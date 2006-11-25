@@ -236,22 +236,22 @@ try_interchange_loops (lambda_trans_matrix trans,
   return trans;
 }
 
-/* Perform a set of linear transforms on LOOPS.  */
+/* Perform a set of linear transforms on loops.  */
 
 void
-linear_transform_loops (struct loops *loops)
+linear_transform_loops (void)
 {
   bool modified = false;
   unsigned int i;
   VEC(tree,heap) *oldivs = NULL;
   VEC(tree,heap) *invariants = NULL;
   
-  for (i = 1; i < loops->num; i++)
+  for (i = 1; i < current_loops->num; i++)
     {
       unsigned int depth = 0;
       VEC (ddr_p, heap) *dependence_relations;
       VEC (data_reference_p, heap) *datarefs;
-      struct loop *loop_nest = loops->parray[i];
+      struct loop *loop_nest = current_loops->parray[i];
       struct loop *temp;
       lambda_loopnest before, after;
       lambda_trans_matrix trans;
@@ -319,7 +319,7 @@ linear_transform_loops (struct loops *loops)
 	  goto free_and_continue;
 	}
 
-      before = gcc_loopnest_to_lambda_loopnest (loops, loop_nest, &oldivs,
+      before = gcc_loopnest_to_lambda_loopnest (loop_nest, &oldivs,
 						&invariants);
 
       if (!before)

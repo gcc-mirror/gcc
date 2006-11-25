@@ -2018,17 +2018,17 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
   compute_estimated_nb_iterations (loop);
 }
 
-/* Records estimates on numbers of iterations of LOOPS.  */
+/* Records estimates on numbers of iterations of loops.  */
 
 void
-estimate_numbers_of_iterations (struct loops *loops)
+estimate_numbers_of_iterations (void)
 {
   unsigned i;
   struct loop *loop;
 
-  for (i = 1; i < loops->num; i++)
+  for (i = 1; i < current_loops->num; i++)
     {
-      loop = loops->parray[i];
+      loop = current_loops->parray[i];
       if (loop)
 	estimate_numbers_of_iterations_loop (loop);
     }
@@ -2240,17 +2240,17 @@ free_numbers_of_iterations_estimates_loop (struct loop *loop)
   loop->bounds = NULL;
 }
 
-/* Frees the information on upper bounds on numbers of iterations of LOOPS.  */
+/* Frees the information on upper bounds on numbers of iterations of loops.  */
 
 void
-free_numbers_of_iterations_estimates (struct loops *loops)
+free_numbers_of_iterations_estimates (void)
 {
   unsigned i;
   struct loop *loop;
 
-  for (i = 1; i < loops->num; i++)
+  for (i = 1; i < current_loops->num; i++)
     {
-      loop = loops->parray[i];
+      loop = current_loops->parray[i];
       if (loop)
 	free_numbers_of_iterations_estimates_loop (loop);
     }

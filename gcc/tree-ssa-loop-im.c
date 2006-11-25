@@ -1372,20 +1372,20 @@ determine_lsm_loop (struct loop *loop)
 }
 
 /* Try to perform store motion for all memory references modified inside
-   any of LOOPS.  */
+   loops.  */
 
 static void
-determine_lsm (struct loops *loops)
+determine_lsm (void)
 {
   struct loop *loop;
 
-  if (!loops->tree_root->inner)
+  if (!current_loops->tree_root->inner)
     return;
 
   /* Pass the loops from the outermost and perform the store motion as
      suitable.  */
 
-  loop = loops->tree_root->inner;
+  loop = current_loops->tree_root->inner;
   while (1)
     {
       determine_lsm_loop (loop);
@@ -1398,7 +1398,7 @@ determine_lsm (struct loops *loops)
       while (!loop->next)
 	{
 	  loop = loop->outer;
-	  if (loop == loops->tree_root)
+	  if (loop == current_loops->tree_root)
 	    {
 	      bsi_commit_edge_inserts ();
 	      return;
@@ -1476,11 +1476,10 @@ fill_always_executed_in (struct loop *loop, sbitmap contains_call)
     fill_always_executed_in (loop, contains_call);
 }
 
-/* Compute the global information needed by the loop invariant motion pass.
-   LOOPS is the loop tree.  */
+/* Compute the global information needed by the loop invariant motion pass.  */
 
 static void
-tree_ssa_lim_initialize (struct loops *loops)
+tree_ssa_lim_initialize (void)
 {
   sbitmap contains_call = sbitmap_alloc (last_basic_block);
   block_stmt_iterator bsi;
@@ -1500,7 +1499,7 @@ tree_ssa_lim_initialize (struct loops *loops)
 	SET_BIT (contains_call, bb->index);
     }
 
-  for (loop = loops->tree_root->inner; loop; loop = loop->next)
+  for (loop = current_loops->tree_root->inner; loop; loop = loop->next)
     fill_always_executed_in (loop, contains_call);
 
   sbitmap_free (contains_call);
@@ -1519,13 +1518,13 @@ tree_ssa_lim_finalize (void)
     }
 }
 
-/* Moves invariants from LOOPS.  Only "expensive" invariants are moved out --
+/* Moves invariants from loops.  Only "expensive" invariants are moved out --
    i.e. those that are likely to be win regardless of the register pressure.  */
 
 void
-tree_ssa_lim (struct loops *loops)
+tree_ssa_lim (void)
 {
-  tree_ssa_lim_initialize (loops);
+  tree_ssa_lim_initialize ();
 
   /* For each statement determine the outermost loop in that it is
      invariant and cost for computing the invariant.  */
@@ -1534,7 +1533,7 @@ tree_ssa_lim (struct loops *loops)
   /* For each memory reference determine whether it is possible to hoist it
      out of the loop.  Force the necessary invariants to be moved out of the
      loops as well.  */
-  determine_lsm (loops);
+  determine_lsm ();
 
   /* Move the expressions that are expensive enough.  */
   move_computations ();

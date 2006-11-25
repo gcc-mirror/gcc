@@ -141,7 +141,6 @@ typedef struct
 lambda_loopnest lambda_loopnest_new (int, int);
 lambda_loopnest lambda_loopnest_transform (lambda_loopnest, lambda_trans_matrix);
 struct loop;
-struct loops;
 bool perfect_nest_p (struct loop *);
 void print_lambda_loopnest (FILE *, lambda_loopnest, char);
 
@@ -196,8 +195,7 @@ lambda_body_vector lambda_body_vector_new (int);
 lambda_body_vector lambda_body_vector_compute_new (lambda_trans_matrix, 
 						   lambda_body_vector);
 void print_lambda_body_vector (FILE *, lambda_body_vector);
-lambda_loopnest gcc_loopnest_to_lambda_loopnest (struct loops *,
-						 struct loop *,
+lambda_loopnest gcc_loopnest_to_lambda_loopnest (struct loop *,
 						 VEC(tree,heap) **,
 						 VEC(tree,heap) **);
 void lambda_loopnest_to_gcc_loopnest (struct loop *,

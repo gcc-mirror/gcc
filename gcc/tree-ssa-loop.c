@@ -85,7 +85,7 @@ tree_ssa_loop_init (void)
   if (!current_loops)
     return 0;
 
-  scev_initialize (current_loops);
+  scev_initialize ();
   return 0;
 }
   
@@ -114,7 +114,7 @@ tree_ssa_loop_im (void)
   if (!current_loops)
     return 0;
 
-  tree_ssa_lim (current_loops);
+  tree_ssa_lim ();
   return 0;
 }
 
@@ -149,7 +149,7 @@ tree_ssa_loop_unswitch (void)
   if (!current_loops)
     return 0;
 
-  return tree_ssa_unswitch_loops (current_loops);
+  return tree_ssa_unswitch_loops ();
 }
 
 static bool
@@ -180,7 +180,7 @@ struct tree_opt_pass pass_tree_unswitch =
 static unsigned int
 tree_vectorize (void)
 {
-  return vectorize_loops (current_loops);
+  return vectorize_loops ();
 }
 
 static bool
@@ -214,7 +214,7 @@ tree_linear_transform (void)
   if (!current_loops)
     return 0;
 
-  linear_transform_loops (current_loops);
+  linear_transform_loops ();
   return 0;
 }
 
@@ -249,7 +249,7 @@ tree_ssa_loop_ivcanon (void)
   if (!current_loops)
     return 0;
 
-  return canonicalize_induction_variables (current_loops);
+  return canonicalize_induction_variables ();
 }
 
 static bool
@@ -310,7 +310,7 @@ tree_ssa_empty_loop (void)
   if (!current_loops)
     return 0;
 
-  return remove_empty_loops (current_loops);
+  return remove_empty_loops ();
 }
 
 struct tree_opt_pass pass_empty_loop =
@@ -338,7 +338,7 @@ tree_ssa_loop_bounds (void)
   if (!current_loops)
     return 0;
 
-  estimate_numbers_of_iterations (current_loops);
+  estimate_numbers_of_iterations ();
   scev_reset ();
   return 0;
 }
@@ -368,10 +368,9 @@ tree_complete_unroll (void)
   if (!current_loops)
     return 0;
 
-  return tree_unroll_loops_completely (current_loops,
-				       flag_unroll_loops
-					|| flag_peel_loops
-					|| optimize >= 3);
+  return tree_unroll_loops_completely (flag_unroll_loops
+				       || flag_peel_loops
+				       || optimize >= 3);
 }
 
 static bool
@@ -405,7 +404,7 @@ tree_ssa_loop_prefetch (void)
   if (!current_loops)
     return 0;
 
-  return tree_ssa_prefetch_arrays (current_loops);
+  return tree_ssa_prefetch_arrays ();
 }
 
 static bool
@@ -439,7 +438,7 @@ tree_ssa_loop_ivopts (void)
   if (!current_loops)
     return 0;
 
-  tree_ssa_iv_optimize (current_loops);
+  tree_ssa_iv_optimize ();
   return 0;
 }
 
@@ -476,7 +475,7 @@ tree_ssa_loop_done (void)
   if (!current_loops)
     return 0;
 
-  free_numbers_of_iterations_estimates (current_loops);
+  free_numbers_of_iterations_estimates ();
   scev_finalize ();
   loop_optimizer_finalize ();
   return 0;

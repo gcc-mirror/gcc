@@ -1176,8 +1176,7 @@ sms_schedule (void)
 		  rtx comp_rtx = gen_rtx_fmt_ee (GT, VOIDmode, count_reg,
 						 GEN_INT(stage_count));
 
-		  nloop = loop_version (current_loops, loop, comp_rtx,
-					&condition_bb, true);
+		  nloop = loop_version (loop, comp_rtx, &condition_bb, true);
 		}
 
 	      /* Set new iteration count of loop kernel.  */

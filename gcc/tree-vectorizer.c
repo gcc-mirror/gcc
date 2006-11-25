@@ -150,8 +150,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 /*************************************************************************
   Simple Loop Peeling Utilities
  *************************************************************************/
-static struct loop *slpeel_tree_duplicate_loop_to_edge_cfg 
-  (struct loop *, struct loops *, edge);
 static void slpeel_update_phis_for_duplicate_loop 
   (struct loop *, struct loop *, bool after);
 static void slpeel_update_phi_nodes_for_guard1 
@@ -823,8 +821,7 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
    on E which is either the entry or exit of LOOP.  */
 
 static struct loop *
-slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, struct loops *loops, 
-					edge e)
+slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, edge e)
 {
   struct loop *new_loop;
   basic_block *new_bbs, *bbs;
@@ -848,7 +845,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, struct loops *loops,
     }
 
   /* Generate new loop structure.  */
-  new_loop = duplicate_loop (loops, loop, loop->outer);
+  new_loop = duplicate_loop (loop, loop->outer);
   if (!new_loop)
     {
       free (bbs);
@@ -1067,7 +1064,7 @@ slpeel_verify_cfg_after_peeling (struct loop *first_loop,
 */
 
 struct loop*
-slpeel_tree_peel_loop_to_edge (struct loop *loop, struct loops *loops, 
+slpeel_tree_peel_loop_to_edge (struct loop *loop, 
 			       edge e, tree first_niters, 
 			       tree niters, bool update_first_loop_count)
 {
@@ -1106,7 +1103,7 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop, struct loops *loops,
         orig_exit_bb:
    */
   
-  if (!(new_loop = slpeel_tree_duplicate_loop_to_edge_cfg (loop, loops, e)))
+  if (!(new_loop = slpeel_tree_duplicate_loop_to_edge_cfg (loop, e)))
     {
       loop_loc = find_loop_location (loop);
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2156,7 +2153,7 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
    Entry Point to loop vectorization phase.  */
 
 unsigned
-vectorize_loops (struct loops *loops)
+vectorize_loops (void)
 {
   unsigned int i;
   unsigned int num_vectorized_loops = 0;
@@ -2173,11 +2170,11 @@ vectorize_loops (struct loops *loops)
   /* If some loop was duplicated, it gets bigger number 
      than all previously defined loops. This fact allows us to run 
      only over initial loops skipping newly generated ones.  */
-  vect_loops_num = loops->num;
+  vect_loops_num = current_loops->num;
   for (i = 1; i < vect_loops_num; i++)
     {
       loop_vec_info loop_vinfo;
-      struct loop *loop = loops->parray[i];
+      struct loop *loop = current_loops->parray[i];
 
       if (!loop)
         continue;
@@ -2189,7 +2186,7 @@ vectorize_loops (struct loops *loops)
       if (!loop_vinfo || !LOOP_VINFO_VECTORIZABLE_P (loop_vinfo))
 	continue;
 
-      vect_transform_loop (loop_vinfo, loops);
+      vect_transform_loop (loop_vinfo);
       num_vectorized_loops++;
     }
   vect_loop_location = UNKNOWN_LOC;
@@ -2204,7 +2201,7 @@ vectorize_loops (struct loops *loops)
 
   for (i = 1; i < vect_loops_num; i++)
     {
-      struct loop *loop = loops->parray[i];
+      struct loop *loop = current_loops->parray[i];
       loop_vec_info loop_vinfo;
 
       if (!loop)

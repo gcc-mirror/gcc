@@ -4774,7 +4774,7 @@ execute_vrp (void)
 
   loop_optimizer_init (LOOPS_NORMAL);
   if (current_loops)
-    scev_initialize (current_loops);
+    scev_initialize ();
 
   vrp_initialize ();
   ssa_propagate (vrp_visit_stmt, vrp_visit_phi_node);

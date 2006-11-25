@@ -933,7 +933,7 @@ static unsigned int
 tree_ssa_dce_loop (void)
 {
   perform_tree_ssa_dce (/*aggressive=*/false);
-  free_numbers_of_iterations_estimates (current_loops);
+  free_numbers_of_iterations_estimates ();
   scev_reset ();
   return 0;
 }

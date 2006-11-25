@@ -114,19 +114,19 @@ struct opt_info
   basic_block loop_preheader;      /* The loop preheader basic block.  */
 };
 
-static void decide_unrolling_and_peeling (struct loops *, int);
-static void peel_loops_completely (struct loops *, int);
+static void decide_unrolling_and_peeling (int);
+static void peel_loops_completely (int);
 static void decide_peel_simple (struct loop *, int);
 static void decide_peel_once_rolling (struct loop *, int);
 static void decide_peel_completely (struct loop *, int);
 static void decide_unroll_stupid (struct loop *, int);
 static void decide_unroll_constant_iterations (struct loop *, int);
 static void decide_unroll_runtime_iterations (struct loop *, int);
-static void peel_loop_simple (struct loops *, struct loop *);
-static void peel_loop_completely (struct loops *, struct loop *);
-static void unroll_loop_stupid (struct loops *, struct loop *);
-static void unroll_loop_constant_iterations (struct loops *, struct loop *);
-static void unroll_loop_runtime_iterations (struct loops *, struct loop *);
+static void peel_loop_simple (struct loop *);
+static void peel_loop_completely (struct loop *);
+static void unroll_loop_stupid (struct loop *);
+static void unroll_loop_constant_iterations (struct loop *);
+static void unroll_loop_runtime_iterations (struct loop *);
 static struct opt_info *analyze_insns_in_loop (struct loop *);
 static void opt_info_start_duplication (struct opt_info *);
 static void apply_opt_in_copies (struct opt_info *, unsigned, bool, bool);
@@ -142,24 +142,24 @@ static rtx get_expansion (struct var_to_expand *);
 
 /* Unroll and/or peel (depending on FLAGS) LOOPS.  */
 void
-unroll_and_peel_loops (struct loops *loops, int flags)
+unroll_and_peel_loops (int flags)
 {
   struct loop *loop, *next;
   bool check;
 
   /* First perform complete loop peeling (it is almost surely a win,
      and affects parameters for further decision a lot).  */
-  peel_loops_completely (loops, flags);
+  peel_loops_completely (flags);
 
   /* Now decide rest of unrolling and peeling.  */
-  decide_unrolling_and_peeling (loops, flags);
+  decide_unrolling_and_peeling (flags);
 
-  loop = loops->tree_root;
+  loop = current_loops->tree_root;
   while (loop->inner)
     loop = loop->inner;
 
   /* Scan the loops, inner ones first.  */
-  while (loop != loops->tree_root)
+  while (loop != current_loops->tree_root)
     {
       if (loop->next)
 	{
@@ -178,16 +178,16 @@ unroll_and_peel_loops (struct loops *loops, int flags)
 	  /* Already done.  */
 	  gcc_unreachable ();
 	case LPT_PEEL_SIMPLE:
-	  peel_loop_simple (loops, loop);
+	  peel_loop_simple (loop);
 	  break;
 	case LPT_UNROLL_CONSTANT:
-	  unroll_loop_constant_iterations (loops, loop);
+	  unroll_loop_constant_iterations (loop);
 	  break;
 	case LPT_UNROLL_RUNTIME:
-	  unroll_loop_runtime_iterations (loops, loop);
+	  unroll_loop_runtime_iterations (loop);
 	  break;
 	case LPT_UNROLL_STUPID:
-	  unroll_loop_stupid (loops, loop);
+	  unroll_loop_stupid (loop);
 	  break;
 	case LPT_NONE:
 	  check = false;
@@ -199,7 +199,7 @@ unroll_and_peel_loops (struct loops *loops, int flags)
 	{
 #ifdef ENABLE_CHECKING
 	  verify_dominators (CDI_DOMINATORS);
-	  verify_loop_structure (loops);
+	  verify_loop_structure ();
 #endif
 	}
       loop = next;
@@ -229,17 +229,17 @@ loop_exit_at_end_p (struct loop *loop)
   return true;
 }
 
-/* Check whether to peel LOOPS (depending on FLAGS) completely and do so.  */
+/* Depending on FLAGS, check whether to peel loops completely and do so.  */
 static void
-peel_loops_completely (struct loops *loops, int flags)
+peel_loops_completely (int flags)
 {
   struct loop *loop;
   unsigned i;
 
   /* Scan the loops, the inner ones first.  */
-  for (i = loops->num - 1; i > 0; i--)
+  for (i = current_loops->num - 1; i > 0; i--)
     {
-      loop = loops->parray[i];
+      loop = current_loops->parray[i];
       if (!loop)
 	continue;
 
@@ -258,26 +258,26 @@ peel_loops_completely (struct loops *loops, int flags)
 
       if (loop->lpt_decision.decision == LPT_PEEL_COMPLETELY)
 	{
-	  peel_loop_completely (loops, loop);
+	  peel_loop_completely (loop);
 #ifdef ENABLE_CHECKING
 	  verify_dominators (CDI_DOMINATORS);
-	  verify_loop_structure (loops);
+	  verify_loop_structure ();
 #endif
 	}
     }
 }
 
-/* Decide whether unroll or peel LOOPS (depending on FLAGS) and how much.  */
+/* Decide whether unroll or peel loops (depending on FLAGS) and how much.  */
 static void
-decide_unrolling_and_peeling (struct loops *loops, int flags)
+decide_unrolling_and_peeling (int flags)
 {
-  struct loop *loop = loops->tree_root, *next;
+  struct loop *loop = current_loops->tree_root, *next;
 
   while (loop->inner)
     loop = loop->inner;
 
   /* Scan the loops, inner ones first.  */
-  while (loop != loops->tree_root)
+  while (loop != current_loops->tree_root)
     {
       if (loop->next)
 	{
@@ -475,7 +475,7 @@ decide_peel_completely (struct loop *loop, int flags ATTRIBUTE_UNUSED)
    body; i++;
    */
 static void
-peel_loop_completely (struct loops *loops, struct loop *loop)
+peel_loop_completely (struct loop *loop)
 {
   sbitmap wont_exit;
   unsigned HOST_WIDE_INT npeel;
@@ -504,7 +504,7 @@ peel_loop_completely (struct loops *loops, struct loop *loop)
       
       opt_info_start_duplication (opt_info);
       ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-					  loops, npeel,
+					  npeel,
 					  wont_exit, desc->out_edge,
 					  remove_edges, &n_remove_edges,
 					  DLTHE_FLAG_UPDATE_FREQ
@@ -523,7 +523,7 @@ peel_loop_completely (struct loops *loops, struct loop *loop)
 
       /* Remove the exit edges.  */
       for (i = 0; i < n_remove_edges; i++)
-	remove_path (loops, remove_edges[i]);
+	remove_path (remove_edges[i]);
       free (remove_edges);
     }
 
@@ -532,7 +532,7 @@ peel_loop_completely (struct loops *loops, struct loop *loop)
 
   /* Now remove the unreachable part of the last iteration and cancel
      the loop.  */
-  remove_path (loops, ein);
+  remove_path (ein);
 
   if (dump_file)
     fprintf (dump_file, ";; Peeled loop completely, %d times\n", (int) npeel);
@@ -658,7 +658,7 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
      }
   */
 static void
-unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
+unroll_loop_constant_iterations (struct loop *loop)
 {
   unsigned HOST_WIDE_INT niter;
   unsigned exit_mod;
@@ -705,7 +705,7 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
 	{
 	  opt_info_start_duplication (opt_info);
           ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-					      loops, exit_mod,
+					      exit_mod,
 					      wont_exit, desc->out_edge,
 					      remove_edges, &n_remove_edges,
 					      DLTHE_FLAG_UPDATE_FREQ
@@ -744,7 +744,7 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
          
           opt_info_start_duplication (opt_info);
 	  ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-					      loops, exit_mod + 1,
+					      exit_mod + 1,
 					      wont_exit, desc->out_edge,
 					      remove_edges, &n_remove_edges,
 					      DLTHE_FLAG_UPDATE_FREQ
@@ -771,7 +771,7 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
   
   opt_info_start_duplication (opt_info);
   ok = duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
-				      loops, max_unroll,
+				      max_unroll,
 				      wont_exit, desc->out_edge,
 				      remove_edges, &n_remove_edges,
 				      DLTHE_FLAG_UPDATE_FREQ
@@ -811,7 +811,7 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
 
   /* Remove the edges.  */
   for (i = 0; i < n_remove_edges; i++)
-    remove_path (loops, remove_edges[i]);
+    remove_path (remove_edges[i]);
   free (remove_edges);
 
   if (dump_file)
@@ -948,7 +948,7 @@ split_edge_and_insert (edge e, rtx insns)
      }
    */
 static void
-unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
+unroll_loop_runtime_iterations (struct loop *loop)
 {
   rtx old_niter, niter, init_code, branch_code, tmp;
   unsigned i, j, p;
@@ -1043,8 +1043,7 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
     SET_BIT (wont_exit, 1);
   ezc_swtch = loop_preheader_edge (loop)->src;
   ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-				      loops, 1,
-				      wont_exit, desc->out_edge,
+				      1, wont_exit, desc->out_edge,
 				      remove_edges, &n_remove_edges,
 				      DLTHE_FLAG_UPDATE_FREQ);
   gcc_assert (ok);
@@ -1059,8 +1058,7 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
       if (i != n_peel - 1 || !last_may_exit)
 	SET_BIT (wont_exit, 1);
       ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-					  loops, 1,
-					  wont_exit, desc->out_edge,
+					  1, wont_exit, desc->out_edge,
 					  remove_edges, &n_remove_edges,
 					  DLTHE_FLAG_UPDATE_FREQ);
       gcc_assert (ok);
@@ -1115,7 +1113,7 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
   opt_info_start_duplication (opt_info);
   
   ok = duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
-				      loops, max_unroll,
+				      max_unroll,
 				      wont_exit, desc->out_edge,
 				      remove_edges, &n_remove_edges,
 				      DLTHE_FLAG_UPDATE_FREQ
@@ -1152,7 +1150,7 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
 
   /* Remove the edges.  */
   for (i = 0; i < n_remove_edges; i++)
-    remove_path (loops, remove_edges[i]);
+    remove_path (remove_edges[i]);
   free (remove_edges);
 
   /* We must be careful when updating the number of iterations due to
@@ -1282,7 +1280,7 @@ decide_peel_simple (struct loop *loop, int flags)
    end: ;
    */
 static void
-peel_loop_simple (struct loops *loops, struct loop *loop)
+peel_loop_simple (struct loop *loop)
 {
   sbitmap wont_exit;
   unsigned npeel = loop->lpt_decision.times;
@@ -1299,7 +1297,7 @@ peel_loop_simple (struct loops *loops, struct loop *loop)
   opt_info_start_duplication (opt_info);
   
   ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-				      loops, npeel, wont_exit,
+				      npeel, wont_exit,
 				      NULL, NULL,
 				      NULL, DLTHE_FLAG_UPDATE_FREQ
 				      | (opt_info
@@ -1432,7 +1430,7 @@ decide_unroll_stupid (struct loop *loop, int flags)
      }
    */
 static void
-unroll_loop_stupid (struct loops *loops, struct loop *loop)
+unroll_loop_stupid (struct loop *loop)
 {
   sbitmap wont_exit;
   unsigned nunroll = loop->lpt_decision.times;
@@ -1450,7 +1448,7 @@ unroll_loop_stupid (struct loops *loops, struct loop *loop)
   opt_info_start_duplication (opt_info);
   
   ok = duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
-				      loops, nunroll, wont_exit,
+				      nunroll, wont_exit,
 				      NULL, NULL, NULL,
 				      DLTHE_FLAG_UPDATE_FREQ
 				      | (opt_info

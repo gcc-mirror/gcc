@@ -1,6 +1,91 @@
+2006-11-25  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-vrp.c (execute_vrp): Do not pass loops structure through
+	arguments.
+	* loop-unswitch.c (unswitch_loops, unswitch_single_loop,
+	unswitch_loop): Ditto.
+	* tree-loop-linear.c (linear_transform_loops): Ditto.
+	* tree-ssa-loop-im.c (determine_lsm, tree_ssa_lim_initialize,
+	tree_ssa_lim): Ditto.
+	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations,
+	free_numbers_of_iterations_estimates): Ditto.
+	* tree-ssa-loop-unswitch.c (tree_ssa_unswitch_loops,
+	tree_unswitch_single_loop, tree_unswitch_loop): Ditto.
+	* cfgloopmanip.c (fix_bb_placement, fix_bb_placements,
+	remove_path, add_loop, loopify, unloop, fix_loop_placements,
+	place_new_loop, duplicate_loop, duplicate_subloops,
+	update_single_exit_for_duplicated_loops, copy_loops_to,
+	duplicate_loop_to_header_edge, create_preheaders,
+	force_single_succ_latches, loop_version, fix_loop_structure):
+	Ditto.
+	* tree-ssa-loop-manip.c (tree_duplicate_loop_to_header_edge,
+	tree_unroll_loop): Ditto.
+	* tree-ssa-loop-ch.c (copy_loop_headers): Ditto.
+	* tree-scalar-evolution.c (select_loops_exit_conditions,
+	scev_initialize, scev_analysis): Ditto.
+	* tree-scalar-evolution.h (scev_initialize): Ditto.
+	* cfghooks.c (cfg_hook_duplicate_loop_to_header_edge): Ditto.
+	* cfgloopanal.c (mark_irreducible_loops, mark_loop_exit_edges): Ditto.
+	* tree-ssa-loop-ivopts.c (tree_ssa_iv_optimize): Ditto.
+	* modulo-sched.c (sms_schedule): Ditto.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Ditto.
+	* loop-init.c (loop_optimizer_init, rtl_move_loop_invariants,
+	rtl_unswitch, rtl_unroll_and_peel_loops, rtl_doloop): Ditto.
+	* ifcvt.c (if_convert): Ditto.
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely,
+	canonicalize_loop_induction_variables,
+	canonicalize_induction_variables,
+	tree_unroll_loops_completely, remove_empty_loops): Ditto.
+	* tree-ssa-loop.c (tree_ssa_loop_init, tree_ssa_loop_im,
+	tree_ssa_loop_unswitch, tree_vectorize, tree_linear_transform,
+	tree_ssa_loop_ivcanon, tree_ssa_empty_loop, tree_ssa_loop_bounds,
+	tree_complete_unroll, tree_ssa_loop_prefetch, tree_ssa_loop_ivopts,
+	tree_ssa_loop_done): Ditto.
+	* predict.c (predict_loops, tree_estimate_probability, estimate_loops,
+	estimate_bb_frequencies): Ditto.
+	* tree-vectorizer.c (slpeel_tree_duplicate_loop_to_edge_cfg,
+	slpeel_tree_peel_loop_to_edge, vectorize_loops): Ditto.
+	* loop-unroll.c (unroll_and_peel_loops, peel_loops_completely,
+	decide_unrolling_and_peeling, peel_loop_completely,
+	unroll_loop_constant_iterations, unroll_loop_runtime_iterations,
+	peel_loop_simple, unroll_loop_stupid): Ditto.
+	* loop-doloop.c (doloop_optimize_loops): Ditto.
+	* tree-cfgcleanup.c (cleanup_tree_cfg_loop): Ditto.
+	* loop-invariant.c (move_loop_invariants): Ditto.
+	* tree-ssa-dce.c (tree_ssa_dce_loop): Ditto.
+	* tree-ssa-loop-prefetch.c (loop_prefetch_arrays,
+	tree_ssa_prefetch_arrays): Ditto.
+	* lambda-code.c (gcc_loopnest_to_lambda_loopnest, perfect_nestify):
+	Ditto.
+	* tree-vect-transform.c (vect_do_peeling_for_loop_bound,
+	vect_do_peeling_for_alignment, vect_transform_loop): Ditto.
+	* cfgloop.c (flow_loops_cfg_dump, flow_loops_dump,
+	mark_single_exit_loops, cancel_loop, cancel_loop_tree,
+	verify_loop_structure): Ditto.
+	* tree-flow.h (vectorize_loops, tree_ssa_lim, tree_ssa_unswitch_loops,
+	canonicalize_induction_variables, tree_unroll_loops_completely,
+	tree_ssa_prefetch_arrays, remove_empty_loops, tree_ssa_iv_optimize,
+	estimate_numbers_of_iterations, free_numbers_of_iterations_estimates,
+	tree_duplicate_loop_to_header_edge, tree_ssa_loop_version,
+	tree_unroll_loop, linear_transform_loops): Declaration changed.
+	* basic-block.h: Remove declaration of struct loops.
+	* cfghooks.h (struct cfg_hooks): Change type of
+	cfg_hook_duplicate_loop_to_header_edge.
+	(cfg_hook_duplicate_loop_to_header_edge): Declaration changed.
+	* tree-vectorizer.h (slpeel_tree_peel_loop_to_edge,
+	vect_transform_loop): Declaration changed.
+	* lambda.h (gcc_loopnest_to_lambda_loopnest): Declaration changed.
+	* cfgloop.h (flow_loops_dump, fix_loop_structure,
+	mark_irreducible_loops, mark_single_exit_loops, mark_loop_exit_edges,
+	cancel_loop_tree, create_preheaders, force_single_succ_latches,
+	verify_loop_structure, duplicate_loop, duplicate_loop_to_header_edge,
+	loopify, loop_version, remove_path, unswitch_loops,
+	unroll_and_peel_loops, doloop_optimize_loops, move_loop_invariants):
+	Declaration changed.
+
 2006-11-24  Uros Bizjak  <ubizjak@gmail.com>
 
-	config/i386/i386.md (UNSPEC_TRUNC_NOOP): New unspec definition.
+	* config/i386/i386.md (UNSPEC_TRUNC_NOOP): New unspec definition.
 	(X87MODEF): New mode macro.
 	(ssemodefsuffix): New mode attribute.
 	(truncxf<mode>2_i387_noop_unspec): New insn pattern.
@@ -17,7 +102,7 @@
 	(fmodsf3, fmoddf3, remaindersf3, remainderdf3): Use noop
 	truncation patterns.
 
-	reg-stack.c (get_true_reg): Handle UNSPEC_TRUNC_NOOP. 
+	* reg-stack.c (get_true_reg): Handle UNSPEC_TRUNC_NOOP. 
 	
 2006-11-24  Jakub Jelinek  <jakub@redhat.com>
 

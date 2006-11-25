@@ -115,8 +115,7 @@
  Fourier-Motzkin elimination is used to compute the bounds of the base space
  of the lattice.  */
 
-static bool perfect_nestify (struct loops *, 
-			     struct loop *, VEC(tree,heap) *, 
+static bool perfect_nestify (struct loop *, VEC(tree,heap) *, 
 			     VEC(tree,heap) *, VEC(int,heap) *,
 			     VEC(tree,heap) *);
 /* Lattice stuff that is internal to the code generation algorithm.  */
@@ -1457,8 +1456,7 @@ DEF_VEC_ALLOC_P(lambda_loop,heap);
    during this process.  */
 
 lambda_loopnest
-gcc_loopnest_to_lambda_loopnest (struct loops *currloops,
-				 struct loop *loop_nest,
+gcc_loopnest_to_lambda_loopnest (struct loop *loop_nest,
 				 VEC(tree,heap) **inductionvars,
 				 VEC(tree,heap) **invariants)
 {
@@ -1493,8 +1491,8 @@ gcc_loopnest_to_lambda_loopnest (struct loops *currloops,
 
   if (!perfect_nest)
     {
-      if (!perfect_nestify (currloops, loop_nest, 
-			    lboundvars, uboundvars, steps, *inductionvars))
+      if (!perfect_nestify (loop_nest, lboundvars, uboundvars, steps,
+			    *inductionvars))
 	{
 	  if (dump_file)
 	    fprintf (dump_file,
@@ -2402,7 +2400,6 @@ can_convert_to_perfect_nest (struct loop *loop)
 }
 
 /* Transform the loop nest into a perfect nest, if possible.
-   LOOPS is the current struct loops *
    LOOP is the loop nest to transform into a perfect nest
    LBOUNDS are the lower bounds for the loops to transform
    UBOUNDS are the upper bounds for the loops to transform
@@ -2439,8 +2436,7 @@ can_convert_to_perfect_nest (struct loop *loop)
    Return FALSE if we can't make this loop into a perfect nest.  */
 
 static bool
-perfect_nestify (struct loops *loops,
-		 struct loop *loop,
+perfect_nestify (struct loop *loop,
 		 VEC(tree,heap) *lbounds,
 		 VEC(tree,heap) *ubounds,
 		 VEC(int,heap) *steps,
@@ -2514,7 +2510,7 @@ perfect_nestify (struct loops *loops,
   make_edge (latchbb, headerbb, EDGE_FALLTHRU);
 
   /* Update the loop structures.  */
-  newloop = duplicate_loop (loops, loop, olddest->loop_father);  
+  newloop = duplicate_loop (loop, olddest->loop_father);  
   newloop->header = headerbb;
   newloop->latch = latchbb;
   set_single_exit (newloop, e);

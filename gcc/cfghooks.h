@@ -112,7 +112,6 @@ struct cfg_hooks
   /* A hook for duplicating loop in CFG, currently this is used
      in loop versioning.  */
   bool (*cfg_hook_duplicate_loop_to_header_edge) (struct loop *loop, edge e,
-						  struct loops *loops,
 						  unsigned int ndupl,
 						  sbitmap wont_exit,
 						  edge orig, edge *to_remove,
@@ -164,7 +163,6 @@ extern int flow_call_edges_add (sbitmap);
 extern void execute_on_growing_pred (edge);
 extern void execute_on_shrinking_pred (edge);
 extern bool cfg_hook_duplicate_loop_to_header_edge (struct loop *loop, edge,
-						    struct loops *loops,
 						    unsigned int ndupl,
 						    sbitmap wont_exit,
 						    edge orig, edge *to_remove,

@@ -937,13 +937,13 @@ lv_flush_pending_stmts (edge e)
    than duplicate_loop_to_header_edge when we are in tree mode.  */
 bool
 cfg_hook_duplicate_loop_to_header_edge (struct loop *loop, edge e,
-					struct loops *loops, unsigned int ndupl,
+					unsigned int ndupl,
 					sbitmap wont_exit, edge orig,
 					edge *to_remove,
 					unsigned int *n_to_remove, int flags)
 {
   gcc_assert (cfg_hooks->cfg_hook_duplicate_loop_to_header_edge);
-  return cfg_hooks->cfg_hook_duplicate_loop_to_header_edge (loop, e, loops,
+  return cfg_hooks->cfg_hook_duplicate_loop_to_header_edge (loop, e,
 							    ndupl, wont_exit,
 							    orig, to_remove,
 							    n_to_remove, flags);

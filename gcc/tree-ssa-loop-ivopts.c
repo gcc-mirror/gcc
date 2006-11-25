@@ -5878,10 +5878,10 @@ finish:
   return changed;
 }
 
-/* Main entry point.  Optimizes induction variables in LOOPS.  */
+/* Main entry point.  Optimizes induction variables in loops.  */
 
 void
-tree_ssa_iv_optimize (struct loops *loops)
+tree_ssa_iv_optimize (void)
 {
   struct loop *loop;
   struct ivopts_data data;
@@ -5889,12 +5889,12 @@ tree_ssa_iv_optimize (struct loops *loops)
   tree_ssa_iv_optimize_init (&data);
 
   /* Optimize the loops starting with the innermost ones.  */
-  loop = loops->tree_root;
+  loop = current_loops->tree_root;
   while (loop->inner)
     loop = loop->inner;
 
   /* Scan the loops, inner ones first.  */
-  while (loop != loops->tree_root)
+  while (loop != current_loops->tree_root)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	flow_loop_dump (loop, dump_file, NULL, 1);

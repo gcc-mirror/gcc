@@ -70,9 +70,6 @@ static void vect_update_ivs_after_vectorizer (loop_vec_info, tree, edge);
 static tree vect_gen_niters_for_prolog_loop (loop_vec_info, tree);
 static void vect_update_init_of_dr (struct data_reference *, tree niters);
 static void vect_update_inits_of_drs (loop_vec_info, tree);
-static void vect_do_peeling_for_alignment (loop_vec_info, struct loops *);
-static void vect_do_peeling_for_loop_bound 
-  (loop_vec_info, tree *, struct loops *);
 static int vect_min_worthwhile_factor (enum tree_code);
 
 
@@ -4070,8 +4067,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
    NITERS / VECTORIZATION_FACTOR times (this value is placed into RATIO).  */
 
 static void 
-vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
-				struct loops *loops)
+vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio)
 {
   tree ni_name, ratio_mult_vf_name;
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -4094,7 +4090,7 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
 				   &ratio_mult_vf_name, ratio);
 
   loop_num  = loop->num; 
-  new_loop = slpeel_tree_peel_loop_to_edge (loop, loops, single_exit (loop),
+  new_loop = slpeel_tree_peel_loop_to_edge (loop, single_exit (loop),
 					    ratio_mult_vf_name, ni_name, false);
   gcc_assert (new_loop);
   gcc_assert (loop_num == loop->num);
@@ -4302,7 +4298,7 @@ vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters)
    peeling is recorded in LOOP_VINFO_UNALIGNED_DR.  */
 
 static void
-vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, struct loops *loops)
+vect_do_peeling_for_alignment (loop_vec_info loop_vinfo)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree niters_of_prolog_loop, ni_name;
@@ -4319,7 +4315,7 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, struct loops *loops)
   
   /* Peel the prolog loop and iterate it niters_of_prolog_loop.  */
   new_loop = 
-	slpeel_tree_peel_loop_to_edge (loop, loops, loop_preheader_edge (loop), 
+	slpeel_tree_peel_loop_to_edge (loop, loop_preheader_edge (loop), 
 				       niters_of_prolog_loop, ni_name, true); 
   gcc_assert (new_loop);
 #ifdef ENABLE_CHECKING
@@ -4470,8 +4466,7 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
    stmts in the loop, and update the loop exit condition.  */
 
 void
-vect_transform_loop (loop_vec_info loop_vinfo, 
-		     struct loops *loops ATTRIBUTE_UNUSED)
+vect_transform_loop (loop_vec_info loop_vinfo)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
@@ -4508,7 +4503,7 @@ vect_transform_loop (loop_vec_info loop_vinfo,
       cond_expr = vect_create_cond_for_align_checks (loop_vinfo,
                                                      &cond_expr_stmt_list);
       initialize_original_copy_tables ();
-      nloop = loop_version (loops, loop, cond_expr, &condition_bb, true);
+      nloop = loop_version (loop, cond_expr, &condition_bb, true);
       free_original_copy_tables();
 
       /** Loop versioning violates an assumption we try to maintain during 
@@ -4550,7 +4545,7 @@ vect_transform_loop (loop_vec_info loop_vinfo,
      Only one data ref with unknown store is allowed.  */
 
   if (LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo))
-    vect_do_peeling_for_alignment (loop_vinfo, loops);
+    vect_do_peeling_for_alignment (loop_vinfo);
   
   /* If the loop has a symbolic number of iterations 'n' (i.e. it's not a
      compile time constant), or it is a constant that doesn't divide by the
@@ -4563,7 +4558,7 @@ vect_transform_loop (loop_vec_info loop_vinfo,
   if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
       || (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
           && LOOP_VINFO_INT_NITERS (loop_vinfo) % vectorization_factor != 0))
-    vect_do_peeling_for_loop_bound (loop_vinfo, &ratio, loops);
+    vect_do_peeling_for_loop_bound (loop_vinfo, &ratio);
   else
     ratio = build_int_cst (TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo)),
 		LOOP_VINFO_INT_NITERS (loop_vinfo) / vectorization_factor);
