@@ -1,3 +1,8 @@
+2006-11-25  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* c.opt: Remove -ffixed-form, -ffixed-line-length-none, and
+	-ffixed-line-length-* options.
+
 2006-11-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	config/i386/i386.md (fpremxf4): Rename to fpremxf4_i387.
