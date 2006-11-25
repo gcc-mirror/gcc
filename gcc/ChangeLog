@@ -1,3 +1,14 @@
+2006-11-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	config/i386/i386.md (fpremxf4): Rename to fpremxf4_i387.
+	(fprem1xf4): Rename to fprem1xf4_i387.
+
+	(fmodsf3, fmoddf3): Macroize patterns using X87MODEF12 mode macro.
+	Rename patterns to fmod<mode>3.  Use general_operand operand
+	constraint for operands 1 and 2.  Use SSE_FLOAT_MODE_P to disable
+	patterns for SSE math.
+	(remaindersf3, remainderdf3): Ditto.
+
 2006-11-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* function.c (instantiate_virtual_regs_in_insn): Call force_reg
@@ -252,7 +263,7 @@
 	(erase_self_graph_edge): Ditto.
 	(add_graph_edge): Removed.
 	(get_graph_weights): Ditto.
-	(allocate_graph_weights): Ditto.	(
+	(allocate_graph_weights): Ditto.
 	(valid_weighted_graph_edge): Ditto
 	(bitmap_other_than_zero_bit_set): Ditto.
 	(int_add_graph_edge): Renamed to add_graph_edge.
