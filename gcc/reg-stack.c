@@ -439,6 +439,13 @@ get_true_reg (rtx *pat)
 	pat = & XEXP (*pat, 0);
 	break;
 
+      case UNSPEC:
+	if (XINT (*pat, 1) == UNSPEC_TRUNC_NOOP)
+	  {
+	    pat = & XVECEXP (*pat, 0, 0);
+	    break;
+	  }
+
       case FLOAT_TRUNCATE:
 	if (!flag_unsafe_math_optimizations)
 	  return pat;
