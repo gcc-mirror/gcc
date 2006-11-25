@@ -1,3 +1,7 @@
+2006-11-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* reg-stack.c (get_true_reg): Fix UNSPEC_TRUNC_NOOP handling.
+
 2006-11-25  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cse.c (cse_altered): Remove.
@@ -19,7 +23,7 @@
 
 2006-11-25  Uros Bizjak  <ubizjak@gmail.com>
 
-	config/i386/i386.md (fpremxf4): Rename to fpremxf4_i387.
+	* config/i386/i386.md (fpremxf4): Rename to fpremxf4_i387.
 	(fprem1xf4): Rename to fprem1xf4_i387.
 
 	(fmodsf3, fmoddf3): Macroize patterns using X87MODEF12 mode macro.
