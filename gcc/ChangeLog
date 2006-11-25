@@ -1,3 +1,24 @@
+2006-11-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	config/i386/i386.md (UNSPEC_TRUNC_NOOP): New unspec definition.
+	(X87MODEF): New mode macro.
+	(ssemodefsuffix): New mode attribute.
+	(truncxf<mode>2_i387_noop_unspec): New insn pattern.
+	(sqrt_extend<mode>xf2_i387): New insn pattern.
+	(sqrt<mode>2): For non-SSE sqrt, emit sqrt_extend<mode>xf2_i387
+	insn and truncate result back to original mode using
+	UNSPEC_TRUNC_NOOP truncation.
+	(*sqrt<mode>2_sse): Implement using SSEMODEF mode macro and
+	ssemodefsuffix mode attribute.
+	(*sqrtsf2_mixed, *sqrtsf2_i387, *sqrtdf2_mixed, *sqrtdf2_i387)
+	(*sqrtextendsfdf2_i387, *sqrtextendsfxf2_i387)
+	(*sqrtextenddfxf2_i387): Remove insn patterns.
+
+	(fmodsf3, fmoddf3, remaindersf3, remainderdf3): Use noop
+	truncation patterns.
+
+	reg-stack.c (get_true_reg): Handle UNSPEC_TRUNC_NOOP. 
+	
 2006-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/29955
