@@ -1,3 +1,9 @@
+2006-11-25  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/29711
+	* error.c (error_print): Handle printf-style position specifiers,
+	of the form "%3$d".
+
 2006-11-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/20880
