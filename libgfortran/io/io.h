@@ -470,6 +470,7 @@ typedef struct
   unit_status status;
   unit_pad pad;
   unit_convert convert;
+  int has_recl;
 }
 unit_flags;
 
