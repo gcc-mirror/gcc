@@ -43,7 +43,6 @@ intrinsics/associated.c \
 intrinsics/abort.c \
 intrinsics/access.c \
 intrinsics/args.c \
-intrinsics/bessel.c \
 intrinsics/c99_functions.c \
 intrinsics/chdir.c \
 intrinsics/chmod.c \
@@ -53,7 +52,6 @@ intrinsics/cshift0.c \
 intrinsics/ctime.c \
 intrinsics/date_and_time.c \
 intrinsics/env.c \
-intrinsics/erf.c \
 intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
 intrinsics/etime.c \
