@@ -1,3 +1,13 @@
+2006-11-25  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* Makefile.am: Remove intrinsics/erf.c and intrinsics/bessel.c.
+	* Makefile.in: Regenerate.
+	* intrinsics/erf.c: Remove.
+	* intrinsics/bessel.c: Remove.
+	* c99_protos.h: Add prototypes for bessel and error functions.
+	* intrinsics/c99_functions.c: Move content for intrinsics/erf.c
+	and intrinsics/bessel.c here.
+
 2006-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* io/io.h (unit_flags): Add new flag has_recl.

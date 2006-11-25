@@ -169,9 +169,9 @@ am__objects_30 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
 am__objects_31 = close.lo file_pos.lo format.lo inquire.lo \
 	list_read.lo lock.lo open.lo read.lo size_from_kind.lo \
 	transfer.lo unit.lo unix.lo write.lo
-am__objects_32 = associated.lo abort.lo access.lo args.lo bessel.lo \
+am__objects_32 = associated.lo abort.lo access.lo args.lo \
 	c99_functions.lo chdir.lo chmod.lo clock.lo cpu_time.lo \
-	cshift0.lo ctime.lo date_and_time.lo env.lo erf.lo eoshift0.lo \
+	cshift0.lo ctime.lo date_and_time.lo env.lo eoshift0.lo \
 	eoshift2.lo etime.lo exit.lo fget.lo flush.lo fnum.lo ftell.lo \
 	gerror.lo getcwd.lo getlog.lo getXid.lo hostnm.lo kill.lo \
 	ierrno.lo ishftc.lo link.lo malloc.lo mvbits.lo move_alloc.lo \
@@ -402,7 +402,6 @@ intrinsics/associated.c \
 intrinsics/abort.c \
 intrinsics/access.c \
 intrinsics/args.c \
-intrinsics/bessel.c \
 intrinsics/c99_functions.c \
 intrinsics/chdir.c \
 intrinsics/chmod.c \
@@ -412,7 +411,6 @@ intrinsics/cshift0.c \
 intrinsics/ctime.c \
 intrinsics/date_and_time.c \
 intrinsics/env.c \
-intrinsics/erf.c \
 intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
 intrinsics/etime.c \
@@ -2358,9 +2356,6 @@ access.lo: intrinsics/access.c
 args.lo: intrinsics/args.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o args.lo `test -f 'intrinsics/args.c' || echo '$(srcdir)/'`intrinsics/args.c
 
-bessel.lo: intrinsics/bessel.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o bessel.lo `test -f 'intrinsics/bessel.c' || echo '$(srcdir)/'`intrinsics/bessel.c
-
 c99_functions.lo: intrinsics/c99_functions.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o c99_functions.lo `test -f 'intrinsics/c99_functions.c' || echo '$(srcdir)/'`intrinsics/c99_functions.c
 
@@ -2387,9 +2382,6 @@ date_and_time.lo: intrinsics/date_and_time.c
 
 env.lo: intrinsics/env.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o env.lo `test -f 'intrinsics/env.c' || echo '$(srcdir)/'`intrinsics/env.c
-
-erf.lo: intrinsics/erf.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o erf.lo `test -f 'intrinsics/erf.c' || echo '$(srcdir)/'`intrinsics/erf.c
 
 eoshift0.lo: intrinsics/eoshift0.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o eoshift0.lo `test -f 'intrinsics/eoshift0.c' || echo '$(srcdir)/'`intrinsics/eoshift0.c
