@@ -202,6 +202,31 @@ mark_all_labels (rtx f)
 	      }
 	  }
       }
+  
+  /* If we are in cfglayout mode, there may be non-insns between the
+     basic blocks.  If those non-insns represent tablejump data, they
+     contain label references that we must record.  */
+  if (current_ir_type () == IR_RTL_CFGLAYOUT)
+    {
+      basic_block bb;
+      rtx insn;
+      FOR_EACH_BB (bb)
+	{
+	  for (insn = bb->il.rtl->header; insn; insn = NEXT_INSN (insn))
+	    if (INSN_P (insn))
+	      {
+		gcc_assert (JUMP_TABLE_DATA_P (insn));
+		mark_jump_label (PATTERN (insn), insn, 0);
+	      }
+
+	  for (insn = bb->il.rtl->footer; insn; insn = NEXT_INSN (insn))
+	    if (INSN_P (insn))
+	      {
+		gcc_assert (JUMP_TABLE_DATA_P (insn));
+		mark_jump_label (PATTERN (insn), insn, 0);
+	      }
+	}
+    }
 }
 
 /* Move all block-beg, block-end and loop-beg notes between START and END out
