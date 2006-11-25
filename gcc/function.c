@@ -1529,7 +1529,14 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	 Validate the new value vs the insn predicate.  Note that
 	 asm insns will have insn_code -1 here.  */
       if (!safe_insn_predicate (insn_code, i, x))
-	x = force_reg (insn_data[insn_code].operand[i].mode, x);
+	{
+	  start_sequence ();
+	  x = force_reg (insn_data[insn_code].operand[i].mode, x);
+	  seq = get_insns ();
+	  end_sequence ();
+	  if (seq)
+	    emit_insn_before (seq, insn);
+	}
 
       *recog_data.operand_loc[i] = recog_data.operand[i] = x;
       any_change = true;
