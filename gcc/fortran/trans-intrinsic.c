@@ -2989,7 +2989,7 @@ gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
 
 
 /* Scalar transfer statement.
-   TRANSFER (source, mold) = VIEW_CONVERT_EXPR<typeof<mold> >source.  */
+   TRANSFER (source, mold) = memcpy(&tmpdecl, &source, size), tmpdecl.  */
 
 static void
 gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
@@ -2999,6 +2999,7 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
   tree type;
   tree ptr;
   gfc_ss *ss;
+  tree tmpdecl, tmp, args;
 
   /* Get a pointer to the source.  */
   arg = expr->value.function.actual;
@@ -3014,6 +3015,7 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
 
   arg = arg->next;
   type = gfc_typenode_for_spec (&expr->ts);
+
   if (expr->ts.type == BT_CHARACTER)
     {
       ptr = convert (build_pointer_type (type), ptr);
@@ -3026,8 +3028,22 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
     }
   else
     {
-      tree tmp = build_fold_indirect_ref (ptr);
-      se->expr = fold_build1 (VIEW_CONVERT_EXPR, type, tmp);
+      tree moldsize;
+      tmpdecl = gfc_create_var (type, "transfer");
+      moldsize = size_in_bytes (type);
+
+      /* Use memcpy to do the transfer.  */
+      tmp = build1 (ADDR_EXPR, build_pointer_type (type), tmpdecl);
+      tmp = fold_convert (pvoid_type_node, tmp);
+      args = gfc_chainon_list (NULL_TREE, tmp);
+      tmp = fold_convert (pvoid_type_node, ptr);
+      args = gfc_chainon_list (args, tmp);
+      args = gfc_chainon_list (args, moldsize);
+      tmp = built_in_decls[BUILT_IN_MEMCPY];
+      tmp = build_function_call_expr (tmp, args);
+      gfc_add_expr_to_block (&se->pre, tmp);
+
+      se->expr = tmpdecl;
     }
 }
 
