@@ -1,3 +1,43 @@
+2006-11-25  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/29385 (partial)
+	* include/bits/stl_tree.h (_Rb_tree<>::destroy_node): Uglify.
+	(_M_erase, erase(iterator), erase(const_iterator)): Adjust
+
+2006-11-25  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/29385 (partial)
+	* include/bits/stl_tree.h (_Rb_tree<>::_M_lower_bound(_Const_Link_type,
+	_Const_Link_type, const _Key&), _M_upper_bound(_Const_Link_type,
+	_Const_Link_type, const _Key&)): Add.
+	(lower_bound(const key_type&), upper_bound(const key_type&),
+	find(const key_type&)): Call the latter.
+
+2006-11-25  Gawain Bolton  <gp.bolton@computer.org>
+
+	PR libstdc++/29385 (partial)
+	* include/bits/stl_tree.h (_Rb_tree_rotate_left,
+	_Rb_tree_rotate_right): Do not declare.
+	(_Rb_tree<>::_M_insert(_Base_ptr, _Base_ptr, const value_type&),
+	_M_insert(_Const_Base_ptr, _Const_Base_ptr, const value_type&),
+	_M_insert_unique(iterator, const value_type&),
+	_M_insert_unique(const_iterator, const value_type&),
+	_M_insert_equal(iterator, const value_type&),
+	_M_insert_equal(const_iterator, const value_type&)):
+	Remove.
+	(_Rb_tree<>::_M_insert_(_Const_Base_ptr, _Const_Base_ptr,
+	const value_type&), _M_insert_unique_(const_iterator,
+	const value_type&), _M_insert_equal_(const_iterator,
+	const value_type&)): Add, adjust all callers.
+	* include/bits/stl_map.h (map<>::insert(iterator, const value_type&)):
+	Adjust.
+	* include/bits/stl_set.h (set<>::insert(iterator, const value_type&)):
+	Likewise.
+	* include/bits/stl_multimap.h (multimap<>::insert(iterator,
+	const value_type&)): Likewise.
+	* include/bits/stl_multiset.h (multiset<>::insert(iterator,
+	const value_type&)): Likewise.
+
 2006-11-22  Antony King <anthony.king@st.com>
             J"orn Rennecke <joern.rennecke@st.com>
 
