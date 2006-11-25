@@ -1477,7 +1477,8 @@ commit_one_edge_insertion (edge e, int watch_calls)
     gcc_assert (!JUMP_P (last));
 
   /* Mark the basic block for find_many_sub_basic_blocks.  */
-  bb->aux = &bb->aux;
+  if (current_ir_type () != IR_RTL_CFGLAYOUT)
+    bb->aux = &bb->aux;
 }
 
 /* Update the CFG for all queued instructions.  */
@@ -1507,6 +1508,13 @@ commit_edge_insertions (void)
     }
 
   if (!changed)
+    return;
+
+  /* In the old rtl CFG API, it was OK to insert control flow on an
+     edge, apparently?  In cfglayout mode, this will *not* work, and
+     the caller is responsible for making sure that control flow is
+     valid at all times.  */
+  if (current_ir_type () == IR_RTL_CFGLAYOUT)
     return;
 
   blocks = sbitmap_alloc (last_basic_block);

@@ -1,3 +1,14 @@
+2006-11-25  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* jump.c (mark_all_labels): Work in cfglayout mode.
+	* cfgcleanup.c (cleanup_cfg): Do not call delete_dead_jumptables
+	when in cfglayout mode, because there are no dead jumptables
+	visible.
+	* cfgrtl.c (commit_one_edge_insertion): Don't set bb->aux when
+	in cfglayout mode.
+	(commit_edge_insertions): Do not allow insertion of instructions
+	with control flow insns when in cfglayout mode.
+
 2006-11-25  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* tree-vrp.c (execute_vrp): Do not pass loops structure through
@@ -1467,7 +1478,7 @@
 
 2006-11-11  Jan Hubicka  <jh@suse.cz>
 
-	* extended.texi (__builtin_expect): We no longer require second argument
+	* extend.texi (__builtin_expect): We no longer require second argument
 	to be constant.
 	* gengtype.c (adjust_field_rtx_def): Drop NOTE_INSN_EXPECTED_VALUE.
 	* builtins.c (expand_builtin_expect): Simplify.
