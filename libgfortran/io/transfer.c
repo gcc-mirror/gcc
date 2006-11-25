@@ -1362,10 +1362,11 @@ us_write (st_parameter_dt *dtp)
   if (swrite (dtp->u.p.current_unit->s, &dummy, &nbytes) != 0)
     generate_error (&dtp->common, ERROR_OS, NULL);
 
-  /* For sequential unformatted, we write until we have more bytes
-     than can fit in the record markers. If disk space runs out first,
-     it will error on the write.  */
-  dtp->u.p.current_unit->recl = max_offset;
+  /* For sequential unformatted, if RECL= was not specified in the OPEN
+     we write until we have more bytes than can fit in the record markers.
+     If disk space runs out first, it will error on the write.   */
+  if (dtp->u.p.current_unit->flags.has_recl == 0)
+    dtp->u.p.current_unit->recl = max_offset;
 
   dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
 }
