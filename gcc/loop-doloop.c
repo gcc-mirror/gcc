@@ -616,17 +616,17 @@ doloop_optimize (struct loop *loop)
   return true;
 }
 
-/* This is the main entry point.  Process all LOOPS using doloop_optimize.  */
+/* This is the main entry point.  Process all loops using doloop_optimize.  */
 
 void
-doloop_optimize_loops (struct loops *loops)
+doloop_optimize_loops (void)
 {
   unsigned i;
   struct loop *loop;
 
-  for (i = 1; i < loops->num; i++)
+  for (i = 1; i < current_loops->num; i++)
     {
-      loop = loops->parray[i];
+      loop = current_loops->parray[i];
       if (!loop)
 	continue;
 
@@ -637,7 +637,7 @@ doloop_optimize_loops (struct loops *loops)
 
 #ifdef ENABLE_CHECKING
   verify_dominators (CDI_DOMINATORS);
-  verify_loop_structure (loops);
+  verify_loop_structure ();
 #endif
 }
 #endif /* HAVE_doloop_end */

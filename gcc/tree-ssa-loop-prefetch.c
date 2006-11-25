@@ -936,11 +936,10 @@ determine_unroll_factor (struct loop *loop, struct mem_ref_group *refs,
 }
 
 /* Issue prefetch instructions for array references in LOOP.  Returns
-   true if the LOOP was unrolled.  LOOPS is the array containing all
-   loops.  */
+   true if the LOOP was unrolled.  */
 
 static bool
-loop_prefetch_arrays (struct loops *loops, struct loop *loop)
+loop_prefetch_arrays (struct loop *loop)
 {
   struct mem_ref_group *refs;
   unsigned ahead, ninsns, unroll_factor;
@@ -981,7 +980,7 @@ loop_prefetch_arrays (struct loops *loops, struct loop *loop)
      iterations so that we do not issue superfluous prefetches.  */
   if (unroll_factor != 1)
     {
-      tree_unroll_loop (loops, loop, unroll_factor,
+      tree_unroll_loop (loop, unroll_factor,
 			single_dom_exit (loop), &desc);
       unrolled = true;
     }
@@ -994,10 +993,10 @@ fail:
   return unrolled;
 }
 
-/* Issue prefetch instructions for array references in LOOPS.  */
+/* Issue prefetch instructions for array references in loops.  */
 
 unsigned int
-tree_ssa_prefetch_arrays (struct loops *loops)
+tree_ssa_prefetch_arrays (void)
 {
   unsigned i;
   struct loop *loop;
@@ -1044,16 +1043,16 @@ tree_ssa_prefetch_arrays (struct loops *loops)
      here.  */
   gcc_assert ((PREFETCH_BLOCK & (PREFETCH_BLOCK - 1)) == 0);
 
-  for (i = loops->num - 1; i > 0; i--)
+  for (i = current_loops->num - 1; i > 0; i--)
     {
-      loop = loops->parray[i];
+      loop = current_loops->parray[i];
       if (!loop)
 	continue;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Processing loop %d:\n", loop->num);
 
-      unrolled |= loop_prefetch_arrays (loops, loop);
+      unrolled |= loop_prefetch_arrays (loop);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "\n\n");

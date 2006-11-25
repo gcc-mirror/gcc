@@ -137,7 +137,7 @@ copy_loop_headers (void)
     return 0;
 
 #ifdef ENABLE_CHECKING
-  verify_loop_structure (current_loops);
+  verify_loop_structure ();
 #endif
 
   bbs = XNEWVEC (basic_block, n_basic_blocks);

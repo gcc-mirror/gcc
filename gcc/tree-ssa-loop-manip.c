@@ -562,16 +562,15 @@ copy_phi_node_args (unsigned first_new_block)
 
 bool
 tree_duplicate_loop_to_header_edge (struct loop *loop, edge e,
-				    struct loops *loops,
 				    unsigned int ndupl, sbitmap wont_exit,
 				    edge orig, edge *to_remove,
 				    unsigned int *n_to_remove, int flags)
 {
   unsigned first_new_block;
 
-  if (!(loops->state & LOOPS_HAVE_SIMPLE_LATCHES))
+  if (!(current_loops->state & LOOPS_HAVE_SIMPLE_LATCHES))
     return false;
-  if (!(loops->state & LOOPS_HAVE_PREHEADERS))
+  if (!(current_loops->state & LOOPS_HAVE_PREHEADERS))
     return false;
 
 #ifdef ENABLE_CHECKING
@@ -579,7 +578,7 @@ tree_duplicate_loop_to_header_edge (struct loop *loop, edge e,
 #endif
 
   first_new_block = last_basic_block;
-  if (!duplicate_loop_to_header_edge (loop, e, loops, ndupl, wont_exit,
+  if (!duplicate_loop_to_header_edge (loop, e, ndupl, wont_exit,
 				      orig, to_remove, n_to_remove, flags))
     return false;
 
@@ -757,10 +756,9 @@ determine_exit_conditions (struct loop *loop, struct tree_niter_desc *desc,
   *exit_bound = bound;
 }
 
-/* Unroll LOOP FACTOR times.  LOOPS is the loops tree.  DESC describes
-   number of iterations of LOOP.  EXIT is the exit of the loop to that
-   DESC corresponds.
-   
+/* Unroll LOOP FACTOR times.  DESC describes number of iterations of LOOP.
+   EXIT is the exit of the loop to that DESC corresponds.
+
    If N is number of iterations of the loop and MAY_BE_ZERO is the condition
    under that loop exits in the first iteration even if N != 0,
    
@@ -809,7 +807,7 @@ determine_exit_conditions (struct loop *loop, struct tree_niter_desc *desc,
      } */
 
 void
-tree_unroll_loop (struct loops *loops, struct loop *loop, unsigned factor,
+tree_unroll_loop (struct loop *loop, unsigned factor,
 		  edge exit, struct tree_niter_desc *desc)
 {
   tree dont_exit, exit_if, ctr_before, ctr_after;
@@ -832,7 +830,7 @@ tree_unroll_loop (struct loops *loops, struct loop *loop, unsigned factor,
 			     &enter_main_cond, &exit_base, &exit_step,
 			     &exit_cmp, &exit_bound);
 
-  new_loop = loop_version (loops, loop, enter_main_cond, NULL, true);
+  new_loop = loop_version (loop, enter_main_cond, NULL, true);
   gcc_assert (new_loop != NULL);
   update_ssa (TODO_update_ssa);
 
@@ -855,7 +853,7 @@ tree_unroll_loop (struct loops *loops, struct loop *loop, unsigned factor,
   wont_exit = sbitmap_alloc (factor);
   sbitmap_ones (wont_exit);
   ok = tree_duplicate_loop_to_header_edge
-	  (loop, loop_latch_edge (loop), loops, factor - 1,
+	  (loop, loop_latch_edge (loop), factor - 1,
 	   wont_exit, NULL, NULL, NULL, DLTHE_FLAG_UPDATE_FREQ);
   free (wont_exit);
   gcc_assert (ok);
@@ -926,7 +924,7 @@ tree_unroll_loop (struct loops *loops, struct loop *loop, unsigned factor,
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
   verify_dominators (CDI_DOMINATORS);
-  verify_loop_structure (loops);
+  verify_loop_structure ();
   verify_loop_closed_ssa ();
 #endif
 }

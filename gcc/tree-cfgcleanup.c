@@ -589,7 +589,7 @@ cleanup_tree_cfg_loop (void)
   if (changed)
     {
       bitmap changed_bbs = BITMAP_ALLOC (NULL);
-      fix_loop_structure (current_loops, changed_bbs);
+      fix_loop_structure (changed_bbs);
       calculate_dominance_info (CDI_DOMINATORS);
 
       /* This usually does nothing.  But sometimes parts of cfg that originally
@@ -600,7 +600,7 @@ cleanup_tree_cfg_loop (void)
       BITMAP_FREE (changed_bbs);
 
 #ifdef ENABLE_CHECKING
-      verify_loop_structure (current_loops);
+      verify_loop_structure ();
 #endif
       scev_reset ();
     }

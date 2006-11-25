@@ -79,9 +79,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
   containing subloops would not be very large compared to complications
   with handling this case.  */
 
-static struct loop *unswitch_loop (struct loops *, struct loop *,
-				   basic_block, rtx, rtx);
-static void unswitch_single_loop (struct loops *, struct loop *, rtx, int);
+static struct loop *unswitch_loop (struct loop *, basic_block, rtx, rtx);
+static void unswitch_single_loop (struct loop *, rtx, int);
 static rtx may_unswitch_on (basic_block, struct loop *, rtx *);
 
 /* Prepare a sequence comparing OP0 with OP1 using COMP and jumping to LABEL if
@@ -135,30 +134,30 @@ compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp, rtx label, int prob,
   return seq;
 }
 
-/* Main entry point.  Perform loop unswitching on all suitable LOOPS.  */
+/* Main entry point.  Perform loop unswitching on all suitable loops.  */
 void
-unswitch_loops (struct loops *loops)
+unswitch_loops (void)
 {
   int i, num;
   struct loop *loop;
 
   /* Go through inner loops (only original ones).  */
-  num = loops->num;
+  num = current_loops->num;
 
   for (i = 1; i < num; i++)
     {
       /* Removed loop?  */
-      loop = loops->parray[i];
+      loop = current_loops->parray[i];
       if (!loop)
 	continue;
 
       if (loop->inner)
 	continue;
 
-      unswitch_single_loop (loops, loop, NULL_RTX, 0);
+      unswitch_single_loop (loop, NULL_RTX, 0);
 #ifdef ENABLE_CHECKING
       verify_dominators (CDI_DOMINATORS);
-      verify_loop_structure (loops);
+      verify_loop_structure ();
 #endif
     }
 
@@ -259,8 +258,7 @@ reversed_condition (rtx cond)
    number of unswitchings done; do not allow it to grow too much, it is too
    easy to create example on that the code would grow exponentially.  */
 static void
-unswitch_single_loop (struct loops *loops, struct loop *loop,
-		      rtx cond_checked, int num)
+unswitch_single_loop (struct loop *loop, rtx cond_checked, int num)
 {
   basic_block *bbs;
   struct loop *nloop;
@@ -351,7 +349,7 @@ unswitch_single_loop (struct loops *loops, struct loop *loop,
 	{
 	  /* Remove false path.  */
 	  e = FALLTHRU_EDGE (bbs[i]);
-	  remove_path (loops, e);
+	  remove_path (e);
 	  free (bbs);
 	  repeat = 1;
 	}
@@ -359,7 +357,7 @@ unswitch_single_loop (struct loops *loops, struct loop *loop,
 	{
 	  /* Remove true path.  */
 	  e = BRANCH_EDGE (bbs[i]);
-	  remove_path (loops, e);
+	  remove_path (e);
 	  free (bbs);
 	  repeat = 1;
 	}
@@ -376,12 +374,12 @@ unswitch_single_loop (struct loops *loops, struct loop *loop,
     fprintf (dump_file, ";; Unswitching loop\n");
 
   /* Unswitch the loop on this condition.  */
-  nloop = unswitch_loop (loops, loop, bbs[i], cond, cinsn);
+  nloop = unswitch_loop (loop, bbs[i], cond, cinsn);
   gcc_assert (nloop);
 
   /* Invoke itself on modified loops.  */
-  unswitch_single_loop (loops, nloop, rconds, num + 1);
-  unswitch_single_loop (loops, loop, conds, num + 1);
+  unswitch_single_loop (nloop, rconds, num + 1);
+  unswitch_single_loop (loop, conds, num + 1);
 
   free_EXPR_LIST_node (conds);
   if (rcond)
@@ -398,8 +396,7 @@ unswitch_single_loop (struct loops *loops, struct loop *loop,
    NULL, it is the insn in that COND is compared.  */
 
 static struct loop *
-unswitch_loop (struct loops *loops, struct loop *loop, basic_block unswitch_on,
-	       rtx cond, rtx cinsn)
+unswitch_loop (struct loop *loop, basic_block unswitch_on, rtx cond, rtx cinsn)
 {
   edge entry, latch_edge, true_edge, false_edge, e;
   basic_block switch_bb, unswitch_on_alt;
@@ -423,7 +420,7 @@ unswitch_loop (struct loops *loops, struct loop *loop, basic_block unswitch_on,
   entry->flags &= ~EDGE_IRREDUCIBLE_LOOP;
   zero_bitmap = sbitmap_alloc (2);
   sbitmap_zero (zero_bitmap);
-  if (!duplicate_loop_to_header_edge (loop, entry, loops, 1,
+  if (!duplicate_loop_to_header_edge (loop, entry, 1,
 	zero_bitmap, NULL, NULL, NULL, 0))
     {
       sbitmap_free (zero_bitmap);
@@ -466,13 +463,13 @@ unswitch_loop (struct loops *loops, struct loop *loop, basic_block unswitch_on,
     }
 
   /* Loopify from the copy of LOOP body, constructing the new loop.  */
-  nloop = loopify (loops, latch_edge,
+  nloop = loopify (latch_edge,
 		   single_pred_edge (get_bb_copy (loop->header)), switch_bb,
 		   BRANCH_EDGE (switch_bb), FALLTHRU_EDGE (switch_bb), true);
 
   /* Remove branches that are now unreachable in new loops.  */
-  remove_path (loops, true_edge);
-  remove_path (loops, false_edge);
+  remove_path (true_edge);
+  remove_path (false_edge);
 
   /* One of created loops do not have to be subloop of the outer loop now,
      so fix its placement in loop data structure.  */

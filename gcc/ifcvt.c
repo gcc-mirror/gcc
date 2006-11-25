@@ -3857,7 +3857,7 @@ if_convert (int x_life_data_ok)
       loop_optimizer_init (0);
       if (current_loops)
 	{
-	  mark_loop_exit_edges (current_loops);
+	  mark_loop_exit_edges ();
 	  loop_optimizer_finalize ();
 	}
       free_dominance_info (CDI_DOMINATORS);

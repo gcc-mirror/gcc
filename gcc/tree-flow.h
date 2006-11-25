@@ -802,7 +802,7 @@ struct tree_niter_desc
 };
 
 /* In tree-vectorizer.c */
-unsigned vectorize_loops (struct loops *);
+unsigned vectorize_loops (void);
 extern bool vect_can_force_dr_alignment_p (tree, unsigned int);
 extern tree get_vectype_for_scalar_type (tree);
 
@@ -811,20 +811,20 @@ bool empty_block_p (basic_block);
 
 /* In tree-ssa-loop*.c  */
 
-void tree_ssa_lim (struct loops *);
-unsigned int tree_ssa_unswitch_loops (struct loops *);
-unsigned int canonicalize_induction_variables (struct loops *);
-unsigned int tree_unroll_loops_completely (struct loops *, bool);
-unsigned int tree_ssa_prefetch_arrays (struct loops *);
-unsigned int remove_empty_loops (struct loops *);
-void tree_ssa_iv_optimize (struct loops *);
+void tree_ssa_lim (void);
+unsigned int tree_ssa_unswitch_loops (void);
+unsigned int canonicalize_induction_variables (void);
+unsigned int tree_unroll_loops_completely (bool);
+unsigned int tree_ssa_prefetch_arrays (void);
+unsigned int remove_empty_loops (void);
+void tree_ssa_iv_optimize (void);
 
 bool number_of_iterations_exit (struct loop *, edge,
 				struct tree_niter_desc *niter, bool);
 tree find_loop_niter (struct loop *, edge *);
 tree loop_niter_by_eval (struct loop *, edge);
 tree find_loop_niter_by_eval (struct loop *, edge *);
-void estimate_numbers_of_iterations (struct loops *);
+void estimate_numbers_of_iterations (void);
 bool scev_probably_wraps_p (tree, tree, tree, struct loop *, bool);
 bool convert_affine_scev (struct loop *, tree, tree *, tree *, tree, bool);
 
@@ -832,7 +832,7 @@ bool nowrap_type_p (tree);
 enum ev_direction {EV_DIR_GROWS, EV_DIR_DECREASES, EV_DIR_UNKNOWN};
 enum ev_direction scev_direction (tree);
 
-void free_numbers_of_iterations_estimates (struct loops *);
+void free_numbers_of_iterations_estimates (void);
 void free_numbers_of_iterations_estimates_loop (struct loop *);
 void rewrite_into_loop_closed_ssa (bitmap, unsigned);
 void verify_loop_closed_ssa (void);
@@ -845,18 +845,18 @@ void standard_iv_increment_position (struct loop *, block_stmt_iterator *,
 				     bool *);
 basic_block ip_end_pos (struct loop *);
 basic_block ip_normal_pos (struct loop *);
-bool tree_duplicate_loop_to_header_edge (struct loop *, edge, struct loops *,
+bool tree_duplicate_loop_to_header_edge (struct loop *, edge,
 					 unsigned int, sbitmap,
 					 edge, edge *,
 					 unsigned int *, int);
-struct loop *tree_ssa_loop_version (struct loops *, struct loop *, tree,
+struct loop *tree_ssa_loop_version (struct loop *, tree,
 				    basic_block *);
 tree expand_simple_operations (tree);
 void substitute_in_loop_info (struct loop *, tree, tree);
 edge single_dom_exit (struct loop *);
 bool can_unroll_loop_p (struct loop *loop, unsigned factor,
 			struct tree_niter_desc *niter);
-void tree_unroll_loop (struct loops *, struct loop *, unsigned,
+void tree_unroll_loop (struct loop *, unsigned,
 		       edge, struct tree_niter_desc *);
 bool contains_abnormal_ssa_name_p (tree);
 
@@ -943,7 +943,7 @@ void sra_init_cache (void);
 bool sra_type_can_be_decomposed_p (tree);
 
 /* In tree-loop-linear.c  */
-extern void linear_transform_loops (struct loops *);
+extern void linear_transform_loops (void);
 
 /* In tree-ssa-loop-ivopts.c  */
 bool expr_invariant_in_loop_p (struct loop *, tree);

@@ -25,7 +25,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 extern tree number_of_iterations_in_loop (struct loop *);
 extern tree get_loop_exit_condition (struct loop *);
 
-extern void scev_initialize (struct loops *loops);
+extern void scev_initialize (void);
 extern void scev_reset (void);
 extern void scev_finalize (void);
 extern tree analyze_scalar_evolution (struct loop *, tree);

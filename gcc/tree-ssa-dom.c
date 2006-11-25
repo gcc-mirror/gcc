@@ -278,7 +278,7 @@ tree_ssa_dominator_optimize (void)
   loop_optimizer_init (0);
   if (current_loops)
     {
-      mark_loop_exit_edges (current_loops);
+      mark_loop_exit_edges ();
       loop_optimizer_finalize ();
     }
 
