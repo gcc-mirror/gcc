@@ -1849,18 +1849,47 @@ gfc_trans_array_bound_check (gfc_se * se, tree descriptor, tree index, int n,
   tree fault;
   tree tmp;
   char *msg;
+  const char * name = NULL;
 
   if (!flag_bounds_check)
     return index;
 
   index = gfc_evaluate_now (index, &se->pre);
 
+  /* We find a name for the error message.  */
+  if (se->ss)
+    name = se->ss->expr->symtree->name;
+
+  if (!name && se->loop && se->loop->ss && se->loop->ss->expr
+      && se->loop->ss->expr->symtree)
+    name = se->loop->ss->expr->symtree->name;
+
+  if (!name && se->loop && se->loop->ss && se->loop->ss->loop_chain
+      && se->loop->ss->loop_chain->expr
+      && se->loop->ss->loop_chain->expr->symtree)
+    name = se->loop->ss->loop_chain->expr->symtree->name;
+
+  if (!name && se->loop && se->loop->ss && se->loop->ss->loop_chain
+      && se->loop->ss->loop_chain->expr->symtree)
+    name = se->loop->ss->loop_chain->expr->symtree->name;
+
+  if (!name && se->loop && se->loop->ss && se->loop->ss->expr)
+    {
+      if (se->loop->ss->expr->expr_type == EXPR_FUNCTION
+	  && se->loop->ss->expr->value.function.name)
+	name = se->loop->ss->expr->value.function.name;
+      else
+	if (se->loop->ss->type == GFC_SS_CONSTRUCTOR
+	    || se->loop->ss->type == GFC_SS_SCALAR)
+	  name = "unnamed constant";
+    }
+
   /* Check lower bound.  */
   tmp = gfc_conv_array_lbound (descriptor, n);
   fault = fold_build2 (LT_EXPR, boolean_type_node, index, tmp);
-  if (se->ss)
+  if (name)
     asprintf (&msg, "%s for array '%s', lower bound of dimension %d exceeded",
-	      gfc_msg_fault, se->ss->expr->symtree->name, n+1);
+	      gfc_msg_fault, name, n+1);
   else
     asprintf (&msg, "%s, lower bound of dimension %d exceeded",
 	      gfc_msg_fault, n+1);
@@ -1870,9 +1899,9 @@ gfc_trans_array_bound_check (gfc_se * se, tree descriptor, tree index, int n,
   /* Check upper bound.  */
   tmp = gfc_conv_array_ubound (descriptor, n);
   fault = fold_build2 (GT_EXPR, boolean_type_node, index, tmp);
-  if (se->ss)
+  if (name)
     asprintf (&msg, "%s for array '%s', upper bound of dimension %d exceeded",
-	      gfc_msg_fault, se->ss->expr->symtree->name, n+1);
+	      gfc_msg_fault, name, n+1);
   else
     asprintf (&msg, "%s, upper bound of dimension %d exceeded",
 	      gfc_msg_fault, n+1);
@@ -3904,7 +3933,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
               tmp = fold_build2 (NE_EXPR, gfc_array_index_type, tmp, stride2);
 	      asprintf (&msg, "%s for dimension %d of array '%s'",
 			gfc_msg_bounds, n+1, sym->name);
-	      gfc_trans_runtime_check (tmp, msg, &block, NULL);
+	      gfc_trans_runtime_check (tmp, msg, &block, &loc);
 	      gfc_free (msg);
 	    }
 	}
