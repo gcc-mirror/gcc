@@ -1,5 +1,10 @@
 2006-11-25  Andrew Pinski  <pinskia@gmail.com>
 
+	PR fortran/29982
+	* trans-expr.c (gfc_conv_expr_reference): Strip off NOP_EXPRs.
+
+2006-11-25  Andrew Pinski  <pinskia@gmail.com>
+
 	PR fortran/29951
 	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Change to
 	call memcpy instead of creating a VIEW_CONVERT_EXRP.
