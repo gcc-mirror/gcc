@@ -563,6 +563,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_upper_bound(_Const_Link_type __x, _Const_Link_type __y,
 		     const _Key& __k) const;
 
+      pair<iterator, iterator>
+      _M_equal_range(const _Key& __k) const;
+
     public:
       // allocation/deallocation
       _Rb_tree()
@@ -731,10 +734,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return const_iterator(_M_upper_bound(_M_begin(), _M_end(), __k)); }
 
       pair<iterator, iterator>
-      equal_range(const key_type& __k);
+      equal_range(const key_type& __k)
+      { return pair<iterator, iterator>(_M_equal_range(__k)); }
 
       pair<const_iterator, const_iterator>
-      equal_range(const key_type& __k) const;
+      equal_range(const key_type& __k) const
+      { return pair<const_iterator, const_iterator>(_M_equal_range(__k)); }
 
       // Debugging.
       bool
@@ -952,6 +957,35 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	else
 	  __x = _S_right(__x);
       return iterator(const_cast<_Link_type>(__y));
+    }
+
+  template<typename _Key, typename _Val, typename _KeyOfValue,
+           typename _Compare, typename _Alloc>
+    pair<typename _Rb_tree<_Key, _Val, _KeyOfValue,
+			   _Compare, _Alloc>::iterator,
+	 typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::iterator>
+    _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
+    _M_equal_range(const _Key& __k) const
+    {
+      _Const_Link_type __x = _M_begin();
+      _Const_Link_type __y = _M_end();
+      while (__x != 0)
+	{
+	  if (_M_impl._M_key_compare(_S_key(__x), __k))
+	    __x = _S_right(__x);
+	  else if (_M_impl._M_key_compare(__k, _S_key(__x)))
+	    __y = __x, __x = _S_left(__x);
+	  else
+	    {
+	      _Const_Link_type __xu(__x), __yu(__y);
+	      __y = __x, __x = _S_left(__x);
+	      __xu = _S_right(__xu);
+	      return pair<iterator, iterator>(_M_lower_bound(__x, __y, __k),
+					      _M_upper_bound(__xu, __yu, __k));	  
+	    }
+	}
+      return pair<iterator, iterator>(iterator(const_cast<_Link_type>(__y)),
+				      iterator(const_cast<_Link_type>(__y)));
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
@@ -1294,27 +1328,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       const size_type __n = std::distance(__p.first, __p.second);
       return __n;
     }
-
-  template<typename _Key, typename _Val, typename _KeyOfValue,
-           typename _Compare, typename _Alloc>
-    inline
-    pair<typename _Rb_tree<_Key, _Val, _KeyOfValue,
-			   _Compare, _Alloc>::iterator,
-	 typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::iterator>
-    _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-    equal_range(const _Key& __k)
-    { return pair<iterator, iterator>(lower_bound(__k), upper_bound(__k)); }
-
-  template<typename _Key, typename _Val, typename _KoV,
-           typename _Compare, typename _Alloc>
-    inline
-    pair<typename _Rb_tree<_Key, _Val, _KoV,
-			   _Compare, _Alloc>::const_iterator,
-	 typename _Rb_tree<_Key, _Val, _KoV, _Compare, _Alloc>::const_iterator>
-    _Rb_tree<_Key, _Val, _KoV, _Compare, _Alloc>::
-    equal_range(const _Key& __k) const
-    { return pair<const_iterator, const_iterator>(lower_bound(__k),
-						  upper_bound(__k)); }
 
   unsigned int
   _Rb_tree_black_count(const _Rb_tree_node_base* __node,

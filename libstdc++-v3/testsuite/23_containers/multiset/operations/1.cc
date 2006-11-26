@@ -1,0 +1,133 @@
+// 2006-11-25  Paolo Carlini  <pcarlini@suse.de>
+
+// Copyright (C) 2006 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+// USA.
+//
+// As a special exception, you may use this file as part of a free software
+// library without restriction.  Specifically, if other files instantiate
+// templates or use macros or inline functions from this file, or you compile
+// this file and link it with other files to produce an executable, this
+// file does not by itself cause the resulting executable to be covered by
+// the GNU General Public License.  This exception does not however
+// invalidate any other reasons why the executable file might be covered by
+// the GNU General Public License.
+
+#include <set>
+#include <testsuite_hooks.h>
+
+// A few tests for equal_range, in the occasion of libstdc++/29385.
+void test01()
+{
+  bool test __attribute__((unused)) = true;
+  using namespace std;
+
+  multiset<int> ms0;
+  typedef multiset<int>::iterator iterator;
+  pair<iterator, iterator> pp0;
+
+  pp0 = ms0.equal_range(1);
+  VERIFY( ms0.count(1) == 0 );
+  VERIFY( pp0.first == ms0.end() );
+  VERIFY( pp0.second == ms0.end() );
+
+  iterator iter0 = ms0.insert(1);
+  iterator iter1 = ms0.insert(2);
+  iterator iter2 = ms0.insert(3);
+ 
+  pp0 = ms0.equal_range(2);
+  VERIFY( ms0.count(2) == 1 );
+  VERIFY( *pp0.first == 2 );
+  VERIFY( *pp0.second == 3 );
+  VERIFY( pp0.first == iter1 );
+  VERIFY( --pp0.first == iter0 );  
+  VERIFY( pp0.second == iter2 );
+
+  ms0.insert(3);
+  iterator iter3 = ms0.insert(3);
+  iterator iter4 = ms0.insert(4);
+  
+  pp0 = ms0.equal_range(3);
+  VERIFY( ms0.count(3) == 3 );
+  VERIFY( *pp0.first == 3 );
+  VERIFY( *pp0.second == 4 );
+  VERIFY( pp0.first == iter2 );
+  VERIFY( --pp0.first == iter1 );  
+  VERIFY( pp0.second == iter4 );
+
+  iterator iter5 = ms0.insert(0);
+  ms0.insert(1);
+  ms0.insert(1);
+  ms0.insert(1);
+
+  pp0 = ms0.equal_range(1);
+  VERIFY( ms0.count(1) == 4 );
+  VERIFY( *pp0.first == 1 );
+  VERIFY( *pp0.second == 2 );
+  VERIFY( pp0.first == iter0 );
+  VERIFY( --pp0.first == iter5 );  
+  VERIFY( pp0.second == iter1 );
+
+  iterator iter6 = ms0.insert(5);
+  ms0.insert(5);
+  ms0.insert(5);
+
+  pp0 = ms0.equal_range(5);
+  VERIFY( ms0.count(5) == 3 );
+  VERIFY( *pp0.first == 5 );
+  VERIFY( pp0.first == iter6 );
+  VERIFY( --pp0.first == iter4 );  
+  VERIFY( pp0.second == ms0.end() );
+
+  ms0.insert(4);
+  ms0.insert(4);
+  ms0.insert(4);
+
+  pp0 = ms0.equal_range(4);
+  VERIFY( ms0.count(4) == 4 );  
+  VERIFY( *pp0.first == 4 );
+  VERIFY( *pp0.second == 5 );  
+  VERIFY( pp0.first == iter4 );
+  VERIFY( --pp0.first == iter3 );  
+  VERIFY( pp0.second == iter6 );
+  
+  ms0.insert(0);
+  iterator iter7 = ms0.insert(0);
+  ms0.insert(1);
+
+  pp0 = ms0.equal_range(0);
+  VERIFY( ms0.count(0) == 3 );  
+  VERIFY( *pp0.first == 0 );
+  VERIFY( *pp0.second == 1 );  
+  VERIFY( pp0.first == iter5 );
+  VERIFY( pp0.first == ms0.begin() );
+  VERIFY( pp0.second == iter0 );
+
+  pp0 = ms0.equal_range(1);
+  VERIFY( ms0.count(1) == 5 );  
+  VERIFY( *pp0.first == 1 );
+  VERIFY( *pp0.second == 2 );  
+  VERIFY( pp0.first == iter0 );
+  VERIFY( --pp0.first == iter7 );
+  VERIFY( pp0.second == iter1 );
+}
+
+main()
+{
+  test01();
+  return 0;
+}

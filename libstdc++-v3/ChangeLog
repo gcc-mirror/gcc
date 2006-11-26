@@ -1,3 +1,16 @@
+2006-11-26  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/29385 (2nd part, based on an idea by Ion Gaztanaga)
+	* include/bits/stl_tree.h (_Rb_tree<>::_M_equal_range): Add.
+	(equal_range(const key_type&)): Use it.
+
+2006-11-26  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/23_containers/multiset/operations/1.cc: New.
+	* testsuite/23_containers/set/operations/1.cc: Likewise.
+	* testsuite/23_containers/multimap/operations/1.cc: Likewise.
+	* testsuite/23_containers/map/operations/1.cc: Likewise.
+
 2006-11-25  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/29385 (partial)
