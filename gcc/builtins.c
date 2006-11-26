@@ -8734,6 +8734,20 @@ fold_builtin_fmin_fmax (tree arglist, tree type, bool max)
       if (res)
 	return res;
 
+      /* If either argument is NaN, return the other one.  Avoid the
+	 transformation if we get (and honor) a signalling NaN.  Using
+	 omit_one_operand() ensures we create a non-lvalue.  */
+      if (TREE_CODE (arg0) == REAL_CST
+	  && real_isnan (&TREE_REAL_CST (arg0))
+	  && (! HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0)))
+	      || ! TREE_REAL_CST (arg0).signalling))
+	return omit_one_operand (type, arg1, arg0);
+      if (TREE_CODE (arg1) == REAL_CST
+	  && real_isnan (&TREE_REAL_CST (arg1))
+	  && (! HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg1)))
+	      || ! TREE_REAL_CST (arg1).signalling))
+	return omit_one_operand (type, arg0, arg1);
+
       /* Transform fmin/fmax(x,x) -> x.  */
       if (operand_equal_p (arg0, arg1, OEP_PURE_SAME))
 	return omit_one_operand (type, arg0, arg1);
