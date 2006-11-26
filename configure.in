@@ -1052,53 +1052,56 @@ ACX_PROG_GNAT
 ACX_PROG_CMP_IGNORE_INITIAL
 
 # Check for GMP and MPFR
-gmplibs=
+gmplibs="-lmpfr"
 gmpinc=
 have_gmp=yes
 # Specify a location for mpfr
 # check for this first so it ends up on the link line before gmp.
-AC_ARG_WITH(mpfr-dir, [  --with-mpfr-dir=PATH    Specify source directory for MPFR library])
+AC_ARG_WITH(mpfr-dir, [  --with-mpfr-dir=PATH    This option has been REMOVED],
+  AC_MSG_ERROR([The --with-mpfr-dir=PATH option has been removed.
+Use --with-mpfr=PATH or --with-mpfr-include=PATH plus --with-mpfr-lib=PATH]))
 
-if test "x$with_mpfr_dir" != x; then
-  gmpinc="-I$with_mpfr_dir"
-  if test -f "$with_mpfr_dir/.libs/libmpfr.a"; then
-    gmplibs="$with_mpfr_dir/.libs/libmpfr.a"
-  elif test -f "$with_mpfr_dir/_libs/libmpfr.a"; then
-    gmplibs="$with_mpfr_dir/_libs/libmpfr.a"
-  else
-    gmplibs="$with_mpfr_dir/libmpfr.a"
-  fi
-else
-  gmplibs="-lmpfr"
-fi
-
-AC_ARG_WITH(mpfr, [  --with-mpfr=PATH        Specify directory for installed MPFR library])
+AC_ARG_WITH(mpfr, [  --with-mpfr=PATH        Specify prefix directory for installed MPFR package
+                          Equivalent to --with-mpfr-include=PATH/include
+                          plus --with-mpfr-lib=PATH/lib])
+AC_ARG_WITH(mpfr_include, [  --with-mpfr-include=PATH
+                          Specify directory for installed MPFR include files])
+AC_ARG_WITH(mpfr_lib, [  --with-mpfr-lib=PATH    Specify the directory for the installed MPFR library])
 
 if test "x$with_mpfr" != x; then
   gmplibs="-L$with_mpfr/lib $gmplibs"
   gmpinc="-I$with_mpfr/include"
 fi
-
-# Specify a location for gmp
-AC_ARG_WITH(gmp-dir, [  --with-gmp-dir=PATH     Specify source directory for GMP library])
-
-if test "x$with_gmp_dir" != x; then
-  gmpinc="$gmpinc -I$with_gmp_dir"
-  if test -f "$with_gmp_dir/.libs/libgmp.a"; then
-    gmplibs="$gmplibs $with_gmp_dir/.libs/libgmp.a"
-  elif test -f "$with_gmp_dir/_libs/libgmp.a"; then
-    gmplibs="$gmplibs $with_gmp_dir/_libs/libgmp.a"
-  fi
-  # One of the later tests will catch the error if neither library is present.
-else
-  gmplibs="$gmplibs -lgmp"
+if test "x$with_mpfr_include" != x; then
+  gmpinc="-I$with_mpfr_include"
+fi
+if test "x$with_mpfr_lib" != x; then
+  gmplibs="-L$with_mpfr_lib $gmplibs"
 fi
 
-AC_ARG_WITH(gmp, [  --with-gmp=PATH         Specify directory for installed GMP library])
+# Specify a location for gmp
+AC_ARG_WITH(gmp-dir, [  --with-gmp-dir=PATH     This option has been REMOVED],
+  AC_MSG_ERROR([The --with-gmp-dir=PATH option has been removed.
+Use --with-gmp=PATH or --with-gmp-include=PATH plus --with-gmp-lib=PATH]))
+
+gmplibs="$gmplibs -lgmp"
+
+AC_ARG_WITH(gmp, [  --with-gmp=PATH         Specify prefix directory for the installed GMP package
+                          Equivalent to --with-gmp-include=PATH/include
+                          plus --with-gmp-lib=PATH/lib])
+AC_ARG_WITH(gmp_include, [  --with-gmp-include=PATH Specify directory for installed GMP include files])
+AC_ARG_WITH(gmp_lib, [  --with-gmp-lib=PATH     Specify the directory for the installed GMP library])
+
 
 if test "x$with_gmp" != x; then
   gmplibs="-L$with_gmp/lib $gmplibs"
   gmpinc="-I$with_gmp/include $gmpinc"
+fi
+if test "x$with_gmp_include" != x; then
+  gmpinc="-I$with_gmp_include $gmpinc"
+fi
+if test "x$with_gmp_lib" != x; then
+  gmplibs="-L$with_gmp_lib $gmplibs"
 fi
 
 saved_CFLAGS="$CFLAGS"
