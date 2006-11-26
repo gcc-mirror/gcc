@@ -1,3 +1,7 @@
+2006-11-26  Razya Ladklesky  <razya@il.ibm.com> 
+
+        * testsuite/gcc.dg/ipa/ipa-6.c: New.
+        
 2006-11-26  Razya Ladklesky  <razya@il.ibm.com>
 	
 	PR tree-optimization/29122
