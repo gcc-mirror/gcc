@@ -1,3 +1,9 @@
+2006-11-26  Mohan Embar  <gnustuff@thisiscool.com>
+
+	PR libgcj/29151:
+	* java/lang/natWin32Process.cc (startProcess): Unconditionally
+	create a UNICODE environment for CreateProcess call.
+
 2006-10-20  Tom Tromey  <tromey@redhat.com>
 
 	* testsuite/libjava.jvmti/natevents.cc (do_callback_arg_tests):

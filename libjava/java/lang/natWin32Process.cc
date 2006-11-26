@@ -240,8 +240,10 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
     }
   *cmdLineCurPos = _T('\0');
 
-  // Get the environment, if any.
-  LPTSTR env = NULL;
+  // Get the environment, if any. Unconditionally
+  // create a UNICODE environment, even on ANSI
+  // builds.
+  LPWSTR env = NULL;
   if (envp)
     {
       elts = elements (envp);
@@ -250,22 +252,22 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
       for (int i = 0; i < envp->length; ++i)
         envLen += (elts[i]->length() + 1);
 
-      env = (LPTSTR) _Jv_Malloc ((envLen + 1) * sizeof(TCHAR));
+      env = (LPWSTR) _Jv_Malloc ((envLen + 1) * sizeof(WCHAR));
 
       int j = 0;
       for (int i = 0; i < envp->length; ++i)
         {
-          jint len = elts[i]->length();
+          jstring elt = elts[i];
+          jint len = elt->length();
           
-          JV_TEMP_STRING_WIN32(thiselt, elts[i]);
-          _tcscpy(env + j, thiselt);
+          wcsncpy(env + j, (LPCWSTR) JvGetStringChars(elt), len);
           
           j += len;
           
-          // Skip past the null terminator that _tcscpy just inserted.
-          j++;
+          // Insert the null terminator and skip past it.
+          env[j++] = 0;
         }
-      *(env + j) = _T('\0');
+      *(env + j) = 0;
     }
 
   // Get the working directory path, if specified.
