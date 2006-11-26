@@ -1,3 +1,8 @@
+2006-11-26  Andrew Pinski  <pinskia@gmail.com>
+
+	* trans-decl.c (gfc_build_intrinsic_function_decls): Mark the
+	pow functions as constant functions.
+
 2006-11-25  Andrew Pinski  <pinskia@gmail.com>
 
 	PR fortran/29982
