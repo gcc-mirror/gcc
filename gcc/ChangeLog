@@ -1,3 +1,9 @@
+2006-11-26  Razya Ladklesky  <razya@il.ibm.com>
+	
+	PR tree-optimization/29122
+	* tree-inline.c (tree_function_versioning): Update DECL_ASSEMBLER_NAME 
+	for the new version.  Assign NULL to DECL_RTL of the new version. 
+
 2006-11-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* reg-stack.c (get_true_reg): Fix UNSPEC_TRUNC_NOOP handling.
