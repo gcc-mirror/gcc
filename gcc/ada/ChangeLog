@@ -2674,6 +2674,11 @@
 	* gnat_rm.texi, gnat_ugn.texi, : Fix typos.  Follow spelling
 	conventions.
 
+2006-05-19  Nicolas Setton  <setton@adacore.com>
+
+	* misc.c (gnat_dwarf_name): New function.
+	(LANG_HOOKS_DWARF_NAME): Define to it.
+
 2006-05-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Make-lang.in (ada/decl.o): Replace target.h with $(TARGET_H).
