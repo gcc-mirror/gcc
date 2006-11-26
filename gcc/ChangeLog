@@ -1,3 +1,7 @@
+2006-11-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (fold_builtin_fmin_fmax): Handle NaN arguments.
+
 2006-11-26  Razya Ladklesky  <razya@il.ibm.com> 
 
         * testsuite/gcc.dg/ipa/ipa-6.c: New.
