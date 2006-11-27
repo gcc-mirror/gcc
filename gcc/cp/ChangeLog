@@ -1,3 +1,18 @@
+2006-11-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29886
+	* parser.c (cp_parser): Add in_function_body.
+	(cp_parser_new): Initialize it.
+	(cp_parser_primary_expression): Use parser->in_function_body
+	instead of at_function_scope_p.
+	(cp_parser_asm_definition): Likewise.
+	(cp_parser_direct_declarator): Likewise.
+	(cp_parser_class_specifier): Clear parser->in_function_body.
+	(cp_parser_constructor_declarator_p): Use parser->in_function_body
+	instead of at_function_scope_p.
+	(cp_parser_function_body_after_declarator): Set
+	parser->in_function_body.
+
 2006-11-21      Douglas Gregor <doug.gregor@gmail.com>
 
         * cp-tree.def (STATIC_ASSERT): New.  
