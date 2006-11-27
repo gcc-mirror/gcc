@@ -987,7 +987,6 @@ duplicate_insn_chain (rtx from, rtx to)
 	    case NOTE_INSN_DELETED_LABEL:
 	      /* No problem to strip these.  */
 	    case NOTE_INSN_EPILOGUE_BEG:
-	    case NOTE_INSN_FUNCTION_END:
 	      /* Debug code expect these notes to exist just once.
 		 Keep them in the master copy.
 		 ??? It probably makes more sense to duplicate them for each

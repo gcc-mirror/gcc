@@ -1,3 +1,17 @@
+2006-11-27  Jan Hubicka  <jh@suse.cz>
+
+	* cfgexpand.c (construct_exit_block): Don't disturb end of last BB.
+	* rtl.texi (NOTE_INSN_FUNCTION_END): Remove.
+	* final.c (final_scan_insn): Don't scan NOTE_INSN_FUNCTION_END.
+	* insn-notes.def (FUNCTION_END): Remove.
+	* jump.c (delete_related_insns): Don't worry about FUNCTION_END.
+	(redicect_jump_2): Don't accept -1 parameter to remove FUNCTION_END
+	note.
+	* ifcvt.c (dead_or_predictable): Update call of redirect_jump_2.
+	* function.c (expand_function_end): Don't emit NOTE_INSN_FUNCTION_END
+	* cfglayout.c (duplicate_insn_chain): Don't worry about
+	NOTE_FUNCTION_END.
+
 2006-11-27  Richard Guenther  <rguenther@suse.de>
 	Zdenek Dvorak <dvorakz@suse.cz>
 
