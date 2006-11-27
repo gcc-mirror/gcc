@@ -1,3 +1,10 @@
+2006-11-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/25620
+	* builtins.c (expand_builtin_pow): Optimize non integer valued
+	constant exponents using sqrt or cbrt if possible.  Always fall back
+	to expanding via optabs.
+
 2006-11-27  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/22372
