@@ -8,6 +8,7 @@ unsigned short int count = 0;
 int flag = 1;
 
 extern void abort (void);
+extern void exit (int);
 
 int
 main ()
