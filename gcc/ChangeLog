@@ -1,3 +1,8 @@
+2006-11-27  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* alias.c (init_alias_analysis): Remove simplification loop
+	after propagating pointers.
+
 2006-11-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (x86_ext_80387_constants): Add m_K8, m_CORE2
