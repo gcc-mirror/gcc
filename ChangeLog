@@ -1,3 +1,11 @@
+2006-11-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in (--with-mpfr-dir, --with-gmp-dir): Remove flags.
+	(--with-mpfr-include, --with-mpfr-lib, --with-gmp-include,
+	--with-gmp-lib): New flags.
+
+	* configure: Regenerate.
+
 2006-11-25  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* MAINTAINERS (Write After Approval): Change my email address.

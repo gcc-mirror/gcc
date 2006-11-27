@@ -1,5 +1,11 @@
 2006-11-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* doc/install.texi: Move GMP/MPFR configure options from Fortran
+	section to general section.  Remove documentation for
+	--with-mpfr-dir and --with-gmp-dir, add documentation for
+	--with-mpfr-include, --with-mpfr-lib, --with-gmp-include and
+	--with-gmp-lib.
+
 	* builtins.c (fold_builtin_fmin_fmax): Handle NaN arguments.
 
 2006-11-26  Razya Ladklesky  <razya@il.ibm.com> 
