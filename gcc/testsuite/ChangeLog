@@ -1,3 +1,8 @@
+2006-11-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29886
+	* g++.dg/expr/cast8.C: New test.
+
 2006-11-26  Andrew Pinski  <pinskia@gmail.com>
 
 	PR fortran/29982
