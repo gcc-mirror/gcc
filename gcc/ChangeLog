@@ -1,3 +1,15 @@
+2006-11-27  Roger Sayle  <roger@eyesopen.com>
+	    Manuel Lopez-Ibanez <manu@gcc.gnu.org>
+	    
+	* c-common.c (constant_fits_type_p): Delete.
+	(unsigned_conversion_warning): Delete.
+	(conversion_warning): Integrate Wconversion warning from
+	unsigned_conversion_warning.
+	(convert_and_check): Integrate Woverflow warning from
+	unsigned_conversion_warning.  Reorganize and simplify to avoid
+	dependence upon the middle-end setting TREE_OVERFLOW on integral
+	conversions, by using int_fits_type_p directly.
+
 2006-11-27  Tobias Burnus  <burnus@net-b.de>
 
 	* doc/invoke.texi: Fixed typo.
