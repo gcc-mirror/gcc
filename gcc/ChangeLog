@@ -1,3 +1,15 @@
+2006-11-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	Revert:
+	2006-05-08  Uros Bizjak  <uros@kss-loka.si>
+	* config/i386/i386.c (ix86_rtx_costs) [FLOAT_EXTEND]: For
+	standard 80387 constants, raise the cost to prevent
+	compress_float_constant() to generate load from memory.
+
+	* config/i386/i386.md: Add new splitter pattern to split
+	float_extended load of constant from constant pool into
+	pure constant load.
+
 2006-11-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* doc/install.texi: Move GMP/MPFR configure options from Fortran
@@ -10,8 +22,8 @@
 
 2006-11-26  Razya Ladklesky  <razya@il.ibm.com> 
 
-        * testsuite/gcc.dg/ipa/ipa-6.c: New.
-        
+	* testsuite/gcc.dg/ipa/ipa-6.c: New.
+
 2006-11-26  Razya Ladklesky  <razya@il.ibm.com>
 	
 	PR tree-optimization/29122
@@ -2070,7 +2082,7 @@
 2006-11-05  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/lib1funcs-4-300.asm: Guard entire file with
-        #if !__SHMEDIA__ .
+	#if !__SHMEDIA__ .
 
 2006-11-05  Jakub Jelinek  <jakub@redhat.com>
 
