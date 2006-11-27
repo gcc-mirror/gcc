@@ -9727,7 +9727,7 @@ For string operation of unknown size, inline runtime checks so for small
 blocks inline code is used, while for large blocks librarly call is used.
 
 @item -mstringop-strategy=@var{alg}
-@optindex mstringop-strategy=@var{alg}
+@opindex mstringop-strategy=@var{alg}
 Overwrite internal decision heuristic about particular algorithm to inline
 string opteration with.  The allowed values are @code{rep_byte},
 @code{rep_4byte}, @code{rep_8byte} for expanding using i386 @code{rep} prefix

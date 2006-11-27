@@ -1,3 +1,7 @@
+2006-11-27  Tobias Burnus  <burnus@net-b.de>
+
+	* doc/invoke.texi: Fixed typo.
+
 2006-11-27  Michael Matz  <matz@suse.de>
             Andreas Krebbel  <krebbel1@de.ibm.com>
 
