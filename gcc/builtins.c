@@ -2601,8 +2601,13 @@ expand_powi (rtx x, enum machine_mode mode, HOST_WIDE_INT n)
 static rtx
 expand_builtin_pow (tree exp, rtx target, rtx subtarget)
 {
+  tree arg0, arg1, fn, narg0, narglist;
   tree arglist = TREE_OPERAND (exp, 1);
-  tree arg0, arg1;
+  tree type = TREE_TYPE (exp);
+  REAL_VALUE_TYPE cint, c, c2;
+  HOST_WIDE_INT n;
+  rtx op, op2;
+  enum machine_mode mode = TYPE_MODE (type);
 
   if (! validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
     return 0;
@@ -2610,36 +2615,108 @@ expand_builtin_pow (tree exp, rtx target, rtx subtarget)
   arg0 = TREE_VALUE (arglist);
   arg1 = TREE_VALUE (TREE_CHAIN (arglist));
 
-  if (TREE_CODE (arg1) == REAL_CST
-      && ! TREE_CONSTANT_OVERFLOW (arg1))
-    {
-      REAL_VALUE_TYPE cint;
-      REAL_VALUE_TYPE c;
-      HOST_WIDE_INT n;
+  if (TREE_CODE (arg1) != REAL_CST
+      || TREE_CONSTANT_OVERFLOW (arg1))
+    return expand_builtin_mathfn_2 (exp, target, subtarget);
 
-      c = TREE_REAL_CST (arg1);
-      n = real_to_integer (&c);
-      real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
-      if (real_identical (&c, &cint))
+  /* Handle constant exponents.  */
+
+  /* For integer valued exponents we can expand to an optimal multiplication
+     sequence using expand_powi.  */
+  c = TREE_REAL_CST (arg1);
+  n = real_to_integer (&c);
+  real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+  if (real_identical (&c, &cint)
+      && ((n >= -1 && n <= 2)
+	  || (flag_unsafe_math_optimizations
+	      && !optimize_size
+	      && powi_cost (n) <= POWI_MAX_MULTS)))
+    {
+      op = expand_expr (arg0, subtarget, VOIDmode, 0);
+      if (n != 1)
 	{
-	  /* If the exponent is -1, 0, 1 or 2, then expand_powi is exact.
-	     Otherwise, check the number of multiplications required.
-	     Note that pow never sets errno for an integer exponent.  */
-	  if ((n >= -1 && n <= 2)
-	      || (flag_unsafe_math_optimizations
-		  && ! optimize_size
-		  && powi_cost (n) <= POWI_MAX_MULTS))
+	  op = force_reg (mode, op);
+	  op = expand_powi (op, mode, n);
+	}
+      return op;
+    }
+
+  narg0 = builtin_save_expr (arg0);
+  narglist = build_tree_list (NULL_TREE, narg0);
+
+  /* If the exponent is not integer valued, check if it is half of an integer.
+     In this case we can expand to sqrt (x) * x**(n/2).  */
+  fn = mathfn_built_in (type, BUILT_IN_SQRT);
+  if (fn != NULL_TREE)
+    {
+      real_arithmetic (&c2, MULT_EXPR, &c, &dconst2);
+      n = real_to_integer (&c2);
+      real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+      if (real_identical (&c2, &cint)
+	  && ((flag_unsafe_math_optimizations
+	       && !optimize_size
+	       && powi_cost (n/2) <= POWI_MAX_MULTS)
+	      || n == 1))
+	{
+	  tree call_expr = build_function_call_expr (fn, narglist);
+	  op = expand_builtin (call_expr, NULL_RTX, subtarget, mode, 0);
+	  if (n != 1)
 	    {
-	      enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
-	      rtx op = expand_expr (arg0, subtarget, VOIDmode, 0);
-	      op = force_reg (mode, op);
-	      return expand_powi (op, mode, n);
+	      op2 = expand_expr (narg0, subtarget, VOIDmode, 0);
+	      op2 = force_reg (mode, op2);
+	      op2 = expand_powi (op2, mode, abs (n / 2));
+	      op = expand_simple_binop (mode, MULT, op, op2, NULL_RTX,
+					0, OPTAB_LIB_WIDEN);
+	      /* If the original exponent was negative, reciprocate the
+		 result.  */
+	      if (n < 0)
+		op = expand_binop (mode, sdiv_optab, CONST1_RTX (mode),
+				   op, NULL_RTX, 0, OPTAB_LIB_WIDEN);
 	    }
+	  return op;
 	}
     }
 
-  if (! flag_unsafe_math_optimizations)
-    return NULL_RTX;
+  /* Try if the exponent is a third of an integer.  In this case
+     we can expand to x**(n/3) * cbrt(x)**(n%3).  */
+  fn = mathfn_built_in (type, BUILT_IN_CBRT);
+  if (fn != NULL_TREE)
+    {
+      real_arithmetic (&c2, MULT_EXPR, &c, &dconst3);
+      real_round (&c2, mode, &c2);
+      n = real_to_integer (&c2);
+      real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+      real_arithmetic (&c2, RDIV_EXPR, &cint, &dconst3);
+      real_convert (&c2, mode, &c2);
+      if (real_identical (&c2, &c)
+	  && ((!optimize_size
+	       && flag_unsafe_math_optimizations
+	       && powi_cost (n/3) <= POWI_MAX_MULTS)
+	      || n == 1))
+	{
+	  tree call_expr = build_function_call_expr (fn, narglist);
+	  op = expand_builtin (call_expr, NULL_RTX, subtarget, mode, 0);
+	  if (abs (n) % 3 == 2)
+	    op = expand_simple_binop (mode, MULT, op, op, op,
+				      0, OPTAB_LIB_WIDEN);
+	  if (n != 1)
+	    {
+	      op2 = expand_expr (narg0, subtarget, VOIDmode, 0);
+	      op2 = force_reg (mode, op2);
+	      op2 = expand_powi (op2, mode, abs (n / 3));
+	      op = expand_simple_binop (mode, MULT, op, op2, NULL_RTX,
+					0, OPTAB_LIB_WIDEN);
+	      /* If the original exponent was negative, reciprocate the
+		 result.  */
+	      if (n < 0)
+		op = expand_binop (mode, sdiv_optab, CONST1_RTX (mode),
+				   op, NULL_RTX, 0, OPTAB_LIB_WIDEN);
+	    }
+	  return op;
+	}
+    }
+
+  /* Fall back to optab expansion.  */
   return expand_builtin_mathfn_2 (exp, target, subtarget);
 }
 

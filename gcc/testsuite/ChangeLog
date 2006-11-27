@@ -1,3 +1,9 @@
+2006-11-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/25620
+	* gcc.target/i386/pow-1.c: New testcase.
+	* gcc.dg/builtins-58.c: Likewise.
+
 2006-11-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29886
