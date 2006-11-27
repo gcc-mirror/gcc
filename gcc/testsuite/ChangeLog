@@ -1,3 +1,9 @@
+2006-11-27  Michael Matz  <matz@suse.de>
+            Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	PR target/29319
+	* gcc.dg/20061127-1.c: New testcase.
+
 2006-11-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29886
