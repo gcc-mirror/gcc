@@ -1465,6 +1465,7 @@ construct_exit_block (void)
   edge e, e2;
   unsigned ix;
   edge_iterator ei;
+  rtx orig_end = BB_END (EXIT_BLOCK_PTR->prev_bb);
 
   /* Make sure the locus is set to the end of the function, so that
      epilogue line numbers and warnings are set properly.  */
@@ -1484,6 +1485,9 @@ construct_exit_block (void)
   end = get_last_insn ();
   if (head == end)
     return;
+  /* While emitting the function end we could move end of the last basic block.
+   */
+  BB_END (EXIT_BLOCK_PTR->prev_bb) = orig_end;
   while (NEXT_INSN (head) && NOTE_P (NEXT_INSN (head)))
     head = NEXT_INSN (head);
   exit_block = create_basic_block (NEXT_INSN (head), end,

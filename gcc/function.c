@@ -4342,11 +4342,6 @@ expand_function_end (void)
   clear_pending_stack_adjust ();
   do_pending_stack_adjust ();
 
-  /* Mark the end of the function body.
-     If control reaches this insn, the function can drop through
-     without returning a value.  */
-  emit_note (NOTE_INSN_FUNCTION_END);
-
   /* Output a linenumber for the end of the function.
      SDB depends on this.  */
   force_next_line_note ();
@@ -5289,15 +5284,14 @@ epilogue_done:
 
       /* Similarly, move any line notes that appear after the epilogue.
          There is no need, however, to be quite so anal about the existence
-	 of such a note.  Also move the NOTE_INSN_FUNCTION_END and (possibly)
+	 of such a note.  Also possibly move
 	 NOTE_INSN_FUNCTION_BEG notes, as those can be relevant for debug
 	 info generation.  */
       for (insn = epilogue_end; insn; insn = next)
 	{
 	  next = NEXT_INSN (insn);
 	  if (NOTE_P (insn) 
-	      && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG
-		  || NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_END))
+	      && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG))
 	    reorder_insns (insn, insn, PREV_INSN (epilogue_end));
 	}
     }

@@ -1467,8 +1467,7 @@ delete_related_insns (rtx insn)
       while (next)
 	{
 	  code = GET_CODE (next);
-	  if (code == NOTE
-	      && NOTE_LINE_NUMBER (next) != NOTE_INSN_FUNCTION_END)
+	  if (code == NOTE)
 	    next = NEXT_INSN (next);
 	  /* Keep going past other deleted labels to delete what follows.  */
 	  else if (code == CODE_LABEL && INSN_DELETED_P (next))
@@ -1631,8 +1630,7 @@ redirect_jump (rtx jump, rtx nlabel, int delete_unused)
 }
 
 /* Fix up JUMP_LABEL and label ref counts after OLABEL has been replaced with
-   NLABEL in JUMP.  If DELETE_UNUSED is non-negative, copy a
-   NOTE_INSN_FUNCTION_END found after OLABEL to the place after NLABEL.
+   NLABEL in JUMP.  
    If DELETE_UNUSED is positive, delete related insn to OLABEL if its ref
    count has dropped to zero.  */
 void
@@ -1641,6 +1639,10 @@ redirect_jump_2 (rtx jump, rtx olabel, rtx nlabel, int delete_unused,
 {
   rtx note;
 
+  /* negative DELETE_UNUSED used to be used to signalize behaviour on
+     moving FUNCTION_END note.  Just sanity check that no user still worry
+     about this.  */
+  gcc_assert (delete_unused >= 0);
   JUMP_LABEL (jump) = nlabel;
   if (nlabel)
     ++LABEL_NUSES (nlabel);
@@ -1656,15 +1658,6 @@ redirect_jump_2 (rtx jump, rtx olabel, rtx nlabel, int delete_unused,
 	  confirm_change_group ();
 	}
     }
-
-  /* If we're eliding the jump over exception cleanups at the end of a
-     function, move the function end note so that -Wreturn-type works.  */
-  if (olabel && nlabel
-      && NEXT_INSN (olabel)
-      && NOTE_P (NEXT_INSN (olabel))
-      && NOTE_LINE_NUMBER (NEXT_INSN (olabel)) == NOTE_INSN_FUNCTION_END
-      && delete_unused >= 0)
-    emit_note_after (NOTE_INSN_FUNCTION_END, nlabel);
 
   if (olabel && --LABEL_NUSES (olabel) == 0 && delete_unused > 0
       /* Undefined labels will remain outside the insn stream.  */
