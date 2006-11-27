@@ -1,3 +1,9 @@
+2006-11-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* doc/install.texi: Remove documentation for --with-mpfr-dir
+	and --with-gmp-dir, add documentation for --with-mpfr-include,
+	--with-mpfr-lib, --with-gmp-include and --with-gmp-lib.
+
 2006-11-25  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/29964
