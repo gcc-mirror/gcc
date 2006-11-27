@@ -1,3 +1,29 @@
+2006-11-27  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/22372
+	* tree-vect-transform.c (vect_create_addr_base_for_vector_ref): Convert
+	the type of the base address.
+	(vect_create_data_ref_ptr): Add an argument, type of the data-ref. Use
+	it in the data-ref pointer creation.
+	(vect_init_vector): Add an argument, type of the init vector. Use it in
+	the stmt creation.
+	(vect_get_vec_def_for_operand): Fix calls to vect_init_vector.
+	(get_initial_def_for_reduction): Likewise.
+	(vect_create_epilog_for_reduction): Change type of MODIFY_EXPR to
+	void_type_node.
+	(vectorizable_assignment, vect_permute_store_chain): Likewise.
+	(vectorizable_store): Fix call to vect_create_data_ref_ptr. Use the
+	correct type in stmt creation.
+	(vect_setup_realignment): Use the correct type in stmt creation.
+	(vect_permute_load_chain): Change type of MODIFY_EXPR to
+	void_type_node.
+	(vectorizable_load): Fix calls to vect_create_data_ref_ptr. Change type
+	of MODIFY_EXPR to void_type_node.
+	(vectorizable_condition): Change type of MODIFY_EXPR to
+	void_type_node.
+	(vect_update_ivs_after_vectorizer): Use the correct type in stmt
+	creation.
+
 2006-11-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	Revert:
