@@ -17705,22 +17705,7 @@ ix86_rtx_costs (rtx x, int code, int outer_code, int *total)
       if (!TARGET_SSE_MATH
 	  || mode == XFmode
 	  || (mode == DFmode && !TARGET_SSE2))
-	/* For standard 80387 constants, raise the cost to prevent
-	   compress_float_constant() to generate load from memory.  */
-	switch (standard_80387_constant_p (XEXP (x, 0)))
-	  {
-	  case -1:
-	  case 0:
-	    *total = 0;
-	    break;
-	  case 1: /* 0.0 */
-	    *total = 1;
-	    break;
-	  default:
-	    *total = (x86_ext_80387_constants & TUNEMASK
-		      || optimize_size
-		      ? 1 : 0);
-	  }
+	*total = 0;
       return false;
 
     case ABS:
