@@ -1,3 +1,8 @@
+2006-11-27  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.target/i386/memcpy-1.c: Adjust size.
+	* testsuite/gcc.dg/visibility-11.c: Likewise.
+
 2006-11-27  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/25620

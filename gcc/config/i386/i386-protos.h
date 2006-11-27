@@ -50,8 +50,8 @@ extern bool x86_extended_QIreg_mentioned_p (rtx);
 extern bool x86_extended_reg_mentioned_p (rtx);
 extern enum machine_mode ix86_cc_mode (enum rtx_code, rtx, rtx);
 
-extern int ix86_expand_movmem (rtx, rtx, rtx, rtx);
-extern int ix86_expand_clrmem (rtx, rtx, rtx);
+extern int ix86_expand_movmem (rtx, rtx, rtx, rtx, rtx, rtx);
+extern int ix86_expand_setmem (rtx, rtx, rtx, rtx, rtx, rtx);
 extern int ix86_expand_strlen (rtx, rtx, rtx, rtx);
 
 extern bool legitimate_constant_p (rtx);
