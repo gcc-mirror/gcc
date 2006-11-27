@@ -163,6 +163,7 @@ enum stmt_vec_info_type {
   load_vec_info_type,
   store_vec_info_type,
   op_vec_info_type,
+  call_vec_info_type,
   assignment_vec_info_type,
   condition_vec_info_type,
   reduc_vec_info_type,
@@ -397,6 +398,7 @@ extern bool vectorizable_operation (tree, block_stmt_iterator *, tree *);
 extern bool vectorizable_type_promotion (tree, block_stmt_iterator *, tree *);
 extern bool vectorizable_type_demotion (tree, block_stmt_iterator *, tree *);
 extern bool vectorizable_assignment (tree, block_stmt_iterator *, tree *);
+extern bool vectorizable_call (tree, block_stmt_iterator *, tree *);
 extern bool vectorizable_condition (tree, block_stmt_iterator *, tree *);
 extern bool vectorizable_live_operation (tree, block_stmt_iterator *, tree *);
 extern bool vectorizable_reduction (tree, block_stmt_iterator *, tree *);

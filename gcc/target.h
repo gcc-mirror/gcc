@@ -370,6 +370,10 @@ struct gcc_target
        function.  */
     tree (* builtin_mask_for_load) (void);
 
+    /* Returns a code for builtin that realizes vectorized version of
+       function, or NULL_TREE if not available.  */
+    tree (* builtin_vectorized_function) (unsigned, tree);
+
     /* Target builtin that implements vector widening multiplication.
        builtin_mul_widen_eve computes the element-by-element products 
        for the even elements, and builtin_mul_widen_odd computes the

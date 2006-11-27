@@ -1566,6 +1566,152 @@ vectorizable_reduction (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   return true;
 }
 
+/* Checks if CALL can be vectorized in type VECTYPE.  Returns
+   true if the target has a vectorized version of the function,
+   or false if the function cannot be vectorized.  */
+
+static bool
+vectorizable_function (tree call, tree vectype)
+{
+  tree fndecl = get_callee_fndecl (call);
+
+  /* We only handle functions that do not read or clobber memory -- i.e.
+     const or novops ones.  */
+  if (!(call_expr_flags (call) & (ECF_CONST | ECF_NOVOPS)))
+    return false;
+
+  if (!fndecl
+      || TREE_CODE (fndecl) != FUNCTION_DECL
+      || !DECL_BUILT_IN (fndecl))
+    return false;
+
+  if (targetm.vectorize.builtin_vectorized_function (DECL_FUNCTION_CODE (fndecl), vectype))
+    return true;
+
+  return false;
+}
+
+/* Returns an expression that performs a call to vectorized version
+   of FNDECL in type VECTYPE, with the arguments given by ARGS.
+   If extra statements need to be generated, they are inserted
+   before BSI.  */
+
+static tree
+build_vectorized_function_call (tree fndecl,
+				tree vectype, tree args)
+{
+  tree vfndecl;
+  enum built_in_function code = DECL_FUNCTION_CODE (fndecl);
+
+  /* The target specific builtin should be available.  */
+  vfndecl = targetm.vectorize.builtin_vectorized_function (code, vectype);
+  gcc_assert (vfndecl != NULL_TREE);
+
+  return build_function_call_expr (vfndecl, args);
+}
+
+/* Function vectorizable_call.
+
+   Check if STMT performs a function call that can be vectorized. 
+   If VEC_STMT is also passed, vectorize the STMT: create a vectorized 
+   stmt to replace it, put it in VEC_STMT, and insert it at BSI.
+   Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
+
+bool
+vectorizable_call (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
+{
+  tree vec_dest;
+  tree scalar_dest;
+  tree operation;
+  tree op, args, type;
+  tree vec_oprnd, vargs, *pvargs_end;
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  tree fndecl, rhs, new_temp, def, def_stmt;
+  enum vect_def_type dt;
+
+  /* Is STMT a vectorizable call?   */
+  if (TREE_CODE (stmt) != MODIFY_EXPR)
+    return false;
+
+  if (TREE_CODE (TREE_OPERAND (stmt, 0)) != SSA_NAME)
+    return false;
+
+  operation = TREE_OPERAND (stmt, 1);
+  if (TREE_CODE (operation) != CALL_EXPR)
+    return false;
+   
+  /* For now, we only vectorize functions if a target specific builtin
+     is available.  TODO -- in some cases, it might be profitable to
+     insert the calls for pieces of the vector, in order to be able
+     to vectorize other operations in the loop.  */
+  if (!vectorizable_function (operation, vectype))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "function is not vectorizable.");
+
+      return false;
+    }
+  gcc_assert (!stmt_references_memory_p (stmt));
+
+  for (args = TREE_OPERAND (operation, 1); args; args = TREE_CHAIN (args))
+    {
+      op = TREE_VALUE (args);
+
+      if (!vect_is_simple_use (op, loop_vinfo, &def_stmt, &def, &dt))
+	{
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    fprintf (vect_dump, "use not simple.");
+	  return false;
+	}
+    }
+
+  if (!vec_stmt) /* transformation not required.  */
+    {
+      STMT_VINFO_TYPE (stmt_info) = call_vec_info_type;
+      return true;
+    }
+
+  /** Transform.  **/
+
+  if (vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump, "transform operation.");
+
+  /* Handle def.  */
+  scalar_dest = TREE_OPERAND (stmt, 0);
+  vec_dest = vect_create_destination_var (scalar_dest, vectype);
+
+  /* Handle uses.  */
+  vargs = NULL_TREE;
+  pvargs_end = &vargs;
+  for (args = TREE_OPERAND (operation, 1); args; args = TREE_CHAIN (args))
+    {
+      op = TREE_VALUE (args);
+      vec_oprnd = vect_get_vec_def_for_operand (op, stmt, NULL);
+	  
+      *pvargs_end = tree_cons (NULL_TREE, vec_oprnd, NULL_TREE);
+      pvargs_end = &TREE_CHAIN (*pvargs_end);
+    }
+
+  fndecl = get_callee_fndecl (operation);
+  rhs = build_vectorized_function_call (fndecl, vectype, vargs);
+  *vec_stmt = build2 (MODIFY_EXPR, vectype, vec_dest, rhs);
+  new_temp = make_ssa_name (vec_dest, *vec_stmt);
+  TREE_OPERAND (*vec_stmt, 0) = new_temp;
+
+  vect_finish_stmt_generation (stmt, *vec_stmt, bsi);
+
+  /* The call in STMT might prevent it from being removed in dce.  We however
+     cannot remove it here, due to the way the ssa name it defines is mapped
+     to the new definition.  So just replace rhs of the statement with something
+     harmless.  */
+  type = TREE_TYPE (scalar_dest);
+  TREE_OPERAND (stmt, 1) = fold_convert (type, integer_zero_node);
+
+  return true;
+}
+
 
 /* Function vectorizable_assignment.
 
@@ -3719,6 +3865,10 @@ vect_transform_stmt (tree stmt, block_stmt_iterator *bsi, bool *strided_store)
       case condition_vec_info_type:
 	done = vectorizable_condition (stmt, bsi, &vec_stmt);
 	gcc_assert (done);
+	break;
+
+      case call_vec_info_type:
+	done = vectorizable_call (stmt, bsi, &vec_stmt);
 	break;
 
       default:

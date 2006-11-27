@@ -1,4 +1,23 @@
 2006-11-27  Richard Guenther  <rguenther@suse.de>
+	Zdenek Dvorak <dvorakz@suse.cz>
+
+	* target.h (struct gcc_target): Add builtin_vectorized_function
+	target hook.
+	* target-def.h (TARGET_VECTORIZE): Likewise.
+	* doc/tm.texi (TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION):
+	Document new target hook.
+	* targhooks.h (default_builtin_vectorized_function): Declare.
+	* targhooks.c (default_builtin_vectorized_function): Define.
+	* tree-vectorizer.h (stmt_vec_info_type): Add call_vec_info_type.
+	(vectorizable_call): Declare.
+	* tree-vect-analyze.c (vect_analyze_operations): Call
+	vectorizable_call.
+	* tree-vect-transform.c (vectorizable_function): New static function.
+	(build_vectorized_function_call): Likewise.
+	(vectorizable_call): New function.
+	(vect_transform_stmt): Handle vectorizable calls.
+
+2006-11-27  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/25620
 	* builtins.c (expand_builtin_pow): Optimize non integer valued

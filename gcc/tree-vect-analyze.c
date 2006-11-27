@@ -301,6 +301,7 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 		    || vectorizable_operation (stmt, NULL, NULL)
 		    || vectorizable_assignment (stmt, NULL, NULL)
 		    || vectorizable_load (stmt, NULL, NULL)
+		    || vectorizable_call (stmt, NULL, NULL)
 		    || vectorizable_store (stmt, NULL, NULL)
 		    || vectorizable_condition (stmt, NULL, NULL));
 
