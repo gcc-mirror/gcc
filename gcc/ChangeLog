@@ -1,3 +1,12 @@
+2006-11-27  Michael Matz  <matz@suse.de>
+            Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	PR target/29319
+	* config/s390/predicates.md (larl_operand): Check addend of larl
+	operand to be in range of -/+2GB.
+	* config/s390/s390.c (legitimize_pic_address): Likewise.  
+	Changed type of variable even to HOST_WIDE_INT.
+
 2006-11-25  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/29964

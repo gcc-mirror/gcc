@@ -3005,7 +3005,10 @@ legitimize_pic_address (rtx orig, rtx reg)
 		|| (GET_CODE (op0) == SYMBOL_REF && SYMBOL_REF_LOCAL_P (op0)))
 	      && GET_CODE (op1) == CONST_INT)
 	    {
-              if (TARGET_CPU_ZARCH && larl_operand (op0, VOIDmode))
+              if (TARGET_CPU_ZARCH
+		  && larl_operand (op0, VOIDmode)
+		  && INTVAL (op1) < (HOST_WIDE_INT)1 << 31
+		  && INTVAL (op1) >= -((HOST_WIDE_INT)1 << 31))
                 {
                   if (INTVAL (op1) & 1)
                     {
@@ -3015,7 +3018,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 
                       if (!DISP_IN_RANGE (INTVAL (op1)))
                         {
-                          int even = INTVAL (op1) - 1;
+                          HOST_WIDE_INT even = INTVAL (op1) - 1;
                           op0 = gen_rtx_PLUS (Pmode, op0, GEN_INT (even));
 			  op0 = gen_rtx_CONST (Pmode, op0);
                           op1 = const1_rtx;
