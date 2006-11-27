@@ -125,6 +125,10 @@ minline-all-stringops
 Target Report Mask(INLINE_ALL_STRINGOPS)
 Inline all known string operations
 
+minline-stringops-dynamically
+Target Report Mask(INLINE_STRINGOPS_DYNAMICALLY)
+Inline memset/memcpy string operations, but perform inline version only for small blocks
+
 mintel-syntax
 Target Undocumented
 ;; Deprecated
@@ -220,6 +224,10 @@ Uninitialized locals in .bss
 mstack-arg-probe
 Target Report Mask(STACK_PROBE)
 Enable stack probing
+
+mstringop-strategy=
+Target RejectNegative Joined Var(ix86_stringop_string)
+Chose strategy to generate stringop using
 
 mtls-dialect=
 Target RejectNegative Joined Var(ix86_tls_dialect_string)

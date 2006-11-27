@@ -9,9 +9,9 @@
 /* A and B are aligned, but we used to lose track of it.
    Ensure that memcpy is inlined and alignment prologue is missing.  */
 
-char a[900];
-char b[900];
+char a[2048];
+char b[2048];
 t()
 {
-  __builtin_memcpy (a,b,900);
+  __builtin_memcpy (a,b,2048);
 }

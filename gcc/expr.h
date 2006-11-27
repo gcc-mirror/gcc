@@ -377,6 +377,7 @@ extern void init_block_move_fn (const char *);
 extern void init_block_clear_fn (const char *);
 
 extern rtx emit_block_move (rtx, rtx, rtx, enum block_op_methods);
+extern rtx emit_block_move_via_libcall (rtx, rtx, rtx, bool);
 
 /* Copy all or part of a value X into registers starting at REGNO.
    The number of registers to be filled is NREGS.  */
@@ -423,6 +424,8 @@ extern void use_group_regs (rtx *, rtx);
 /* Write zeros through the storage of OBJECT.
    If OBJECT has BLKmode, SIZE is its length in bytes.  */
 extern rtx clear_storage (rtx, rtx, enum block_op_methods);
+/* The same, but always output an library call.  */
+rtx set_storage_via_libcall (rtx, rtx, rtx, bool);
 
 /* Expand a setmem pattern; return true if successful.  */
 extern bool set_storage_via_setmem (rtx, rtx, rtx, unsigned int);

@@ -1,5 +1,56 @@
 2006-11-27  Jan Hubicka  <jh@suse.cz>
 
+	* expr.c (emit_block_move_via_libcall): Export.
+	(clear_storage_via_libcall): Rename to ...
+	(set_storage_via_libcall): ... this one; handle arbitrary value to set.
+	(clear_storage): Update to set_storage_via_libcall.
+	* expr.h (emit_block_move_via_libcall): Declare
+	* config/i386/i386.h (stringop_alg): New enum.
+	(MAX_STRINGOP_ALGS): New constant.
+	(stringop_algs): New struct.
+	(processor_costs): Add memcpy/memset descriptors.
+	(TARGET_REP_MOVEL_OPTIMAL): Remove.
+	* config/i386/i386.md (movsi_insv_1_rex64): New pattern.
+	(strmovsi, strmovdi, strsetsi, strsetdi): Update; accept all operands
+	for memset.
+	* config/i386/i386.opt (minline-stringops-dynamically,
+	mstringop-strategy): New
+	parameters.
+	* config/i386/i386-prostos.h (ix86_expand_movmem): Update prototype.
+	(ix86_expand-clrmem): Rename to ...
+	(ix86_expand_setmem): ... this one; update prototype.
+	* config/i386/i386.c (DUMMY_STRINGOP_ALGS): New constant.
+	(size_cost, i386_cost, i486_cost, pentium_cost, pentiumpro_cost,
+	geode_cost, k6_cost, athlon_cost, k8_cost, pentium4_cost,
+	nocona_cost, core2_cost, generic_cost, generic64_cost,
+	generic32_cost): Add memcpy/memset descriptors.
+	(x86_rep_movl_optimal): Remove.
+	(stringop_alg): New static variable.
+	(ix86_expand_aligntest): Handle predictions.
+	(override_options): Add strgop_alg handling.
+	(predict_jump): New function.
+	(scale_counter): New function.
+	(expand_set_or_movmem_via_loop): New function.
+	(expand_movmem_via_rep_mov): New function.
+	(expand_setmem_via_rep_stots): New function.
+	(emit_strmov): New function.
+	(expand_movmem_epilogue): New function.
+	(expand_setmem_epilogue_via_loop): New function.
+	(expand_setmem_epilogue): New function.
+	(expand_movmem_prologue): New function.
+	(expand_setmem_prologue): New function.
+	(decide_alg): New function.
+	(decide_alignment): New function.
+	(ix86_exand_movmem): Rewrite.
+	(promote_duplicated_reg): New function.
+	(ix86_expand_clrmem): Rename to ...
+	(ix86_expand_setmem): ... this one. Rewrite.
+
+	* invoke.texi (minline-stringops-dynamically): New command line option.
+	(mstringop-strategy): Likewise.
+
+2006-11-27  Jan Hubicka  <jh@suse.cz>
+
 	* cfgexpand.c (construct_exit_block): Don't disturb end of last BB.
 	* rtl.texi (NOTE_INSN_FUNCTION_END): Remove.
 	* final.c (final_scan_insn): Don't scan NOTE_INSN_FUNCTION_END.
