@@ -1,5 +1,12 @@
 2006-11-28  Jan Hubicka  <jh@suse.cz>
 
+	* builtins.c: Include tree-flow.h.
+	(fold_builtin_memory_op): Be more aggressive on converting memcpy to
+	assignment; convert memmove to memcpy for sizes greater than 1 where
+	alignment of operands prohibit the partial overlap.
+
+2006-11-28  Jan Hubicka  <jh@suse.cz>
+
 	* invoke.texi (large-stack-frame, large-stack-frame-growth): New params.
 	* cgraph.c (dump_cgraph_node): Dump stack usage.
 	* cgraph.h (cgraph_local_info): Add estimated_self_stack_size.
