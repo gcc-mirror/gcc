@@ -327,6 +327,13 @@ __umulsidi3:
 	/* Restore the original return address.  */
 	l32i	a0, sp, 0
 #endif
+#if __XTENSA_CALL0_ABI__
+	l32i	a12, sp, 16
+	l32i	a13, sp, 20
+	l32i	a14, sp, 24
+	l32i	a15, sp, 28
+	addi	sp, sp, 32
+#endif
 	leaf_return
 
 #if !XCHAL_HAVE_MUL16 && !XCHAL_HAVE_MUL32 && !XCHAL_HAVE_MAC16
