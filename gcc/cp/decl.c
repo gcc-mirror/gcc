@@ -5912,16 +5912,6 @@ grokfndecl (tree ctype,
 	error ("cannot declare %<::main%> to be inline");
       if (!publicp)
 	error ("cannot declare %<::main%> to be static");
-      if (!same_type_p (TREE_TYPE (TREE_TYPE (decl)),
-			integer_type_node))
-	{
-	  tree oldtypeargs = TYPE_ARG_TYPES (TREE_TYPE (decl));
-	  tree newtype;
-	  error ("%<::main%> must return %<int%>");
-	  newtype =  build_function_type (integer_type_node,
-			  		  oldtypeargs);
-	  TREE_TYPE (decl) = newtype;
-	}
       inlinep = 0;
       publicp = 1;
     }
@@ -6023,6 +6013,18 @@ grokfndecl (tree ctype,
     {
       cplus_decl_attributes (&decl, *attrlist, 0);
       *attrlist = NULL_TREE;
+    }
+
+  /* Check main's type after attributes have been applied.  */
+  if (ctype == NULL_TREE && DECL_MAIN_P (decl)
+      && !same_type_p (TREE_TYPE (TREE_TYPE (decl)),
+		       integer_type_node))
+    {
+      tree oldtypeargs = TYPE_ARG_TYPES (TREE_TYPE (decl));
+      tree newtype;
+      error ("%<::main%> must return %<int%>");
+      newtype = build_function_type (integer_type_node, oldtypeargs);
+      TREE_TYPE (decl) = newtype;
     }
 
   if (ctype != NULL_TREE
