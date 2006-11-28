@@ -1,4 +1,4 @@
-/* locks.h - Thread synchronization primitives. x86-64 implementation.
+/* locks.h - Thread synchronization primitives. X86/x86-64 implementation.
 
    Copyright (C) 2002  Free Software Foundation
 
@@ -21,7 +21,9 @@ typedef size_t obj_addr_t;	/* Integer type big enough for object	*/
 // Assumed to have acquire semantics, i.e. later memory operations
 // cannot execute before the compare_and_swap finishes.
 inline static bool
-compare_and_swap(volatile obj_addr_t *addr, obj_addr_t old, obj_addr_t new_val)
+compare_and_swap(volatile obj_addr_t *addr,
+		 obj_addr_t old,
+		 obj_addr_t new_val)
 {
   char result;
 #ifdef __x86_64__
@@ -31,7 +33,7 @@ compare_and_swap(volatile obj_addr_t *addr, obj_addr_t old, obj_addr_t new_val)
 	      : "memory");
 #else
   __asm__ __volatile__("lock; cmpxchgl %2, %0; setz %1"
-		       : "=m"(*(addr)), "=q"(result)
+		       : "=m"(*addr), "=q"(result)
 		       : "r" (new_val), "a"(old), "m"(*addr)
 		       : "memory");
 #endif
@@ -41,7 +43,7 @@ compare_and_swap(volatile obj_addr_t *addr, obj_addr_t old, obj_addr_t new_val)
 // Set *addr to new_val with release semantics, i.e. making sure
 // that prior loads and stores complete before this
 // assignment.
-// On x86-64, the hardware shouldn't reorder reads and writes,
+// On X86/x86-64, the hardware shouldn't reorder reads and writes,
 // so we just have to convince gcc not to do it either.
 inline static void
 release_set(volatile obj_addr_t *addr, obj_addr_t new_val)
@@ -63,7 +65,7 @@ compare_and_swap_release(volatile obj_addr_t *addr,
 
 // Ensure that subsequent instructions do not execute on stale
 // data that was loaded from memory before the barrier.
-// On x86-64, the hardware ensures that reads are properly ordered.
+// On X86/x86-64, the hardware ensures that reads are properly ordered.
 inline static void
 read_barrier()
 {
@@ -74,8 +76,8 @@ read_barrier()
 inline static void
 write_barrier()
 {
-  /* x86-64 does not reorder writes. We just need to ensure that gcc also
-     doesn't.  */
+  /* x86-64/X86 does not reorder writes. We just need to ensure that
+     gcc also doesn't.  */
   __asm__ __volatile__(" " : : : "memory");
 }
 #endif
