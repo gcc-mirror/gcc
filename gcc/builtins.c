@@ -47,6 +47,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "langhooks.h"
 #include "basic-block.h"
 #include "tree-mudflap.h"
+#include "tree-flow.h"
 
 #ifndef PAD_VARARGS_DOWN
 #define PAD_VARARGS_DOWN BYTES_BIG_ENDIAN
@@ -8142,7 +8143,6 @@ static tree
 fold_builtin_memory_op (tree arglist, tree type, bool ignore, int endp)
 {
   tree dest, src, len, destvar, srcvar, expr;
-  unsigned HOST_WIDE_INT length;
 
   if (! validate_arglist (arglist,
 			  POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -8162,12 +8162,12 @@ fold_builtin_memory_op (tree arglist, tree type, bool ignore, int endp)
     expr = len;
   else
     {
+      tree srctype, desttype;
       if (endp == 3)
 	{
-          unsigned int src_align
-	     = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
-          unsigned int dest_align
-	     = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+          int src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
+          int dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+
 	  /* Both DEST and SRC must be pointer types. 
 	     ??? This is what old code did.  Is the testing for pointer types
 	     really mandatory?
@@ -8175,64 +8175,72 @@ fold_builtin_memory_op (tree arglist, tree type, bool ignore, int endp)
 	     If either SRC is readonly or length is 1, we can use memcpy.  */
 	  if (dest_align && src_align
 	      && (readonly_data_expr (src)
-		  || integer_onep (len)))
+	          || (host_integerp (len, 1)
+		      && (MIN (src_align, dest_align) / BITS_PER_UNIT <=
+			  tree_low_cst (len, 1)))))
 	    {
 	      tree fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
 	      if (!fn)
 		return 0;
 	      return build_function_call_expr (fn, arglist);
 	    }
+	  return 0;
 	}
-      if (! host_integerp (len, 1))
+
+      if (!host_integerp (len, 0))
+	return 0;
+      /* FIXME:
+         This logic lose for arguments like (type *)malloc (sizeof (type)),
+         since we strip the casts of up to VOID return value from malloc.
+	 Perhaps we ought to inherit type from non-VOID argument here?  */
+      STRIP_NOPS (src);
+      STRIP_NOPS (dest);
+      srctype = TREE_TYPE (TREE_TYPE (src));
+      desttype = TREE_TYPE (TREE_TYPE (dest));
+      if (!srctype || !desttype
+	  || !TYPE_SIZE_UNIT (srctype)
+	  || !TYPE_SIZE_UNIT (desttype)
+	  || TREE_CODE (TYPE_SIZE_UNIT (srctype)) != INTEGER_CST
+	  || TREE_CODE (TYPE_SIZE_UNIT (desttype)) != INTEGER_CST
+	  || !operand_equal_p (TYPE_SIZE_UNIT (srctype), len, 0)
+	  || !operand_equal_p (TYPE_SIZE_UNIT (desttype), len, 0))
 	return 0;
 
-      if (TREE_SIDE_EFFECTS (dest) || TREE_SIDE_EFFECTS (src))
+      if (get_pointer_alignment (dest, BIGGEST_ALIGNMENT) 
+	  < (int) TYPE_ALIGN (desttype)
+	  || (get_pointer_alignment (src, BIGGEST_ALIGNMENT) 
+	      < (int) TYPE_ALIGN (srctype)))
 	return 0;
 
-      destvar = dest;
-      STRIP_NOPS (destvar);
-      if (TREE_CODE (destvar) != ADDR_EXPR)
-	return 0;
+      if (!ignore)
+        dest = builtin_save_expr (dest);
 
-      destvar = TREE_OPERAND (destvar, 0);
-      if (TREE_THIS_VOLATILE (destvar))
-	return 0;
-
-      if (!INTEGRAL_TYPE_P (TREE_TYPE (destvar))
-	  && !POINTER_TYPE_P (TREE_TYPE (destvar))
-	  && !SCALAR_FLOAT_TYPE_P (TREE_TYPE (destvar)))
-	return 0;
-
-      if (! var_decl_component_p (destvar))
-	return 0;
-
-      srcvar = src;
-      STRIP_NOPS (srcvar);
-      if (TREE_CODE (srcvar) != ADDR_EXPR)
-	return 0;
-
-      srcvar = TREE_OPERAND (srcvar, 0);
+      srcvar = build_fold_indirect_ref (src);
       if (TREE_THIS_VOLATILE (srcvar))
 	return 0;
-
-      if (!INTEGRAL_TYPE_P (TREE_TYPE (srcvar))
-	  && !POINTER_TYPE_P (TREE_TYPE (srcvar))
-	  && !SCALAR_FLOAT_TYPE_P (TREE_TYPE (srcvar)))
+      /* With memcpy, it is possible to bypass aliasing rules, so without
+         this check i. e. execute/20060930-2.c would be misoptimized, because
+	 it use conflicting alias set to hold argument for the memcpy call.
+	 This check is probably unnecesary with -fno-strict-aliasing. 
+	 Similarly for destvar.  See also PR29286.  */
+      if (!var_decl_component_p (srcvar)
+	  /* Accept: memcpy (*char_var, "test", 1); that simplify
+	     to char_var='t';  */
+	  || is_gimple_min_invariant (srcvar)
+	  || readonly_data_expr (src))
 	return 0;
 
-      if (! var_decl_component_p (srcvar))
+      destvar = build_fold_indirect_ref (dest);
+      if (TREE_THIS_VOLATILE (destvar))
+	return 0;
+      if (!var_decl_component_p (destvar))
 	return 0;
 
-      length = tree_low_cst (len, 1);
-      if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (destvar))) != length
-	  || get_pointer_alignment (dest, BIGGEST_ALIGNMENT) / BITS_PER_UNIT
-	     < (int) length
-	  || GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (srcvar))) != length
-	  || get_pointer_alignment (src, BIGGEST_ALIGNMENT) / BITS_PER_UNIT
-	     < (int) length)
-	return 0;
-
-      if ((INTEGRAL_TYPE_P (TREE_TYPE (srcvar))
+      if (srctype == desttype
+	  || (in_ssa_p
+	      && tree_ssa_useless_type_conversion_1 (desttype, srctype)))
+	expr = srcvar;
+      else if ((INTEGRAL_TYPE_P (TREE_TYPE (srcvar))
 	   || POINTER_TYPE_P (TREE_TYPE (srcvar)))
 	  && (INTEGRAL_TYPE_P (TREE_TYPE (destvar))
 	      || POINTER_TYPE_P (TREE_TYPE (destvar))))
