@@ -1,3 +1,8 @@
+2006-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/29735
+	* g++.dg/warn/main-3.C: New test.
+
 2006-11-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29976
