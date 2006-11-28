@@ -24,6 +24,12 @@ proc ${tool}_check_compile {testcase option objname gcc_output} {
     global tool
     set fatal_signal "*cc: Internal compiler error: program*got fatal signal"
  
+    if {[istarget spu-*-*] && [string match "*exceeds local store range*" $gcc_output]} {
+	setup_xfail [istarget]
+	${tool}_fail $testcase $option
+	return 0
+    }
+
     if [string match "$fatal_signal 6" $gcc_output] then {
 	${tool}_fail $testcase "Got Signal 6, $option"
 	return 0
