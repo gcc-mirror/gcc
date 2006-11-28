@@ -110,6 +110,8 @@ void tree_function_versioning (tree, tree, varray_type, bool);
 extern tree remap_decl (tree decl, copy_body_data *id);
 extern tree remap_type (tree type, copy_body_data *id);
 
+extern HOST_WIDE_INT estimated_stack_frame_size (void);
+
 /* 0 if we should not perform inlining.
    1 if we should expand functions calls inline at the tree level.
    2 if we should consider *all* functions to be inline

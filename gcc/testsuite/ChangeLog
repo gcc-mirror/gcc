@@ -1,3 +1,7 @@
+2006-11-28  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/winline-1.c: New test.
+
 2006-11-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.dg/pack-test-1.c: Use __alignof__ to determine natural

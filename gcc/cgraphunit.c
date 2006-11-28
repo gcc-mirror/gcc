@@ -950,6 +950,9 @@ cgraph_analyze_function (struct cgraph_node *node)
   /* First kill forward declaration so reverse inlining works properly.  */
   cgraph_create_edges (node, decl);
 
+  node->local.estimated_self_stack_size = estimated_stack_frame_size ();
+  node->global.estimated_stack_size = node->local.estimated_self_stack_size;
+  node->global.stack_frame_offset = 0;
   node->local.inlinable = tree_inlinable_function_p (decl);
   if (!flag_unit_at_a_time)
     node->local.self_insns = estimate_num_insns (decl);

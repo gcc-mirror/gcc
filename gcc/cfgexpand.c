@@ -39,6 +39,7 @@ Boston, MA 02110-1301, USA.  */
 #include "toplev.h"
 #include "debug.h"
 #include "params.h"
+#include "tree-inline.h"
 
 /* Verify that there is exactly single jump instruction since last and attach
    REG_BR_PROB note specifying probability.
@@ -583,6 +584,28 @@ expand_stack_vars (bool (*pred) (tree))
     }
 }
 
+/* Take into account all sizes of partitions and reset DECL_RTLs.  */
+static HOST_WIDE_INT
+account_stack_vars (void)
+{
+  size_t si, j, i, n = stack_vars_num;
+  HOST_WIDE_INT size = 0;
+
+  for (si = 0; si < n; ++si)
+    {
+      i = stack_vars_sorted[si];
+
+      /* Skip variables that aren't partition representatives, for now.  */
+      if (stack_vars[i].representative != i)
+	continue;
+
+      size += stack_vars[i].size;
+      for (j = i; j != EOC; j = stack_vars[j].next)
+	SET_DECL_RTL (stack_vars[j].decl, NULL);
+    }
+  return size;
+}
+
 /* A subroutine of expand_one_var.  Called to immediately assign rtl
    to a variable to be allocated in the stack frame.  */
 
@@ -721,31 +744,53 @@ defer_stack_allocation (tree var, bool toplevel)
 
 /* A subroutine of expand_used_vars.  Expand one variable according to
    its flavor.  Variables to be placed on the stack are not actually
-   expanded yet, merely recorded.  */
+   expanded yet, merely recorded.  
+   When REALLY_EXPAND is false, only add stack values to be allocated.
+   Return stack usage this variable is supposed to take.
+*/
 
-static void
-expand_one_var (tree var, bool toplevel)
+static HOST_WIDE_INT
+expand_one_var (tree var, bool toplevel, bool really_expand)
 {
   if (TREE_CODE (var) != VAR_DECL)
-    lang_hooks.expand_decl (var);
+    {
+      if (really_expand)
+        lang_hooks.expand_decl (var);
+    }
   else if (DECL_EXTERNAL (var))
     ;
   else if (DECL_HAS_VALUE_EXPR_P (var))
     ;
   else if (TREE_STATIC (var))
-    expand_one_static_var (var);
+    {
+      if (really_expand)
+        expand_one_static_var (var);
+    }
   else if (DECL_RTL_SET_P (var))
     ;
   else if (TREE_TYPE (var) == error_mark_node)
-    expand_one_error_var (var);
+    {
+      if (really_expand)
+        expand_one_error_var (var);
+    }
   else if (DECL_HARD_REGISTER (var))
-    expand_one_hard_reg_var (var);
+    {
+      if (really_expand)
+        expand_one_hard_reg_var (var);
+    }
   else if (use_register_for_decl (var))
-    expand_one_register_var (var);
+    {
+      if (really_expand)
+        expand_one_register_var (var);
+    }
   else if (defer_stack_allocation (var, toplevel))
     add_stack_var (var);
   else
-    expand_one_stack_var (var);
+    {
+      expand_one_stack_var (var);
+      return tree_low_cst (DECL_SIZE_UNIT (var), 1);
+    }
+  return 0;
 }
 
 /* A subroutine of expand_used_vars.  Walk down through the BLOCK tree
@@ -770,7 +815,7 @@ expand_used_vars_for_block (tree block, bool toplevel)
 	   care of this.  */
 	|| (!flag_unit_at_a_time && TREE_STATIC (t)
 	    && DECL_PRESERVE_P (t)))
-      expand_one_var (t, toplevel);
+      expand_one_var (t, toplevel, true);
 
   this_sv_num = stack_vars_num;
 
@@ -947,6 +992,122 @@ create_stack_guard (void)
   cfun->stack_protect_guard = guard;
 }
 
+/* A subroutine of expand_used_vars.  Walk down through the BLOCK tree
+   expanding variables.  Those variables that can be put into registers
+   are allocated pseudos; those that can't are put on the stack.
+
+   TOPLEVEL is true if this is the outermost BLOCK.  */
+
+static HOST_WIDE_INT
+account_used_vars_for_block (tree block, bool toplevel)
+{
+  size_t i, j, old_sv_num, this_sv_num, new_sv_num;
+  tree t;
+  HOST_WIDE_INT size = 0;
+
+  old_sv_num = toplevel ? 0 : stack_vars_num;
+
+  /* Expand all variables at this level.  */
+  for (t = BLOCK_VARS (block); t ; t = TREE_CHAIN (t))
+    if (TREE_USED (t))
+      size += expand_one_var (t, toplevel, false);
+
+  this_sv_num = stack_vars_num;
+
+  /* Expand all variables at containing levels.  */
+  for (t = BLOCK_SUBBLOCKS (block); t ; t = BLOCK_CHAIN (t))
+    size += account_used_vars_for_block (t, false);
+
+  /* Since we do not track exact variable lifetimes (which is not even
+     possible for variables whose address escapes), we mirror the block
+     tree in the interference graph.  Here we cause all variables at this
+     level, and all sublevels, to conflict.  Do make certain that a
+     variable conflicts with itself.  */
+  if (old_sv_num < this_sv_num)
+    {
+      new_sv_num = stack_vars_num;
+      resize_stack_vars_conflict (new_sv_num);
+
+      for (i = old_sv_num; i < new_sv_num; ++i)
+	for (j = i < this_sv_num ? i+1 : this_sv_num; j-- > old_sv_num ;)
+	  add_stack_var_conflict (i, j);
+    }
+  return size;
+}
+
+/* Prepare for expanding variables.  */
+static void 
+init_vars_expansion (void)
+{
+  tree t;
+  /* Set TREE_USED on all variables in the unexpanded_var_list.  */
+  for (t = cfun->unexpanded_var_list; t; t = TREE_CHAIN (t))
+    TREE_USED (TREE_VALUE (t)) = 1;
+
+  /* Clear TREE_USED on all variables associated with a block scope.  */
+  clear_tree_used (DECL_INITIAL (current_function_decl));
+
+  /* Initialize local stack smashing state.  */
+  has_protected_decls = false;
+  has_short_buffer = false;
+}
+
+/* Free up stack variable graph data.  */
+static void
+fini_vars_expansion (void)
+{
+  XDELETEVEC (stack_vars);
+  XDELETEVEC (stack_vars_sorted);
+  XDELETEVEC (stack_vars_conflict);
+  stack_vars = NULL;
+  stack_vars_alloc = stack_vars_num = 0;
+  stack_vars_conflict = NULL;
+  stack_vars_conflict_alloc = 0;
+}
+
+HOST_WIDE_INT
+estimated_stack_frame_size (void)
+{
+  HOST_WIDE_INT size = 0;
+  tree t, outer_block = DECL_INITIAL (current_function_decl);
+
+  init_vars_expansion ();
+
+  /* At this point all variables on the unexpanded_var_list with TREE_USED
+     set are not associated with any block scope.  Lay them out.  */
+  for (t = cfun->unexpanded_var_list; t; t = TREE_CHAIN (t))
+    {
+      tree var = TREE_VALUE (t);
+
+      if (TREE_USED (var))
+        size += expand_one_var (var, true, false);
+      TREE_USED (var) = 1;
+    }
+  size += account_used_vars_for_block (outer_block, true);
+  if (stack_vars_num > 0)
+    {
+      /* Due to the way alias sets work, no variables with non-conflicting
+	 alias sets may be assigned the same address.  Add conflicts to
+	 reflect this.  */
+      add_alias_set_conflicts ();
+
+      /* If stack protection is enabled, we don't share space between
+	 vulnerable data and non-vulnerable data.  */
+      if (flag_stack_protect)
+	add_stack_protection_conflicts ();
+
+      /* Now that we have collected all stack variables, and have computed a
+	 minimal interference graph, attempt to save some stack space.  */
+      partition_stack_vars ();
+      if (dump_file)
+	dump_stack_var_partition ();
+
+      size += account_stack_vars ();
+      fini_vars_expansion ();
+    }
+  return size;
+}
+
 /* Expand all variables used in the function.  */
 
 static void
@@ -961,16 +1122,7 @@ expand_used_vars (void)
     frame_phase = off ? align - off : 0;
   }
 
-  /* Set TREE_USED on all variables in the unexpanded_var_list.  */
-  for (t = cfun->unexpanded_var_list; t; t = TREE_CHAIN (t))
-    TREE_USED (TREE_VALUE (t)) = 1;
-
-  /* Clear TREE_USED on all variables associated with a block scope.  */
-  clear_tree_used (outer_block);
-
-  /* Initialize local stack smashing state.  */
-  has_protected_decls = false;
-  has_short_buffer = false;
+  init_vars_expansion ();
 
   /* At this point all variables on the unexpanded_var_list with TREE_USED
      set are not associated with any block scope.  Lay them out.  */
@@ -1005,7 +1157,7 @@ expand_used_vars (void)
       TREE_USED (var) = 1;
 
       if (expand_now)
-	expand_one_var (var, true);
+	expand_one_var (var, true, true);
     }
   cfun->unexpanded_var_list = NULL_TREE;
 
@@ -1059,14 +1211,7 @@ expand_used_vars (void)
 
       expand_stack_vars (NULL);
 
-      /* Free up stack variable graph data.  */
-      XDELETEVEC (stack_vars);
-      XDELETEVEC (stack_vars_sorted);
-      XDELETEVEC (stack_vars_conflict);
-      stack_vars = NULL;
-      stack_vars_alloc = stack_vars_num = 0;
-      stack_vars_conflict = NULL;
-      stack_vars_conflict_alloc = 0;
+      fini_vars_expansion ();
     }
 
   /* If the target requires that FRAME_OFFSET be aligned, do it.  */
