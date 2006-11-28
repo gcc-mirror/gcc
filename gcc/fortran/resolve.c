@@ -5523,7 +5523,9 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
     return FAILURE;
 
   st = gfc_find_symtree (gfc_current_ns->sym_root, sym->name);
-  if (st && st->ambiguous && !sym->attr.generic)
+  if (st && st->ambiguous
+	 && sym->attr.referenced
+	 && !sym->attr.generic)
     {
       gfc_error ("Procedure %s at %L is ambiguous",
 		 sym->name, &sym->declared_at);
