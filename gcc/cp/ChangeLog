@@ -1,3 +1,9 @@
+2006-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/29735
+	* decl.c (grokfndecl): Check main's type after applying
+	attributes, not before.
+
 2006-11-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (build_vcall_offset_vtbl_entries): Do not add vcall
