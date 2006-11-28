@@ -702,7 +702,7 @@ arg_needs_copy_p (tree param)
     return false;
 		
   /* Parameters that are only defined but never used need not be copied.  */
-  def = default_def (param);
+  def = gimple_default_def (cfun, param);
   if (!def)
     return false;
 
@@ -826,7 +826,7 @@ add_virtual_phis (void)
 
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
-      if (!is_gimple_reg (var) && default_def (var) != NULL_TREE)
+      if (!is_gimple_reg (var) && gimple_default_def (cfun, var) != NULL_TREE)
 	mark_sym_for_renaming (var);
     }
 
@@ -911,7 +911,7 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 	       param = TREE_CHAIN (param))
 	    if (arg_needs_copy_p (param))
 	      {
-		tree name = default_def (param);
+		tree name = gimple_default_def (cfun, param);
 		tree new_name = make_ssa_name (param, SSA_NAME_DEF_STMT (name));
 		tree phi;
 

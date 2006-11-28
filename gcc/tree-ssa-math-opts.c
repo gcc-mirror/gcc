@@ -469,10 +469,10 @@ execute_cse_reciprocals (void)
 #endif
 
   for (arg = DECL_ARGUMENTS (cfun->decl); arg; arg = TREE_CHAIN (arg))
-    if (default_def (arg)
+    if (gimple_default_def (cfun, arg)
 	&& FLOAT_TYPE_P (TREE_TYPE (arg))
 	&& is_gimple_reg (arg))
-      execute_cse_reciprocals_1 (NULL, default_def (arg));
+      execute_cse_reciprocals_1 (NULL, gimple_default_def (cfun, arg));
 
   FOR_EACH_BB (bb)
     {

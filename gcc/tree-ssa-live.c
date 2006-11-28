@@ -736,7 +736,7 @@ calculate_live_on_entry (var_map map)
 	  var = partition_to_var (map, i);
 	  stmt = SSA_NAME_DEF_STMT (var);
 	  tmp = bb_for_stmt (stmt);
-	  d = default_def (SSA_NAME_VAR (var));
+	  d = gimple_default_def (cfun, SSA_NAME_VAR (var));
 
 	  if (bitmap_bit_p (live_entry_blocks (live, i), entry_block))
 	    {

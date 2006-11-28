@@ -165,9 +165,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map))) 
 htab_t heapvar_for_stmt;
 
-/* One variable to represent all non-local accesses.  */
-tree nonlocal_all;
-
 static bool use_field_sensitive = true;
 static int in_ipa_mode = 0;
 static bitmap_obstack predbitmap_obstack;
@@ -1836,7 +1833,7 @@ get_constraint_exp_from_ssa_var (tree t)
      decl.  */
   if (TREE_CODE (t) == SSA_NAME 
       && TREE_CODE (SSA_NAME_VAR (t)) == PARM_DECL 
-      && default_def (SSA_NAME_VAR (t)) == t)
+      && gimple_default_def (cfun, SSA_NAME_VAR (t)) == t)
     return get_constraint_exp_from_ssa_var (SSA_NAME_VAR (t));
 
   cexpr.type = SCALAR;
@@ -2101,7 +2098,7 @@ create_nonlocal_var (tree type)
 {
   tree nonlocal = create_tmp_var_raw (type, "NONLOCAL");
   
-  if (referenced_vars)
+  if (gimple_referenced_vars (cfun))
     add_referenced_var (nonlocal);
 
   DECL_EXTERNAL (nonlocal) = 1;
@@ -2224,7 +2221,7 @@ get_constraint_for (tree t, VEC (ce_s, heap) **results)
 		    heapvar = create_tmp_var_raw (ptr_type_node, "HEAP");
 		    DECL_EXTERNAL (heapvar) = 1;
 		    get_var_ann (heapvar)->is_heapvar = 1;
-		    if (referenced_vars)
+		    if (gimple_referenced_vars (cfun))
 		      add_referenced_var (heapvar);
 		    heapvar_insert (t, heapvar);
 		  }
@@ -2659,7 +2656,7 @@ update_alias_info (tree stmt, struct alias_info *ai)
   addr_taken = addresses_taken (stmt);
   if (addr_taken)
     {
-      bitmap_ior_into (addressable_vars, addr_taken);
+      bitmap_ior_into (gimple_addressable_vars (cfun), addr_taken);
 
       /* If STMT is an escape point, all the addresses taken by it are
 	 call-clobbered.  */
@@ -2695,7 +2692,10 @@ update_alias_info (tree stmt, struct alias_info *ai)
 	 to the set of addressable variables.  */
       if (TREE_CODE (op) == ADDR_EXPR)
 	{
+	  bitmap addressable_vars = gimple_addressable_vars (cfun);
+
 	  gcc_assert (TREE_CODE (stmt) == PHI_NODE);
+	  gcc_assert (addressable_vars);
 
 	  /* PHI nodes don't have annotations for pinning the set
 	     of addresses taken, so we collect them here.
@@ -2704,7 +2704,8 @@ update_alias_info (tree stmt, struct alias_info *ai)
 	     so that they can be treated like regular statements?
 	     Currently, they are treated as second-class
 	     statements.  */
-	  add_to_addressable_set (TREE_OPERAND (op, 0), &addressable_vars);
+	  add_to_addressable_set (TREE_OPERAND (op, 0),
+                                  &addressable_vars);
 	  continue;
 	}
 
@@ -3608,7 +3609,7 @@ find_global_initializers (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
     case VAR_DECL:
       /* We might not have walked this because we skip
 	 DECL_EXTERNALs during the initial scan.  */
-      if (referenced_vars)
+      if (gimple_referenced_vars (cfun))
 	{
 	  get_var_ann (t);
 	  if (referenced_var_check_and_insert (t))
@@ -3867,7 +3868,7 @@ intra_create_variable_infos (void)
 					    "PARM_NOALIAS");
 	      get_var_ann (heapvar)->is_heapvar = 1;
 	      DECL_EXTERNAL (heapvar) = 1;
-	      if (referenced_vars)
+	      if (gimple_referenced_vars (cfun))
 		add_referenced_var (heapvar);
 	      heapvar_insert (t, heapvar);
 	    }
@@ -3891,13 +3892,14 @@ intra_create_variable_infos (void)
 	    make_constraint_from_escaped (p);
 	}
     }
-  if (!nonlocal_all)
-    nonlocal_all = create_nonlocal_var (void_type_node);
+  if (!gimple_nonlocal_all (cfun))
+    cfun->gimple_df->nonlocal_all = create_nonlocal_var (void_type_node);
 
   /* Create variable info for the nonlocal var if it does not
      exist.  */
-  nonlocal_vars_id = create_variable_info_for (nonlocal_all,
-					       get_name (nonlocal_all));
+  nonlocal_vars_id = create_variable_info_for (gimple_nonlocal_all (cfun),
+					       get_name (gimple_nonlocal_all
+							 (cfun)));
   nonlocal_vi = get_varinfo (nonlocal_vars_id);
   nonlocal_vi->is_artificial_var = 1;
   nonlocal_vi->is_heap_var = 1; 
@@ -3999,7 +4001,7 @@ find_what_p_points_to (tree p)
      decl.  */
   if (TREE_CODE (p) == SSA_NAME 
       && TREE_CODE (SSA_NAME_VAR (p)) == PARM_DECL 
-      && default_def (SSA_NAME_VAR (p)) == p)
+      && gimple_default_def (cfun, SSA_NAME_VAR (p)) == p)
     lookup_p = SSA_NAME_VAR (p);
 
   if (lookup_id_for_tree (lookup_p, &id))
@@ -4591,13 +4593,13 @@ init_alias_heapvars (void)
 {
   heapvar_for_stmt = htab_create_ggc (11, tree_map_hash, tree_map_eq,
 				      NULL);
-  nonlocal_all = NULL_TREE;
+  cfun->gimple_df->nonlocal_all = NULL_TREE;
 }
 
 void
 delete_alias_heapvars (void)
 {
-  nonlocal_all = NULL_TREE;
+  cfun->gimple_df->nonlocal_all = NULL_TREE;
   htab_delete (heapvar_for_stmt);
 }
 
