@@ -57,13 +57,6 @@ Boston, MA 02110-1301, USA.  */
    We could also use a zone allocator for these objects since they have
    a very well defined lifetime.  If someone wants to experiment with that
    this is the place to try it.  */
-   
-/* Array of all SSA_NAMEs used in the function.  */
-VEC(tree,gc) *ssa_names;
-
-/* Free list of SSA_NAMEs.  This list is wiped at the end of each function
-   after we leave SSA form.  */
-static GTY (()) tree free_ssanames;
 
 /* Version numbers with special meanings.  We start allocating new version
    numbers after the special ones.  */
@@ -79,7 +72,7 @@ unsigned int ssa_name_nodes_created;
 void
 init_ssanames (void)
 {
-  ssa_names = VEC_alloc (tree, gc, 50);
+  SSANAMES (cfun) = VEC_alloc (tree, gc, 50);
 
   /* Version 0 is special, so reserve the first slot in the table.  Though
      currently unused, we may use version 0 in alias analysis as part of
@@ -88,8 +81,8 @@ init_ssanames (void)
 
      We use VEC_quick_push here because we know that SSA_NAMES has at
      least 50 elements reserved in it.  */
-  VEC_quick_push (tree, ssa_names, NULL_TREE);
-  free_ssanames = NULL;
+  VEC_quick_push (tree, SSANAMES (cfun), NULL_TREE);
+  FREE_SSANAMES (cfun) = NULL;
 }
 
 /* Finalize management of SSA_NAMEs.  */
@@ -97,8 +90,8 @@ init_ssanames (void)
 void
 fini_ssanames (void)
 {
-  VEC_free (tree, gc, ssa_names);
-  free_ssanames = NULL;
+  VEC_free (tree, gc, SSANAMES (cfun));
+  FREE_SSANAMES (cfun) = NULL;
 }
 
 /* Dump some simple statistics regarding the re-use of SSA_NAME nodes.  */
@@ -129,10 +122,10 @@ make_ssa_name (tree var, tree stmt)
   gcc_assert (!stmt || EXPR_P (stmt) || TREE_CODE (stmt) == PHI_NODE);
 
   /* If our free list has an element, then use it.  */
-  if (free_ssanames)
+  if (FREE_SSANAMES (cfun))
     {
-      t = free_ssanames;
-      free_ssanames = TREE_CHAIN (free_ssanames);
+      t = FREE_SSANAMES (cfun);
+      FREE_SSANAMES (cfun) = TREE_CHAIN (FREE_SSANAMES (cfun));
 #ifdef GATHER_STATISTICS
       ssa_name_nodes_reused++;
 #endif
@@ -140,13 +133,13 @@ make_ssa_name (tree var, tree stmt)
       /* The node was cleared out when we put it on the free list, so
 	 there is no need to do so again here.  */
       gcc_assert (ssa_name (SSA_NAME_VERSION (t)) == NULL);
-      VEC_replace (tree, ssa_names, SSA_NAME_VERSION (t), t);
+      VEC_replace (tree, SSANAMES (cfun), SSA_NAME_VERSION (t), t);
     }
   else
     {
       t = make_node (SSA_NAME);
       SSA_NAME_VERSION (t) = num_ssa_names;
-      VEC_safe_push (tree, gc, ssa_names, t);
+      VEC_safe_push (tree, gc, SSANAMES (cfun), t);
 #ifdef GATHER_STATISTICS
       ssa_name_nodes_created++;
 #endif
@@ -183,7 +176,7 @@ release_ssa_name (tree var)
 
   /* Never release the default definition for a symbol.  It's a
      special SSA name that should always exist once it's created.  */
-  if (var == default_def (SSA_NAME_VAR (var)))
+  if (var == gimple_default_def (cfun, SSA_NAME_VAR (var)))
     return;
 
   /* If VAR has been registered for SSA updating, don't remove it.
@@ -213,7 +206,8 @@ release_ssa_name (tree var)
       while (imm->next != imm)
 	delink_imm_use (imm->next);
 
-      VEC_replace (tree, ssa_names, SSA_NAME_VERSION (var), NULL_TREE);
+      VEC_replace (tree, SSANAMES (cfun),
+		   SSA_NAME_VERSION (var), NULL_TREE);
       memset (var, 0, tree_size (var));
 
       imm->prev = imm;
@@ -234,8 +228,8 @@ release_ssa_name (tree var)
       SSA_NAME_IN_FREE_LIST (var) = 1;
 
       /* And finally link it into the free list.  */
-      TREE_CHAIN (var) = free_ssanames;
-      free_ssanames = var;
+      TREE_CHAIN (var) = FREE_SSANAMES (cfun);
+      FREE_SSANAMES (cfun) = var;
     }
 }
 
@@ -291,7 +285,7 @@ release_defs (tree stmt)
 
   /* Make sure that we are in SSA.  Otherwise, operand cache may point
      to garbage.  */
-  gcc_assert (in_ssa_p);
+  gcc_assert (gimple_in_ssa_p (cfun));
 
   FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_ALL_DEFS)
     if (TREE_CODE (def) == SSA_NAME)
@@ -307,5 +301,3 @@ replace_ssa_name_symbol (tree ssa_name, tree sym)
   SSA_NAME_VAR (ssa_name) = sym;
   TREE_TYPE (ssa_name) = TREE_TYPE (sym);
 }
-
-#include "gt-tree-ssanames.h"

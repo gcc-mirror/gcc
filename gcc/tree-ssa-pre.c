@@ -3660,9 +3660,9 @@ compute_avail (void)
        param;
        param = TREE_CHAIN (param))
     {
-      if (default_def (param) != NULL)
+      if (gimple_default_def (cfun, param) != NULL)
 	{
-	  tree def = default_def (param);
+	  tree def = gimple_default_def (cfun, param);
 
 	  vn_lookup_or_add (def, NULL);
 	  bitmap_insert_into_set (TMP_GEN (ENTRY_BLOCK_PTR), def);
@@ -3676,9 +3676,9 @@ compute_avail (void)
   if (cfun->static_chain_decl)
     {
       param = cfun->static_chain_decl;
-      if (default_def (param) != NULL)
+      if (gimple_default_def (cfun, param) != NULL)
 	{
-	  tree def = default_def (param);
+	  tree def = gimple_default_def (cfun, param);
 
 	  vn_lookup_or_add (def, NULL);
 	  bitmap_insert_into_set (TMP_GEN (ENTRY_BLOCK_PTR), def);

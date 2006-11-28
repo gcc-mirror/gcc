@@ -127,14 +127,6 @@ cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
   return retval;
 }
 
-/* A list of all the noreturn calls passed to modify_stmt.
-   cleanup_control_flow uses it to detect cases where a mid-block
-   indirect call has been turned into a noreturn call.  When this
-   happens, all the instructions after the call are no longer
-   reachable and must be deleted as dead.  */
-
-VEC(tree,gc) *modified_noreturn_calls;
-
 /* Try to remove superfluous control structures.  */
 
 static bool
@@ -146,13 +138,14 @@ cleanup_control_flow (void)
   tree stmt;
 
   /* Detect cases where a mid-block call is now known not to return.  */
-  while (VEC_length (tree, modified_noreturn_calls))
-    {
-      stmt = VEC_pop (tree, modified_noreturn_calls);
-      bb = bb_for_stmt (stmt);
-      if (bb != NULL && last_stmt (bb) != stmt && noreturn_call_p (stmt))
-	split_block (bb, stmt);
-    }
+  if (cfun->gimple_df)
+    while (VEC_length (tree, MODIFIED_NORETURN_CALLS (cfun)))
+      {
+	stmt = VEC_pop (tree, MODIFIED_NORETURN_CALLS (cfun));
+	bb = bb_for_stmt (stmt);
+	if (bb != NULL && last_stmt (bb) != stmt && noreturn_call_p (stmt))
+	  split_block (bb, stmt);
+      }
 
   FOR_EACH_BB (bb)
     {

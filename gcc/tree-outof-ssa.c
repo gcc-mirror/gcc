@@ -870,7 +870,7 @@ coalesce_ssa_name (var_map map, int flags)
   for (x = 0 ; x < num; x++)
     {
       tree var = partition_to_var (map, x);
-      if (default_def (SSA_NAME_VAR (var)) == var)
+      if (gimple_default_def (cfun, SSA_NAME_VAR (var)) == var)
 	SET_BIT (live, x);
     }
 
@@ -2543,7 +2543,7 @@ rewrite_out_of_ssa (void)
   /* Flush out flow graph and SSA data.  */
   delete_var_map (map);
 
-  in_ssa_p = false;
+  cfun->gimple_df->in_ssa_p = false;
   return 0;
 }
 

@@ -173,7 +173,7 @@ memory_ssa_name_same (tree *expr_p, int *walk_subtrees ATTRIBUTE_UNUSED,
 
   /* If we've found a default definition, then there's no problem.  Both
      stores will post-dominate it.  And def_bb will be NULL.  */
-  if (expr == default_def (SSA_NAME_VAR (expr)))
+  if (expr == gimple_default_def (cfun, SSA_NAME_VAR (expr)))
     return NULL_TREE;
 
   def_stmt = SSA_NAME_DEF_STMT (expr);

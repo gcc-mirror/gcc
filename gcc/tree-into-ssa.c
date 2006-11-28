@@ -55,9 +55,6 @@ Boston, MA 02110-1301, USA.  */
    Graph. ACM Transactions on Programming Languages and Systems,
    13(4):451-490, October 1991.  */
 
-/* True if the code is in ssa form.  */
-bool in_ssa_p;
-
 /* Structure to map a variable VAR to the set of blocks that contain
    definitions for VAR.  */
 struct def_blocks_d
@@ -1074,7 +1071,7 @@ find_def_blocks_for (tree var)
 static inline tree
 get_default_def_for (tree sym)
 {
-  tree ddef = default_def (sym);
+  tree ddef = gimple_default_def (cfun, sym);
 
   if (ddef == NULL_TREE)
     {
@@ -2122,7 +2119,7 @@ rewrite_into_ssa (void)
   sbitmap_free (interesting_blocks);
 
   timevar_pop (TV_TREE_SSA_OTHER);
-  in_ssa_p = true;
+  cfun->gimple_df->in_ssa_p = true;
   return 0;
 }
 

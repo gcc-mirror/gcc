@@ -1,5 +1,104 @@
 2006-11-28  Jan Hubicka  <jh@suse.cz>
 
+	Privatize SSA variables into gimple_df.
+	* tree-flow-inline.h
+	(gimple_in_ssa_p, gimple_aliases_computed_p, gimple_addressable_vars,
+	gimple_call_clobbered_vars, gimple_referenced_vars, gimple_global_var,
+	gimple_nonlocal_all): New accessors.
+	(first_referenced_var): Update.
+	(mark_stmt_modified): Update.
+	(is_call_clobbered): Update.
+	(mark_call_clobbered): Update.
+	(clear_call_clobbered): Update.
+	(mark_non_addressable): Update.
+	* tree-vrp.c (get_value_range): Update.
+	* tree-into-ssa.c (in_ssa_p): Kill.
+	(get_default_def_for): Update.
+	(rewrite_into_ssa): Update.
+	* tree-complex.c (init_parameter_lattice_values): Update.
+	(update_complex_assignment): Update.
+	(update_parameter_components): Update.
+	(expand_complex_libcall): Update.
+	(expand_complex_operations_1): Update.
+	* tree-tailcall.c (arg_needs_copy_p): Update.
+	(add_virtual_phis): Update.
+	(tree_optimize_tail_calls_1): Update.
+	* tree-ssa-dse.c (memory_ssa_name_same): Update.
+	* tree-ssa-copyrename.c
+	(copy_rename_partition_coalesce): Update.
+	* tree-ssa-math-opts.c (execute_cse_reciprocals): Update.
+	* tree-ssa-propagate.c (set_rhs): Update.
+	* tree-ssa-alias.c (aliases_computed_p, call_clobbered_vars,
+	addressable_vars, global_var):Kill.
+	(set_initial_properties): Update.
+	(init_alias_info): Update.
+	(finalize_ref_all_pointers): Update.
+	(setup_pointers_and_addressables): Update.
+	(maybe_create_global_var): Update.
+	(create_global_var): Update.
+	(dump_points_to_info): Update.
+	* function.h (struct gimple_df): Forward declare.
+	(struct function): Add GIMPLE_DF field.
+	* gimplify.c (force_gimple_operand): Update.
+	* tree-dfa.c (referenced_vars, default_defs): KIll.
+	(make_rename_temp): Update.
+	(dump_variable): Update.
+	(referenced_var_lookup): Update.
+	(referenced_var_check_and_insert): Update.
+	(default_def): Rename to ...
+	(gimple_default_def): ... this one; accept cfun argument.
+	(set_default_def): Update.
+	* tree-cfgcleanup.c (modified_noreturn_calls): Kill.
+	(cleanup_control_flow): Update.
+	* tree-ssa-pre.c (compute_avail): Update
+	* tree-ssa-live.c (calculate_live_on_entry): Update.
+	* tree-ssa.c (verify_use): Update.
+	(verify_call_clobbering): Update.
+	(verify_call_clobbering): Update.
+	(init_tree_ssa): Update.
+	(delete_tree_ssa): Update.
+	* tree-outof-ssa.c (coalesce_ssa_name): Update.
+	(rewrite_out_of_ssa): Update.
+	* tree-flow.h (gimple_df): New structure collecting dataflow variables.
+	(FREE_SSANAMES, SSANAMES, MODIFIED_NORETURN_CALLS, DEFAULT_DEFS): New
+	private accessors.
+	(in_ssa_p, modified_noreturn_calls, referenced_vars, default_defs,
+	ssa_names, global_var, nonlocal_all, call_clobbered_vars,
+	addressable_vars, aliases_computed_p): Kill.
+	(default_def): Rename to...
+	(gimple_default_def): ... this one.
+	(defaule_def_fn): Kill.
+	(num_referenced_vars, ssa_names, num_ssa_names): Update.
+	* tree-ssa-structalias.c (nonlocal_all): Kill.
+	(get_constraint_exp_from_ssa_var): Update.
+	(create_nonlocal_var): Update.
+	(get_constraint_for): Update.
+	(update_alias_info): Update.
+	(find_global_initializers): Update.
+	(intra_create_variable_infos): Update.
+	(intra_create_variable_infos):
+	(find_what_p_points_to): Update.
+	(init_alias_heapvars): Update.
+	* tree-cfg.c (remove_bb): Update.
+	(gimplify_val): Update.
+	* tree-ssa-reassoc.c (get_rank): Update.
+	(init_reassoc): Update.
+	* tree-ssanames.c: Do not include gt-tree-ssanames.h
+	(ssa_names, free_ssanames): Kill.
+	(init_ssanames): Update.
+	(make_ssa_name): Update.
+	(release_ssa_name): Update.
+	(release_defs): Update.
+	(replace_ssa_name_symbol): Update.
+	* tree-ssa-operands.c (access_can_touch_variable): Update.
+	(add_virtual_operand): Update.
+	(add_call_clobber_ops): Update.
+	(add_call_read_ops): Update.
+	(get_call_expr_operands): Update.
+	(get_asm_expr_operands): Update.
+
+2006-11-28  Jan Hubicka  <jh@suse.cz>
+
 	* builtins.c: Include tree-flow.h.
 	(fold_builtin_memory_op): Be more aggressive on converting memcpy to
 	assignment; convert memmove to memcpy for sizes greater than 1 where

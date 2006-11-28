@@ -6365,7 +6365,7 @@ force_gimple_operand (tree expr, tree *stmts, bool simple, tree var)
   gimple_test_f = simple ? is_gimple_val : is_gimple_reg_rhs;
 
   push_gimplify_context ();
-  gimplify_ctxp->into_ssa = in_ssa_p;
+  gimplify_ctxp->into_ssa = gimple_in_ssa_p (cfun);
 
   if (var)
     expr = build2 (MODIFY_EXPR, TREE_TYPE (var), var, expr);
@@ -6374,7 +6374,7 @@ force_gimple_operand (tree expr, tree *stmts, bool simple, tree var)
 		       gimple_test_f, fb_rvalue);
   gcc_assert (ret != GS_ERROR);
 
-  if (referenced_vars)
+  if (gimple_referenced_vars (cfun))
     {
       for (t = gimplify_ctxp->temps; t ; t = TREE_CHAIN (t))
 	add_referenced_var (t);

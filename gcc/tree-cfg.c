@@ -2040,7 +2040,7 @@ remove_bb (basic_block bb)
 	     may be called when not in SSA.  For example,
 	     final_cleanup calls this function via
 	     cleanup_tree_cfg.  */
-	  if (in_ssa_p)
+	  if (gimple_in_ssa_p (cfun))
 	    release_defs (stmt);
 
 	  bsi_remove (&i, true);
@@ -5645,7 +5645,7 @@ gimplify_val (block_stmt_iterator *bsi, tree type, tree exp)
   TREE_BLOCK (new_stmt) = TREE_BLOCK (orig_stmt);
 
   bsi_insert_before (bsi, new_stmt, BSI_SAME_STMT);
-  if (in_ssa_p)
+  if (gimple_in_ssa_p (cfun))
     mark_new_vars_to_rename (new_stmt);
 
   return t;
