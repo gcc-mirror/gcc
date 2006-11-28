@@ -1,3 +1,24 @@
+2006-11-28  Jan Hubicka  <jh@suse.cz>
+
+	* invoke.texi (large-stack-frame, large-stack-frame-growth): New params.
+	* cgraph.c (dump_cgraph_node): Dump stack usage.
+	* cgraph.h (cgraph_local_info): Add estimated_self_stack_size.
+	(cgraph_global_info): Add estimated_stack_size and stack_frame_offset.
+	* cgraphunit.c (cgraph_analyze_function): Analyze stack sizes.
+	* ipa-inline.c (cgraph_clone_inlined_nodes): Propagate stack usage.
+	(cgraph_check_inline_limits): Limit stack growth.
+	* cfgexpand.c: Include tree-inline.h.
+	(account_stack_vars): New function.
+	(expand_one_var): New param to just account the stack; return estimated
+	size.
+	(expand_used_vars_for_block): Update call of expand_one_var.
+	(account_used_vars_for_block): New function.
+	(estimated_stack_frame_size): Likewise.
+	(init_vars_expansion, fini_vars_expansion): Break out from..
+	(expand_used_vars): ... here.
+	* tree-inline.h (estimated_stack_frame_size): Declare.
+	* params.def (PARAM_LARGE_STACK_FRAME, PARAM_STACK_FRAME_GROWTH): New.
+
 2006-11-28  Richard Guenther  <rguenther@suse.de>
 
 	* ggc-page.c (ggc_print_statistics): Use %ul and a cast to

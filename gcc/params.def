@@ -198,6 +198,14 @@ DEFPARAM(PARAM_INLINE_CALL_COST,
 	 "inline-call-cost",
 	 "expense of call operation relative to ordinary arithmetic operations",
 	 16, 0, 0)
+DEFPARAM(PARAM_LARGE_STACK_FRAME,
+	 "large-stack-frame",
+	 "The size of stack frame to be considered large",
+	 256, 0, 0)
+DEFPARAM(PARAM_STACK_FRAME_GROWTH,
+	 "large-stack-frame-growth",
+	 "Maximal stack frame growth due to inlining (in percent)",
+	 1000, 0, 0)
 
 /* The GCSE optimization will be disabled if it would require
    significantly more memory than this value.  */

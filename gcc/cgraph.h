@@ -51,6 +51,9 @@ enum availability
 
 struct cgraph_local_info GTY(())
 {
+  /* Estiimated stack frame consumption by the function.  */
+  HOST_WIDE_INT estimated_self_stack_size;
+
   /* Size of the function before inlining.  */
   int self_insns;
 
@@ -88,6 +91,11 @@ struct cgraph_local_info GTY(())
 
 struct cgraph_global_info GTY(())
 {
+  /* Estimated stack frame consumption by the function.  */
+  HOST_WIDE_INT estimated_stack_size;
+  /* Expected offset of the stack frame of inlined function.  */
+  HOST_WIDE_INT stack_frame_offset;
+
   /* For inline clones this points to the function they will be inlined into.  */
   struct cgraph_node *inlined_to;
 

@@ -6033,6 +6033,15 @@ This parameter is ignored when @option{-funit-at-a-time} is not used.
 The default value is 50 which limits unit growth to 1.5 times the original
 size.
 
+@item large-stack-frame
+The limit specifying large stack frames.  While inlining the algorithm is trying
+to not grow past this limit too much.  Default value is 256 bytes.
+
+@item large-stack-frame-growth
+Specifies maximal growth of large stack frames caused by inlining in percents.
+The default value is 1000 which limits large stack frame growth to 11 times
+the original size.
+
 @item max-inline-insns-recursive
 @itemx max-inline-insns-recursive-auto
 Specifies maximum number of instructions out-of-line copy of self recursive inline
