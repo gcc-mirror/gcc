@@ -18,14 +18,25 @@ interface
 end interface
 end module
 
-! This is the original PR
-subroutine my_sub (a) ! { dg-error "is ambiguous" }
+module test_mod2
+interface
+  function my_fun (a)
+    real a, my_fun
+  end function
+end interface
+end module
+
+
+! This is the original PR, excepting that the error requires the symbol
+! to be referenced.
+subroutine my_sub (a)
   use test_mod
   real a
+  call my_sub (a)  ! { dg-error "ambiguous reference" }
   print *, a
 end subroutine
 
-integer function my_fun (a) ! { dg-error "is ambiguous" }
+integer function my_fun (a)
   use test_mod
   real a
   print *, a
@@ -42,4 +53,17 @@ subroutine thy_sub (a)
   real a
   print *, a
 end subroutine
+
+subroutine thy_fun (a)
+  use test_mod
+  use test_mod2  ! OK because there is no reference to my_fun
+  print *, a
+end subroutine thy_fun
+
+subroutine his_fun (a)
+  use test_mod
+  use test_mod2
+  print *, my_fun (a)  ! { dg-error "ambiguous reference" }
+end subroutine his_fun
+
 ! { dg-final { cleanup-modules "test_mod" } }

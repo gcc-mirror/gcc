@@ -1,3 +1,9 @@
+2006-11-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/20880
+	* resolve.c (resolve_fl_procedure): Error if procedure is
+	ambiguous modified to require attr.referenced.
+
 2006-11-26  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/29892

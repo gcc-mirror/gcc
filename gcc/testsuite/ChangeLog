@@ -1,3 +1,8 @@
+2006-11-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/20880
+	* gfortran.dg/interface_3.f90: Modify errors.
+
 2006-11-28  Ben Elliston  <bje@au.ibm.com>
 
 	* lib/gcc-defs.exp (${tool}_check_compile): xfail test cases that
