@@ -3,37 +3,39 @@
 
 /* { dg-do compile { target { { *-*-linux* *-*-cygwin* powerpc*-*-eabi* } && { ! default_packed } } } } */
 
-/* We only test the alignment of char, short, and int, because these
-   are the only ones that are pretty certain to be the same across
-   platforms (and maybe not even those).  Mainly we're just testing
-   whether pushing and popping seem to be working correctly, and
-   verifying the (alignment == 1) case, which is really the only
-   reason anyone would use this pragma anyway.
-*/
+/* Mainly we're just testing whether pushing and popping seem to be
+   working correctly, and verifying the (alignment == 1) case, which
+   is really the only reason anyone would use this pragma anyway. */
 
 #include <stddef.h>
 
-/* gap in bytes between fields a and b in struct s */
-#define gap(s, a, b) (offsetof(struct s, a) - offsetof(struct s, b))
 /* generalized compile-time test expression */
 #define test(n, expr) int test_##n [(expr) ? 1 : -1]
-/* test a gap */
-#define testgap(n, a, b, val) test(n, gap(SNAME, a, b) == val)
+
+/* Round V down to multiple of A */
+#define floor(v,a) ((v) / (a) * (a))
+
+/* Offset of field with alignment A in structure S after a field P of
+   type PT */
+#define offset(s,p,pt,a) \
+	floor ((offsetof(struct s, p) + sizeof (pt) + (a) - 1), a)
+
+/* regular minimum */
+#define min(a,b)  ((a) < (b) ? (a) : (b))
+
+/* Check that field A (type AT) followed by field B (type BT) are
+   packed according to P */
+#define test_pack(n, a, at, b, bt, p) \
+	test(n, offsetof (struct SNAME, b) \
+ 	        == min (offset (SNAME,a,at,__alignof__(bt)), \
+		        offset (SNAME,a,at,p)))
+
+/* Test offset of field F in structs s1 and s2 are the same.  */
+#define test_offset(n, s1, s2, f) \
+	test (n, (offsetof(struct s1, f) == offsetof(struct s2, f)))
 
 #define SNAME s0
 #include "pack-test-1.h"
-
-/* Save original alignment values.  Can't use const ints because they
-   won't be expanded and we'll get bogus errors about variable length
-   arrays.  (Possible bug in C front end?)  Use s0, not SNAME, so these
-   won't change later.  */
-#define al1 gap(s0, f1, f0)
-#define al2 gap(s0, f2, f1)
-#define al3 gap(s0, f3, f2)
-#define al4 gap(s0, f4, f3)
-#define al5 gap(s0, f5, f4)
-#define al6 gap(s0, f6, f5)
-#define al7 gap(s0, f7, f6)
 
 #undef SNAME
 #define SNAME s1
@@ -41,9 +43,9 @@
 #include "pack-test-1.h"
 
 void SNAME() {
-  testgap(0, f1, f0, sizeof(char));
-  testgap(1, f3, f2, sizeof(short));
-  testgap(2, f5, f4, sizeof(int));
+  test_pack(0, f0, char, f1, double, 1);
+  test_pack(1, f2, short, f3, double, 1);
+  test_pack(2, f4, int, f5, double, 1);
 }
 
 #undef SNAME
@@ -52,9 +54,9 @@ void SNAME() {
 #include "pack-test-1.h"
 
 void SNAME() {
-  testgap(0, f1, f0, sizeof(short));
-  testgap(1, f3, f2, sizeof(short));
-  testgap(2, f5, f4, sizeof(int));
+  test_pack(0, f0, char, f1, double, 2);
+  test_pack(1, f2, short, f3, double, 2);
+  test_pack(2, f4, int, f5, double, 2);
 }
 
 #undef SNAME
@@ -63,9 +65,9 @@ void SNAME() {
 #include "pack-test-1.h"
 
 void SNAME() {
-  testgap(0, f1, f0, sizeof(int));
-  testgap(1, f3, f2, sizeof(int));
-  testgap(2, f5, f4, sizeof(int));
+  test_pack(0, f0, char, f1, double, 4);
+  test_pack(1, f2, short, f3, double, 4);
+  test_pack(2, f4, int, f5, double, 4);
 }
 
 #undef SNAME
@@ -74,9 +76,9 @@ void SNAME() {
 #include "pack-test-1.h"
 
 void SNAME() {
-  testgap(0, f1, f0, sizeof(short));
-  testgap(1, f3, f2, sizeof(short));
-  testgap(2, f5, f4, sizeof(int));
+  test_pack(0, f0, char, f1, double, 2);
+  test_pack(1, f2, short, f3, double, 2);
+  test_pack(2, f4, int, f5, double, 2);
 }
 
 #undef SNAME
@@ -85,9 +87,9 @@ void SNAME() {
 #include "pack-test-1.h"
 
 void SNAME() {
-  testgap(0, f1, f0, sizeof(char));
-  testgap(1, f3, f2, sizeof(short));
-  testgap(2, f5, f4, sizeof(int));
+  test_pack(0, f0, char, f1, double, 1);
+  test_pack(1, f2, short, f3, double, 1);
+  test_pack(2, f4, int, f5, double, 1);
 }
 
 #undef SNAME
@@ -96,9 +98,12 @@ void SNAME() {
 #include "pack-test-1.h"
 
 void SNAME() {
-  testgap(0, f1, f0, al1);
-  testgap(1, f3, f2, al3);
-  testgap(2, f5, f4, al5);
+  test_offset (0, s0, SNAME, f0);
+  test_offset (1, s0, SNAME, f1);
+  test_offset (2, s0, SNAME, f2);
+  test_offset (3, s0, SNAME, f3);
+  test_offset (4, s0, SNAME, f4);
+  test_offset (5, s0, SNAME, f5);
 }
 
 #undef SNAME
@@ -107,9 +112,9 @@ void SNAME() {
 #include "pack-test-1.h"
 
 void SNAME() {
-  testgap(0, f1, f0, sizeof(char));
-  testgap(1, f3, f2, sizeof(short));
-  testgap(2, f5, f4, sizeof(int));
+  test_pack(0, f0, char, f1, double, 1);
+  test_pack(1, f2, short, f3, double, 1);
+  test_pack(2, f4, int, f5, double, 1);
 }
 
 #undef SNAME
@@ -118,9 +123,9 @@ void SNAME() {
 #include "pack-test-1.h"
 
 void SNAME() {
-  testgap(0, f1, f0, sizeof(short));
-  testgap(1, f3, f2, sizeof(short));
-  testgap(2, f5, f4, sizeof(int));
+  test_pack(0, f0, char, f1, double, 2);
+  test_pack(1, f2, short, f3, double, 2);
+  test_pack(2, f4, int, f5, double, 2);
 }
 
 #undef SNAME
@@ -129,9 +134,9 @@ void SNAME() {
 #include "pack-test-1.h"
 
 void SNAME() {
-  testgap(0, f1, f0, sizeof(char));
-  testgap(1, f3, f2, sizeof(short));
-  testgap(2, f5, f4, sizeof(int));
+  test_pack(0, f0, char, f1, double, 1);
+  test_pack(1, f2, short, f3, double, 1);
+  test_pack(2, f4, int, f5, double, 1);
 }
 
 #undef SNAME
@@ -140,7 +145,10 @@ void SNAME() {
 #include "pack-test-1.h"
 
 void SNAME() {
-  testgap(0, f1, f0, al1);
-  testgap(1, f3, f2, al3);
-  testgap(2, f5, f4, al5);
+  test_offset (0, s0, SNAME, f0);
+  test_offset (1, s0, SNAME, f1);
+  test_offset (2, s0, SNAME, f2);
+  test_offset (3, s0, SNAME, f3);
+  test_offset (4, s0, SNAME, f4);
+  test_offset (5, s0, SNAME, f5);
 }
