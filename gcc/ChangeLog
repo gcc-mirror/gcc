@@ -1,3 +1,7 @@
+2006-11-28  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/lib1funcs.asm (__umulsidi3): Restore a12-a15 on exit.
+
 2006-11-28  Jan Hubicka  <jh@suse.cz>
 
 	Privatize SSA variables into gimple_df.
