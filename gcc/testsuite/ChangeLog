@@ -1,5 +1,10 @@
 2006-11-28  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/29976
+	* gfortran.dg/missing_optional_dummy_3.f90
+
+2006-11-28  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/20880
 	* gfortran.dg/interface_3.f90: Modify errors.
 

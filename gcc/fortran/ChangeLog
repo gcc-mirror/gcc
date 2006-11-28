@@ -1,5 +1,11 @@
 2006-11-28  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/29976
+	* trans-expr.c (gfc_conv_missing_dummy): Remove build_int_const
+	and replace with cast to type of se->expr of integer_zero_node.
+
+2006-11-28  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/20880
 	* resolve.c (resolve_fl_procedure): Error if procedure is
 	ambiguous modified to require attr.referenced.

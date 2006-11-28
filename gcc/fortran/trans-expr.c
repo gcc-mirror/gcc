@@ -153,7 +153,8 @@ gfc_conv_missing_dummy (gfc_se * se, gfc_expr * arg, gfc_typespec ts)
 
   present = gfc_conv_expr_present (arg->symtree->n.sym);
   tmp = build3 (COND_EXPR, TREE_TYPE (se->expr), present, se->expr,
-		build_int_cst (TREE_TYPE (se->expr), 0));
+		fold_convert (TREE_TYPE (se->expr), integer_zero_node));
+
   tmp = gfc_evaluate_now (tmp, &se->pre);
   se->expr = tmp;
   if (ts.type == BT_CHARACTER)
