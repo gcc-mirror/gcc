@@ -4,12 +4,17 @@
    decimal floating types and generic floating types.
    C99 6.3.1.5(4) Conversions, arithmetic operands, real floating types.  */
 
+/* Long double isn't supported yet at runtime, so disable those checks.  */
+#define SKIP_LONG_DOUBLE
+
 volatile _Decimal32 d32;
 volatile _Decimal64 d64;
 volatile _Decimal128 d128;
 volatile float sf;
 volatile double df;
+#ifndef SKIP_LONG_DOUBLE
 volatile long double tf;
+#endif
 
 extern void abort (void);
 
@@ -28,9 +33,11 @@ main ()
   if (df != 2.0)
     abort ();
 
+#ifndef SKIP_LONG_DOUBLE
   tf = d32;
   if (tf != 2.0l)
     abort ();
+#endif
 
   /* Conversions from _Decimal64. */
   d64 = -7.0dd;
@@ -42,9 +49,11 @@ main ()
   if (df != -7.0)
     abort ();
 
+#ifndef SKIP_LONG_DOUBLE
   tf = d64;
   if (tf != -7.0l)
     abort ();
+#endif
 
   /* Conversions from _Decimal128. */
   d128 = 30.0dl;
@@ -88,6 +97,7 @@ main ()
   if (d128 != 30.0dl)
     abort ();
 
+#ifndef SKIP_LONG_DOUBLE
   tf = -22.0l;
   d32 = tf;
   if (d32 != -22.0df)
@@ -100,6 +110,7 @@ main ()
   d128 = tf;
   if (d128 != -22.0dl)
     abort ();
+#endif
 
   /* 2**(-11) = 0.00048828125. */
   d128 = 0.000488281251dl;
