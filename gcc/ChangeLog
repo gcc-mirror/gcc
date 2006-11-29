@@ -1,5 +1,7 @@
 2006-11-29  Janis Johnson  <janis187@us.ibm.com>
 
+	* config/dfp-bit.c (DFP_TO_INT): Fix rounding mode.
+
 	* config/dfp-bit.h (CONTEXT_ROUND): Delete.
 	(DFP_INIT_ROUNDMODE): Define.
 	* config/dfp-bit.c: Replace CONTEXT_ROUND with DFP_INIT_ROUNDMODE.
