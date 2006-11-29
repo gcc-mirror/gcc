@@ -2555,8 +2555,7 @@ invalid_e500_subreg (rtx op, enum machine_mode mode)
       && GET_CODE (op) == SUBREG
       && mode == SImode
       && REG_P (SUBREG_REG (op))
-      && SPE_VECTOR_MODE (GET_MODE (SUBREG_REG (op)))
-      && SUBREG_BYTE (op) != 4)
+      && SPE_VECTOR_MODE (GET_MODE (SUBREG_REG (op))))
     return true;
 
   return false;
