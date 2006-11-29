@@ -1,3 +1,10 @@
+2006-11-29  Janis Johnson  <janis187@us.ibm.com>
+
+	* config/dfp-bit.h (CONTEXT_ROUND): Delete.
+	(DFP_INIT_ROUNDMODE): Define.
+	* config/dfp-bit.c: Replace CONTEXT_ROUND with DFP_INIT_ROUNDMODE.
+	* mklibgcc.in: Fix dependencies for dfp-bit.c.
+
 2006-11-29  Tehila Meyzels  <tehila@il.ibm.com>
 
 	* haifa-sched.c: Remove define LINE_NOTE(INSN).  Remove line_note_head.
