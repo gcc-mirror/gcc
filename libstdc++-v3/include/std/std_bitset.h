@@ -41,7 +41,7 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-/** @file bitset
+/** @file 
  *  This is a Standard C++ Library header.
  */
 

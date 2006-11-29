@@ -35,6 +35,9 @@
 // 4.0 and all versions of the CVS managed file at:
 // :pserver:anoncvs@anoncvs.freebsd.org:/home/ncvs/src/include/ctype.h
   
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  /// @brief  Base class for ctype.
   struct ctype_base
   {
     // Non-standard typedefs.
@@ -70,5 +73,4 @@
 #endif
   };
 
-
-
+_GLIBCXX_END_NAMESPACE

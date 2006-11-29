@@ -27,13 +27,13 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _TR1_RANDOM
-#define _TR1_RANDOM 1
-
 /**
  * @file 
  * This is a TR1 C++ Library header. 
  */
+
+#ifndef _TR1_RANDOM
+#define _TR1_RANDOM 1
 
 #include <algorithm>
 #include <bits/concept_check.h>

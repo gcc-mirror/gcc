@@ -33,6 +33,10 @@
  *  You should not attempt to use it directly.
  */
 
+namespace std
+{
+_GLIBCXX_BEGIN_NAMESPACE(tr1)
+
 template<typename _Res _GLIBCXX_COMMA _GLIBCXX_TEMPLATE_PARAMS>
   struct _Weak_result_type_impl<_Res(_GLIBCXX_TEMPLATE_ARGS)>
   {
@@ -914,3 +918,5 @@ template<typename _Functor>
       }
   }
 
+_GLIBCXX_END_NAMESPACE
+}

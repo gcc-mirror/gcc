@@ -99,7 +99,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       // requires special behaviour if _InIterator is an integral type
       template<typename _InIterator>
         void
-        _M_construct_aux(_InIterator __beg, _InIterator __end, __false_type)
+        _M_construct_aux(_InIterator __beg, _InIterator __end, 
+			 std::__false_type)
 	{
           typedef typename iterator_traits<_InIterator>::iterator_category _Tag;
           _M_construct(__beg, __end, _Tag());
@@ -107,7 +108,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       template<typename _InIterator>
         void
-        _M_construct_aux(_InIterator __beg, _InIterator __end, __true_type)
+        _M_construct_aux(_InIterator __beg, _InIterator __end, 
+			 std::__true_type)
 	{ _M_construct(static_cast<size_type>(__beg),
 		       static_cast<value_type>(__end)); }
 

@@ -1200,13 +1200,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       template<class _Integer>
 	__versa_string&
 	_M_replace_dispatch(iterator __i1, iterator __i2, _Integer __n,
-			    _Integer __val, __true_type)
+			    _Integer __val, std::__true_type)
         { return _M_replace_aux(__i1 - _M_ibegin(), __i2 - __i1, __n, __val); }
 
       template<class _InputIterator>
 	__versa_string&
 	_M_replace_dispatch(iterator __i1, iterator __i2, _InputIterator __k1,
-			    _InputIterator __k2, __false_type);
+			    _InputIterator __k2, std::__false_type);
 
       __versa_string&
       _M_replace_aux(size_type __pos1, size_type __n1, size_type __n2,

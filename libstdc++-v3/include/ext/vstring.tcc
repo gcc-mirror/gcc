@@ -84,7 +84,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       __versa_string<_CharT, _Traits, _Alloc, _Base>&
       __versa_string<_CharT, _Traits, _Alloc, _Base>::
       _M_replace_dispatch(iterator __i1, iterator __i2, _InputIterator __k1,
-			  _InputIterator __k2, __false_type)
+			  _InputIterator __k2, std::__false_type)
       {
 	const __versa_string __s(__k1, __k2);
 	const size_type __n1 = __i2 - __i1;

@@ -225,7 +225,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       template<typename _InIterator>
         static _CharT*
         _S_construct_aux(_InIterator __beg, _InIterator __end,
-			 const _Alloc& __a, __false_type)
+			 const _Alloc& __a, std::__false_type)
 	{
           typedef typename iterator_traits<_InIterator>::iterator_category _Tag;
           return _S_construct(__beg, __end, __a, _Tag());
@@ -234,7 +234,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       template<typename _InIterator>
         static _CharT*
         _S_construct_aux(_InIterator __beg, _InIterator __end,
-			 const _Alloc& __a, __true_type)
+			 const _Alloc& __a, std::__true_type)
 	{ return _S_construct(static_cast<size_type>(__beg),
 			      static_cast<value_type>(__end), __a); }
 

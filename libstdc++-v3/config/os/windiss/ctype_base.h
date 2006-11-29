@@ -33,6 +33,9 @@
   
 // Default information, may not be appropriate for specific host.
 
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  /// @brief  Base class for ctype.
   struct ctype_base
   {
     // Non-standard typedefs.
@@ -53,3 +56,5 @@
     static const mask punct 	= _P;
     static const mask alnum 	= _U | _L | _N;
   };
+
+_GLIBCXX_END_NAMESPACE
