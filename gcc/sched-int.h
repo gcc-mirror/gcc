@@ -270,11 +270,7 @@ struct haifa_insn_data
   /* A list of scheduled producers of the instruction.  Links are being moved
      from LOG_LINKS to RESOLVED_DEPS during scheduling.  */
   rtx resolved_deps;
-  
-  /* The line number note in effect for each insn.  For line number
-     notes, this indicates whether the note may be reused.  */
-  rtx line_note;
-
+ 
   /* Logical uid gives the original ordering of the insns.  */
   int luid;
 
@@ -634,8 +630,6 @@ extern int haifa_classify_insn (rtx);
 extern void get_ebb_head_tail (basic_block, basic_block, rtx *, rtx *);
 extern int no_real_insns_p (rtx, rtx);
 
-extern void save_line_notes (int, rtx, rtx);
-extern void restore_line_notes (rtx, rtx);
 extern void rm_other_notes (rtx, rtx);
 
 extern int insn_cost (rtx, rtx, rtx);

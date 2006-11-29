@@ -818,7 +818,11 @@ loop_canon_p (struct loop *loop)
     {
       if (dump_file)
 	{
+	  rtx insn = BB_END (loop->header);
+ 
 	  fprintf (dump_file, "SMS loop many exits ");
+	  	  fprintf (dump_file, " %s %d (file, line)\n",
+			   insn_file (insn), insn_line (insn));
 	}
       return false;
     }
@@ -827,7 +831,11 @@ loop_canon_p (struct loop *loop)
     {
       if (dump_file)
 	{
+	  rtx insn = BB_END (loop->header);
+ 
 	  fprintf (dump_file, "SMS loop many BBs. ");
+	  fprintf (dump_file, " %s %d (file, line)\n",
+		   insn_file (insn), insn_line (insn));
 	}
       return false;
     }
@@ -954,6 +962,8 @@ sms_schedule (void)
 	{
 	  if (dump_file)
 	    {
+	      fprintf (dump_file, " %s %d (file, line)\n",
+		       insn_file (tail), insn_line (tail));
 	      fprintf (dump_file, "SMS single-bb-loop\n");
 	      if (profile_info && flag_branch_probabilities)
 	    	{
@@ -1043,6 +1053,8 @@ sms_schedule (void)
 
       if (dump_file)
 	{
+	  fprintf (dump_file, " %s %d (file, line)\n",
+		   insn_file (tail), insn_line (tail));
 	  fprintf (dump_file, "SMS single-bb-loop\n");
 	  if (profile_info && flag_branch_probabilities)
 	    {

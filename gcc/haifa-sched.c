@@ -186,7 +186,6 @@ fix_sched_param (const char *param, const char *val)
 
 struct haifa_insn_data *h_i_d;
 
-#define LINE_NOTE(INSN)		(h_i_d[INSN_UID (INSN)].line_note)
 #define INSN_TICK(INSN)		(h_i_d[INSN_UID (INSN)].tick)
 #define INTER_TICK(INSN)        (h_i_d[INSN_UID (INSN)].inter_tick)
 
@@ -199,10 +198,6 @@ struct haifa_insn_data *h_i_d;
 /* Issue points are used to distinguish between instructions in max_issue ().
    For now, all instructions are equally good.  */
 #define ISSUE_POINTS(INSN) 1
-
-/* Vector indexed by basic block number giving the starting line-number
-   for each basic block.  */
-static rtx *line_note_head;
 
 /* List of important notes we must keep around.  This is a pointer to the
    last element in the list.  */
@@ -509,7 +504,7 @@ static void advance_one_cycle (void);
 /* Notes handling mechanism:
    =========================
    Generally, NOTES are saved before scheduling and restored after scheduling.
-   The scheduler distinguishes between three types of notes:
+   The scheduler distinguishes between two types of notes:
 
    (1) LOOP_BEGIN, LOOP_END, SETJMP, EHREGION_BEG, EHREGION_END notes:
    Before scheduling a region, a pointer to the note is added to the insn
@@ -569,12 +564,11 @@ static void init_before_recovery (void);
 static basic_block create_recovery_block (void);
 static void create_check_block_twin (rtx, bool);
 static void fix_recovery_deps (basic_block);
-static void associate_line_notes_with_blocks (basic_block);
 static void change_pattern (rtx, rtx);
 static int speculate_insn (rtx, ds_t, rtx *);
 static void dump_new_block_header (int, basic_block, rtx, rtx);
 static void restore_bb_notes (basic_block);
-static void extend_bb (basic_block);
+static void extend_bb (void);
 static void fix_jump_move (rtx);
 static void move_block_after_check (rtx);
 static void move_succs (VEC(edge,gc) **, basic_block);
@@ -1319,99 +1313,6 @@ no_real_insns_p (rtx head, rtx tail)
       head = NEXT_INSN (head);
     }
   return 1;
-}
-
-/* Save line number notes for each insn in block B.  HEAD and TAIL are
-   the boundaries of the block in which notes should be processed.  */
-
-void
-save_line_notes (int b, rtx head, rtx tail)
-{
-  rtx next_tail;
-
-  /* We must use the true line number for the first insn in the block
-     that was computed and saved at the start of this pass.  We can't
-     use the current line number, because scheduling of the previous
-     block may have changed the current line number.  */
-
-  rtx line = line_note_head[b];
-  rtx insn;
-
-  next_tail = NEXT_INSN (tail);
-
-  for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
-    LINE_NOTE (insn) = line;
-}
-
-/* After a block was scheduled, insert line notes into the insns list.
-   HEAD and TAIL are the boundaries of the block in which notes should
-   be processed.  */
-
-void
-restore_line_notes (rtx head, rtx tail)
-{
-  rtx line, note, prev, new;
-  int added_notes = 0;
-  rtx next_tail, insn;
-
-  head = head;
-  next_tail = NEXT_INSN (tail);
-
-  /* Determine the current line-number.  We want to know the current
-     line number of the first insn of the block here, in case it is
-     different from the true line number that was saved earlier.  If
-     different, then we need a line number note before the first insn
-     of this block.  If it happens to be the same, then we don't want to
-     emit another line number note here.  */
-  for (line = head; line; line = PREV_INSN (line))
-    if (NOTE_P (line) && NOTE_LINE_NUMBER (line) > 0)
-      break;
-
-  /* Walk the insns keeping track of the current line-number and inserting
-     the line-number notes as needed.  */
-  for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
-    if (NOTE_P (insn) && NOTE_LINE_NUMBER (insn) > 0)
-      line = insn;
-  /* This used to emit line number notes before every non-deleted note.
-     However, this confuses a debugger, because line notes not separated
-     by real instructions all end up at the same address.  I can find no
-     use for line number notes before other notes, so none are emitted.  */
-    else if (!NOTE_P (insn)
-	     && INSN_UID (insn) < old_max_uid
-	     && (note = LINE_NOTE (insn)) != 0
-	     && note != line
-	     && (line == 0
-#ifdef USE_MAPPED_LOCATION
-		 || NOTE_SOURCE_LOCATION (note) != NOTE_SOURCE_LOCATION (line)
-#else
-		 || NOTE_LINE_NUMBER (note) != NOTE_LINE_NUMBER (line)
-		 || NOTE_SOURCE_FILE (note) != NOTE_SOURCE_FILE (line)
-#endif
-		 ))
-      {
-	line = note;
-	prev = PREV_INSN (insn);
-	if (LINE_NOTE (note))
-	  {
-	    /* Re-use the original line-number note.  */
-	    LINE_NOTE (note) = 0;
-	    PREV_INSN (note) = prev;
-	    NEXT_INSN (prev) = note;
-	    PREV_INSN (insn) = note;
-	    NEXT_INSN (note) = insn;
-	    set_block_for_insn (note, BLOCK_FOR_INSN (insn));
-	  }
-	else
-	  {
-	    added_notes++;
-	    new = emit_note_after (NOTE_LINE_NUMBER (note), prev);
-#ifndef USE_MAPPED_LOCATION
-	    NOTE_SOURCE_FILE (new) = NOTE_SOURCE_FILE (note);
-#endif
-	  }
-      }
-  if (sched_verbose && added_notes)
-    fprintf (sched_dump, ";; added %d line-number notes\n", added_notes);
 }
 
 /* Delete notes between HEAD and TAIL and put them in the chain
@@ -2722,11 +2623,10 @@ sched_init (void)
 
   init_alias_analysis ();
 
-  line_note_head = 0;
   old_last_basic_block = 0;
   glat_start = 0;  
   glat_end = 0;
-  extend_bb (0);
+  extend_bb ();
 
   if (current_sched_info->flags & USE_GLAT)
     init_glat ();
@@ -2758,7 +2658,6 @@ sched_finish (void)
   dfa_finish ();
   free_dependency_caches ();
   end_alias_analysis ();
-  free (line_note_head);
   free_glat ();
 
   if (targetm.sched.md_finish_global)
@@ -3902,29 +3801,6 @@ fix_recovery_deps (basic_block rec)
   add_jump_dependencies (insn, jump);
 }
 
-/* The function saves line notes at the beginning of block B.  */
-static void
-associate_line_notes_with_blocks (basic_block b)
-{
-  rtx line;
-
-  for (line = BB_HEAD (b); line; line = PREV_INSN (line))
-    if (NOTE_P (line) && NOTE_LINE_NUMBER (line) > 0)
-      {
-        line_note_head[b->index] = line;
-        break;
-      }
-  /* Do a forward search as well, since we won't get to see the first
-     notes in a basic block.  */
-  for (line = BB_HEAD (b); line; line = NEXT_INSN (line))
-    {
-      if (INSN_P (line))
-        break;
-      if (NOTE_P (line) && NOTE_LINE_NUMBER (line) > 0)
-        line_note_head[b->index] = line;
-    }
-}
-
 /* Changes pattern of the INSN to NEW_PAT.  */
 static void
 change_pattern (rtx insn, rtx new_pat)
@@ -4087,28 +3963,10 @@ restore_bb_notes (basic_block first)
    If BB is NULL, initialize structures for the whole CFG.
    Otherwise, initialize them for the just created BB.  */
 static void
-extend_bb (basic_block bb)
+extend_bb (void)
 {
   rtx insn;
 
-  if (write_symbols != NO_DEBUG)
-    {
-      /* Save-line-note-head:
-         Determine the line-number at the start of each basic block.
-         This must be computed and saved now, because after a basic block's
-         predecessor has been scheduled, it is impossible to accurately
-         determine the correct line number for the first insn of the block.  */
-      line_note_head = xrecalloc (line_note_head, last_basic_block, 
-				  old_last_basic_block,
-				  sizeof (*line_note_head));
-
-      if (bb)
-	associate_line_notes_with_blocks (bb);
-      else
-	FOR_EACH_BB (bb)
-	  associate_line_notes_with_blocks (bb);
-    }        
-  
   old_last_basic_block = last_basic_block;
 
   if (current_sched_info->flags & USE_GLAT)
@@ -4143,7 +4001,7 @@ add_block (basic_block bb, basic_block ebb)
 	      && bb->il.rtl->global_live_at_start == 0
 	      && bb->il.rtl->global_live_at_end == 0);
 
-  extend_bb (bb);
+  extend_bb ();
 
   glat_start[bb->index] = 0;
   glat_end[bb->index] = 0;
