@@ -7,6 +7,7 @@ LIB1ASMFUNCS = _ashiftrt _ashiftrt_n _ashiftlt _lshiftrt _movmem \
   _movmem_i4 _mulsi3 _sdivsi3 _sdivsi3_i4 _udivsi3 _udivsi3_i4 _set_fpscr \
   _div_table _udiv_qrnnd_16 \
   $(LIB1ASMFUNCS_CACHE)
+LIB1ASMFUNCS_CACHE = _ic_invalidate _ic_invalidate_array
 
 # We want fine grained libraries, so use the new code to build the
 # floating point emulation libraries.

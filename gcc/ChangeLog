@@ -1,3 +1,16 @@
+2006-11-29  J"orn Rennecke  <joern.rennecke@st.com>
+
+	* sh.opt (minline-ic_invalidate): New option.
+	(musermode): Adjust comment.
+	* sh.c (sh_initialize_trampoline): Emit library call unless
+	is set; if it is set, don't emit library call if we can use icbi
+	instead.
+	* sh.md (ic_invalidate_line, ic_invalidate_line_sh4a): Also use
+	icbi for TARGET_SH4_300.
+	* t-sh (LIB1ASMFUNCS_CACHE): Set.
+	* doc/invoke.texi: Document -minline-ic_invalidate; Update
+	-musermode documentation.
+
 2006-11-29  Jim Tison  <jtison@us.ibm.com>
 
 	* gthr-tpf.h (__GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION,

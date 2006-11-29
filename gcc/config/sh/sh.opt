@@ -268,6 +268,10 @@ mindexed-addressing
 Target Report Mask(ALLOW_INDEXED_ADDRESS) Condition(SUPPORT_ANY_SH5_32MEDIA)
 Enable the use of the indexed addressing mode for SHmedia32/SHcompact
 
+minline-ic_invalidate
+Target Report Var(TARGET_INLINE_IC_INVALIDATE)
+inline code to invalidate instruction cache entries after setting up nested function trampolines
+
 minvalid-symbols
 Target Report Mask(INVALID_SYMBOLS) Condition(SUPPORT_ANY_SH5)
 Assume symbols might be invalid
@@ -316,7 +320,7 @@ Cost to assume for a multiply insn
 
 musermode
 Target Report RejectNegative Mask(USERMODE)
-Generate library function call to invalidate instruction cache entries after fixing trampoline
+Don't generate privileged-mode only code; implies -mno-inline-ic_invalidate if the inline code would not work in user mode.
 
 ;; We might want to enable this by default for TARGET_HARD_SH4, because
 ;; zero-offset branches have zero latency.  Needs some benchmarking.
