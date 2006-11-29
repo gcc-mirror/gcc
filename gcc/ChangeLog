@@ -1,3 +1,7 @@
+2006-11-29  Jie Zhang  <jie.zhang@analog.com>
+
+	* doc/tm.texi (NO_PROFILE_COUNTERS): Document more accurately.
+
 2006-11-29  Jim Tison  <jtison@us.ibm.com>
 
 	* gthr-tpf.h (__GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION,
