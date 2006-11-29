@@ -1,3 +1,12 @@
+2006-11-29  Lee Millward  <lee.millward@codesourcery.com>
+
+	PR c++/29022
+	* g++.dg/inherit/virtual1.C: New test.
+	* g++.dg/inherit/virtual2.C: Likewise.
+	* g++.old-deja/g++.bugs/900121_05.C: Adjust error markers.
+	* g++.dg/inherit/error2.C: Likewise.
+	* g++.dg/template/instantiate1.C: Likewise.
+	
 2006-11-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/20061124-1.c: Add exit() function prototype.

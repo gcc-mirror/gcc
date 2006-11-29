@@ -1,3 +1,12 @@
+2006-11-29  Lee Millward  <lee.millward@codesourcery.com> 
+
+	PR c++/29022
+	* parser.c (cp_parser_class_head): Move processing
+	of any base classes to...
+	(cp_parser_class_specifier) ...here. Take an extra
+	tree* parameter for any base classes. Only process
+	them if the opening brace was found.
+	
 2006-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/29735
