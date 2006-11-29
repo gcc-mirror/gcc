@@ -1,5 +1,7 @@
 2006-11-29  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/dfp/convert-int.c: Remove dg-do compile, fix comment.
+
 	* gcc.dg/dfp/convert-bfp.c: Skip long double conversions.
 
 2006-11-29  Lee Millward  <lee.millward@codesourcery.com>
