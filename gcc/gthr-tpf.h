@@ -61,6 +61,7 @@ typedef pthread_mutex_t __gthread_recursive_mutex_t;
 
 #define __GTHREAD_MUTEX_INIT PTHREAD_MUTEX_INITIALIZER
 #define __GTHREAD_ONCE_INIT PTHREAD_ONCE_INIT
+#define __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION __gthread_recursive_mutex_init_function
 
 #define NOTATHREAD   00
 #define ECBBASEPTR (unsigned long int) *(unsigned int *)0x00000514u
@@ -87,6 +88,10 @@ __gthrw(pthread_create)
 __gthrw(pthread_mutex_lock)
 __gthrw(pthread_mutex_trylock)
 __gthrw(pthread_mutex_unlock)
+__gthrw(pthread_mutexattr_init)
+__gthrw(pthread_mutexattr_settype)
+__gthrw(pthread_mutexattr_destroy)
+__gthrw(pthread_mutex_init)
 
 static inline int
 __gthread_active_p (void)
@@ -192,5 +197,26 @@ __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
   else
     return 0;
 }
+
+static inline int
+__gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *mutex)
+{ 
+  if (__tpf_pthread_active ())
+    {
+      pthread_mutexattr_t attr;
+      int r;
+
+      r = __gthrw_(pthread_mutexattr_init) (&attr);
+      if (!r)
+	r = __gthrw_(pthread_mutexattr_settype) (&attr, PTHREAD_MUTEX_RECURSIVE);
+      if (!r)
+	r = __gthrw_(pthread_mutex_init) (mutex, &attr);
+      if (!r)
+	r = __gthrw_(pthread_mutexattr_destroy) (&attr);
+      return r;
+    }
+  return 0;
+}
+
 
 #endif /* ! GCC_GTHR_TPF_H */
