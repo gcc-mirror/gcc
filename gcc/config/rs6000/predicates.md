@@ -84,10 +84,12 @@
 ;; Return 1 if op is a register that is not special.
 (define_predicate "gpc_reg_operand"
    (and (match_operand 0 "register_operand")
-	(match_test "GET_CODE (op) != REG
-		     || (REGNO (op) >= ARG_POINTER_REGNUM
-			 && !XER_REGNO_P (REGNO (op)))
-		     || REGNO (op) < MQ_REGNO")))
+	(match_test "(GET_CODE (op) != REG
+		      || (REGNO (op) >= ARG_POINTER_REGNUM
+			  && !XER_REGNO_P (REGNO (op)))
+		      || REGNO (op) < MQ_REGNO)
+		     && !((TARGET_E500_DOUBLE || TARGET_SPE)
+			  && invalid_e500_subreg (op, mode))")))
 
 ;; Return 1 if op is a register that is a condition register field.
 (define_predicate "cc_reg_operand"
