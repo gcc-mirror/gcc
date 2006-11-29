@@ -1989,7 +1989,11 @@ true_regnum (rtx x)
   if (GET_CODE (x) == SUBREG)
     {
       int base = true_regnum (SUBREG_REG (x));
-      if (base >= 0 && base < FIRST_PSEUDO_REGISTER)
+      if (base >= 0
+	  && base < FIRST_PSEUDO_REGISTER
+	  && subreg_offset_representable_p (REGNO (SUBREG_REG (x)),
+					    GET_MODE (SUBREG_REG (x)),
+					    SUBREG_BYTE (x), GET_MODE (x)))
 	return base + subreg_regno_offset (REGNO (SUBREG_REG (x)),
 					   GET_MODE (SUBREG_REG (x)),
 					   SUBREG_BYTE (x), GET_MODE (x));
