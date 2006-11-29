@@ -3978,14 +3978,8 @@ vrp_visit_stmt (tree stmt, edge *taken_edge_p, tree *output_p)
 
 
 /* Meet operation for value ranges.  Given two value ranges VR0 and
-   VR1, store in VR0 the result of meeting VR0 and VR1.
-   
-   The meeting rules are as follows:
-
-   1- If VR0 and VR1 have an empty intersection, set VR0 to VR_VARYING.
-
-   2- If VR0 and VR1 have a non-empty intersection, set VR0 to the
-      union of VR0 and VR1.  */
+   VR1, store in VR0 a range that contains both VR0 and VR1.  This
+   may not be the smallest possible such range.  */
 
 static void
 vrp_meet (value_range_t *vr0, value_range_t *vr1)
@@ -4016,56 +4010,44 @@ vrp_meet (value_range_t *vr0, value_range_t *vr1)
 
   if (vr0->type == VR_RANGE && vr1->type == VR_RANGE)
     {
-      /* If VR0 and VR1 have a non-empty intersection, compute the
-	 union of both ranges.  */
-      if (value_ranges_intersect_p (vr0, vr1))
-	{
-	  int cmp;
-	  tree min, max;
+      int cmp;
+      tree min, max;
 
-	  /* The lower limit of the new range is the minimum of the
-	     two ranges.  If they cannot be compared, the result is
-	     VARYING.  */
-	  cmp = compare_values (vr0->min, vr1->min);
-	  if (cmp == 0 || cmp == 1)
-	    min = vr1->min;
-	  else if (cmp == -1)
-	    min = vr0->min;
-	  else
-	    {
-	      set_value_range_to_varying (vr0);
-	      return;
-	    }
-
-	  /* Similarly, the upper limit of the new range is the
-	     maximum of the two ranges.  If they cannot be compared,
-	     the result is VARYING.  */
-	  cmp = compare_values (vr0->max, vr1->max);
-	  if (cmp == 0 || cmp == -1)
-	    max = vr1->max;
-	  else if (cmp == 1)
-	    max = vr0->max;
-	  else
-	    {
-	      set_value_range_to_varying (vr0);
-	      return;
-	    }
-
-	  /* The resulting set of equivalences is the intersection of
-	     the two sets.  */
-	  if (vr0->equiv && vr1->equiv && vr0->equiv != vr1->equiv)
-	    bitmap_and_into (vr0->equiv, vr1->equiv);
-	  else if (vr0->equiv && !vr1->equiv)
-	    bitmap_clear (vr0->equiv);
-
-	  set_value_range (vr0, vr0->type, min, max, vr0->equiv);
-	}
+      /* Compute the convex hull of the ranges.  The lower limit of
+         the new range is the minimum of the two ranges.  If they
+	 cannot be compared, then give up.  */
+      cmp = compare_values (vr0->min, vr1->min);
+      if (cmp == 0 || cmp == 1)
+        min = vr1->min;
+      else if (cmp == -1)
+        min = vr0->min;
       else
-	goto no_meet;
+	goto give_up;
+
+      /* Similarly, the upper limit of the new range is the maximum
+         of the two ranges.  If they cannot be compared, then
+	 give up.  */
+      cmp = compare_values (vr0->max, vr1->max);
+      if (cmp == 0 || cmp == -1)
+        max = vr1->max;
+      else if (cmp == 1)
+        max = vr0->max;
+      else
+	goto give_up;
+
+      /* The resulting set of equivalences is the intersection of
+	 the two sets.  */
+      if (vr0->equiv && vr1->equiv && vr0->equiv != vr1->equiv)
+        bitmap_and_into (vr0->equiv, vr1->equiv);
+      else if (vr0->equiv && !vr1->equiv)
+        bitmap_clear (vr0->equiv);
+
+      set_value_range (vr0, vr0->type, min, max, vr0->equiv);
     }
   else if (vr0->type == VR_ANTI_RANGE && vr1->type == VR_ANTI_RANGE)
     {
-      /* Two anti-ranges meet only if they are both identical.  */
+      /* Two anti-ranges meet only if their complements intersect.
+         Only handle the case of identical ranges.  */
       if (compare_values (vr0->min, vr1->min) == 0
 	  && compare_values (vr0->max, vr1->max) == 0
 	  && compare_values (vr0->min, vr0->max) == 0)
@@ -4078,13 +4060,13 @@ vrp_meet (value_range_t *vr0, value_range_t *vr1)
 	    bitmap_clear (vr0->equiv);
 	}
       else
-	goto no_meet;
+	goto give_up;
     }
   else if (vr0->type == VR_ANTI_RANGE || vr1->type == VR_ANTI_RANGE)
     {
-      /* A numeric range [VAL1, VAL2] and an anti-range ~[VAL3, VAL4]
-	 meet only if the ranges have an empty intersection.  The
-	 result of the meet operation is the anti-range.  */
+      /* For a numeric range [VAL1, VAL2] and an anti-range ~[VAL3, VAL4],
+         only handle the case where the ranges have an empty intersection.
+	 The result of the meet operation is the anti-range.  */
       if (!symbolic_range_p (vr0)
 	  && !symbolic_range_p (vr1)
 	  && !value_ranges_intersect_p (vr0, vr1))
@@ -4103,17 +4085,17 @@ vrp_meet (value_range_t *vr0, value_range_t *vr1)
 	    bitmap_clear (vr0->equiv);
 	}
       else
-	goto no_meet;
+	goto give_up;
     }
   else
     gcc_unreachable ();
 
   return;
 
-no_meet:
-  /* The two range VR0 and VR1 do not meet.  Before giving up and
-     setting the result to VARYING, see if we can at least derive a
-     useful anti-range.  FIXME, all this nonsense about distinguishing
+give_up:
+  /* Failed to find an efficient meet.  Before giving up and setting
+     the result to VARYING, see if we can at least derive a useful
+     anti-range.  FIXME, all this nonsense about distinguishing
      anti-ranges from ranges is necessary because of the odd
      semantics of range_includes_zero_p and friends.  */
   if (!symbolic_range_p (vr0)
