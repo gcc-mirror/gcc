@@ -16,6 +16,6 @@ template <class T> struct Z {	// { dg-error "declaration" }
   Y<Z<T> > y;			// { dg-error "instantiated" }
 };
 
-struct ZZ : Z<int>		// { dg-error "instantiated" }
+struct ZZ : Z<int>
 {
 };
