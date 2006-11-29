@@ -479,11 +479,6 @@ schedule_ebb (rtx head, rtx tail)
   current_sched_info->prev_head = PREV_INSN (head);
   current_sched_info->next_tail = NEXT_INSN (tail);
 
-  if (write_symbols != NO_DEBUG)
-    {
-      save_line_notes (first_bb->index, head, tail);
-    }
-
   /* rm_other_notes only removes notes which are _inside_ the
      block---that is, it won't remove notes before the first real insn
      or after the last real insn of the block.  So if the first insn
@@ -518,9 +513,6 @@ schedule_ebb (rtx head, rtx tail)
   gcc_assert (sched_n_insns == n_insns);
   head = current_sched_info->head;
   tail = current_sched_info->tail;
-
-  if (write_symbols != NO_DEBUG)
-    restore_line_notes (head, tail);
 
   if (EDGE_COUNT (last_bb->preds) == 0)
     /* LAST_BB is unreachable.  */

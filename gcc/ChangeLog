@@ -1,3 +1,31 @@
+2006-11-29  Tehila Meyzels  <tehila@il.ibm.com>
+
+	* haifa-sched.c: Remove define LINE_NOTE(INSN).  Remove line_note_head.
+	Update documentation.
+	(associate_line_notes_with_blocks): Kill.
+	(extend_bb): Remove basic block argument, put void instead. 
+	Remove line number handling for each bb. 
+	(save_line_notes): Kill.
+	(restore_line_notes): Kill.
+	(sched_init): Remove line_note_head initialization.
+	Change extend_bb call.
+	(sched_finish): Remove free of line_note_head.
+	(add_block): Change extend_bb call.
+	* sched-ebb.c (schedule_ebb): Remove save_line_notes,
+	rm_line_notes and restore_line_notes calls.
+	(schedule_ebbs): Remove rm_redundant_line_notes.
+	* sched-int.h (struct haifa_insn_data): Remove line_note.
+	(save_line_notes): Remove declaration.
+	(restore_line_notes): Remove declaration.
+	* modulo-sched.c (loop_canon_p): Update debug info printing 
+	by using insn locators instead of line note.
+	(sms_schedule): Update debug info printing, by using insn 
+	locators instead of line note.
+	* sched-rgn.c (debug_dependencies): Remove handling of case 
+	n>0 (line number), since it's a dead code.
+	(schedule_region): Remove save_line_notes and 
+	restore_line_notes calls.
+
 2006-11-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/predicates.md (gpc_reg_operand): Check
