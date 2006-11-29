@@ -31,7 +31,7 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
-  namespace __balloc
+  namespace __detail
   {
     template class __mini_vector<
       std::pair<bitmap_allocator<char>::_Alloc_block*,
@@ -55,7 +55,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     __mutex_type& __bfl_mutex = _M_get_mutex();
 #endif
     const vector_type& __free_list = _M_get_free_list();
-    using __gnu_cxx::__balloc::__lower_bound;
+    using __gnu_cxx::__detail::__lower_bound;
     iterator __tmp = __lower_bound(__free_list.begin(), __free_list.end(), 
 				   __sz, _LT_pointer_compare());
 

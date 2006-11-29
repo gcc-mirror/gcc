@@ -155,6 +155,7 @@ fi
   cd $builddir
   sed -e "s=@outdir@=${outdir}=g" \
       -e "s=@srcdir@=${srcdir}=g" \
+      -e "s=@builddir@=${builddir}=g" \
       -e "s=@host_alias@=${host_alias}=g" \
       -e "s=@html_output_dir@=html_${mode}=" \
       -e "s=@enabled_sections@=${enabled_sections}=" \

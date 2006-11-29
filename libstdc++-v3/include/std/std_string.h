@@ -32,7 +32,7 @@
 // ISO C++ 14882: 21  Strings library
 //
 
-/** @file string
+/** @file
  *  This is a Standard C++ Library header.
  */
 

@@ -27,6 +27,10 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file 
+ *  This is a TR1 C++ Library header. 
+ */
+
 namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE(tr1)

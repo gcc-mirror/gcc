@@ -33,6 +33,9 @@
   
 // Default information, may not be appropriate for specific host.
   
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  /// @brief  Base class for ctype.
   struct ctype_base
   {
     // Non-standard typedefs.
@@ -54,5 +57,4 @@
     static const mask alnum 	= (1 << 2) | (1 << 3);  // alpha|digit
   };
 
-
-
+_GLIBCXX_END_NAMESPACE

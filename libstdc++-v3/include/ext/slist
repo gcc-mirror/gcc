@@ -62,6 +62,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   using std::_Construct;
   using std::_Destroy;
   using std::allocator;
+  using std::__true_type;
+  using std::__false_type;
 
   struct _Slist_node_base
   {

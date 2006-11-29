@@ -1,3 +1,111 @@
+2006-11-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/throw_allocator.h: Consistent @file markup.
+	* include/ext/type_traits.h: Same.
+	* include/debug/hash_map: Same.
+	* include/debug/hash_multimap.h: Same.
+	* include/debug/set.h: Same.
+	* include/debug/hash_set.h: Same.
+	* include/debug/formatter.h: Same.
+	* include/debug/bitset: Same.
+	* include/debug/set: Same.
+	* include/debug/multiset.h: Same.
+	* include/debug/safe_sequence.h: Same.
+	* include/debug/hash_set: Same.
+	* include/debug/functions.h: Same.
+	* include/debug/safe_base.h: Same.
+	* include/debug/hash_multiset.h: Same.
+	* include/debug/safe_iterator.tcc: Same.
+	* include/debug/vector: Same.
+	* include/debug/map.h: Same.
+	* include/debug/deque: Same.
+	* include/debug/hash_map.h: Same.
+	* include/debug/string: Same.
+	* include/debug/macros.h: Same.
+	* include/debug/list: Same.
+	* include/debug/debug.h: Same.
+	* include/debug/map: Same. 
+	* include/debug/safe_iterator.h: Same.
+	* include/debug/multimap.h: Same.
+	* config/cpu/generic/atomicity_mutex/atomicity.h: Same.
+	* config/cpu/generic/atomicity_builtins/atomicity.h: Same.
+	* config/cpu/generic/atomic_word.h: Same.
+	* include/tr1/memory: Same.
+	* include/tr1/random: Same.	
+	* include/std/std_queue.h: Same.
+	* include/std/std_iterator.h: Same.
+	* include/std/std_bitset.h: Same.
+	* include/std/std_set.h: Same.
+	* include/std/std_vector.h: Same.
+	* include/std/std_deque.h: Same.
+	* include/std/std_utility.h: Same.
+	* include/std/std_stack.h: Same.
+	* include/std/std_string.h: Same.
+	* include/std/std_list.h: Same.
+	* include/std/std_map.h: Same.
+	* libsupc++/typeinfo: Same.
+	* libsupc++/exception: Same.
+	* libsupc++/exception_defines.h: Same.
+	* libsupc++/new: Same.
+	
+	* include/ext/bitmap_allocator.h: Change namespace __balloc to
+	__detail.
+	* src/bitmap_allocator.cc: Same.
+	
+	* include/bits/cpp_type_traits.h: Change __true_type and
+	__false_type from global to namespace std scope.
+	* include/ext/slist: Same.
+	* include/ext/vstring.h: Same.
+	* include/ext/vstring.tcc: Same.
+	* include/ext/rc_string_base.h: Same.
+	* include/ext/sso_string_base.h: Same.
+
+	* include/bits/codecvt.h: Adjust markup so that correct namespace
+	scope information is in all files.
+	* include/bits/locale_facets.h: Same. Include ctype_base directly.
+	* config/os/windiss/ctype_base.h: Add in namespace markup.
+	* config/os/newlib/ctype_base.h: Same.
+	* config/os/aix/ctype_base.h: Same.
+	* config/os/vxworks/ctype_base.h: Same.
+	* config/os/hpux/ctype_base.h: Same.
+	* config/os/mingw32/ctype_base.h: Same.
+	* config/os/gnu-linux/ctype_base.h: Same.
+	* config/os/tpf/ctype_base.h: Same.
+	* config/os/uclibc/ctype_base.h: Same.
+	* config/os/djgpp/ctype_base.h: Same.
+	* config/os/qnx/qnx6.1/ctype_base.h: Same.
+	* config/os/bsd/netbsd/ctype_base.h: Same.
+	* config/os/bsd/darwin/ctype_base.h: Same.
+	* config/os/bsd/freebsd/ctype_base.h: Same.
+	* config/os/irix/irix5.2/ctype_base.h: Same.
+	* config/os/irix/irix6.5/ctype_base.h: Same.
+	* config/os/solaris/solaris2.5/ctype_base.h: Same.
+	* config/os/solaris/solaris2.6/ctype_base.h: Same.
+	* config/os/solaris/solaris2.7/ctype_base.h: Same.
+	* config/os/generic/ctype_base.h: Same.
+	* include/tr1/mu_iterate.h: Same.
+	* include/tr1/tuple: Same.
+	* include/tr1/tuple_iterate.h: Same.
+	* include/tr1/tuple_defs.h: Same.
+	* include/tr1/random.tcc: Same.
+	* include/tr1/functional: Same.
+	* include/tr1/functional_iterate.h: Same.
+	
+	* testsuite/ext/type_traits/remove_unsigned_integer_neg.cc: Line
+	number changes.	
+	* testsuite/ext/type_traits/add_unsigned_floating_neg.cc: Same.
+	* testsuite/ext/type_traits/remove_unsigned_floating_neg.cc: Same.
+	* testsuite/ext/type_traits/add_unsigned_integer_neg.cc: Same.
+
+	* docs/doxygen/user.cfg.in: Update to doxygen 1.5.1.
+	* docs/html/17_intro/license.html: Updated info for generated docs.
+	* docs/doxygen/guide.html: Adjust.
+	* docs/doxygen/run_doxygen: Adjust.
+	* docs/doxygen/mainpage.html: Same.
+	* docs/doxygen/doxygroups.cc: Same.
+	* docs/doxygen/Intro.3: Same.
+	* docs/doxygen/tables.html: Same.
+
 2006-11-26  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/29385 (2nd part, based on an idea by Ion Gaztanaga)

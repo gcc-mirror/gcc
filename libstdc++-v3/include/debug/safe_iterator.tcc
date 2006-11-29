@@ -28,9 +28,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file safe_iterator.tcc
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+/** @file debug/safe_iterator.tcc
+ *  This file is a GNU debug extension to the Standard C++ Library.
  */
 
 #ifndef _GLIBCXX_DEBUG_SAFE_ITERATOR_TCC

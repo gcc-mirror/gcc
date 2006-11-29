@@ -17,26 +17,39 @@
 
 // // // // // // // // // // // // // // // // // // // // // // // //
 /** @namespace std
- *  @brief Everything defined by the ISO C++ Standard is within namespace std.
+ *  @brief Everything defined by the ISO C++ Standard is within
+ *  namespace <a class="el" href="namespacestd.html">std</a>.
+*/
+/** @namespace std::__detail
+ *  @brief Implementation details not part of the namespace <a class="el"
+ *  href="namespacestd.html">std</a> interface.
 */
 /** @namespace std::tr1
- *  @brief Everything defined by the TR1 is within namespace std::tr1.
+ *  @brief Everything defined by the ISO C++ TR1 is within namespace std::tr1.
+*/
+/** @namespace std::tr1::__detail
+ *  @brief Implementation details not part of the namespace std::tr1 interface.
 */
 /** @namespace __gnu_cxx
  *  @brief GNU extensions for public use.
 */
-/** @namespace __gnu_cxx::balloc
- *  @brief Related to __gnu_cxx::bitmap_allocator.
+/** @namespace __gnu_cxx::__detail
+ *  @brief Implementation details not part of the namespace __gnu_cxx
+ *  interface.
+*/
+/** @namespace __gnu_cxx::typelist
+ *  @brief GNU typelist extensions for public compile-time use.
 */
 /** @namespace __gnu_internal
- *  @brief GNU implemenation details, not for public use.
+ *  @brief GNU implemenation details, not for public use or
+ *  export. Used only when anonymous namespaces cannot be substituted.
 */
 /** @namespace __gnu_debug
- *  @brief GNU debug mode implemenation details.
+ *  @brief GNU debug mode classes for public use.
 */
 // // // // // // // // // // // // // // // // // // // // // // // //
 /** @addtogroup SGIextensions STL extensions from SGI
-Because libstdc++-v3 based its implementation of the STL subsections of
+Because libstdc++ based its implementation of the STL subsections of
 the library on the SGI 3.3 implementation, we inherited their extensions
 as well.
 
@@ -118,9 +131,10 @@ All associative containers must meet certain requirements, summarized in
 
 // // // // // // // // // // // // // // // // // // // // // // // //
 /** @namespace abi
- *  @brief The cross-vendor C++ Application Binary Interface.
+ *  @brief The cross-vendor C++ Application Binary Interface. A
+ *  namespace alias to __cxxabiv1.
  *
- *  A brief overview of an ABI is given in the libstdc++-v3 FAQ, question
+ *  A brief overview of an ABI is given in the libstdc++ FAQ, question
  *  5.8 (you may have a copy of the FAQ locally, or you can view the online
  *  version at http://gcc.gnu.org/onlinedocs/libstdc++/faq/index.html#5_8).
  *

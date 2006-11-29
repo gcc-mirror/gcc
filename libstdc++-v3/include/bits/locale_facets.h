@@ -44,6 +44,7 @@
 
 #include <ctime>	// For struct tm
 #include <cwctype>	// For wctype_t
+#include <bits/ctype_base.h>	
 #include <iosfwd>
 #include <bits/ios_base.h>  // For ios_base, ios_base::iostate
 #include <streambuf>
@@ -130,7 +131,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // 22.2.1.1  Template class ctype
   // Include host and configuration specific ctype enums for ctype_base.
-  #include <bits/ctype_base.h>
 
   // Common base for ctype<_CharT>.
   /**
@@ -1530,8 +1530,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<>
     ctype_byname<wchar_t>::ctype_byname(const char*, size_t refs);
 
-  // 22.2.1.5  Template class codecvt
-  #include <bits/codecvt.h>
+_GLIBCXX_END_NAMESPACE
+
+// 22.2.1.5  Template class codecvt
+#include <bits/codecvt.h>
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
 
   // 22.2.2  The numeric category.
   class __num_base

@@ -27,6 +27,10 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file ext/atomic_word.h
+ *  This file is a GNU extension to the Standard C++ Library.
+ */
+
 #ifndef _GLIBCXX_ATOMIC_WORD_H
 #define _GLIBCXX_ATOMIC_WORD_H	1
 

@@ -34,6 +34,9 @@
 // Information as gleaned from /usr/include/ctype.h. Looks like this
 // only works with solaris2.6.
 
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  /// @brief  Base class for ctype.
   struct ctype_base
   {
     // Non-standard typedefs.
@@ -54,3 +57,5 @@
     static const mask punct 	= _ISPUNCT;
     static const mask alnum 	= _ISALPHA | _ISDIGIT;
   };
+
+_GLIBCXX_END_NAMESPACE

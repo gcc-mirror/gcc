@@ -33,6 +33,9 @@
   
 // Information extracted from target/h/ctype.h.
   
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  /// @brief  Base class for ctype.
   struct ctype_base
   {
     // Non-standard typedefs.
@@ -55,5 +58,4 @@
     static const mask alnum 	= _C_UPPER | _C_LOWER | _C_NUMBER;
   };
 
-
-
+_GLIBCXX_END_NAMESPACE
