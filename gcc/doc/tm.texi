@@ -4535,10 +4535,11 @@ not support profiling.
 @end defmac
 
 @defmac NO_PROFILE_COUNTERS
-Define this macro if the @code{mcount} subroutine on your system does
-not need a counter variable allocated for each function.  This is true
-for almost all modern implementations.  If you define this macro, you
-must not use the @var{labelno} argument to @code{FUNCTION_PROFILER}.
+Define this macro to be an expression with a nonzero value if the
+@code{mcount} subroutine on your system does not need a counter variable
+allocated for each function.  This is true for almost all modern
+implementations.  If you define this macro, you must not use the
+@var{labelno} argument to @code{FUNCTION_PROFILER}.
 @end defmac
 
 @defmac PROFILE_BEFORE_PROLOGUE
