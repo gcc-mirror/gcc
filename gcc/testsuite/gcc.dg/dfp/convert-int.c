@@ -1,7 +1,6 @@
-/* { dg-do compile } */
 /* { dg-options "-std=gnu99 -O0" } */
 
-/* N1150 5.1 Conversion between decimal floating integer.
+/* N1150 5.1 Conversion between decimal floating types and integer.
    C99 6.3.1.4(1a) New.  */
 
 extern void abort (void);
