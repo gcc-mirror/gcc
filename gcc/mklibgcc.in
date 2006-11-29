@@ -145,6 +145,9 @@ decnumber_dep='stmp-dirs $(srcdir)/../libdecnumber/decContext.h $(srcdir)/../lib
 	$(srcdir)/../libdecnumber/decNumberLocal.h $(srcdir)/../libdecnumber/decimal32.h $(srcdir)/../libdecnumber/decimal64.h
 	$(srcdir)/../libdecnumber/decimal128.h $(srcdir)/../libdecnumber/decDPD.h $(srcdir)/../libdecnumber/decUtility.h'
 
+# Dependencies for dfp-bit.c
+dfpbit_c_dep='$(srcdir)/../libdecnumber/decRound.h'" $libgcc_dep $decnumber_dep"
+
 # Flag whether we need eh_dummy.c
 need_eh_dummy=
 
@@ -456,7 +459,7 @@ for ml in $MULTILIBS; do
       if [ "$dpbit" ]; then
         for name in $dpfuncs; do
           out="libgcc/${dir}/${name}${objext}"
-	  echo $out: config/dfp-bit.h config/dfp-bit.c $fpbit_c_dep
+	  echo $out: config/dfp-bit.h config/dfp-bit.c $dfpbit_c_dep
 	  echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name -DWIDTH=$dpwidth \
 	      $DFP_CFLAGS -c $\(srcdir\)/config/dfp-bit.c -o $out
 	  echo $libgcc_a: $out

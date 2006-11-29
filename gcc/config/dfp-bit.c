@@ -81,7 +81,7 @@ dfp_unary_op (dfp_unary_func op, DFP_C_TYPE arg)
   HOST_TO_IEEE (arg, &a);
 
   decContextDefault (&context, CONTEXT_INIT);
-  context.round = CONTEXT_ROUND;
+  DFP_INIT_ROUNDMODE (context.round);
 
   TO_INTERNAL (&a, &arg1);
 
@@ -107,7 +107,7 @@ dfp_binary_op (dfp_binary_func op, DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
   HOST_TO_IEEE (arg_b, &b);
 
   decContextDefault (&context, CONTEXT_INIT);
-  context.round = CONTEXT_ROUND;
+  DFP_INIT_ROUNDMODE (context.round);
 
   TO_INTERNAL (&a, &arg1);
   TO_INTERNAL (&b, &arg2);
@@ -134,7 +134,7 @@ dfp_compare_op (dfp_binary_func op, DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
   HOST_TO_IEEE (arg_b, &b);
 
   decContextDefault (&context, CONTEXT_INIT);
-  context.round = CONTEXT_ROUND;
+  DFP_INIT_ROUNDMODE (context.round);
 
   TO_INTERNAL (&a, &arg1);
   TO_INTERNAL (&b, &arg2);
@@ -365,7 +365,7 @@ DFP_TO_DFP (DFP_C_TYPE f_from)
   decContext context;
 
   decContextDefault (&context, CONTEXT_INIT);
-  context.round = CONTEXT_ROUND;
+  DFP_INIT_ROUNDMODE (context.round);
 
   HOST_TO_IEEE (f_from, &s_from);
   TO_INTERNAL (&s_from, &d);
@@ -394,7 +394,7 @@ DFP_TO_INT (DFP_C_TYPE x)
 
   decContextDefault (&context, CONTEXT_INIT);
   /* Need non-default rounding mode here.  */
-  context.round = DEC_ROUND_DOWN;
+  DFP_INIT_ROUNDMODE (context.round);
 
   HOST_TO_IEEE (x, &s);
   TO_INTERNAL (&s, &n1);
@@ -428,7 +428,7 @@ INT_TO_DFP (INT_TYPE i)
   decContext context;
 
   decContextDefault (&context, CONTEXT_INIT);
-  context.round = CONTEXT_ROUND;
+  DFP_INIT_ROUNDMODE (context.round);
 
   /* Use a C library function to get a floating point string.  */
   sprintf (buf, INT_FMT ".0", CAST_FOR_FMT(i));
@@ -470,7 +470,7 @@ BFP_TO_DFP (BFP_TYPE x)
   decContext context;
 
   decContextDefault (&context, CONTEXT_INIT);
-  context.round = CONTEXT_ROUND;
+  DFP_INIT_ROUNDMODE (context.round);
 
   /* Use a C library function to write the floating point value to a string.  */
 #ifdef BFP_VIA_TYPE

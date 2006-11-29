@@ -30,6 +30,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #ifndef _DFPBIT_H
 #define _DFPBIT_H
 
+#include <fenv.h>
+#include <decRound.h>
 #include "tconfig.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -114,9 +116,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define CONTEXT_INIT DEC_INIT_DECIMAL128
 #endif
 
-/* Define CONTEXT_ROUND to obtain the current decNumber rounding mode.  */
-extern enum rounding	__decGetRound (void);
-#define CONTEXT_ROUND	__decGetRound ()
+#ifndef DFP_INIT_ROUNDMODE
+#define DFP_INIT_ROUNDMODE(A) A = DEC_ROUND_HALF_EVEN
+#endif
 
 /* Conversions between different decimal float types use WIDTH_TO to
    determine additional macros to define.  */

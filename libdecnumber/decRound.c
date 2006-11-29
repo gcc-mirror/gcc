@@ -1,5 +1,6 @@
-/* Temporary support for a libc-like fp environment for decimal float.
-   Copyright (C) 2005 Free Software Foundation, Inc.
+/* Internal testing support for rounding for decimal float.
+
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -20,6 +21,10 @@
 
 #include "config.h"
 #include "decContext.h"
+#include "decRound.h"
+
+/* Internal, non-documented functions for testing libgcc functions.
+   This support is not sufficient for application use.  */
 
 #define FE_DEC_DOWNWARD 0
 #define FE_DEC_TONEAREST 1
@@ -28,11 +33,6 @@
 #define FE_DEC_UPWARD 4
 #define FE_DEC_MAX 5
 
-extern void __dfp_set_round (int);
-extern int __dfp_get_round (void);
-extern enum rounding __decGetRound (void);
-
-/* FIXME: these should be in thread-local storage for runtime support.  */
 static enum rounding __dfp_rounding_mode = DEC_ROUND_HALF_EVEN;
 
 /* Set the decNumber rounding mode from the FE_DEC_* value in MODE.  */ 
