@@ -1,3 +1,13 @@
+2006-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/predicates.md (gpc_reg_operand): Check
+	invalid_e500_subreg.
+	* config/rs6000/rs6000.c (invalid_e500_subreg): Don't allow any
+	SImode subregs of SPE vectors.
+	* config/rs6000/rs6000.md (insv): Fail for invalid E500 subregs.
+	* jump.c (true_regnum): Require subregs to satisfy
+	subreg_offset_representable_p.
+
 2006-11-29  Daniel Berlin  <dberlin@dberlin.org>
 	    Steven Bosscher <stevenb.gcc@gmail.com>
 
