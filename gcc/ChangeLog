@@ -1,3 +1,18 @@
+2006-11-29  Duncan Sands  <baldrick@free.fr>
+
+	PR tree-optimization/23744
+	* tree-vrp.c (vrp_meet): do not require ranges to intersect.
+
+2006-11-29  Duncan Sands  <baldrick@free.fr>
+
+	PR tree-optimization/23744
+	* testsuite/gcc.dg/tree-ssa/pr23744.c: new test.
+
+2006-11-29  Duncan Sands  <baldrick@free.fr>
+
+	PR tree-optimization/23744
+	* testsuite/gcc.dg/tree-ssa/update-threading.c: xfail.
+
 2006-11-29  Jie Zhang  <jie.zhang@analog.com>
 
 	* doc/tm.texi (NO_PROFILE_COUNTERS): Document more accurately.
