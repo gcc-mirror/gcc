@@ -1900,7 +1900,7 @@ tree-ssa-threadupdate.o : tree-ssa-threadupdate.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(DIAGNOSTIC_H) $(FUNCTION_H) $(TM_H) coretypes.h $(TREE_DUMP_H) \
    $(BASIC_BLOCK_H) $(FLAGS_H) tree-pass.h $(CFGLOOP_H)
 tree-ssanames.o : tree-ssanames.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TM_H) $(TREE_H) $(VARRAY_H) $(GGC_H) gt-tree-ssanames.h  $(TREE_FLOW_H)
+   $(TM_H) $(TREE_H) $(VARRAY_H) $(GGC_H) $(TREE_FLOW_H)
 tree-phinodes.o : tree-phinodes.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(VARRAY_H) $(GGC_H) $(BASIC_BLOCK_H) $(TREE_FLOW_H) \
    gt-tree-phinodes.h $(RTL_H) toplev.h
@@ -2901,7 +2901,7 @@ gt-dbxout.h \
 gtype-c.h gt-cfglayout.h \
 gt-tree-mudflap.h gt-tree-vect-generic.h \
 gt-tree-profile.h gt-tree-ssa-address.h \
-gt-tree-ssanames.h gt-tree-iterator.h gt-gimplify.h \
+gt-tree-iterator.h gt-gimplify.h \
 gt-tree-phinodes.h gt-tree-nested.h \
 gt-tree-ssa-operands.h gt-tree-ssa-propagate.h \
 gt-tree-ssa-structalias.h gt-ipa-inline.h gt-cgraphunit.h \

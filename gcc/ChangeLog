@@ -1,3 +1,9 @@
+2006-11-29  Daniel Berlin  <dberlin@dberlin.org>
+	    Steven Bosscher <stevenb.gcc@gmail.com>
+
+	* Makefile.in (tree-ssanames.o): Remove gt-tree-ssanames.h,
+	since it no longer exists.
+	    
 2006-11-29  Duncan Sands  <baldrick@free.fr>
 
 	PR tree-optimization/23744
