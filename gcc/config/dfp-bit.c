@@ -394,7 +394,7 @@ DFP_TO_INT (DFP_C_TYPE x)
 
   decContextDefault (&context, CONTEXT_INIT);
   /* Need non-default rounding mode here.  */
-  DFP_INIT_ROUNDMODE (context.round);
+  context.round = DEC_ROUND_DOWN;
 
   HOST_TO_IEEE (x, &s);
   TO_INTERNAL (&s, &n1);
