@@ -9597,7 +9597,8 @@ sh_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
   emit_move_insn (adjust_address (tramp_mem, SImode, 12), fnaddr);
   if (TARGET_HARVARD)
     {
-      if (TARGET_USERMODE)
+      if (!TARGET_INLINE_IC_INVALIDATE
+	  || !(TARGET_SH4A_ARCH || TARGET_SH4_300) && TARGET_USERMODE)
 	emit_library_call (function_symbol (NULL, "__ic_invalidate",
 					    FUNCTION_ORDINARY),
 			   0, VOIDmode, 1, tramp, SImode);

@@ -709,7 +709,7 @@ See RS/6000 and PowerPC Options.
 -m5-compact  -m5-compact-nofpu @gol
 -mb  -ml  -mdalign  -mrelax @gol
 -mbigtable  -mfmovd  -mhitachi -mrenesas -mno-renesas -mnomacsave @gol
--mieee  -misize  -mpadstruct  -mspace @gol
+-mieee  -misize  -minline-ic_invalidate -mpadstruct  -mspace @gol
 -mprefergot  -musermode -multcost=@var{number} -mdiv=@var{strategy} @gol
 -mdivsi3_libfunc=@var{name}  @gol
 -madjust-unroll -mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
@@ -12458,6 +12458,19 @@ comparisons of NANs / infinities incurs extra overhead in every
 floating point comparison, therefore the default is set to
 @option{-ffinite-math-only}.
 
+@item -minline-ic_invalidate
+@opindex minline-ic_invalidate
+Inline code to invalidate instruction cache entries after setting up
+nested function trampolines.
+This option has no effect if -musermode is in effect and the selected
+code generation option (e.g. -m4) does not allow the use of the icbi
+instruction.
+If the selected code generation option does not allow the use of the icbi
+instruction, and -musermode is not in effect, the inlined code will
+manipulate the instruction cache address array directly with an associative
+write.  This not only requires privileged mode, but it will also
+fail if the cache line had been mapped via the TLB and has become unmapped.
+
 @item -misize
 @opindex misize
 Dump instruction size and location in the assembly code.
@@ -12478,10 +12491,9 @@ the Global Offset Table instead of the Procedure Linkage Table.
 
 @item -musermode
 @opindex musermode
-Generate a library function call to invalidate instruction cache
-entries, after fixing up a trampoline.  This library function call
-doesn't assume it can write to the whole memory address space.  This
-is the default when the target is @code{sh-*-linux*}.
+Don't generate privileged mode only code; implies -mno-inline-ic_invalidate
+if the inlined code would not work in user mode.
+This is the default when the target is @code{sh-*-linux*}.
 
 @item -multcost=@var{number}
 @opindex multcost=@var{number}
