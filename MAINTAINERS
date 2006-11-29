@@ -143,7 +143,6 @@ treelang                James A. Morrison	phython@gcc.gnu.org
 
 cpplib			Per Bothner		per@bothner.com
 libdecnumber		Ben Elliston		bje@au.ibm.com
-libgcc-math		Richard Guenther	rguenther@suse.de
 libgcj			Tom Tromey		tromey@redhat.com
 libgcj			Bryce McKinlay		mckinlay@redhat.com
 libgomp                 Richard Henderson       rth@redhat.com
@@ -267,6 +266,7 @@ Matthew Gingell					gingell@gnat.com
 Anthony Green					green@redhat.com
 Doug Gregor					doug.gregor@gmail.com
 Jon Grimm					jgrimm2@us.ibm.com
+Richard Guenther				rguenther@suse.de
 Laurent Guerby					laurent@guerby.net
 Mostafa Hagog					hagog@gcc.gnu.org
 Olivier Hainque					hainque@act-europe.fr
