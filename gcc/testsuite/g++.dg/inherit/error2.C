@@ -3,14 +3,14 @@
 
 struct A
 {
-  virtual A* foo();
+  virtual A* foo();    // { dg-error "overriding" }
 };
 
 struct B : virtual A;  // { dg-error "before" }
 
 struct C : A
 {
-  virtual B* foo();
+  virtual B* foo();    // { dg-error "invalid covariant" }
 };
 
 B* C::foo() { return 0; }

@@ -24,7 +24,7 @@ union u1 {
   int u1_member_1;
 };
 
-struct s1 : public u1 {			/* { dg-error "" } base class is a union */
+struct s1 : public u1 {			/* { dg-error "base type" } */
   int s1_member_0;
 };
 
