@@ -1,3 +1,7 @@
+2006-11-29  Jie Zhang  <jie.zhang@analog.com>
+
+	* doc/tm.texi (NO_PROFILE_COUNTERS): Document more accurately.
+
 2006-11-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/rs6000.c (rs6000_gimplify_va_arg): If
