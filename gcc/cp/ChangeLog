@@ -1,3 +1,11 @@
+2006-12-01  Dirk Mueller  <dmueller@suse.de>
+
+	PR c++/18313
+	* decl.c (grokdeclarator): Warn for type qualifiers on return
+	type for non-dependent types.
+	* pt.c (tsubst_function_type): Warn for type qualifiers on
+	return type for dependent types.
+
 2006-11-30  Geoffrey Keating  <geoffk@apple.com>
 
 	* rtti.c (get_tinfo_decl): Handle return value from
