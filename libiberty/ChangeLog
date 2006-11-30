@@ -1,3 +1,13 @@
+2006-11-30  Andrew Stubbs  <andrew.stubbs@st.com>
+            J"orn Rennecke <joern.rennecke@st.com>
+
+	PR driver/29931
+	* make-relative-prefix.c (make_relative_prefix_1): New function,
+	broken out of make_relative_prefix.  Make link resolution dependent
+	on new parameter.
+	(make_relative_prefix): Use make_relative_prefix_1.
+	(make_relative_prefix_ignore_links): New function.
+
 2006-11-08  Vladimir Prus  <vladimir@codesourcery.com>
 
 	* pex-win32.c (no_suffixes): Remove.

@@ -1,3 +1,9 @@
+2006-11-30  Andrew Stubbs  <andrew.stubbs@st.com>
+            J"orn Rennecke <joern.rennecke@st.com>
+
+	PR driver/29931
+	* libiberty.h (make_relative_prefix_ignore_links): Declare.
+
 2006-11-27  Bob Wilson  <bob.wilson@acm.org>
 
 	* xtensa-config.h (XSHAL_ABI): New.
