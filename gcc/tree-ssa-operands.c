@@ -116,19 +116,10 @@ static VEC(tree,heap) *build_vuses;
 /* Array for building all the V_MUST_DEF operands.  */
 static VEC(tree,heap) *build_v_must_defs;
 
-/* These arrays are the cached operand vectors for call clobbered calls.  */
-static bool ops_active = false;
-
-static GTY (()) struct ssa_operand_memory_d *operand_memory = NULL;
-static unsigned operand_memory_index;
-
 static void get_expr_operands (tree, tree *, int);
 
-static def_optype_p free_defs = NULL;
-static use_optype_p free_uses = NULL;
-static vuse_optype_p free_vuses = NULL;
-static maydef_optype_p free_maydefs = NULL;
-static mustdef_optype_p free_mustdefs = NULL;
+/* Number of functions with initialized ssa_operands.  */
+static int n_initialized = 0;
 
 /* Allocates operand OP of given TYPE from the appropriate free list,
    or of the new value if the list is empty.  */
@@ -136,9 +127,11 @@ static mustdef_optype_p free_mustdefs = NULL;
 #define ALLOC_OPTYPE(OP, TYPE)				\
   do							\
     {							\
-      TYPE##_optype_p ret = free_##TYPE##s;		\
+      TYPE##_optype_p ret				\
+	 = gimple_ssa_operands (cfun)->free_##TYPE##s;	\
       if (ret)						\
-	free_##TYPE##s = ret->next;			\
+	gimple_ssa_operands (cfun)->free_##TYPE##s 	\
+	 = ret->next;					\
       else						\
 	ret = ssa_operand_alloc (sizeof (*ret));	\
       (OP) = ret;					\
@@ -212,7 +205,7 @@ operand_build_sort_virtual (VEC(tree,heap) *list)
 bool
 ssa_operands_active (void)
 {
-  return ops_active;
+  return cfun->gimple_df && gimple_ssa_operands (cfun)->ops_active;
 }
 
 
@@ -250,15 +243,18 @@ static struct
 void
 init_ssa_operands (void)
 {
-  build_defs = VEC_alloc (tree, heap, 5);
-  build_uses = VEC_alloc (tree, heap, 10);
-  build_vuses = VEC_alloc (tree, heap, 25);
-  build_v_may_defs = VEC_alloc (tree, heap, 25);
-  build_v_must_defs = VEC_alloc (tree, heap, 25);
+  if (!n_initialized++)
+    {
+      build_defs = VEC_alloc (tree, heap, 5);
+      build_uses = VEC_alloc (tree, heap, 10);
+      build_vuses = VEC_alloc (tree, heap, 25);
+      build_v_may_defs = VEC_alloc (tree, heap, 25);
+      build_v_must_defs = VEC_alloc (tree, heap, 25);
+    }
 
-  gcc_assert (operand_memory == NULL);
-  operand_memory_index = SSA_OPERAND_MEMORY_SIZE;
-  ops_active = true;
+  gcc_assert (gimple_ssa_operands (cfun)->operand_memory == NULL);
+  gimple_ssa_operands (cfun)->operand_memory_index = SSA_OPERAND_MEMORY_SIZE;
+  gimple_ssa_operands (cfun)->ops_active = true;
   memset (&clobber_stats, 0, sizeof (clobber_stats));
 }
 
@@ -269,23 +265,27 @@ void
 fini_ssa_operands (void)
 {
   struct ssa_operand_memory_d *ptr;
-  VEC_free (tree, heap, build_defs);
-  VEC_free (tree, heap, build_uses);
-  VEC_free (tree, heap, build_v_must_defs);
-  VEC_free (tree, heap, build_v_may_defs);
-  VEC_free (tree, heap, build_vuses);
-  free_defs = NULL;
-  free_uses = NULL;
-  free_vuses = NULL;
-  free_maydefs = NULL;
-  free_mustdefs = NULL;
-  while ((ptr = operand_memory) != NULL)
+  if (!--n_initialized)
     {
-      operand_memory = operand_memory->next;
+      VEC_free (tree, heap, build_defs);
+      VEC_free (tree, heap, build_uses);
+      VEC_free (tree, heap, build_v_must_defs);
+      VEC_free (tree, heap, build_v_may_defs);
+      VEC_free (tree, heap, build_vuses);
+    }
+  gimple_ssa_operands (cfun)->free_defs = NULL;
+  gimple_ssa_operands (cfun)->free_uses = NULL;
+  gimple_ssa_operands (cfun)->free_vuses = NULL;
+  gimple_ssa_operands (cfun)->free_maydefs = NULL;
+  gimple_ssa_operands (cfun)->free_mustdefs = NULL;
+  while ((ptr = gimple_ssa_operands (cfun)->operand_memory) != NULL)
+    {
+      gimple_ssa_operands (cfun)->operand_memory
+	= gimple_ssa_operands (cfun)->operand_memory->next;
       ggc_free (ptr);
     }
 
-  ops_active = false;
+  gimple_ssa_operands (cfun)->ops_active = false;
   
   if (dump_file && (dump_flags & TDF_STATS))
     {
@@ -311,16 +311,18 @@ static inline void *
 ssa_operand_alloc (unsigned size)
 {
   char *ptr;
-  if (operand_memory_index + size >= SSA_OPERAND_MEMORY_SIZE)
+  if (gimple_ssa_operands (cfun)->operand_memory_index + size
+        >= SSA_OPERAND_MEMORY_SIZE)
     {
       struct ssa_operand_memory_d *ptr;
       ptr = GGC_NEW (struct ssa_operand_memory_d);
-      ptr->next = operand_memory;
-      operand_memory = ptr;
-      operand_memory_index = 0;
+      ptr->next = gimple_ssa_operands (cfun)->operand_memory;
+      gimple_ssa_operands (cfun)->operand_memory = ptr;
+      gimple_ssa_operands (cfun)->operand_memory_index = 0;
     }
-  ptr = &(operand_memory->mem[operand_memory_index]);
-  operand_memory_index += size;
+  ptr = &(gimple_ssa_operands (cfun)->operand_memory
+	  ->mem[gimple_ssa_operands (cfun)->operand_memory_index]);
+  gimple_ssa_operands (cfun)->operand_memory_index += size;
   return ptr;
 }
 
@@ -366,8 +368,9 @@ set_virtual_use_link (use_operand_p ptr, tree stmt)
   do							\
     {							\
       TYPE##_optype_p next = (OP)->next;		\
-      (OP)->next = free_##TYPE##s;			\
-      free_##TYPE##s = (OP);				\
+      (OP)->next					\
+	 = gimple_ssa_operands (cfun)->free_##TYPE##s;	\
+      gimple_ssa_operands (cfun)->free_##TYPE##s = (OP);\
       (OP) = next;					\
     } while (0)
 
@@ -503,8 +506,8 @@ finalize_ssa_def_ops (tree stmt)
   /* If there is anything in the old list, free it.  */
   if (old_ops)
     {
-      old_ops->next = free_defs;
-      free_defs = old_ops;
+      old_ops->next = gimple_ssa_operands (cfun)->free_defs;
+      gimple_ssa_operands (cfun)->free_defs = old_ops;
     }
 
   /* Now set the stmt's operands.  */
@@ -558,8 +561,8 @@ finalize_ssa_use_ops (tree stmt)
     {
       for (ptr = old_ops; ptr; ptr = ptr->next)
 	delink_imm_use (USE_OP_PTR (ptr));
-      old_ops->next = free_uses;
-      free_uses = old_ops;
+      old_ops->next = gimple_ssa_operands (cfun)->free_uses;
+      gimple_ssa_operands (cfun)->free_uses = old_ops;
     }
 
   /* Now create nodes for all the new nodes.  */
@@ -661,8 +664,8 @@ finalize_ssa_v_may_def_ops (tree stmt)
     {
       for (ptr = old_ops; ptr; ptr = ptr->next)
 	delink_imm_use (MAYDEF_OP_PTR (ptr));
-      old_ops->next = free_maydefs;
-      free_maydefs = old_ops;
+      old_ops->next = gimple_ssa_operands (cfun)->free_maydefs;
+      gimple_ssa_operands (cfun)->free_maydefs = old_ops;
     }
 
   /* Now set the stmt's operands.  */
@@ -763,8 +766,8 @@ finalize_ssa_vuse_ops (tree stmt)
     {
       for (ptr = old_ops; ptr; ptr = ptr->next)
 	delink_imm_use (VUSE_OP_PTR (ptr));
-      old_ops->next = free_vuses;
-      free_vuses = old_ops;
+      old_ops->next = gimple_ssa_operands (cfun)->free_vuses;
+      gimple_ssa_operands (cfun)->free_vuses = old_ops;
     }
 
   /* Now set the stmt's operands.  */
@@ -904,8 +907,8 @@ finalize_ssa_v_must_def_ops (tree stmt)
     {
       for (ptr = old_ops; ptr; ptr = ptr->next)
 	delink_imm_use (MUSTDEF_KILL_PTR (ptr));
-      old_ops->next = free_mustdefs;
-      free_mustdefs = old_ops;
+      old_ops->next = gimple_ssa_operands (cfun)->free_mustdefs;
+      gimple_ssa_operands (cfun)->free_mustdefs = old_ops;
     }
 
   /* Now set the stmt's operands.  */
@@ -2582,5 +2585,3 @@ debug_immediate_uses_for (tree var)
 {
   dump_immediate_uses_for (stderr, var);
 }
-
-#include "gt-tree-ssa-operands.h"

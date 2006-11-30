@@ -1726,4 +1726,10 @@ get_value_handle (tree expr)
     gcc_unreachable ();
 }
 
+/* Accessor to tree-ssa-operands.c caches.  */
+static inline struct ssa_operands *
+gimple_ssa_operands (struct function *fun)
+{
+  return &fun->gimple_df->ssa_operands;
+}
 #endif /* _TREE_FLOW_INLINE_H  */

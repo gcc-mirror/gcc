@@ -88,6 +88,8 @@ struct gimple_df GTY(()) {
 
   /* True if the code is in ssa form.  */
   unsigned int in_ssa_p : 1;
+
+  struct ssa_operands ssa_operands;
 };
 
 /* Accessors for internal use only.  Generic code should use abstraction
