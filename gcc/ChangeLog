@@ -1,3 +1,12 @@
+2006-11-30  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vectorizable_function): Export.
+	* tree-vect-transform.c (vectorizable_function): Likewise.
+        * tree-vect-patterns.c (vect_recog_pow_pattern): Set
+        type_in to scalar type in recognition of squaring.
+	Make sure the target can vectorize sqrt in recognition
+	of sqrt, set type_in to vector type in this case.
+
 2006-11-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (R10_REG): New constant.

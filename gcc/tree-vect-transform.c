@@ -1570,7 +1570,7 @@ vectorizable_reduction (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
    true if the target has a vectorized version of the function,
    or false if the function cannot be vectorized.  */
 
-static bool
+bool
 vectorizable_function (tree call, tree vectype)
 {
   tree fndecl = get_callee_fndecl (call);

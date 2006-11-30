@@ -466,7 +466,6 @@ vect_recog_pow_pattern (tree last_stmt, tree *type_in, tree *type_out)
   /* We now have a pow or powi builtin function call with a constant
      exponent.  */
 
-  *type_in = get_vectype_for_scalar_type (TREE_TYPE (base));
   *type_out = NULL_TREE;
 
   /* Catch squaring.  */
@@ -474,7 +473,10 @@ vect_recog_pow_pattern (tree last_stmt, tree *type_in, tree *type_out)
        && tree_low_cst (exp, 0) == 2)
       || (TREE_CODE (exp) == REAL_CST
           && REAL_VALUES_EQUAL (TREE_REAL_CST (exp), dconst2)))
-    return build2 (MULT_EXPR, TREE_TYPE (base), base, base);
+    {
+      *type_in = TREE_TYPE (base);
+      return build2 (MULT_EXPR, TREE_TYPE (base), base, base);
+    }
 
   /* Catch square root.  */
   if (TREE_CODE (exp) == REAL_CST
@@ -482,7 +484,13 @@ vect_recog_pow_pattern (tree last_stmt, tree *type_in, tree *type_out)
     {
       tree newfn = mathfn_built_in (TREE_TYPE (base), BUILT_IN_SQRT);
       tree newarglist = build_tree_list (NULL_TREE, base);
-      return build_function_call_expr (newfn, newarglist);
+      *type_in = get_vectype_for_scalar_type (TREE_TYPE (base));
+      if (*type_in)
+	{
+	  newfn = build_function_call_expr (newfn, newarglist);
+	  if (vectorizable_function (newfn, *type_in))
+	    return newfn;
+	}
     }
 
   return NULL_TREE;

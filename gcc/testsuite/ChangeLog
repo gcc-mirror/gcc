@@ -1,3 +1,9 @@
+2006-11-30  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-pow-1.c: Rename ...
+	* gcc.dg/vect/fast-math-vect-pow-1.c: ... to this.  Use
+	floats instead of doubles, check successful vectorization.
+
 2006-11-29  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
         PR target/29945
