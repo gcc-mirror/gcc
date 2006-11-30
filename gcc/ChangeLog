@@ -1,3 +1,7 @@
+2006-11-29  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/spu/crt0.c (__dso_handle): Define.
+
 2006-11-30  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* emit-rtl.c (verify_rtl_sharing): Handle SEQUENCE specially

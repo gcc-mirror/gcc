@@ -46,6 +46,7 @@ static func_ptr __DTOR_LIST__[1]
   __attribute__((__section__(".dtors"), __aligned__(4)))
   = { (func_ptr) (-1) };
 
+void *__dso_handle = 0;
 
 /* According to the BE Linux ABI an SPU module is called with these
  * parameters.  Also, $2 is set to the Available Stack Size.  */
