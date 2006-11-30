@@ -37,7 +37,10 @@ set save-dg-do-what-default ${dg-do-what-default}
 # code.  Set additional target-dependent vector flags, which can be
 # overridden by using dg-options in individual tests.
 if [istarget "powerpc*-*-*"] {
-    # If there are powerpc targets to skip, do it here.
+    # Skip targets not supporting -maltivec.
+    if ![is-effective-target powerpc_altivec_ok] {
+	return
+    }
 
     lappend DEFAULT_VECTCFLAGS "-maltivec"
     if [check_vmx_hw_available] {
