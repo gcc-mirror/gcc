@@ -292,10 +292,10 @@ pool_free (alloc_pool pool, void *ptr)
   gcc_assert (ptr);
 
 #ifdef ENABLE_CHECKING
-  memset (ptr, 0xaf, pool->elt_size - offsetof (allocation_object, u.data));
-
   /* Check whether the PTR was allocated from POOL.  */
   gcc_assert (pool->id == ALLOCATION_OBJECT_PTR_FROM_USER_PTR (ptr)->id);
+
+  memset (ptr, 0xaf, pool->elt_size - offsetof (allocation_object, u.data));
 
   /* Mark the element to be free.  */
   ALLOCATION_OBJECT_PTR_FROM_USER_PTR (ptr)->id = 0;

@@ -1076,7 +1076,7 @@ cgraph_finalize_compilation_unit (void)
 
   if (!quiet_flag)
     {
-      fprintf (stderr, "\nAnalyzing compilation unit");
+      fprintf (stderr, "\nAnalyzing compilation unit\n");
       fflush (stderr);
     }
 
