@@ -2713,10 +2713,13 @@ selb\t%0,%4,%0,%3"
 	(unspec [(match_operand 1 "spu_reg_operand" "r")] UNSPEC_EXTEND_CMP))]
   ""
   {
-    emit_insn (gen_rtx_SET (VOIDmode, operands[0], gen_rtx_UNSPEC (GET_MODE (operands[0]),
-			       gen_rtvec (1, operands[1]), UNSPEC_EXTEND_CMP)));
+    emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			    gen_rtx_UNSPEC (GET_MODE (operands[0]),
+			                    gen_rtvec (1, operands[1]),
+					    UNSPEC_EXTEND_CMP)));
     DONE;
   })
+
 (define_insn "extend_compare<mode>"
   [(set (match_operand:ALL 0 "spu_reg_operand" "=r")
 	(unspec:ALL [(match_operand 1 "spu_reg_operand" "r")] UNSPEC_EXTEND_CMP))]

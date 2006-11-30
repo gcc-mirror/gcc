@@ -1,5 +1,9 @@
 2006-11-29  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
+	* config/spu/spu.md (extend_compare): Fix whitespace formatting.
+
+2006-11-29  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
 	PR target/29945
 	* config/spu/spu.md  (extend_compare<mode>): New pattern.
 	(extend_compare): Change to expand and use the above pattern.
