@@ -1473,9 +1473,11 @@ cselib_init (bool record_memory)
 				       sizeof (cselib_val), 10);
   value_pool = create_alloc_pool ("value", RTX_CODE_SIZE (VALUE), 100);
   cselib_record_memory = record_memory;
-  /* This is only created once.  */
+
+  /* (mem:BLK (scratch)) is a special mechanism to conflict with everything,
+     see canon_true_dependence.  This is only created once.  */
   if (! callmem)
-    callmem = gen_rtx_MEM (BLKmode, const0_rtx);
+    callmem = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode));
 
   cselib_nregs = max_reg_num ();
 

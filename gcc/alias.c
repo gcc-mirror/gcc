@@ -2151,7 +2151,7 @@ true_dependence (rtx mem, enum machine_mode mem_mode, rtx x,
     return 1;
 
   /* (mem:BLK (scratch)) is a special mechanism to conflict with everything.
-     This is used in epilogue deallocation functions.  */
+     This is used in epilogue deallocation functions, and in cselib.  */
   if (GET_MODE (x) == BLKmode && GET_CODE (XEXP (x, 0)) == SCRATCH)
     return 1;
   if (GET_MODE (mem) == BLKmode && GET_CODE (XEXP (mem, 0)) == SCRATCH)

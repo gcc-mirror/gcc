@@ -1,5 +1,10 @@
 2006-11-30  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* cselib.c (cselib_init): Use special MEM rtx form for callmem.
+	* alias.c (canon_true_dependence): Update comment.
+
+2006-11-30  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* cgraphunit.c (cgraph_finalize_compilation_unit): Add a newline
 	at the end of a diagnostics message.
 
