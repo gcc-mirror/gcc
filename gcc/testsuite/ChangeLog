@@ -1,3 +1,8 @@
+2006-11-29  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+        PR target/29945
+	* gcc.c-torture/compile/pr29945.c: New testcase.
+			
 2006-11-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/vect/vect.exp: Skip PowerPC targets not supporting

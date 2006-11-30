@@ -2708,9 +2708,18 @@ selb\t%0,%4,%0,%3"
 
 ;; This pattern is used when the result of a compare is not large
 ;; enough to use in a selb when expanding conditional moves.
-(define_insn "extend_compare"
+(define_expand "extend_compare"
   [(set (match_operand 0 "spu_reg_operand" "=r")
 	(unspec [(match_operand 1 "spu_reg_operand" "r")] UNSPEC_EXTEND_CMP))]
+  ""
+  {
+    emit_insn (gen_rtx_SET (VOIDmode, operands[0], gen_rtx_UNSPEC (GET_MODE (operands[0]),
+			       gen_rtvec (1, operands[1]), UNSPEC_EXTEND_CMP)));
+    DONE;
+  })
+(define_insn "extend_compare<mode>"
+  [(set (match_operand:ALL 0 "spu_reg_operand" "=r")
+	(unspec:ALL [(match_operand 1 "spu_reg_operand" "r")] UNSPEC_EXTEND_CMP))]
   "operands"
   "fsm\t%0,%1"
   [(set_attr "type" "shuf")])
