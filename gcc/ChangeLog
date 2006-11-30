@@ -1,3 +1,8 @@
+2006-11-30  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* emit-rtl.c (verify_rtl_sharing): Handle SEQUENCE specially
+	when clearing the used flags.
+
 2006-11-29  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* config/spu/spu.md (extend_compare): Fix whitespace formatting.

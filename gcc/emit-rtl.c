@@ -2292,6 +2292,20 @@ verify_rtl_sharing (void)
 	reset_used_flags (PATTERN (p));
 	reset_used_flags (REG_NOTES (p));
 	reset_used_flags (LOG_LINKS (p));
+	if (GET_CODE (PATTERN (p)) == SEQUENCE)
+	  {
+	    int i;
+	    rtx q, sequence = PATTERN (p);
+
+	    for (i = 0; i < XVECLEN (sequence, 0); i++)
+	      {
+		q = XVECEXP (sequence, 0, i);
+		gcc_assert (INSN_P (q));
+		reset_used_flags (PATTERN (q));
+		reset_used_flags (REG_NOTES (q));
+		reset_used_flags (LOG_LINKS (q));
+	      }
+	  }
       }
 
   for (p = get_insns (); p; p = NEXT_INSN (p))
