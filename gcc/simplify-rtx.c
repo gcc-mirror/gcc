@@ -4853,9 +4853,9 @@ simplify_rtx (rtx x)
 
     case RTX_EXTRA:
       if (code == SUBREG)
-	return simplify_gen_subreg (mode, SUBREG_REG (x),
-				    GET_MODE (SUBREG_REG (x)),
-				    SUBREG_BYTE (x));
+	return simplify_subreg (mode, SUBREG_REG (x),
+				GET_MODE (SUBREG_REG (x)),
+				SUBREG_BYTE (x));
       break;
 
     case RTX_OBJ:
