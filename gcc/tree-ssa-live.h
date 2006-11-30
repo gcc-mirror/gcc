@@ -147,7 +147,7 @@ var_to_partition (var_map map, tree var)
   else
     {
       ann = var_ann (var);
-      if (ann->out_of_ssa_tag)
+      if (ann && ann->out_of_ssa_tag)
 	part = VAR_ANN_PARTITION (ann);
       else
         part = NO_PARTITION;
@@ -671,31 +671,26 @@ type_var_decompact (type_var_p tv)
    all desired information has been collected, the object can be used to 
    order the pairs for processing.  */
 
-/* This structure defines a pair for coalescing.  */
+/* This structure defines a pair entry.  */
 
-typedef struct partition_pair_d
+typedef struct partition_pair
 {
   int first_partition;
   int second_partition;
   int cost;
-  struct partition_pair_d *next;
-} *partition_pair_p;
+} * partition_pair_p;
 
-/* This structure maintains the list of coalesce pairs.  
-   When add_mode is true, list is a triangular shaped list of coalesce pairs.
-   The smaller partition number is used to index the list, and the larger is
-   index is located in a partition_pair_p object. These lists are sorted from 
-   smallest to largest by 'second_partition'.  New coalesce pairs are allowed
-   to be added in this mode.
-   When add_mode is false, the lists have all been merged into list[0]. The
-   rest of the lists are not used. list[0] is ordered from most desirable
-   coalesce to least desirable. pop_best_coalesce() retrieves the pairs
-   one at a time.  */
+extern unsigned int partition_pair_map_hash (const void *);
+extern int partition_pair_map_eq (const void *, const void *);
+
+/* This structure maintains the list of coalesce pairs.  */
 
 typedef struct coalesce_list_d 
 {
   var_map map;
-  partition_pair_p *list;
+  htab_t list;
+  partition_pair_p *sorted;
+  int num_sorted;
   bool add_mode;
 } *coalesce_list_p;
 

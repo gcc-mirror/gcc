@@ -1,3 +1,25 @@
+2006-11-30  Andrew Macleod  <amacleod@redhat.com>
+
+	* tree-ssa-live.c (create_coalesce_list): Create a hash table.
+	(COALESCE_HASH_FN): New.  Define hash function.
+	(partition_pair_map_hash): New.  Hash value for a partition pair.
+	(partition_pair_map_eq): New.  Equality for hash pairs.
+	(create_coalesce_list): Create hash table.
+	(delete_coalesce_list): Free hash table.
+	(find_partition_pair): Find/create pairs in hash table.
+	(compare_pairs):  Sort pairs in ascending order now.
+	(num_coalesce_pairs): New.  Number of pairs in hash table.
+	(struct partition_pair_iterator): Iterator struct for pair table.
+	(first_partition_pair): Iterator function for first pair.
+	(end_partition_pair_p): Iterator function for end of iteration.
+	(next_partition_pair): Iterator function for next pair.
+	(FOR_EACH_PARTITION_PAIR): Macro for iterating over pairs.
+	(sort_coalesce_list): Sort pairs from hash table into an array.
+	(pop_best_coalesce): Take pairs from the array.
+	(dump_coalesce_list): Update to use hash table or sorted array.
+	* tree-ssa-live.h (struct partition_pair_d): Remove next field.
+	(struct coalesce_list_d): Add hash table related fields.
+
 2006-11-30  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/30028
