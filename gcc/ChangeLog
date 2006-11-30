@@ -1,3 +1,9 @@
+2006-11-29  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR target/29945
+	* config/spu/spu.md  (extend_compare<mode>): New pattern.
+	(extend_compare): Change to expand and use the above pattern.
+	
 2006-11-29  Janis Johnson  <janis187@us.ibm.com>
 
 	* config/dfp-bit.c (DFP_TO_INT): Fix rounding mode.
