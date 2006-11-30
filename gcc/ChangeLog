@@ -1,3 +1,24 @@
+2006-11-30  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-operands.h (struct ssa_operands): New.
+	* tree-flow-inline.h (gimple_ssa_operands): New function.
+	* tree-flow.h: (struct gimple_df): Add ssa_operands.
+	* Makefile.in: Remove gt-tree-ssa-operands.h
+	* tree-ssa-operands.c: Do not include gt-tree-ssa-operands.h
+	(free_defs, free_uses, free_vuses, free_maydefs, free_mustdefs,
+	operand_memory, operand_memory_index, ops_active): Remove statics.
+	(ALLOC_OPTYPE): Update.
+	(operand_build_sort_virtual): Update.
+	(ssa_operands_active): Update.
+	(init_ssa_operands): Update.
+	(fini_ssa_operands): Update.
+	(ssa_operand_alloc): Update.
+	(INITIALIZE_USE): Update.
+	(finalize_ssa_use_ops): Update.
+	(finalize_ssa_v_may_def_ops): Update.
+	(finalize_ssa_vuse_ops): Update.
+	(finalize_ssa_v_must_def_ops): Update.
+
 2006-11-30  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vectorizer.h (vectorizable_function): Export.

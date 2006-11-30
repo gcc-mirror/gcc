@@ -88,6 +88,19 @@ struct ssa_operand_memory_d GTY((chain_next("%h.next")))
   char mem[SSA_OPERAND_MEMORY_SIZE];
 };
 
+/* Per-function operand caches.  */
+struct ssa_operands GTY(()) {
+   struct ssa_operand_memory_d *operand_memory;
+   unsigned operand_memory_index;
+
+   bool ops_active;
+
+   struct def_optype_d * GTY ((skip (""))) free_defs;
+   struct use_optype_d * GTY ((skip (""))) free_uses;
+   struct vuse_optype_d * GTY ((skip (""))) free_vuses;
+   struct maydef_optype_d * GTY ((skip (""))) free_maydefs;
+   struct mustdef_optype_d * GTY ((skip (""))) free_mustdefs;
+};
 
 /* This represents the operand cache for a stmt.  */
 struct stmt_operands_d
