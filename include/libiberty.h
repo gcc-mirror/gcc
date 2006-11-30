@@ -197,6 +197,13 @@ extern long get_run_time (void);
 extern char *make_relative_prefix (const char *, const char *,
                                    const char *) ATTRIBUTE_MALLOC;
 
+/* Generate a relocated path to some installation directory without
+   attempting to follow any soft links.  Allocates
+   return value using malloc.  */
+
+extern char *make_relative_prefix_ignore_links (const char *, const char *,
+						const char *) ATTRIBUTE_MALLOC;
+
 /* Choose a temporary directory to use for scratch files.  */
 
 extern char *choose_temp_base (void) ATTRIBUTE_MALLOC;
