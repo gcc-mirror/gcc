@@ -1,3 +1,15 @@
+2006-11-30  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cgraphunit.c (cgraph_finalize_compilation_unit): Add a newline
+	at the end of a diagnostics message.
+
+	* alloc-pool.c (pool_free): Postpone clearing the pool entry
+	until after asserting that it was allocated in the right pool.
+
+	* cfgrtl.c (print_rtl_with_bb): Print predecessor and
+	successor edge information as well.  Make output of live regs
+	on exit consistent with live regs on entry.
+
 2006-11-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/29852

@@ -1646,6 +1646,8 @@ print_rtl_with_bb (FILE *outf, rtx rtx_first)
       for (tmp_rtx = rtx_first; NULL != tmp_rtx; tmp_rtx = NEXT_INSN (tmp_rtx))
 	{
 	  int did_output;
+	  edge_iterator ei;
+	  edge e;
 
 	  if ((bb = start[INSN_UID (tmp_rtx)]) != NULL)
 	    {
@@ -1653,6 +1655,12 @@ print_rtl_with_bb (FILE *outf, rtx rtx_first)
 		       bb->index);
 	      dump_regset (bb->il.rtl->global_live_at_start, outf);
 	      putc ('\n', outf);
+	      FOR_EACH_EDGE (e, ei, bb->preds)
+		{
+		  fputs (";; Pred edge ", outf);
+		  dump_edge_info (outf, e, 0);
+		  fputc ('\n', outf);
+		}
 	    }
 
 	  if (in_bb_p[INSN_UID (tmp_rtx)] == NOT_IN_BB
@@ -1666,10 +1674,16 @@ print_rtl_with_bb (FILE *outf, rtx rtx_first)
 
 	  if ((bb = end[INSN_UID (tmp_rtx)]) != NULL)
 	    {
-	      fprintf (outf, ";; End of basic block %d, registers live:\n",
+	      fprintf (outf, ";; End of basic block %d, registers live:",
 		       bb->index);
 	      dump_regset (bb->il.rtl->global_live_at_end, outf);
 	      putc ('\n', outf);
+	      FOR_EACH_EDGE (e, ei, bb->succs)
+		{
+		  fputs (";; Succ edge ", outf);
+		  dump_edge_info (outf, e, 1);
+		  fputc ('\n', outf);
+		}
 	    }
 
 	  if (did_output)
