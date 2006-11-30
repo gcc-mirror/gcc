@@ -1,3 +1,14 @@
+2006-11-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (movsf_1): Enable pattern for standard
+	80387 constants before reload when optimizing for size.
+	(*movdf_nointeger, *movdf_integer): Ditto.
+	(*movxf_nointeger, *movxf_integer): Disable patterns for standard
+	80387 constants before reload when not optimizing for size.
+
+	(*fop_xf_4_i387, *fop_xf_5_i387, *fop_xf_6_i387): Avoid float
+	extension of XFmode input operands.
+
 2006-11-29  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* config/spu/crt0.c (__dso_handle): Define.
@@ -271,7 +282,7 @@
 
 2006-11-27  Roger Sayle  <roger@eyesopen.com>
 	    Manuel Lopez-Ibanez <manu@gcc.gnu.org>
-	    
+
 	* c-common.c (constant_fits_type_p): Delete.
 	(unsigned_conversion_warning): Delete.
 	(conversion_warning): Integrate Wconversion warning from
@@ -286,7 +297,7 @@
 	* doc/invoke.texi: Fixed typo.
 
 2006-11-27  Michael Matz  <matz@suse.de>
-            Andreas Krebbel  <krebbel1@de.ibm.com>
+	    Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR target/29319
 	* config/s390/predicates.md (larl_operand): Check addend of larl
@@ -360,7 +371,7 @@
 	NOTE_FUNCTION_END.
 
 2006-11-27  Richard Guenther  <rguenther@suse.de>
-	Zdenek Dvorak <dvorakz@suse.cz>
+	    Zdenek Dvorak <dvorakz@suse.cz>
 
 	* target.h (struct gcc_target): Add builtin_vectorized_function
 	target hook.
