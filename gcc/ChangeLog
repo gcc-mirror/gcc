@@ -1,3 +1,11 @@
+2006-11-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (R10_REG): New constant.
+	* config/i386/i386.c (pro_epilogue_adjust_stack): Use R11_REG.
+	(ix86_emit_restore_regs_using_mov): Ditto.
+	(ix86_expand_call): Ditto.
+	(x86_output_mi_thunk): Ditto. Also use R10_REG.
+
 2006-11-30  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cselib.c (cselib_init): Use special MEM rtx form for callmem.

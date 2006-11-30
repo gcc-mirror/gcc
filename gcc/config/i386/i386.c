@@ -5581,7 +5581,7 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset, int style)
 	 shouldn't be used together with huge frame sizes in one
 	 function because of the frame_size check in sibcall.c.  */
       gcc_assert (style);
-      r11 = gen_rtx_REG (DImode, FIRST_REX_INT_REG + 3 /* R11 */);
+      r11 = gen_rtx_REG (DImode, R11_REG);
       insn = emit_insn (gen_rtx_SET (DImode, r11, offset));
       if (style < 0)
 	RTX_FRAME_RELATED_P (insn) = 1;
@@ -5838,7 +5838,7 @@ ix86_emit_restore_regs_using_mov (rtx pointer, HOST_WIDE_INT offset,
 	  {
 	    rtx r11;
 
-	    r11 = gen_rtx_REG (DImode, FIRST_REX_INT_REG + 3 /* R11 */);
+	    r11 = gen_rtx_REG (DImode, R11_REG);
 	    emit_move_insn (r11, GEN_INT (offset));
 	    emit_insn (gen_adddi3 (r11, r11, pointer));
 	    base_address = gen_rtx_MEM (Pmode, r11);
@@ -14417,7 +14417,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
     {
       rtx addr;
       addr = copy_to_mode_reg (Pmode, XEXP (fnaddr, 0));
-      fnaddr = gen_rtx_REG (Pmode, FIRST_REX_INT_REG + 3 /* R11 */);
+      fnaddr = gen_rtx_REG (Pmode, R11_REG);
       emit_move_insn (fnaddr, addr);
       fnaddr = gen_rtx_MEM (QImode, fnaddr);
     }
@@ -18762,7 +18762,7 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
 	{
 	  if (!x86_64_general_operand (xops[0], DImode))
 	    {
-	      tmp = gen_rtx_REG (DImode, FIRST_REX_INT_REG + 2 /* R10 */);
+	      tmp = gen_rtx_REG (DImode, R10_REG);
 	      xops[1] = tmp;
 	      output_asm_insn ("mov{q}\t{%1, %0|%0, %1}", xops);
 	      xops[0] = tmp;
@@ -18778,7 +18778,7 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
   if (vcall_offset)
     {
       if (TARGET_64BIT)
-	tmp = gen_rtx_REG (DImode, FIRST_REX_INT_REG + 2 /* R10 */);
+	tmp = gen_rtx_REG (DImode, R10_REG);
       else
 	{
 	  int tmp_regno = 2 /* ECX */;
@@ -18799,7 +18799,7 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
       xops[0] = gen_rtx_MEM (Pmode, plus_constant (tmp, vcall_offset));
       if (TARGET_64BIT && !memory_operand (xops[0], Pmode))
 	{
-	  rtx tmp2 = gen_rtx_REG (DImode, FIRST_REX_INT_REG + 3 /* R11 */);
+	  rtx tmp2 = gen_rtx_REG (DImode, R11_REG);
 	  xops[0] = GEN_INT (vcall_offset);
 	  xops[1] = tmp2;
 	  output_asm_insn ("mov{q}\t{%0, %1|%1, %0}", xops);
