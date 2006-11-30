@@ -1,3 +1,8 @@
+2006-11-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/vect/vect.exp: Skip PowerPC targets not supporting
+	-maltivec.
+
 2006-11-29  Eric Christopher  <echristo@apple.com>
 
 	* gcc.dg/tree-ssa/prefetch-3.c: Allow x86_64, but require ilp32.
