@@ -1,3 +1,7 @@
+2006-12-01  Dirk Mueller  <dmueller@suse.de>
+
+	* g++.dg/warn/Wreturn-type-4.C: New testcase.
+
 2006-11-30  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/dfp/convert-int-max.c: New test.
