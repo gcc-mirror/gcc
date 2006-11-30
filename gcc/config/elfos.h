@@ -40,12 +40,15 @@ Boston, MA 02110-1301, USA.  */
 #undef  USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX ""
 
-/* Biggest alignment supported by the object file format of this
-   machine.  Use this macro to limit the alignment which can be
-   specified using the `__attribute__ ((aligned (N)))' construct.  If
-   not defined, the default value is `BIGGEST_ALIGNMENT'.  */
+/* The biggest alignment supported by ELF in bits. 32-bit ELF 
+   supports section alignment up to (0x80000000 * 8), while 
+   64-bit ELF supports (0x8000000000000000 * 8). If this macro 
+   is not defined, the default is the largest alignment supported 
+   by 32-bit ELF and representable on a 32-bit host. Use this
+   macro to limit the alignment which can be specified using
+   the `__attribute__ ((aligned (N)))' construct.  */
 #ifndef MAX_OFILE_ALIGNMENT
-#define MAX_OFILE_ALIGNMENT (32768 * 8)
+#define MAX_OFILE_ALIGNMENT (((unsigned int) 1 << 28) * 8)
 #endif
 
 /* Use periods rather than dollar signs in special g++ assembler names.  */

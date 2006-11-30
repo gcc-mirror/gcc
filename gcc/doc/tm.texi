@@ -1078,6 +1078,12 @@ Biggest alignment supported by the object file format of this machine.
 Use this macro to limit the alignment which can be specified using the
 @code{__attribute__ ((aligned (@var{n})))} construct.  If not defined,
 the default value is @code{BIGGEST_ALIGNMENT}.
+
+On systems that use ELF, the default (in @file{config/elfos.h}) is
+the largest supported 32-bit ELF section alignment representable on
+a 32-bit host e.g. @samp{(((unsigned HOST_WIDEST_INT) 1 << 28) * 8)}.
+On 32-bit ELF the largest supported section alignment in bits is
+@samp{(0x80000000 * 8)}, but this is not representable on 32-bit hosts.
 @end defmac
 
 @defmac DATA_ALIGNMENT (@var{type}, @var{basic-align})

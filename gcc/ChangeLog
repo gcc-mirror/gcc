@@ -1,3 +1,10 @@
+2006-11-30  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* doc/tm.texi (MAX_OFILE_ALIGNMENT): Document default.
+	* config/elfos.h [!MAX_OFILE_ALIGNMENT] (MAX_OFILE_ALIGNMENT): 
+	Default is the largest alignment supported for 32-bit ELF and 
+	representable on a 32-bit host.
+
 2006-11-30  Janis Johnson  <janis187@us.ibm.com>
 
 	* config/dfp-bit.c (DFP_TO_INT): Use wider precision.
