@@ -384,10 +384,11 @@ get_tinfo_decl (tree type)
 	 define it later if we need to do so.  */
       DECL_EXTERNAL (d) = 1;
       DECL_NOT_REALLY_EXTERN (d) = 1;
+      set_linkage_according_to_type (type, d);
+
+      d = pushdecl_top_level_and_finish (d, NULL_TREE);
       if (CLASS_TYPE_P (type))
 	CLASSTYPE_TYPEINFO_VAR (TYPE_MAIN_VARIANT (type)) = d;
-      set_linkage_according_to_type (type, d);
-      pushdecl_top_level_and_finish (d, NULL_TREE);
 
       /* Add decl to the global array of tinfo decls.  */
       VEC_safe_push (tree, gc, unemitted_tinfo_decls, d);
