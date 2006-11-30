@@ -8176,7 +8176,7 @@ fold_builtin_memory_op (tree arglist, tree type, bool ignore, int endp)
 	  if (dest_align && src_align
 	      && (readonly_data_expr (src)
 	          || (host_integerp (len, 1)
-		      && (MIN (src_align, dest_align) / BITS_PER_UNIT <=
+		      && (MIN (src_align, dest_align) / BITS_PER_UNIT >=
 			  tree_low_cst (len, 1)))))
 	    {
 	      tree fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
