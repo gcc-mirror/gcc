@@ -1,5 +1,16 @@
 2006-11-30  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/29852
+	* config/i386/i386.md (*truncxfsf2_mixed, *truncxfdf2_mixed): Enable
+	insn patterns for TARGET_80387.
+	(*truncxfsf2_i387, *truncxfdf2_i387): Remove.
+	(*truncxfsf2_i387_1): Rename to *truncxfsf2_i387.
+	(*truncxfdf2_i387_1): Rename to *truncxfdf2_i387.
+	(fmod<mode>3, remainder<mode>3): Enable expaders for SSE math.
+	Generate truncxf<mode>2 insn patterns for strict SSE math.
+
+2006-11-30  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (movsf_1): Enable pattern for standard
 	80387 constants before reload when optimizing for size.
 	(*movdf_nointeger, *movdf_integer): Ditto.
