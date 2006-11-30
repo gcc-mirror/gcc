@@ -392,7 +392,8 @@ DFP_TO_INT (DFP_C_TYPE x)
   decNumber qval, n1, n2;
   decContext context;
 
-  decContextDefault (&context, CONTEXT_INIT);
+  /* Use a large context to avoid losing precision.  */
+  decContextDefault (&context, DEC_INIT_DECIMAL128);
   /* Need non-default rounding mode here.  */
   context.round = DEC_ROUND_DOWN;
 
