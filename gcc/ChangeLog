@@ -1,3 +1,24 @@
+2006-11-30  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/spu/spu.c (spu_builtin_range): Move from spu-c.c
+	(TARGET_RESOLVE_OVERLOADED_BUILTIN): Delete.
+	(spu_cpu_cpp_builtins): Remove.
+	(spu_override_options): Don't set warn_main.
+	(spu_force_reg): Move from spu-c.c.
+	(spu_check_builtin_parm): Likewise.
+	(expand_builtin_args): Likewise.
+	(spu_expand_builtin_1): Likewise.
+	(spu_expand_builtin): Likewise.
+	* config/spu/spu.h (REGISTER_TARGET_PRAGMAS): Define, set
+	warn_main and targetm.resolve_overloaded_builtin.
+	* config/spu/spu-c.c (spu_builtin_range): Remove.
+	(spu_check_builtin_parm): Remove.
+	(expand_builtin_args): Remove.
+	(spu_expand_builtin_1): Remove.
+	(spu_expand_builtin): Remove.
+	(spu_cpu_cpp_builtins): Moved from spu.c
+	(spu_force_reg): Remove.
+
 2006-12-01  Joseph Myers  <joseph@codesourcery.com>
             David Edelsohn  <edelsohn@gnu.org>
 
