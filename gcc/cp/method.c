@@ -407,10 +407,6 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 	}
     }
 
-  /* The back-end expects DECL_INITIAL to contain a BLOCK, so we
-     create one.  */
-  DECL_INITIAL (thunk_fndecl) = make_node (BLOCK);
-
   /* Set up cloned argument trees for the thunk.  */
   t = NULL_TREE;
   for (a = DECL_ARGUMENTS (function); a; a = TREE_CHAIN (a))
@@ -424,17 +420,23 @@ use_thunk (tree thunk_fndecl, bool emit_p)
     }
   a = nreverse (t);
   DECL_ARGUMENTS (thunk_fndecl) = a;
-  BLOCK_VARS (DECL_INITIAL (thunk_fndecl)) = a;
 
   if (this_adjusting
       && targetm.asm_out.can_output_mi_thunk (thunk_fndecl, fixed_offset,
 					      virtual_value, alias))
     {
       const char *fnname;
+      tree fn_block;
+      
       current_function_decl = thunk_fndecl;
       DECL_RESULT (thunk_fndecl)
 	= build_decl (RESULT_DECL, 0, integer_type_node);
       fnname = XSTR (XEXP (DECL_RTL (thunk_fndecl), 0), 0);
+      /* The back-end expects DECL_INITIAL to contain a BLOCK, so we
+	 create one.  */
+      fn_block = make_node (BLOCK);
+      BLOCK_VARS (fn_block) = a;
+      DECL_INITIAL (thunk_fndecl) = fn_block;
       init_function_start (thunk_fndecl);
       current_function_is_thunk = 1;
       assemble_start_function (thunk_fndecl, fnname);
