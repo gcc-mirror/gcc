@@ -3822,15 +3822,20 @@ rs6000_hard_regno_nregs (int regno, enum machine_mode mode)
   if (FP_REGNO_P (regno))
     return (GET_MODE_SIZE (mode) + UNITS_PER_FP_WORD - 1) / UNITS_PER_FP_WORD;
 
-  if (TARGET_E500_DOUBLE && mode == DFmode)
-    return 1;
-
   if (SPE_SIMD_REGNO_P (regno) && TARGET_SPE && SPE_VECTOR_MODE (mode))
     return (GET_MODE_SIZE (mode) + UNITS_PER_SPE_WORD - 1) / UNITS_PER_SPE_WORD;
 
   if (ALTIVEC_REGNO_P (regno))
     return
       (GET_MODE_SIZE (mode) + UNITS_PER_ALTIVEC_WORD - 1) / UNITS_PER_ALTIVEC_WORD;
+
+  /* The value returned for SCmode in the E500 double case is 2 for
+     ABI compatibility; storing an SCmode value in a single register
+     would require function_arg and rs6000_spe_function_arg to handle
+     SCmode so as to pass the value correctly in a pair of
+     registers.  */
+  if (TARGET_E500_DOUBLE && FLOAT_MODE_P (mode) && mode != SCmode)
+    return (GET_MODE_SIZE (mode) + UNITS_PER_FP_WORD - 1) / UNITS_PER_FP_WORD;
 
   return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 }
@@ -4200,8 +4205,7 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 
   /* 128-bit constant floating-point values on Darwin should really be
      loaded as two parts.  */
-  if (!TARGET_IEEEQUAD
-      && TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_LONG_DOUBLE_128
+  if (!TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128
       && mode == TFmode && GET_CODE (operands[1]) == CONST_DOUBLE)
     {
       /* DImode is used, not DFmode, because simplify_gen_subreg doesn't
@@ -12744,6 +12748,8 @@ rs6000_split_multireg_move (rtx dst, rtx src)
     reg_mode = DFmode;
   else if (ALTIVEC_REGNO_P (reg))
     reg_mode = V16QImode;
+  else if (TARGET_E500_DOUBLE && mode == TFmode)
+    reg_mode = DFmode;
   else
     reg_mode = word_mode;
   reg_mode_size = GET_MODE_SIZE (reg_mode);

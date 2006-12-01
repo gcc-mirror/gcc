@@ -2925,34 +2925,15 @@ unsigned int
 subreg_regno_offset (unsigned int xregno, enum machine_mode xmode,
 		     unsigned int offset, enum machine_mode ymode)
 {
-  int nregs_xmode, nregs_ymode, nregs_xmode_unit_int;
+  int nregs_xmode, nregs_ymode;
   int mode_multiple, nregs_multiple;
   int y_offset;
-  enum machine_mode xmode_unit, xmode_unit_int;
 
   gcc_assert (xregno < FIRST_PSEUDO_REGISTER);
 
-  if (GET_MODE_INNER (xmode) == VOIDmode)
-    xmode_unit = xmode;
-  else
-    xmode_unit = GET_MODE_INNER (xmode);
-  
-  if (FLOAT_MODE_P (xmode_unit))
-    {
-      xmode_unit_int = int_mode_for_mode (xmode_unit);
-      if (xmode_unit_int == BLKmode)
-	/* It's probably bad to be here; a port should have an integer mode
-	   that's the same size as anything of which it takes a SUBREG.  */
-	xmode_unit_int = xmode_unit;
-    }
-  else
-    xmode_unit_int = xmode_unit;
-
-  nregs_xmode_unit_int = hard_regno_nregs[xregno][xmode_unit_int];
-
   /* Adjust nregs_xmode to allow for 'holes'.  */
-  if (nregs_xmode_unit_int != hard_regno_nregs[xregno][xmode_unit])
-    nregs_xmode = nregs_xmode_unit_int * GET_MODE_NUNITS (xmode);
+  if (HARD_REGNO_NREGS_HAS_PADDING (xregno, xmode))
+    nregs_xmode = HARD_REGNO_NREGS_WITH_PADDING (xregno, xmode);
   else
     nregs_xmode = hard_regno_nregs[xregno][xmode];
     
@@ -2990,38 +2971,31 @@ bool
 subreg_offset_representable_p (unsigned int xregno, enum machine_mode xmode,
 			       unsigned int offset, enum machine_mode ymode)
 {
-  int nregs_xmode, nregs_ymode, nregs_xmode_unit, nregs_xmode_unit_int;
+  int nregs_xmode, nregs_ymode;
   int mode_multiple, nregs_multiple;
   int y_offset;
-  enum machine_mode xmode_unit, xmode_unit_int;
+  int regsize_xmode, regsize_ymode;
 
   gcc_assert (xregno < FIRST_PSEUDO_REGISTER);
 
-  if (GET_MODE_INNER (xmode) == VOIDmode)
-    xmode_unit = xmode;
-  else
-    xmode_unit = GET_MODE_INNER (xmode);
-  
-  if (FLOAT_MODE_P (xmode_unit))
-    {
-      xmode_unit_int = int_mode_for_mode (xmode_unit);
-      if (xmode_unit_int == BLKmode)
-	/* It's probably bad to be here; a port should have an integer mode
-	   that's the same size as anything of which it takes a SUBREG.  */
-	xmode_unit_int = xmode_unit;
-    }
-  else
-    xmode_unit_int = xmode_unit;
-
-  nregs_xmode_unit = hard_regno_nregs[xregno][xmode_unit];
-  nregs_xmode_unit_int = hard_regno_nregs[xregno][xmode_unit_int];
-
   /* If there are holes in a non-scalar mode in registers, we expect
      that it is made up of its units concatenated together.  */
-  if (nregs_xmode_unit != nregs_xmode_unit_int)
+  if (HARD_REGNO_NREGS_HAS_PADDING (xregno, xmode))
     {
-      gcc_assert (nregs_xmode_unit * GET_MODE_NUNITS (xmode)
-		  == hard_regno_nregs[xregno][xmode]);
+      enum machine_mode xmode_unit;
+
+      nregs_xmode = HARD_REGNO_NREGS_WITH_PADDING (xregno, xmode);
+      if (GET_MODE_INNER (xmode) == VOIDmode)
+	xmode_unit = xmode;
+      else
+	xmode_unit = GET_MODE_INNER (xmode);
+      gcc_assert (HARD_REGNO_NREGS_HAS_PADDING (xregno, xmode_unit));
+      gcc_assert (nregs_xmode
+		  == (GET_MODE_NUNITS (xmode)
+		      * HARD_REGNO_NREGS_WITH_PADDING (xregno, xmode_unit)));
+      gcc_assert (hard_regno_nregs[xregno][xmode]
+		  == (hard_regno_nregs[xregno][xmode_unit]
+		      * GET_MODE_NUNITS (xmode)));
 
       /* You can only ask for a SUBREG of a value with holes in the middle
 	 if you don't cross the holes.  (Such a SUBREG should be done by
@@ -3031,15 +3005,12 @@ subreg_offset_representable_p (unsigned int xregno, enum machine_mode xmode,
 	 3 for each part, but in memory it's two 128-bit parts.  
 	 Padding is assumed to be at the end (not necessarily the 'high part')
 	 of each unit.  */
-      if (nregs_xmode_unit != nregs_xmode_unit_int
-	  && (offset / GET_MODE_SIZE (xmode_unit_int) + 1 
-	      < GET_MODE_NUNITS (xmode))
-	  && (offset / GET_MODE_SIZE (xmode_unit_int) 
+      if ((offset / GET_MODE_SIZE (xmode_unit) + 1 
+	   < GET_MODE_NUNITS (xmode))
+	  && (offset / GET_MODE_SIZE (xmode_unit)
 	      != ((offset + GET_MODE_SIZE (ymode) - 1)
-		  / GET_MODE_SIZE (xmode_unit_int))))
+		  / GET_MODE_SIZE (xmode_unit))))
 	return false;
-
-      nregs_xmode = nregs_xmode_unit_int * GET_MODE_NUNITS (xmode);
     }
   else
     nregs_xmode = hard_regno_nregs[xregno][xmode];
@@ -3052,6 +3023,15 @@ subreg_offset_representable_p (unsigned int xregno, enum machine_mode xmode,
       && (GET_MODE_SIZE (ymode) > UNITS_PER_WORD
 	  ? WORDS_BIG_ENDIAN : BYTES_BIG_ENDIAN))
     return true;
+
+  /* If registers store different numbers of bits in the different
+     modes, we cannot generally form this subreg.  */
+  regsize_xmode = GET_MODE_SIZE (xmode) / nregs_xmode;
+  regsize_ymode = GET_MODE_SIZE (ymode) / nregs_ymode;
+  if (regsize_xmode > regsize_ymode && nregs_ymode > 1)
+    return false;
+  if (regsize_ymode > regsize_xmode && nregs_xmode > 1)
+    return false;
 
   /* Lowpart subregs are otherwise valid.  */
   if (offset == subreg_lowpart_offset (ymode, xmode))

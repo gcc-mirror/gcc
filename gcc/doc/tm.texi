@@ -1978,6 +1978,33 @@ definition of this macro is
 @end smallexample
 @end defmac
 
+@defmac HARD_REGNO_NREGS_HAS_PADDING (@var{regno}, @var{mode})
+A C expression that is nonzero if a value of mode @var{mode}, stored
+in memory, ends with padding that causes it to take up more space than
+in registers starting at register number @var{regno} (as determined by
+multiplying GCC's notion of the size of the register when containing
+this mode by the number of registers returned by
+@code{HARD_REGNO_NREGS}).  By default this is zero.
+
+For example, if a floating-point value is stored in three 32-bit
+registers but takes up 128 bits in memory, then this would be
+nonzero.
+
+This macros only needs to be defined if there are cases where
+@code{subreg_regno_offset} and @code{subreg_offset_representable_p}
+would otherwise wrongly determine that a @code{subreg} can be
+represented by an offset to the register number, when in fact such a
+@code{subreg} would contain some of the padding not stored in
+registers and so not be representable.
+@end defmac
+
+@defmac HARD_REGNO_NREGS_WITH_PADDING (@var{regno}, @var{mode})
+For values of @var{regno} and @var{mode} for which
+@code{HARD_REGNO_NREGS_HAS_PADDING} returns nonzero, a C expression
+returning the greater number of registers required to hold the value
+including any padding.  In the example above, the value would be four.
+@end defmac
+
 @defmac REGMODE_NATURAL_SIZE (@var{mode})
 Define this macro if the natural size of registers that hold values
 of mode @var{mode} is not the word size.  It is a C expression that

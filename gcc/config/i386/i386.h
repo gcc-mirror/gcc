@@ -917,6 +917,15 @@ do {									\
       ? (TARGET_64BIT ? 4 : 6)						\
       : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)))
 
+#define HARD_REGNO_NREGS_HAS_PADDING(REGNO, MODE)			\
+  ((TARGET_128BIT_LONG_DOUBLE && !TARGET_64BIT)				\
+   ? (FP_REGNO_P (REGNO) || SSE_REGNO_P (REGNO) || MMX_REGNO_P (REGNO)	\
+      ? 0								\
+      : ((MODE) == XFmode || (MODE) == XCmode))				\
+   : 0)
+
+#define HARD_REGNO_NREGS_WITH_PADDING(REGNO, MODE) ((MODE) == XFmode ? 4 : 8)
+
 #define VALID_SSE2_REG_MODE(MODE) \
     ((MODE) == V16QImode || (MODE) == V8HImode || (MODE) == V2DFmode    \
      || (MODE) == V2DImode || (MODE) == DFmode)

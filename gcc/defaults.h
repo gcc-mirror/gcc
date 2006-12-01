@@ -895,4 +895,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define INCOMING_FRAME_SP_OFFSET 0
 #endif
 
+#ifndef HARD_REGNO_NREGS_HAS_PADDING
+#define HARD_REGNO_NREGS_HAS_PADDING(REGNO, MODE) 0
+#define HARD_REGNO_NREGS_WITH_PADDING(REGNO, MODE) -1
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */
