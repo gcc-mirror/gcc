@@ -1,3 +1,10 @@
+2006-12-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (fold_binary) <LT_EXPR>: Use the precision of the
+	type instead of the size of its mode to compute the highest and
+	lowest possible values.  Still check the size of the mode before
+	flipping the signedness of the comparison.
+
 2006-12-01  Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
 
 	* config/spu/predicates.md (spu_mov_operand): Add.
