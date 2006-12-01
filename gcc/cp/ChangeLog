@@ -1,3 +1,15 @@
+2006-12-01  Geoffrey Keating  <geoffk@apple.com>
+
+	* decl.c (poplevel): Check DECL_INITIAL invariant.
+	(duplicate_decls): Preserve DECL_INITIAL when eliminating
+	a new definition in favour of an old declaration.
+	(start_preparsed_function): Define and document value of
+	DECL_INITIAL before and after routine.
+	(finish_function): Check DECL_INITIAL invariant.
+	* parser.c 
+	(cp_parser_function_definition_from_specifiers_and_declarator): 
+	Skip duplicate function definitions.
+
 2006-12-01  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/30022

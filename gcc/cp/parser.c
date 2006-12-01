@@ -15583,6 +15583,16 @@ cp_parser_function_definition_from_specifiers_and_declarator
       cp_parser_skip_to_end_of_block_or_statement (parser);
       fn = error_mark_node;
     }
+  else if (DECL_INITIAL (current_function_decl) != error_mark_node)
+    {
+      /* Seen already, skip it.  An error message has already been output.  */
+      cp_parser_skip_to_end_of_block_or_statement (parser);
+      fn = current_function_decl;
+      current_function_decl = NULL_TREE;
+      /* If this is a function from a class, pop the nested class.  */
+      if (current_class_name)
+	pop_nested_class ();
+    }
   else
     fn = cp_parser_function_definition_after_declarator (parser,
 							 /*inline_p=*/false);
