@@ -7727,24 +7727,24 @@ fold_minmax (enum tree_code code, tree type, tree op0, tree op1)
   else
     gcc_unreachable ();
 
-  /* MIN (MAX (a, b), b) == b.  */
+  /* MIN (MAX (a, b), b) == b.  */
   if (TREE_CODE (op0) == compl_code
       && operand_equal_p (TREE_OPERAND (op0, 1), op1, 0))
     return omit_one_operand (type, op1, TREE_OPERAND (op0, 0));
 
-  /* MIN (MAX (b, a), b) == b.  */
+  /* MIN (MAX (b, a), b) == b.  */
   if (TREE_CODE (op0) == compl_code
       && operand_equal_p (TREE_OPERAND (op0, 0), op1, 0)
       && reorder_operands_p (TREE_OPERAND (op0, 1), op1))
     return omit_one_operand (type, op1, TREE_OPERAND (op0, 1));
 
-  /* MIN (a, MAX (a, b)) == a.  */
+  /* MIN (a, MAX (a, b)) == a.  */
   if (TREE_CODE (op1) == compl_code
       && operand_equal_p (op0, TREE_OPERAND (op1, 0), 0)
       && reorder_operands_p (op0, TREE_OPERAND (op1, 1)))
     return omit_one_operand (type, op0, TREE_OPERAND (op1, 1));
 
-  /* MIN (a, MAX (b, a)) == a.  */
+  /* MIN (a, MAX (b, a)) == a.  */
   if (TREE_CODE (op1) == compl_code
       && operand_equal_p (op0, TREE_OPERAND (op1, 1), 0)
       && reorder_operands_p (op0, TREE_OPERAND (op1, 0)))
