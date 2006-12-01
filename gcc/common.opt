@@ -929,10 +929,6 @@ ftree-ch
 Common Report Var(flag_tree_ch)
 Enable loop header copying on trees
 
-ftree-combine-temps
-Common Report Var(flag_tree_combine_temps)
-Coalesce memory temporaries in the SSA->normal pass
-
 ftree-copyrename
 Common Report Var(flag_tree_copyrename)
 Replace SSA temporaries with better names in copies

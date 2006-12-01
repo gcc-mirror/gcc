@@ -1,7 +1,9 @@
 /* PR middle-end/18548 */
 /* Test case reduced by Andrew Pinski <pinskia@physics.uc.edu> */
 /* { dg-do run } */
-/* { dg-options "-O1 -fno-tree-lrs" } */
+/* { dg-options "-O1 " } */
+/* Option -fno-tree-lrs removed By Andrew MacLeod since it is no longer 
+   supported in the compiler beginning with GCC 4.3.  */
 /* m32c has varying sized pointers */
 /* { dg-skip-if "" { "m32c-*-*" } { "*" } { "-mcpu=m32c" "-mcpu=m32cm" } } */
 
