@@ -35,6 +35,10 @@
   (and (match_operand 0 "memory_operand")
        (match_test "reload_in_progress || reload_completed || aligned_mem_p (op)")))
 
+(define_predicate "spu_mov_operand"
+  (ior (match_operand 0 "spu_mem_operand")
+       (match_operand 0 "spu_nonmem_operand")))
+
 (define_predicate "call_operand"
   (and (match_code "mem")
        (match_test "(!TARGET_LARGE_MEM && satisfies_constraint_S (op))

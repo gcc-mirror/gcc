@@ -262,14 +262,16 @@
 ;; move internal
 
 (define_insn "_mov<mode>"
-  [(set (match_operand:MOV 0 "spu_reg_operand" "=r,r,r")
-	(match_operand:MOV 1 "spu_nonmem_operand" "r,A,f"))]
-  ""
+  [(set (match_operand:MOV 0 "spu_nonimm_operand" "=r,r,r,r,m")
+	(match_operand:MOV 1 "spu_mov_operand" "r,A,f,m,r"))]
+  "spu_valid_move (operands)"
   "@
    ori\t%0,%1,0
    il%s1\t%0,%S1
-   fsmbi\t%0,%F1"
-  [(set_attr "type" "fx2,fx2,shuf")])
+   fsmbi\t%0,%F1
+   lq%p1\t%0,%1
+   stq%p0\t%1,%0"
+  [(set_attr "type" "fx2,fx2,shuf,load,store")])
 
 (define_insn "high"
   [(set (match_operand:SI 0 "spu_reg_operand" "=r")
@@ -285,24 +287,28 @@
   "iohl\t%0,%2@l")
 
 (define_insn "_movdi"
-  [(set (match_operand:DI 0 "spu_reg_operand" "=r,r,r")
-	(match_operand:DI 1 "spu_nonmem_operand" "r,a,f"))]
-  ""
+  [(set (match_operand:DI 0 "spu_nonimm_operand" "=r,r,r,r,m")
+	(match_operand:DI 1 "spu_mov_operand" "r,a,f,m,r"))]
+  "spu_valid_move (operands)"
   "@
    ori\t%0,%1,0
    il%d1\t%0,%D1
-   fsmbi\t%0,%G1"
-  [(set_attr "type" "fx2,fx2,shuf")])
+   fsmbi\t%0,%G1
+   lq%p1\t%0,%1
+   stq%p0\t%1,%0"
+  [(set_attr "type" "fx2,fx2,shuf,load,store")])
 
 (define_insn "_movti"
-  [(set (match_operand:TI 0 "spu_reg_operand" "=r,r,r")
-	(match_operand:TI 1 "spu_nonmem_operand" "r,U,f"))]
-  ""
+  [(set (match_operand:TI 0 "spu_nonimm_operand" "=r,r,r,r,m")
+	(match_operand:TI 1 "spu_mov_operand" "r,U,f,m,r"))]
+  "spu_valid_move (operands)"
   "@
    ori\t%0,%1,0
    il%t1\t%0,%T1
-   fsmbi\t%0,%H1"
-  [(set_attr "type" "fx2,fx2,shuf")])
+   fsmbi\t%0,%H1
+   lq%p1\t%0,%1
+   stq%p0\t%1,%0"
+  [(set_attr "type" "fx2,fx2,shuf,load,store")])
 
 (define_insn_and_split "load"
   [(set (match_operand 0 "spu_reg_operand" "=r")
@@ -316,22 +322,6 @@
 	(match_dup 1))]
   { spu_split_load(operands); DONE; })
 
-(define_insn "lq"
-  [(set (match_operand:TI 0 "spu_reg_operand" "=r")
-	(mem:TI (and:SI (match_operand:SI 1 "address_operand" "p")
-			(const_int -16))))]
-  ""
-  "lq%p1\t%0,%a1"
-  [(set_attr "type" "load")])
-
-(define_insn "lq_<mode>"
-  [(set (match_operand:ALL 0 "spu_reg_operand" "=r")
-	(match_operand:ALL 1 "spu_mem_operand" "m"))]
-  "spu_valid_move (operands)"
-  "lq%p1\t%0,%1"
-  [(set_attr "type" "load")])
-
-
 (define_insn_and_split "store"
   [(set (match_operand 0 "memory_operand" "=m")
 	(match_operand 1 "spu_reg_operand" "r"))
@@ -343,21 +333,6 @@
   [(set (match_dup 0)
 	(match_dup 1))]
   { spu_split_store(operands); DONE; })
-
-(define_insn "stq"
-  [(set (mem:TI (and:SI (match_operand:SI 0 "address_operand" "p")
-			(const_int -16)))
-	(match_operand:TI 1 "spu_reg_operand" "r"))]
-  ""
-  "stq%p0\t%1,%a0"
-  [(set_attr "type" "load")])
-
-(define_insn "stq_<mode>"
-  [(set (match_operand:ALL 0 "spu_mem_operand" "=m")
-	(match_operand:ALL 1 "spu_reg_operand" "r"))]
-  "spu_valid_move (operands)"
-  "stq%p0\t%1,%0"
-  [(set_attr "type" "load")])
 
 ;; Operand 3 is the number of bytes. 1:b 2:h 4:w 8:d
 (define_insn "cpat"
