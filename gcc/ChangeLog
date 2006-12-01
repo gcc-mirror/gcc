@@ -1,3 +1,9 @@
+2006-12-01  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/29921
+	* tree-ssa-ccp.c (canonicalize_float_value): New function.
+	(set_lattice_value): Use canonicalize_float_value.
+
 2006-11-30  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* config/spu/spu.c (spu_builtin_range): Move from spu-c.c

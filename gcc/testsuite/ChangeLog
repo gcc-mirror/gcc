@@ -1,3 +1,9 @@
+2006-12-01  H.J. Lu  <hongjiu.lu@intel.com>
+	    Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/29921
+	* gcc.dg/pr29921-2.c: New test.
+
 2006-11-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/i386-cpuid.h (bit_SSE3): New.

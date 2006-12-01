@@ -418,6 +418,54 @@ set_value_varying (tree var)
   val->mem_ref = NULL_TREE;
 }
 
+/* For float types, modify the value of VAL to make ccp work correctly
+   for non-standard values (-0, NaN):
+
+   If HONOR_SIGNED_ZEROS is false, and VAL = -0, we canonicalize it to 0.
+   If HONOR_NANS is false, and VAL is NaN, we canonicalize it to UNDEFINED.
+     This is to fix the following problem (see PR 29921): Suppose we have
+
+     x = 0.0 * y
+
+     and we set value of y to NaN.  This causes value of x to be set to NaN.
+     When we later determine that y is in fact VARYING, fold uses the fact
+     that HONOR_NANS is false, and we try to change the value of x to 0,
+     causing an ICE.  With HONOR_NANS being false, the real appearance of
+     NaN would cause undefined behavior, though, so claiming that y (and x)
+     are UNDEFINED initially is correct.  */
+
+static void
+canonicalize_float_value (prop_value_t *val)
+{
+  enum machine_mode mode;
+  tree type;
+  REAL_VALUE_TYPE d;
+
+  if (val->lattice_val != CONSTANT
+      || TREE_CODE (val->value) != REAL_CST)
+    return;
+
+  d = TREE_REAL_CST (val->value);
+  type = TREE_TYPE (val->value);
+  mode = TYPE_MODE (type);
+
+  if (!HONOR_SIGNED_ZEROS (mode)
+      && REAL_VALUE_MINUS_ZERO (d))
+    {
+      val->value = build_real (type, dconst0);
+      return;
+    }
+
+  if (!HONOR_NANS (mode)
+      && REAL_VALUE_ISNAN (d))
+    {
+      val->lattice_val = UNDEFINED;
+      val->value = NULL;
+      val->mem_ref = NULL;
+      return;
+    }
+}
+
 /* Set the value for variable VAR to NEW_VAL.  Return true if the new
    value is different from VAR's previous value.  */
 
@@ -425,6 +473,8 @@ static bool
 set_lattice_value (tree var, prop_value_t new_val)
 {
   prop_value_t *old_val = get_value (var);
+
+  canonicalize_float_value (&new_val);
 
   /* Lattice transitions must always be monotonically increasing in
      value.  If *OLD_VAL and NEW_VAL are the same, return false to
