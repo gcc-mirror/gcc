@@ -1,3 +1,30 @@
+2006-12-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	* common.opt (ftree-combine-temps): Remove.
+	* tree-outof-ssa.c (SSANORM_COMBINE_TEMPS): Remove.
+	(coalesce_ssa_name): Don't check for combine-temps.
+	(coalesce_vars): Remove.
+	(check_replaceable): Use num_imm_uses.
+	(remove_ssa_form, insert_backedge_copies, rewrite_out_of_ssa): Don't 
+	check for combine-temps.
+	(rewrite_out_of_ssa): Never create a ref_count in the var_map.
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Change parms
+	to register_ssa_partition calls.
+	* tree-ssa-live.c (register_ssa_partition): Remove prototype.
+	(init_var_map, delete_var_map): remove refernces to ref_count.
+	(create_ssa_var_map): Never calculate a ref count.
+	(type_var_init): Remove.
+	* tree-ssa-live.h (typedef struct _var_map): Remove ref_count.
+	(SSA_VAR_MAP_REF_COUNT): Delete.
+	(create_ssa_var_map): Change Prototype to have no parameters.
+	(version_ref_count): Delete.
+	(register_ssa_partition): Remove 'is_use' paramater and don't set the
+	ref_count vector.
+	(type_var_num, type_var, type_var_first_partition,
+	type_var_next_partition, type_var_dump, type_var_delete,
+	type_var_remove_partition, type_var_find, type_var_compact,
+	type_var_decompact): Remove.
+
 2006-12-01  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.md (pushsi_insn, popsi_insn): Set correct addrtype

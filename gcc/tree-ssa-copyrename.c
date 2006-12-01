@@ -121,8 +121,8 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
   gcc_assert (TREE_CODE (var1) == SSA_NAME);
   gcc_assert (TREE_CODE (var2) == SSA_NAME);
 
-  register_ssa_partition (map, var1, false);
-  register_ssa_partition (map, var2, true);
+  register_ssa_partition (map, var1);
+  register_ssa_partition (map, var2);
 
   p1 = partition_find (map->var_partition, SSA_NAME_VERSION (var1));
   p2 = partition_find (map->var_partition, SSA_NAME_VERSION (var2));

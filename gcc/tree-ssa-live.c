@@ -45,7 +45,6 @@ static tree_live_info_p new_tree_live_info (var_map);
 static inline void set_if_valid (var_map, bitmap, tree);
 static inline void add_livein_if_notdef (tree_live_info_p, bitmap,
 					 tree, basic_block);
-static inline void register_ssa_partition (var_map, tree, bool);
 static inline void add_conflicts_if_valid (tpa_p, conflict_graph,
 					   var_map, bitmap, tree);
 static partition_pair_p find_partition_pair (coalesce_list_p, int, int, bool);
@@ -79,7 +78,6 @@ init_var_map (int size)
   map->compact_to_partition = NULL;
   map->num_partitions = size;
   map->partition_size = size;
-  map->ref_count = NULL;
   return map;
 }
 
@@ -95,8 +93,6 @@ delete_var_map (var_map map)
     free (map->partition_to_compact);
   if (map->compact_to_partition)
     free (map->compact_to_partition);
-  if (map->ref_count)
-    free (map->ref_count);
   free (map);
 }
 
@@ -402,11 +398,11 @@ remove_unused_locals (void)
    new partition map is returned.  */
 
 var_map
-create_ssa_var_map (int flags)
+create_ssa_var_map (void)
 {
   block_stmt_iterator bsi;
   basic_block bb;
-  tree dest, use;
+  tree var;
   tree stmt;
   var_map map;
   ssa_op_iter iter;
@@ -422,13 +418,6 @@ create_ssa_var_map (int flags)
   used_in_virtual_ops = BITMAP_ALLOC (NULL);
 #endif
 
-  if (flags & SSA_VAR_MAP_REF_COUNT)
-    {
-      map->ref_count
-	= (int *)xmalloc (((num_ssa_names + 1) * sizeof (int)));
-      memset (map->ref_count, 0, (num_ssa_names + 1) * sizeof (int));
-    }
-
   FOR_EACH_BB (bb)
     {
       tree phi, arg;
@@ -436,12 +425,12 @@ create_ssa_var_map (int flags)
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	{
 	  int i;
-	  register_ssa_partition (map, PHI_RESULT (phi), false);
+	  register_ssa_partition (map, PHI_RESULT (phi));
 	  for (i = 0; i < PHI_NUM_ARGS (phi); i++)
 	    {
 	      arg = PHI_ARG_DEF (phi, i);
 	      if (TREE_CODE (arg) == SSA_NAME)
-		register_ssa_partition (map, arg, true);
+		register_ssa_partition (map, arg);
 
 	      mark_all_vars_used (&PHI_ARG_DEF_TREE (phi, i));
 	    }
@@ -452,31 +441,22 @@ create_ssa_var_map (int flags)
 	  stmt = bsi_stmt (bsi);
 
 	  /* Register USE and DEF operands in each statement.  */
-	  FOR_EACH_SSA_TREE_OPERAND (use , stmt, iter, SSA_OP_USE)
+	  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, (SSA_OP_DEF|SSA_OP_USE))
 	    {
-	      register_ssa_partition (map, use, true);
+	      register_ssa_partition (map, var);
 
 #ifdef ENABLE_CHECKING
-	      bitmap_set_bit (used_in_real_ops, DECL_UID (SSA_NAME_VAR (use)));
-#endif
-	    }
-
-	  FOR_EACH_SSA_TREE_OPERAND (dest, stmt, iter, SSA_OP_DEF)
-	    {
-	      register_ssa_partition (map, dest, false);
-
-#ifdef ENABLE_CHECKING
-	      bitmap_set_bit (used_in_real_ops, DECL_UID (SSA_NAME_VAR (dest)));
+	      bitmap_set_bit (used_in_real_ops, DECL_UID (SSA_NAME_VAR (var)));
 #endif
 	    }
 
 #ifdef ENABLE_CHECKING
 	  /* Validate that virtual ops don't get used in funny ways.  */
-	  FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, 
+	  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, 
 				     SSA_OP_VIRTUAL_USES | SSA_OP_VMUSTDEF)
 	    {
 	      bitmap_set_bit (used_in_virtual_ops, 
-			      DECL_UID (SSA_NAME_VAR (use)));
+			      DECL_UID (SSA_NAME_VAR (var)));
 	    }
 
 #endif /* ENABLE_CHECKING */
@@ -1066,73 +1046,6 @@ root_var_init (var_map map)
 
   sbitmap_free (seen);
   return rv;
-}
-
-
-/* Initialize a type_var structure which associates all the partitions in MAP 
-   of the same type to the type node's index.  Volatiles are ignored.  */
-
-type_var_p
-type_var_init (var_map map)
-{
-  type_var_p tv;
-  int x, y, p;
-  int num_partitions = num_var_partitions (map);
-  tree t;
-  sbitmap seen;
-
-  tv = tpa_init (map);
-  if (!tv)
-    return NULL;
-
-  seen = sbitmap_alloc (num_partitions);
-  sbitmap_zero (seen);
-
-  for (x = num_partitions - 1; x >= 0; x--)
-    {
-      t = partition_to_var (map, x);
-
-      /* Disallow coalescing of these types of variables.  */
-      if (!t
-	  || TREE_THIS_VOLATILE (t)
-	  || TREE_CODE (t) == RESULT_DECL
-      	  || TREE_CODE (t) == PARM_DECL 
-	  || (DECL_P (t)
-	      && (DECL_REGISTER (t)
-		  || !DECL_IGNORED_P (t)
-		  || DECL_RTL_SET_P (t))))
-        continue;
-
-      p = var_to_partition (map, t);
-
-      gcc_assert (p != NO_PARTITION);
-
-      /* If partitions have been coalesced, only add the representative 
-	 for the partition to the list once.  */
-      if (TEST_BIT (seen, p))
-        continue;
-      SET_BIT (seen, p);
-      t = TREE_TYPE (t);
-
-      /* Find the list for this type.  */
-      for (y = 0; y < tv->num_trees; y++)
-        if (t == VEC_index (tree, tv->trees, y))
-	  break;
-      if (y == tv->num_trees)
-        {
-	  tv->num_trees++;
-	  VEC_safe_push (tree, heap, tv->trees, t);
-	  VEC_safe_push (int, heap, tv->first_partition, p);
-	}
-      else
-        {
-	  tv->next_partition[p] = VEC_index (int, tv->first_partition, y);
-	  VEC_replace (int, tv->first_partition, y, p);
-	}
-      tv->partition_to_tree_map[p] = y;
-    }
-  sbitmap_free (seen);
-  return tv;
 }
 
 

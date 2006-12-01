@@ -1,3 +1,7 @@
+2006-12-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/max-1.c: Remove reference to -fno-tree-lrs option.
+
 2006-12-01  Ryan Mansfield  <rmansfield@qnx.com>
 
 	PR c++/29066
