@@ -366,52 +366,6 @@ spu_expand_extv (rtx ops[], int unsignedp)
   dst_mode = GET_MODE (dst);
   dst_size = GET_MODE_BITSIZE (GET_MODE (dst));
 
-  if (GET_CODE (ops[1]) == MEM)
-    {
-      if (start + width > MEM_ALIGN (ops[1]))
-	{
-	  rtx addr = gen_reg_rtx (SImode);
-	  rtx shl = gen_reg_rtx (SImode);
-	  rtx shr = gen_reg_rtx (SImode);
-	  rtx w0 = gen_reg_rtx (TImode);
-	  rtx w1 = gen_reg_rtx (TImode);
-	  rtx a0, a1;
-	  src = gen_reg_rtx (TImode);
-	  emit_move_insn (addr, copy_rtx (XEXP (ops[1], 0)));
-	  a0 = memory_address (TImode, addr);
-	  a1 = memory_address (TImode, plus_constant (addr, 16));
-	  emit_insn (gen_lq (w0, a0));
-	  emit_insn (gen_lq (w1, a1));
-	  emit_insn (gen_andsi3 (shl, addr, GEN_INT (15)));
-	  emit_insn (gen_iorsi3 (shr, addr, GEN_INT (16)));
-	  emit_insn (gen_shlqby_ti (w0, w0, shl));
-	  emit_insn (gen_rotqmby_ti (w1, w1, shr));
-	  emit_insn (gen_iorti3 (src, w0, w1));
-	}
-      else
-	{
-	  rtx addr = gen_reg_rtx (SImode);
-	  rtx a0;
-	  emit_move_insn (addr, copy_rtx (XEXP (ops[1], 0)));
-	  a0 = memory_address (TImode, addr);
-	  src = gen_reg_rtx (TImode);
-	  emit_insn (gen_lq (src, a0));
-	  if (MEM_ALIGN (ops[1]) < 128)
-	    {
-	      rtx t = src;
-	      src = gen_reg_rtx (TImode);
-	      emit_insn (gen_rotqby_ti (src, t, addr));
-	    }
-	}
-      /* Shifts in SImode are faster, use them if we can. */
-      if (start + width < 32)
-	{
-	  rtx t = src;
-	  src = gen_reg_rtx (SImode);
-	  emit_insn (gen_spu_convert (src, t));
-	}
-    }
-
   src = adjust_operand (src, &start);
   src_mode = GET_MODE (src);
   src_size = GET_MODE_BITSIZE (GET_MODE (src));
@@ -970,6 +924,11 @@ print_operand_address (FILE * file, register rtx addr)
   rtx reg;
   rtx offset;
 
+  if (GET_CODE (addr) == AND
+      && GET_CODE (XEXP (addr, 1)) == CONST_INT
+      && INTVAL (XEXP (addr, 1)) == -16)
+    addr = XEXP (addr, 0);
+
   switch (GET_CODE (addr))
     {
     case REG:
@@ -1250,6 +1209,11 @@ print_operand (FILE * file, rtx x, int code)
 
     case 'p':			/* load/store */
       if (xcode == MEM)
+	{
+	  x = XEXP (x, 0);
+	  xcode = GET_CODE (x);
+	}
+      if (xcode == AND)
 	{
 	  x = XEXP (x, 0);
 	  xcode = GET_CODE (x);
@@ -3300,7 +3264,7 @@ spu_split_load (rtx * ops)
   addr = gen_rtx_AND (SImode, copy_rtx (addr), GEN_INT (-16));
   mem = change_address (ops[1], TImode, addr);
 
-  emit_insn (gen_lq_ti (load, mem));
+  emit_insn (gen_movti (load, mem));
 
   if (rot)
     emit_insn (gen_rotqby_ti (load, load, rot));
@@ -3385,6 +3349,8 @@ spu_split_store (rtx * ops)
 	}
     }
 
+  addr = gen_rtx_AND (SImode, copy_rtx (addr), GEN_INT (-16));
+
   scalar = store_with_one_insn_p (ops[0]);
   if (!scalar)
     {
@@ -3393,7 +3359,9 @@ spu_split_store (rtx * ops)
          possible, and copying the flags will prevent that in certain
          cases, e.g. consider the volatile flag. */
 
-      emit_insn (gen_lq (reg, copy_rtx (addr)));
+      rtx lmem = change_address (ops[0], TImode, copy_rtx (addr));
+      set_mem_alias_set (lmem, 0);
+      emit_insn (gen_movti (reg, lmem));
 
       if (!p0 || reg_align (p0) >= 128)
 	p0 = stack_pointer_rtx;
@@ -3428,13 +3396,12 @@ spu_split_store (rtx * ops)
     emit_insn (gen_shlqby_ti
 	       (reg, reg, GEN_INT (4 - GET_MODE_SIZE (mode))));
 
-  addr = gen_rtx_AND (SImode, copy_rtx (addr), GEN_INT (-16));
   smem = change_address (ops[0], TImode, addr);
   /* We can't use the previous alias set because the memory has changed
      size and can potentially overlap objects of other types.  */
   set_mem_alias_set (smem, 0);
 
-  emit_insn (gen_stq_ti (smem, reg));
+  emit_insn (gen_movti (smem, reg));
 }
 
 /* Return TRUE if X is MEM which is a struct member reference

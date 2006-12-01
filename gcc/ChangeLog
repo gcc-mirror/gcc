@@ -1,3 +1,13 @@
+2006-12-01  Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
+
+	* config/spu/predicates.md (spu_mov_operand): Add.
+	* config/spu/spu.c (spu_expand_extv): Remove unused code.
+	(print_operand_address, print_operand): Handle addresses containing AND.
+	(spu_split_load, spu_split_store): Use updated movti pattern.
+	* config/spu/spu.md: (_mov<mode>, _movdi, _movti): Handle loads and
+	stores in mov patterns for correct operation of reload.
+	(lq, lq_<mode>, stq, stq_<mode>): Remove.
+
 2006-12-01  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/30021
