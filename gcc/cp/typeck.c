@@ -3266,8 +3266,28 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	}
       else if (TYPE_PTRMEMFUNC_P (type0) && null_ptr_cst_p (op1))
 	{
-	  op0 = build_ptrmemfunc_access_expr (op0, pfn_identifier);
-	  op1 = cp_convert (TREE_TYPE (op0), integer_zero_node);
+	  if (TARGET_PTRMEMFUNC_VBIT_LOCATION
+	      == ptrmemfunc_vbit_in_delta)
+	    {
+	      tree pfn0 = pfn_from_ptrmemfunc (op0);
+	      tree delta0 = build_ptrmemfunc_access_expr (op0,
+			 	 			  delta_identifier);
+	      tree e1 = cp_build_binary_op (EQ_EXPR,
+	  			            pfn0,	
+				      	    fold_convert (TREE_TYPE (pfn0),
+							  integer_zero_node));
+	      tree e2 = cp_build_binary_op (BIT_AND_EXPR, 
+					    delta0,
+				            integer_one_node);
+	      e2 = cp_build_binary_op (EQ_EXPR, e2, integer_zero_node);
+	      op0 = cp_build_binary_op (TRUTH_ANDIF_EXPR, e1, e2);
+	      op1 = cp_convert (TREE_TYPE (op0), integer_one_node); 
+	    }
+     	  else 
+	    {
+	      op0 = build_ptrmemfunc_access_expr (op0, pfn_identifier);
+	      op1 = cp_convert (TREE_TYPE (op0), integer_zero_node); 
+	    }
 	  result_type = TREE_TYPE (op0);
 	}
       else if (TYPE_PTRMEMFUNC_P (type1) && null_ptr_cst_p (op0))
@@ -3290,26 +3310,61 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	  if (TREE_SIDE_EFFECTS (op1))
 	    op1 = save_expr (op1);
 
-	  /* We generate:
-
-	     (op0.pfn == op1.pfn
-	      && (!op0.pfn || op0.delta == op1.delta))
-
-	     The reason for the `!op0.pfn' bit is that a NULL
-	     pointer-to-member is any member with a zero PFN; the
-	     DELTA field is unspecified.  */
 	  pfn0 = pfn_from_ptrmemfunc (op0);
 	  pfn1 = pfn_from_ptrmemfunc (op1);
 	  delta0 = build_ptrmemfunc_access_expr (op0,
 						 delta_identifier);
 	  delta1 = build_ptrmemfunc_access_expr (op1,
 						 delta_identifier);
-	  e1 = cp_build_binary_op (EQ_EXPR, delta0, delta1);
-	  e2 = cp_build_binary_op (EQ_EXPR,
-				   pfn0,
-				   cp_convert (TREE_TYPE (pfn0),
-					       integer_zero_node));
-	  e1 = cp_build_binary_op (TRUTH_ORIF_EXPR, e1, e2);
+	  if (TARGET_PTRMEMFUNC_VBIT_LOCATION
+	      == ptrmemfunc_vbit_in_delta)
+	    {
+	      /* We generate:
+
+		 (op0.pfn == op1.pfn
+		  && ((op0.delta == op1.delta)
+     		       || (!op0.pfn && op0.delta & 1 == 0 
+			   && op1.delta & 1 == 0))
+
+	         The reason for the `!op0.pfn' bit is that a NULL
+	         pointer-to-member is any member with a zero PFN and
+	         LSB of the DELTA field is 0.  */
+
+	      e1 = cp_build_binary_op (BIT_AND_EXPR,
+				       delta0, 
+				       integer_one_node);
+	      e1 = cp_build_binary_op (EQ_EXPR, e1, integer_zero_node);
+	      e2 = cp_build_binary_op (BIT_AND_EXPR,
+				       delta1,
+				       integer_one_node);
+	      e2 = cp_build_binary_op (EQ_EXPR, e2, integer_zero_node);
+	      e1 = cp_build_binary_op (TRUTH_ANDIF_EXPR, e2, e1);
+	      e2 = cp_build_binary_op (EQ_EXPR,
+				       pfn0,
+				       fold_convert (TREE_TYPE (pfn0),
+						     integer_zero_node));
+	      e2 = cp_build_binary_op (TRUTH_ANDIF_EXPR, e2, e1);
+	      e1 = cp_build_binary_op (EQ_EXPR, delta0, delta1);
+	      e1 = cp_build_binary_op (TRUTH_ORIF_EXPR, e1, e2);
+	    }
+	  else
+	    {
+	      /* We generate:
+
+	         (op0.pfn == op1.pfn
+	         && (!op0.pfn || op0.delta == op1.delta))
+
+	         The reason for the `!op0.pfn' bit is that a NULL
+	         pointer-to-member is any member with a zero PFN; the
+	         DELTA field is unspecified.  */
+ 
+    	      e1 = cp_build_binary_op (EQ_EXPR, delta0, delta1);
+	      e2 = cp_build_binary_op (EQ_EXPR,
+		      		       pfn0,
+			   	       fold_convert (TREE_TYPE (pfn0),
+						   integer_zero_node));
+	      e1 = cp_build_binary_op (TRUTH_ORIF_EXPR, e1, e2);
+	    }
 	  e2 = build2 (EQ_EXPR, boolean_type_node, pfn0, pfn1);
 	  e = cp_build_binary_op (TRUTH_ANDIF_EXPR, e2, e1);
 	  if (code == EQ_EXPR)
