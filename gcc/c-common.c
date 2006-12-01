@@ -1034,7 +1034,7 @@ check_main_parameter_types (tree decl)
    {
      tree type = args ? TREE_VALUE (args) : 0;
 
-     if (type == void_type_node)
+     if (type == void_type_node || type == error_mark_node )
        break;
 
      ++argct;
