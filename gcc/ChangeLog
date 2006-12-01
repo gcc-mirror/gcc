@@ -1,3 +1,27 @@
+2006-12-01  Joseph Myers  <joseph@codesourcery.com>
+            David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/24036
+	* doc/tm.texi (HARD_REGNO_NREGS_HAS_PADDING,
+	HARD_REGNO_NREGS_WITH_PADDING): Document new target macros.
+	* defaults.h (HARD_REGNO_NREGS_HAS_PADDING,
+	HARD_REGNO_NREGS_WITH_PADDING): Define.
+	* config/i386/i386.h (HARD_REGNO_NREGS_HAS_PADDING,
+	HARD_REGNO_NREGS_WITH_PADDING): Define.
+	* rtlanal.c (subreg_regno_offset, subreg_offset_representable_p):
+	Use new macros to detect modes with holes; do not look at integer
+	units.
+	(subreg_offset_representable_p): Check for and disallow cases
+	where the modes use different numbers of bits from registers.
+	* config/rs6000/rs6000.c (rs6000_emit_move): Handle TFmode
+	constant for soft-float.
+	(rs6000_hard_regno_nregs): Use UNITS_PER_FP_WORD for e500 GPRs
+	containing doubles.
+	(rs6000_split_multireg_move): Use DFmode reg_mode for TFmode moves
+	in E500 double case.
+	* config/rs6000/rs6000.md (movtf): Allow soft-float.
+	(movtf_softfloat): New.
+
 2006-11-30  Richard Sandiford  <richard@codesourcery.com>
 
 	* simplify-rtx.c (simplify_rtx): Use simplify_subreg rather than
