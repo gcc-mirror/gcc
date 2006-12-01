@@ -1,3 +1,10 @@
+2006-12-01  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/30022
+	* typeck.c (type_after_usual_arithmetic_conversions):
+	Fix assertion for vector types.
+	(build_binary_op): Use temporary for inner type of vector types.
+
 2006-11-29  Lee Millward  <lee.millward@codesourcery.com> 
 
 	PR c++/29022
