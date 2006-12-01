@@ -141,7 +141,7 @@ enum spu_immediate {
   SPU_ORI,
   SPU_ORHI,
   SPU_ORBI,
-  SPU_IOHL,
+  SPU_IOHL
 };
 
 static enum spu_immediate which_immediate_load (HOST_WIDE_INT val);
@@ -3670,10 +3670,10 @@ reloc_diagnostic (rtx x)
   else
     msg = "creating run-time relocation";
 
-  if (TARGET_ERROR_RELOC) /** default : error reloc **/
-    error (msg, loc_decl, decl);
-  else
+  if (TARGET_WARN_RELOC)
     warning (0, msg, loc_decl, decl);
+  else
+    error (msg, loc_decl, decl);
 }
 
 /* Hook into assemble_integer so we can generate an error for run-time

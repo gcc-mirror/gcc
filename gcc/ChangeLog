@@ -1,3 +1,24 @@
+2006-12-01  Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
+
+	* config/spu/spu.c (spu_immediate): Remove trailing comma.
+	(reloc_diagnostic): Call warning when -mwarn-reloc is specified.
+	* config/spu/spu.md: (zero_extendhisi2): Expand instead of split for
+	better optimization.
+	(floatv4siv4sf2): New.
+	(fix_truncv4sfv4si2): New.
+	(floatunsv4siv4sf2): New.
+	(fixuns_truncv4sfv4si2): New.
+	(addv16qi3): New.
+	(subv16qi3): New.
+	(negv16qi2): New.
+	(mulv8hi3): New.
+	(mulsi3): Remove.
+	(mul<mode>3): New.
+	(_mulv4si3): New.
+	(cmp<mode>): Don't accept constant arguments for DI, TI and SF.
+	* config/spu/spu_internals.h: Handle overloaded intrinsics in C++ with
+	spu_resolve_overloaded_builtin instead of static inline functions.
+
 2006-12-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (fold_binary) <LT_EXPR>: Use the precision of the
