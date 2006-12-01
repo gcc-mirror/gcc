@@ -502,15 +502,16 @@
   ""
   "[--SP] = %0;"
   [(set_attr "type" "mcst")
+   (set_attr "addrtype" "32bit")
    (set_attr "length" "2")])
 
 (define_insn "*popsi_insn"
-  [(set (match_operand:SI 0 "register_operand" "=xy")
+  [(set (match_operand:SI 0 "register_operand" "=d,xy")
         (mem:SI (post_inc:SI (reg:SI REG_SP))))]
   ""
   "%0 = [SP++];"
   [(set_attr "type" "mcld")
-   (set_attr "addrtype" "preg")
+   (set_attr "addrtype" "preg,32bit")
    (set_attr "length" "2")])
 
 ;; The first alternative is used to make reload choose a limited register
