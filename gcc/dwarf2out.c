@@ -3756,7 +3756,7 @@ die_node;
 typedef struct pubname_struct GTY(())
 {
   dw_die_ref die;
-  char *name;
+  const char *name;
 }
 pubname_entry;
 
@@ -7358,12 +7358,10 @@ add_pubtype (tree decl, dw_die_ref die)
 	  if (TYPE_NAME (decl))
 	    {
 	      if (TREE_CODE (TYPE_NAME (decl)) == IDENTIFIER_NODE)
-		e.name = xstrdup ((const char *) IDENTIFIER_POINTER 
-				                              (TYPE_NAME (decl)));
+		e.name = IDENTIFIER_POINTER (TYPE_NAME (decl));
 	      else if (TREE_CODE (TYPE_NAME (decl)) == TYPE_DECL
 		       && DECL_NAME (TYPE_NAME (decl)))
-		e.name = xstrdup ((const char *) IDENTIFIER_POINTER 
-				                  (DECL_NAME (TYPE_NAME (decl))));
+		e.name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (decl)));
              else
 	       e.name = xstrdup ((const char *) get_AT_string (die, DW_AT_name));
 	    }
