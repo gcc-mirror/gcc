@@ -59,6 +59,9 @@ char *alloca ();
 #define GFC_MAX_DIMENSIONS 7	/* Maximum dimensions in an array.  */
 #define GFC_LETTERS 26		/* Number of letters in the alphabet.  */
 
+#define MAX_SUBRECORD_LENGTH 2147483639   /* 2**31-9 */
+
+
 #define free(x) Use_gfc_free_instead_of_free()
 #define gfc_is_whitespace(c) ((c==' ') || (c=='\t'))
 
@@ -1661,11 +1664,11 @@ typedef struct
   int fshort_enums;
   int convert;
   int record_marker;
+  int max_subrecord_length;
 }
 gfc_option_t;
 
 extern gfc_option_t gfc_option;
-
 
 /* Constructor nodes for array and structure constructors.  */
 typedef struct gfc_constructor

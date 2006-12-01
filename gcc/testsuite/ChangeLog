@@ -1,3 +1,12 @@
+2006-12-01  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/29568
+	* gfortran.dg/convert_implied_open.f90:  Change to
+	new default record length.
+	* gfortran.dg/unf_short_record_1.f90:  Adapt to
+	new error message.
+	* gfortran.dg/unformatted_subrecords_1.f90:  New test.
+
 2006-12-01  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc.dg/max-1.c: Remove reference to -fno-tree-lrs option.
