@@ -98,7 +98,7 @@ formatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)
 
 /* unformatted_backspace(fpp) -- Move the file backwards for an unformatted
    sequential file.  We are guaranteed to be between records on entry and 
-   we have to shift to the previous record.  */
+   we have to shift to the previous record.  Loop over subrecords.  */
 
 static void
 unformatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)
@@ -107,74 +107,74 @@ unformatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)
   GFC_INTEGER_4 m4;
   GFC_INTEGER_8 m8;
   int length, length_read;
+  int continued;
   char *p;
 
   if (compile_options.record_marker == 0)
-    length = sizeof (gfc_offset);
+    length = sizeof (GFC_INTEGER_4);
   else
     length = compile_options.record_marker;
 
-  length_read = length;
-
-  p = salloc_r_at (u->s, &length_read,
-		   file_position (u->s) - length);
-  if (p == NULL || length_read != length)
-    goto io_error;
-
-  /* Only CONVERT_NATIVE and CONVERT_SWAP are valid here.  */
-  if (u->flags.convert == CONVERT_NATIVE)
+  do
     {
-      switch (compile_options.record_marker)
+      length_read = length;
+
+      p = salloc_r_at (u->s, &length_read,
+		       file_position (u->s) - length);
+      if (p == NULL || length_read != length)
+	goto io_error;
+
+      /* Only CONVERT_NATIVE and CONVERT_SWAP are valid here.  */
+      if (u->flags.convert == CONVERT_NATIVE)
 	{
-	case 0:
-	  memcpy (&m, p, sizeof(gfc_offset));
-	  break;
+	  switch (length)
+	    {
+	    case sizeof(GFC_INTEGER_4):
+	      memcpy (&m4, p, sizeof (m4));
+	      m = m4;
+	      break;
 
-	case sizeof(GFC_INTEGER_4):
-	  memcpy (&m4, p, sizeof (m4));
-	  m = m4;
-	  break;
+	    case sizeof(GFC_INTEGER_8):
+	      memcpy (&m8, p, sizeof (m8));
+	      m = m8;
+	      break;
 
-	case sizeof(GFC_INTEGER_8):
-	  memcpy (&m8, p, sizeof (m8));
-	  m = m8;
-	  break;
-
-	default:
-	  runtime_error ("Illegal value for record marker");
-	  break;
+	    default:
+	      runtime_error ("Illegal value for record marker");
+	      break;
+	    }
 	}
-    }
-  else
-    {
-      switch (compile_options.record_marker)
+      else
 	{
-	case 0:
-	  reverse_memcpy (&m, p, sizeof(gfc_offset));
-	  break;
+	  switch (length)
+	    {
+	    case sizeof(GFC_INTEGER_4):
+	      reverse_memcpy (&m4, p, sizeof (m4));
+	      m = m4;
+	      break;
 
-	case sizeof(GFC_INTEGER_4):
-	  reverse_memcpy (&m4, p, sizeof (m4));
-	  m = m4;
-	  break;
+	    case sizeof(GFC_INTEGER_8):
+	      reverse_memcpy (&m8, p, sizeof (m8));
+	      m = m8;
+	      break;
 
-	case sizeof(GFC_INTEGER_8):
-	  reverse_memcpy (&m8, p, sizeof (m8));
-	  m = m8;
-	  break;
+	    default:
+	      runtime_error ("Illegal value for record marker");
+	      break;
+	    }
 
-	default:
-	  runtime_error ("Illegal value for record marker");
-	  break;
 	}
 
-    }
+      continued = m < 0;
+      if (continued)
+	m = -m;
 
-  if ((new = file_position (u->s) - m - 2*length) < 0)
-    new = 0;
+      if ((new = file_position (u->s) - m - 2*length) < 0)
+	new = 0;
 
-  if (sseek (u->s, new) == FAILURE)
-    goto io_error;
+      if (sseek (u->s, new) == FAILURE)
+	goto io_error;
+    } while (continued);
 
   u->last_record--;
   return;

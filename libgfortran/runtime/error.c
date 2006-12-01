@@ -437,7 +437,7 @@ translate_error (int code)
       break;
 
     case ERROR_SHORT_RECORD:
-      p = "Short record on unformatted read";
+      p = "I/O past end of record on unformatted file";
       break;
 
     default:

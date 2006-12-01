@@ -650,13 +650,17 @@ variable override the default specified by -fconvert.}
 @cindex -frecord-marker=@var{length}
 @item -frecord-marker=@var{length}
 Specify the length of record markers for unformatted files.
-Valid values for @var{length} are 4 and 8.  Default is whatever
-@code{off_t} is specified to be on that particular system.
-Note that specifying @var{length} as 4 limits the record
-length of unformatted files to 2 GB.  This option does not
-extend the maximum possible record length on systems where
-@code{off_t} is a four_byte quantity.
+Valid values for @var{length} are 4 and 8.  Default is 4.
+@emph{This is different from previous versions of gfortran},
+which specified a default record marker length of 8 on most
+systems.  If you want to read or write files compatible
+with earlier versions of gfortran, use @samp{-frecord-marker=8}.
 
+@cindex -fmax-subrecord-length=@var{length}
+@item -fmax-subrecord-length=@var{length}
+Specify the maximum length for a subrecord.  The maximum permitted
+value for length is 2147483639, which is also the default.  Only
+really useful for use by the gfortran testsuite.
 @end table
 
 @node Code Gen Options
