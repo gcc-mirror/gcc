@@ -1,3 +1,9 @@
+2006-12-01  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/29433
+	* dwarf2out.c (struct pubname_struct): Make name const.
+	(add_pubtype): Do not xstrdup identifiers.
+
 2006-12-01  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (bfin_valid_add): Fix the logic that ensures
