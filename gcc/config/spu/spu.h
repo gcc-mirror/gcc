@@ -238,6 +238,12 @@ enum reg_class {
         ((GET_MODE_SIZE (FROM) > 4 || GET_MODE_SIZE (TO) > 4) \
 	 && GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO))
 
+#define REGISTER_TARGET_PRAGMAS() do {					\
+targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
+  /* Don't give warnings about the main() function. */			\
+warn_main = 0;								\
+}while (0);
+
 
 /* Frame Layout */
 
