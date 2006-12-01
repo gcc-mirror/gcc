@@ -1,3 +1,9 @@
+2006-12-01  Ryan Mansfield  <rmansfield@qnx.com>
+
+        PR c++/29066
+	* typeck.c (build_binary_op):  Fix pointer to member function
+	comparison for ptrmemfunc_vbit_in_delta targets.
+
 2006-12-01  Dirk Mueller  <dmueller@suse.de>
 
 	PR c++/18313
