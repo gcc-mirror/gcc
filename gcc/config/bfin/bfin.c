@@ -2339,8 +2339,9 @@ bfin_valid_add (enum machine_mode mode, HOST_WIDE_INT value)
   int shift = sz == 1 ? 0 : sz == 2 ? 1 : 2;
   /* The usual offsettable_memref machinery doesn't work so well for this
      port, so we deal with the problem here.  */
-  unsigned HOST_WIDE_INT mask = sz == 8 ? 0x7ffe : 0x7fff;
-  return (v & ~(mask << shift)) == 0;
+  if (value > 0 && sz == 8)
+    v += 4;
+  return (v & ~(0x7fff << shift)) == 0;
 }
 
 static bool
