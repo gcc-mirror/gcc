@@ -78,9 +78,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 _GLIBCXX_END_NAMESPACE
 
-struct __true_type { };
-struct __false_type { };
-
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
 namespace __detail
@@ -95,6 +92,10 @@ namespace __detail
   template<typename _Tp>
   __two& __test_type(...);
 } // namespace __detail
+
+
+  struct __true_type { };
+  struct __false_type { };
 
   template<bool>
     struct __truth_type

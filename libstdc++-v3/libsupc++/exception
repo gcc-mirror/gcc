@@ -30,8 +30,7 @@
 // the GNU General Public License.
 
 /** @file exception
- *  This header defines several types and functions relating to the
- *  handling of exceptions in a C++ program.
+ *  This is a Standard C++ Library header.
  */
 
 #ifndef __EXCEPTION__

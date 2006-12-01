@@ -34,6 +34,10 @@
 
 // Chris Jefferson <chris@bubblescope.net>
 
+namespace std
+{
+_GLIBCXX_BEGIN_NAMESPACE(tr1)
+
 /// @brief class tuple_size
 template<_GLIBCXX_TEMPLATE_PARAMS>
   struct tuple_size<tuple<_GLIBCXX_TEMPLATE_ARGS> >
@@ -164,3 +168,5 @@ template<_GLIBCXX_TEMPLATE_PARAMS>
   { return make_tuple(_GLIBCXX_REF_WRAP_PARAMS); }
 #endif
 
+_GLIBCXX_END_NAMESPACE
+}

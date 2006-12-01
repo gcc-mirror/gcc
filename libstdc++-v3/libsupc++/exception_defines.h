@@ -31,6 +31,10 @@
 // ISO C++ 14882: 19.1  Exception classes
 //
 
+/** @file exception_defines.h
+ *  This is a Standard C++ Library header.
+ */
+
 #ifndef _EXCEPTION_DEFINES_H
 #define _EXCEPTION_DEFINES_H 1
 

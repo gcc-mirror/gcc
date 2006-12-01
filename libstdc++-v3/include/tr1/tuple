@@ -145,6 +145,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
    swallow_assign ignore;
  }; // anonymous namespace
 
+_GLIBCXX_END_NAMESPACE
+}
+
 #define _GLIBCXX_CAT(x,y) _GLIBCXX_CAT2(x,y)
 #define _GLIBCXX_CAT2(x,y) x##y
 #define _SHORT_REPEAT
@@ -152,9 +155,6 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 #include <tr1/repeat.h>
 #undef _GLIBCXX_REPEAT_HEADER
 #undef _SHORT_REPEAT
-
-_GLIBCXX_END_NAMESPACE
-}
 
 #include <tr1/functional>
 

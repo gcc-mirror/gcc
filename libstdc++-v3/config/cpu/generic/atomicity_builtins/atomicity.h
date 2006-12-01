@@ -28,6 +28,10 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file ext/atomicity.h
+ *  This file is a GNU extension to the Standard C++ Library.
+ */
+
 #include <bits/c++config.h>
 #include <bits/atomic_word.h>
 

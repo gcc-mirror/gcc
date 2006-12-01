@@ -53,7 +53,7 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-/** @file set
+/** @file
  *  This is a Standard C++ Library header.
  */
 

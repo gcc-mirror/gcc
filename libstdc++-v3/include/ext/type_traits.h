@@ -28,6 +28,10 @@
 // reasons why the executable file might be covered by the GNU General
 // Public License.
 
+/** @file ext/type_traits.h
+ *  This file is a GNU extension to the Standard C++ Library.
+ */
+
 #ifndef _EXT_TYPE_TRAITS
 #define _EXT_TYPE_TRAITS 1
 

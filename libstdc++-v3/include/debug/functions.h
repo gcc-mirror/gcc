@@ -28,6 +28,10 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file debug/functions.h
+ *  This file is a GNU debug extension to the Standard C++ Library.
+ */
+
 #ifndef _GLIBCXX_DEBUG_FUNCTIONS_H
 #define _GLIBCXX_DEBUG_FUNCTIONS_H 1
 
@@ -109,7 +113,7 @@ namespace __gnu_debug
   */
   template<typename _Integral>
     inline bool
-    __valid_range_aux(const _Integral&, const _Integral&, __true_type)
+    __valid_range_aux(const _Integral&, const _Integral&, std::__true_type)
     { return true; }
 
   /** We have iterators, so figure out what kind of iterators that are
@@ -118,7 +122,7 @@ namespace __gnu_debug
   template<typename _InputIterator>
     inline bool
     __valid_range_aux(const _InputIterator& __first,
-		      const _InputIterator& __last, __false_type)
+		      const _InputIterator& __last, std::__false_type)
   {
     typedef typename std::iterator_traits<_InputIterator>::iterator_category
       _Category;

@@ -29,7 +29,7 @@
 // the GNU General Public License.
 
 /** @file typeinfo
- *  This header provides RTTI support.
+ *  This is a Standard C++ Library header.
  */
 
 #ifndef _TYPEINFO

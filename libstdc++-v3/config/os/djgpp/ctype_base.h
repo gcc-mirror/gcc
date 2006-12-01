@@ -31,6 +31,9 @@
 // ISO C++ 14882: 22.1  Locales
 //
   
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  /// @brief  Base class for ctype.
   struct ctype_base
   {
     typedef unsigned short 	mask;
@@ -53,5 +56,4 @@
     static const mask graph = __dj_ISALPHA | __dj_ISDIGIT | __dj_ISPUNCT;  // Graphical
   };
 
-
-
+_GLIBCXX_END_NAMESPACE

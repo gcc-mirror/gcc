@@ -1090,6 +1090,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       __x.swap(__y);
     }
 
+_GLIBCXX_END_NAMESPACE
+}
+
+
 #define _GLIBCXX_JOIN(X,Y) _GLIBCXX_JOIN2( X , Y )
 #define _GLIBCXX_JOIN2(X,Y) _GLIBCXX_JOIN3(X,Y)
 #define _GLIBCXX_JOIN3(X,Y) X##Y
@@ -1099,6 +1103,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 #undef _GLIBCXX_JOIN3
 #undef _GLIBCXX_JOIN2
 #undef _GLIBCXX_JOIN
+
+
+namespace std
+{
+_GLIBCXX_BEGIN_NAMESPACE(tr1)
 
   // Definition of default hash function std::tr1::hash<>.  The types for
   // which std::tr1::hash<T> is defined is in clause 6.3.3. of the PDTR.

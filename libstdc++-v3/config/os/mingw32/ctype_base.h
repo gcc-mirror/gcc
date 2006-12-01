@@ -33,6 +33,9 @@
   
 // Information, as gleaned from /mingw32/include/ctype.h.
   
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  /// @brief  Base class for ctype.
   struct ctype_base
   {
     // Non-standard typedefs.
@@ -54,5 +57,4 @@
     static const mask alnum 	= (_ALPHA | _DIGIT);
   };
 
-
-
+_GLIBCXX_END_NAMESPACE

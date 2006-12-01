@@ -44,6 +44,8 @@
 
 #pragma GCC system_header
 
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /// @brief  Empty base class for codecvt facet [22.2.1.5].
   class codecvt_base
   {
@@ -466,5 +468,7 @@
       virtual
       ~codecvt_byname() { }
     };
+
+_GLIBCXX_END_NAMESPACE
 
 #endif // _CODECVT_H
