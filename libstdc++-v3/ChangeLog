@@ -1,3 +1,8 @@
+2006-12-01  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_tree.h (_Rb_tree<>::destroy_node): Uglify.
+	(_M_erase, erase(iterator), erase(const_iterator)): Adjust.
+
 2006-11-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/throw_allocator.h: Consistent @file markup.

@@ -395,7 +395,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       }
 
       void
-      destroy_node(_Link_type __p)
+      _M_destroy_node(_Link_type __p)
       {
 	get_allocator().destroy(&__p->_M_value_field);
 	_M_put_node(__p);
@@ -1245,7 +1245,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	static_cast<_Link_type>(_Rb_tree_rebalance_for_erase
 				(__position._M_node,
 				 this->_M_impl._M_header));
-      destroy_node(__y);
+      _M_destroy_node(__y);
       --_M_impl._M_node_count;
     }
 
@@ -1259,7 +1259,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	static_cast<_Link_type>(_Rb_tree_rebalance_for_erase
 				(const_cast<_Base_ptr>(__position._M_node),
 				 this->_M_impl._M_header));
-      destroy_node(__y);
+      _M_destroy_node(__y);
       --_M_impl._M_node_count;
     }
 
@@ -1322,7 +1322,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	{
 	  _M_erase(_S_right(__x));
 	  _Link_type __y = _S_left(__x);
-	  destroy_node(__x);
+	  _M_destroy_node(__x);
 	  __x = __y;
 	}
     }
