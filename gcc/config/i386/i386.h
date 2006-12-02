@@ -356,7 +356,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define CC1_CPU_SPEC CC1_CPU_SPEC_1
 #else
 #define CC1_CPU_SPEC CC1_CPU_SPEC_1 \
-"%{march=native:%<march=native %:local_cpu_detect(arch)} \
+"%{march=native:%<march=native %:local_cpu_detect(arch) \
+  %{!mtune=*:%<mtune=native %:local_cpu_detect(tune)}} \
 %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
 #endif
 #endif
