@@ -1,7 +1,6 @@
 /* Version 2.2.0 of MPFR had bugs in sin rounding.  This test checks
    to see if that buggy version was installed.  The problem is fixed
-   in the MPFR cumulative patch http://www.mpfr.org/mpfr-current and
-   presumably later MPFR versions.
+   in version 2.2.1 and presumably later MPFR versions.
 
    Origin: Kaveh R. Ghazi 10/23/2006.  */
 

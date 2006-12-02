@@ -2392,7 +2392,7 @@ fi
 CFLAGS="$saved_CFLAGS"
 
 if test -d ${srcdir}/gcc && test x$have_gmp != xyes; then
-  { echo "configure: error: Building GCC requires GMP 4.1+ and MPFR 2.2+.
+  { echo "configure: error: Building GCC requires GMP 4.1+ and MPFR 2.2.1+.
 Try the --with-gmp and/or --with-mpfr options to specify their locations.
 Copies of these libraries' source code can be found at their respective
 hosting sites as well as at ftp://gcc.gnu.org/pub/gcc/infrastructure/.
