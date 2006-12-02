@@ -61,7 +61,7 @@ tree global_namespace;
    unit.  */
 static GTY(()) tree anonymous_namespace_name;
 
-/* Initialise anonymous_namespace_name if necessary, and return it.  */
+/* Initialize anonymous_namespace_name if necessary, and return it.  */
 
 static tree
 get_anonymous_namespace_name(void)

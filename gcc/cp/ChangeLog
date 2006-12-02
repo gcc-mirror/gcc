@@ -1,3 +1,7 @@
+2006-12-02  Kazu Hirata  <kazu@codesourcery.com>
+
+	* name-lookup.c: Follow spelling conventions.
+
 2006-12-01  Geoffrey Keating  <geoffk@apple.com>
 
 	* decl.c (poplevel): Check DECL_INITIAL invariant.
