@@ -1601,7 +1601,7 @@ estimate_loops_at_level (struct loop *first_loop)
     }
 }
 
-/* Propates frequencies through structure of loops.  */
+/* Propagates frequencies through structure of loops.  */
 
 static void
 estimate_loops (void)

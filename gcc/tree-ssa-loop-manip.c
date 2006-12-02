@@ -627,7 +627,7 @@ can_unroll_loop_p (struct loop *loop, unsigned factor,
       || niter->cmp == ERROR_MARK
       /* Scalar evolutions analysis might have copy propagated
 	 the abnormal ssa names into these expressions, hence
-	 emiting the computations based on them during loop
+	 emitting the computations based on them during loop
 	 unrolling might create overlapping life ranges for
 	 them, and failures in out-of-ssa.  */
       || contains_abnormal_ssa_name_p (niter->may_be_zero)

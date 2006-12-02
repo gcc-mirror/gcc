@@ -17557,7 +17557,7 @@ rs6000_sched_reorder2 (FILE *dump, int sched_verbose, rtx *ready,
          cycle and we attempt to locate another load in the ready list to
          issue with it.
 
-       - If the pedulum is -2, then two stores have already been
+       - If the pendulum is -2, then two stores have already been
          issued in this cycle, so we increase the priority of the first load
          in the ready list to increase it's likelihood of being chosen first
          in the next cycle.

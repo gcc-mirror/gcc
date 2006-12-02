@@ -143,7 +143,7 @@ struct loop
   struct nb_iter_bound *bounds;
 
   /* If not NULL, loop has just single exit edge stored here (edges to the
-     EXIT_BLOCK_PTR do not count.  Do not use direcly, this field should
+     EXIT_BLOCK_PTR do not count.  Do not use directly; this field should
      only be accessed via single_exit/set_single_exit functions.  */
   edge single_exit_;
 

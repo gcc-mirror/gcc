@@ -119,7 +119,7 @@ struct data_reference
           a[j].b[5][j] = 0; 
 
      Here the offset expression (j * C_j + C) will not contain variables after
-     subsitution of j=3 (3*C_j + C).
+     substitution of j=3 (3*C_j + C).
 
      Misalignment can be calculated only if all the variables can be 
      substituted with constants, otherwise, we record maximum possible alignment

@@ -1668,7 +1668,7 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 	 (since the maximal set often has 300+ members, even when you
 	 have a small number of blocks).
 	 Basically, we defer the computation of ANTIC for this block
-	 until we have processed it's successor, which will inveitably
+	 until we have processed it's successor, which will inevitably
 	 have a *much* smaller set of values to phi translate once
 	 clean has been run on it.
 	 The cost of doing this is that we technically perform more

@@ -1428,7 +1428,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	    {
 	      /* For interleaved access we peel only if number of iterations in
 		 the prolog loop ({VF - misalignment}), is a multiple of the
-		 number of the interelaved accesses.  */
+		 number of the interleaved accesses.  */
 	      int elem_size, mis_in_elements;
 	      int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
 
@@ -2228,7 +2228,8 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
              is not used inside the loop), it will be vectorized, and therefore
              the corresponding DEF_STMTs need to marked as relevant.
 	     We distinguish between two kinds of relevant stmts - those that are
-	     used by a reduction conputation, and those that are (also) used by 	     a regular computation. This allows us later on to identify stmts 
+	     used by a reduction computation, and those that are (also) used by
+ 	     a regular computation. This allows us later on to identify stmts
 	     that are used solely by a reduction, and therefore the order of 
 	     the results that they produce does not have to be kept.
        */

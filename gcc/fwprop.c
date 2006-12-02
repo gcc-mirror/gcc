@@ -389,7 +389,7 @@ propagate_rtx_1 (rtx *px, rtx old, rtx new, bool can_appear)
 }
 
 /* Replace all occurrences of OLD in X with NEW and try to simplify the
-   resulting expression (in mode MODE).  Return a new expresion if it is
+   resulting expression (in mode MODE).  Return a new expression if it is
    a constant, otherwise X.
 
    Simplifications where occurrences of NEW collapse to a constant are always

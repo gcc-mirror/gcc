@@ -51,7 +51,7 @@ enum availability
 
 struct cgraph_local_info GTY(())
 {
-  /* Estiimated stack frame consumption by the function.  */
+  /* Estimated stack frame consumption by the function.  */
   HOST_WIDE_INT estimated_self_stack_size;
 
   /* Size of the function before inlining.  */

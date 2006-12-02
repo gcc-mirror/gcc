@@ -1831,7 +1831,7 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
      unsigned char).
 
      To make things simpler, we require both bounds to fit into type, although
-     there are cases where this would not be strightly necessary.  */
+     there are cases where this would not be strictly necessary.  */
   if (!int_fits_type_p (high, type)
       || !int_fits_type_p (low, type))
     return true;
@@ -2086,7 +2086,7 @@ n_of_executions_at_most (tree stmt,
      
      -- if NITER_BOUND->is_exit is true, then everything before
         NITER_BOUND->stmt is executed at most NITER_BOUND->bound + 1
-	times, and everyting after it at most NITER_BOUND->bound times.
+	times, and everything after it at most NITER_BOUND->bound times.
 
      -- If NITER_BOUND->is_exit is false, then if we can prove that when STMT
 	is executed, then NITER_BOUND->stmt is executed as well in the same

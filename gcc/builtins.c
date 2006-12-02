@@ -554,7 +554,7 @@ expand_builtin_return_addr (enum built_in_function fndecl_code, int count)
      override us.  Therefore frame pointer elimination is OK, and using
      the soft frame pointer is OK.
 
-     For a non-zero count, or a zero count with __builtin_frame_address,
+     For a nonzero count, or a zero count with __builtin_frame_address,
      we require a stable offset from the current frame pointer to the
      previous one, so we must use the hard frame pointer, and
      we must disable frame pointer elimination.  */
@@ -11495,7 +11495,7 @@ init_target_chars (void)
 
 /* Helper function for do_mpfr_arg*().  Ensure M is a normal number
    and no overflow/underflow occurred.  INEXACT is true if M was not
-   exacly calculated.  TYPE is the tree type for the result.  This
+   exactly calculated.  TYPE is the tree type for the result.  This
    function assumes that you cleared the MPFR flags and then
    calculated M to see if anything subsequently set a flag prior to
    entering this function.  Return NULL_TREE if any checks fail.  */

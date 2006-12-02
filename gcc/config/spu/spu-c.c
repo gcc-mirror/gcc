@@ -72,7 +72,7 @@ spu_resolve_overloaded_builtin (tree fndecl, tree fnargs)
   struct spu_builtin_description *desc;
   tree match = NULL_TREE;
 
-  /* The vector types are not available if the backend is not initalized */
+  /* The vector types are not available if the backend is not initialized.  */
   gcc_assert (!flag_preprocess_only);
 
   desc = &spu_builtins[fcode];
