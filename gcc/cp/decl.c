@@ -11606,6 +11606,7 @@ cp_tree_node_structure (union lang_tree_node * t)
     case TINST_LEVEL:		return TS_CP_TINST_LEVEL;
     case PTRMEM_CST:		return TS_CP_PTRMEM;
     case BASELINK:		return TS_CP_BASELINK;
+    case STATIC_ASSERT:		return TS_CP_STATIC_ASSERT;
     default:			return TS_CP_GENERIC;
     }
 }
