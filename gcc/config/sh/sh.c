@@ -1416,7 +1416,7 @@ prepare_cbranch_operands (rtx *operands, enum machine_mode mode,
      compare r0.  Hence, if operands[1] has to be loaded from somewhere else
      into a register, that register might as well be r0, and we allow the
      constant.  If it is already in a register, this is likely to be
-     allocatated to a different hard register, thus we load the constant into
+     allocated to a different hard register, thus we load the constant into
      a register unless it is zero.  */
   if (!REG_P (operands[2])
       && (GET_CODE (operands[2]) != CONST_INT
@@ -1468,7 +1468,7 @@ expand_cbranchsi4 (rtx *operands, enum rtx_code comparison, int probability)
      operation should be EQ or NE.
    - If items are searched in an ordered tree from the root, we can expect
      the highpart to be unequal about half of the time; operation should be
-     an unequality comparison, operands non-constant, and overall probability
+     an inequality comparison, operands non-constant, and overall probability
      about 50%.  Likewise for quicksort.
    - Range checks will be often made against constants.  Even if we assume for
      simplicity an even distribution of the non-constant operand over a
@@ -2413,7 +2413,7 @@ sh_rtx_costs (rtx x, int code, int outer_code, int *total)
 	       && CONST_OK_FOR_K08 (INTVAL (x)))
         *total = 1;
       /* prepare_cmp_insn will force costly constants int registers before
-	 the cbrach[sd]i4 pattterns can see them, so preserve potentially
+	 the cbrach[sd]i4 patterns can see them, so preserve potentially
 	 interesting ones not covered by I08 above.  */
       else if (outer_code == COMPARE
 	       && ((unsigned HOST_WIDE_INT) INTVAL (x)
@@ -2440,7 +2440,7 @@ sh_rtx_costs (rtx x, int code, int outer_code, int *total)
       if (TARGET_SHMEDIA)
         *total = COSTS_N_INSNS (4);
       /* prepare_cmp_insn will force costly constants int registers before
-	 the cbrachdi4 patttern can see them, so preserve potentially
+	 the cbrachdi4 pattern can see them, so preserve potentially
 	 interesting ones.  */
       else if (outer_code == COMPARE && GET_MODE (x) == DImode)
         *total = 1;

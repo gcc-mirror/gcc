@@ -2155,7 +2155,7 @@ static inline vec_int4 vec_subs(vec_int4 a, vec_bint4 b)
 }
 
 
-/* vec_sum4s (vector sum across partial (1/4) staturated)
+/* vec_sum4s (vector sum across partial (1/4) saturated)
  * =========
  */
 static inline vec_uint4 vec_sum4s(vec_uchar16 a, vec_uint4 b)
@@ -2187,7 +2187,7 @@ static inline vec_int4 vec_sum4s(vec_short8 a, vec_int4 b)
 }
 
 
-/* vec_sum2s (vector sum across partial (1/2) staturated)
+/* vec_sum2s (vector sum across partial (1/2) saturated)
  * =========
  */
 static inline vec_int4 vec_sum2s(vec_int4 a, vec_int4 b)
@@ -2223,7 +2223,7 @@ static inline vec_int4 vec_sum2s(vec_int4 a, vec_int4 b)
 }
 
 
-/* vec_sums (vector sum staturated)
+/* vec_sums (vector sum saturated)
  * ========
  */
 static inline vec_int4 vec_sums(vec_int4 a, vec_int4 b)
@@ -2909,7 +2909,7 @@ static inline int vec_all_ne(vec_float4 a, vec_float4 b)
 }
 
 
-/* vec_all_nge (all elements not greater than or eqaul)
+/* vec_all_nge (all elements not greater than or equal)
  * ===========
  */
 static inline int vec_all_nge(vec_float4 a, vec_float4 b)
@@ -3385,7 +3385,7 @@ static inline int vec_any_ne(vec_float4 a, vec_float4 b)
 }
 
 
-/* vec_any_nge (any elements not greater than or eqaul)
+/* vec_any_nge (any elements not greater than or equal)
  * ===========
  */
 static inline int vec_any_nge(vec_float4 a, vec_float4 b)

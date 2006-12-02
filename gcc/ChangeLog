@@ -2,6 +2,19 @@
 
 	* doc/extend.texi, doc/invoke.texi, doc/md.texi: Fix typos.
 
+	* builtins.c, cfgloop.h, cgraph.h, config/arm/arm.c,
+	config/i386/i386.c, config/i386/i386.h, config/mips/mips.h,
+	config/rs6000/cell.md, config/rs6000/rs6000.c, config/sh/sh.c,
+	config/sh/sh4-300.md, config/spu/spu-builtins.def,
+	config/spu/spu-c.c, config/spu/spu-modes.def,
+	config/spu/spu.c, config/spu/spu.md,
+	config/spu/spu_internals.h, config/spu/vmx2spu.h,
+	fold-const.c, fwprop.c, predict.c, tree-data-ref.h,
+	tree-flow.h, tree-ssa-loop-manip.c, tree-ssa-loop-niter.c,
+	tree-ssa-pre.c, tree-vect-analyze.c, tree-vect-transform.c,
+	tree-vectorizer.c, tree-vrp.c: Fix comment typos.  Follow
+	spelling conventions.
+
 2006-12-01  Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
 
 	* config/spu/spu.c (spu_immediate): Remove trailing comma.

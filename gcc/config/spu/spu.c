@@ -322,7 +322,7 @@ valid_subreg (rtx op)
 }
 
 /* When insv and ext[sz]v ar passed a TI SUBREG, we want to strip it off
-   and ajust the start offset. */
+   and adjust the start offset.  */
 static rtx
 adjust_operand (rtx op, HOST_WIDE_INT * start)
 {
@@ -1651,8 +1651,8 @@ int spu_hint_dist = (8 * 4);
 /* An array of these is used to propagate hints to predecessor blocks. */
 struct spu_bb_info
 {
-  rtx prop_jump;		/* propogated from another block */
-  basic_block bb;		/* the orignal block. */
+  rtx prop_jump;		/* propagated from another block */
+  basic_block bb;		/* the original block. */
 };
 
 /* The special $hbr register is used to prevent the insn scheduler from
@@ -2455,7 +2455,7 @@ spu_legitimate_address (enum machine_mode mode ATTRIBUTE_UNUSED,
 }
 
 /* When the address is reg + const_int, force the const_int into a
-   regiser. */
+   register.  */
 rtx
 spu_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 			enum machine_mode mode)
@@ -2697,7 +2697,7 @@ spu_pass_by_reference (CUMULATIVE_ARGS * cum ATTRIBUTE_UNUSED,
             
         } va_list[1];
 
-   wheare __args points to the arg that will be returned by the next
+   where __args points to the arg that will be returned by the next
    va_arg(), and __skip points to the previous stack frame such that
    when __args == __skip we should advance __args by 32 bytes. */
 static tree
@@ -2913,8 +2913,8 @@ spu_conditional_register_usage (void)
    aligned.  Taking into account that CSE might replace this reg with
    another one that has not been marked aligned.  
    So this is really only true for frame, stack and virtual registers,
-   which we know are always aligned and should not be adversly effected
-   by CSE. */
+   which we know are always aligned and should not be adversely effected
+   by CSE.  */
 static int
 regno_aligned_for_load (int regno)
 {
@@ -2981,7 +2981,7 @@ store_with_one_insn_p (rtx mem)
   if (GET_CODE (addr) == SYMBOL_REF)
     {
       /* We use the associated declaration to make sure the access is
-         refering to the whole object.
+         referring to the whole object.
          We check both MEM_EXPR and and SYMBOL_REF_DECL.  I'm not sure
          if it is necessary.  Will there be cases where one exists, and
          the other does not?  Will there be cases where both exist, but
@@ -3426,8 +3426,8 @@ mem_is_padded_component_ref (rtx x)
   if (GET_MODE (x) != TYPE_MODE (TREE_TYPE (t)))
     return 0;
   /* If there are no following fields then the field alignment assures
-     the structure is padded to the alignement which means this field is
-     padded too. */
+     the structure is padded to the alignment which means this field is
+     padded too.  */
   if (TREE_CHAIN (t) == 0)
     return 1;
   /* If the following field is also aligned then this field will be

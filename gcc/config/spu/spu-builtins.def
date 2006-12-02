@@ -1,4 +1,4 @@
-/* Definitions of builtin fuctions for the Synergistic Processing Unit (SPU). */
+/* Definitions of builtin functions for the Synergistic Processing Unit (SPU).  */
 /* Copyright (C) 2006 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
@@ -24,8 +24,8 @@
 #define _A3(a,b,c)   {a, b, c, SPU_BTI_END_OF_PARAMS}
 #define _A4(a,b,c,d) {a, b, c, d, SPU_BTI_END_OF_PARAMS}
 
-/* definitions to support si intrinisic functions: (These and other builtin 
- * definitions must preceed definitions of the overloaded generic intrinsics */
+/* definitions to support si intrinsic functions: (These and other builtin
+ * definitions must precede definitions of the overloaded generic intrinsics */
 
 DEF_BUILTIN (SI_LQD,         CODE_FOR_spu_lqd,       "si_lqd",         B_INSN,   _A3(SPU_BTI_QUADWORD, SPU_BTI_QUADWORD, SPU_BTI_S10_4))
 DEF_BUILTIN (SI_LQX,         CODE_FOR_spu_lqx,       "si_lqx",         B_INSN,   _A3(SPU_BTI_QUADWORD, SPU_BTI_QUADWORD, SPU_BTI_QUADWORD))
@@ -701,10 +701,10 @@ DEF_BUILTIN (SPU_PROMOTE_7,        CODE_FOR_spu_promote,   "spu_promote_7",     
 DEF_BUILTIN (SPU_PROMOTE_8,        CODE_FOR_spu_promote,   "spu_promote_8",        B_INTERNAL, _A3(SPU_BTI_V4SF,   SPU_BTI_FLOAT,  SPU_BTI_INTSI))
 DEF_BUILTIN (SPU_PROMOTE_9,        CODE_FOR_spu_promote,   "spu_promote_9",        B_INTERNAL, _A3(SPU_BTI_V2DF,   SPU_BTI_DOUBLE, SPU_BTI_INTSI))
 
-/* We need something that is not B_INTERNAL as a sentinal. */
+/* We need something that is not B_INTERNAL as a sentinel.  */
 
-/* These are for the convenience of imlpemnting fma() in the standard
-   libraries. */
+/* These are for the convenience of implementing fma() in the standard
+   libraries.  */
 DEF_BUILTIN (SCALAR_FMA,           CODE_FOR_fma_sf,        "fmas",                 B_INSN,     _A4(SPU_BTI_FLOAT,  SPU_BTI_FLOAT, SPU_BTI_FLOAT, SPU_BTI_FLOAT))
 DEF_BUILTIN (SCALAR_DFMA,          CODE_FOR_fma_df,        "dfmas",                B_INSN,     _A4(SPU_BTI_DOUBLE, SPU_BTI_DOUBLE, SPU_BTI_DOUBLE, SPU_BTI_DOUBLE))
 

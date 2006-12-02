@@ -530,7 +530,7 @@ struct processor_costs athlon_cost = {
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
   /* For some reason, Athlon deals better with REP prefix (relative to loops)
-     comopared to K8. Alignment becomes important after 8 bytes for mempcy and
+     compared to K8. Alignment becomes important after 8 bytes for mempcy and
      128 bytes for memset.  */
   {{libcall, {{2048, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
@@ -13171,7 +13171,7 @@ expand_movmem_epilogue (rtx destmem, rtx srcmem,
 
   /* When there are stringops, we can cheaply increase dest and src pointers.
      Otherwise we save code size by maintaining offset (zero is readily
-     available from preceeding rep operation) and using x86 addressing modes.
+     available from preceding rep operation) and using x86 addressing modes.
    */
   if (TARGET_SINGLE_STRINGOP)
     {
@@ -13621,7 +13621,7 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 
   if (GET_CODE (align_exp) == CONST_INT)
     align = INTVAL (align_exp);
-  /* i386 can do missaligned access on resonably increased cost.  */
+  /* i386 can do misaligned access on reasonably increased cost.  */
   if (GET_CODE (expected_align_exp) == CONST_INT
       && INTVAL (expected_align_exp) > align)
     align = INTVAL (expected_align_exp);
@@ -13783,7 +13783,7 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
       dst = change_address (dst, BLKmode, destreg);
     }
 
-  /* Epologue to copy the remaining bytes.  */
+  /* Epilogue to copy the remaining bytes.  */
   if (label)
     {
       if (size_needed < desired_align - align)
@@ -13909,7 +13909,7 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
 
   if (GET_CODE (align_exp) == CONST_INT)
     align = INTVAL (align_exp);
-  /* i386 can do missaligned access on resonably increased cost.  */
+  /* i386 can do misaligned access on reasonably increased cost.  */
   if (GET_CODE (expected_align_exp) == CONST_INT
       && INTVAL (expected_align_exp) > align)
     align = INTVAL (expected_align_exp);

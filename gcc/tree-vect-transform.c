@@ -368,7 +368,7 @@ vect_create_data_ref_ptr (tree stmt,
 /* Function bump_vector_ptr
 
    Increment a pointer (to a vector type) by vector-size. Connect the new 
-   increment stmt to the exising def-use update-chain of the pointer.
+   increment stmt to the existing def-use update-chain of the pointer.
 
    The pointer def-use update-chain before this function:
                         DATAREF_PTR = phi (p_0, p_2)
@@ -658,7 +658,7 @@ vect_get_vec_def_for_operand (tree op, tree stmt, tree *scalar_def)
    stmts operating on wider types we need to create 'VF/nunits' "copies" of the
    vector stmt (each computing a vector of 'nunits' results, and together
    computing 'VF' results in each iteration).  This function is called when 
-   vectorizing such a stmt (e.g. vectorizing S2 in the illusration below, in 
+   vectorizing such a stmt (e.g. vectorizing S2 in the illustration below, in
    which VF=16 and nuniti=4, so the number of copies required is 4):
 
    scalar stmt:         vectorized into:        STMT_VINFO_RELATED_STMT
@@ -2495,13 +2495,13 @@ vect_strided_store_supported (tree vectype)
 
 /* Function vect_permute_store_chain.
 
-   Given a chain of interleaved strores in DR_CHAIN of LENGTH that must be
+   Given a chain of interleaved stores in DR_CHAIN of LENGTH that must be
    a power of 2, generate interleave_high/low stmts to reorder the data 
    correctly for the stores. Return the final references for stores in
    RESULT_CHAIN.
 
    E.g., LENGTH is 4 and the scalar type is short, i.e., VF is 8.
-   The input is 4 vectors each containg 8 elements. We assign a number to each 
+   The input is 4 vectors each containing 8 elements. We assign a number to each
    element, the input sequence is:
 
    1st vec:   0  1  2  3  4  5  6  7
@@ -2529,7 +2529,7 @@ vect_strided_store_supported (tree vectype)
    and of interleave_low:                   2 6 3 7
 
    
-   The permutaion is done in log LENGTH stages. In each stage interleave_high 
+   The permutation is done in log LENGTH stages. In each stage interleave_high
    and interleave_low stmts are created for each pair of vectors in DR_CHAIN, 
    where the first argument is taken from the first half of DR_CHAIN and the 
    second argument from it's second half. 
@@ -2758,7 +2758,7 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
      And they are put in STMT_VINFO_VEC_STMT of the corresponding scalar stmts
      (the order of the data-refs in the output of vect_permute_store_chain
      corresponds to the order of scalar stmts in the interleaving chain - see
-     the documentaion of vect_permute_store_chain()).
+     the documentation of vect_permute_store_chain()).
 
      In case of both multiple types and interleaving, above vector stores and
      permutation stmts are created for every copy. The result vector stmts are
@@ -3050,7 +3050,7 @@ vect_strided_load_supported (tree vectype)
    correctly. Return the final references for loads in RESULT_CHAIN.
 
    E.g., LENGTH is 4 and the scalar type is short, i.e., VF is 8.
-   The input is 4 vectors each containg 8 elements. We assign a number to each 
+   The input is 4 vectors each containing 8 elements. We assign a number to each
    element, the input sequence is:
 
    1st vec:   0  1  2  3  4  5  6  7
@@ -3078,7 +3078,7 @@ vect_strided_load_supported (tree vectype)
    and of extract_odd:     1 3 5 7
 
    
-   The permutaion is done in log LENGTH stages. In each stage extract_even and 
+   The permutation is done in log LENGTH stages. In each stage extract_even and
    extract_odd stmts are created for each pair of vectors in DR_CHAIN in their 
    order. In our example, 
 
@@ -3443,7 +3443,7 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
      And they are put in STMT_VINFO_VEC_STMT of the corresponding scalar stmts
      (the order of the data-refs in the output of vect_permute_load_chain
      corresponds to the order of scalar stmts in the interleaving chain - see
-     the documentaion of vect_permute_load_chain()).
+     the documentation of vect_permute_load_chain()).
      The generation of permutation stmts and recording them in
      STMT_VINFO_VEC_STMT is done in vect_transform_strided_load().
 
@@ -4332,7 +4332,7 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
 
   if (DR_GROUP_FIRST_DR (stmt_info))
     {
-      /* For interleaved access element size must be multipled by the size of
+      /* For interleaved access element size must be multiplied by the size of
 	 the interleaved group.  */
       group_size = DR_GROUP_SIZE (vinfo_for_stmt (
 					       DR_GROUP_FIRST_DR (stmt_info)));

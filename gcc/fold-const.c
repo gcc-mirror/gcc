@@ -7818,7 +7818,7 @@ maybe_canonicalize_comparison_1 (enum tree_code code, tree type,
       || TREE_OVERFLOW (cst0))
     return NULL_TREE;
 
-  /* See if we can reduce the mangitude of the constant in
+  /* See if we can reduce the magnitude of the constant in
      arg0 by changing the comparison code.  */
   if (code0 == INTEGER_CST)
     {
@@ -7899,7 +7899,7 @@ maybe_canonicalize_comparison (enum tree_code code, tree type,
     return t;
 
   /* Try canonicalization by simplifying arg1 using the swapped
-     comparsion.  */
+     comparison.  */
   code = swap_tree_comparison (code);
   return maybe_canonicalize_comparison_1 (code, type, arg1, arg0);
 }

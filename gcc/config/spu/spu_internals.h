@@ -256,7 +256,7 @@
 
 #define __align_hint(ptr,base,offset) __builtin_spu_align_hint(ptr,base,offset)
 
-/* generic spu_* intrinisics */ 
+/* generic spu_* intrinsics */
 
 #define spu_splats(scalar)        __builtin_spu_splats(scalar) 
 #define spu_convtf(ra,imm)        __builtin_spu_convtf(ra,imm)

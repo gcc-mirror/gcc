@@ -576,7 +576,7 @@ extern const struct mips_rtx_cost_data *mips_cost;
    been generated up to this point.  */
 #define ISA_HAS_BRANCHLIKELY	(!ISA_MIPS1)
 
-/* ISA has a three-operand multiplcation instruction (usually spelt "mul").  */
+/* ISA has a three-operand multiplication instruction (usually spelt "mul").  */
 #define ISA_HAS_MUL3		((TARGET_MIPS3900                       \
 				  || TARGET_MIPS5400			\
 				  || TARGET_MIPS5500			\

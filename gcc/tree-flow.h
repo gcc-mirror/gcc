@@ -39,8 +39,8 @@ struct basic_block_def;
 typedef struct basic_block_def *basic_block;
 #endif
 
-/* Gimple dataflow datastructure. All publically available fields shall have
-   gimple_ accessor defined in tree-flow-inline.h, all publically modifiable
+/* Gimple dataflow datastructure. All publicly available fields shall have
+   gimple_ accessor defined in tree-flow-inline.h, all publicly modifiable
    fields should have gimple_set accessor.  */
 struct gimple_df GTY(()) {
   /* Array of all variables referenced in the function.  */

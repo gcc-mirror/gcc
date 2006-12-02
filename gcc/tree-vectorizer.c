@@ -1762,7 +1762,7 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
    vector form (i.e., when operating on arguments of type VECTYPE).
     
    The two kinds of widening operations we currently support are
-   NOP and WIDEN_MULT. This function checks if these oprations
+   NOP and WIDEN_MULT. This function checks if these operations
    are supported by the target platform either directly (via vector 
    tree-codes), or via target builtins.
 
@@ -1796,9 +1796,9 @@ supportable_widening_operation (enum tree_code code, tree stmt, tree vectype,
         vect1: [res1,res2,res3,res4], vect2: [res5,res6,res7,res8]. 
 
      However, in the special case that the result of the widening operation is 
-     used in a reduction copmutation only, the order doesn't matter (because 
+     used in a reduction computation only, the order doesn't matter (because
      when vectorizing a reduction we change the order of the computation). 
-     Some targets can take advatage of this and generate more efficient code. 
+     Some targets can take advantage of this and generate more efficient code.
      For example, targets like Altivec, that support widen_mult using a sequence
      of {mult_even,mult_odd} generate the following vectors:
         vect1: [res1,res3,res5,res7], vect2: [res2,res4,res6,res8].  */

@@ -1178,8 +1178,8 @@
   [(set_attr "type" "fp7")])
 
 ;; This isn't always profitable to use.  Consider r = a * b + c * d.
-;; It's faster to do  the multplies in parallel then add them.  If we
-;; merge a multply and add it prevents the multplies from happening in 
+;; It's faster to do the multiplies in parallel then add them.  If we
+;; merge a multiply and add it prevents the multiplies from happening in
 ;; parallel.
 (define_insn "mpya_si"
   [(set (match_operand:SI 0 "spu_reg_operand" "=r")

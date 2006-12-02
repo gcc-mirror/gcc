@@ -394,7 +394,7 @@ rtx arm_compare_op0, arm_compare_op1;
 /* The processor for which instructions should be scheduled.  */
 enum processor_type arm_tune = arm_none;
 
-/* The default processor used if not overriden by commandline.  */
+/* The default processor used if not overridden by commandline.  */
 static enum processor_type arm_default_cpu = arm_none;
 
 /* Which floating point model to use.  */

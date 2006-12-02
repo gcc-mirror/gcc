@@ -21,10 +21,10 @@
 
 ;; Sources: BE BOOK4 (/sfs/enc/doc/PPU_BookIV_DD3.0_latest.pdf)
 
-;; BE Architechture *DD3.0 and DD3.1*
+;; BE Architecture *DD3.0 and DD3.1*
 ;; This file simulate PPU processor unit backend of pipeline, maualP24. 
 ;; manual P27, stall and flush points
-;; IU, XU, VSU, dipatcher decodes and dispatch 2 insns per cycle in program
+;; IU, XU, VSU, dispatcher decodes and dispatch 2 insns per cycle in program
 ;;  order, the grouped adress are aligned by 8
 ;; This file only simulate one thread situation
 ;; XU executes all fixed point insns(3 units, a simple alu, a complex unit,
@@ -43,7 +43,7 @@
 ;;VMX(perm,vsu_ls, fp_ls)					X
 ;;    X are illegal combination.
 
-;; Dual issue exceptons: 
+;; Dual issue exceptions:
 ;;(1) nop-pipelined FXU instr in slot 0 
 ;;(2) non-pipelined FPU inst in slot 0
 ;; CSI instr(contex-synchronizing insn)
@@ -51,7 +51,7 @@
 
 ;; BRU unit: bru(none register stall), bru_cr(cr register stall)
 ;; VSU unit: vus(vmx simple), vup(vmx permute), vuc(vmx complex),
-;;  vuf(vmx float), fpu(floats). fpu_div is hypthetical, it is for 
+;;  vuf(vmx float), fpu(floats). fpu_div is hypothetical, it is for
 ;;  nonpipelined simulation
 ;; micr insns will stall at least 7 cycles to get the first instr from ROM,
 ;;  micro instructions are not dual issued. 
@@ -378,7 +378,7 @@
 ; this is not correct, 
 ;;  this is a stall in general and not dependent on result
 (define_bypass 13 "cell-vecstore" "cell-fpstore")
-; this is not correct, this can never be true, not depent on result
+; this is not correct, this can never be true, not dependent on result
 (define_bypass 7 "cell-fp" "cell-fpload")
 ;; vsu1 should avoid writing to the same target register as vsu2 insn
 ;;   within 12 cycles. 
@@ -396,6 +396,6 @@
 
 ;;Things are not simulated:
 ;; update instruction, update address gpr are not simulated
-;; vrefp, vrsqrtefp have latency(14), currently simluated as 12 cycle float
+;; vrefp, vrsqrtefp have latency(14), currently simulated as 12 cycle float
 ;;  insns
 

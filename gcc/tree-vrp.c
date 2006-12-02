@@ -2902,7 +2902,7 @@ register_edge_assert_for (tree name, edge e, block_stmt_iterator si, tree cond)
 
   /* In the case of NAME == 1 or NAME != 0, for TRUTH_AND_EXPR defining
      statement of NAME we can assert both operands of the TRUTH_AND_EXPR
-     have non-zero value.  */
+     have nonzero value.  */
   if (((comp_code == EQ_EXPR && integer_onep (val))
        || (comp_code == NE_EXPR && integer_zerop (val))))
     {
