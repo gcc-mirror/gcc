@@ -1428,7 +1428,7 @@ ifneq ($(EH_MECHANISM),)
 endif
 
 # Use the Ada 2005 version of Ada.Exceptions by default, unless specified
-# explicitely already. The base files (a-except.ad?) are used only for building
+# explicitly already. The base files (a-except.ad?) are used only for building
 # the compiler and other basic tools.
 # These base versions lack Ada 2005 additions which would cause bootstrap
 # problems if included in the compiler and other basic tools.

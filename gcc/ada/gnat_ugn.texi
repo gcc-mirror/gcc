@@ -4674,7 +4674,7 @@ A range in a @code{for} loop that is known to be null or might be null
 @noindent
 The following section lists compiler switches that are available
 to control the handling of warning messages. It is also possible
-to excercise much finer control over what warnings are issued and
+to exercise much finer control over what warnings are issued and
 suppressed using the GNAT pragma Warnings, which is documented
 in the GNAT Reference manual.
 

@@ -1199,7 +1199,7 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 
          /* If the case value is a subtype that raises Constraint_Error at
              run-time because of a wrong bound, then gnu_low or gnu_high
-             is not transtaleted into an INTEGER_CST.  In such a case, we need
+             is not translated into an INTEGER_CST.  In such a case, we need
              to ensure that the when statement is not added in the tree,
              otherwise it will crash the gimplifier.  */
          if ((!gnu_low || TREE_CODE (gnu_low) == INTEGER_CST)
