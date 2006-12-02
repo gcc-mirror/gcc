@@ -1,3 +1,9 @@
+2006-12-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in: Update MPFR version in error message.
+
+	* configure: Regenerate.
+
 2006-11-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (--with-mpfr-dir, --with-gmp-dir): Remove flags.

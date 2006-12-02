@@ -1,3 +1,7 @@
+2006-12-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/torture/builtin-sin-mpfr-1.c: Update MPFR comment.
+
 2006-12-02  Lee Millward  <lee.millward@codesourcery.com>
 
        PR c/27953
