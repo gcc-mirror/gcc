@@ -3621,7 +3621,7 @@ and place the resulting N/2 values of size 2*S in the output vector (operand 0).
 Signed/Unsigned widening multiplication. 
 The two inputs (operands 1 and 2) are vectors with N 
 signed/unsigned elements of size S. Multiply the high/low elements of the two 
-vectors, and put the N/2 products of size 2*S in the output vector (opernad 0). 
+vectors, and put the N/2 products of size 2*S in the output vector (operand 0). 
 
 @cindex @code{mulhisi3} instruction pattern
 @item @samp{mulhisi3}

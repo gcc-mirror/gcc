@@ -9803,7 +9803,7 @@ The extended version of @code{__builtin_expect} is not supported.
 
 @end itemize
 
-@emph{Note:} Only the interface descibed in the aforementioned
+@emph{Note:} Only the interface described in the aforementioned
 specification is supported. Internally, GCC uses built-in functions to
 implement the required functionality, but these are not supported and
 are subject to change without notice.

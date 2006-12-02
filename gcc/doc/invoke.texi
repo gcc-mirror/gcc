@@ -9733,12 +9733,12 @@ and memset for short lengths.
 @item -minline-stringops-dynamically
 @opindex minline-stringops-dynamically
 For string operation of unknown size, inline runtime checks so for small
-blocks inline code is used, while for large blocks librarly call is used.
+blocks inline code is used, while for large blocks library call is used.
 
 @item -mstringop-strategy=@var{alg}
 @opindex mstringop-strategy=@var{alg}
 Overwrite internal decision heuristic about particular algorithm to inline
-string opteration with.  The allowed values are @code{rep_byte},
+string operation with.  The allowed values are @code{rep_byte},
 @code{rep_4byte}, @code{rep_8byte} for expanding using i386 @code{rep} prefix
 of specified size, @code{loop}, @code{unrolled_loop} for expanding inline loop,
 @code{libcall} for always expanding library call.
