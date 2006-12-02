@@ -1,3 +1,9 @@
+2006-12-02  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-opt/29984
+	* tree-ssa-reassoc.c (eliminate_duplicate_pair): Handle MAX_EXPR
+	and MIN_EXRP.
+
 2006-11-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/predicates.md (gpc_reg_operand): Check
