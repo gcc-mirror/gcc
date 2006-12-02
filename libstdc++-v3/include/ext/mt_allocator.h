@@ -151,7 +151,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     _M_get_binmap(size_t __bytes)
     { return _M_binmap[__bytes]; }
 
-    const size_t
+    size_t
     _M_get_align()
     { return _M_options._M_align; }
 
