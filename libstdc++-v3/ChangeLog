@@ -1,3 +1,10 @@
+2006-12-02  Howard Hinnant  <hhinnant@apple.com>
+
+	* acinclude.m4: Allow OPTIMIZE_CXXFLAGS to be set by configure.host.
+	* configure.host: Set OPTIMIZE_CXXFLAGS to -fvisibility-inlines-hidden
+	for x86/darwin.
+	* configure: Regenerate.
+
 2006-12-01  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/mt_allocator.h (__pool_base::_M_get_align): Remove

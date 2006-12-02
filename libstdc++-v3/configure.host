@@ -202,6 +202,11 @@ case "${host_os}" in
     # On Darwin, performance is improved if libstdc++ is single-module,
     # and on 8+ compatibility is better if not -flat_namespace.
     OPT_LDFLAGS="${OPT_LDFLAGS} -Wl,-single_module"
+    case "${host_cpu}" in
+      i[34567]86 | x86_64)
+        OPTIMIZE_CXXFLAGS="${OPTIMIZE_CXXFLAGS} -fvisibility-inlines-hidden"
+        ;;
+    esac
     os_include_dir="os/bsd/darwin"
     ;;
   *djgpp*)      # leading * picks up "msdosdjgpp"
