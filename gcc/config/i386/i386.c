@@ -655,10 +655,11 @@ struct processor_costs pentium4_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (43),			/* cost of FSQRT instruction.  */
-  {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
-   {libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}}},
-  {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
-   {libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}}}
+  {{libcall, {{12, loop_1_byte}, {64, loop}, {-1, rep_prefix_4_byte}}},
+   DUMMY_STRINGOP_ALGS},
+  {{libcall, {{6, loop_1_byte}, {64, loop}, {20480, rep_prefix_4_byte},
+   {-1, libcall}}},
+   DUMMY_STRINGOP_ALGS},
 };
 
 static const
@@ -712,10 +713,11 @@ struct processor_costs nocona_cost = {
   COSTS_N_INSNS (3),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (3),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (44),			/* cost of FSQRT instruction.  */
-  {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
+  {{libcall, {{12, loop_1_byte}, {64, loop}, {-1, rep_prefix_4_byte}}},
    {libcall, {{32, loop}, {20000, rep_prefix_8_byte},
 	      {100000, unrolled_loop}, {-1, libcall}}}},
-  {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
+  {{libcall, {{6, loop_1_byte}, {64, loop}, {20480, rep_prefix_4_byte},
+   {-1, libcall}}},
    {libcall, {{24, loop}, {64, unrolled_loop},
 	      {8192, rep_prefix_8_byte}, {-1, libcall}}}}
 };
@@ -13507,14 +13509,18 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
 	         last non-libcall inline algorithm.  */
 	      if (TARGET_INLINE_ALL_STRINGOPS)
 		{
-		  gcc_assert (alg != libcall);
-		  return alg;
+		  /* When the current size is best to be copied by a libcall,
+		     but we are still forced to inline, run the heuristic bellow
+		     that will pick code for medium sized blocks.  */
+		  if (alg != libcall)
+		    return alg;
+		  break;
 		}
 	      else
 		return algs->size[i].alg;
 	    }
 	}
-      gcc_unreachable ();
+      gcc_assert (TARGET_INLINE_ALL_STRINGOPS);
     }
   /* When asked to inline the call anyway, try to pick meaningful choice.
      We look for maximal size of block that is faster to copy by hand and

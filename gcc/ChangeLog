@@ -1,3 +1,12 @@
+2006-11-30  Jan Hubicka  <jh@suse.cz>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (pentium4_cost, nocona_cost): Update
+	32bit memcpy/memset decriptors.
+	(decide_alg): With -minline-all-stringops and sizes that are best
+	to be copied via libcall still work hard enough to pick non-libcall
+	strategy.
+
 2006-12-02  Kazu Hirata  <kazu@codesourcery.com>
 
 	* doc/extend.texi, doc/invoke.texi, doc/md.texi: Fix typos.
