@@ -13,9 +13,14 @@
 # Optimize TLS usage by avoiding the overhead of dynamic allocation.
 # This does require that the library be present during process 
 # startup, so mark the library as not to be dlopened.
-if test $have_tls = yes && test "$with_gnu_ld" = "yes"; then
+if test $have_tls = yes ; then
+  case "${target}" in
+
+    *-*-linux*)
 	XCFLAGS="${XCFLAGS} -ftls-model=initial-exec"
 	XLDFLAGS="${XLDFLAGS} -Wl,-z,nodlopen"
+	;;
+  esac
 fi
 
 # Since we require POSIX threads, assume a POSIX system by default.
