@@ -1,3 +1,9 @@
+2006-12-02  Kazu Hirata  <kazu@codesourcery.com>
+
+	* Makefile.in, mingw32.h, trans.c: Fix comment typos.
+	* gnat_rm.texi, gnat_ugn.texi: Follow spelling conventions.
+	Fix typos.
+
 2006-11-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/27936

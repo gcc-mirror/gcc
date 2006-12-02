@@ -48,7 +48,7 @@
 
 #else
 
-/*  Older MingW versions have no defintion for _tfreopen, add it here to have a
+/*  Older MingW versions have no definition for _tfreopen, add it here to have a
     proper build without unicode support.  */
 #ifndef _tfreopen
 #define _tfreopen   freopen

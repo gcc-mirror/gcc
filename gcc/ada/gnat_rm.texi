@@ -5136,7 +5136,7 @@ prefix) provides the same value as @code{System.Storage_Unit}.
 @findex Stub_Type
 @noindent
 The GNAT implementation of remote access-to-classwide types is
-organised as described in AARM section E.4 (20.t): a value of an RACW type
+organized as described in AARM section E.4 (20.t): a value of an RACW type
 (designating a remote object) is represented as a normal access
 value, pointing to a "stub" object which in turn contains the
 necessary information to contact the designated remote object. A
@@ -10522,7 +10522,7 @@ when one of these values is read, any nonzero value is treated as True.
 For 64-bit OpenVMS systems, access types (other than those for unconstrained
 arrays) are 64-bits long. An exception to this rule is for the case of
 C-convention access types where there is no explicit size clause present (or
-inheritied for derived types). In this case, GNAT chooses to make these
+inherited for derived types). In this case, GNAT chooses to make these
 pointers 32-bits, which provides an easier path for migration of 32-bit legacy
 code. size clause specifying 64-bits must be used to obtain a 64-bit pointer.
 
@@ -11754,7 +11754,7 @@ is only used for wide characters with a code greater than @code{16#FF#}.
 
 Note that brackets coding is not normally used in the context of
 Wide_Text_IO or Wide_Wide_Text_IO, since it is really just designed as
-a portable way of encoding source files. In the contect of Wide_Text_IO
+a portable way of encoding source files. In the context of Wide_Text_IO
 or Wide_Wide_Text_IO, it can only be used if the file does not contain
 any instance of the left bracket character other than to encode wide
 character values using the brackets encoding method. In practice it is
