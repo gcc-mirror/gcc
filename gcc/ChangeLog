@@ -15,6 +15,8 @@
 	tree-vectorizer.c, tree-vrp.c: Fix comment typos.  Follow
 	spelling conventions.
 
+	* config/i386/i386.c: Fix a comment typo.
+
 2006-12-01  Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
 
 	* config/spu/spu.c (spu_immediate): Remove trailing comma.
