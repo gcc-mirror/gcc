@@ -59,7 +59,5 @@ int main (void)
   return 0;
 }
 
-/* Need misalignment support, or cgraph to delay emitting the arrays until
-   after vectorization can force-align them.  */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { xfail vect_no_align } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
