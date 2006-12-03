@@ -2167,11 +2167,11 @@
 	    (match_dup 1))
 	  (parallel [(const_int 0)
 		     (const_int 2)])))]
-  "TARGET_SSE3 && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
+  "TARGET_SSE3 && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
    movddup\t{%1, %0|%0, %1}
    #"
-  [(set_attr "type" "sselog,ssemov")
+  [(set_attr "type" "sselog1,ssemov")
    (set_attr "mode" "V2DF")])
 
 (define_split
