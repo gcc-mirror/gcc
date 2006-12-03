@@ -1115,7 +1115,7 @@ if test x"$have_gmp" = xyes; then
   AC_MSG_CHECKING([for correct version of mpfr.h])
   AC_TRY_COMPILE([#include "gmp.h"
 #include <mpfr.h>],[
-#if MPFR_VERSION_MAJOR < 2 || (MPFR_VERSION_MAJOR == 2 && MPFR_VERSION_MINOR < 2)
+#if MPFR_VERSION < MPFR_VERSION_NUM(2,2,1)
   choke me
 #endif
 ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([buggy version of MPFR detected])])
@@ -1267,7 +1267,7 @@ if test -d ${srcdir}/gcc; then
         case ,${enable_languages},:${have_gmp}:${need_gmp} in
           *,${language},*:no:yes)
             # Specifically requested language; tell them.
-            AC_MSG_ERROR([GMP 4.1 and MPFR 2.2 or newer versions required by $language])
+            AC_MSG_ERROR([GMP 4.1 and MPFR 2.2.1 or newer versions required by $language])
             ;;
           *:no:yes)
             # Silently disable.

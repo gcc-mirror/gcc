@@ -1,3 +1,9 @@
+2006-12-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in: Check for MPFR 2.2.1.  Update error message.
+
+	* configure: Regenerate.
+
 2006-11-29  Richard Guenther  <rguenther@suse.de>
 
 	Revert

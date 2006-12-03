@@ -297,14 +297,14 @@ installed in your library search path, you will have to configure with
 the @option{--with-gmp} configure option.  See also
 @option{--with-gmp-lib} and @option{--with-gmp-include}.
 
-@item MPFR Library version 2.2 (or later)
+@item MPFR Library version 2.2.1 (or later)
 
 Necessary to build the Fortran frontend.  It can be downloaded from
 @uref{http://www.mpfr.org/}.  The version of MPFR that is bundled with
 GMP 4.1.x contains numerous bugs.  Although GNU Fortran will appear
 to function with the buggy versions of MPFR, there are a few GNU Fortran
 bugs that will not be fixed when using this version.  It is strongly
-recommended to upgrade to at least MPFR version 2.2.
+recommended to upgrade to the recommended version of MPFR.
 
 The @option{--with-mpfr} configure option should be used if your MPFR
 Library is not installed in your default library search path.  See

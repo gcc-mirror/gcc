@@ -2365,7 +2365,7 @@ echo "configure:2361: checking for correct version of mpfr.h" >&5
 #include <mpfr.h>
 int main() {
 
-#if MPFR_VERSION_MAJOR < 2 || (MPFR_VERSION_MAJOR == 2 && MPFR_VERSION_MINOR < 2)
+#if MPFR_VERSION < MPFR_VERSION_NUM(2,2,1)
   choke me
 #endif
 
@@ -2546,7 +2546,7 @@ if test -d ${srcdir}/gcc; then
         case ,${enable_languages},:${have_gmp}:${need_gmp} in
           *,${language},*:no:yes)
             # Specifically requested language; tell them.
-            { echo "configure: error: GMP 4.1 and MPFR 2.2 or newer versions required by $language" 1>&2; exit 1; }
+            { echo "configure: error: GMP 4.1 and MPFR 2.2.1 or newer versions required by $language" 1>&2; exit 1; }
             ;;
           *:no:yes)
             # Silently disable.

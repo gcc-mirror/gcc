@@ -1,3 +1,7 @@
+2006-12-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* doc/install.texi: Update MPFR prerequisite to version 2.2.1.
+
 2006-12-02  Andrew Pinski  <pinskia@gmail.com>
 
 	PR tree-opt/29984
