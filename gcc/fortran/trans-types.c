@@ -1343,7 +1343,7 @@ gfc_sym_type (gfc_symbol * sym)
       sym->ts.kind = gfc_default_real_kind;
     }
 
-  if (sym->attr.dummy && !sym->attr.function)
+  if (sym->attr.dummy && !sym->attr.function && !sym->attr.value)
     byref = 1;
   else
     byref = 0;

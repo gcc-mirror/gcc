@@ -1,3 +1,12 @@
+2006-12-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/29642
+	* gfortran.dg/value_1.f90 : New test.
+	* gfortran.dg/value_2.f90 : New test.
+	* gfortran.dg/value_3.f90 : New test.
+	* gfortran.dg/value_4.f90 : New test.
+	* gfortran.dg/value_4.c : Called from value_4.f90.
+
 2006-12-02  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C++/30033

@@ -284,6 +284,7 @@ decode_statement (void)
       break;
 
     case 'v':
+      match ("value", gfc_match_value, ST_ATTR_DECL);
       match ("volatile", gfc_match_volatile, ST_ATTR_DECL);
       break;
 

@@ -1,3 +1,31 @@
+2006-12-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/29642
+	* trans-expr.c (gfc_conv_variable): A character expression with
+	the VALUE attribute needs an address expression; otherwise all
+	other expressions with this attribute must not be dereferenced.
+	(gfc_conv_function_call): Pass expressions with the VALUE
+	attribute by value, using gfc_conv_expr.
+	* symbol.c (check_conflict): Add strings for INTENT OUT, INOUT
+	and VALUE.  Apply all the constraints associated with the VALUE
+	attribute.
+	(gfc_add_value): New function.
+	(gfc_copy_attr): Call it for VALUE attribute.
+	* decl.c (match_attr_spec): Include the VALUE attribute.
+	(gfc_match_value): New function.
+	* dump-parse-tree.c (gfc_show_attr): Include VALUE.
+	* gfortran.h : Add value to the symbol_attribute structure and
+	add a prototype for gfc_add_value
+	* module.c (mio_internal_string): Include AB_VALUE in enum.
+	(attr_bits): Provide the VALUE string for it.
+	(mio_symbol_attribute): Read or apply the VLUE attribute.
+	* trans-types.c (gfc_sym_type): Variables with the VLAUE
+	attribute are not passed by reference!
+	* resolve.c (was_declared): Add value to those that return 1.
+	(resolve_symbol): Value attribute requires dummy attribute.
+	* match.h : Add prototype for gfc_match_public.
+	* parse.c (decode_statement): Try to match a VALUE statement.
+
 2006-12-01  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/29568
