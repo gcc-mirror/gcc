@@ -3374,6 +3374,9 @@ redeclare_class_template (tree type, tree parms)
 tree
 fold_non_dependent_expr (tree expr)
 {
+  if (expr == NULL_TREE)
+    return NULL_TREE;
+
   /* If we're in a template, but EXPR isn't value dependent, simplify
      it.  We're supposed to treat:
 
