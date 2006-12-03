@@ -58,6 +58,8 @@ if [istarget "powerpc*-*-*"] {
         }
         set dg-do-what-default compile
     }
+} elseif { [istarget  "spu-*-*"] } {
+   set dg-do-what-default run
 } elseif { [istarget "i?86-*-*"] || [istarget "x86_64-*-*"] } {
     lappend DEFAULT_VECTCFLAGS "-msse2"
     set dg-do-what-default run

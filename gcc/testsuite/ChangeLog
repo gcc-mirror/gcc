@@ -1,3 +1,14 @@
+2006-12-03  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* g++.dg/vect/vect.exp: Enable tests to run on spu.
+	* gcc.dg/vect/vect.exp: Enable tests to run on spu.
+	* gcc.dg/vect/no-section-anchors-vect-69.c: Reduce array size.
+	* gcc.dg/vect/vect-70.c: Reduce array size.
+	* gcc.dg/vect/fast-math-vect-reduc-7.c: Xfail for 
+	vect_no_compaer_double targets.
+	* lib/target-supports.exp: Add spu to vect_no_align, no_vect_int_max,
+	vect_float, vect_double, and vect_int.
+
 2006-12-03  Dorit Nuzman <dorit@il.ibm.com>
 
 	* gcc.dg/vect/pr16105.c: Remove xfail on vect_no_align targets. Add
