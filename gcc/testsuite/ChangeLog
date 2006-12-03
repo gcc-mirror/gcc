@@ -1,3 +1,18 @@
+2006-12-03  Dorit Nuzman <dorit@il.ibm.com>
+
+	* gcc.dg/vect/pr16105.c: Remove xfail on vect_no_align targets. Add
+	test for loop versioning on vect_no_align targets.
+	* gcc.dg/vect/pr20122.c: Likewise.
+	* gcc.dg/vect/vect-105.c: Likewise.
+	* gcc.dg/vect/vect-42.c: Likewise.
+	* gcc.dg/vect/vect-43.c: Likewise.
+	* gcc.dg/vect/vect-74.c: Likewise.
+	* gcc.dg/vect/vect-75.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-3.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-6.c: Likewise.
+	* gcc.dg/vect/vect-8.c: Remove xfail on vect_no_align targets.
+	* gcc.dg/vect/vect-30.c: Remove xfail on vect_no_align targets.
+
 2006-12-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29642
