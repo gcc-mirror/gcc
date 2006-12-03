@@ -1,3 +1,9 @@
+2006-12-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/30041
+	* config/i386/sse.md ("*sse3_movddup"): Use operands[0] and
+	operands[1] in insn constraint.  Correct type attribute to sselog1.
+
 2006-12-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/30040
