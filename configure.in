@@ -1134,7 +1134,10 @@ if test -d ${srcdir}/gcc && test x$have_gmp != xyes; then
 Try the --with-gmp and/or --with-mpfr options to specify their locations.
 Copies of these libraries' source code can be found at their respective
 hosting sites as well as at ftp://gcc.gnu.org/pub/gcc/infrastructure/.
-See also http://gcc.gnu.org/install/prerequisites.html for additional info.])
+See also http://gcc.gnu.org/install/prerequisites.html for additional info.
+If you obtained GMP and/or MPFR from a vendor distribution package, make
+sure that you have installed both the libraries and the header files.
+They may be located in separate packages.])
 fi
 
 # Flags needed for both GMP and/or MPFR
