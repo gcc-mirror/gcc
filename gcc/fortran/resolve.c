@@ -675,7 +675,7 @@ was_declared (gfc_symbol * sym)
     return 1;
 
   if (a.allocatable || a.dimension || a.dummy || a.external || a.intrinsic
-      || a.optional || a.pointer || a.save || a.target || a.volatile_
+      || a.optional || a.pointer || a.save || a.target || a.volatile_ || a.value
       || a.access != ACCESS_UNKNOWN || a.intent != INTENT_UNKNOWN)
     return 1;
 
@@ -5960,6 +5960,14 @@ resolve_symbol (gfc_symbol * sym)
       gfc_error ("Symbol at %L is not a DUMMY variable", &sym->declared_at);
       return;
     }
+
+  if (sym->attr.value && !sym->attr.dummy)
+    {
+      gfc_error ("'%s' at %L cannot have the VALUE attribute because "
+		 "it is not a dummy", sym->name, &sym->declared_at);
+      return;
+    }
+
 
   /* If a derived type symbol has reached this point, without its
      type being declared, we have an error.  Notice that most

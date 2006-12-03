@@ -1487,11 +1487,11 @@ mio_internal_string (char *string)
 
 typedef enum
 { AB_ALLOCATABLE, AB_DIMENSION, AB_EXTERNAL, AB_INTRINSIC, AB_OPTIONAL,
-  AB_POINTER, AB_SAVE, AB_TARGET, AB_DUMMY, AB_RESULT,
-  AB_DATA, AB_IN_NAMELIST, AB_IN_COMMON, 
-  AB_FUNCTION, AB_SUBROUTINE, AB_SEQUENCE, AB_ELEMENTAL, AB_PURE,
-  AB_RECURSIVE, AB_GENERIC, AB_ALWAYS_EXPLICIT, AB_CRAY_POINTER,
-  AB_CRAY_POINTEE, AB_THREADPRIVATE, AB_ALLOC_COMP, AB_VOLATILE
+  AB_POINTER, AB_SAVE, AB_TARGET, AB_DUMMY, AB_RESULT, AB_DATA,
+  AB_IN_NAMELIST, AB_IN_COMMON, AB_FUNCTION, AB_SUBROUTINE, AB_SEQUENCE,
+  AB_ELEMENTAL, AB_PURE, AB_RECURSIVE, AB_GENERIC, AB_ALWAYS_EXPLICIT,
+  AB_CRAY_POINTER, AB_CRAY_POINTEE, AB_THREADPRIVATE, AB_ALLOC_COMP,
+  AB_VALUE, AB_VOLATILE
 }
 ab_attribute;
 
@@ -1504,6 +1504,7 @@ static const mstring attr_bits[] =
     minit ("OPTIONAL", AB_OPTIONAL),
     minit ("POINTER", AB_POINTER),
     minit ("SAVE", AB_SAVE),
+    minit ("VALUE", AB_VALUE),
     minit ("VOLATILE", AB_VOLATILE),
     minit ("TARGET", AB_TARGET),
     minit ("THREADPRIVATE", AB_THREADPRIVATE),
@@ -1575,6 +1576,8 @@ mio_symbol_attribute (symbol_attribute * attr)
 	MIO_NAME(ab_attribute) (AB_POINTER, attr_bits);
       if (attr->save)
 	MIO_NAME(ab_attribute) (AB_SAVE, attr_bits);
+      if (attr->value)
+	MIO_NAME(ab_attribute) (AB_VALUE, attr_bits);
       if (attr->volatile_)
 	MIO_NAME(ab_attribute) (AB_VOLATILE, attr_bits);
       if (attr->target)
@@ -1654,6 +1657,9 @@ mio_symbol_attribute (symbol_attribute * attr)
 	      break;
 	    case AB_SAVE:
 	      attr->save = 1;
+	      break;
+	    case AB_VALUE:
+	      attr->value = 1;
 	      break;
 	    case AB_VOLATILE:
 	      attr->volatile_ = 1;
