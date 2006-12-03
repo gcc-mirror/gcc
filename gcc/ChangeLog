@@ -1,3 +1,7 @@
+2006-12-03  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* config/spu/spu.md (smaxv4sf3, sminv4sf3): New.
+
 2006-12-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/30041

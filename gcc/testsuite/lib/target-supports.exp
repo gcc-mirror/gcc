@@ -1249,6 +1249,7 @@ proc check_effective_target_vect_int { } {
 	set et_vect_int_saved 0
 	if { [istarget i?86-*-*]
 	      || [istarget powerpc*-*-*]
+	      || [istarget spu-*-*]
 	      || [istarget x86_64-*-*]
 	      || [istarget sparc*-*-*]
 	      || [istarget alpha*-*-*]
@@ -1398,6 +1399,7 @@ proc check_effective_target_vect_float { } {
 	set et_vect_float_saved 0
 	if { [istarget i?86-*-*]
 	      || [istarget powerpc*-*-*]
+	      || [istarget spu-*-*]
 	      || [istarget mipsisa64*-*-*]
 	      || [istarget x86_64-*-*]
 	      || [istarget ia64-*-*] } {
@@ -1421,13 +1423,34 @@ proc check_effective_target_vect_double { } {
     } else {
 	set et_vect_double_saved 0
 	if { [istarget i?86-*-*]
-	      || [istarget x86_64-*-*] } {
+	      || [istarget x86_64-*-*] 
+	      || [istarget spu-*-*] } {
 	   set et_vect_double_saved 1
 	}
     }
 
     verbose "check_effective_target_vect_double: returning $et_vect_double_saved" 2
     return $et_vect_double_saved
+}
+
+# Return 0 if the target supports hardware comparison of vectors of double, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_no_compare_double { } {
+    global et_vect_no_compare_double_saved
+
+    if [info exists et_vect_no_compare_double_saved] {
+        verbose "check_effective_target_vect_no_compare_double: using cached result" 2
+    } else {
+        set et_vect_no_compare_double_saved 0
+        if { [istarget spu-*-*] } {
+           set et_vect_no_compare_double_saved 1
+        }
+    }
+
+    verbose "check_effective_target_vect_no_compare_double: returning $et_vect_no_compare_double_saved" 2
+    return $et_vect_no_compare_double_saved
 }
 
 # Return 1 if the target plus current options does not support a vector
@@ -1443,6 +1466,7 @@ proc check_effective_target_vect_no_int_max { } {
     } else {
 	set et_vect_no_int_max_saved 0
 	if { [istarget sparc*-*-*]
+	     || [istarget spu-*-*]
 	     || [istarget alpha*-*-*] } {
 	    set et_vect_no_int_max_saved 1
 	}
@@ -1751,6 +1775,7 @@ proc check_effective_target_vect_no_align { } {
     } else {
 	set et_vect_no_align_saved 0
 	if { [istarget mipsisa64*-*-*]
+	     || [istarget spu-*-*]
 	     || [istarget sparc*-*-*]
 	     || [istarget ia64-*-*] } {
 	    set et_vect_no_align_saved 1

@@ -3300,3 +3300,31 @@ selb\t%0,%4,%0,%3"
 ;;
 (include "spu-builtins.md")
 
+  
+(define_expand "smaxv4sf3"
+  [(set (match_operand:V4SF 0 "register_operand" "=r")
+        (smax:V4SF (match_operand:V4SF 1 "register_operand" "r")
+                 (match_operand:V4SF 2 "register_operand" "r")))]
+  ""
+  "
+{
+  rtx mask = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_cgt_v4sf (mask, operands[1], operands[2]));
+  emit_insn (gen_selb (operands[0], operands[2], operands[1], mask));
+  DONE;
+}") 
+
+(define_expand "sminv4sf3"
+  [(set (match_operand:V4SF 0 "register_operand" "=r")
+        (smax:V4SF (match_operand:V4SF 1 "register_operand" "r")
+                 (match_operand:V4SF 2 "register_operand" "r")))]
+  ""
+  "
+{
+  rtx mask = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_cgt_v4sf (mask, operands[1], operands[2]));
+  emit_insn (gen_selb (operands[0], operands[1], operands[2], mask));
+  DONE;
+}") 
