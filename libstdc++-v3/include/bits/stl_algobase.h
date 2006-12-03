@@ -167,9 +167,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	iter_swap(__a, __b);
     }
 
-#undef min
-#undef max
-
   /**
    *  @brief This does what you think it does.
    *  @param  a  A thing of arbitrary type.
