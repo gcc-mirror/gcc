@@ -1,3 +1,27 @@
+2006-12-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-outof-ssa.c (coalesce_ssa_name): Use calculate_live_ranges.
+	* tree-ssa-live.c (new_tree_live_info, delete_tree_live_info): Update.
+	(add_livein_if_notdef): Delete.
+	(loe_visit_block): New.  Propogate live on entry info for a block into
+	each predecessor.  If it changes, make sure it is visited again.
+	(live_worklist): Visit every block and update the live on entry info 
+	for preds.  Iterate over any that changed.
+	(set_var_live_on_entry): Populate the live on entry blocks with bits
+	based on the immediate uses of a var.
+	(calculate_live_on_entry): Remove.
+	(calculate_live_on_exit): Calculate live on exit based on the newly
+	oriented live on entry bits.
+	(calculate_live_ranges): Build live on entry and exit vectors.
+	(dump_live_info): Use new orientation of live on entry bitmaps.
+	(verify_live_on_entry): New.  Split out verification code from old
+	calculate_live_on_entry routine.
+	* tree-ssa-live.h (struct tree_live_info_d): Add Working stack.
+	(live_entry_blocks): Rename to live_on_entry and return bitmap for a
+	basic_block instead of for a partition.
+	(live_merge_and_clear): Add asserts.
+	(make_live_on_entry): Set partition bit in basic block vector.
+
 2006-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/29947
