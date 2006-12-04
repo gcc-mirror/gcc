@@ -1,3 +1,13 @@
+2006-12-03  Eric Christopher  <echristo@apple.com>
+
+	PR target/24598
+	* config/t-slibgcc-darwin: Pass -install_name.
+	* config/darwin.h (LINK_COMMAND_SPEC): Remove use of
+	libtool. Only pass through options that the linker recognizes.
+	(LINK_SPEC): Update comment. Translate options.
+	(STARTFILE_SPEC): Add dylib1.o for shared libraries.
+	* config/darwin9.h (LINK_COMMAND_SPEC): Ditto above.
+
 2006-12-03  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* config/spu/spu.md (smaxv4sf3, sminv4sf3): New.
@@ -31,7 +41,7 @@
 
 	PR c/27953
 	* c-decl.c (store_parm_decls_oldstyle): Robustify.
-	
+
 2006-11-30  Jan Hubicka  <jh@suse.cz>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
@@ -110,7 +120,7 @@
 	(coalesce_ssa_name): Don't check for combine-temps.
 	(coalesce_vars): Remove.
 	(check_replaceable): Use num_imm_uses.
-	(remove_ssa_form, insert_backedge_copies, rewrite_out_of_ssa): Don't 
+	(remove_ssa_form, insert_backedge_copies, rewrite_out_of_ssa): Don't
 	check for combine-temps.
 	(rewrite_out_of_ssa): Never create a ref_count in the var_map.
 	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Change parms
@@ -233,8 +243,8 @@
 2006-11-30  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* doc/tm.texi (MAX_OFILE_ALIGNMENT): Document default.
-	* config/elfos.h [!MAX_OFILE_ALIGNMENT] (MAX_OFILE_ALIGNMENT): 
-	Default is the largest alignment supported for 32-bit ELF and 
+	* config/elfos.h [!MAX_OFILE_ALIGNMENT] (MAX_OFILE_ALIGNMENT):
+	Default is the largest alignment supported for 32-bit ELF and
 	representable on a 32-bit host.
 
 2006-11-30  Janis Johnson  <janis187@us.ibm.com>
@@ -336,7 +346,7 @@
 	PR target/29945
 	* config/spu/spu.md  (extend_compare<mode>): New pattern.
 	(extend_compare): Change to expand and use the above pattern.
-	
+
 2006-11-29  Janis Johnson  <janis187@us.ibm.com>
 
 	* config/dfp-bit.c (DFP_TO_INT): Fix rounding mode.
@@ -351,8 +361,8 @@
 	* haifa-sched.c: Remove define LINE_NOTE(INSN).  Remove line_note_head.
 	Update documentation.
 	(associate_line_notes_with_blocks): Kill.
-	(extend_bb): Remove basic block argument, put void instead. 
-	Remove line number handling for each bb. 
+	(extend_bb): Remove basic block argument, put void instead.
+	Remove line number handling for each bb.
 	(save_line_notes): Kill.
 	(restore_line_notes): Kill.
 	(sched_init): Remove line_note_head initialization.
@@ -365,13 +375,13 @@
 	* sched-int.h (struct haifa_insn_data): Remove line_note.
 	(save_line_notes): Remove declaration.
 	(restore_line_notes): Remove declaration.
-	* modulo-sched.c (loop_canon_p): Update debug info printing 
+	* modulo-sched.c (loop_canon_p): Update debug info printing
 	by using insn locators instead of line note.
-	(sms_schedule): Update debug info printing, by using insn 
+	(sms_schedule): Update debug info printing, by using insn
 	locators instead of line note.
-	* sched-rgn.c (debug_dependencies): Remove handling of case 
+	* sched-rgn.c (debug_dependencies): Remove handling of case
 	n>0 (line number), since it's a dead code.
-	(schedule_region): Remove save_line_notes and 
+	(schedule_region): Remove save_line_notes and
 	restore_line_notes calls.
 
 2006-11-29  Joseph Myers  <joseph@codesourcery.com>
@@ -389,7 +399,7 @@
 
 	* Makefile.in (tree-ssanames.o): Remove gt-tree-ssanames.h,
 	since it no longer exists.
-	    
+
 2006-11-29  Duncan Sands  <baldrick@free.fr>
 
 	PR tree-optimization/23744
@@ -611,7 +621,7 @@
 	PR target/29319
 	* config/s390/predicates.md (larl_operand): Check addend of larl
 	operand to be in range of -/+2GB.
-	* config/s390/s390.c (legitimize_pic_address): Likewise.  
+	* config/s390/s390.c (legitimize_pic_address): Likewise.
 	Changed type of variable even to HOST_WIDE_INT.
 
 2006-11-27  Jan Hubicka  <jh@suse.cz>
@@ -753,15 +763,15 @@
 
 	* builtins.c (fold_builtin_fmin_fmax): Handle NaN arguments.
 
-2006-11-26  Razya Ladklesky  <razya@il.ibm.com> 
+2006-11-26  Razya Ladklesky  <razya@il.ibm.com>
 
 	* testsuite/gcc.dg/ipa/ipa-6.c: New.
 
 2006-11-26  Razya Ladklesky  <razya@il.ibm.com>
-	
+
 	PR tree-optimization/29122
-	* tree-inline.c (tree_function_versioning): Update DECL_ASSEMBLER_NAME 
-	for the new version.  Assign NULL to DECL_RTL of the new version. 
+	* tree-inline.c (tree_function_versioning): Update DECL_ASSEMBLER_NAME
+	for the new version.  Assign NULL to DECL_RTL of the new version.
 
 2006-11-25  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -917,8 +927,8 @@
 	(fmodsf3, fmoddf3, remaindersf3, remainderdf3): Use noop
 	truncation patterns.
 
-	* reg-stack.c (get_true_reg): Handle UNSPEC_TRUNC_NOOP. 
-	
+	* reg-stack.c (get_true_reg): Handle UNSPEC_TRUNC_NOOP.
+
 2006-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/29955
@@ -937,7 +947,7 @@
 	PR tree-opt/29964
 	* ipa-pure-const.c (check_tree): If the original tree
 	is volatile return early and say the function is not pure
-	nor const.  Remove the volatile check for writes.  
+	nor const.  Remove the volatile check for writes.
 	(analyze_function): Print out the result of the local
 	analysis pass.
 
@@ -953,7 +963,7 @@
 2006-11-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390.c (s390_emit_compare_and_swap): New function.
-	(s390_expand_cs_hqi, s390_expand_atomic): Call 
+	(s390_expand_cs_hqi, s390_expand_atomic): Call
 	s390_emit_compare_and_swap.
 
 2006-11-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
@@ -983,7 +993,7 @@
 
 2006-11-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
-	PR c/9072 
+	PR c/9072
 	* c.opt (Wtraditional-conversion): New.
 	(Wconversion): Update description.
 	* c-typeck.c (convert_arguments): Warnings for prototypes causing
@@ -1414,14 +1424,14 @@
 2006-11-20  Carlos O'Donell  <carlos@codesourcery.com>
 	    Mark Mitchell  <mark@codesourcery.com>
 
-	* cppdefault.c: Define cpp_PREFIX, cpp_PREFIX_len, and 
+	* cppdefault.c: Define cpp_PREFIX, cpp_PREFIX_len, and
 	gcc_exec_prefix.
 	(cpp_relocated): New function.
-	* cppdefault.h: Declare cpp_PREFIX, cpp_PREFIX_len, gcc_exec_prefix 
-	and cpp_relocated. 
+	* cppdefault.h: Declare cpp_PREFIX, cpp_PREFIX_len, gcc_exec_prefix
+	and cpp_relocated.
 	* Makefile.in (PREPROCESSOR_DEFINES): Add -DPREFIX option.
 	* c-incpath.c (add_standard_paths): Call cpp_relocated. If relocated,
-	replace configured prefix with gcc_exec_prefix. 
+	replace configured prefix with gcc_exec_prefix.
 
 2006-11-20  Bernd Schmidt  <bernd.schmidt@analog.com>
 
@@ -1529,7 +1539,7 @@
 	x86_pad_returns): Add m_CORE2.
 	(override_options): Add entries for Core2.
 	(ix86_issue_rate): Add case for Core2.
-	
+
 2006-11-18  Aldy Hernandez  <aldyh@redhat.com>
 
 	* doc/invoke.texi: Fix mno-isel typo.
@@ -1713,7 +1723,7 @@
 	* config.gcc: Add suppport for darwin9.h.
 	* config/darwin9.h: Add.
 	* doc/install.texi (Specific): Clarify darwin documentation.
-	
+
 2006-11-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (CONSTANT_ALIGNMENT): Don't over-align strings when
@@ -1881,7 +1891,7 @@
 	(cstoresi_nltu_thumb, thumb_addsi3_addgeu): New patterns.
 
 2006-11-14  Caroline Tice  <ctice@apple.com>
-		
+
 	* dwarf2out.c (debug_pubtypes_section): New static global variable.
 	(pubname_entry):  Add DEF_VEC_O and DEF_VEC_ALLOC_O statements for
 	this type.
@@ -1890,24 +1900,24 @@
 	(pubname_table_allocated): Remove static global variable.
 	(pubname_table_in_use): Remove static global variable.
 	(PUBNAME_TABLE_INCREMENT): Remove constant.
-	(size_of_pubnames): Add parameter to deal with either pubnames or 
+	(size_of_pubnames): Add parameter to deal with either pubnames or
 	pubtypes, and change code to deal with table being a vector.
 	(add_pubname):  Change to deal with table being a vector.
 	(add_pubtype):  New function.
-	(output_pubnames): Add parameter to deal with either pubnames or 
+	(output_pubnames): Add parameter to deal with either pubnames or
 	pubtypes, and change code to deal with table being a vector.
 	(gen_array_type_die):  Add call to add_pubtype.
 	(gen_enumeration_type_die): Add call to add_pubtype.
 	(gen_struct_or_union_type_die): Add call to add_pubtype.
 	(gen_subroutine_type_die): Add call to add_pubtype.
 	(gen_typedef_die):  Add call to add_pubtype.
-	(dwarf2out_init): Add code to initialize pubname_table and 
+	(dwarf2out_init): Add code to initialize pubname_table and
 	pubtype_table vectors; also initialize debug_pubtypes_section.
 	(prune_unused_types):  Change to deal with pubnames being a vector.
-	(dwarf2out_finish): Change to deal with pubnames being a vector; add 
-	pubnames table to call to output_pubnames;  Add code to output pubtypes 
+	(dwarf2out_finish): Change to deal with pubnames being a vector; add
+	pubnames table to call to output_pubnames;  Add code to output pubtypes
 	table if DEBUG_PUBTYPES_SECTION is defined.
-	* config/darwin.c (darwin_file_start):  Add DEBUG_PUBTYPES_SECTION to 
+	* config/darwin.c (darwin_file_start):  Add DEBUG_PUBTYPES_SECTION to
 	debugnames.
 	* config/darwin.h (DEBUG_PUBTYPES_SECTION): Define new global variable.
 
