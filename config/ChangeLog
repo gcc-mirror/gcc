@@ -1,3 +1,8 @@
+2006-12-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* tls.m4 (GCC_CHECK_TLS): Do not test TLS with static linking
+	if static linking doesn't even work.
+
 2006-11-13  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* tls.m4 (GCC_CHECK_TLS): Fall back to a link test.

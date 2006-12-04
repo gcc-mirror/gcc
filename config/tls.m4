@@ -5,12 +5,14 @@ AC_DEFUN([GCC_CHECK_TLS], [
 		 have_tls, [
     AC_RUN_IFELSE([__thread int a; int b; int main() { return a = b; }],
       [dnl If the test case passed with dynamic linking, try again with
-      dnl static linking.  This fails at least with some older Red Hat
-      dnl releases.
+       dnl static linking, but only if static linking is supported (not
+       dnl on Solaris 10).  This fails with some older Red Hat releases.
       save_LDFLAGS="$LDFLAGS"
       LDFLAGS="-static $LDFLAGS"
-      AC_RUN_IFELSE([__thread int a; int b; int main() { return a = b; }],
-		    [have_tls=yes], [have_tls=no], [])
+      AC_LINK_IFELSE([int main() { return 0; }],
+	AC_RUN_IFELSE([__thread int a; int b; int main() { return a = b; }],
+		      [have_tls=yes], [have_tls=no],[]),
+	[have_tls=yes])
       LDFLAGS="$save_LDFLAGS"],
       [have_tls=no],
       [AC_LINK_IFELSE([__thread int a; int b; int main() { return a = b; }],

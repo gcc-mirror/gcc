@@ -1,3 +1,7 @@
+2006-12-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* configure: Regenerate.
+
 2006-11-27  Mike Stump  <mrs@apple.com>
 
 	* sysdep/x86-64/locks.h: Enable use of either file on either
