@@ -1,5 +1,10 @@
 2006-12-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR libgomp/29947
+	* omp-low.c (expand_omp_for_static_nochunk,
+	expand_omp_for_static_chunk): Do all arithmetics in signed rather than
+	unsigned type.
+
 	PR middle-end/29965
 	* omp-low.c (determine_parallel_type): Don't try to optimize combined
 	parallels if region->exit or region->inner->exit is NULL.

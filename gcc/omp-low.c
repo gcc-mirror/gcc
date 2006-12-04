@@ -2771,13 +2771,12 @@ expand_omp_for_static_nochunk (struct omp_region *region,
 			       struct omp_for_data *fd)
 {
   tree l0, l1, l2, n, q, s0, e0, e, t, nthreads, threadid;
-  tree type, utype, list;
+  tree type, list;
   basic_block entry_bb, exit_bb, seq_start_bb, body_bb, cont_bb;
   basic_block fin_bb;
   block_stmt_iterator si;
 
   type = TREE_TYPE (fd->v);
-  utype = lang_hooks.types.unsigned_type (type);
 
   entry_bb = region->entry;
   seq_start_bb = create_empty_bb (entry_bb);
@@ -2795,12 +2794,12 @@ expand_omp_for_static_nochunk (struct omp_region *region,
 
   t = built_in_decls[BUILT_IN_OMP_GET_NUM_THREADS];
   t = build_function_call_expr (t, NULL);
-  t = fold_convert (utype, t);
+  t = fold_convert (type, t);
   nthreads = get_formal_tmp_var (t, &list);
   
   t = built_in_decls[BUILT_IN_OMP_GET_THREAD_NUM];
   t = build_function_call_expr (t, NULL);
-  t = fold_convert (utype, t);
+  t = fold_convert (type, t);
   threadid = get_formal_tmp_var (t, &list);
 
   fd->n1 = fold_convert (type, fd->n1);
@@ -2820,25 +2819,25 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   t = fold_build2 (PLUS_EXPR, type, t, fd->n2);
   t = fold_build2 (MINUS_EXPR, type, t, fd->n1);
   t = fold_build2 (TRUNC_DIV_EXPR, type, t, fd->step);
-  t = fold_convert (utype, t);
+  t = fold_convert (type, t);
   if (is_gimple_val (t))
     n = t;
   else
     n = get_formal_tmp_var (t, &list);
 
-  t = build2 (TRUNC_DIV_EXPR, utype, n, nthreads);
+  t = build2 (TRUNC_DIV_EXPR, type, n, nthreads);
   q = get_formal_tmp_var (t, &list);
 
-  t = build2 (MULT_EXPR, utype, q, nthreads);
-  t = build2 (NE_EXPR, utype, t, n);
-  t = build2 (PLUS_EXPR, utype, q, t);
+  t = build2 (MULT_EXPR, type, q, nthreads);
+  t = build2 (NE_EXPR, type, t, n);
+  t = build2 (PLUS_EXPR, type, q, t);
   q = get_formal_tmp_var (t, &list);
 
-  t = build2 (MULT_EXPR, utype, q, threadid);
+  t = build2 (MULT_EXPR, type, q, threadid);
   s0 = get_formal_tmp_var (t, &list);
 
-  t = build2 (PLUS_EXPR, utype, s0, q);
-  t = build2 (MIN_EXPR, utype, t, n);
+  t = build2 (PLUS_EXPR, type, s0, q);
+  t = build2 (MIN_EXPR, type, t, n);
   e0 = get_formal_tmp_var (t, &list);
 
   t = build2 (GE_EXPR, boolean_type_node, s0, e0);
@@ -2944,14 +2943,13 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
 {
   tree l0, l1, l2, l3, l4, n, s0, e0, e, t;
   tree trip, nthreads, threadid;
-  tree type, utype;
+  tree type;
   basic_block entry_bb, exit_bb, body_bb, seq_start_bb, iter_part_bb;
   basic_block trip_update_bb, cont_bb, fin_bb;
   tree list;
   block_stmt_iterator si;
 
   type = TREE_TYPE (fd->v);
-  utype = lang_hooks.types.unsigned_type (type);
 
   entry_bb = region->entry;
   iter_part_bb = create_empty_bb (entry_bb);
@@ -2973,12 +2971,12 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
 
   t = built_in_decls[BUILT_IN_OMP_GET_NUM_THREADS];
   t = build_function_call_expr (t, NULL);
-  t = fold_convert (utype, t);
+  t = fold_convert (type, t);
   nthreads = get_formal_tmp_var (t, &list);
   
   t = built_in_decls[BUILT_IN_OMP_GET_THREAD_NUM];
   t = build_function_call_expr (t, NULL);
-  t = fold_convert (utype, t);
+  t = fold_convert (type, t);
   threadid = get_formal_tmp_var (t, &list);
 
   fd->n1 = fold_convert (type, fd->n1);
@@ -2993,7 +2991,7 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
   if (!is_gimple_val (fd->step))
     fd->step = get_formal_tmp_var (fd->step, &list);
 
-  fd->chunk_size = fold_convert (utype, fd->chunk_size);
+  fd->chunk_size = fold_convert (type, fd->chunk_size);
   if (!is_gimple_val (fd->chunk_size))
     fd->chunk_size = get_formal_tmp_var (fd->chunk_size, &list);
 
@@ -3002,13 +3000,13 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
   t = fold_build2 (PLUS_EXPR, type, t, fd->n2);
   t = fold_build2 (MINUS_EXPR, type, t, fd->n1);
   t = fold_build2 (TRUNC_DIV_EXPR, type, t, fd->step);
-  t = fold_convert (utype, t);
+  t = fold_convert (type, t);
   if (is_gimple_val (t))
     n = t;
   else
     n = get_formal_tmp_var (t, &list);
 
-  t = build_int_cst (utype, 0);
+  t = build_int_cst (type, 0);
   trip = get_initialized_tmp_var (t, &list, NULL);
 
   si = bsi_last (entry_bb);
@@ -3019,13 +3017,13 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
   /* Iteration space partitioning goes in ITER_PART_BB.  */
   list = alloc_stmt_list ();
 
-  t = build2 (MULT_EXPR, utype, trip, nthreads);
-  t = build2 (PLUS_EXPR, utype, t, threadid);
-  t = build2 (MULT_EXPR, utype, t, fd->chunk_size);
+  t = build2 (MULT_EXPR, type, trip, nthreads);
+  t = build2 (PLUS_EXPR, type, t, threadid);
+  t = build2 (MULT_EXPR, type, t, fd->chunk_size);
   s0 = get_formal_tmp_var (t, &list);
 
-  t = build2 (PLUS_EXPR, utype, s0, fd->chunk_size);
-  t = build2 (MIN_EXPR, utype, t, n);
+  t = build2 (PLUS_EXPR, type, s0, fd->chunk_size);
+  t = build2 (MIN_EXPR, type, t, n);
   e0 = get_formal_tmp_var (t, &list);
 
   t = build2 (LT_EXPR, boolean_type_node, s0, n);
@@ -3075,8 +3073,8 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
   /* Trip update code goes into TRIP_UPDATE_BB.  */
   list = alloc_stmt_list ();
 
-  t = build_int_cst (utype, 1);
-  t = build2 (PLUS_EXPR, utype, trip, t);
+  t = build_int_cst (type, 1);
+  t = build2 (PLUS_EXPR, type, trip, t);
   t = build2 (MODIFY_EXPR, void_type_node, trip, t);
   gimplify_and_add (t, &list);
 

@@ -34,13 +34,14 @@
 /* Initialize the given work share construct from the given arguments.  */
 
 static inline void
-gomp_loop_init (struct gomp_work_share *ws, unsigned long start,
-		unsigned long end, unsigned long incr,
-		enum gomp_schedule_type sched, unsigned long chunk_size)
+gomp_loop_init (struct gomp_work_share *ws, long start, long end, long incr,
+		enum gomp_schedule_type sched, long chunk_size)
 {
   ws->sched = sched;
   ws->chunk_size = chunk_size;
-  ws->end = end;
+  /* Canonicalize loops that have zero iterations to ->next == ->end.  */
+  ws->end = ((incr > 0 && start > end) || (incr < 0 && start < end))
+	    ? start : end;
   ws->incr = incr;
   ws->next = start;
 }
@@ -147,9 +148,6 @@ gomp_loop_ordered_static_start (long start, long end, long incr,
 				long chunk_size, long *istart, long *iend)
 {
   struct gomp_thread *thr = gomp_thread ();
-
-  if (start == end)
-    return false;
 
   if (gomp_work_share_start (true))
     {
