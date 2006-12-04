@@ -1,3 +1,8 @@
+2006-12-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sp64-elf.h (JUMP_TABLES_IN_TEXT_SECTION): Delete.
+	* config/sparc/sysv4.h (JUMP_TABLES_IN_TEXT_SECTION): Likewise.
+
 2006-12-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.c (walk_type_fields): Do not handle TYPE_MIN_VALUE and

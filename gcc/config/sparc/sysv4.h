@@ -48,13 +48,6 @@ Boston, MA 02110-1301, USA.  */
 #undef SKIP_ASM_OP
 #undef SET_ASM_OP	/* Has no equivalent.  See ASM_OUTPUT_DEF below.  */
 
-/* The native assembler can't compute differences between symbols in different
-   sections when generating pic code, so we must put jump tables in the
-   text section.  */
-/* But we now defer the tables to the end of the function, so we make
-   this 0 to not confuse the branch shortening code.  */
-#define JUMP_TABLES_IN_TEXT_SECTION 0
-
 /* Pass -K to the assembler when PIC.  */
 #undef ASM_SPEC
 #define ASM_SPEC \
