@@ -488,131 +488,6 @@ err:
   internal_error ("verify_flow_sensitive_alias_info failed");
 }
 
-DEF_VEC_P (bitmap);
-DEF_VEC_ALLOC_P (bitmap,heap);
-
-/* Verify that all name tags have different points to sets.
-   This algorithm takes advantage of the fact that every variable with the
-   same name tag must have the same points-to set. 
-   So we check a single variable for each name tag, and verify that its
-   points-to set is different from every other points-to set for other name
-   tags.
-
-   Additionally, given a pointer P_i with name tag NMT and symbol tag
-   SMT, this function verified the alias set of SMT is a superset of
-   the alias set of NMT.  */
-
-static void
-verify_name_tags (void)
-{
-  size_t i;  
-  size_t j;
-  bitmap first, second;  
-  VEC(tree,heap) *name_tag_reps = NULL;
-  VEC(bitmap,heap) *pt_vars_for_reps = NULL;
-  bitmap type_aliases = BITMAP_ALLOC (NULL);
-
-  /* First we compute the name tag representatives and their points-to sets.  */
-  for (i = 0; i < num_ssa_names; i++)
-    {
-      struct ptr_info_def *pi;
-      tree smt, ptr = ssa_name (i);
-
-      if (ptr == NULL_TREE)
-	continue;
-      
-      pi = SSA_NAME_PTR_INFO (ptr);
-
-      if (!TREE_VISITED (ptr) 
-	  || !POINTER_TYPE_P (TREE_TYPE (ptr)) 
-	  || !pi
-	  || !pi->name_mem_tag 
-	  || TREE_VISITED (pi->name_mem_tag))
-	continue;
-
-      TREE_VISITED (pi->name_mem_tag) = 1;
-
-      if (pi->pt_vars == NULL)
-	continue;
-
-      VEC_safe_push (tree, heap, name_tag_reps, ptr);
-      VEC_safe_push (bitmap, heap, pt_vars_for_reps, pi->pt_vars);
-
-      /* Verify that alias set of PTR's symbol tag is a superset of the
-	 alias set of PTR's name tag.  */
-      smt = var_ann (SSA_NAME_VAR (ptr))->symbol_mem_tag;
-      if (smt)
-	{
-	  size_t i;
-	  VEC(tree,gc) *aliases = var_ann (smt)->may_aliases;
-	  tree alias;
-
-	  bitmap_clear (type_aliases);
-	  for (i = 0; VEC_iterate (tree, aliases, i, alias); i++)
-	    bitmap_set_bit (type_aliases, DECL_UID (alias));
-
-	  /* When grouping, we may have added PTR's symbol tag into the
-	     alias set of PTR's name tag.  To prevent a false
-	     positive, pretend that SMT is in its own alias set.  */
-	  bitmap_set_bit (type_aliases, DECL_UID (smt));
-
-	  if (bitmap_equal_p (type_aliases, pi->pt_vars))
-	    continue;
-
-	  if (!bitmap_intersect_compl_p (type_aliases, pi->pt_vars))
-	    {
-	      error ("alias set of a pointer's symbol tag should be a superset of the corresponding name tag");
-	      debug_variable (smt);
-	      debug_variable (pi->name_mem_tag);
-	      goto err;
-	    }
-	}
-    }
-  
-  /* Now compare all the representative bitmaps with all other representative
-     bitmaps, to verify that they are all different.  */
-  for (i = 0; VEC_iterate (bitmap, pt_vars_for_reps, i, first); i++)
-    {
-       for (j = i + 1; VEC_iterate (bitmap, pt_vars_for_reps, j, second); j++)
-	 { 
-	   if (bitmap_equal_p (first, second))
-	     {
-	       error ("two different pointers with identical points-to sets but different name tags");
-	       debug_variable (VEC_index (tree, name_tag_reps, j));
-	       goto err;
-	     }
-	 }
-    }
-
-  /* Lastly, clear out the visited flags.  */
-  for (i = 0; i < num_ssa_names; i++)
-    {
-      if (ssa_name (i))
-	{
-	  tree ptr = ssa_name (i);
-	  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
-	  if (!TREE_VISITED (ptr) 
-	      || !POINTER_TYPE_P (TREE_TYPE (ptr)) 
-	      || !pi
-	      || !pi->name_mem_tag)
-	    continue;
-	  TREE_VISITED (pi->name_mem_tag) = 0;
-	}
-    } 
-
-  /* We do not have to free the bitmaps or trees in the vectors, as
-     they are not owned by us.  */
-  VEC_free (bitmap, heap, pt_vars_for_reps);
-  VEC_free (tree, heap, name_tag_reps);
-  BITMAP_FREE (type_aliases);
-  return;
-  
-err:
-  debug_variable (VEC_index (tree, name_tag_reps, i));
-  internal_error ("verify_name_tags failed");
-}
-
-
 /* Verify the consistency of call clobbering information.  */
 static void
 verify_call_clobbering (void)
@@ -659,7 +534,6 @@ static void
 verify_alias_info (void)
 {
   verify_flow_sensitive_alias_info ();
-  verify_name_tags ();
   verify_call_clobbering ();
   verify_flow_insensitive_alias_info ();
 }

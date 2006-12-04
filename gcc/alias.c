@@ -293,6 +293,26 @@ insert_subset_children (splay_tree_node node, void *data)
   return 0;
 }
 
+/* Return true if the first alias set is a subset of the second.  */
+
+bool
+alias_set_subset_of (HOST_WIDE_INT set1, HOST_WIDE_INT set2)
+{
+  alias_set_entry ase;
+
+  /* Everything is a subset of the "aliases everything" set.  */
+  if (set2 == 0)
+    return true;
+
+  /* Otherwise, check if set1 is a subset of set2.  */
+  ase = get_alias_set_entry (set2);
+  if (ase != 0
+      && (splay_tree_lookup (ase->children,
+			     (splay_tree_key) set1)))
+    return true;
+  return false;
+}
+
 /* Return 1 if the two specified alias sets may conflict.  */
 
 int

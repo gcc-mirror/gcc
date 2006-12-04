@@ -1056,11 +1056,6 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
   if (alias == gimple_global_var (cfun))
     return true;
 
-  /* We cannot prune nonlocal aliases because they are not type
-     specific.  */
-  if (alias == gimple_nonlocal_all (cfun))
-    return true;
-
   /* If ALIAS is an SFT, it can't be touched if the offset     
      and size of the access is not overlapping with the SFT offset and
      size.  This is only true if we are accessing through a pointer
