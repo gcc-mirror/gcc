@@ -1,3 +1,10 @@
+2006-12-04  Richard Guenther  <rguenther@suse.de>
+
+	* MAINTAINERS (Non-Algorithmic Maintainers): New section.
+	(Non-Algorithmic Maintainers): Move over non-algorithmic
+	loop optimizer maintainers, add myself as a non-algorithmic
+	middle-end maintainer.
+
 2006-12-04  Daniel Franke  <franke.daniel@gmail.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
