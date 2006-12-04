@@ -1,3 +1,9 @@
+2006-12-04  Richard Henderson  <rth@redhat.com>
+            Andrew Pinski  <pinskia@gmail.com>
+
+	PR C++/14329
+	* error.c (cp_printer) <'D'>: Handle DECL_DEBUG_EXPR.
+
 2006-12-01  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/30022
