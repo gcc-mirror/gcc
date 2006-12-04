@@ -3,4 +3,5 @@
 ! { dg-do compile }
 ! { dg-options "-std=f95" }
 real, parameter :: pi = 4.0*Atan(1.0) ! { dg-error "Evaluation of nonstandard initialization expression" }
+real, parameter :: three = 27.0**(1.0/3.0) ! { dg-error "Noninteger exponent in an initialization expression" }
 end
