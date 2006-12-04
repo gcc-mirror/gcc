@@ -1,3 +1,8 @@
+2006-12-04  Jan Hubicka  <jh@suse.cz>
+
+	* cp-objcp-common.c (cp_expr_size): Return NULL in the case
+	size is undefined.
+
 2006-12-04  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29733
