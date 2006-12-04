@@ -1,3 +1,9 @@
+2006-12-04  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29632
+	* call.c (add_builtin_candidate): Do not permit NULL pointer
+	constants to be compared with template parameters.
+
 2006-12-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* pt.c (for_each_template_parm_r) <INTEGER_TYPE>: New case.

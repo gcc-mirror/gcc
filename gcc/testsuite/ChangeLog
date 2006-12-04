@@ -1,3 +1,8 @@
+2006-12-04  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29632
+	* g++.dg/template/error23.C: New test.
+
 2006-12-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse-18.c: Pass if CPU has no SSE2 support.
