@@ -1,3 +1,12 @@
+2006-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/29947
+	* loop.c (gomp_loop_init): Make parameters signed.  Set ws->end to
+	start if there shouldn't be any loop iterations.
+	(gomp_loop_ordered_static_start): Remove start == end test.
+	* testsuite/libgomp.c/pr29947-1.c: New test.
+	* testsuite/libgomp.c/pr29947-2.c: New test.
+
 2006-12-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* configure.tgt: Force initial-exec TLS model on Linux only.
