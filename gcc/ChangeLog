@@ -1,3 +1,8 @@
+2006-12-04  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* config/arm/unwind-arm.c: Adjust __cxa_type_match declaration.
+	(__gnu_unwind_pr_common): Pass is_reference to __cxa_type_match.
+
 2006-12-04  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-outof-ssa.c (coalesce_ssa_name): Use calculate_live_ranges.
