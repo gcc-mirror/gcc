@@ -225,7 +225,7 @@ initialize_env (void)
 void
 omp_set_num_threads (int n)
 {
-  gomp_nthreads_var = n;
+  gomp_nthreads_var = (n > 0 ? n : 1);
 }
 
 void
