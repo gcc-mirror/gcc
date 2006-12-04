@@ -213,12 +213,19 @@ alias analysis		Diego Novillo		dnovillo@redhat.com
 reload			Ulrich Weigand		uweigand@de.ibm.com
 dfp.c, related		Ben Elliston		bje@au.ibm.com
 RTL optimizers		Eric Botcazou		ebotcazou@libertysurf.fr
-loop optimizer		Zdenek Dvorak		dvorakz@suse.cz
-loop optimizer		Daniel Berlin		dberlin@dberlin.org
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
 
+			Non-Algorithmic Maintainers
+
+loop optimizer		Zdenek Dvorak		dvorakz@suse.cz
+loop optimizer		Daniel Berlin		dberlin@dberlin.org
+middle-end		Richard Guenther	rguenther@suse.de
+
+Note individuals who maintain parts of the compiler as non-algorithmic
+maintainer need approval to check in algorithmic changes or changes
+outside of the parts of the compiler they maintain.
 
 			Write After Approval	(last name alphabetical order)
 
