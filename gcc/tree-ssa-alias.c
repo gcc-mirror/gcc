@@ -646,15 +646,13 @@ compute_may_aliases (void)
      not needed anymore.  */
   setup_pointers_and_addressables (ai);
 
-  /* Compute flow-sensitive, points-to based aliasing for all the name
-     memory tags.  Note that this pass needs to be done before flow
-     insensitive analysis because it uses the points-to information
-     gathered before to mark call-clobbered symbol tags.  */
-  compute_flow_sensitive_aliasing (ai);
-
   /* Compute type-based flow-insensitive aliasing for all the type
      memory tags.  */
   compute_flow_insensitive_aliasing (ai);
+
+  /* Compute flow-sensitive, points-to based aliasing for all the name
+     memory tags.  */
+  compute_flow_sensitive_aliasing (ai);
   
   /* Compute call clobbering information.  */
   compute_call_clobbered (ai);
@@ -1121,7 +1119,8 @@ compute_flow_sensitive_aliasing (struct alias_info *ai)
 	EXECUTE_IF_SET_IN_BITMAP (pi->pt_vars, 0, j, bi)
 	  {
 	    add_may_alias (pi->name_mem_tag, referenced_var (j));
-	    add_may_alias (v_ann->symbol_mem_tag, referenced_var (j));
+	    if (j != DECL_UID (v_ann->symbol_mem_tag))
+	      add_may_alias (v_ann->symbol_mem_tag, referenced_var (j));
 	  }
     }
 }

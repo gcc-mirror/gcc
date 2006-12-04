@@ -25,6 +25,7 @@ extern HOST_WIDE_INT new_alias_set (void);
 extern HOST_WIDE_INT get_varargs_alias_set (void);
 extern HOST_WIDE_INT get_frame_alias_set (void);
 extern bool component_uses_parent_alias_set (tree);
+extern bool alias_set_subset_of (HOST_WIDE_INT, HOST_WIDE_INT);
 
 /* This alias set can be used to force a memory to conflict with all
    other memories, creating a barrier across which no memory reference
