@@ -7442,14 +7442,6 @@ walk_type_fields (tree type, walk_tree_fn func, void *data,
       WALK_SUBTREE (TYPE_DOMAIN (type));
       break;
 
-    case BOOLEAN_TYPE:
-    case ENUMERAL_TYPE:
-    case INTEGER_TYPE:
-    case REAL_TYPE:
-      WALK_SUBTREE (TYPE_MIN_VALUE (type));
-      WALK_SUBTREE (TYPE_MAX_VALUE (type));
-      break;
-
     case OFFSET_TYPE:
       WALK_SUBTREE (TREE_TYPE (type));
       WALK_SUBTREE (TYPE_OFFSET_BASETYPE (type));
@@ -7518,7 +7510,7 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, struct pointer_set_t *pset)
 
   result = lang_hooks.tree_inlining.walk_subtrees (tp, &walk_subtrees, func,
 						   data, pset);
-  if (result || ! walk_subtrees)
+  if (result || !walk_subtrees)
     return result;
 
   switch (code)
@@ -7648,23 +7640,29 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, struct pointer_set_t *pset)
       }
 
     case DECL_EXPR:
-      /* Walk into various fields of the type that it's defining.  We only
-	 want to walk into these fields of a type in this case.  Note that
-	 decls get walked as part of the processing of a BIND_EXPR.
+      /* If this is a TYPE_DECL, walk into the fields of the type that it's
+	 defining.  We only want to walk into these fields of a type in this
+	 case and not in the general case of a mere reference to the type.
 
-	 ??? Precisely which fields of types that we are supposed to walk in
-	 this case vs. the normal case aren't well defined.  */
-      if (TREE_CODE (DECL_EXPR_DECL (*tp)) == TYPE_DECL
-	  && TREE_CODE (TREE_TYPE (DECL_EXPR_DECL (*tp))) != ERROR_MARK)
+	 The criterion is as follows: if the field can be an expression, it
+	 must be walked only here.  This should be in keeping with the fields
+	 that are directly gimplified in gimplify_type_sizes in order for the
+	 mark/copy-if-shared/unmark machinery of the gimplifier to work with
+	 variable-sized types.
+  
+	 Note that DECLs get walked as part of processing the BIND_EXPR.  */
+      if (TREE_CODE (DECL_EXPR_DECL (*tp)) == TYPE_DECL)
 	{
 	  tree *type_p = &TREE_TYPE (DECL_EXPR_DECL (*tp));
+	  if (TREE_CODE (*type_p) == ERROR_MARK)
+	    return NULL_TREE;
 
 	  /* Call the function for the type.  See if it returns anything or
 	     doesn't want us to continue.  If we are to continue, walk both
 	     the normal fields and those for the declaration case.  */
 	  result = (*func) (type_p, &walk_subtrees, data);
 	  if (result || !walk_subtrees)
-	    return NULL_TREE;
+	    return result;
 
 	  result = walk_type_fields (*type_p, func, data, pset);
 	  if (result)
@@ -7693,6 +7691,16 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, struct pointer_set_t *pset)
 		  if (TREE_CODE (*type_p) == QUAL_UNION_TYPE)
 		    WALK_SUBTREE (DECL_QUALIFIER (field));
 		}
+	    }
+
+	  /* Same for scalar types.  */
+	  else if (TREE_CODE (*type_p) == BOOLEAN_TYPE
+		   || TREE_CODE (*type_p) == ENUMERAL_TYPE
+		   || TREE_CODE (*type_p) == INTEGER_TYPE
+		   || TREE_CODE (*type_p) == REAL_TYPE)
+	    {
+	      WALK_SUBTREE (TYPE_MIN_VALUE (*type_p));
+	      WALK_SUBTREE (TYPE_MAX_VALUE (*type_p));
 	    }
 
 	  WALK_SUBTREE (TYPE_SIZE (*type_p));

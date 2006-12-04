@@ -1,3 +1,11 @@
+2006-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.c (walk_type_fields): Do not handle TYPE_MIN_VALUE and
+	TYPE_MAX_VALUE for scalar types here but...
+	(walk_tree): ...there instead.  Return NULL_TREE if the TYPE_DECL
+	is attached an error mark, and the return value of the callback
+	if it is not NULL_TREE.
+
 2006-12-04  Ben Elliston  <bje@au.ibm.com>
 
 	* config/spu/spu.md (_mulv4si3): Remove unused local variables.
