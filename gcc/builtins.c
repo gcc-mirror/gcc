@@ -8202,8 +8202,8 @@ fold_builtin_memory_op (tree arglist, tree type, bool ignore, int endp)
 	  || !TYPE_SIZE_UNIT (desttype)
 	  || TREE_CODE (TYPE_SIZE_UNIT (srctype)) != INTEGER_CST
 	  || TREE_CODE (TYPE_SIZE_UNIT (desttype)) != INTEGER_CST
-	  || !operand_equal_p (TYPE_SIZE_UNIT (srctype), len, 0)
-	  || !operand_equal_p (TYPE_SIZE_UNIT (desttype), len, 0))
+	  || !tree_int_cst_equal (TYPE_SIZE_UNIT (srctype), len)
+	  || !tree_int_cst_equal (TYPE_SIZE_UNIT (desttype), len))
 	return 0;
 
       if (get_pointer_alignment (dest, BIGGEST_ALIGNMENT) 
@@ -8217,6 +8217,8 @@ fold_builtin_memory_op (tree arglist, tree type, bool ignore, int endp)
 
       srcvar = build_fold_indirect_ref (src);
       if (TREE_THIS_VOLATILE (srcvar))
+	return 0;
+      if (!tree_int_cst_equal (lang_hooks.expr_size (srcvar), len))
 	return 0;
       /* With memcpy, it is possible to bypass aliasing rules, so without
          this check i. e. execute/20060930-2.c would be misoptimized, because
@@ -8232,6 +8234,8 @@ fold_builtin_memory_op (tree arglist, tree type, bool ignore, int endp)
 
       destvar = build_fold_indirect_ref (dest);
       if (TREE_THIS_VOLATILE (destvar))
+	return 0;
+      if (!tree_int_cst_equal (lang_hooks.expr_size (destvar), len))
 	return 0;
       if (!var_decl_component_p (destvar))
 	return 0;

@@ -245,7 +245,11 @@ expr_size (tree exp)
   if (TREE_CODE (exp) == WITH_SIZE_EXPR)
     size = TREE_OPERAND (exp, 1);
   else
-    size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (lang_hooks.expr_size (exp), exp);
+    {
+      size = lang_hooks.expr_size (exp);
+      gcc_assert (size);
+      size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (size, exp);
+    }
 
   return expand_expr (size, NULL_RTX, TYPE_MODE (sizetype), 0);
 }
@@ -261,7 +265,10 @@ int_expr_size (tree exp)
   if (TREE_CODE (exp) == WITH_SIZE_EXPR)
     size = TREE_OPERAND (exp, 1);
   else
-    size = lang_hooks.expr_size (exp);
+    {
+      size = lang_hooks.expr_size (exp);
+      gcc_assert (size);
+    }
 
   if (size == 0 || !host_integerp (size, 0))
     return -1;
