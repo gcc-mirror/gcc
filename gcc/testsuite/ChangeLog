@@ -1,3 +1,9 @@
+2006-12-03  Richard Henderson  <rth@redhat.com>
+            Andrew Pinski  <pinskia@gmail.com>
+
+	PR C++/14329
+	* g++.dg/warn/unit-1.C: New test.
+
 2006-12-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/visibility-11.c: Compile with -mstringop-strategy=libcall.

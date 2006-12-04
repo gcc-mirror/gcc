@@ -1,3 +1,9 @@
+2006-12-03  Richard Henderson  <rth@redhat.com>
+            Andrew Pinski  <pinskia@gmail.com>
+
+	PR C++/14329
+	* error.c (cp_printer) <'D'>: Handle DECL_DEBUG_EXPR.
+
 2006-12-02  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C++/30033
