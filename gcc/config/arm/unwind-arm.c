@@ -41,6 +41,7 @@ void __attribute__((weak)) __cxa_call_unexpected(_Unwind_Control_Block *ucbp);
 bool __attribute__((weak)) __cxa_begin_cleanup(_Unwind_Control_Block *ucbp);
 bool __attribute__((weak)) __cxa_type_match(_Unwind_Control_Block *ucbp,
 					    const type_info *rttip,
+					    bool is_reference,
 					    void **matched_object);
 
 _Unwind_Ptr __attribute__((weak))
@@ -847,6 +848,7 @@ __gnu_unwind_pr_common (_Unwind_State state,
 		    {
 		      /* Check for a barrier.  */
 		      _uw rtti;
+		      bool is_reference = (data[0] & uint32_highbit) != 0;
 		      void *matched;
 
 		      /* Check for no-throw areas.  */
@@ -860,6 +862,7 @@ __gnu_unwind_pr_common (_Unwind_State state,
 			  /* Match a catch specification.  */
 			  rtti = _Unwind_decode_target2 ((_uw) &data[1]);
 			  if (!__cxa_type_match (ucbp, (type_info *) rtti,
+						 is_reference,
 						 &matched))
 			    matched = (void *)0;
 			}
@@ -907,7 +910,7 @@ __gnu_unwind_pr_common (_Unwind_State state,
 			{
 			  matched = (void *)(ucbp + 1);
 			  rtti = _Unwind_decode_target2 ((_uw) &data[i + 1]);
-			  if (__cxa_type_match (ucbp, (type_info *) rtti,
+			  if (__cxa_type_match (ucbp, (type_info *) rtti, 0,
 						&matched))
 			    break;
 			}
