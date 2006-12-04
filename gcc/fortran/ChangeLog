@@ -1,5 +1,11 @@
 2006-12-04  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/29821
+	* resolve.c (resolve_operator): Only return result of
+	gfc_simplify_expr if expression is constant.
+
+2006-12-04  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/29916
 	* resolve.c (resolve_symbol): Allow host-associated variables
 	  the specification expression of an array-valued function.

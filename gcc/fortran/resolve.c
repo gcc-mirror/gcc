@@ -2191,7 +2191,14 @@ resolve_operator (gfc_expr * e)
 
   /* Attempt to simplify the expression.  */
   if (t == SUCCESS)
-    t = gfc_simplify_expr (e, 0);
+    {
+      t = gfc_simplify_expr (e, 0);
+      /* Some calls do not succeed in simplification and return FAILURE
+	 even though there is no error; eg. variable references to
+	 PARAMETER arrays.  */
+      if (!gfc_is_constant_expr (e))
+	t = SUCCESS;
+    }
   return t;
 
 bad_op:
