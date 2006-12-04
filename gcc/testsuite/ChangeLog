@@ -1,3 +1,8 @@
+2006-12-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/29916
+	* gfortran.dg/host_dummy_index_1.f90: Added additional test.
+
 2006-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/29965

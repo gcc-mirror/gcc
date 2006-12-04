@@ -6043,7 +6043,16 @@ resolve_symbol (gfc_symbol * sym)
      on COMMON blocks.  */
 
   check_constant = sym->attr.in_common && !sym->attr.pointer;
+
+  /* Set the formal_arg_flag so that check_conflict will not throw
+     an error for host associated variables in the specification
+     expression for an array_valued function.  */
+  if (sym->attr.function && sym->as)
+    formal_arg_flag = 1;
+
   gfc_resolve_array_spec (sym->as, check_constant);
+
+  formal_arg_flag = 0;
 
   /* Resolve formal namespaces.  */
 
