@@ -822,8 +822,7 @@ coalesce_ssa_name (var_map map, int flags)
   if (num_var_partitions (map) <= 1)
     return NULL;
 
-  liveinfo = calculate_live_on_entry (map);
-  calculate_live_on_exit (liveinfo);
+  liveinfo = calculate_live_ranges (map);
   rv = root_var_init (map);
 
   /* Remove single element variable from the list.  */
