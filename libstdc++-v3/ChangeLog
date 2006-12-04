@@ -1,3 +1,7 @@
+2006-12-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* configure: Regenerate.
+
 2006-12-03  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/29989
