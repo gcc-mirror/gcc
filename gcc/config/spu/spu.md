@@ -1117,14 +1117,12 @@
 	(mult:V4SI (match_dup:V4SI 1)
 		   (match_dup:V4SI 2)))]
   {
-    HOST_WIDE_INT val = 0;
     rtx a = operands[3];
     rtx b = operands[4];
     rtx c = operands[5];
     rtx d = operands[6];
     rtx op1 = simplify_gen_subreg (V8HImode, operands[1], V4SImode, 0);
     rtx op2 = simplify_gen_subreg (V8HImode, operands[2], V4SImode, 0);
-    rtx op3 = simplify_gen_subreg (V8HImode, operands[3], V4SImode, 0);
     emit_insn(gen_spu_mpyh(a, op1, op2));
     emit_insn(gen_spu_mpyh(b, op2, op1));
     emit_insn(gen_spu_mpyu(c, op1, op2));
