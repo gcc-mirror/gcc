@@ -1810,14 +1810,19 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	break;
       if (TYPE_PTR_P (type1) && TYPE_PTR_P (type2))
 	break;
-      if (TREE_CODE (type1) == ENUMERAL_TYPE && TREE_CODE (type2) == ENUMERAL_TYPE)
+      if (TREE_CODE (type1) == ENUMERAL_TYPE 
+	  && TREE_CODE (type2) == ENUMERAL_TYPE)
 	break;
-      if (TYPE_PTR_P (type1) && null_ptr_cst_p (args[1]))
+      if (TYPE_PTR_P (type1) 
+	  && null_ptr_cst_p (args[1])
+	  && !uses_template_parms (type1))
 	{
 	  type2 = type1;
 	  break;
 	}
-      if (null_ptr_cst_p (args[0]) && TYPE_PTR_P (type2))
+      if (null_ptr_cst_p (args[0]) 
+	  && TYPE_PTR_P (type2)
+	  && !uses_template_parms (type2))
 	{
 	  type1 = type2;
 	  break;
