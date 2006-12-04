@@ -1,3 +1,7 @@
+2006-12-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* configure: Regenerate.
+
 2006-09-18  Tom Tromey  <tromey@redhat.com>
 
 	* configure: Rebuilt.

@@ -1,3 +1,7 @@
+2006-12-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* configure: Regenerate.
+
 2006-11-26  Mohan Embar  <gnustuff@thisiscool.com>
 
 	PR libgcj/29151:

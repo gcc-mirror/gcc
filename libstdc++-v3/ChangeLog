@@ -1,3 +1,7 @@
+2006-12-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* configure: Regenerate.
+
 2006-12-01  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_tree.h (_Rb_tree<>::destroy_node): Uglify.
