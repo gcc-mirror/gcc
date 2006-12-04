@@ -1,3 +1,23 @@
+2006-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/29965
+	* gcc.dg/gomp/pr29965-1.c: New test.
+	* gcc.dg/gomp/pr29965-2.c: New test.
+	* gcc.dg/gomp/pr29965-3.c: New test.
+	* gcc.dg/gomp/pr29965-4.c: New test.
+	* gcc.dg/gomp/pr29965-5.c: New test.
+	* gcc.dg/gomp/pr29965-6.c: New test.
+	* g++.dg/gomp/pr29965-1.C: New test.
+	* g++.dg/gomp/pr29965-2.C: New test.
+	* g++.dg/gomp/pr29965-3.C: New test.
+	* g++.dg/gomp/pr29965-4.C: New test.
+	* g++.dg/gomp/pr29965-5.C: New test.
+	* g++.dg/gomp/pr29965-6.C: New test.
+	* g++.dg/gomp/pr29965-7.C: New test.
+	* g++.dg/gomp/pr29965-8.C: New test.
+	* g++.dg/gomp/pr29965-9.C: New test.
+	* g++.dg/gomp/pr29965-10.C: New test.
+
 2006-12-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/pointer_variable_bounds.adb: New test.
