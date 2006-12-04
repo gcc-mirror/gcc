@@ -1622,9 +1622,11 @@ check_intrinsic_op (gfc_expr * e, try (*check_function) (gfc_expr *))
       if (e->value.op.operator == INTRINSIC_POWER
 	  && check_function == check_init_expr && et0 (op2) != BT_INTEGER)
 	{
-	  gfc_error ("Exponent at %L must be INTEGER for an initialization "
-		     "expression", &op2->where);
-	  return FAILURE;
+	  if (gfc_notify_std (GFC_STD_F2003,"Fortran 2003: Noninteger "
+			      "exponent in an initialization "
+			      "expression at %L", &op2->where)
+	      == FAILURE)
+	    return FAILURE;
 	}
 
       break;

@@ -1,3 +1,8 @@
+2006-12-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/29962
+	* expr.c (check_intrinsic_op): Allow noninteger exponents for F2003.
+
 2006-12-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29821
