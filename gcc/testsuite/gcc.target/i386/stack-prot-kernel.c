@@ -1,5 +1,5 @@
 /* { dg-do compile { target lp64 } } */
-/* { dg-skip-if "darwin x86_64 is pic" { *-*-darwin* } { "-m64" } { "" } } */
+/* { dg-skip-if "darwin x86_64 is pic" { *-*-darwin* } { "*" } { "" } } */
 /* { dg-options "-O2 -fstack-protector-all -mcmodel=kernel" } */
 
 void test1 (int x)
