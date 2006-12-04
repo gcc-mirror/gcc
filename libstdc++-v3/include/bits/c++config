@@ -193,4 +193,8 @@ _GLIBCXX_END_NAMESPACE
 // for something else under certain OSes (see BADNAMES).
 #define __N(msgid)     (msgid)
 
+// For example, <windows.h> is known to #define min and max as macros...
+#undef min
+#undef max
+
 // End of prewritten config; the discovered settings follow.

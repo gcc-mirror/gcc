@@ -1,3 +1,9 @@
+2006-12-04  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/29989 (again)
+	* include/bits/c++config: #undef min and max.
+	* testsuite/18_support/numeric_limits/29989.cc: New.
+
 2006-12-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* configure: Regenerate.
