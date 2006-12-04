@@ -1,3 +1,9 @@
+2006-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/pointer_variable_bounds.adb: New test.
+	* gnat.dg/pointer_variable_bounds.ads: Likewise.
+	* gnat.dg/pointer_variable_bounds_q.ads: Likewise.
+
 2006-12-03  Eric Christopher  <echristo@apple.com>
 
 	* gcc.target/i386/stack-prot-kernel.c: Skip for x86_64-*-darwin.

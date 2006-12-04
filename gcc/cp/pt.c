@@ -4958,6 +4958,14 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 	return error_mark_node;
       break;
 
+    case INTEGER_TYPE:
+      if (for_each_template_parm (TYPE_MIN_VALUE (t),
+				  fn, data, pfd->visited)
+	  || for_each_template_parm (TYPE_MAX_VALUE (t),
+				     fn, data, pfd->visited))
+	return error_mark_node;
+      break;
+
     case METHOD_TYPE:
       /* Since we're not going to walk subtrees, we have to do this
 	 explicitly here.  */
