@@ -1,3 +1,7 @@
+2006-12-04  Daniel Franke  <franke.daniel@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2006-12-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in: Update error message for missing GMP/MPFR.
