@@ -1,3 +1,16 @@
+2006-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/29965
+	* omp-low.c (determine_parallel_type): Don't try to optimize combined
+	parallels if region->exit or region->inner->exit is NULL.
+	(expand_omp_parallel): Handle NULL region->exit even if cfg is already
+	built.
+	(expand_omp_for_generic): Handle NULL region->cond and region->exit.
+	(expand_omp_for): Use expand_omp_for_generic if either region->cond
+	or region->exit is NULL.
+	(expand_omp_sections): Handle NULL region->cond or region->exit.
+	(expand_omp_synch): 
+
 2006-12-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sp64-elf.h (JUMP_TABLES_IN_TEXT_SECTION): Delete.
