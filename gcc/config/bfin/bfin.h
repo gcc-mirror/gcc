@@ -1233,4 +1233,8 @@ extern struct rtx_def *bfin_cc_rtx, *bfin_rets_rtx;
 
 #define SIZE_ASM_OP     "\t.size\t"
 
+extern int splitting_for_sched;
+
+#define PRINT_OPERAND_PUNCT_VALID_P(CHAR) ((CHAR) == '!')
+
 #endif /*  _BFIN_CONFIG */

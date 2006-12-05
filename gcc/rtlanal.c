@@ -1390,6 +1390,11 @@ note_uses (rtx *pbody, void (*fun) (rtx *, void *), void *data)
 	note_uses (&XVECEXP (body, 0, i), fun, data);
       return;
 
+    case SEQUENCE:
+      for (i = XVECLEN (body, 0) - 1; i >= 0; i--)
+	note_uses (&PATTERN (XVECEXP (body, 0, i)), fun, data);
+      return;
+
     case USE:
       (*fun) (&XEXP (body, 0), data);
       return;

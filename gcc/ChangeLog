@@ -1,3 +1,49 @@
+2006-12-04  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* rtlanal.c (note_uses): Deal with SEQUENCEs.
+	* config/bfin/bfin.c: Include "timevar.h".
+	(bfin_flag_schedule_insns2, splitting_for_sched,
+	bfin_flag_var_tracking): New variables.
+	(print_operand): Handle '%!'.
+	(override_options): Disable normal sched2 pass, instead set
+	bfin_flag_schedule_insns2 for reorg to handle it.
+	(output_file_start): Likewise for var-tracking.
+	(bfin_optimize_loop): Take some care not to stumble over SEQUENCEs.
+	(gen_one_bundle, bfin_gen_bundles, type_for_anomaly, trapping_loads_p):
+	New functions.
+	(bfin_reorg): Do second scheduling pass here, and call
+	bfin_gen_bundles.  Use type_for_anomaly and trapping_loads_p instead
+	of examining insns directly.  If bfin_flag_var_tracking, call
+	var-tracking pass when done with everything else.
+	* config/bfin/bfin.h (PRINT_OPERAND_PUNCT_VALID_P): '!' is valid.
+	* config/bfin/bfin.md (UNSPEC_32BIT): New constant.
+	(movsi_insn32): New pattern, with two new splits to create it
+	before the final scheduling pass.
+	(neghi2): Not a dsp32 insn, rather alu0.
+	(movbi, pushsi_insn, popsi_insn, movsi_insn, movv2hi_insn, movhi_insn,
+	movqi_insn, movsf_insn, movsi_insv, extendhisi2, zero_extendhisi2,
+	extendqihi2, extendqisi2, zero_extendqihi2, zero_extendqisi2,
+	mulhisi3, umulhisi3, ssadsi3, sssubsi3, smaxsi3, sminsi3, abssi2,
+	ssnegsi2, signbitssi2, smaxhi3, sminhi3, abshi2, ssneghi2, signbitshi2,
+	movhi_low2high, movhi_high2high, movhi_low2low, movhi_high2low,
+	movhiv2hi_low, movhiv2hi_high, composev2hi, packv2hi, movv2hi_hi,
+	ssaddhi3, sssubhi3, addv2hi3, ssaddv2hi3, subv2hi3, sssubv2hi3,
+	addsubv2hi3, subaddv2hi3, ssaddsubv2hi3, sssubaddv2hi3, sublohiv2hi3,
+	subhilov2hi3, sssublohiv2hi3, sssubhilov2hi3, addlohiv2hi3,
+	addhilov2hi3, ssaddlohiv2hi3, ssaddhilov2hi3, sminv2hi3, smaxv2hi3,
+	flag_mulhi, flag_mulhisi, flag_mulhisi_parts, flag_machi,
+	flag_machi_acconly, flag_macinithi, flag_macinit1hi, mulv2hi3,
+	flag_mulv2hi, flag_mulv2hi_parts, flag_macv2hi_parts,
+	flag_macv2hi_parts_acconly, flag_macinitv2hi_parts,
+	flag_macinit1v2hi_parts, mulhisi_ll, mulhisi_lh, mulhisi_hl,
+	mulhisi_hh, ssnegv2hi2, absv2hi2, ssashiftv2hi3, ssashifthi3,
+	lshiftv2hi3, lshifthi3): Use '%!' to terminate all dsp32/load/store
+	variants instead of ';'.
+	(ror_one, rol_one): Likewise.  Make them dsp32 insns.
+	(ashlsi3_insn, ashrsi3, lshrsi3): Add dsp32 variants.
+	(align8, align16, align24): Now named patterns; also using '%!'.
+	(mnop): New insn.
+
 2006-12-05  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/i386/darwin.h, config/spu/spu.c, tree-ssa-live.c,
