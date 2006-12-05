@@ -370,12 +370,6 @@ set_initial_properties (struct alias_info *ai)
     }
 }
 
-
-/* This variable is set to true if we are updating the used alone
-   information for SMTs, or are in a pass that is going to break it
-   temporarily.  */
-bool updating_used_alone;
-
 /* Compute which variables need to be marked call clobbered because
    their tag is call clobbered, and which tags need to be marked
    global because they contain global variables.  */
@@ -399,120 +393,6 @@ compute_call_clobbered (struct alias_info *ai)
   VEC_free (tree, heap, worklist);
   VEC_free (int, heap, worklist2);
   compute_tag_properties ();
-}
-
-
-/* Helper for recalculate_used_alone.  Return a conservatively correct
-   answer as to whether STMT may make a store on the LHS to SYM.  */
-
-static bool
-lhs_may_store_to (tree stmt, tree sym ATTRIBUTE_UNUSED)
-{
-  tree lhs = GENERIC_TREE_OPERAND (stmt, 0);
-  
-  lhs = get_base_address (lhs);
-  
-  if (!lhs)
-    return false;
-
-  if (TREE_CODE (lhs) == SSA_NAME)
-    return false;
-  /* We could do better here by looking at the type tag of LHS, but it
-     is unclear whether this is worth it. */
-  return true;
-}
-
-/* Recalculate the used_alone information for SMTs . */
-
-void 
-recalculate_used_alone (void)
-{
-  VEC (tree, heap) *calls = NULL;
-  block_stmt_iterator bsi;
-  basic_block bb;
-  tree stmt;
-  size_t i;
-  referenced_var_iterator rvi;
-  tree var;
-  
-  /* First, reset all the SMT used alone bits to zero.  */
-  updating_used_alone = true;
-  FOR_EACH_REFERENCED_VAR (var, rvi)
-    if (TREE_CODE (var) == SYMBOL_MEMORY_TAG)
-      {
-	SMT_OLD_USED_ALONE (var) = SMT_USED_ALONE (var);
-	SMT_USED_ALONE (var) = 0;
-      }
-
-  /* Walk all the statements.
-     Calls get put into a list of statements to update, since we will
-     need to update operands on them if we make any changes.
-     If we see a bare use of a SMT anywhere in a real virtual use or virtual
-     def, mark the SMT as used alone, and for renaming.  */
-  FOR_EACH_BB (bb)
-    {
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-	{
-	  bool iscall = false;
-	  ssa_op_iter iter;
-
-	  stmt = bsi_stmt (bsi);
-	  
-	  if (TREE_CODE (stmt) == CALL_EXPR
-	      || (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT 
-		  && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == CALL_EXPR))
-	    {
-	      iscall = true;
-	      VEC_safe_push (tree, heap, calls, stmt);	    
-	    }
-	  
-	  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, 
-				     SSA_OP_VUSE | SSA_OP_VIRTUAL_DEFS)
-	    {
-	      tree svar = var;
-	      
-	      if (TREE_CODE (var) == SSA_NAME)
-		svar = SSA_NAME_VAR (var);
-	      
-	      if (TREE_CODE (svar) == SYMBOL_MEMORY_TAG)
-		{
-		  /* We only care about the LHS on calls.  */
-		  if (iscall && !lhs_may_store_to (stmt, svar))
-		    continue;
-
-		  if (!SMT_USED_ALONE (svar))
-		    {
-		      SMT_USED_ALONE (svar) = true;
-		      
-		      /* Only need to mark for renaming if it wasn't
-			 used alone before.  */
-		      if (!SMT_OLD_USED_ALONE (svar))
-			mark_sym_for_renaming (svar);
-		    }
-		}
-	    }
-	}	           
-    }
-  
-  /* Update the operands on all the calls we saw.  */
-  if (calls)
-    {
-      for (i = 0; VEC_iterate (tree, calls, i, stmt); i++)
-	update_stmt (stmt);
-    }
-  
-  /* We need to mark SMT's that are no longer used for renaming so the
-     symbols go away, or else verification will be angry with us, even
-     though they are dead.  */
-  FOR_EACH_REFERENCED_VAR (var, rvi)
-    if (TREE_CODE (var) == SYMBOL_MEMORY_TAG)
-      {
-	if (SMT_OLD_USED_ALONE (var) && !SMT_USED_ALONE (var))
-	  mark_sym_for_renaming (var);
-      }
-
-  VEC_free (tree, heap, calls);
-  updating_used_alone = false;
 }
 
 /* Compute may-alias information for every variable referenced in function
@@ -687,7 +567,6 @@ compute_may_aliases (void)
   /* Deallocate memory used by aliasing data structures.  */
   delete_alias_info (ai);
 
-  updating_used_alone = true;
   {
     block_stmt_iterator bsi;
     basic_block bb;
@@ -699,8 +578,6 @@ compute_may_aliases (void)
           }
       }
   }
-  recalculate_used_alone ();
-  updating_used_alone = false;
   return 0;
 }
 
