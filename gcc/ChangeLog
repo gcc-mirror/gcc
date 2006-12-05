@@ -1,3 +1,27 @@
+2006-12-05  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-vrp.c (pass_vrp): Remove PROP_smt_usage.
+	* tree-complex.c (pass_lower_complex): Ditto.
+	* tree-ssa-ccp.c (pass_ccp): Ditto.
+	(pass_store_ccp): Ditto.
+	* tree-ssa-dom.c (pass_dominator): Ditto.
+	(pass_phi_only_cprop): Ditto.
+	* tree-sra.c (pass_sra): Ditto.
+	* tree-ssa-forwprop.c (pass_forwprop): Ditto.
+	* tree-flow.h (updating_used_alone): Remove.
+	(updating_used_alone): Ditto.
+	* tree-ssa-alias.c (updating_used_alone): Remove variable.
+	(lhs_may_store_to): Remove function.
+	(recalculate_used_alone): Ditto.
+	(compute_may_aliases): Remove used_alone calculation.
+	* tree.h (struct tree_memory_tag): Remove is_used_alone and
+	old_used_alone. Remove SMT_USED_ALONE and SMT_OLD_USED_ALONE.
+	* tree-pass.h (PROP_smt_usage): Remove.
+	* passes.c (execute_todo): Remove used alone recalculation.
+	(execute_one_pass): Ditto.
+	* tree-ssa-operands.c (add_virtual_operand): Remove used_alone
+	stuff.
+
 2006-12-05  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* doc/include/texinfo.tex: Update to version 2006-11-08.17.
