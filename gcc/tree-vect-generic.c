@@ -411,7 +411,7 @@ expand_vector_operations_1 (block_stmt_iterator *bsi)
   gcc_assert (code != CONVERT_EXPR);
   op = optab_for_tree_code (code, type);
 
-  /* For widening/narrowgin vector operations, the relevant type is of the 
+  /* For widening/narrowing vector operations, the relevant type is of the 
      arguments, not the widened result.  */
   if (code == WIDEN_SUM_EXPR
       || code == VEC_WIDEN_MULT_HI_EXPR

@@ -984,7 +984,7 @@ partition_pair_map_hash (const void *pair)
 }
 
 
-/* Return TRUE if PAIR1 is equivilent to PAIR2.  */
+/* Return TRUE if PAIR1 is equivalent to PAIR2.  */
 
 int 
 partition_pair_map_eq (const void *pair1, const void *pair2)
@@ -1112,7 +1112,7 @@ add_coalesce (coalesce_list_p cl, int p1, int p2,
 }
 
 
-/* Comparison function to allow qsort to sort P1 and P2 in Ascendiong order.  */
+/* Comparison function to allow qsort to sort P1 and P2 in Ascending order.  */
 
 static
 int compare_pairs (const void *p1, const void *p2)
