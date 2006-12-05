@@ -5716,7 +5716,7 @@ sparc_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
     addr = fold_convert (ptrtype, addr);
 
   incr = fold (build2 (PLUS_EXPR, ptr_type_node, incr, ssize_int (rsize)));
-  incr = build2 (MODIFY_EXPR, ptr_type_node, valist, incr);
+  incr = build2 (GIMPLE_MODIFY_STMT, ptr_type_node, valist, incr);
   gimplify_and_add (incr, post_p);
 
   return build_va_arg_indirect_ref (addr);

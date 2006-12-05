@@ -624,12 +624,12 @@ verify_ssa (bool check_modified_stmt)
 	      goto err;
 	    }
 
-	  if (TREE_CODE (stmt) == MODIFY_EXPR
-	      && TREE_CODE (TREE_OPERAND (stmt, 0)) != SSA_NAME)
+	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	      && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) != SSA_NAME)
 	    {
 	      tree lhs, base_address;
 
-	      lhs = TREE_OPERAND (stmt, 0);
+	      lhs = GIMPLE_STMT_OPERAND (stmt, 0);
 	      base_address = get_base_address (lhs);
 
 	      if (base_address
@@ -758,8 +758,8 @@ delete_tree_ssa (void)
   /* Remove annotations from every referenced variable.  */
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
-      ggc_free (var->common.ann);
-      var->common.ann = NULL;
+      ggc_free (var->base.ann);
+      var->base.ann = NULL;
     }
   htab_delete (gimple_referenced_vars (cfun));
   cfun->gimple_df->referenced_vars = NULL;

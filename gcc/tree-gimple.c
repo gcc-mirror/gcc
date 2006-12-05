@@ -87,7 +87,7 @@ is_gimple_formal_tmp_rhs (tree t)
 bool
 is_gimple_reg_rhs (tree t)
 {
-  /* If the RHS of the MODIFY_EXPR may throw or make a nonlocal goto
+  /* If the RHS of the GIMPLE_MODIFY_STMT may throw or make a nonlocal goto
      and the LHS is a user variable, then we need to introduce a formal
      temporary.  This way the optimizers can determine that the user
      variable is only modified if evaluation of the RHS does not throw.
@@ -233,7 +233,7 @@ is_gimple_stmt (tree t)
       return true;
 
     case CALL_EXPR:
-    case MODIFY_EXPR:
+    case GIMPLE_MODIFY_STMT:
       /* These are valid regardless of their type.  */
       return true;
 
@@ -427,8 +427,10 @@ is_gimple_call_addr (tree t)
 tree
 get_call_expr_in (tree t)
 {
-  if (TREE_CODE (t) == MODIFY_EXPR)
-    t = TREE_OPERAND (t, 1);
+  /* FIXME tuples: delete the assertion below when conversion complete.  */
+  gcc_assert (TREE_CODE (t) != MODIFY_EXPR);
+  if (TREE_CODE (t) == GIMPLE_MODIFY_STMT)
+    t = GIMPLE_STMT_OPERAND (t, 1);
   if (TREE_CODE (t) == WITH_SIZE_EXPR)
     t = TREE_OPERAND (t, 0);
   if (TREE_CODE (t) == CALL_EXPR)
@@ -473,7 +475,7 @@ recalculate_side_effects (tree t)
       switch (code)
 	{
 	case INIT_EXPR:
-	case MODIFY_EXPR:
+	case GIMPLE_MODIFY_STMT:
 	case VA_ARG_EXPR:
 	case PREDECREMENT_EXPR:
 	case PREINCREMENT_EXPR:

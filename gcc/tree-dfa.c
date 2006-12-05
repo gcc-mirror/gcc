@@ -128,13 +128,13 @@ create_var_ann (tree t)
 
   gcc_assert (t);
   gcc_assert (DECL_P (t));
-  gcc_assert (!t->common.ann || t->common.ann->common.type == VAR_ANN);
+  gcc_assert (!t->base.ann || t->base.ann->common.type == VAR_ANN);
 
   ann = GGC_CNEW (struct var_ann_d);
 
   ann->common.type = VAR_ANN;
 
-  t->common.ann = (tree_ann_t) ann;
+  t->base.ann = (tree_ann_t) ann;
 
   return ann;
 }
@@ -148,14 +148,14 @@ create_function_ann (tree t)
 
   gcc_assert (t);
   gcc_assert (TREE_CODE (t) == FUNCTION_DECL);
-  gcc_assert (!t->common.ann || t->common.ann->common.type == FUNCTION_ANN);
+  gcc_assert (!t->base.ann || t->base.ann->common.type == FUNCTION_ANN);
 
   ann = ggc_alloc (sizeof (*ann));
   memset ((void *) ann, 0, sizeof (*ann));
 
   ann->common.type = FUNCTION_ANN;
 
-  t->common.ann = (tree_ann_t) ann;
+  t->base.ann = (tree_ann_t) ann;
 
   return ann;
 }
@@ -168,7 +168,7 @@ create_stmt_ann (tree t)
   stmt_ann_t ann;
 
   gcc_assert (is_gimple_stmt (t));
-  gcc_assert (!t->common.ann || t->common.ann->common.type == STMT_ANN);
+  gcc_assert (!t->base.ann || t->base.ann->common.type == STMT_ANN);
 
   ann = GGC_CNEW (struct stmt_ann_d);
 
@@ -177,7 +177,7 @@ create_stmt_ann (tree t)
   /* Since we just created the annotation, mark the statement modified.  */
   ann->modified = true;
 
-  t->common.ann = (tree_ann_t) ann;
+  t->base.ann = (tree_ann_t) ann;
 
   return ann;
 }
@@ -190,12 +190,12 @@ create_tree_common_ann (tree t)
   tree_ann_common_t ann;
 
   gcc_assert (t);
-  gcc_assert (!t->common.ann || t->common.ann->common.type == TREE_ANN_COMMON);
+  gcc_assert (!t->base.ann || t->base.ann->common.type == TREE_ANN_COMMON);
 
   ann = GGC_CNEW (struct tree_ann_common_d);
 
   ann->type = TREE_ANN_COMMON;
-  t->common.ann = (tree_ann_t) ann;
+  t->base.ann = (tree_ann_t) ann;
 
   return ann;
 }
@@ -540,9 +540,9 @@ collect_dfa_stats_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
   tree t = *tp;
   struct dfa_stats_d *dfa_stats_p = (struct dfa_stats_d *)data;
 
-  if (t->common.ann)
+  if (t->base.ann)
     {
-      switch (ann_type (t->common.ann))
+      switch (ann_type (t->base.ann))
 	{
 	case STMT_ANN:
 	  {

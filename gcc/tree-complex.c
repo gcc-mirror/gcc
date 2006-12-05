@@ -206,13 +206,13 @@ init_dont_simulate_again (void)
 		 since it's never used as an input to another computation.  */
 	      dsa = true;
 	      stmt = TREE_OPERAND (stmt, 0);
-	      if (!stmt || TREE_CODE (stmt) != MODIFY_EXPR)
+	      if (!stmt || TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
 		break;
 	      /* FALLTHRU */
 
-	    case MODIFY_EXPR:
-	      dsa = !is_complex_reg (TREE_OPERAND (stmt, 0));
-	      rhs = TREE_OPERAND (stmt, 1);
+	    case GIMPLE_MODIFY_STMT:
+	      dsa = !is_complex_reg (GIMPLE_STMT_OPERAND (stmt, 0));
+	      rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 	      break;
 
 	    case COND_EXPR:
@@ -267,11 +267,11 @@ complex_visit_stmt (tree stmt, edge *taken_edge_p ATTRIBUTE_UNUSED,
   unsigned int ver;
   tree lhs, rhs;
 
-  if (TREE_CODE (stmt) != MODIFY_EXPR)
+  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return SSA_PROP_VARYING;
 
-  lhs = TREE_OPERAND (stmt, 0);
-  rhs = TREE_OPERAND (stmt, 1);
+  lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+  rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 
   /* These conditions should be satisfied due to the initial filter
      set up in init_dont_simulate_again.  */
@@ -532,7 +532,7 @@ set_component_ssa_name (tree ssa_name, bool imag_p, tree value)
   
   /* Do all the work to assign VALUE to COMP.  */
   value = force_gimple_operand (value, &list, false, NULL);
-  last = build2 (MODIFY_EXPR, TREE_TYPE (comp), comp, value);
+  last = build2_gimple (GIMPLE_MODIFY_STMT, comp, value);
   append_to_statement_list (last, &list);
 
   gcc_assert (SSA_NAME_DEF_STMT (comp) == NULL);
@@ -588,7 +588,7 @@ extract_component (block_stmt_iterator *bsi, tree t, bool imagpart_p,
 static void
 update_complex_components (block_stmt_iterator *bsi, tree stmt, tree r, tree i)
 {
-  tree lhs = TREE_OPERAND (stmt, 0);
+  tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
   tree list;
 
   list = set_component_ssa_name (lhs, false, r);
@@ -628,8 +628,8 @@ update_complex_assignment (block_stmt_iterator *bsi, tree r, tree i)
   else if (gimple_in_ssa_p (cfun))
     update_complex_components (bsi, stmt, r, i);
   
-  type = TREE_TYPE (TREE_OPERAND (mod, 1));
-  TREE_OPERAND (mod, 1) = build2 (COMPLEX_EXPR, type, r, i);
+  type = TREE_TYPE (GIMPLE_STMT_OPERAND (mod, 1));
+  GIMPLE_STMT_OPERAND (mod, 1) = build2 (COMPLEX_EXPR, type, r, i);
   update_stmt (stmt);
 }
 
@@ -773,25 +773,24 @@ expand_complex_move (block_stmt_iterator *bsi, tree stmt, tree type,
       i = extract_component (bsi, rhs, 1, false);
 
       x = build1 (REALPART_EXPR, inner_type, unshare_expr (lhs));
-      x = build2 (MODIFY_EXPR, inner_type, x, r);
+      x = build2_gimple (GIMPLE_MODIFY_STMT, x, r);
       bsi_insert_before (bsi, x, BSI_SAME_STMT);
 
       if (stmt == bsi_stmt (*bsi))
 	{
 	  x = build1 (IMAGPART_EXPR, inner_type, unshare_expr (lhs));
-	  TREE_OPERAND (stmt, 0) = x;
-	  TREE_OPERAND (stmt, 1) = i;
-	  TREE_TYPE (stmt) = inner_type;
+	  GIMPLE_STMT_OPERAND (stmt, 0) = x;
+	  GIMPLE_STMT_OPERAND (stmt, 1) = i;
 	}
       else
 	{
 	  x = build1 (IMAGPART_EXPR, inner_type, unshare_expr (lhs));
-	  x = build2 (MODIFY_EXPR, inner_type, x, i);
+	  x = build2_gimple (GIMPLE_MODIFY_STMT, x, i);
 	  bsi_insert_before (bsi, x, BSI_SAME_STMT);
 
 	  stmt = bsi_stmt (*bsi);
 	  gcc_assert (TREE_CODE (stmt) == RETURN_EXPR);
-	  TREE_OPERAND (stmt, 0) = lhs;
+	  GIMPLE_STMT_OPERAND (stmt, 0) = lhs;
 	}
 
       update_all_vops (stmt);
@@ -894,7 +893,7 @@ expand_complex_libcall (block_stmt_iterator *bsi, tree ar, tree ai,
   args = tree_cons (NULL, ar, args);
 
   stmt = bsi_stmt (*bsi);
-  type = TREE_TYPE (TREE_OPERAND (stmt, 1));
+  type = TREE_TYPE (GIMPLE_STMT_OPERAND (stmt, 1));
 
   mode = TYPE_MODE (type);
   gcc_assert (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT);
@@ -906,13 +905,13 @@ expand_complex_libcall (block_stmt_iterator *bsi, tree ar, tree ai,
     gcc_unreachable ();
   fn = built_in_decls[bcode];
 
-  TREE_OPERAND (stmt, 1)
+  GIMPLE_STMT_OPERAND (stmt, 1)
     = build3 (CALL_EXPR, type, build_fold_addr_expr (fn), args, NULL);
   update_stmt (stmt);
 
   if (gimple_in_ssa_p (cfun))
     {
-      tree lhs = TREE_OPERAND (stmt, 0);
+      tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
       type = TREE_TYPE (type);
       update_complex_components (bsi, stmt,
 				 build1 (REALPART_EXPR, type, lhs),
@@ -1122,9 +1121,9 @@ expand_complex_div_wide (block_stmt_iterator *bsi, tree inner_type,
 
      if (bb_true)
        {
-	 t1 = build2 (MODIFY_EXPR, inner_type, rr, tr);
+	 t1 = build2_gimple (GIMPLE_MODIFY_STMT, rr, tr);
 	 bsi_insert_before (bsi, t1, BSI_SAME_STMT);
-	 t1 = build2 (MODIFY_EXPR, inner_type, ri, ti);
+	 t1 = build2_gimple (GIMPLE_MODIFY_STMT, ri, ti);
 	 bsi_insert_before (bsi, t1, BSI_SAME_STMT);
 	 bsi_remove (bsi, true);
        }
@@ -1161,9 +1160,9 @@ expand_complex_div_wide (block_stmt_iterator *bsi, tree inner_type,
 
      if (bb_false)
        {
-	 t1 = build2 (MODIFY_EXPR, inner_type, rr, tr);
+	 t1 = build2_gimple (GIMPLE_MODIFY_STMT, rr, tr);
 	 bsi_insert_before (bsi, t1, BSI_SAME_STMT);
-	 t1 = build2 (MODIFY_EXPR, inner_type, ri, ti);
+	 t1 = build2_gimple (GIMPLE_MODIFY_STMT, ri, ti);
 	 bsi_insert_before (bsi, t1, BSI_SAME_STMT);
 	 bsi_remove (bsi, true);
        }
@@ -1307,9 +1306,9 @@ expand_complex_comparison (block_stmt_iterator *bsi, tree ar, tree ai,
     case RETURN_EXPR:
       expr = TREE_OPERAND (stmt, 0);
       /* FALLTHRU */
-    case MODIFY_EXPR:
-      type = TREE_TYPE (TREE_OPERAND (expr, 1));
-      TREE_OPERAND (expr, 1) = fold_convert (type, cc);
+    case GIMPLE_MODIFY_STMT:
+      type = TREE_TYPE (GIMPLE_STMT_OPERAND (expr, 1));
+      GIMPLE_STMT_OPERAND (expr, 1) = fold_convert (type, cc);
       break;
     case COND_EXPR:
       TREE_OPERAND (stmt, 0) = cc;
@@ -1338,12 +1337,12 @@ expand_complex_operations_1 (block_stmt_iterator *bsi)
       stmt = TREE_OPERAND (stmt, 0);
       if (!stmt)
 	return;
-      if (TREE_CODE (stmt) != MODIFY_EXPR)
+      if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
 	return;
       /* FALLTHRU */
 
-    case MODIFY_EXPR:
-      rhs = TREE_OPERAND (stmt, 1);
+    case GIMPLE_MODIFY_STMT:
+      rhs = GIMPLE_STMT_OPERAND (stmt, 1);
       break;
 
     case COND_EXPR:
@@ -1384,8 +1383,8 @@ expand_complex_operations_1 (block_stmt_iterator *bsi)
 
     default:
       {
-	tree lhs = TREE_OPERAND (stmt, 0);
-	tree rhs = TREE_OPERAND (stmt, 1);
+	tree lhs = GENERIC_TREE_OPERAND (stmt, 0);
+	tree rhs = GENERIC_TREE_OPERAND (stmt, 1);
 
 	if (TREE_CODE (type) == COMPLEX_TYPE)
 	  expand_complex_move (bsi, stmt, type, lhs, rhs);
@@ -1393,7 +1392,7 @@ expand_complex_operations_1 (block_stmt_iterator *bsi)
 		  || TREE_CODE (rhs) == IMAGPART_EXPR)
 		 && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME)
 	  {
-	    TREE_OPERAND (stmt, 1)
+	    GENERIC_TREE_OPERAND (stmt, 1)
 	      = extract_component (bsi, TREE_OPERAND (rhs, 0),
 				   TREE_CODE (rhs) == IMAGPART_EXPR, false);
 	    update_stmt (stmt);

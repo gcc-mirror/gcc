@@ -4278,12 +4278,12 @@ mips_va_start (tree valist, rtx nextarg)
 	t = build2 (PLUS_EXPR, TREE_TYPE (ovfl), t,
 		    build_int_cst (NULL_TREE,
 				   cum->stack_words * UNITS_PER_WORD));
-      t = build2 (MODIFY_EXPR, TREE_TYPE (ovfl), ovfl, t);
+      t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (ovfl), ovfl, t);
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
       /* Emit code to initialize GTOP, the top of the GPR save area.  */
       t = make_tree (TREE_TYPE (gtop), virtual_incoming_args_rtx);
-      t = build2 (MODIFY_EXPR, TREE_TYPE (gtop), gtop, t);
+      t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (gtop), gtop, t);
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
       /* Emit code to initialize FTOP, the top of the FPR save area.
@@ -4295,18 +4295,18 @@ mips_va_start (tree valist, rtx nextarg)
       if (fpr_offset)
 	t = build2 (PLUS_EXPR, TREE_TYPE (ftop), t,
 		    build_int_cst (NULL_TREE, -fpr_offset));
-      t = build2 (MODIFY_EXPR, TREE_TYPE (ftop), ftop, t);
+      t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (ftop), ftop, t);
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
       /* Emit code to initialize GOFF, the offset from GTOP of the
 	 next GPR argument.  */
-      t = build2 (MODIFY_EXPR, TREE_TYPE (goff), goff,
+      t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (goff), goff,
 		  build_int_cst (NULL_TREE, gpr_save_area_size));
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
       /* Likewise emit code to initialize FOFF, the offset from FTOP
 	 of the next FPR argument.  */
-      t = build2 (MODIFY_EXPR, TREE_TYPE (foff), foff,
+      t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (foff), foff,
 		  build_int_cst (NULL_TREE, fpr_save_area_size));
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
@@ -4427,7 +4427,7 @@ mips_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 	      /* [1] Emit code for: off &= -rsize.	*/
 	      t = build2 (BIT_AND_EXPR, TREE_TYPE (off), off,
 			  build_int_cst (NULL_TREE, -rsize));
-	      t = build2 (MODIFY_EXPR, TREE_TYPE (off), off, t);
+	      t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (off), off, t);
 	      gimplify_and_add (t, pre_p);
 	    }
 	  osize = rsize;
@@ -4466,7 +4466,7 @@ mips_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 	  u = fold_convert (TREE_TYPE (ovfl),
 			    build_int_cst (NULL_TREE, -osize));
 	  t = build2 (BIT_AND_EXPR, TREE_TYPE (ovfl), t, u);
-	  align = build2 (MODIFY_EXPR, TREE_TYPE (ovfl), ovfl, t);
+	  align = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (ovfl), ovfl, t);
 	}
       else
 	align = NULL;

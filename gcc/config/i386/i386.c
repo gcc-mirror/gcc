@@ -4522,7 +4522,7 @@ ix86_va_start (tree valist, rtx nextarg)
   if (cfun->va_list_gpr_size)
     {
       type = TREE_TYPE (gpr);
-      t = build2 (MODIFY_EXPR, type, gpr,
+      t = build2 (GIMPLE_MODIFY_STMT, type, gpr,
 		  build_int_cst (type, n_gpr * 8));
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -4531,7 +4531,7 @@ ix86_va_start (tree valist, rtx nextarg)
   if (cfun->va_list_fpr_size)
     {
       type = TREE_TYPE (fpr);
-      t = build2 (MODIFY_EXPR, type, fpr,
+      t = build2 (GIMPLE_MODIFY_STMT, type, fpr,
 		  build_int_cst (type, n_fpr * 16 + 8*REGPARM_MAX));
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -4543,7 +4543,7 @@ ix86_va_start (tree valist, rtx nextarg)
   if (words != 0)
     t = build2 (PLUS_EXPR, type, t,
 	        build_int_cst (type, words * UNITS_PER_WORD));
-  t = build2 (MODIFY_EXPR, type, ovf, t);
+  t = build2 (GIMPLE_MODIFY_STMT, type, ovf, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
@@ -4553,7 +4553,7 @@ ix86_va_start (tree valist, rtx nextarg)
 	 Prologue of the function save it right above stack frame.  */
       type = TREE_TYPE (sav);
       t = make_tree (type, frame_pointer_rtx);
-      t = build2 (MODIFY_EXPR, type, sav, t);
+      t = build2 (GIMPLE_MODIFY_STMT, type, sav, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
@@ -4690,7 +4690,7 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 	  /* int_addr = gpr + sav; */
 	  t = fold_convert (ptr_type_node, gpr);
 	  t = build2 (PLUS_EXPR, ptr_type_node, sav, t);
-	  t = build2 (MODIFY_EXPR, void_type_node, int_addr, t);
+	  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, int_addr, t);
 	  gimplify_and_add (t, pre_p);
 	}
       if (needed_sseregs)
@@ -4698,7 +4698,7 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 	  /* sse_addr = fpr + sav; */
 	  t = fold_convert (ptr_type_node, fpr);
 	  t = build2 (PLUS_EXPR, ptr_type_node, sav, t);
-	  t = build2 (MODIFY_EXPR, void_type_node, sse_addr, t);
+	  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, sse_addr, t);
 	  gimplify_and_add (t, pre_p);
 	}
       if (need_temp)
@@ -4708,7 +4708,7 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 
 	  /* addr = &temp; */
 	  t = build1 (ADDR_EXPR, build_pointer_type (type), temp);
-	  t = build2 (MODIFY_EXPR, void_type_node, addr, t);
+	  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, addr, t);
 	  gimplify_and_add (t, pre_p);
 
 	  for (i = 0; i < XVECLEN (container, 0); i++)
@@ -4742,7 +4742,7 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 					size_int (INTVAL (XEXP (slot, 1)))));
 	      dest = build_va_arg_indirect_ref (dest_addr);
 
-	      t = build2 (MODIFY_EXPR, void_type_node, dest, src);
+	      t = build2 (GIMPLE_MODIFY_STMT, void_type_node, dest, src);
 	      gimplify_and_add (t, pre_p);
 	    }
 	}
@@ -4751,14 +4751,14 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 	{
 	  t = build2 (PLUS_EXPR, TREE_TYPE (gpr), gpr,
 		      build_int_cst (TREE_TYPE (gpr), needed_intregs * 8));
-	  t = build2 (MODIFY_EXPR, TREE_TYPE (gpr), gpr, t);
+	  t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (gpr), gpr, t);
 	  gimplify_and_add (t, pre_p);
 	}
       if (needed_sseregs)
 	{
 	  t = build2 (PLUS_EXPR, TREE_TYPE (fpr), fpr,
 		      build_int_cst (TREE_TYPE (fpr), needed_sseregs * 16));
-	  t = build2 (MODIFY_EXPR, TREE_TYPE (fpr), fpr, t);
+	  t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (fpr), fpr, t);
 	  gimplify_and_add (t, pre_p);
 	}
 
@@ -4785,12 +4785,12 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
     }
   gimplify_expr (&t, pre_p, NULL, is_gimple_val, fb_rvalue);
 
-  t2 = build2 (MODIFY_EXPR, void_type_node, addr, t);
+  t2 = build2 (GIMPLE_MODIFY_STMT, void_type_node, addr, t);
   gimplify_and_add (t2, pre_p);
 
   t = build2 (PLUS_EXPR, TREE_TYPE (t), t,
 	      build_int_cst (TREE_TYPE (t), rsize * UNITS_PER_WORD));
-  t = build2 (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
+  t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (ovf), ovf, t);
   gimplify_and_add (t, pre_p);
 
   if (container)

@@ -256,7 +256,7 @@ extern char C_SIZEOF_STRUCT_LANG_IDENTIFIER_isnt_accurate
 
 union lang_tree_node
   GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
-       chain_next ("TREE_CODE (&%h.generic) == INTEGER_TYPE ? (union lang_tree_node *) TYPE_NEXT_VARIANT (&%h.generic) : (union lang_tree_node *) TREE_CHAIN (&%h.generic)")))
+       chain_next ("TREE_CODE (&%h.generic) == INTEGER_TYPE ? (union lang_tree_node *) TYPE_NEXT_VARIANT (&%h.generic) : (GIMPLE_TUPLE_P (&%h.generic) ? (union lang_tree_node *) 0 : (union lang_tree_node *) TREE_CHAIN (&%h.generic))")))
 {
   union tree_node GTY ((tag ("0"),
 			desc ("tree_node_structure (&%h)")))
@@ -434,7 +434,7 @@ add_stmt (tree t)
 {
   enum tree_code code = TREE_CODE (t);
 
-  if (EXPR_P (t) && code != LABEL_EXPR)
+  if (CAN_HAVE_LOCATION_P (t) && code != LABEL_EXPR)
     {
       if (!EXPR_HAS_LOCATION (t))
 	SET_EXPR_LOCATION (t, input_location);

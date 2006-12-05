@@ -461,11 +461,11 @@ gather_memory_references (struct loop *loop)
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	{
 	  stmt = bsi_stmt (bsi);
-	  if (TREE_CODE (stmt) != MODIFY_EXPR)
+	  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
 	    continue;
 
-	  lhs = TREE_OPERAND (stmt, 0);
-	  rhs = TREE_OPERAND (stmt, 1);
+	  lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+	  rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 
 	  if (REFERENCE_CLASS_P (rhs))
 	    gather_memory_references_ref (loop, &refs, rhs, false, stmt);

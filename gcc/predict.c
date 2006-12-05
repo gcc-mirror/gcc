@@ -902,9 +902,10 @@ expr_expected_value (tree expr, bitmap visited)
 	    }
 	  return val;
 	}
-      if (TREE_CODE (def) != MODIFY_EXPR || TREE_OPERAND (def, 0) != expr)
+      if (TREE_CODE (def) != GIMPLE_MODIFY_STMT
+	  || GIMPLE_STMT_OPERAND (def, 0) != expr)
 	return NULL;
-      return expr_expected_value (TREE_OPERAND (def, 1), visited);
+      return expr_expected_value (GIMPLE_STMT_OPERAND (def, 1), visited);
     }
   else if (TREE_CODE (expr) == CALL_EXPR)
     {
@@ -968,15 +969,15 @@ strip_builtin_expect (void)
 	  tree fndecl;
 	  tree arglist;
 
-	  if (TREE_CODE (stmt) == MODIFY_EXPR
-	      && TREE_CODE (TREE_OPERAND (stmt, 1)) == CALL_EXPR
-	      && (fndecl = get_callee_fndecl (TREE_OPERAND (stmt, 1)))
+	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	      && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == CALL_EXPR
+	      && (fndecl = get_callee_fndecl (GIMPLE_STMT_OPERAND (stmt, 1)))
 	      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
 	      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_EXPECT
-	      && (arglist = TREE_OPERAND (TREE_OPERAND (stmt, 1), 1))
+	      && (arglist = TREE_OPERAND (GIMPLE_STMT_OPERAND (stmt, 1), 1))
 	      && TREE_CHAIN (arglist))
 	    {
-	      TREE_OPERAND (stmt, 1) = TREE_VALUE (arglist);
+	      GIMPLE_STMT_OPERAND (stmt, 1) = TREE_VALUE (arglist);
 	      update_stmt (stmt);
 	    }
 	}
@@ -1167,8 +1168,8 @@ apply_return_prediction (int *heads)
   return_val = TREE_OPERAND (return_stmt, 0);
   if (!return_val)
     return;
-  if (TREE_CODE (return_val) == MODIFY_EXPR)
-    return_val = TREE_OPERAND (return_val, 1);
+  if (TREE_CODE (return_val) == GIMPLE_MODIFY_STMT)
+    return_val = GIMPLE_STMT_OPERAND (return_val, 1);
   if (TREE_CODE (return_val) != SSA_NAME
       || !SSA_NAME_DEF_STMT (return_val)
       || TREE_CODE (SSA_NAME_DEF_STMT (return_val)) != PHI_NODE)
@@ -1221,10 +1222,10 @@ tree_bb_level_predictions (void)
 	  tree stmt = bsi_stmt (bsi);
 	  switch (TREE_CODE (stmt))
 	    {
-	      case MODIFY_EXPR:
-		if (TREE_CODE (TREE_OPERAND (stmt, 1)) == CALL_EXPR)
+	      case GIMPLE_MODIFY_STMT:
+		if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == CALL_EXPR)
 		  {
-		    stmt = TREE_OPERAND (stmt, 1);
+		    stmt = GIMPLE_STMT_OPERAND (stmt, 1);
 		    goto call_expr;
 		  }
 		break;
@@ -1306,8 +1307,9 @@ tree_estimate_probability (void)
 		{
 		  tree stmt = bsi_stmt (bi);
 		  if ((TREE_CODE (stmt) == CALL_EXPR
-		       || (TREE_CODE (stmt) == MODIFY_EXPR
-			   && TREE_CODE (TREE_OPERAND (stmt, 1)) == CALL_EXPR))
+		       || (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+			   && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1))
+			      == CALL_EXPR))
 		      /* Constant and pure calls are hardly used to signalize
 			 something exceptional.  */
 		      && TREE_SIDE_EFFECTS (stmt))

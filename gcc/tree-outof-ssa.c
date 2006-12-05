@@ -188,7 +188,7 @@ insert_copy_on_edge (edge e, tree dest, tree src)
 {
   tree copy;
 
-  copy = build2 (MODIFY_EXPR, TREE_TYPE (dest), dest, src);
+  copy = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (dest), dest, src);
   set_is_used (dest);
 
   if (TREE_CODE (src) == ADDR_EXPR)
@@ -1026,10 +1026,10 @@ replace_use_variable (var_map map, use_operand_p p, tree *expr)
       int version = SSA_NAME_VERSION (var);
       if (expr[version])
         {
-	  tree new_expr = TREE_OPERAND (expr[version], 1);
+	  tree new_expr = GIMPLE_STMT_OPERAND (expr[version], 1);
 	  SET_USE (p, new_expr);
 	  /* Clear the stmt's RHS, or GC might bite us.  */
-	  TREE_OPERAND (expr[version], 1) = NULL_TREE;
+	  GIMPLE_STMT_OPERAND (expr[version], 1) = NULL_TREE;
 	  return true;
 	}
     }
@@ -1437,7 +1437,7 @@ check_replaceable (temp_expr_table_p tab, tree stmt)
   tree call_expr;
   bitmap def_vars, use_vars;
 
-  if (TREE_CODE (stmt) != MODIFY_EXPR)
+  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return false;
   
   /* Punt if there is more than 1 def, or more than 1 use.  */
@@ -1453,7 +1453,8 @@ check_replaceable (temp_expr_table_p tab, tree stmt)
     return false;
 
   /* Float expressions must go through memory if float-store is on.  */
-  if (flag_float_store && FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (stmt, 1))))
+  if (flag_float_store && FLOAT_TYPE_P (TREE_TYPE
+					(GENERIC_TREE_OPERAND (stmt, 1))))
     return false;
 
   /* Calls to functions with side-effects cannot be replaced.  */
@@ -1793,8 +1794,8 @@ rewrite_trees (var_map map, tree *values)
 	  ann = stmt_ann (stmt);
 	  changed = false;
 
-	  if (TREE_CODE (stmt) == MODIFY_EXPR 
-	      && (TREE_CODE (TREE_OPERAND (stmt, 1)) == SSA_NAME))
+	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT 
+	      && (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == SSA_NAME))
 	    is_copy = true;
 
 	  copy_use_p = NULL_USE_OPERAND_P;
@@ -1877,17 +1878,17 @@ static inline bool
 identical_copies_p (tree s1, tree s2)
 {
 #ifdef ENABLE_CHECKING
-  gcc_assert (TREE_CODE (s1) == MODIFY_EXPR);
-  gcc_assert (TREE_CODE (s2) == MODIFY_EXPR);
-  gcc_assert (DECL_P (TREE_OPERAND (s1, 0)));
-  gcc_assert (DECL_P (TREE_OPERAND (s2, 0)));
+  gcc_assert (TREE_CODE (s1) == GIMPLE_MODIFY_STMT);
+  gcc_assert (TREE_CODE (s2) == GIMPLE_MODIFY_STMT);
+  gcc_assert (DECL_P (GIMPLE_STMT_OPERAND (s1, 0)));
+  gcc_assert (DECL_P (GIMPLE_STMT_OPERAND (s2, 0)));
 #endif
 
-  if (TREE_OPERAND (s1, 0) != TREE_OPERAND (s2, 0))
+  if (GIMPLE_STMT_OPERAND (s1, 0) != GIMPLE_STMT_OPERAND (s2, 0))
     return false;
 
-  s1 = TREE_OPERAND (s1, 1);
-  s2 = TREE_OPERAND (s2, 1);
+  s1 = GIMPLE_STMT_OPERAND (s1, 1);
+  s2 = GIMPLE_STMT_OPERAND (s2, 1);
 
   if (s1 != s2)
     return false;
@@ -2343,10 +2344,10 @@ insert_backedge_copies (void)
 
 		  /* Create a new instance of the underlying
 		     variable of the PHI result.  */
-		  stmt = build2 (MODIFY_EXPR, TREE_TYPE (result_var),
+		  stmt = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (result_var),
 				 NULL_TREE, PHI_ARG_DEF (phi, i));
 		  name = make_ssa_name (result_var, stmt);
-		  TREE_OPERAND (stmt, 0) = name;
+		  GIMPLE_STMT_OPERAND (stmt, 0) = name;
 
 		  /* Insert the new statement into the block and update
 		     the PHI node.  */

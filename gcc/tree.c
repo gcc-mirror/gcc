@@ -98,7 +98,8 @@ static const char * const tree_node_kind_names[] = {
   "random kinds",
   "lang_decl kinds",
   "lang_type kinds",
-  "omp clauses"
+  "omp clauses",
+  "gimple statements"
 };
 #endif /* GATHER_STATISTICS */
 
@@ -356,6 +357,10 @@ tree_code_size (enum tree_code code)
       return (sizeof (struct tree_exp)
 	      + (TREE_CODE_LENGTH (code) - 1) * sizeof (char *));
 
+    case tcc_gimple_stmt:
+      return (sizeof (struct gimple_stmt)
+	      + (TREE_CODE_LENGTH (code) - 1) * sizeof (char *));
+
     case tcc_constant:  /* a constant */
       switch (code)
 	{
@@ -476,6 +481,10 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
       kind = c_kind;
       break;
 
+    case tcc_gimple_stmt:
+      kind = gimple_stmt_kind;
+      break;
+
     case tcc_exceptional:  /* something random, like an identifier.  */
       switch (code)
 	{
@@ -591,6 +600,17 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 	}
       break;
 
+    case tcc_gimple_stmt:
+      switch (code)
+	{
+      case GIMPLE_MODIFY_STMT:
+	TREE_SIDE_EFFECTS (t) = 1;
+	break;
+
+      default:
+	break;
+	}
+
     default:
       /* Other classes need no special treatment.  */
       break;
@@ -615,10 +635,11 @@ copy_node_stat (tree node MEM_STAT_DECL)
   t = ggc_alloc_zone_pass_stat (length, &tree_zone);
   memcpy (t, node, length);
 
-  TREE_CHAIN (t) = 0;
+  if (!GIMPLE_TUPLE_P (node))
+    TREE_CHAIN (t) = 0;
   TREE_ASM_WRITTEN (t) = 0;
   TREE_VISITED (t) = 0;
-  t->common.ann = 0;
+  t->base.ann = 0;
 
   if (TREE_CODE_CLASS (code) == tcc_declaration)
     {
@@ -1872,7 +1893,14 @@ expr_align (tree t)
       align1 = TYPE_ALIGN (TREE_TYPE (t));
       return MAX (align0, align1);
 
-    case SAVE_EXPR:         case COMPOUND_EXPR:       case MODIFY_EXPR:
+    case MODIFY_EXPR:
+      /* FIXME tuples: It is unclear to me if this function, which
+         is only called from ADA, is called on gimple or non gimple
+         trees.  Let's assume it's from gimple trees unless we hit
+         this abort.  */
+      gcc_unreachable ();
+
+    case SAVE_EXPR:         case COMPOUND_EXPR:       case GIMPLE_MODIFY_STMT:
     case INIT_EXPR:         case TARGET_EXPR:         case WITH_CLEANUP_EXPR:
     case CLEANUP_POINT_EXPR:
       /* These don't change the alignment of an object.  */
@@ -2141,6 +2169,8 @@ tree_node_structure (tree t)
     case tcc_expression:
     case tcc_statement:
       return TS_EXP;
+    case tcc_gimple_stmt:
+      return TS_GIMPLE_STATEMENT;
     default:  /* tcc_constant and tcc_exceptional */
       break;
     }
@@ -2153,6 +2183,8 @@ tree_node_structure (tree t)
     case VECTOR_CST:		return TS_VECTOR;
     case STRING_CST:		return TS_STRING;
       /* tcc_exceptional cases.  */
+    /* FIXME tuples: eventually this should be TS_BASE.  For now, nothing
+       returns TS_BASE.  */
     case ERROR_MARK:		return TS_COMMON;
     case IDENTIFIER_NODE:	return TS_IDENTIFIER;
     case TREE_LIST:		return TS_LIST;
@@ -2967,6 +2999,17 @@ build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
 
   gcc_assert (TREE_CODE_LENGTH (code) == 2);
 
+  if (code == MODIFY_EXPR && cfun && cfun->gimplified)
+    {
+      /* We should be talking GIMPLE_MODIFY_STMT by now.  */
+      gcc_unreachable ();
+    }
+
+  /* FIXME tuples: For now let's be lazy; later we must rewrite all
+     build2 calls to build2_gimple calls.  */
+  if (TREE_CODE_CLASS (code) == tcc_gimple_stmt)
+    return build2_gimple (code, arg0, arg1);
+
   t = make_node_stat (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
 
@@ -2993,6 +3036,35 @@ build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
   TREE_THIS_VOLATILE (t)
     = (TREE_CODE_CLASS (code) == tcc_reference
        && arg0 && TREE_THIS_VOLATILE (arg0));
+
+  return t;
+}
+
+
+/* Similar as build2_stat, but for GIMPLE tuples.  For convenience's sake,
+   arguments and return type are trees.  */
+
+tree
+build2_gimple_stat (enum tree_code code, tree arg0, tree arg1 MEM_STAT_DECL)
+{
+  bool side_effects;
+  tree t;
+
+  gcc_assert (TREE_CODE_LENGTH (code) == 2);
+
+  t = make_node_stat (code PASS_MEM_STAT);
+
+  side_effects = TREE_SIDE_EFFECTS (t);
+
+  /* ?? We don't care about setting flags for tuples...  */
+  GIMPLE_STMT_OPERAND (t, 0) = arg0;
+  GIMPLE_STMT_OPERAND (t, 1) = arg1;
+
+  /* ...except perhaps side_effects and volatility.  ?? */
+  TREE_SIDE_EFFECTS (t) = side_effects;
+  TREE_THIS_VOLATILE (t) = (TREE_CODE_CLASS (code) == tcc_reference
+	             	    && arg0 && TREE_THIS_VOLATILE (arg0));
+
 
   return t;
 }
@@ -3285,6 +3357,130 @@ annotate_with_locus (tree node, location_t locus)
   annotate_with_file_line (node, locus.file, locus.line);
 }
 #endif
+
+/* Source location accessor functions.  */
+
+
+/* The source location of this expression.  Non-tree_exp nodes such as
+   decls and constants can be shared among multiple locations, so
+   return nothing.  */
+location_t
+expr_location (tree node)
+{
+#ifdef USE_MAPPED_LOCATION
+  if (GIMPLE_STMT_P (node))
+    return GIMPLE_STMT_LOCUS (node);
+  return EXPR_P (node) ? node->exp.locus : UNKNOWN_LOCATION;
+#else
+  if (GIMPLE_STMT_P (node))
+    return EXPR_HAS_LOCATION (node)
+      ? *GIMPLE_STMT_LOCUS (node) : UNKNOWN_LOCATION;
+  return EXPR_HAS_LOCATION (node) ? *node->exp.locus : UNKNOWN_LOCATION;
+#endif
+}
+
+void
+set_expr_location (tree node, location_t locus)
+{
+#ifdef USE_MAPPED_LOCATION
+  if (GIMPLE_STMT_P (node))
+    GIMPLE_STMT_LOCUS (node) = locus;
+  else
+    EXPR_CHECK (node)->exp.locus = locus;
+#else
+      annotate_with_locus (node, locus);
+#endif
+}
+
+bool
+expr_has_location (tree node)
+{
+#ifdef USE_MAPPED_LOCATION
+  return expr_location (node) != UNKNOWN_LOCATION;
+#else
+  return expr_locus (node) != NULL;
+#endif
+}
+
+#ifdef USE_MAPPED_LOCATION
+source_location *
+#else
+source_locus
+#endif
+expr_locus (tree node)
+{
+#ifdef USE_MAPPED_LOCATION
+  if (GIMPLE_STMT_P (node))
+    return &GIMPLE_STMT_LOCUS (node);
+  return EXPR_P (node) ? &node->exp.locus : (location_t *) NULL;
+#else
+  if (GIMPLE_STMT_P (node))
+    return GIMPLE_STMT_LOCUS (node);
+  /* ?? The cast below was originally "(location_t *)" in the macro,
+     but that makes no sense.  ?? */
+  return EXPR_P (node) ? node->exp.locus : (source_locus) NULL;
+#endif
+}
+
+void
+set_expr_locus (tree node,
+#ifdef USE_MAPPED_LOCATION
+		source_location *loc
+#else
+		source_locus loc
+#endif
+		)
+{
+#ifdef USE_MAPPED_LOCATION
+  if (loc == NULL)
+    {
+      if (GIMPLE_STMT_P (node))
+	GIMPLE_STMT_LOCUS (node) = UNKNOWN_LOCATION;
+      else
+	EXPR_CHECK (node)->exp.locus = UNKNOWN_LOCATION;
+    }
+  else
+    {
+      if (GIMPLE_STMT_P (node))
+	GIMPLE_STMT_LOCUS (node) = *loc;
+      else
+	EXPR_CHECK (node)->exp.locus = *loc;
+    }
+#else
+  if (GIMPLE_STMT_P (node))
+    GIMPLE_STMT_LOCUS (node) = loc;
+  else
+    EXPR_CHECK (node)->exp.locus = loc;
+#endif
+}
+
+const char **
+expr_filename (tree node)
+{
+#ifdef USE_MAPPED_LOCATION
+  if (GIMPLE_STMT_P (node))
+    return &LOCATION_FILE (GIMPLE_STMT_LOCUS (node));
+  return &LOCATION_FILE (EXPR_CHECK (node)->exp.locus);
+#else
+  if (GIMPLE_STMT_P (node))
+    return &GIMPLE_STMT_LOCUS (node)->file;
+  return &(EXPR_CHECK (node)->exp.locus->file);
+#endif
+}
+
+int *
+expr_lineno (tree node)
+{
+#ifdef USE_MAPPED_LOCATION
+  if (GIMPLE_STMT_P (node))
+    return &LOCATION_LINE (GIMPLE_STMT_LOCUS (node));
+  return &LOCATION_LINE (EXPR_CHECK (node)->exp.locus);
+#else
+  if (GIMPLE_STMT_P (node))
+    return &GIMPLE_STMT_LOCUS (node)->line;
+  return &EXPR_CHECK (node)->exp.locus->line;
+#endif
+}
 
 /* Return a declaration like DDECL except that its DECL_ATTRIBUTES
    is ATTRIBUTE.  */
@@ -7709,7 +7905,8 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, struct pointer_set_t *pset)
       /* FALLTHRU */
 
     default:
-      if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code)))
+      if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code))
+	  || IS_GIMPLE_STMT_CODE_CLASS (TREE_CODE_CLASS (code)))
 	{
 	  int i, len;
 
@@ -7721,11 +7918,10 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, struct pointer_set_t *pset)
 	  if (len)
 	    {
 	      for (i = 0; i < len - 1; ++i)
-		WALK_SUBTREE (TREE_OPERAND (*tp, i));
-	      WALK_SUBTREE_TAIL (TREE_OPERAND (*tp, len - 1));
+		WALK_SUBTREE (GENERIC_TREE_OPERAND (*tp, i));
+	      WALK_SUBTREE_TAIL (GENERIC_TREE_OPERAND (*tp, len - 1));
 	    }
 	}
-
       /* If this is a type, walk the needed fields in the type.  */
       else if (TYPE_P (*tp))
 	return walk_type_fields (*tp, func, data, pset);
@@ -7777,6 +7973,35 @@ empty_body_p (tree stmt)
       return false;
 
   return true;
+}
+
+tree *
+tree_block (tree t)
+{
+  char const c = TREE_CODE_CLASS (TREE_CODE (t));
+
+  if (IS_EXPR_CODE_CLASS (c))
+    return &t->exp.block;
+  else if (IS_GIMPLE_STMT_CODE_CLASS (c))
+    return &GIMPLE_STMT_BLOCK (t);
+  gcc_unreachable ();
+  return NULL;
+}
+
+tree *
+generic_tree_operand (tree node, int i)
+{
+  if (GIMPLE_STMT_P (node))
+    return &GIMPLE_STMT_OPERAND (node, i);
+  return &TREE_OPERAND (node, i);
+}
+
+tree *
+generic_tree_type (tree node)
+{
+  if (GIMPLE_STMT_P (node))
+    return &void_type_node;
+  return &TREE_TYPE (node);
 }
 
 #include "gt-tree.h"

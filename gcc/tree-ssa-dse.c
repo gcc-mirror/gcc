@@ -205,7 +205,7 @@ memory_address_same (tree store1, tree store2)
   walk_data.store1_bb = bb_for_stmt (store1);
   walk_data.store2_bb = bb_for_stmt (store2);
 
-  return (walk_tree (&TREE_OPERAND (store1, 0), memory_ssa_name_same,
+  return (walk_tree (&GIMPLE_STMT_OPERAND (store1, 0), memory_ssa_name_same,
 		     &walk_data, NULL)
 	  == NULL);
 }
@@ -237,15 +237,15 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
   if (ZERO_SSA_OPERANDS (stmt, (SSA_OP_VMAYDEF|SSA_OP_VMUSTDEF)))
     return;
 
-  /* We know we have virtual definitions.  If this is a MODIFY_EXPR that's
-     not also a function call, then record it into our table.  */
+  /* We know we have virtual definitions.  If this is a GIMPLE_MODIFY_STMT
+     that's not also a function call, then record it into our table.  */
   if (get_call_expr_in (stmt))
     return;
 
   if (ann->has_volatile_ops)
     return;
 
-  if (TREE_CODE (stmt) == MODIFY_EXPR)
+  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
     {
       use_operand_p first_use_p = NULL_USE_OPERAND_P;
       use_operand_p use_p = NULL;
@@ -328,8 +328,8 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 	 SSA-form variables in the address will have the same values.  */
       if (use_p != NULL_USE_OPERAND_P
 	  && bitmap_bit_p (dse_gd->stores, get_stmt_uid (use_stmt))
-	  && operand_equal_p (TREE_OPERAND (stmt, 0),
-			      TREE_OPERAND (use_stmt, 0), 0)
+	  && operand_equal_p (GIMPLE_STMT_OPERAND (stmt, 0),
+			      GIMPLE_STMT_OPERAND (use_stmt, 0), 0)
 	  && memory_address_same (stmt, use_stmt))
 	{
 	  /* Make sure we propagate the ABNORMAL bit setting.  */

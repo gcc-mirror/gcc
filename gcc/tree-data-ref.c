@@ -4019,10 +4019,10 @@ get_references_in_stmt (tree stmt, VEC (data_ref_loc, heap) **references)
   if (ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
     return clobbers_memory;
 
-  if (TREE_CODE (stmt) ==  MODIFY_EXPR)
+  if (TREE_CODE (stmt) ==  GIMPLE_MODIFY_STMT)
     {
-      op0 = &TREE_OPERAND (stmt, 0);
-      op1 = &TREE_OPERAND (stmt, 1);
+      op0 = &GIMPLE_STMT_OPERAND (stmt, 0);
+      op1 = &GIMPLE_STMT_OPERAND (stmt, 1);
 		
       if (DECL_P (*op1)
 	  || REFERENCE_CLASS_P (*op1))

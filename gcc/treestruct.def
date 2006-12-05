@@ -28,6 +28,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    tree_node for garbage collection purposes, as well as specifying what structures
    contain what other structures in the tree_contains_struct array.  */
 	
+DEFTREESTRUCT(TS_BASE, "base")
 DEFTREESTRUCT(TS_COMMON, "common")
 DEFTREESTRUCT(TS_INT_CST, "integer cst")
 DEFTREESTRUCT(TS_REAL_CST, "real cst")
@@ -57,6 +58,7 @@ DEFTREESTRUCT(TS_PHI_NODE, "phi node")
 DEFTREESTRUCT(TS_BLOCK, "block")
 DEFTREESTRUCT(TS_BINFO, "binfo")
 DEFTREESTRUCT(TS_STATEMENT_LIST, "statement list")
+DEFTREESTRUCT(TS_GIMPLE_STATEMENT, "gimple statement")
 DEFTREESTRUCT(TS_VALUE_HANDLE, "value handle")
 DEFTREESTRUCT(TS_CONSTRUCTOR, "constructor")
 DEFTREESTRUCT(TS_MEMORY_TAG, "memory tag")

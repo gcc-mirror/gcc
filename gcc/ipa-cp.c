@@ -446,7 +446,7 @@ constant_val_insert (tree fn, tree parm1, tree val)
   edge e_step;
   edge_iterator ei;
 
-  init_stmt = build2 (MODIFY_EXPR, void_type_node, parm1, val);
+  init_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, parm1, val);
   func = DECL_STRUCT_FUNCTION (fn);
   cfun = func;
   current_function_decl = fn;

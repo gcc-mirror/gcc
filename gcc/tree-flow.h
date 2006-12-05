@@ -156,7 +156,7 @@ struct ptr_info_def GTY(())
 
 
 /*---------------------------------------------------------------------------
-		   Tree annotations stored in tree_common.ann
+		   Tree annotations stored in tree_base.ann
 ---------------------------------------------------------------------------*/
 enum tree_ann_type { TREE_ANN_COMMON, VAR_ANN, FUNCTION_ANN, STMT_ANN };
 

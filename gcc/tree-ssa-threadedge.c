@@ -91,12 +91,12 @@ lhs_of_dominating_assert (tree op, basic_block bb, tree stmt)
     {
       use_stmt = USE_STMT (use_p);
       if (use_stmt != stmt
-          && TREE_CODE (use_stmt) == MODIFY_EXPR
-          && TREE_CODE (TREE_OPERAND (use_stmt, 1)) == ASSERT_EXPR
-          && TREE_OPERAND (TREE_OPERAND (use_stmt, 1), 0) == op
+          && TREE_CODE (use_stmt) == GIMPLE_MODIFY_STMT
+          && TREE_CODE (GIMPLE_STMT_OPERAND (use_stmt, 1)) == ASSERT_EXPR
+          && TREE_OPERAND (GIMPLE_STMT_OPERAND (use_stmt, 1), 0) == op
 	  && dominated_by_p (CDI_DOMINATORS, bb, bb_for_stmt (use_stmt)))
 	{
-	  return TREE_OPERAND (use_stmt, 0);
+	  return GIMPLE_STMT_OPERAND (use_stmt, 0);
 	}
     }
   return op;
@@ -245,11 +245,11 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
       if (stmt_count > max_stmt_count)
 	return NULL;
 
-      /* If this is not a MODIFY_EXPR which sets an SSA_NAME to a new
+      /* If this is not a GIMPLE_MODIFY_STMT which sets an SSA_NAME to a new
 	 value, then do not try to simplify this statement as it will
 	 not simplify in any way that is helpful for jump threading.  */
-      if (TREE_CODE (stmt) != MODIFY_EXPR
-	  || TREE_CODE (TREE_OPERAND (stmt, 0)) != SSA_NAME)
+      if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT
+	  || TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) != SSA_NAME)
 	continue;
 
       /* At this point we have a statement which assigns an RHS to an
@@ -259,10 +259,10 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 
 	 Handle simple copy operations as well as implied copies from
 	 ASSERT_EXPRs.  */
-      if (TREE_CODE (TREE_OPERAND (stmt, 1)) == SSA_NAME)
-	cached_lhs = TREE_OPERAND (stmt, 1);
-      else if (TREE_CODE (TREE_OPERAND (stmt, 1)) == ASSERT_EXPR)
-	cached_lhs = TREE_OPERAND (TREE_OPERAND (stmt, 1), 0);
+      if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == SSA_NAME)
+	cached_lhs = GIMPLE_STMT_OPERAND (stmt, 1);
+      else if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == ASSERT_EXPR)
+	cached_lhs = TREE_OPERAND (GIMPLE_STMT_OPERAND (stmt, 1), 0);
       else
 	{
 	  /* A statement that is not a trivial copy or ASSERT_EXPR.
@@ -296,19 +296,19 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 	     here, because fold expects all the operands of an expression
 	     to be folded before the expression itself is folded, but we
 	     can't just substitute the folded condition here.  */
-	  if (TREE_CODE (TREE_OPERAND (stmt, 1)) == COND_EXPR)
+	  if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == COND_EXPR)
 	    {
-	      tree cond = COND_EXPR_COND (TREE_OPERAND (stmt, 1));
+	      tree cond = COND_EXPR_COND (GIMPLE_STMT_OPERAND (stmt, 1));
 	      cond = fold (cond);
 	      if (cond == boolean_true_node)
-		pre_fold_expr = COND_EXPR_THEN (TREE_OPERAND (stmt, 1));
+		pre_fold_expr = COND_EXPR_THEN (GIMPLE_STMT_OPERAND (stmt, 1));
 	      else if (cond == boolean_false_node)
-		pre_fold_expr = COND_EXPR_ELSE (TREE_OPERAND (stmt, 1));
+		pre_fold_expr = COND_EXPR_ELSE (GIMPLE_STMT_OPERAND (stmt, 1));
 	      else
-		pre_fold_expr = TREE_OPERAND (stmt, 1);
+		pre_fold_expr = GIMPLE_STMT_OPERAND (stmt, 1);
 	    }
 	  else
-	    pre_fold_expr = TREE_OPERAND (stmt, 1);
+	    pre_fold_expr = GIMPLE_STMT_OPERAND (stmt, 1);
 
 	  if (pre_fold_expr)
 	    {
@@ -331,7 +331,7 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
       if (cached_lhs
 	  && (TREE_CODE (cached_lhs) == SSA_NAME
 	      || is_gimple_min_invariant (cached_lhs)))
-	record_temporary_equivalence (TREE_OPERAND (stmt, 0),
+	record_temporary_equivalence (GIMPLE_STMT_OPERAND (stmt, 0),
 				      cached_lhs,
 				      stack);
     }

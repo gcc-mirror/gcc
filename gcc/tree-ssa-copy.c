@@ -370,11 +370,11 @@ stmt_may_generate_copy (tree stmt)
   if (TREE_CODE (stmt) == PHI_NODE)
     return !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (PHI_RESULT (stmt));
 
-  if (TREE_CODE (stmt) != MODIFY_EXPR)
+  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return false;
 
-  lhs = TREE_OPERAND (stmt, 0);
-  rhs = TREE_OPERAND (stmt, 1);
+  lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+  rhs = GIMPLE_STMT_OPERAND (stmt, 1);
   ann = stmt_ann (stmt);
 
   /* If the statement has volatile operands, it won't generate a
@@ -554,8 +554,8 @@ copy_prop_visit_assignment (tree stmt, tree *result_p)
   tree lhs, rhs;
   prop_value_t *rhs_val;
 
-  lhs = TREE_OPERAND (stmt, 0);
-  rhs = TREE_OPERAND (stmt, 1);
+  lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+  rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 
   gcc_assert (TREE_CODE (rhs) == SSA_NAME);
 
@@ -690,17 +690,17 @@ copy_prop_visit_stmt (tree stmt, edge *taken_edge_p, tree *result_p)
       fprintf (dump_file, "\n");
     }
 
-  if (TREE_CODE (stmt) == MODIFY_EXPR
-      && TREE_CODE (TREE_OPERAND (stmt, 1)) == SSA_NAME
+  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+      && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == SSA_NAME
       && (do_store_copy_prop
-	  || TREE_CODE (TREE_OPERAND (stmt, 0)) == SSA_NAME))
+	  || TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == SSA_NAME))
     {
       /* If the statement is a copy assignment, evaluate its RHS to
 	 see if the lattice value of its output has changed.  */
       retval = copy_prop_visit_assignment (stmt, result_p);
     }
-  else if (TREE_CODE (stmt) == MODIFY_EXPR
-	   && TREE_CODE (TREE_OPERAND (stmt, 0)) == SSA_NAME
+  else if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	   && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == SSA_NAME
 	   && do_store_copy_prop
 	   && stmt_makes_single_load (stmt))
     {
@@ -711,14 +711,14 @@ copy_prop_visit_stmt (tree stmt, edge *taken_edge_p, tree *result_p)
       if (val
 	  && val->mem_ref
 	  && is_gimple_reg (val->value)
-	  && operand_equal_p (val->mem_ref, TREE_OPERAND (stmt, 1), 0))
+	  && operand_equal_p (val->mem_ref, GIMPLE_STMT_OPERAND (stmt, 1), 0))
         {
 	  bool changed;
-	  changed = set_copy_of_val (TREE_OPERAND (stmt, 0),
+	  changed = set_copy_of_val (GIMPLE_STMT_OPERAND (stmt, 0),
 				     val->value, val->mem_ref);
 	  if (changed)
 	    {
-	      *result_p = TREE_OPERAND (stmt, 0);
+	      *result_p = GIMPLE_STMT_OPERAND (stmt, 0);
 	      retval = SSA_PROP_INTERESTING;
 	    }
 	  else
@@ -910,7 +910,7 @@ init_copy_prop (void)
 	  if (stmt_ends_bb_p (stmt))
 	    DONT_SIMULATE_AGAIN (stmt) = false;
 	  else if (stmt_may_generate_copy (stmt)
-		   && loop_depth_of_name (TREE_OPERAND (stmt, 1)) <= depth)
+		   && loop_depth_of_name (GIMPLE_STMT_OPERAND (stmt, 1)) <= depth)
 	    DONT_SIMULATE_AGAIN (stmt) = false;
 	  else
 	    DONT_SIMULATE_AGAIN (stmt) = true;

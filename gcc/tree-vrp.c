@@ -2399,20 +2399,22 @@ build_assert_expr_for (tree cond, tree v)
   if (COMPARISON_CLASS_P (cond))
     {
       tree a = build2 (ASSERT_EXPR, TREE_TYPE (v), v, cond); 
-      assertion = build2 (MODIFY_EXPR, TREE_TYPE (v), n, a);
+      assertion = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (v), n, a);
     }
   else if (TREE_CODE (cond) == TRUTH_NOT_EXPR)
     {
       /* Given !V, build the assignment N = false.  */
       tree op0 = TREE_OPERAND (cond, 0);
       gcc_assert (op0 == v);
-      assertion = build2 (MODIFY_EXPR, TREE_TYPE (v), n, boolean_false_node);
+      assertion = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (v), n,
+			  boolean_false_node);
     }
   else if (TREE_CODE (cond) == SSA_NAME)
     {
       /* Given V, build the assignment N = true.  */
       gcc_assert (v == cond);
-      assertion = build2 (MODIFY_EXPR, TREE_TYPE (v), n, boolean_true_node);
+      assertion = build2 (GIMPLE_MODIFY_STMT,
+	  		  TREE_TYPE (v), n, boolean_true_node);
     }
   else
     gcc_unreachable ();
@@ -2797,10 +2799,10 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
      a truth operation or some bit operations, then we may be able
      to register information about the operands of that assignment.  */
   op_def = SSA_NAME_DEF_STMT (op);
-  if (TREE_CODE (op_def) != MODIFY_EXPR)
+  if (TREE_CODE (op_def) != GIMPLE_MODIFY_STMT)
     return retval;
 
-  rhs = TREE_OPERAND (op_def, 1);
+  rhs = GIMPLE_STMT_OPERAND (op_def, 1);
 
   if (COMPARISON_CLASS_P (rhs))
     {
@@ -2908,12 +2910,12 @@ register_edge_assert_for (tree name, edge e, block_stmt_iterator si, tree cond)
     {
       tree def_stmt = SSA_NAME_DEF_STMT (name);
 
-      if (TREE_CODE (def_stmt) == MODIFY_EXPR
-	  && (TREE_CODE (TREE_OPERAND (def_stmt, 1)) == TRUTH_AND_EXPR
-	      || TREE_CODE (TREE_OPERAND (def_stmt, 1)) == BIT_AND_EXPR))
+      if (TREE_CODE (def_stmt) == GIMPLE_MODIFY_STMT
+	  && (TREE_CODE (GIMPLE_STMT_OPERAND (def_stmt, 1)) == TRUTH_AND_EXPR
+	      || TREE_CODE (GIMPLE_STMT_OPERAND (def_stmt, 1)) == BIT_AND_EXPR))
 	{
-	  tree op0 = TREE_OPERAND (TREE_OPERAND (def_stmt, 1), 0);
-	  tree op1 = TREE_OPERAND (TREE_OPERAND (def_stmt, 1), 1);
+	  tree op0 = TREE_OPERAND (GIMPLE_STMT_OPERAND (def_stmt, 1), 0);
+	  tree op1 = TREE_OPERAND (GIMPLE_STMT_OPERAND (def_stmt, 1), 1);
 	  retval |= register_edge_assert_for_1 (op0, NE_EXPR, e, si);
 	  retval |= register_edge_assert_for_1 (op1, NE_EXPR, e, si);
 	}
@@ -2927,12 +2929,12 @@ register_edge_assert_for (tree name, edge e, block_stmt_iterator si, tree cond)
     {
       tree def_stmt = SSA_NAME_DEF_STMT (name);
 
-      if (TREE_CODE (def_stmt) == MODIFY_EXPR
-	  && (TREE_CODE (TREE_OPERAND (def_stmt, 1)) == TRUTH_OR_EXPR
-	      || TREE_CODE (TREE_OPERAND (def_stmt, 1)) == BIT_IOR_EXPR))
+      if (TREE_CODE (def_stmt) == GIMPLE_MODIFY_STMT
+	  && (TREE_CODE (GIMPLE_STMT_OPERAND (def_stmt, 1)) == TRUTH_OR_EXPR
+	      || TREE_CODE (GIMPLE_STMT_OPERAND (def_stmt, 1)) == BIT_IOR_EXPR))
 	{
-	  tree op0 = TREE_OPERAND (TREE_OPERAND (def_stmt, 1), 0);
-	  tree op1 = TREE_OPERAND (TREE_OPERAND (def_stmt, 1), 1);
+	  tree op0 = TREE_OPERAND (GIMPLE_STMT_OPERAND (def_stmt, 1), 0);
+	  tree op1 = TREE_OPERAND (GIMPLE_STMT_OPERAND (def_stmt, 1), 1);
 	  retval |= register_edge_assert_for_1 (op0, EQ_EXPR, e, si);
 	  retval |= register_edge_assert_for_1 (op1, EQ_EXPR, e, si);
 	}
@@ -3156,12 +3158,18 @@ find_assert_locations (basic_block bb)
 		  tree t = op;
 		  tree def_stmt = SSA_NAME_DEF_STMT (t);
 	
-		  while (TREE_CODE (def_stmt) == MODIFY_EXPR
-			 && TREE_CODE (TREE_OPERAND (def_stmt, 1)) == NOP_EXPR
-			 && TREE_CODE (TREE_OPERAND (TREE_OPERAND (def_stmt, 1), 0)) == SSA_NAME
-			 && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (def_stmt, 1), 0))))
+		  while (TREE_CODE (def_stmt) == GIMPLE_MODIFY_STMT
+			 && TREE_CODE
+			     (GIMPLE_STMT_OPERAND (def_stmt, 1)) == NOP_EXPR
+			 && TREE_CODE
+			     (TREE_OPERAND (GIMPLE_STMT_OPERAND (def_stmt, 1),
+					    0)) == SSA_NAME
+			 && POINTER_TYPE_P
+			     (TREE_TYPE (TREE_OPERAND
+					  (GIMPLE_STMT_OPERAND (def_stmt,
+								1), 0))))
 		    {
-		      t = TREE_OPERAND (TREE_OPERAND (def_stmt, 1), 0);
+		      t = TREE_OPERAND (GIMPLE_STMT_OPERAND (def_stmt, 1), 0);
 		      def_stmt = SSA_NAME_DEF_STMT (t);
 
 		      /* Note we want to register the assert for the
@@ -3412,10 +3420,10 @@ remove_range_assertions (void)
 	tree stmt = bsi_stmt (si);
 	tree use_stmt;
 
-	if (TREE_CODE (stmt) == MODIFY_EXPR
-	    && TREE_CODE (TREE_OPERAND (stmt, 1)) == ASSERT_EXPR)
+	if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	    && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == ASSERT_EXPR)
 	  {
-	    tree rhs = TREE_OPERAND (stmt, 1), var;
+	    tree rhs = GIMPLE_STMT_OPERAND (stmt, 1), var;
 	    tree cond = fold (ASSERT_EXPR_COND (rhs));
 	    use_operand_p use_p;
 	    imm_use_iterator iter;
@@ -3424,7 +3432,8 @@ remove_range_assertions (void)
 
 	    /* Propagate the RHS into every use of the LHS.  */
 	    var = ASSERT_EXPR_VAR (rhs);
-	    FOR_EACH_IMM_USE_STMT (use_stmt, iter, TREE_OPERAND (stmt, 0))
+	    FOR_EACH_IMM_USE_STMT (use_stmt, iter,
+				   GIMPLE_STMT_OPERAND (stmt, 0))
 	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
 		{
 		  SET_USE (use_p, var);
@@ -3452,10 +3461,10 @@ stmt_interesting_for_vrp (tree stmt)
       && (INTEGRAL_TYPE_P (TREE_TYPE (PHI_RESULT (stmt)))
 	  || POINTER_TYPE_P (TREE_TYPE (PHI_RESULT (stmt)))))
     return true;
-  else if (TREE_CODE (stmt) == MODIFY_EXPR)
+  else if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
     {
-      tree lhs = TREE_OPERAND (stmt, 0);
-      tree rhs = TREE_OPERAND (stmt, 1);
+      tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+      tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 
       /* In general, assignments with virtual operands are not useful
 	 for deriving ranges, with the obvious exception of calls to
@@ -3533,8 +3542,8 @@ vrp_visit_assignment (tree stmt, tree *output_p)
   tree lhs, rhs, def;
   ssa_op_iter iter;
 
-  lhs = TREE_OPERAND (stmt, 0);
-  rhs = TREE_OPERAND (stmt, 1);
+  lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+  rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 
   /* We only keep track of ranges in integral and pointer types.  */
   if (TREE_CODE (lhs) == SSA_NAME
@@ -3951,9 +3960,9 @@ vrp_visit_stmt (tree stmt, edge *taken_edge_p, tree *output_p)
     }
 
   ann = stmt_ann (stmt);
-  if (TREE_CODE (stmt) == MODIFY_EXPR)
+  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
     {
-      tree rhs = TREE_OPERAND (stmt, 1);
+      tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 
       /* In general, assignments with virtual operands are not useful
 	 for deriving ranges, with the obvious exception of calls to
@@ -4267,7 +4276,7 @@ simplify_div_or_mod_using_ranges (tree stmt, tree rhs, enum tree_code rhs_code)
 	  t = build2 (BIT_AND_EXPR, TREE_TYPE (op0), op0, t);
 	}
 
-      TREE_OPERAND (stmt, 1) = t;
+      GIMPLE_STMT_OPERAND (stmt, 1) = t;
       update_stmt (stmt);
     }
 }
@@ -4314,7 +4323,7 @@ simplify_abs_using_ranges (tree stmt, tree rhs)
 	  else
 	    t = op;
 
-	  TREE_OPERAND (stmt, 1) = t;
+	  GIMPLE_STMT_OPERAND (stmt, 1) = t;
 	  update_stmt (stmt);
 	}
     }
@@ -4464,9 +4473,9 @@ simplify_cond_using_ranges (tree stmt)
 void
 simplify_stmt_using_ranges (tree stmt)
 {
-  if (TREE_CODE (stmt) == MODIFY_EXPR)
+  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
     {
-      tree rhs = TREE_OPERAND (stmt, 1);
+      tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
       enum tree_code rhs_code = TREE_CODE (rhs);
 
       /* Transform TRUNC_DIV_EXPR and TRUNC_MOD_EXPR into RSHIFT_EXPR

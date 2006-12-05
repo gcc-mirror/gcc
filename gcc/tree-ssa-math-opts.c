@@ -111,7 +111,7 @@ struct occurrence {
      inserted in BB.  */
   tree recip_def;
 
-  /* If non-NULL, the MODIFY_EXPR for a reciprocal computation that
+  /* If non-NULL, the GIMPLE_MODIFY_STMT for a reciprocal computation that
      was inserted in BB.  */
   tree recip_def_stmt;
 
@@ -274,9 +274,9 @@ compute_merit (struct occurrence *occ)
 static inline bool
 is_division_by (tree use_stmt, tree def)
 {
-  return TREE_CODE (use_stmt) == MODIFY_EXPR
-	 && TREE_CODE (TREE_OPERAND (use_stmt, 1)) == RDIV_EXPR
-	 && TREE_OPERAND (TREE_OPERAND (use_stmt, 1), 1) == def;
+  return TREE_CODE (use_stmt) == GIMPLE_MODIFY_STMT
+	 && TREE_CODE (GIMPLE_STMT_OPERAND (use_stmt, 1)) == RDIV_EXPR
+	 && TREE_OPERAND (GIMPLE_STMT_OPERAND (use_stmt, 1), 1) == def;
 }
 
 /* Walk the subset of the dominator tree rooted at OCC, setting the
@@ -303,7 +303,7 @@ insert_reciprocals (block_stmt_iterator *def_bsi, struct occurrence *occ,
       /* Make a variable with the replacement and substitute it.  */
       type = TREE_TYPE (def);
       recip_def = make_rename_temp (type, "reciptmp");
-      new_stmt = build2 (MODIFY_EXPR, void_type_node, recip_def,
+      new_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, recip_def,
 		         fold_build2 (RDIV_EXPR, type, build_one_cst (type),
 				      def));
   
@@ -353,7 +353,7 @@ replace_reciprocal (use_operand_p use_p)
 
   if (occ->recip_def && use_stmt != occ->recip_def_stmt)
     {
-      TREE_SET_CODE (TREE_OPERAND (use_stmt, 1), MULT_EXPR);
+      TREE_SET_CODE (GIMPLE_STMT_OPERAND (use_stmt, 1), MULT_EXPR);
       SET_USE (use_p, occ->recip_def);
       fold_stmt_inplace (use_stmt);
       update_stmt (use_stmt);
@@ -490,7 +490,7 @@ execute_cse_reciprocals (void)
       for (bsi = bsi_after_labels (bb); !bsi_end_p (bsi); bsi_next (&bsi))
         {
 	  tree stmt = bsi_stmt (bsi);
-	  if (TREE_CODE (stmt) == MODIFY_EXPR
+	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
 	      && (def = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_DEF)) != NULL
 	      && FLOAT_TYPE_P (TREE_TYPE (def))
 	      && TREE_CODE (def) == SSA_NAME)

@@ -2763,13 +2763,13 @@ update_alias_info (tree stmt, struct alias_info *ai)
 	 of an assignment and their base address is always an
 	 INDIRECT_REF expression.  */
       is_potential_deref = false;
-      if (TREE_CODE (stmt) == MODIFY_EXPR
-	  && TREE_CODE (TREE_OPERAND (stmt, 1)) == ADDR_EXPR
-	  && !is_gimple_val (TREE_OPERAND (stmt, 1)))
+      if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	  && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == ADDR_EXPR
+	  && !is_gimple_val (GIMPLE_STMT_OPERAND (stmt, 1)))
 	{
 	  /* If the RHS if of the form &PTR->FLD and PTR == OP, then
 	     this represents a potential dereference of PTR.  */
-	  tree rhs = TREE_OPERAND (stmt, 1);
+	  tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 	  tree base = get_base_address (TREE_OPERAND (rhs, 0));
 	  if (TREE_CODE (base) == INDIRECT_REF
 	      && TREE_OPERAND (base, 0) == op)
@@ -2971,9 +2971,9 @@ find_func_aliases (tree origt)
      modify_expr when we are returning a value, or just a plain
      call_expr when we are not.   */
   else if (in_ipa_mode
-	   && ((TREE_CODE (t) == MODIFY_EXPR
-		&& TREE_CODE (TREE_OPERAND (t, 1)) == CALL_EXPR
-	       && !(call_expr_flags (TREE_OPERAND (t, 1))
+	   && ((TREE_CODE (t) == GIMPLE_MODIFY_STMT
+		&& TREE_CODE (GIMPLE_STMT_OPERAND (t, 1)) == CALL_EXPR
+	       && !(call_expr_flags (GIMPLE_STMT_OPERAND (t, 1))
 		    & (ECF_MALLOC | ECF_MAY_BE_ALLOCA)))
 	       || (TREE_CODE (t) == CALL_EXPR
 		   && !(call_expr_flags (t)
@@ -2986,10 +2986,10 @@ find_func_aliases (tree origt)
       varinfo_t fi;
       int i = 1;
       tree decl;
-      if (TREE_CODE (t) == MODIFY_EXPR)
+      if (TREE_CODE (t) == GIMPLE_MODIFY_STMT)
 	{
-	  lhsop = TREE_OPERAND (t, 0);
-	  rhsop = TREE_OPERAND (t, 1);
+	  lhsop = GIMPLE_STMT_OPERAND (t, 0);
+	  rhsop = GIMPLE_STMT_OPERAND (t, 1);
 	}
       else
 	{
@@ -3068,10 +3068,10 @@ find_func_aliases (tree origt)
 	}
     }
   /* Otherwise, just a regular assignment statement.  */
-  else if (TREE_CODE (t) == MODIFY_EXPR)
+  else if (TREE_CODE (t) == GIMPLE_MODIFY_STMT)
     {
-      tree lhsop = TREE_OPERAND (t, 0);
-      tree rhsop = TREE_OPERAND (t, 1);
+      tree lhsop = GIMPLE_STMT_OPERAND (t, 0);
+      tree rhsop = GIMPLE_STMT_OPERAND (t, 1);
       int i;
 
       if ((AGGREGATE_TYPE_P (TREE_TYPE (lhsop))

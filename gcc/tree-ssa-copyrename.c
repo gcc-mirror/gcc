@@ -315,10 +315,10 @@ rename_ssa_copies (void)
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	{
 	  stmt = bsi_stmt (bsi); 
-	  if (TREE_CODE (stmt) == MODIFY_EXPR)
+	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
 	    {
-	      tree lhs = TREE_OPERAND (stmt, 0);
-	      tree rhs = TREE_OPERAND (stmt, 1);
+	      tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+	      tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 
               if (TREE_CODE (lhs) == SSA_NAME && TREE_CODE (rhs) == SSA_NAME)
 		copy_rename_partition_coalesce (map, lhs, rhs, debug);

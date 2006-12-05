@@ -5741,6 +5741,19 @@ resolve_fl_derived (gfc_symbol *sym)
       sym->ns->derived_types = dt_list;
     }
 
+  /* Add derived type to the derived type list.  */
+  for (dt_list = sym->ns->derived_types; dt_list; dt_list = dt_list->next)
+    if (sym == dt_list->derived)
+      break;
+
+  if (dt_list == NULL)
+    {
+      dt_list = gfc_get_dt_list ();
+      dt_list->next = sym->ns->derived_types;
+      dt_list->derived = sym;
+      sym->ns->derived_types = dt_list;
+    }
+
   return SUCCESS;
 }
 

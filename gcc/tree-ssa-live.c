@@ -1331,10 +1331,10 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
 	     be interested in trying to coalesce SSA_NAME variables with
 	     root variables in some cases.  */
 
-	  if (TREE_CODE (stmt) == MODIFY_EXPR)
+	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
 	    {
-	      tree lhs = TREE_OPERAND (stmt, 0);
-	      tree rhs = TREE_OPERAND (stmt, 1);
+	      tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+	      tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 	      int p1, p2;
 	      int bit;
 

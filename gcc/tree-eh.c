@@ -115,7 +115,7 @@ add_stmt_to_eh_region_fn (struct function *ifun, tree t, int num)
   /* ??? For the benefit of calls.c, converting all this to rtl,
      we need to record the call expression, not just the outer
      modify statement.  */
-  if (TREE_CODE (t) == MODIFY_EXPR
+  if (TREE_CODE (t) == GIMPLE_MODIFY_STMT
       && (t = get_call_expr_in (t)))
     add_stmt_to_eh_region_fn (ifun, t, num);
 }
@@ -144,7 +144,7 @@ remove_stmt_from_eh_region_fn (struct function *ifun, tree t)
       /* ??? For the benefit of calls.c, converting all this to rtl,
 	 we need to record the call expression, not just the outer
 	 modify statement.  */
-      if (TREE_CODE (t) == MODIFY_EXPR
+      if (TREE_CODE (t) == GIMPLE_MODIFY_STMT
 	  && (t = get_call_expr_in (t)))
 	remove_stmt_from_eh_region_fn (ifun, t);
       return true;
@@ -624,10 +624,10 @@ do_return_redirection (struct goto_queue_node *q, tree finlab, tree mod,
 	  q->cont_stmt = q->stmt;
 	  break;
 
-	case MODIFY_EXPR:
+	case GIMPLE_MODIFY_STMT:
 	  {
-	    tree result = TREE_OPERAND (ret_expr, 0);
-	    tree new, old = TREE_OPERAND (ret_expr, 1);
+	    tree result = GIMPLE_STMT_OPERAND (ret_expr, 0);
+	    tree new, old = GIMPLE_STMT_OPERAND (ret_expr, 1);
 
 	    if (!*return_value_p)
 	      {
@@ -646,13 +646,13 @@ do_return_redirection (struct goto_queue_node *q, tree finlab, tree mod,
 	    else
 	      new = *return_value_p;
 
-	    x = build2 (MODIFY_EXPR, TREE_TYPE (new), new, old);
+	    x = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (new), new, old);
 	    append_to_statement_list (x, &q->repl_stmt);
 
 	    if (new == result)
 	      x = result;
 	    else
-	      x = build2 (MODIFY_EXPR, TREE_TYPE (result), result, new);
+	      x = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (result), result, new);
 	    q->cont_stmt = build1 (RETURN_EXPR, void_type_node, x);
 	  }
 
@@ -842,20 +842,20 @@ honor_protect_cleanup_actions (struct leh_state *outer_state,
 
       i = tsi_start (finally);
       x = build0 (EXC_PTR_EXPR, ptr_type_node);
-      x = build2 (MODIFY_EXPR, void_type_node, save_eptr, x);
+      x = build2 (GIMPLE_MODIFY_STMT, void_type_node, save_eptr, x);
       tsi_link_before (&i, x, TSI_CONTINUE_LINKING);
 
       x = build0 (FILTER_EXPR, integer_type_node);
-      x = build2 (MODIFY_EXPR, void_type_node, save_filt, x);
+      x = build2 (GIMPLE_MODIFY_STMT, void_type_node, save_filt, x);
       tsi_link_before (&i, x, TSI_CONTINUE_LINKING);
 
       i = tsi_last (finally);
       x = build0 (EXC_PTR_EXPR, ptr_type_node);
-      x = build2 (MODIFY_EXPR, void_type_node, x, save_eptr);
+      x = build2 (GIMPLE_MODIFY_STMT, void_type_node, x, save_eptr);
       tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
 
       x = build0 (FILTER_EXPR, integer_type_node);
-      x = build2 (MODIFY_EXPR, void_type_node, x, save_filt);
+      x = build2 (GIMPLE_MODIFY_STMT, void_type_node, x, save_filt);
       tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
 
       x = build_resx (get_eh_region_number (tf->region));
@@ -1177,7 +1177,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
 
   if (tf->may_fallthru)
     {
-      x = build2 (MODIFY_EXPR, void_type_node, finally_tmp,
+      x = build2 (GIMPLE_MODIFY_STMT, void_type_node, finally_tmp,
 		  build_int_cst (NULL_TREE, fallthru_index));
       append_to_statement_list (x, tf->top_p);
 
@@ -1207,7 +1207,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
       x = build1 (LABEL_EXPR, void_type_node, tf->eh_label);
       append_to_statement_list (x, tf->top_p);
 
-      x = build2 (MODIFY_EXPR, void_type_node, finally_tmp,
+      x = build2 (GIMPLE_MODIFY_STMT, void_type_node, finally_tmp,
 		  build_int_cst (NULL_TREE, eh_index));
       append_to_statement_list (x, tf->top_p);
 
@@ -1239,14 +1239,14 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
 
       if (q->index < 0)
 	{
-	  mod = build2 (MODIFY_EXPR, void_type_node, finally_tmp,
+	  mod = build2 (GIMPLE_MODIFY_STMT, void_type_node, finally_tmp,
 		        build_int_cst (NULL_TREE, return_index));
 	  do_return_redirection (q, finally_label, mod, &return_val);
 	  switch_id = return_index;
 	}
       else
 	{
-	  mod = build2 (MODIFY_EXPR, void_type_node, finally_tmp,
+	  mod = build2 (GIMPLE_MODIFY_STMT, void_type_node, finally_tmp,
 		        build_int_cst (NULL_TREE, q->index));
 	  do_goto_redirection (q, finally_label, mod);
 	  switch_id = q->index;
@@ -1612,7 +1612,7 @@ lower_eh_constructs_1 (struct leh_state *state, tree *tp)
 	}
       break;
 
-    case MODIFY_EXPR:
+    case GIMPLE_MODIFY_STMT:
       /* Look for things that can throw exceptions, and record them.  */
       if (state->cur_region && tree_could_throw_p (t))
 	{
@@ -1997,12 +1997,12 @@ tree_could_throw_p (tree t)
 {
   if (!flag_exceptions)
     return false;
-  if (TREE_CODE (t) == MODIFY_EXPR)
+  if (TREE_CODE (t) == GIMPLE_MODIFY_STMT)
     {
       if (flag_non_call_exceptions
-	  && tree_could_trap_p (TREE_OPERAND (t, 0)))
+	  && tree_could_trap_p (GIMPLE_STMT_OPERAND (t, 0)))
 	return true;
-      t = TREE_OPERAND (t, 1);
+      t = GIMPLE_STMT_OPERAND (t, 1);
     }
 
   if (TREE_CODE (t) == WITH_SIZE_EXPR)
@@ -2081,7 +2081,7 @@ verify_eh_throw_stmt_node (void **slot, void *data ATTRIBUTE_UNUSED)
 {
   struct throw_stmt_node *node = (struct throw_stmt_node *)*slot;
 
-  gcc_assert (node->stmt->common.ann == NULL);
+  gcc_assert (node->stmt->base.ann == NULL);
   return 1;
 }
 

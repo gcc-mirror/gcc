@@ -271,7 +271,7 @@ get_rank (tree e)
       if (bb_for_stmt (stmt) == NULL)
 	return 0;
 
-      if (TREE_CODE (stmt) != MODIFY_EXPR
+      if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT
 	  || !ZERO_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_DEFS))
 	return bb_rank[bb_for_stmt (stmt)->index];
 
@@ -284,7 +284,7 @@ get_rank (tree e)
 	 rank, whichever is less.   */
       rank = 0;
       maxrank = bb_rank[bb_for_stmt(stmt)->index];
-      rhs = TREE_OPERAND (stmt, 1);
+      rhs = GIMPLE_STMT_OPERAND (stmt, 1);
       if (TREE_CODE_LENGTH (TREE_CODE (rhs)) == 0)
 	rank = MAX (rank, get_rank (rhs));
       else
@@ -378,9 +378,9 @@ static bool
 is_reassociable_op (tree stmt, enum tree_code code)
 {
   if (!IS_EMPTY_STMT (stmt)
-      && TREE_CODE (stmt) == MODIFY_EXPR
-      && TREE_CODE (TREE_OPERAND (stmt, 1)) == code
-      && has_single_use (TREE_OPERAND (stmt, 0)))
+      && TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+      && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == code
+      && has_single_use (GIMPLE_STMT_OPERAND (stmt, 0)))
     return true;
   return false;
 }
@@ -395,10 +395,10 @@ get_unary_op (tree name, enum tree_code opcode)
   tree stmt = SSA_NAME_DEF_STMT (name);
   tree rhs;
 
-  if (TREE_CODE (stmt) != MODIFY_EXPR)
+  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return NULL_TREE;
 
-  rhs = TREE_OPERAND (stmt, 1);
+  rhs = GIMPLE_STMT_OPERAND (stmt, 1);
   if (TREE_CODE (rhs) == opcode)
     return TREE_OPERAND (rhs, 0);
   return NULL_TREE;
@@ -814,7 +814,7 @@ static bool
 is_phi_for_stmt (tree stmt, tree operand)
 {
   tree def_stmt;
-  tree lhs = TREE_OPERAND (stmt, 0);
+  tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
   use_operand_p arg_p;
   ssa_op_iter i;
 
@@ -839,7 +839,7 @@ static void
 rewrite_expr_tree (tree stmt, unsigned int opindex,
 		   VEC(operand_entry_t, heap) * ops)
 {
-  tree rhs = TREE_OPERAND (stmt, 1);
+  tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
   operand_entry_t oe;
 
   /* If we have three operands left, then we want to make sure the one
@@ -952,7 +952,7 @@ static void
 linearize_expr (tree stmt)
 {
   block_stmt_iterator bsinow, bsirhs;
-  tree rhs = TREE_OPERAND (stmt, 1);
+  tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
   enum tree_code rhscode = TREE_CODE (rhs);
   tree binrhs = SSA_NAME_DEF_STMT (TREE_OPERAND (rhs, 1));
   tree binlhs = SSA_NAME_DEF_STMT (TREE_OPERAND (rhs, 0));
@@ -965,11 +965,12 @@ linearize_expr (tree stmt)
   bsirhs = bsi_for_stmt (binrhs);
   bsi_move_before (&bsirhs, &bsinow);
 
-  TREE_OPERAND (rhs, 1) = TREE_OPERAND (TREE_OPERAND (binrhs, 1), 0);
+  TREE_OPERAND (rhs, 1) = TREE_OPERAND (GIMPLE_STMT_OPERAND (binrhs, 1), 0);
   if (TREE_CODE (TREE_OPERAND (rhs, 1)) == SSA_NAME)
     newbinrhs = SSA_NAME_DEF_STMT (TREE_OPERAND (rhs, 1));
-  TREE_OPERAND (TREE_OPERAND (binrhs, 1), 0) = TREE_OPERAND (binlhs, 0);
-  TREE_OPERAND (rhs, 0) = TREE_OPERAND (binrhs, 0);
+  TREE_OPERAND (GIMPLE_STMT_OPERAND (binrhs, 1), 0)
+    = GIMPLE_STMT_OPERAND (binlhs, 0);
+  TREE_OPERAND (rhs, 0) = GIMPLE_STMT_OPERAND (binrhs, 0);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -991,7 +992,7 @@ linearize_expr (tree stmt)
 
 }
 
-/* If LHS has a single immediate use that is a MODIFY_EXPR, return
+/* If LHS has a single immediate use that is a GIMPLE_MODIFY_STMT, return
    it.  Otherwise, return NULL.  */
 
 static tree
@@ -1005,7 +1006,7 @@ get_single_immediate_use (tree lhs)
     {
       if (TREE_CODE (immusestmt) == RETURN_EXPR)
 	immusestmt = TREE_OPERAND (immusestmt, 0);
-      if (TREE_CODE (immusestmt) == MODIFY_EXPR)
+      if (TREE_CODE (immusestmt) == GIMPLE_MODIFY_STMT)
 	return immusestmt;
     }
   return NULL_TREE;
@@ -1032,13 +1033,13 @@ negate_value (tree tonegate, block_stmt_iterator *bsi)
   /* If we are trying to negate a name, defined by an add, negate the
      add operands instead.  */
   if (TREE_CODE (tonegate) == SSA_NAME
-      && TREE_CODE (negatedef) == MODIFY_EXPR
-      && TREE_CODE (TREE_OPERAND (negatedef, 0)) == SSA_NAME
-      && has_single_use (TREE_OPERAND (negatedef, 0))
-      && TREE_CODE (TREE_OPERAND (negatedef, 1)) == PLUS_EXPR)
+      && TREE_CODE (negatedef) == GIMPLE_MODIFY_STMT
+      && TREE_CODE (GIMPLE_STMT_OPERAND (negatedef, 0)) == SSA_NAME
+      && has_single_use (GIMPLE_STMT_OPERAND (negatedef, 0))
+      && TREE_CODE (GIMPLE_STMT_OPERAND (negatedef, 1)) == PLUS_EXPR)
     {
       block_stmt_iterator bsi;
-      tree binop = TREE_OPERAND (negatedef, 1);
+      tree binop = GIMPLE_STMT_OPERAND (negatedef, 1);
 
       bsi = bsi_for_stmt (negatedef);
       TREE_OPERAND (binop, 0) = negate_value (TREE_OPERAND (binop, 0),
@@ -1047,7 +1048,7 @@ negate_value (tree tonegate, block_stmt_iterator *bsi)
       TREE_OPERAND (binop, 1) = negate_value (TREE_OPERAND (binop, 1),
 					      &bsi);
       update_stmt (negatedef);
-      return TREE_OPERAND (negatedef, 0);
+      return GIMPLE_STMT_OPERAND (negatedef, 0);
     }
 
   tonegate = fold_build1 (NEGATE_EXPR, TREE_TYPE (tonegate), tonegate);
@@ -1068,8 +1069,8 @@ static bool
 should_break_up_subtract (tree stmt)
 {
 
-  tree lhs = TREE_OPERAND (stmt, 0);
-  tree rhs = TREE_OPERAND (stmt, 1);
+  tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+  tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
   tree binlhs = TREE_OPERAND (rhs, 0);
   tree binrhs = TREE_OPERAND (rhs, 1);
   tree immusestmt;
@@ -1084,7 +1085,7 @@ should_break_up_subtract (tree stmt)
 
   if (TREE_CODE (lhs) == SSA_NAME
       && (immusestmt = get_single_immediate_use (lhs))
-      && TREE_CODE (TREE_OPERAND (immusestmt, 1)) == PLUS_EXPR)
+      && TREE_CODE (GIMPLE_STMT_OPERAND (immusestmt, 1)) == PLUS_EXPR)
     return true;
   return false;
 
@@ -1095,7 +1096,7 @@ should_break_up_subtract (tree stmt)
 static void
 break_up_subtract (tree stmt, block_stmt_iterator *bsi)
 {
-  tree rhs = TREE_OPERAND (stmt, 1);
+  tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1103,7 +1104,7 @@ break_up_subtract (tree stmt, block_stmt_iterator *bsi)
       print_generic_stmt (dump_file, stmt, 0);
     }
 
-  TREE_SET_CODE (TREE_OPERAND (stmt, 1), PLUS_EXPR);
+  TREE_SET_CODE (GIMPLE_STMT_OPERAND (stmt, 1), PLUS_EXPR);
   TREE_OPERAND (rhs, 1) = negate_value (TREE_OPERAND (rhs, 1), bsi);
 
   update_stmt (stmt);
@@ -1116,7 +1117,7 @@ static void
 linearize_expr_tree (VEC(operand_entry_t, heap) **ops, tree stmt)
 {
   block_stmt_iterator bsinow, bsilhs;
-  tree rhs = TREE_OPERAND (stmt, 1);
+  tree rhs = GENERIC_TREE_OPERAND (stmt, 1);
   tree binrhs = TREE_OPERAND (rhs, 1);
   tree binlhs = TREE_OPERAND (rhs, 0);
   tree binlhsdef, binrhsdef;
@@ -1180,7 +1181,7 @@ linearize_expr_tree (VEC(operand_entry_t, heap) **ops, tree stmt)
   else if (binrhsisreassoc)
     {
       linearize_expr (stmt);
-      gcc_assert (rhs == TREE_OPERAND (stmt, 1));
+      gcc_assert (rhs == GIMPLE_STMT_OPERAND (stmt, 1));
       binlhs = TREE_OPERAND (rhs, 0);
       binrhs = TREE_OPERAND (rhs, 1);
     }
@@ -1213,15 +1214,15 @@ repropagate_negates (void)
 	 Force the negate operand to the RHS of the PLUS_EXPR, then
 	 transform the PLUS_EXPR into a MINUS_EXPR.  */
       if (user
-	  && TREE_CODE (user) == MODIFY_EXPR
-	  && TREE_CODE (TREE_OPERAND (user, 1)) == PLUS_EXPR)
+	  && TREE_CODE (user) == GIMPLE_MODIFY_STMT
+	  && TREE_CODE (GIMPLE_STMT_OPERAND (user, 1)) == PLUS_EXPR)
 	{
-	  tree rhs = TREE_OPERAND (user, 1);
+	  tree rhs = GIMPLE_STMT_OPERAND (user, 1);
 
 	  /* If the negated operand appears on the LHS of the
 	     PLUS_EXPR, exchange the operands of the PLUS_EXPR
 	     to force the negated operand to the RHS of the PLUS_EXPR.  */
-	  if (TREE_OPERAND (TREE_OPERAND (user, 1), 0) == negate)
+	  if (TREE_OPERAND (GIMPLE_STMT_OPERAND (user, 1), 0) == negate)
 	    {
 	      tree temp = TREE_OPERAND (rhs, 0);
 	      TREE_OPERAND (rhs, 0) = TREE_OPERAND (rhs, 1);
@@ -1230,7 +1231,7 @@ repropagate_negates (void)
 
 	  /* Now transform the PLUS_EXPR into a MINUS_EXPR and replace
 	     the RHS of the PLUS_EXPR with the operand of the NEGATE_EXPR.  */
-	  if (TREE_OPERAND (TREE_OPERAND (user, 1), 1) == negate)
+	  if (TREE_OPERAND (GIMPLE_STMT_OPERAND (user, 1), 1) == negate)
 	    {
 	      TREE_SET_CODE (rhs, MINUS_EXPR);
 	      TREE_OPERAND (rhs, 1) = get_unary_op (negate, NEGATE_EXPR);
@@ -1265,10 +1266,10 @@ break_up_subtract_bb (basic_block bb)
     {
       tree stmt = bsi_stmt (bsi);
 
-      if (TREE_CODE (stmt) == MODIFY_EXPR)
+      if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
 	{
-	  tree lhs = TREE_OPERAND (stmt, 0);
-	  tree rhs = TREE_OPERAND (stmt, 1);
+	  tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+	  tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 
 	  TREE_VISITED (stmt) = 0;
 	  /* If unsafe math optimizations we can do reassociation for
@@ -1308,10 +1309,10 @@ reassociate_bb (basic_block bb)
     {
       tree stmt = bsi_stmt (bsi);
 
-      if (TREE_CODE (stmt) == MODIFY_EXPR)
+      if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
 	{
-	  tree lhs = TREE_OPERAND (stmt, 0);
-	  tree rhs = TREE_OPERAND (stmt, 1);
+	  tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+	  tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 
 	  /* If this was part of an already processed tree, we don't
 	     need to touch it again. */
@@ -1351,14 +1352,15 @@ reassociate_bb (basic_block bb)
 		      fprintf (dump_file, "Transforming ");
 		      print_generic_expr (dump_file, rhs, 0);
 		    }
-		  TREE_OPERAND (stmt, 1) = VEC_last (operand_entry_t, ops)->op;
+		  GIMPLE_STMT_OPERAND (stmt, 1) 
+		    = VEC_last (operand_entry_t, ops)->op;
 		  update_stmt (stmt);
 
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
 		      fprintf (dump_file, " into ");
 		      print_generic_stmt (dump_file,
-					  TREE_OPERAND (stmt, 1), 0);
+					  GIMPLE_STMT_OPERAND (stmt, 1), 0);
 		    }
 		}
 	      else

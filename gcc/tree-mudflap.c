@@ -458,13 +458,13 @@ mf_decl_cache_locals (void)
 
   /* Build initialization nodes for the cache vars.  We just load the
      globals into the cache variables.  */
-  t = build2 (MODIFY_EXPR, TREE_TYPE (mf_cache_shift_decl_l),
+  t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (mf_cache_shift_decl_l),
               mf_cache_shift_decl_l, mf_cache_shift_decl);
   SET_EXPR_LOCATION (t, DECL_SOURCE_LOCATION (current_function_decl));
   gimplify_to_stmt_list (&t);
   shift_init_stmts = t;
 
-  t = build2 (MODIFY_EXPR, TREE_TYPE (mf_cache_mask_decl_l),
+  t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (mf_cache_mask_decl_l),
               mf_cache_mask_decl_l, mf_cache_mask_decl);
   SET_EXPR_LOCATION (t, DECL_SOURCE_LOCATION (current_function_decl));
   gimplify_to_stmt_list (&t);
@@ -553,7 +553,7 @@ mf_build_check_statement_for (tree base, tree limit,
   mf_limit = create_tmp_var (mf_uintptr_type, "__mf_limit");
 
   /* Build: __mf_base = (uintptr_t) <base address expression>.  */
-  t = build2 (MODIFY_EXPR, void_type_node, mf_base,
+  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, mf_base,
               convert (mf_uintptr_type, unshare_expr (base)));
   SET_EXPR_LOCUS (t, locus);
   gimplify_to_stmt_list (&t);
@@ -561,7 +561,7 @@ mf_build_check_statement_for (tree base, tree limit,
   tsi = tsi_last (t);
 
   /* Build: __mf_limit = (uintptr_t) <limit address expression>.  */
-  t = build2 (MODIFY_EXPR, void_type_node, mf_limit,
+  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, mf_limit,
               convert (mf_uintptr_type, unshare_expr (limit)));
   SET_EXPR_LOCUS (t, locus);
   gimplify_to_stmt_list (&t);
@@ -577,7 +577,7 @@ mf_build_check_statement_for (tree base, tree limit,
               TREE_TYPE (TREE_TYPE (mf_cache_array_decl)),
               mf_cache_array_decl, t, NULL_TREE, NULL_TREE);
   t = build1 (ADDR_EXPR, mf_cache_structptr_type, t);
-  t = build2 (MODIFY_EXPR, void_type_node, mf_elem, t);
+  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, mf_elem, t);
   SET_EXPR_LOCUS (t, locus);
   gimplify_to_stmt_list (&t);
   tsi_link_after (&tsi, t, TSI_CONTINUE_LINKING);
@@ -623,7 +623,7 @@ mf_build_check_statement_for (tree base, tree limit,
      can use as the condition for the conditional jump.  */
   t = build2 (TRUTH_OR_EXPR, boolean_type_node, t, u);
   cond = create_tmp_var (boolean_type_node, "__mf_unlikely_cond");
-  t = build2 (MODIFY_EXPR, boolean_type_node, cond, t);
+  t = build2 (GIMPLE_MODIFY_STMT, boolean_type_node, cond, t);
   gimplify_to_stmt_list (&t);
   tsi_link_after (&tsi, t, TSI_CONTINUE_LINKING);
 
@@ -676,11 +676,11 @@ mf_build_check_statement_for (tree base, tree limit,
 
   if (! flag_mudflap_threads)
     {
-      t = build2 (MODIFY_EXPR, void_type_node,
+      t = build2 (GIMPLE_MODIFY_STMT, void_type_node,
                   mf_cache_shift_decl_l, mf_cache_shift_decl);
       tsi_link_after (&tsi, t, TSI_CONTINUE_LINKING);
 
-      t = build2 (MODIFY_EXPR, void_type_node,
+      t = build2 (GIMPLE_MODIFY_STMT, void_type_node,
                   mf_cache_mask_decl_l, mf_cache_mask_decl);
       tsi_link_after (&tsi, t, TSI_CONTINUE_LINKING);
     }
@@ -912,18 +912,19 @@ mf_xform_derefs (void)
           /* Only a few GIMPLE statements can reference memory.  */
           switch (TREE_CODE (s))
             {
-            case MODIFY_EXPR:
-              mf_xform_derefs_1 (&i, &TREE_OPERAND (s, 0), EXPR_LOCUS (s),
-                                 integer_one_node);
-              mf_xform_derefs_1 (&i, &TREE_OPERAND (s, 1), EXPR_LOCUS (s),
-                                 integer_zero_node);
+            case GIMPLE_MODIFY_STMT:
+              mf_xform_derefs_1 (&i, &GIMPLE_STMT_OPERAND (s, 0),
+		  		 EXPR_LOCUS (s), integer_one_node);
+              mf_xform_derefs_1 (&i, &GIMPLE_STMT_OPERAND (s, 1),
+		  		 EXPR_LOCUS (s), integer_zero_node);
               break;
 
             case RETURN_EXPR:
               if (TREE_OPERAND (s, 0) != NULL_TREE)
                 {
-                  if (TREE_CODE (TREE_OPERAND (s, 0)) == MODIFY_EXPR)
-                    mf_xform_derefs_1 (&i, &TREE_OPERAND (TREE_OPERAND (s, 0), 1),
+                  if (TREE_CODE (TREE_OPERAND (s, 0)) == GIMPLE_MODIFY_STMT)
+                    mf_xform_derefs_1 (&i, &GIMPLE_STMT_OPERAND
+					     (TREE_OPERAND (s, 0), 1),
                                        EXPR_LOCUS (s), integer_zero_node);
                   else
                     mf_xform_derefs_1 (&i, &TREE_OPERAND (s, 0), EXPR_LOCUS (s),

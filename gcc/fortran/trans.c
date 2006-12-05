@@ -140,11 +140,13 @@ gfc_evaluate_now (tree expr, stmtblock_t * pblock)
 }
 
 
-/* Build a MODIFY_EXPR node and add it to a given statement block PBLOCK.
-   A MODIFY_EXPR is an assignment: LHS <- RHS.  */
+/* Build a MODIFY_EXPR (or GIMPLE_MODIFY_STMT) node and add it to a
+   given statement block PBLOCK.  A MODIFY_EXPR is an assignment:
+   LHS <- RHS.  */
 
 void
-gfc_add_modify_expr (stmtblock_t * pblock, tree lhs, tree rhs)
+gfc_add_modify (stmtblock_t * pblock, tree lhs, tree rhs,
+		bool tuples_p)
 {
   tree tmp;
 
@@ -157,7 +159,8 @@ gfc_add_modify_expr (stmtblock_t * pblock, tree lhs, tree rhs)
 	      || AGGREGATE_TYPE_P (TREE_TYPE (lhs)));
 #endif
 
-  tmp = fold_build2 (MODIFY_EXPR, void_type_node, lhs, rhs);
+  tmp = fold_build2 (tuples_p ? GIMPLE_MODIFY_STMT : MODIFY_EXPR,
+		     void_type_node, lhs, rhs);
   gfc_add_expr_to_block (pblock, tmp);
 }
 

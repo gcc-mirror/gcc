@@ -489,7 +489,7 @@ initialize_hash_element (tree expr, tree lhs, struct expr_hash_elt *element)
   else if (TREE_CODE (expr) == RETURN_EXPR && TREE_OPERAND (expr, 0))
     {
       element->stmt = expr;
-      element->rhs = TREE_OPERAND (TREE_OPERAND (expr, 0), 1);
+      element->rhs = GIMPLE_STMT_OPERAND (TREE_OPERAND (expr, 0), 1);
     }
   else if (TREE_CODE (expr) == GOTO_EXPR)
     {
@@ -499,7 +499,7 @@ initialize_hash_element (tree expr, tree lhs, struct expr_hash_elt *element)
   else
     {
       element->stmt = expr;
-      element->rhs = TREE_OPERAND (expr, 1);
+      element->rhs = GENERIC_TREE_OPERAND (expr, 1);
     }
 
   element->lhs = lhs;
@@ -1183,14 +1183,14 @@ simple_iv_increment_p (tree stmt)
   tree lhs, rhs, preinc, phi;
   unsigned i;
 
-  if (TREE_CODE (stmt) != MODIFY_EXPR)
+  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return false;
 
-  lhs = TREE_OPERAND (stmt, 0);
+  lhs = GIMPLE_STMT_OPERAND (stmt, 0);
   if (TREE_CODE (lhs) != SSA_NAME)
     return false;
 
-  rhs = TREE_OPERAND (stmt, 1);
+  rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 
   if (TREE_CODE (rhs) != PLUS_EXPR
       && TREE_CODE (rhs) != MINUS_EXPR)
@@ -1473,8 +1473,8 @@ eliminate_redundant_computations (tree stmt)
   bool retval = false;
   bool modify_expr_p = false;
 
-  if (TREE_CODE (stmt) == MODIFY_EXPR)
-    def = TREE_OPERAND (stmt, 0);
+  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
+    def = GIMPLE_STMT_OPERAND (stmt, 0);
 
   /* Certain expressions on the RHS can be optimized away, but can not
      themselves be entered into the hash tables.  */
@@ -1499,12 +1499,12 @@ eliminate_redundant_computations (tree stmt)
     expr_p = &SWITCH_COND (stmt);
   else if (TREE_CODE (stmt) == RETURN_EXPR && TREE_OPERAND (stmt, 0))
     {
-      expr_p = &TREE_OPERAND (TREE_OPERAND (stmt, 0), 1);
+      expr_p = &GIMPLE_STMT_OPERAND (TREE_OPERAND (stmt, 0), 1);
       modify_expr_p = true;
     }
   else
     {
-      expr_p = &TREE_OPERAND (stmt, 1);
+      expr_p = &GENERIC_TREE_OPERAND (stmt, 1);
       modify_expr_p = true;
     }
 
@@ -1552,7 +1552,7 @@ eliminate_redundant_computations (tree stmt)
   return retval;
 }
 
-/* STMT, a MODIFY_EXPR, may create certain equivalences, in either
+/* STMT, a GIMPLE_MODIFY_STMT, may create certain equivalences, in either
    the available expressions table or the const_and_copies table.
    Detect and record those equivalences.  */
 
@@ -1561,12 +1561,12 @@ record_equivalences_from_stmt (tree stmt,
 			       int may_optimize_p,
 			       stmt_ann_t ann)
 {
-  tree lhs = TREE_OPERAND (stmt, 0);
+  tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
   enum tree_code lhs_code = TREE_CODE (lhs);
 
   if (lhs_code == SSA_NAME)
     {
-      tree rhs = TREE_OPERAND (stmt, 1);
+      tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 
       /* Strip away any useless type conversions.  */
       STRIP_USELESS_TYPE_CONVERSION (rhs);
@@ -1588,11 +1588,11 @@ record_equivalences_from_stmt (tree stmt,
      vops and recording the result in the available expression table,
      we may be able to expose more redundant loads.  */
   if (!ann->has_volatile_ops
-      && (TREE_CODE (TREE_OPERAND (stmt, 1)) == SSA_NAME
-	  || is_gimple_min_invariant (TREE_OPERAND (stmt, 1)))
+      && (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == SSA_NAME
+	  || is_gimple_min_invariant (GIMPLE_STMT_OPERAND (stmt, 1)))
       && !is_gimple_reg (lhs))
     {
-      tree rhs = TREE_OPERAND (stmt, 1);
+      tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
       tree new;
 
       /* FIXME: If the LHS of the assignment is a bitfield and the RHS
@@ -1619,7 +1619,7 @@ record_equivalences_from_stmt (tree stmt,
       if (rhs)
 	{
 	  /* Build a new statement with the RHS and LHS exchanged.  */
-	  new = build2 (MODIFY_EXPR, TREE_TYPE (stmt), rhs, lhs);
+	  new = build2_gimple (GIMPLE_MODIFY_STMT, rhs, lhs);
 
 	  create_ssa_artficial_load_stmt (new, stmt);
 
@@ -1840,11 +1840,14 @@ optimize_stmt (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
   may_optimize_p = (!ann->has_volatile_ops
 		    && ((TREE_CODE (stmt) == RETURN_EXPR
 			 && TREE_OPERAND (stmt, 0)
-			 && TREE_CODE (TREE_OPERAND (stmt, 0)) == MODIFY_EXPR
+			 && TREE_CODE (TREE_OPERAND (stmt, 0))
+			    == GIMPLE_MODIFY_STMT
 			 && ! (TREE_SIDE_EFFECTS
-			       (TREE_OPERAND (TREE_OPERAND (stmt, 0), 1))))
-			|| (TREE_CODE (stmt) == MODIFY_EXPR
-			    && ! TREE_SIDE_EFFECTS (TREE_OPERAND (stmt, 1)))
+			       (GIMPLE_STMT_OPERAND
+				(TREE_OPERAND (stmt, 0), 1))))
+			|| (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+			    && ! TREE_SIDE_EFFECTS (GIMPLE_STMT_OPERAND (stmt,
+									 1)))
 			|| TREE_CODE (stmt) == COND_EXPR
 			|| TREE_CODE (stmt) == SWITCH_EXPR));
 
@@ -1852,7 +1855,7 @@ optimize_stmt (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
     may_have_exposed_new_symbols |= eliminate_redundant_computations (stmt);
 
   /* Record any additional equivalences created by this statement.  */
-  if (TREE_CODE (stmt) == MODIFY_EXPR)
+  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
     record_equivalences_from_stmt (stmt,
 				   may_optimize_p,
 				   ann);
@@ -1917,7 +1920,7 @@ optimize_stmt (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
    is also added to the stack pointed to by BLOCK_AVAIL_EXPRS_P, so that they
    can be removed when we finish processing this block and its children.
 
-   NOTE: This function assumes that STMT is a MODIFY_EXPR node that
+   NOTE: This function assumes that STMT is a GIMPLE_MODIFY_STMT node that
    contains no CALL_EXPR on its RHS and makes no volatile nor
    aliased references.  */
 
@@ -1929,7 +1932,8 @@ lookup_avail_expr (tree stmt, bool insert)
   tree temp;
   struct expr_hash_elt *element = XNEW (struct expr_hash_elt);
 
-  lhs = TREE_CODE (stmt) == MODIFY_EXPR ? TREE_OPERAND (stmt, 0) : NULL;
+  lhs = TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+    			    ? GIMPLE_STMT_OPERAND (stmt, 0) : NULL;
 
   initialize_hash_element (stmt, lhs, element);
 
@@ -1978,8 +1982,8 @@ lookup_avail_expr (tree stmt, bool insert)
 }
 
 /* Hashing and equality functions for AVAIL_EXPRS.  The table stores
-   MODIFY_EXPR statements.  We compute a value number for expressions using
-   the code of the expression and the SSA numbers of its operands.  */
+   GIMPLE_MODIFY_STMT statements.  We compute a value number for expressions
+   using the code of the expression and the SSA numbers of its operands.  */
 
 static hashval_t
 avail_expr_hash (const void *p)
@@ -2078,7 +2082,7 @@ degenerate_phi_result (tree phi)
   return (i == PHI_NUM_ARGS (phi) ? val : NULL);
 }
 
-/* Given a tree node T, which is either a PHI_NODE or MODIFY_EXPR,
+/* Given a tree node T, which is either a PHI_NODE or GIMPLE_MODIFY_STMT,
    remove it from the IL.  */
 
 static void
@@ -2093,7 +2097,7 @@ remove_stmt_or_phi (tree t)
     }
 }
 
-/* Given a tree node T, which is either a PHI_NODE or MODIFY_EXPR,
+/* Given a tree node T, which is either a PHI_NODE or GIMPLE_MODIFY_STMT,
    return the "rhs" of the node, in the case of a non-degenerate
    PHI, NULL is returned.  */
 
@@ -2102,13 +2106,13 @@ get_rhs_or_phi_arg (tree t)
 {
   if (TREE_CODE (t) == PHI_NODE)
     return degenerate_phi_result (t);
-  else if (TREE_CODE (t) == MODIFY_EXPR)
-    return TREE_OPERAND (t, 1);
+  else if (TREE_CODE (t) == GIMPLE_MODIFY_STMT)
+    return GIMPLE_STMT_OPERAND (t, 1);
   gcc_unreachable ();
 }
 
 
-/* Given a tree node T, which is either a PHI_NODE or a MODIFY_EXPR,
+/* Given a tree node T, which is either a PHI_NODE or a GIMPLE_MODIFY_STMT,
    return the "lhs" of the node.  */
 
 static tree
@@ -2116,8 +2120,8 @@ get_lhs_or_phi_result (tree t)
 {
   if (TREE_CODE (t) == PHI_NODE)
     return PHI_RESULT (t);
-  else if (TREE_CODE (t) == MODIFY_EXPR)
-    return TREE_OPERAND (t, 0);
+  else if (TREE_CODE (t) == GIMPLE_MODIFY_STMT)
+    return GIMPLE_STMT_OPERAND (t, 0);
   gcc_unreachable ();
 }
 
@@ -2239,9 +2243,10 @@ propagate_rhs_into_lhs (tree stmt, tree lhs, tree rhs, bitmap interesting_names)
 
 	  /* If we replaced a variable index with a constant, then
 	     we would need to update the invariant flag for ADDR_EXPRs.  */
-	  if (TREE_CODE (use_stmt) == MODIFY_EXPR
-	      && TREE_CODE (TREE_OPERAND (use_stmt, 1)) == ADDR_EXPR)
-	    recompute_tree_invariant_for_addr_expr (TREE_OPERAND (use_stmt, 1));
+	  if (TREE_CODE (use_stmt) == GIMPLE_MODIFY_STMT
+	      && TREE_CODE (GIMPLE_STMT_OPERAND (use_stmt, 1)) == ADDR_EXPR)
+	    recompute_tree_invariant_for_addr_expr
+	      (GIMPLE_STMT_OPERAND (use_stmt, 1));
 
 	  /* If we cleaned up EH information from the statement,
 	     mark its containing block as needing EH cleanups.  */
@@ -2254,10 +2259,11 @@ propagate_rhs_into_lhs (tree stmt, tree lhs, tree rhs, bitmap interesting_names)
 
 	  /* Propagation may expose new trivial copy/constant propagation
 	     opportunities.  */
-	  if (TREE_CODE (use_stmt) == MODIFY_EXPR
-	      && TREE_CODE (TREE_OPERAND (use_stmt, 0)) == SSA_NAME
-	      && (TREE_CODE (TREE_OPERAND (use_stmt, 1)) == SSA_NAME
-		  || is_gimple_min_invariant (TREE_OPERAND (use_stmt, 1))))
+	  if (TREE_CODE (use_stmt) == GIMPLE_MODIFY_STMT
+	      && TREE_CODE (GIMPLE_STMT_OPERAND (use_stmt, 0)) == SSA_NAME
+	      && (TREE_CODE (GIMPLE_STMT_OPERAND (use_stmt, 1)) == SSA_NAME
+		  || is_gimple_min_invariant (GIMPLE_STMT_OPERAND (use_stmt,
+		      						   1))))
 	    {
 	      tree result = get_lhs_or_phi_result (use_stmt);
 	      bitmap_set_bit (interesting_names, SSA_NAME_VERSION (result));
