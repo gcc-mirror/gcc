@@ -4,19 +4,31 @@
 	* explow.c (expr_size, int_expr_size): Assert that size is non_NULL.
 
 2006-12-04  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-alias.c (compute_flow_sensitive_aliasing): Call
+	set_used_smts.
+	* tree-ssa-structalias.c (set_used_smts): Export.
+	(find_what_p_points_to): Don't call set_used_smts here.
+	* tree-ssa-structalias.h (set_used_smts): Add prototype.
+
+2006-12-04  Daniel Berlin  <dberlin@dberlin.org>
 	
 	* tree-ssa-alias.c (compute_may_aliases):
 	Compute flow sensitive before flow insensitive.
 	(compute_flow_sensitive_aliasing): Don't try to add
 	a symbol memory tag to itself.
+	
 	* alias.h (alias_set_subset_of): New prototype.
+
 	* alias.c (alias_set_subset_of): New function.
+
 	* tree-ssa-structalias.c: Update comments.
 	(struct variable_info): Add finished_solution.
 	(new_varinfo): Set finished solution to NULL.
 	(var_escaped_vars): Remove.
 	(escaped_vars_tree): Remove.
 	(escaped_vars_id): Remove.
+	(nonlocal_vars_id): Remove.
 	(constraint_expr_type): Add INCLUDES.
 	(graph_size): Removed.
 	(dump_constraint): Support INCLUDES.
@@ -29,7 +41,8 @@
 	(process_constraint): Fix non-field sensitive handling
 	Handle includes.
 	(get_constraint_for): Use INCLUDES.
-	(make_constraint_from_escaped): Use nonlocal_vars_id.
+	(make_constraint_from_anything): Renamed from
+	make_constraint_from_escaped.
 	(make_constraint_to_escaped): Removed.
 	(find_global_initializers): Removed.
 	(create_variable_info_for): Do not make constraints to escaped
@@ -37,17 +50,20 @@
 	(dump_solution_for_var): Don't print out the equivalent points-to
 	sets, just use the name of the variable it shares it with.
 	(intra_create_variable_infos): Use INCLUDES.
-	Move initialization of nonlocal variable to init_base_vars.
-	(init_base_vars): Init nonlocal variable here.
-	Remove escaped_vars initialization.
+	Change nonlocal variable sets to anything sets.
+	(init_base_vars): Remove escaped_vars and nonlocal_var
+	initialization. 
 	(find_escape_constraints): Removed.
 	(delete_points_to_sets): Remove dead code.
 	(used_smt_calculated): New variable.
 	(set_used_smts): New function.
 	(merge_smts_into): New function.
 	(find_what_p_points_to): Modify to use SMTs.
+	(create_nonlocal_var): Remove.
+	
 	* tree-ssa-operands.c (access_can_touch_variable): Remove
 	reference to nonlocal_all. 
+
 	* tree-ssa.c (verify_name_tags): Remove.
 	
 2006-12-04  Carlos O'Donell  <carlos@codesourcery.com>

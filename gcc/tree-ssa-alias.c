@@ -1096,6 +1096,8 @@ compute_flow_sensitive_aliasing (struct alias_info *ai)
   size_t i;
   tree ptr;
   
+  set_used_smts ();
+  
   for (i = 0; VEC_iterate (tree, ai->processed_ptrs, i, ptr); i++)
     {
       if (!find_what_p_points_to (ptr))
