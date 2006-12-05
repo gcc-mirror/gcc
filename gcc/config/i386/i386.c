@@ -2392,7 +2392,7 @@ x86_elf_aligned_common (FILE *file,
   fprintf (file, ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",
 	   size, align / BITS_PER_UNIT);
 }
-
+#endif
 /* Utility function for targets to use in implementing
    ASM_OUTPUT_ALIGNED_BSS.  */
 
@@ -2416,7 +2416,6 @@ x86_output_aligned_bss (FILE *file, tree decl ATTRIBUTE_UNUSED,
 #endif /* ASM_DECLARE_OBJECT_NAME */
   ASM_OUTPUT_SKIP (file, size ? size : 1);
 }
-#endif
 
 void
 optimization_options (int level, int size ATTRIBUTE_UNUSED)
