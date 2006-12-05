@@ -1,3 +1,25 @@
+2006-12-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2006-11-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/i386-cpuid.h (bit_SSE3): New.
+	(i386_get_cpuid): New function.
+	(i386_cpuid_ecx): Likewise.
+	(i386_cpuid_edx): Likewise.
+	(i386_cpuid): Updated to call i386_cpuid_edx.
+
+	* gcc.target/i386/sse3-addsubpd.c: New file.
+	* gcc.target/i386/sse3-addsubps.c: Likewise.
+	* gcc.target/i386/sse3-haddpd.c: Likewise.
+	* gcc.target/i386/sse3-haddps.c: Likewise.
+	* gcc.target/i386/sse3-hsubpd.c: Likewise.
+	* gcc.target/i386/sse3-hsubps.c: Likewise.
+	* gcc.target/i386/sse3-lddqu.c: Likewise.
+	* gcc.target/i386/sse3-movddup.c: Likewise.
+	* gcc.target/i386/sse3-movshdup.c: Likewise.
+	* gcc.target/i386/sse3-movsldup.c: Likewise.
+
 2006-12-04  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29733
