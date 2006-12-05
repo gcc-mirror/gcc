@@ -3852,7 +3852,7 @@ vect_transform_stmt (tree stmt, block_stmt_iterator *bsi, bool *strided_store)
 	  {
 	    /* In case of interleaving, the whole chain is vectorized when the
 	       last store in the chain is reached. Store stmts before the last
-	       one are skipped, and there vec_stmt_info shoudn't be freed
+	       one are skipped, and there vec_stmt_info shouldn't be freed
 	       meanwhile.  */
 	    *strided_store = true;
 	    if (STMT_VINFO_VEC_STMT (stmt_info))

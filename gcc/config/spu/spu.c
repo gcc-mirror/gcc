@@ -3707,7 +3707,7 @@ spu_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total)
 
   /* Folding to a CONST_VECTOR will use extra space but there might
      be only a small savings in cycles.  We'd like to use a CONST_VECTOR
-     only if it allows us to fold away multiple insns.  Changin the cost
+     only if it allows us to fold away multiple insns.  Changing the cost
      of a CONST_VECTOR here (or in CONST_COSTS) doesn't help though
      because this cost will only be compared against a single insn. 
      if (code == CONST_VECTOR)
