@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- gslice class.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -64,7 +64,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   {
   public:
     ///  Construct an empty slice.
-    gslice ();
+    gslice();
 
     /**
      *  @brief  Construct a slice.
@@ -108,8 +108,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       valarray<size_t> _M_size;
       valarray<size_t> _M_stride;
       valarray<size_t> _M_index; // Linear array of referenced indices
+
+      _Indexer()
+      : _M_count(1), _M_start(0), _M_size(), _M_stride(), _M_index() {}
+
       _Indexer(size_t, const valarray<size_t>&,
 	       const valarray<size_t>&);
+
       void
       _M_increment_use()
       { ++_M_count; }
@@ -125,18 +130,22 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   };
 
   inline size_t
-  gslice::start () const
+  gslice::start() const
   { return _M_index ? _M_index->_M_start : 0; }
 
   inline valarray<size_t>
-  gslice::size () const
+  gslice::size() const
   { return _M_index ? _M_index->_M_size : valarray<size_t>(); }
 
   inline valarray<size_t>
-  gslice::stride () const
+  gslice::stride() const
   { return _M_index ? _M_index->_M_stride : valarray<size_t>(); }
 
-  inline gslice::gslice () : _M_index(0) {}
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 543. valarray slice default constructor
+  inline
+  gslice::gslice()
+  : _M_index(new gslice::_Indexer()) {}
 
   inline
   gslice::gslice(size_t __o, const valarray<size_t>& __l,
@@ -144,7 +153,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   : _M_index(new gslice::_Indexer(__o, __l, __s)) {}
 
   inline
-  gslice::gslice(const gslice& __g) : _M_index(__g._M_index)
+  gslice::gslice(const gslice& __g)
+  : _M_index(__g._M_index)
   { if (_M_index) _M_index->_M_increment_use(); }
 
   inline
@@ -155,7 +165,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   }
 
   inline gslice&
-  gslice::operator= (const gslice& __g)
+  gslice::operator=(const gslice& __g)
   {
     if (__g._M_index)
       __g._M_index->_M_increment_use();
