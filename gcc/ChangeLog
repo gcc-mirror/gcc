@@ -1,3 +1,8 @@
+2006-12-05  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (output_file_start): Fix comment which referred to
+	ia64_override_options.
+
 2006-12-04  Jan Hubicka  <jh@suse.cz>
 
 	* cfgexpand.c (expand_one_var): Guard expand_one_stack_var by
