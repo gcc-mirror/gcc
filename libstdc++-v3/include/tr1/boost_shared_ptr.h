@@ -46,7 +46,7 @@
 
 // GCC Note:  based on version 1.32.0 of the Boost library.
 
-/** @file boost_shared_ptr.h
+/** @file tr1/boost_shared_ptr.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */

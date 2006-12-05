@@ -28,12 +28,12 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-// Written by Gabriel Dos Reis <Gabriel.Dos-Reis@cmla.ens-cachan.fr>
-
 /** @file valarray_before.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */
+
+// Written by Gabriel Dos Reis <Gabriel.Dos-Reis@cmla.ens-cachan.fr>
 
 #ifndef _VALARRAY_BEFORE_H
 #define _VALARRAY_BEFORE_H 1

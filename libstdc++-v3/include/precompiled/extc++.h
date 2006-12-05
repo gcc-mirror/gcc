@@ -27,6 +27,10 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file extc++.h
+ *  This is an implementation file for a precompiled header.
+ */
+
 #include <bits/stdtr1c++.h>
 
 #include <ext/algorithm>

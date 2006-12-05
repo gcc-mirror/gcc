@@ -28,15 +28,15 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 27.4.1 - Types
-// ISO C++ 14882: 27.4.3 - Template class fpos
-//
-
 /** @file postypes.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */
+
+//
+// ISO C++ 14882: 27.4.1 - Types
+// ISO C++ 14882: 27.4.3 - Template class fpos
+//
 
 #ifndef _GLIBCXX_POSTYPES_H
 #define _GLIBCXX_POSTYPES_H 1

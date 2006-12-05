@@ -27,13 +27,20 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file ctype_inline.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 //
 // ISO C++ 14882: 22.1  Locales
-//
-  
+//  
+
 // ctype bits to be inlined go here. Non-inlinable (ie virtual do_*)
 // functions go in ctype.cc
   
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   bool
   ctype<char>::
   is(mask __m, char __c) const
@@ -74,3 +81,5 @@
       ++__low;
     return __low;
   }
+
+_GLIBCXX_END_NAMESPACE

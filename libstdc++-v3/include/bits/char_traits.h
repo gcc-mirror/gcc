@@ -28,14 +28,14 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 21  Strings library
-//
-
 /** @file char_traits.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */
+
+//
+// ISO C++ 14882: 21  Strings library
+//
 
 #ifndef _CHAR_TRAITS_H
 #define _CHAR_TRAITS_H 1

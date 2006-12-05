@@ -28,13 +28,13 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file include/string
+ *  This is a Standard C++ Library header.
+ */
+
 //
 // ISO C++ 14882: 21  Strings library
 //
-
-/** @file
- *  This is a Standard C++ Library header.
- */
 
 #ifndef _GLIBCXX_STRING
 #define _GLIBCXX_STRING	1

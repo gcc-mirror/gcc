@@ -28,14 +28,14 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 27.4  Iostreams base classes
-//
-
 /** @file ios_base.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */
+
+//
+// ISO C++ 14882: 27.4  Iostreams base classes
+//
 
 #ifndef _IOS_BASE_H
 #define _IOS_BASE_H 1

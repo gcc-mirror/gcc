@@ -28,13 +28,13 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 27.8  File-based streams
-//
-
 /** @file fstream
  *  This is a Standard C++ Library header.
  */
+
+//
+// ISO C++ 14882: 27.8  File-based streams
+//
 
 #ifndef _GLIBCXX_FSTREAM
 #define _GLIBCXX_FSTREAM 1
