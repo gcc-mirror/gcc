@@ -32,6 +32,7 @@ Boston, MA 02110-1301, USA.  */
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include "libgfortran.h"
 #include "io.h"
 
@@ -374,7 +375,34 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
   s = open_external (opp, flags);
   if (s == NULL)
     {
-      generate_error (&opp->common, ERROR_OS, NULL);
+      char *path, *msg;
+      path = (char *) gfc_alloca (opp->file_len + 1);
+      msg = (char *) gfc_alloca (opp->file_len + 51);
+      unpack_filename (path, opp->file, opp->file_len);
+
+      switch (errno)
+	{
+	case ENOENT: 
+	  st_sprintf (msg, "File '%s' does not exist", path);
+	  break;
+
+	case EEXIST:
+	  st_sprintf (msg, "File '%s' already exists", path);
+	  break;
+
+	case EACCES:
+	  st_sprintf (msg, "Permission denied trying to open file '%s'", path);
+	  break;
+
+	case EISDIR:
+	  st_sprintf (msg, "'%s' is a directory", path);
+	  break;
+
+	default:
+	  msg = NULL;
+	}
+
+      generate_error (&opp->common, ERROR_OS, msg);
       goto cleanup;
     }
 
