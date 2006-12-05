@@ -3890,8 +3890,6 @@ set_used_smts (void)
     {
       tree var = vi->decl;
       tree smt;
-      bitmap_iterator bi;
-      unsigned int j;
       var_ann_t va;
       struct ptr_info_def *pi = NULL;
       
