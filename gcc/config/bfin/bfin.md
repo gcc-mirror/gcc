@@ -135,7 +135,9 @@
    (UNSPEC_MAC_WITH_FLAG 7)
    (UNSPEC_MOVE_FDPIC 8)
    (UNSPEC_FUNCDESC_GOT17M4 9)
-   (UNSPEC_LSETUP_END 10)])
+   (UNSPEC_LSETUP_END 10)
+   ;; Distinguish a 32 bit version of an insn from a 16 bit version.
+   (UNSPEC_32BIT 11)])
 
 (define_constants
   [(UNSPEC_VOLATILE_EH_RETURN 0)
@@ -454,7 +456,7 @@
   "@
    %0 = %1;
    %0 = %1 (X);
-   %0 = B %1 (Z);
+   %0 = B %1 (Z)%!
    B %0 = %1;
    CC = %1;
    %0 = CC;
@@ -509,7 +511,7 @@
   [(set (match_operand:SI 0 "register_operand" "=d,xy")
         (mem:SI (post_inc:SI (reg:SI REG_SP))))]
   ""
-  "%0 = [SP++];"
+  "%0 = [SP++]%!"
   [(set_attr "type" "mcld")
    (set_attr "addrtype" "preg,32bit")
    (set_attr "length" "2")])
@@ -531,10 +533,31 @@
    %0 = %1 (X);
    %0 = %1 (Z);
    #
-   %0 = %1;
-   %0 = %1;"
+   %0 = %1%!
+   %0 = %1%!"
   [(set_attr "type" "move,move,move,move,mvi,mvi,mvi,*,mcld,mcst")
    (set_attr "length" "2,2,2,2,2,4,4,*,*,*")])
+
+(define_insn "*movsi_insn32"
+  [(set (match_operand:SI 0 "register_operand" "=d,d")
+	(unspec:SI [(match_operand:SI 1 "nonmemory_operand" "d,P0")] UNSPEC_32BIT))]
+  ""
+ "@
+   %0 = ROT %1 BY 0%!
+   %0 = %0 -|- %0%!"
+  [(set_attr "type" "dsp32")])
+
+(define_split
+  [(set (match_operand:SI 0 "d_register_operand" "")
+	(const_int 0))]
+  "splitting_for_sched && !optimize_size"
+  [(set (match_dup 0) (unspec:SI [(const_int 0)] UNSPEC_32BIT))])
+
+(define_split
+  [(set (match_operand:SI 0 "d_register_operand" "")
+	(match_operand:SI 1 "d_register_operand" ""))]
+  "splitting_for_sched && !optimize_size"
+  [(set (match_dup 0) (unspec:SI [(match_dup 1)] UNSPEC_32BIT))])
 
 (define_insn_and_split "*movv2hi_insn"
   [(set (match_operand:V2HI 0 "nonimmediate_operand" "=da,da,d,dm")
@@ -544,8 +567,8 @@
   "@
    #
    %0 = %1;
-   %0 = %1;
-   %0 = %1;"
+   %0 = %1%!
+   %0 = %1%!"
   "reload_completed && GET_CODE (operands[1]) == CONST_VECTOR"
   [(set (match_dup 0) (high:SI (match_dup 2)))
    (set (match_dup 0) (lo_sum:SI (match_dup 0) (match_dup 3)))]
@@ -568,10 +591,10 @@
     "%0 = %1;",
     "%0 = %1 (X);",
     "%0 = %1 (X);",
-    "%0 = W %1 (X);",
-    "W %0 = %1;",
-    "%h0 = W %1;",
-    "W %0 = %h1;"
+    "%0 = W %1 (X)%!",
+    "W %0 = %1%!",
+    "%h0 = W %1%!",
+    "W %0 = %h1%!"
   };
   int alt = which_alternative;
   rtx mem = (MEM_P (operands[0]) ? operands[0]
@@ -591,8 +614,8 @@
    %0 = %1;
    %0 = %1 (X);
    %0 = %1 (X);
-   %0 = B %1 (X);
-   B %0 = %1;"
+   %0 = B %1 (X)%!
+   B %0 = %1%!"
   [(set_attr "type" "move,mvi,mvi,mcld,mcst")
    (set_attr "length" "2,2,4,*,*")])
 
@@ -603,8 +626,8 @@
   "@
    %0 = %1;
    #
-   %0 = %1;
-   %0 = %1;"
+   %0 = %1%!
+   %0 = %1%!"
   [(set_attr "type" "move,*,mcld,mcst")])
 
 (define_insn_and_split "movdf_insn"
@@ -643,7 +666,7 @@
 	(match_operand:SI 1 "nonmemory_operand" "d,n"))]
   ""
   "@
-   %d0 = %h1 << 0;
+   %d0 = %h1 << 0%!
    %d0 = %1;"
   [(set_attr "type" "dsp32,mvi")])
 
@@ -781,7 +804,7 @@
   ""
   "@
    %0 = %h1 (X);
-   %0 = W %h1 (X);"
+   %0 = W %h1 (X)%!"
   "reload_completed && bfin_dsp_memref_p (operands[1])"
   [(set (match_dup 2) (match_dup 1))
    (set (match_dup 0) (sign_extend:SI (match_dup 2)))]
@@ -796,7 +819,7 @@
   ""
   "@
    %0 = %h1 (Z);
-   %0 = W %h1 (Z);"
+   %0 = W %h1 (Z)%!"
   "reload_completed && bfin_dsp_memref_p (operands[1])"
   [(set (match_dup 2) (match_dup 1))
    (set (match_dup 0) (zero_extend:SI (match_dup 2)))]
@@ -817,7 +840,7 @@
 	(sign_extend:HI (match_operand:QI 1 "nonimmediate_operand" "m, d")))]
   ""
   "@
-   %0 = B %1 (X);
+   %0 = B %1 (X)%!
    %0 = %T1 (X);"
   [(set_attr "type" "mcld,alu0")])
 
@@ -826,7 +849,7 @@
 	(sign_extend:SI (match_operand:QI 1 "nonimmediate_operand" "m, d")))]
   ""
   "@
-   %0 = B %1 (X);
+   %0 = B %1 (X)%!
    %0 = %T1 (X);"
   [(set_attr "type" "mcld,alu0")])
 
@@ -836,7 +859,7 @@
 	(zero_extend:HI (match_operand:QI 1 "nonimmediate_operand" "m, d")))]
   ""
   "@
-   %0 = B %1 (Z);
+   %0 = B %1 (Z)%!
    %0 = %T1 (Z);"
   [(set_attr "type" "mcld,alu0")])
 
@@ -846,7 +869,7 @@
 	(zero_extend:SI (match_operand:QI 1 "nonimmediate_operand" "m, d")))]
   ""
   "@
-   %0 = B %1 (Z);
+   %0 = B %1 (Z)%!
    %0 = %T1 (Z);"
   [(set_attr "type" "mcld,alu0")])
 
@@ -1109,7 +1132,7 @@
 	(mult:SI (sign_extend:SI (match_operand:HI 1 "register_operand" "%d"))
 		 (sign_extend:SI (match_operand:HI 2 "register_operand" "d"))))]
   ""
-  "%0 = %h1 * %h2 (IS);"
+  "%0 = %h1 * %h2 (IS)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "umulhisi3"
@@ -1117,7 +1140,7 @@
 	(mult:SI (zero_extend:SI (match_operand:HI 1 "register_operand" "%d"))
 		 (zero_extend:SI (match_operand:HI 2 "register_operand" "d"))))]
   ""
-  "%0 = %h1 * %h2 (FU);"
+  "%0 = %h1 * %h2 (FU)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "usmulhisi3"
@@ -1125,7 +1148,7 @@
 	(mult:SI (zero_extend:SI (match_operand:HI 1 "register_operand" "W"))
 		 (sign_extend:SI (match_operand:HI 2 "register_operand" "W"))))]
   ""
-  "%0 = %h2 * %h1 (IS,M);"
+  "%0 = %h2 * %h1 (IS,M)%!"
   [(set_attr "type" "dsp32")])
 
 ;; The processor also supports ireg += mreg or ireg -= mreg, but these
@@ -1150,7 +1173,7 @@
 	(ss_plus:SI (match_operand:SI 1 "register_operand" "d")
 		    (match_operand:SI 2 "register_operand" "d")))]
   ""
-  "%0 = %1 + %2 (S);"
+  "%0 = %1 + %2 (S)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "subsi3"
@@ -1182,7 +1205,7 @@
 	(ss_minus:SI (match_operand:SI 1 "register_operand" "d")
 		     (match_operand:SI 2 "register_operand" "d")))]
   ""
-  "%0 = %1 - %2 (S);"
+  "%0 = %1 - %2 (S)%!"
   [(set_attr "type" "dsp32")])
 
 ;; Bit test instructions
@@ -1291,7 +1314,7 @@
 	(smax:SI (match_operand:SI 1 "register_operand" "d")
 		 (match_operand:SI 2 "register_operand" "d")))]
   ""
-  "%0 = max(%1,%2);"
+  "%0 = max(%1,%2)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "sminsi3"
@@ -1299,14 +1322,14 @@
 	(smin:SI (match_operand:SI 1 "register_operand" "d")
 		 (match_operand:SI 2 "register_operand" "d")))]
   ""
-  "%0 = min(%1,%2);"
+  "%0 = min(%1,%2)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "abssi2"
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(abs:SI (match_operand:SI 1 "register_operand" "d")))]
   ""
-  "%0 = abs %1;"
+  "%0 = abs %1%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "negsi2"
@@ -1320,7 +1343,7 @@
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(ss_neg:SI (match_operand:SI 1 "register_operand" "d")))]
   ""
-  "%0 = -%1 (S);"
+  "%0 = -%1 (S)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "one_cmplsi2"
@@ -1337,7 +1360,7 @@
 	 (clz:HI (not:SI (match_dup 1)))
 	 (clz:HI (match_dup 1))))]
   ""
-  "%h0 = signbits %1;"
+  "%h0 = signbits %1%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "smaxhi3"
@@ -1345,7 +1368,7 @@
 	(smax:HI (match_operand:HI 1 "register_operand" "d")
 		 (match_operand:HI 2 "register_operand" "d")))]
   ""
-  "%0 = max(%1,%2) (V);"
+  "%0 = max(%1,%2) (V)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "sminhi3"
@@ -1353,14 +1376,14 @@
 	(smin:HI (match_operand:HI 1 "register_operand" "d")
 		 (match_operand:HI 2 "register_operand" "d")))]
   ""
-  "%0 = min(%1,%2) (V);"
+  "%0 = min(%1,%2) (V)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "abshi2"
   [(set (match_operand:HI 0 "register_operand" "=d")
 	(abs:HI (match_operand:HI 1 "register_operand" "d")))]
   ""
-  "%0 = abs %1 (V);"
+  "%0 = abs %1 (V)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "neghi2"
@@ -1368,13 +1391,13 @@
 	(neg:HI (match_operand:HI 1 "register_operand" "d")))]
   ""
   "%0 = -%1;"
-  [(set_attr "type" "dsp32")])
+  [(set_attr "type" "alu0")])
 
 (define_insn "ssneghi2"
   [(set (match_operand:HI 0 "register_operand" "=d")
 	(ss_neg:HI (match_operand:HI 1 "register_operand" "d")))]
   ""
-  "%0 = -%1 (V);"
+  "%0 = -%1 (V)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "signbitshi2"
@@ -1384,7 +1407,7 @@
 	 (clz:HI (not:HI (match_dup 1)))
 	 (clz:HI (match_dup 1))))]
   ""
-  "%h0 = signbits %h1;"
+  "%h0 = signbits %h1%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "mulsi3"
@@ -1410,12 +1433,13 @@
 })
 
 (define_insn_and_split "*ashlsi3_insn"
-  [(set (match_operand:SI 0 "register_operand" "=d,a,a,a")
-	(ashift:SI (match_operand:SI 1 "register_operand" "0,a,a,a")
-		   (match_operand:SI 2 "nonmemory_operand" "dKu5,P1,P2,?P3P4")))]
+  [(set (match_operand:SI 0 "register_operand" "=d,d,a,a,a")
+	(ashift:SI (match_operand:SI 1 "register_operand" "0,d,a,a,a")
+		   (match_operand:SI 2 "nonmemory_operand" "dKu5,Ku5,P1,P2,?P3P4")))]
   ""
   "@
    %0 <<= %2;
+   %0 = %1 << %2%!
    %0 = %1 + %1;
    %0 = %1 << %2;
    #"
@@ -1423,15 +1447,17 @@
   [(set (match_dup 0) (ashift:SI (match_dup 1) (const_int 2)))
    (set (match_dup 0) (ashift:SI (match_dup 0) (match_dup 3)))]
   "operands[3] = GEN_INT (INTVAL (operands[2]) - 2);"
-  [(set_attr "type" "shft")])
+  [(set_attr "type" "shft,dsp32,shft,shft,*")])
 
 (define_insn "ashrsi3"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(ashiftrt:SI (match_operand:SI 1 "register_operand" "0")
-		     (match_operand:SI 2 "nonmemory_operand" "dKu5")))]
+  [(set (match_operand:SI 0 "register_operand" "=d,d")
+	(ashiftrt:SI (match_operand:SI 1 "register_operand" "0,d")
+		     (match_operand:SI 2 "nonmemory_operand" "dKu5,Ku5")))]
   ""
-  "%0 >>>= %2;"
-  [(set_attr "type" "shft")])
+  "@
+   %0 >>>= %2;
+   %0 = %1 >>> %2%!"
+  [(set_attr "type" "shft,dsp32")])
 
 (define_insn "ror_one"
   [(set (match_operand:SI 0 "register_operand" "=d")
@@ -1440,9 +1466,8 @@
    (set (reg:BI REG_CC)
 	(zero_extract:BI (match_dup 1) (const_int 1) (const_int 0)))]
   ""
-  "%0 = ROT %1 BY -1;"
-  [(set_attr "type" "shft")
-   (set_attr "length" "4")])
+  "%0 = ROT %1 BY -1%!"
+  [(set_attr "type" "dsp32")])
 
 (define_insn "rol_one"
   [(set (match_operand:SI 0 "register_operand" "+d")
@@ -1451,9 +1476,8 @@
    (set (reg:BI REG_CC)
 	(zero_extract:BI (match_dup 1) (const_int 31) (const_int 0)))]
   ""
-  "%0 = ROT %1 BY 1;"
-  [(set_attr "type" "shft")
-   (set_attr "length" "4")])
+  "%0 = ROT %1 BY 1%!"
+  [(set_attr "type" "dsp32")])
 
 (define_expand "lshrdi3"
   [(set (match_operand:DI 0 "register_operand" "")
@@ -1520,14 +1544,15 @@
 })
 
 (define_insn "lshrsi3"
-  [(set (match_operand:SI 0 "register_operand" "=d,a")
-	(lshiftrt:SI (match_operand:SI 1 "register_operand" " 0,a")
-		     (match_operand:SI 2 "nonmemory_operand" "dKu5,P1P2")))]
+  [(set (match_operand:SI 0 "register_operand" "=d,d,a")
+	(lshiftrt:SI (match_operand:SI 1 "register_operand" "0,d,a")
+		     (match_operand:SI 2 "nonmemory_operand" "dKu5,Ku5,P1P2")))]
   ""
   "@
    %0 >>= %2;
+   %0 = %1 >> %2%!
    %0 = %1 >> %2;"
-  [(set_attr "type" "shft")])
+  [(set_attr "type" "shft,dsp32,shft")])
 
 ;; A pattern to reload the equivalent of
 ;;   (set (Dreg) (plus (FP) (large_constant)))
@@ -2327,6 +2352,12 @@
   ""
   "nop;")
 
+(define_insn "mnop"
+  [(unspec [(const_int 0)] UNSPEC_32BIT)]
+  ""
+  "mnop%!"
+  [(set_attr "type" "dsp32")])
+
 ;;;;;;;;;;;;;;;;;;;;   CC2dreg   ;;;;;;;;;;;;;;;;;;;;;;;;;
 (define_insn "movsibi"
   [(set (match_operand:BI 0 "register_operand" "=C")
@@ -2361,7 +2392,7 @@
 		(lshiftrt:SI (match_operand:SI 2 "register_operand" "d")
 			     (const_int 8))))]
   ""
-  "%0 = ALIGN8(%1, %2);"
+  "%0 = ALIGN8(%1, %2)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn ""
@@ -2371,7 +2402,7 @@
 		(lshiftrt:SI (match_operand:SI 2 "register_operand" "d")
 			     (const_int 16))))]
   ""
-  "%0 = ALIGN16(%1, %2);"
+  "%0 = ALIGN16(%1, %2)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn ""
@@ -2381,7 +2412,7 @@
 		(lshiftrt:SI (match_operand:SI 2 "register_operand" "d")
 			     (const_int 24))))]
   ""
-  "%0 = ALIGN24(%1, %2);"
+  "%0 = ALIGN24(%1, %2)%!"
   [(set_attr "type" "dsp32")])
 
 ;; Prologue and epilogue.
@@ -2521,7 +2552,7 @@
 	 (vec_select:HI (match_operand:V2HI 2 "register_operand" "d")
 			(parallel [(const_int 0)]))))]
   ""
-  "%d0 = %h2 << 0;"
+  "%d0 = %h2 << 0%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "movhi_high2high"
@@ -2532,7 +2563,7 @@
 	 (vec_select:HI (match_operand:V2HI 2 "register_operand" "d")
 			(parallel [(const_int 1)]))))]
   ""
-  "%d0 = %d2 << 0;"
+  "%d0 = %d2 << 0%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "movhi_low2low"
@@ -2543,7 +2574,7 @@
 	 (vec_select:HI (match_operand:V2HI 1 "register_operand" "0")
 			(parallel [(const_int 1)]))))]
   ""
-  "%h0 = %h2 << 0;"
+  "%h0 = %h2 << 0%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "movhi_high2low"
@@ -2554,7 +2585,7 @@
 	 (vec_select:HI (match_operand:V2HI 1 "register_operand" "0")
 			(parallel [(const_int 1)]))))]
   ""
-  "%h0 = %d2 << 0;"
+  "%h0 = %d2 << 0%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "movhiv2hi_low"
@@ -2564,7 +2595,7 @@
 	 (vec_select:HI (match_operand:V2HI 1 "register_operand" "0")
 			(parallel [(const_int 1)]))))]
   ""
-  "%h0 = %h2 << 0;"
+  "%h0 = %h2 << 0%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "movhiv2hi_high"
@@ -2574,7 +2605,7 @@
 			(parallel [(const_int 0)]))
 	 (match_operand:HI 2 "register_operand" "d")))]
   ""
-  "%d0 = %h2 << 0;"
+  "%d0 = %h2 << 0%!"
   [(set_attr "type" "dsp32")])
 
 ;; No earlyclobber on alternative two since our sequence ought to be safe.
@@ -2586,7 +2617,7 @@
 			 (match_operand:HI 1 "register_operand" "d,d")))]
   ""
   "@
-   %d0 = %h2 << 0;
+   %d0 = %h2 << 0%!
    #"
   "reload_completed"
   [(set (match_dup 0)
@@ -2613,10 +2644,10 @@
 			  (parallel [(match_operand 4 "const01_operand" "P0,P0,P1,P1")]))))]
   ""
   "@
-   %0 = PACK (%h2,%h1);
-   %0 = PACK (%h2,%d1);
-   %0 = PACK (%d2,%h1);
-   %0 = PACK (%d2,%d1);"
+   %0 = PACK (%h2,%h1)%!
+   %0 = PACK (%h2,%d1)%!
+   %0 = PACK (%d2,%h1)%!
+   %0 = PACK (%d2,%d1)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "movv2hi_hi"
@@ -2626,8 +2657,8 @@
   ""
   "@
    /* optimized out */
-   %h0 = %h1 << 0;
-   %h0 = %d1 << 0;"
+   %h0 = %h1 << 0%!
+   %h0 = %d1 << 0%!"
   [(set_attr "type" "dsp32")])
 
 (define_expand "movv2hi_hi_low"
@@ -2651,7 +2682,7 @@
 	(ss_plus:HI (match_operand:HI 1 "register_operand" "d")
 		    (match_operand:HI 2 "register_operand" "d")))]
   ""
-  "%h0 = %h1 + %h2 (S);"
+  "%h0 = %h1 + %h2 (S)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "sssubhi3"
@@ -2659,7 +2690,7 @@
 	(ss_minus:HI (match_operand:HI 1 "register_operand" "d")
 		     (match_operand:HI 2 "register_operand" "d")))]
   ""
-  "%h0 = %h1 - %h2 (S);"
+  "%h0 = %h1 - %h2 (S)%!"
   [(set_attr "type" "dsp32")])
 
 ;; V2HI vector insns
@@ -2669,7 +2700,7 @@
 	(plus:V2HI (match_operand:V2HI 1 "register_operand" "d")
 		   (match_operand:V2HI 2 "register_operand" "d")))]
   ""
-  "%0 = %1 +|+ %2;"
+  "%0 = %1 +|+ %2%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "ssaddv2hi3"
@@ -2677,7 +2708,7 @@
 	(ss_plus:V2HI (match_operand:V2HI 1 "register_operand" "d")
 		      (match_operand:V2HI 2 "register_operand" "d")))]
   ""
-  "%0 = %1 +|+ %2 (S);"
+  "%0 = %1 +|+ %2 (S)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "subv2hi3"
@@ -2685,7 +2716,7 @@
 	(minus:V2HI (match_operand:V2HI 1 "register_operand" "d")
 		   (match_operand:V2HI 2 "register_operand" "d")))]
   ""
-  "%0 = %1 -|- %2;"
+  "%0 = %1 -|- %2%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "sssubv2hi3"
@@ -2693,7 +2724,7 @@
 	(ss_minus:V2HI (match_operand:V2HI 1 "register_operand" "d")
 		       (match_operand:V2HI 2 "register_operand" "d")))]
   ""
-  "%0 = %1 -|- %2 (S);"
+  "%0 = %1 -|- %2 (S)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "addsubv2hi3"
@@ -2706,7 +2737,7 @@
 	 (minus:HI (vec_select:HI (match_dup 1) (parallel [(const_int 1)]))
 		   (vec_select:HI (match_dup 2) (parallel [(const_int 1)])))))]
   ""
-  "%0 = %1 +|- %2;"
+  "%0 = %1 +|- %2%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "subaddv2hi3"
@@ -2719,7 +2750,7 @@
 	 (plus:HI (vec_select:HI (match_dup 1) (parallel [(const_int 1)]))
 		  (vec_select:HI (match_dup 2) (parallel [(const_int 1)])))))]
   ""
-  "%0 = %1 -|+ %2;"
+  "%0 = %1 -|+ %2%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "ssaddsubv2hi3"
@@ -2732,7 +2763,7 @@
 	 (ss_minus:HI (vec_select:HI (match_dup 1) (parallel [(const_int 1)]))
 		      (vec_select:HI (match_dup 2) (parallel [(const_int 1)])))))]
   ""
-  "%0 = %1 +|- %2 (S);"
+  "%0 = %1 +|- %2 (S)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "sssubaddv2hi3"
@@ -2745,7 +2776,7 @@
 	 (ss_plus:HI (vec_select:HI (match_dup 1) (parallel [(const_int 1)]))
 		     (vec_select:HI (match_dup 2) (parallel [(const_int 1)])))))]
   ""
-  "%0 = %1 -|+ %2 (S);"
+  "%0 = %1 -|+ %2 (S)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "sublohiv2hi3"
@@ -2755,7 +2786,7 @@
 		  (vec_select:HI (match_operand:V2HI 2 "register_operand" "d")
 				 (parallel [(const_int 0)]))))]
   ""
-  "%h0 = %d1 - %h2;"
+  "%h0 = %d1 - %h2%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "subhilov2hi3"
@@ -2765,7 +2796,7 @@
 		  (vec_select:HI (match_operand:V2HI 2 "register_operand" "d")
 				 (parallel [(const_int 1)]))))]
   ""
-  "%h0 = %h1 - %d2;"
+  "%h0 = %h1 - %d2%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "sssublohiv2hi3"
@@ -2775,7 +2806,7 @@
 		     (vec_select:HI (match_operand:V2HI 2 "register_operand" "d")
 				    (parallel [(const_int 0)]))))]
   ""
-  "%h0 = %d1 - %h2 (S);"
+  "%h0 = %d1 - %h2 (S)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "sssubhilov2hi3"
@@ -2785,7 +2816,7 @@
 		     (vec_select:HI (match_operand:V2HI 2 "register_operand" "d")
 				    (parallel [(const_int 1)]))))]
   ""
-  "%h0 = %h1 - %d2 (S);"
+  "%h0 = %h1 - %d2 (S)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "addlohiv2hi3"
@@ -2795,7 +2826,7 @@
 		 (vec_select:HI (match_operand:V2HI 2 "register_operand" "d")
 				(parallel [(const_int 0)]))))]
   ""
-  "%h0 = %d1 + %h2;"
+  "%h0 = %d1 + %h2%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "addhilov2hi3"
@@ -2805,7 +2836,7 @@
 		 (vec_select:HI (match_operand:V2HI 2 "register_operand" "d")
 				(parallel [(const_int 1)]))))]
   ""
-  "%h0 = %h1 + %d2;"
+  "%h0 = %h1 + %d2%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "ssaddlohiv2hi3"
@@ -2815,7 +2846,7 @@
 		    (vec_select:HI (match_operand:V2HI 2 "register_operand" "d")
 				   (parallel [(const_int 0)]))))]
   ""
-  "%h0 = %d1 + %h2 (S);"
+  "%h0 = %d1 + %h2 (S)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "ssaddhilov2hi3"
@@ -2825,7 +2856,7 @@
 		    (vec_select:HI (match_operand:V2HI 2 "register_operand" "d")
 				   (parallel [(const_int 1)]))))]
   ""
-  "%h0 = %h1 + %d2 (S);"
+  "%h0 = %h1 + %d2 (S)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "sminv2hi3"
@@ -2833,7 +2864,7 @@
 	(smin:V2HI (match_operand:V2HI 1 "register_operand" "d")
 		   (match_operand:V2HI 2 "register_operand" "d")))]
   ""
-  "%0 = MIN (%1, %2) (V);"
+  "%0 = MIN (%1, %2) (V)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "smaxv2hi3"
@@ -2841,7 +2872,7 @@
 	(smax:V2HI (match_operand:V2HI 1 "register_operand" "d")
 		   (match_operand:V2HI 2 "register_operand" "d")))]
   ""
-  "%0 = MAX (%1, %2) (V);"
+  "%0 = MAX (%1, %2) (V)%!"
   [(set_attr "type" "dsp32")])
 
 ;; Multiplications.
@@ -2865,7 +2896,7 @@
 		    (match_operand 3 "const_int_operand" "n")]
 		   UNSPEC_MUL_WITH_FLAG))]
   ""
-  "%h0 = %h1 * %h2 %M3;"
+  "%h0 = %h1 * %h2 %M3%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "flag_mulhisi"
@@ -2875,7 +2906,7 @@
 		    (match_operand 3 "const_int_operand" "n")]
 		   UNSPEC_MUL_WITH_FLAG))]
   ""
-  "%0 = %h1 * %h2 %M3;"
+  "%0 = %h1 * %h2 %M3%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "flag_mulhisi_parts"
@@ -2891,10 +2922,10 @@
   ""
 {
   const char *templates[] = {
-    "%0 = %h1 * %h2 %M5;",
-    "%0 = %d1 * %h2 %M5;",
-    "%0 = %h1 * %d2 %M5;",
-    "%0 = %d1 * %d2 %M5;" };
+    "%0 = %h1 * %h2 %M5%!",
+    "%0 = %d1 * %h2 %M5%!",
+    "%0 = %h1 * %d2 %M5%!",
+    "%0 = %d1 * %d2 %M5%!" };
   int alt = INTVAL (operands[3]) + (INTVAL (operands[4]) << 1);
   return templates[alt];
 }
@@ -2913,7 +2944,7 @@
 		     (match_dup 4) (match_dup 5)]
 		    UNSPEC_MAC_WITH_FLAG))]
   ""
-  "%h0 = (A0 %b4 %h1 * %h2) %M6;"
+  "%h0 = (A0 %b4 %h1 * %h2) %M6%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "flag_machi_acconly"
@@ -2925,7 +2956,7 @@
 		     (match_operand 5 "const_int_operand" "n")]
 		    UNSPEC_MAC_WITH_FLAG))]
   ""
-  "%0 %b4 %h1 * %h2 %M6;"
+  "%0 %b4 %h1 * %h2 %M6%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "flag_macinithi"
@@ -2938,7 +2969,7 @@
 	(unspec:PDI [(match_dup 1) (match_dup 2) (match_dup 3)]
 		    UNSPEC_MAC_WITH_FLAG))]
   ""
-  "%h0 = (A0 = %h1 * %h2) %M3;"
+  "%h0 = (A0 = %h1 * %h2) %M3%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "flag_macinit1hi"
@@ -2948,7 +2979,7 @@
 		     (match_operand 3 "const_int_operand" "n")]
 		    UNSPEC_MAC_WITH_FLAG))]
   ""
-  "%0 = %h1 * %h2 %M3;"
+  "%0 = %h1 * %h2 %M3%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "mulv2hi3"
@@ -2956,7 +2987,7 @@
 	(mult:V2HI (match_operand:V2HI 1 "register_operand" "d")
 		   (match_operand:V2HI 2 "register_operand" "d")))]
   ""
-  "%h0 = %h1 * %h2, %d0 = %d1 * %d2 (IS);"
+  "%h0 = %h1 * %h2, %d0 = %d1 * %d2 (IS)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "flag_mulv2hi"
@@ -2966,7 +2997,7 @@
 		      (match_operand 3 "const_int_operand" "n")]
 		     UNSPEC_MUL_WITH_FLAG))]
   ""
-  "%h0 = %h1 * %h2, %d0 = %d1 * %d2 %M3;"
+  "%h0 = %h1 * %h2, %d0 = %d1 * %d2 %M3%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "flag_mulv2hi_parts"
@@ -2988,22 +3019,22 @@
   ""
 {
   const char *templates[] = {
-    "%h0 = %h1 * %h2, %d0 = %h1 * %h2 %M7;",
-    "%h0 = %d1 * %h2, %d0 = %h1 * %h2 %M7;",
-    "%h0 = %h1 * %h2, %d0 = %d1 * %h2 %M7;",
-    "%h0 = %d1 * %h2, %d0 = %d1 * %h2 %M7;",
-    "%h0 = %h1 * %d2, %d0 = %h1 * %h2 %M7;",
-    "%h0 = %d1 * %d2, %d0 = %h1 * %h2 %M7;",
-    "%h0 = %h1 * %d2, %d0 = %d1 * %h2 %M7;",
-    "%h0 = %d1 * %d2, %d0 = %d1 * %h2 %M7;",
-    "%h0 = %h1 * %h2, %d0 = %h1 * %d2 %M7;",
-    "%h0 = %d1 * %h2, %d0 = %h1 * %d2 %M7;",
-    "%h0 = %h1 * %h2, %d0 = %d1 * %d2 %M7;",
-    "%h0 = %d1 * %h2, %d0 = %d1 * %d2 %M7;",
-    "%h0 = %h1 * %d2, %d0 = %h1 * %d2 %M7;",
-    "%h0 = %d1 * %d2, %d0 = %h1 * %d2 %M7;",
-    "%h0 = %h1 * %d2, %d0 = %d1 * %d2 %M7;",
-    "%h0 = %d1 * %d2, %d0 = %d1 * %d2 %M7;" };
+    "%h0 = %h1 * %h2, %d0 = %h1 * %h2 %M7%!",
+    "%h0 = %d1 * %h2, %d0 = %h1 * %h2 %M7%!",
+    "%h0 = %h1 * %h2, %d0 = %d1 * %h2 %M7%!",
+    "%h0 = %d1 * %h2, %d0 = %d1 * %h2 %M7%!",
+    "%h0 = %h1 * %d2, %d0 = %h1 * %h2 %M7%!",
+    "%h0 = %d1 * %d2, %d0 = %h1 * %h2 %M7%!",
+    "%h0 = %h1 * %d2, %d0 = %d1 * %h2 %M7%!",
+    "%h0 = %d1 * %d2, %d0 = %d1 * %h2 %M7%!",
+    "%h0 = %h1 * %h2, %d0 = %h1 * %d2 %M7%!",
+    "%h0 = %d1 * %h2, %d0 = %h1 * %d2 %M7%!",
+    "%h0 = %h1 * %h2, %d0 = %d1 * %d2 %M7%!",
+    "%h0 = %d1 * %h2, %d0 = %d1 * %d2 %M7%!",
+    "%h0 = %h1 * %d2, %d0 = %h1 * %d2 %M7%!",
+    "%h0 = %d1 * %d2, %d0 = %h1 * %d2 %M7%!",
+    "%h0 = %h1 * %d2, %d0 = %d1 * %d2 %M7%!",
+    "%h0 = %d1 * %d2, %d0 = %d1 * %d2 %M7%!" };
   int alt = (INTVAL (operands[3]) + (INTVAL (operands[4]) << 1)
 	     + (INTVAL (operands[5]) << 2)  + (INTVAL (operands[6]) << 3));
   return templates[alt];
@@ -3048,22 +3079,22 @@
   ""
 {
   const char *templates[] = {
-    "%h0 = (A0 %b8 %h1 * %h2), %d0 = (A1 %b9 %h1 * %h2) %M10;",
-    "%h0 = (A0 %b8 %d1 * %h2), %d0 = (A1 %b9 %h1 * %h2) %M10;",
-    "%h0 = (A0 %b8 %h1 * %h2), %d0 = (A1 %b9 %d1 * %h2) %M10;",
-    "%h0 = (A0 %b8 %d1 * %h2), %d0 = (A1 %b9 %d1 * %h2) %M10;",
-    "%h0 = (A0 %b8 %h1 * %d2), %d0 = (A1 %b9 %h1 * %h2) %M10;",
-    "%h0 = (A0 %b8 %d1 * %d2), %d0 = (A1 %b9 %h1 * %h2) %M10;",
-    "%h0 = (A0 %b8 %h1 * %d2), %d0 = (A1 %b9 %d1 * %h2) %M10;",
-    "%h0 = (A0 %b8 %d1 * %d2), %d0 = (A1 %b9 %d1 * %h2) %M10;",
-    "%h0 = (A0 %b8 %h1 * %h2), %d0 = (A1 %b9 %h1 * %d2) %M10;",
-    "%h0 = (A0 %b8 %d1 * %h2), %d0 = (A1 %b9 %h1 * %d2) %M10;",
-    "%h0 = (A0 %b8 %h1 * %h2), %d0 = (A1 %b9 %d1 * %d2) %M10;",
-    "%h0 = (A0 %b8 %d1 * %h2), %d0 = (A1 %b9 %d1 * %d2) %M10;",
-    "%h0 = (A0 %b8 %h1 * %d2), %d0 = (A1 %b9 %h1 * %d2) %M10;",
-    "%h0 = (A0 %b8 %d1 * %d2), %d0 = (A1 %b9 %h1 * %d2) %M10;",
-    "%h0 = (A0 %b8 %h1 * %d2), %d0 = (A1 %b9 %d1 * %d2) %M10;",
-    "%h0 = (A0 %b8 %d1 * %d2), %d0 = (A1 %b9 %d1 * %d2) %M10;" };
+    "%h0 = (A0 %b8 %h1 * %h2), %d0 = (A1 %b9 %h1 * %h2) %M10%!",
+    "%h0 = (A0 %b8 %d1 * %h2), %d0 = (A1 %b9 %h1 * %h2) %M10%!",
+    "%h0 = (A0 %b8 %h1 * %h2), %d0 = (A1 %b9 %d1 * %h2) %M10%!",
+    "%h0 = (A0 %b8 %d1 * %h2), %d0 = (A1 %b9 %d1 * %h2) %M10%!",
+    "%h0 = (A0 %b8 %h1 * %d2), %d0 = (A1 %b9 %h1 * %h2) %M10%!",
+    "%h0 = (A0 %b8 %d1 * %d2), %d0 = (A1 %b9 %h1 * %h2) %M10%!",
+    "%h0 = (A0 %b8 %h1 * %d2), %d0 = (A1 %b9 %d1 * %h2) %M10%!",
+    "%h0 = (A0 %b8 %d1 * %d2), %d0 = (A1 %b9 %d1 * %h2) %M10%!",
+    "%h0 = (A0 %b8 %h1 * %h2), %d0 = (A1 %b9 %h1 * %d2) %M10%!",
+    "%h0 = (A0 %b8 %d1 * %h2), %d0 = (A1 %b9 %h1 * %d2) %M10%!",
+    "%h0 = (A0 %b8 %h1 * %h2), %d0 = (A1 %b9 %d1 * %d2) %M10%!",
+    "%h0 = (A0 %b8 %d1 * %h2), %d0 = (A1 %b9 %d1 * %d2) %M10%!",
+    "%h0 = (A0 %b8 %h1 * %d2), %d0 = (A1 %b9 %h1 * %d2) %M10%!",
+    "%h0 = (A0 %b8 %d1 * %d2), %d0 = (A1 %b9 %h1 * %d2) %M10%!",
+    "%h0 = (A0 %b8 %h1 * %d2), %d0 = (A1 %b9 %d1 * %d2) %M10%!",
+    "%h0 = (A0 %b8 %d1 * %d2), %d0 = (A1 %b9 %d1 * %d2) %M10%!" };
   int alt = (INTVAL (operands[3]) + (INTVAL (operands[4]) << 1)
 	     + (INTVAL (operands[5]) << 2)  + (INTVAL (operands[6]) << 3));
   return templates[alt];
@@ -3092,22 +3123,22 @@
   ""
 {
   const char *templates[] = {
-    "A0 %b8 %h1 * %h2, A1 %b9 %h1 * %h2 %M10;",
-    "A0 %b8 %d1 * %h2, A1 %b9 %h1 * %h2 %M10;",
-    "A0 %b8 %h1 * %h2, A1 %b9 %d1 * %h2 %M10;",
-    "A0 %b8 %d1 * %h2, A1 %b9 %d1 * %h2 %M10;",
-    "A0 %b8 %h1 * %d2, A1 %b9 %h1 * %h2 %M10;",
-    "A0 %b8 %d1 * %d2, A1 %b9 %h1 * %h2 %M10;",
-    "A0 %b8 %h1 * %d2, A1 %b9 %d1 * %h2 %M10;",
-    "A0 %b8 %d1 * %d2, A1 %b9 %d1 * %h2 %M10;",
-    "A0 %b8 %h1 * %h2, A1 %b9 %h1 * %d2 %M10;",
-    "A0 %b8 %d1 * %h2, A1 %b9 %h1 * %d2 %M10;",
-    "A0 %b8 %h1 * %h2, A1 %b9 %d1 * %d2 %M10;",
-    "A0 %b8 %d1 * %h2, A1 %b9 %d1 * %d2 %M10;",
-    "A0 %b8 %h1 * %d2, A1 %b9 %h1 * %d2 %M10;",
-    "A0 %b8 %d1 * %d2, A1 %b9 %h1 * %d2 %M10;",
-    "A0 %b8 %h1 * %d2, A1 %b9 %d1 * %d2 %M10;",
-    "A0 %b8 %d1 * %d2, A1 %b9 %d1 * %d2 %M10;" };
+    "A0 %b8 %h1 * %h2, A1 %b9 %h1 * %h2 %M10%!",
+    "A0 %b8 %d1 * %h2, A1 %b9 %h1 * %h2 %M10%!",
+    "A0 %b8 %h1 * %h2, A1 %b9 %d1 * %h2 %M10%!",
+    "A0 %b8 %d1 * %h2, A1 %b9 %d1 * %h2 %M10%!",
+    "A0 %b8 %h1 * %d2, A1 %b9 %h1 * %h2 %M10%!",
+    "A0 %b8 %d1 * %d2, A1 %b9 %h1 * %h2 %M10%!",
+    "A0 %b8 %h1 * %d2, A1 %b9 %d1 * %h2 %M10%!",
+    "A0 %b8 %d1 * %d2, A1 %b9 %d1 * %h2 %M10%!",
+    "A0 %b8 %h1 * %h2, A1 %b9 %h1 * %d2 %M10%!",
+    "A0 %b8 %d1 * %h2, A1 %b9 %h1 * %d2 %M10%!",
+    "A0 %b8 %h1 * %h2, A1 %b9 %d1 * %d2 %M10%!",
+    "A0 %b8 %d1 * %h2, A1 %b9 %d1 * %d2 %M10%!",
+    "A0 %b8 %h1 * %d2, A1 %b9 %h1 * %d2 %M10%!",
+    "A0 %b8 %d1 * %d2, A1 %b9 %h1 * %d2 %M10%!",
+    "A0 %b8 %h1 * %d2, A1 %b9 %d1 * %d2 %M10%!",
+    "A0 %b8 %d1 * %d2, A1 %b9 %d1 * %d2 %M10%!" };
   int alt = (INTVAL (operands[3]) + (INTVAL (operands[4]) << 1)
 	     + (INTVAL (operands[5]) << 2)  + (INTVAL (operands[6]) << 3));
   return templates[alt];
@@ -3144,22 +3175,22 @@
   ""
 {
   const char *templates[] = {
-    "%h0 = (A0 = %h1 * %h2), %d0 = (A1 = %h1 * %h2) %M7;",
-    "%h0 = (A0 = %d1 * %h2), %d0 = (A1 = %h1 * %h2) %M7;",
-    "%h0 = (A0 = %h1 * %h2), %d0 = (A1 = %d1 * %h2) %M7;",
-    "%h0 = (A0 = %d1 * %h2), %d0 = (A1 = %d1 * %h2) %M7;",
-    "%h0 = (A0 = %h1 * %d2), %d0 = (A1 = %h1 * %h2) %M7;",
-    "%h0 = (A0 = %d1 * %d2), %d0 = (A1 = %h1 * %h2) %M7;",
-    "%h0 = (A0 = %h1 * %d2), %d0 = (A1 = %d1 * %h2) %M7;",
-    "%h0 = (A0 = %d1 * %d2), %d0 = (A1 = %d1 * %h2) %M7;",
-    "%h0 = (A0 = %h1 * %h2), %d0 = (A1 = %h1 * %d2) %M7;",
-    "%h0 = (A0 = %d1 * %h2), %d0 = (A1 = %h1 * %d2) %M7;",
-    "%h0 = (A0 = %h1 * %h2), %d0 = (A1 = %d1 * %d2) %M7;",
-    "%h0 = (A0 = %d1 * %h2), %d0 = (A1 = %d1 * %d2) %M7;",
-    "%h0 = (A0 = %h1 * %d2), %d0 = (A1 = %h1 * %d2) %M7;",
-    "%h0 = (A0 = %d1 * %d2), %d0 = (A1 = %h1 * %d2) %M7;",
-    "%h0 = (A0 = %h1 * %d2), %d0 = (A1 = %d1 * %d2) %M7;",
-    "%h0 = (A0 = %d1 * %d2), %d0 = (A1 = %d1 * %d2) %M7;" };
+    "%h0 = (A0 = %h1 * %h2), %d0 = (A1 = %h1 * %h2) %M7%!",
+    "%h0 = (A0 = %d1 * %h2), %d0 = (A1 = %h1 * %h2) %M7%!",
+    "%h0 = (A0 = %h1 * %h2), %d0 = (A1 = %d1 * %h2) %M7%!",
+    "%h0 = (A0 = %d1 * %h2), %d0 = (A1 = %d1 * %h2) %M7%!",
+    "%h0 = (A0 = %h1 * %d2), %d0 = (A1 = %h1 * %h2) %M7%!",
+    "%h0 = (A0 = %d1 * %d2), %d0 = (A1 = %h1 * %h2) %M7%!",
+    "%h0 = (A0 = %h1 * %d2), %d0 = (A1 = %d1 * %h2) %M7%!",
+    "%h0 = (A0 = %d1 * %d2), %d0 = (A1 = %d1 * %h2) %M7%!",
+    "%h0 = (A0 = %h1 * %h2), %d0 = (A1 = %h1 * %d2) %M7%!",
+    "%h0 = (A0 = %d1 * %h2), %d0 = (A1 = %h1 * %d2) %M7%!",
+    "%h0 = (A0 = %h1 * %h2), %d0 = (A1 = %d1 * %d2) %M7%!",
+    "%h0 = (A0 = %d1 * %h2), %d0 = (A1 = %d1 * %d2) %M7%!",
+    "%h0 = (A0 = %h1 * %d2), %d0 = (A1 = %h1 * %d2) %M7%!",
+    "%h0 = (A0 = %d1 * %d2), %d0 = (A1 = %h1 * %d2) %M7%!",
+    "%h0 = (A0 = %h1 * %d2), %d0 = (A1 = %d1 * %d2) %M7%!",
+    "%h0 = (A0 = %d1 * %d2), %d0 = (A1 = %d1 * %d2) %M7%!" };
   int alt = (INTVAL (operands[3]) + (INTVAL (operands[4]) << 1)
 	     + (INTVAL (operands[5]) << 2)  + (INTVAL (operands[6]) << 3));
   return templates[alt];
@@ -3185,22 +3216,22 @@
   ""
 {
   const char *templates[] = {
-    "A0 = %h1 * %h2, A1 = %h1 * %h2 %M7;",
-    "A0 = %d1 * %h2, A1 = %h1 * %h2 %M7;",
-    "A0 = %h1 * %h2, A1 = %d1 * %h2 %M7;",
-    "A0 = %d1 * %h2, A1 = %d1 * %h2 %M7;",
-    "A0 = %h1 * %d2, A1 = %h1 * %h2 %M7;",
-    "A0 = %d1 * %d2, A1 = %h1 * %h2 %M7;",
-    "A0 = %h1 * %d2, A1 = %d1 * %h2 %M7;",
-    "A0 = %d1 * %d2, A1 = %d1 * %h2 %M7;",
-    "A0 = %h1 * %h2, A1 = %h1 * %d2 %M7;",
-    "A0 = %d1 * %h2, A1 = %h1 * %d2 %M7;",
-    "A0 = %h1 * %h2, A1 = %d1 * %d2 %M7;",
-    "A0 = %d1 * %h2, A1 = %d1 * %d2 %M7;",
-    "A0 = %h1 * %d2, A1 = %h1 * %d2 %M7;",
-    "A0 = %d1 * %d2, A1 = %h1 * %d2 %M7;",
-    "A0 = %h1 * %d2, A1 = %d1 * %d2 %M7;",
-    "A0 = %d1 * %d2, A1 = %d1 * %d2 %M7;" };
+    "A0 = %h1 * %h2, A1 = %h1 * %h2 %M7%!",
+    "A0 = %d1 * %h2, A1 = %h1 * %h2 %M7%!",
+    "A0 = %h1 * %h2, A1 = %d1 * %h2 %M7%!",
+    "A0 = %d1 * %h2, A1 = %d1 * %h2 %M7%!",
+    "A0 = %h1 * %d2, A1 = %h1 * %h2 %M7%!",
+    "A0 = %d1 * %d2, A1 = %h1 * %h2 %M7%!",
+    "A0 = %h1 * %d2, A1 = %d1 * %h2 %M7%!",
+    "A0 = %d1 * %d2, A1 = %d1 * %h2 %M7%!",
+    "A0 = %h1 * %h2, A1 = %h1 * %d2 %M7%!",
+    "A0 = %d1 * %h2, A1 = %h1 * %d2 %M7%!",
+    "A0 = %h1 * %h2, A1 = %d1 * %d2 %M7%!",
+    "A0 = %d1 * %h2, A1 = %d1 * %d2 %M7%!",
+    "A0 = %h1 * %d2, A1 = %h1 * %d2 %M7%!",
+    "A0 = %d1 * %d2, A1 = %h1 * %d2 %M7%!",
+    "A0 = %h1 * %d2, A1 = %d1 * %d2 %M7%!",
+    "A0 = %d1 * %d2, A1 = %d1 * %d2 %M7%!" };
   int alt = (INTVAL (operands[3]) + (INTVAL (operands[4]) << 1)
 	     + (INTVAL (operands[5]) << 2)  + (INTVAL (operands[6]) << 3));
   return templates[alt];
@@ -3216,7 +3247,7 @@
 		  (vec_select:HI (match_operand:V2HI 2 "register_operand" "d")
 				 (parallel [(const_int 0)])))))]
   ""
-  "%0 = %h1 * %h2 (IS);"
+  "%0 = %h1 * %h2 (IS)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "mulhisi_lh"
@@ -3228,7 +3259,7 @@
 		  (vec_select:HI (match_operand:V2HI 2 "register_operand" "d")
 				 (parallel [(const_int 1)])))))]
   ""
-  "%0 = %h1 * %d2 (IS);"
+  "%0 = %h1 * %d2 (IS)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "mulhisi_hl"
@@ -3240,7 +3271,7 @@
 		  (vec_select:HI (match_operand:V2HI 2 "register_operand" "d")
 				 (parallel [(const_int 0)])))))]
   ""
-  "%0 = %d1 * %h2 (IS);"
+  "%0 = %d1 * %h2 (IS)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "mulhisi_hh"
@@ -3252,21 +3283,21 @@
 		  (vec_select:HI (match_operand:V2HI 2 "register_operand" "d")
 				 (parallel [(const_int 1)])))))]
   ""
-  "%0 = %d1 * %d2 (IS);"
+  "%0 = %d1 * %d2 (IS)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "ssnegv2hi2"
   [(set (match_operand:V2HI 0 "register_operand" "=d")
 	(ss_neg:V2HI (match_operand:V2HI 1 "register_operand" "d")))]
   ""
-  "%0 = - %1 (V);"
+  "%0 = - %1 (V)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "absv2hi2"
   [(set (match_operand:V2HI 0 "register_operand" "=d")
 	(abs:V2HI (match_operand:V2HI 1 "register_operand" "d")))]
   ""
-  "%0 = ABS %1 (V);"
+  "%0 = ABS %1 (V)%!"
   [(set_attr "type" "dsp32")])
 
 ;; Shifts.
@@ -3280,9 +3311,9 @@
 	 (ss_ashift:V2HI (match_dup 1) (match_dup 2))))]
   ""
   "@
-   %0 = ASHIFT %1 BY %2 (V, S);
-   %0 = %1 >>> %2 (V,S);
-   %0 = %1 << %2 (V,S);"
+   %0 = ASHIFT %1 BY %2 (V, S)%!
+   %0 = %1 >>> %2 (V,S)%!
+   %0 = %1 << %2 (V,S)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "ssashifthi3"
@@ -3294,9 +3325,9 @@
 	 (ss_ashift:HI (match_dup 1) (match_dup 2))))]
   ""
   "@
-   %0 = ASHIFT %1 BY %2 (V, S);
-   %0 = %1 >>> %2 (V,S);
-   %0 = %1 << %2 (V,S);"
+   %0 = ASHIFT %1 BY %2 (V, S)%!
+   %0 = %1 >>> %2 (V,S)%!
+   %0 = %1 << %2 (V,S)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "lshiftv2hi3"
@@ -3308,9 +3339,9 @@
 	 (ashift:V2HI (match_dup 1) (match_dup 2))))]
   ""
   "@
-   %0 = LSHIFT %1 BY %2 (V);
-   %0 = %1 >> %2 (V);
-   %0 = %1 << %2 (V);"
+   %0 = LSHIFT %1 BY %2 (V)%!
+   %0 = %1 >> %2 (V)%!
+   %0 = %1 << %2 (V)%!"
   [(set_attr "type" "dsp32")])
 
 (define_insn "lshifthi3"
@@ -3322,8 +3353,8 @@
 	 (ashift:HI (match_dup 1) (match_dup 2))))]
   ""
   "@
-   %0 = LSHIFT %1 BY %2 (V);
-   %0 = %1 >> %2 (V);
-   %0 = %1 << %2 (V);"
+   %0 = LSHIFT %1 BY %2 (V)%!
+   %0 = %1 >> %2 (V)%!
+   %0 = %1 << %2 (V)%!"
   [(set_attr "type" "dsp32")])
 

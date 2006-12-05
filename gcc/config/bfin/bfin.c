@@ -52,6 +52,7 @@
 #include "tm-preds.h"
 #include "gt-bfin.h"
 #include "basic-block.h"
+#include "timevar.h"
 
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */
@@ -82,6 +83,16 @@ static int arg_regs[] = FUNCTION_ARG_REGISTERS;
 /* Nonzero if -mshared-library-id was given.  */
 static int bfin_lib_id_given;
 
+/* Nonzero if -fschedule-insns2 was given.  We override it and
+   call the scheduler ourselves during reorg.  */
+static int bfin_flag_schedule_insns2;
+
+/* Determines whether we run variable tracking in machine dependent
+   reorganization.  */
+static int bfin_flag_var_tracking;
+
+int splitting_for_sched;
+
 static void
 bfin_globalize_label (FILE *stream, const char *name)
 {
@@ -96,6 +107,13 @@ output_file_start (void)
 {
   FILE *file = asm_out_file;
   int i;
+
+  /* Variable tracking should be run after all optimizations which change order
+     of insns.  It also needs a valid CFG.  This can't be done in
+     ia64_override_options, because flag_var_tracking is finalized after
+     that.  */
+  bfin_flag_var_tracking = flag_var_tracking;
+  flag_var_tracking = 0;
 
   fprintf (file, ".file \"%s\";\n", input_filename);
   
@@ -1161,7 +1179,18 @@ print_address_operand (FILE *file, rtx x)
 void
 print_operand (FILE *file, rtx x, char code)
 {
-  enum machine_mode mode = GET_MODE (x);
+  enum machine_mode mode;
+
+  if (code == '!')
+    {
+      if (GET_MODE (current_output_insn) == SImode)
+	fprintf (file, " ||");
+      else
+	fprintf (file, ";");
+      return;
+    }
+
+  mode = GET_MODE (x);
 
   switch (code)
     {
@@ -2078,6 +2107,11 @@ override_options (void)
     flag_pic = 0;
 
   flag_schedule_insns = 0;
+
+  /* Passes after sched2 can break the helpful TImode annotations that
+     haifa-sched puts on every insn.  Just do scheduling in reorg.  */
+  bfin_flag_schedule_insns2 = flag_schedule_insns_after_reload;
+  flag_schedule_insns_after_reload = 0;
 
   init_machine_status = bfin_init_machine_status;
 }
@@ -3243,7 +3277,8 @@ bfin_optimize_loop (loop_info loop)
 	}
     }
   else if (CALL_P (last_insn)
-	   || get_attr_type (last_insn) == TYPE_SYNC
+	   || (GET_CODE (PATTERN (last_insn)) != SEQUENCE
+	       && get_attr_type (last_insn) == TYPE_SYNC)
 	   || recog_memoized (last_insn) == CODE_FOR_return_internal)
     {
       if (dump_file)
@@ -3254,7 +3289,8 @@ bfin_optimize_loop (loop_info loop)
 
   if (GET_CODE (PATTERN (last_insn)) == ASM_INPUT
       || asm_noperands (PATTERN (last_insn)) >= 0
-      || get_attr_seq_insns (last_insn) == SEQ_INSNS_MULTI)
+      || (GET_CODE (PATTERN (last_insn)) != SEQUENCE
+	  && get_attr_seq_insns (last_insn) == SEQ_INSNS_MULTI))
     {
       nop_insn = emit_insn_after (gen_nop (), last_insn);
       last_insn = nop_insn;
@@ -3602,9 +3638,184 @@ bfin_reorg_loops (FILE *dump_file)
 
   if (dump_file)
     print_rtl (dump_file, get_insns ());
+
+  FOR_EACH_BB (bb)
+    bb->aux = NULL;
+}
+
+/* Possibly generate a SEQUENCE out of three insns found in SLOT.
+   Returns true if we modified the insn chain, false otherwise.  */
+static bool
+gen_one_bundle (rtx slot[3])
+{
+  rtx bundle;
+
+  gcc_assert (slot[1] != NULL_RTX);
+
+  /* Verify that we really can do the multi-issue.  */
+  if (slot[0])
+    {
+      rtx t = NEXT_INSN (slot[0]);
+      while (t != slot[1])
+	{
+	  if (GET_CODE (t) != NOTE
+	      || NOTE_LINE_NUMBER (t) != NOTE_INSN_DELETED)
+	    return false;
+	  t = NEXT_INSN (t);
+	}
+    }
+  if (slot[2])
+    {
+      rtx t = NEXT_INSN (slot[1]);
+      while (t != slot[2])
+	{
+	  if (GET_CODE (t) != NOTE
+	      || NOTE_LINE_NUMBER (t) != NOTE_INSN_DELETED)
+	    return false;
+	  t = NEXT_INSN (t);
+	}
+    }
+
+  if (slot[0] == NULL_RTX)
+    slot[0] = emit_insn_before (gen_mnop (), slot[1]);
+  if (slot[2] == NULL_RTX)
+    slot[2] = emit_insn_after (gen_nop (), slot[1]);
+
+  /* Avoid line number information being printed inside one bundle.  */
+  if (INSN_LOCATOR (slot[1])
+      && INSN_LOCATOR (slot[1]) != INSN_LOCATOR (slot[0]))
+    INSN_LOCATOR (slot[1]) = INSN_LOCATOR (slot[0]);
+  if (INSN_LOCATOR (slot[2])
+      && INSN_LOCATOR (slot[2]) != INSN_LOCATOR (slot[0]))
+    INSN_LOCATOR (slot[2]) = INSN_LOCATOR (slot[0]);
+
+  /* Terminate them with "|| " instead of ";" in the output.  */
+  PUT_MODE (slot[0], SImode);
+  PUT_MODE (slot[1], SImode);
+
+  /* This is a cheat to avoid emit_insn's special handling of SEQUENCEs.
+     Generating a PARALLEL first and changing its code later is the
+     easiest way to emit a SEQUENCE insn.  */
+  bundle = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (3, slot[0], slot[1], slot[2]));
+  emit_insn_before (bundle, slot[0]);
+  remove_insn (slot[0]);
+  remove_insn (slot[1]);
+  remove_insn (slot[2]);
+  PUT_CODE (bundle, SEQUENCE);
+  
+  return true;
 }
 
+/* Go through all insns, and use the information generated during scheduling
+   to generate SEQUENCEs to represent bundles of instructions issued
+   simultaneously.  */
+
+static void
+bfin_gen_bundles (void)
+{
+  basic_block bb;
+  FOR_EACH_BB (bb)
+    {
+      rtx insn, next;
+      rtx slot[3];
+      int n_filled = 0;
+
+      slot[0] = slot[1] = slot[2] = NULL_RTX;
+      for (insn = BB_HEAD (bb);; insn = next)
+	{
+	  int at_end;
+	  if (INSN_P (insn))
+	    {
+	      if (get_attr_type (insn) == TYPE_DSP32)
+		slot[0] = insn;
+	      else if (slot[1] == NULL_RTX)
+		slot[1] = insn;
+	      else
+		slot[2] = insn;
+	      n_filled++;
+	    }
+
+	  next = NEXT_INSN (insn);
+	  while (next && insn != BB_END (bb)
+		 && !(INSN_P (next)
+		      && GET_CODE (PATTERN (next)) != USE
+		      && GET_CODE (PATTERN (next)) != CLOBBER))
+	    {
+	      insn = next;
+	      next = NEXT_INSN (insn);
+	    }
+
+	  /* BB_END can change due to emitting extra NOPs, so check here.  */
+	  at_end = insn == BB_END (bb);
+	  if (at_end || GET_MODE (next) == TImode)
+	    {
+	      if ((n_filled < 2
+		   || !gen_one_bundle (slot))
+		  && slot[0] != NULL_RTX)
+		{
+		  rtx pat = PATTERN (slot[0]);
+		  if (GET_CODE (pat) == SET
+		      && GET_CODE (SET_SRC (pat)) == UNSPEC
+		      && XINT (SET_SRC (pat), 1) == UNSPEC_32BIT)
+		    {
+		      SET_SRC (pat) = XVECEXP (SET_SRC (pat), 0, 0);
+		      INSN_CODE (slot[0]) = -1;
+		    }
+		}
+	      n_filled = 0;
+	      slot[0] = slot[1] = slot[2] = NULL_RTX;
+	    }
+	  if (at_end)
+	    break;
+	}
+    }
+}
 
+/* Return an insn type for INSN that can be used by the caller for anomaly
+   workarounds.  This differs from plain get_attr_type in that it handles
+   SEQUENCEs.  */
+
+static enum attr_type
+type_for_anomaly (rtx insn)
+{
+  rtx pat = PATTERN (insn);
+  if (GET_CODE (pat) == SEQUENCE)
+    {
+      enum attr_type t;
+      t = get_attr_type (XVECEXP (pat, 0, 1));
+      if (t == TYPE_MCLD)
+	return t;
+      t = get_attr_type (XVECEXP (pat, 0, 2));
+      if (t == TYPE_MCLD)
+	return t;
+      return TYPE_MCST;
+    }
+  else
+    return get_attr_type (insn);
+}
+
+/* Return nonzero if INSN contains any loads that may trap.  It handles
+   SEQUENCEs correctly.  */
+
+static bool
+trapping_loads_p (rtx insn)
+{
+  rtx pat = PATTERN (insn);
+  if (GET_CODE (pat) == SEQUENCE)
+    {
+      enum attr_type t;
+      t = get_attr_type (XVECEXP (pat, 0, 1));
+      if (t == TYPE_MCLD && may_trap_p (SET_SRC (XVECEXP (pat, 0, 1))))
+	return true;
+      t = get_attr_type (XVECEXP (pat, 0, 2));
+      if (t == TYPE_MCLD && may_trap_p (SET_SRC (XVECEXP (pat, 0, 2))))
+	return true;
+      return false;
+    }
+  else
+    return may_trap_p (SET_SRC (single_set (insn)));
+}
+
 /* We use the machine specific reorg pass for emitting CSYNC instructions
    after conditional branches as needed.
 
@@ -3630,6 +3841,27 @@ bfin_reorg (void)
 {
   rtx insn, last_condjump = NULL_RTX;
   int cycles_since_jump = INT_MAX;
+
+  /* We are freeing block_for_insn in the toplev to keep compatibility
+     with old MDEP_REORGS that are not CFG based.  Recompute it now.  */
+  compute_bb_for_insn ();
+
+  if (bfin_flag_schedule_insns2)
+    {
+      splitting_for_sched = 1;
+      split_all_insns (0);
+      splitting_for_sched = 0;
+
+      update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES, PROP_DEATH_NOTES);
+
+      timevar_push (TV_SCHED2);
+      schedule_insns ();
+      timevar_pop (TV_SCHED2);
+
+      /* Examine the schedule and insert nops as necessary for 64 bit parallel
+	 instructions.  */
+      bfin_gen_bundles ();
+    }
 
   /* Doloop optimization */
   if (cfun->machine->has_hardware_loops)
@@ -3666,15 +3898,14 @@ bfin_reorg (void)
 	}
       else if (INSN_P (insn))
 	{
-	  enum attr_type type = get_attr_type (insn);
+	  enum attr_type type = type_for_anomaly (insn);
 	  int delay_needed = 0;
 	  if (cycles_since_jump < INT_MAX)
 	    cycles_since_jump++;
 
 	  if (type == TYPE_MCLD && TARGET_SPECLD_ANOMALY)
 	    {
-	      rtx pat = single_set (insn);
-	      if (may_trap_p (SET_SRC (pat)))
+	      if (trapping_loads_p (insn))
 		delay_needed = 3;
 	    }
 	  else if (type == TYPE_SYNC && TARGET_CSYNC_ANOMALY)
@@ -3736,7 +3967,7 @@ bfin_reorg (void)
 
 	      if (INSN_P (target))
 		{
-		  enum attr_type type = get_attr_type (target);
+		  enum attr_type type = type_for_anomaly (target);
 		  int delay_needed = 0;
 		  if (cycles_since_jump < INT_MAX)
 		    cycles_since_jump++;
@@ -3773,6 +4004,13 @@ bfin_reorg (void)
 		}
 	    }
 	}
+    }
+
+  if (bfin_flag_var_tracking)
+    {
+      timevar_push (TV_VAR_TRACKING);
+      variable_tracking_main ();
+      timevar_pop (TV_VAR_TRACKING);
     }
 }
 
