@@ -28,7 +28,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file repeat.h
+/** @file tr1/repeat.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */

@@ -28,13 +28,13 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 27.7  String-based streams
-//
-
 /** @file sstream
  *  This is a Standard C++ Library header.
  */
+
+//
+// ISO C++ 14882: 27.7  String-based streams
+//
 
 #ifndef _GLIBCXX_SSTREAM
 #define _GLIBCXX_SSTREAM 1

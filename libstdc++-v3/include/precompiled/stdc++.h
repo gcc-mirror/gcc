@@ -27,6 +27,10 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file stdc++.h
+ *  This is an implementation file for a precompiled header.
+ */
+
 // 17.4.1.2 Headers
 
 // C

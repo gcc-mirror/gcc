@@ -27,6 +27,10 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file stdtr1c++.h
+ *  This is an implementation file for a precompiled header.
+ */
+
 #include <bits/stdc++.h>
 
 #include <tr1/array>

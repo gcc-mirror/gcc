@@ -27,7 +27,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file tuple_defs.h
+/** @file tr1/tuple_defs.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */

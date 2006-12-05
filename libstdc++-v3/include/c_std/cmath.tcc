@@ -29,6 +29,10 @@
 
 // This file was written by Gabriel Dos Reis <gdr@codesourcery.com>
 
+/** @file cmath.tcc
+ *  This is a Standard C++ Library file.
+ */
+
 #ifndef _GLIBCXX_CMATH_TCC
 #define _GLIBCXX_CMATH_TCC 1
 

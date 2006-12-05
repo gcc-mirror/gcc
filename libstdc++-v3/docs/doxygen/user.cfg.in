@@ -468,7 +468,10 @@ WARN_LOGFILE           =
 # files or directories with spaces.
 
 INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
-                         @srcdir@/libsupc++ \
+                   	 @srcdir@/include/precompiled/stdc++.h \
+                   	 @srcdir@/include/precompiled/stdtr1c++.h \
+                   	 @srcdir@/include/precompiled/extc++.h \
+                   	 @srcdir@/libsupc++/cxxabi.h \
                          @srcdir@/libsupc++/exception \
                          @srcdir@/libsupc++/new \
                          @srcdir@/libsupc++/typeinfo \
@@ -479,6 +482,24 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          include/tr1 \
                          include/algorithm \
                          include/bitset \
+                         include/cassert \
+                         include/cctype \
+                         include/cerrno \
+                         include/cfloat \
+                         include/ciso646 \
+                         include/climits \
+                         include/clocale \
+                         include/cmath \
+                         include/csetjmp \
+                         include/csignal \
+                         include/cstdarg \
+                         include/cstddef \
+                         include/cstdio \
+                         include/cstdlib \
+                         include/cstring \
+                         include/ctime \
+                         include/cwchar \
+                         include/cwctype \
                          include/deque \
                          include/fstream \
                          include/functional \
@@ -575,7 +596,7 @@ RECURSIVE              = NO
 # exclude a subdirectory from a directory tree whose root is specified
 # with the INPUT tag.
 
-EXCLUDE                = Makefile
+EXCLUDE                = Makefile 
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix filesystem feature) are excluded 
@@ -590,8 +611,9 @@ EXCLUDE_SYMLINKS       = NO
 # for example use the pattern */test/*
 
 EXCLUDE_PATTERNS       = stamp-* \
-                         Makefile \
-                         *gch* \
+                         *stdc++.h* \
+                         *stdtr1c++.h* \
+                         *extc++.h* \
                          */.svn/*
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or 

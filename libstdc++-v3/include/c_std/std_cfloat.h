@@ -28,11 +28,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 18.2.2  Implementation properties: C library
-//
-
-/** @file cfloat
+/** @file include/cfloat
  *  This is a Standard C++ Library file.  You should @c #include this file
  *  in your programs, rather than any of the "*.h" implementation files.
  *
@@ -41,6 +37,10 @@
  *  contained in the namespace @c std (except for names which are defined
  *  as macros in C).
  */
+
+//
+// ISO C++ 14882: 18.2.2  Implementation properties: C library
+//
 
 #ifndef _GLIBCXX_CFLOAT
 #define _GLIBCXX_CFLOAT 1

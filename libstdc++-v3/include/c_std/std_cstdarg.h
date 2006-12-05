@@ -28,11 +28,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 20.4.6  C library
-//
-
-/** @file cstdarg
+/** @file include/cstdarg
  *  This is a Standard C++ Library file.  You should @c #include this file
  *  in your programs, rather than any of the "*.h" implementation files.
  *
@@ -41,6 +37,10 @@
  *  contained in the namespace @c std (except for names which are defined
  *  as macros in C).
  */
+
+//
+// ISO C++ 14882: 20.4.6  C library
+//
 
 #ifndef _GLIBCXX_CSTDARG
 #define _GLIBCXX_CSTDARG 1

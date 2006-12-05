@@ -27,13 +27,13 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 27.4  Iostreams base classes
-//
-
 /** @file ios
  *  This is a Standard C++ Library header.
  */
+
+//
+// ISO C++ 14882: 27.4  Iostreams base classes
+//
 
 #ifndef _GLIBCXX_IOS
 #define _GLIBCXX_IOS 1

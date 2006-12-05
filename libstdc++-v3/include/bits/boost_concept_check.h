@@ -34,12 +34,12 @@
 // to its suitability for any purpose.
 //
 
-// GCC Note:  based on version 1.12.0 of the Boost library.
-
 /** @file boost_concept_check.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */
+
+// GCC Note:  based on version 1.12.0 of the Boost library.
 
 #ifndef _BOOST_CONCEPT_CHECK_H
 #define _BOOST_CONCEPT_CHECK_H 1
