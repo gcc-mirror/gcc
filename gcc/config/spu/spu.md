@@ -237,6 +237,29 @@
       DONE;
   })
 
+(define_split 
+  [(set (match_operand:SI 0 "spu_reg_operand" "=r")
+	(match_operand:SI 1 "immediate_operand" "s"))]
+
+  "(flag_pic || TARGET_LARGE_MEM
+    || (GET_CODE (operands[1]) == CONST
+        && !legitimate_const (operands[1], 0)))
+   && (reload_in_progress || reload_completed)
+   && (GET_CODE (operands[1]) == CONST
+       || GET_CODE (operands[1]) == SYMBOL_REF
+       || GET_CODE (operands[1]) == LABEL_REF)"
+  [(parallel
+    [(set (match_dup:SI 0)
+	  (match_dup:SI 1))
+     (use (const_int 0))])
+   (set (match_dup:SI 0)
+	(plus:SI (match_dup:SI 0)
+		 (match_dup:SI 2)))]
+  {
+    spu_split_address(operands);
+    DONE;
+  })
+
 (define_insn "pic"
   [(set (match_operand:SI 0 "spu_reg_operand" "=r")
 	(match_operand:SI 1 "immediate_operand" "s"))
@@ -2408,9 +2431,9 @@
   ceq<bh>i\t%0,%1,%2")
 
 (define_insn_and_split "ceq_di"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (eq:SI (match_operand:DI 1 "register_operand" "r")
-	       (match_operand:DI 2 "register_operand" "r")))]
+  [(set (match_operand:SI 0 "spu_reg_operand" "=r")
+        (eq:SI (match_operand:DI 1 "spu_reg_operand" "r")
+	       (match_operand:DI 2 "spu_reg_operand" "r")))]
   ""
   "#"
   "reload_completed"

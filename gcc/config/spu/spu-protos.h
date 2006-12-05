@@ -34,6 +34,7 @@ extern HOST_WIDE_INT const_double_to_hwint (rtx x);
 extern rtx hwint_to_const_double (enum machine_mode mode, HOST_WIDE_INT v);
 extern void print_operand_address (FILE * file, register rtx addr);
 extern void print_operand (FILE * file, rtx x, int code);
+extern void spu_split_address (rtx * ops);
 extern int spu_saved_regs_size (void);
 extern int direct_return (void);
 extern void spu_expand_prologue (void);

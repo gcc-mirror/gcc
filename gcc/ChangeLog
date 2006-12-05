@@ -1,3 +1,14 @@
+2006-12-04  Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
+
+	* config/spu/spu-protos.c (spu_split_address): Add.
+	* config/spu/spu.c (spu_split_address): Add.
+	(print_operand): Handle HIGH.
+	(spu_legitimate_address):  Don't test for aligned CONST.
+	(spu_expand_mov):  Don't split addresses here.
+	* config/spu/constraints.md (A): Don't test legitimate_const.
+	* config/spu/spu.md: Add split of movsi patterns for PIC mode.
+	(ceq_di): Use correct predicates.
+
 2006-12-04  Eric Christopher  <echristo@apple.com>
 
 	* config/darwin.h: Update copyright notice.
