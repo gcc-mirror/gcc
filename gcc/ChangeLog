@@ -1,3 +1,7 @@
+2006-12-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.host: Remove extra blank line.
+
 2006-12-05  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config.host (i[34567]86-*-*, x86-64-*-*): Use driver-i386.o only if
