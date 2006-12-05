@@ -787,7 +787,8 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
     add_stack_var (var);
   else
     {
-      expand_one_stack_var (var);
+      if (really_expand)
+        expand_one_stack_var (var);
       return tree_low_cst (DECL_SIZE_UNIT (var), 1);
     }
   return 0;
