@@ -1354,6 +1354,7 @@ static bool ix86_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				    tree, bool);
 static void ix86_init_builtins (void);
 static rtx ix86_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
+static tree ix86_builtin_vectorized_function (enum built_in_function, tree);
 static const char *ix86_mangle_fundamental_type (tree);
 static tree ix86_stack_protect_fail (void);
 static rtx ix86_internal_arg_pointer (void);
@@ -1418,6 +1419,8 @@ static section *x86_64_elf_select_section (tree decl, int reloc,
 #define TARGET_INIT_BUILTINS ix86_init_builtins
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN ix86_expand_builtin
+#undef TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
+#define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION ix86_builtin_vectorized_function
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE ix86_output_function_epilogue
@@ -17637,6 +17640,41 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       return ix86_expand_sse_comi (d, arglist, target);
 
   gcc_unreachable ();
+}
+
+/* Returns a function decl for a vectorized version of the builtin function
+   with builtin function code FN and the result vector type TYPE, or NULL_TREE
+   if it is not available.  */
+
+static tree
+ix86_builtin_vectorized_function (enum built_in_function fn, tree type)
+{
+  enum machine_mode el_mode;
+  int n;
+
+  if (TREE_CODE (type) != VECTOR_TYPE)
+    return NULL_TREE;
+
+  el_mode = TYPE_MODE (TREE_TYPE (type));
+  n = TYPE_VECTOR_SUBPARTS (type);
+
+  switch (fn)
+    {
+    case BUILT_IN_SQRT:
+      if (el_mode == DFmode && n == 2)
+	return ix86_builtins[IX86_BUILTIN_SQRTPD];
+      return NULL_TREE;
+
+    case BUILT_IN_SQRTF:
+      if (el_mode == SFmode && n == 4)
+	return ix86_builtins[IX86_BUILTIN_SQRTPS];
+      return NULL_TREE;
+
+    default:
+      ;
+    }
+
+  return NULL_TREE;
 }
 
 /* Store OPERAND to the memory after reload is completed.  This means
