@@ -1,3 +1,14 @@
+2006-12-05  Eric Christopher  <echristo@apple.com>
+
+	* config/darwin.h (DARWIN_EXTRA_SPECS): New.
+	(STARTFILE_SPEC): Use.
+	(DARWIN_DYLIB1_SPEC): New.
+	(DARWIN_CRT1_SPEC): New.
+	* config/i386/darwin64.h (SUBTARGET_EXTRA_SPECS): Use
+	DARWIN_EXTRA_SPECS.
+	* config/i386/darwin.h: Ditto.
+	* config/rs6000/darwin.h: Ditto.
+
 2006-12-05  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-vrp.c (pass_vrp): Remove PROP_smt_usage.
@@ -62,7 +73,7 @@
 
 	2006-12-04  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/stormy16/stormy16.c (xstormy16_expand_builtin_va_start): 
+        * config/stormy16/stormy16.c (xstormy16_expand_builtin_va_start):
         Change uses of MODIFY_EXPR to GIMPLE_MODIFY_STMT.
         (xstormy16_expand_builtin_va_arg): Same.
 
