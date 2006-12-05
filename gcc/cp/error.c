@@ -2326,7 +2326,22 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
     {
     case 'A': result = args_to_string (next_tree, verbose);	break;
     case 'C': result = code_to_string (next_tcode);		break;
-    case 'D': result = decl_to_string (next_tree, verbose);	break;
+    case 'D':
+      {
+	tree temp = next_tree;
+	if (DECL_P (temp)
+	    && DECL_DEBUG_EXPR_IS_FROM (temp) && DECL_DEBUG_EXPR (temp))
+	  {
+	    temp = DECL_DEBUG_EXPR (temp);
+	    if (!DECL_P (temp))
+	      {
+		result = expr_to_string (temp);
+		break;
+	      }
+	  }
+	result = decl_to_string (temp, verbose);
+      }
+      break;
     case 'E': result = expr_to_string (next_tree);		break;
     case 'F': result = fndecl_to_string (next_tree, verbose);	break;
     case 'L': result = language_to_string (next_lang);		break;

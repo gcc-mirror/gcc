@@ -1,3 +1,9 @@
+2006-12-05  Richard Henderson  <rth@redhat.com>
+            Andrew Pinski  <pinskia@gmail.com>
+
+	PR C++/14329
+	* g++.dg/warn/unit-1.C: New test.
+
 2006-12-04  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29632
