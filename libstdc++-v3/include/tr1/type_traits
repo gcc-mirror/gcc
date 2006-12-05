@@ -31,8 +31,8 @@
  *  This is a TR1 C++ Library header. 
  */
 
-#ifndef _TYPE_TRAITS
-#define _TYPE_TRAITS 1
+#ifndef _TR1_TYPE_TRAITS
+#define _TR1_TYPE_TRAITS 1
 
 #include <bits/c++config.h>
 #include <tr1/type_traits_fwd.h>
