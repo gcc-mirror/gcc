@@ -31,8 +31,8 @@
  *  This is a TR1 C++ Library header. 
  */
 
-#ifndef _ARRAY
-#define _ARRAY 1
+#ifndef _TR1_ARRAY
+#define _TR1_ARRAY 1
 
 #include <new>
 #include <iterator>

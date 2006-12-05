@@ -33,8 +33,8 @@
 
 // Chris Jefferson <chris@bubblescope.net>
 
-#ifndef _TUPLE
-#define _TUPLE 1
+#ifndef _TR1_TUPLE
+#define _TR1_TUPLE 1
 
 #include <tr1/utility>
 #include <tr1/ref_fwd.h>
