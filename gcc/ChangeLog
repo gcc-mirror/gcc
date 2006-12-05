@@ -1,3 +1,8 @@
+2006-12-04  Eric Christopher  <echristo@apple.com>
+
+	* config/darwin.h: Update copyright notice.
+	* config/i386/darwin.h: Ditto.
+
 2006-12-04  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.c (fold_builtin_memory_op): Check that expr_size match.
@@ -12,12 +17,12 @@
 	* tree-ssa-structalias.h (set_used_smts): Add prototype.
 
 2006-12-04  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	* tree-ssa-alias.c (compute_may_aliases):
 	Compute flow sensitive before flow insensitive.
 	(compute_flow_sensitive_aliasing): Don't try to add
 	a symbol memory tag to itself.
-	
+
 	* alias.h (alias_set_subset_of): New prototype.
 
 	* alias.c (alias_set_subset_of): New function.
@@ -52,7 +57,7 @@
 	(intra_create_variable_infos): Use INCLUDES.
 	Change nonlocal variable sets to anything sets.
 	(init_base_vars): Remove escaped_vars and nonlocal_var
-	initialization. 
+	initialization.
 	(find_escape_constraints): Removed.
 	(delete_points_to_sets): Remove dead code.
 	(used_smt_calculated): New variable.
@@ -60,12 +65,12 @@
 	(merge_smts_into): New function.
 	(find_what_p_points_to): Modify to use SMTs.
 	(create_nonlocal_var): Remove.
-	
+
 	* tree-ssa-operands.c (access_can_touch_variable): Remove
-	reference to nonlocal_all. 
+	reference to nonlocal_all.
 
 	* tree-ssa.c (verify_name_tags): Remove.
-	
+
 2006-12-04  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* config/arm/unwind-arm.c: Adjust __cxa_type_match declaration.
@@ -78,7 +83,7 @@
 	(add_livein_if_notdef): Delete.
 	(loe_visit_block): New.  Propogate live on entry info for a block into
 	each predecessor.  If it changes, make sure it is visited again.
-	(live_worklist): Visit every block and update the live on entry info 
+	(live_worklist): Visit every block and update the live on entry info
 	for preds.  Iterate over any that changed.
 	(set_var_live_on_entry): Populate the live on entry blocks with bits
 	based on the immediate uses of a var.
@@ -111,7 +116,7 @@
 	(expand_omp_for): Use expand_omp_for_generic if either region->cond
 	or region->exit is NULL.
 	(expand_omp_sections): Handle NULL region->cond or region->exit.
-	(expand_omp_synch): 
+	(expand_omp_synch):
 
 2006-12-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
