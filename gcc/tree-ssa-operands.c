@@ -1303,17 +1303,8 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 	  if (v_ann->is_aliased
 	      || none_added
 	      || (TREE_CODE (var) == SYMBOL_MEMORY_TAG
-		  && for_clobber
-		  && SMT_USED_ALONE (var)))
+		  && for_clobber))
 	    {
-	      /* Every bare SMT def we add should have SMT_USED_ALONE
-		 set on it, or else we will get the wrong answer on
-		 clobbers.  */
-	      if (none_added
-		  && !updating_used_alone && gimple_aliases_computed_p (cfun)
-		  && TREE_CODE (var) == SYMBOL_MEMORY_TAG)
-		gcc_assert (SMT_USED_ALONE (var));
-
 	      append_v_may_def (var);
 	    }
 	}

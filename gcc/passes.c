@@ -721,23 +721,13 @@ execute_todo (unsigned int flags)
   if (!flags)
     return;
   
-  /* Always recalculate SMT usage before doing anything else.  */
-  if (flags & TODO_update_smt_usage)
-    recalculate_used_alone ();
-
   /* Always cleanup the CFG before trying to update SSA .  */
   if (flags & TODO_cleanup_cfg)
     {
-      /* CFG Cleanup can cause a constant to prop into an ARRAY_REF.  */
-      updating_used_alone = true;
-
       if (current_loops)
 	cleanup_tree_cfg_loop ();
       else
 	cleanup_tree_cfg ();
-
-      /* Update the used alone after cleanup cfg.  */
-      recalculate_used_alone ();
 
       /* When cleanup_tree_cfg merges consecutive blocks, it may
 	 perform some simplistic propagation when removing single
@@ -835,9 +825,6 @@ execute_one_pass (struct tree_opt_pass *pass)
   gcc_assert ((curr_properties & pass->properties_required)
 	      == pass->properties_required);
 
-  if (pass->properties_destroyed & PROP_smt_usage)
-    updating_used_alone = true;
-
   /* If a dump file name is present, open it if enabled.  */
   if (pass->static_pass_number != -1)
     {
@@ -903,9 +890,6 @@ execute_one_pass (struct tree_opt_pass *pass)
       dump_end (pass->static_pass_number, dump_file);
       dump_file = NULL;
     }
-
-  if (pass->properties_destroyed & PROP_smt_usage)
-    updating_used_alone = false;
 
   return true;
 }
