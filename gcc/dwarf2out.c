@@ -9266,8 +9266,9 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
     case NON_LVALUE_EXPR:
     case VIEW_CONVERT_EXPR:
     case SAVE_EXPR:
-    case MODIFY_EXPR:
-      return loc_descriptor_from_tree_1 (TREE_OPERAND (loc, 0), want_address);
+    case GIMPLE_MODIFY_STMT:
+      return loc_descriptor_from_tree_1 (GENERIC_TREE_OPERAND (loc, 0),
+					 want_address);
 
     case COMPONENT_REF:
     case BIT_FIELD_REF:
@@ -10040,7 +10041,7 @@ static tree
 reference_to_unused (tree * tp, int * walk_subtrees,
 		     void * data ATTRIBUTE_UNUSED)
 {
-  if (! EXPR_P (*tp) && ! CONSTANT_CLASS_P (*tp))
+  if (! EXPR_P (*tp) && ! GIMPLE_STMT_P (*tp) && ! CONSTANT_CLASS_P (*tp))
     *walk_subtrees = 0;
   
   if (DECL_P (*tp) && ! TREE_PUBLIC (*tp) && ! TREE_USED (*tp)

@@ -684,7 +684,7 @@ simplify_replace_tree (tree expr, tree old, tree new)
       || operand_equal_p (expr, old, 0))
     return unshare_expr (new);
 
-  if (!EXPR_P (expr))
+  if (!EXPR_P (expr) && !GIMPLE_STMT_P (expr))
     return expr;
 
   n = TREE_CODE_LENGTH (TREE_CODE (expr));
@@ -744,10 +744,10 @@ expand_simple_operations (tree expr)
     return expr;
 
   stmt = SSA_NAME_DEF_STMT (expr);
-  if (TREE_CODE (stmt) != MODIFY_EXPR)
+  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return expr;
 
-  e = TREE_OPERAND (stmt, 1);
+  e = GIMPLE_STMT_OPERAND (stmt, 1);
   if (/* Casts are simple.  */
       TREE_CODE (e) != NOP_EXPR
       && TREE_CODE (e) != CONVERT_EXPR
@@ -1255,7 +1255,7 @@ chain_of_csts_start (struct loop *loop, tree x)
       return NULL_TREE;
     }
 
-  if (TREE_CODE (stmt) != MODIFY_EXPR)
+  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return NULL_TREE;
 
   if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
@@ -1337,7 +1337,7 @@ get_val_for (tree x, tree base)
       nx = USE_FROM_PTR (op);
       val = get_val_for (nx, base);
       SET_USE (op, val);
-      val = fold (TREE_OPERAND (stmt, 1));
+      val = fold (GIMPLE_STMT_OPERAND (stmt, 1));
       SET_USE (op, nx);
       /* only iterate loop once.  */
       return val;
@@ -1655,10 +1655,11 @@ derive_constant_upper_bound (tree val, tree additional)
 
     case SSA_NAME:
       stmt = SSA_NAME_DEF_STMT (val);
-      if (TREE_CODE (stmt) != MODIFY_EXPR
-	  || TREE_OPERAND (stmt, 0) != val)
+      if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT
+	  || GIMPLE_STMT_OPERAND (stmt, 0) != val)
 	return max;
-      return derive_constant_upper_bound (TREE_OPERAND (stmt, 1), additional);
+      return derive_constant_upper_bound (GIMPLE_STMT_OPERAND (stmt, 1),
+	  				  additional);
 
     default: 
       return max;
@@ -1872,10 +1873,10 @@ infer_loop_bounds_from_array (struct loop *loop, tree stmt)
 {
   tree call;
 
-  if (TREE_CODE (stmt) == MODIFY_EXPR)
+  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
     {
-      tree op0 = TREE_OPERAND (stmt, 0);
-      tree op1 = TREE_OPERAND (stmt, 1);
+      tree op0 = GIMPLE_STMT_OPERAND (stmt, 0);
+      tree op1 = GIMPLE_STMT_OPERAND (stmt, 1);
 
       /* For each memory access, analyze its access function
 	 and record a bound on the loop iteration domain.  */
@@ -1906,10 +1907,10 @@ infer_loop_bounds_from_signedness (struct loop *loop, tree stmt)
 {
   tree def, base, step, scev, type, low, high;
 
-  if (flag_wrapv || TREE_CODE (stmt) != MODIFY_EXPR)
+  if (flag_wrapv || TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return;
 
-  def = TREE_OPERAND (stmt, 0);
+  def = GIMPLE_STMT_OPERAND (stmt, 0);
 
   if (TREE_CODE (def) != SSA_NAME)
     return;

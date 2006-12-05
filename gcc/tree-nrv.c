@@ -133,10 +133,10 @@ tree_nrv (void)
 	      if (ret_expr)
 		gcc_assert (ret_expr == result);
 	    }
-	  else if (TREE_CODE (stmt) == MODIFY_EXPR
-		   && TREE_OPERAND (stmt, 0) == result)
+	  else if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+		   && GIMPLE_STMT_OPERAND (stmt, 0) == result)
 	    {
-	      ret_expr = TREE_OPERAND (stmt, 1);
+	      ret_expr = GIMPLE_STMT_OPERAND (stmt, 1);
 
 	      /* Now verify that this return statement uses the same value
 		 as any previously encountered return statement.  */
@@ -197,9 +197,9 @@ tree_nrv (void)
 	{
 	  tree *tp = bsi_stmt_ptr (bsi);
 	  /* If this is a copy from VAR to RESULT, remove it.  */
-	  if (TREE_CODE (*tp) == MODIFY_EXPR
-	      && TREE_OPERAND (*tp, 0) == result
-	      && TREE_OPERAND (*tp, 1) == found)
+	  if (TREE_CODE (*tp) == GIMPLE_MODIFY_STMT
+	      && GIMPLE_STMT_OPERAND (*tp, 0) == result
+	      && GIMPLE_STMT_OPERAND (*tp, 1) == found)
 	    bsi_remove (&bsi, true);
 	  else
 	    {
@@ -264,7 +264,7 @@ dest_safe_for_nrv_p (tree dest)
     }
 }
 
-/* Walk through the function looking for MODIFY_EXPRs with calls that
+/* Walk through the function looking for GIMPLE_MODIFY_STMTs with calls that
    return in memory on the RHS.  For each of these, determine whether it is
    safe to pass the address of the LHS as the return slot, and mark the
    call appropriately if so.
@@ -289,15 +289,15 @@ execute_return_slot_opt (void)
 	  tree stmt = bsi_stmt (i);
 	  tree call;
 
-	  if (TREE_CODE (stmt) == MODIFY_EXPR
-	      && (call = TREE_OPERAND (stmt, 1),
+	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	      && (call = GIMPLE_STMT_OPERAND (stmt, 1),
 		  TREE_CODE (call) == CALL_EXPR)
 	      && !CALL_EXPR_RETURN_SLOT_OPT (call)
 	      && aggregate_value_p (call, call))
 	    /* Check if the location being assigned to is
 	       call-clobbered.  */
 	    CALL_EXPR_RETURN_SLOT_OPT (call) =
-	      dest_safe_for_nrv_p (TREE_OPERAND (stmt, 0)) ? 1 : 0;
+	      dest_safe_for_nrv_p (GIMPLE_STMT_OPERAND (stmt, 0)) ? 1 : 0;
 	}
     }
   return 0;

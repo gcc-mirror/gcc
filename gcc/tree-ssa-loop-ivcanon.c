@@ -455,7 +455,7 @@ empty_loop_p (struct loop *loop)
 	  switch (TREE_CODE (stmt))
 	    {
 	    case RETURN_EXPR:
-	    case MODIFY_EXPR:
+	    case GIMPLE_MODIFY_STMT:
 	      stmt = get_call_expr_in (stmt);
 	      if (!stmt)
 		break;

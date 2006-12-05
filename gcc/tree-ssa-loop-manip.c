@@ -100,9 +100,8 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
   if (stmts)
     bsi_insert_on_edge_immediate (pe, stmts);
 
-  stmt = build2 (MODIFY_EXPR, void_type_node, va,
-		 build2 (incr_op, TREE_TYPE (base),
-			 vb, step));
+  stmt = build2_gimple (GIMPLE_MODIFY_STMT, va,
+		        build2 (incr_op, TREE_TYPE (base), vb, step));
   SSA_NAME_DEF_STMT (va) = stmt;
   if (after)
     bsi_insert_after (incr_pos, stmt, BSI_NEW_STMT);

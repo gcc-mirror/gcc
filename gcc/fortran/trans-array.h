@@ -118,7 +118,11 @@ tree gfc_conv_array_ubound (tree, int);
 
 /* Build expressions for accessing components of an array descriptor.  */
 tree gfc_conv_descriptor_data_get (tree);
-void gfc_conv_descriptor_data_set (stmtblock_t *, tree, tree);
+void gfc_conv_descriptor_data_set_internal (stmtblock_t *, tree, tree, bool);
+#define gfc_conv_descriptor_data_set(BLOCK, T1, T2)			\
+  gfc_conv_descriptor_data_set_internal ((BLOCK), (T1), (T2), false)
+#define gfc_conv_descriptor_data_set_tuples(BLOCK, T1, T2)		\
+  gfc_conv_descriptor_data_set_internal ((BLOCK), (T1), (T2), true)
 tree gfc_conv_descriptor_data_addr (tree);
 tree gfc_conv_descriptor_offset (tree);
 tree gfc_conv_descriptor_dtype (tree);

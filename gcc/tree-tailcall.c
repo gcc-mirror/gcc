@@ -272,8 +272,8 @@ process_assignment (tree ass, tree stmt, block_stmt_iterator call, tree *m,
 		    tree *a, tree *ass_var)
 {
   tree op0, op1, non_ass_var;
-  tree dest = TREE_OPERAND (ass, 0);
-  tree src = TREE_OPERAND (ass, 1);
+  tree dest = GIMPLE_STMT_OPERAND (ass, 0);
+  tree src = GIMPLE_STMT_OPERAND (ass, 1);
   enum tree_code code = TREE_CODE (src);
   tree src_var = src;
 
@@ -395,10 +395,10 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 	continue;
 
       /* Check for a call.  */
-      if (TREE_CODE (stmt) == MODIFY_EXPR)
+      if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
 	{
-	  ass_var = TREE_OPERAND (stmt, 0);
-	  call = TREE_OPERAND (stmt, 1);
+	  ass_var = GIMPLE_STMT_OPERAND (stmt, 0);
+	  call = GIMPLE_STMT_OPERAND (stmt, 1);
 	  if (TREE_CODE (call) == WITH_SIZE_EXPR)
 	    call = TREE_OPERAND (call, 0);
 	}
@@ -454,7 +454,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 		 of copying the value.  This test implies is_gimple_reg_type
 		 from the previous condition, however this one could be
 		 relaxed by being more careful with copying the new value
-		 of the parameter (emitting appropriate MODIFY_EXPR and
+		 of the parameter (emitting appropriate GIMPLE_MODIFY_STMT and
 		 updating the virtual operands).  */
 	      if (!is_gimple_reg (param))
 		break;
@@ -492,7 +492,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
       if (TREE_CODE (stmt) == RETURN_EXPR)
 	break;
 
-      if (TREE_CODE (stmt) != MODIFY_EXPR)
+      if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
 	return;
 
       if (!process_assignment (stmt, stmt, bsi, &m, &a, &ass_var))
@@ -502,9 +502,9 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
   /* See if this is a tail call we can handle.  */
   ret_var = TREE_OPERAND (stmt, 0);
   if (ret_var
-      && TREE_CODE (ret_var) == MODIFY_EXPR)
+      && TREE_CODE (ret_var) == GIMPLE_MODIFY_STMT)
     {
-      tree ret_op = TREE_OPERAND (ret_var, 1);
+      tree ret_op = GIMPLE_STMT_OPERAND (ret_var, 1);
       STRIP_NOPS (ret_op);
       if (!tail_recursion
 	  && TREE_CODE (ret_op) != SSA_NAME)
@@ -512,7 +512,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 
       if (!process_assignment (ret_var, stmt, bsi, &m, &a, &ass_var))
 	return;
-      ret_var = TREE_OPERAND (ret_var, 0);
+      ret_var = GIMPLE_STMT_OPERAND (ret_var, 0);
     }
 
   /* We may proceed if there either is no return value, or the return value
@@ -558,34 +558,34 @@ adjust_accumulator_values (block_stmt_iterator bsi, tree m, tree a, edge back)
 	    var = m_acc;
 	  else
 	    {
-	      stmt = build2 (MODIFY_EXPR, ret_type, NULL_TREE,
+	      stmt = build2 (GIMPLE_MODIFY_STMT, ret_type, NULL_TREE,
 			     build2 (MULT_EXPR, ret_type, m_acc, a));
 
 	      tmp = create_tmp_var (ret_type, "acc_tmp");
 	      add_referenced_var (tmp);
 
 	      var = make_ssa_name (tmp, stmt);
-	      TREE_OPERAND (stmt, 0) = var;
+	      GIMPLE_STMT_OPERAND (stmt, 0) = var;
 	      bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
 	    }
 	}
       else
 	var = a;
 
-      stmt = build2 (MODIFY_EXPR, ret_type, NULL_TREE,
+      stmt = build2 (GIMPLE_MODIFY_STMT, ret_type, NULL_TREE,
 		     build2 (PLUS_EXPR, ret_type, a_acc, var));
       var = make_ssa_name (SSA_NAME_VAR (a_acc), stmt);
-      TREE_OPERAND (stmt, 0) = var;
+      GIMPLE_STMT_OPERAND (stmt, 0) = var;
       bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
       a_acc_arg = var;
     }
 
   if (m)
     {
-      stmt = build2 (MODIFY_EXPR, ret_type, NULL_TREE,
+      stmt = build2 (GIMPLE_MODIFY_STMT, ret_type, NULL_TREE,
 		     build2 (MULT_EXPR, ret_type, m_acc, m));
       var = make_ssa_name (SSA_NAME_VAR (m_acc), stmt);
-      TREE_OPERAND (stmt, 0) = var;
+      GIMPLE_STMT_OPERAND (stmt, 0) = var;
       bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
       m_acc_arg = var;
     }
@@ -625,26 +625,26 @@ adjust_return_value (basic_block bb, tree m, tree a)
   if (!ret_var)
     return;
 
-  if (TREE_CODE (ret_var) == MODIFY_EXPR)
+  if (TREE_CODE (ret_var) == GIMPLE_MODIFY_STMT)
     {
-      ret_var->common.ann = (tree_ann_t) stmt_ann (ret_stmt);
+      ret_var->base.ann = (tree_ann_t) stmt_ann (ret_stmt);
       bsi_replace (&bsi, ret_var, true);
-      SSA_NAME_DEF_STMT (TREE_OPERAND (ret_var, 0)) = ret_var;
-      ret_var = TREE_OPERAND (ret_var, 0);
+      SSA_NAME_DEF_STMT (GIMPLE_STMT_OPERAND (ret_var, 0)) = ret_var;
+      ret_var = GIMPLE_STMT_OPERAND (ret_var, 0);
       ret_stmt = build1 (RETURN_EXPR, TREE_TYPE (ret_stmt), ret_var);
       bsi_insert_after (&bsi, ret_stmt, BSI_NEW_STMT);
     }
 
   if (m)
     {
-      stmt = build2 (MODIFY_EXPR, ret_type, NULL_TREE,
+      stmt = build2 (GIMPLE_MODIFY_STMT, ret_type, NULL_TREE,
 		     build2 (MULT_EXPR, ret_type, m_acc, ret_var));
 
       tmp = create_tmp_var (ret_type, "acc_tmp");
       add_referenced_var (tmp);
 
       var = make_ssa_name (tmp, stmt);
-      TREE_OPERAND (stmt, 0) = var;
+      GIMPLE_STMT_OPERAND (stmt, 0) = var;
       bsi_insert_before (&bsi, stmt, BSI_SAME_STMT);
     }
   else
@@ -652,14 +652,14 @@ adjust_return_value (basic_block bb, tree m, tree a)
 
   if (a)
     {
-      stmt = build2 (MODIFY_EXPR, ret_type, NULL_TREE,
+      stmt = build2 (GIMPLE_MODIFY_STMT, ret_type, NULL_TREE,
 		     build2 (PLUS_EXPR, ret_type, a_acc, var));
 
       tmp = create_tmp_var (ret_type, "acc_tmp");
       add_referenced_var (tmp);
 
       var = make_ssa_name (tmp, stmt);
-      TREE_OPERAND (stmt, 0) = var;
+      GIMPLE_STMT_OPERAND (stmt, 0) = var;
       bsi_insert_before (&bsi, stmt, BSI_SAME_STMT);
     }
 
@@ -733,8 +733,8 @@ eliminate_tail_call (struct tailcall *t)
       fprintf (dump_file, "\n");
     }
 
-  if (TREE_CODE (stmt) == MODIFY_EXPR)
-    stmt = TREE_OPERAND (stmt, 1);
+  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
+    stmt = GIMPLE_STMT_OPERAND (stmt, 1);
 
   first = single_succ (ENTRY_BLOCK_PTR);
 
@@ -788,9 +788,9 @@ eliminate_tail_call (struct tailcall *t)
   adjust_accumulator_values (t->call_bsi, t->mult, t->add, e);
 
   call = bsi_stmt (t->call_bsi);
-  if (TREE_CODE (call) == MODIFY_EXPR)
+  if (TREE_CODE (call) == GIMPLE_MODIFY_STMT)
     {
-      rslt = TREE_OPERAND (call, 0);
+      rslt = GIMPLE_STMT_OPERAND (call, 0);
 
       /* Result of the call will no longer be defined.  So adjust the
 	 SSA_NAME_DEF_STMT accordingly.  */

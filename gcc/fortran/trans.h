@@ -334,8 +334,12 @@ void gfc_trans_vla_type_sizes (gfc_symbol *, stmtblock_t *);
 void gfc_add_expr_to_block (stmtblock_t *, tree);
 /* Add a block to the end of a block.  */
 void gfc_add_block_to_block (stmtblock_t *, stmtblock_t *);
-/* Add a MODIFY_EXPR to a block.  */
-void gfc_add_modify_expr (stmtblock_t *, tree, tree);
+/* Add a MODIFY_EXPR or a GIMPLE_MODIFY_STMT to a block.  */
+void gfc_add_modify (stmtblock_t *, tree, tree, bool);
+#define gfc_add_modify_expr(BLOCK, LHS, RHS) \
+       gfc_add_modify ((BLOCK), (LHS), (RHS), false)
+#define gfc_add_modify_stmt(BLOCK, LHS, RHS) \
+       gfc_add_modify ((BLOCK), (LHS), (RHS), true)
 
 /* Initialize a statement block.  */
 void gfc_init_block (stmtblock_t *);

@@ -5891,7 +5891,7 @@ hppa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
       u = build_int_cst (valist_type, (size > 4 ? -8 : -4));
       t = build2 (BIT_AND_EXPR, valist_type, t, u);
 
-      t = build2 (MODIFY_EXPR, valist_type, valist, t);
+      t = build2 (GIMPLE_MODIFY_STMT, valist_type, valist, t);
 
       ofs = (8 - size) % 4;
       if (ofs != 0)

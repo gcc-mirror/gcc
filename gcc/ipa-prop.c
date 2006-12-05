@@ -247,10 +247,10 @@ ipa_method_modify_stmt (struct cgraph_node *mt, tree stmt)
 
   switch (TREE_CODE (stmt))
     {
-    case MODIFY_EXPR:
-      if (TREE_CODE (TREE_OPERAND (stmt, 0)) == PARM_DECL)
+    case GIMPLE_MODIFY_STMT:
+      if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == PARM_DECL)
 	{
-	  i = ipa_method_tree_map (mt, TREE_OPERAND (stmt, 0));
+	  i = ipa_method_tree_map (mt, GIMPLE_STMT_OPERAND (stmt, 0));
 	  if (i >= 0)
             ipa_method_modify_set (mt, i, true);
 	}

@@ -380,14 +380,14 @@ expand_vector_operations_1 (block_stmt_iterator *bsi)
     {
     case RETURN_EXPR:
       stmt = TREE_OPERAND (stmt, 0);
-      if (!stmt || TREE_CODE (stmt) != MODIFY_EXPR)
+      if (!stmt || TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
 	return;
 
       /* FALLTHRU */
 
-    case MODIFY_EXPR:
-      p_lhs = &TREE_OPERAND (stmt, 0);
-      p_rhs = &TREE_OPERAND (stmt, 1);
+    case GIMPLE_MODIFY_STMT:
+      p_lhs = &GIMPLE_STMT_OPERAND (stmt, 0);
+      p_rhs = &GIMPLE_STMT_OPERAND (stmt, 1);
       lhs = *p_lhs;
       rhs = *p_rhs;
       break;

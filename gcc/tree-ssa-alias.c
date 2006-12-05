@@ -408,7 +408,7 @@ compute_call_clobbered (struct alias_info *ai)
 static bool
 lhs_may_store_to (tree stmt, tree sym ATTRIBUTE_UNUSED)
 {
-  tree lhs = TREE_OPERAND (stmt, 0);
+  tree lhs = GENERIC_TREE_OPERAND (stmt, 0);
   
   lhs = get_base_address (lhs);
   
@@ -459,8 +459,8 @@ recalculate_used_alone (void)
 	  stmt = bsi_stmt (bsi);
 	  
 	  if (TREE_CODE (stmt) == CALL_EXPR
-	      || (TREE_CODE (stmt) == MODIFY_EXPR 
-		  && TREE_CODE (TREE_OPERAND (stmt, 1)) == CALL_EXPR))
+	      || (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT 
+		  && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == CALL_EXPR))
 	    {
 	      iscall = true;
 	      VEC_safe_push (tree, heap, calls, stmt);	    
@@ -786,24 +786,24 @@ count_uses_and_derefs (tree ptr, tree stmt, unsigned *num_uses_p,
      find all the indirect and direct uses of x_1 inside.  The only
      shortcut we can take is the fact that GIMPLE only allows
      INDIRECT_REFs inside the expressions below.  */
-  if (TREE_CODE (stmt) == MODIFY_EXPR
+  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
       || (TREE_CODE (stmt) == RETURN_EXPR
-	  && TREE_CODE (TREE_OPERAND (stmt, 0)) == MODIFY_EXPR)
+	  && TREE_CODE (TREE_OPERAND (stmt, 0)) == GIMPLE_MODIFY_STMT)
       || TREE_CODE (stmt) == ASM_EXPR
       || TREE_CODE (stmt) == CALL_EXPR)
     {
       tree lhs, rhs;
 
-      if (TREE_CODE (stmt) == MODIFY_EXPR)
+      if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
 	{
-	  lhs = TREE_OPERAND (stmt, 0);
-	  rhs = TREE_OPERAND (stmt, 1);
+	  lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+	  rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 	}
       else if (TREE_CODE (stmt) == RETURN_EXPR)
 	{
 	  tree e = TREE_OPERAND (stmt, 0);
-	  lhs = TREE_OPERAND (e, 0);
-	  rhs = TREE_OPERAND (e, 1);
+	  lhs = GIMPLE_STMT_OPERAND (e, 0);
+	  rhs = GIMPLE_STMT_OPERAND (e, 1);
 	}
       else if (TREE_CODE (stmt) == ASM_EXPR)
 	{
@@ -816,7 +816,8 @@ count_uses_and_derefs (tree ptr, tree stmt, unsigned *num_uses_p,
 	  rhs = stmt;
 	}
 
-      if (lhs && (TREE_CODE (lhs) == TREE_LIST || EXPR_P (lhs)))
+      if (lhs && (TREE_CODE (lhs) == TREE_LIST
+		  || EXPR_P (lhs) || GIMPLE_STMT_P (lhs)))
 	{
 	  struct count_ptr_d count;
 	  count.ptr = ptr;
@@ -826,7 +827,8 @@ count_uses_and_derefs (tree ptr, tree stmt, unsigned *num_uses_p,
 	  *num_derefs_p = count.count;
 	}
 
-      if (rhs && (TREE_CODE (rhs) == TREE_LIST || EXPR_P (rhs)))
+      if (rhs && (TREE_CODE (rhs) == TREE_LIST
+		  || EXPR_P (rhs) || GIMPLE_STMT_P (rhs)))
 	{
 	  struct count_ptr_d count;
 	  count.ptr = ptr;
@@ -2167,9 +2169,9 @@ is_escape_site (tree stmt)
     }
   else if (TREE_CODE (stmt) == ASM_EXPR)
     return ESCAPE_TO_ASM;
-  else if (TREE_CODE (stmt) == MODIFY_EXPR)
+  else if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
     {
-      tree lhs = TREE_OPERAND (stmt, 0);
+      tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
 
       /* Get to the base of _REF nodes.  */
       if (TREE_CODE (lhs) != SSA_NAME)
@@ -2180,12 +2182,13 @@ is_escape_site (tree stmt)
       if (lhs == NULL_TREE)
 	return ESCAPE_UNKNOWN;
 
-      if (TREE_CODE (TREE_OPERAND (stmt, 1)) == NOP_EXPR
-	  || TREE_CODE (TREE_OPERAND (stmt, 1)) == CONVERT_EXPR
-	  || TREE_CODE (TREE_OPERAND (stmt, 1)) == VIEW_CONVERT_EXPR)
+      if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == NOP_EXPR
+	  || TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == CONVERT_EXPR
+	  || TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == VIEW_CONVERT_EXPR)
 	{
-	  tree from = TREE_TYPE (TREE_OPERAND (TREE_OPERAND (stmt, 1), 0));
-	  tree to = TREE_TYPE (TREE_OPERAND (stmt, 1));
+	  tree from
+	    = TREE_TYPE (TREE_OPERAND (GIMPLE_STMT_OPERAND (stmt, 1), 0));
+	  tree to = TREE_TYPE (GIMPLE_STMT_OPERAND (stmt, 1));
 
 	  /* If the RHS is a conversion between a pointer and an integer, the
 	     pointer escapes since we can't track the integer.  */
@@ -3173,11 +3176,12 @@ find_used_portions (tree *tp, int *walk_subtrees, void *lhs_p)
 {
   switch (TREE_CODE (*tp))
     {
-    case MODIFY_EXPR:
+    case GIMPLE_MODIFY_STMT:
       /* Recurse manually here to track whether the use is in the
 	 LHS of an assignment.  */
-      find_used_portions (&TREE_OPERAND (*tp, 0), walk_subtrees, tp);
-      return find_used_portions (&TREE_OPERAND (*tp, 1), walk_subtrees, NULL);
+      find_used_portions (&GIMPLE_STMT_OPERAND (*tp, 0), walk_subtrees, tp);
+      return find_used_portions (&GIMPLE_STMT_OPERAND (*tp, 1),
+	  			 walk_subtrees, NULL);
     case REALPART_EXPR:
     case IMAGPART_EXPR:
     case COMPONENT_REF:

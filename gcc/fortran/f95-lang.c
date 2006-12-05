@@ -62,7 +62,8 @@ GTY(())
 
 union lang_tree_node
 GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
-     chain_next ("(union lang_tree_node *)TREE_CHAIN (&%h.generic)")))
+     chain_next ("(GIMPLE_STMT_P (&%h.generic) ? (union lang_tree_node *) 0 : (union lang_tree_node *)TREE_CHAIN (&%h.generic))")))
+
 {
   union tree_node GTY((tag ("0"),
 		       desc ("tree_node_structure (&%h)"))) generic;

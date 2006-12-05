@@ -576,6 +576,11 @@ dequeue_and_dump (dump_info_p di)
       dump_child ("op 1", TREE_OPERAND (t, 1));
       break;
 
+    case GIMPLE_MODIFY_STMT:
+      dump_child ("op 0", GIMPLE_STMT_OPERAND (t, 0));
+      dump_child ("op 1", GIMPLE_STMT_OPERAND (t, 1));
+      break;
+
     case COMPONENT_REF:
       dump_child ("op 0", TREE_OPERAND (t, 0));
       dump_child ("op 1", TREE_OPERAND (t, 1));

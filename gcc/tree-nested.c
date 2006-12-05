@@ -388,7 +388,7 @@ init_tmp_var (struct nesting_info *info, tree exp, tree_stmt_iterator *tsi)
   tree t, stmt;
 
   t = create_tmp_var_for (info, TREE_TYPE (exp), NULL);
-  stmt = build2 (MODIFY_EXPR, TREE_TYPE (t), t, exp);
+  stmt = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (t), t, exp);
   SET_EXPR_LOCUS (stmt, EXPR_LOCUS (tsi_stmt (*tsi)));
   tsi_link_before (tsi, stmt, TSI_SAME_STMT);
 
@@ -416,7 +416,7 @@ save_tmp_var (struct nesting_info *info, tree exp,
   tree t, stmt;
 
   t = create_tmp_var_for (info, TREE_TYPE (exp), NULL);
-  stmt = build2 (MODIFY_EXPR, TREE_TYPE (t), exp, t);
+  stmt = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (t), exp, t);
   SET_EXPR_LOCUS (stmt, EXPR_LOCUS (tsi_stmt (*tsi)));
   tsi_link_after (tsi, stmt, TSI_SAME_STMT);
 
@@ -613,16 +613,16 @@ walk_stmts (struct walk_stmt_info *wi, tree *tp)
       walk_stmts (wi, &TREE_OPERAND (t, 0));
       break;
 
-    case MODIFY_EXPR:
+    case GIMPLE_MODIFY_STMT:
       /* A formal temporary lhs may use a COMPONENT_REF rhs.  */
-      wi->val_only = !is_gimple_formal_tmp_var (TREE_OPERAND (t, 0));
-      walk_tree (&TREE_OPERAND (t, 1), wi->callback, wi, NULL);
+      wi->val_only = !is_gimple_formal_tmp_var (GIMPLE_STMT_OPERAND (t, 0));
+      walk_tree (&GIMPLE_STMT_OPERAND (t, 1), wi->callback, wi, NULL);
 
       /* If the rhs is appropriate for a memory, we may use a
 	 COMPONENT_REF on the lhs.  */
-      wi->val_only = !is_gimple_mem_rhs (TREE_OPERAND (t, 1));
+      wi->val_only = !is_gimple_mem_rhs (GIMPLE_STMT_OPERAND (t, 1));
       wi->is_lhs = true;
-      walk_tree (&TREE_OPERAND (t, 0), wi->callback, wi, NULL);
+      walk_tree (&GIMPLE_STMT_OPERAND (t, 0), wi->callback, wi, NULL);
 
       wi->val_only = true;
       wi->is_lhs = false;
@@ -1648,7 +1648,7 @@ convert_call_expr (tree *tp, int *walk_subtrees, void *data)
       break;
 
     case RETURN_EXPR:
-    case MODIFY_EXPR:
+    case GIMPLE_MODIFY_STMT:
     case WITH_SIZE_EXPR:
       /* Only return modify and with_size_expr may contain calls.  */
       *walk_subtrees = 1;
@@ -1770,7 +1770,7 @@ finalize_nesting_tree_1 (struct nesting_info *root)
 
 	  y = build3 (COMPONENT_REF, TREE_TYPE (field),
 		      root->frame_decl, field, NULL_TREE);
-	  x = build2 (MODIFY_EXPR, TREE_TYPE (field), y, x);
+	  x = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (field), y, x);
 	  append_to_statement_list (x, &stmt_list);
 	}
     }
@@ -1781,7 +1781,7 @@ finalize_nesting_tree_1 (struct nesting_info *root)
     {
       tree x = build3 (COMPONENT_REF, TREE_TYPE (root->chain_field),
 		       root->frame_decl, root->chain_field, NULL_TREE);
-      x = build2 (MODIFY_EXPR, TREE_TYPE (x), x, get_chain_decl (root));
+      x = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (x), x, get_chain_decl (root));
       append_to_statement_list (x, &stmt_list);
     }
 

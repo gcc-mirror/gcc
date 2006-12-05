@@ -2172,7 +2172,7 @@ c_parser_typeof_specifier (c_parser *parser)
 	  if (DECL_P (e) || CONSTANT_CLASS_P (e))
 	    e = build1 (NOP_EXPR, void_type_node, e);
 
-	  if (EXPR_P (e))
+	  if (CAN_HAVE_LOCATION_P (e))
 	    SET_EXPR_LOCATION (e, input_location);
 
 	  add_stmt (e);
@@ -3817,7 +3817,7 @@ c_parser_statement_after_labels (c_parser *parser)
      (recursively) all of the component statements should already have
      line numbers assigned.  ??? Can we discard no-op statements
      earlier?  */
-  if (stmt && EXPR_P (stmt))
+  if (stmt && CAN_HAVE_LOCATION_P (stmt))
     SET_EXPR_LOCATION (stmt, loc);
 }
 
@@ -3836,7 +3836,7 @@ c_parser_paren_condition (c_parser *parser)
   loc = c_parser_peek_token (parser)->location;
   cond = c_objc_common_truthvalue_conversion
     (c_parser_expression_conv (parser).value);
-  if (EXPR_P (cond))
+  if (CAN_HAVE_LOCATION_P (cond))
     SET_EXPR_LOCATION (cond, loc);
   c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
   return cond;
@@ -4073,7 +4073,7 @@ c_parser_for_statement (c_parser *parser)
 	{
 	  tree ocond = c_parser_expression_conv (parser).value;
 	  cond = c_objc_common_truthvalue_conversion (ocond);
-	  if (EXPR_P (cond))
+	  if (CAN_HAVE_LOCATION_P (cond))
 	    SET_EXPR_LOCATION (cond, loc);
 	  c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
 	}
@@ -7424,7 +7424,7 @@ c_parser_omp_for_loop (c_parser *parser)
     {
       cond = c_parser_expression_conv (parser).value;
       cond = c_objc_common_truthvalue_conversion (cond);
-      if (EXPR_P (cond))
+      if (CAN_HAVE_LOCATION_P (cond))
 	SET_EXPR_LOCATION (cond, input_location);
     }
   c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");

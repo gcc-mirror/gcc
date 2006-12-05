@@ -194,9 +194,10 @@ var_ann (tree t)
   gcc_assert (t);
   gcc_assert (DECL_P (t));
   gcc_assert (TREE_CODE (t) != FUNCTION_DECL);
-  gcc_assert (!t->common.ann || t->common.ann->common.type == VAR_ANN);
+  gcc_assert (!t->base.ann
+	      || t->base.ann->common.type == VAR_ANN);
 
-  return (var_ann_t) t->common.ann;
+  return (var_ann_t) t->base.ann;
 }
 
 /* Return the variable annotation for T, which must be a _DECL node.
@@ -215,9 +216,10 @@ function_ann (tree t)
 {
   gcc_assert (t);
   gcc_assert (TREE_CODE (t) == FUNCTION_DECL);
-  gcc_assert (!t->common.ann || t->common.ann->common.type == FUNCTION_ANN);
+  gcc_assert (!t->base.ann
+	      || t->base.ann->common.type == FUNCTION_ANN);
 
-  return (function_ann_t) t->common.ann;
+  return (function_ann_t) t->base.ann;
 }
 
 /* Return the function annotation for T, which must be a FUNCTION_DECL node.
@@ -226,7 +228,7 @@ static inline function_ann_t
 get_function_ann (tree var)
 {
   function_ann_t ann = function_ann (var);
-  gcc_assert (!var->common.ann || var->common.ann->common.type == FUNCTION_ANN);
+  gcc_assert (!var->base.ann || var->base.ann->common.type == FUNCTION_ANN);
   return (ann) ? ann : create_function_ann (var);
 }
 
@@ -238,7 +240,7 @@ has_stmt_ann (tree t)
 #ifdef ENABLE_CHECKING
   gcc_assert (is_gimple_stmt (t));
 #endif
-  return t->common.ann && t->common.ann->common.type == STMT_ANN;
+  return t->base.ann && t->base.ann->common.type == STMT_ANN;
 }
 
 /* Return the statement annotation for T, which must be a statement
@@ -249,8 +251,8 @@ stmt_ann (tree t)
 #ifdef ENABLE_CHECKING
   gcc_assert (is_gimple_stmt (t));
 #endif
-  gcc_assert (!t->common.ann || t->common.ann->common.type == STMT_ANN);
-  return (stmt_ann_t) t->common.ann;
+  gcc_assert (!t->base.ann || t->base.ann->common.type == STMT_ANN);
+  return (stmt_ann_t) t->base.ann;
 }
 
 /* Return the statement annotation for T, which must be a statement
@@ -868,7 +870,7 @@ mark_non_addressable (tree var)
 static inline tree_ann_common_t
 tree_common_ann (tree t)
 {
-  return &t->common.ann->common;
+  return &t->base.ann->common;
 }
 
 /* Return a common annotation for T.  Create the constant annotation if it

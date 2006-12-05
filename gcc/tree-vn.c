@@ -85,8 +85,8 @@ vn_compute (tree expr, hashval_t val)
   /* EXPR must not be a statement.  We are only interested in value
      numbering expressions on the RHS of assignments.  */
   gcc_assert (expr);
-  gcc_assert (!expr->common.ann
-	      || expr->common.ann->common.type != STMT_ANN);
+  gcc_assert (!expr->base.ann
+	      || expr->base.ann->common.type != STMT_ANN);
 
   val = iterative_hash_expr (expr, val);
   return val;
@@ -181,6 +181,7 @@ set_value_handle (tree e, tree v)
   if (TREE_CODE (e) == SSA_NAME)
     SSA_NAME_VALUE (e) = v;
   else if (EXPR_P (e) || DECL_P (e) || TREE_CODE (e) == TREE_LIST
+	   || GIMPLE_STMT_P (e)
 	   || TREE_CODE (e) == CONSTRUCTOR)
     get_tree_common_ann (e)->value_handle = v;
   else

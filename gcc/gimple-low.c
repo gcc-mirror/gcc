@@ -138,7 +138,7 @@ lower_function_body (void)
       arg = tree_cons (NULL, t, NULL);
       t = implicit_built_in_decls[BUILT_IN_SETJMP_DISPATCHER];
       t = build_function_call_expr (t,arg);
-      x = build2 (MODIFY_EXPR, void_type_node, disp_var, t);
+      x = build2 (GIMPLE_MODIFY_STMT, void_type_node, disp_var, t);
 
       /* Build 'goto DISP_VAR;' and insert.  */
       tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
@@ -254,9 +254,9 @@ lower_stmt (tree_stmt_iterator *tsi, struct lower_data *data)
     case OMP_CONTINUE:
       break;
 
-    case MODIFY_EXPR:
-      if (TREE_CODE (TREE_OPERAND (stmt, 1)) == CALL_EXPR)
-	stmt = TREE_OPERAND (stmt, 1);
+    case GIMPLE_MODIFY_STMT:
+      if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == CALL_EXPR)
+	stmt = GIMPLE_STMT_OPERAND (stmt, 1);
       else
 	break;
       /* FALLTHRU */
@@ -436,9 +436,9 @@ block_may_fallthru (tree block)
       return (block_may_fallthru (TREE_OPERAND (stmt, 0))
 	      && block_may_fallthru (TREE_OPERAND (stmt, 1)));
 
-    case MODIFY_EXPR:
-      if (TREE_CODE (TREE_OPERAND (stmt, 1)) == CALL_EXPR)
-	stmt = TREE_OPERAND (stmt, 1);
+    case GIMPLE_MODIFY_STMT:
+      if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == CALL_EXPR)
+	stmt = GIMPLE_STMT_OPERAND (stmt, 1);
       else
 	return true;
       /* FALLTHRU */
@@ -560,15 +560,15 @@ lower_return_expr (tree_stmt_iterator *tsi, struct lower_data *data)
 
   /* Extract the value being returned.  */
   value = TREE_OPERAND (stmt, 0);
-  if (value && TREE_CODE (value) == MODIFY_EXPR)
-    value = TREE_OPERAND (value, 1);
+  if (value && TREE_CODE (value) == GIMPLE_MODIFY_STMT)
+    value = GIMPLE_STMT_OPERAND (value, 1);
 
   /* Match this up with an existing return statement that's been created.  */
   for (t = data->return_statements; t ; t = TREE_CHAIN (t))
     {
       tree tvalue = TREE_OPERAND (TREE_VALUE (t), 0);
-      if (tvalue && TREE_CODE (tvalue) == MODIFY_EXPR)
-	tvalue = TREE_OPERAND (tvalue, 1);
+      if (tvalue && TREE_CODE (tvalue) == GIMPLE_MODIFY_STMT)
+	tvalue = GIMPLE_STMT_OPERAND (tvalue, 1);
 
       if (value == tvalue)
 	{
@@ -654,10 +654,10 @@ lower_builtin_setjmp (tree_stmt_iterator *tsi)
      passed to both __builtin_setjmp_setup and __builtin_setjmp_receiver.  */
   FORCED_LABEL (next_label) = 1;
 
-  if (TREE_CODE (stmt) == MODIFY_EXPR)
+  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
     {
-      dest = TREE_OPERAND (stmt, 0);
-      stmt = TREE_OPERAND (stmt, 1);
+      dest = GIMPLE_STMT_OPERAND (stmt, 0);
+      stmt = GIMPLE_STMT_OPERAND (stmt, 1);
     }
   else
     dest = NULL_TREE;
@@ -665,7 +665,7 @@ lower_builtin_setjmp (tree_stmt_iterator *tsi)
   /* Build '__builtin_setjmp_setup (BUF, NEXT_LABEL)' and insert.  */
   t = build_addr (next_label, current_function_decl);
   arg = tree_cons (NULL, t, NULL);
-  t = TREE_VALUE (TREE_OPERAND (stmt, 1));
+  t = TREE_VALUE (GENERIC_TREE_OPERAND (stmt, 1));
   arg = tree_cons (NULL, t, arg);
   t = implicit_built_in_decls[BUILT_IN_SETJMP_SETUP];
   t = build_function_call_expr (t, arg);
@@ -675,7 +675,7 @@ lower_builtin_setjmp (tree_stmt_iterator *tsi)
   /* Build 'DEST = 0' and insert.  */
   if (dest)
     {
-      t = build2 (MODIFY_EXPR, void_type_node, dest, integer_zero_node);
+      t = build2 (GIMPLE_MODIFY_STMT, void_type_node, dest, integer_zero_node);
       SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
       tsi_link_before (tsi, t, TSI_SAME_STMT);
     }
@@ -699,7 +699,7 @@ lower_builtin_setjmp (tree_stmt_iterator *tsi)
   /* Build 'DEST = 1' and insert.  */
   if (dest)
     {
-      t = build2 (MODIFY_EXPR, void_type_node, dest, integer_one_node);
+      t = build2 (GIMPLE_MODIFY_STMT, void_type_node, dest, integer_one_node);
       SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
       tsi_link_before (tsi, t, TSI_SAME_STMT);
     }

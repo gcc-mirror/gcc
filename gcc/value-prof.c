@@ -193,8 +193,9 @@ tree_divmod_fixed_value (tree stmt, tree operation,
 
   tmpv = create_tmp_var (optype, "PROF");
   tmp1 = create_tmp_var (optype, "PROF");
-  stmt1 = build2 (MODIFY_EXPR, optype, tmpv, fold_convert (optype, value));
-  stmt2 = build2 (MODIFY_EXPR, optype, tmp1, op2);
+  stmt1 = build2 (GIMPLE_MODIFY_STMT, optype, tmpv,
+		  fold_convert (optype, value));
+  stmt2 = build2 (GIMPLE_MODIFY_STMT, optype, tmp1, op2);
   stmt3 = build3 (COND_EXPR, void_type_node,
 	    build2 (NE_EXPR, boolean_type_node, tmp1, tmpv),
 	    build1 (GOTO_EXPR, void_type_node, label_decl2),
@@ -206,14 +207,14 @@ tree_divmod_fixed_value (tree stmt, tree operation,
 
   tmp2 = create_tmp_var (optype, "PROF");
   label1 = build1 (LABEL_EXPR, void_type_node, label_decl1);
-  stmt1 = build2 (MODIFY_EXPR, optype, tmp2,
+  stmt1 = build2 (GIMPLE_MODIFY_STMT, optype, tmp2,
 		  build2 (TREE_CODE (operation), optype, op1, tmpv));
   bsi_insert_before (&bsi, label1, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   bb2end = stmt1;
 
   label2 = build1 (LABEL_EXPR, void_type_node, label_decl2);
-  stmt1 = build2 (MODIFY_EXPR, optype, tmp2,
+  stmt1 = build2 (GIMPLE_MODIFY_STMT, optype, tmp2,
 		  build2 (TREE_CODE (operation), optype, op1, op2));
   bsi_insert_before (&bsi, label2, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
@@ -269,11 +270,11 @@ tree_divmod_fixed_value_transform (tree stmt)
   modify = stmt;
   if (TREE_CODE (stmt) == RETURN_EXPR
       && TREE_OPERAND (stmt, 0)
-      && TREE_CODE (TREE_OPERAND (stmt, 0)) == MODIFY_EXPR)
+      && TREE_CODE (TREE_OPERAND (stmt, 0)) == GIMPLE_MODIFY_STMT)
     modify = TREE_OPERAND (stmt, 0);
-  if (TREE_CODE (modify) != MODIFY_EXPR)
+  if (TREE_CODE (modify) != GIMPLE_MODIFY_STMT)
     return false;
-  op = TREE_OPERAND (modify, 1);
+  op = GIMPLE_STMT_OPERAND (modify, 1);
   if (!INTEGRAL_TYPE_P (TREE_TYPE (op)))
     return false;
   code = TREE_CODE (op);
@@ -325,7 +326,7 @@ tree_divmod_fixed_value_transform (tree stmt)
       print_generic_stmt (dump_file, stmt, TDF_SLIM);
     }
 
-  TREE_OPERAND (modify, 1) = result;
+  GIMPLE_STMT_OPERAND (modify, 1) = result;
 
   return true;
 }
@@ -357,9 +358,9 @@ tree_mod_pow2 (tree stmt, tree operation, tree op1, tree op2, int prob,
 
   tmp2 = create_tmp_var (optype, "PROF");
   tmp3 = create_tmp_var (optype, "PROF");
-  stmt2 = build2 (MODIFY_EXPR, optype, tmp2, 
+  stmt2 = build2 (GIMPLE_MODIFY_STMT, optype, tmp2, 
 		  build2 (PLUS_EXPR, optype, op2, build_int_cst (optype, -1)));
-  stmt3 = build2 (MODIFY_EXPR, optype, tmp3,
+  stmt3 = build2 (GIMPLE_MODIFY_STMT, optype, tmp3,
 		  build2 (BIT_AND_EXPR, optype, tmp2, op2));
   stmt4 = build3 (COND_EXPR, void_type_node,
 		  build2 (NE_EXPR, boolean_type_node,
@@ -373,14 +374,14 @@ tree_mod_pow2 (tree stmt, tree operation, tree op1, tree op2, int prob,
 
   /* tmp2 == op2-1 inherited from previous block */
   label1 = build1 (LABEL_EXPR, void_type_node, label_decl1);
-  stmt1 = build2 (MODIFY_EXPR, optype, result,
+  stmt1 = build2 (GIMPLE_MODIFY_STMT, optype, result,
 		  build2 (BIT_AND_EXPR, optype, op1, tmp2));
   bsi_insert_before (&bsi, label1, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   bb2end = stmt1;
 
   label2 = build1 (LABEL_EXPR, void_type_node, label_decl2);
-  stmt1 = build2 (MODIFY_EXPR, optype, result,
+  stmt1 = build2 (GIMPLE_MODIFY_STMT, optype, result,
 		  build2 (TREE_CODE (operation), optype, op1, op2));
   bsi_insert_before (&bsi, label2, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
@@ -436,11 +437,11 @@ tree_mod_pow2_value_transform (tree stmt)
   modify = stmt;
   if (TREE_CODE (stmt) == RETURN_EXPR
       && TREE_OPERAND (stmt, 0)
-      && TREE_CODE (TREE_OPERAND (stmt, 0)) == MODIFY_EXPR)
+      && TREE_CODE (TREE_OPERAND (stmt, 0)) == GIMPLE_MODIFY_STMT)
     modify = TREE_OPERAND (stmt, 0);
-  if (TREE_CODE (modify) != MODIFY_EXPR)
+  if (TREE_CODE (modify) != GIMPLE_MODIFY_STMT)
     return false;
-  op = TREE_OPERAND (modify, 1);
+  op = GIMPLE_STMT_OPERAND (modify, 1);
   if (!INTEGRAL_TYPE_P (TREE_TYPE (op)))
     return false;
   code = TREE_CODE (op);
@@ -483,7 +484,7 @@ tree_mod_pow2_value_transform (tree stmt)
 
   result = tree_mod_pow2 (stmt, op, op1, op2, prob, count, all);
 
-  TREE_OPERAND (modify, 1) = result;
+  GIMPLE_STMT_OPERAND (modify, 1) = result;
 
   return true;
 }
@@ -520,8 +521,8 @@ tree_mod_subtract (tree stmt, tree operation, tree op1, tree op2,
   bsi = bsi_for_stmt (stmt);
 
   tmp1 = create_tmp_var (optype, "PROF");
-  stmt1 = build2 (MODIFY_EXPR, optype, result, op1);
-  stmt2 = build2 (MODIFY_EXPR, optype, tmp1, op2);
+  stmt1 = build2 (GIMPLE_MODIFY_STMT, optype, result, op1);
+  stmt2 = build2 (GIMPLE_MODIFY_STMT, optype, tmp1, op2);
   stmt3 = build3 (COND_EXPR, void_type_node,
 	    build2 (LT_EXPR, boolean_type_node, result, tmp1),
 	    build1 (GOTO_EXPR, void_type_node, label_decl3),
@@ -535,7 +536,7 @@ tree_mod_subtract (tree stmt, tree operation, tree op1, tree op2,
   if (ncounts)	/* Assumed to be 0 or 1 */
     {
       label1 = build1 (LABEL_EXPR, void_type_node, label_decl1);
-      stmt1 = build2 (MODIFY_EXPR, optype, result,
+      stmt1 = build2 (GIMPLE_MODIFY_STMT, optype, result,
 		      build2 (MINUS_EXPR, optype, result, tmp1));
       stmt2 = build3 (COND_EXPR, void_type_node,
 		build2 (LT_EXPR, boolean_type_node, result, tmp1),
@@ -549,7 +550,7 @@ tree_mod_subtract (tree stmt, tree operation, tree op1, tree op2,
 
   /* Fallback case. */
   label2 = build1 (LABEL_EXPR, void_type_node, label_decl2);
-  stmt1 = build2 (MODIFY_EXPR, optype, result,
+  stmt1 = build2 (GIMPLE_MODIFY_STMT, optype, result,
 		    build2 (TREE_CODE (operation), optype, result, tmp1));
   bsi_insert_before (&bsi, label2, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
@@ -619,11 +620,11 @@ tree_mod_subtract_transform (tree stmt)
   modify = stmt;
   if (TREE_CODE (stmt) == RETURN_EXPR
       && TREE_OPERAND (stmt, 0)
-      && TREE_CODE (TREE_OPERAND (stmt, 0)) == MODIFY_EXPR)
+      && TREE_CODE (TREE_OPERAND (stmt, 0)) == GIMPLE_MODIFY_STMT)
     modify = TREE_OPERAND (stmt, 0);
-  if (TREE_CODE (modify) != MODIFY_EXPR)
+  if (TREE_CODE (modify) != GIMPLE_MODIFY_STMT)
     return false;
-  op = TREE_OPERAND (modify, 1);
+  op = GIMPLE_STMT_OPERAND (modify, 1);
   if (!INTEGRAL_TYPE_P (TREE_TYPE (op)))
     return false;
   code = TREE_CODE (op);
@@ -685,7 +686,7 @@ tree_mod_subtract_transform (tree stmt)
 			    histogram->hvalue.counters[0], 
 			    histogram->hvalue.counters[1], all);
 
-  TREE_OPERAND (modify, 1) = result;
+  GIMPLE_STMT_OPERAND (modify, 1) = result;
 
   return true;
 }
@@ -713,14 +714,14 @@ tree_divmod_values_to_profile (tree stmt, histogram_values *values)
     assign = stmt;
 
   if (!assign
-      || TREE_CODE (assign) != MODIFY_EXPR)
+      || TREE_CODE (assign) != GIMPLE_MODIFY_STMT)
     return;
-  lhs = TREE_OPERAND (assign, 0);
+  lhs = GIMPLE_STMT_OPERAND (assign, 0);
   type = TREE_TYPE (lhs);
   if (!INTEGRAL_TYPE_P (type))
     return;
 
-  rhs = TREE_OPERAND (assign, 1);
+  rhs = GIMPLE_STMT_OPERAND (assign, 1);
   switch (TREE_CODE (rhs))
     {
     case TRUNC_DIV_EXPR:

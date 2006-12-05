@@ -206,8 +206,8 @@ execute_free_cfg_annotations (void)
     for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
       {
 	tree stmt = bsi_stmt (bsi);
-	ggc_free (stmt->common.ann);
-	stmt->common.ann = NULL;
+	ggc_free (stmt->base.ann);
+	stmt->base.ann = NULL;
       }
 
   /* And get rid of annotations we no longer need.  */

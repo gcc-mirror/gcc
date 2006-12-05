@@ -216,7 +216,7 @@ find_pdom (basic_block block)
     }
 }
 
-#define NECESSARY(stmt)		stmt->common.asm_written_flag
+#define NECESSARY(stmt)		stmt->base.asm_written_flag
 
 /* If STMT is not already marked necessary, mark it, and add it to the
    worklist if ADD_TO_WORKLIST is true.  */
@@ -318,7 +318,7 @@ mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
 	mark_stmt_necessary (stmt, true);
       return;
 
-    case MODIFY_EXPR:
+    case GIMPLE_MODIFY_STMT:
       op = get_call_expr_in (stmt);
       if (op && TREE_SIDE_EFFECTS (op))
 	{
@@ -329,8 +329,8 @@ mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
       /* These values are mildly magic bits of the EH runtime.  We can't
 	 see the entire lifetime of these values until landing pads are
 	 generated.  */
-      if (TREE_CODE (TREE_OPERAND (stmt, 0)) == EXC_PTR_EXPR
-	  || TREE_CODE (TREE_OPERAND (stmt, 0)) == FILTER_EXPR)
+      if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == EXC_PTR_EXPR
+	  || TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == FILTER_EXPR)
 	{
 	  mark_stmt_necessary (stmt, true);
 	  return;

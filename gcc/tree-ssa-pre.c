@@ -61,9 +61,9 @@ Boston, MA 02110-1301, USA.  */
 */
 
 /* For ease of terminology, "expression node" in the below refers to
-   every expression node but MODIFY_EXPR, because MODIFY_EXPR's represent
-   the actual statement containing the expressions we care about, and
-   we cache the value number by putting it in the expression.  */
+   every expression node but GIMPLE_MODIFY_STMT, because GIMPLE_MODIFY_STMT's
+   represent the actual statement containing the expressions we care about,
+   and we cache the value number by putting it in the expression.  */
 
 /* Basic algorithm
 
@@ -986,7 +986,7 @@ phi_translate (tree expr, bitmap_set_t set1, bitmap_set_t set2,
     return expr;
 
   /* Phi translations of a given expression don't change.  */
-  if (EXPR_P (expr))
+  if (EXPR_P (expr) || GIMPLE_STMT_P (expr))
     {
       tree vh;
 
@@ -1115,7 +1115,7 @@ phi_translate (tree expr, bitmap_set_t set1, bitmap_set_t set2,
 		TREE_OPERAND (newexpr, 0) = newop0 == oldop0 ? oldval0 : get_value_handle (newop0);
 		TREE_OPERAND (newexpr, 1) = listchanged ? newarglist : oldarglist;
 		TREE_OPERAND (newexpr, 2) = newop2 == oldop2 ? oldval2 : get_value_handle (newop2);
-		newexpr->common.ann = NULL;
+		newexpr->base.ann = NULL;
 		vn_lookup_or_add_with_vuses (newexpr, tvuses);
 		expr = newexpr;
 		phi_trans_add (oldexpr, newexpr, pred, tvuses);
@@ -1227,7 +1227,7 @@ phi_translate (tree expr, bitmap_set_t set1, bitmap_set_t set2,
 	      }
 	    else
 	      {
-		newexpr->common.ann = NULL;
+		newexpr->base.ann = NULL;
 		vn_lookup_or_add_with_vuses (newexpr, newvuses);
 	      }
 	    expr = newexpr;
@@ -1272,7 +1272,7 @@ phi_translate (tree expr, bitmap_set_t set1, bitmap_set_t set2,
 	      }
 	    else
 	      {
-		newexpr->common.ann = NULL;
+		newexpr->base.ann = NULL;
 		vn_lookup_or_add (newexpr, NULL);
 	      }
 	    expr = newexpr;
@@ -1305,7 +1305,7 @@ phi_translate (tree expr, bitmap_set_t set1, bitmap_set_t set2,
 	      }
 	    else
 	      {
-		newexpr->common.ann = NULL;
+		newexpr->base.ann = NULL;
 		vn_lookup_or_add (newexpr, NULL);
 	      }
 	    expr = newexpr;
@@ -2490,7 +2490,7 @@ find_or_generate_expression (basic_block block, tree expr, tree stmts)
   return genop;
 }
 
-#define NECESSARY(stmt)		stmt->common.asm_written_flag
+#define NECESSARY(stmt)		stmt->base.asm_written_flag
 /* Create an expression in pieces, so that we can handle very complex
    expressions that may be ANTIC, but not necessary GIMPLE.
    BLOCK is the basic block the expression will be inserted into,
@@ -2608,8 +2608,8 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
       for (; !tsi_end_p (tsi); tsi_next (&tsi))
 	{
 	  tree stmt = tsi_stmt (tsi);
-	  tree forcedname = TREE_OPERAND (stmt, 0);
-	  tree forcedexpr = TREE_OPERAND (stmt, 1);
+	  tree forcedname = GIMPLE_STMT_OPERAND (stmt, 0);
+	  tree forcedexpr = GIMPLE_STMT_OPERAND (stmt, 1);
 	  tree val = vn_lookup_or_add (forcedexpr, NULL);
 
 	  VEC_safe_push (tree, heap, inserted_exprs, stmt);
@@ -2636,9 +2636,9 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
   if (TREE_CODE (TREE_TYPE (expr)) == COMPLEX_TYPE)
     DECL_COMPLEX_GIMPLE_REG_P (temp) = 1;
 
-  newexpr = build2 (MODIFY_EXPR, TREE_TYPE (expr), temp, newexpr);
+  newexpr = build2_gimple (GIMPLE_MODIFY_STMT, temp, newexpr);
   name = make_ssa_name (temp, newexpr);
-  TREE_OPERAND (newexpr, 0) = name;
+  GIMPLE_STMT_OPERAND (newexpr, 0) = name;
   NECESSARY (newexpr) = 0;
 
   tsi = tsi_last (stmts);
@@ -3375,7 +3375,7 @@ try_look_through_load (tree lhs, tree mem_ref, tree stmt, basic_block block)
 	 uses, we can stop right here.  Note that this means we do
 	 not look through PHI nodes, which is intentional.  */
       if (!def_stmt
-	  || TREE_CODE (def_stmt) != MODIFY_EXPR
+	  || TREE_CODE (def_stmt) != GIMPLE_MODIFY_STMT
 	  || !ZERO_SSA_OPERANDS (def_stmt, SSA_OP_VIRTUAL_USES))
 	return false;
 
@@ -3388,7 +3388,7 @@ try_look_through_load (tree lhs, tree mem_ref, tree stmt, basic_block block)
 	{
 	  /* Is this a store to the exact same location as the one we are
 	     loading from in STMT?  */
-	  if (!operand_equal_p (TREE_OPERAND (def_stmt, 0), mem_ref, 0))
+	  if (!operand_equal_p (GIMPLE_STMT_OPERAND (def_stmt, 0), mem_ref, 0))
 	    return false;
 
 	  /* Otherwise remember this statement and see if all other VUSEs
@@ -3400,7 +3400,7 @@ try_look_through_load (tree lhs, tree mem_ref, tree stmt, basic_block block)
   /* Alright then, we have visited all VUSEs of STMT and we've determined
      that all of them come from the same statement STORE_STMT.  See if there
      is a useful expression we can deduce from STORE_STMT.  */
-  rhs = TREE_OPERAND (store_stmt, 1);
+  rhs = GIMPLE_STMT_OPERAND (store_stmt, 1);
   if ((TREE_CODE (rhs) == SSA_NAME
        && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs))
       || is_gimple_min_invariant (rhs)
@@ -3438,12 +3438,14 @@ poolify_tree (tree node)
 	return temp;
       }
       break;
-    case MODIFY_EXPR:
+    case GIMPLE_MODIFY_STMT:
       {
 	tree temp = (tree) pool_alloc (modify_expr_node_pool);
 	memcpy (temp, node, tree_size (node));
-	TREE_OPERAND (temp, 0) = poolify_tree (TREE_OPERAND (temp, 0));
-	TREE_OPERAND (temp, 1) = poolify_tree (TREE_OPERAND (temp, 1));
+	GIMPLE_STMT_OPERAND (temp, 0) =
+	  poolify_tree (GIMPLE_STMT_OPERAND (temp, 0));
+	GIMPLE_STMT_OPERAND (temp, 1) =
+	  poolify_tree (GIMPLE_STMT_OPERAND (temp, 1));
 	return temp;
       }
       break;
@@ -3462,17 +3464,16 @@ poolify_tree (tree node)
 
 static tree modify_expr_template;
 
-/* Allocate a MODIFY_EXPR with TYPE, and operands OP1, OP2 in the
+/* Allocate a GIMPLE_MODIFY_STMT with TYPE, and operands OP1, OP2 in the
    alloc pools and return it.  */
 static tree
-poolify_modify_expr (tree type, tree op1, tree op2)
+poolify_modify_stmt (tree op1, tree op2)
 {
   if (modify_expr_template == NULL)
-    modify_expr_template = build2 (MODIFY_EXPR, type, op1, op2);
+    modify_expr_template = build2_gimple (GIMPLE_MODIFY_STMT, op1, op2);
 
-  TREE_OPERAND (modify_expr_template, 0) = op1;
-  TREE_OPERAND (modify_expr_template, 1) = op2;
-  TREE_TYPE (modify_expr_template) = type;
+  GIMPLE_STMT_OPERAND (modify_expr_template, 0) = op1;
+  GIMPLE_STMT_OPERAND (modify_expr_template, 1) = op2;
 
   return poolify_tree (modify_expr_template);
 }
@@ -3506,15 +3507,16 @@ insert_fake_stores (void)
 	     or aggregate.  We also want to ignore things whose
 	     virtual uses occur in abnormal phis.  */
 
-	  if (TREE_CODE (stmt) == MODIFY_EXPR
-	      && TREE_CODE (TREE_OPERAND (stmt, 0)) == INDIRECT_REF
-	      && !AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (stmt, 0)))
-	      && TREE_CODE (TREE_TYPE (TREE_OPERAND (stmt, 0))) != COMPLEX_TYPE)
+	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	      && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == INDIRECT_REF
+	      && !AGGREGATE_TYPE_P (TREE_TYPE (GIMPLE_STMT_OPERAND (stmt, 0)))
+	      && TREE_CODE (TREE_TYPE (GIMPLE_STMT_OPERAND
+					(stmt, 0))) != COMPLEX_TYPE)
 	    {
 	      ssa_op_iter iter;
 	      def_operand_p defp;
-	      tree lhs = TREE_OPERAND (stmt, 0);
-	      tree rhs = TREE_OPERAND (stmt, 1);
+	      tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+	      tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 	      tree new;
 	      bool notokay = false;
 
@@ -3537,10 +3539,10 @@ insert_fake_stores (void)
 		  get_var_ann (storetemp);
 		}
 
-	      new = poolify_modify_expr (TREE_TYPE (stmt), storetemp, lhs);
+	      new = poolify_modify_stmt (storetemp, lhs);
 
 	      lhs = make_ssa_name (storetemp, new);
-	      TREE_OPERAND (new, 0) = lhs;
+	      GIMPLE_STMT_OPERAND (new, 0) = lhs;
 	      create_ssa_artficial_load_stmt (new, stmt);
 
 	      NECESSARY (new) = 0;
@@ -3570,7 +3572,7 @@ realify_fake_stores (void)
 	  tree newstmt;
 
 	  /* Mark the temp variable as referenced */
-	  add_referenced_var (SSA_NAME_VAR (TREE_OPERAND (stmt, 0)));
+	  add_referenced_var (SSA_NAME_VAR (GIMPLE_STMT_OPERAND (stmt, 0)));
 
 	  /* Put the new statement in GC memory, fix up the
 	     SSA_NAME_DEF_STMT on it, and then put it in place of
@@ -3578,10 +3580,10 @@ realify_fake_stores (void)
 	     as a plain ssa name copy.  */
 	  bsi = bsi_for_stmt (stmt);
 	  bsi_prev (&bsi);
-	  newstmt = build2 (MODIFY_EXPR, void_type_node,
-			    TREE_OPERAND (stmt, 0),
-			    TREE_OPERAND (bsi_stmt (bsi), 1));
-	  SSA_NAME_DEF_STMT (TREE_OPERAND (newstmt, 0)) = newstmt;
+	  newstmt = build2_gimple (GIMPLE_MODIFY_STMT,
+			           GIMPLE_STMT_OPERAND (stmt, 0),
+			    	   GIMPLE_STMT_OPERAND (bsi_stmt (bsi), 1));
+	  SSA_NAME_DEF_STMT (GIMPLE_STMT_OPERAND (newstmt, 0)) = newstmt;
 	  bsi_insert_before (&bsi, newstmt, BSI_SAME_STMT);
 	  bsi = bsi_for_stmt (stmt);
 	  bsi_remove (&bsi, true);
@@ -3752,10 +3754,10 @@ compute_avail (void)
 	      tree rhs;
 
 	      stmt = TREE_OPERAND (stmt, 0);
-	      if (stmt && TREE_CODE (stmt) == MODIFY_EXPR)
+	      if (stmt && TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
 		{
-		  lhs  = TREE_OPERAND (stmt, 0);
-		  rhs = TREE_OPERAND (stmt, 1);
+		  lhs  = GIMPLE_STMT_OPERAND (stmt, 0);
+		  rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 		  if (TREE_CODE (rhs) == SSA_NAME
 		      && !is_undefined_value (rhs))
 		    bitmap_value_insert_into_set (EXP_GEN (block), rhs);
@@ -3767,13 +3769,14 @@ compute_avail (void)
 	      continue;
 	    }
 
-	  else if (TREE_CODE (stmt) == MODIFY_EXPR
+	  else if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
 	      && !ann->has_volatile_ops
-	      && TREE_CODE (TREE_OPERAND (stmt, 0)) == SSA_NAME
-	      && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (TREE_OPERAND (stmt, 0)))
+	      && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == SSA_NAME
+	      && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI
+	           (GIMPLE_STMT_OPERAND (stmt, 0)))
 	    {
-	      tree lhs = TREE_OPERAND (stmt, 0);
-	      tree rhs = TREE_OPERAND (stmt, 1);
+	      tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+	      tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 
 	      /* Try to look through loads.  */
 	      if (TREE_CODE (lhs) == SSA_NAME
@@ -3868,14 +3871,14 @@ eliminate (void)
 	  /* Lookup the RHS of the expression, see if we have an
 	     available computation for it.  If so, replace the RHS with
 	     the available computation.  */
-	  if (TREE_CODE (stmt) == MODIFY_EXPR
-	      && TREE_CODE (TREE_OPERAND (stmt, 0)) == SSA_NAME
-	      && TREE_CODE (TREE_OPERAND (stmt ,1)) != SSA_NAME
-	      && !is_gimple_min_invariant (TREE_OPERAND (stmt, 1))
+	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	      && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == SSA_NAME
+	      && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) != SSA_NAME
+	      && !is_gimple_min_invariant (GIMPLE_STMT_OPERAND (stmt, 1))
 	      && !stmt_ann (stmt)->has_volatile_ops)
 	    {
-	      tree lhs = TREE_OPERAND (stmt, 0);
-	      tree *rhs_p = &TREE_OPERAND (stmt, 1);
+	      tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+	      tree *rhs_p = &GIMPLE_STMT_OPERAND (stmt, 1);
 	      tree sprime;
 
 	      sprime = bitmap_find_leader (AVAIL_OUT (b),
@@ -4097,8 +4100,8 @@ init_pre (bool do_fre)
 				      tree_code_size (TREE_LIST), 30);
   comparison_node_pool = create_alloc_pool ("Comparison tree nodes",
 					    tree_code_size (EQ_EXPR), 30);
-  modify_expr_node_pool = create_alloc_pool ("MODIFY_EXPR nodes",
-					     tree_code_size (MODIFY_EXPR),
+  modify_expr_node_pool = create_alloc_pool ("GIMPLE_MODIFY_STMT nodes",
+					     tree_code_size (GIMPLE_MODIFY_STMT),
 					     30);
   modify_expr_template = NULL;
 

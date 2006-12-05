@@ -1375,11 +1375,11 @@ xstormy16_expand_builtin_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   t = make_tree (TREE_TYPE (base), virtual_incoming_args_rtx);
   t = build2 (PLUS_EXPR, TREE_TYPE (base), t, 
 	      build_int_cst (NULL_TREE, INCOMING_FRAME_SP_OFFSET));
-  t = build2 (MODIFY_EXPR, TREE_TYPE (base), base, t);
+  t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (base), base, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-  t = build2 (MODIFY_EXPR, TREE_TYPE (count), count, 
+  t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (count), count, 
 	      build_int_cst (NULL_TREE,
 			     current_function_args_info * UNITS_PER_WORD));
   TREE_SIDE_EFFECTS (t) = 1;
@@ -1434,7 +1434,7 @@ xstormy16_expand_builtin_va_arg (tree valist, tree type, tree *pre_p,
   
       t = fold_convert (ptr_type_node, count_tmp);
       t = build2 (PLUS_EXPR, ptr_type_node, base, t);
-      t = build2 (MODIFY_EXPR, void_type_node, addr, t);
+      t = build2 (GIMPLE_MODIFY_STMT, void_type_node, addr, t);
       gimplify_and_add (t, pre_p);
 
       t = build1 (GOTO_EXPR, void_type_node, lab_gotaddr);
@@ -1453,7 +1453,7 @@ xstormy16_expand_builtin_va_arg (tree valist, tree type, tree *pre_p,
       tree r, u;
 
       r = size_int (NUM_ARGUMENT_REGISTERS * UNITS_PER_WORD);
-      u = build2 (MODIFY_EXPR, void_type_node, count_tmp, r);
+      u = build2 (GIMPLE_MODIFY_STMT, void_type_node, count_tmp, r);
 
       t = fold_convert (TREE_TYPE (count), r);
       t = build2 (GE_EXPR, boolean_type_node, count_tmp, t);
@@ -1469,7 +1469,7 @@ xstormy16_expand_builtin_va_arg (tree valist, tree type, tree *pre_p,
 	      fold_convert (TREE_TYPE (count), size_tree));
   t = fold_convert (TREE_TYPE (base), fold (t));
   t = build2 (MINUS_EXPR, TREE_TYPE (base), base, t);
-  t = build2 (MODIFY_EXPR, void_type_node, addr, t);
+  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, addr, t);
   gimplify_and_add (t, pre_p);
 
   t = build1 (LABEL_EXPR, void_type_node, lab_gotaddr);
@@ -1477,7 +1477,7 @@ xstormy16_expand_builtin_va_arg (tree valist, tree type, tree *pre_p,
 
   t = fold_convert (TREE_TYPE (count), size_tree);
   t = build2 (PLUS_EXPR, TREE_TYPE (count), count_tmp, t);
-  t = build2 (MODIFY_EXPR, TREE_TYPE (count), count, t);
+  t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (count), count, t);
   gimplify_and_add (t, pre_p);
   
   addr = fold_convert (build_pointer_type (type), addr);

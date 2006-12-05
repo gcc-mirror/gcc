@@ -1065,6 +1065,11 @@ DEFTREECODE (WIDEN_MULT_EXPR, "widen_mult_expr", tcc_binary, 2)
    Operand 1 is an integer shift amount in bits.  */
 DEFTREECODE (VEC_LSHIFT_EXPR, "vec_lshift_expr", tcc_binary, 2)
 DEFTREECODE (VEC_RSHIFT_EXPR, "vec_rshift_expr", tcc_binary, 2)
+
+/* GIMPLE tree codes.  */
+
+/* Assignment expression.  Operand 0 is the what to set; 1, the new value.  */
+DEFTREECODE (GIMPLE_MODIFY_STMT, "gimple_modify_stmt", tcc_gimple_stmt, 2)
 
 /* Widening vector multiplication.
    The two operands are vectors with N elements of size S. Multiplying the

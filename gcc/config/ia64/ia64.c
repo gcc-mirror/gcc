@@ -4324,7 +4324,7 @@ ia64_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 		       build_int_cst (NULL_TREE, 2 * UNITS_PER_WORD - 1));
       t = build2 (BIT_AND_EXPR, TREE_TYPE (t), t,
 		  build_int_cst (NULL_TREE, -2 * UNITS_PER_WORD));
-      t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
+      t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (valist), valist, t);
       gimplify_and_add (t, pre_p);
     }
 

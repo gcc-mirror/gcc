@@ -48,7 +48,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    Given a scalar variable to be analyzed, follow the SSA edge to
    its definition:
      
-   - When the definition is a MODIFY_EXPR: if the right hand side
+   - When the definition is a GIMPLE_MODIFY_STMT: if the right hand side
    (RHS) of the definition cannot be statically analyzed, the answer
    of the analyzer is: "don't know".  
    Otherwise, for all the variables that are not yet analyzed in the
@@ -1405,15 +1405,15 @@ follow_ssa_edge (struct loop *loop, tree def, tree halting_phi,
       /* Outer loop.  */
       return t_false;
 
-    case MODIFY_EXPR:
+    case GIMPLE_MODIFY_STMT:
       return follow_ssa_edge_in_rhs (loop, def,
-				     TREE_OPERAND (def, 1), 
+				     GIMPLE_STMT_OPERAND (def, 1), 
 				     halting_phi, 
 				     evolution_of_loop, limit);
       
     default:
       /* At this level of abstraction, the program is just a set
-	 of MODIFY_EXPRs and PHI_NODEs.  In principle there is no
+	 of GIMPLE_MODIFY_STMTs and PHI_NODEs.  In principle there is no
 	 other node to be handled.  */
       return t_false;
     }
@@ -1607,16 +1607,16 @@ interpret_condition_phi (struct loop *loop, tree condition_phi)
   return res;
 }
 
-/* Interpret the right hand side of a modify_expr OPND1.  If we didn't
+/* Interpret the right hand side of a GIMPLE_MODIFY_STMT OPND1.  If we didn't
    analyze this node before, follow the definitions until ending
-   either on an analyzed modify_expr, or on a loop-phi-node.  On the
+   either on an analyzed GIMPLE_MODIFY_STMT, or on a loop-phi-node.  On the
    return path, this function propagates evolutions (ala constant copy
    propagation).  OPND1 is not a GIMPLE expression because we could
    analyze the effect of an inner loop: see interpret_loop_phi.  */
 
 static tree
-interpret_rhs_modify_expr (struct loop *loop, tree at_stmt,
-			   tree opnd1, tree type)
+interpret_rhs_modify_stmt (struct loop *loop, tree at_stmt,
+			   	  tree opnd1, tree type)
 {
   tree res, opnd10, opnd11, chrec10, chrec11;
 
@@ -1883,15 +1883,15 @@ pointer_used_p (tree ptr)
       if (TREE_CODE (stmt) == COND_EXPR)
 	return true;
 
-      if (TREE_CODE (stmt) != MODIFY_EXPR)
+      if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
 	continue;
 
-      rhs = TREE_OPERAND (stmt, 1);
+      rhs = GIMPLE_STMT_OPERAND (stmt, 1);
       if (!COMPARISON_CLASS_P (rhs))
 	continue;
 
-      if (TREE_OPERAND (stmt, 0) == ptr
-	  || TREE_OPERAND (stmt, 1) == ptr)
+      if (GIMPLE_STMT_OPERAND (stmt, 0) == ptr
+	  || GIMPLE_STMT_OPERAND (stmt, 1) == ptr)
 	return true;
     }
 
@@ -1911,7 +1911,7 @@ analyze_scalar_evolution_1 (struct loop *loop, tree var, tree res)
     return chrec_dont_know;
 
   if (TREE_CODE (var) != SSA_NAME)
-    return interpret_rhs_modify_expr (loop, NULL_TREE, var, type);
+    return interpret_rhs_modify_stmt (loop, NULL_TREE, var, type);
 
   def = SSA_NAME_DEF_STMT (var);
   bb = bb_for_stmt (def);
@@ -1944,8 +1944,9 @@ analyze_scalar_evolution_1 (struct loop *loop, tree var, tree res)
 
   switch (TREE_CODE (def))
     {
-    case MODIFY_EXPR:
-      res = interpret_rhs_modify_expr (loop, def, TREE_OPERAND (def, 1), type);
+    case GIMPLE_MODIFY_STMT:
+      res = interpret_rhs_modify_stmt (loop, def,
+	  			       GIMPLE_STMT_OPERAND (def, 1), type);
 
       if (POINTER_TYPE_P (type)
 	  && !automatically_generated_chrec_p (res)
@@ -3005,14 +3006,14 @@ scev_const_prop (void)
 	  SET_PHI_RESULT (phi, NULL_TREE);
 	  remove_phi_node (phi, NULL_TREE);
 
-	  ass = build2 (MODIFY_EXPR, void_type_node, rslt, NULL_TREE);
+	  ass = build2 (GIMPLE_MODIFY_STMT, void_type_node, rslt, NULL_TREE);
 	  SSA_NAME_DEF_STMT (rslt) = ass;
 	  {
 	    block_stmt_iterator dest = bsi;
 	    bsi_insert_before (&dest, ass, BSI_NEW_STMT);
 	    def = force_gimple_operand_bsi (&dest, def, false, NULL_TREE);
 	  }
-	  TREE_OPERAND (ass, 1) = def;
+	  GIMPLE_STMT_OPERAND (ass, 1) = def;
 	  update_stmt (ass);
 	}
     }

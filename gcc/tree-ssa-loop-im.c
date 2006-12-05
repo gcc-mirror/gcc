@@ -244,7 +244,7 @@ movement_possibility (tree stmt)
       return MOVE_POSSIBLE;
     }
 
-  if (TREE_CODE (stmt) != MODIFY_EXPR)
+  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return MOVE_IMPOSSIBLE;
 
   if (stmt_ends_bb_p (stmt))
@@ -253,12 +253,12 @@ movement_possibility (tree stmt)
   if (stmt_ann (stmt)->has_volatile_ops)
     return MOVE_IMPOSSIBLE;
 
-  lhs = TREE_OPERAND (stmt, 0);
+  lhs = GIMPLE_STMT_OPERAND (stmt, 0);
   if (TREE_CODE (lhs) == SSA_NAME
       && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
     return MOVE_IMPOSSIBLE;
 
-  rhs = TREE_OPERAND (stmt, 1);
+  rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 
   if (TREE_SIDE_EFFECTS (rhs))
     return MOVE_IMPOSSIBLE;
@@ -423,7 +423,7 @@ stmt_cost (tree stmt)
   if (TREE_CODE (stmt) == COND_EXPR)
     return LIM_EXPENSIVE;
 
-  rhs = TREE_OPERAND (stmt, 1);
+  rhs = GENERIC_TREE_OPERAND (stmt, 1);
 
   /* Hoisting memory references out should almost surely be a win.  */
   if (stmt_references_memory_p (stmt))
@@ -609,7 +609,7 @@ determine_invariantness_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
       /* If divisor is invariant, convert a/b to a*(1/b), allowing reciprocal
 	 to be hoisted out of loop, saving expensive divide.  */
       if (pos == MOVE_POSSIBLE
-	  && (rhs = TREE_OPERAND (stmt, 1)) != NULL
+	  && (rhs = GENERIC_TREE_OPERAND (stmt, 1)) != NULL
 	  && TREE_CODE (rhs) == RDIV_EXPR
 	  && flag_unsafe_math_optimizations
 	  && !flag_trapping_math
@@ -620,19 +620,19 @@ determine_invariantness_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
 	{
 	  tree lhs, stmt1, stmt2, var, name;
 
-	  lhs = TREE_OPERAND (stmt, 0);
+	  lhs = GENERIC_TREE_OPERAND (stmt, 0);
 
-	  /* stmt must be MODIFY_EXPR.  */
+	  /* stmt must be GIMPLE_MODIFY_STMT.  */
 	  var = create_tmp_var (TREE_TYPE (rhs), "reciptmp");
 	  add_referenced_var (var);
 
-	  stmt1 = build2 (MODIFY_EXPR, void_type_node, var,
+	  stmt1 = build2 (GIMPLE_MODIFY_STMT, void_type_node, var,
 			  build2 (RDIV_EXPR, TREE_TYPE (rhs),
 				  build_real (TREE_TYPE (rhs), dconst1),
 				  TREE_OPERAND (rhs, 1)));
 	  name = make_ssa_name (var, stmt1);
-	  TREE_OPERAND (stmt1, 0) = name;
-	  stmt2 = build2 (MODIFY_EXPR, void_type_node, lhs,
+	  GIMPLE_STMT_OPERAND (stmt1, 0) = name;
+	  stmt2 = build2 (GIMPLE_MODIFY_STMT, void_type_node, lhs,
 			  build2 (MULT_EXPR, TREE_TYPE (rhs),
 				  name, TREE_OPERAND (rhs, 0)));
 
@@ -1051,7 +1051,7 @@ schedule_sm (struct loop *loop, VEC (edge, heap) *exits, tree ref,
       LIM_DATA (aref->stmt)->sm_done = true;
 
   /* Emit the load & stores.  */
-  load = build2 (MODIFY_EXPR, void_type_node, tmp_var, ref);
+  load = build2_gimple (GIMPLE_MODIFY_STMT, tmp_var, ref);
   get_stmt_ann (load)->common.aux = xcalloc (1, sizeof (struct lim_aux_data));
   LIM_DATA (load)->max_loop = loop;
   LIM_DATA (load)->tgt_loop = loop;
@@ -1062,8 +1062,7 @@ schedule_sm (struct loop *loop, VEC (edge, heap) *exits, tree ref,
 
   for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
     {
-      store = build2 (MODIFY_EXPR, void_type_node,
-		      unshare_expr (ref), tmp_var);
+      store = build2_gimple (GIMPLE_MODIFY_STMT, unshare_expr (ref), tmp_var);
       bsi_insert_on_edge (ex, store);
     }
 }
@@ -1201,11 +1200,11 @@ gather_mem_refs_stmt (struct loop *loop, htab_t mem_refs,
     return;
 
   /* Recognize MEM = (SSA_NAME | invariant) and SSA_NAME = MEM patterns.  */
-  if (TREE_CODE (stmt) != MODIFY_EXPR)
+  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     goto fail;
 
-  lhs = &TREE_OPERAND (stmt, 0);
-  rhs = &TREE_OPERAND (stmt, 1);
+  lhs = &GIMPLE_STMT_OPERAND (stmt, 0);
+  rhs = &GIMPLE_STMT_OPERAND (stmt, 1);
 
   if (TREE_CODE (*lhs) == SSA_NAME)
     {

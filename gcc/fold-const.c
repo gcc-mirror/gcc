@@ -41,7 +41,11 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
    force_fit_type takes a constant, an overflowable flag and prior
    overflow indicators.  It forces the value to fit the type and sets
-   TREE_OVERFLOW and TREE_CONSTANT_OVERFLOW as appropriate.  */
+   TREE_OVERFLOW and TREE_CONSTANT_OVERFLOW as appropriate.
+   
+   Note: Since the folders get called on non-gimple code as well as
+   gimple code, we need to handle GIMPLE tuples as well as their
+   corresponding tree equivalents.  */
 
 #include "config.h"
 #include "system.h"
@@ -2181,6 +2185,7 @@ maybe_lvalue_p (tree x)
   case WITH_CLEANUP_EXPR:
   case COMPOUND_EXPR:
   case MODIFY_EXPR:
+  case GIMPLE_MODIFY_STMT:
   case TARGET_EXPR:
   case COND_EXPR:
   case BIND_EXPR:
@@ -7474,15 +7479,17 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	    return fold_convert (type, build_fold_addr_expr (base));
         }
 
-      if (TREE_CODE (op0) == MODIFY_EXPR
-	  && TREE_CONSTANT (TREE_OPERAND (op0, 1))
+      if ((TREE_CODE (op0) == MODIFY_EXPR
+	   || TREE_CODE (op0) == GIMPLE_MODIFY_STMT)
+	  && TREE_CONSTANT (GENERIC_TREE_OPERAND (op0, 1))
 	  /* Detect assigning a bitfield.  */
-	  && !(TREE_CODE (TREE_OPERAND (op0, 0)) == COMPONENT_REF
-	       && DECL_BIT_FIELD (TREE_OPERAND (TREE_OPERAND (op0, 0), 1))))
+	  && !(TREE_CODE (GENERIC_TREE_OPERAND (op0, 0)) == COMPONENT_REF
+	       && DECL_BIT_FIELD
+	       (TREE_OPERAND (GENERIC_TREE_OPERAND (op0, 0), 1))))
 	{
 	  /* Don't leave an assignment inside a conversion
 	     unless assigning a bitfield.  */
-	  tem = fold_build1 (code, type, TREE_OPERAND (op0, 1));
+	  tem = fold_build1 (code, type, GENERIC_TREE_OPERAND (op0, 1));
 	  /* First do the assignment, then return converted constant.  */
 	  tem = build2 (COMPOUND_EXPR, TREE_TYPE (tem), op0, tem);
 	  TREE_NO_WARNING (tem) = 1;
@@ -8461,7 +8468,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
   tree arg0, arg1, tem;
   tree t1 = NULL_TREE;
 
-  gcc_assert (IS_EXPR_CODE_CLASS (kind)
+  gcc_assert ((IS_EXPR_CODE_CLASS (kind)
+	       || IS_GIMPLE_STMT_CODE_CLASS (kind))
 	      && TREE_CODE_LENGTH (code) == 2
 	      && op0 != NULL_TREE
 	      && op1 != NULL_TREE);
@@ -11673,7 +11681,8 @@ fold (tree expr)
   if (kind == tcc_constant)
     return t;
 
-  if (IS_EXPR_CODE_CLASS (kind))
+  if (IS_EXPR_CODE_CLASS (kind)
+      || IS_GIMPLE_STMT_CODE_CLASS (kind))
     {
       tree type = TREE_TYPE (t);
       tree op0, op1, op2;
@@ -12359,7 +12368,8 @@ tree_expr_nonnegative_p (tree t)
 
     case COMPOUND_EXPR:
     case MODIFY_EXPR:
-      return tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+    case GIMPLE_MODIFY_STMT:
+      return tree_expr_nonnegative_p (GENERIC_TREE_OPERAND (t, 1));
 
     case BIND_EXPR:
       return tree_expr_nonnegative_p (expr_last (TREE_OPERAND (t, 1)));
@@ -12419,9 +12429,10 @@ tree_expr_nonnegative_p (tree t)
 	    else
 	      break;
 	  }
-	if (TREE_CODE (t) == MODIFY_EXPR
-	    && TREE_OPERAND (t, 0) == temp)
-	  return tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+	if ((TREE_CODE (t) == MODIFY_EXPR
+	     || TREE_CODE (t) == GIMPLE_MODIFY_STMT)
+	    && GENERIC_TREE_OPERAND (t, 0) == temp)
+	  return tree_expr_nonnegative_p (GENERIC_TREE_OPERAND (t, 1));
 
 	return false;
       }
@@ -12657,8 +12668,9 @@ tree_expr_nonzero_p (tree t)
 
     case COMPOUND_EXPR:
     case MODIFY_EXPR:
+    case GIMPLE_MODIFY_STMT:
     case BIND_EXPR:
-      return tree_expr_nonzero_p (TREE_OPERAND (t, 1));
+      return tree_expr_nonzero_p (GENERIC_TREE_OPERAND (t, 1));
 
     case SAVE_EXPR:
     case NON_LVALUE_EXPR:

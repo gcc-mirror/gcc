@@ -412,11 +412,11 @@ scan_function (tree *tp,
       *walk_subtrees = 0;
       break;
 
-    case MODIFY_EXPR:
+    case GIMPLE_MODIFY_STMT:
       {
 	/* First look on the lhs and see what variable is stored to */
-	tree lhs = TREE_OPERAND (t, 0);
-	tree rhs = TREE_OPERAND (t, 1);
+	tree lhs = GIMPLE_STMT_OPERAND (t, 0);
+	tree rhs = GIMPLE_STMT_OPERAND (t, 1);
 	check_lhs_var (local, lhs);
 
 	/* For the purposes of figuring out what the cast affects */

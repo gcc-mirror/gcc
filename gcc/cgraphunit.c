@@ -591,8 +591,8 @@ cgraph_create_edges (struct cgraph_node *node, tree body)
 				bb->loop_depth);
 	    walk_tree (&TREE_OPERAND (call, 1),
 		       record_reference, node, visited_nodes);
-	    if (TREE_CODE (stmt) == MODIFY_EXPR)
-	      walk_tree (&TREE_OPERAND (stmt, 0),
+	    if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
+	      walk_tree (&GIMPLE_STMT_OPERAND (stmt, 0),
 			 record_reference, node, visited_nodes);
 	  }
 	else

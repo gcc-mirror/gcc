@@ -156,10 +156,18 @@ gfc_conv_descriptor_data_get (tree desc)
   return t;
 }
 
-/* This provides WRITE access to the data field.  */
+/* This provides WRITE access to the data field.
+
+   TUPLES_P is true if we are generating tuples.
+   
+   This function gets called through the following macros:
+     gfc_conv_descriptor_data_set
+     gfc_conv_descriptor_data_set_tuples.  */
 
 void
-gfc_conv_descriptor_data_set (stmtblock_t *block, tree desc, tree value)
+gfc_conv_descriptor_data_set_internal (stmtblock_t *block,
+				       tree desc, tree value,
+				       bool tuples_p)
 {
   tree field, type, t;
 
@@ -170,7 +178,7 @@ gfc_conv_descriptor_data_set (stmtblock_t *block, tree desc, tree value)
   gcc_assert (DATA_FIELD == 0);
 
   t = build3 (COMPONENT_REF, TREE_TYPE (field), desc, field, NULL_TREE);
-  gfc_add_modify_expr (block, t, fold_convert (TREE_TYPE (field), value));
+  gfc_add_modify (block, t, fold_convert (TREE_TYPE (field), value), tuples_p);
 }
 
 

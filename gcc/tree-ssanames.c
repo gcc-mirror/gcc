@@ -119,7 +119,9 @@ make_ssa_name (tree var, tree stmt)
   gcc_assert (DECL_P (var)
 	      || TREE_CODE (var) == INDIRECT_REF);
 
-  gcc_assert (!stmt || EXPR_P (stmt) || TREE_CODE (stmt) == PHI_NODE);
+  gcc_assert (!stmt
+	      || EXPR_P (stmt) || GIMPLE_STMT_P (stmt)
+	      || TREE_CODE (stmt) == PHI_NODE);
 
   /* If our free list has an element, then use it.  */
   if (FREE_SSANAMES (cfun))

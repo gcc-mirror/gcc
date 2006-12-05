@@ -144,7 +144,7 @@ is_hidden_global_store (tree stmt)
     {
       tree lhs;
 
-      gcc_assert (TREE_CODE (stmt) == MODIFY_EXPR);
+      gcc_assert (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT);
 
       /* Note that we must not check the individual virtual operands
 	 here.  In particular, if this is an aliased store, we could
@@ -171,7 +171,7 @@ is_hidden_global_store (tree stmt)
 	 address is a pointer, we check if its name tag or symbol tag is
 	 a global variable.  Otherwise, we check if the base variable
 	 is a global.  */
-      lhs = TREE_OPERAND (stmt, 0);
+      lhs = GIMPLE_STMT_OPERAND (stmt, 0);
       if (REFERENCE_CLASS_P (lhs))
 	lhs = get_base_address (lhs);
 
@@ -292,9 +292,9 @@ statement_sink_location (tree stmt, basic_block frombb)
   if (one_use == NULL_USE_OPERAND_P)
     return NULL;
 
-  if (TREE_CODE (stmt) != MODIFY_EXPR)
+  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return NULL;
-  rhs = TREE_OPERAND (stmt, 1);
+  rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 
   /* There are a few classes of things we can't or don't move, some because we
      don't have code to handle it, some because it's not profitable and some

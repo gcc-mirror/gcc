@@ -1233,7 +1233,7 @@ find_loop_location (struct loop *loop)
 
   node = get_loop_exit_condition (loop);
 
-  if (node && EXPR_P (node) && EXPR_HAS_LOCATION (node)
+  if (node && CAN_HAVE_LOCATION_P (node) && EXPR_HAS_LOCATION (node)
       && EXPR_FILENAME (node) && EXPR_LINENO (node))
     return EXPR_LOC (node);
 
@@ -1248,7 +1248,7 @@ find_loop_location (struct loop *loop)
   for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
     {
       node = bsi_stmt (si);
-      if (node && EXPR_P (node) && EXPR_HAS_LOCATION (node))
+      if (node && CAN_HAVE_LOCATION_P (node) && EXPR_HAS_LOCATION (node))
         return EXPR_LOC (node);
     }
 
@@ -1681,7 +1681,7 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
     }
 
   /* empty stmt is expected only in case of a function argument.
-     (Otherwise - we expect a phi_node or a modify_expr).  */
+     (Otherwise - we expect a phi_node or a GIMPLE_MODIFY_STMT).  */
   if (IS_EMPTY_STMT (*def_stmt))
     {
       tree arg = TREE_OPERAND (*def_stmt, 0);
@@ -1733,8 +1733,8 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
                   || *dt == vect_invariant_def);
       break;
 
-    case MODIFY_EXPR:
-      *def = TREE_OPERAND (*def_stmt, 0);
+    case GIMPLE_MODIFY_STMT:
+      *def = GIMPLE_STMT_OPERAND (*def_stmt, 0);
       gcc_assert (*dt == vect_loop_def || *dt == vect_invariant_def);
       break;
 
@@ -1783,7 +1783,7 @@ supportable_widening_operation (enum tree_code code, tree stmt, tree vectype,
   enum machine_mode vec_mode;
   enum insn_code icode1, icode2;
   optab optab1, optab2;
-  tree expr = TREE_OPERAND (stmt, 1);
+  tree expr = GIMPLE_STMT_OPERAND (stmt, 1);
   tree type = TREE_TYPE (expr);
   tree wide_vectype = get_vectype_for_scalar_type (type);
   enum tree_code c1, c2;
@@ -1960,7 +1960,7 @@ vect_is_simple_reduction (struct loop *loop, tree phi)
       return NULL_TREE;
     }
 
-  if (TREE_CODE (def_stmt) != MODIFY_EXPR)
+  if (TREE_CODE (def_stmt) != GIMPLE_MODIFY_STMT)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         {
@@ -1969,7 +1969,7 @@ vect_is_simple_reduction (struct loop *loop, tree phi)
       return NULL_TREE;
     }
 
-  operation = TREE_OPERAND (def_stmt, 1);
+  operation = GIMPLE_STMT_OPERAND (def_stmt, 1);
   code = TREE_CODE (operation);
   if (!commutative_tree_code (code) || !associative_tree_code (code))
     {
@@ -2059,7 +2059,7 @@ vect_is_simple_reduction (struct loop *loop, tree phi)
       return NULL_TREE;
     }
 
-  if (TREE_CODE (def1) == MODIFY_EXPR
+  if (TREE_CODE (def1) == GIMPLE_MODIFY_STMT
       && flow_bb_inside_loop_p (loop, bb_for_stmt (def1))
       && def2 == phi)
     {
@@ -2070,7 +2070,7 @@ vect_is_simple_reduction (struct loop *loop, tree phi)
         }
       return def_stmt;
     }
-  else if (TREE_CODE (def2) == MODIFY_EXPR
+  else if (TREE_CODE (def2) == GIMPLE_MODIFY_STMT
       && flow_bb_inside_loop_p (loop, bb_for_stmt (def2))
       && def1 == phi)
     {

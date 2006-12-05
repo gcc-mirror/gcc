@@ -130,7 +130,8 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
               continue;
             }
 
-          if (VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (stmt))))
+          if (!GIMPLE_STMT_P (stmt)
+	      && VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (stmt))))
             {
               if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
                 {
@@ -150,8 +151,8 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	      if (STMT_VINFO_DATA_REF (stmt_info))
 		scalar_type = 
 			TREE_TYPE (DR_REF (STMT_VINFO_DATA_REF (stmt_info)));
-	      else if (TREE_CODE (stmt) == MODIFY_EXPR)
-		scalar_type = TREE_TYPE (TREE_OPERAND (stmt, 0));
+	      else if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
+		scalar_type = TREE_TYPE (GIMPLE_STMT_OPERAND (stmt, 0));
 	      else
 		scalar_type = TREE_TYPE (stmt);
 
@@ -293,7 +294,8 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 
           if (STMT_VINFO_RELEVANT_P (stmt_info))
             {
-              gcc_assert (!VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (stmt))));
+              gcc_assert (GIMPLE_STMT_P (stmt)
+		  	  || !VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (stmt))));
               gcc_assert (STMT_VINFO_VECTYPE (stmt_info));
 
 	      ok = (vectorizable_type_promotion (stmt, NULL, NULL)
@@ -429,10 +431,10 @@ exist_non_indexing_operands_for_use_p (tree use, tree stmt)
      Therefore, all we need to check is if STMT falls into the
      first case, and whether var corresponds to USE.  */
  
-  if (TREE_CODE (TREE_OPERAND (stmt, 0)) == SSA_NAME)
+  if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == SSA_NAME)
     return false;
 
-  operand = TREE_OPERAND (stmt, 1);
+  operand = GIMPLE_STMT_OPERAND (stmt, 1);
 
   if (TREE_CODE (operand) != SSA_NAME)
     return false;

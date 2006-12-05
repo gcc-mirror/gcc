@@ -486,7 +486,7 @@ enum cp_tree_node_structure_enum {
 
 /* The resulting tree type.  */
 union lang_tree_node GTY((desc ("cp_tree_node_structure (&%h)"),
-       chain_next ("(union lang_tree_node *)TREE_CHAIN (&%h.generic)")))
+       chain_next ("(GIMPLE_STMT_P (&%h.generic) ? (union lang_tree_node *) 0 : (union lang_tree_node *)TREE_CHAIN (&%h.generic))")))
 {
   union tree_node GTY ((tag ("TS_CP_GENERIC"),
 			desc ("tree_node_structure (&%h)"))) generic;
@@ -2067,7 +2067,7 @@ struct lang_decl GTY(())
 
 /* In a TREE_LIST concatenating using directives, indicate indirect
    directives  */
-#define TREE_INDIRECT_USING(NODE) (TREE_LIST_CHECK (NODE)->common.lang_flag_0)
+#define TREE_INDIRECT_USING(NODE) (TREE_LIST_CHECK (NODE)->base.lang_flag_0)
 
 extern tree decl_shadowed_for_var_lookup (tree);
 extern void decl_shadowed_for_var_insert (tree, tree);

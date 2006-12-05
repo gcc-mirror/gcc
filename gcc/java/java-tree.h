@@ -725,7 +725,8 @@ struct lang_identifier GTY(())
 /* The resulting tree type.  */
 union lang_tree_node 
   GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
-       chain_next ("(union lang_tree_node *)TREE_CHAIN (&%h.generic)")))
+       chain_next ("(GIMPLE_STMT_P (&%h.generic) ? (union lang_tree_node *) 0 : (union lang_tree_node *)TREE_CHAIN (&%h.generic))")))
+
 {
   union tree_node GTY ((tag ("0"), 
 			desc ("tree_node_structure (&%h)"))) 
@@ -1881,12 +1882,12 @@ enum
 
 /* In an EXPR_WITH_FILE_LOCATION node.  */
 #define EXPR_WFL_EMIT_LINE_NOTE(NODE) \
-  (EXPR_WITH_FILE_LOCATION_CHECK (NODE)->common.public_flag)
+  (EXPR_WITH_FILE_LOCATION_CHECK (NODE)->base.public_flag)
 #undef EXPR_WFL_NODE
 #define EXPR_WFL_NODE(NODE) \
   TREE_OPERAND (EXPR_WITH_FILE_LOCATION_CHECK (NODE), 0)
 #ifdef USE_MAPPED_LOCATION
-#define EXPR_WFL_LINECOL(NODE) ((NODE)->exp.locus)
+#define EXPR_WFL_LINECOL(NODE) EXPR_LOCUS(NODE)
 #define EXPR_WFL_FILENAME(NODE) EXPR_FILENAME (NODE)
 #define EXPR_WFL_LINENO(NODE) EXPR_LINENO (NODE)
 extern tree build_expr_wfl (tree, source_location);
