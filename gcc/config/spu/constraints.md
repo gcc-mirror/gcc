@@ -28,10 +28,7 @@
   "An immediate which can be loaded with the il/ila/ilh/ilhu instructions.  const_int is treated as a 32 bit value."
   (ior (and (match_code "const_int,const_double,const_vector")
 	    (match_test "immediate_load_p (op, SImode)"))
-       (and (match_test "!TARGET_LARGE_MEM && !flag_pic")
-	    (ior (match_code "symbol_ref,label_ref")
-		 (and (match_code "const")
-		      (match_test "legitimate_const (op, 0)"))))))
+       (match_code "symbol_ref,label_ref,high,const")))
 
 (define_constraint "B"
   "An immediate for arithmetic instructions (e.g., ai, ceqi).  const_int is treated as a 32 bit value."

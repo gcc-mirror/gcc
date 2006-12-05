@@ -1088,6 +1088,8 @@ print_operand (FILE * file, rtx x, int code)
 	}
       else if (xcode == SYMBOL_REF || xcode == LABEL_REF || xcode == CONST)
 	fprintf (file, "a");
+      else if (xcode == HIGH)
+	fprintf (file, "hu");
       else
 	gcc_unreachable ();
       return;
@@ -1118,6 +1120,11 @@ print_operand (FILE * file, rtx x, int code)
 	}
       else if (xcode == CONST || xcode == SYMBOL_REF || xcode == LABEL_REF)
 	output_addr_const (file, x);
+      else if (xcode == HIGH)
+	{
+	  output_addr_const (file, XEXP (x, 0));
+	  fprintf (file, "@h");
+	}
       else
 	gcc_unreachable ();
       return;
@@ -1265,6 +1272,27 @@ get_pic_reg (void)
   if (!reload_completed && !reload_in_progress)
     abort ();
   return pic_reg;
+}
+
+/* Split constant addresses to handle cases that are too large.  Also, add in
+   the pic register when in PIC mode. */
+void
+spu_split_address (rtx * ops)
+{
+  if (TARGET_LARGE_MEM
+      || (GET_CODE (ops[1]) == CONST && !legitimate_const (ops[1], 0)))
+    {
+      emit_insn (gen_high (ops[0], ops[1]));
+      emit_insn (gen_low (ops[0], ops[0], ops[1]));
+    }
+  else if (flag_pic)
+    emit_insn (gen_pic (ops[0], ops[1]));
+  if (flag_pic)
+    {
+      rtx pic_reg = get_pic_reg ();
+      emit_insn (gen_addsi3 (ops[0], ops[0], pic_reg));
+      current_function_uses_pic_offset_table = 1;
+    }
 }
 
 /* SAVING is TRUE when we are generating the actual load and store
@@ -2408,7 +2436,7 @@ spu_legitimate_address (enum machine_mode mode ATTRIBUTE_UNUSED,
       return !TARGET_LARGE_MEM;
 
     case CONST:
-      return !TARGET_LARGE_MEM && legitimate_const (x, 1);
+      return !TARGET_LARGE_MEM && legitimate_const (x, 0);
 
     case CONST_INT:
       return INTVAL (x) >= 0 && INTVAL (x) <= 0x3ffff;
@@ -3089,34 +3117,6 @@ spu_expand_mov (rtx * ops, enum machine_mode mode)
 	  lo = array_to_constant (mode, arrlo);
 	  emit_move_insn (to, hi);
 	  emit_insn (gen_rtx_SET (VOIDmode, to, gen_rtx_IOR (mode, to, lo)));
-	  return 1;
-	}
-      if ((GET_CODE (ops[1]) == CONST
-	    && !legitimate_const (ops[1], 0))
-	  || (TARGET_LARGE_MEM
-	      && (GET_CODE (ops[1]) == CONST
-	          || GET_CODE (ops[1]) == SYMBOL_REF
-		  || GET_CODE (ops[1]) == LABEL_REF)))
-	{
-	  emit_insn (gen_high (ops[0], ops[1]));
-	  emit_insn (gen_low (ops[0], ops[0], ops[1]));
-	  if (flag_pic)
-	    {
-	      rtx pic_reg = get_pic_reg ();
-	      emit_insn (gen_addsi3 (ops[0], ops[0], pic_reg));
-	      current_function_uses_pic_offset_table = 1;
-	    }
-	  return 1;
-	}
-      if (flag_pic
-	  && (GET_CODE (ops[1]) == SYMBOL_REF
-	      || GET_CODE (ops[1]) == LABEL_REF
-	      || GET_CODE (ops[1]) == CONST))
-	{
-	  rtx pic_reg = get_pic_reg ();
-	  emit_insn (gen_pic (ops[0], ops[1]));
-	  emit_insn (gen_addsi3 (ops[0], ops[0], pic_reg));
-	  current_function_uses_pic_offset_table = 1;
 	  return 1;
 	}
       return 0;
