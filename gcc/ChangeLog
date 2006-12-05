@@ -1,3 +1,8 @@
+2006-12-05  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-structalias.c (set_used_smts): Re-fix pr29156.
+	Optimize to avoid marking more SMT's as used when they aren't.
+
 2006-12-05  Eric Christopher  <echristo@apple.com>
 
 	* config/i386/i386.c (x86_output_aligned_bss): Move out

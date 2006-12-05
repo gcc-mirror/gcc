@@ -3894,15 +3894,21 @@ set_used_smts (void)
       unsigned int j;
       var_ann_t va;
       struct ptr_info_def *pi = NULL;
-
-      if (TREE_CODE (vi->decl) == SSA_NAME)
+      
+      /* For parm decls, the pointer info may be under the default
+	 def.  */
+      if (TREE_CODE (vi->decl) == PARM_DECL
+	  && gimple_default_def (cfun, var))
+	pi = SSA_NAME_PTR_INFO (gimple_default_def (cfun, var));
+      else if (TREE_CODE (var) == SSA_NAME)
 	pi = SSA_NAME_PTR_INFO (var);
 
       /* Skip the special variables and those without their own
 	 solution set.  */
       if (vi->is_special_var || vi->node != vi->id || !SSA_VAR_P (var)
 	  || (pi && !pi->is_dereferenced) 
-	  || (DECL_P (var) && !may_be_aliased (var)))
+	  || (TREE_CODE (var) == VAR_DECL && !may_be_aliased (var))
+	  || !POINTER_TYPE_P (TREE_TYPE (var)))
 	continue;
 
       if (TREE_CODE (var) == SSA_NAME)
@@ -3913,17 +3919,8 @@ set_used_smts (void)
 	continue;
 
       smt = va->symbol_mem_tag;
-      if (smt)
-	{
-	  EXECUTE_IF_SET_IN_BITMAP (vi->solution, 0, j, bi)
-	    {
-	      if (get_varinfo (j)->is_artificial_var)
-		{
-		  bitmap_set_bit (used_smts, DECL_UID (smt));
-		  break;
-		}
-	    }
-	}
+      if (smt && bitmap_bit_p (vi->solution, anything_id))
+	bitmap_set_bit (used_smts, DECL_UID (smt));
     }
 }
 
