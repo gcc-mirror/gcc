@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- slice_array class.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -83,10 +83,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     size_t _M_st;			// stride unit
   };
 
-  // The default constructor constructor is not required to initialize
-  // data members with any meaningful values, so we choose to do nothing.
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 543. valarray slice default constructor
   inline
-  slice::slice() {}
+  slice::slice() 
+  : _M_off(0), _M_sz(0), _M_st(0) {}
 
   inline
   slice::slice(size_t __o, size_t __d, size_t __s)
