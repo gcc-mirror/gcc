@@ -3876,11 +3876,10 @@ static bitmap used_smts;
    calculation being a bit co-dependent, we can't just calculate SMT
    used info whenever we want, we have to calculate it around the time
    that find_what_p_points_to is called.  */
-static bool used_smt_calculated;
 
 /* Mark which SMT's are in use by points-to anything variables.  */
 
-static void
+void
 set_used_smts (void)
 {
   int i;
@@ -3926,7 +3925,6 @@ set_used_smts (void)
 	    }
 	}
     }
-  used_smt_calculated = true;
 }
 
 /* Merge the necessary SMT's into the solution set for VI, which is
@@ -4076,12 +4074,10 @@ find_what_p_points_to (tree p)
 		 aliases for the underlying SMT.  */
 	      if (was_pt_anything)
 		{
-		  if (!used_smt_calculated)
-		    set_used_smts ();
 		  merge_smts_into (p, vi);
 		  pi->pt_global_mem = 1;
-
 		}
+
 	      set_uids_in_ptset (vi->decl, vi->finished_solution, vi->solution);
 	      pi->pt_vars = vi->finished_solution;
 	    }
@@ -4324,8 +4320,6 @@ compute_points_to_sets (struct alias_info *ai)
 
   solve_graph (graph);
 
-  used_smt_calculated = false;
-
   if (dump_file)
     dump_sa_points_to_info (dump_file);
 
@@ -4458,7 +4452,6 @@ ipa_pta_execute (void)
     fprintf (dump_file, "\nSolving graph:\n");
 
   solve_graph (graph);
-  set_used_smts ();
 
   if (dump_file)
     dump_sa_points_to_info (dump_file);
