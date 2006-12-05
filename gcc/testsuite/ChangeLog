@@ -1,3 +1,10 @@
+2006-12-05  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect.exp: Add support for -fno-math-errno tests.
+	* gcc.dg/vect/vect-pow-2.c: Rename to ...
+	* gcc.dg/vect/no-math-errno-vect-pow-1.c: ... this.  Require
+	vect_double, xfail for spu*-*-*.
+
 2006-12-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/29962
