@@ -1153,12 +1153,7 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
 	       || TREE_CODE (TREE_TYPE (base)) != UNION_TYPE)
 	   && !AGGREGATE_TYPE_P (TREE_TYPE (alias))
 	   && TREE_CODE (TREE_TYPE (alias)) != COMPLEX_TYPE
-#if 0
-	   /* FIXME: PR tree-optimization/29680.  */
 	   && !var_ann (alias)->is_heapvar
-#else
-	   && !POINTER_TYPE_P (TREE_TYPE (alias))
-#endif
 	   /* When the struct has may_alias attached to it, we need not to
 	      return true.  */
 	   && get_alias_set (base))
