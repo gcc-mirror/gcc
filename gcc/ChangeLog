@@ -1,3 +1,7 @@
+2006-12-06  Diego Novillo  <dnovillo@redhat.com>
+
+	* gdbinit.in: Set complaints to 0.
+
 2006-12-06  Jan Hubicka  <jh@suse.cz>
 
 	* statistics.h (ALONE_PASS_MEM_STAT, ALONE_MEM_STAT_INFO,

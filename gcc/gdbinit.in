@@ -136,10 +136,7 @@ b fancy_abort
 # Put a breakpoint on internal_error to help with debugging ICEs.
 b internal_error
 
-# Make gdb complain about symbol reading errors.  This is so that gcc
-# developers can see and fix bugs in gcc debug output.
-set complaints 20
-
+set complaints 0
 # Don't let abort actually run, as it will make
 # stdio stop working and therefore the `pr' command above as well.
 # Put this last because gcc does not reference it any more unless
