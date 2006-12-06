@@ -1,3 +1,10 @@
+2006-12-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29728
+	* decl.c (check_array_designated_initializer): New function.
+	(maybe_deduce_size_from_array_init): Use it.
+	(reshape_init_array): Likewise.
+
 2006-12-05  Richard Henderson  <rth@redhat.com>
             Andrew Pinski  <pinskia@gmail.com>
 
