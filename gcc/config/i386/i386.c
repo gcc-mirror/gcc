@@ -13622,10 +13622,6 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
   int desired_align = 0;
   enum stringop_alg alg;
   int dynamic_check;
-  /* Precise placement on cld depends whether stringops will be emit in
-     prologue, main copying body or epilogue.  This variable keeps track
-     if cld was already needed.  */
-  bool cld_done = false;
 
   if (GET_CODE (align_exp) == CONST_INT)
     align = INTVAL (align_exp);
@@ -13690,8 +13686,7 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
       && !count)
     {
       int size = MAX (size_needed - 1, desired_align - align);
-      if (TARGET_SINGLE_STRINGOP)
-	emit_insn (gen_cld ()), cld_done = true;
+
       label = gen_label_rtx ();
       emit_cmp_and_jump_insns (count_exp,
 			       GEN_INT (size),
@@ -13725,8 +13720,6 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 	 the info early.  */
       src = change_address (src, BLKmode, srcreg);
       dst = change_address (dst, BLKmode, destreg);
-      if (TARGET_SINGLE_STRINGOP && !cld_done)
-	emit_insn (gen_cld ()), cld_done = true;
       expand_movmem_prologue (dst, src, destreg, srcreg, count_exp, align,
 			      desired_align);
     }
@@ -13759,20 +13752,14 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 				     expected_size);
       break;
     case rep_prefix_8_byte:
-      if (!cld_done)
-	emit_insn (gen_cld ()), cld_done = true;
       expand_movmem_via_rep_mov (dst, src, destreg, srcreg, count_exp,
 				 DImode);
       break;
     case rep_prefix_4_byte:
-      if (!cld_done)
-	emit_insn (gen_cld ()), cld_done = true;
       expand_movmem_via_rep_mov (dst, src, destreg, srcreg, count_exp,
 				 SImode);
       break;
     case rep_prefix_1_byte:
-      if (!cld_done)
-	emit_insn (gen_cld ()), cld_done = true;
       expand_movmem_via_rep_mov (dst, src, destreg, srcreg, count_exp,
 				 QImode);
       break;
@@ -13808,12 +13795,8 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
       LABEL_NUSES (label) = 1;
     }
   if (count_exp != const0_rtx && size_needed > 1)
-    {
-      if (TARGET_SINGLE_STRINGOP && !cld_done)
-	emit_insn (gen_cld ()), cld_done = true;
-      expand_movmem_epilogue (dst, src, destreg, srcreg, count_exp,
-			      size_needed);
-    }
+    expand_movmem_epilogue (dst, src, destreg, srcreg, count_exp,
+			    size_needed);
   if (jump_around_label)
     emit_label (jump_around_label);
   return 1;
@@ -13907,10 +13890,6 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
   int size_needed = 0;
   int desired_align = 0;
   enum stringop_alg alg;
-  /* Precise placement on cld depends whether stringops will be emit in
-     prologue, main copying body or epilogue.  This variable keeps track
-     if cld was already needed.  */
-  bool cld_done = false;
   rtx promoted_val = val_exp;
   bool force_loopy_epilogue = false;
   int dynamic_check;
@@ -13977,8 +13956,6 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
          code, so we need to use QImode accesses in epilogue.  */
       if (GET_CODE (val_exp) != CONST_INT && size_needed > 1)
 	force_loopy_epilogue = true;
-      else if (TARGET_SINGLE_STRINGOP)
-	emit_insn (gen_cld ()), cld_done = true;
       label = gen_label_rtx ();
       emit_cmp_and_jump_insns (count_exp,
 			       GEN_INT (size),
@@ -14013,8 +13990,7 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
       && !count && !label)
     {
       int size = MAX (size_needed - 1, desired_align - align);
-      if (TARGET_SINGLE_STRINGOP)
-	emit_insn (gen_cld ()), cld_done = true;
+
       label = gen_label_rtx ();
       emit_cmp_and_jump_insns (count_exp,
 			       GEN_INT (size),
@@ -14031,8 +14007,6 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
 	 the pain to maintain it for the first move, so throw away
 	 the info early.  */
       dst = change_address (dst, BLKmode, destreg);
-      if (TARGET_SINGLE_STRINGOP && !cld_done)
-	emit_insn (gen_cld ()), cld_done = true;
       expand_setmem_prologue (dst, destreg, promoted_val, count_exp, align,
 			      desired_align);
     }
@@ -14060,20 +14034,14 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
 				     count_exp, Pmode, 4, expected_size);
       break;
     case rep_prefix_8_byte:
-      if (!cld_done)
-	emit_insn (gen_cld ()), cld_done = true;
       expand_setmem_via_rep_stos (dst, destreg, promoted_val, count_exp,
 				  DImode);
       break;
     case rep_prefix_4_byte:
-      if (!cld_done)
-	emit_insn (gen_cld ()), cld_done = true;
       expand_setmem_via_rep_stos (dst, destreg, promoted_val, count_exp,
 				  SImode);
       break;
     case rep_prefix_1_byte:
-      if (!cld_done)
-	emit_insn (gen_cld ()), cld_done = true;
       expand_setmem_via_rep_stos (dst, destreg, promoted_val, count_exp,
 				  QImode);
       break;
@@ -14106,12 +14074,8 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
 	expand_setmem_epilogue_via_loop (dst, destreg, val_exp, count_exp,
 					 size_needed);
       else
-	{
-	  if (TARGET_SINGLE_STRINGOP && !cld_done)
-	    emit_insn (gen_cld ()), cld_done = true;
-	  expand_setmem_epilogue (dst, destreg, promoted_val, count_exp,
-				  size_needed);
-	}
+	expand_setmem_epilogue (dst, destreg, promoted_val, count_exp,
+				size_needed);
     }
   if (jump_around_label)
     emit_label (jump_around_label);
@@ -14169,7 +14133,6 @@ ix86_expand_strlen (rtx out, rtx src, rtx eoschar, rtx align)
       emit_move_insn (scratch3, addr);
       eoschar = force_reg (QImode, eoschar);
 
-      emit_insn (gen_cld ());
       src = replace_equiv_address_nv (src, scratch3);
 
       /* If .md starts supporting :P, this can be done in .md.  */

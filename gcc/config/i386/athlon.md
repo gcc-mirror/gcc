@@ -18,7 +18,7 @@
 ;; communicates with all the execution units separately instead.
 
 (define_attr "athlon_decode" "direct,vector,double"
-  (cond [(eq_attr "type" "call,imul,idiv,other,multi,fcmov,fpspc,str,pop,cld,leave")
+  (cond [(eq_attr "type" "call,imul,idiv,other,multi,fcmov,fpspc,str,pop,leave")
 	   (const_string "vector")
          (and (eq_attr "type" "push")
               (match_operand 1 "memory_operand" ""))
