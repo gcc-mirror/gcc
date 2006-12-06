@@ -318,6 +318,15 @@
 /* libm includes floorl */
 #undef HAVE_FLOORL
 
+/* libm includes fmod */
+#undef HAVE_FMOD
+
+/* libm includes fmodf */
+#undef HAVE_FMODF
+
+/* libm includes fmodl */
+#undef HAVE_FMODL
+
 /* Define if you have fpsetmask. */
 #undef HAVE_FPSETMASK
 
@@ -677,6 +686,21 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
+
+/* The size of a `char', as computed by sizeof. */
+#undef SIZEOF_CHAR
+
+/* The size of a `int', as computed by sizeof. */
+#undef SIZEOF_INT
+
+/* The size of a `long', as computed by sizeof. */
+#undef SIZEOF_LONG
+
+/* The size of a `short', as computed by sizeof. */
+#undef SIZEOF_SHORT
+
+/* The size of a `void *', as computed by sizeof. */
+#undef SIZEOF_VOID_P
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS

@@ -1,3 +1,14 @@
+2006-12-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/29810
+	* intrinsics/c99_functions.c (fmodf, fmodl, floorl): New functions.
+	* c99_protos.h (fmodf, fmodl, floorl): New prototypes.
+	* configure.ac: Check for fmodf, fmod and fmodl.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* aclocal.m4: Regenerate with correct autoconf version (1.9.6).
+	* Makefile.in: Likewise.
+
 2006-11-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/29936
