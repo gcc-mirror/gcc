@@ -1,3 +1,7 @@
+2006-12-06  Nick Clifton  <nickc@redhat.com>
+
+	* ansidecl.h (ATTRIBUTE_PACKED): Define.
+
 2006-11-30  Andrew Stubbs  <andrew.stubbs@st.com>
             J"orn Rennecke <joern.rennecke@st.com>
 
