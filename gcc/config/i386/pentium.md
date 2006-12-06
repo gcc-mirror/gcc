@@ -151,11 +151,6 @@
        (eq_attr "type" "idiv"))
   "pentium-np+pentium-fp")
 
-(define_insn_reservation "pent_cld" 2
-  (and (eq_attr "cpu" "pentium")
-       (eq_attr "type" "cld"))
-  "pentium-np*2")
-
 ;;  Moves usually have one cycle penalty, but there are exceptions.
 (define_insn_reservation "pent_fmov" 1
   (and (eq_attr "cpu" "pentium")

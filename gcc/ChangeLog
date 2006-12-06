@@ -1,3 +1,66 @@
+2006-12-06 Uros Bizjak <ubizjak@gmail.com>
+
+	* config/i386/i386.md (DIRFLAG_REG): Remove constant.
+	(type): Remove cld.
+	(length_immediate): Do not depend on cld type attribute.
+	(length_address): Ditto.
+	(modrm): Ditto.
+	(memory): Ditto.
+	(cld): Remove insn pattern.
+	(strmov_singleop): Do not use DIRFLAG_REG.
+	(*strmovdi_rex_1): Ditto.
+	(*strmovsi_1): Ditto.
+	(*strmovsi_rex_1): Ditto.
+	(*strmovhi_1): Ditto.
+	(*strmovhi_rex_1): Ditto.
+	(*strmovqi_1): Ditto.
+	(*strmovqi_rex_1): Ditto.
+	(rep_mov): Ditto.
+	(*rep_movdi_rex64): Ditto.
+	(*rep_movsi): Ditto.
+	(*rep_movsi_rex64): Ditto.
+	(*rep_movqi): Ditto.
+	(*rep_movqi_rex64): Ditto.
+	(strset_singleop): Ditto.
+	(*strsetdi_rex_1): Ditto.
+	(*strsetsi_1): Ditto.
+	(*strsetsi_rex_1): Ditto.
+	(*strsethi_1): Ditto.
+	(*strsethi_rex_1): Ditto.
+	(*strsetqi_1): Ditto.
+	(*strsetqi_rex_1): Ditto.
+	(rep_stos): Ditto.
+	(*rep_stosdi_rex64): Ditto.
+	(*rep_stossi): Ditto.
+	(*rep_stossi_rex64): Ditto.
+	(*rep_stosqi): Ditto.
+	(*rep_stosqi_rex64): Ditto.
+	(cmpstrnsi): Do not generate cld insn.
+	(cmpstrnqi_nz_1): Do not use DIRFLAG_REG.
+	(*cmpstrnqi_nz_1): Ditto.
+	(*cmpstrnqi_nz_rex_1): Ditto.
+	(cmpstrnqi_1): Ditto.
+	(*cmpstrnqi_1): Ditto.
+	(*cmpstrnqi_rex_1): Ditto.
+	(strlenqi_1): Ditto.
+	(*strlenqi_1): Ditto.
+	(*strlenqi_rex_1): Ditto.
+
+	* config/i386/geode.md (shift): Do not depend on cld type attribute.
+	* config/i386/pentium.md (pent_cld): Remove insn reservation.
+	* config/i386/athlon.md (athlon_decode): Do not depend on cld
+	type attribute.
+	* config/i386/ppro.md (ppro_cld): Remove insn reservation.
+	* config/i386/k6.md (k6_alux_only): Do not depend on cld type
+	attribute.
+	(k6_alux_only_load): Ditto.
+	(k6_alux_only_store): Ditto.
+
+	* config/i386/i386.c (ix86_expand_movmem): Remove cld_done boolean.
+	Do not emit cld instruction.
+	(ix86_expand_setmem): Ditto.
+	(ix86_expand_strlen): Do not emit cld instruction.
+
 2006-12-06  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (bfin_rtx_costs): Add a number of new cases, tweak

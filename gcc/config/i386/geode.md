@@ -52,7 +52,7 @@
 
 (define_insn_reservation "shift" 2
 			 (and (eq_attr "cpu" "geode")
-			      (eq_attr "type" "ishift,ishift1,rotate,rotate1,cld"))
+			      (eq_attr "type" "ishift,ishift1,rotate,rotate1"))
 			 "geode_issue,geode_alu*2")
 
 (define_insn_reservation "imul" 7
