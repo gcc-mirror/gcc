@@ -1,3 +1,9 @@
+2006-12-06  Jan Hubicka  <jh@suse.cz>
+
+	* tree-vrp.c (operand_less_p): New.
+	(compare_values, value_inside_range): Rewrite in terms of
+	operand_less_p.
+
 2006-12-06 Uros Bizjak <ubizjak@gmail.com>
 
 	* config/i386/i386.md (DIRFLAG_REG): Remove constant.
