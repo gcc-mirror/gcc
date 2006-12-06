@@ -2474,6 +2474,7 @@ static bool
 bfin_rtx_costs (rtx x, int code, int outer_code, int *total)
 {
   int cost2 = COSTS_N_INSNS (1);
+  rtx op0, op1;
 
   switch (code)
     {
@@ -2507,43 +2508,153 @@ bfin_rtx_costs (rtx x, int code, int outer_code, int *total)
       return true;
 
     case PLUS:
-      if (GET_MODE (x) == Pmode)
+      op0 = XEXP (x, 0);
+      op1 = XEXP (x, 1);
+      if (GET_MODE (x) == SImode)
 	{
-	  if (GET_CODE (XEXP (x, 0)) == MULT
-	      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
+	  if (GET_CODE (op0) == MULT
+	      && GET_CODE (XEXP (op0, 1)) == CONST_INT)
 	    {
-	      HOST_WIDE_INT val = INTVAL (XEXP (XEXP (x, 0), 1));
+	      HOST_WIDE_INT val = INTVAL (XEXP (op0, 1));
 	      if (val == 2 || val == 4)
 		{
 		  *total = cost2;
-		  *total += rtx_cost (XEXP (XEXP (x, 0), 0), outer_code);
-		  *total += rtx_cost (XEXP (x, 1), outer_code);
+		  *total += rtx_cost (XEXP (op0, 0), outer_code);
+		  *total += rtx_cost (op1, outer_code);
 		  return true;
 		}
 	    }
+	  *total = cost2;
+	  if (GET_CODE (op0) != REG
+	      && (GET_CODE (op0) != SUBREG || GET_CODE (SUBREG_REG (op0)) != REG))
+	    *total += rtx_cost (op0, SET);
+#if 0 /* We'd like to do this for accuracy, but it biases the loop optimizer
+	 towards creating too many induction variables.  */
+	  if (!reg_or_7bit_operand (op1, SImode))
+	    *total += rtx_cost (op1, SET);
+#endif
 	}
-
-      /* fall through */
+      else if (GET_MODE (x) == DImode)
+	{
+	  *total = 6 * cost2;
+	  if (GET_CODE (op1) != CONST_INT
+	      || !CONST_7BIT_IMM_P (INTVAL (op1)))
+	    *total += rtx_cost (op1, PLUS);
+	  if (GET_CODE (op0) != REG
+	      && (GET_CODE (op0) != SUBREG || GET_CODE (SUBREG_REG (op0)) != REG))
+	    *total += rtx_cost (op0, PLUS);
+	}
+      return true;
 
     case MINUS:
+      if (GET_MODE (x) == DImode)
+	*total = 6 * cost2;
+      else
+	*total = cost2;
+      return true;
+      
     case ASHIFT: 
     case ASHIFTRT:
     case LSHIFTRT:
       if (GET_MODE (x) == DImode)
 	*total = 6 * cost2;
-      return false;
+      else
+	*total = cost2;
+
+      op0 = XEXP (x, 0);
+      op1 = XEXP (x, 1);
+      if (GET_CODE (op0) != REG
+	  && (GET_CODE (op0) != SUBREG || GET_CODE (SUBREG_REG (op0)) != REG))
+	*total += rtx_cost (op0, code);
+
+      return true;
 	  
-    case AND:
     case IOR:
+    case AND:
     case XOR:
+      op0 = XEXP (x, 0);
+      op1 = XEXP (x, 1);
+
+      /* Handle special cases of IOR: rotates, ALIGN insns, movstricthi_high.  */
+      if (code == IOR)
+	{
+	  if ((GET_CODE (op0) == LSHIFTRT && GET_CODE (op1) == ASHIFT)
+	      || (GET_CODE (op0) == ASHIFT && GET_CODE (op1) == ZERO_EXTEND)
+	      || (GET_CODE (op0) == ASHIFT && GET_CODE (op1) == LSHIFTRT)
+	      || (GET_CODE (op0) == AND && GET_CODE (op1) == CONST_INT))
+	    {
+	      *total = cost2;
+	      return true;
+	    }
+	}
+
+      if (GET_CODE (op0) != REG
+	  && (GET_CODE (op0) != SUBREG || GET_CODE (SUBREG_REG (op0)) != REG))
+	*total += rtx_cost (op0, code);
+
       if (GET_MODE (x) == DImode)
-	*total = 2 * cost2;
-      return false;
+	{
+	  *total = 2 * cost2;
+	  return true;
+	}
+      *total = cost2;
+      if (GET_MODE (x) != SImode)
+	return true;
+
+      if (code == AND)
+	{
+	  if (! rhs_andsi3_operand (XEXP (x, 1), SImode))
+	    *total += rtx_cost (XEXP (x, 1), code);
+	}
+      else
+	{
+	  if (! regorlog2_operand (XEXP (x, 1), SImode))
+	    *total += rtx_cost (XEXP (x, 1), code);
+	}
+
+      return true;
+
+    case ZERO_EXTRACT:
+    case SIGN_EXTRACT:
+      if (outer_code == SET
+	  && XEXP (x, 1) == const1_rtx
+	  && GET_CODE (XEXP (x, 2)) == CONST_INT)
+	{
+	  *total = 2 * cost2;
+	  return true;
+	}
+      /* fall through */
+
+    case SIGN_EXTEND:
+    case ZERO_EXTEND:
+      *total = cost2;
+      return true;
 
     case MULT:
-      if (GET_MODE_SIZE (GET_MODE (x)) <= UNITS_PER_WORD)
-	*total = COSTS_N_INSNS (3);
-      return false;
+	{
+	  op0 = XEXP (x, 0);
+	  op1 = XEXP (x, 1);
+	  if (GET_CODE (op0) == GET_CODE (op1)
+	      && (GET_CODE (op0) == ZERO_EXTEND
+		  || GET_CODE (op0) == SIGN_EXTEND))
+	    {
+	      *total = COSTS_N_INSNS (1);
+	      op0 = XEXP (op0, 0);
+	      op1 = XEXP (op1, 0);
+	    }
+	  else if (optimize_size)
+	    *total = COSTS_N_INSNS (1);
+	  else
+	    *total = COSTS_N_INSNS (3);
+
+	  if (GET_CODE (op0) != REG
+	      && (GET_CODE (op0) != SUBREG || GET_CODE (SUBREG_REG (op0)) != REG))
+	    *total += rtx_cost (op0, MULT);
+	  if (GET_CODE (op1) != REG
+	      && (GET_CODE (op1) != SUBREG || GET_CODE (SUBREG_REG (op1)) != REG))
+	    *total += rtx_cost (op1, MULT);
+	}
+      return true;
 
     case UDIV:
     case UMOD:
