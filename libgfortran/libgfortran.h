@@ -416,6 +416,7 @@ typedef enum
   ERROR_ALLOCATION,
   ERROR_DIRECT_EOR,
   ERROR_SHORT_RECORD,
+  ERROR_CORRUPT_FILE,
   ERROR_LAST			/* Not a real error, the last error # + 1.  */
 }
 error_codes;

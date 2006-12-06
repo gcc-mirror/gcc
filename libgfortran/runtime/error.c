@@ -440,6 +440,10 @@ translate_error (int code)
       p = "I/O past end of record on unformatted file";
       break;
 
+    case ERROR_CORRUPT_FILE:
+      p = "Unformatted file structure has been corrupted";
+      break;
+
     default:
       p = "Unknown error code";
       break;
