@@ -374,7 +374,8 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
 
       if (to_read_record != have_read_record)
 	{
-	  /* Short read,  e.g. if we hit EOF.  */
+	  /* Short read,  e.g. if we hit EOF.  For stream files,
+	   we have to set the end-of-file condition.  */
 	  generate_error (&dtp->common, ERROR_END, NULL);
 	  return;
 	}
@@ -388,13 +389,6 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
 	  short_record = 1;
 	  to_read_record = (size_t) dtp->u.p.current_unit->bytes_left;
 	  *nbytes = to_read_record;
-
-	  if (dtp->u.p.current_unit->bytes_left == 0)
-	    {
-	      dtp->u.p.current_unit->endfile = AT_ENDFILE;
-	      generate_error (&dtp->common, ERROR_END, NULL);
-	      return;
-	    }
 	}
 
       else
@@ -411,10 +405,12 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
 	  return;
 	}
 
-      if (to_read_record != *nbytes)  /* Short read, e.g. if we hit EOF.  */
+      if (to_read_record != *nbytes)  
 	{
+	  /* Short read, e.g. if we hit EOF.  Apparently, we read
+	   more than was written to the last record.  */
 	  *nbytes = to_read_record;
-	  generate_error (&dtp->common, ERROR_END, NULL);
+	  generate_error (&dtp->common, ERROR_SHORT_RECORD, NULL);
 	  return;
 	}
 
@@ -429,6 +425,12 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
   /* Unformatted sequential.  We loop over the subrecords, reading
      until the request has been fulfilled or the record has run out
      of continuation subrecords.  */
+
+  if (dtp->u.p.current_unit->endfile == AT_ENDFILE)
+    {
+      generate_error (&dtp->common, ERROR_END, NULL);
+      return;
+    }
 
   /* Check whether we exceed the total record length.  */
 
@@ -453,25 +455,7 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
 	{
 	  to_read_subrecord = (size_t) dtp->u.p.current_unit->bytes_left_subrecord;
 	  to_read_record -= to_read_subrecord;
-
-	  if (dtp->u.p.current_unit->bytes_left_subrecord == 0)
-	    {
-	      if (dtp->u.p.current_unit->continued)
-		{
-		  /* Skip to the next subrecord */
-		  next_record_r_unf (dtp, 0);
-		  us_read (dtp, 1);
-		  continue;
-		}
-	      else
-		{
-		  dtp->u.p.current_unit->endfile = AT_ENDFILE;
-		  generate_error (&dtp->common, ERROR_END, NULL);
-		  return;
-		}
-	    }
 	}
-
       else
 	{
 	  to_read_subrecord = to_read_record;
@@ -490,11 +474,15 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
 
       have_read_record += have_read_subrecord;
 
-      if (to_read_subrecord != have_read_subrecord)  /* Short read,
-							e.g. if we hit EOF.  */
+      if (to_read_subrecord != have_read_subrecord)  
+			
 	{
+	  /* Short read, e.g. if we hit EOF.  This means the record
+	     structure has been corrupted, or the trailing record
+	     marker would still be present.  */
+
 	  *nbytes = have_read_record;
-	  generate_error (&dtp->common, ERROR_END, NULL);
+	  generate_error (&dtp->common, ERROR_CORRUPT_FILE, NULL);
 	  return;
 	}
 
@@ -507,6 +495,11 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
 	    }
 	  else
 	    {
+	      /* Let's make sure the file position is correctly set for the
+		 next read statement.  */
+
+	      next_record_r_unf (dtp, 0);
+	      us_read (dtp, 0);
 	      generate_error (&dtp->common, ERROR_SHORT_RECORD, NULL);
 	      return;
 	    }
@@ -637,7 +630,8 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
 	  return FAILURE;
 	}
 
-      dtp->u.p.current_unit->strm_pos += (gfc_offset) nbytes; 
+      dtp->u.p.current_unit->strm_pos += (gfc_offset) nbytes;
+      dtp->u.p.current_unit->bytes_left -= (gfc_offset) nbytes;
 
       return SUCCESS;
 
