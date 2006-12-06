@@ -100,6 +100,21 @@ extern float fabsf(float);
 extern float floorf(float);
 #endif
 
+#ifndef HAVE_FLOORL
+#define HAVE_FLOORL 1
+extern long double floorl (long double x);
+#endif
+
+#ifndef HAVE_FMODF
+#define HAVE_FMODF 1
+extern float fmodf (float x, float y);
+#endif
+
+#ifndef HAVE_FMODL
+#define HAVE_FMODL 1
+extern long double fmodl (long double x, long double y);
+#endif
+
 #ifndef HAVE_FREXPF
 #define HAVE_FREXPF 1
 extern float frexpf(float, int *);

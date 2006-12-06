@@ -199,6 +199,15 @@ floorf(float x)
 }
 #endif
 
+#ifndef HAVE_FMODF
+#define HAVE_FMODF 1
+float
+fmodf (float x, float y)
+{
+  return (float) fmod (x, y);
+}
+#endif
+
 #ifndef HAVE_FREXPF
 #define HAVE_FREXPF 1
 float
@@ -493,6 +502,47 @@ log10l(long double x)
     }
 #endif
     return log10 (x);
+}
+#endif
+
+
+#ifndef HAVE_FLOORL
+#define HAVE_FLOORL 1
+long double
+floorl (long double x)
+{
+  /* Zero, possibly signed.  */
+  if (x == 0)
+    return x;
+
+  /* Large magnitude.  */
+  if (x > DBL_MAX || x < (-DBL_MAX))
+    return x;
+
+  /* Small positive values.  */
+  if (x >= 0 && x < DBL_MIN)
+    return 0;
+
+  /* Small negative values.  */
+  if (x < 0 && x > (-DBL_MIN))
+    return -1;
+
+  return floor (x);
+}
+#endif
+
+
+#ifndef HAVE_FMODL
+#define HAVE_FMODL 1
+long double
+fmodl (long double x, long double y)
+{
+  if (y == 0.0L)
+    return 0.0L;
+
+  /* Need to check that the result has the same sign as x and magnitude
+     less than the magnitude of y.  */
+  return x - floorl (x / y) * y;
 }
 #endif
 
