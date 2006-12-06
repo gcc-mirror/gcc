@@ -442,6 +442,29 @@ valid_value_p (tree expr)
   return is_gimple_min_invariant (expr);
 }
 
+/* Return 
+   1 if VAL < VAL2
+   0 if !(VAL < VAL2)
+   -2 if those are incomparable.  */
+static inline int
+operand_less_p (tree val, tree val2)
+{
+  tree tcmp;
+  /* LT is folded faster than GE and others.  Inline the common case.  */
+  if (TREE_CODE (val) == INTEGER_CST && TREE_CODE (val2) == INTEGER_CST)
+    {
+      if (TYPE_UNSIGNED (TREE_TYPE (val)))
+	return INT_CST_LT_UNSIGNED (val, val2);
+      else
+	return INT_CST_LT (val, val2);
+    }
+  else
+    tcmp = fold_binary_to_constant (LT_EXPR, boolean_type_node, val, val2);
+  if (!tcmp)
+    return -2;
+  return !integer_zerop (tcmp);
+}
+
 /* Compare two values VAL1 and VAL2.  Return
    
    	-2 if VAL1 and VAL2 cannot be compared at compile-time,
@@ -590,13 +613,11 @@ compare_values (tree val1, tree val2)
 	return 0;
       
       /* If VAL1 is a lower address than VAL2, return -1.  */
-      t = fold_binary (LT_EXPR, boolean_type_node, val1, val2);
-      if (t == boolean_true_node)
+      if (operand_less_p (val1, val2) == 1)
 	return -1;
 
       /* If VAL1 is a higher address than VAL2, return +1.  */
-      t = fold_binary (GT_EXPR, boolean_type_node, val1, val2);
-      if (t == boolean_true_node)
+      if (operand_less_p (val2, val1) == 1)
 	return 1;
 
       /* If VAL1 is different than VAL2, return +2.  */
@@ -627,27 +648,36 @@ compare_values (tree val1, tree val2)
 	  This also applies to value_ranges_intersect_p and
 	  range_includes_zero_p.  The semantics of VR_RANGE and
 	  VR_ANTI_RANGE should be encoded here, but that also means
-	  adapting the users of these functions to the new semantics.  */
+	  adapting the users of these functions to the new semantics.  
+
+   Benchmark compile/20001226-1.c compilation time after changing this
+   function.  */
 
 static inline int
-value_inside_range (tree val, value_range_t *vr)
+value_inside_range (tree val, value_range_t * vr)
 {
-  tree cmp1, cmp2;
+  int cmp1, cmp2;
 
-  cmp1 = fold_binary_to_constant (GE_EXPR, boolean_type_node, val, vr->min);
-  if (!cmp1)
+  cmp1 = operand_less_p (val, vr->min);
+  if (cmp1 == -2)
+    return -2;
+  if (cmp1 == 1)
+    return 0;
+
+  cmp2 = operand_less_p (vr->max, val);
+  if (cmp2 == -2)
     return -2;
 
-  cmp2 = fold_binary_to_constant (LE_EXPR, boolean_type_node, val, vr->max);
-  if (!cmp2)
-    return -2;
-
-  return cmp1 == boolean_true_node && cmp2 == boolean_true_node;
+  return !cmp2;
 }
 
 
 /* Return true if value ranges VR0 and VR1 have a non-empty
-   intersection.  */
+   intersection.  
+   
+   Benchmark compile/20001226-1.c compilation time after changing this
+   function.
+   */
 
 static inline bool
 value_ranges_intersect_p (value_range_t *vr0, value_range_t *vr1)
