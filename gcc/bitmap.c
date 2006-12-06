@@ -28,6 +28,94 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "obstack.h"
 #include "ggc.h"
 #include "bitmap.h"
+#include "hashtab.h"
+
+#ifdef GATHER_STATISTICS
+
+/* Store information about each particular bitmap.  */
+struct bitmap_descriptor
+{
+  const char *function;
+  const char *file;
+  int line;
+  int allocated;
+  int created;
+  int peak;
+  int current;
+  int nsearches;
+};
+
+/* Hashtable mapping bitmap names to descriptors.  */
+static htab_t bitmap_desc_hash;
+
+/* Hashtable helpers.  */
+static hashval_t
+hash_descriptor (const void *p)
+{
+  const struct bitmap_descriptor *d = p;
+  return htab_hash_pointer (d->file) + d->line;
+}
+struct loc
+{
+  const char *file;
+  const char *function;
+  int line;
+};
+static int
+eq_descriptor (const void *p1, const void *p2)
+{
+  const struct bitmap_descriptor *d = p1;
+  const struct loc *l = p2;
+  return d->file == l->file && d->function == l->function && d->line == l->line;
+}
+
+/* For given file and line, return descriptor, create new if needed.  */
+static struct bitmap_descriptor *
+bitmap_descriptor (const char *file, const char *function, int line)
+{
+  struct bitmap_descriptor **slot;
+  struct loc loc;
+
+  loc.file = file;
+  loc.function = function;
+  loc.line = line;
+
+  if (!bitmap_desc_hash)
+    bitmap_desc_hash = htab_create (10, hash_descriptor, eq_descriptor, NULL);
+
+  slot = (struct bitmap_descriptor **)
+    htab_find_slot_with_hash (bitmap_desc_hash, &loc,
+			      htab_hash_pointer (file) + line,
+			      1);
+  if (*slot)
+    return *slot;
+  *slot = xcalloc (sizeof (**slot), 1);
+  (*slot)->file = file;
+  (*slot)->function = function;
+  (*slot)->line = line;
+  return *slot;
+}
+
+/* Register new bitmap.  */
+void
+bitmap_register (bitmap b MEM_STAT_DECL)
+{
+  b->desc = bitmap_descriptor (_loc_name, _loc_function, _loc_line);
+  b->desc->created++;
+}
+
+/* Account the overhead.  */
+static void
+register_overhead (bitmap b, int amount)
+{
+  b->desc->current += amount;
+  if (amount > 0)
+    b->desc->allocated += amount;
+  gcc_assert (b->desc->current >= 0);
+  if (b->desc->peak < b->desc->current)
+    b->desc->peak = b->desc->current;
+}
+#endif
 
 /* Global data */
 bitmap_element bitmap_zero_bits;  /* An element of all zero bits.  */
@@ -92,6 +180,9 @@ bitmap_element_free (bitmap head, bitmap_element *elt)
       else
 	head->indx = 0;
     }
+#ifdef GATHER_STATISTICS
+  register_overhead (head, -((int)sizeof (bitmap_element)));
+#endif
   bitmap_elem_to_freelist (head, elt);
 }
 
@@ -139,6 +230,9 @@ bitmap_element_allocate (bitmap head)
 	element = GGC_NEW (bitmap_element);
     }
 
+#ifdef GATHER_STATISTICS
+  register_overhead (head, sizeof (bitmap_element));
+#endif
   memset (element->bits, 0, sizeof (element->bits));
 
   return element;
@@ -151,8 +245,17 @@ bitmap_elt_clear_from (bitmap head, bitmap_element *elt)
 {
   bitmap_element *prev;
   bitmap_obstack *bit_obstack = head->obstack;
+#ifdef GATHER_STATISTICS
+  int n;
+#endif
 
   if (!elt) return;
+#ifdef GATHER_STATISTICS
+  n = 0;
+  for (prev = elt; prev; prev = prev->next)
+    n++;
+  register_overhead (head, -sizeof (bitmap_element) * n);
+#endif
 
   prev = elt->prev;
   if (prev)
@@ -232,7 +335,7 @@ bitmap_obstack_release (bitmap_obstack *bit_obstack)
    it on the default bitmap obstack.  */
 
 bitmap
-bitmap_obstack_alloc (bitmap_obstack *bit_obstack)
+bitmap_obstack_alloc_stat (bitmap_obstack *bit_obstack MEM_STAT_DECL)
 {
   bitmap map;
 
@@ -243,7 +346,10 @@ bitmap_obstack_alloc (bitmap_obstack *bit_obstack)
     bit_obstack->heads = (void *)map->first;
   else
     map = XOBNEW (&bit_obstack->obstack, bitmap_head);
-  bitmap_initialize (map, bit_obstack);
+  bitmap_initialize_stat (map, bit_obstack PASS_MEM_STAT);
+#ifdef GATHER_STATISTICS
+  register_overhead (map, sizeof (bitmap_head));
+#endif
 
   return map;
 }
@@ -251,12 +357,15 @@ bitmap_obstack_alloc (bitmap_obstack *bit_obstack)
 /* Create a new GCd bitmap.  */
 
 bitmap
-bitmap_gc_alloc (void)
+bitmap_gc_alloc_stat (ALONE_MEM_STAT_DECL)
 {
   bitmap map;
 
   map = GGC_NEW (struct bitmap_head_def);
-  bitmap_initialize (map, NULL);
+  bitmap_initialize_stat (map, NULL PASS_MEM_STAT);
+#ifdef GATHER_STATISTICS
+  register_overhead (map, sizeof (bitmap_head));
+#endif
 
   return map;
 }
@@ -270,6 +379,9 @@ bitmap_obstack_free (bitmap map)
     {
       bitmap_clear (map);
       map->first = (void *)map->obstack->heads;
+#ifdef GATHER_STATISTICS
+      register_overhead (map, -((int)sizeof (bitmap_head)));
+#endif
       map->obstack->heads = map;
     }
 }
@@ -430,6 +542,9 @@ bitmap_find_bit (bitmap head, unsigned int bit)
   bitmap_element *element;
   unsigned int indx = bit / BITMAP_ELEMENT_ALL_BITS;
 
+#ifdef GATHER_STATISTICS
+  head->desc->nsearches++;
+#endif
   if (head->current == 0
       || head->indx == indx)
     return head->current;
@@ -1518,6 +1633,64 @@ bitmap_print (FILE *file, bitmap head, const char *prefix, const char *suffix)
       comma = ", ";
     }
   fputs (suffix, file);
+}
+#ifdef GATHER_STATISTICS
+
+
+/* Used to accumulate statistics about bitmap sizes.  */
+struct output_info
+{
+  int count;
+  int size;
+};
+
+/* Called via htab_traverse.  Output bitmap descriptor pointed out by SLOT
+   and update statistics.  */
+static int
+print_statistics (void **slot, void *b)
+{
+  struct bitmap_descriptor *d = (struct bitmap_descriptor *) *slot;
+  struct output_info *i = (struct output_info *) b;
+  char s[4096];
+
+  if (d->allocated)
+    {
+      const char *s1 = d->file;
+      const char *s2;
+      while ((s2 = strstr (s1, "gcc/")))
+	s1 = s2 + 4;
+      sprintf (s, "%s:%i (%s)", s1, d->line, d->function);
+      s[41] = 0;
+      fprintf (stderr, "%-41s %6d %10d %10d %10d %10d\n", s,
+	       d->created, d->allocated, d->peak, d->current, d->nsearches);
+      i->size += d->allocated;
+      i->count += d->created;
+    }
+  return 1;
+}
+#endif
+/* Output per-bitmap memory usage statistics.  */
+void
+dump_bitmap_statistics (void)
+{
+#ifdef GATHER_STATISTICS
+  struct output_info info;
+
+  if (!bitmap_desc_hash)
+    return;
+
+  fprintf (stderr, "\nBitmap                                     Overall "
+		   "Allocated     Peak        Leak   searched "
+		   "  per search\n");
+  fprintf (stderr, "---------------------------------------------------------------------------------\n");
+  info.count = 0;
+  info.size = 0;
+  htab_traverse (bitmap_desc_hash, print_statistics, &info);
+  fprintf (stderr, "---------------------------------------------------------------------------------\n");
+  fprintf (stderr, "%-40s %7d %10d\n",
+	   "Total", info.count, info.size);
+  fprintf (stderr, "---------------------------------------------------------------------------------\n");
+#endif
 }
 
 /* Compute hash of bitmap (for purposes of hashing).  */

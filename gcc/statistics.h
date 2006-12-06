@@ -24,11 +24,17 @@
 #define GCC_STATISTICS
 #ifdef GATHER_STATISTICS
 #define MEM_STAT_DECL , const char * ARG_UNUSED (_loc_name), int ARG_UNUSED (_loc_line), const char * ARG_UNUSED (_loc_function)
+#define ALONE_MEM_STAT_DECL const char * ARG_UNUSED (_loc_name), int ARG_UNUSED (_loc_line), const char * ARG_UNUSED (_loc_function)
 #define PASS_MEM_STAT , _loc_name, _loc_line,  _loc_function
+#define ALONE_PASS_MEM_STAT _loc_name, _loc_line,  _loc_function
 #define MEM_STAT_INFO , __FILE__, __LINE__, __FUNCTION__
+#define ALONE_MEM_STAT_INFO __FILE__, __LINE__, __FUNCTION__
 #else
 #define MEM_STAT_DECL
+#define ALONE_MEM_STAT_DECL void
 #define PASS_MEM_STAT
+#define ALONE_PASS_MEM_STAT
 #define MEM_STAT_INFO
+#define ALONE_MEM_STAT_INFO
 #endif
 #endif
