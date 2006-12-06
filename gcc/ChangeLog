@@ -88,47 +88,47 @@
 
 	2006-12-04  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/s390/s390.c (s390_va_start): Replace MODIFY_EXPR with
-        GIMPLE_MODIFY_STMT.
-        (s390_gimplify_va_arg): Same.
-        * config/sparc/sparc.c (sparc_gimplify_va_arg): Same.
-        * config/sh/sh.c (sh_va_start): Same.
-        (sh_gimplify_va_arg_expr): Same.
-        * config/xtensa/xtensa.c (xtensa_va_start): Same.
-        (xtensa_gimplify_va_arg_expr): Same.
-        * config/ia64/ia64.c (ia64_gimplify_va_arg): Same.
-        * config/pa/pa.c (hppa_gimplify_va_arg_expr): Same.
-        * config/mips/mips.c (mips_va_start): Same.
-        (mips_gimplify_va_arg_expr): Same.
+	* config/s390/s390.c (s390_va_start): Replace MODIFY_EXPR with
+	GIMPLE_MODIFY_STMT.
+	(s390_gimplify_va_arg): Same.
+	* config/sparc/sparc.c (sparc_gimplify_va_arg): Same.
+	* config/sh/sh.c (sh_va_start): Same.
+	(sh_gimplify_va_arg_expr): Same.
+	* config/xtensa/xtensa.c (xtensa_va_start): Same.
+	(xtensa_gimplify_va_arg_expr): Same.
+	* config/ia64/ia64.c (ia64_gimplify_va_arg): Same.
+	* config/pa/pa.c (hppa_gimplify_va_arg_expr): Same.
+	* config/mips/mips.c (mips_va_start): Same.
+	(mips_gimplify_va_arg_expr): Same.
 
 	2006-12-04  Aldy Hernandez  <aldyh@redhat.com>
 
-        * Merge from mainline at revision 119445.
+	* Merge from mainline at revision 119445.
 
 	2006-12-04  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/spu/spu.c (spu_va_start): Change MODIFY_EXPR to
-        GIMPLE_MODIFY_STMT.
-        (spu_gimplify_va_arg_expr): Same.
+	* config/spu/spu.c (spu_va_start): Change MODIFY_EXPR to
+	GIMPLE_MODIFY_STMT.
+	(spu_gimplify_va_arg_expr): Same.
 
 	2006-12-04  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/stormy16/stormy16.c (xstormy16_expand_builtin_va_start):
-        Change uses of MODIFY_EXPR to GIMPLE_MODIFY_STMT.
-        (xstormy16_expand_builtin_va_arg): Same.
+	* config/stormy16/stormy16.c (xstormy16_expand_builtin_va_start):
+	Change uses of MODIFY_EXPR to GIMPLE_MODIFY_STMT.
+	(xstormy16_expand_builtin_va_arg): Same.
 
 	2006-12-04  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/frv/frv.c (frv_expand_builtin_va_start): Change MODIFY_EXPR
-        to GIMPLE_MODIFY_STMT.
+	* config/frv/frv.c (frv_expand_builtin_va_start): Change MODIFY_EXPR
+	to GIMPLE_MODIFY_STMT.
 
 	2006-12-04  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/alpha/alpha.c (va_list_skip_additions): Change all
+	* config/alpha/alpha.c (va_list_skip_additions): Change all
 	occurrences of MODIFY_EXPR to GIMPLE_MODIFY_STMT.
-        (alpha_va_start): Same.
-        (alpha_gimplify_va_arg_1): Same.
-        (alpha_gimplify_va_arg): Same.
+	(alpha_va_start): Same.
+	(alpha_gimplify_va_arg_1): Same.
+	(alpha_gimplify_va_arg): Same.
 
 	2006-12-01  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -136,68 +136,68 @@
 
 	2006-12-01  Aldy Hernandez  <aldyh@redhat.com>
 
-        * tree-ssa-loop-im.c: Rename all PROTECTED_TREE_OPERAND to
-        GENERIC_TREE_OPERAND, and all PROTECTED_TREE_TYPE to
-        GENERIC_TREE_TYPE.
-        * tree-complex.c: Same.
-        * tree-pretty-print.c: Same.
-        * tree.c: Same.
-        * tree.h: Same.
-        * builtins.c: Same.
-        * fold-const.c: Same.
-        * tree-ssa-dom.c: Same.
-        * tree-ssa-propagate.c: Same.
-        * tree-ssa-alias.c: Same.
-        * gimple-low.c: Same.
-        * dwarf2out.c: Same.
-        * c-pretty-print.c: Same.
-        * gimplify.c: Same.
-        * tree-inline.c: Same.
-        * tree-outof-ssa.c: Same.
-        * tree-ssa-structalias.c: Same.
-        * tree-ssa-reassoc.c: Same.
-        * stmt.c: Same.
+	* tree-ssa-loop-im.c: Rename all PROTECTED_TREE_OPERAND to
+	GENERIC_TREE_OPERAND, and all PROTECTED_TREE_TYPE to
+	GENERIC_TREE_TYPE.
+	* tree-complex.c: Same.
+	* tree-pretty-print.c: Same.
+	* tree.c: Same.
+	* tree.h: Same.
+	* builtins.c: Same.
+	* fold-const.c: Same.
+	* tree-ssa-dom.c: Same.
+	* tree-ssa-propagate.c: Same.
+	* tree-ssa-alias.c: Same.
+	* gimple-low.c: Same.
+	* dwarf2out.c: Same.
+	* c-pretty-print.c: Same.
+	* gimplify.c: Same.
+	* tree-inline.c: Same.
+	* tree-outof-ssa.c: Same.
+	* tree-ssa-structalias.c: Same.
+	* tree-ssa-reassoc.c: Same.
+	* stmt.c: Same.
 
 	2006-11-16  Aldy Hernandez  <aldyh@redhat.com>
 
-        * tree.c (build2_stat): Fix comment.
+	* tree.c (build2_stat): Fix comment.
 
 	2006-11-13  Aldy Hernandez  <aldyh@redhat.com>
 
-        * tree-ssa-propagate.c (get_rhs): Use GIMPLE_MODIFY_STMT and
-        TREE_OPERAND when appropriate.
+	* tree-ssa-propagate.c (get_rhs): Use GIMPLE_MODIFY_STMT and
+	TREE_OPERAND when appropriate.
 
 	2006-11-04  Aldy Hernandez  <aldyh@redhat.com>
 
-        * java/java-tree.h (lang_tree_node): Handle gimple tuples.
-        (EXPR_WFL_EMIT_LINE_NOTE): Look inside base.
-        (EXPR_WFL_LINECOL): Use EXPR_LOCUS macro instead of exp.locus.
-        * java/java-gimplify.c (java_gimplify_expr): Comment on why we do
-        not handle GIMPLE_MODIFY_STMT in the switch statement.
-        (java_gimplify_modify_expr): Call build2 with GIMPLE_MODIFY_STMT.
-        (java_gimplify_new_array_init): Same.
+	* java/java-tree.h (lang_tree_node): Handle gimple tuples.
+	(EXPR_WFL_EMIT_LINE_NOTE): Look inside base.
+	(EXPR_WFL_LINECOL): Use EXPR_LOCUS macro instead of exp.locus.
+	* java/java-gimplify.c (java_gimplify_expr): Comment on why we do
+	not handle GIMPLE_MODIFY_STMT in the switch statement.
+	(java_gimplify_modify_expr): Call build2 with GIMPLE_MODIFY_STMT.
+	(java_gimplify_new_array_init): Same.
 
 	2006-11-03  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gimplify.c (gimplify_omp_for): Allow gimple statements.
-        * tree-outof-ssa.c (check_replaceable): Use PROTECTED_TREE_OPERAND.
-        * fold-const.c (fold_binary): Allow gimple statements.
-        (fold): Same.
-        * fortran/trans-array.c (gfc_conv_descriptor_data_set_internal):
-        Rename from gfc_conv_descriptor_data_set.
-        Call gfc_add_modify instead of gfc_add_modify_expr.
-        * fortran/trans-array.h (gfc_conv_descriptor_data_set_internal):
-        Rename from gfc_conv_descriptor_data_set.
-        (gfc_conv_descriptor_data_set): New macro.
-        (gfc_conv_descriptor_data_set_tuples): New macros.
-        * fortran/trans-openmp.c (gfc_omp_clause_default_ctor): Call
-        gfc_conv_descriptor_data_set_tuples.
-        * fortran/trans.c (gfc_add_modify): Rename from gfc_add_modify_expr.
-        Generate GIMPLE_MODIFY_STMT when appropriate.
-        * fortran/trans.h (gfc_add_modify): Rename from gfc_add_modify_expr.
-        (gfc_add_modify_expr): New macro.
-        (gfc_add_modify_stmt): New macro.
-        * fortran/f95-lang.c (lang_tree_node): Handle gimple statements.
+	* gimplify.c (gimplify_omp_for): Allow gimple statements.
+	* tree-outof-ssa.c (check_replaceable): Use PROTECTED_TREE_OPERAND.
+	* fold-const.c (fold_binary): Allow gimple statements.
+	(fold): Same.
+	* fortran/trans-array.c (gfc_conv_descriptor_data_set_internal):
+	Rename from gfc_conv_descriptor_data_set.
+	Call gfc_add_modify instead of gfc_add_modify_expr.
+	* fortran/trans-array.h (gfc_conv_descriptor_data_set_internal):
+	Rename from gfc_conv_descriptor_data_set.
+	(gfc_conv_descriptor_data_set): New macro.
+	(gfc_conv_descriptor_data_set_tuples): New macros.
+	* fortran/trans-openmp.c (gfc_omp_clause_default_ctor): Call
+	gfc_conv_descriptor_data_set_tuples.
+	* fortran/trans.c (gfc_add_modify): Rename from gfc_add_modify_expr.
+	Generate GIMPLE_MODIFY_STMT when appropriate.
+	* fortran/trans.h (gfc_add_modify): Rename from gfc_add_modify_expr.
+	(gfc_add_modify_expr): New macro.
+	(gfc_add_modify_stmt): New macro.
+	* fortran/f95-lang.c (lang_tree_node): Handle gimple statements.
 
 	2006-11-02  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -216,11 +216,11 @@
 
 	2006-10-09  Aldy Hernandez  <aldyh@redhat.com>
 
-        * tree.h (TREE_CHAIN, TREE_TYPE): Add versions for non GCC or not
+	* tree.h (TREE_CHAIN, TREE_TYPE): Add versions for non GCC or not
 	enable checking.
-        Also, add __extension__ to GCC versions.
-        * tree-mudflap.c (mf_xform_derefs_1): Add parentheses around TREE_TYPE.
-        * tree-inline.c (copy_tree_r): Initialize chain to assuage the warning
+	Also, add __extension__ to GCC versions.
+	* tree-mudflap.c (mf_xform_derefs_1): Add parentheses around TREE_TYPE.
+	* tree-inline.c (copy_tree_r): Initialize chain to assuage the warning
 	patrol.
 
 	2006-10-05  Aldy Hernandez  <aldyh@redhat.com>
@@ -270,159 +270,159 @@
 
 	2006-09-28  Aldy Hernandez  <aldyh@redhat.com>
 
-        * tree-ssa-math-opts.c (replace_reciprocal): Use GIMPLE_STMT_OPERAND.
-        * tree-if-conv.c (if_convertible_gimple_modify_stmt_p): Same.
-        (ifc_temp_var): Same.
-        * tree-vect-analyze.c (vect_determine_vectorization_factor): Check
+	* tree-ssa-math-opts.c (replace_reciprocal): Use GIMPLE_STMT_OPERAND.
+	* tree-if-conv.c (if_convertible_gimple_modify_stmt_p): Same.
+	(ifc_temp_var): Same.
+	* tree-vect-analyze.c (vect_determine_vectorization_factor): Check
 	for gimple statements.
-        (vect_analyze_operations): Same.
-        (exist_non_indexing_operands_for_use_p): Use GIMPLE_STMT_OPERAND.
-        * gimplify.c (gimplify_return_expr): Handle gimple statements.
-        * lambda-code.c (can_put_in_inner_loop): Same.
-        (can_put_after_inner_loop): Same.
-        * tree-vect-transform.c (vect_create_addr_base_for_vector_ref): Same.
-        (vect_create_data_ref_ptr): Same.
-        (vect_init_vector): Same.
-        (vect_get_vec_def_for_operand): Same.
-        (vect_create_epilog_for_reduction): Same.
-        (vectorizable_reduction): Same.
-        (vectorizable_assignment): Same.
-        (vectorizable_operation): Same.
-        (vectorizable_load): Same.
-        (vectorizable_condition): Same.
-        * config/rs6000/rs6000.c (rs6000_va_start): Do not create MODIFY_EXPRs.
-        (rs6000_gimplify_va_arg): Same.
+	(vect_analyze_operations): Same.
+	(exist_non_indexing_operands_for_use_p): Use GIMPLE_STMT_OPERAND.
+	* gimplify.c (gimplify_return_expr): Handle gimple statements.
+	* lambda-code.c (can_put_in_inner_loop): Same.
+	(can_put_after_inner_loop): Same.
+	* tree-vect-transform.c (vect_create_addr_base_for_vector_ref): Same.
+	(vect_create_data_ref_ptr): Same.
+	(vect_init_vector): Same.
+	(vect_get_vec_def_for_operand): Same.
+	(vect_create_epilog_for_reduction): Same.
+	(vectorizable_reduction): Same.
+	(vectorizable_assignment): Same.
+	(vectorizable_operation): Same.
+	(vectorizable_load): Same.
+	(vectorizable_condition): Same.
+	* config/rs6000/rs6000.c (rs6000_va_start): Do not create MODIFY_EXPRs.
+	(rs6000_gimplify_va_arg): Same.
 
 	2006-09-25  Aldy Hernandez  <aldyh@redhat.com>
 
-        * tree-vrp.c (simplify_div_or_mod_using_ranges): Use
-        GIMPLE_STMT_OPERAND.
-        (simplify_abs_using_ranges): Same.
-        * tree-complex.c (expand_complex_operations_1): Use
-        PROTECTED_TREE_OPERAND.
-        * tree-ssa-loop-niter.c (simplify_replace_tree): Check for gimple
-        stmt.
-        (get_val_for): Use GIMPLE_STMT_OPERAND.
-        * tree-tailcall.c (adjust_accumulator_values): Same.
-        (adjust_return_value): Same.
-        * tree.c (walk_tree): Use IS_GIMPLE_STMT_CODE_CLASS on default
-        case.  Remove special case for tcc_gimple_stmt.
-        * tree.h (CAN_HAVE_LOCATION_P): New.
-        * tree-ssa-loop-ivopts.c (expr_invariant_in_loop_p): Check for
-        GIMPLE_STMT_P.
-        * tree-stdarg.c (va_list_counter_bump): Use GIMPLE_STMT_OPERAND.
-        * tree-ssa-dom.c (propagate_rhs_into_lhs): Same.
-        * tree-nrv.c (execute_return_slot_opt): Same.
-        * tree-ssa-alias.c (count_uses_and_derefs): Check for GIMPLE_STMT_P.
-        * tree-vn.c (set_value_handle): Same.
-        (get_value_handle): Same.
-        * c-decl.c (add_stmt): Use CAN_HAVE_LOCATION_P.
-        * tree-vectorizer.c (find_loop_location): Same.
-        * c-typeck.c (c_process_expr_stmt): Same.
-        (c_finish_stmt_expr): Same.
-        * gimplify.c (should_carry_locus_p): Same.
-        (tree_to_gimple_tuple): Delete definition and use of unecessary
-        variable save_tree_block.
-        * tree-ssa-pre.c (phi_translate): Check for GIMPLE_STMT_P.
-        (create_expression_by_pieces): Use GIMPLE_STMT_OPERAND.
-        (realify_fake_stores): Same.
-        * tree-ssa-forwprop.c (forward_propagate_addr_into_variable_arr):
-        Use TREE_OPERAND.
-        * tree-inline.c (copy_body_r): Check for EXPR_P and GIMPLE_STMT_P.
-        (copy_tree_r): Check for IS_GIMPLE_STMT_CODE_CLASS.
-        * tree-cfg.c (move_stmt_r): Use EXPR_P.  Check for GIMPLE_STMT_P.
-        * c-parser.c (c_parser_typeof_specifier): Use CAN_HAVE_LOCATION_P.
-        (c_parser_statement_after_labels): Same.
-        (c_parser_paren_condition): Same.
-        (c_parser_for_statement): Same.
-        (c_parser_omp_for_loop): Same.
-        * tree-ssa-reassoc.c (linearize_expr): Use GIMPLE_STMT_OPERAND.
-        (linearize_expr_tree): Same.
-        * dwarf2out.c (reference_to_unused): Check for GIMPLE_STMT_P.
-        * function.c (instantiate_expr): Same.
+	* tree-vrp.c (simplify_div_or_mod_using_ranges): Use
+	GIMPLE_STMT_OPERAND.
+	(simplify_abs_using_ranges): Same.
+	* tree-complex.c (expand_complex_operations_1): Use
+	PROTECTED_TREE_OPERAND.
+	* tree-ssa-loop-niter.c (simplify_replace_tree): Check for gimple
+	stmt.
+	(get_val_for): Use GIMPLE_STMT_OPERAND.
+	* tree-tailcall.c (adjust_accumulator_values): Same.
+	(adjust_return_value): Same.
+	* tree.c (walk_tree): Use IS_GIMPLE_STMT_CODE_CLASS on default
+	case.  Remove special case for tcc_gimple_stmt.
+	* tree.h (CAN_HAVE_LOCATION_P): New.
+	* tree-ssa-loop-ivopts.c (expr_invariant_in_loop_p): Check for
+	GIMPLE_STMT_P.
+	* tree-stdarg.c (va_list_counter_bump): Use GIMPLE_STMT_OPERAND.
+	* tree-ssa-dom.c (propagate_rhs_into_lhs): Same.
+	* tree-nrv.c (execute_return_slot_opt): Same.
+	* tree-ssa-alias.c (count_uses_and_derefs): Check for GIMPLE_STMT_P.
+	* tree-vn.c (set_value_handle): Same.
+	(get_value_handle): Same.
+	* c-decl.c (add_stmt): Use CAN_HAVE_LOCATION_P.
+	* tree-vectorizer.c (find_loop_location): Same.
+	* c-typeck.c (c_process_expr_stmt): Same.
+	(c_finish_stmt_expr): Same.
+	* gimplify.c (should_carry_locus_p): Same.
+	(tree_to_gimple_tuple): Delete definition and use of unecessary
+	variable save_tree_block.
+	* tree-ssa-pre.c (phi_translate): Check for GIMPLE_STMT_P.
+	(create_expression_by_pieces): Use GIMPLE_STMT_OPERAND.
+	(realify_fake_stores): Same.
+	* tree-ssa-forwprop.c (forward_propagate_addr_into_variable_arr):
+	Use TREE_OPERAND.
+	* tree-inline.c (copy_body_r): Check for EXPR_P and GIMPLE_STMT_P.
+	(copy_tree_r): Check for IS_GIMPLE_STMT_CODE_CLASS.
+	* tree-cfg.c (move_stmt_r): Use EXPR_P.  Check for GIMPLE_STMT_P.
+	* c-parser.c (c_parser_typeof_specifier): Use CAN_HAVE_LOCATION_P.
+	(c_parser_statement_after_labels): Same.
+	(c_parser_paren_condition): Same.
+	(c_parser_for_statement): Same.
+	(c_parser_omp_for_loop): Same.
+	* tree-ssa-reassoc.c (linearize_expr): Use GIMPLE_STMT_OPERAND.
+	(linearize_expr_tree): Same.
+	* dwarf2out.c (reference_to_unused): Check for GIMPLE_STMT_P.
+	* function.c (instantiate_expr): Same.
 
 	2006-09-22  Aldy Hernandez  <aldyh@redhat.com>
 
-        * tree.c (expr_location): Use GIMPLE_STMT_LOCUS.
-        (set_expr_location): Same.
-        (expr_locus): Same.
-        (set_expr_locus): Same.
-        (expr_filename): Same.
-        (expr_lineno): Same.
-        (tree_block): Use GIMPLE_STMT_BLOCK.
-        (protected_tree_operand): Use GIMPLE_STMT_OPERAND.
-        * tree.h (struct gimple_stmt): Remove prev and next.
-        (GIMPLE_STMT_OPERAND_CHECK): New.
-        (TREE_TO_GIMPLE_STMT): Delete.
-        (GIMPLE_STMT_TO_TREE): Delete.
-        (GIMPLE_STMT_OPERAND): Use union, not cast.
-        (GIMPLE_STMT_LOCUS): New.
-        (GIMPLE_STMT_BLOCK): New.
-        * gimplify.c (tree_to_gimple_tuple): Use union.  Do not cast
-        to tree_base.
-        * tree-cfg.c (verify_gimple_tuples_1): Call gcc_unreachable.
+	* tree.c (expr_location): Use GIMPLE_STMT_LOCUS.
+	(set_expr_location): Same.
+	(expr_locus): Same.
+	(set_expr_locus): Same.
+	(expr_filename): Same.
+	(expr_lineno): Same.
+	(tree_block): Use GIMPLE_STMT_BLOCK.
+	(protected_tree_operand): Use GIMPLE_STMT_OPERAND.
+	* tree.h (struct gimple_stmt): Remove prev and next.
+	(GIMPLE_STMT_OPERAND_CHECK): New.
+	(TREE_TO_GIMPLE_STMT): Delete.
+	(GIMPLE_STMT_TO_TREE): Delete.
+	(GIMPLE_STMT_OPERAND): Use union, not cast.
+	(GIMPLE_STMT_LOCUS): New.
+	(GIMPLE_STMT_BLOCK): New.
+	* gimplify.c (tree_to_gimple_tuple): Use union.  Do not cast
+	to tree_base.
+	* tree-cfg.c (verify_gimple_tuples_1): Call gcc_unreachable.
 
 	2006-09-21  Aldy Hernandez  <aldyh@redhat.com>
 
-        * tree-into-ssa.c (REGISTER_DEFS_IN_STMT): Change common.base
-        to base.
-        * tree-tailcall.c (adjust_return_value): Same.
-        * tree.c (tree_code_size): Remove GIMPLE_STATEMENT_LIST case.
-        (copy_node_stat): Change common.base to base.
-        (tree_node_structure): Return TS_GIMPLE_STATEMENT for tcc_gimple_stmt.
-        Remove GIMPLE_STATEMENT_LIST case.
-        * tree.h (struct gimple_stmt): Make operands of type tree.
-        (TREE_CODE, TREE_SET_CODE, TREE_ADDRESSABLE, CALL_EXPR_TAILCALL,
-        CASE_LOW_SEEN, TREE_STATIC, CLEANUP_EH_ONLY, CASE_HIGH_SEEN,
-        TREE_NO_WARNING, TREE_CONSTANT_OVERFLOW, TREE_SYMBOL_REFERENCED,
-        TYPE_REF_CAN_ALIAS_ALL, TREE_OVERFLOW, TREE_PUBLIC,
-        TYPE_CACHED_VALUES_P, TREE_SIDE_EFFECTS, FORCED_LABEL,
-        TREE_THIS_VOLATILE, TREE_THIS_NOTRAP, TREE_READONLY,
-        TREE_CONSTANT, TYPE_SIZES_GIMPLIFIED, DECL_UNSIGNED,
-        BIT_FIELD_REF_UNSIGNED, TYPE_UNSIGNED, TREE_ASM_WRITTEN, TREE_USED,
-        TREE_NOTHROW, CALL_EXPR_RETURN_SLOT_OPT, DECL_BY_REFERENCE,
-        CALL_FROM_THUNK_P, TYPE_ALIGN_OK, TREE_PRIVATE, TREE_PROTECTED,
-        TREE_DEPRECATED, IDENTIFIER_TRANSPARENT_ALIAS, TREE_INVARIANT,
-        TREE_LANG_FLAG_*, SSA_NAME_OCCURS_IN_ABNORMAL_PHI,
-        SSA_NAME_IN_FREE_LIST, TYPE_VOLATILE, TYPE_READONLY, BINFO_VIRTUAL_P):
-        Change common.base to base.
-        (GIMPLE_STATEMENT_LIST*): Remove.
-        (union tree_node): Add base.  Remove gimple_statement_list.
-        Remove pointer from gstmt.
-        * tree-ssa-propagate.c (set_rhs): Change common.base to base.
-        * treestruct.def: Add TS_BASE.  Remove TS_GIMPLE_STATEMENT_LIST.
-        * tree-vn.c (vn_compute): Change common.base to base.
-        * tree-eh.c (verify_eh_throw_stmt_node): Same.
-        * tree-flow-inline.h (var_ann): Same.
-        (function_ann): Same.
-        (stmt_ann): Same.
-        (mark_non_addressable): Same.
-        * gimplify.c (tree_to_gimple_tuple): Same.
-        * tree.def (DEFTREECODE): Remove GIMPLE_STATEMENT_LIST.
-        * tree-dfa.c (create_var_ann): Change common.base to base.
-        (create_function_ann): Same.
-        (create_stmt_ann): Same.
-        (create_tree_ann): Same.
-        (collect_dfa_stats_r): Same.
-        * tree-ssa-pre.c (NECESSARY): Change common.base to base.
-        * tree-ssa-dce.c (NECESSARY): Same.
-        * tree-ssa.c (delete_tree_ssa): Same.
-        * tree-optimize.c (execute_free_cfg_annotations): Same.
-        * tree-flow.h: Same.
+	* tree-into-ssa.c (REGISTER_DEFS_IN_STMT): Change common.base
+	to base.
+	* tree-tailcall.c (adjust_return_value): Same.
+	* tree.c (tree_code_size): Remove GIMPLE_STATEMENT_LIST case.
+	(copy_node_stat): Change common.base to base.
+	(tree_node_structure): Return TS_GIMPLE_STATEMENT for tcc_gimple_stmt.
+	Remove GIMPLE_STATEMENT_LIST case.
+	* tree.h (struct gimple_stmt): Make operands of type tree.
+	(TREE_CODE, TREE_SET_CODE, TREE_ADDRESSABLE, CALL_EXPR_TAILCALL,
+	CASE_LOW_SEEN, TREE_STATIC, CLEANUP_EH_ONLY, CASE_HIGH_SEEN,
+	TREE_NO_WARNING, TREE_CONSTANT_OVERFLOW, TREE_SYMBOL_REFERENCED,
+	TYPE_REF_CAN_ALIAS_ALL, TREE_OVERFLOW, TREE_PUBLIC,
+	TYPE_CACHED_VALUES_P, TREE_SIDE_EFFECTS, FORCED_LABEL,
+	TREE_THIS_VOLATILE, TREE_THIS_NOTRAP, TREE_READONLY,
+	TREE_CONSTANT, TYPE_SIZES_GIMPLIFIED, DECL_UNSIGNED,
+	BIT_FIELD_REF_UNSIGNED, TYPE_UNSIGNED, TREE_ASM_WRITTEN, TREE_USED,
+	TREE_NOTHROW, CALL_EXPR_RETURN_SLOT_OPT, DECL_BY_REFERENCE,
+	CALL_FROM_THUNK_P, TYPE_ALIGN_OK, TREE_PRIVATE, TREE_PROTECTED,
+	TREE_DEPRECATED, IDENTIFIER_TRANSPARENT_ALIAS, TREE_INVARIANT,
+	TREE_LANG_FLAG_*, SSA_NAME_OCCURS_IN_ABNORMAL_PHI,
+	SSA_NAME_IN_FREE_LIST, TYPE_VOLATILE, TYPE_READONLY, BINFO_VIRTUAL_P):
+	Change common.base to base.
+	(GIMPLE_STATEMENT_LIST*): Remove.
+	(union tree_node): Add base.  Remove gimple_statement_list.
+	Remove pointer from gstmt.
+	* tree-ssa-propagate.c (set_rhs): Change common.base to base.
+	* treestruct.def: Add TS_BASE.  Remove TS_GIMPLE_STATEMENT_LIST.
+	* tree-vn.c (vn_compute): Change common.base to base.
+	* tree-eh.c (verify_eh_throw_stmt_node): Same.
+	* tree-flow-inline.h (var_ann): Same.
+	(function_ann): Same.
+	(stmt_ann): Same.
+	(mark_non_addressable): Same.
+	* gimplify.c (tree_to_gimple_tuple): Same.
+	* tree.def (DEFTREECODE): Remove GIMPLE_STATEMENT_LIST.
+	* tree-dfa.c (create_var_ann): Change common.base to base.
+	(create_function_ann): Same.
+	(create_stmt_ann): Same.
+	(create_tree_ann): Same.
+	(collect_dfa_stats_r): Same.
+	* tree-ssa-pre.c (NECESSARY): Change common.base to base.
+	* tree-ssa-dce.c (NECESSARY): Same.
+	* tree-ssa.c (delete_tree_ssa): Same.
+	* tree-optimize.c (execute_free_cfg_annotations): Same.
+	* tree-flow.h: Same.
 
 	2006-09-19  Aldy Hernandez  <aldyh@redhat.com>
 
-        * tree.c (tree_code_size): Handle GIMPLE_STATEMENT_LIST.
-        (tree_node_structure): Handle GIMPLE_STATEMENT_LIST and
+	* tree.c (tree_code_size): Handle GIMPLE_STATEMENT_LIST.
+	(tree_node_structure): Handle GIMPLE_STATEMENT_LIST and
 	GIMPLE_MODIFY_STMT.
-        * tree.h (struct gimple_stmt): Add prev and next fields.
+	* tree.h (struct gimple_stmt): Add prev and next fields.
 	(GIMPLE_STMT_TO_TREE): Cast, do not call GIMPLE_STMT_CHECK.
 	(GIMPLE_STATEMENT_LIST_HEAD): New.
 	(GIMPLE_STATEMENT_LIST_TAIL): New.
 	(struct gimple_statement_list): New.
 	(union tree_node): Add gimple_stmt_list and gstmt.
-        * treestruct.def: Add TS_GIMPLE_STATEMENT_LIST, TS_GIMPLE_STATEMENT.
-        * tree.def: Add GIMPLE_STATEMENT_LIST.
+	* treestruct.def: Add TS_GIMPLE_STATEMENT_LIST, TS_GIMPLE_STATEMENT.
+	* tree.def: Add GIMPLE_STATEMENT_LIST.
 
 	2006-09-06  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -1227,7 +1227,7 @@
 	(spu_force_reg): Remove.
 
 2006-12-01  Joseph Myers  <joseph@codesourcery.com>
-            David Edelsohn  <edelsohn@gnu.org>
+	    David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/24036
 	* doc/tm.texi (HARD_REGNO_NREGS_HAS_PADDING,
@@ -1319,8 +1319,8 @@
 
 	* tree-vectorizer.h (vectorizable_function): Export.
 	* tree-vect-transform.c (vectorizable_function): Likewise.
-        * tree-vect-patterns.c (vect_recog_pow_pattern): Set
-        type_in to scalar type in recognition of squaring.
+	* tree-vect-patterns.c (vect_recog_pow_pattern): Set
+	type_in to scalar type in recognition of squaring.
 	Make sure the target can vectorize sqrt in recognition
 	of sqrt, set type_in to vector type in this case.
 
