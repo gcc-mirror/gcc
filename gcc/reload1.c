@@ -7972,6 +7972,9 @@ delete_output_reload (rtx insn, int j, int last_reload_reg)
 	}
     }
   n_occurrences = count_occurrences (PATTERN (insn), reg, 0);
+  if (CALL_P (insn) && CALL_INSN_FUNCTION_USAGE (insn))
+    n_occurrences += count_occurrences (CALL_INSN_FUNCTION_USAGE (insn),
+					reg, 0);
   if (substed)
     n_occurrences += count_occurrences (PATTERN (insn),
 					eliminate_regs (substed, 0,
