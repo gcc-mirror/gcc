@@ -1,5 +1,13 @@
 2006-12-05  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/29729
+	* decl2.c (check_member_template): Move check for member
+	templates in local classes to ...
+	* parser.c (cp_parser_template_declaration_after_export):
+	... here.
+
+2006-12-05  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/29728
 	* decl.c (check_array_designated_initializer): New function.
 	(maybe_deduce_size_from_array_init): Use it.

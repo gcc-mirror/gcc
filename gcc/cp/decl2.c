@@ -476,13 +476,8 @@ check_member_template (tree tmpl)
       || (TREE_CODE (decl) == TYPE_DECL
 	  && IS_AGGR_TYPE (TREE_TYPE (decl))))
     {
-      if (current_function_decl)
-	/* 14.5.2.2 [temp.mem]
-
-	   A local class shall not have member templates.  */
-	error ("invalid declaration of member template %q#D in local class",
-	       decl);
-
+      /* The parser rejects template declarations in local classes.  */
+      gcc_assert (!current_function_decl);
       if (TREE_CODE (decl) == FUNCTION_DECL && DECL_VIRTUAL_P (decl))
 	{
 	  /* 14.5.2.3 [temp.mem]
