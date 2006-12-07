@@ -549,6 +549,7 @@ error_print (const char *type, const char *format0, va_list argp)
 	{
 	  /* This is a position specifier.  See comment above.  */
 	  while (ISDIGIT(*format))
+	    format++;
 	    
 	  /* Skip over the dollar sign.  */
 	  format++;

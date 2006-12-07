@@ -1,3 +1,9 @@
+2006-12-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/29711
+	* error.c (error_print): Fix handling of printf-style position specifiers
+	  of the form "%3$d"
+
 2006-12-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/30003
