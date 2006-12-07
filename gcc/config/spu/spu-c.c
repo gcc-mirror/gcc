@@ -36,37 +36,14 @@
 #include "spu-builtins.h"
 
 
-/* Helper for spu_resolve_overloaded_builtin.  */
-static tree
-spu_build_overload_builtin (tree fndecl, tree fnargs)
-{
-  tree param, param_type;
-  tree ret_type = TREE_TYPE (TREE_TYPE (fndecl));
-  tree arg, arglist = NULL_TREE;
-  tree val;
-
-  for (param = TYPE_ARG_TYPES (TREE_TYPE (fndecl)), arg = fnargs;
-       param != void_list_node;
-       param = TREE_CHAIN (param), arg = TREE_CHAIN (arg))
-    {
-      gcc_assert (arg != NULL_TREE);
-      param_type = TREE_VALUE (param);
-      val = default_conversion (TREE_VALUE (arg));
-      val = fold_convert (param_type, val);
-
-      arglist = tree_cons (NULL_TREE, val, arglist);
-    }
-  gcc_assert (arg == NULL_TREE);
-  arglist = nreverse (arglist);
-
-  return fold_convert (ret_type, build_function_call_expr (fndecl, arglist));
-}
-
 /* target hook for resolve_overloaded_builtin(). Returns a function call
    RTX if we can resolve the overloaded builtin */
 tree
 spu_resolve_overloaded_builtin (tree fndecl, tree fnargs)
 {
+#define SCALAR_TYPE_P(t) (INTEGRAL_TYPE_P (t) \
+			  || SCALAR_FLOAT_TYPE_P (t) \
+			  || POINTER_TYPE_P (t))
   spu_function_code new_fcode, fcode =
     DECL_FUNCTION_CODE (fndecl) - END_BUILTINS;
   struct spu_builtin_description *desc;
@@ -119,7 +96,8 @@ spu_resolve_overloaded_builtin (tree fndecl, tree fnargs)
 	     checking/promotions for scalar arguments, except for the
 	     first argument of intrinsics which don't have a vector
 	     parameter. */
-	  if ((TREE_CODE (param_type) == VECTOR_TYPE
+	  if ((!SCALAR_TYPE_P (param_type)
+	       || !SCALAR_TYPE_P (arg_type)
 	       || ((fcode == SPU_SPLATS || fcode == SPU_PROMOTE
 		    || fcode == SPU_HCMPEQ || fcode == SPU_HCMPGT
 		    || fcode == SPU_MASKB || fcode == SPU_MASKH
@@ -149,7 +127,8 @@ spu_resolve_overloaded_builtin (tree fndecl, tree fnargs)
       return error_mark_node;
     }
 
-  return spu_build_overload_builtin (match, fnargs);
+  return build_function_call (match, fnargs);
+#undef SCALAR_TYPE_P
 }
 
 
