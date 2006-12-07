@@ -1381,6 +1381,8 @@ print_operand (FILE *file, rtx x, char code)
 	    x = GEN_INT ((INTVAL (x) >> 16) & 0xffff);
 	  else if (code == 'h')
 	    x = GEN_INT (INTVAL (x) & 0xffff);
+	  else if (code == 'N')
+	    x = GEN_INT (-INTVAL (x));
 	  else if (code == 'X')
 	    x = GEN_INT (exact_log2 (0xffffffff & INTVAL (x)));
 	  else if (code == 'Y')
