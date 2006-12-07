@@ -1,3 +1,9 @@
+2006-12-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29730
+	* g++.dg/template/crash64.C: New test.
+	* g++.dg/parse/crash27.C: Adjust error markers.
+
 2006-12-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29729
