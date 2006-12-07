@@ -3603,14 +3603,14 @@ array_to_constant (enum machine_mode mode, unsigned char arr[16])
     {
       val = (arr[0] << 24) | (arr[1] << 16) | (arr[2] << 8) | arr[3];
       val = trunc_int_for_mode (val, SImode);
-      return hwint_to_const_double (val, SFmode);
+      return hwint_to_const_double (SFmode, val);
     }
   if (mode == DFmode)
     {
       val = (arr[0] << 24) | (arr[1] << 16) | (arr[2] << 8) | arr[3];
       val <<= 32;
       val |= (arr[4] << 24) | (arr[5] << 16) | (arr[6] << 8) | arr[7];
-      return hwint_to_const_double (val, DFmode);
+      return hwint_to_const_double (DFmode, val);
     }
 
   if (!VECTOR_MODE_P (mode))
