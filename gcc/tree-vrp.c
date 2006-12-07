@@ -620,10 +620,17 @@ compare_values (tree val1, tree val2)
       if (operand_less_p (val2, val1) == 1)
 	return 1;
 
-      /* If VAL1 is different than VAL2, return +2.  */
-      t = fold_binary (NE_EXPR, boolean_type_node, val1, val2);
-      if (t == boolean_true_node)
-	return 2;
+      /* If VAL1 is different than VAL2, return +2.
+	 For integer constants we either have already returned -1 or 1
+	 or they are equivalent.  We still might suceed prove something
+	 about non-trivial operands.  */
+      if (TREE_CODE (val1) != INTEGER_CST
+	  || TREE_CODE (val2) != INTEGER_CST)
+	{
+          t = fold_binary_to_constant (NE_EXPR, boolean_type_node, val1, val2);
+	  if (t && tree_expr_nonzero_p (t))
+	    return 2;
+	}
 
       return -2;
     }
@@ -682,10 +689,14 @@ value_inside_range (tree val, value_range_t * vr)
 static inline bool
 value_ranges_intersect_p (value_range_t *vr0, value_range_t *vr1)
 {
-  return (value_inside_range (vr1->min, vr0) == 1
-	  || value_inside_range (vr1->max, vr0) == 1
-	  || value_inside_range (vr0->min, vr1) == 1
-	  || value_inside_range (vr0->max, vr1) == 1);
+  /* The value ranges do not intersect if the maximum of the first range is
+     less than the minimum of the second range or vice versa.
+     When those relations are unknown, we can't do any better.  */
+  if (operand_less_p (vr0->max, vr1->min) != 0)
+    return false;
+  if (operand_less_p (vr1->max, vr0->min) != 0)
+    return false;
+  return true;
 }
 
 

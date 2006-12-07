@@ -1,3 +1,9 @@
+2006-12-07  Jan Hubicka  <jh@suse.cz>
+
+	* tree-vrp.c (compare_values): Short circuit INTEGER_CST;
+	use fold_constant_to_binary; tolerate wrong type constants.
+	(value_intersect_p): Do just two tests.
+
 2006-12-07  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (print_operand): New modifier 'N' for constants.
