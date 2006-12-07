@@ -51,6 +51,22 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #include "tm.h"
 #include "insn-modes.h"
 
+/* Types used by the record_gcc_switches() target function.  */
+typedef enum
+{
+  SWITCH_TYPE_PASSED,		/* A switch passed on the command line.  */
+  SWITCH_TYPE_ENABLED,		/* An option that is currently enabled.  */
+  SWITCH_TYPE_DESCRIPTIVE,	/* Descriptive text, not a switch or option.  */
+  SWITCH_TYPE_LINE_START,	/* Please emit any necessary text at the start of a line.  */
+  SWITCH_TYPE_LINE_END		/* Please emit a line terminator.  */
+}
+print_switch_type;
+
+typedef int (* print_switch_fn_type) (print_switch_type, const char *);
+
+/* An example implementation for ELF targets.  Defined in varasm.c  */
+extern int elf_record_gcc_switches (print_switch_type type, const char *);
+
 struct stdarg_info;
 struct spec_info_def;
 
@@ -196,9 +212,17 @@ struct gcc_target
        external.  */
     void (*external_libcall) (rtx);
 
-     /* Output an assembler directive to mark decl live. This instructs
+    /* Output an assembler directive to mark decl live. This instructs
 	linker to not dead code strip this symbol.  */
     void (*mark_decl_preserved) (const char *);
+
+    /* Output a record of the command line switches that have been passed.  */
+    print_switch_fn_type record_gcc_switches;
+    /* The name of the section that the example ELF implementation of
+       record_gcc_switches will use to store the information.  Target
+       specific versions of record_gcc_switches may or may not use
+       this information.  */
+    const char * record_gcc_switches_section;
 
     /* Output the definition of a section anchor.  */
     void (*output_anchor) (rtx);
@@ -796,7 +820,7 @@ struct gcc_target
        target modifications).  */
     void (*adjust_class_at_definition) (tree type);
   } cxx;
-  
+
   /* For targets that need to mark extra registers as live on entry to
      the function, they should define this target hook and set their
      bits in the bitmap passed in. */  
