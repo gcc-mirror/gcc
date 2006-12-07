@@ -3152,9 +3152,15 @@ add_block1 (basic_block bb, basic_block after)
 	 is _always_ valid for access.  */
 
       i = BLOCK_TO_BB (after->index) + 1;
-      for (pos = ebb_head[i]; rgn_bb_table[pos] != after->index; pos--);
+      pos = ebb_head[i] - 1;
+      /* Now POS is the index of the last block in the region.  */
+
+      /* Find index of basic block AFTER.  */
+      for (; rgn_bb_table[pos] != after->index; pos--);
+
       pos++;
       gcc_assert (pos > ebb_head[i - 1]);
+
       /* i - ebb right after "AFTER".  */
       /* ebb_head[i] - VALID.  */
 

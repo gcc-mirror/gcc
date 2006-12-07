@@ -1,3 +1,8 @@
+2006-12-07  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
+	PR target/29794
+	* sched-rgn.c (add_block1): Use correct initializer.
+
 2006-12-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/30074
