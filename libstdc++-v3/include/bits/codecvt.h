@@ -28,16 +28,16 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file bits/codecvt.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 //
 // ISO C++ 14882: 22.2.1.5 Template class codecvt
 //
 
 // Written by Benjamin Kosnik <bkoz@redhat.com>
-
-/** @file bits/codecvt.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
 
 #ifndef _CODECVT_H
 #define _CODECVT_H 1

@@ -28,13 +28,13 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 27.6.2  Output streams
-//
-
 /** @file ostream
  *  This is a Standard C++ Library header.
  */
+
+//
+// ISO C++ 14882: 27.6.2  Output streams
+//
 
 #ifndef _GLIBCXX_OSTREAM
 #define _GLIBCXX_OSTREAM 1

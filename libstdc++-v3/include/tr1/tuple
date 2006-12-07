@@ -27,14 +27,14 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file
+/** @file tr1/tuple
 *  This is a TR1 C++ Library header.
 */
 
 // Chris Jefferson <chris@bubblescope.net>
 
-#ifndef _TUPLE
-#define _TUPLE 1
+#ifndef _TR1_TUPLE
+#define _TR1_TUPLE 1
 
 #include <tr1/utility>
 #include <tr1/ref_fwd.h>

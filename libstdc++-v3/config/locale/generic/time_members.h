@@ -27,12 +27,19 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file time_members.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 //
 // ISO C++ 14882: 22.2.5.1.2 - time_get functions
 // ISO C++ 14882: 22.2.5.3.2 - time_put functions
 //
 
 // Written by Benjamin Kosnik <bkoz@redhat.com>
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _CharT>
     __timepunct<_CharT>::__timepunct(size_t __refs) 
@@ -77,3 +84,5 @@
       delete _M_data;
       _S_destroy_c_locale(_M_c_locale_timepunct); 
     }
+
+_GLIBCXX_END_NAMESPACE

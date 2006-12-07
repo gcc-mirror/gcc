@@ -28,13 +28,13 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 27.5  Stream buffers
-//
-
 /** @file streambuf
  *  This is a Standard C++ Library header.
  */
+
+//
+// ISO C++ 14882: 27.5  Stream buffers
+//
 
 #ifndef _GLIBXX_STREAMBUF
 #define _GLIBXX_STREAMBUF 1

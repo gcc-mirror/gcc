@@ -27,12 +27,12 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file 
+/** @file tr1/type_traits
  *  This is a TR1 C++ Library header. 
  */
 
-#ifndef _TYPE_TRAITS
-#define _TYPE_TRAITS 1
+#ifndef _TR1_TYPE_TRAITS
+#define _TR1_TYPE_TRAITS 1
 
 #include <bits/c++config.h>
 #include <tr1/type_traits_fwd.h>

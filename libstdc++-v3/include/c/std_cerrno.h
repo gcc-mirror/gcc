@@ -27,10 +27,6 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 19.3  Error numbers
-//
-
 /** @file cerrno
  *  This is a Standard C++ Library file.  You should @c #include this file
  *  in your programs, rather than any of the "*.h" implementation files.
@@ -39,6 +35,10 @@
  *  and its contents are (mostly) the same as that header, but are all
  *  contained in the namespace @c std.
  */
+
+//
+// ISO C++ 14882: 19.3  Error numbers
+//
 
 #ifndef _GLIBCXX_CERRNO
 #define _GLIBCXX_CERRNO 1

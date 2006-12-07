@@ -53,7 +53,7 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-/** @file 
+/** @file include/iterator
  *  This is a Standard C++ Library header.
  */
 

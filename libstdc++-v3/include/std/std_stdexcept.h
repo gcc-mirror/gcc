@@ -27,13 +27,13 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 19.1  Exception classes
-//
-
 /** @file stdexcept
  *  This is a Standard C++ Library header.
  */
+
+//
+// ISO C++ 19.1  Exception classes
+//
 
 #ifndef _GLIBCXX_STDEXCEPT
 #define _GLIBCXX_STDEXCEPT 1

@@ -27,6 +27,11 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file c++locale_internal.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 // Written by Jakub Jelinek <jakub@redhat.com>
 
 #include <bits/c++config.h>

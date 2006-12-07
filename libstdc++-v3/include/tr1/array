@@ -27,12 +27,12 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file 
+/** @file tr1/array
  *  This is a TR1 C++ Library header. 
  */
 
-#ifndef _ARRAY
-#define _ARRAY 1
+#ifndef _TR1_ARRAY
+#define _TR1_ARRAY 1
 
 #include <new>
 #include <iterator>

@@ -28,13 +28,13 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 27.6.3  Standard manipulators
-//
-
 /** @file iomanip
  *  This is a Standard C++ Library header.
  */
+
+//
+// ISO C++ 14882: 27.6.3  Standard manipulators
+//
 
 #ifndef _GLIBCXX_IOMANIP
 #define _GLIBCXX_IOMANIP 1

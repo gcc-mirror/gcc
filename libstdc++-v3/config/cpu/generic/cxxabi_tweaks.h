@@ -27,6 +27,10 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file cxxabi_tweaks.h
+ *  The header provides an CPU-variable interface to the C++ ABI.
+ */
+
 #ifndef _CXXABI_TWEAKS_H
 #define _CXXABI_TWEAKS_H 1
 
