@@ -1,5 +1,10 @@
 2006-12-07  Jan Hubicka  <jh@suse.cz>
 
+	* i386.c (nocona_cost, pentium4_cost): Update preffered memcpy/memset
+	codegen.
+
+2006-12-07  Jan Hubicka  <jh@suse.cz>
+
 	* tree-vrp.c (compare_values): Short circuit INTEGER_CST;
 	use fold_constant_to_binary; tolerate wrong type constants.
 	(value_intersect_p): Do just two tests.
