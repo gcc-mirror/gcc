@@ -1,3 +1,8 @@
+2006-12-07  Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
+
+	* config/spu/spu.c (array_to_constant): Correct the order of arguments
+	to the calls of hwint_to_const_double.
+
 2006-12-07  Nick Clifton  <nickc@redhat.com>
 
 	* config/elfos.h (TARGET_ASM_RECORD_GCC_SWITCHES): Set to
