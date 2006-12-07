@@ -1714,7 +1714,7 @@ vectorizable_call (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
      to the new definition.  So just replace rhs of the statement with something
      harmless.  */
   type = TREE_TYPE (scalar_dest);
-  TREE_OPERAND (stmt, 1) = fold_convert (type, integer_zero_node);
+  GIMPLE_STMT_OPERAND (stmt, 1) = fold_convert (type, integer_zero_node);
 
   return true;
 }
