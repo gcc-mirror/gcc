@@ -1,5 +1,11 @@
 2006-12-06  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/29730
+	* parser.c (cp_parser_init_declarator): Reject initialization of
+	functions.
+
+2006-12-06  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/29729
 	* decl2.c (check_member_template): Move check for member
 	templates in local classes to ...

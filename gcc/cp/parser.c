@@ -11238,9 +11238,23 @@ cp_parser_init_declarator (cp_parser* parser,
   is_non_constant_init = true;
   if (is_initialized)
     {
-      if (function_declarator_p (declarator)
-	  && initialization_kind == CPP_EQ)
-	initializer = cp_parser_pure_specifier (parser);
+      if (function_declarator_p (declarator))
+	{
+	   if (initialization_kind == CPP_EQ)
+	     initializer = cp_parser_pure_specifier (parser);
+	   else
+	     {
+	       /* If the declaration was erroneous, we don't really
+		  know what the user intended, so just silently
+		  consume the initializer.  */
+	       if (decl != error_mark_node)
+		 error ("initializer provided for function");
+	       cp_parser_skip_to_closing_parenthesis (parser,
+						      /*recovering=*/true,
+						      /*or_comma=*/false,
+						      /*consume_paren=*/true);
+	     }
+	}
       else
 	initializer = cp_parser_initializer (parser,
 					     &is_parenthesized_init,
