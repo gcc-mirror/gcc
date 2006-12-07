@@ -10238,10 +10238,15 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	    }
 
 	  if (TREE_CODE (TREE_TYPE (decl)) != TYPENAME_TYPE)
-	    check_elaborated_type_specifier
-	      (tag_type, decl,
-	       (parser->num_template_parameter_lists
-		|| DECL_SELF_REFERENCE_P (decl)));
+            {
+              bool allow_template = (parser->num_template_parameter_lists
+		                      || DECL_SELF_REFERENCE_P (decl));
+              type = check_elaborated_type_specifier (tag_type, decl, 
+                                                      allow_template);
+
+              if (type == error_mark_node)
+                return error_mark_node;
+            }
 
 	  type = TREE_TYPE (decl);
 	}
