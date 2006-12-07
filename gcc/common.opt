@@ -715,6 +715,16 @@ frandom-seed=
 Common Joined RejectNegative
 -frandom-seed=<string>	Make compile reproducible using <string>
 
+; This switch causes the command line that was used to create an
+; object file to be recorded into the object file.  The exact format
+; of this recording is target and binary file format dependent.
+; It is related to the -fverbose-asm switch, but that switch only
+; records information in the assembler output file as comments, so
+; they never reach the object file.
+frecord-gcc-switches
+Common Report Var(flag_record_gcc_switches)
+Record gcc command line switches in the object file.
+
 freg-struct-return
 Common Report Var(flag_pcc_struct_return,0) VarExists
 Return small aggregates in registers

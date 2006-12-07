@@ -6653,6 +6653,58 @@ need to override this if your target has special flags that might be
 set via @code{__attribute__}.
 @end deftypefn
 
+@deftypefn {Target Hook} {int} TARGET_ASM_RECORD_GCC_SWITCHES (print_switch_type @var{type}, const char * @var{text})
+Provides the target with the ability to record the gcc command line
+switches that have been passed to the compiler, and options that are
+enabled.  The @var{type} argument specifies what is being recorded.
+It can take the following values:
+
+@table @gcctabopt
+@item SWITCH_TYPE_PASSED
+@var{text} is a command line switch that has been set by the user.
+
+@item SWITCH_TYPE_ENABLED
+@var{text} is an option which has been enabled.  This might be as a
+direct result of a command line switch, or because it is enabled by
+default or because it has been enabled as a side effect of a different
+command line switch.  For example, the @option{-O2} switch enables
+various different individual optimization passes.
+
+@item SWITCH_TYPE_DESCRIPTIVE
+@var{text} is either NULL or some descriptive text which should be
+ignored.  If @var{text} is NULL then it is being used to warn the
+target hook that either recording is starting or ending.  The first
+time @var{type} is SWITCH_TYPE_DESCRIPTIVE and @var{text} is NULL, the
+warning is for start up and the second time the warning is for
+wind down.  This feature is to allow the target hook to make any
+necessary preparations before it starts to record switches and to
+perform any necessary tidying up after it has finished recording
+switches.
+
+@item SWITCH_TYPE_LINE_START
+This option can be ignored by this target hook.
+
+@item  SWITCH_TYPE_LINE_END
+This option can be ignored by this target hook.
+@end table
+
+The hook's return value must be zero.  Other return values may be
+supported in the future.
+
+By default this hook is set to NULL, but an example implementation is
+provided for ELF based targets.  Called @var{elf_record_gcc_switches},
+it records the switches as ASCII text inside a new, string mergeable
+section in the assembler output file.  The name of the new section is
+provided by the @code{TARGET_ASM_RECORD_GCC_SWITCHES_SECTION} target
+hook.
+@end deftypefn
+
+@deftypefn {Target Hook} {const char *} TARGET_ASM_RECORD_GCC_SWITCHES_SECTION
+This is the name of the section that will be created by the example
+ELF implementation of the @code{TARGET_ASM_RECORD_GCC_SWITCHES} target
+hook.
+@end deftypefn
+
 @need 2000
 @node Data Output
 @subsection Output of Data

@@ -6226,4 +6226,105 @@ output_object_blocks (void)
   htab_traverse (object_block_htab, output_object_block_htab, NULL);
 }
 
+/* This function provides a possible implementation of the
+   TARGET_ASM_RECORD_GCC_SWITCHES target hook for ELF targets.  When triggered
+   by -frecord-gcc-switches it creates a new mergeable, string section in the
+   assembler output file called TARGET_ASM_RECORD_GCC_SWITCHES_SECTION which
+   contains the switches in ASCII format.
+
+   FIXME: This code does not correctly handle double quote characters
+   that appear inside strings, (it strips them rather than preserving them).
+   FIXME: ASM_OUTPUT_ASCII, as defined in config/elfos.h will not emit NUL
+   characters - instead it treats them as sub-string separators.  Since
+   we want to emit NUL strings terminators into the object file we have to use
+   ASM_OUTPUT_SKIP.  */
+
+int
+elf_record_gcc_switches (print_switch_type type, const char * name)
+{
+  static char buffer[1024];
+
+  /* This variable is used as part of a simplistic heuristic to detect
+     command line switches which take an argument:
+
+       "If a command line option does not start with a dash then
+        it is an argument for the previous command line option."
+
+     This fails in the case of the command line option which is the name
+     of the file to compile, but otherwise it is pretty reasonable.  */
+  static bool previous_name_held_back = FALSE;
+
+  switch (type)
+    {
+    case SWITCH_TYPE_PASSED:
+      if (* name != '-')
+	{
+	  if (previous_name_held_back)
+	    {
+	      unsigned int len = strlen (buffer);
+
+	      snprintf (buffer + len, sizeof buffer - len, " %s", name);
+	      ASM_OUTPUT_ASCII (asm_out_file, buffer, strlen (buffer));
+	      ASM_OUTPUT_SKIP (asm_out_file, 1L);
+	      previous_name_held_back = FALSE;
+	    }
+	  else
+	    {
+	      strncpy (buffer, name, sizeof buffer);
+	      ASM_OUTPUT_ASCII (asm_out_file, buffer, strlen (buffer));
+	      ASM_OUTPUT_SKIP (asm_out_file, 1L);
+	    }
+	}
+      else
+	{
+	  if (previous_name_held_back)
+	    {
+	      ASM_OUTPUT_ASCII (asm_out_file, buffer, strlen (buffer));
+	      ASM_OUTPUT_SKIP (asm_out_file, 1L);
+	    }
+
+	  strncpy (buffer, name, sizeof buffer);
+	  previous_name_held_back = TRUE;
+	}
+      break;
+
+    case SWITCH_TYPE_DESCRIPTIVE:
+      if (name == NULL)
+	{
+	  /* Distinguish between invocations where name is NULL.  */
+	  static bool started = false;
+
+	  if (started)
+	    {
+	      if (previous_name_held_back)
+		{
+		  ASM_OUTPUT_ASCII (asm_out_file, buffer, strlen (buffer));
+		  ASM_OUTPUT_SKIP (asm_out_file, 1L);
+		}
+	    }
+	  else
+	    {
+	      section * sec;
+
+	      sec = get_section (targetm.asm_out.record_gcc_switches_section,
+				 SECTION_DEBUG
+				 | SECTION_MERGE
+				 | SECTION_STRINGS
+				 | (SECTION_ENTSIZE & 1),
+				 NULL);
+	      switch_to_section (sec);
+	      started = true;
+	    }
+	}
+
+    default:
+      break;
+    }
+
+  /* The return value is currently ignored by the caller, but must be 0.
+     For -fverbose-asm the return value would be the number of characters
+     emitted into the assembler file.  */
+  return 0;
+}
+
 #include "gt-varasm.h"

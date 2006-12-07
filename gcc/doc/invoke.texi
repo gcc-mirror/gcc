@@ -783,6 +783,7 @@ See S/390 and zSeries Options.
 -fno-common  -fno-ident @gol
 -fpcc-struct-return  -fpic  -fPIC -fpie -fPIE @gol
 -fno-jump-tables @gol
+-frecord-gcc-switches @gol
 -freg-struct-return  -fshort-enums @gol
 -fshort-double  -fshort-wchar @gol
 -fverbose-asm  -fpack-struct[=@var{n}]  -fstack-check @gol
@@ -13507,6 +13508,17 @@ debugging the compiler itself).
 @option{-fno-verbose-asm}, the default, causes the
 extra information to be omitted and is useful when comparing two assembler
 files.
+
+@item -frecord-gcc-switches
+@opindex frecord-gcc-switches
+This switch causes the command line that was used to invoke the
+compiler to be recorded into the object file that is being created.
+This switch is only implemented on some targets and the exact format
+of the recording is target and binary file format dependent, but it
+usually takes the form of a section containing ASCII text.  This
+switch is related to the @option{-fverbose-asm} switch, but that
+switch only records information in the assembler output file as
+comments, so it never reaches the object file.
 
 @item -fpic
 @opindex fpic
