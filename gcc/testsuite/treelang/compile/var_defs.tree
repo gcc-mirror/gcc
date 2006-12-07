@@ -13,12 +13,12 @@ condition
 {
   if (arg1)
     {
-      automatic int i;
-      return i + 1; // { dg-warning "uninitialized" }
+      automatic int i;	// { dg-warning "was declared here" }
+      return i + 1;	// { dg-warning "uninitialized" }
     }
   else
     {
-      automatic int j;
-      return j; // { dg-warning "uninitialized" }
+      automatic int j;	// { dg-warning "was declared here" }
+      return j;		// { dg-warning "uninitialized" }
     }
 }
