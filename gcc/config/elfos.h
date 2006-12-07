@@ -499,3 +499,8 @@ Boston, MA 02110-1301, USA.  */
         fprintf ((FILE), "\"\n");					\
     }									\
   while (0)
+
+/* Allow the use of the -frecord-gcc-switches switch via the
+   elf_record_gcc_switches function defined in varasm.c.  */
+#undef  TARGET_ASM_RECORD_GCC_SWITCHES
+#define TARGET_ASM_RECORD_GCC_SWITCHES elf_record_gcc_switches
