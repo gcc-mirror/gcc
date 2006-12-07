@@ -2679,9 +2679,15 @@ expand_builtin_pow (tree exp, rtx target, rtx subtarget)
     }
 
   /* Try if the exponent is a third of an integer.  In this case
-     we can expand to x**(n/3) * cbrt(x)**(n%3).  */
+     we can expand to x**(n/3) * cbrt(x)**(n%3).  As cbrt (x) is
+     different from pow (x, 1./3.) due to rounding and behavior
+     with negative x we need to constrain this transformation to
+     unsafe math and positive x or finite math.  */
   fn = mathfn_built_in (type, BUILT_IN_CBRT);
-  if (fn != NULL_TREE)
+  if (fn != NULL_TREE
+      && flag_unsafe_math_optimizations
+      && (tree_expr_nonnegative_p (arg0)
+	  || !HONOR_NANS (mode)))
     {
       real_arithmetic (&c2, MULT_EXPR, &c, &dconst3);
       real_round (&c2, mode, &c2);
@@ -2691,7 +2697,6 @@ expand_builtin_pow (tree exp, rtx target, rtx subtarget)
       real_convert (&c2, mode, &c2);
       if (real_identical (&c2, &c)
 	  && ((!optimize_size
-	       && flag_unsafe_math_optimizations
 	       && powi_cost (n/3) <= POWI_MAX_MULTS)
 	      || n == 1))
 	{
