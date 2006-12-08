@@ -913,6 +913,27 @@ src.zip:
 	    echo $(srcdir)/classpath; \
 	    echo $$file; \
 	  done ); \
+	  ( cd $(srcdir)/classpath/external/sax; \
+	  find org -name '*.java' -print | \
+	  while read file; do \
+	    echo "x-C" | sed -e 's/^.//'; \
+	    echo $(srcdir)/classpath/external/sax; \
+	    echo $$file; \
+	  done ); \
+	  ( cd $(srcdir)/classpath/external/relaxngDatatype; \
+	  find org -name '*.java' -print | \
+	  while read file; do \
+	    echo "x-C" | sed -e 's/^.//'; \
+	    echo $(srcdir)/classpath/external/relaxngDatatype; \
+	    echo $$file; \
+	  done ); \
+	  ( cd $(srcdir)/classpath/external/w3c_dom; \
+	  find org -name '*.java' -print | \
+	  while read file; do \
+	    echo "x-C" | sed -e 's/^.//'; \
+	    echo $(srcdir)/classpath/external/w3c_dom; \
+	    echo $$file; \
+	  done ); \
 ## Now the build tree.
 	  ( cd classpath; \
 	    find gnu java -name '*.java' -print | \

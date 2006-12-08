@@ -1,3 +1,9 @@
+2006-12-08  Ben Konrath  <bkonrath@redhat.com>
+
+	PR libgcj/30110:
+	* Makefile.am: Add contents of classpath/external to src.zip.
+	* Makefile.in: Regenerate.
+
 2006-12-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* configure: Regenerate.
