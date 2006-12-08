@@ -1,3 +1,10 @@
+2006-12-08  Mike Stump  <mrs@apple.com>
+
+	* config/rs6000/t-darwin (TARGET_LIBGCC2_CFLAGS): Build
+	libgcc with -mmacosx-version-min=10.4.
+	* config/rs6000/darwin.h (SUBTARGET_OVERRIDE_OPTIONS): Default to
+	G4 for 10.5+ unless doing kernel builds.
+
 2006-12-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/30120
