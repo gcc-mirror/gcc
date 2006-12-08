@@ -760,12 +760,10 @@ extern int may_call_alloca;
 
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.
-   On the pdp this is for predec/postinc */
+   On the pdp this is for predec/postinc, and this is now treated
+   generically in recog.c.  */
 
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)	\
- { if (GET_CODE (ADDR) == POST_INC || GET_CODE (ADDR) == PRE_DEC)	\
-     goto LABEL; 							\
- }
+#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)
 
 
 /* Specify the machine mode that this machine uses

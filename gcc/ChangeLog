@@ -1,3 +1,41 @@
+2006-12-08  Mark Shinwell  <shinwell@codesourcery.com>
+
+	* recog.c (mode_dependent_address_p): Identify pre-increment,
+	pre-decrement, post-increment and post-decrement addressing as always
+	being mode-dependent.
+	* config/m32c/m32c.c (m32c_mode_dependent_address): Delete.
+	* config/m32c/m32c.h (GO_IF_MODE_DEPENDENT_ADDRESS): Change to no-op.
+	* config/m32c/m32c-protos.h (m32c_mode_dependent_address): Delete.
+	* config/m32r/m32r.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete PRE_DEC,
+	PRE_INC and POST_INC checks.
+	* config/i386/i386.h (GO_IF_MODE_DEPENDENT_ADDRESS): Change to no-op.
+	* config/sh/sh.h (GO_IF_MODE_DEPENDENT_ADDRESS): Change to no-op.
+	* config/pdp11/pdp11.h (GO_IF_MODE_DEPENDENT_ADDRESS): Change to no-op.
+	* config/avr/avr.h (GO_IF_MODE_DEPENDENT_ADDRESS): Change to no-op.
+	* config/c4x/c4x.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete PRE_DEC,
+	PRE_INC, POST_DEC and POST_INC cases.
+	* config/stormy16/stormy16.c (xstormy16_mode_dependent_address_p):
+	Delete POST_INC and PRE_DEC cases.
+	* config/m68hc11/m68hc11.h (GO_IF_MODE_DEPENDENT_ADDRESS): Change to
+	no-op.
+	* config/cris/cris.h (GO_IF_MODE_DEPENDENT_ADDRESS): Change to no-op.
+	* config/mn10300/mn10300.h (GO_IF_MODE_DEPENDENT_ADDRESS): Change to
+	no-op.
+	* config/ia64/ia64.h (GO_IF_MODE_DEPENDENT_ADDRESS): Change to no-op.
+	* config/m68k/m68k.h (GO_IF_MODE_DEPENDENT_ADDRESS): Change to no-op.
+	* config/rs6000/rs6000.c (rs6000_mode_dependent_address): Delete
+	PRE_INC and PRE_DEC cases.
+	* config/arc/arc.h (GO_IF_MODE_DEPENDENT_ADDRESS): Change to no-op.
+	* config/mcore/mcore.h (GO_IF_MODE_DEPENDENT_ADDRESS): Change to no-op.
+	* config/arm/arm.h (ARM_GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	(GO_IF_MODE_DEPENDENT_ADDRESS): Change to no-op.
+	* config/pa/pa.h (GO_IF_MODE_DEPENDENT_ADDRESS): Change to no-op.
+	* config/vax/vax.c (vax_mode_dependent_address_p): Delete
+	auto-increment cases.
+	* config/h8300/h8300.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete
+	auto-increment cases.
+	* config/bfin/bfin.h (GO_IF_MODE_DEPENDENT_ADDRESS): Change to no-op.
+
 2006-12-08  Andrew MacLeod  <amacleod@redhat.com>
 
 	* Makefile.in: Add new file tree-ssa-ter.c.

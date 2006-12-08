@@ -84,7 +84,6 @@ int  m32c_legitimize_reload_address (rtx *, MM, int, int, int);
 rtx  m32c_libcall_value (MM);
 int  m32c_limit_reload_class (MM, int);
 int  m32c_memory_move_cost (MM, int, int);
-int  m32c_mode_dependent_address (rtx);
 int  m32c_modes_tieable_p (MM, MM);
 bool m32c_mov_ok (rtx *, MM);
 char * m32c_output_compare (rtx, rtx *);

@@ -707,9 +707,7 @@ xstormy16_mode_dependent_address_p (rtx x)
   if (GET_CODE (x) == PLUS)
     x = XEXP (x, 0);
 
-  if (GET_CODE (x) == POST_INC
-      || GET_CODE (x) == PRE_DEC)
-    return 1;
+  /* Auto-increment addresses are now treated generically in recog.c.  */
 
   return 0;
 }

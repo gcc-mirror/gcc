@@ -1306,8 +1306,8 @@ vax_mode_dependent_address_p (rtx x)
 {
   rtx xfoo0, xfoo1;
 
-  if (GET_CODE (x) == POST_INC || GET_CODE (x) == PRE_DEC)
-    return 1;
+  /* Auto-increment cases are now dealt with generically in recog.c.  */
+
   if (GET_CODE (x) != PLUS)
     return 0;
 

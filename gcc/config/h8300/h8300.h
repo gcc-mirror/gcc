@@ -939,11 +939,6 @@ struct cum_arg
    (the amount of decrement or increment being the length of the operand).  */
 
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL) \
-  if (GET_CODE (ADDR) == POST_INC \
-      || GET_CODE (ADDR) == POST_DEC \
-      || GET_CODE (ADDR) == PRE_INC \
-      || GET_CODE (ADDR) == PRE_DEC) \
-    goto LABEL; \
   if (GET_CODE (ADDR) == PLUS \
       && h8300_get_index (XEXP (ADDR, 0), VOIDmode, 0) != XEXP (ADDR, 0)) \
     goto LABEL;
