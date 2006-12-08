@@ -1,3 +1,10 @@
+2006-12-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/x87regparm-1.c: XFAIL.
+	* gcc.target/i386/x87regparm-2.c: XFAIL.
+	* gcc.target/i386/x87regparm-3.c: XFAIL.
+	* gcc.target/i386/x87regparm-4.c: XFAIL.
+
 2006-12-08  Manuel Lopez-Ibanez <manu@gcc.gnu.org>
 
 	* lib/target-supports.exp

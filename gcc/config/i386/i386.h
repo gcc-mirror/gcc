@@ -1778,7 +1778,9 @@ do {									\
 
 #define REGPARM_MAX (TARGET_64BIT ? 6 : 3)
 
-#define X87_REGPARM_MAX 3
+/* ??? Currently disabled, as reg-stack.c does not know how to
+   rearrange input registers if some arguments are left unused.  */
+#define X87_REGPARM_MAX 0
 
 #define SSE_REGPARM_MAX (TARGET_64BIT ? 8 : (TARGET_SSE ? 3 : 0))
 

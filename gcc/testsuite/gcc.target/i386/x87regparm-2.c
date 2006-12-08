@@ -19,4 +19,4 @@ void test()
 
 /* Check that no memory is used to pass arguments.  */
 
-/* { dg-final { scan-assembler-not "\\(%esp\\)" } } */
+/* { dg-final { scan-assembler-not "\\(%esp\\)" { xfail *-*-* } } } */
