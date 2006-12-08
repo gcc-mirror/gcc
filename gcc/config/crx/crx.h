@@ -405,11 +405,7 @@ struct cumulative_args
 }
 #endif /* REG_OK_STRICT */
 
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)			\
-{									\
-  if (GET_CODE (ADDR) == POST_INC || GET_CODE (ADDR) == POST_DEC)	\
-    goto LABEL;								\
-}
+#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)
 
 #define LEGITIMATE_CONSTANT_P(X)  1
 

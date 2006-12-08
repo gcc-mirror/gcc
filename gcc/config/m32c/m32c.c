@@ -2018,15 +2018,6 @@ m32c_legitimize_reload_address (rtx * x,
   return 0;
 }
 
-/* Used in GO_IF_MODE_DEPENDENT_ADDRESS.  */
-int
-m32c_mode_dependent_address (rtx addr)
-{
-  if (GET_CODE (addr) == POST_INC || GET_CODE (addr) == PRE_DEC)
-    return 1;
-  return 0;
-}
-
 /* Implements LEGITIMATE_CONSTANT_P.  We split large constants anyway,
    so we can allow anything.  */
 int

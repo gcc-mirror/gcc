@@ -799,12 +799,7 @@ do { \
 
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.  */
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL) \
-{ if (GET_CODE (ADDR) == PRE_DEC)	\
-    goto LABEL;				\
-  if (GET_CODE (ADDR) == PRE_INC)	\
-    goto LABEL;				\
-}
+#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  */

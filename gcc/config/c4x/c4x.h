@@ -1156,13 +1156,8 @@ CUMULATIVE_ARGS;
 }
 
 /* No mode-dependent addresses on the C4x are autoincrements.  */
-
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)	\
-  if (GET_CODE (ADDR) == PRE_DEC	\
-      || GET_CODE (ADDR) == POST_DEC	\
-      || GET_CODE (ADDR) == PRE_INC	\
-      || GET_CODE (ADDR) == POST_INC	\
-      || GET_CODE (ADDR) == POST_MODIFY	\
+  if (GET_CODE (ADDR) == POST_MODIFY	\
       || GET_CODE (ADDR) == PRE_MODIFY)	\
     goto LABEL
 

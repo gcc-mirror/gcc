@@ -1267,10 +1267,7 @@ L2:     .word STATIC
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)		\
   do								\
     {						 		\
-      if (   GET_CODE (ADDR) == PRE_DEC		 		\
-	  || GET_CODE (ADDR) == PRE_INC		 		\
-	  || GET_CODE (ADDR) == POST_INC		 	\
-	  || GET_CODE (ADDR) == LO_SUM)		 		\
+      if (GET_CODE (ADDR) == LO_SUM)		 		\
 	goto LABEL;					 	\
     }								\
   while (0)
