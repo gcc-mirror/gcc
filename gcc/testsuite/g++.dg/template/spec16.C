@@ -7,5 +7,5 @@ struct A {
   template<int M> void B () ; 
 }; 
 
-void A<0>::B<0>() {    // { dg-error "explicit specialization" }
+void A<0>::B<0>() {    // { dg-error "parameter-lists" }
 } 
