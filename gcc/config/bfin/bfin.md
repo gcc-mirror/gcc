@@ -159,7 +159,7 @@
    (MACFLAG_IH 10)])
 
 (define_attr "type"
-  "move,mvi,mcld,mcst,dsp32,mult,alu0,shft,brcc,br,call,misc,sync,compare,dummy"
+  "move,movcc,mvi,mcld,mcst,dsp32,mult,alu0,shft,brcc,br,call,misc,sync,compare,dummy"
   (const_string "misc"))
 
 (define_attr "addrtype" "32bit,preg,ireg"
@@ -198,7 +198,7 @@
 (define_reservation "core" "slot0+slot1+slot2")
 
 (define_insn_reservation "alu" 1
-  (eq_attr "type" "move,mvi,alu0,shft,brcc,br,call,misc,sync,compare")
+  (eq_attr "type" "move,movcc,mvi,alu0,shft,brcc,br,call,misc,sync,compare")
   "core")
 
 (define_insn_reservation "imul" 3
@@ -352,7 +352,7 @@
     if cc %0 =%2; /* movsicc-1b */
     if !cc %0 =%1; if cc %0=%2; /* movsicc-1 */"
   [(set_attr "length" "2,2,4")
-   (set_attr "type" "move")
+   (set_attr "type" "movcc")
    (set_attr "seq_insns" "*,*,multi")])
 
 (define_insn "*movsicc_insn2"
@@ -368,7 +368,7 @@
    if cc %0 =%1; /* movsicc-2a */
    if cc %0 =%1; if !cc %0=%2; /* movsicc-1 */"
   [(set_attr "length" "2,2,4")
-   (set_attr "type" "move")
+   (set_attr "type" "movcc")
    (set_attr "seq_insns" "*,*,multi")])
 
 ;; Insns to load HIGH and LO_SUM

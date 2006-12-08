@@ -1,3 +1,14 @@
+2006-12-08  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (effective_address_32bit_p): Return true for
+	anything involving the GOT.
+	(bfin_adjust_cost): Don't take the REGNO of a MEM.
+	(trapping_loads_p): Look inside the pattern of an insn to find the
+	SET.
+	* config/bfin/bfin.md (attr "type"): Add movcc.
+	(insn_reservation "alu"): Likewise.
+	(movsicc_insn1, movsicc_insn2): Change type to movcc.
+
 2006-12-07  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* config/spu/spu-c.c (spu_build_overload_builtin): Delete.

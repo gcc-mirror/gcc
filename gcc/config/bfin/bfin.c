@@ -1097,6 +1097,9 @@ effective_address_32bit_p (rtx op, enum machine_mode mode)
       return 0;
     }
 
+  if (GET_CODE (XEXP (op, 1)) == UNSPEC)
+    return 1;
+
   offset = INTVAL (XEXP (op, 1));
 
   /* All byte loads use a 16 bit offset.  */
@@ -2997,7 +3000,8 @@ bfin_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
       rtx pat = PATTERN (dep_insn);
       rtx dest = SET_DEST (pat);
       rtx src = SET_SRC (pat);
-      if (! ADDRESS_REGNO_P (REGNO (dest)) || ! D_REGNO_P (REGNO (src)))
+      if (! ADDRESS_REGNO_P (REGNO (dest))
+	  || ! (MEM_P (src) || D_REGNO_P (REGNO (src))))
 	return cost;
       return cost + (dep_insn_type == TYPE_MOVE ? 4 : 3);
     }
@@ -3918,10 +3922,12 @@ trapping_loads_p (rtx insn)
     {
       enum attr_type t;
       t = get_attr_type (XVECEXP (pat, 0, 1));
-      if (t == TYPE_MCLD && may_trap_p (SET_SRC (XVECEXP (pat, 0, 1))))
+      if (t == TYPE_MCLD
+	  && may_trap_p (SET_SRC (PATTERN (XVECEXP (pat, 0, 1)))))
 	return true;
       t = get_attr_type (XVECEXP (pat, 0, 2));
-      if (t == TYPE_MCLD && may_trap_p (SET_SRC (XVECEXP (pat, 0, 2))))
+      if (t == TYPE_MCLD
+	  && may_trap_p (SET_SRC (PATTERN (XVECEXP (pat, 0, 2)))))
 	return true;
       return false;
     }
