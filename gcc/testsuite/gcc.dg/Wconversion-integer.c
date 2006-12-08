@@ -2,7 +2,7 @@
    These tests come from gcc/testsuite/gcc.dg/overflow-warn-2.c  */
 
 /* { dg-do compile } */
-/* { dg-options "-std=c99 -Wconversion" } */
+/* { dg-options "-std=c99 -fsigned-char -Wconversion" } */
 
 #include <limits.h>
 
