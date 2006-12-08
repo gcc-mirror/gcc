@@ -19,4 +19,4 @@ void test()
 
 /* Check that float and double arguments are passed through memory.  */
 
-/* { dg-final { scan-assembler-times "\\(%esp\\)" 4 } } */
+/* { dg-final { scan-assembler-times "\\(%esp\\)" 4 { xfail *-*-* } } } */

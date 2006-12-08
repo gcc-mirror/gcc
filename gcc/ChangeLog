@@ -1,3 +1,12 @@
+2006-12-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/30120
+	* reg-stack.c (convert_regs_entry): Mark current argument passing
+	registers as live.
+
+	* config/i386/i386.h (X87_REGPARM_MAX): Set to 0 to disable passing
+	of float arguments in x87 registers.
+
 2006-12-08  John David Anglin  <dave.anglin.@nrc-cnrc.gc.ca>
 
 	* pa.h (LEGITIMATE_CONSTANT_P): Simplify.
