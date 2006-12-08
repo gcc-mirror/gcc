@@ -1119,13 +1119,18 @@ extern int may_call_alloca;
 #define LEGITIMATE_CONSTANT_P(X)				\
   ((GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT			\
     || (X) == CONST0_RTX (GET_MODE (X)))			\
-   && (NEW_HP_ASSEMBLER || TARGET_GAS || GET_CODE (X) != LABEL_REF)	\
-   && !(TARGET_64BIT && GET_CODE (X) == CONST_DOUBLE)		\
-   && !(TARGET_64BIT && GET_CODE (X) == CONST_INT		\
-	&& !(HOST_BITS_PER_WIDE_INT <= 32			\
-	     || (reload_in_progress || reload_completed)	\
-	     || LEGITIMATE_64BIT_CONST_INT_P (INTVAL (X))	\
-	     || cint_ok_for_move (INTVAL (X))))			\
+   && (NEW_HP_ASSEMBLER						\
+       || TARGET_GAS						\
+       || GET_CODE (X) != LABEL_REF)				\
+   && (!TARGET_64BIT						\
+       || GET_CODE (X) != CONST_DOUBLE)				\
+   && (!TARGET_64BIT						\
+       || HOST_BITS_PER_WIDE_INT <= 32				\
+       || GET_CODE (X) != CONST_INT				\
+       || reload_in_progress					\
+       || reload_completed					\
+       || LEGITIMATE_64BIT_CONST_INT_P (INTVAL (X))		\
+       || cint_ok_for_move (INTVAL (X)))			\
    && !function_label_operand (X, VOIDmode))
 
 /* Target flags set on a symbol_ref.  */
