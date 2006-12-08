@@ -49,6 +49,15 @@
 # else
 #  error can not work out how to access fields of i386_thread_state_t
 # endif
+#elif defined(__x86_64__)
+# define THREAD_STATE i386_thread_state_t
+# if defined (HAS_I386_THREAD_STATE_EAX)
+#  define THREAD_FLD(x) x
+# elif defined (HAS_I386_THREAD_STATE___EAX)
+#  define THREAD_FLD(x) __ ## x
+# else
+#  error can not work out how to access fields of i386_thread_state_t
+# endif
 #else
 # error unknown architecture
 #endif
@@ -127,15 +136,15 @@ void GC_push_all_stacks() {
 	if(r != KERN_SUCCESS) ABORT("thread_get_state failed");
 
 #if defined(I386)
-	lo = state.esp;
+	lo = (void*)state . THREAD_FLD (esp);
 
-	GC_push_one(state.eax); 
-	GC_push_one(state.ebx); 
-	GC_push_one(state.ecx); 
-	GC_push_one(state.edx); 
-	GC_push_one(state.edi); 
-	GC_push_one(state.esi); 
-	GC_push_one(state.ebp); 
+	GC_push_one(state . THREAD_FLD (eax)); 
+	GC_push_one(state . THREAD_FLD (ebx)); 
+	GC_push_one(state . THREAD_FLD (ecx)); 
+	GC_push_one(state . THREAD_FLD (edx)); 
+	GC_push_one(state . THREAD_FLD (edi)); 
+	GC_push_one(state . THREAD_FLD (esi)); 
+	GC_push_one(state . THREAD_FLD (ebp)); 
 #elif defined(POWERPC)
 	lo = (void*)(state . THREAD_FLD (r1) - PPC_RED_ZONE_SIZE);
         
