@@ -2760,13 +2760,6 @@ gfc_create_module_variable (gfc_symbol * sym)
   if (sym->attr.entry)
     return;
 
-  /* Only output symbols from this module.  */
-  if (sym->ns != module_namespace)
-    {
-      /* I don't think this should ever happen.  */
-      internal_error ("module symbol %s in wrong namespace", sym->name);
-    }
-
   /* Only output variables and array valued parameters.  */
   if (sym->attr.flavor != FL_VARIABLE
       && (sym->attr.flavor != FL_PARAMETER || sym->attr.dimension == 0))
