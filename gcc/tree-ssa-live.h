@@ -586,5 +586,9 @@ extern conflict_graph build_tree_conflict_graph (tree_live_info_p, tpa_p,
 extern void coalesce_tpa_members (tpa_p tpa, conflict_graph graph, var_map map,
 				  coalesce_list_p cl, FILE *);
 
+/* From tree-ssa-ter.c  */
+extern tree *find_replaceable_exprs (var_map);
+extern void dump_replaceable_exprs (FILE *, tree *);
+
 
 #endif /* _TREE_SSA_LIVE_H  */

@@ -1,3 +1,46 @@
+2006-12-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	* Makefile.in: Add new file tree-ssa-ter.c.
+	* tree-outof-ssa.c (struct temp_expr_table_d, new_temp_expr_table, 
+	free_temp_expr_table, add_value_to_version_list, 
+	add_value_to_partition_list, remove_value_from_partition_list, 
+	add_dependence, check_replaceable, finish_expr, mark_replaceable, 
+	kill_expr, kill_virtual_exprs, find_replaceable_in_bb, 
+	find_replaceable_exprs, dump_replaceable_exprs): Move to tree-ssa-ter.c.
+	* tree-ssa-live.h (find_replaceable_exprs, dump_replaceable_exprs): Add
+	prototypes.
+	* tree-ssa-ter.c: New file using code moved from tree-outof-ssa.c.
+	(struct value_expr_d): Remove.
+	(struct temp_expr_table_d): Rename fields, add explicit vector of
+	replaceable expressions instead of sharing.  Change value_expr_p's to 
+	bitmap.  Delete free_list.
+	(new_temp_expr_table): Rename fields, count number of ssa_names in
+	each partition.
+	(free_temp_expr_table): Rename field, free new fields.
+	(new_value_expr, free_value_expr, find_value_in_list, add_value_to_list,
+	add_info_to_list, remove_value_from_list): Delete.
+	(version_to_be_replaced_p): New.  Is an ssa-name replaceable?
+	(make_dependent_on_partition): New.  Set bit in version list, allocating
+	a bitmap if need be.
+	(add_to_partition_kill_list): New.  Set bit in the partition list,
+	allocating a bitmap if need be.
+	(remove_from_partition_kill_list): New.  Remove a bit from the
+	partition list, free the bitmap if it is empty.
+	(add_dependence): Use renamed field, cleanup.  Don't add a dependence
+	on partitions with only one member.
+	(is_replaceable_p): New.  Split out replaceability check from 
+	check_replaceable.
+	(process_replaceable): New.  Code split from check_replaceable.
+	(check_replaceable): Removed.
+	(finished_with_expr): Renamed from finish_expr.
+	(kill_expr): Use renamed fields and less parameters.
+	(kill_virtual_exprs): Less parameters.
+	(mark_replaceable): Use renamed fields.
+	(find_replaceable_in_bb): Use renamed fields, cleanup.
+	(find_replaceable_exprs): Use renamed routines, cleanup.
+	(dump_replaceable_exprs): Don't go past end of ssa_names list.
+	(debug_ter): New.  Debug routine to dump state.
+
 2006-12-08  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (effective_address_32bit_p): Return true for
