@@ -1,3 +1,9 @@
+2006-12-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/27546
+	* trans-decl.f90 (gfc_create_module_variable): Allow imported symbols
+	  in interface bodys in modules.
+
 2006-12-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/29711
