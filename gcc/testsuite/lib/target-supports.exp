@@ -1118,6 +1118,16 @@ proc check_effective_target_lp64 { } {
     }]
 }
 
+# Return 1 if the target supports long double larger than double,
+# 0 otherwise.
+
+proc check_effective_target_large_long_double { } {
+    return [check_no_compiler_messages large_long_double object {
+	int dummy[sizeof(long double) > sizeof(double) ? 1 : -1];
+    }]
+}
+
+
 # Return 1 if the target supports compiling decimal floating point,
 # 0 otherwise.
 

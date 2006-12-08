@@ -20,15 +20,15 @@ void h (void)
   ffloat (3.1); /* { dg-warning "conversion" } */
   vfloat = 3.1; /* { dg-warning "conversion" } */
   ffloat (3.1L); /* { dg-warning "conversion" } */
-  vfloat = 3.1L; /* { dg-warning "conversion" } */
-  fdouble (3.1L); /* { dg-warning "conversion" } */
-  vdouble = 3.1L; /* { dg-warning "conversion" } */
+  vfloat = 3.1L;  /* { dg-warning "conversion" } */
+  fdouble (3.1L); /* { dg-warning "conversion" "" { target large_long_double } } */
+  vdouble = 3.1L; /* { dg-warning "conversion" "" { target large_long_double } } */
   ffloat (vdouble); /* { dg-warning "conversion" } */
   vfloat = vdouble; /* { dg-warning "conversion" } */
   ffloat (vlongdouble); /* { dg-warning "conversion" } */
   vfloat = vlongdouble; /* { dg-warning "conversion" } */
-  fdouble (vlongdouble); /* { dg-warning "conversion" } */
-  vdouble = vlongdouble; /* { dg-warning "conversion" } */
+  fdouble (vlongdouble); /* { dg-warning "conversion" "" { target large_long_double } } */
+  vdouble = vlongdouble; /* { dg-warning "conversion" "" { target large_long_double } } */
 
 
   ffloat ((float) 3.1); 
