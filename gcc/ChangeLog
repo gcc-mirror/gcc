@@ -11842,6 +11842,7 @@
 
 2006-04-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR C/27558
 	* c-pretty-print.c (pp_c_direct_abstract_declarator): Print
 	TYPE_MAX_VALUE (TYPE_DOMAIN (t)) + 1 for ARRAY_TYPE rather
 	than plain TYPE_MAX_VALUE (TYPE_DOMAIN (t)).
