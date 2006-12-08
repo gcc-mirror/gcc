@@ -1,3 +1,12 @@
+2006-12-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	Merge from gimple-tuples-branch.
+
+	2006-11-02  Aldy Hernandez  <aldyh@redhat.com>
+	* ada-tree.h (lang_tree_node): Handle gimple tuples.
+	* trans.c (gnat_gimplify_expr): Replace MODIFY_EXPR with
+	GIMPLE_MODIFY_STMT.
+
 2006-12-02  Kazu Hirata  <kazu@codesourcery.com>
 
 	* Makefile.in, mingw32.h, trans.c: Fix comment typos.
