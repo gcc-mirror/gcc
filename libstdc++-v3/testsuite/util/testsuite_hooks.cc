@@ -89,6 +89,16 @@ namespace __gnu_test
 #endif
 
     // Virtual memory.
+    // On x86_64-linux, the default is -z max-page-size=0x200000
+    // which means up to 2MB of address space are accounted for
+    // PROT_NONE mappings between text and data segments of
+    // each shared library.  There are 4 shared libs involved
+    // in addition to the dynamic linker.  Use at least 16MB address space
+    // limit.
+#if defined(__x86_64__) && defined(__linux__)
+    if (limit < 16777216)
+      limit = 16777216;
+#endif
     // On HP-UX 11.23, a trivial C++ program that sets RLIMIT_AS to
     // anything less than 128MB cannot "malloc" even 1K of memory.
     // Therefore, we skip RLIMIT_AS on HP-UX.
