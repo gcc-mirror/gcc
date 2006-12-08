@@ -1,3 +1,7 @@
+2006-12-08  John David Anglin  <dave.anglin.@nrc-cnrc.gc.ca>
+
+	* pa.h (LEGITIMATE_CONSTANT_P): Simplify.
+
 2006-12-08  Mark Shinwell  <shinwell@codesourcery.com>
 
 	* recog.c (mode_dependent_address_p): Identify pre-increment,
