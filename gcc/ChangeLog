@@ -1,3 +1,30 @@
+2006-12-08  Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
+
+	* config/spu/spu-protos.h (spu_split_immediate): Renamed from
+	spu_split_address.
+	(cpat_const_p, gen_cpat_const): Add.
+	* config/spu/spu.c (immediate_class): New enum.
+	(cpat_info, classify_immediate): New.
+	(print_operand): Use S, D, T instead of F, G, H.  Use
+	classify_immediate.  Handle cpat cases.
+	(spu_split_immediate):  Renamed from spu_split_address.  Split all
+	immediates that can be split.
+	(immediate_load_p): Use classify_immediate.
+	(spu_legitimate_constant_p): Accept everything except some cases of
+	CONST_VECTOR.
+	(spu_expand_move): Use spu_split_immedate.
+	(fsmbi_const_p): Use classify_immediate.
+	(cpat_const_p): New.
+	(gen_cpat_const: New.
+	* config/spu/constraints.md (j,k,l): New constraints for cpat
+	instructions.
+	* config/spu/spu.md (unnamed splitter): Change address splitter to
+	handle all immediates.
+	(_mov<mode>, _movdi, _movti): Handle i, j, k constraints for cpat
+	instructions.
+	(cpat, _cpat, splitter): Generate a TImode constant for cpat patterns
+	when possible.
+
 2006-12-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/30039
