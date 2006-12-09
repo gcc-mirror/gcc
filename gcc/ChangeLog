@@ -1,3 +1,9 @@
+2006-12-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/30039
+	* pa.md (high:DI and lo_sum:DI): Handle 64-bit CONST_INTs in 32-bit
+	patterns.  Correct length of high:DI instruction sequence.
+
 2006-11-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/predicates.md (gpc_reg_operand): Check
