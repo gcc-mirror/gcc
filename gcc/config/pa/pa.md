@@ -4199,6 +4199,7 @@
 
   if (GET_CODE (op1) == CONST_INT)
     {
+#if HOST_BITS_PER_WIDE_INT <= 32
       operands[0] = operand_subword (op0, 1, 0, DImode);
       output_asm_insn (\"ldil L'%1,%0\", operands);
 
@@ -4208,6 +4209,16 @@
       else
 	output_asm_insn (\"ldi 0,%0\", operands);
       return \"\";
+#else
+      operands[0] = operand_subword (op0, 1, 0, DImode);
+      operands[1] = GEN_INT (INTVAL (op1) & 0xffffffff));
+      output_asm_insn (\"ldil L'%1,%0\", operands);
+
+      operands[0] = operand_subword (op0, 0, 0, DImode);
+      operands[1] = GEN_INT (INTVAL (op1) >> 32);
+      output_asm_insn (singlemove_string (operands), operands);
+      return \"\";
+#endif
     }
   else if (GET_CODE (op1) == CONST_DOUBLE)
     {
@@ -4224,7 +4235,7 @@
     abort ();
 }"
   [(set_attr "type" "move")
-   (set_attr "length" "8")])
+   (set_attr "length" "12")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "move_dest_operand"
@@ -4384,6 +4395,9 @@
      handle it correctly.  */
   if (GET_CODE (operands[2]) == CONST_DOUBLE)
     operands[2] = GEN_INT (CONST_DOUBLE_LOW (operands[2]));
+  else if (HOST_BITS_PER_WIDE_INT > 32
+	   && GET_CODE (operands[2]) == CONST_INT)
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 0xffffffff);
   if (which_alternative == 1)
     output_asm_insn (\"copy %1,%0\", operands);
   return \"ldo R'%G2(%R1),%R0\";

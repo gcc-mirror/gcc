@@ -1,3 +1,9 @@
+2006-12-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/30039
+	* pa.md (high:DI and lo_sum:DI): Handle 64-bit CONST_INTs in 32-bit
+	patterns.  Correct length of high:DI instruction sequence.
+
 2006-11-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (return_addr_rtx): Change 0xe0400002 to -532676606.
