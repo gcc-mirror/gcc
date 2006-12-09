@@ -1971,7 +1971,8 @@ gfc_free_symbol (gfc_symbol * sym)
 
   gfc_free_namespace (sym->formal_ns);
 
-  gfc_free_interface (sym->generic);
+  if (!sym->attr.generic_copy)
+    gfc_free_interface (sym->generic);
 
   gfc_free_formal_arglist (sym->formal);
 
