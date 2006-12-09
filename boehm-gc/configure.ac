@@ -267,11 +267,13 @@ case "$host" in
     AC_CHECK_MEMBER(i386_thread_state_t.eax,
       AC_DEFINE(HAS_I386_THREAD_STATE_EAX,,dnl
         [i386_thread_state_t has field eax]),,
-      [#include <mach/thread_status.h>])
+      [#include <sys/cdefs.h>
+#include <mach/thread_status.h>])
     AC_CHECK_MEMBER(i386_thread_state_t.__eax,
       AC_DEFINE(HAS_I386_THREAD_STATE___EAX,,dnl
         [i386_thread_state_t has field __eax]),,
-      [#include <mach/thread_status.h>])
+      [#include <sys/cdefs.h>
+#include <mach/thread_status.h>])
     ;;
   *) ;;
 esac
