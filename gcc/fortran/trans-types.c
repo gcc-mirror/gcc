@@ -1394,7 +1394,6 @@ gfc_add_field_to_struct (tree *fieldlist, tree context,
   return decl;
 }
 
-
 /* Copy the backend_decl and component backend_decls if
    the two derived type symbols are "equal", as described
    in 4.4.2 and resolved by gfc_compare_derived_types.  */
@@ -1481,6 +1480,9 @@ gfc_get_derived_type (gfc_symbol * derived)
 	{
 	  for (dt = ns->derived_types; dt; dt = dt->next)
 	    {
+	      if (dt->derived == derived)
+		continue;
+
 	      if (dt->derived->backend_decl == NULL
 		    && gfc_compare_derived_types (dt->derived, derived))
 		gfc_get_derived_type (dt->derived);
@@ -1573,11 +1575,8 @@ gfc_get_derived_type (gfc_symbol * derived)
 other_equal_dts:
   /* Add this backend_decl to all the other, equal derived types and
      their components in this and sibling namespaces.  */
-
-  for (dt = derived->ns->derived_types; dt; dt = dt->next)
-    copy_dt_decls_ifequal (derived, dt->derived);
-
-  for (ns = derived->ns->sibling; ns; ns = ns->sibling)
+  ns = derived->ns->parent ? derived->ns->parent->contained : derived->ns;
+  for (; ns; ns = ns->sibling)
     for (dt = ns->derived_types; dt; dt = dt->next)
       copy_dt_decls_ifequal (derived, dt->derived);
 

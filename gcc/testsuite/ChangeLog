@@ -1,3 +1,24 @@
+2006-12-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/29821
+	* gfortran.dg/parameter_array_section_1.f90: New test.
+
+	PR fortran/29912
+	* gfortran.dg/char_result_12.f90: New test.
+
+	PR fortran/29916
+	* gfortran.dg/host_dummy_index_1.f90: Added additional test.
+
+	PR fortran/30003
+	* gfortran.dg/allocatable_function_1.f90: Increase the number
+	of expected calls of free to 10; the lhs section reference is
+	now evaluated so there is another call to bar.  Change the
+	comment appropriately.
+	* gfortran.dg/array_section_1.f90: New test.
+
+	PR fortran/29820
+	* gfortran.dg/used_types_13.f90: New test.
+
 2006-12-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29730
