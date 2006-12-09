@@ -1,14 +1,20 @@
+2006-12-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/29941
+	* resolve.c (resolve_function): Add LEN to the functions not
+	checked for assumed size actual args.
+
 2006-12-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/27546
-	* trans-decl.f90 (gfc_create_module_variable): Allow imported symbols
-	  in interface bodys in modules.
+	* trans-decl.c (gfc_create_module_variable): Allow imported
+	symbols in interface bodies in modules.
 
 2006-12-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/29711
-	* error.c (error_print): Fix handling of printf-style position specifiers
-	  of the form "%3$d"
+	* error.c (error_print): Fix handling of printf-style position
+	specifiers of the form "%3$d".
 
 2006-12-05  Paul Thomas  <pault@gcc.gnu.org>
 

@@ -1514,19 +1514,21 @@ resolve_function (gfc_expr * expr)
       t = FAILURE;
     }
 
+#define GENERIC_ID expr->value.function.isym->generic_id
   else if (expr->value.function.actual != NULL
 	     && expr->value.function.isym != NULL
-	     && expr->value.function.isym->generic_id != GFC_ISYM_LBOUND
-	     && expr->value.function.isym->generic_id != GFC_ISYM_LOC
-	     && expr->value.function.isym->generic_id != GFC_ISYM_PRESENT)
+	     && GENERIC_ID != GFC_ISYM_LBOUND
+	     && GENERIC_ID != GFC_ISYM_LEN
+	     && GENERIC_ID != GFC_ISYM_LOC
+	     && GENERIC_ID != GFC_ISYM_PRESENT)
     {
       /* Array intrinsics must also have the last upper bound of an
 	 assumed size array argument.  UBOUND and SIZE have to be
 	 excluded from the check if the second argument is anything
 	 than a constant.  */
       int inquiry;
-      inquiry = expr->value.function.isym->generic_id == GFC_ISYM_UBOUND
-		  || expr->value.function.isym->generic_id == GFC_ISYM_SIZE;
+      inquiry = GENERIC_ID == GFC_ISYM_UBOUND
+		  || GENERIC_ID == GFC_ISYM_SIZE;
 
       for (arg = expr->value.function.actual; arg; arg = arg->next)
 	{
@@ -1540,6 +1542,7 @@ resolve_function (gfc_expr * expr)
 	    return FAILURE;
 	}
     }
+#undef GENERIC_ID
 
   need_full_assumed_size = temp;
 
