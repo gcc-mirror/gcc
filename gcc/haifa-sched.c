@@ -2655,14 +2655,6 @@ schedule_block (basic_block *target_bb, int rgn_n_insns1)
       fix_inter_tick (NEXT_INSN (prev_head), last_scheduled_insn);
     }
 
-#ifdef ENABLE_CHECKING
-  /* After the reload the ia64 backend doesn't maintain BB_END, so
-     if we want to check anything, better do it now. 
-     And it already clobbered previously scheduled code.  */
-  if (reload_completed)
-    check_cfg (BB_HEAD (BLOCK_FOR_INSN (prev_head)), 0);
-#endif
-
   if (targetm.sched.md_finish)
     targetm.sched.md_finish (sched_dump, sched_verbose);
 

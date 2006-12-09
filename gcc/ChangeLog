@@ -1,3 +1,7 @@
+2006-12-09  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
+	* haifa-sched.c (schedule_block): Remove excessive sanity check.
+
 2006-12-08  Mike Stump  <mrs@apple.com>
 
 	* config/rs6000/t-darwin (TARGET_LIBGCC2_CFLAGS): Build
