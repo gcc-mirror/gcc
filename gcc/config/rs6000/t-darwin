@@ -18,7 +18,7 @@ DARWIN_EXTRA_CRT_BUILD_CFLAGS = -mlongcall
 # it to not properly process the first # directive, causing temporary
 # file names to appear in stabs, causing the bootstrap to fail.  Using -pipe
 # works around this by not having any temporary file names.
-TARGET_LIBGCC2_CFLAGS = -Wa,-force_cpusubtype_ALL -pipe
+TARGET_LIBGCC2_CFLAGS = -Wa,-force_cpusubtype_ALL -pipe -mmacosx-version-min=10.4
 
 # Export the _xlq* symbols from darwin-ldouble.c.
 SHLIB_MAPFILES += $(srcdir)/config/rs6000/libgcc-ppc64.ver
