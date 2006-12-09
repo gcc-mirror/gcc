@@ -5528,6 +5528,10 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
   gfc_formal_arglist *arg;
   gfc_symtree *st;
 
+  if (sym->attr.ambiguous_interfaces && !sym->attr.referenced)
+    gfc_warning ("Although not referenced, '%s' at %L has ambiguous "
+		 "interfaces", sym->name, &sym->declared_at);
+
   if (sym->attr.function
 	&& resolve_fl_var_and_proc (sym, mp_flag) == FAILURE)
     return FAILURE;

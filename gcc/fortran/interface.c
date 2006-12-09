@@ -462,7 +462,9 @@ compare_type_rank_if (gfc_symbol * s1, gfc_symbol * s2)
   if (s1->attr.function && compare_type_rank (s1, s2) == 0)
     return 0;
 
-  return compare_interfaces (s1, s2, 0);	/* Recurse! */
+  /* Originally, gfortran recursed here to check the interfaces of passed
+     procedures.  This is explicitly not required by the standard.  */
+  return 1;
 }
 
 
@@ -965,7 +967,8 @@ check_interface0 (gfc_interface * p, const char *interface_name)
 
 static int
 check_interface1 (gfc_interface * p, gfc_interface * q0,
-		  int generic_flag, const char *interface_name)
+		  int generic_flag, const char *interface_name,
+		  int referenced)
 {
   gfc_interface * q;
   for (; p; p = p->next)
@@ -979,12 +982,20 @@ check_interface1 (gfc_interface * p, gfc_interface * q0,
 
 	if (compare_interfaces (p->sym, q->sym, generic_flag))
 	  {
-	    gfc_error ("Ambiguous interfaces '%s' and '%s' in %s at %L",
-		       p->sym->name, q->sym->name, interface_name, &p->where);
+	    if (referenced)
+	      {
+		gfc_error ("Ambiguous interfaces '%s' and '%s' in %s at %L",
+			   p->sym->name, q->sym->name, interface_name,
+			   &p->where);
+	      }
+
+	    if (!p->sym->attr.use_assoc && q->sym->attr.use_assoc)
+	      gfc_warning ("Ambiguous interfaces '%s' and '%s' in %s at %L",
+			   p->sym->name, q->sym->name, interface_name,
+			   &p->where);
 	    return 1;
 	  }
       }
-
   return 0;
 }
 
@@ -997,7 +1008,7 @@ static void
 check_sym_interfaces (gfc_symbol * sym)
 {
   char interface_name[100];
-  gfc_symbol *s2;
+  int k;
 
   if (sym->ns != gfc_current_ns)
     return;
@@ -1008,17 +1019,13 @@ check_sym_interfaces (gfc_symbol * sym)
       if (check_interface0 (sym->generic, interface_name))
 	return;
 
-      s2 = sym;
-      while (s2 != NULL)
-	{
-	  if (check_interface1 (sym->generic, s2->generic, 1, interface_name))
-	    return;
-
-	  if (s2->ns->parent == NULL)
-	    break;
-	  if (gfc_find_symbol (sym->name, s2->ns->parent, 1, &s2))
-	    break;
-	}
+      /* Originally, this test was aplied to host interfaces too;
+	 this is incorrect since host associated symbols, from any
+	 source, cannot be ambiguous with local symbols.  */
+      k = sym->attr.referenced || !sym->attr.use_assoc;
+      if (check_interface1 (sym->generic, sym->generic, 1,
+			    interface_name, k))
+	sym->attr.ambiguous_interfaces = 1;
     }
 }
 
@@ -1040,7 +1047,8 @@ check_uop_interfaces (gfc_user_op * uop)
       if (uop2 == NULL)
 	continue;
 
-      check_interface1 (uop->operator, uop2->operator, 0, interface_name);
+      check_interface1 (uop->operator, uop2->operator, 0,
+			interface_name, 1);
     }
 }
 
@@ -1082,7 +1090,7 @@ gfc_check_interfaces (gfc_namespace * ns)
 
       for (ns2 = ns->parent; ns2; ns2 = ns2->parent)
 	if (check_interface1 (ns->operator[i], ns2->operator[i], 0,
-			      interface_name))
+			      interface_name, 1))
 	  break;
     }
 
