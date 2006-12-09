@@ -3333,6 +3333,23 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
       || expr2->symtree->n.sym->attr.allocatable)
     return NULL;
 
+  /* Character array functions need temporaries unless the
+     character lengths are the same.  */
+  if (expr2->ts.type == BT_CHARACTER && expr2->rank > 0)
+    {
+      if (expr1->ts.cl->length == NULL
+	    || expr1->ts.cl->length->expr_type != EXPR_CONSTANT)
+	return NULL;
+
+      if (expr2->ts.cl->length == NULL
+	    || expr2->ts.cl->length->expr_type != EXPR_CONSTANT)
+	return NULL;
+
+      if (mpz_cmp (expr1->ts.cl->length->value.integer,
+		     expr2->ts.cl->length->value.integer) != 0)
+	return NULL;
+    }
+
   /* Check that no LHS component references appear during an array
      reference. This is needed because we do not have the means to
      span any arbitrary stride with an array descriptor. This check

@@ -1,7 +1,9 @@
 ! { dg-do run }
 ! Tests the fix for PR23446. Based on PR example.
-!
 ! Contributed by Paul Thomas  <pault@gcc.gnu.org>
+!
+! Tests furthermore the fix for PR fortran/29916.
+! Test contributed by Marco Restelli <mrestelli@gmail.com>
 !
 PROGRAM TST
   INTEGER IMAX
@@ -12,6 +14,7 @@ PROGRAM TST
   CALL T(A)
   CALL U(A)
   if ( ALL(A.ne.(/2,2,3,4/))) CALL ABORT ()
+  if ( ALL(F().ne.(/2.0,2.0/))) CALL ABORT()
 
 CONTAINS
   SUBROUTINE S(A)
@@ -26,4 +29,8 @@ CONTAINS
     INTEGER A(2,IMAX)
     A(2,2) = 4
   END SUBROUTINE U
+  FUNCTION F()
+    real :: F(IMAX)
+    F = 2.0
+  END FUNCTION F
 ENDPROGRAM TST

@@ -1,3 +1,30 @@
+2006-12-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/29821
+	* resolve.c (resolve_operator): Only return result of
+	gfc_simplify_expr if expression is constant.
+
+	PR fortran/29912
+	* trans-expr.c (gfc_trans_arrayfunc_assign): Return NULL if the
+	lhs and rhs character lengths are not constant and equal for
+	character array valued functions.
+
+	PR fortran/29916
+	* resolve.c (resolve_symbol): Allow host-associated variables
+	in the specification expression of an array-valued function.
+	* expr.c (check_restricted): Accept host-associated dummy
+	array indices.
+	
+	PR fortran/30003
+	* trans-array.c (gfc_trans_create_temp_array): Set the section
+	ends to zero.
+	(gfc_conv_array_transpose): Likewise.
+	(gfc_conv_section_startstride): Declare an expression for end,
+	set it from a the array reference and evaluate it for the info
+	structure. Zero the ends in the ss structure and set end, used
+	in the bounds check, from the info structure.
+	trans.h: Add and end array to the gfc_ss_info structure.
+
 2006-11-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29976

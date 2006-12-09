@@ -65,9 +65,9 @@ program alloc_fun
 ! 1 _gfortran_internal_free
     if (.not.all(2*bar(size(a)) + 5 == [ 7, 9, 11 ])) call abort()
 
-! The first reference never happens because the rhs determines the loop size.
-! Thus there is no subsequent _gfortran_internal_free.
-! 2 _gfortran_internal_free's
+! Although the rhs determines the loop size, the lhs reference is
+! evaluated, in case it has side-effects or is needed for bounds checking.
+! 3 _gfortran_internal_free's
     a(1:size (bar (3))) = 2*bar(size(a)) + 2 + a(size (bar (3)))
     if (.not.all(a == [ 7, 9, 11 ])) call abort()
 
@@ -107,6 +107,6 @@ contains
     end function bar
 
 end program alloc_fun
-! { dg-final { scan-tree-dump-times "free" 9 "original" } }
+! { dg-final { scan-tree-dump-times "free" 10 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
 ! { dg-final { cleanup-modules "m" } }
