@@ -13,5 +13,5 @@ template <typename T> struct C {
 };
 
 template <typename T> struct A : public C<T> {
-  typedef X<int> X;
+  typedef ::X<int> X;
 };

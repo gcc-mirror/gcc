@@ -103,10 +103,10 @@ namespace std
   };
   template<typename _Key, typename _Val, typename _KeyOfValue, typename _Compare, typename _Alloc = allocator<_Val> > struct _Rb_tree
   {
-    typedef typename _Alloc::template rebind<_Rb_tree_node<_Val> >::other _Node_allocator;
+    typedef typename _Alloc::template rebind<std::_Rb_tree_node<_Val> >::other _Node_allocator;
     typedef _Rb_tree_node_base* _Base_ptr;
     typedef const _Rb_tree_node_base* _Const_Base_ptr;
-    typedef _Rb_tree_node<_Val> _Rb_tree_node;
+    typedef std::_Rb_tree_node<_Val> _Rb_tree_node;
     typedef _Key key_type;
     typedef _Val value_type;
     typedef value_type* pointer;
