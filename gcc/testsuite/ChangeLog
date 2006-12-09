@@ -1,3 +1,9 @@
+2006-12-09  Richard Guenther  <rguenther@suse.de>
+
+	* g++.dg/warn/implicit-typename1.C: Qualify types.
+	* g++.dg/parse/crash12.C: Likewise.
+	* g++.dg/tree-ssa/pr22444.C: Likewise.
+
 2006-12-09  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/array_2.f90: Added sqrt test.

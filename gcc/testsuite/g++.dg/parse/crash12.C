@@ -9,8 +9,8 @@ template <class _Tp>
 class counted_ptr
 {
 public:
-  counted_ptr(auto_ptr<_Tp>& __a);		// { dg-error "candidate" }
-  auto_ptr<_Tp> auto_ptr();
+  counted_ptr(::auto_ptr<_Tp>& __a);		// { dg-error "candidate" }
+  ::auto_ptr<_Tp> auto_ptr();
 };
 
 template <class _Tp>
