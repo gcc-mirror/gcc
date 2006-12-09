@@ -368,14 +368,9 @@ case "${target}" in
   *-*-chorusos)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
     ;;
-  powerpc-*-darwin*)
+  *-*-darwin*)
     noconfigdirs="$noconfigdirs bfd binutils ld gas opcodes gdb gprof"
     noconfigdirs="$noconfigdirs sim target-rda"
-    ;;
-  *-*-darwin*)
-    noconfigdirs="$noconfigdirs ld gas gdb gprof"
-    noconfigdirs="$noconfigdirs sim target-rda"
-    noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   *-*-freebsd[[12]] | *-*-freebsd[[12]].* | *-*-freebsd*aout*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
