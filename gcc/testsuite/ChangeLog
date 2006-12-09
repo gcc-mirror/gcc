@@ -1,3 +1,7 @@
+2006-12-09  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/array_2.f90: Added sqrt test.
+
 2006-12-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/x87regparm-1.c: XFAIL.
