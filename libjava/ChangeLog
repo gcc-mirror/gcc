@@ -8,6 +8,12 @@
 
 	* configure: Regenerate.
 
+2006-11-27  Mike Stump  <mrs@apple.com>
+
+	* sysdep/x86-64/locks.h: Enable use of either file on either
+	target to support multilibs from one to the other.
+	* sysdep/i386/locks.h: Likewise.
+
 2006-11-26  Mohan Embar  <gnustuff@thisiscool.com>
 
 	PR libgcj/29151:
