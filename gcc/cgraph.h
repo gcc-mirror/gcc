@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -309,7 +309,6 @@ struct cgraph_node *cgraph_master_clone (struct cgraph_node *);
 void cgraph_add_new_function (tree);
 
 /* In cgraphunit.c  */
-bool cgraph_assemble_pending_functions (void);
 bool cgraph_varpool_assemble_pending_decls (void);
 void cgraph_finalize_function (tree, bool);
 void cgraph_finalize_compilation_unit (void);
