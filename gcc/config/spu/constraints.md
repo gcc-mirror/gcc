@@ -18,7 +18,7 @@
 
 
 ;; GCC standard constraints:  g, i, m, n, o, p, r, s, E-H, I-P, V, X
-;; unused for SPU:  E-H, L, Q, d, e, h, j-l, q, t-z
+;; unused for SPU:  E-H, L, Q, d, e, h, q, t-z
 
 ;; For most immediate constraints we have 3 variations to deal with the
 ;; fact const_int has no mode.  One variation treats const_int as 32 bit,
@@ -84,6 +84,22 @@
   "An immediate which can be loaded with fsmbi."
   (and (match_code "const_int,const_double,const_vector")
        (match_test "fsmbi_const_p (op)")))
+
+(define_constraint "j"
+  "An immediate which can be loaded with one of the cbd/chd/cwd/cdd instructions.  const_int is treated as a 32 bit value."
+  (and (match_code "const_int,const_double,const_vector")
+       (match_test "cpat_const_p (op, SImode)")))
+
+(define_constraint "k"
+  "An immediate which can be loaded with one of the cbd/chd/cwd/cdd instructions.  const_int is treated as a 64 bit value."
+  (and (match_code "const_int,const_double,const_vector")
+       (match_test "cpat_const_p (op, DImode)")))
+
+(define_constraint "l"
+  "An immediate which can be loaded with one of the cbd/chd/cwd/cdd instructions."
+  (and (match_code "const_double,const_vector")
+       (match_test "cpat_const_p (op, TImode)")))
+
 
 ;; Integer constraints
 

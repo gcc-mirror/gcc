@@ -238,26 +238,19 @@
   })
 
 (define_split 
-  [(set (match_operand:SI 0 "spu_reg_operand" "=r")
-	(match_operand:SI 1 "immediate_operand" "s"))]
+  [(set (match_operand 0 "spu_reg_operand")
+	(match_operand 1 "immediate_operand"))]
 
-  "(flag_pic || TARGET_LARGE_MEM
-    || (GET_CODE (operands[1]) == CONST
-        && !legitimate_const (operands[1], 0)))
-   && (reload_in_progress || reload_completed)
-   && (GET_CODE (operands[1]) == CONST
-       || GET_CODE (operands[1]) == SYMBOL_REF
-       || GET_CODE (operands[1]) == LABEL_REF)"
-  [(parallel
-    [(set (match_dup:SI 0)
-	  (match_dup:SI 1))
-     (use (const_int 0))])
-   (set (match_dup:SI 0)
-	(plus:SI (match_dup:SI 0)
-		 (match_dup:SI 2)))]
+  ""
+  [(set (match_dup 0)
+	(high (match_dup 1)))
+   (set (match_dup 0)
+	(lo_sum (match_dup 0)
+	        (match_dup 1)))]
   {
-    spu_split_address(operands);
-    DONE;
+    if (spu_split_immediate (operands))
+      DONE;
+    FAIL;
   })
 
 (define_insn "pic"
@@ -285,16 +278,17 @@
 ;; move internal
 
 (define_insn "_mov<mode>"
-  [(set (match_operand:MOV 0 "spu_nonimm_operand" "=r,r,r,r,m")
-	(match_operand:MOV 1 "spu_mov_operand" "r,A,f,m,r"))]
+  [(set (match_operand:MOV 0 "spu_nonimm_operand" "=r,r,r,r,r,m")
+	(match_operand:MOV 1 "spu_mov_operand" "r,A,f,j,m,r"))]
   "spu_valid_move (operands)"
   "@
    ori\t%0,%1,0
    il%s1\t%0,%S1
-   fsmbi\t%0,%F1
+   fsmbi\t%0,%S1
+   c%s1d\t%0,%S1($sp)
    lq%p1\t%0,%1
    stq%p0\t%1,%0"
-  [(set_attr "type" "fx2,fx2,shuf,load,store")])
+  [(set_attr "type" "fx2,fx2,shuf,shuf,load,store")])
 
 (define_insn "high"
   [(set (match_operand:SI 0 "spu_reg_operand" "=r")
@@ -310,28 +304,30 @@
   "iohl\t%0,%2@l")
 
 (define_insn "_movdi"
-  [(set (match_operand:DI 0 "spu_nonimm_operand" "=r,r,r,r,m")
-	(match_operand:DI 1 "spu_mov_operand" "r,a,f,m,r"))]
+  [(set (match_operand:DI 0 "spu_nonimm_operand" "=r,r,r,r,r,m")
+	(match_operand:DI 1 "spu_mov_operand" "r,a,f,k,m,r"))]
   "spu_valid_move (operands)"
   "@
    ori\t%0,%1,0
    il%d1\t%0,%D1
-   fsmbi\t%0,%G1
+   fsmbi\t%0,%D1
+   c%d1d\t%0,%D1($sp)
    lq%p1\t%0,%1
    stq%p0\t%1,%0"
-  [(set_attr "type" "fx2,fx2,shuf,load,store")])
+  [(set_attr "type" "fx2,fx2,shuf,shuf,load,store")])
 
 (define_insn "_movti"
-  [(set (match_operand:TI 0 "spu_nonimm_operand" "=r,r,r,r,m")
-	(match_operand:TI 1 "spu_mov_operand" "r,U,f,m,r"))]
+  [(set (match_operand:TI 0 "spu_nonimm_operand" "=r,r,r,r,r,m")
+	(match_operand:TI 1 "spu_mov_operand" "r,U,f,l,m,r"))]
   "spu_valid_move (operands)"
   "@
    ori\t%0,%1,0
    il%t1\t%0,%T1
-   fsmbi\t%0,%H1
+   fsmbi\t%0,%T1
+   c%t1d\t%0,%T1($sp)
    lq%p1\t%0,%1
    stq%p0\t%1,%0"
-  [(set_attr "type" "fx2,fx2,shuf,load,store")])
+  [(set_attr "type" "fx2,fx2,shuf,shuf,load,store")])
 
 (define_insn_and_split "load"
   [(set (match_operand 0 "spu_reg_operand" "=r")
@@ -358,10 +354,26 @@
   { spu_split_store(operands); DONE; })
 
 ;; Operand 3 is the number of bytes. 1:b 2:h 4:w 8:d
-(define_insn "cpat"
+
+(define_expand "cpat"
   [(set (match_operand:TI 0 "spu_reg_operand" "=r,r")
-        (unspec:TI [(match_operand:SI 1 "spu_reg_operand" "r,r")
-                    (match_operand:SI 2 "spu_nonmem_operand" "r,n")
+	(unspec:TI [(match_operand:SI 1 "spu_reg_operand" "r,r")
+		    (match_operand:SI 2 "spu_nonmem_operand" "r,n")
+		    (match_operand:SI 3 "immediate_operand" "i,i")] UNSPEC_CPAT))]
+  ""
+  {
+    rtx x = gen_cpat_const (operands);
+    if (x)
+      {
+        emit_move_insn (operands[0], x);
+        DONE;
+      }
+  })
+
+(define_insn "_cpat"
+  [(set (match_operand:TI 0 "spu_reg_operand" "=r,r")
+	(unspec:TI [(match_operand:SI 1 "spu_reg_operand" "r,r")
+		    (match_operand:SI 2 "spu_nonmem_operand" "r,n")
 		    (match_operand:SI 3 "immediate_operand" "i,i")] UNSPEC_CPAT))]
   ""
   "@
@@ -369,6 +381,19 @@
    c%M3d\t%0,%C2(%1)"
   [(set_attr "type" "shuf")])
 
+(define_split
+  [(set (match_operand:TI 0 "spu_reg_operand")
+	(unspec:TI [(match_operand:SI 1 "spu_nonmem_operand")
+		    (match_operand:SI 2 "immediate_operand")
+		    (match_operand:SI 3 "immediate_operand")] UNSPEC_CPAT))]
+  ""
+  [(set (match_dup:TI 0)
+        (match_dup:TI 4))]
+  {
+    operands[4] = gen_cpat_const (operands);
+    if (!operands[4])
+      FAIL;
+  })
 
 ;; extend
 

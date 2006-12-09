@@ -34,7 +34,7 @@ extern HOST_WIDE_INT const_double_to_hwint (rtx x);
 extern rtx hwint_to_const_double (enum machine_mode mode, HOST_WIDE_INT v);
 extern void print_operand_address (FILE * file, register rtx addr);
 extern void print_operand (FILE * file, rtx x, int code);
-extern void spu_split_address (rtx * ops);
+extern int spu_split_immediate (rtx * ops);
 extern int spu_saved_regs_size (void);
 extern int direct_return (void);
 extern void spu_expand_prologue (void);
@@ -69,6 +69,8 @@ extern void spu_split_load (rtx * ops);
 extern void spu_split_store (rtx * ops);
 extern int spu_valid_move (rtx * ops);
 extern int fsmbi_const_p (rtx x);
+extern int cpat_const_p (rtx x, enum machine_mode mode);
+extern rtx gen_cpat_const (rtx * ops);
 extern void constant_to_array (enum machine_mode mode, rtx x,
 			       unsigned char *arr);
 extern rtx array_to_constant (enum machine_mode mode, unsigned char *arr);
