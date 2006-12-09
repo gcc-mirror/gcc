@@ -1,5 +1,5 @@
 /* Callgraph based interprocedural optimizations.
-   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -32,7 +32,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
       This function is called once front-end has parsed whole body of function
       and it is certain that the function body nor the declaration will change.
 
-      (There is one exception needed for implementing GCC extern inline function.)
+      (There is one exception needed for implementing GCC extern inline
+	function.)
 
     - cgraph_varpool_finalize_variable
 
@@ -41,17 +42,15 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
     - cgraph_finalize_compilation_unit
 
-      This function is called once compilation unit is finalized and it will
-      no longer change.
+      This function is called once (source level) compilation unit is finalized
+      and it will no longer change.
 
       In the unit-at-a-time the call-graph construction and local function
       analysis takes place here.  Bodies of unreachable functions are released
       to conserve memory usage.
 
-      ???  The compilation unit in this point of view should be compilation
-      unit as defined by the language - for instance C frontend allows multiple
-      compilation units to be parsed at once and it should call function each
-      time parsing is done so we save memory.
+      The function can be called multiple times when multiple source level
+      compilation units are combined (such as in C frontend)
 
     - cgraph_optimize
 
@@ -60,19 +59,14 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
       taken are marked as local.  Backend can then use this information to
       modify calling conventions, do better inlining or similar optimizations.
 
-    - cgraph_assemble_pending_functions
-    - cgraph_varpool_assemble_pending_variables
-
-      In non-unit-at-a-time mode these functions can be used to force compilation
-      of functions or variables that are known to be needed at given stage
-      of compilation
-
     - cgraph_mark_needed_node
     - cgraph_varpool_mark_needed_node
 
-      When function or variable is referenced by some hidden way (for instance
-      via assembly code and marked by attribute "used"), the call-graph data structure
-      must be updated accordingly by this function.
+      When function or variable is referenced by some hidden way the call-graph
+      data structure must be updated accordingly by this function.
+      There should be little need to call this function and all the references
+      should be made explicit to cgraph code.  At present these functions are
+      used by C++ frotend to explicitely mark the keyed methods.
 
     - analyze_expr callback
 
@@ -351,7 +345,7 @@ cgraph_varpool_remove_unreferenced_decls (void)
 /* When not doing unit-at-a-time, output all functions enqueued.
    Return true when such a functions were found.  */
 
-bool
+static bool
 cgraph_assemble_pending_functions (void)
 {
   bool output = false;
