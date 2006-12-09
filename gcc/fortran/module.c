@@ -3024,6 +3024,8 @@ load_generic_interfaces (void)
   const char *p;
   char name[GFC_MAX_SYMBOL_LEN + 1], module[GFC_MAX_SYMBOL_LEN + 1];
   gfc_symbol *sym;
+  gfc_interface *generic = NULL;
+  int n, i;
 
   mio_lparen ();
 
@@ -3034,25 +3036,39 @@ load_generic_interfaces (void)
       mio_internal_string (name);
       mio_internal_string (module);
 
-      /* Decide if we need to load this one or not.  */
-      p = find_use_name (name);
+      n = number_use_names (name);
+      n = n ? n : 1;
 
-      if (p == NULL || gfc_find_symbol (p, NULL, 0, &sym))
+      for (i = 1; i <= n; i++)
 	{
-	  while (parse_atom () != ATOM_RPAREN);
-	  continue;
+	  /* Decide if we need to load this one or not.  */
+	  p = find_use_name_n (name, &i);
+
+	  if (p == NULL || gfc_find_symbol (p, NULL, 0, &sym))
+	    {
+	      while (parse_atom () != ATOM_RPAREN);
+	        continue;
+	    }
+
+	  if (sym == NULL)
+	    {
+	      gfc_get_symbol (p, NULL, &sym);
+
+	      sym->attr.flavor = FL_PROCEDURE;
+	      sym->attr.generic = 1;
+	      sym->attr.use_assoc = 1;
+	    }
+	  if (i == 1)
+	    {
+	      mio_interface_rest (&sym->generic);
+	      generic = sym->generic;
+	    }
+	  else
+	    {
+	      sym->generic = generic;
+	      sym->attr.generic_copy = 1;
+	    }
 	}
-
-      if (sym == NULL)
-	{
-	  gfc_get_symbol (p, NULL, &sym);
-
-	  sym->attr.flavor = FL_PROCEDURE;
-	  sym->attr.generic = 1;
-	  sym->attr.use_assoc = 1;
-	}
-
-      mio_interface_rest (&sym->generic);
     }
 
   mio_rparen ();
