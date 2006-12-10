@@ -2305,7 +2305,7 @@ static tree
 get_number_of_iters_for_loop (int loopnum)
 {
   struct loop *loop = get_loop (loopnum);
-  tree numiter = number_of_iterations_in_loop (loop);
+  tree numiter = number_of_exit_cond_executions (loop);
 
   if (TREE_CODE (numiter) == INTEGER_CST)
     return numiter;

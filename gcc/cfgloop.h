@@ -119,10 +119,10 @@ struct loop
   /* Auxiliary info specific to a pass.  */
   void *aux;
 
-  /* The probable number of times the loop is executed at runtime.
+  /* The number of times the latch of the loop is executed.
      This is an INTEGER_CST or an expression containing symbolic
      names.  Don't access this field directly:
-     number_of_iterations_in_loop computes and caches the computed
+     number_of_latch_executions computes and caches the computed
      information in this field.  */
   tree nb_iterations;
 

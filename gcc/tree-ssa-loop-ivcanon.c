@@ -279,18 +279,12 @@ canonicalize_loop_induction_variables (struct loop *loop,
   edge exit = NULL;
   tree niter;
 
-  niter = number_of_iterations_in_loop (loop);
+  niter = number_of_latch_executions (loop);
   if (TREE_CODE (niter) == INTEGER_CST)
     {
       exit = single_exit (loop);
       if (!just_once_each_iteration_p (loop, exit->src))
 	return false;
-
-      /* The result of number_of_iterations_in_loop is by one higher than
-	 we expect (i.e. it returns number of executions of the exit
-	 condition, not of the loop latch edge).  */
-      niter = fold_build2 (MINUS_EXPR, TREE_TYPE (niter), niter,
-			   build_int_cst (TREE_TYPE (niter), 1));
     }
   else
     {
