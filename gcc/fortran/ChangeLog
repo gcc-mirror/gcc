@@ -1,5 +1,9 @@
 2006-12-10  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.texi: Update Fortran 2003 section.
+
+2006-12-10  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/23994
 	* interface.c (compare_actual_formal): PROTECTED is incompatible
 	  with intent(out).
