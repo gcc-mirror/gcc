@@ -449,7 +449,6 @@ decode_options (unsigned int argc, const char **argv)
       flag_tree_dom = 1;
       flag_tree_dse = 1;
       flag_tree_ter = 1;
-      flag_tree_live_range_split = 1;
       flag_tree_sra = 1;
       flag_tree_copyrename = 1;
       flag_tree_fre = 1;
