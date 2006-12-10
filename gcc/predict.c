@@ -630,17 +630,17 @@ combine_predictions_for_bb (basic_block bb)
 static void
 predict_loops (void)
 {
-  unsigned i;
+  loop_iterator li;
+  struct loop *loop;
 
   scev_initialize ();
 
   /* Try to predict out blocks in a loop that are not part of a
      natural loop.  */
-  for (i = 1; i < current_loops->num; i++)
+  FOR_EACH_LOOP (li, loop, 0)
     {
       basic_block bb, *bbs;
       unsigned j, n_exits;
-      struct loop *loop = current_loops->parray[i];
       VEC (edge, heap) *exits;
       struct tree_niter_desc niter_desc;
       edge ex;

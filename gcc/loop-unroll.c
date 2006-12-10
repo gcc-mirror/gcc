@@ -144,8 +144,9 @@ static rtx get_expansion (struct var_to_expand *);
 void
 unroll_and_peel_loops (int flags)
 {
-  struct loop *loop, *next;
+  struct loop *loop;
   bool check;
+  loop_iterator li;
 
   /* First perform complete loop peeling (it is almost surely a win,
      and affects parameters for further decision a lot).  */
@@ -154,22 +155,9 @@ unroll_and_peel_loops (int flags)
   /* Now decide rest of unrolling and peeling.  */
   decide_unrolling_and_peeling (flags);
 
-  loop = current_loops->tree_root;
-  while (loop->inner)
-    loop = loop->inner;
-
   /* Scan the loops, inner ones first.  */
-  while (loop != current_loops->tree_root)
+  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
-      if (loop->next)
-	{
-	  next = loop->next;
-	  while (next->inner)
-	    next = next->inner;
-	}
-      else
-	next = loop->outer;
-
       check = true;
       /* And perform the appropriate transformations.  */
       switch (loop->lpt_decision.decision)
@@ -202,7 +190,6 @@ unroll_and_peel_loops (int flags)
 	  verify_loop_structure ();
 #endif
 	}
-      loop = next;
     }
 
   iv_analysis_done ();
@@ -234,15 +221,11 @@ static void
 peel_loops_completely (int flags)
 {
   struct loop *loop;
-  unsigned i;
+  loop_iterator li;
 
   /* Scan the loops, the inner ones first.  */
-  for (i = current_loops->num - 1; i > 0; i--)
+  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
-      loop = current_loops->parray[i];
-      if (!loop)
-	continue;
-
       loop->lpt_decision.decision = LPT_NONE;
 
       if (dump_file)
@@ -271,23 +254,12 @@ peel_loops_completely (int flags)
 static void
 decide_unrolling_and_peeling (int flags)
 {
-  struct loop *loop = current_loops->tree_root, *next;
-
-  while (loop->inner)
-    loop = loop->inner;
+  struct loop *loop;
+  loop_iterator li;
 
   /* Scan the loops, inner ones first.  */
-  while (loop != current_loops->tree_root)
+  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
-      if (loop->next)
-	{
-	  next = loop->next;
-	  while (next->inner)
-	    next = next->inner;
-	}
-      else
-	next = loop->outer;
-
       loop->lpt_decision.decision = LPT_NONE;
 
       if (dump_file)
@@ -298,7 +270,6 @@ decide_unrolling_and_peeling (int flags)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, ";; Not considering loop, cold area\n");
-	  loop = next;
 	  continue;
 	}
 
@@ -308,7 +279,6 @@ decide_unrolling_and_peeling (int flags)
 	  if (dump_file)
 	    fprintf (dump_file,
 		     ";; Not considering loop, cannot duplicate\n");
-	  loop = next;
 	  continue;
 	}
 
@@ -317,7 +287,6 @@ decide_unrolling_and_peeling (int flags)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, ";; Not considering loop, is not innermost\n");
-	  loop = next;
 	  continue;
 	}
 
@@ -334,8 +303,6 @@ decide_unrolling_and_peeling (int flags)
 	decide_unroll_stupid (loop, flags);
       if (loop->lpt_decision.decision == LPT_NONE)
 	decide_peel_simple (loop, flags);
-
-      loop = next;
     }
 }
 

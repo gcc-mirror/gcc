@@ -146,12 +146,6 @@ struct loop
      EXIT_BLOCK_PTR do not count.  Do not use directly; this field should
      only be accessed via single_exit/set_single_exit functions.  */
   edge single_exit_;
-
-  /* True when the loop does not carry data dependences, and
-     consequently the iterations can be executed in any order.  False
-     when the loop carries data dependences, or when the property is
-     not decidable.  */
-  bool parallel_p;
 };
 
 /* Flags for state of loop structure.  */
@@ -166,26 +160,21 @@ enum
 #define LOOPS_NORMAL (LOOPS_HAVE_PREHEADERS | LOOPS_HAVE_SIMPLE_LATCHES \
 		      | LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)
 
+typedef struct loop *loop_p;
+DEF_VEC_P (loop_p);
+DEF_VEC_ALLOC_P (loop_p, heap);
+
 /* Structure to hold CFG information about natural loops within a function.  */
 struct loops
 {
-  /* Number of natural loops in the function.  */
-  unsigned num;
-
   /* State of loops.  */
   int state;
 
-  /* We store just pointers to loops here.  
-     Note that a loop in this array may actually be NULL, if the loop
-     has been removed and the entire loops structure has not been
-     recomputed since that time.  */
-  struct loop **parray;
+  /* Array of the loops.  */
+  VEC (loop_p, heap) *larray;
 
   /* Pointer to root of loop hierarchy tree.  */
   struct loop *tree_root;
-
-  /* Headers shared by multiple loops that should be merged.  */
-  sbitmap shared_headers;
 };
 
 /* Loop recognition.  */
@@ -231,6 +220,7 @@ extern void add_bb_to_loop (basic_block, struct loop *);
 extern void remove_bb_from_loops (basic_block);
 
 extern void cancel_loop_tree (struct loop *);
+extern void delete_loop (struct loop *);
 
 extern int fix_loop_placement (struct loop *);
 
@@ -374,6 +364,124 @@ simple_loop_desc (struct loop *loop)
 {
   return (struct niter_desc *) loop->aux;
 }
+
+/* Accessors for the loop structures.  */
+
+/* Returns the loop with index NUM from current_loops.  */
+
+static inline struct loop *
+get_loop (unsigned num)
+{
+  return VEC_index (loop_p, current_loops->larray, num);
+}
+
+/* Returns the list of loops in current_loops.  */
+
+static inline VEC (loop_p, heap) *
+get_loops (void)
+{
+  if (!current_loops)
+    return NULL;
+
+  return current_loops->larray;
+}
+
+/* Returns the number of loops in current_loops (including the removed
+   ones and the fake loop that forms the root of the loop tree).  */
+
+static inline unsigned
+number_of_loops (void)
+{
+  if (!current_loops)
+    return 0;
+
+  return VEC_length (loop_p, current_loops->larray);
+}
+
+/* Loop iterators.  */
+
+/* Flags for loop iteration.  */
+
+enum li_flags
+{
+  LI_INCLUDE_ROOT,	/* Include the fake root of the loop tree.  */
+  LI_FROM_INNERMOST,	/* Iterate over the loops in the reverse order,
+			   starting from innermost ones.  */
+  LI_ONLY_INNERMOST,	/* Iterate only over innermost loops.  */
+  LI_ONLY_OLD		/* Do not traverse the loops created during the
+			   traversal (this is the default behavior with
+			   LI_FROM_INNERMOST).  */
+};
+
+/* The iterator for loops.  */
+
+typedef struct
+{
+  int idx;		/* Index of the actual loop.  */
+  int end;		/* Only loops before end should be traversed.  */
+} loop_iterator;
+
+static inline void
+fel_next (loop_iterator *li, loop_p *loop, unsigned flags)
+{
+  if (flags & LI_FROM_INNERMOST)
+    {
+      li->idx--;
+      for (; li->idx > li->end; li->idx--)
+	{
+	  *loop = VEC_index (loop_p, current_loops->larray, li->idx);
+	  if (*loop
+	      && (!(flags & LI_ONLY_INNERMOST)
+		  || (*loop)->inner == NULL))
+	    return;
+	}
+    }
+  else
+    {
+      if (!(flags & LI_ONLY_OLD))
+	li->end = number_of_loops ();
+      li->idx++;
+      for (; li->idx < li->end; li->idx++)
+	{
+	  *loop = VEC_index (loop_p, current_loops->larray, li->idx);
+	  if (*loop
+	      && (!(flags & LI_ONLY_INNERMOST)
+		  || (*loop)->inner == NULL))
+	    return;
+	}
+    }
+
+  *loop = NULL;
+}
+
+static inline void
+fel_init (loop_iterator *li, loop_p *loop, unsigned flags)
+{
+  if (!current_loops)
+    {
+      li->idx = 0;
+      li->end = 0;
+      *loop = NULL;
+      return;
+    }
+
+  if (flags & LI_FROM_INNERMOST)
+    {
+      li->idx = number_of_loops ();
+      li->end = (flags & LI_INCLUDE_ROOT) ? -1 : 0;
+    }
+  else
+    {
+      li->idx = (flags & LI_INCLUDE_ROOT) ? -1 : 0;
+      li->end = number_of_loops ();
+    }
+  fel_next (li, loop, flags);
+}
+
+#define FOR_EACH_LOOP(LI, LOOP, FLAGS) \
+  for (fel_init (&(LI), &(LOOP), FLAGS); \
+       (LOOP); \
+       fel_next (&(LI), &(LOOP), FLAGS))
 
 /* The properties of the target.  */
 

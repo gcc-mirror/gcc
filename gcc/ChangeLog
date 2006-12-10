@@ -1,3 +1,68 @@
+2006-12-10  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-vrp.c (adjust_range_with_scev): Use get_chrec_loop.
+	* loop-unswitch.c (unswitch_loops): Use FOR_EACH_LOOP.
+	* tree-loop-linear.c (linear_transform_loops): Ditto.
+	* tree-ssa-loop-im.c (determine_lsm): Ditto.
+	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations,
+	free_numbers_of_iterations_estimates): Ditto.
+	* tree_ssa_unswitch_loops (tree_ssa_unswitch_loops): Ditto.
+	* tree-ssa-loop-ch.c (copy_loop_headers): Ditto.
+	* tree-ssa-loop-ivopts.c (tree_ssa_iv_optimize): Ditto.
+	* modulo-sched.c (sms_schedule): Ditto.
+	* tree-ssa-loop-ivcanon.c (canonicalize_induction_variables,
+	tree_unroll_loops_completely): Ditto.
+	* predict.c (predict_loops): Ditto.
+	* tree-if-conv.c (main_tree_if_conversion): Ditto.
+	* loop-unroll.c (unroll_and_peel_loops, peel_loops_completely,
+	decide_unrolling_and_peeling): Ditto.
+	* cfgloopmanip.c (unloop): Use delete_loop.
+	(place_new_loop): Access larray vector instead of parray.
+	(create_preheaders, force_single_succ_latches,
+	fix_loop_structure): Use FOR_EACH_LOOP and delete_loop..
+	* loop-doloop.c (doloop_optimize_loops): Ditto.
+	* loop-invariant.c (move_loop_invariants): Ditto.
+	* tree-cfg.c (replace_uses_by): Ditto.
+	* tree-ssa-loop-prefetch.c (tree_ssa_prefetch_arrays): Ditto.
+	* tree-chrec.h (CHREC_VAR, CHREC_LEFT, CHREC_RIGHT, CHREC_VARIABLE):
+	Moved to ...
+	* tree.h (CHREC_VAR, CHREC_LEFT, CHREC_RIGHT, CHREC_VARIABLE):
+	... here.
+	* tree-scalar-evolution.c (chrec_contains_symbols_defined_in_loop,
+	compute_overall_effect_of_inner_loop, chrec_is_positive): Use
+	get_loop and get_chrec_loop.
+	(number_of_iterations_for_all_loops): Use number_of_loops.
+	(scev_initialize, scev_reset, scev_const_prop): Use FOR_EACH_LOOP.
+	* tree-scalar-evolution.h (get_chrec_loop): New inline function.
+	* cfgloopanal.c (mark_irreducible_loops): Use number_of_loops,
+	and FOR_EACH_LOOP.
+	* tree-chrec.c (evolution_function_is_invariant_rec_p,
+	chrec_convert_1): Use get_loop and get_chrec_loop.
+	* loop-init.c (loop_optimizer_init): Use number_of_loops.
+	(loop_optimizer_init): Use FOR_EACH_LOOP.
+	* tree-vectorizer.c (vect_loops_num): Removed.
+	(vectorize_loops): Store number of loops locally.  Use
+	FOR_EACH_LOOP and get_loop.
+	* tree-vectorizer.h (vect_loops_num): Removed.
+	* tree-data-ref.c (get_number_of_iters_for_loop): Use get_loop.
+	(find_data_references_in_loop): Do not set parallel_p.
+	* tree-data-ref.h: Do not declare VEC(loop_p).
+	* cfgloop.c (flow_loops_dump, mark_single_exit_loops,
+	verify_loop_structure): Use FOR_EACH_LOOP.
+	(flow_loops_free): Use FOR_EACH_LOOP, free larray vector.
+	(initialize_loops_parallel_p): Removed.
+	(flow_loops_find): Push the loops into a vector.
+	(delete_loop): New function.
+	(cancel_loop): Use delete_loop.
+	* cfgloop.h: Declare VEC(loop_p).
+	(struct loop): Remove parallel_p field.
+	(struct loops): Replace num and parray field by larray vector.
+	Remove shared_headers field.
+	(delete_loop): Declare.
+	(get_loop, get_loops, number_of_loops, fel_next, fel_init,
+	FOR_EACH_LOOP): New.
+	* doc/loop.tex: Document new accessor functions.
+
 2006-12-10  Andrew MacLeod  <amacleod@redhat.com>
 
 	* common.opt (-ftree-lrs): Remove live range splitting option.

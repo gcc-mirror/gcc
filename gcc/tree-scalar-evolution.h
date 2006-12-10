@@ -36,4 +36,12 @@ unsigned int scev_const_prop (void);
 
 extern bool simple_iv (struct loop *, tree, tree, affine_iv *, bool);
 
+/* Returns the loop of the polynomial chrec CHREC.  */
+
+static inline struct loop *
+get_chrec_loop (tree chrec)
+{
+  return get_loop (CHREC_VARIABLE (chrec));
+}
+
 #endif  /* GCC_TREE_SCALAR_EVOLUTION_H  */

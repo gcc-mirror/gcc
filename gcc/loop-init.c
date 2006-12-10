@@ -68,9 +68,10 @@ loop_optimizer_init (unsigned flags)
   flow_loops_find (loops);
   current_loops = loops;
 
-  if (current_loops->num <= 1)
+  if (number_of_loops () <= 1)
     {
-      /* No loops.  */
+      /* No loops (the 1 returned by number_of_loops corresponds to the fake
+	 loop that we put as a root of the loop tree).  */
       loop_optimizer_finalize ();
       return;
     }
@@ -104,15 +105,17 @@ loop_optimizer_init (unsigned flags)
 void
 loop_optimizer_finalize (void)
 {
-  unsigned i;
+  loop_iterator li;
+  struct loop *loop;
   basic_block bb;
 
   if (!current_loops)
     return;
 
-  for (i = 1; i < current_loops->num; i++)
-    if (current_loops->parray[i])
-      free_simple_loop_desc (current_loops->parray[i]);
+  FOR_EACH_LOOP (li, loop, 0)
+    {
+      free_simple_loop_desc (loop);
+    }
 
   /* Clean up.  */
   flow_loops_free (current_loops);

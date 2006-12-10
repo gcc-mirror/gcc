@@ -2304,7 +2304,7 @@ analyze_ziv_subscript (tree chrec_a,
 static tree
 get_number_of_iters_for_loop (int loopnum)
 {
-  struct loop *loop = current_loops->parray[loopnum];
+  struct loop *loop = get_loop (loopnum);
   tree numiter = number_of_iterations_in_loop (loop);
 
   if (TREE_CODE (numiter) == INTEGER_CST)
@@ -4109,7 +4109,6 @@ find_data_references_in_loop (struct loop *loop,
   block_stmt_iterator bsi;
 
   bbs = get_loop_body (loop);
-  loop->parallel_p = true;
 
   for (i = 0; i < loop->num_nodes; i++)
     {
@@ -4137,16 +4136,11 @@ find_data_references_in_loop (struct loop *loop,
 	      DR_OFFSET_MISALIGNMENT (res) = NULL_TREE;
 	      DR_MEMTAG (res) = NULL_TREE;
 	      DR_PTR_INFO (res) = NULL;
-	      loop->parallel_p = false;
 	      VEC_safe_push (data_reference_p, heap, *datarefs, res);
 
 	      free (bbs);
 	      return chrec_dont_know;
 	    }
-
-	  /* When there are no defs in the loop, the loop is parallel.  */
-	  if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_DEFS))
-	    loop->parallel_p = false;
 	}
     }
   free (bbs);

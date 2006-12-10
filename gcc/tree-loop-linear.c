@@ -242,16 +242,16 @@ void
 linear_transform_loops (void)
 {
   bool modified = false;
-  unsigned int i;
+  loop_iterator li;
   VEC(tree,heap) *oldivs = NULL;
   VEC(tree,heap) *invariants = NULL;
+  struct loop *loop_nest;
   
-  for (i = 1; i < current_loops->num; i++)
+  FOR_EACH_LOOP (li, loop_nest, 0)
     {
       unsigned int depth = 0;
       VEC (ddr_p, heap) *dependence_relations;
       VEC (data_reference_p, heap) *datarefs;
-      struct loop *loop_nest = current_loops->parray[i];
       struct loop *temp;
       lambda_loopnest before, after;
       lambda_trans_matrix trans;
@@ -270,7 +270,7 @@ linear_transform_loops (void)
                 ...
                }
            } */
-      if (!loop_nest || !loop_nest->inner || !single_exit (loop_nest))
+      if (!loop_nest->inner || !single_exit (loop_nest))
 	continue;
       VEC_truncate (tree, oldivs, 0);
       VEC_truncate (tree, invariants, 0);

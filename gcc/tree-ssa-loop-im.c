@@ -1377,34 +1377,17 @@ static void
 determine_lsm (void)
 {
   struct loop *loop;
-
-  if (!current_loops->tree_root->inner)
-    return;
+  loop_iterator li;
 
   /* Pass the loops from the outermost and perform the store motion as
      suitable.  */
 
-  loop = current_loops->tree_root->inner;
-  while (1)
+  FOR_EACH_LOOP (li, loop, 0)
     {
       determine_lsm_loop (loop);
-
-      if (loop->inner)
-	{
-	  loop = loop->inner;
-	  continue;
-	}
-      while (!loop->next)
-	{
-	  loop = loop->outer;
-	  if (loop == current_loops->tree_root)
-	    {
-	      bsi_commit_edge_inserts ();
-	      return;
-	    }
-	}
-      loop = loop->next;
     }
+
+  bsi_commit_edge_inserts ();
 }
 
 /* Fills ALWAYS_EXECUTED_IN information for basic blocks of LOOP, i.e.

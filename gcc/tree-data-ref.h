@@ -224,10 +224,6 @@ DEF_VEC_ALLOC_P (subscript_p, heap);
 #define SUB_LAST_CONFLICT(SUB) SUB->last_conflict
 #define SUB_DISTANCE(SUB) SUB->distance
 
-typedef struct loop *loop_p;
-DEF_VEC_P(loop_p);
-DEF_VEC_ALLOC_P (loop_p, heap);
-
 /* A data_dependence_relation represents a relation between two
    data_references A and B.  */
 

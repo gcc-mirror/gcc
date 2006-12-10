@@ -2024,14 +2024,12 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
 void
 estimate_numbers_of_iterations (void)
 {
-  unsigned i;
+  loop_iterator li;
   struct loop *loop;
 
-  for (i = 1; i < current_loops->num; i++)
+  FOR_EACH_LOOP (li, loop, 0)
     {
-      loop = current_loops->parray[i];
-      if (loop)
-	estimate_numbers_of_iterations_loop (loop);
+      estimate_numbers_of_iterations_loop (loop);
     }
 }
 
@@ -2246,14 +2244,12 @@ free_numbers_of_iterations_estimates_loop (struct loop *loop)
 void
 free_numbers_of_iterations_estimates (void)
 {
-  unsigned i;
+  loop_iterator li;
   struct loop *loop;
 
-  for (i = 1; i < current_loops->num; i++)
+  FOR_EACH_LOOP (li, loop, 0)
     {
-      loop = current_loops->parray[i];
-      if (loop)
-	free_numbers_of_iterations_estimates_loop (loop);
+      free_numbers_of_iterations_estimates_loop (loop);
     }
 }
 

@@ -123,7 +123,7 @@ do_while_loop_p (struct loop *loop)
 static unsigned int
 copy_loop_headers (void)
 {
-  unsigned i;
+  loop_iterator li;
   struct loop *loop;
   basic_block header;
   edge exit, entry;
@@ -144,14 +144,11 @@ copy_loop_headers (void)
   copied_bbs = XNEWVEC (basic_block, n_basic_blocks);
   bbs_size = n_basic_blocks;
 
-  for (i = 1; i < current_loops->num; i++)
+  FOR_EACH_LOOP (li, loop, 0)
     {
       /* Copy at most 20 insns.  */
       int limit = 20;
 
-      loop = current_loops->parray[i];
-      if (!loop)
-	continue;
       header = loop->header;
 
       /* If the loop is already a do-while style one (either because it was

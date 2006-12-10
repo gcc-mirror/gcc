@@ -273,11 +273,12 @@ mark_irreducible_loops (void)
   edge_iterator ei;
   int i, src, dest;
   struct graph *g;
-  int num = current_loops ? current_loops->num : 1;
+  int num = current_loops ? number_of_loops () : 1;
   int *queue1 = XNEWVEC (int, last_basic_block + num);
   int *queue2 = XNEWVEC (int, last_basic_block + num);
   int nq, depth;
-  struct loop *cloop;
+  struct loop *cloop, *loop;
+  loop_iterator li;
 
   /* Reset the flags.  */
   FOR_BB_BETWEEN (act, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
@@ -343,9 +344,14 @@ mark_irreducible_loops (void)
     {
       queue1[nq++] = BB_REPR (act);
     }
-  for (i = 1; i < num; i++)
-    if (current_loops->parray[i])
-      queue1[nq++] = LOOP_REPR (current_loops->parray[i]);
+
+  if (current_loops)
+    {
+      FOR_EACH_LOOP (li, loop, 0)
+	{
+	  queue1[nq++] = LOOP_REPR (loop);
+	}
+    }
   dfs (g, queue1, nq, queue2, false);
   for (i = 0; i < nq; i++)
     queue1[i] = queue2[nq - i - 1];

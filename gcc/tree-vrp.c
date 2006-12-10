@@ -1998,8 +1998,7 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop, tree stmt,
 	 or decreases,  ... */
       dir == EV_DIR_UNKNOWN
       /* ... or if it may wrap.  */
-      || scev_probably_wraps_p (init, step, stmt,
-				current_loops->parray[CHREC_VARIABLE (chrec)],
+      || scev_probably_wraps_p (init, step, stmt, get_chrec_loop (chrec),
 				true))
     return;
 

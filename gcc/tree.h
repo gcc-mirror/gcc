@@ -1587,6 +1587,12 @@ struct tree_constructor GTY(())
 #define COND_EXPR_THEN(NODE)	(TREE_OPERAND (COND_EXPR_CHECK (NODE), 1))
 #define COND_EXPR_ELSE(NODE)	(TREE_OPERAND (COND_EXPR_CHECK (NODE), 2))
 
+/* Accessors for the chains of recurrences.  */
+#define CHREC_VAR(NODE)           TREE_OPERAND (POLYNOMIAL_CHREC_CHECK (NODE), 0)
+#define CHREC_LEFT(NODE)          TREE_OPERAND (POLYNOMIAL_CHREC_CHECK (NODE), 1)
+#define CHREC_RIGHT(NODE)         TREE_OPERAND (POLYNOMIAL_CHREC_CHECK (NODE), 2)
+#define CHREC_VARIABLE(NODE)      TREE_INT_CST_LOW (CHREC_VAR (NODE))
+
 /* LABEL_EXPR accessor. This gives access to the label associated with
    the given label expression.  */
 #define LABEL_EXPR_LABEL(NODE)  TREE_OPERAND (LABEL_EXPR_CHECK (NODE), 0)

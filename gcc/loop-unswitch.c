@@ -138,22 +138,13 @@ compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp, rtx label, int prob,
 void
 unswitch_loops (void)
 {
-  int i, num;
+  loop_iterator li;
   struct loop *loop;
 
   /* Go through inner loops (only original ones).  */
-  num = current_loops->num;
 
-  for (i = 1; i < num; i++)
+  FOR_EACH_LOOP (li, loop, LI_ONLY_OLD | LI_ONLY_INNERMOST)
     {
-      /* Removed loop?  */
-      loop = current_loops->parray[i];
-      if (!loop)
-	continue;
-
-      if (loop->inner)
-	continue;
-
       unswitch_single_loop (loop, NULL_RTX, 0);
 #ifdef ENABLE_CHECKING
       verify_dominators (CDI_DOMINATORS);
