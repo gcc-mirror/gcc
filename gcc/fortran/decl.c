@@ -2116,8 +2116,9 @@ match_attr_spec (void)
   { GFC_DECL_BEGIN = 0,
     DECL_ALLOCATABLE = GFC_DECL_BEGIN, DECL_DIMENSION, DECL_EXTERNAL,
     DECL_IN, DECL_OUT, DECL_INOUT, DECL_INTRINSIC, DECL_OPTIONAL,
-    DECL_PARAMETER, DECL_POINTER, DECL_PRIVATE, DECL_PUBLIC, DECL_SAVE,
-    DECL_TARGET, DECL_VALUE, DECL_VOLATILE, DECL_COLON, DECL_NONE,
+    DECL_PARAMETER, DECL_POINTER, DECL_PROTECTED, DECL_PRIVATE,
+    DECL_PUBLIC, DECL_SAVE, DECL_TARGET, DECL_VALUE, DECL_VOLATILE,
+    DECL_COLON, DECL_NONE,
     GFC_DECL_END /* Sentinel */
   }
   decl_types;
@@ -2136,6 +2137,7 @@ match_attr_spec (void)
     minit (", optional", DECL_OPTIONAL),
     minit (", parameter", DECL_PARAMETER),
     minit (", pointer", DECL_POINTER),
+    minit (", protected", DECL_PROTECTED),
     minit (", private", DECL_PRIVATE),
     minit (", public", DECL_PUBLIC),
     minit (", save", DECL_SAVE),
@@ -2250,6 +2252,9 @@ match_attr_spec (void)
 	  case DECL_POINTER:
 	    attr = "POINTER";
 	    break;
+	  case DECL_PROTECTED:
+	    attr = "PROTECTED";
+	    break;
 	  case DECL_PRIVATE:
 	    attr = "PRIVATE";
 	    break;
@@ -2362,6 +2367,23 @@ match_attr_spec (void)
 
 	case DECL_POINTER:
 	  t = gfc_add_pointer (&current_attr, &seen_at[d]);
+	  break;
+
+	case DECL_PROTECTED:
+	  if (gfc_current_ns->proc_name->attr.flavor != FL_MODULE)
+	    {
+	       gfc_error ("PROTECTED at %C only allowed in specification "
+			  "part of a module");
+	       t = FAILURE;
+	       break;
+	    }
+
+	  if (gfc_notify_std (GFC_STD_F2003,
+                              "Fortran 2003: PROTECTED attribute at %C")
+	      == FAILURE)
+	    t = FAILURE;
+	  else
+	    t = gfc_add_protected (&current_attr, NULL, &seen_at[d]);
 	  break;
 
 	case DECL_PRIVATE:
@@ -3838,6 +3860,67 @@ syntax:
 done:
   return MATCH_ERROR;
 }
+
+
+match
+gfc_match_protected (void)
+{
+  gfc_symbol *sym;
+  match m;
+
+  if (gfc_current_ns->proc_name->attr.flavor != FL_MODULE)
+    {
+       gfc_error ("PROTECTED at %C only allowed in specification "
+		  "part of a module");
+       return MATCH_ERROR;
+
+    }
+
+  if (gfc_notify_std (GFC_STD_F2003, 
+		      "Fortran 2003: PROTECTED statement at %C")
+      == FAILURE)
+    return MATCH_ERROR;
+
+  if (gfc_match (" ::") == MATCH_NO && gfc_match_space () == MATCH_NO)
+    {
+      return MATCH_ERROR;
+    }
+
+  if (gfc_match_eos () == MATCH_YES)
+    goto syntax;
+
+  for(;;)
+    {
+      m = gfc_match_symbol (&sym, 0);
+      switch (m)
+	{
+	case MATCH_YES:
+	  if (gfc_add_protected (&sym->attr, sym->name,
+  			         &gfc_current_locus) == FAILURE)
+	    return MATCH_ERROR;
+	  goto next_item;
+
+	case MATCH_NO:
+	  break;
+
+	case MATCH_ERROR:
+	  return MATCH_ERROR;
+	}
+
+    next_item:
+      if (gfc_match_eos () == MATCH_YES)
+	break;
+      if (gfc_match_char (',') != MATCH_YES)
+	goto syntax;
+    }
+
+  return MATCH_YES;
+
+syntax:
+  gfc_error ("Syntax error in PROTECTED statement at %C");
+  return MATCH_ERROR;
+}
+
 
 
 /* The PRIVATE statement is a bit weird in that it can be a attribute

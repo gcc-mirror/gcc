@@ -1206,6 +1206,36 @@ compare_parameter (gfc_symbol * formal, gfc_expr * actual,
 }
 
 
+/* Given a symbol of a formal argument list and an expression, see if
+   the two are compatible as arguments.  Returns nonzero if
+   compatible, zero if not compatible.  */
+
+static int
+compare_parameter_protected (gfc_symbol * formal, gfc_expr * actual)
+{
+  if (actual->expr_type != EXPR_VARIABLE)
+    return 1;
+
+  if (!actual->symtree->n.sym->attr.protected)
+    return 1;
+
+  if (!actual->symtree->n.sym->attr.use_assoc)
+    return 1;
+
+  if (formal->attr.intent == INTENT_IN
+      || formal->attr.intent == INTENT_UNKNOWN)
+    return 1;
+
+  if (!actual->symtree->n.sym->attr.pointer)
+    return 0;
+
+  if (actual->symtree->n.sym->attr.pointer && formal->attr.pointer)
+    return 0;
+
+  return 1;
+}
+
+
 /* Given formal and actual argument lists, see if they are compatible.
    If they are compatible, the actual argument list is sorted to
    correspond with the formal list, and elements for missing optional
@@ -1392,6 +1422,16 @@ compare_actual_formal (gfc_actual_arglist ** ap,
 		       "match dummy INTENT = OUT/INOUT", &a->expr->where);
           return 0;
         }
+
+      if (!compare_parameter_protected(f->sym, a->expr))
+	{
+	  if (where)
+	    gfc_error ("Actual argument at %L is use-associated with "
+		       "PROTECTED attribute and dummy argument '%s' is "
+		       "INTENT = OUT/INOUT",
+		       &a->expr->where,f->sym->name);
+          return 0;
+	}
 
     match:
       if (a == actual)

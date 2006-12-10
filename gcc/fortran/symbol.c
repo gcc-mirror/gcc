@@ -275,7 +275,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
     *dimension = "DIMENSION", *in_equivalence = "EQUIVALENCE",
     *use_assoc = "USE ASSOCIATED", *cray_pointer = "CRAY POINTER",
     *cray_pointee = "CRAY POINTEE", *data = "DATA", *value = "VALUE",
-    *volatile_ = "VOLATILE";
+    *volatile_ = "VOLATILE", *protected = "PROTECTED";
   static const char *threadprivate = "THREADPRIVATE";
 
   const char *a1, *a2;
@@ -404,6 +404,10 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
   conf (data, allocatable);
   conf (data, use_assoc);
 
+  conf (protected, intrinsic)
+  conf (protected, external)
+  conf (protected, in_common)
+
   conf (value, pointer)
   conf (value, allocatable)
   conf (value, subroutine)
@@ -451,6 +455,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
       conf2 (save);
       conf2 (volatile_);
       conf2 (pointer);
+      conf2 (protected);
       conf2 (target);
       conf2 (external);
       conf2 (intrinsic);
@@ -537,6 +542,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
       conf2 (subroutine);
       conf2 (entry);
       conf2 (pointer);
+      conf2 (protected);
       conf2 (target);
       conf2 (dummy);
       conf2 (in_common);
@@ -781,6 +787,24 @@ gfc_add_cray_pointee (symbol_attribute * attr, locus * where)
   return check_conflict (attr, NULL, where);
 }
 
+try
+gfc_add_protected (symbol_attribute * attr, const char *name, locus * where)
+{
+  if (check_used (attr, name, where))
+    return FAILURE;
+
+  if (attr->protected)
+    {
+	if (gfc_notify_std (GFC_STD_LEGACY, 
+			    "Duplicate PROTECTED attribute specified at %L",
+			    where) 
+	    == FAILURE)
+	  return FAILURE;
+    }
+
+  attr->protected = 1;
+  return check_conflict (attr, name, where);
+}
 
 try
 gfc_add_result (symbol_attribute * attr, const char *name, locus * where)
@@ -1292,6 +1316,8 @@ gfc_copy_attr (symbol_attribute * dest, symbol_attribute * src, locus * where)
   if (src->optional && gfc_add_optional (dest, where) == FAILURE)
     goto fail;
   if (src->pointer && gfc_add_pointer (dest, where) == FAILURE)
+    goto fail;
+  if (src->protected && gfc_add_protected (dest, NULL, where) == FAILURE)
     goto fail;
   if (src->save && gfc_add_save (dest, NULL, where) == FAILURE)
     goto fail;

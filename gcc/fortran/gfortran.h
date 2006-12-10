@@ -483,6 +483,7 @@ typedef struct
     dummy:1, result:1, assign:1, threadprivate:1;
 
   unsigned data:1,		/* Symbol is named in a DATA statement.  */
+    protected:1,		/* Symbol has been marked as protected.  */
     use_assoc:1,		/* Symbol has been use-associated.  */
     use_only:1;			/* Symbol has been use-associated, with ONLY.  */
 
@@ -1857,6 +1858,7 @@ try gfc_add_pointer (symbol_attribute *, locus *);
 try gfc_add_cray_pointer (symbol_attribute *, locus *);
 try gfc_add_cray_pointee (symbol_attribute *, locus *);
 try gfc_mod_pointee_as (gfc_array_spec *as);
+try gfc_add_protected (symbol_attribute *, const char *, locus *);
 try gfc_add_result (symbol_attribute *, const char *, locus *);
 try gfc_add_save (symbol_attribute *, const char *, locus *);
 try gfc_add_threadprivate (symbol_attribute *, const char *, locus *);
