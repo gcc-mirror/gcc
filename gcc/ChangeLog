@@ -1,3 +1,11 @@
+2006-12-09  Zack Weinberg  <zackw@panix.com>
+
+	* c-opts.c (c_common_parse_file): Unconditionally give a warning,
+	suitable for the language, if set_yydebug is true.
+	* c-pragma.h: Define enum pragma_omp_clause here.  Don't define
+	YYDEBUG or declare yydebug.
+	* c-parser.c (yydebug, enum pragma_omp_clause): Delete.
+
 2006-12-09  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c: Update copyright.
@@ -104,18 +112,18 @@
 2006-12-08  Andrew MacLeod  <amacleod@redhat.com>
 
 	* Makefile.in: Add new file tree-ssa-ter.c.
-	* tree-outof-ssa.c (struct temp_expr_table_d, new_temp_expr_table, 
-	free_temp_expr_table, add_value_to_version_list, 
-	add_value_to_partition_list, remove_value_from_partition_list, 
-	add_dependence, check_replaceable, finish_expr, mark_replaceable, 
-	kill_expr, kill_virtual_exprs, find_replaceable_in_bb, 
+	* tree-outof-ssa.c (struct temp_expr_table_d, new_temp_expr_table,
+	free_temp_expr_table, add_value_to_version_list,
+	add_value_to_partition_list, remove_value_from_partition_list,
+	add_dependence, check_replaceable, finish_expr, mark_replaceable,
+	kill_expr, kill_virtual_exprs, find_replaceable_in_bb,
 	find_replaceable_exprs, dump_replaceable_exprs): Move to tree-ssa-ter.c.
 	* tree-ssa-live.h (find_replaceable_exprs, dump_replaceable_exprs): Add
 	prototypes.
 	* tree-ssa-ter.c: New file using code moved from tree-outof-ssa.c.
 	(struct value_expr_d): Remove.
 	(struct temp_expr_table_d): Rename fields, add explicit vector of
-	replaceable expressions instead of sharing.  Change value_expr_p's to 
+	replaceable expressions instead of sharing.  Change value_expr_p's to
 	bitmap.  Delete free_list.
 	(new_temp_expr_table): Rename fields, count number of ssa_names in
 	each partition.
@@ -131,7 +139,7 @@
 	partition list, free the bitmap if it is empty.
 	(add_dependence): Use renamed field, cleanup.  Don't add a dependence
 	on partitions with only one member.
-	(is_replaceable_p): New.  Split out replaceability check from 
+	(is_replaceable_p): New.  Split out replaceability check from
 	check_replaceable.
 	(process_replaceable): New.  Code split from check_replaceable.
 	(check_replaceable): Removed.
@@ -208,7 +216,7 @@
 	(struct gcc_target): Add record_gcc_switches and
 	record_gcc_switches_section fields.
 	* target-def.h (TARGET_ASM_RECORD_GCC_SWITCHES): Provide a
-        default definition.
+	default definition.
 	(TARGET_ASM_RECORD_GCC_SWITCHES_SECTION): Provide a default
 	definition.
 	* toplev.c (print_single_switch): Simplify by providing a
@@ -218,9 +226,9 @@
 	(print_to_asm_out_file): New function.
 	(print_to_stderr): New function.
 	(init_asm_output): If flag_record_gcc_switches is set then if
-        the target supports recording the switches then emit them into
-        the assembler output file, otherwise tell the user that the
-        switch is not supported.
+	the target supports recording the switches then emit them into
+	the assembler output file, otherwise tell the user that the
+	switch is not supported.
 	* varasm.c (eld_record_gcc_switches): New function.  Example
 	handler for the record_gcc_switches target hook.
 	* doc/tm.texi (TARGET_ASM_RECORD_GCC_SWITCHES): Document the new
