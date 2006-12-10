@@ -1245,7 +1245,6 @@ replace_uses_by (tree name, tree val)
   use_operand_p use;
   tree stmt;
   edge e;
-  unsigned i;
 
   FOR_EACH_IMM_USE_STMT (stmt, imm_iter, name)
     {
@@ -1286,12 +1285,11 @@ replace_uses_by (tree name, tree val)
   if (current_loops)
     {
       struct loop *loop;
+      loop_iterator li;
 
-      for (i = 0; i < current_loops->num; i++)
+      FOR_EACH_LOOP (li, loop, 0)
 	{
-	  loop = current_loops->parray[i];
-	  if (loop)
-	    substitute_in_loop_info (loop, name, val);
+	  substitute_in_loop_info (loop, name, val);
 	}
     }
 }

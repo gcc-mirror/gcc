@@ -63,20 +63,25 @@ The root of this tree is a fake loop that contains all blocks in the
 function.  Each of the loops is represented in a @code{struct loop}
 structure.  Each loop is assigned an index (@code{num} field of the
 @code{struct loop} structure), and the pointer to the loop is stored in
-the corresponding field of the @code{parray} field of the loops
+the corresponding field of the @code{larray} vector in the loops
 structure.  Index of a sub-loop is always greater than the index of its
 super-loop.  The indices do not have to be continuous, there may be
-empty (@code{NULL}) entries in the @code{parray} created by deleting
-loops.  The index of a loop never changes.  The first unused index is
-stored in the @code{num} field of the loops structure.
+empty (@code{NULL}) entries in the @code{larray} created by deleting
+loops.  The index of a loop never changes.
+
+The entries of the @code{larray} field should not be accessed directly.
+The function @code{get_loop} returns the loop description for a loop with
+the given index.  @code{number_of_loops} function returns number of
+loops in the function.  To traverse all loops, use @code{FOR_EACH_LOOP}
+macro.  The @code{flags} argument of the macro is used to determine
+the direction of traversal and the set of loops visited.
 
 Each basic block contains the reference to the innermost loop it belongs
 to (@code{loop_father}).  For this reason, it is only possible to have
 one @code{struct loops} structure initialized at the same time for each
-CFG.  It is recommended to use the global variable @code{current_loops}
-to contain the @code{struct loops} structure, especially if the loop
-structures are updated throughout several passes.  Many of the loop
-manipulation functions assume that dominance information is up-to-date.
+CFG.  The global variable @code{current_loops} contains the
+@code{struct loops} structure.  Many of the loop manipulation functions
+assume that dominance information is up-to-date.
 
 The loops are analyzed through @code{loop_optimizer_init} function.  The
 argument of this function is a set of flags represented in an integer

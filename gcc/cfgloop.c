@@ -128,20 +128,16 @@ flow_loop_dump (const struct loop *loop, FILE *file,
 void
 flow_loops_dump (FILE *file, void (*loop_dump_aux) (const struct loop *, FILE *, int), int verbose)
 {
-  unsigned i;
+  loop_iterator li;
+  struct loop *loop;
 
   if (!current_loops || ! file)
     return;
 
-  fprintf (file, ";; %d loops found\n", current_loops->num);
+  fprintf (file, ";; %d loops found\n", number_of_loops ());
 
-  for (i = 0; i < current_loops->num; i++)
+  FOR_EACH_LOOP (li, loop, LI_INCLUDE_ROOT)
     {
-      struct loop *loop = current_loops->parray[i];
-
-      if (!loop)
-	continue;
-
       flow_loop_dump (loop, file, loop_dump_aux, verbose);
     }
 
@@ -163,25 +159,22 @@ flow_loop_free (struct loop *loop)
 void
 flow_loops_free (struct loops *loops)
 {
-  if (loops->parray)
+  if (loops->larray)
     {
       unsigned i;
-
-      gcc_assert (loops->num);
+      loop_p loop;
 
       /* Free the loop descriptors.  */
-      for (i = 0; i < loops->num; i++)
+      for (i = 0; VEC_iterate (loop_p, loops->larray, i, loop); i++)
 	{
-	  struct loop *loop = loops->parray[i];
-
 	  if (!loop)
 	    continue;
 
 	  flow_loop_free (loop);
 	}
 
-      free (loops->parray);
-      loops->parray = NULL;
+      VEC_free (loop_p, heap, loops->larray);
+      loops->larray = NULL;
     }
 }
 
@@ -242,13 +235,11 @@ mark_single_exit_loops (void)
   basic_block bb;
   edge e;
   struct loop *loop;
-  unsigned i;
+  loop_iterator li;
 
-  for (i = 1; i < current_loops->num; i++)
+  FOR_EACH_LOOP (li, loop, 0)
     {
-      loop = current_loops->parray[i];
-      if (loop)
-	set_single_exit (loop, NULL);
+      set_single_exit (loop, NULL);
     }
 
   FOR_EACH_BB (bb)
@@ -278,12 +269,8 @@ mark_single_exit_loops (void)
 	}
     }
 
-  for (i = 1; i < current_loops->num; i++)
+  FOR_EACH_LOOP (li, loop, 0)
     {
-      loop = current_loops->parray[i];
-      if (!loop)
-	continue;
-
       if (single_exit (loop) == single_succ_edge (ENTRY_BLOCK_PTR))
 	set_single_exit (loop, NULL);
     }
@@ -499,20 +486,6 @@ canonicalize_loop_headers (void)
 #endif
 }
 
-/* Initialize all the parallel_p fields of the loops structure to true.  */
-
-static void
-initialize_loops_parallel_p (struct loops *loops)
-{
-  unsigned int i;
-
-  for (i = 0; i < loops->num; i++)
-    {
-      struct loop *loop = loops->parray[i];
-      loop->parallel_p = true;
-    }
-}
-
 /* Find all the natural loops in the function and save in LOOPS structure and
    recalculate loop_depth information in basic block structures.
    Return the number of natural loops found.  */
@@ -528,6 +501,7 @@ flow_loops_find (struct loops *loops)
   int *rc_order;
   basic_block header;
   basic_block bb;
+  struct loop *root;
 
   memset (loops, 0, sizeof *loops);
 
@@ -594,26 +568,21 @@ flow_loops_find (struct loops *loops)
     }
 
   /* Allocate loop structures.  */
-  loops->parray = XCNEWVEC (struct loop *, num_loops + 1);
+  loops->larray = VEC_alloc (loop_p, heap, num_loops + 1);
 
   /* Dummy loop containing whole function.  */
-  loops->parray[0] = XCNEW (struct loop);
-  loops->parray[0]->next = NULL;
-  loops->parray[0]->inner = NULL;
-  loops->parray[0]->outer = NULL;
-  loops->parray[0]->depth = 0;
-  loops->parray[0]->pred = NULL;
-  loops->parray[0]->num_nodes = n_basic_blocks;
-  loops->parray[0]->latch = EXIT_BLOCK_PTR;
-  loops->parray[0]->header = ENTRY_BLOCK_PTR;
-  ENTRY_BLOCK_PTR->loop_father = loops->parray[0];
-  EXIT_BLOCK_PTR->loop_father = loops->parray[0];
+  root = XCNEW (struct loop);
+  root->num_nodes = n_basic_blocks;
+  root->latch = EXIT_BLOCK_PTR;
+  root->header = ENTRY_BLOCK_PTR;
+  ENTRY_BLOCK_PTR->loop_father = root;
+  EXIT_BLOCK_PTR->loop_father = root;
 
-  loops->tree_root = loops->parray[0];
+  VEC_quick_push (loop_p, loops->larray, root);
+  loops->tree_root = root;
 
   /* Find and record information about all the natural loops
      in the CFG.  */
-  loops->num = 1;
   FOR_EACH_BB (bb)
     bb->loop_father = loops->tree_root;
 
@@ -639,7 +608,8 @@ flow_loops_find (struct loops *loops)
 
 	  header = BASIC_BLOCK (rc_order[b]);
 
-	  loop = loops->parray[num_loops] = XCNEW (struct loop);
+	  loop = XCNEW (struct loop);
+	  VEC_quick_push (loop_p, loops->larray, loop);
 
 	  loop->header = header;
 	  loop->num = num_loops;
@@ -662,9 +632,6 @@ flow_loops_find (struct loops *loops)
 	  loop->num_nodes = flow_loop_nodes_find (loop->header, loop);
 	}
 
-      loops->num = num_loops;
-      initialize_loops_parallel_p (loops);
-
       free (dfs_order);
       free (rc_order);
     }
@@ -672,7 +639,7 @@ flow_loops_find (struct loops *loops)
   sbitmap_free (headers);
 
   loops->state = 0;
-  return loops->num;
+  return VEC_length (loop_p, loops->larray);
 }
 
 /* Return nonzero if basic block BB belongs to LOOP.  */
@@ -924,6 +891,21 @@ find_common_loop (struct loop *loop_s, struct loop *loop_d)
   return loop_s;
 }
 
+/* Removes LOOP from structures and frees its data.  */
+
+void
+delete_loop (struct loop *loop)
+{
+  /* Remove the loop from structure.  */
+  flow_loop_tree_node_remove (loop);
+
+  /* Remove loop from loops array.  */
+  VEC_replace (loop_p, current_loops->larray, loop->num, NULL);
+
+  /* Free loop data.  */
+  flow_loop_free (loop);
+}
+
 /* Cancels the LOOP; it must be innermost one.  */
 
 static void
@@ -939,14 +921,7 @@ cancel_loop (struct loop *loop)
   for (i = 0; i < loop->num_nodes; i++)
     bbs[i]->loop_father = loop->outer;
 
-  /* Remove the loop from structure.  */
-  flow_loop_tree_node_remove (loop);
-
-  /* Remove loop from loops array.  */
-  current_loops->parray[loop->num] = NULL;
-
-  /* Free loop data.  */
-  flow_loop_free (loop);
+  delete_loop (loop);
 }
 
 /* Cancels LOOP and all its subloops.  */
@@ -974,52 +949,48 @@ verify_loop_structure (void)
   struct loop *loop;
   int err = 0;
   edge e;
+  unsigned num = number_of_loops ();
+  loop_iterator li;
 
   /* Check sizes.  */
-  sizes = XCNEWVEC (unsigned, current_loops->num);
+  sizes = XCNEWVEC (unsigned, num);
   sizes[0] = 2;
 
   FOR_EACH_BB (bb)
     for (loop = bb->loop_father; loop; loop = loop->outer)
       sizes[loop->num]++;
 
-  for (i = 0; i < current_loops->num; i++)
+  FOR_EACH_LOOP (li, loop, LI_INCLUDE_ROOT)
     {
-      if (!current_loops->parray[i])
-	continue;
+      i = loop->num;
 
-      if (current_loops->parray[i]->num_nodes != sizes[i])
+      if (loop->num_nodes != sizes[i])
 	{
 	  error ("size of loop %d should be %d, not %d",
-		   i, sizes[i], current_loops->parray[i]->num_nodes);
+		   i, sizes[i], loop->num_nodes);
 	  err = 1;
 	}
     }
 
   /* Check get_loop_body.  */
-  for (i = 1; i < current_loops->num; i++)
+  FOR_EACH_LOOP (li, loop, 0)
     {
-      loop = current_loops->parray[i];
-      if (!loop)
-	continue;
       bbs = get_loop_body (loop);
 
       for (j = 0; j < loop->num_nodes; j++)
 	if (!flow_bb_inside_loop_p (loop, bbs[j]))
 	  {
 	    error ("bb %d do not belong to loop %d",
-		    bbs[j]->index, i);
+		    bbs[j]->index, loop->num);
 	    err = 1;
 	  }
       free (bbs);
     }
 
   /* Check headers and latches.  */
-  for (i = 1; i < current_loops->num; i++)
+  FOR_EACH_LOOP (li, loop, 0)
     {
-      loop = current_loops->parray[i];
-      if (!loop)
-	continue;
+      i = loop->num;
 
       if ((current_loops->state & LOOPS_HAVE_PREHEADERS)
 	  && EDGE_COUNT (loop->header->preds) != 2)
@@ -1120,7 +1091,7 @@ verify_loop_structure (void)
   /* Check the single_exit.  */
   if (current_loops->state & LOOPS_HAVE_MARKED_SINGLE_EXITS)
     {
-      memset (sizes, 0, sizeof (unsigned) * current_loops->num);
+      memset (sizes, 0, sizeof (unsigned) * num);
       FOR_EACH_BB (bb)
 	{
 	  edge_iterator ei;
@@ -1154,11 +1125,9 @@ verify_loop_structure (void)
 	    }
 	}
 
-      for (i = 1; i < current_loops->num; i++)
+      FOR_EACH_LOOP (li, loop, 0)
 	{
-	  loop = current_loops->parray[i];
-	  if (!loop)
-	    continue;
+	  i = loop->num;
 
 	  if (sizes[i] == 1
 	      && !single_exit (loop))

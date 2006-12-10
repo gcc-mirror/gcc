@@ -552,9 +552,7 @@ unloop (struct loop *loop, bool *irred_invalidated)
     }
 
   /* Remove the loop and free its data.  */
-  flow_loop_tree_node_remove (loop);
-  current_loops->parray[loop->num] = NULL;
-  flow_loop_free (loop);
+  delete_loop (loop);
 
   remove_edge (single_succ_edge (latch));
 
@@ -634,11 +632,8 @@ fix_loop_placements (struct loop *loop, bool *irred_invalidated)
 static void
 place_new_loop (struct loop *loop)
 {
-  current_loops->parray =
-    xrealloc (current_loops->parray, (current_loops->num + 1) * sizeof (struct loop *));
-  current_loops->parray[current_loops->num] = loop;
-
-  loop->num = current_loops->num++;
+  loop->num = number_of_loops ();
+  VEC_safe_push (loop_p, heap, current_loops->larray, loop);
 }
 
 /* Copies copy of LOOP as subloop of TARGET loop, placing newly
@@ -1195,9 +1190,11 @@ create_preheader (struct loop *loop, int flags)
 void
 create_preheaders (int flags)
 {
-  unsigned i;
-  for (i = 1; i < current_loops->num; i++)
-    create_preheader (current_loops->parray[i], flags);
+  loop_iterator li;
+  struct loop *loop;
+
+  FOR_EACH_LOOP (li, loop, 0)
+    create_preheader (loop, flags);
   current_loops->state |= LOOPS_HAVE_PREHEADERS;
 }
 
@@ -1206,13 +1203,12 @@ create_preheaders (int flags)
 void
 force_single_succ_latches (void)
 {
-  unsigned i;
+  loop_iterator li;
   struct loop *loop;
   edge e;
 
-  for (i = 1; i < current_loops->num; i++)
+  FOR_EACH_LOOP (li, loop, 0)
     {
-      loop = current_loops->parray[i];
       if (loop->latch != loop->header && single_succ_p (loop->latch))
 	continue;
 
@@ -1392,7 +1388,7 @@ fix_loop_structure (bitmap changed_bbs)
 {
   basic_block bb;
   struct loop *loop, *ploop;
-  unsigned i;
+  loop_iterator li;
 
   /* Remove the old bb -> loop mapping.  */
   FOR_EACH_BB (bb)
@@ -1403,12 +1399,8 @@ fix_loop_structure (bitmap changed_bbs)
 
   /* Remove the dead loops from structures.  */
   current_loops->tree_root->num_nodes = n_basic_blocks;
-  for (i = 1; i < current_loops->num; i++)
+  FOR_EACH_LOOP (li, loop, 0)
     {
-      loop = current_loops->parray[i];
-      if (!loop)
-	continue;
-
       loop->num_nodes = 0;
       if (loop->header)
 	continue;
@@ -1421,38 +1413,18 @@ fix_loop_structure (bitmap changed_bbs)
 	}
 
       /* Remove the loop and free its data.  */
-      flow_loop_tree_node_remove (loop);
-      current_loops->parray[loop->num] = NULL;
-      flow_loop_free (loop);
+      delete_loop (loop);
     }
 
   /* Rescan the bodies of loops, starting from the outermost.  */
-  loop = current_loops->tree_root;
-  while (1)
+  FOR_EACH_LOOP (li, loop, 0)
     {
-      if (loop->inner)
-	loop = loop->inner;
-      else
-	{
-	  while (!loop->next
-		 && loop != current_loops->tree_root)
-	    loop = loop->outer;
-	  if (loop == current_loops->tree_root)
-	    break;
-
-	  loop = loop->next;
-	}
-
       loop->num_nodes = flow_loop_nodes_find (loop->header, loop);
     }
 
   /* Now fix the loop nesting.  */
-  for (i = 1; i < current_loops->num; i++)
+  FOR_EACH_LOOP (li, loop, 0)
     {
-      loop = current_loops->parray[i];
-      if (!loop)
-	continue;
-
       bb = loop_preheader_edge (loop)->src;
       if (bb->loop_father != loop->outer)
 	{

@@ -327,9 +327,6 @@ known_alignment_for_access_p (struct data_reference *data_ref_info)
 extern FILE *vect_dump;
 extern enum verbosity_levels vect_verbosity_level;
 
-/* Number of loops, at the beginning of vectorization.  */
-extern unsigned int vect_loops_num;
-
 /* Bitmap of virtual variables to be renamed.  */
 extern bitmap vect_vnames_to_rename;
 

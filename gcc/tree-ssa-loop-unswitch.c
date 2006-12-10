@@ -82,23 +82,13 @@ static tree tree_may_unswitch_on (basic_block, struct loop *);
 unsigned int
 tree_ssa_unswitch_loops (void)
 {
-  int i, num;
+  loop_iterator li;
   struct loop *loop;
   bool changed = false;
 
   /* Go through inner loops (only original ones).  */
-  num = current_loops->num;
-
-  for (i = 1; i < num; i++)
+  FOR_EACH_LOOP (li, loop, LI_ONLY_OLD | LI_ONLY_INNERMOST)
     {
-      /* Removed loop?  */
-      loop = current_loops->parray[i];
-      if (!loop)
-	continue;
-
-      if (loop->inner)
-	continue;
-
       changed |= tree_unswitch_single_loop (loop, 0);
     }
 

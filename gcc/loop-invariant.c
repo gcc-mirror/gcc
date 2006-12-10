@@ -1318,33 +1318,21 @@ void
 move_loop_invariants (void)
 {
   struct loop *loop;
-  unsigned i;
+  loop_iterator li;
 
   df = df_init (DF_HARD_REGS | DF_EQUIV_NOTES);
   df_chain_add_problem (df, DF_UD_CHAIN);
  
   /* Process the loops, innermost first.  */
-  loop = current_loops->tree_root;
-  while (loop->inner)
-    loop = loop->inner;
-
-  while (loop != current_loops->tree_root)
+  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
       move_single_loop_invariants (loop);
-
-      if (loop->next)
-	{
-	  loop = loop->next;
-	  while (loop->inner)
-	    loop = loop->inner;
-	}
-      else
-	loop = loop->outer;
     }
 
-  for (i = 1; i < current_loops->num; i++)
-    if (current_loops->parray[i])
-      free_loop_data (current_loops->parray[i]);
+  FOR_EACH_LOOP (li, loop, 0)
+    {
+      free_loop_data (loop);
+    }
 
   df_finish (df);
   df = NULL;

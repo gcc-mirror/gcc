@@ -174,9 +174,6 @@ FILE *vect_dump;
    to mark that it's uninitialized.  */
 enum verbosity_levels vect_verbosity_level = MAX_VERBOSITY_LEVEL;
 
-/* Number of loops, at the beginning of vectorization.  */
-unsigned int vect_loops_num;
-
 /* Loop location.  */
 static LOC vect_loop_location;
 
@@ -2157,6 +2154,9 @@ vectorize_loops (void)
 {
   unsigned int i;
   unsigned int num_vectorized_loops = 0;
+  unsigned int vect_loops_num;
+  loop_iterator li;
+  struct loop *loop;
 
   /* Fix the verbosity level if not defined explicitly by the user.  */
   vect_set_dump_settings ();
@@ -2170,14 +2170,10 @@ vectorize_loops (void)
   /* If some loop was duplicated, it gets bigger number 
      than all previously defined loops. This fact allows us to run 
      only over initial loops skipping newly generated ones.  */
-  vect_loops_num = current_loops->num;
-  for (i = 1; i < vect_loops_num; i++)
+  vect_loops_num = number_of_loops ();
+  FOR_EACH_LOOP (li, loop, LI_ONLY_OLD)
     {
       loop_vec_info loop_vinfo;
-      struct loop *loop = current_loops->parray[i];
-
-      if (!loop)
-        continue;
 
       vect_loop_location = find_loop_location (loop);
       loop_vinfo = vect_analyze_loop (loop);
@@ -2201,9 +2197,9 @@ vectorize_loops (void)
 
   for (i = 1; i < vect_loops_num; i++)
     {
-      struct loop *loop = current_loops->parray[i];
       loop_vec_info loop_vinfo;
 
+      loop = get_loop (i);
       if (!loop)
 	continue;
       loop_vinfo = loop->aux;

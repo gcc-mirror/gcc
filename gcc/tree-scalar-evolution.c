@@ -375,7 +375,7 @@ chrec_contains_symbols_defined_in_loop (tree chrec, unsigned loop_nb)
     {
       tree def = SSA_NAME_DEF_STMT (chrec);
       struct loop *def_loop = loop_containing_stmt (def);
-      struct loop *loop = current_loops->parray[loop_nb];
+      struct loop *loop = get_loop (loop_nb);
 
       if (def_loop == NULL)
 	return false;
@@ -467,8 +467,7 @@ compute_overall_effect_of_inner_loop (struct loop *loop, tree evolution_fn)
     {
       if (CHREC_VARIABLE (evolution_fn) >= (unsigned) loop->num)
 	{
-	  struct loop *inner_loop = 
-	    current_loops->parray[CHREC_VARIABLE (evolution_fn)];
+	  struct loop *inner_loop = get_chrec_loop (evolution_fn);
 	  tree nb_iter = number_of_iterations_in_loop (inner_loop);
 
 	  if (nb_iter == chrec_dont_know)
@@ -534,9 +533,7 @@ chrec_is_positive (tree chrec, bool *value)
       if (!evolution_function_is_affine_p (chrec))
 	return false;
 
-      nb_iter = number_of_iterations_in_loop
-	(current_loops->parray[CHREC_VARIABLE (chrec)]);
-
+      nb_iter = number_of_iterations_in_loop (get_chrec_loop (chrec));
       if (chrec_contains_undetermined (nb_iter))
 	return false;
 
@@ -2530,7 +2527,7 @@ number_of_iterations_for_all_loops (VEC(tree,heap) **exit_conditions)
       fprintf (dump_file, "-----------------------------------------\n");
       fprintf (dump_file, "%d\tnb_chrec_dont_know_loops\n", nb_chrec_dont_know_loops);
       fprintf (dump_file, "%d\tnb_static_loops\n", nb_static_loops);
-      fprintf (dump_file, "%d\tnb_total_loops\n", current_loops->num);
+      fprintf (dump_file, "%d\tnb_total_loops\n", number_of_loops ());
       fprintf (dump_file, "-----------------------------------------\n");
       fprintf (dump_file, ")\n\n");
       
@@ -2747,7 +2744,8 @@ initialize_scalar_evolutions_analyzer (void)
 void
 scev_initialize (void)
 {
-  unsigned i;
+  loop_iterator li;
+  struct loop *loop;
 
   scalar_evolution_info = htab_create (100, hash_scev_info,
 				       eq_scev_info, del_scev_info);
@@ -2755,9 +2753,10 @@ scev_initialize (void)
   
   initialize_scalar_evolutions_analyzer ();
 
-  for (i = 1; i < current_loops->num; i++)
-    if (current_loops->parray[i])
-      current_loops->parray[i]->nb_iterations = NULL_TREE;
+  FOR_EACH_LOOP (li, loop, 0)
+    {
+      loop->nb_iterations = NULL_TREE;
+    }
 }
 
 /* Cleans up the information cached by the scalar evolutions analysis.  */
@@ -2765,18 +2764,16 @@ scev_initialize (void)
 void
 scev_reset (void)
 {
-  unsigned i;
+  loop_iterator li;
   struct loop *loop;
 
   if (!scalar_evolution_info || !current_loops)
     return;
 
   htab_empty (scalar_evolution_info);
-  for (i = 1; i < current_loops->num; i++)
+  FOR_EACH_LOOP (li, loop, 0)
     {
-      loop = current_loops->parray[i];
-      if (loop)
-	loop->nb_iterations = NULL_TREE;
+      loop->nb_iterations = NULL_TREE;
     }
 }
 
@@ -2890,6 +2887,7 @@ scev_const_prop (void)
   struct loop *loop, *ex_loop;
   bitmap ssa_names_to_remove = NULL;
   unsigned i;
+  loop_iterator li;
 
   if (!current_loops)
     return 0;
@@ -2931,7 +2929,6 @@ scev_const_prop (void)
   if (ssa_names_to_remove)
     {
       bitmap_iterator bi;
-      unsigned i;
 
       EXECUTE_IF_SET_IN_BITMAP (ssa_names_to_remove, 0, i, bi)
 	{
@@ -2947,15 +2944,11 @@ scev_const_prop (void)
     }
 
   /* Now the regular final value replacement.  */
-  for (i = current_loops->num - 1; i > 0; i--)
+  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
       edge exit;
       tree def, rslt, ass, niter;
       block_stmt_iterator bsi;
-
-      loop = current_loops->parray[i];
-      if (!loop)
-	continue;
 
       /* If we do not know exact number of iterations of the loop, we cannot
 	 replace the final value.  */

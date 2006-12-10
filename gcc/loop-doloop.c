@@ -621,15 +621,11 @@ doloop_optimize (struct loop *loop)
 void
 doloop_optimize_loops (void)
 {
-  unsigned i;
+  loop_iterator li;
   struct loop *loop;
 
-  for (i = 1; i < current_loops->num; i++)
+  FOR_EACH_LOOP (li, loop, 0)
     {
-      loop = current_loops->parray[i];
-      if (!loop)
-	continue;
-
       doloop_optimize (loop);
     }
 

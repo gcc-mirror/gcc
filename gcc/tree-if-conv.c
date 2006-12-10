@@ -1092,19 +1092,14 @@ bb_with_exit_edge_p (struct loop *loop, basic_block bb)
 static unsigned int
 main_tree_if_conversion (void)
 {
-  unsigned i, loop_num;
+  loop_iterator li;
   struct loop *loop;
 
   if (!current_loops)
     return 0;
 
-  loop_num = current_loops->num;
-  for (i = 0; i < loop_num; i++)
+  FOR_EACH_LOOP (li, loop, 0)
     {
-      loop =  current_loops->parray[i];
-      if (!loop)
-      continue;
-
       tree_if_conversion (loop, true);
     }
   return 0;

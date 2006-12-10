@@ -939,8 +939,7 @@ evolution_function_is_invariant_rec_p (tree chrec, int loopnum)
     return true;
 
   if (TREE_CODE (chrec) == SSA_NAME 
-      && expr_invariant_in_loop_p (current_loops->parray[loopnum],
-				   chrec))
+      && expr_invariant_in_loop_p (get_loop (loopnum), chrec))
     return true;
 
   if (TREE_CODE (chrec) == POLYNOMIAL_CHREC)
@@ -1280,7 +1279,7 @@ chrec_convert_1 (tree type, tree chrec, tree at_stmt,
   if (!evolution_function_is_affine_p (chrec))
     goto keep_cast;
 
-  loop = current_loops->parray[CHREC_VARIABLE (chrec)];
+  loop = get_chrec_loop (chrec);
   base = CHREC_LEFT (chrec);
   step = CHREC_RIGHT (chrec);
 

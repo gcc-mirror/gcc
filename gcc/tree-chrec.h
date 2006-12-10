@@ -22,14 +22,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #ifndef GCC_TREE_CHREC_H
 #define GCC_TREE_CHREC_H
 
-/* Accessors for the chains of recurrences.  */
-#define CHREC_VAR(NODE)           TREE_OPERAND (NODE, 0)
-#define CHREC_LEFT(NODE)          TREE_OPERAND (NODE, 1)
-#define CHREC_RIGHT(NODE)         TREE_OPERAND (NODE, 2)
-#define CHREC_VARIABLE(NODE)      TREE_INT_CST_LOW (CHREC_VAR (NODE))
-
-
-
 /* The following trees are unique elements.  Thus the comparison of another 
    element to these elements should be done on the pointer to these trees, 
    and not on their value.  */
