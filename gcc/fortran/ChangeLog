@@ -1,6 +1,12 @@
 2006-12-10  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/29568
+	* options.c:  Apply the correct version of the previous
+	patch.
+
+2006-12-10  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/29568
 	* gfortran.h (gfc_option_t):  Add max_subrecord_length.
 	(top level): Define MAX_SUBRECORD_LENGTH.
 	* lang.opt:  Add option -fmax-subrecord-length=.
