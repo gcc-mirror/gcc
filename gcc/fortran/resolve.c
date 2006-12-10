@@ -6632,6 +6632,7 @@ resolve_equivalence_derived (gfc_symbol *derived, gfc_symbol *sym, gfc_expr *e)
    the preceding objects.  A substring shall not have length zero.  A
    derived type shall not have components with default initialization nor
    shall two objects of an equivalence group be initialized.
+   Either all or none of the objects shall have an protected attribute.
    The simple constraints are done in symbol.c(check_conflict) and the rest
    are implemented here.  */
 
@@ -6646,7 +6647,7 @@ resolve_equivalence (gfc_equiv *eq)
   locus *last_where = NULL;
   seq_type eq_type, last_eq_type;
   gfc_typespec *last_ts;
-  int object;
+  int object, cnt_protected;
   const char *value_name;
   const char *msg;
 
@@ -6654,6 +6655,8 @@ resolve_equivalence (gfc_equiv *eq)
   last_ts = &eq->expr->symtree->n.sym->ts;
 
   first_sym = eq->expr->symtree->n.sym;
+
+  cnt_protected = 0;
 
   for (object = 1; eq; eq = eq->eq, object++)
     {
@@ -6725,6 +6728,17 @@ resolve_equivalence (gfc_equiv *eq)
         continue;
 
       sym = e->symtree->n.sym;
+
+      if (sym->attr.protected)
+	cnt_protected++;
+      if (cnt_protected > 0 && cnt_protected != object)
+       	{
+	      gfc_error ("Either all or none of the objects in the "
+			 "EQUIVALENCE set at %L shall have the "
+			 "PROTECTED attribute",
+			 &e->where);
+	      break;
+        }
 
       /* An equivalence statement cannot have more than one initialized
 	 object.  */

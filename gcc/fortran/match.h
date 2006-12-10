@@ -142,6 +142,7 @@ match gfc_match_intrinsic (void);
 match gfc_match_optional (void);
 match gfc_match_parameter (void);
 match gfc_match_pointer (void);
+match gfc_match_protected (void);
 match gfc_match_private (gfc_statement *);
 match gfc_match_public (gfc_statement *);
 match gfc_match_save (void);

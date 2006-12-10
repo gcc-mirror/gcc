@@ -550,6 +550,8 @@ gfc_show_attr (symbol_attribute * attr)
     gfc_status (" OPTIONAL");
   if (attr->pointer)
     gfc_status (" POINTER");
+  if (attr->protected)
+    gfc_status (" PROTECTED");
   if (attr->save)
     gfc_status (" SAVE");
   if (attr->value)

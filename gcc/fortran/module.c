@@ -1491,7 +1491,7 @@ typedef enum
   AB_IN_NAMELIST, AB_IN_COMMON, AB_FUNCTION, AB_SUBROUTINE, AB_SEQUENCE,
   AB_ELEMENTAL, AB_PURE, AB_RECURSIVE, AB_GENERIC, AB_ALWAYS_EXPLICIT,
   AB_CRAY_POINTER, AB_CRAY_POINTEE, AB_THREADPRIVATE, AB_ALLOC_COMP,
-  AB_VALUE, AB_VOLATILE
+  AB_VALUE, AB_VOLATILE, AB_PROTECTED
 }
 ab_attribute;
 
@@ -1524,6 +1524,7 @@ static const mstring attr_bits[] =
     minit ("CRAY_POINTER", AB_CRAY_POINTER),
     minit ("CRAY_POINTEE", AB_CRAY_POINTEE),
     minit ("ALLOC_COMP", AB_ALLOC_COMP),
+    minit ("PROTECTED", AB_PROTECTED),
     minit (NULL, -1)
 };
 
@@ -1574,6 +1575,8 @@ mio_symbol_attribute (symbol_attribute * attr)
 	MIO_NAME(ab_attribute) (AB_OPTIONAL, attr_bits);
       if (attr->pointer)
 	MIO_NAME(ab_attribute) (AB_POINTER, attr_bits);
+      if (attr->protected)
+	MIO_NAME(ab_attribute) (AB_PROTECTED, attr_bits);
       if (attr->save)
 	MIO_NAME(ab_attribute) (AB_SAVE, attr_bits);
       if (attr->value)
@@ -1654,6 +1657,9 @@ mio_symbol_attribute (symbol_attribute * attr)
 	      break;
 	    case AB_POINTER:
 	      attr->pointer = 1;
+	      break;
+	    case AB_PROTECTED:
+	      attr->protected = 1;
 	      break;
 	    case AB_SAVE:
 	      attr->save = 1;
