@@ -77,7 +77,7 @@ main()
    * t1 is a "map" type, and cannot be rebound.
    **/
 
-  typedef t_1::rebind<1>::other t_1_rebound; // { dg-error "expected" }
+  typedef t_1::rebind<1>::other t_1_rebound; // { dg-error "parameter-lists" }
 }
 
 

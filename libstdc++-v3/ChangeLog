@@ -1,3 +1,9 @@
+2006-12-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29732
+	* testsuite/ext/pb_assoc/example/mapping_level_neg.cc: Tweak error
+	markers. 
+
 2006-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/testsuite_hooks.cc (set_memory_limits): Don't set
