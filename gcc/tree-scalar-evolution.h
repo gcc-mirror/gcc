@@ -22,7 +22,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #ifndef GCC_TREE_SCALAR_EVOLUTION_H
 #define GCC_TREE_SCALAR_EVOLUTION_H
 
-extern tree number_of_iterations_in_loop (struct loop *);
+extern tree number_of_latch_executions (struct loop *);
+extern tree number_of_exit_cond_executions (struct loop *);
 extern tree get_loop_exit_condition (struct loop *);
 
 extern void scev_initialize (void);

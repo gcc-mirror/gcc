@@ -2393,7 +2393,7 @@ vect_get_loop_niters (struct loop *loop, tree *number_of_iterations)
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== get_loop_niters ===");
 
-  niters = number_of_iterations_in_loop (loop);
+  niters = number_of_exit_cond_executions (loop);
 
   if (niters != NULL_TREE
       && niters != chrec_dont_know)

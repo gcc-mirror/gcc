@@ -15,5 +15,5 @@ int foo (int *p)
   return i;
 }
 
-/* { dg-final { scan-tree-dump "set_nb_iterations_in_loop = 2" "sccp" } } */
+/* { dg-final { scan-tree-dump "set_nb_iterations_in_loop = 1" "sccp" } } */
 /* { dg-final { cleanup-tree-dump "sccp" } } */

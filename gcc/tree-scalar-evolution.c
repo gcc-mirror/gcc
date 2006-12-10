@@ -468,20 +468,14 @@ compute_overall_effect_of_inner_loop (struct loop *loop, tree evolution_fn)
       if (CHREC_VARIABLE (evolution_fn) >= (unsigned) loop->num)
 	{
 	  struct loop *inner_loop = get_chrec_loop (evolution_fn);
-	  tree nb_iter = number_of_iterations_in_loop (inner_loop);
+	  tree nb_iter = number_of_latch_executions (inner_loop);
 
 	  if (nb_iter == chrec_dont_know)
 	    return chrec_dont_know;
 	  else
 	    {
 	      tree res;
-	      tree type = chrec_type (nb_iter);
 
-	      /* Number of iterations is off by one (the ssa name we
-		 analyze must be defined before the exit).  */
-	      nb_iter = chrec_fold_minus (type, nb_iter,
-					  build_int_cst (type, 1));
-	      
 	      /* evolution_fn is the evolution function in LOOP.  Get
 		 its value in the nb_iter-th iteration.  */
 	      res = chrec_apply (inner_loop->num, evolution_fn, nb_iter);
@@ -510,7 +504,7 @@ bool
 chrec_is_positive (tree chrec, bool *value)
 {
   bool value0, value1, value2;
-  tree type, end_value, nb_iter;
+  tree end_value, nb_iter;
   
   switch (TREE_CODE (chrec))
     {
@@ -533,12 +527,9 @@ chrec_is_positive (tree chrec, bool *value)
       if (!evolution_function_is_affine_p (chrec))
 	return false;
 
-      nb_iter = number_of_iterations_in_loop (get_chrec_loop (chrec));
+      nb_iter = number_of_latch_executions (get_chrec_loop (chrec));
       if (chrec_contains_undetermined (nb_iter))
 	return false;
-
-      type = chrec_type (nb_iter);
-      nb_iter = chrec_fold_minus (type, nb_iter, build_int_cst (type, 1));
 
 #if 0
       /* TODO -- If the test is after the exit, we may decrease the number of
@@ -892,19 +883,6 @@ static inline tree
 set_nb_iterations_in_loop (struct loop *loop, 
 			   tree res)
 {
-  tree type = chrec_type (res);
-
-  res = chrec_fold_plus (type, res, build_int_cst (type, 1));
-
-  /* FIXME HWI: However we want to store one iteration less than the
-     count of the loop in order to be compatible with the other
-     nb_iter computations in loop-iv.  This also allows the
-     representation of nb_iters that are equal to MAX_INT.  */
-  if (TREE_CODE (res) == INTEGER_CST
-      && (TREE_INT_CST_LOW (res) == 0
-	  || TREE_OVERFLOW (res)))
-    res = chrec_dont_know;
-  
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "  (set_nb_iterations_in_loop = ");
@@ -2465,7 +2443,7 @@ resolve_mixers (struct loop *loop, tree chrec)
    the loop body has been executed 6 times.  */
 
 tree 
-number_of_iterations_in_loop (struct loop *loop)
+number_of_latch_executions (struct loop *loop)
 {
   tree res, type;
   edge exit;
@@ -2500,6 +2478,33 @@ end:
   return set_nb_iterations_in_loop (loop, res);
 }
 
+/* Returns the number of executions of the exit condition of LOOP,
+   i.e., the number by one higher than number_of_latch_executions.
+   Note that unline number_of_latch_executions, this number does
+   not necessarily fit in the unsigned variant of the type of
+   the control variable -- if the number of iterations is a constant,
+   we return chrec_dont_know if adding one to number_of_latch_executions
+   overflows; however, in case the number of iterations is symbolic
+   expression, the caller is responsible for dealing with this
+   the possible overflow.  */
+
+tree 
+number_of_exit_cond_executions (struct loop *loop)
+{
+  tree ret = number_of_latch_executions (loop);
+  tree type = chrec_type (ret);
+
+  if (chrec_contains_undetermined (ret))
+    return ret;
+
+  ret = chrec_fold_plus (type, ret, build_int_cst (type, 1));
+  if (TREE_CODE (ret) == INTEGER_CST
+      && TREE_OVERFLOW (ret))
+    return chrec_dont_know;
+
+  return ret;
+}
+
 /* One of the drivers for testing the scalar evolutions analysis.
    This function computes the number of iterations for all the loops
    from the EXIT_CONDITIONS array.  */
@@ -2514,7 +2519,7 @@ number_of_iterations_for_all_loops (VEC(tree,heap) **exit_conditions)
   
   for (i = 0; VEC_iterate (tree, *exit_conditions, i, cond); i++)
     {
-      tree res = number_of_iterations_in_loop (loop_containing_stmt (cond));
+      tree res = number_of_latch_executions (loop_containing_stmt (cond));
       if (chrec_contains_undetermined (res))
 	nb_chrec_dont_know_loops++;
       else
@@ -2956,7 +2961,7 @@ scev_const_prop (void)
       if (!exit)
 	continue;
 
-      niter = number_of_iterations_in_loop (loop);
+      niter = number_of_latch_executions (loop);
       if (niter == chrec_dont_know
 	  /* If computing the number of iterations is expensive, it may be
 	     better not to introduce computations involving it.  */

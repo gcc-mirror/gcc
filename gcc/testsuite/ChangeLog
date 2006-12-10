@@ -1,3 +1,7 @@
+2006-12-10  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/loop-17.c: Update outcome.
+
 2006-12-10  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/23994
