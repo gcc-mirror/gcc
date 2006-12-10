@@ -336,11 +336,11 @@ static unsigned int cse_reg_info_table_size;
 static unsigned int cse_reg_info_table_first_uninitialized;
 
 /* The timestamp at the beginning of the current run of
-   cse_basic_block.  We increment this variable at the beginning of
-   the current run of cse_basic_block.  The timestamp field of a
+   cse_extended_basic_block.  We increment this variable at the beginning of
+   the current run of cse_extended_basic_block.  The timestamp field of a
    cse_reg_info entry matches the value of this variable if and only
    if the entry has been initialized during the current run of
-   cse_basic_block.  */
+   cse_extended_basic_block.  */
 static unsigned int cse_reg_info_timestamp;
 
 /* A HARD_REG_SET containing all the hard registers for which there is
@@ -536,7 +536,8 @@ static struct table_elt *free_element_chain;
 static int constant_pool_entries_cost;
 static int constant_pool_entries_regcost;
 
-/* This data describes a block that will be processed by cse_basic_block.  */
+/* This data describes a block that will be processed by
+   cse_extended_basic_block.  */
 
 struct cse_basic_block_data
 {
@@ -546,19 +547,19 @@ struct cse_basic_block_data
   int high_cuid;
   /* Total number of SETs in block.  */
   int nsets;
-  /* Last insn in the block.  */
-  rtx last;
   /* Size of current branch path, if any.  */
   int path_size;
-  /* Current branch path, indicating which branches will be taken.  */
+  /* Current path, indicating which basic_blocks will be processed.  */
   struct branch_path
     {
-      /* The branch insn.  */
-      rtx branch;
-      /* Whether it should be taken or not.  */
-      enum taken {PATH_TAKEN, PATH_NOT_TAKEN} status;
+      /* The basic block for this path entry.  */
+      basic_block bb;
     } *path;
 };
+
+/* A simple bitmap to track which basic blocks have been visited
+   already as part of an already processed extended basic block.  */
+static sbitmap cse_visited_basic_blocks;
 
 static bool fixed_base_plus_p (rtx x);
 static int notreg_cost (rtx, enum rtx_code);
@@ -602,11 +603,10 @@ static void record_jump_equiv (rtx, bool);
 static void record_jump_cond (enum rtx_code, enum machine_mode, rtx, rtx,
 			      int);
 static void cse_insn (rtx, rtx);
-static void cse_end_of_basic_block (rtx, struct cse_basic_block_data *,
-				    int);
+static void cse_prescan_path (struct cse_basic_block_data *);
 static void invalidate_from_clobbers (rtx);
 static rtx cse_process_notes (rtx, rtx);
-static rtx cse_basic_block (rtx, rtx, struct branch_path *);
+static void cse_extended_basic_block (struct cse_basic_block_data *);
 static void count_reg_usage (rtx, int *, rtx, int);
 static int check_for_label_ref (rtx *, void *);
 extern void dump_class (struct table_elt*);
@@ -4862,6 +4862,14 @@ cse_insn (rtx insn, rtx libcall_insn)
 
 	      validate_change (insn, &SET_SRC (sets[i].rtl), new, 1);
 	      apply_change_group ();
+
+	      /* With non-call exceptions, if this was an insn that could
+		 trap, we may have made it non-throwing now.  For example
+		 we may have replaced a load with a register.  */
+	      if (flag_non_call_exceptions
+		  && insn == BB_END (BLOCK_FOR_INSN (insn)))
+		purge_dead_edges (BLOCK_FOR_INSN (insn));
+
 	      break;
 	    }
 
@@ -5317,6 +5325,15 @@ cse_insn (rtx insn, rtx libcall_insn)
       && MEM_VOLATILE_P (PATTERN (insn)))
     flush_hash_table ();
 
+  /* Don't cse over a call to setjmp; on some machines (eg VAX)
+     the regs restored by the longjmp come from a later time
+     than the setjmp.  */
+  if (CALL_P (insn) && find_reg_note (insn, REG_SETJMP, NULL))
+    {
+      flush_hash_table ();
+      goto done;
+    }
+
   /* Make sure registers mentioned in destinations
      are safe for use in an expression to be inserted.
      This removes from the hash table
@@ -5578,15 +5595,15 @@ cse_insn (rtx insn, rtx libcall_insn)
       if ((src_ent->first_reg == REGNO (SET_DEST (sets[0].rtl)))
 	  && ! find_reg_note (insn, REG_RETVAL, NULL_RTX))
 	{
-	  rtx prev = insn;
 	  /* Scan for the previous nonnote insn, but stop at a basic
 	     block boundary.  */
+	  rtx prev = insn;
+	  rtx bb_head = BB_HEAD (BLOCK_FOR_INSN (insn));
 	  do
 	    {
 	      prev = PREV_INSN (prev);
 	    }
-	  while (prev && NOTE_P (prev)
-		 && NOTE_LINE_NUMBER (prev) != NOTE_INSN_BASIC_BLOCK);
+	  while (prev != bb_head && NOTE_P (prev));
 
 	  /* Do not swap the registers around if the previous instruction
 	     attaches a REG_EQUIV note to REG1.
@@ -5599,8 +5616,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	     This section previously turned the REG_EQUIV into a REG_EQUAL
 	     note.  We cannot do that because REG_EQUIV may provide an
 	     uninitialized stack slot when REG_PARM_STACK_SPACE is used.  */
-
-	  if (prev != 0 && NONJUMP_INSN_P (prev)
+	  if (NONJUMP_INSN_P (prev)
 	      && GET_CODE (PATTERN (prev)) == SET
 	      && SET_DEST (PATTERN (prev)) == SET_SRC (sets[0].rtl)
 	      && ! find_reg_note (prev, REG_EQUIV, NULL_RTX))
@@ -5627,12 +5643,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	}
     }
 
-  /* If this is a conditional jump insn, record any known equivalences due to
-     the condition being tested.  */
-
-  if (n_sets == 1 && any_condjump_p (insn))
-    record_jump_equiv (insn, false);
-
+done:;
 #ifdef HAVE_cc0
   /* If the previous insn set CC0 and this insn no longer references CC0,
      delete the previous insn.  Here we use the fact that nothing expects CC0
@@ -5796,168 +5807,337 @@ cse_process_notes (rtx x, rtx object)
   return x;
 }
 
-/* Find the end of INSN's basic block and return its range,
-   the total number of SETs in all the insns of the block, the last insn of the
-   block, and the branch path.
+/* Find a path in the CFG, starting with FIRST_BB to perform CSE on.
 
-   The branch path indicates which branches should be followed.  If a nonzero
-   path size is specified, the block should be rescanned and a different set
-   of branches will be taken.  The branch path is only used if
-   FLAG_CSE_FOLLOW_JUMPS is nonzero.
+   DATA is a pointer to a struct cse_basic_block_data, that is used to
+   describe the path.
+   It is filled with a queue of basic blocks, starting with FIRST_BB
+   and following a trace through the CFG.
+  
+   If all paths starting at FIRST_BB have been followed, or no new path
+   starting at FIRST_BB can be constructed, this function returns FALSE.
+   Otherwise, DATA->path is filled and the function returns TRUE indicating
+   that a path to follow was found.
 
-   DATA is a pointer to a struct cse_basic_block_data, defined below, that is
-   used to describe the block.  It is filled in with the information about
-   the current block.  The incoming structure's branch path, if any, is used
-   to construct the output branch path.  */
+   If FOLLOW_JUMPS is false, the maximum path lenghth is 1 and the only
+   block in the path will be FIRST_BB.  */
 
-static void
-cse_end_of_basic_block (rtx insn, struct cse_basic_block_data *data,
-			int follow_jumps)
+static bool
+cse_find_path (basic_block first_bb, struct cse_basic_block_data *data,
+	       int follow_jumps)
 {
-  rtx p = insn, q;
-  int nsets = 0;
-  int low_cuid = INSN_CUID (insn), high_cuid = INSN_CUID (insn);
-  rtx next = INSN_P (insn) ? insn : next_real_insn (insn);
-  int path_size = data->path_size;
-  int path_entry = 0;
-  int i;
+  basic_block bb;
+  edge e;
+  int path_size;
+ 
+  SET_BIT (cse_visited_basic_blocks, first_bb->index);
 
-  /* Update the previous branch path, if any.  If the last branch was
-     previously PATH_TAKEN, mark it PATH_NOT_TAKEN.
-     If it was previously PATH_NOT_TAKEN,
-     shorten the path by one and look at the previous branch.  We know that
-     at least one branch must have been taken if PATH_SIZE is nonzero.  */
-  while (path_size > 0)
+  /* See if there is a previous path.  */
+  path_size = data->path_size;
+
+  /* There is a previous path.  Make sure it started with FIRST_BB.  */
+  if (path_size)
+    gcc_assert (data->path[0].bb == first_bb);
+
+  /* There was only one basic block in the last path.  Clear the path and
+     return, so that paths starting at another basic block can be tried.  */
+  if (path_size == 1)
     {
-      if (data->path[path_size - 1].status != PATH_NOT_TAKEN)
-	{
-	  data->path[path_size - 1].status = PATH_NOT_TAKEN;
-	  break;
-	}
-      else
-	path_size--;
+      path_size = 0;
+      goto done;
     }
 
-  /* If the first instruction is marked with QImode, that means we've
-     already processed this block.  Our caller will look at DATA->LAST
-     to figure out where to go next.  We want to return the next block
-     in the instruction stream, not some branched-to block somewhere
-     else.  We accomplish this by pretending our called forbid us to
-     follow jumps.  */
-  if (GET_MODE (insn) == QImode)
-    follow_jumps = 0;
-
-  /* Scan to end of this basic block.  */
-  while (p && !LABEL_P (p))
+  /* If the path was empty from the beginning, construct a new path.  */
+  if (path_size == 0)
+    data->path[path_size++].bb = first_bb;
+  else
     {
-      /* Don't cse over a call to setjmp; on some machines (eg VAX)
-	 the regs restored by the longjmp come from
-	 a later time than the setjmp.  */
-      if (PREV_INSN (p) && CALL_P (PREV_INSN (p))
-	  && find_reg_note (PREV_INSN (p), REG_SETJMP, NULL))
-	break;
+      /* Otherwise, path_size must be equal to or greater than 2, because
+	 a previous path exists that is at least two basic blocks long.
 
-      /* A PARALLEL can have lots of SETs in it,
-	 especially if it is really an ASM_OPERANDS.  */
-      if (INSN_P (p) && GET_CODE (PATTERN (p)) == PARALLEL)
-	nsets += XVECLEN (PATTERN (p), 0);
-      else if (!NOTE_P (p))
-	nsets += 1;
-
-      /* Ignore insns made by CSE; they cannot affect the boundaries of
-	 the basic block.  */
-
-      if (INSN_UID (p) <= max_uid && INSN_CUID (p) > high_cuid)
-	high_cuid = INSN_CUID (p);
-      if (INSN_UID (p) <= max_uid && INSN_CUID (p) < low_cuid)
-	low_cuid = INSN_CUID (p);
-
-      /* See if this insn is in our branch path.  If it is and we are to
-	 take it, do so.  */
-      if (path_entry < path_size && data->path[path_entry].branch == p)
+	 Update the previous branch path, if any.  If the last branch was
+	 previously along the branch edge, take the fallthrough edge now.  */
+      while (path_size >= 2)
 	{
-	  if (data->path[path_entry].status != PATH_NOT_TAKEN)
-	    p = JUMP_LABEL (p);
+	  basic_block last_bb_in_path, previous_bb_in_path;
+	  edge e;
 
-	  /* Point to next entry in path, if any.  */
-	  path_entry++;
-	}
+	  --path_size;
+	  last_bb_in_path = data->path[path_size].bb;
+	  previous_bb_in_path = data->path[path_size - 1].bb;
 
-      /* If this is a conditional jump, we can follow it if -fcse-follow-jumps
-	 was specified, we haven't reached our maximum path length, there are
-	 insns following the target of the jump, this is the only use of the
-	 jump label, and the target label is preceded by a BARRIER.  */
-      else if (follow_jumps
-	       && path_size < PARAM_VALUE (PARAM_MAX_CSE_PATH_LENGTH) - 1
-	       && JUMP_P (p)
-	       && GET_CODE (PATTERN (p)) == SET
-	       && GET_CODE (SET_SRC (PATTERN (p))) == IF_THEN_ELSE
-	       && JUMP_LABEL (p) != 0
-	       && LABEL_NUSES (JUMP_LABEL (p)) == 1
-	       && NEXT_INSN (JUMP_LABEL (p)) != 0)
-	{
-	  for (q = PREV_INSN (JUMP_LABEL (p)); q; q = PREV_INSN (q))
-	    if ((!NOTE_P (q)
-		 || (PREV_INSN (q) && CALL_P (PREV_INSN (q))
-		     && find_reg_note (PREV_INSN (q), REG_SETJMP, NULL)))
-		&& (!LABEL_P (q) || LABEL_NUSES (q) != 0))
-	      break;
-
-	  /* If we ran into a BARRIER, this code is an extension of the
-	     basic block when the branch is taken.  */
-	  if (follow_jumps && q != 0 && BARRIER_P (q))
+	  /* If we previously followed a path along the branch edge, try
+	     the fallthru edge now.  */
+	  if (EDGE_COUNT (previous_bb_in_path->succs) == 2
+	      && any_condjump_p (BB_END (previous_bb_in_path))
+	      && (e = find_edge (previous_bb_in_path, last_bb_in_path))
+	      && e == BRANCH_EDGE (previous_bb_in_path))
 	    {
-	      /* Don't allow ourself to keep walking around an
-		 always-executed loop.  */
-	      if (next_real_insn (q) == next)
+	      bb = FALLTHRU_EDGE (previous_bb_in_path)->dest;
+	      if (bb != EXIT_BLOCK_PTR
+		  && single_pred_p (bb))
 		{
-		  p = NEXT_INSN (p);
-		  continue;
-		}
-
-	      /* Similarly, don't put a branch in our path more than once.  */
-	      for (i = 0; i < path_entry; i++)
-		if (data->path[i].branch == p)
+#if ENABLE_CHECKING
+		  /* We should only see blocks here that we have not
+		     visited yet.  */
+		  gcc_assert (!TEST_BIT (cse_visited_basic_blocks, bb->index));
+#endif
+		  SET_BIT (cse_visited_basic_blocks, bb->index);
+		  data->path[path_size++].bb = bb;
 		  break;
-
-	      if (i != path_entry)
-		break;
-
-	      data->path[path_entry].branch = p;
-	      data->path[path_entry++].status = PATH_TAKEN;
-
-	      /* This branch now ends our path.  It was possible that we
-		 didn't see this branch the last time around (when the
-		 insn in front of the target was a JUMP_INSN that was
-		 turned into a no-op).  */
-	      path_size = path_entry;
-
-	      p = JUMP_LABEL (p);
-	      /* Mark block so we won't scan it again later.  */
-	      PUT_MODE (NEXT_INSN (p), QImode);
+		}
 	    }
+
+	  data->path[path_size].bb = NULL;
 	}
-      p = NEXT_INSN (p);
+
+      /* If only one block remains in the path, bail.  */
+      if (path_size == 1)
+	{
+	  path_size = 0;
+	  goto done;
+	}
+    }
+
+  /* Extend the path if possible.  */
+  if (follow_jumps)
+    {
+      bb = data->path[path_size - 1].bb;
+      while (bb && path_size < PARAM_VALUE (PARAM_MAX_CSE_PATH_LENGTH))
+	{
+	  if (single_succ_p (bb))
+	    e = single_succ_edge (bb);
+	  else if (EDGE_COUNT (bb->succs) == 2
+		   && any_condjump_p (BB_END (bb)))
+	    {
+	      /* First try to follow the branch.  If that doesn't lead
+		 to a useful path, follow the fallthru edge.  */
+	      e = BRANCH_EDGE (bb);
+	      if (!single_pred_p (e->dest))
+		e = FALLTHRU_EDGE (bb);
+	    }
+	  else
+	    e = NULL;
+
+	  if (e && e->dest != EXIT_BLOCK_PTR
+	      && single_pred_p (e->dest))
+	    {
+	      basic_block bb2 = e->dest;
+
+#if ENABLE_CHECKING
+	      /* We should only see blocks here that we have not
+		 visited yet.  */
+	      gcc_assert (!TEST_BIT (cse_visited_basic_blocks, bb2->index));
+#endif
+	      SET_BIT (cse_visited_basic_blocks, bb2->index);
+	      data->path[path_size++].bb = bb2;
+	      bb = bb2;
+	    }
+	  else
+	    bb = NULL;
+	}
+    }
+
+done:
+  data->path_size = path_size;
+  return path_size != 0;
+}
+
+/* Dump the path in DATA to file F.  NSETS is the number of sets
+   in the path.  */
+
+static void
+cse_dump_path (struct cse_basic_block_data *data, int nsets, FILE *f)
+{
+  int path_entry;
+
+  fprintf (f, ";; Following path with %d sets: ", nsets);
+  for (path_entry = 0; path_entry < data->path_size; path_entry++)
+    fprintf (f, "%d ", (data->path[path_entry].bb)->index);
+  fputc ('\n', dump_file);
+  fflush (f);
+}
+
+
+/* Scan to the end of the path described by DATA.  Return an estimate of
+   the total number of SETs, and the lowest and highest insn CUID, of all
+   insns in the path.  */
+
+static void
+cse_prescan_path (struct cse_basic_block_data *data)
+{
+  int nsets = 0;
+  int low_cuid = -1, high_cuid = -1; /* FIXME low_cuid not computed correctly */
+  int path_size = data->path_size;
+  int path_entry;
+
+  /* Scan to end of each basic block in the path.  */
+  for (path_entry = 0; path_entry < path_size; path_entry++) 
+    {
+      basic_block bb;
+      rtx insn;
+
+      bb = data->path[path_entry].bb;
+
+      FOR_BB_INSNS (bb, insn)
+	{
+	  if (!INSN_P (insn))
+	    continue;
+
+	  /* A PARALLEL can have lots of SETs in it,
+	     especially if it is really an ASM_OPERANDS.  */
+	  if (GET_CODE (PATTERN (insn)) == PARALLEL)
+	    nsets += XVECLEN (PATTERN (insn), 0);
+	  else
+	    nsets += 1;
+
+	  /* Ignore insns made by CSE in a previous traversal of this
+	     basic block.  They cannot affect the boundaries of the
+	     basic block.
+	     FIXME: When we only visit each basic block at most once,
+		    this can go away.  */
+	  if (INSN_UID (insn) <= max_uid && INSN_CUID (insn) > high_cuid)
+	    high_cuid = INSN_CUID (insn);
+	  if (INSN_UID (insn) <= max_uid && INSN_CUID (insn) < low_cuid)
+	    low_cuid = INSN_CUID (insn);
+	}
     }
 
   data->low_cuid = low_cuid;
   data->high_cuid = high_cuid;
   data->nsets = nsets;
-  data->last = p;
+}
+
+/* Process a single extended basic block described by EBB_DATA.  */
 
-  /* If all jumps in the path are not taken, set our path length to zero
-     so a rescan won't be done.  */
-  for (i = path_size - 1; i >= 0; i--)
-    if (data->path[i].status != PATH_NOT_TAKEN)
-      break;
+static void
+cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
+{
+  int path_size = ebb_data->path_size;
+  int path_entry;
+  int num_insns = 0;
 
-  if (i == -1)
-    data->path_size = 0;
-  else
-    data->path_size = path_size;
+  /* Allocate the space needed by qty_table.  */
+  qty_table = XNEWVEC (struct qty_table_elem, max_qty);
 
-  /* End the current branch path.  */
-  data->path[path_size].branch = 0;
+  new_basic_block ();
+  for (path_entry = 0; path_entry < path_size; path_entry++)
+    {
+      basic_block bb;
+      rtx insn;
+      rtx libcall_insn = NULL_RTX;
+      int no_conflict = 0;
+
+      bb = ebb_data->path[path_entry].bb;
+      FOR_BB_INSNS (bb, insn)
+	{
+	  /* If we have processed 1,000 insns, flush the hash table to
+	     avoid extreme quadratic behavior.  We must not include NOTEs
+	     in the count since there may be more of them when generating
+	     debugging information.  If we clear the table at different
+	     times, code generated with -g -O might be different than code
+	     generated with -O but not -g.
+
+	     FIXME: This is a real kludge and needs to be done some other
+		    way.  */
+	  if (INSN_P (insn)
+	      && num_insns++ > PARAM_VALUE (PARAM_MAX_CSE_INSNS))
+	    {
+	      flush_hash_table ();
+	      num_insns = 0;
+	    }
+
+	  if (INSN_P (insn))
+	    {
+	      /* Process notes first so we have all notes in canonical forms
+		 when looking for duplicate operations.  */
+	      if (REG_NOTES (insn))
+		REG_NOTES (insn) = cse_process_notes (REG_NOTES (insn),
+						      NULL_RTX);
+
+	      /* Track when we are inside in LIBCALL block.  Inside such
+		 a block we do not want to record destinations.  The last
+		 insn of a LIBCALL block is not considered to be part of
+		 the block, since its destination is the result of the
+		 block and hence should be recorded.  */
+	      if (REG_NOTES (insn) != 0)
+		{
+		  rtx p;
+
+		  if ((p = find_reg_note (insn, REG_LIBCALL, NULL_RTX)))
+		    libcall_insn = XEXP (p, 0);
+		  else if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
+		    {
+		      /* Keep libcall_insn for the last SET insn of
+			 a no-conflict block to prevent changing the
+			 destination.  */
+		      if (!no_conflict)
+			libcall_insn = NULL_RTX;
+		      else
+			no_conflict = -1;
+		    }
+		  else if (find_reg_note (insn, REG_NO_CONFLICT, NULL_RTX))
+		    no_conflict = 1;
+		}
+
+	      cse_insn (insn, libcall_insn);
+
+	      /* If we kept libcall_insn for a no-conflict bock,
+		 clear it here.  */
+	      if (no_conflict == -1)
+		{
+		  libcall_insn = NULL_RTX;
+		  no_conflict = 0;
+		}
+	    
+	      /* If we haven't already found an insn where we added a LABEL_REF,
+		 check this one.  */
+	      if (NONJUMP_INSN_P (insn) && ! recorded_label_ref
+		  && for_each_rtx (&PATTERN (insn), check_for_label_ref,
+				   (void *) insn))
+		recorded_label_ref = 1;
+	    }
+	}
+
+      /* Make sure that libcalls don't span multiple basic blocks.  */
+      gcc_assert (libcall_insn == NULL_RTX);
+
+#ifdef HAVE_cc0
+      /* Clear the CC0-tracking related insns, they can't provide
+	 useful information across basic block boundaries.  */
+      prev_insn_cc0 = 0;
+      prev_insn = 0;
+#endif
+
+      /* If we changed a conditional jump, we may have terminated
+	 the path we are following.  Check that by verifying that
+	 the edge we would take still exists.  If the edge does
+	 not exist anymore, purge the remainder of the path.
+	 Note that this will cause us to return to the caller.  */
+      if (path_entry < path_size - 1)
+	{
+	  basic_block next_bb = ebb_data->path[path_entry + 1].bb;
+	  if (!find_edge (bb, next_bb))
+	    ebb_data->path_size = path_entry + 1;
+	}
+
+      /* If this is a conditional jump insn, record any known
+	 equivalences due to the condition being tested.  */
+      insn = BB_END (bb);
+      if (path_entry < path_size - 1
+	  && JUMP_P (insn)
+	  && single_set (insn)
+	  && any_condjump_p (insn))
+	{
+	  basic_block next_bb = ebb_data->path[path_entry + 1].bb;
+	  bool taken = (next_bb == BRANCH_EDGE (bb)->dest);
+	  record_jump_equiv (insn, taken);
+	}
+    }
+
+  gcc_assert (next_qty <= max_qty);
+
+  free (qty_table);
 }
 
 /* Perform cse on the instructions of a function.
@@ -5968,21 +6148,24 @@ cse_end_of_basic_block (rtx insn, struct cse_basic_block_data *data,
    in conditional jump instructions.  */
 
 int
-cse_main (rtx f, int nregs)
+cse_main (rtx f ATTRIBUTE_UNUSED, int nregs)
 {
-  struct cse_basic_block_data val;
-  rtx insn = f;
-  int i;
+  struct cse_basic_block_data ebb_data;
+  basic_block bb;
+  int *dfs_order = XNEWVEC (int, last_basic_block);
+  int i, n_blocks;
 
   init_cse_reg_info (nregs);
 
-  val.path = XNEWVEC (struct branch_path, PARAM_VALUE (PARAM_MAX_CSE_PATH_LENGTH));
+  ebb_data.path = XNEWVEC (struct branch_path,
+			   PARAM_VALUE (PARAM_MAX_CSE_PATH_LENGTH));
 
   cse_jumps_altered = 0;
   recorded_label_ref = 0;
   constant_pool_entries_cost = 0;
   constant_pool_entries_regcost = 0;
-  val.path_size = 0;
+  ebb_data.path_size = 0;
+  ebb_data.nsets = 0;
   rtl_hooks = cse_rtl_hooks;
 
   init_recog ();
@@ -5990,68 +6173,60 @@ cse_main (rtx f, int nregs)
 
   reg_eqv_table = XNEWVEC (struct reg_eqv_elem, nregs);
 
-  /* Find the largest uid.  */
-
-  max_uid = get_max_uid ();
-  uid_cuid = XCNEWVEC (int, max_uid + 1);
+  /* Set up the table of already visited basic blocks.  */
+  cse_visited_basic_blocks = sbitmap_alloc (last_basic_block);
+  sbitmap_zero (cse_visited_basic_blocks);
 
   /* Compute the mapping from uids to cuids.
-     CUIDs are numbers assigned to insns, like uids,
-     except that cuids increase monotonically through the code.  */
-
-  for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
-    INSN_CUID (insn) = ++i;
-
-  /* Loop over basic blocks.
-     Compute the maximum number of qty's needed for each basic block
-     (which is 2 for each SET).  */
-  insn = f;
-  while (insn)
+     CUIDs are numbers assigned to insns, like uids, except that
+     that cuids increase monotonically through the code.  */
+  max_uid = get_max_uid ();
+  uid_cuid = XCNEWVEC (int, max_uid + 1);
+  i = 0;
+  FOR_EACH_BB (bb)
     {
-      cse_end_of_basic_block (insn, &val, flag_cse_follow_jumps);
+      rtx insn;
+      FOR_BB_INSNS (bb, insn)
+	INSN_CUID (insn) = ++i;
+    }
 
-      /* If this basic block was already processed or has no sets, skip it.  */
-      if (val.nsets == 0 || GET_MODE (insn) == QImode)
+  /* Loop over basic blocks in DFS order,
+     excluding the ENTRY and EXIT blocks.  */
+  n_blocks = pre_and_rev_post_order_compute (dfs_order, NULL, false);
+  i = 0;
+  while (i < n_blocks)
+    {
+      /* Find the first block in the DFS queue that we have not yet
+	 processed before.  */
+      do
 	{
-	  PUT_MODE (insn, VOIDmode);
-	  insn = (val.last ? NEXT_INSN (val.last) : 0);
-	  val.path_size = 0;
-	  continue;
+	  bb = BASIC_BLOCK (dfs_order[i++]);
 	}
+      while (TEST_BIT (cse_visited_basic_blocks, bb->index)
+	     && i < n_blocks);
 
-      cse_basic_block_start = val.low_cuid;
-      cse_basic_block_end = val.high_cuid;
-      max_qty = val.nsets * 2;
-
-      if (dump_file)
-	fprintf (dump_file, ";; Processing block from %d to %d, %d sets.\n",
-		 INSN_UID (insn), val.last ? INSN_UID (val.last) : 0,
-		 val.nsets);
-
-      /* Make MAX_QTY bigger to give us room to optimize
-	 past the end of this basic block, if that should prove useful.  */
-      if (max_qty < 500)
-	max_qty = 500;
-
-      /* If this basic block is being extended by following certain jumps,
-         (see `cse_end_of_basic_block'), we reprocess the code from the start.
-         Otherwise, we start after this basic block.  */
-      if (val.path_size > 0)
-	cse_basic_block (insn, val.last, val.path);
-      else
+      /* Find all paths starting with BB, and process them.  */
+      while (cse_find_path (bb, &ebb_data, flag_cse_follow_jumps))
 	{
-	  int old_cse_jumps_altered = cse_jumps_altered;
-	  rtx temp;
+	  /* Pre-scan the path.  */
+	  cse_prescan_path (&ebb_data);
 
-	  /* When cse changes a conditional jump to an unconditional
-	     jump, we want to reprocess the block, since it will give
-	     us a new branch path to investigate.  */
-	  cse_jumps_altered = 0;
-	  temp = cse_basic_block (insn, val.last, val.path);
-	  if (cse_jumps_altered == 0 || flag_cse_follow_jumps)
-	    insn = temp;
+	  /* If this basic block has no sets, skip it.  */
+	  if (ebb_data.nsets == 0)
+	    continue;
 
-	  cse_jumps_altered |= old_cse_jumps_altered;
+	  /* Get a reasonable extimate for the maximum number of qty's
+	     needed for this path.  For this, we take the number of sets
+	     and multiply that by MAX_RECOG_OPERANDS.  */
+	  max_qty = ebb_data.nsets * MAX_RECOG_OPERANDS;
+	  cse_basic_block_start = ebb_data.low_cuid;
+	  cse_basic_block_end = ebb_data.high_cuid;
+
+	  /* Dump the path we're about to process.  */
+	  if (dump_file)
+	    cse_dump_path (&ebb_data, ebb_data.nsets, dump_file);
+
+	  cse_extended_basic_block (&ebb_data);
 	}
     }
 
@@ -6059,160 +6234,12 @@ cse_main (rtx f, int nregs)
   end_alias_analysis ();
   free (uid_cuid);
   free (reg_eqv_table);
-  free (val.path);
+  free (ebb_data.path);
+  sbitmap_free (cse_visited_basic_blocks);
+  free (dfs_order);
   rtl_hooks = general_rtl_hooks;
 
   return cse_jumps_altered || recorded_label_ref;
-}
-
-/* Process a single basic block.  FROM and TO and the limits of the basic
-   block.  NEXT_BRANCH points to the branch path when following jumps or
-   a null path when not following jumps.  */
-
-static rtx
-cse_basic_block (rtx from, rtx to, struct branch_path *next_branch)
-{
-  rtx insn;
-  int to_usage = 0;
-  rtx libcall_insn = NULL_RTX;
-  int num_insns = 0;
-  int no_conflict = 0;
-
-  /* Allocate the space needed by qty_table.  */
-  qty_table = XNEWVEC (struct qty_table_elem, max_qty);
-
-  new_basic_block ();
-
-  /* TO might be a label.  If so, protect it from being deleted.  */
-  if (to != 0 && LABEL_P (to))
-    ++LABEL_NUSES (to);
-
-  for (insn = from; insn != to; insn = NEXT_INSN (insn))
-    {
-      enum rtx_code code = GET_CODE (insn);
-
-      /* If we have processed 1,000 insns, flush the hash table to
-	 avoid extreme quadratic behavior.  We must not include NOTEs
-	 in the count since there may be more of them when generating
-	 debugging information.  If we clear the table at different
-	 times, code generated with -g -O might be different than code
-	 generated with -O but not -g.
-
-	 ??? This is a real kludge and needs to be done some other way.
-	 Perhaps for 2.9.  */
-      if (code != NOTE && num_insns++ > PARAM_VALUE (PARAM_MAX_CSE_INSNS))
-	{
-	  flush_hash_table ();
-	  num_insns = 0;
-	}
-
-      /* See if this is a branch that is part of the path.  If so, and it is
-	 to be taken, do so.  */
-      if (next_branch->branch == insn)
-	{
-	  enum taken status = next_branch++->status;
-	  if (status != PATH_NOT_TAKEN)
-	    {
-	      gcc_assert (status == PATH_TAKEN);
-	      if (any_condjump_p (insn))
-		record_jump_equiv (insn, true);
-
-	      /* Set the last insn as the jump insn; it doesn't affect cc0.
-		 Then follow this branch.  */
-#ifdef HAVE_cc0
-	      prev_insn_cc0 = 0;
-	      prev_insn = insn;
-#endif
-	      insn = JUMP_LABEL (insn);
-	      continue;
-	    }
-	}
-
-      if (GET_MODE (insn) == QImode)
-	PUT_MODE (insn, VOIDmode);
-
-      if (GET_RTX_CLASS (code) == RTX_INSN)
-	{
-	  rtx p;
-
-	  /* Process notes first so we have all notes in canonical forms when
-	     looking for duplicate operations.  */
-
-	  if (REG_NOTES (insn))
-	    REG_NOTES (insn) = cse_process_notes (REG_NOTES (insn), NULL_RTX);
-
-	  /* Track when we are inside in LIBCALL block.  Inside such a block,
-	     we do not want to record destinations.  The last insn of a
-	     LIBCALL block is not considered to be part of the block, since
-	     its destination is the result of the block and hence should be
-	     recorded.  */
-
-	  if (REG_NOTES (insn) != 0)
-	    {
-	      if ((p = find_reg_note (insn, REG_LIBCALL, NULL_RTX)))
-		libcall_insn = XEXP (p, 0);
-	      else if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
-		{
-		  /* Keep libcall_insn for the last SET insn of a no-conflict
-		     block to prevent changing the destination.  */
-		  if (! no_conflict)
-		    libcall_insn = 0;
-		  else
-		    no_conflict = -1;
-		}
-	      else if (find_reg_note (insn, REG_NO_CONFLICT, NULL_RTX))
-		no_conflict = 1;
-	    }
-
-	  cse_insn (insn, libcall_insn);
-
-	  if (no_conflict == -1)
-	    {
-	      libcall_insn = 0;
-	      no_conflict = 0;
-	    }
-	    
-	  /* If we haven't already found an insn where we added a LABEL_REF,
-	     check this one.  */
-	  if (NONJUMP_INSN_P (insn) && ! recorded_label_ref
-	      && for_each_rtx (&PATTERN (insn), check_for_label_ref,
-			       (void *) insn))
-	    recorded_label_ref = 1;
-	}
-
-      /* If INSN is now an unconditional jump, skip to the end of our
-	 basic block by pretending that we just did the last insn in the
-	 basic block.  If we are jumping to the end of our block, show
-	 that we can have one usage of TO.  */
-
-      if (any_uncondjump_p (insn))
-	{
-	  if (to == 0)
-	    {
-	      free (qty_table);
-	      return 0;
-	    }
-
-	  if (JUMP_LABEL (insn) == to)
-	    to_usage = 1;
-
-	  /* Maybe TO was deleted because the jump is unconditional.
-	     If so, there is nothing left in this basic block.  */
-	  /* ??? Perhaps it would be smarter to set TO
-	     to whatever follows this insn,
-	     and pretend the basic block had always ended here.  */
-	  if (INSN_DELETED_P (to))
-	    break;
-
-	  insn = PREV_INSN (to);
-	}
-    }
-
-  gcc_assert (next_qty <= max_qty);
-
-  free (qty_table);
-
-  return to ? NEXT_INSN (to) : 0;
 }
 
 /* Called via for_each_rtx to see if an insn is using a LABEL_REF for which
@@ -6929,30 +6956,30 @@ gate_handle_cse (void)
 static unsigned int
 rest_of_handle_cse (void)
 {
+static int counter = 0;
   int tem;
-
+counter++;
   if (dump_file)
     dump_flow_info (dump_file, dump_flags);
 
   reg_scan (get_insns (), max_reg_num ());
 
   tem = cse_main (get_insns (), max_reg_num ());
-  if (tem)
-    rebuild_jump_labels (get_insns ());
-  if (purge_all_dead_edges ())
-    delete_unreachable_blocks ();
-
-  delete_trivially_dead_insns (get_insns (), max_reg_num ());
 
   /* If we are not running more CSE passes, then we are no longer
      expecting CSE to be run.  But always rerun it in a cheap mode.  */
   cse_not_expected = !flag_rerun_cse_after_loop && !flag_gcse;
 
+  /* If there are dead edges to purge, we haven't properly updated
+     the CFG incrementally.  */
+  gcc_assert (!purge_all_dead_edges ());
+
   if (tem)
-    delete_dead_jumptables ();
+    rebuild_jump_labels (get_insns ());
 
   if (tem || optimize > 1)
     cleanup_cfg (CLEANUP_EXPENSIVE);
+
   return 0;
 }
 
@@ -6970,7 +6997,8 @@ struct tree_opt_pass pass_cse =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_dump_func |
-  TODO_ggc_collect,                     /* todo_flags_finish */
+  TODO_ggc_collect |
+  TODO_verify_flow,                     /* todo_flags_finish */
   's'                                   /* letter */
 };
 
@@ -6998,7 +7026,10 @@ rest_of_handle_cse2 (void)
      bypassed safely.  */
   cse_condition_code_reg ();
 
-  purge_all_dead_edges ();
+  /* If there are dead edges to purge, we haven't properly updated
+     the CFG incrementally.  */
+  gcc_assert (!purge_all_dead_edges ());
+
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
 
   if (tem)
@@ -7029,7 +7060,8 @@ struct tree_opt_pass pass_cse2 =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_dump_func |
-  TODO_ggc_collect,                     /* todo_flags_finish */
+  TODO_ggc_collect |
+  TODO_verify_flow,                     /* todo_flags_finish */
   't'                                   /* letter */
 };
 

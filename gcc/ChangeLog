@@ -1,3 +1,25 @@
+2006-12-10  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cse.c: (struct cse_basic_block_data): Remove LAST field.
+	(struct branch_path): Remove BRANCH and TAKEN fields. Add new
+	BB field.
+	(cse_visited_basic_blocks): New static bitmap.
+	(cse_end_of_basic_block, cse_basic_block): Remove.
+	(cse_find_path, cse_dump_path, cse_prescan_path,
+	cse_extended_basic_block): New static functions.
+	(cse_insn): Don't CSE over setjmp calls.  Use the CFG to find
+	basic block boundaries.  Don't record jump equivalences here.
+	Update the CFG after doing in-place replacement of the SET_SRC.
+	(cse_main): Rewrite.  Look for extended basic block headers
+	and call cse_extended_basic_block on them until all paths that
+	start at this header are exhausted.
+	(rest_of_handle_cse): Verify that the CFG is incrementally updated
+	and correct after cse_main.
+	Don't call delete_trivially_dead_insns, let cfgcleanup do that.
+	(rest_of_handle_cse2): Verify the CFG here, too, after cse_main.
+	(pass_cse): Add TODO_verify_flow.
+	(pass_cse2): Likewise.
+
 2006-12-10  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* reload1.c (choose_reload_regs): Don't set byte offset when
