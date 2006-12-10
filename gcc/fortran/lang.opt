@@ -165,6 +165,10 @@ fmax-identifier-length=
 Fortran RejectNegative Joined UInteger
 -fmax-identifier-length=<n>	Maximum identifier length
 
+fmax-subrecord-length=
+Fortran RejectNegative Joined UInteger
+-fmax-subrecord-length=<n>	Maximum length for subrecords
+
 fmax-stack-var-size=
 Fortran RejectNegative Joined UInteger
 -fmax-stack-var-size=<n>	Size in bytes of the largest array that will be put on the stack

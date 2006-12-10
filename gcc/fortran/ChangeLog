@@ -1,3 +1,20 @@
+2006-12-10  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/29568
+	* gfortran.h (gfc_option_t):  Add max_subrecord_length.
+	(top level): Define MAX_SUBRECORD_LENGTH.
+	* lang.opt:  Add option -fmax-subrecord-length=.
+	* trans-decl.c:  Add new function set_max_subrecord_length.
+	(gfc_generate_function_code): If we are within the main
+	program and max_subrecord_length has been set, call
+	set_max_subrecord_length.
+	* options.c (gfc_init_options):  Add defaults for
+	max_subrecord_lenght, convert and record_marker.
+	(gfc_handle_option):  Add handling for
+	-fmax_subrecord_length.
+	* invoke.texi:  Document the new default for
+	-frecord-marker=<n>.
+
 2006-12-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29821

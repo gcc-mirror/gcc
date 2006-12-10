@@ -1,16 +1,30 @@
 ! { dg-do run }
-! PR 27575 : This test checks the error checking for end of file condition.
+! PR 27575 and PR 30009: This test checks the error checking for end
+! of file condition.
 ! Derived from test case in PR.
-! Submitted by Jerry DeLisle <jvdelisle@verizon.net>.
+! Submitted by Jerry DeLisle <jvdelisle@verizon.net>, modified by
+! Thomas Koenig <Thomas.Koenig@online.de>
+
       program test
       integer i1,i2,i3
       open(unit=11,form='unformatted')
-      write(11)i1, i2     
+      write (11) 1, 2
+      write (11) 3, 4
       close(11,status='keep')
+
       open(unit=11,form='unformatted')
-      read(11, eND=100) i1, i2, i3
+
+      read(11, ERR=100) i1, i2, i3
       call abort()
- 100  read(11, end=110) i3
-      call abort() 
- 110  close(11,status='delete')
+  100 continue
+      if (i1 /= 1 .or. i2 /= 2) call abort
+
+      read(11, ERR=110) i1, i2, i3
+      call abort()
+  110 continue
+      if (i1 /= 3 .or. i2 /= 4) call abort
+
+      read(11, end=120) i3
+      call abort()
+ 120  close(11,status='delete')
       end

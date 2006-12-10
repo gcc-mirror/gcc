@@ -94,6 +94,7 @@ tree gfor_fndecl_set_fpe;
 tree gfor_fndecl_set_std;
 tree gfor_fndecl_set_convert;
 tree gfor_fndecl_set_record_marker;
+tree gfor_fndecl_set_max_subrecord_length;
 tree gfor_fndecl_ctime;
 tree gfor_fndecl_fdate;
 tree gfor_fndecl_ttynam;
@@ -2321,6 +2322,10 @@ gfc_build_builtin_function_decls (void)
     gfc_build_library_function_decl (get_identifier (PREFIX("set_record_marker")),
 				     void_type_node, 1, gfc_c_int_type_node);
 
+  gfor_fndecl_set_max_subrecord_length =
+    gfc_build_library_function_decl (get_identifier (PREFIX("set_max_subrecord_length")),
+				     void_type_node, 1, gfc_c_int_type_node);
+
   gfor_fndecl_in_pack = gfc_build_library_function_decl (
         get_identifier (PREFIX("internal_pack")),
         pvoid_type_node, 1, pvoid_type_node);
@@ -3127,6 +3132,18 @@ gfc_generate_function_code (gfc_namespace * ns)
       tmp = build_function_call_expr (gfor_fndecl_set_record_marker, arglist);
       gfc_add_expr_to_block (&body, tmp);
 
+    }
+
+  if (sym->attr.is_main_program && gfc_option.max_subrecord_length != 0)
+    {
+      tree arglist, gfc_c_int_type_node;
+
+      gfc_c_int_type_node = gfc_get_int_type (gfc_c_int_kind);
+      arglist = gfc_chainon_list (NULL_TREE,
+				  build_int_cst (gfc_c_int_type_node,
+						 gfc_option.max_subrecord_length));
+      tmp = build_function_call_expr (gfor_fndecl_set_max_subrecord_length, arglist);
+      gfc_add_expr_to_block (&body, tmp);
     }
 
   if (TREE_TYPE (DECL_RESULT (fndecl)) != void_type_node

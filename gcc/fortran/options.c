@@ -626,6 +626,12 @@ gfc_handle_option (size_t scode, const char *arg, int value)
     case OPT_frecord_marker_8:
       gfc_option.record_marker = 8;
       break;
+
+    case OPT_fmax_subrecord_length_:
+      if (value > MAX_SUBRECORD_LENGTH || value < 1)
+	gfc_fatal_error ("Maximum subrecord length is %d", MAX_SUBRECORD_LENGTH);
+
+      gfc_option.max_subrecord_length = value;
     }
 
   return result;

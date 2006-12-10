@@ -86,17 +86,29 @@ set_record_marker (int val)
   switch(val)
     {
     case 4:
-      if (sizeof (GFC_INTEGER_4) != sizeof (gfc_offset))
-	compile_options.record_marker = sizeof (GFC_INTEGER_4);
+      compile_options.record_marker = sizeof (GFC_INTEGER_4);
       break;
 
     case 8:
-      if (sizeof (GFC_INTEGER_8) != sizeof (gfc_offset))
-	compile_options.record_marker = sizeof (GFC_INTEGER_8);
+      compile_options.record_marker = sizeof (GFC_INTEGER_8);
       break;
 
     default:
       runtime_error ("Invalid value for record marker");
       break;
     }
+}
+
+extern void set_max_subrecord_length (int);
+export_proto (set_max_subrecord_length);
+
+void set_max_subrecord_length(int val)
+{
+  if (val > GFC_MAX_SUBRECORD_LENGTH || val < 1)
+    {
+      runtime_error ("Invalid value for maximum subrecord length");
+      return;
+    }
+
+  compile_options.max_subrecord_length = val;
 }

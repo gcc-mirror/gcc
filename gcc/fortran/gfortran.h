@@ -1664,11 +1664,13 @@ typedef struct
   int fshort_enums;
   int convert;
   int record_marker;
+  int max_subrecord_length;
 }
 gfc_option_t;
 
 extern gfc_option_t gfc_option;
 
+#define MAX_SUBRECORD_LENGTH 2147483639   /* 2**31-9 */
 
 /* Constructor nodes for array and structure constructors.  */
 typedef struct gfc_constructor

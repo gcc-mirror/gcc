@@ -1,3 +1,61 @@
+2006-12-10  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/29568
+	* libgfortran/libgfortran.h (compile_options_t):  Add
+	record_marker. (top level):  Define GFC_MAX_SUBRECORD_LENGTH.
+	* runtime/compile_options.c (set_record_marker):  Change
+	default to four-byte record marker.
+	(set_max_subrecord_length):  New function.
+	* runtime/error.c (translate_error):  Change error message
+	for short record on unformatted read.
+	* io/io.h (gfc_unit):  Add recl_subrecord, bytes_left_subrecord
+	and continued.
+	* io/file_pos.c (unformatted_backspace):  Change default of record
+	marker size to four bytes.  Loop over subrecords.
+	* io/open.c:  Default recl is max_offset.  If
+	compile_options.max_subrecord_length has been set, set set
+	u->recl_subrecord to its value, to the maximum value otherwise.
+	* io/transfer.c (top level):  Add prototypes for us_read, us_write,
+	next_record_r_unf and next_record_w_unf.
+	(read_block_direct):  Separate codepaths for unformatted direct
+	and unformatted sequential.  If a recl has been set by the
+	user, use the number of bytes left for the record if it is smaller
+	than the read request.  Loop over subrecords.  Set an error if the
+	user has set a recl and the read was short.
+	(write_buf):  Separate codepaths for unformatted direct and
+	unformatted sequential. If a recl has been set by the
+	user, use the number of bytes left for the record if it is smaller
+	than the read request.  Loop over subrecords.  Set an error if the
+	user has set a recl and the read was short.
+	(us_read):  Add parameter continued (to indicate that bytes_left
+	should not be intialized).  Change default of record marker size
+	to four bytes. Use subrecord.  If the subrecord length is smaller than
+	zero, this indicates a continuation.
+	(us_write):  Add parameter continued (to indicate that the continued
+	flag should be set).  Use subrecord.
+	(pre_position):  Use 0 for continued on us_write and us_read calls.
+	(skip_record):  New function.
+	(next_record_r_unf):  New function.
+	(next_record_r):  Use next_record_r_unf.
+	(write_us_marker):  Default size for record markers is four bytes.
+	(next_record_w_unf):  New function.
+	(next_record_w):  Use next_record_w_unf.
+	PR libfortran/30009
+	PR libfortran/30056
+	* libgfortran.h:  Add ERROR_CORRUPT_FILE to error_codes.
+	* runtime/error.c (translate_error):  Add handling for
+	ERROR_CORRUPT_FILE.
+	* io/transfer.c (read_block_direct):  Add comment about
+	EOR for stream files.
+	Remove test for no bytes left for direct access files.
+	Generate an ERROR_SHORT_RECORD if the read was short.
+	For unformatted sequential files:  Check endfile condition.
+	Remove test for no bytes left.  End of file here means
+	that the file structure has been corrupted.  Pre-position
+	the file for the next record in case of error.
+	(write_buf):  Whitespace fix.  Subtract the number of bytes
+	written from bytes_left.
+
 2006-12-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/29810

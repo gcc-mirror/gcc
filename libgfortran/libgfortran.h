@@ -370,6 +370,7 @@ typedef struct
   int pedantic;
   int convert;
   size_t record_marker;
+  int max_subrecord_length;
 }
 compile_options_t;
 
@@ -379,6 +380,7 @@ internal_proto(compile_options);
 extern void init_compile_options (void);
 internal_proto(init_compile_options);
 
+#define GFC_MAX_SUBRECORD_LENGTH 2147483639   /* 2**31 - 9 */
 
 /* Structure for statement options.  */
 
@@ -414,6 +416,7 @@ typedef enum
   ERROR_ALLOCATION,
   ERROR_DIRECT_EOR,
   ERROR_SHORT_RECORD,
+  ERROR_CORRUPT_FILE,
   ERROR_LAST			/* Not a real error, the last error # + 1.  */
 }
 error_codes;
