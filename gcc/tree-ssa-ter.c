@@ -672,7 +672,8 @@ dump_replaceable_exprs (FILE *f, tree *expr)
 	gcc_assert (var != NULL_TREE);
 	print_generic_expr (f, var, TDF_SLIM);
 	fprintf (f, " replace with --> ");
-	print_generic_expr (f, TREE_OPERAND (stmt, 1), TDF_SLIM);
+	print_generic_expr (f, GENERIC_TREE_OPERAND (stmt, 1),
+			    TDF_SLIM);
 	fprintf (f, "\n");
       }
   fprintf (f, "\n");

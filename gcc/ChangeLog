@@ -1,3 +1,8 @@
+2006-12-10  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-alias.c (compact_name_tags): Use sort_tags_by_id.
+	(tree_pointer_compare): Remove.
+
 2006-12-10  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* tree-vrp.c (adjust_range_with_scev): Use get_chrec_loop.
