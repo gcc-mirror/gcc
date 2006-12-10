@@ -1,3 +1,103 @@
+2006-12-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* common.opt (-ftree-lrs): Remove live range splitting option.
+	* makefile.in: Add tree-ssa-coalesce.o and reduce header dependancies.
+	* opts.c (decode_options): Remove flag_tree_live_range_split.
+	* tree-flow.h (struct var_ann_d): Rename fields from root_ to base_.
+	* tree-flow-inline.h (single_imm_use_p): New.  Check for single use.
+	* tree-outof-ssa.c: Remove header files which aren't needed.
+	(SSANORM_*): Remove flags.
+	(print_exprs_edge, coalesce_abnormal_edges, coalesce_phi_operands, 
+	coalesce_result_decls_and_copies, coalesce_asm_operands): Remove.
+	(coalesce_ssa_name): Move to tree-ssa-coalesce.c.
+	(assign_vars): Use Basevar instead of root_var structure.
+	(replace_def_variable): Dont do anything if def is replaceable.
+	(remove_ssa_form): Integrate functional changes.
+	(rewrite_out_of_ssa): Remove live-range_split option.
+	* tree-ssa-coalesce.c: New File for ssa-name coalescing.
+	(coalesce_cost): Calculate the cost of a coalesce.
+	(coalesce_cost_bb): Calculate the coalesce cost within a BB.
+	(coalesce_cost_edge): Calculate the coalesce cost on an edge.
+	(pop_cost_one_pair): Remove the best coalesce with cost 1 from the list.
+	(pop_best_coalesce): Remove the best coalesce from the list.
+	(coalesce_pair_map_hash): Calculate coalesce pair hash.
+	(coalesce_pair_map_eq): Compare 2 coalesce pairs for hash function.
+	(create_coalesce_list): Create a coalesce list object.
+	(delete_coalesce_list): Free a coalesce list object.
+	(find_coalesce_pair): Find matching pair in the coalesce list.
+	(add_cost_one_coalesce): Add a coalesce to the "cost one" list.
+	(add_coalesce): Add a coalesce to the coalesce list.
+	(compare_pairs): Comparision function to determine pair sorted order.
+	(num_coalesce_pairs): Number of coalesced pairs.
+	(first_coalesce_pair, end_coalesce_pair_p, next_coalesce_pair):
+	Coalesce pair iterator functions.
+	(sort_coalesce_list): Sort coalesce pairs in order of expense.
+	(dump_coalesce_list): Show coalesce list.
+	(ssa_conflicts_new): Create an SSA conflict graph.
+	(ssa_conflicts_delete): Delete an SSA conflict graph.
+	(ssa_conflicts_test_p): Test for conflicts.
+	(ssa_conflicts_add_one): Add a single conflict.
+	(ssa_conflicts_add): Add a conflict pair.
+	(ssa_conflicts_merge): Merge conflicts.
+	(struct live_track_d): Struct for tracking live partitions.
+	(new_live_track): Create new live_track object.
+	(delete_live_track): Delete a live_track object.
+	(live_track_remove_partition): Remove a partition from the live list.
+	(live_track_add_partition): Add a partition from the live list.
+	(live_track_clear_var): Take VAR from the live list.
+	(live_track_live_p): Is var live?
+	(live_track_process_use): Make var come alive.
+	(live_track_process_def): Make var go dead, add conflicts.
+	(live_track_init): Initialize to a live on exit set.
+	(live_track_clear_base_vars): Clear live partitions.
+	(build_ssa_conflict_graph): Build a conflict graph.
+	(print_exprs): Common debug output routine.
+	(abnormal_corrupt): Output info about a failed coalesce across an
+	abnormal edge.
+	(fail_abnormal_edge_coalesce): Output info about a failed MUST_COALESCE.
+	(create_outofssa_var_map): Create a var map and coalesce list.
+	(attempt_coalesce): Coalesce a pair.
+	(coalesce_partitions): Coalesce all pairs in a coalesce list.
+	(coalesce_ssa_name): Entry point.  Determine what ssa_names to coalesce.
+	* tree-ssa-live.c: Remove header files which aren't needed.
+	(var_map_base_init): New.  Initialize a basevar list.
+	(var_map_base_fini): New.  Finish a basevar list.
+	(init_var_map): Initialize new fields.
+	(delete_var_map): Free new fields.
+	(var_union): Use renamed fields.
+	(compact_var_map): Remove.
+	(partition_to_view_init): Use renamed fields, change order of an if.
+	(partition_view_fini): Use renamed fields.
+	(partition_view_normal): Create basevar list if requested.
+	(partition_view_bitmap): Create a view based on a bitmap of partitions.
+	(change_partition_var): Use renamed fields.
+	(create_ssa_var_map): Remove.
+	(tpa_init, tpa_remove_partition, tpa_delete, tpa_compact,
+	root_var_init): Remove.
+	(partition_pair_map_hash, partition_pair_map_eq, create_coalesce_list,
+	delete_coalesce_list, find_partition_pair, coalesce_cost, add_coalesce,
+	compare_pairs, num_coalesce_pairs, first_partition_pair,
+	end_partition_pair_p, next_partition_pair, sort_coalesce_list,
+	pop_best_coalesce, add_conflicts_if_valid, set_if_valid,
+	build_tree_conflict_graph, coalesce_tpa_members, dump_coalesce_list,
+	tpa_dump): Moved to tree-ssa-coalesce.c and/or renamed there.
+	(dump_var_map): Use renamed fields.
+	* tree-ssa-live.h (struct  _var_map): Modify fields.
+	(partition_to_var, version_to_var, var_to_partition): Use renamed 
+	fields.
+	(basevar_index): New.  Index of the base variable of a partition.
+	(num_basevars): New.  Number of unique base variables in partition map.
+	(register_ssa_partition): Use renamed fields.
+	(struct tree_partition_associator_d): Remove.
+	(tpa_num_trees, tpa_tree, tpa_first_partition, tpa_next_partition,
+	tpa_find_tree, tpa_decompact, root_var_init, root_var_num,
+	root_var, root_var_first_partition, root_var_next_partition,
+	root_var_dump, root_var_delete, root_var_remove_partition, 
+	root_var_find, root_var_compact, root_var_decompact): Remove.
+	(struct partition_pair, struct coalesce_list_d): Moved to 
+	tree-ssa-coalesce.c
+	* tree-ssa-ter.c: Remove header files which aren't needed.
+
 2006-12-10  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cse.c: (struct cse_basic_block_data): Remove LAST field.

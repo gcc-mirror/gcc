@@ -218,8 +218,8 @@ struct var_ann_d GTY(())
      been seen yet or not.  */
   unsigned out_of_ssa_tag : 1;
 
-  /* Used when building root_var structures in tree_ssa_live.[ch].  */
-  unsigned root_var_processed : 1;
+  /* Used when building base variable structures in a var_map.  */
+  unsigned base_var_processed : 1;
 
   /* Nonzero if this variable is in the alias set of another variable.  */
   unsigned is_aliased : 1;
@@ -257,8 +257,8 @@ struct var_ann_d GTY(())
      variable represents storage for.  */
   unsigned partition;
 
-  /* Used by the root-var object in tree-ssa-live.[ch].  */
-  unsigned root_index;
+  /* Used by var_map for the base index of ssa base variables.  */
+  unsigned base_index;
 
   /* During into-ssa and the dominator optimizer, this field holds the
      current version of this variable (an SSA_NAME).  */
