@@ -54,30 +54,10 @@ CRTSTUFF_T_CFLAGS =
 # Neither gcc or newlib seem to have a standard way to generate multiple
 # crt*.o files.  So we don't use the standard crt0.o name anymore.
 
-EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crti.o crtn.o crt1.o crtend1.o
+EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
-
-# Assemble startup files.
-$(T)crti.o: $(srcdir)/config/spu/crti.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
-	-c -o $(T)crti.o -x assembler-with-cpp $(srcdir)/config/spu/crti.asm
-
-$(T)crtn.o: $(srcdir)/config/spu/crtn.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
-	-c -o $(T)crtn.o -x assembler-with-cpp $(srcdir)/config/spu/crtn.asm
-
-$(T)crt1.o: $(srcdir)/config/spu/crt0.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
-	-O2 \
-	-c -o $(T)crt1.o $(srcdir)/config/spu/crt0.c
-
-$(T)crtend1.o: $(srcdir)/config/spu/crtend.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
-	-O2 \
-	-c -o $(T)crtend1.o $(srcdir)/config/spu/crtend.c
-
 
 spu.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(REGS_H) hard-reg-set.h \

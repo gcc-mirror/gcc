@@ -25,11 +25,18 @@
             asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
 
 
-#undef  STARTFILE_SPEC
-#define STARTFILE_SPEC	"crt1%O%s"
+
+/* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
+   the GNU/Linux magical crtbegin.o file (see crtstuff.c) which
+   provides part of the support for getting C++ file-scope static
+   object constructed before entering `main'.  */
+
+#undef  STARTFILE_SPEC 
+#define STARTFILE_SPEC "%{mstdmain: crt2.o%s} %{!mstdmain: crt1.o%s} \
+			crti.o%s crtbegin.o%s"
 
 #undef  ENDFILE_SPEC
-#define ENDFILE_SPEC	"crtend1%O%s"
+#define ENDFILE_SPEC   "crtend.o%s crtn.o%s"
 
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 

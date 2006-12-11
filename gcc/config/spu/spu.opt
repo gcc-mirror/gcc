@@ -36,6 +36,10 @@ munsafe-dma
 Target Report RejectNegative InverseMask(SAFE_DMA)
 volatile must be specified on any memory that is effected by DMA
 
+mstdmain
+Target Report Mask(STD_MAIN)
+Use standard main function as entry for startup
+
 mbranch-hints
 Target Report Mask(BRANCH_HINTS)
 Generate branch hints for branches
