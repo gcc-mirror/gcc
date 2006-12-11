@@ -1,3 +1,28 @@
+2006-12-11  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-operands.h (create_ssa_artificial_load_stmt):
+	Rename from create_ssa_artficial_load_stmt.  Update all users.
+	* tree-into-ssa.c (register_new_def): Make static.
+	* tree.c (is_global_var): Handle SSA_NAMEs.
+	* tree.h (SSA_NAME_IS_DEFAULT_DEF): Define.  Update all users
+	that used to call gimple_default_def.
+	* tree-ssa-operands.c (push_stmt_changes): New.
+	(pop_stmt_changes): New.  Update every pass that modifies
+	statements to bracket modifications with
+	push_stmt_changes/pop_stmt_changes.
+	(discard_stmt_changes): New.
+	* tree-ssa-dom.c (stmts_to_rescan): Change to stack of
+	'tree *' instead of 'tree'.  Update all users.
+	* tree-flow-inline.h (zero_imm_uses_p): New.
+	(symbol_mem_tag): New.  Update every function that used
+	to access the annotation directly.
+	(set_symbol_mem_tag): Likewise.
+	* tree-dfa.c (dump_variable): Always show the escape mask.
+	(mark_symbols_for_renaming): Rename from
+	mark_new_vars_to_rename.  Update all users.
+	Only mark to rename naked symbols in real and virtual
+	operands.
+
 2006-12-11  Andreas Schwab  <schwab@suse.de>
 
 	* varasm.c (elf_record_gcc_switches): Cast second argument of

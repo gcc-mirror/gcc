@@ -1844,12 +1844,11 @@ pointer_used_p (tree ptr)
   imm_use_iterator imm_iter;
   tree stmt, rhs;
   struct ptr_info_def *pi = get_ptr_info (ptr);
-  var_ann_t v_ann = var_ann (SSA_NAME_VAR (ptr));
 
   /* Check whether the pointer has a memory tag; if it does, it is
      (or at least used to be) dereferenced.  */
   if ((pi != NULL && pi->name_mem_tag != NULL)
-      || v_ann->symbol_mem_tag)
+      || symbol_mem_tag (SSA_NAME_VAR (ptr)))
     return true;
 
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, ptr)

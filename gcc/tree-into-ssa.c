@@ -1225,7 +1225,7 @@ insert_phi_nodes (bitmap *dfs)
    variable (SSA_NAME_VAR (DEF)) and push VAR's current reaching definition
    into the stack pointed to by BLOCK_DEFS_P.  */
 
-void
+static void
 register_new_def (tree def, VEC(tree,heap) **block_defs_p)
 {
   tree var = SSA_NAME_VAR (def);

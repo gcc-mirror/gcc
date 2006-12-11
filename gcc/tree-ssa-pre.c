@@ -2616,7 +2616,7 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
 	  vn_add (forcedname, val);
 	  bitmap_value_replace_in_set (NEW_SETS (block), forcedname);
 	  bitmap_value_replace_in_set (AVAIL_OUT (block), forcedname);
-	  mark_new_vars_to_rename (stmt);
+	  mark_symbols_for_renaming (stmt);
 	}
       tsi = tsi_last (stmts);
       tsi_link_after (&tsi, forced_stmts, TSI_CONTINUE_LINKING);
@@ -2644,7 +2644,9 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
   tsi = tsi_last (stmts);
   tsi_link_after (&tsi, newexpr, TSI_CONTINUE_LINKING);
   VEC_safe_push (tree, heap, inserted_exprs, newexpr);
-  mark_new_vars_to_rename (newexpr);
+
+  /* All the symbols in NEWEXPR should be put into SSA form.  */
+  mark_symbols_for_renaming (newexpr);
 
   /* Add a value handle to the temporary.
      The value may already exist in either NEW_SETS, or AVAIL_OUT, because
@@ -3543,7 +3545,7 @@ insert_fake_stores (void)
 
 	      lhs = make_ssa_name (storetemp, new);
 	      GIMPLE_STMT_OPERAND (new, 0) = lhs;
-	      create_ssa_artficial_load_stmt (new, stmt);
+	      create_ssa_artificial_load_stmt (new, stmt);
 
 	      NECESSARY (new) = 0;
 	      VEC_safe_push (tree, heap, inserted_exprs, new);

@@ -586,7 +586,7 @@ tidy_after_forward_propagate_addr (tree stmt)
   if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == ADDR_EXPR)
      recompute_tree_invariant_for_addr_expr (GIMPLE_STMT_OPERAND (stmt, 1));
 
-  mark_new_vars_to_rename (stmt);
+  mark_symbols_for_renaming (stmt);
 }
 
 /* STMT defines LHS which is contains the address of the 0th element
@@ -856,9 +856,13 @@ forward_propagate_addr_expr (tree stmt, bool *some)
 	  continue;
 	}
       
+      push_stmt_changes (&use_stmt);
+
       result = forward_propagate_addr_expr_1 (stmt, use_stmt, some);
       *some |= result;
       all &= result;
+
+      pop_stmt_changes (&use_stmt);
     }
 
   return all;
@@ -1051,8 +1055,9 @@ struct tree_opt_pass pass_forwprop = {
   0,				/* properties_provided */
   0,				/* properties_destroyed */
   0,				/* todo_flags_start */
-  TODO_dump_func /* todo_flags_finish */
+  TODO_dump_func
   | TODO_ggc_collect
-  | TODO_update_ssa | TODO_verify_ssa,
-  0					/* letter */
+  | TODO_update_ssa
+  | TODO_verify_ssa,		/* todo_flags_finish */
+  0				/* letter */
 };

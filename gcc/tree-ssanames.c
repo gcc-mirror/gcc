@@ -152,6 +152,7 @@ make_ssa_name (tree var, tree stmt)
   SSA_NAME_DEF_STMT (t) = stmt;
   SSA_NAME_PTR_INFO (t) = NULL;
   SSA_NAME_IN_FREE_LIST (t) = 0;
+  SSA_NAME_IS_DEFAULT_DEF (t) = 0;
   imm = &(SSA_NAME_IMM_USE_NODE (t));
   imm->use = NULL;
   imm->prev = imm;
@@ -178,7 +179,7 @@ release_ssa_name (tree var)
 
   /* Never release the default definition for a symbol.  It's a
      special SSA name that should always exist once it's created.  */
-  if (var == gimple_default_def (cfun, SSA_NAME_VAR (var)))
+  if (SSA_NAME_IS_DEFAULT_DEF (var))
     return;
 
   /* If VAR has been registered for SSA updating, don't remove it.
