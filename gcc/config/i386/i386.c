@@ -2149,11 +2149,6 @@ override_options (void)
 	ix86_preferred_stack_boundary = (1 << i) * BITS_PER_UNIT;
     }
 
-  /* Accept -mx87regparm only if 80387 support is enabled.  */
-  if (TARGET_X87REGPARM
-      && ! TARGET_80387)
-    error ("-mx87regparm used without 80387 enabled");
-
   /* Accept -msseregparm only if at least SSE support is enabled.  */
   if (TARGET_SSEREGPARM
       && ! TARGET_SSE)
@@ -2460,9 +2455,6 @@ const struct attribute_spec ix86_attribute_table[] =
   /* Regparm attribute specifies how many integer arguments are to be
      passed in registers.  */
   { "regparm",   1, 1, false, true,  true,  ix86_handle_cconv_attribute },
-  /* X87regparm attribute says we are passing floating point arguments
-     in 80387 registers.  */
-  { "x87regparm", 0, 0, false, true, true, ix86_handle_cconv_attribute },
   /* Sseregparm attribute says we are using x86_64 calling conventions
      for FP arguments.  */
   { "sseregparm", 0, 0, false, true, true, ix86_handle_cconv_attribute },
@@ -2565,8 +2557,8 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
   return true;
 }
 
-/* Handle "cdecl", "stdcall", "fastcall", "regparm", "x87regparm"
-   and "sseregparm" calling convention attributes;
+/* Handle "cdecl", "stdcall", "fastcall", "regparm" and "sseregparm"
+   calling convention attributes;
    arguments as in struct attribute_spec.handler.  */
 
 static tree
@@ -2631,8 +2623,7 @@ ix86_handle_cconv_attribute (tree *node, tree name,
       return NULL_TREE;
     }
 
-  /* Can combine fastcall with stdcall (redundant), x87regparm
-     and sseregparm.  */
+  /* Can combine fastcall with stdcall (redundant) and sseregparm.  */
   if (is_attribute_p ("fastcall", name))
     {
       if (lookup_attribute ("cdecl", TYPE_ATTRIBUTES (*node)))
@@ -2649,8 +2640,8 @@ ix86_handle_cconv_attribute (tree *node, tree name,
 	}
     }
 
-  /* Can combine stdcall with fastcall (redundant), regparm,
-     x87regparm and sseregparm.  */
+  /* Can combine stdcall with fastcall (redundant), regparm and
+     sseregparm.  */
   else if (is_attribute_p ("stdcall", name))
     {
       if (lookup_attribute ("cdecl", TYPE_ATTRIBUTES (*node)))
@@ -2663,7 +2654,7 @@ ix86_handle_cconv_attribute (tree *node, tree name,
 	}
     }
 
-  /* Can combine cdecl with regparm, x87regparm and sseregparm.  */
+  /* Can combine cdecl with regparm and sseregparm.  */
   else if (is_attribute_p ("cdecl", name))
     {
       if (lookup_attribute ("stdcall", TYPE_ATTRIBUTES (*node)))
@@ -2676,7 +2667,7 @@ ix86_handle_cconv_attribute (tree *node, tree name,
 	}
     }
 
-  /* Can combine x87regparm or sseregparm with all attributes.  */
+  /* Can combine sseregparm with all attributes.  */
 
   return NULL_TREE;
 }
@@ -2699,11 +2690,6 @@ ix86_comp_type_attributes (tree type1, tree type2)
        != !lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type2)))
       || (ix86_function_regparm (type1, NULL)
 	  != ix86_function_regparm (type2, NULL)))
-    return 0;
-
-  /* Check for mismatched x87regparm types.  */
-  if (!lookup_attribute ("x87regparm", TYPE_ATTRIBUTES (type1))
-      != !lookup_attribute ("x87regparm", TYPE_ATTRIBUTES (type2)))
     return 0;
 
   /* Check for mismatched sseregparm types.  */
@@ -2792,48 +2778,6 @@ ix86_function_regparm (tree type, tree decl)
 	}
     }
   return regparm;
-}
-
-/* Return 1 if we can pass up to X87_REGPARM_MAX floating point
-   arguments in x87 registers for a function with the indicated
-   TYPE and DECL.  DECL may be NULL when calling function indirectly
-   or considering a libcall.  For local functions, return 2.
-   Otherwise return 0.  */
-
-static int
-ix86_function_x87regparm (tree type, tree decl)
-{
-  /* Use x87 registers to pass floating point arguments if requested
-     by the x87regparm attribute.  */
-  if (TARGET_X87REGPARM
-      || (type
-	  && lookup_attribute ("x87regparm", TYPE_ATTRIBUTES (type))))
-    {
-      if (!TARGET_80387)
-	{
-	  if (decl)
-	    error ("Calling %qD with attribute x87regparm without "
-		   "80387 enabled", decl);
-	  else
-	    error ("Calling %qT with attribute x87regparm without "
-		   "80387 enabled", type);
-	  return 0;
-	}
-
-      return 1;
-    }
-
-  /* For local functions, pass up to X87_REGPARM_MAX floating point
-     arguments in x87 registers.  */
-  if (!TARGET_64BIT && decl
-      && flag_unit_at_a_time && !profile_flag)
-    {
-      struct cgraph_local_info *i = cgraph_local_info (decl);
-      if (i && i->local)
-	return 2;
-    }
-
-  return 0;
 }
 
 /* Return 1 or 2, if we can pass up to SSE_REGPARM_MAX SFmode (1) and
@@ -2955,8 +2899,6 @@ ix86_function_arg_regno_p (int regno)
   int i;
   if (!TARGET_64BIT)
     return (regno < REGPARM_MAX
-	    || (TARGET_80387 && FP_REGNO_P (regno)
-		&& (regno < FIRST_FLOAT_REG + X87_REGPARM_MAX))
 	    || (TARGET_MMX && MMX_REGNO_P (regno)
 		&& (regno < FIRST_MMX_REG + MMX_REGPARM_MAX))
 	    || (TARGET_SSE && SSE_REGNO_P (regno)
@@ -3020,8 +2962,6 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 
   /* Set up the number of registers to use for passing arguments.  */
   cum->nregs = ix86_regparm;
-  if (TARGET_80387)
-    cum->x87_nregs = X87_REGPARM_MAX;
   if (TARGET_SSE)
     cum->sse_nregs = SSE_REGPARM_MAX;
   if (TARGET_MMX)
@@ -3043,10 +2983,6 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 	cum->nregs = ix86_function_regparm (fntype, fndecl);
     }
 
-  /* Set up the number of 80387 registers used for passing
-     floating point arguments.  Warn for mismatching ABI.  */
-  cum->float_in_x87 = ix86_function_x87regparm (fntype, fndecl);
-
   /* Set up the number of SSE registers used for passing SFmode
      and DFmode arguments.  Warn for mismatching ABI.  */
   cum->float_in_sse = ix86_function_sseregparm (fntype, fndecl);
@@ -3056,8 +2992,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
      are no variable arguments.  If there are variable arguments, then
      we won't pass anything in registers in 32-bit mode. */
 
-  if (cum->nregs || cum->mmx_nregs
-      || cum->x87_nregs || cum->sse_nregs)
+  if (cum->nregs || cum->mmx_nregs || cum->sse_nregs)
     {
       for (param = (fntype) ? TYPE_ARG_TYPES (fntype) : 0;
 	   param != 0; param = next_param)
@@ -3068,13 +3003,11 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 	      if (!TARGET_64BIT)
 		{
 		  cum->nregs = 0;
-		  cum->x87_nregs = 0;
 		  cum->sse_nregs = 0;
 		  cum->mmx_nregs = 0;
 		  cum->warn_sse = 0;
 		  cum->warn_mmx = 0;
 		  cum->fastcall = 0;
-		  cum->float_in_x87 = 0;
 		  cum->float_in_sse = 0;
 		}
 	      cum->maybe_vaarg = true;
@@ -3771,40 +3704,13 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	    }
 	  break;
 
-	case SFmode:
-	  if (cum->float_in_sse > 0)
-	    goto skip_80387;
-
 	case DFmode:
-	  if (cum->float_in_sse > 1)
-	    goto skip_80387;
-
-	  /* Because no inherent XFmode->DFmode and XFmode->SFmode
-	     rounding takes place when values are passed in x87
-	     registers, pass DFmode and SFmode types to local functions
-	     only when flag_unsafe_math_optimizations is set.  */
-	  if (!cum->float_in_x87
-	      || (cum->float_in_x87 == 2
-		  && !flag_unsafe_math_optimizations))
+	  if (cum->float_in_sse < 2)
 	    break;
-
-	case XFmode:
-	  if (!cum->float_in_x87)
+	case SFmode:
+	  if (cum->float_in_sse < 1)
 	    break;
-
-	  if (!type || !AGGREGATE_TYPE_P (type))
-	    {
-	      cum->x87_nregs -= 1;
-	      cum->x87_regno += 1;
-	      if (cum->x87_nregs <= 0)
-		{
-		  cum->x87_nregs = 0;
-		  cum->x87_regno = 0;
-		}
-	    }
-	  break;
-
- skip_80387:
+	  /* FALLTHRU */
 
 	case TImode:
 	case V16QImode:
@@ -3815,6 +3721,7 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	case V2DFmode:
 	  if (!type || !AGGREGATE_TYPE_P (type))
 	    {
+	      cum->sse_words += words;
 	      cum->sse_nregs -= 1;
 	      cum->sse_regno += 1;
 	      if (cum->sse_nregs <= 0)
@@ -3831,6 +3738,7 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	case V2SFmode:
 	  if (!type || !AGGREGATE_TYPE_P (type))
 	    {
+	      cum->mmx_words += words;
 	      cum->mmx_nregs -= 1;
 	      cum->mmx_regno += 1;
 	      if (cum->mmx_nregs <= 0)
@@ -3895,6 +3803,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode orig_mode,
   else
     switch (mode)
       {
+	/* For now, pass fp/complex values on the stack.  */
       default:
 	break;
 
@@ -3924,35 +3833,13 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode orig_mode,
 	    ret = gen_rtx_REG (mode, regno);
 	  }
 	break;
-
-	case SFmode:
-	  if (cum->float_in_sse > 0)
-	    goto skip_80387;
-
-	case DFmode:
-	  if (cum->float_in_sse > 1)
-	    goto skip_80387;
-
-	  /* Because no inherent XFmode->DFmode and XFmode->SFmode
-	     rounding takes place when values are passed in x87
-	     registers, pass DFmode and SFmode types to local functions
-	     only when flag_unsafe_math_optimizations is set.  */
-	  if (!cum->float_in_x87
-	      || (cum->float_in_x87 == 2
-		  && !flag_unsafe_math_optimizations))
-	    break;
-
-	case XFmode:
-	  if (!cum->float_in_x87)
-	    break;
-
-	  if (!type || !AGGREGATE_TYPE_P (type))
-	    if (cum->x87_nregs)
-	      ret = gen_rtx_REG (mode, cum->x87_regno + FIRST_FLOAT_REG);
+      case DFmode:
+	if (cum->float_in_sse < 2)
 	  break;
-
- skip_80387:
-
+      case SFmode:
+	if (cum->float_in_sse < 1)
+	  break;
+	/* FALLTHRU */
       case TImode:
       case V16QImode:
       case V8HImode:

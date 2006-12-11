@@ -536,8 +536,8 @@ Objective-C and Objective-C++ Dialects}.
 -mmmx  -msse  -msse2 -msse3 -mssse3 -m3dnow @gol
 -mthreads  -mno-align-stringops  -minline-all-stringops @gol
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
--m96bit-long-double  -mregparm=@var{num}  -mx87regparm @gol
--msseregparm @gol  -mstackrealign @gol
+-m96bit-long-double  -mregparm=@var{num}  -msseregparm @gol
+-mstackrealign @gol
 -momit-leaf-frame-pointer  -mno-red-zone -mno-tls-direct-seg-refs @gol
 -mcmodel=@var{code-model} @gol
 -m32  -m64 -mlarge-data-threshold=@var{num}}
@@ -9596,17 +9596,6 @@ function by using the function attribute @samp{regparm}.
 @var{num} is nonzero, then you must build all modules with the same
 value, including any libraries.  This includes the system libraries and
 startup modules.
-
-@item -mx87regparm
-@opindex mx87regparm
-Use 80387 register passing conventions for floating point arguments.
-You can control this behavior for a specific function by using the
-function attribute @samp{x87regparm}.
-@xref{Function Attributes}.
-
-@strong{Warning:} if you use this switch then you must build all
-modules with the same value, including any libraries.  This includes
-the system libraries and startup modules.
 
 @item -msseregparm
 @opindex msseregparm
