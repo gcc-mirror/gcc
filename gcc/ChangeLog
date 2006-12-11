@@ -1,3 +1,7 @@
+2006-12-11  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* config/arm/elf.h (MAX_OFILE_ALIGNMENT): Remove definition.
+
 2006-12-11  Jan Hubicka  <jh@suse.cz>
 
 	* value-prof.c (tree_stringops_transform): New.
