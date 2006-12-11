@@ -1,3 +1,13 @@
+2006-12-11  Richard Guenther  <rguenther@suse.de>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/pb_ds/detail/pat_trie_/traits.hpp: Qualify types.
+	* include/ext/pb_ds/detail/binary_heap_/binary_heap_.hpp: Likewise.
+	* include/ext/rope: Likewise.
+	* include/bits/stl_tree.h (struct _Rb_tree): Change the _Link_type
+	typedefs to use _Rb_tree_node<_Val> directly.
+	(_M_get_node, _M_put_node): Use _Link_type.
+
 2006-12-10  Paolo Carlini  <pcarlini@suse.de>
 
 	* src/valarray-inst.cc (__gslice_to_index): Optimize performance.

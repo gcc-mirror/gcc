@@ -93,7 +93,7 @@ namespace pb_ds
       typedef E_Access_Traits e_access_traits;
 
       typedef
-      synth_e_access_traits<
+      pb_ds::detail::synth_e_access_traits<
 	type_traits,
 	false,
 	e_access_traits>
@@ -254,7 +254,7 @@ namespace pb_ds
       typedef E_Access_Traits e_access_traits;
 
       typedef
-      synth_e_access_traits<
+      pb_ds::detail::synth_e_access_traits<
 	type_traits,
 	true,
 	e_access_traits>

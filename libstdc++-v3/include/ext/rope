@@ -78,8 +78,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   using std::size_t;
   using std::ptrdiff_t;
   using std::allocator;
-  using std::iterator;
-  using std::reverse_iterator;
   using std::_Destroy;
 
   // The _S_eos function is used for those functions that
@@ -165,7 +163,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   template<class _Sequence, size_t _Buf_sz = 100>
     class sequence_buffer
-    : public iterator<std::output_iterator_tag, void, void, void, void>
+    : public std::iterator<std::output_iterator_tag, void, void, void, void>
     {
     public:
       typedef typename _Sequence::value_type value_type;
@@ -1023,7 +1021,7 @@ protected:
   
   template<class _CharT, class _Alloc>
     class _Rope_iterator_base
-    : public iterator<std::random_access_iterator_tag, _CharT>
+    : public std::iterator<std::random_access_iterator_tag, _CharT>
     {
       friend class rope<_CharT, _Alloc>;
     public:
@@ -2017,7 +2015,7 @@ protected:
 	//  but it's harder to make guarantees.
       }
 
-      typedef reverse_iterator<const_iterator> const_reverse_iterator;
+      typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
       const_reverse_iterator
       rbegin() const
@@ -2549,7 +2547,7 @@ protected:
       mutable_end()
       { return(iterator(this, size())); }
 
-      typedef reverse_iterator<iterator> reverse_iterator;
+      typedef std::reverse_iterator<iterator> reverse_iterator;
       
       reverse_iterator
       mutable_rbegin()
