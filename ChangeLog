@@ -1,3 +1,7 @@
+2006-12-11  Joern Rennecke <joern.rennecke@arc.com>
+
+	MAINTAINERS: Update my entry.
+
 2006-12-11  Alan Modra  <amodra@bigpond.net.au>
 
 	* configure.in:  Handle spu makefile frag.
