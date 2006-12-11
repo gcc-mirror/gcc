@@ -5351,12 +5351,7 @@ remove_statement (tree stmt, bool including_defined_name)
 {
   if (TREE_CODE (stmt) == PHI_NODE)
     {
-      if (!including_defined_name)
-	{
-	  /* Prevent the ssa name defined by the statement from being removed.  */
-	  SET_PHI_RESULT (stmt, NULL);
-	}
-      remove_phi_node (stmt, NULL_TREE);
+      remove_phi_node (stmt, NULL_TREE, including_defined_name);
     }
   else
     {

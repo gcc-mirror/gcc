@@ -112,30 +112,7 @@ static bool cfg_altered;
   EXECUTE_IF_SET_IN_BITMAP (control_dependence_map[(N)], 0,	\
 			    (EDGE_NUMBER), (BI))
 
-/* Local function prototypes.  */
-static inline void set_control_dependence_map_bit (basic_block, int);
-static inline void clear_control_dependence_bitmap (basic_block);
-static void find_all_control_dependences (struct edge_list *);
-static void find_control_dependence (struct edge_list *, int);
-static inline basic_block find_pdom (basic_block);
 
-static inline void mark_stmt_necessary (tree, bool);
-static inline void mark_operand_necessary (tree, bool);
-
-static void mark_stmt_if_obviously_necessary (tree, bool);
-static void find_obviously_necessary_stmts (struct edge_list *);
-
-static void mark_control_dependent_edges_necessary (basic_block, struct edge_list *);
-static void propagate_necessity (struct edge_list *);
-
-static void eliminate_unnecessary_stmts (void);
-static void remove_dead_phis (basic_block);
-static void remove_dead_stmt (block_stmt_iterator *, basic_block);
-
-static void print_stats (void);
-static void tree_dce_init (bool);
-static void tree_dce_done (bool);
-
 /* Indicate block BB is control dependent on an edge with index EDGE_INDEX.  */
 static inline void
 set_control_dependence_map_bit (basic_block bb, int edge_index)
@@ -153,17 +130,26 @@ clear_control_dependence_bitmap (basic_block bb)
   bitmap_clear (control_dependence_map[bb->index]);
 }
 
-/* Record all blocks' control dependences on all edges in the edge
-   list EL, ala Morgan, Section 3.6.  */
 
-static void
-find_all_control_dependences (struct edge_list *el)
+/* Find the immediate postdominator PDOM of the specified basic block BLOCK.
+   This function is necessary because some blocks have negative numbers.  */
+
+static inline basic_block
+find_pdom (basic_block block)
 {
-  int i;
+  gcc_assert (block != ENTRY_BLOCK_PTR);
 
-  for (i = 0; i < NUM_EDGES (el); ++i)
-    find_control_dependence (el, i);
+  if (block == EXIT_BLOCK_PTR)
+    return EXIT_BLOCK_PTR;
+  else
+    {
+      basic_block bb = get_immediate_dominator (CDI_POST_DOMINATORS, block);
+      if (! bb)
+	return EXIT_BLOCK_PTR;
+      return bb;
+    }
 }
+
 
 /* Determine all blocks' control dependences on the given edge with edge_list
    EL index EDGE_INDEX, ala Morgan, Section 3.6.  */
@@ -197,25 +183,20 @@ find_control_dependence (struct edge_list *el, int edge_index)
     }
 }
 
-/* Find the immediate postdominator PDOM of the specified basic block BLOCK.
-   This function is necessary because some blocks have negative numbers.  */
 
-static inline basic_block
-find_pdom (basic_block block)
+/* Record all blocks' control dependences on all edges in the edge
+   list EL, ala Morgan, Section 3.6.  */
+
+static void
+find_all_control_dependences (struct edge_list *el)
 {
-  gcc_assert (block != ENTRY_BLOCK_PTR);
+  int i;
 
-  if (block == EXIT_BLOCK_PTR)
-    return EXIT_BLOCK_PTR;
-  else
-    {
-      basic_block bb = get_immediate_dominator (CDI_POST_DOMINATORS, block);
-      if (! bb)
-	return EXIT_BLOCK_PTR;
-      return bb;
-    }
+  for (i = 0; i < NUM_EDGES (el); ++i)
+    find_control_dependence (el, i);
 }
-
+
+
 #define NECESSARY(stmt)		stmt->base.asm_written_flag
 
 /* If STMT is not already marked necessary, mark it, and add it to the
@@ -268,7 +249,7 @@ mark_operand_necessary (tree op, bool phionly)
   NECESSARY (stmt) = 1;
   VEC_safe_push (tree, heap, worklist, stmt);
 }
-
+
 
 /* Mark STMT as necessary if it obviously is.  Add it to the worklist if
    it can make other statements necessary.
@@ -374,64 +355,8 @@ mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
 
   return;
 }
-
-/* Find obviously necessary statements.  These are things like most function
-   calls, and stores to file level variables.
 
-   If EL is NULL, control statements are conservatively marked as
-   necessary.  Otherwise it contains the list of edges used by control
-   dependence analysis.  */
 
-static void
-find_obviously_necessary_stmts (struct edge_list *el)
-{
-  basic_block bb;
-  block_stmt_iterator i;
-  edge e;
-
-  FOR_EACH_BB (bb)
-    {
-      tree phi;
-
-      /* Check any PHI nodes in the block.  */
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-	{
-	  NECESSARY (phi) = 0;
-
-	  /* PHIs for virtual variables do not directly affect code
-	     generation and need not be considered inherently necessary
-	     regardless of the bits set in their decl.
-
-	     Thus, we only need to mark PHIs for real variables which
-	     need their result preserved as being inherently necessary.  */
-	  if (is_gimple_reg (PHI_RESULT (phi))
-	      && is_global_var (SSA_NAME_VAR (PHI_RESULT (phi))))
-	    mark_stmt_necessary (phi, true);
-        }
-
-      /* Check all statements in the block.  */
-      for (i = bsi_start (bb); ! bsi_end_p (i); bsi_next (&i))
-	{
-	  tree stmt = bsi_stmt (i);
-	  NECESSARY (stmt) = 0;
-	  mark_stmt_if_obviously_necessary (stmt, el != NULL);
-	}
-    }
-
-  if (el)
-    {
-      /* Prevent the loops from being removed.  We must keep the infinite loops,
-	 and we currently do not have a means to recognize the finite ones.  */
-      FOR_EACH_BB (bb)
-	{
-	  edge_iterator ei;
-	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    if (e->flags & EDGE_DFS_BACK)
-	      mark_control_dependent_edges_necessary (e->dest, el);
-	}
-    }
-}
-
 /* Make corresponding control dependent edges necessary.  We only
    have to do this once for each basic block, so we clear the bitmap
    after we're done.  */
@@ -460,17 +385,65 @@ mark_control_dependent_edges_necessary (basic_block bb, struct edge_list *el)
 	mark_stmt_necessary (t, true);
     }
 }
-
-/* Propagate necessity using the operands of necessary statements.  Process
-   the uses on each statement in the worklist, and add all feeding statements
-   which contribute to the calculation of this value to the worklist.
+
+
+/* Find obviously necessary statements.  These are things like most function
+   calls, and stores to file level variables.
+
+   If EL is NULL, control statements are conservatively marked as
+   necessary.  Otherwise it contains the list of edges used by control
+   dependence analysis.  */
+
+static void
+find_obviously_necessary_stmts (struct edge_list *el)
+{
+  basic_block bb;
+  block_stmt_iterator i;
+  edge e;
+
+  FOR_EACH_BB (bb)
+    {
+      tree phi;
+
+      /* PHI nodes are never inherently necessary.  */
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+	NECESSARY (phi) = 0;
+
+      /* Check all statements in the block.  */
+      for (i = bsi_start (bb); ! bsi_end_p (i); bsi_next (&i))
+	{
+	  tree stmt = bsi_stmt (i);
+	  NECESSARY (stmt) = 0;
+	  mark_stmt_if_obviously_necessary (stmt, el != NULL);
+	}
+    }
+
+  if (el)
+    {
+      /* Prevent the loops from being removed.  We must keep the infinite loops,
+	 and we currently do not have a means to recognize the finite ones.  */
+      FOR_EACH_BB (bb)
+	{
+	  edge_iterator ei;
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    if (e->flags & EDGE_DFS_BACK)
+	      mark_control_dependent_edges_necessary (e->dest, el);
+	}
+    }
+}
+
+
+/* Propagate necessity using the operands of necessary statements.
+   Process the uses on each statement in the worklist, and add all
+   feeding statements which contribute to the calculation of this
+   value to the worklist. 
 
    In conservative mode, EL is NULL.  */
 
 static void
 propagate_necessity (struct edge_list *el)
 {
-  tree i;
+  tree stmt;
   bool aggressive = (el ? true : false); 
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -478,22 +451,22 @@ propagate_necessity (struct edge_list *el)
 
   while (VEC_length (tree, worklist) > 0)
     {
-      /* Take `i' from worklist.  */
-      i = VEC_pop (tree, worklist);
+      /* Take STMT from worklist.  */
+      stmt = VEC_pop (tree, worklist);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "processing: ");
-	  print_generic_stmt (dump_file, i, TDF_SLIM);
+	  print_generic_stmt (dump_file, stmt, TDF_SLIM);
 	  fprintf (dump_file, "\n");
 	}
 
       if (aggressive)
 	{
 	  /* Mark the last statements of the basic blocks that the block
-	     containing `i' is control dependent on, but only if we haven't
+	     containing STMT is control dependent on, but only if we haven't
 	     already done so.  */
-	  basic_block bb = bb_for_stmt (i);
+	  basic_block bb = bb_for_stmt (stmt);
 	  if (bb != ENTRY_BLOCK_PTR
 	      && ! TEST_BIT (visited_control_parents, bb->index))
 	    {
@@ -502,7 +475,7 @@ propagate_necessity (struct edge_list *el)
 	    }
 	}
 
-      if (TREE_CODE (i) == PHI_NODE)
+      if (TREE_CODE (stmt) == PHI_NODE)
 	{
 	  /* PHI nodes are somewhat special in that each PHI alternative has
 	     data and control dependencies.  All the statements feeding the
@@ -511,18 +484,19 @@ propagate_necessity (struct edge_list *el)
 	     predecessor block associated with each PHI alternative as
 	     necessary.  */
 	  int k;
-	  for (k = 0; k < PHI_NUM_ARGS (i); k++)
+
+	  for (k = 0; k < PHI_NUM_ARGS (stmt); k++)
             {
-	      tree arg = PHI_ARG_DEF (i, k);
+	      tree arg = PHI_ARG_DEF (stmt, k);
 	      if (TREE_CODE (arg) == SSA_NAME)
 		mark_operand_necessary (arg, false);
 	    }
 
 	  if (aggressive)
 	    {
-	      for (k = 0; k < PHI_NUM_ARGS (i); k++)
+	      for (k = 0; k < PHI_NUM_ARGS (stmt); k++)
 		{
-		  basic_block arg_bb = PHI_ARG_EDGE (i, k)->src;
+		  basic_block arg_bb = PHI_ARG_EDGE (stmt, k)->src;
 		  if (arg_bb != ENTRY_BLOCK_PTR
 		      && ! TEST_BIT (visited_control_parents, arg_bb->index))
 		    {
@@ -545,7 +519,7 @@ propagate_necessity (struct edge_list *el)
 	     statement (V_MAY_DEF operands allow us to follow def-def 
 	     links).  */
 
-	  FOR_EACH_SSA_TREE_OPERAND (use, i, iter, SSA_OP_ALL_USES)
+	  FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_ALL_USES)
 	    mark_operand_necessary (use, false);
 	}
     }
@@ -616,50 +590,6 @@ mark_really_necessary_kill_operand_phis (void)
 }
 
 
-
-
-/* Eliminate unnecessary statements. Any instruction not marked as necessary
-   contributes nothing to the program, and can be deleted.  */
-
-static void
-eliminate_unnecessary_stmts (void)
-{
-  basic_block bb;
-  block_stmt_iterator i;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "\nEliminating unnecessary statements:\n");
-  
-  clear_special_calls ();
-  FOR_EACH_BB (bb)
-    {
-      /* Remove dead PHI nodes.  */
-      remove_dead_phis (bb);
-    }
-
-  FOR_EACH_BB (bb)
-    {
-      /* Remove dead statements.  */
-      for (i = bsi_start (bb); ! bsi_end_p (i) ; )
-	{
-         tree t = bsi_stmt (i);
-
-         stats.total++;
-
-         /* If `i' is not necessary then remove it.  */
-         if (! NECESSARY (t))
-           remove_dead_stmt (&i, bb);
-         else
-           {
-             tree call = get_call_expr_in (t);
-             if (call)
-               notice_special_calls (call);
-             bsi_next (&i);
-           }
-	}
-    }
- }
-
 /* Remove dead PHI nodes from block BB.  */
 
 static void
@@ -684,7 +614,7 @@ remove_dead_phis (basic_block bb)
 	      fprintf (dump_file, "\n");
 	    }
 
-	  remove_phi_node (phi, prev);
+	  remove_phi_node (phi, prev, true);
 	  stats.removed_phis++;
 	  phi = next;
 	}
@@ -695,7 +625,8 @@ remove_dead_phis (basic_block bb)
 	}
     }
 }
-
+
+
 /* Remove dead statement pointed to by iterator I.  Receives the basic block BB
    containing I so that we don't have to look it up.  */
 
@@ -788,7 +719,51 @@ remove_dead_stmt (block_stmt_iterator *i, basic_block bb)
   bsi_remove (i, true);  
   release_defs (t); 
 }
-
+
+
+/* Eliminate unnecessary statements. Any instruction not marked as necessary
+   contributes nothing to the program, and can be deleted.  */
+
+static void
+eliminate_unnecessary_stmts (void)
+{
+  basic_block bb;
+  block_stmt_iterator i;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "\nEliminating unnecessary statements:\n");
+
+  clear_special_calls ();
+  FOR_EACH_BB (bb)
+    {
+      /* Remove dead PHI nodes.  */
+      remove_dead_phis (bb);
+    }
+
+  FOR_EACH_BB (bb)
+    {
+      /* Remove dead statements.  */
+      for (i = bsi_start (bb); ! bsi_end_p (i) ; )
+	{
+	  tree t = bsi_stmt (i);
+
+	  stats.total++;
+
+	  /* If `i' is not necessary then remove it.  */
+	  if (! NECESSARY (t))
+	    remove_dead_stmt (&i, bb);
+	  else
+	    {
+	      tree call = get_call_expr_in (t);
+	      if (call)
+		notice_special_calls (call);
+	      bsi_next (&i);
+	    }
+	}
+    }
+}
+
+
 /* Print out removed statement statistics.  */
 
 static void

@@ -4035,7 +4035,7 @@ remove_dead_inserted_code (void)
 
 	  if (TREE_CODE (t) == PHI_NODE)
 	    {
-	      remove_phi_node (t, NULL);
+	      remove_phi_node (t, NULL, true);
 	    }
 	  else
 	    {

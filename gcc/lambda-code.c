@@ -2474,13 +2474,9 @@ perfect_nestify (struct loop *loop,
     }
   e = redirect_edge_and_branch (single_succ_edge (preheaderbb), headerbb);
 
-  /* Remove the exit phis from the old basic block.  Make sure to set
-     PHI_RESULT to null so it doesn't get released.  */
+  /* Remove the exit phis from the old basic block.  */
   while (phi_nodes (olddest) != NULL)
-    {
-      SET_PHI_RESULT (phi_nodes (olddest), NULL);
-      remove_phi_node (phi_nodes (olddest), NULL);
-    }      
+    remove_phi_node (phi_nodes (olddest), NULL, false);
 
   /* and add them back to the new basic block.  */
   while (VEC_length (tree, phis) != 0)

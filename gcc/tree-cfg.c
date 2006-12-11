@@ -1333,13 +1333,12 @@ tree_merge_blocks (basic_block a, basic_block b)
 	     appear as arguments of the phi nodes.  */
 	  copy = build2_gimple (GIMPLE_MODIFY_STMT, def, use);
 	  bsi_insert_after (&bsi, copy, BSI_NEW_STMT);
-	  SET_PHI_RESULT (phi, NULL_TREE);
 	  SSA_NAME_DEF_STMT (def) = copy;
 	}
       else
 	replace_uses_by (def, use);
 
-      remove_phi_node (phi, NULL);
+      remove_phi_node (phi, NULL, false);
     }
 
   /* Ensure that B follows A.  */
@@ -1970,7 +1969,7 @@ remove_phi_nodes_and_edges_for_unreachable_block (basic_block bb)
   while (phi)
     {
       tree next = PHI_CHAIN (phi);
-      remove_phi_node (phi, NULL_TREE);
+      remove_phi_node (phi, NULL_TREE, true);
       phi = next;
     }
 
