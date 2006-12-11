@@ -70,6 +70,9 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_DATA = @INSTALL_DATA@
 LN = @LN@
 LN_S = @LN_S@
+MAINT = @MAINT@
+MAINTAINER_MODE_FALSE = @MAINTAINER_MODE_FALSE@
+MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 
 # -------------------------------------------------
 # Miscellaneous non-standard autoconf-set variables
