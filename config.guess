@@ -4,7 +4,7 @@
 #   2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation,
 #   Inc.
 
-timestamp='2006-07-02'
+timestamp='2006-12-08'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -161,6 +161,7 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	    arm*) machine=arm-unknown ;;
 	    sh3el) machine=shl-unknown ;;
 	    sh3eb) machine=sh-unknown ;;
+	    sh5el) machine=sh5le-unknown ;;
 	    *) machine=${UNAME_MACHINE_ARCH}-unknown ;;
 	esac
 	# The Operating System including object format, if it has switched
@@ -793,7 +794,7 @@ EOF
     x86:Interix*:[3456]*)
 	echo i586-pc-interix${UNAME_RELEASE}
 	exit ;;
-    EM64T:Interix*:[3456]*)
+    EM64T:Interix*:[3456]* | authenticamd:Interix*:[3456]*)
 	echo x86_64-unknown-interix${UNAME_RELEASE}
 	exit ;;
     [345]86:Windows_95:* | [345]86:Windows_98:* | [345]86:Windows_NT:*)
@@ -949,6 +950,9 @@ EOF
 	exit ;;
     x86_64:Linux:*:*)
 	echo x86_64-unknown-linux-gnu
+	exit ;;
+    xtensa:Linux:*:*)
+    	echo xtensa-unknown-linux-gnu
 	exit ;;
     i*86:Linux:*:*)
 	# The BFD linker knows what the default object file format is, so
@@ -1207,6 +1211,12 @@ EOF
 	exit ;;
     SX-6:SUPER-UX:*:*)
 	echo sx6-nec-superux${UNAME_RELEASE}
+	exit ;;
+    SX-7:SUPER-UX:*:*)
+	echo sx7-nec-superux${UNAME_RELEASE}
+	exit ;;
+    SX-8:SUPER-UX:*:*)
+	echo sx8-nec-superux${UNAME_RELEASE}
 	exit ;;
     Power*:Rhapsody:*:*)
 	echo powerpc-apple-rhapsody${UNAME_RELEASE}

@@ -4,7 +4,7 @@
 #   2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation,
 #   Inc.
 
-timestamp='2006-09-20'
+timestamp='2006-12-08'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -245,7 +245,7 @@ case $basic_machine in
 	| bfin \
 	| c4x | clipper \
 	| d10v | d30v | dlx | dsp16xx \
-	| fr30 | frv \
+	| fido | fr30 | frv \
 	| h8300 | h8500 | hppa | hppa1.[01] | hppa2.0 | hppa2.0[nw] | hppa64 \
 	| i370 | i860 | i960 | ia64 \
 	| ip2k | iq2000 \
@@ -324,7 +324,7 @@ case $basic_machine in
 	| clipper-* | craynv-* | cydra-* \
 	| d10v-* | d30v-* | dlx-* \
 	| elxsi-* \
-	| f30[01]-* | f700-* | fr30-* | frv-* | fx80-* \
+	| f30[01]-* | f700-* | fido-* | fr30-* | frv-* | fx80-* \
 	| h8300-* | h8500-* \
 	| hppa-* | hppa1.[01]-* | hppa2.0-* | hppa2.0[nw]-* | hppa64-* \
 	| i*86-* | i860-* | i960-* | ia64-* \
@@ -924,6 +924,9 @@ case $basic_machine in
 	sh)
 		basic_machine=sh-hitachi
 		os=-hms
+		;;
+	sh5el)
+		basic_machine=sh5le-unknown
 		;;
 	sh64)
 		basic_machine=sh64-unknown
