@@ -1,3 +1,10 @@
+2006-12-11  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Use 
+	GIMPLE_STMT_OPERAND.
+	* tree-vect-transform.c (vect_permute_store_chain): Likewise.
+	(vect_setup_realignment): Likewise.
+
 2006-12-11  Sa Liu  <saliu@de.ibm.com>
 	    Ben Elliston  <bje@au.ibm.com>
 

@@ -2575,7 +2575,7 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
   unsigned int j;
   VEC(tree,heap) *first, *second;
   
-  scalar_dest = TREE_OPERAND (stmt, 0);
+  scalar_dest = GIMPLE_STMT_OPERAND (stmt, 0);
   first = VEC_alloc (tree, heap, length/2);
   second = VEC_alloc (tree, heap, length/2);
 
@@ -2941,7 +2941,7 @@ vect_setup_realignment (tree stmt, block_stmt_iterator *bsi,
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   edge pe = loop_preheader_edge (loop);
-  tree scalar_dest = TREE_OPERAND (stmt, 0);
+  tree scalar_dest = GIMPLE_STMT_OPERAND (stmt, 0);
   tree vec_dest;
   tree init_addr;
   tree inc;
