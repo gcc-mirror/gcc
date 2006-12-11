@@ -1,7 +1,7 @@
 2006-12-11  Andreas Schwab  <schwab@suse.de>
 
 	* varasm.c (elf_record_gcc_switches): Cast second argument of
-	ASM_OUTPUT_POOL_PROLOGUE to unsigned HOST_WIDE_INT.
+	ASM_OUTPUT_SKIP to unsigned HOST_WIDE_INT.
 
 2006-12-11  Diego Novillo  <dnovillo@redhat.com>
 
