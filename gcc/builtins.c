@@ -72,7 +72,6 @@ tree built_in_decls[(int) END_BUILTINS];
    required to implement the function call in all cases).  */
 tree implicit_built_in_decls[(int) END_BUILTINS];
 
-static int get_pointer_alignment (tree, unsigned int);
 static const char *c_getstr (tree);
 static rtx c_readstr (const char *, enum machine_mode);
 static int target_char_cast (tree, char *);
@@ -118,7 +117,6 @@ static rtx expand_builtin_strcpy (tree, tree, rtx, enum machine_mode);
 static rtx expand_builtin_stpcpy (tree, rtx, enum machine_mode);
 static rtx builtin_strncpy_read_str (void *, HOST_WIDE_INT, enum machine_mode);
 static rtx expand_builtin_strncpy (tree, rtx, enum machine_mode);
-static rtx builtin_memset_read_str (void *, HOST_WIDE_INT, enum machine_mode);
 static rtx builtin_memset_gen_str (void *, HOST_WIDE_INT, enum machine_mode);
 static rtx expand_builtin_memset (tree, rtx, enum machine_mode, tree);
 static rtx expand_builtin_bzero (tree);
@@ -141,7 +139,6 @@ static tree fold_builtin_classify_type (tree);
 static tree fold_builtin_strlen (tree);
 static tree fold_builtin_inf (tree, int);
 static tree fold_builtin_nan (tree, tree, int);
-static int validate_arglist (tree, ...);
 static bool integer_valued_real_p (tree);
 static tree fold_trunc_transparent_mathfn (tree, tree);
 static bool readonly_data_expr (tree);
@@ -235,7 +232,7 @@ static bool called_as_built_in (tree node)
    Otherwise, look at the expression to see if we can do better, i.e., if the
    expression is actually pointing at an object whose alignment is tighter.  */
 
-static int
+int
 get_pointer_alignment (tree exp, unsigned int max_align)
 {
   unsigned int align, inner;
@@ -3486,7 +3483,7 @@ expand_builtin_strncpy (tree exp, rtx target, enum machine_mode mode)
    bytes from constant string DATA + OFFSET and return it as target
    constant.  */
 
-static rtx
+rtx
 builtin_memset_read_str (void *data, HOST_WIDE_INT offset ATTRIBUTE_UNUSED,
 			 enum machine_mode mode)
 {
@@ -9503,7 +9500,7 @@ build_function_call_expr (tree fn, tree arglist)
    of tree_codes.  If the last specifier is a 0, that represents an
    ellipses, otherwise the last specifier must be a VOID_TYPE.  */
 
-static int
+int
 validate_arglist (tree arglist, ...)
 {
   enum tree_code code;

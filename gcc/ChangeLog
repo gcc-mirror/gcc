@@ -1,3 +1,18 @@
+2006-12-11  Jan Hubicka  <jh@suse.cz>
+
+	* value-prof.c (tree_stringops_transform): New.
+	(tree_value_profile_transformations): Require count to be non-zero;
+	call stringop transform; reset stmt BSI after BB changed.
+	(tree_divmod_fixed_value, tree_mod_pow2): Don't emit unnecesary label.
+	(interesting_stringop_to_profile_p, tree_stringop_fixed_value): New.
+	(tree_stringops_values_to_profile): New.
+	(tree_values_to_profile): Call tree_stringops_values_to_profile.
+	* tree.h (build_string_literal): Tidy prototype.
+	(validate_arglist, builtin_memset_read_str, get_pointer_alignment):
+	Declare.
+	* builtins.c (validate_arglist, builtin_memset_read_str,
+	get_pointer_alignment): Export.
+
 2006-12-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/30120

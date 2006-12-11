@@ -4362,7 +4362,10 @@ extern tree strip_float_extensions (tree);
 extern tree c_strlen (tree, int);
 extern tree std_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 extern tree build_va_arg_indirect_ref (tree);
-tree build_string_literal (int, const char *);
+extern tree build_string_literal (int, const char *);
+extern int validate_arglist (tree, ...);
+extern rtx builtin_memset_read_str (void *, HOST_WIDE_INT, enum machine_mode);
+extern int get_pointer_alignment (tree, unsigned int);
 
 /* In convert.c */
 extern tree strip_float_extensions (tree);

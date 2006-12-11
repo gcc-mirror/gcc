@@ -79,6 +79,7 @@ static tree tree_mod_subtract (tree, tree, tree, tree, int, int, int,
 static bool tree_divmod_fixed_value_transform (tree);
 static bool tree_mod_pow2_value_transform (tree);
 static bool tree_mod_subtract_transform (tree);
+static bool tree_stringops_transform (block_stmt_iterator *);
 
 /* The overall number of invocations of the counter should match execution count
    of basic block.  Report it as error rather than internal error as it might
@@ -110,7 +111,7 @@ tree_value_profile_transformations (void)
   FOR_EACH_BB (bb)
     {
       /* Ignore cold areas -- we are enlarging the code.  */
-      if (!maybe_hot_bb_p (bb))
+      if (!bb->count || !maybe_hot_bb_p (bb))
 	continue;
 
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
@@ -137,8 +138,10 @@ tree_value_profile_transformations (void)
 	  if (flag_value_profile_transformations
 	      && (tree_mod_subtract_transform (stmt)
 		  || tree_divmod_fixed_value_transform (stmt)
-		  || tree_mod_pow2_value_transform (stmt)))
+		  || tree_mod_pow2_value_transform (stmt)
+		  || tree_stringops_transform (&bsi)))
 	    {
+	      stmt = bsi_stmt (bsi);
 	      changed = true;
 	      /* Original statement may no longer be in the same block. */
 	      if (bb != bb_for_stmt (stmt))
@@ -180,8 +183,7 @@ tree_divmod_fixed_value (tree stmt, tree operation,
   tree tmp1, tmp2, tmpv;
   tree label_decl1 = create_artificial_label ();
   tree label_decl2 = create_artificial_label ();
-  tree label_decl3 = create_artificial_label ();
-  tree label1, label2, label3;
+  tree label1, label2;
   tree bb1end, bb2end, bb3end;
   basic_block bb, bb2, bb3, bb4;
   tree optype = TREE_TYPE (operation);
@@ -219,9 +221,6 @@ tree_divmod_fixed_value (tree stmt, tree operation,
   bsi_insert_before (&bsi, label2, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   bb3end = stmt1;
-
-  label3 = build1 (LABEL_EXPR, void_type_node, label_decl3);
-  bsi_insert_before (&bsi, label3, BSI_SAME_STMT);
 
   /* Fix CFG. */
   /* Edge e23 connects bb2 to bb3, etc. */
@@ -344,8 +343,7 @@ tree_mod_pow2 (tree stmt, tree operation, tree op1, tree op2, int prob,
   tree tmp2, tmp3;
   tree label_decl1 = create_artificial_label ();
   tree label_decl2 = create_artificial_label ();
-  tree label_decl3 = create_artificial_label ();
-  tree label1, label2, label3;
+  tree label1, label2;
   tree bb1end, bb2end, bb3end;
   basic_block bb, bb2, bb3, bb4;
   tree optype = TREE_TYPE (operation);
@@ -386,9 +384,6 @@ tree_mod_pow2 (tree stmt, tree operation, tree op1, tree op2, int prob,
   bsi_insert_before (&bsi, label2, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   bb3end = stmt1;
-
-  label3 = build1 (LABEL_EXPR, void_type_node, label_decl3);
-  bsi_insert_before (&bsi, label3, BSI_SAME_STMT);
 
   /* Fix CFG. */
   /* Edge e23 connects bb2 to bb3, etc. */
@@ -691,6 +686,236 @@ tree_mod_subtract_transform (tree stmt)
   return true;
 }
 
+/* Return true if the stringop FNDECL with ARGLIST shall be profiled.  */
+static bool
+interesting_stringop_to_profile_p (tree fndecl, tree arglist)
+{
+  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
+
+  if (fcode != BUILT_IN_MEMSET && fcode != BUILT_IN_MEMCPY
+      && fcode != BUILT_IN_BZERO)
+    return false;
+
+  switch (fcode)
+    {
+     case BUILT_IN_MEMCPY:
+     case BUILT_IN_MEMPCPY:
+	return validate_arglist (arglist,
+				 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE,
+				 VOID_TYPE);
+     case BUILT_IN_MEMSET:
+	return validate_arglist (arglist,
+				 POINTER_TYPE, INTEGER_TYPE, INTEGER_TYPE,
+				 VOID_TYPE);
+     case BUILT_IN_BZERO:
+        return validate_arglist (arglist, POINTER_TYPE, INTEGER_TYPE,
+				 VOID_TYPE);
+     default:
+	gcc_unreachable ();
+    }
+}
+
+/* Convert   stringop (..., size)
+   into 
+   if (size == VALUE)
+     stringop (...., VALUE);
+   else
+     stringop (...., size);
+   assuming constant propagation of VALUE will happen later.
+*/
+static void
+tree_stringop_fixed_value (tree stmt, tree value, int prob, gcov_type count,
+			   gcov_type all)
+{
+  tree stmt1, stmt2, stmt3;
+  tree tmp1, tmpv;
+  tree label_decl1 = create_artificial_label ();
+  tree label_decl2 = create_artificial_label ();
+  tree label1, label2;
+  tree bb1end, bb2end;
+  basic_block bb, bb2, bb3, bb4;
+  edge e12, e13, e23, e24, e34;
+  block_stmt_iterator bsi;
+  tree call = get_call_expr_in (stmt);
+  tree arglist = TREE_OPERAND (call, 1);
+  tree blck_size = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+  tree optype = TREE_TYPE (blck_size);
+  int region;
+
+  bb = bb_for_stmt (stmt);
+  bsi = bsi_for_stmt (stmt);
+
+  if (bsi_end_p (bsi))
+    {
+      edge_iterator ei;
+      for (ei = ei_start (bb->succs); (e34 = ei_safe_edge (ei)); )
+	if (!e34->flags & EDGE_ABNORMAL)
+	  break;
+    }
+  else
+    {
+      e34 = split_block (bb, stmt);
+      bsi = bsi_for_stmt (stmt);
+    }
+  bb4 = e34->dest;
+
+  tmpv = create_tmp_var (optype, "PROF");
+  tmp1 = create_tmp_var (optype, "PROF");
+  stmt1 = build2 (GIMPLE_MODIFY_STMT, optype, tmpv,
+		  fold_convert (optype, value));
+  stmt2 = build2 (GIMPLE_MODIFY_STMT, optype, tmp1, blck_size);
+  stmt3 = build3 (COND_EXPR, void_type_node,
+	    build2 (NE_EXPR, boolean_type_node, tmp1, tmpv),
+	    build1 (GOTO_EXPR, void_type_node, label_decl2),
+	    build1 (GOTO_EXPR, void_type_node, label_decl1));
+  bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
+  bsi_insert_before (&bsi, stmt2, BSI_SAME_STMT);
+  bsi_insert_before (&bsi, stmt3, BSI_SAME_STMT);
+  bb1end = stmt3;
+
+  label1 = build1 (LABEL_EXPR, void_type_node, label_decl1);
+  stmt1 = unshare_expr (stmt);
+  call = get_call_expr_in (stmt1);
+  arglist = TREE_OPERAND (call, 1);
+  TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist))) = value;
+  bsi_insert_before (&bsi, label1, BSI_SAME_STMT);
+  bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
+  region = lookup_stmt_eh_region (stmt);
+  if (region >= 0)
+    add_stmt_to_eh_region (stmt1, region);
+  bb2end = stmt1;
+  label2 = build1 (LABEL_EXPR, void_type_node, label_decl2);
+  bsi_insert_before (&bsi, label2, BSI_SAME_STMT);
+
+  /* Fix CFG. */
+  /* Edge e23 connects bb2 to bb3, etc. */
+  e12 = split_block (bb, bb1end);
+  bb2 = e12->dest;
+  bb2->count = count;
+  e23 = split_block (bb2, bb2end);
+  bb3 = e23->dest;
+  bb3->count = all - count;
+
+  e12->flags &= ~EDGE_FALLTHRU;
+  e12->flags |= EDGE_FALSE_VALUE;
+  e12->probability = prob;
+  e12->count = count;
+
+  e13 = make_edge (bb, bb3, EDGE_TRUE_VALUE);
+  e13->probability = REG_BR_PROB_BASE - prob;
+  e13->count = all - count;
+
+  remove_edge (e23);
+  
+  e24 = make_edge (bb2, bb4, EDGE_FALLTHRU);
+  e24->probability = REG_BR_PROB_BASE;
+  e24->count = count;
+
+  e34->probability = REG_BR_PROB_BASE;
+  e34->count = all - count;
+}
+
+/* Find values inside STMT for that we want to measure histograms for
+   division/modulo optimization.  */
+static bool
+tree_stringops_transform (block_stmt_iterator *bsi)
+{
+  tree stmt = bsi_stmt (*bsi);
+  tree call = get_call_expr_in (stmt);
+  tree fndecl;
+  tree arglist;
+  tree blck_size;
+  enum built_in_function fcode;
+  stmt_ann_t ann = get_stmt_ann (stmt);
+  histogram_value histogram;
+  gcov_type count, all, val;
+  tree value;
+  tree dest, src;
+  unsigned int dest_align, src_align;
+  int prob;
+  tree tree_val;
+
+  if (!call)
+    return false;
+  fndecl = get_callee_fndecl (call);
+  if (!fndecl)
+    return false;
+  fcode = DECL_FUNCTION_CODE (fndecl);
+  arglist = TREE_OPERAND (call, 1);
+  if (!interesting_stringop_to_profile_p (fndecl, arglist))
+    return false;
+
+  if (fcode == BUILT_IN_BZERO)
+    blck_size = TREE_VALUE (TREE_CHAIN (arglist));
+  else
+    blck_size = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+  if (TREE_CODE (blck_size) == INTEGER_CST)
+    return false;
+
+  if (!ann->histograms)
+    return false;
+
+  all = bb_for_stmt (stmt)->count;
+  if (!all)
+    return false;
+  for (histogram = ann->histograms; histogram;
+       histogram = histogram->hvalue.next)
+    if (histogram->type == HIST_TYPE_SINGLE_VALUE)
+      break;
+  if (!histogram)
+    return false;
+  value = histogram->hvalue.value;
+  val = histogram->hvalue.counters[0];
+  count = histogram->hvalue.counters[1];
+  all = histogram->hvalue.counters[2];
+  /* We require that count is at least half of all; this means
+     that for the transformation to fire the value must be constant
+     at least 80% of time.  */
+  if ((6 * count / 5) < all)
+    return false;
+  if (check_counter (stmt, "value", all, bb_for_stmt (stmt)->count))
+    return false;
+  prob = (count * REG_BR_PROB_BASE + all / 2) / all;
+  dest = TREE_VALUE (arglist);
+  dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+  switch (fcode)
+    {
+    case BUILT_IN_MEMCPY:
+    case BUILT_IN_MEMPCPY:
+      src = TREE_VALUE (TREE_CHAIN (arglist));
+      src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
+      if (!can_move_by_pieces (val, MIN (dest_align, src_align)))
+	return false;
+      break;
+    case BUILT_IN_MEMSET:
+      if (!can_store_by_pieces (val, builtin_memset_read_str,
+				TREE_VALUE (TREE_CHAIN (arglist)),
+				dest_align))
+	return false;
+      break;
+    case BUILT_IN_BZERO:
+      if (!can_store_by_pieces (val, builtin_memset_read_str,
+				integer_zero_node,
+				dest_align))
+	return false;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  tree_val = build_int_cst_wide (get_gcov_type (),
+				 (unsigned HOST_WIDE_INT) val,
+				 val >> (HOST_BITS_PER_WIDE_INT - 1) >> 1);
+  if (dump_file)
+    {
+      fprintf (dump_file, "Single value %i stringop transformation on ",
+	       (int)val);
+      print_generic_stmt (dump_file, stmt, TDF_SLIM);
+    }
+  tree_stringop_fixed_value (stmt, tree_val, prob, count, all);
+  
+  return true;
+}
+
 struct value_prof_hooks {
   /* Find list of values for which we want to measure histograms.  */
   void (*find_values_to_profile) (histogram_values *);
@@ -770,6 +995,45 @@ tree_divmod_values_to_profile (tree stmt, histogram_values *values)
     }
 }
 
+/* Find values inside STMT for that we want to measure histograms for
+   division/modulo optimization.  */
+static void
+tree_stringops_values_to_profile (tree stmt, histogram_values *values)
+{
+  tree call = get_call_expr_in (stmt);
+  tree fndecl;
+  tree arglist;
+  tree blck_size;
+  enum built_in_function fcode;
+  histogram_value hist;
+
+  if (!call)
+    return;
+  fndecl = get_callee_fndecl (call);
+  if (!fndecl)
+    return;
+  fcode = DECL_FUNCTION_CODE (fndecl);
+  arglist = TREE_OPERAND (call, 1);
+
+  if (!interesting_stringop_to_profile_p (fndecl, arglist))
+    return;
+
+  if (fcode == BUILT_IN_BZERO)
+    blck_size = TREE_VALUE (TREE_CHAIN (arglist));
+  else
+    blck_size = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+
+  if (TREE_CODE (blck_size) != INTEGER_CST)
+    {
+      VEC_reserve (histogram_value, heap, *values, 3);
+      hist = ggc_alloc (sizeof (*hist));
+      hist->hvalue.value = blck_size;
+      hist->hvalue.stmt = stmt;
+      hist->type = HIST_TYPE_SINGLE_VALUE;
+      VEC_quick_push (histogram_value, *values, hist);
+    }
+}
+
 /* Find values inside STMT for that we want to measure histograms and adds
    them to list VALUES.  */
 
@@ -777,7 +1041,10 @@ static void
 tree_values_to_profile (tree stmt, histogram_values *values)
 {
   if (flag_value_profile_transformations)
-    tree_divmod_values_to_profile (stmt, values);
+    {
+      tree_divmod_values_to_profile (stmt, values);
+      tree_stringops_values_to_profile (stmt, values);
+    }
 }
 
 static void
