@@ -1337,7 +1337,7 @@ ipa_init (void)
    to variables defined within this unit.  */
 
 static void 
-analyze_variable (struct cgraph_varpool_node *vnode)
+analyze_variable (struct varpool_node *vnode)
 {
   tree global = vnode->decl;
   tree type = get_canon_type (TREE_TYPE (global), false, false);
@@ -1674,7 +1674,7 @@ static unsigned int
 type_escape_execute (void)
 {
   struct cgraph_node *node;
-  struct cgraph_varpool_node *vnode;
+  struct varpool_node *vnode;
   unsigned int i;
   bitmap_iterator bi;
   splay_tree_node result;
@@ -1682,7 +1682,7 @@ type_escape_execute (void)
   ipa_init ();
 
   /* Process all of the variables first.  */
-  for (vnode = cgraph_varpool_nodes_queue; vnode; vnode = vnode->next_needed)
+  for (vnode = varpool_nodes_queue; vnode; vnode = vnode->next_needed)
     analyze_variable (vnode);
 
   /* Process all of the functions. next

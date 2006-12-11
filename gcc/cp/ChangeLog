@@ -1,3 +1,7 @@
+2006-12-11  Jan Hubicka  <jh@suse.cz>
+
+	* decl2.c (var_finalized_p): Update for renamed varpool functions.
+
 2006-12-09  Zack Weinberg  <zackw@panix.com>
 
 	* parser.c (yydebug, enum pragma_omp_clause): Delete.

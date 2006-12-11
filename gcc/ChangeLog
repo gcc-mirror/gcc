@@ -1,3 +1,71 @@
+2006-12-11  Jan Hubicka  <jh@suse.cz>
+
+	Move all varpool routines out of cgraph/cgraphunit to varpool.c
+	* cgraph.c: Update comments.
+	(cgraph_varpool_hash,
+	cgraph_varpool_nodes, cgraph_varpool_last_needed_node
+	cgraph_varpool_node_name, cgraph_varpool_node,
+	cgraph_varpol_mode_for_asm, cgraph_varpool_mark_needed_node,
+	cgraph_variable_initializer_availability): Move to
+	varpool.c and drop cgraph_ prefixes.
+	(cgraph_varpool_enqueue_needed_node, cgraph_varpool_reset_queue,
+	cgraph_varpool_first_unanalyzed_node, cgraph_varpool_finalize_decl):
+	move to varpool.c; drop cgraph_ prefix; make static.
+	(dump_cgraph_varpool_node): Move to varpool.c under name
+	dump_varpool_node.
+	(dump_varpool, hash_varpool_node, eq_varpool_node,
+	decide_is_variable_needed): Move to varpool.c
+	(decl_assembler_name_equal): Move to tree.c.
+	(availability_names): Rename to ...
+	(cgraph_availability_names): ... this one.
+	(dump_cgraph_node): Update.
+	* cgraph.h: Reorder declarations now in varpool.c
+	(cgraph_vailablity_names): Declare.
+	(struct cgraph_varpool_node): Rename to ...
+	(struct varpool_node): ... this one.
+	(cgraph_varpool_first_unanalyzed_node, cgraph_varpool_nodes_queue,
+	cgraph_varpool_first_unanalyzed_node, cgraph_varpool_node,
+	cgraph_varpool_node_for_asm, cgraph_varpool_mark_needed_node,
+	cgraph_varpool_finalize_decl, cgraph_varpool_enqueue_needed_node,
+	cgraph_varpool_reset_queue, cgraph_varpool_assemble_pending_decls,
+	cgraph_variable_initializer_availability): Rename to ...
+	(varpool_first_unanalyzed_node, varpool_nodes_queue,
+	varpool_first_unanalyzed_node, varpool_node,
+	varpool_node_for_asm, varpool_mark_needed_node,
+	varpool_finalize_decl, varpool_enqueue_needed_node,
+	varpool_assemble_pending_decls, variable_initializer_availability):
+	Rename to ...
+	* tree.c (decl_assembler_name_equal): Move here from cgraph.c.
+	* tree.h (decl_assembler_name_equal): Declare.
+	* omp-low.c (lower_omp_critical): Update.
+	* ipa-reference (analyze_variable, static_execute): Likewise.
+	* toplev.c (wrapup_global_declaration_2, compile_file): Update.
+	* cgraphunit.c: Update comments.
+	(cgraph_varpool_assembled_nodes_queue): Move to varpool.c under name
+	varpool_assembled_nodes_queue.
+	(cgraph_varpool_analyze_pending_decls): Move to varpool.c under name
+	varpool_analyze_pending_decls.
+	(cgraph_varpool_remove_unreferenced_decls): Move to varpool.c under name
+	varpool_remove_unreferenced_decls.
+	(record_reference): Update.
+	(cgraph_create_edges): Update.
+	(record_referneces_in_initializer): New function.
+	(cgraph_varpool_assemble_decl): Move to varpool.c under name
+	varpool_assemble_decl; make global.
+	(cgraph_varpool_assemble_pending_decls): Move to varpool.c under name
+	varpool_assemble_pending_decls.
+	(process_function_and_variable_attributes, cgraph_finalize_compilation_unit,
+	struct cgraph_order_sort, cgraph_output_in_order,
+	cgraph_function_and_variable_invisibility, cgraph_optimize,
+	cgraph_increase_alignment): Update.
+	* dwarf2out.c (decls_for_scope): Likewise.
+	* ipa-type-escape.c (analyze_variable, type_escape_execute): Likewise.
+	* except.c (output_ttype): Likewise.
+	* varasm.c (mark_decl_referenced): Likewise.
+	(find_decl_and_mark_referenced, assemble_alias): update.
+	* Makefile.in: Add varpool.c, gt-varpool.c and remove gt-cgraphunit.c
+	* passes.c (rest_of_decl_compilation): Update.
+
 2006-12-11  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Use 

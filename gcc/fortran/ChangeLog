@@ -1,3 +1,7 @@
+2006-12-11  Jan Hubicka  <jh@suse.cz>
+
+	* f59-lang.c (gfc_expand_function): Update for renamed varpool functions.
+
 2006-12-10  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi: Update Fortran 2003 section.

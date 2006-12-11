@@ -1,3 +1,8 @@
+2006-11-12  Jan Hubicka  <jh@suse.cz>
+
+	* resource.c (compile_resource_data): Update for new varpool names.
+	* java/class.c (build_utf8_ref): Likewise.
+
 2006-11-12  David Daney  <ddaney@avtrex.com>
 
 	PR java/29805
