@@ -1,3 +1,27 @@
+2006-12-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/29892
+	* trans-intrinsic.c (gfc_conv_intrinsic_bound): Use a locus in
+	the call to gfc_trans_runtime_check.
+	* trans-array.c (gfc_trans_array_bound_check): Try harder to find
+	the variable or function name for the runtime error message.
+	(gfc_trans_dummy_array_bias): Use a locus in the call to
+	gfc_trans_runtime_check
+
+2006-12-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/29973
+	* resolve.c (resolve_actual_arglist): Remove the special case for
+	CHAR.
+	* intrinsic.c (add_functions): Remove the special case for CHAR.
+
+2006-12-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/29711
+	* error.c (error_print): Handle printf-style position specifiers,
+	of the form "%3$d".
+
 2006-12-10  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/29568

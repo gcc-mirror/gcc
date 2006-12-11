@@ -378,68 +378,149 @@ show_loci (locus * l1, locus * l2)
 static void ATTRIBUTE_GCC_GFC(2,0)
 error_print (const char *type, const char *format0, va_list argp)
 {
-  char c, c_arg[MAX_ARGS], *cp_arg[MAX_ARGS];
-  int n, have_l1, i_arg[MAX_ARGS];
+  enum { TYPE_CURRENTLOC, TYPE_LOCUS, TYPE_INTEGER, TYPE_CHAR, TYPE_STRING,
+	 NOTYPE };
+  struct
+  {
+    int type;
+    int pos;
+    union
+    {
+      int intval;
+      char charval;
+      const char * stringval;
+    } u;
+  } arg[MAX_ARGS], spec[MAX_ARGS];
+  /* spec is the array of specifiers, in the same order as they
+     appear in the format string.  arg is the array of arguments,
+     in the same order as they appear in the va_list.  */
+
+  char c;
+  int i, n, have_l1, pos, maxpos;
   locus *l1, *l2, *loc;
   const char *format;
 
-  l1 = l2 = loc = NULL;
+  l1 = l2 = NULL;
 
   have_l1 = 0;
+  pos = -1;
+  maxpos = -1;
 
   n = 0;
   format = format0;
 
+  for (i = 0; i < MAX_ARGS; i++)
+    {
+      arg[i].type = NOTYPE;
+      spec[i].pos = -1;
+    }
+
+  /* First parse the format string for position specifiers.  */
   while (*format)
     {
       c = *format++;
-      if (c == '%')
+      if (c != '%')
+	continue;
+
+      if (*format == '%')
+	continue;
+
+      if (ISDIGIT (*format))
 	{
-	  c = *format++;
+	  /* This is a position specifier.  For example, the number
+	     12 in the format string "%12$d", which specifies the third
+	     argument of the va_list, formatted in %d format.
+	     For details, see "man 3 printf".  */
+	  pos = atoi(format) - 1;
+	  gcc_assert (pos >= 0);
+	  while (ISDIGIT(*format))
+	    format++;
+	  gcc_assert (*format++ == '$');
+	}
+      else
+	pos++;
 
-	  switch (c)
-	    {
-	    case '%':
-	      break;
+      c = *format++;
 
-	    case 'L':
+      if (pos > maxpos)
+	maxpos = pos;
+
+      switch (c)
+	{
+	  case 'C':
+	    arg[pos].type = TYPE_CURRENTLOC;
+	    break;
+
+	  case 'L':
+	    arg[pos].type = TYPE_LOCUS;
+	    break;
+
+	  case 'd':
+	  case 'i':
+	    arg[pos].type = TYPE_INTEGER;
+	    break;
+
+	  case 'c':
+	    arg[pos].type = TYPE_CHAR;
+	    break;
+
+	  case 's':
+	    arg[pos].type = TYPE_STRING;
+	    break;
+
+	  default:
+	    gcc_unreachable ();
+	}
+
+      spec[n++].pos = pos;
+    }
+
+  /* Then convert the values for each %-style argument.  */
+  for (pos = 0; pos <= maxpos; pos++)
+    {
+      gcc_assert (arg[pos].type != NOTYPE);
+      switch (arg[pos].type)
+	{
+	  case TYPE_CURRENTLOC:
+	    loc = &gfc_current_locus;
+	    /* Fall through.  */
+
+	  case TYPE_LOCUS:
+	    if (arg[pos].type == TYPE_LOCUS)
 	      loc = va_arg (argp, locus *);
-	      /* Fall through */
 
-	    case 'C':
-	      if (c == 'C')
-		loc = &gfc_current_locus;
+	    if (have_l1)
+	      {
+		l2 = loc;
+		arg[pos].u.stringval = "(2)";
+	      }
+	    else
+	      {
+		l1 = loc;
+		have_l1 = 1;
+		arg[pos].u.stringval = "(1)";
+	      }
+	    break;
 
-	      if (have_l1)
-		{
-		  l2 = loc;
-		}
-	      else
-		{
-		  l1 = loc;
-		  have_l1 = 1;
-		}
-	      break;
+	  case TYPE_INTEGER:
+	    arg[pos].u.intval = va_arg (argp, int);
+	    break;
 
-	    case 'd':
-	    case 'i':
-	      i_arg[n++] = va_arg (argp, int);
-	      break;
+	  case TYPE_CHAR:
+	    arg[pos].u.charval = (char) va_arg (argp, int);
+	    break;
 
-	    case 'c':
-	      c_arg[n++] = va_arg (argp, int);
-	      break;
+	  case TYPE_STRING:
+	    arg[pos].u.stringval = (const char *) va_arg (argp, char *);
+	    break;
 
-	    case 's':
-	      cp_arg[n++] = va_arg (argp, char *);
-	      break;
-
-	    case '\0':
-	      format--;
-	      break;
-	    }
+	  default:
+	    gcc_unreachable ();
 	}
     }
+
+  for (n = 0; spec[n].pos >= 0; n++)
+    spec[n].u = arg[spec[n].pos].u;
 
   /* Show the current loci if we have to.  */
   if (have_l1)
@@ -464,6 +545,16 @@ error_print (const char *type, const char *format0, va_list argp)
 	}
 
       format++;
+      if (ISDIGIT(*format))
+	{
+	  /* This is a position specifier.  See comment above.  */
+	  while (ISDIGIT(*format))
+	    format++;
+	    
+	  /* Skip over the dollar sign.  */
+	  format++;
+	}
+	
       switch (*format)
 	{
 	case '%':
@@ -471,26 +562,18 @@ error_print (const char *type, const char *format0, va_list argp)
 	  break;
 
 	case 'c':
-	  error_char (c_arg[n++]);
+	  error_char (spec[n++].u.charval);
 	  break;
 
 	case 's':
-	  error_string (cp_arg[n++]);
+	case 'C':		/* Current locus */
+	case 'L':		/* Specified locus */
+	  error_string (spec[n++].u.stringval);
 	  break;
 
 	case 'd':
 	case 'i':
-	  error_integer (i_arg[n++]);
-	  break;
-
-	case 'C':		/* Current locus */
-	case 'L':		/* Specified locus */
-	  error_string (have_l1 ? "(2)" : "(1)");
-	  have_l1 = 1;
-	  break;
-
-	case '\0':
-	  format--;
+	  error_integer (spec[n++].u.intval);
 	  break;
 	}
     }

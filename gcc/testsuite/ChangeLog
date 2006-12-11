@@ -1,3 +1,12 @@
+2006-12-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/29973
+	* gfortran.dg/specifics_1.f90: Remove check for CHAR.
+	* gfortran.dg/specifics_2.f90: Remove check for CHAR.
+	* gfortran.dg/specifics_3.f90: Remove.
+	* gfortran.fortran-torture/execute/specifics.f90: Remove test
+	for CHAR.
+
 2006-12-10  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	Backport from mainline
