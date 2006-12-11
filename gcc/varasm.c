@@ -6265,14 +6265,14 @@ elf_record_gcc_switches (print_switch_type type, const char * name)
 
 	      snprintf (buffer + len, sizeof buffer - len, " %s", name);
 	      ASM_OUTPUT_ASCII (asm_out_file, buffer, strlen (buffer));
-	      ASM_OUTPUT_SKIP (asm_out_file, 1L);
+	      ASM_OUTPUT_SKIP (asm_out_file, (unsigned HOST_WIDE_INT) 1);
 	      previous_name_held_back = FALSE;
 	    }
 	  else
 	    {
 	      strncpy (buffer, name, sizeof buffer);
 	      ASM_OUTPUT_ASCII (asm_out_file, buffer, strlen (buffer));
-	      ASM_OUTPUT_SKIP (asm_out_file, 1L);
+	      ASM_OUTPUT_SKIP (asm_out_file, (unsigned HOST_WIDE_INT) 1);
 	    }
 	}
       else
@@ -6280,7 +6280,7 @@ elf_record_gcc_switches (print_switch_type type, const char * name)
 	  if (previous_name_held_back)
 	    {
 	      ASM_OUTPUT_ASCII (asm_out_file, buffer, strlen (buffer));
-	      ASM_OUTPUT_SKIP (asm_out_file, 1L);
+	      ASM_OUTPUT_SKIP (asm_out_file, (unsigned HOST_WIDE_INT) 1);
 	    }
 
 	  strncpy (buffer, name, sizeof buffer);
@@ -6299,7 +6299,7 @@ elf_record_gcc_switches (print_switch_type type, const char * name)
 	      if (previous_name_held_back)
 		{
 		  ASM_OUTPUT_ASCII (asm_out_file, buffer, strlen (buffer));
-		  ASM_OUTPUT_SKIP (asm_out_file, 1L);
+		  ASM_OUTPUT_SKIP (asm_out_file, (unsigned HOST_WIDE_INT) 1);
 		}
 	    }
 	  else
