@@ -2929,8 +2929,9 @@ scev_const_prop (void)
 	}
     }
 
-  /* Remove the ssa names that were replaced by constants.  We do not remove them
-     directly in the previous cycle, since this invalidates scev cache.  */
+  /* Remove the ssa names that were replaced by constants.  We do not
+     remove them directly in the previous cycle, since this
+     invalidates scev cache.  */
   if (ssa_names_to_remove)
     {
       bitmap_iterator bi;
@@ -2941,7 +2942,7 @@ scev_const_prop (void)
 	  phi = SSA_NAME_DEF_STMT (name);
 
 	  gcc_assert (TREE_CODE (phi) == PHI_NODE);
-	  remove_phi_node (phi, NULL);
+	  remove_phi_node (phi, NULL, true);
 	}
 
       BITMAP_FREE (ssa_names_to_remove);
@@ -2998,11 +2999,10 @@ scev_const_prop (void)
 	      || contains_abnormal_ssa_name_p (def))
 	    continue;
 
-	  /* Eliminate the phi node and replace it by a computation outside
+	  /* Eliminate the PHI node and replace it by a computation outside
 	     the loop.  */
 	  def = unshare_expr (def);
-	  SET_PHI_RESULT (phi, NULL_TREE);
-	  remove_phi_node (phi, NULL_TREE);
+	  remove_phi_node (phi, NULL_TREE, false);
 
 	  ass = build2 (GIMPLE_MODIFY_STMT, void_type_node, rslt, NULL_TREE);
 	  SSA_NAME_DEF_STMT (rslt) = ass;

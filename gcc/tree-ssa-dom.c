@@ -2089,7 +2089,7 @@ static void
 remove_stmt_or_phi (tree t)
 {
   if (TREE_CODE (t) == PHI_NODE)
-    remove_phi_node (t, NULL);
+    remove_phi_node (t, NULL, true);
   else
     {
       block_stmt_iterator bsi = bsi_for_stmt (t);

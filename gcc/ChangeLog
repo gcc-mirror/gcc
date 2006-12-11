@@ -1,3 +1,15 @@
+2006-12-11  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-scalar-evolution.c (scev_const_prop):
+	* tree-phinodes.c (remove_phi_node): Add argument
+	RELEASE_LHS_P.  If given, release the SSA name on the LHS of
+	the PHI node.
+	Update all users.
+	* tree-ssa-dce.c: Remove forward declarations for static
+	functions.  Re-arrange functions bodies as needed.
+	(find_obviously_necessary_stmts): Never mark PHI nodes as
+	obviously necessary.
+
 2006-12-11  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* config/arm/elf.h (MAX_OFILE_ALIGNMENT): Remove definition.
