@@ -19,7 +19,7 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.  */
 
-/*  This file contains basic routines manipulating call graph and variable pool
+/*  This file contains basic routines manipulating call graph
 
 The callgraph:
 
@@ -69,15 +69,7 @@ The callgraph:
 
       Each edge has "inline_failed" field.  When the field is set to NULL,
       the call will be inlined.  When it is non-NULL it contains a reason
-      why inlining wasn't performed.
-
-
-The varpool data structure:
-
-    Varpool is used to maintain variables in similar manner as call-graph
-    is used for functions.  Most of the API is symmetric replacing cgraph
-    function prefix by cgraph_varpool  */
-
+      why inlining wasn't performed.  */
 
 #include "config.h"
 #include "system.h"
@@ -129,18 +121,6 @@ bool cgraph_global_info_ready = false;
 
 /* Set when the cgraph is fully build and the basic flags are computed.  */
 bool cgraph_function_flags_ready = false;
-
-/* Hash table used to convert declarations into nodes.  */
-static GTY((param_is (struct cgraph_varpool_node))) htab_t cgraph_varpool_hash;
-
-/* Queue of cgraph nodes scheduled to be lowered and output.  */
-struct cgraph_varpool_node *cgraph_varpool_nodes_queue, *cgraph_varpool_first_unanalyzed_node;
-
-/* The linked list of cgraph varpool nodes.  */
-struct cgraph_varpool_node *cgraph_varpool_nodes;
-
-/* End of the varpool queue.  Needs to be QTYed to work with PCH.  */
-static GTY(()) struct cgraph_varpool_node *cgraph_varpool_last_needed_node;
 
 /* Linked list of cgraph asm nodes.  */
 struct cgraph_asm_node *cgraph_asm_nodes;
@@ -241,40 +221,6 @@ cgraph_insert_node_to_hashtable (struct cgraph_node *node)
 
   gcc_assert (!*slot);
   *slot = node;
-}
-
-/* Compare ASMNAME with the DECL_ASSEMBLER_NAME of DECL.  */
-
-static bool
-decl_assembler_name_equal (tree decl, tree asmname)
-{
-  tree decl_asmname = DECL_ASSEMBLER_NAME (decl);
-
-  if (decl_asmname == asmname)
-    return true;
-
-  /* If the target assembler name was set by the user, things are trickier.
-     We have a leading '*' to begin with.  After that, it's arguable what
-     is the correct thing to do with -fleading-underscore.  Arguably, we've
-     historically been doing the wrong thing in assemble_alias by always
-     printing the leading underscore.  Since we're not changing that, make
-     sure user_label_prefix follows the '*' before matching.  */
-  if (IDENTIFIER_POINTER (decl_asmname)[0] == '*')
-    {
-      const char *decl_str = IDENTIFIER_POINTER (decl_asmname) + 1;
-      size_t ulp_len = strlen (user_label_prefix);
-
-      if (ulp_len == 0)
-	;
-      else if (strncmp (decl_str, user_label_prefix, ulp_len) == 0)
-	decl_str += ulp_len;
-      else
-	return false;
-
-      return strcmp (decl_str, IDENTIFIER_POINTER (asmname)) == 0;
-    }
-
-  return false;
 }
 
 
@@ -683,15 +629,8 @@ cgraph_node_name (struct cgraph_node *node)
   return lang_hooks.decl_printable_name (node->decl, 2);
 }
 
-/* Return name of the node used in debug output.  */
-static const char *
-cgraph_varpool_node_name (struct cgraph_varpool_node *node)
-{
-  return lang_hooks.decl_printable_name (node->decl, 2);
-}
-
 /* Names used to print out the availability enum.  */
-static const char * const availability_names[] =
+const char * const cgraph_availability_names[] =
   {"unset", "not_available", "overwrittable", "available", "local"};
 
 /* Dump given cgraph node.  */
@@ -706,7 +645,7 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 	     node->global.inlined_to->uid);
   if (cgraph_function_flags_ready)
     fprintf (f, " availability:%s",
-	     availability_names [cgraph_function_body_availability (node)]);
+	     cgraph_availability_names [cgraph_function_body_availability (node)]);
   if (node->master_clone && node->master_clone->uid != node->uid)
     fprintf (f, "(%i)", node->master_clone->uid);
   if (node->count)
@@ -785,100 +724,6 @@ dump_cgraph (FILE *f)
     dump_cgraph_node (f, node);
 }
 
-/* Dump given cgraph node.  */
-void
-dump_cgraph_varpool_node (FILE *f, struct cgraph_varpool_node *node)
-{
-  fprintf (f, "%s:", cgraph_varpool_node_name (node));
-  fprintf (f, " availability:%s",
-	   cgraph_function_flags_ready
-	   ? availability_names[cgraph_variable_initializer_availability (node)]
-	   : "not-ready");
-  if (DECL_INITIAL (node->decl))
-    fprintf (f, " initialized");
-  if (node->needed)
-    fprintf (f, " needed");
-  if (node->analyzed)
-    fprintf (f, " analyzed");
-  if (node->finalized)
-    fprintf (f, " finalized");
-  if (node->output)
-    fprintf (f, " output");
-  if (node->externally_visible)
-    fprintf (f, " externally_visible");
-  fprintf (f, "\n");
-}
-
-/* Dump the callgraph.  */
-
-void
-dump_varpool (FILE *f)
-{
-  struct cgraph_varpool_node *node;
-
-  fprintf (f, "variable pool:\n\n");
-  for (node = cgraph_varpool_nodes; node; node = node->next_needed)
-    dump_cgraph_varpool_node (f, node);
-}
-
-/* Returns a hash code for P.  */
-
-static hashval_t
-hash_varpool_node (const void *p)
-{
-  const struct cgraph_varpool_node *n = (const struct cgraph_varpool_node *) p;
-  return (hashval_t) DECL_UID (n->decl);
-}
-
-/* Returns nonzero if P1 and P2 are equal.  */
-
-static int
-eq_varpool_node (const void *p1, const void *p2)
-{
-  const struct cgraph_varpool_node *n1 =
-    (const struct cgraph_varpool_node *) p1;
-  const struct cgraph_varpool_node *n2 =
-    (const struct cgraph_varpool_node *) p2;
-  return DECL_UID (n1->decl) == DECL_UID (n2->decl);
-}
-
-/* Return cgraph_varpool node assigned to DECL.  Create new one when needed.  */
-struct cgraph_varpool_node *
-cgraph_varpool_node (tree decl)
-{
-  struct cgraph_varpool_node key, *node, **slot;
-
-  gcc_assert (DECL_P (decl) && TREE_CODE (decl) != FUNCTION_DECL);
-
-  if (!cgraph_varpool_hash)
-    cgraph_varpool_hash = htab_create_ggc (10, hash_varpool_node,
-					   eq_varpool_node, NULL);
-  key.decl = decl;
-  slot = (struct cgraph_varpool_node **)
-    htab_find_slot (cgraph_varpool_hash, &key, INSERT);
-  if (*slot)
-    return *slot;
-  node = GGC_CNEW (struct cgraph_varpool_node);
-  node->decl = decl;
-  node->order = cgraph_order++;
-  node->next = cgraph_varpool_nodes;
-  cgraph_varpool_nodes = node;
-  *slot = node;
-  return node;
-}
-
-struct cgraph_varpool_node *
-cgraph_varpool_node_for_asm (tree asmname)
-{
-  struct cgraph_varpool_node *node;
-
-  for (node = cgraph_varpool_nodes; node ; node = node->next)
-    if (decl_assembler_name_equal (node->decl, asmname))
-      return node;
-
-  return NULL;
-}
-
 /* Set the DECL_ASSEMBLER_NAME and update cgraph hashtables.  */
 void
 change_decl_assembler_name (tree decl, tree name)
@@ -896,116 +741,6 @@ change_decl_assembler_name (tree decl, tree name)
     warning (0, "%D renamed after being referenced in assembly", decl);
 
   SET_DECL_ASSEMBLER_NAME (decl, name);
-}
-
-/* Helper function for finalization code - add node into lists so it will
-   be analyzed and compiled.  */
-void
-cgraph_varpool_enqueue_needed_node (struct cgraph_varpool_node *node)
-{
-  if (cgraph_varpool_last_needed_node)
-    cgraph_varpool_last_needed_node->next_needed = node;
-  cgraph_varpool_last_needed_node = node;
-  node->next_needed = NULL;
-  if (!cgraph_varpool_nodes_queue)
-    cgraph_varpool_nodes_queue = node;
-  if (!cgraph_varpool_first_unanalyzed_node)
-    cgraph_varpool_first_unanalyzed_node = node;
-  notice_global_symbol (node->decl);
-}
-
-/* Reset the queue of needed nodes.  */
-void
-cgraph_varpool_reset_queue (void)
-{
-  cgraph_varpool_last_needed_node = NULL;
-  cgraph_varpool_nodes_queue = NULL;
-  cgraph_varpool_first_unanalyzed_node = NULL;
-}
-
-/* Notify finalize_compilation_unit that given node is reachable
-   or needed.  */
-void
-cgraph_varpool_mark_needed_node (struct cgraph_varpool_node *node)
-{
-  if (!node->needed && node->finalized
-      && !TREE_ASM_WRITTEN (node->decl))
-    cgraph_varpool_enqueue_needed_node (node);
-  node->needed = 1;
-}
-
-/* Determine if variable DECL is needed.  That is, visible to something
-   either outside this translation unit, something magic in the system
-   configury, or (if not doing unit-at-a-time) to something we haven't
-   seen yet.  */
-
-bool
-decide_is_variable_needed (struct cgraph_varpool_node *node, tree decl)
-{
-  /* If the user told us it is used, then it must be so.  */
-  if (node->externally_visible)
-    return true;
-  if (!flag_unit_at_a_time
-      && lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
-    return true;
-
-  /* ??? If the assembler name is set by hand, it is possible to assemble
-     the name later after finalizing the function and the fact is noticed
-     in assemble_name then.  This is arguably a bug.  */
-  if (DECL_ASSEMBLER_NAME_SET_P (decl)
-      && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
-    return true;
-
-  /* If we decided it was needed before, but at the time we didn't have
-     the definition available, then it's still needed.  */
-  if (node->needed)
-    return true;
-
-  /* Externally visible variables must be output.  The exception is
-     COMDAT variables that must be output only when they are needed.  */
-  if (TREE_PUBLIC (decl) && !flag_whole_program && !DECL_COMDAT (decl)
-      && !DECL_EXTERNAL (decl))
-    return true;
-
-  /* When not reordering top level variables, we have to assume that
-     we are going to keep everything.  */
-  if (flag_unit_at_a_time && flag_toplevel_reorder)
-    return false;
-
-  /* We want to emit COMDAT variables only when absolutely necessary.  */
-  if (DECL_COMDAT (decl))
-    return false;
-  return true;
-}
-
-void
-cgraph_varpool_finalize_decl (tree decl)
-{
-  struct cgraph_varpool_node *node = cgraph_varpool_node (decl);
-
-  /* The first declaration of a variable that comes through this function
-     decides whether it is global (in C, has external linkage)
-     or local (in C, has internal linkage).  So do nothing more
-     if this function has already run.  */
-  if (node->finalized)
-    {
-      if (cgraph_global_info_ready || (!flag_unit_at_a_time && !flag_openmp))
-	cgraph_varpool_assemble_pending_decls ();
-      return;
-    }
-  if (node->needed)
-    cgraph_varpool_enqueue_needed_node (node);
-  node->finalized = true;
-
-  if (decide_is_variable_needed (node, decl))
-    cgraph_varpool_mark_needed_node (node);
-  /* Since we reclaim unreachable nodes at the end of every language
-     level unit, we need to be conservative about possible entry points
-     there.  */
-  else if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
-    cgraph_varpool_mark_needed_node (node);
-  if (cgraph_global_info_ready || (!flag_unit_at_a_time && !flag_openmp))
-    cgraph_varpool_assemble_pending_decls ();
 }
 
 /* Add a top-level asm statement to the list.  */
@@ -1180,25 +915,6 @@ cgraph_function_body_availability (struct cgraph_node *node)
 
   return avail;
 }
-
-/* Return variable availability.  See cgraph.h for description of individual
-   return values.  */
-enum availability
-cgraph_variable_initializer_availability (struct cgraph_varpool_node *node)
-{
-  gcc_assert (cgraph_function_flags_ready);
-  if (!node->finalized)
-    return AVAIL_NOT_AVAILABLE;
-  if (!TREE_PUBLIC (node->decl))
-    return AVAIL_AVAILABLE;
-  /* If the variable can be overwritten, return OVERWRITABLE.  Takes
-     care of at least two notable extensions - the COMDAT variables
-     used to share template instantiations in C++.  */
-  if (!(*targetm.binds_local_p) (node->decl) && !DECL_COMDAT (node->decl))
-    return AVAIL_OVERWRITABLE;
-  return AVAIL_AVAILABLE;
-}
-
 
 /* Add the function FNDECL to the call graph.  FNDECL is assumed to be
    in low GIMPLE form and ready to be processed by cgraph_finalize_function.

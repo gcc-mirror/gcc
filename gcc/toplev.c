@@ -751,9 +751,9 @@ wrapup_global_declaration_2 (tree decl)
 
   if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
     {
-      struct cgraph_varpool_node *node;
+      struct varpool_node *node;
       bool needed = true;
-      node = cgraph_varpool_node (decl);
+      node = varpool_node (decl);
 
       if (node->finalized)
 	needed = false;
@@ -1042,7 +1042,7 @@ compile_file (void)
   if (errorcount || sorrycount)
     return;
 
-  cgraph_varpool_assemble_pending_decls ();
+  varpool_assemble_pending_decls ();
   finish_aliases_2 ();
 
   /* This must occur after the loop to output deferred functions.

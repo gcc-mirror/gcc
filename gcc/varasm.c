@@ -2018,8 +2018,8 @@ mark_decl_referenced (tree decl)
     }
   else if (TREE_CODE (decl) == VAR_DECL)
     {
-      struct cgraph_varpool_node *node = cgraph_varpool_node (decl);
-      cgraph_varpool_mark_needed_node (node);
+      struct varpool_node *node = varpool_node (decl);
+      varpool_mark_needed_node (node);
       /* C++ frontend use mark_decl_references to force COMDAT variables
          to be output that might appear dead otherwise.  */
       node->force_output = true;
@@ -4808,17 +4808,17 @@ static tree
 find_decl_and_mark_needed (tree decl, tree target)
 {
   struct cgraph_node *fnode = NULL;
-  struct cgraph_varpool_node *vnode = NULL;
+  struct varpool_node *vnode = NULL;
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       fnode = cgraph_node_for_asm (target);
       if (fnode == NULL)
-	vnode = cgraph_varpool_node_for_asm (target);
+	vnode = varpool_node_for_asm (target);
     }
   else
     {
-      vnode = cgraph_varpool_node_for_asm (target);
+      vnode = varpool_node_for_asm (target);
       if (vnode == NULL)
 	fnode = cgraph_node_for_asm (target);
     }
@@ -4836,7 +4836,7 @@ find_decl_and_mark_needed (tree decl, tree target)
     }
   else if (vnode)
     {
-      cgraph_varpool_mark_needed_node (vnode);
+      varpool_mark_needed_node (vnode);
       return vnode->decl;
     }
   else
@@ -5029,7 +5029,7 @@ assemble_alias (tree decl, tree target)
   if (TREE_CODE (decl) == FUNCTION_DECL)
     cgraph_node (decl)->alias = true;
   else
-    cgraph_varpool_node (decl)->alias = true;
+    varpool_node (decl)->alias = true;
 
   /* If the target has already been emitted, we don't have to queue the
      alias.  This saves a tad o memory.  */

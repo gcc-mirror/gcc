@@ -226,7 +226,7 @@ gfc_expand_function (tree fndecl)
 		&& TREE_CODE (TREE_OPERAND (expr, 0)) == VAR_DECL
 		&& TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0)))
 		   == UNION_TYPE
-		&& cgraph_varpool_node (TREE_OPERAND (expr, 0))->needed
+		&& varpool_node (TREE_OPERAND (expr, 0))->needed
 		&& errorcount == 0 && sorrycount == 0)
 	      {
 		timevar_push (TV_SYMOUT);

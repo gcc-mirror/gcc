@@ -1024,7 +1024,7 @@ OBJS-md = $(out_object_file)
 OBJS-archive = $(EXTRA_OBJS) $(host_hook_obj) tree-inline.o		   \
   cgraph.o cgraphunit.o tree-nomudflap.o ipa.o ipa-inline.o                \
   ipa-utils.o ipa-reference.o ipa-pure-const.o ipa-type-escape.o           \
-  ipa-prop.o ipa-cp.o
+  ipa-prop.o ipa-cp.o varpool.o
 
 OBJS = $(OBJS-common) $(out_object_file) $(OBJS-archive)
 
@@ -2293,8 +2293,13 @@ cgraphunit.o : cgraphunit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) toplev.h $(FLAGS_H) $(GGC_H) \
    $(TARGET_H) $(CGRAPH_H) intl.h pointer-set.h $(FUNCTION_H) $(TREE_GIMPLE_H) \
    $(TREE_FLOW_H) tree-pass.h $(C_COMMON_H) debug.h $(DIAGNOSTIC_H) \
+   $(FIBHEAP_H) output.h $(PARAMS_H) $(RTL_H) $(TIMEVAR_H) ipa-prop.h 
+varpool.o : varpool.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   $(TREE_H) langhooks.h $(TREE_INLINE_H) toplev.h $(FLAGS_H) $(GGC_H) \
+   $(TARGET_H) $(CGRAPH_H) intl.h pointer-set.h $(FUNCTION_H) $(TREE_GIMPLE_H) \
+   $(TREE_FLOW_H) tree-pass.h $(C_COMMON_H) debug.h $(DIAGNOSTIC_H) \
    $(FIBHEAP_H) output.h $(PARAMS_H) $(RTL_H) $(TIMEVAR_H) ipa-prop.h \
-   gt-cgraphunit.h
+   gt-varpool.h
 ipa.o : ipa.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(CGRAPH_H) 
 ipa-prop.o : ipa-prop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h  \
    langhooks.h $(GGC_H) $(TARGET_H) $(CGRAPH_H) ipa-prop.h \
@@ -2873,8 +2878,8 @@ GTFILES = $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-profile.c $(srcdir)/tree-nested.c \
   $(srcdir)/ipa-reference.c $(srcdir)/tree-ssa-structalias.h \
   $(srcdir)/tree-ssa-structalias.c \
-  $(srcdir)/c-pragma.h $(srcdir)/omp-low.c \
-  $(srcdir)/targhooks.c $(srcdir)/cgraphunit.c $(out_file) \
+  $(srcdir)/c-pragma.h $(srcdir)/omp-low.c $(srcdir)/varpool.c \
+  $(srcdir)/targhooks.c $(out_file) \
   @all_gtfiles@
 
 GTFILES_FILES_LANGS = @all_gtfiles_files_langs@
@@ -2904,8 +2909,8 @@ gt-tree-mudflap.h gt-tree-vect-generic.h \
 gt-tree-profile.h gt-tree-ssa-address.h \
 gt-tree-iterator.h gt-gimplify.h \
 gt-tree-phinodes.h gt-tree-nested.h \
-gt-tree-ssa-propagate.h \
-gt-tree-ssa-structalias.h gt-ipa-inline.h gt-cgraphunit.h \
+gt-tree-ssa-propagate.h gt-varpool.h \
+gt-tree-ssa-structalias.h gt-ipa-inline.h \
 gt-stringpool.h gt-targhooks.h gt-omp-low.h : s-gtype ; @true
 
 define echo_quoted_to_gtyp

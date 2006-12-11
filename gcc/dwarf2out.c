@@ -12926,7 +12926,7 @@ decls_for_scope (tree stmt, dw_die_ref context_die, int depth)
 	    add_child_die (context_die, die);
 	  /* Do not produce debug information for static variables since
 	     these might be optimized out.  We are called for these later
-	     in cgraph_varpool_analyze_pending_decls. */
+	     in varpool_analyze_pending_decls. */
 	  if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
 	    ;
 	  else
