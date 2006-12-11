@@ -326,7 +326,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     protected:
       typedef _Rb_tree_node_base* _Base_ptr;
       typedef const _Rb_tree_node_base* _Const_Base_ptr;
-      typedef _Rb_tree_node<_Val> _Rb_tree_node;
 
     public:
       typedef _Key key_type;
@@ -335,8 +334,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef const value_type* const_pointer;
       typedef value_type& reference;
       typedef const value_type& const_reference;
-      typedef _Rb_tree_node* _Link_type;
-      typedef const _Rb_tree_node* _Const_Link_type;
+      typedef _Rb_tree_node<_Val>* _Link_type;
+      typedef const _Rb_tree_node<_Val>* _Const_Link_type;
       typedef size_t size_type;
       typedef ptrdiff_t difference_type;
       typedef _Alloc allocator_type;
@@ -354,12 +353,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return allocator_type(_M_get_Node_allocator()); }
 
     protected:
-      _Rb_tree_node*
+      _Link_type
       _M_get_node()
       { return _M_impl._Node_allocator::allocate(1); }
 
       void
-      _M_put_node(_Rb_tree_node* __p)
+      _M_put_node(_Link_type __p)
       { _M_impl._Node_allocator::deallocate(__p, 1); }
 
       _Link_type

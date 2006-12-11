@@ -81,7 +81,7 @@ namespace pb_ds
     entry_cmp<Value_Type, Cmp_Fn, is_simple<Value_Type>::value, Allocator>::type
 
 #define PB_DS_RESIZE_POLICY_DEC	\
-    resize_policy<typename Allocator::size_type>
+    pb_ds::detail::resize_policy<typename Allocator::size_type>
 
     /**
      * class description = "Base class for some types of h3ap$">
