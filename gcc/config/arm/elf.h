@@ -133,12 +133,6 @@
 /* The ELF assembler handles GOT addressing differently to NetBSD.  */
 #define GOT_PCREL	0
 
-/* Biggest alignment supported by the object file format of this
-   machine.  Use this macro to limit the alignment which can be
-   specified using the `__attribute__ ((aligned (N)))' construct.  If
-   not defined, the default value is `BIGGEST_ALIGNMENT'.  */
-#define MAX_OFILE_ALIGNMENT (32768 * 8)
-
 /* Align output to a power of two.  Note ".align 0" is redundant,
    and also GAS will treat it as ".align 2" which we do not want.  */
 #define ASM_OUTPUT_ALIGN(STREAM, POWER)			\
