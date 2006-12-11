@@ -121,6 +121,49 @@ static void get_expr_operands (tree, tree *, int);
 /* Number of functions with initialized ssa_operands.  */
 static int n_initialized = 0;
 
+/* Statement change buffer.  Data structure used to record state
+   information for statements.  This is used to determine what needs
+   to be done in order to update the SSA web after a statement is
+   modified by a pass.  If STMT is a statement that has just been
+   created, or needs to be folded via fold_stmt, or anything that
+   changes its physical structure then the pass should:
+
+   1- Call push_stmt_changes (&stmt) to record the current state of
+      STMT before any modifications are made.
+
+   2- Make all appropriate modifications to the statement.
+
+   3- Call pop_stmt_changes (&stmt) to find new symbols that
+      need to be put in SSA form, SSA name mappings for names that
+      have disappeared, recompute invariantness for address
+      expressions, cleanup EH information, etc.
+
+   If it is possible to determine that the statement was not modified,
+   instead of calling pop_stmt_changes it is quicker to call
+   discard_stmt_changes to avoid the expensive and unnecessary operand
+   re-scan and change comparison.  */
+
+struct scb_d
+{
+  /* Pointer to the statement being modified.  */
+  tree *stmt_p;
+
+  /* If the statement references memory these are the sets of symbols
+     loaded and stored by the statement.  */
+  bitmap loads;
+  bitmap stores;
+};
+
+typedef struct scb_d *scb_t;
+DEF_VEC_P(scb_t);
+DEF_VEC_ALLOC_P(scb_t,heap);
+
+/* Stack of statement change buffers (SCB).  Every call to
+   push_stmt_changes pushes a new buffer onto the stack.  Calls to
+   pop_stmt_changes pop a buffer off of the stack and compute the set
+   of changes for the popped statement.  */
+static VEC(scb_t,heap) *scb_stack;
+
 /* Allocates operand OP of given TYPE from the appropriate free list,
    or of the new value if the list is empty.  */
 
@@ -2277,7 +2320,7 @@ copy_virtual_operands (tree dest, tree src)
    values stored.  */
 
 void
-create_ssa_artficial_load_stmt (tree new_stmt, tree old_stmt)
+create_ssa_artificial_load_stmt (tree new_stmt, tree old_stmt)
 {
   stmt_ann_t ann;
   tree op;
@@ -2566,4 +2609,207 @@ void
 debug_immediate_uses_for (tree var)
 {
   dump_immediate_uses_for (stderr, var);
+}
+
+
+/* Create a new change buffer for the statement pointed by STMT_P and
+   push the buffer into SCB_STACK.  Each change buffer
+   records state information needed to determine what changed in the
+   statement.  Mainly, this keeps track of symbols that may need to be
+   put into SSA form, SSA name replacements and other information
+   needed to keep the SSA form up to date.  */
+
+void
+push_stmt_changes (tree *stmt_p)
+{
+  tree stmt;
+  scb_t buf;
+  
+  stmt = *stmt_p;
+
+  /* It makes no sense to keep track of PHI nodes.  */
+  if (TREE_CODE (stmt) == PHI_NODE)
+    return;
+
+  buf = xmalloc (sizeof *buf);
+  memset (buf, 0, sizeof *buf);
+
+  buf->stmt_p = stmt_p;
+
+  if (stmt_references_memory_p (stmt))
+    {
+      tree op;
+      ssa_op_iter i;
+
+      FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_VUSE)
+	{
+	  tree sym = TREE_CODE (op) == SSA_NAME ? SSA_NAME_VAR (op) : op;
+	  if (buf->loads == NULL)
+	    buf->loads = BITMAP_ALLOC (NULL);
+	  bitmap_set_bit (buf->loads, DECL_UID (sym));
+	}
+
+      FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_VIRTUAL_DEFS)
+	{
+	  tree sym = TREE_CODE (op) == SSA_NAME ? SSA_NAME_VAR (op) : op;
+	  if (buf->stores == NULL)
+	    buf->stores = BITMAP_ALLOC (NULL);
+	  bitmap_set_bit (buf->stores, DECL_UID (sym));
+	}
+    }
+
+  VEC_safe_push (scb_t, heap, scb_stack, buf);
+}
+
+
+/* Given two sets S1 and S2, mark the symbols that differ in S1 and S2
+   for renaming.  The set to mark for renaming is (S1 & ~S2) | (S2 & ~S1).  */
+
+static void
+mark_difference_for_renaming (bitmap s1, bitmap s2)
+{
+  if (s1 == NULL && s2 == NULL)
+    return;
+
+  if (s1 && s2 == NULL)
+    mark_set_for_renaming (s1);
+  else if (s1 == NULL && s2)
+    mark_set_for_renaming (s2);
+  else if (!bitmap_equal_p (s1, s2))
+    {
+      bitmap t1 = BITMAP_ALLOC (NULL);
+      bitmap t2 = BITMAP_ALLOC (NULL);
+
+      bitmap_and_compl (t1, s1, s2);
+      bitmap_and_compl (t2, s2, s1);
+      bitmap_ior_into (t1, t2);
+      mark_set_for_renaming (t1);
+
+      BITMAP_FREE (t1);
+      BITMAP_FREE (t2);
+    }
+}
+
+
+/* Pop the top SCB from SCB_STACK and act on the differences between
+   what was recorded by push_stmt_changes and the current state of
+   the statement.  */
+
+void
+pop_stmt_changes (tree *stmt_p)
+{
+  tree op, stmt;
+  ssa_op_iter iter;
+  bitmap loads, stores;
+  scb_t buf;
+
+  stmt = *stmt_p;
+
+  /* It makes no sense to keep track of PHI nodes.  */
+  if (TREE_CODE (stmt) == PHI_NODE)
+    return;
+
+  buf = VEC_pop (scb_t, scb_stack);
+  gcc_assert (stmt_p == buf->stmt_p);
+
+  /* Force an operand re-scan on the statement and mark any newly
+     exposed variables.  */
+  update_stmt (stmt);
+
+  /* Determine whether any memory symbols need to be renamed.  If the
+     sets of loads and stores are different after the statement is
+     modified, then the affected symbols need to be renamed.
+     
+     Note that it may be possible for the statement to not reference
+     memory anymore, but we still need to act on the differences in
+     the sets of symbols.  */
+  loads = stores = NULL;
+  if (stmt_references_memory_p (stmt))
+    {
+      tree op;
+      ssa_op_iter i;
+
+      FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_VUSE)
+	{
+	  tree sym = TREE_CODE (op) == SSA_NAME ? SSA_NAME_VAR (op) : op;
+	  if (loads == NULL)
+	    loads = BITMAP_ALLOC (NULL);
+	  bitmap_set_bit (loads, DECL_UID (sym));
+	}
+
+      FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_VIRTUAL_DEFS)
+	{
+	  tree sym = TREE_CODE (op) == SSA_NAME ? SSA_NAME_VAR (op) : op;
+	  if (stores == NULL)
+	    stores = BITMAP_ALLOC (NULL);
+	  bitmap_set_bit (stores, DECL_UID (sym));
+
+	  /* If a V_MAY_DEF turned into a V_MUST_DEF, we will keep
+	     referencing the same symbol, but we still need to mark it
+	     for renaming since the operand scanner stripped its
+	     SSA_NAME.  */
+	  if (op == sym)
+	    mark_sym_for_renaming (sym);
+	}
+    }
+
+  /* If LOADS is different from BUF->LOADS, the affected
+     symbols need to be marked for renaming.  */
+  mark_difference_for_renaming (loads, buf->loads);
+
+  /* Similarly for STORES and BUF->STORES.  */
+  mark_difference_for_renaming (stores, buf->stores);
+
+  /* Mark all the naked GIMPLE register operands for renaming.  */
+  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_DEF|SSA_OP_USE)
+    if (DECL_P (op))
+      mark_sym_for_renaming (op);
+
+  /* FIXME, need to add more finalizers here.  Cleanup EH info,
+     recompute invariants for address expressions, add
+     SSA replacement mappings, etc.  For instance, given
+     testsuite/gcc.c-torture/compile/pr16808.c, we fold a statement of
+     the form:
+
+	  # SMT.4_20 = VDEF <SMT.4_16>
+	  D.1576_11 = 1.0e+0;
+
+     So, the VDEF will disappear, but instead of marking SMT.4 for
+     renaming it would be far more efficient to establish a
+     replacement mapping that would replace every reference of
+     SMT.4_20 with SMT.4_16.  */
+
+  /* Free memory used by the buffer.  */
+  BITMAP_FREE (buf->loads);
+  BITMAP_FREE (buf->stores);
+  BITMAP_FREE (loads);
+  BITMAP_FREE (stores);
+  buf->stmt_p = NULL;
+  free (buf);
+}
+
+
+/* Discard the topmost change buffer from SCB_STACK.  This is useful
+   when the caller realized that it did not actually modified the
+   statement.  It avoids the expensive operand re-scan.  */
+
+void
+discard_stmt_changes (tree *stmt_p)
+{
+  scb_t buf;
+  tree stmt;
+  
+  /* It makes no sense to keep track of PHI nodes.  */
+  stmt = *stmt_p;
+  if (TREE_CODE (stmt) == PHI_NODE)
+    return;
+
+  buf = VEC_pop (scb_t, scb_stack);
+  gcc_assert (stmt_p == buf->stmt_p);
+
+  /* Free memory used by the buffer.  */
+  BITMAP_FREE (buf->loads);
+  BITMAP_FREE (buf->stores);
+  buf->stmt_p = NULL;
+  free (buf);
 }

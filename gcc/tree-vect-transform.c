@@ -3162,7 +3162,7 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 	  data_ref = make_ssa_name (perm_dest, perm_stmt);
 	  GIMPLE_STMT_OPERAND (perm_stmt, 0) = data_ref;
 	  vect_finish_stmt_generation (stmt, perm_stmt, bsi);
-	  mark_new_vars_to_rename (perm_stmt);
+	  mark_symbols_for_renaming (perm_stmt);
 
 	  VEC_replace (tree, *result_chain, j/2, data_ref);	      
 	      
@@ -3176,7 +3176,7 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 	  data_ref = make_ssa_name (perm_dest, perm_stmt);
 	  GIMPLE_STMT_OPERAND (perm_stmt, 0) = data_ref;
 	  vect_finish_stmt_generation (stmt, perm_stmt, bsi);
-	  mark_new_vars_to_rename (perm_stmt);
+	  mark_symbols_for_renaming (perm_stmt);
 
 	  VEC_replace (tree, *result_chain, j/2+length/2, data_ref);
 	}
@@ -3540,7 +3540,7 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 	  GIMPLE_STMT_OPERAND (new_stmt, 0) = new_temp;
 	  vect_finish_stmt_generation (stmt, new_stmt, bsi);
 	  copy_virtual_operands (new_stmt, stmt);
-	  mark_new_vars_to_rename (new_stmt);
+	  mark_symbols_for_renaming (new_stmt);
 
 	  /* 3. Handle explicit realignment if necessary/supported.  */
 	  if (alignment_support_cheme == dr_unaligned_software_pipeline)

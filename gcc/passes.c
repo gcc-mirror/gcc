@@ -885,6 +885,7 @@ execute_one_pass (struct tree_opt_pass *pass)
       free ((char *) dump_file_name);
       dump_file_name = NULL;
     }
+
   if (dump_file)
     {
       dump_end (pass->static_pass_number, dump_file);

@@ -273,7 +273,7 @@ get_value_range (tree var)
   /* If VAR is a default definition, the variable can take any value
      in VAR's type.  */
   sym = SSA_NAME_VAR (var);
-  if (var == gimple_default_def (cfun, sym))
+  if (SSA_NAME_IS_DEFAULT_DEF (var))
     {
       /* Try to use the "nonnull" attribute to create ~[0, 0]
 	 anti-ranges for pointers.  Note that this is only valid with

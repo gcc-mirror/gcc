@@ -264,7 +264,7 @@ get_rank (tree e)
       int i;
 
       if (TREE_CODE (SSA_NAME_VAR (e)) == PARM_DECL
-	  && e == gimple_default_def (cfun, SSA_NAME_VAR (e)))
+	  && SSA_NAME_IS_DEFAULT_DEF (e))
 	return find_operand_rank (e)->rank;
 
       stmt = SSA_NAME_DEF_STMT (e);

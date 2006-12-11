@@ -1762,6 +1762,14 @@ struct tree_exp GTY(())
 #define SSA_NAME_IN_FREE_LIST(NODE) \
     SSA_NAME_CHECK (NODE)->base.nothrow_flag
 
+/* Nonzero if this SSA_NAME is the default definition for the
+   underlying symbol.  A default SSA name is created for symbol S if
+   the very first reference to S in the function is a read operation.
+   Default definitions are always created by an empty statement and
+   belong to no basic block.  */
+#define SSA_NAME_IS_DEFAULT_DEF(NODE)	\
+    SSA_NAME_CHECK (NODE)->base.volatile_flag
+
 /* Attributes for SSA_NAMEs for pointer-type variables.  */
 #define SSA_NAME_PTR_INFO(N) \
     SSA_NAME_CHECK (N)->ssa_name.ptr_info

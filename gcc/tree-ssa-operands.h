@@ -171,7 +171,7 @@ extern void update_stmt_operands (tree);
 extern bool verify_imm_links (FILE *f, tree var);
 
 extern void copy_virtual_operands (tree, tree);
-extern void create_ssa_artficial_load_stmt (tree, tree);
+extern void create_ssa_artificial_load_stmt (tree, tree);
 
 extern void dump_immediate_uses (FILE *file);
 extern void dump_immediate_uses_for (FILE *file, tree var);
@@ -181,6 +181,9 @@ extern void debug_immediate_uses_for (tree var);
 extern bool ssa_operands_active (void);
 
 extern void add_to_addressable_set (tree, bitmap *);
+extern void push_stmt_changes (tree *);
+extern void pop_stmt_changes (tree *);
+extern void discard_stmt_changes (tree *);
 
 enum ssa_op_iter_type {
   ssa_op_iter_none = 0,
