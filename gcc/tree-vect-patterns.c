@@ -204,7 +204,7 @@ vect_recog_dot_prod_pattern (tree last_stmt, tree *type_in, tree *type_out)
       /* Has been detected as widening-summation?  */
 
       stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo);
-      expr = TREE_OPERAND (stmt, 1);
+      expr = GIMPLE_STMT_OPERAND (stmt, 1);
       type = TREE_TYPE (expr);
       if (TREE_CODE (expr) != WIDEN_SUM_EXPR)
         return NULL;
