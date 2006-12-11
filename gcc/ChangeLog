@@ -1,3 +1,9 @@
+2006-12-11  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR rtl-optimization/30113
+	* loop-iv.c (implies_p): Require the mode of the operands to be
+	scalar.
+
 2006-12-11  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-operands.h (create_ssa_artificial_load_stmt):
