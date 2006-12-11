@@ -733,7 +733,7 @@ See RS/6000 and PowerPC Options.
 @gccoptlist{-mwarn-reloc -merror-reloc @gol
 -msafe-dma -munsafe-dma @gol
 -mbranch-hints @gol
--msmall-mem -mlarge-mem}
+-msmall-mem -mlarge-mem -mstdmain}
 
 @emph{System V Options}
 @gccoptlist{-Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}}
@@ -12919,6 +12919,15 @@ or to make an object a little bit smaller.
 By default, GCC generates code assuming that addresses are never larger
 than 18 bits.  With @option{-mlarge-mem} code is generated that assumes
 a full 32 bit address.
+
+@item -mstdmain
+@opindex mstdmain
+
+By default, GCC links against startup code that assumes the SPU-style
+main function interface (which has an unconventional parameter list).
+With @option{-mstdmain}, GCC will link your program against startup
+code that assumes a C99-style interface to @code{main}, including a
+local copy of @code{argv} strings.
 
 @end table
 

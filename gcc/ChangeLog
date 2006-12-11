@@ -1,3 +1,18 @@
+2006-12-11  Sa Liu  <saliu@de.ibm.com>
+	    Ben Elliston  <bje@au.ibm.com>
+
+	* config/spu/spu-elf.h (STARTFILE_SPEC): Update.
+	(ENDFILE_SPEC): Likewise.
+	* config/spu/spu.opt (mstdmain): New option.
+	* config/spu/crti.asm: Remove.
+	* config/spu/crtn.asm: Likewise.
+	* config/spu/crt0.c: Likewise.
+	* config/spu/crtend.c: Likewise.
+	* config/spu/t-spu-elf (EXTRA_MULTILIB_PARTS): Remove crt0 files
+	listed above.
+	($(T)crti.o, $(T)crtn.o, $(T)crt1.o, $(T)crtend1.o): Remove.
+	* doc/invoke.texi (SPU Options): Document -mstdmain.
+
 2006-12-10  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* doc/loop.texi: Document number_of_latch_executions and
