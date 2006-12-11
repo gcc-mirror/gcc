@@ -1,3 +1,37 @@
+2006-12-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/30120
+	Revert:
+	2006-11-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.opt: New target option -mx87regparm.
+
+	* config/i386/i386.h (struct ix86_args): Add x87_nregs, x87_regno,
+	float_in_x87: Add new variables. mmx_words, sse_words: Remove.
+	(X87_REGPARM_MAX): Define.
+
+	* config/i386/i386.c (override_options): Error out for
+	-mx87regparm but no 80387 support.
+	(ix86_attribute_table): Add x87regparm.
+	(ix86_handle_cconv_attribute): Update comments for x87regparm.
+	(ix86_comp_type_attributes): Check for mismatched x87regparm types.
+	(ix86_function_x87regparm): New function.
+	(ix86_function_arg_regno_p): Add X87_REGPARM_MAX 80387 floating
+	point registers.
+	(init_cumulative_args): Initialize x87_nregs and float_in_x87
+	variables.
+	(function_arg_advance): Process x87_nregs and x87_regno when
+	floating point argument is to be passed in 80387 register.
+	(function_arg): Pass XFmode arguments in 80387 registers for local
+	functions.  Pass SFmode and DFmode arguments to local functions
+	in 80387 registers when flag_unsafe_math_optimizations is set.
+
+	* reg-stack.c (convert_regs_entry): Disable NaN load for
+	stack registers that are used for argument passing.
+
+	* doc/extend.texi: Document x87regparm function attribute.
+	* doc/invoke.texi: Document -mx87regparm.
+
 2006-12-11  Jan Hubicka  <jh@suse.cz>
 
 	Move all varpool routines out of cgraph/cgraphunit to varpool.c

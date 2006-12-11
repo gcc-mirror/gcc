@@ -2221,14 +2221,6 @@ safe since the loaders there save all registers.  (Lazy binding can be
 disabled with the linker or the loader if desired, to avoid the
 problem.)
 
-@item x87regparm
-@cindex @code{x87regparm} attribute
-On the Intel x86 with 80387 @code{x87regparm} attribute causes the
-compiler to pass up to 3 floating point arguments in 80387 registers
-instead of on the stack.  Functions that take a variable number of
-arguments will continue to pass all of their floating point arguments
-on the stack.
-
 @item sseregparm
 @cindex @code{sseregparm} attribute
 On the Intel 386 with SSE support, the @code{sseregparm} attribute
