@@ -2466,6 +2466,7 @@ static unsigned int
 eliminate_degenerate_phis (void)
 {
   bitmap interesting_names;
+  bitmap interesting_names1;
 
   /* Bitmap of blocks which need EH information updated.  We can not
      update it on-the-fly as doing so invalidates the dominator tree.  */
@@ -2482,6 +2483,7 @@ eliminate_degenerate_phis (void)
      Experiments have show we generally get better compilation
      time behavior with bitmaps rather than sbitmaps.  */
   interesting_names = BITMAP_ALLOC (NULL);
+  interesting_names1 = BITMAP_ALLOC (NULL);
 
   /* First phase.  Eliminate degenerate PHIs via a dominator
      walk of the CFG.
@@ -2503,7 +2505,12 @@ eliminate_degenerate_phis (void)
       unsigned int i;
       bitmap_iterator bi;
 
-      EXECUTE_IF_SET_IN_BITMAP (interesting_names, 0, i, bi)
+      /* EXECUTE_IF_SET_IN_BITMAP does not like its bitmap
+	 changed during the loop.  Copy it to another bitmap and
+	 use that.  */
+      bitmap_copy (interesting_names1, interesting_names);
+
+      EXECUTE_IF_SET_IN_BITMAP (interesting_names1, 0, i, bi)
 	{
 	  tree name = ssa_name (i);
 
@@ -2524,6 +2531,7 @@ eliminate_degenerate_phis (void)
     }
 
   BITMAP_FREE (interesting_names);
+  BITMAP_FREE (interesting_names1);
   if (cfg_altered)
     free_dominance_info (CDI_DOMINATORS);
   return 0;

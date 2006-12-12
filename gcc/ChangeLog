@@ -1,5 +1,11 @@
 2006-12-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
+	PR tree-opt/28624
+	* tree-ssa-dom.c (eliminate_degenerate_phis): Use a temporary 
+	bitmap for EXECUTE_IF_SET_IN_BITMAP.
+
+2006-12-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
 	PR tree-opt/28436
 	* tree.h (DECL_COMPLEX_GIMPLE_REG_P): Rename to ...
 	(DECL_GIMPLE_REG_P): This.
