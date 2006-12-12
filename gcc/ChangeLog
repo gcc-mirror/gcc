@@ -1,3 +1,12 @@
+2006-12-12  Jim Wilson  <wilson@specifix.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/27761
+	* combine.c (try_combine): Don't create a useless garbage SET
+	if PATTERN (i2) is a PARALLEL.  If added_sets_1, save
+	PATTERN (i1) resp. SET from i1src to i1dest in i1pat
+	and use it to prevent accidental modification of i1src.
+
 2006-12-12  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vect-analyze.c (vect_analyze_data_ref_access): Add another check
