@@ -23,6 +23,7 @@ case $machine in
     i?86-*-mingw32* | \
     i?86-*-uwin* | \
     i?86-*-interix* | \
+    *-*-vxworks* | \
     powerpc-*-eabiaix* | \
     powerpc-*-eabisim* | \
     powerpc-*-eabi*    | \
