@@ -2592,23 +2592,41 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
 	  vect1 = VEC_index (tree, dr_chain, j);
 	  vect2 = VEC_index (tree, dr_chain, j+length/2);
 
-	  /* high = interleave_high (vect1, vect2);  */
+	  /* Create interleaving stmt:
+	     in the case of big endian: 
+                                high = interleave_high (vect1, vect2) 
+             and in the case of little endian: 
+                                high = interleave_low (vect1, vect2).  */
 	  perm_dest = create_tmp_var (vectype, "vect_inter_high");
 	  add_referenced_var (perm_dest);
-	  perm_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, perm_dest,
-			      build2 (VEC_INTERLEAVE_HIGH_EXPR, vectype, vect1, 
-				      vect2));
+          if (BYTES_BIG_ENDIAN)
+	    perm_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, perm_dest,
+	        		build2 (VEC_INTERLEAVE_HIGH_EXPR, vectype, 
+                                        vect1, vect2)); 
+	  else
+            perm_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, perm_dest,
+                                build2 (VEC_INTERLEAVE_LOW_EXPR, vectype, 
+                                        vect1, vect2));
 	  high = make_ssa_name (perm_dest, perm_stmt);
 	  GIMPLE_STMT_OPERAND (perm_stmt, 0) = high;
 	  vect_finish_stmt_generation (stmt, perm_stmt, bsi);
 	  VEC_replace (tree, *result_chain, 2*j, high);
 
-	  /* low = interleave_low (vect1, vect2);  */
+	  /* Create interleaving stmt:
+             in the case of big endian:
+                               low  = interleave_low (vect1, vect2) 
+             and in the case of little endian:
+                               low  = interleave_high (vect1, vect2).  */     
 	  perm_dest = create_tmp_var (vectype, "vect_inter_low");
 	  add_referenced_var (perm_dest);
-	  perm_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, perm_dest,
-			      build2 (VEC_INTERLEAVE_LOW_EXPR, vectype, vect1, 
-				      vect2));
+	  if (BYTES_BIG_ENDIAN)
+	    perm_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, perm_dest,
+	               	        build2 (VEC_INTERLEAVE_LOW_EXPR, vectype, 
+ 					vect1, vect2));
+	  else
+            perm_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, perm_dest,
+                                build2 (VEC_INTERLEAVE_HIGH_EXPR, vectype, 
+                                        vect1, vect2));
 	  low = make_ssa_name (perm_dest, perm_stmt);
 	  GIMPLE_STMT_OPERAND (perm_stmt, 0) = low;
 	  vect_finish_stmt_generation (stmt, perm_stmt, bsi);

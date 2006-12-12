@@ -1804,7 +1804,8 @@ vect_analyze_data_ref_access (struct data_reference *dr)
       /* COUNT is the number of accesses found, we multiply it by the size of 
 	 the type to get COUNT_IN_BYTES.  */
       count_in_bytes = type_size * count;
-      /* Check the size of the interleaving is not greater than STEP.  */
+
+      /* Check that the size of the interleaving is not greater than STEP.  */
       if (dr_step < count_in_bytes) 
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
@@ -1812,6 +1813,15 @@ vect_analyze_data_ref_access (struct data_reference *dr)
 	      fprintf (vect_dump, "interleaving size is greater than step for ");
 	      print_generic_expr (vect_dump, DR_REF (dr), TDF_SLIM); 
 	    }
+	  return false;
+	}
+
+      /* Check that the size of the interleaving is equal to STEP for stores, 
+         i.e., that there are no gaps.  */ 
+      if (!DR_IS_READ (dr) && dr_step != count_in_bytes) 
+	{
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    fprintf (vect_dump, "interleaved store with gaps");
 	  return false;
 	}
 

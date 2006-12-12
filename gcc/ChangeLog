@@ -1,3 +1,10 @@
+2006-12-12  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vect-analyze.c (vect_analyze_data_ref_access): Add another check
+	for stores with gaps.
+	* tree-vect-transform.c (vect_permute_store_chain): Create
+	interleave_high or interleave_low according to the endianess.
+
 2006-12-12  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/30147
