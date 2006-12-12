@@ -129,6 +129,7 @@ static unsigned char spu_function_ok_for_sibcall (tree decl, tree exp);
 static void spu_init_libfuncs (void);
 static bool spu_return_in_memory (tree type, tree fntype);
 static void fix_range (const char *);
+static void spu_encode_section_info (tree, rtx, int);
 
 extern const char *reg_names[];
 rtx spu_compare_op0, spu_compare_op1;
@@ -243,6 +244,9 @@ const struct attribute_spec spu_attribute_table[];
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY spu_return_in_memory
+
+#undef  TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO spu_encode_section_info
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3176,6 +3180,20 @@ aligned_mem_p (rtx mem)
 	return 1;
     }
   return 0;
+}
+
+/* Encode symbol attributes (local vs. global, tls model) of a SYMBOL_REF
+   into its SYMBOL_REF_FLAGS.  */
+static void
+spu_encode_section_info (tree decl, rtx rtl, int first)
+{
+  default_encode_section_info (decl, rtl, first);
+
+  /* If a variable has a forced alignment to < 16 bytes, mark it with
+     SYMBOL_FLAG_ALIGN1.  */
+  if (TREE_CODE (decl) == VAR_DECL
+      && DECL_USER_ALIGN (decl) && DECL_ALIGN (decl) < 128)
+    SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= SYMBOL_FLAG_ALIGN1;
 }
 
 /* Return TRUE if we are certain the mem refers to a complete object

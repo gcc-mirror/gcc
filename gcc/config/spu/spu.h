@@ -87,6 +87,7 @@ extern const char *spu_fixed_range_string;
 /* symbol_ref's of functions are not aligned to 16 byte boundary. */
 #define ALIGNED_SYMBOL_REF_P(X) \
 	(GET_CODE (X) == SYMBOL_REF \
+          && (SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_ALIGN1) == 0 \
 	  && (! SYMBOL_REF_FUNCTION_P (X) \
 	      || align_functions >= 16))
 
@@ -372,6 +373,9 @@ warn_main = 0;								\
 
 #define FUNCTION_VALUE_REGNO_P(N) ((N) >= (FIRST_RETURN_REGNUM) && (N) <= (LAST_RETURN_REGNUM))
 
+
+/* Machine-specific symbol_ref flags.  */
+#define SYMBOL_FLAG_ALIGN1	(SYMBOL_FLAG_MACH_DEP << 0)
 
 /* Aggregate Return */
 
