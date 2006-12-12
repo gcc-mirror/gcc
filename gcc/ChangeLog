@@ -1,3 +1,10 @@
+2006-12-13  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/spu/spu.c (TARGET_ENCODE_SECTION_INFO): Define.
+	(spu_encode_section_info): New.
+	* config/spu/spu.h (ALIGNED_SYMBOL_REF_P): Adjust.
+	(SYMBOL_FLAG_ALIGN1): New.
+
 2006-12-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/28624
