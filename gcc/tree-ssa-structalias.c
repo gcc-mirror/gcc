@@ -2871,6 +2871,8 @@ handle_ptr_arith (VEC (ce_s, heap) *lhsc, tree expr)
     {
       rhsoffset = TREE_INT_CST_LOW (op1) * BITS_PER_UNIT;
     }
+  else
+    return false;
 
 
   for (i = 0; VEC_iterate (ce_s, lhsc, i, c); i++)
