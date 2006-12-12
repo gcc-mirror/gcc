@@ -1,3 +1,10 @@
+2006-12-12  Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
+
+	* gcc.target/spu/cpat-1.c: New test.
+	* gcc.target/spu/cpat-2.c: New test.
+	* gcc.target/spu/cpat-3.c: New test.
+	* gcc.target/spu/cpat-4.c: New test.
+
 2006-12-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/28436
