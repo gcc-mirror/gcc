@@ -1,3 +1,7 @@
+2006-12-12  Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
+
+	* config/spu/spu.c (cpat_info): Fix an incorrectly identified case.
+
 2006-12-12  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/tm.texi (Alignment Output): Document that ASM_OUTPUT_SKIP

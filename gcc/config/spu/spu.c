@@ -2360,7 +2360,7 @@ cpat_info(unsigned char *arr, int size, int *prun, int *pstart)
 	else
 	  cpat = 0;
       }
-  if (cpat)
+  if (cpat && (run || size < 16))
     {
       if (run == 0)
 	run = 1;
