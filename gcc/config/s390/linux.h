@@ -89,6 +89,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
           %{m31:-dynamic-linker /lib/ld.so.1} \
           %{m64:-dynamic-linker /lib/ld64.so.1}}}}"
 
+#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 

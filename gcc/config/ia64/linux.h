@@ -46,6 +46,7 @@ do {						\
       %{!dynamic-linker:-dynamic-linker /lib/ld-linux-ia64.so.2}} \
       %{static:-static}}"
 
+#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 
 #define JMP_BUF_SIZE  76
 
