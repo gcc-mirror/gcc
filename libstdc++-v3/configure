@@ -8374,16 +8374,18 @@ done
 
   # Start by getting the version number.  I think the libtool test already
   # does some of this, but throws away the result.
-  echo "$as_me:$LINENO: checking for ld version" >&5
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld version" >&5
 echo $ECHO_N "checking for ld version... $ECHO_C" >&6
 
-  ldver=`$LD --version 2>/dev/null | head -1 | \
-         sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+    ldver=`$LD --version 2>/dev/null | head -1 | \
+           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
 
-  glibcxx_gnu_ld_version=`echo $ldver | \
-         $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
-  echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
+    glibcxx_gnu_ld_version=`echo $ldver | \
+           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+    echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
 echo "${ECHO_T}$glibcxx_gnu_ld_version" >&6
+  fi
 
   # Set --gc-sections.
   glibcxx_gcsections_min_ld=21602
@@ -54178,16 +54180,18 @@ done
 
   # Start by getting the version number.  I think the libtool test already
   # does some of this, but throws away the result.
-  echo "$as_me:$LINENO: checking for ld version" >&5
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld version" >&5
 echo $ECHO_N "checking for ld version... $ECHO_C" >&6
 
-  ldver=`$LD --version 2>/dev/null | head -1 | \
-         sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+    ldver=`$LD --version 2>/dev/null | head -1 | \
+           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
 
-  glibcxx_gnu_ld_version=`echo $ldver | \
-         $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
-  echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
+    glibcxx_gnu_ld_version=`echo $ldver | \
+           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+    echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
 echo "${ECHO_T}$glibcxx_gnu_ld_version" >&6
+  fi
 
   # Set --gc-sections.
   glibcxx_gcsections_min_ld=21602
@@ -75482,16 +75486,18 @@ done
 
   # Start by getting the version number.  I think the libtool test already
   # does some of this, but throws away the result.
-  echo "$as_me:$LINENO: checking for ld version" >&5
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld version" >&5
 echo $ECHO_N "checking for ld version... $ECHO_C" >&6
 
-  ldver=`$LD --version 2>/dev/null | head -1 | \
-         sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+    ldver=`$LD --version 2>/dev/null | head -1 | \
+           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
 
-  glibcxx_gnu_ld_version=`echo $ldver | \
-         $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
-  echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
+    glibcxx_gnu_ld_version=`echo $ldver | \
+           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+    echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
 echo "${ECHO_T}$glibcxx_gnu_ld_version" >&6
+  fi
 
   # Set --gc-sections.
   glibcxx_gcsections_min_ld=21602
@@ -76949,16 +76955,18 @@ done
 
   # Start by getting the version number.  I think the libtool test already
   # does some of this, but throws away the result.
-  echo "$as_me:$LINENO: checking for ld version" >&5
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld version" >&5
 echo $ECHO_N "checking for ld version... $ECHO_C" >&6
 
-  ldver=`$LD --version 2>/dev/null | head -1 | \
-         sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+    ldver=`$LD --version 2>/dev/null | head -1 | \
+           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
 
-  glibcxx_gnu_ld_version=`echo $ldver | \
-         $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
-  echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
+    glibcxx_gnu_ld_version=`echo $ldver | \
+           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+    echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
 echo "${ECHO_T}$glibcxx_gnu_ld_version" >&6
+  fi
 
   # Set --gc-sections.
   glibcxx_gcsections_min_ld=21602
@@ -78384,16 +78392,18 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
   # Start by getting the version number.  I think the libtool test already
   # does some of this, but throws away the result.
-  echo "$as_me:$LINENO: checking for ld version" >&5
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld version" >&5
 echo $ECHO_N "checking for ld version... $ECHO_C" >&6
 
-  ldver=`$LD --version 2>/dev/null | head -1 | \
-         sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+    ldver=`$LD --version 2>/dev/null | head -1 | \
+           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
 
-  glibcxx_gnu_ld_version=`echo $ldver | \
-         $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
-  echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
+    glibcxx_gnu_ld_version=`echo $ldver | \
+           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+    echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
 echo "${ECHO_T}$glibcxx_gnu_ld_version" >&6
+  fi
 
   # Set --gc-sections.
   glibcxx_gcsections_min_ld=21602
@@ -100131,16 +100141,18 @@ done
 
   # Start by getting the version number.  I think the libtool test already
   # does some of this, but throws away the result.
-  echo "$as_me:$LINENO: checking for ld version" >&5
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld version" >&5
 echo $ECHO_N "checking for ld version... $ECHO_C" >&6
 
-  ldver=`$LD --version 2>/dev/null | head -1 | \
-         sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+    ldver=`$LD --version 2>/dev/null | head -1 | \
+           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
 
-  glibcxx_gnu_ld_version=`echo $ldver | \
-         $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
-  echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
+    glibcxx_gnu_ld_version=`echo $ldver | \
+           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+    echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
 echo "${ECHO_T}$glibcxx_gnu_ld_version" >&6
+  fi
 
   # Set --gc-sections.
   glibcxx_gcsections_min_ld=21602
@@ -101427,16 +101439,18 @@ done
 
   # Start by getting the version number.  I think the libtool test already
   # does some of this, but throws away the result.
-  echo "$as_me:$LINENO: checking for ld version" >&5
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld version" >&5
 echo $ECHO_N "checking for ld version... $ECHO_C" >&6
 
-  ldver=`$LD --version 2>/dev/null | head -1 | \
-         sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+    ldver=`$LD --version 2>/dev/null | head -1 | \
+           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
 
-  glibcxx_gnu_ld_version=`echo $ldver | \
-         $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
-  echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
+    glibcxx_gnu_ld_version=`echo $ldver | \
+           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+    echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
 echo "${ECHO_T}$glibcxx_gnu_ld_version" >&6
+  fi
 
   # Set --gc-sections.
   glibcxx_gcsections_min_ld=21602
@@ -102772,16 +102786,18 @@ done
 
   # Start by getting the version number.  I think the libtool test already
   # does some of this, but throws away the result.
-  echo "$as_me:$LINENO: checking for ld version" >&5
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld version" >&5
 echo $ECHO_N "checking for ld version... $ECHO_C" >&6
 
-  ldver=`$LD --version 2>/dev/null | head -1 | \
-         sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+    ldver=`$LD --version 2>/dev/null | head -1 | \
+           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
 
-  glibcxx_gnu_ld_version=`echo $ldver | \
-         $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
-  echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
+    glibcxx_gnu_ld_version=`echo $ldver | \
+           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+    echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
 echo "${ECHO_T}$glibcxx_gnu_ld_version" >&6
+  fi
 
   # Set --gc-sections.
   glibcxx_gcsections_min_ld=21602
@@ -104509,16 +104525,18 @@ echo "${ECHO_T}$glibcxx_cv_WRITEV" >&6
 
   # Start by getting the version number.  I think the libtool test already
   # does some of this, but throws away the result.
-  echo "$as_me:$LINENO: checking for ld version" >&5
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld version" >&5
 echo $ECHO_N "checking for ld version... $ECHO_C" >&6
 
-  ldver=`$LD --version 2>/dev/null | head -1 | \
-         sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+    ldver=`$LD --version 2>/dev/null | head -1 | \
+           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
 
-  glibcxx_gnu_ld_version=`echo $ldver | \
-         $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
-  echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
+    glibcxx_gnu_ld_version=`echo $ldver | \
+           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+    echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
 echo "${ECHO_T}$glibcxx_gnu_ld_version" >&6
+  fi
 
   # Set --gc-sections.
   glibcxx_gcsections_min_ld=21602
@@ -105670,6 +105688,164 @@ _ACEOF
     #    os_include_dir="os/solaris/solaris2.6"
     #    ;;
       *-solaris2.7 | *-solaris2.8 | *-solaris2.9 | *-solaris2.10)
+
+  # If we're not using GNU ld, then there's no point in even trying these
+  # tests.  Check for that first.  We should have already tested for gld
+  # by now (in libtool), but require it now just to be safe...
+  test -z "$SECTION_LDFLAGS" && SECTION_LDFLAGS=''
+  test -z "$OPT_LDFLAGS" && OPT_LDFLAGS=''
+
+
+
+  # The name set by libtool depends on the version of libtool.  Shame on us
+  # for depending on an impl detail, but c'est la vie.  Older versions used
+  # ac_cv_prog_gnu_ld, but now it's lt_cv_prog_gnu_ld, and is copied back on
+  # top of with_gnu_ld (which is also set by --with-gnu-ld, so that actually
+  # makes sense).  We'll test with_gnu_ld everywhere else, so if that isn't
+  # set (hence we're using an older libtool), then set it.
+  if test x${with_gnu_ld+set} != xset; then
+    if test x${ac_cv_prog_gnu_ld+set} != xset; then
+      # We got through "ac_require(ac_prog_ld)" and still not set?  Huh?
+      with_gnu_ld=no
+    else
+      with_gnu_ld=$ac_cv_prog_gnu_ld
+    fi
+  fi
+
+  # Start by getting the version number.  I think the libtool test already
+  # does some of this, but throws away the result.
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld version" >&5
+echo $ECHO_N "checking for ld version... $ECHO_C" >&6
+
+    ldver=`$LD --version 2>/dev/null | head -1 | \
+           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+
+    glibcxx_gnu_ld_version=`echo $ldver | \
+           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+    echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
+echo "${ECHO_T}$glibcxx_gnu_ld_version" >&6
+  fi
+
+  # Set --gc-sections.
+  glibcxx_gcsections_min_ld=21602
+  if test x"$with_gnu_ld" = x"yes" &&
+	test $glibcxx_gnu_ld_version -gt $glibcxx_gcsections_min_ld ; then
+
+    # Sufficiently young GNU ld it is!  Joy and bunny rabbits!
+    # NB: This flag only works reliably after 2.16.1. Configure tests
+    # for this are difficult, so hard wire a value that should work.
+
+    # All these tests are for C++, but run with the "C" compiler driver.
+    # Need to do this so that g++ won't try to link in libstdc++/libsupc++.
+    ac_test_CFLAGS="${CFLAGS+set}"
+    ac_save_CFLAGS="$CFLAGS"
+    CFLAGS='-x c++ -Wl,--gc-sections'
+
+    # Check for -Wl,--gc-sections
+    echo "$as_me:$LINENO: checking for ld that supports -Wl,--gc-sections" >&5
+echo $ECHO_N "checking for ld that supports -Wl,--gc-sections... $ECHO_C" >&6
+    if test x$gcc_no_link = xyes; then
+  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+ int one(void) { return 1; }
+     int two(void) { return 2; }
+
+int
+main ()
+{
+ two();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_gcsections=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_gcsections=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+    if test "$ac_gcsections" = "yes"; then
+      rm -f conftest.c
+      touch conftest.c
+      if $CC -c conftest.c; then
+	if $LD --gc-sections -o conftest conftest.o 2>&1 | \
+	   grep "Warning: gc-sections option ignored" > /dev/null; then
+	  ac_gcsections=no
+	fi
+      fi
+      rm -f conftest.c conftest.o conftest
+    fi
+    if test "$ac_gcsections" = "yes"; then
+      SECTION_LDFLAGS="-Wl,--gc-sections $SECTION_LDFLAGS"
+    fi
+    echo "$as_me:$LINENO: result: $ac_gcsections" >&5
+echo "${ECHO_T}$ac_gcsections" >&6
+
+    if test "$ac_test_CFLAGS" = set; then
+      CFLAGS="$ac_save_CFLAGS"
+    else
+      # this is the suspicious part
+      CFLAGS=''
+    fi
+  fi
+
+  # Set -z,relro.
+  # Note this is only for shared objects.
+  ac_ld_relro=no
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld that supports -Wl,-z,relro" >&5
+echo $ECHO_N "checking for ld that supports -Wl,-z,relro... $ECHO_C" >&6
+    cxx_z_relo=`$LD -v --help 2>/dev/null | grep "z relro"`
+    if test -n "$cxx_z_relo"; then
+      OPT_LDFLAGS="-Wl,-z,relro"
+      ac_ld_relro=yes
+    fi
+    echo "$as_me:$LINENO: result: $ac_ld_relro" >&5
+echo "${ECHO_T}$ac_ld_relro" >&6
+  fi
+
+  # Set linker optimization flags.
+  if test x"$with_gnu_ld" = x"yes"; then
+    OPT_LDFLAGS="-Wl,-O1 $OPT_LDFLAGS"
+  fi
+
+
+
+
          cat >>confdefs.h <<\_ACEOF
 #define HAVE_GETPAGESIZE 1
 _ACEOF
@@ -106511,16 +106687,18 @@ done
 
   # Start by getting the version number.  I think the libtool test already
   # does some of this, but throws away the result.
-  echo "$as_me:$LINENO: checking for ld version" >&5
+  if test x"$with_gnu_ld" = x"yes"; then
+    echo "$as_me:$LINENO: checking for ld version" >&5
 echo $ECHO_N "checking for ld version... $ECHO_C" >&6
 
-  ldver=`$LD --version 2>/dev/null | head -1 | \
-         sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+    ldver=`$LD --version 2>/dev/null | head -1 | \
+           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
 
-  glibcxx_gnu_ld_version=`echo $ldver | \
-         $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
-  echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
+    glibcxx_gnu_ld_version=`echo $ldver | \
+           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+    echo "$as_me:$LINENO: result: $glibcxx_gnu_ld_version" >&5
 echo "${ECHO_T}$glibcxx_gnu_ld_version" >&6
+  fi
 
   # Set --gc-sections.
   glibcxx_gcsections_min_ld=21602

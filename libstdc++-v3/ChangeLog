@@ -1,3 +1,11 @@
+2006-12-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/26497
+	* crossconfig.m4: Add GLIBCXX_CHECK_LINKER_FEATURES for Solaris.
+	* acinclude.m4 (GLIBCXX_CHECK_LINKER_FEATURES): Set
+	glibcxx_gnu_ld_version only when with GNU ld confirmed.	
+	* configure: Regenerate.
+
 2006-12-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/28125

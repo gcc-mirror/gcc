@@ -254,6 +254,7 @@ case "${host}" in
     #    os_include_dir="os/solaris/solaris2.6"
     #    ;;
       *-solaris2.7 | *-solaris2.8 | *-solaris2.9 | *-solaris2.10)
+         GLIBCXX_CHECK_LINKER_FEATURES
          AC_DEFINE(HAVE_GETPAGESIZE)
          AC_DEFINE(HAVE_SIGSETJMP)
          AC_DEFINE(HAVE_MBSTATE_T)
