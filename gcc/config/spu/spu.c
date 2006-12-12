@@ -128,6 +128,7 @@ static unsigned char spu_rtx_costs (rtx x, int code, int outer_code,
 static unsigned char spu_function_ok_for_sibcall (tree decl, tree exp);
 static void spu_init_libfuncs (void);
 static bool spu_return_in_memory (tree type, tree fntype);
+static void fix_range (const char *);
 
 extern const char *reg_names[];
 rtx spu_compare_op0, spu_compare_op1;
@@ -264,6 +265,9 @@ spu_override_options (void)
 
   if (align_functions < 8)
     align_functions = 8;
+
+  if (spu_fixed_range_string)
+    fix_range (spu_fixed_range_string);
 }
 
 /* Handle an attribute requiring a FUNCTION_DECL; arguments as in
@@ -3572,6 +3576,68 @@ mem_is_padded_component_ref (rtx x)
   if (TREE_CODE (t) == FIELD_DECL && DECL_ALIGN (t) >= 128)
     return 1;
   return 0;
+}
+
+/* Parse the -mfixed-range= option string.  */
+static void
+fix_range (const char *const_str)
+{
+  int i, first, last;
+  char *str, *dash, *comma;
+  
+  /* str must be of the form REG1'-'REG2{,REG1'-'REG} where REG1 and
+     REG2 are either register names or register numbers.  The effect
+     of this option is to mark the registers in the range from REG1 to
+     REG2 as ``fixed'' so they won't be used by the compiler.  */
+  
+  i = strlen (const_str);
+  str = (char *) alloca (i + 1);
+  memcpy (str, const_str, i + 1);
+  
+  while (1)
+    {
+      dash = strchr (str, '-');
+      if (!dash)
+	{
+	  warning (0, "value of -mfixed-range must have form REG1-REG2");
+	  return;
+	}
+      *dash = '\0';
+      comma = strchr (dash + 1, ',');
+      if (comma)
+	*comma = '\0';
+      
+      first = decode_reg_name (str);
+      if (first < 0)
+	{
+	  warning (0, "unknown register name: %s", str);
+	  return;
+	}
+      
+      last = decode_reg_name (dash + 1);
+      if (last < 0)
+	{
+	  warning (0, "unknown register name: %s", dash + 1);
+	  return;
+	}
+      
+      *dash = '-';
+      
+      if (first > last)
+	{
+	  warning (0, "%s-%s is an empty range", str, dash + 1);
+	  return;
+	}
+      
+      for (i = first; i <= last; ++i)
+	fixed_regs[i] = call_used_regs[i] = 1;
+
+      if (!comma)
+	break;
+
+      *comma = ',';
+      str = comma + 1;
+    }
 }
 
 int
