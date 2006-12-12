@@ -81,10 +81,13 @@
   (and (match_code "const_int")
        (match_test "INTVAL (op) > 0 && exact_log2 (INTVAL (op)) >= 0")))
 
-;; Return 1 if op is a register that is not special.
+;; Return 1 if op is a register that is not special.  We accept anything
+;; during reload_in_progress since eliminate_regs_in_insn() sometimes
+;; creates invalid insns which will be fixed up later in reload.
 (define_predicate "gpc_reg_operand"
    (and (match_operand 0 "register_operand")
-	(match_test "(GET_CODE (op) != REG
+	(match_test "(reload_in_progress
+		      || GET_CODE (op) != REG
 		      || (REGNO (op) >= ARG_POINTER_REGNUM
 			  && !XER_REGNO_P (REGNO (op)))
 		      || REGNO (op) < MQ_REGNO)

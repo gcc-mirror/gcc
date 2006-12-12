@@ -1,3 +1,10 @@
+2006-12-12  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* reload1.c (eliminate_regs_in_insn): Merge the plus_src "else" and
+	the offset == 0 "then" clauses.
+	* config/rs6000/predicates.md (gpc_reg_operand): Check for
+	reload_in_progress.
+
 2006-12-12  Marcin Dalecki  <martin@dalecki.de>
 
 	* doc/passes.texi: remove docs about "redundant PHI removal".
