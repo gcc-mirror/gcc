@@ -1,3 +1,9 @@
+2006-12-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29732
+	* g++.dg/template/crash65.C: New test.
+	* g++.dg/template/spec16.C: Tweak error markers.
+
 2006-12-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/29973
