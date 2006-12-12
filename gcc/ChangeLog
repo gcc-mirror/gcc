@@ -1,3 +1,8 @@
+2006-12-12  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-structalias.c (handle_ptr_arith): Return false when we
+	can't handle the pointer arithmetic.
+
 2006-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/11953
