@@ -6,6 +6,11 @@ MULTILIB_DIRNAMES =
 MULTILIB_MATCHES = fPIC=fpic
 MULTILIB_EXCEPTIONS = fPIC*
 
-# Restore some variables from t-vxworks clobbered by t-ppccomm.
+# This is set from the common config/t-vxworks but clobbered by t-ppccomm
+# on this target.
 EXTRA_MULTILIB_PARTS = 
-LIB2FUNCS_EXTRA = $(srcdir)/config/vxlib.c
+
+# Similarily, LIB2FUNCS_EXTRA is set from config/t-vxworks and
+# t-ppccomm *adds* to it, but the common contents are useful to us.
+# In particular the base trampoline_setup bits are expected to be
+# provided there.
