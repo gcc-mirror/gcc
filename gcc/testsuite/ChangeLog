@@ -1,3 +1,15 @@
+2006-12-12  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* lib/fortran-torture.exp: Update copyright years.  Remove
+	obsolete comment.  Test -ftree-vectorize where it makes sense.
+	* lib/gfortran-dg.exp: Update copyright years.  Use settings
+	from fortran-torture.exp.
+	* gfortran.dg/char_transpose_1.f90,
+	gfortran.dg/char_spread_1.f90, gfortran.dg/g77/dnrm2.f,
+	gfortran.dg/dependent_decls_1.f90: Fixout-of-bound errors.
+	* gfortran.dg/enum_10.f90, gfortran.dg/mixed_io_1.f90:  Add
+	'-w' to dg-options.
+
 2006-12-12  Richard Sandiford  <richard@codesourcery.com>
 
 	* lib/gcc-dg.exp (${tool}_load): Fix invocation of

@@ -1,4 +1,4 @@
-# Copyright (C) 2003 Free Software Foundation, Inc.
+# Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,24 +20,54 @@
 # This file was written by Steven Bosscher (s.bosscher@student.tudelft.nl)
 # based on f-torture.exp, which was written by Rob Savoye.
 
-# The biggest change from g77 is that we always test all testcases with
-# loop options, because it is much harder to figure out whether a testcase
-# has loops if you have array syntax, like Fortran 95.  In fact, the whole
-# point of F95 is arrays, so loops show up in most testcases anyway.
-
 
 # The default option list can be overridden by
 # TORTURE_OPTIONS="{ { list1 } ... { listN } }"
 
 if ![info exists TORTURE_OPTIONS] {
+    # determine if host supports vectorization, and the necessary set
+    # of options, based on code from testsuite/vect/vect.exp
+
+    set vectorizer_options [list "-O2" "-ftree-vectorize"]
+
+    if { [istarget "powerpc*-*-*"]
+	 && [is-effective-target powerpc_altivec_ok]
+	 && [check_vmx_hw_available] } {
+	lappend vectorizer_options "-maltivec"
+	set test_tree_vectorize 1
+    } elseif { [istarget  "spu-*-*"] } {
+	set test_tree_vectorize 1
+    } elseif { [istarget "i?86-*-*"] || [istarget "x86_64-*-*"] } {
+	lappend vectorizer_options "-msse2"
+	set test_tree_vectorize 1
+    } elseif { [istarget "mipsisa64*-*-*"]
+	       && [check_effective_target_mpaired_single] } {
+	lappend vectorizer_options "-mpaired-single"
+	set test_tree_vectorize 1
+    } elseif [istarget "sparc*-*-*"] {
+	lappend vectorizer_options "-mcpu=ultrasparc" "-mvis"
+	set test_tree_vectorize 1
+    } elseif { [istarget "alpha*-*-*"]
+	       && [check_alpha_max_hw_available] } {
+	lappend vectorizer_options "-mmax"
+	set test_tree_vectorize 1
+    } elseif [istarget "ia64-*-*"] {
+	set test_tree_vectorize 1
+    } else {
+	set test_tree_vectorize 0
+    }
+
     set TORTURE_OPTIONS [list \
 	{ -O0 } { -O1 } { -O2 } \
 	{ -O2 -fomit-frame-pointer -finline-functions } \
 	{ -O2 -fomit-frame-pointer -finline-functions -funroll-loops } \
 	{ -O2 -fbounds-check } \
-	{ -O2 -fno-repack-arrays } \
 	{ -O3 -g } \
 	{ -Os }]
+
+    if { $test_tree_vectorize } {
+	lappend TORTURE_OPTIONS $vectorizer_options
+    }
 }
 
 

@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-additional-sources enum_10.c }
-! { dg-options "-fshort-enums" }
+! { dg-options "-fshort-enums -w" }
 ! Make sure short enums are indeed interoperable with the
 ! corresponding C type.
 
