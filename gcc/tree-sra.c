@@ -1563,8 +1563,9 @@ decide_instantiations (void)
 
 /* Phase Four: Update the function to match the replacements created.  */
 
-/* Mark all the variables in V_MAY_DEF or V_MUST_DEF operands for STMT for
-   renaming. This becomes necessary when we modify all of a non-scalar.  */
+/* Mark all the variables in VDEF/VUSE operators for STMT for
+   renaming. This becomes necessary when we modify all of a
+   non-scalar.  */
 
 static void
 mark_all_v_defs_1 (tree stmt)
@@ -1598,6 +1599,7 @@ mark_all_v_defs (tree list)
 	mark_all_v_defs_1 (tsi_stmt (i));
     }
 }
+
 
 /* Mark every replacement under ELT with TREE_NO_WARNING.  */
 
@@ -2358,8 +2360,9 @@ struct tree_opt_pass pass_sra =
   0,					/* properties_provided */
   0,				        /* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func /* todo_flags_finish */
+  TODO_dump_func
   | TODO_update_ssa
-  | TODO_ggc_collect | TODO_verify_ssa,
+  | TODO_ggc_collect
+  | TODO_verify_ssa,			/* todo_flags_finish */
   0					/* letter */
 };

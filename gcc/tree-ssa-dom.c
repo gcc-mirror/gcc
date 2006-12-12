@@ -1486,7 +1486,7 @@ eliminate_redundant_computations (tree stmt)
   if (! def
       || TREE_CODE (def) != SSA_NAME
       || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (def)
-      || !ZERO_SSA_OPERANDS (stmt, SSA_OP_VMAYDEF)
+      || !ZERO_SSA_OPERANDS (stmt, SSA_OP_VDEF)
       /* Do not record equivalences for increments of ivs.  This would create
 	 overlapping live ranges for a very questionable gain.  */
       || simple_iv_increment_p (stmt))

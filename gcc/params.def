@@ -451,13 +451,6 @@ DEFPARAM(PARAM_VECT_MAX_VERSION_CHECKS,
          "Bound on number of runtime checks inserted by the vectorizer's loop versioning",
          6, 0, 0)
 
-/* The product of the next two is used to decide whether or not to
-   use .GLOBAL_VAR.  See tree-dfa.c.  */
-DEFPARAM(PARAM_GLOBAL_VAR_THRESHOLD,
-	"global-var-threshold",
-	"Given N calls and V call-clobbered vars in a function.  Use .GLOBAL_VAR if NxV is larger than this limit",
-	500000, 0, 0)
-
 DEFPARAM(PARAM_MAX_CSELIB_MEMORY_LOCATIONS,
 	 "max-cselib-memory-locations",
 	 "The maximum memory locations recorded by cselib",
@@ -495,8 +488,8 @@ DEFPARAM(PARAM_MAX_RELOAD_SEARCH_INSNS,
 
 DEFPARAM(PARAM_MAX_ALIASED_VOPS,
          "max-aliased-vops",
-	 "The maximum number of virtual operands allowed to represent aliases before triggering alias grouping",
-	 500, 0, 0)
+	 "The maximum number of virtual operators per statement allowed to represent aliases before triggering alias grouping",
+	 10, 0, 0)
 
 DEFPARAM(PARAM_MAX_SCHED_REGION_BLOCKS,
 	 "max-sched-region-blocks",

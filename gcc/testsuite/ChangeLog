@@ -1,3 +1,19 @@
+2006-12-11  Aldy Hernandez  <aldyh@redhat.com>
+	    Diego Novillo  <dnovillo@redhat.com>
+
+	* gcc.dg/tree-ssa/20040517-1.c: Adapt pattern to
+	VDEF/VUSE changes.
+	* gcc.dg/tree-ssa/pr26421.c: Likewise
+	* gcc.dg/tree-ssa/inline_asm-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr23382.c: Likewise.
+	* gcc.dg/tree-ssa/inline_asm-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr28410.c: Likewise.
+	* gcc.dg/tree-ssa/20031015-1.c: Likewise.
+	* gcc.dg/tree-ssa/20040302-1.c: Likewise.
+	* gcc.dg/tree-ssa/vrp07.c: Likewise.
+	* gcc.dg/tree-ssa/vrp08.c: Likewise.
+	* gcc.dg/tree-ssa/alias-12.c: Likewise.
+
 2006-12-11  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-prof/stringop-1.c: New test.

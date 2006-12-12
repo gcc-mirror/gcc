@@ -15,6 +15,6 @@ char f(char *a)
 /* { dg-final { scan-tree-dump-times "test_function" 2 "optimized"} } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
 
-/* There should a V_MAY_DEF for the inline-asm.  */
-/* { dg-final { scan-tree-dump-times "V_MAY_DEF" 1 "alias1"} } */
+/* There should a VDEF for the inline-asm.  */
+/* { dg-final { scan-tree-dump-times "VDEF" 1 "alias1"} } */
 /* { dg-final { cleanup-tree-dump "alias1" } } */

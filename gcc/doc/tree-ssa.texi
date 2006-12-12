@@ -852,8 +852,8 @@ operands, use the @option{-vops} option to @option{-fdump-tree}:
     p = &a;
   else
     p = &b;
-  # a = V_MAY_DEF <a>
-  # b = V_MAY_DEF <b>
+  # a = VDEF <a>
+  # b = VDEF <b>
   *p = 5;
 
   # VUSE <a>
@@ -862,11 +862,11 @@ operands, use the @option{-vops} option to @option{-fdump-tree}:
 @}
 @end smallexample
 
-Notice that @code{V_MAY_DEF} operands have two copies of the referenced
+Notice that @code{VDEF} operands have two copies of the referenced
 variable.  This indicates that this is not a killing definition of
 that variable.  In this case we refer to it as a @dfn{may definition}
 or @dfn{aliased store}.  The presence of the second copy of the
-variable in the @code{V_MAY_DEF} operand will become important when the
+variable in the @code{VDEF} operand will become important when the
 function is converted into SSA form.  This will be used to link all
 the non-killing definitions to prevent optimizations from making
 incorrect assumptions about them.
@@ -963,8 +963,8 @@ tree            FOR_EACH_SSA_TREE_OPERAND
 #define SSA_OP_USE              0x01    /* @r{Real USE operands.}  */
 #define SSA_OP_DEF              0x02    /* @r{Real DEF operands.}  */
 #define SSA_OP_VUSE             0x04    /* @r{VUSE operands.}  */
-#define SSA_OP_VMAYUSE          0x08    /* @r{USE portion of V_MAY_DEFS.}  */
-#define SSA_OP_VMAYDEF          0x10    /* @r{DEF portion of V_MAY_DEFS.}  */
+#define SSA_OP_VMAYUSE          0x08    /* @r{USE portion of VDEFS.}  */
+#define SSA_OP_VMAYDEF          0x10    /* @r{DEF portion of VDEFS.}  */
 #define SSA_OP_VMUSTDEF         0x20    /* @r{V_MUST_DEF definitions.}  */
 
 /* @r{These are commonly grouped operand flags.}  */
@@ -1004,12 +1004,12 @@ aren't using operand pointers, use and defs flags can be mixed.
     @}
 @end smallexample
 
-@code{V_MAY_DEF}s are broken into two flags, one for the
+@code{VDEF}s are broken into two flags, one for the
 @code{DEF} portion (@code{SSA_OP_VMAYDEF}) and one for the USE portion
 (@code{SSA_OP_VMAYUSE}).  If all you want to look at are the
-@code{V_MAY_DEF}s together, there is a fourth iterator macro for this,
+@code{VDEF}s together, there is a fourth iterator macro for this,
 which returns both a def_operand_p and a use_operand_p for each
-@code{V_MAY_DEF} in the statement.  Note that you don't need any flags for
+@code{VDEF} in the statement.  Note that you don't need any flags for
 this one.
 
 @smallexample
@@ -1400,21 +1400,34 @@ There are several @code{TODO} flags that control the behavior of
 
 The virtual SSA form is harder to preserve than the non-virtual SSA form
 mainly because the set of virtual operands for a statement may change at
-what some would consider unexpected times.  In general, any time you
-have modified a statement that has virtual operands, you should verify
-whether the list of virtual operands has changed, and if so, mark the
-newly exposed symbols by calling @code{mark_new_vars_to_rename}.
+what some would consider unexpected times.  In general, statement
+modifications should be bracketed between calls to
+@code{push_stmt_changes} and @code{pop_stmt_changes}.  For example,
 
-There is one additional caveat to preserving virtual SSA form.  When the
-entire set of virtual operands may be eliminated due to better
-disambiguation, a bare SMT will be added to the list of virtual
-operands, to signify the non-visible aliases that the are still being
-referenced.  If the set of bare SMT's may change,
-@code{TODO_update_smt_usage} should be added to the todo flags.
+@smallexample
+    munge_stmt (tree stmt)
+    @{
+       push_stmt_changes (&stmt);
+       ... rewrite STMT ...
+       pop_stmt_changes (&stmt);
+    @}
+@end smallexample
 
-With the current pruning code, this can only occur when constants are
-propagated into array references that were previously non-constant, or
-address expressions are propagated into their uses.
+The call to @code{push_stmt_changes} saves the current state of the
+statement operands and the call to @code{pop_stmt_changes} compares
+the saved state with the current one and does the appropriate symbol
+marking for the SSA renamer.
+
+It is possible to modify several statements at a time, provided that
+@code{push_stmt_changes} and @code{pop_stmt_changes} are called in
+LIFO order, as when processing a stack of statements.
+
+Additionally, if the pass discovers that it did not need to make
+changes to the statement after calling @code{push_stmt_changes}, it
+can simply discard the topmost change buffer by calling
+@code{discard_stmt_changes}.  This will avoid the expensive operand
+re-scan operation and the buffer comparison that determines if symbols
+need to be marked for renaming.
 
 @subsection Examining @code{SSA_NAME} nodes
 @cindex examining SSA_NAMEs
@@ -1635,11 +1648,11 @@ foo (int i)
     p_6 = &b;
   # p_1 = PHI <p_4(1), p_6(2)>;
 
-  # a_7 = V_MAY_DEF <a_3>;
-  # b_8 = V_MAY_DEF <b_5>;
+  # a_7 = VDEF <a_3>;
+  # b_8 = VDEF <b_5>;
   *p_1 = 3;
 
-  # a_9 = V_MAY_DEF <a_7>
+  # a_9 = VDEF <a_7>
   # VUSE <b_8>
   a_9 = b_8 + 2;
 

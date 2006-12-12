@@ -45,12 +45,14 @@ typedef struct basic_block_def *basic_block;
 struct gimple_df GTY(()) {
   /* Array of all variables referenced in the function.  */
   htab_t GTY((param_is (struct int_tree_map))) referenced_vars;
+
   /* A list of all the noreturn calls passed to modify_stmt.
      cleanup_control_flow uses it to detect cases where a mid-block
      indirect call has been turned into a noreturn call.  When this
      happens, all the instructions after the call are no longer
      reachable and must be deleted as dead.  */
   VEC(tree,gc) *modified_noreturn_calls;
+
   /* Array of all SSA_NAMEs used in the function.  */
   VEC(tree,gc) *ssa_names;
 
@@ -234,23 +236,31 @@ struct var_ann_d GTY(())
   ENUM_BITFIELD (need_phi_state) need_phi_state : 2;
 
   /* Used during operand processing to determine if this variable is already 
-     in the vuse list.  */
+     in the VUSE list.  */
   unsigned in_vuse_list : 1;
 
   /* Used during operand processing to determine if this variable is already 
-     in the v_may_def list.  */
-  unsigned in_v_may_def_list : 1;
+     in the VDEF list.  */
+  unsigned in_vdef_list : 1;
 
   /* True for HEAP and PARM_NOALIAS artificial variables.  */
   unsigned is_heapvar : 1;
 
-  /* An artificial variable representing the memory location pointed-to by
-     all the pointer symbols that flow-insensitive alias analysis
-     (mostly type-based) considers to be aliased.  If the variable is
-     not a pointer or if it is never dereferenced, this must be NULL.  */
+  /* Memory partition tag assigned to this symbol.  */
+  tree mpt;
+
+  /* If this variable is a pointer P that has been dereferenced, this
+     field is an artificial variable that represents the memory
+     location *P.  Every other pointer Q that is type-compatible with
+     P will also have the same memory tag.  If the variable is not a
+     pointer or if it is never dereferenced, this must be NULL.
+     FIXME, do we really need this here?  How much slower would it be
+     to convert to hash table?  */
   tree symbol_mem_tag;
 
-  /* Variables that may alias this variable.  */
+  /* Variables that may alias this variable.  This may only be set on
+     memory tags (NAME_MEMORY_TAG or TYPE_MEMORY_TAG).  FIXME, move to
+     struct tree_memory_tag.  */
   VEC(tree, gc) *may_aliases;
 
   /* Used when going out of SSA form to indicate which partition this
@@ -356,6 +366,10 @@ struct stmt_ann_d GTY(())
   /* Nonzero if the statement makes a function call that may clobber global
      and local addressable variables.  */
   unsigned makes_clobbering_call : 1;
+
+  /* Nonzero if the statement references memory (at least one of its
+     expressions contains a non-register operand).  */
+  unsigned references_memory : 1;
 
   /* Basic block that contains this statement.  */
   basic_block bb;
@@ -719,6 +733,7 @@ static inline bool var_can_have_subvars (tree);
 static inline bool overlap_subvar (unsigned HOST_WIDE_INT,
 				   unsigned HOST_WIDE_INT,
 				   tree, bool *);
+extern tree create_tag_raw (enum tree_code, tree, const char *);
 
 /* Call-back function for walk_use_def_chains().  At each reaching
    definition, a function with this prototype is called.  */

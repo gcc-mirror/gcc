@@ -1,3 +1,412 @@
+2006-12-11  Diego Novillo  <dnovillo@redhat.com>
+
+	* doc/tree-ssa.texi: Update documentation for virtual operands
+	and the use of push_stmt_changes/pop_stmt_changes.
+	* doc/invoke.texi: Remove documentation for params
+	global-var-threshold.
+	Update documentation on max-aliased-vops.
+
+	* tree-into-ssa.c: Cleanup comments, variables and
+	spacing in various functions.
+	(regs_to_rename): Declare.
+	(mem_syms_to_rename): Declare.
+	(dump_update_ssa): Declare.
+	(debug_update_ssa): Declare.
+	(dump_names_replaced_by): Declare.
+	(debug_names_replaced_by): Declare.
+	(dump_def_blocks): Declare.
+	(debug_def_blocks): Declare.
+	(dump_defs_stack): Declare.
+	(debug_defs_stack): Declare.
+	(dump_currdefs): Declare.
+	(debug_currdefs): Declare.
+	(mark_def_sites): Do not handle virtual operands.
+	(compute_idf): Rename from find_idf.  Update users.
+	(register_new_def): Make local.  Convert second argument
+	to 'tree'.
+	Use BLOCK_DEFS_STACK directly.
+	If pushing a non-register, also push the underlying
+	symbol.
+	(rewrite_stmt): Do not handle virtual operands.
+	(dump_tree_ssa): Call dump_def_blocks, dump_defs_stack,
+	dump_currdefs and dump_tree_ssa_stats.
+	(dump_tree_ssa_stats): Also dump REPL_TBL.
+	(replace_use): Remove.  Update all users to call SET_USE
+	instead.
+	(rewrite_blocks): Move code to free memory to
+	fini_ssa_renamer.
+	(mark_def_site_blocks): Move initialization code to
+	init_ssa_renamer.
+	(init_ssa_renamer): New.
+	(fini_ssa_renamer): New.
+	(rewrite_into_ssa): Call them.
+	(prepare_block_for_update): Process SSA_OP_ALL_USES first
+	and SSA_OP_ALL_DEFS later.  Do not process virtual
+	operands separately.
+	(dump_update_ssa): Call dump_decl_set.
+	(init_update_ssa): Initialize regs_to_rename and
+	mem_syms_to_rename.
+	Call init_ssa_renamer.
+	(delete_update_ssa): Call fini_ssa_renamer.
+	Free blocks_with_phis_to_rewrite.
+	(mark_sym_for_renaming): If the variable has
+	sub-variables, also mark them.
+	If the variable belongs to a partition, also mark it.
+	(mark_set_for_renaming): Call mark_sym_for_renaming on
+	every symbol in the set.
+	(switch_virtuals_to_full_rewrite): Call
+	mark_set_for_renaming.
+	(update_ssa): Separate syms_to_rename into regs_to_rename
+	and mem_syms_to_rename.
+
+	* tree-dump.c (dump_options): Add TDF_MEMSYMS.
+	* tree-pretty-print.c (debug_generic_expr): Add TDF_MEMSYMS.
+	(debug_generic_stmt): Likewise.
+	(debug_tree_chain): Likewise.
+	(dump_symbols): New.
+	(dump_generic_node): Check for TDF_MEMSYMS.
+	Handle MEMORY_PARTITION_TAG.
+	If the statement references memory and TDF_MEMSYMS is
+	given, call dump_symbols.
+	Indicate default names with (D).
+	(dump_vops): Update for new virtual operator format.
+
+	* tree.c (init_ttree): Add MEMORY_PARTITION_TAG to
+	tree_contains_struct.
+	(tree_code_size): Handle MEMORY_PARTITION_TAG.
+	(tree_node_structure): Likewise.
+	(needs_to_live_in_memory): Handle SSA names.
+	* tree.h (MTAG_P): Likewise.
+	(struct tree_memory_partition_tag): Declare.
+	(MPT_SYMBOLS): Define.
+	(union tree_node): Add field 'mpt'.
+	* treestruct.def (TS_MEMORY_PARTITION_TAG): Define.
+	* tree.def (MEMORY_PARTITION_TAG): Define.
+
+	* tree-pass.h (TDF_MEMSYMS): Define.
+
+	* params.h (GLOBAL_VAR_THRESHOLD): Remove.
+
+	* tree-ssa-alias.c: Include pointer-set.h
+	(struct alias_map_d): Remove fields total_alias_vops,
+	grouped_p and may_aliases.  Update all users.
+	(struct mp_info_def): Declare.
+	(mp_info_t): New type.
+	(get_smt_for): Rename from get_tmt_for.  Update all
+	users.
+	(add_may_alias): Add argument ALREADY_ADDED.  If given,
+	use it to avoid adding duplicate entries to alias sets.
+	(replace_may_alias): Remove.  Update all users.
+	(total_alias_vops_cmp): Remove.  Update all users.
+	(group_aliases_into): Remove.  Update all users.
+	(tree_pointer_compare): Remove.  Update all users.
+	(compact_name_tags): Remove.  Update all users.
+	(group_aliases): Remove.  Update all users.
+	(mark_non_addressable): Move from tree-flow-inline.h.
+	Remove the symbol from the partition holding it, if
+	needed.
+	(dump_mp_info): New.
+	(debug_mp_info): New.
+	(sort_mp_info): New.
+	(create_partition_for): New.
+	(rewrite_alias_set_for): New.
+	(compute_memory_partitions): New.
+	(compute_may_aliases): Call it.
+	(init_alias_info): If computing aliases for the first
+	time, mark every memory symbol for renaming.
+	(have_common_aliases_p): New.
+	(compute_flow_insensitive_aliasing): Call it.
+	(setup_pointers_and_addressables): Do not cache
+	num_referenced_vars.
+	For register promoted symbols, mark their former
+	partition for renaming.
+	(maybe_create_global_var): Only create .GLOBAL_VAR if
+	there are no call-clobbered variables and a mix of pure
+	and non-pure functions were found.
+	(may_alias_p): Tidy comments.
+	(create_tag_raw): Remove unused variable new_type.
+	(dump_alias_info): call dump_memory_partitions.
+	(dump_points_to_info_for): Call dump_decl_set.
+	(may_be_aliased): Tidy comments and formatting.
+
+	* timevar.def (TV_MEMORY_PARTITIONING): Define.
+	* tree-vectorizer.c (vect_memsyms_to_rename): Rename from
+	vect_vnames_to_rename.  Set DECL_UIDs instead of SSA name
+	versions in it.
+	(slpeel_update_phi_nodes_for_guard1): Ignore memory PHIs.
+	* tree-vect-transform.c (vect_transform_loop): Call
+	mark_set_for_renaming with vect_memsyms_to_rename.
+	* tree-flow-inline.h (zero_imm_uses_p): New.
+	(memory_partition): New.
+	(set_memory_partition): New.
+	(factoring_name_p): New.
+	(symbol_mem_tag): New.  Update every function that used
+	to access the annotation directly.
+	(set_symbol_mem_tag): Likewise.
+
+	* tree-ssa-copy.c (may_propagate_copy): Allow copies
+	between a partition and a symbol as long as the symbol
+	belongs to the partition.
+	(merge_alias_info): Ignore merge requests when memory
+	partitions are involved.
+
+	* tree-ssa.c (verify_ssa_name): Check that default
+	definitions have empty defining statements.
+	(verify_use): Remove argument IS_VIRTUAL.
+	Don't call verify_ssa_name.
+	(verify_phi_args): Call verify_ssa_name.
+	(verify_flow_insensitive_alias_info): Handle MPTs.
+	(verify_flow_sensitive_alias_info): Likewise.
+	(verify_name_tags): Likewise.
+	(verify_call_clobbering): Likewise.
+	(verify_ssa): Check for VOPs only after aliasing
+	information is available.
+	Check virtuals and real operands separately.
+	Call verify_ssa_name on every operand.
+	(stmt_references_memory_p): Move to tree-ssa-operands.c.
+	(walk_use_def_chains_1): Guard against NULL PHI
+	arguments.
+
+	* tree-ssa-operands.c (stmt_references_memory_p): Move from
+	tree-ssa.c.
+	(get_mpt_for): New.
+	(dump_memory_partitions): New.
+	(debug_memory_partitions): New.
+
+	* tree-flow.h (struct var_ann_d): Add field mpt.
+	(struct stmt_ann_d): Add bitfield references_memory.
+	* Makefile.in (tree-ssa-structalias.o): Include
+	pointer-set.h
+	(tree-ssa-alias.o): Likewise.
+	* tree-ssa-structalias.c: (update_alias_info): Use
+	STORED_SYMS to determine which variables are being
+	written to by the store operation.
+	* tree-ssa-structalias.h (struct alias_info)
+	<total_alias_vops>: Remove.  Update all users.
+	<written_vars>: Change to a pointer set.  Update all
+	users.
+	<dereferenced_ptrs_store>: Likewise.
+	<dereferenced_ptrs_load>: Likewise.
+	(NUM_REFERENCES): Remove.  Update all users.
+	(NUM_REFERENCES_CLEAR): Remove.  Update all users.
+	(NUM_REFERENCES_INC): Remove.  Update all users.
+	(NUM_REFERENCES_SET): Remove.  Update all users.
+
+	* params.def (PARAM_GLOBAL_VAR_THRESHOLD): Remove.
+	Update all users.
+	(PARAM_MAX_ALIASED_VOPS): Set to 10.
+	* tree-ssanames.c (make_ssa_name): Initialize
+	SSA_NAME_IS_DEFAULT_DEF to 0.
+
+2006-12-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-dse.c (aggregate_vardecl_d): New.
+	(dse_global_data): Add aggregate_vardecl field.
+	(dse_possible_dead_store_p): New.
+	Add prev_defvar variable.
+	Allow immediate uses and previous immediate uses to differ
+	if they are setting different parts of the whole.
+	(get_aggregate_vardecl): New.
+	(dse_record_partial_aggregate_store): New.
+	(dse_whole_aggregate_clobbered_p): New.
+	(dse_partial_kill_p): New.
+	(dse_optimize_stmt): Abstract code checking a possible dead store
+	into new function dse_possible_dead_store_p().
+	Call dse_maybe_record_aggregate_store().
+	When checking whether a STMT and its USE_STMT refer to the
+	same memory address, check also for partial kills that clobber
+	the whole.
+	Move some variable definitions to the block where they are used.
+	(aggregate_vardecl_hash): New.
+	(aggregate_vardecl_eq): New.
+	(aggregate_vardecl_free): New.
+	(aggregate_whole_store_p): New.
+	(tree_ssa_dse): Initialize and free aggregate_vardecl.
+	Mark which aggregate stores we care about.
+
+2006-12-11  Andrew Macleod  <amacleod@redhat.com>
+
+	* tree-ssa-operands.h (struct vuse_element_d): Declare.
+	(vuse_element_t): Declare.
+	(struct vuse_vec_d): Declare.
+	(vuse_vec_p): Declare.
+	(VUSE_VECT_NUM_ELEM): Define.
+	(VUSE_VECT_ELEMENT_NC): Define.
+	(VUSE_ELEMENT_PTR_NC): Define.
+	(VUSE_ELEMENT_VAR_NC): Define.
+	(VUSE_VECT_ELEMENT): Define.
+	(VUSE_ELEMENT_PTR): Define.
+	(VUSE_ELEMENT_VAR): Define.
+	(struct maydef_optype_d) <use_var>: Remove.
+	<use_ptr>: Remove.
+	<usev>: Add.
+	(struct vuse_optype_d) <kill_var>: Remove.
+	<use_ptr>: Remove.
+	<usev>: Add.
+	(struct mustdef_optype_d) <kill_var>: Remove.
+	<use_ptr>: Remove.
+	<usev>: Add.
+	(VUSE_OP_PTR): Add argument.  Use VUSE_ELEMENT_PTR.
+	(VUSE_OP): Add argument.  Use VUSE_ELEMENT_PTR.
+	(VUSE_NUM): Define.
+	(VUSE_VECT): Define.
+	(MAYDEF_OP_PTR): Add argument.  Use VUSE_OP_PTR.
+	(MAYDEF_OP): Add argument.  Use VUSE_OP.
+	(MAYDEF_NUM): Define.
+	(MAYDEF_VECT): Define.
+	(MUSTDEF_KILL_PTR): Use VUSE_OP_PTR.
+	(MUSTDEF_KILL): Use VUSE_OP.
+	(MUSTDEF_NUM): Define.
+	(MUSTDEF_VECT): Define.
+	(realloc_maydef): Declare.
+	(realloc_vuse): Declare.
+	(struct ssa_operand_iterator_d) <vuse_index>: Add.
+	<mayuse_index>: Add.
+	(LOADED_SYMS): Define.
+	(STORED_SYMS): Define.
+	(FOR_EACH_SSA_MUSTDEF_OPERAND): Call op_iter_next_mustdef.
+	* tree-into-ssa.c: Adapt for multi-operand V_MAY_DEF and VUSE
+	operators.
+	* tree-pretty-print.c: Likewise.
+	* tree-ssa-dse.c: Likewise.
+	* tree-flow-inline.h: Likewise.
+	(op_iter_next_mustdef): New.
+	* tree-ssa-operands.c: Likewise.
+	(ALLOC_OPTYPE): Remove.
+	Update all users.
+	(alloc_def): New.
+	(alloc_use): New.
+	(alloc_maydef): New.
+	(alloc_vuse): New.
+	(alloc_mustdef): New.
+	(realloc_maydef): New.
+	(realloc_vuse): New.
+
+2006-12-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-operands.c: Remove build_v_must_defs.
+	(init_ssa_operands): Delete build_v_must_defs.
+	(finalize_ssa_v_must_def_ops): Remove.
+	(finalize_ssa_v_must_defs): Remove.
+	(finalize_ssa_stmt_operands): Do not call
+	finalize_ssa_v_must_defs.
+	(start_ssa_stmt_operands): Do not check build_v_must_defs.
+	(append_v_must_def): Delete.
+	(copy_virtual_operands): Do not copy V_MUST_DEFs.
+	(get_modify_expr_operands): Remove reference to V_MUST_DEF from
+	comment.  Remove opf_kill_def.
+	(build_ssa_operands): Remove references to v_must_defs.
+	(copy_virtual_operands): Same.
+	(copy_virtual_operands): Same.
+	(fini_ssa_operands): Same.
+	(free_ssa_operands): Same.
+	(add_mustdef_op): Remove.
+	Remove mustdef_optype_p.
+	(alloc_mustdef): Remove.
+	Remove references to V_MUST_DEFs in comment at top of file.
+	(get_expr_operands): Remove opf_kill_def.
+	(opf_kill_def): Remove.
+	(add_virtual_operand): Remove opf_kill_def.
+	(get_indirect_ref_operands): Same.
+	(get_tmr_operands): Same.
+
+	* tree-vectorizer.c (rename_variables_in_bb): Remove
+	SSA_OP_ALL_KILLS.
+
+	* tree-ssa-loop-manip.c (find_uses_to_rename_stmt): Remove
+	SSA_OP_ALL_KILLS.
+	(check_loop_closed_ssa_stmt): Same.
+
+	* tree-ssa.c (verify_def): Remove V_MUST_DEF from comment.
+	(verify_use): Same.
+	(verify_ssa): Remove V_MUST_DEFs traces.
+	(verify_ssa): Remove SSA_OP_ALL_KILLS.
+
+	* tree-into-ssa.c (mark_def_sites): Change SSA_OP_VMUSTDEF to
+	SSA_OP_VMAYDEF.
+	(rewrite_update_stmt): Remove SSA_OP_VIRTUAL_KILLS.
+	(rewrite_stmt): Remove SSA_OP_ALL_KILLS.
+
+	* tree-ssa-operands.h (struct stmt_operands_d): Remove V_MUST_DEF
+	references.
+	(MUSTDEF_OPS): Remove.
+	(SSA_OP_VMUSTDEF): Remove.
+	(FOR_EACH_SSA_MUSTDEF_OPERAND): Remove.
+	(struct mustdef_optype_d): Remove.
+	Remove mustdef_optype_p.
+	(struct stmt_operands_d): Remove mustdef_ops.
+	(ssa_operand_iterator_d): Remove mustdefs and mustkills.
+	(SSA_OP_VIRTUAL_DEFS): Remove SSA_OP_VMUSTDEF.
+	(MUSTDEF_RESULT_PTR): Remove.
+	(MUSTDEF_RESULT): Remove.
+	(MUSTDEF_KILL_PTR): Remove.
+	(MUSTDEF_KILL): Remove.
+	(MUSTDEF_NUM): Remove.
+	(MUSTDEF_VECT): Remove.
+	(SSA_OP_VIRTUAL_KILLS): Remove.
+	(SSA_OP_ALL_VIRTUALS): Remove SSA_OP_VIRTUAL_KILLS.
+	(SSA_OP_VMUSTKILL): Remove.
+	(SSA_OP_ALL_KILLS): Remove.
+	(SSA_OP_ALL_OPERANDS): Remove SSA_OP_ALL_KILLS.
+
+	* tree-flow-inline.h (op_iter_init_def): Remove
+	SSA_OP_VIRTUAL_KILLS.
+	(delink_stmt_imm_use): Remove SSA_OP_ALL_KILLS.
+
+	* tree-ssa-pre.c (compute_rvuse_and_antic_safe): Remove
+	SSA_OP_VIRTUAL_KILLS.
+
+	* tree-ssa-loop-im.c (determine_max_movement): Remove
+	SSA_OP_VIRTUAL_KILLS.
+	(gather_mem_refs_stmt): Same.
+	(gather_mem_refs_stmt): Same.
+
+	* tree-ssa-dce.c (mark_really_necessary_kill_operand_phis): Delete.
+	(perform_tree_ssa_dce): Remove call to
+	mark_really_necessary_kill_operand_phis.
+
+	* tree-flow-inline.h (op_iter_init): Remove setting of mustdefs
+	and mustkills.
+	(op_iter_next_use): Do not check mustkills.
+	(op_iter_next_def): Do not check mustdefs.
+	(op_iter_next_tree): Do not check mustkills or mustdefs.
+	(clear_and_done_ssa_iter): Do not set mustdefs or mustkills.
+	(op_iter_next_maymustdef): Do not check mustkills.
+	(op_iter_init_must_and_may_def): Remove SSA_OP_VMUSTKILL.
+	(op_iter_init_mustdef): Remove.
+
+	* tree-ssa-live.c (create_ssa_var_map): Change SSA_OP_VMUSTDEF to
+	SSA_OP_VMAYDEF.
+
+	* tree-ssa-dse.c (dse_optimize_stmt): Remove SSA_OP_VMUSTDEF.
+
+	* tree-ssa-ccp.c: Remove V_MUST_DEF traces from comments.
+	(visit_assignment): Same.
+
+	* tree-ssa-copy.c (copy_prop_visit_assignment): Same.
+
+	* tree-sra.c (mark_all_v_defs_1): Remove V_MUST_DEF from comment.
+
+	* tree-outof-ssa.c (check_replaceable): Remove SSA_OP_VMUSTDEF.
+
+	* tree-pretty-print.c (dump_vops): Remove printing of V_MUST_DEF.
+	Remove kill_p variable.
+
+	* tree-dfa.c (struct dfa_stats_d): Remove num_v_must_defs.
+	(dump_dfa_stats): Remove code related to V_MUST_DEFs.
+	(collect_dfa_stats_r): Do not set num_v_must_defs.
+	(mark_new_vars_to_rename): Remove v_must_defs_{before,after}
+	code.
+
+	* tree-into-ssa.c (mark_def_sites): Change SSA_OP_VMUSTKILL to
+	SSA_OP_VMAYUSE.
+
+	* tree-ssa-pre.c (compute_rvuse_and_antic_safe): Remove
+	SSA_OP_VMUSTDEF and SSA_OP_VMUSTKILL.
+
+	* tree-ssa-propagate.c (stmt_makes_single_store): Remove
+	SSA_OP_VMUSTDEF.
+
 2006-12-11  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR rtl-optimization/30113

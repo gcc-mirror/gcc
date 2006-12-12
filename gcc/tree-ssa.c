@@ -76,7 +76,7 @@ ssa_redirect_edge (edge e, basic_block dest)
   return e;
 }
 
-/* Add PHI arguments queued in PENDINT_STMT list on edge E to edge
+/* Add PHI arguments queued in PENDING_STMT list on edge E to edge
    E->dest.  */
 
 void
@@ -143,6 +143,13 @@ verify_ssa_name (tree ssa_name, bool is_virtual)
       return true;
     }
 
+  if (SSA_NAME_IS_DEFAULT_DEF (ssa_name)
+      && !IS_EMPTY_STMT (SSA_NAME_DEF_STMT (ssa_name)))
+    {
+      error ("found a default name with a non-empty defining statement");
+      return true;
+    }
+
   return false;
 }
 
@@ -156,8 +163,7 @@ verify_ssa_name (tree ssa_name, bool is_virtual)
       it means that the block in that array slot contains the
       definition of SSA_NAME.
 
-   IS_VIRTUAL is true if SSA_NAME is created by a V_MAY_DEF or a
-      V_MUST_DEF.  */
+   IS_VIRTUAL is true if SSA_NAME is created by a VDEF.  */
 
 static bool
 verify_def (basic_block bb, basic_block *definition_block, tree ssa_name,
@@ -208,21 +214,15 @@ err:
       is flowing through an abnormal edge (only used when checking PHI
       arguments).
 
-   IS_VIRTUAL is true if SSA_NAME is created by a V_MAY_DEF or a
-      V_MUST_DEF.
-   
    If NAMES_DEFINED_IN_BB is not NULL, it contains a bitmap of ssa names
      that are defined before STMT in basic block BB.  */
 
 static bool
 verify_use (basic_block bb, basic_block def_bb, use_operand_p use_p,
-	    tree stmt, bool check_abnormal, bool is_virtual,
-	    bitmap names_defined_in_bb)
+	    tree stmt, bool check_abnormal, bitmap names_defined_in_bb)
 {
   bool err = false;
   tree ssa_name = USE_FROM_PTR (use_p);
-
-  err = verify_ssa_name (ssa_name, is_virtual);
 
   if (!TREE_VISITED (ssa_name))
     if (verify_imm_links (stderr, ssa_name))
@@ -231,7 +231,7 @@ verify_use (basic_block bb, basic_block def_bb, use_operand_p use_p,
   TREE_VISITED (ssa_name) = 1;
 
   if (IS_EMPTY_STMT (SSA_NAME_DEF_STMT (ssa_name))
-      && gimple_default_def (cfun, SSA_NAME_VAR (ssa_name)) == ssa_name)
+      && SSA_NAME_IS_DEFAULT_DEF (ssa_name))
     ; /* Default definitions have empty statements.  Nothing to do.  */
   else if (!def_bb)
     {
@@ -296,9 +296,10 @@ verify_use (basic_block bb, basic_block def_bb, use_operand_p use_p,
 /* Return true if any of the arguments for PHI node PHI at block BB is
    malformed.
 
-   DEFINITION_BLOCK is an array of basic blocks indexed by SSA_NAME version
-      numbers.  If DEFINITION_BLOCK[SSA_NAME_VERSION] is set, it means that the
-      block in that array slot contains the definition of SSA_NAME.  */
+   DEFINITION_BLOCK is an array of basic blocks indexed by SSA_NAME
+      version numbers.  If DEFINITION_BLOCK[SSA_NAME_VERSION] is set,
+      it means that the block in that array slot contains the
+      definition of SSA_NAME.  */
 
 static bool
 verify_phi_args (tree phi, basic_block bb, basic_block *definition_block)
@@ -319,7 +320,6 @@ verify_phi_args (tree phi, basic_block bb, basic_block *definition_block)
       use_operand_p op_p = PHI_ARG_DEF_PTR (phi, i);
       tree op = USE_FROM_PTR (op_p);
 
-
       e = EDGE_PRED (bb, i);
 
       if (op == NULL_TREE)
@@ -338,10 +338,11 @@ verify_phi_args (tree phi, basic_block bb, basic_block *definition_block)
 	}
 
       if (TREE_CODE (op) == SSA_NAME)
-	err = verify_use (e->src, definition_block[SSA_NAME_VERSION (op)], op_p,
-			  phi, e->flags & EDGE_ABNORMAL,
-			  !is_gimple_reg (PHI_RESULT (phi)),
-			  NULL);
+	{
+	  err = verify_ssa_name (op, !is_gimple_reg (PHI_RESULT (phi)));
+	  err |= verify_use (e->src, definition_block[SSA_NAME_VERSION (op)],
+			     op_p, phi, e->flags & EDGE_ABNORMAL, NULL);
+	}
 
       if (e->dest != bb)
 	{
@@ -362,7 +363,7 @@ error:
   if (err)
     {
       fprintf (stderr, "for PHI node\n");
-      print_generic_stmt (stderr, phi, TDF_VOPS);
+      print_generic_stmt (stderr, phi, TDF_VOPS|TDF_MEMSYMS);
     }
 
 
@@ -391,7 +392,8 @@ verify_flow_insensitive_alias_info (void)
 	{
 	  bitmap_set_bit (visited, DECL_UID (alias));
 
-	  if (!may_be_aliased (alias))
+	  if (TREE_CODE (alias) != MEMORY_PARTITION_TAG
+	      && !may_be_aliased (alias))
 	    {
 	      error ("non-addressable variable inside an alias set");
 	      debug_variable (alias);
@@ -407,9 +409,11 @@ verify_flow_insensitive_alias_info (void)
 
       if (!MTAG_P (var)
 	  && ann->is_aliased
+	  && memory_partition (var) == NULL_TREE
 	  && !bitmap_bit_p (visited, DECL_UID (var)))
 	{
-	  error ("addressable variable that is aliased but is not in any alias set");
+	  error ("addressable variable that is aliased but is not in any "
+	         "alias set");
 	  goto err;
 	}
     }
@@ -472,12 +476,17 @@ verify_flow_sensitive_alias_info (void)
 	  goto err;
 	}
 
-      if (pi->value_escapes_p
-	  && pi->name_mem_tag
-	  && !is_call_clobbered (pi->name_mem_tag))
+      if (pi->value_escapes_p && pi->name_mem_tag)
 	{
-	  error ("pointer escapes but its name tag is not call-clobbered");
-	  goto err;
+	  tree t = memory_partition (pi->name_mem_tag);
+	  if (t == NULL_TREE)
+	    t = pi->name_mem_tag;
+	  
+	  if (!is_call_clobbered (t))
+	    {
+	      error ("pointer escapes but its name tag is not call-clobbered");
+	      goto err;
+	    }
 	}
     }
 
@@ -488,7 +497,9 @@ err:
   internal_error ("verify_flow_sensitive_alias_info failed");
 }
 
+
 /* Verify the consistency of call clobbering information.  */
+
 static void
 verify_call_clobbering (void)
 {
@@ -505,23 +516,38 @@ verify_call_clobbering (void)
   EXECUTE_IF_SET_IN_BITMAP (gimple_call_clobbered_vars (cfun), 0, i, bi)
     {
       var = referenced_var (i);
+
+      if (memory_partition (var))
+	var = memory_partition (var);
+
       if (!MTAG_P (var) && !DECL_CALL_CLOBBERED (var))
 	{
-	  error ("variable in call_clobbered_vars but not marked DECL_CALL_CLOBBERED");
+	  error ("variable in call_clobbered_vars but not marked "
+	         "DECL_CALL_CLOBBERED");
 	  debug_variable (var);
 	  goto err;
 	}
     }
+
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
-      if (!MTAG_P (var) && DECL_CALL_CLOBBERED (var)
+      if (is_gimple_reg (var))
+	continue;
+
+      if (memory_partition (var))
+	var = memory_partition (var);
+
+      if (!MTAG_P (var)
+	  && DECL_CALL_CLOBBERED (var)
 	  && !bitmap_bit_p (gimple_call_clobbered_vars (cfun), DECL_UID (var)))
 	{
-	  error ("variable marked DECL_CALL_CLOBBERED but not in call_clobbered_vars bitmap.");
+	  error ("variable marked DECL_CALL_CLOBBERED but not in "
+	         "call_clobbered_vars bitmap.");
 	  debug_variable (var);
 	  goto err;
 	}
     }
+
   return;
 
  err:
@@ -606,6 +632,7 @@ verify_ssa (bool check_modified_stmt)
 	{
 	  if (verify_phi_args (phi, bb, definition_block))
 	    goto err;
+
 	  bitmap_set_bit (names_defined_in_bb,
 			  SSA_NAME_VERSION (PHI_RESULT (phi)));
 	}
@@ -618,7 +645,7 @@ verify_ssa (bool check_modified_stmt)
 
 	  if (check_modified_stmt && stmt_modified_p (stmt))
 	    {
-	      error ("stmt (%p) marked modified after optimization pass : ",
+	      error ("stmt (%p) marked modified after optimization pass: ",
 		     (void *)stmt);
 	      print_generic_stmt (stderr, stmt, TDF_VOPS);
 	      goto err;
@@ -633,23 +660,42 @@ verify_ssa (bool check_modified_stmt)
 	      base_address = get_base_address (lhs);
 
 	      if (base_address
+		  && gimple_aliases_computed_p (cfun)
 		  && SSA_VAR_P (base_address)
-		  && ZERO_SSA_OPERANDS (stmt, SSA_OP_VMAYDEF|SSA_OP_VMUSTDEF))
+		  && !stmt_ann (stmt)->has_volatile_ops
+		  && ZERO_SSA_OPERANDS (stmt, SSA_OP_VDEF))
 		{
-		  error ("statement makes a memory store, but has no "
-			 "V_MAY_DEFS nor V_MUST_DEFS");
+		  error ("statement makes a memory store, but has no VDEFS");
 		  print_generic_stmt (stderr, stmt, TDF_VOPS);
 		  goto err;
 		}
 	    }
 
-	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter,
-	                            SSA_OP_ALL_USES | SSA_OP_ALL_KILLS)
+	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_ALL_VIRTUALS)
+	    {
+	      if (verify_ssa_name (op, true))
+		{
+		  error ("in statement");
+		  print_generic_stmt (stderr, stmt, TDF_VOPS|TDF_MEMSYMS);
+		  goto err;
+		}
+	    }
+
+	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE|SSA_OP_DEF)
+	    {
+	      if (verify_ssa_name (op, false))
+		{
+		  error ("in statement");
+		  print_generic_stmt (stderr, stmt, TDF_VOPS|TDF_MEMSYMS);
+		  goto err;
+		}
+	    }
+
+	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE|SSA_OP_VUSE)
 	    {
 	      op = USE_FROM_PTR (use_p);
 	      if (verify_use (bb, definition_block[SSA_NAME_VERSION (op)],
-			      use_p, stmt, false, !is_gimple_reg (op),
-			      names_defined_in_bb))
+			      use_p, stmt, false, names_defined_in_bb))
 		goto err;
 	    }
 
@@ -661,7 +707,8 @@ verify_ssa (bool check_modified_stmt)
     }
 
   /* Finally, verify alias information.  */
-  verify_alias_info ();
+  if (gimple_aliases_computed_p (cfun))
+    verify_alias_info ();
 
   free (definition_block);
 
@@ -774,6 +821,7 @@ delete_tree_ssa (void)
   cfun->gimple_df->addressable_vars = NULL;
   cfun->gimple_df->modified_noreturn_calls = NULL;
   cfun->gimple_df->aliases_computed_p = false;
+
   delete_alias_heapvars ();
   gcc_assert (!need_ssa_update_p ());
 }
@@ -882,18 +930,6 @@ tree_ssa_useless_type_conversion (tree expr)
   return false;
 }
 
-/* Returns true if statement STMT may read memory.  */
-
-bool
-stmt_references_memory_p (tree stmt)
-{
-  stmt_ann_t ann = stmt_ann (stmt);
-
-  if (ann->has_volatile_ops)
-    return true;
-
-  return (!ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS));
-}
 
 /* Internal helper for walk_use_def_chains.  VAR, FN and DATA are as
    described in walk_use_def_chains.
@@ -940,7 +976,10 @@ walk_use_def_chains_1 (tree var, walk_use_def_chains_fn fn, void *data,
       for (i = 0; i < PHI_NUM_ARGS (def_stmt); i++)
 	{
 	  tree arg = PHI_ARG_DEF (def_stmt, i);
-	  if (TREE_CODE (arg) == SSA_NAME
+
+	  /* ARG may be NULL for newly introduced PHI nodes.  */
+	  if (arg
+	      && TREE_CODE (arg) == SSA_NAME
 	      && walk_use_def_chains_1 (arg, fn, data, visited, is_dfs))
 	    return true;
 	}
@@ -977,7 +1016,6 @@ walk_use_def_chains_1 (tree var, walk_use_def_chains_fn fn, void *data,
 
    If IS_DFS is false, the two steps above are done in reverse order
    (i.e., a breadth-first search).  */
-
 
 void
 walk_use_def_chains (tree var, walk_use_def_chains_fn fn, void *data,
@@ -1189,4 +1227,3 @@ struct tree_opt_pass pass_late_warn_uninitialized =
   0,                                    /* todo_flags_finish */
   0				        /* letter */
 };
-	  

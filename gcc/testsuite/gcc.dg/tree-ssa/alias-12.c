@@ -13,6 +13,6 @@ int foo(int i)
 	return a.x[i];
 }
 
-/* { dg-final { scan-tree-dump "V_MAY_DEF" "alias1" } } */
+/* { dg-final { scan-tree-dump "VDEF" "alias1" } } */
 /* { dg-final { cleanup-tree-dump "alias1" } } */
 

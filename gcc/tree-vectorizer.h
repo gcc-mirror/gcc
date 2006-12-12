@@ -328,7 +328,7 @@ extern FILE *vect_dump;
 extern enum verbosity_levels vect_verbosity_level;
 
 /* Bitmap of virtual variables to be renamed.  */
-extern bitmap vect_vnames_to_rename;
+extern bitmap vect_memsyms_to_rename;
 
 /*-----------------------------------------------------------------*/
 /* Function prototypes.                                            */

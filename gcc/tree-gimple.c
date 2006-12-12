@@ -93,7 +93,7 @@ is_gimple_reg_rhs (tree t)
      variable is only modified if evaluation of the RHS does not throw.
 
      Don't force a temp of a non-renamable type; the copy could be
-     arbitrarily expensive.  Instead we will generate a V_MAY_DEF for
+     arbitrarily expensive.  Instead we will generate a VDEF for
      the assignment.  */
 
   if (is_gimple_reg_type (TREE_TYPE (t))
@@ -377,7 +377,7 @@ is_gimple_val (tree t)
   /* FIXME make these decls.  That can happen only when we expose the
      entire landing-pad construct at the tree level.  */
   if (TREE_CODE (t) == EXC_PTR_EXPR || TREE_CODE (t) == FILTER_EXPR)
-    return 1;
+    return true;
 
   return (is_gimple_variable (t) || is_gimple_min_invariant (t));
 }

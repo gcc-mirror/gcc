@@ -52,6 +52,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tree-ssa-structalias.h"
 #include "cgraph.h"
 #include "alias.h"
+#include "pointer-set.h"
 
 /* The idea behind this analyzer is to generate set constraints from the
    program, then solve the resulting constraints in order to generate the
@@ -285,8 +286,8 @@ DEF_VEC_P(varinfo_t);
 
 DEF_VEC_ALLOC_P(varinfo_t, heap);
 
-/* Table of variable info structures for constraint variables.  Indexed directly
-   by variable info id.  */
+/* Table of variable info structures for constraint variables.
+   Indexed directly by variable info id.  */
 static VEC(varinfo_t,heap) *varmap;
 
 /* Return the varmap element N */
@@ -1840,7 +1841,7 @@ get_constraint_exp_from_ssa_var (tree t)
      decl.  */
   if (TREE_CODE (t) == SSA_NAME
       && TREE_CODE (SSA_NAME_VAR (t)) == PARM_DECL
-      && gimple_default_def (cfun, SSA_NAME_VAR (t)) == t)
+      && SSA_NAME_IS_DEFAULT_DEF (t))
     return get_constraint_exp_from_ssa_var (SSA_NAME_VAR (t));
 
   cexpr.type = SCALAR;
@@ -2641,7 +2642,6 @@ update_alias_info (tree stmt, struct alias_info *ai)
   use_operand_p use_p;
   ssa_op_iter iter;
   enum escape_type stmt_escape_type = is_escape_site (stmt);
-  tree op;
 
   if (stmt_escape_type == ESCAPE_TO_CALL
       || stmt_escape_type == ESCAPE_TO_PURE_CONST)
@@ -2715,7 +2715,7 @@ update_alias_info (tree stmt, struct alias_info *ai)
       var = SSA_NAME_VAR (op);
       v_ann = var_ann (var);
 
-      /* The base variable of an ssa name must be a GIMPLE register, and thus
+      /* The base variable of an SSA name must be a GIMPLE register, and thus
 	 it cannot be aliased.  */
       gcc_assert (!may_be_aliased (var));
 
@@ -2751,7 +2751,7 @@ update_alias_info (tree stmt, struct alias_info *ai)
 	 So, if the original code had no other dereferences of PTR,
 	 the aliaser will not create memory tags for it, and when
 	 &PTR->FLD gets propagated to INDIRECT_REF expressions, the
-	 memory operations will receive no V_MAY_DEF/VUSE operands.
+	 memory operations will receive no VDEF/VUSE operands.
 
 	 One solution would be to have count_uses_and_derefs consider
 	 &PTR->FLD a dereference of PTR.  But that is wrong, since it
@@ -2784,17 +2784,13 @@ update_alias_info (tree stmt, struct alias_info *ai)
 	     all the variables OP points to.  */
 	  pi->is_dereferenced = 1;
 
-	  /* Keep track of how many time we've dereferenced each
-	     pointer.  */
-	  NUM_REFERENCES_INC (v_ann);
-
 	  /* If this is a store operation, mark OP as being
 	     dereferenced to store, otherwise mark it as being
 	     dereferenced to load.  */
 	  if (is_store)
-	    bitmap_set_bit (ai->dereferenced_ptrs_store, DECL_UID (var));
+	    pointer_set_insert (ai->dereferenced_ptrs_store, var);
 	  else
-	    bitmap_set_bit (ai->dereferenced_ptrs_load, DECL_UID (var));
+	    pointer_set_insert (ai->dereferenced_ptrs_load, var);
 	}
 
       if (stmt_escape_type != NO_ESCAPE && num_derefs < num_uses)
@@ -2812,7 +2808,7 @@ update_alias_info (tree stmt, struct alias_info *ai)
 	  if (get_call_expr_in (stmt)
 	      || stmt_escape_type == ESCAPE_STORED_IN_GLOBAL)
 	    {
-	      bitmap_set_bit (ai->dereferenced_ptrs_store, DECL_UID (var));
+	      pointer_set_insert (ai->dereferenced_ptrs_store, var);
 	      pi->is_dereferenced = 1;
 	    }
 	}
@@ -2821,24 +2817,14 @@ update_alias_info (tree stmt, struct alias_info *ai)
   if (TREE_CODE (stmt) == PHI_NODE)
     return;
 
-  /* Update reference counter for definitions to any
-     potentially aliased variable.  This is used in the alias
-     grouping heuristics.  */
-  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_DEF)
+  /* Mark stored variables in STMT as being written to and update the
+     reference counter for potentially aliased symbols in STMT.  */
+  if (stmt_references_memory_p (stmt) && STORED_SYMS (stmt))
     {
-      tree var = SSA_NAME_VAR (op);
-      var_ann_t ann = var_ann (var);
-      bitmap_set_bit (ai->written_vars, DECL_UID (var));
-      if (may_be_aliased (var))
-	NUM_REFERENCES_INC (ann);
-
-    }
-
-  /* Mark variables in V_MAY_DEF operands as being written to.  */
-  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_VIRTUAL_DEFS)
-    {
-      tree var = DECL_P (op) ? op : SSA_NAME_VAR (op);
-      bitmap_set_bit (ai->written_vars, DECL_UID (var));
+      unsigned i;
+      bitmap_iterator bi;
+      EXECUTE_IF_SET_IN_BITMAP (STORED_SYMS (stmt), 0, i, bi)
+	pointer_set_insert (ai->written_vars, referenced_var (i));
     }
 }
 
@@ -3992,7 +3978,7 @@ find_what_p_points_to (tree p)
      decl.  */
   if (TREE_CODE (p) == SSA_NAME
       && TREE_CODE (SSA_NAME_VAR (p)) == PARM_DECL
-      && gimple_default_def (cfun, SSA_NAME_VAR (p)) == p)
+      && SSA_NAME_IS_DEFAULT_DEF (p))
     lookup_p = SSA_NAME_VAR (p);
 
   if (lookup_id_for_tree (lookup_p, &id))
@@ -4286,6 +4272,7 @@ compute_points_to_sets (struct alias_info *ai)
 	  tree stmt = bsi_stmt (bsi);
 
 	  find_func_aliases (stmt);
+
 	  /* Update various related attributes like escaped
 	     addresses, pointer dereferences for loads and stores.
 	     This is used when creating name tags and alias

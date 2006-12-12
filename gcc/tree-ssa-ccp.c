@@ -132,13 +132,12 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
    We should be able to deduce that the predicate 'a.a != B' is always
    false.  To achieve this, we associate constant values to the SSA
-   names in the V_MAY_DEF and V_MUST_DEF operands for each store.
-   Additionally, since we also glob partial loads/stores with the base
-   symbol, we also keep track of the memory reference where the
-   constant value was stored (in the MEM_REF field of PROP_VALUE_T).
-   For instance,
+   names in the VDEF operands for each store.  Additionally,
+   since we also glob partial loads/stores with the base symbol, we
+   also keep track of the memory reference where the constant value
+   was stored (in the MEM_REF field of PROP_VALUE_T).  For instance,
 
-        # a_5 = V_MAY_DEF <a_4>
+        # a_5 = VDEF <a_4>
         a.a = 2;
 
         # VUSE <a_5>
@@ -222,9 +221,9 @@ typedef enum
 /* Array of propagated constant values.  After propagation,
    CONST_VAL[I].VALUE holds the constant value for SSA_NAME(I).  If
    the constant is held in an SSA name representing a memory store
-   (i.e., a V_MAY_DEF or V_MUST_DEF), CONST_VAL[I].MEM_REF will
-   contain the actual memory reference used to store (i.e., the LHS of
-   the assignment doing the store).  */
+   (i.e., a VDEF), CONST_VAL[I].MEM_REF will contain the actual
+   memory reference used to store (i.e., the LHS of the assignment
+   doing the store).  */
 static prop_value_t *const_val;
 
 /* True if we are also propagating constants in stores and loads.  */
@@ -1274,9 +1273,9 @@ visit_assignment (tree stmt, tree *output_p)
     }
   else if (do_store_ccp && stmt_makes_single_store (stmt))
     {
-      /* Otherwise, set the names in V_MAY_DEF/V_MUST_DEF operands
-	 to the new constant value and mark the LHS as the memory
-	 reference associated with VAL.  */
+      /* Otherwise, set the names in VDEF operands to the new
+	 constant value and mark the LHS as the memory reference
+	 associated with VAL.  */
       ssa_op_iter i;
       tree vdef;
       bool changed;

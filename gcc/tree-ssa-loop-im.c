@@ -496,7 +496,7 @@ determine_max_movement (tree stmt, bool must_preserve_exec)
     if (!add_dependency (val, lim_data, loop, true))
       return false;
 
-  FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, SSA_OP_VIRTUAL_USES | SSA_OP_VIRTUAL_KILLS)
+  FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, SSA_OP_VIRTUAL_USES)
     if (!add_dependency (val, lim_data, loop, false))
       return false;
 
@@ -1251,15 +1251,13 @@ gather_mem_refs_stmt (struct loop *loop, htab_t mem_refs,
     }
   ref->is_stored |= is_stored;
 
-  FOR_EACH_SSA_TREE_OPERAND (vname, stmt, oi,
-			     SSA_OP_VIRTUAL_USES | SSA_OP_VIRTUAL_KILLS)
+  FOR_EACH_SSA_TREE_OPERAND (vname, stmt, oi, SSA_OP_VIRTUAL_USES)
     bitmap_set_bit (ref->vops, DECL_UID (SSA_NAME_VAR (vname)));
   record_mem_ref_loc (&ref->locs, stmt, mem);
   return;
 
 fail:
-  FOR_EACH_SSA_TREE_OPERAND (vname, stmt, oi,
-			     SSA_OP_VIRTUAL_USES | SSA_OP_VIRTUAL_KILLS)
+  FOR_EACH_SSA_TREE_OPERAND (vname, stmt, oi, SSA_OP_VIRTUAL_USES)
     bitmap_set_bit (clobbered_vops, DECL_UID (SSA_NAME_VAR (vname)));
 }
 

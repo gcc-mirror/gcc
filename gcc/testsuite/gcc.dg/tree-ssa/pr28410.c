@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 --param global-var-threshold=1" } */
+/* { dg-options "-O2" } */
 
 extern void abort(void);
 struct Bar { int p; };

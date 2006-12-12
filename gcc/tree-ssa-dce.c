@@ -222,11 +222,11 @@ mark_stmt_necessary (tree stmt, bool add_to_worklist)
     VEC_safe_push (tree, heap, worklist, stmt);
 }
 
-/* Mark the statement defining operand OP as necessary.  PHIONLY is true
-   if we should only mark it necessary if it is a phi node.  */
+
+/* Mark the statement defining operand OP as necessary.  */
 
 static inline void
-mark_operand_necessary (tree op, bool phionly)
+mark_operand_necessary (tree op)
 {
   tree stmt;
   int ver;
@@ -241,9 +241,7 @@ mark_operand_necessary (tree op, bool phionly)
   stmt = SSA_NAME_DEF_STMT (op);
   gcc_assert (stmt);
 
-  if (NECESSARY (stmt)
-      || IS_EMPTY_STMT (stmt)
-      || (phionly && TREE_CODE (stmt) != PHI_NODE))
+  if (NECESSARY (stmt) || IS_EMPTY_STMT (stmt))
     return;
 
   NECESSARY (stmt) = 1;
@@ -489,7 +487,7 @@ propagate_necessity (struct edge_list *el)
             {
 	      tree arg = PHI_ARG_DEF (stmt, k);
 	      if (TREE_CODE (arg) == SSA_NAME)
-		mark_operand_necessary (arg, false);
+		mark_operand_necessary (arg);
 	    }
 
 	  if (aggressive)
@@ -509,83 +507,18 @@ propagate_necessity (struct edge_list *el)
       else
 	{
 	  /* Propagate through the operands.  Examine all the USE, VUSE and
-	     V_MAY_DEF operands in this statement.  Mark all the statements 
-	     which feed this statement's uses as necessary.  */
+	     VDEF operands in this statement.  Mark all the statements 
+	     which feed this statement's uses as necessary.  The
+	     operands of VDEF expressions are also needed as they
+	     represent potential definitions that may reach this
+	     statement (VDEF operands allow us to follow def-def
+	     links).  */
 	  ssa_op_iter iter;
 	  tree use;
 
-	  /* The operands of V_MAY_DEF expressions are also needed as they
-	     represent potential definitions that may reach this
-	     statement (V_MAY_DEF operands allow us to follow def-def 
-	     links).  */
-
 	  FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_ALL_USES)
-	    mark_operand_necessary (use, false);
+	    mark_operand_necessary (use);
 	}
-    }
-}
-
-
-/* Propagate necessity around virtual phi nodes used in kill operands.
-   The reason this isn't done during propagate_necessity is because we don't
-   want to keep phis around that are just there for must-defs, unless we
-   absolutely have to.  After we've rewritten the reaching definitions to be
-   correct in the previous part of the fixup routine, we can simply propagate
-   around the information about which of these virtual phi nodes are really
-   used, and set the NECESSARY flag accordingly.
-   Note that we do the minimum here to ensure that we keep alive the phis that
-   are actually used in the corrected SSA form.  In particular, some of these
-   phis may now have all of the same operand, and will be deleted by some
-   other pass.  */
-
-static void
-mark_really_necessary_kill_operand_phis (void)
-{
-  basic_block bb;
-  int i;
-
-  /* Seed the worklist with the new virtual phi arguments and virtual
-     uses */
-  FOR_EACH_BB (bb)
-    {
-      block_stmt_iterator bsi;
-      tree phi;
-      
-      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-	{
-	  if (!is_gimple_reg (PHI_RESULT (phi)) && NECESSARY (phi))
-	    {
-	      for (i = 0; i < PHI_NUM_ARGS (phi); i++)
-		mark_operand_necessary (PHI_ARG_DEF (phi, i), true);
-	    }
-	}
-      
-      for (bsi = bsi_last (bb); !bsi_end_p (bsi); bsi_prev (&bsi))
-	{
-	  tree stmt = bsi_stmt (bsi);
-	
-	  if (NECESSARY (stmt))
-	    {
-	      use_operand_p use_p;
-	      ssa_op_iter iter;
-	      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter,
-					SSA_OP_VIRTUAL_USES | SSA_OP_VIRTUAL_KILLS)
-		{
-		  tree use = USE_FROM_PTR (use_p);
-		  mark_operand_necessary (use, true);
-		}
-	    }
-	}
-    }
-  
-  /* Mark all virtual phis still in use as necessary, and all of their
-     arguments that are phis as necessary.  */
-  while (VEC_length (tree, worklist) > 0)
-    {
-      tree use = VEC_pop (tree, worklist);
-      
-      for (i = 0; i < PHI_NUM_ARGS (use); i++)
-	mark_operand_necessary (PHI_ARG_DEF (use, i), true);
     }
 }
 
@@ -634,9 +567,6 @@ static void
 remove_dead_stmt (block_stmt_iterator *i, basic_block bb)
 {
   tree t = bsi_stmt (*i);
-  def_operand_p def_p;
-
-  ssa_op_iter iter;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -711,11 +641,6 @@ remove_dead_stmt (block_stmt_iterator *i, basic_block bb)
 	}
     }
   
-  FOR_EACH_SSA_DEF_OPERAND (def_p, t, iter, SSA_OP_VIRTUAL_DEFS)
-    {
-      tree def = DEF_FROM_PTR (def_p);
-      mark_sym_for_renaming (SSA_NAME_VAR (def));
-    }
   bsi_remove (i, true);  
   release_defs (t); 
 }
@@ -875,7 +800,6 @@ perform_tree_ssa_dce (bool aggressive)
 
   propagate_necessity (el);
 
-  mark_really_necessary_kill_operand_phis ();
   eliminate_unnecessary_stmts ();
 
   if (aggressive)
