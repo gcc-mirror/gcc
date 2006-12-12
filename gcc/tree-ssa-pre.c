@@ -2630,8 +2630,9 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
   temp = pretemp;
   add_referenced_var (temp);
 
-  if (TREE_CODE (TREE_TYPE (expr)) == COMPLEX_TYPE)
-    DECL_COMPLEX_GIMPLE_REG_P (temp) = 1;
+  if (TREE_CODE (TREE_TYPE (expr)) == COMPLEX_TYPE
+      || TREE_CODE (TREE_TYPE (expr)) == VECTOR_TYPE)
+    DECL_GIMPLE_REG_P (temp) = 1;
 
   newexpr = build2_gimple (GIMPLE_MODIFY_STMT, temp, newexpr);
   name = make_ssa_name (temp, newexpr);
@@ -2778,8 +2779,10 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
   temp = prephitemp;
   add_referenced_var (temp);
 
-  if (TREE_CODE (type) == COMPLEX_TYPE)
-    DECL_COMPLEX_GIMPLE_REG_P (temp) = 1;
+
+  if (TREE_CODE (type) == COMPLEX_TYPE
+      || TREE_CODE (type) == VECTOR_TYPE)
+    DECL_GIMPLE_REG_P (temp) = 1;
   temp = create_phi_node (temp, block);
 
   NECESSARY (temp) = 0;
@@ -3535,6 +3538,8 @@ insert_fake_stores (void)
 	      if (!storetemp || TREE_TYPE (rhs) != TREE_TYPE (storetemp))
 		{
 		  storetemp = create_tmp_var (TREE_TYPE (rhs), "storetmp");
+		  if (TREE_CODE (TREE_TYPE (storetemp)) == VECTOR_TYPE)
+		    DECL_GIMPLE_REG_P (storetemp) = 1;
 		  get_var_ann (storetemp);
 		}
 

@@ -606,8 +606,9 @@ internal_get_tmp_var (tree val, tree *pre_p, tree *post_p, bool is_formal)
 	}
     }
 
-  if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE)
-    DECL_COMPLEX_GIMPLE_REG_P (t) = 1;
+  if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE
+      || TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
+    DECL_GIMPLE_REG_P (t) = 1;
 
   mod = build2 (INIT_EXPR, TREE_TYPE (t), t, unshare_expr (val));
 
@@ -1078,11 +1079,12 @@ gimplify_bind_expr (tree *expr_p, tree *pre_p)
       /* Preliminarily mark non-addressed complex variables as eligible
 	 for promotion to gimple registers.  We'll transform their uses
 	 as we find them.  */
-      if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE
+      if ((TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE
+	   || TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
 	  && !TREE_THIS_VOLATILE (t)
 	  && (TREE_CODE (t) == VAR_DECL && !DECL_HARD_REGISTER (t))
 	  && !needs_to_live_in_memory (t))
-	DECL_COMPLEX_GIMPLE_REG_P (t) = 1;
+	DECL_GIMPLE_REG_P (t) = 1;
     }
 
   gimple_push_bind_expr (bind_expr);
@@ -3460,7 +3462,7 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 
 /* Promote partial stores to COMPLEX variables to total stores.  *EXPR_P is
    a MODIFY_EXPR with a lhs of a REAL/IMAGPART_EXPR of a variable with
-   DECL_COMPLEX_GIMPLE_REG_P set.  */
+   DECL_GIMPLE_REG_P set.  */
 
 static enum gimplify_status
 gimplify_modify_expr_complex_part (tree *expr_p, tree *pre_p, bool want_value)
@@ -6372,16 +6374,18 @@ gimplify_function_tree (tree fndecl)
       /* Preliminarily mark non-addressed complex variables as eligible
          for promotion to gimple registers.  We'll transform their uses
          as we find them.  */
-      if (TREE_CODE (TREE_TYPE (parm)) == COMPLEX_TYPE
+      if ((TREE_CODE (TREE_TYPE (parm)) == COMPLEX_TYPE
+	   || TREE_CODE (TREE_TYPE (parm)) == VECTOR_TYPE)
           && !TREE_THIS_VOLATILE (parm)
           && !needs_to_live_in_memory (parm))
-        DECL_COMPLEX_GIMPLE_REG_P (parm) = 1;
+        DECL_GIMPLE_REG_P (parm) = 1;
     }
 
   ret = DECL_RESULT (fndecl);
-  if (TREE_CODE (TREE_TYPE (ret)) == COMPLEX_TYPE
+  if ((TREE_CODE (TREE_TYPE (ret)) == COMPLEX_TYPE
+	   || TREE_CODE (TREE_TYPE (ret)) == VECTOR_TYPE)
       && !needs_to_live_in_memory (ret))
-    DECL_COMPLEX_GIMPLE_REG_P (ret) = 1;
+    DECL_GIMPLE_REG_P (ret) = 1;
 
   gimplify_body (&DECL_SAVED_TREE (fndecl), fndecl, true);
 

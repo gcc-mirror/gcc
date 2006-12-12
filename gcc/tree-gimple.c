@@ -316,8 +316,9 @@ is_gimple_reg (tree t)
 
   /* Complex values must have been put into ssa form.  That is, no 
      assignments to the individual components.  */
-  if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE)
-    return DECL_COMPLEX_GIMPLE_REG_P (t);
+  if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE
+      || TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
+    return DECL_GIMPLE_REG_P (t);
 
   return true;
 }

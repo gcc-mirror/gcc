@@ -1681,7 +1681,7 @@ var_can_have_subvars (tree v)
   /* Complex types variables which are not also a gimple register can
     have subvars. */
   if (TREE_CODE (TREE_TYPE (v)) == COMPLEX_TYPE
-      && !DECL_COMPLEX_GIMPLE_REG_P (v))
+      && !DECL_GIMPLE_REG_P (v))
     return true;
 
   return false;

@@ -1204,10 +1204,11 @@ declare_return_variable (copy_body_data *id, tree return_slot_addr,
 	var = return_slot_addr;
       else
 	var = build_fold_indirect_ref (return_slot_addr);
-      if (TREE_CODE (TREE_TYPE (result)) == COMPLEX_TYPE
-	  && !DECL_COMPLEX_GIMPLE_REG_P (result)
+      if ((TREE_CODE (TREE_TYPE (result)) == COMPLEX_TYPE
+           || TREE_CODE (TREE_TYPE (result)) == VECTOR_TYPE)
+	  && !DECL_GIMPLE_REG_P (result)
 	  && DECL_P (var))
-	DECL_COMPLEX_GIMPLE_REG_P (var) = 0;
+	DECL_GIMPLE_REG_P (var) = 0;
       use = NULL;
       goto done;
     }
@@ -1245,9 +1246,10 @@ declare_return_variable (copy_body_data *id, tree return_slot_addr,
 	    use_it = false;
 	  else if (is_global_var (base_m))
 	    use_it = false;
-	  else if (TREE_CODE (TREE_TYPE (result)) == COMPLEX_TYPE
-		   && !DECL_COMPLEX_GIMPLE_REG_P (result)
-		   && DECL_COMPLEX_GIMPLE_REG_P (base_m))
+	  else if ((TREE_CODE (TREE_TYPE (result)) == COMPLEX_TYPE
+		    || TREE_CODE (TREE_TYPE (result)) == VECTOR_TYPE)
+		   && !DECL_GIMPLE_REG_P (result)
+		   && DECL_GIMPLE_REG_P (base_m))
 	    use_it = false;
 	  else if (!TREE_ADDRESSABLE (base_m))
 	    use_it = true;
@@ -2648,7 +2650,7 @@ copy_decl_to_var (tree decl, copy_body_data *id)
   TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (decl);
   TREE_READONLY (copy) = TREE_READONLY (decl);
   TREE_THIS_VOLATILE (copy) = TREE_THIS_VOLATILE (decl);
-  DECL_COMPLEX_GIMPLE_REG_P (copy) = DECL_COMPLEX_GIMPLE_REG_P (decl);
+  DECL_GIMPLE_REG_P (copy) = DECL_GIMPLE_REG_P (decl);
 
   return copy_decl_for_dup_finish (id, decl, copy);
 }
@@ -2674,7 +2676,7 @@ copy_result_decl_to_var (tree decl, copy_body_data *id)
   if (!DECL_BY_REFERENCE (decl))
     {
       TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (decl);
-      DECL_COMPLEX_GIMPLE_REG_P (copy) = DECL_COMPLEX_GIMPLE_REG_P (decl);
+      DECL_GIMPLE_REG_P (copy) = DECL_GIMPLE_REG_P (decl);
     }
 
   return copy_decl_for_dup_finish (id, decl, copy);

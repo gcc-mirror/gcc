@@ -37,6 +37,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "real.h"
 #include "recog.h"
 #include "langhooks.h"
+#include "target.h"
 
 static void store_fixed_bit_field (rtx, unsigned HOST_WIDE_INT,
 				   unsigned HOST_WIDE_INT,
@@ -1126,6 +1127,28 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       return op0;
     }
 
+  /* See if we can get a better vector mode before extracting.  */
+  if (VECTOR_MODE_P (GET_MODE (op0))
+      && !MEM_P (op0)
+      && GET_MODE_INNER (GET_MODE (op0)) != tmode)
+    {
+      enum machine_mode new_mode;
+      int nunits = GET_MODE_NUNITS (GET_MODE (op0));
+
+      if (GET_MODE_CLASS (tmode) == MODE_FLOAT)
+	new_mode = MIN_MODE_VECTOR_FLOAT;
+      else
+	new_mode = MIN_MODE_VECTOR_INT;
+
+      for (; new_mode != VOIDmode ; new_mode = GET_MODE_WIDER_MODE (new_mode))
+	if (GET_MODE_NUNITS (new_mode) == nunits
+	    && GET_MODE_INNER (new_mode) == tmode
+	    && targetm.vector_mode_supported_p (new_mode))
+	  break;
+      if (new_mode != VOIDmode)
+	op0 = gen_lowpart (new_mode, op0);
+    }
+
   /* Use vec_extract patterns for extracting parts of vectors whenever
      available.  */
   if (VECTOR_MODE_P (GET_MODE (op0))
@@ -1176,6 +1199,8 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	{
 	  emit_insn (seq);
 	  emit_insn (pat);
+      	  if (mode0 != mode)
+	    return gen_lowpart (tmode, dest);
 	  return dest;
 	}
     }

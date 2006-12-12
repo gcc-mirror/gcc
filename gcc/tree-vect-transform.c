@@ -106,6 +106,10 @@ vect_get_new_vect_var (tree type, enum vect_var_kind var_kind, const char *name)
   else
     new_vect_var = create_tmp_var (type, prefix);
 
+  /* Mark vector typed variable as a gimple register variable.  */
+  if (TREE_CODE (type) == VECTOR_TYPE)
+    DECL_GIMPLE_REG_P (new_vect_var) = true;
+
   return new_vect_var;
 }
 
@@ -2598,6 +2602,7 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
              and in the case of little endian: 
                                 high = interleave_low (vect1, vect2).  */
 	  perm_dest = create_tmp_var (vectype, "vect_inter_high");
+	  DECL_GIMPLE_REG_P (perm_dest) = 1;
 	  add_referenced_var (perm_dest);
           if (BYTES_BIG_ENDIAN)
 	    perm_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, perm_dest,
@@ -2618,6 +2623,7 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
              and in the case of little endian:
                                low  = interleave_high (vect1, vect2).  */     
 	  perm_dest = create_tmp_var (vectype, "vect_inter_low");
+	  DECL_GIMPLE_REG_P (perm_dest) = 1;
 	  add_referenced_var (perm_dest);
 	  if (BYTES_BIG_ENDIAN)
 	    perm_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, perm_dest,

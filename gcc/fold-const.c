@@ -13094,6 +13094,14 @@ fold_indirect_ref_1 (tree type, tree op0)
       else if (TREE_CODE (optype) == COMPLEX_TYPE
 	       && type == TREE_TYPE (optype))
 	return fold_build1 (REALPART_EXPR, type, op);
+      /* *(foo *)&vectorfoo => BIT_FIELD_REF<vectorfoo,...> */
+      else if (TREE_CODE (optype) == VECTOR_TYPE
+	       && type == TREE_TYPE (optype))
+	{
+	  tree part_width = TYPE_SIZE (type);
+	  tree index = bitsize_int (0);
+	  return fold_build3 (BIT_FIELD_REF, type, op, part_width, index);
+	}
     }
 
   /* ((foo*)&complexfoo)[1] => __imag__ complexfoo */
