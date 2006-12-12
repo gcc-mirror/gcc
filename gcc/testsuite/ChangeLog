@@ -1,3 +1,11 @@
+2006-12-12  Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/vect-strided-store-u32-i2.c: New test.
+	* gcc.dg/vect/vect-strided-store-a-u8-i2.c: New test.
+	* gcc.dg/vect/vect-strided-store-u16-i4.c: New test.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4.c: Add a case of stores with
+	gaps.
+
 2006-12-12  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/30147
