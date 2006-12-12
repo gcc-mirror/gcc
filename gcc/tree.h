@@ -2598,12 +2598,13 @@ struct tree_memory_partition_tag GTY(())
 #define DECL_PRESERVE_P(DECL) \
   DECL_COMMON_CHECK (DECL)->decl_common.preserve_flag
 
-/* For function local variables of COMPLEX type, indicates that the
-   variable is not aliased, and that all modifications to the variable
-   have been adjusted so that they are killing assignments.  Thus the
-   variable may now be treated as a GIMPLE register, and use real
-   instead of virtual ops in SSA form.  */
-#define DECL_COMPLEX_GIMPLE_REG_P(DECL) \
+/* For function local variables of COMPLEX and VECTOR types,
+   indicates that the variable is not aliased, and that all
+   modifications to the variable have been adjusted so that
+   they are killing assignments.  Thus the variable may now
+   be treated as a GIMPLE register, and use real instead of
+   virtual ops in SSA form.  */
+#define DECL_GIMPLE_REG_P(DECL) \
   DECL_COMMON_CHECK (DECL)->decl_common.gimple_reg_flag
 
 /* This is true if DECL is call clobbered in the current function.

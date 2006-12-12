@@ -149,7 +149,7 @@ create_tmp_var_for (struct nesting_info *info, tree type, const char *prefix)
   TREE_CHAIN (tmp_var) = info->new_local_var_chain;
   DECL_SEEN_IN_BIND_EXPR_P (tmp_var) = 1;
   if (TREE_CODE (type) == COMPLEX_TYPE)
-    DECL_COMPLEX_GIMPLE_REG_P (tmp_var) = 1;
+    DECL_GIMPLE_REG_P (tmp_var) = 1;
 
   info->new_local_var_chain = tmp_var;
 

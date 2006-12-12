@@ -140,6 +140,9 @@ struct sra_elt
 
   /* A flag for use with/after random access traversals.  */
   bool visited;
+
+  /* True if there is BIT_FIELD_REF on the lhs with a vector. */
+  bool is_vector_lhs;
 };
 
 #define IS_ELEMENT_FOR_GROUP(ELEMENT) (TREE_CODE (ELEMENT) == RANGE_EXPR)
@@ -787,9 +790,18 @@ sra_walk_expr (tree *expr_p, block_stmt_iterator *bsi, bool is_output,
 	break;
 
       case BIT_FIELD_REF:
+	/* A bit field reference to a specific vector is scalarized but for
+	   ones for inputs need to be marked as used on the left hand size so
+	   when we scalarize it, we can mark that variable as non renamable.  */
+	if (is_output && TREE_CODE (TREE_TYPE (TREE_OPERAND (inner, 0))) == VECTOR_TYPE)
+	  {
+	    struct sra_elt *elt = maybe_lookup_element_for_expr (TREE_OPERAND (inner, 0));
+	    elt->is_vector_lhs = true;
+	  }
 	/* A bit field reference (access to *multiple* fields simultaneously)
 	   is not currently scalarized.  Consider this an access to the
 	   complete outer element, to which walk_tree will bring us next.  */
+	  
 	goto use_all;
 
       case VIEW_CONVERT_EXPR:
@@ -1178,6 +1190,12 @@ instantiate_element (struct sra_elt *elt)
   base = base_elt->element;
 
   elt->replacement = var = make_rename_temp (elt->type, "SR");
+
+  /* For vectors, if used on the left hand side with BIT_FIELD_REF,
+     they are not a gimple register.  */
+  if (TREE_CODE (TREE_TYPE (var)) == VECTOR_TYPE && elt->is_vector_lhs)
+    DECL_GIMPLE_REG_P (var) = 0;
+
   DECL_SOURCE_LOCATION (var) = DECL_SOURCE_LOCATION (base);
   DECL_ARTIFICIAL (var) = 1;
 

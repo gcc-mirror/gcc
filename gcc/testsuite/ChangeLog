@@ -1,3 +1,10 @@
+2006-12-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/28436
+	* gcc.c-torture/compile/vector-1.c: New test.
+	* gcc.c-torture/compile/vector-2.c: New test.
+	* gcc.c-torture/compile/vector-3.c: New test.
+
 2006-12-12  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* lib/fortran-torture.exp: Update copyright years.  Remove

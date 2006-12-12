@@ -1,3 +1,46 @@
+2006-12-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/28436
+	* tree.h (DECL_COMPLEX_GIMPLE_REG_P): Rename to ...
+	(DECL_GIMPLE_REG_P): This.
+	* fold-const.c (fold_indirect_ref_1): Fold *(foo *)&vectorfoo into
+	using BIT_FIELD_REF.
+	* omp-low.c (omp_copy_decl_2): Use the renamed DECL_GIMPLE_REG_P.
+	* tree-gimple.c (is_gimple_reg): Use the renamed DECL_GIMPLE_REG_P
+	and check for VECTOR_TYPE.
+	* expr.c (get_inner_reference): Set the mode for BIT_FIELD_REF with
+	vector types.
+	* tree-flow-inline.h (var_can_have_subvars): Use the renamed
+	DECL_GIMPLE_REG_P.
+	* gimplify.c (internal_get_tmp_var): Use the renamed DECL_GIMPLE_REG_P
+	and check for VECTOR_TYPE.
+	(gimplify_bind_expr): Likewise.
+	(gimplify_function_tree): Likewise.
+	* expmed.c: Include target.h.
+	(extract_bit_field): For vector mode, try find a better mode first.
+	If that fails use gen_lowpart (for vectors only).
+	* tree-dfa.c (make_rename_temp): Use the renamed DECL_GIMPLE_REG_P
+	and check for VECTOR_TYPE.
+	* tree-ssa-pre.c (create_expressions_by_pieces): Likewise.
+	(insert_into_preds_of_block): Likewise.
+	(insert_fake_stores): Create gimple register store_tmps for
+	vector types.
+	* tree-sra.c (sra_elt): New field, is_vector_lhs.
+	(sra_walk_expr <case BIT_FIELD_REF>): For vector types that
+	are the left hand side, set the element's is_vector_lhs to true.
+	(instantiate_element): For vector types which were on the left
+	hand size, set DECL_GIMPLE_REG_P to false.
+	* tree-nested.c (create_tmp_var_for): Use the renamed DECL_GIMPLE_REG_P.	* tree-inline.c (declare_return_variable):  Use the renamed
+	DECL_GIMPLE_REG_P
+	and check for VECTOR_TYPE.
+	(copy_decl_to_var):  Use the renamed DECL_GIMPLE_REG_P.
+	(copy_result_decl_to_var): Likewise.
+	* tree-vect-transform.c (vect_get_new_vect_var): For vector types,
+	create a gimple register variable.
+	(vect_permute_store_chain): Set DECL_GIMPLE_REG_P to true for the
+	vect_inter_* temp variables.
+	* Makefile.in (expmed.o): Update dependencies.
+
 2006-12-12  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* reload1.c (eliminate_regs_in_insn): Merge the plus_src "else" and
