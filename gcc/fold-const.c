@@ -12726,7 +12726,9 @@ fold_unary_to_constant (enum tree_code code, tree type, tree op0)
 tree
 fold_read_from_constant_string (tree exp)
 {
-  if (TREE_CODE (exp) == INDIRECT_REF || TREE_CODE (exp) == ARRAY_REF)
+  if ((TREE_CODE (exp) == INDIRECT_REF
+       || TREE_CODE (exp) == ARRAY_REF)
+      && TREE_CODE (TREE_TYPE (exp)) == INTEGER_TYPE)
     {
       tree exp1 = TREE_OPERAND (exp, 0);
       tree index;

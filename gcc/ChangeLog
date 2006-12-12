@@ -1,3 +1,9 @@
+2006-12-12  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/30147
+	* fold-const.c (fold_read_from_constant_string): Only fold read
+	from constant string if the result type is integer.
+
 2006-12-12  Olivier Hainque  <hainque@adacore.com>
 
 	* config/rs6000/t-vxworks: Remove assignment to LIB2FUNCS_EXTRA.
