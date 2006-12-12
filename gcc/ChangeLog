@@ -1,3 +1,9 @@
+2006-12-12  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxlib.c: Extract tls related routines into ...
+	* config/vxlib-tls.c: New file. 
+	* config/t-vxworks: Add vxlib-tls.c to LIB2FUNCS_EXTRA.
+	
 2006-12-12  Sa Liu  <saliu@de.ibm.com>
 	    Ben Elliston  <bje@au.ibm.com>
 
