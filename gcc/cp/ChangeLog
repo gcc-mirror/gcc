@@ -1,3 +1,8 @@
+2006-12-12  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* decl.c (build_enumerator): Update error message to match C
+	front-end.
+	
 2006-12-11  Jan Hubicka  <jh@suse.cz>
 
 	* decl2.c (var_finalized_p): Update for renamed varpool functions.
