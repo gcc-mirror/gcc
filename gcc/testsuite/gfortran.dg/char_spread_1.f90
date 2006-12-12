@@ -8,7 +8,7 @@ program main
 
   do i3 = 1, n3
     do i1 = 1, n1
-      a (i1, i3) = 'ab'(i1:i1) // 'cde'(i3:i3) // 'cantrip'
+      a (i1, i3) = 'abc'(i1:i1) // 'defg'(i3:i3) // 'cantrip'
     end do
   end do
 

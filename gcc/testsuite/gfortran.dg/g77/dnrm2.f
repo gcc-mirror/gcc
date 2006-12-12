@@ -1,4 +1,5 @@
 c { dg-do run }
+c { dg-options "-fno-bounds-check" }
 CCC g77 0.5.21 `Actual Bugs':
 CCC   * A code-generation bug afflicts Intel x86 targets when `-O2' is
 CCC     specified compiling, for example, an old version of the `DNRM2'

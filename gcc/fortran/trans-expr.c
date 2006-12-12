@@ -278,9 +278,14 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
     }
   if (flag_bounds_check)
     {
+      tree nonempty = fold_build2 (LE_EXPR, boolean_type_node,
+				   start.expr, end.expr);
+
       /* Check lower bound.  */
       fault = fold_build2 (LT_EXPR, boolean_type_node, start.expr,
                            build_int_cst (gfc_charlen_type_node, 1));
+      fault = fold_build2 (TRUTH_ANDIF_EXPR, boolean_type_node,
+			   nonempty, fault);
       if (name)
 	asprintf (&msg, "Substring out of bounds: lower bound of '%s' "
 		  "is less than one", name);
@@ -293,6 +298,8 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
       /* Check upper bound.  */
       fault = fold_build2 (GT_EXPR, boolean_type_node, end.expr,
                            se->string_length);
+      fault = fold_build2 (TRUTH_ANDIF_EXPR, boolean_type_node,
+			   nonempty, fault);
       if (name)
 	asprintf (&msg, "Substring out of bounds: upper bound of '%s' "
 		  "exceeds string length", name);
