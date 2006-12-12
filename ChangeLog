@@ -1,3 +1,7 @@
+2006-12-11  Ian Lance Taylor  <ian@airs.com>
+
+	* MAINTAINERS: Add myself as libgcc and fp-bit maintainer.
+
 2006-12-11  Joern Rennecke <joern.rennecke@arc.com>
 
 	MAINTAINERS: Update my entry.
