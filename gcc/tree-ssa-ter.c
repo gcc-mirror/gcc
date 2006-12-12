@@ -167,7 +167,7 @@ typedef struct temp_expr_table_d
   int *num_in_part;			/* # of ssa_names in a partition.  */
 } *temp_expr_table_p;
 
-/* Used to indicate a dependency on V_MAY_DEFs.  */
+/* Used to indicate a dependency on VDEFs.  */
 #define VIRTUAL_PARTITION(table)	(table->virtual_partition)
 
 #ifdef ENABLE_CHECKING
@@ -384,8 +384,8 @@ is_replaceable_p (tree stmt)
   if (TREE_CODE (use_stmt) == PHI_NODE)
     return false;
 
-  /* There must be no V_MAY_DEFS or V_MUST_DEFS.  */
-  if (!(ZERO_SSA_OPERANDS (stmt, (SSA_OP_VMAYDEF | SSA_OP_VMUSTDEF))))
+  /* There must be no VDEFs.  */
+  if (!(ZERO_SSA_OPERANDS (stmt, SSA_OP_VDEF)))
     return false;
 
   /* Float expressions must go through memory if float-store is on.  */

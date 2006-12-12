@@ -2177,16 +2177,13 @@ compute_rvuse_and_antic_safe (void)
 	{
 	  tree stmt = bsi_stmt (bsi);
 
-	  if (first_store_uid[bb->index] == 0
-	      && !ZERO_SSA_OPERANDS (stmt, SSA_OP_VMAYUSE | SSA_OP_VMAYDEF
-				     | SSA_OP_VMUSTDEF | SSA_OP_VMUSTKILL))
+	  if (first_store_uid[bb->index] == 0 
+	      && !ZERO_SSA_OPERANDS (stmt, SSA_OP_VMAYUSE | SSA_OP_VDEF))
 	    {
 	      first_store_uid[bb->index] = stmt_ann (stmt)->uid;
 	    }
 
-
-	  FOR_EACH_SSA_USE_OPERAND (usep, stmt, iter, SSA_OP_VIRTUAL_KILLS
-				    | SSA_OP_VMAYUSE)
+	  FOR_EACH_SSA_USE_OPERAND (usep, stmt, iter, SSA_OP_VMAYUSE)
 	    {
 	      tree use = USE_FROM_PTR (usep);
 	      bitmap repbit = get_representative (vuse_names,
@@ -4004,14 +4001,14 @@ remove_dead_inserted_code (void)
       else
 	{
 	  /* Propagate through the operands.  Examine all the USE, VUSE and
-	     V_MAY_DEF operands in this statement.  Mark all the statements
+	     VDEF operands in this statement.  Mark all the statements 
 	     which feed this statement's uses as necessary.  */
 	  ssa_op_iter iter;
 	  tree use;
 
-	  /* The operands of V_MAY_DEF expressions are also needed as they
+	  /* The operands of VDEF expressions are also needed as they
 	     represent potential definitions that may reach this
-	     statement (V_MAY_DEF operands allow us to follow def-def
+	     statement (VDEF operands allow us to follow def-def 
 	     links).  */
 
 	  FOR_EACH_SSA_TREE_OPERAND (use, t, iter, SSA_OP_ALL_USES)

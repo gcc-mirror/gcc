@@ -59,9 +59,8 @@ struct dfa_stats_d
   long num_phis;
   long num_phi_args;
   int max_num_phi_args;
-  long num_v_may_defs;
+  long num_vdefs;
   long num_vuses;
-  long num_v_must_defs;
 };
 
 
@@ -378,6 +377,21 @@ dump_variable (FILE *file, tree var)
       dump_subvars_for (file, var);
     }
 
+  if (!is_gimple_reg (var))
+    {
+      if (memory_partition (var))
+	{
+	  fprintf (file, ", belongs to partition: ");
+	  print_generic_expr (file, memory_partition (var), dump_flags);
+	}
+
+      if (TREE_CODE (var) == MEMORY_PARTITION_TAG)
+	{
+	  fprintf (file, ", partition symbols: ");
+	  dump_decl_set (file, MPT_SYMBOLS (var));
+	}
+    }
+
   fprintf (file, "\n");
 }
 
@@ -444,14 +458,9 @@ dump_dfa_stats (FILE *file)
   fprintf (file, fmt_str_1, "VUSE operands", dfa_stats.num_vuses,
 	   SCALE (size), LABEL (size));
 
-  size = dfa_stats.num_v_may_defs * sizeof (tree *);
+  size = dfa_stats.num_vdefs * sizeof (tree *);
   total += size;
-  fprintf (file, fmt_str_1, "V_MAY_DEF operands", dfa_stats.num_v_may_defs,
-	   SCALE (size), LABEL (size));
-
-  size = dfa_stats.num_v_must_defs * sizeof (tree *);
-  total += size;
-  fprintf (file, fmt_str_1, "V_MUST_DEF operands", dfa_stats.num_v_must_defs,
+  fprintf (file, fmt_str_1, "VDEF operands", dfa_stats.num_vdefs,
 	   SCALE (size), LABEL (size));
 
   size = dfa_stats.num_phis * sizeof (struct tree_phi_node);
@@ -546,10 +555,8 @@ collect_dfa_stats_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 	    dfa_stats_p->num_stmt_anns++;
 	    dfa_stats_p->num_defs += NUM_SSA_OPERANDS (t, SSA_OP_DEF);
 	    dfa_stats_p->num_uses += NUM_SSA_OPERANDS (t, SSA_OP_USE);
-	    dfa_stats_p->num_v_may_defs += NUM_SSA_OPERANDS (t, SSA_OP_VMAYDEF);
+	    dfa_stats_p->num_vdefs += NUM_SSA_OPERANDS (t, SSA_OP_VDEF);
 	    dfa_stats_p->num_vuses += NUM_SSA_OPERANDS (t, SSA_OP_VUSE);
-	    dfa_stats_p->num_v_must_defs += 
-				  NUM_SSA_OPERANDS (t, SSA_OP_VMUSTDEF);
 	    break;
 	  }
 
@@ -674,6 +681,7 @@ set_default_def (tree var, tree def)
   gcc_assert (TREE_CODE (def) == SSA_NAME);
   loc = htab_find_slot_with_hash (DEFAULT_DEFS (cfun), &in,
                                   DECL_UID (var), INSERT);
+
   /* Default definition might be changed by tail call optimization.  */
   if (!*loc)
     {

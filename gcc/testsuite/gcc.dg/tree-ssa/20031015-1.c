@@ -13,6 +13,6 @@ main(void)
   return 0;
 }
 
-/* The V_*_DEF comes from the initial assignment and the asm.  */
-/* { dg-final { scan-tree-dump-times "_DEF" 2 "alias1" } } */
+/* The VDEF comes from the initial assignment and the asm.  */
+/* { dg-final { scan-tree-dump-times "DEF" 2 "alias1" } } */
 /* { dg-final { cleanup-tree-dump "alias1" } } */

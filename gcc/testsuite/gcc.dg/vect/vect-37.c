@@ -53,9 +53,5 @@ int main (void)
   return main1 (x);
 } 
 
-/* Currently the loops fail to vectorize due to aliasing problems.
-   If/when the aliasing problems are resolved, unalignment may
-   prevent vectorization on some targets.  */
-/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "can't determine dependence between" 2 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

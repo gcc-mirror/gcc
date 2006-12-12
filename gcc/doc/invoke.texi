@@ -6205,21 +6205,12 @@ Maximum number of basic blocks on path that cse considers.  The default is 10.
 @item max-cse-insns
 The maximum instructions CSE process before flushing. The default is 1000.
 
-@item global-var-threshold
-
-Counts the number of function calls (@var{n}) and the number of
-call-clobbered variables (@var{v}).  If @var{n}x@var{v} is larger than this limit, a
-single artificial variable will be created to represent all the
-call-clobbered variables at function call sites.  This artificial
-variable will then be made to alias every call-clobbered variable.
-(done as @code{int * size_t} on the host machine; beware overflow).
-
 @item max-aliased-vops
 
-Maximum number of virtual operands allowed to represent aliases
-before triggering the alias grouping heuristic.  Alias grouping
-reduces compile times and memory consumption needed for aliasing at
-the expense of precision loss in alias information.
+Maximum number of virtual operands per statement allowed to represent
+aliases before triggering the alias grouping heuristic.  Alias
+grouping reduces compile times and memory consumption needed for
+aliasing at the expense of precision loss in alias information.
 
 @item ggc-min-expand
 

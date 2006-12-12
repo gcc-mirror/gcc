@@ -32,5 +32,5 @@ foo (int i, int *p)
 
 /* { dg-final { scan-tree-dump-times "Folding predicate p_.*to 1" 1 "vrp1" } } */
 /* { dg-final { scan-tree-dump-times "Folding predicate p_.*to 0" 1 "vrp1" } } */
-/* { dg-final { scan-tree-dump-times "PREDICATE: p_\[0-9\] ne_expr 0B" 2 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "PREDICATE: p_\[0-9\]" 2 "vrp1" } } */
 /* { dg-final { cleanup-tree-dump "vrp1" } } */

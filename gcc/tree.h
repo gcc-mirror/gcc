@@ -107,7 +107,8 @@ extern const enum tree_code_class tree_code_type[];
 #define MTAG_P(CODE) \
   (TREE_CODE (CODE) == STRUCT_FIELD_TAG		\
    || TREE_CODE (CODE) == NAME_MEMORY_TAG	\
-   || TREE_CODE (CODE) == SYMBOL_MEMORY_TAG)
+   || TREE_CODE (CODE) == SYMBOL_MEMORY_TAG	\
+   || TREE_CODE (CODE) == MEMORY_PARTITION_TAG)
 
 
 /* Nonzero if DECL represents a VAR_DECL or FUNCTION_DECL.  */
@@ -1859,13 +1860,14 @@ struct tree_phi_node GTY(())
   int num_args;
   int capacity;
 
-  /* Basic block to that the phi node belongs.  */
+  /* Basic block holding this PHI node.  */
   struct basic_block_def *bb;
 
   /* Arguments of the PHI node.  These are maintained in the same
      order as predecessor edge vector BB->PREDS.  */
   struct phi_arg_d GTY ((length ("((tree)&%h)->phi.num_args"))) a[1];
 };
+
 
 #define OMP_CLAUSE_CODE(NODE)					\
 	(OMP_CLAUSE_CHECK (NODE))->omp_clause.code
@@ -2442,6 +2444,20 @@ struct tree_struct_field_tag GTY(())
 #define SFT_PARENT_VAR(NODE) (STRUCT_FIELD_TAG_CHECK (NODE)->sft.parent_var)
 #define SFT_OFFSET(NODE) (STRUCT_FIELD_TAG_CHECK (NODE)->sft.offset)
 #define SFT_SIZE(NODE) (STRUCT_FIELD_TAG_CHECK (NODE)->sft.size)
+
+/* Memory Partition Tags (MPTs) group memory symbols under one
+   common name for the purposes of placing memory PHI nodes.  */
+
+struct tree_memory_partition_tag GTY(())
+{
+  struct tree_memory_tag common;
+  
+  /* Set of symbols grouped under this MPT.  */
+  bitmap symbols;
+};
+
+#define MPT_SYMBOLS(NODE)	(MEMORY_PARTITION_TAG_CHECK (NODE)->mpt.symbols)
+
 
 /* For any sort of a ..._DECL node, this points to the original (abstract)
    decl node which this decl is an instance of, or else it is NULL indicating
@@ -3264,6 +3280,7 @@ union tree_node GTY ((ptr_alias (union lang_tree_node),
   struct tree_memory_tag GTY ((tag ("TS_MEMORY_TAG"))) mtag;
   struct tree_struct_field_tag GTY ((tag ("TS_STRUCT_FIELD_TAG"))) sft;
   struct tree_omp_clause GTY ((tag ("TS_OMP_CLAUSE"))) omp_clause;
+  struct tree_memory_partition_tag GTY ((tag ("TS_MEMORY_PARTITION_TAG"))) mpt;
 };
 
 /* Standard named or nameless data types of the C compiler.  */

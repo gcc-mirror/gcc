@@ -63,6 +63,24 @@ may_propagate_copy (tree dest, tree orig)
   tree type_d = TREE_TYPE (dest);
   tree type_o = TREE_TYPE (orig);
 
+  /* For memory partitions, copies are OK as long as the memory symbol
+     belongs to the partition.  */
+  if (TREE_CODE (dest) == SSA_NAME
+      && TREE_CODE (SSA_NAME_VAR (dest)) == MEMORY_PARTITION_TAG)
+    return (TREE_CODE (orig) == SSA_NAME
+            && !is_gimple_reg (orig)
+	    && (bitmap_bit_p (MPT_SYMBOLS (SSA_NAME_VAR (dest)),
+	                      DECL_UID (SSA_NAME_VAR (orig)))
+	        || SSA_NAME_VAR (dest) == SSA_NAME_VAR (orig)));
+
+  if (TREE_CODE (orig) == SSA_NAME
+      && TREE_CODE (SSA_NAME_VAR (orig)) == MEMORY_PARTITION_TAG)
+    return (TREE_CODE (dest) == SSA_NAME
+            && !is_gimple_reg (dest)
+	    && (bitmap_bit_p (MPT_SYMBOLS (SSA_NAME_VAR (orig)),
+	                      DECL_UID (SSA_NAME_VAR (dest)))
+	        || SSA_NAME_VAR (dest) == SSA_NAME_VAR (orig)));
+  
   /* Do not copy between types for which we *do* need a conversion.  */
   if (!tree_ssa_useless_type_conversion_1 (type_d, type_o))
     return false;
@@ -108,8 +126,8 @@ may_propagate_copy (tree dest, tree orig)
       && POINTER_TYPE_P (type_d)
       && POINTER_TYPE_P (type_o))
     {
-      tree mt_dest = var_ann (SSA_NAME_VAR (dest))->symbol_mem_tag;
-      tree mt_orig = var_ann (SSA_NAME_VAR (orig))->symbol_mem_tag;
+      tree mt_dest = symbol_mem_tag (SSA_NAME_VAR (dest));
+      tree mt_orig = symbol_mem_tag (SSA_NAME_VAR (orig));
       if (mt_dest && mt_orig && mt_dest != mt_orig)
 	return false;
       else if (!lang_hooks.types_compatible_p (type_d, type_o))
@@ -187,6 +205,18 @@ merge_alias_info (tree orig, tree new)
   tree orig_sym = SSA_NAME_VAR (orig);
   var_ann_t new_ann = var_ann (new_sym);
   var_ann_t orig_ann = var_ann (orig_sym);
+
+  /* No merging necessary when memory partitions are involved.  */
+  if (factoring_name_p (new))
+    {
+      gcc_assert (!is_gimple_reg (orig_sym));
+      return;
+    }
+  else if (factoring_name_p (orig))
+    {
+      gcc_assert (!is_gimple_reg (new_sym));
+      return;
+    }
 
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (orig)));
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (new)));
@@ -545,7 +575,7 @@ dump_copy_of (FILE *file, tree var)
 /* Evaluate the RHS of STMT.  If it produces a valid copy, set the LHS
    value and store the LHS into *RESULT_P.  If STMT generates more
    than one name (i.e., STMT is an aliased store), it is enough to
-   store the first name in the V_MAY_DEF list into *RESULT_P.  After
+   store the first name in the VDEF list into *RESULT_P.  After
    all, the names generated will be VUSEd in the same statements.  */
 
 static enum ssa_prop_result
@@ -582,8 +612,8 @@ copy_prop_visit_assignment (tree stmt, tree *result_p)
     }
   else if (stmt_makes_single_store (stmt))
     {
-      /* Otherwise, set the names in V_MAY_DEF/V_MUST_DEF operands
-	 to be a copy of RHS.  */
+      /* Otherwise, set the names in VDEF operands to be a copy
+	 of RHS.  */
       ssa_op_iter i;
       tree vdef;
       bool changed;

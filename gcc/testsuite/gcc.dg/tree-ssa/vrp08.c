@@ -19,5 +19,5 @@ foo (int a, int *p)
 }
 
 /* { dg-final { scan-tree-dump-times "Folding predicate p_.*to 1" 1 "vrp1" } } */
-/* { dg-final { scan-tree-dump-times "PREDICATE: p_. ne_expr 0" 1 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "PREDICATE: p_.* ne_expr 0" 1 "vrp1" } } */
 /* { dg-final { cleanup-tree-dump "vrp1" } } */

@@ -301,7 +301,7 @@ vect_create_data_ref_ptr (tree stmt,
   if (!MTAG_P (tag))
     new_type_alias (vect_ptr, tag, DR_REF (dr));
   else
-    var_ann (vect_ptr)->symbol_mem_tag = tag;
+    set_symbol_mem_tag (vect_ptr, tag);
 
   var_ann (vect_ptr)->subvars = DR_SUBVARS (dr);
 
@@ -1660,7 +1660,7 @@ vectorizable_call (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 
       return false;
     }
-  gcc_assert (!stmt_references_memory_p (stmt));
+  gcc_assert (ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS));
 
   for (args = TREE_OPERAND (operation, 1); args; args = TREE_CHAIN (args))
     {
@@ -2851,16 +2851,16 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 			     vec_oprnd);
 	  vect_finish_stmt_generation (stmt, new_stmt, bsi);
 
-	  /* Set the V_MAY_DEFS for the vector pointer. If this virtual def has a 
-	     use outside the loop and a loop peel is performed then the def may be 
-	     renamed by the peel.  Mark it for renaming so the later use will also 
-	     be renamed.  */
+	  /* Set the VDEFs for the vector pointer. If this virtual def
+	     has a use outside the loop and a loop peel is performed
+	     then the def may be renamed by the peel.  Mark it for
+	     renaming so the later use will also be renamed.  */
 	  copy_virtual_operands (new_stmt, next_stmt);
 	  if (j == 0)
 	    {
-	      /* The original store is deleted so the same SSA_NAMEs can be used.  
-	       */
-	      FOR_EACH_SSA_TREE_OPERAND (def, next_stmt, iter, SSA_OP_VMAYDEF)
+	      /* The original store is deleted so the same SSA_NAMEs
+		 can be used.  */
+	      FOR_EACH_SSA_TREE_OPERAND (def, next_stmt, iter, SSA_OP_VDEF)
 		{
 		  SSA_NAME_DEF_STMT (def) = new_stmt;
 		  mark_sym_for_renaming (SSA_NAME_VAR (def));
@@ -2872,7 +2872,7 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 	    {
 	      /* Create new names for all the definitions created by COPY and
 		 add replacement mappings for each new name.  */
-	      FOR_EACH_SSA_DEF_OPERAND (def_p, new_stmt, iter, SSA_OP_VMAYDEF)
+	      FOR_EACH_SSA_DEF_OPERAND (def_p, new_stmt, iter, SSA_OP_VDEF)
 		{
 		  create_new_def_for (DEF_FROM_PTR (def_p), new_stmt, def_p);
 		  mark_sym_for_renaming (SSA_NAME_VAR (DEF_FROM_PTR (def_p)));
@@ -4037,9 +4037,9 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
    LOOP - the loop whose preheader will contain STMT.
 
    It's possible to vectorize a loop even though an SSA_NAME from a VUSE
-   appears to be defined in a V_MAY_DEF in another statement in a loop.
+   appears to be defined in a VDEF in another statement in a loop.
    One such case is when the VUSE is at the dereference of a __restricted__
-   pointer in a load and the V_MAY_DEF is at the dereference of a different
+   pointer in a load and the VDEF is at the dereference of a different
    __restricted__ pointer in a store.  Vectorization may result in
    copy_virtual_uses being called to copy the problematic VUSE to a new
    statement that is being inserted in the loop preheader.  This procedure
@@ -4651,8 +4651,6 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   int i;
   tree ratio = NULL;
   int vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-  bitmap_iterator bi;
-  unsigned int j;
   bool strided_store;
 
   if (vect_print_dump_info (REPORT_DETAILS))
@@ -4715,7 +4713,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 
   /* CHECKME: we wouldn't need this if we called update_ssa once
      for all loops.  */
-  bitmap_zero (vect_vnames_to_rename);
+  bitmap_zero (vect_memsyms_to_rename);
 
   /* Peel the loop if there are data refs with unknown alignment.
      Only one data ref with unknown store is allowed.  */
@@ -4837,8 +4835,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 
   slpeel_make_loop_iterate_ntimes (loop, ratio);
 
-  EXECUTE_IF_SET_IN_BITMAP (vect_vnames_to_rename, 0, j, bi)
-    mark_sym_for_renaming (SSA_NAME_VAR (ssa_name (j)));
+  mark_set_for_renaming (vect_memsyms_to_rename);
 
   /* The memory tags and pointers in vectorized statements need to
      have their SSA forms updated.  FIXME, why can't this be delayed

@@ -55,30 +55,19 @@ struct alias_info
   /* Number of const/pure function calls found in the program.  */
   size_t num_pure_const_calls_found;
 
-  /* Total number of virtual operands that will be needed to represent
-     all the aliases of all the pointers found in the program.  */
-  long total_alias_vops;
-
-  /* Variables that have been written to.  */
-  bitmap written_vars;
+  /* Variables that have been written to directly (i.e., not through a
+     pointer dereference).  */
+  struct pointer_set_t *written_vars;
 
   /* Pointers that have been used in an indirect store operation.  */
-  bitmap dereferenced_ptrs_store;
+  struct pointer_set_t *dereferenced_ptrs_store;
 
   /* Pointers that have been used in an indirect load operation.  */
-  bitmap dereferenced_ptrs_load;
+  struct pointer_set_t *dereferenced_ptrs_load;
 
   /* Memory tag for all the PTR_IS_REF_ALL pointers.  */
   tree ref_all_symbol_mem_tag;
 };
-
-/* Keep track of how many times each pointer has been dereferenced in
-   the program using the aux variable.  This is used by the alias
-   grouping heuristic in compute_flow_insensitive_aliasing.  */
-#define NUM_REFERENCES(ANN) ((size_t)((ANN)->common.aux))
-#define NUM_REFERENCES_CLEAR(ANN) ((ANN)->common.aux) = 0
-#define NUM_REFERENCES_INC(ANN) (ANN)->common.aux = (void*) (((size_t)((ANN)->common.aux)) + 1)
-#define NUM_REFERENCES_SET(ANN, VAL) (ANN)->common.aux = (void*) ((void *)(VAL))
 
 /* In tree-ssa-alias.c.  */
 enum escape_type is_escape_site (tree);
