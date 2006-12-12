@@ -196,7 +196,7 @@ if { [info procs ${tool}_load] != [list] \
     proc ${tool}_load { program args } {
 	global tool
 	global shouldfail
-	set result [saved_${tool}_load $program $args]
+	set result [eval [list saved_${tool}_load $program] $args]
 	if { $shouldfail != 0 } {
 	    switch [lindex $result 0] {
 		"pass" { set status "fail" }

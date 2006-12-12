@@ -1,3 +1,8 @@
+2006-12-12  Richard Sandiford  <richard@codesourcery.com>
+
+	* lib/gcc-dg.exp (${tool}_load): Fix invocation of
+	saved_${tool}_load.
+
 2006-12-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29821
