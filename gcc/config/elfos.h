@@ -504,3 +504,13 @@ Boston, MA 02110-1301, USA.  */
    elf_record_gcc_switches function defined in varasm.c.  */
 #undef  TARGET_ASM_RECORD_GCC_SWITCHES
 #define TARGET_ASM_RECORD_GCC_SWITCHES elf_record_gcc_switches
+
+/* A C statement (sans semicolon) to output to the stdio stream STREAM
+   any text necessary for declaring the name of an external symbol
+   named NAME whch is referenced in this compilation but not defined.
+   It is needed to properly support non-default visibility.  */
+
+#ifndef ASM_OUTPUT_EXTERNAL
+#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME) \
+  default_elf_asm_output_external (FILE, DECL, NAME)
+#endif

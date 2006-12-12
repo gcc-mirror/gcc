@@ -255,10 +255,6 @@ static section *ia64_rwreloc_select_rtx_section (enum machine_mode, rtx,
 						 unsigned HOST_WIDE_INT)
      ATTRIBUTE_UNUSED;
 static unsigned int ia64_section_type_flags (tree, const char *, int);
-static void ia64_hpux_add_extern_decl (tree decl)
-     ATTRIBUTE_UNUSED;
-static void ia64_hpux_file_end (void)
-     ATTRIBUTE_UNUSED;
 static void ia64_init_libfuncs (void)
      ATTRIBUTE_UNUSED;
 static void ia64_hpux_init_libfuncs (void)
@@ -5021,49 +5017,6 @@ ia64_secondary_reload_class (enum reg_class class,
 }
 
 
-/* Emit text to declare externally defined variables and functions, because
-   the Intel assembler does not support undefined externals.  */
-
-void
-ia64_asm_output_external (FILE *file, tree decl, const char *name)
-{
-  int save_referenced;
-
-  /* GNU as does not need anything here, but the HP linker does need
-     something for external functions.  */
-
-  if (TARGET_GNU_AS
-      && (!TARGET_HPUX_LD
-	  || TREE_CODE (decl) != FUNCTION_DECL
-	  || strstr (name, "__builtin_") == name))
-    return;
-
-  /* ??? The Intel assembler creates a reference that needs to be satisfied by
-     the linker when we do this, so we need to be careful not to do this for
-     builtin functions which have no library equivalent.  Unfortunately, we
-     can't tell here whether or not a function will actually be called by
-     expand_expr, so we pull in library functions even if we may not need
-     them later.  */
-  if (! strcmp (name, "__builtin_next_arg")
-      || ! strcmp (name, "alloca")
-      || ! strcmp (name, "__builtin_constant_p")
-      || ! strcmp (name, "__builtin_args_info"))
-    return;
-
-  if (TARGET_HPUX_LD)
-    ia64_hpux_add_extern_decl (decl);
-  else
-    {
-      /* assemble_name will set TREE_SYMBOL_REFERENCED, so we must save and
-         restore it.  */
-      save_referenced = TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl));
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-        ASM_OUTPUT_TYPE_DIRECTIVE (file, name, "function");
-      (*targetm.asm_out.globalize_label) (file, name);
-      TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)) = save_referenced;
-    }
-}
-
 /* Parse the -mfixed-range= option string.  */
 
 static void
@@ -9174,55 +9127,33 @@ ia64_hpux_function_arg_padding (enum machine_mode mode, tree type)
    return DEFAULT_FUNCTION_ARG_PADDING (mode, type);
 }
 
-/* Linked list of all external functions that are to be emitted by GCC.
-   We output the name if and only if TREE_SYMBOL_REFERENCED is set in
-   order to avoid putting out names that are never really used.  */
+/* Emit text to declare externally defined variables and functions, because
+   the Intel assembler does not support undefined externals.  */
 
-struct extern_func_list GTY(())
+void
+ia64_asm_output_external (FILE *file, tree decl, const char *name)
 {
-  struct extern_func_list *next;
-  tree decl;
-};
-
-static GTY(()) struct extern_func_list *extern_func_head;
-
-static void
-ia64_hpux_add_extern_decl (tree decl)
-{
-  struct extern_func_list *p = ggc_alloc (sizeof (struct extern_func_list));
-
-  p->decl = decl;
-  p->next = extern_func_head;
-  extern_func_head = p;
-}
-
-/* Print out the list of used global functions.  */
-
-static void
-ia64_hpux_file_end (void)
-{
-  struct extern_func_list *p;
-
-  for (p = extern_func_head; p; p = p->next)
+  /* We output the name if and only if TREE_SYMBOL_REFERENCED is
+     set in order to avoid putting out names that are never really
+     used. */
+  if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
     {
-      tree decl = p->decl;
-      tree id = DECL_ASSEMBLER_NAME (decl);
+      /* maybe_assemble_visibility will return 1 if the assembler
+	 visibility directive is outputed.  */
+      int need_visibility = ((*targetm.binds_local_p) (decl)
+			     && maybe_assemble_visibility (decl));
 
-      gcc_assert (id);
-
-      if (!TREE_ASM_WRITTEN (decl) && TREE_SYMBOL_REFERENCED (id))
-        {
-	  const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
-
-	  TREE_ASM_WRITTEN (decl) = 1;
-	  (*targetm.asm_out.globalize_label) (asm_out_file, name);
-	  fputs (TYPE_ASM_OP, asm_out_file);
-	  assemble_name (asm_out_file, name);
-	  fprintf (asm_out_file, "," TYPE_OPERAND_FMT "\n", "function");
-        }
+      /* GNU as does not need anything here, but the HP linker does
+	 need something for external functions.  */
+      if ((TARGET_HPUX_LD || !TARGET_GNU_AS)
+	  && TREE_CODE (decl) == FUNCTION_DECL)
+	{
+	  ASM_OUTPUT_TYPE_DIRECTIVE (file, name, "function");
+	  (*targetm.asm_out.globalize_label) (file, name);
+	}
+      else if (need_visibility && !TARGET_GNU_AS)
+	(*targetm.asm_out.globalize_label) (file, name);
     }
-
-  extern_func_head = 0;
 }
 
 /* Set SImode div/mod functions, init_integral_libfuncs only initializes

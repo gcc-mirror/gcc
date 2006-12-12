@@ -204,9 +204,9 @@ extern void assemble_variable (tree, int, int, int);
    DONT_OUTPUT_DATA is from assemble_variable.  */
 extern void align_variable (tree decl, bool dont_output_data);
 
-/* Output something to declare an external symbol to the assembler.
-   (Most assemblers don't need this, so we normally output nothing.)
-   Do nothing if DECL is not external.  */
+/* Queue for outputing something to declare an external symbol to the
+   assembler.  (Most assemblers don't need this, so we normally output
+   nothing.)  Do nothing if DECL is not external.  */
 extern void assemble_external (tree);
 
 /* Assemble code to leave SIZE bytes of zeros.  */
@@ -618,6 +618,10 @@ extern void default_internal_label (FILE *, const char *, unsigned long);
 extern void default_file_start (void);
 extern void file_end_indicate_exec_stack (void);
 extern bool default_valid_pointer_mode (enum machine_mode);
+
+extern void default_elf_asm_output_external (FILE *file, tree,
+					     const char *);
+extern int maybe_assemble_visibility (tree);
 
 extern int default_address_cost (rtx);
 

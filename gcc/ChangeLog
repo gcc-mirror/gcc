@@ -1,3 +1,31 @@
+2006-12-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/17982
+	PR middle-end/20218
+	* cgraphunit.c (cgraph_optimize): Remove call to
+	process_pending_assemble_externals.
+
+	* config/elfos.h (ASM_OUTPUT_EXTERNAL): New.
+
+	* config/ia64/hpux.h (TARGET_ASM_FILE_END): Removed.
+
+	* config/ia64/ia64.c (ia64_asm_output_external): Rewritten.
+	(ia64_hpux_add_extern_decl): Removed.
+	(ia64_hpux_file_end): Likewise.
+	(extern_func_list): Likewise.
+	(extern_func_head): Likewise.
+
+	* output.h (assemble_external): Update comments.
+	(default_elf_asm_output_external): New.
+	(maybe_assemble_visibility): New.
+
+	* toplev.c (compile_file): Update comment.
+
+	* varasm.c (assemble_external): Always put it on
+	pending_assemble_externals.
+	(maybe_assemble_visibility): Make it extern and return int.
+	(default_elf_asm_output_external): New.
+
 2006-12-11  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-structalias.c (handle_ptr_arith): Return false when we
