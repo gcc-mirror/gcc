@@ -1,3 +1,11 @@
+2006-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/11953
+	* gthr-posix.h (_REENTRANT): Only define if __osf__ is defined.
+
+	* config/ia64/linux.h (CPP_SPEC): Define.
+	* config/s390/linux.h (CPP_SPEC): Define.
+
 2006-12-12  Jim Wilson  <wilson@specifix.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
