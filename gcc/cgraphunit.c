@@ -1388,8 +1388,6 @@ cgraph_optimize (void)
       return;
     }
 
-  process_pending_assemble_externals ();
-
   /* Frontend may output common variables after the unit has been finalized.
      It is safe to deal with them here as they are always zero initialized.  */
   varpool_analyze_pending_decls ();

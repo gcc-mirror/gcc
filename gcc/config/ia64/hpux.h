@@ -144,10 +144,6 @@ do {								\
    definitions, so do not use them in gthr-posix.h.  */
 #define GTHREAD_USE_WEAK 0
 
-/* Put out the needed function declarations at the end.  */
-
-#define TARGET_ASM_FILE_END ia64_hpux_file_end
-
 #undef CTORS_SECTION_ASM_OP
 #define CTORS_SECTION_ASM_OP  "\t.section\t.init_array,\t\"aw\",\"init_array\""
 
