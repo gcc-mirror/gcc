@@ -8195,7 +8195,7 @@ This works only if @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.
 A C statement to output to the stdio stream @var{stream} an assembler
 instruction to advance the location counter by @var{nbytes} bytes.
 Those bytes should be zero when loaded.  @var{nbytes} will be a C
-expression of type @code{int}.
+expression of type @code{unsigned HOST_WIDE_INT}.
 @end defmac
 
 @defmac ASM_NO_SKIP_IN_TEXT
