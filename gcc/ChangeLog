@@ -1,3 +1,14 @@
+2006-12-12  Sa Liu  <saliu@de.ibm.com>
+	    Ben Elliston  <bje@au.ibm.com>
+
+	* config/spu/spu.opt (mfixed-range): New option.
+	* config/spu/spu.h (spu_fixed_range_string): Declare.
+	* config/spu/spu.c (spu_override_options): Handle -mfixed-range.
+	(fix_range): New function.
+	* doc/invoke.texi (SPU Options): Document -mfixed-range.
+	* testsuite/gcc.target/spu/fixed-range.c: New.
+	* testsuite/gcc.target/spu/fixed-range-bad.c: Ditto.
+
 2006-12-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/17982

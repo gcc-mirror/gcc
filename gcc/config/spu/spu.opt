@@ -52,3 +52,6 @@ mlarge-mem
 Target Report RejectNegative Mask(LARGE_MEM)
 Generate code for 32 bit addressing
 
+mfixed-range=
+Target RejectNegative Joined Var(spu_fixed_range_string)
+Specify range of registers to make fixed

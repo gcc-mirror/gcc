@@ -24,6 +24,7 @@
 #define OVERRIDE_OPTIONS spu_override_options()
 
 extern int target_flags;
+extern const char *spu_fixed_range_string;
 
 /* Default target_flags if no switches specified.  */
 #ifndef TARGET_DEFAULT
