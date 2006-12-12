@@ -295,14 +295,6 @@ expression simplification, and jump threading.  It is run multiple times
 throughout the optimization process.  It it located in @file{tree-ssa-dom.c}
 and is described by @code{pass_dominator}.
 
-@item Redundant PHI elimination
-
-This pass removes PHI nodes for which all of the arguments are the same
-value, excluding feedback.  Such degenerate forms are typically created
-by removing unreachable code.  The pass is run multiple times throughout
-the optimization process.  It is located in @file{tree-ssa.c} and is
-described by @code{pass_redundant_phi}.o
-
 @item Forward propagation of single-use variables
 
 This pass attempts to remove redundant computation by substituting
