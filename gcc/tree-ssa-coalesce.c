@@ -1284,7 +1284,7 @@ coalesce_ssa_name (void)
   partition_view_bitmap (map, used_in_copies, true);
   BITMAP_FREE (used_in_copies);
 
-  if (num_var_partitions (map) <= 1)
+  if (num_var_partitions (map) < 1)
     {
       delete_coalesce_list (cl);
       return map;

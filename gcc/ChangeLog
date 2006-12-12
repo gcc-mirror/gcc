@@ -1,3 +1,9 @@
+2006-12-12  Andrew Macleod  <amacleod@redhat.com>
+	
+	PR tree-optimization/30159
+	* tree-ssa-coalesce.c (coalesce_ssa_name): Process single ssa_name 
+	functions in case a default_def coalesce is required.
+
 2006-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/11953
