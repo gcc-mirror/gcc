@@ -1,3 +1,8 @@
+2006-12-13  Andreas Tobler <a.tobler@schweiz.org>
+
+	* aclocal.m4: Regenerate with aclocal -I .. as written in the
+	Makefile.am.
+
 2006-10-31  Geoffrey Keating  <geoffk@apple.com>
 
 	* src/powerpc/ffi_darwin.c (darwin_adjust_aggregate_sizes): New.
