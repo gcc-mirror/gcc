@@ -3098,12 +3098,7 @@ eliminate_regs_in_insn (rtx insn, int replace)
 	    if (GET_CODE (XEXP (plus_cst_src, 0)) == SUBREG)
 	      to_rtx = gen_lowpart (GET_MODE (XEXP (plus_cst_src, 0)),
 				    to_rtx);
-	    /* If we have a nonzero offset, and the source is already
-	       a simple REG, the following transformation would
-	       increase the cost of the insn by replacing a simple REG
-	       with (plus (reg sp) CST).  So try only when we already
-	       had a PLUS before.  */
-	    if (offset == 0 || plus_src)
+	    if (offset == 0)
 	      {
 		int num_clobbers;
 		/* We assume here that if we need a PARALLEL with
@@ -3112,7 +3107,7 @@ eliminate_regs_in_insn (rtx insn, int replace)
 		   There's not much we can do if that doesn't work.  */
 		PATTERN (insn) = gen_rtx_SET (VOIDmode,
 					      SET_DEST (old_set),
-					      plus_constant (to_rtx, offset));
+					      to_rtx);
 		num_clobbers = 0;
 		INSN_CODE (insn) = recog (PATTERN (insn), insn, &num_clobbers);
 		if (num_clobbers)
@@ -3124,6 +3119,26 @@ eliminate_regs_in_insn (rtx insn, int replace)
 		    add_clobbers (PATTERN (insn), INSN_CODE (insn));
 		  }
 		gcc_assert (INSN_CODE (insn) >= 0);
+	      }
+	    /* If we have a nonzero offset, and the source is already
+	       a simple REG, the following transformation would
+	       increase the cost of the insn by replacing a simple REG
+	       with (plus (reg sp) CST).  So try only when we already
+	       had a PLUS before.  */
+	    else if (plus_src)
+	      {
+		new_body = old_body;
+		if (! replace)
+		  {
+		    new_body = copy_insn (old_body);
+		    if (REG_NOTES (insn))
+		      REG_NOTES (insn) = copy_insn_1 (REG_NOTES (insn));
+		  }
+		PATTERN (insn) = new_body;
+		old_set = single_set (insn);
+
+		XEXP (SET_SRC (old_set), 0) = to_rtx;
+		XEXP (SET_SRC (old_set), 1) = GEN_INT (offset);
 	      }
 	    else
 	      break;
