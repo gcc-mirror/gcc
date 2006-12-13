@@ -2,8 +2,10 @@
 // necessarily the type info object
 
 // { dg-require-weak "" }
-// { dg-final { scan-assembler ".weak\[ \t\]_?_ZTSPP1A" } }
-// { dg-final { scan-assembler-not ".weak\[ \t\]_?_ZTIPP1A" } }
+// { dg-final { scan-assembler ".weak\[ \t\]_?_ZTSPP1A" { target { ! { *-*-darwin* } } } } }
+// { dg-final { scan-assembler-not ".weak\[ \t\]_?_ZTIPP1A" { target { ! { *-*-darwin* } } } } }
+// { dg-final { scan-assembler ".weak_definition\[ \t\]_?_ZTSPP1A" { target { *-*-darwin* } } } }
+// { dg-final { scan-assembler-not ".weak_definition\[ \t\]_?_ZTIPP1A" { target { *-*-darwin* } } } }
 
 struct A;
 
