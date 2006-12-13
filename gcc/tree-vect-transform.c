@@ -3177,6 +3177,7 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 
 	  /* data_ref = permute_even (first_data_ref, second_data_ref);  */
 	  perm_dest = create_tmp_var (vectype, "vect_perm_even");
+	  DECL_GIMPLE_REG_P (perm_dest) = 1;
 	  add_referenced_var (perm_dest);
 	 
 	  perm_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, perm_dest,
@@ -3192,6 +3193,7 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 	      
 	  /* data_ref = permute_odd (first_data_ref, second_data_ref);  */
 	  perm_dest = create_tmp_var (vectype, "vect_perm_odd");
+	  DECL_GIMPLE_REG_P (perm_dest) = 1;
 	  add_referenced_var (perm_dest);
 
 	  perm_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, perm_dest,
