@@ -22,6 +22,7 @@
 #define TARGET_VERSION fprintf (stderr, " (spu %s)", __DATE__);
 
 #define OVERRIDE_OPTIONS spu_override_options()
+#define C_COMMON_OVERRIDE_OPTIONS spu_c_common_override_options()
 
 extern int target_flags;
 extern const char *spu_fixed_range_string;
@@ -242,8 +243,6 @@ enum reg_class {
 
 #define REGISTER_TARGET_PRAGMAS() do {					\
 targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
-  /* Don't give warnings about the main() function. */			\
-warn_main = 0;								\
 }while (0);
 
 

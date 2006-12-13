@@ -1,3 +1,7 @@
+2006-12-13  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.target/spu/Wmain.c: New test.
+
 2006-12-12  Josh Conner  <jconner@apple.com>
 
 	* g++.dg/abi/thunk3.C: Use .weak_definition on darwin.

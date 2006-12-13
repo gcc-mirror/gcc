@@ -141,3 +141,12 @@ spu_cpu_cpp_builtins (struct cpp_reader *pfile)
   builtin_define_std ("__vector=__attribute__((__spu_vector__))");
 }
 
+void
+spu_c_common_override_options (void)
+{ 
+  if (!TARGET_STD_MAIN)
+    {
+      /* Don't give warnings about the main() function.  */
+      warn_main = 0;
+    }
+}
