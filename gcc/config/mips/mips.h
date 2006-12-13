@@ -2519,6 +2519,7 @@ while (0)
    the assembler uses length information on externals to allocate in
    data/sdata bss/sbss, thereby saving exec time.  */
 
+#undef ASM_OUTPUT_EXTERNAL
 #define ASM_OUTPUT_EXTERNAL(STREAM,DECL,NAME) \
   mips_output_external(STREAM,DECL,NAME)
 

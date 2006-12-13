@@ -1,3 +1,8 @@
+2006-12-12 David Daney  <ddaney@avtrex.com>
+
+	* config/mips/mips.h (ASM_OUTPUT_EXTERNAL): Undefine it before
+	define.
+
 2006-12-12  Andrew Pinski  <pinskia@gmail.com>
 
 	* tree-vect-transform.c (vect_permute_load_chain):
