@@ -74,6 +74,13 @@ struct vfp_regs
   _uw pad;
 };
 
+struct vfpv3_regs
+{
+  /* Always populated via VSTM, so no need for the "pad" field from
+     vfp_regs (which is used to store the format word for FSTMX).  */
+  _uw64 d[16];
+};
+
 struct fpa_reg
 {
   _uw w[3];
@@ -114,10 +121,14 @@ typedef struct
   struct core_regs core;
   _uw prev_sp; /* Only valid during forced unwinding.  */
   struct vfp_regs vfp;
+  struct vfpv3_regs vfp_regs_16_to_31;
   struct fpa_regs fpa;
 } phase1_vrs;
 
-#define DEMAND_SAVE_VFP 1
+#define DEMAND_SAVE_VFP 1	/* VFP state has been saved if not set */
+#define DEMAND_SAVE_VFP_D 2	/* VFP state is for FLDMD/FSTMD if set */
+#define DEMAND_SAVE_VFP_V3 4    /* VFPv3 state for regs 16 .. 31 has
+                                   been saved if not set */
 
 /* This must match the structure created by the assembly wrappers.  */
 typedef struct
@@ -143,15 +154,33 @@ void __attribute__((noreturn)) restore_core_regs (struct core_regs *);
 
 /* Coprocessor register state manipulation functions.  */
 
+/* Routines for FLDMX/FSTMX format...  */
 void __gnu_Unwind_Save_VFP (struct vfp_regs * p);
 void __gnu_Unwind_Restore_VFP (struct vfp_regs * p);
+
+/* ...and those for FLDMD/FSTMD format...  */
+void __gnu_Unwind_Save_VFP_D (struct vfp_regs * p);
+void __gnu_Unwind_Restore_VFP_D (struct vfp_regs * p);
+
+/* ...and those for VLDM/VSTM format, saving/restoring only registers
+   16 through 31.  */
+void __gnu_Unwind_Save_VFP_D_16_to_31 (struct vfpv3_regs * p);
+void __gnu_Unwind_Restore_VFP_D_16_to_31 (struct vfpv3_regs * p);
 
 /* Restore coprocessor state after phase1 unwinding.  */
 static void
 restore_non_core_regs (phase1_vrs * vrs)
 {
   if ((vrs->demand_save_flags & DEMAND_SAVE_VFP) == 0)
-    __gnu_Unwind_Restore_VFP (&vrs->vfp);
+    {
+      if (vrs->demand_save_flags & DEMAND_SAVE_VFP_D)
+        __gnu_Unwind_Restore_VFP_D (&vrs->vfp);
+      else
+        __gnu_Unwind_Restore_VFP (&vrs->vfp);
+    }
+
+  if ((vrs->demand_save_flags & DEMAND_SAVE_VFP_V3) == 0)
+    __gnu_Unwind_Restore_VFP_D_16_to_31 (&vrs->vfp_regs_16_to_31);
 }
 
 /* A better way to do this would probably be to compare the absolute address
@@ -274,35 +303,101 @@ _Unwind_VRS_Result _Unwind_VRS_Pop (_Unwind_Context *context,
 	_uw start = discriminator >> 16;
 	_uw count = discriminator & 0xffff;
 	struct vfp_regs tmp;
+	struct vfpv3_regs tmp_16_to_31;
+	int tmp_count;
 	_uw *sp;
 	_uw *dest;
+        int num_vfpv3_regs = 0;
 
+        /* We use an approximation here by bounding _UVRSD_DOUBLE
+           register numbers at 32 always, since we can't detect if
+           VFPv3 isn't present (in such a case the upper limit is 16).  */
 	if ((representation != _UVRSD_VFPX && representation != _UVRSD_DOUBLE)
-	    || start + count > 16)
+            || start + count > (representation == _UVRSD_VFPX ? 16 : 32)
+            || (representation == _UVRSD_VFPX && start >= 16))
 	  return _UVRSR_FAILED;
 
-	if (vrs->demand_save_flags & DEMAND_SAVE_VFP)
+        /* Check if we're being asked to pop VFPv3-only registers
+           (numbers 16 through 31).  */
+	if (start >= 16)
+          num_vfpv3_regs = count;
+        else if (start + count > 16)
+          num_vfpv3_regs = start + count - 16;
+
+        if (num_vfpv3_regs && representation != _UVRSD_DOUBLE)
+          return _UVRSR_FAILED;
+
+	/* Demand-save coprocessor registers for stage1.  */
+	if (start < 16 && (vrs->demand_save_flags & DEMAND_SAVE_VFP))
 	  {
-	    /* Demand-save resisters for stage1.  */
 	    vrs->demand_save_flags &= ~DEMAND_SAVE_VFP;
-	    __gnu_Unwind_Save_VFP (&vrs->vfp);
+
+            if (representation == _UVRSD_DOUBLE)
+              {
+                /* Save in FLDMD/FSTMD format.  */
+	        vrs->demand_save_flags |= DEMAND_SAVE_VFP_D;
+	        __gnu_Unwind_Save_VFP_D (&vrs->vfp);
+              }
+            else
+              {
+                /* Save in FLDMX/FSTMX format.  */
+	        vrs->demand_save_flags &= ~DEMAND_SAVE_VFP_D;
+	        __gnu_Unwind_Save_VFP (&vrs->vfp);
+              }
+	  }
+
+        if (num_vfpv3_regs > 0
+            && (vrs->demand_save_flags & DEMAND_SAVE_VFP_V3))
+	  {
+	    vrs->demand_save_flags &= ~DEMAND_SAVE_VFP_V3;
+            __gnu_Unwind_Save_VFP_D_16_to_31 (&vrs->vfp_regs_16_to_31);
 	  }
 
 	/* Restore the registers from the stack.  Do this by saving the
 	   current VFP registers to a memory area, moving the in-memory
 	   values into that area, and restoring from the whole area.
 	   For _UVRSD_VFPX we assume FSTMX standard format 1.  */
-	__gnu_Unwind_Save_VFP (&tmp);
+        if (representation == _UVRSD_VFPX)
+  	  __gnu_Unwind_Save_VFP (&tmp);
+        else
+          {
+	    /* Save registers 0 .. 15 if required.  */
+            if (start < 16)
+              __gnu_Unwind_Save_VFP_D (&tmp);
 
-	/* The stack address is only guaranteed to be word aligned, so
+	    /* Save VFPv3 registers 16 .. 31 if required.  */
+            if (num_vfpv3_regs)
+  	      __gnu_Unwind_Save_VFP_D_16_to_31 (&tmp_16_to_31);
+          }
+
+	/* Work out how many registers below register 16 need popping.  */
+	tmp_count = num_vfpv3_regs > 0 ? 16 - start : count;
+
+	/* Copy registers below 16, if needed.
+	   The stack address is only guaranteed to be word aligned, so
 	   we can't use doubleword copies.  */
 	sp = (_uw *) vrs->core.r[R_SP];
-	dest = (_uw *) &tmp.d[start];
-	count *= 2;
-	while (count--)
-	  *(dest++) = *(sp++);
+        if (tmp_count > 0)
+          {
+	    tmp_count *= 2;
+	    dest = (_uw *) &tmp.d[start];
+	    while (tmp_count--)
+	      *(dest++) = *(sp++);
+          }
 
-	/* Skip the pad word */
+	/* Copy VFPv3 registers numbered >= 16, if needed.  */
+        if (num_vfpv3_regs > 0)
+          {
+            /* num_vfpv3_regs is needed below, so copy it.  */
+            int tmp_count_2 = num_vfpv3_regs * 2;
+            int vfpv3_start = start < 16 ? 16 : start;
+
+	    dest = (_uw *) &tmp_16_to_31.d[vfpv3_start - 16];
+	    while (tmp_count_2--)
+	      *(dest++) = *(sp++);
+          }
+
+	/* Skip the format word space if using FLDMX/FSTMX format.  */
 	if (representation == _UVRSD_VFPX)
 	  sp++;
 
@@ -310,7 +405,18 @@ _Unwind_VRS_Result _Unwind_VRS_Pop (_Unwind_Context *context,
 	vrs->core.r[R_SP] = (_uw) sp;
 
 	/* Reload the registers.  */
-	__gnu_Unwind_Restore_VFP (&tmp);
+        if (representation == _UVRSD_VFPX)
+  	  __gnu_Unwind_Restore_VFP (&tmp);
+        else
+          {
+	    /* Restore registers 0 .. 15 if required.  */
+            if (start < 16)
+              __gnu_Unwind_Restore_VFP_D (&tmp);
+
+	    /* Restore VFPv3 registers 16 .. 31 if required.  */
+            if (num_vfpv3_regs > 0)
+  	      __gnu_Unwind_Restore_VFP_D_16_to_31 (&tmp_16_to_31);
+          }
       }
       return _UVRSR_OK;
 

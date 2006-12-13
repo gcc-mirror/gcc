@@ -1,3 +1,42 @@
+2006-12-13  Mark Shinwell  <shinwell@codesourcery.com>
+
+	* config/arm/arm.c (arm_output_fldmx): Output FLDMD instead of
+	FLDMX.  Rename function to...
+	(vfp_output_fldmd): ...this.
+	(vfp_output_fstmx): Output FSTMD instead of FSTMX.  Rename
+	function to...
+	(vfp_output_fstmd): ...this.
+	(vfp_emit_fstmx): Don't leave space in the frame layout for the
+	FSTMX format word.  Rename function to...
+	(vfp_emit_fstmd): ...this.
+	(arm_get_vfp_saved_size): Don't add in space for the FSTMX format
+	word.
+	(arm_output_epilogue): Adjust comment to reflect use of FSTMD.
+	(arm_unwind_emit_sequence): Don't compensate for the FSTMX format
+	word.  Also emit "vsave" assembler directives in such cases rather
+	than "save".
+	* config/arm/libunwind.S (gnu_Unwind_Restore_VFP,
+	gnu_Unwind_Save_VFP): Adjust comments.
+	(gnu_Unwind_Restore_VFP_D, gnu_Unwind_Save_VFP_D): New functions
+	for saving and restoring using FSTMD and FLDMD rather than
+	FSTMX and FLDMX.
+	(gnu_Unwind_Restore_VFP_D_16_to_31, gnu_Unwind_Restore_VFP_D_16_to_31):
+	New functions for saving and restoring the VFPv3 registers 16 .. 31.
+	* config/arm/pr-support.c (gnu_unwind_execute): Add conditional
+	compilation case to correctly handle unwind opcode 0xc8 when using
+	VFP.
+	* config/arm/unwind-arm.c (struct vfpv3_regs): New.
+	(DEMAND_SAVE_VFP_D, DEMAND_SAVE_VFP_V3): New flags.
+	(__gnu_Unwind_Save_VFP_D, __gnu_Unwind_Restore_VFP_D,
+	__gnu_Unwind_Save_VFP_D_16_to_31, __gnu_Unwind_Restore_VFP_D_16_to_31):
+	Declare.
+	(restore_non_core_regs): Restore registers using FLDMD rather than
+	FLDMX if required.  Also handle restoration of VFPv3 registers.
+	(_Unwind_VRS_Pop): Handle saving and restoring of registers using
+	FSTMD and FLDMD if required; also handle VFPv3 registers 16 .. 31,
+	including cases where the caller specifies a range of registers
+	that overlaps the d15/d16 boundary.
+
 2006-12-13  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 30089
