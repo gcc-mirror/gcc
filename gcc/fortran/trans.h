@@ -107,7 +107,6 @@ typedef struct gfc_ss_info
      start is used in the calculation of these.  Indexed by scalarizer
      dimension.  */
   tree start[GFC_MAX_DIMENSIONS];
-  tree end[GFC_MAX_DIMENSIONS];
   tree stride[GFC_MAX_DIMENSIONS];
   tree delta[GFC_MAX_DIMENSIONS];
 
