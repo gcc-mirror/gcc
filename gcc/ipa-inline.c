@@ -558,7 +558,7 @@ cgraph_find_cycles (struct cgraph_node *node, htab_t cycles)
   node->aux = 0;
 }
 
-/* Leafify the cgraph node.  We have to be careful in recursing
+/* Flatten the cgraph node.  We have to be careful in recursing
    as to not run endlessly in circles of the callgraph.
    We do so by using a hashtab of cycle entering nodes as generated
    by cgraph_find_cycles.  */
@@ -983,7 +983,7 @@ cgraph_decide_inlining (void)
 	  htab_t cycles;
   	  if (dump_file)
     	    fprintf (dump_file,
-	     	     "Leafifying %s\n", cgraph_node_name (node));
+	     	     "Flattening %s\n", cgraph_node_name (node));
 	  cycles = htab_create (7, htab_hash_pointer, htab_eq_pointer, NULL);
 	  cgraph_find_cycles (node, cycles);
 	  cgraph_flatten_node (node, cycles);
