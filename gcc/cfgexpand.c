@@ -40,6 +40,7 @@ Boston, MA 02110-1301, USA.  */
 #include "debug.h"
 #include "params.h"
 #include "tree-inline.h"
+#include "value-prof.h"
 
 /* Verify that there is exactly single jump instruction since last and attach
    REG_BR_PROB note specifying probability.
@@ -1860,6 +1861,7 @@ tree_expand_cfg (void)
   /* After expanding, the return labels are no longer needed. */
   return_label = NULL;
   naked_return_label = NULL;
+  free_histograms ();
   return 0;
 }
 

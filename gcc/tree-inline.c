@@ -49,6 +49,7 @@ Boston, MA 02110-1301, USA.  */
 #include "debug.h"
 #include "pointer-set.h"
 #include "ipa-prop.h"
+#include "value-prof.h"
 
 /* I'm not real happy about this, but we need to handle gimple and
    non-gimple trees.  */
@@ -706,6 +707,8 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale, int count_scal
       if (stmt)
 	{
 	  tree call, decl;
+
+	  gimple_duplicate_stmt_histograms (cfun, stmt, id->src_cfun, orig_stmt);
 
 	  /* With return slot optimization we can end up with
 	     non-gimple (foo *)&this->m, fix that here.  */
