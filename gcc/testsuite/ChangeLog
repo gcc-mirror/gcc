@@ -1,3 +1,9 @@
+2006-12-12  Josh Conner  <jconner@apple.com>
+
+	* g++.dg/abi/thunk3.C: Use .weak_definition on darwin.
+	* g++.dg/abi/thunk4.C: Likewise.
+	* g++.dg/abi/rtti3.C: Likewise.
+
 2006-12-12  Richard Sandiford  <richard@codesourcery.com>
 
 	* lib/gcc-dg.exp (${tool}_load): Fix invocation of
