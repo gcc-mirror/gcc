@@ -146,7 +146,7 @@ char cygwin_tool_include_dir[sizeof (TOOL_INCLUDE_DIR) + 1
 #undef TOOL_INCLUDE_DIR
 #define TOOL_INCLUDE_DIR ((const char *) cygwin_tool_include_dir)
 
-#ifndef CROSS_COMPILE
+#ifndef CROSS_DIRECTORY_STRUCTURE
 #undef STANDARD_INCLUDE_DIR
 #define STANDARD_INCLUDE_DIR "/usr/include"
 char cygwin_standard_include_dir[sizeof (STANDARD_INCLUDE_DIR) + 1

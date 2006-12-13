@@ -1745,7 +1745,8 @@ for f in $build_xm_file; do
   esac
 done
 
-# Define macro CROSS_COMPILE in compilation if this is a cross-compiler.
+# Define macro CROSS_DIRECTORY_STRUCTURE in compilation if this is a
+# cross-compiler which does not use the native headers and libraries.
 # Also use all.cross instead of all.internal and adjust SYSTEM_HEADER_DIR.
 CROSS=						AC_SUBST(CROSS)
 ALL=all.internal				AC_SUBST(ALL)
@@ -1762,7 +1763,7 @@ fi
 
 if test x$host != x$target
 then
-	CROSS="-DCROSS_COMPILE"
+	CROSS="-DCROSS_DIRECTORY_STRUCTURE"
 	ALL=all.cross
 	SYSTEM_HEADER_DIR=$build_system_header_dir
 	case "$host","$target" in

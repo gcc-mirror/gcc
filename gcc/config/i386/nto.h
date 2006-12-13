@@ -43,7 +43,7 @@ Boston, MA 02110-1301, USA.  */
 #undef THREAD_MODEL_SPEC
 #define THREAD_MODEL_SPEC "posix"
 
-#ifdef CROSS_COMPILE
+#ifdef CROSS_DIRECTORY_STRUCTURE
 #define SYSROOT_SUFFIX_SPEC "x86"
 #endif
 

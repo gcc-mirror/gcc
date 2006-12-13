@@ -667,11 +667,11 @@ main (void)
 
 #include <signal.h>
 
-#ifndef CROSS_COMPILE
+#ifndef CROSS_DIRECTORY_STRUCTURE
 #include <a.out.h>
 #else
 #include "mips/a.out.h"
-#endif /* CROSS_COMPILE */
+#endif /* CROSS_DIRECTORY_STRUCTURE */
 
 #include "gstab.h"
 

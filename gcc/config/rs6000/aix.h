@@ -124,14 +124,14 @@
 /* #define ASM_SPEC "-u %(asm_cpu)" */
 
 /* Default location of syscalls.exp under AIX */
-#ifndef CROSS_COMPILE
+#ifndef CROSS_DIRECTORY_STRUCTURE
 #define LINK_SYSCALLS_SPEC "-bI:/lib/syscalls.exp"
 #else
 #define LINK_SYSCALLS_SPEC ""
 #endif
 
 /* Default location of libg.exp under AIX */
-#ifndef CROSS_COMPILE
+#ifndef CROSS_DIRECTORY_STRUCTURE
 #define LINK_LIBG_SPEC "-bexport:/usr/lib/libg.exp"
 #else
 #define LINK_LIBG_SPEC ""

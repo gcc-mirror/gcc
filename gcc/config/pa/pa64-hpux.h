@@ -88,7 +88,7 @@ Boston, MA 02110-1301, USA.  */
 /* Under hpux11, the normal location of the `ld' and `as' programs is the
    /usr/ccs/bin directory.  */
 
-#ifndef CROSS_COMPILE
+#ifndef CROSS_DIRECTORY_STRUCTURE
 #undef MD_EXEC_PREFIX
 #define MD_EXEC_PREFIX "/usr/ccs/bin"
 #endif
@@ -105,12 +105,12 @@ Boston, MA 02110-1301, USA.  */
    is the /usr/ccs/lib/pa20_64 directory.  Some files may also be in the
    /opt/langtools/lib/pa20_64 directory.  */
 
-#ifndef CROSS_COMPILE
+#ifndef CROSS_DIRECTORY_STRUCTURE
 #undef MD_STARTFILE_PREFIX
 #define MD_STARTFILE_PREFIX "/usr/ccs/lib/pa20_64/"
 #endif
 
-#ifndef CROSS_COMPILE
+#ifndef CROSS_DIRECTORY_STRUCTURE
 #undef MD_STARTFILE_PREFIX_1
 #define MD_STARTFILE_PREFIX_1 "/opt/langtools/lib/pa20_64/"
 #endif

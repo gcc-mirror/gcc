@@ -135,7 +135,7 @@ Boston, MA 02110-1301, USA.  */
    for the BeOS include files relative to TOOL_INCLUDE_DIR.  Yes, we
    use ANSI string concatenation here (FIXME) */
 
-#ifndef CROSS_COMPILE
+#ifndef CROSS_DIRECTORY_STRUCTURE
 #undef INCLUDE_DEFAULTS
 #define INCLUDE_DEFAULTS \
     { \
@@ -177,7 +177,7 @@ Boston, MA 02110-1301, USA.  */
     { "/boot/develop/headers", 0, 0, 0 }, \
     { 0, 0, 0, 0 } \
     }
-#else /* CROSS_COMPILE */
+#else /* CROSS_DIRECTORY_STRUCTURE */
 #undef	INCLUDE_DEFAULTS
 #define INCLUDE_DEFAULTS				\
     { \

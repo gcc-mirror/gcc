@@ -84,7 +84,7 @@ Boston, MA 02110-1301, USA.
 /* Under svr4, the normal location of the `ld' and `as' programs is the
    /usr/ccs/bin directory.  */
 
-#ifndef CROSS_COMPILE
+#ifndef CROSS_DIRECTORY_STRUCTURE
 #undef  MD_EXEC_PREFIX
 #define MD_EXEC_PREFIX "/usr/ccs/bin/"
 #endif
@@ -92,7 +92,7 @@ Boston, MA 02110-1301, USA.
 /* Under svr4, the normal location of the various *crt*.o files is the
    /usr/ccs/lib directory.  */
 
-#ifndef CROSS_COMPILE
+#ifndef CROSS_DIRECTORY_STRUCTURE
 #undef  MD_STARTFILE_PREFIX
 #define MD_STARTFILE_PREFIX "/usr/ccs/lib/"
 #endif
@@ -136,7 +136,7 @@ Boston, MA 02110-1301, USA.
    not being done.  */
 
 #undef	LINK_SPEC
-#ifdef CROSS_COMPILE
+#ifdef CROSS_DIRECTORY_STRUCTURE
 #define LINK_SPEC "%{h*} %{v:-V} \
 		   %{b} \
 		   %{static:-dn -Bstatic} \

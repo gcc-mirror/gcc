@@ -53,7 +53,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    the utilities are not correct for a cross-compiler; we have to hope that
    cross-versions are in the proper directories.  */
 
-#ifdef CROSS_COMPILE
+#ifdef CROSS_DIRECTORY_STRUCTURE
 #undef OBJECT_FORMAT_COFF
 #undef MD_EXEC_PREFIX
 #undef REAL_LD_FILE_NAME
@@ -553,7 +553,7 @@ is_ctor_dtor (const char *s)
 
 static struct path_prefix cpath, path;
 
-#ifdef CROSS_COMPILE
+#ifdef CROSS_DIRECTORY_STRUCTURE
 /* This is the name of the target machine.  We use it to form the name
    of the files to execute.  */
 
@@ -746,7 +746,7 @@ main (int argc, char **argv)
   static const char *const strip_suffix = "strip";
   static const char *const gstrip_suffix = "gstrip";
 
-#ifdef CROSS_COMPILE
+#ifdef CROSS_DIRECTORY_STRUCTURE
   /* If we look for a program in the compiler directories, we just use
      the short name, since these directories are already system-specific.
      But it we look for a program in the system directories, we need to
@@ -775,7 +775,7 @@ main (int argc, char **argv)
 #endif
   const char *const full_strip_suffix	= strip_suffix;
   const char *const full_gstrip_suffix	= gstrip_suffix;
-#endif /* CROSS_COMPILE */
+#endif /* CROSS_DIRECTORY_STRUCTURE */
 
   const char *arg;
   FILE *outf;
@@ -957,7 +957,7 @@ main (int argc, char **argv)
   c_file_name = getenv ("COLLECT_GCC");
   if (c_file_name == 0)
     {
-#ifdef CROSS_COMPILE
+#ifdef CROSS_DIRECTORY_STRUCTURE
       c_file_name = concat (target_machine, "-gcc", NULL);
 #else
       c_file_name = "gcc";

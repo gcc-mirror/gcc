@@ -122,7 +122,7 @@ Boston, MA 02110-1301, USA.  */
 /* Under hpux10, the normal location of the `ld' and `as' programs is the
    /usr/ccs/bin directory.  */
 
-#ifndef CROSS_COMPILE
+#ifndef CROSS_DIRECTORY_STRUCTURE
 #undef MD_EXEC_PREFIX
 #define MD_EXEC_PREFIX "/usr/ccs/bin/"
 #endif
@@ -131,7 +131,7 @@ Boston, MA 02110-1301, USA.  */
    the /usr/ccs/lib directory.  However, the profiling files are in
    /opt/langtools/lib.  */
 
-#ifndef CROSS_COMPILE
+#ifndef CROSS_DIRECTORY_STRUCTURE
 #undef MD_STARTFILE_PREFIX
 #define MD_STARTFILE_PREFIX "/usr/ccs/lib/"
 #define MD_STARTFILE_PREFIX_1 "/opt/langtools/lib/"

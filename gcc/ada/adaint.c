@@ -197,7 +197,7 @@ struct vstring
 #endif
 
 /* Check for cross-compilation */
-#ifdef CROSS_COMPILE
+#ifdef CROSS_DIRECTORY_STRUCTURE
 int __gnat_is_cross_compiler = 1;
 #else
 int __gnat_is_cross_compiler = 0;
@@ -614,7 +614,7 @@ __gnat_get_debuggable_suffix_ptr (int *len, const char **value)
 FILE *
 __gnat_fopen (char *path, char *mode)
 {
-#if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_COMPILE)
+#if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_DIRECTORY_STRUCTURE)
   TCHAR wpath[GNAT_MAX_PATH_LEN];
   TCHAR wmode[10];
 
@@ -630,7 +630,7 @@ __gnat_fopen (char *path, char *mode)
 FILE *
 __gnat_freopen (char *path, char *mode, FILE *stream)
 {
-#if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_COMPILE)
+#if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_DIRECTORY_STRUCTURE)
   TCHAR wpath[GNAT_MAX_PATH_LEN];
   TCHAR wmode[10];
 
@@ -1402,7 +1402,7 @@ __gnat_get_libraries_from_registry (void)
 {
   char *result = (char *) "";
 
-#if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_COMPILE)
+#if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_DIRECTORY_STRUCTURE)
 
   HKEY reg_key;
   DWORD name_size, value_size;
@@ -2604,7 +2604,7 @@ _flush_cache()
 }
 #endif
 
-#if defined (CROSS_COMPILE)  \
+#if defined (CROSS_DIRECTORY_STRUCTURE)  \
   || (! ((defined (sparc) || defined (i386)) && defined (sun) \
       && defined (__SVR4)) \
       && ! (defined (linux) && (defined (i386) || defined (__x86_64__))) \
