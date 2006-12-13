@@ -768,7 +768,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    eliminated during reloading in favor of either the stack or frame
    pointer.  */
 
-#define FIRST_PSEUDO_REGISTER 54
+#define FIRST_PSEUDO_REGISTER 53
 
 /* Number of hardware registers that go into the DWARF-2 unwind info.
    If not defined, equals FIRST_PSEUDO_REGISTER.  */
@@ -788,8 +788,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define FIXED_REGISTERS						\
 /*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7*/	\
 {  0, 0, 0, 0, 0, 0, 0, 1, 0,  0,  0,  0,  0,  0,  0,  0,	\
-/*arg,flags,fpsr,fpcr,dir,frame*/				\
-    1,    1,   1,   1,  1,    1,				\
+/*arg,flags,fpsr,fpcr,frame*/					\
+    1,    1,   1,   1,    1,					\
 /*xmm0,xmm1,xmm2,xmm3,xmm4,xmm5,xmm6,xmm7*/			\
      0,   0,   0,   0,   0,   0,   0,   0,			\
 /*mmx0,mmx1,mmx2,mmx3,mmx4,mmx5,mmx6,mmx7*/			\
@@ -816,8 +816,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define CALL_USED_REGISTERS					\
 /*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7*/	\
 {  1, 1, 1, 0, 3, 3, 0, 1, 1,  1,  1,  1,  1,  1,  1,  1,	\
-/*arg,flags,fpsr,fpcr,dir,frame*/				\
-    1,   1,    1,   1,  1,    1,				\
+/*arg,flags,fpsr,fpcr,frame*/					\
+    1,   1,    1,   1,    1,					\
 /*xmm0,xmm1,xmm2,xmm3,xmm4,xmm5,xmm6,xmm7*/			\
      1,   1,   1,   1,   1,   1,   1,   1,			\
 /*mmx0,mmx1,mmx2,mmx3,mmx4,mmx5,mmx6,mmx7*/			\
@@ -840,7 +840,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 {  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,\
    18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,	\
    33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,  \
-   48, 49, 50, 51, 52, 53 }
+   48, 49, 50, 51, 52 }
 
 /* ORDER_REGS_FOR_LOCAL_ALLOC is a macro which permits reg_alloc_order
    to be rearranged based on a particular function.  When using sse math,
@@ -1006,7 +1006,7 @@ do {									\
 #define HARD_FRAME_POINTER_REGNUM 6
 
 /* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM 21
+#define FRAME_POINTER_REGNUM 20
 
 /* First floating point reg */
 #define FIRST_FLOAT_REG 8
@@ -1200,21 +1200,21 @@ enum reg_class
       { 0x10,     0x0 }, { 0x20, 0x0 },	/* SIREG, DIREG */		\
       { 0x03,     0x0 },		/* AD_REGS */			\
       { 0x0f,     0x0 },		/* Q_REGS */			\
-  { 0x2100f0,  0x3fc0 },		/* NON_Q_REGS */		\
-      { 0x7f,  0x3fc0 },		/* INDEX_REGS */		\
-  { 0x2100ff,     0x0 },		/* LEGACY_REGS */		\
-  { 0x2100ff,  0x3fc0 },		/* GENERAL_REGS */		\
+  { 0x1100f0,  0x1fe0 },		/* NON_Q_REGS */		\
+      { 0x7f,  0x1fe0 },		/* INDEX_REGS */		\
+  { 0x1100ff,     0x0 },		/* LEGACY_REGS */		\
+  { 0x1100ff,  0x1fe0 },		/* GENERAL_REGS */		\
      { 0x100,     0x0 }, { 0x0200, 0x0 },/* FP_TOP_REG, FP_SECOND_REG */\
     { 0xff00,     0x0 },		/* FLOAT_REGS */		\
-{ 0x3fc00000,0x3fc000 },		/* SSE_REGS */			\
-{ 0xc0000000,    0x3f },		/* MMX_REGS */			\
-{ 0x3fc00100,0x3fc000 },		/* FP_TOP_SSE_REG */		\
-{ 0x3fc00200,0x3fc000 },		/* FP_SECOND_SSE_REG */		\
-{ 0x3fc0ff00,0x3fc000 },		/* FLOAT_SSE_REGS */		\
-   { 0x1ffff,  0x3fc0 },		/* FLOAT_INT_REGS */		\
-{ 0x3fc100ff,0x3fffc0 },		/* INT_SSE_REGS */		\
-{ 0x3fc1ffff,0x3fffc0 },		/* FLOAT_INT_SSE_REGS */	\
-{ 0xffffffff,0x3fffff }							\
+{ 0x1fe00000,0x1fe000 },		/* SSE_REGS */			\
+{ 0xe0000000,    0x1f },		/* MMX_REGS */			\
+{ 0x1fe00100,0x1fe000 },		/* FP_TOP_SSE_REG */		\
+{ 0x1fe00200,0x1fe000 },		/* FP_SECOND_SSE_REG */		\
+{ 0x1fe0ff00,0x3fe000 },		/* FLOAT_SSE_REGS */		\
+   { 0x1ffff,  0x1fe0 },		/* FLOAT_INT_REGS */		\
+{ 0x1fe100ff,0x1fffe0 },		/* INT_SSE_REGS */		\
+{ 0x1fe1ffff,0x1fffe0 },		/* FLOAT_INT_SSE_REGS */	\
+{ 0xffffffff,0x1fffff }							\
 }
 
 /* The same information, inverted:
@@ -1953,7 +1953,7 @@ do {							\
 #define HI_REGISTER_NAMES						\
 {"ax","dx","cx","bx","si","di","bp","sp",				\
  "st","st(1)","st(2)","st(3)","st(4)","st(5)","st(6)","st(7)",		\
- "argp", "flags", "fpsr", "fpcr", "dirflag", "frame",			\
+ "argp", "flags", "fpsr", "fpcr", "frame",				\
  "xmm0","xmm1","xmm2","xmm3","xmm4","xmm5","xmm6","xmm7",		\
  "mm0", "mm1", "mm2", "mm3", "mm4", "mm5", "mm6", "mm7",		\
  "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",			\
