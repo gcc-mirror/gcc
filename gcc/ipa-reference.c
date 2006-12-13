@@ -507,6 +507,7 @@ scan_for_static_refs (tree *tp,
 	switch (TREE_CODE_CLASS (TREE_CODE (rhs))) 
 	  {
 	  case tcc_binary:	    
+	  case tcc_comparison:	    
  	    {
  	      tree op0 = TREE_OPERAND (rhs, 0);
  	      tree op1 = TREE_OPERAND (rhs, 1);
