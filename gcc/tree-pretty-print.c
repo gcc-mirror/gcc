@@ -33,6 +33,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-iterator.h"
 #include "tree-chrec.h"
 #include "tree-pass.h"
+#include "value-prof.h"
 
 /* Local functions, macros and variables.  */
 static int op_prio (tree);
@@ -3000,6 +3001,7 @@ dump_generic_bb_buff (pretty_printer *buffer, basic_block bb,
       INDENT (curr_indent);
       dump_generic_node (buffer, stmt, curr_indent, flags, true);
       pp_newline (buffer);
+      dump_histograms_for_stmt (cfun, buffer->buffer->stream, stmt);
     }
 
   dump_implicit_edges (buffer, bb, indent, flags);

@@ -356,17 +356,6 @@ struct stmt_ann_d GTY(())
 {
   struct tree_ann_common_d common;
 
-  /* Nonzero if the statement has been modified (meaning that the operands
-     need to be scanned again).  */
-  unsigned modified : 1;
-
-  /* Nonzero if the statement makes references to volatile storage.  */
-  unsigned has_volatile_ops : 1;
-
-  /* Nonzero if the statement makes a function call that may clobber global
-     and local addressable variables.  */
-  unsigned makes_clobbering_call : 1;
-
   /* Nonzero if the statement references memory (at least one of its
      expressions contains a non-register operand).  */
   unsigned references_memory : 1;
@@ -385,11 +374,16 @@ struct stmt_ann_d GTY(())
      pass which needs statement UIDs.  */
   unsigned int uid;
 
-  /* Linked list of histograms for value-based profiling.  This is really a
-     struct histogram_value*.  We use void* to avoid having to export that
-     everywhere, and to avoid having to put it in GC memory.  */
-  
-  void * GTY ((skip (""))) histograms;
+  /* Nonzero if the statement has been modified (meaning that the operands
+     need to be scanned again).  */
+  unsigned modified : 1;
+
+  /* Nonzero if the statement makes references to volatile storage.  */
+  unsigned has_volatile_ops : 1;
+
+  /* Nonzero if the statement makes a function call that may clobber global
+     and local addressable variables.  */
+  unsigned makes_clobbering_call : 1;
 };
 
 union tree_ann_d GTY((desc ("ann_type ((tree_ann_t)&%h)")))

@@ -1,3 +1,51 @@
+2006-12-13  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in: Add dependencies.
+	* tree-pretty-print.c: Include value-prof.h
+	(dump_generic_bb_buff): Dump histograms
+	* value-prof.c: Include pointer-set.h
+	(gimple_alloc_histogram_value, histogram_hash, histogram_eq,
+	set_histogram_value, gimple_histogram_value,
+	gimple_add_histogram_value, gimple_remove_histogram_value,
+	gimple_histogram_value_of_type, dump_histogram_value,
+	dump_histograms_for_stmt, gimple_remove_stmt_histograms,
+	gimple_duplicate_stmt_histograms, visit_hist,
+	verify_histograms): New functions.
+	(tree_value_profile_transformations): Update for new histogram API.
+	(tree_divmod_fixed_value): Update for new histogram API.
+	(tree_divmod_fixed_value_transform): Update for new histogram API.
+	(tree_mod_pow2): Update for new histogram API.
+	(tree_mod_pow2_value_transform): Update for new histogram API.
+	(tree_mod_subtract): Update for new histogram API.
+	(tree_mod_subtract_transform): Update for new histogram API.
+	(tree_stringops_transform): Update for new histogram API.
+	(tree_divmod_values_to_profile): Update for new histogram API.
+	(tree_stringops_values_to_profile): Update for new histogram API.
+	(tree_find_values_to_profile): Update for new histogram API.
+	* value-prof.h (gimple_histogram_value): Declare.
+	(gimple_histogram_value_of_type): Declare.
+	(gimple_add_histogram_value): Declare.
+	(gimple_remove_histogram_value): Declare.
+	(dump_histograms_for_stmt): Declare.
+	(gimple_remove_histogram_value): Declare.
+	(gimple_remove_stmt_histograms): Declare.
+	(gimple_duplicate_stmt_histograms): Declare.
+	(verify_histograms): Declare.
+	* function.h
+	(struct funrction): Add value_histograms hash.
+	(VALUE_HISTOGRAMS): New macro.
+	* profile.c (compute_value_histograms): update for new API.
+	* tree-inline.c: Include value-prof.h
+	(copy_bb): Update histograms.
+	* tree-flow.h (struct stmt_ann_d): Do not contain pointer to histograms;
+	reorder to get smaller memory layout.
+	* tree-cfg.c: Include value-prof.h
+	(bsi_remove): Update histograms.
+	(bsi_replace): Update histograms.
+	(verify_stmts): Call histogram verifier.
+	(tree_duplicate_bb): Update histograms.
+	(move_block_to_fn): Update histograms.
+
 2006-12-13  Richard Guenther  <rguenther@suse.de>
 
 	* ipa-inline.c (cgraph_flatten_node): Replace leafify with

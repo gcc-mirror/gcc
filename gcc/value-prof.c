@@ -43,6 +43,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "timevar.h"
 #include "tree-pass.h"
 #include "toplev.h"
+#include "pointer-set.h"
 
 static struct value_prof_hooks *value_prof_hooks;
 
@@ -81,6 +82,302 @@ static bool tree_mod_pow2_value_transform (tree);
 static bool tree_mod_subtract_transform (tree);
 static bool tree_stringops_transform (block_stmt_iterator *);
 
+/* Allocate histogram value.  */
+
+static histogram_value
+gimple_alloc_histogram_value (struct function *fun ATTRIBUTE_UNUSED,
+			      enum hist_type type, tree stmt, tree value)
+{
+   histogram_value hist = (histogram_value) xcalloc (1, sizeof (*hist));
+   hist->hvalue.value = value;
+   hist->hvalue.stmt = stmt;
+   hist->type = type;
+   return hist;
+}
+
+/* Hash value for histogram.  */
+
+static hashval_t
+histogram_hash (const void *x)
+{
+  return htab_hash_pointer (((histogram_value)x)->hvalue.stmt);
+}
+
+/* Return nonzero if decl_id of die_struct X is the same as UID of decl *Y.  */
+
+static int
+histogram_eq (const void *x, const void *y)
+{
+  return ((histogram_value) x)->hvalue.stmt == (tree)y;
+}
+
+/* Set histogram for STMT.  */
+
+static void
+set_histogram_value (struct function *fun, tree stmt, histogram_value hist)
+{
+  void **loc;
+  if (!hist && !VALUE_HISTOGRAMS (fun))
+    return;
+  if (!VALUE_HISTOGRAMS (fun))
+    VALUE_HISTOGRAMS (fun) = htab_create (1, histogram_hash,
+				           histogram_eq, NULL);
+  loc = htab_find_slot_with_hash (VALUE_HISTOGRAMS (fun), stmt,
+                                  htab_hash_pointer (stmt),
+				  hist ? INSERT : NO_INSERT);
+  if (!hist)
+    {
+      if (loc)
+	htab_clear_slot (VALUE_HISTOGRAMS (fun), loc);
+      return;
+    }
+  *loc = hist;
+}
+
+/* Get histogram list for STMT.  */
+
+histogram_value
+gimple_histogram_value (struct function *fun, tree stmt)
+{
+  if (!VALUE_HISTOGRAMS (fun))
+    return NULL;
+  return htab_find_with_hash (VALUE_HISTOGRAMS (fun), stmt,
+                              htab_hash_pointer (stmt));
+}
+
+/* Add histogram for STMT.  */
+
+void
+gimple_add_histogram_value (struct function *fun, tree stmt, histogram_value hist)
+{
+  hist->hvalue.next = gimple_histogram_value (fun, stmt);
+  set_histogram_value (fun, stmt, hist);
+}
+
+/* Remove histogram HIST from STMT's histogram list.  */
+
+void
+gimple_remove_histogram_value (struct function *fun, tree stmt, histogram_value hist)
+{
+  histogram_value hist2 = gimple_histogram_value (fun, stmt);
+  if (hist == hist2)
+    {
+      set_histogram_value (fun, stmt, hist->hvalue.next);
+    }
+  else
+    {
+      while (hist2->hvalue.next != hist)
+	hist2 = hist2->hvalue.next;
+      hist2->hvalue.next = hist->hvalue.next;
+    }
+  free (hist->hvalue.counters);
+#ifdef ENABLE_CHECKING
+  memset (hist, 0xab, sizeof (*hist));
+#endif
+  free (hist);
+}
+
+/* Lookup histogram of type TYPE in the STMT.  */
+
+histogram_value
+gimple_histogram_value_of_type (struct function *fun, tree stmt, enum hist_type type)
+{
+  histogram_value hist;
+  for (hist = gimple_histogram_value (fun, stmt); hist; hist = hist->hvalue.next)
+    if (hist->type == type)
+      return hist;
+  return NULL;
+}
+
+/* Dump information about HIST to DUMP_FILE.  */
+
+static void
+dump_histogram_value (FILE *dump_file, histogram_value hist)
+{
+  switch (hist->type)
+    {
+    case HIST_TYPE_INTERVAL:
+      fprintf (dump_file, "Interval counter range %d -- %d",
+	       hist->hdata.intvl.int_start,
+	       (hist->hdata.intvl.int_start
+	        + hist->hdata.intvl.steps - 1));
+      if (hist->hvalue.counters)
+	{
+	   unsigned int i;
+	   fprintf(dump_file, " [");
+           for (i = 0; i < hist->hdata.intvl.steps; i++)
+	     fprintf (dump_file, " %d:"HOST_WIDEST_INT_PRINT_DEC,
+		      hist->hdata.intvl.int_start + i,
+		      (HOST_WIDEST_INT) hist->hvalue.counters[i]);
+	   fprintf (dump_file, " ] outside range:"HOST_WIDEST_INT_PRINT_DEC,
+		    (HOST_WIDEST_INT) hist->hvalue.counters[i]);
+	}
+      fprintf (dump_file, ".\n");
+      break;
+
+    case HIST_TYPE_POW2:
+      fprintf (dump_file, "Pow2 counter ");
+      if (hist->hvalue.counters)
+	{
+	   fprintf (dump_file, "pow2:"HOST_WIDEST_INT_PRINT_DEC
+		    " nonpow2:"HOST_WIDEST_INT_PRINT_DEC,
+		    (HOST_WIDEST_INT) hist->hvalue.counters[0],
+		    (HOST_WIDEST_INT) hist->hvalue.counters[1]);
+	}
+      fprintf (dump_file, ".\n");
+      break;
+
+    case HIST_TYPE_SINGLE_VALUE:
+      fprintf (dump_file, "Single value ");
+      if (hist->hvalue.counters)
+	{
+	   fprintf (dump_file, "value:"HOST_WIDEST_INT_PRINT_DEC
+		    " match:"HOST_WIDEST_INT_PRINT_DEC
+		    " wrong:"HOST_WIDEST_INT_PRINT_DEC,
+		    (HOST_WIDEST_INT) hist->hvalue.counters[0],
+		    (HOST_WIDEST_INT) hist->hvalue.counters[1],
+		    (HOST_WIDEST_INT) hist->hvalue.counters[2]);
+	}
+      fprintf (dump_file, ".\n");
+      break;
+
+    case HIST_TYPE_CONST_DELTA:
+      fprintf (dump_file, "Constant delta ");
+      if (hist->hvalue.counters)
+	{
+	   fprintf (dump_file, "value:"HOST_WIDEST_INT_PRINT_DEC
+		    " match:"HOST_WIDEST_INT_PRINT_DEC
+		    " wrong:"HOST_WIDEST_INT_PRINT_DEC,
+		    (HOST_WIDEST_INT) hist->hvalue.counters[0],
+		    (HOST_WIDEST_INT) hist->hvalue.counters[1],
+		    (HOST_WIDEST_INT) hist->hvalue.counters[2]);
+	}
+      fprintf (dump_file, ".\n");
+      break;
+   }
+}
+
+/* Dump all histograms attached to STMT to DUMP_FILE.  */
+
+void
+dump_histograms_for_stmt (struct function *fun, FILE *dump_file, tree stmt)
+{
+  histogram_value hist;
+  for (hist = gimple_histogram_value (fun, stmt); hist; hist = hist->hvalue.next)
+   dump_histogram_value (dump_file, hist);
+}
+
+/* Remove all histograms associated with STMT.  */
+
+void
+gimple_remove_stmt_histograms (struct function *fun, tree stmt)
+{
+  histogram_value val;
+  while ((val = gimple_histogram_value (fun, stmt)) != NULL)
+    gimple_remove_histogram_value (fun, stmt, val);
+}
+
+/* Duplicate all histograms associates with OSTMT to STMT.  */
+
+void
+gimple_duplicate_stmt_histograms (struct function *fun, tree stmt,
+				  struct function *ofun, tree ostmt)
+{
+  histogram_value val;
+  for (val = gimple_histogram_value (ofun, ostmt); val != NULL; val = val->hvalue.next)
+    {
+      histogram_value new = gimple_alloc_histogram_value (fun, val->type, NULL, NULL);
+      memcpy (new, val, sizeof (*val));
+      new->hvalue.stmt = stmt;
+      new->hvalue.counters = xmalloc (sizeof (*new->hvalue.counters) * new->n_counters);
+      memcpy (new->hvalue.counters, val->hvalue.counters, sizeof (*new->hvalue.counters) * new->n_counters);
+      gimple_add_histogram_value (fun, stmt, new);
+    }
+}
+
+static bool error_found = false;
+
+/* Helper function for verify_histograms.  For each histogram reachable via htab
+   walk verify that it was reached via statement walk.  */
+
+static int
+visit_hist (void **slot, void *data)
+{
+  struct pointer_set_t *visited = (struct pointer_set_t *) data;
+  histogram_value hist = *(histogram_value *) slot;
+  if (!pointer_set_contains (visited, hist))
+    {
+      error ("Dead histogram");
+      dump_histogram_value (stderr, hist);
+      debug_generic_stmt (hist->hvalue.stmt);
+      error_found = true;
+    }
+  return 0;
+}
+
+/* Verify sanity of the histograms.  */
+
+void
+verify_histograms (void)
+{
+  basic_block bb;
+  block_stmt_iterator bsi;
+  histogram_value hist;
+  struct pointer_set_t *visited_hists;
+
+  error_found = false;
+  visited_hists = pointer_set_create ();
+  FOR_EACH_BB (bb)
+    for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+      {
+	tree stmt = bsi_stmt (bsi);
+
+	for (hist = gimple_histogram_value (cfun, stmt); hist; hist = hist->hvalue.next)
+	  {
+	    if (hist->hvalue.stmt != stmt)
+	      {
+		error ("Histogram value statement does not correspond to statement"
+		       " it is associated with");
+		debug_generic_stmt (stmt);
+		dump_histogram_value (stderr, hist);
+		error_found = true;
+	      }
+            pointer_set_insert (visited_hists, hist);
+	  }
+      }
+  if (VALUE_HISTOGRAMS (cfun))
+    htab_traverse (VALUE_HISTOGRAMS (cfun), visit_hist, visited_hists);
+  pointer_set_destroy (visited_hists);
+  if (error_found)
+    internal_error ("verify_histograms failed");
+}
+
+/* Helper function for verify_histograms.  For each histogram reachable via htab
+   walk verify that it was reached via statement walk.  */
+
+static int
+free_hist (void **slot, void *data ATTRIBUTE_UNUSED)
+{
+  histogram_value hist = *(histogram_value *) slot;
+  free (hist->hvalue.counters);
+#ifdef ENABLE_CHECKING
+  memset (hist, 0xab, sizeof (*hist));
+#endif
+  free (hist);
+  return 0;
+}
+
+void
+free_histograms (void)
+{
+  if (VALUE_HISTOGRAMS (cfun))
+    {
+      htab_traverse (VALUE_HISTOGRAMS (cfun), free_hist, NULL);
+      htab_delete (VALUE_HISTOGRAMS (cfun));
+      VALUE_HISTOGRAMS (cfun) = NULL;
+    }
+}
+
 /* The overall number of invocations of the counter should match execution count
    of basic block.  Report it as error rather than internal error as it might
    mean that user has misused the profile somehow.  */
@@ -110,22 +407,18 @@ tree_value_profile_transformations (void)
 
   FOR_EACH_BB (bb)
     {
-      /* Ignore cold areas -- we are enlarging the code.  */
-      if (!bb->count || !maybe_hot_bb_p (bb))
-	continue;
-
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	{
 	  tree stmt = bsi_stmt (bsi);
-	  stmt_ann_t ann = get_stmt_ann (stmt);
-	  histogram_value th = ann->histograms;
+	  histogram_value th = gimple_histogram_value (cfun, stmt);
 	  if (!th)
 	    continue;
 
 	  if (dump_file)
 	    {
-	      fprintf (dump_file, "Trying transformations on insn ");
+	      fprintf (dump_file, "Trying transformations on stmt ");
 	      print_generic_stmt (dump_file, stmt, TDF_SLIM);
+	      dump_histograms_for_stmt (cfun, dump_file, stmt);
 	    }
 
 	  /* Transformations:  */
@@ -150,14 +443,6 @@ tree_value_profile_transformations (void)
 		  bsi = bsi_for_stmt (stmt);
 		}
 	    }
-
-	  /* Free extra storage from compute_value_histograms.  */
-	  while (th)
-	    {
-	      free (th->hvalue.counters);
-	      th = th->hvalue.next;
-	    }
-	  ann->histograms = 0;
         }
     }
 
@@ -259,7 +544,6 @@ tree_divmod_fixed_value (tree stmt, tree operation,
 static bool
 tree_divmod_fixed_value_transform (tree stmt)
 {
-  stmt_ann_t ann = get_stmt_ann (stmt);
   histogram_value histogram;
   enum tree_code code;
   gcov_type val, count, all;
@@ -283,13 +567,8 @@ tree_divmod_fixed_value_transform (tree stmt)
 
   op1 = TREE_OPERAND (op, 0);
   op2 = TREE_OPERAND (op, 1);
-  if (!ann->histograms)
-    return false;
 
-  for (histogram = ann->histograms; histogram; histogram = histogram->hvalue.next)
-    if (histogram->type == HIST_TYPE_SINGLE_VALUE)
-      break;
-
+  histogram = gimple_histogram_value_of_type (cfun, stmt, HIST_TYPE_SINGLE_VALUE);
   if (!histogram)
     return false;
 
@@ -297,11 +576,13 @@ tree_divmod_fixed_value_transform (tree stmt)
   val = histogram->hvalue.counters[0];
   count = histogram->hvalue.counters[1];
   all = histogram->hvalue.counters[2];
+  gimple_remove_histogram_value (cfun, stmt, histogram);
 
   /* We require that count is at least half of all; this means
      that for the transformation to fire the value must be constant
      at least 50% of time (and 75% gives the guarantee of usage).  */
-  if (simple_cst_equal (op2, value) != 1 || 2 * count < all)
+  if (simple_cst_equal (op2, value) != 1 || 2 * count < all
+      || !maybe_hot_bb_p (bb_for_stmt (stmt)))
     return false;
 
   if (check_counter (stmt, "value", all, bb_for_stmt (stmt)->count))
@@ -422,7 +703,6 @@ tree_mod_pow2 (tree stmt, tree operation, tree op1, tree op2, int prob,
 static bool
 tree_mod_pow2_value_transform (tree stmt)
 {
-  stmt_ann_t ann = get_stmt_ann (stmt);
   histogram_value histogram;
   enum tree_code code;
   gcov_type count, wrong_values, all;
@@ -446,13 +726,8 @@ tree_mod_pow2_value_transform (tree stmt)
 
   op1 = TREE_OPERAND (op, 0);
   op2 = TREE_OPERAND (op, 1);
-  if (!ann->histograms)
-    return false;
 
-  for (histogram = ann->histograms; histogram; histogram = histogram->hvalue.next)
-    if (histogram->type == HIST_TYPE_POW2)
-      break;
-
+  histogram = gimple_histogram_value_of_type (cfun, stmt, HIST_TYPE_POW2);
   if (!histogram)
     return false;
 
@@ -460,8 +735,11 @@ tree_mod_pow2_value_transform (tree stmt)
   wrong_values = histogram->hvalue.counters[0];
   count = histogram->hvalue.counters[1];
 
+  gimple_remove_histogram_value (cfun, stmt, histogram);
+
   /* We require that we hit a power of 2 at least half of all evaluations.  */
-  if (simple_cst_equal (op2, value) != 1 || count < wrong_values)
+  if (simple_cst_equal (op2, value) != 1 || count < wrong_values
+      || !maybe_hot_bb_p (bb_for_stmt (stmt)))
     return false;
 
   if (dump_file)
@@ -472,6 +750,7 @@ tree_mod_pow2_value_transform (tree stmt)
 
   /* Compute probability of taking the optimal path.  */
   all = count + wrong_values;
+
   if (check_counter (stmt, "pow2", all, bb_for_stmt (stmt)->count))
     return false;
 
@@ -604,13 +883,13 @@ tree_mod_subtract (tree stmt, tree operation, tree op1, tree op2,
 static bool
 tree_mod_subtract_transform (tree stmt)
 {
-  stmt_ann_t ann = get_stmt_ann (stmt);
   histogram_value histogram;
   enum tree_code code;
   gcov_type count, wrong_values, all;
   tree modify, op, op1, op2, result, value;
   int prob1, prob2;
-  unsigned int i;
+  unsigned int i, steps;
+  gcov_type count1, count2;
 
   modify = stmt;
   if (TREE_CODE (stmt) == RETURN_EXPR
@@ -629,13 +908,8 @@ tree_mod_subtract_transform (tree stmt)
 
   op1 = TREE_OPERAND (op, 0);
   op2 = TREE_OPERAND (op, 1);
-  if (!ann->histograms)
-    return false;
 
-  for (histogram = ann->histograms; histogram; histogram = histogram->hvalue.next)
-    if (histogram->type == HIST_TYPE_INTERVAL)
-      break;
-
+  histogram = gimple_histogram_value_of_type (cfun, stmt, HIST_TYPE_INTERVAL);
   if (!histogram)
     return false;
 
@@ -647,11 +921,17 @@ tree_mod_subtract_transform (tree stmt)
 
   wrong_values += histogram->hvalue.counters[i];
   wrong_values += histogram->hvalue.counters[i+1];
+  steps = histogram->hdata.intvl.steps;
   all += wrong_values;
+  count1 = histogram->hvalue.counters[0];
+  count2 = histogram->hvalue.counters[1];
 
   /* Compute probability of taking the optimal path.  */
   if (check_counter (stmt, "interval", all, bb_for_stmt (stmt)->count))
-    return false;
+    {
+      gimple_remove_histogram_value (cfun, stmt, histogram);
+      return false;
+    }
 
   /* We require that we use just subtractions in at least 50% of all
      evaluations.  */
@@ -662,9 +942,11 @@ tree_mod_subtract_transform (tree stmt)
       if (count * 2 >= all)
 	break;
     }
-  if (i == histogram->hdata.intvl.steps)
+  if (i == steps
+      || !maybe_hot_bb_p (bb_for_stmt (stmt)))
     return false;
 
+  gimple_remove_histogram_value (cfun, stmt, histogram);
   if (dump_file)
     {
       fprintf (dump_file, "Mod subtract transformation on insn ");
@@ -672,14 +954,13 @@ tree_mod_subtract_transform (tree stmt)
     }
 
   /* Compute probability of taking the optimal path(s).  */
-  prob1 = (histogram->hvalue.counters[0] * REG_BR_PROB_BASE + all / 2) / all;
-  prob2 = (histogram->hvalue.counters[1] * REG_BR_PROB_BASE + all / 2) / all;
+  prob1 = (count1 * REG_BR_PROB_BASE + all / 2) / all;
+  prob2 = (count2 * REG_BR_PROB_BASE + all / 2) / all;
 
   /* In practice, "steps" is always 2.  This interface reflects this,
      and will need to be changed if "steps" can change.  */
   result = tree_mod_subtract (stmt, op, op1, op2, prob1, prob2, i,
-			    histogram->hvalue.counters[0], 
-			    histogram->hvalue.counters[1], all);
+			      count1, count2, all);
 
   GIMPLE_STMT_OPERAND (modify, 1) = result;
 
@@ -826,7 +1107,6 @@ tree_stringops_transform (block_stmt_iterator *bsi)
   tree arglist;
   tree blck_size;
   enum built_in_function fcode;
-  stmt_ann_t ann = get_stmt_ann (stmt);
   histogram_value histogram;
   gcov_type count, all, val;
   tree value;
@@ -852,26 +1132,18 @@ tree_stringops_transform (block_stmt_iterator *bsi)
   if (TREE_CODE (blck_size) == INTEGER_CST)
     return false;
 
-  if (!ann->histograms)
-    return false;
-
-  all = bb_for_stmt (stmt)->count;
-  if (!all)
-    return false;
-  for (histogram = ann->histograms; histogram;
-       histogram = histogram->hvalue.next)
-    if (histogram->type == HIST_TYPE_SINGLE_VALUE)
-      break;
+  histogram = gimple_histogram_value_of_type (cfun, stmt, HIST_TYPE_SINGLE_VALUE);
   if (!histogram)
     return false;
   value = histogram->hvalue.value;
   val = histogram->hvalue.counters[0];
   count = histogram->hvalue.counters[1];
   all = histogram->hvalue.counters[2];
+  gimple_remove_histogram_value (cfun, stmt, histogram);
   /* We require that count is at least half of all; this means
      that for the transformation to fire the value must be constant
      at least 80% of time.  */
-  if ((6 * count / 5) < all)
+  if ((6 * count / 5) < all || !maybe_hot_bb_p (bb_for_stmt (stmt)))
     return false;
   if (check_counter (stmt, "value", all, bb_for_stmt (stmt)->count))
     return false;
@@ -957,33 +1229,26 @@ tree_divmod_values_to_profile (tree stmt, histogram_values *values)
       VEC_reserve (histogram_value, heap, *values, 3);
 
       if (is_gimple_reg (divisor))
-	{
-	  /* Check for the case where the divisor is the same value most
-	     of the time.  */
-	  hist = ggc_alloc (sizeof (*hist));
-	  hist->hvalue.value = divisor;
-	  hist->hvalue.stmt = stmt;
-	  hist->type = HIST_TYPE_SINGLE_VALUE;
-	  VEC_quick_push (histogram_value, *values, hist);
-	}
+	/* Check for the case where the divisor is the same value most
+	   of the time.  */
+	VEC_quick_push (histogram_value, *values,
+			gimple_alloc_histogram_value (cfun, HIST_TYPE_SINGLE_VALUE,
+						      stmt, divisor));
 
       /* For mod, check whether it is not often a noop (or replaceable by
 	 a few subtractions).  */
       if (TREE_CODE (rhs) == TRUNC_MOD_EXPR
 	  && TYPE_UNSIGNED (type))
 	{
+          tree val;
           /* Check for a special case where the divisor is power of 2.  */
-	  hist = ggc_alloc (sizeof (*hist));
-	  hist->hvalue.value = divisor;
-	  hist->hvalue.stmt = stmt;
-	  hist->type = HIST_TYPE_POW2;
-	  VEC_quick_push (histogram_value, *values, hist);
+	  VEC_quick_push (histogram_value, *values,
+			  gimple_alloc_histogram_value (cfun, HIST_TYPE_POW2,
+							stmt, divisor));
 
-	  hist = ggc_alloc (sizeof (*hist));
-	  hist->hvalue.stmt = stmt;
-	  hist->hvalue.value
-		  = build2 (TRUNC_DIV_EXPR, type, op0, divisor);
-	  hist->type = HIST_TYPE_INTERVAL;
+	  val = build2 (TRUNC_DIV_EXPR, type, op0, divisor);
+	  hist = gimple_alloc_histogram_value (cfun, HIST_TYPE_INTERVAL,
+					       stmt, val);
 	  hist->hdata.intvl.int_start = 0;
 	  hist->hdata.intvl.steps = 2;
 	  VEC_quick_push (histogram_value, *values, hist);
@@ -996,7 +1261,7 @@ tree_divmod_values_to_profile (tree stmt, histogram_values *values)
 }
 
 /* Find values inside STMT for that we want to measure histograms for
-   division/modulo optimization.  */
+   string operations.  */
 static void
 tree_stringops_values_to_profile (tree stmt, histogram_values *values)
 {
@@ -1005,7 +1270,6 @@ tree_stringops_values_to_profile (tree stmt, histogram_values *values)
   tree arglist;
   tree blck_size;
   enum built_in_function fcode;
-  histogram_value hist;
 
   if (!call)
     return;
@@ -1024,14 +1288,9 @@ tree_stringops_values_to_profile (tree stmt, histogram_values *values)
     blck_size = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
 
   if (TREE_CODE (blck_size) != INTEGER_CST)
-    {
-      VEC_reserve (histogram_value, heap, *values, 3);
-      hist = ggc_alloc (sizeof (*hist));
-      hist->hvalue.value = blck_size;
-      hist->hvalue.stmt = stmt;
-      hist->type = HIST_TYPE_SINGLE_VALUE;
-      VEC_quick_push (histogram_value, *values, hist);
-    }
+    VEC_safe_push (histogram_value, heap, *values,
+		   gimple_alloc_histogram_value (cfun, HIST_TYPE_SINGLE_VALUE,
+						 stmt, blck_size));
 }
 
 /* Find values inside STMT for that we want to measure histograms and adds
@@ -1053,7 +1312,7 @@ tree_find_values_to_profile (histogram_values *values)
   basic_block bb;
   block_stmt_iterator bsi;
   unsigned i;
-  histogram_value hist;
+  histogram_value hist = NULL;
 
   *values = NULL;
   FOR_EACH_BB (bb)
@@ -1065,52 +1324,30 @@ tree_find_values_to_profile (histogram_values *values)
       switch (hist->type)
         {
 	case HIST_TYPE_INTERVAL:
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "Interval counter for tree ");
-	      print_generic_expr (dump_file, hist->hvalue.stmt, 
-				  TDF_SLIM);
-	      fprintf (dump_file, ", range %d -- %d.\n",
-		     hist->hdata.intvl.int_start,
-		     (hist->hdata.intvl.int_start
-		      + hist->hdata.intvl.steps - 1));
-	    }
 	  hist->n_counters = hist->hdata.intvl.steps + 2;
 	  break;
 
 	case HIST_TYPE_POW2:
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "Pow2 counter for tree ");
-	      print_generic_expr (dump_file, hist->hvalue.stmt, TDF_SLIM);
-	      fprintf (dump_file, ".\n");
-	    }
 	  hist->n_counters = 2;
 	  break;
 
 	case HIST_TYPE_SINGLE_VALUE:
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "Single value counter for tree ");
-	      print_generic_expr (dump_file, hist->hvalue.stmt, TDF_SLIM);
-	      fprintf (dump_file, ".\n");
-	    }
 	  hist->n_counters = 3;
 	  break;
 
 	case HIST_TYPE_CONST_DELTA:
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "Constant delta counter for tree ");
-	      print_generic_expr (dump_file, hist->hvalue.stmt, TDF_SLIM);
-	      fprintf (dump_file, ".\n");
-	    }
 	  hist->n_counters = 4;
 	  break;
 
 	default:
 	  gcc_unreachable ();
 	}
+      if (dump_file)
+        {
+	  fprintf (dump_file, "Stmt ");
+          print_generic_expr (dump_file, hist->hvalue.stmt, TDF_SLIM);
+	  dump_histogram_value (dump_file, hist);
+        }
     }
 }
 

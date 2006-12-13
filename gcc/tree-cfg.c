@@ -46,6 +46,7 @@ Boston, MA 02110-1301, USA.  */
 #include "cfglayout.h"
 #include "hashtab.h"
 #include "tree-ssa-propagate.h"
+#include "value-prof.h"
 
 /* This file contains functions for building the Control Flow Graph (CFG)
    for a function tree.  */
@@ -2871,7 +2872,10 @@ bsi_remove (block_stmt_iterator *i, bool remove_eh_info)
   tsi_delink (&i->tsi);
   mark_stmt_modified (t);
   if (remove_eh_info)
-    remove_stmt_from_eh_region (t);
+    {
+      remove_stmt_from_eh_region (t);
+      gimple_remove_stmt_histograms (cfun, t);
+    }
 }
 
 
@@ -2934,6 +2938,8 @@ bsi_replace (const block_stmt_iterator *bsi, tree stmt, bool update_eh_info)
 	{
 	  remove_stmt_from_eh_region (orig_stmt);
 	  add_stmt_to_eh_region (stmt, eh_region);
+	  gimple_duplicate_stmt_histograms (cfun, stmt, cfun, orig_stmt);
+          gimple_remove_stmt_histograms (cfun, orig_stmt);
 	}
     }
 
@@ -3671,6 +3677,7 @@ verify_stmts (void)
     internal_error ("verify_stmts failed");
 
   htab_delete (htab);
+  verify_histograms ();
   timevar_pop (TV_TREE_STMT_VERIFY);
 }
 
@@ -4342,6 +4349,7 @@ tree_duplicate_bb (basic_block bb)
       region = lookup_stmt_eh_region (stmt);
       if (region >= 0)
 	add_stmt_to_eh_region (copy, region);
+      gimple_duplicate_stmt_histograms (cfun, copy, cfun, stmt);
 
       /* Create new names for all the definitions created by COPY and
 	 add replacement mappings for each new name.  */
@@ -4785,6 +4793,8 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
 	{
 	  add_stmt_to_eh_region_fn (dest_cfun, stmt, region + eh_offset);
 	  remove_stmt_from_eh_region (stmt);
+	  gimple_duplicate_stmt_histograms (dest_cfun, stmt, cfun, stmt);
+          gimple_remove_stmt_histograms (cfun, stmt);
 	}
     }
 }
