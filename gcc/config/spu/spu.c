@@ -257,7 +257,6 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 void
 spu_override_options (void)
 {
-
   /* Override some of the default param values.  With so many registers
      larger values are better for these params.  */
   if (MAX_UNROLLED_INSNS == 100)

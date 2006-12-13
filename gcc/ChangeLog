@@ -1,3 +1,13 @@
+2006-12-13  Sa Liu  <saliu@de.ibm.com>
+	    Ben Elliston  <bje@au.ibm.com>
+
+	* config/spu/spu.h (C_COMMON_OVERRIDE_OPTIONS): Define.
+	(REGISTER_TARGET_PRAGMAS): Don't zero warn_main flag.
+	* config/spu/spu-protos.h (spu_c_common_override_options):
+	Declare.
+	* config/spu/spu-c.c (spu_c_common_override_options): New.
+	* config/spu/spu.c (spu_override_options): Whitespace fix.
+
 2006-12-12  Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
 
 	* config/spu/spu.c (cpat_info): Fix an incorrectly identified case.
