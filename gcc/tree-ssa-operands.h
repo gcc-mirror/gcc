@@ -116,7 +116,7 @@ struct vuse_optype_d
 typedef struct vuse_optype_d *vuse_optype_p;
                                                                               
 
-#define SSA_OPERAND_MEMORY_SIZE		(2048 - sizeof (void *))
+#define SSA_OPERAND_MEMORY_SIZE		(511 * sizeof (struct vuse_optype_d))
                                                                               
 struct ssa_operand_memory_d GTY((chain_next("%h.next")))
 {
