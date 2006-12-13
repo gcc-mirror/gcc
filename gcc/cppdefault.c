@@ -33,7 +33,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 #define STANDARD_INCLUDE_COMPONENT 0
 #endif
 
-#if defined (CROSS_COMPILE) && !defined (TARGET_SYSTEM_ROOT)
+#if defined (CROSS_DIRECTORY_STRUCTURE) && !defined (TARGET_SYSTEM_ROOT)
 # undef LOCAL_INCLUDE_DIR
 # undef SYSTEM_INCLUDE_DIR
 # undef STANDARD_INCLUDE_DIR

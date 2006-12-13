@@ -138,7 +138,7 @@ Boston, MA 02110-1301, USA.  */
 #define SUBTARGET_EXTRA_SPECS { "asm_oldas", ASM_OLDAS_SPEC }
 
 /* Indicate that we have a stamp.h to use.  */
-#ifndef CROSS_COMPILE
+#ifndef CROSS_DIRECTORY_STRUCTURE
 #define HAVE_STAMP_H 1
 #endif
 
