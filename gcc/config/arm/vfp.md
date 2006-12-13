@@ -828,7 +828,7 @@
 	  (unspec:BLK [(match_operand:DF 1 "s_register_operand" "w")]
 		      UNSPEC_PUSH_MULT))])]
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
-  "* return vfp_output_fstmx (operands);"
+  "* return vfp_output_fstmd (operands);"
   [(set_attr "type" "f_stored")]
 )
 

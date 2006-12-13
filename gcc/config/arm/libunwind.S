@@ -68,18 +68,44 @@ ARM_FUNC_START restore_core_regs
 	FUNC_END restore_core_regs
 	UNPREFIX restore_core_regs
 
-/* Load VFP registers d0-d15 from the address in r0.  */
+/* Load VFP registers d0-d15 from the address in r0.
+   Use this to load from FSTMX format.  */
 ARM_FUNC_START gnu_Unwind_Restore_VFP
 	/* Use the generic coprocessor form so that gas doesn't complain
 	   on soft-float targets.  */
 	ldc   p11,cr0,[r0],{0x21} /* fldmiax r0, {d0-d15} */
 	RET
 
-/* Store VFR regsters d0-d15 to the address in r0.  */
+/* Store VFP registers d0-d15 to the address in r0.
+   Use this to store in FSTMX format.  */
 ARM_FUNC_START gnu_Unwind_Save_VFP
 	/* Use the generic coprocessor form so that gas doesn't complain
 	   on soft-float targets.  */
 	stc   p11,cr0,[r0],{0x21} /* fstmiax r0, {d0-d15} */
+	RET
+
+/* Load VFP registers d0-d15 from the address in r0.
+   Use this to load from FSTMD format.  */
+ARM_FUNC_START gnu_Unwind_Restore_VFP_D
+	ldc   p11,cr0,[r0],{0x20} /* fldmiad r0, {d0-d15} */
+	RET
+
+/* Store VFP registers d0-d15 to the address in r0.
+   Use this to store in FLDMD format.  */
+ARM_FUNC_START gnu_Unwind_Save_VFP_D
+	stc   p11,cr0,[r0],{0x20} /* fstmiad r0, {d0-d15} */
+	RET
+
+/* Load VFP registers d16-d31 from the address in r0.
+   Use this to load from FSTMD (=VSTM) format.  Needs VFPv3.  */
+ARM_FUNC_START gnu_Unwind_Restore_VFP_D_16_to_31
+	ldcl  p11,cr0,[r0],{0x20} /* vldm r0, {d16-d31} */
+	RET
+
+/* Store VFP registers d16-d31 to the address in r0.
+   Use this to store in FLDMD (=VLDM) format.  Needs VFPv3.  */
+ARM_FUNC_START gnu_Unwind_Save_VFP_D_16_to_31
+	stcl  p11,cr0,[r0],{0x20} /* vstm r0, {d16-d31} */
 	RET
 
 /* Wrappers to save core registers, then call the real routine.   */
