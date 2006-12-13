@@ -1,5 +1,20 @@
 2006-12-13  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/17687
+	* builtins.def (BUILT_IN_CEXPI, BUILT_IN_CEXPIF, BUILT_IN_CEXPIL):
+	New builtins for imaginary argument cexp.
+	* builtin-types.def (BT_FN_COMPLEX_FLOAT_FLOAT,
+	BT_FN_COMPLEX_DOUBLE_DOUBLE, BT_FN_COMPLEX_LONGDOUBLE_LONGDOUBLE):
+	New required builtin types.
+	* builtins.c (expand_builtin_cexpi): Declare.
+	(mathfn_built_in): Handle BUILT_IN_CEXPI.
+	(expand_builtin_cexpi): New static helper.
+	(expand_builtin): Call it.
+	(do_mpfr_sincos): Adjust for CEXPI evaluation.
+	(fold_builtin_sincos): New function to fold sincos to cepxi.
+
+2006-12-13  Richard Guenther  <rguenther@suse.de>
+
 	* ipa-reference.c (scan_for_static_refs): Also scan
 	tcc_comparison class trees.
 

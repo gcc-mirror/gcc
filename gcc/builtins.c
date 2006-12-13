@@ -94,6 +94,7 @@ static rtx expand_builtin_mathfn (tree, rtx, rtx);
 static rtx expand_builtin_mathfn_2 (tree, rtx, rtx);
 static rtx expand_builtin_mathfn_3 (tree, rtx, rtx);
 static rtx expand_builtin_sincos (tree);
+static rtx expand_builtin_cexpi (tree, rtx, rtx);
 static rtx expand_builtin_int_roundingfn (tree, rtx, rtx);
 static rtx expand_builtin_int_roundingfn_2 (tree, rtx, rtx);
 static rtx expand_builtin_args_info (tree);
@@ -1648,6 +1649,7 @@ mathfn_built_in (tree type, enum built_in_function fn)
       CASE_MATHFN (BUILT_IN_ATANH)
       CASE_MATHFN (BUILT_IN_CBRT)
       CASE_MATHFN (BUILT_IN_CEIL)
+      CASE_MATHFN (BUILT_IN_CEXPI)
       CASE_MATHFN (BUILT_IN_COPYSIGN)
       CASE_MATHFN (BUILT_IN_COS)
       CASE_MATHFN (BUILT_IN_COSH)
@@ -2213,6 +2215,78 @@ expand_builtin_sincos (tree exp)
   emit_move_insn (op2, target2);
 
   return const0_rtx;
+}
+
+/* Expand a call to the internal cexpi builtin to the sincos math function.
+   EXP is the expression that is a call to the builtin function; if convenient,
+   the result should be placed in TARGET.  SUBTARGET may be used as the target
+   for computing one of EXP's operands.  */
+
+static rtx
+expand_builtin_cexpi (tree exp, rtx target, rtx subtarget)
+{
+  tree fndecl = get_callee_fndecl (exp);
+  tree arglist = TREE_OPERAND (exp, 1);
+  enum machine_mode mode;
+  tree arg, type;
+  rtx op0, op1, op2;
+
+  if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    return 0;
+
+  arg = TREE_VALUE (arglist);
+  type = TREE_TYPE (arg);
+  mode = TYPE_MODE (TREE_TYPE (arg));
+
+  /* Try expanding via a sincos optab, fall back to emitting a libcall
+     to sincos.  We are sure we have sincos either way because cexpi
+     is only generated from sincos.  */
+  if (sincos_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+    {
+      op1 = gen_reg_rtx (mode);
+      op2 = gen_reg_rtx (mode);
+
+      op0 = expand_expr (arg, subtarget, VOIDmode, 0);
+
+      /* Compute into op1 and op2.  */
+      expand_twoval_unop (sincos_optab, op0, op2, op1, 0);
+    }
+  else
+    {
+      tree call, narglist, fn = NULL_TREE;
+      tree top1, top2;
+      rtx op1a, op2a;
+
+      if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CEXPIF)
+	fn = built_in_decls[BUILT_IN_SINCOSF];
+      else if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CEXPI)
+	fn = built_in_decls[BUILT_IN_SINCOS];
+      else if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CEXPIL)
+	fn = built_in_decls[BUILT_IN_SINCOSL];
+      gcc_assert (fn);
+ 
+      op1 = assign_temp (TREE_TYPE (arg), 0, 1, 1);
+      op2 = assign_temp (TREE_TYPE (arg), 0, 1, 1);
+      op1a = copy_to_mode_reg (Pmode, XEXP (op1, 0));
+      op2a = copy_to_mode_reg (Pmode, XEXP (op2, 0));
+      top1 = make_tree (build_pointer_type (TREE_TYPE (arg)), op1a);
+      top2 = make_tree (build_pointer_type (TREE_TYPE (arg)), op2a);
+
+      narglist = build_tree_list (NULL_TREE, top2);
+      narglist = tree_cons (NULL_TREE, top1, narglist);
+      narglist = tree_cons (NULL_TREE, arg, narglist);
+
+      /* Make sure not to fold the sincos call again.  */
+      call = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
+      expand_normal (build3 (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+			     call, arglist, NULL_TREE));
+    }
+
+  /* Now build the proper return type.  */
+  return expand_expr (build2 (COMPLEX_EXPR, build_complex_type (type),
+			      make_tree (TREE_TYPE (arg), op2),
+			      make_tree (TREE_TYPE (arg), op1)),
+		      target, VOIDmode, 0);
 }
 
 /* Expand a call to one of the builtin rounding functions gcc defines
@@ -5772,6 +5846,11 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	return target;
       break;
 
+    CASE_FLT_FN (BUILT_IN_CEXPI):
+      target = expand_builtin_cexpi (exp, target, subtarget);
+      gcc_assert (target);
+      return target;
+
     CASE_FLT_FN (BUILT_IN_SIN):
     CASE_FLT_FN (BUILT_IN_COS):
       if (! flag_unsafe_math_optimizations)
@@ -7247,6 +7326,45 @@ fold_builtin_tan (tree arglist, tree type)
     return TREE_VALUE (TREE_OPERAND (arg, 1));
 
   return NULL_TREE;
+}
+
+/* Fold function call to builtin sincos, sincosf, or sincosl.  Return
+   NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_sincos (tree arglist)
+{
+  tree type, arg0, arg1, arg2;
+  tree res, fn, call;
+
+  if (!validate_arglist (arglist, REAL_TYPE, POINTER_TYPE,
+			 POINTER_TYPE, VOID_TYPE))
+    return NULL_TREE;
+
+  arg0 = TREE_VALUE (arglist);
+  type = TREE_TYPE (arg0);
+  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+
+  /* Calculate the result when the argument is a constant.  */
+  if ((res = do_mpfr_sincos (arg0, arg1, arg2)))
+    return res;
+
+  /* Canonicalize sincos to cexpi.  */
+  fn = mathfn_built_in (type, BUILT_IN_CEXPI);
+  if (!fn)
+    return NULL_TREE;
+
+  call = build_function_call_expr (fn, build_tree_list (NULL_TREE, arg0));
+  call = builtin_save_expr (call);
+
+  return build2 (COMPOUND_EXPR, type,
+		 build2 (MODIFY_EXPR, void_type_node,
+			 build_fold_indirect_ref (arg1),
+			 build1 (IMAGPART_EXPR, type, call)),
+		 build2 (MODIFY_EXPR, void_type_node,
+			 build_fold_indirect_ref (arg2),
+			 build1 (REALPART_EXPR, type, call)));
 }
 
 /* Fold function call to builtin trunc, truncf or truncl.  Return
@@ -9192,10 +9310,11 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
       return fold_builtin_tan (arglist, type);
 
     CASE_FLT_FN (BUILT_IN_SINCOS):
-      if (validate_arglist (arglist, REAL_TYPE, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
-	return do_mpfr_sincos (TREE_VALUE (arglist), TREE_VALUE (TREE_CHAIN (arglist)),
-			       TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist))));
-    break;
+      return fold_builtin_sincos (arglist);
+
+    CASE_FLT_FN (BUILT_IN_CEXPI):
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_sincos (TREE_VALUE (arglist), NULL_TREE, NULL_TREE);
 
     CASE_FLT_FN (BUILT_IN_SINH):
       if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
@@ -11667,6 +11786,8 @@ do_mpfr_arg3 (tree arg1, tree arg2, tree arg3, tree type,
 
 /* If argument ARG is a REAL_CST, call mpfr_sin_cos() on it and set
    the pointers *(ARG_SINP) and *(ARG_COSP) to the resulting values.
+   If ARG_SINP and ARG_COSP are NULL then the result is returned
+   as a complex value.
    The type is taken from the type of ARG and is used for setting the
    precision of the calculation and results.  */
 
@@ -11698,6 +11819,11 @@ do_mpfr_sincos (tree arg, tree arg_sinp, tree arg_cosp)
 	  mpfr_clears (m, ms, mc, NULL);
 	  if (result_s && result_c)
 	    {
+	      /* If we are to return in a complex value do so.  */
+	      if (!arg_sinp && !arg_cosp)
+		return build_complex (build_complex_type (type),
+				      result_c, result_s);
+
 	      /* Dereference the sin/cos pointer arguments.  */
 	      arg_sinp = build_fold_indirect_ref (arg_sinp);
 	      arg_cosp = build_fold_indirect_ref (arg_cosp);
