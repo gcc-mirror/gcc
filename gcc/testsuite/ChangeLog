@@ -1,3 +1,11 @@
+2006-12-13  Lee Millward  <lee.millward@codesourcery.com>
+
+	PR c++27316
+	* g++.dg/inherit/error3.C: New test.
+
+	PR c++/28740
+	* g++.dg/inherit/error4.C: New test. 
+	
 2006-12-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/17687
