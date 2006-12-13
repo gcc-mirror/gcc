@@ -2279,7 +2279,7 @@ expand_builtin_cexpi (tree exp, rtx target, rtx subtarget)
       /* Make sure not to fold the sincos call again.  */
       call = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
       expand_normal (build3 (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-			     call, arglist, NULL_TREE));
+			     call, narglist, NULL_TREE));
     }
 
   /* Now build the proper return type.  */

@@ -1,3 +1,7 @@
+2006-12-13  Richard Guenther  <rguenther@suse.de>
+
+	* builtins.c (expand_builtin_cexpi): Fix typo.
+
 2006-12-13  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in: Add dependencies.
