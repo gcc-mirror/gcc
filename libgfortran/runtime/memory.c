@@ -174,13 +174,10 @@ internal_realloc64 (void *mem, GFC_INTEGER_8 size)
 /* User-allocate, one call for each member of the alloc-list of an
    ALLOCATE statement. */
 
-static void
-allocate_size (void **mem, size_t size, GFC_INTEGER_4 * stat)
+static void *
+allocate_size (size_t size, GFC_INTEGER_4 * stat)
 {
   void *newmem;
-
-  if (!mem)
-    runtime_error ("Internal: NULL mem pointer in ALLOCATE.");
 
   newmem = malloc (size ? size : 1);
   if (!newmem)
@@ -188,119 +185,99 @@ allocate_size (void **mem, size_t size, GFC_INTEGER_4 * stat)
       if (stat)
 	{
 	  *stat = 1;
-	  return;
+	  return newmem;
 	}
       else
 	runtime_error ("ALLOCATE: Out of memory.");
     }
 
-  (*mem) = newmem;
-
   if (stat)
     *stat = 0;
+
+  return newmem;
 }
 
-extern void allocate (void **, GFC_INTEGER_4, GFC_INTEGER_4 *);
+extern void *allocate (GFC_INTEGER_4, GFC_INTEGER_4 *);
 export_proto(allocate);
 
-void
-allocate (void **mem, GFC_INTEGER_4 size, GFC_INTEGER_4 * stat)
+void *
+allocate (GFC_INTEGER_4 size, GFC_INTEGER_4 * stat)
 {
   if (size < 0)
-    {
-      runtime_error ("Attempt to allocate negative amount of memory.  "
-		     "Possible integer overflow");
-      abort ();
-    }
+    runtime_error ("Attempt to allocate negative amount of memory.  "
+		   "Possible integer overflow");
 
-  allocate_size (mem, (size_t) size, stat);
+  return allocate_size ((size_t) size, stat);
 }
 
-extern void allocate64 (void **, GFC_INTEGER_8, GFC_INTEGER_4 *);
+extern void *allocate64 (GFC_INTEGER_8, GFC_INTEGER_4 *);
 export_proto(allocate64);
 
-void
-allocate64 (void **mem, GFC_INTEGER_8 size, GFC_INTEGER_4 * stat)
+void *
+allocate64 (GFC_INTEGER_8 size, GFC_INTEGER_4 * stat)
 {
   if (size < 0)
-    {
-      runtime_error
-	("ALLOCATE64: Attempt to allocate negative amount of memory. "
-	 "Possible integer overflow");
-      abort ();
-    }
+    runtime_error ("ALLOCATE64: Attempt to allocate negative amount of "
+		   "memory. Possible integer overflow");
 
-  allocate_size (mem, (size_t) size, stat);
+  return allocate_size ((size_t) size, stat);
 }
 
 /* Function to call in an ALLOCATE statement when the argument is an
    allocatable array.  If the array is currently allocated, it is
    an error to allocate it again.  32-bit version.  */
 
-extern void allocate_array (void **, GFC_INTEGER_4, GFC_INTEGER_4 *);
+extern void *allocate_array (void *, GFC_INTEGER_4, GFC_INTEGER_4 *);
 export_proto(allocate_array);
 
-void
-allocate_array (void **mem, GFC_INTEGER_4 size, GFC_INTEGER_4 * stat)
+void *
+allocate_array (void *mem, GFC_INTEGER_4 size, GFC_INTEGER_4 * stat)
 {
-  if (*mem == NULL)
-    {
-      allocate (mem, size, stat);
-      return;
-    }
+  if (mem == NULL)
+    return allocate (size, stat);
   if (stat)
     {
-      free (*mem);
-      allocate (mem, size, stat);
+      free (mem);
+      mem = allocate (size, stat);
       *stat = ERROR_ALLOCATION;
-      return;
+      return mem;
     }
-  else
-    runtime_error ("Attempting to allocate already allocated array.");
 
-  return;
+  runtime_error ("Attempting to allocate already allocated array.");
 }
 
 /* Function to call in an ALLOCATE statement when the argument is an
    allocatable array.  If the array is currently allocated, it is
    an error to allocate it again.  64-bit version.  */
 
-extern void allocate64_array (void **, GFC_INTEGER_8, GFC_INTEGER_4 *);
+extern void *allocate64_array (void *, GFC_INTEGER_8, GFC_INTEGER_4 *);
 export_proto(allocate64_array);
 
-void
-allocate64_array (void **mem, GFC_INTEGER_8 size, GFC_INTEGER_4 * stat)
+void *
+allocate64_array (void *mem, GFC_INTEGER_8 size, GFC_INTEGER_4 * stat)
 {
-  if (*mem == NULL)
-    {
-      allocate64 (mem, size, stat);
-      return;
-    }
+  if (mem == NULL)
+    return allocate64 (size, stat);
   if (stat)
     {
-      free (*mem);
-      allocate (mem, size, stat);
+      free (mem);
+      mem = allocate (size, stat);
       *stat = ERROR_ALLOCATION;
-      return;
+      return mem;
     }
-  else
-    runtime_error ("Attempting to allocate already allocated array.");
 
-  return;
+  runtime_error ("Attempting to allocate already allocated array.");
 }
 
 /* User-deallocate; pointer is NULLified. */
 
-extern void deallocate (void **, GFC_INTEGER_4 *);
+extern void deallocate (void *, GFC_INTEGER_4 *);
 export_proto(deallocate);
 
 void
-deallocate (void **mem, GFC_INTEGER_4 * stat)
+deallocate (void *mem, GFC_INTEGER_4 * stat)
 {
   if (!mem)
-    runtime_error ("Internal: NULL mem pointer in DEALLOCATE.");
-
-  if (!*mem)
     {
       if (stat)
 	{
@@ -308,15 +285,10 @@ deallocate (void **mem, GFC_INTEGER_4 * stat)
 	  return;
 	}
       else
-	{
-	  runtime_error
-	    ("Internal: Attempt to DEALLOCATE unallocated memory.");
-	  abort ();
-	}
+	runtime_error ("Internal: Attempt to DEALLOCATE unallocated memory.");
     }
 
-  free (*mem);
-  *mem = NULL;
+  free (mem);
 
   if (stat)
     *stat = 0;

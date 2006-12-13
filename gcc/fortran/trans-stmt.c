@@ -3571,21 +3571,15 @@ gfc_trans_allocate (gfc_code * code)
       if (!gfc_array_allocate (&se, expr, pstat))
 	{
 	  /* A scalar or derived type.  */
-	  tree val;
-
-	  val = gfc_create_var (ppvoid_type_node, "ptr");
-	  tmp = gfc_build_addr_expr (ppvoid_type_node, se.expr);
-	  gfc_add_modify_expr (&se.pre, val, tmp);
-
 	  tmp = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (se.expr)));
 
 	  if (expr->ts.type == BT_CHARACTER && tmp == NULL_TREE)
 	    tmp = se.string_length;
 
-	  parm = gfc_chainon_list (NULL_TREE, val);
-	  parm = gfc_chainon_list (parm, tmp);
+	  parm = gfc_chainon_list (NULL_TREE, tmp);
 	  parm = gfc_chainon_list (parm, pstat);
 	  tmp = build_function_call_expr (gfor_fndecl_allocate, parm);
+	  tmp = build2 (MODIFY_EXPR, void_type_node, se.expr, tmp);
 	  gfc_add_expr_to_block (&se.pre, tmp);
 
 	  if (code->expr)
@@ -3650,7 +3644,7 @@ gfc_trans_deallocate (gfc_code * code)
   gfc_se se;
   gfc_alloc *al;
   gfc_expr *expr;
-  tree apstat, astat, parm, pstat, stat, tmp, type, var;
+  tree apstat, astat, parm, pstat, stat, tmp;
   stmtblock_t block;
 
   gfc_start_block (&block);
@@ -3713,14 +3707,13 @@ gfc_trans_deallocate (gfc_code * code)
 	tmp = gfc_array_deallocate (se.expr, pstat);
       else
 	{
-	  type = build_pointer_type (TREE_TYPE (se.expr));
-	  var = gfc_create_var (type, "ptr");
-	  tmp = gfc_build_addr_expr (type, se.expr);
-	  gfc_add_modify_expr (&se.pre, var, tmp);
-
-	  parm = gfc_chainon_list (NULL_TREE, var);
+	  parm = gfc_chainon_list (NULL_TREE, se.expr);
 	  parm = gfc_chainon_list (parm, pstat);
 	  tmp = build_function_call_expr (gfor_fndecl_deallocate, parm);
+	  gfc_add_expr_to_block (&se.pre, tmp);
+
+	  tmp = build2 (MODIFY_EXPR, void_type_node,
+			se.expr, build_int_cst (TREE_TYPE (se.expr), 0));
 	}
 
       gfc_add_expr_to_block (&se.pre, tmp);

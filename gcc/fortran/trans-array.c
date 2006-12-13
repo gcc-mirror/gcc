@@ -3355,8 +3355,8 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
 			      lower, upper, &se->pre);
 
   /* Allocate memory to store the data.  */
-  tmp = gfc_conv_descriptor_data_addr (se->expr);
-  pointer = gfc_evaluate_now (tmp, &se->pre);
+  pointer = gfc_conv_descriptor_data_get (se->expr);
+  STRIP_NOPS (pointer);
 
   if (TYPE_PRECISION (gfc_array_index_type) == 32)
     {
@@ -3375,10 +3375,14 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
   else
     gcc_unreachable ();
 
-  tmp = gfc_chainon_list (NULL_TREE, pointer);
+  tmp = NULL_TREE;
+  /* The allocate_array variants take the old pointer as first argument.  */
+  if (allocatable_array)
+    tmp = gfc_chainon_list (tmp, pointer);
   tmp = gfc_chainon_list (tmp, size);
   tmp = gfc_chainon_list (tmp, pstat);
   tmp = build_function_call_expr (allocate, tmp);
+  tmp = build2 (MODIFY_EXPR, void_type_node, pointer, tmp);
   gfc_add_expr_to_block (&se->pre, tmp);
 
   tmp = gfc_conv_descriptor_offset (se->expr);
@@ -3409,13 +3413,18 @@ gfc_array_deallocate (tree descriptor, tree pstat)
 
   gfc_start_block (&block);
   /* Get a pointer to the data.  */
-  tmp = gfc_conv_descriptor_data_addr (descriptor);
-  var = gfc_evaluate_now (tmp, &block);
+  var = gfc_conv_descriptor_data_get (descriptor);
+  STRIP_NOPS (var);
 
   /* Parameter is the address of the data component.  */
   tmp = gfc_chainon_list (NULL_TREE, var);
   tmp = gfc_chainon_list (tmp, pstat);
   tmp = build_function_call_expr (gfor_fndecl_deallocate, tmp);
+  gfc_add_expr_to_block (&block, tmp);
+
+  /* Zero the data pointer.  */
+  tmp = build2 (MODIFY_EXPR, void_type_node,
+                var, build_int_cst (TREE_TYPE (var), 0));
   gfc_add_expr_to_block (&block, tmp);
 
   return gfc_finish_block (&block);
@@ -4690,8 +4699,8 @@ gfc_trans_dealloc_allocated (tree descriptor)
 
   gfc_start_block (&block);
 
-  tmp = gfc_conv_descriptor_data_addr (descriptor);
-  var = gfc_evaluate_now (tmp, &block);
+  var = gfc_conv_descriptor_data_get (descriptor);
+  STRIP_NOPS (var);
   tmp = gfc_create_var (gfc_array_index_type, NULL);
   ptr = build_fold_addr_expr (tmp);
 
@@ -4702,6 +4711,12 @@ gfc_trans_dealloc_allocated (tree descriptor)
   tmp = gfc_chainon_list (tmp, ptr);
   tmp = build_function_call_expr (gfor_fndecl_deallocate, tmp);
   gfc_add_expr_to_block (&block, tmp);
+
+  /* Zero the data pointer.  */
+  tmp = build2 (MODIFY_EXPR, void_type_node,
+		var, build_int_cst (TREE_TYPE (var), 0));
+  gfc_add_expr_to_block (&block, tmp);
+
   return gfc_finish_block (&block);
 }
 
