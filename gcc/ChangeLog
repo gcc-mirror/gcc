@@ -1,3 +1,25 @@
+2006-12-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (FIRST_PSEUDO_REGISTER): Define to 53.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS): Remove dir register.
+	(REG_ALLOC_ORDER): Remove one element due to removal of dir register.
+	(FRAME_POINTER_REGNUM): Update register number to 20.
+	(REG_CLASS_CONTENTS): Update contents due to removed dir register.
+	(HI_REGISTER_NAMES): Remove "dirflag".
+
+	* config/i386/i386.c (regclass_map): Remove dirflag entry.
+	(dbx_register_map, dbx64_register_map, svr4_dbx_register_map):
+	Remove "dir" entry.
+	(ix86_md_asm_clobbers): Remove "dirflag" default asm clobber.
+
+	* config/i386/i386.md (R10_REG, R11_REG): Renumber.
+	(sse_prologue_save, *sse_prologue_save_insn): Renumber
+	hardcoded SSE register numbers.
+
+	* config/i386/mmx.md (mmx_emms, mmx_femms): Renumber
+	hardcoded MMX register numbers.
+
+
 2006-12-13  Mark Shinwell  <shinwell@codesourcery.com>
 
 	* config/arm/arm.c (arm_output_fldmx): Output FLDMD instead of
