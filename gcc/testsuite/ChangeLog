@@ -1,3 +1,8 @@
+2006-12-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/17687
+	* gcc.dg/builtins-59.c: New testcase.
+
 2006-12-13  Ben Elliston  <bje@au.ibm.com>
 
 	* gcc.target/spu/Wmain.c: New test.
