@@ -1,3 +1,29 @@
+2006-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/debug/vartrack1.C: New test.
+
+	* g++.dg/opt/ifcvt1.C: New test.
+
+	* gcc.dg/tls/opt-13.c: New test.
+
+	* gcc.dg/20060425-2.c: New test.
+
+	* g++.dg/opt/pr15054-2.C: New test.
+
+	* gcc.c-torture/execute/20060420-1.c: New test.
+
+	* gcc.c-torture/execute/20060412-1.c: New test.
+
+	* objc/compile/20060406-1.m: New test.
+
+2006-12-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.dg/template/array17.C: New test.
+
+2006-02-25  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.target/powerpc/altivec-23.c: New test.
+
 2006-12-13  Lee Millward  <lee.millward@codesourcery.com>
 
 	PR c++27316
