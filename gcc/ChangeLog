@@ -1,5 +1,11 @@
 2006-12-13  Richard Guenther  <rguenther@suse.de>
 
+	* ipa-inline.c (cgraph_flatten_node): Replace leafify with
+	flatten.
+	(cgraph_decide_inlining): Likewise.
+
+2006-12-13  Richard Guenther  <rguenther@suse.de>
+
 	* ipa-reference.c (scan_for_static_refs): Also scan
 	tcc_comparison class trees.
 
