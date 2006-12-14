@@ -1002,33 +1002,6 @@ extern void remove_unused_locals (void);
 
 /* In tree-ssa-address.c  */
 
-/* Affine combination of trees.  We keep track of at most MAX_AFF_ELTS elements
-   to make things simpler; this is sufficient in most cases.  */
-
-#define MAX_AFF_ELTS 8
-
-struct affine_tree_combination
-{
-  /* Type of the result of the combination.  */
-  tree type;
-
-  /* Mask modulo that the operations are performed.  */
-  unsigned HOST_WIDE_INT mask;
-
-  /* Constant offset.  */
-  unsigned HOST_WIDE_INT offset;
-
-  /* Number of elements of the combination.  */
-  unsigned n;
-
-  /* Elements and their coefficients.  */
-  tree elts[MAX_AFF_ELTS];
-  unsigned HOST_WIDE_INT coefs[MAX_AFF_ELTS];
-
-  /* Remainder of the expression.  */
-  tree rest;
-};
-
 /* Description of a memory address.  */
 
 struct mem_address
@@ -1036,6 +1009,7 @@ struct mem_address
   tree symbol, base, index, step, offset;
 };
 
+struct affine_tree_combination;
 tree create_mem_ref (block_stmt_iterator *, tree, 
 		     struct affine_tree_combination *);
 rtx addr_for_mem_ref (struct mem_address *, bool);

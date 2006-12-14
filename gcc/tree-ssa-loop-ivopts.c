@@ -89,6 +89,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "cfgloop.h"
 #include "params.h"
 #include "langhooks.h"
+#include "tree-affine.h"
 
 /* The infinite cost.  */
 #define INFTY 10000000
@@ -522,57 +523,6 @@ static inline struct version_info *
 name_info (struct ivopts_data *data, tree name)
 {
   return ver_info (data, SSA_NAME_VERSION (name));
-}
-
-/* Checks whether there exists number X such that X * B = A, counting modulo
-   2^BITS.  */
-
-static bool
-divide (unsigned bits, unsigned HOST_WIDE_INT a, unsigned HOST_WIDE_INT b,
-	HOST_WIDE_INT *x)
-{
-  unsigned HOST_WIDE_INT mask = ~(~(unsigned HOST_WIDE_INT) 0 << (bits - 1) << 1);
-  unsigned HOST_WIDE_INT inv, ex, val;
-  unsigned i;
-
-  a &= mask;
-  b &= mask;
-
-  /* First divide the whole equation by 2 as long as possible.  */
-  while (!(a & 1) && !(b & 1))
-    {
-      a >>= 1;
-      b >>= 1;
-      bits--;
-      mask >>= 1;
-    }
-
-  if (!(b & 1))
-    {
-      /* If b is still even, a is odd and there is no such x.  */
-      return false;
-    }
-
-  /* Find the inverse of b.  We compute it as
-     b^(2^(bits - 1) - 1) (mod 2^bits).  */
-  inv = 1;
-  ex = b;
-  for (i = 0; i < bits - 1; i++)
-    {
-      inv = (inv * ex) & mask;
-      ex = (ex * ex) & mask;
-    }
-
-  val = (a * inv) & mask;
-
-  gcc_assert (((val * b) & mask) == a);
-
-  if ((val >> (bits - 1)) & 1)
-    val |= ~mask;
-
-  *x = val;
-
-  return true;
 }
 
 /* Returns true if STMT is after the place where the IP_NORMAL ivs will be
@@ -2613,8 +2563,8 @@ constant_multiple_of (tree top, tree bot, double_int *mul)
       if (TREE_CODE (bot) != INTEGER_CST)
 	return false;
 
-      p0 = double_int_sext (tree_to_double_int (bot), precision);
-      p1 = double_int_sext (tree_to_double_int (top), precision);
+      p0 = double_int_sext (tree_to_double_int (top), precision);
+      p1 = double_int_sext (tree_to_double_int (bot), precision);
       if (double_int_zero_p (p1))
 	return false;
       *mul = double_int_sext (double_int_sdivmod (p0, p1, FLOOR_DIV_EXPR, &res),
@@ -2624,354 +2574,6 @@ constant_multiple_of (tree top, tree bot, double_int *mul)
     default:
       return false;
     }
-}
-
-/* Sets COMB to CST.  */
-
-static void
-aff_combination_const (struct affine_tree_combination *comb, tree type,
-		       unsigned HOST_WIDE_INT cst)
-{
-  unsigned prec = TYPE_PRECISION (type);
-
-  comb->type = type;
-  comb->mask = (((unsigned HOST_WIDE_INT) 2 << (prec - 1)) - 1);
-
-  comb->n = 0;
-  comb->rest = NULL_TREE;
-  comb->offset = cst & comb->mask;
-}
-
-/* Sets COMB to single element ELT.  */
-
-static void
-aff_combination_elt (struct affine_tree_combination *comb, tree type, tree elt)
-{
-  unsigned prec = TYPE_PRECISION (type);
-
-  comb->type = type;
-  comb->mask = (((unsigned HOST_WIDE_INT) 2 << (prec - 1)) - 1);
-
-  comb->n = 1;
-  comb->elts[0] = elt;
-  comb->coefs[0] = 1;
-  comb->rest = NULL_TREE;
-  comb->offset = 0;
-}
-
-/* Scales COMB by SCALE.  */
-
-static void
-aff_combination_scale (struct affine_tree_combination *comb,
-		       unsigned HOST_WIDE_INT scale)
-{
-  unsigned i, j;
-
-  if (scale == 1)
-    return;
-
-  if (scale == 0)
-    {
-      aff_combination_const (comb, comb->type, 0);
-      return;
-    }
-
-  comb->offset = (scale * comb->offset) & comb->mask;
-  for (i = 0, j = 0; i < comb->n; i++)
-    {
-      comb->coefs[j] = (scale * comb->coefs[i]) & comb->mask;
-      comb->elts[j] = comb->elts[i];
-      if (comb->coefs[j] != 0)
-	j++;
-    }
-  comb->n = j;
-
-  if (comb->rest)
-    {
-      if (comb->n < MAX_AFF_ELTS)
-	{
-	  comb->coefs[comb->n] = scale;
-	  comb->elts[comb->n] = comb->rest;
-	  comb->rest = NULL_TREE;
-	  comb->n++;
-	}
-      else
-	comb->rest = fold_build2 (MULT_EXPR, comb->type, comb->rest,
-				  build_int_cst_type (comb->type, scale));
-    }
-}
-
-/* Adds ELT * SCALE to COMB.  */
-
-static void
-aff_combination_add_elt (struct affine_tree_combination *comb, tree elt,
-			 unsigned HOST_WIDE_INT scale)
-{
-  unsigned i;
-
-  if (scale == 0)
-    return;
-
-  for (i = 0; i < comb->n; i++)
-    if (operand_equal_p (comb->elts[i], elt, 0))
-      {
-	comb->coefs[i] = (comb->coefs[i] + scale) & comb->mask;
-	if (comb->coefs[i])
-	  return;
-
-	comb->n--;
-	comb->coefs[i] = comb->coefs[comb->n];
-	comb->elts[i] = comb->elts[comb->n];
-
-	if (comb->rest)
-	  {
-	    gcc_assert (comb->n == MAX_AFF_ELTS - 1);
-	    comb->coefs[comb->n] = 1;
-	    comb->elts[comb->n] = comb->rest;
-	    comb->rest = NULL_TREE;
-	    comb->n++;
-	  }
-	return;
-      }
-  if (comb->n < MAX_AFF_ELTS)
-    {
-      comb->coefs[comb->n] = scale;
-      comb->elts[comb->n] = elt;
-      comb->n++;
-      return;
-    }
-
-  if (scale == 1)
-    elt = fold_convert (comb->type, elt);
-  else
-    elt = fold_build2 (MULT_EXPR, comb->type,
-		       fold_convert (comb->type, elt),
-		       build_int_cst_type (comb->type, scale)); 
-
-  if (comb->rest)
-    comb->rest = fold_build2 (PLUS_EXPR, comb->type, comb->rest, elt);
-  else
-    comb->rest = elt;
-}
-
-/* Adds COMB2 to COMB1.  */
-
-static void
-aff_combination_add (struct affine_tree_combination *comb1,
-		     struct affine_tree_combination *comb2)
-{
-  unsigned i;
-
-  comb1->offset = (comb1->offset + comb2->offset) & comb1->mask;
-  for (i = 0; i < comb2->n; i++)
-    aff_combination_add_elt (comb1, comb2->elts[i], comb2->coefs[i]);
-  if (comb2->rest)
-    aff_combination_add_elt (comb1, comb2->rest, 1);
-}
-
-/* Convert COMB to TYPE.  */
-
-static void
-aff_combination_convert (tree type, struct affine_tree_combination *comb)
-{
-  unsigned prec = TYPE_PRECISION (type);
-  unsigned i;
-
-  /* If the precision of both types is the same, it suffices to change the type
-     of the whole combination -- the elements are allowed to have another type
-     equivalent wrto STRIP_NOPS.  */
-  if (prec == TYPE_PRECISION (comb->type))
-    {
-      comb->type = type;
-      return;
-    }
-
-  comb->mask = (((unsigned HOST_WIDE_INT) 2 << (prec - 1)) - 1);
-  comb->offset = comb->offset & comb->mask;
-
-  /* The type of the elements can be different from comb->type only as
-     much as what STRIP_NOPS would remove.  We can just directly cast
-     to TYPE.  */
-  for (i = 0; i < comb->n; i++)
-    comb->elts[i] = fold_convert (type, comb->elts[i]);
-  if (comb->rest)
-    comb->rest = fold_convert (type, comb->rest);
-
-  comb->type = type;
-}
-
-/* Splits EXPR into an affine combination of parts.  */
-
-static void
-tree_to_aff_combination (tree expr, tree type,
-			 struct affine_tree_combination *comb)
-{
-  struct affine_tree_combination tmp;
-  enum tree_code code;
-  tree cst, core, toffset;
-  HOST_WIDE_INT bitpos, bitsize;
-  enum machine_mode mode;
-  int unsignedp, volatilep;
-
-  STRIP_NOPS (expr);
-
-  code = TREE_CODE (expr);
-  switch (code)
-    {
-    case INTEGER_CST:
-      aff_combination_const (comb, type, int_cst_value (expr));
-      return;
-
-    case PLUS_EXPR:
-    case MINUS_EXPR:
-      tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
-      tree_to_aff_combination (TREE_OPERAND (expr, 1), type, &tmp);
-      if (code == MINUS_EXPR)
-	aff_combination_scale (&tmp, -1);
-      aff_combination_add (comb, &tmp);
-      return;
-
-    case MULT_EXPR:
-      cst = TREE_OPERAND (expr, 1);
-      if (TREE_CODE (cst) != INTEGER_CST)
-	break;
-      tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
-      aff_combination_scale (comb, int_cst_value (cst));
-      return;
-
-    case NEGATE_EXPR:
-      tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
-      aff_combination_scale (comb, -1);
-      return;
-
-    case ADDR_EXPR:
-      core = get_inner_reference (TREE_OPERAND (expr, 0), &bitsize, &bitpos,
-				  &toffset, &mode, &unsignedp, &volatilep,
-				  false);
-      if (bitpos % BITS_PER_UNIT != 0)
-	break;
-      aff_combination_const (comb, type, bitpos / BITS_PER_UNIT);
-      core = build_fold_addr_expr (core);
-      if (TREE_CODE (core) == ADDR_EXPR)
-	aff_combination_add_elt (comb, core, 1);
-      else
-	{
-	  tree_to_aff_combination (core, type, &tmp);
-	  aff_combination_add (comb, &tmp);
-	}
-      if (toffset)
-	{
-	  tree_to_aff_combination (toffset, type, &tmp);
-	  aff_combination_add (comb, &tmp);
-	}
-      return;
-
-    default:
-      break;
-    }
-
-  aff_combination_elt (comb, type, expr);
-}
-
-/* Creates EXPR + ELT * SCALE in TYPE.  MASK is the mask for width of TYPE.  */
-
-static tree
-add_elt_to_tree (tree expr, tree type, tree elt, unsigned HOST_WIDE_INT scale,
-		 unsigned HOST_WIDE_INT mask)
-{
-  enum tree_code code;
-
-  scale &= mask;
-  elt = fold_convert (type, elt);
-
-  if (scale == 1)
-    {
-      if (!expr)
-	return elt;
-
-      return fold_build2 (PLUS_EXPR, type, expr, elt);
-    }
-
-  if (scale == mask)
-    {
-      if (!expr)
-	return fold_build1 (NEGATE_EXPR, type, elt);
-
-      return fold_build2 (MINUS_EXPR, type, expr, elt);
-    }
-
-  if (!expr)
-    return fold_build2 (MULT_EXPR, type, elt,
-			build_int_cst_type (type, scale));
-
-  if ((scale | (mask >> 1)) == mask)
-    {
-      /* Scale is negative.  */
-      code = MINUS_EXPR;
-      scale = (-scale) & mask;
-    }
-  else
-    code = PLUS_EXPR;
-
-  elt = fold_build2 (MULT_EXPR, type, elt,
-		     build_int_cst_type (type, scale));
-  return fold_build2 (code, type, expr, elt);
-}
-
-/* Copies the tree elements of COMB to ensure that they are not shared.  */
-
-static void
-unshare_aff_combination (struct affine_tree_combination *comb)
-{
-  unsigned i;
-
-  for (i = 0; i < comb->n; i++)
-    comb->elts[i] = unshare_expr (comb->elts[i]);
-  if (comb->rest)
-    comb->rest = unshare_expr (comb->rest);
-}
-
-/* Makes tree from the affine combination COMB.  */
-
-static tree
-aff_combination_to_tree (struct affine_tree_combination *comb)
-{
-  tree type = comb->type;
-  tree expr = comb->rest;
-  unsigned i;
-  unsigned HOST_WIDE_INT off, sgn;
-
-  if (comb->n == 0 && comb->offset == 0)
-    {
-      if (expr)
-	{
-	  /* Handle the special case produced by get_computation_aff when
-	     the type does not fit in HOST_WIDE_INT.  */
-	  return fold_convert (type, expr);
-	}
-      else
-	return build_int_cst (type, 0);
-    }
-
-  gcc_assert (comb->n == MAX_AFF_ELTS || comb->rest == NULL_TREE);
-
-  for (i = 0; i < comb->n; i++)
-    expr = add_elt_to_tree (expr, type, comb->elts[i], comb->coefs[i],
-			    comb->mask);
-
-  if ((comb->offset | (comb->mask >> 1)) == comb->mask)
-    {
-      /* Offset is negative.  */
-      off = (-comb->offset) & comb->mask;
-      sgn = comb->mask;
-    }
-  else
-    {
-      off = comb->offset;
-      sgn = 1;
-    }
-  return add_elt_to_tree (expr, type, build_int_cst_type (type, off), sgn,
-			  comb->mask);
 }
 
 /* Folds EXPR using the affine expressions framework.  */
@@ -3039,16 +2641,11 @@ get_computation_aff (struct loop *loop,
   tree ubase = use->iv->base;
   tree ustep = use->iv->step;
   tree cbase = cand->iv->base;
-  tree cstep = cand->iv->step;
+  tree cstep = cand->iv->step, cstep_common;
   tree utype = TREE_TYPE (ubase), ctype = TREE_TYPE (cbase);
-  tree common_type;
+  tree common_type, var;
   tree uutype;
-  tree expr, delta;
-  tree ratio;
-  unsigned HOST_WIDE_INT ustepi, cstepi;
-  HOST_WIDE_INT ratioi;
-  struct affine_tree_combination cbase_aff, expr_aff;
-  tree cstep_orig = cstep, ustep_orig = ustep;
+  aff_tree cbase_aff, var_aff;
   double_int rat;
 
   if (TYPE_PRECISION (utype) > TYPE_PRECISION (ctype))
@@ -3057,65 +2654,19 @@ get_computation_aff (struct loop *loop,
       return false;
     }
 
-  expr = var_at_stmt (loop, cand, at);
+  var = var_at_stmt (loop, cand, at);
+  uutype = unsigned_type_for (utype);
 
-  if (TREE_TYPE (expr) != ctype)
+  /* If the conversion is not noop, perform it.  */
+  if (TYPE_PRECISION (utype) < TYPE_PRECISION (ctype))
     {
-      /* This may happen with the original ivs.  */
-      expr = fold_convert (ctype, expr);
-    }
-
-  if (TYPE_UNSIGNED (utype))
-    uutype = utype;
-  else
-    {
-      uutype = unsigned_type_for (utype);
-      ubase = fold_convert (uutype, ubase);
-      ustep = fold_convert (uutype, ustep);
-    }
-
-  if (uutype != ctype)
-    {
-      expr = fold_convert (uutype, expr);
-      cbase = fold_convert (uutype, cbase);
       cstep = fold_convert (uutype, cstep);
-
-      /* If the conversion is not noop, we must take it into account when
-	 considering the value of the step.  */
-      if (TYPE_PRECISION (utype) < TYPE_PRECISION (ctype))
-	cstep_orig = cstep;
+      cbase = fold_convert (uutype, cbase);
+      var = fold_convert (uutype, var);
     }
 
-  if (cst_and_fits_in_hwi (cstep_orig)
-      && cst_and_fits_in_hwi (ustep_orig))
-    {
-      ustepi = int_cst_value (ustep_orig);
-      cstepi = int_cst_value (cstep_orig);
-
-      if (!divide (TYPE_PRECISION (uutype), ustepi, cstepi, &ratioi))
-	{
-	  /* TODO maybe consider case when ustep divides cstep and the ratio is
-	     a power of 2 (so that the division is fast to execute)?  We would
-	     need to be much more careful with overflows etc. then.  */
-	  return false;
-	}
-
-      ratio = build_int_cst_type (uutype, ratioi);
-    }
-  else
-    {
-      if (!constant_multiple_of (ustep_orig, cstep_orig, &rat))
-	return false;
-      ratio = double_int_to_tree (uutype, rat);
-
-      /* Ratioi is only used to detect special cases when the multiplicative
-	 factor is 1 or -1, so if rat does not fit to HOST_WIDE_INT, we may
-	 set it to 0.  */
-      if (double_int_fits_in_shwi_p (rat))
-	ratioi = double_int_to_shwi (rat);
-      else
-	ratioi = 0;
-    }
+  if (!constant_multiple_of (ustep, cstep, &rat))
+    return false;
 
   /* In case both UBASE and CBASE are shortened to UUTYPE from some common
      type, we achieve better folding by computing their difference in this
@@ -3124,73 +2675,32 @@ get_computation_aff (struct loop *loop,
      anyway.  */
   common_type = determine_common_wider_type (&ubase, &cbase);
 
-  /* We may need to shift the value if we are after the increment.  */
-  if (stmt_after_increment (loop, cand, at))
-    {
-      if (uutype != common_type)
-	cstep = fold_convert (common_type, cstep);
-      cbase = fold_build2 (PLUS_EXPR, common_type, cbase, cstep);
-    }
-
-  /* use = ubase - ratio * cbase + ratio * var.
-
-     In general case ubase + ratio * (var - cbase) could be better (one less
-     multiplication), but often it is possible to eliminate redundant parts
-     of computations from (ubase - ratio * cbase) term, and if it does not
-     happen, fold is able to apply the distributive law to obtain this form
-     anyway.  */
-
-  if (TYPE_PRECISION (common_type) > HOST_BITS_PER_WIDE_INT)
-    {
-      /* Let's compute in trees and just return the result in AFF.  This case
-	 should not be very common, and fold itself is not that bad either,
-	 so making the aff. functions more complicated to handle this case
-	 is not that urgent.  */
-      if (ratioi == 1)
-	{
-	  delta = fold_build2 (MINUS_EXPR, common_type, ubase, cbase);
-	  if (uutype != common_type)
-	    delta = fold_convert (uutype, delta);
-	  expr = fold_build2 (PLUS_EXPR, uutype, expr, delta);
-	}
-      else if (ratioi == -1)
-	{
-	  delta = fold_build2 (PLUS_EXPR, common_type, ubase, cbase);
-	  if (uutype != common_type)
-	    delta = fold_convert (uutype, delta);
-	  expr = fold_build2 (MINUS_EXPR, uutype, delta, expr);
-	}
-      else
-	{
-	  delta = fold_build2 (MULT_EXPR, common_type, cbase, ratio);
-	  delta = fold_build2 (MINUS_EXPR, common_type, ubase, delta);
-	  if (uutype != common_type)
-	    delta = fold_convert (uutype, delta);
-	  expr = fold_build2 (MULT_EXPR, uutype, ratio, expr);
-	  expr = fold_build2 (PLUS_EXPR, uutype, delta, expr);
-	}
-
-      aff->type = uutype;
-      aff->n = 0;
-      aff->offset = 0;
-      aff->mask = 0;
-      aff->rest = expr;
-      return true;
-    }
-
-  /* If we got here, the types fits in HOST_WIDE_INT, thus it must be
-     possible to compute ratioi.  */
-  gcc_assert (ratioi);
-
+  /* use = ubase - ratio * cbase + ratio * var.  */
   tree_to_aff_combination (ubase, common_type, aff);
   tree_to_aff_combination (cbase, common_type, &cbase_aff);
-  tree_to_aff_combination (expr, uutype, &expr_aff);
-  aff_combination_scale (&cbase_aff, -ratioi);
-  aff_combination_scale (&expr_aff, ratioi);
+  tree_to_aff_combination (var, uutype, &var_aff);
+
+  /* We need to shift the value if we are after the increment.  */
+  if (stmt_after_increment (loop, cand, at))
+    {
+      aff_tree cstep_aff;
+  
+      if (common_type != uutype)
+	cstep_common = fold_convert (common_type, cstep);
+      else
+	cstep_common = cstep;
+
+      tree_to_aff_combination (cstep_common, common_type, &cstep_aff);
+      aff_combination_add (&cbase_aff, &cstep_aff);
+    }
+
+  aff_combination_scale (&cbase_aff, double_int_neg (rat));
   aff_combination_add (aff, &cbase_aff);
   if (common_type != uutype)
-    aff_combination_convert (uutype, aff);
-  aff_combination_add (aff, &expr_aff);
+    aff_combination_convert (aff, uutype);
+
+  aff_combination_scale (&var_aff, rat);
+  aff_combination_add (aff, &var_aff);
 
   return true;
 }
@@ -3202,7 +2712,7 @@ static tree
 get_computation_at (struct loop *loop,
 		    struct iv_use *use, struct iv_cand *cand, tree at)
 {
-  struct affine_tree_combination aff;
+  aff_tree aff;
   tree type = TREE_TYPE (use->iv->base);
 
   if (!get_computation_aff (loop, use, cand, at, &aff))
@@ -3862,10 +3372,11 @@ get_computation_cost_at (struct ivopts_data *data,
   tree ubase = use->iv->base, ustep = use->iv->step;
   tree cbase, cstep;
   tree utype = TREE_TYPE (ubase), ctype;
-  unsigned HOST_WIDE_INT ustepi, cstepi, offset = 0;
+  unsigned HOST_WIDE_INT cstepi, offset = 0;
   HOST_WIDE_INT ratio, aratio;
   bool var_present, symbol_present;
   unsigned cost = 0, n_sums;
+  double_int rat;
 
   *depends_on = NULL;
 
@@ -3913,26 +3424,13 @@ get_computation_cost_at (struct ivopts_data *data,
   else
     cstepi = 0;
 
-  if (cst_and_fits_in_hwi (ustep)
-      && cst_and_fits_in_hwi (cstep))
-    {
-      ustepi = int_cst_value (ustep);
-
-      if (!divide (TYPE_PRECISION (utype), ustepi, cstepi, &ratio))
-	return INFTY;
-    }
-  else
-    {
-      double_int rat;
-      
-      if (!constant_multiple_of (ustep, cstep, &rat))
-	return INFTY;
+  if (!constant_multiple_of (ustep, cstep, &rat))
+    return INFTY;
     
-      if (double_int_fits_in_shwi_p (rat))
-	ratio = double_int_to_shwi (rat);
-      else
-	return INFTY;
-    }
+  if (double_int_fits_in_shwi_p (rat))
+    ratio = double_int_to_shwi (rat);
+  else
+    return INFTY;
 
   /* use = ubase + ratio * (var - cbase).  If either cbase is a constant
      or ratio == 1, it is better to handle this like
@@ -5427,7 +4925,10 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
 				   unshare_expr (step)));
     }
   else
-    comp = get_computation (data->current_loop, use, cand);
+    {
+      comp = get_computation (data->current_loop, use, cand);
+      gcc_assert (comp != NULL_TREE);
+    }
 
   switch (TREE_CODE (use->stmt))
     {
@@ -5593,11 +5094,13 @@ static void
 rewrite_use_address (struct ivopts_data *data,
 		     struct iv_use *use, struct iv_cand *cand)
 {
-  struct affine_tree_combination aff;
+  aff_tree aff;
   block_stmt_iterator bsi = bsi_for_stmt (use->stmt);
   tree ref;
+  bool ok;
 
-  get_computation_aff (data->current_loop, use, cand, use->stmt, &aff);
+  ok = get_computation_aff (data->current_loop, use, cand, use->stmt, &aff);
+  gcc_assert (ok);
   unshare_aff_combination (&aff);
 
   ref = create_mem_ref (&bsi, TREE_TYPE (*use->op_p), &aff);
@@ -5640,6 +5143,7 @@ rewrite_use_compare (struct ivopts_data *data,
   /* The induction variable elimination failed; just express the original
      giv.  */
   comp = get_computation (data->current_loop, use, cand);
+  gcc_assert (comp != NULL_TREE);
 
   cond = *use->op_p;
   op_p = &TREE_OPERAND (cond, 0);
