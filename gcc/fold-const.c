@@ -7715,6 +7715,19 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	  tem = fold_build1 (REALPART_EXPR, itype, TREE_OPERAND (arg0, 0));
 	  return fold_convert (type, tem);
 	}
+      if (TREE_CODE (arg0) == CALL_EXPR)
+	{
+	  tree fn = get_callee_fndecl (arg0);
+	  if (DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL)
+	    switch (DECL_FUNCTION_CODE (fn))
+	      {
+	      CASE_FLT_FN (BUILT_IN_CEXPI):
+	        fn = mathfn_built_in (type, BUILT_IN_COS);
+	        return build_function_call_expr (fn, TREE_OPERAND (arg0, 1));
+
+	      default:;
+	      }
+	}
       return NULL_TREE;
 
     case IMAGPART_EXPR:
@@ -7740,6 +7753,19 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	  tree itype = TREE_TYPE (TREE_TYPE (arg0));
 	  tem = fold_build1 (IMAGPART_EXPR, itype, TREE_OPERAND (arg0, 0));
 	  return fold_convert (type, negate_expr (tem));
+	}
+      if (TREE_CODE (arg0) == CALL_EXPR)
+	{
+	  tree fn = get_callee_fndecl (arg0);
+	  if (DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL)
+	    switch (DECL_FUNCTION_CODE (fn))
+	      {
+	      CASE_FLT_FN (BUILT_IN_CEXPI):
+	        fn = mathfn_built_in (type, BUILT_IN_SIN);
+	        return build_function_call_expr (fn, TREE_OPERAND (arg0, 1));
+
+	      default:;
+	      }
 	}
       return NULL_TREE;
 

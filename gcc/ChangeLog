@@ -1,3 +1,9 @@
+2006-12-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/30198
+	* fold-const.c (fold_unary): Fold REALPART_EXPR of cexpi to cos.
+	Fold IMAGPART_EXPR of cexpi to sin.
+
 2006-12-14  Dorit Nuzman  <dorit@il.ibm.com>
 	    Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
 
