@@ -356,10 +356,6 @@ struct stmt_ann_d GTY(())
 {
   struct tree_ann_common_d common;
 
-  /* Nonzero if the statement references memory (at least one of its
-     expressions contains a non-register operand).  */
-  unsigned references_memory : 1;
-
   /* Basic block that contains this statement.  */
   basic_block bb;
 
@@ -368,6 +364,10 @@ struct stmt_ann_d GTY(())
 
   /* Set of variables that have had their address taken in the statement.  */
   bitmap addresses_taken;
+
+  /* Nonzero if the statement references memory (at least one of its
+     expressions contains a non-register operand).  */
+  unsigned references_memory : 1;
 
   /* Unique identifier for this statement.  These ID's are to be created
      by each pass on an as-needed basis in any order convenient for the
