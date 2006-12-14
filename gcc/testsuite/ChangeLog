@@ -1,5 +1,11 @@
 2006-12-14  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/30197
+	* gcc.c-torture/execute/complex-1.c: Fix function name.
+	* gcc.dg/builtins-61.c: New testcase.
+
+2006-12-14  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/30172
 	* gcc.dg/pr30172-1.c: New testcase.
 
