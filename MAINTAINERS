@@ -95,6 +95,7 @@ xtensa port		Bob Wilson		bob.wilson@acm.org
 darwin port		Dale Johannesen		dalej@apple.com
 darwin port		Mike Stump		mrs@apple.com
 darwin port		Stan Shebs		shebs@apple.com
+darwin port		Eric Christopher	echristo@apple.com
 DJGPP			DJ Delorie		dj@delorie.com
 freebsd			Loren J. Rittle		ljrittle@acm.org
 hpux			Dave Anglin		dave.anglin@nrc.ca

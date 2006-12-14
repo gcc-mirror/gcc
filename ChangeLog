@@ -1,3 +1,7 @@
+2006-12-13  Eric Christopher  <echristo@apple.com>
+
+	* MAINTAINERS: Add myself as darwin maintainer.
+
 2006-12-11  Ian Lance Taylor  <ian@airs.com>
 
 	* MAINTAINERS: Add myself as libgcc and fp-bit maintainer.
@@ -158,7 +162,7 @@
 2006-11-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (have_gmp): Only error if the gcc directory exists.
-	
+
 	* configure: Regenerate.
 
 2006-11-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
@@ -185,7 +189,7 @@
 
 2006-10-25  Chen Liqin  <liqin@sunnorth.com.cn>
 
-	* MAINTAINERS (Write After Approval): Move myself to 
+	* MAINTAINERS (Write After Approval): Move myself to
         Write After Approval section.
 
 2006-10-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
@@ -219,7 +223,7 @@
 
 2006-09-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
-	* configure.in: Check for GMP 4.1 or newer.  Check for MPFR 2.2.0 
+	* configure.in: Check for GMP 4.1 or newer.  Check for MPFR 2.2.0
 	or newer.
 	* configure: Regenerated.
 
@@ -350,7 +354,7 @@
 	whether target-libjava is being configured instead of whether the
 	java front end is enabled.
 	* configure: Regenerate.
-	
+
 2006-06-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR target/27540
@@ -377,17 +381,17 @@
 
 	PR bootstrap/27963
 	PR target/19970
-	* configure.in:	Remove target-boehm-gc from noconfigdirs where 
+	* configure.in:	Remove target-boehm-gc from noconfigdirs where
 	${libgcj} is specified.
 	* configure: Regenerate.
-	
+
 2006-06-06  Carlos O'Donell <carlos@codesourcery.com>
 
 	Sync from src:
-	
-	* configure.in: Sync. 
+
+	* configure.in: Sync.
 	* configure: Regenerated.
-	
+
 	2006-05-31  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* Makefile.def: Added dependencies from sim and gdb on intl, and
@@ -409,7 +413,7 @@
 	Assert that boehm-gc is supported when requested for Objective-C.
 	Only build boehm-gc if needed either for Java or Objective-C.
 	* configure: Regenerate.
-	
+
 2006-06-05  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR 27674
@@ -477,7 +481,7 @@
 	* configure: Rebuilt.
 
 2006-05-12  Sandra Loosemore <sandra@codesourcery.com>
-	
+
 	* MAINTAINERS (Write After Approval): Add myself.
 
 2006-05-01  DJ Delorie  <dj@redhat.com>
@@ -521,7 +525,7 @@
 
 2006-03-22  Janne Blomqvist  <jb@gcc.gnu.org>
 
-	* MAINTAINERS (Write After Approval): Remove myself. 
+	* MAINTAINERS (Write After Approval): Remove myself.
 	(Language Front End Maintainers): Add myself as fortran 95 maintainer.
 
 2006-03-14  Richard Guenther  <rguenther@suse.de>
@@ -637,11 +641,11 @@
 2006-02-07  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	* MAINTAINERS (Write After Approval): Add myself.
-	
+
 2006-02-03  Lee Millward  <lee.millward@gmail.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
-	
+
 2006-01-31  Richard Guenther  <rguenther@suse.de>
 	Paolo Bonzini  <bonzini@gnu.org>
 
@@ -1004,7 +1008,7 @@
 	CONFIGURED_LIPO_FOR_TARGET, CONFIGURED_STRIP_FOR_TARGET.
 	* Makefile.in: Regenerate.
 	* configure: Regenerate.
-	
+
 2005-09-19  David Edelsohn  <edelsohn@gnu.org>
 
 	* configure.in (powerpc-*-aix*): Add target-libssp to noconfigdirs.
@@ -1087,7 +1091,7 @@
 2005-07-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.tpl (EXTRA_TARGET_FLAGS): Set LDFLAGS=LDFLAGS_FOR_TARGET.
-	* Makefile.def (flags_to_pass): Add LDFLAGS_FOR_TARGET. 
+	* Makefile.def (flags_to_pass): Add LDFLAGS_FOR_TARGET.
 	* Makefile.in: Regenerated.
 
 2005-07-26  Mark Mitchell  <mark@codesourcery.com>
@@ -1128,7 +1132,7 @@
 
 	* configure.in: Add cases for Renesas m32c.
 	* configure: Regenerated.
-	
+
 2005-07-14  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* COPYING.LIB: Update from fsf.org.
@@ -1155,7 +1159,7 @@
 2005-07-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* MAINTAINERS: Remove Dave Brolley as a cpplib maintainer.  Add Dave
-	Brolley to write-after-approval. 
+	Brolley to write-after-approval.
 
 2005-07-07  Andreas Schwab  <schwab@suse.de>
 
