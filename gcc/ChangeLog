@@ -1,5 +1,12 @@
 2006-12-14  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/30172
+	* fold-const.c (fold_binary): Fold __complex__ ( x, 0 )
+	+ __complex__ ( 0, y ) to __complex__ ( x, y ).
+	Fold __complex__ (x, y) * +-I to __complex__ (-+y, +-x).
+
+2006-12-14  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/30198
 	* fold-const.c (fold_unary): Fold REALPART_EXPR of cexpi to cos.
 	Fold IMAGPART_EXPR of cexpi to sin.
