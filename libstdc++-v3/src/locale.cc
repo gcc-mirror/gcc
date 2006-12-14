@@ -146,7 +146,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   locale::_S_normalize_category(category __cat) 
   {
     int __ret = 0;
-    if (__cat == none || (__cat & all) && !(__cat & ~all))
+    if (__cat == none || ((__cat & all) && !(__cat & ~all)))
       __ret = __cat;
     else
       {

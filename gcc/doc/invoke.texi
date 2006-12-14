@@ -2531,9 +2531,7 @@ Warn if a user-supplied include directory does not exist.
 Warn if parentheses are omitted in certain contexts, such
 as when there is an assignment in a context where a truth value
 is expected, or when operators are nested whose precedence people
-often get confused about.  Only the warning for an assignment used as
-a truth value is supported when compiling C++; the other warnings are
-only supported when compiling C@.
+often get confused about.
 
 Also warn if a comparison like @samp{x<=y<=z} appears; this is
 equivalent to @samp{(x<=y ? 1 : 0) <= z}, which is a different
@@ -2555,14 +2553,15 @@ such a case:
 @end group
 @end smallexample
 
-In C, every @code{else} branch belongs to the innermost possible @code{if}
-statement, which in this example is @code{if (b)}.  This is often not
-what the programmer expected, as illustrated in the above example by
-indentation the programmer chose.  When there is the potential for this
-confusion, GCC will issue a warning when this flag is specified.
-To eliminate the warning, add explicit braces around the innermost
-@code{if} statement so there is no way the @code{else} could belong to
-the enclosing @code{if}.  The resulting code would look like this:
+In C/C++, every @code{else} branch belongs to the innermost possible
+@code{if} statement, which in this example is @code{if (b)}.  This is
+often not what the programmer expected, as illustrated in the above
+example by indentation the programmer chose.  When there is the
+potential for this confusion, GCC will issue a warning when this flag
+is specified.  To eliminate the warning, add explicit braces around
+the innermost @code{if} statement so there is no way the @code{else}
+could belong to the enclosing @code{if}.  The resulting code would
+look like this:
 
 @smallexample
 @group

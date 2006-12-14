@@ -1,3 +1,25 @@
+2006-12-13  Ian Lance Taylor  <iant@google.com>
+
+	PR c++/19564
+	PR c++/19756
+	* include/bits/locale_facets.tcc (num_get<>::_M_extract_float):
+	Add parentheses around && within || to avoid warning.
+	(num_get<>::_M_extract_int): Likewise.
+	(money_get<>::_M_extract): Likewise.
+	(num_get<>::do_get(iter_type, iter_type, ios_base&,
+	ios_base::iostate&, void*&)): Add parentheses around & within | to
+	avoid warning.
+	(num_put<>::do_put(iter_type, ios_base&, char_type, const void*)):
+	Likewise.
+	* include/bits/streambuf_iterator.h (istreambuf_iterator::equal):
+	Add parentheses around && within || to avoid warning.
+	* libsupc++/tinfo.cc (__do_dyncast): Likewise.
+	* src/locale.cc (locale::_S_normalize_category): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree<>::_M_insert_unique): Add
+	braces to avoid ambiguous else warning.
+	* src/strstream.cc (strstreambuf::_M_free): Likewise.
+	* src/tree.cc (_Rb_tree_rebalance_for_erase): Likewise.
+
 2006-12-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/28265

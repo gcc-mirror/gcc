@@ -6606,5 +6606,87 @@ warn_array_subscript_with_type_char (tree index)
     warning (OPT_Wchar_subscripts, "array subscript has type %<char%>");
 }
 
+/* Implement -Wparentheses for the unexpected C precedence rules, to
+   cover cases like x + y << z which readers are likely to
+   misinterpret.  We have seen an expression in which CODE is a binary
+   operator used to combine expressions headed by CODE_LEFT and
+   CODE_RIGHT.  CODE_LEFT and CODE_RIGHT may be ERROR_MARK, which
+   means that that side of the expression was not formed using a
+   binary operator, or it was enclosed in parentheses.  */
+
+void
+warn_about_parentheses (enum tree_code code, enum tree_code code_left,
+			enum tree_code code_right)
+{
+  if (!warn_parentheses)
+    return;
+
+  if (code == LSHIFT_EXPR || code == RSHIFT_EXPR)
+    {
+      if (code_left == PLUS_EXPR || code_left == MINUS_EXPR
+	  || code_right == PLUS_EXPR || code_right == MINUS_EXPR)
+	warning (OPT_Wparentheses,
+		 "suggest parentheses around + or - inside shift");
+    }
+
+  if (code == TRUTH_ORIF_EXPR)
+    {
+      if (code_left == TRUTH_ANDIF_EXPR
+	  || code_right == TRUTH_ANDIF_EXPR)
+	warning (OPT_Wparentheses,
+		 "suggest parentheses around && within ||");
+    }
+
+  if (code == BIT_IOR_EXPR)
+    {
+      if (code_left == BIT_AND_EXPR || code_left == BIT_XOR_EXPR
+	  || code_left == PLUS_EXPR || code_left == MINUS_EXPR
+	  || code_right == BIT_AND_EXPR || code_right == BIT_XOR_EXPR
+	  || code_right == PLUS_EXPR || code_right == MINUS_EXPR)
+	warning (OPT_Wparentheses,
+		 "suggest parentheses around arithmetic in operand of |");
+      /* Check cases like x|y==z */
+      if (TREE_CODE_CLASS (code_left) == tcc_comparison
+	  || TREE_CODE_CLASS (code_right) == tcc_comparison)
+	warning (OPT_Wparentheses,
+		 "suggest parentheses around comparison in operand of |");
+    }
+
+  if (code == BIT_XOR_EXPR)
+    {
+      if (code_left == BIT_AND_EXPR
+	  || code_left == PLUS_EXPR || code_left == MINUS_EXPR
+	  || code_right == BIT_AND_EXPR
+	  || code_right == PLUS_EXPR || code_right == MINUS_EXPR)
+	warning (OPT_Wparentheses,
+		 "suggest parentheses around arithmetic in operand of ^");
+      /* Check cases like x^y==z */
+      if (TREE_CODE_CLASS (code_left) == tcc_comparison
+	  || TREE_CODE_CLASS (code_right) == tcc_comparison)
+	warning (OPT_Wparentheses,
+		 "suggest parentheses around comparison in operand of ^");
+    }
+
+  if (code == BIT_AND_EXPR)
+    {
+      if (code_left == PLUS_EXPR || code_left == MINUS_EXPR
+	  || code_right == PLUS_EXPR || code_right == MINUS_EXPR)
+	warning (OPT_Wparentheses,
+		 "suggest parentheses around + or - in operand of &");
+      /* Check cases like x&y==z */
+      if (TREE_CODE_CLASS (code_left) == tcc_comparison
+	  || TREE_CODE_CLASS (code_right) == tcc_comparison)
+	warning (OPT_Wparentheses,
+		 "suggest parentheses around comparison in operand of &");
+    }
+
+  /* Similarly, check for cases like 1<=i<=10 that are probably errors.  */
+  if (TREE_CODE_CLASS (code) == tcc_comparison
+      && (TREE_CODE_CLASS (code_left) == tcc_comparison
+	  || TREE_CODE_CLASS (code_right) == tcc_comparison))
+    warning (OPT_Wparentheses, "comparisons like X<=Y<=Z do not "
+	     "have their mathematical meaning");
+}
+
 
 #include "gt-c-common.h"

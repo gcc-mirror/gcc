@@ -1158,8 +1158,15 @@ typedef enum cp_parser_status_kind
 
 typedef struct cp_parser_expression_stack_entry
 {
+  /* Left hand side of the binary operation we are currently
+     parsing.  */
   tree lhs;
+  /* Original tree code for left hand side, if it was a binary
+     expression itself (used for -Wparentheses).  */
+  enum tree_code lhs_type;
+  /* Tree code for the binary operation we are parsing.  */
   enum tree_code tree_type;
+  /* Precedence of the binary operation we are parsing.  */
   int prec;
 } cp_parser_expression_stack_entry;
 
@@ -1517,7 +1524,7 @@ static tree cp_parser_builtin_offsetof
 /* Statements [gram.stmt.stmt]  */
 
 static void cp_parser_statement
-  (cp_parser *, tree, bool);
+  (cp_parser *, tree, bool, bool *);
 static void cp_parser_label_for_labeled_statement
   (cp_parser *);
 static tree cp_parser_expression_statement
@@ -1527,7 +1534,7 @@ static tree cp_parser_compound_statement
 static void cp_parser_statement_seq_opt
   (cp_parser *, tree);
 static tree cp_parser_selection_statement
-  (cp_parser *);
+  (cp_parser *, bool *);
 static tree cp_parser_condition
   (cp_parser *);
 static tree cp_parser_iteration_statement
@@ -1540,7 +1547,7 @@ static void cp_parser_declaration_statement
   (cp_parser *);
 
 static tree cp_parser_implicitly_scoped_statement
-  (cp_parser *);
+  (cp_parser *, bool *);
 static void cp_parser_already_scoped_statement
   (cp_parser *);
 
@@ -5685,12 +5692,13 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p)
   cp_parser_expression_stack_entry *sp = &stack[0];
   tree lhs, rhs;
   cp_token *token;
-  enum tree_code tree_type;
+  enum tree_code tree_type, lhs_type, rhs_type;
   enum cp_parser_prec prec = PREC_NOT_OPERATOR, new_prec, lookahead_prec;
   bool overloaded_p;
 
   /* Parse the first expression.  */
   lhs = cp_parser_cast_expression (parser, /*address_p=*/false, cast_p);
+  lhs_type = ERROR_MARK;
 
   for (;;)
     {
@@ -5723,6 +5731,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p)
       /* Extract another operand.  It may be the RHS of this expression
 	 or the LHS of a new, higher priority expression.  */
       rhs = cp_parser_simple_cast_expression (parser);
+      rhs_type = ERROR_MARK;
 
       /* Get another operator token.  Look up its precedence to avoid
 	 building a useless (immediately popped) stack entry for common
@@ -5738,8 +5747,10 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p)
 	  sp->prec = prec;
 	  sp->tree_type = tree_type;
 	  sp->lhs = lhs;
+	  sp->lhs_type = lhs_type;
 	  sp++;
 	  lhs = rhs;
+	  lhs_type = rhs_type;
 	  prec = new_prec;
 	  new_prec = lookahead_prec;
 	  goto get_rhs;
@@ -5756,11 +5767,15 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p)
 	  prec = sp->prec;
 	  tree_type = sp->tree_type;
 	  rhs = lhs;
+	  rhs_type = lhs_type;
 	  lhs = sp->lhs;
+	  lhs_type = sp->lhs_type;
 	}
 
       overloaded_p = false;
-      lhs = build_x_binary_op (tree_type, lhs, rhs, &overloaded_p);
+      lhs = build_x_binary_op (tree_type, lhs, lhs_type, rhs, rhs_type,
+			       &overloaded_p);
+      lhs_type = tree_type;
 
       /* If the binary operator required the use of an overloaded operator,
 	 then this expression cannot be an integral constant-expression.
@@ -6177,17 +6192,23 @@ cp_parser_builtin_offsetof (cp_parser *parser)
      try-block
 
   IN_COMPOUND is true when the statement is nested inside a
-  cp_parser_compound_statement; this matters for certain pragmas.  */
+  cp_parser_compound_statement; this matters for certain pragmas.
+
+  If IF_P is not NULL, *IF_P is set to indicate whether the statement
+  is a (possibly labeled) if statement which is not enclosed in braces
+  and has an else clause.  This is used to implement -Wparentheses.  */
 
 static void
 cp_parser_statement (cp_parser* parser, tree in_statement_expr,
-		     bool in_compound)
+		     bool in_compound, bool *if_p)
 {
   tree statement;
   cp_token *token;
   location_t statement_location;
 
  restart:
+  if (if_p != NULL)
+    *if_p = false;
   /* There is no statement yet.  */
   statement = NULL_TREE;
   /* Peek at the next token.  */
@@ -6212,7 +6233,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 
 	case RID_IF:
 	case RID_SWITCH:
-	  statement = cp_parser_selection_statement (parser);
+	  statement = cp_parser_selection_statement (parser, if_p);
 	  break;
 
 	case RID_WHILE:
@@ -6477,7 +6498,7 @@ cp_parser_statement_seq_opt (cp_parser* parser, tree in_statement_expr)
 	break;
 
       /* Parse the statement.  */
-      cp_parser_statement (parser, in_statement_expr, true);
+      cp_parser_statement (parser, in_statement_expr, true, NULL);
     }
 }
 
@@ -6488,13 +6509,21 @@ cp_parser_statement_seq_opt (cp_parser* parser, tree in_statement_expr)
      if ( condition ) statement else statement
      switch ( condition ) statement
 
-   Returns the new IF_STMT or SWITCH_STMT.  */
+   Returns the new IF_STMT or SWITCH_STMT.
+
+   If IF_P is not NULL, *IF_P is set to indicate whether the statement
+   is a (possibly labeled) if statement which is not enclosed in
+   braces and has an else clause.  This is used to implement
+   -Wparentheses.  */
 
 static tree
-cp_parser_selection_statement (cp_parser* parser)
+cp_parser_selection_statement (cp_parser* parser, bool *if_p)
 {
   cp_token *token;
   enum rid keyword;
+
+  if (if_p != NULL)
+    *if_p = false;
 
   /* Peek at the next token.  */
   token = cp_parser_require (parser, CPP_KEYWORD, "selection-statement");
@@ -6531,11 +6560,13 @@ cp_parser_selection_statement (cp_parser* parser)
 
 	if (keyword == RID_IF)
 	  {
+	    bool nested_if;
+
 	    /* Add the condition.  */
 	    finish_if_stmt_cond (condition, statement);
 
 	    /* Parse the then-clause.  */
-	    cp_parser_implicitly_scoped_statement (parser);
+	    cp_parser_implicitly_scoped_statement (parser, &nested_if);
 	    finish_then_clause (statement);
 
 	    /* If the next token is `else', parse the else-clause.  */
@@ -6546,8 +6577,28 @@ cp_parser_selection_statement (cp_parser* parser)
 		cp_lexer_consume_token (parser->lexer);
 		begin_else_clause (statement);
 		/* Parse the else-clause.  */
-		cp_parser_implicitly_scoped_statement (parser);
+		cp_parser_implicitly_scoped_statement (parser, NULL);
 		finish_else_clause (statement);
+
+		/* If we are currently parsing a then-clause, then
+		   IF_P will not be NULL.  We set it to true to
+		   indicate that this if statement has an else clause.
+		   This may trigger the Wparentheses warning below
+		   when we get back up to the parent if statement.  */
+		if (if_p != NULL)
+		  *if_p = true;
+	      }
+	    else
+	      {
+		/* This if statement does not have an else clause.  If
+		   NESTED_IF is true, then the then-clause is an if
+		   statement which does have an else clause.  We warn
+		   about the potential ambiguity.  */
+		if (nested_if)
+		  warning (OPT_Wparentheses,
+			   ("%Hsuggest explicit braces "
+			    "to avoid ambiguous %<else%>"),
+			   EXPR_LOCUS (statement));
 	      }
 
 	    /* Now we're all done with the if-statement.  */
@@ -6566,7 +6617,7 @@ cp_parser_selection_statement (cp_parser* parser)
 	    in_statement = parser->in_statement;
 	    parser->in_switch_statement_p = true;
 	    parser->in_statement |= IN_SWITCH_STMT;
-	    cp_parser_implicitly_scoped_statement (parser);
+	    cp_parser_implicitly_scoped_statement (parser, NULL);
 	    parser->in_switch_statement_p = in_switch_statement_p;
 	    parser->in_statement = in_statement;
 
@@ -6744,7 +6795,7 @@ cp_parser_iteration_statement (cp_parser* parser)
 	statement = begin_do_stmt ();
 	/* Parse the body of the do-statement.  */
 	parser->in_statement = IN_ITERATION_STMT;
-	cp_parser_implicitly_scoped_statement (parser);
+	cp_parser_implicitly_scoped_statement (parser, NULL);
 	parser->in_statement = in_statement;
 	finish_do_body (statement);
 	/* Look for the `while' keyword.  */
@@ -6986,12 +7037,20 @@ cp_parser_declaration_statement (cp_parser* parser)
    but ensures that is in its own scope, even if it is not a
    compound-statement.
 
+   If IF_P is not NULL, *IF_P is set to indicate whether the statement
+   is a (possibly labeled) if statement which is not enclosed in
+   braces and has an else clause.  This is used to implement
+   -Wparentheses.
+
    Returns the new statement.  */
 
 static tree
-cp_parser_implicitly_scoped_statement (cp_parser* parser)
+cp_parser_implicitly_scoped_statement (cp_parser* parser, bool *if_p)
 {
   tree statement;
+
+  if (if_p != NULL)
+    *if_p = false;
 
   /* Mark if () ; with a special NOP_EXPR.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
@@ -7008,7 +7067,7 @@ cp_parser_implicitly_scoped_statement (cp_parser* parser)
       /* Create a compound-statement.  */
       statement = begin_compound_stmt (0);
       /* Parse the dependent-statement.  */
-      cp_parser_statement (parser, NULL_TREE, false);
+      cp_parser_statement (parser, NULL_TREE, false, if_p);
       /* Finish the dummy compound-statement.  */
       finish_compound_stmt (statement);
     }
@@ -7027,7 +7086,7 @@ cp_parser_already_scoped_statement (cp_parser* parser)
 {
   /* If the token is a `{', then we must take special action.  */
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE))
-    cp_parser_statement (parser, NULL_TREE, false);
+    cp_parser_statement (parser, NULL_TREE, false, NULL);
   else
     {
       /* Avoid calling cp_parser_compound_statement, so that we
@@ -18654,7 +18713,7 @@ cp_parser_omp_structured_block (cp_parser *parser)
   tree stmt = begin_omp_structured_block ();
   unsigned int save = cp_parser_begin_omp_structured_block (parser);
 
-  cp_parser_statement (parser, NULL_TREE, false);
+  cp_parser_statement (parser, NULL_TREE, false, NULL);
 
   cp_parser_end_omp_structured_block (parser, save);
   return finish_omp_structured_block (stmt);
@@ -18899,7 +18958,7 @@ cp_parser_omp_for_loop (cp_parser *parser)
   /* Note that the grammar doesn't call for a structured block here,
      though the loop as a whole is a structured block.  */
   body = push_stmt_list ();
-  cp_parser_statement (parser, NULL_TREE, false);
+  cp_parser_statement (parser, NULL_TREE, false, NULL);
   body = pop_stmt_list (body);
 
   return finish_omp_for (loc, decl, init, cond, incr, body, pre_body);
@@ -18992,7 +19051,7 @@ cp_parser_omp_sections_scope (cp_parser *parser)
 
       while (1)
 	{
-	  cp_parser_statement (parser, NULL_TREE, false);
+	  cp_parser_statement (parser, NULL_TREE, false, NULL);
 
 	  tok = cp_lexer_peek_token (parser->lexer);
 	  if (tok->pragma_kind == PRAGMA_OMP_SECTION)

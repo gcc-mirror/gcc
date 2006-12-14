@@ -1,3 +1,19 @@
+2006-12-13  Ian Lance Taylor  <iant@google.com>
+
+	PR c++/19564
+	PR c++/19756
+	* parser.c (cp_parser_expression_stack_entry): Add field
+	lhs_type.
+	(cp_parser_binary_expression): Track tree code of left hand side
+	of expression.  Use it when calling build_x_binary_op.
+	(cp_parser_selection_statement): Add if_p parameter.  Change all
+	callers.  Warn about ambiguous else.
+	(cp_parser_statement): Add if_p parameter.  Change all callers.
+	(cp_parser_implicitly_scoped_statement): Likewise.
+	* typeck.c (build_x_binary_op): Add parameters arg1_code and
+	arg2_code.  Change all callers.  Call warn_about_parentheses.
+	* cp-tree.h (build_x_binary_op): Update declaration.
+
 2006-12-12  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* decl.c (build_enumerator): Update error message to match C
