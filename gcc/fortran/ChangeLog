@@ -1,3 +1,10 @@
+2006-12-14  Richard Guenther  <rguenther@suse.de>
+	    Diego Novillo  <dnovillo@redhat.com>
+
+	* Make-lang.in (fortran/options.o): Add $(PARAMS_H) dependency.
+	* options.c (params.h): Include.
+	(gfc_post_options): Set MAX_ALIASED_VOPS to 50.
+
 2006-12-13  Richard Guenther  <rguenther@suse.de>
 
 	PR fortran/30115
