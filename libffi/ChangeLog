@@ -1,3 +1,17 @@
+2006-12-14  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* configure.ac: Add TARGET for x86_64-*-darwin*.
+	* Makefile.am (nodist_libffi_la_SOURCES): Add rules for 64-bit sources
+	for X86_DARWIN.
+	* src/x86/ffitarget.h: Set trampoline size for x86_64-*-darwin*.
+	* src/x86/darwin64.S: New file for x86_64-*-darwin* support.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/libffi.special/unwindtest_ffi_call.cc: New test case for
+	ffi_call only.
+
 2006-12-13  Andreas Tobler <a.tobler@schweiz.org>
 
 	* aclocal.m4: Regenerate with aclocal -I .. as written in the

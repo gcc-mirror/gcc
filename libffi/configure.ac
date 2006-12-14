@@ -80,6 +80,7 @@ cris-*-*) TARGET=LIBFFI_CRIS; TARGETDIR=cris;;
 s390-*-linux-*) TARGET=S390; TARGETDIR=s390;;
 s390x-*-linux-*) TARGET=S390; TARGETDIR=s390;;
 x86_64-*-linux* | x86_64-*-freebsd* | x86_64-*-kfreebsd*-gnu) TARGET=X86_64; TARGETDIR=x86;;
+x86_64-*-darwin*) TARGET=X86_DARWIN; TARGETDIR=x86;;
 sh-*-linux* | sh[[34]]*-*-linux*) TARGET=SH; TARGETDIR=sh;;
 sh-*-rtems*) TARGET=SH; TARGETDIR=sh;;
 sh64-*-linux* | sh5*-*-linux*) TARGET=SH64; TARGETDIR=sh64;;
