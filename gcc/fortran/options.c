@@ -29,6 +29,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "intl.h"
 #include "opts.h"
 #include "options.h"
+#include "params.h"
 #include "tree-inline.h"
 
 #include "gfortran.h"
@@ -106,6 +107,10 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
 
   /* -fshort-enums can be default on some targets.  */
   gfc_option.fshort_enums = targetm.default_short_enums ();
+
+  /* Increase MAX_ALIASED_VOPS to account for different characteristics
+     of fortran regarding VOPs.  */
+  MAX_ALIASED_VOPS = 50;
 
   return CL_Fortran;
 }
