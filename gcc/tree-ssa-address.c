@@ -42,6 +42,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "recog.h"
 #include "expr.h"
 #include "ggc.h"
+#include "tree-affine.h"
 
 /* TODO -- handling of symbols (according to Richard Hendersons
    comments, http://gcc.gnu.org/ml/gcc-patches/2005-04/msg00949.html):
@@ -346,24 +347,19 @@ fixed_address_object_p (tree obj)
    construct.  */
 
 static void
-add_to_parts (struct mem_address *parts, tree type, tree elt,
-	      unsigned HOST_WIDE_INT coef)
+add_to_parts (struct mem_address *parts, tree type, tree elt)
 {
+  tree elt_core = elt;
+  STRIP_NOPS (elt_core);
+
   /* Check if this is a symbol.  */
   if (!parts->symbol
-      && coef == 1
-      && TREE_CODE (elt) == ADDR_EXPR
-      && fixed_address_object_p (TREE_OPERAND (elt, 0)))
+      && TREE_CODE (elt_core) == ADDR_EXPR
+      && fixed_address_object_p (TREE_OPERAND (elt_core, 0)))
     {
-      parts->symbol = TREE_OPERAND (elt, 0);
+      parts->symbol = TREE_OPERAND (elt_core, 0);
       return;
     }
-
-  if (coef != 1)
-    elt = fold_build2 (MULT_EXPR, type, fold_convert (type, elt),
-		       build_int_cst_type (type, coef));
-  else
-    elt = fold_convert (type, elt);
 
   if (!parts->base)
     {
@@ -388,52 +384,69 @@ add_to_parts (struct mem_address *parts, tree type, tree elt,
 
 static void
 most_expensive_mult_to_index (struct mem_address *parts, tree type,
-			      struct affine_tree_combination *addr)
+			      aff_tree *addr)
 {
-  unsigned HOST_WIDE_INT best_mult = 0;
+  HOST_WIDE_INT coef;
+  double_int best_mult, amult, amult_neg;
   unsigned best_mult_cost = 0, acost;
   tree mult_elt = NULL_TREE, elt;
   unsigned i, j;
+  enum tree_code op_code;
 
+  best_mult = double_int_zero;
   for (i = 0; i < addr->n; i++)
     {
-      /* FIXME: Should use the correct memory mode rather than Pmode.  */
-      if (addr->coefs[i] == 1
-	  || !multiplier_allowed_in_address_p (addr->coefs[i], Pmode))
+      if (!double_int_fits_in_shwi_p (addr->elts[i].coef))
 	continue;
-      
-      acost = multiply_by_cost (addr->coefs[i], Pmode);
+
+      /* FIXME: Should use the correct memory mode rather than Pmode.  */
+
+      coef = double_int_to_shwi (addr->elts[i].coef);
+      if (coef == 1
+	  || !multiplier_allowed_in_address_p (coef, Pmode))
+	continue;
+
+      acost = multiply_by_cost (coef, Pmode);
 
       if (acost > best_mult_cost)
 	{
 	  best_mult_cost = acost;
-	  best_mult = addr->coefs[i];
+	  best_mult = addr->elts[i].coef;
 	}
     }
 
-  if (!best_mult)
+  if (!best_mult_cost)
     return;
 
+  /* Collect elements multiplied by best_mult.  */
   for (i = j = 0; i < addr->n; i++)
     {
-      if (addr->coefs[i] != best_mult)
+      amult = addr->elts[i].coef;
+      amult_neg = double_int_ext_for_comb (double_int_neg (amult), addr);
+ 
+      if (double_int_equal_p (amult, best_mult))
+	op_code = PLUS_EXPR;
+      else if (double_int_equal_p (amult_neg, best_mult))
+	op_code = MINUS_EXPR;
+      else
 	{
-	  addr->coefs[j] = addr->coefs[i];
 	  addr->elts[j] = addr->elts[i];
 	  j++;
 	  continue;
 	}
-
-      elt = fold_convert (type, addr->elts[i]);
-      if (!mult_elt)
+  
+      elt = fold_convert (type, addr->elts[i].val);
+      if (mult_elt)
+	mult_elt = fold_build2 (op_code, type, mult_elt, elt);
+      else if (op_code == PLUS_EXPR)
 	mult_elt = elt;
       else
-	mult_elt = fold_build2 (PLUS_EXPR, type, mult_elt, elt);
+	mult_elt = fold_build1 (NEGATE_EXPR, type, elt);
     }
   addr->n = j;
-
+  
   parts->index = mult_elt;
-  parts->step = build_int_cst_type (type, best_mult);
+  parts->step = double_int_to_tree (type, best_mult);
 }
 
 /* Splits address ADDR into PARTS.
@@ -442,13 +455,13 @@ most_expensive_mult_to_index (struct mem_address *parts, tree type,
    to PARTS.  Some architectures do not support anything but single
    register in address, possibly with a small integer offset; while
    create_mem_ref will simplify the address to an acceptable shape
-   later, it would be a small bit more efficient to know that asking
-   for complicated addressing modes is useless.  */
+   later, it would be more efficient to know that asking for complicated
+   addressing modes is useless.  */
 
 static void
-addr_to_parts (struct affine_tree_combination *addr, tree type,
-	       struct mem_address *parts)
+addr_to_parts (aff_tree *addr, tree type, struct mem_address *parts)
 {
+  tree part;
   unsigned i;
 
   parts->symbol = NULL_TREE;
@@ -456,8 +469,8 @@ addr_to_parts (struct affine_tree_combination *addr, tree type,
   parts->index = NULL_TREE;
   parts->step = NULL_TREE;
 
-  if (addr->offset)
-    parts->offset = build_int_cst_type (type, addr->offset);
+  if (!double_int_zero_p (addr->offset))
+    parts->offset = double_int_to_tree (type, addr->offset);
   else
     parts->offset = NULL_TREE;
 
@@ -467,9 +480,15 @@ addr_to_parts (struct affine_tree_combination *addr, tree type,
 
   /* Then try to process the remaining elements.  */
   for (i = 0; i < addr->n; i++)
-    add_to_parts (parts, type, addr->elts[i], addr->coefs[i]);
+    {
+      part = fold_convert (type, addr->elts[i].val);
+      if (!double_int_one_p (addr->elts[i].coef))
+	part = fold_build2 (MULT_EXPR, type, part,
+			    double_int_to_tree (type, addr->elts[i].coef));
+      add_to_parts (parts, type, part);
+    }
   if (addr->rest)
-    add_to_parts (parts, type, addr->rest, 1);
+    add_to_parts (parts, type, addr->rest);
 }
 
 /* Force the PARTS to register.  */
@@ -490,8 +509,7 @@ gimplify_mem_ref_parts (block_stmt_iterator *bsi, struct mem_address *parts)
    of created memory reference.  */
 
 tree
-create_mem_ref (block_stmt_iterator *bsi, tree type,
-		struct affine_tree_combination *addr)
+create_mem_ref (block_stmt_iterator *bsi, tree type, aff_tree *addr)
 {
   tree mem_ref, tmp;
   tree addr_type = build_pointer_type (type);
