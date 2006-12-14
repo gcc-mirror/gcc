@@ -163,7 +163,7 @@ proc check_weak_available { } {
 
     # HP-UX 10.X doesn't support it
 
-    if { [regexp "hppa.*hpux10" $target_triplet] } {
+    if { [istarget "hppa*-*-hpux10*"] } {
 	return 0
     }
 
@@ -978,7 +978,6 @@ proc check_mkfifo_available {} {
 proc check_cxa_atexit_available { } {
     global et_cxa_atexit
     global et_cxa_atexit_target_name
-    global target_triplet
     global tool	
 
     if { ![info exists et_cxa_atexit_target_name] } {
@@ -998,7 +997,7 @@ proc check_cxa_atexit_available { } {
 
     if [info exists et_cxa_atexit] {
 	verbose "check_cxa_atexit_available: using cached result" 2
-    } elseif { [regexp "hppa.*hpux10" $target_triplet] } {
+    } elseif { [istarget "hppa*-*-hpux10*"] } {
 	# HP-UX 10 doesn't have __cxa_atexit but subsequent test passes.
 	set et_cxa_atexit 0
     } else {

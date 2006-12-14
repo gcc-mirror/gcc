@@ -1,3 +1,9 @@
+2006-12-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* lib/target-supports.exp (check_weak_available): Use istarget
+	"hppa*-*-hpux10*" instead of regexp.
+	(check_cxa_atexit_available): Likewise.
+
 2006-12-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/30157
