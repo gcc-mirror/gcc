@@ -1,3 +1,8 @@
+2006-12-14  Jan Hubicka  <jh@suse.cz>
+
+	* tree-flow.h (struct stmt_ann_d): Move bitfield references_memory
+	to proper place.
+
 2006-12-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/30197
