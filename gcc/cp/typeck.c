@@ -1648,17 +1648,20 @@ rationalize_conditional_expr (enum tree_code code, tree t)
      are equal, so we know what conditional expression this used to be.  */
   if (TREE_CODE (t) == MIN_EXPR || TREE_CODE (t) == MAX_EXPR)
     {
+      tree op0 = TREE_OPERAND (t, 0);
+      tree op1 = TREE_OPERAND (t, 1);
+
       /* The following code is incorrect if either operand side-effects.  */
-      gcc_assert (!TREE_SIDE_EFFECTS (TREE_OPERAND (t, 0))
-		  && !TREE_SIDE_EFFECTS (TREE_OPERAND (t, 1)));
+      gcc_assert (!TREE_SIDE_EFFECTS (op0)
+		  && !TREE_SIDE_EFFECTS (op1));
       return
 	build_conditional_expr (build_x_binary_op ((TREE_CODE (t) == MIN_EXPR
 						    ? LE_EXPR : GE_EXPR),
-						   TREE_OPERAND (t, 0),
-						   TREE_OPERAND (t, 1),
+						   op0, TREE_CODE (op0),
+						   op1, TREE_CODE (op1),
 						   /*overloaded_p=*/NULL),
-			    build_unary_op (code, TREE_OPERAND (t, 0), 0),
-			    build_unary_op (code, TREE_OPERAND (t, 1), 0));
+			    build_unary_op (code, op0, 0),
+			    build_unary_op (code, op1, 0));
     }
 
   return
@@ -2865,11 +2868,19 @@ convert_arguments (tree typelist, tree values, tree fndecl, int flags)
 }
 
 /* Build a binary-operation expression, after performing default
-   conversions on the operands.  CODE is the kind of expression to build.  */
+   conversions on the operands.  CODE is the kind of expression to
+   build.  ARG1 and ARG2 are the arguments.  ARG1_CODE and ARG2_CODE
+   are the tree codes which correspond to ARG1 and ARG2 when issuing
+   warnings about possibly misplaced parentheses.  They may differ
+   from the TREE_CODE of ARG1 and ARG2 if the parser has done constant
+   folding (e.g., if the parser sees "a | 1 + 1", it may call this
+   routine with ARG2 being an INTEGER_CST and ARG2_CODE == PLUS_EXPR).
+   To avoid issuing any parentheses warnings, pass ARG1_CODE and/or
+   ARG2_CODE as ERROR_MARK.  */
 
 tree
-build_x_binary_op (enum tree_code code, tree arg1, tree arg2,
-		   bool *overloaded_p)
+build_x_binary_op (enum tree_code code, tree arg1, enum tree_code arg1_code,
+		   tree arg2, enum tree_code arg2_code, bool *overloaded_p)
 {
   tree orig_arg1;
   tree orig_arg2;
@@ -2892,6 +2903,17 @@ build_x_binary_op (enum tree_code code, tree arg1, tree arg2,
   else
     expr = build_new_op (code, LOOKUP_NORMAL, arg1, arg2, NULL_TREE,
 			 overloaded_p);
+
+  /* Check for cases such as x+y<<z which users are likely to
+     misinterpret.  But don't warn about obj << x + y, since that is a
+     common idiom for I/O.  */
+  if (warn_parentheses
+      && !processing_template_decl
+      && !error_operand_p (arg1)
+      && !error_operand_p (arg2)
+      && (code != LSHIFT_EXPR
+	  || !CLASS_TYPE_P (TREE_TYPE (arg1))))
+    warn_about_parentheses (code, arg1_code, arg2_code);
 
   if (processing_template_decl && expr != error_mark_node)
     return build_min_non_dep (code, expr, orig_arg1, orig_arg2);

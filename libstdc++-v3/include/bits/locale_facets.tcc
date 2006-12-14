@@ -314,7 +314,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       int __sep_pos = 0;
       while (!__testeof)
 	{
-	  if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep
+	  if ((__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
 	      || __c == __lc->_M_decimal_point)
 	    break;
 	  else if (__c == __lit[__num_base::_S_izero])
@@ -556,7 +556,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	int __sep_pos = 0;
 	while (!__testeof)
 	  {
-	    if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep
+	    if ((__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
 		|| __c == __lc->_M_decimal_point)
 	      break;
 	    else if (__c == __lit[__num_base::_S_izero] 
@@ -883,7 +883,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       // Prepare for hex formatted input.
       typedef ios_base::fmtflags        fmtflags;
       const fmtflags __fmt = __io.flags();
-      __io.flags(__fmt & ~ios_base::basefield | ios_base::hex);
+      __io.flags((__fmt & ~ios_base::basefield) | ios_base::hex);
 
       unsigned long __ul;
       __beg = _M_extract_int(__beg, __end, __io, __err, __ul);
@@ -1305,7 +1305,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       const ios_base::fmtflags __fmt = ~(ios_base::basefield
 					 | ios_base::uppercase
 					 | ios_base::internal);
-      __io.flags(__flags & __fmt | (ios_base::hex | ios_base::showbase));
+      __io.flags((__flags & __fmt) | (ios_base::hex | ios_base::showbase));
 
       __s = _M_insert_int(__s, __io, __fill,
 			  reinterpret_cast<unsigned long>(__v));
@@ -1377,9 +1377,9 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 					 == money_base::space)))
 		    || (__i == 2 && ((static_cast<part>(__p.field[3])
 				      == money_base::value)
-				     || __mandatory_sign
-				     && (static_cast<part>(__p.field[3])
-					 == money_base::sign))))
+				     || (__mandatory_sign
+					 && (static_cast<part>(__p.field[3])
+					     == money_base::sign)))))
 		  {
 		    const size_type __len = __lc->_M_curr_symbol_size;
 		    size_type __j = 0;

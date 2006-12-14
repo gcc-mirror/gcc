@@ -2629,73 +2629,7 @@ parser_build_binary_op (enum tree_code code, struct c_expr arg1,
   /* Check for cases such as x+y<<z which users are likely
      to misinterpret.  */
   if (warn_parentheses)
-    {
-      if (code == LSHIFT_EXPR || code == RSHIFT_EXPR)
-	{
-	  if (code1 == PLUS_EXPR || code1 == MINUS_EXPR
-	      || code2 == PLUS_EXPR || code2 == MINUS_EXPR)
-	    warning (OPT_Wparentheses,
-		     "suggest parentheses around + or - inside shift");
-	}
-
-      if (code == TRUTH_ORIF_EXPR)
-	{
-	  if (code1 == TRUTH_ANDIF_EXPR
-	      || code2 == TRUTH_ANDIF_EXPR)
-	    warning (OPT_Wparentheses,
-		     "suggest parentheses around && within ||");
-	}
-
-      if (code == BIT_IOR_EXPR)
-	{
-	  if (code1 == BIT_AND_EXPR || code1 == BIT_XOR_EXPR
-	      || code1 == PLUS_EXPR || code1 == MINUS_EXPR
-	      || code2 == BIT_AND_EXPR || code2 == BIT_XOR_EXPR
-	      || code2 == PLUS_EXPR || code2 == MINUS_EXPR)
-	    warning (OPT_Wparentheses,
-		     "suggest parentheses around arithmetic in operand of |");
-	  /* Check cases like x|y==z */
-	  if (TREE_CODE_CLASS (code1) == tcc_comparison
-	      || TREE_CODE_CLASS (code2) == tcc_comparison)
-	    warning (OPT_Wparentheses,
-		     "suggest parentheses around comparison in operand of |");
-	}
-
-      if (code == BIT_XOR_EXPR)
-	{
-	  if (code1 == BIT_AND_EXPR
-	      || code1 == PLUS_EXPR || code1 == MINUS_EXPR
-	      || code2 == BIT_AND_EXPR
-	      || code2 == PLUS_EXPR || code2 == MINUS_EXPR)
-	    warning (OPT_Wparentheses,
-		     "suggest parentheses around arithmetic in operand of ^");
-	  /* Check cases like x^y==z */
-	  if (TREE_CODE_CLASS (code1) == tcc_comparison
-	      || TREE_CODE_CLASS (code2) == tcc_comparison)
-	    warning (OPT_Wparentheses,
-		     "suggest parentheses around comparison in operand of ^");
-	}
-
-      if (code == BIT_AND_EXPR)
-	{
-	  if (code1 == PLUS_EXPR || code1 == MINUS_EXPR
-	      || code2 == PLUS_EXPR || code2 == MINUS_EXPR)
-	    warning (OPT_Wparentheses,
-		     "suggest parentheses around + or - in operand of &");
-	  /* Check cases like x&y==z */
-	  if (TREE_CODE_CLASS (code1) == tcc_comparison
-	      || TREE_CODE_CLASS (code2) == tcc_comparison)
-	    warning (OPT_Wparentheses,
-		     "suggest parentheses around comparison in operand of &");
-	}
-      /* Similarly, check for cases like 1<=i<=10 that are probably errors.  */
-      if (TREE_CODE_CLASS (code) == tcc_comparison
-	  && (TREE_CODE_CLASS (code1) == tcc_comparison
-	      || TREE_CODE_CLASS (code2) == tcc_comparison))
-	warning (OPT_Wparentheses, "comparisons like X<=Y<=Z do not "
-		 "have their mathematical meaning");
-
-    }
+    warn_about_parentheses (code, code1, code2);
 
   /* Warn about comparisons against string literals, with the exception
      of testing for equality or inequality of a string literal with NULL.  */

@@ -160,7 +160,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       {
 	const bool __thiseof = _M_at_eof();
 	const bool __beof = __b._M_at_eof();
-	return (__thiseof && __beof || (!__thiseof && !__beof));
+	return ((__thiseof && __beof) || (!__thiseof && !__beof));
       }
 
     private:

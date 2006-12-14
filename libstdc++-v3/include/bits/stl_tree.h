@@ -1055,10 +1055,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
       iterator __j = iterator(__y);
       if (__comp)
-	if (__j == begin())
-	  return pair<iterator, bool>(_M_insert_(__x, __y, __v), true);
-	else
-	  --__j;
+	{
+	  if (__j == begin())
+	    return pair<iterator, bool>(_M_insert_(__x, __y, __v), true);
+	  else
+	    --__j;
+	}
       if (_M_impl._M_key_compare(_S_key(__j._M_node), _KeyOfValue()(__v)))
 	return pair<iterator, bool>(_M_insert_(__x, __y, __v), true);
       return pair<iterator, bool>(__j, false);
