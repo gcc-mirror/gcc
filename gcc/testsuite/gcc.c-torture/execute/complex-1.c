@@ -17,7 +17,7 @@ g2 (double x)
 }
 
 __complex__ double
-cexp (__complex__ double x)
+xcexp (__complex__ double x)
 {
   double r;
 
@@ -31,7 +31,7 @@ main ()
 {
   __complex__ double x;
 
-  x = cexp (1.0i);
+  x = xcexp (1.0i);
   if (__real__ x != -1.0)
     abort ();
   if (__imag__ x != 0.0)

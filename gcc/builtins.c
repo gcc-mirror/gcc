@@ -7367,6 +7367,67 @@ fold_builtin_sincos (tree arglist)
 			 build1 (REALPART_EXPR, type, call)));
 }
 
+/* Fold function call to builtin cexp, cexpf, or cexpl.  Return
+   NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_cexp (tree arglist, tree type)
+{
+  tree arg0, rtype;
+  tree realp, imagp, ifn;
+
+  if (!validate_arglist (arglist, COMPLEX_TYPE, VOID_TYPE))
+    return NULL_TREE;
+
+  arg0 = TREE_VALUE (arglist);
+  rtype = TREE_TYPE (TREE_TYPE (arg0));
+
+  /* In case we can figure out the real part of arg0 and it is constant zero
+     fold to cexpi.  */
+  ifn = mathfn_built_in (rtype, BUILT_IN_CEXPI);
+  if (!ifn)
+    return NULL_TREE;
+
+  if ((realp = fold_unary (REALPART_EXPR, rtype, arg0))
+      && real_zerop (realp))
+    {
+      tree narg = fold_build1 (IMAGPART_EXPR, rtype, arg0);
+      return build_function_call_expr (ifn, build_tree_list (NULL_TREE, narg));
+    }
+
+  /* In case we can easily decompose real and imaginary parts split cexp
+     to exp (r) * cexpi (i).  */
+  if (flag_unsafe_math_optimizations
+      && realp)
+    {
+      tree rfn, rcall, icall;
+
+      rfn = mathfn_built_in (rtype, BUILT_IN_EXP);
+      if (!rfn)
+	return NULL_TREE;
+
+      imagp = fold_unary (IMAGPART_EXPR, rtype, arg0);
+      if (!imagp)
+	return NULL_TREE;
+
+      icall = build_function_call_expr (ifn,
+				        build_tree_list (NULL_TREE, imagp));
+      icall = builtin_save_expr (icall);
+      rcall = build_function_call_expr (rfn,
+				        build_tree_list (NULL_TREE, realp));
+      rcall = builtin_save_expr (rcall);
+      return build2 (COMPLEX_EXPR, type,
+		     build2 (MULT_EXPR, rtype,
+			     rcall,
+			     build1 (REALPART_EXPR, rtype, icall)),
+		     build2 (MULT_EXPR, rtype,
+			     rcall,
+			     build1 (IMAGPART_EXPR, rtype, icall)));
+    }
+
+  return NULL_TREE;
+}
+
 /* Fold function call to builtin trunc, truncf or truncl.  Return
    NULL_TREE if no simplification can be made.  */
 
@@ -9311,6 +9372,9 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
 
     CASE_FLT_FN (BUILT_IN_SINCOS):
       return fold_builtin_sincos (arglist);
+
+    CASE_FLT_FN (BUILT_IN_CEXP):
+      return fold_builtin_cexp (arglist, type);
 
     CASE_FLT_FN (BUILT_IN_CEXPI):
       if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))

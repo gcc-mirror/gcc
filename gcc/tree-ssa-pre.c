@@ -3613,7 +3613,9 @@ try_combine_conversion (tree *expr_p)
   unsigned int firstbit;
 
   if (!((TREE_CODE (expr) == NOP_EXPR
-	 || TREE_CODE (expr) == CONVERT_EXPR)
+	 || TREE_CODE (expr) == CONVERT_EXPR
+	 || TREE_CODE (expr) == REALPART_EXPR
+	 || TREE_CODE (expr) == IMAGPART_EXPR)
 	&& TREE_CODE (TREE_OPERAND (expr, 0)) == VALUE_HANDLE
 	&& !VALUE_HANDLE_VUSES (TREE_OPERAND (expr, 0))))
     return false;

@@ -1,5 +1,13 @@
 2006-12-14  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/30197
+	* builtins.c (fold_builtin_cexp): New function to fold cexp
+	to cexpi and exp parts.
+	* tree-ssa-pre.c (try_combine_conversion): Also handle
+	REALPART_EXPR and IMAGPART_EXPR.
+
+2006-12-14  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/30172
 	* fold-const.c (fold_binary): Fold __complex__ ( x, 0 )
 	+ __complex__ ( 0, y ) to __complex__ ( x, y ).
