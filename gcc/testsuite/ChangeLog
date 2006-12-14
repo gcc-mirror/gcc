@@ -1,3 +1,7 @@
+2006-12-14  Dorit Nuzman  <dorit@il.ibm.com>
+ 
+	* lib/target-supports.exp (vect_no_align): Remove spu.
+
 2006-12-13  Ian Lance Taylor  <iant@google.com>
 
 	PR c++/19564

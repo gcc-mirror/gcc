@@ -142,7 +142,10 @@
  (UNSPEC_MTSPR          45)
  (UNSPEC_RDCH           46)
  (UNSPEC_RCHCNT         47)
- (UNSPEC_WRCH           48)])
+ (UNSPEC_WRCH           48)
+ (UNSPEC_SPU_REALIGN_LOAD 49)
+ (UNSPEC_SPU_MASK_FOR_LOAD 50)
+])
 
 (include "predicates.md")
 (include "constraints.md")
@@ -3374,3 +3377,53 @@ selb\t%0,%4,%0,%3"
   emit_insn (gen_selb (operands[0], operands[1], operands[2], mask));
   DONE;
 }") 
+
+(define_expand "vec_realign_load_<mode>"
+  [(set (match_operand:ALL 0 "register_operand" "=r")
+	(unspec:ALL [(match_operand:ALL 1 "register_operand" "r")
+		     (match_operand:ALL 2 "register_operand" "r")
+		     (match_operand:TI 3 "register_operand" "r")] UNSPEC_SPU_REALIGN_LOAD))]
+  ""
+  "
+{
+  emit_insn (gen_shufb (operands[0], operands[1], operands[2], operands[3])); 
+  DONE;
+}")
+
+(define_expand "spu_lvsr"
+  [(set (match_operand:V16QI 0 "register_operand" "")
+        (unspec:V16QI [(match_operand 1 "memory_operand" "")] UNSPEC_SPU_MASK_FOR_LOAD))]
+  ""
+  "
+{ 
+  rtx addr;
+  rtx offset = gen_reg_rtx (V8HImode);
+  rtx addr_bits = gen_reg_rtx (SImode);
+  rtx addr_bits_vec = gen_reg_rtx (V8HImode);
+  rtx splatqi = gen_reg_rtx (TImode);
+  rtx result = gen_reg_rtx (V8HImode);
+  unsigned char arr[16] = {
+    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 
+    0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F};
+  unsigned char arr2[16] = {
+    0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 
+    0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03};
+
+  emit_move_insn (offset, array_to_constant (V8HImode, arr));
+  emit_move_insn (splatqi, array_to_constant (TImode, arr2));
+
+  gcc_assert (GET_CODE (operands[1]) == MEM);
+  addr = force_reg (Pmode, XEXP (operands[1], 0));
+  emit_insn (gen_andsi3 (addr_bits, addr, GEN_INT (0xF))); 
+  emit_insn (gen_shufb (addr_bits_vec, addr_bits, addr_bits, splatqi));
+
+  /* offset - (addr & 0xF) 
+     It is safe to use a single sfh, because each byte of offset is > 15 and
+     each byte of addr is <= 15. */
+  emit_insn (gen_subv8hi3 (result, offset, addr_bits_vec));
+
+  result = simplify_gen_subreg (V16QImode, result, V8HImode, 0);
+  emit_move_insn (operands[0], result);
+
+  DONE;
+}")

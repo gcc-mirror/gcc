@@ -130,6 +130,7 @@ static void spu_init_libfuncs (void);
 static bool spu_return_in_memory (tree type, tree fntype);
 static void fix_range (const char *);
 static void spu_encode_section_info (tree, rtx, int);
+static tree spu_builtin_mask_for_load (void);
 
 extern const char *reg_names[];
 rtx spu_compare_op0, spu_compare_op1;
@@ -247,6 +248,9 @@ const struct attribute_spec spu_attribute_table[];
 
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO spu_encode_section_info
+
+#undef TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD
+#define TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD spu_builtin_mask_for_load
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4288,6 +4292,8 @@ spu_init_builtins (void)
       d->fndecl =
 	add_builtin_function (name, p, END_BUILTINS + i, BUILT_IN_MD,
 			      NULL, NULL_TREE);
+      if (d->fcode == SPU_MASK_FOR_LOAD)
+	TREE_READONLY (d->fndecl) = 1;	
     }
 }
 
@@ -4843,6 +4849,31 @@ spu_expand_builtin_1 (struct spu_builtin_description *d,
       i++;
     }
 
+  if (d->fcode == SPU_MASK_FOR_LOAD)
+    {
+      enum machine_mode mode = insn_data[icode].operand[1].mode;
+      tree arg;
+      rtx addr, op, pat;
+
+      /* get addr */
+      arg = TREE_VALUE (arglist);
+      gcc_assert (TREE_CODE (TREE_TYPE (arg)) == POINTER_TYPE);
+      op = expand_expr (arg, NULL_RTX, Pmode, EXPAND_NORMAL);
+      addr = memory_address (mode, op);
+
+      /* negate addr */
+      op = gen_reg_rtx (GET_MODE (addr));
+      emit_insn (gen_rtx_SET (VOIDmode, op,
+                 gen_rtx_NEG (GET_MODE (addr), addr)));
+      op = gen_rtx_MEM (mode, op);
+
+      pat = GEN_FCN (icode) (target, op);
+      if (!pat) 
+        return 0;
+      emit_insn (pat);
+      return target;
+    }   
+
   /* Ignore align_hint, but still expand it's args in case they have
      side effects. */
   if (icode == CODE_FOR_spu_align_hint)
@@ -4962,3 +4993,11 @@ spu_expand_builtin (tree exp,
   abort ();
 }
 
+/* Implement targetm.vectorize.builtin_mask_for_load.  */
+static tree
+spu_builtin_mask_for_load (void)
+{
+  struct spu_builtin_description *d = &spu_builtins[SPU_MASK_FOR_LOAD];
+  gcc_assert (d);
+  return d->fndecl;
+}

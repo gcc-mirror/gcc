@@ -1,3 +1,15 @@
+2006-12-14  Dorit Nuzman  <dorit@il.ibm.com>
+	    Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
+
+	* spu.c (TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD): Defined.
+	(spu_init_builtins): Mark the SPU_MASK_FOR_LOAD builtin decl as read 
+	only.   
+	(spu_expand_builtin_1): Handle the SPU_MASK_FOR_LOAD builtin.
+	(spu_builtin_mask_for_load): New.
+	* spu-builtins.def (SPU_MASK_FOR_LOAD): Define new builtin.
+	* spu.md (UNSPEC_SPU_REALIGN_LOAD, UNSPEC_SPU_MASK_FOR_LOAD):New.
+	(vec_realign_load_<mode>, spu_lvsr): New.
+
 2006-12-13  Ian Lance Taylor  <iant@google.com>
 
 	PR c++/19564

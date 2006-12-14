@@ -246,6 +246,7 @@ DEF_BUILTIN (SPU_CMPABSEQ,   CODE_FOR_cmeq_v4sf,      "spu_cmpabseq",   B_INSN, 
 DEF_BUILTIN (SPU_CMPABSGT,   CODE_FOR_cmgt_v4sf,      "spu_cmpabsgt",   B_INSN,     _A3(SPU_BTI_UV4SI,    SPU_BTI_V4SF,   SPU_BTI_V4SF))
 DEF_BUILTIN (SPU_IDISABLE,   CODE_FOR_spu_idisable,   "spu_idisable",   B_INSN,     _A1(SPU_BTI_VOID))
 DEF_BUILTIN (SPU_IENABLE,    CODE_FOR_spu_ienable,    "spu_ienable",    B_INSN,     _A1(SPU_BTI_VOID))
+DEF_BUILTIN (SPU_MASK_FOR_LOAD,    CODE_FOR_spu_lvsr, "spu_lvsr",       B_INSN,     _A2(SPU_BTI_V16QI, SPU_BTI_PTR))
 
 /* definitions to support overloaded generic builtin functions:  */
 

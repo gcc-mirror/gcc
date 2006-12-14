@@ -1789,7 +1789,6 @@ proc check_effective_target_vect_no_align { } {
     } else {
 	set et_vect_no_align_saved 0
 	if { [istarget mipsisa64*-*-*]
-	     || [istarget spu-*-*]
 	     || [istarget sparc*-*-*]
 	     || [istarget ia64-*-*] } {
 	    set et_vect_no_align_saved 1
