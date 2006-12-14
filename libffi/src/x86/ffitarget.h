@@ -69,7 +69,7 @@ typedef enum ffi_abi {
 
 #define FFI_CLOSURES 1
 
-#ifdef X86_64
+#if defined (X86_64) || (defined (__x86_64__) && defined (X86_DARWIN))
 #define FFI_TRAMPOLINE_SIZE 24
 #define FFI_NATIVE_RAW_API 0
 #else
