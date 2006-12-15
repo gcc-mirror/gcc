@@ -1106,9 +1106,10 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 	 at the end.  Note that is_gimple_cast only checks the outer
 	 tree code, not its operand.  Thus the explicit check that its
 	 operand is a gimple value.  */
-      if (!is_gimple_val (rhs)
+      if ((!is_gimple_val (rhs)
 	  && (!is_gimple_cast (rhs)
 	      || !is_gimple_val (TREE_OPERAND (rhs, 0))))
+	  || !is_gimple_reg (var))
 	gimplify_stmt (&init_stmt);
 
       /* If VAR represents a zero-sized variable, it's possible that the

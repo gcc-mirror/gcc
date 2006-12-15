@@ -1,3 +1,9 @@
+2006-12-15  Andrew Pinski  <pinski@gmail.com>
+
+	PR tree-opt/30140
+	* tree-inline.c (setup_one_parameter): Gimplify the statement if
+	the variable is not a gimple register variable.
+
 2006-12-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* invoke.texi (mstringop-strategy): Add missing "byte_loop" value.
