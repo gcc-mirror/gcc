@@ -20,6 +20,7 @@
 # This file was written by Steven Bosscher (s.bosscher@student.tudelft.nl)
 # based on f-torture.exp, which was written by Rob Savoye.
 
+load_lib target-supports.exp
 
 # The default option list can be overridden by
 # TORTURE_OPTIONS="{ { list1 } ... { listN } }"
