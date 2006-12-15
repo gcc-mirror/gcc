@@ -1,3 +1,8 @@
+2006-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/30185
+	* gcc.c-torture/execute/pr30185.c: New test.
+
 2006-12-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* lib/target-supports.exp (check_weak_available): Use istarget

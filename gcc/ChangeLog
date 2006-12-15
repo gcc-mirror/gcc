@@ -1,3 +1,9 @@
+2006-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/30185
+	* config/rs6000/rs6000.md (div<mode>3): Use correct mode in
+	force_reg call.
+
 2006-12-13  Richard Guenther  <rguenther@suse.de>
 
 	* ipa-inline.c (cgraph_flatten_node): Replace leafify with
