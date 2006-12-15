@@ -1430,7 +1430,7 @@ build_dt (tree function, gfc_code * code)
 			    dt->advance);
 
       if (dt->format_expr)
-	mask |= set_string (&block, &post_block, var, IOPARM_dt_format,
+	mask |= set_string (&block, &post_end_block, var, IOPARM_dt_format,
 			    dt->format_expr);
 
       if (dt->format_label)
