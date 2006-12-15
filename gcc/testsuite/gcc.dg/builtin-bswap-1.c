@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target stdint_types } */
 /* { dg-options "" } */
 /* { dg-final { scan-assembler-not "__builtin_" } } */
 

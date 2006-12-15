@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target stdint_types } */
 /* { dg-options "-Wall" } */
 
 #include <stdint.h>
