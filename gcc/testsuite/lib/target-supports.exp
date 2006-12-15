@@ -2044,3 +2044,14 @@ proc check_effective_target_string_merging { } {
 		    const char *var = "String";
 		} {-O2}]
 }
+
+# Return 1 if target has the basic signed and unsigned types in
+# <stdint.h>, 0 otherwise.
+
+proc check_effective_target_stdint_types { } {
+    return [check_no_compiler_messages stdint_types assembly {
+	#include <stdint.h>
+	int8_t a; int16_t b; int32_t c; int64_t d;
+	uint8_t e; uint16_t f; uint32_t g; uint64_t h;
+    }]
+}
