@@ -1,3 +1,19 @@
+2006-12-15  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2006-12-13  Richard Guenther  <rguenther@suse.de>
+
+	PR fortran/30115
+	* trans-array.c (gfc_array_allocate): Adjust for changed
+	library interface.
+	(gfc_array_deallocate): Likewise.
+	(gfc_trans_dealloc_allocated): Likewise.
+	* trans-stmt.c (gfc_trans_allocate): Likewise.
+	(gfc_trans_deallocate): Likewise.
+	* trans-decl.c (gfc_build_builtin_function_decls): Adjust
+	function declarations to match the library changes.  Mark
+	allocation functions with DECL_IS_MALLOC.
+
 2006-12-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/29892

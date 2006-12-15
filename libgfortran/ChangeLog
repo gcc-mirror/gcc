@@ -1,3 +1,19 @@
+2006-12-15  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2006-12-13  Richard Guenther  <rguenther@suse.de>
+
+	PR fortran/30115
+	* runtime/memory.c (allocate_size): Change interface to
+	void *()(size_t, GFC_INTEGER_4 *).
+	(allocate): Likewise.
+	(allocate64): Likewise.
+	(allocate_array): Change interface to
+	void *()(void *, size_t, GFC_INTEGER_4 *).
+	(allocate64_array): Likewise.
+	(deallocate): Change interface to
+	void ()(void *, GFC_INTEGER_4 *).
+
 2006-12-10  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/29568

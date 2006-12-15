@@ -2246,27 +2246,31 @@ gfc_build_builtin_function_decls (void)
 
   gfor_fndecl_allocate =
     gfc_build_library_function_decl (get_identifier (PREFIX("allocate")),
-				     void_type_node, 2, ppvoid_type_node,
-				     gfc_int4_type_node);
+				     pvoid_type_node, 2,
+				     gfc_int4_type_node, gfc_pint4_type_node);
+  DECL_IS_MALLOC (gfor_fndecl_allocate) = 1;
 
   gfor_fndecl_allocate64 =
     gfc_build_library_function_decl (get_identifier (PREFIX("allocate64")),
-				     void_type_node, 2, ppvoid_type_node,
-				     gfc_int8_type_node);
+				     pvoid_type_node, 2,
+				     gfc_int8_type_node, gfc_pint4_type_node);
+  DECL_IS_MALLOC (gfor_fndecl_allocate64) = 1;
 
   gfor_fndecl_allocate_array =
     gfc_build_library_function_decl (get_identifier (PREFIX("allocate_array")),
-				     void_type_node, 2, ppvoid_type_node,
-				     gfc_int4_type_node);
+				     pvoid_type_node, 3, pvoid_type_node,
+				     gfc_int4_type_node, gfc_pint4_type_node);
+  DECL_IS_MALLOC (gfor_fndecl_allocate_array) = 1;
 
   gfor_fndecl_allocate64_array =
     gfc_build_library_function_decl (get_identifier (PREFIX("allocate64_array")),
-				     void_type_node, 2, ppvoid_type_node,
-				     gfc_int8_type_node);
+				     pvoid_type_node, 3, pvoid_type_node,
+				     gfc_int8_type_node, gfc_pint4_type_node);
+  DECL_IS_MALLOC (gfor_fndecl_allocate64_array) = 1;
 
   gfor_fndecl_deallocate =
     gfc_build_library_function_decl (get_identifier (PREFIX("deallocate")),
-				     void_type_node, 2, ppvoid_type_node,
+				     void_type_node, 2, pvoid_type_node,
 				     gfc_pint4_type_node);
 
   gfor_fndecl_stop_numeric =
