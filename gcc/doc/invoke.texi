@@ -9721,8 +9721,8 @@ blocks inline code is used, while for large blocks library call is used.
 Overwrite internal decision heuristic about particular algorithm to inline
 string operation with.  The allowed values are @code{rep_byte},
 @code{rep_4byte}, @code{rep_8byte} for expanding using i386 @code{rep} prefix
-of specified size, @code{loop}, @code{unrolled_loop} for expanding inline loop,
-@code{libcall} for always expanding library call.
+of specified size, @code{byte_loop}, @code{loop}, @code{unrolled_loop} for
+expanding inline loop, @code{libcall} for always expanding library call.
 
 @item -momit-leaf-frame-pointer
 @opindex momit-leaf-frame-pointer
