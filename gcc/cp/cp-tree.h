@@ -4234,14 +4234,29 @@ extern tree copied_binfo			(tree, tree);
 extern tree original_binfo			(tree, tree);
 extern int shared_member_p			(tree);
 
+
+/* The representation of a deferred access check.  */
+
+typedef struct deferred_access_check GTY(())
+{
+  /* The base class in which the declaration is referenced. */
+  tree binfo;
+  /* The declaration whose access must be checked.  */
+  tree decl;
+  /* The declaration that should be used in the error message.  */
+  tree diag_decl;
+} deferred_access_check;
+DEF_VEC_O(deferred_access_check);
+DEF_VEC_ALLOC_O(deferred_access_check,gc);
+
 /* in semantics.c */
 extern void push_deferring_access_checks	(deferring_kind);
 extern void resume_deferring_access_checks	(void);
 extern void stop_deferring_access_checks	(void);
 extern void pop_deferring_access_checks		(void);
-extern tree get_deferred_access_checks		(void);
+extern VEC (deferred_access_check,gc)* get_deferred_access_checks		(void);
 extern void pop_to_parent_deferring_access_checks (void);
-extern void perform_access_checks		(tree);
+extern void perform_access_checks		(VEC (deferred_access_check,gc)*);
 extern void perform_deferred_access_checks	(void);
 extern void perform_or_defer_access_check	(tree, tree, tree);
 extern int stmts_are_full_exprs_p		(void);

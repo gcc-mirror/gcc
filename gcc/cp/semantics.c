@@ -96,7 +96,7 @@ static tree finalize_nrv_r (tree *, int *, void *);
 
    2. When a declaration such as a type, or a variable, is encountered,
       the function `perform_or_defer_access_check' is called.  It
-      maintains a TREE_LIST of all deferred checks.
+      maintains a VEC of all deferred checks.
 
    3. The global `current_class_type' or `current_function_decl' is then
       setup by the parser.  `enforce_access' relies on these information
@@ -104,7 +104,7 @@ static tree finalize_nrv_r (tree *, int *, void *);
 
    4. Upon exiting the context mentioned in step 1,
       `perform_deferred_access_checks' is called to check all declaration
-      stored in the TREE_LIST.   `pop_deferring_access_checks' is then
+      stored in the VEC. `pop_deferring_access_checks' is then
       called to restore the previous access checking mode.
 
       In case of parsing error, we simply call `pop_deferring_access_checks'
@@ -112,7 +112,7 @@ static tree finalize_nrv_r (tree *, int *, void *);
 
 typedef struct deferred_access GTY(())
 {
-  /* A TREE_LIST representing name-lookups for which we have deferred
+  /* A VEC representing name-lookups for which we have deferred
      checking access controls.  We cannot check the accessibility of
      names used in a decl-specifier-seq until we know what is being
      declared because code like:
@@ -124,12 +124,8 @@ typedef struct deferred_access GTY(())
 
        A::B* A::f() { return 0; }
 
-     is valid, even though `A::B' is not generally accessible.
-
-     The TREE_PURPOSE of each node is the scope used to qualify the
-     name being looked up; the TREE_VALUE is the DECL to which the
-     name was resolved.  */
-  tree deferred_access_checks;
+     is valid, even though `A::B' is not generally accessible.  */
+  VEC (deferred_access_check,gc)* GTY(()) deferred_access_checks;
 
   /* The current mode of access checks.  */
   enum deferring_kind deferring_access_checks_kind;
@@ -157,7 +153,7 @@ push_deferring_access_checks (deferring_kind deferring)
       deferred_access *ptr;
 
       ptr = VEC_safe_push (deferred_access, gc, deferred_access_stack, NULL);
-      ptr->deferred_access_checks = NULL_TREE;
+      ptr->deferred_access_checks = NULL;
       ptr->deferring_access_checks_kind = deferring;
     }
 }
@@ -200,7 +196,7 @@ pop_deferring_access_checks (void)
    access occurred; the TREE_VALUE is the declaration named.
    */
 
-tree
+VEC (deferred_access_check,gc)*
 get_deferred_access_checks (void)
 {
   if (deferred_access_no_check)
@@ -221,7 +217,7 @@ pop_to_parent_deferring_access_checks (void)
     deferred_access_no_check--;
   else
     {
-      tree checks;
+      VEC (deferred_access_check,gc) *checks;
       deferred_access *ptr;
 
       checks = (VEC_last (deferred_access, deferred_access_stack)
@@ -232,29 +228,31 @@ pop_to_parent_deferring_access_checks (void)
       if (ptr->deferring_access_checks_kind == dk_no_deferred)
 	{
 	  /* Check access.  */
-	  for (; checks; checks = TREE_CHAIN (checks))
-	    enforce_access (TREE_PURPOSE (checks),
-			    TREE_VALUE (checks), TREE_VALUE (checks));
+	  perform_access_checks (checks);
 	}
       else
 	{
 	  /* Merge with parent.  */
-	  tree next;
-	  tree original = ptr->deferred_access_checks;
+	  int i, j;
+	  deferred_access_check *chk, *probe;
 
-	  for (; checks; checks = next)
+	  for (i = 0 ;
+	       VEC_iterate (deferred_access_check, checks, i, chk) ;
+	       ++i)
 	    {
-	      tree probe;
-
-	      next = TREE_CHAIN (checks);
-
-	      for (probe = original; probe; probe = TREE_CHAIN (probe))
-		if (TREE_VALUE (probe) == TREE_VALUE (checks)
-		    && TREE_PURPOSE (probe) == TREE_PURPOSE (checks))
-		  goto found;
+	      for (j = 0 ;
+		   VEC_iterate (deferred_access_check,
+				ptr->deferred_access_checks, j, probe) ;
+		   ++j)
+		{
+		  if (probe->binfo == chk->binfo &&
+		      probe->decl == chk->decl &&
+		      probe->diag_decl == chk->diag_decl)
+		    goto found;
+		}
 	      /* Insert into parent's checks.  */
-	      TREE_CHAIN (checks) = ptr->deferred_access_checks;
-	      ptr->deferred_access_checks = checks;
+	      VEC_safe_push (deferred_access_check, gc,
+			     ptr->deferred_access_checks, chk);
 	    found:;
 	    }
 	}
@@ -266,14 +264,16 @@ pop_to_parent_deferring_access_checks (void)
    DECL node stored in the TREE_VALUE of the node.  */
 
 void
-perform_access_checks (tree checks)
+perform_access_checks (VEC (deferred_access_check,gc)* checks)
 {
-  while (checks)
-    {
-      enforce_access (TREE_PURPOSE (checks),
-		      TREE_VALUE (checks), TREE_VALUE (checks));
-      checks = TREE_CHAIN (checks);
-    }
+  int i;
+  deferred_access_check *chk;
+
+  if (!checks)
+    return;
+
+  for (i = 0 ; VEC_iterate (deferred_access_check, checks, i, chk) ; ++i)
+    enforce_access (chk->binfo, chk->decl, chk->diag_decl);
 }
 
 /* Perform the deferred access checks.
@@ -304,8 +304,11 @@ perform_deferred_access_checks (void)
 void
 perform_or_defer_access_check (tree binfo, tree decl, tree diag_decl)
 {
-  tree check;
+  int i;
   deferred_access *ptr;
+  deferred_access_check *chk;
+  deferred_access_check *new_access;
+
 
   /* Exit if we are in a context that no access checking is performed.
      */
@@ -324,14 +327,24 @@ perform_or_defer_access_check (tree binfo, tree decl, tree diag_decl)
     }
 
   /* See if we are already going to perform this check.  */
-  for (check = ptr->deferred_access_checks;
-       check;
-       check = TREE_CHAIN (check))
-    if (TREE_VALUE (check) == decl && TREE_PURPOSE (check) == binfo)
-      return;
+  for (i = 0 ;
+       VEC_iterate (deferred_access_check,
+		    ptr->deferred_access_checks, i, chk) ;
+       ++i)
+    {
+      if (chk->decl == decl && chk->binfo == binfo &&
+	  chk->diag_decl == diag_decl)
+	{
+	  return;
+	}
+    }
   /* If not, record the check.  */
-  ptr->deferred_access_checks
-    = tree_cons (binfo, decl, ptr->deferred_access_checks);
+  new_access =
+    VEC_safe_push (deferred_access_check, gc,
+		   ptr->deferred_access_checks, 0);
+  new_access->binfo = binfo;
+  new_access->decl = decl;
+  new_access->diag_decl = diag_decl;
 }
 
 /* Returns nonzero if the current statement is a full expression,
