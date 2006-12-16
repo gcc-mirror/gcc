@@ -3832,7 +3832,7 @@ c_parser_c99_block_statement (c_parser *parser)
    is just parsing a statement but (a) it is a block in C99, (b) we
    track whether the body is an if statement for the sake of
    -Wparentheses warnings, (c) we handle an empty body specially for
-   the sake of -Wextra warnings.  */
+   the sake of -Wempty-body warnings.  */
 
 static tree
 c_parser_if_body (c_parser *parser, bool *if_p)
@@ -3844,7 +3844,7 @@ c_parser_if_body (c_parser *parser, bool *if_p)
 	     && c_parser_peek_2nd_token (parser)->type == CPP_COLON))
     c_parser_label (parser);
   *if_p = c_parser_next_token_is_keyword (parser, RID_IF);
-  if (extra_warnings && c_parser_next_token_is (parser, CPP_SEMICOLON))
+  if (warn_empty_body && c_parser_next_token_is (parser, CPP_SEMICOLON))
     add_stmt (build_empty_stmt ());
   c_parser_statement_after_labels (parser);
   return c_end_compound_stmt (block, flag_isoc99);

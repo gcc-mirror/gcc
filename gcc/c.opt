@@ -173,6 +173,10 @@ Weffc++
 C++ ObjC++ Var(warn_ecpp)
 Warn about violations of Effective C++ style rules
 
+Wempty-body
+C ObjC C++ ObjC++ Var(warn_empty_body) Init(-1)
+Warn about an empty body in an if or else statement
+
 Wendif-labels
 C ObjC C++ ObjC++
 Warn about stray tokens after #elif and #endif

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wextra" } */
+/* { dg-options "-Wempty-body" } */
 void foo (void)
 {
 	if (0)
