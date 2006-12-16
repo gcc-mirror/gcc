@@ -363,7 +363,7 @@ o clean up the section-numbering
 	  <paramdef>int <parameter>size</parameter></paramdef>
 	</funcprototype>
       </funcsynopsis>
-      but the the signature of this constructor has changed often, and
+      but the signature of this constructor has changed often, and
       it might change again. For the current state of this, check
       <ulink url="../ext/howto.html">the howto for extensions</ulink>.
     </para>
