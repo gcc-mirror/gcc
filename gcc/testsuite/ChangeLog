@@ -1,3 +1,25 @@
+2006-12-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/i386-cpuid.h (bit_SSSE3): New.
+
+	* gcc.target/i386/ssse3-pabsb.c: New file.
+	* gcc.target/i386/ssse3-pabsd.c: Likewise.
+	* gcc.target/i386/ssse3-pabsw.c: Likewise.
+	* gcc.target/i386/ssse3-palignr.c: Likewise.
+	* gcc.target/i386/ssse3-phaddd.c: Likewise.
+	* gcc.target/i386/ssse3-phaddsw.c: Likewise.
+	* gcc.target/i386/ssse3-phaddw.c: Likewise.
+	* gcc.target/i386/ssse3-phsubd.c: Likewise.
+	* gcc.target/i386/ssse3-phsubsw.c: Likewise.
+	* gcc.target/i386/ssse3-phsubw.c: Likewise.
+	* gcc.target/i386/ssse3-pmaddubsw.c: Likewise.
+	* gcc.target/i386/ssse3-pmulhrsw.c: Likewise.
+	* gcc.target/i386/ssse3-pshufb.c: Likewise.
+	* gcc.target/i386/ssse3-psignb.c: Likewise.
+	* gcc.target/i386/ssse3-psignd.c: Likewise.
+	* gcc.target/i386/ssse3-psignw.c: Likewise.
+	* gcc.target/i386/ssse3-vals.h: Likewise.
+
 2006-12-15  Janis Johnson  <janis187@us.ibm.com>
 
 	* lib/gfortran-dg.exp: Don't include fortran-torture.exp.
