@@ -45,6 +45,20 @@
 /* The cp_lexer_* routines mediate between the lexer proper (in libcpp
    and c-lex.c) and the C++ parser.  */
 
+/* A token's value and its associated deferred access checks and
+   qualifying scope.  */
+
+struct tree_check GTY(())
+{
+  /* The value associated with the token.  */
+  tree value;
+  /* The checks that have been associated with value.  */
+  VEC (deferred_access_check, gc)* checks;
+  /* The token's qualifying scope (used when it is a
+     CPP_NESTED_NAME_SPECIFIER).  */
+  tree qualifying_scope;
+};
+
 /* A C++ token.  */
 
 typedef struct cp_token GTY (())
@@ -69,7 +83,12 @@ typedef struct cp_token GTY (())
   /* The input file stack index at which this token was found.  */
   unsigned input_file_stack_index : INPUT_FILE_STACK_BITS;
   /* The value associated with this token, if any.  */
-  tree value;
+  union cp_token_value {
+    /* Used for CPP_NESTED_NAME_SPECIFIER and CPP_TEMPLATE_ID.  */
+    struct tree_check* GTY((tag ("1"))) tree_check_value;
+    /* Use for all other tokens.  */
+    tree GTY((tag ("0"))) value;
+  } GTY((desc ("(%1.type == CPP_TEMPLATE_ID) || (%1.type == CPP_NESTED_NAME_SPECIFIER)"))) u;
   /* The location at which this token was found.  */
   location_t location;
 } cp_token;
@@ -81,7 +100,7 @@ DEF_VEC_ALLOC_P (cp_token_position,heap);
 
 static const cp_token eof_token =
 {
-  CPP_EOF, RID_MAX, 0, PRAGMA_NONE, 0, 0, false, 0, NULL_TREE,
+  CPP_EOF, RID_MAX, 0, PRAGMA_NONE, 0, 0, false, 0, { NULL },
 #if USE_MAPPED_LOCATION
   0
 #else
@@ -394,7 +413,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
 
    /* Get a new token from the preprocessor.  */
   token->type
-    = c_lex_with_flags (&token->value, &token->location, &token->flags);
+    = c_lex_with_flags (&token->u.value, &token->location, &token->flags);
   token->input_file_stack_index = input_file_stack_tick;
   token->keyword = RID_MAX;
   token->pragma_kind = PRAGMA_NONE;
@@ -410,17 +429,17 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
   /* Check to see if this token is a keyword.  */
   if (token->type == CPP_NAME)
     {
-      if (C_IS_RESERVED_WORD (token->value))
+      if (C_IS_RESERVED_WORD (token->u.value))
 	{
 	  /* Mark this token as a keyword.  */
 	  token->type = CPP_KEYWORD;
 	  /* Record which keyword.  */
-	  token->keyword = C_RID_CODE (token->value);
+	  token->keyword = C_RID_CODE (token->u.value);
 	  /* Update the value.  Some keywords are mapped to particular
 	     entities, rather than simply having the value of the
 	     corresponding IDENTIFIER_NODE.  For example, `__const' is
 	     mapped to `const'.  */
-	  token->value = ridpointers[token->keyword];
+	  token->u.value = ridpointers[token->keyword];
 	}
       else
 	{
@@ -432,7 +451,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
   else if (token->type == CPP_AT_NAME)
     {
       token->type = CPP_KEYWORD;
-      switch (C_RID_CODE (token->value))
+      switch (C_RID_CODE (token->u.value))
 	{
 	/* Map 'class' to '@class', 'private' to '@private', etc.  */
 	case RID_CLASS: token->keyword = RID_AT_CLASS; break;
@@ -442,14 +461,14 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
 	case RID_THROW: token->keyword = RID_AT_THROW; break;
 	case RID_TRY: token->keyword = RID_AT_TRY; break;
 	case RID_CATCH: token->keyword = RID_AT_CATCH; break;
-	default: token->keyword = C_RID_CODE (token->value);
+	default: token->keyword = C_RID_CODE (token->u.value);
 	}
     }
   else if (token->type == CPP_PRAGMA)
     {
       /* We smuggled the cpp_token->u.pragma value in an INTEGER_CST.  */
-      token->pragma_kind = TREE_INT_CST_LOW (token->value);
-      token->value = NULL;
+      token->pragma_kind = TREE_INT_CST_LOW (token->u.value);
+      token->u.value = NULL_TREE;
     }
 }
 
@@ -641,7 +660,7 @@ cp_lexer_purge_token (cp_lexer *lexer)
   gcc_assert (tok != &eof_token);
   tok->type = CPP_PURGED;
   tok->location = UNKNOWN_LOCATION;
-  tok->value = NULL_TREE;
+  tok->u.value = NULL_TREE;
   tok->keyword = RID_MAX;
 
   do
@@ -675,7 +694,7 @@ cp_lexer_purge_tokens_after (cp_lexer *lexer, cp_token *tok)
     {
       tok->type = CPP_PURGED;
       tok->location = UNKNOWN_LOCATION;
-      tok->value = NULL_TREE;
+      tok->u.value = NULL_TREE;
       tok->keyword = RID_MAX;
     }
 }
@@ -753,16 +772,16 @@ cp_lexer_print_token (FILE * stream, cp_token *token)
     case CPP_KEYWORD:
       /* Some keywords have a value that is not an IDENTIFIER_NODE.
 	 For example, `struct' is mapped to an INTEGER_CST.  */
-      if (TREE_CODE (token->value) != IDENTIFIER_NODE)
+      if (TREE_CODE (token->u.value) != IDENTIFIER_NODE)
 	break;
       /* else fall through */
     case CPP_NAME:
-      fputs (IDENTIFIER_POINTER (token->value), stream);
+      fputs (IDENTIFIER_POINTER (token->u.value), stream);
       break;
 
     case CPP_STRING:
     case CPP_WSTRING:
-      fprintf (stream, " \"%s\"", TREE_STRING_POINTER (token->value));
+      fprintf (stream, " \"%s\"", TREE_STRING_POINTER (token->u.value));
       break;
 
     default:
@@ -1606,7 +1625,7 @@ static void cp_parser_static_assert
 /* Declarators [gram.dcl.decl] */
 
 static tree cp_parser_init_declarator
-  (cp_parser *, cp_decl_specifier_seq *, tree, bool, bool, int, bool *);
+  (cp_parser *, cp_decl_specifier_seq *, VEC (deferred_access_check,gc)*, bool, bool, int, bool *);
 static cp_declarator *cp_parser_declarator
   (cp_parser *, cp_parser_declarator_kind, int *, bool *, bool);
 static cp_declarator *cp_parser_direct_declarator
@@ -1806,9 +1825,9 @@ static tree cp_parser_function_definition_after_declarator
 static void cp_parser_template_declaration_after_export
   (cp_parser *, bool);
 static void cp_parser_perform_template_parameter_access_checks
-  (tree);
+  (VEC (deferred_access_check,gc)*);
 static tree cp_parser_single_declaration
-  (cp_parser *, tree, bool, bool *);
+  (cp_parser *, VEC (deferred_access_check,gc)*, bool, bool *);
 static tree cp_parser_functional_cast
   (cp_parser *, tree);
 static tree cp_parser_save_member_function_body
@@ -1962,7 +1981,7 @@ cp_parser_error (cp_parser* parser, const char* message)
 			CPP_KEYWORD, keywords are treated like
 			identifiers.  */
 		     (token->type == CPP_KEYWORD ? CPP_NAME : token->type),
-		     token->value);
+		     token->u.value);
     }
 }
 
@@ -2703,7 +2722,7 @@ cp_parser_identifier (cp_parser* parser)
   /* Look for the identifier.  */
   token = cp_parser_require (parser, CPP_NAME, "identifier");
   /* Return the value.  */
-  return token ? token->value : error_mark_node;
+  return token ? token->u.value : error_mark_node;
 }
 
 /* Parse a sequence of adjacent string constants.  Returns a
@@ -2744,8 +2763,8 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
     {
       cp_lexer_consume_token (parser->lexer);
 
-      str.text = (const unsigned char *)TREE_STRING_POINTER (tok->value);
-      str.len = TREE_STRING_LENGTH (tok->value);
+      str.text = (const unsigned char *)TREE_STRING_POINTER (tok->u.value);
+      str.len = TREE_STRING_LENGTH (tok->u.value);
       count = 1;
       if (tok->type == CPP_WSTRING)
 	wide = true;
@@ -2761,8 +2780,8 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
 	{
 	  cp_lexer_consume_token (parser->lexer);
 	  count++;
-	  str.text = (unsigned char *)TREE_STRING_POINTER (tok->value);
-	  str.len = TREE_STRING_LENGTH (tok->value);
+	  str.text = (unsigned char *)TREE_STRING_POINTER (tok->u.value);
+	  str.len = TREE_STRING_LENGTH (tok->u.value);
 	  if (tok->type == CPP_WSTRING)
 	    wide = true;
 
@@ -2929,7 +2948,7 @@ cp_parser_primary_expression (cp_parser *parser,
       /* Floating-point literals are only allowed in an integral
 	 constant expression if they are cast to an integral or
 	 enumeration type.  */
-      if (TREE_CODE (token->value) == REAL_CST
+      if (TREE_CODE (token->u.value) == REAL_CST
 	  && parser->integral_constant_expression_p
 	  && pedantic)
 	{
@@ -2966,7 +2985,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	    cp_parser_non_integral_constant_expression
 	      (parser, "floating-point literal");
 	}
-      return token->value;
+      return token->u.value;
 
     case CPP_STRING:
     case CPP_WSTRING:
@@ -3082,7 +3101,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	     Consume the token.  */
 	  token = cp_lexer_consume_token (parser->lexer);
 	  /* Look up the name.  */
-	  return finish_fname (token->value);
+	  return finish_fname (token->u.value);
 
 	case RID_VA_ARG:
 	  {
@@ -3519,7 +3538,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	    && token->type == CPP_NAME
 	    && (cp_lexer_peek_nth_token (parser->lexer, 2)->type
 		== CPP_OPEN_PAREN)
-	    && constructor_name_p (token->value, scope))
+	    && constructor_name_p (token->u.value, scope))
 	  {
 	    cp_lexer_consume_token (parser->lexer);
 	    return build_nt (BIT_NOT_EXPR, scope);
@@ -3820,7 +3839,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 		      tree decl;
 		      tree ambiguous_decls;
 
-		      decl = cp_parser_lookup_name (parser, token->value,
+		      decl = cp_parser_lookup_name (parser, token->u.value,
 						    none_type,
 						    /*is_template=*/false,
 						    /*is_namespace=*/false,
@@ -3831,13 +3850,13 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 		      else if (ambiguous_decls)
 			{
 			  error ("reference to %qD is ambiguous",
-				 token->value);
+				 token->u.value);
 			  print_candidates (ambiguous_decls);
 			  decl = error_mark_node;
 			}
 		      else
 			cp_parser_name_lookup_error
-			  (parser, token->value, decl,
+			  (parser, token->u.value, decl,
 			   "is not a class or namespace");
 		    }
 		  parser->scope = error_mark_node;
@@ -3896,17 +3915,17 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
   if (success && start)
     {
       cp_token *token;
-      tree access_checks;
 
       token = cp_lexer_token_at (parser->lexer, start);
       /* Reset the contents of the START token.  */
       token->type = CPP_NESTED_NAME_SPECIFIER;
       /* Retrieve any deferred checks.  Do not pop this access checks yet
 	 so the memory will not be reclaimed during token replacing below.  */
-      access_checks = get_deferred_access_checks ();
-      token->value = build_tree_list (copy_list (access_checks),
-				      parser->scope);
-      TREE_TYPE (token->value) = parser->qualifying_scope;
+      token->u.tree_check_value = GGC_CNEW (struct tree_check);
+      token->u.tree_check_value->value = parser->scope;
+      token->u.tree_check_value->checks = get_deferred_access_checks ();
+      token->u.tree_check_value->qualifying_scope =
+	parser->qualifying_scope;
       token->keyword = RID_MAX;
 
       /* Purge all subsequent tokens.  */
@@ -4764,7 +4783,7 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 	    /* Consume the identifier.  */
 	    token = cp_lexer_consume_token (parser->lexer);
 	    /* Save the identifier.  */
-	    identifier = token->value;
+	    identifier = token->u.value;
 	  }
 	else
 	  {
@@ -7451,7 +7470,7 @@ cp_parser_simple_declaration (cp_parser* parser,
 
       /* Parse the init-declarator.  */
       decl = cp_parser_init_declarator (parser, &decl_specifiers,
-					/*checks=*/NULL_TREE,
+					/*checks=*/NULL,
 					function_definition_allowed_p,
 					/*member_p=*/false,
 					declares_class_or_enum,
@@ -7789,7 +7808,7 @@ cp_parser_storage_class_specifier_opt (cp_parser* parser)
     case RID_MUTABLE:
     case RID_THREAD:
       /* Consume the token.  */
-      return cp_lexer_consume_token (parser->lexer)->value;
+      return cp_lexer_consume_token (parser->lexer)->u.value;
 
     default:
       return NULL_TREE;
@@ -7837,7 +7856,7 @@ cp_parser_function_specifier_opt (cp_parser* parser,
     }
 
   /* Consume the token.  */
-  return cp_lexer_consume_token (parser->lexer)->value;
+  return cp_lexer_consume_token (parser->lexer)->u.value;
 }
 
 /* Parse a linkage-specification.
@@ -8876,11 +8895,13 @@ cp_parser_template_id (cp_parser *parser,
 		       bool check_dependency_p,
 		       bool is_declaration)
 {
+  int i;
   tree template;
   tree arguments;
   tree template_id;
   cp_token_position start_of_id = 0;
-  tree access_check = NULL_TREE;
+  deferred_access_check *chk;
+  VEC (deferred_access_check,gc) *access_check;
   cp_token *next_token, *next_token_2;
   bool is_identifier;
 
@@ -8889,18 +8910,25 @@ cp_parser_template_id (cp_parser *parser,
   next_token = cp_lexer_peek_token (parser->lexer);
   if (next_token->type == CPP_TEMPLATE_ID)
     {
-      tree value;
-      tree check;
+      struct tree_check *check_value;
 
       /* Get the stored value.  */
-      value = cp_lexer_consume_token (parser->lexer)->value;
+      check_value = cp_lexer_consume_token (parser->lexer)->u.tree_check_value;
       /* Perform any access checks that were deferred.  */
-      for (check = TREE_PURPOSE (value); check; check = TREE_CHAIN (check))
-	perform_or_defer_access_check (TREE_PURPOSE (check),
-				       TREE_VALUE (check),
-				       TREE_VALUE (check));
+      access_check = check_value->checks;
+      if (access_check)
+	{
+	  for (i = 0 ;
+	       VEC_iterate (deferred_access_check, access_check, i, chk) ;
+	       ++i)
+	    {
+	      perform_or_defer_access_check (chk->binfo,
+					     chk->decl,
+					     chk->diag_decl);
+	    }
+	}
       /* Return the stored value.  */
-      return TREE_VALUE (value);
+      return check_value->value;
     }
 
   /* Avoid performing name lookup if there is no possibility of
@@ -9016,10 +9044,6 @@ cp_parser_template_id (cp_parser *parser,
       template_id = lookup_template_function (template, arguments);
     }
 
-  /* Retrieve any deferred checks.  Do not pop this access checks yet
-     so the memory will not be reclaimed during token replacing below.  */
-  access_check = get_deferred_access_checks ();
-
   /* If parsing tentatively, replace the sequence of tokens that makes
      up the template-id with a CPP_TEMPLATE_ID token.  That way,
      should we re-parse the token stream, we will not have to repeat
@@ -9032,7 +9056,11 @@ cp_parser_template_id (cp_parser *parser,
 
       /* Reset the contents of the START_OF_ID token.  */
       token->type = CPP_TEMPLATE_ID;
-      token->value = build_tree_list (access_check, template_id);
+      /* Retrieve any deferred checks.  Do not pop this access checks yet
+	 so the memory will not be reclaimed during token replacing below.  */
+      token->u.tree_check_value = GGC_CNEW (struct tree_check);
+      token->u.tree_check_value->value = template_id;
+      token->u.tree_check_value->checks = get_deferred_access_checks ();
       token->keyword = RID_MAX;
 
       /* Purge all subsequent tokens.  */
@@ -9697,7 +9725,7 @@ cp_parser_explicit_specialization (cp_parser* parser)
   else
     /* Parse the dependent declaration.  */
     cp_parser_single_declaration (parser,
-				  /*checks=*/NULL_TREE,
+				  /*checks=*/NULL,
 				  /*member_p=*/false,
 				  /*friend_p=*/NULL);
   /* We're done with the specialization.  */
@@ -9864,7 +9892,7 @@ cp_parser_type_specifier (cp_parser* parser,
 	  ++decl_specs->specs[(int)ds];
 	  decl_specs->any_specifiers_p = true;
 	}
-      return cp_lexer_consume_token (parser->lexer)->value;
+      return cp_lexer_consume_token (parser->lexer)->u.value;
     }
 
   /* If we do not already have a type-specifier, assume we are looking
@@ -10007,7 +10035,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	decl_specs->any_specifiers_p = true;
 
       /* Consume the token.  */
-      id = cp_lexer_consume_token (parser->lexer)->value;
+      id = cp_lexer_consume_token (parser->lexer)->u.value;
 
       /* There is no valid C++ program where a non-template type is
 	 followed by a "<".  That usually indicates that the user thought
@@ -11150,7 +11178,7 @@ cp_parser_asm_definition (cp_parser* parser)
 static tree
 cp_parser_init_declarator (cp_parser* parser,
 			   cp_decl_specifier_seq *decl_specifiers,
-			   tree checks,
+			   VEC (deferred_access_check,gc)* checks,
 			   bool function_definition_allowed_p,
 			   bool member_p,
 			   int declares_class_or_enum,
@@ -12948,7 +12976,7 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
 	  if (pedantic)
 	    pedwarn ("ISO C++ does not allow designated initializers");
 	  /* Consume the identifier.  */
-	  identifier = cp_lexer_consume_token (parser->lexer)->value;
+	  identifier = cp_lexer_consume_token (parser->lexer)->u.value;
 	  /* Consume the `:'.  */
 	  cp_lexer_consume_token (parser->lexer);
 	}
@@ -13753,7 +13781,7 @@ cp_parser_member_specification_opt (cp_parser* parser)
 	  /* Consume the access-specifier.  */
 	  cp_lexer_consume_token (parser->lexer);
 	  /* Remember which access-specifier is active.  */
-	  current_access_specifier = token->value;
+	  current_access_specifier = token->u.value;
 	  /* Look for the `:'.  */
 	  cp_parser_require (parser, CPP_COLON, "`:'");
 	  break;
@@ -14933,7 +14961,7 @@ cp_parser_attribute_list (cp_parser* parser)
 
 	  /* Save away the identifier that indicates which attribute
 	     this is.  */
-	  identifier = token->value;
+	  identifier = token->u.value;
 	  attribute = build_tree_list (identifier, NULL_TREE);
 
 	  /* Peek at the next token.  */
@@ -15766,7 +15794,7 @@ static void
 cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
 {
   tree decl = NULL_TREE;
-  tree checks;
+  VEC (deferred_access_check,gc) *checks;
   tree parameter_list;
   bool friend_p = false;
   bool need_lang_pop;
@@ -15889,7 +15917,7 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
    get_deferred_access_checks.  */
 
 static void
-cp_parser_perform_template_parameter_access_checks (tree checks)
+cp_parser_perform_template_parameter_access_checks (VEC (deferred_access_check,gc)* checks)
 {
   ++processing_template_parmlist;
   perform_access_checks (checks);
@@ -15905,7 +15933,7 @@ cp_parser_perform_template_parameter_access_checks (tree checks)
 
 static tree
 cp_parser_single_declaration (cp_parser* parser,
-			      tree checks,
+			      VEC (deferred_access_check,gc)* checks,
 			      bool member_p,
 			      bool* friend_p)
 {
@@ -16851,19 +16879,29 @@ cp_parser_optional_template_keyword (cp_parser *parser)
 static void
 cp_parser_pre_parsed_nested_name_specifier (cp_parser *parser)
 {
-  tree value;
-  tree check;
+  int i;
+  struct tree_check *check_value;
+  deferred_access_check *chk;
+  VEC (deferred_access_check,gc) *checks;
 
   /* Get the stored value.  */
-  value = cp_lexer_consume_token (parser->lexer)->value;
+  check_value = cp_lexer_consume_token (parser->lexer)->u.tree_check_value;
   /* Perform any access checks that were deferred.  */
-  for (check = TREE_PURPOSE (value); check; check = TREE_CHAIN (check))
-    perform_or_defer_access_check (TREE_PURPOSE (check),
-				   TREE_VALUE (check),
-				   TREE_VALUE (check));
+  checks = check_value->checks;
+  if (checks)
+    {
+      for (i = 0 ;
+	   VEC_iterate (deferred_access_check, checks, i, chk) ;
+	   ++i)
+	{
+	  perform_or_defer_access_check (chk->binfo,
+					 chk->decl,
+					 chk->diag_decl);
+	}
+    }
   /* Set the scope from the stored value.  */
-  parser->scope = TREE_VALUE (value);
-  parser->qualifying_scope = TREE_TYPE (value);
+  parser->scope = check_value->value;
+  parser->qualifying_scope = check_value->qualifying_scope;
   parser->object_scope = NULL_TREE;
 }
 
@@ -17051,7 +17089,7 @@ cp_parser_objc_expression (cp_parser* parser)
 
     case CPP_OBJC_STRING:
       kwd = cp_lexer_consume_token (parser->lexer);
-      return objc_build_string_object (kwd->value);
+      return objc_build_string_object (kwd->u.value);
 
     case CPP_KEYWORD:
       switch (kwd->keyword)
@@ -17069,7 +17107,7 @@ cp_parser_objc_expression (cp_parser* parser)
 	  break;
 	}
     default:
-      error ("misplaced %<@%D%> Objective-C++ construct", kwd->value);
+      error ("misplaced %<@%D%> Objective-C++ construct", kwd->u.value);
       cp_parser_skip_to_end_of_block_or_statement (parser);
     }
 
@@ -17459,7 +17497,7 @@ cp_parser_objc_protocol_qualifiers (cp_parser* parser)
   tree quals = NULL_TREE, node;
   cp_token *token = cp_lexer_peek_token (parser->lexer);
 
-  node = token->value;
+  node = token->u.value;
 
   while (node && TREE_CODE (node) == IDENTIFIER_NODE
 	 && (node == ridpointers [(int) RID_IN]
@@ -17472,7 +17510,7 @@ cp_parser_objc_protocol_qualifiers (cp_parser* parser)
       quals = tree_cons (NULL_TREE, node, quals);
       cp_lexer_consume_token (parser->lexer);
       token = cp_lexer_peek_token (parser->lexer);
-      node = token->value;
+      node = token->u.value;
     }
 
   return quals;
@@ -17543,7 +17581,7 @@ cp_parser_objc_selector (cp_parser* parser)
     case CPP_OR_EQ: return get_identifier ("or_eq");
     case CPP_XOR: return get_identifier ("xor");
     case CPP_XOR_EQ: return get_identifier ("xor_eq");
-    default: return token->value;
+    default: return token->u.value;
     }
 }
 
@@ -17992,7 +18030,7 @@ cp_parser_objc_declaration (cp_parser* parser)
       cp_parser_objc_end_implementation (parser);
       break;
     default:
-      error ("misplaced %<@%D%> Objective-C++ construct", kwd->value);
+      error ("misplaced %<@%D%> Objective-C++ construct", kwd->u.value);
       cp_parser_skip_to_end_of_block_or_statement (parser);
     }
 }
@@ -18123,7 +18161,7 @@ cp_parser_objc_statement (cp_parser * parser) {
     case RID_AT_THROW:
       return cp_parser_objc_throw_statement (parser);
     default:
-      error ("misplaced %<@%D%> Objective-C++ construct", kwd->value);
+      error ("misplaced %<@%D%> Objective-C++ construct", kwd->u.value);
       cp_parser_skip_to_end_of_block_or_statement (parser);
     }
 
@@ -18150,7 +18188,7 @@ cp_parser_omp_clause_name (cp_parser *parser)
     result = PRAGMA_OMP_CLAUSE_PRIVATE;
   else if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
-      tree id = cp_lexer_peek_token (parser->lexer)->value;
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
       const char *p = IDENTIFIER_POINTER (id);
 
       switch (p[0])
@@ -18304,7 +18342,7 @@ cp_parser_omp_clause_default (cp_parser *parser, tree list)
     return list;
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
-      tree id = cp_lexer_peek_token (parser->lexer)->value;
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
       const char *p = IDENTIFIER_POINTER (id);
 
       switch (p[0])
@@ -18515,7 +18553,7 @@ cp_parser_omp_clause_schedule (cp_parser *parser, tree list)
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
-      tree id = cp_lexer_peek_token (parser->lexer)->value;
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
       const char *p = IDENTIFIER_POINTER (id);
 
       switch (p[0])
@@ -19164,7 +19202,7 @@ cp_parser_omp_parallel (cp_parser *parser, cp_token *pragma_tok)
     }
   else if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
-      tree id = cp_lexer_peek_token (parser->lexer)->value;
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
       const char *p = IDENTIFIER_POINTER (id);
       if (strcmp (p, "sections") == 0)
 	{
@@ -19320,7 +19358,7 @@ cp_parser_initial_pragma (cp_token *first_token)
   cp_lexer_get_preprocessor_token (NULL, first_token);
   if (first_token->type == CPP_STRING)
     {
-      name = first_token->value;
+      name = first_token->u.value;
 
       cp_lexer_get_preprocessor_token (NULL, first_token);
       if (first_token->type != CPP_PRAGMA_EOL)
@@ -19440,7 +19478,7 @@ pragma_lex (tree *value)
   tok = cp_lexer_peek_token (the_parser->lexer);
 
   ret = tok->type;
-  *value = tok->value;
+  *value = tok->u.value;
 
   if (ret == CPP_PRAGMA_EOL || ret == CPP_EOF)
     ret = CPP_EOF;
