@@ -849,12 +849,14 @@ clear_last_verified (void *data ATTRIBUTE_UNUSED)
 /* Helper function. Verify that the properties has been turn into the
    properties expected by the pass.  */
 
+#ifdef ENABLE_CHECKING
 static void
 verify_curr_properties (void *data)
 {
   unsigned int props = (size_t)data;
   gcc_assert ((cfun->curr_properties & props) == props);
 }
+#endif
 
 /* After executing the pass, apply expected changes to the function
    properties. */

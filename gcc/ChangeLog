@@ -1,3 +1,7 @@
+2006-12-16  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* passes.c (verify_curr_properties): Define only for ENABLE_CHECKING.
+
 2006-12-16  Jan Hubicka  <jh@suse.cz>
 
 	* omp-low.c (expand_omp_parallel): Set function properties.
