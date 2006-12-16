@@ -102,13 +102,13 @@
       blank lines and only &quot;Thequickbrownfox...&quot;.  With
       libraries that do not define that operator, IN (or one of IN's
       member pointers) sometimes gets converted to a void*, and the output
-      file then contains a perfect text representation of a hexidecimal
+      file then contains a perfect text representation of a hexadecimal
       address (quite a big surprise).  Others don't compile at all.
    </p>
    <p>Also note that none of this is specific to o<b>*f*</b>streams. 
       The operators shown above are all defined in the parent 
       basic_ostream class and are therefore available with all possible
-      descendents.
+      descendants.
    </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
@@ -569,7 +569,7 @@
       be built and included in libstdc++.
    </p>
    <h3>Alternatives</h3>
-   <p>Don't forget that other cstdio implemenations are possible.  You could
+   <p>Don't forget that other cstdio implementations are possible.  You could
       easily write one to perform your own forms of locking, to solve your
       &quot;interesting&quot; problems.
    </p>
@@ -643,7 +643,7 @@
       interfaces, then you only need to use the appropriate interface header.
    </p>
    <p><strong>&lt;iomanip&gt;</strong> provides &quot;extractors and inserters
-      that alter information maintained by class ios_base and its dervied
+      that alter information maintained by class ios_base and its derived
       classes,&quot; such as std::setprecision and std::setw.  If you need
       to write expressions like <code>os &lt;&lt; setw(3);</code> or
       <code>is &gt;&gt; setbase(8);</code>, you must include &lt;iomanip&gt;.

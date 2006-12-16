@@ -1,3 +1,17 @@
+2006-12-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* docs/html/27_io/howto.html: Fix typos.
+	* docs/html/24_iterators/howto.html: Likewise.
+	* docs/html/18_support/howto.html: Likewise.
+	* docs/html/21_strings/howto.html: Likewise.
+	* docs/html/ext/howto.html: Likewise.
+	* docs/html/ext/ballocator_doc.html: Likewise.
+	* docs/html/17_intro/porting-howto.xml: Likewise.
+	* docs/html/17_intro/howto.html: Likewise.
+	* docs/html/22_locale/howto.html: Likewise.
+	* docs/html/faq/index.html: Likewise.
+	* docs/doxygen/tables.html: Likewise.
+
 2006-12-13  Ian Lance Taylor  <iant@google.com>
 
 	PR c++/19564

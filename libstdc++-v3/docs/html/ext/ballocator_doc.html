@@ -40,7 +40,7 @@ will double every time the bitmapped allocator runs out of memory.<br>
 <hr style="width: 100%; height: 2px;"><br>
 The macro __GTHREADS decides whether to use Mutex Protection around
 every allocation/deallocation. The state of the macro is picked up
-automatically from the gthr abstration layer.<br>
+automatically from the gthr abstraction layer.<br>
 <br>
 <hr style="width: 100%; height: 2px;">
 <h3 style="text-align: center;">What is the Free List Store?</h3>
@@ -125,11 +125,11 @@ operator new.<br>
 Suppose n == 1, then the allocator does the following:<br>
 <br>
 <ol>
-  <li>Checks to see whether the a free block exists somewhere in a
+  <li>Checks to see whether a free block exists somewhere in a
 region of memory close to the last satisfied request. If so, then that
 block is marked as allocated in the bit map and given to the user. If
 not, then (2) is executed.</li>
-  <li>Is there a free block anywhere after the current block right upto
+  <li>Is there a free block anywhere after the current block right up to
 the end of the memory that we have? If so, that block is found, and the
 same procedure is applied as above, and returned to the user. If not,
 then (3) is executed.</li>
@@ -275,7 +275,7 @@ which is 8-bytes, or 2 x sizeof(size_t).<br>
 Another issue would be whether to keep the all bitmaps in a separate
 area in memory, or to keep them near the actual blocks that will be
 given out or allocated for the client. After some testing, I've decided
-to keep these bitmaps close to the actual blocks. this will help in 2
+to keep these bitmaps close to the actual blocks. This will help in 2
 ways. <br>
 <br>
 <ol>
@@ -310,7 +310,7 @@ some linear/logarithmic complexity components in it. Thus, to try and
 minimize them would be a good thing to do at the cost of a little bit
 of memory.<br>
 <br>
-Another thing to be noted is the the pool size will double every time
+Another thing to be noted is the pool size will double every time
 the internal pool gets exhausted, and all the free blocks have been
 given away. The initial size of the pool would be sizeof(size_t) x 8
 which is the number of bits in an integer, which can fit exactly
@@ -348,7 +348,7 @@ bitmap is a multiple of 32 in size. If there are 32 x (2^3) blocks of
 single objects to be given, there will be '32 x (2^3)' bits present.
 Each
 32 bits managing the allocated / free status for 32 blocks. Since each
-size_t contains 32-bits, one size_t can manage upto 32
+size_t contains 32-bits, one size_t can manage up to 32
 blocks' status. Each bit-map is made up of a number of size_t,
 whose exact number for a super-block of a given size I have just
 mentioned.<br>
@@ -364,19 +364,19 @@ field indicates free, while a 0 indicates allocated. This lets us check
 32 bits at a time to check whether there is at lease one free block in
 those 32 blocks by testing for equality with (0). Now, the allocate
 function will given a memory block find the corresponding bit in the
-bitmap, and will reset it (ie. make it re-set (0)). And when the
+bitmap, and will reset it (i.e., make it re-set (0)). And when the
 deallocate function is called, it will again set that bit after
 locating it to indicate that that particular block corresponding to
 this bit in the bit-map is not being used by anyone, and may be used to
 satisfy future requests.<br>
 <br>
-eg: Consider a bit-map of 64-bits as represented below:<br>
+e.g.: Consider a bit-map of 64-bits as represented below:<br>
 1111111111111111111111111111111111111111111111111111111111111111<br>
 <br>
 Now, when the first request for allocation of a single object comes
 along, the first block in address order is returned. And since the
 bit-maps in the reverse order to that of the address order, the last
-bit(LSB if the bit-map is considered as a binary word of 64-bits) is
+bit (LSB if the bit-map is considered as a binary word of 64-bits) is
 re-set to 0.<br>
 <br>
 The bit-map now looks like this:<br>
@@ -400,7 +400,7 @@ Where,<br>
 k =&gt; The constant overhead per node. eg. for list, it is 8 bytes,
 and for map it is 12 bytes.<br>
 c =&gt; The size of the base type on which the map/list is
-instantiated. Thus, suppose the the type1 is int and type2 is double,
+instantiated. Thus, suppose the type1 is int and type2 is double,
 they are related by the relation sizeof(double) == 2*sizeof(int). Thus,
 all types must have this double size relation for this formula to work
 properly.<br>
