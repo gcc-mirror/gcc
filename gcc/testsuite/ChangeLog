@@ -1,3 +1,8 @@
+2006-12-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/30005
+	* gfortran.dg/open_errors.f90: New test.
+
 2006-12-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/i386-cpuid.h (bit_SSSE3): New.
