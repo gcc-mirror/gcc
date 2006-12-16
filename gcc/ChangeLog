@@ -1,3 +1,13 @@
+2006-12-16  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR middle-end/7651
+	* c.opt (Wempty-body): New.
+	* doc/invoke.texi (Wempty-body): Document it.
+	(Wextra): Enabled by -Wextra.
+	* c-opts.c (c_common_post_options): Enabled by -Wextra.
+	* c-common.c (empty_body_warning): Replace Wextra with Wempty-body.
+	* c-parser.c (c_parser_c99_block_statement): Likewise.
+	
 2006-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/30185

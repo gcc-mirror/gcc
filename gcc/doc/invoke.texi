@@ -224,7 +224,8 @@ Objective-C and Objective-C++ Dialects}.
 -w  -Wextra  -Wall  -Waggregate-return -Walways-true -Wno-attributes @gol
 -Wc++-compat -Wcast-align  -Wcast-qual  -Wchar-subscripts  -Wcomment @gol
 -Wconversion  -Wno-deprecated-declarations @gol
--Wdisabled-optimization  -Wno-div-by-zero  -Wno-endif-labels @gol
+-Wdisabled-optimization  -Wno-div-by-zero  @gol
+-Wempty-body  -Wno-endif-labels @gol
 -Werror  -Werror-* -Werror-implicit-function-declaration @gol
 -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-extra-args -Wformat-nonliteral @gol
@@ -2915,7 +2916,8 @@ void foo(bar) @{ @}
 @end smallexample
 
 @item
-An empty body occurs in an @samp{if} or @samp{else} statement.
+An empty body occurs in an @samp{if} or @samp{else} statement. This
+warning can be independently controlled by @option{-Wempty-body}.
 
 @item
 A pointer is compared against integer zero with @samp{<}, @samp{<=},
@@ -3164,6 +3166,11 @@ like @code{unsigned ui = -1}; and conversions to smaller types, like
 @code{sqrtf (M_PI)}. Do not warn for explicit casts like @code{abs
 ((int) x)} and @code{ui = (unsigned) -1}, or if the value is not
 changed by the conversion like in @code{abs (2.0)}.
+
+@item -Wempty-body
+@opindex Wempty-body
+An empty body occurs in an @samp{if} or @samp{else} statement. 
+This warning is also enabled by @option{-Wextra}.
 
 @item -Wsign-compare
 @opindex Wsign-compare

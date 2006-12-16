@@ -1,7 +1,7 @@
 /* Test diagnostics for empty bodies in if / else.  */
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do compile } */
-/* { dg-options "-Wextra" } */
+/* { dg-options "-Wempty-body" } */
 
 void
 f (int x)
