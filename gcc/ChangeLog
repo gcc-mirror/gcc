@@ -1,3 +1,23 @@
+2006-12-16  Jan Hubicka  <jh@suse.cz>
+
+	* omp-low.c (expand_omp_parallel): Set function properties.
+	* function.h (struct function): Add curr_properties and last_verified.
+	* passes.c (register_dump_files): Do not set TODO_set_props for the
+	first pass
+	(init_optimization_passes): Set it here; reorder initialization so the
+	dump files appear in more logical order.
+	(last_verified, curr_properties): Kill.
+	(do_per_function): New function.
+	(execute_function_todo): Break out from ...
+	(execute_todo): ... here; handle per-function flags.
+	(clear_last_verified, verify_curr_properties,
+	update_properties_after_pass): New functions.
+	(execute_one_pass): Handle per-function properties.
+	(execute_ipa_pass_list): Use do_per_function; sanity check that cfun
+	and current_function_decls are cleared out.
+	* ipa-cp.c (constant_val_insert): Clear cfun/current_function_decl
+	after use.
+
 2006-12-16  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR middle-end/7651

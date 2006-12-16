@@ -2531,6 +2531,8 @@ expand_omp_parallel (struct omp_region *region)
       new_bb = move_sese_region_to_fn (child_cfun, entry_bb, exit_bb);
       if (exit_bb)
 	single_succ_edge (new_bb)->flags = EDGE_FALLTHRU;
+      DECL_STRUCT_FUNCTION (child_fn)->curr_properties
+	= cfun->curr_properties;
       cgraph_add_new_function (child_fn);
 
       /* Convert OMP_RETURN into a RETURN_EXPR.  */
