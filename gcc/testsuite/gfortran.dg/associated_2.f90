@@ -17,6 +17,8 @@ contains
 ! the target argument is not present (case (i))
     if (.not. associated (b)) call abort ()
     deallocate (a)
+    nullify(a)
+    if(associated(a,a)) call abort()
     allocate (a(2,1,2))
     b => a
     if (.not.associated (b)) call abort ()

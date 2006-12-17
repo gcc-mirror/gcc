@@ -1,3 +1,7 @@
+2006-12-17  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/associated_2.f90: Add test for associated(NULL,NULL).
+
 2006-12-16  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR middle-end/7651
