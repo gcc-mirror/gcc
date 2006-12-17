@@ -1,3 +1,11 @@
+2006-12-17  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cse.c (have_eh_succ_edges): New function.
+	(cse_insn): Don't remove dead EH edges here
+	(cse_extended_basic_block): Do it here.
+	(rest_of_handle_cse, rest_of_handle_cse2): Don't assert
+	that we have removed all dead edges.
+
 2006-12-17  Matthias Klose  <doko@debian.org>
 
 	PR libstdc++/11953
