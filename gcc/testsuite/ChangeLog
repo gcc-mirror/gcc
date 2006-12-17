@@ -1,3 +1,7 @@
+2006-12-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/compile/pr27528.c: Use empty templates.
+
 2006-12-17  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/30207
