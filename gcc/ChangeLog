@@ -1,5 +1,15 @@
 2006-12-17  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* cse.c (cse_find_path): Don't wrap a gcc_assert in ENABLE_CHECKING.
+	(cse_extended_basic_block): When truncating a path while processing
+	it, make sure to clear the visited bit on the basic blocks in the
+	truncated part of the path.
+	(cse_main): Use reverse completion order, not DFS order, to walk
+	the CFG.
+	(gate_handle_cse): Revert erroneous commit of a counter.
+
+2006-12-17  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* cse.c (this_insn_cc0, this_insn_cc0_mode): New global
 	variables, moved out from cse_insn.
 	(prev_insn): Remove this global variable).
