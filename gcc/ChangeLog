@@ -1,3 +1,7 @@
+2006-12-16  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (ipa_passes): Clear current_function_decl.
+
 2006-12-16  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* passes.c (verify_curr_properties): Define only for ENABLE_CHECKING.
