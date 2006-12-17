@@ -4147,7 +4147,6 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
   tree start;
   tree offset;
   int full;
-  gfc_ref *ref;
 
   gcc_assert (ss != gfc_ss_terminator);
 
@@ -4184,25 +4183,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       else if (se->direct_byref)
 	full = 0;
       else
-	{
-	  ref = info->ref;
-	  gcc_assert (ref->u.ar.type == AR_SECTION);
-
-	  full = 1;
-	  for (n = 0; n < ref->u.ar.dimen; n++)
-	    {
-	      /* Detect passing the full array as a section.  This could do
-	         even more checking, but it doesn't seem worth it.  */
-	      if (ref->u.ar.start[n]
-		  || ref->u.ar.end[n]
-		  || (ref->u.ar.stride[n]
-		      && !gfc_expr_is_one (ref->u.ar.stride[n], 0)))
-		{
-		  full = 0;
-		  break;
-		}
-	    }
-	}
+	full = gfc_full_array_ref_p (info->ref);
 
       if (full)
 	{
