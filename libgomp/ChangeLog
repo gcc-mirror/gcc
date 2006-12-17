@@ -1,3 +1,18 @@
+2006-12-18  Daniel Franke  <franke.daniel@gmail.com>
+
+	Backport from mainline:
+	2006-12-04  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR libgomp/29949
+	* env.c (omp_set_num_threads): Set illegal thread count to 1.
+
+	Backport from mainline:
+	2006-11-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* env.c (parse_schedule): Reject out of range values.
+	(parse_unsigned_long): Reject out of range, negative
+	or zero values.
+
 2006-12-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* configure: Regenerate.
