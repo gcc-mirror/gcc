@@ -1363,6 +1363,7 @@ static void
 ipa_passes (void)
 {
   cfun = NULL;
+  current_function_decl = NULL;
   tree_register_cfg_hooks ();
   bitmap_obstack_initialize (NULL);
   execute_ipa_pass_list (all_ipa_passes);
