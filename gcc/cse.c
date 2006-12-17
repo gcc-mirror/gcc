@@ -5905,11 +5905,10 @@ cse_find_path (basic_block first_bb, struct cse_basic_block_data *data,
 	    {
 	      basic_block bb2 = e->dest;
 
-#if ENABLE_CHECKING
 	      /* We should only see blocks here that we have not
 		 visited yet.  */
 	      gcc_assert (!TEST_BIT (cse_visited_basic_blocks, bb2->index));
-#endif
+
 	      SET_BIT (cse_visited_basic_blocks, bb2->index);
 	      data->path[path_size++].bb = bb2;
 	      bb = bb2;
@@ -6119,7 +6118,21 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 	{
 	  basic_block next_bb = ebb_data->path[path_entry + 1].bb;
 	  if (!find_edge (bb, next_bb))
-	    ebb_data->path_size = path_entry + 1;
+	    {
+	      do
+		{
+		  path_size--;
+
+		  /* If we truncate the path, we must also reset the
+		     visited bit on the remaining blocks in the path,
+		     or we will never visit them at all.  */
+		  RESET_BIT (cse_visited_basic_blocks,
+			     ebb_data->path[path_size].bb->index);
+		  ebb_data->path[path_size].bb = NULL;
+		}
+	      while (path_size - 1 != path_entry);
+	      ebb_data->path_size = path_size;
+	    }
 	}
 
       /* If this is a conditional jump insn, record any known
@@ -6159,7 +6172,7 @@ cse_main (rtx f ATTRIBUTE_UNUSED, int nregs)
 {
   struct cse_basic_block_data ebb_data;
   basic_block bb;
-  int *dfs_order = XNEWVEC (int, last_basic_block);
+  int *rc_order = XNEWVEC (int, last_basic_block);
   int i, n_blocks;
 
   init_cse_reg_info (nregs);
@@ -6199,7 +6212,7 @@ cse_main (rtx f ATTRIBUTE_UNUSED, int nregs)
 
   /* Loop over basic blocks in DFS order,
      excluding the ENTRY and EXIT blocks.  */
-  n_blocks = pre_and_rev_post_order_compute (dfs_order, NULL, false);
+  n_blocks = pre_and_rev_post_order_compute (NULL, rc_order, false);
   i = 0;
   while (i < n_blocks)
     {
@@ -6207,7 +6220,7 @@ cse_main (rtx f ATTRIBUTE_UNUSED, int nregs)
 	 processed before.  */
       do
 	{
-	  bb = BASIC_BLOCK (dfs_order[i++]);
+	  bb = BASIC_BLOCK (rc_order[i++]);
 	}
       while (TEST_BIT (cse_visited_basic_blocks, bb->index)
 	     && i < n_blocks);
@@ -6243,7 +6256,7 @@ cse_main (rtx f ATTRIBUTE_UNUSED, int nregs)
   free (reg_eqv_table);
   free (ebb_data.path);
   sbitmap_free (cse_visited_basic_blocks);
-  free (dfs_order);
+  free (rc_order);
   rtl_hooks = general_rtl_hooks;
 
   return cse_jumps_altered || recorded_label_ref;
@@ -6963,9 +6976,7 @@ gate_handle_cse (void)
 static unsigned int
 rest_of_handle_cse (void)
 {
-static int counter = 0;
   int tem;
-counter++;
   if (dump_file)
     dump_flow_info (dump_file, dump_flags);
 
