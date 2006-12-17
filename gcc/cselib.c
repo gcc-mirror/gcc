@@ -237,7 +237,7 @@ entry_and_rtx_equal_p (const void *entry, const void *x_arg)
   gcc_assert (GET_CODE (x) != CONST_INT
 	      && (mode != VOIDmode || GET_CODE (x) != CONST_DOUBLE));
   
-  if (mode != GET_MODE (v->u.val_rtx))
+  if (mode != GET_MODE (v->val_rtx))
     return 0;
 
   /* Unwrap X if necessary.  */
@@ -331,7 +331,7 @@ discard_useless_values (void **x, void *info ATTRIBUTE_UNUSED)
 
   if (v->locs == 0)
     {
-      CSELIB_VAL_PTR (v->u.val_rtx) = NULL;
+      CSELIB_VAL_PTR (v->val_rtx) = NULL;
       htab_clear_slot (cselib_hash_table, x);
       unchain_one_value (v);
       n_useless_values--;
@@ -387,7 +387,7 @@ cselib_reg_set_mode (rtx x)
       || REG_VALUES (REGNO (x))->elt == NULL)
     return VOIDmode;
 
-  return GET_MODE (REG_VALUES (REGNO (x))->elt->u.val_rtx);
+  return GET_MODE (REG_VALUES (REGNO (x))->elt->val_rtx);
 }
 
 /* Return nonzero if we can prove that X and Y contain the same value, taking
@@ -405,7 +405,7 @@ rtx_equal_for_cselib_p (rtx x, rtx y)
       cselib_val *e = cselib_lookup (x, GET_MODE (x), 0);
 
       if (e)
-	x = e->u.val_rtx;
+	x = e->val_rtx;
     }
 
   if (REG_P (y) || MEM_P (y))
@@ -413,7 +413,7 @@ rtx_equal_for_cselib_p (rtx x, rtx y)
       cselib_val *e = cselib_lookup (y, GET_MODE (y), 0);
 
       if (e)
-	y = e->u.val_rtx;
+	y = e->val_rtx;
     }
 
   if (x == y)
@@ -748,11 +748,11 @@ new_cselib_val (unsigned int value, enum machine_mode mode)
      precisely when we can have VALUE RTXen (when cselib is active)
      so we don't need to put them in garbage collected memory.
      ??? Why should a VALUE be an RTX in the first place?  */
-  e->u.val_rtx = pool_alloc (value_pool);
-  memset (e->u.val_rtx, 0, RTX_HDR_SIZE);
-  PUT_CODE (e->u.val_rtx, VALUE);
-  PUT_MODE (e->u.val_rtx, mode);
-  CSELIB_VAL_PTR (e->u.val_rtx) = e;
+  e->val_rtx = pool_alloc (value_pool);
+  memset (e->val_rtx, 0, RTX_HDR_SIZE);
+  PUT_CODE (e->val_rtx, VALUE);
+  PUT_MODE (e->val_rtx, mode);
+  CSELIB_VAL_PTR (e->val_rtx) = e;
   e->addr_list = 0;
   e->locs = 0;
   e->next_containing_mem = 0;
@@ -777,7 +777,7 @@ add_mem_for_addr (cselib_val *addr_elt, cselib_val *mem_elt, rtx x)
   addr_elt->addr_list = new_elt_list (addr_elt->addr_list, mem_elt);
   mem_elt->locs
     = new_elt_loc_list (mem_elt->locs,
-			replace_equiv_address_nv (x, addr_elt->u.val_rtx));
+			replace_equiv_address_nv (x, addr_elt->val_rtx));
   if (mem_elt->next_containing_mem == NULL)
     {
       mem_elt->next_containing_mem = first_containing_mem;
@@ -809,7 +809,7 @@ cselib_lookup_mem (rtx x, int create)
 
   /* Find a value that describes a value of our mode at that address.  */
   for (l = addr->addr_list; l; l = l->next)
-    if (GET_MODE (l->elt->u.val_rtx) == mode)
+    if (GET_MODE (l->elt->val_rtx) == mode)
       return l->elt;
 
   if (! create)
@@ -846,8 +846,8 @@ cselib_subst_to_values (rtx x)
       if (l && l->elt == NULL)
 	l = l->next;
       for (; l; l = l->next)
-	if (GET_MODE (l->elt->u.val_rtx) == GET_MODE (x))
-	  return l->elt->u.val_rtx;
+	if (GET_MODE (l->elt->val_rtx) == GET_MODE (x))
+	  return l->elt->val_rtx;
 
       gcc_unreachable ();
 
@@ -859,7 +859,7 @@ cselib_subst_to_values (rtx x)
 	     match any other.  */
 	  e = new_cselib_val (++next_unknown_value, GET_MODE (x));
 	}
-      return e->u.val_rtx;
+      return e->val_rtx;
 
     case CONST_DOUBLE:
     case CONST_VECTOR:
@@ -873,7 +873,7 @@ cselib_subst_to_values (rtx x)
     case POST_MODIFY:
     case PRE_MODIFY:
       e = new_cselib_val (++next_unknown_value, GET_MODE (x));
-      return e->u.val_rtx;
+      return e->val_rtx;
 
     default:
       break;
@@ -943,7 +943,7 @@ cselib_lookup (rtx x, enum machine_mode mode, int create)
       if (l && l->elt == NULL)
 	l = l->next;
       for (; l; l = l->next)
-	if (mode == GET_MODE (l->elt->u.val_rtx))
+	if (mode == GET_MODE (l->elt->val_rtx))
 	  return l->elt;
 
       if (! create)
@@ -1050,7 +1050,7 @@ cselib_invalidate_regno (unsigned int regno, enum machine_mode mode)
 	  unsigned int this_last = i;
 
 	  if (i < FIRST_PSEUDO_REGISTER && v != NULL)
-	    this_last += hard_regno_nregs[i][GET_MODE (v->u.val_rtx)] - 1;
+	    this_last += hard_regno_nregs[i][GET_MODE (v->val_rtx)] - 1;
 
 	  if (this_last < regno || v == NULL)
 	    {
@@ -1422,7 +1422,7 @@ cselib_process_insn (rtx insn)
 	if (call_used_regs[i]
 	    || (REG_VALUES (i) && REG_VALUES (i)->elt
 		&& HARD_REGNO_CALL_PART_CLOBBERED (i, 
-		      GET_MODE (REG_VALUES (i)->elt->u.val_rtx))))
+		      GET_MODE (REG_VALUES (i)->elt->val_rtx))))
 	  cselib_invalidate_regno (i, reg_raw_mode[i]);
 
       if (! CONST_OR_PURE_CALL_P (insn))
