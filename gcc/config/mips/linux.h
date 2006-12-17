@@ -95,7 +95,7 @@ Boston, MA 02110-1301, USA.  */
   } while (0)
 
 #undef  SUBTARGET_CPP_SPEC
-#define SUBTARGET_CPP_SPEC "%{pthread:-D_REENTRANT}"
+#define SUBTARGET_CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 
 /* From iris5.h */
 /* -G is incompatible with -KPIC which is the default, so only allow objects
