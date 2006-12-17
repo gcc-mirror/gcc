@@ -16,6 +16,45 @@
 @syncodeindex pg cp
 @syncodeindex tp cp
 
+@c TODO: The following "Part" definitions are included here temporarily
+@c until they are incorporated into the official Texinfo distribution.
+@c They borrow heavily from Texinfo's \unnchapentry definitions.
+
+@tex
+\gdef\part#1#2{%
+  \pchapsepmacro
+  \gdef\thischapter{}
+  \begingroup
+    \vglue\titlepagetopglue
+    \titlefonts \rm
+    \leftline{Part #1:@* #2}
+    \vskip4pt \hrule height 4pt width \hsize \vskip4pt
+  \endgroup
+  \writetocentry{part}{#2}{#1}
+}
+\gdef\blankpart{%
+  \writetocentry{blankpart}{}{}
+}
+% Part TOC-entry definition for summary contents.
+\gdef\dosmallpartentry#1#2#3#4{%
+  \vskip .5\baselineskip plus.2\baselineskip
+  \begingroup
+    \let\rm=\bf \rm
+    \tocentry{Part #2: #1}{\doshortpageno\bgroup#4\egroup}
+  \endgroup
+}
+\gdef\dosmallblankpartentry#1#2#3#4{%
+  \vskip .5\baselineskip plus.2\baselineskip
+}
+% Part TOC-entry definition for regular contents.  This has to be
+% equated to an existing entry to not cause problems when the PDF
+% outline is created.
+\gdef\dopartentry#1#2#3#4{%
+  \unnchapentry{Part #2: #1}{}{#3}{#4}
+}
+\gdef\doblankpartentry#1#2#3#4{}
+@end tex
+
 @c %**end of header
 
 @c Use with @@smallbook.
@@ -94,8 +133,22 @@ Boston, MA 02110-1301, USA@*
 @sp 1
 @insertcopying
 @end titlepage
+
+@c TODO: The following "Part" definitions are included here temporarily
+@c until they are incorporated into the official Texinfo distribution.
+
+@tex
+\global\let\partentry=\dosmallpartentry
+\global\let\blankpartentry=\dosmallblankpartentry
+@end tex
 @summarycontents
+
+@tex
+\global\let\partentry=\dopartentry
+\global\let\blankpartentry=\doblankpartentry
+@end tex
 @contents
+
 @page
 
 @node Top
@@ -118,16 +171,23 @@ not accurately reflect the status of the most recent GNU Fortran compiler.
 @comment  better formatting.
 @comment
 @menu
+Part I: About GNU Fortran
 * Getting Started::      What you should know about GNU Fortran.
 * GNU Fortran and GCC::  You can compile Fortran, C, or other programs.
 * GNU Fortran and G77::  Why we chose to start from scratch.
-* Invoking GNU Fortran:: Command options supported by @command{gfortran}.
 * Project Status::       Status of GNU Fortran, roadmap, proposed extensions.
-* Contributing::         How you can help.
 * Standards::	         Standards supported by GNU Fortran.
+
+Part II: Invoking GNU Fortran
+* Invoking GNU Fortran:: Command options supported by @command{gfortran}.
 * Runtime::              Influencing runtime behavior with environment variables.
+
+Part III: Language Reference
+* Fortran 2003 status::  Fortran 2003 features supported by GNU Fortran.
 * Extensions::           Language extensions implemented by GNU Fortran.
 * Intrinsic Procedures:: Intrinsic procedures supported by GNU Fortran.
+
+* Contributing::         How you can help.
 * Copying::              GNU General Public License says
                          how you can copy and share GNU Fortran.
 * GNU Free Documentation License::
@@ -137,6 +197,13 @@ not accurately reflect the status of the most recent GNU Fortran compiler.
 @end menu
 
 
+@c =====================================================================
+@c PART I: ABOUT GNU FORTRAN
+@c =====================================================================
+
+@tex
+\part{I}{About GNU Fortran}
+@end tex
 
 @c ---------------------------------------------------------------------
 @c Getting Started
@@ -255,7 +322,6 @@ programs will call it for you.
 @end itemize
 
 
-
 @c ---------------------------------------------------------------------
 @c GNU Fortran and GCC
 @c ---------------------------------------------------------------------
@@ -308,7 +374,6 @@ If you build GCC with @command{gfortran}, @command{gcc} will recognize
 command line options.
 
 
-
 @c ---------------------------------------------------------------------
 @c GNU Fortran and G77
 @c ---------------------------------------------------------------------
@@ -349,7 +414,6 @@ because it was expected to be easier to maintain code we
 develop ourselves than to do a major overhaul of @command{g77} first,
 and then build a Fortran 95 compiler out of it.
 
-@include invoke.texi
 
 @c ---------------------------------------------------------------------
 @c Project Status
@@ -373,14 +437,6 @@ The start of the GNU Fortran 95 project was announced on
 the GCC homepage in March 18, 2000
 (even though Andy had already been working on it for a while,
 of course).
-
-@menu
-* Compiler and Library Status::
-* Proposed Extensions::
-@end menu
-
-@node Compiler and Library Status
-@section Compiler and Library Status
 
 The GNU Fortran compiler is able to compile nearly all
 standard-compliant Fortran 95, Fortran 90, and Fortran 77 programs,
@@ -419,98 +475,39 @@ and the performance of compiled code, and extending the compiler to support
 future standards---in particular, Fortran 2003.
 
 
-@node Proposed Extensions
-@section Proposed Extensions
+@c ---------------------------------------------------------------------
+@c Standards
+@c ---------------------------------------------------------------------
 
-Here's a list of proposed extensions for the GNU Fortran compiler, in no particular
-order.  Most of these are necessary to be fully compatible with
-existing Fortran compilers, but they are not part of the official
-J3 Fortran 95 standard.
+@node Standards
+@chapter Standards
+@cindex Standards
 
-@subsection Compiler extensions: 
-@itemize @bullet
-@item
-User-specified alignment rules for structures.
+The GNU Fortran compiler implements
+ISO/IEC 1539:1997 (Fortran 95).  As such, it can also compile essentially all
+standard-compliant Fortran 90 and Fortran 77 programs.   It also supports
+the ISO/IEC TR-15581 enhancements to allocatable arrays, and
+the @uref{http://www.openmp.org/drupal/mp-documents/spec25.pdf,
+OpenMP Application Program Interface v2.5} specification.
 
-@item
-Flag to generate @code{Makefile} info.
-
-@item
-Automatically extend single precision constants to double.
-
-@item
-Compile code that conserves memory by dynamically allocating common and
-module storage either on stack or heap.
-
-@item
-Compile flag to generate code for array conformance checking (suggest -CC).
-
-@item
-User control of symbol names (underscores, etc).
-
-@item
-Compile setting for maximum size of stack frame size before spilling
-parts to static or heap.
-
-@item
-Flag to force local variables into static space.
-
-@item
-Flag to force local variables onto stack.
-
-@item
-Flag for maximum errors before ending compile.
-
-@item
-Option to initialize otherwise uninitialized integer and floating
-point variables.
-@end itemize
+In the future, the GNU Fortran compiler may also support other standard 
+variants of and extensions to the Fortran language.  These include
+ISO/IEC 1539-1:2004 (Fortran 2003).
 
 
-@subsection Environment Options
-@itemize @bullet
-@item
-Pluggable library modules for random numbers, linear algebra.
-LA should use BLAS calling conventions.
+@c =====================================================================
+@c PART II: INVOCATION REFERENCE
+@c =====================================================================
 
-@item
-Environment variables controlling actions on arithmetic exceptions like
-overflow, underflow, precision loss---Generate NaN, abort, default.
-action.
+@tex
+\part{II}{Invoking GNU Fortran}
+@end tex
 
-@item
-Set precision for fp units that support it (i387).
+@c ---------------------------------------------------------------------
+@c Compiler Options
+@c ---------------------------------------------------------------------
 
-@item
-Variable for setting fp rounding mode.
-
-@item
-Variable to fill uninitialized variables with a user-defined bit
-pattern.
-
-@item
-Environment variable controlling filename that is opened for that unit
-number.
-
-@item
-Environment variable to clear/trash memory being freed.
-
-@item
-Environment variable to control tracing of allocations and frees.
-
-@item
-Environment variable to display allocated memory at normal program end.
-
-@item
-Environment variable for filename for * IO-unit.
-
-@item
-Environment variable for temporary file directory.
-
-@item
-Environment variable forcing standard output to be line buffered (unix).
-
-@end itemize
+@include invoke.texi
 
 
 @c ---------------------------------------------------------------------
@@ -687,6 +684,81 @@ portable.
 data representation for unformatted files.  @xref{Runtime Options}, for
 setting a default data representation for the whole program.  The
 @code{CONVERT} specifier overrides the @code{-fconvert} compile options.
+
+
+@c =====================================================================
+@c PART III: LANGUAGE REFERENCE
+@c =====================================================================
+
+@tex
+\part{III}{Language Reference}
+@end tex
+
+@c ---------------------------------------------------------------------
+@c Fortran 2003 Status
+@c ---------------------------------------------------------------------
+
+@node Fortran 2003 status
+@chapter Fortran 2003 Status
+
+Although GNU Fortran focuses on implementing the Fortran 95
+standard for the time being, a few Fortran 2003 features are currently
+available.
+
+@itemize
+@item 
+Intrinsics @code{command_argument_count}, @code{get_command},
+@code{get_command_argument}, @code{get_environment_variable}, and
+@code{move_alloc}.
+
+@item 
+@cindex Array constructors
+@cindex @code{[...]}
+Array constructors using square brackets. That is, @code{[...]} rather
+than @code{(/.../)}.
+
+@item
+@cindex @code{FLUSH} statement
+@code{FLUSH} statement.
+
+@item
+@cindex @code{IOMSG=} specifier
+@code{IOMSG=} specifier for I/O statements.
+
+@item
+@cindex @code{ENUM} statement
+@cindex @code{ENUMERATOR} statement
+@cindex @command{-fshort-enums}
+Support for the declaration of enumeration constants via the
+@code{ENUM} and @code{ENUMERATOR} statements.  Interoperability with
+@command{gcc} is guaranteed also for the case where the
+@command{-fshort-enums} command line option is given.
+
+@item
+@cindex TR 15581
+TR 15581:
+@itemize
+@item
+@cindex @code{ALLOCATABLE} dummy arguments
+@code{ALLOCATABLE} dummy arguments.
+@item
+@cindex @code{ALLOCATABLE} function results
+@code{ALLOCATABLE} function results
+@item
+@cindex @code{ALLOCATABLE} components of derived types
+@code{ALLOCATABLE} components of derived types
+@end itemize
+
+@item
+@cindex @code{STREAM} I/O
+@cindex @code{ACCESS='STREAM'} I/O
+The @code{OPEN} statement supports the @code{ACCESS='STREAM'} specifier,
+allowing I/O without any record structure.
+
+
+
+@end itemize
+
 
 @c ---------------------------------------------------------------------
 @c Extensions
@@ -1176,15 +1248,22 @@ For details refer to the actual
 OpenMP Application Program Interface v2.5} specification.
 
 @c ---------------------------------------------------------------------
-@include intrinsic.texi
+@c Intrinsic Procedures
 @c ---------------------------------------------------------------------
+
+@include intrinsic.texi
+
+
+@tex
+\blankpart
+@end tex
 
 @c ---------------------------------------------------------------------
 @c Contributing
 @c ---------------------------------------------------------------------
 
 @node Contributing
-@chapter Contributing
+@unnumbered Contributing
 @cindex Contributing
 
 Free software is only possible if people contribute to efforts
@@ -1206,6 +1285,7 @@ but they are also things doable by someone who is willing and able.
 @menu
 * Contributors::
 * Projects::
+* Proposed Extensions::
 @end menu
 
 
@@ -1300,87 +1380,96 @@ please contact a project maintainer.
 @c TODO: email!
 
 
-@c ---------------------------------------------------------------------
-@c Standards
-@c ---------------------------------------------------------------------
+@node Proposed Extensions
+@section Proposed Extensions
 
-@node Standards
-@chapter Standards
-@cindex Standards
+Here's a list of proposed extensions for the GNU Fortran compiler, in no particular
+order.  Most of these are necessary to be fully compatible with
+existing Fortran compilers, but they are not part of the official
+J3 Fortran 95 standard.
 
-The GNU Fortran compiler implements
-ISO/IEC 1539:1997 (Fortran 95).  As such, it can also compile essentially all
-standard-compliant Fortran 90 and Fortran 77 programs.   It also supports
-the ISO/IEC TR-15581 enhancements to allocatable arrays, and
-the @uref{http://www.openmp.org/drupal/mp-documents/spec25.pdf,
-OpenMP Application Program Interface v2.5} specification.
-
-In the future, the GNU Fortran compiler may also support other standard 
-variants of and extensions to the Fortran language.  These include
-ISO/IEC 1539-1:2004 (Fortran 2003).
-
-@menu
-* Fortran 2003 status::
-@end menu
-
-@node Fortran 2003 status
-@section Fortran 2003 status
-
-Although GNU Fortran focuses on implementing the Fortran 95
-standard for the time being, a few Fortran 2003 features are currently
-available.
-
-@itemize
-@item 
-Intrinsics @code{command_argument_count}, @code{get_command},
-@code{get_command_argument}, @code{get_environment_variable}, and
-@code{move_alloc}.
-
-@item 
-@cindex Array constructors
-@cindex @code{[...]}
-Array constructors using square brackets. That is, @code{[...]} rather
-than @code{(/.../)}.
+@subsection Compiler extensions: 
+@itemize @bullet
+@item
+User-specified alignment rules for structures.
 
 @item
-@cindex @code{FLUSH} statement
-@code{FLUSH} statement.
+Flag to generate @code{Makefile} info.
 
 @item
-@cindex @code{IOMSG=} specifier
-@code{IOMSG=} specifier for I/O statements.
+Automatically extend single precision constants to double.
 
 @item
-@cindex @code{ENUM} statement
-@cindex @code{ENUMERATOR} statement
-@cindex @command{-fshort-enums}
-Support for the declaration of enumeration constants via the
-@code{ENUM} and @code{ENUMERATOR} statements.  Interoperability with
-@command{gcc} is guaranteed also for the case where the
-@command{-fshort-enums} command line option is given.
+Compile code that conserves memory by dynamically allocating common and
+module storage either on stack or heap.
 
 @item
-@cindex TR 15581
-TR 15581:
-@itemize
+Compile flag to generate code for array conformance checking (suggest -CC).
+
 @item
-@cindex @code{ALLOCATABLE} dummy arguments
-@code{ALLOCATABLE} dummy arguments.
+User control of symbol names (underscores, etc).
+
 @item
-@cindex @code{ALLOCATABLE} function results
-@code{ALLOCATABLE} function results
+Compile setting for maximum size of stack frame size before spilling
+parts to static or heap.
+
 @item
-@cindex @code{ALLOCATABLE} components of derived types
-@code{ALLOCATABLE} components of derived types
+Flag to force local variables into static space.
+
+@item
+Flag to force local variables onto stack.
+
+@item
+Flag for maximum errors before ending compile.
+
+@item
+Option to initialize otherwise uninitialized integer and floating
+point variables.
 @end itemize
 
+
+@subsection Environment Options
+@itemize @bullet
 @item
-@cindex @code{STREAM} I/O
-@cindex @code{ACCESS='STREAM'} I/O
-The @code{OPEN} statement supports the @code{ACCESS='STREAM'} specifier,
-allowing I/O without any record structure.
+Pluggable library modules for random numbers, linear algebra.
+LA should use BLAS calling conventions.
 
+@item
+Environment variables controlling actions on arithmetic exceptions like
+overflow, underflow, precision loss---Generate NaN, abort, default.
+action.
 
+@item
+Set precision for fp units that support it (i387).
+
+@item
+Variable for setting fp rounding mode.
+
+@item
+Variable to fill uninitialized variables with a user-defined bit
+pattern.
+
+@item
+Environment variable controlling filename that is opened for that unit
+number.
+
+@item
+Environment variable to clear/trash memory being freed.
+
+@item
+Environment variable to control tracing of allocations and frees.
+
+@item
+Environment variable to display allocated memory at normal program end.
+
+@item
+Environment variable for filename for * IO-unit.
+
+@item
+Environment variable for temporary file directory.
+
+@item
+Environment variable forcing standard output to be line buffered (unix).
 
 @end itemize
 

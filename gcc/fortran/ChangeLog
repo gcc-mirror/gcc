@@ -1,3 +1,9 @@
+2006-12-16  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* gfortran.texi: Added TeX support for document parts;
+	rearranged existing text into "About GNU Fortran",
+	"Invoking GNU Fortran", and "Language Reference" parts.
+
 2006-12-15  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
