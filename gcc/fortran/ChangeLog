@@ -1,3 +1,13 @@
+2006-12-17  Roger Sayle  <roger@eyesopen.com>
+
+	PR fortran/30207
+	* dependency.c (gfc_full_array_ref_p): New function to test whether
+	the given array ref specifies the entire array.
+	(gfc_dep_resolver): Use gfc_full_array_ref_p to analyze AR_FULL
+	array refs against AR_SECTION array refs, and vice versa.
+	* dependency.h (gfc_full_array_ref_p): Prototype here.
+	* trans-array.c (gfc_conv_expr_descriptor): Use gfc_full_array_ref_p.
+
 2006-12-16  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* gfortran.texi: Added TeX support for document parts;

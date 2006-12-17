@@ -1108,6 +1108,46 @@ gfc_check_element_vs_element (gfc_ref * lref, gfc_ref * rref, int n)
 }
 
 
+/* Determine if an array ref, usually an array section specifies the
+   entire array.  */
+
+bool
+gfc_full_array_ref_p (gfc_ref *ref)
+{
+  int i;
+
+  if (ref->type != REF_ARRAY)
+    return false;
+  if (ref->u.ar.type == AR_FULL)
+    return true;
+  if (ref->u.ar.type != AR_SECTION)
+    return false;
+
+  for (i = 0; i < ref->u.ar.dimen; i++)
+    {
+      /* Check the lower bound.  */
+      if (ref->u.ar.start[i]
+	  && (!ref->u.ar.as
+	      || !ref->u.ar.as->lower[i]
+	      || gfc_dep_compare_expr (ref->u.ar.start[i],
+				       ref->u.ar.as->lower[i])))
+	return false;
+      /* Check the upper bound.  */
+      if (ref->u.ar.end[i]
+	  && (!ref->u.ar.as
+	      || !ref->u.ar.as->upper[i]
+	      || gfc_dep_compare_expr (ref->u.ar.end[i],
+				       ref->u.ar.as->upper[i])))
+	return false;
+      /* Check the stride.  */
+      if (ref->u.ar.stride[i]
+	  && !gfc_expr_is_one (ref->u.ar.stride[i], 0))
+	return false;
+    }
+  return true;
+}
+
+
 /* Finds if two array references are overlapping or not.
    Return value
    	1 : array references are overlapping.
@@ -1145,6 +1185,19 @@ gfc_dep_resolver (gfc_ref * lref, gfc_ref * rref)
 	  return 0;
 	
 	case REF_ARRAY:
+          if (lref->u.ar.dimen != rref->u.ar.dimen)
+	    {
+	      if (lref->u.ar.type == AR_FULL)
+		fin_dep = gfc_full_array_ref_p (rref) ? GFC_DEP_EQUAL
+						      : GFC_DEP_OVERLAP;
+	      else if (rref->u.ar.type == AR_FULL)
+		fin_dep = gfc_full_array_ref_p (lref) ? GFC_DEP_EQUAL
+						      : GFC_DEP_OVERLAP;
+	      else
+                return 1;
+	      break;
+	    }
+
 	  for (n=0; n < lref->u.ar.dimen; n++)
 	    {
 	      /* Assume dependency when either of array reference is vector
