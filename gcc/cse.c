@@ -4858,13 +4858,6 @@ cse_insn (rtx insn, rtx libcall_insn)
 	      validate_change (insn, &SET_SRC (sets[i].rtl), new, 1);
 	      apply_change_group ();
 
-	      /* With non-call exceptions, if this was an insn that could
-		 trap, we may have made it non-throwing now.  For example
-		 we may have replaced a load with a register.  */
-	      if (flag_non_call_exceptions
-		  && insn == BB_END (BLOCK_FOR_INSN (insn)))
-		purge_dead_edges (BLOCK_FOR_INSN (insn));
-
 	      break;
 	    }
 
@@ -5939,6 +5932,22 @@ cse_dump_path (struct cse_basic_block_data *data, int nsets, FILE *f)
 }
 
 
+/* Return true if BB has exception handling successor edges.  */
+
+static bool
+have_eh_succ_edges (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    if (e->flags & EDGE_EH)
+      return true;
+
+  return false;
+}
+
+
 /* Scan to the end of the path described by DATA.  Return an estimate of
    the total number of SETs, and the lowest and highest insn CUID, of all
    insns in the path.  */
@@ -6109,6 +6118,12 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
       /* Make sure that libcalls don't span multiple basic blocks.  */
       gcc_assert (libcall_insn == NULL_RTX);
 
+      /* With non-call exceptions, we are not always able to update
+	 the CFG properly inside cse_insn.  So clean up possibly
+	 redundant EH edges here.  */
+      if (flag_non_call_exceptions && have_eh_succ_edges (bb))
+	purge_dead_edges (bb);
+
       /* If we changed a conditional jump, we may have terminated
 	 the path we are following.  Check that by verifying that
 	 the edge we would take still exists.  If the edge does
@@ -6210,13 +6225,13 @@ cse_main (rtx f ATTRIBUTE_UNUSED, int nregs)
 	INSN_CUID (insn) = ++i;
     }
 
-  /* Loop over basic blocks in DFS order,
+  /* Loop over basic blocks in reverse completion order (RPO),
      excluding the ENTRY and EXIT blocks.  */
   n_blocks = pre_and_rev_post_order_compute (NULL, rc_order, false);
   i = 0;
   while (i < n_blocks)
     {
-      /* Find the first block in the DFS queue that we have not yet
+      /* Find the first block in the RPO queue that we have not yet
 	 processed before.  */
       do
 	{
@@ -6988,10 +7003,6 @@ rest_of_handle_cse (void)
      expecting CSE to be run.  But always rerun it in a cheap mode.  */
   cse_not_expected = !flag_rerun_cse_after_loop && !flag_gcse;
 
-  /* If there are dead edges to purge, we haven't properly updated
-     the CFG incrementally.  */
-  gcc_assert (!purge_all_dead_edges ());
-
   if (tem)
     rebuild_jump_labels (get_insns ());
 
@@ -7043,10 +7054,6 @@ rest_of_handle_cse2 (void)
      makes it harder for that pass to determine whether a jump can be
      bypassed safely.  */
   cse_condition_code_reg ();
-
-  /* If there are dead edges to purge, we haven't properly updated
-     the CFG incrementally.  */
-  gcc_assert (!purge_all_dead_edges ());
 
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
 
