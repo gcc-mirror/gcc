@@ -269,17 +269,13 @@ struct change_cc_mode_args
    table since its use is guaranteed to be the insn immediately following
    its definition and any other insn is presumed to invalidate it.
 
-   Instead, we store below the value last assigned to CC0.  If it should
-   happen to be a constant, it is stored in preference to the actual
-   assigned value.  In case it is a constant, we store the mode in which
-   the constant should be interpreted.  */
+   Instead, we store below the current and last value assigned to CC0.
+   If it should happen to be a constant, it is stored in preference
+   to the actual assigned value.  In case it is a constant, we store
+   the mode in which the constant should be interpreted.  */
 
-static rtx prev_insn_cc0;
-static enum machine_mode prev_insn_cc0_mode;
-
-/* Previous actual insn.  0 if at first insn of basic block.  */
-
-static rtx prev_insn;
+static rtx this_insn_cc0, prev_insn_cc0;
+static enum machine_mode this_insn_cc0_mode, prev_insn_cc0_mode;
 #endif
 
 /* Insn being scanned.  */
@@ -900,7 +896,6 @@ new_basic_block (void)
     }
 
 #ifdef HAVE_cc0
-  prev_insn = 0;
   prev_insn_cc0 = 0;
 #endif
 }
@@ -4022,8 +4017,8 @@ cse_insn (rtx insn, rtx libcall_insn)
 
 #ifdef HAVE_cc0
   /* Records what this insn does to set CC0.  */
-  rtx this_insn_cc0 = 0;
-  enum machine_mode this_insn_cc0_mode = VOIDmode;
+  this_insn_cc0 = 0;
+  this_insn_cc0_mode = VOIDmode;
 #endif
 
   rtx src_eqv = 0;
@@ -5644,20 +5639,6 @@ cse_insn (rtx insn, rtx libcall_insn)
     }
 
 done:;
-#ifdef HAVE_cc0
-  /* If the previous insn set CC0 and this insn no longer references CC0,
-     delete the previous insn.  Here we use the fact that nothing expects CC0
-     to be valid over an insn, which is true until the final pass.  */
-  if (prev_insn && NONJUMP_INSN_P (prev_insn)
-      && (tem = single_set (prev_insn)) != 0
-      && SET_DEST (tem) == cc0_rtx
-      && ! reg_mentioned_p (cc0_rtx, x))
-    delete_insn_and_edges (prev_insn);
-
-  prev_insn_cc0 = this_insn_cc0;
-  prev_insn_cc0_mode = this_insn_cc0_mode;
-  prev_insn = insn;
-#endif
 }
 
 /* Remove from the hash table all expressions that reference memory.  */
@@ -6096,18 +6077,38 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 		  && for_each_rtx (&PATTERN (insn), check_for_label_ref,
 				   (void *) insn))
 		recorded_label_ref = 1;
+
+#ifdef HAVE_cc0
+	      /* If the previous insn set CC0 and this insn no longer
+		 references CC0, delete the previous insn.  Here we use
+		 fact that nothing expects CC0 to be valid over an insn,
+		 which is true until the final pass.  */
+	      {
+		rtx prev_insn, tem;
+
+		prev_insn = PREV_INSN (insn);
+		if (prev_insn && NONJUMP_INSN_P (prev_insn)
+		    && (tem = single_set (prev_insn)) != 0
+		    && SET_DEST (tem) == cc0_rtx
+		    && ! reg_mentioned_p (cc0_rtx, PATTERN (insn)))
+		  delete_insn (prev_insn);
+	      }
+
+	      /* If this insn is not the last insn in the basic block,
+		 it will be PREV_INSN(insn) in the next iteration.  If
+		 we recorded any CC0-related information for this insn,
+		 remember it.  */
+	      if (insn != BB_END (bb))
+		{
+		  prev_insn_cc0 = this_insn_cc0;
+		  prev_insn_cc0_mode = this_insn_cc0_mode;
+		}
+#endif
 	    }
 	}
 
       /* Make sure that libcalls don't span multiple basic blocks.  */
       gcc_assert (libcall_insn == NULL_RTX);
-
-#ifdef HAVE_cc0
-      /* Clear the CC0-tracking related insns, they can't provide
-	 useful information across basic block boundaries.  */
-      prev_insn_cc0 = 0;
-      prev_insn = 0;
-#endif
 
       /* If we changed a conditional jump, we may have terminated
 	 the path we are following.  Check that by verifying that
@@ -6133,6 +6134,12 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 	  bool taken = (next_bb == BRANCH_EDGE (bb)->dest);
 	  record_jump_equiv (insn, taken);
 	}
+
+#ifdef HAVE_cc0
+      /* Clear the CC0-tracking related insns, they can't provide
+	 useful information across basic block boundaries.  */
+      prev_insn_cc0 = 0;
+#endif
     }
 
   gcc_assert (next_qty <= max_qty);
