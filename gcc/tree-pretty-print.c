@@ -2692,8 +2692,8 @@ newline_and_indent (pretty_printer *buffer, int spc)
 static void
 dump_vops (pretty_printer *buffer, tree stmt, int spc, int flags)
 {
-  struct vdef_optype_d *vdefs;
-  struct vuse_optype_d *vuses;
+  struct voptype_d *vdefs;
+  struct voptype_d *vuses;
   int i, n;
 
   if (!ssa_operands_active () || !stmt_references_memory_p (stmt))

@@ -98,31 +98,27 @@ typedef struct vuse_vec_d *vuse_vec_p;
 
 #define VUSE_ELEMENT_VAR(V,X)	(VUSE_VECT_ELEMENT ((V),(X)).use_var)
 
-/* This represents the VDEFS for a stmt.  */
-struct vdef_optype_d
+/* This represents the virtual ops of a stmt.  */
+struct voptype_d
 {
-  struct vdef_optype_d *next;
+  struct voptype_d *next;
   tree def_var;
   vuse_vec_t usev;
 };
-typedef struct vdef_optype_d *vdef_optype_p;
+typedef struct voptype_d *voptype_p;
 
-/* This represents the VUSEs for a stmt.  */
-struct vuse_optype_d
-{
-  struct vuse_optype_d *next;
-  vuse_vec_t usev;
-};
-typedef struct vuse_optype_d *vuse_optype_p;
-                                                                              
-
-#define SSA_OPERAND_MEMORY_SIZE		(511 * sizeof (struct vuse_optype_d))
-                                                                              
+/* This structure represents a variable sized buffer which is allocated by the
+   operand memory manager.  Operands are subalocated out of this block.  The
+   MEM array varies in size.  */
+   
 struct ssa_operand_memory_d GTY((chain_next("%h.next")))
 {
   struct ssa_operand_memory_d *next;
-  char mem[SSA_OPERAND_MEMORY_SIZE];
+  char mem[1];
 };
+
+/* Number of different size free buckets for virtual operands.  */
+#define NUM_VOP_FREE_BUCKETS		29
 
 /* Per-function operand caches.  */
 struct ssa_operands GTY(()) {
@@ -133,8 +129,7 @@ struct ssa_operands GTY(()) {
 
    struct def_optype_d * GTY ((skip (""))) free_defs;
    struct use_optype_d * GTY ((skip (""))) free_uses;
-   struct vuse_optype_d * GTY ((skip (""))) free_vuses;
-   struct vdef_optype_d * GTY ((skip (""))) free_vdefs;
+   struct voptype_d * GTY ((skip (""))) vop_free_buckets[NUM_VOP_FREE_BUCKETS];
    VEC(tree,heap) * GTY ((skip (""))) mpt_table;
 };
 
@@ -146,8 +141,8 @@ struct stmt_operands_d
   struct use_optype_d * use_ops;
                                                                               
   /* Virtual operands (VDEF, VUSE).  */
-  struct vdef_optype_d * vdef_ops;
-  struct vuse_optype_d * vuse_ops;
+  struct voptype_d * vdef_ops;
+  struct voptype_d * vuse_ops;
 
   /* Sets of memory symbols loaded and stored.  */
   bitmap stores;
@@ -206,8 +201,8 @@ typedef struct stmt_operands_d *stmt_operands_p;
 #define PHI_ARG_INDEX_FROM_USE(USE)   phi_arg_index_from_use (USE)
 
 
-extern struct vdef_optype_d *realloc_vdef (struct vdef_optype_d *, int);
-extern struct vuse_optype_d *realloc_vuse (struct vuse_optype_d *, int);
+extern struct voptype_d *realloc_vdef (struct voptype_d *, int);
+extern struct voptype_d *realloc_vuse (struct voptype_d *, int);
 
 extern void init_ssa_operands (void);
 extern void fini_ssa_operands (void);
@@ -249,9 +244,9 @@ typedef struct ssa_operand_iterator_d
 {
   def_optype_p defs;
   use_optype_p uses;
-  vuse_optype_p vuses;
-  vdef_optype_p vdefs;
-  vdef_optype_p mayuses;
+  voptype_p vuses;
+  voptype_p vdefs;
+  voptype_p mayuses;
   enum ssa_op_iter_type iter_type;
   int phi_i;
   int num_phi;

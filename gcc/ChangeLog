@@ -1,3 +1,41 @@
+2006-12-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssa-operands.h (struct vdef_optype_d): Rename to voptype_d.
+	(struct vuse_optype_d): Delete.
+	(SSA_OPERAND_MEMORY_SIZE): Delete.
+	(struct ssa_operand_memory_d): Change mem array to size one.
+	(NUM_VOP_FREE_BUCKETS): Define.
+	(free_vuses, free_vdefs): Replace with vop_free_buckets array.
+	(vdef_ops, vuse_ops, struct ssa_operand_iterator_d): Use voptype_d type.
+	* tree-pretty-print.c (dump_vops): Use voptype_d type.
+	* tree-ssa-operands.c (vop_free_bucket_size): New.  Number of operands
+	which fit into a chunk of memory from a specific bucket.
+	(vop_free_bucket_index): New.  Find correct size memory bucket.
+	(init_vop_buckets): New.  Initialize VOP free memory buckets.
+	(add_vop_to_freelist): New.  Add a VOP to the correct free list.
+	(ssa_operand_mem_size): New.  Current size of an operand memory chunk.
+	(init_ssa_operands): Initialize operand memory and free lists.
+	(fini_ssa_operands): Remove references to free_vuses and free_vdefs.
+	(ssa_operand_alloc): Use graduated size memory allocation.
+	(APPEND_OP_AFTER, MOVE_HEAD_AFTER, MOVE_HEAD_TO_FREELIST, 
+	INITIALIZE_USE): Remove.
+	(alloc_vop): New.  Allocate a virtual operand.
+	(alloc_vdef, alloc_vuse): Delete.
+	(add_def_op, add_use_op): Directly setup pointers.
+	(add_vop): New.  Add a virtual operand.
+	(add_vuse_op, add_vdef_op): Call add_vop.
+	(realloc_vop): New.  Reallocate a virtual operand.
+	(realloc_vdef, realloc_vuse): Call realloc_vop.
+	(finalize_ssa_def_ops): Delete.  Move content to finalize_ssa_defs.
+	(finalize_ssa_defs): Optimize for common case, remove code based on
+	sorted pointers which was a waste of time.
+	(finalize_ssa_use_ops): Delete.  Move content to finalize_ssa_uses.
+	(finalize_ssa_uses): Update last pointer.
+	(finalize_ssa_vdef_ops): Delete.  Move content to finalize_ssa_vdefs.
+	(finalize_ssa_vdefs, finalize_ssa_vuse_ops): Use voptype_d and
+	directly manipulate pointers.
+	(copy_virtual_operands): Use voptype_d, and no need to update pointers.
+
 2006-12-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/rs6000/rs6000.md (*movdf_hardfloat32): Use %X format to
