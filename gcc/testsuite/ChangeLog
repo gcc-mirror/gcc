@@ -1,4 +1,4 @@
-2006-12-17  Brooks Moses  <brooks.moses@codesourcery.com>
+2006-12-18  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* gfortran.dg/advance_3.f90: Add dg-do compile directive.
 
