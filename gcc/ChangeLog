@@ -1,3 +1,9 @@
+2006-12-18  Ian Lance Taylor  <iant@google.com>
+
+	* c.opt (Wmissing-declarations): Add C++ and ObjC++.
+	* doc/invoke.texi (Warning Options): -Wmissing-declarations now
+	works for C++.
+
 2006-12-18  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-ssa-operands.h (struct vdef_optype_d): Rename to voptype_d.

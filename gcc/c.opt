@@ -264,7 +264,7 @@ C ObjC C++ ObjC++ Var(warn_missing_braces)
 Warn about possibly missing braces around initializers
 
 Wmissing-declarations
-C ObjC Var(warn_missing_declarations)
+C ObjC C++ ObjC++ Var(warn_missing_declarations)
 Warn about global functions without previous declarations
 
 Wmissing-field-initializers

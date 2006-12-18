@@ -1,3 +1,7 @@
+2006-12-18  Ian Lance Taylor  <iant@google.com>
+
+	* g++.dg/warn/Wmissing-declarations-1.C: New test.
+
 2006-12-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/pr27528.c: Use empty templates.
