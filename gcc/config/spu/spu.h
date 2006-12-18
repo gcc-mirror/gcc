@@ -551,6 +551,7 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 
 #define NO_IMPLICIT_EXTERN_C 1
 
+#define HANDLE_PRAGMA_PACK_PUSH_POP 1
 
 
 /* These are set by the cmp patterns and used while expanding

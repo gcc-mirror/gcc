@@ -1,5 +1,9 @@
 2006-12-19  Ben Elliston  <bje@au.ibm.com>
 
+	* config/spu/spu.h (HANDLE_PRAGMA_PACK_PUSH_POP): Define.
+
+2006-12-19  Ben Elliston  <bje@au.ibm.com>
+
 	* cse.c (cse_insn): Fix formatting.
 
 2006-12-18  Geoffrey Keating  <geoffk@apple.com>
