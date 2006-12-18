@@ -1,3 +1,9 @@
+2006-12-18  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/invoke.texi (Debugging Options): Document -g0.
+	* config/darwin.h (LINK_COMMAND_SPEC): Replace -gnone with -g0.
+	* config/darwin9.h (LINK_COMMAND_SPEC): Likewise.
+
 2006-12-18  Ian Lance Taylor  <iant@google.com>
 
 	* c.opt (Wmissing-declarations): Add C++ and ObjC++.
