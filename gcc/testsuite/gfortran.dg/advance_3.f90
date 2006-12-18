@@ -1,3 +1,4 @@
+! { dg-do compile }
 subroutine foo
   real :: a
   a = 1
