@@ -4499,8 +4499,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 		   const_elt; const_elt = const_elt->next_same_value)
 		if (REG_P (const_elt->exp))
 		  {
-		    src_related = gen_lowpart (mode,
-							   const_elt->exp);
+		    src_related = gen_lowpart (mode, const_elt->exp);
 		    break;
 		  }
 	    }
@@ -4587,8 +4586,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 		   larger_elt; larger_elt = larger_elt->next_same_value)
 		if (REG_P (larger_elt->exp))
 		  {
-		    src_related = gen_lowpart (mode,
-							   larger_elt->exp);
+		    src_related = gen_lowpart (mode, larger_elt->exp);
 		    break;
 		  }
 
