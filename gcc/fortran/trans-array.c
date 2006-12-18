@@ -1985,10 +1985,12 @@ gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
 
           /* Multiply the loop variable by the stride and delta.  */
 	  index = se->loop->loopvar[i];
-	  index = fold_build2 (MULT_EXPR, gfc_array_index_type, index,
-			       info->stride[i]);
-	  index = fold_build2 (PLUS_EXPR, gfc_array_index_type, index,
-			       info->delta[i]);
+	  if (!integer_onep (info->stride[i]))
+	    index = fold_build2 (MULT_EXPR, gfc_array_index_type, index,
+				 info->stride[i]);
+	  if (!integer_zerop (info->delta[i]))
+	    index = fold_build2 (PLUS_EXPR, gfc_array_index_type, index,
+				 info->delta[i]);
 	  break;
 
 	default:
@@ -2006,7 +2008,8 @@ gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
     }
 
   /* Multiply by the stride.  */
-  index = fold_build2 (MULT_EXPR, gfc_array_index_type, index, stride);
+  if (!integer_onep (stride))
+    index = fold_build2 (MULT_EXPR, gfc_array_index_type, index, stride);
 
   return index;
 }
