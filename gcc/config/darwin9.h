@@ -16,4 +16,4 @@
     %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} %{F*} }}}}}}}\n\
 %{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
     %{.c|.cc|.C|.cpp|.c++|.CPP|.m|.mm: \
-    %{g*:%{!gstabs*:%{!gnone: dsymutil %{o*:%*}%{!o:a.out}}}}}}}}}}}}"
+    %{g*:%{!gstabs*:%{!g0: dsymutil %{o*:%*}%{!o:a.out}}}}}}}}}}}}"

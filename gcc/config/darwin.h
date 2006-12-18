@@ -240,7 +240,7 @@ extern GTY(()) int darwin_ms_struct;
     %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} %{F*} }}}}}}}\n\
 %{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
     %{.c|.cc|.C|.cpp|.c++|.CPP|.m|.mm: \
-    %{gdwarf-2:%{!gstabs*:%{!gnone: dsymutil %{o*:%*}%{!o:a.out}}}}}}}}}}}}"
+    %{gdwarf-2:%{!gstabs*:%{!g0: dsymutil %{o*:%*}%{!o:a.out}}}}}}}}}}}}"
 
 #ifdef TARGET_SYSTEM_ROOT
 #define LINK_SYSROOT_SPEC \

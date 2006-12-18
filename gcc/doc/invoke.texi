@@ -3664,6 +3664,9 @@ supported).  This is the format used by DEBUG on VMS systems.
 Request debugging information and also use @var{level} to specify how
 much information.  The default level is 2.
 
+Level 0 produces no debug information at all.  Thus, @option{-g0} negates
+@option{-g}.
+
 Level 1 produces minimal information, enough for making backtraces in
 parts of the program that you don't plan to debug.  This includes
 descriptions of functions and external variables, but no information
