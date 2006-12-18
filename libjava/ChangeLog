@@ -1,3 +1,9 @@
+2006-12-18  Adam Megacz <megacz@cs.berkeley.edu>
+
+        * Makefile.am: remove @X_CFLAGS@ from AM_CXXFLAGS; it causes
+        -I/usr/include to wind up in cross-builds
+        * configure: Regenerate.
+
 2006-12-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* configure: Regenerate.

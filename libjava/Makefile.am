@@ -114,7 +114,6 @@ AM_CXXFLAGS = \
 	-Wswitch-enum \
 	-D_FILE_OFFSET_BITS=64 \
 	@LIBGCJ_CXXFLAGS@ \
-	@X_CFLAGS@ \
 	$(WARNINGS) \
 	-D_GNU_SOURCE \
 	-DPREFIX="\"$(prefix)\"" \
