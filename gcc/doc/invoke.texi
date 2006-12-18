@@ -3221,12 +3221,13 @@ declaration.  This warning is issued even if the definition itself
 provides a prototype.  The aim is to detect global functions that fail
 to be declared in header files.
 
-@item -Wmissing-declarations @r{(C only)}
+@item -Wmissing-declarations @r{(C and C++ only)}
 @opindex Wmissing-declarations
 Warn if a global function is defined without a previous declaration.
 Do so even if the definition itself provides a prototype.
 Use this option to detect global functions that are not declared in
-header files.
+header files.  In C++, no warnings are issued for function templates,
+or for inline functions, or for functions in anonymous namespaces.
 
 @item -Wmissing-field-initializers
 @opindex Wmissing-field-initializers
