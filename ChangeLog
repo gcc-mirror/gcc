@@ -1,5 +1,12 @@
 2006-12-19  Paolo Bonzini  <bonzini@gnu.org>
 
+	* configure.in: Remove "$build" case for powerpc-*-darwin* since
+	it only affects bootstrap and could be tested on "$host" as well.
+	* configure: Regenerate.
+	* config/mh-ppc-darwin: Add to the stage1 cflags here.
+
+2006-12-19  Paolo Bonzini  <bonzini@gnu.org>
+
 	PR bootstrap/29544
 	* Makefile.def (flags_to_pass): Add STAGE1_CHECKING.
 	(bootstrap_stage): Add STAGE1_CHECKING to stage1 configure flags,

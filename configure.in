@@ -2403,13 +2403,6 @@ case $build in
       yes) stage1_cflags="-g -Wa,-J" ;;
       *) stage1_cflags="-g -J" ;;
     esac ;;
-  powerpc-*-darwin*)
-    # The spiffy cpp-precomp chokes on some legitimate constructs in GCC
-    # sources; use -no-cpp-precomp to get to GNU cpp.
-    # Apple's GCC has bugs in designated initializer handling, so disable
-    # that too.
-    stage1_cflags="-g -no-cpp-precomp -DHAVE_DESIGNATED_INITIALIZERS=0"
-    ;;
 esac
 
 # This is aimed to mimic bootstrap with a non-GCC compiler to catch problems.
