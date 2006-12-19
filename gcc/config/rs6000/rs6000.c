@@ -3936,11 +3936,11 @@ rs6000_emit_set_const (rtx dest, enum machine_mode mode,
     case SImode:
       result = no_new_pseudos ? dest : gen_reg_rtx (SImode);
 
-      emit_insn (gen_rtx_SET (VOIDmode, result,
+      emit_insn (gen_rtx_SET (VOIDmode, copy_rtx (result),
 			      GEN_INT (INTVAL (source)
 				       & (~ (HOST_WIDE_INT) 0xffff))));
       emit_insn (gen_rtx_SET (VOIDmode, dest,
-			      gen_rtx_IOR (SImode, result,
+			      gen_rtx_IOR (SImode, copy_rtx (result),
 					   GEN_INT (INTVAL (source) & 0xffff))));
       result = dest;
       break;
@@ -3995,7 +3995,7 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
 
       operand1 = operand_subword_force (dest, WORDS_BIG_ENDIAN == 0,
 					DImode);
-      operand2 = operand_subword_force (dest, WORDS_BIG_ENDIAN != 0,
+      operand2 = operand_subword_force (copy_rtx (dest), WORDS_BIG_ENDIAN != 0,
 					DImode);
       emit_move_insn (operand1, GEN_INT (c1));
       emit_move_insn (operand2, GEN_INT (c2));
@@ -4030,7 +4030,9 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
 	  else
 	    emit_move_insn (dest, GEN_INT (ud2 << 16));
 	  if (ud1 != 0)
-	    emit_move_insn (dest, gen_rtx_IOR (DImode, dest, GEN_INT (ud1)));
+	    emit_move_insn (copy_rtx (dest),
+			    gen_rtx_IOR (DImode, copy_rtx (dest),
+					 GEN_INT (ud1)));
 	}
       else if ((ud4 == 0xffff && (ud3 & 0x8000))
 	       || (ud4 == 0 && ! (ud3 & 0x8000)))
@@ -4042,10 +4044,16 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
 	    emit_move_insn (dest, GEN_INT (ud3 << 16));
 
 	  if (ud2 != 0)
-	    emit_move_insn (dest, gen_rtx_IOR (DImode, dest, GEN_INT (ud2)));
-	  emit_move_insn (dest, gen_rtx_ASHIFT (DImode, dest, GEN_INT (16)));
+	    emit_move_insn (copy_rtx (dest),
+			    gen_rtx_IOR (DImode, copy_rtx (dest),
+					 GEN_INT (ud2)));
+	  emit_move_insn (copy_rtx (dest),
+			  gen_rtx_ASHIFT (DImode, copy_rtx (dest),
+					  GEN_INT (16)));
 	  if (ud1 != 0)
-	    emit_move_insn (dest, gen_rtx_IOR (DImode, dest, GEN_INT (ud1)));
+	    emit_move_insn (copy_rtx (dest),
+			    gen_rtx_IOR (DImode, copy_rtx (dest),
+					 GEN_INT (ud1)));
 	}
       else
 	{
@@ -4056,14 +4064,20 @@ rs6000_emit_set_long_const (rtx dest, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
 	    emit_move_insn (dest, GEN_INT (ud4 << 16));
 
 	  if (ud3 != 0)
-	    emit_move_insn (dest, gen_rtx_IOR (DImode, dest, GEN_INT (ud3)));
+	    emit_move_insn (copy_rtx (dest),
+			    gen_rtx_IOR (DImode, copy_rtx (dest),
+					 GEN_INT (ud3)));
 
-	  emit_move_insn (dest, gen_rtx_ASHIFT (DImode, dest, GEN_INT (32)));
+	  emit_move_insn (copy_rtx (dest),
+			  gen_rtx_ASHIFT (DImode, copy_rtx (dest),
+					  GEN_INT (32)));
 	  if (ud2 != 0)
-	    emit_move_insn (dest, gen_rtx_IOR (DImode, dest,
-					       GEN_INT (ud2 << 16)));
+	    emit_move_insn (copy_rtx (dest),
+			    gen_rtx_IOR (DImode, copy_rtx (dest),
+					 GEN_INT (ud2 << 16)));
 	  if (ud1 != 0)
-	    emit_move_insn (dest, gen_rtx_IOR (DImode, dest, GEN_INT (ud1)));
+	    emit_move_insn (copy_rtx (dest),
+			    gen_rtx_IOR (DImode, copy_rtx (dest), GEN_INT (ud1)));
 	}
     }
   return dest;
@@ -4134,8 +4148,8 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
     {
       emit_move_insn (adjust_address (operands[0], SImode, 0),
 		      adjust_address (operands[1], SImode, 0));
-      emit_move_insn (adjust_address (operands[0], SImode, 4),
-		      adjust_address (operands[1], SImode, 4));
+      emit_move_insn (adjust_address (copy_rtx (operands[0]), SImode, 4),
+		      adjust_address (copy_rtx (operands[1]), SImode, 4));
       return;
     }
 
@@ -4162,7 +4176,8 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
       if (FP_REGNO_P (regnum) || regnum >= FIRST_PSEUDO_REGISTER)
 	{
 	  rtx newreg;
-	  newreg = (no_new_pseudos ? operands[1] : gen_reg_rtx (mode));
+	  newreg = (no_new_pseudos ? copy_rtx (operands[1])
+		    : gen_reg_rtx (mode));
 	  emit_insn (gen_aux_truncdfsf2 (newreg, operands[1]));
 	  operands[1] = newreg;
 	}
