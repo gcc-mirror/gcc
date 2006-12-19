@@ -1,3 +1,13 @@
+2006-12-19  Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/30236
+	* interface.c (compare_interfaces): Handle NULL symbols.
+	(count_types_test): Count NULL symbols, which correspond to
+	alternate returns.
+
+	(check_interface1): Change final argument from int to bool
+	in the function and all references.
+
 2006-12-18  Roger Sayle  <roger@eyesopen.com>
 
 	* trans-array.c (gfc_conv_array_index_offset): Avoid multiplying
