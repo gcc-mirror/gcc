@@ -8802,9 +8802,8 @@ altivec_init_builtins (void)
       decl = add_builtin_function ("__builtin_altivec_mask_for_load",
 				   v16qi_ftype_long_pcvoid,
 				   ALTIVEC_BUILTIN_MASK_FOR_LOAD,
-				   BUILT_IN_MD, NULL,
-				   tree_cons (get_identifier ("const"),
-					      NULL_TREE, NULL_TREE));
+				   BUILT_IN_MD, NULL, NULL_TREE);
+      TREE_READONLY (decl) = 1;
       /* Record the decl. Will be used by rs6000_builtin_mask_for_load.  */
       altivec_builtin_mask_for_load = decl;
     }

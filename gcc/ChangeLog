@@ -1,3 +1,10 @@
+2006-12-18  Andrew Pinski  <pinskia@gmail.com>
+
+	PR target/29779
+	* config/rs6000/rs6000.c (altivec_init_builtins): Change to set
+	READONLY on __builtin_altivec_mask_for_load instead of adding
+	the attribute.
+
 2006-12-18  Roger Sayle  <roger@eyesopen.com>
 	    Eric Christopher  <echristo@apple.com>
 
