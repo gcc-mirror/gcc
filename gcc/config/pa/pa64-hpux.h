@@ -197,6 +197,7 @@ do {								\
    dynamic loader to work correctly.  This is equivalent to the
    HP assembler's .IMPORT directive but relates more directly to
    ELF object file types.  */
+#undef ASM_OUTPUT_EXTERNAL
 #define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)			\
   pa_hpux_asm_output_external ((FILE), (DECL), (NAME))
 #define ASM_OUTPUT_EXTERNAL_REAL(FILE, DECL, NAME)		\
