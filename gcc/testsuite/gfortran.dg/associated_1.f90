@@ -4,7 +4,10 @@
 program test
    real, pointer :: a, b
 
+   nullify(a,b)
+   if(associated(a,b).or.associated(a,a)) call abort()
    allocate(a)
+   if(associated(b,a)) call abort()
    if (.not.associated(x(a))) call abort ()
    if (.not.associated(a, x(a))) call abort ()
 
