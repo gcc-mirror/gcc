@@ -1,3 +1,9 @@
+2006-12-19  Jan Hubicka  <jh@suse.cz>
+
+	* expmed.c (expand_mult_const): Force operand to constant.
+	* rs6000.c (rs6000_emit_set_const, rs6000_emit_set_long_const): Add
+	copy_rtx to arguments.
+
 2006-12-19  Ben Elliston  <bje@au.ibm.com>
 
 	* config/spu/spu.h (HANDLE_PRAGMA_PACK_PUSH_POP): Define.

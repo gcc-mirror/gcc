@@ -2981,10 +2981,9 @@ expand_mult_const (enum machine_mode mode, rtx op0, HOST_WIDE_INT val,
   int opno;
   enum machine_mode nmode;
 
-  /* Avoid referencing memory over and over.
-     For speed, but also for correctness when mem is volatile.  */
-  if (MEM_P (op0))
-    op0 = force_reg (mode, op0);
+  /* Avoid referencing memory over and over and invalid sharing
+     on SUBREGs.  */
+  op0 = force_reg (mode, op0);
 
   /* ACCUM starts out either as OP0 or as a zero, depending on
      the first operation.  */
@@ -3095,7 +3094,8 @@ expand_mult_const (enum machine_mode mode, rtx op0, HOST_WIDE_INT val,
 
       insn = get_last_insn ();
       set_unique_reg_note (insn, REG_EQUAL,
-			   gen_rtx_MULT (nmode, tem, GEN_INT (val_so_far)));
+			   gen_rtx_MULT (nmode, tem,
+					 GEN_INT (val_so_far)));
     }
 
   if (variant == negate_variant)
