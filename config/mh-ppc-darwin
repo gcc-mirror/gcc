@@ -4,3 +4,8 @@
 
 BOOT_CFLAGS=-g -O2 -mdynamic-no-pic
 
+# The spiffy cpp-precomp chokes on some legitimate constructs in GCC
+# sources; use -no-cpp-precomp to get to GNU cpp.
+# Apple's GCC has bugs in designated initializer handling, so disable
+# that too.
+STAGE1_CFLAGS += -no-cpp-precomp -DHAVE_DESIGNATED_INITIALIZERS=0

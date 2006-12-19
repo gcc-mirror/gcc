@@ -7299,13 +7299,6 @@ case $build in
       yes) stage1_cflags="-g -Wa,-J" ;;
       *) stage1_cflags="-g -J" ;;
     esac ;;
-  powerpc-*-darwin*)
-    # The spiffy cpp-precomp chokes on some legitimate constructs in GCC
-    # sources; use -no-cpp-precomp to get to GNU cpp.
-    # Apple's GCC has bugs in designated initializer handling, so disable
-    # that too.
-    stage1_cflags="-g -no-cpp-precomp -DHAVE_DESIGNATED_INITIALIZERS=0"
-    ;;
 esac
 
 # This is aimed to mimic bootstrap with a non-GCC compiler to catch problems.
@@ -7315,16 +7308,16 @@ if test "$GCC" = yes; then
   # Pass -fkeep-inline-functions for stage 1 if the GCC version supports it.
   CFLAGS="$CFLAGS -fkeep-inline-functions"
   echo $ac_n "checking whether -fkeep-inline-functions is supported""... $ac_c" 1>&6
-echo "configure:7319: checking whether -fkeep-inline-functions is supported" >&5
+echo "configure:7312: checking whether -fkeep-inline-functions is supported" >&5
   cat > conftest.$ac_ext <<EOF
-#line 7321 "configure"
+#line 7314 "configure"
 #include "confdefs.h"
 
 int main() {
 
 ; return 0; }
 EOF
-if { (eval echo configure:7328: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:7321: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   echo "$ac_t""yes" 1>&6; stage1_cflags="$stage1_cflags -fkeep-inline-functions"
 else
