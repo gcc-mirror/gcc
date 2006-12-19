@@ -2282,6 +2282,15 @@ real_maxval (REAL_VALUE_TYPE *r, int sign, enum machine_mode mode)
       np2 = SIGNIFICAND_BITS - fmt->p * fmt->log2_b;
       memset (r->sig, -1, SIGSZ * sizeof (unsigned long));
       clear_significand_below (r, np2);
+
+      if (fmt->pnan < fmt->p)
+	/* This is an IBM extended double format made up of two IEEE
+	   doubles.  The value of the long double is the sum of the
+	   values of the two parts.  The most significant part is
+	   required to be the value of the long double rounded to the
+	   nearest double.  Rounding means we need a slightly smaller
+	   value for LDBL_MAX.  */
+        clear_significand_bit (r, SIGNIFICAND_BITS - fmt->pnan);
     }
 }
 
