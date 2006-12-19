@@ -1,3 +1,8 @@
+2006-12-19  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.dg/cpp/trad/include.c: #include stdlib.h instead of stdio.h,
+	as newlib's stdio.h uses non-traditional cpp constructs.
+
 2006-12-18  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* gfortran.dg/advance.f90: Renamed to advance_1.f90
