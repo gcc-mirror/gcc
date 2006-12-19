@@ -1,3 +1,32 @@
+2006-12-18  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* gfortran.dg/advance.f90: Renamed to advance_1.f90
+	* gfortran.dg/append-1.f90: Renamed to append_1.f90
+	* gfortran.dg/array-1.f90: Renamed to array_1.f90
+	* gfortran.dg/assign_4.f90: Renamed to assign_8.f90
+	* gfortran.dg/backspace.f: Renamed to backspace_1.f
+	* gfortran.dg/backspace.f90: Renamed to backspace_7.f90
+	* gfortran.dg/default_initialization.f: Renamed to default_initialization_1.f
+	* gfortran.dg/dollar_edit_descriptor-1.f: Renamed to dollar_edit_descriptor_1.f
+	* gfortran.dg/dollar_edit_descriptor-2.f: Renamed to dollar_edit_descriptor_2.f
+	* gfortran.dg/dollar_edit_descriptor-3.f: Renamed to dollar_edit_descriptor_3.f
+	* gfortran.dg/logint-1.f: Renamed to logint_1.f
+	* gfortran.dg/logint-2.f: Renamed to logint_2.f
+	* gfortran.dg/logint-3.f: Renamed to logint_3.f
+	* gfortran.dg/advance_1.f90: Renamed from advance.f90
+	* gfortran.dg/append_1.f90: Renamed from append-1.f90
+	* gfortran.dg/array_1.f90: Renamed from array-1.f90
+	* gfortran.dg/assign_8.f90: Renamed from assign_4.f90
+	* gfortran.dg/backspace_1.f: Renamed from backspace.f
+	* gfortran.dg/backspace_7.f90: Renamed from backspace.f90
+	* gfortran.dg/default_initialization_1.f: Renamed from default_initialization.f
+	* gfortran.dg/dollar_edit_descriptor_1.f: Renamed from dollar_edit_descriptor-1.f
+	* gfortran.dg/dollar_edit_descriptor_2.f: Renamed from dollar_edit_descriptor-2.f
+	* gfortran.dg/dollar_edit_descriptor_3.f: Renamed from dollar_edit_descriptor-3.f
+	* gfortran.dg/logint_1.f: Renamed from logint-1.f
+	* gfortran.dg/logint_2.f: Renamed from logint-2.f
+	* gfortran.dg/logint_3.f: Renamed from logint-3.f
+
 2006-12-18  Bill Wendling  <wendling@apple.com>
 
        * g++.old-deja/g++.mike/p11144.C: Renamed id to ID because
