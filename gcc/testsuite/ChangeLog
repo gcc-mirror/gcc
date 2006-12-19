@@ -1,3 +1,8 @@
+2006-12-19  Eric Christopher  <echristo@apple.com>
+
+	PR target/29302
+	* gcc.c-torture/execute/pr29302-1.c: New.
+
 2006-12-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/39238
@@ -81,7 +86,7 @@
 	* gcc.dg/if-empty-1.c: Likewise.
 	* gcc.dg/pr23165.c: Likewise.
 	* g++.dg/warn/empty-body.C: Likewise.
-	
+
 2006-12-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/30005
@@ -169,7 +174,7 @@
 	* gcc.dg/builtins-60.c: New testcase.
 
 2006-12-14  Dorit Nuzman  <dorit@il.ibm.com>
- 
+
 	* lib/target-supports.exp (vect_no_align): Remove spu.
 
 2006-12-13  Ian Lance Taylor  <iant@google.com>
@@ -232,8 +237,8 @@
 	* g++.dg/inherit/error3.C: New test.
 
 	PR c++/28740
-	* g++.dg/inherit/error4.C: New test. 
-	
+	* g++.dg/inherit/error4.C: New test.
+
 2006-12-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/17687
@@ -392,8 +397,8 @@
 2006-12-08  Manuel Lopez-Ibanez <manu@gcc.gnu.org>
 
 	* lib/target-supports.exp
-	(check_effective_target_large_long_double): New.  
-	* gcc.dg/Wconversion-real.c : Use it.  
+	(check_effective_target_large_long_double): New.
+	* gcc.dg/Wconversion-real.c : Use it.
 	* gcc.dg/Wconversion-integer.c : Fix for targets where char is
 	unsigned.
 
@@ -424,7 +429,7 @@
 	* g++.dg/ext/attrib27.C: New test.
 	* g++.dg/parse/struct-as-enum1.C: Adjust error markers.
 	* g++.dg/parse/typedef5.C: Likewise.
-	
+
 2006-12-07  Mike Stump  <mrs@apple.com>
 
 	* treelang/compile/var_defs.tree: Adjust.
@@ -487,7 +492,7 @@
 2006-12-04  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29733
-	* g++.dg/template/crash61.C: New test. 
+	* g++.dg/template/crash61.C: New test.
 
 	PR c++/29632
 	* g++.dg/template/error23.C: New test.
