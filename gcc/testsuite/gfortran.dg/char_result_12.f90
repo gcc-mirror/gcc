@@ -1,8 +1,8 @@
 ! { dg-do run }
 ! Tests the fix for PR29912, in which the call to JETTER
-! would cause a segfault beause a temporary was not being written.
+! would cause a segfault because a temporary was not being written.
 !
-! COntributed by Philip Mason  <pmason@ricardo.com>
+! Contributed by Philip Mason  <pmason@ricardo.com>
 !
  program testat
  character(len=4)   :: ctemp(2)
