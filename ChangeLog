@@ -1,3 +1,7 @@
+2006-12-19  Paolo Bonzini  <bonzini@gnu.org>
+
+	* MAINTAINERS: Add myself as build system maintainer.
+
 2006-12-15  Simon Martin  <simartin@users.sourceforge.net>
 
 	* MAINTAINERS (Write After Approval): Add myself.
