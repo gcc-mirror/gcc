@@ -1,5 +1,17 @@
 2006-12-19  Paolo Bonzini  <bonzini@gnu.org>
 
+	PR bootstrap/29544
+	* Makefile.def (flags_to_pass): Add STAGE1_CHECKING.
+	(bootstrap_stage): Add STAGE1_CHECKING to stage1 configure flags,
+	move here comment from Makefile.tpl.
+	* Makefile.tpl: Move some definitions higher in the file.
+	(STAGE1_CHECKING): New.
+	* configure.in: Add --enable-stage1-checking.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
+2006-12-19  Paolo Bonzini  <bonzini@gnu.org>
+
 	* MAINTAINERS: Add myself as build system maintainer.
 
 2006-12-15  Simon Martin  <simartin@users.sourceforge.net>

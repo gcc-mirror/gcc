@@ -226,6 +226,7 @@ flags_to_pass = { flag= LDFLAGS ; };
 flags_to_pass = { flag= LIBCFLAGS ; };
 flags_to_pass = { flag= LIBCXXFLAGS ; };
 flags_to_pass = { flag= STAGE1_CFLAGS ; };
+flags_to_pass = { flag= STAGE1_CHECKING ; };
 flags_to_pass = { flag= STAGE1_LANGUAGES ; };
 
 // Target tools
@@ -487,7 +488,14 @@ dependencies = { module=all-target-winsup; on=all-target-libtermcap; };
 // Toplevel bootstrap
 bootstrap_stage = {
 	id=1 ;
-	stage_configure_flags='--disable-intermodule \
+
+	// * We force-disable intermodule optimizations, even if
+	//   --enable-intermodule was passed, since the installed compiler
+	//   probably can't handle them.  Luckily, autoconf always respects
+	//   the last argument when conflicting --enable arguments are passed.
+	// * Likewise, we force-disable coverage flags, since the installed
+	//   compiler probably has never heard of them.
+	stage_configure_flags='--disable-intermodule $(STAGE1_CHECKING) \
 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)"' ;
 	stage_make_flags='CFLAGS="$(STAGE1_CFLAGS)" LIBCFLAGS="$(STAGE1_CFLAGS)"' ; };
 bootstrap_stage = {

@@ -155,7 +155,7 @@ TCFLAGS =
 CFLAGS = @CFLAGS@
 LDFLAGS = @LDFLAGS@
 STAGE1_CFLAGS = -g @stage1_cflags@
-STAGE1_CHECKING = -DENABLE_CHECKING -DENABLE_ASSERT_CHECKING
+STAGE1_CHECKING_CFLAGS = -DENABLE_CHECKING -DENABLE_ASSERT_CHECKING
 BOOT_CFLAGS = -g -O2
 
 # Flags to determine code coverage. When coverage is disabled, this will
@@ -4213,7 +4213,7 @@ STAGEFEEDBACK_FLAGS_TO_PASS = \
 # The stage1 compiler is always built with checking enabled.
 stage1_build:
 	$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)" \
-		CFLAGS="$(STAGE1_CFLAGS) $(STAGE1_CHECKING)" \
+		CFLAGS="$(STAGE1_CFLAGS) $(STAGE1_CHECKING_CFLAGS)" \
 		MAKEINFO="$(MAKEINFO)" MAKEINFOFLAGS="$(MAKEINFOFLAGS)" \
 		COVERAGE_FLAGS= OBJS-onestep="$(OBJS)"
 	$(STAMP) stage1_build

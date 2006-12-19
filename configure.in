@@ -2428,6 +2428,18 @@ fi
 
 AC_SUBST(stage1_cflags)
 
+# Enable --enable-checking in stage1 of the compiler.
+AC_ARG_ENABLE(stage1-checking,
+[  --enable-stage1-checking[=all]   choose additional checking for stage1
+                          of the compiler.],
+[stage1_checking=--enable-checking=${enable_stage1_checking}],
+[if test "x$enable_checking" = xno; then
+  stage1_checking=--enable-checking
+else
+  stage1_checking=--enable-checking${enable_checking+=}$enable_checking
+fi])
+AC_SUBST(stage1_checking)
+
 # Enable -Werror in bootstrap stage2 and later.
 # Change the default to "no" on release branches.
 AC_ARG_ENABLE(werror,
