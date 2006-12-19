@@ -1,3 +1,9 @@
+2006-12-18  Roger Sayle  <roger@eyesopen.com>
+	    Eric Christopher  <echristo@apple.com>
+
+	PR target/29302
+	* real.c (real_maxval): Correctly handle IBM extended double format.
+
 2006-12-19  Jan Hubicka  <jh@suse.cz>
 
 	* expmed.c (expand_mult_const): Force operand to constant.
