@@ -7,9 +7,9 @@ public:
   int d_i;
   Id(int i) : d_i(i) {}
   int value() {return d_i;}
-} id(1);
+} ID(1);
 
-Id foo() { return id; }
+Id foo() { return ID; }
 
 int main() {
   const Id &id1 = foo();
