@@ -1,3 +1,9 @@
+2006-12-19  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-opt/30045
+	* tree-vrp.c (nonnull_arg_p): Treat the static decl as always
+	non null.
+
 2006-12-20  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/invoke.texi (Optimize Options): Typo fix.
@@ -18,8 +24,8 @@
 2006-12-19  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/29544
-        * gcc/Makefile.in (STAGE1_CHECKING): Rename to...
-        (STAGE1_CHECKING_CFLAGS): ... this.
+	* gcc/Makefile.in (STAGE1_CHECKING): Rename to...
+	(STAGE1_CHECKING_CFLAGS): ... this.
 
 2006-12-18  Andrew Pinski  <pinskia@gmail.com>
 
