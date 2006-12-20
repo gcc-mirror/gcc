@@ -130,6 +130,8 @@ static void spu_init_libfuncs (void);
 static bool spu_return_in_memory (tree type, tree fntype);
 static void fix_range (const char *);
 static void spu_encode_section_info (tree, rtx, int);
+static tree spu_builtin_mul_widen_even (tree);
+static tree spu_builtin_mul_widen_odd (tree);
 static tree spu_builtin_mask_for_load (void);
 
 extern const char *reg_names[];
@@ -248,6 +250,12 @@ const struct attribute_spec spu_attribute_table[];
 
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO spu_encode_section_info
+
+#undef TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN
+#define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN spu_builtin_mul_widen_even
+
+#undef TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD
+#define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD spu_builtin_mul_widen_odd
 
 #undef TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD
 #define TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD spu_builtin_mask_for_load
@@ -4991,6 +4999,41 @@ spu_expand_builtin (tree exp,
       return spu_expand_builtin_1 (d, arglist, target);
     }
   abort ();
+}
+
+/* Implement targetm.vectorize.builtin_mul_widen_even.  */
+static tree
+spu_builtin_mul_widen_even (tree type)
+{
+  struct spu_builtin_description *d;
+  switch (TYPE_MODE (type))
+    {
+    case V8HImode:
+      if (TYPE_UNSIGNED (type))
+	return spu_builtins[SPU_MULE_0].fndecl;
+      else
+	return spu_builtins[SPU_MULE_1].fndecl;
+      break;
+    default:
+      return NULL_TREE;
+    }
+}
+
+/* Implement targetm.vectorize.builtin_mul_widen_odd.  */
+static tree
+spu_builtin_mul_widen_odd (tree type)
+{
+  switch (TYPE_MODE (type))
+    {
+    case V8HImode:
+      if (TYPE_UNSIGNED (type))
+	return spu_builtins[SPU_MULO_1].fndecl;
+      else
+	return spu_builtins[SPU_MULO_0].fndecl; 
+      break;
+    default:
+      return NULL_TREE;
+    }
 }
 
 /* Implement targetm.vectorize.builtin_mask_for_load.  */
