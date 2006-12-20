@@ -28,19 +28,11 @@ The callgraph:
     sharing.
 
     The call-graph consist of nodes and edges represented via linked lists.
-    Each function (external or not) corresponds to the unique node (in
-    contrast to tree DECL nodes where we can have multiple nodes for each
-    function).
+    Each function (external or not) corresponds to the unique node.
 
     The mapping from declarations to call-graph nodes is done using hash table
-    based on DECL_ASSEMBLER_NAME, so it is essential for assembler name to
-    not change once the declaration is inserted into the call-graph.
-    The call-graph nodes are created lazily using cgraph_node function when
-    called for unknown declaration.
-
-    When built, there is one edge for each direct call.  It is possible that
-    the reference will be later optimized out.  The call-graph is built
-    conservatively in order to make conservative data flow analysis possible.
+    based on DECL_UID.  The call-graph nodes are created lazily using
+    cgraph_node function when called for unknown declaration.
 
     The callgraph at the moment does not represent indirect calls or calls
     from other compilation unit.  Flag NEEDED is set for each node that may
@@ -156,6 +148,7 @@ eq_node (const void *p1, const void *p2)
 }
 
 /* Allocate new callgraph node and insert it into basic data structures.  */
+
 static struct cgraph_node *
 cgraph_create_node (void)
 {
@@ -175,6 +168,7 @@ cgraph_create_node (void)
 }
 
 /* Return cgraph node assigned to DECL.  Create new one when needed.  */
+
 struct cgraph_node *
 cgraph_node (tree decl)
 {
@@ -295,6 +289,7 @@ cgraph_edge (struct cgraph_node *node, tree call_stmt)
 }
 
 /* Change call_smtt of edge E to NEW_STMT.  */
+
 void
 cgraph_set_call_stmt (struct cgraph_edge *e, tree new_stmt)
 {
