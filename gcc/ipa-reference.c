@@ -774,13 +774,8 @@ static void
 analyze_variable (struct varpool_node *vnode)
 {
   tree global = vnode->decl;
-  if (TREE_CODE (global) == VAR_DECL)
-    {
-      if (DECL_INITIAL (global)) 
-	walk_tree (&DECL_INITIAL (global), scan_for_static_refs, 
-		   NULL, visited_nodes);
-    } 
-  else gcc_unreachable ();
+  walk_tree (&DECL_INITIAL (global), scan_for_static_refs, 
+             NULL, visited_nodes);
 }
 
 /* This is the main routine for finding the reference patterns for
@@ -903,7 +898,7 @@ static_execute (void)
   ipa_init ();
 
   /* Process all of the variables first.  */
-  for (vnode = varpool_nodes_queue; vnode; vnode = vnode->next_needed)
+  FOR_EACH_STATIC_INITIALIZER (vnode)
     analyze_variable (vnode);
 
   /* Process all of the functions next. 

@@ -342,6 +342,42 @@ bool varpool_analyze_pending_decls (void);
 void varpool_output_debug_info (void);
 void varpool_remove_unreferenced_decls (void);
 
+/* Walk all reachable static variables.  */
+#define FOR_EACH_STATIC_VARIABLE(node) \
+   for ((node) = varpool_nodes_queue; (node); (node) = (node)->next_needed)
+
+/* Return first reachable static variable with initializer.  */
+static inline struct varpool_node *
+varpool_first_static_initializer (void)
+{
+  struct varpool_node *node;
+  for (node = varpool_nodes_queue; node; node = node->next_needed)
+    {
+      gcc_assert (TREE_CODE (node->decl) == VAR_DECL);
+      if (DECL_INITIAL (node->decl))
+	return node;
+    }
+  return NULL;
+}
+
+/* Return next reachable static variable with initializer after NODE.  */
+static inline struct varpool_node *
+varpool_next_static_initializer (struct varpool_node *node)
+{
+  for (node = node->next_needed; node; node = node->next_needed)
+    {
+      gcc_assert (TREE_CODE (node->decl) == VAR_DECL);
+      if (DECL_INITIAL (node->decl))
+	return node;
+    }
+  return NULL;
+}
+
+/* Walk all static variables with initializer set.  */
+#define FOR_EACH_STATIC_INITIALIZER(node) \
+   for ((node) = varpool_first_static_initializer (); (node); \
+        (node) = varpool_next_static_initializer (node))
+
 /* In ipa-inline.c  */
 bool cgraph_decide_inlining_incrementally (struct cgraph_node *, bool);
 void cgraph_clone_inlined_nodes (struct cgraph_edge *, bool, bool);
