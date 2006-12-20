@@ -446,8 +446,9 @@ peel_loop_completely (struct loop *loop)
 {
   sbitmap wont_exit;
   unsigned HOST_WIDE_INT npeel;
-  unsigned n_remove_edges, i;
-  edge *remove_edges, ein;
+  unsigned i;
+  VEC (edge, heap) *remove_edges;
+  edge ein;
   struct niter_desc *desc = get_simple_loop_desc (loop);
   struct opt_info *opt_info = NULL;
   
@@ -463,8 +464,7 @@ peel_loop_completely (struct loop *loop)
       if (desc->noloop_assumptions)
 	RESET_BIT (wont_exit, 1);
 
-      remove_edges = XCNEWVEC (edge, npeel);
-      n_remove_edges = 0;
+      remove_edges = NULL;
 
       if (flag_split_ivs_in_unroller)
         opt_info = analyze_insns_in_loop (loop);
@@ -473,7 +473,7 @@ peel_loop_completely (struct loop *loop)
       ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 					  npeel,
 					  wont_exit, desc->out_edge,
-					  remove_edges, &n_remove_edges,
+					  &remove_edges,
 					  DLTHE_FLAG_UPDATE_FREQ
 					  | DLTHE_FLAG_COMPLETTE_PEEL
 					  | (opt_info
@@ -489,9 +489,9 @@ peel_loop_completely (struct loop *loop)
  	}
 
       /* Remove the exit edges.  */
-      for (i = 0; i < n_remove_edges; i++)
-	remove_path (remove_edges[i]);
-      free (remove_edges);
+      for (i = 0; VEC_iterate (edge, remove_edges, i, ein); i++)
+	remove_path (ein);
+      VEC_free (edge, heap, remove_edges);
     }
 
   ein = desc->in_edge;
@@ -630,8 +630,9 @@ unroll_loop_constant_iterations (struct loop *loop)
   unsigned HOST_WIDE_INT niter;
   unsigned exit_mod;
   sbitmap wont_exit;
-  unsigned n_remove_edges, i;
-  edge *remove_edges;
+  unsigned i;
+  VEC (edge, heap) *remove_edges;
+  edge e;
   unsigned max_unroll = loop->lpt_decision.times;
   struct niter_desc *desc = get_simple_loop_desc (loop);
   bool exit_at_end = loop_exit_at_end_p (loop);
@@ -648,8 +649,7 @@ unroll_loop_constant_iterations (struct loop *loop)
   wont_exit = sbitmap_alloc (max_unroll + 1);
   sbitmap_ones (wont_exit);
 
-  remove_edges = XCNEWVEC (edge, max_unroll + exit_mod + 1);
-  n_remove_edges = 0;
+  remove_edges = NULL;
   if (flag_split_ivs_in_unroller 
       || flag_variable_expansion_in_unroller)
     opt_info = analyze_insns_in_loop (loop);
@@ -674,7 +674,7 @@ unroll_loop_constant_iterations (struct loop *loop)
           ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 					      exit_mod,
 					      wont_exit, desc->out_edge,
-					      remove_edges, &n_remove_edges,
+					      &remove_edges,
 					      DLTHE_FLAG_UPDATE_FREQ
 					      | (opt_info && exit_mod > 1
 						 ? DLTHE_RECORD_COPY_NUMBER
@@ -713,7 +713,7 @@ unroll_loop_constant_iterations (struct loop *loop)
 	  ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 					      exit_mod + 1,
 					      wont_exit, desc->out_edge,
-					      remove_edges, &n_remove_edges,
+					      &remove_edges,
 					      DLTHE_FLAG_UPDATE_FREQ
 					      | (opt_info && exit_mod > 0
 						 ? DLTHE_RECORD_COPY_NUMBER
@@ -740,7 +740,7 @@ unroll_loop_constant_iterations (struct loop *loop)
   ok = duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
 				      max_unroll,
 				      wont_exit, desc->out_edge,
-				      remove_edges, &n_remove_edges,
+				      &remove_edges,
 				      DLTHE_FLAG_UPDATE_FREQ
 				      | (opt_info
 					 ? DLTHE_RECORD_COPY_NUMBER
@@ -777,9 +777,9 @@ unroll_loop_constant_iterations (struct loop *loop)
   desc->niter_expr = GEN_INT (desc->niter);
 
   /* Remove the edges.  */
-  for (i = 0; i < n_remove_edges; i++)
-    remove_path (remove_edges[i]);
-  free (remove_edges);
+  for (i = 0; VEC_iterate (edge, remove_edges, i, e); i++)
+    remove_path (e);
+  VEC_free (edge, heap, remove_edges);
 
   if (dump_file)
     fprintf (dump_file,
@@ -923,8 +923,9 @@ unroll_loop_runtime_iterations (struct loop *loop)
   unsigned n_dom_bbs;
   sbitmap wont_exit;
   int may_exit_copy;
-  unsigned n_peel, n_remove_edges;
-  edge *remove_edges, e;
+  unsigned n_peel;
+  VEC (edge, heap) *remove_edges;
+  edge e;
   bool extra_zero_check, last_may_exit;
   unsigned max_unroll = loop->lpt_decision.times;
   struct niter_desc *desc = get_simple_loop_desc (loop);
@@ -995,8 +996,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
   /* Precondition the loop.  */
   split_edge_and_insert (loop_preheader_edge (loop), init_code);
 
-  remove_edges = XCNEWVEC (edge, max_unroll + n_peel + 1);
-  n_remove_edges = 0;
+  remove_edges = NULL;
 
   wont_exit = sbitmap_alloc (max_unroll + 2);
 
@@ -1011,7 +1011,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
   ezc_swtch = loop_preheader_edge (loop)->src;
   ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 				      1, wont_exit, desc->out_edge,
-				      remove_edges, &n_remove_edges,
+				      &remove_edges,
 				      DLTHE_FLAG_UPDATE_FREQ);
   gcc_assert (ok);
 
@@ -1026,7 +1026,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
 	SET_BIT (wont_exit, 1);
       ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 					  1, wont_exit, desc->out_edge,
-					  remove_edges, &n_remove_edges,
+					  &remove_edges,
 					  DLTHE_FLAG_UPDATE_FREQ);
       gcc_assert (ok);
 
@@ -1082,7 +1082,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
   ok = duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
 				      max_unroll,
 				      wont_exit, desc->out_edge,
-				      remove_edges, &n_remove_edges,
+				      &remove_edges,
 				      DLTHE_FLAG_UPDATE_FREQ
 				      | (opt_info
 					 ? DLTHE_RECORD_COPY_NUMBER
@@ -1116,9 +1116,9 @@ unroll_loop_runtime_iterations (struct loop *loop)
     }
 
   /* Remove the edges.  */
-  for (i = 0; i < n_remove_edges; i++)
-    remove_path (remove_edges[i]);
-  free (remove_edges);
+  for (i = 0; VEC_iterate (edge, remove_edges, i, e); i++)
+    remove_path (e);
+  VEC_free (edge, heap, remove_edges);
 
   /* We must be careful when updating the number of iterations due to
      preconditioning and the fact that the value must be valid at entry
@@ -1264,8 +1264,7 @@ peel_loop_simple (struct loop *loop)
   opt_info_start_duplication (opt_info);
   
   ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-				      npeel, wont_exit,
-				      NULL, NULL,
+				      npeel, wont_exit, NULL,
 				      NULL, DLTHE_FLAG_UPDATE_FREQ
 				      | (opt_info
 					 ? DLTHE_RECORD_COPY_NUMBER
@@ -1416,7 +1415,7 @@ unroll_loop_stupid (struct loop *loop)
   
   ok = duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
 				      nunroll, wont_exit,
-				      NULL, NULL, NULL,
+				      NULL, NULL,
 				      DLTHE_FLAG_UPDATE_FREQ
 				      | (opt_info
 					 ? DLTHE_RECORD_COPY_NUMBER

@@ -939,14 +939,14 @@ bool
 cfg_hook_duplicate_loop_to_header_edge (struct loop *loop, edge e,
 					unsigned int ndupl,
 					sbitmap wont_exit, edge orig,
-					edge *to_remove,
-					unsigned int *n_to_remove, int flags)
+					VEC (edge, heap) **to_remove,
+					int flags)
 {
   gcc_assert (cfg_hooks->cfg_hook_duplicate_loop_to_header_edge);
   return cfg_hooks->cfg_hook_duplicate_loop_to_header_edge (loop, e,
 							    ndupl, wont_exit,
 							    orig, to_remove,
-							    n_to_remove, flags);
+							    flags);
 }
 
 /* Conditional jumps are represented differently in trees and RTL,

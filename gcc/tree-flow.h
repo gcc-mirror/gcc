@@ -882,8 +882,8 @@ basic_block ip_end_pos (struct loop *);
 basic_block ip_normal_pos (struct loop *);
 bool tree_duplicate_loop_to_header_edge (struct loop *, edge,
 					 unsigned int, sbitmap,
-					 edge, edge *,
-					 unsigned int *, int);
+					 edge, VEC (edge, heap) **,
+					 int);
 struct loop *tree_ssa_loop_version (struct loop *, tree,
 				    basic_block *);
 tree expand_simple_operations (tree);

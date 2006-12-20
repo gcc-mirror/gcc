@@ -562,8 +562,8 @@ copy_phi_node_args (unsigned first_new_block)
 bool
 tree_duplicate_loop_to_header_edge (struct loop *loop, edge e,
 				    unsigned int ndupl, sbitmap wont_exit,
-				    edge orig, edge *to_remove,
-				    unsigned int *n_to_remove, int flags)
+				    edge orig, VEC (edge, heap) **to_remove,
+				    int flags)
 {
   unsigned first_new_block;
 
@@ -578,7 +578,7 @@ tree_duplicate_loop_to_header_edge (struct loop *loop, edge e,
 
   first_new_block = last_basic_block;
   if (!duplicate_loop_to_header_edge (loop, e, ndupl, wont_exit,
-				      orig, to_remove, n_to_remove, flags))
+				      orig, to_remove, flags))
     return false;
 
   /* Readd the removed phi args for e.  */
@@ -853,7 +853,7 @@ tree_unroll_loop (struct loop *loop, unsigned factor,
   sbitmap_ones (wont_exit);
   ok = tree_duplicate_loop_to_header_edge
 	  (loop, loop_latch_edge (loop), factor - 1,
-	   wont_exit, NULL, NULL, NULL, DLTHE_FLAG_UPDATE_FREQ);
+	   wont_exit, exit, NULL, DLTHE_FLAG_UPDATE_FREQ);
   free (wont_exit);
   gcc_assert (ok);
   update_ssa (TODO_update_ssa);
