@@ -72,6 +72,8 @@ extern void abort (void);
 /* No pic register.  */
 #elif defined(__m32c__)
 /* No pic register.  */
+#elif defined(__SPU__)
+#  define PIC_REG  "126"
 #else
 # error "Modify the test for your target."
 #endif
