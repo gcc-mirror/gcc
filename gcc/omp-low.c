@@ -4190,6 +4190,38 @@ lower_regimplify (tree *tp, struct walk_stmt_info *wi)
     tsi_link_before (&wi->tsi, pre, TSI_SAME_STMT);
 }
 
+/* Copy EXP into a temporary.  Insert the initialization statement before TSI.  */
+
+static tree
+init_tmp_var (tree exp, tree_stmt_iterator *tsi)
+{
+  tree t, stmt;
+
+  t = create_tmp_var (TREE_TYPE (exp), NULL);
+  DECL_GIMPLE_REG_P (t) = 1;
+  stmt = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (t), t, exp);
+  SET_EXPR_LOCUS (stmt, EXPR_LOCUS (tsi_stmt (*tsi)));
+  tsi_link_before (tsi, stmt, TSI_SAME_STMT);
+
+  return t;
+}
+
+/* Similarly, but copy from the temporary and insert the statement
+   after the iterator.  */
+
+static tree
+save_tmp_var (tree exp, tree_stmt_iterator *tsi)
+{
+  tree t, stmt;
+
+  t = create_tmp_var (TREE_TYPE (exp), NULL);
+  DECL_GIMPLE_REG_P (t) = 1;
+  stmt = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (t), exp, t);
+  SET_EXPR_LOCUS (stmt, EXPR_LOCUS (tsi_stmt (*tsi)));
+  tsi_link_after (tsi, stmt, TSI_SAME_STMT);
+
+  return t;
+}
 
 /* Callback for walk_stmts.  Lower the OpenMP directive pointed by TP.  */
 
@@ -4255,7 +4287,17 @@ lower_omp_1 (tree *tp, int *walk_subtrees, void *data)
 
     case VAR_DECL:
       if (ctx && DECL_HAS_VALUE_EXPR_P (t))
-	lower_regimplify (tp, wi);
+	{
+	  lower_regimplify (&t, wi);
+	  if (wi->val_only)
+	    {
+	      if (wi->is_lhs)
+		t = save_tmp_var (t, &wi->tsi);
+	      else
+		t = init_tmp_var (t, &wi->tsi);
+	    }
+	  *tp = t;
+	}
       break;
 
     case ADDR_EXPR:
