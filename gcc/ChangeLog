@@ -1,3 +1,9 @@
+2006-12-20  Carlos O'Donell  <carlos@codesourcery.com>
+
+	PR bootstrap/30242
+	* gcc/c-incpath.c (add_standard_paths): Only relocate paths that 
+	begin with the configured prefix. 
+
 2006-12-20  Jan Hubicka  <jh@suse.cz>
 
 	PR target/30213
