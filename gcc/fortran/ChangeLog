@@ -1,3 +1,17 @@
+2006-12-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/29992
+	* interface.c (check_sym_interfaces): Module procedures in a
+	generic must be use associated or contained in the module.
+	* decl.c (gfc_match_modproc): Set attribute mod_proc.
+	* gfortran.h (symbol_attribute): Add mod_proc atribute.
+
+	PR fortran/30081
+	* resolve.c (resolve_generic_f, resolve_generic_s): Use
+	gfc_intrinsic_name to find out if the function is intrinsic
+	because it does not have to be a generic intrinsic to be
+	overloaded.
+
 2006-12-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/39238

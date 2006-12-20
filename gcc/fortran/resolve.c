@@ -1215,9 +1215,9 @@ generic:
 	goto generic;
     }
 
-  /* Last ditch attempt.  */
-
-  if (!gfc_generic_intrinsic (expr->symtree->n.sym->name))
+  /* Last ditch attempt.  See if the reference is to an intrinsic
+     that possesses a matching interface.  14.1.2.4  */
+  if (!gfc_intrinsic_name (sym->name, 0))
     {
       gfc_error ("There is no specific function for the generic '%s' at %L",
 		 expr->symtree->n.sym->name, &expr->where);
@@ -1675,9 +1675,11 @@ generic:
 	goto generic;
     }
 
-  /* Last ditch attempt.  */
+  /* Last ditch attempt.  See if the reference is to an intrinsic
+     that possesses a matching interface.  14.1.2.4  */
   sym = c->symtree->n.sym;
-  if (!gfc_generic_intrinsic (sym->name))
+
+  if (!gfc_intrinsic_name (sym->name, 1))
     {
       gfc_error
 	("There is no specific subroutine for the generic '%s' at %L",
