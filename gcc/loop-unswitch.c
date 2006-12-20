@@ -410,14 +410,9 @@ unswitch_loop (struct loop *loop, basic_block unswitch_on, rtx cond, rtx cinsn)
   irred_flag = entry->flags & EDGE_IRREDUCIBLE_LOOP;
   entry->flags &= ~EDGE_IRREDUCIBLE_LOOP;
   zero_bitmap = sbitmap_alloc (2);
-  sbitmap_zero (zero_bitmap);
   if (!duplicate_loop_to_header_edge (loop, entry, 1,
-	zero_bitmap, NULL, NULL, NULL, 0))
-    {
-      sbitmap_free (zero_bitmap);
-      return NULL;
-    }
-  sbitmap_free (zero_bitmap);
+			      	      NULL, NULL, NULL, 0))
+    return NULL;
   entry->flags |= irred_flag;
 
   /* Record the block with condition we unswitch on.  */

@@ -111,12 +111,10 @@ struct cfg_hooks
 
   /* A hook for duplicating loop in CFG, currently this is used
      in loop versioning.  */
-  bool (*cfg_hook_duplicate_loop_to_header_edge) (struct loop *loop, edge e,
-						  unsigned int ndupl,
-						  sbitmap wont_exit,
-						  edge orig, edge *to_remove,
-						  unsigned int *n_to_remove,
-						  int flags);
+  bool (*cfg_hook_duplicate_loop_to_header_edge) (struct loop *, edge,
+						  unsigned, sbitmap,
+						  edge, VEC (edge, heap) **,
+						  int);
 
   /* Add condition to new basic block and update CFG used in loop
      versioning.  */
@@ -165,8 +163,8 @@ extern void execute_on_shrinking_pred (edge);
 extern bool cfg_hook_duplicate_loop_to_header_edge (struct loop *loop, edge,
 						    unsigned int ndupl,
 						    sbitmap wont_exit,
-						    edge orig, edge *to_remove,
-						    unsigned int *n_to_remove,
+						    edge orig,
+						    VEC (edge, heap) **to_remove,
 						    int flags);
 
 extern void lv_flush_pending_stmts (edge);

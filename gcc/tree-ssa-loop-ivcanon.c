@@ -223,8 +223,6 @@ try_unroll_loop_completely (struct loop *loop,
   if (n_unroll)
     {
       sbitmap wont_exit;
-      edge *edges_to_remove = XNEWVEC (edge, n_unroll);
-      unsigned int n_to_remove = 0;
 
       old_cond = COND_EXPR_COND (cond);
       COND_EXPR_COND (cond) = dont_exit;
@@ -237,8 +235,7 @@ try_unroll_loop_completely (struct loop *loop,
 
       if (!tree_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 					       n_unroll, wont_exit,
-					       exit, edges_to_remove,
-					       &n_to_remove,
+					       exit, NULL,
 					       DLTHE_FLAG_UPDATE_FREQ
 					       | DLTHE_FLAG_COMPLETTE_PEEL))
 	{
@@ -246,11 +243,9 @@ try_unroll_loop_completely (struct loop *loop,
 	  update_stmt (cond);
           free_original_copy_tables ();
 	  free (wont_exit);
-	  free (edges_to_remove);
 	  return false;
 	}
       free (wont_exit);
-      free (edges_to_remove);
       free_original_copy_tables ();
     }
   
