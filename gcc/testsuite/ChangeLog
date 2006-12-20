@@ -1,3 +1,7 @@
+2006-12-20  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.dg/20020312-2.c: Add a case for __SPU__.
+
 2006-12-19  Eric Christopher  <echristo@apple.com>
 
 	PR target/29302
