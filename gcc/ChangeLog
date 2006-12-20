@@ -1,3 +1,12 @@
+2006-12-19  Eric Christopher  <echristo@apple.com>
+
+	* config/darwin.c (machopic_select_section): Rewrite.
+	(darwin_text_section): New.
+	(darwin_rodata_section): Ditto.
+	(darwin_mergeable_string_section): Ditto.
+	(darwin_mergeable_constant_section): Ditto.
+	* config/darwin-sections.def: Add SECTION_STRINGS for cstring_section.
+
 2006-12-19  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/pa/pa64-hpux.h (ASM_OUTPUT_EXTERNAL):  Add undef.
@@ -66,7 +75,7 @@
 	(init_ssa_operands): Initialize operand memory and free lists.
 	(fini_ssa_operands): Remove references to free_vuses and free_vdefs.
 	(ssa_operand_alloc): Use graduated size memory allocation.
-	(APPEND_OP_AFTER, MOVE_HEAD_AFTER, MOVE_HEAD_TO_FREELIST, 
+	(APPEND_OP_AFTER, MOVE_HEAD_AFTER, MOVE_HEAD_TO_FREELIST,
 	INITIALIZE_USE): Remove.
 	(alloc_vop): New.  Allocate a virtual operand.
 	(alloc_vdef, alloc_vuse): Delete.
@@ -168,7 +177,7 @@
 	* c-opts.c (c_common_post_options): Enabled by -Wextra.
 	* c-common.c (empty_body_warning): Replace Wextra with Wempty-body.
 	* c-parser.c (c_parser_c99_block_statement): Likewise.
-	
+
 2006-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/30185
@@ -215,8 +224,8 @@
 	    Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
 
 	* spu.c (TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD): Defined.
-	(spu_init_builtins): Mark the SPU_MASK_FOR_LOAD builtin decl as read 
-	only.   
+	(spu_init_builtins): Mark the SPU_MASK_FOR_LOAD builtin decl as read
+	only.
 	(spu_expand_builtin_1): Handle the SPU_MASK_FOR_LOAD builtin.
 	(spu_builtin_mask_for_load): New.
 	* spu-builtins.def (SPU_MASK_FOR_LOAD): Define new builtin.
@@ -474,7 +483,7 @@
 2006-12-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/28624
-	* tree-ssa-dom.c (eliminate_degenerate_phis): Use a temporary 
+	* tree-ssa-dom.c (eliminate_degenerate_phis): Use a temporary
 	bitmap for EXECUTE_IF_SET_IN_BITMAP.
 
 2006-12-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
@@ -535,9 +544,9 @@
 	remove redundant pass_partition_blocks declaration.
 
 2006-12-12  Andrew Macleod  <amacleod@redhat.com>
-	
+
 	PR tree-optimization/30159
-	* tree-ssa-coalesce.c (coalesce_ssa_name): Process single ssa_name 
+	* tree-ssa-coalesce.c (coalesce_ssa_name): Process single ssa_name
 	functions in case a default_def coalesce is required.
 
 2006-12-12  Jakub Jelinek  <jakub@redhat.com>
@@ -577,9 +586,9 @@
 2006-12-12  Olivier Hainque  <hainque@adacore.com>
 
 	* config/vxlib.c: Extract tls related routines into ...
-	* config/vxlib-tls.c: New file. 
+	* config/vxlib-tls.c: New file.
 	* config/t-vxworks: Add vxlib-tls.c to LIB2FUNCS_EXTRA.
-	
+
 2006-12-12  Sa Liu  <saliu@de.ibm.com>
 	    Ben Elliston  <bje@au.ibm.com>
 
@@ -1204,7 +1213,7 @@
 
 2006-12-11  Ira Rosen  <irar@il.ibm.com>
 
-	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Use 
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Use
 	GIMPLE_STMT_OPERAND.
 	* tree-vect-transform.c (vect_permute_store_chain): Likewise.
 	(vect_setup_realignment): Likewise.
@@ -1326,7 +1335,7 @@
 	* tree-flow-inline.h (single_imm_use_p): New.  Check for single use.
 	* tree-outof-ssa.c: Remove header files which aren't needed.
 	(SSANORM_*): Remove flags.
-	(print_exprs_edge, coalesce_abnormal_edges, coalesce_phi_operands, 
+	(print_exprs_edge, coalesce_abnormal_edges, coalesce_phi_operands,
 	coalesce_result_decls_and_copies, coalesce_asm_operands): Remove.
 	(coalesce_ssa_name): Move to tree-ssa-coalesce.c.
 	(assign_vars): Use Basevar instead of root_var structure.
@@ -1402,7 +1411,7 @@
 	tpa_dump): Moved to tree-ssa-coalesce.c and/or renamed there.
 	(dump_var_map): Use renamed fields.
 	* tree-ssa-live.h (struct  _var_map): Modify fields.
-	(partition_to_var, version_to_var, var_to_partition): Use renamed 
+	(partition_to_var, version_to_var, var_to_partition): Use renamed
 	fields.
 	(basevar_index): New.  Index of the base variable of a partition.
 	(num_basevars): New.  Number of unique base variables in partition map.
@@ -1411,9 +1420,9 @@
 	(tpa_num_trees, tpa_tree, tpa_first_partition, tpa_next_partition,
 	tpa_find_tree, tpa_decompact, root_var_init, root_var_num,
 	root_var, root_var_first_partition, root_var_next_partition,
-	root_var_dump, root_var_delete, root_var_remove_partition, 
+	root_var_dump, root_var_delete, root_var_remove_partition,
 	root_var_find, root_var_compact, root_var_decompact): Remove.
-	(struct partition_pair, struct coalesce_list_d): Moved to 
+	(struct partition_pair, struct coalesce_list_d): Moved to
 	tree-ssa-coalesce.c
 	* tree-ssa-ter.c: Remove header files which aren't needed.
 

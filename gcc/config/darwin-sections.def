@@ -11,7 +11,7 @@ DEF_SECTION (const_data_coal_section, 0,
 	     ".section __DATA,__const_coal,coalesced", 0)
 DEF_SECTION (data_coal_section, SECTION_WRITE,
 	     ".section __DATA,__datacoal_nt,coalesced", 0)
-DEF_SECTION (cstring_section, SECTION_MERGE, ".cstring", 0)
+DEF_SECTION (cstring_section, SECTION_MERGE | SECTION_STRINGS, ".cstring", 0)
 DEF_SECTION (literal4_section, SECTION_MERGE, ".literal4", 0)
 DEF_SECTION (literal8_section, SECTION_MERGE, ".literal8", 0)
 DEF_SECTION (literal16_section, SECTION_MERGE, ".literal16", 0)
