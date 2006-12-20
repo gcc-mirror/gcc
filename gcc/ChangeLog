@@ -1,3 +1,14 @@
+2006-12-20  Jan Hubicka  <jh@suse.cz>
+
+	* tree-flow-inline.h (gimple_var_anns): New function.
+	(var_ann): Use hashtable for static functions.
+	* tree-dfa.c (create_var_ann): Likewise.
+	* tree-ssa.c (var_ann_eq, var_ann_hash): New functions.
+	(init_tree_ssa): Initialize var anns.
+	(delete_tree_ssa): Delete var anns; also clear out gimple_df.
+	* tree-flow.h (struct static_var_ann_d): New structure.
+	(gimple_df): Add var_anns.
+
 2006-12-20  Carlos O'Donell  <carlos@codesourcery.com>
 
 	PR bootstrap/30242

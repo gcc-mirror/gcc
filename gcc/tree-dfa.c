@@ -124,16 +124,33 @@ var_ann_t
 create_var_ann (tree t)
 {
   var_ann_t ann;
+  struct static_var_ann_d *sann = NULL;
 
   gcc_assert (t);
   gcc_assert (DECL_P (t));
   gcc_assert (!t->base.ann || t->base.ann->common.type == VAR_ANN);
 
-  ann = GGC_CNEW (struct var_ann_d);
+  if (TREE_STATIC (t))
+    {
+      sann = GGC_CNEW (struct static_var_ann_d);
+      ann = &sann->ann;
+    }
+  else
+    ann = GGC_CNEW (struct var_ann_d);
 
   ann->common.type = VAR_ANN;
 
-  t->base.ann = (tree_ann_t) ann;
+  if (TREE_STATIC (t))
+    {
+       void **slot;
+       sann->uid = DECL_UID (t);
+       slot = htab_find_slot_with_hash (gimple_var_anns (cfun),
+				        t, DECL_UID (t), INSERT);
+       gcc_assert (!*slot);
+       *slot = sann;
+    }
+  else
+    t->base.ann = (tree_ann_t) ann;
 
   return ann;
 }

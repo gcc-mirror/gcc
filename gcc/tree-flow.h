@@ -38,6 +38,7 @@ typedef struct edge_def *edge;
 struct basic_block_def;
 typedef struct basic_block_def *basic_block;
 #endif
+struct static_var_ann_d;
 
 /* Gimple dataflow datastructure. All publicly available fields shall have
    gimple_ accessor defined in tree-flow-inline.h, all publicly modifiable
@@ -92,6 +93,10 @@ struct gimple_df GTY(()) {
   unsigned int in_ssa_p : 1;
 
   struct ssa_operands ssa_operands;
+
+  /* Hashtable of variables annotations.  Used for static variables only;
+     local variables have direct pointer in the tree node.  */
+  htab_t GTY((param_is (struct static_var_ann_d))) var_anns;
 };
 
 /* Accessors for internal use only.  Generic code should use abstraction
@@ -281,6 +286,14 @@ struct var_ann_d GTY(())
   /* Mask of values saying the reasons why this variable has escaped
      the function.  */
   unsigned int escape_mask;
+};
+
+/* Contianer for variable annotation used by hashtable for annotations for
+   static variables.  */
+struct static_var_ann_d GTY(())
+{
+  struct var_ann_d ann;
+  unsigned int uid;
 };
 
 struct function_ann_d GTY(())
