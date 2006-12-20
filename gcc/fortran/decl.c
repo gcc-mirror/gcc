@@ -4289,6 +4289,8 @@ gfc_match_modproc (void)
       if (gfc_add_interface (sym) == FAILURE)
 	return MATCH_ERROR;
 
+      sym->attr.mod_proc = 1;
+
       if (gfc_match_eos () == MATCH_YES)
 	break;
       if (gfc_match_char (',') != MATCH_YES)
