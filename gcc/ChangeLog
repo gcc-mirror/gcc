@@ -1,3 +1,13 @@
+2006-12-19  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (FOR_EACH_STATIC_VARIABLE, FOR_EACH_STATIC_INITIALIZER): New
+	macros.
+	(varpool_first_static_initializer, varpol_next_static_initializer): New
+	inline functions.
+	* ipa-reference.c (analyze_variable): Simplify.
+	(static_execute): Use FOR_EACH_STATIC_INITIALIZER.
+	* ipa-type-escape.c (type_escape_execute): Use FOR_EACH_STATIC_VARIABLE.
+
 2006-12-19  Andrew Pinski  <pinskia@gmail.com>
 
 	PR tree-opt/30045

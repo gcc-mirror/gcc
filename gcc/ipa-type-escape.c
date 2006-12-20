@@ -1682,7 +1682,7 @@ type_escape_execute (void)
   ipa_init ();
 
   /* Process all of the variables first.  */
-  for (vnode = varpool_nodes_queue; vnode; vnode = vnode->next_needed)
+  FOR_EACH_STATIC_VARIABLE (vnode)
     analyze_variable (vnode);
 
   /* Process all of the functions. next
