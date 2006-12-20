@@ -5735,7 +5735,7 @@ After running a program compiled with @option{-fprofile-arcs}
 the number of times each branch was taken.  When the program
 compiled with @option{-fprofile-arcs} exits it saves arc execution
 counts to a file called @file{@var{sourcename}.gcda} for each source
-file  The information in this data file is very dependent on the
+file.  The information in this data file is very dependent on the
 structure of the generated code, so you must use the same source code
 and the same optimization options for both compilations.
 
