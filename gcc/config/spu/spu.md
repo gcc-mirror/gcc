@@ -3378,6 +3378,118 @@ selb\t%0,%4,%0,%3"
   DONE;
 }") 
 
+(define_expand "vec_widen_umult_hi_v8hi"
+  [(set (match_operand:V4SI 0 "register_operand"   "=r")
+        (mult:V4SI
+          (zero_extend:V4SI
+            (vec_select:V4HI
+              (match_operand:V8HI 1 "register_operand" "r")
+              (parallel [(const_int 0)(const_int 1)(const_int 2)(const_int 3)])))
+          (zero_extend:V4SI
+            (vec_select:V4HI
+              (match_operand:V8HI 2 "register_operand" "r")
+              (parallel [(const_int 0)(const_int 1)(const_int 2)(const_int 3)])))))]
+  ""
+  "
+{
+  rtx ve = gen_reg_rtx (V4SImode);
+  rtx vo = gen_reg_rtx (V4SImode);
+  rtx mask = gen_reg_rtx (TImode);
+  unsigned char arr[16] = {
+    0x00, 0x01, 0x02, 0x03, 0x10, 0x11, 0x12, 0x13, 
+    0x04, 0x05, 0x06, 0x07, 0x14, 0x15, 0x16, 0x17};
+  
+  emit_move_insn (mask, array_to_constant (TImode, arr));
+  emit_insn (gen_spu_mpyhhu (ve, operands[1], operands[2]));
+  emit_insn (gen_spu_mpyu (vo, operands[1], operands[2]));
+  emit_insn (gen_shufb (operands[0], ve, vo, mask));
+  DONE;
+}")
+
+(define_expand "vec_widen_umult_lo_v8hi"
+  [(set (match_operand:V4SI 0 "register_operand"   "=r")
+        (mult:V4SI
+          (zero_extend:V4SI
+            (vec_select:V4HI
+              (match_operand:V8HI 1 "register_operand" "r")
+              (parallel [(const_int 4)(const_int 5)(const_int 6)(const_int 7)])))
+          (zero_extend:V4SI
+            (vec_select:V4HI
+              (match_operand:V8HI 2 "register_operand" "r")
+              (parallel [(const_int 4)(const_int 5)(const_int 6)(const_int 7)])))))]
+  ""
+  "
+{
+  rtx ve = gen_reg_rtx (V4SImode);
+  rtx vo = gen_reg_rtx (V4SImode);
+  rtx mask = gen_reg_rtx (TImode);
+  unsigned char arr[16] = {
+    0x08, 0x09, 0x0A, 0x0B, 0x18, 0x19, 0x1A, 0x1B, 
+    0x0C, 0x0D, 0x0E, 0x0F, 0x1C, 0x1D, 0x1E, 0x1F};
+
+  emit_move_insn (mask, array_to_constant (TImode, arr));
+  emit_insn (gen_spu_mpyhhu (ve, operands[1], operands[2]));
+  emit_insn (gen_spu_mpyu (vo, operands[1], operands[2]));
+  emit_insn (gen_shufb (operands[0], ve, vo, mask));
+  DONE;
+}")
+
+(define_expand "vec_widen_smult_hi_v8hi"
+  [(set (match_operand:V4SI 0 "register_operand"   "=r")
+        (mult:V4SI
+          (sign_extend:V4SI
+            (vec_select:V4HI
+              (match_operand:V8HI 1 "register_operand" "r")
+              (parallel [(const_int 0)(const_int 1)(const_int 2)(const_int 3)])))
+          (sign_extend:V4SI
+            (vec_select:V4HI
+              (match_operand:V8HI 2 "register_operand" "r")
+              (parallel [(const_int 0)(const_int 1)(const_int 2)(const_int 3)])))))]
+  ""
+  "
+{
+  rtx ve = gen_reg_rtx (V4SImode);
+  rtx vo = gen_reg_rtx (V4SImode);
+  rtx mask = gen_reg_rtx (TImode);
+  unsigned char arr[16] = {
+    0x00, 0x01, 0x02, 0x03, 0x10, 0x11, 0x12, 0x13, 
+    0x04, 0x05, 0x06, 0x07, 0x14, 0x15, 0x16, 0x17};
+  
+  emit_move_insn (mask, array_to_constant (TImode, arr));
+  emit_insn (gen_spu_mpyhh (ve, operands[1], operands[2]));
+  emit_insn (gen_spu_mpy (vo, operands[1], operands[2]));
+  emit_insn (gen_shufb (operands[0], ve, vo, mask));
+  DONE;
+}")
+
+(define_expand "vec_widen_smult_lo_v8hi"
+  [(set (match_operand:V4SI 0 "register_operand"   "=r")
+        (mult:V4SI
+          (sign_extend:V4SI
+            (vec_select:V4HI
+              (match_operand:V8HI 1 "register_operand" "r")
+              (parallel [(const_int 4)(const_int 5)(const_int 6)(const_int 7)])))
+          (sign_extend:V4SI
+            (vec_select:V4HI
+              (match_operand:V8HI 2 "register_operand" "r")
+              (parallel [(const_int 4)(const_int 5)(const_int 6)(const_int 7)])))))]
+  ""
+  "
+{
+  rtx ve = gen_reg_rtx (V4SImode);
+  rtx vo = gen_reg_rtx (V4SImode);
+  rtx mask = gen_reg_rtx (TImode);
+  unsigned char arr[16] = {
+    0x08, 0x09, 0x0A, 0x0B, 0x18, 0x19, 0x1A, 0x1B, 
+    0x0C, 0x0D, 0x0E, 0x0F, 0x1C, 0x1D, 0x1E, 0x1F};
+
+  emit_move_insn (mask, array_to_constant (TImode, arr));
+  emit_insn (gen_spu_mpyhh (ve, operands[1], operands[2]));
+  emit_insn (gen_spu_mpy (vo, operands[1], operands[2]));
+  emit_insn (gen_shufb (operands[0], ve, vo, mask));
+  DONE;
+}")
+
 (define_expand "vec_realign_load_<mode>"
   [(set (match_operand:ALL 0 "register_operand" "=r")
 	(unspec:ALL [(match_operand:ALL 1 "register_operand" "r")
