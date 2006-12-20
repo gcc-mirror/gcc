@@ -1,3 +1,12 @@
+2006-12-20  Roger Sayle  <roger@eyesopen.com>
+
+	* trans-expr.c (is_zero_initializer_p): Determine whether a given
+	constant expression is a zero initializer.
+	(gfc_trans_zero_assign): New function to attempt to optimize
+	"a(:) = 0.0" as a call to __builtin_memset (a, 0, sizeof(a));
+	(gfc_trans_assignment): Special case array assignments to a
+	zero initializer constant, using gfc_trans_zero_assign.
+
 2006-12-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29992
