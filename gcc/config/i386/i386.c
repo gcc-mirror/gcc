@@ -13159,6 +13159,7 @@ static void
 expand_setmem_epilogue (rtx destmem, rtx destptr, rtx value, rtx count, int max_size)
 {
   rtx dest;
+
   if (GET_CODE (count) == CONST_INT)
     {
       HOST_WIDE_INT countval = INTVAL (count);
@@ -13491,8 +13492,40 @@ decide_alignment (int align,
   return desired_align;
 }
 
+/* Return thre smallest power of 2 greater than VAL.  */
+static int
+smallest_pow2_greater_than (int val)
+{
+  int ret = 1;
+  while (ret <= val)
+    ret <<= 1;
+  return ret;
+}
+
 /* Expand string move (memcpy) operation.  Use i386 string operations when
-   profitable.  expand_clrmem contains similar code.  */
+   profitable.  expand_clrmem contains similar code. The code depends upon
+   architecture, block size and alignment, but always has the same
+   overall structure:
+
+   1) Prologue guard: Conditional that jumps up to epilogues for small
+      blocks that can be handled by epilogue alone.  This is faster but
+      also needed for correctness, since prologue assume the block is larger
+      than the desrired alignment.
+
+      Optional dynamic check for size and libcall for large
+      blocks is emitted here too, with -minline-stringops-dynamically.
+
+   2) Prologue: copy first few bytes in order to get destination aligned
+      to DESIRED_ALIGN.  It is emitted only when ALIGN is less than
+      DESIRED_ALIGN and and up to DESIRED_ALIGN - ALIGN bytes can be copied.
+      We emit either a jump tree on power of two sized blocks, or a byte loop.
+
+   3) Main body: the copying loop itself, copying in SIZE_NEEDED chunks
+      with specified algorithm.
+
+   4) Epilogue: code copying tail of the block that is too small to be
+      handled by main body (or up to size guarded by prologue guard).  */
+   
 int
 ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 		    rtx expected_align_exp, rtx expected_size_exp)
@@ -13505,7 +13538,7 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
   HOST_WIDE_INT align = 1;
   unsigned HOST_WIDE_INT count = 0;
   HOST_WIDE_INT expected_size = -1;
-  int size_needed = 0;
+  int size_needed = 0, epilogue_size_needed;
   int desired_align = 0;
   enum stringop_alg alg;
   int dynamic_check;
@@ -13519,9 +13552,10 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
   if (GET_CODE (count_exp) == CONST_INT)
     count = expected_size = INTVAL (count_exp);
   if (GET_CODE (expected_size_exp) == CONST_INT && count == 0)
-    {
-      expected_size = INTVAL (expected_size_exp);
-    }
+    expected_size = INTVAL (expected_size_exp);
+
+  /* Step 0: Decide on preferred algorithm, desired alignment and
+     size of chunks to be copied by main loop.  */
 
   alg = decide_alg (count, expected_size, false, &dynamic_check);
   desired_align = decide_alignment (align, alg, expected_size);
@@ -13559,6 +13593,10 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
       break;
     }
 
+  epilogue_size_needed = size_needed;
+
+  /* Step 1: Prologue guard.  */
+
   /* Alignment code needs count to be in register.  */
   if (GET_CODE (count_exp) == CONST_INT && desired_align > align)
     {
@@ -13568,17 +13606,22 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
       count_exp = force_reg (mode, count_exp);
     }
   gcc_assert (desired_align >= 1 && align >= 1);
+
   /* Ensure that alignment prologue won't copy past end of block.  */
   if ((size_needed > 1 || (desired_align > 1 && desired_align > align))
       && !count)
     {
-      int size = MAX (size_needed - 1, desired_align - align);
+      epilogue_size_needed = MAX (size_needed - 1, desired_align - align);
+
+      /* Epilogue always copies COUNT_EXP & EPILOGUE_SIZE_NEEDED bytes.
+	 Make sure it is power of 2.  */
+      epilogue_size_needed = smallest_pow2_greater_than (epilogue_size_needed);
 
       label = gen_label_rtx ();
       emit_cmp_and_jump_insns (count_exp,
-			       GEN_INT (size),
-			       LEU, 0, GET_MODE (count_exp), 1, label);
-      if (expected_size == -1 || expected_size < size)
+			       GEN_INT (epilogue_size_needed),
+			       LTU, 0, GET_MODE (count_exp), 1, label);
+      if (expected_size == -1 || expected_size < epilogue_size_needed)
 	predict_jump (REG_BR_PROB_BASE * 60 / 100);
       else
 	predict_jump (REG_BR_PROB_BASE * 20 / 100);
@@ -13597,8 +13640,8 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
       emit_label (hot_label);
     }
 
+  /* Step 2: Alignment prologue.  */
 
-  /* Alignment prologue.  */
   if (desired_align > align)
     {
       /* Except for the first move in epilogue, we no longer know
@@ -13617,7 +13660,8 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
       label = NULL;
     }
 
-  /* Main body.  */
+  /* Step 3: Main loop.  */
+
   switch (alg)
     {
     case libcall:
@@ -13665,25 +13709,31 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
       dst = change_address (dst, BLKmode, destreg);
     }
 
-  /* Epilogue to copy the remaining bytes.  */
+  /* Step 4: Epilogue to copy the remaining bytes.  */
+
   if (label)
     {
-      if (size_needed < desired_align - align)
+      /* When the main loop is done, COUNT_EXP might hold original count,
+ 	 while we want to copy only COUNT_EXP & SIZE_NEEDED bytes.
+	 Epilogue code will actually copy COUNT_EXP & EPILOGUE_SIZE_NEEDED
+	 bytes. Compensate if needed.  */
+	 
+      if (size_needed < epilogue_size_needed)
 	{
 	  tmp =
 	    expand_simple_binop (GET_MODE (count_exp), AND, count_exp,
 				 GEN_INT (size_needed - 1), count_exp, 1,
 				 OPTAB_DIRECT);
-	  size_needed = desired_align - align + 1;
 	  if (tmp != count_exp)
 	    emit_move_insn (count_exp, tmp);
 	}
       emit_label (label);
       LABEL_NUSES (label) = 1;
     }
-  if (count_exp != const0_rtx && size_needed > 1)
+
+  if (count_exp != const0_rtx && epilogue_size_needed > 1)
     expand_movmem_epilogue (dst, src, destreg, srcreg, count_exp,
-			    size_needed);
+			    epilogue_size_needed);
   if (jump_around_label)
     emit_label (jump_around_label);
   return 1;
@@ -13761,8 +13811,30 @@ promote_duplicated_reg (enum machine_mode mode, rtx val)
     }
 }
 
+/* Duplicate value VAL using promote_duplicated_reg into maximal size that will
+   be needed by main loop copying SIZE_NEEDED chunks and prologue getting
+   alignment from ALIGN to DESIRED_ALIGN.  */
+static rtx
+promote_duplicated_reg_to_size (rtx val, int size_needed, int desired_align, int align)
+{
+  rtx promoted_val;
+
+  if (TARGET_64BIT
+      && (size_needed > 4 || (desired_align > align && desired_align > 4)))
+    promoted_val = promote_duplicated_reg (DImode, val);
+  else if (size_needed > 2 || (desired_align > align && desired_align > 2))
+    promoted_val = promote_duplicated_reg (SImode, val);
+  else if (size_needed > 1 || (desired_align > align && desired_align > 1))
+    promoted_val = promote_duplicated_reg (HImode, val);
+  else
+    promoted_val = val;
+
+  return promoted_val;
+}
+
 /* Expand string clear operation (bzero).  Use i386 string operations when
-   profitable.  expand_movmem contains similar code.  */
+   profitable.  See expand_movmem comment for explanation of individual
+   steps performd.  */
 int
 ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
 		    rtx expected_align_exp, rtx expected_size_exp)
@@ -13774,10 +13846,10 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
   HOST_WIDE_INT align = 1;
   unsigned HOST_WIDE_INT count = 0;
   HOST_WIDE_INT expected_size = -1;
-  int size_needed = 0;
+  int size_needed = 0, epilogue_size_needed;
   int desired_align = 0;
   enum stringop_alg alg;
-  rtx promoted_val = val_exp;
+  rtx promoted_val = NULL;
   bool force_loopy_epilogue = false;
   int dynamic_check;
 
@@ -13791,6 +13863,9 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
     count = expected_size = INTVAL (count_exp);
   if (GET_CODE (expected_size_exp) == CONST_INT && count == 0)
     expected_size = INTVAL (expected_size_exp);
+
+  /* Step 0: Decide on preferred algorithm, desired alignment and
+     size of chunks to be copied by main loop.  */
 
   alg = decide_alg (count, expected_size, true, &dynamic_check);
   desired_align = decide_alignment (align, alg, expected_size);
@@ -13826,6 +13901,10 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
       size_needed = 1;
       break;
     }
+  epilogue_size_needed = size_needed;
+
+  /* Step 1: Prologue guard.  */
+
   /* Alignment code needs count to be in register.  */
   if (GET_CODE (count_exp) == CONST_INT && desired_align > align)
     {
@@ -13834,20 +13913,33 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
 	mode = DImode;
       count_exp = force_reg (mode, count_exp);
     }
+  /* Do the cheap promotion to allow better CSE across the 
+     main loop and epilogue (ie one load of the big constant in the
+     front of all code.  */
+  if (GET_CODE (val_exp) == CONST_INT)
+    promoted_val = promote_duplicated_reg_to_size (val_exp, size_needed,
+						   desired_align, align);
   /* Ensure that alignment prologue won't copy past end of block.  */
   if ((size_needed > 1 || (desired_align > 1 && desired_align > align))
       && !count)
     {
-      int size = MAX (size_needed - 1, desired_align - align);
-      /* To improve performance of small blocks, we jump around the promoting
-         code, so we need to use QImode accesses in epilogue.  */
-      if (GET_CODE (val_exp) != CONST_INT && size_needed > 1)
-	force_loopy_epilogue = true;
+      epilogue_size_needed = MAX (size_needed - 1, desired_align - align);
+
+      /* Epilogue always copies COUNT_EXP & EPILOGUE_SIZE_NEEDED bytes.
+	 Make sure it is power of 2.  */
+      epilogue_size_needed = smallest_pow2_greater_than (epilogue_size_needed);
+
+      /* To improve performance of small blocks, we jump around the VAL
+	 promoting mode.  This mean that if the promoted VAL is not constant,
+	 we might not use it in the epilogue and have to use byte
+	 loop variant.  */
+      if (epilogue_size_needed > 2 && !promoted_val)
+        force_loopy_epilogue = true;
       label = gen_label_rtx ();
       emit_cmp_and_jump_insns (count_exp,
-			       GEN_INT (size),
-			       LEU, 0, GET_MODE (count_exp), 1, label);
-      if (expected_size == -1 || expected_size <= size)
+			       GEN_INT (epilogue_size_needed),
+			       LTU, 0, GET_MODE (count_exp), 1, label);
+      if (expected_size == -1 || expected_size <= epilogue_size_needed)
 	predict_jump (REG_BR_PROB_BASE * 60 / 100);
       else
 	predict_jump (REG_BR_PROB_BASE * 20 / 100);
@@ -13863,30 +13955,15 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
       emit_jump (jump_around_label);
       emit_label (hot_label);
     }
-  if (TARGET_64BIT
-      && (size_needed > 4 || (desired_align > align && desired_align > 4)))
-    promoted_val = promote_duplicated_reg (DImode, val_exp);
-  else if (size_needed > 2 || (desired_align > align && desired_align > 2))
-    promoted_val = promote_duplicated_reg (SImode, val_exp);
-  else if (size_needed > 1 || (desired_align > align && desired_align > 1))
-    promoted_val = promote_duplicated_reg (HImode, val_exp);
-  else
-    promoted_val = val_exp;
-  gcc_assert (desired_align >= 1 && align >= 1);
-  if ((size_needed > 1 || (desired_align > 1 && desired_align > align))
-      && !count && !label)
-    {
-      int size = MAX (size_needed - 1, desired_align - align);
 
-      label = gen_label_rtx ();
-      emit_cmp_and_jump_insns (count_exp,
-			       GEN_INT (size),
-			       LEU, 0, GET_MODE (count_exp), 1, label);
-      if (expected_size == -1 || expected_size <= size)
-	predict_jump (REG_BR_PROB_BASE * 60 / 100);
-      else
-	predict_jump (REG_BR_PROB_BASE * 20 / 100);
-    }
+  /* Step 2: Alignment prologue.  */
+
+  /* Do the expensive promotion once we branched off the small blocks.  */
+  if (!promoted_val)
+    promoted_val = promote_duplicated_reg_to_size (val_exp, size_needed,
+						   desired_align, align);
+  gcc_assert (desired_align >= 1 && align >= 1);
+
   if (desired_align > align)
     {
       /* Except for the first move in epilogue, we no longer know
@@ -13903,6 +13980,9 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
       LABEL_NUSES (label) = 1;
       label = NULL;
     }
+
+  /* Step 3: Main loop.  */
+
   switch (alg)
     {
     case libcall:
@@ -13940,8 +14020,15 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
   else
     dst = change_address (dst, BLKmode, destreg);
 
+  /* Step 4: Epilogue to copy the remaining bytes.  */
+
   if (label)
     {
+      /* When the main loop is done, COUNT_EXP might hold original count,
+ 	 while we want to copy only COUNT_EXP & SIZE_NEEDED bytes.
+	 Epilogue code will actually copy COUNT_EXP & EPILOGUE_SIZE_NEEDED
+	 bytes. Compensate if needed.  */
+
       if (size_needed < desired_align - align)
 	{
 	  tmp =
@@ -13955,7 +14042,7 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
       emit_label (label);
       LABEL_NUSES (label) = 1;
     }
-  if (count_exp != const0_rtx && size_needed > 1)
+  if (count_exp != const0_rtx && epilogue_size_needed > 1)
     {
       if (force_loopy_epilogue)
 	expand_setmem_epilogue_via_loop (dst, destreg, val_exp, count_exp,
