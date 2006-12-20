@@ -99,11 +99,17 @@ update_live_status (rtx dest, rtx x, void *data ATTRIBUTE_UNUSED)
     return;
 
   if (GET_CODE (dest) == SUBREG)
-    first_regno = subreg_regno (dest);
-  else
-    first_regno = REGNO (dest);
+    {
+      first_regno = subreg_regno (dest);
+      last_regno = first_regno + subreg_nregs (dest);
 
-  last_regno = first_regno + hard_regno_nregs[first_regno][GET_MODE (dest)];
+    }
+  else
+    {
+      first_regno = REGNO (dest);
+      last_regno
+	= first_regno + hard_regno_nregs[first_regno][GET_MODE (dest)];
+    }
 
   if (GET_CODE (x) == CLOBBER)
     for (i = first_regno; i < last_regno; i++)
@@ -229,8 +235,7 @@ mark_referenced_resources (rtx x, struct resources *res,
       else
 	{
 	  unsigned int regno = subreg_regno (x);
-	  unsigned int last_regno
-	    = regno + hard_regno_nregs[regno][GET_MODE (x)];
+	  unsigned int last_regno = regno + subreg_nregs (x);
 
 	  gcc_assert (last_regno <= FIRST_PSEUDO_REGISTER);
 	  for (r = regno; r < last_regno; r++)
@@ -763,8 +768,7 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 	  else
 	    {
 	      unsigned int regno = subreg_regno (x);
-	      unsigned int last_regno
-		= regno + hard_regno_nregs[regno][GET_MODE (x)];
+	      unsigned int last_regno = regno + subreg_nregs (x);
 
 	      gcc_assert (last_regno <= FIRST_PSEUDO_REGISTER);
 	      for (r = regno; r < last_regno; r++)

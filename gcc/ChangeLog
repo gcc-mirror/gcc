@@ -1,3 +1,23 @@
+2006-12-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* rtlanal.c (struct subreg_info, subreg_get_info, subreg_nregs):
+	New.
+	(subreg_regno_offset, subreg_offset_representable_p): Change to
+	wrappers about subreg_get_info.
+	(refers_to_regno_p, reg_overlap_mentioned_p): Use subreg_nregs.
+	* rtl.h (subreg_nregs): Declare.
+	* doc/tm.texi (HARD_REGNO_NREGS_HAS_PADDING): Update to refer to
+	subreg_get_info.
+	* caller-save.c (mark_set_regs, add_stored_regs): Use
+	subreg_nregs.
+	* df-scan.c (df_ref_record): Use subreg_nregs.
+	* flow.c (mark_set_1): Use subreg_nregs.
+	* postreload.c (move2add_note_store): Use subreg_nregs.
+	* reload.c (decompose, refers_to_regno_for_reload_p,
+	reg_overlap_mentioned_for_reload_p): Use subreg_nregs.
+	* resource.c (update_live_status, mark_referenced_resources,
+	mark_set_resources): Use subreg_nregs.
+
 2006-12-20  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* loop-unswitch.c (unswitch_loop): Update arguments of

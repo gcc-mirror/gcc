@@ -1083,15 +1083,14 @@ df_ref_record (struct dataflow *dflow, rtx reg, rtx *loc,
       if (!(dflow->flags & DF_HARD_REGS))
 	return;
 
-      /* GET_MODE (reg) is correct here.  We do not want to go into a SUBREG
-         for the mode, because we only want to add references to regs, which
-	 are really referenced.  E.g., a (subreg:SI (reg:DI 0) 0) does _not_
-	 reference the whole reg 0 in DI mode (which would also include
-	 reg 1, at least, if 0 and 1 are SImode registers).  */
-      endregno = hard_regno_nregs[regno][GET_MODE (reg)];
       if (GET_CODE (reg) == SUBREG)
-        regno += subreg_regno_offset (regno, GET_MODE (SUBREG_REG (reg)),
-				      SUBREG_BYTE (reg), GET_MODE (reg));
+	{
+	  regno += subreg_regno_offset (regno, GET_MODE (SUBREG_REG (reg)),
+					SUBREG_BYTE (reg), GET_MODE (reg));
+	  endregno = subreg_nregs (reg);
+	}
+      else
+	endregno = hard_regno_nregs[regno][GET_MODE (reg)];
       endregno += regno;
 
       /*  If this is a multiword hardreg, we create some extra datastructures that 

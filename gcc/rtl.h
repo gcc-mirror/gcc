@@ -1041,6 +1041,7 @@ extern unsigned int subreg_regno_offset	(unsigned int, enum machine_mode,
 extern bool subreg_offset_representable_p (unsigned int, enum machine_mode,
 					   unsigned int, enum machine_mode);
 extern unsigned int subreg_regno (rtx);
+extern unsigned int subreg_nregs (rtx);
 extern unsigned HOST_WIDE_INT nonzero_bits (rtx, enum machine_mode);
 extern unsigned int num_sign_bit_copies (rtx, enum machine_mode);
 extern bool constant_pool_constant_p (rtx);
