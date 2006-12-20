@@ -1429,6 +1429,7 @@ static void
 move2add_note_store (rtx dst, rtx set, void *data ATTRIBUTE_UNUSED)
 {
   unsigned int regno = 0;
+  unsigned int nregs = 0;
   unsigned int i;
   enum machine_mode mode = GET_MODE (dst);
 
@@ -1438,6 +1439,7 @@ move2add_note_store (rtx dst, rtx set, void *data ATTRIBUTE_UNUSED)
 				   GET_MODE (SUBREG_REG (dst)),
 				   SUBREG_BYTE (dst),
 				   GET_MODE (dst));
+      nregs = subreg_nregs (dst);
       dst = SUBREG_REG (dst);
     }
 
@@ -1455,9 +1457,11 @@ move2add_note_store (rtx dst, rtx set, void *data ATTRIBUTE_UNUSED)
     return;
 
   regno += REGNO (dst);
+  if (!nregs)
+    nregs = hard_regno_nregs[regno][mode];
 
   if (SCALAR_INT_MODE_P (GET_MODE (dst))
-      && hard_regno_nregs[regno][mode] == 1 && GET_CODE (set) == SET
+      && nregs == 1 && GET_CODE (set) == SET
       && GET_CODE (SET_DEST (set)) != ZERO_EXTRACT
       && GET_CODE (SET_DEST (set)) != STRICT_LOW_PART)
     {
@@ -1557,7 +1561,7 @@ move2add_note_store (rtx dst, rtx set, void *data ATTRIBUTE_UNUSED)
     }
   else
     {
-      unsigned int endregno = regno + hard_regno_nregs[regno][mode];
+      unsigned int endregno = regno + nregs;
 
       for (i = regno; i < endregno; i++)
 	/* Reset the information about this register.  */

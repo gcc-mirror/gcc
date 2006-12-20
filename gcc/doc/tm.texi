@@ -1991,7 +1991,7 @@ registers but takes up 128 bits in memory, then this would be
 nonzero.
 
 This macros only needs to be defined if there are cases where
-@code{subreg_regno_offset} and @code{subreg_offset_representable_p}
+@code{subreg_get_info}
 would otherwise wrongly determine that a @code{subreg} can be
 represented by an offset to the register number, when in fact such a
 @code{subreg} would contain some of the padding not stored in

@@ -508,14 +508,16 @@ mark_set_regs (rtx reg, rtx setter ATTRIBUTE_UNUSED, void *data)
       if (!REG_P (inner) || REGNO (inner) >= FIRST_PSEUDO_REGISTER)
 	return;
       regno = subreg_regno (reg);
+      endregno = regno + subreg_nregs (reg);
     }
   else if (REG_P (reg)
 	   && REGNO (reg) < FIRST_PSEUDO_REGISTER)
-    regno = REGNO (reg);
+    {
+      regno = REGNO (reg);
+      endregno = regno + hard_regno_nregs[regno][mode];
+    }
   else
     return;
-
-  endregno = regno + hard_regno_nregs[regno][mode];
 
   for (i = regno; i < endregno; i++)
     SET_HARD_REG_BIT (*this_insn_sets, i);
@@ -542,13 +544,17 @@ add_stored_regs (rtx reg, rtx setter, void *data)
 				    SUBREG_BYTE (reg),
 				    GET_MODE (reg));
       reg = SUBREG_REG (reg);
+      regno = REGNO (reg) + offset;
+      endregno = regno + subreg_nregs (reg);
     }
+  else
+    {
+      if (!REG_P (reg) || REGNO (reg) >= FIRST_PSEUDO_REGISTER)
+	return;
 
-  if (!REG_P (reg) || REGNO (reg) >= FIRST_PSEUDO_REGISTER)
-    return;
-
-  regno = REGNO (reg) + offset;
-  endregno = regno + hard_regno_nregs[regno][mode];
+      regno = REGNO (reg) + offset;
+      endregno = regno + hard_regno_nregs[regno][mode];
+    }
 
   for (i = regno; i < endregno; i++)
     SET_REGNO_REG_SET ((regset) data, i);

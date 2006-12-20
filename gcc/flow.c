@@ -2791,8 +2791,7 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
 	      regno_first += subreg_regno_offset (regno_first, inner_mode,
 						  SUBREG_BYTE (reg),
 						  outer_mode);
-	      regno_last = (regno_first
-			    + hard_regno_nregs[regno_first][outer_mode] - 1);
+	      regno_last = regno_first + subreg_nregs (reg) - 1;
 
 	      /* Since we've just adjusted the register number ranges, make
 		 sure REG matches.  Otherwise some_was_live will be clear
