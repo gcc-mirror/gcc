@@ -1,3 +1,14 @@
+2006-12-20  Jan Hubicka  <jh@suse.cz>
+
+	PR target/30213
+	* i386.c (expand_setmem_epilogue): Fix formating.
+	(dsmalest_pow2_greater_than): New function.
+	(ix86_expand_movmem): Improve comments; avoid re-computing of
+	epilogue size.
+	(promote_duplicated_reg_to_size): Break out from ...
+	(expand_setmem): ... this one; reorganize promotion code;
+	improve comments; avoid recomputation of epilogue size.
+
 2006-12-20  Andrew Pinski  <pinskia@gmail.com>
 
 	PR middle-end/30143
