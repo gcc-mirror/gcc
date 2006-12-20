@@ -102,6 +102,10 @@ nonnull_arg_p (tree arg)
 
   gcc_assert (TREE_CODE (arg) == PARM_DECL && POINTER_TYPE_P (TREE_TYPE (arg)));
 
+  /* The static chain decl is always non null.  */
+  if (arg == cfun->static_chain_decl)
+    return true;
+
   fntype = TREE_TYPE (current_function_decl);
   attrs = lookup_attribute ("nonnull", TYPE_ATTRIBUTES (fntype));
 
