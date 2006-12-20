@@ -1,5 +1,12 @@
 2006-12-20  Andrew Pinski  <pinskia@gmail.com>
 
+	PR middle-end/30143
+	* omp-low.c (init_tmp_var): New function.       
+	(save_tmp_var): New function.
+	(lower_omp_1): Use them for VAR_DECL.
+
+2006-12-20  Andrew Pinski  <pinskia@gmail.com>
+
 	* tree-gimple.c (is_gimple_min_invariant): Treat constant vector
 	CONSTRUCTORs as min invariants.
 
