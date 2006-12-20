@@ -745,6 +745,24 @@ int_tree_map_hash (const void *item)
   return ((const struct int_tree_map *)item)->uid;
 }
 
+/* Return true if the uid in both int tree maps are equal.  */
+
+static int
+var_ann_eq (const void *va, const void *vb)
+{
+  const struct static_var_ann_d *a = (const struct static_var_ann_d *) va;
+  tree b = (tree) vb;
+  return (a->uid == DECL_UID (b));
+}
+
+/* Hash a UID in a int_tree_map.  */
+
+static unsigned int
+var_ann_hash (const void *item)
+{
+  return ((const struct static_var_ann_d *)item)->uid;
+}
+
 
 /* Initialize global DFA and SSA structures.  */
 
@@ -756,6 +774,8 @@ init_tree_ssa (void)
 				     		      int_tree_map_eq, NULL);
   cfun->gimple_df->default_defs = htab_create_ggc (20, int_tree_map_hash, 
 				                   int_tree_map_eq, NULL);
+  cfun->gimple_df->var_anns = htab_create_ggc (20, var_ann_hash, 
+					       var_ann_eq, NULL);
   cfun->gimple_df->call_clobbered_vars = BITMAP_GGC_ALLOC ();
   cfun->gimple_df->addressable_vars = BITMAP_GGC_ALLOC ();
   init_alias_heapvars ();
@@ -805,7 +825,8 @@ delete_tree_ssa (void)
   /* Remove annotations from every referenced variable.  */
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
-      ggc_free (var->base.ann);
+      if (var->base.ann)
+        ggc_free (var->base.ann);
       var->base.ann = NULL;
     }
   htab_delete (gimple_referenced_vars (cfun));
@@ -817,6 +838,9 @@ delete_tree_ssa (void)
   cfun->gimple_df->global_var = NULL_TREE;
   
   htab_delete (cfun->gimple_df->default_defs);
+  cfun->gimple_df->default_defs = NULL;
+  htab_delete (cfun->gimple_df->var_anns);
+  cfun->gimple_df->var_anns = NULL;
   cfun->gimple_df->call_clobbered_vars = NULL;
   cfun->gimple_df->addressable_vars = NULL;
   cfun->gimple_df->modified_noreturn_calls = NULL;
@@ -824,6 +848,7 @@ delete_tree_ssa (void)
 
   delete_alias_heapvars ();
   gcc_assert (!need_ssa_update_p ());
+  cfun->gimple_df = NULL;
 }
 
 
