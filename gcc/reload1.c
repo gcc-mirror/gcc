@@ -888,15 +888,7 @@ reload (rtx first, int global)
     {
       int something_changed;
       int did_spill;
-
       HOST_WIDE_INT starting_frame_size;
-
-      /* Round size of stack frame to stack_alignment_needed.  This must be done
-	 here because the stack size may be a part of the offset computation
-	 for register elimination, and there might have been new stack slots
-	 created in the last iteration of this loop.  */
-      if (cfun->stack_alignment_needed)
-        assign_stack_local (BLKmode, 0, cfun->stack_alignment_needed);
 
       starting_frame_size = get_frame_size ();
 
@@ -964,6 +956,20 @@ reload (rtx first, int global)
       /* If we allocated another stack slot, redo elimination bookkeeping.  */
       if (starting_frame_size != get_frame_size ())
 	continue;
+      if (starting_frame_size && cfun->stack_alignment_needed)
+	{
+	  /* If we have a stack frame, we must align it now.  The
+	     stack size may be a part of the offset computation for
+	     register elimination.  So if this changes the stack size,
+	     then repeat the elimination bookkeeping.  We don't
+	     realign when there is no stack, as that will cause a
+	     stack frame when none is needed should
+	     STARTING_FRAME_OFFSET not be already aligned to
+	     STACK_BOUNDARY.  */
+	  assign_stack_local (BLKmode, 0, cfun->stack_alignment_needed);
+	  if (starting_frame_size != get_frame_size ())
+	    continue;
+	}
 
       if (caller_save_needed)
 	{
