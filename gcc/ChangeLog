@@ -1,5 +1,10 @@
 2006-12-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/30262
+	PR middle-end/30263
+	* tree-nested.c (walk_asm_expr): New function.
+	(walk_stmts): Use it for ASM_EXPR.
+
 	PR target/30230
 	* config/ia64/ia64.c (ia64_add_bundle_selector_before): New function.
 	(bundling): Use it.
