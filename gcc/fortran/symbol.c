@@ -1958,7 +1958,9 @@ gfc_find_sym_tree (const char *name, gfc_namespace * ns, int parent_flag,
       if (st != NULL)
 	{
 	  *result = st;
-	  if (st->ambiguous)
+	  /* Ambiguous generic interfaces are permitted, as long
+	     as the specific interfaces are different.  */
+	  if (st->ambiguous && !st->n.sym->attr.generic)
 	    {
 	      ambiguous_symbol (name, st);
 	      return 1;
@@ -2059,8 +2061,10 @@ gfc_get_sym_tree (const char *name, gfc_namespace * ns, gfc_symtree ** result)
     }
   else
     {
-      /* Make sure the existing symbol is OK.  */
-      if (st->ambiguous)
+      /* Make sure the existing symbol is OK.  Ambiguous
+	 generic interfaces are permitted, as long as the
+	 specific interfaces are different.  */
+      if (st->ambiguous && !st->n.sym->attr.generic)
 	{
 	  ambiguous_symbol (name, st);
 	  return 1;

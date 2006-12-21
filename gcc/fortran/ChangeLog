@@ -1,5 +1,28 @@
 2006-12-21  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/29975
+	PR fortran/30068
+	PR fortran/30096
+	* interface.c (compare_type_rank_if): Reject invalid generic
+	interfaces.
+	(check_interface1): Give a warning for nonreferred to ambiguous
+	interfaces.
+	(check_sym_interfaces): Check whether an ambiguous interface is
+	referred to.  Do not check host associated interfaces since these
+	cannot be ambiguous with the local versions.
+	(check_uop_interface, gfc_check_interfaces): Update call to
+	check_interface1.
+	* symbol.c (gfc_get_sym_tree, gfc_get_sym_tree): Allow adding
+	unambiguous procedures to generic interfaces.
+	* gfortran.h (symbol_attribute): Added use_only and
+	ambiguous_interfaces.
+	* module.c (load_need): Set the use_only flag, if needed.
+	* resolve.c (resolve_fl_procedure): Warn for nonreferred
+	interfaces.
+	* expr.c (find_array_section): Fix initializer array contructor.
+
+2006-12-21  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/29941
 	* resolve.c (resolve_function): Add LEN to the functions not
 	checked for assumed size actual args.

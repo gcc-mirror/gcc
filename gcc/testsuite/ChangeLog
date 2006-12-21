@@ -1,4 +1,25 @@
 2006-12-21  Paul Thomas  <pault@gcc.gnu.org>
+	    Tobias Burnus  <burnus@gcc.gnu.org>
+
+	PR fortran/29975
+	PR fortran/30068
+	* gfortran.dg/interface_4.f90: Test adding procedure to generic
+	interface.
+	* gfortran.dg/interface_5.f90: Test warning for not-referenced-to
+	ambiguous interfaces.
+	* gfortran.dg/interface_6.f90: Test invalid, ambiguous interface.
+	* gfortran.dg/interface_7.f90: Test invalid, ambiguous interface.
+	* gfortran.dg/interface_8.f90: Test warning for not-referenced-to
+	ambiguous interfaces.
+	* gfortran.dg/interface_1.f90: Change dg-error into a dg-warning.
+	* gfortran.dg/array_initializer_2.f90: Add initializer array
+	constructor test.
+
+	PR fortran/30096
+	* gfortran.dg/interface_9.f90: Test that host interfaces are
+	not checked for ambiguity with the local version.
+
+2006-12-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29941
 	* gfortran.dg/assumed_len.f90: New test.
