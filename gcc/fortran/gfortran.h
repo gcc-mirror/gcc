@@ -484,7 +484,7 @@ typedef struct
     use_assoc:1;		/* Symbol has been use-associated.  */
 
   unsigned in_namelist:1, in_common:1, in_equivalence:1;
-  unsigned function:1, subroutine:1, generic:1;
+  unsigned function:1, subroutine:1, generic:1, generic_copy:1;
   unsigned implicit_type:1;	/* Type defined via implicit rules.  */
   unsigned untyped:1;           /* No implicit type could be found.  */
 
