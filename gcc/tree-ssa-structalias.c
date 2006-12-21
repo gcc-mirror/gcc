@@ -911,7 +911,7 @@ build_constraint_graph (void)
 	  if (lhsvar != rhsvar || rhs.offset != 0 || lhs.offset != 0)
 	    {
 	      if (rhs.offset != 0 || lhs.offset != 0)
-		insert_into_complex (lhsvar, c);
+		insert_into_complex (rhsvar, c);
 	      else
 		add_graph_edge (graph, lhs.var, rhs.var);
 	    }
