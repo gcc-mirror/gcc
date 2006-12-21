@@ -1,3 +1,9 @@
+2006-12-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* rtlanal.c (subreg_get_info): Do not make register size
+	computations for mode sizes not divisible by the number of
+	registers.
+
 2006-12-21  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-structalias.c (build_constraint_graph): Insert complex
