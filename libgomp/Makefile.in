@@ -51,6 +51,7 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
+	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/stdint.m4 \
 	$(top_srcdir)/../config/tls.m4 $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/configure.ac
@@ -68,7 +69,7 @@ am__vpath_adj = case $$p in \
     *) f=$$p;; \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
+am__installdirs = "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(infodir)" \
 	"$(DESTDIR)$(fincludedir)" "$(DESTDIR)$(libsubincludedir)" \
 	"$(DESTDIR)$(toolexeclibdir)"
 toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
@@ -98,6 +99,18 @@ MULTIDIRS =
 MULTISUBDIR = 
 MULTIDO = true
 MULTICLEAN = true
+INFO_DEPS = libgomp.info
+am__TEXINFO_TEX_DIR = $(srcdir)/../gcc/doc/include
+DVIS = libgomp.dvi
+PDFS = libgomp.pdf
+PSS = libgomp.ps
+HTMLS = libgomp.html
+TEXINFOS = libgomp.texi
+TEXI2DVI = texi2dvi
+TEXI2PDF = $(TEXI2DVI) --pdf --batch
+MAKEINFOHTML = $(MAKEINFO) --html
+AM_MAKEINFOHTMLFLAGS = $(AM_MAKEINFOFLAGS)
+DVIPS = dvips
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-exec-recursive install-info-recursive \
@@ -148,6 +161,9 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FC = @FC@
 FCFLAGS = @FCFLAGS@
+GENINSRC_FALSE = @GENINSRC_FALSE@
+GENINSRC_TRUE = @GENINSRC_TRUE@
+GREP = @GREP@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -190,11 +206,8 @@ USE_FORTRAN_TRUE = @USE_FORTRAN_TRUE@
 VERSION = @VERSION@
 XCFLAGS = @XCFLAGS@
 XLDFLAGS = @XLDFLAGS@
-ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_FC = @ac_ct_FC@
-ac_ct_RANLIB = @ac_ct_RANLIB@
-ac_ct_STRIP = @ac_ct_STRIP@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__include = @am__include@
@@ -210,6 +223,9 @@ build_os = @build_os@
 build_vendor = @build_vendor@
 config_path = @config_path@
 datadir = @datadir@
+datarootdir = @datarootdir@
+docdir = @docdir@
+dvidir = @dvidir@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
@@ -218,6 +234,7 @@ host_alias = @host_alias@
 host_cpu = @host_cpu@
 host_os = @host_os@
 host_vendor = @host_vendor@
+htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
 install_sh = @install_sh@
@@ -225,13 +242,16 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 libtool_VERSION = @libtool_VERSION@
 link_gomp = @link_gomp@
+localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 multi_basedir = @multi_basedir@
 oldincludedir = @oldincludedir@
+pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
+psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
@@ -266,11 +286,28 @@ libgomp_la_SOURCES = alloc.c barrier.c critical.c env.c error.c iter.c \
 nodist_noinst_HEADERS = libgomp_f.h
 nodist_libsubinclude_HEADERS = omp.h
 @USE_FORTRAN_TRUE@nodist_finclude_HEADERS = omp_lib.h omp_lib.f90 omp_lib.mod omp_lib_kinds.mod
+
+# Automake Documentation:
+# If your package has Texinfo files in many directories, you can use the
+# variable TEXINFO_TEX to tell Automake where to find the canonical
+# `texinfo.tex' for your package. The value of this variable should be
+# the relative path from the current `Makefile.am' to `texinfo.tex'.
+TEXINFO_TEX = ../gcc/doc/include/texinfo.tex
+
+# Defines info, dvi, pdf and html targets
+MAKEINFOFLAGS = -I $(srcdir)/../gcc/doc/include
+info_TEXINFOS = libgomp.texi
+@GENINSRC_FALSE@STAMP_GENINSRC = 
+
+# AM_CONDITIONAL on configure option --generated-files-in-srcdir
+@GENINSRC_TRUE@STAMP_GENINSRC = stamp-geninsrc
+CLEANFILES = stamp-geninsrc libgomp.info
+MAINTAINERCLEANFILES = $(srcdir)/libgomp.info
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
-.SUFFIXES: .c .lo .o .obj
+.SUFFIXES: .c .dvi .lo .o .obj .ps
 am--refresh:
 	@:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -434,7 +471,101 @@ distclean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=distclean multi-clean # $(MAKE)
 maintainer-clean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean # $(MAKE)
+
+libgomp.info: libgomp.texi 
+	restore=: && backupdir="$(am__leading_dot)am$$$$" && \
+	rm -rf $$backupdir && mkdir $$backupdir && \
+	if ($(MAKEINFO) --version) >/dev/null 2>&1; then \
+	  for f in $@ $@-[0-9] $@-[0-9][0-9] $(@:.info=).i[0-9] $(@:.info=).i[0-9][0-9]; do \
+	    if test -f $$f; then mv $$f $$backupdir; restore=mv; else :; fi; \
+	  done; \
+	else :; fi && \
+	if $(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) \
+	 -o $@ `test -f 'libgomp.texi' || echo '$(srcdir)/'`libgomp.texi; \
+	then \
+	  rc=0; \
+	else \
+	  rc=$$?; \
+	  $$restore $$backupdir/* `echo "./$@" | sed 's|[^/]*$$||'`; \
+	fi; \
+	rm -rf $$backupdir; exit $$rc
+
+libgomp.dvi: libgomp.texi  
+	TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
+	MAKEINFO='$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir)' \
+	$(TEXI2DVI) -o $@ `test -f 'libgomp.texi' || echo '$(srcdir)/'`libgomp.texi
+
+libgomp.pdf: libgomp.texi  
+	TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
+	MAKEINFO='$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir)' \
+	$(TEXI2PDF) -o $@ `test -f 'libgomp.texi' || echo '$(srcdir)/'`libgomp.texi
+
+libgomp.html: libgomp.texi  
+	rm -rf $(@:.html=.htp)
+	if $(MAKEINFOHTML) $(AM_MAKEINFOHTMLFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) \
+	 -o $(@:.html=.htp) `test -f 'libgomp.texi' || echo '$(srcdir)/'`libgomp.texi; \
+	then \
+	  rm -rf $@; \
+	  if test ! -d $(@:.html=.htp) && test -d $(@:.html=); then \
+	    mv $(@:.html=) $@; else mv $(@:.html=.htp) $@; fi; \
+	else \
+	  if test ! -d $(@:.html=.htp) && test -d $(@:.html=); then \
+	    rm -rf $(@:.html=); else rm -Rf $(@:.html=.htp) $@; fi; \
+	  exit 1; \
+	fi
+.dvi.ps:
+	TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
+	$(DVIPS) -o $@ $<
+
 uninstall-info-am:
+	@$(PRE_UNINSTALL)
+	@if (install-info --version && \
+	     install-info --version 2>&1 | sed 1q | grep -i -v debian) >/dev/null 2>&1; then \
+	  list='$(INFO_DEPS)'; \
+	  for file in $$list; do \
+	    relfile=`echo "$$file" | sed 's|^.*/||'`; \
+	    echo " install-info --info-dir='$(DESTDIR)$(infodir)' --remove '$(DESTDIR)$(infodir)/$$relfile'"; \
+	    install-info --info-dir="$(DESTDIR)$(infodir)" --remove "$(DESTDIR)$(infodir)/$$relfile"; \
+	  done; \
+	else :; fi
+	@$(NORMAL_UNINSTALL)
+	@list='$(INFO_DEPS)'; \
+	for file in $$list; do \
+	  relfile=`echo "$$file" | sed 's|^.*/||'`; \
+	  relfile_i=`echo "$$relfile" | sed 's|\.info$$||;s|$$|.i|'`; \
+	  (if cd "$(DESTDIR)$(infodir)"; then \
+	     echo " cd '$(DESTDIR)$(infodir)' && rm -f $$relfile $$relfile-[0-9] $$relfile-[0-9][0-9] $$relfile_i[0-9] $$relfile_i[0-9][0-9]"; \
+	     rm -f $$relfile $$relfile-[0-9] $$relfile-[0-9][0-9] $$relfile_i[0-9] $$relfile_i[0-9][0-9]; \
+	   else :; fi); \
+	done
+
+dist-info: $(INFO_DEPS)
+	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
+	list='$(INFO_DEPS)'; \
+	for base in $$list; do \
+	  case $$base in \
+	    $(srcdir)/*) base=`echo "$$base" | sed "s|^$$srcdirstrip/||"`;; \
+	  esac; \
+	  if test -f $$base; then d=.; else d=$(srcdir); fi; \
+	  for file in $$d/$$base*; do \
+	    relfile=`expr "$$file" : "$$d/\(.*\)"`; \
+	    test -f $(distdir)/$$relfile || \
+	      cp -p $$file $(distdir)/$$relfile; \
+	  done; \
+	done
+
+mostlyclean-aminfo:
+	-rm -rf libgomp.aux libgomp.cp libgomp.cps libgomp.fn libgomp.fns libgomp.ky \
+	  libgomp.kys libgomp.log libgomp.pg libgomp.pgs libgomp.tmp \
+	  libgomp.toc libgomp.tp libgomp.tps libgomp.vr libgomp.vrs \
+	  libgomp.dvi libgomp.pdf libgomp.ps libgomp.html
+
+maintainer-clean-aminfo:
+	@list='$(INFO_DEPS)'; for i in $$list; do \
+	  i_i=`echo "$$i" | sed 's|\.info$$||;s|$$|.i|'`; \
+	  echo " rm -f $$i $$i-[0-9] $$i-[0-9][0-9] $$i_i[0-9] $$i_i[0-9][0-9]"; \
+	  rm -f $$i $$i-[0-9] $$i-[0-9][0-9] $$i_i[0-9] $$i_i[0-9][0-9]; \
+	done
 install-nodist_fincludeHEADERS: $(nodist_finclude_HEADERS)
 	@$(NORMAL_INSTALL)
 	test -z "$(fincludedir)" || $(mkdir_p) "$(DESTDIR)$(fincludedir)"
@@ -664,6 +795,9 @@ distdir: $(DISTFILES)
 	      || exit 1; \
 	  fi; \
 	done
+	$(MAKE) $(AM_MAKEFLAGS) \
+	  top_distdir="$(top_distdir)" distdir="$(distdir)" \
+	  dist-info
 	-find $(distdir) -type d ! -perm -777 -exec chmod a+rwx {} \; -o \
 	  ! -type d ! -perm -444 -links 1 -exec chmod a+r {} \; -o \
 	  ! -type d ! -perm -400 -exec chmod a+r {} \; -o \
@@ -763,10 +897,11 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(LTLIBRARIES) all-multi $(HEADERS) config.h
+all-am: Makefile $(INFO_DEPS) $(LTLIBRARIES) all-multi $(HEADERS) \
+		config.h all-local
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(fincludedir)" "$(DESTDIR)$(libsubincludedir)" "$(DESTDIR)$(toolexeclibdir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(infodir)" "$(DESTDIR)$(fincludedir)" "$(DESTDIR)$(libsubincludedir)" "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
 install: install-recursive
@@ -786,6 +921,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -793,6 +929,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
 clean: clean-multi clean-recursive
 
 clean-am: clean-generic clean-libtool clean-toolexeclibLTLIBRARIES \
@@ -807,15 +944,17 @@ distclean-am: clean-am distclean-compile distclean-generic \
 
 dvi: dvi-recursive
 
-dvi-am:
+dvi-am: $(DVIS)
 
 html: html-recursive
 
+html-am: $(HTMLS)
+
 info: info-recursive
 
-info-am:
+info-am: $(INFO_DEPS)
 
-install-data-am: install-nodist_fincludeHEADERS \
+install-data-am: install-info-am install-nodist_fincludeHEADERS \
 	install-nodist_libsubincludeHEADERS
 
 install-exec-am: install-multi install-nodist_toolexeclibHEADERS \
@@ -823,6 +962,36 @@ install-exec-am: install-multi install-nodist_toolexeclibHEADERS \
 
 install-info: install-info-recursive
 
+install-info-am: $(INFO_DEPS)
+	@$(NORMAL_INSTALL)
+	test -z "$(infodir)" || $(mkdir_p) "$(DESTDIR)$(infodir)"
+	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
+	list='$(INFO_DEPS)'; \
+	for file in $$list; do \
+	  case $$file in \
+	    $(srcdir)/*) file=`echo "$$file" | sed "s|^$$srcdirstrip/||"`;; \
+	  esac; \
+	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
+	  file_i=`echo "$$file" | sed 's|\.info$$||;s|$$|.i|'`; \
+	  for ifile in $$d/$$file $$d/$$file-[0-9] $$d/$$file-[0-9][0-9] \
+                       $$d/$$file_i[0-9] $$d/$$file_i[0-9][0-9] ; do \
+	    if test -f $$ifile; then \
+	      relfile=`echo "$$ifile" | sed 's|^.*/||'`; \
+	      echo " $(INSTALL_DATA) '$$ifile' '$(DESTDIR)$(infodir)/$$relfile'"; \
+	      $(INSTALL_DATA) "$$ifile" "$(DESTDIR)$(infodir)/$$relfile"; \
+	    else : ; fi; \
+	  done; \
+	done
+	@$(POST_INSTALL)
+	@if (install-info --version && \
+	     install-info --version 2>&1 | sed 1q | grep -i -v debian) >/dev/null 2>&1; then \
+	  list='$(INFO_DEPS)'; \
+	  for file in $$list; do \
+	    relfile=`echo "$$file" | sed 's|^.*/||'`; \
+	    echo " install-info --info-dir='$(DESTDIR)$(infodir)' '$(DESTDIR)$(infodir)/$$relfile'";\
+	    install-info --info-dir="$(DESTDIR)$(infodir)" "$(DESTDIR)$(infodir)/$$relfile" || :;\
+	  done; \
+	else : ; fi
 install-man:
 
 installcheck-am:
@@ -832,20 +1001,21 @@ maintainer-clean: maintainer-clean-multi maintainer-clean-recursive
 	-rm -rf $(top_srcdir)/autom4te.cache
 	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
-maintainer-clean-am: distclean-am maintainer-clean-generic
+maintainer-clean-am: distclean-am maintainer-clean-aminfo \
+	maintainer-clean-generic
 
 mostlyclean: mostlyclean-multi mostlyclean-recursive
 
-mostlyclean-am: mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool
+mostlyclean-am: mostlyclean-aminfo mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool
 
 pdf: pdf-recursive
 
-pdf-am:
+pdf-am: $(PDFS)
 
 ps: ps-recursive
 
-ps-am:
+ps-am: $(PSS)
 
 uninstall-am: uninstall-info-am uninstall-nodist_fincludeHEADERS \
 	uninstall-nodist_libsubincludeHEADERS \
@@ -854,11 +1024,12 @@ uninstall-am: uninstall-info-am uninstall-nodist_fincludeHEADERS \
 
 uninstall-info: uninstall-info-recursive
 
-.PHONY: $(RECURSIVE_TARGETS) CTAGS GTAGS all all-am all-multi \
-	am--refresh check check-am clean clean-generic clean-libtool \
-	clean-multi clean-recursive clean-toolexeclibLTLIBRARIES ctags \
-	ctags-recursive dist dist-all dist-bzip2 dist-gzip dist-shar \
-	dist-tarZ dist-zip distcheck distclean distclean-compile \
+.PHONY: $(RECURSIVE_TARGETS) CTAGS GTAGS all all-am all-local \
+	all-multi am--refresh check check-am clean clean-generic \
+	clean-libtool clean-multi clean-recursive \
+	clean-toolexeclibLTLIBRARIES ctags ctags-recursive dist \
+	dist-all dist-bzip2 dist-gzip dist-info dist-shar dist-tarZ \
+	dist-zip distcheck distclean distclean-compile \
 	distclean-generic distclean-hdr distclean-libtool \
 	distclean-multi distclean-recursive distclean-tags \
 	distcleancheck distdir distuninstallcheck dvi dvi-am html \
@@ -870,12 +1041,12 @@ uninstall-info: uninstall-info-recursive
 	install-nodist_toolexeclibHEADERS install-strip \
 	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
 	installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic maintainer-clean-multi \
-	maintainer-clean-recursive mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool mostlyclean-multi \
-	mostlyclean-recursive pdf pdf-am ps ps-am tags tags-recursive \
-	uninstall uninstall-am uninstall-info-am \
-	uninstall-nodist_fincludeHEADERS \
+	maintainer-clean-aminfo maintainer-clean-generic \
+	maintainer-clean-multi maintainer-clean-recursive mostlyclean \
+	mostlyclean-aminfo mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool mostlyclean-multi mostlyclean-recursive \
+	pdf pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
+	uninstall-info-am uninstall-nodist_fincludeHEADERS \
 	uninstall-nodist_libsubincludeHEADERS \
 	uninstall-nodist_toolexeclibHEADERS \
 	uninstall-toolexeclibLTLIBRARIES
@@ -893,6 +1064,12 @@ env.o: libgomp_f.h
 # No install-html target
 .PHONY: install-html
 install-html:
+
+all-local: $(STAMP_GENINSRC)
+
+stamp-geninsrc: libgomp.info
+	-cp -p $(top_builddir)/libgomp.info $(srcdir)/libgomp.info
+	touch $@
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

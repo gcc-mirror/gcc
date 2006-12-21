@@ -1,3 +1,15 @@
+2006-12-21  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR libgomp/28209
+	* libgomp.texi: New file.
+	* configure.ac: Add --enable-generated-files-in-srcdir option.
+	* Makefile.am: Add info, dvi, pdf, html targets. On request, copy
+	files to srcdir.
+	* Makefile.in: Regenerated.
+	* config.h.in: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+	* NOTES: Removed.
+
 2006-12-04  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR libgomp/29949

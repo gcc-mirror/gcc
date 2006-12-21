@@ -50,7 +50,35 @@ fortran.o: libgomp_f.h
 env.lo: libgomp_f.h
 env.o: libgomp_f.h
 
+
 # No install-html target
 .PHONY: install-html
 install-html:
 
+
+# Automake Documentation:
+# If your package has Texinfo files in many directories, you can use the
+# variable TEXINFO_TEX to tell Automake where to find the canonical
+# `texinfo.tex' for your package. The value of this variable should be
+# the relative path from the current `Makefile.am' to `texinfo.tex'.
+TEXINFO_TEX   = ../gcc/doc/include/texinfo.tex
+
+# Defines info, dvi, pdf and html targets
+MAKEINFOFLAGS = -I $(srcdir)/../gcc/doc/include
+info_TEXINFOS = libgomp.texi
+
+# AM_CONDITIONAL on configure option --generated-files-in-srcdir
+if GENINSRC
+STAMP_GENINSRC = stamp-geninsrc
+else
+STAMP_GENINSRC =
+endif
+
+all-local: $(STAMP_GENINSRC)
+
+stamp-geninsrc: libgomp.info
+	-cp -p $(top_builddir)/libgomp.info $(srcdir)/libgomp.info
+	touch $@
+
+CLEANFILES = stamp-geninsrc libgomp.info
+MAINTAINERCLEANFILES = $(srcdir)/libgomp.info
