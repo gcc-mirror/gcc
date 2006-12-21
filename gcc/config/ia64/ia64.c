@@ -7693,6 +7693,53 @@ get_next_important_insn (rtx insn, rtx tail)
   return NULL_RTX;
 }
 
+/* Add a bundle selector TEMPLATE0 before INSN.  */
+
+static void
+ia64_add_bundle_selector_before (int template0, rtx insn)
+{
+  rtx b = gen_bundle_selector (GEN_INT (template0));
+
+  ia64_emit_insn_before (b, insn);
+#if NR_BUNDLES == 10
+  if ((template0 == 4 || template0 == 5)
+      && (flag_unwind_tables || (flag_exceptions && !USING_SJLJ_EXCEPTIONS)))
+    {
+      int i;
+      rtx note = NULL_RTX;
+
+      /* In .mbb and .bbb bundles, check if CALL_INSN isn't in the
+	 first or second slot.  If it is and has REG_EH_NOTE set, copy it
+	 to following nops, as br.call sets rp to the address of following
+	 bundle and therefore an EH region end must be on a bundle
+	 boundary.  */
+      insn = PREV_INSN (insn);
+      for (i = 0; i < 3; i++)
+	{
+	  do
+	    insn = next_active_insn (insn);
+	  while (GET_CODE (insn) == INSN
+		 && get_attr_empty (insn) == EMPTY_YES);
+	  if (GET_CODE (insn) == CALL_INSN)
+	    note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
+	  else if (note)
+	    {
+	      int code;
+
+	      gcc_assert ((code = recog_memoized (insn)) == CODE_FOR_nop
+			  || code == CODE_FOR_nop_b);
+	      if (find_reg_note (insn, REG_EH_REGION, NULL_RTX))
+		note = NULL_RTX;
+	      else
+		REG_NOTES (insn)
+		  = gen_rtx_EXPR_LIST (REG_EH_REGION, XEXP (note, 0),
+				       REG_NOTES (insn));
+	    }
+	}
+    }
+#endif
+}
+
 /* The following function does insn bundling.  Bundling means
    inserting templates and nop insns to fit insn groups into permitted
    templates.  Instruction scheduling uses NDFA (non-deterministic
@@ -7974,8 +8021,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 		/* We are at the start of a bundle: emit the template
 		   (it should be defined).  */
 		gcc_assert (template0 >= 0);
-		b = gen_bundle_selector (GEN_INT (template0));
-		ia64_emit_insn_before (b, nop);
+		ia64_add_bundle_selector_before (template0, nop);
 		/* If we have two bundle window, we make one bundle
 		   rotation.  Otherwise template0 will be undefined
 		   (negative value).  */
@@ -8001,8 +8047,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	  /* The current insn is at the bundle start: emit the
 	     template.  */
 	  gcc_assert (template0 >= 0);
-	  b = gen_bundle_selector (GEN_INT (template0));
-	  ia64_emit_insn_before (b, insn);
+	  ia64_add_bundle_selector_before (template0, insn);
 	  b = PREV_INSN (insn);
 	  insn = b;
 	  /* See comment above in analogous place for emitting nops
@@ -8024,8 +8069,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	      /* See comment above in analogous place for emitting nops
 		 after the insn.  */
 	      gcc_assert (template0 >= 0);
-	      b = gen_bundle_selector (GEN_INT (template0));
-	      ia64_emit_insn_before (b, insn);
+	      ia64_add_bundle_selector_before (template0, insn);
 	      b = PREV_INSN (insn);
 	      insn = b;
 	      template0 = template1;
@@ -8119,8 +8163,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	      }
 	    /* Put the MM-insn in the same slot of a bundle with the
 	       same template as the original one.  */
-	    ia64_emit_insn_before (gen_bundle_selector (GEN_INT (template0)),
-				   insn);
+	    ia64_add_bundle_selector_before (template0, insn);
 	    /* To put the insn in the same slot, add necessary number
 	       of nops.  */
 	    for (j = n; j > 0; j --)
