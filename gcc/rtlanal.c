@@ -3028,12 +3028,12 @@ subreg_get_info (unsigned int xregno, enum machine_mode xmode,
   /* If registers store different numbers of bits in the different
      modes, we cannot generally form this subreg.  */
   if (!HARD_REGNO_NREGS_HAS_PADDING (xregno, xmode)
-      && !HARD_REGNO_NREGS_HAS_PADDING (xregno, ymode))
+      && !HARD_REGNO_NREGS_HAS_PADDING (xregno, ymode)
+      && (GET_MODE_SIZE (xmode) % nregs_xmode) == 0
+      && (GET_MODE_SIZE (ymode) % nregs_ymode) == 0)
     {
       regsize_xmode = GET_MODE_SIZE (xmode) / nregs_xmode;
-      gcc_assert (regsize_xmode * nregs_xmode == GET_MODE_SIZE (xmode));
       regsize_ymode = GET_MODE_SIZE (ymode) / nregs_ymode;
-      gcc_assert (regsize_ymode * nregs_ymode == GET_MODE_SIZE (ymode));
       if (!rknown && regsize_xmode > regsize_ymode && nregs_ymode > 1)
 	{
 	  info->representable_p = false;
