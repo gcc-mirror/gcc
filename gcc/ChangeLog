@@ -1,3 +1,10 @@
+2006-12-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR other/29639
+	* configure.ac (HAVE_LD_EH_GC_SECTIONS): Check that exception tables
+	are kept for .gnu.linkonce.t sections if COMDAT groups are disabled.
+	* configure: Regenerate.
+
 2006-12-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* rtlanal.c (subreg_get_info): Do not make register size
