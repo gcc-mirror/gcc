@@ -4648,13 +4648,22 @@ simplify_subreg (enum machine_mode outermode, rtx op,
      of real and imaginary part.  */
   if (GET_CODE (op) == CONCAT)
     {
-      unsigned int inner_size, final_offset;
+      unsigned int part_size, final_offset;
       rtx part, res;
 
-      inner_size = GET_MODE_UNIT_SIZE (innermode);
-      part = byte < inner_size ? XEXP (op, 0) : XEXP (op, 1);
-      final_offset = byte % inner_size;
-      if (final_offset + GET_MODE_SIZE (outermode) > inner_size)
+      part_size = GET_MODE_UNIT_SIZE (GET_MODE (XEXP (op, 0)));
+      if (byte < part_size)
+	{
+	  part = XEXP (op, 0);
+	  final_offset = byte;
+	}
+      else
+	{
+	  part = XEXP (op, 1);
+	  final_offset = byte - part_size;
+	}
+
+      if (final_offset + GET_MODE_SIZE (outermode) > part_size)
 	return NULL_RTX;
 
       res = simplify_subreg (outermode, part, GET_MODE (part), final_offset);
