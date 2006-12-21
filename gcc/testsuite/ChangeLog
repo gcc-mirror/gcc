@@ -1,5 +1,11 @@
 2006-12-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/30262
+	* gcc.c-torture/execute/20061220-1.c: New test.
+
+	PR middle-end/30263
+	* gcc.dg/gomp/asm-1.c: New test.
+
 	PR target/30230
 	* g++.dg/eh/ia64-2.C: New test.
 
