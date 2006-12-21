@@ -1,3 +1,10 @@
+2006-12-22  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/spu/spu.h (ARG_POINTER_CFA_OFFSET): Define.
+	* config/spu/spu.c (spu_expand_prologue): Set RTX_FRAME_RELATED_P
+	for insn setting up the frame pointer.  Do not set it for insns
+	setting up scratch registers or storing the backchain.
+
 2006-12-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR other/29639

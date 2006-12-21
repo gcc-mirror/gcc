@@ -1629,21 +1629,18 @@ spu_expand_prologue (void)
 	{
 	  /* In this case we save the back chain first. */
 	  insn = frame_emit_store (STACK_POINTER_REGNUM, sp_reg, -total_size);
-	  RTX_FRAME_RELATED_P (insn) = 1;
 	  insn =
 	    frame_emit_add_imm (sp_reg, sp_reg, -total_size, scratch_reg_0);
 	}
       else if (satisfies_constraint_K (GEN_INT (-total_size)))
 	{
 	  insn = emit_move_insn (scratch_reg_0, sp_reg);
-	  RTX_FRAME_RELATED_P (insn) = 1;
 	  insn =
 	    emit_insn (gen_addsi3 (sp_reg, sp_reg, GEN_INT (-total_size)));
 	}
       else
 	{
 	  insn = emit_move_insn (scratch_reg_0, sp_reg);
-	  RTX_FRAME_RELATED_P (insn) = 1;
 	  insn =
 	    frame_emit_add_imm (sp_reg, sp_reg, -total_size, scratch_reg_1);
 	}
@@ -1656,7 +1653,6 @@ spu_expand_prologue (void)
 	{
 	  /* Save the back chain ptr */
 	  insn = frame_emit_store (REGNO (scratch_reg_0), sp_reg, 0);
-	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
 
       if (frame_pointer_needed)
@@ -1665,7 +1661,12 @@ spu_expand_prologue (void)
 	  HOST_WIDE_INT fp_offset = STACK_POINTER_OFFSET
 	    + current_function_outgoing_args_size;
 	  /* Set the new frame_pointer */
-	  frame_emit_add_imm (fp_reg, sp_reg, fp_offset, scratch_reg_0);
+	  insn = frame_emit_add_imm (fp_reg, sp_reg, fp_offset, scratch_reg_0);
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  real = gen_addsi3 (fp_reg, sp_reg, GEN_INT (fp_offset));
+	  REG_NOTES (insn) = 
+	    gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+			       real, REG_NOTES (insn));
 	}
     }
 
