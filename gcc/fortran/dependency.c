@@ -694,6 +694,7 @@ gfc_check_dependency (gfc_expr * expr1, gfc_expr * expr2, bool identical)
       return 0;
 
     case EXPR_CONSTANT:
+    case EXPR_NULL:
       return 0;
 
     case EXPR_ARRAY:

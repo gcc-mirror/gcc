@@ -1,3 +1,9 @@
+2006-12-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30273
+	* dependency.c (gfc_check_dependency): There is no dependency
+	with EXPR_NULL so always return 0.
+
 2006-12-21  Roger Sayle  <roger@eyesopen.com>
 
 	PR fortran/30207
