@@ -2068,9 +2068,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
               if (fsym && fsym->attr.allocatable
                   && fsym->attr.intent == INTENT_OUT)
                 {
-		  tmp = e->symtree->n.sym->backend_decl;
-		  if (e->symtree->n.sym->attr.dummy)
-                    tmp = build_fold_indirect_ref (tmp);
+                  tmp = build_fold_indirect_ref (parmse.expr);
                   tmp = gfc_trans_dealloc_allocated (tmp);
                   gfc_add_expr_to_block (&se->pre, tmp);
                 }
