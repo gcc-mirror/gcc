@@ -123,10 +123,16 @@ struct d_info
   int expansion;
 };
 
+/* To avoid running past the ending '\0', don't:
+   - call d_peek_next_char if d_peek_char returned '\0'
+   - call d_advance with an 'i' that is too large
+   - call d_check_char(di, '\0')
+   Everything else is safe.  */
 #define d_peek_char(di) (*((di)->n))
 #define d_peek_next_char(di) ((di)->n[1])
 #define d_advance(di, i) ((di)->n += (i))
-#define d_next_char(di) (*((di)->n++))
+#define d_check_char(di, c) (d_peek_char(di) == c ? ((di)->n++, 1) : 0)
+#define d_next_char(di) (d_peek_char(di) == '\0' ? '\0' : *((di)->n++))
 #define d_str(di) ((di)->n)
 
 /* Functions and arrays in cp-demangle.c which are referenced by

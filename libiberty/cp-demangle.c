@@ -913,9 +913,9 @@ CP_STATIC_IF_GLIBCPP_V3
 struct demangle_component *
 cplus_demangle_mangled_name (struct d_info *di, int top_level)
 {
-  if (d_next_char (di) != '_')
+  if (! d_check_char (di, '_'))
     return NULL;
-  if (d_next_char (di) != 'Z')
+  if (! d_check_char (di, 'Z'))
     return NULL;
   return d_encoding (di, top_level);
 }
@@ -1123,7 +1123,7 @@ d_nested_name (struct d_info *di)
   struct demangle_component *ret;
   struct demangle_component **pret;
 
-  if (d_next_char (di) != 'N')
+  if (! d_check_char (di, 'N'))
     return NULL;
 
   pret = d_cv_qualifiers (di, &ret, 1);
@@ -1134,7 +1134,7 @@ d_nested_name (struct d_info *di)
   if (*pret == NULL)
     return NULL;
 
-  if (d_next_char (di) != 'E')
+  if (! d_check_char (di, 'E'))
     return NULL;
 
   return ret;
@@ -1449,11 +1449,8 @@ d_operator_name (struct d_info *di)
 static struct demangle_component *
 d_special_name (struct d_info *di)
 {
-  char c;
-
   di->expansion += 20;
-  c = d_next_char (di);
-  if (c == 'T')
+  if (d_check_char (di, 'T'))
     {
       switch (d_next_char (di))
 	{
@@ -1502,7 +1499,7 @@ d_special_name (struct d_info *di)
 	    offset = d_number (di);
 	    if (offset < 0)
 	      return NULL;
-	    if (d_next_char (di) != '_')
+	    if (! d_check_char (di, '_'))
 	      return NULL;
 	    base_type = cplus_demangle_type (di);
 	    /* We don't display the offset.  FIXME: We should display
@@ -1523,7 +1520,7 @@ d_special_name (struct d_info *di)
 	  return NULL;
 	}
     }
-  else if (c == 'G')
+  else if (d_check_char (di, 'G'))
     {
       switch (d_next_char (di))
 	{
@@ -1570,14 +1567,14 @@ d_call_offset (struct d_info *di, int c)
   else if (c == 'v')
     {
       d_number (di);
-      if (d_next_char (di) != '_')
+      if (! d_check_char (di, '_'))
 	return 0;
       d_number (di);
     }
   else
     return 0;
 
-  if (d_next_char (di) != '_')
+  if (! d_check_char (di, '_'))
     return 0;
 
   return 1;
@@ -1601,13 +1598,13 @@ d_ctor_dtor_name (struct d_info *di)
       else if (di->last_name->type == DEMANGLE_COMPONENT_SUB_STD)
 	di->expansion += di->last_name->u.s_string.len;
     }
-  switch (d_next_char (di))
+  switch (d_peek_char (di))
     {
     case 'C':
       {
 	enum gnu_v3_ctor_kinds kind;
 
-	switch (d_next_char (di))
+	switch (d_peek_next_char (di))
 	  {
 	  case '1':
 	    kind = gnu_v3_complete_object_ctor;
@@ -1621,6 +1618,7 @@ d_ctor_dtor_name (struct d_info *di)
 	  default:
 	    return NULL;
 	  }
+	d_advance (di, 2);
 	return d_make_ctor (di, kind, di->last_name);
       }
 
@@ -1628,7 +1626,7 @@ d_ctor_dtor_name (struct d_info *di)
       {
 	enum gnu_v3_dtor_kinds kind;
 
-	switch (d_next_char (di))
+	switch (d_peek_next_char (di))
 	  {
 	  case '0':
 	    kind = gnu_v3_deleting_dtor;
@@ -1642,6 +1640,7 @@ d_ctor_dtor_name (struct d_info *di)
 	  default:
 	    return NULL;
 	  }
+	d_advance (di, 2);
 	return d_make_dtor (di, kind, di->last_name);
       }
 
@@ -1925,7 +1924,7 @@ d_function_type (struct d_info *di)
 {
   struct demangle_component *ret;
 
-  if (d_next_char (di) != 'F')
+  if (! d_check_char (di, 'F'))
     return NULL;
   if (d_peek_char (di) == 'Y')
     {
@@ -1934,7 +1933,7 @@ d_function_type (struct d_info *di)
       d_advance (di, 1);
     }
   ret = d_bare_function_type (di, 1);
-  if (d_next_char (di) != 'E')
+  if (! d_check_char (di, 'E'))
     return NULL;
   return ret;
 }
@@ -2021,7 +2020,7 @@ d_array_type (struct d_info *di)
   char peek;
   struct demangle_component *dim;
 
-  if (d_next_char (di) != 'A')
+  if (! d_check_char (di, 'A'))
     return NULL;
 
   peek = d_peek_char (di);
@@ -2049,7 +2048,7 @@ d_array_type (struct d_info *di)
 	return NULL;
     }
 
-  if (d_next_char (di) != '_')
+  if (! d_check_char (di, '_'))
     return NULL;
 
   return d_make_comp (di, DEMANGLE_COMPONENT_ARRAY_TYPE, dim,
@@ -2065,7 +2064,7 @@ d_pointer_to_member_type (struct d_info *di)
   struct demangle_component *mem;
   struct demangle_component **pmem;
 
-  if (d_next_char (di) != 'M')
+  if (! d_check_char (di, 'M'))
     return NULL;
 
   cl = cplus_demangle_type (di);
@@ -2109,7 +2108,7 @@ d_template_param (struct d_info *di)
 {
   long param;
 
-  if (d_next_char (di) != 'T')
+  if (! d_check_char (di, 'T'))
     return NULL;
 
   if (d_peek_char (di) == '_')
@@ -2122,7 +2121,7 @@ d_template_param (struct d_info *di)
       param += 1;
     }
 
-  if (d_next_char (di) != '_')
+  if (! d_check_char (di, '_'))
     return NULL;
 
   ++di->did_subs;
@@ -2144,7 +2143,7 @@ d_template_args (struct d_info *di)
      constructor or destructor.  */
   hold_last_name = di->last_name;
 
-  if (d_next_char (di) != 'I')
+  if (! d_check_char (di, 'I'))
     return NULL;
 
   al = NULL;
@@ -2189,7 +2188,7 @@ d_template_arg (struct d_info *di)
     case 'X':
       d_advance (di, 1);
       ret = d_expression (di);
-      if (d_next_char (di) != 'E')
+      if (! d_check_char (di, 'E'))
 	return NULL;
       return ret;
 
@@ -2316,7 +2315,7 @@ d_expr_primary (struct d_info *di)
 {
   struct demangle_component *ret;
 
-  if (d_next_char (di) != 'L')
+  if (! d_check_char (di, 'L'))
     return NULL;
   if (d_peek_char (di) == '_')
     ret = cplus_demangle_mangled_name (di, 0);
@@ -2362,7 +2361,7 @@ d_expr_primary (struct d_info *di)
 	}
       ret = d_make_comp (di, t, type, d_make_name (di, s, d_str (di) - s));
     }
-  if (d_next_char (di) != 'E')
+  if (! d_check_char (di, 'E'))
     return NULL;
   return ret;
 }
@@ -2376,12 +2375,12 @@ d_local_name (struct d_info *di)
 {
   struct demangle_component *function;
 
-  if (d_next_char (di) != 'Z')
+  if (! d_check_char (di, 'Z'))
     return NULL;
 
   function = d_encoding (di, 0);
 
-  if (d_next_char (di) != 'E')
+  if (! d_check_char (di, 'E'))
     return NULL;
 
   if (d_peek_char (di) == 's')
@@ -2486,7 +2485,7 @@ d_substitution (struct d_info *di, int prefix)
 {
   char c;
 
-  if (d_next_char (di) != 'S')
+  if (! d_check_char (di, 'S'))
     return NULL;
 
   c = d_next_char (di);
