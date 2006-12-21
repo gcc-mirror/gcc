@@ -86,6 +86,50 @@ getline(buf)
   buf->alloced = alloc;
 }
 
+/* If we have mmap() and mprotect(), copy the string S just before a
+   protected page, so that if the demangler runs over the end of the
+   string we'll get a fault, and return the address of the new string.
+   If no mmap, or it fails, or it looks too hard, just return S.  */
+
+#ifdef HAVE_SYS_MMAN_H
+#include <sys/mman.h>
+#endif
+#if defined(MAP_ANON) && ! defined (MAP_ANONYMOUS)
+#define MAP_ANONYMOUS MAP_ANON
+#endif
+
+static const char *
+protect_end (const char * s)
+{
+#if defined(HAVE_MMAP) && defined (MAP_ANONYMOUS)
+  size_t pagesize = getpagesize();
+  static char * buf;
+  size_t s_len = strlen (s);
+  char * result;
+  
+  /* Don't try if S is too long.  */
+  if (s_len >= pagesize)
+    return s;
+
+  /* Allocate one page of allocated space followed by an unmapped
+     page.  */
+  if (buf == NULL)
+    {
+      buf = mmap (NULL, pagesize * 2, PROT_READ | PROT_WRITE,
+		  MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+      if (! buf)
+	return s;
+      munmap (buf + pagesize, pagesize);
+    }
+  
+  result = buf + (pagesize - s_len - 1);
+  memcpy (result, s, s_len + 1);
+  return result;
+#else
+  return s;
+#endif
+}
+
 static void
 fail (lineno, opts, in, out, exp)
      int lineno;
@@ -150,12 +194,16 @@ main(argc, argv)
 
   for (;;)
     {
+      const char *inp;
+      
       getline (&format);
       if (feof (stdin))
 	break;
 
       getline (&input);
       getline (&expect);
+
+      inp = protect_end (input.data);
 
       tests++;
 
@@ -237,14 +285,14 @@ main(argc, argv)
 	    {
 	      enum gnu_v3_ctor_kinds kc;
 
-	      kc = is_gnu_v3_mangled_ctor (input.data);
+	      kc = is_gnu_v3_mangled_ctor (inp);
 	      sprintf (buf, "%d", (int) kc);
 	    }
 	  else
 	    {
 	      enum gnu_v3_dtor_kinds kd;
 
-	      kd = is_gnu_v3_mangled_dtor (input.data);
+	      kd = is_gnu_v3_mangled_dtor (inp);
 	      sprintf (buf, "%d", (int) kd);
 	    }
 
@@ -259,7 +307,7 @@ main(argc, argv)
 
       cplus_demangle_set_style (style);
 
-      result = cplus_demangle (input.data,
+      result = cplus_demangle (inp,
 			       DMGL_PARAMS|DMGL_ANSI|DMGL_TYPES
 			       |(ret_postfix ? DMGL_RET_POSTFIX : 0));
 
@@ -275,7 +323,7 @@ main(argc, argv)
       if (no_params)
 	{
 	  getline (&expect);
-	  result = cplus_demangle (input.data, DMGL_ANSI|DMGL_TYPES);
+	  result = cplus_demangle (inp, DMGL_ANSI|DMGL_TYPES);
 
 	  if (result
 	      ? strcmp (result, expect.data)
