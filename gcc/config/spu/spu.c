@@ -5005,7 +5005,6 @@ spu_expand_builtin (tree exp,
 static tree
 spu_builtin_mul_widen_even (tree type)
 {
-  struct spu_builtin_description *d;
   switch (TYPE_MODE (type))
     {
     case V8HImode:
