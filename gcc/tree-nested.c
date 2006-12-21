@@ -546,6 +546,47 @@ get_nl_goto_field (struct nesting_info *info)
   return field;
 }
 
+/* Helper function for walk_stmts.  Walk output operands of an ASM_EXPR.  */
+
+static void
+walk_asm_expr (struct walk_stmt_info *wi, tree stmt)
+{
+  int noutputs = list_length (ASM_OUTPUTS (stmt));
+  const char **oconstraints
+    = (const char **) alloca ((noutputs) * sizeof (const char *));
+  int i;
+  tree link;
+  const char *constraint;
+  bool allows_mem, allows_reg, is_inout;
+
+  wi->is_lhs = true;
+  for (i=0, link = ASM_OUTPUTS (stmt); link; ++i, link = TREE_CHAIN (link))
+    {
+      constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
+      oconstraints[i] = constraint;
+      parse_output_constraint (&constraint, i, 0, 0, &allows_mem,
+			       &allows_reg, &is_inout);
+
+      wi->val_only = (allows_reg || !allows_mem);
+      walk_tree (&TREE_VALUE (link), wi->callback, wi, NULL);
+    }
+
+  for (link = ASM_INPUTS (stmt); link; link = TREE_CHAIN (link))
+    {
+      constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
+      parse_input_constraint (&constraint, 0, 0, noutputs, 0,
+			      oconstraints, &allows_mem, &allows_reg);
+
+      wi->val_only = (allows_reg || !allows_mem);
+      /* Although input "m" is not really a LHS, we need a lvalue.  */
+      wi->is_lhs = !wi->val_only;
+      walk_tree (&TREE_VALUE (link), wi->callback, wi, NULL);
+    }
+
+  wi->is_lhs = false;
+  wi->val_only = true;
+}
+
 /* Iterate over all sub-statements of *TP calling walk_tree with
    WI->CALLBACK for every sub-expression in each statement found.  */
 
@@ -626,6 +667,10 @@ walk_stmts (struct walk_stmt_info *wi, tree *tp)
 
       wi->val_only = true;
       wi->is_lhs = false;
+      break;
+
+    case ASM_EXPR:
+      walk_asm_expr (wi, *tp);
       break;
 
     default:
