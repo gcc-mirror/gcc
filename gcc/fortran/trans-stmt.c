@@ -431,7 +431,7 @@ gfc_trans_return (gfc_code * code ATTRIBUTE_UNUSED)
       tree tmp;
       tree result;
 
-      /* if code->expr is not NULL, this return statement must appear
+      /* If code->expr is not NULL, this return statement must appear
          in a subroutine and current_fake_result_decl has already
 	 been generated.  */
 
