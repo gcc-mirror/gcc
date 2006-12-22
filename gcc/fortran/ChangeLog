@@ -1,3 +1,21 @@
+2006-12-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25818
+	* trans-array.c (gfc_trans_g77_array): If the variable is
+	optional or not always present, make the statement conditional
+	on presence of the argument.
+	* gfortran.h : Add symbol_attribute not_always_present.
+	* resolve.c (check_argument_lists): New function to check if
+	arguments are not present in all entries.
+
+	PR fortran/30084
+	* module.c (mio_component_ref): Move treatment of unique name
+	variables, during output, to fix_mio_expr.
+	(fix_mio_expr): New function that fixes defective expressions
+	before they are written to the module file.
+	(mio_expr): Call the new function.
+	(resolve_entries): Call check_argument_lists.
+
 2006-12-21  Roger Sayle  <roger@eyesopen.com>
 
 	* trans-array.c (gfc_trans_create_temp_array): When the size is known
