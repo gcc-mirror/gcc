@@ -1093,9 +1093,14 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 		  || TREE_CODE (COND_EXPR_ELSE (node)) == GOTO_EXPR))
 	    {
 	      pp_space (buffer);
-	      dump_generic_node (buffer, COND_EXPR_THEN (node), 0, flags, true);
-	      pp_string (buffer, " else ");
-	      dump_generic_node (buffer, COND_EXPR_ELSE (node), 0, flags, true);
+	      dump_generic_node (buffer, COND_EXPR_THEN (node),
+				 0, flags, true);
+	      if (!IS_EMPTY_STMT (COND_EXPR_ELSE (node)))
+		{
+		  pp_string (buffer, " else ");
+		  dump_generic_node (buffer, COND_EXPR_ELSE (node),
+				     0, flags, true);
+		}
 	    }
 	  else if (!(flags & TDF_SLIM))
 	    {
@@ -1112,7 +1117,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 		}
 
 	      /* Output COND_EXPR_ELSE.  */
-	      if (COND_EXPR_ELSE (node))
+	      if (COND_EXPR_ELSE (node)
+		  && !IS_EMPTY_STMT (COND_EXPR_ELSE (node)))
 		{
 		  newline_and_indent (buffer, spc);
 		  pp_string (buffer, "else");
