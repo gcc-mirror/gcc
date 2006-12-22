@@ -701,24 +701,33 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
     {
       if (function)
 	{
-	  var = gfc_create_var (TREE_TYPE (size), "size");
-	  gfc_start_block (&thenblock);
-	  gfc_add_modify_expr (&thenblock, var, gfc_index_zero_node);
-	  thencase = gfc_finish_block (&thenblock);
+	  /* If we know at compile-time whether any dimension size is
+	     negative, we can avoid a conditional and pass the true size
+	     to gfc_trans_allocate_array_storage, which can then decide
+	     whether to allocate this on the heap or on the stack.  */
+	  if (integer_zerop (or_expr))
+	    ;
+	  else if (integer_onep (or_expr))
+	    size = gfc_index_zero_node;
+	  else
+	    {
+	      var = gfc_create_var (TREE_TYPE (size), "size");
+	      gfc_start_block (&thenblock);
+	      gfc_add_modify_expr (&thenblock, var, gfc_index_zero_node);
+	      thencase = gfc_finish_block (&thenblock);
 
-	  gfc_start_block (&elseblock);
-	  gfc_add_modify_expr (&elseblock, var, size);
-	  elsecase = gfc_finish_block (&elseblock);
+	      gfc_start_block (&elseblock);
+	      gfc_add_modify_expr (&elseblock, var, size);
+	      elsecase = gfc_finish_block (&elseblock);
 	  
-	  tmp = gfc_evaluate_now (or_expr, pre);
-	  tmp = build3_v (COND_EXPR, tmp, thencase, elsecase);
-	  gfc_add_expr_to_block (pre, tmp);
-	  nelem = var;
-	  size = var;
+	      tmp = gfc_evaluate_now (or_expr, pre);
+	      tmp = build3_v (COND_EXPR, tmp, thencase, elsecase);
+	      gfc_add_expr_to_block (pre, tmp);
+	      size = var;
+	    }
 	}
-      else
-	  nelem = size;
 
+      nelem = size;
       size = fold_build2 (MULT_EXPR, gfc_array_index_type, size,
 			  TYPE_SIZE_UNIT (gfc_get_element_type (type)));
     }
@@ -3274,6 +3283,11 @@ gfc_array_init_size (tree descriptor, int rank, tree * poffset,
       offset = gfc_evaluate_now (offset, pblock);
       *poffset = offset;
     }
+
+  if (integer_zerop (or_expr))
+    return size;
+  if (integer_onep (or_expr))
+    return gfc_index_zero_node;
 
   var = gfc_create_var (TREE_TYPE (size), "size");
   gfc_start_block (&thenblock);
