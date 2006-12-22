@@ -63,7 +63,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 static int can_delete_note_p (rtx);
 static int can_delete_label_p (rtx);
-static void commit_one_edge_insertion (edge, int);
+static void commit_one_edge_insertion (edge);
 static basic_block rtl_split_edge (edge);
 static bool rtl_move_block_after (basic_block, basic_block);
 static int rtl_verify_flow_info (void);
@@ -1337,7 +1337,7 @@ insert_insn_on_edge (rtx pattern, edge e)
 /* Update the CFG for the instructions queued on edge E.  */
 
 static void
-commit_one_edge_insertion (edge e, int watch_calls)
+commit_one_edge_insertion (edge e)
 {
   rtx before = NULL_RTX, after = NULL_RTX, insns, tmp, last;
   basic_block bb = NULL;
@@ -1346,25 +1346,6 @@ commit_one_edge_insertion (edge e, int watch_calls)
   insns = e->insns.r;
   e->insns.r = NULL_RTX;
 
-  /* Special case -- avoid inserting code between call and storing
-     its return value.  */
-  if (watch_calls && (e->flags & EDGE_FALLTHRU)
-      && single_pred_p (e->dest)
-      && e->src != ENTRY_BLOCK_PTR
-      && CALL_P (BB_END (e->src)))
-    {
-      rtx next = next_nonnote_insn (BB_END (e->src));
-
-      after = BB_HEAD (e->dest);
-      /* The first insn after the call may be a stack pop, skip it.  */
-      while (next
-	     && keep_with_call_p (next))
-	{
-	  after = next;
-	  next = next_nonnote_insn (next);
-	}
-      bb = e->dest;
-    }
   if (!before && !after)
     {
       /* Figure out where to put these things.  If the destination has
@@ -1503,7 +1484,7 @@ commit_edge_insertions (void)
 	if (e->insns.r)
 	  {
 	    changed = true;
-	    commit_one_edge_insertion (e, false);
+	    commit_one_edge_insertion (e);
 	  }
     }
 
@@ -1515,51 +1496,6 @@ commit_edge_insertions (void)
      the caller is responsible for making sure that control flow is
      valid at all times.  */
   if (current_ir_type () == IR_RTL_CFGLAYOUT)
-    return;
-
-  blocks = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (blocks);
-  FOR_EACH_BB (bb)
-    if (bb->aux)
-      {
-	SET_BIT (blocks, bb->index);
-	/* Check for forgotten bb->aux values before commit_edge_insertions
-	   call.  */
-	gcc_assert (bb->aux == &bb->aux);
-	bb->aux = NULL;
-      }
-  find_many_sub_basic_blocks (blocks);
-  sbitmap_free (blocks);
-}
-
-/* Update the CFG for all queued instructions, taking special care of inserting
-   code on edges between call and storing its return value.  */
-
-void
-commit_edge_insertions_watch_calls (void)
-{
-  basic_block bb;
-  sbitmap blocks;
-  bool changed = false;
-
-#ifdef ENABLE_CHECKING
-  verify_flow_info ();
-#endif
-
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
-    {
-      edge e;
-      edge_iterator ei;
-
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	if (e->insns.r)
-	  {
-	    changed = true;
-	    commit_one_edge_insertion (e, true);
-	  }
-    }
-
-  if (!changed)
     return;
 
   blocks = sbitmap_alloc (last_basic_block);

@@ -489,7 +489,6 @@ extern void insert_insn_on_edge (rtx, edge);
 basic_block split_edge_and_insert (edge, rtx);
 
 extern void commit_edge_insertions (void);
-extern void commit_edge_insertions_watch_calls (void);
 
 extern void remove_fake_edges (void);
 extern void remove_fake_exit_edges (void);
