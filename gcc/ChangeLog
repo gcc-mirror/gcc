@@ -1,3 +1,14 @@
+2006-12-22  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR middle-end/7651
+	* c.opt (Wclobbered): New.
+	* doc/invoke.texi (Wclobbered): Document it.
+	(Wextra): Enabled by -Wextra.
+	* c-opts.c (c_common_post_options): Enabled by -Wextra.
+	* flow.c (rest_of_handle_life): Replace Wextra with Wclobbered.
+	* function.c (setjmp_vars_warning): Only warn for Wclobbered.
+	(setjmp_args_warning): Likewise.
+	
 2006-12-22  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/elfos.h, config/spu/spu.c, tree-ssa-operands.h,

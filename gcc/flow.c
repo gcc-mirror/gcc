@@ -4695,7 +4695,7 @@ rest_of_handle_life (void)
     cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_UPDATE_LIFE | CLEANUP_LOG_LINKS
                  | (flag_thread_jumps ? CLEANUP_THREADING : 0));
 
-  if (extra_warnings)
+  if (warn_clobbered)
     {
       setjmp_vars_warning (DECL_INITIAL (current_function_decl));
       setjmp_args_warning ();

@@ -1,3 +1,9 @@
+2006-12-22  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR middle-end/7651
+	* gcc.dg/attr-returns_twice-1.c: Replace Wextra with Wclobbered.
+	* gcc.dg/setjmp-1.c: Add explicit Wclobbered.
+
 2006-12-21  Andrew Pinski  <pinskia@gmail.com>
 
 	PR C++/30168

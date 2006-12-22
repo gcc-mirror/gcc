@@ -2,7 +2,7 @@
    Inspired by cse.c:simplify_relational_operation. */
 
 /* { dg-do compile } */
-/* { dg-options "-O -W -Wall" } */
+/* { dg-options "-O -Wclobbered -Wextra -Wall" } */
 
 #include <setjmp.h>
 

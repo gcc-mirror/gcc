@@ -1025,9 +1025,11 @@ c_common_post_options (const char **pfilename)
   if (flag_objc_exceptions && !flag_objc_sjlj_exceptions)
     flag_exceptions = 1;
 
-  /* -Wextra implies -Wempty-body, -Wsign-compare, 
+  /* -Wextra implies -Wclobbered, -Wempty-body, -Wsign-compare, 
      -Wmissing-field-initializers and -Woverride-init, 
      but not if explicitly overridden.  */
+  if (warn_clobbered == -1)
+    warn_clobbered = extra_warnings;
   if (warn_empty_body == -1)
     warn_empty_body = extra_warnings;
   if (warn_sign_compare == -1)
