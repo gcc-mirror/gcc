@@ -3402,17 +3402,17 @@ cxx_builtin_function (tree decl)
 {
   tree          id = DECL_NAME (decl);
   const char *name = IDENTIFIER_POINTER (id);
-  tree       decl2 = copy_node(decl);
   /* All builtins that don't begin with an '_' should additionally
      go in the 'std' namespace.  */
   if (name[0] != '_')
     {
+      tree decl2 = copy_node(decl);
       push_namespace (std_identifier);
-      builtin_function_1 (decl, std_node);
+      builtin_function_1 (decl2, std_node);
       pop_namespace ();
     }
 
-  return builtin_function_1 (decl2, NULL_TREE);
+  return builtin_function_1 (decl, NULL_TREE);
 }
 
 /* Generate a FUNCTION_DECL with the typical flags for a runtime library
