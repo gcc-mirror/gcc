@@ -1,5 +1,5 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-W" } */
+/* { dg-options "-Wclobbered" } */
 
 int newsetjmp(void) __attribute__((returns_twice));
 void g(int);

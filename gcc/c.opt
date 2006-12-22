@@ -141,6 +141,10 @@ Wchar-subscripts
 C ObjC C++ ObjC++ Var(warn_char_subscripts)
 Warn about subscripts whose type is \"char\"
 
+Wclobbered
+C ObjC C++ ObjC++ Var(warn_clobbered) Init(-1)
+Warn about variables that might be changed by \"longjmp\" or \"vfork\"
+
 Wcomment
 C ObjC C++ ObjC++
 Warn about possibly nested block comments, and C++ comments spanning more than one physical line
