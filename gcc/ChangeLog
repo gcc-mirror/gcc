@@ -1,3 +1,10 @@
+2006-12-22  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR rtl-optimization/29840
+
+	* fwprop.c (forward_propagate_into): Reject artificial uses/defs.
+	(fwprop_init): Add DF_HARD_REGS to df_init call.
+
 2006-12-21  Andrew Pinski  <pinskia@gmail.com>
 
 	* tree-nested.c (create_tmp_var_for): Check for vector type

@@ -846,6 +846,8 @@ forward_propagate_into (struct df_ref *use)
 
   if (DF_REF_FLAGS (use) & DF_REF_READ_WRITE)
     return;
+  if (DF_REF_FLAGS (use) & DF_REF_ARTIFICIAL)
+    return;
 
   /* Only consider uses that have a single definition.  */
   defs = DF_REF_CHAIN (use);
@@ -854,6 +856,8 @@ forward_propagate_into (struct df_ref *use)
 
   def = defs->ref;
   if (DF_REF_FLAGS (def) & DF_REF_READ_WRITE)
+    return;
+  if (DF_REF_FLAGS (def) & DF_REF_ARTIFICIAL)
     return;
 
   /* Do not propagate loop invariant definitions inside the loop if
@@ -899,7 +903,7 @@ fwprop_init (void)
 
   /* Now set up the dataflow problem (we only want use-def chains) and
      put the dataflow solver to work.  */
-  df = df_init (DF_SUBREGS | DF_EQUIV_NOTES);
+  df = df_init (DF_HARD_REGS | DF_SUBREGS | DF_EQUIV_NOTES);
   df_chain_add_problem (df, DF_UD_CHAIN);
   df_analyze (df);
   df_dump (df, dump_file);
