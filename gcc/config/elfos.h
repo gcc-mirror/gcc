@@ -507,7 +507,7 @@ Boston, MA 02110-1301, USA.  */
 
 /* A C statement (sans semicolon) to output to the stdio stream STREAM
    any text necessary for declaring the name of an external symbol
-   named NAME whch is referenced in this compilation but not defined.
+   named NAME which is referenced in this compilation but not defined.
    It is needed to properly support non-default visibility.  */
 
 #ifndef ASM_OUTPUT_EXTERNAL

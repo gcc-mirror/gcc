@@ -1606,7 +1606,7 @@ spu_expand_prologue (void)
     {
       if (flag_stack_check)
 	{
-	  /* We compare agains total_size-1 because
+	  /* We compare against total_size-1 because
 	     ($sp >= total_size) <=> ($sp > total_size-1) */
 	  rtx scratch_v4si = gen_rtx_REG (V4SImode, REGNO (scratch_reg_0));
 	  rtx sp_v4si = gen_rtx_REG (V4SImode, STACK_POINTER_REGNUM);
@@ -2386,7 +2386,7 @@ cpat_info(unsigned char *arr, int size, int *prun, int *pstart)
 }
 
 /* OP is a CONSTANT_P.  Determine what instructions can be used to load
-   it into a regiser.  MODE is only valid when OP is a CONST_INT. */
+   it into a register.  MODE is only valid when OP is a CONST_INT. */
 static enum immediate_class
 classify_immediate (rtx op, enum machine_mode mode)
 {

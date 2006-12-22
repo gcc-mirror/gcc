@@ -402,7 +402,7 @@ is_replaceable_p (tree stmt)
 	return false;
     }
 
-  /* Leave any stmt with voltile operands alone as well.  */
+  /* Leave any stmt with volatile operands alone as well.  */
   if (stmt_ann (stmt)->has_volatile_ops)
     return false;
   
