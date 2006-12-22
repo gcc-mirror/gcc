@@ -183,6 +183,14 @@ proc gcc-dg-prune { system text } {
 	return "::unsupported::memory full"
     }
 
+    # Likewise, if we see ".text exceeds local store range" or
+    # similar.
+    if {[string match "spu-*" $system] && \
+	    [string match "*exceeds local store range*" $text]} {
+	# The format here is important.  See dg.exp.
+	return "::unsupported::memory full"
+    }
+
     return $text
 }
 
