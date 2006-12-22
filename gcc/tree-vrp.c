@@ -626,8 +626,8 @@ compare_values (tree val1, tree val2)
 
       /* If VAL1 is different than VAL2, return +2.
 	 For integer constants we either have already returned -1 or 1
-	 or they are equivalent.  We still might suceed prove something
-	 about non-trivial operands.  */
+	 or they are equivalent.  We still might succeed in proving
+	 something about non-trivial operands.  */
       if (TREE_CODE (val1) != INTEGER_CST
 	  || TREE_CODE (val2) != INTEGER_CST)
 	{

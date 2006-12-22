@@ -1249,7 +1249,7 @@ print_single_switch (print_switch_fn_type print_fn,
 {
   /* The ultrix fprintf returns 0 on success, so compute the result
      we want here since we need it for the following test.  The +1
-     is for the seperator character that will probably be emitted.  */
+     is for the separator character that will probably be emitted.  */
   int len = strlen (text) + 1;
 
   if (pos != 0

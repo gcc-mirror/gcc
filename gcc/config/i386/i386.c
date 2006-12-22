@@ -13492,7 +13492,7 @@ decide_alignment (int align,
   return desired_align;
 }
 
-/* Return thre smallest power of 2 greater than VAL.  */
+/* Return the smallest power of 2 greater than VAL.  */
 static int
 smallest_pow2_greater_than (int val)
 {
@@ -13510,7 +13510,7 @@ smallest_pow2_greater_than (int val)
    1) Prologue guard: Conditional that jumps up to epilogues for small
       blocks that can be handled by epilogue alone.  This is faster but
       also needed for correctness, since prologue assume the block is larger
-      than the desrired alignment.
+      than the desired alignment.
 
       Optional dynamic check for size and libcall for large
       blocks is emitted here too, with -minline-stringops-dynamically.
@@ -13834,7 +13834,7 @@ promote_duplicated_reg_to_size (rtx val, int size_needed, int desired_align, int
 
 /* Expand string clear operation (bzero).  Use i386 string operations when
    profitable.  See expand_movmem comment for explanation of individual
-   steps performd.  */
+   steps performed.  */
 int
 ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
 		    rtx expected_align_exp, rtx expected_size_exp)

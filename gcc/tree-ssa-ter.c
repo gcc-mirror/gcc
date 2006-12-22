@@ -80,13 +80,13 @@ Boston, MA 02110-1301, USA.  */
    v_9 = a_2 * n_12
    <...>
 
-   If b_5, b_8 and b_14 are all colaesced together...
+   If b_5, b_8 and b_14 are all coalesced together...
    The expression b_5 + 6 CANNOT replace the use in the statement defining v_9
    because b_8 is in fact killing the value of b_5 since they share a partition
-   and will be assigned the same memory or regster location.
+   and will be assigned the same memory or register location.
    
    TER implements this but stepping through the instructions in a block and
-   tracking potential expressions for replacement, and the paritions they are
+   tracking potential expressions for replacement, and the partitions they are
    dependent on.  Expressions are represented by the SSA_NAME_VERSION of the
    DEF on the LHS of a GIMPLE_MODIFY_STMT and the expression is the RHS.
 
@@ -110,8 +110,8 @@ Boston, MA 02110-1301, USA.  */
    an expression from the partition kill lists when a decision is made whether
    to replace it or not.  This is indexed by ssa version number as well, and
    indicates a partition number.  virtual operands are not tracked individually,
-   but they are summarized by an artifical partition called VIRTUAL_PARTITION.
-   This means a MAY or MUST def will kill *ALL* expressions that are dependant
+   but they are summarized by an artificial partition called VIRTUAL_PARTITION.
+   This means a MAY or MUST def will kill *ALL* expressions that are dependent
    on a virtual operand.
    Note that the EXPR_DECL_UID and this bitmap represent very similar 
    information, but the info in one is not easy to obtain from the other.
@@ -121,11 +121,11 @@ Boston, MA 02110-1301, USA.  */
    longer be valid if a definition into this partition takes place.
 
    PARTITION_IN_USE is simply a bitmap which is used to track which partitions
-   currently have sokmething in their kill list.  This is used at the end of 
+   currently have something in their kill list.  This is used at the end of 
    a block to clear out the KILL_LIST bitmaps at the end of each block.
 
    NEW_REPLACEABLE_DEPENDENCIES is used as a temporary place to store 
-   dependencies which will be reused by the current defintion. ALl the uses
+   dependencies which will be reused by the current definition. ALl the uses
    on an expression are processed before anything else is done. If a use is
    determined to be a replaceable expression AND the current stmt is also going
    to be replaceable, all the dependencies of this replaceable use will be
@@ -161,8 +161,8 @@ typedef struct temp_expr_table_d
   tree *replaceable_expressions;	/* Replacement expression table.  */
   bitmap *expr_decl_uids;		/* Base uids of exprs.  */
   bitmap *kill_list;			/* Expr's killed by a partition.  */
-  int virtual_partition;		/* Psuedo partition for virtual ops.  */
-  bitmap partition_in_use;		/* Partitions with kill entires.  */
+  int virtual_partition;		/* Pseudo partition for virtual ops.  */
+  bitmap partition_in_use;		/* Partitions with kill entries.  */
   bitmap new_replaceable_dependencies;	/* Holding place for pending dep's.  */
   int *num_in_part;			/* # of ssa_names in a partition.  */
 } *temp_expr_table_p;
@@ -256,7 +256,7 @@ version_to_be_replaced_p (temp_expr_table_p tab, int version)
 }
 
 
-/* Add partition P to the list if partititons VERSION is dependent on.  TAB is 
+/* Add partition P to the list if partitions VERSION is dependent on.  TAB is 
    the expression table */
 
 static inline void

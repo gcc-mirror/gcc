@@ -182,7 +182,7 @@ coalesce_pair_map_hash (const void *pair)
 
 
 /* Equality function for coalesce list hash table.  Compare PAIR1 and PAIR2,
-   returning TRUE if the two pairs are equivilent. */
+   returning TRUE if the two pairs are equivalent.  */
 
 static int 
 coalesce_pair_map_eq (const void *pair1, const void *pair2)
@@ -309,7 +309,7 @@ add_coalesce (coalesce_list_p cl, int p1, int p2,
 }
 
 
-/* Comparison function to allow qsort to sort P1 and P2 in Ascendiong order.  */
+/* Comparison function to allow qsort to sort P1 and P2 in Ascending order.  */
 
 static int 
 compare_pairs (const void *p1, const void *p2)
@@ -355,7 +355,7 @@ end_coalesce_pair_p (coalesce_pair_iterator *iter)
 }
 
 
-/* Return the next parttition pair to be visited by ITER.  */
+/* Return the next partition pair to be visited by ITER.  */
 
 static inline coalesce_pair_p
 next_coalesce_pair (coalesce_pair_iterator *iter)
@@ -466,7 +466,7 @@ dump_coalesce_list (FILE *f, coalesce_list_p cl)
 
 
 /* This represents a conflict graph.  Implemented as an array of bitmaps.  
-   A full matrix isused for conflicts rather than just upper triangular form.
+   A full matrix is used for conflicts rather than just upper triangular form.
    this make sit much simpler and faster to perform conflict merges.  */
 
 typedef struct ssa_conflicts_d
@@ -787,9 +787,9 @@ live_track_clear_base_vars (live_track_p ptr)
 
 
 /* Build a conflict graph based on LIVEINFO.  Any partitions which are in the
-   partition view of the var_map liveinfo is based on get entires in the 
+   partition view of the var_map liveinfo is based on get entries in the 
    conflict graph.  Only conflicts between ssa_name partitions with the same 
-   base variableare added.  */
+   base variable are added.  */
 
 static ssa_conflicts_p
 build_ssa_conflict_graph (tree_live_info_p liveinfo)
@@ -1140,7 +1140,7 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
 }
 
 
-/* Attempt to coalesce ssa verisons X and Y together using the partition
+/* Attempt to coalesce ssa versions X and Y together using the partition
    mapping in MAP and checking conflicts in GRAPH.  Output any debug info to
    DEBUG, if it is nun-NULL.  */
 
@@ -1219,8 +1219,8 @@ coalesce_partitions (var_map map, ssa_conflicts_p graph, coalesce_list_p cl,
   edge e;
   edge_iterator ei;
 
-  /* First, coalece all the copie across abnormal edges.  These are not placed
-     in the coalesce list becase they do not need to be sorted, and simply 
+  /* First, coalesce all the copies across abnormal edges.  These are not placed
+     in the coalesce list because they do not need to be sorted, and simply 
      consume extra memory/compilation time in large programs.  */
 
   FOR_EACH_BB (bb)

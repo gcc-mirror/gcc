@@ -560,7 +560,7 @@ delete_tree_live_info (tree_live_info_p live)
 
 /* Visit basic block BB and propogate any required live on entry bits from 
    LIVE into the predecessors.  VISITED is the bitmap of visited blocks.  
-   TMP is a temporary work bitmap which is passed in to avoid reallocting
+   TMP is a temporary work bitmap which is passed in to avoid reallocating
    it each time.  */
 
 static void 
@@ -602,7 +602,7 @@ loe_visit_block (tree_live_info_p live, basic_block bb, sbitmap visited,
 
 
 /* Using LIVE, fill in all the live-on-entry blocks between the defs and uses 
-   of all the vairables.  */
+   of all the variables.  */
 
 static void
 live_worklist (tree_live_info_p live)
@@ -631,7 +631,7 @@ live_worklist (tree_live_info_p live)
 }
 
 
-/* Calulate the initial live on entry vector for SSA_NAME using immediate_use
+/* Calculate the initial live on entry vector for SSA_NAME using immediate_use
    links.  Set the live on entry fields in LIVE.  Def's are marked temporarily
    in the liveout vector.  */
 
