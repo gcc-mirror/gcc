@@ -281,7 +281,7 @@ tree_mem_ref_addr (tree type, tree mem_ref)
 	addr = act_elem;
     }
 
-  if (!zero_p (offset))
+  if (offset && !integer_zerop (offset))
     {
       act_elem = fold_convert (type, offset);
 
@@ -325,7 +325,7 @@ create_mem_ref_raw (tree type, struct mem_address *addr)
   if (addr->step && integer_onep (addr->step))
     addr->step = NULL_TREE;
 
-  if (addr->offset && zero_p (addr->offset))
+  if (addr->offset && integer_zerop (addr->offset))
     addr->offset = NULL_TREE;
 
   return build7 (TARGET_MEM_REF, type,

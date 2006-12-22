@@ -4075,7 +4075,22 @@ extern int integer_pow2p (tree);
 
 extern int integer_nonzerop (tree);
 
-extern bool zero_p (tree);
+/* Returns true if X is either NULL or zero.  */
+
+static inline bool
+null_or_integer_zerop (tree x)
+{
+  return x == NULL_TREE || integer_zerop (x);
+}
+
+/* Returns true if X is non-NULL and non-zero.  */
+
+static inline bool
+nonnull_and_integer_nonzerop (tree x)
+{
+  return x != NULL_TREE && integer_nonzerop (x);
+}
+
 extern bool cst_and_fits_in_hwi (tree);
 extern tree num_ending_zeros (tree);
 
