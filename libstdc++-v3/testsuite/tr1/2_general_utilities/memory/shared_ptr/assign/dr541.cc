@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation
+// Copyright (C) 2006 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,33 +18,13 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-// 20.4.5 Template class auto_ptr negative tests [lib.auto.ptr]
+// TR1 2.2.2 Template class shared_ptr [tr.util.smartptr.shared]
 
-#include <memory>
-#include <testsuite_hooks.h>
+#include <tr1/memory>
 
-// via Jack Reeves <jack_reeves@hispeed.ch>
-// libstdc++/3946
-// http://gcc.gnu.org/ml/libstdc++/2002-07/msg00024.html
-struct Base { };
-struct Derived : public Base { };
-
-std::auto_ptr<Derived> 
-foo() { return std::auto_ptr<Derived>(new Derived); }
-
-int
-test01()
+// DR 541. shared_ptr template assignment and void
+void test01()
 {
-  std::auto_ptr<Base> ptr2;
-  ptr2 = new Base; // { dg-error "no match" }
-  return 0;
+  std::tr1::shared_ptr<void> p;
+  p.operator=<void>(p);
 }
-
-int 
-main()
-{
-  test01();
-  return 0;
-}
-// { dg-error "candidates" "" { target *-*-* } 224 } 
-// { dg-error "::auto_ptr" "" { target *-*-* } 354 } 

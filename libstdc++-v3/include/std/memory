@@ -1,6 +1,7 @@
 // <memory> -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -367,7 +368,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       template<typename _Tp1>
         operator auto_ptr<_Tp1>() throw()
         { return auto_ptr<_Tp1>(this->release()); }
-  };
+    };
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 541. shared_ptr template assignment and void
+  template<>
+    class auto_ptr<void>
+    {
+    public:
+      typedef void element_type;
+    };
 
 _GLIBCXX_END_NAMESPACE
 
