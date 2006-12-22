@@ -1034,7 +1034,7 @@ check_sym_interfaces (gfc_symbol * sym)
 	    }
 	}
 
-      /* Originally, this test was aplied to host interfaces too;
+      /* Originally, this test was applied to host interfaces too;
 	 this is incorrect since host associated symbols, from any
 	 source, cannot be ambiguous with local symbols.  */
       k = sym->attr.referenced || !sym->attr.use_assoc;
