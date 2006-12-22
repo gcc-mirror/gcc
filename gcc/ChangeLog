@@ -1,3 +1,11 @@
+2006-12-22  Kazu Hirata  <kazu@codesourcery.com>
+
+	* cgraphunit.c, config/i386/i386.c, config/ia64/ia64.c, cse.c,
+	output.h, toplev.c, tree-affine.h, tree-flow.h,
+	tree-ssa-alias.c, tree-ssa-coalesce.c, tree-ssa-live.c,
+	tree-ssa-live.h, tree-ssa-operands.c, tree-ssa-ter.c,
+	tree-vrp.c, varpool.c: Fix comment typos.
+
 2006-12-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/spu/spu.h (ARG_POINTER_CFA_OFFSET): Define.

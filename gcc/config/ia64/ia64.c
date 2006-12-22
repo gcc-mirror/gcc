@@ -9182,7 +9182,7 @@ ia64_asm_output_external (FILE *file, tree decl, const char *name)
   if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
     {
       /* maybe_assemble_visibility will return 1 if the assembler
-	 visibility directive is outputed.  */
+	 visibility directive is output.  */
       int need_visibility = ((*targetm.binds_local_p) (decl)
 			     && maybe_assemble_visibility (decl));
 

@@ -49,7 +49,7 @@ typedef struct affine_tree_combination
      TYPE, but their sizes must be the same (STRIP_NOPS is applied to the
      elements).
      
-     The coefficients are always sign extened from the precision of TYPE
+     The coefficients are always sign extended from the precision of TYPE
      (regardless of signedness of TYPE).  */
   struct aff_comb_elt elts[MAX_AFF_ELTS];
 

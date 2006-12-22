@@ -468,8 +468,8 @@ ssa_operand_alloc (unsigned size)
       if (size > ssa_operand_mem_size)
         ssa_operand_mem_size = OP_SIZE_3 * sizeof (struct voptype_d);
 
-      /* Fail if there is not enough space.  If thre are this many operands
-	 required, first make sure there isn't a different probem causing this
+      /* Fail if there is not enough space.  If there are this many operands
+	 required, first make sure there isn't a different problem causing this
 	 many operands.  If the decision is that this is OK, then we can 
 	 specially allocate a buffer just for this request.  */
       gcc_assert (size <= ssa_operand_mem_size);
@@ -607,7 +607,7 @@ add_use_op (tree stmt, tree *op, use_optype_p last)
 
 
 /* Return a virtual op pointer with NUM elements which are all initialized to OP
-   and are linked into the immeidate uses for STMT.  The new vop is appended
+   and are linked into the immediate uses for STMT.  The new vop is appended
    after PREV.  */
 
 static inline voptype_p

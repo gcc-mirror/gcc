@@ -1710,7 +1710,7 @@ setup_pointers_and_addressables (struct alias_info *ai)
 		{
 		  /* The memory partition holding VAR will no longer
 		     contain VAR, and statements referencing it will need
-		     to be udpated.  */
+		     to be updated.  */
 		  if (memory_partition (var))
 		    mark_sym_for_renaming (memory_partition (var));
 

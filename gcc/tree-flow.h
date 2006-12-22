@@ -288,7 +288,7 @@ struct var_ann_d GTY(())
   unsigned int escape_mask;
 };
 
-/* Contianer for variable annotation used by hashtable for annotations for
+/* Container for variable annotation used by hashtable for annotations for
    static variables.  */
 struct static_var_ann_d GTY(())
 {

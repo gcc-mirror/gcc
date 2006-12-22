@@ -5791,7 +5791,7 @@ cse_process_notes (rtx x, rtx object)
    Otherwise, DATA->path is filled and the function returns TRUE indicating
    that a path to follow was found.
 
-   If FOLLOW_JUMPS is false, the maximum path lenghth is 1 and the only
+   If FOLLOW_JUMPS is false, the maximum path length is 1 and the only
    block in the path will be FIRST_BB.  */
 
 static bool
@@ -6248,7 +6248,7 @@ cse_main (rtx f ATTRIBUTE_UNUSED, int nregs)
 	  if (ebb_data.nsets == 0)
 	    continue;
 
-	  /* Get a reasonable extimate for the maximum number of qty's
+	  /* Get a reasonable estimate for the maximum number of qty's
 	     needed for this path.  For this, we take the number of sets
 	     and multiply that by MAX_RECOG_OPERANDS.  */
 	  max_qty = ebb_data.nsets * MAX_RECOG_OPERANDS;

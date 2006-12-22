@@ -40,7 +40,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
     and drives the decision process on what variables and when are
     going to be compiled.
 
-    The varpool nodes are alocated lazilly for declarations
+    The varpool nodes are allocated lazily for declarations
     either by frontend or at callgraph construction time.
     All variables supposed to be output into final file needs to be
     explicitely marked by frontend via VARPOOL_FINALIZE_DECL function.  */

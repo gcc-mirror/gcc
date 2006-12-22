@@ -31,8 +31,8 @@ Boston, MA 02110-1301, USA.  */
 /* Used to create the variable mapping when we go out of SSA form.  
 
    Mapping from an ssa_name to a partition number is maintained, as well as
-   partition number to back to ssa_name. A parition can also be represented
-   by a non-ssa_name variable.  This allows ssa_names and thier partition to 
+   partition number to back to ssa_name. A partition can also be represented
+   by a non-ssa_name variable.  This allows ssa_names and their partition to 
    be coalesced with live on entry compiler variables, as well as eventually
    having real compiler variables assigned to each partition as part of the 
    final stage of going of of ssa.  
@@ -43,7 +43,7 @@ Boston, MA 02110-1301, USA.  */
    partitions.  This allows the coalescer to decide what partitions are 
    interesting to it, and only work with those partitions.  Whenever the view
    is changed, the partition numbers change, but none of the partition groupings
-   change. (ie, it is truly a view since it doesnt change anything)
+   change. (ie, it is truly a view since it doesn't change anything)
 
    The final component of the data structure is the basevar map.  This provides
    a list of all the different base variables which occue in a partition view,
