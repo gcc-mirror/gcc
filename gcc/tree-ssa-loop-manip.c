@@ -706,7 +706,7 @@ determine_exit_conditions (struct loop *loop, struct tree_niter_desc *desc,
 	of the loop, i.e., BOUND - step * FACTOR does not overflow.
      3) # of iterations is at least FACTOR  */
 
-  if (!zero_p (desc->may_be_zero))
+  if (!integer_zerop (desc->may_be_zero))
     cond = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
 			invert_truthvalue (desc->may_be_zero),
 			cond);

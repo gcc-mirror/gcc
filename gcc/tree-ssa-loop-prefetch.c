@@ -337,7 +337,7 @@ idx_analyze_ref (tree base, tree *index, void *data)
   ibase = iv.base;
   step = iv.step;
 
-  if (zero_p (step))
+  if (null_or_integer_zerop (step))
     istep = 0;
   else
     {

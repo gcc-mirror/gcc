@@ -2153,7 +2153,7 @@ find_taken_edge_cond_expr (basic_block bb, tree val)
   extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
 
   gcc_assert (TREE_CODE (val) == INTEGER_CST);
-  return (zero_p (val) ? false_edge : true_edge);
+  return (integer_zerop (val) ? false_edge : true_edge);
 }
 
 /* Given an INTEGER_CST VAL and the entry block BB to a SWITCH_EXPR
