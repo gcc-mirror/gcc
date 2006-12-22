@@ -488,4 +488,5 @@ else
     # We need a cross tool
     AC_MSG_RESULT(pre-installed)
   fi
-fi])
+fi
+AC_SUBST($2)])
