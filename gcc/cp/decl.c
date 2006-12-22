@@ -4102,7 +4102,7 @@ grok_reference_init (tree decl, tree type, tree init, tree *cleanup)
 static bool
 check_array_designated_initializer (const constructor_elt *ce)
 {
-  /* Designated initializers for array elements arenot supported.  */
+  /* Designated initializers for array elements are not supported.  */
   if (ce->index)
     {
       /* The parser only allows identifiers as designated
