@@ -1,3 +1,9 @@
+2006-12-21  Roger Sayle  <roger@eyesopen.com>
+
+	* trans-array.c (gfc_trans_create_temp_array): When the size is known
+	at compile-time, avoid an unnecessary conditional assignment.
+	(gfc_array_init_size): Likewise.
+
 2006-12-22  Kazu Hirata  <kazu@codesourcery.com>
 
 	* interface.c: Fix a comment typo.
