@@ -1,5 +1,11 @@
 2006-12-21  Andrew Pinski  <pinskia@gmail.com>
 
+	PR C++/30225
+	* decl.c (cxx_builtin_function): Only copy the decl if adding
+	it to the std namespace.
+
+2006-12-21  Andrew Pinski  <pinskia@gmail.com>
+
 	PR C++/30168
 	* optimize.c (update_cloned_parm): Copy DECL_GIMPLE_REG_P also.
 
