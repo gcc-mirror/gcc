@@ -66,7 +66,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
       data structure must be updated accordingly by this function.
       There should be little need to call this function and all the references
       should be made explicit to cgraph code.  At present these functions are
-      used by C++ frontend to explicitely mark the keyed methods.
+      used by C++ frontend to explicitly mark the keyed methods.
 
     - analyze_expr callback
 

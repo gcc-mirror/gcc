@@ -43,7 +43,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
     The varpool nodes are allocated lazily for declarations
     either by frontend or at callgraph construction time.
     All variables supposed to be output into final file needs to be
-    explicitely marked by frontend via VARPOOL_FINALIZE_DECL function.  */
+    explicitly marked by frontend via VARPOOL_FINALIZE_DECL function.  */
 
 /* Hash table used to convert declarations into nodes.  */
 static GTY((param_is (struct varpool_node))) htab_t varpool_hash;
