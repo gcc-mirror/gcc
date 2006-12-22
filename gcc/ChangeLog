@@ -1,3 +1,8 @@
+2006-12-21  Andrew Pinski  <pinskia@gmail.com>
+
+	* tree-nested.c (create_tmp_var_for): Check for vector type
+	when setting DECL_GIMPLE_REG_P.
+
 2006-12-21  Roger Sayle  <roger@eyesopen.com>
 
 	* tree-pretty-print.c (dump_generic_node): Avoid outputing "(void) 0;"
