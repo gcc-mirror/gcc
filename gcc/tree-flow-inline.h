@@ -203,7 +203,7 @@ var_ann (tree t)
   gcc_assert (t);
   gcc_assert (DECL_P (t));
   gcc_assert (TREE_CODE (t) != FUNCTION_DECL);
-  if (TREE_STATIC (t))
+  if (!MTAG_P (t) && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
     {
       struct static_var_ann_d *sann
         = ((struct static_var_ann_d *)
@@ -952,6 +952,9 @@ clear_call_clobbered (tree var)
 static inline tree_ann_common_t
 tree_common_ann (tree t)
 {
+  /* Watch out static variables with unshared annotations.  */
+  if (DECL_P (t) && TREE_CODE (t) == VAR_DECL)
+    return &var_ann (t)->common;
   return &t->base.ann->common;
 }
 
