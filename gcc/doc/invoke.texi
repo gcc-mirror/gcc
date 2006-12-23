@@ -256,7 +256,8 @@ Objective-C and Objective-C++ Dialects}.
 
 @item C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations @gol
--Wmissing-prototypes  -Wnested-externs  -Wold-style-definition @gol
+-Wmissing-parameter-type  -Wmissing-prototypes @gol
+-Wnested-externs  -Wold-style-definition @gol
 -Wstrict-prototypes  -Wtraditional  -Wtraditional-conversion @gol
 -Wdeclaration-after-statement -Wpointer-sign}
 
@@ -2908,13 +2909,10 @@ designated initializers (@pxref{Designated Inits, , Designated
 Initializers}).  This warning can be independently controlled by
 @option{-Woverride-init}.
 
-@item
+@item @r{(C only)}
 A function parameter is declared without a type specifier in K&R-style
-functions:
-
-@smallexample
-void foo(bar) @{ @}
-@end smallexample
+functions.  This warning can be independently controlled by
+@option{-Wmissing-parameter-type}.
 
 @item
 An empty body occurs in an @samp{if} or @samp{else} statement. This
@@ -3220,6 +3218,17 @@ types.)
 @opindex Wold-style-definition
 Warn if an old-style function definition is used.  A warning is given
 even if there is a previous prototype.
+
+@item -Wmissing-parameter-type @r{(C only)}
+@opindex Wmissing-parameter-type
+A function parameter is declared without a type specifier in K&R-style
+functions:
+
+@smallexample
+void foo(bar) @{ @}
+@end smallexample
+
+This warning is also enabled by @option{-Wextra}.
 
 @item -Wmissing-prototypes @r{(C only)}
 @opindex Wmissing-prototypes

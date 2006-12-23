@@ -1,3 +1,10 @@
+2006-12-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR middle-end/7651
+	* gcc.dg/Wmissing-parameter-type.c: New.
+	* gcc.dg/Wmissing-parameter-type-Wextra.c: New.
+	* gcc.dg/Wmissing-parameter-type-no.c: New.
+	
 2006-12-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25818

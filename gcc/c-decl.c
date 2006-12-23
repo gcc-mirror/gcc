@@ -6414,8 +6414,8 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 
 	  if (flag_isoc99)
 	    pedwarn ("type of %q+D defaults to %<int%>", decl);
-	  else if (extra_warnings)
-	    warning (OPT_Wextra, "type of %q+D defaults to %<int%>", decl);
+	  else 
+	    warning (OPT_Wmissing_parameter_type, "type of %q+D defaults to %<int%>", decl);
 	}
 
       TREE_PURPOSE (parm) = decl;
