@@ -1,3 +1,9 @@
+2006-12-23  Kazu Hirata  <kazu@codesourcery.com>
+
+	* common.opt (flag_force_mem): Remove.
+	* doc/invoke.texi (-fforce-mem): Remove.
+	* opts.c (common_handle_option): Don't handle OPT_fforce_mem.
+
 2006-12-23  Marcin Dalecki  <martin@dalecki.de>
 
 	* cgraphunit.c (cgraph_optimize): Fixed obvious thinko in memory
