@@ -1,3 +1,9 @@
+2006-12-23  Andrew Pinski  <pinskia@gmail.com>
+
+	* vec.c: Don't include tree.h.
+	* Makefile.in (vec.o): Update dependencies.
+	(build/vec.o): Likewise.
+
 2006-12-23  Kazu Hirata  <kazu@codesourcery.com>
 
 	* common.opt (flag_force_mem): Remove.
