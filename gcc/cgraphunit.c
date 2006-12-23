@@ -1426,7 +1426,7 @@ cgraph_optimize (void)
     }
   if (post_ipa_mem_report)
     {
-      fprintf (stderr, "Memory consumption before IPA\n");
+      fprintf (stderr, "Memory consumption after IPA\n");
       dump_memory_report (false);
     }
   timevar_pop (TV_CGRAPHOPT);
