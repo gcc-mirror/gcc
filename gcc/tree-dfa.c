@@ -130,7 +130,7 @@ create_var_ann (tree t)
   gcc_assert (DECL_P (t));
   gcc_assert (!t->base.ann || t->base.ann->common.type == VAR_ANN);
 
-  if (TREE_STATIC (t))
+  if (!MTAG_P (t) && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
     {
       sann = GGC_CNEW (struct static_var_ann_d);
       ann = &sann->ann;
@@ -140,7 +140,7 @@ create_var_ann (tree t)
 
   ann->common.type = VAR_ANN;
 
-  if (TREE_STATIC (t))
+  if (!MTAG_P (t) && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
     {
        void **slot;
        sann->uid = DECL_UID (t);
@@ -696,7 +696,7 @@ set_default_def (tree var, tree def)
       htab_remove_elt (DEFAULT_DEFS (cfun), *loc);
       return;
     }
-  gcc_assert (TREE_CODE (def) == SSA_NAME);
+  gcc_assert (!def || TREE_CODE (def) == SSA_NAME);
   loc = htab_find_slot_with_hash (DEFAULT_DEFS (cfun), &in,
                                   DECL_UID (var), INSERT);
 
