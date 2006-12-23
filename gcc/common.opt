@@ -438,12 +438,6 @@ fforce-addr
 Common Report Var(flag_force_addr)
 Copy memory address constants into registers before use
 
-; Nonzero for -fforce-mem: load memory value into a register
-; before arithmetic on it.  This makes better cse but slower compilation.
-fforce-mem
-Common Report Var(flag_force_mem)
-Copy memory operands into registers before use
-
 fforward-propagate
 Common Report Var(flag_forward_propagate)
 Perform a forward propagation pass on RTL

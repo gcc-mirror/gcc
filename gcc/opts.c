@@ -992,10 +992,6 @@ common_handle_option (size_t scode, const char *arg, int value,
       flag_pedantic_errors = pedantic = 1;
       break;
 
-    case OPT_fforce_mem:
-      warning (0, "-f[no-]force-mem is nop and option will be removed in 4.2");
-      break;
-
     case OPT_floop_optimize:
     case OPT_frerun_loop_opt:
     case OPT_fstrength_reduce:
