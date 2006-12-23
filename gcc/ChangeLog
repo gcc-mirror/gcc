@@ -1,3 +1,35 @@
+2006-12-23  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-ssa-loop-niter.c (number_of_iterations_lt_to_ne,
+	assert_no_overflow_lt, assert_loop_rolls_lt,
+	number_of_iterations_lt, number_of_iterations_le,
+	number_of_iterations_cond, number_of_iterations_exit):
+	Use integer_zerop/integer_nonzerop instead of
+	null_or_integer_zerop/nonnull_and_integer_nonzerop.
+	* tree.h (null_or_integer_zerop, nonnull_and_integer_nonzerop):
+	Removed.
+	* tree-scalar-evolution.c (simple_iv): Return zero for step of
+	an invariant.
+	* tree-ssa-loop-ivopts.c (alloc_iv): Do not set step of invariants
+	to zero.
+	(get_iv): Return NULL for non-scalar types.  Use zero as a step
+	of an invariant.
+	(determine_biv_step, find_interesting_uses_op,
+	find_interesting_uses_cond, find_interesting_uses_stmt,
+	add_old_ivs_candidates, determine_use_iv_cost_condition,
+	rewrite_use_compare, remove_unused_ivs):
+	Use integer_zerop instead of null_or_integer_zerop.
+	(struct ifs_ivopts_data): Replace step_p field with step field.
+	(idx_find_step): Use zero as a step of an invariant.  Modify
+	step instead of *step_p.
+	(find_interesting_uses_address): Use zero as a step of an invariant.
+	Use integer_zerop instead of null_or_integer_zerop.
+	(find_interesting_uses_outside): Call find_interesting_uses_op only
+	for phi nodes for real operands.
+	(add_candidate_1): Expect step to be non-NULL.
+	* tree-ssa-loop-prefetch.c (idx_analyze_ref): Expect step to be
+	non-NULL.
+
 2006-12-23  Andrew Pinski  <pinskia@gmail.com>
 
 	* vec.c: Don't include tree.h.

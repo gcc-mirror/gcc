@@ -337,14 +337,9 @@ idx_analyze_ref (tree base, tree *index, void *data)
   ibase = iv.base;
   step = iv.step;
 
-  if (null_or_integer_zerop (step))
-    istep = 0;
-  else
-    {
-      if (!cst_and_fits_in_hwi (step))
-	return false;
-      istep = int_cst_value (step);
-    }
+  if (!cst_and_fits_in_hwi (step))
+    return false;
+  istep = int_cst_value (step);
 
   if (TREE_CODE (ibase) == PLUS_EXPR
       && cst_and_fits_in_hwi (TREE_OPERAND (ibase, 1)))

@@ -840,9 +840,7 @@ static struct iv *
 alloc_iv (tree base, tree step)
 {
   struct iv *iv = XCNEW (struct iv);
-
-  if (step && integer_zerop (step))
-    step = NULL_TREE;
+  gcc_assert (step != NULL_TREE);
 
   iv->base = base;
   iv->base_object = determine_base_object (base);
@@ -875,14 +873,19 @@ static struct iv *
 get_iv (struct ivopts_data *data, tree var)
 {
   basic_block bb;
-  
+  tree type = TREE_TYPE (var);
+
+  if (!POINTER_TYPE_P (type)
+      && !INTEGRAL_TYPE_P (type))
+    return NULL;
+
   if (!name_info (data, var)->iv)
     {
       bb = bb_for_stmt (SSA_NAME_DEF_STMT (var));
 
       if (!bb
 	  || !flow_bb_inside_loop_p (data->current_loop, bb))
-	set_iv (data, var, var, NULL_TREE);
+	set_iv (data, var, var, build_int_cst (type, 0));
     }
 
   return name_info (data, var)->iv;
@@ -904,7 +907,7 @@ determine_biv_step (tree phi)
   if (!simple_iv (loop, phi, name, &iv, true))
     return NULL_TREE;
 
-  return (null_or_integer_zerop (iv.step) ? NULL_TREE : iv.step);
+  return integer_zerop (iv.step) ? NULL_TREE : iv.step;
 }
 
 /* Finds basic ivs.  */
@@ -1160,7 +1163,7 @@ find_interesting_uses_op (struct ivopts_data *data, tree op)
       return use;
     }
 
-  if (null_or_integer_zerop (iv->step))
+  if (integer_zerop (iv->step))
     {
       record_invariant (data, op, true);
       return NULL;
@@ -1192,7 +1195,7 @@ find_interesting_uses_cond (struct ivopts_data *data, tree stmt, tree *cond_p)
   struct iv const_iv;
   tree zero = integer_zero_node;
 
-  const_iv.step = NULL_TREE;
+  const_iv.step = integer_zero_node;
 
   if (TREE_CODE (*cond_p) != SSA_NAME
       && !COMPARISON_CLASS_P (*cond_p))
@@ -1224,23 +1227,23 @@ find_interesting_uses_cond (struct ivopts_data *data, tree stmt, tree *cond_p)
       (!iv0 || !iv1)
       /* Eliminating condition based on two ivs would be nontrivial.
 	 ??? TODO -- it is not really important to handle this case.  */
-      || (!null_or_integer_zerop (iv0->step)
-	  && !null_or_integer_zerop (iv1->step)))
+      || (!integer_zerop (iv0->step)
+	  && !integer_zerop (iv1->step)))
     {
       find_interesting_uses_op (data, *op0_p);
       find_interesting_uses_op (data, *op1_p);
       return;
     }
 
-  if (null_or_integer_zerop (iv0->step)
-      && null_or_integer_zerop (iv1->step))
+  if (integer_zerop (iv0->step)
+      && integer_zerop (iv1->step))
     {
       /* If both are invariants, this is a work for unswitching.  */
       return;
     }
 
   civ = XNEW (struct iv);
-  *civ = null_or_integer_zerop (iv0->step) ? *iv1: *iv0;
+  *civ = integer_zerop (iv0->step) ? *iv1: *iv0;
   record_use (data, cond_p, civ, stmt, USE_COMPARE);
 }
 
@@ -1285,7 +1288,7 @@ struct ifs_ivopts_data
 {
   struct ivopts_data *ivopts_data;
   tree stmt;
-  tree *step_p;
+  tree step;
 };
 
 static bool
@@ -1334,7 +1337,7 @@ idx_find_step (tree base, tree *idx, void *data)
 	  ARRAY_REF path below.  */
   *idx = iv->base;
 
-  if (!iv->step)
+  if (integer_zerop (iv->step))
     return true;
 
   if (TREE_CODE (base) == ARRAY_REF)
@@ -1360,11 +1363,7 @@ idx_find_step (tree base, tree *idx, void *data)
     }
 
   step = fold_build2 (MULT_EXPR, sizetype, step, iv_step);
-
-  if (!*dta->step_p)
-    *dta->step_p = step;
-  else
-    *dta->step_p = fold_build2 (PLUS_EXPR, sizetype, *dta->step_p, step);
+  dta->step = fold_build2 (PLUS_EXPR, sizetype, dta->step, step);
 
   return true;
 }
@@ -1456,7 +1455,7 @@ may_be_nonaddressable_p (tree expr)
 static void
 find_interesting_uses_address (struct ivopts_data *data, tree stmt, tree *op_p)
 {
-  tree base = *op_p, step = NULL;
+  tree base = *op_p, step = build_int_cst (sizetype, 0);
   struct iv *civ;
   struct ifs_ivopts_data ifs_ivopts_data;
 
@@ -1509,14 +1508,11 @@ find_interesting_uses_address (struct ivopts_data *data, tree stmt, tree *op_p)
 	      if (TMR_STEP (base))
 		astep = fold_build2 (MULT_EXPR, type, TMR_STEP (base), astep);
 
-	      if (step)
-		step = fold_build2 (PLUS_EXPR, type, step, astep);
-	      else
-		step = astep;
+	      step = fold_build2 (PLUS_EXPR, type, step, astep);
 	    }
 	}
 
-      if (null_or_integer_zerop (step))
+      if (integer_zerop (step))
 	goto fail;
       base = tree_mem_ref_addr (type, base);
     }
@@ -1524,10 +1520,11 @@ find_interesting_uses_address (struct ivopts_data *data, tree stmt, tree *op_p)
     {
       ifs_ivopts_data.ivopts_data = data;
       ifs_ivopts_data.stmt = stmt;
-      ifs_ivopts_data.step_p = &step;
+      ifs_ivopts_data.step = build_int_cst (sizetype, 0);
       if (!for_each_index (&base, idx_find_step, &ifs_ivopts_data)
-	  || null_or_integer_zerop (step))
+	  || integer_zerop (ifs_ivopts_data.step))
 	goto fail;
+      step = ifs_ivopts_data.step;
 
       gcc_assert (TREE_CODE (base) != ALIGN_INDIRECT_REF);
       gcc_assert (TREE_CODE (base) != MISALIGNED_INDIRECT_REF);
@@ -1600,7 +1597,7 @@ find_interesting_uses_stmt (struct ivopts_data *data, tree stmt)
 
 	  iv = get_iv (data, lhs);
 
-	  if (iv && !null_or_integer_zerop (iv->step))
+	  if (iv && !integer_zerop (iv->step))
 	    return;
 	}
 
@@ -1646,7 +1643,7 @@ find_interesting_uses_stmt (struct ivopts_data *data, tree stmt)
       lhs = PHI_RESULT (stmt);
       iv = get_iv (data, lhs);
 
-      if (iv && !null_or_integer_zerop (iv->step))
+      if (iv && !integer_zerop (iv->step))
 	return;
     }
 
@@ -1676,7 +1673,8 @@ find_interesting_uses_outside (struct ivopts_data *data, edge exit)
   for (phi = phi_nodes (exit->dest); phi; phi = PHI_CHAIN (phi))
     {
       def = PHI_ARG_DEF_FROM_EDGE (phi, exit);
-      find_interesting_uses_op (data, def);
+      if (is_gimple_reg (def))
+	find_interesting_uses_op (data, def);
     }
 }
 
@@ -1944,8 +1942,7 @@ add_candidate_1 (struct ivopts_data *data,
       if (type != orig_type)
 	{
 	  base = fold_convert (type, base);
-	  if (step)
-	    step = fold_convert (type, step);
+	  step = fold_convert (type, step);
 	}
     }
 
@@ -1970,19 +1967,9 @@ add_candidate_1 (struct ivopts_data *data,
       if (!base && !step)
 	continue;
 
-      if (!operand_equal_p (base, cand->iv->base, 0))
-	continue;
-
-      if (null_or_integer_zerop (cand->iv->step))
-	{
-	  if (null_or_integer_zerop (step))
-	    break;
-	}
-      else
-	{
-	  if (step && operand_equal_p (step, cand->iv->step, 0))
-	    break;
-	}
+      if (operand_equal_p (base, cand->iv->base, 0)
+	  && operand_equal_p (step, cand->iv->step, 0))
+	break;
     }
 
   if (i == n_iv_cands (data))
@@ -2136,7 +2123,7 @@ add_old_ivs_candidates (struct ivopts_data *data)
   EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, i, bi)
     {
       iv = ver_info (data, i)->iv;
-      if (iv && iv->biv_p && !null_or_integer_zerop (iv->step))
+      if (iv && iv->biv_p && !integer_zerop (iv->step))
 	add_old_iv_candidates (data, iv);
     }
 }
@@ -3733,7 +3720,7 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
     {
       op = TREE_OPERAND (cond, 0);
       if (TREE_CODE (op) == SSA_NAME
-	  && !null_or_integer_zerop (get_iv (data, op)->step))
+	  && !integer_zerop (get_iv (data, op)->step))
 	op = TREE_OPERAND (cond, 1);
       if (TREE_CODE (op) == SSA_NAME)
 	{
@@ -5151,7 +5138,7 @@ rewrite_use_compare (struct ivopts_data *data,
   cond = *use->op_p;
   op_p = &TREE_OPERAND (cond, 0);
   if (TREE_CODE (*op_p) != SSA_NAME
-      || null_or_integer_zerop (get_iv (data, *op_p)->step))
+      || integer_zerop (get_iv (data, *op_p)->step))
     op_p = &TREE_OPERAND (cond, 1);
 
   op = force_gimple_operand (comp, &stmts, true, SSA_NAME_VAR (*op_p));
@@ -5222,7 +5209,7 @@ remove_unused_ivs (struct ivopts_data *data)
 
       info = ver_info (data, j);
       if (info->iv
-	  && !null_or_integer_zerop (info->iv->step)
+	  && !integer_zerop (info->iv->step)
 	  && !info->inv_id
 	  && !info->iv->have_use_for
 	  && !info->preserve_biv)
