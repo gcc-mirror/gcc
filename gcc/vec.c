@@ -31,7 +31,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "ggc.h"
 #include "vec.h"
 #include "coretypes.h"
-#include "tree.h"
 #include "toplev.h"
 
 struct vec_prefix 
