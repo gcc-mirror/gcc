@@ -283,6 +283,10 @@ Wmissing-include-dirs
 C ObjC C++ ObjC++
 Warn about user-specified include directories that do not exist
 
+Wmissing-parameter-type
+C ObjC Var(warn_missing_parameter_type) Init(-1)
+Warn about function parameters declared without a type specifier in K&R-style functions
+
 Wmissing-prototypes
 C ObjC Var(warn_missing_prototypes)
 Warn about global functions without prototypes
