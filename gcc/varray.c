@@ -246,14 +246,17 @@ dump_varray_statistics (void)
 #ifdef GATHER_STATISTICS
   struct output_info info;
 
-  fprintf (stderr, "\nVARRAY Kind            Count      Bytes  Resized copied\n");
-  fprintf (stderr, "-------------------------------------------------------\n");
-  info.count = 0;
-  info.size = 0;
-  htab_traverse (varray_hash, print_statistics, &info);
-  fprintf (stderr, "-------------------------------------------------------\n");
-  fprintf (stderr, "%-20s %7d %10d\n",
-	   "Total", info.count, info.size);
-  fprintf (stderr, "-------------------------------------------------------\n");
+  if (varray_hash)
+    {
+      fprintf (stderr, "\nVARRAY Kind            Count      Bytes  Resized copied\n");
+      fprintf (stderr, "-------------------------------------------------------\n");
+      info.count = 0;
+      info.size = 0;
+      htab_traverse (varray_hash, print_statistics, &info);
+      fprintf (stderr, "-------------------------------------------------------\n");
+      fprintf (stderr, "%-20s %7d %10d\n",
+	       "Total", info.count, info.size);
+      fprintf (stderr, "-------------------------------------------------------\n");
+   }
 #endif
 }

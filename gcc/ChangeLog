@@ -1,3 +1,17 @@
+2006-12-23  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (dump_memory_report): Break out from...
+	(finalize): Here.
+	* toplev.h (dump_memory_report): Declare.
+	(cmp_statistic): Rename to ...
+	(final_cmp_statistic): ... this one
+	(cmp_statistic): New.
+	(dump_ggc_loc_staitsitcs): New FINAL parpameter.
+	* common.opt (-fpre-ipa-mem-report, -fpost-ipa-mem-report): Declare.
+	* varray.c (dump_varray_staitiscs): Do not segfault when no varray was
+	allocated so far.
+        * cgraphunit.c (cgraph_optimize): Dump the memory reports.
+
 2006-12-22  Mike Stump  <mrs@apple.com>
 
 	* config/rs6000/t-darwin (DARWIN_EXTRA_CRT_BUILD_CFLAGS): Add

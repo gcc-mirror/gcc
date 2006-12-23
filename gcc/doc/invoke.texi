@@ -290,7 +290,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-tree-storeccp@r{[}-@var{n}@r{]} @gol
 -feliminate-dwarf2-dups -feliminate-unused-debug-types @gol
 -feliminate-unused-debug-symbols -femit-class-debug-always @gol
--fmem-report -fprofile-arcs @gol
+-fmem-report -fpre-ipa-mem-report -fpost-ipa-mem-report -fprofile-arcs @gol
 -frandom-seed=@var{string} -fsched-verbose=@var{n} @gol
 -ftest-coverage  -ftime-report -fvar-tracking @gol
 -g  -g@var{level}  -gcoff -gdwarf-2 @gol
@@ -3727,6 +3727,13 @@ pass when it finishes.
 @opindex fmem-report
 Makes the compiler print some statistics about permanent memory
 allocation when it finishes.
+
+@item -fpre-ipa-mem-report
+@opindex fpre-ipa-mem-report
+@item -fpost-ipa-mem-report
+@opindex fpost-ipa-mem-report
+Makes the compiler print some statistics about permanent memory
+allocation before or after interprocedural optimization.
 
 @item -fprofile-arcs
 @opindex fprofile-arcs

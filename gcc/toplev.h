@@ -100,6 +100,8 @@ extern void check_global_declarations (tree *, int);
 extern void emit_debug_global_declarations (tree *, int);
 extern void write_global_declarations (void);
 
+extern void dump_memory_report (bool);
+
 /* A unique local time stamp, might be zero if none is available.  */
 extern unsigned local_tick;
 

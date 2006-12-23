@@ -2012,6 +2012,19 @@ lang_dependent_init (const char *name)
   return 1;
 }
 
+void
+dump_memory_report (bool final)
+{
+  ggc_print_statistics ();
+  stringpool_statistics ();
+  dump_tree_statistics ();
+  dump_rtx_statistics ();
+  dump_varray_statistics ();
+  dump_alloc_pool_statistics ();
+  dump_bitmap_statistics ();
+  dump_ggc_loc_statistics (final);
+}
+
 /* Clean up: close opened files, etc.  */
 
 static void
@@ -2040,16 +2053,7 @@ finalize (void)
   finish_optimization_passes ();
 
   if (mem_report)
-    {
-      ggc_print_statistics ();
-      stringpool_statistics ();
-      dump_tree_statistics ();
-      dump_rtx_statistics ();
-      dump_varray_statistics ();
-      dump_alloc_pool_statistics ();
-      dump_bitmap_statistics ();
-      dump_ggc_loc_statistics ();
-    }
+    dump_memory_report (true);
 
   /* Free up memory for the benefit of leak detectors.  */
   free_reg_info ();
