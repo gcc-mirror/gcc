@@ -193,7 +193,7 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
     mod = fold_build2 (MINUS_EXPR, niter_type, step, mod);
   tmod = fold_convert (type, mod);
 
-  if (nonnull_and_integer_nonzerop (iv0->step))
+  if (integer_nonzerop (iv0->step))
     {
       /* The final value of the iv is iv1->base + MOD, assuming that this
 	 computation does not overflow, and that
@@ -256,7 +256,7 @@ assert_no_overflow_lt (tree type, affine_iv *iv0, affine_iv *iv1,
   tree bound, d, assumption, diff;
   tree niter_type = TREE_TYPE (step);
 
-  if (nonnull_and_integer_nonzerop (iv0->step))
+  if (integer_nonzerop (iv0->step))
     {
       /* for (i = iv0->base; i < iv1->base; i += iv0->step) */
       if (iv0->no_overflow)
@@ -324,7 +324,7 @@ assert_loop_rolls_lt (tree type, affine_iv *iv0, affine_iv *iv1,
   tree assumption = boolean_true_node, bound, diff;
   tree mbz, mbzl, mbzr;
 
-  if (nonnull_and_integer_nonzerop (iv0->step))
+  if (integer_nonzerop (iv0->step))
     {
       diff = fold_build2 (MINUS_EXPR, type,
 			  iv0->step, build_int_cst (type, 1));
@@ -384,7 +384,7 @@ number_of_iterations_lt (tree type, affine_iv *iv0, affine_iv *iv1,
   tree niter_type = unsigned_type_for (type);
   tree delta, step, s;
 
-  if (nonnull_and_integer_nonzerop (iv0->step))
+  if (integer_nonzerop (iv0->step))
     {
       niter->control = *iv0;
       niter->cmp = LT_EXPR;
@@ -402,10 +402,8 @@ number_of_iterations_lt (tree type, affine_iv *iv0, affine_iv *iv1,
 		       fold_convert (niter_type, iv0->base));
 
   /* First handle the special case that the step is +-1.  */
-  if ((iv0->step && integer_onep (iv0->step)
-       && null_or_integer_zerop (iv1->step))
-      || (iv1->step && integer_all_onesp (iv1->step)
-	  && null_or_integer_zerop (iv0->step)))
+  if ((integer_onep (iv0->step) && integer_zerop (iv1->step))
+      || (integer_all_onesp (iv1->step) && integer_zerop (iv0->step)))
     {
       /* for (i = iv0->base; i < iv1->base; i++)
 
@@ -421,7 +419,7 @@ number_of_iterations_lt (tree type, affine_iv *iv0, affine_iv *iv1,
       return true;
     }
 
-  if (nonnull_and_integer_nonzerop (iv0->step))
+  if (integer_nonzerop (iv0->step))
     step = fold_convert (niter_type, iv0->step);
   else
     step = fold_convert (niter_type,
@@ -479,7 +477,7 @@ number_of_iterations_le (tree type, affine_iv *iv0, affine_iv *iv1,
 
   if (!never_infinite)
     {
-      if (nonnull_and_integer_nonzerop (iv0->step))
+      if (integer_nonzerop (iv0->step))
 	assumption = fold_build2 (NE_EXPR, boolean_type_node,
 				  iv1->base, TYPE_MAX_VALUE (type));
       else
@@ -493,7 +491,7 @@ number_of_iterations_le (tree type, affine_iv *iv0, affine_iv *iv1,
 					  niter->assumptions, assumption);
     }
 
-  if (nonnull_and_integer_nonzerop (iv0->step))
+  if (integer_nonzerop (iv0->step))
     iv1->base = fold_build2 (PLUS_EXPR, type,
 			     iv1->base, build_int_cst (type, 1));
   else
@@ -542,7 +540,7 @@ number_of_iterations_cond (tree type, affine_iv *iv0, enum tree_code code,
   /* Make < comparison from > ones, and for NE_EXPR comparisons, ensure that
      the control variable is on lhs.  */
   if (code == GE_EXPR || code == GT_EXPR
-      || (code == NE_EXPR && null_or_integer_zerop (iv0->step)))
+      || (code == NE_EXPR && integer_zerop (iv0->step)))
     {
       SWAP (iv0, iv1);
       code = swap_tree_comparison (code);
@@ -578,9 +576,9 @@ number_of_iterations_cond (tree type, affine_iv *iv0, enum tree_code code,
 
   /* If the control induction variable does not overflow, the loop obviously
      cannot be infinite.  */
-  if (!null_or_integer_zerop (iv0->step) && iv0->no_overflow)
+  if (!integer_zerop (iv0->step) && iv0->no_overflow)
     never_infinite = true;
-  else if (!null_or_integer_zerop (iv1->step) && iv1->no_overflow)
+  else if (!integer_zerop (iv1->step) && iv1->no_overflow)
     never_infinite = true;
   else
     never_infinite = false;
@@ -588,7 +586,7 @@ number_of_iterations_cond (tree type, affine_iv *iv0, enum tree_code code,
   /* We can handle the case when neither of the sides of the comparison is
      invariant, provided that the test is NE_EXPR.  This rarely occurs in
      practice, but it is simple enough to manage.  */
-  if (!null_or_integer_zerop (iv0->step) && !null_or_integer_zerop (iv1->step))
+  if (!integer_zerop (iv0->step) && !integer_zerop (iv1->step))
     {
       if (code != NE_EXPR)
 	return false;
@@ -596,14 +594,14 @@ number_of_iterations_cond (tree type, affine_iv *iv0, enum tree_code code,
       iv0->step = fold_binary_to_constant (MINUS_EXPR, type,
 					   iv0->step, iv1->step);
       iv0->no_overflow = false;
-      iv1->step = NULL_TREE;
+      iv1->step = build_int_cst (type, 0);
       iv1->no_overflow = true;
     }
 
   /* If the result of the comparison is a constant,  the loop is weird.  More
      precise handling would be possible, but the situation is not common enough
      to waste time on it.  */
-  if (null_or_integer_zerop (iv0->step) && null_or_integer_zerop (iv1->step))
+  if (integer_zerop (iv0->step) && integer_zerop (iv1->step))
     return false;
 
   /* Ignore loops of while (i-- < 10) type.  */
@@ -612,7 +610,7 @@ number_of_iterations_cond (tree type, affine_iv *iv0, enum tree_code code,
       if (iv0->step && tree_int_cst_sign_bit (iv0->step))
 	return false;
 
-      if (!null_or_integer_zerop (iv1->step) && !tree_int_cst_sign_bit (iv1->step))
+      if (!integer_zerop (iv1->step) && !tree_int_cst_sign_bit (iv1->step))
 	return false;
     }
 
@@ -628,7 +626,7 @@ number_of_iterations_cond (tree type, affine_iv *iv0, enum tree_code code,
   switch (code)
     {
     case NE_EXPR:
-      gcc_assert (null_or_integer_zerop (iv1->step));
+      gcc_assert (integer_zerop (iv1->step));
       return number_of_iterations_ne (type, iv0, iv1->base, niter, never_infinite);
     case LT_EXPR:
       return number_of_iterations_lt (type, iv0, iv1, niter, never_infinite);
@@ -1099,11 +1097,10 @@ number_of_iterations_exit (struct loop *loop, edge exit,
   
       /* We can provide a more specific warning if one of the operator is
 	 constant and the other advances by +1 or -1.  */
-      if (!null_or_integer_zerop (iv1.step)
-	  ? (null_or_integer_zerop (iv0.step)
+      if (!integer_zerop (iv1.step)
+	  ? (integer_zerop (iv0.step)
 	     && (integer_onep (iv1.step) || integer_all_onesp (iv1.step)))
-	  : (iv0.step
-	     && (integer_onep (iv0.step) || integer_all_onesp (iv0.step))))
+	  : (integer_onep (iv0.step) || integer_all_onesp (iv0.step)))
         wording =
           flag_unsafe_loop_optimizations
           ? N_("assuming that the loop is not infinite")

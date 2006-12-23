@@ -2813,6 +2813,7 @@ simple_iv (struct loop *loop, tree stmt, tree op, affine_iv *iv,
       && !chrec_contains_symbols_defined_in_loop (ev, loop->num))
     {
       iv->base = ev;
+      iv->step = build_int_cst (TREE_TYPE (ev), 0);
       iv->no_overflow = true;
       return true;
     }
