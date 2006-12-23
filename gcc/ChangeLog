@@ -1,3 +1,9 @@
+2006-12-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (dbx_reg_number): Do leaf register remapping
+	only if the function is leaf.
+	(multiple_reg_loc_descriptor): Likewise.
+
 2006-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/30262
