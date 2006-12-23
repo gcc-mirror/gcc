@@ -19,32 +19,48 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.  */
 
 #ifndef GCC_INSN_ADDR_H
-#define GCC_INSN_ADDR_H 
+#define GCC_INSN_ADDR_H
 
-#include "varray.h"
+#include "vecprim.h"
 
-extern GTY(()) varray_type insn_addresses_;
+extern VEC(int,heap) *insn_addresses_;
 extern int insn_current_address;
 
-#define INSN_ADDRESSES_DEFN() varray_type insn_addresses_
-#define INSN_ADDRESSES(id) VARRAY_INT (insn_addresses_, (id))
-#define INSN_ADDRESSES_ALLOC(size) \
-  VARRAY_INT_INIT (insn_addresses_, (size), "insn_addresses")
-#define INSN_ADDRESSES_FREE() (insn_addresses_ = 0)
+#define INSN_ADDRESSES(id) (*&(VEC_address (int, insn_addresses_) [id]))
+#define INSN_ADDRESSES_ALLOC(size)			\
+  do							\
+    {							\
+      insn_addresses_ = VEC_alloc (int, heap, size);	\
+      VEC_safe_grow (int, heap, insn_addresses_, size);	\
+      memset (VEC_address (int, insn_addresses_),	\
+	      0, sizeof (int) * size);			\
+    }							\
+  while (0)
+#define INSN_ADDRESSES_FREE() (VEC_free (int, heap, insn_addresses_))
 #define INSN_ADDRESSES_SET_P() (insn_addresses_ != 0)
-#define INSN_ADDRESSES_SIZE() VARRAY_SIZE (insn_addresses_)
-#define INSN_ADDRESSES_NEW(insn, addr) do \
-  {									\
-    unsigned insn_uid__ = INSN_UID ((insn));				\
-    int insn_addr__ = (addr);						\
-									\
-    if (INSN_ADDRESSES_SET_P ())					\
-      {									\
-	if (INSN_ADDRESSES_SIZE () <= insn_uid__)			\
-	  VARRAY_GROW (insn_addresses_, insn_uid__ + 1);		\
-	INSN_ADDRESSES (insn_uid__) = insn_addr__;			\
-      }									\
-  }									\
-while (0)
+#define INSN_ADDRESSES_SIZE() (VEC_length (int, insn_addresses_))
+
+static inline void
+insn_addresses_new (rtx insn, int insn_addr)
+{
+  unsigned insn_uid = INSN_UID ((insn));
+
+  if (INSN_ADDRESSES_SET_P ())
+    {
+      size_t size = INSN_ADDRESSES_SIZE ();
+      if (size <= insn_uid)
+	{
+	  int *p;
+	  VEC_safe_grow (int, heap, insn_addresses_, insn_uid + 1);
+	  p = VEC_address (int, insn_addresses_);
+	  memset (&p[size],
+		  0, sizeof (int) * (insn_uid + 1 - size));
+	}
+      INSN_ADDRESSES (insn_uid) = insn_addr;
+    }
+}
+
+#define INSN_ADDRESSES_NEW(insn, addr)		\
+  (insn_addresses_new (insn, addr))
 
 #endif /* ! GCC_INSN_ADDR_H */
