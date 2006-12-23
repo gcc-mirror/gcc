@@ -1394,6 +1394,11 @@ cgraph_optimize (void)
   varpool_analyze_pending_decls ();
 
   timevar_push (TV_CGRAPHOPT);
+  if (pre_ipa_mem_report)
+    {
+      fprintf (stderr, "Memory consumption before IPA\n");
+      dump_memory_report (false);
+    }
   if (!quiet_flag)
     fprintf (stderr, "Performing interprocedural optimizations\n");
 
@@ -1418,6 +1423,11 @@ cgraph_optimize (void)
       fprintf (cgraph_dump_file, "Optimized ");
       dump_cgraph (cgraph_dump_file);
       dump_varpool (cgraph_dump_file);
+    }
+  if (post_ipa_mem_report)
+    {
+      fprintf (stderr, "Memory consumption before IPA\n");
+      dump_memory_report (false);
     }
   timevar_pop (TV_CGRAPHOPT);
 

@@ -644,6 +644,14 @@ foptimize-sibling-calls
 Common Report Var(flag_optimize_sibling_calls)
 Optimize sibling and tail recursive calls
 
+fpre-ipa-mem-report
+Common Report Var(pre_ipa_mem_report)
+Report on memory allocation before interprocedural optimization
+
+fpost-ipa-mem-report
+Common Report Var(post_ipa_mem_report)
+Report on memory allocation before interprocedural optimization
+
 fpack-struct
 Common Report Var(flag_pack_struct)
 Pack structure members together without holes

@@ -222,7 +222,7 @@ extern void ggc_record_overhead (size_t, size_t, void * MEM_STAT_DECL);
 extern void ggc_free_overhead (void *);
 extern void ggc_prune_overhead_list (void);
 
-extern void dump_ggc_loc_statistics (void);
+extern void dump_ggc_loc_statistics (bool);
 
 /* Type-safe, C++-friendly versions of ggc_alloc() and gcc_calloc().  */
 #define GGC_NEW(T)		((T *) ggc_alloc (sizeof (T)))
