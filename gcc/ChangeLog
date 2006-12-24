@@ -1,5 +1,19 @@
 2006-12-24  Jan Hubicka  <jh@suse.cz>
 
+	* tree-ssa-operands.h (struct ssa_operand_memory_d):
+	add ssa_operand_mem_size.
+	* tree-ssa-operands.c (operands_bitmap_obstack): New.               
+	(ssa_operand_mem_size): Remove.
+	(init_ssa_operands): Initialize obstack; use it.
+	(fini_ssa_operands): Release obstack.
+	(ssa_operand_alloc): Update.
+	(finalize_ssa_vdefs, finalize_ssa_vuse_ops, copy_virtual_operands,
+	get_mpt_for): Use obstack.
+	* tree-ssa.c (delete_tree_ssa): Call fini_ssa_operands.
+	* tree-outof-ssa.c: (remove_ssa_form): Don't call it here.
+
+2006-12-24  Jan Hubicka  <jh@suse.cz>
+
 	* tree-mudflap.c (ml_decl_cache_locals, md_build_check_statement_for):
 	add newly referenced vars.
 

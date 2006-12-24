@@ -139,6 +139,9 @@ static VEC(tree,heap) *build_vdefs;
 /* Set for building all the VUSE operands.  */
 static VEC(tree,heap) *build_vuses;
 
+/* Bitmap obstack for our datastructures that needs to survive across	
+   compilations of multiple funcitons.  */
+static bitmap_obstack operands_bitmap_obstack;
 /* Set for building all the loaded symbols.  */
 static bitmap build_loads;
 
@@ -351,9 +354,6 @@ add_vop_to_freelist (voptype_p ptr)
 #define OP_SIZE_2	110
 #define OP_SIZE_3	511
 
-/* Current size of the operand memory buffer.  */
-static unsigned int ssa_operand_mem_size;
-
 /* Initialize the operand cache routines.  */
 
 void
@@ -365,18 +365,20 @@ init_ssa_operands (void)
       build_uses = VEC_alloc (tree, heap, 10);
       build_vuses = VEC_alloc (tree, heap, 25);
       build_vdefs = VEC_alloc (tree, heap, 25);
-      build_loads = BITMAP_ALLOC (NULL);
-      build_stores = BITMAP_ALLOC (NULL);
+      bitmap_obstack_initialize (&operands_bitmap_obstack);
+      build_loads = BITMAP_ALLOC (&operands_bitmap_obstack);
+      build_stores = BITMAP_ALLOC (&operands_bitmap_obstack);
       scb_stack = VEC_alloc (scb_t, heap, 20);
     }
 
   gcc_assert (gimple_ssa_operands (cfun)->operand_memory == NULL);
   gcc_assert (gimple_ssa_operands (cfun)->mpt_table == NULL);
-  gimple_ssa_operands (cfun)->operand_memory_index = ssa_operand_mem_size;
+  gimple_ssa_operands (cfun)->operand_memory_index
+     = gimple_ssa_operands (cfun)->ssa_operand_mem_size;
   gimple_ssa_operands (cfun)->ops_active = true;
   memset (&clobber_stats, 0, sizeof (clobber_stats));
   init_vop_buckets ();
-  ssa_operand_mem_size = OP_SIZE_INIT;
+  gimple_ssa_operands (cfun)->ssa_operand_mem_size = OP_SIZE_INIT;
 }
 
 
@@ -426,6 +428,8 @@ fini_ssa_operands (void)
 
   gimple_ssa_operands (cfun)->ops_active = false;
 
+  if (!n_initialized)
+    bitmap_obstack_release (&operands_bitmap_obstack);
   if (dump_file && (dump_flags & TDF_STATS))
     {
       fprintf (dump_file, "Original clobbered vars:           %d\n",
@@ -452,31 +456,36 @@ ssa_operand_alloc (unsigned size)
   char *ptr;
 
   if (gimple_ssa_operands (cfun)->operand_memory_index + size
-      >= ssa_operand_mem_size)
+      >= gimple_ssa_operands (cfun)->ssa_operand_mem_size)
     {
       struct ssa_operand_memory_d *ptr;
 
-      if (ssa_operand_mem_size == OP_SIZE_INIT)
-	ssa_operand_mem_size = OP_SIZE_1 * sizeof (struct voptype_d);
+      if (gimple_ssa_operands (cfun)->ssa_operand_mem_size == OP_SIZE_INIT)
+	gimple_ssa_operands (cfun)->ssa_operand_mem_size
+	   = OP_SIZE_1 * sizeof (struct voptype_d);
       else
-	if (ssa_operand_mem_size == OP_SIZE_1 * sizeof (struct voptype_d))
-	  ssa_operand_mem_size = OP_SIZE_2 * sizeof (struct voptype_d);
+	if (gimple_ssa_operands (cfun)->ssa_operand_mem_size
+	    == OP_SIZE_1 * sizeof (struct voptype_d))
+	  gimple_ssa_operands (cfun)->ssa_operand_mem_size
+	     = OP_SIZE_2 * sizeof (struct voptype_d);
 	else
-	  ssa_operand_mem_size = OP_SIZE_3 * sizeof (struct voptype_d);
+	  gimple_ssa_operands (cfun)->ssa_operand_mem_size
+	     = OP_SIZE_3 * sizeof (struct voptype_d);
 
       /* Go right to the maximum size if the request is too large.  */
-      if (size > ssa_operand_mem_size)
-        ssa_operand_mem_size = OP_SIZE_3 * sizeof (struct voptype_d);
+      if (size > gimple_ssa_operands (cfun)->ssa_operand_mem_size)
+        gimple_ssa_operands (cfun)->ssa_operand_mem_size
+	  = OP_SIZE_3 * sizeof (struct voptype_d);
 
       /* Fail if there is not enough space.  If there are this many operands
 	 required, first make sure there isn't a different problem causing this
 	 many operands.  If the decision is that this is OK, then we can 
 	 specially allocate a buffer just for this request.  */
-      gcc_assert (size <= ssa_operand_mem_size);
+      gcc_assert (size <= gimple_ssa_operands (cfun)->ssa_operand_mem_size);
 
       ptr = (struct ssa_operand_memory_d *) 
 	      ggc_alloc (sizeof (struct ssa_operand_memory_d) 
-			 + ssa_operand_mem_size - 1);
+			 + gimple_ssa_operands (cfun)->ssa_operand_mem_size - 1);
       ptr->next = gimple_ssa_operands (cfun)->operand_memory;
       gimple_ssa_operands (cfun)->operand_memory = ptr;
       gimple_ssa_operands (cfun)->operand_memory_index = 0;
@@ -876,7 +885,7 @@ finalize_ssa_vdefs (tree stmt)
   if (!bitmap_empty_p (build_stores))
     {
       if (ann->operands.stores == NULL)
-	ann->operands.stores = BITMAP_ALLOC (NULL);
+	ann->operands.stores = BITMAP_ALLOC (&operands_bitmap_obstack);
 
       bitmap_copy (ann->operands.stores, build_stores);
     }
@@ -982,7 +991,7 @@ finalize_ssa_vuse_ops (tree stmt)
   if (!bitmap_empty_p (build_loads))
     {
       if (ann->operands.loads == NULL)
-	ann->operands.loads = BITMAP_ALLOC (NULL);
+	ann->operands.loads = BITMAP_ALLOC (&operands_bitmap_obstack);
 
       bitmap_copy (ann->operands.loads, build_loads);
     }
@@ -2403,13 +2412,13 @@ copy_virtual_operands (tree dest, tree src)
 
   if (LOADED_SYMS (src))
     {
-      dest_ann->operands.loads = BITMAP_ALLOC (NULL);
+      dest_ann->operands.loads = BITMAP_ALLOC (&operands_bitmap_obstack);
       bitmap_copy (dest_ann->operands.loads, LOADED_SYMS (src));
     }
 
   if (STORED_SYMS (src))
     {
-      dest_ann->operands.stores = BITMAP_ALLOC (NULL);
+      dest_ann->operands.stores = BITMAP_ALLOC (&operands_bitmap_obstack);
       bitmap_copy (dest_ann->operands.stores, STORED_SYMS (src));
     }
 
@@ -2969,7 +2978,7 @@ get_mpt_for (tree sym)
       MTAG_GLOBAL (mpt) = 1;
       add_referenced_var (mpt);
       VEC_safe_push (tree, heap, gimple_ssa_operands (cfun)->mpt_table, mpt);
-      MPT_SYMBOLS (mpt) = BITMAP_ALLOC (NULL);
+      MPT_SYMBOLS (mpt) = BITMAP_ALLOC (&operands_bitmap_obstack);
       set_memory_partition (sym, mpt);
     }
 
