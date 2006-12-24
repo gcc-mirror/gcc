@@ -1180,9 +1180,6 @@ remove_ssa_form (bool perform_ter)
 	}
     }
 
-  /* we no longer maintain the SSA operand cache at this point.  */
-  fini_ssa_operands ();
-
   /* If any copies were inserted on edges, analyze and insert them now.  */
   perform_edge_inserts ();
 
