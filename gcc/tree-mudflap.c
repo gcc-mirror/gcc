@@ -460,12 +460,14 @@ mf_decl_cache_locals (void)
      globals into the cache variables.  */
   t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (mf_cache_shift_decl_l),
               mf_cache_shift_decl_l, mf_cache_shift_decl);
+  add_referenced_var (mf_cache_shift_decl);
   SET_EXPR_LOCATION (t, DECL_SOURCE_LOCATION (current_function_decl));
   gimplify_to_stmt_list (&t);
   shift_init_stmts = t;
 
   t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (mf_cache_mask_decl_l),
               mf_cache_mask_decl_l, mf_cache_mask_decl);
+  add_referenced_var (mf_cache_mask_decl);
   SET_EXPR_LOCATION (t, DECL_SOURCE_LOCATION (current_function_decl));
   gimplify_to_stmt_list (&t);
   mask_init_stmts = t;
@@ -571,13 +573,17 @@ mf_build_check_statement_for (tree base, tree limit,
                                             & __mf_mask].  */
   t = build2 (RSHIFT_EXPR, mf_uintptr_type, mf_base,
               (flag_mudflap_threads ? mf_cache_shift_decl : mf_cache_shift_decl_l));
+  add_referenced_var (mf_cache_shift_decl);
   t = build2 (BIT_AND_EXPR, mf_uintptr_type, t,
               (flag_mudflap_threads ? mf_cache_mask_decl : mf_cache_mask_decl_l));
+  add_referenced_var (mf_cache_mask_decl);
   t = build4 (ARRAY_REF,
               TREE_TYPE (TREE_TYPE (mf_cache_array_decl)),
               mf_cache_array_decl, t, NULL_TREE, NULL_TREE);
+  add_referenced_var (mf_cache_array_decl);
   t = build1 (ADDR_EXPR, mf_cache_structptr_type, t);
   t = build2 (GIMPLE_MODIFY_STMT, void_type_node, mf_elem, t);
+  add_referenced_var (mf_elem);
   SET_EXPR_LOCUS (t, locus);
   gimplify_to_stmt_list (&t);
   tsi_link_after (&tsi, t, TSI_CONTINUE_LINKING);
@@ -601,6 +607,7 @@ mf_build_check_statement_for (tree base, tree limit,
               build1 (INDIRECT_REF, mf_cache_struct_type, mf_elem),
               TYPE_FIELDS (mf_cache_struct_type), NULL_TREE);
   t = build2 (GT_EXPR, boolean_type_node, t, mf_base);
+  add_referenced_var (mf_base);
 
   /* Construct '__mf_elem->high < __mf_limit'.
 
