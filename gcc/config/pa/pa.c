@@ -4159,9 +4159,6 @@ hppa_pic_save_rtx (void)
 #define NO_DEFERRED_PROFILE_COUNTERS 0
 #endif
 
-/* Define heap vector type for funcdef numbers.  */
-DEF_VEC_I(int);
-DEF_VEC_ALLOC_I(int,heap);
 
 /* Vector of funcdef numbers.  */
 static VEC(int,heap) *funcdef_nos;
