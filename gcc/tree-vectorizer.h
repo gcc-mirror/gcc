@@ -320,9 +320,6 @@ known_alignment_for_access_p (struct data_reference *data_ref_info)
   return (DR_MISALIGNMENT (data_ref_info) != -1);
 }
 
-/* Perform signed modulo, always returning a non-negative value.  */
-#define VECT_SMODULO(x,y) ((x) % (y) < 0 ? ((x) % (y) + (y)) : (x) % (y))
-
 /* vect_dump will be set to stderr or dump_file if exist.  */
 extern FILE *vect_dump;
 extern enum verbosity_levels vect_verbosity_level;

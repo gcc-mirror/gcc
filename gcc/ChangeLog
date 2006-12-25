@@ -1,3 +1,7 @@
+2006-12-25  Kazu Hirata  <kazu@codesourcery.com>
+
+	* tree-vectorizer.h (VECT_SMODULO): Remove.
+
 2006-12-24  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* config/pa/pa.c: Remove heap vector type defines.
