@@ -1216,7 +1216,7 @@ transfer_array (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
 
       /* If the extent of even one dimension is zero, then the entire
 	 array section contains zero elements, so we return.  */
-      if (extent[n] == 0)
+      if (extent[n] <= 0)
 	return;
     }
 
