@@ -1,3 +1,8 @@
+2006-12-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/30200
+	* trans-io.c (build_dt): Move post block for format_expr to end.
+
 2006-12-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Revert Paul Thomas' commit from 2006-12-09
