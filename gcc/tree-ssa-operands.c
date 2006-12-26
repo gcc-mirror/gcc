@@ -140,7 +140,7 @@ static VEC(tree,heap) *build_vdefs;
 static VEC(tree,heap) *build_vuses;
 
 /* Bitmap obstack for our datastructures that needs to survive across	
-   compilations of multiple funcitons.  */
+   compilations of multiple functions.  */
 static bitmap_obstack operands_bitmap_obstack;
 /* Set for building all the loaded symbols.  */
 static bitmap build_loads;
