@@ -11737,7 +11737,10 @@ do_mpfr_arg1 (tree arg, tree type, int (*func)(mpfr_ptr, mpfr_srcptr, mp_rnd_t),
   
   STRIP_NOPS (arg);
 
-  if (TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
+  /* To proceed, MPFR must exactly represent the target floating point
+     format, which only happens when the target base equals two.  */
+  if (REAL_MODE_FORMAT (TYPE_MODE (type))->b == 2
+      && TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
     {
       const REAL_VALUE_TYPE *const ra = &TREE_REAL_CST (arg);
 
@@ -11776,7 +11779,10 @@ do_mpfr_arg2 (tree arg1, tree arg2, tree type,
   STRIP_NOPS (arg1);
   STRIP_NOPS (arg2);
 
-  if (TREE_CODE (arg1) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg1)
+  /* To proceed, MPFR must exactly represent the target floating point
+     format, which only happens when the target base equals two.  */
+  if (REAL_MODE_FORMAT (TYPE_MODE (type))->b == 2
+      && TREE_CODE (arg1) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg1)
       && TREE_CODE (arg2) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg2))
     {
       const REAL_VALUE_TYPE *const ra1 = &TREE_REAL_CST (arg1);
@@ -11818,7 +11824,10 @@ do_mpfr_arg3 (tree arg1, tree arg2, tree arg3, tree type,
   STRIP_NOPS (arg2);
   STRIP_NOPS (arg3);
 
-  if (TREE_CODE (arg1) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg1)
+  /* To proceed, MPFR must exactly represent the target floating point
+     format, which only happens when the target base equals two.  */
+  if (REAL_MODE_FORMAT (TYPE_MODE (type))->b == 2
+      && TREE_CODE (arg1) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg1)
       && TREE_CODE (arg2) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg2)
       && TREE_CODE (arg3) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg3))
     {
@@ -11858,17 +11867,20 @@ do_mpfr_arg3 (tree arg1, tree arg2, tree arg3, tree type,
 static tree
 do_mpfr_sincos (tree arg, tree arg_sinp, tree arg_cosp)
 {
+  tree const type = TREE_TYPE (arg);
   tree result = NULL_TREE;
   
   STRIP_NOPS (arg);
   
-  if (TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
+  /* To proceed, MPFR must exactly represent the target floating point
+     format, which only happens when the target base equals two.  */
+  if (REAL_MODE_FORMAT (TYPE_MODE (type))->b == 2
+      && TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
     {
       const REAL_VALUE_TYPE *const ra = &TREE_REAL_CST (arg);
 
       if (!real_isnan (ra) && !real_isinf (ra))
         {
-	  tree const type = TREE_TYPE (arg);
 	  const int prec = REAL_MODE_FORMAT (TYPE_MODE (type))->p;
 	  tree result_s, result_c;
 	  int inexact;
