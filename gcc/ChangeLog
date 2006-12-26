@@ -1,3 +1,9 @@
+2006-12-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/29335
+	* builtins.c (do_mpfr_arg1, do_mpfr_arg2, do_mpfr_arg3,
+	do_mpfr_sincos): Ensure target base equals two.
+
 2006-12-26  Kazu Hirata  <kazu@codesourcery.com>
 
 	* tree-ssa-operands.c: Fix a comment typo.
