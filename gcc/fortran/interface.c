@@ -1270,7 +1270,6 @@ compare_actual_formal (gfc_actual_arglist ** ap,
 {
   gfc_actual_arglist **new, *a, *actual, temp;
   gfc_formal_arglist *f;
-  gfc_gsymbol *gsym;
   int i, n, na;
   bool rank_check;
 
