@@ -6,7 +6,7 @@
 ! standard explicitly does not require recursion into the formal
 ! arguments of procedures that themselves are interface arguments.
 !
-module x
+module xx
   INTERFACE BAD9
     SUBROUTINE S9A(X)
       REAL :: X
@@ -27,6 +27,6 @@ module x
       END INTERFACE
     END SUBROUTINE S9C  ! { dg-error "Ambiguous interfaces" }
   END INTERFACE BAD9
-end module x
+end module xx
 
-! { dg-final { cleanup-modules "x" } }
+! { dg-final { cleanup-modules "xx" } }

@@ -37,7 +37,7 @@ end module m1
   call s1(w) ! { dg-error "not allowed as an actual argument" }
   call s1(x) ! explicit interface
   call s1(y) ! declared external
-  call s1(z) ! already compiled
+  call s1(z) ! { dg-error "Expected a procedure for argument" }
 contains
   integer function w()
     w = 1

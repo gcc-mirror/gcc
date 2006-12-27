@@ -1,3 +1,15 @@
+2006-12-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/20896
+	* gfortran.dg/interface_10.f90: New test.
+	* gfortran.dg/dummy_procedure_1.f90: Add error for call s1(z),
+	since z is already, locally a variable.
+
+	PR fortran/25135
+	* gfortran.dg/generic_11.f90: New test.
+	* gfortran.dg/interface_7.f90: Remove name clash between module
+	name and procedure 'x' referenced in the interface.
+
 2006-12-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR middle-end/7651

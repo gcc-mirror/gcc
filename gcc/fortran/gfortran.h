@@ -2032,6 +2032,7 @@ void gfc_free_statement (gfc_code *);
 void gfc_free_statements (gfc_code *);
 
 /* resolve.c */
+void resolve_global_procedure (gfc_symbol *, locus *, int);
 try gfc_resolve_expr (gfc_expr *);
 void gfc_resolve (gfc_namespace *);
 void gfc_resolve_blocks (gfc_code *, gfc_namespace *);
