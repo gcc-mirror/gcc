@@ -1156,7 +1156,7 @@ find_noncopying_intrinsics (gfc_symbol * fnsym, gfc_actual_arglist * actual)
    reference.  The corresponding code that is called in creating
    global entities is parse.c.  */
 
-static void
+void
 resolve_global_procedure (gfc_symbol *sym, locus *where, int sub)
 {
   gfc_gsymbol * gsym;
@@ -5560,7 +5560,6 @@ static try
 resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 {
   gfc_formal_arglist *arg;
-  gfc_symtree *st;
 
   if (sym->attr.ambiguous_interfaces && !sym->attr.referenced)
     gfc_warning ("Although not referenced, '%s' at %L has ambiguous "
@@ -5569,16 +5568,6 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
   if (sym->attr.function
 	&& resolve_fl_var_and_proc (sym, mp_flag) == FAILURE)
     return FAILURE;
-
-  st = gfc_find_symtree (gfc_current_ns->sym_root, sym->name);
-  if (st && st->ambiguous
-	 && sym->attr.referenced
-	 && !sym->attr.generic)
-    {
-      gfc_error ("Procedure %s at %L is ambiguous",
-		 sym->name, &sym->declared_at);
-      return FAILURE;
-    }
 
   if (sym->ts.type == BT_CHARACTER)
     {

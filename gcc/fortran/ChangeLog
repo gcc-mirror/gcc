@@ -1,3 +1,21 @@
+2006-12-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/20896
+	* interface.c (check_sym_interfaces): Try to resolve interface
+	reference as a global symbol, if it is not a nodule procedure.
+	(compare_actual_formal): Remove call to gfc_find_symbol; if
+	the expression is already a variable it is locally declared
+	and this has precedence.
+	gfortran.h : Add prototype for resolve_global_procedure.
+	resolve.c (resolve_global_procedure): Remove static attribute
+	from function declaration.
+	(resolve_fl_procedure): Remove symtree declaration and the
+	redundant check for an ambiguous procedure.
+
+	PR fortran/25135
+	* module.c (load_generic_interfaces): If the symbol is present
+	and is not generic it is ambiguous.
+
 2006-12-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25818
