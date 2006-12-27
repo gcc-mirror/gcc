@@ -1,3 +1,9 @@
+2006-12-27  Ian Lance Taylor  <iant@google.com>
+
+	PR debug/26964
+	* dwarf2out.c (gen_type_die): Don't write out a DIE for
+	ENUMERAL_TYPE if it was already written out.
+
 2006-12-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR middle-end/29335
