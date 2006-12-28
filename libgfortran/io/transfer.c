@@ -2539,7 +2539,7 @@ finalize_transfer (st_parameter_dt *dtp)
   GFC_INTEGER_4 cf = dtp->common.flags;
 
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-    *dtp->size = (GFC_INTEGER_4) dtp->u.p.size_used;
+    *dtp->size = (GFC_IO_INT) dtp->u.p.size_used;
 
   if (dtp->u.p.eor_condition)
     {
@@ -2615,7 +2615,7 @@ iolength_transfer (st_parameter_dt *dtp, bt type __attribute__((unused)),
 		   size_t size, size_t nelems)
 {
   if ((dtp->common.flags & IOPARM_DT_HAS_IOLENGTH) != 0)
-    *dtp->iolength += (GFC_INTEGER_4) size * nelems;
+    *dtp->iolength += (GFC_IO_INT) size * nelems;
 }
 
 
