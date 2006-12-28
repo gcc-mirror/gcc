@@ -1,3 +1,9 @@
+2006-12-28  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/30001:
+	* charset.c (_cpp_convert_input): Check that to.len is greater
+	than zero.
+
 2006-11-20  Trevor Smigiel <Trevor_Smigiel@playstation.sony.com>
 
 	* configure.ac (need_64bit_hwint): Need 64bit hwint for SPU.
