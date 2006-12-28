@@ -1122,7 +1122,7 @@ resolve_tag (const io_tag * tag, gfc_expr * e)
 
       if (tag == &tag_size && e->ts.kind != gfc_default_integer_kind)
 	{
-	  if (gfc_notify_std (GFC_STD_GNU, "Fortran 95 requires default "
+	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 95 requires default "
 			      "INTEGER in SIZE tag at %L",
 			      &e->where) == FAILURE)
 	    return FAILURE;
@@ -1131,6 +1131,14 @@ resolve_tag (const io_tag * tag, gfc_expr * e)
       if (tag == &tag_convert)
 	{
 	  if (gfc_notify_std (GFC_STD_GNU, "Extension: CONVERT tag at %L",
+			      &e->where) == FAILURE)
+	    return FAILURE;
+	}
+    
+      if (tag == &tag_iolength && e->ts.kind != gfc_default_integer_kind)
+	{
+	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 95 requires default "
+			      "INTEGER in IOLENGTH tag at %L",
 			      &e->where) == FAILURE)
 	    return FAILURE;
 	}
