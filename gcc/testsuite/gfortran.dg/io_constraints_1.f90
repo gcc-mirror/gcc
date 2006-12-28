@@ -54,7 +54,6 @@ end module global
 ! R912
 !Was correctly picked up before patch.
  write(6, NML=NL, iostat = ierr)                ! { dg-warning "requires default INTEGER" }
- READ(1, fmt='(i6)', advance='NO', size = ierr) ! { dg-warning "requires default INTEGER" }
 
 ! Constraints
 !Was correctly picked up before patch.
