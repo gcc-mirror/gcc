@@ -1,5 +1,5 @@
 /* CPP Library - charsets
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2006
    Free Software Foundation, Inc.
 
    Broken out of c-lex.c Apr 2003, adding valid C99 UCN ranges.
@@ -1628,7 +1628,7 @@ _cpp_convert_input (cpp_reader *pfile, const char *input_charset,
      terminate with another \r, not an \n, so that we do not mistake
      the \r\n sequence for a single DOS line ending and erroneously
      issue the "No newline at end of file" diagnostic.  */
-  if (to.text[to.len - 1] == '\r')
+  if (to.len && to.text[to.len - 1] == '\r')
     to.text[to.len] = '\r';
   else
     to.text[to.len] = '\n';
