@@ -920,25 +920,6 @@ extern bool cleanup_cfg (int);
 extern bool delete_unreachable_blocks (void);
 extern bool merge_seq_blocks (void);
 
-typedef struct conflict_graph_def *conflict_graph;
-
-/* Callback function when enumerating conflicts.  The arguments are
-   the smaller and larger regno in the conflict.  Returns zero if
-   enumeration is to continue, nonzero to halt enumeration.  */
-typedef int (*conflict_graph_enum_fn) (int, int, void *);
-
-
-/* Prototypes of operations on conflict graphs.  */
-
-extern conflict_graph conflict_graph_new
- (int);
-extern void conflict_graph_delete (conflict_graph);
-extern int conflict_graph_add (conflict_graph, int, int);
-extern int conflict_graph_conflict_p (conflict_graph, int, int);
-extern void conflict_graph_enum (conflict_graph, int, conflict_graph_enum_fn,
-				 void *);
-extern void conflict_graph_merge_regs (conflict_graph, int, int);
-extern void conflict_graph_print (conflict_graph, FILE*);
 extern bool mark_dfs_back_edges (void);
 extern void set_edge_can_fallthru_flag (void);
 extern void update_br_prob_note (basic_block);
