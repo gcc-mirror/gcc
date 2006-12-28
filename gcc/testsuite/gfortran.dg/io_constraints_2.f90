@@ -53,6 +53,8 @@ end module global
 ! Not allowed with an ADVANCE=specifier
  READ(buffer, fmt='(i6)', advance='YES') a      ! { dg-error "internal file" }
  READ(1, NML=NL, advance='YES')                 ! { dg-error "NAMELIST IO is not allowed" }
+ 
+ READ(1, fmt='(i6)', advance='NO', size = ierr) ! { dg-error "requires default INTEGER" }
 
  READ(1, advance='YES')                         ! { dg-error "must appear with an explicit format" }
 

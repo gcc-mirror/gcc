@@ -1,3 +1,10 @@
+2006-12-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/30014
+	* gfortran.dg/io_constraints_1.f90: Update test.
+	* gfortran.dg/io_constraints_2.f90: Update test.
+	* gfortran.dg/inquire_iolength.f90: Ne test.
+
 2006-12-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/20896
