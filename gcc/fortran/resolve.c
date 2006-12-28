@@ -173,25 +173,19 @@ resolve_formal_arglist (gfc_symbol * proc)
       if (sym->attr.flavor == FL_UNKNOWN)
 	gfc_add_flavor (&sym->attr, FL_VARIABLE, sym->name, &sym->declared_at);
 
-      if (gfc_pure (proc))
+      if (gfc_pure (proc) && !sym->attr.pointer
+            && sym->attr.flavor != FL_PROCEDURE)
 	{
-	  if (proc->attr.function && !sym->attr.pointer
-              && sym->attr.flavor != FL_PROCEDURE
-	      && sym->attr.intent != INTENT_IN)
-
+	  if (proc->attr.function && sym->attr.intent != INTENT_IN)
 	    gfc_error ("Argument '%s' of pure function '%s' at %L must be "
 		       "INTENT(IN)", sym->name, proc->name,
 		       &sym->declared_at);
 
-	  if (proc->attr.subroutine && !sym->attr.pointer
-	      && sym->attr.intent == INTENT_UNKNOWN)
-
-	    gfc_error
-	      ("Argument '%s' of pure subroutine '%s' at %L must have "
-	       "its INTENT specified", sym->name, proc->name,
-	       &sym->declared_at);
+	  if (proc->attr.subroutine && sym->attr.intent == INTENT_UNKNOWN)
+	    gfc_error ("Argument '%s' of pure subroutine '%s' at %L must "
+		       "have its INTENT specified", sym->name, proc->name,
+		       &sym->declared_at);
 	}
-
 
       if (gfc_elemental (proc))
 	{

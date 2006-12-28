@@ -1,3 +1,11 @@
+2006-12-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30034
+	* gfortran.dg/pure_formal_proc_1.f90: New test.
+
+	PR fortran/30237
+	* gfortran.dg/intrinsic_actual_3.f90: New test.
+
 2006-12-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/30014
