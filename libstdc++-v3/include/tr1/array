@@ -128,11 +128,17 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
       reference
       at(size_type __n)
-      { return _M_at<_Nm>(__n); }
+      { 
+	_M_check<_Nm>(__n);
+	return _M_instance[__n];
+      }
 
       const_reference
       at(size_type __n) const
-      { return _M_at<_Nm>(__n); }
+      {
+	_M_check<_Nm>(__n);
+	return _M_instance[__n];
+      }
 
       reference 
       front()
@@ -160,39 +166,18 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
     private:
       template<std::size_t _Mm>
-        typename __gnu_cxx::__enable_if<_Mm, reference>::__type
-        _M_at(size_type __n)
+        typename __gnu_cxx::__enable_if<_Mm, void>::__type
+        _M_check(size_type __n) const
         {
 	  if (__builtin_expect(__n >= _Mm, false))
-	    std::__throw_out_of_range(__N("array::_M_at"));
-	  return _M_instance[__n];
+	    std::__throw_out_of_range(__N("array::_M_check"));
 	}
 
       // Avoid "unsigned comparison with zero" warnings.
       template<std::size_t _Mm>
-        typename __gnu_cxx::__enable_if<!_Mm, reference>::__type
-        _M_at(size_type)
-        {
-	  std::__throw_out_of_range(__N("array::_M_at"));
-	  return _M_instance[0];
-	}
-
-      template<std::size_t _Mm>
-        typename __gnu_cxx::__enable_if<_Mm, const_reference>::__type
-        _M_at(size_type __n) const
-        {
-	  if (__builtin_expect(__n >= _Mm, false))
-	    std::__throw_out_of_range(__N("array::_M_at"));
-	  return _M_instance[__n];
-	}
-
-      template<std::size_t _Mm>
-        typename __gnu_cxx::__enable_if<!_Mm, const_reference>::__type
-        _M_at(size_type) const
-        {
-	  std::__throw_out_of_range(__N("array::_M_at"));
-	  return _M_instance[0];
-	}     
+        typename __gnu_cxx::__enable_if<!_Mm, void>::__type
+        _M_check(size_type) const
+        { std::__throw_out_of_range(__N("array::_M_check")); }
     };
 
   // Array comparisons.
