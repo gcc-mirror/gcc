@@ -28,11 +28,19 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define SBITMAP_ELT_BITS ((unsigned) HOST_BITS_PER_WIDEST_FAST_INT)
 #define SBITMAP_ELT_TYPE unsigned HOST_WIDEST_FAST_INT
 
+/* Can't use SBITMAP_ELT_BITS in this macro because it contains a
+   cast.  There is no perfect macro in GCC to test against.  This
+   suffices for roughly 99% of the hosts we run on, and the rest
+   don't have 256 bit integers.  */
+#if HOST_BITS_PER_WIDEST_FAST_INT > 255
+#error Need to increase size of datatype used for popcount
+#endif
+
 typedef struct simple_bitmap_def
 {
+  unsigned char *popcount;      /* Population count.  */
   unsigned int n_bits;		/* Number of bits.  */
   unsigned int size;		/* Size in elements.  */
-  unsigned int bytes;		/* Size in bytes.  */
   SBITMAP_ELT_TYPE elms[1];	/* The elements.  */
 } *sbitmap;
 
@@ -40,20 +48,47 @@ typedef SBITMAP_ELT_TYPE *sbitmap_ptr;
 
 /* Return the set size needed for N elements.  */
 #define SBITMAP_SET_SIZE(N) (((N) + SBITMAP_ELT_BITS - 1) / SBITMAP_ELT_BITS)
-
-/* Set bit number bitno in the bitmap.  */
-#define SET_BIT(BITMAP, BITNO)					\
-  ((BITMAP)->elms [(BITNO) / SBITMAP_ELT_BITS]			\
-   |= (SBITMAP_ELT_TYPE) 1 << (BITNO) % SBITMAP_ELT_BITS)
+#define SBITMAP_SIZE_BYTES(BITMAP) ((BITMAP)->size * sizeof (SBITMAP_ELT_TYPE))
 
 /* Test if bit number bitno in the bitmap is set.  */
 #define TEST_BIT(BITMAP, BITNO) \
 ((BITMAP)->elms [(BITNO) / SBITMAP_ELT_BITS] >> (BITNO) % SBITMAP_ELT_BITS & 1)
 
-/* Reset bit number bitno in the bitmap.  */
-#define RESET_BIT(BITMAP, BITNO)				\
-  ((BITMAP)->elms [(BITNO) / SBITMAP_ELT_BITS]			\
-   &= ~((SBITMAP_ELT_TYPE) 1 << (BITNO) % SBITMAP_ELT_BITS))
+/* Set bit number BITNO in the sbitmap MAP.  Updates population count
+   if this bitmap has one.  */
+
+static inline void
+SET_BIT (sbitmap map, unsigned int bitno)
+{
+  if (map->popcount)
+    {
+      bool oldbit;
+      oldbit = TEST_BIT (map, bitno);
+      if (!oldbit)
+	map->popcount[bitno / SBITMAP_ELT_BITS]++;
+    }
+  map->elms[bitno / SBITMAP_ELT_BITS]
+    |= (SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS;
+}
+
+
+
+/* Reset bit number BITNO in the sbitmap MAP.  Updates population
+   count if this bitmap has one.  */
+
+static inline void
+RESET_BIT (sbitmap map,  unsigned int bitno)
+{
+  if (map->popcount)
+    {
+      bool oldbit;
+      oldbit = TEST_BIT (map, bitno);
+      if (oldbit)
+	map->popcount[bitno / SBITMAP_ELT_BITS]--;
+    }
+  map->elms[bitno / SBITMAP_ELT_BITS]
+    &= ~((SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS);
+}
 
 /* The iterator for sbitmap.  */
 typedef struct {
@@ -165,7 +200,7 @@ do {									\
     }									\
 } while (0)
 
-#define sbitmap_free(MAP)		free(MAP)
+#define sbitmap_free(MAP)		(free((MAP)->popcount), free((MAP)))
 #define sbitmap_vector_free(VEC)	free(VEC)
 
 struct int_list;
@@ -175,9 +210,11 @@ extern void dump_sbitmap_file (FILE *, sbitmap);
 extern void dump_sbitmap_vector (FILE *, const char *, const char *, sbitmap *,
 				 int);
 extern sbitmap sbitmap_alloc (unsigned int);
+extern sbitmap sbitmap_alloc_with_popcount (unsigned int);
 extern sbitmap *sbitmap_vector_alloc (unsigned int, unsigned int);
 extern sbitmap sbitmap_resize (sbitmap, unsigned int, int);
 extern void sbitmap_copy (sbitmap, sbitmap);
+extern void sbitmap_copy_n (sbitmap, sbitmap, unsigned int);
 extern int sbitmap_equal (sbitmap, sbitmap);
 extern void sbitmap_zero (sbitmap);
 extern void sbitmap_ones (sbitmap);
@@ -224,4 +261,6 @@ extern void sbitmap_union_of_preds (sbitmap, sbitmap *, int);
 
 extern void debug_sbitmap (sbitmap);
 extern sbitmap sbitmap_realloc (sbitmap, unsigned int);
+extern unsigned long sbitmap_popcount(sbitmap, unsigned long);
+extern void sbitmap_verify_popcount (sbitmap);
 #endif /* ! GCC_SBITMAP_H */

@@ -1,3 +1,49 @@
+2006-12-27  Daniel Berlin  <dberlin@dberlin.org>
+
+	* sbitmap.c (BITMAP_DEBUGGING): New macro.
+	(do_popcount): Ditto.
+	(sbitmap_verify_popcount): New function.
+	(sbitmap_alloc): Set popcount to NULL, remove set of bytes
+	member.
+	(sbitmap_alloc_with_popcount): New function.
+	(sbitmap_resize): Remove uses of bytes member and update
+	popcount.
+	(sbitmap_realloc): Remove uses of bytes member.
+	(sbitmap_copy): Copy popcount.
+	(sbitmap_copy_n): New function.
+	(sbitmap_zero): Update popcount cache.
+	(sbitmap_ones): Ditto.
+	(sbitmap_a_and_b): Ditto.
+	(sbitmap_a_or_b): Ditto.
+	(sbitmap_a_xor_b): Ditto.
+	(sbitmap_union_of_diff_cg): Assert non-existence of popcount
+	cache.
+	(sbitmap_union_of_diff): Ditto.
+	(sbitmap_not): Ditto.
+	(sbitmap_difference): Ditto.
+	(sbitmap_a_and_b_cg): Ditto.
+	(sbitmap_a_xor_b_cg): Ditto.
+	(sbitmap_a_or_b_cg): Ditto.
+	(sbitmap_a_or_b_and_c_cg): Ditto.
+	(sbitmap_a_and_b_or_c_cg): Ditto.
+	(sbitmap_intersection_of_succs): Ditto.
+	(sbitmap_intersection_of_preds): Ditto.
+	(sbitmap_union_of_succs): Ditto.
+	(sbitmap_union_of_preds): Ditto.
+	(popcount_table): New.
+	(sbitmap_elt_popcount): New function.
+	(sbitmap_popcount): Ditto.
+
+	* sbitmap.h (sbitmap): Remove bytes member.
+	Add popcount member.
+	(SET_BIT): Macro turned into function.
+	(RESET_BIT): Ditto.
+	(SBITMAP_SIZE_BYTES): New macro.
+	(sbitmap_free): Free popcount too.
+	(sbitmap_alloc_with_popcount): New prototype.
+	(sbitmap_copy_n): Ditto.
+	(sbitmap_verify_popcount): Ditto.
+
 2006-12-27  Ian Lance Taylor  <iant@google.com>
 
 	PR debug/26964
