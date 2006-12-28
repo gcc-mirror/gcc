@@ -2824,7 +2824,7 @@ write_out_vars (tree vars)
 }
 
 /* Generate a static constructor (if CONSTRUCTOR_P) or destructor
-   (otherwise) that will initialize all gobal objects with static
+   (otherwise) that will initialize all global objects with static
    storage duration having the indicated PRIORITY.  */
 
 static void
