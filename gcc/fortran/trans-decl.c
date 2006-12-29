@@ -1765,7 +1765,7 @@ gfc_create_function_decl (gfc_namespace * ns)
 }
 
 /* Return the decl used to hold the function return value.  If
-   parent_flag is set, the context is the parent_scope*/
+   parent_flag is set, the context is the parent_scope.  */
 
 tree
 gfc_get_fake_result_decl (gfc_symbol * sym, int parent_flag)
@@ -1874,9 +1874,12 @@ gfc_get_fake_result_decl (gfc_symbol * sym, int parent_flag)
       sprintf (name, "__result_%.20s",
 	       IDENTIFIER_POINTER (DECL_NAME (this_function_decl)));
 
-      decl = build_decl (VAR_DECL, get_identifier (name),
-			 TREE_TYPE (TREE_TYPE (this_function_decl)));
-
+      if (!sym->attr.mixed_entry_master && sym->attr.function)
+	decl = build_decl (VAR_DECL, get_identifier (name),
+			   gfc_sym_type (sym));
+      else
+	decl = build_decl (VAR_DECL, get_identifier (name),
+			   TREE_TYPE (TREE_TYPE (this_function_decl)));
       DECL_ARTIFICIAL (decl) = 1;
       DECL_EXTERNAL (decl) = 0;
       TREE_PUBLIC (decl) = 0;
@@ -3207,9 +3210,12 @@ gfc_generate_function_code (gfc_namespace * ns)
 	warning (0, "Function return value not set");
       else
 	{
-	  /* Set the return value to the dummy result variable.  */
-	  tmp = build2 (MODIFY_EXPR, TREE_TYPE (result),
-			DECL_RESULT (fndecl), result);
+	  /* Set the return value to the dummy result variable.  The
+	     types may be different for scalar default REAL functions
+	     with -ff2c, therefore we have to convert.  */
+	  tmp = convert (TREE_TYPE (DECL_RESULT (fndecl)), result);
+	  tmp = build2 (MODIFY_EXPR, TREE_TYPE (tmp),
+			DECL_RESULT (fndecl), tmp);
 	  tmp = build1_v (RETURN_EXPR, tmp);
 	  gfc_add_expr_to_block (&block, tmp);
 	}
