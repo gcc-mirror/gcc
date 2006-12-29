@@ -56,7 +56,9 @@ GLIBCXX_3.4 {
       std::b[b-z]*;
       std::c[a-g]*;
 #     std::char_traits;
-      std::c[i-z]*;
+#     std::c[i-z]*;
+      std::c[i-s]*;
+      std::c[u-z]*;
       std::[d-h]*;
       std::i[a-n]*;
       std::ios_base::[A-Ha-z]*;
@@ -336,6 +338,22 @@ GLIBCXX_3.4 {
 
     # bool std::has_facet 
     _ZSt9has_facetIS*;
+
+    # std::use_facet
+    _ZSt9use_facetIS*;
+
+    # std::ctype
+    _ZNKSt5ctypeIcE8*;
+    _ZNKSt5ctypeIcE9*;
+    _ZNKSt5ctypeIcE10*;
+    _ZNKSt5ctypeIw*;
+    _ZNSt5ctypeI[cw]*;
+
+    # std::ctype_base
+    _ZNSt10ctype_base*;
+
+    # std::ctype_byname
+    _ZNSt12ctype_bynameI[cw]*;
 
     # std::num_get
     _ZNKSt7num_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE*;
