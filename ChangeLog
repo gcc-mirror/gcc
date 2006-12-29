@@ -1,5 +1,12 @@
 2006-12-29  Paolo Bonzini  <bonzini@gnu.org>
 
+	* configure.in: Reorganize recognition of languages.  Add
+	--enable-stage1-languages.  Show supported languages for the chosen
+	target rather than all recognized languages.
+	* configure: Regenerate.
+
+2006-12-29  Paolo Bonzini  <bonzini@gnu.org>
+
 	* Makefile.tpl (GCC_STRAP_TARGETS, all-prebootstrap): Remove.
 	* Makefile.in: Regenerate.
 
