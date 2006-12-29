@@ -2686,16 +2686,6 @@ last_stmt (basic_block bb)
 }
 
 
-/* Return a pointer to the last statement in block BB.  */
-
-tree *
-last_stmt_ptr (basic_block bb)
-{
-  block_stmt_iterator last = bsi_last (bb);
-  return !bsi_end_p (last) ? bsi_stmt_ptr (last) : NULL;
-}
-
-
 /* Return the last statement of an otherwise empty block.  Return NULL
    if the block is totally empty, or if it contains more than one
    statement.  */
