@@ -1,3 +1,8 @@
+2006-12-29  Marcin Dalecki  <martin@dalecki.de>
+
+	* doc/invoke.texi: Replace no longer supported -fno-strength-reduce
+	with -fmerge-constants in sample code.
+
 2006-12-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	* Makefile.in (OBJS-common): Remove conflict.o
