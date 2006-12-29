@@ -3,6 +3,9 @@
 	* tree-cfg.c (last_stmt_ptr): Remove.
 	* tree-flow.h: Remove the prototype for last_stmt_ptr.
 
+	* config/i386/i386.h (NON_QI_REG_P): Remove.
+	* config/i386/predicates.md (non_q_regs_operand): Remove.
+
 2006-12-29  Ian Lance Taylor  <iant@google.com>
 
 	* c-common.c (c_define_builtins): New static function broken out
