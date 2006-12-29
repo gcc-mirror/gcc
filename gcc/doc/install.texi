@@ -1909,12 +1909,12 @@ You can pass multiple options to the testsuite using the
 work outside the makefiles.  For example,
 
 @smallexample
-    make check-g++ RUNTESTFLAGS="--target_board=unix/-O3/-fno-strength-reduce"
+    make check-g++ RUNTESTFLAGS="--target_board=unix/-O3/-fmerge-constants"
 @end smallexample
 
 will run the standard @command{g++} testsuites (``unix'' is the target name
 for a standard native testsuite situation), passing
-@samp{-O3 -fno-strength-reduce} to the compiler on every test, i.e.,
+@samp{-O3 -fmerge-constants} to the compiler on every test, i.e.,
 slashes separate options.
 
 You can run the testsuites multiple times using combinations of options
