@@ -41713,60 +41713,6 @@ maintainer-clean-target-libgomp:
 # ----------
 
 @if gcc-no-bootstrap
-# GCC has some more recursive targets, which trigger the old
-# (but still current, until the toplevel bootstrap project
-# is finished) compiler bootstrapping rules.
-
-GCC_STRAP_TARGETS = bootstrap bootstrap-lean bootstrap2 bootstrap2-lean bootstrap3 bootstrap3-lean bootstrap4 bootstrap4-lean bubblestrap quickstrap cleanstrap restrap
-.PHONY: $(GCC_STRAP_TARGETS)
-$(GCC_STRAP_TARGETS): all-prebootstrap configure-gcc
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	echo "Bootstrapping the compiler"; \
-	$(RPATH_ENVVAR)=`echo "$(TARGET_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,:[ :]*,:,g;s,^[ :]*,,;s,:*$$,,'`; export $(RPATH_ENVVAR); \
-	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) $@
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	case "$@" in \
-	  *bootstrap4-lean ) \
-	    msg="Comparing stage3 and stage4 of the compiler"; \
-	    compare=compare3-lean ;; \
-	  *bootstrap4 ) \
-	    msg="Comparing stage3 and stage4 of the compiler"; \
-	    compare=compare3 ;; \
-	  *-lean ) \
-	    msg="Comparing stage2 and stage3 of the compiler"; \
-	    compare=compare-lean ;; \
-	  * ) \
-	    msg="Comparing stage2 and stage3 of the compiler"; \
-	    compare=compare ;; \
-	esac; \
-	$(HOST_EXPORTS) \
-	echo "$$msg"; \
-	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) $$compare
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
-	echo "Building runtime libraries"; \
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all
-
-profiledbootstrap: all-prebootstrap configure-gcc
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	$(RPATH_ENVVAR)=`echo "$(TARGET_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,:[ :]*,:,g;s,^[ :]*,,;s,:*$$,,'`; export $(RPATH_ENVVAR); \
-	echo "Bootstrapping training compiler"; \
-	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) stageprofile_build
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	echo "Building feedback based compiler"; \
-	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) stagefeedback_build
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
-	echo "Building runtime libraries"; \
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all
-
 .PHONY: cross
 cross: all-build all-gas all-ld
 	@r=`${PWD_COMMAND}`; export r; \
@@ -43337,7 +43283,6 @@ all-stage3-gcc: maybe-all-build-texinfo
 all-stage4-gcc: maybe-all-build-texinfo
 all-stageprofile-gcc: maybe-all-build-texinfo
 all-stagefeedback-gcc: maybe-all-build-texinfo
-all-prebootstrap: maybe-all-build-texinfo
 all-gcc: maybe-all-build-bison
 
 all-stage1-gcc: maybe-all-build-bison
@@ -43346,7 +43291,6 @@ all-stage3-gcc: maybe-all-build-bison
 all-stage4-gcc: maybe-all-build-bison
 all-stageprofile-gcc: maybe-all-build-bison
 all-stagefeedback-gcc: maybe-all-build-bison
-all-prebootstrap: maybe-all-build-bison
 all-gcc: maybe-all-build-byacc
 
 all-stage1-gcc: maybe-all-build-byacc
@@ -43355,7 +43299,6 @@ all-stage3-gcc: maybe-all-build-byacc
 all-stage4-gcc: maybe-all-build-byacc
 all-stageprofile-gcc: maybe-all-build-byacc
 all-stagefeedback-gcc: maybe-all-build-byacc
-all-prebootstrap: maybe-all-build-byacc
 all-gcc: maybe-all-build-flex
 
 all-stage1-gcc: maybe-all-build-flex
@@ -43364,7 +43307,6 @@ all-stage3-gcc: maybe-all-build-flex
 all-stage4-gcc: maybe-all-build-flex
 all-stageprofile-gcc: maybe-all-build-flex
 all-stagefeedback-gcc: maybe-all-build-flex
-all-prebootstrap: maybe-all-build-flex
 all-gcc: maybe-all-build-libiberty
 
 all-stage1-gcc: maybe-all-build-libiberty
@@ -43373,7 +43315,6 @@ all-stage3-gcc: maybe-all-build-libiberty
 all-stage4-gcc: maybe-all-build-libiberty
 all-stageprofile-gcc: maybe-all-build-libiberty
 all-stagefeedback-gcc: maybe-all-build-libiberty
-all-prebootstrap: maybe-all-build-libiberty
 all-gcc: maybe-all-build-fixincludes
 
 all-stage1-gcc: maybe-all-build-fixincludes
@@ -43382,7 +43323,6 @@ all-stage3-gcc: maybe-all-build-fixincludes
 all-stage4-gcc: maybe-all-build-fixincludes
 all-stageprofile-gcc: maybe-all-build-fixincludes
 all-stagefeedback-gcc: maybe-all-build-fixincludes
-all-prebootstrap: maybe-all-build-fixincludes
 all-gcc: maybe-all-zlib
 
 all-stage1-gcc: maybe-all-stage1-zlib
@@ -43538,7 +43478,6 @@ all-stage3-binutils: maybe-all-build-flex
 all-stage4-binutils: maybe-all-build-flex
 all-stageprofile-binutils: maybe-all-build-flex
 all-stagefeedback-binutils: maybe-all-build-flex
-all-prebootstrap: maybe-all-build-flex
 all-binutils: maybe-all-build-bison
 
 all-stage1-binutils: maybe-all-build-bison
@@ -43547,7 +43486,6 @@ all-stage3-binutils: maybe-all-build-bison
 all-stage4-binutils: maybe-all-build-bison
 all-stageprofile-binutils: maybe-all-build-bison
 all-stagefeedback-binutils: maybe-all-build-bison
-all-prebootstrap: maybe-all-build-bison
 all-binutils: maybe-all-build-byacc
 
 all-stage1-binutils: maybe-all-build-byacc
@@ -43556,7 +43494,6 @@ all-stage3-binutils: maybe-all-build-byacc
 all-stage4-binutils: maybe-all-build-byacc
 all-stageprofile-binutils: maybe-all-build-byacc
 all-stagefeedback-binutils: maybe-all-build-byacc
-all-prebootstrap: maybe-all-build-byacc
 all-binutils: maybe-all-intl
 
 all-stage1-binutils: maybe-all-stage1-intl
@@ -43652,7 +43589,6 @@ all-stage3-ld: maybe-all-build-bison
 all-stage4-ld: maybe-all-build-bison
 all-stageprofile-ld: maybe-all-build-bison
 all-stagefeedback-ld: maybe-all-build-bison
-all-prebootstrap: maybe-all-build-bison
 all-ld: maybe-all-build-byacc
 
 all-stage1-ld: maybe-all-build-byacc
@@ -43661,7 +43597,6 @@ all-stage3-ld: maybe-all-build-byacc
 all-stage4-ld: maybe-all-build-byacc
 all-stageprofile-ld: maybe-all-build-byacc
 all-stagefeedback-ld: maybe-all-build-byacc
-all-prebootstrap: maybe-all-build-byacc
 all-ld: maybe-all-build-flex
 
 all-stage1-ld: maybe-all-build-flex
@@ -43670,7 +43605,6 @@ all-stage3-ld: maybe-all-build-flex
 all-stage4-ld: maybe-all-build-flex
 all-stageprofile-ld: maybe-all-build-flex
 all-stagefeedback-ld: maybe-all-build-flex
-all-prebootstrap: maybe-all-build-flex
 all-ld: maybe-all-intl
 
 all-stage1-ld: maybe-all-stage1-intl
@@ -43798,22 +43732,6 @@ all-target-libgloss: maybe-configure-target-newlib
 all-target-winsup: maybe-all-target-libiberty
 all-target-winsup: maybe-all-target-libtermcap
 
-
-# Non-toplevel bootstrap rules must depend on several packages, to be built
-# before gcc.  Another wart that will go away, hopefully soon.
-@if gcc-no-bootstrap
-
-all-prebootstrap: maybe-all-bfd
-all-prebootstrap: maybe-all-opcodes
-all-prebootstrap: maybe-all-binutils
-all-prebootstrap: maybe-all-gas
-all-prebootstrap: maybe-all-intl
-all-prebootstrap: maybe-all-ld
-all-prebootstrap: maybe-all-libcpp
-all-prebootstrap: maybe-all-libdecnumber
-all-prebootstrap: maybe-all-libiberty
-all-prebootstrap: maybe-all-zlib
-@endif gcc-no-bootstrap
 
 CONFIGURE_GDB_TK = @CONFIGURE_GDB_TK@
 GDB_TK = @GDB_TK@
