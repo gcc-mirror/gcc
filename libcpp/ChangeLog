@@ -1,3 +1,9 @@
+2006-12-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/29612
+	* directives.c (do_linemarker): Set pfile->buffer->sysp always, not
+	only when new_sysp is non-zero.
+
 2006-05-24  Release Manager
 
 	* GCC 4.1.1 released.

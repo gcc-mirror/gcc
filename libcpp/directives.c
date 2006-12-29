@@ -951,8 +951,8 @@ do_linemarker (cpp_reader *pfile)
 	  flag = read_flag (pfile, flag);
 	  if (flag == 4)
 	    new_sysp = 2;
-	  pfile->buffer->sysp = new_sysp;
 	}
+      pfile->buffer->sysp = new_sysp;
 
       check_eol (pfile);
     }
