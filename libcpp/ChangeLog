@@ -1,3 +1,8 @@
+2006-12-29  Ian Lance Taylor  <iant@google.com>
+
+	* lex.c (_cpp_clean_line): Add uses of __builtin_expect.  Don't
+	look backward at the end of the line unless we saw a backslash.
+
 2006-12-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/29612
