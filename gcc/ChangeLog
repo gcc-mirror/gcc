@@ -1,3 +1,19 @@
+2006-12-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2006-12-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/30040
+	* config/i386/driver-i386.c: Include "coretypes.h" and "tm.h".
+	(host_detect_local_cpu): Check -mtune= vs. -march=. Rewrite
+	processor detection.
+
+	* config/i386/i386.h (CC1_CPU_SPEC): Add -mtune=native for
+	-march=native if there is no -mtune=*.
+
+	* config/i386/x-i386 (driver-i386.o): Also depend on $(TM_H)
+	coretypes.h.
+
 2006-12-27  Ian Lance Taylor  <iant@google.com>
 
 	PR debug/26964
