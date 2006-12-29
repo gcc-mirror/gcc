@@ -297,6 +297,16 @@ CXXFLAGS = @CXXFLAGS@
 LIBCXXFLAGS = $(CXXFLAGS) -fno-implicit-templates
 PICFLAG = 
 
+# Only build the C compiler for stage1, because that is the only one that
+# we can guarantee will build with the native compiler, and also it is the
+# only thing useful for building stage2. STAGE1_CFLAGS (via CFLAGS),
+# MAKEINFO and MAKEINFOFLAGS are explicitly passed here to make them
+# overrideable (for a bootstrap build stage1 also builds gcc.info).
+
+STAGE1_CFLAGS=@stage1_cflags@
+STAGE1_CHECKING=@stage1_checking@
+STAGE1_LANGUAGES=@stage1_languages@
+
 # -----------------------------------------------
 # Programs producing files for the TARGET machine
 # -----------------------------------------------
@@ -427,6 +437,16 @@ FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)
 X11_FLAGS_TO_PASS = \
 	'X11_EXTRA_CFLAGS=$(X11_EXTRA_CFLAGS)' \
 	'X11_EXTRA_LIBS=$(X11_EXTRA_LIBS)'
+
+# Flags to pass to stage2 and later makes.
+
+POSTSTAGE1_FLAGS_TO_PASS = \
+	CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
+	STAGE_PREFIX="$$r/$(HOST_SUBDIR)/prev-gcc/" \
+	CFLAGS="$(BOOT_CFLAGS)" \
+	LIBCFLAGS="$(BOOT_CFLAGS)" \
+	LDFLAGS="$(BOOT_LDFLAGS)" \
+	"`echo 'ADAFLAGS=$(BOOT_ADAFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`"
 
 # Flags to pass down to makes which are built with the target environment.
 # The double $ decreases the length of the command line; those variables
@@ -1243,35 +1263,8 @@ LEAN = false
 # 'touch' doesn't work right on some platforms.
 STAMP = echo timestamp > 
 
-# Only build the C compiler for stage1, because that is the only one that
-# we can guarantee will build with the native compiler, and also it is the
-# only thing useful for building stage2. STAGE1_CFLAGS (via CFLAGS),
-# MAKEINFO and MAKEINFOFLAGS are explicitly passed here to make them
-# overrideable (for a bootstrap build stage1 also builds gcc.info).
-
-STAGE1_CFLAGS=@stage1_cflags@
-STAGE1_LANGUAGES=@stage1_languages@
-
 # We only want to compare .o files, so set this!
 objext = .o
-
-# Flags to pass to stage2 and later makes.
-POSTSTAGE1_FLAGS_TO_PASS = \
-	CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
-	STAGE_PREFIX="$$r/$(HOST_SUBDIR)/prev-gcc/" \
-	CFLAGS="$(BOOT_CFLAGS)" \
-	LIBCFLAGS="$(BOOT_CFLAGS)" \
-	LDFLAGS="$(BOOT_LDFLAGS)" \
-	"`echo 'ADAFLAGS=$(BOOT_ADAFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`"
-
-# For stage 1:
-# * We force-disable intermodule optimizations, even if
-#   --enable-intermodule was passed, since the installed compiler probably
-#   can't handle them.  Luckily, autoconf always respects
-#   the last argument when conflicting --enable arguments are passed.
-# * Likewise, we force-disable coverage flags, since the installed compiler
-#   probably has never heard of them.
-# * We build only C (and possibly Ada).
 
 [+ FOR bootstrap-stage +]
 .PHONY: stage[+id+]-start stage[+id+]-end
