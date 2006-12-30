@@ -251,6 +251,9 @@ struct var_ann_d GTY(())
   /* True for HEAP and PARM_NOALIAS artificial variables.  */
   unsigned is_heapvar : 1;
 
+  /* True if the variable is call clobbered.  */
+  unsigned int call_clobbered : 1;
+
   /* Memory partition tag assigned to this symbol.  */
   tree mpt;
 

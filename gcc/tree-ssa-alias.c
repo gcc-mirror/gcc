@@ -126,7 +126,7 @@ mark_non_addressable (tree var)
   mpt = memory_partition (var);
 
   if (!MTAG_P (var))
-    DECL_CALL_CLOBBERED (var) = false;
+    var_ann (var)->call_clobbered = false;
 
   bitmap_clear_bit (gimple_call_clobbered_vars (cfun), DECL_UID (var));
   TREE_ADDRESSABLE (var) = 0;
@@ -3266,7 +3266,7 @@ struct tree_opt_pass pass_create_structure_vars =
   0			 /* letter */
 };
 
-/* Reset the DECL_CALL_CLOBBERED flags on our referenced vars.  In
+/* Reset the call_clobbered flags on our referenced vars.  In
    theory, this only needs to be done for globals.  */
 
 static unsigned int
@@ -3276,7 +3276,7 @@ reset_cc_flags (void)
   referenced_var_iterator rvi;
 
   FOR_EACH_REFERENCED_VAR (var, rvi)
-    DECL_CALL_CLOBBERED (var) = false;
+    var_ann (var)->call_clobbered = false;
   return 0;
 }
 

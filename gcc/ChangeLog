@@ -1,5 +1,15 @@
 2006-12-30  Jan Hubicka  <jh@suse.cz>
 
+	* tree.h (DECL_CALL_CLOBBERED): Remove.
+	(tree_decl_common): Remove call_clobbered flag.
+	* tree-flow.h (struct var_ann_d): Add call_clobbered flag.
+	* tree-ssa-alias.c (mark_non_addressable, reset_cc_flags): Update.
+	* tree-flow-inline.h (is_call_clobbered, mark_call_clobbered,
+	clear_call_clobbered): Update.
+	* tree-ssa.c (verify_call_clobbering): Update.
+
+2006-12-30  Jan Hubicka  <jh@suse.cz>
+
 	* tree-ssa-alias.c (create_structure_vars): When in SSA, update operand
 	caches.
 	* tree-ssa-operands.c (build_ssa_operands): Recompute addresses_taken
