@@ -1,3 +1,9 @@
+2006-12-30  Jan Hubicka  <jh@suse.cz>
+	    Vladimir Yanovsky <volodyan@gmail.com>
+	
+	* emit-rt.c (emit_copy_of_insn_after): Fix bug causing exponential
+	amount of copies of INSN_NOTEs list.
+
 2006-12-29  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_exapnd_queue): Rename to...
