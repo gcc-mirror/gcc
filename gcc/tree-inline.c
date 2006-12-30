@@ -883,7 +883,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale, int count_scal
 
    There is however exception where inlining might change dominator relation
    across EH edges from basic block within inlined functions destinating
-   to landging pads in function we inline into.
+   to landing pads in function we inline into.
 
    The function mark PHI_RESULT of such PHI nodes for renaming; it is
    safe the EH edges are abnormal and SSA_NAME_OCCURS_IN_ABNORMAL_PHI
