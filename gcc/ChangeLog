@@ -1,3 +1,23 @@
+2006-12-29  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_exapnd_queue): Rename to...
+	(cgraph_new_nodes): ... this one.
+	(cgraph_state): New global variable.
+	(cgraph_add_new_function): Work in more cases.
+	* cgraph.h (cgraph_expand_queue): Rename to ...
+	(cgraph_new_nodes): ... this one.
+	(cgraph_state): New enum and static variable.
+	(cgraph_add_new_function): Update prototype.
+	(cgraph_process_new_functions): New.
+	* omp-low.c (expand_omp_parallel): Update.
+	* cgraphunit.c (initialize_inline_failed): Declare early.
+	(cgraph_process_new_functions): New function.
+	(cgraph_assemble_pending_functions): Use it.
+	(cgraph_expand_all_functions): Use it.
+	(cgraph_optimize): Use it; set cgraph_state.
+	* passes.c (execute_one_pass, execute_ipa_pass_list): Process new
+	functions
+
 2006-12-29  Kazu Hirata  <kazu@codesourcery.com>
 
 	* tree-cfg.c (last_stmt_ptr): Remove.
