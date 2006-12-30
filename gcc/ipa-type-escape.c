@@ -1267,7 +1267,11 @@ scan_for_refs (tree *tp, int *walk_subtrees, void *data)
 		   result so we do mark the resulting cast as being
 		   bad.  */
 		if (check_call (rhs))
-		  bitmap_set_bit (results_of_malloc, DECL_UID (lhs));
+		  {
+		    if (TREE_CODE (lhs) == SSA_NAME)
+		      lhs = SSA_NAME_VAR (lhs);
+		    bitmap_set_bit (results_of_malloc, DECL_UID (lhs));
+		  }
 		break;
 	      default:
 		break;

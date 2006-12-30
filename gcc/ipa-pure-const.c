@@ -163,7 +163,8 @@ check_operand (funct_state local,
 static void
 check_tree (funct_state local, tree t, bool checking_write)
 {
-  if ((TREE_CODE (t) == EXC_PTR_EXPR) || (TREE_CODE (t) == FILTER_EXPR))
+  if ((TREE_CODE (t) == EXC_PTR_EXPR) || (TREE_CODE (t) == FILTER_EXPR)
+      || TREE_CODE (t) == SSA_NAME)
     return;
 
   /* Any tree which is volatile disqualifies thie function from being
