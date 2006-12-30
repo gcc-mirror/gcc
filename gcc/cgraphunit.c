@@ -167,6 +167,7 @@ static void cgraph_expand_function (struct cgraph_node *);
 static tree record_reference (tree *, int *, void *);
 static void cgraph_output_pending_asms (void);
 static void cgraph_increase_alignment (void);
+static void initialize_inline_failed (struct cgraph_node *);
 
 /* Records tree nodes seen in record_reference.  Simply using
    walk_tree_without_duplicates doesn't guarantee each node is visited
@@ -262,6 +263,77 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
   return false;
 }
 
+/* Process CGRAPH_NEW_FUNCTIONS and perform actions neccesary to add these
+   functions into callgraph in a way so they look like ordinary reachable
+   functions inserted into callgraph already at construction time.  */
+
+bool
+cgraph_process_new_functions (void)
+{
+  bool output = false;
+  tree fndecl;
+  struct cgraph_node *node;
+
+  /*  Note that this queue may grow as its being processed, as the new
+      functions may generate new ones.  */
+  while (cgraph_new_nodes)
+    {
+      node = cgraph_new_nodes;
+      fndecl = node->decl;
+      cgraph_new_nodes = cgraph_new_nodes->next_needed;
+      switch (cgraph_state)
+	{
+	case CGRAPH_STATE_CONSTRUCTION:
+	  /* At construction time we just need to finalize function and move
+	     it into reachable functions list.  */
+
+	  node->next_needed = NULL;
+	  cgraph_finalize_function (fndecl, false);
+	  cgraph_mark_reachable_node (node);
+	  output = true;
+	  break;
+
+	case CGRAPH_STATE_IPA:
+	  /* When IPA optimization already started, do all essential
+	     transformations that has been already performed on the whole
+	     cgraph but not on this function.  */
+
+	  tree_register_cfg_hooks ();
+	  if (!node->analyzed)
+	    cgraph_analyze_function (node);
+	  push_cfun (DECL_STRUCT_FUNCTION (fndecl));
+	  current_function_decl = fndecl;
+	  node->local.inlinable = tree_inlinable_function_p (fndecl);
+	  node->local.self_insns = estimate_num_insns (fndecl);
+	  node->local.disregard_inline_limits
+	    = lang_hooks.tree_inlining.disregard_inline_limits (fndecl);
+	  /* Inlining characteristics are maintained by the
+	     cgraph_mark_inline.  */
+	  node->global.insns = node->local.self_insns;
+	  initialize_inline_failed (node);
+	  if (flag_really_no_inline && !node->local.disregard_inline_limits)
+	     node->local.inlinable = 0;
+	  free_dominance_info (CDI_POST_DOMINATORS);
+	  free_dominance_info (CDI_DOMINATORS);
+	  pop_cfun ();
+	  current_function_decl = NULL;
+	  break;
+
+	case CGRAPH_STATE_EXPANSION:
+	  /* Functions created during expansion shall be compiled
+	     directly.  */
+	  node->output = 0;
+	  cgraph_expand_function (node);
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	  break;
+	}
+    }
+  return output;
+}
+
 /* When not doing unit-at-a-time, output all functions enqueued.
    Return true when such a functions were found.  */
 
@@ -288,18 +360,7 @@ cgraph_assemble_pending_functions (void)
 	  cgraph_expand_function (n);
 	  output = true;
 	}
-    }
-
-  /* Process CGRAPH_EXPAND_QUEUE, these are functions created during
-     the expansion process.  Note that this queue may grow as its
-     being processed, as the new functions may generate new ones.  */
-  while (cgraph_expand_queue)
-    {
-      struct cgraph_node *n = cgraph_expand_queue;
-      cgraph_expand_queue = cgraph_expand_queue->next_needed;
-      n->next_needed = NULL;
-      cgraph_finalize_function (n->decl, false);
-      output = true;
+      output |= cgraph_process_new_functions ();
     }
 
   return output;
@@ -1161,21 +1222,10 @@ cgraph_expand_all_functions (void)
 	  cgraph_expand_function (node);
 	}
     }
+  cgraph_process_new_functions ();
 
   free (order);
 
-  /* Process CGRAPH_EXPAND_QUEUE, these are functions created during
-     the expansion process.  Note that this queue may grow as its
-     being processed, as the new functions may generate new ones.  */
-  while (cgraph_expand_queue)
-    {
-      node = cgraph_expand_queue;
-      cgraph_expand_queue = cgraph_expand_queue->next_needed;
-      node->next_needed = NULL;
-      node->output = 0;
-      node->lowered = DECL_STRUCT_FUNCTION (node->decl)->cfg != NULL;
-      cgraph_expand_function (node);
-    }
 }
 
 /* This is used to sort the node types by the cgraph order number.  */
@@ -1383,6 +1433,9 @@ cgraph_optimize (void)
 #endif
   if (!flag_unit_at_a_time)
     {
+      cgraph_assemble_pending_functions ();
+      cgraph_process_new_functions ();
+      cgraph_state = CGRAPH_STATE_FINISHED;
       cgraph_output_pending_asms ();
       varpool_assemble_pending_decls ();
       varpool_output_debug_info ();
@@ -1408,6 +1461,7 @@ cgraph_optimize (void)
       fprintf (cgraph_dump_file, "Marked ");
       dump_cgraph (cgraph_dump_file);
     }
+  cgraph_state = CGRAPH_STATE_IPA;
     
   /* Don't run the IPA passes if there was any error or sorry messages.  */
   if (errorcount == 0 && sorrycount == 0)
@@ -1440,6 +1494,7 @@ cgraph_optimize (void)
 
   cgraph_mark_functions_to_output ();
 
+  cgraph_state = CGRAPH_STATE_EXPANSION;
   if (!flag_toplevel_reorder)
     cgraph_output_in_order ();
   else
@@ -1452,6 +1507,8 @@ cgraph_optimize (void)
       varpool_assemble_pending_decls ();
       varpool_output_debug_info ();
     }
+  cgraph_process_new_functions ();
+  cgraph_state = CGRAPH_STATE_FINISHED;
 
   if (cgraph_dump_file)
     {
@@ -1581,14 +1638,8 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
 
   gimplify_function_tree (decl);
 
-  /* ??? We will get called LATE in the compilation process.  */
-  if (cgraph_global_info_ready)
-    {
-      tree_lowering_passes (decl);
-      tree_rest_of_compilation (decl);
-    }
-  else
-    cgraph_finalize_function (decl, 0);
+  cgraph_add_new_function (decl, false);
+  cgraph_mark_needed_node (cgraph_node (decl));
 
   if (targetm.have_ctors_dtors)
     {

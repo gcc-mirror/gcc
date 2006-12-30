@@ -947,6 +947,9 @@ execute_one_pass (struct tree_opt_pass *pass)
   /* Run post-pass cleanup and verification.  */
   execute_todo (todo_after | pass->todo_flags_finish);
 
+  if (!current_function_decl)
+    cgraph_process_new_functions ();
+
   /* Flush and close dump file.  */
   if (dump_file_name)
     {
@@ -986,6 +989,8 @@ execute_ipa_pass_list (struct tree_opt_pass *pass)
       gcc_assert (!cfun);
       if (execute_one_pass (pass) && pass->sub)
 	do_per_function ((void (*)(void *))execute_pass_list, pass->sub);
+      if (!current_function_decl)
+	cgraph_process_new_functions ();
       pass = pass->next;
     }
   while (pass);

@@ -254,9 +254,21 @@ extern GTY(()) struct cgraph_node *cgraph_nodes;
 extern GTY(()) int cgraph_n_nodes;
 extern GTY(()) int cgraph_max_uid;
 extern bool cgraph_global_info_ready;
+enum cgraph_state
+{
+  /* Callgraph is being constructed.  It is safe to add new functions.  */
+  CGRAPH_STATE_CONSTRUCTION,
+  /* Callgraph is built and IPA passes are being run.  */
+  CGRAPH_STATE_IPA,
+  /* Functions are now ordered and being passed to RTL expanders.  */
+  CGRAPH_STATE_EXPANSION,
+  /* All cgraph expansion is done.  */
+  CGRAPH_STATE_FINISHED
+};
+extern enum cgraph_state cgraph_state;
 extern bool cgraph_function_flags_ready;
 extern GTY(()) struct cgraph_node *cgraph_nodes_queue;
-extern GTY(()) struct cgraph_node *cgraph_expand_queue;
+extern GTY(()) struct cgraph_node *cgraph_new_nodes;
 
 extern GTY(()) struct cgraph_asm_node *cgraph_asm_nodes;
 extern GTY(()) int cgraph_order;
@@ -295,7 +307,7 @@ void cgraph_unnest_node (struct cgraph_node *);
 enum availability cgraph_function_body_availability (struct cgraph_node *);
 bool cgraph_is_master_clone (struct cgraph_node *);
 struct cgraph_node *cgraph_master_clone (struct cgraph_node *);
-void cgraph_add_new_function (tree);
+void cgraph_add_new_function (tree, bool);
 
 /* In cgraphunit.c  */
 void cgraph_finalize_function (tree, bool);
@@ -316,6 +328,7 @@ struct cgraph_node *cgraph_function_versioning (struct cgraph_node *,
 void cgraph_analyze_function (struct cgraph_node *);
 struct cgraph_node *save_inline_function_body (struct cgraph_node *);
 void record_references_in_initializer (tree);
+bool cgraph_process_new_functions (void);
 
 /* In ipa.c  */
 bool cgraph_remove_unreachable_nodes (bool, FILE *);
