@@ -5297,14 +5297,12 @@ emit_copy_of_insn_after (rtx insn, rtx after)
       {
 	if (GET_CODE (link) == EXPR_LIST)
 	  REG_NOTES (new)
-	    = copy_insn_1 (gen_rtx_EXPR_LIST (REG_NOTE_KIND (link),
-					      XEXP (link, 0),
-					      REG_NOTES (new)));
+		= gen_rtx_EXPR_LIST (REG_NOTE_KIND (link),
+		  copy_insn_1 (XEXP (link, 0)),  REG_NOTES (new));
 	else
 	  REG_NOTES (new)
-	    = copy_insn_1 (gen_rtx_INSN_LIST (REG_NOTE_KIND (link),
-					      XEXP (link, 0),
-					      REG_NOTES (new)));
+	       = gen_rtx_INSN_LIST (REG_NOTE_KIND (link),
+		 copy_insn_1 (XEXP (link, 0)),  REG_NOTES (new));
       }
 
   /* Fix the libcall sequences.  */
