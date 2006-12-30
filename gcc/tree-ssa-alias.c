@@ -3188,6 +3188,58 @@ create_structure_vars (void)
     }
   htab_delete (used_portions);
   VEC_free (tree, heap, varvec);
+
+  /* Update SSA operands of statememnts mentioning varibales we split.  */
+  if (gimple_in_ssa_p (cfun))
+    FOR_EACH_BB (bb)
+      {
+	block_stmt_iterator bsi;
+	for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	  {
+	    tree stmt = bsi_stmt (bsi);
+	    bool update = false;
+	    unsigned int i;
+	    bitmap_iterator bi;
+
+	    if (STORED_SYMS (stmt))
+	       EXECUTE_IF_SET_IN_BITMAP (STORED_SYMS (stmt), 0, i, bi)
+		{
+		  tree sym = referenced_var_lookup (i);
+		  if (get_subvars_for_var (sym))
+		    {
+		      update=true;
+		      break;
+		    }
+		}
+
+	    if (LOADED_SYMS (stmt) && !update)
+	       EXECUTE_IF_SET_IN_BITMAP (LOADED_SYMS (stmt), 0, i, bi)
+		{
+		  tree sym = referenced_var_lookup (i);
+		  if (get_subvars_for_var (sym))
+		    {
+		      update=true;
+		      break;
+		    }
+		}
+
+	    if (stmt_ann (stmt)->addresses_taken && !update)
+	       EXECUTE_IF_SET_IN_BITMAP (stmt_ann (stmt)->addresses_taken,
+					 0, i, bi)
+		{
+		  tree sym = referenced_var_lookup (i);
+		  if (get_subvars_for_var (sym))
+		    {
+		      update=true;
+		      break;
+		    }
+		}
+
+	    if (update)
+	      update_stmt (stmt);
+	  }
+      }
+  
   return 0;
 }
 

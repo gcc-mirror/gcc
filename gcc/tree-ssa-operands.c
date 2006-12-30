@@ -2337,6 +2337,9 @@ build_ssa_operands (tree stmt)
      makes no memory references.  */
   ann->has_volatile_ops = false;
   ann->references_memory = false;
+  /* Just clear the bitmap so we don't end up reallocating it over and over.  */
+  if (ann->addresses_taken)
+    bitmap_clear (ann->addresses_taken);
 
   start_ssa_stmt_operands ();
   parse_ssa_operands (stmt);
@@ -2344,6 +2347,8 @@ build_ssa_operands (tree stmt)
   operand_build_sort_virtual (build_vdefs);
   finalize_ssa_stmt_operands (stmt);
 
+  if (ann->addresses_taken && bitmap_empty_p (ann->addresses_taken))
+    ann->addresses_taken = NULL;
   /* For added safety, assume that statements with volatile operands
      also reference memory.  */
   if (ann->has_volatile_ops)
