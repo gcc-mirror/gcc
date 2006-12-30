@@ -508,11 +508,11 @@ verify_call_clobbering (void)
   tree var;
   referenced_var_iterator rvi;
 
-  /* At all times, the result of the DECL_CALL_CLOBBERED flag should
+  /* At all times, the result of the call_clobbered flag should
      match the result of the call_clobbered_vars bitmap.  Verify both
      that everything in call_clobbered_vars is marked
-     DECL_CALL_CLOBBERED, and that everything marked
-     DECL_CALL_CLOBBERED is in call_clobbered_vars.  */
+     call_clobbered, and that everything marked
+     call_clobbered is in call_clobbered_vars.  */
   EXECUTE_IF_SET_IN_BITMAP (gimple_call_clobbered_vars (cfun), 0, i, bi)
     {
       var = referenced_var (i);
@@ -520,10 +520,10 @@ verify_call_clobbering (void)
       if (memory_partition (var))
 	var = memory_partition (var);
 
-      if (!MTAG_P (var) && !DECL_CALL_CLOBBERED (var))
+      if (!MTAG_P (var) && !var_ann (var)->call_clobbered)
 	{
 	  error ("variable in call_clobbered_vars but not marked "
-	         "DECL_CALL_CLOBBERED");
+	         "call_clobbered");
 	  debug_variable (var);
 	  goto err;
 	}
@@ -538,10 +538,10 @@ verify_call_clobbering (void)
 	var = memory_partition (var);
 
       if (!MTAG_P (var)
-	  && DECL_CALL_CLOBBERED (var)
+	  && var_ann (var)->call_clobbered
 	  && !bitmap_bit_p (gimple_call_clobbered_vars (cfun), DECL_UID (var)))
 	{
-	  error ("variable marked DECL_CALL_CLOBBERED but not in "
+	  error ("variable marked call_clobbered but not in "
 	         "call_clobbered_vars bitmap.");
 	  debug_variable (var);
 	  goto err;

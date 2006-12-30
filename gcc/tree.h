@@ -2607,12 +2607,6 @@ struct tree_memory_partition_tag GTY(())
 #define DECL_GIMPLE_REG_P(DECL) \
   DECL_COMMON_CHECK (DECL)->decl_common.gimple_reg_flag
 
-/* This is true if DECL is call clobbered in the current function.
-   The result of this flag should always be the same as
-   bitmap_bit_p (call_clobbered_vars, DECL_UID (decl)).  */
-#define DECL_CALL_CLOBBERED(DECL) \
-  DECL_COMMON_CHECK (DECL)->decl_common.call_clobbered_flag
-
 struct tree_decl_common GTY(())
 {
   struct tree_decl_minimal common;
@@ -2653,7 +2647,6 @@ struct tree_decl_common GTY(())
   /* Logically, these two would go in a theoretical base shared by var and
      parm decl. */
   unsigned gimple_reg_flag : 1;
-  unsigned call_clobbered_flag : 1;
 
   union tree_decl_u1 {
     /* In a FUNCTION_DECL for which DECL_BUILT_IN holds, this is
