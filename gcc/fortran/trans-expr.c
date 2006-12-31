@@ -1906,6 +1906,57 @@ is_aliased_array (gfc_expr * e)
   return false;
 }
 
+/* Generate the code for argument list functions.  */
+
+static void
+conv_arglist_function (gfc_se *se, gfc_expr *expr, const char *name)
+{
+  tree type = NULL_TREE;
+  /* Pass by value for g77 %VAL(arg), pass the address
+     indirectly for %LOC, else by reference.  Thus %REF
+     is a "do-nothing" and %LOC is the same as an F95
+     pointer.  */
+  if (strncmp (name, "%VAL", 4) == 0)
+    {
+      gfc_conv_expr (se, expr);
+      /* %VAL converts argument to default kind.  */
+      switch (expr->ts.type)
+	{
+	  case BT_REAL:
+	    type = gfc_get_real_type (gfc_default_real_kind);
+	    se->expr = fold_convert (type, se->expr);
+	    break;
+	  case BT_COMPLEX:
+	    type = gfc_get_complex_type (gfc_default_complex_kind);
+	    se->expr = fold_convert (type, se->expr);
+	    break;
+	  case BT_INTEGER:
+	    type = gfc_get_int_type (gfc_default_integer_kind);
+	    se->expr = fold_convert (type, se->expr);
+	    break;
+	  case BT_LOGICAL:
+	    type = gfc_get_logical_type (gfc_default_logical_kind);
+	    se->expr = fold_convert (type, se->expr);
+	    break;
+	  /* This should have been resolved away.  */
+	  case BT_UNKNOWN: case BT_CHARACTER: case BT_DERIVED:
+	  case BT_PROCEDURE: case BT_HOLLERITH:
+	    gfc_internal_error ("Bad type in conv_arglist_function");
+	}
+	  
+    }
+  else if (strncmp (name, "%LOC", 4) == 0)
+    {
+      gfc_conv_expr_reference (se, expr);
+      se->expr = gfc_build_addr_expr (NULL, se->expr);
+    }
+  else if (strncmp (name, "%REF", 4) == 0)
+    gfc_conv_expr_reference (se, expr);
+  else
+    gfc_error ("Unknown argument list function at %L", &expr->where);
+}
+
+
 /* Generate code for a procedure call.  Note can return se->post != NULL.
    If se->direct_byref is set then se->expr contains the return parameter.
    Return nonzero, if the call has alternate specifiers.  */
@@ -2024,6 +2075,10 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 		{
 		  gfc_conv_expr (&parmse, e);
 		}
+	      else if (arg->name && arg->name[0] == '%')
+		/* Argument list functions %VAL, %LOC and %REF are signalled
+		   through arg->name.  */
+		conv_arglist_function (&parmse, arg->expr, arg->name);
 	      else
 		{
 		  gfc_conv_expr_reference (&parmse, e);
