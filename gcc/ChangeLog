@@ -1,3 +1,9 @@
+2006-12-31  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/30137
+	* fold-const.c (fold_comparison): Fold comparison of addresses
+	of components.
+
 2006-12-31  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/30322
