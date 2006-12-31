@@ -3024,13 +3024,20 @@ cp_parser_primary_expression (cp_parser *parser,
 
 	       at class or namespace scope.  */
 	    if (!parser->in_function_body)
-	      error ("statement-expressions are allowed only inside functions");
-	    /* Start the statement-expression.  */
-	    expr = begin_stmt_expr ();
-	    /* Parse the compound-statement.  */
-	    cp_parser_compound_statement (parser, expr, false);
-	    /* Finish up.  */
-	    expr = finish_stmt_expr (expr, false);
+	      {
+		error ("statement-expressions are allowed only inside functions");
+		cp_parser_skip_to_end_of_block_or_statement (parser);
+		expr = error_mark_node;
+	      }
+	    else
+	      {
+		/* Start the statement-expression.  */
+		expr = begin_stmt_expr ();
+		/* Parse the compound-statement.  */
+		cp_parser_compound_statement (parser, expr, false);
+		/* Finish up.  */
+		expr = finish_stmt_expr (expr, false);
+	      }
 	  }
 	else
 	  {

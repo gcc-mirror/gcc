@@ -1,3 +1,9 @@
+2006-12-31  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/29731
+	* parser.c (cp_parser_primary_expression): Return error_mark_node when
+	a statement-expression is found outside of a function body.
+
 2006-12-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	* cp-tree.h (TYPE_NAMESPACE_SCOPE_P, TYPE_FUNCTION_SCOPE_P):
