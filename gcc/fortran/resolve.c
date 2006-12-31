@@ -140,6 +140,21 @@ resolve_formal_arglist (gfc_symbol * proc)
 	      continue;
 	    }
 
+	  if (sym->attr.function
+		&& sym->ts.type == BT_UNKNOWN
+		&& sym->attr.intrinsic)
+	    {
+	      gfc_intrinsic_sym *isym;
+	      isym = gfc_find_function (sym->name);
+	      if (isym == NULL || !isym->specific)
+		{
+		  gfc_error ("Unable to find a specific INTRINSIC procedure "
+			     "for the reference '%s' at %L", sym->name,
+			     &sym->declared_at);
+		}
+	      sym->ts = isym->ts;
+	    }
+
 	  continue;
 	}
 
@@ -937,6 +952,21 @@ resolve_actual_arglist (gfc_actual_arglist * arg, procedure_type ptype)
 		      && sym->ns->parent->proc_name == sym)))
 	    goto got_variable;
 
+	  /* If all else fails, see if we have a specific intrinsic.  */
+	  if (sym->attr.function
+		&& sym->ts.type == BT_UNKNOWN
+		&& sym->attr.intrinsic)
+	    {
+	      gfc_intrinsic_sym *isym;
+	      isym = gfc_find_function (sym->name);
+	      if (isym == NULL || !isym->specific)
+		{
+		  gfc_error ("Unable to find a specific INTRINSIC procedure "
+			     "for the reference '%s' at %L", sym->name,
+			     &e->where);
+		}
+	      sym->ts = isym->ts;
+	    }
 	  goto argument_list;
 	}
 
@@ -1511,6 +1541,13 @@ resolve_function (gfc_expr * expr)
   sym = NULL;
   if (expr->symtree)
     sym = expr->symtree->n.sym;
+
+  if (sym && sym->attr.flavor == FL_VARIABLE)
+    {
+      gfc_error ("'%s' at %L is not a function",
+		 sym->name, &expr->where);
+      return FAILURE;
+    }
 
   /* If the procedure is not internal, a statement function or a module
      procedure,it must be external and should be checked for usage.  */

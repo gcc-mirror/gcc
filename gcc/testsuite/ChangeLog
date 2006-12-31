@@ -1,5 +1,13 @@
 2006-12-31  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/27900
+	* gfortran.dg/intrinsic_actual_4.f90: New test.
+
+	PR fortran/24325
+	* gfortran.dg/func_decl_3.f90: New test.
+
+2006-12-31  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/23060
 	* gfortran.dg/c_by_val.c: Called by c_by_val_1.f.
 	* gfortran.dg/c_by_val_1.f: New test.
