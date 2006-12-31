@@ -7988,6 +7988,110 @@ fold_comparison (enum tree_code code, tree type, tree op0, tree op1)
 	return fold_build2 (code, type, variable, lhs);
     }
 
+  /* For comparisons of pointers we can decompose it to a compile time
+     comparison of the base objects and the offsets into the object.
+     This requires at least one operand being an ADDR_EXPR to do more
+     than the operand_equal_p test below.  */
+  if (POINTER_TYPE_P (TREE_TYPE (arg0))
+      && (TREE_CODE (arg0) == ADDR_EXPR
+	  || TREE_CODE (arg1) == ADDR_EXPR))
+    {
+      tree base0, base1, offset0 = NULL_TREE, offset1 = NULL_TREE;
+      HOST_WIDE_INT bitsize, bitpos0 = 0, bitpos1 = 0;
+      enum machine_mode mode;
+      int volatilep, unsignedp;
+      bool indirect_base0 = false;
+
+      /* Get base and offset for the access.  Strip ADDR_EXPR for
+	 get_inner_reference, but put it back by stripping INDIRECT_REF
+	 off the base object if possible.  */
+      base0 = arg0;
+      if (TREE_CODE (arg0) == ADDR_EXPR)
+	{
+	  base0 = get_inner_reference (TREE_OPERAND (arg0, 0),
+				       &bitsize, &bitpos0, &offset0, &mode,
+				       &unsignedp, &volatilep, false);
+	  if (TREE_CODE (base0) == INDIRECT_REF)
+	    base0 = TREE_OPERAND (base0, 0);
+	  else
+	    indirect_base0 = true;
+	}
+
+      base1 = arg1;
+      if (TREE_CODE (arg1) == ADDR_EXPR)
+	{
+	  base1 = get_inner_reference (TREE_OPERAND (arg1, 0),
+				       &bitsize, &bitpos1, &offset1, &mode,
+				       &unsignedp, &volatilep, false);
+	  /* We have to make sure to have an indirect/non-indirect base1
+	     just the same as we did for base0.  */
+	  if (TREE_CODE (base1) == INDIRECT_REF
+	      && !indirect_base0)
+	    base1 = TREE_OPERAND (base1, 0);
+	  else if (!indirect_base0)
+	    base1 = NULL_TREE;
+	}
+      else if (indirect_base0)
+	base1 = NULL_TREE;
+
+      /* If we have equivalent bases we might be able to simplify.  */
+      if (base0 && base1
+	  && operand_equal_p (base0, base1, 0))
+	{
+	  /* We can fold this expression to a constant if the non-constant
+	     offset parts are equal.  */
+	  if (offset0 == offset1
+	      || (offset0 && offset1
+		  && operand_equal_p (offset0, offset1, 0)))
+	    {
+	      switch (code)
+		{
+		case EQ_EXPR:
+		  return build_int_cst (boolean_type_node, bitpos0 == bitpos1);
+		case NE_EXPR:
+		  return build_int_cst (boolean_type_node, bitpos0 != bitpos1);
+		case LT_EXPR:
+		  return build_int_cst (boolean_type_node, bitpos0 < bitpos1);
+		case LE_EXPR:
+		  return build_int_cst (boolean_type_node, bitpos0 <= bitpos1);
+		case GE_EXPR:
+		  return build_int_cst (boolean_type_node, bitpos0 >= bitpos1);
+		case GT_EXPR:
+		  return build_int_cst (boolean_type_node, bitpos0 > bitpos1);
+		default:;
+		}
+	    }
+	  /* We can simplify the comparison to a comparison of the variable
+	     offset parts if the constant offset parts are equal.
+	     Be careful to use signed size type here because otherwise we
+	     mess with array offsets in the wrong way.  This is possible
+	     because pointer arithmetic is restricted to retain within an
+	     object and overflow on pointer differences is undefined as of
+	     6.5.6/8 and /9 with respect to the signed ptrdiff_t.  */
+	  else if (bitpos0 == bitpos1)
+	    {
+	      tree signed_size_type_node;
+	      signed_size_type_node = signed_type_for (size_type_node);
+
+	      /* By converting to signed size type we cover middle-end pointer
+	         arithmetic which operates on unsigned pointer types of size
+	         type size and ARRAY_REF offsets which are properly sign or
+	         zero extended from their type in case it is narrower than
+	         size type.  */
+	      if (offset0 == NULL_TREE)
+		offset0 = build_int_cst (signed_size_type_node, 0);
+	      else
+		offset0 = fold_convert (signed_size_type_node, offset0);
+	      if (offset1 == NULL_TREE)
+		offset1 = build_int_cst (signed_size_type_node, 0);
+	      else
+		offset1 = fold_convert (signed_size_type_node, offset1);
+
+	      return fold_build2 (code, type, offset0, offset1);
+	    }
+	}
+    }
+
   /* If this is a comparison of two exprs that look like an ARRAY_REF of the
      same object, then we can fold this to a comparison of the two offsets in
      signed size type.  This is possible because pointer arithmetic is
