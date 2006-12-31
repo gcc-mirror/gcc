@@ -9009,7 +9009,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       /* Convert -1 - A to ~A.  */
       if (INTEGRAL_TYPE_P (type)
 	  && integer_all_onesp (arg0))
-	return fold_build1 (BIT_NOT_EXPR, type, arg1);
+	return fold_build1 (BIT_NOT_EXPR, type, op1);
 
       if (! FLOAT_TYPE_P (type))
 	{

@@ -1,3 +1,8 @@
+2006-12-31  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/30338
+	* gcc.c-torture/compile/pr30338.c: New testcase.
+
 2006-12-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/27900
