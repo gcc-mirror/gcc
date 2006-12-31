@@ -1293,7 +1293,8 @@ compare_actual_formal (gfc_actual_arglist ** ap,
 
   for (a = actual; a; a = a->next, f = f->next)
     {
-      if (a->name != NULL)
+      /* Look for keywords but ignore g77 extensions like %VAL.  */
+      if (a->name != NULL && a->name[0] != '%')
 	{
 	  i = 0;
 	  for (f = formal; f; f = f->next, i++)
