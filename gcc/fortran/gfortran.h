@@ -491,7 +491,7 @@ typedef struct
 
   /* Function/subroutine attributes */
   unsigned sequence:1, elemental:1, pure:1, recursive:1;
-  unsigned unmaskable:1, masked:1, contained:1;
+  unsigned unmaskable:1, masked:1, contained:1, mod_proc:1;
 
   /* This is set if the subroutine doesn't return.  Currently, this
      is only possible for intrinsic subroutines.  */

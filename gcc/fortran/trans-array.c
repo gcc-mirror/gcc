@@ -2083,8 +2083,6 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
 	  tree cond;
 	  char *msg;
 
-	  indexse.expr = gfc_evaluate_now (indexse.expr, &se->pre);
-
 	  tmp = gfc_conv_array_lbound (se->expr, n);
 	  cond = fold_build2 (LT_EXPR, boolean_type_node, 
 			      indexse.expr, tmp);

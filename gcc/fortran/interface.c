@@ -1008,6 +1008,7 @@ check_sym_interfaces (gfc_symbol * sym)
 {
   char interface_name[100];
   bool k;
+  gfc_interface *p;
 
   if (sym->ns != gfc_current_ns)
     return;
@@ -1017,6 +1018,18 @@ check_sym_interfaces (gfc_symbol * sym)
       sprintf (interface_name, "generic interface '%s'", sym->name);
       if (check_interface0 (sym->generic, interface_name))
 	return;
+
+      for (p = sym->generic; p; p = p->next)
+	{
+	  if (!p->sym->attr.use_assoc
+		&& p->sym->attr.mod_proc
+		&& p->sym->attr.if_source != IFSRC_DECL)
+	    {
+	      gfc_error ("MODULE PROCEDURE '%s' at %L does not come "
+			 "from a module", p->sym->name, &p->where);
+	      return;
+	    }
+	}
 
       /* Originally, this test was aplied to host interfaces too;
 	 this is incorrect since host associated symbols, from any
