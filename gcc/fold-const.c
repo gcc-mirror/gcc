@@ -8662,6 +8662,26 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  if (integer_zerop (arg1))
 	    return non_lvalue (fold_convert (type, arg0));
 
+	  /* ~X + X is -1.  */
+	  if (TREE_CODE (arg0) == BIT_NOT_EXPR
+	      && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0)
+	      && !TYPE_TRAP_SIGNED (type))
+	    {
+	      t1 = build_int_cst (type, -1);
+	      t1 = force_fit_type (t1, 0, false, false);
+	      return omit_one_operand (type, t1, arg1);
+	    }
+
+	  /* X + ~X is -1.  */
+	  if (TREE_CODE (arg1) == BIT_NOT_EXPR
+	      && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0)
+	      && !TYPE_TRAP_SIGNED (type))
+	    {
+	      t1 = build_int_cst (type, -1);
+	      t1 = force_fit_type (t1, 0, false, false);
+	      return omit_one_operand (type, t1, arg0);
+	  }
+
 	  /* If we are adding two BIT_AND_EXPR's, both of which are and'ing
 	     with a constant, and the two constants have no bits in common,
 	     we should treat this as a BIT_IOR_EXPR since this may produce more
@@ -9002,7 +9022,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       /* Convert -A - 1 to ~A.  */
       if (INTEGRAL_TYPE_P (type)
 	  && TREE_CODE (arg0) == NEGATE_EXPR
-	  && integer_onep (arg1))
+	  && integer_onep (arg1)
+	  && !TYPE_TRAP_SIGNED (type))
 	return fold_build1 (BIT_NOT_EXPR, type,
 			    fold_convert (type, TREE_OPERAND (arg0, 0)));
 
