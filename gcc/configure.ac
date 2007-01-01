@@ -2051,6 +2051,12 @@ gcc_GAS_CHECK_FEATURE([.p2align with maximum skip], gcc_cv_as_max_skip_p2align,
   [Define if your assembler supports specifying the maximum number
    of bytes to skip when using the GAS .p2align command.])])
 
+gcc_GAS_CHECK_FEATURE([.literal16], gcc_cv_as_literal16,
+ [2,8,0],,
+ [.literal16],,
+[AC_DEFINE(HAVE_GAS_LITERAL16, 1,
+  [Define if your assembler supports .literal16.])])
+
 gcc_GAS_CHECK_FEATURE([working .subsection -1], gcc_cv_as_subsection_m1,
  [elf,2,9,0],,
  [conftest_label1: .word 0

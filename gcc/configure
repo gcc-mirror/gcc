@@ -13737,6 +13737,43 @@ _ACEOF
 
 fi
 
+echo "$as_me:$LINENO: checking assembler for .literal16" >&5
+echo $ECHO_N "checking assembler for .literal16... $ECHO_C" >&6
+if test "${gcc_cv_as_literal16+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_as_literal16=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 8 \) \* 1000 + 0`
+  then gcc_cv_as_literal16=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo '.literal16' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }
+    then
+	gcc_cv_as_literal16=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_as_literal16" >&5
+echo "${ECHO_T}$gcc_cv_as_literal16" >&6
+if test $gcc_cv_as_literal16 = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_GAS_LITERAL16 1
+_ACEOF
+
+fi
+
 echo "$as_me:$LINENO: checking assembler for working .subsection -1" >&5
 echo $ECHO_N "checking assembler for working .subsection -1... $ECHO_C" >&6
 if test "${gcc_cv_as_subsection_m1+set}" = set; then

@@ -754,6 +754,12 @@
 /* Define if your assembler and linker support .hidden. */
 #undef HAVE_GAS_HIDDEN
 
+/* Define if your assembler supports .literal16. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GAS_LITERAL16
+#endif
+
+
 /* Define if your assembler supports specifying the maximum number of bytes to
    skip when using the GAS .p2align command. */
 #ifndef USED_FOR_TARGET

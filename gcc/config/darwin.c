@@ -1131,6 +1131,10 @@ darwin_mergeable_string_section (tree exp,
   return readonly_data_section;
 }
 
+#ifndef HAVE_GAS_LITERAL16
+#define HAVE_GAS_LITERAL16 0
+#endif
+
 static section *
 darwin_mergeable_constant_section (tree exp,
 				   unsigned HOST_WIDE_INT align)
@@ -1156,7 +1160,8 @@ darwin_mergeable_constant_section (tree exp,
 	       && TREE_INT_CST_LOW (size) == 8
 	       && TREE_INT_CST_HIGH (size) == 0)
         return darwin_sections[literal8_section];
-      else if (TARGET_64BIT
+      else if (HAVE_GAS_LITERAL16
+	       && TARGET_64BIT
                && TREE_CODE (size) == INTEGER_CST
                && TREE_INT_CST_LOW (size) == 16
                && TREE_INT_CST_HIGH (size) == 0)
@@ -1321,7 +1326,8 @@ machopic_select_rtx_section (enum machine_mode mode, rtx x,
 	   && (GET_CODE (x) == CONST_INT
 	       || GET_CODE (x) == CONST_DOUBLE))
     return darwin_sections[literal4_section];
-  else if (TARGET_64BIT
+  else if (HAVE_GAS_LITERAL16
+	   && TARGET_64BIT
 	   && GET_MODE_SIZE (mode) == 16
 	   && (GET_CODE (x) == CONST_INT
 	       || GET_CODE (x) == CONST_DOUBLE

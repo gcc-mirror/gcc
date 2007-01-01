@@ -1,5 +1,16 @@
+2007-01-01  Mike Stump  <mrs@apple.com>
+
+	* configure.ac (HAVE_GAS_LITERAL16): Add autoconf check for
+	.literal16.
+	* config/darwin.c (machopic_select_rtx_section): Use
+	HAVE_GAS_LITERAL16.
+	(darwin_mergeable_constant_section): Likewise.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 2007-01-01  Jan Hubicka  <jh@suse.cz>
 	    Andrew Pinski  <pinskia@gmail.com>
 
 	* cgraphunit.c (cgraph_optimize): Call cgraph_add_new_functions
 	before starting IPA passes.
+
