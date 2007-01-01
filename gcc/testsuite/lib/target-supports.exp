@@ -1,4 +1,4 @@
-#   Copyright (C) 1999, 2001, 2003, 2004, 2005, 2006
+#   Copyright (C) 1999, 2001, 2003, 2004, 2005, 2006, 2007
 #   Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -1240,7 +1240,9 @@ proc check_effective_target_vect_cmdline_needed { } {
 	set et_vect_cmdline_needed_saved 1
 	if { [istarget ia64-*-*]
 	     || (([istarget x86_64-*-*] || [istarget i?86-*-*])
-		 && [check_effective_target_lp64])} {
+		 && [check_effective_target_lp64])
+	     || ([istarget powerpc*-*-*]
+		 && [check_effective_target_powerpc_spe])} {
 	   set et_vect_cmdline_needed_saved 0
 	}
     }
@@ -1355,6 +1357,22 @@ proc check_effective_target_powerpc_altivec_ok { } {
 	return [check_no_compiler_messages powerpc_altivec_ok object {
 	    int dummy;
 	} "-maltivec"]
+    } else {
+	return 0
+    }
+}
+
+# Return 1 if this is a PowerPC target with SPE enabled.
+
+proc check_effective_target_powerpc_spe { } {
+    if { [istarget powerpc*-*-*] } {
+	return [check_no_compiler_messages powerpc_spe object {
+	    #ifndef __SPE__
+	    #error not SPE
+	    #else
+	    int dummy;
+	    #endif
+	}]
     } else {
 	return 0
     }
