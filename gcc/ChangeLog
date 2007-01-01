@@ -1,0 +1,5 @@
+2007-01-01  Jan Hubicka  <jh@suse.cz>
+	    Andrew Pinski  <pinskia@gmail.com>
+
+	* cgraphunit.c (cgraph_optimize): Call cgraph_add_new_functions
+	before starting IPA passes.
