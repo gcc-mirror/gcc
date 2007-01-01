@@ -1,3 +1,8 @@
+2007-01-01  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/30253
+	* gcc.c-torture/compile/statement-expression-1.c: New test.
+
 2007-01-01  Andreas Schwab  <schwab@suse.de>
 
 	PR target/29166
