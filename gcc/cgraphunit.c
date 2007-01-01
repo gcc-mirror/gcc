@@ -1445,6 +1445,7 @@ cgraph_optimize (void)
   /* Frontend may output common variables after the unit has been finalized.
      It is safe to deal with them here as they are always zero initialized.  */
   varpool_analyze_pending_decls ();
+  cgraph_process_new_functions ();
 
   timevar_push (TV_CGRAPHOPT);
   if (pre_ipa_mem_report)
