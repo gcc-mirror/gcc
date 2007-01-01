@@ -1014,7 +1014,7 @@ voidify_wrapper_expr (tree wrapper, tree temp)
 	  /* The wrapper is on the RHS of an assignment that we're pushing
 	     down.  */
 	  gcc_assert (TREE_CODE (temp) == INIT_EXPR
-		      || TREE_CODE (temp) == GIMPLIFY_MODIFY_STMT
+		      || TREE_CODE (temp) == GIMPLE_MODIFY_STMT
 		      || TREE_CODE (temp) == MODIFY_EXPR);
 	  GENERIC_TREE_OPERAND (temp, 1) = *p;
 	  *p = temp;
