@@ -1,3 +1,8 @@
+2007-01-01  Andreas Schwab  <schwab@suse.de>
+
+	PR target/29166
+	* g++.dg/eh/pr29166.C: New test.
+
 2007-01-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* lib/target-supports.exp (check_effective_target_powerpc_spe):

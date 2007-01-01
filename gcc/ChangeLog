@@ -1,3 +1,12 @@
+2007-01-01  Andreas Schwab  <schwab@suse.de>
+
+	PR target/29166
+	* config/ia64/ia64.c (ia64_compute_frame_size): Account space for
+	save of BR0 in extra_spill_size instead of spill_size.
+	(ia64_expand_prologue): Save BR0 outside of the gr/br/fr spill
+	area.
+	(ia64_expand_epilogue): Restore BR0 from its new location.
+
 2006-12-29  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/29544
