@@ -1,3 +1,8 @@
+2007-01-01  Jan Hubicka  <jh@suse.cz>
+
+	* emit-rtl.c (emit_copy_of_insn_after): Do not call copy_insn_1 for
+	INSN_LIST.
+
 2007-01-01  Mike Stump  <mrs@apple.com>
 
 	* configure.ac (HAVE_GAS_LITERAL16): Add autoconf check for
