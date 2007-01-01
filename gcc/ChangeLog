@@ -1,3 +1,9 @@
+2007-01-01  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/30253
+	* gimplify (voidify_wrapper_expr): Update for
+	GIMPLIFY_MODIFY_STMT.
+
 2007-01-01  Andreas Schwab  <schwab@suse.de>
 
 	PR target/29166
