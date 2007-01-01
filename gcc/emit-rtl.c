@@ -5302,7 +5302,7 @@ emit_copy_of_insn_after (rtx insn, rtx after)
 	else
 	  REG_NOTES (new)
 	       = gen_rtx_INSN_LIST (REG_NOTE_KIND (link),
-		 copy_insn_1 (XEXP (link, 0)),  REG_NOTES (new));
+		 XEXP (link, 0),  REG_NOTES (new));
       }
 
   /* Fix the libcall sequences.  */
