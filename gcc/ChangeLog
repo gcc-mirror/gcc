@@ -1,5 +1,11 @@
 2007-01-01  Andrew Pinski  <pinskia@gmail.com>
 
+	* gimplify.c (gimplify_init_constructor <case VECTOR_TYPE>):
+	Use a temporary variable if the left hand side is not a gimple
+	register.
+
+2007-01-01  Andrew Pinski  <pinskia@gmail.com>
+
 	* gimplify.c (gimplify_return_expr): Make the temporary variable
 	for the return expression, a gimple register variable.
 

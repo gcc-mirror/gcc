@@ -3190,6 +3190,8 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	    if (tret == GS_ERROR)
 	      ret = GS_ERROR;
 	  }
+	if (!is_gimple_reg (GENERIC_TREE_OPERAND (*expr_p, 0)))
+	  GENERIC_TREE_OPERAND (*expr_p, 1) = get_formal_tmp_var (ctor, pre_p);
       }
       break;
 
