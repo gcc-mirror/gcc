@@ -1,8 +1,6 @@
-/* Test declaration specifiers.  Test diagnosis of storage class
-   specifiers not at start.  */
-/* Origin: Joseph Myers <jsm@polyomino.org.uk> */
+/* See declspec-3.c . Test -Wold-style-declaration is enabled by -Wextra. */
 /* { dg-do compile } */
-/* { dg-options "-Wold-style-declaration" } */
+/* { dg-options "-Wextra" } */
 
 static int x0;
 int static x1; /* { dg-warning "not at beginning" } */

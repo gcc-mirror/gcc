@@ -1,3 +1,14 @@
+2007-01-02  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR middle-end/7651
+	* c.opt (Wold-style-declaration): New.
+	* doc/invoke.texi (C-only Warning Options): New.
+	(Wold-style-declaration): Document it.
+	(Wextra): Enabled by -Wextra.
+	* c-opts.c (c_common_post_options): Enabled by -Wextra.
+	* c-decl.c (declspecs_add_scspec): Replace -Wextra with
+	-Wold-style-declaration.
+	
 2007-01-02  Kazu Hirata  <kazu@codesourcery.com>
 
 	* alias.c (init_alias_analysis): Use VEC_safe_grow_cleared.
