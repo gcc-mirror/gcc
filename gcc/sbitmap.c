@@ -31,7 +31,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #if GCC_VERSION >= 3400
 #if HOST_BITS_PER_WIDEST_FAST_INT == HOST_BITS_PER_LONG
 #define do_popcount(x) __builtin_popcountl(x)
-#elif HOST_BITS_PER_WIDEST_FAST_INT == HOST_BITS_PER_LONG_LONG
+#elif HOST_BITS_PER_WIDEST_FAST_INT == HOST_BITS_PER_LONGLONG
 #define do_popcount(x) __builtin_popcountll(x)
 #else
 #error "internal error: sbitmap.h and hwint.h are inconsistent"
