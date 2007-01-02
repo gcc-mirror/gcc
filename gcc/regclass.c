@@ -2177,9 +2177,8 @@ allocate_reg_info (size_t num_regs, int new_p, int renumber_p)
       if (!reg_n_info)
 	{
 	  reg_n_info = VEC_alloc (reg_info_p, heap, regno_allocated);
-	  VEC_safe_grow (reg_info_p, heap, reg_n_info, regno_allocated);
-	  memset (VEC_address (reg_info_p, reg_n_info), 0,
-		  sizeof (reg_info_p) * regno_allocated);
+	  VEC_safe_grow_cleared (reg_info_p, heap, reg_n_info,
+				 regno_allocated);
 	  renumber = xmalloc (size_renumber);
 	  reg_pref_buffer = XNEWVEC (struct reg_pref, regno_allocated);
 	}
@@ -2188,11 +2187,8 @@ allocate_reg_info (size_t num_regs, int new_p, int renumber_p)
 	  size_t old_length = VEC_length (reg_info_p, reg_n_info);
 	  if (old_length < regno_allocated)
 	    {
-	      reg_info_p *addr;
-	      VEC_safe_grow (reg_info_p, heap, reg_n_info, regno_allocated);
-	      addr = VEC_address (reg_info_p, reg_n_info);
-	      memset (&addr[old_length], 0,
-		      sizeof (reg_info_p) * (regno_allocated - old_length));
+	      VEC_safe_grow_cleared (reg_info_p, heap, reg_n_info,
+				     regno_allocated);
 	    }
 	  else if (regno_allocated < old_length)
 	    {
