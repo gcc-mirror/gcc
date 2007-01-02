@@ -2453,7 +2453,9 @@ init_alias_analysis (void)
   if (reg_base_value)
     VEC_truncate (rtx, reg_base_value, 0);
 
-  VEC_safe_grow_cleared (rtx, gc, reg_base_value, maxreg);
+  VEC_safe_grow (rtx, gc, reg_base_value, maxreg);
+  memset (VEC_address (rtx, reg_base_value), 0,
+	  sizeof (rtx) * VEC_length (rtx, reg_base_value));
 
   new_reg_base_value = XNEWVEC (rtx, maxreg);
   reg_seen = XNEWVEC (char, maxreg);
