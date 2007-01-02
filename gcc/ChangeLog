@@ -1,3 +1,12 @@
+2007-01-02  Joseph Myers  <joseph@codesourcery.com>
+
+	PR middle-end/30311
+	* caller-save.c (add_stored_regs): Only handle SUBREGs if inner
+	REG is a hard register.  Do not modify REG before calling
+	subreg_nregs.
+	* rtlanal.c (subreg_get_info): Don't assert size of XMODE is a
+	multiple of the size of YMODE for certain lowpart cases.
+
 2007-01-01  Andrew Pinski  <pinskia@gmail.com>
 
 	PR middle-end/30253

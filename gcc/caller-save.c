@@ -1,6 +1,6 @@
 /* Save and restore call-clobbered registers which are live across a call.
-   Copyright (C) 1989, 1992, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1992, 1994, 1995, 1997, 1998, 1999, 2000,
+   2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -537,14 +537,15 @@ add_stored_regs (rtx reg, rtx setter, void *data)
   if (GET_CODE (setter) == CLOBBER)
     return;
 
-  if (GET_CODE (reg) == SUBREG && REG_P (SUBREG_REG (reg)))
+  if (GET_CODE (reg) == SUBREG
+      && REG_P (SUBREG_REG (reg))
+      && REGNO (SUBREG_REG (reg)) < FIRST_PSEUDO_REGISTER)
     {
       offset = subreg_regno_offset (REGNO (SUBREG_REG (reg)),
 				    GET_MODE (SUBREG_REG (reg)),
 				    SUBREG_BYTE (reg),
 				    GET_MODE (reg));
-      reg = SUBREG_REG (reg);
-      regno = REGNO (reg) + offset;
+      regno = REGNO (SUBREG_REG (reg)) + offset;
       endregno = regno + subreg_nregs (reg);
     }
   else
