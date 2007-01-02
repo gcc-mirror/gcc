@@ -1,3 +1,8 @@
+2007-01-01  Eric Christopher  <echristo@apple.com>
+
+	* config/mips/mips.c (mips_regno_mode_ok_for_base_p): Use
+	HARD_REGISTER_NUM_P.
+
 2007-01-01  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_binary) <EQ_EXPR>: Fold "(X^C1) eq/ne C2" into
@@ -64,4 +69,3 @@
 
 	* cgraphunit.c (cgraph_optimize): Call cgraph_add_new_functions
 	before starting IPA passes.
-
