@@ -1,5 +1,14 @@
 2007-01-02  Jan Hubicka  <jh@suse.cz>
 
+        * tree-mudflap.c (mf_decl_cache_locals, mf_build_check_statement_for):
+        Do not add referenced vars.
+        * tree-cfg.c (update_modified_stmts): Do not update when SSA operands
+        are not active.
+        * passes.c (init_optimization_passes): Put mudflap_2 after
+        free_datastructures.
+
+2007-01-02  Jan Hubicka  <jh@suse.cz>
+
 	* tree-optimize (execute_fixup_cfg): Set after_inlining flag.
 	Set NOTHROW flag on call statements proved to be nothrow.
 	Update statement of local calls so new pure/const functions are

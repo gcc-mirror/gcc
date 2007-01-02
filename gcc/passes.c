@@ -476,8 +476,8 @@ init_optimization_passes (void)
   NEXT_PASS (pass_expand_omp);
   NEXT_PASS (pass_all_optimizations);
   NEXT_PASS (pass_warn_function_noreturn);
-  NEXT_PASS (pass_mudflap_2);
   NEXT_PASS (pass_free_datastructures);
+  NEXT_PASS (pass_mudflap_2);
   NEXT_PASS (pass_free_cfg_annotations);
   NEXT_PASS (pass_expand);
   NEXT_PASS (pass_rest_of_compilation);

@@ -2803,6 +2803,8 @@ bsi_for_stmt (tree stmt)
 static inline void
 update_modified_stmts (tree t)
 {
+  if (!ssa_operands_active ())
+    return;
   if (TREE_CODE (t) == STATEMENT_LIST)
     {
       tree_stmt_iterator i;
