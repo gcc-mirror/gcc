@@ -1,3 +1,9 @@
+2007-01-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/30238
+	* gfortran.dg/associated_1.f90: Add test for associated(NULL,NULL).
+	* gfortran.dg/associated_2.f90: Add test for associated(NULL,NULL).
+	
 2007-01-01  Andreas Schwab  <schwab@suse.de>
 
 	PR target/29166
