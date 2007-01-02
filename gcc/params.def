@@ -626,6 +626,19 @@ DEFPARAM (PARAM_L1_CACHE_LINE_SIZE,
 	  "The size of L1 cache line",
 	  32, 0, 0)
 
+#ifdef ENABLE_CHECKING
+# define GCC_CANONICAL_TYPES_DEFAULT 1
+#else
+# define GCC_CANONICAL_TYPES_DEFAULT 0
+#endif
+
+/* Whether we should verify that the canonical types in the system are
+   consistent with the "structural" typing. */
+
+DEFPARAM (PARAM_VERIFY_CANONICAL_TYPES,
+	  "verify-canonical-types",
+	  "Whether to verify canonical types",
+	  GCC_CANONICAL_TYPES_DEFAULT, 0, 1)
 /*
 Local variables:
 mode:c

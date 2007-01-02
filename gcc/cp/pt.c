@@ -80,6 +80,12 @@ static tree cur_stmt_expr;
    local variables.  */
 static htab_t local_specializations;
 
+/* Contains canonical template parameter types. The vector is index by
+   the TEMPLATE_TYPE_IDX of the template parameter. Each element is a
+   TREE_LIST, whose TREE_VALUEs contain the canonical template
+   parameters of various types and levels.  */
+static GTY(()) VEC(tree,gc) *canonical_template_parms;
+
 #define UNIFY_ALLOW_NONE 0
 #define UNIFY_ALLOW_MORE_CV_QUAL 1
 #define UNIFY_ALLOW_LESS_CV_QUAL 2
@@ -157,6 +163,7 @@ static tree copy_default_args_to_explicit_spec_1 (tree, tree);
 static void copy_default_args_to_explicit_spec (tree);
 static int invalid_nontype_parm_type_p (tree, tsubst_flags_t);
 static int eq_local_specializations (const void *, const void *);
+static bool any_template_arguments_need_structural_equality_p (tree);
 static bool dependent_type_p_r (tree);
 static tree tsubst (tree, tree, tsubst_flags_t, tree);
 static tree tsubst_expr	(tree, tree, tsubst_flags_t, tree, bool);
@@ -2335,6 +2342,35 @@ build_template_parm_index (int index,
   return t;
 }
 
+/* Find the canonical type parameter for the given template type
+   parmaeter. Returns the canonical type parameter, which may be TYPE
+   if no such parameter existed. */
+static tree
+canonical_type_parameter (tree type)
+{
+  tree list;
+  int idx = TEMPLATE_TYPE_IDX (type);
+  if (!canonical_template_parms)
+    canonical_template_parms = VEC_alloc (tree, gc, idx+1);
+
+  while (VEC_length (tree, canonical_template_parms) <= (unsigned)idx)
+    VEC_safe_push (tree, gc, canonical_template_parms, NULL_TREE);
+
+  list = VEC_index (tree, canonical_template_parms, idx);
+  while (list && !comptypes (type, TREE_VALUE (list), COMPARE_STRUCTURAL))
+    list = TREE_CHAIN (list);
+
+  if (list)
+    return TREE_VALUE (list);
+  else
+    {
+      VEC_replace(tree, canonical_template_parms, idx,
+		  tree_cons (NULL_TREE, type, 
+			     VEC_index (tree, canonical_template_parms, idx)));
+      return type;
+    }
+}
+
 /* Return a TEMPLATE_PARM_INDEX, similar to INDEX, but whose
    TEMPLATE_PARM_LEVEL has been decreased by LEVELS.  If such a
    TEMPLATE_PARM_INDEX already exists, it is returned; otherwise, a
@@ -2473,6 +2509,7 @@ process_template_parm (tree list, tree parm, bool is_non_type)
 	= build_template_parm_index (idx, processing_template_decl,
 				     processing_template_decl,
 				     decl, TREE_TYPE (parm));
+      TYPE_CANONICAL (t) = canonical_type_parameter (t);
     }
   DECL_ARTIFICIAL (decl) = 1;
   SET_DECL_TEMPLATE_PARM_P (decl);
@@ -4807,6 +4844,17 @@ lookup_template_class (tree d1,
 	  /* A local class.  Make sure the decl gets registered properly.  */
 	  if (context == current_function_decl)
 	    pushtag (DECL_NAME (template), t, /*tag_scope=*/ts_current);
+
+	  if (comp_template_args (CLASSTYPE_TI_ARGS (template_type), arglist))
+	    /* This instantiation is another name for the primary
+	       template type. Set the TYPE_CANONICAL field
+	       appropriately. */
+	    TYPE_CANONICAL (t) = template_type;
+	  else if (any_template_arguments_need_structural_equality_p (arglist))
+	    /* Some of the template arguments require structural
+	       equality testing, so this template class requires
+	       structural equality testing. */
+	    SET_TYPE_STRUCTURAL_EQUALITY (t);
 	}
 
       /* If we called start_enum or pushtag above, this information
@@ -7472,6 +7520,18 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		TYPE_MAIN_VARIANT (r) = r;
 		TYPE_POINTER_TO (r) = NULL_TREE;
 		TYPE_REFERENCE_TO (r) = NULL_TREE;
+
+		if (TREE_CODE (r) == TEMPLATE_TEMPLATE_PARM)
+		  /* We have reduced the level of the template
+		     template parameter, but not the levels of its
+		     template parameters, so canonical_type_parameter
+		     will not be able to find the canonical template
+		     template parameter for this level. Thus, we
+		     require structural equality checking to compare
+		     TEMPLATE_TEMPLATE_PARMs. */
+		  SET_TYPE_STRUCTURAL_EQUALITY (r);
+		else
+		  TYPE_CANONICAL (r) = canonical_type_parameter (r);
 
 		if (TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM)
 		  {
@@ -13165,6 +13225,40 @@ dependent_template_arg_p (tree arg)
   else
     return (type_dependent_expression_p (arg)
 	    || value_dependent_expression_p (arg));
+}
+
+/* Returns true if ARGS (a collection of template arguments) contains
+   any types that require structural equality testing.  */
+
+bool
+any_template_arguments_need_structural_equality_p (tree args)
+{
+  int i;
+  int j;
+
+  if (!args)
+    return false;
+  if (args == error_mark_node)
+    return true;
+
+  for (i = 0; i < TMPL_ARGS_DEPTH (args); ++i)
+    {
+      tree level = TMPL_ARGS_LEVEL (args, i + 1);
+      for (j = 0; j < TREE_VEC_LENGTH (level); ++j)
+	{
+	  tree arg = TREE_VEC_ELT (level, j);
+	  if (TREE_CODE (arg) == TEMPLATE_DECL
+	      || TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
+	    continue;
+	  else if (TYPE_P (arg) && TYPE_STRUCTURAL_EQUALITY_P (arg))
+	    return true;
+	  else if (!TYPE_P (arg) && TREE_TYPE (arg)
+		   && TYPE_STRUCTURAL_EQUALITY_P (TREE_TYPE (arg)))
+	    return true;
+	}
+    }
+
+  return false;
 }
 
 /* Returns true if ARGS (a collection of template arguments) contains

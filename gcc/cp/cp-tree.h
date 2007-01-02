@@ -3508,6 +3508,10 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 #define COMPARE_REDECLARATION 4 /* The comparison is being done when
 				   another declaration of an existing
 				   entity is seen.  */
+#define COMPARE_STRUCTURAL    8 /* The comparison is intended to be
+				   structural. The actual comparison
+				   will be identical to
+				   COMPARE_STRICT.  */
 
 /* Used with push_overloaded_decl.  */
 #define PUSH_GLOBAL	     0  /* Push the DECL into namespace scope,

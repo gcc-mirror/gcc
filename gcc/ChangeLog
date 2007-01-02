@@ -1,3 +1,53 @@
+2007-01-02  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* c-common.c(c_common_nodes_and_builtins): Since variants of
+	void_type_node get built before it is given a name, we need to
+	give those variants the name, too. 
+	(complete_array_type): We need to work with the canonical main
+	type of the array, from which we will build the qualified version.
+	* params.def (PARAM_VERIFY_CANONICAL_TYPES): New.
+	* print-tree.c (print_node): Display canonical type information
+	for each type.
+	* stor-layout.c (layout_type): When we don't know the
+	alignment of a type for which we're building an array, we end up
+	guessing wrong, so make the type require structural equality.
+	* tree.c (make_node_stat): When we build a new type, it is its
+	own canonical type.
+	(build_type_attribute_qual_variant): When building an attribute
+	variant, its canonical type is the non-attribute variant. However,
+	if the attributes are target-dependent and they differ, we need to
+	use structural equality checks for this type.
+	(build_qualified_type): A qualified type is not equivalent to its
+	unqualified variant; set the canonical type appropriately.
+	(build_distinct_type_copy): When building a distinct type from
+	another type, the new type is its own canonical type.
+	(build_variant_type_copy): When building a new type variant, we
+	assume that it is equivalent to the original type.
+	(build_pointer_type_for_mode): When building a pointer type, also
+	build a canonical type pointer.
+	(build_reference_type_for_mode): When building a reference type,
+	also build a canonical type reference.
+	(build_index_type): When we can't hash an index type (e.g.,
+	because its maximum value is negative), the index type requires
+	structural equality tests.
+	(build_array_type): Build the canonical form of an array type.
+	(build_function_type): Function types require structural equality,
+	because they contain default arguments, attributes, etc. 
+	(build_method_type_directly): Ditto for method types.
+	(build_offset_type): Build the canonical offset type.
+	(build_complex_type): Build the canonical vector type.
+	(make_vector_type): Build the canonical vector type.
+	* tree.h (TYPE_CANONICAL): New.
+	(TYPE_STRUCTURAL_EQUALITY_P): New.
+	(SET_TYPE_STRUCTURAL_EQUALITY): New.
+	(struct tree_type): Added "canonical" field.
+	* params.h (VERIFY_CANONICAL_TYPES): New.
+	* doc/c-tree.texi (TYPE_CANONICAL): Document.
+	(TYPE_STRUCTURAL_EQUALITY_P): Document.
+	(SET_TYPE_STRUCTURAL_EQUALITY): Document.
+	* doc/invoke.texi (verify-canonical-types): Document --param
+	parameter for verifying canonical types.
+
 2007-01-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.gcc (powerpc-*-eabispe*, powerpc-*-eabisimaltivec*,

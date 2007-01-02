@@ -1,3 +1,9 @@
+2007-01-02  Douglas Gregor  <doug.gregor@gmail.com>
+	
+	* objc-act.c (objc_build_volatilized_type): Keep track of
+	canonical types.
+	(objc_get_protocol_qualified_type): Ditto.
+	
 2006-11-02  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* objc-act.c (objc_finish_file): Remove ifdef clause for OBJCPLUS and

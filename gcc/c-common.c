@@ -3458,6 +3458,16 @@ c_common_nodes_and_builtins (void)
 
   record_builtin_type (RID_VOID, NULL, void_type_node);
 
+  /* Set the TYPE_NAME for any variants that were built before
+     record_builtin_type gave names to the built-in types. */
+  {
+    tree void_name = TYPE_NAME (void_type_node);
+    TYPE_NAME (void_type_node) = NULL_TREE;
+    TYPE_NAME (build_qualified_type (void_type_node, TYPE_QUAL_CONST))
+      = void_name;
+    TYPE_NAME (void_type_node) = void_name;
+  }
+
   /* This node must not be shared.  */
   void_zero_node = make_node (INTEGER_CST);
   TREE_TYPE (void_zero_node) = void_type_node;
@@ -6294,6 +6304,7 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 {
   tree maxindex, type, main_type, elt, unqual_elt;
   int failure = 0, quals;
+  hashval_t hashcode = 0;
 
   maxindex = size_zero_node;
   if (initial_value)
@@ -6369,6 +6380,12 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
   TREE_TYPE (main_type) = unqual_elt;
   TYPE_DOMAIN (main_type) = build_index_type (maxindex);
   layout_type (main_type);
+
+  /* Make sure we have the canonical MAIN_TYPE. */
+  hashcode = iterative_hash_object (TYPE_HASH (unqual_elt), hashcode);
+  hashcode = iterative_hash_object (TYPE_HASH (TYPE_DOMAIN (main_type)), 
+				    hashcode);
+  main_type = type_hash_canon (hashcode, main_type);
 
   if (quals == 0)
     type = main_type;
