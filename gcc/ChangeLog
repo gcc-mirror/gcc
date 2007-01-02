@@ -1,3 +1,16 @@
+2007-01-02  Kazu Hirata  <kazu@codesourcery.com>
+
+	* alias.c (init_alias_analysis): Use VEC_safe_grow_cleared.
+	* cfgbuild.c (find_basic_blocks): Likewise.
+	* cfgrtl.c (rtl_create_basic_block): Likewise.
+	* function.c (temp_slots_at_level): Likewise.
+	* reg-stack.c (stack_regs_mentioned): Likewise.
+	* regclass.c (allocate_reg_info): Likewise.
+	* tree-cfg.c (init_empty_tree_cfg, build_tree_cfg, create_bb,
+	set_bb_for_stmt, move_block_to_fn): Likewise.
+	* tree-complex.c (tree_lower_complex): Likewise.
+	* vec.h (VEC_safe_grow_cleared): New.
+
 2007-01-02  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* c-common.c(c_common_nodes_and_builtins): Since variants of

@@ -302,6 +302,16 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define VEC_safe_grow(T,A,V,I)		\
 	(VEC_OP(T,A,safe_grow)(&(V),I VEC_CHECK_INFO MEM_STAT_INFO))
 
+/* Grow to a specific length.
+   void VEC_T_A_safe_grow_cleared (VEC(T,A) *&v, int len);
+
+   Grow the vector to a specific length.  The LEN must be as
+   long or longer than the current length.  The new elements are
+   initialized to zero.  */
+
+#define VEC_safe_grow_cleared(T,A,V,I)		\
+	(VEC_OP(T,A,safe_grow_cleared)(&(V),I VEC_CHECK_INFO MEM_STAT_INFO))
+
 /* Replace element
    T VEC_T_replace (VEC(T) *v, unsigned ix, T val); // Integer
    T VEC_T_replace (VEC(T) *v, unsigned ix, T val); // Pointer
@@ -745,6 +755,15 @@ static inline void VEC_OP (T,A,safe_grow)				  \
   VEC_BASE (*vec_)->num = size_;					  \
 }									  \
 									  \
+static inline void VEC_OP (T,A,safe_grow_cleared)			  \
+     (VEC(T,A) **vec_, int size_ VEC_CHECK_DECL MEM_STAT_DECL)		  \
+{									  \
+  int oldsize = VEC_OP(T,base,length) VEC_BASE(*vec_);			  \
+  VEC_OP (T,A,safe_grow) (vec_, size_ VEC_CHECK_PASS PASS_MEM_STAT);	  \
+  memset (&(VEC_OP (T,base,address) (VEC_BASE(*vec_)))[oldsize], 0,	  \
+	  sizeof (T) * (size_ - oldsize));				  \
+}									  \
+									  \
 static inline T *VEC_OP (T,A,safe_push)					  \
      (VEC(T,A) **vec_, T obj_ VEC_CHECK_DECL MEM_STAT_DECL)       	  \
 {									  \
@@ -1014,6 +1033,15 @@ static inline void VEC_OP (T,A,safe_grow)				  \
   VEC_BASE (*vec_)->num = size_;					  \
 }									  \
 									  \
+static inline void VEC_OP (T,A,safe_grow_cleared)			  \
+     (VEC(T,A) **vec_, int size_ VEC_CHECK_DECL MEM_STAT_DECL)		  \
+{									  \
+  int oldsize = VEC_OP(T,base,length) VEC_BASE(*vec_);			  \
+  VEC_OP (T,A,safe_grow) (vec_, size_ VEC_CHECK_PASS PASS_MEM_STAT);	  \
+  memset (&(VEC_OP (T,base,address) (VEC_BASE(*vec_)))[oldsize], 0,	  \
+	  sizeof (T) * (size_ - oldsize));				  \
+}									  \
+									  \
 static inline T *VEC_OP (T,A,safe_push)					  \
      (VEC(T,A) **vec_, const T *obj_ VEC_CHECK_DECL MEM_STAT_DECL)	  \
 {									  \
@@ -1095,6 +1123,24 @@ static inline void VEC_OP (T,A,safe_grow)				  \
   VEC_OP (T,A,reserve) (vec_, (int)(*vec_ ? VEC_BASE(*vec_)->num : 0) - size_ \
 			VEC_CHECK_PASS PASS_MEM_STAT);			  \
   VEC_BASE (*vec_)->num = size_;					  \
+}									  \
+									  \
+static inline void VEC_OP (T,A,safe_grow_cleared)			  \
+     (VEC(T,A) **vec_, int size_ VEC_CHECK_DECL MEM_STAT_DECL)		  \
+{									  \
+  int oldsize = VEC_OP(T,base,length) VEC_BASE(*vec_);			  \
+  VEC_OP (T,A,safe_grow) (vec, size_);					  \
+  memset ((VEC_OP (T,base,address) (vec_))[oldsize], 0,			  \
+	  sizeof (T) * (size_ - oldsize));				  \
+}									  \
+									  \
+static inline void VEC_OP (T,A,safe_grow_cleared)			  \
+     (VEC(T,A) **vec_, int size_ VEC_CHECK_DECL MEM_STAT_DECL)		  \
+{									  \
+  int oldsize = VEC_OP(T,base,length) VEC_BASE(*vec_);			  \
+  VEC_OP (T,A,safe_grow) (vec_, size_ VEC_CHECK_PASS PASS_MEM_STAT);	  \
+  memset (&(VEC_OP (T,base,address) (VEC_BASE(*vec_)))[oldsize], 0,	  \
+	  sizeof (T) * (size_ - oldsize));				  \
 }									  \
 									  \
 static inline T *VEC_OP (T,A,safe_push)					  \
