@@ -1016,11 +1016,6 @@ check_sym_interfaces (gfc_symbol * sym)
   if (sym->ns != gfc_current_ns)
     return;
 
-  if (sym->attr.if_source == IFSRC_IFBODY
-	&& sym->attr.flavor == FL_PROCEDURE
-	&& !sym->attr.mod_proc)
-    resolve_global_procedure (sym, &sym->declared_at, sym->attr.subroutine);
-
   if (sym->generic != NULL)
     {
       sprintf (interface_name, "generic interface '%s'", sym->name);
