@@ -40,7 +40,7 @@ f (void)
   /* This expression is not required to be a constant expression, so
      it should just involve undefined behavior at runtime.  */
   int c = INT_MAX + 1; /* { dg-warning "warning: integer overflow in expression" } */
-  /* { dg-bogus "error: overflow in constant expression" "constant" { xfail *-*-* } 42 } */
+
 }
 
 /* But this expression does need to be constant.  */

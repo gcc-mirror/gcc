@@ -4292,7 +4292,7 @@ store_init_value (tree decl, tree init)
 
   /* ANSI wants warnings about out-of-range constant initializers.  */
   STRIP_TYPE_NOPS (value);
-  constant_expression_warning (value);
+  if (TREE_STATIC (decl)) constant_expression_warning (value);
 
   /* Check if we need to set array size from compound literal size.  */
   if (TREE_CODE (type) == ARRAY_TYPE
