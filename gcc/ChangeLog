@@ -1,5 +1,9 @@
 2007-01-02  Carlos O'Donell  <carlos@codesourcery.com>
 
+	* Makefile.in: Update copyright year.
+
+2007-01-02  Carlos O'Donell  <carlos@codesourcery.com>
+
 	* Makefile.in: Export GCC_EXEC_PREFIX before calling $(RUNTEST)
 	in $(lang_checks) and check-consistency targets.
 
