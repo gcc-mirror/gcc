@@ -1,3 +1,9 @@
+2007-01-02  Manuel Lopez-Ibanez <manu@gcc.gnu.org>
+
+	PR c/19977
+	* c-typeck.c (store_init_value): Don't emit pedantic overflow
+	warning for non-static initializers.
+	
 2007-01-02  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/alpha/alpha.md, arm/arm.c, darwin.c, frv/frv.md,

@@ -1,3 +1,9 @@
+2007-01-02  Manuel Lopez-Ibanez <manu@gcc.gnu.org>
+
+	PR c/19977
+	* gcc/testsuite/gcc.dg/overflow-warn-3.c: Remove XFAIL.
+	* gcc/testsuite/gcc.dg/overflow-warn-4.c: Remove XFAIL.
+
 2006-01-02  Ian Lance Taylor  <iant@google.com>
 
 	* g++.dg/warn/Wparentheses-22.C: New test.
