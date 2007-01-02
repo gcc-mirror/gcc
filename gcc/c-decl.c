@@ -7613,8 +7613,9 @@ declspecs_add_scspec (struct c_declspecs *specs, tree scspec)
   gcc_assert (TREE_CODE (scspec) == IDENTIFIER_NODE
 	      && C_IS_RESERVED_WORD (scspec));
   i = C_RID_CODE (scspec);
-  if (extra_warnings && specs->non_sc_seen_p)
-    warning (OPT_Wextra, "%qE is not at beginning of declaration", scspec);
+  if (specs->non_sc_seen_p)
+    warning (OPT_Wold_style_declaration, 
+             "%qE is not at beginning of declaration", scspec);
   switch (i)
     {
     case RID_INLINE:

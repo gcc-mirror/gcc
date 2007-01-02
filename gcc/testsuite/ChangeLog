@@ -1,3 +1,10 @@
+2007-01-02  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR middle-end/7651
+	* gcc.dg/declspec-3.c: Replace -W with -Wold-style-declaration.
+	* gcc.dg/declspec-3-Wextra.c: New.
+	* gcc.dg/declspec-3-no.c: New
+
 2007-01-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/20896

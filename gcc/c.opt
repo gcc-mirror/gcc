@@ -319,6 +319,10 @@ Wold-style-cast
 C++ ObjC++ Var(warn_old_style_cast)
 Warn if a C-style cast is used in a program
 
+Wold-style-declaration
+C ObjC Var(warn_old_style_declaration) Init(-1)
+Warn for obsolescent usage in a declaration
+
 Wold-style-definition
 C ObjC Var(warn_old_style_definition)
 Warn if an old-style parameter definition is used

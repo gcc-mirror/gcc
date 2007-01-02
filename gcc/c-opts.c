@@ -1026,7 +1026,8 @@ c_common_post_options (const char **pfilename)
     flag_exceptions = 1;
 
   /* -Wextra implies -Wclobbered, -Wempty-body, -Wsign-compare, 
-     -Wmissing-field-initializers, -Wmissing-parameter-type and -Woverride-init, 
+     -Wmissing-field-initializers, -Wmissing-parameter-type
+     -Wold-style-declaration, and -Woverride-init, 
      but not if explicitly overridden.  */
   if (warn_clobbered == -1)
     warn_clobbered = extra_warnings;
@@ -1038,6 +1039,8 @@ c_common_post_options (const char **pfilename)
     warn_missing_field_initializers = extra_warnings;
   if (warn_missing_parameter_type == -1)
     warn_missing_parameter_type = extra_warnings;
+  if (warn_old_style_declaration == -1)
+    warn_old_style_declaration = extra_warnings;
   if (warn_override_init == -1)
     warn_override_init = extra_warnings;
 
