@@ -7904,8 +7904,7 @@
 
   MEM_READONLY_P (SET_SRC (PATTERN (insn))) = 1;
 
-  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, operands[1],
-					REG_NOTES (insn));
+  set_unique_reg_note (insn, REG_EQUAL, operands[1]);
 
   DONE;
 }")
@@ -7985,8 +7984,7 @@
 {
   rtx insn = emit_insn (gen_symGOTOFF2reg_i (operands[0], operands[1], operands[2], operands[3]));
 
-  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, operands[1],
-					REG_NOTES (insn));
+  set_unique_reg_note (insn, REG_EQUAL, operands[1]);
 
   DONE;
 }")
@@ -8022,8 +8020,7 @@
   insn = emit_insn (gen_symGOTOFF2reg_i (operands[0], operands[1],
 					 operands[4], operands[3]));
 
-  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, operands[1],
-					REG_NOTES (insn));
+  set_unique_reg_note (insn, REG_EQUAL, operands[1]);
 
   DONE;
 }")
@@ -8053,8 +8050,7 @@
   insn = emit_insn (gen_symGOTOFF2reg_hilo (operands[0], operands[1],
 					    operands[4], operands[3]));
 
-  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, operands[1],
-					REG_NOTES (insn));
+  set_unique_reg_note (insn, REG_EQUAL, operands[1]);
 
   DONE;
 }")

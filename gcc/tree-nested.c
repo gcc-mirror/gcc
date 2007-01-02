@@ -183,7 +183,7 @@ build_addr (tree exp, tree context)
   save_context = current_function_decl;
   current_function_decl = context;
   retval = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (exp)), exp);
-  current_function_decl = save_context;;
+  current_function_decl = save_context;
   return retval;
 }
 

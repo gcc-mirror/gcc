@@ -1681,8 +1681,7 @@ m32r_legitimize_pic_address (rtx orig, rtx reg)
 #if 0
       /* Put a REG_EQUAL note on this insn, so that it can be optimized
          by loop.  */
-      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, orig,
-                  REG_NOTES (insn));
+      set_unique_reg_note (insn, REG_EQUAL, orig);
 #endif
       return reg;
     }
