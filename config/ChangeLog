@@ -1,3 +1,7 @@
+2007-01-01  Mike Stump  <mrs@apple.com>
+
+	* mh-ppc-darwin: Remove support for building with Apple's gcc-3.1.
+
 2006-12-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* tls.m4 (GCC_CHECK_TLS): Do not test TLS with static linking

@@ -1,3 +1,7 @@
+2007-01-01  Mike Stump  <mrs@apple.com>
+
+	* configure.ac: Remove support for building with Apple's gcc-3.1.
+
 2007-01-02  Joseph Myers  <joseph@codesourcery.com>
 
 	PR middle-end/30311

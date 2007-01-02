@@ -983,13 +983,6 @@ vax-*-*)
     stage1_cflags="-J"
   fi
   ;;
-powerpc*-*-darwin*)
-  # The spiffy cpp-precomp chokes on some legitimate constructs in GCC
-  # sources; use -no-cpp-precomp to get to GNU cpp.
-  # Apple's GCC has bugs in designated initializer handling, so disable
-  # that too.
-  stage1_cflags="-no-cpp-precomp -DHAVE_DESIGNATED_INITIALIZERS=0"
-  ;;
 esac
 AC_SUBST(stage1_cflags)
 
