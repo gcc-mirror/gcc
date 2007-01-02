@@ -1,3 +1,13 @@
+2007-01-02  Jan Hubicka  <jh@suse.cz>
+
+	* tree-optimize (execute_fixup_cfg): Set after_inlining flag.
+	Set NOTHROW flag on call statements proved to be nothrow.
+	Update statement of local calls so new pure/const functions are
+	updated. Update_ssa when in ssa form. Mark PHI nodes of nonlocal
+	goto receivers.
+	(tree_rest_of_compilation): Register hooks and initialize bitmap
+	early. Do not set after_inlining flag.
+
 2007-01-02  Steve Ellcey  <sje@cup.hp.com>
 
 	* sbitmap.c (HOST_BITS_PER_LONG_LONG):  Change to

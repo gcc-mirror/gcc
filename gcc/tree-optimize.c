@@ -264,6 +264,8 @@ execute_fixup_cfg (void)
   basic_block bb;
   block_stmt_iterator bsi;
 
+  cfun->after_inlining = true;
+
   if (cfun->eh)
     FOR_EACH_BB (bb)
       {
@@ -271,9 +273,16 @@ execute_fixup_cfg (void)
 	  {
 	    tree stmt = bsi_stmt (bsi);
 	    tree call = get_call_expr_in (stmt);
+	    tree decl = call ? get_callee_fndecl (call) : NULL;
 
-	    if (call && call_expr_flags (call) & (ECF_CONST | ECF_PURE))
-	      TREE_SIDE_EFFECTS (call) = 0;
+	    if (decl && call_expr_flags (call) & (ECF_CONST | ECF_PURE)
+		&& TREE_SIDE_EFFECTS (call))
+	      {
+	        update_stmt (stmt);
+	        TREE_SIDE_EFFECTS (call) = 0;
+	      }
+	    if (decl && TREE_NOTHROW (decl))
+	      TREE_NOTHROW (call) = 1;
 	    if (!tree_could_throw_p (stmt) && lookup_stmt_eh_region (stmt))
 	      remove_stmt_from_eh_region (stmt);
 	  }
@@ -281,29 +290,55 @@ execute_fixup_cfg (void)
       }
 
   if (current_function_has_nonlocal_label)
-    FOR_EACH_BB (bb)
-      {
-	for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-	  {
-	    tree stmt = bsi_stmt (bsi);
-	    if (tree_can_make_abnormal_goto (stmt))
-	      {
-		if (stmt == bsi_stmt (bsi_last (bb)))
-		  {
-		    if (!has_abnormal_outgoing_edge_p (bb))
+    {
+      FOR_EACH_BB (bb)
+	{
+	  for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	    {
+	      tree stmt = bsi_stmt (bsi);
+	      if (tree_can_make_abnormal_goto (stmt))
+		{
+		  if (stmt == bsi_stmt (bsi_last (bb)))
+		    {
+		      if (!has_abnormal_outgoing_edge_p (bb))
+			make_abnormal_goto_edges (bb, true);
+		    }
+		  else
+		    {
+		      edge e = split_block (bb, stmt);
+		      bb = e->src;
 		      make_abnormal_goto_edges (bb, true);
-		  }
-		else
-		  {
-		    edge e = split_block (bb, stmt);
-		    bb = e->src;
-		    make_abnormal_goto_edges (bb, true);
-		  }
-		break;
-	      }
-	  }
-      }
+		    }
+		  break;
+		}
 
+	      /* Update PHIs on nonlocal goto receivers we (possibly)
+		 just created new edges into.  */
+	      if (TREE_CODE (stmt) == LABEL_EXPR
+		  && gimple_in_ssa_p (cfun))
+		{
+		  tree target = LABEL_EXPR_LABEL (stmt);
+		  if (DECL_NONLOCAL (target))
+		    {
+		      tree phi;
+		      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+			{
+			  gcc_assert (SSA_NAME_OCCURS_IN_ABNORMAL_PHI
+				      (PHI_RESULT (phi)));
+			  mark_sym_for_renaming
+			    (SSA_NAME_VAR (PHI_RESULT (phi)));
+			}
+		    }
+		}
+	    }
+	}
+    }
+
+  if (gimple_in_ssa_p (cfun))
+    {
+      delete_unreachable_blocks ();
+      update_ssa (TODO_update_ssa);
+    }
   cleanup_tree_cfg ();
 
   /* Dump a textual representation of the flowgraph.  */
@@ -408,6 +443,9 @@ tree_rest_of_compilation (tree fndecl)
 
   node = cgraph_node (fndecl);
 
+  /* Initialize the default bitmap obstack.  */
+  bitmap_obstack_initialize (NULL);
+
   /* We might need the body of this function so that we can expand
      it inline somewhere else.  */
   if (cgraph_preserve_function_body_p (fndecl))
@@ -424,7 +462,8 @@ tree_rest_of_compilation (tree fndecl)
      We haven't necessarily assigned RTL to all variables yet, so it's
      not safe to try to expand expressions involving them.  */
   cfun->x_dont_save_pending_sizes_p = 1;
-  cfun->after_inlining = true;
+  
+  tree_register_cfg_hooks ();
 
   if (flag_inline_trees)
     {
@@ -453,12 +492,7 @@ tree_rest_of_compilation (tree fndecl)
      Kill it so it won't confuse us.  */
   cgraph_node_remove_callees (node);
 
-
-  /* Initialize the default bitmap obstack.  */
-  bitmap_obstack_initialize (NULL);
   bitmap_obstack_initialize (&reg_obstack); /* FIXME, only at RTL generation*/
-  
-  tree_register_cfg_hooks ();
   /* Perform all tree transforms and optimizations.  */
   execute_pass_list (all_passes);
   
