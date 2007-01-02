@@ -1446,9 +1446,6 @@ rs6000_override_options (const char *default_cpu)
 
   if (TARGET_E500)
     {
-      if (TARGET_ALTIVEC)
-	error ("AltiVec and E500 instructions cannot coexist");
-
       /* The e500 does not have string instructions, and we set
 	 MASK_STRING above when optimizing for size.  */
       if ((target_flags & MASK_STRING) != 0)
@@ -1470,6 +1467,9 @@ rs6000_override_options (const char *default_cpu)
       if (!rs6000_explicit_options.long_double)
 	rs6000_long_double_type_size = RS6000_DEFAULT_LONG_DOUBLE_SIZE;
     }
+
+  /* Detect invalid option combinations with E500.  */
+  CHECK_E500_OPTIONS;
 
   rs6000_always_hint = (rs6000_cpu != PROCESSOR_POWER4
 			&& rs6000_cpu != PROCESSOR_POWER5
