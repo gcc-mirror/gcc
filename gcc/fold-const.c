@@ -10753,6 +10753,15 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  && ! TREE_CONSTANT_OVERFLOW (tem))
 	return fold_build2 (code, type, TREE_OPERAND (arg0, 0), tem);
 
+      /* Similarly for a BIT_XOR_EXPR;  X ^ C1 == C2 is X == (C1 ^ C2).  */
+      if (TREE_CODE (arg0) == BIT_XOR_EXPR
+	  && TREE_CODE (arg1) == INTEGER_CST
+	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
+	return fold_build2 (code, type, TREE_OPERAND (arg0, 0),
+			    fold_build2 (BIT_XOR_EXPR, TREE_TYPE (arg0),
+					 fold_convert (TREE_TYPE (arg0), arg1),
+					 TREE_OPERAND (arg0, 1)));
+
       /* If we have X - Y == 0, we can convert that to X == Y and similarly
 	 for !=.  Don't do this for ordered comparisons due to overflow.  */
       if (TREE_CODE (arg0) == MINUS_EXPR
@@ -11106,6 +11115,36 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 				build_int_cst (itype, 0));
 	}
 
+      if (TREE_CODE (arg0) == BIT_XOR_EXPR
+	  && TREE_CODE (arg1) == BIT_XOR_EXPR)
+	{
+	  tree arg00 = TREE_OPERAND (arg0, 0);
+	  tree arg01 = TREE_OPERAND (arg0, 1);
+	  tree arg10 = TREE_OPERAND (arg1, 0);
+	  tree arg11 = TREE_OPERAND (arg1, 1);
+	  tree itype = TREE_TYPE (arg0);
+
+	  /* Optimize (X ^ Z) op (Y ^ Z) as X op Y, and symmetries.
+	     operand_equal_p guarantees no side-effects so we don't need
+	     to use omit_one_operand on Z.  */
+	  if (operand_equal_p (arg01, arg11, 0))
+	    return fold_build2 (code, type, arg00, arg10);
+	  if (operand_equal_p (arg01, arg10, 0))
+	    return fold_build2 (code, type, arg00, arg11);
+	  if (operand_equal_p (arg00, arg11, 0))
+	    return fold_build2 (code, type, arg01, arg10);
+	  if (operand_equal_p (arg00, arg10, 0))
+	    return fold_build2 (code, type, arg01, arg11);
+
+	  /* Optimize (X ^ C1) op (Y ^ C2) as (X ^ (C1 ^ C2)) op Y.  */
+	  if (TREE_CODE (arg01) == INTEGER_CST
+	      && TREE_CODE (arg11) == INTEGER_CST)
+	    return fold_build2 (code, type,
+				fold_build2 (BIT_XOR_EXPR, itype, arg00,
+					     fold_build2 (BIT_XOR_EXPR, itype,
+							  arg01, arg11)),
+				arg10);
+	}
       return NULL_TREE;
 
     case LT_EXPR:

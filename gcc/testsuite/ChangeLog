@@ -1,3 +1,7 @@
+2007-01-01  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/fold-eqxor-4.c: New test case.
+
 2007-01-02  Joseph Myers  <joseph@codesourcery.com>
 
 	PR middle-end/30311
