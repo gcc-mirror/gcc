@@ -80,7 +80,7 @@ static tree cur_stmt_expr;
    local variables.  */
 static htab_t local_specializations;
 
-/* Contains canonical template parameter types. The vector is index by
+/* Contains canonical template parameter types. The vector is indexed by
    the TEMPLATE_TYPE_IDX of the template parameter. Each element is a
    TREE_LIST, whose TREE_VALUEs contain the canonical template
    parameters of various types and levels.  */
