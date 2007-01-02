@@ -5336,8 +5336,8 @@
   emit_insn (gen_ashldi3 (operands[0], operands[0], GEN_INT (32)));
   insn2 = emit_insn (gen_umk_lalm (operands[0], operands[0], operands[1]));
   insn3 = emit_insn (gen_umk_lal (operands[0], operands[0], operands[1]));
-  REG_NOTES (insn3) = gen_rtx_EXPR_LIST (REG_EQUAL, operands[1],
-					 REG_NOTES (insn3));
+  set_unique_reg_note (insn3, REG_EQUAL, operands[1]);
+
   if (GET_CODE (operands[1]) == LABEL_REF)
     {
       rtx label;

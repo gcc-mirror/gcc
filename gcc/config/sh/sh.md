@@ -2749,9 +2749,9 @@ label:
      See also smulsi3_highpart.
      ??? Alternatively, we could put this at the calling site of expand_binop,
      i.e. expand_expr.  */
-  REG_NOTES (last)
-    = gen_rtx_EXPR_LIST (REG_EQUAL, copy_rtx (SET_SRC (single_set (first))),
-			 REG_NOTES (last));
+  set_unique_reg_note (last, REG_EQUAL,
+		       copy_rtx (SET_SRC (single_set (first))));
+
   DONE;
 }")
 
@@ -2779,9 +2779,9 @@ label:
      See also smulsi3_highpart.
      ??? Alternatively, we could put this at the calling site of expand_binop,
      i.e. expand_expr.  */
-  REG_NOTES (last)
-    = gen_rtx_EXPR_LIST (REG_EQUAL, copy_rtx (SET_SRC (single_set (first))),
-			 REG_NOTES (last));
+  set_unique_reg_note (last, REG_EQUAL,
+		       copy_rtx (SET_SRC (single_set (first))));
+
   DONE;
 }")
 
@@ -3058,9 +3058,9 @@ label:
      See also {,u}mulhisi.
      ??? Alternatively, we could put this at the calling site of expand_binop,
      i.e. expand_mult_highpart.  */
-  REG_NOTES (last)
-    = gen_rtx_EXPR_LIST (REG_EQUAL, copy_rtx (SET_SRC (single_set (first))),
-			 REG_NOTES (last));
+  set_unique_reg_note (last, REG_EQUAL,
+		       copy_rtx (SET_SRC (single_set (first))));
+
   DONE;
 }")
 
@@ -5113,8 +5113,7 @@ label:
 {
   rtx insn = emit_insn (gen_movsi_const (operands[0], operands[1]));
 
-  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, copy_rtx (operands[1]),
-					REG_NOTES (insn));
+  set_unique_reg_note (insn, REG_EQUAL, copy_rtx (operands[1]));
 
   DONE;
 }")
@@ -5497,8 +5496,7 @@ label:
   else
     insn = emit_insn (gen_movdi_const_32bit (operands[0], operands[1]));
 
-  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, copy_rtx (operands[1]),
-					REG_NOTES (insn));
+  set_unique_reg_note (insn, REG_EQUAL, copy_rtx (operands[1]));
 
   DONE;
 }")
@@ -8323,8 +8321,7 @@ label:
 
       insn = emit_move_insn (operands[0], tr);
 
-      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, equiv,
-					    REG_NOTES (insn));
+      set_unique_reg_note (insn, REG_EQUAL, equiv);
 
       DONE;
     }
@@ -8433,9 +8430,8 @@ label:
   /* ??? Should we have a special alias set for the GOT?  */
   insn = emit_move_insn (operands[0], mem);
 
-  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, XVECEXP (XEXP (operands[1],
-								  0), 0, 0),
-					REG_NOTES (insn));
+  set_unique_reg_note (insn, REG_EQUAL,
+		       XVECEXP (XEXP (operands[1], 0), 0, 0));
 
   DONE;
 }")
@@ -8494,8 +8490,7 @@ label:
 			 gen_rtx_PLUS (Pmode, t,
 				       gen_rtx_REG (Pmode, PIC_REG)));
 
-  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, operands[1],
-					REG_NOTES (insn));
+  set_unique_reg_note (insn, REG_EQUAL, operands[1]);
 
   DONE;
 }")
@@ -13203,9 +13198,8 @@ mov.l\\t1f,r0\\n\\
   emit_insn (gen_adddi3 (scratch, scratch, GEN_INT (-64)));
   emit_insn (gen_movdicc_false (scratch, operands[1], const0_rtx, scratch));
   last = emit_insn (gen_subdi3 (operands[0], const0_rtx, scratch));
-  REG_NOTES (last)
-    = gen_rtx_EXPR_LIST (REG_EQUAL,
-			 gen_rtx_FFS (DImode, operands[0]), REG_NOTES (last));
+  set_unique_reg_note (last, REG_EQUAL, gen_rtx_FFS (DImode, operands[0]));
+
   DONE;
 }")
 
@@ -13228,9 +13222,8 @@ mov.l\\t1f,r0\\n\\
   emit_insn (gen_nsbsi (scratch, discratch));
   last = emit_insn (gen_subsi3 (operands[0],
 				force_reg (SImode, GEN_INT (63)), scratch));
-  REG_NOTES (last)
-    = gen_rtx_EXPR_LIST (REG_EQUAL,
-			 gen_rtx_FFS (SImode, operands[0]), REG_NOTES (last));
+  set_unique_reg_note (last, REG_EQUAL, gen_rtx_FFS (SImode, operands[0]));
+
   DONE;
 }")
 

@@ -1,3 +1,10 @@
+2007-01-02  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/alpha/alpha.md, arm/arm.c, darwin.c, frv/frv.md,
+	m32r/m32r.c, m32r/m32r.c, mn10300/mn10300.md, pa/pa.c,
+	rs6000/rs6000.c, s390/s390.md, sh/sh.md, sparc/sparc.c:
+	Always use set_unique_reg_note to add REG_EQUAL notes.
+
 2007-01-02  Kazu Hirata  <kazu@codesourcery.com>
 
 	Revert:

@@ -3363,8 +3363,7 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 		  emit_move_insn (tmp2, mem);
 		  emit_insn (gen_addsi3 (tmp3, tmp1, tmp2));
 		  last = emit_move_insn (got, tmp3);
-		  REG_NOTES (last) = gen_rtx_EXPR_LIST (REG_EQUAL, gsym,
-							REG_NOTES (last));
+		  set_unique_reg_note (last, REG_EQUAL, gsym);
 		  REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last,
 							 REG_NOTES (first));
 		  REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first,
