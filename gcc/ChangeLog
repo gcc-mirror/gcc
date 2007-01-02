@@ -1,3 +1,10 @@
+2007-01-01  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_binary) <EQ_EXPR>: Fold "(X^C1) eq/ne C2" into
+	"X eq/ne (C1^C2)".  Fold "(X^Z) eq/ne (Y^Z)" as "X eq/ne Y" when Z
+	has no side-effects.  Fold "(X^C1) eq/ne (Y^C2)" as "(X^(C1^C2))
+	eq/ne Y".
+
 2007-01-01  Mike Stump  <mrs@apple.com>
 
 	* configure.ac: Remove support for building with Apple's gcc-3.1.
