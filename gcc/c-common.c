@@ -1,6 +1,6 @@
 /* Subroutines shared by all languages that are variants of C.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2726,9 +2726,13 @@ c_common_truthvalue_conversion (tree expr)
       break;
 
     case MODIFY_EXPR:
-      if (!TREE_NO_WARNING (expr))
-	warning (OPT_Wparentheses,
-		 "suggest parentheses around assignment used as truth value");
+      if (!TREE_NO_WARNING (expr)
+	  && warn_parentheses)
+	{
+	  warning (OPT_Wparentheses,
+		   "suggest parentheses around assignment used as truth value");
+	  TREE_NO_WARNING (expr) = 1;
+	}
       break;
 
     default:
