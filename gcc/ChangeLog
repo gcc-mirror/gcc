@@ -1,5 +1,25 @@
 2007-01-02  Joseph Myers  <joseph@codesourcery.com>
 
+	* config.gcc (powerpc-*-eabispe*, powerpc-*-eabisimaltivec*,
+	powerpc-*-eabisim*, powerpc-*-eabialtivec*, powerpc-*-eabi*,
+	powerpc-*-rtems*, powerpc-wrs-vxworks, powerpc-wrs-vxworksae,
+	powerpcle-*-eabisim*, powerpcle-*-eabi*): Add rs6000/e500.h to
+	tm_file.
+	* config/rs6000/e500.h: New.
+	* config/rs6000/eabi.h (TARGET_SPE_ABI, TARGET_SPE, TARGET_E500,
+	TARGET_ISEL, TARGET_FPRS, TARGET_E500_SINGLE, TARGET_E500_DOUBLE):
+	Remove.
+	* config/rs6000/linuxspe.h (TARGET_SPE_ABI, TARGET_SPE,
+	TARGET_E500, TARGET_ISEL, TARGET_FPRS, TARGET_E500_SINGLE,
+	TARGET_E500_DOUBLE): Remove.
+	* config/rs6000/vxworks.h (TARGET_SPE_ABI, TARGET_SPE,
+	TARGET_E500, TARGET_ISEL, TARGET_FPRS): Remove.
+	* config/rs6000/rs6000.h (CHECK_E500_OPTIONS): Define.
+	* config/rs6000/rs6000.c (rs6000_override_options): Use
+	CHECK_E500_OPTIONS.
+
+2007-01-02  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/rs6000/rs6000.c (print_operand): Check (TARGET_SPE ||
 	TARGET_E500_DOUBLE), not TARGET_E500, for %y.
 	(rs6000_generate_compare, rs6000_emit_sCOND, output_cbranch,

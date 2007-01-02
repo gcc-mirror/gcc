@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for PowerPC e500 machines running GNU/Linux.
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez (aldy@quesejoda.com).
 
    This file is part of GCC.
@@ -26,22 +26,6 @@
 /* Override rs6000.h and sysv4.h definition.  */
 #undef	TARGET_DEFAULT
 #define	TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_STRICT_ALIGN)
-
-#undef TARGET_SPE_ABI
-#undef TARGET_SPE
-#undef TARGET_E500
-#undef TARGET_ISEL
-#undef TARGET_FPRS
-#undef TARGET_E500_SINGLE
-#undef TARGET_E500_DOUBLE
-
-#define TARGET_SPE_ABI rs6000_spe_abi
-#define TARGET_SPE rs6000_spe
-#define TARGET_E500 (rs6000_cpu == PROCESSOR_PPC8540)
-#define TARGET_ISEL rs6000_isel
-#define TARGET_FPRS (rs6000_float_gprs == 0)
-#define TARGET_E500_SINGLE (TARGET_HARD_FLOAT && rs6000_float_gprs == 1)
-#define TARGET_E500_DOUBLE (TARGET_HARD_FLOAT && rs6000_float_gprs == 2)
 
 #undef  SUBSUBTARGET_OVERRIDE_OPTIONS
 #define SUBSUBTARGET_OVERRIDE_OPTIONS \
