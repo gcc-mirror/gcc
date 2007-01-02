@@ -1,3 +1,8 @@
+2007-01-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/20896
+	* gfortran.dg/interface_10.f90: Remove.
+
 2007-01-01  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/fold-eqxor-4.c: New test case.

@@ -1235,7 +1235,7 @@ find_noncopying_intrinsics (gfc_symbol * fnsym, gfc_actual_arglist * actual)
    reference.  The corresponding code that is called in creating
    global entities is parse.c.  */
 
-void
+static void
 resolve_global_procedure (gfc_symbol *sym, locus *where, int sub)
 {
   gfc_gsymbol * gsym;
