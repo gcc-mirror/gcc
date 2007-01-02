@@ -327,8 +327,12 @@ rtl_create_basic_block (void *headp, void *endp, basic_block after)
   /* Grow the basic block array if needed.  */
   if ((size_t) last_basic_block >= VEC_length (basic_block, basic_block_info))
     {
+      size_t old_size = VEC_length (basic_block, basic_block_info);
       size_t new_size = last_basic_block + (last_basic_block + 3) / 4;
-      VEC_safe_grow_cleared (basic_block, gc, basic_block_info, new_size);
+      basic_block *p;
+      VEC_safe_grow (basic_block, gc, basic_block_info, new_size);
+      p = VEC_address (basic_block, basic_block_info);
+      memset (&p[old_size], 0, sizeof (basic_block) * (new_size - old_size));
     }
 
   n_basic_blocks++;

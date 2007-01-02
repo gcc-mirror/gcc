@@ -133,13 +133,15 @@ init_empty_tree_cfg (void)
   n_basic_blocks = NUM_FIXED_BLOCKS;
   last_basic_block = NUM_FIXED_BLOCKS;
   basic_block_info = VEC_alloc (basic_block, gc, initial_cfg_capacity);
-  VEC_safe_grow_cleared (basic_block, gc, basic_block_info,
-			 initial_cfg_capacity);
+  VEC_safe_grow (basic_block, gc, basic_block_info, initial_cfg_capacity);
+  memset (VEC_address (basic_block, basic_block_info), 0,
+	  sizeof (basic_block) * initial_cfg_capacity);
 
   /* Build a mapping of labels to their associated blocks.  */
   label_to_block_map = VEC_alloc (basic_block, gc, initial_cfg_capacity);
-  VEC_safe_grow_cleared (basic_block, gc, label_to_block_map,
-			 initial_cfg_capacity);
+  VEC_safe_grow (basic_block, gc, label_to_block_map, initial_cfg_capacity);
+  memset (VEC_address (basic_block, label_to_block_map),
+	  0, sizeof (basic_block) * initial_cfg_capacity);
 
   SET_BASIC_BLOCK (ENTRY_BLOCK, ENTRY_BLOCK_PTR);
   SET_BASIC_BLOCK (EXIT_BLOCK, EXIT_BLOCK_PTR);
@@ -181,7 +183,14 @@ build_tree_cfg (tree *tp)
 
   /* Adjust the size of the array.  */
   if (VEC_length (basic_block, basic_block_info) < (size_t) n_basic_blocks)
-    VEC_safe_grow_cleared (basic_block, gc, basic_block_info, n_basic_blocks);
+    {
+      size_t old_size = VEC_length (basic_block, basic_block_info);
+      basic_block *p;
+      VEC_safe_grow (basic_block, gc, basic_block_info, n_basic_blocks);
+      p = VEC_address (basic_block, basic_block_info);
+      memset (&p[old_size], 0,
+	      sizeof (basic_block) * (n_basic_blocks - old_size));
+    }
 
   /* To speed up statement iterator walks, we first purge dead labels.  */
   cleanup_dead_labels ();
@@ -388,8 +397,12 @@ create_bb (void *h, void *e, basic_block after)
   /* Grow the basic block array if needed.  */
   if ((size_t) last_basic_block == VEC_length (basic_block, basic_block_info))
     {
+      size_t old_size = VEC_length (basic_block, basic_block_info);
       size_t new_size = last_basic_block + (last_basic_block + 3) / 4;
-      VEC_safe_grow_cleared (basic_block, gc, basic_block_info, new_size);
+      basic_block *p;
+      VEC_safe_grow (basic_block, gc, basic_block_info, new_size);
+      p = VEC_address (basic_block, basic_block_info);
+      memset (&p[old_size], 0, sizeof (basic_block) * (new_size - old_size));
     }
 
   /* Add the newly created block to the array.  */
@@ -2738,10 +2751,14 @@ set_bb_for_stmt (tree t, basic_block bb)
 	      LABEL_DECL_UID (t) = uid = cfun->last_label_uid++;
 	      if (old_len <= (unsigned) uid)
 		{
+		  basic_block *addr;
 		  unsigned new_len = 3 * uid / 2;
 
-		  VEC_safe_grow_cleared (basic_block, gc, label_to_block_map,
-					 new_len);
+		  VEC_safe_grow (basic_block, gc, label_to_block_map,
+				 new_len);
+		  addr = VEC_address (basic_block, label_to_block_map);
+		  memset (&addr[old_len],
+			  0, sizeof (basic_block) * (new_len - old_len));
 		}
 	    }
 	  else
@@ -4675,6 +4692,7 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
   block_stmt_iterator si;
   struct move_stmt_d d;
   unsigned old_len, new_len;
+  basic_block *addr;
 
   /* Link BB to the new linked list.  */
   move_block_after (bb, after);
@@ -4701,8 +4719,9 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
   if ((unsigned) cfg->x_last_basic_block >= old_len)
     {
       new_len = cfg->x_last_basic_block + (cfg->x_last_basic_block + 3) / 4;
-      VEC_safe_grow_cleared (basic_block, gc, cfg->x_basic_block_info,
-			     new_len);
+      VEC_safe_grow (basic_block, gc, cfg->x_basic_block_info, new_len);
+      addr = VEC_address (basic_block, cfg->x_basic_block_info);
+      memset (&addr[old_len], 0, sizeof (basic_block) * (new_len - old_len));
     }
 
   VEC_replace (basic_block, cfg->x_basic_block_info,
@@ -4738,8 +4757,11 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
 	  if (old_len <= (unsigned) uid)
 	    {
 	      new_len = 3 * uid / 2;
-	      VEC_safe_grow_cleared (basic_block, gc,
-				     cfg->x_label_to_block_map, new_len);
+	      VEC_safe_grow (basic_block, gc, cfg->x_label_to_block_map,
+			     new_len);
+	      addr = VEC_address (basic_block, cfg->x_label_to_block_map);
+	      memset (&addr[old_len], 0,
+		      sizeof (basic_block) * (new_len - old_len));
 	    }
 
 	  VEC_replace (basic_block, cfg->x_label_to_block_map, uid, bb);
