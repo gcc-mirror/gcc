@@ -1,3 +1,10 @@
+2006-01-02  Ian Lance Taylor  <iant@google.com>
+
+	* semantics.c (maybe_convert_cond): Optionally warn when using an
+	assignment as a condition.
+	* typeck.c (convert_for_assignment): Optionally warn about
+	assigning the result of an assignment to a bool.
+
 2007-01-02  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* pt.c (canonical_template_parms): Correct typo in comment.
