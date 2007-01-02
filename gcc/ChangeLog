@@ -1,3 +1,8 @@
+2007-01-02  Steve Ellcey  <sje@cup.hp.com>
+
+	* sbitmap.c (HOST_BITS_PER_LONG_LONG):  Change to
+	HOST_BITS_PER_LONGLONG 
+
 2007-01-02  Manuel Lopez-Ibanez <manu@gcc.gnu.org>
 
 	PR c/19977
