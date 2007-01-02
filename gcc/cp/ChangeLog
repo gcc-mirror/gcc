@@ -1,5 +1,9 @@
 2007-01-02  Douglas Gregor  <doug.gregor@gmail.com>
 
+	* pt.c (canonical_template_parms): Correct typo in comment.
+	
+2007-01-02  Douglas Gregor  <doug.gregor@gmail.com>
+
 	* typeck.c (structural_comptypes): Renamed from "comptypes".
 	(comptypes): Use canonical type information to perform fast type
 	comparison. When VERIFY_CANONICAL_TYPES, verify that the
