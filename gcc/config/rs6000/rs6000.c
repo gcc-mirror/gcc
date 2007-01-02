@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on IBM RS/6000.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
@@ -11016,7 +11016,8 @@ print_operand (FILE *file, rtx x, int code)
 	tmp = XEXP (x, 0);
 
 	/* Ugly hack because %y is overloaded.  */
-	if (TARGET_E500 && GET_MODE_SIZE (GET_MODE (x)) == 8)
+	if ((TARGET_SPE || TARGET_E500_DOUBLE)
+	    && GET_MODE_SIZE (GET_MODE (x)) == 8)
 	  {
 	    /* Handle [reg].  */
 	    if (GET_CODE (tmp) == REG)
@@ -11315,7 +11316,7 @@ rs6000_generate_compare (enum rtx_code code)
   compare_result = gen_reg_rtx (comp_mode);
 
   /* E500 FP compare instructions on the GPRs.  Yuck!  */
-  if ((TARGET_E500 && !TARGET_FPRS && TARGET_HARD_FLOAT)
+  if ((!TARGET_FPRS && TARGET_HARD_FLOAT)
       && rs6000_compare_fp_p)
     {
       rtx cmp, or_result, compare_result2;
@@ -11508,7 +11509,7 @@ rs6000_generate_compare (enum rtx_code code)
      under flag_finite_math_only we don't bother.  */
   if (rs6000_compare_fp_p
       && !flag_finite_math_only
-      && !(TARGET_HARD_FLOAT && TARGET_E500 && !TARGET_FPRS)
+      && !(TARGET_HARD_FLOAT && !TARGET_FPRS)
       && (code == LE || code == GE
 	  || code == UNEQ || code == LTGT
 	  || code == UNGT || code == UNLT))
@@ -11558,7 +11559,7 @@ rs6000_emit_sCOND (enum rtx_code code, rtx result)
   condition_rtx = rs6000_generate_compare (code);
   cond_code = GET_CODE (condition_rtx);
 
-  if (TARGET_E500 && rs6000_compare_fp_p
+  if (rs6000_compare_fp_p
       && !TARGET_FPRS && TARGET_HARD_FLOAT)
     {
       rtx t;
@@ -11665,7 +11666,7 @@ output_cbranch (rtx op, const char *label, int reversed, rtx insn)
 	code = reverse_condition (code);
     }
 
-  if ((TARGET_E500 && !TARGET_FPRS && TARGET_HARD_FLOAT) && mode == CCFPmode)
+  if ((!TARGET_FPRS && TARGET_HARD_FLOAT) && mode == CCFPmode)
     {
       /* The efscmp/tst* instructions twiddle bit 2, which maps nicely
 	 to the GT bit.  */
@@ -12081,7 +12082,7 @@ rs6000_emit_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
 	return rs6000_emit_int_cmove (dest, op, true_cond, false_cond);
       return 0;
     }
-  else if (TARGET_E500 && TARGET_HARD_FLOAT && !TARGET_FPRS
+  else if (TARGET_HARD_FLOAT && !TARGET_FPRS
 	   && SCALAR_FLOAT_MODE_P (compare_mode))
     return 0;
 

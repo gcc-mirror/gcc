@@ -1,3 +1,12 @@
+2007-01-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/rs6000.c (print_operand): Check (TARGET_SPE ||
+	TARGET_E500_DOUBLE), not TARGET_E500, for %y.
+	(rs6000_generate_compare, rs6000_emit_sCOND, output_cbranch,
+	rs6000_emit_cmove): Don't check TARGET_E500.
+	* config/rs6000/rs6000.md (bunordered, bordered, sunordered,
+	sordered): Don't check TARGET_E500.
+
 2007-01-01  Eric Christopher  <echristo@apple.com>
 
 	* config/mips/mips.c (mips_regno_mode_ok_for_base_p): Use
