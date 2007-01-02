@@ -199,6 +199,11 @@ open_included_file (const char *name, gfc_directorylist *list, bool module)
   gfc_directorylist *p;
   FILE *f;
 
+  f = gfc_open_file (name);
+
+  if (f != NULL)
+    return f;
+
   for (p = list; p; p = p->next)
     {
       if (module && !p->use_for_modules)
