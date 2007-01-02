@@ -1,3 +1,8 @@
+2007-01-02  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Makefile.in: Export GCC_EXEC_PREFIX before calling $(RUNTEST)
+	in $(lang_checks) and check-consistency targets.
+
 2007-01-02  Jan Hubicka  <jh@suse.cz>
 
         * tree-mudflap.c (mf_decl_cache_locals, mf_build_check_statement_for):
