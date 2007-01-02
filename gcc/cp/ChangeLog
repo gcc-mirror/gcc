@@ -1,3 +1,52 @@
+2007-01-02  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* typeck.c (structural_comptypes): Renamed from "comptypes".
+	(comptypes): Use canonical type information to perform fast type
+	comparison. When VERIFY_CANONICAL_TYPES, verify that the
+	canonical type comparison returns the same results as we would see
+	from the current, structural check. Support COMPARE_STRUCTURAL
+	when we need structural checks.
+	* decl.c (typename_compare): Fix comment.
+	(build_typename_type): TYPENAME_TYPE nodes require structural
+	equality checks, because they resolve different based on the
+	current class type.
+	(make_unbound_class_template): UNBOUND_CLASS_TEMPLATE nodes
+	require structural equality checks (for now).
+	(build_ptrmemfunc_type): Build the canonical pointer to member
+	function type.
+	(compute_array_index_type): Whenever we build a new index type
+	to represent the size of an array in a template, we need to mark
+	this index type as requiring structural equality. This goes for
+	arrays with value-dependent sizes with the current ABI, or all
+	arrays with ABI-1.
+	* tree.c (cplus_array_hash): New.
+	(struct cplus_array_info): New.
+	(cplus_array_compare): New.
+	(cplus_array_htab): New.
+	(build_cplus_array_type_1): Use a hash table to cache the array
+	types we build. Build the canonical array type for each array
+	type.
+	(cp_build_qualified_type_real): When building a cv-qualified array
+	type, use the hash table of array types and build canonical array
+	types as necessary.
+	(bind_template_template_parm): BOUND_TEMPLATE_TEMPLATE_PARM nodes
+	use structural equality (for now).
+	* cp-tree.h (COMPARE_STRUCTURAL): New.
+	* pt.c (canonical_template_parms): New.
+	(canonical_type_parameter): New.
+	(process_template_parm): Find the canonical type parameter.
+	(lookup_template_class): When we have named the primary template
+	type, set the canonical type for our template class to the primary
+	template type. If any of the template arguments need structural
+	equality checks, the template class needs structural equality
+	checks.
+	(tsubst): When reducing the level of a template template
+	parameter, we require structural equality tests for the resulting
+	parameter because its template parameters have not had their types
+	canonicalized. When reducing a template type parameter, find the
+	canonical reduced type parameter.
+	(any_template_arguments_need_structural_equality_p): New.
+
 2006-12-31  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/29731

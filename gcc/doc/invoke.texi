@@ -6383,6 +6383,13 @@ The size of cache line in L1 cache, in bytes.
 @item l1-cache-size
 The number of cache lines in L1 cache.
 
+@item verify-canonical-types
+Whether the compiler should verify the ``canonical'' types used for
+type equality comparisons within the C++ and Objective-C++ front
+ends. Set to 1 (the default when GCC is configured with
+--enable-checking) to enable verification, 0 to disable verification
+(the default when GCC is configured with --disable-checking).
+
 @end table
 @end table
 

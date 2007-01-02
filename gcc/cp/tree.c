@@ -407,6 +407,49 @@ rvalue (tree expr)
 }
 
 
+/* Hash an ARRAY_TYPE.  K is really of type `tree'.  */
+
+static hashval_t
+cplus_array_hash (const void* k)
+{
+  hashval_t hash;
+  tree t = (tree) k;
+
+  hash = (htab_hash_pointer (TREE_TYPE (t))
+	  ^ htab_hash_pointer (TYPE_DOMAIN (t)));
+
+  return hash;
+}
+
+typedef struct cplus_array_info {
+  tree type;
+  tree domain;
+} cplus_array_info;
+
+/* Compare two ARRAY_TYPEs.  K1 is really of type `tree', K2 is really
+   of type `cplus_array_info*'. */
+
+static int
+cplus_array_compare (const void * k1, const void * k2)
+{
+  tree t1 = (tree) k1;
+  const cplus_array_info *t2 = (const cplus_array_info*) k2;
+
+  if (!comptypes (TREE_TYPE (t1), t2->type, COMPARE_STRUCTURAL))
+    return 0;
+
+  if (!TYPE_DOMAIN (t1))
+    return !t2->domain;
+
+  if (!t2->domain)
+    return 0;
+
+  return comptypes (TYPE_DOMAIN (t1), t2->domain, COMPARE_STRUCTURAL);
+}
+
+static GTY ((param_is (union tree_node))) htab_t cplus_array_htab;
+
+
 static tree
 build_cplus_array_type_1 (tree elt_type, tree index_type)
 {
@@ -419,9 +462,47 @@ build_cplus_array_type_1 (tree elt_type, tree index_type)
       || (index_type
 	  && value_dependent_expression_p (TYPE_MAX_VALUE (index_type))))
     {
-      t = make_node (ARRAY_TYPE);
-      TREE_TYPE (t) = elt_type;
-      TYPE_DOMAIN (t) = index_type;
+      void **e;
+      cplus_array_info cai;
+      hashval_t hash;
+      
+      if (cplus_array_htab == NULL)
+	cplus_array_htab = htab_create_ggc (61, &cplus_array_hash,
+					    &cplus_array_compare, NULL);
+      
+      hash = (htab_hash_pointer (elt_type)
+	      ^ htab_hash_pointer (index_type));
+      cai.type = elt_type;
+      cai.domain = index_type;
+
+      e = htab_find_slot_with_hash (cplus_array_htab, &cai, hash, INSERT); 
+      if (*e)
+	/* We have found the type: we're done. */
+	return (tree) *e;
+      else
+	{
+	  /* Build a new array type. */
+	  t = make_node (ARRAY_TYPE);
+	  TREE_TYPE (t) = elt_type;
+	  TYPE_DOMAIN (t) = index_type;
+
+	  /* Complete building the array type. */
+	  if (TYPE_STRUCTURAL_EQUALITY_P (elt_type)
+	      || (index_type && TYPE_STRUCTURAL_EQUALITY_P (index_type)))
+	    SET_TYPE_STRUCTURAL_EQUALITY (t);
+	  else if (TYPE_CANONICAL (elt_type) != elt_type
+		   || (index_type 
+		       && TYPE_CANONICAL (index_type) != index_type))
+	    TYPE_CANONICAL (t) 
+	      = TYPE_CANONICAL 
+	          (build_cplus_array_type_1 (TYPE_CANONICAL (elt_type),
+					     index_type? 
+					       TYPE_CANONICAL (index_type)
+					       : index_type));
+
+	  /* Store it in the hash table. */
+	  *e = t;
+	}
     }
   else
     t = build_array_type (elt_type, index_type);
@@ -508,10 +589,59 @@ cp_build_qualified_type_real (tree type,
 
       if (!t)
 	{
+	  tree domain = TYPE_DOMAIN (type);
+
 	  /* Make a new array type, just like the old one, but with the
 	     appropriately qualified element type.  */
 	  t = build_variant_type_copy (type);
 	  TREE_TYPE (t) = element_type;
+
+	  /* This is a new type. */
+	  TYPE_CANONICAL (t) = t;
+
+	  if (dependent_type_p (element_type)
+	      || (domain
+		  && value_dependent_expression_p (TYPE_MAX_VALUE (domain))))
+	    {
+	      /* The new dependent array type we just created might be
+		 equivalent to an existing dependent array type, so we
+		 need to keep track of this new array type with a
+		 lookup into CPLUS_ARRAY_HTAB. Note that we cannot
+		 directly call build_cplus_array_type (that would
+		 recurse) or build_cplus_array_type_1 (that would lose
+		 attributes). */
+	      void **e;
+	      cplus_array_info cai;
+	      hashval_t hash;
+
+	      if (cplus_array_htab == NULL)
+		cplus_array_htab = htab_create_ggc (61, &cplus_array_hash,
+						    &cplus_array_compare, 
+						    NULL);
+	  
+	      hash = (htab_hash_pointer (element_type)
+		      ^ htab_hash_pointer (domain));
+	      cai.type = element_type;
+	      cai.domain = domain;
+	  
+	      e = htab_find_slot_with_hash (cplus_array_htab, &cai, hash, 
+					    INSERT); 
+	      if (! *e)
+		/* Save this new type. */
+		*e = t;
+	    }
+
+	  if (TYPE_STRUCTURAL_EQUALITY_P (TREE_TYPE (t))
+		   || (TYPE_DOMAIN (t)
+		       && TYPE_STRUCTURAL_EQUALITY_P (TYPE_DOMAIN (t))))
+	    SET_TYPE_STRUCTURAL_EQUALITY (t);
+	  else
+	    TYPE_CANONICAL (t) 
+	      = TYPE_CANONICAL 
+	          (build_array_type (TYPE_CANONICAL (TREE_TYPE (t)),
+				     TYPE_DOMAIN (t)? 
+				       TYPE_CANONICAL (TYPE_DOMAIN(t))
+				       : TYPE_DOMAIN (t)));
 	}
 
       /* Even if we already had this variant, we update
@@ -1003,6 +1133,7 @@ bind_template_template_parm (tree t, tree newargs)
   TYPE_NAME (t2) = decl;
   TYPE_STUB_DECL (t2) = decl;
   TYPE_SIZE (t2) = 0;
+  SET_TYPE_STRUCTURAL_EQUALITY (t2);
 
   return t2;
 }

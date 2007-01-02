@@ -908,6 +908,14 @@ objc_build_volatilized_type (tree type)
   t = build_variant_type_copy (type);
   TYPE_VOLATILE (t) = 1;
 
+  /* Set up the canonical type information. */
+  if (TYPE_STRUCTURAL_EQUALITY_P (type))
+    SET_TYPE_STRUCTURAL_EQUALITY (t);
+  else if (TYPE_CANONICAL (type) != type)
+    TYPE_CANONICAL (t) = objc_build_volatilized_type (TYPE_CANONICAL (type));
+  else
+    TYPE_CANONICAL (t) = t;
+
   return t;
 }
 
@@ -1370,7 +1378,13 @@ objc_get_protocol_qualified_type (tree interface, tree protocols)
 	 to the pointee.  */
       if (is_ptr)
 	{
-	  TREE_TYPE (type) = build_variant_type_copy (TREE_TYPE (type));
+	  tree orig_pointee_type = TREE_TYPE (type);
+	  TREE_TYPE (type) = build_variant_type_copy (orig_pointee_type);
+
+	  /* Set up the canonical type information. */
+	  TYPE_CANONICAL (type) 
+	    = TYPE_CANONICAL (TYPE_POINTER_TO (orig_pointee_type));
+
 	  TYPE_POINTER_TO (TREE_TYPE (type)) = type;
 	  type = TREE_TYPE (type);
 	}
