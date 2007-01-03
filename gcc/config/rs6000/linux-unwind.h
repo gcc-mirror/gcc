@@ -319,7 +319,7 @@ frob_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs ATT
   if (pc[0] == 0x38210000 + SIGNAL_FRAMESIZE
       && (pc[1] == 0x38000077 || pc[1] == 0x380000AC)
       && pc[2] == 0x44000002)
-    context->signal_frame = 1;
+    _Unwind_SetSignalFrame (context, 1);
 #else
   /* li r0, 0x7777; sc  (sigreturn old)  */
   /* li r0, 0x0077; sc  (sigreturn new)  */
@@ -328,7 +328,7 @@ frob_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs ATT
   if ((pc[0] == 0x38007777 || pc[0] == 0x38000077
        || pc[0] == 0x38006666 || pc[0] == 0x380000AC)
       && pc[1] == 0x44000002)
-    context->signal_frame = 1;
+    _Unwind_SetSignalFrame (context, 1);
 #endif
 
 #ifdef __powerpc64__
