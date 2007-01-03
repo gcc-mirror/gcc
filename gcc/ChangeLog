@@ -1,3 +1,10 @@
+2007-01-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/20353
+	* gimplify.c (gimplify_modify_expr_complex_part): Move below
+	tree_to_gimple_tuple.  Call tree_to_gimple_tuple when we need
+	the value.
+
 2007-01-03  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/i386/i386.h (NON_STACK_REG_P, REGNO_OK_FOR_SIREG_P,
