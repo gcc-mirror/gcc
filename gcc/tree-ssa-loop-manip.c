@@ -805,6 +805,9 @@ determine_exit_conditions (struct loop *loop, struct tree_niter_desc *desc,
        post;
      } */
 
+/* Probability in % that the unrolled loop is entered.  Just a guess.  */
+#define PROB_UNROLLED_LOOP_ENTERED 90
+
 void
 tree_unroll_loop (struct loop *loop, unsigned factor,
 		  edge exit, struct tree_niter_desc *desc)
@@ -816,11 +819,12 @@ tree_unroll_loop (struct loop *loop, unsigned factor,
   struct loop *new_loop;
   basic_block rest, exit_bb;
   edge old_entry, new_entry, old_latch, precond_edge, new_exit;
-  edge nonexit, new_nonexit;
+  edge new_nonexit;
   block_stmt_iterator bsi;
   use_operand_p op;
   bool ok;
-  unsigned est_niter;
+  unsigned est_niter, prob_entry, scale_unrolled, scale_rest, freq_e, freq_h;
+  unsigned new_est_niter;
   unsigned irr = loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP;
   sbitmap wont_exit;
 
@@ -829,7 +833,29 @@ tree_unroll_loop (struct loop *loop, unsigned factor,
 			     &enter_main_cond, &exit_base, &exit_step,
 			     &exit_cmp, &exit_bound);
 
-  new_loop = loop_version (loop, enter_main_cond, NULL, true);
+  /* Let us assume that the unrolled loop is quite likely to be entered.  */
+  if (integer_nonzerop (enter_main_cond))
+    prob_entry = REG_BR_PROB_BASE;
+  else
+    prob_entry = PROB_UNROLLED_LOOP_ENTERED * REG_BR_PROB_BASE / 100;
+
+  /* The values for scales should keep profile consistent, and somewhat close
+     to correct.
+
+     TODO: The current value of SCALE_REST makes it appear that the loop that
+     is created by splitting the remaining iterations of the unrolled loop is
+     executed the same number of times as the original loop, and with the same
+     frequencies, which is obviously wrong.  This does not appear to cause
+     problems, so we do not bother with fixing it for now.  To make the profile
+     correct, we would need to change the probability of the exit edge of the
+     loop, and recompute the distribution of frequencies in its body because
+     of this change (scale the frequencies of blocks before and after the exit
+     by appropriate factors).  */
+  scale_unrolled = prob_entry;
+  scale_rest = REG_BR_PROB_BASE;
+
+  new_loop = loop_version (loop, enter_main_cond, NULL,
+			   prob_entry, scale_unrolled, scale_rest, true);
   gcc_assert (new_loop != NULL);
   update_ssa (TODO_update_ssa);
 
@@ -837,14 +863,6 @@ tree_unroll_loop (struct loop *loop, unsigned factor,
   dont_exit = ((exit->flags & EDGE_TRUE_VALUE)
 	       ? boolean_false_node
 	       : boolean_true_node);
-  if (exit == EDGE_SUCC (exit->src, 0))
-    nonexit = EDGE_SUCC (exit->src, 1);
-  else
-    nonexit = EDGE_SUCC (exit->src, 0);
-  nonexit->probability = REG_BR_PROB_BASE;
-  exit->probability = 0;
-  nonexit->count += exit->count;
-  exit->count = 0;
   exit_if = last_stmt (exit->src);
   COND_EXPR_COND (exit_if) = dont_exit;
   update_stmt (exit_if);
@@ -858,6 +876,29 @@ tree_unroll_loop (struct loop *loop, unsigned factor,
   gcc_assert (ok);
   update_ssa (TODO_update_ssa);
 
+  /* Determine the probability of the exit edge.  */
+  new_est_niter = est_niter / factor;
+
+  /* Without profile feedback, loops for that we do not know a better estimate
+     are assumed to roll 10 times.  When we unroll such loop, it appears to
+     roll too little, and it may even seem to be cold.  To avoid this, we
+     ensure that the created loop appears to roll at least 5 times (but at
+     most as many times as before unrolling).  */
+  if (new_est_niter < 5)
+    {
+      if (est_niter < 5)
+	new_est_niter = est_niter;
+      else
+	new_est_niter = 5;
+    }
+
+  /* Ensure that the frequencies in the loop match the new estimated
+     number of iterations.  */
+  freq_h = loop->header->frequency;
+  freq_e = EDGE_FREQUENCY (loop_preheader_edge (loop));
+  if (freq_h != 0)
+    scale_loop_frequencies (loop, freq_e * new_est_niter, freq_h);
+
   /* Prepare the cfg and update the phi nodes.  */
   rest = loop_preheader_edge (new_loop)->src;
   precond_edge = single_pred_edge (rest);
@@ -866,12 +907,16 @@ tree_unroll_loop (struct loop *loop, unsigned factor,
 
   new_exit = make_edge (exit_bb, rest, EDGE_FALSE_VALUE | irr);
   new_exit->count = loop_preheader_edge (loop)->count;
-  est_niter = est_niter / factor + 1;
-  new_exit->probability = REG_BR_PROB_BASE / est_niter;
+  new_exit->probability = REG_BR_PROB_BASE / new_est_niter;
+
+  rest->count += new_exit->count;
+  rest->frequency += EDGE_FREQUENCY (new_exit);
 
   new_nonexit = single_pred_edge (loop->latch);
   new_nonexit->flags = EDGE_TRUE_VALUE;
   new_nonexit->probability = REG_BR_PROB_BASE - new_exit->probability;
+  scale_bbs_frequencies_int (&loop->latch, 1, new_nonexit->probability,
+			     REG_BR_PROB_BASE);
 
   old_entry = loop_preheader_edge (loop);
   new_entry = loop_preheader_edge (new_loop);

@@ -1,3 +1,23 @@
+2006-01-03  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* loop-unswitch.c (unswitch_loop): Pass probabilities to loopify.
+	* tree-ssa-loop-unswitch.c (tree_unswitch_loop): Pass probabilities
+	to loop_version.
+	* cfgloopmanip.c (scale_loop_frequencies): Export.
+	(loopify): Scale the frequencies by prescribed coefficients.
+	(set_zero_probability): New function.
+	(duplicate_loop_to_header_edge): Improve updating of frequencies.
+	(lv_adjust_loop_entry_edge, loop_version): Set probabilities
+	and frequencies according to arguments.
+	* tree-ssa-loop-manip.c (tree_unroll_loop): Set probabilities
+	correctly.
+	* cfg.c (scale_bbs_frequencies_int): Allow scaling the frequencies up.
+	* modulo-sched.c (sms_schedule): Set probabilities for entering
+	versioned loop correctly.
+	* tree-vect-transform.c (vect_transform_loop): Ditto.
+	* cfgloop.h (loopify, loop_version): Declaration changed.
+	(scale_loop_frequencies): Declared.
+
 2007-01-02  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c: Include tree-flow.h
@@ -41,12 +61,12 @@
 
 2007-01-02  Jan Hubicka  <jh@suse.cz>
 
-        * tree-mudflap.c (mf_decl_cache_locals, mf_build_check_statement_for):
-        Do not add referenced vars.
-        * tree-cfg.c (update_modified_stmts): Do not update when SSA operands
-        are not active.
-        * passes.c (init_optimization_passes): Put mudflap_2 after
-        free_datastructures.
+	* tree-mudflap.c (mf_decl_cache_locals, mf_build_check_statement_for):
+	Do not add referenced vars.
+	* tree-cfg.c (update_modified_stmts): Do not update when SSA operands
+	are not active.
+	* passes.c (init_optimization_passes): Put mudflap_2 after
+	free_datastructures.
 
 2007-01-02  Jan Hubicka  <jh@suse.cz>
 

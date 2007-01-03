@@ -949,15 +949,28 @@ scale_bbs_frequencies_int (basic_block *bbs, int nbbs, int num, int den)
   edge e;
   if (num < 0)
     num = 0;
-  if (num > den)
+
+  /* Scale NUM and DEN to avoid overflows.  Frequencies are in order of
+     10^4, if we make DEN <= 10^3, we can afford to upscale by 100
+     and still safely fit in int during calculations.  */
+  if (den > 1000)
+    {
+      if (num > 1000000)
+	return;
+
+      num = RDIV (1000 * num, den);
+      den = 1000;
+    }
+  if (num > 100 * den)
     return;
-  /* Assume that the users are producing the fraction from frequencies
-     that never grow far enough to risk arithmetic overflow.  */
-  gcc_assert (num < 65536);
+
   for (i = 0; i < nbbs; i++)
     {
       edge_iterator ei;
       bbs[i]->frequency = RDIV (bbs[i]->frequency * num, den);
+      /* Make sure the frequencies do not grow over BB_FREQ_MAX.  */
+      if (bbs[i]->frequency > BB_FREQ_MAX)
+	bbs[i]->frequency = BB_FREQ_MAX;
       bbs[i]->count = RDIV (bbs[i]->count * num, den);
       FOR_EACH_EDGE (e, ei, bbs[i]->succs)
 	e->count = RDIV (e->count * num, den);

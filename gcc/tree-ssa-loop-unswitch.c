@@ -269,13 +269,17 @@ static struct loop *
 tree_unswitch_loop (struct loop *loop,
 		    basic_block unswitch_on, tree cond)
 {
-  basic_block condition_bb;
+  unsigned prob_true;
+  edge edge_true, edge_false;
 
   /* Some sanity checking.  */
   gcc_assert (flow_bb_inside_loop_p (loop, unswitch_on));
   gcc_assert (EDGE_COUNT (unswitch_on->succs) == 2);
   gcc_assert (loop->inner == NULL);
 
+  extract_true_false_edges_from_block (unswitch_on, &edge_true, &edge_false);
+  prob_true = edge_true->probability;
   return loop_version (loop, unshare_expr (cond), 
-		       &condition_bb, false);
+		       NULL, prob_true, prob_true,
+		       REG_BR_PROB_BASE - prob_true, false);
 }
