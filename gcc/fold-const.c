@@ -1044,14 +1044,14 @@ negate_expr (tree t)
 	  || TYPE_UNSIGNED (type)
 	  || ! flag_trapv)
 	return tem;
-      break;
+      return build1 (NEGATE_EXPR, type, t);
 
     case REAL_CST:
       tem = fold_negate_const (t, type);
       /* Two's complement FP formats, such as c4x, may overflow.  */
       if (! TREE_OVERFLOW (tem) || ! flag_trapping_math)
 	return fold_convert (type, tem);
-      break;
+      return build1 (NEGATE_EXPR, type, t);
 
     case COMPLEX_CST:
       {

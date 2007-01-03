@@ -1,3 +1,9 @@
+2007-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/30286
+	* fold-const.c (negate_expr): Don't call fold_build1
+	for INTEGER_CST or REAL_CST.
+
 2006-12-27  Ian Lance Taylor  <iant@google.com>
 
 	PR debug/26964
