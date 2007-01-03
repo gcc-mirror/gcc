@@ -1,3 +1,8 @@
+2007-01-02  Steven G. Kargl  <kargls@comcast.net>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_ibits): Fix call to
+	build_int_cst.
+
 2007-01-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/30238
