@@ -1,5 +1,9 @@
 2007-01-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/28217
+	* g++.dg/pch/template-1.C: New test.
+	* g++.dg/pch/template-1.Hs: New file.
+
 	PR middle-end/30286
 	* gcc.dg/pr30286.c: New test.
 
