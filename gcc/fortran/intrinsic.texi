@@ -275,7 +275,7 @@ names for an intrinsic procedure the kind type parameter will be explicitly
 given (e.g., @code{REAL(KIND=4)} or @code{REAL(KIND=8)}).  Finally, for
 brevity the optional @code{KIND=} syntax will be omitted.
 
-Many of the intrinsics procedures take one or more optional arguments.
+Many of the intrinsic procedures take one or more optional arguments.
 This document follows the convention used in the Fortran 95 standard,
 and denotes such arguments by square brackets.
 
@@ -289,7 +289,6 @@ have been implemented in @command{gfortran} for backwards compatibility
 with @command{g77}.  It is noted here that these functions and subroutines
 cannot be intermixed in a given subprogram.  In the descriptions that follow,
 the applicable option(s) is noted.
-
 
 
 @node ABORT
@@ -327,7 +326,6 @@ end program test_abort
 @ref{EXIT}, @ref{KILL}
 
 @end table
-
 
 
 @node ABS
@@ -731,8 +729,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = AINT(X)} 
-@code{X = AINT(X, KIND)}
+@code{X = AINT(X [, KIND])} 
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -791,8 +788,7 @@ GNU extension
 Subroutine
 
 @item @emph{Syntax}:
-@code{CALL ALARM(SECONDS, HANDLER)} 
-@code{CALL ALARM(SECONDS, HANDLER, STATUS)}
+@code{CALL ALARM(SECONDS, HANDLER [, STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -838,8 +834,7 @@ F95 and later
 transformational function
 
 @item @emph{Syntax}:
-@code{L = ALL(MASK)} 
-@code{L = ALL(MASK, DIM)}
+@code{L = ALL(MASK [, DIM])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -3354,7 +3349,7 @@ Subroutine
 @end multitable
 
 @item @emph{Return value}:
-The current date and time as a string.
+The current date as a string.
 
 @item @emph{Example}:
 @smallexample
@@ -3437,7 +3432,7 @@ GNU extension
 Non-elemental subroutine
 
 @item @emph{Syntax}:
-@code{CALL fget(C[,STATUS])}
+@code{CALL FGET(C[,STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -3492,7 +3487,7 @@ GNU extension
 Non-elemental subroutine
 
 @item @emph{Syntax}:
-@code{CALL fgetc(UNIT,C[,STATUS])}
+@code{CALL FGETC(UNIT,C[,STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -3665,7 +3660,7 @@ GNU extension
 Non-elemental subroutine
 
 @item @emph{Syntax}:
-@code{CALL fput(C[,STATUS])}
+@code{CALL FPUT(C[,STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -3715,7 +3710,7 @@ GNU extension
 Non-elemental subroutine
 
 @item @emph{Syntax}:
-@code{CALL fputc(UNIT,C[,STATUS])}
+@code{CALL FPUTC(UNIT,C[,STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -4119,7 +4114,7 @@ GNU extension
 Non-elemental subroutine.
 
 @item @emph{Syntax}:
-@code{CALL getcwd(CWD[,STATUS])}
+@code{CALL GETCWD(CWD[,STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -5418,7 +5413,7 @@ GNU extension
 @item @emph{Specific names}:
 
 @item @emph{See also}:
-@ref{INDEX}
+@ref{INDEX}, @ref{LEN_TRIM}
 @end table
 
 
@@ -5448,8 +5443,9 @@ Inquiry function
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER(n)}, where @code{n} is the
-size (in bytes) of a memory address on the target machine.
+The return value is of type @code{INTEGER}, with a @code{KIND}
+corresponding to the size (in bytes) of a memory address on the target
+machine.
 
 @item @emph{Example}:
 @smallexample
