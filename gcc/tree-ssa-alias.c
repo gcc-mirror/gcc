@@ -3189,7 +3189,7 @@ create_structure_vars (void)
   htab_delete (used_portions);
   VEC_free (tree, heap, varvec);
 
-  /* Update SSA operands of statememnts mentioning varibales we split.  */
+  /* Update SSA operands of statements mentioning variables we split.  */
   if (gimple_in_ssa_p (cfun))
     FOR_EACH_BB (bb)
       {

@@ -17,6 +17,8 @@
 	* tree-complex.c (tree_lower_complex): Likewise.
 	* vec.h (VEC_safe_grow_cleared): New.
 
+	* cgraphunit.c, tree-ssa-alias.c: Fix comment typos.
+
 2007-01-03  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* loop-unswitch.c (unswitch_loop): Pass probabilities to loopify.

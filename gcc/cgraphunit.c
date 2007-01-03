@@ -263,7 +263,7 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
   return false;
 }
 
-/* Process CGRAPH_NEW_FUNCTIONS and perform actions neccesary to add these
+/* Process CGRAPH_NEW_FUNCTIONS and perform actions necessary to add these
    functions into callgraph in a way so they look like ordinary reachable
    functions inserted into callgraph already at construction time.  */
 
