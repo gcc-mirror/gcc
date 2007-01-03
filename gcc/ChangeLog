@@ -1,3 +1,11 @@
+2007-01-03  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/i386/i386.h (NON_STACK_REG_P, REGNO_OK_FOR_SIREG_P,
+	REGNO_OK_FOR_DIREG_P, REWRITE_ADDRESS, ASM_OPERAND_LETTER,
+	RET, AT_SP): Remove.
+	* config/i386/i386.md (*sse_prologue_save_insn): Use return
+	instead of RET.
+
 2006-01-03  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* loop-unswitch.c (unswitch_loop): Pass probabilities to loopify.
