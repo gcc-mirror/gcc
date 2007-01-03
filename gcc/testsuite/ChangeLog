@@ -1,5 +1,8 @@
 2007-01-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/30286
+	* gcc.dg/pr30286.c: New test.
+
 	PR c++/29535
 	* g++.dg/template/crash66.C: New test.
 
