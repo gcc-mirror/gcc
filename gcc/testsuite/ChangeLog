@@ -1,3 +1,9 @@
+2007-01-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* g++.dg/vect/vect.exp: Skip PowerPC targets not supporting
+	-maltivec.
+	* gcc.target/powerpc/altivec-20.c: Use powerpc_altivec_ok.
+
 2007-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/30286
