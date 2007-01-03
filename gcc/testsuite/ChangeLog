@@ -1,3 +1,8 @@
+2007-01-02  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/pr16194.c: We now output error on all three functions, not just
+	first one.
+
 2007-01-02  Manuel Lopez-Ibanez <manu@gcc.gnu.org>
 
 	PR c/19977

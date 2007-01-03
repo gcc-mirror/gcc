@@ -237,6 +237,10 @@ do_tree_profiling (void)
 static unsigned int
 tree_profiling (void)
 {
+  /* Don't profile functions produced at destruction time, particularly
+     the gcov datastructure initializer.  */
+  if (cgraph_state == CGRAPH_STATE_FINISHED)
+    return 0;
   branch_prob ();
   if (flag_branch_probabilities
       && flag_profile_values
@@ -254,33 +258,6 @@ struct tree_opt_pass pass_tree_profile =
 {
   "tree_profile",			/* name */
   do_tree_profiling,			/* gate */
-  tree_profiling,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_BRANCH_PROB,			/* tv_id */
-  PROP_gimple_leh | PROP_cfg,		/* properties_required */
-  PROP_gimple_leh | PROP_cfg,		/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_stmts,			/* todo_flags_finish */
-  0					/* letter */
-};
-
-/* Return 1 if tree-based profiling is in effect, else 0.
-   If it is, set up hooks for tree-based profiling.
-   Gate for pass_tree_profile.  */
-
-static bool
-do_early_tree_profiling (void)
-{
-  return (do_tree_profiling () && (!flag_unit_at_a_time || !optimize));
-}
-
-struct tree_opt_pass pass_early_tree_profile = 
-{
-  "early_tree_profile",			/* name */
-  do_early_tree_profiling,		/* gate */
   tree_profiling,			/* execute */
   NULL,					/* sub */
   NULL,					/* next */

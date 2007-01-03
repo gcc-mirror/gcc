@@ -1,3 +1,35 @@
+2007-01-02  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c: Include tree-flow.h
+	(cgraph_add_new-function): Handle IPA_SSA mode; execute
+	early_local_passes.
+	* cgraph.h (enum cgraph_state): Add CGRAPH_STATE_IPA_SSA.
+	* tree-pass.h (pass_all_early_optimizations): Declare.
+	* cgraphunit.c (cgraph_process_new_functions): Add IPA_SSA; execute
+	early_local_passes.
+	(cgraph_analyze_function): Do early_local_passes.
+	* tree-mudflap.c (mf_decl_cache_locals, mf_build_check_statement_for):
+	Do not add referenced vars.
+	* tree-optimize.c (gate_all_optimizations): Do not execute when not in
+	SSA form.
+	(gate_all_early_local_passes): New gate.
+	(pass_early_local_passes): Use new gate.
+	(execute_early_local_optimizations): New functions.
+	(gate_all_early_optimizations): New gate.
+	(pass_all_early_optimizations): New pass.
+	(execute_free_datastructures): Free SSA only when initialized.
+	(gate_init_datastructures): Init only when optimizing.
+	(tree_lowering_passes): Do early local passes when called late.
+	* tree-profile.c (do_tree_profiling): Don't profile functions added
+	late.
+	(do_early_tree_profiling, pass_early_tree_profile): Kill.
+	* tree-cfg.c (update_modified_stmts): Do not update when operands are
+	not active.
+	* passes.c (init_optimizations_passes): Reorder so we go into SSA
+	during early_local_passes.
+	* Makefile.in (cgraph.o): Add dependency on tree-flow.h.
+
+
 2007-01-02  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* Makefile.in: Update copyright year.

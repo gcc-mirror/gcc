@@ -294,6 +294,7 @@ cgraph_process_new_functions (void)
 	  break;
 
 	case CGRAPH_STATE_IPA:
+	case CGRAPH_STATE_IPA_SSA:
 	  /* When IPA optimization already started, do all essential
 	     transformations that has been already performed on the whole
 	     cgraph but not on this function.  */
@@ -313,6 +314,12 @@ cgraph_process_new_functions (void)
 	  initialize_inline_failed (node);
 	  if (flag_really_no_inline && !node->local.disregard_inline_limits)
 	     node->local.inlinable = 0;
+	  if ((cgraph_state == CGRAPH_STATE_IPA_SSA
+	      && !gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))
+	      /* When not optimizing, be sure we run early local passes anyway
+		 to expand OMP.  */
+	      || !optimize)
+	    execute_pass_list (pass_early_local_passes.sub);
 	  free_dominance_info (CDI_POST_DOMINATORS);
 	  free_dominance_info (CDI_DOMINATORS);
 	  pop_cfun ();
@@ -877,6 +884,15 @@ cgraph_analyze_function (struct cgraph_node *node)
     node->local.inlinable = 0;
   /* Inlining characteristics are maintained by the cgraph_mark_inline.  */
   node->global.insns = node->local.self_insns;
+  if (!flag_unit_at_a_time)
+    {
+      bitmap_obstack_initialize (NULL);
+      tree_register_cfg_hooks ();
+      execute_pass_list (pass_early_local_passes.sub);
+      free_dominance_info (CDI_POST_DOMINATORS);
+      free_dominance_info (CDI_DOMINATORS);
+      bitmap_obstack_release (NULL);
+    }
 
   node->analyzed = true;
   pop_cfun ();
