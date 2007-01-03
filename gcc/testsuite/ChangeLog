@@ -1,3 +1,8 @@
+2007-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/29054
+	* g++.dg/template/friend49.C: New test.
+
 2006-12-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/29612

@@ -11411,7 +11411,11 @@ revert_static_member_fn (tree decl)
   tmp = build_exception_variant (tmp,
 				 TYPE_RAISES_EXCEPTIONS (function));
   TREE_TYPE (decl) = tmp;
-  if (DECL_ARGUMENTS (decl))
+  if (DECL_ARGUMENTS (decl)
+      /* revert_static_member_fn might be called before grokclassfn
+         had time to add the "this" argument.  */
+      && DECL_ARTIFICIAL (DECL_ARGUMENTS (decl))
+      && DECL_NAME (DECL_ARGUMENTS (decl)) == this_identifier)
     DECL_ARGUMENTS (decl) = TREE_CHAIN (DECL_ARGUMENTS (decl));
   DECL_STATIC_FUNCTION_P (decl) = 1;
 }
