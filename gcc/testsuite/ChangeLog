@@ -1,3 +1,8 @@
+2007-01-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/30353
+	* gcc.c-torture/compile/complex-4.c: New test.
+
 2007-01-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* g++.dg/vect/vect.exp: Skip PowerPC targets not supporting

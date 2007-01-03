@@ -3467,46 +3467,6 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
   return ret;
 }
 
-/* Promote partial stores to COMPLEX variables to total stores.  *EXPR_P is
-   a MODIFY_EXPR with a lhs of a REAL/IMAGPART_EXPR of a variable with
-   DECL_GIMPLE_REG_P set.  */
-
-static enum gimplify_status
-gimplify_modify_expr_complex_part (tree *expr_p, tree *pre_p, bool want_value)
-{
-  enum tree_code code, ocode;
-  tree lhs, rhs, new_rhs, other, realpart, imagpart;
-
-  lhs = GENERIC_TREE_OPERAND (*expr_p, 0);
-  rhs = GENERIC_TREE_OPERAND (*expr_p, 1);
-  code = TREE_CODE (lhs);
-  lhs = TREE_OPERAND (lhs, 0);
-
-  ocode = code == REALPART_EXPR ? IMAGPART_EXPR : REALPART_EXPR;
-  other = build1 (ocode, TREE_TYPE (rhs), lhs);
-  other = get_formal_tmp_var (other, pre_p);
-
-  realpart = code == REALPART_EXPR ? rhs : other;
-  imagpart = code == REALPART_EXPR ? other : rhs;
-
-  if (TREE_CONSTANT (realpart) && TREE_CONSTANT (imagpart))
-    new_rhs = build_complex (TREE_TYPE (lhs), realpart, imagpart);
-  else
-    new_rhs = build2 (COMPLEX_EXPR, TREE_TYPE (lhs), realpart, imagpart);
-
-  GENERIC_TREE_OPERAND (*expr_p, 0) = lhs;
-  GENERIC_TREE_OPERAND (*expr_p, 1) = new_rhs;
-
-  if (want_value)
-    {
-      append_to_statement_list (*expr_p, pre_p);
-      *expr_p = rhs;
-    }
-
-  return GS_ALL_DONE;
-}
-
-
 /* Destructively convert the TREE pointer in TP into a gimple tuple if
    appropriate.  */
 
@@ -3551,6 +3511,47 @@ tree_to_gimple_tuple (tree *tp)
     default:
       break;
     }
+}
+
+/* Promote partial stores to COMPLEX variables to total stores.  *EXPR_P is
+   a MODIFY_EXPR with a lhs of a REAL/IMAGPART_EXPR of a variable with
+   DECL_GIMPLE_REG_P set.  */
+
+static enum gimplify_status
+gimplify_modify_expr_complex_part (tree *expr_p, tree *pre_p, bool want_value)
+{
+  enum tree_code code, ocode;
+  tree lhs, rhs, new_rhs, other, realpart, imagpart;
+
+  lhs = GENERIC_TREE_OPERAND (*expr_p, 0);
+  rhs = GENERIC_TREE_OPERAND (*expr_p, 1);
+  code = TREE_CODE (lhs);
+  lhs = TREE_OPERAND (lhs, 0);
+
+  ocode = code == REALPART_EXPR ? IMAGPART_EXPR : REALPART_EXPR;
+  other = build1 (ocode, TREE_TYPE (rhs), lhs);
+  other = get_formal_tmp_var (other, pre_p);
+
+  realpart = code == REALPART_EXPR ? rhs : other;
+  imagpart = code == REALPART_EXPR ? other : rhs;
+
+  if (TREE_CONSTANT (realpart) && TREE_CONSTANT (imagpart))
+    new_rhs = build_complex (TREE_TYPE (lhs), realpart, imagpart);
+  else
+    new_rhs = build2 (COMPLEX_EXPR, TREE_TYPE (lhs), realpart, imagpart);
+
+  GENERIC_TREE_OPERAND (*expr_p, 0) = lhs;
+  GENERIC_TREE_OPERAND (*expr_p, 1) = new_rhs;
+
+  if (want_value)
+    {
+      tree_to_gimple_tuple (expr_p);
+
+      append_to_statement_list (*expr_p, pre_p);
+      *expr_p = rhs;
+    }
+
+  return GS_ALL_DONE;
 }
 
 /* Gimplify the MODIFY_EXPR node pointed to by EXPR_P.
