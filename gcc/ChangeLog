@@ -1,6 +1,6 @@
 2007-01-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
-	PR middle-end/20353
+	PR middle-end/30353
 	* gimplify.c (gimplify_modify_expr_complex_part): Move below
 	tree_to_gimple_tuple.  Call tree_to_gimple_tuple when we need
 	the value.
