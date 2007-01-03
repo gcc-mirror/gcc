@@ -3742,6 +3742,7 @@ gfc_trans_g77_array (gfc_symbol * sym, tree body)
   locus loc;
   tree offset;
   tree tmp;
+  tree stmt;  
   stmtblock_t block;
 
   gfc_get_backend_locus (&loc);
@@ -3771,13 +3772,21 @@ gfc_trans_g77_array (gfc_symbol * sym, tree body)
       tmp = convert (TREE_TYPE (parm), GFC_DECL_SAVED_DESCRIPTOR (parm));
       gfc_add_modify_expr (&block, parm, tmp);
     }
-  tmp = gfc_finish_block (&block);
+  stmt = gfc_finish_block (&block);
 
   gfc_set_backend_locus (&loc);
 
   gfc_start_block (&block);
+
   /* Add the initialization code to the start of the function.  */
-  gfc_add_expr_to_block (&block, tmp);
+
+  if (sym->attr.optional || sym->attr.not_always_present)
+    {
+      tmp = gfc_conv_expr_present (sym);
+      stmt = build3_v (COND_EXPR, tmp, stmt, build_empty_stmt ());
+    }
+  
+  gfc_add_expr_to_block (&block, stmt);
   gfc_add_expr_to_block (&block, body);
 
   return gfc_finish_block (&block);

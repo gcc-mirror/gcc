@@ -2120,27 +2120,9 @@ mio_symtree_ref (gfc_symtree ** stp)
 {
   pointer_info *p;
   fixup_t *f;
-  gfc_symtree * ns_st = NULL;
 
   if (iomode == IO_OUTPUT)
-    {
-      /* If this is a symtree for a symbol that came from a contained module
-	 namespace, it has a unique name and we should look in the current
-	 namespace to see if the required, non-contained symbol is available
-	 yet. If so, the latter should be written.  */
-      if ((*stp)->n.sym && check_unique_name((*stp)->name))
-	ns_st = gfc_find_symtree (gfc_current_ns->sym_root,
-				    (*stp)->n.sym->name);
-
-      /* On the other hand, if the existing symbol is the module name or the
-	 new symbol is a dummy argument, do not do the promotion.  */
-      if (ns_st && ns_st->n.sym
-	    && ns_st->n.sym->attr.flavor != FL_MODULE
-	    && !(*stp)->n.sym->attr.dummy)
-	mio_symbol_ref (&ns_st->n.sym);
-      else
-	mio_symbol_ref (&(*stp)->n.sym);
-    }
+    mio_symbol_ref (&(*stp)->n.sym);
   else
     {
       require_atom (ATOM_INTEGER);
@@ -2480,6 +2462,48 @@ static const mstring intrinsics[] =
     minit (NULL, -1)
 };
 
+
+/* Remedy a couple of situations where the gfc_expr's can be defective.  */
+ 
+static void
+fix_mio_expr (gfc_expr *e)
+{
+  gfc_symtree *ns_st = NULL;
+  const char *fname;
+
+  if (iomode != IO_OUTPUT)
+    return;
+
+  if (e->symtree)
+    {
+      /* If this is a symtree for a symbol that came from a contained module
+	 namespace, it has a unique name and we should look in the current
+	 namespace to see if the required, non-contained symbol is available
+	 yet. If so, the latter should be written.  */
+      if (e->symtree->n.sym && check_unique_name(e->symtree->name))
+	ns_st = gfc_find_symtree (gfc_current_ns->sym_root,
+				    e->symtree->n.sym->name);
+
+      /* On the other hand, if the existing symbol is the module name or the
+	 new symbol is a dummy argument, do not do the promotion.  */
+      if (ns_st && ns_st->n.sym
+	    && ns_st->n.sym->attr.flavor != FL_MODULE
+	    && !e->symtree->n.sym->attr.dummy)
+	e->symtree = ns_st;
+    }
+  else if (e->expr_type == EXPR_FUNCTION && e->value.function.name)
+    {
+      /* In some circumstances, a function used in an initialization
+	 expression, in one use associated module, can fail to be
+	 coupled to its symtree when used in a specification
+	 expression in another module.  */
+      fname = e->value.function.esym ? e->value.function.esym->name :
+				       e->value.function.isym->name;
+      e->symtree = gfc_find_symtree (gfc_current_ns->sym_root, fname);
+    }
+}
+
+
 /* Read and write expressions.  The form "()" is allowed to indicate a
    NULL expression.  */
 
@@ -2523,6 +2547,8 @@ mio_expr (gfc_expr ** ep)
 
   mio_typespec (&e->ts);
   mio_integer (&e->rank);
+
+  fix_mio_expr (e);
 
   switch (e->expr_type)
     {

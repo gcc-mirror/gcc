@@ -478,7 +478,7 @@ typedef struct
   /* Variable attributes.  */
   unsigned allocatable:1, dimension:1, external:1, intrinsic:1,
     optional:1, pointer:1, save:1, target:1,
-    dummy:1, result:1, assign:1, threadprivate:1;
+    dummy:1, result:1, assign:1, threadprivate:1, not_always_present:1;
 
   unsigned data:1,		/* Symbol is named in a DATA statement.  */
     use_assoc:1,		/* Symbol has been use-associated.  */
