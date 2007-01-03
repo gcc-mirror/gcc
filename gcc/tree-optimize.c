@@ -57,8 +57,9 @@ static bool
 gate_all_optimizations (void)
 {
   return (optimize >= 1
-	  /* Don't bother doing anything if the program has errors.  */
-	  && !(errorcount || sorrycount));
+	  /* Don't bother doing anything if the program has errors. 
+	     We have to pass down the queue if we already went into SSA */
+	  && (!(errorcount || sorrycount) || gimple_in_ssa_p (cfun)));
 }
 
 struct tree_opt_pass pass_all_optimizations =
@@ -78,11 +79,55 @@ struct tree_opt_pass pass_all_optimizations =
   0					/* letter */
 };
 
+/* Gate: execute, or not, all of the non-trivial optimizations.  */
+
+static bool
+gate_all_early_local_passes (void)
+{
+	  /* Don't bother doing anything if the program has errors.  */
+  return (!errorcount && !sorrycount);
+}
+
 struct tree_opt_pass pass_early_local_passes =
 {
-  NULL,					/* name */
-  gate_all_optimizations,		/* gate */
+  "early_local_cleanups",		/* name */
+  gate_all_early_local_passes,		/* gate */
   NULL,					/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  0,					/* tv_id */
+  0,					/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0,					/* todo_flags_finish */
+  0					/* letter */
+};
+
+static unsigned int
+execute_early_local_optimizations (void)
+{
+  if (flag_unit_at_a_time)
+    cgraph_state = CGRAPH_STATE_IPA_SSA;
+  return 0;
+}
+
+/* Gate: execute, or not, all of the non-trivial optimizations.  */
+
+static bool
+gate_all_early_optimizations (void)
+{
+  return (optimize >= 1
+	  /* Don't bother doing anything if the program has errors.  */
+	  && !(errorcount || sorrycount));
+}
+
+struct tree_opt_pass pass_all_early_optimizations =
+{
+  "early_optimizations",		/* name */
+  gate_all_early_optimizations,		/* gate */
+  execute_early_local_optimizations,	/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
@@ -170,7 +215,8 @@ execute_free_datastructures (void)
 
   /* Remove the ssa structures.  Do it here since this includes statement
      annotations that need to be intact during disband_implicit_edges.  */
-  delete_tree_ssa ();
+  if (cfun->gimple_df)
+    delete_tree_ssa ();
   return 0;
 }
 
@@ -376,10 +422,18 @@ execute_init_datastructures (void)
   return 0;
 }
 
+/* Gate: initialize or not the SSA datastructures.  */
+
+static bool
+gate_init_datastructures (void)
+{
+  return (optimize >= 1);
+}
+
 struct tree_opt_pass pass_init_datastructures =
 {
   NULL,					/* name */
-  NULL,					/* gate */
+  gate_init_datastructures,		/* gate */
   execute_init_datastructures,		/* execute */
   NULL,					/* sub */
   NULL,					/* next */
@@ -403,7 +457,10 @@ tree_lowering_passes (tree fn)
   tree_register_cfg_hooks ();
   bitmap_obstack_initialize (NULL);
   execute_pass_list (all_lowering_passes);
+  if (optimize && cgraph_global_info_ready)
+    execute_pass_list (pass_early_local_passes.sub);
   free_dominance_info (CDI_POST_DOMINATORS);
+  free_dominance_info (CDI_DOMINATORS);
   compact_blocks ();
   current_function_decl = saved_current_function_decl;
   bitmap_obstack_release (NULL);

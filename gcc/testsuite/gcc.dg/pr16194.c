@@ -56,12 +56,12 @@ void bug (void)
 void bug2 (void)
 {
   register char* dst ASMDECL;
-  __asm__ ("": :"g"(*dst) CLOBBER_LIST);
+  __asm__ ("": :"g"(*dst) CLOBBER_LIST); /* { dg-error "conflict" } */
 }
 
 void
 foo (void)
 {
   register struct C *dst ASMDECL;
-  __asm__ ("" : "=g"(dst->c.b[1].a) INP_CLOBBER_LIST);
+  __asm__ ("" : "=g"(dst->c.b[1].a) INP_CLOBBER_LIST); /* { dg-error "conflict" } */
 }

@@ -260,6 +260,8 @@ enum cgraph_state
   CGRAPH_STATE_CONSTRUCTION,
   /* Callgraph is built and IPA passes are being run.  */
   CGRAPH_STATE_IPA,
+  /* Callgraph is built and all functions are transformed to SSA form.  */
+  CGRAPH_STATE_IPA_SSA,
   /* Functions are now ordered and being passed to RTL expanders.  */
   CGRAPH_STATE_EXPANSION,
   /* All cgraph expansion is done.  */

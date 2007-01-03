@@ -83,6 +83,7 @@ The callgraph:
 #include "intl.h"
 #include "tree-gimple.h"
 #include "tree-dump.h"
+#include "tree-flow.h"
 
 static void cgraph_node_remove_callers (struct cgraph_node *node);
 static inline void cgraph_edge_remove_caller (struct cgraph_edge *e);
@@ -942,6 +943,7 @@ cgraph_add_new_function (tree fndecl, bool lowered)
         break;
 
       case CGRAPH_STATE_IPA:
+      case CGRAPH_STATE_IPA_SSA:
       case CGRAPH_STATE_EXPANSION:
 	/* Bring the function into finalized state and enqueue for later
 	   analyzing and compilation.  */
@@ -963,6 +965,10 @@ cgraph_add_new_function (tree fndecl, bool lowered)
 	tree_register_cfg_hooks ();
 	if (!lowered)
           tree_lowering_passes (fndecl);
+	bitmap_obstack_initialize (NULL);
+	if (!gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)) && optimize)
+	  execute_pass_list (pass_early_local_passes.sub);
+	bitmap_obstack_release (NULL);
 	tree_rest_of_compilation (fndecl);
 	pop_cfun ();
 	current_function_decl = NULL;
