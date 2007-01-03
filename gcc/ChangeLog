@@ -1,3 +1,21 @@
+2007-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* unwind-dw2.c (SIGNAL_FRAME_BIT, EXTENDED_CONTEXT_BIT): Define.
+	(struct _Unwind_Context): Rename args_size to flags, remove
+	signal_frame field, add a new args_size field and version field.
+	(_Unwind_IsSignalFrame, _Unwind_SetSignalFrame,
+	_Unwind_IsExtendedContext): New inline functions.
+	(_Unwind_GetGR, _Unwind_SetGR, _Unwind_GetGRPtr, _Unwind_SetGRPtr):
+	Assume by_value array is only present if _Unwind_IsExtendedContext.
+	(_Unwind_GetIPInfo, execute_cfa_program, uw_frame_state_for): Use
+	_Unwind_IsSignalFrame.
+	(__frame_state_for): Initialize context.flags to EXTENDED_CONTEXT_BIT.
+	(uw_update_context_1): Use _Unwind_SetSignalFrame.
+	(uw_init_context_1): Initialize context->flags to
+	EXTENDED_CONTEXT_BIT.
+	* config/rs6000/linux-unwind.h (frob_update_context): Use
+	_Unwind_SetSignalFrame.
+
 2007-01-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/30353
