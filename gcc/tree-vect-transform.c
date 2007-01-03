@@ -4699,11 +4699,13 @@ vect_transform_loop (loop_vec_info loop_vinfo)
       basic_block new_exit_bb;
       edge new_exit_e, e;
       tree orig_phi, new_phi, arg;
+      unsigned prob = 4 * REG_BR_PROB_BASE / 5;
 
       cond_expr = vect_create_cond_for_align_checks (loop_vinfo,
                                                      &cond_expr_stmt_list);
       initialize_original_copy_tables ();
-      nloop = loop_version (loop, cond_expr, &condition_bb, true);
+      nloop = loop_version (loop, cond_expr, &condition_bb,
+			    prob, prob, REG_BR_PROB_BASE - prob, true);
       free_original_copy_tables();
 
       /** Loop versioning violates an assumption we try to maintain during 

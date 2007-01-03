@@ -1,3 +1,8 @@
+2006-01-03  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/update-unroll-1.c: New test.
+	* gcc.dg/tree-ssa/update-unswitch-1.c: New test.
+
 2007-01-02  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/pr16194.c: We now output error on all three functions, not just
