@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM with a.out
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2004
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2004, 2007
    Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@armltd.co.uk).
    
@@ -214,16 +214,47 @@
 #endif
      
 /* Output an element of a dispatch table.  */
-#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)  \
-  asm_fprintf (STREAM, "\t.word\t%LL%d\n", VALUE)
+#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)			\
+  do								\
+    {								\
+      gcc_assert (!TARGET_THUMB2);				\
+      asm_fprintf (STREAM, "\t.word\t%LL%d\n", VALUE);		\
+    }								\
+  while (0)
+	  
 
+/* Thumb-2 always uses addr_diff_elf so that the Table Branch instructions
+   can be used.  For non-pic code where the offsets do not suitable for
+   TBB/TBH the elements are output as absolute labels.  */
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, BODY, VALUE, REL)		\
   do									\
     {									\
       if (TARGET_ARM)							\
 	asm_fprintf (STREAM, "\tb\t%LL%d\n", VALUE);			\
-      else								\
+      else if (TARGET_THUMB1)						\
 	asm_fprintf (STREAM, "\t.word\t%LL%d-%LL%d\n", VALUE, REL);	\
+      else /* Thumb-2 */						\
+	{								\
+	  switch (GET_MODE(body))					\
+	    {								\
+	    case QImode: /* TBB */					\
+	      asm_fprintf (STREAM, "\t.byte\t(%LL%d-%LL%d)/2\n",	\
+			   VALUE, REL);					\
+	      break;							\
+	    case HImode: /* TBH */					\
+	      asm_fprintf (STREAM, "\t.2byte\t(%LL%d-%LL%d)/2\n",	\
+			   VALUE, REL);					\
+	      break;							\
+	    case SImode:						\
+	      if (flag_pic)						\
+		asm_fprintf (STREAM, "\t.word\t%LL%d+1-%LL%d\n", VALUE, REL); \
+	      else							\
+		asm_fprintf (STREAM, "\t.word\t%LL%d+1\n", VALUE);	\
+	      break;							\
+	    default:							\
+	      gcc_unreachable();					\
+	    }								\
+	}								\
     }									\
   while (0)
 

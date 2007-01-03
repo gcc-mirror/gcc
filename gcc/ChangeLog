@@ -1,3 +1,142 @@
+2007-01-03  Paul Brook  <paul@codesourcery.com>
+
+	Merge from sourcerygxx-4_1.
+	* config/arm/thumb2.md: New file.
+	* config/arm/elf.h (JUMP_TABLES_IN_TEXT_SECTION): Return True for
+	Thumb-2.
+	* config/arm/coff.h (JUMP_TABLES_IN_TEXT_SECTION): Ditto.
+	* config/arm/aout.h (ASM_OUTPUT_ADDR_VEC_ELT): Add !Thumb-2 assertion.
+	(ASM_OUTPUT_ADDR_DIFF_ELT): Output Thumb-2 jump tables.
+	* config/arm/aof.h (ASM_OUTPUT_ADDR_DIFF_ELT): Output Thumb-2 jump
+	tables.
+	(ASM_OUTPUT_ADDR_VEC_ELT): Add !Thumb-2 assertion.
+	* config/arm/ieee754-df.S: Use macros for Thumb-2/Unified asm
+	comptibility.
+	* config/arm/ieee754-sf.S: Ditto.
+	* config/arm/arm.c (thumb_base_register_rtx_p): Rename...
+	(thumb1_base_register_rtx_p): ... to this.
+	(thumb_index_register_rtx_p): Rename...
+	(thumb1_index_register_rtx_p): ... to this.
+	(thumb_output_function_prologue): Rename...
+	(thumb1_output_function_prologue): ... to this.
+	(thumb_legitimate_address_p): Rename...
+	(thumb1_legitimate_address_p): ... to this.
+	(thumb_rtx_costs): Rename...
+	(thumb1_rtx_costs): ... to this.
+	(thumb_compute_save_reg_mask): Rename...
+	(thumb1_compute_save_reg_mask): ... to this.
+	(thumb_final_prescan_insn): Rename...
+	(thumb1_final_prescan_insn): ... to this.
+	(thumb_expand_epilogue): Rename...
+	(thumb1_expand_epilogue): ... to this.
+	(arm_unwind_emit_stm): Rename...
+	(arm_unwind_emit_sequence): ... to this.
+	(thumb2_legitimate_index_p, thumb2_legitimate_address_p,
+	thumb1_compute_save_reg_mask, arm_dwarf_handle_frame_unspec,
+	thumb2_index_mul_operand, output_move_vfp, arm_shift_nmem,
+	arm_save_coproc_regs, thumb_set_frame_pointer, arm_print_condition,
+	thumb2_final_prescan_insn, thumb2_asm_output_opcode, arm_output_shift,
+	thumb2_output_casesi): New functions.
+	(TARGET_DWARF_HANDLE_FRAME_UNSPEC): Define.
+	(FL_THUMB2, FL_NOTM, FL_DIV, FL_FOR_ARCH6T2, FL_FOR_ARCH7,
+	FL_FOR_ARCH7A, FL_FOR_ARCH7R, FL_FOR_ARCH7M, ARM_LSL_NAME,
+	THUMB2_WORK_REGS): Define.
+	(arm_arch_notm, arm_arch_thumb2, arm_arch_hwdiv, arm_condexec_count,
+	arm_condexec_mask, arm_condexec_masklen)): New variables.
+	(all_architectures): Add armv6t2, armv7, armv7a, armv7r and armv7m.
+	(arm_override_options): Check new CPU capabilities.
+	Set new architecture flag variables.
+	(arm_isr_value): Handle v7m interrupt functions.
+	(user_return_insn): Return 0 for v7m interrupt functions.  Handle
+	Thumb-2.
+	(const_ok_for_arm): Handle Thumb-2 constants.
+	(arm_gen_constant): Ditto.  Use movw when available.
+	(arm_function_ok_for_sibcall): Return false for v7m interrupt
+	functions.
+	(legitimize_pic_address, arm_call_tls_get_addr): Handle Thumb-2.
+	(thumb_find_work_register, arm_load_pic_register,
+	legitimize_tls_address, arm_address_cost, load_multiple_sequence,
+	emit_ldm_seq, emit_stm_seq, arm_select_cc_mode, get_jump_table_size,
+	print_multi_reg, output_mov_long_double_fpa_from_arm,
+	output_mov_long_double_arm_from_fpa, output_mov_double_fpa_from_arm,
+	output_mov_double_fpa_from_arm, output_move_double,
+	arm_compute_save_reg_mask, arm_compute_save_reg0_reg12_mask,
+	output_return_instruction, arm_output_function_prologue,
+	arm_output_epilogue, arm_get_frame_offsets, arm_regno_class,
+	arm_output_mi_thunk, thumb_set_return_address): Ditto.
+	(arm_expand_prologue): Handle Thumb-2.  Use arm_save_coproc_regs.
+	(arm_coproc_mem_operand): Allow POST_INC/PRE_DEC.
+	(arithmetic_instr, shift_op): Use arm_shift_nmem.
+	(arm_print_operand): Use arm_print_condition.  Handle '(', ')', '.',
+	'!' and 'L'.
+	(arm_final_prescan_insn): Use extract_constrain_insn_cached.
+	(thumb_expand_prologue): Use thumb_set_frame_pointer.
+	(arm_file_start): Output directive for unified syntax.
+	(arm_unwind_emit_set): Handle stack alignment instruction.
+	* config/arm/lib1funcs.asm: Remove default for __ARM_ARCH__.
+	Add v6t2, v7, v7a, v7r and v7m.
+	(RETLDM): Add Thumb-2 code.
+	(do_it, shift1, do_push, do_pop, COND, THUMB_SYNTAX): New macros.
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Define __thumb2__.
+	(TARGET_THUMB1, TARGET_32BIT, TARGET_THUMB2, TARGET_DSP_MULTIPLY,
+	TARGET_INT_SIMD, TARGET_UNIFIED_ASM, ARM_FT_STACKALIGN, IS_STACKALIGN,
+	THUMB2_TRAMPOLINE_TEMPLATE, TRAMPOLINE_ADJUST_ADDRESS,
+	ASM_OUTPUT_OPCODE, THUMB2_GO_IF_LEGITIMATE_ADDRESS,
+	THUMB2_LEGITIMIZE_ADDRESS, CASE_VECTOR_PC_RELATIVE,
+	CASE_VECTOR_SHORTEN_MODE, ADDR_VEC_ALIGN, ASM_OUTPUT_CASE_END,
+	ADJUST_INSN_LENGTH): Define.
+	(TARGET_REALLY_IWMMXT, TARGET_IWMMXT_ABI, CONDITIONAL_REGISTER_USAGE,
+	STATIC_CHAIN_REGNUM, HARD_REGNO_NREGS, INDEX_REG_CLASS,
+	BASE_REG_CLASS, MODE_BASE_REG_CLASS, SMALL_REGISTER_CLASSES,
+	PREFERRED_RELOAD_CLASS, SECONDARY_OUTPUT_RELOAD_CLASS,
+	SECONDARY_INPUT_RELOAD_CLASS, LIBCALL_VALUE, FUNCTION_VALUE_REGNO_P,
+	TRAMPOLINE_SIZE, INITIALIZE_TRAMPOLINE, HAVE_PRE_INCREMENT,
+	HAVE_POST_DECREMENT, HAVE_PRE_DECREMENT, HAVE_PRE_MODIFY_DISP,
+	HAVE_POST_MODIFY_DISP, HAVE_PRE_MODIFY_REG, HAVE_POST_MODIFY_REG,
+	REGNO_MODE_OK_FOR_BASE_P, LEGITIMATE_CONSTANT_P,
+	REG_MODE_OK_FOR_BASE_P, REG_OK_FOR_INDEX_P, GO_IF_LEGITIMATE_ADDRESS,
+	LEGITIMIZE_ADDRESS, THUMB2_LEGITIMIZE_ADDRESS,
+	GO_IF_MODE_DEPENDENT_ADDRESS, MEMORY_MOVE_COST, BRANCH_COST,
+	ASM_APP_OFF, ASM_OUTPUT_CASE_LABEL, ARM_DECLARE_FUNCTION_NAME,
+	FINAL_PRESCAN_INSN, PRINT_OPERAND_PUNCT_VALID_P,
+	PRINT_OPERAND_ADDRESS): Adjust for Thumb-2.
+	(arm_arch_notm, arm_arch_thumb2, arm_arch_hwdiv): New declarations.
+	* config/arm/arm-cores.def: Add arm1156t2-s, cortex-a8, cortex-r4 and
+	cortex-m3.
+	* config/arm/arm-tune.md: Regenerate.
+	* config/arm/arm-protos.h: Update prototypes.
+	* config/arm/vfp.md: Enable patterns for Thumb-2.
+	(arm_movsi_vfp): Add movw alternative.  Use output_move_vfp.
+	(arm_movdi_vfp, movsf_vfp, movdf_vfp): Use output_move_vfp.
+	(thumb2_movsi_vfp, thumb2_movdi_vfp, thumb2_movsf_vfp,
+	thumb2_movdf_vfp, thumb2_movsfcc_vfp, thumb2_movdfcc_vfp): New.
+	* config/arm/libunwind.S: Add Thumb-2 code.
+	* config/arm/constraints.md: Update include Thumb-2.
+	* config/arm/ieee754-sf.S: Add Thumb-2/Unified asm support.
+	* config/arm/ieee754-df.S: Ditto.
+	* config/arm/bpabi.S: Ditto.
+	* config/arm/t-arm (MD_INCLUDES): Add thumb2.md.
+	* config/arm/predicates.md (low_register_operand,
+	low_reg_or_int_operand, thumb_16bit_operator): New.
+	(thumb_cmp_operand, thumb_cmpneg_operand): Rename...
+	(thumb1_cmp_operand, thumb1_cmpneg_operand): ... to this.
+	* config/arm/t-arm-elf: Add armv7 multilib.
+	* config/arm/arm.md: Update patterns for Thumb-2 and Unified asm.
+	Include thumb2.md.
+	(UNSPEC_STACK_ALIGN, ce_count): New.
+	(arm_incscc, arm_decscc, arm_umaxsi3, arm_uminsi3,
+	arm_zero_extendsidi2, arm_zero_extendqidi2): New
+	insns/expanders.
+	* config/arm/fpa.md: Update patterns for Thumb-2 and Unified asm.
+	(thumb2_movsf_fpa, thumb2_movdf_fpa, thumb2_movxf_fpa,
+	thumb2_movsfcc_fpa, thumb2_movdfcc_fpa): New insns.
+	* config/arm/cirrus.md: Update patterns for Thumb-2 and Unified asm.
+	(cirrus_thumb2_movdi, cirrus_thumb2_movsi_insn,
+	thumb2_cirrus_movsf_hard_insn, thumb2_cirrus_movdf_hard_insn): New
+	insns.
+	* doc/extend.texi: Document ARMv7-M interrupt functions.
+	* doc/invoke.texi: Document Thumb-2 new cores+architectures.
+
 2007-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* unwind-dw2.c (SIGNAL_FRAME_BIT, EXTENDED_CONTEXT_BIT): Define.

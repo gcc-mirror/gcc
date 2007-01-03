@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for Advanced RISC Machines
    ARM compilation, AOF Assembler.
-   Copyright (C) 1995, 1996, 1997, 2000, 2003, 2004
+   Copyright (C) 1995, 1996, 1997, 2000, 2003, 2004, 2007
    Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@armltd.co.uk)
 
@@ -258,18 +258,47 @@ do {					\
 #define ARM_MCOUNT_NAME "_mcount"
 
 /* Output of Dispatch Tables.  */
-#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, BODY, VALUE, REL)			\
-  do										\
-    {										\
-      if (TARGET_ARM)								\
-        fprintf ((STREAM), "\tb\t|L..%d|\n", (VALUE));				\
-      else									\
-        fprintf ((STREAM), "\tDCD\t|L..%d| - |L..%d|\n", (VALUE), (REL));	\
-    }										\
+#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, BODY, VALUE, REL)		\
+  do									\
+    {									\
+      if (TARGET_ARM)							\
+        fprintf ((STREAM), "\tb\t|L..%d|\n", (VALUE));			\
+      else if (TARGET_THUMB1)						\
+        fprintf ((STREAM), "\tDCD\t|L..%d| - |L..%d|\n", (VALUE), (REL)); \
+      else /* Thumb-2 */						\
+	{								\
+	  switch (GET_MODE(body))					\
+	    {								\
+	    case QImode: /* TBB */					\
+	      asm_fprintf (STREAM, "\tDCB\t(|L..%d| - |L..%d|)/2\n",	\
+			   VALUE, REL);					\
+	      break;							\
+	    case HImode: /* TBH */					\
+	      asm_fprintf (STREAM, "\tDCW\t|L..%d| - |L..%d|)/2\n",	\
+			   VALUE, REL);					\
+	      break;							\
+	    case SImode:						\
+	      if (flag_pic)						\
+		asm_fprintf (STREAM, "\tDCD\t|L..%d| + 1 - |L..%d|\n",	\
+			     VALUE, REL);				\
+	      else							\
+		asm_fprintf (STREAM, "\tDCD\t|L..%d| + 1\n", VALUE);	\
+	      break;							\
+	    default:							\
+	      gcc_unreachable();					\
+	    }								\
+	}								\
+    }									\
   while (0)
 
-#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)	\
-  fprintf ((STREAM), "\tDCD\t|L..%d|\n", (VALUE))
+#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)			\
+  do								\
+    {								\
+      gcc_assert (!TARGET_THUMB2)				\
+      fprintf ((STREAM), "\tDCD\t|L..%d|\n", (VALUE))		\
+    }								\
+  while (0)
+	
 
 /* A label marking the start of a jump table is a data label.  */
 #define ASM_OUTPUT_CASE_LABEL(STREAM, PREFIX, NUM, TABLE)	\

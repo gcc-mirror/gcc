@@ -1,5 +1,5 @@
 ;; Predicate definitions for ARM and Thumb
-;; Copyright (C) 2004 Free Software Foundation, Inc.
+;; Copyright (C) 2004, 2007 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -38,6 +38,16 @@
 {
   return REGNO (op) < FIRST_PSEUDO_REGISTER;
 })
+
+;; A low register.
+(define_predicate "low_register_operand"
+  (and (match_code "reg")
+       (match_test "REGNO (op) <= LAST_LO_REGNUM")))
+
+;; A low register or const_int.
+(define_predicate "low_reg_or_int_operand"
+  (ior (match_code "const_int")
+       (match_operand 0 "low_register_operand")))
 
 ;; Any core register, or any pseudo.  */ 
 (define_predicate "arm_general_register_operand"
@@ -173,6 +183,10 @@
 				   && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (op, 1))) < 32")))
 	    (match_code "ashift,ashiftrt,lshiftrt,rotatert"))
        (match_test "mode == GET_MODE (op)")))
+
+;; True for operators that have 16-bit thumb variants.  */
+(define_special_predicate "thumb_16bit_operator"
+  (match_code "plus,minus,and,ior,xor"))
 
 ;; True for EQ & NE
 (define_special_predicate "equality_operator"
@@ -399,13 +413,13 @@
 ;; Thumb predicates
 ;;
 
-(define_predicate "thumb_cmp_operand"
+(define_predicate "thumb1_cmp_operand"
   (ior (and (match_code "reg,subreg")
 	    (match_operand 0 "s_register_operand"))
        (and (match_code "const_int")
 	    (match_test "((unsigned HOST_WIDE_INT) INTVAL (op)) < 256"))))
 
-(define_predicate "thumb_cmpneg_operand"
+(define_predicate "thumb1_cmpneg_operand"
   (and (match_code "const_int")
        (match_test "INTVAL (op) < 0 && INTVAL (op) > -256")))
 

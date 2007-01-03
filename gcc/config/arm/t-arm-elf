@@ -11,6 +11,16 @@ MULTILIB_DIRNAMES    = arm thumb
 MULTILIB_EXCEPTIONS  = 
 MULTILIB_MATCHES     =
 
+#MULTILIB_OPTIONS      += march=armv7
+#MULTILIB_DIRNAMES     += thumb2
+#MULTILIB_EXCEPTIONS   += march=armv7* marm/*march=armv7*
+#MULTILIB_MATCHES      += march?armv7=march?armv7-a
+#MULTILIB_MATCHES      += march?armv7=march?armv7-r
+#MULTILIB_MATCHES      += march?armv7=march?armv7-m
+#MULTILIB_MATCHES      += march?armv7=mcpu?cortex-a8
+#MULTILIB_MATCHES      += march?armv7=mcpu?cortex-r4
+#MULTILIB_MATCHES      += march?armv7=mcpu?cortex-m3
+
 # MULTILIB_OPTIONS    += mcpu=ep9312
 # MULTILIB_DIRNAMES   += ep9312
 # MULTILIB_EXCEPTIONS += *mthumb/*mcpu=ep9312*
