@@ -315,16 +315,10 @@ stack_regs_mentioned (rtx insn)
   max = VEC_length (char, stack_regs_mentioned_data);
   if (uid >= max)
     {
-      char *p;
-      unsigned int old_max = max;
-
       /* Allocate some extra size to avoid too many reallocs, but
 	 do not grow too quickly.  */
       max = uid + uid / 20 + 1;
-      VEC_safe_grow (char, heap, stack_regs_mentioned_data, max);
-      p = VEC_address (char, stack_regs_mentioned_data);
-      memset (&p[old_max], 0,
-	      sizeof (char) * (max - old_max));
+      VEC_safe_grow_cleared (char, heap, stack_regs_mentioned_data, max);
     }
 
   test = VEC_index (char, stack_regs_mentioned_data, uid);

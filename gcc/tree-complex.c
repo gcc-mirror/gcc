@@ -1492,10 +1492,8 @@ tree_lower_complex (void)
     return 0;
 
   complex_lattice_values = VEC_alloc (complex_lattice_t, heap, num_ssa_names);
-  VEC_safe_grow (complex_lattice_t, heap,
-		 complex_lattice_values, num_ssa_names);
-  memset (VEC_address (complex_lattice_t, complex_lattice_values), 0,
-	  num_ssa_names * sizeof(complex_lattice_t));
+  VEC_safe_grow_cleared (complex_lattice_t, heap,
+			 complex_lattice_values, num_ssa_names);
 
   init_parameter_lattice_values ();
   ssa_propagate (complex_visit_stmt, complex_visit_phi);
@@ -1504,9 +1502,8 @@ tree_lower_complex (void)
 					     int_tree_map_eq, free);
 
   complex_ssa_name_components = VEC_alloc (tree, heap, 2*num_ssa_names);
-  VEC_safe_grow (tree, heap, complex_ssa_name_components, 2*num_ssa_names);
-  memset (VEC_address (tree, complex_ssa_name_components), 0,
-	  2 * num_ssa_names * sizeof(tree));
+  VEC_safe_grow_cleared (tree, heap, complex_ssa_name_components,
+			 2 * num_ssa_names);
 
   update_parameter_components ();
 
