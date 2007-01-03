@@ -1,7 +1,15 @@
 2007-01-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/29535
+	* g++.dg/template/crash66.C: New test.
+
 	PR c++/29054
 	* g++.dg/template/friend49.C: New test.
+
+	Backported from mainline
+	2006-10-17  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/28261
+	* g++.dg/parse/enum3.C: New test.
 
 2006-12-29  Jakub Jelinek  <jakub@redhat.com>
 

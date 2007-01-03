@@ -501,6 +501,49 @@ cp_lexer_next_token_is_keyword (cp_lexer* lexer, enum rid keyword)
   return token->keyword == keyword;
 }
 
+static bool
+cp_lexer_next_token_is_decl_specifier_keyword (cp_lexer *lexer)
+{
+  cp_token *token;
+
+  token = cp_lexer_peek_token (lexer);
+  switch (token->keyword) 
+    {
+      /* Storage classes.  */
+    case RID_AUTO:
+    case RID_REGISTER:
+    case RID_STATIC:
+    case RID_EXTERN:
+    case RID_MUTABLE:
+    case RID_THREAD:
+      /* Elaborated type specifiers.  */
+    case RID_ENUM:
+    case RID_CLASS:
+    case RID_STRUCT:
+    case RID_UNION:
+    case RID_TYPENAME:
+      /* Simple type specifiers.  */
+    case RID_CHAR:
+    case RID_WCHAR:
+    case RID_BOOL:
+    case RID_SHORT:
+    case RID_INT:
+    case RID_LONG:
+    case RID_SIGNED:
+    case RID_UNSIGNED:
+    case RID_FLOAT:
+    case RID_DOUBLE:
+    case RID_VOID:
+      /* GNU extensions.  */ 
+    case RID_ATTRIBUTE:
+    case RID_TYPEOF:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
 /* Return a pointer to the Nth token in the token stream.  If N is 1,
    then this is precisely equivalent to cp_lexer_peek_token (except
    that it is not inline).  One would like to disallow that case, but
@@ -1828,7 +1871,7 @@ static void cp_parser_name_lookup_error
   (cp_parser *, tree, tree, const char *);
 static bool cp_parser_simulate_error
   (cp_parser *);
-static void cp_parser_check_type_definition
+static bool cp_parser_check_type_definition
   (cp_parser *);
 static void cp_parser_check_for_definition_in_return_type
   (cp_declarator *, tree);
@@ -2027,14 +2070,18 @@ cp_parser_check_decl_spec (cp_decl_specifier_seq *decl_specs)
    definitions are forbidden at this point, an error message is
    issued.  */
 
-static void
+static bool
 cp_parser_check_type_definition (cp_parser* parser)
 {
   /* If types are forbidden here, issue a message.  */
   if (parser->type_definition_forbidden_message)
-    /* Use `%s' to print the string in case there are any escape
-       characters in the message.  */
-    error ("%s", parser->type_definition_forbidden_message);
+    {
+      /* Use `%s' to print the string in case there are any escape
+	 characters in the message.  */
+      error ("%s", parser->type_definition_forbidden_message);
+      return false;
+    }
+  return true;
 }
 
 /* This function is called when the DECLARATOR is processed.  The TYPE
@@ -10256,13 +10303,14 @@ cp_parser_enum_specifier (cp_parser* parser)
     identifier = make_anon_name ();
 
   /* Issue an error message if type-definitions are forbidden here.  */
-  cp_parser_check_type_definition (parser);
-
-  /* Create the new type.  We do this before consuming the opening brace
-     so the enum will be recorded as being on the line of its tag (or the
-     'enum' keyword, if there is no tag).  */
-  type = start_enum (identifier);
-
+  if (!cp_parser_check_type_definition (parser))
+    type = error_mark_node;
+  else
+    /* Create the new type.  We do this before consuming the opening
+       brace so the enum will be recorded as being on the line of its
+       tag (or the 'enum' keyword, if there is no tag).  */
+    type = start_enum (identifier);
+  
   /* Consume the opening brace.  */
   cp_lexer_consume_token (parser->lexer);
 
@@ -15258,8 +15306,7 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 	  /* A parameter declaration begins with a decl-specifier,
 	     which is either the "attribute" keyword, a storage class
 	     specifier, or (usually) a type-specifier.  */
-	  && !cp_lexer_next_token_is_keyword (parser->lexer, RID_ATTRIBUTE)
-	  && !cp_parser_storage_class_specifier_opt (parser))
+	  && !cp_lexer_next_token_is_decl_specifier_keyword (parser->lexer))
 	{
 	  tree type;
 	  tree pushed_scope = NULL_TREE;
