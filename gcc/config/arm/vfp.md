@@ -1,5 +1,5 @@
 ;; ARM VFP coprocessor Machine Description
-;; Copyright (C) 2003, 2005 Free Software Foundation, Inc.
+;; Copyright (C) 2003, 2005, 2006, 2007 Free Software Foundation, Inc.
 ;; Written by CodeSourcery, LLC.
 ;;
 ;; This file is part of GCC.
@@ -121,25 +121,77 @@
 ;; ??? For now do not allow loading constants into vfp regs.  This causes
 ;; problems because small constants get converted into adds.
 (define_insn "*arm_movsi_vfp"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r ,m,*w,r,*w,*w, *Uv")
-      (match_operand:SI 1 "general_operand"	   "rI,K,mi,r,r,*w,*w,*Uvi,*w"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r ,m,*w,r,*w,*w, *Uv")
+      (match_operand:SI 1 "general_operand"	   "rI,K,N,mi,r,r,*w,*w,*Uvi,*w"))]
   "TARGET_ARM && TARGET_VFP && TARGET_HARD_FLOAT
    && (   s_register_operand (operands[0], SImode)
        || s_register_operand (operands[1], SImode))"
-  "@
-  mov%?\\t%0, %1
-  mvn%?\\t%0, #%B1
-  ldr%?\\t%0, %1
-  str%?\\t%1, %0
-  fmsr%?\\t%0, %1\\t%@ int
-  fmrs%?\\t%0, %1\\t%@ int
-  fcpys%?\\t%0, %1\\t%@ int
-  flds%?\\t%0, %1\\t%@ int
-  fsts%?\\t%1, %0\\t%@ int"
+  "*
+  switch (which_alternative)
+    {
+    case 0:
+      return \"mov%?\\t%0, %1\";
+    case 1:
+      return \"mvn%?\\t%0, #%B1\";
+    case 2:
+      return \"movw%?\\t%0, %1\";
+    case 3:
+      return \"ldr%?\\t%0, %1\";
+    case 4:
+      return \"str%?\\t%1, %0\";
+    case 5:
+      return \"fmsr%?\\t%0, %1\\t%@ int\";
+    case 6:
+      return \"fmrs%?\\t%0, %1\\t%@ int\";
+    case 7:
+      return \"fcpys%?\\t%0, %1\\t%@ int\";
+    case 8: case 9:
+      return output_move_vfp (operands);
+    default:
+      gcc_unreachable ();
+    }
+  "
   [(set_attr "predicable" "yes")
-   (set_attr "type" "*,*,load1,store1,r_2_f,f_2_r,ffarith,f_loads,f_stores")
-   (set_attr "pool_range"     "*,*,4096,*,*,*,*,1020,*")
-   (set_attr "neg_pool_range" "*,*,4084,*,*,*,*,1008,*")]
+   (set_attr "type" "*,*,*,load1,store1,r_2_f,f_2_r,ffarith,f_loads,f_stores")
+   (set_attr "pool_range"     "*,*,*,4096,*,*,*,*,1020,*")
+   (set_attr "neg_pool_range" "*,*,*,4084,*,*,*,*,1008,*")]
+)
+
+(define_insn "*thumb2_movsi_vfp"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,m,*w,r,*w,*w, *Uv")
+      (match_operand:SI 1 "general_operand"	   "rI,K,N,mi,r,r,*w,*w,*Uvi,*w"))]
+  "TARGET_THUMB2 && TARGET_VFP && TARGET_HARD_FLOAT
+   && (   s_register_operand (operands[0], SImode)
+       || s_register_operand (operands[1], SImode))"
+  "*
+  switch (which_alternative)
+    {
+    case 0:
+      return \"mov%?\\t%0, %1\";
+    case 1:
+      return \"mvn%?\\t%0, #%B1\";
+    case 2:
+      return \"movw%?\\t%0, %1\";
+    case 3:
+      return \"ldr%?\\t%0, %1\";
+    case 4:
+      return \"str%?\\t%1, %0\";
+    case 5:
+      return \"fmsr%?\\t%0, %1\\t%@ int\";
+    case 6:
+      return \"fmrs%?\\t%0, %1\\t%@ int\";
+    case 7:
+      return \"fcpys%?\\t%0, %1\\t%@ int\";
+    case 8: case 9:
+      return output_move_vfp (operands);
+    default:
+      gcc_unreachable ();
+    }
+  "
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "*,*,*,load1,store1,r_2_f,f_2_r,ffarith,f_load,f_store")
+   (set_attr "pool_range"     "*,*,*,4096,*,*,*,*,1020,*")
+   (set_attr "neg_pool_range" "*,*,*,   0,*,*,*,*,1008,*")]
 )
 
 
@@ -165,10 +217,8 @@
       return \"fmrrd%?\\t%Q0, %R0, %P1\\t%@ int\";
     case 5:
       return \"fcpyd%?\\t%P0, %P1\\t%@ int\";
-    case 6:
-      return \"fldd%?\\t%P0, %1\\t%@ int\";
-    case 7:
-      return \"fstd%?\\t%P1, %0\\t%@ int\";
+    case 6: case 7:
+      return output_move_vfp (operands);
     default:
       gcc_unreachable ();
     }
@@ -177,6 +227,33 @@
    (set_attr "length" "8,8,8,4,4,4,4,4")
    (set_attr "pool_range"     "*,1020,*,*,*,*,1020,*")
    (set_attr "neg_pool_range" "*,1008,*,*,*,*,1008,*")]
+)
+
+(define_insn "*thumb2_movdi_vfp"
+  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r,m,w,r,w,w, Uv")
+	(match_operand:DI 1 "di_operand"              "rIK,mi,r,r,w,w,Uvi,w"))]
+  "TARGET_THUMB2 && TARGET_HARD_FLOAT && TARGET_VFP"
+  "*
+  switch (which_alternative)
+    {
+    case 0: case 1: case 2:
+      return (output_move_double (operands));
+    case 3:
+      return \"fmdrr%?\\t%P0, %Q1, %R1\\t%@ int\";
+    case 4:
+      return \"fmrrd%?\\t%Q0, %R0, %P1\\t%@ int\";
+    case 5:
+      return \"fcpyd%?\\t%P0, %P1\\t%@ int\";
+    case 6: case 7:
+      return output_move_vfp (operands);
+    default:
+      abort ();
+    }
+  "
+  [(set_attr "type" "*,load2,store2,r_2_f,f_2_r,ffarith,f_load,f_store")
+   (set_attr "length" "8,8,8,4,4,4,4,4")
+   (set_attr "pool_range"     "*,4096,*,*,*,*,1020,*")
+   (set_attr "neg_pool_range" "*,   0,*,*,*,*,1008,*")]
 )
 
 
@@ -190,19 +267,64 @@
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP
    && (   s_register_operand (operands[0], SFmode)
        || s_register_operand (operands[1], SFmode))"
-  "@
-  fmsr%?\\t%0, %1
-  fmrs%?\\t%0, %1
-  flds%?\\t%0, %1
-  fsts%?\\t%1, %0
-  ldr%?\\t%0, %1\\t%@ float
-  str%?\\t%1, %0\\t%@ float
-  fcpys%?\\t%0, %1
-  mov%?\\t%0, %1\\t%@ float"
+  "*
+  switch (which_alternative)
+    {
+    case 0:
+      return \"fmsr%?\\t%0, %1\";
+    case 1:
+      return \"fmrs%?\\t%0, %1\";
+    case 2: case 3:
+      return output_move_vfp (operands);
+    case 4:
+      return \"ldr%?\\t%0, %1\\t%@ float\";
+    case 5:
+      return \"str%?\\t%1, %0\\t%@ float\";
+    case 6:
+      return \"fcpys%?\\t%0, %1\";
+    case 7:
+      return \"mov%?\\t%0, %1\\t%@ float\";
+    default:
+      gcc_unreachable ();
+    }
+  "
   [(set_attr "predicable" "yes")
    (set_attr "type" "r_2_f,f_2_r,ffarith,*,f_loads,f_stores,load1,store1")
    (set_attr "pool_range" "*,*,1020,*,4096,*,*,*")
    (set_attr "neg_pool_range" "*,*,1008,*,4080,*,*,*")]
+)
+
+(define_insn "*thumb2_movsf_vfp"
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=w,?r,w  ,Uv,r ,m,w,r")
+	(match_operand:SF 1 "general_operand"	   " ?r,w,UvE,w, mE,r,w,r"))]
+  "TARGET_THUMB2 && TARGET_HARD_FLOAT && TARGET_VFP
+   && (   s_register_operand (operands[0], SFmode)
+       || s_register_operand (operands[1], SFmode))"
+  "*
+  switch (which_alternative)
+    {
+    case 0:
+      return \"fmsr%?\\t%0, %1\";
+    case 1:
+      return \"fmrs%?\\t%0, %1\";
+    case 2: case 3:
+      return output_move_vfp (operands);
+    case 4:
+      return \"ldr%?\\t%0, %1\\t%@ float\";
+    case 5:
+      return \"str%?\\t%1, %0\\t%@ float\";
+    case 6:
+      return \"fcpys%?\\t%0, %1\";
+    case 7:
+      return \"mov%?\\t%0, %1\\t%@ float\";
+    default:
+      gcc_unreachable ();
+    }
+  "
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "r_2_f,f_2_r,ffarith,*,f_load,f_store,load1,store1")
+   (set_attr "pool_range" "*,*,1020,*,4092,*,*,*")
+   (set_attr "neg_pool_range" "*,*,1008,*,0,*,*,*")]
 )
 
 
@@ -224,10 +346,8 @@
 	return \"fmrrd%?\\t%Q0, %R0, %P1\";
       case 2: case 3:
 	return output_move_double (operands);
-      case 4:
-	return \"fldd%?\\t%P0, %1\";
-      case 5:
-	return \"fstd%?\\t%P1, %0\";
+      case 4: case 5:
+	return output_move_vfp (operands);
       case 6:
 	return \"fcpyd%?\\t%P0, %P1\";
       case 7:
@@ -241,6 +361,35 @@
    (set_attr "length" "4,4,8,8,4,4,4,8")
    (set_attr "pool_range" "*,*,1020,*,1020,*,*,*")
    (set_attr "neg_pool_range" "*,*,1008,*,1008,*,*,*")]
+)
+
+(define_insn "*thumb2_movdf_vfp"
+  [(set (match_operand:DF 0 "nonimmediate_soft_df_operand" "=w,?r,r, m,w  ,Uv,w,r")
+	(match_operand:DF 1 "soft_df_operand"		   " ?r,w,mF,r,UvF,w, w,r"))]
+  "TARGET_THUMB2 && TARGET_HARD_FLOAT && TARGET_VFP"
+  "*
+  {
+    switch (which_alternative)
+      {
+      case 0:
+	return \"fmdrr%?\\t%P0, %Q1, %R1\";
+      case 1:
+	return \"fmrrd%?\\t%Q0, %R0, %P1\";
+      case 2: case 3: case 7:
+	return output_move_double (operands);
+      case 4: case 5:
+	return output_move_vfp (operands);
+      case 6:
+	return \"fcpyd%?\\t%P0, %P1\";
+      default:
+	abort ();
+      }
+    }
+  "
+  [(set_attr "type" "r_2_f,f_2_r,ffarith,*,load2,store2,f_load,f_store")
+   (set_attr "length" "4,4,8,8,4,4,4,8")
+   (set_attr "pool_range" "*,*,4096,*,1020,*,*,*")
+   (set_attr "neg_pool_range" "*,*,0,*,1008,*,*,*")]
 )
 
 
@@ -269,6 +418,29 @@
     (set_attr "type" "ffarith,ffarith,ffarith,r_2_f,r_2_f,r_2_f,f_2_r,f_2_r,f_2_r")]
 )
 
+(define_insn "*thumb2_movsfcc_vfp"
+  [(set (match_operand:SF   0 "s_register_operand" "=w,w,w,w,w,w,?r,?r,?r")
+	(if_then_else:SF
+	  (match_operator   3 "arm_comparison_operator"
+	    [(match_operand 4 "cc_register" "") (const_int 0)])
+	  (match_operand:SF 1 "s_register_operand" "0,w,w,0,?r,?r,0,w,w")
+	  (match_operand:SF 2 "s_register_operand" "w,0,w,?r,0,?r,w,0,w")))]
+  "TARGET_THUMB2 && TARGET_HARD_FLOAT && TARGET_VFP"
+  "@
+   it\\t%D3\;fcpys%D3\\t%0, %2
+   it\\t%d3\;fcpys%d3\\t%0, %1
+   ite\\t%D3\;fcpys%D3\\t%0, %2\;fcpys%d3\\t%0, %1
+   it\\t%D3\;fmsr%D3\\t%0, %2
+   it\\t%d3\;fmsr%d3\\t%0, %1
+   ite\\t%D3\;fmsr%D3\\t%0, %2\;fmsr%d3\\t%0, %1
+   it\\t%D3\;fmrs%D3\\t%0, %2
+   it\\t%d3\;fmrs%d3\\t%0, %1
+   ite\\t%D3\;fmrs%D3\\t%0, %2\;fmrs%d3\\t%0, %1"
+   [(set_attr "conds" "use")
+    (set_attr "length" "6,6,10,6,6,10,6,6,10")
+    (set_attr "type" "ffarith,ffarith,ffarith,r_2_f,r_2_f,r_2_f,f_2_r,f_2_r,f_2_r")]
+)
+
 (define_insn "*movdfcc_vfp"
   [(set (match_operand:DF   0 "s_register_operand" "=w,w,w,w,w,w,?r,?r,?r")
 	(if_then_else:DF
@@ -292,13 +464,36 @@
     (set_attr "type" "ffarith,ffarith,ffarith,r_2_f,r_2_f,r_2_f,f_2_r,f_2_r,f_2_r")]
 )
 
+(define_insn "*thumb2_movdfcc_vfp"
+  [(set (match_operand:DF   0 "s_register_operand" "=w,w,w,w,w,w,?r,?r,?r")
+	(if_then_else:DF
+	  (match_operator   3 "arm_comparison_operator"
+	    [(match_operand 4 "cc_register" "") (const_int 0)])
+	  (match_operand:DF 1 "s_register_operand" "0,w,w,0,?r,?r,0,w,w")
+	  (match_operand:DF 2 "s_register_operand" "w,0,w,?r,0,?r,w,0,w")))]
+  "TARGET_THUMB2 && TARGET_HARD_FLOAT && TARGET_VFP"
+  "@
+   it\\t%D3\;fcpyd%D3\\t%P0, %P2
+   it\\t%d3\;fcpyd%d3\\t%P0, %P1
+   ite\\t%D3\;fcpyd%D3\\t%P0, %P2\;fcpyd%d3\\t%P0, %P1
+   it\t%D3\;fmdrr%D3\\t%P0, %Q2, %R2
+   it\t%d3\;fmdrr%d3\\t%P0, %Q1, %R1
+   ite\\t%D3\;fmdrr%D3\\t%P0, %Q2, %R2\;fmdrr%d3\\t%P0, %Q1, %R1
+   it\t%D3\;fmrrd%D3\\t%Q0, %R0, %P2
+   it\t%d3\;fmrrd%d3\\t%Q0, %R0, %P1
+   ite\\t%D3\;fmrrd%D3\\t%Q0, %R0, %P2\;fmrrd%d3\\t%Q0, %R0, %P1"
+   [(set_attr "conds" "use")
+    (set_attr "length" "6,6,10,6,6,10,6,6,10")
+    (set_attr "type" "ffarith,ffarith,ffarith,r_2_f,r_2_f,r_2_f,f_2_r,f_2_r,f_2_r")]
+)
+
 
 ;; Sign manipulation functions
 
 (define_insn "*abssf2_vfp"
   [(set (match_operand:SF	  0 "s_register_operand" "=w")
 	(abs:SF (match_operand:SF 1 "s_register_operand" "w")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fabss%?\\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "type" "ffarith")]
@@ -307,7 +502,7 @@
 (define_insn "*absdf2_vfp"
   [(set (match_operand:DF	  0 "s_register_operand" "=w")
 	(abs:DF (match_operand:DF 1 "s_register_operand" "w")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fabsd%?\\t%P0, %P1"
   [(set_attr "predicable" "yes")
    (set_attr "type" "ffarith")]
@@ -316,7 +511,7 @@
 (define_insn "*negsf2_vfp"
   [(set (match_operand:SF	  0 "s_register_operand" "=w,?r")
 	(neg:SF (match_operand:SF 1 "s_register_operand" "w,r")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "@
    fnegs%?\\t%0, %1
    eor%?\\t%0, %1, #-2147483648"
@@ -327,12 +522,12 @@
 (define_insn_and_split "*negdf2_vfp"
   [(set (match_operand:DF	  0 "s_register_operand" "=w,?r,?r")
 	(neg:DF (match_operand:DF 1 "s_register_operand" "w,0,r")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "@
    fnegd%?\\t%P0, %P1
    #
    #"
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP && reload_completed
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP && reload_completed
    && arm_general_register_operand (operands[0], DFmode)"
   [(set (match_dup 0) (match_dup 1))]
   "
@@ -377,7 +572,7 @@
   [(set (match_operand:SF	   0 "s_register_operand" "=w")
 	(plus:SF (match_operand:SF 1 "s_register_operand" "w")
 		 (match_operand:SF 2 "s_register_operand" "w")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fadds%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "type" "farith")]
@@ -387,7 +582,7 @@
   [(set (match_operand:DF	   0 "s_register_operand" "=w")
 	(plus:DF (match_operand:DF 1 "s_register_operand" "w")
 		 (match_operand:DF 2 "s_register_operand" "w")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "faddd%?\\t%P0, %P1, %P2"
   [(set_attr "predicable" "yes")
    (set_attr "type" "farith")]
@@ -398,7 +593,7 @@
   [(set (match_operand:SF	    0 "s_register_operand" "=w")
 	(minus:SF (match_operand:SF 1 "s_register_operand" "w")
 		  (match_operand:SF 2 "s_register_operand" "w")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fsubs%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "type" "farith")]
@@ -408,7 +603,7 @@
   [(set (match_operand:DF	    0 "s_register_operand" "=w")
 	(minus:DF (match_operand:DF 1 "s_register_operand" "w")
 		  (match_operand:DF 2 "s_register_operand" "w")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fsubd%?\\t%P0, %P1, %P2"
   [(set_attr "predicable" "yes")
    (set_attr "type" "farith")]
@@ -421,7 +616,7 @@
   [(set (match_operand:SF	  0 "s_register_operand" "+w")
 	(div:SF (match_operand:SF 1 "s_register_operand" "w")
 		(match_operand:SF 2 "s_register_operand" "w")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fdivs%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "type" "fdivs")]
@@ -431,7 +626,7 @@
   [(set (match_operand:DF	  0 "s_register_operand" "+w")
 	(div:DF (match_operand:DF 1 "s_register_operand" "w")
 		(match_operand:DF 2 "s_register_operand" "w")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fdivd%?\\t%P0, %P1, %P2"
   [(set_attr "predicable" "yes")
    (set_attr "type" "fdivd")]
@@ -444,7 +639,7 @@
   [(set (match_operand:SF	   0 "s_register_operand" "+w")
 	(mult:SF (match_operand:SF 1 "s_register_operand" "w")
 		 (match_operand:SF 2 "s_register_operand" "w")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fmuls%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "type" "farith")]
@@ -454,7 +649,7 @@
   [(set (match_operand:DF	   0 "s_register_operand" "+w")
 	(mult:DF (match_operand:DF 1 "s_register_operand" "w")
 		 (match_operand:DF 2 "s_register_operand" "w")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fmuld%?\\t%P0, %P1, %P2"
   [(set_attr "predicable" "yes")
    (set_attr "type" "fmul")]
@@ -465,7 +660,7 @@
   [(set (match_operand:SF		   0 "s_register_operand" "+w")
 	(mult:SF (neg:SF (match_operand:SF 1 "s_register_operand" "w"))
 		 (match_operand:SF	   2 "s_register_operand" "w")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fnmuls%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
    (set_attr "type" "farith")]
@@ -475,7 +670,7 @@
   [(set (match_operand:DF		   0 "s_register_operand" "+w")
 	(mult:DF (neg:DF (match_operand:DF 1 "s_register_operand" "w"))
 		 (match_operand:DF	   2 "s_register_operand" "w")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fnmuld%?\\t%P0, %P1, %P2"
   [(set_attr "predicable" "yes")
    (set_attr "type" "fmul")]
@@ -490,7 +685,7 @@
 	(plus:SF (mult:SF (match_operand:SF 2 "s_register_operand" "w")
 			  (match_operand:SF 3 "s_register_operand" "w"))
 		 (match_operand:SF	    1 "s_register_operand" "0")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fmacs%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
    (set_attr "type" "farith")]
@@ -501,7 +696,7 @@
 	(plus:DF (mult:DF (match_operand:DF 2 "s_register_operand" "w")
 			  (match_operand:DF 3 "s_register_operand" "w"))
 		 (match_operand:DF	    1 "s_register_operand" "0")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fmacd%?\\t%P0, %P2, %P3"
   [(set_attr "predicable" "yes")
    (set_attr "type" "fmul")]
@@ -513,7 +708,7 @@
 	(minus:SF (mult:SF (match_operand:SF 2 "s_register_operand" "w")
 			   (match_operand:SF 3 "s_register_operand" "w"))
 		  (match_operand:SF	     1 "s_register_operand" "0")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fmscs%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
    (set_attr "type" "farith")]
@@ -524,7 +719,7 @@
 	(minus:DF (mult:DF (match_operand:DF 2 "s_register_operand" "w")
 			   (match_operand:DF 3 "s_register_operand" "w"))
 		  (match_operand:DF	     1 "s_register_operand" "0")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fmscd%?\\t%P0, %P2, %P3"
   [(set_attr "predicable" "yes")
    (set_attr "type" "fmul")]
@@ -536,7 +731,7 @@
 	(minus:SF (match_operand:SF	     1 "s_register_operand" "0")
 		  (mult:SF (match_operand:SF 2 "s_register_operand" "w")
 			   (match_operand:SF 3 "s_register_operand" "w"))))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fnmacs%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
    (set_attr "type" "farith")]
@@ -547,7 +742,7 @@
 	(minus:DF (match_operand:DF	     1 "s_register_operand" "0")
 		  (mult:DF (match_operand:DF 2 "s_register_operand" "w")
 			   (match_operand:DF 3 "s_register_operand" "w"))))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fnmacd%?\\t%P0, %P2, %P3"
   [(set_attr "predicable" "yes")
    (set_attr "type" "fmul")]
@@ -561,7 +756,7 @@
 		    (neg:SF (match_operand:SF 2 "s_register_operand" "w"))
 		    (match_operand:SF	      3 "s_register_operand" "w"))
 		  (match_operand:SF	      1 "s_register_operand" "0")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fnmscs%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
    (set_attr "type" "farith")]
@@ -573,7 +768,7 @@
 		    (neg:DF (match_operand:DF 2 "s_register_operand" "w"))
 		    (match_operand:DF	      3 "s_register_operand" "w"))
 		  (match_operand:DF	      1 "s_register_operand" "0")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fnmscd%?\\t%P0, %P2, %P3"
   [(set_attr "predicable" "yes")
    (set_attr "type" "fmul")]
@@ -585,7 +780,7 @@
 (define_insn "*extendsfdf2_vfp"
   [(set (match_operand:DF		   0 "s_register_operand" "=w")
 	(float_extend:DF (match_operand:SF 1 "s_register_operand" "w")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fcvtds%?\\t%P0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "type" "f_cvt")]
@@ -594,7 +789,7 @@
 (define_insn "*truncdfsf2_vfp"
   [(set (match_operand:SF		   0 "s_register_operand" "=w")
 	(float_truncate:SF (match_operand:DF 1 "s_register_operand" "w")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fcvtsd%?\\t%0, %P1"
   [(set_attr "predicable" "yes")
    (set_attr "type" "f_cvt")]
@@ -603,7 +798,7 @@
 (define_insn "*truncsisf2_vfp"
   [(set (match_operand:SI		  0 "s_register_operand" "=w")
 	(fix:SI (fix:SF (match_operand:SF 1 "s_register_operand" "w"))))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "ftosizs%?\\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "type" "f_cvt")]
@@ -612,7 +807,7 @@
 (define_insn "*truncsidf2_vfp"
   [(set (match_operand:SI		  0 "s_register_operand" "=w")
 	(fix:SI (fix:DF (match_operand:DF 1 "s_register_operand" "w"))))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "ftosizd%?\\t%0, %P1"
   [(set_attr "predicable" "yes")
    (set_attr "type" "f_cvt")]
@@ -622,7 +817,7 @@
 (define_insn "fixuns_truncsfsi2"
   [(set (match_operand:SI		  0 "s_register_operand" "=w")
 	(unsigned_fix:SI (fix:SF (match_operand:SF 1 "s_register_operand" "w"))))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "ftouizs%?\\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "type" "f_cvt")]
@@ -631,7 +826,7 @@
 (define_insn "fixuns_truncdfsi2"
   [(set (match_operand:SI		  0 "s_register_operand" "=w")
 	(unsigned_fix:SI (fix:DF (match_operand:DF 1 "s_register_operand" "w"))))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "ftouizd%?\\t%0, %P1"
   [(set_attr "predicable" "yes")
    (set_attr "type" "f_cvt")]
@@ -641,7 +836,7 @@
 (define_insn "*floatsisf2_vfp"
   [(set (match_operand:SF	    0 "s_register_operand" "=w")
 	(float:SF (match_operand:SI 1 "s_register_operand" "w")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fsitos%?\\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "type" "f_cvt")]
@@ -650,7 +845,7 @@
 (define_insn "*floatsidf2_vfp"
   [(set (match_operand:DF	    0 "s_register_operand" "=w")
 	(float:DF (match_operand:SI 1 "s_register_operand" "w")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fsitod%?\\t%P0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "type" "f_cvt")]
@@ -660,7 +855,7 @@
 (define_insn "floatunssisf2"
   [(set (match_operand:SF	    0 "s_register_operand" "=w")
 	(unsigned_float:SF (match_operand:SI 1 "s_register_operand" "w")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fuitos%?\\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "type" "f_cvt")]
@@ -669,7 +864,7 @@
 (define_insn "floatunssidf2"
   [(set (match_operand:DF	    0 "s_register_operand" "=w")
 	(unsigned_float:DF (match_operand:SI 1 "s_register_operand" "w")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fuitod%?\\t%P0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "type" "f_cvt")]
@@ -681,7 +876,7 @@
 (define_insn "*sqrtsf2_vfp"
   [(set (match_operand:SF	   0 "s_register_operand" "=w")
 	(sqrt:SF (match_operand:SF 1 "s_register_operand" "w")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fsqrts%?\\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "type" "fdivs")]
@@ -690,7 +885,7 @@
 (define_insn "*sqrtdf2_vfp"
   [(set (match_operand:DF	   0 "s_register_operand" "=w")
 	(sqrt:DF (match_operand:DF 1 "s_register_operand" "w")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fsqrtd%?\\t%P0, %P1"
   [(set_attr "predicable" "yes")
    (set_attr "type" "fdivd")]
@@ -702,7 +897,7 @@
 (define_insn "*movcc_vfp"
   [(set (reg CC_REGNUM)
 	(reg VFPCC_REGNUM))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "fmstat%?"
   [(set_attr "conds" "set")
    (set_attr "type" "f_flag")]
@@ -712,9 +907,9 @@
   [(set (reg:CCFP CC_REGNUM)
 	(compare:CCFP (match_operand:SF 0 "s_register_operand"  "w")
 		      (match_operand:SF 1 "vfp_compare_operand" "wG")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "#"
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   [(set (reg:CCFP VFPCC_REGNUM)
 	(compare:CCFP (match_dup 0)
 		      (match_dup 1)))
@@ -727,9 +922,9 @@
   [(set (reg:CCFPE CC_REGNUM)
 	(compare:CCFPE (match_operand:SF 0 "s_register_operand"  "w")
 		       (match_operand:SF 1 "vfp_compare_operand" "wG")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "#"
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   [(set (reg:CCFPE VFPCC_REGNUM)
 	(compare:CCFPE (match_dup 0)
 		       (match_dup 1)))
@@ -742,9 +937,9 @@
   [(set (reg:CCFP CC_REGNUM)
 	(compare:CCFP (match_operand:DF 0 "s_register_operand"  "w")
 		      (match_operand:DF 1 "vfp_compare_operand" "wG")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "#"
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   [(set (reg:CCFP VFPCC_REGNUM)
 	(compare:CCFP (match_dup 0)
 		       (match_dup 1)))
@@ -757,9 +952,9 @@
   [(set (reg:CCFPE CC_REGNUM)
 	(compare:CCFPE (match_operand:DF 0 "s_register_operand"  "w")
 		       (match_operand:DF 1 "vfp_compare_operand" "wG")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "#"
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   [(set (reg:CCFPE VFPCC_REGNUM)
 	(compare:CCFPE (match_dup 0)
 		       (match_dup 1)))
@@ -775,7 +970,7 @@
   [(set (reg:CCFP VFPCC_REGNUM)
 	(compare:CCFP (match_operand:SF 0 "s_register_operand"  "w,w")
 		      (match_operand:SF 1 "vfp_compare_operand" "w,G")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "@
    fcmps%?\\t%0, %1
    fcmpzs%?\\t%0"
@@ -787,7 +982,7 @@
   [(set (reg:CCFPE VFPCC_REGNUM)
 	(compare:CCFPE (match_operand:SF 0 "s_register_operand"  "w,w")
 		       (match_operand:SF 1 "vfp_compare_operand" "w,G")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "@
    fcmpes%?\\t%0, %1
    fcmpezs%?\\t%0"
@@ -799,7 +994,7 @@
   [(set (reg:CCFP VFPCC_REGNUM)
 	(compare:CCFP (match_operand:DF 0 "s_register_operand"  "w,w")
 		      (match_operand:DF 1 "vfp_compare_operand" "w,G")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "@
    fcmpd%?\\t%P0, %P1
    fcmpzd%?\\t%P0"
@@ -811,7 +1006,7 @@
   [(set (reg:CCFPE VFPCC_REGNUM)
 	(compare:CCFPE (match_operand:DF 0 "s_register_operand"  "w,w")
 		       (match_operand:DF 1 "vfp_compare_operand" "w,G")))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "@
    fcmped%?\\t%P0, %P1
    fcmpezd%?\\t%P0"
@@ -827,7 +1022,7 @@
     [(set (match_operand:BLK 0 "memory_operand" "=m")
 	  (unspec:BLK [(match_operand:DF 1 "s_register_operand" "w")]
 		      UNSPEC_PUSH_MULT))])]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "* return vfp_output_fstmd (operands);"
   [(set_attr "type" "f_stored")]
 )

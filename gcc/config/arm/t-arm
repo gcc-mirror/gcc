@@ -10,7 +10,8 @@ MD_INCLUDES= 	$(srcdir)/config/arm/arm-tune.md \
 		$(srcdir)/config/arm/cirrus.md \
 		$(srcdir)/config/arm/fpa.md \
 		$(srcdir)/config/arm/iwmmxt.md \
-		$(srcdir)/config/arm/vfp.md
+		$(srcdir)/config/arm/vfp.md \
+		$(srcdir)/config/arm/thumb2.md
 
 s-config s-conditions s-flags s-codes s-constants s-emit s-recog s-preds \
 	s-opinit s-extract s-peep s-attr s-attrtab s-output: $(MD_INCLUDES)

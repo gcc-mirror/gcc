@@ -1,6 +1,6 @@
 /* ieee754-df.S double-precision floating point support for ARM
 
-   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2007  Free Software Foundation, Inc.
    Contributed by Nicolas Pitre (nico@cam.org)
 
    This file is free software; you can redistribute it and/or modify it
@@ -88,23 +88,26 @@ ARM_FUNC_ALIAS aeabi_dsub subdf3
 ARM_FUNC_START adddf3
 ARM_FUNC_ALIAS aeabi_dadd adddf3
 
-1:	stmfd	sp!, {r4, r5, lr}
+1:	do_push	{r4, r5, lr}
 
 	@ Look for zeroes, equal values, INF, or NAN.
-	mov	r4, xh, lsl #1
-	mov	r5, yh, lsl #1
+	shift1	lsl, r4, xh, #1
+	shift1	lsl, r5, yh, #1
 	teq	r4, r5
+	do_it	eq
 	teqeq	xl, yl
-	orrnes	ip, r4, xl
-	orrnes	ip, r5, yl
-	mvnnes	ip, r4, asr #21
-	mvnnes	ip, r5, asr #21
+	do_it	ne, ttt
+	COND(orr,s,ne)	ip, r4, xl
+	COND(orr,s,ne)	ip, r5, yl
+	COND(mvn,s,ne)	ip, r4, asr #21
+	COND(mvn,s,ne)	ip, r5, asr #21
 	beq	LSYM(Lad_s)
 
 	@ Compute exponent difference.  Make largest exponent in r4,
 	@ corresponding arg in xh-xl, and positive exponent difference in r5.
-	mov	r4, r4, lsr #21
+	shift1	lsr, r4, r4, #21
 	rsbs	r5, r4, r5, lsr #21
+	do_it	lt
 	rsblt	r5, r5, #0
 	ble	1f
 	add	r4, r4, r5
@@ -119,6 +122,7 @@ ARM_FUNC_ALIAS aeabi_dadd adddf3
 	@ already in xh-xl.  We need up to 54 bit to handle proper rounding
 	@ of 0x1p54 - 1.1.
 	cmp	r5, #54
+	do_it	hi
 	RETLDM	"r4, r5" hi
 
 	@ Convert mantissa to signed integer.
@@ -127,15 +131,25 @@ ARM_FUNC_ALIAS aeabi_dadd adddf3
 	mov	ip, #0x00100000
 	orr	xh, ip, xh, lsr #12
 	beq	1f
+#if defined(__thumb2__)
+	negs	xl, xl
+	sbc	xh, xh, xh, lsl #1
+#else
 	rsbs	xl, xl, #0
 	rsc	xh, xh, #0
+#endif
 1:
 	tst	yh, #0x80000000
 	mov	yh, yh, lsl #12
 	orr	yh, ip, yh, lsr #12
 	beq	1f
+#if defined(__thumb2__)
+	negs	yl, yl
+	sbc	yh, yh, yh, lsl #1
+#else
 	rsbs	yl, yl, #0
 	rsc	yh, yh, #0
+#endif
 1:
 	@ If exponent == difference, one or both args were denormalized.
 	@ Since this is not common case, rescale them off line.
@@ -149,27 +163,35 @@ LSYM(Lad_x):
 	@ Shift yh-yl right per r5, add to xh-xl, keep leftover bits into ip.
 	rsbs	lr, r5, #32
 	blt	1f
-	mov	ip, yl, lsl lr
-	adds	xl, xl, yl, lsr r5
+	shift1	lsl, ip, yl, lr
+	shiftop adds xl xl yl lsr r5 yl
 	adc	xh, xh, #0
-	adds	xl, xl, yh, lsl lr
-	adcs	xh, xh, yh, asr r5
+	shiftop adds xl xl yh lsl lr yl
+	shiftop adcs xh xh yh asr r5 yh
 	b	2f
 1:	sub	r5, r5, #32
 	add	lr, lr, #32
 	cmp	yl, #1
-	mov	ip, yh, lsl lr
+	shift1	lsl,ip, yh, lr
+	do_it	cs
 	orrcs	ip, ip, #2		@ 2 not 1, to allow lsr #1 later
-	adds	xl, xl, yh, asr r5
+	shiftop adds xl xl yh asr r5 yh
 	adcs	xh, xh, yh, asr #31
 2:
 	@ We now have a result in xh-xl-ip.
 	@ Keep absolute value in xh-xl-ip, sign in r5 (the n bit was set above)
 	and	r5, xh, #0x80000000
 	bpl	LSYM(Lad_p)
+#if defined(__thumb2__)
+	mov	lr, #0
+	negs	ip, ip
+	sbcs	xl, lr, xl
+	sbc	xh, lr, xh
+#else
 	rsbs	ip, ip, #0
 	rscs	xl, xl, #0
 	rsc	xh, xh, #0
+#endif
 
 	@ Determine how to normalize the result.
 LSYM(Lad_p):
@@ -195,7 +217,8 @@ LSYM(Lad_p):
 	@ Pack final result together.
 LSYM(Lad_e):
 	cmp	ip, #0x80000000
-	moveqs	ip, xl, lsr #1
+	do_it	eq
+	COND(mov,s,eq)	ip, xl, lsr #1
 	adcs	xl, xl, #0
 	adc	xh, xh, r4, lsl #20
 	orr	xh, xh, r5
@@ -238,9 +261,11 @@ LSYM(Lad_l):
 #else
 
 	teq	xh, #0
+	do_it	eq, t
 	moveq	xh, xl
 	moveq	xl, #0
 	clz	r3, xh
+	do_it	eq
 	addeq	r3, r3, #32
 	sub	r3, r3, #11
 
@@ -256,20 +281,29 @@ LSYM(Lad_l):
 	@ since a register switch happened above.
 	add	ip, r2, #20
 	rsb	r2, r2, #12
-	mov	xl, xh, lsl ip
-	mov	xh, xh, lsr r2
+	shift1	lsl, xl, xh, ip
+	shift1	lsr, xh, xh, r2
 	b	3f
 
 	@ actually shift value left 1 to 20 bits, which might also represent
 	@ 32 to 52 bits if counting the register switch that happened earlier.
 1:	add	r2, r2, #20
-2:	rsble	ip, r2, #32
-	mov	xh, xh, lsl r2
+2:	do_it	le
+	rsble	ip, r2, #32
+	shift1	lsl, xh, xh, r2
+#if defined(__thumb2__)
+	lsr	ip, xl, ip
+	itt	le
+	orrle	xh, xh, ip
+	lslle	xl, xl, r2
+#else
 	orrle	xh, xh, xl, lsr ip
 	movle	xl, xl, lsl r2
+#endif
 
 	@ adjust exponent accordingly.
 3:	subs	r4, r4, r3
+	do_it	ge, tt
 	addge	xh, xh, r4, lsl #20
 	orrge	xh, xh, r5
 	RETLDM	"r4, r5" ge
@@ -285,23 +319,23 @@ LSYM(Lad_l):
 	@ shift result right of 1 to 20 bits, sign is in r5.
 	add	r4, r4, #20
 	rsb	r2, r4, #32
-	mov	xl, xl, lsr r4
-	orr	xl, xl, xh, lsl r2
-	orr	xh, r5, xh, lsr r4
+	shift1	lsr, xl, xl, r4
+	shiftop orr xl xl xh lsl r2 yh
+	shiftop orr xh r5 xh lsr r4 yh
 	RETLDM	"r4, r5"
 
 	@ shift result right of 21 to 31 bits, or left 11 to 1 bits after
 	@ a register switch from xh to xl.
 1:	rsb	r4, r4, #12
 	rsb	r2, r4, #32
-	mov	xl, xl, lsr r2
-	orr	xl, xl, xh, lsl r4
+	shift1	lsr, xl, xl, r2
+	shiftop orr xl xl xh lsl r4 yh
 	mov	xh, r5
 	RETLDM	"r4, r5"
 
 	@ Shift value right of 32 to 64 bits, or 0 to 32 bits after a switch
 	@ from xh to xl.
-2:	mov	xl, xh, lsr r4
+2:	shift1	lsr, xl, xh, r4
 	mov	xh, r5
 	RETLDM	"r4, r5"
 
@@ -310,6 +344,7 @@ LSYM(Lad_l):
 LSYM(Lad_d):
 	teq	r4, #0
 	eor	yh, yh, #0x00100000
+	do_it	eq, te
 	eoreq	xh, xh, #0x00100000
 	addeq	r4, r4, #1
 	subne	r5, r5, #1
@@ -318,15 +353,18 @@ LSYM(Lad_d):
 
 LSYM(Lad_s):
 	mvns	ip, r4, asr #21
-	mvnnes	ip, r5, asr #21
+	do_it	ne
+	COND(mvn,s,ne)	ip, r5, asr #21
 	beq	LSYM(Lad_i)
 
 	teq	r4, r5
+	do_it	eq
 	teqeq	xl, yl
 	beq	1f
 
 	@ Result is x + 0.0 = x or 0.0 + y = y.
 	teq	r4, #0
+	do_it	eq, t
 	moveq	xh, yh
 	moveq	xl, yl
 	RETLDM	"r4, r5"
@@ -334,6 +372,7 @@ LSYM(Lad_s):
 1:	teq	xh, yh
 
 	@ Result is x - x = 0.
+	do_it	ne, tt
 	movne	xh, #0
 	movne	xl, #0
 	RETLDM	"r4, r5" ne
@@ -343,9 +382,11 @@ LSYM(Lad_s):
 	bne	2f
 	movs	xl, xl, lsl #1
 	adcs	xh, xh, xh
+	do_it	cs
 	orrcs	xh, xh, #0x80000000
 	RETLDM	"r4, r5"
 2:	adds	r4, r4, #(2 << 21)
+	do_it	cc, t
 	addcc	xh, xh, #(1 << 20)
 	RETLDM	"r4, r5" cc
 	and	r5, xh, #0x80000000
@@ -365,13 +406,16 @@ LSYM(Lad_o):
 	@   otherwise return xh-xl (which is INF or -INF)
 LSYM(Lad_i):
 	mvns	ip, r4, asr #21
+	do_it	ne, te
 	movne	xh, yh
 	movne	xl, yl
-	mvneqs	ip, r5, asr #21
+	COND(mvn,s,eq)	ip, r5, asr #21
+	do_it	ne, t
 	movne	yh, xh
 	movne	yl, xl
 	orrs	r4, xl, xh, lsl #12
-	orreqs	r5, yl, yh, lsl #12
+	do_it	eq, te
+	COND(orr,s,eq)	r5, yl, yh, lsl #12
 	teqeq	xh, yh
 	orrne	xh, xh, #0x00080000	@ quiet NAN
 	RETLDM	"r4, r5"
@@ -385,9 +429,10 @@ ARM_FUNC_START floatunsidf
 ARM_FUNC_ALIAS aeabi_ui2d floatunsidf
 
 	teq	r0, #0
+	do_it	eq, t
 	moveq	r1, #0
 	RETc(eq)
-	stmfd	sp!, {r4, r5, lr}
+	do_push	{r4, r5, lr}
 	mov	r4, #0x400		@ initial exponent
 	add	r4, r4, #(52-1 - 1)
 	mov	r5, #0			@ sign bit is 0
@@ -404,12 +449,14 @@ ARM_FUNC_START floatsidf
 ARM_FUNC_ALIAS aeabi_i2d floatsidf
 
 	teq	r0, #0
+	do_it	eq, t
 	moveq	r1, #0
 	RETc(eq)
-	stmfd	sp!, {r4, r5, lr}
+	do_push	{r4, r5, lr}
 	mov	r4, #0x400		@ initial exponent
 	add	r4, r4, #(52-1 - 1)
 	ands	r5, r0, #0x80000000	@ sign bit in r5
+	do_it	mi
 	rsbmi	r0, r0, #0		@ absolute value
 	.ifnc	xl, r0
 	mov	xl, r0
@@ -427,17 +474,19 @@ ARM_FUNC_ALIAS aeabi_f2d extendsfdf2
 	mov	xh, r2, asr #3		@ stretch exponent
 	mov	xh, xh, rrx		@ retrieve sign bit
 	mov	xl, r2, lsl #28		@ retrieve remaining bits
-	andnes	r3, r2, #0xff000000	@ isolate exponent
+	do_it	ne, ttt
+	COND(and,s,ne)	r3, r2, #0xff000000	@ isolate exponent
 	teqne	r3, #0xff000000		@ if not 0, check if INF or NAN
 	eorne	xh, xh, #0x38000000	@ fixup exponent otherwise.
 	RETc(ne)			@ and return it.
 
 	teq	r2, #0			@ if actually 0
+	do_it	ne, e
 	teqne	r3, #0xff000000		@ or INF or NAN
 	RETc(eq)			@ we are done already.
 
 	@ value was denormalized.  We can normalize it now.
-	stmfd	sp!, {r4, r5, lr}
+	do_push	{r4, r5, lr}
 	mov	r4, #0x380		@ setup corresponding exponent
 	and	r5, xh, #0x80000000	@ move sign bit in r5
 	bic	xh, xh, #0x80000000
@@ -451,7 +500,10 @@ ARM_FUNC_ALIAS aeabi_ul2d floatundidf
 
 	orrs	r2, r0, r1
 #if !defined (__VFP_FP__) && !defined(__SOFTFP__)
+	do_it	eq, t
 	mvfeqd	f0, #0.0
+#else
+	do_it	eq
 #endif
 	RETc(eq)
 
@@ -460,9 +512,9 @@ ARM_FUNC_ALIAS aeabi_ul2d floatundidf
 	@ we can return the result in f0 as well as in r0/r1 for backwards
 	@ compatibility.
 	adr	ip, LSYM(f0_ret)
-	stmfd	sp!, {r4, r5, ip, lr}
+	do_push	{r4, r5, ip, lr}
 #else
-	stmfd	sp!, {r4, r5, lr}
+	do_push	{r4, r5, lr}
 #endif
 
 	mov	r5, #0
@@ -473,7 +525,10 @@ ARM_FUNC_ALIAS aeabi_l2d floatdidf
 
 	orrs	r2, r0, r1
 #if !defined (__VFP_FP__) && !defined(__SOFTFP__)
+	do_itt	eq
 	mvfeqd	f0, #0.0
+#else
+	do_it	eq
 #endif
 	RETc(eq)
 
@@ -482,15 +537,20 @@ ARM_FUNC_ALIAS aeabi_l2d floatdidf
 	@ we can return the result in f0 as well as in r0/r1 for backwards
 	@ compatibility.
 	adr	ip, LSYM(f0_ret)
-	stmfd	sp!, {r4, r5, ip, lr}
+	do_push	{r4, r5, ip, lr}
 #else
-	stmfd	sp!, {r4, r5, lr}
+	do_push	{r4, r5, lr}
 #endif
 
 	ands	r5, ah, #0x80000000	@ sign bit in r5
 	bpl	2f
+#if defined(__thumb2__)
+	negs	al, al
+	sbc	ah, ah, ah, lsl #1
+#else
 	rsbs	al, al, #0
 	rsc	ah, ah, #0
+#endif
 2:
 	mov	r4, #0x400		@ initial exponent
 	add	r4, r4, #(52-1 - 1)
@@ -508,16 +568,18 @@ ARM_FUNC_ALIAS aeabi_l2d floatdidf
 	@ The value is too big.  Scale it down a bit...
 	mov	r2, #3
 	movs	ip, ip, lsr #3
+	do_it	ne
 	addne	r2, r2, #3
 	movs	ip, ip, lsr #3
+	do_it	ne
 	addne	r2, r2, #3
 	add	r2, r2, ip, lsr #3
 
 	rsb	r3, r2, #32
-	mov	ip, xl, lsl r3
-	mov	xl, xl, lsr r2
-	orr	xl, xl, xh, lsl r3
-	mov	xh, xh, lsr r2
+	shift1	lsl, ip, xl, r3
+	shift1	lsr, xl, xl, r2
+	shiftop orr xl xl xh lsl r3 lr
+	shift1	lsr, xh, xh, r2
 	add	r4, r4, r2
 	b	LSYM(Lad_p)
 
@@ -526,7 +588,7 @@ ARM_FUNC_ALIAS aeabi_l2d floatdidf
 	@ Legacy code expects the result to be returned in f0.  Copy it
 	@ there as well.
 LSYM(f0_ret):
-	stmfd	sp!, {r0, r1}
+	do_push	{r0, r1}
 	ldfd	f0, [sp], #8
 	RETLDM
 
@@ -543,13 +605,14 @@ LSYM(f0_ret):
 
 ARM_FUNC_START muldf3
 ARM_FUNC_ALIAS aeabi_dmul muldf3
-	stmfd	sp!, {r4, r5, r6, lr}
+	do_push	{r4, r5, r6, lr}
 
 	@ Mask out exponents, trap any zero/denormal/INF/NAN.
 	mov	ip, #0xff
 	orr	ip, ip, #0x700
 	ands	r4, ip, xh, lsr #20
-	andnes	r5, ip, yh, lsr #20
+	do_it	ne, tte
+	COND(and,s,ne)	r5, ip, yh, lsr #20
 	teqne	r4, ip
 	teqne	r5, ip
 	bleq	LSYM(Lml_s)
@@ -565,7 +628,8 @@ ARM_FUNC_ALIAS aeabi_dmul muldf3
 	bic	xh, xh, ip, lsl #21
 	bic	yh, yh, ip, lsl #21
 	orrs	r5, xl, xh, lsl #12
-	orrnes	r5, yl, yh, lsl #12
+	do_it	ne
+	COND(orr,s,ne)	r5, yl, yh, lsl #12
 	orr	xh, xh, #0x00100000
 	orr	yh, yh, #0x00100000
 	beq	LSYM(Lml_1)
@@ -646,6 +710,7 @@ ARM_FUNC_ALIAS aeabi_dmul muldf3
 	@ The LSBs in ip are only significant for the final rounding.
 	@ Fold them into lr.
 	teq	ip, #0
+	do_it	ne
 	orrne	lr, lr, #1
 
 	@ Adjust result upon the MSB position.
@@ -666,12 +731,14 @@ ARM_FUNC_ALIAS aeabi_dmul muldf3
 
 	@ Check exponent range for under/overflow.
 	subs	ip, r4, #(254 - 1)
+	do_it	hi
 	cmphi	ip, #0x700
 	bhi	LSYM(Lml_u)
 
 	@ Round the result, merge final exponent.
 	cmp	lr, #0x80000000
-	moveqs	lr, xl, lsr #1
+	do_it	eq
+	COND(mov,s,eq)	lr, xl, lsr #1
 	adcs	xl, xl, #0
 	adc	xh, xh, r4, lsl #20
 	RETLDM	"r4, r5, r6"
@@ -683,7 +750,8 @@ LSYM(Lml_1):
 	orr	xl, xl, yl
 	eor	xh, xh, yh
 	subs	r4, r4, ip, lsr #1
-	rsbgts	r5, r4, ip
+	do_it	gt, tt
+	COND(rsb,s,gt)	r5, r4, ip
 	orrgt	xh, xh, r4, lsl #20
 	RETLDM	"r4, r5, r6" gt
 
@@ -698,6 +766,7 @@ LSYM(Lml_u):
 
 	@ Check if denormalized result is possible, otherwise return signed 0.
 	cmn	r4, #(53 + 1)
+	do_it	le, tt
 	movle	xl, #0
 	bicle	xh, xh, #0x7fffffff
 	RETLDM	"r4, r5, r6" le
@@ -712,14 +781,15 @@ LSYM(Lml_u):
 	@ shift result right of 1 to 20 bits, preserve sign bit, round, etc.
 	add	r4, r4, #20
 	rsb	r5, r4, #32
-	mov	r3, xl, lsl r5
-	mov	xl, xl, lsr r4
-	orr	xl, xl, xh, lsl r5
+	shift1	lsl, r3, xl, r5
+	shift1	lsr, xl, xl, r4
+	shiftop orr xl xl xh lsl r5 r2
 	and	r2, xh, #0x80000000
 	bic	xh, xh, #0x80000000
 	adds	xl, xl, r3, lsr #31
-	adc	xh, r2, xh, lsr r4
+	shiftop adc xh r2 xh lsr r4 r6
 	orrs	lr, lr, r3, lsl #1
+	do_it	eq
 	biceq	xl, xl, r3, lsr #31
 	RETLDM	"r4, r5, r6"
 
@@ -727,27 +797,29 @@ LSYM(Lml_u):
 	@ a register switch from xh to xl. Then round.
 1:	rsb	r4, r4, #12
 	rsb	r5, r4, #32
-	mov	r3, xl, lsl r4
-	mov	xl, xl, lsr r5
-	orr	xl, xl, xh, lsl r4
+	shift1	lsl, r3, xl, r4
+	shift1	lsr, xl, xl, r5
+	shiftop orr xl xl xh lsl r4 r2
 	bic	xh, xh, #0x7fffffff
 	adds	xl, xl, r3, lsr #31
 	adc	xh, xh, #0
 	orrs	lr, lr, r3, lsl #1
+	do_it	eq
 	biceq	xl, xl, r3, lsr #31
 	RETLDM	"r4, r5, r6"
 
 	@ Shift value right of 32 to 64 bits, or 0 to 32 bits after a switch
 	@ from xh to xl.  Leftover bits are in r3-r6-lr for rounding.
 2:	rsb	r5, r4, #32
-	orr	lr, lr, xl, lsl r5
-	mov	r3, xl, lsr r4
-	orr	r3, r3, xh, lsl r5
-	mov	xl, xh, lsr r4
+	shiftop orr lr lr xl lsl r5 r2
+	shift1	lsr, r3, xl, r4
+	shiftop orr r3 r3 xh lsl r5 r2
+	shift1	lsr, xl, xh, r4
 	bic	xh, xh, #0x7fffffff
-	bic	xl, xl, xh, lsr r4
+	shiftop bic xl xl xh lsr r4 r2
 	add	xl, xl, r3, lsr #31
 	orrs	lr, lr, r3, lsl #1
+	do_it	eq
 	biceq	xl, xl, r3, lsr #31
 	RETLDM	"r4, r5, r6"
 
@@ -760,15 +832,18 @@ LSYM(Lml_d):
 1:	movs	xl, xl, lsl #1
 	adc	xh, xh, xh
 	tst	xh, #0x00100000
+	do_it	eq
 	subeq	r4, r4, #1
 	beq	1b
 	orr	xh, xh, r6
 	teq	r5, #0
+	do_it	ne
 	movne	pc, lr
 2:	and	r6, yh, #0x80000000
 3:	movs	yl, yl, lsl #1
 	adc	yh, yh, yh
 	tst	yh, #0x00100000
+	do_it	eq
 	subeq	r5, r5, #1
 	beq	3b
 	orr	yh, yh, r6
@@ -778,26 +853,29 @@ LSYM(Lml_s):
 	@ Isolate the INF and NAN cases away
 	teq	r4, ip
 	and	r5, ip, yh, lsr #20
+	do_it	ne
 	teqne	r5, ip
 	beq	1f
 
 	@ Here, one or more arguments are either denormalized or zero.
 	orrs	r6, xl, xh, lsl #1
-	orrnes	r6, yl, yh, lsl #1
+	do_it	ne
+	COND(orr,s,ne)	r6, yl, yh, lsl #1
 	bne	LSYM(Lml_d)
 
 	@ Result is 0, but determine sign anyway.
 LSYM(Lml_z):
 	eor	xh, xh, yh
-	bic	xh, xh, #0x7fffffff
+	and	xh, xh, #0x80000000
 	mov	xl, #0
 	RETLDM	"r4, r5, r6"
 
 1:	@ One or both args are INF or NAN.
 	orrs	r6, xl, xh, lsl #1
+	do_it	eq, te
 	moveq	xl, yl
 	moveq	xh, yh
-	orrnes	r6, yl, yh, lsl #1
+	COND(orr,s,ne)	r6, yl, yh, lsl #1
 	beq	LSYM(Lml_n)		@ 0 * INF or INF * 0 -> NAN
 	teq	r4, ip
 	bne	1f
@@ -806,6 +884,7 @@ LSYM(Lml_z):
 1:	teq	r5, ip
 	bne	LSYM(Lml_i)
 	orrs	r6, yl, yh, lsl #12
+	do_it	ne, t
 	movne	xl, yl
 	movne	xh, yh
 	bne	LSYM(Lml_n)		@ <anything> * NAN -> NAN
@@ -834,13 +913,14 @@ LSYM(Lml_n):
 ARM_FUNC_START divdf3
 ARM_FUNC_ALIAS aeabi_ddiv divdf3
 	
-	stmfd	sp!, {r4, r5, r6, lr}
+	do_push	{r4, r5, r6, lr}
 
 	@ Mask out exponents, trap any zero/denormal/INF/NAN.
 	mov	ip, #0xff
 	orr	ip, ip, #0x700
 	ands	r4, ip, xh, lsr #20
-	andnes	r5, ip, yh, lsr #20
+	do_it	ne, tte
+	COND(and,s,ne)	r5, ip, yh, lsr #20
 	teqne	r4, ip
 	teqne	r5, ip
 	bleq	LSYM(Ldv_s)
@@ -871,6 +951,7 @@ ARM_FUNC_ALIAS aeabi_ddiv divdf3
 	@ Ensure result will land to known bit position.
 	@ Apply exponent bias accordingly.
 	cmp	r5, yh
+	do_it	eq
 	cmpeq	r6, yl
 	adc	r4, r4, #(255 - 2)
 	add	r4, r4, #0x300
@@ -889,6 +970,7 @@ ARM_FUNC_ALIAS aeabi_ddiv divdf3
 	@ The actual division loop.
 1:	subs	lr, r6, yl
 	sbcs	lr, r5, yh
+	do_it	cs, tt
 	subcs	r6, r6, yl
 	movcs	r5, lr
 	orrcs	xl, xl, ip
@@ -896,6 +978,7 @@ ARM_FUNC_ALIAS aeabi_ddiv divdf3
 	mov	yl, yl, rrx
 	subs	lr, r6, yl
 	sbcs	lr, r5, yh
+	do_it	cs, tt
 	subcs	r6, r6, yl
 	movcs	r5, lr
 	orrcs	xl, xl, ip, lsr #1
@@ -903,6 +986,7 @@ ARM_FUNC_ALIAS aeabi_ddiv divdf3
 	mov	yl, yl, rrx
 	subs	lr, r6, yl
 	sbcs	lr, r5, yh
+	do_it	cs, tt
 	subcs	r6, r6, yl
 	movcs	r5, lr
 	orrcs	xl, xl, ip, lsr #2
@@ -910,6 +994,7 @@ ARM_FUNC_ALIAS aeabi_ddiv divdf3
 	mov	yl, yl, rrx
 	subs	lr, r6, yl
 	sbcs	lr, r5, yh
+	do_it	cs, tt
 	subcs	r6, r6, yl
 	movcs	r5, lr
 	orrcs	xl, xl, ip, lsr #3
@@ -936,18 +1021,21 @@ ARM_FUNC_ALIAS aeabi_ddiv divdf3
 2:
 	@ Be sure result starts in the high word.
 	tst	xh, #0x00100000
+	do_it	eq, t
 	orreq	xh, xh, xl
 	moveq	xl, #0
 3:
 	@ Check exponent range for under/overflow.
 	subs	ip, r4, #(254 - 1)
+	do_it	hi
 	cmphi	ip, #0x700
 	bhi	LSYM(Lml_u)
 
 	@ Round the result, merge final exponent.
 	subs	ip, r5, yh
-	subeqs	ip, r6, yl
-	moveqs	ip, xl, lsr #1
+	do_it	eq, t
+	COND(sub,s,eq)	ip, r6, yl
+	COND(mov,s,eq)	ip, xl, lsr #1
 	adcs	xl, xl, #0
 	adc	xh, xh, r4, lsl #20
 	RETLDM	"r4, r5, r6"
@@ -957,7 +1045,8 @@ LSYM(Ldv_1):
 	and	lr, lr, #0x80000000
 	orr	xh, lr, xh, lsr #12
 	adds	r4, r4, ip, lsr #1
-	rsbgts	r5, r4, ip
+	do_it	gt, tt
+	COND(rsb,s,gt)	r5, r4, ip
 	orrgt	xh, xh, r4, lsl #20
 	RETLDM	"r4, r5, r6" gt
 
@@ -976,6 +1065,7 @@ LSYM(Ldv_u):
 LSYM(Ldv_s):
 	and	r5, ip, yh, lsr #20
 	teq	r4, ip
+	do_it	eq
 	teqeq	r5, ip
 	beq	LSYM(Lml_n)		@ INF/NAN / INF/NAN -> NAN
 	teq	r4, ip
@@ -996,7 +1086,8 @@ LSYM(Ldv_s):
 	b	LSYM(Lml_n)		@ <anything> / NAN -> NAN
 2:	@ If both are nonzero, we need to normalize and resume above.
 	orrs	r6, xl, xh, lsl #1
-	orrnes	r6, yl, yh, lsl #1
+	do_it	ne
+	COND(orr,s,ne)	r6, yl, yh, lsl #1
 	bne	LSYM(Lml_d)
 	@ One or both arguments are 0.
 	orrs	r4, xl, xh, lsl #1
@@ -1035,14 +1126,17 @@ ARM_FUNC_ALIAS eqdf2 cmpdf2
 	mov	ip, xh, lsl #1
 	mvns	ip, ip, asr #21
 	mov	ip, yh, lsl #1
-	mvnnes	ip, ip, asr #21
+	do_it	ne
+	COND(mvn,s,ne)	ip, ip, asr #21
 	beq	3f
 
 	@ Test for equality.
 	@ Note that 0.0 is equal to -0.0.
 2:	orrs	ip, xl, xh, lsl #1	@ if x == 0.0 or -0.0
-	orreqs	ip, yl, yh, lsl #1	@ and y == 0.0 or -0.0
+	do_it	eq, e
+	COND(orr,s,eq)	ip, yl, yh, lsl #1	@ and y == 0.0 or -0.0
 	teqne	xh, yh			@ or xh == yh
+	do_it	eq, tt
 	teqeq	xl, yl			@ and xl == yl
 	moveq	r0, #0			@ then equal.
 	RETc(eq)
@@ -1054,10 +1148,13 @@ ARM_FUNC_ALIAS eqdf2 cmpdf2
 	teq	xh, yh
 
 	@ Compare values if same sign
+	do_it	pl
 	cmppl	xh, yh
+	do_it	eq
 	cmpeq	xl, yl
 
 	@ Result:
+	do_it	cs, e
 	movcs	r0, yh, asr #31
 	mvncc	r0, yh, asr #31
 	orr	r0, r0, #1
@@ -1100,14 +1197,15 @@ ARM_FUNC_ALIAS aeabi_cdcmple aeabi_cdcmpeq
 
 	@ The status-returning routines are required to preserve all
 	@ registers except ip, lr, and cpsr.
-6:	stmfd	sp!, {r0, lr}
+6:	do_push	{r0, lr}
 	ARM_CALL cmpdf2
 	@ Set the Z flag correctly, and the C flag unconditionally.
-	cmp	 r0, #0
+	cmp	r0, #0
 	@ Clear the C flag if the return value was -1, indicating
 	@ that the first operand was smaller than the second.
-	cmnmi	 r0, #0
-	RETLDM   "r0"
+	do_it	mi
+	cmnmi	r0, #0
+	RETLDM	"r0"
 
 	FUNC_END aeabi_cdcmple
 	FUNC_END aeabi_cdcmpeq
@@ -1117,6 +1215,7 @@ ARM_FUNC_START	aeabi_dcmpeq
 
 	str	lr, [sp, #-8]!
 	ARM_CALL aeabi_cdcmple
+	do_it	eq, e
 	moveq	r0, #1	@ Equal to.
 	movne	r0, #0	@ Less than, greater than, or unordered.
 	RETLDM
@@ -1127,6 +1226,7 @@ ARM_FUNC_START	aeabi_dcmplt
 
 	str	lr, [sp, #-8]!
 	ARM_CALL aeabi_cdcmple
+	do_it	cc, e
 	movcc	r0, #1	@ Less than.
 	movcs	r0, #0	@ Equal to, greater than, or unordered.
 	RETLDM
@@ -1137,6 +1237,7 @@ ARM_FUNC_START	aeabi_dcmple
 
 	str	lr, [sp, #-8]!
 	ARM_CALL aeabi_cdcmple
+	do_it	ls, e
 	movls	r0, #1  @ Less than or equal to.
 	movhi	r0, #0	@ Greater than or unordered.
 	RETLDM
@@ -1147,6 +1248,7 @@ ARM_FUNC_START	aeabi_dcmpge
 
 	str	lr, [sp, #-8]!
 	ARM_CALL aeabi_cdrcmple
+	do_it	ls, e
 	movls	r0, #1	@ Operand 2 is less than or equal to operand 1.
 	movhi	r0, #0	@ Operand 2 greater than operand 1, or unordered.
 	RETLDM
@@ -1157,6 +1259,7 @@ ARM_FUNC_START	aeabi_dcmpgt
 
 	str	lr, [sp, #-8]!
 	ARM_CALL aeabi_cdrcmple
+	do_it	cc, e
 	movcc	r0, #1	@ Operand 2 is less than operand 1.
 	movcs	r0, #0  @ Operand 2 is greater than or equal to operand 1,
 			@ or they are unordered.
@@ -1211,7 +1314,8 @@ ARM_FUNC_ALIAS aeabi_d2iz fixdfsi
 	orr	r3, r3, #0x80000000
 	orr	r3, r3, xl, lsr #21
 	tst	xh, #0x80000000		@ the sign bit
-	mov	r0, r3, lsr r2
+	shift1	lsr, r0, r3, r2
+	do_it	ne
 	rsbne	r0, r0, #0
 	RET
 
@@ -1221,6 +1325,7 @@ ARM_FUNC_ALIAS aeabi_d2iz fixdfsi
 2:	orrs	xl, xl, xh, lsl #12
 	bne	4f			@ x is NAN.
 3:	ands	r0, xh, #0x80000000	@ the sign bit
+	do_it	eq
 	moveq	r0, #0x7fffffff		@ maximum signed positive si
 	RET
 
@@ -1251,7 +1356,7 @@ ARM_FUNC_ALIAS aeabi_d2uiz fixunsdfsi
 	mov	r3, xh, lsl #11
 	orr	r3, r3, #0x80000000
 	orr	r3, r3, xl, lsr #21
-	mov	r0, r3, lsr r2
+	shift1	lsr, r0, r3, r2
 	RET
 
 1:	mov	r0, #0
@@ -1278,8 +1383,9 @@ ARM_FUNC_ALIAS aeabi_d2f truncdfsf2
 	@ check exponent range.
 	mov	r2, xh, lsl #1
 	subs	r3, r2, #((1023 - 127) << 21)
-	subcss	ip, r3, #(1 << 21)
-	rsbcss	ip, ip, #(254 << 21)
+	do_it	cs, t
+	COND(sub,s,cs)	ip, r3, #(1 << 21)
+	COND(rsb,s,cs)	ip, ip, #(254 << 21)
 	bls	2f			@ value is out of range
 
 1:	@ shift and round mantissa
@@ -1288,6 +1394,7 @@ ARM_FUNC_ALIAS aeabi_d2f truncdfsf2
 	orr	xl, ip, xl, lsr #29
 	cmp	r2, #0x80000000
 	adc	r0, xl, r3, lsl #2
+	do_it	eq
 	biceq	r0, r0, #1
 	RET
 
@@ -1297,6 +1404,7 @@ ARM_FUNC_ALIAS aeabi_d2f truncdfsf2
 
 	@ check if denormalized value is possible
 	adds	r2, r3, #(23 << 21)
+	do_it	lt, t
 	andlt	r0, xh, #0x80000000	@ too small, return signed 0.
 	RETc(lt)
 
@@ -1305,13 +1413,18 @@ ARM_FUNC_ALIAS aeabi_d2f truncdfsf2
 	mov	r2, r2, lsr #21
 	rsb	r2, r2, #24
 	rsb	ip, r2, #32
+#if defined(__thumb2__)
+	lsls	r3, xl, ip
+#else
 	movs	r3, xl, lsl ip
-	mov	xl, xl, lsr r2
+#endif
+	shift1	lsr, xl, xl, r2
+	do_it	ne
 	orrne	xl, xl, #1		@ fold r3 for rounding considerations. 
 	mov	r3, xh, lsl #11
 	mov	r3, r3, lsr #11
-	orr	xl, xl, r3, lsl ip
-	mov	r3, r3, lsr r2
+	shiftop orr xl xl r3 lsl ip ip
+	shift1	lsr, r3, r3, r2
 	mov	r3, r3, lsl #1
 	b	1b
 
@@ -1319,6 +1432,7 @@ ARM_FUNC_ALIAS aeabi_d2f truncdfsf2
 	mvns	r3, r2, asr #21
 	bne	5f			@ simple overflow
 	orrs	r3, xl, xh, lsl #12
+	do_it	ne, tt
 	movne	r0, #0x7f000000
 	orrne	r0, r0, #0x00c00000
 	RETc(ne)			@ return NAN
