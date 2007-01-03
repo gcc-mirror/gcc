@@ -2343,8 +2343,8 @@ build_template_parm_index (int index,
 }
 
 /* Find the canonical type parameter for the given template type
-   parmaeter. Returns the canonical type parameter, which may be TYPE
-   if no such parameter existed. */
+   parameter.  Returns the canonical type parameter, which may be TYPE
+   if no such parameter existed.  */
 static tree
 canonical_type_parameter (tree type)
 {
