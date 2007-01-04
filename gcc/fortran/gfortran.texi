@@ -122,9 +122,9 @@ Boston, MA 02110-1301 USA
 @center The gfortran team
 @page
 @vskip 0pt plus 1filll
-For the @value{version-GCC} Version*
+For the @value{version-GCC} Version
 @sp 1
-Published by the Free Software Foundation @*
+Published by the Free Software Foundation@*
 51 Franklin Street, Fifth Floor@*
 Boston, MA 02110-1301, USA@*
 @c Last printed ??ber, 19??.@*

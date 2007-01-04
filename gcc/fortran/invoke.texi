@@ -302,6 +302,7 @@ functionality.
 @item -fopenmp
 @cindex @code{-fopenmp} option
 @cindex option, @code{-fopenmp}
+@cindex OpenMP
 Enable the OpenMP extensions.  This includes OpenMP @code{!$omp} directives
 in free form
 and @code{c$omp}, @code{*$omp} and @code{!$omp} directives in fixed form,

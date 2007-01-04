@@ -1,5 +1,10 @@
 2007-01-03  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* invoke.texi (OpenMP): Added index entry.
+	* gfortran.texi (title page): Removed erroneous '*'.
+
+2007-01-03  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* gfortran.texi (GFORTRAN_DEFAULT_RECL): Added units
 	to description.
 	(Extensions): Miscellaneous minor rewriting and copyediting.
