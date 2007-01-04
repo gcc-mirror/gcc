@@ -1,3 +1,8 @@
+2007-01-03  Robert Kennedy <jimbob@google.com>
+
+	* tree-cfg.c (tree_merge_blocks): Release SSA_NAME phi results
+	whose definitions are deleted due to basic block merging.
+
 2007-01-03  Paul Brook  <paul@codesourcery.com>
 
 	PR target/16634
