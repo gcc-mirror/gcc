@@ -186,9 +186,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		      break;
 		  if (!clone)
 		    {
-		      DECL_SAVED_TREE (node->decl) = NULL;
-		      DECL_STRUCT_FUNCTION (node->decl) = NULL;
-		      DECL_INITIAL (node->decl) = error_mark_node;
+		      cgraph_release_function_body (node);
 		      node->analyzed = false;
 		    }
 		  cgraph_node_remove_callees (node);

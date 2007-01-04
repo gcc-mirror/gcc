@@ -1179,9 +1179,7 @@ cgraph_expand_function (struct cgraph_node *node)
   current_function_decl = NULL;
   if (!cgraph_preserve_function_body_p (node->decl))
     {
-      DECL_SAVED_TREE (node->decl) = NULL;
-      DECL_STRUCT_FUNCTION (node->decl) = NULL;
-      DECL_INITIAL (node->decl) = error_mark_node;
+      cgraph_release_function_body (node);
       /* Eliminate all call edges.  This is important so the call_expr no longer
 	 points to the dead function body.  */
       cgraph_node_remove_callees (node);
