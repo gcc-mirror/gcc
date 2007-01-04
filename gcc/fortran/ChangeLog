@@ -1,5 +1,9 @@
 2007-01-03  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* gfortran.texi (GNU Fortran and GCC): Rewrite
+
+2007-01-03  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* gfortran.texi (Introduction): Lower "Part I:
 	Introduction" to a chapter, renumber Parts II and III to
 	Parts I and II.
