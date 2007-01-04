@@ -1,5 +1,5 @@
 /* Part of CPP library.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
    Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
@@ -487,6 +487,13 @@ cpp_in_system_header (cpp_reader *pfile)
 }
 #define CPP_PEDANTIC(PF) CPP_OPTION (PF, pedantic)
 #define CPP_WTRADITIONAL(PF) CPP_OPTION (PF, warn_traditional)
+
+static inline int cpp_in_primary_file (cpp_reader *);
+static inline int
+cpp_in_primary_file (cpp_reader *pfile)
+{
+  return pfile->line_table->depth == 1;
+}
 
 /* In errors.c  */
 extern int _cpp_begin_message (cpp_reader *, int,
