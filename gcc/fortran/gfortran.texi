@@ -728,7 +728,7 @@ than @code{(/.../)}.
 @item
 @cindex @code{ENUM} statement
 @cindex @code{ENUMERATOR} statement
-@cindex @command{-fshort-enums}
+@cindex @code{-fshort-enums} option
 Support for the declaration of enumeration constants via the
 @code{ENUM} and @code{ENUMERATOR} statements.  Interoperability with
 @command{gcc} is guaranteed also for the case where the
