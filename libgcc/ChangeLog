@@ -1,3 +1,7 @@
+2007-01-04  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* Makefile.in (version): Define.
+
 2007-01-03  Daniel Jacobowitz  <dan@codesourcery.com>
 	    Paolo Bonzini  <bonzini@gnu.org>
 
