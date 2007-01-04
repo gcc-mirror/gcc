@@ -1,5 +1,14 @@
 2007-01-03  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* gfortran.texi (GFORTRAN_DEFAULT_RECL): Added units
+	to description.
+	(Extensions): Miscellaneous minor rewriting and copyediting.
+	(BOZ-literal constants): Renamed from Hexadecimal constants.
+	(Hollerith constants support): Added explanation and 
+	suggestions for standard-conforming modern equivalents.
+
+2007-01-03  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* intrinsic.texi: Improvements to index entries; change
 	@findex entries to @cindex entries.
 	* invoke.texi: Standardize and improve index entries.
