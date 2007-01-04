@@ -289,8 +289,8 @@ Specify the maximum allowed identifier length. Typical values are
 @cindex options, -fimplicit-none
 @item -fimplicit-none
 Specify that no implicit typing is allowed, unless overridden by explicit
-@samp{IMPLICIT} statements.  This is the equivalent of adding
-@samp{implicit none} to the start of every procedure.
+@code{IMPLICIT} statements.  This is the equivalent of adding
+@code{implicit none} to the start of every procedure.
 
 @cindex -fcray-pointer option
 @cindex options, -fcray-pointer
@@ -312,14 +312,14 @@ in.
 @cindex -frange-check
 @cindex options, -frange-check
 @item -frange-check
-Enable range checking on results of simplification of constant expressions
-during compilation.  For example, by default, GNU Fortran will give
-an overflow error at compile time when simplifying @code{a = EXP(1000)}.
-With @samp{-fno-range-check}, no error will be given and the variable @code{a}
-will be assigned the value @code{+Infinity}.  Similarly,
-@code{DATA i/Z'FFFFFFFF'/} will result in an integer overflow on most systems,
-but with @samp{-fno-range-check} the value will ``wrap around'' and @code{i}
-will be initialized to @math{-1} instead.
+Enable range checking on results of simplification of constant
+expressions during compilation.  For example, by default, GNU Fortran
+will give an overflow error at compile time when simplifying @code{a =
+EXP(1000)}. With @option{-fno-range-check}, no error will be given and
+the variable @code{a} will be assigned the value @code{+Infinity}.
+Similarly, @code{DATA i/Z'FFFFFFFF'/} will result in an integer overflow
+on most systems, but with @option{-fno-range-check} the value will
+``wrap around'' and @code{i} will be initialized to @math{-1} instead.
 
 @cindex -std=@var{std} option
 @cindex option, -std=@var{std}
@@ -384,7 +384,7 @@ Check the code for syntax errors, but don't do anything beyond that.
 Issue warnings for uses of extensions to Fortran 95.
 @option{-pedantic} also applies to C-language constructs where they
 occur in GNU Fortran source files, such as use of @samp{\e} in a
-character constant within a directive like @samp{#include}.
+character constant within a directive like @code{#include}.
 
 Valid Fortran 95 programs should compile properly with or without
 this option.
@@ -429,7 +429,7 @@ This currently includes @option{-Waliasing},
 @cindex aliasing
 Warn about possible aliasing of dummy arguments. Specifically, it warns
 if the same actual argument is associated with a dummy argument with
-@code{intent(in)} and a dummy argument with @code{intent(out)} in a call
+@code{INTENT(IN)} and a dummy argument with @code{INTENT(OUT)} in a call
 with an explicit interface.
 
 The following example will trigger the warning.
@@ -564,7 +564,7 @@ Specify a list of IEEE exceptions when a Floating Point Exception
 signal being sent and the program being interrupted, producing a core
 file useful for debugging.  @var{list} is a (possibly empty) comma-separated
 list of the following IEEE exceptions: @samp{invalid} (invalid floating
-point operation, such as @code{sqrt(-1.0)}), @samp{zero} (division by
+point operation, such as @code{SQRT(-1.0)}), @samp{zero} (division by
 zero), @samp{overflow} (overflow in a floating point operation),
 @samp{underflow} (underflow in a floating point operation),
 @samp{precision} (loss of precision during operation) and @samp{denormal}
@@ -608,7 +608,7 @@ Also note that the general behavior of @option{-I} and
 @code{#include} in the @command{cpp} preprocessor, with regard to
 looking for @file{header.gcc} files and other such things.
 
-This path is also used to search for @samp{.mod} files when previously
+This path is also used to search for @file{.mod} files when previously
 compiled modules are required by a @code{USE} statement.
 
 @xref{Directory Options,,Options for Directory Search,
@@ -619,7 +619,7 @@ gcc,Using the GNU Compiler Collection (GCC)}, for information on the
 @cindex option, -Mdir
 @item -M@var{dir}
 @item -J@var{dir}
-This option specifies where to put @samp{.mod} files for compiled modules.
+This option specifies where to put @file{.mod} files for compiled modules.
 It is also added to the list of directories to searched by an @code{USE}
 statement.
 
@@ -645,7 +645,7 @@ representation for unformatted files.
 
 @emph{This option has an effect only when used in the main program.
 The @code{CONVERT} specifier and the GFORTRAN_CONVERT_UNIT environment
-variable override the default specified by -fconvert.}
+variable override the default specified by @option{-fconvert}.}
 
 @cindex -frecord-marker=@var{length}
 @item -frecord-marker=@var{length}
@@ -654,7 +654,7 @@ Valid values for @var{length} are 4 and 8.  Default is 4.
 @emph{This is different from previous versions of gfortran},
 which specified a default record marker length of 8 on most
 systems.  If you want to read or write files compatible
-with earlier versions of gfortran, use @samp{-frecord-marker=8}.
+with earlier versions of gfortran, use @option{-frecord-marker=8}.
 
 @cindex -fmax-subrecord-length=@var{length}
 @item -fmax-subrecord-length=@var{length}
@@ -714,15 +714,15 @@ option, unless @option{-fno-second-underscore} is explicitly requested.
 This does not affect the generation of code that interfaces with
 the @command{libgfortran} library.
 
-@emph{Caution:} It is not a good idea to mix Fortran code compiled
-with @code{-ff2c} with code compiled with the default @code{-fno-f2c}
+@emph{Caution:} It is not a good idea to mix Fortran code compiled with
+@option{-ff2c} with code compiled with the default @option{-fno-f2c}
 calling conventions as, calling @code{COMPLEX} or default @code{REAL}
 functions between program parts which were compiled with different
 calling conventions will break at execution time.
 
 @emph{Caution:} This will break code which passes intrinsic functions
 of type default @code{REAL} or @code{COMPLEX} as actual arguments, as
-the library implementations use the @command{-fno-f2c} calling conventions.
+the library implementations use the @option{-fno-f2c} calling conventions.
 
 @cindex @option{-fno-underscoring option}
 @cindex options, @option{-fno-underscoring}
@@ -750,17 +750,14 @@ existing system environments (vis-a-vis existing libraries, tools, and
 so on).
 
 For example, with @option{-funderscoring}, and assuming other defaults like
-@option{-fcase-lower} and that @samp{j()} and @samp{max_count()} are
-external functions while @samp{my_var} and @samp{lvar} are local variables,
+@option{-fcase-lower} and that @code{j()} and @code{max_count()} are
+external functions while @code{my_var} and @code{lvar} are local variables,
 a statement like
-
 @smallexample
 I = J() + MAX_COUNT (MY_VAR, LVAR)
 @end smallexample
-
 @noindent
 is implemented as something akin to:
-
 @smallexample
 i = j_() + max_count__(&my_var__, &lvar);
 @end smallexample
@@ -818,9 +815,9 @@ names.
 This option has no effect if @option{-fno-underscoring} is
 in effect.  It is implied by the @option{-ff2c} option.
 
-Otherwise, with this option, an external name such as @samp{MAX_COUNT}
+Otherwise, with this option, an external name such as @code{MAX_COUNT}
 is implemented as a reference to the link-time external symbol
-@samp{max_count__}, instead of @samp{max_count_}.  This is required
+@code{max_count__}, instead of @code{max_count_}.  This is required
 for compatibility with @command{g77} and @command{f2c}, and is implied
 by use of the @option{-ff2c} option.
 
