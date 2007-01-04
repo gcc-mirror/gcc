@@ -1,3 +1,8 @@
+2007-01-04  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.in: Use DEV-PHASE to detect the default for --enable-werror.
+	* configure: Regenerate.
+
 2007-01-03  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* Makefile.def (target_modules): Add libgcc.
