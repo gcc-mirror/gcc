@@ -74,6 +74,7 @@ esac
 
 AC_CANONICAL_HOST
 ACX_NONCANONICAL_HOST
+GCC_TOPLEV_SUBDIRS
 
 dnl These must be called before AM_PROG_LIBTOOL, because it may want
 dnl to call AC_CHECK_PROG.

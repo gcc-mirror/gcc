@@ -21,8 +21,10 @@
 #
 
 libgcc_topdir = @libgcc_topdir@
+host_subdir = @host_subdir@
+
 gcc_srcdir = $(libgcc_topdir)/gcc
-gcc_objdir = $(MULTIBUILDTOP)../../gcc
+gcc_objdir = $(MULTIBUILDTOP)../../$(host_subdir)/gcc
 
 srcdir = @srcdir@
 
