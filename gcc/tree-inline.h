@@ -88,6 +88,9 @@ typedef struct copy_body_data
   /* True if lang_hooks.decls.insert_block should be invoked when
      duplicating BLOCK nodes.  */
   bool transform_lang_insert_block;
+
+  /* Statements that might be possibly folded.  */
+  struct pointer_set_t *statements_to_fold;
 } copy_body_data;
 
 /* Function prototypes.  */

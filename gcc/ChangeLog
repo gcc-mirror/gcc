@@ -1,3 +1,11 @@
+2007-01-04  Jan Hubicka  <jh@suse.cz>
+
+	* tree-inline.c (copy_bb): Insert new statements to statements_to_fold
+	set.
+	(fold_marked_statements): New function.
+	(optimize_inline_calls, tree_function_versioning): Fold new statements.
+	* tree-inline.h (copy_body_data): Add statemetns_to_fold.
+
 2007-01-03  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config.gcc: Mention libgcc/config.host.
