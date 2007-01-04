@@ -1,3 +1,11 @@
+2007-01-04  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/28165:
+	* internal.h (cpp_in_primary_file): New function.
+	* directives.c (do_include_next): Use cpp_in_primary_file.
+	(do_pragma_once): Likewise.
+	(do_pragma_system_header): Likewise.
+
 2006-12-29  Ian Lance Taylor  <iant@google.com>
 
 	* lex.c (_cpp_clean_line): Add uses of __builtin_expect.  Don't
