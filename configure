@@ -7439,13 +7439,16 @@ fi
 
 
 # Enable -Werror in bootstrap stage2 and later.
-# Change the default to "no" on release branches.
 # Check whether --enable-werror or --disable-werror was given.
 if test "${enable_werror+set}" = set; then
   enableval="$enable_werror"
   :
 else
+  if test -d gcc && test x"`cat $srcdir/gcc/DEV-PHASE`" = xexperimental; then
   enable_werror=yes
+else
+  enable_werror=no
+fi
 fi
 
 case ${enable_werror} in

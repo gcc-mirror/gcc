@@ -2488,10 +2488,13 @@ fi])
 AC_SUBST(stage1_checking)
 
 # Enable -Werror in bootstrap stage2 and later.
-# Change the default to "no" on release branches.
 AC_ARG_ENABLE(werror,
 [  --enable-werror         enable -Werror in bootstrap stage2 and later], [],
-[enable_werror=yes])
+[if test -d gcc && test x"`cat $srcdir/gcc/DEV-PHASE`" = xexperimental; then
+  enable_werror=yes
+else
+  enable_werror=no
+fi])
 case ${enable_werror} in
   yes) stage2_werror_flag="--enable-werror-always" ;;
   *) stage2_werror_flag="" ;;
