@@ -1,5 +1,12 @@
 2007-01-03  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* intrinsic.texi: Improvements to index entries; change
+	@findex entries to @cindex entries.
+	* invoke.texi: Standardize and improve index entries.
+	* gfortran.texi: Fix @code in one index entry.
+
+2007-01-03  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* invoke.texi: Change @code-type macros to appropriate
 	variants (@command, @option, etc.)
 	* gfortran.texi: Same.
