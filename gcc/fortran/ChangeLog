@@ -1,3 +1,11 @@
+2007-01-02  Tobias Burnus  <burnus@net-b.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/30276
+	* scanner.c (open_included_file): Revert patch.
+	  (gfc_open_included_file): Support absolute pathnames.
+	  (gfc_open_intrinsic_module): Support absolute pathnames.
+
 2007-01-03  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* gfortran.texi (GNU Fortran and GCC): Rewrite

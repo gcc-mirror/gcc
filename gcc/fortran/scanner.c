@@ -199,11 +199,6 @@ open_included_file (const char *name, gfc_directorylist *list, bool module)
   gfc_directorylist *p;
   FILE *f;
 
-  f = gfc_open_file (name);
-
-  if (f != NULL)
-    return f;
-
   for (p = list; p; p = p->next)
     {
       if (module && !p->use_for_modules)
@@ -231,6 +226,9 @@ gfc_open_included_file (const char *name, bool include_cwd, bool module)
 {
   FILE *f;
 
+  if (IS_ABSOLUTE_PATH (name))
+    return gfc_open_file (name);
+
   if (include_cwd)
     {
       f = gfc_open_file (name);
@@ -244,6 +242,9 @@ gfc_open_included_file (const char *name, bool include_cwd, bool module)
 FILE *
 gfc_open_intrinsic_module (const char *name)
 {
+  if (IS_ABSOLUTE_PATH (name))
+    return gfc_open_file (name);
+
   return open_included_file (name, intrinsic_modules_dirs, true);
 }
 
