@@ -1,5 +1,5 @@
 /* Control flow functions for trees.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
@@ -1329,11 +1329,13 @@ tree_merge_blocks (basic_block a, basic_block b)
 	  copy = build2_gimple (GIMPLE_MODIFY_STMT, def, use);
 	  bsi_insert_after (&bsi, copy, BSI_NEW_STMT);
 	  SSA_NAME_DEF_STMT (def) = copy;
+          remove_phi_node (phi, NULL, false);
 	}
       else
-	replace_uses_by (def, use);
-
-      remove_phi_node (phi, NULL, false);
+        {
+          replace_uses_by (def, use);
+          remove_phi_node (phi, NULL, true);
+        }
     }
 
   /* Ensure that B follows A.  */
