@@ -1,3 +1,9 @@
+2007-01-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_rtx_costs): Make adjustment for
+	MULT inside MINUS as either argument.  Use rs6000_cost->dmul -
+	rs6000_cost->fp not 0 as adjustment for outer NEG.
+
 2007-01-04  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_release_function_body): New function.
