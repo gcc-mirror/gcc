@@ -1,4 +1,3 @@
-SHLIB_VERPFX = $(srcdir)/config/i386/darwin-libgcc
 MULTILIB_OPTIONS = m64
 MULTILIB_DIRNAMES = x86_64
 LIB2_SIDITI_CONV_FUNCS=yes

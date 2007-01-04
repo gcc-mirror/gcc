@@ -1,0 +1,36 @@
+EXTRA_PARTS += ecrti$(objext) ecrtn$(objext) ncrti$(objext) ncrtn$(objext) \
+  crtsavres$(objext)
+
+# We build {e,n}crti.o and {e,n}crtn.o, which serve to add begin and
+# end labels to all of the special sections used when we link using gcc.
+
+# Assemble startup files.
+ecrti.S: $(gcc_srcdir)/config/rs6000/eabi-ci.asm
+	cat $(gcc_srcdir)/config/rs6000/eabi-ci.asm >ecrti.S
+
+ecrtn.S: $(gcc_srcdir)/config/rs6000/eabi-cn.asm
+	cat $(gcc_srcdir)/config/rs6000/eabi-cn.asm >ecrtn.S
+
+ncrti.S: $(gcc_srcdir)/config/rs6000/sol-ci.asm
+	cat $(gcc_srcdir)/config/rs6000/sol-ci.asm >ncrti.S
+
+ncrtn.S: $(gcc_srcdir)/config/rs6000/sol-cn.asm
+	cat $(gcc_srcdir)/config/rs6000/sol-cn.asm >ncrtn.S
+
+crtsavres.S: $(gcc_srcdir)/config/rs6000/crtsavres.asm
+	cat $(gcc_srcdir)/config/rs6000/crtsavres.asm >crtsavres.S
+
+ecrti$(objext): ecrti.S
+	$(crt_compile) -c ecrti.S
+
+ecrtn$(objext): ecrtn.S
+	$(crt_compile) -c ecrtn.S
+
+ncrti$(objext): ncrti.S
+	$(crt_compile) -c ncrti.S
+
+ncrtn$(objext): ncrtn.S
+	$(crt_compile) -c ncrtn.S
+
+crtsavres$(objext): crtsavres.S
+	$(crt_compile) -c crtsavres.S

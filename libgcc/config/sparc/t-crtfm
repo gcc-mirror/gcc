@@ -1,0 +1,2 @@
+crtfastmath.o: $(gcc_srcdir)/config/sparc/crtfastmath.c
+	$(gcc_compile) -c $(gcc_srcdir)/config/sparc/crtfastmath.c

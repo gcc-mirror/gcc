@@ -40,9 +40,6 @@ used.
 @item
 @file{intl/Makefile} is constructed from @file{intl/Makefile.in}.
 @item
-@file{mklibgcc}, a shell script to create a Makefile to build libgcc,
-is constructed from @file{mklibgcc.in}.
-@item
 If a language @file{config-lang.in} file (@pxref{Front End Config, ,
 The Front End @file{config-lang.in} File}) sets @code{outputs}, then
 the files listed in @code{outputs} there are also generated.

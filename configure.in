@@ -142,6 +142,7 @@ libgcj="target-libffi \
 # the host libraries and the host tools (which may be a cross compiler)
 #
 target_libraries="target-libiberty \
+		target-libgcc \
 		target-libgloss \
 		target-newlib \
 		target-libstdc++-v3 \

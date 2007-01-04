@@ -1,3 +1,14 @@
+2007-01-03  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* Makefile.def (target_modules): Add libgcc.
+	(lang_env_dependencies): Remove default items.  Use no_c and no_gcc.
+	* Makefile.tpl (clean-target-libgcc): Delete.
+	(configure-target-[+module+]): Emit --disable-bootstrap dependencies
+	on gcc even for bootstrapped modules.  Rewrite handling of
+	lang_env_dependencies to loop over target_modules.
+	* configure.in (target_libraries): Add target-libgcc.
+	* Makefile.in, configure: Regenerated.
+
 2006-12-29  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.in: Reorganize recognition of languages.  Add

@@ -1,3 +1,44 @@
+2007-01-03  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config.gcc: Mention libgcc/config.host.
+	* Makefile.in: Update comments mentioning libgcc.
+	(LIBGCC, INSTALL_LIBGCC, GCC_PARTS, mklibgcc): Delete.
+	(all.cross, start.encap, rest.encap, rest.cross): Update
+	dependencies for libgcc move.
+	(libgcc.mk, LIBGCC_DEPS, libgcov.a, libgcc.a, stmp-multilib)
+	(clean-target, clean-target-libgcc): Delete.
+	(srcdirify, GCC_EXTRA_PARTS): New macros.
+	(libgcc-support, libgcc.mvars): New rules.
+	(distclean): Remove mention of mklibgcc.
+	(install): Don't reference INSTALL_LIBGCC.
+	(install-common): Don't reference EXTRA_PARTS.
+	(install-libgcc, install-multilib): Delete rules.
+	* mklibgcc.in: Delete file.
+	* doc/configfiles.texi: Don't mention mklibgcc.
+
+	* config/i386/t-darwin (SHLIB_VERPFX): Delete (moved to libgcc).
+	* config/i386/t-darwin64 (SHLIB_VERPFX): Likewise.
+	* config/rs6000/t-darwin (SHLIB_VERPFX): Likewise.
+	* config/rs6000/t-ppccomm (TARGET_LIBGCC2_CFLAGS, SHLIB_MAPFILES)
+	(mklibgcc, ldblspecs): Likewise.
+
+	* config/i386/t-nwld (libgcc.def, libc.def, libpcre.def)
+	(posixpre.def): Use $(T).
+	(SHLIB_EXT, SHLIB_NAME, SHLIB_SLIBDIR_QUAL, SHLIB_DEF, SHLIB_MAP)
+	(SHLIB_SRC, SHLIB_INSTALL): Delete.
+	(SHLIB_LINK): Make dummy.
+	* config/t-slibgcc-darwin: Delete contents except for dummy SHLIB_LINK.
+
+	* config/frv/t-linux (EXTRA_MULTILIB_PARTS): Clear.
+
+	* config/alpha/t-crtfm: Use $(T) in rules for EXTRA_PARTS.
+	* config/alpha/t-vms, config/alpha/t-vms64, config/fr30/t-fr30,
+	config/i386/t-rtems-i386, config/ia64/t-ia64, config/rs6000/t-beos,
+	config/rs6000/t-newas, config/sparc/t-elf: Likewise.
+
+	* configure.ac (all_outputs): Remove mklibgcc.
+	* configure: Regenerated.
+
 2007-01-03  Josh Conner  <jconner@apple.com>
 
 	PR middle-end/29683

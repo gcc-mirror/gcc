@@ -2,11 +2,11 @@ LIB1ASMSRC    = fr30/lib1funcs.asm
 LIB1ASMFUNCS  = _udivsi3 _divsi3 _umodsi3 _modsi3
 
 # Assemble startup files.
-crti.o: $(srcdir)/config/fr30/crti.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -c -o crti.o -x assembler $(srcdir)/config/fr30/crti.asm
+$(T)crti.o: $(srcdir)/config/fr30/crti.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) -c -o $(T)crti.o -x assembler $(srcdir)/config/fr30/crti.asm
 
-crtn.o: $(srcdir)/config/fr30/crtn.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -c -o crtn.o -x assembler $(srcdir)/config/fr30/crtn.asm
+$(T)crtn.o: $(srcdir)/config/fr30/crtn.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) -c -o $(T)crtn.o -x assembler $(srcdir)/config/fr30/crtn.asm
 
 # We want fine grained libraries, so use the new code to build the
 # floating point emulation libraries.

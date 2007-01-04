@@ -1,0 +1,18 @@
+CUSTOM_CRTSTUFF = yes
+
+# Assemble startup files.
+crtbegin.o: $(gcc_srcdir)/config/ia64/crtbegin.asm
+	$(CC) $(compile_deps) -I. -I$(gcc_objdir) -c -x assembler-with-cpp \
+		-o $@ $(gcc_srcdir)/config/ia64/crtbegin.asm
+crtend.o: $(gcc_srcdir)/config/ia64/crtend.asm
+	$(CC) $(compile_deps) -I. -I$(gcc_objdir) -c -x assembler-with-cpp \
+		-o $@ $(gcc_srcdir)/config/ia64/crtend.asm
+crtbeginS.o: $(gcc_srcdir)/config/ia64/crtbegin.asm
+	$(CC) $(compile_deps) -I. -I$(gcc_objdir) -c -x assembler-with-cpp \
+		-o $@ -DSHARED $(gcc_srcdir)/config/ia64/crtbegin.asm
+crtendS.o: $(gcc_srcdir)/config/ia64/crtend.asm
+	$(CC) $(compile_deps) -I. -I$(gcc_objdir) -c -x assembler-with-cpp \
+		-o $@ -DSHARED $(gcc_srcdir)/config/ia64/crtend.asm
+
+crtfastmath.o: $(gcc_srcdir)/config/ia64/crtfastmath.c
+	$(gcc_compile) -c $(gcc_srcdir)/config/ia64/crtfastmath.c
