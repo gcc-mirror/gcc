@@ -351,49 +351,35 @@ programs will call it for you.
 @node GNU Fortran and GCC
 @section GNU Fortran and GCC
 @cindex GNU Compiler Collection
+@cindex GCC
 
-GCC used to be the GNU ``C'' Compiler,
-but is now known as the @dfn{GNU Compiler Collection}.
-GCC provides the GNU system with a very versatile
-compiler middle end (shared optimization passes),
-and back ends (code generators) for many different
-computer architectures and operating systems.
-The code of the middle end and back end are shared by all
-compiler front ends that are in the GNU Compiler Collection.
+GNU Fortran is a part of GCC, the @dfn{GNU Compiler Collection}.  GCC
+consists of a collection of front ends for various languages, which
+translate the source code into a language-independent form called
+@dfn{GENERIC}.  This is then processed by a common middle end which
+provides optimization, and then passed to one of a collection of back
+ends which generate code for different computer architectures and
+operating systems.
 
-A GCC front end is essentially a source code parser
-and an intermediate code generator.  The code generator translates the
-semantics of the source code into a language independent form called
-@dfn{GENERIC}.
+Functionally, this is implemented with a driver program (@command{gcc})
+which provides the command-line interface for the compiler.  It calls
+the relevant compiler front-end program (e.g., @command{f951} for
+Fortran) for each file in the source code, and then calls the assembler
+and linker as appropriate to produce the compiled output. In a copy of
+GCC which has been compiled with Fortran language support enabled,
+@command{gcc} will recognize files with @file{.f}, @file{.f90}, and
+@file{.f95} extensions as Fortran source code, and compile it
+accordingly.  A @command{gfortran} driver program is also provided,
+which is identical to @command{gcc} except that it automatically links
+the Fortran runtime libraries into the compiled program.
 
-The parser takes a source file written in a
-particular computer language, reads and parses it,
-and tries to make sure that the source code conforms to
-the language rules.
-Once the correctness of a program has been established,
-the compiler will build a data structure known as the
-@dfn{Abstract Syntax tree},
-or just @dfn{AST} or ``tree'' for short.
-This data structure represents the whole program
-or a subroutine or a function.
-The ``tree'' is passed to the GCC middle end,
-which will perform optimization passes on it.  The optimized AST is then 
-handed off too the back end which assembles the program unit.
-
-Different phases in this translation process can be,
-and in fact @emph{are} merged in many compiler front ends.
-GNU Fortran has a strict separation between the
-parser and code generator.
-
-The goal of the GNU Fortran project is to build a new front end for GCC.
-Specifically, a Fortran 95 front end.
-In a non-@command{gfortran} installation,
-@command{gcc} will not be able to compile Fortran source code
-(only the ``C'' front end has to be compiled if you want to build GCC,
-all other languages are optional).
-If you build GCC with @command{gfortran}, @command{gcc} will recognize
-@file{.f/.f90/.f95} source files and accepts Fortran specific
-command line options.
+This manual specifically documents the Fortran front end, which handles
+the programming language's syntax and semantics.  The aspects of GCC
+which relate to the optimization passes and the back-end code generation
+are documented in the GCC manual; see 
+@ref{Top,,Introduction,gcc,Using the GNU Compiler Collection (GCC)}.
+The two manuals together provide a complete reference for the GNU
+Fortran compiler.
 
 
 @c ---------------------------------------------------------------------
