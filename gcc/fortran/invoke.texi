@@ -1,4 +1,4 @@
-@c Copyright (C) 2004, 2005, 2006
+@c Copyright (C) 2004, 2005, 2006, 2007
 @c Free Software Foundation, Inc.
 @c This is part of the GNU Fortran manual.   
 @c For copying conditions, see the file gfortran.texi.

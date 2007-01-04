@@ -1,3 +1,9 @@
+2007-01-04  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* gfortran.texi: Update copyright to include 2007.
+	* intrinsic.texi: Update copyright to include 2007.
+	* invoke.texi: Update copyright to include 2007.
+
 2007-01-02  Tobias Burnus  <burnus@net-b.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 
