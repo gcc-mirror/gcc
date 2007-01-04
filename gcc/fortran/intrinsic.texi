@@ -4540,16 +4540,20 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = IAND(X, Y)}
+@code{RESULT = IAND(I, J)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be @code{INTEGER(*)}.
-@item @var{Y} @tab The type shall be @code{INTEGER(*)}.
+@item @var{I} @tab The type shall be @code{INTEGER(*)}.
+@item @var{J} @tab The type shall be @code{INTEGER(*)}, of the same
+kind as @var{I}.  (As a GNU extension, different kinds are also 
+permitted.)
 @end multitable
 
 @item @emph{Return value}:
-The return type is @code{INTEGER(*)} after cross-promotion of the arguments. 
+The return type is @code{INTEGER(*)}, of the same kind as the
+arguments.  (If the argument kinds differ, it is of the same kind as
+the larger argument.)
 
 @item @emph{Example}:
 @smallexample
@@ -4612,10 +4616,11 @@ F2003 functions and subroutines: @ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT}, 
 @cindex @code{IBCLR} intrinsic
 @cindex bit operations
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+@code{IBCLR} returns the value of @var{I} with the bit at position
+@var{POS} set to zero.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -4623,15 +4628,21 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
+@code{RESULT = IBCLR(I, POS)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{I} @tab The type shall be @code{INTEGER(*)}.
+@item @var{POS} @tab The type shall be @code{INTEGER(*)}.
+@end multitable
+
 @item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
+The return value is of type @code{INTEGER(*)} and of the same kind as
+@var{I}.
 
 @item @emph{See also}:
 @ref{IBITS}, @ref{IBSET}, @ref{IAND}, @ref{IOR}, @ref{IEOR}
 @end table
-
 
 
 
@@ -4640,10 +4651,14 @@ Elemental function
 @cindex @code{IBITS} intrinsic
 @cindex bit operations
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+@code{IBITS} extracts a field of length @var{LEN} from @var{I},
+starting from bit position @var{POS} and extending left for @var{LEN}
+bits.  The result is right-justified and the remaining bits are
+zeroed.  The value of @code{POS+LEN} must be less than or equal to the
+value @code{BIT_SIZE(I)}.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -4651,15 +4666,22 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
+@code{RESULT = IBITS(I, POS, LEN)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{I} @tab The type shall be @code{INTEGER(*)}.
+@item @var{POS} @tab The type shall be @code{INTEGER(*)}.
+@item @var{LEN} @tab The type shall be @code{INTEGER(*)}.
+@end multitable
+
 @item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
+The return value is of type @code{INTEGER(*)} and of the same kind as
+@var{I}.
+
 @item @emph{See also}:
-@ref{IBCLR}, @ref{IBSET}, @ref{IAND}, @ref{IOR}, @ref{IEOR}
-
+@ref{BIT_SIZE}, @ref{IBCLR}, @ref{IBSET}, @ref{IAND}, @ref{IOR}, @ref{IEOR}
 @end table
-
 
 
 
@@ -4668,10 +4690,11 @@ Elemental function
 @cindex @code{IBSET} intrinsic
 @cindex bit operations
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+@code{IBSET} returns the value of @var{I} with the bit at position
+@var{POS} set to one.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -4679,14 +4702,20 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
+@code{RESULT = IBSET(I, POS)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{I} @tab The type shall be @code{INTEGER(*)}.
+@item @var{POS} @tab The type shall be @code{INTEGER(*)}.
+@end multitable
+
 @item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
+The return value is of type @code{INTEGER(*)} and of the same kind as
+@var{I}.
 
 @item @emph{See also}:
 @ref{IBCLR}, @ref{IBITS}, @ref{IAND}, @ref{IOR}, @ref{IEOR}
-
 @end table
 
 
@@ -4797,10 +4826,11 @@ end program test_idate
 @cindex @code{IEOR} intrinsic
 @cindex bit operations
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+@code{IEOR} returns the bitwise boolean exclusive-OR of @var{I} and
+@var{J}.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -4808,10 +4838,20 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
+@code{RESULT = IEOR(I, J)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{I} @tab The type shall be @code{INTEGER(*)}.
+@item @var{J} @tab The type shall be @code{INTEGER(*)}, of the same
+kind as @var{I}.  (As a GNU extension, different kinds are also 
+permitted.)
+@end multitable
+
 @item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
+The return type is @code{INTEGER(*)}, of the same kind as the
+arguments.  (If the argument kinds differ, it is of the same kind as
+the larger argument.)
 
 @item @emph{See also}:
 @ref{IOR}, @ref{IAND}, @ref{IBITS}, @ref{IBSET}, @ref{IBCLR},
@@ -4819,24 +4859,30 @@ Elemental function
 
 
 
-
 @node IERRNO
 @section @code{IERRNO} --- Get the last system error number
 @cindex @code{IERRNO} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
 
 @table @asis
 @item @emph{Description}:
+Returns the last system error number, as given by the C @code{errno()}
+function.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
+Elemental function
+
 @item @emph{Syntax}:
+@code{I = IERRNO()}
+
 @item @emph{Arguments}:
+None.
+
 @item @emph{Return value}:
-@item @emph{Example}:
+The return value is of type @code{INTEGER} and of the default integer
+kind.
 
 @item @emph{See also}:
 @ref{PERROR}
@@ -4844,16 +4890,18 @@ GNU extension
 
 
 
-
 @node INDEX
 @section @code{INDEX} --- Position of a substring within a string
 @cindex @code{INDEX} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
 
 @table @asis
 @item @emph{Description}:
+Returns the position of the start of the first occurrence of string
+@var{SUBSTRING} as a substring in @var{STRING}, counting from one.  If
+@var{SUBSTRING} is not present in @var{STRING}, zero is returned.  If 
+the @var{BACK} argument is present and true, the return value is the
+start of the last occurrence rather than the first.
+
 @item @emph{Standard}:
 F77 and later
 
@@ -4861,13 +4909,24 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
+@code{I = INDEX(STRING, SUBSTRING [, BACK])}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{STRING} @tab Shall be a scalar @code{CHARACTER(*)}, with
+@code{INTENT(IN)}
+@item @var{SUBSTRING} @tab Shall be a scalar @code{CHARACTER(*)}, with
+@code{INTENT(IN)}
+@item @var{BACK} @tab (Optional) Shall be a scalar @code{LOGICAL(*)}, with
+@code{INTENT(IN)}
+@end multitable
+
 @item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
+The return value is of type @code{INTEGER} and of the default integer
+kind.
+
 @item @emph{See also}:
 @end table
-
 
 
 
@@ -4937,16 +4996,16 @@ end program
 
 
 
-
 @node IOR
 @section @code{IOR} --- Bitwise logical or
 @cindex @code{IOR} intrinsic
 @cindex bit operations
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+@code{IEOR} returns the bitwise boolean OR of @var{I} and
+@var{J}.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -4954,10 +5013,20 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
+@code{RESULT = IEOR(I, J)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{I} @tab The type shall be @code{INTEGER(*)}.
+@item @var{J} @tab The type shall be @code{INTEGER(*)}, of the same
+kind as @var{I}.  (As a GNU extension, different kinds are also 
+permitted.)
+@end multitable
+
 @item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
+The return type is @code{INTEGER(*)}, of the same kind as the
+arguments.  (If the argument kinds differ, it is of the same kind as
+the larger argument.)
 
 @item @emph{See also}:
 @ref{IEOR}, @ref{IAND}, @ref{IBITS}, @ref{IBSET}, @ref{IBCLR},
@@ -5017,10 +5086,16 @@ end program test_irand
 @cindex @code{ISHFT} intrinsic
 @cindex bit operations
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+@code{ISHFT} returns a value corresponding to @var{I} with all of the
+bits shifted @var{SHIFT} places.  A value of @var{SHIFT} greater than
+zero corresponds to a left shift, a value of zero corresponds to no
+shift, and a value less than zero corresponds to a right shift.  If the
+absolute value of @var{SHIFT} is greater than @code{BIT_SIZE(I)}, the
+value is undefined.  Bits shifted out from the left end or right end are
+lost; zeros are shifted in from the opposite end.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -5028,10 +5103,17 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
+@code{RESULT = ISHFT(I, SHIFT)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{I} @tab The type shall be @code{INTEGER(*)}.
+@item @var{SHIFT} @tab The type shall be @code{INTEGER(*)}.
+@end multitable
+
 @item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
+The return value is of type @code{INTEGER(*)} and of the same kind as
+@var{I}.
 
 @item @emph{See also}:
 @ref{ISHFTC}
@@ -5045,10 +5127,17 @@ Elemental function
 @cindex @code{ISHFTC} intrinsic
 @cindex bit operations
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+@code{ISHFTC} returns a value corresponding to @var{I} with the
+rightmost @var{SIZE} bits shifted circularly @var{SHIFT} places; that
+is, bits shifted out one end are shifted into the opposite end.  A value
+of @var{SHIFT} greater than zero corresponds to a left shift, a value of
+zero corresponds to no shift, and a value less than zero corresponds to
+a right shift.  The absolute value of @var{SHIFT} must be less than
+@var{SIZE}.  If the @var{SIZE} argument is omitted, it is taken to be
+equivalent to @code{BIT_SIZE(I)}.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -5056,10 +5145,20 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
+@code{RESULT = ISHFTC(I, SHIFT [, SIZE])}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{I} @tab The type shall be @code{INTEGER(*)}.
+@item @var{SHIFT} @tab The type shall be @code{INTEGER(*)}.
+@item @var{SIZE} @tab (Optional) The type shall be @code{INTEGER(*)};
+the value must be greater than zero and less than or equal to
+@code{BIT_SIZE(I)}.
+@end multitable
+
 @item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
+The return value is of type @code{INTEGER(*)} and of the same kind as
+@var{I}.
 
 @item @emph{See also}:
 @ref{ISHFT}
@@ -5114,23 +5213,29 @@ end program test_itime
 @node KILL
 @section @code{KILL} --- Send a signal to a process
 @cindex @code{KILL} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
 
 @table @asis
 @item @emph{Description}:
 @item @emph{Standard}:
-GNU extension
+Sends the signal specified by @var{SIGNAL} to the process @var{PID}.
+See @code{kill(2)}.
 
 @item @emph{Class}:
 Subroutine
 
 @item @emph{Syntax}:
+@code{CALL KILL(PID, SIGNAL [, STATUS])}
+
 @item @emph{Arguments}:
-@item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
+@multitable @columnfractions .15 .80
+@item @var{PID} @tab Shall be a scalar @code{INTEGER}, with
+@code{INTENT(IN)}
+@item @var{SIGNAL} @tab Shall be a scalar @code{INTEGER}, with
+@code{INTENT(IN)}
+@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)} or
+                        @code{INTEGER(8)}. Returns 0 on success, or a
+                        system-specific error code otherwise.
+@end multitable
 
 @item @emph{See also}:
 @ref{ABORT}, @ref{EXIT}
@@ -5209,12 +5314,14 @@ Inquiry function
 @node LEN
 @section @code{LEN} --- Length of a character entity
 @cindex @code{LEN} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
 
 @table @asis
 @item @emph{Description}:
+Returns the length of a character string.  If @var{STRING} is an array,
+the length of an element of @var{STRING} is returned.  Note that
+@var{STRING} need not be defined when this intrinsic is invoked, since
+only the length, not the content, of @var{STRING} is needed.
+
 @item @emph{Standard}:
 F77 and later
 
@@ -5222,10 +5329,16 @@ F77 and later
 Inquiry function
 
 @item @emph{Syntax}:
+@code{L = LEN(STRING)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{STRING} @tab Shall be a scalar or array of type
+@code{CHARACTER(*)}, with @code{INTENT(IN)}
+@end multitable
+
 @item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
+The return value is an @code{INTEGER} of the default kind.
 
 @item @emph{See also}:
 @ref{LEN_TRIM}, @ref{ADJUSTL}, @ref{ADJUSTR}
@@ -5233,16 +5346,14 @@ Inquiry function
 
 
 
-
 @node LEN_TRIM
 @section @code{LEN_TRIM} --- Length of a character entity without trailing blank characters
 @cindex @code{LEN_TRIM} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
 
 @table @asis
 @item @emph{Description}:
+Returns the length of a character string, ignoring any trailing blanks.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -5250,9 +5361,16 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
+@code{L = LEN_TRIM(STRING)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{STRING} @tab Shall be a scalar of type @code{CHARACTER(*)},
+with @code{INTENT(IN)}
+@end multitable
+
 @item @emph{Return value}:
-@item @emph{Example}:
+The return value is of @code{INTEGER(kind=4)} type.
 
 @item @emph{See also}:
 @ref{LEN}, @ref{ADJUSTL}, @ref{ADJUSTR}

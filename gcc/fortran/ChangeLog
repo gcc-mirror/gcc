@@ -1,5 +1,20 @@
 2007-01-04  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* intrinsic.texi (IAND): Clarify argument specifications.
+	(IBCLR): Add documentation.
+	(IBITS): Add documentation.
+	(IBSET): Add documentation.
+	(IEOR): Add documentation.
+	(IERRNO): Add documentation.
+	(INDEX): Add documentation.
+	(IOR): Add documentation.
+	(ISHFT): Add documentation.
+	(ISHFTC): Add documentation.
+	(KILL): Add documentation.
+	(LEN_TRIM): Add documentation.
+
+2007-01-04  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	PR 30235
 	* interface.c (compare_actual_formal): check for
 	alternate returns when iterating over non-present
