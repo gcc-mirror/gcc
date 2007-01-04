@@ -1,3 +1,10 @@
+2007-01-04  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac: Add GCC_TOPLEV_SUBDIRS.
+	* configure: Regenerate.
+	* Makefile.in (host_subdir): Substitute it.
+	(gcc_objdir): Use it. 
+
 2007-01-04  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config.host (ia64*-*-linux*): Set tmake_file.
