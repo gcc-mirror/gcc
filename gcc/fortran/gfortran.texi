@@ -618,7 +618,7 @@ be sure to quote spaces, as in
 @smallexample
 $ GFORTRAN_LIST_SEPARATOR='  ,  ' ./a.out
 @end smallexample
-when @code{a.out} is the compiled Fortran program that you want to run.
+when @command{a.out} is the compiled Fortran program that you want to run.
 Default is a single space.
 
 @node GFORTRAN_CONVERT_UNIT
@@ -648,7 +648,7 @@ the modes are the same as for the @code{CONVERT} specifier:
 @item @code{BIG_ENDIAN} Use the big-endian format for unformatted files.
 @end itemize
 A missing mode for an exception is taken to mean @code{BIG_ENDIAN}.
-Examples of values for @code{GFORTRAN_CONVERT_UNIT} are:
+Examples of values for @env{GFORTRAN_CONVERT_UNIT} are:
 @itemize @w{}
 @item @code{'big_endian'}  Do all unformatted I/O in big_endian mode.
 @item @code{'little_endian;native:10-20,25'}  Do all unformatted I/O 
@@ -658,17 +658,17 @@ native format.
 @end itemize
 
 Setting the environment variables should be done on the command
-line or via the @code{export}
-command for @code{sh}-compatible shells and via @code{setenv}
-for @code{csh}-compatible shells.
+line or via the @command{export}
+command for @command{sh}-compatible shells and via @command{setenv}
+for @command{csh}-compatible shells.
 
-Example for @code{sh}:
+Example for @command{sh}:
 @smallexample
 $ gfortran foo.f90
 $ GFORTRAN_CONVERT_UNIT='big_endian;native:10-20' ./a.out
 @end smallexample
 
-Example code for @code{csh}:
+Example code for @command{csh}:
 @smallexample
 % gfortran foo.f90
 % setenv GFORTRAN_CONVERT_UNIT 'big_endian;native:10-20'
@@ -683,7 +683,7 @@ portable.
 @xref{CONVERT specifier}, for an alternative way to specify the
 data representation for unformatted files.  @xref{Runtime Options}, for
 setting a default data representation for the whole program.  The
-@code{CONVERT} specifier overrides the @code{-fconvert} compile options.
+@code{CONVERT} specifier overrides the @option{-fconvert} compile options.
 
 
 @c =====================================================================
@@ -1261,12 +1261,12 @@ portable.
 @cindex OpenMP
 
 GNU Fortran attempts to be OpenMP Application Program Interface v2.5
-compatible when invoked with the @code{-fopenmp} option.  GNU Fortran
+compatible when invoked with the @option{-fopenmp} option.  GNU Fortran
 then generates parallelized code according to the OpenMP directives
 used in the source.  The OpenMP Fortran runtime library
-routines are provided both in a form of Fortran 90 module named
+routines are provided both in a form of a Fortran 90 module named
 @code{omp_lib} and in a form of a Fortran @code{include} file named
-@code{omp_lib.h}.
+@file{omp_lib.h}.
 
 For details refer to the actual
 @uref{http://www.openmp.org/drupal/mp-documents/spec25.pdf,

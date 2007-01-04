@@ -1,5 +1,11 @@
 2007-01-03  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* invoke.texi: Change @code-type macros to appropriate
+	variants (@command, @option, etc.)
+	* gfortran.texi: Same.
+
+2007-01-03  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* intrinsic.texi: Various minor cleanups.
 
 2007-01-02  Steven G. Kargl  <kargls@comcast.net>
