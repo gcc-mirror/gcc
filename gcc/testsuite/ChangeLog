@@ -1,3 +1,8 @@
+2006-01-04  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	PR 30235
+	* gfortran.dg/altreturn_2.f90: new test.
+
 2007-01-04  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/28165:
