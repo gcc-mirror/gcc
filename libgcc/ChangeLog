@@ -1,3 +1,8 @@
+2007-01-04  Mike Stump  <mrs@apple.com>
+
+	* Makefile.in (MAKEINFO): Remove.
+	(PERL): Likewise.
+
 2007-01-04  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac: Add GCC_TOPLEV_SUBDIRS.
