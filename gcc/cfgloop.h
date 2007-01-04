@@ -406,11 +406,11 @@ number_of_loops (void)
 
 enum li_flags
 {
-  LI_INCLUDE_ROOT,	/* Include the fake root of the loop tree.  */
-  LI_FROM_INNERMOST,	/* Iterate over the loops in the reverse order,
+  LI_INCLUDE_ROOT = 1,	/* Include the fake root of the loop tree.  */
+  LI_FROM_INNERMOST = 2,/* Iterate over the loops in the reverse order,
 			   starting from innermost ones.  */
-  LI_ONLY_INNERMOST,	/* Iterate only over innermost loops.  */
-  LI_ONLY_OLD		/* Do not traverse the loops created during the
+  LI_ONLY_INNERMOST = 4,/* Iterate only over innermost loops.  */
+  LI_ONLY_OLD = 8	/* Do not traverse the loops created during the
 			   traversal (this is the default behavior with
 			   LI_FROM_INNERMOST).  */
 };
