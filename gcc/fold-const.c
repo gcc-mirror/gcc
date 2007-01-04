@@ -2144,7 +2144,10 @@ fold_convert (tree type, tree arg)
       return fold_build1 (VIEW_CONVERT_EXPR, type, arg);
 
     case VOID_TYPE:
-      return fold_build1 (NOP_EXPR, type, fold_ignored_result (arg));
+      tem = fold_ignored_result (arg);
+      if (TREE_CODE (tem) == GIMPLE_MODIFY_STMT)
+	return tem;
+      return fold_build1 (NOP_EXPR, type, tem);
 
     default:
       gcc_unreachable ();

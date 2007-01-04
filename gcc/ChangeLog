@@ -1,3 +1,10 @@
+2007-01-04  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_convert): When casting an expression to void,
+	fold_ignored_result may discover a GIMPLE_MODIFY_STMT which doesn't
+	have a type.  Instead of attempting to build a NOP_EXPR, return
+	these "special" trees directly.
+
 2007-01-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/rs6000.c (rs6000_rtx_costs): Make adjustment for
