@@ -797,6 +797,20 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale, int count_scal
 	    {
 	      stmt = bsi_stmt (copy_bsi);
 	      call = get_call_expr_in (stmt);
+
+	      /* Statements produced by inlining can be unfolded, especially
+		 when we constant propagated some operands.  We can't fold
+		 them right now for two reasons:
+		 1) folding require SSA_NAME_DEF_STMTs to be correct
+		 2) we can't change function calls to builtins.
+		 So we just mark statement for later folding.  We mark
+		 all new statements, instead just statements that has changed
+		 by some nontrivial substitution so even statements made
+		 foldable indirectly are updated.  If this turns out to be
+		 expensive, copy_body can be told to watch for nontrivial
+		 changes.  */
+	      if (id->statements_to_fold)
+		pointer_set_insert (id->statements_to_fold, stmt);
 	      /* We're duplicating a CALL_EXPR.  Find any corresponding
 		 callgraph edges and update or duplicate them.  */
 	      if (call && (decl = get_callee_fndecl (call)))
@@ -2571,6 +2585,22 @@ gimple_expand_calls_inline (basic_block bb, copy_body_data *id)
   return false;
 }
 
+/* Walk all basic blocks created after FIRST and try to fold every statement
+   in the STATEMENTS pointer set.  */
+static void
+fold_marked_statements (int first, struct pointer_set_t *statements)
+{
+  for (;first < n_basic_blocks;first++)
+    if (BASIC_BLOCK (first))
+      {
+        block_stmt_iterator bsi;
+	for (bsi = bsi_start (BASIC_BLOCK (first));
+	     !bsi_end_p (bsi); bsi_next (&bsi))
+	  if (pointer_set_contains (statements, bsi_stmt (bsi)))
+	    fold_stmt (bsi_stmt_ptr (bsi));
+      }
+}
+
 /* Expand calls to inline functions in the body of FN.  */
 
 void
@@ -2579,6 +2609,7 @@ optimize_inline_calls (tree fn)
   copy_body_data id;
   tree prev_fn;
   basic_block bb;
+  int last = n_basic_blocks;
   /* There is no point in performing inlining if errors have already
      occurred -- and we might crash if we try to inline invalid
      code.  */
@@ -2603,6 +2634,7 @@ optimize_inline_calls (tree fn)
   id.transform_new_cfg = false;
   id.transform_return_to_modify = true;
   id.transform_lang_insert_block = false;
+  id.statements_to_fold = pointer_set_create ();
 
   push_gimplify_context ();
 
@@ -2636,6 +2668,9 @@ optimize_inline_calls (tree fn)
      as inlining loops might increase the maximum.  */
   if (ENTRY_BLOCK_PTR->count)
     counts_to_freqs ();
+
+  fold_marked_statements (last, id.statements_to_fold);
+  pointer_set_destroy (id.statements_to_fold);
   if (gimple_in_ssa_p (cfun))
     {
       /* We make no attempts to keep dominance info up-to-date.  */
@@ -3188,6 +3223,7 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
   id.transform_new_cfg = true;
   id.transform_return_to_modify = false;
   id.transform_lang_insert_block = false;
+  id.statements_to_fold = pointer_set_create ();
 
   current_function_decl = new_decl;
   old_entry_block = ENTRY_BLOCK_PTR_FOR_FUNCTION
@@ -3253,6 +3289,8 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
 
   /* Clean up.  */
   splay_tree_delete (id.decl_map);
+  fold_marked_statements (0, id.statements_to_fold);
+  pointer_set_destroy (id.statements_to_fold);
   fold_cond_expr_cond ();
   if (gimple_in_ssa_p (cfun))
     {
