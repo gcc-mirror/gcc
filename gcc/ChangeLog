@@ -1,3 +1,9 @@
+2007-01-04  Eric Christopher  <echristo@apple.com>
+
+	* libgcc2.c (__bswapsi2): Use SItype.
+	(__bswapdi2): Use DItype.
+	* libgcc2.h: Update for above.
+
 2007-01-04  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.md (arm_mulsi3, thumb_mulsi3, mulsi3_compare0,
@@ -381,14 +387,14 @@
 2007-01-02  Steve Ellcey  <sje@cup.hp.com>
 
 	* sbitmap.c (HOST_BITS_PER_LONG_LONG):  Change to
-	HOST_BITS_PER_LONGLONG 
+	HOST_BITS_PER_LONGLONG
 
 2007-01-02  Manuel Lopez-Ibanez <manu@gcc.gnu.org>
 
 	PR c/19977
 	* c-typeck.c (store_init_value): Don't emit pedantic overflow
 	warning for non-static initializers.
-	
+
 2007-01-02  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/alpha/alpha.md, arm/arm.c, darwin.c, frv/frv.md,
@@ -427,7 +433,7 @@
 	* c-opts.c (c_common_post_options): Enabled by -Wextra.
 	* c-decl.c (declspecs_add_scspec): Replace -Wextra with
 	-Wold-style-declaration.
-	
+
 2007-01-02  Kazu Hirata  <kazu@codesourcery.com>
 
 	* alias.c (init_alias_analysis): Use VEC_safe_grow_cleared.
@@ -445,7 +451,7 @@
 
 	* c-common.c(c_common_nodes_and_builtins): Since variants of
 	void_type_node get built before it is given a name, we need to
-	give those variants the name, too. 
+	give those variants the name, too.
 	(complete_array_type): We need to work with the canonical main
 	type of the array, from which we will build the qualified version.
 	* params.def (PARAM_VERIFY_CANONICAL_TYPES): New.
@@ -475,7 +481,7 @@
 	structural equality tests.
 	(build_array_type): Build the canonical form of an array type.
 	(build_function_type): Function types require structural equality,
-	because they contain default arguments, attributes, etc. 
+	because they contain default arguments, attributes, etc.
 	(build_method_type_directly): Ditto for method types.
 	(build_offset_type): Build the canonical offset type.
 	(build_complex_type): Build the canonical vector type.

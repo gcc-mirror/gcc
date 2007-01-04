@@ -493,8 +493,8 @@ __ashrdi3 (DWtype u, word_type b)
 #endif
 
 #ifdef L_bswapsi2
-UWtype
-__bswapsi2 (UWtype u)
+SItype
+__bswapsi2 (SItype u)
 {
   return ((((u) & 0xff000000) >> 24)
 	  | (((u) & 0x00ff0000) >>  8)
@@ -503,8 +503,8 @@ __bswapsi2 (UWtype u)
 }
 #endif
 #ifdef L_bswapdi2
-UDWtype
-__bswapdi2 (UDWtype u)
+DItype
+__bswapdi2 (DItype u)
 {
   return ((((u) & 0xff00000000000000ull) >> 56)
 	  | (((u) & 0x00ff000000000000ull) >> 40)
