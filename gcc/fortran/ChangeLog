@@ -1,5 +1,9 @@
 2007-01-03  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* intrinsic.texi (Introduction): Rewrite first paragraph.
+
+2007-01-03  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* invoke.texi (OpenMP): Added index entry.
 	* gfortran.texi (title page): Removed erroneous '*'.
 
