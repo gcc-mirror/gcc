@@ -1,3 +1,2 @@
-SHLIB_VERPFX = $(srcdir)/config/i386/darwin-libgcc
 LIB2_SIDITI_CONV_FUNCS=yes
 LIB2FUNCS_EXTRA = $(srcdir)/config/darwin-64.c

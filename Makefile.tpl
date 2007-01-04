@@ -611,11 +611,6 @@ maintainer-clean: local-maintainer-clean do-maintainer-clean local-clean
 maintainer-clean: local-distclean
 realclean: maintainer-clean
 
-# Extra dependency for clean-target, owing to the mixed nature of gcc.
-clean-target: clean-target-libgcc
-clean-target-libgcc:
-	if test -f gcc/Makefile; then cd gcc && $(MAKE) $@; else :; fi
-
 # Check target.
 
 .PHONY: check do-check
@@ -1400,17 +1395,11 @@ configure-target-[+module+]: stage_last[+
   ENDIF bootstrap +][+ ENDFOR target_modules +]
 @endif gcc-bootstrap
 
-@if gcc-no-bootstrap[+ FOR target_modules +][+ IF bootstrap
-  +][+ ELSE +]
+@if gcc-no-bootstrap[+ FOR target_modules +]
 configure-target-[+module+]: maybe-all-gcc[+
-  ENDIF bootstrap +][+ ENDFOR target_modules +]
+  ENDFOR target_modules +]
 @endif gcc-no-bootstrap
 
-
-[+ FOR lang_env_dependencies +]
-configure-target-[+module+]: maybe-all-target-newlib maybe-all-target-libgloss
-[+ IF cxx +]configure-target-[+module+]: maybe-all-target-libstdc++-v3
-[+ ENDIF cxx +][+ ENDFOR lang_env_dependencies +]
 
 # There are two types of dependencies here: 'hard' dependencies, where one
 # module simply won't build without the other; and 'soft' dependencies, where
@@ -1506,6 +1495,48 @@ configure-target-[+module+]: maybe-all-target-newlib maybe-all-target-libgloss
        ENDFOR bootstrap_stage +]
 [+ ESAC +][+
 ENDFOR dependencies +]
+
+# Dependencies for target modules on other target modules are
+# described by lang_env_dependencies; the defaults apply to anything
+# not mentioned there.
+[+
+   ;; Predicate for whether LANG was specified in lang_env_dependencies.
+   (define lang-dep (lambda (lang)
+      (hash-ref lang-env-deps (string-append (get "module") "-" lang))))
+
+   ;; Build the hash table we will need.
+   (define lang-env-deps (make-hash-table 7))
++][+ FOR lang_env_dependencies +][+
+   (if (exist? "cxx")
+       (hash-create-handle! lang-env-deps
+	  (string-append (get "module") "-" "cxx") #t))
+
+   (if (exist? "no_c")
+       (hash-create-handle! lang-env-deps
+	  (string-append (get "module") "-" "no_c") #t))
+
+   (if (exist? "no_gcc")
+       (hash-create-handle! lang-env-deps
+	  (string-append (get "module") "-" "no_gcc") #t))
+   "" +][+ ENDFOR lang_env_dependencies +]
+
+@if gcc-bootstrap[+ FOR target_modules +][+ IF (not (lang-dep "no_gcc"))
+  +][+ IF bootstrap +][+ FOR bootstrap_stage +]
+configure-stage[+id+]-target-[+module+]: maybe-all-stage[+id+]-target-libgcc[+
+  ENDFOR +][+ ENDIF bootstrap +][+ ENDIF +][+ ENDFOR target_modules +]
+@endif gcc-bootstrap
+
+@if gcc-no-bootstrap[+ FOR target_modules +][+ IF (not (lang-dep "no_gcc")) +]
+configure-target-[+module+]: maybe-all-target-libgcc[+
+  ENDIF +][+ ENDFOR target_modules +]
+@endif gcc-no-bootstrap
+
+[+ FOR target_modules +][+ IF (not (lang-dep "no_c")) +]
+configure-target-[+module+]: maybe-all-target-newlib maybe-all-target-libgloss[+
+  ENDIF +][+ IF (lang-dep "cxx") +]
+configure-target-[+module+]: maybe-all-target-libstdc++-v3[+
+  ENDIF +]
+[+ ENDFOR target_modules +]
 
 CONFIGURE_GDB_TK = @CONFIGURE_GDB_TK@
 GDB_TK = @GDB_TK@

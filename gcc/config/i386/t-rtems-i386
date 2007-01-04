@@ -5,12 +5,12 @@
 # version of these files.
 #
 
-crti.o: $(srcdir)/config/i386/sol2-ci.asm $(GCC_PASSES)
+$(T)crti.o: $(srcdir)/config/i386/sol2-ci.asm $(GCC_PASSES)
 	sed -e '/^!/d' <$(srcdir)/config/i386/sol2-ci.asm >crti.s
-	$(GCC_FOR_TARGET) -c -o crti.o crti.s
-crtn.o: $(srcdir)/config/i386/sol2-cn.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) -c -o $(T)crti.o crti.s
+$(T)crtn.o: $(srcdir)/config/i386/sol2-cn.asm $(GCC_PASSES)
 	sed -e '/^!/d' <$(srcdir)/config/i386/sol2-cn.asm >crtn.s
-	$(GCC_FOR_TARGET) -c -o crtn.o crtn.s
+	$(GCC_FOR_TARGET) -c -o $(T)crtn.o crtn.s
 
 # We want fine grained libraries, so use the new code to build the
 # floating point emulation libraries.

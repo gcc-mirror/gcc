@@ -330,9 +330,9 @@ USER_H = $(srcdir)/ginclude/decfloat.h \
 
 UNWIND_H = $(srcdir)/unwind-generic.h
 
-# The GCC to use for compiling libgcc.a and crt*.o.
+# The GCC to use for compiling crt*.o.
 # Usually the one we just built.
-# Don't use this as a dependency--use $(GCC_PASSES) or $(GCC_PARTS).
+# Don't use this as a dependency--use $(GCC_PASSES).
 GCC_FOR_TARGET = $(STAGE_CC_WRAPPER) ./xgcc -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include -isystem $(build_tooldir)/sys-include -L$(objdir)/../ld
 
 # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
@@ -537,11 +537,6 @@ GGC=@GGC@.o
 # If a supplementary library is being used for the GC.
 GGC_LIB=
 
-# libgcc.a may be built directly or via stmp-multilib,
-# and installed likewise.  Overridden by t-fragment.
-LIBGCC = libgcc.a
-INSTALL_LIBGCC = install-libgcc
-
 # "true" if the target C library headers are unavailable; "false"
 # otherwise.
 inhibit_libc = @inhibit_libc@
@@ -655,10 +650,6 @@ COMPILERS = cc1$(exeext) @all_compilers@
 # to compile anything (without linking).
 GCC_PASSES=xgcc$(exeext) cc1$(exeext) specs $(EXTRA_PASSES)
 
-# List of things which should already be built whenever we try to use xgcc
-# to link anything.
-GCC_PARTS=$(GCC_PASSES) $(LIBGCC) $(EXTRA_PROGRAMS) $(COLLECT2) $(EXTRA_PARTS)
-
 # Directory to link to, when using the target `maketest'.
 DIR = ../gcc
 
@@ -701,7 +692,7 @@ CRT0STUFF_T_CFLAGS =
 # "t" or nothing, for building multilibbed versions of, say, crtbegin.o.
 T =
 
-# Should T contain a `=', libgcc.mk will make T_TARGET, setting
+# Should T contain a `=', libgcc/Makefile will make T_TARGET, setting
 # $(T_TARGET) to the name of the actual target filename.
 T_TARGET =
 T_TARGET : $(T_TARGET)
@@ -1230,9 +1221,6 @@ $(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac $(srcdir)/aclocal.m4 \
 gccbug:	$(srcdir)/gccbug.in
 	CONFIG_FILES=gccbug CONFIG_HEADERS= ./config.status
 
-mklibgcc: $(srcdir)/mklibgcc.in
-	CONFIG_FILES=mklibgcc CONFIG_HEADERS= ./config.status
-
 # cstamp-h.in controls rebuilding of config.in.
 # It is named cstamp-h.in and not stamp-h.in so the mostlyclean rule doesn't
 # delete it.  A stamp file is needed as autoheader won't update the file if
@@ -1274,12 +1262,12 @@ config.status: $(srcdir)/configure $(srcdir)/config.gcc
 all.internal: start.encap rest.encap doc
 # This is what to compile if making a cross-compiler.
 all.cross: native gcc-cross$(exeext) cpp$(exeext) specs \
-	$(LIBGCC) $(EXTRA_PARTS) lang.all.cross doc @GENINSRC@ srcextra
+	libgcc-support lang.all.cross doc @GENINSRC@ srcextra
 # This is what must be made before installing GCC and converting libraries.
 start.encap: native xgcc$(exeext) cpp$(exeext) specs \
-	xlimits.h lang.start.encap @GENINSRC@ srcextra
+	libgcc-support xlimits.h lang.start.encap @GENINSRC@ srcextra
 # These can't be made until after GCC can run.
-rest.encap: $(STMP_FIXPROTO) $(LIBGCC) $(EXTRA_PARTS) lang.rest.encap
+rest.encap: $(STMP_FIXPROTO) lang.rest.encap
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
 native: config.status auto-host.h build-@POSUB@ $(LANGUAGES) \
@@ -1293,7 +1281,7 @@ c: cc1$(exeext)
 
 # On the target machine, finish building a cross compiler.
 # This does the things that can't be done on the host machine.
-rest.cross: $(LIBGCC) specs
+rest.cross: specs
 
 # Recompile all the language-independent object files.
 # This is used only if the user explicitly asks for it.
@@ -1415,75 +1403,66 @@ xlimits.h: glimits.h limitx.h limity.h
 LIB2ADD = $(LIB2FUNCS_EXTRA)
 LIB2ADD_ST = $(LIB2FUNCS_STATIC_EXTRA)
 
-libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) $(LIB2ADD_ST) specs \
+# All source files for libgcc are either in the source directory (in
+# which case they will start with $(srcdir)), or generated into the build
+# directory (in which case they will be relative paths).
+srcdirify = $(patsubst $(srcdir)%,$$(gcc_srcdir)%,$(filter $(srcdir)%,$(1))) \
+            $(patsubst %,$$(gcc_objdir)/%,$(filter-out $(srcdir)%,$(1)))
+
+# The distinction between these two variables is no longer relevant,
+# so we combine them.  Sort removes duplicates.
+GCC_EXTRA_PARTS := $(sort $(EXTRA_MULTILIB_PARTS) $(EXTRA_PARTS))
+
+libgcc-support: libgcc.mvars stmp-int-hdrs $(STMP_FIXPROTO) $(TCONFIG_H) \
+	$(MACHMODE_H) $(FPBIT) $(DPBIT) $(TPBIT) $(LIB2ADD) \
+	$(LIB2ADD_ST) $(LIB2ADDEH) gcov-iov.h $(SFP_MACHINE)
+
+libgcc.mvars: config.status Makefile $(LIB2ADD) $(LIB2ADD_ST) specs \
 		xgcc$(exeext) stamp-as stamp-collect-ld stamp-nm
-	objext='$(objext)' \
-	LIB1ASMFUNCS='$(LIB1ASMFUNCS)' \
-	LIB2FUNCS_ST='$(LIB2FUNCS_ST)' \
-	LIB2FUNCS_EXCLUDE='$(LIB2FUNCS_EXCLUDE)' \
-	LIBGCOV='$(LIBGCOV)' \
-	LIB2ADD='$(LIB2ADD)' \
-	LIB2ADD_ST='$(LIB2ADD_ST)' \
-	LIB2ADDEH='$(LIB2ADDEH)' \
-	LIB2ADDEHSTATIC='$(LIB2ADDEHSTATIC)' \
-	LIB2ADDEHSHARED='$(LIB2ADDEHSHARED)' \
-	LIB2ADDEHDEP='$(LIB2ADDEHDEP)' \
-	LIB2_SIDITI_CONV_FUNCS='$(LIB2_SIDITI_CONV_FUNCS)' \
-	LIBUNWIND='$(LIBUNWIND)' \
-	LIBUNWINDDEP='$(LIBUNWINDDEP)' \
-	SHLIBUNWIND_LINK='$(SHLIBUNWIND_LINK)' \
-	SHLIBUNWIND_INSTALL='$(SHLIBUNWIND_INSTALL)' \
-	FPBIT='$(FPBIT)' \
-	FPBIT_FUNCS='$(FPBIT_FUNCS)' \
-	LIB2_DIVMOD_FUNCS='$(LIB2_DIVMOD_FUNCS)' \
-	DPBIT='$(DPBIT)' \
-	DPBIT_FUNCS='$(DPBIT_FUNCS)' \
-	TPBIT='$(TPBIT)' \
-	TPBIT_FUNCS='$(TPBIT_FUNCS)' \
-	DFP_ENABLE='$(DFP_ENABLE)' \
-	DFP_CFLAGS='$(DFP_CFLAGS)' \
-	D32PBIT='$(D32PBIT)' \
-	D32PBIT_FUNCS='$(D32PBIT_FUNCS)' \
-	D64PBIT='$(D64PBIT)' \
-	D64PBIT_FUNCS='$(D64PBIT_FUNCS)' \
-	D128PBIT='$(D128PBIT)' \
-	D128PBIT_FUNCS='$(D128PBIT_FUNCS)' \
-	MULTILIBS=`$(GCC_FOR_TARGET) --print-multi-lib` \
-	EXTRA_MULTILIB_PARTS='$(EXTRA_MULTILIB_PARTS)' \
-	SHLIB_LINK='$(SHLIB_LINK)' \
-	SHLIB_INSTALL='$(SHLIB_INSTALL)' \
-	SHLIB_EXT='$(SHLIB_EXT)' \
-	SHLIB_MULTILIB='$(SHLIB_MULTILIB)' \
-	SHLIB_MKMAP='$(SHLIB_MKMAP)' \
-	SHLIB_MKMAP_OPTS='$(SHLIB_MKMAP_OPTS)' \
-	SHLIB_MAPFILES='$(SHLIB_MAPFILES)' \
-	SHLIB_NM_FLAGS='$(SHLIB_NM_FLAGS)' \
-	MULTILIB_OSDIRNAMES='$(MULTILIB_OSDIRNAMES)' \
-	ASM_HIDDEN_OP='$(ASM_HIDDEN_OP)' \
-	GCC_FOR_TARGET='$(GCC_FOR_TARGET)' \
-	mkinstalldirs='$(mkinstalldirs)' \
-	  $(SHELL) mklibgcc > tmp-libgcc.mk
-	mv tmp-libgcc.mk libgcc.mk
+	: > tmp-libgcc.mvars
+	echo LIB1ASMFUNCS = '$(LIB1ASMFUNCS)' >> tmp-libgcc.mvars
+	echo LIB1ASMSRC = '$(LIB1ASMSRC)' >> tmp-libgcc.mvars
+	echo LIB2FUNCS_ST = '$(LIB2FUNCS_ST)' >> tmp-libgcc.mvars
+	echo LIB2FUNCS_EXCLUDE = '$(LIB2FUNCS_EXCLUDE)' >> tmp-libgcc.mvars
+	echo LIBGCOV = '$(LIBGCOV)' >> tmp-libgcc.mvars
+	echo LIB2ADD = '$(call srcdirify,$(LIB2ADD))' >> tmp-libgcc.mvars
+	echo LIB2ADD_ST = '$(call srcdirify,$(LIB2ADD_ST))' >> tmp-libgcc.mvars
+	echo LIB2ADDEH = '$(call srcdirify,$(LIB2ADDEH))' >> tmp-libgcc.mvars
+	echo LIB2ADDEHSTATIC = '$(call srcdirify,$(LIB2ADDEHSTATIC))' >> tmp-libgcc.mvars
+	echo LIB2ADDEHSHARED = '$(call srcdirify,$(LIB2ADDEHSHARED))' >> tmp-libgcc.mvars
+	echo LIB2_SIDITI_CONV_FUNCS = '$(LIB2_SIDITI_CONV_FUNCS)' >> tmp-libgcc.mvars
+	echo LIBUNWIND = '$(call srcdirify,$(LIBUNWIND))' >> tmp-libgcc.mvars
+	echo SHLIBUNWIND_LINK = '$(SHLIBUNWIND_LINK)' >> tmp-libgcc.mvars
+	echo SHLIBUNWIND_INSTALL = '$(SHLIBUNWIND_INSTALL)' >> tmp-libgcc.mvars
+	echo FPBIT = '$(FPBIT)' >> tmp-libgcc.mvars
+	echo FPBIT_FUNCS = '$(FPBIT_FUNCS)' >> tmp-libgcc.mvars
+	echo LIB2_DIVMOD_FUNCS = '$(LIB2_DIVMOD_FUNCS)' >> tmp-libgcc.mvars
+	echo DPBIT = '$(DPBIT)' >> tmp-libgcc.mvars
+	echo DPBIT_FUNCS = '$(DPBIT_FUNCS)' >> tmp-libgcc.mvars
+	echo TPBIT = '$(TPBIT)' >> tmp-libgcc.mvars
+	echo TPBIT_FUNCS = '$(TPBIT_FUNCS)' >> tmp-libgcc.mvars
+	echo DFP_ENABLE = '$(DFP_ENABLE)' >> tmp-libgcc.mvars
+	echo DFP_CFLAGS='$(DFP_CFLAGS)' >> tmp-libgcc.mvars
+	echo D32PBIT='$(D32PBIT)' >> tmp-libgcc.mvars
+	echo D32PBIT_FUNCS='$(D32PBIT_FUNCS)' >> tmp-libgcc.mvars
+	echo D64PBIT='$(D64PBIT)' >> tmp-libgcc.mvars
+	echo D64PBIT_FUNCS='$(D64PBIT_FUNCS)' >> tmp-libgcc.mvars
+	echo D128PBIT='$(D128PBIT)' >> tmp-libgcc.mvars
+	echo D128PBIT_FUNCS='$(D128PBIT_FUNCS)' >> tmp-libgcc.mvars
+	echo GCC_EXTRA_PARTS = '$(GCC_EXTRA_PARTS)' >> tmp-libgcc.mvars
+	echo SHLIB_LINK = '$(subst $(GCC_FOR_TARGET),$$(GCC_FOR_TARGET),$(SHLIB_LINK))' >> tmp-libgcc.mvars
+	echo SHLIB_INSTALL = '$(SHLIB_INSTALL)' >> tmp-libgcc.mvars
+	echo SHLIB_EXT = '$(SHLIB_EXT)' >> tmp-libgcc.mvars
+	echo SHLIB_MKMAP = '$(call srcdirify,$(SHLIB_MKMAP))' >> tmp-libgcc.mvars
+	echo SHLIB_MKMAP_OPTS = '$(SHLIB_MKMAP_OPTS)' >> tmp-libgcc.mvars
+	echo SHLIB_MAPFILES = '$(call srcdirify,$(SHLIB_MAPFILES))' >> tmp-libgcc.mvars
+	echo SHLIB_NM_FLAGS = '$(SHLIB_NM_FLAGS)' >> tmp-libgcc.mvars
+	echo LIBGCC2_CFLAGS = '$(LIBGCC2_CFLAGS)' >> tmp-libgcc.mvars
+	echo CRTSTUFF_CFLAGS = '$(CRTSTUFF_CFLAGS)' >> tmp-libgcc.mvars
+	echo CRTSTUFF_T_CFLAGS = '$(CRTSTUFF_T_CFLAGS)' >> tmp-libgcc.mvars
+	echo CRTSTUFF_T_CFLAGS_S = '$(CRTSTUFF_T_CFLAGS_S)' >> tmp-libgcc.mvars
 
-# All the things that might cause us to want to recompile bits of libgcc.
-LIBGCC_DEPS = $(GCC_PASSES) stmp-int-hdrs $(STMP_FIXPROTO) \
-	libgcc.mk $(srcdir)/libgcc2.c $(srcdir)/libgcov.c $(TCONFIG_H) \
-	$(MACHMODE_H) longlong.h gbl-ctors.h config.status $(srcdir)/libgcc2.h \
-	tsystem.h $(FPBIT) $(DPBIT) $(TPBIT) $(LIB2ADD) \
-	config/dfp-bit.h config/dfp-bit.c \
-	$(LIB2ADD_ST) $(LIB2ADDEH) $(LIB2ADDEHDEP) $(EXTRA_PARTS) \
-	$(srcdir)/config/$(LIB1ASMSRC) \
-	$(srcdir)/gcov-io.h $(srcdir)/gcov-io.c gcov-iov.h $(SFP_MACHINE)
-
-libgcov.a: libgcc.a; @true
-
-libgcc.a: $(LIBGCC_DEPS)
-	$(MAKE) \
-	  CFLAGS="$(CFLAGS) $(WARN_CFLAGS)" \
-	  CONFIG_H="$(TCONFIG_H)" TM_H="$(TM_H)" \
-	  INCLUDES="$(INCLUDES)" \
-	  MAKEOVERRIDES= \
-	  -f libgcc.mk all
+	mv tmp-libgcc.mvars libgcc.mvars
 
 # Use the genmultilib shell script to generate the information the gcc
 # driver program needs to select the library directory based on the
@@ -1508,15 +1487,6 @@ s-mlib: $(srcdir)/genmultilib Makefile
 	fi
 	$(SHELL) $(srcdir)/../move-if-change tmp-mlib.h multilib.h
 	$(STAMP) s-mlib
-
-# Build multiple copies of libgcc.a, one for each target switch.
-stmp-multilib: $(LIBGCC_DEPS)
-	$(MAKE) \
-	  CFLAGS="$(CFLAGS) $(WARN_CFLAGS)" \
-	  CONFIG_H="$(CONFIG_H)" \
-	  MAKEOVERRIDES= \
-	  -f libgcc.mk all
-	$(STAMP) stmp-multilib
 
 # Compile two additional files that are linked with every program
 # linked using GCC on systems using COFF or ELF, for the sake of C++
@@ -3538,18 +3508,6 @@ fsf-funding.pod: funding.texi
 	-$(TEXI2POD) $< > $@
 
 #
-# clean-target removes all files made by compilation.
-# This can be added to over time.
-
-clean-target: clean-target-libgcc
-
-clean-target-libgcc:
-	test ! -d libgcc || \
-	(cd libgcc && find . -type d -print) | \
-	while read d; do rm -f $$d/libgcc.a || : ; done
-	test ! -d libgcc || rm -r libgcc
-	test ! -f stmp-dirs || rm stmp-dirs
-
 # Deletion of files made during compilation.
 # There are four levels of this:
 #   `mostlyclean', `clean', `distclean' and `maintainer-clean'.
@@ -3646,7 +3604,7 @@ distclean: clean lang.distclean
 	-cd testsuite && rm -f *.out *.gcov *$(coverageexts)
 	-rm -rf ${QMTEST_DIR} stamp-qmtest
 	-rm -f cxxmain.c
-	-rm -f mklibgcc gccbug .gdbinit configargs.h
+	-rm -f gccbug .gdbinit configargs.h
 	-rm -f gcov.pod
 # Delete po/*.gmo only if we are not building in the source directory.
 	-if [ ! -f po/exgettext ]; then rm -f po/*.gmo; fi
@@ -3668,7 +3626,7 @@ maintainer-clean:
 # Copy the compiler files into directories where they will be run.
 # Install the driver last so that the window when things are
 # broken is small.
-install: install-common $(INSTALL_HEADERS) $(INSTALL_LIBGCC) \
+install: install-common $(INSTALL_HEADERS) \
     install-cpp install-man install-info install-@POSUB@ \
     install-driver
 
@@ -3694,7 +3652,7 @@ installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(man7dir)
 
 # Install the compiler executables built during cross compilation.
-install-common: native $(EXTRA_PARTS) lang.install-common installdirs
+install-common: native lang.install-common installdirs
 	for file in $(COMPILERS); do \
 	  if [ -f $$file ] ; then \
 	    rm -f $(DESTDIR)$(libexecsubdir)/$$file; \
@@ -3706,13 +3664,6 @@ install-common: native $(EXTRA_PARTS) lang.install-common installdirs
 	  if [ x"$$file" != x.. ]; then \
 	    rm -f $(DESTDIR)$(libexecsubdir)/$$file; \
 	    $(INSTALL_PROGRAM) $$file $(DESTDIR)$(libexecsubdir)/$$file; \
-	  else true; fi; \
-	done
-	for file in $(EXTRA_PARTS) ..; do \
-	  if [ x"$$file" != x.. ]; then \
-	    rm -f $(DESTDIR)$(libsubdir)/$$file; \
-	    $(INSTALL_DATA) $$file $(DESTDIR)$(libsubdir)/$$file; \
-	    chmod a-x $(DESTDIR)$(libsubdir)/$$file; \
 	  else true; fi; \
 	done
 # We no longer install the specs file because its presence makes the
@@ -3832,24 +3783,6 @@ $(DESTDIR)$(man1dir)/$(GCOV_INSTALL_NAME)$(man1ext): doc/gcov.1 installdirs
 	-rm -f $@
 	-$(INSTALL_DATA) $< $@
 	-chmod a-x $@
-
-# Install the library.
-install-libgcc: libgcc.mk libgcc.a libgcov.a installdirs
-	$(MAKE) \
-	  CFLAGS="$(CFLAGS) $(WARN_CFLAGS)" \
-	  CONFIG_H="$(TCONFIG_H)" \
-	  MAKEOVERRIDES= \
-	  mkinstalldirs='$(mkinstalldirs)' \
-	  -f libgcc.mk install
-
-# Install multiple versions of libgcc.a, libgcov.a.
-install-multilib: stmp-multilib installdirs
-	$(MAKE) \
-	  CFLAGS="$(CFLAGS) $(WARN_CFLAGS)" \
-	  CONFIG_H="$(CONFIG_H)" \
-	  MAKEOVERRIDES= \
-	  mkinstalldirs='$(mkinstalldirs)' \
-	  -f libgcc.mk install
 
 # Install all the header files built in the include subdirectory.
 install-headers: $(INSTALL_HEADERS_DIR)

@@ -1,0 +1,10 @@
+2007-01-03  Daniel Jacobowitz  <dan@codesourcery.com>
+	    Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.in, config/i386/t-darwin, config/i386/t-darwin64,
+	config/i386/t-nwld, config/rs6000/t-darwin, config/rs6000/t-ldbl128,
+	config/i386/t-crtfm, config/alpha/t-crtfm, config/ia64/t-ia64,
+	config/sparc/t-crtfm, config/t-slibgcc-darwin,
+	config/rs6000/t-ppccomm, config.host, configure.ac, empty.mk,
+	shared-object.mk, siditi-object.mk, static-object.mk: New files.
+	* configure: Generated.

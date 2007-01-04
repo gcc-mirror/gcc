@@ -1,0 +1,632 @@
+# libgcc host-specific configuration file.
+# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+# Free Software Foundation, Inc.
+
+#This file is part of GCC.
+
+#GCC is free software; you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free
+#Software Foundation; either version 2, or (at your option) any later
+#version.
+
+#GCC is distributed in the hope that it will be useful, but WITHOUT
+#ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+#for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with GCC; see the file COPYING.  If not, write to the Free
+#Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
+#02110-1301, USA.
+
+# This is the libgcc host-specific configuration file
+# where a configuration type is mapped to different system-specific
+# definitions and files.  This is invoked by the autoconf-generated
+# configure script.  Putting it in a separate shell file lets us skip
+# running autoconf when modifying host-specific information.
+
+# This file bears an obvious resemblance to gcc/config.gcc.  The cases
+# should be kept similar, to ease moving library-specific settings
+# from config.gcc to this file.  That is also why tmake_file is
+# left as tmake_file, rather than hmake_file, even though this library
+# switches on ${host}.
+
+# This file switches on the shell variable ${host}, and also uses the
+# following shell variables:
+#
+#  with_*		Various variables as set by configure.
+
+# This file sets the following shell variables for use by the
+# autoconf-generated configure script:
+#
+#  asm_hidden_op	The assembler pseudo-op to use for hide
+#			lists for object files implemented in
+#			assembly (with -fvisibility=hidden for C).
+#			The default is ".hidden".
+#  cpu_type		The name of the cpu, if different from the first
+#			chunk of the canonical host name.
+#  extra_parts		List of extra object files that should be compiled
+#			for this target machine.  This may be overridden
+#			by setting EXTRA_PARTS in a tmake_file fragment.
+#			If either is set, EXTRA_PARTS and
+#			EXTRA_MULTILIB_PARTS inherited from the GCC
+#			subdirectory will be ignored.
+#  tmake_file		A list of machine-description-specific
+#			makefile-fragments, if different from
+#			"$cpu_type/t-$cpu_type".
+
+asm_hidden_op=.hidden
+extra_parts=
+tmake_file=
+
+# Set default cpu_type so it can be updated in each machine entry.
+cpu_type=`echo ${host} | sed 's/-.*$//'`
+case ${host} in
+m32c*-*-*)
+        cpu_type=m32c
+        ;;
+alpha*-*-*)
+	cpu_type=alpha
+	;;
+am33_2.0-*-linux*)
+	cpu_type=mn10300
+	;;
+strongarm*-*-*)
+	cpu_type=arm
+	;;
+arm*-*-*)
+	cpu_type=arm
+	;;
+bfin*-*)
+	cpu_type=bfin
+	;;
+ep9312*-*-*)
+	cpu_type=arm
+	;;
+frv*)	cpu_type=frv
+	;;
+xscale-*-*)
+	cpu_type=arm
+	;;
+i[34567]86-*-*)
+	cpu_type=i386
+	;;
+x86_64-*-*)
+	cpu_type=i386
+	;;
+ia64-*-*)
+	;;
+hppa*-*-* | parisc*-*-*)
+	cpu_type=pa
+	;;
+m32r*-*-*)
+        cpu_type=m32r
+        ;;
+m680[012]0-*-*)
+	cpu_type=m68k
+	;;
+m68k-*-*)
+	;;
+mips*-*-*)
+	cpu_type=mips
+	;;
+powerpc*-*-*)
+	cpu_type=rs6000
+	;;
+rs6000*-*-*)
+	;;
+score*-*-*)
+	cpu_type=score
+	;;
+sparc64*-*-*)
+	cpu_type=sparc
+	;;
+sparc*-*-*)
+	cpu_type=sparc
+	;;
+spu*-*-*)
+	cpu_type=spu
+	;;
+s390*-*-*)
+	cpu_type=s390
+	;;
+# Note the 'l'; we need to be able to match e.g. "shle" or "shl".
+sh[123456789lbe]*-*-*)
+	cpu_type=sh
+	;;
+tic4x-*-*)
+        cpu_type=c4x
+        ;;
+esac
+
+# Common parts for widely ported systems.
+case ${host} in
+*-*-darwin*)
+  asm_hidden_op=.private_extern
+  tmake_file="t-darwin ${cpu_type}/t-darwin t-slibgcc-darwin"
+  ;;
+*-*-freebsd[12] | *-*-freebsd[12].* | *-*-freebsd*aout*)
+  # This is the place-holder for the generic a.out configuration
+  # of FreeBSD.  No actual configuration resides here since
+  # there was only ever a bare-bones ix86 configuration for
+  # a.out and it exists solely in the machine-specific section.
+  # This place-holder must exist to avoid dropping into
+  # the generic ELF configuration of FreeBSD (i.e. it must be
+  # ordered before that section).
+  ;;
+*-*-freebsd*)
+  # This is the generic ELF configuration of FreeBSD.  Later
+  # machine-specific sections may refine and add to this
+  # configuration.
+  ;;
+*-*-linux*libc1* | *-*-linux*aout*)
+  # Avoid the generic linux case.
+  ;;
+*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu)
+  # Must come before *-*-gnu* (because of *-*-linux-gnu* systems).
+  extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
+  ;;
+*-*-gnu*)
+  ;;
+*-*-netbsd*)
+  ;;
+*-*-openbsd*)
+  ;;
+*-*-rtems*)
+  ;;
+*-*-vxworks*)
+  ;;
+*-*-elf)
+  ;;
+esac
+
+case ${host} in
+# Support site-specific machine types.
+*local*)
+	rest=`echo ${host} | sed -e "s/$cpu_type-//"`
+	if test -f $srcdir/config/${cpu_type}/t-$rest
+	then tmake_file=${cpu_type}/t-$rest
+	fi
+	;;
+alpha*-*-unicosmk*)
+	;;
+alpha*-*-linux*)
+	tmake_file="${tmake_file} alpha/t-crtfm"
+	;;
+alpha*-*-gnu*)
+	;;
+alpha*-*-freebsd*)
+	;;
+alpha*-*-netbsd*)
+	;;
+alpha*-*-openbsd*)
+	;;
+alpha*-dec-osf[45]*)
+	;;
+alpha64-dec-*vms*)
+	;;
+alpha*-dec-*vms*)
+	;;
+arc-*-elf*)
+	;;
+arm-*-coff* | armel-*-coff*)
+	;;
+arm-semi-aof | armel-semi-aof)
+	;;
+arm-wrs-vxworks)
+	;;
+arm*-*-freebsd*|strongarm*-*-freebsd*)
+	;;
+arm*-*-netbsdelf*)
+	;;
+arm*-*-netbsd*)
+	;;
+arm*-*-linux*)			# ARM GNU/Linux with ELF
+	;;
+arm*-*-uclinux*)		# ARM ucLinux
+	;;
+arm*-*-ecos-elf)
+	;;
+arm*-*-eabi* | arm*-*-symbianelf* )
+	;;
+arm*-*-rtems*)
+	;;
+arm*-*-elf | ep9312-*-elf)
+	;;
+arm*-wince-pe*)
+	;;
+arm-*-pe*)
+	;;
+arm*-*-kaos*)
+	;;
+avr-*-rtems*)
+	;;
+avr-*-*)
+	;;
+bfin*-elf*)
+        ;;
+bfin*-uclinux*)
+        ;;
+bfin*-*)
+        ;;
+c4x-*-rtems* | tic4x-*-rtems*)
+	;;
+c4x-* | tic4x-*)
+	;;
+cris-*-aout)
+	;;
+cris-*-elf | cris-*-none)
+	;;
+cris-*-linux*)
+	;;
+crx-*-elf)
+	;;
+fr30-*-elf)
+	;;
+frv-*-elf)
+	;;
+frv-*-*linux*)
+	;;
+h8300-*-rtemscoff*)
+	;;
+h8300-*-rtems*)
+	;;
+h8300-*-elf*)
+	;;
+h8300-*-*)
+	;;
+hppa*64*-*-linux* | parisc*64*-*-linux*)
+	;;
+hppa*-*-linux* | parisc*-*-linux*)
+	;;
+hppa1.1-*-pro*)
+	;;
+hppa1.1-*-osf*)
+	;;
+hppa1.1-*-bsd*)
+	;;
+hppa[12]*-*-hpux10*)
+	;;
+hppa*64*-*-hpux11*)
+	;;
+hppa[12]*-*-hpux11*)
+	;;
+i[34567]86-*-darwin*)
+	;;
+x86_64-*-darwin*)
+	tmake_file="t-darwin ${cpu_type}/t-darwin64 t-slibgcc-darwin"
+	;;
+i[34567]86-*-elf*)
+	;;
+i[34567]86-sequent-ptx4* | i[34567]86-sequent-sysv4*)
+	;;
+i[34567]86-*-aout*)
+	;;
+i[34567]86-*-beoself* | i[34567]86-*-beos*)
+	;;
+i[34567]86-*-freebsd*)
+	;;
+x86_64-*-freebsd*)
+	;;
+i[34567]86-*-netbsdelf*)
+	;;
+i[34567]86-*-netbsd*)
+	;;
+x86_64-*-netbsd*)
+	;;
+i[34567]86-*-openbsd2.*|i[34567]86-*openbsd3.[0123])
+	;;
+i[34567]86-*-openbsd*)
+	;;
+i[34567]86-*-coff*)
+	;;
+i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu)
+	extra_parts="$extra_parts crtfastmath.o"
+	tmake_file="${tmake_file} i386/t-crtfm"
+	;;
+x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
+	extra_parts="$extra_parts crtfastmath.o"
+	tmake_file="${tmake_file} i386/t-crtfm"
+	;;
+i[34567]86-*-gnu*)
+	;;
+i[34567]86-pc-msdosdjgpp*)
+	;;
+i[34567]86-*-lynxos*)
+	;;
+i[3456x]86-*-netware*)
+	case /${with_ld} in
+	*/nwld)
+	 	tmake_file="${tmake_file} i386/t-nwld"
+		;;
+	esac
+	;;
+i[34567]86-*-nto-qnx*)
+	;;
+i[34567]86-*-rtems*)
+	;;
+i[34567]86-*-sco3.2v5*)	# 80386 running SCO Open Server 5
+	;;
+i[34567]86-*-solaris2*)
+	;;
+i[34567]86-*-sysv5*)           # Intel x86 on System V Release 5
+       ;;
+i[34567]86-*-sysv4*)		# Intel 80386's running system V.4
+	;;
+i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
+	;;
+i[34567]86-*-pe | i[34567]86-*-cygwin*)
+	;;
+i[34567]86-*-mingw32*)
+	;;
+i[34567]86-*-uwin*)
+	;;
+i[34567]86-*-interix3*)
+	;;
+i[34567]86-*-kaos*)
+	;;
+ia64*-*-elf*)
+	;;
+ia64*-*-freebsd*)
+	;;
+ia64*-*-linux*)
+	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
+	;;
+ia64*-*-hpux*)
+	;;
+iq2000*-*-elf*)
+        ;;
+m32r-*-elf*)
+ 	;;
+m32rle-*-elf*)
+	;;
+m32r-*-linux*)
+ 	;;
+m32rle-*-linux*)
+	;;
+m68hc11-*-*|m6811-*-*)
+        ;;
+m68hc12-*-*|m6812-*-*)
+        ;;
+m68k-*-aout*)
+	;;
+m68k-*-coff*)
+	;;
+m68020-*-elf* | m68k-*-elf*)
+	;;
+m68010-*-netbsdelf* | m68k*-*-netbsdelf*)
+	;;
+m68k*-*-openbsd*)
+	;;
+m68k-*-uclinux*)		# Motorola m68k/ColdFire running uClinux with uClibc
+	;;
+m68k-*-linux*)		# Motorola m68k's running GNU/Linux
+				# with ELF format using glibc 2
+				# aka the GNU/Linux C library 6.
+	;;
+m68k-*-rtems*)
+	;;
+mcore-*-elf)
+	;;
+mcore-*-pe*)
+	;;
+mips-sgi-irix[56]*)
+	;;
+mips*-*-netbsd*)			# NetBSD/mips, either endian.
+	;;
+mips64*-*-linux*)
+	;;
+mips*-*-linux*)				# Linux MIPS, either endian.
+	;;
+mips*-*-openbsd*)
+	;;
+mipsisa32-*-elf* | mipsisa32el-*-elf*)
+	;;
+mipsisa32r2-*-elf* | mipsisa32r2el-*-elf*)
+	;;
+mipsisa64-*-elf* | mipsisa64el-*-elf*)
+	;;
+mipsisa64sr71k-*-elf*)
+        ;;
+mipsisa64sb1-*-elf* | mipsisa64sb1el-*-elf*)
+	;;
+mips-*-elf* | mipsel-*-elf*)
+	;;
+mips64-*-elf* | mips64el-*-elf*)
+	;;
+mips64vr-*-elf* | mips64vrel-*-elf*)
+        ;;
+mips64orion-*-elf* | mips64orionel-*-elf*)
+	;;
+mips*-*-rtems*)
+	;;
+mips-wrs-vxworks)
+	;;
+mips-wrs-windiss)	# Instruction-level simulator for VxWorks.
+	;;
+mipstx39-*-elf* | mipstx39el-*-elf*)
+	;;
+mmix-knuth-mmixware)
+	;;
+mn10300-*-*)
+	;;
+mt-*-elf)
+        ;;
+ns32k-*-netbsdelf*)
+	echo "GCC does not yet support the ${host} target"; exit 1
+	;;
+ns32k-*-netbsd*)
+	;;
+pdp11-*-bsd)
+        ;;
+pdp11-*-*)
+	;;
+powerpc64-*-linux*)
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ldbl128"
+	;;
+powerpc64-*-gnu*)
+	tmake_file="${tmake_file} rs6000/t-ldbl128"
+	;;
+powerpc-*-beos*)
+	;;
+powerpc-*-darwin*)
+	;;
+powerpc64-*-darwin*)
+	;;
+powerpc*-*-freebsd*)
+	;;
+powerpc-*-netbsd*)
+	;;
+powerpc-*-chorusos*)
+	;;
+powerpc-*-eabispe*)
+	;;
+powerpc-*-eabisimaltivec*)
+	;;
+powerpc-*-eabisim*)
+	;;
+powerpc-*-elf*)
+	;;
+powerpc-*-eabialtivec*)
+	;;
+powerpc-*-eabi*)
+	;;
+powerpc-*-rtems*)
+	;;
+powerpc-*-linux*altivec*)
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ldbl128"
+	;;
+powerpc-*-linux*spe*)
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ldbl128"
+	;;
+powerpc-*-linux*)
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ldbl128"
+	;;
+powerpc-*-gnu-gnualtivec*)
+	tmake_file="${tmake_file} rs6000/t-ldbl128"
+	;;
+powerpc-*-gnu*)
+	tmake_file="${tmake_file} rs6000/t-ldbl128"
+	;;
+powerpc-wrs-vxworks|powerpc-wrs-vxworksae)
+	;;
+powerpc-wrs-windiss*)  # Instruction-level simulator for VxWorks.
+	;;
+powerpc-*-lynxos*)
+	;;
+powerpcle-*-sysv*)
+	;;
+powerpcle-*-elf*)
+	;;
+powerpcle-*-eabisim*)
+	;;
+powerpcle-*-eabi*)
+	;;
+powerpc-*-kaos*)
+	;;
+powerpcle-*-kaos*)
+	;;
+rs6000-ibm-aix4.[12]* | powerpc-ibm-aix4.[12]*)
+	;;
+rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
+	;;
+rs6000-ibm-aix5.1.* | powerpc-ibm-aix5.1.*)
+	;;
+rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
+	;;
+s390-*-linux*)
+	;;
+s390x-*-linux*)
+	;;
+s390x-ibm-tpf*)
+	;;
+score-*-elf)
+        ;;
+sh-*-elf* | sh[12346l]*-*-elf* | sh*-*-kaos* | \
+sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
+  sh-*-linux* | sh[346lbe]*-*-linux* | \
+  sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
+   sh64-*-netbsd* | sh64l*-*-netbsd*)
+	;;
+sh-*-rtemscoff*)
+	;;
+sh-*-rtems*)
+	;;
+sh-wrs-vxworks)
+	;;
+sh-*-*)
+	;;
+sparc-*-netbsdelf*)
+	;;
+sparc64-*-openbsd*)
+	;;
+sparc-*-elf*)
+	;;
+sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
+	extra_parts="$extra_parts crtfastmath.o"
+	tmake_file="${tmake_file} sparc/t-crtfm"
+	;;
+sparc-*-rtems*)
+	;;
+sparc64-*-solaris2* | sparcv9-*-solaris2*)
+	;;
+sparc-*-solaris2*)
+	;;
+sparc-*-sysv4*)
+	;;
+sparc64-*-elf*)
+	;;
+sparc64-*-freebsd*|ultrasparc-*-freebsd*)
+	;;
+sparc64-*-linux*)		# 64-bit SPARC's running GNU/Linux
+	extra_parts="$extra_parts crtfastmath.o"
+	tmake_file="${tmake_file} sparc/t-crtfm"
+	;;
+sparc64-*-netbsd*)
+	;;
+spu-*-elf*)
+	;;
+strongarm-*-elf*)
+	;;
+strongarm-*-pe)
+	;;
+strongarm-*-kaos*)
+	;;
+v850e1-*-*)
+	;;
+v850e-*-*)
+	;;
+v850-*-*)
+	;;
+vax-*-bsd*)			# VAXen running BSD
+	;;
+vax-*-sysv*)			# VAXen running system V
+	;;
+vax-*-netbsdelf*)
+	;;
+vax-*-netbsd*)
+	;;
+vax-*-openbsd*)
+	;;
+vax-*-ultrix*)			# VAXen running ultrix
+	;;
+xscale-*-elf)
+	;;
+xscale-*-coff)
+	;;
+xstormy16-*-elf)
+	;;
+xtensa-*-elf*)
+	;;
+xtensa-*-linux*)
+	;;
+am33_2.0-*-linux*)
+	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
+	;;
+m32c-*-elf*)
+ 	;;
+*)
+	echo "*** Configuration ${host} not supported" 1>&2
+	exit 1
+	;;
+esac

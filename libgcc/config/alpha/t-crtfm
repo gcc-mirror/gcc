@@ -1,0 +1,6 @@
+# FIXME drow/20061228 - I have preserved this -frandom-seed option
+# while migrating this rule from the GCC directory, but I do not
+# know why it is necessary if no other crt file uses it.
+crtfastmath.o: $(gcc_srcdir)/config/alpha/crtfastmath.c
+	$(gcc_compile) -frandom-seed=gcc-crtfastmath -c \
+		$(gcc_srcdir)/config/alpha/crtfastmath.c
