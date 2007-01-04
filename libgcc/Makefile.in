@@ -730,6 +730,8 @@ gcc-extra-parts:
 all: $(extra-parts)
 
 # Documentation targets (empty).
+.PHONY: info html dvi pdf
+
 info:
 
 html:
