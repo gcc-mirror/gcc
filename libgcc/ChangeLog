@@ -1,5 +1,9 @@
 2007-01-04  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* Makefile.in: Added .PHONY entry for documentation targets.
+
+2007-01-04  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* Makefile.in: Add empty info, html, dvi, pdf targets.
 
 2007-01-04  Mike Stump  <mrs@apple.com>
