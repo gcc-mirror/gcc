@@ -1455,6 +1455,13 @@ compare_actual_formal (gfc_actual_arglist ** ap,
     {
       if (new[i] != NULL)
 	continue;
+      if (f->sym == NULL)
+	{
+	  if (where)
+	    gfc_error ("Missing alternate return spec in subroutine call at %L",
+		       where);
+	  return 0;
+	}
       if (!f->sym->attr.optional)
 	{
 	  if (where)

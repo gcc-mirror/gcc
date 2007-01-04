@@ -1,5 +1,12 @@
 2007-01-04  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	PR 30235
+	* interface.c (compare_actual_formal): check for
+	alternate returns when iterating over non-present
+	arguments.
+
+2007-01-04  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* invoke.texi: Update manpage copyright to include 2007.
 
 2007-01-04  Brooks Moses  <brooks.moses@codesourcery.com>
