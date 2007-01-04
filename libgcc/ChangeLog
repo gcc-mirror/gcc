@@ -1,5 +1,9 @@
 2007-01-04  Daniel Jacobowitz  <dan@codesourcery.com>
 
+	* config.host (ia64*-*-linux*): Set tmake_file.
+
+2007-01-04  Daniel Jacobowitz  <dan@codesourcery.com>
+
 	* Makefile.in (version): Define.
 
 2007-01-03  Daniel Jacobowitz  <dan@codesourcery.com>
