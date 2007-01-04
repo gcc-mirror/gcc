@@ -181,6 +181,8 @@ export RANLIB_FOR_TARGET
 export libsubdir
 export slibdir
 
+version := $(shell $(CC) -dumpversion)
+
 DECNUMINC = -I$(srcdir)/../libdecnumber -I$(MULTIBUILDTOP)../../libdecnumber
 
 # Specify the directories to be searched for header files.
