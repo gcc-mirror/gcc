@@ -151,6 +151,11 @@ Boston, MA 02110-1301, USA@*
 
 @page
 
+@c ---------------------------------------------------------------------
+@c TexInfo table of contents.
+@c ---------------------------------------------------------------------
+
+@ifnottex
 @node Top
 @top Introduction
 @cindex Introduction
@@ -171,18 +176,13 @@ not accurately reflect the status of the most recent GNU Fortran compiler.
 @comment  better formatting.
 @comment
 @menu
-Part I: About GNU Fortran
-* Getting Started::      What you should know about GNU Fortran.
-* GNU Fortran and GCC::  You can compile Fortran, C, or other programs.
-* GNU Fortran and G77::  Why we chose to start from scratch.
-* Project Status::       Status of GNU Fortran, roadmap, proposed extensions.
-* Standards::	         Standards supported by GNU Fortran.
+* Introduction::
 
-Part II: Invoking GNU Fortran
+Part I: Invoking GNU Fortran
 * Invoking GNU Fortran:: Command options supported by @command{gfortran}.
 * Runtime::              Influencing runtime behavior with environment variables.
 
-Part III: Language Reference
+Part II: Language Reference
 * Fortran 2003 status::  Fortran 2003 features supported by GNU Fortran.
 * Extensions::           Language extensions implemented by GNU Fortran.
 * Intrinsic Procedures:: Intrinsic procedures supported by GNU Fortran.
@@ -195,27 +195,49 @@ Part III: Language Reference
 * Funding::              How to help assure continued work for free software.
 * Index::                Index of this documentation.
 @end menu
-
-
-@c =====================================================================
-@c PART I: ABOUT GNU FORTRAN
-@c =====================================================================
-
-@tex
-\part{I}{About GNU Fortran}
-@end tex
+@end ifnottex
 
 @c ---------------------------------------------------------------------
-@c Getting Started
+@c Introduction
 @c ---------------------------------------------------------------------
 
-@node Getting Started
-@chapter Getting Started
+@node Introduction
+@chapter Introduction
+
+@c The following duplicates the text on the TexInfo table of contents.
+@iftex
+This manual documents the use of @command{gfortran}, the GNU Fortran
+compiler. You can find in this manual how to invoke @command{gfortran},
+as well as its features and incompatibilities.
+
+@ifset DEVELOPMENT
+@emph{Warning:} This document, and the compiler it describes, are still
+under development.  While efforts are made to keep it up-to-date, it
+might not accurately reflect the status of the most recent GNU Fortran
+compiler.
+@end ifset
+@end iftex
 
 The GNU Fortran compiler front end was
 designed initially as a free replacement for,
 or alternative to, the unix @command{f95} command;
 @command{gfortran} is the command you'll use to invoke the compiler.
+
+@menu
+* About GNU Fortran::    What you should know about the GNU Fortran compiler.
+* GNU Fortran and GCC::  You can compile Fortran, C, or other programs.
+* GNU Fortran and G77::  Why we chose to start from scratch.
+* Project Status::       Status of GNU Fortran, roadmap, proposed extensions.
+* Standards::	         Standards supported by GNU Fortran.
+@end menu
+
+
+@c ---------------------------------------------------------------------
+@c About GNU Fortran
+@c ---------------------------------------------------------------------
+
+@node About GNU Fortran
+@section About GNU Fortran
 
 The GNU Fortran compiler is still in an early state of development.
 It can generate code for most constructs and expressions,
@@ -327,7 +349,7 @@ programs will call it for you.
 @c ---------------------------------------------------------------------
 
 @node GNU Fortran and GCC
-@chapter GNU Fortran and GCC
+@section GNU Fortran and GCC
 @cindex GNU Compiler Collection
 
 GCC used to be the GNU ``C'' Compiler,
@@ -379,7 +401,7 @@ command line options.
 @c ---------------------------------------------------------------------
 
 @node GNU Fortran and G77
-@chapter GNU Fortran and G77
+@section GNU Fortran and G77
 @cindex Fortran 77
 @cindex G77
 
@@ -420,7 +442,7 @@ and then build a Fortran 95 compiler out of it.
 @c ---------------------------------------------------------------------
 
 @node Project Status
-@chapter Project Status
+@section Project Status
 
 @quotation
 As soon as @command{gfortran} can parse all of the statements correctly,
@@ -480,7 +502,7 @@ future standards---in particular, Fortran 2003.
 @c ---------------------------------------------------------------------
 
 @node Standards
-@chapter Standards
+@section Standards
 @cindex Standards
 
 The GNU Fortran compiler implements
@@ -496,11 +518,11 @@ ISO/IEC 1539-1:2004 (Fortran 2003).
 
 
 @c =====================================================================
-@c PART II: INVOCATION REFERENCE
+@c PART I: INVOCATION REFERENCE
 @c =====================================================================
 
 @tex
-\part{II}{Invoking GNU Fortran}
+\part{I}{Invoking GNU Fortran}
 @end tex
 
 @c ---------------------------------------------------------------------
@@ -687,11 +709,11 @@ setting a default data representation for the whole program.  The
 
 
 @c =====================================================================
-@c PART III: LANGUAGE REFERENCE
+@c PART II: LANGUAGE REFERENCE
 @c =====================================================================
 
 @tex
-\part{III}{Language Reference}
+\part{II}{Language Reference}
 @end tex
 
 @c ---------------------------------------------------------------------

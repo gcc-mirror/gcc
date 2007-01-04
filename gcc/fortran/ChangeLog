@@ -1,5 +1,13 @@
 2007-01-03  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* gfortran.texi (Introduction): Lower "Part I:
+	Introduction" to a chapter, renumber Parts II and III to
+	Parts I and II.
+	* intrinsic.texi (Introduction): Rename to "Introduction
+	to Intrinsics" to avoid conflict with the new chapter.
+
+2007-01-03  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* intrinsic.texi (Introduction): Rewrite first paragraph.
 
 2007-01-03  Brooks Moses  <brooks.moses@codesourcery.com>
