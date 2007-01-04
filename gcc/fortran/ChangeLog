@@ -1,5 +1,9 @@
 2007-01-04  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* invoke.texi: Update manpage copyright to include 2007.
+
+2007-01-04  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* gfortran.texi: Update copyright to include 2007.
 	* intrinsic.texi: Update copyright to include 2007.
 	* invoke.texi: Update copyright to include 2007.
