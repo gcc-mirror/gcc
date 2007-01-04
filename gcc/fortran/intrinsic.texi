@@ -49,7 +49,7 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 @comment  - Short
 
 @menu
-* Introduction:         Introduction
+* Introduction:         Introduction to Intrinsics
 * @code{ABORT}:         ABORT,     Abort the program     
 * @code{ABS}:           ABS,       Absolute value     
 * @code{ACCESS}:        ACCESS,    Checks file access modes
@@ -251,7 +251,7 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 * @code{XOR}:           XOR,       Bitwise logical exclusive or
 @end menu
 
-@node Introduction
+@node Introduction to Intrinsics
 @section Introduction to intrinsic procedures
 
 The intrinsic procedures provided by GNU Fortran include all of the
