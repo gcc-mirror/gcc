@@ -19738,11 +19738,12 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
     case MINUS:
       if (mode == DFmode)
 	{
-	  if (GET_CODE (XEXP (x, 0)) == MULT)
+	  if (GET_CODE (XEXP (x, 0)) == MULT
+	      || GET_CODE (XEXP (x, 1)) == MULT)
 	    {
 	      /* FNMA accounted in outer NEG.  */
 	      if (outer_code == NEG)
-		*total = 0;
+		*total = rs6000_cost->dmul - rs6000_cost->fp;
 	      else
 		*total = rs6000_cost->dmul;
 	    }
