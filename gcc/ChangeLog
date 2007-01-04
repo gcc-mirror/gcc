@@ -1,3 +1,16 @@
+2007-01-04  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.md (arm_mulsi3, thumb_mulsi3, mulsi3_compare0,
+	mulsi_compare0_scratch, mulsi3addsi, mulsi3addsi_compare0,
+	mulsi3addsi_compare0_scratch, mulsidi3adddi, mulsidi3,
+	umulsidi3, umulsidi3adddi, smulsi3_highpart,
+	umulsi3_highpart): Make conditional on !arm_arch6.
+	(arm_mulsi3_v6, thumb_mulsi3_v6, mulsi3_compare0_v6,
+	mulsi_compare0_scratch_v6, mulsi3addsi_v6, mulsi3addsi_compare0_v6,
+	mulsi3addsi_compare0_scratch_v6, mulsidi3adddi_v6, mulsidi3_v6,
+	umulsidi3_v6, umulsidi3adddi_v6, smulsi3_highpart_v6,
+	umulsi3_highpart_v6): New insns.
+
 2007-01-04  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_convert): When casting an expression to void,
