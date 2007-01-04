@@ -254,13 +254,13 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 @node Introduction
 @section Introduction to intrinsic procedures
 
-GNU Fortran provides a rich set of intrinsic procedures that includes all
-the intrinsic procedures required by the Fortran 95 standard, a set of
-intrinsic procedures for backwards compatibility with Gnu Fortran 77
-(i.e., @command{g77}), and a small selection of intrinsic procedures
-from the Fortran 2003 standard.  Any description here, which conflicts with a 
-description in either the Fortran 95 standard or the Fortran 2003 standard,
-is unintentional and the standard(s) should be considered authoritative.
+The intrinsic procedures provided by GNU Fortran include all of the
+intrinsic procedures required by the Fortran 95 standard, a set of
+intrinsic procedures for backwards compatibility with G77, and a small
+selection of intrinsic procedures from the Fortran 2003 standard.  Any
+conflict between a description here and a description in either the
+Fortran 95 standard or the Fortran 2003 standard is unintentional, and
+the standard(s) should be considered authoritative.
 
 The enumeration of the @code{KIND} type parameter is processor defined in
 the Fortran 95 standard.  GNU Fortran defines the default integer type and
