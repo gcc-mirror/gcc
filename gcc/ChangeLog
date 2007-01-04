@@ -1,3 +1,16 @@
+2007-01-04  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_release_function_body): New function.
+	(cgraph_remove_node): Use it.
+	* cgraph.h (cgraph_release_function_body): Declare.
+	* cgraphunit.c (cgraph_expand_function): Use it.
+	* ipa.c (cgraph_remove_unreahchable_nodes): Use it.
+	* tree-ssa.c (delete_tree_ssa): Allow to be called before aliasing
+	is initialized and while compilation of other function is running.
+	* tree-optimize.c (execute_free_cfg_annotations): Move code to clear
+	statement CFG annotations from here to ...
+	* tree-cfg.c (delete_tree_cfg_annotations): ... here.
+
 2007-01-04  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* cfgloop.h (enum li_flags): Make the constants powers of two.

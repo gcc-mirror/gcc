@@ -241,20 +241,8 @@ struct tree_opt_pass pass_free_datastructures =
 static unsigned int
 execute_free_cfg_annotations (void)
 {
-  basic_block bb;
-  block_stmt_iterator bsi;
-
   /* Emit gotos for implicit jumps.  */
   disband_implicit_edges ();
-
-  /* Remove annotations from every tree in the function.  */
-  FOR_EACH_BB (bb)
-    for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-      {
-	tree stmt = bsi_stmt (bsi);
-	ggc_free (stmt->base.ann);
-	stmt->base.ann = NULL;
-      }
 
   /* And get rid of annotations we no longer need.  */
   delete_tree_cfg_annotations ();

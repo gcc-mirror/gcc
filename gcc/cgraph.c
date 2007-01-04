@@ -468,6 +468,27 @@ cgraph_node_remove_callers (struct cgraph_node *node)
   node->callers = NULL;
 }
 
+/* Release memory used to represent body of function NODE.  */
+
+void
+cgraph_release_function_body (struct cgraph_node *node)
+{
+  if (DECL_STRUCT_FUNCTION (node->decl)
+      && DECL_STRUCT_FUNCTION (node->decl)->gimple_df)
+    {
+      tree old_decl = current_function_decl;
+      push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+      current_function_decl = node->decl;
+      delete_tree_ssa ();
+      delete_tree_cfg_annotations ();
+      current_function_decl = old_decl;
+      pop_cfun();
+    }
+  DECL_SAVED_TREE (node->decl) = NULL;
+  DECL_STRUCT_FUNCTION (node->decl) = NULL;
+  DECL_INITIAL (node->decl) = error_mark_node;
+}
+
 /* Remove the node from cgraph.  */
 
 void
@@ -541,11 +562,7 @@ cgraph_remove_node (struct cgraph_node *node)
     }
 
   if (kill_body && flag_unit_at_a_time)
-    {
-      DECL_SAVED_TREE (node->decl) = NULL;
-      DECL_STRUCT_FUNCTION (node->decl) = NULL;
-      DECL_INITIAL (node->decl) = error_mark_node;
-    }
+    cgraph_release_function_body (node);
   node->decl = NULL;
   if (node->call_site_hash)
     {

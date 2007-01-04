@@ -846,10 +846,13 @@ delete_tree_ssa (void)
   cfun->gimple_df->call_clobbered_vars = NULL;
   cfun->gimple_df->addressable_vars = NULL;
   cfun->gimple_df->modified_noreturn_calls = NULL;
+  if (gimple_aliases_computed_p (cfun))
+    {
+      delete_alias_heapvars ();
+      gcc_assert (!need_ssa_update_p ());
+    }
   cfun->gimple_df->aliases_computed_p = false;
 
-  delete_alias_heapvars ();
-  gcc_assert (!need_ssa_update_p ());
   cfun->gimple_df = NULL;
 }
 

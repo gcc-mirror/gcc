@@ -2651,6 +2651,17 @@ disband_implicit_edges (void)
 void
 delete_tree_cfg_annotations (void)
 {
+  basic_block bb;
+  block_stmt_iterator bsi;
+
+  /* Remove annotations from every tree in the function.  */
+  FOR_EACH_BB (bb)
+    for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+      {
+	tree stmt = bsi_stmt (bsi);
+	ggc_free (stmt->base.ann);
+	stmt->base.ann = NULL;
+      }
   label_to_block_map = NULL;
 }
 
