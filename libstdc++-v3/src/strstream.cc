@@ -235,7 +235,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     if ((mode & (ios_base::in | ios_base::out)) 
 	== (ios_base::in | ios_base::out) &&
 	(dir == ios_base::beg || dir == ios_base::end))
-      do_get = do_put = true;
+      do_get = (do_put = true);
     else if (mode & ios_base::in)
       do_get = true;
     else if (mode & ios_base::out)
