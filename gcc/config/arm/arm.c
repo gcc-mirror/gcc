@@ -1543,8 +1543,9 @@ use_return_insn (int iscond, rtx sibling)
   if (func_type & (ARM_FT_VOLATILE | ARM_FT_NAKED | ARM_FT_STACKALIGN))
     return 0;
 
-  /* So do interrupt functions that use the frame pointer.  */
-  if (IS_INTERRUPT (func_type) && frame_pointer_needed)
+  /* So do interrupt functions that use the frame pointer and Thumb
+     interrupt functions.  */
+  if (IS_INTERRUPT (func_type) && (frame_pointer_needed || TARGET_THUMB))
     return 0;
 
   offsets = arm_get_frame_offsets ();
@@ -1605,7 +1606,7 @@ use_return_insn (int iscond, rtx sibling)
 
   /* Can't be done if interworking with Thumb, and any registers have been
      stacked.  */
-  if (TARGET_INTERWORK && saved_int_regs != 0)
+  if (TARGET_INTERWORK && saved_int_regs != 0 && !IS_INTERRUPT(func_type))
     return 0;
 
   /* On StrongARM, conditional returns are expensive if they aren't
@@ -8739,15 +8740,17 @@ fp_const_from_val (REAL_VALUE_TYPE *r)
 /* Output the operands of a LDM/STM instruction to STREAM.
    MASK is the ARM register set mask of which only bits 0-15 are important.
    REG is the base register, either the frame pointer or the stack pointer,
-   INSTR is the possibly suffixed load or store instruction.  */
+   INSTR is the possibly suffixed load or store instruction.
+   RFE is nonzero if the instruction should also copy spsr to cpsr.  */
 
 static void
 print_multi_reg (FILE *stream, const char *instr, unsigned reg,
-		 unsigned long mask)
+		 unsigned long mask, int rfe)
 {
   unsigned i;
   bool not_first = FALSE;
 
+  gcc_assert (!rfe || (mask & (1 << PC_REGNUM)));
   fputc ('\t', stream);
   asm_fprintf (stream, instr, reg);
   fputc ('{', stream);
@@ -8762,7 +8765,10 @@ print_multi_reg (FILE *stream, const char *instr, unsigned reg,
 	not_first = TRUE;
       }
 
-  fprintf (stream, "}\n");
+  if (rfe)
+    fprintf (stream, "}^\n");
+  else
+    fprintf (stream, "}\n");
 }
 
 
@@ -9971,10 +9977,10 @@ output_return_instruction (rtx operand, int really_return, int reverse)
       const char * return_reg;
 
       /* If we do not have any special requirements for function exit
-	 (e.g. interworking, or ISR) then we can load the return address
+	 (e.g. interworking) then we can load the return address
 	 directly into the PC.  Otherwise we must load it into LR.  */
       if (really_return
-	  && ! TARGET_INTERWORK)
+	  && (IS_INTERRUPT (func_type) || !TARGET_INTERWORK))
 	return_reg = reg_names[PC_REGNUM];
       else
 	return_reg = reg_names[LR_REGNUM];
@@ -10427,16 +10433,17 @@ arm_output_epilogue (rtx sibling)
 	  || current_function_calls_alloca)
 	asm_fprintf (f, "\tsub\t%r, %r, #%d\n", SP_REGNUM, FP_REGNUM,
 		     4 * bit_count (saved_regs_mask));
-      print_multi_reg (f, "ldmfd\t%r, ", SP_REGNUM, saved_regs_mask);
+      print_multi_reg (f, "ldmfd\t%r, ", SP_REGNUM, saved_regs_mask, 0);
 
       if (IS_INTERRUPT (func_type))
 	/* Interrupt handlers will have pushed the
 	   IP onto the stack, so restore it now.  */
-	print_multi_reg (f, "ldmfd\t%r!, ", SP_REGNUM, 1 << IP_REGNUM);
+	print_multi_reg (f, "ldmfd\t%r!, ", SP_REGNUM, 1 << IP_REGNUM, 0);
     }
   else
     {
       HOST_WIDE_INT amount;
+      int rfe;
       /* Restore stack pointer if necessary.  */
       if (frame_pointer_needed)
 	{
@@ -10527,7 +10534,8 @@ arm_output_epilogue (rtx sibling)
 	    asm_fprintf (f, "\twldrd\t%r, [%r], #8\n", reg, SP_REGNUM);
 
       /* If we can, restore the LR into the PC.  */
-      if (ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL
+      if (ARM_FUNC_TYPE (func_type) != ARM_FT_INTERWORKED
+	  && (TARGET_ARM || ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL)
 	  && !IS_STACKALIGN (func_type)
 	  && really_return
 	  && current_function_pretend_args_size == 0
@@ -10536,12 +10544,16 @@ arm_output_epilogue (rtx sibling)
 	{
 	  saved_regs_mask &= ~ (1 << LR_REGNUM);
 	  saved_regs_mask |=   (1 << PC_REGNUM);
+	  rfe = IS_INTERRUPT (func_type);
 	}
+      else
+	rfe = 0;
 
       /* Load the registers off the stack.  If we only have one register
 	 to load use the LDR instruction - it is faster.  For Thumb-2
 	 always use pop and the assembler will pick the best instruction.*/
-      if (TARGET_ARM && saved_regs_mask == (1 << LR_REGNUM))
+      if (TARGET_ARM && saved_regs_mask == (1 << LR_REGNUM)
+	  && !IS_INTERRUPT(func_type))
 	{
 	  asm_fprintf (f, "\tldr\t%r, [%r], #4\n", LR_REGNUM, SP_REGNUM);
 	}
@@ -10552,11 +10564,13 @@ arm_output_epilogue (rtx sibling)
 	       (i.e. "ldmfd sp!...").  We know that the stack pointer is
 	       in the list of registers and if we add writeback the
 	       instruction becomes UNPREDICTABLE.  */
-	    print_multi_reg (f, "ldmfd\t%r, ", SP_REGNUM, saved_regs_mask);
+	    print_multi_reg (f, "ldmfd\t%r, ", SP_REGNUM, saved_regs_mask,
+			     rfe);
 	  else if (TARGET_ARM)
-	    print_multi_reg (f, "ldmfd\t%r!, ", SP_REGNUM, saved_regs_mask);
+	    print_multi_reg (f, "ldmfd\t%r!, ", SP_REGNUM, saved_regs_mask,
+			     rfe);
 	  else
-	    print_multi_reg (f, "pop\t", SP_REGNUM, saved_regs_mask);
+	    print_multi_reg (f, "pop\t", SP_REGNUM, saved_regs_mask, 0);
 	}
 
       if (current_function_pretend_args_size)
@@ -11389,7 +11403,8 @@ arm_expand_prologue (void)
      can be done with a single instruction.  */
   if ((func_type == ARM_FT_ISR || func_type == ARM_FT_FIQ)
       && (live_regs_mask & (1 << LR_REGNUM)) != 0
-      && ! frame_pointer_needed)
+      && ! frame_pointer_needed
+      && TARGET_ARM)
     {
       rtx lr = gen_rtx_REG (SImode, LR_REGNUM);
       
