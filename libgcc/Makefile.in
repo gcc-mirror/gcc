@@ -729,6 +729,15 @@ gcc-extra-parts:
 
 all: $(extra-parts)
 
+# Documentation targets (empty).
+info:
+
+html:
+
+dvi:
+
+pdf:
+
 # Install rules.  These do not depend on "all", so that they can be invoked
 # recursively from it.
 install-libunwind:
