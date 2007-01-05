@@ -5587,11 +5587,11 @@ check_function_nonnull (tree attrs, tree params)
 	       param_num++, param = TREE_CHAIN (param))
 	    {
 	      if (!param)
-	break;
+		break;
 	      if (!args || nonnull_check_p (args, param_num))
-	check_function_arguments_recurse (check_nonnull_arg, NULL,
-					  TREE_VALUE (param),
-					  param_num);
+		check_function_arguments_recurse (check_nonnull_arg, NULL,
+						  TREE_VALUE (param),
+						  param_num);
 	    }
 	}
     }
