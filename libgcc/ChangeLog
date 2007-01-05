@@ -1,3 +1,7 @@
+2007-01-05  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* Makefile.in (install): Handle multilibs.
+
 2007-01-04  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Makefile.in: Added .PHONY entry for documentation targets.
