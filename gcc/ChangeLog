@@ -1,5 +1,12 @@
 2007-01-05  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/27826
+	* tree.c (get_narrower): Do not construct COMPONENT_REFs
+	with mismatched types.  Instead explicitly build a
+	conversion NOP_EXPR.
+
+2007-01-05  Richard Guenther  <rguenther@suse.de>
+
 	Backport from mainline:
 	2006-06-24  Jan Hubicka  <jh@suse.cz>
 
