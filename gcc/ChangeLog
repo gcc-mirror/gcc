@@ -1,3 +1,7 @@
+2007-01-04  Ian Lance Taylor  <iant@google.com>
+
+	* c-common.c (check_function_nonnull): Whitespace fix.
+
 2007-01-04  Jan Hubicka  <jh@suse.cz>
 
 	* tree-optimize.c (execute_fixup_cfg): Correct previously mistakely
