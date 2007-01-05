@@ -3446,48 +3446,57 @@ static try
 resolve_deallocate_expr (gfc_expr * e)
 {
   symbol_attribute attr;
-  int allocatable;
+  int allocatable, pointer, check_intent_in;
   gfc_ref *ref;
+
+  /* Check INTENT(IN), unless the object is a sub-component of a pointer.  */
+  check_intent_in = 1;
 
   if (gfc_resolve_expr (e) == FAILURE)
     return FAILURE;
-
-  attr = gfc_expr_attr (e);
-  if (attr.pointer)
-    return SUCCESS;
 
   if (e->expr_type != EXPR_VARIABLE)
     goto bad;
 
   allocatable = e->symtree->n.sym->attr.allocatable;
+  pointer = e->symtree->n.sym->attr.pointer;
   for (ref = e->ref; ref; ref = ref->next)
-    switch (ref->type)
-      {
-      case REF_ARRAY:
-	if (ref->u.ar.type != AR_FULL)
+    {
+      if (pointer)
+        check_intent_in = 0;
+
+      switch (ref->type)
+        {
+        case REF_ARRAY:
+	  if (ref->u.ar.type != AR_FULL)
+	    allocatable = 0;
+	  break;
+
+        case REF_COMPONENT:
+	  allocatable = (ref->u.c.component->as != NULL
+		         && ref->u.c.component->as->type == AS_DEFERRED);
+	  pointer = ref->u.c.component->pointer;
+	  break;
+
+        case REF_SUBSTRING:
 	  allocatable = 0;
-	break;
+	  break;
+        }
+    }
 
-      case REF_COMPONENT:
-	allocatable = (ref->u.c.component->as != NULL
-		       && ref->u.c.component->as->type == AS_DEFERRED);
-	break;
+  attr = gfc_expr_attr (e);
 
-      case REF_SUBSTRING:
-	allocatable = 0;
-	break;
-      }
-
-  if (allocatable == 0)
+  if (allocatable == 0 && attr.pointer == 0)
     {
     bad:
       gfc_error ("Expression in DEALLOCATE statement at %L must be "
 		 "ALLOCATABLE or a POINTER", &e->where);
     }
 
-  if (e->symtree->n.sym->attr.intent == INTENT_IN)
+  if (check_intent_in
+      && e->symtree->n.sym->attr.intent == INTENT_IN)
     {
-      gfc_error ("Can't deallocate INTENT(IN) variable '%s' at %L",
+      gfc_error ("Cannot deallocate INTENT(IN) variable '%s' at %L",
                  e->symtree->n.sym->name, &e->where);
       return FAILURE;
     }
@@ -3609,7 +3618,7 @@ expr_to_initialize (gfc_expr * e)
 static try
 resolve_allocate_expr (gfc_expr * e, gfc_code * code)
 {
-  int i, pointer, allocatable, dimension;
+  int i, pointer, allocatable, dimension, check_intent_in;
   symbol_attribute attr;
   gfc_ref *ref, *ref2;
   gfc_array_ref *ar;
@@ -3617,6 +3626,9 @@ resolve_allocate_expr (gfc_expr * e, gfc_code * code)
   gfc_expr *init_e;
   gfc_symbol *sym;
   gfc_alloc *a;
+
+  /* Check INTENT(IN), unless the object is a sub-component of a pointer.  */
+  check_intent_in = 1;
 
   if (gfc_resolve_expr (e) == FAILURE)
     return FAILURE;
@@ -3655,26 +3667,31 @@ resolve_allocate_expr (gfc_expr * e, gfc_code * code)
 	}
 
       for (ref = e->ref; ref; ref2 = ref, ref = ref->next)
-	switch (ref->type)
-	  {
-	  case REF_ARRAY:
-	    if (ref->next != NULL)
-	      pointer = 0;
-	    break;
+        {
+	  if (pointer)
+	    check_intent_in = 0;
 
-	  case REF_COMPONENT:
-	    allocatable = (ref->u.c.component->as != NULL
-			   && ref->u.c.component->as->type == AS_DEFERRED);
+	  switch (ref->type)
+	    {
+ 	      case REF_ARRAY:
+	        if (ref->next != NULL)
+	          pointer = 0;
+	        break;
 
-	    pointer = ref->u.c.component->pointer;
-	    dimension = ref->u.c.component->dimension;
-	    break;
+	      case REF_COMPONENT:
+	        allocatable = (ref->u.c.component->as != NULL
+			      && ref->u.c.component->as->type == AS_DEFERRED);
 
-	  case REF_SUBSTRING:
-	    allocatable = 0;
-	    pointer = 0;
-	    break;
-	  }
+	        pointer = ref->u.c.component->pointer;
+	        dimension = ref->u.c.component->dimension;
+	        break;
+
+	      case REF_SUBSTRING:
+	        allocatable = 0;
+	        pointer = 0;
+	        break;
+	    }
+       }
     }
 
   if (allocatable == 0 && pointer == 0)
@@ -3684,9 +3701,10 @@ resolve_allocate_expr (gfc_expr * e, gfc_code * code)
       return FAILURE;
     }
 
-  if (e->symtree->n.sym->attr.intent == INTENT_IN)
+  if (check_intent_in
+      && e->symtree->n.sym->attr.intent == INTENT_IN)
     {
-      gfc_error ("Can't allocate INTENT(IN) variable '%s' at %L",
+      gfc_error ("Cannot allocate INTENT(IN) variable '%s' at %L",
                  e->symtree->n.sym->name, &e->where);
       return FAILURE;
     }

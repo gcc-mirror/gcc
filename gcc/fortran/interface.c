@@ -1664,6 +1664,27 @@ check_some_aliasing (gfc_formal_arglist * f, gfc_actual_arglist * a)
 }
 
 
+/* Given a symbol of a formal argument list and an expression,
+   return non-zero if their intents are compatible, zero otherwise.  */
+
+static int
+compare_parameter_intent (gfc_symbol * formal, gfc_expr * actual)
+{
+  if (actual->symtree->n.sym->attr.pointer
+      && !formal->attr.pointer)
+    return 1;
+
+  if (actual->symtree->n.sym->attr.intent != INTENT_IN)
+    return 1;
+
+  if (formal->attr.intent == INTENT_INOUT
+      || formal->attr.intent == INTENT_OUT)
+    return 0;
+
+  return 1;
+}
+
+
 /* Given formal and actual argument lists that correspond to one
    another, check that they are compatible in the sense that intents
    are not mismatched.  */
@@ -1671,7 +1692,7 @@ check_some_aliasing (gfc_formal_arglist * f, gfc_actual_arglist * a)
 static try
 check_intents (gfc_formal_arglist * f, gfc_actual_arglist * a)
 {
-  sym_intent a_intent, f_intent;
+  sym_intent f_intent;
 
   for (;; f = f->next, a = a->next)
     {
@@ -1683,12 +1704,9 @@ check_intents (gfc_formal_arglist * f, gfc_actual_arglist * a)
       if (a->expr == NULL || a->expr->expr_type != EXPR_VARIABLE)
 	continue;
 
-      a_intent = a->expr->symtree->n.sym->attr.intent;
       f_intent = f->sym->attr.intent;
 
-      if (a_intent == INTENT_IN
-	  && (f_intent == INTENT_INOUT
-	      || f_intent == INTENT_OUT))
+      if (!compare_parameter_intent(f->sym, a->expr))
 	{
 
 	  gfc_error ("Procedure argument at %L is INTENT(IN) while interface "

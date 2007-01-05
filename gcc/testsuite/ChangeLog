@@ -1,4 +1,16 @@
-2006-01-04  Brooks Moses  <brooks.moses@codesourcery.com>
+2006-01-05  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/29624
+	* gfortran.dg/alloc_alloc_expr_1.f90: Add check for
+	  invalid deallocate.
+	* gfortran.dg/allocatable_dummy_2.f90: Update dg-error.
+	* gfortran.dg/protected_4.f90: Add pointer intent check.
+	* gfortran.dg/protected_6.f90: Add pointer intent check.
+	* gfortran.dg/pointer_intent_1.f90: New test.
+	* gfortran.dg/pointer_intent_2.f90: New test.
+	* gfortran.dg/pointer_intent_3.f90: New test.
+
+2007-01-04  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	PR 30235
 	* gfortran.dg/altreturn_2.f90: new test.

@@ -24,6 +24,8 @@ program fc011
 
   ALLOCATE(PTR,ALLOCS(PTR)) ! { dg-error "same ALLOCATE statement" }
 
-  print *, 'This program has three errors', PTR, ALLOC(1)
+  deallocate(ALLOCS(1)) ! { dg-error "must be ALLOCATABLE or a POINTER" }
+
+  print *, 'This program has four errors', PTR, ALLOC(1)
 
 end program fc011
