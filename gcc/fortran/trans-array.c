@@ -1224,6 +1224,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	      TREE_STATIC (tmp) = 1;
 	      TREE_CONSTANT (tmp) = 1;
 	      TREE_INVARIANT (tmp) = 1;
+	      TREE_READONLY (tmp) = 1;
 	      DECL_INITIAL (tmp) = init;
 	      init = tmp;
 
