@@ -1,3 +1,8 @@
+2007-01-04  Mike Stump  <mrs@apple.com>
+
+	* Makefile.in (mostlyclean): Don't remove libgcc anymore.
+	(clean): Likewise.
+
 2007-01-04  Eric Christopher  <echristo@apple.com>
 
 	* libgcc2.c (__bswapsi2): Use SItype.
