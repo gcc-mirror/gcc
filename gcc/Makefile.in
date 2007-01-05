@@ -3524,7 +3524,6 @@ fsf-funding.pod: funding.texi
 mostlyclean: lang.mostlyclean
 	-rm -f $(STAGECOPYSTUFF) $(STAGEMOVESTUFF)
 	-rm -f *$(coverageexts)
-	-rm -rf libgcc
 # Delete build programs
 	-rm -f build/*
 	-rm -f mddeps.mk
@@ -3568,7 +3567,6 @@ clean: mostlyclean lang.clean
 	-rm -f config.h tconfig.h bconfig.h tm_p.h tm.h
 	-rm -f options.c options.h optionlist
 	-rm -f cs-*
-	-rm -rf libgcc
 	-rm -f doc/*.dvi
 	-rm -f doc/*.pdf
 # Delete the include directory.
