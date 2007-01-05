@@ -4,6 +4,12 @@
 	* libgcc2.c (__divdc3): Compare c and d against 0.0 instead of
 	denom against 0.0.
 
+	Backported from mainline
+	2006-09-17  Steven Bosscher  <steven@gcc.gnu.org>
+	PR c/25993
+	* c-opts.c (c_common_handle_option): Ignore the -std options
+	if the input language is assembly.
+
 2007-01-05  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/28116

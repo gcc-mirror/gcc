@@ -3,6 +3,14 @@
 	PR c/30360
 	* gcc.dg/pr30360.c: New test.
 
+	Backported from mainline
+	2006-10-13  Eric Christopher  <echristo@apple.com>
+	* gcc.dg/pr25993.c: Skip for darwin.
+
+	2006-09-16  Steven Bosscher  <steven@gcc.gnu.org>
+	PR c/25993
+	* gcc.dg/pr25993.c: New test.
+
 2007-01-05  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/28116

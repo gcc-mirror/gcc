@@ -265,6 +265,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
   enum opt_code code = (enum opt_code) scode;
   int result = 1;
 
+  /* Prevent resetting the language standard to a C dialect when the driver
+     has already determined that we're looking at assembler input.  */
+  bool preprocessing_asm_p = (cpp_get_options (parse_in)->lang == CLK_ASM);
+ 
   switch (code)
     {
     default:
@@ -896,29 +900,34 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_std_c__98:
     case OPT_std_gnu__98:
-      set_std_cxx98 (code == OPT_std_c__98 /* ISO */);
+      if (!preprocessing_asm_p)
+	set_std_cxx98 (code == OPT_std_c__98 /* ISO */);
       break;
 
     case OPT_std_c89:
     case OPT_std_iso9899_1990:
     case OPT_std_iso9899_199409:
-      set_std_c89 (code == OPT_std_iso9899_199409 /* c94 */, true /* ISO */);
+      if (!preprocessing_asm_p)
+	set_std_c89 (code == OPT_std_iso9899_199409 /* c94 */, true /* ISO */);
       break;
 
     case OPT_std_gnu89:
-      set_std_c89 (false /* c94 */, false /* ISO */);
+      if (!preprocessing_asm_p)
+	set_std_c89 (false /* c94 */, false /* ISO */);
       break;
 
     case OPT_std_c99:
     case OPT_std_c9x:
     case OPT_std_iso9899_1999:
     case OPT_std_iso9899_199x:
-      set_std_c99 (true /* ISO */);
+      if (!preprocessing_asm_p)
+	set_std_c99 (true /* ISO */);
       break;
 
     case OPT_std_gnu99:
     case OPT_std_gnu9x:
-      set_std_c99 (false /* ISO */);
+      if (!preprocessing_asm_p)
+	set_std_c99 (false /* ISO */);
       break;
 
     case OPT_trigraphs:
