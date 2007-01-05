@@ -1,5 +1,17 @@
 2007-01-04  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* intrinsic.texi (LBOUND): Add documentation.
+	(LGE): Add documentation.
+	(LGT): Add documentation.
+	(LINK): Add documentation.
+	(LLE): Add documentation.
+	(LLT): Add documentation.
+	(LNBLNK): Add documentation.
+	(UBOUND): Add documentation.
+	(UNLINK): Add documentation.
+
+2007-01-04  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* intrinsic.texi (IAND): Clarify argument specifications.
 	(IBCLR): Add documentation.
 	(IBITS): Add documentation.

@@ -5288,12 +5288,11 @@ end program test_kind
 @node LBOUND
 @section @code{LBOUND} --- Lower dimension bounds of an array
 @cindex @code{LBOUND} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
 
 @table @asis
 @item @emph{Description}:
+Returns the lower bounds of an array, or a single lower bound
+along the @var{DIM} dimension.
 @item @emph{Standard}:
 F95 and later
 
@@ -5301,13 +5300,25 @@ F95 and later
 Inquiry function
 
 @item @emph{Syntax}:
+@code{I = LBOUND(ARRAY [, DIM])}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{ARRAY} @tab Shall be an array, of any type.
+@item @var{DIM} @tab (Optional) Shall be a scalar @code{INTEGER(*)}.
+@end multitable
+
 @item @emph{Return value}:
-@item @emph{Example}:
+If @var{DIM} is absent, the result is an array of the lower bounds of
+@var{ARRAY}.  If @var{DIM} is present, the result is a scalar
+corresponding to the lower bound of the array along that dimension.  If
+@var{ARRAY} is an expression rather than a whole array or array
+structure component, or if it has a zero extent along the relevant
+dimension, the lower bound is taken to be 1.
+
 @item @emph{See also}:
 @ref{UBOUND}
 @end table
-
 
 
 
@@ -5378,16 +5389,27 @@ The return value is of @code{INTEGER(kind=4)} type.
 
 
 
-
 @node LGE
 @section @code{LGE} --- Lexical greater than or equal
 @cindex @code{LGE} intrinsic
 @cindex comparison (lexical)
-
-Intrinsic implemented, documentation pending.
+@cindex lexical comparison
 
 @table @asis
 @item @emph{Description}:
+Determines whether one string is lexically greater than or equal to
+another string, where the two strings are interpreted as containing
+ASCII character codes.  If the String A and String B are not the same
+length, the shorter is compared as if spaces were appended to it to form
+a value that has the same length as the longer.
+
+In general, the lexical comparison intrinsics @code{LGE}, @code{LGT},
+@code{LLE}, and @code{LLT} differ from the corresponding intrinsic
+operators @code{.GE.}, @code{.GT.}, @code{.LE.}, and @code{.LT.}, in
+that the latter use the processor's character ordering (which is not
+ASCII on some targets), whereas the former always use the ASCII
+ordering.
+
 @item @emph{Standard}:
 F77 and later
 
@@ -5395,9 +5417,17 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
+@code{L = LGE(STRING_A, STRING_B)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{STRING_A} @tab Shall be of default @code{CHARACTER} type.
+@item @var{STRING_B} @tab Shall be of default @code{CHARACTER} type.
+@end multitable
+
 @item @emph{Return value}:
-@item @emph{Example}:
+Returns @code{.TRUE.} if @code{STRING_A >= STRING_B}, and @code{.FALSE.}
+otherwise, based on the ASCII ordering.
 
 @item @emph{See also}:
 @ref{LGT}, @ref{LLE}, @ref{LLT}
@@ -5405,16 +5435,27 @@ Elemental function
 
 
 
-
 @node LGT
 @section @code{LGT} --- Lexical greater than
 @cindex @code{LGT} intrinsic
 @cindex comparison (lexical)
-
-Intrinsic implemented, documentation pending.
+@cindex lexical comparison
 
 @table @asis
 @item @emph{Description}:
+Determines whether one string is lexically greater than another string,
+where the two strings are interpreted as containing ASCII character
+codes.  If the String A and String B are not the same length, the
+shorter is compared as if spaces were appended to it to form a value
+that has the same length as the longer.
+
+In general, the lexical comparison intrinsics @code{LGE}, @code{LGT},
+@code{LLE}, and @code{LLT} differ from the corresponding intrinsic
+operators @code{.GE.}, @code{.GT.}, @code{.LE.}, and @code{.LT.}, in
+that the latter use the processor's character ordering (which is not
+ASCII on some targets), whereas the former always use the ASCII
+ordering.
+
 @item @emph{Standard}:
 F77 and later
 
@@ -5422,14 +5463,21 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
+@code{L = LGT(STRING_A, STRING_B)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{STRING_A} @tab Shall be of default @code{CHARACTER} type.
+@item @var{STRING_B} @tab Shall be of default @code{CHARACTER} type.
+@end multitable
+
 @item @emph{Return value}:
-@item @emph{Example}:
+Returns @code{.TRUE.} if @code{STRING_A > STRING_B}, and @code{.FALSE.}
+otherwise, based on the ASCII ordering.
 
 @item @emph{See also}:
 @ref{LGE}, @ref{LLE}, @ref{LLT}
 @end table
-
 
 
 
@@ -5438,10 +5486,13 @@ Elemental function
 @cindex @code{LINK} intrinsic
 @cindex file system operations
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+Makes a (hard) link from file @var{PATH1} to @var{PATH2}. A null character (@code{CHAR(0)}) can be used to mark the
+end of the names in @var{PATH1} and @var{PATH2}; otherwise, trailing blanks in the file names are
+ignored.  If the @var{STATUS} argument is supplied, it contains 0 on success or a nonzero error code
+upon return; see @code{link(2)}.
+
 @item @emph{Standard}:
 GNU extension
 
@@ -5449,10 +5500,14 @@ GNU extension
 Subroutine
 
 @item @emph{Syntax}:
+@code{CALL LINK(PATH1, PATH2 [, STATUS])}
+
 @item @emph{Arguments}:
-@item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
+@multitable @columnfractions .15 .80
+@item @var{PATH1} @tab Shall be of default @code{CHARACTER} type.
+@item @var{PATH2} @tab Shall be of default @code{CHARACTER} type.
+@item @var{STATUS} @tab (Optional) Shall be of default @code{INTEGER} type.
+@end multitable
 
 @item @emph{See also}:
 @ref{UNLINK}
@@ -5460,16 +5515,27 @@ Subroutine
 
 
 
-
 @node LLE
 @section @code{LLE} --- Lexical less than or equal
 @cindex @code{LLE} intrinsic
 @cindex comparison (lexical)
-
-Intrinsic implemented, documentation pending.
+@cindex lexical comparison
 
 @table @asis
 @item @emph{Description}:
+Determines whether one string is lexically less than or equal to another
+string, where the two strings are interpreted as containing ASCII
+character codes.  If the String A and String B are not the same length,
+the shorter is compared as if spaces were appended to it to form a value
+that has the same length as the longer.
+
+In general, the lexical comparison intrinsics @code{LGE}, @code{LGT},
+@code{LLE}, and @code{LLT} differ from the corresponding intrinsic
+operators @code{.GE.}, @code{.GT.}, @code{.LE.}, and @code{.LT.}, in
+that the latter use the processor's character ordering (which is not
+ASCII on some targets), whereas the former always use the ASCII
+ordering.
+
 @item @emph{Standard}:
 F77 and later
 
@@ -5477,9 +5543,17 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
+@code{L = LLE(STRING_A, STRING_B)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{STRING_A} @tab Shall be of default @code{CHARACTER} type.
+@item @var{STRING_B} @tab Shall be of default @code{CHARACTER} type.
+@end multitable
+
 @item @emph{Return value}:
-@item @emph{Example}:
+Returns @code{.TRUE.} if @code{STRING_A <= STRING_B}, and @code{.FALSE.}
+otherwise, based on the ASCII ordering.
 
 @item @emph{See also}:
 @ref{LGE}, @ref{LGT}, @ref{LLT}
@@ -5487,16 +5561,29 @@ Elemental function
 
 
 
-
 @node LLT
 @section @code{LLT} --- Lexical less than
 @cindex @code{LLT} intrinsic
 @cindex comparison (lexical)
+@cindex lexical comparison
 
 Intrinsic implemented, documentation pending.
 
 @table @asis
 @item @emph{Description}:
+Determines whether one string is lexically less than another string,
+where the two strings are interpreted as containing ASCII character
+codes.  If the String A and String B are not the same length, the
+shorter is compared as if spaces were appended to it to form a value
+that has the same length as the longer.
+
+In general, the lexical comparison intrinsics @code{LGE}, @code{LGT},
+@code{LLE}, and @code{LLT} differ from the corresponding intrinsic
+operators @code{.GE.}, @code{.GT.}, @code{.LE.}, and @code{.LT.}, in
+that the latter use the processor's character ordering (which is not
+ASCII on some targets), whereas the former always use the ASCII
+ordering.
+
 @item @emph{Standard}:
 F77 and later
 
@@ -5504,9 +5591,17 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
+@code{L = LLT(STRING_A, STRING_B)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{STRING_A} @tab Shall be of default @code{CHARACTER} type.
+@item @var{STRING_B} @tab Shall be of default @code{CHARACTER} type.
+@end multitable
+
 @item @emph{Return value}:
-@item @emph{Example}:
+Returns @code{.TRUE.} if @code{STRING_A < STRING_B}, and @code{.FALSE.}
+otherwise, based on the ASCII ordering.
 
 @item @emph{See also}:
 @ref{LGE}, @ref{LGT}, @ref{LLE}
@@ -5514,30 +5609,37 @@ Elemental function
 
 
 
-
 @node LNBLNK
 @section @code{LNBLNK} --- Index of the last non-blank character in a string
 @cindex @code{LNBLNK} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
 
 @table @asis
 @item @emph{Description}:
+Returns the length of a character string, ignoring any trailing blanks.
+This is identical to the standard @code{LEN_TRIM} intrinsic, and is only
+included for backwards compatibility.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
+Elemental function
+
 @item @emph{Syntax}:
+@code{L = LNBLNK(STRING)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{STRING} @tab Shall be a scalar of type @code{CHARACTER(*)},
+with @code{INTENT(IN)}
+@end multitable
+
 @item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
+The return value is of @code{INTEGER(kind=4)} type.
 
 @item @emph{See also}:
 @ref{INDEX}, @ref{LEN_TRIM}
 @end table
-
 
 
 
@@ -8247,17 +8349,14 @@ Transformational function
 
 
 
-
 @node UBOUND
 @section @code{UBOUND} --- Upper dimension bounds of an array
 @cindex @code{UBOUND} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
 
 @table @asis
 @item @emph{Description}:
-
+Returns the upper bounds of an array, or a single upper bound
+along the @var{DIM} dimension.
 @item @emph{Standard}:
 F95 and later
 
@@ -8265,15 +8364,26 @@ F95 and later
 Inquiry function
 
 @item @emph{Syntax}:
+@code{I = UBOUND(ARRAY [, DIM])}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{ARRAY} @tab Shall be an array, of any type.
+@item @var{DIM} @tab (Optional) Shall be a scalar @code{INTEGER(*)}.
+@end multitable
+
 @item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
+If @var{DIM} is absent, the result is an array of the upper bounds of
+@var{ARRAY}.  If @var{DIM} is present, the result is a scalar
+corresponding to the upper bound of the array along that dimension.  If
+@var{ARRAY} is an expression rather than a whole array or array
+structure component, or if it has a zero extent along the relevant
+dimension, the upper bound is taken to be the number of elements along
+the relevant dimension.
 
 @item @emph{See also}:
 @ref{LBOUND}
 @end table
-
 
 
 
@@ -8302,16 +8412,18 @@ Subroutine
 
 
 
-
 @node UNLINK
 @section @code{UNLINK} --- Remove a file from the file system
 @cindex @code{UNLINK} intrinsic
 @cindex file system operations
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+Unlinks the file @var{PATH}. A null character (@code{CHAR(0)}) can be used to mark the
+end of the name in @var{PATH}; otherwise, trailing blanks in the file name are
+ignored.  If the @var{STATUS} argument is supplied, it contains 0 on success or a nonzero error code
+upon return; see @code{link(2)}.
+
 @item @emph{Standard}:
 GNU extension
 
@@ -8319,14 +8431,17 @@ GNU extension
 Subroutine
 
 @item @emph{Syntax}:
+@code{CALL UNLINK(PATH [, STATUS])}
+
 @item @emph{Arguments}:
-@item @emph{Return value}:
-@item @emph{Example}:
+@multitable @columnfractions .15 .80
+@item @var{PATH} @tab Shall be of default @code{CHARACTER} type.
+@item @var{STATUS} @tab (Optional) Shall be of default @code{INTEGER} type.
+@end multitable
 
 @item @emph{See also}:
 @ref{LINK}
 @end table
-
 
 
 
