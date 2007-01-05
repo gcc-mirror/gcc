@@ -573,7 +573,7 @@ conflict_std:
   if (name == NULL)
     {
       return gfc_notify_std (standard, "Fortran 2003: %s attribute "
-                             "conflicts with %s attribute at %L", a1, a2,
+                             "with %s attribute at %L", a1, a2,
                              where);
     }
   else

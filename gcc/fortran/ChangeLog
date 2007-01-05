@@ -1,3 +1,7 @@
+2007-01-05  Tobias Burnus  <burnus@net-b.de>
+
+	* symbol.c (check_conflict): Fix error message.
+
 2007-01-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/23232
