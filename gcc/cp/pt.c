@@ -7530,6 +7530,8 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		     require structural equality checking to compare
 		     TEMPLATE_TEMPLATE_PARMs. */
 		  SET_TYPE_STRUCTURAL_EQUALITY (r);
+		else if (TYPE_STRUCTURAL_EQUALITY_P (t))
+		  SET_TYPE_STRUCTURAL_EQUALITY (r);
 		else
 		  TYPE_CANONICAL (r) = canonical_type_parameter (r);
 

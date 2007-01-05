@@ -1,3 +1,8 @@
+2007-01-05  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* pt.c (tsubst): Propagate the need for structural equality checks
+	when reducing the level of template parameters.
+
 2007-01-03  Kazu Hirata  <kazu@codesourcery.com>
 
 	* pt.c: Fix a comment typo.
