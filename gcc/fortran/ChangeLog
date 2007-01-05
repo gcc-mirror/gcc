@@ -1,3 +1,9 @@
+2007-01-03  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	PR 30371
+	* check.c (gfc_check_kill_sub): Add checks for non-scalar
+	arguments.
+
 2007-01-04  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* intrinsic.texi: Minor cleanup, reflowing overlong

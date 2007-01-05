@@ -1327,7 +1327,13 @@ gfc_check_kill_sub (gfc_expr * pid, gfc_expr * sig, gfc_expr * status)
   if (type_check (pid, 0, BT_INTEGER) == FAILURE)
     return FAILURE;
 
+  if (scalar_check (pid, 0) == FAILURE)
+    return FAILURE;
+
   if (type_check (sig, 1, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (scalar_check (sig, 1) == FAILURE)
     return FAILURE;
 
   if (status == NULL)
