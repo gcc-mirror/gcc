@@ -3579,11 +3579,76 @@ gfc_trans_zero_assign (gfc_expr * expr)
   return fold_convert (void_type_node, tmp);
 }
 
-/* Translate an assignment.  Most of the code is concerned with
-   setting up the scalarizer.  */
+/* Try to efficiently translate dst(:) = src(:).  Return NULL if this
+   can't be done.  EXPR1 is the destination/lhs and EXPR2 is the
+   source/rhs, both are gfc_full_array_ref_p which have been checked for
+   dependencies.  */
 
-tree
-gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2, bool init_flag)
+static tree
+gfc_trans_array_copy (gfc_expr * expr1, gfc_expr * expr2)
+{
+  tree dst, dlen, dtype;
+  tree src, slen, stype;
+  tree tmp, args;
+
+  dst = gfc_get_symbol_decl (expr1->symtree->n.sym);
+  src = gfc_get_symbol_decl (expr2->symtree->n.sym);
+
+  dtype = TREE_TYPE (dst);
+  if (POINTER_TYPE_P (dtype))
+    dtype = TREE_TYPE (dtype);
+  stype = TREE_TYPE (src);
+  if (POINTER_TYPE_P (stype))
+    stype = TREE_TYPE (stype);
+
+  if (!GFC_ARRAY_TYPE_P (dtype) || !GFC_ARRAY_TYPE_P (stype))
+    return NULL_TREE;
+
+  /* Determine the lengths of the arrays.  */
+  dlen = GFC_TYPE_ARRAY_SIZE (dtype);
+  if (!dlen || TREE_CODE (dlen) != INTEGER_CST)
+    return NULL_TREE;
+  dlen = fold_build2 (MULT_EXPR, gfc_array_index_type, dlen,
+		      TYPE_SIZE_UNIT (gfc_get_element_type (dtype)));
+
+  slen = GFC_TYPE_ARRAY_SIZE (stype);
+  if (!slen || TREE_CODE (slen) != INTEGER_CST)
+    return NULL_TREE;
+  slen = fold_build2 (MULT_EXPR, gfc_array_index_type, slen,
+		      TYPE_SIZE_UNIT (gfc_get_element_type (stype)));
+
+  /* Sanity check that they are the same.  This should always be
+     the case, as we should already have checked for conformance.  */
+  if (!tree_int_cst_equal (slen, dlen))
+    return NULL_TREE;
+
+  /* Convert arguments to the correct types.  */
+  if (!POINTER_TYPE_P (TREE_TYPE (dst)))
+    dst = gfc_build_addr_expr (pvoid_type_node, dst);
+  else
+    dst = fold_convert (pvoid_type_node, dst);
+
+  if (!POINTER_TYPE_P (TREE_TYPE (src)))
+    src = gfc_build_addr_expr (pvoid_type_node, src);
+  else
+    src = fold_convert (pvoid_type_node, src);
+
+  dlen = fold_convert (size_type_node, dlen);
+
+  /* Construct call to __builtin_memcpy.  */
+  args = build_tree_list (NULL_TREE, dlen);
+  args = tree_cons (NULL_TREE, src, args);
+  args = tree_cons (NULL_TREE, dst, args);
+  tmp = build_function_call_expr (built_in_decls[BUILT_IN_MEMCPY], args);
+  return fold_convert (void_type_node, tmp);
+}
+
+
+/* Subroutine of gfc_trans_assignment that actually scalarizes the
+   assignment.  EXPR1 is the destination/RHS and EXPR2 is the source/LHS.  */
+
+static tree
+gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag)
 {
   gfc_se lse;
   gfc_se rse;
@@ -3595,26 +3660,6 @@ gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2, bool init_flag)
   stmtblock_t block;
   stmtblock_t body;
   bool l_is_temp;
-
-  /* Special case a single function returning an array.  */
-  if (expr2->expr_type == EXPR_FUNCTION && expr2->rank > 0)
-    {
-      tmp = gfc_trans_arrayfunc_assign (expr1, expr2);
-      if (tmp)
-	return tmp;
-    }
-
-  /* Special case assigning an array to zero.  */
-  if (expr1->expr_type == EXPR_VARIABLE
-      && expr1->rank > 0
-      && expr1->ref
-      && gfc_full_array_ref_p (expr1->ref)
-      && is_zero_initializer_p (expr2))
-    {
-      tmp = gfc_trans_zero_assign (expr1);
-      if (tmp)
-        return tmp;
-    }
 
   /* Assignment of the form lhs = rhs.  */
   gfc_start_block (&block);
@@ -3749,6 +3794,78 @@ gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2, bool init_flag)
     }
 
   return gfc_finish_block (&block);
+}
+
+
+/* Check whether EXPR, which is an EXPR_VARIABLE, is a copyable array.  */
+
+static bool
+copyable_array_p (gfc_expr * expr)
+{
+  /* First check it's an array.  */
+  if (expr->rank < 1 || !expr->ref)
+    return false;
+
+  /* Next check that it's of a simple enough type.  */
+  switch (expr->ts.type)
+    {
+    case BT_INTEGER:
+    case BT_REAL:
+    case BT_COMPLEX:
+    case BT_LOGICAL:
+      return true;
+
+    default:
+      break;
+    }
+
+  return false;
+}
+
+/* Translate an assignment.  */
+
+tree
+gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2, bool init_flag)
+{
+  tree tmp;
+
+  /* Special case a single function returning an array.  */
+  if (expr2->expr_type == EXPR_FUNCTION && expr2->rank > 0)
+    {
+      tmp = gfc_trans_arrayfunc_assign (expr1, expr2);
+      if (tmp)
+	return tmp;
+    }
+
+  /* Special case assigning an array to zero.  */
+  if (expr1->expr_type == EXPR_VARIABLE
+      && expr1->rank > 0
+      && expr1->ref
+      && gfc_full_array_ref_p (expr1->ref)
+      && is_zero_initializer_p (expr2))
+    {
+      tmp = gfc_trans_zero_assign (expr1);
+      if (tmp)
+        return tmp;
+    }
+
+  /* Special case copying one array to another.  */
+  if (expr1->expr_type == EXPR_VARIABLE
+      && copyable_array_p (expr1)
+      && gfc_full_array_ref_p (expr1->ref)
+      && expr2->expr_type == EXPR_VARIABLE
+      && copyable_array_p (expr2)
+      && gfc_full_array_ref_p (expr2->ref)
+      && gfc_compare_types (&expr1->ts, &expr2->ts)
+      && !gfc_check_dependency (expr1, expr2, 0))
+    {
+      tmp = gfc_trans_array_copy (expr1, expr2);
+      if (tmp)
+        return tmp;
+    }
+
+  /* Fallback to the scalarizer to generate explicit loops.  */
+  return gfc_trans_assignment_1 (expr1, expr2, init_flag);
 }
 
 tree
