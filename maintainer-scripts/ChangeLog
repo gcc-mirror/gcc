@@ -1,3 +1,8 @@
+2007-01-05  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* crontab: Spread snapshots more evenly throughout the week, and
+	in "ascending" order.  Build all at the same time of the day.
+
 2006-10-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* crontab: Add 4.2 branch.  Set trunk to 4.3.
