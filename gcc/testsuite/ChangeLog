@@ -1,3 +1,8 @@
+2007-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/30360
+	* gcc.dg/pr30360.c: New test.
+
 2007-01-05  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/28116
