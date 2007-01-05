@@ -2062,7 +2062,10 @@ cd @var{objdir}; make install
 @end smallexample
 
 We strongly recommend to install into a target directory where there is
-no previous version of GCC present.
+no previous version of GCC present.  Also, the GNAT runtime should not
+be stripped, as this would break certain features of the debugger that
+depend on this debugging information (catching Ada exceptions for
+instance).
 
 That step completes the installation of GCC; user level binaries can
 be found in @file{@var{prefix}/bin} where @var{prefix} is the value
