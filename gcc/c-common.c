@@ -2591,6 +2591,18 @@ pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
   return fold_build2 (resultcode, result_type, ptrop, intop);
 }
 
+/* Return whether EXPR is a declaration whose address can never be
+   NULL.  */
+
+bool
+decl_with_nonnull_addr_p (tree expr)
+{
+  return (DECL_P (expr)
+	  && (TREE_CODE (expr) == PARM_DECL
+	      || TREE_CODE (expr) == LABEL_DECL
+	      || !DECL_WEAK (expr)));
+}
+
 /* Prepare expr to be an argument of a TRUTH_NOT_EXPR,
    or for an `if' or `while' statement or ?..: exp.  It should already
    have been validated to be of suitable type; otherwise, a bad
@@ -2656,23 +2668,22 @@ c_common_truthvalue_conversion (tree expr)
     case ADDR_EXPR:
       {
  	tree inner = TREE_OPERAND (expr, 0);
-	if (DECL_P (inner)
-	    && (TREE_CODE (inner) == PARM_DECL
-		|| TREE_CODE (inner) == LABEL_DECL
-		|| !DECL_WEAK (inner)))
+	if (decl_with_nonnull_addr_p (inner))
 	  {
-	    /* Common Ada/Pascal programmer's mistake.  We always warn
-	       about this since it is so bad.  */
-	    warning (OPT_Walways_true, "the address of %qD will always evaluate as %<true%>",
+	    /* Common Ada/Pascal programmer's mistake.  */
+	    warning (OPT_Walways_true,
+		     "the address of %qD will always evaluate as %<true%>",
 		     inner);
 	    return truthvalue_true_node;
 	  }
 
-	/* If we are taking the address of an external decl, it might be
-	   zero if it is weak, so we cannot optimize.  */
-	if (DECL_P (inner)
-	    && DECL_EXTERNAL (inner))
-	  break;
+	/* If we still have a decl, it is possible for its address to
+	   be NULL, so we cannot optimize.  */
+	if (DECL_P (inner))
+	  {
+	    gcc_assert (DECL_WEAK (inner));
+	    break;
+	  }
 
 	if (TREE_SIDE_EFFECTS (inner))
 	  return build2 (COMPOUND_EXPR, truthvalue_type_node,

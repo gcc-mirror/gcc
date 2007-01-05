@@ -1,3 +1,8 @@
+2007-01-05  Ian Lance Taylor  <iant@google.com>
+
+	* typeck.c (build_binary_op): Warn about comparing a non-weak
+	address to NULL.
+
 2007-01-05  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* pt.c (tsubst): Propagate the need for structural equality checks

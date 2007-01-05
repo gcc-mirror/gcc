@@ -8013,10 +8013,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
       else if (code0 == POINTER_TYPE && null_pointer_constant_p (orig_op1))
 	{
 	  if (TREE_CODE (op0) == ADDR_EXPR
-	      && DECL_P (TREE_OPERAND (op0, 0))
-	      && (TREE_CODE (TREE_OPERAND (op0, 0)) == PARM_DECL
-		  || TREE_CODE (TREE_OPERAND (op0, 0)) == LABEL_DECL
-		  || !DECL_WEAK (TREE_OPERAND (op0, 0))))
+	      && decl_with_nonnull_addr_p (TREE_OPERAND (op0, 0)))
 	    warning (OPT_Walways_true, "the address of %qD will never be NULL",
 		     TREE_OPERAND (op0, 0));
 	  result_type = type0;
@@ -8024,10 +8021,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
       else if (code1 == POINTER_TYPE && null_pointer_constant_p (orig_op0))
 	{
 	  if (TREE_CODE (op1) == ADDR_EXPR
-	      && DECL_P (TREE_OPERAND (op1, 0))
-	      && (TREE_CODE (TREE_OPERAND (op1, 0)) == PARM_DECL
-		  || TREE_CODE (TREE_OPERAND (op1, 0)) == LABEL_DECL
-		  || !DECL_WEAK (TREE_OPERAND (op1, 0))))
+	      && decl_with_nonnull_addr_p (TREE_OPERAND (op1, 0)))
 	    warning (OPT_Walways_true, "the address of %qD will never be NULL",
 		     TREE_OPERAND (op1, 0));
 	  result_type = type1;
