@@ -1,3 +1,10 @@
+2007-01-05  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* Makefile.tpl (all-target): Correct @if conditional for target
+	modules.
+	* configure.in: Omit libiberty if building only target libgcc.
+	* configure, Makefile.in: Regenerated.
+
 2007-01-04  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.in: Use DEV-PHASE to detect the default for --enable-werror.
