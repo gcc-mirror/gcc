@@ -1,3 +1,12 @@
+2007-01-05  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2006-10-15  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/29241
+	* cgraphunit.c (cgraph_preserve_function_body_p): Preserve functions
+	declared always_inline even when not inlining.
+
 2007-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/30286

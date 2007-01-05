@@ -1222,7 +1222,9 @@ cgraph_preserve_function_body_p (tree decl)
   if (dump_enabled_p (TDI_tree_all))
     return true;
   if (!cgraph_global_info_ready)
-    return (DECL_INLINE (decl) && !flag_really_no_inline);
+    return (flag_really_no_inline
+	    ? lang_hooks.tree_inlining.disregard_inline_limits (decl)
+	    : DECL_INLINE (decl));
   /* Look if there is any clone around.  */
   for (node = cgraph_node (decl); node; node = node->next_clone)
     if (node->global.inlined_to)
