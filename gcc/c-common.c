@@ -920,39 +920,45 @@ constant_expression_warning (tree value)
     pedwarn ("overflow in constant expression");
 }
 
-/* Print a warning if an expression had overflow in folding.
+/* Print a warning if an expression had overflow in folding and its
+   operands hadn't.
+
    Invoke this function on every expression that
    (1) appears in the source code, and
-   (2) might be a constant expression that overflowed, and
+   (2) is a constant expression that overflowed, and
    (3) is not already checked by convert_and_check;
-   however, do not invoke this function on operands of explicit casts.  */
+   however, do not invoke this function on operands of explicit casts
+   or when the expression is the result of an operator and any operand
+   already overflowed.  */
 
 void
 overflow_warning (tree value)
 {
-  if ((TREE_CODE (value) == INTEGER_CST
-       || (TREE_CODE (value) == COMPLEX_CST
-	   && TREE_CODE (TREE_REALPART (value)) == INTEGER_CST))
-      && TREE_OVERFLOW (value))
+  if (skip_evaluation) return;
+
+  switch (TREE_CODE (value))
     {
-      TREE_OVERFLOW (value) = 0;
-      if (skip_evaluation == 0)
-	warning (OPT_Woverflow, "integer overflow in expression");
-    }
-  else if ((TREE_CODE (value) == REAL_CST
-	    || (TREE_CODE (value) == COMPLEX_CST
-		&& TREE_CODE (TREE_REALPART (value)) == REAL_CST))
-	   && TREE_OVERFLOW (value))
-    {
-      TREE_OVERFLOW (value) = 0;
-      if (skip_evaluation == 0)
-	warning (OPT_Woverflow, "floating point overflow in expression");
-    }
-  else if (TREE_CODE (value) == VECTOR_CST && TREE_OVERFLOW (value))
-    {
-      TREE_OVERFLOW (value) = 0;
-      if (skip_evaluation == 0)
-	warning (OPT_Woverflow, "vector overflow in expression");
+    case INTEGER_CST:
+      warning (OPT_Woverflow, "integer overflow in expression");
+      break;
+      
+    case REAL_CST:
+      warning (OPT_Woverflow, "floating point overflow in expression");
+      break;
+      
+    case VECTOR_CST:
+      warning (OPT_Woverflow, "vector overflow in expression");
+      break;
+      
+    case COMPLEX_CST:
+      if (TREE_CODE (TREE_REALPART (value)) == INTEGER_CST)
+	warning (OPT_Woverflow, "complex integer overflow in expression");
+      else if (TREE_CODE (TREE_REALPART (value)) == REAL_CST)
+	warning (OPT_Woverflow, "complex floating point overflow in expression");
+      break;
+
+    default:
+      break;
     }
 }
 
