@@ -794,9 +794,9 @@ all-target: maybe-all-target-libstdc++-v3
 all-target: maybe-all-target-libmudflap
 all-target: maybe-all-target-libssp
 all-target: maybe-all-target-newlib
-@if libgcc-no-bootstrap
+@if target-libgcc-no-bootstrap
 all-target: maybe-all-target-libgcc
-@endif libgcc-no-bootstrap
+@endif target-libgcc-no-bootstrap
 all-target: maybe-all-target-libgfortran
 all-target: maybe-all-target-libobjc
 all-target: maybe-all-target-libtermcap

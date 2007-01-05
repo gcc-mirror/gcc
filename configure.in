@@ -1439,10 +1439,14 @@ done
 
 # Sometimes the tools are distributed with libiberty but with no other
 # libraries.  In that case, we don't want to build target-libiberty.
+# Don't let libgcc imply libiberty either.
 if test -n "${target_configdirs}" ; then
+  libgcc=
   others=
   for i in `echo ${target_configdirs} | sed -e s/target-//g` ; do
-    if test "$i" != "libiberty" ; then
+    if test "$i" = "libgcc"; then
+      libgcc=target-libgcc
+    elif test "$i" != "libiberty" ; then
       if test -r $srcdir/$i/configure ; then
 	others=yes;
 	break;
@@ -1450,7 +1454,7 @@ if test -n "${target_configdirs}" ; then
     fi
   done
   if test -z "${others}" ; then
-    target_configdirs=
+    target_configdirs=$libgcc
   fi
 fi
 

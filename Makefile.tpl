@@ -531,9 +531,10 @@ all-host: maybe-all-[+module+][+ IF bootstrap +]
 
 .PHONY: all-target
 [+ FOR target_modules +][+ IF bootstrap +]
-@if [+module+]-no-bootstrap[+ ENDIF bootstrap +]
+@if target-[+module+]-no-bootstrap[+ ENDIF bootstrap +]
 all-target: maybe-all-target-[+module+][+ IF bootstrap +]
-@endif [+module+]-no-bootstrap[+ ENDIF bootstrap +][+ ENDFOR target_modules +]
+@endif target-[+module+]-no-bootstrap[+
+  ENDIF bootstrap +][+ ENDFOR target_modules +]
 
 # Do a target for all the subdirectories.  A ``make do-X'' will do a
 # ``make X'' in all subdirectories (because, in general, there is a
