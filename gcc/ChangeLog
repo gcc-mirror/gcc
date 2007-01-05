@@ -1,3 +1,8 @@
+2007-01-05  Joel Brobecker  <brobecker@adacore.com>
+
+	* doc/install.texi (Final install): Document the fact that
+	the GNAT runtime should not be stripped.
+
 2007-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/30360
