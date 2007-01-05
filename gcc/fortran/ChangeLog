@@ -1,3 +1,9 @@
+2007-01-05  Roger Sayle  <roger@eyesopen.com>
+
+	* trans-array.c (gfc_conv_loop_setup):  Test whether the loop
+	stride is one, to avoid fold_build2 introducing a useless
+	NON_LVALUE_EXPR node.
+
 2007-01-05  Tobias Burnus  <burnus@net-b.de>
 
 	* symbol.c (check_conflict): Fix error message.

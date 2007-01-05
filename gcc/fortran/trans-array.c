@@ -3141,8 +3141,10 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 	    {
 	      /* Calculate the offset relative to the loop variable.
 	         First multiply by the stride.  */
-	      tmp = fold_build2 (MULT_EXPR, gfc_array_index_type,
-				 loop->from[n], info->stride[n]);
+	      tmp = loop->from[n];
+	      if (!integer_onep (info->stride[n]))
+		tmp = fold_build2 (MULT_EXPR, gfc_array_index_type,
+				   tmp, info->stride[n]);
 
 	      /* Then subtract this from our starting value.  */
 	      tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
