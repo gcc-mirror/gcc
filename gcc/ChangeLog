@@ -1,5 +1,15 @@
 2007-01-05  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR c/19978
+	* tree.h (TREE_OVERFLOW_P): New.
+	* c-typeck.c (parser_build_unary_op): Warn only if result
+	overflowed and operands did not.
+	(parser_build_binary_op): Likewise.
+	(convert_for_assignment): Remove redundant overflow_warning.
+	* c-common.c (overflow_warning): Don't check or set TREE_OVERFLOW.
+
+2007-01-05  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	* c-typeck.c (store_init_value): Split over two lines to follow
 	the GNU coding style.
 

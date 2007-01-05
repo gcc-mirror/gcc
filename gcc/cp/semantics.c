@@ -2000,7 +2000,9 @@ finish_unary_op_expr (enum tree_code code, tree expr)
       result = copy_node (result);
       TREE_NEGATED_INT (result) = 1;
     }
-  overflow_warning (result);
+  if (TREE_OVERFLOW_P (result) && !TREE_OVERFLOW_P (expr))
+    overflow_warning (result);
+
   return result;
 }
 

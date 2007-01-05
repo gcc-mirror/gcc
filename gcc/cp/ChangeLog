@@ -1,3 +1,9 @@
+2007-01-05  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c/19978
+	* semantics.c (finish_unary_op_expr): Warn only if result
+	overflowed and operands did not.
+
 2007-01-05  Ian Lance Taylor  <iant@google.com>
 
 	* typeck.c (build_binary_op): Warn about comparing a non-weak
