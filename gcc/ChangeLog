@@ -1,3 +1,8 @@
+2007-01-05  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* c-typeck.c (store_init_value): Split over two lines to follow
+	the GNU coding style.
+
 2007-01-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): __GXX_EXPERIMENTAL_CPP0X__ to
