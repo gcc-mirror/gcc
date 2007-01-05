@@ -1,5 +1,11 @@
 2007-01-05  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/28116
+	* tree-inline.c (copy_body_r): Mark argument of ADDR_EXPR
+	addressable.
+
+2007-01-05  Richard Guenther  <rguenther@suse.de>
+
 	Backport from mainline:
 	2006-10-15  Jan Hubicka  <jh@suse.cz>
 

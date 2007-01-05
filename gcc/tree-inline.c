@@ -714,7 +714,11 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	  if (TREE_CODE (TREE_OPERAND (*tp, 0)) == INDIRECT_REF)
 	    *tp = TREE_OPERAND (TREE_OPERAND (*tp, 0), 0);
 	  else
-	    recompute_tree_invarant_for_addr_expr (*tp);
+	    {
+	      recompute_tree_invarant_for_addr_expr (*tp);
+	      if (DECL_P (TREE_OPERAND (*tp, 0)))
+	        TREE_ADDRESSABLE (TREE_OPERAND (*tp, 0)) = 1;
+	    }
 	  *walk_subtrees = 0;
 	}
     }

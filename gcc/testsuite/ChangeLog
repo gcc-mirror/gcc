@@ -1,5 +1,10 @@
 2007-01-05  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/28116
+	* g++.dg/opt/pr28116.C: New testcase.
+
+2007-01-05  Richard Guenther  <rguenther@suse.de>
+
 	Backport from mainline:
 	2006-10-15  Jan Hubicka  <jh@suse.cz>
 
