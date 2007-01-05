@@ -2094,7 +2094,7 @@ This macro is defined, with value 1, if the compiler uses the old
 mechanism based on @code{setjmp} and @code{longjmp} for exception
 handling.
 
-@item __GXX_EXPERIMENTAL_CPP0X__
+@item __GXX_EXPERIMENTAL_CXX0X__
 This macro is defined when compiling a C++ source file with the option
 @option{-std=c++0x} or @option{-std=gnu++0x}. It indicates that some
 features likely to be included in C++0x are available. Note that these
