@@ -1,5 +1,11 @@
 2007-01-05  Richard Guenther  <rguenther@suse.de>
 
+        PR tree-optimization/30212
+	* tree-vrp.c (adjust_range_with_scev): Do not adjust invalid
+	ranges by using TYPE_MIN_VALUE or TYPE_MAX_VALUE.
+
+2007-01-05  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/27826
 	* tree.c (get_narrower): Do not construct COMPONENT_REFs
 	with mismatched types.  Instead explicitly build a

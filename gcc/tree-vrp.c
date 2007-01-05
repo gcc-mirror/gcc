@@ -1816,10 +1816,11 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop, tree stmt,
 	      max = init;
 
 	      /* If we just created an invalid range with the minimum
-		 greater than the maximum, take the minimum all the
-		 way to -INF.  */
+		 greater than the maximum, we fail conservatively.
+		 This should happen only in unreachable
+		 parts of code, or for invalid programs.  */
 	      if (compare_values (min, max) == 1)
-		min = TYPE_MIN_VALUE (TREE_TYPE (min));
+		return;
 	    }
 	}
       else
@@ -1829,11 +1830,9 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop, tree stmt,
 	    {
 	      min = init;
 
-	      /* If we just created an invalid range with the minimum
-		 greater than the maximum, take the maximum all the
-		 way to +INF.  */
+	      /* Again, avoid creating invalid range by failing.  */
 	      if (compare_values (min, max) == 1)
-		max = TYPE_MAX_VALUE (TREE_TYPE (max));
+		return;
 	    }
 	}
 
