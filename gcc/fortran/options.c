@@ -309,6 +309,7 @@ set_Wall (void)
   gfc_option.warn_surprising = 1;
   gfc_option.warn_tabs = 0;
   gfc_option.warn_underflow = 1;
+  gfc_option.warn_character_truncation = 1;
 
   set_Wunused (1);
   warn_return_type = 1;

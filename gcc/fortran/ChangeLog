@@ -1,3 +1,33 @@
+2007-01-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/23232
+	* decl.c (gfc_in_match_data, gfc_set_in_match_data): New
+	functions to signal that a DATA statement is being matched.
+	(gfc_match_data): Call gfc_set_in_match_data on entry and on
+	exit.
+	* gfortran.h : Add prototypes for above.
+	* expr.c (check_init_expr): Avoid check on parameter or
+	variable if gfc_in_match_data is true.
+	(gfc_match_init_expr): Do not call error on non-reduction of
+	expression if gfc_in_match_data is true.
+
+	PR fortran/27996
+	PR fortran/27998
+	* decl.c (gfc_set_constant_character_len): Add boolean arg to
+	flag array constructor resolution.  Warn if string is being
+	truncated.  Standard dependent error if string is padded. Set
+	new arg to false for all three calls to
+	gfc_set_constant_character_len.
+	* match.h : Add boolean arg to prototype for
+	gfc_set_constant_character_len.
+	* gfortran.h : Add warn_character_truncation to gfc_options.
+	* options.c (set_Wall): Set warn_character_truncation if -Wall
+	is set.
+	* resolve.c (resolve_code): Warn if rhs string in character
+	assignment has to be truncated.
+	* array.c (gfc_resolve_character_array_constructor): Set new
+	argument to true for call to gfc_set_constant_character_len.
+
 2007-01-05  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/29624

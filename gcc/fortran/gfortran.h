@@ -1637,6 +1637,7 @@ typedef struct
   int warn_surprising;
   int warn_tabs;
   int warn_underflow;
+  int warn_character_truncation;
   int max_errors;
 
   int flag_all_intrinsics;
@@ -1712,6 +1713,10 @@ void gfc_get_section_index (gfc_array_ref *, mpz_t *, mpz_t *);
 void gfc_assign_data_value (gfc_expr *, gfc_expr *, mpz_t);
 void gfc_assign_data_value_range (gfc_expr *, gfc_expr *, mpz_t, mpz_t);
 void gfc_advance_section (mpz_t *, gfc_array_ref *, mpz_t *);
+
+/* decl.c */
+bool gfc_in_match_data (void);
+void gfc_set_in_match_data (bool);
 
 /* scanner.c */
 void gfc_scanner_done_1 (void);
