@@ -782,6 +782,8 @@ install: $(install-shared) $(install-libunwind)
 	  $(INSTALL_DATA) $$file $(DESTDIR)$(inst_libdir)/;	\
 	done
 
+	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
+
 .PHONY: install install-shared install-libunwind
 
 # Don't export variables to the environment, in order to not confuse
