@@ -1,3 +1,10 @@
+2007-01-04  Jan Hubicka  <jh@suse.cz>
+
+	* tree-optimize.c (execute_fixup_cfg): Correct previously mistakely
+	comitted older version of patch.
+	(pass_fixup_cfg): Add TODOs to verify flow and statements, dump
+	function, celanup cfg and collect garbage.
+
 2007-01-04  Mike Stump  <mrs@apple.com>
 
 	* Makefile.in (mostlyclean): Don't remove libgcc anymore.
