@@ -1,5 +1,10 @@
 2007-01-04  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* intrinsic.texi: Minor cleanup, reflowing overlong
+	paragraphs, and correcting whitespace.
+
+2007-01-04  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* intrinsic.texi (LBOUND): Add documentation.
 	(LGE): Add documentation.
 	(LGT): Add documentation.

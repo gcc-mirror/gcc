@@ -16,7 +16,7 @@ included in the gfdl(7) man page.
 Some basic guidelines for editing this document:
 
   (1) The intrinsic procedures are to be listed in alphabetical order.
-  (2) The generic name is to be use.
+  (2) The generic name is to be used.
   (3) The specific names are included in the function index and in a
       table at the end of the node (See ABS entry).
   (4) Try to maintain the same style for each entry.
@@ -288,7 +288,8 @@ implemented both a function and a subroutine.  Both classes
 have been implemented in @command{gfortran} for backwards compatibility
 with @command{g77}.  It is noted here that these functions and subroutines
 cannot be intermixed in a given subprogram.  In the descriptions that follow,
-the applicable option(s) is noted.
+the applicable standard for each intrinsic procedure is noted.
+
 
 
 @node ABORT
@@ -1384,7 +1385,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be @code{REAL(*)} with a magnitude that is less than or equal to one.
+@item @var{X} @tab The type shall be @code{REAL(*)} with a magnitude
+that is less than or equal to one.
 @end multitable
 
 @item @emph{Return value}:
@@ -1874,7 +1876,8 @@ Non-elemental subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{PATH}   @tab The type shall be @code{CHARACTER(*)} and shall specify a valid path within the file system.
+@item @var{PATH}   @tab The type shall be @code{CHARACTER(*)} and shall
+                        specify a valid path within the file system.
 @item @var{STATUS} @tab (Optional) status flag. Returns 0 on success, 
                         a system specific and non-zero error code otherwise.
 @end multitable
@@ -1989,8 +1992,11 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type may be @code{INTEGER(*)}, @code{REAL(*)}, or @code{COMPLEX(*)}.
-@item @var{Y} @tab Optional, allowed if @var{X} is not @code{COMPLEX(*)}.  May be @code{INTEGER(*)} or @code{REAL(*)}. 
+@item @var{X} @tab The type may be @code{INTEGER(*)}, @code{REAL(*)},
+                   or @code{COMPLEX(*)}.
+@item @var{Y} @tab Optional, allowed if @var{X} is not
+                   @code{COMPLEX(*)}.  May be @code{INTEGER(*)}
+		   or @code{REAL(*)}. 
 @item @var{KIND} @tab Optional scaler integer initialization expression.
 @end multitable
 
@@ -2501,7 +2507,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type shall be @code{INTEGER(*)}, @code{REAL(*)}, or @code{COMPLEX(*)}.
+@item @var{X} @tab The type shall be @code{INTEGER(*)}, @code{REAL(*)},
+                   or @code{COMPLEX(*)}.
 @end multitable
 
 @item @emph{Return value}:
@@ -2547,8 +2554,10 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab The type may be @code{INTEGER(*)}, @code{REAL(*)}, or @code{COMPLEX(*)}.
-@item @var{Y} @tab Optional if @var{X} is not @code{COMPLEX(*)}. May be @code{INTEGER(*)} or @code{REAL(*)}. 
+@item @var{X} @tab The type may be @code{INTEGER(*)}, @code{REAL(*)},
+                   or @code{COMPLEX(*)}.
+@item @var{Y} @tab Optional if @var{X} is not @code{COMPLEX(*)}. May be
+                   @code{INTEGER(*)} or @code{REAL(*)}. 
 @end multitable
 
 @item @emph{Return value}:
@@ -4000,7 +4009,8 @@ END PROGRAM
 @item @emph{See also}:
 GNU Fortran 77 compatibility function: @ref{IARGC}
 
-F2003 functions and subroutines: @ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT}, @ref{COMMAND_ARGUMENT_COUNT}
+F2003 functions and subroutines: @ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT},
+@ref{COMMAND_ARGUMENT_COUNT}
 @end table
 
 
@@ -4606,7 +4616,8 @@ See @ref{GETARG}
 @item @emph{See also}:
 GNU Fortran 77 compatibility subroutine: @ref{GETARG}
 
-F2003 functions and subroutines: @ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT}, @ref{COMMAND_ARGUMENT_COUNT}
+F2003 functions and subroutines: @ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT},
+@ref{COMMAND_ARGUMENT_COUNT}
 @end table
 
 
@@ -4955,8 +4966,9 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{X} @tab shall be of type @code{INTEGER(*)}, @code{REAL(*)} or @code{COMPLEX(*)}
-@item @var{KIND}  @tab (Optional) @var{KIND} shall be a scalar integer.
+@item @var{X} @tab shall be of type @code{INTEGER(*)}, @code{REAL(*)} or
+@code{COMPLEX(*)} @item @var{KIND}  @tab (Optional) @var{KIND} shall be
+a scalar integer.
 @end multitable
 
 @item @emph{Return value}:
@@ -5488,10 +5500,12 @@ otherwise, based on the ASCII ordering.
 
 @table @asis
 @item @emph{Description}:
-Makes a (hard) link from file @var{PATH1} to @var{PATH2}. A null character (@code{CHAR(0)}) can be used to mark the
-end of the names in @var{PATH1} and @var{PATH2}; otherwise, trailing blanks in the file names are
-ignored.  If the @var{STATUS} argument is supplied, it contains 0 on success or a nonzero error code
-upon return; see @code{link(2)}.
+Makes a (hard) link from file @var{PATH1} to @var{PATH2}. A null
+character (@code{CHAR(0)}) can be used to mark the end of the names in
+@var{PATH1} and @var{PATH2}; otherwise, trailing blanks in the file
+names are ignored.  If the @var{STATUS} argument is supplied, it
+contains 0 on success or a nonzero error code upon return; see
+@code{link(2)}.
 
 @item @emph{Standard}:
 GNU extension
@@ -5682,6 +5696,8 @@ end program test_loc
 @end smallexample
 @end table
 
+
+
 @node LOG
 @section @code{LOG} --- Logarithm function
 @cindex @code{LOG} intrinsic
@@ -5785,6 +5801,7 @@ end program test_log10
 @end table
 
 
+
 @node LOGICAL
 @section @code{LOGICAL} --- Convert to logical type
 @cindex @code{LOGICAL} intrinsic
@@ -5816,7 +5833,7 @@ Elemental function
 @cindex @code{LSHIFT} intrinsic
 @cindex bit operations
 
-Not yet implemented in GNU Fortran.
+Intrinsic implemented, documentation pending.
 
 @table @asis
 @item @emph{Description}:
@@ -5880,7 +5897,7 @@ To stat an open file: @ref{FSTAT}, to stat a file: @ref{STAT}
 @cindex @code{LTIME} intrinsic
 @cindex time, conversion function
 
-Not yet implemented in GNU Fortran.
+Intrinsic implemented, documentation pending.
 
 @table @asis
 @item @emph{Description}:
@@ -6428,8 +6445,10 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
-@item @var{SRC} @tab @code{ALLOCATABLE}, @code{INTENT(INOUT)}, may be of any type and kind.
-@item @var{DEST} @tab @code{ALLOCATABLE}, @code{INTENT(OUT)}, shall be of the same type, kind and rank as @var{SRC}
+@item @var{SRC}  @tab @code{ALLOCATABLE}, @code{INTENT(INOUT)}, may be
+                      of any type and kind.
+@item @var{DEST} @tab @code{ALLOCATABLE}, @code{INTENT(OUT)}, shall be
+                      of the same type, kind and rank as @var{SRC}
 @end multitable
 
 @item @emph{Return value}:
@@ -7206,7 +7225,7 @@ The value returned is equal to
 @cindex @code{RSHIFT} intrinsic
 @cindex bit operations
 
-Not yet implemented in GNU Fortran.
+Intrinsic implemented, documentation pending.
 
 @table @asis
 @item @emph{Description}:
@@ -8419,10 +8438,11 @@ Subroutine
 
 @table @asis
 @item @emph{Description}:
-Unlinks the file @var{PATH}. A null character (@code{CHAR(0)}) can be used to mark the
-end of the name in @var{PATH}; otherwise, trailing blanks in the file name are
-ignored.  If the @var{STATUS} argument is supplied, it contains 0 on success or a nonzero error code
-upon return; see @code{link(2)}.
+Unlinks the file @var{PATH}. A null character (@code{CHAR(0)}) can be
+used to mark the end of the name in @var{PATH}; otherwise, trailing
+blanks in the file name are ignored.  If the @var{STATUS} argument is
+supplied, it contains 0 on success or a nonzero error code upon return;
+see @code{link(2)}.
 
 @item @emph{Standard}:
 GNU extension
