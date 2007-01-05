@@ -1445,6 +1445,7 @@ gfc_trans_character_select (gfc_code *code)
   TREE_CONSTANT (tmp) = 1;
   TREE_INVARIANT (tmp) = 1;
   TREE_STATIC (tmp) = 1;
+  TREE_READONLY (tmp) = 1;
   DECL_INITIAL (tmp) = init;
   init = tmp;
 
