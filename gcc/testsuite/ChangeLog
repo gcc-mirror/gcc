@@ -1,4 +1,9 @@
-2006-01-05  Tobias Burnus  <burnus@net-b.de>
+2007-01-05  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/28116
+	* g++.dg/opt/pr28116.C: New testcase.
+
+2007-01-05  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/29624
 	* gfortran.dg/alloc_alloc_expr_1.f90: Add check for
