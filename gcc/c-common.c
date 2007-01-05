@@ -4313,20 +4313,9 @@ handle_externally_visible_attribute (tree *pnode, tree name,
 	       "%qE attribute have effect only on public objects", name);
       *no_add_attrs = true;
     }
-  else if (TREE_CODE (node) == FUNCTION_DECL)
-    {
-      struct cgraph_node *n = cgraph_node (node);
-      n->local.externally_visible = true;
-      if (n->local.finalized)
-	cgraph_mark_needed_node (n);
-    }
-  else if (TREE_CODE (node) == VAR_DECL)
-    {
-      struct cgraph_varpool_node *n = cgraph_varpool_node (node);
-      n->externally_visible = true;
-      if (n->finalized)
-	cgraph_varpool_mark_needed_node (n);
-    }
+  else if (TREE_CODE (node) == FUNCTION_DECL
+	   || TREE_CODE (node) == VAR_DECL)
+    ;
   else
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);

@@ -1,3 +1,13 @@
+2007-01-05  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2006-06-24  Jan Hubicka  <jh@suse.cz>
+
+	PR c/25795
+	PR c++/27369
+	* gcc.dg/pr25795.c: New testcase.
+	* gcc.dg/pr25795-1.c: Likewise.
+
 2007-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/30360

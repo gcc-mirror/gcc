@@ -202,8 +202,10 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
     }
 
   /* If the user told us it is used, then it must be so.  */
-  if (node->local.externally_visible
-      || lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
+  if (node->local.externally_visible)
+    return true;
+
+  if (!flag_unit_at_a_time && lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
     return true;
 
   /* ??? If the assembler name is set by hand, it is possible to assemble
@@ -890,6 +892,71 @@ cgraph_analyze_function (struct cgraph_node *node)
   current_function_decl = NULL;
 }
 
+/* Look for externally_visible and used attributes and mark cgraph nodes
+   accordingly.
+
+   We cannot mark the nodes at the point the attributes are processed (in
+   handle_*_attribute) because the copy of the declarations available at that
+   point may not be canonical.  For example, in:
+
+    void f();
+    void f() __attribute__((used));
+
+   the declaration we see in handle_used_attribute will be the second
+   declaration -- but the front end will subsequently merge that declaration
+   with the original declaration and discard the second declaration.
+
+   Furthermore, we can't mark these nodes in cgraph_finalize_function because:
+
+    void f() {}
+    void f() __attribute__((externally_visible));
+
+   is valid.
+
+   So, we walk the nodes at the end of the translation unit, applying the
+   attributes at that point.  */
+
+static void
+process_function_and_variable_attributes (struct cgraph_node *first,
+                                          struct cgraph_varpool_node *first_var)
+{
+  struct cgraph_node *node;
+  struct cgraph_varpool_node *vnode;
+
+  for (node = cgraph_nodes; node != first; node = node->next)
+    {
+      tree decl = node->decl;
+      if (lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
+	{
+	  mark_decl_referenced (decl);
+	  if (node->local.finalized)
+	     cgraph_mark_needed_node (node);
+	}
+      if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (decl)))
+	{
+	  if (node->local.finalized)
+	    cgraph_mark_needed_node (node);
+	  node->externally_visible = true;
+	}
+    }
+  for (vnode = cgraph_varpool_nodes; vnode != first_var; vnode = vnode->next)
+    {
+      tree decl = vnode->decl;
+      if (lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
+	{
+	  mark_decl_referenced (decl);
+	  if (vnode->finalized)
+	    cgraph_varpool_mark_needed_node (vnode);
+	}
+      if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (decl)))
+	{
+	  if (vnode->finalized)
+	    cgraph_varpool_mark_needed_node (vnode);
+	  vnode->externally_visible = true;
+	}
+    }
+}
+
 /* Analyze the whole compilation unit once it is parsed completely.  */
 
 void
@@ -899,6 +966,7 @@ cgraph_finalize_compilation_unit (void)
   /* Keep track of already processed nodes when called multiple times for
      intermodule optimization.  */
   static struct cgraph_node *first_analyzed;
+  static struct cgraph_varpool_node *first_analyzed_var;
 
   if (errorcount || sorrycount)
     return;
@@ -918,6 +986,7 @@ cgraph_finalize_compilation_unit (void)
     }
 
   timevar_push (TV_CGRAPH);
+  process_function_and_variable_attributes (first_analyzed, first_analyzed_var);
   cgraph_varpool_analyze_pending_decls ();
   if (cgraph_dump_file)
     {
@@ -1002,6 +1071,7 @@ cgraph_finalize_compilation_unit (void)
       dump_cgraph (cgraph_dump_file);
     }
   first_analyzed = cgraph_nodes;
+  first_analyzed_var = cgraph_varpool_nodes;
   ggc_collect ();
   timevar_pop (TV_CGRAPH);
 }

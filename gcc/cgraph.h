@@ -221,6 +221,7 @@ extern GTY(()) struct cgraph_node *cgraph_nodes_queue;
 
 extern GTY(()) struct cgraph_varpool_node *cgraph_varpool_first_unanalyzed_node;
 extern GTY(()) struct cgraph_varpool_node *cgraph_varpool_nodes_queue;
+extern GTY(()) struct cgraph_varpool_node *cgraph_varpool_nodes;
 
 /* In cgraph.c  */
 void dump_cgraph (FILE *);

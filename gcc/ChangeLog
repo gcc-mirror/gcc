@@ -1,3 +1,20 @@
+2007-01-05  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2006-06-24  Jan Hubicka  <jh@suse.cz>
+
+	PR c/25795
+	PR c++/27369
+	* craph.c (cgraph_varpool_nodes): Export.
+	(decide_is_variable_needed): Do not worry about "used" attribute.
+	* cgraph.h (cgraph_varpool_nodes): Declare.
+	* cgraphunit.c (decide_is_function_needed): Do not worry about "used"
+	attribute.
+	(process_function_and_variable_attributes): New function.
+	(cgraph_finalize_compilation_unit): Call it.
+	* c-decl.c (finish_decl): Do not worry about used attribute.
+	* c-common.c (handle_externally_visible_attribute): Only validate.	
+
 2007-01-05  Joel Brobecker  <brobecker@adacore.com>
 
 	* doc/install.texi (Final install): Document the fact that
