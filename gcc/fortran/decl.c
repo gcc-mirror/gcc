@@ -74,6 +74,20 @@ gfc_symbol *gfc_new_block;
 
 /********************* DATA statement subroutines *********************/
 
+static bool in_match_data = false;
+
+bool
+gfc_in_match_data (void)
+{
+  return in_match_data;
+}
+
+void
+gfc_set_in_match_data (bool set_value)
+{
+  in_match_data = set_value;
+}
+
 /* Free a gfc_data_variable structure and everything beneath it.  */
 
 static void
@@ -455,6 +469,8 @@ gfc_match_data (void)
   gfc_data *new;
   match m;
 
+  gfc_set_in_match_data (true);
+
   for (;;)
     {
       new = gfc_get_data ();
@@ -477,6 +493,8 @@ gfc_match_data (void)
       gfc_match_char (',');	/* Optional comma */
     }
 
+  gfc_set_in_match_data (false);
+
   if (gfc_pure (NULL))
     {
       gfc_error ("DATA statement at %C is not allowed in a PURE procedure");
@@ -486,6 +504,7 @@ gfc_match_data (void)
   return MATCH_YES;
 
 cleanup:
+  gfc_set_in_match_data (false);
   gfc_free_data (new);
   return MATCH_ERROR;
 }
@@ -743,7 +762,7 @@ build_sym (const char *name, gfc_charlen * cl,
    truncated.  */
 
 void
-gfc_set_constant_character_len (int len, gfc_expr * expr)
+gfc_set_constant_character_len (int len, gfc_expr * expr, bool array)
 {
   char * s;
   int slen;
@@ -758,6 +777,18 @@ gfc_set_constant_character_len (int len, gfc_expr * expr)
       memcpy (s, expr->value.character.string, MIN (len, slen));
       if (len > slen)
 	memset (&s[slen], ' ', len - slen);
+
+      if (gfc_option.warn_character_truncation && slen > len)
+	gfc_warning_now ("CHARACTER expression at %L is being truncated "
+			 "(%d/%d)", &expr->where, slen, len);
+
+      /* Apply the standard by 'hand' otherwise it gets cleared for
+	 initializers.  */
+      if (array && slen < len && !(gfc_option.allow_std & GFC_STD_GNU))
+	gfc_error_now ("The CHARACTER elements of the array constructor "
+		       "at %L must have the same length (%d/%d)",
+		        &expr->where, slen, len);
+
       s[len] = '\0';
       gfc_free (expr->value.character.string);
       expr->value.character.string = s;
@@ -909,13 +940,13 @@ add_init_expr_to_sym (const char *name, gfc_expr ** initp,
 	      gfc_constructor * p;
 
 	      if (init->expr_type == EXPR_CONSTANT)
-		gfc_set_constant_character_len (len, init);
+		gfc_set_constant_character_len (len, init, false);
 	      else if (init->expr_type == EXPR_ARRAY)
 		{
 		  gfc_free_expr (init->ts.cl->length);
 		  init->ts.cl->length = gfc_copy_expr (sym->ts.cl->length);
 		  for (p = init->value.constructor; p; p = p->next)
-		    gfc_set_constant_character_len (len, p->expr);
+		    gfc_set_constant_character_len (len, p->expr, false);
 		}
 	    }
 	}
@@ -4025,7 +4056,7 @@ do_parm (void)
       && init->ts.type == BT_CHARACTER
       && init->ts.kind == 1)
     gfc_set_constant_character_len (
-      mpz_get_si (sym->ts.cl->length->value.integer), init);
+      mpz_get_si (sym->ts.cl->length->value.integer), init, false);
 
   sym->value = init;
   return MATCH_YES;

@@ -1587,7 +1587,7 @@ got_charlen:
 	  /* Update the element constructors.  */
 	  for (p = expr->value.constructor; p; p = p->next)
 	    if (p->expr->expr_type == EXPR_CONSTANT)
-	      gfc_set_constant_character_len (max_length, p->expr);
+	      gfc_set_constant_character_len (max_length, p->expr, true);
 	}
     }
 }
