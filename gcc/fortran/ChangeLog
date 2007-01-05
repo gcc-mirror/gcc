@@ -1,3 +1,15 @@
+2007-01-05  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/29624
+	* interface.c (compare_parameter_intent): New function.
+	  (check_intents): Support pointer intents.
+	* symbol.c (check_conflict): Support pointer intents,
+	  better conflict_std message.
+	* expr.c (gfc_check_assign,gfc_check_pointer_assign):
+	  Support pointer intents.
+	* resolve.c (resolve_deallocate_expr,resolve_allocate_expr):
+	  Support pointer intents.
+
 2007-01-03  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	PR 30371

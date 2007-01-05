@@ -21,6 +21,7 @@ program main
   use protmod
   implicit none
   integer   :: j 
+  logical   :: asgnd
   protected :: j ! { dg-error "only allowed in specification part of a module" }
   a = 43       ! { dg-error "Assigning to PROTECTED variable" }
   ap => null() ! { dg-error "Assigning to PROTECTED variable" }
@@ -30,6 +31,8 @@ program main
   allocate(ap) ! { dg-error "Assigning to PROTECTED variable" }
   ap = 73      ! { dg-error "Assigning to PROTECTED variable" }
   call increment(a,at) ! { dg-error "use-associated with PROTECTED attribute" }
+  call pointer_assignments(ap) ! { dg-error "is use-associated with PROTECTED attribute" }
+  asgnd = pointer_check(ap)
 contains
   subroutine increment(a1,a3)
     integer, intent(inout) :: a1, a3
@@ -37,9 +40,14 @@ contains
     a3 = a3 + 1
   end subroutine increment
   subroutine pointer_assignments(p)
-    integer, pointer :: p ! with [pointer] intent(out)
-    p => null()           ! this is invalid
+    integer, pointer,intent(out) :: p
+    p => null()           
   end subroutine pointer_assignments
+  function pointer_check(p)
+    integer, pointer,intent(in) :: p
+    logical :: pointer_check
+    pointer_check = associated(p)
+  end function pointer_check
 end program main
 
 module test

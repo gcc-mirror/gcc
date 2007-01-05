@@ -16,13 +16,13 @@ contains
     subroutine init2(x)
         integer, allocatable, intent(in) :: x(:)
 
-        allocate(x(3)) ! { dg-error "Can't allocate" }
+        allocate(x(3)) ! { dg-error "Cannot allocate" }
     end subroutine init2
 
     subroutine kill(x)
         integer, allocatable, intent(in) :: x(:)
         
-        deallocate(x) ! { dg-error "Can't deallocate" }
+        deallocate(x) ! { dg-error "Cannot deallocate" }
     end subroutine kill
 
 end program alloc_dummy
