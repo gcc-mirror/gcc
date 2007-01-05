@@ -10314,6 +10314,12 @@ cp_parser_enum_specifier (cp_parser* parser)
   /* Consume the opening brace.  */
   cp_lexer_consume_token (parser->lexer);
 
+  if (type == error_mark_node)
+    {
+      cp_parser_skip_to_end_of_block_or_statement (parser);
+      return error_mark_node;
+    }
+
   /* If the next token is not '}', then there are some enumerators.  */
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_BRACE))
     cp_parser_enumerator_list (parser, type);

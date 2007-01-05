@@ -1,3 +1,11 @@
+2007-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/30382
+	Backported from mainline
+	2006-06-29  Jason Merrill  <jason@redhat.com>
+	* parser.c (cp_parser_enum_specifier): Return early if
+	type is error_mark_node.
+
 2007-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
