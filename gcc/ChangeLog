@@ -1,3 +1,9 @@
+2007-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/30360
+	* libgcc2.c (__divdc3): Compare c and d against 0.0 instead of
+	denom against 0.0.
+
 2007-01-05  Joel Brobecker  <brobecker@adacore.com>
 
 	* doc/install.texi (Final install): Document the fact that

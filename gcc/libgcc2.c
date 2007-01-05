@@ -1909,7 +1909,7 @@ CONCAT3(__div,MODE,3) (MTYPE a, MTYPE b, MTYPE c, MTYPE d)
      are nonzero/zero, infinite/finite, and finite/infinite.  */
   if (isnan (x) && isnan (y))
     {
-      if (denom == 0.0 && (!isnan (a) || !isnan (b)))
+      if (c == 0.0 && d == 0.0 && (!isnan (a) || !isnan (b)))
 	{
 	  x = COPYSIGN (INFINITY, c) * a;
 	  y = COPYSIGN (INFINITY, c) * b;
