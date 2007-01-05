@@ -1,5 +1,17 @@
 2007-01-05  Roger Sayle  <roger@eyesopen.com>
 
+	* trans-expr.c (gfc_trans_assignment_1): New subroutine to scalarize
+	array assignments split out from gfc_trans_assignment.
+	(gfc_trans_array_copy): New function to implement array to array
+	copies via calls to __builtin_memcpy.
+	(copyable_array_p): New helper function to identify an array of
+	simple/POD types, that may be copied/assigned using memcpy.
+	(gfc_trans_assignment): Use gfc_trans_array_copy to handle simple
+	whole array assignments considered suitable by copyable_array_p.
+	Invoke gfc_trans_assignment_1 to perform the fallback scalarization.
+
+2007-01-05  Roger Sayle  <roger@eyesopen.com>
+
 	* trans-array.c (gfc_trans_array_constructor_value): Make the
 	static const "data" array as TREE_READONLY.
 	* trans-stmt.c (gfc_trans_character_select): Likewise.
