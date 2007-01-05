@@ -297,6 +297,7 @@ execute_fixup_cfg (void)
 {
   basic_block bb;
   block_stmt_iterator bsi;
+  int todo = gimple_in_ssa_p (cfun) ? TODO_verify_ssa : 0;
 
   cfun->after_inlining = true;
 
@@ -312,7 +313,11 @@ execute_fixup_cfg (void)
 	    if (decl && call_expr_flags (call) & (ECF_CONST | ECF_PURE)
 		&& TREE_SIDE_EFFECTS (call))
 	      {
-	        update_stmt (stmt);
+		if (gimple_in_ssa_p (cfun))
+		  {
+		    todo |= TODO_update_ssa;
+	            update_stmt (stmt);
+		  }
 	        TREE_SIDE_EFFECTS (call) = 0;
 	      }
 	    if (decl && TREE_NOTHROW (decl))
@@ -355,8 +360,10 @@ execute_fixup_cfg (void)
 		  if (DECL_NONLOCAL (target))
 		    {
 		      tree phi;
+
 		      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 			{
+		          todo |= TODO_update_ssa;
 			  gcc_assert (SSA_NAME_OCCURS_IN_ABNORMAL_PHI
 				      (PHI_RESULT (phi)));
 			  mark_sym_for_renaming
@@ -368,18 +375,11 @@ execute_fixup_cfg (void)
 	}
     }
 
-  if (gimple_in_ssa_p (cfun))
-    {
-      delete_unreachable_blocks ();
-      update_ssa (TODO_update_ssa);
-    }
-  cleanup_tree_cfg ();
-
   /* Dump a textual representation of the flowgraph.  */
   if (dump_file)
     dump_tree_cfg (dump_file, dump_flags);
 
-  return 0;
+  return todo;
 }
 
 struct tree_opt_pass pass_fixup_cfg =
@@ -395,9 +395,10 @@ struct tree_opt_pass pass_fixup_cfg =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0,					/* todo_flags_finish */
-  0					/* letter */
-};
+  TODO_cleanup_cfg | TODO_ggc_collect
+  | TODO_dump_func | TODO_verify_flow
+  | TODO_verify_stmts,/* todo_flags_finish */
+  0					/* letter */ };
 
 /* Do the actions required to initialize internal data structures used
    in tree-ssa optimization passes.  */
