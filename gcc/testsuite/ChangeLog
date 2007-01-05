@@ -1,3 +1,10 @@
+2007-01-05  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/Walways-true-1.c: New test.
+	* gcc.dg/Walways-true-2.c: New test.
+	* g++.dg/warn/Walways-true-1.C: New test.
+	* g++.dg/warn/Walways-true-2.C: New test.
+
 2007-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/30360

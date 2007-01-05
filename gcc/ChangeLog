@@ -1,3 +1,10 @@
+2007-01-05  Ian Lance Taylor  <iant@google.com>
+
+	* c-common.c (decl_with_nonnull_addr_p): New function.
+	(c_common_truthvalue_conversion): Call it.
+	* c-typeck.c (build_binary_op): Likewise.
+	* c-common.h (decl_with_nonnull_addr_p): Declare.
+
 2007-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/30360

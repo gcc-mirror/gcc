@@ -652,6 +652,7 @@ extern tree c_common_unsigned_type (tree);
 extern tree c_common_signed_type (tree);
 extern tree c_common_signed_or_unsigned_type (int, tree);
 extern tree c_build_bitfield_integer_type (unsigned HOST_WIDE_INT, int);
+extern bool decl_with_nonnull_addr_p (tree);
 extern tree c_common_truthvalue_conversion (tree);
 extern void c_apply_type_quals_to_decl (int, tree);
 extern tree c_sizeof_or_alignof_type (tree, bool, int);
