@@ -1,3 +1,14 @@
+2007-01-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/30162
+	* io/unix.c (fd_flush): Don't seek if file is not seekable, defined as
+	s->file_length == -1.
+	(fd_alloc_w_at): Do not adjust file_length if file is not seekable.
+	(fd_seek): If not seekable, just return success.
+	(fd_truncate): If not seekable, no need to truncate.  Return failure if
+	seek fails and the stream is not a pipe.
+	(fd_to_stream): Make test for non-seekable file more robust.
+
 2007-01-01  Steven G. Kargl  <kargls@comcast.net>
 
 	* ChangeLog: Copied to ...
