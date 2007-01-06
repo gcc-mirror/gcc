@@ -31267,39 +31267,9 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-                      save_LDFLAGS="$LDFLAGS"
+                    save_LDFLAGS="$LDFLAGS"
       LDFLAGS="-static $LDFLAGS"
-      if test x$gcc_no_link = xyes; then
-  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
-echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
-   { (exit 1); exit 1; }; }
-fi
-cat >conftest.$ac_ext <<_ACEOF
-int main() { return 0; }
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  if test "$cross_compiling" = yes; then
+      if test "$cross_compiling" = yes; then
   { { echo "$as_me:$LINENO: error: cannot run test program while cross compiling
 See \`config.log' for more details." >&5
 echo "$as_me: error: cannot run test program while cross compiling
@@ -31331,14 +31301,6 @@ have_tls=no
 fi
 rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-have_tls=yes
-fi
-rm -f conftest.err conftest.$ac_objext \
-      conftest$ac_exeext conftest.$ac_ext
       LDFLAGS="$save_LDFLAGS"
 else
   echo "$as_me: program exited with status $ac_status" >&5
@@ -99353,16 +99315,103 @@ done
 #define HAVE_INT64_T 1
 _ACEOF
 
-    case "$target" in
-      *-uclinux*)
-        # Don't enable LFS with uClibc
-        ;;
-      *)
-        cat >>confdefs.h <<\_ACEOF
+
+
+
+  ac_ext=cc
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+  echo "$as_me:$LINENO: checking for LFS support" >&5
+echo $ECHO_N "checking for LFS support... $ECHO_C" >&6
+  if test "${glibcxx_cv_LFS+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+    if test x$gcc_no_link = xyes; then
+  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <unistd.h>
+       #include <stdio.h>
+       #include <sys/stat.h>
+
+int
+main ()
+{
+FILE* fp;
+       fopen64("t", "w");
+       fseeko64(fp, 0, SEEK_CUR);
+       ftello64(fp);
+       lseek64(1, 0, SEEK_CUR);
+       struct stat64 buf;
+       fstat64(1, &buf);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  glibcxx_cv_LFS=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+glibcxx_cv_LFS=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+
+fi
+
+  if test $glibcxx_cv_LFS = yes; then
+
+cat >>confdefs.h <<\_ACEOF
 #define _GLIBCXX_USE_LFS 1
 _ACEOF
 
-    esac
+  fi
+  echo "$as_me:$LINENO: result: $glibcxx_cv_LFS" >&5
+echo "${ECHO_T}$glibcxx_cv_LFS" >&6
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
 
     # For showmanyc_helper().
 
