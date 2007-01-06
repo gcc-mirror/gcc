@@ -4,7 +4,8 @@
 	PR target/30008
 	* fixincl.tpl (List): separate file name patterns with a NUL byte instead
 	of a vertical bar ("|").
-	* fixincl.c (fix_applies, machine_matches): Use fnmatch for name matching.
+	* fixincl.c (fix_applies, machine_matches): Use fnmatch for name
+	matching.  Set SKIP_TEST flag if we are not to run a test.
 	* fixincl.x: Regenerate.
 	* inclhack.def (glibc_c99_inline_[1234], broken_cabs, broken_nan,
 	kandr_concat, sco_math): Replace lists of specfic file names by search
