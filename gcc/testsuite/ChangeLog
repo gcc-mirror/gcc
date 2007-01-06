@@ -1,3 +1,9 @@
+2007-01-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* lib/target-supports.exp (check_effective_target_sync_int_long):
+	Always return 0 for SPARC targets.
+	(check_effective_target_sync_char_short): Likewise.
+
 2007-01-06  Richard Sandiford  <richard@codesourcery.com>
 
 	2006-05-22  Richard Sandiford  <richard@codesourcery.com>
