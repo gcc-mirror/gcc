@@ -1,3 +1,15 @@
+2007-01-05  Bruce Korb <bkorb@gnu.org>, 
+            Daniel Franke <franke.daniel@gmail.com>
+
+	PR target/30008
+	* fixincl.tpl (List): separate file name patterns with a NUL byte instead
+	of a vertical bar ("|").
+	* fixincl.c (fix_applies, machine_matches): Use fnmatch for name matching.
+	* fixincl.x: Regenerate.
+	* inclhack.def (glibc_c99_inline_[1234], broken_cabs, broken_nan,
+	kandr_concat, sco_math): Replace lists of specfic file names by search
+	patterns.
+
 2006-12-12  Olivier Hainque  <hainque@adacore.com>
 
 	* fixincludes/mkfixinc.sh: Add "*-*-vxworks*" to the list of

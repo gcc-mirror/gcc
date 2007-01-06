@@ -23,6 +23,7 @@ Boston, MA 02110-1301, USA.  */
 
 #include "fixlib.h"
 
+#include <fnmatch.h>
 #include <sys/stat.h>
 #ifndef SEPARATE_FIX_PROC
 #include <sys/wait.h>
@@ -359,96 +360,31 @@ load_file ( const char* fname )
 
 static int
 machine_matches( tFixDesc* p_fixd )
-        {
-# ifndef SEPARATE_FIX_PROC
-          tSCC case_fmt[] = "case %s in\n";     /*  9 bytes, plus string */
-          tSCC esac_fmt[] =
-               " )\n    echo %s ;;\n* ) echo %s ;;\nesac";/*  4 bytes */
-          tSCC skip[] = "skip";                 /*  4 bytes */
-          tSCC run[] = "run";                   /*  3 bytes */
-          /* total bytes to add to machine sum:    49 - see fixincl.tpl */
+{
+  char const ** papz_machs = p_fixd->papz_machs;
+  int have_match = BOOL_FALSE;
 
-          const char **papz_machs = p_fixd->papz_machs;
-          char *pz;
-          const char *pz_sep = "";
-          tCC *pz_if_true;
-          tCC *pz_if_false;
-          char cmd_buf[ MACH_LIST_SIZE_LIMIT ]; /* size lim from fixincl.tpl */
-
-          /* Start the case statement */
-
-          sprintf (cmd_buf, case_fmt, pz_machine);
-          pz = cmd_buf + strlen (cmd_buf);
-
-          /*  Determine if a match means to apply the fix or not apply it */
-
-          if (p_fixd->fd_flags & FD_MACH_IFNOT)
-            {
-              pz_if_true  = skip;
-              pz_if_false = run;
-            }
-          else
-            {
-              pz_if_true  = run;
-              pz_if_false = skip;
-            }
-
-          /*  Emit all the machine names.  If there are more than one,
-              then we will insert " | \\\n" between the names  */
-
-          for (;;)
-            {
-              const char* pz_mach = *(papz_machs++);
-
-              if (pz_mach == (const char*) NULL)
-                break;
-              sprintf (pz, "%s%s", pz_sep, pz_mach);
-              pz += strlen (pz);
-              pz_sep = " | \\\n";
-            }
-
-          /* Now emit the match and not-match actions and the esac */
-
-          sprintf (pz, esac_fmt, pz_if_true, pz_if_false);
-
-          /*  Run the script.
-              The result will start either with 's' or 'r'.  */
-
-          {
-            int skip;
-            pz = run_shell (cmd_buf);
-            skip = (*pz == 's');
-            free ( (void*)pz );
-            if (skip)
-              {
-                p_fixd->fd_flags |= FD_SKIP_TEST;
-		return BOOL_FALSE;
-	      }
-	  }
-
-  return BOOL_TRUE;
-# else /* is SEPARATE_FIX_PROC */
-  const char **papz_machs = p_fixd->papz_machs;
-  int invert = (p_fixd->fd_flags & FD_MACH_IFNOT) != 0;
   for (;;)
     {
-      const char* pz_mach = *(papz_machs++);
-
-      if (pz_mach == (const char*) NULL)
+      char const * pz_mpat = *(papz_machs++);
+      if (pz_mpat == NULL)
         break;
-      if (strstr (pz_mach, "dos") != NULL && !invert)
-	return BOOL_TRUE;
+      if (fnmatch(pz_mpat, pz_machine, 0) == 0)
+        {
+          have_match = BOOL_TRUE;
+          break;
+        }
     }
 
-  p_fixd->fd_flags |= FD_SKIP_TEST;
-  return BOOL_FALSE;
-# endif
+  if (p_fixd->fd_flags & FD_MACH_IFNOT)
+    return ! have_match;
+  return have_match;
 }
 
 /* * * * * * * * * * * * *
-
-   run_compiles   run all the regexp compiles for all the fixes once.
-   */
+ *
+ *  run_compiles   run all the regexp compiles for all the fixes once.
+ */
 void
 run_compiles (void)
 {
@@ -1074,11 +1010,11 @@ start_fixer (int read_fd, tFixDesc* p_fixd, char* pz_fix_file)
 
 
 /* * * * * * * * * * * * *
-
-   Process the potential fixes for a particular include file.
-   Input:  the original text of the file and the file's name
-   Result: none.  A new file may or may not be created.  */
-
+ *
+ *  Process the potential fixes for a particular include file.
+ *  Input:  the original text of the file and the file's name
+ *  Result: none.  A new file may or may not be created.
+ */
 static t_bool
 fix_applies (tFixDesc* p_fixd)
 {
@@ -1087,7 +1023,7 @@ fix_applies (tFixDesc* p_fixd)
   int test_ct;
   tTestDesc *p_test;
 
-# ifdef SEPARATE_FIX_PROC
+#ifdef SEPARATE_FIX_PROC
   /*
    *  There is only one fix that uses a shell script as of this writing.
    *  I hope to nuke it anyway, it does not apply to DOS and it would
@@ -1095,10 +1031,10 @@ fix_applies (tFixDesc* p_fixd)
    */
   if (p_fixd->fd_flags & (FD_SHELL_SCRIPT | FD_SKIP_TEST))
     return BOOL_FALSE;
-# else
+#else
   if (p_fixd->fd_flags & FD_SKIP_TEST)
     return BOOL_FALSE;
-# endif
+#endif
 
   /*  IF there is a file name restriction,
       THEN ensure the current file name matches one in the pattern  */
@@ -1113,17 +1049,11 @@ fix_applies (tFixDesc* p_fixd)
 
       for (;;)
         {
-          pz_scan = strstr (pz_scan + 1, pz_fname);
-          /*  IF we can't match the string at all,
-              THEN bail  */
-          if (pz_scan == (char *) NULL)
-            return BOOL_FALSE;
-
-          /*  IF the match is surrounded by the '|' markers,
-              THEN we found a full match -- time to run the tests  */
-
-          if ((pz_scan[-1] == '|') && (pz_scan[name_len] == '|'))
+          if (fnmatch (pz_scan, pz_fname, 0) == 0)
             break;
+          pz_scan += strlen (pz_scan) + 1;
+          if (*pz_scan == NUL)
+            return BOOL_FALSE;
         }
     }
 

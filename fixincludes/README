@@ -69,14 +69,17 @@ MAKING CHANGES TO INCLHACK.DEF
     for variable names and is unique without regard to alphabetic case.
     Please keep them alphabetical by this name.  :-)
 
-2.  If the problem is known to exist only in certain files,
-    then name each such file with a "files = " entry.
+2.  If the problem is known to exist only in certain files, then
+    identify the files with "files = " entries.  If you use fnmatch(3C)
+    wild card characters in a "files" entry, be certain that the first
+    "files" entry has no such character.  Otherwise, the "make check"
+    machinery will attempt to create files with those characters in the
+    name.  That is inconvenient.
 
 3.  It is relatively expensive to fire off a process to fix a source
     file, therefore write apply tests to avoid unnecessary fix
-    processes.  The preferred apply tests are "select", "bypass" and
-    "c_test" because they are performed internally.  The available
-    tests are:
+    processes.  The preferred apply tests are "select", "bypass", "mach"
+    and "c-test" because they are performed internally:
 
     * select - Run a regex on the contents of the file being considered.
                All such regex-es must match.
@@ -84,17 +87,16 @@ MAKING CHANGES TO INCLHACK.DEF
     * bypass - Run a regex on the contents of the file being considered.
                No such regex may match.
 
-    * c_test - call a function in fixtests.c.  See that file.
+    * c-test - call a function in fixtests.c.  See that file.
 
-    The next two tests are relatively slow because they must be handled
-    in a separate shell process.  Some platforms do not support server
-    shells, so the whole process is even slower and more cumbersome there.
-
-    * mach   - Match the output of config.conf against a series of globbing
+    * mach   - Match the output of config.conf against a series of fnmatch
                patterns.  It must match at least one of the patterns, unless
-               "not-machine" has also been specified.  If that has been
-               specified, then the config.conf output may not match any of
-               the patterns.
+               "not-machine" has also been specified.  In that case, the
+               config.conf output must not match any of the patterns.
+
+    The next test is relatively slow because it must be handled in a
+    separate shell process.  Some platforms do not support server shells,
+    so the whole process is even slower and more cumbersome there.
 
     * test   - These should be arguments to the program, "/bin/test".
                You may perform multiple commands, if you enclose them

@@ -2,7 +2,7 @@
 x=fixincl.x =]
 [= (dne " * " "/* ")=]
  */
-/* DO NOT CVS-MERGE THIS FILE, EITHER [=`date`=]
+/* DO NOT SVN-MERGE THIS FILE, EITHER [=`date`=]
  *
  * You must regenerate it.  Use the ./genfixes script.
  *
@@ -48,7 +48,7 @@ tSCC z[=(. Hack)=]Name[] =
 
   IF (exist? "files")=]
 tSCC z[=(. Hack)=]List[] =
-  "[=FOR files =]|[=files=][=ENDFOR=]|";[=
+  "[=  (join "\\0" (stack "files")) =]\0";[=
 
   ELSE =]
 #define z[=(. Hack)=]List (char*)NULL[=
@@ -73,7 +73,7 @@ tSCC* apz[=(. Hack)=]Machs[] = {[=
 
   ELSE =]
 #define apz[=(. Hack)=]Machs (const char**)NULL[=
-  ENDIF (exist? "files") =][=
+  ENDIF (exist? "mach") =][=
 
   IF (exist? "select")=]
 

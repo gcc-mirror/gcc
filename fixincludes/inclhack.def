@@ -1028,9 +1028,7 @@ fix = {
  */
 fix = {
     hackname = broken_cabs;
-    files    = "math.h";
-    files    = "architecture/ppc/math.h";
-    files    = "architecture/i386/math.h";
+    files    = math.h, "architecture/*/math.h";
     select   = "^extern[ \t]+double[ \t]+cabs";
 
     c_fix     = format;
@@ -1054,8 +1052,14 @@ fix = {
     
 fix = {
     hackname  = broken_nan;
+    /*
+     *  It is tempting to omit the first "files" entry.  Do not.
+     *  The testing machinery will take the first "files" entry as the name
+     *  of a test file to play with.  It would be a nuisance to have a directory
+     *  with the name "*".
+     */
     files     = "architecture/ppc/math.h";
-    files     = "architecture/i386/math.h";
+    files     = "architecture/*/math.h";
     select    = "#if defined(__APPLE_CC__) && (__APPLE_CC__ >= 1345)";
     bypass    = "powl";
     c_fix     = format; 
@@ -1294,7 +1298,7 @@ fix = {
  */
 fix = {
     hackname  = glibc_c99_inline_1;
-    files     = features.h;
+    files     = features.h, '*/features.h';
     select    = "^ *&& !defined __OPTIMIZE_SIZE__ && !defined __NO_INLINE__$";
     c_fix     = format;
     c_fix_arg = "%0 && __STDC_VERSION__ < 199901L";
@@ -1314,7 +1318,7 @@ EOT;
  */
 fix = {
     hackname  = glibc_c99_inline_2;
-    files     = sys/stat.h;
+    files     = sys/stat.h, '*/sys/stat.h';
     select    = "extern __inline__ int";
     sed	      = "s/extern int \\(stat\\|lstat\\|fstat\\|mknod\\)/"
 		"#if __STDC_VERSION__ < 199901L\\\nextern\\\n#endif\\\n"
@@ -1336,7 +1340,7 @@ EOT;
 
 fix = {
     hackname  = glibc_c99_inline_3;
-    files     = bits/string2.h;
+    files     = bits/string2.h, '*/bits/string2.h';
     bypass    = "__STDC_VERSION__";
     c_fix     = format;
     c_fix_arg = "# if defined(__cplusplus) || __STDC_VERSION__ >= 19901L";
@@ -1353,7 +1357,7 @@ EOT;
 
 fix = {
     hackname  = glibc_c99_inline_4;
-    files     = sys/sysmacros.h;
+    files     = sys/sysmacros.h, '*/sys/sysmacros.h';
     bypass    = "__STDC_VERSION__";
     c_fix     = format;
     c_fix_arg = "\n#if __STDC_VERSION__ < 19901L\nextern\n#endif\n";
@@ -2250,13 +2254,7 @@ fix = {
 fix = {
     hackname = kandr_concat;
     files  = "sparc/asm_linkage.h";
-    files  = "sun3/asm_linkage.h";
-    files  = "sun3x/asm_linkage.h";
-    files  = "sun4/asm_linkage.h";
-    files  = "sun4c/asm_linkage.h";
-    files  = "sun4m/asm_linkage.h";
-    files  = "sun4c/debug/asm_linkage.h";
-    files  = "sun4m/debug/asm_linkage.h";
+    files  = "sun*/asm_linkage.h";
     files  = "arm/as_support.h";
     files  = "arm/mc_type.h";
     files  = "arm/xcb.h";
@@ -2851,14 +2849,7 @@ fix = {
  */
 fix = {
     hackname = sco_math;
-    files    = math.h;
-    files    = ansi/math.h;
-    files    = posix/math.h;
-    files    = xpg4/math.h;
-    files    = xpg4v2/math.h;
-    files    = xpg4plus/math.h;
-    files    = ods_30_compat/math.h;
-    files    = oldstyle/math.h;
+    files    = math.h, '*/math.h';
     select   = "inline double abs";
     bypass   = "__GNUG__";
     sed      = "/#define.*__fp_class(a) \\\\/i\\\n"
