@@ -1,3 +1,7 @@
+2007-01-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* arith.c: Update copyright years.  Whitespace.
+
 2007-01-05  Roger Sayle  <roger@eyesopen.com>
 
 	* trans-expr.c (gfc_trans_assignment_1): New subroutine to scalarize
