@@ -1,7 +1,7 @@
 2007-01-06  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/30365
-	* crossconfig.m4 (case *-linux*): Run crossconfig.m4.
+	* crossconfig.m4 (case *-linux*): Run GLIBCXX_CHECK_LFS.
 	* configure: Regenerate.
 
 2007-01-06  Matthias Klose  <doko@debian.org>
