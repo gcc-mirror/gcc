@@ -1,3 +1,23 @@
+2007-01-06  Jan Hubicka  <jh@suse.cz>
+
+	* tree-pass.h (pass_build_cgraph_edges): Declare.
+	* cgraphunit.c (record_refernece): Move to cgraphbuild.c
+	(visited_nodes): Remove.
+	(cgraph_create_edges): Move to cgraphbuild.c; rename to
+	build_cgrpah_edges; make visited_nodes local.
+	(cgraph_process_new_functions): DO not call initialize_inline_failed.
+	(record_references_in_initializer): Move to cgraphbuild.c
+	(initialize_inline_failed, rebuild_cgraph_edges,
+	pass_rebuild_cgraph_edges): Move to cgraphbuild.c.
+	(verify_cgraph_node): Make visited_nodes local.
+	(cgraph_analyze_function): Do not call cgraph_create_edges and
+	initialize_inline_failed.
+	(cgraph_expand_function): Do not call cgraph_lower_function;
+	assert that function is already lowered.
+	* Makefile.in (cgraphbuild.o): New.
+	* passes.c (init_optimization_passes): Add pass_build_cgraph_edges
+	at the end of lowering passes.
+
 2007-01-06  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* ifcvt.c (cond_move_convert_if_block): New function, code

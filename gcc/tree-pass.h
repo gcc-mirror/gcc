@@ -303,6 +303,7 @@ extern struct tree_opt_pass pass_uncprop;
 extern struct tree_opt_pass pass_return_slot;
 extern struct tree_opt_pass pass_reassoc;
 extern struct tree_opt_pass pass_rebuild_cgraph_edges;
+extern struct tree_opt_pass pass_build_cgraph_edges;
 extern struct tree_opt_pass pass_reset_cc_flags;
 
 /* IPA Passes */
