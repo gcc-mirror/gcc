@@ -1,3 +1,44 @@
+2007-01-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30034
+	* resolve.c (resolve_formal_arglist): Exclude the test for
+	pointers and procedures for subroutine arguments as well as
+	functions.
+
+	PR fortran/30237
+	* intrinsic.c (remove_nullargs): Do not pass up arguments with
+	a label. If the actual has a label and the formal has a type
+	then emit an error.
+
+	PR fortran/25135
+	* module.c (load_generic_interfaces): If the symbol is present
+	and is not generic it is ambiguous.
+
+	PR fortran/23060
+	* intrinsic.c (compare_actual_formal ): Distinguish argument
+	list functions from keywords.
+	* intrinsic.c (sort_actual): If formal is NULL, the presence of
+	an argument list function actual is an error.
+	* trans-expr.c (conv_arglist_function) : New function to
+	implement argument list functions %VAL, %REF and %LOC.
+	(gfc_conv_function_call): Call it.
+	* resolve.c (resolve_actual_arglist): Add arg ptype and check
+	argument list functions.
+	(resolve_function, resolve_call): Set value of ptype before
+	calls to resolve_actual_arglist.
+	* primary.c (match_arg_list_function): New function.
+	(gfc_match_actual_arglist): Call it before trying for a
+	keyword argument.
+
+	PR fortran/27900
+	* resolve.c (resolve_actual_arglist): If all else fails and a
+	procedure actual argument has no type, see if a specific
+	intrinsic matches.
+
+	PR fortran/24325
+	* resolve.c (resolve_function): If the function reference is
+	FL_VARIABLE this is an error.
+
 2007-01-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25818

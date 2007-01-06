@@ -2782,7 +2782,7 @@ remove_nullargs (gfc_actual_arglist ** ap)
     {
       next = head->next;
 
-      if (head->expr == NULL)
+      if (head->expr == NULL && !head->label)
 	{
 	  head->next = NULL;
 	  gfc_free_actual_arglist (head);
@@ -2864,7 +2864,11 @@ keywords:
 
       if (f == NULL)
 	{
-	  gfc_error ("Can't find keyword named '%s' in call to '%s' at %L",
+	  if (a->name[0] == '%')
+	    gfc_error ("Argument list function at %L is not allowed in this "
+		       "context", where);
+	  else
+	    gfc_error ("Can't find keyword named '%s' in call to '%s' at %L",
 		     a->name, name, where);
 	  return FAILURE;
 	}
@@ -2898,6 +2902,12 @@ do_sort:
 
   for (f = formal; f; f = f->next)
     {
+      if (f->actual && f->actual->label != NULL && f->ts.type)
+	{
+	  gfc_error ("ALTERNATE RETURN not permitted at %L", where);
+	  return FAILURE;
+	}
+
       if (f->actual == NULL)
 	{
 	  a = gfc_get_actual_arglist ();

@@ -1,3 +1,28 @@
+2007-01-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30034
+	* gfortran.dg/pure_formal_proc_1.f90: New test.
+
+	PR fortran/30237
+	* gfortran.dg/intrinsic_actual_3.f90: New test.
+
+	PR fortran/25135
+	* gfortran.dg/generic_11.f90: New test.
+	* gfortran.dg/interface_7.f90: Remove name clash between module
+	name and procedure 'x' referenced in the interface.
+
+	PR fortran/23060
+	* gfortran.dg/c_by_val.c: Called by c_by_val_1.f.
+	* gfortran.dg/c_by_val_1.f: New test.
+	* gfortran.dg/c_by_val_2.f: New test.
+	* gfortran.dg/c_by_val_3.f: New test.
+
+	PR fortran/27900
+	* gfortran.dg/intrinsic_actual_4.f90: New test.
+
+	PR fortran/24325
+	* gfortran.dg/func_decl_3.f90: New test.
+
 2007-01-05  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/27826

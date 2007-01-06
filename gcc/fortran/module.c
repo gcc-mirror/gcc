@@ -3016,6 +3016,16 @@ load_generic_interfaces (void)
 	      sym->attr.generic = 1;
 	      sym->attr.use_assoc = 1;
 	    }
+	  else
+	    {
+	      /* Unless sym is a generic interface, this reference
+		 is ambiguous.  */
+	      gfc_symtree *st;
+	      p = p ? p : name;
+	      st = gfc_find_symtree (gfc_current_ns->sym_root, p);
+	      st->ambiguous = sym->attr.generic ? 0 : 1;
+	    }
+
 	  if (i == 1)
 	    {
 	      mio_interface_rest (&sym->generic);
