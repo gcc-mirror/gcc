@@ -2270,7 +2270,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
    * @brief A gamma continuous distribution for random numbers.
    *
    * The formula for the gamma probability mass function is 
-   * @f$ p(x) = \frac{1}{\Gamma(\alpha)} x^{\alpha - 1} e^{-x} } @f$.
+   * @f$ p(x) = \frac{1}{\Gamma(\alpha)} x^{\alpha - 1} e^{-x} @f$.
    */
   template<typename _RealType = double>
     class gamma_distribution
