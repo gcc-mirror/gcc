@@ -123,6 +123,16 @@ static int combine_successes;
 
 static int total_attempts, total_merges, total_extras, total_successes;
 
+/* Sometimes combine tries to replace the right hand side of an insn
+   with the value of a REG_EQUAL note.  This is the insn that has been
+   so modified, or null if none.  */
+
+static rtx replaced_rhs_insn;
+
+/* When REPLACED_RHS_INSN is nonnull, this is a copy of the new right
+   hand side.  */
+
+static rtx replaced_rhs_value;
 
 /* Vector mapping INSN_UIDs to cuids.
    The cuids are like uids but increase monotonically always.
@@ -877,8 +887,11 @@ combine_instructions (rtx f, unsigned int nregs)
 			 be deleted or recognized by try_combine.  */
 		      rtx orig = SET_SRC (set);
 		      SET_SRC (set) = note;
+		      replaced_rhs_insn = temp;
+		      replaced_rhs_value = copy_rtx (note);
 		      next = try_combine (insn, temp, NULL_RTX,
 					  &new_direct_jump_p);
+		      replaced_rhs_insn = NULL;
 		      if (next)
 			goto retry;
 		      SET_SRC (set) = orig;
@@ -12224,7 +12237,15 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 	  break;
 
 	case REG_DEAD:
-	  /* If the register is used as an input in I3, it dies there.
+	  /* If we replaced the right hand side of FROM_INSN with a
+	     REG_EQUAL note, the original use of the dying register
+	     will not have been combined into I3 and I2.  In such cases,
+	     FROM_INSN is guaranteed to be the first of the combined
+	     instructions, so we simply need to search back before
+	     FROM_INSN for the previous use or set of this register,
+	     then alter the notes there appropriately.
+
+	     If the register is used as an input in I3, it dies there.
 	     Similarly for I2, if it is nonzero and adjacent to I3.
 
 	     If the register is not used as an input in either I3 or I2
@@ -12239,29 +12260,31 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 	     use of A and put the death note there.  */
 
 	  if (from_insn
-	      && CALL_P (from_insn)
-	      && find_reg_fusage (from_insn, USE, XEXP (note, 0)))
-	    place = from_insn;
-	  else if (reg_referenced_p (XEXP (note, 0), PATTERN (i3)))
-	    place = i3;
-	  else if (i2 != 0 && next_nonnote_insn (i2) == i3
-		   && reg_referenced_p (XEXP (note, 0), PATTERN (i2)))
-	    place = i2;
-
-	  if (place == 0
-	      && (rtx_equal_p (XEXP (note, 0), elim_i2)
-		  || rtx_equal_p (XEXP (note, 0), elim_i1)))
-	    break;
+	      && from_insn == replaced_rhs_insn
+	      && !reg_overlap_mentioned_p (XEXP (note, 0), replaced_rhs_value))
+	    tem = from_insn;
+	  else
+	    {
+	      if (from_insn
+		  && CALL_P (from_insn)
+		  && find_reg_fusage (from_insn, USE, XEXP (note, 0)))
+		place = from_insn;
+	      else if (reg_referenced_p (XEXP (note, 0), PATTERN (i3)))
+		place = i3;
+	      else if (i2 != 0 && next_nonnote_insn (i2) == i3
+		       && reg_referenced_p (XEXP (note, 0), PATTERN (i2)))
+		place = i2;
+	      else if (rtx_equal_p (XEXP (note, 0), elim_i2)
+		       || rtx_equal_p (XEXP (note, 0), elim_i1))
+		break;
+	      tem = i3;
+	    }
 
 	  if (place == 0)
 	    {
 	      basic_block bb = this_basic_block;
 
-	      /* You might think you could search back from FROM_INSN
-		 rather than from I3, but combine tries to split invalid
-		 combined instructions.  This can result in the old I2
-		 or I1 moving later in the insn sequence.  */
-	      for (tem = PREV_INSN (i3); place == 0; tem = PREV_INSN (tem))
+	      for (tem = PREV_INSN (tem); place == 0; tem = PREV_INSN (tem))
 		{
 		  if (! INSN_P (tem))
 		    {
@@ -12363,22 +12386,6 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 			   || (CALL_P (tem)
 			       && find_reg_fusage (tem, USE, XEXP (note, 0))))
 		    {
-		      /* This may not be the correct place for the death
-			 note if FROM_INSN is before TEM, and the reg is
-			 set between FROM_INSN and TEM.  The reg might
-			 die two or more times.  An existing death note
-			 means we are looking at the wrong live range.  */
-		      if (from_insn
-			  && INSN_CUID (from_insn) < INSN_CUID (tem)
-			  && find_regno_note (tem, REG_DEAD,
-					      REGNO (XEXP (note, 0))))
-			{
-			  tem = from_insn;
-			  if (tem == BB_HEAD (bb))
-			    break;
-			  continue;
-			}
-
 		      place = tem;
 
 		      /* If we are doing a 3->2 combination, and we have a

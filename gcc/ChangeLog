@@ -1,3 +1,24 @@
+2007-01-06  Richard Sandiford  <richard@codesourcery.com>
+
+	Backport:
+
+	2006-05-23  Richard Sandiford  <richard@codesourcery.com>
+
+	PR rtl-optimization/27736
+	* combine.c (replaced_rhs_value): New variable.
+	(combine_instructions): Set it.
+	(distribute_notes): When distributing a note in replaced_rhs_insn,
+	check whether the value was used in replaced_rhs_value.
+
+	2006-05-22  Richard Sandiford  <richard@codesourcery.com>
+
+	PR rtl-optimization/25514
+	* combine.c (replaced_rhs_insn): New variable.
+	(combine_instructions): Set replaced_rhs_insn when trying to replace
+	a SET_SRC with a REG_EQUAL note.
+	(distribute_notes): Use replaced_rhs_insn when determining the live
+	range of a REG_DEAD register.
+
 2007-01-05  Richard Guenther  <rguenther@suse.de>
 
         PR tree-optimization/30212
