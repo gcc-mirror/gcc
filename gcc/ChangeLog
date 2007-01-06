@@ -1,3 +1,12 @@
+2007-01-06  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* ifcvt.c (cond_move_convert_if_block): New function, code
+	factored out from...
+	(cond_move_process_if_block): ...here.  Call the new function
+	on the THEN and ELSE blocks.
+	(merge_if_block): Do not copy global_live_at_end, merge_blocks
+	already takes care of this.
+
 2007-01-05  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c/19978
