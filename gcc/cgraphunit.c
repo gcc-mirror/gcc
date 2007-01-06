@@ -164,16 +164,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 static void cgraph_expand_all_functions (void);
 static void cgraph_mark_functions_to_output (void);
 static void cgraph_expand_function (struct cgraph_node *);
-static tree record_reference (tree *, int *, void *);
 static void cgraph_output_pending_asms (void);
 static void cgraph_increase_alignment (void);
-static void initialize_inline_failed (struct cgraph_node *);
-
-/* Records tree nodes seen in record_reference.  Simply using
-   walk_tree_without_duplicates doesn't guarantee each node is visited
-   once because it gets a new htab upon each recursive call from
-   record_reference itself.  */
-static struct pointer_set_t *visited_nodes;
 
 static FILE *cgraph_dump_file;
 
@@ -311,7 +303,6 @@ cgraph_process_new_functions (void)
 	  /* Inlining characteristics are maintained by the
 	     cgraph_mark_inline.  */
 	  node->global.insns = node->local.self_insns;
-	  initialize_inline_failed (node);
 	  if (flag_really_no_inline && !node->local.disregard_inline_limits)
 	     node->local.inlinable = 0;
 	  if ((cgraph_state == CGRAPH_STATE_IPA_SSA
@@ -495,189 +486,6 @@ cgraph_finalize_function (tree decl, bool nested)
     do_warn_unused_parameter (decl);
 }
 
-/* Walk tree and record all calls.  Called via walk_tree.  */
-static tree
-record_reference (tree *tp, int *walk_subtrees, void *data)
-{
-  tree t = *tp;
-
-  switch (TREE_CODE (t))
-    {
-    case VAR_DECL:
-      /* ??? Really, we should mark this decl as *potentially* referenced
-	 by this function and re-examine whether the decl is actually used
-	 after rtl has been generated.  */
-      if (TREE_STATIC (t) || DECL_EXTERNAL (t))
-	{
-	  varpool_mark_needed_node (varpool_node (t));
-	  if (lang_hooks.callgraph.analyze_expr)
-	    return lang_hooks.callgraph.analyze_expr (tp, walk_subtrees,
-						      data);
-	}
-      break;
-
-    case FDESC_EXPR:
-    case ADDR_EXPR:
-      if (flag_unit_at_a_time)
-	{
-	  /* Record dereferences to the functions.  This makes the
-	     functions reachable unconditionally.  */
-	  tree decl = TREE_OPERAND (*tp, 0);
-	  if (TREE_CODE (decl) == FUNCTION_DECL)
-	    cgraph_mark_needed_node (cgraph_node (decl));
-	}
-      break;
-
-    default:
-      /* Save some cycles by not walking types and declaration as we
-	 won't find anything useful there anyway.  */
-      if (IS_TYPE_OR_DECL_P (*tp))
-	{
-	  *walk_subtrees = 0;
-	  break;
-	}
-
-      if ((unsigned int) TREE_CODE (t) >= LAST_AND_UNUSED_TREE_CODE)
-	return lang_hooks.callgraph.analyze_expr (tp, walk_subtrees, data);
-      break;
-    }
-
-  return NULL;
-}
-
-/* Create cgraph edges for function calls inside BODY from NODE.  */
-
-static void
-cgraph_create_edges (struct cgraph_node *node, tree body)
-{
-  basic_block bb;
-
-  struct function *this_cfun = DECL_STRUCT_FUNCTION (body);
-  block_stmt_iterator bsi;
-  tree step;
-  visited_nodes = pointer_set_create ();
-
-  /* Reach the trees by walking over the CFG, and note the
-     enclosing basic-blocks in the call edges.  */
-  FOR_EACH_BB_FN (bb, this_cfun)
-    for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-      {
-	tree stmt = bsi_stmt (bsi);
-	tree call = get_call_expr_in (stmt);
-	tree decl;
-
-	if (call && (decl = get_callee_fndecl (call)))
-	  {
-	    cgraph_create_edge (node, cgraph_node (decl), stmt,
-				bb->count,
-				bb->loop_depth);
-	    walk_tree (&TREE_OPERAND (call, 1),
-		       record_reference, node, visited_nodes);
-	    if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
-	      walk_tree (&GIMPLE_STMT_OPERAND (stmt, 0),
-			 record_reference, node, visited_nodes);
-	  }
-	else
-	  walk_tree (bsi_stmt_ptr (bsi), record_reference, node, visited_nodes);
-      }
-
-  /* Look for initializers of constant variables and private statics.  */
-  for (step = DECL_STRUCT_FUNCTION (body)->unexpanded_var_list;
-       step;
-       step = TREE_CHAIN (step))
-    {
-      tree decl = TREE_VALUE (step);
-      if (TREE_CODE (decl) == VAR_DECL
-	  && (TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
-	  && flag_unit_at_a_time)
-	varpool_finalize_decl (decl);
-      else if (TREE_CODE (decl) == VAR_DECL && DECL_INITIAL (decl))
-	walk_tree (&DECL_INITIAL (decl), record_reference, node, visited_nodes);
-    }
-
-  pointer_set_destroy (visited_nodes);
-  visited_nodes = NULL;
-}
-
-void
-record_references_in_initializer (tree decl)
-{
-  visited_nodes = pointer_set_create ();
-  walk_tree (&DECL_INITIAL (decl), record_reference, NULL, visited_nodes);
-  pointer_set_destroy (visited_nodes);
-  visited_nodes = NULL;
-}
-
-
-/* Give initial reasons why inlining would fail.  Those gets
-   either NULLified or usually overwritten by more precise reason
-   later.  */
-static void
-initialize_inline_failed (struct cgraph_node *node)
-{
-  struct cgraph_edge *e;
-
-  for (e = node->callers; e; e = e->next_caller)
-    {
-      gcc_assert (!e->callee->global.inlined_to);
-      gcc_assert (e->inline_failed);
-      if (node->local.redefined_extern_inline)
-	e->inline_failed = N_("redefined extern inline functions are not "
-			   "considered for inlining");
-      else if (!node->local.inlinable)
-	e->inline_failed = N_("function not inlinable");
-      else
-	e->inline_failed = N_("function not considered for inlining");
-    }
-}
-
-/* Rebuild call edges from current function after a passes not aware
-   of cgraph updating.  */
-static unsigned int
-rebuild_cgraph_edges (void)
-{
-  basic_block bb;
-  struct cgraph_node *node = cgraph_node (current_function_decl);
-  block_stmt_iterator bsi;
-
-  cgraph_node_remove_callees (node);
-
-  node->count = ENTRY_BLOCK_PTR->count;
-
-  FOR_EACH_BB (bb)
-    for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-      {
-	tree stmt = bsi_stmt (bsi);
-	tree call = get_call_expr_in (stmt);
-	tree decl;
-
-	if (call && (decl = get_callee_fndecl (call)))
-	  cgraph_create_edge (node, cgraph_node (decl), stmt,
-			      bb->count,
-			      bb->loop_depth);
-      }
-  initialize_inline_failed (node);
-  gcc_assert (!node->global.inlined_to);
-  return 0;
-}
-
-struct tree_opt_pass pass_rebuild_cgraph_edges =
-{
-  NULL,					/* name */
-  NULL,					/* gate */
-  rebuild_cgraph_edges,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  0,					/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0,					/* todo_flags_finish */
-  0					/* letter */
-};
-
 /* Verify cgraph nodes of given cgraph node.  */
 void
 verify_cgraph_node (struct cgraph_node *node)
@@ -763,7 +571,7 @@ verify_cgraph_node (struct cgraph_node *node)
 	{
 	  /* The nodes we're interested in are never shared, so walk
 	     the tree ignoring duplicates.  */
-	  visited_nodes = pointer_set_create ();
+	  struct pointer_set_t *visited_nodes = pointer_set_create ();
 	  /* Reach the trees by walking over the CFG, and note the
 	     enclosing basic-blocks in the call edges.  */
 	  FOR_EACH_BB_FN (this_block, this_cfun)
@@ -802,7 +610,6 @@ verify_cgraph_node (struct cgraph_node *node)
 		  }
 	      }
 	  pointer_set_destroy (visited_nodes);
-	  visited_nodes = NULL;
 	}
       else
 	/* No CFG available?!  */
@@ -867,9 +674,6 @@ cgraph_analyze_function (struct cgraph_node *node)
   push_cfun (DECL_STRUCT_FUNCTION (decl));
   cgraph_lower_function (node);
 
-  /* First kill forward declaration so reverse inlining works properly.  */
-  cgraph_create_edges (node, decl);
-
   node->local.estimated_self_stack_size = estimated_stack_frame_size ();
   node->global.estimated_stack_size = node->local.estimated_self_stack_size;
   node->global.stack_frame_offset = 0;
@@ -879,7 +683,6 @@ cgraph_analyze_function (struct cgraph_node *node)
   if (node->local.inlinable)
     node->local.disregard_inline_limits
       = lang_hooks.tree_inlining.disregard_inline_limits (decl);
-  initialize_inline_failed (node);
   if (flag_really_no_inline && !node->local.disregard_inline_limits)
     node->local.inlinable = 0;
   /* Inlining characteristics are maintained by the cgraph_mark_inline.  */
@@ -1167,7 +970,8 @@ cgraph_expand_function (struct cgraph_node *node)
   if (flag_unit_at_a_time)
     announce_function (decl);
 
-  cgraph_lower_function (node);
+  gcc_assert (node->lowered);
+  /*cgraph_lower_function (node);*/
 
   /* Generate RTL for the body of DECL.  */
   lang_hooks.callgraph.expand_function (decl);
