@@ -14,7 +14,7 @@ any later version.
 GCC is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING.  If not, write to
@@ -376,8 +376,13 @@ machine_matches( tFixDesc* p_fixd )
         }
     }
 
+  /* Check for sense inversion then set the "skip test" flag, if needed */
   if (p_fixd->fd_flags & FD_MACH_IFNOT)
-    return ! have_match;
+    have_match = ! have_match;
+
+  if (! have_match)
+    p_fixd->fd_flags |= FD_SKIP_TEST;
+
   return have_match;
 }
 
