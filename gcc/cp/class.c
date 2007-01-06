@@ -1,6 +1,7 @@
 /* Functions related to building classes and their related objects.
    Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
+   Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -898,6 +899,7 @@ add_method (tree type, tree method, tree using_decl)
   bool complete_p;
   bool insert_p = false;
   tree current_fns;
+  tree fns;
 
   if (method == error_mark_node)
     return false;
@@ -975,92 +977,83 @@ add_method (tree type, tree method, tree using_decl)
     }
   current_fns = insert_p ? NULL_TREE : VEC_index (tree, method_vec, slot);
 
-  if (processing_template_decl)
-    /* TYPE is a template class.  Don't issue any errors now; wait
-       until instantiation time to complain.  */
-    ;
-  else
+  /* Check to see if we've already got this method.  */
+  for (fns = current_fns; fns; fns = OVL_NEXT (fns))
     {
-      tree fns;
+      tree fn = OVL_CURRENT (fns);
+      tree fn_type;
+      tree method_type;
+      tree parms1;
+      tree parms2;
 
-      /* Check to see if we've already got this method.  */
-      for (fns = current_fns; fns; fns = OVL_NEXT (fns))
+      if (TREE_CODE (fn) != TREE_CODE (method))
+	continue;
+
+      /* [over.load] Member function declarations with the
+	 same name and the same parameter types cannot be
+	 overloaded if any of them is a static member
+	 function declaration.
+
+	 [namespace.udecl] When a using-declaration brings names
+	 from a base class into a derived class scope, member
+	 functions in the derived class override and/or hide member
+	 functions with the same name and parameter types in a base
+	 class (rather than conflicting).  */
+      fn_type = TREE_TYPE (fn);
+      method_type = TREE_TYPE (method);
+      parms1 = TYPE_ARG_TYPES (fn_type);
+      parms2 = TYPE_ARG_TYPES (method_type);
+
+      /* Compare the quals on the 'this' parm.  Don't compare
+	 the whole types, as used functions are treated as
+	 coming from the using class in overload resolution.  */
+      if (! DECL_STATIC_FUNCTION_P (fn)
+	  && ! DECL_STATIC_FUNCTION_P (method)
+	  && (TYPE_QUALS (TREE_TYPE (TREE_VALUE (parms1)))
+	      != TYPE_QUALS (TREE_TYPE (TREE_VALUE (parms2)))))
+	continue;
+
+      /* For templates, the return type and template parameters
+	 must be identical.  */
+      if (TREE_CODE (fn) == TEMPLATE_DECL
+	  && (!same_type_p (TREE_TYPE (fn_type),
+			    TREE_TYPE (method_type))
+	      || !comp_template_parms (DECL_TEMPLATE_PARMS (fn),
+				       DECL_TEMPLATE_PARMS (method))))
+	continue;
+
+      if (! DECL_STATIC_FUNCTION_P (fn))
+	parms1 = TREE_CHAIN (parms1);
+      if (! DECL_STATIC_FUNCTION_P (method))
+	parms2 = TREE_CHAIN (parms2);
+
+      if (compparms (parms1, parms2)
+	  && (!DECL_CONV_FN_P (fn)
+	      || same_type_p (TREE_TYPE (fn_type),
+			      TREE_TYPE (method_type))))
 	{
-	  tree fn = OVL_CURRENT (fns);
-	  tree fn_type;
-	  tree method_type;
-	  tree parms1;
-	  tree parms2;
-
-	  if (TREE_CODE (fn) != TREE_CODE (method))
-	    continue;
-
-	  /* [over.load] Member function declarations with the
-	     same name and the same parameter types cannot be
-	     overloaded if any of them is a static member
-	     function declaration.
-
-	     [namespace.udecl] When a using-declaration brings names
-	     from a base class into a derived class scope, member
-	     functions in the derived class override and/or hide member
-	     functions with the same name and parameter types in a base
-	     class (rather than conflicting).  */
-	  fn_type = TREE_TYPE (fn);
-	  method_type = TREE_TYPE (method);
-	  parms1 = TYPE_ARG_TYPES (fn_type);
-	  parms2 = TYPE_ARG_TYPES (method_type);
-
-	  /* Compare the quals on the 'this' parm.  Don't compare
-	     the whole types, as used functions are treated as
-	     coming from the using class in overload resolution.  */
-	  if (! DECL_STATIC_FUNCTION_P (fn)
-	      && ! DECL_STATIC_FUNCTION_P (method)
-	      && (TYPE_QUALS (TREE_TYPE (TREE_VALUE (parms1)))
-		  != TYPE_QUALS (TREE_TYPE (TREE_VALUE (parms2)))))
-	    continue;
-
-	  /* For templates, the return type and template parameters
-	     must be identical.  */
-	  if (TREE_CODE (fn) == TEMPLATE_DECL
-	      && (!same_type_p (TREE_TYPE (fn_type),
-				TREE_TYPE (method_type))
-		  || !comp_template_parms (DECL_TEMPLATE_PARMS (fn),
-					   DECL_TEMPLATE_PARMS (method))))
-	    continue;
-
-	  if (! DECL_STATIC_FUNCTION_P (fn))
-	    parms1 = TREE_CHAIN (parms1);
-	  if (! DECL_STATIC_FUNCTION_P (method))
-	    parms2 = TREE_CHAIN (parms2);
-
-	  if (compparms (parms1, parms2)
-	      && (!DECL_CONV_FN_P (fn)
-		  || same_type_p (TREE_TYPE (fn_type),
-				  TREE_TYPE (method_type))))
+	  if (using_decl)
 	    {
-	      if (using_decl)
-		{
-		  if (DECL_CONTEXT (fn) == type)
-		    /* Defer to the local function.  */
-		    return false;
-		  if (DECL_CONTEXT (fn) == DECL_CONTEXT (method))
-		    error ("repeated using declaration %q+D", using_decl);
-		  else
-		    error ("using declaration %q+D conflicts with a previous using declaration",
-			   using_decl);
-		}
+	      if (DECL_CONTEXT (fn) == type)
+		/* Defer to the local function.  */
+		return false;
+	      if (DECL_CONTEXT (fn) == DECL_CONTEXT (method))
+		error ("repeated using declaration %q+D", using_decl);
 	      else
-		{
-		  error ("%q+#D cannot be overloaded", method);
-		  error ("with %q+#D", fn);
-		}
-
-	      /* We don't call duplicate_decls here to merge the
-		 declarations because that will confuse things if the
-		 methods have inline definitions.  In particular, we
-		 will crash while processing the definitions.  */
-	      return false;
+		error ("using declaration %q+D conflicts with a previous using declaration",
+		       using_decl);
 	    }
+	  else
+	    {
+	      error ("%q+#D cannot be overloaded", method);
+	      error ("with %q+#D", fn);
+	    }
+
+	  /* We don't call duplicate_decls here to merge the
+	     declarations because that will confuse things if the
+	     methods have inline definitions.  In particular, we
+	     will crash while processing the definitions.  */
+	  return false;
 	}
     }
 
