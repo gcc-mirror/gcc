@@ -1,3 +1,12 @@
+2007-01-07  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr-protos.h (call_insn_operand): Delete prototype.
+	* config/avr/avr.c (call_insn_operand): Delete function.
+	* config/avr/avr.md (*pushqi, *pushhi, *pushsi, *pushsf): Use REG_SP
+	instead of register number. Use predicates.
+	* config/avr/predicates.md (const0_operand, reg_or_0_operand, 
+	call_insn_operand): Add.
+
 2007-01-06  Jan Hubicka  <jh@suse.cz>
 
 	* tree-pass.h (pass_build_cgraph_edges): Declare.

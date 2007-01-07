@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for ATMEL AVR micro controllers
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
@@ -1168,22 +1168,6 @@ print_operand (FILE *file, rtx x, int code)
     fputs (cond_string (reverse_condition (GET_CODE (x))), file);
   else
     print_operand_address (file, x);
-}
-
-/* Recognize operand OP of mode MODE used in call instructions.  */
-
-int
-call_insn_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (op) == MEM)
-    {
-      rtx inside = XEXP (op, 0);
-      if (register_operand (inside, Pmode))
-        return 1;
-      if (CONSTANT_ADDRESS_P (inside))
-        return 1;
-    }
-  return 0;
 }
 
 /* Update the condition code in the INSN.  */

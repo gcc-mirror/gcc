@@ -1,5 +1,5 @@
 ;; Predicate definitions for ATMEL AVR micro controllers.
-;; Copyright (C) 2006 Free Software Foundation, Inc.
+;; Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -50,7 +50,17 @@
   (and (match_code "const_int")
        (match_test "INTVAL (op) >= 0x40 
                     && INTVAL (op) <= 0x60 - GET_MODE_SIZE (mode)")))
-       
+
+;; Return 1 if OP is the zero constant for MODE.
+(define_predicate "const0_operand"
+  (and (match_code "const_int,const_double")
+       (match_test "op == CONST0_RTX (mode)")))
+
+;; Returns true if OP is either the constant zero or a register.
+(define_predicate "reg_or_0_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "const0_operand")))
+
 ;; Returns 1 if OP is a SYMBOL_REF.
 (define_predicate "symbol_ref_operand"
   (match_code "symbol_ref"))
@@ -83,3 +93,9 @@
 (define_predicate "simple_comparison_operator"
   (and (match_operand 0 "comparison_operator")
        (not (match_code "gt,gtu,le,leu"))))
+
+;; Return true if OP is a valid call operand.
+(define_predicate "call_insn_operand"
+  (and (match_code "mem")
+       (ior (match_test "register_operand (XEXP (op, 0), mode)")
+            (match_test "CONSTANT_ADDRESS_P (XEXP (op, 0))"))))

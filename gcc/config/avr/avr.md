@@ -1,7 +1,7 @@
 ;; -*- Mode: Scheme -*-
 ;;   Machine description for GNU compiler,
 ;;   for ATMEL AVR micro controllers.
-;;   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006
+;;   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007
 ;;   Free Software Foundation, Inc.
 ;;   Contributed by Denis Chertykov (denisc@overta.ru)
 
@@ -145,9 +145,9 @@
   [(set_attr "length" "5")])
 
 (define_insn "*pushqi"
-  [(set (mem:QI (post_dec (reg:HI 32)))
-        (match_operand:QI 0 "nonmemory_operand" "r,L"))]
-  "(operands[0] == const0_rtx || register_operand (operands[0], QImode))"
+  [(set (mem:QI (post_dec (reg:HI REG_SP)))
+        (match_operand:QI 0 "reg_or_0_operand" "r,L"))]
+  ""
   "@
 	push %0
 	push __zero_reg__"
@@ -155,25 +155,25 @@
 
 
 (define_insn "*pushhi"
-  [(set (mem:HI (post_dec (reg:HI 32)))
-        (match_operand:HI 0 "nonmemory_operand" "r,L"))]
-  "(operands[0] == const0_rtx || register_operand (operands[0], HImode))"
+  [(set (mem:HI (post_dec (reg:HI REG_SP)))
+        (match_operand:HI 0 "reg_or_0_operand" "r,L"))]
+  ""
   "@
 	push %B0\;push %A0
 	push __zero_reg__\;push __zero_reg__"
   [(set_attr "length" "2,2")])
 
 (define_insn "*pushsi"
-  [(set (mem:SI (post_dec (reg:HI 32)))
-        (match_operand:SI 0 "nonmemory_operand" "r,L"))]
-  "(operands[0] == const0_rtx || register_operand (operands[0], SImode))"
+  [(set (mem:SI (post_dec (reg:HI REG_SP)))
+        (match_operand:SI 0 "reg_or_0_operand" "r,L"))]
+  ""
   "@
 	push %D0\;push %C0\;push %B0\;push %A0
 	push __zero_reg__\;push __zero_reg__\;push __zero_reg__\;push __zero_reg__"
   [(set_attr "length" "4,4")])
 
 (define_insn "*pushsf"
-  [(set (mem:SF (post_dec (reg:HI 32)))
+  [(set (mem:SF (post_dec (reg:HI REG_SP)))
         (match_operand:SF 0 "register_operand" "r"))]
   ""
   "push %D0
