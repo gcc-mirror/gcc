@@ -1,5 +1,9 @@
 2007-01-07  Bernhard Fischer  <aldot@gcc.gnu.org>
 
+	* data.c (gfc_assign_data_value): Fix whitespace.
+
+2007-01-07  Bernhard Fischer  <aldot@gcc.gnu.org>
+
 	* trans-array.c (gfc_trans_create_temp_array, gfc_array_init_size):
 	Commentary typo fix.
 
