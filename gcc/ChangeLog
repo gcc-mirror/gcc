@@ -1,3 +1,9 @@
+2007-01-07  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (extract_range_from_assert): CSE calls to
+	compare_values where possible.
+	(extract_range_from_unary_expr): Likewise.
+
 2007-01-07  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr-protos.h (call_insn_operand): Delete prototype.
