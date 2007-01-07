@@ -1066,6 +1066,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
       else
 	{
 	  tree min, max, anti_min, anti_max, real_min, real_max;
+	  int cmp;
 
 	  /* We want to compute the logical AND of the two ranges;
 	     there are three cases to consider.
@@ -1130,8 +1131,8 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	  /* Case 3a, the anti-range extends into the low
 	     part of the real range.  Thus creating a new
 	     low for the real range.  */
-	  else if ((compare_values (anti_max, real_min) == 1
-		    || compare_values (anti_max, real_min) == 0)
+	  else if (((cmp = compare_values (anti_max, real_min)) == 1
+		    || cmp == 0)
 		   && compare_values (anti_max, real_max) == -1)
 	    {
 	      min = fold_build2 (PLUS_EXPR, TREE_TYPE (var_vr->min),
@@ -1144,8 +1145,8 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	     part of the real range.  Thus creating a new
 	     higher for the real range.  */
 	  else if (compare_values (anti_min, real_min) == 1
-		   && (compare_values (anti_min, real_max) == -1
-		       || compare_values (anti_min, real_max) == 0))
+		   && ((cmp = compare_values (anti_min, real_max)) == -1
+		       || cmp == 0))
 	    {
 	      max = fold_build2 (MINUS_EXPR, TREE_TYPE (var_vr->min),
 				 anti_min,
@@ -1734,8 +1735,8 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
 	      && is_gimple_val (new_max)
 	      && tree_int_cst_equal (new_min, orig_min)
 	      && tree_int_cst_equal (new_max, orig_max)
-	      && compare_values (new_min, new_max) <= 0
-	      && compare_values (new_min, new_max) >= -1)
+	      && (cmp = compare_values (new_min, new_max)) <= 0
+	      && cmp >= -1)
 	    {
 	      set_value_range (vr, VR_RANGE, new_min, new_max, vr->equiv);
 	      return;
