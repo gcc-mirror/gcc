@@ -265,12 +265,12 @@ gfc_resolve_array_spec (gfc_array_spec *as, int check_constant)
 
 	Parsed       Lower   Upper  Returned
 	------------------------------------
-	  :	  NULL    NULL   AS_DEFERRED (*)
-	  x	   1       x     AS_EXPLICIT
-	  x:	  x      NULL   AS_ASSUMED_SHAPE
-	  x:y	 x       y     AS_EXPLICIT
-	  x:*	 x      NULL   AS_ASSUMED_SIZE
-	  *	   1      NULL   AS_ASSUMED_SIZE
+	  :           NULL    NULL   AS_DEFERRED (*)
+	  x            1       x     AS_EXPLICIT
+	  x:           x      NULL   AS_ASSUMED_SHAPE
+	  x:y          x       y     AS_EXPLICIT
+	  x:*          x      NULL   AS_ASSUMED_SIZE
+	  *            1      NULL   AS_ASSUMED_SIZE
 
   (*) For non-pointer dummy arrays this is AS_ASSUMED_SHAPE.  This
   is fixed during the resolution of formal interfaces.
