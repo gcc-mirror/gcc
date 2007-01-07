@@ -1,5 +1,6 @@
 /* Balanced binary trees using treaps.
-   Copyright (C) 2000, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2003, 2007
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -62,7 +63,7 @@ pseudo_random (void)
 /* Rotate the treap left.  */
 
 static gfc_bbt *
-rotate_left (gfc_bbt * t)
+rotate_left (gfc_bbt *t)
 {
   gfc_bbt *temp;
 
@@ -77,7 +78,7 @@ rotate_left (gfc_bbt * t)
 /* Rotate the treap right.  */
 
 static gfc_bbt *
-rotate_right (gfc_bbt * t)
+rotate_right (gfc_bbt *t)
 {
   gfc_bbt *temp;
 
@@ -93,7 +94,7 @@ rotate_right (gfc_bbt * t)
    aborts if we find a duplicate key.  */
 
 static gfc_bbt *
-insert (gfc_bbt * new, gfc_bbt * t, compare_fn compare)
+insert (gfc_bbt *new, gfc_bbt *t, compare_fn compare)
 {
   int c;
 
@@ -108,14 +109,12 @@ insert (gfc_bbt * new, gfc_bbt * t, compare_fn compare)
       if (t->priority < t->left->priority)
 	t = rotate_right (t);
     }
-
   else if (c > 0)
     {
       t->right = insert (new, t->right, compare);
       if (t->priority < t->right->priority)
 	t = rotate_left (t);
     }
-
   else /* if (c == 0)  */
     gfc_internal_error("insert_bbt(): Duplicate key found!");
 
@@ -134,13 +133,12 @@ gfc_insert_bbt (void *root, void *new, compare_fn compare)
 
   r = (gfc_bbt **) root;
   n = (gfc_bbt *) new;
-
   n->priority = pseudo_random ();
   *r = insert (n, *r, compare);
 }
 
 static gfc_bbt *
-delete_root (gfc_bbt * t)
+delete_root (gfc_bbt *t)
 {
   gfc_bbt *temp;
 
@@ -170,7 +168,7 @@ delete_root (gfc_bbt * t)
    Returns the new root node of the tree.  */
 
 static gfc_bbt *
-delete_treap (gfc_bbt * old, gfc_bbt * t, compare_fn compare)
+delete_treap (gfc_bbt *old, gfc_bbt *t, compare_fn compare)
 {
   int c;
 
@@ -196,6 +194,5 @@ gfc_delete_bbt (void *root, void *old, compare_fn compare)
   gfc_bbt **t;
 
   t = (gfc_bbt **) root;
-
   *t = delete_treap ((gfc_bbt *) old, *t, compare);
 }
