@@ -1,0 +1,1452 @@
+2006-12-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/30145
+	* io/transfer.c (transfer_array):  Check for negative extent.
+
+2006-12-15  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2006-12-13  Richard Guenther  <rguenther@suse.de>
+
+	PR fortran/30115
+	* runtime/memory.c (allocate_size): Change interface to
+	void *()(size_t, GFC_INTEGER_4 *).
+	(allocate): Likewise.
+	(allocate64): Likewise.
+	(allocate_array): Change interface to
+	void *()(void *, size_t, GFC_INTEGER_4 *).
+	(allocate64_array): Likewise.
+	(deallocate): Change interface to
+	void ()(void *, GFC_INTEGER_4 *).
+
+2006-12-10  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/29568
+	* libgfortran/libgfortran.h (compile_options_t):  Add
+	record_marker. (top level):  Define GFC_MAX_SUBRECORD_LENGTH.
+	* runtime/compile_options.c (set_record_marker):  Change
+	default to four-byte record marker.
+	(set_max_subrecord_length):  New function.
+	* runtime/error.c (translate_error):  Change error message
+	for short record on unformatted read.
+	* io/io.h (gfc_unit):  Add recl_subrecord, bytes_left_subrecord
+	and continued.
+	* io/file_pos.c (unformatted_backspace):  Change default of record
+	marker size to four bytes.  Loop over subrecords.
+	* io/open.c:  Default recl is max_offset.  If
+	compile_options.max_subrecord_length has been set, set set
+	u->recl_subrecord to its value, to the maximum value otherwise.
+	* io/transfer.c (top level):  Add prototypes for us_read, us_write,
+	next_record_r_unf and next_record_w_unf.
+	(read_block_direct):  Separate codepaths for unformatted direct
+	and unformatted sequential.  If a recl has been set by the
+	user, use the number of bytes left for the record if it is smaller
+	than the read request.  Loop over subrecords.  Set an error if the
+	user has set a recl and the read was short.
+	(write_buf):  Separate codepaths for unformatted direct and
+	unformatted sequential. If a recl has been set by the
+	user, use the number of bytes left for the record if it is smaller
+	than the read request.  Loop over subrecords.  Set an error if the
+	user has set a recl and the read was short.
+	(us_read):  Add parameter continued (to indicate that bytes_left
+	should not be intialized).  Change default of record marker size
+	to four bytes. Use subrecord.  If the subrecord length is smaller than
+	zero, this indicates a continuation.
+	(us_write):  Add parameter continued (to indicate that the continued
+	flag should be set).  Use subrecord.
+	(pre_position):  Use 0 for continued on us_write and us_read calls.
+	(skip_record):  New function.
+	(next_record_r_unf):  New function.
+	(next_record_r):  Use next_record_r_unf.
+	(write_us_marker):  Default size for record markers is four bytes.
+	(next_record_w_unf):  New function.
+	(next_record_w):  Use next_record_w_unf.
+	PR libfortran/30009
+	PR libfortran/30056
+	* libgfortran.h:  Add ERROR_CORRUPT_FILE to error_codes.
+	* runtime/error.c (translate_error):  Add handling for
+	ERROR_CORRUPT_FILE.
+	* io/transfer.c (read_block_direct):  Add comment about
+	EOR for stream files.
+	Remove test for no bytes left for direct access files.
+	Generate an ERROR_SHORT_RECORD if the read was short.
+	For unformatted sequential files:  Check endfile condition.
+	Remove test for no bytes left.  End of file here means
+	that the file structure has been corrupted.  Pre-position
+	the file for the next record in case of error.
+	(write_buf):  Whitespace fix.  Subtract the number of bytes
+	written from bytes_left.
+
+2006-12-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/29810
+	* intrinsics/c99_functions.c (fmodf, fmodl, floorl): New functions.
+	* c99_protos.h (fmodf, fmodl, floorl): New prototypes.
+	* configure.ac: Check for fmodf, fmod and fmodl.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* Makefile.in: Regenerate.
+
+2006-11-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/29936
+	* io/io.h (unit_flags): Add new flag has_recl.
+	* io.open.c (new_unit): Set flag if RECL= was specified.
+	* io/transfer.c (us_write): If flag set, leave recl as initialized by
+	new_unit.
+
+2006-11-13  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/27895
+	* intrinsics/reshape_generic.c (reshape_internal): Fix so that it
+	works correctly for zero-sized arrays.
+	* m4/reshape.m4: Likewise.
+	* generated/reshape_r16.c: Regenerate.
+	* generated/reshape_c4.c: Regenerate.
+	* generated/reshape_i4.c: Regenerate.
+	* generated/reshape_c16.c: Regenerate.
+	* generated/reshape_r10.c: Regenerate.
+	* generated/reshape_r8.c: Regenerate.
+	* generated/reshape_c10.c: Regenerate.
+	* generated/reshape_c8.c: Regenerate.
+	* generated/reshape_i8.c: Regenerate.
+	* generated/reshape_i16.c: Regenerate.
+	* generated/reshape_r4.c: Regenerate.
+
+2006-11-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/29752
+	* io/transfer.c (finalize_transfer): Flush on ADVANCE_NO.
+
+2006-11-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25545
+	* io/transfer.c (write_block): Cleanup code paths between
+	stream and non-stream I/O.
+	(write_buf):  Cleanup.
+	(read_block): Cleanup.
+	(finalize_transfer): Call next_record for '$' edit descriptor handling
+	of internal unit. Cleanup code for readability.
+
+2006-11-03  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/29627
+	Backport from trunk
+	* libgfortran.h: Add ERROR_SHORT_RECORD
+	* runtime/error.c (translate_error): Add case
+	for ERROR_SHORT_RECORD.
+	* io/transfer.c (read_block_direct):  Separate codepaths
+	for stream and record unformatted I/O.  Remove unneeded
+	tests for standard input, padding and formatted I/O.
+	If the record is short, read in as much data as possible,
+	then raise the error.
+
+2006-10-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/29452
+	* runtime/string.c (compare0): Check whether string lengths match.
+
+2006-10-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/29563
+	* io/io.h (st_parameter_dt): Add new flag at_eof.
+	* io/list_read.c (next_char): Set flag when EOF and return '\n' to
+	signal EOR.  Check flag on next call and jump out.
+	* io/unit.c (get_internal_unit): Initialize new flag.
+
+2006-10-20  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* generated/minval_r8.c: Regenerate.
+	* generated/maxloc1_4_r8.c: Regenerate.
+	* generated/minloc1_16_r16.c: Regenerate.
+	* generated/sum_i8.c: Regenerate.
+	* generated/eoshift3_4.c: Regenerate.
+	* generated/any_l16.c: Regenerate.
+	* generated/eoshift1_8.c: Regenerate.
+	* generated/reshape_r16.c: Regenerate.
+	* generated/product_r4.c: Regenerate.
+	* generated/maxloc1_8_i4.c: Regenerate.
+	* generated/maxloc0_4_r4.c: Regenerate.
+	* generated/in_unpack_i8.c: Regenerate.
+	* generated/minloc0_4_r16.c: Regenerate.
+	* generated/reshape_c4.c: Regenerate.
+	* generated/maxloc0_4_r16.c: Regenerate.
+	* generated/minloc1_8_r16.c: Regenerate.
+	* generated/maxloc1_8_r16.c: Regenerate.
+	* generated/in_unpack_i16.c: Regenerate.
+	* generated/maxloc0_8_i8.c: Regenerate.
+	* generated/sum_r16.c: Regenerate.
+	* generated/minloc1_4_r8.c: Regenerate.
+	* generated/maxloc1_16_r16.c: Regenerate.
+	* generated/minloc1_16_i4.c: Regenerate.
+	* generated/maxloc1_16_i4.c: Regenerate.
+	* generated/minloc0_16_i8.c: Regenerate.
+	* generated/maxloc0_16_i8.c: Regenerate.
+	* generated/maxval_r16.c: Regenerate.
+	* generated/count_16_l16.c: Regenerate.
+	* generated/count_8_l8.c: Regenerate.
+	* generated/product_c10.c: Regenerate.
+	* generated/minloc1_8_i4.c: Regenerate.
+	* generated/minloc0_16_i16.c: Regenerate.
+	* generated/eoshift1_16.c: Regenerate.
+	* generated/minloc0_4_r4.c: Regenerate.
+	* generated/product_c4.c: Regenerate.
+	* generated/sum_r4.c: Regenerate.
+	* generated/in_pack_c16.c: Regenerate.
+	* generated/reshape_i4.c: Regenerate.
+	* generated/minloc0_8_i8.c: Regenerate.
+	* generated/minloc1_16_r10.c: Regenerate.
+	* generated/in_pack_c4.c: Regenerate.
+	* generated/all_l16.c: Regenerate.
+	* generated/reshape_c16.c: Regenerate.
+	* generated/maxloc1_8_r8.c: Regenerate.
+	* generated/minval_i16.c: Regenerate.
+	* generated/reshape_r10.c: Regenerate.
+	* generated/maxval_i4.c: Regenerate.
+	* generated/any_l4.c: Regenerate.
+	* generated/minval_i8.c: Regenerate.
+	* generated/maxloc1_4_i8.c: Regenerate.
+	* generated/maxloc0_16_i16.c: Regenerate.
+	* generated/maxloc0_8_r4.c: Regenerate.
+	* generated/minloc1_4_i16.c: Regenerate.
+	* generated/minloc0_4_r10.c: Regenerate.
+	* generated/maxloc1_4_i16.c: Regenerate.
+	* generated/minloc0_8_i16.c: Regenerate.
+	* generated/maxloc0_4_r10.c: Regenerate.
+	* generated/maxloc0_8_i16.c: Regenerate.
+	* generated/minloc1_8_r10.c: Regenerate.
+	* generated/product_i4.c: Regenerate.
+	* generated/minloc0_16_r4.c: Regenerate.
+	* generated/sum_c16.c: Regenerate.
+	* generated/maxloc1_8_r10.c: Regenerate.
+	* generated/maxloc0_16_r4.c: Regenerate.
+	* generated/minloc1_16_r8.c: Regenerate.
+	* generated/maxloc0_4_i4.c: Regenerate.
+	* generated/maxloc1_16_r8.c: Regenerate.
+	* generated/cshift1_4.c: Regenerate.
+	* generated/sum_r10.c: Regenerate.
+	* generated/sum_c4.c: Regenerate.
+	* generated/maxloc1_16_r10.c: Regenerate.
+	* generated/count_4_l16.c: Regenerate.
+	* generated/in_pack_i4.c: Regenerate.
+	* generated/minloc1_8_r8.c: Regenerate.
+	* generated/count_4_l4.c: Regenerate.
+	* generated/maxval_r10.c: Regenerate.
+	* generated/minloc1_4_i8.c: Regenerate.
+	* generated/in_unpack_c4.c: Regenerate.
+	* generated/minloc0_8_r4.c: Regenerate.
+	* generated/product_i16.c: Regenerate.
+	* generated/minloc0_16_r16.c: Regenerate.
+	* generated/reshape_r8.c: Regenerate.
+	* generated/all_l4.c: Regenerate.
+	* generated/in_pack_c10.c: Regenerate.
+	* generated/minloc0_4_i4.c: Regenerate.
+	* generated/reshape_c10.c: Regenerate.
+	* generated/minval_r4.c: Regenerate.
+	* generated/maxloc1_4_r4.c: Regenerate.
+	* generated/sum_i4.c: Regenerate.
+	* generated/count_16_l8.c: Regenerate.
+	* generated/maxval_r8.c: Regenerate.
+	* generated/eoshift1_4.c: Regenerate.
+	* generated/eoshift3_8.c: Regenerate.
+	* generated/minval_r16.c: Regenerate.
+	* generated/product_r8.c: Regenerate.
+	* generated/maxloc1_8_i8.c: Regenerate.
+	* generated/maxloc0_4_r8.c: Regenerate.
+	* generated/maxloc0_16_r16.c: Regenerate.
+	* generated/in_unpack_i4.c: Regenerate.
+	* generated/sum_c10.c: Regenerate.
+	* generated/minloc1_4_r16.c: Regenerate.
+	* generated/maxloc1_4_r16.c: Regenerate.
+	* generated/in_unpack_c16.c: Regenerate.
+	* generated/minloc0_8_r16.c: Regenerate.
+	* generated/reshape_c8.c: Regenerate.
+	* generated/maxloc0_8_r16.c: Regenerate.
+	* generated/maxloc0_8_i4.c: Regenerate.
+	* generated/minloc1_4_r4.c: Regenerate.
+	* generated/minloc0_16_i4.c: Regenerate.
+	* generated/maxloc0_16_i4.c: Regenerate.
+	* generated/minloc1_16_i8.c: Regenerate.
+	* generated/maxloc1_16_i8.c: Regenerate.
+	* generated/count_8_l4.c: Regenerate.
+	* generated/minloc0_16_r10.c: Regenerate.
+	* generated/minloc1_8_i8.c: Regenerate.
+	* generated/minloc0_4_r8.c: Regenerate.
+	* generated/product_r16.c: Regenerate.
+	* generated/product_c8.c: Regenerate.
+	* generated/sum_r8.c: Regenerate.
+	* generated/in_pack_i16.c: Regenerate.
+	* generated/minloc0_8_i4.c: Regenerate.
+	* generated/minloc1_16_i16.c: Regenerate.
+	* generated/reshape_i8.c: Regenerate.
+	* generated/in_pack_c8.c: Regenerate.
+	* generated/maxloc1_8_r4.c: Regenerate.
+	* generated/reshape_i16.c: Regenerate.
+	* generated/minval_r10.c: Regenerate.
+	* generated/minval_i4.c: Regenerate.
+	* generated/maxloc1_4_i4.c: Regenerate.
+	* generated/maxval_i8.c: Regenerate.
+	* generated/eoshift3_16.c: Regenerate.
+	* generated/any_l8.c: Regenerate.
+	* generated/maxloc0_16_r10.c: Regenerate.
+	* generated/minloc0_4_i16.c: Regenerate.
+	* generated/maxloc0_8_r8.c: Regenerate.
+	* generated/maxloc0_4_i16.c: Regenerate.
+	* generated/minloc1_4_r10.c: Regenerate.
+	* generated/minloc1_8_i16.c: Regenerate.
+	* generated/maxloc1_4_r10.c: Regenerate.
+	* generated/minloc0_8_r10.c: Regenerate.
+	* generated/maxloc1_8_i16.c: Regenerate.
+	* generated/in_unpack_c10.c: Regenerate.
+	* generated/maxloc0_8_r10.c: Regenerate.
+	* generated/minloc1_16_r4.c: Regenerate.
+	* generated/maxloc1_16_r4.c: Regenerate.
+	* generated/minloc0_16_r8.c: Regenerate.
+	* generated/product_i8.c: Regenerate.
+	* generated/maxloc0_16_r8.c: Regenerate.
+	* generated/sum_i16.c: Regenerate.
+	* generated/maxloc0_4_i8.c: Regenerate.
+	* generated/cshift1_8.c: Regenerate.
+	* generated/maxloc1_16_i16.c: Regenerate.
+	* generated/minloc1_8_r4.c: Regenerate.
+	* generated/sum_c8.c: Regenerate.
+	* generated/count_8_l16.c: Regenerate.
+	* generated/in_pack_i8.c: Regenerate.
+	* generated/maxval_i16.c: Regenerate.
+	* generated/count_4_l8.c: Regenerate.
+	* generated/minloc1_4_i4.c: Regenerate.
+	* generated/product_c16.c: Regenerate.
+	* generated/reshape_r4.c: Regenerate.
+	* generated/minloc0_8_r8.c: Regenerate.
+	* generated/in_unpack_c8.c: Regenerate.
+	* generated/product_r10.c: Regenerate.
+	* generated/cshift1_16.c: Regenerate.
+	* generated/all_l8.c: Regenerate.
+	* generated/minloc0_4_i8.c: Regenerate.
+	* generated/maxval_r4.c: Regenerate.
+	* generated/count_16_l4.c: Regenerate.
+
+2006-10-19  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/27895
+	* intrinsics/cshift0.c: Special cases for zero-sized arrays.
+	* intrinsics/pack_generic.c: Likewise.
+	* intrinsics/spread_generic.c: Likewise.
+
+2006-10-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/29277
+	* io/write.c (write_a): Add conversion of LF to CR-LF for systems with
+	#define HAVE_CRLF.
+
+2006-10-18  Tobias Burnus  <burnus@net-b.de>
+
+	* m4/in_pack.m4: Fixed a typo.
+	* m4/iforeach.m4: Fixed a typo.
+	* m4/eoshift1.m4: Fixed a typo.
+	* m4/eoshift3.m4: Fixed a typo.
+	* m4/cshift1.m4: Fixed a typo.
+	* m4/in_unpack.m4: Fixed a typo.
+	* m4/reshape.m4: Fixed a typo.
+	* m4/ifunction.m4: Fixed a typo.
+	* runtime/environ.c: Fixed a typo.
+	* runtime/in_pack_generic.c: Fixed a typo.
+	* runtime/in_unpack_generic.c: Fixed a typo.
+	* runtime/memory.c: Fixed a typo.
+	* intrinsics/cshift0.c: Fixed a typo.
+	* intrinsics/cpu_time.c: Fixed a typo.
+	* intrinsics/pack_generic.c: Fixed a typo.
+	* intrinsics/unpack_generic.c: Fixed a typo.
+	* intrinsics/eoshift0.c: Fixed a typo.
+	* intrinsics/eoshift2.c: Fixed a typo.
+	* intrinsics/reshape_generic.c: Fixed a typo.
+	* io/open.c: Fixed a typo.
+	* io/list_read.c: Fixed a typo.
+	* io/io.h: Fixed a typo.
+	* io/transfer.c: Fixed a typo.
+	* io/write.c: Fixed a typo.
+
+2006-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/29277
+	* io/list_read.c (next_char): Update strm_pos.
+	(eat_separator): Delete extra call to unget_char.
+	* io/transfer.c (read_block): Use read_sf for formatted stream I/O.
+	(next_record_r): Update strm_pos for formatted stream I/O and handle
+	end-of-record correctly.
+	(next_record_w): Ditto.
+	(next_record): Enable next record (r/w) functions and update strm_pos.
+	(finalize_transfer): Call next_record to finish the record.
+
+2006-10-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* m4/spacing.m4: Use scalbn[f,l] if ldexp[f,l] is unavailable.
+	* m4/rrspacing.m4: Ditto.
+	* generated/spacing_r4.c: Regenerated.
+	* generated/spacing_r8.c: Ditto.
+	* generated/spacing_r10.c: Ditto.
+	* generated/spacing_r16.c: Ditto.
+	* generated/rrspacing_r4.c: Ditto.
+	* generated/rrspacing_r8.c: Ditto.
+	* generated/rrspacing_r10.c: Ditto.
+	* generated/rrspacing_r16.c: Ditto.
+
+2006-10-06  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/15441
+	PR fortran/29312
+	* configure.ac: Add HAVE_LDEXPF, HAVE_LDEXP, and HAVE_LDEXPL
+	* m4/spacing.m4: New file.  Use new HAVE_* defines.
+	* m4/rrspacing.m4: Ditto.
+	* Makefile.am: Handle new files.
+	* configure: Regenerated.
+	* Makefile.in: Ditto.
+	* config.h.in: Ditto.
+	* generated/spacing_r4.c: Generated.
+	* generated/spacing_r8.c: Ditto.
+	* generated/spacing_r10.c: Ditto.
+	* generated/spacing_r16.c: Ditto.
+	* generated/rrspacing_r4.c: Ditto.
+	* generated/rrspacing_r8.c: Ditto.
+	* generated/rrspacing_r10.c: Ditto.
+	* generated/rrspacing_r16.c: Ditto.
+
+2006-10-08  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsics/hyper.c: Remove file.
+	* intrinsics/c99_functions.c: Add fallback functions asinhf,
+	acoshf and atanhf.
+	* Makefile.am: Remove file intrinsics/hyper.c.
+	* Makefile.in: Regenerate.
+
+2006-10-08  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* c99_protos.h: Correctly protect definitions of prototypes for
+	asinhf, acoshf and atanhf to be the same as in intrinsics/hyper.c.
+
+2006-10-08  Paul Thomas  <pault@gcc.gnu.org>
+	    Erik Edelmann  <edelmann@gcc.gnu.org>
+
+	PR libgfortran/20541
+	* Makefile.in : Add move_alloc.
+	* intrinsics/move_alloc.c: New function.
+	* Makefile.am : Add move_alloc.
+
+2006-10-08  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/26540
+	* intrinsics/signal.c (signal_sub, signal_sub_int): Use intptr_t
+	if available to cast function pointers to int and back.
+	* configure.ac: Check for intptr_t.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2006-10-01  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/16580
+	PR fortran/29288
+	* libgfortran/Makefile.am: Add the new files to the build
+	process, and rules to build them.
+	* libgfortran/Makefile.in: Regenerate.
+	* libgfortran/m4/misc_specifics.m4: New file.
+	* libgfortran/m4/specific.m4: Add new special cases for function
+	with complex argument and real result, like abs_c* and aimag_c*.
+	* libgfortran/intrinsics/f2c_specifics.F90: Add specifics for
+	AIMAG, ASINH, ACOSH and ATANH.
+	* libgfortran/generated/_aimag_c4.F90: New file.
+	* libgfortran/generated/_aimag_c8.F90: New file.
+	* libgfortran/generated/_asinh_r10.F90: New file.
+	* libgfortran/generated/_acosh_r16.F90: New file.
+	* libgfortran/generated/_aimag_c10.F90: New file.
+	* libgfortran/generated/_atanh_r16.F90: New file.
+	* libgfortran/generated/_acosh_r4.F90: New file.
+	* libgfortran/generated/_acosh_r8.F90: New file.
+	* libgfortran/generated/_asinh_r4.F90: New file.
+	* libgfortran/generated/_asinh_r8.F90: New file.
+	* libgfortran/generated/_asinh_r16.F90: New file.
+	* libgfortran/generated/_atanh_r4.F90: New file.
+	* libgfortran/generated/_atanh_r8.F90: New file.
+	* libgfortran/generated/_acosh_r10.F90: New file.
+	* libgfortran/generated/misc_specifics.F90: New file.
+	* libgfortran/generated/_aimag_c16.F90: New file.
+	* libgfortran/generated/_atanh_r10.F90: New file.
+
+2006-10-05  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* acinclude.m4 (HAVE_ATTRIBUTE_ALIAS): Remove __USER_LABEL_PREFIX__
+	from test.
+	* configure: Regenerate.
+
+2006-10-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* Makefile.am: Use $(M4) instead of m4.
+	* Makefile.in: Regenerated.
+
+2006-10-01  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* libgfortran.h: Add prototype for internal_unpack_c16.
+
+2006-09-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/18791
+	* m4/specific.m4: Special-case cabs so that its return type is
+	real. Special-case conjg so that their suffices are _4, _8, _10 and
+	_16 instead of _c4, _c8, _c10 and _c16.
+	* intrinsics/f2c_specifics.F90: Special-case conjg functions so
+	that their suffices are _4 and _8 instead of _c4 and _c8.
+	* generated/_conjg_c4.F90: Regenerate.
+	* generated/_conjg_c8.F90: Regenerate.
+	* generated/_conjg_c10.F90: Regenerate.
+	* generated/_conjg_c16.F90: Regenerate.
+	* generated/_abs_c4.F90: Regenerate.
+	* generated/_abs_c8.F90: Regenerate.
+	* generated/_abs_c10.F90: Regenerate.
+	* generated/_abs_c16.F90: Regenerate.
+
+2006-09-29  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* intrinsics/cpu_time.c:  Add cpu_time_10 and cpu_time_16 routines.
+
+2006-09-28  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+D
+	* Makefile.am: Install libgfortranbegin inside compiler libraries
+	directory instead of system libraries directory.
+	* Makefile.in: Regenerate.
+
+2006-09-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* Makefile.am: Remove dependency on gfortypes.h.
+	* Makefile.in: Regenerate.
+
+2006-09-22  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR libfortran/27964
+	* configure.ac: Check for setmode() function.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* io/unix.c (output_stream): Force stdout to binary mode. 
+	(error_stream): Force stderr to binary mode.
+
+2006-09-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/29099
+	* intrinsics/date_and_time.c (secnds): Fix case of zero time.
+
+2006-09-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/29053
+	* io.h (gfc_unit): Add variable, strm_pos, to track
+	STREAM I/O file position.
+	* file_pos.c (st_rewind): Set strm_pos to beginning.
+	* open.c (new_unit): Initialize strm_pos.
+	* read.c (read_x): Bump strm_pos.
+	* inquire.c (inquire_via_unit): Return strm_pos value.
+	* transfer.c (read_block),(read_block_direct),(write_block)
+	(write_buf): Seek to strm_pos - 1.  Update strm_pos when done.
+	(pre_position): Initialize strm_pos.
+	(data_transfer_init): Set strm_pos if DT_HAS_REC.
+	(finalize_transfer): Flush file, no need to update strm_pos.
+
+2006-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR libfortran/28947
+	* m4/matmul.m4: For the case where the second input argument is
+	transposed, ensure that the case with rank (a) == 1 is
+	correctly calculated.
+	* generated/matmul_r4.c: Regenerate.
+	* generated/matmul_r8.c: Regenerate.
+	* generated/matmul_r10.c: Regenerate.
+	* generated/matmul_r16.c: Regenerate.
+	* generated/matmul_c4.c: Regenerate.
+	* generated/matmul_c8.c: Regenerate.
+	* generated/matmul_c10.c: Regenerate.
+	* generated/matmul_c16.c: Regenerate.
+	* generated/matmul_i4.c: Regenerate.
+	* generated/matmul_i8.c: Regenerate.
+	* generated/matmul_i16.c: Regenerate.
+
+2006-08-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/28354
+	* io/write.c: Check for special case of zero precision in format
+	and pre-round the real value.
+
+2006-08-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25828
+	* libgfortran.h: Rename GFC_LARGE_IO_INT to GFC_IO_INT.
+	* io/file_pos.c (st_backspace): Ignore if access=STREAM.
+	(st_rewind): Handle case of access=STREAM.
+	* io/open.c (access_opt): Add STREAM_ACCESS.
+	(edit_modes): Set current_record to zero only if not STREAM.
+	(new_unit): Initialize maxrec, recl, and last_record for STREAM.
+	* io/read.c (read_x): Advance file position for STREAM.
+	* io/io.h (enum unit_access): Align IOPARM flags with frontend.
+	Add ACCESS_STREAM. Add prototype for is_stream_io () function.
+	Use GFC_IO_INT.
+	* io/inquire.c (inquire_via_unit): Add text for access = "STREAM".
+	* io/unit.c (is_stream_io): New function to return true if access =
+	STREAM.
+	* io/transfer.c (file_mode): Add modes for unformatted stream and
+	formatted stream. (current_mode): Return appropriate file mode based
+	on access flags.
+	(read_block): Handle formatted stream reads.
+	(read_block_direct): Handle unformatted stream reads.
+	(write_block): Handle formatted stream writes.
+	(write_buf): Handle unformatted stream writes.
+	(unformatted_read): Fix up, use temporary for size.
+	(pre_position): Position file for STREAM access.
+	(data_transfer_init): Initialize for stream access, skip irrelevent
+	error checks.
+	(next_record_r),(next_record_w), and (next_record): Do nothing for
+	stream I/O.
+	(finalize_transfer): Flush when all done if stream I/O.
+
+2006-08-12  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsics/bessel.c: Add prototypes for all functions.
+
+2006-08-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsics/access.c (access_func): Remove export directive.
+
+2006-08-02  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	* Makefile.in:  Regenerate using automake 1.9.6.
+	* aclocal.m4:  Revert to previous version.
+
+2006-08-01  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/28452
+	* Makefile.am:  Remove normalize.c.
+	* aclocal.m4:  Regenerate using aclocal 1.9.3.
+	* Makefile.in:  Regenerate using automake 1.9.3.
+	* libgfortran.h:  #include <float.h>.
+	Define GFC_REAL_*_DIGITS and GFC_REAL_*_RADIX.
+	Remove prototypes for normalize_r4_i4 and normalize_r8_i8.
+	* intrinsics/random.c (top level): Add prototypes for
+	random_r10, arandom_r10, random_r16 and arandom_r16.
+	(rnumber_4):  New static function.
+	(rnumber_8):  New static function.
+	(rnumber_10): New static function.
+	(rnumber_16): New static function.
+	(top level):  Set to kiss_size to 12 if we have
+	REAL(KIND=16), to 8 otherwise.
+	Define KISS_DEFAULT_SEED_1, KISS_DEFAULT_SEED_2 and
+	KISS_DEFAULT_SEED_3.
+	(kiss_random_kernel):  Take argument to differentiate
+	between different random number generators.
+	(random_r4):  Add argument to call to kiss_random_kernel,
+	use rnumber_*.
+	(random_r8):  Likewise.
+	(random_r10):  New function.
+	(random_r16):  New function.
+	(arandom_r4):  Add argument to call to kiss_random_kernel,
+	use_rnumber_*.
+	(arandom_r8):  Likewise.
+	(arandom_r10):  New function.
+	(arandom_r16):  New function.
+	* intrinsics/rand.c (rand):  Use shift and mask.
+	* runtime/normalize.c:  Remove.
+
+2006-07-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/28335
+	* file_position.c (st_flush): Add clearer error when UNIT does not
+	exist. Add reference to standard in comment.
+
+2006-07-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/28335
+	* close.c (st_close): Revert previous patch and add comment.
+	* file_position.c (st_flush): Revert previous patch and add comment.
+
+2006-07-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsics/date_and_time.c: Add functions for GMTIME and LTIME.
+	* intrinsics/access.c: New file.
+	* intrinsics/chmod.c: New file.
+	* configure.ac: Add checks for <sys/wait.h>, access, fork,execl
+	and wait.
+	* Makefile.am: Add new files intrinsics/access.c and
+	intrinsics/chmod.c.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* Makefile.in: Regenerate.
+
+2006-07-30  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/transfer.c (transfer_array): Remove stride0 fix.
+	
+2006-07-26  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* configure.ac: Check for function clock.
+	* Makefile.am: Compile new file intrinsics/clock.c.
+	* intrinsics/clock.c: New file.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* intrinsics/stat.c: Rename the old stat_i?_sub functions to
+	helper functions stat_i?_sub_0, and use them for both STAT and
+	LSTAT.
+
+2006-07-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/28335
+	* close.c (st_close): Add error when UNIT does not exist.
+	* file_position.c (st_flush): Add error when UNIT does not exist.
+
+2006-07-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR build/26188
+	* configure: Regenerate.
+
+2006-07-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25289
+	* libgfortran.h: Add conditional definition of GFC_LARGE_IO_INT type.
+	* io/io.h (st_parameter_dt): Define rec as type GFC_LARGE_IO_INT.
+
+2006-07-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/28339
+	* io/transfer.c (next_record_w): Use next_array_record result to set
+	END_FILE. (write_block): Test for END_FILE before the next write occurs.
+	* io/unit.c (get_internal_unit): Initialize iunit->endfile for internal
+	unit.
+
+2006-07-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/27919
+	* m4/dotprodc.m4: Remove.
+	* m4/dotprodl.m4: Remove.
+	* m4/dotprod.m4: Remove.
+	* generated/dotprod_*.c: Remove.
+	* Makefile.am: Remove any references to dot_product
+	implementation.
+	* Makefile.in: Regenerated.
+	
+2006-07-18  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure: Regenerate.
+
+2006-07-15  Steven G. Kargl  <kargls@comcast.net>
+
+	* intrinsics/etime.c: Remove etime_
+	* libtool-version: Bump from libgfortran.so.1 to libgfortran.so.2
+
+2006-07-12  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/28163
+	* intrinsics/string_intrinsics.c (copy_string): Remove function.
+
+2006-07-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsics/date_and_time.c (itime0,idate0,itime_i4,itime_i8,
+	idate_i4,idate_i8): New functions.
+
+2006-07-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/27704
+	* runtime/error.c (notify_std): Pass common flags into function. Use
+	flags to show locus of error or warning.
+	* libgfortran.h: Add enum try.  Add prototype for notify_std.
+	* io/open.c (edit_modes): Allow status="old" and add extension to
+	allow status="scratch"
+	*io/list_read.c (nml_read_obj): Update call to notify_std.
+	*io/io.h: Remove enum try and prototype for notify_std.
+	*io/transfer.c (read_sf): Update call to notify_std.
+	*io/format.c (parse_format_list): Update call to notify_std.
+
+2006-06-25  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* io/io.h: Move proto for unit_to_fd...
+	* libgfortran.h: ...here.
+
+2006-06-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsics/ierrno.c: Don't include "io/io.h".
+	* intrinsics/sleep.c: Likewise.
+	* intrinsics/perror.c: Likewise.
+	* intrinsics/stat.c: Likewise.
+	* intrinsics/kill.c: Likewise.
+	* intrinsics/time.c: Likewise.
+	* intrinsics/fnum.c: Likewise.
+	* intrinsics/rename.c: Likewise.
+	* intrinsics/symlnk.c: Likewise.
+	* intrinsics/chdir.c: Likewise.
+	* intrinsics/link.c: Likewise.
+	* intrinsics/random.c: Don't include "io/io.h". Include	<gthr.h>.
+	* intrinsics/rand.c: Likewise.
+
+2006-06-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/28094
+	* Makefile.am: Add _mod_r10.F90 and _mod_r16.F90.
+	* Makefile.in: Regenerate.
+	* generated/_mod_r10.F90: New file.
+	* generated/_mod_r16.F90: New file.
+
+2006-06-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/26769
+	* Makefile.am: Add r4 and r8 versions of reshape and transpose.
+	* Makefile.in: Regenerate.
+	* generated/reshape_r4.c: New file.
+	* generated/reshape_r8.c: New file.
+	* generated/transpose_r4.c: New file.
+	* generated/transpose_r8.c: New file.
+
+2006-06-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR libfortran/28005
+	* m4/matmul.m4: aystride = 1 does not uniquely detect the
+	presence of a temporary transpose; an array element in the
+	first dimension produces the same signature.  Detect this
+	using the rank of a and add specific code.
+	* generated/matmul_r4.c: Regenerate.
+	* generated/matmul_r8.c: Regenerate.
+	* generated/matmul_r10.c: Regenerate.
+	* generated/matmul_r16.c: Regenerate.
+	* generated/matmul_c4.c: Regenerate.
+	* generated/matmul_c8.c: Regenerate.
+	* generated/matmul_c10.c: Regenerate.
+	* generated/matmul_c16.c: Regenerate.
+	* generated/matmul_i4.c: Regenerate.
+	* generated/matmul_i8.c: Regenerate.
+	* generated/matmul_i16.c: Regenerate.
+
+2006-06-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR libgomp/27254
+	* io/unit.c (get_internal_unit): Initialize and lock thread mutex
+	for internal units.
+
+2006-06-06  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* m4/in_pack.m4: Add TODO comment about detecting temporaries,
+	remove test for stride 0, update copyright year.
+	* m4/transpose.m4: Remove test for stride 0, update copyright
+	year.
+	* m4/iforeach.m4: Likewise.
+	* m4/shape.m4: Likewise.
+	* m4/in_unpack.m4: Likewise.
+	* m4/reshape.m4: Likewise.
+	* m4/ifunction.m4: Likewise.
+	* m4/matmul.m4: Likewise.
+	* m4/matmull.m4: Likewise.
+	* intrinsics/etime.c: Likewise.
+	* intrinsics/transpose_generic.c: Likewise.
+	* intrinsics/spread_generic.c: Likewise.
+	* intrinsics/stat.c: Likewise.
+	* intrinsics/reshape_generic.c: Likewise.
+	* intrinsics/random.c: Likewise.
+	* generated/*: Regenerated from above changed m4 files.
+	
+2006-05-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/27757
+	* io/unix.c (fd_seek): Set active to zero.
+
+2006-05-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/27634
+	* io/format.c (parse_format_list): Allow missing period in format only
+	if -std=legacy.
+
+2006-05-28  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	* intrinsics/string_intrinsics.c (compare_string):
+	Use memcmp instead of strncmp to avoid tripping over
+	CHAR(0) in a string.
+
+2006-05-27  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/io.h (find_or_create_unit): Correct export declaration.
+	
+2006-05-27  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/abort.c (abort_): Remove.
+
+2006-05-26  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* configure.ac: Remove AC_FUNC_MMAP.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* config.h.in: Regenerated.
+	* aclocal.m4: Regenerated.
+
+2006-05-25  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsics/associated.c (associated): Zero-sized arrays should
+	not be reported as ASSOCIATED.
+
+2006-05-24  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Makefile.am: Add install-html target. Add install-html to .PHONY
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	
+2006-05-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/24459
+	* io/list_read.c (nml_parse_qualifier): Leave loop spec end value
+	at default value unless -std=f95 or if an array section
+	is specified in namelist input.  Warn if -pedantic.
+	* io/io.h (st_parameter_dt): Add expanded_read flag.
+
+2006-05-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/22423
+	* io/transfer.c (read_block): Return NULL instead of nothing.
+	
+2006-05-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/27575
+	* io/transfer.c (read_block):  Add check for end file condition.
+	(read_block_direct): Add check for end file condition.
+
+2006-05-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/26985
+	* m4/matmul.m4: Correct the condition for the memset call,
+	and remove the unneeded call to size0.
+	* generated/matmul_r4.c: Regenerate.
+	* generated/matmul_r8.c: Regenerate.
+	* generated/matmul_r10.c: Regenerate.
+	* generated/matmul_r16.c: Regenerate.
+	* generated/matmul_c4.c: Regenerate.
+	* generated/matmul_c8.c: Regenerate.
+	* generated/matmul_c10.c: Regenerate.
+	* generated/matmul_c16.c: Regenerate.
+	* generated/matmul_i4.c: Regenerate.
+	* generated/matmul_i8.c: Regenerate.
+	* generated/matmul_i16.c: Regenerate.
+
+2006-04-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/27360
+	* io/list_read.c (read_logical):  Free line_buffer and free saved.
+
+2006-04-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/27304
+	* io/transfer.c (formatted_transfer_scalar):  Generate error if data
+	descriptors are exhausted.
+	* io/format.c (next_format0): Fix comment.
+
+2006-04-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/20257
+	* io/io.h: Add prototypes for get_internal_unit and free_internal_unit.
+	* io/unit.c (get_internal_unit): Initialize unit number, not zero.
+	(free_internal_unit): New function to consolidate freeing memory.
+	(get_unit): Initialize internal_unit_desc to NULL when unit is
+	external.
+	* io/unix.c (mem_close): Check for not NULL before freeing memory.
+	* io/transfer.c (read_block): Reset bytes_left and skip error if unit
+	is preconnected and default record length is reached.
+	(read_block_direct): Ditto.
+	(write_block): Ditto.
+	(write_buf): Ditto.
+	(data_transfer_init): Only flush if not internal unit.
+	(finalize_transfer): Ditto and delete code to free memory used by
+	internal units.
+	(st_read_done): Use new function - free_internal_unit.
+	(st_write_done): Use new function - free_internal unit.
+
+2006-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/26769
+	* Makefile.am (i_transpose_c): Add generated/transpose_r16.c.
+	(i_reshape_c): Add generated/reshape_r16.c.
+	* Makefile.in: Regenerated.
+	* generated/transpose_r16.c: Generated new file.
+	* generated/redhape_r16.c: Generated new file.
+
+2006-04-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/27138
+	* io/list_read.c (eat_line): New function.
+	(parse_repeat): Use new function and free_saved.
+	(read_logical): Same.
+	(read_integer): Use new function.
+	(parse_real): Use nml_bad_return and new function.
+	(read_complex): Use new function and free_saved.
+	(read_real): Same.
+
+2006-04-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/26766
+	* io/io.h: Add bit to identify associated unit as internal.
+	* io/unit.c (get_external_unit): Renamed the find_unit_1 function to
+	reflect the external unit functionality vs internal unit.
+	(get_internal_unit): New function to allocate and initialize an internal
+	unit structure.
+	(get_unit): Use get_internal_unit and get_external_unit.
+	(is_internal_unit): Revised to use new bit added in io.h.
+	* io/transfer.c (data_transfer_init): Fix line width.
+	(st_read_done): Free memory allocated for internal unit.
+	(st_write_done): Add test to only flush and truncate when not an
+	internal unit.  Free memory allocated for internal unit.
+
+2006-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* io/io.h (st_parameter_dt): Revert 2005-12-10 change to
+	u.pad, fix comment.
+	(check_st_parameter_dt): New compile time assert.
+
+2006-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgfortran/24685
+	* io/write.c (MIN_FIELD_WIDTH, STR, STR1): Define.
+	(output_float): Increase buffer sizes for IEEE quad and IBM extended
+	long double.
+	(write_real): Output REAL(16) as 1PG43.34E4 rather than 1PG40.31E4.
+
+2006-04-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/26890
+	* io/io.h: Revert change to pad size made on 2006-03-30.
+	Add comment explaining dependency with fortran/trans-io.c.
+	
+2006-04-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/write.c (output_float): Update condition to not error when
+	decimal precision in format specifier is zero.
+
+2006-04-01  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* config/fpu-387.h: Use previously added SSE code in all
+	cases, as it really is the right thing to do.
+
+2006-03-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/26890
+	* io/io.h: Add size_used to st_parameter_dt, adjust pad size.
+	*io/transfer.c (data_transfer_init): Initialize size_used to zero.
+	(read_sf): Use size_used.
+	(read_block): Likewise.
+	(read_block_direct): Likewise.
+	(write_block): Likewise.
+	(write_buf): Likewise and eliminate erroneous FAILURE return.
+	(finalize_transfer): Assign value of size_used to *dtp->size.
+
+2006-03-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/26712
+	* config/fpu-387.h: Add special case for handling of SSE
+	control bit on i386-darwin.
+
+2006-03-30  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/25031
+	* runtime/memory.c (allocate_array):  If stat is present and
+	the variable is already allocated, free the variable, do
+	the allocation and set stat.
+	(allocate_array_64):  Likewise.  Whitespace fix.
+
+2006-03-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/26880
+	* io/file_pos.c (st_rewind): Clear read_bad flag.
+
+2006-03-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/26661
+	* io/io.h: Add read_sf so it can be used by read_x.
+	* io/transfer.c (read_sf): Pass no_error flag to read_sf.  Use it to
+	break out rather than error on EOF or EOR conditions.
+	(read_block): Update call to read_sf.
+	(read_block_direct): Ditto.
+	* io/read.c (read_x): Use the modified read_sf instead of read_block.
+
+2006-03-25  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/26735
+	* io/transfer.c (data_transfer_init):  Set u_flags.convert
+	on an unopened unit if specified by environment variable
+	(via get_unformatted_convert) or by compile-time option.
+
+2006-03-25  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/26769
+	* Makefile.am:  Add transpose_r10.c and reshape_r10.c.
+	* aclocal.m4:  Regenerate using aclocal 1.9.3.
+	* Makefile.in:  Regenerate using automake 1.9.3.
+	* m4/iparm.m4 (rtype_ccode):  If rtype_letter is `i',
+	evaluate to rtype_kind, otherwise to rtype_code.
+	* generated/transpose_r10.c:  Add.
+	* generated/reshape_r10.c:  Add.
+
+2006-03-22  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/19303
+	* libgfortran.h (compile_options_t):  Add record_marker.
+	* runtime/compile_options.c (set_record_marker):
+	New function.
+	* io/open.c:  If we have four-byte record markers, use
+	GFC_INTEGER_4_HUGE as default record length.
+	* io/file_pos.c (unformatted_backspace):  Handle
+	different size record markers.
+	* io/transfer.c (us_read):  Likewise.
+	(us_write):  Likewise.
+	(next_record_r):  Likewise.
+	(write_us_marker):  Likewise.
+	(next_record_w):  Likewise.
+
+2006-03-20  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/20935
+	* m4/iforeach.m4:  Add SCALAR_FOREACH_FUNCTION macro.
+	* m4/ifunction.m4:  Add SCALAR_ARRAY_FUNCTION macro.
+	* m4/minloc0.m4:  Use SCALAR_FOREACH_FUNCTION.
+	* m4/minloc1.m4:  Use SCALAR_ARRAY_FUNCTION.
+	* m4/maxloc0.m4:  Use SCALAR_FOREACH_FUNCTION.
+	* m4/maxloc1.m4:  Use SCALAR_ARRAY_FUNCTION.
+	* m4/minval.m4:  Likewise.
+	* m4/maxval.m4:  Likewise.
+	* m4/product.m4:  Likewise.
+	* m4/sum.m4:  Likewise.
+	* minloc0_16_i16.c : Regenerated.
+	* minloc0_16_i4.c : Regenerated.
+	* minloc0_16_i8.c : Regenerated.
+	* minloc0_16_r10.c : Regenerated.
+	* minloc0_16_r16.c : Regenerated.
+	* minloc0_16_r4.c : Regenerated.
+	* minloc0_16_r8.c : Regenerated.
+	* minloc0_4_i16.c : Regenerated.
+	* minloc0_4_i4.c : Regenerated.
+	* minloc0_4_i8.c : Regenerated.
+	* minloc0_4_r10.c : Regenerated.
+	* minloc0_4_r16.c : Regenerated.
+	* minloc0_4_r4.c : Regenerated.
+	* minloc0_4_r8.c : Regenerated.
+	* minloc0_8_i16.c : Regenerated.
+	* minloc0_8_i4.c : Regenerated.
+	* minloc0_8_i8.c : Regenerated.
+	* minloc0_8_r10.c : Regenerated.
+	* minloc0_8_r16.c : Regenerated.
+	* minloc0_8_r4.c : Regenerated.
+	* minloc0_8_r8.c : Regenerated.
+	* minloc1_16_i16.c : Regenerated.
+	* minloc1_16_i4.c : Regenerated.
+	* minloc1_16_i8.c : Regenerated.
+	* minloc1_16_r10.c : Regenerated.
+	* minloc1_16_r16.c : Regenerated.
+	* minloc1_16_r4.c : Regenerated.
+	* minloc1_16_r8.c : Regenerated.
+	* minloc1_4_i16.c : Regenerated.
+	* minloc1_4_i4.c : Regenerated.
+	* minloc1_4_i8.c : Regenerated.
+	* minloc1_4_r10.c : Regenerated.
+	* minloc1_4_r16.c : Regenerated.
+	* minloc1_4_r4.c : Regenerated.
+	* minloc1_4_r8.c : Regenerated.
+	* minloc1_8_i16.c : Regenerated.
+	* minloc1_8_i4.c : Regenerated.
+	* minloc1_8_i8.c : Regenerated.
+	* minloc1_8_r10.c : Regenerated.
+	* minloc1_8_r16.c : Regenerated.
+	* minloc1_8_r4.c : Regenerated.
+	* minloc1_8_r8.c : Regenerated.
+	* maxloc0_16_i16.c : Regenerated.
+	* maxloc0_16_i4.c : Regenerated.
+	* maxloc0_16_i8.c : Regenerated.
+	* maxloc0_16_r10.c : Regenerated.
+	* maxloc0_16_r16.c : Regenerated.
+	* maxloc0_16_r4.c : Regenerated.
+	* maxloc0_16_r8.c : Regenerated.
+	* maxloc0_4_i16.c : Regenerated.
+	* maxloc0_4_i4.c : Regenerated.
+	* maxloc0_4_i8.c : Regenerated.
+	* maxloc0_4_r10.c : Regenerated.
+	* maxloc0_4_r16.c : Regenerated.
+	* maxloc0_4_r4.c : Regenerated.
+	* maxloc0_4_r8.c : Regenerated.
+	* maxloc0_8_i16.c : Regenerated.
+	* maxloc0_8_i4.c : Regenerated.
+	* maxloc0_8_i8.c : Regenerated.
+	* maxloc0_8_r10.c : Regenerated.
+	* maxloc0_8_r16.c : Regenerated.
+	* maxloc0_8_r4.c : Regenerated.
+	* maxloc0_8_r8.c : Regenerated.
+	* maxloc1_16_i16.c : Regenerated.
+	* maxloc1_16_i4.c : Regenerated.
+	* maxloc1_16_i8.c : Regenerated.
+	* maxloc1_16_r10.c : Regenerated.
+	* maxloc1_16_r16.c : Regenerated.
+	* maxloc1_16_r4.c : Regenerated.
+	* maxloc1_16_r8.c : Regenerated.
+	* maxloc1_4_i16.c : Regenerated.
+	* maxloc1_4_i4.c : Regenerated.
+	* maxloc1_4_i8.c : Regenerated.
+	* maxloc1_4_r10.c : Regenerated.
+	* maxloc1_4_r16.c : Regenerated.
+	* maxloc1_4_r4.c : Regenerated.
+	* maxloc1_4_r8.c : Regenerated.
+	* maxloc1_8_i16.c : Regenerated.
+	* maxloc1_8_i4.c : Regenerated.
+	* maxloc1_8_i8.c : Regenerated.
+	* maxloc1_8_r10.c : Regenerated.
+	* maxloc1_8_r16.c : Regenerated.
+	* maxloc1_8_r4.c : Regenerated.
+	* maxloc1_8_r8.c : Regenerated.
+	* maxval_i16.c : Regenerated.
+	* maxval_i4.c : Regenerated.
+	* maxval_i8.c : Regenerated.
+	* maxval_r10.c : Regenerated.
+	* maxval_r16.c : Regenerated.
+	* maxval_r4.c : Regenerated.
+	* maxval_r8.c : Regenerated.
+	* minval_i16.c : Regenerated.
+	* minval_i4.c : Regenerated.
+	* minval_i8.c : Regenerated.
+	* minval_r10.c : Regenerated.
+	* minval_r16.c : Regenerated.
+	* minval_r4.c : Regenerated.
+	* minval_r8.c : Regenerated.
+	* sum_c10.c : Regenerated.
+	* sum_c16.c : Regenerated.
+	* sum_c4.c : Regenerated.
+	* sum_c8.c : Regenerated.
+	* sum_i16.c : Regenerated.
+	* sum_i4.c : Regenerated.
+	* sum_i8.c : Regenerated.
+	* sum_r10.c : Regenerated.
+	* sum_r16.c : Regenerated.
+	* sum_r4.c : Regenerated.
+	* sum_r8.c : Regenerated.
+	* product_c10.c : Regenerated.
+	* product_c16.c : Regenerated.
+	* product_c4.c : Regenerated.
+	* product_c8.c : Regenerated.
+	* product_i16.c : Regenerated.
+	* product_i4.c : Regenerated.
+	* product_i8.c : Regenerated.
+	* product_r10.c : Regenerated.
+	* product_r16.c : Regenerated.
+	* product_r4.c : Regenerated.
+	* product_r8.c : Regenerated.
+
+2006-03-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/26509
+	* libgfortran.h: Add ERROR_DIRECT_EOR.
+	* runtime/error.c (translate_error): Add translation for new error.
+	* io/transfer.c (write_buf): Add check for EOR when mode is 
+	direct access.
+
+2006-03-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25378
+	* libgfortran/m4/minloc1.m4: Set the initial position to zero and
+	modify the condition for updating it, to implement the F2003
+	requirement for all(mask).eq.false.
+	* libgfortran/m4/maxloc1.m4: The same.
+	* libgfortran/m4/iforeach.m4: The same.
+	* libgfortran/m4/minloc0.m4: The same.
+	* libgfortran/m4/maxloc0.m4: The same.
+	* libgfortran/generated/maxloc0_16_i16.c: Regenerated, together
+	with 41 others.
+	* libgfortran/generated/minloc0_16_i16.c: Regenerated, together
+	with 41 others.
+
+2006-03-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/26499
+	* io/file_pos (st_rewind): Flush always.
+	* io/unix.c (fd_truncate): Return SUCCESS rather than FAILURE for
+	special files like /dev/null.
+	* io/transfer.c (st_write_done): Remove broken logic that
+	prevented calling fd_truncate.
+
+2006-03-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/26554
+	* io/list_read.c (read_logical): Return the value if not in namelist
+	mode.
+
+2006-03-03  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/25031
+	* runtime/memory.c:  Adjust copyright years.
+	(allocate_array):  New function.
+	(allocate64_array):  New function.
+	* libgfortran.h (error_codes):  Add ERROR_ALLOCATION.
+
+2006-02-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/26136
+	* io/io.h: Add flag for reading from line_buffer.
+	* io/list_read.c (l_push_char): New function to save namelist
+	input when reading logicals.
+	(free_line): New function to free line_buffer memory.
+	(next_char): Added feature to read from line_buffer.
+	(read_logical): Use new functions to test for '=' after reading a
+	logical value, checking for possible variable name.
+	(namelist_read): Use free_line when all done.
+
+2006-02-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/26464
+	* io/file_pos.c (st_backspace): Flush and truncate file
+	when in AFTER_ENDFILE condition.
+	* io/transfer.c (st_read_done): Remove flush, no longer needed.
+
+2006-02-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/26423
+	* io/unix.c (fd_seek): Revert change from 25949.
+	(fd_read): Same.
+	(fd_write): Same.
+
+2006-02-19  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* io/open.c (edit_modes): Correct abusive copy-pasting.
+
+2006-02-16  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/24903
+	* m4/dotprodc.m4: Use __builtin_conj instead of assigning real
+	and imaginary parts separately.
+	* generated/dotprod_c4.c: Regenerated.
+	* generated/dotprod_c8.c: Regenerated.
+	* generated/dotprod_c10.c: Regenerated.
+	* generated/dotprod_c16.c: Regenerated.
+
+2006-02-12  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libgfortran/25949
+	* io/io.h: Add set function pointer to struct stream.  
+	* io/unix.c (fd_seek): Only update offset, don't seek.
+	(fd_sset): New function.
+	(fd_read): Call lseek directly if necessary.
+	(fd_write): Likewise.
+	(fd_open): Set pointer to fd_sset.
+	(mem_set): New function.
+	(open_internal): Set pointer to mem_set.
+	* io/transfer.c (write_block_direct): Rename to write_buf, add
+	error return, non-pointer length argument.
+	(unformatted_write): Update to use write_buf.
+	(us_write): Simplify by using swrite instead of salloc_w.
+	(write_us_marker): New function.
+	(new_record_w): Use sset instead of memset, use write_us_marker,
+	simplify by using swrite instead of salloc_w.
+
+2006-02-08  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/25425
+	* libgfortran.h: Add pedantic field to compile_options struct.
+	* io/write.c (calculate_G_format): Depending on the standard,
+	choose E or F format for list-directed output of 0.0.
+	* runtime/error.c (notify_std): Make warning and error dependent
+	on pedanticity.
+	* runtime/compile_options.c (set_std): Use new pedantic argument.
+
+2006-02-07  Dale Ranta  <dir@lanl.gov>
+
+	PR fortran/25577
+	* intrinsics/mvbits.c: Shift '(TYPE)1' type when building 'lenmask'.
+
+2006-02-07  Rainer Emrich <r.emrich@de.tecosim.com>
+
+	* intrinsics/c99_functions.c: Work around incompatible
+	declarations of cabs{,f,l} on pre-C99 IRIX systems.
+
+2005-02-06  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/23815
+	* runtime/environ.c (init_unformatted):  Add GFORTRAN_CONVERT_UNIT
+	environment variable.
+	(top level):  Add defines, type and static variables for
+	GFORTRAN_CONVERT_UNIT handling.
+	(search_unit):  New function.
+	(match_word): New function.
+	(match_integer): New function.
+	(next_token): New function.
+	(push_token): New function.
+	(mark_single): New function.
+	(mark_range): New funciton.
+	(do_parse): New function.
+	(init_unformatted): New function.
+	(get_unformatted_convert): New function.
+	* runtime/compile_options.c:  Add set_convert().
+	* libgfortran.h:  Add convert to compile_options_t.
+	* io/open.c (st_open): Call get_unformatted_convert to get
+	unit default; if CONVERT_NONE is returned, check for
+	the presence of a CONVERT specifier and use it.
+	As default, use compile_options.convert.
+	* io/io.h (top level): Add CONVERT_NONE to unit_convert, to signal
+	"nothing has been set".
+	(top level): Add prototype for get_unformatted_convert.
+
+2006-02-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/24685
+	* io/write.c (write_real): Widen the default format for real(10)
+	variables output.
+
+2006-01-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25835
+	* io/transfer.c (st_read_done): Flush buffers when read is done.
+
+2006-01-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25697
+	* io/transfer.c (us_read): Detect end of file condition from previous
+	operations and bail out (no need to pre-position).
+
+2006-01-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25631
+	* io/transfer.c (formatted_transfer_scalar): Adjust pending_spaces and
+	skips so that TL works correctly when no bytes_used yet.  
+
+2006-01-16  Roger Sayle  <roger@eyesopen.com>
+
+	* configure.ac (CFLAGS): Update to include -std=gnu99 so that
+	the configure tests will be run with the same environment as
+	used to compile the libgfortran source code.
+	* configure: Regenerate.
+
+2006-01-12  Roger Sayle  <roger@eyesopen.com>
+
+	* intrinsics/c99_functions.c: Add function prototypes to avoid
+	warnings from -Wstrict-prototypes -Wmissing-prototypes.  On Tru64
+	work around a brain-dead libm by redirecting calls to cabs{,f,l}
+	to a local __gfc_cabs{,f,l}.
+
+2006-01-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* configure.ac: Remove check for sys/mman.h.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* config.h.in: Regenerated.
+	* aclocal.m4: Regenerated.
+	
+2006-01-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25598
+	* io/file_pos.c (unformatted_backspace): Assure the new file position
+	to seek is not less than zero.
+	(st_backspace): Set unit bytes_left to zero.
+	* io/transfer.c (next_record_r): Fix line lengths, no functional change.
+
+2006-01-02  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/25259
+	* configure.ac: Use GCC_HEADER_STDINT.
+	* libgfortran.h: Include gstdint.h.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
+2006-01-01  Steven G. Kargl  <kargls@comcast.net>
+
+	* ChangeLog: Split into years ...
+	* ChangeLog-2002: here.
+	* ChangeLog-2003: here.
+	* ChangeLog-2004: here.
+	* ChangeLog-2005: here.
