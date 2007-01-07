@@ -1,5 +1,6 @@
 /* Dependency analysis
-   Copyright (C) 2000, 2001, 2002, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2005, 2006, 2007
+   Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of GCC.
@@ -24,7 +25,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    have different dependency checking functions for different types
    if dependencies.  Ideally these would probably be merged.  */
    
-
 #include "config.h"
 #include "gfortran.h"
 #include "dependency.h"
@@ -52,7 +52,7 @@ gfc_dependency;
    def if the value could not be determined.  */
 
 int
-gfc_expr_is_one (gfc_expr * expr, int def)
+gfc_expr_is_one (gfc_expr *expr, int def)
 {
   gcc_assert (expr != NULL);
 
@@ -70,7 +70,7 @@ gfc_expr_is_one (gfc_expr * expr, int def)
    and -2 if the relationship could not be determined.  */
 
 int
-gfc_dep_compare_expr (gfc_expr * e1, gfc_expr * e2)
+gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 {
   gfc_actual_arglist *args1;
   gfc_actual_arglist *args2;
@@ -78,15 +78,14 @@ gfc_dep_compare_expr (gfc_expr * e1, gfc_expr * e2)
 
   if (e1->expr_type == EXPR_OP
       && (e1->value.op.operator == INTRINSIC_UPLUS
-          || e1->value.op.operator == INTRINSIC_PARENTHESES))
+	  || e1->value.op.operator == INTRINSIC_PARENTHESES))
     return gfc_dep_compare_expr (e1->value.op.op1, e2);
   if (e2->expr_type == EXPR_OP
       && (e2->value.op.operator == INTRINSIC_UPLUS
-          || e2->value.op.operator == INTRINSIC_PARENTHESES))
+	  || e2->value.op.operator == INTRINSIC_PARENTHESES))
     return gfc_dep_compare_expr (e1, e2->value.op.op1);
 
-  if (e1->expr_type == EXPR_OP
-      && e1->value.op.operator == INTRINSIC_PLUS)
+  if (e1->expr_type == EXPR_OP && e1->value.op.operator == INTRINSIC_PLUS)
     {
       /* Compare X+C vs. X.  */
       if (e1->value.op.op2->expr_type == EXPR_CONSTANT
@@ -95,8 +94,7 @@ gfc_dep_compare_expr (gfc_expr * e1, gfc_expr * e2)
 	return mpz_sgn (e1->value.op.op2->value.integer);
 
       /* Compare P+Q vs. R+S.  */
-      if (e2->expr_type == EXPR_OP
-	  && e2->value.op.operator == INTRINSIC_PLUS)
+      if (e2->expr_type == EXPR_OP && e2->value.op.operator == INTRINSIC_PLUS)
 	{
 	  int l, r;
 
@@ -129,8 +127,7 @@ gfc_dep_compare_expr (gfc_expr * e1, gfc_expr * e2)
     }
 
   /* Compare X vs. X+C.  */
-  if (e2->expr_type == EXPR_OP
-      && e2->value.op.operator == INTRINSIC_PLUS)
+  if (e2->expr_type == EXPR_OP && e2->value.op.operator == INTRINSIC_PLUS)
     {
       if (e2->value.op.op2->expr_type == EXPR_CONSTANT
 	  && e2->value.op.op2->ts.type == BT_INTEGER
@@ -139,8 +136,7 @@ gfc_dep_compare_expr (gfc_expr * e1, gfc_expr * e2)
     }
 
   /* Compare X-C vs. X.  */
-  if (e1->expr_type == EXPR_OP
-      && e1->value.op.operator == INTRINSIC_MINUS)
+  if (e1->expr_type == EXPR_OP && e1->value.op.operator == INTRINSIC_MINUS)
     {
       if (e1->value.op.op2->expr_type == EXPR_CONSTANT
 	  && e1->value.op.op2->ts.type == BT_INTEGER
@@ -148,8 +144,7 @@ gfc_dep_compare_expr (gfc_expr * e1, gfc_expr * e2)
 	return -mpz_sgn (e1->value.op.op2->value.integer);
 
       /* Compare P-Q vs. R-S.  */
-      if (e2->expr_type == EXPR_OP
-	  && e2->value.op.operator == INTRINSIC_MINUS)
+      if (e2->expr_type == EXPR_OP && e2->value.op.operator == INTRINSIC_MINUS)
 	{
 	  int l, r;
 
@@ -169,8 +164,7 @@ gfc_dep_compare_expr (gfc_expr * e1, gfc_expr * e2)
     }
 
   /* Compare X vs. X-C.  */
-  if (e2->expr_type == EXPR_OP
-      && e2->value.op.operator == INTRINSIC_MINUS)
+  if (e2->expr_type == EXPR_OP && e2->value.op.operator == INTRINSIC_MINUS)
     {
       if (e2->value.op.op2->expr_type == EXPR_CONSTANT
 	  && e2->value.op.op2->ts.type == BT_INTEGER
@@ -218,8 +212,7 @@ gfc_dep_compare_expr (gfc_expr * e1, gfc_expr * e2)
 
     case EXPR_FUNCTION:
       /* We can only compare calls to the same intrinsic function.  */
-      if (e1->value.function.isym == 0
-	  || e2->value.function.isym == 0
+      if (e1->value.function.isym == 0 || e2->value.function.isym == 0
 	  || e1->value.function.isym != e2->value.function.isym)
 	return -2;
 
@@ -275,7 +268,7 @@ gfc_dep_compare_expr (gfc_expr * e1, gfc_expr * e2)
    if the results are indeterminate.  N is the dimension to compare.  */
 
 int
-gfc_is_same_range (gfc_array_ref * ar1, gfc_array_ref * ar2, int n, int def)
+gfc_is_same_range (gfc_array_ref *ar1, gfc_array_ref *ar2, int n, int def)
 {
   gfc_expr *e1;
   gfc_expr *e2;
@@ -375,7 +368,7 @@ gfc_is_same_range (gfc_array_ref * ar1, gfc_array_ref * ar2, int n, int def)
    whose data can be reused, otherwise return NULL.  */
 
 gfc_expr *
-gfc_get_noncopying_intrinsic_argument (gfc_expr * expr)
+gfc_get_noncopying_intrinsic_argument (gfc_expr *expr)
 {
   if (expr->expr_type != EXPR_FUNCTION || !expr->value.function.isym)
     return NULL;
@@ -439,8 +432,8 @@ gfc_ref_needs_temporary_p (gfc_ref *ref)
    temporary.  */
 
 static int
-gfc_check_argument_var_dependency (gfc_expr * var, sym_intent intent,
-				   gfc_expr * expr)
+gfc_check_argument_var_dependency (gfc_expr *var, sym_intent intent,
+				   gfc_expr *expr)
 {
   gcc_assert (var->expr_type == EXPR_VARIABLE);
   gcc_assert (var->rank > 0);
@@ -472,8 +465,8 @@ gfc_check_argument_var_dependency (gfc_expr * var, sym_intent intent,
    array expression OTHER, not just variables.  */
 
 static int
-gfc_check_argument_dependency (gfc_expr * other, sym_intent intent,
-			       gfc_expr * expr)
+gfc_check_argument_dependency (gfc_expr *other, sym_intent intent,
+			       gfc_expr *expr)
 {
   switch (other->expr_type)
     {
@@ -498,8 +491,8 @@ gfc_check_argument_dependency (gfc_expr * other, sym_intent intent,
    FNSYM is the function being called, or NULL if not known.  */
 
 int
-gfc_check_fncall_dependency (gfc_expr * other, sym_intent intent,
-			     gfc_symbol * fnsym, gfc_actual_arglist * actual)
+gfc_check_fncall_dependency (gfc_expr *other, sym_intent intent,
+			     gfc_symbol *fnsym, gfc_actual_arglist *actual)
 {
   gfc_formal_arglist *formal;
   gfc_expr *expr;
@@ -518,8 +511,7 @@ gfc_check_fncall_dependency (gfc_expr * other, sym_intent intent,
 	continue;
 
       /* Skip intent(in) arguments if OTHER itself is intent(in).  */
-      if (formal
-	  && intent == INTENT_IN
+      if (formal && intent == INTENT_IN
 	  && formal->sym->attr.intent == INTENT_IN)
 	continue;
 
@@ -550,12 +542,10 @@ gfc_are_equivalenced_arrays (gfc_expr *e1, gfc_expr *e2)
   gfc_equiv_info *s, *fl1, *fl2;
 
   gcc_assert (e1->expr_type == EXPR_VARIABLE
-		&& e2->expr_type == EXPR_VARIABLE);
+	      && e2->expr_type == EXPR_VARIABLE);
 
   if (!e1->symtree->n.sym->attr.in_equivalence
-	|| !e2->symtree->n.sym->attr.in_equivalence
-	|| !e1->rank
-	|| !e2->rank)
+      || !e2->symtree->n.sym->attr.in_equivalence|| !e1->rank || !e2->rank)
     return 0;
 
   /* Go through the equiv_lists and return 1 if the variables
@@ -607,7 +597,7 @@ gfc_are_equivalenced_arrays (gfc_expr *e1, gfc_expr *e2)
    temporary.  */
 
 int
-gfc_check_dependency (gfc_expr * expr1, gfc_expr * expr2, bool identical)
+gfc_check_dependency (gfc_expr *expr1, gfc_expr *expr2, bool identical)
 {
   gfc_ref *ref;
   int n;
@@ -637,13 +627,10 @@ gfc_check_dependency (gfc_expr * expr1, gfc_expr * expr2, bool identical)
 	    return 1;
 
 	  /* Symbols can only alias if they have the same type.  */
-	  if (ts1->type != BT_UNKNOWN
-	      && ts2->type != BT_UNKNOWN
-	      && ts1->type != BT_DERIVED
-	      && ts2->type != BT_DERIVED)
+	  if (ts1->type != BT_UNKNOWN && ts2->type != BT_UNKNOWN
+	      && ts1->type != BT_DERIVED && ts2->type != BT_DERIVED)
 	    {
-	      if (ts1->type != ts2->type
-		  || ts1->kind != ts2->kind)
+	      if (ts1->type != ts2->type || ts1->kind != ts2->kind)
 		return 0;
 	    }
 
@@ -710,7 +697,7 @@ gfc_check_dependency (gfc_expr * expr1, gfc_expr * expr2, bool identical)
 /* Determines overlapping for two array sections.  */
 
 static gfc_dependency
-gfc_check_section_vs_section (gfc_ref * lref, gfc_ref * rref, int n)
+gfc_check_section_vs_section (gfc_ref *lref, gfc_ref *rref, int n)
 {
   gfc_array_ref l_ar;
   gfc_expr *l_start;
@@ -761,7 +748,7 @@ gfc_check_section_vs_section (gfc_ref * lref, gfc_ref * rref, int n)
   if (!l_stride)
     l_dir = 1;
   else if (l_stride->expr_type == EXPR_CONSTANT
-           && l_stride->ts.type == BT_INTEGER)
+	   && l_stride->ts.type == BT_INTEGER)
     l_dir = mpz_sgn (l_stride->value.integer);
   else if (l_start && l_end)
     l_dir = gfc_dep_compare_expr (l_end, l_start);
@@ -772,7 +759,7 @@ gfc_check_section_vs_section (gfc_ref * lref, gfc_ref * rref, int n)
   if (!r_stride)
     r_dir = 1;
   else if (r_stride->expr_type == EXPR_CONSTANT
-           && r_stride->ts.type == BT_INTEGER)
+	   && r_stride->ts.type == BT_INTEGER)
     r_dir = mpz_sgn (r_stride->value.integer);
   else if (r_start && r_end)
     r_dir = gfc_dep_compare_expr (r_end, r_start);
@@ -827,18 +814,18 @@ gfc_check_section_vs_section (gfc_ref * lref, gfc_ref * rref, int n)
   if (l_start && r_start && gfc_dep_compare_expr (l_start, r_start) == 0)
     {
       if (l_dir == 1 && r_dir == -1)
-        return GFC_DEP_EQUAL;
+	return GFC_DEP_EQUAL;
       if (l_dir == -1 && r_dir == 1)
-        return GFC_DEP_EQUAL;
+	return GFC_DEP_EQUAL;
     }
 
   /* Handle cases like x:y:1 vs. z:y:-1 as GFC_DEP_EQUAL.  */
   if (l_end && r_end && gfc_dep_compare_expr (l_end, r_end) == 0)
     {
       if (l_dir == 1 && r_dir == -1)
-        return GFC_DEP_EQUAL;
+	return GFC_DEP_EQUAL;
       if (l_dir == -1 && r_dir == 1)
-        return GFC_DEP_EQUAL;
+	return GFC_DEP_EQUAL;
     }
 
   /* Check for forward dependencies x:y vs. x+1:z.  */
@@ -874,7 +861,7 @@ gfc_check_section_vs_section (gfc_ref * lref, gfc_ref * rref, int n)
 /* Determines overlapping for a single element and a section.  */
 
 static gfc_dependency
-gfc_check_element_vs_section( gfc_ref * lref, gfc_ref * rref, int n)
+gfc_check_element_vs_section( gfc_ref *lref, gfc_ref *rref, int n)
 {
   gfc_array_ref *ref;
   gfc_expr *elem;
@@ -999,7 +986,7 @@ gfc_check_element_vs_section( gfc_ref * lref, gfc_ref * rref, int n)
    return true, and assume a dependency.  */
 
 static bool
-contains_forall_index_p (gfc_expr * expr)
+contains_forall_index_p (gfc_expr *expr)
 {
   gfc_actual_arglist *arg;
   gfc_constructor *c;
@@ -1074,7 +1061,7 @@ contains_forall_index_p (gfc_expr * expr)
 /* Determines overlapping for two single element array references.  */
 
 static gfc_dependency
-gfc_check_element_vs_element (gfc_ref * lref, gfc_ref * rref, int n)
+gfc_check_element_vs_element (gfc_ref *lref, gfc_ref *rref, int n)
 {
   gfc_array_ref l_ar;
   gfc_array_ref r_ar;
@@ -1099,8 +1086,7 @@ gfc_check_element_vs_element (gfc_ref * lref, gfc_ref * rref, int n)
   /* However, we need to be careful when either scalar expression
      contains a FORALL index, as these can potentially change value
      during the scalarization/traversal of this array reference.  */
-  if (contains_forall_index_p (r_start)
-      || contains_forall_index_p (l_start))
+  if (contains_forall_index_p (r_start) || contains_forall_index_p (l_start))
     return GFC_DEP_OVERLAP;
 
   if (i != -2)
@@ -1141,8 +1127,7 @@ gfc_full_array_ref_p (gfc_ref *ref)
 				       ref->u.ar.as->upper[i])))
 	return false;
       /* Check the stride.  */
-      if (ref->u.ar.stride[i]
-	  && !gfc_expr_is_one (ref->u.ar.stride[i], 0))
+      if (ref->u.ar.stride[i] && !gfc_expr_is_one (ref->u.ar.stride[i], 0))
 	return false;
     }
   return true;
@@ -1155,12 +1140,11 @@ gfc_full_array_ref_p (gfc_ref *ref)
    	0 : array references are identical or not overlapping.  */
 
 int
-gfc_dep_resolver (gfc_ref * lref, gfc_ref * rref)
+gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref)
 {
   int n;
   gfc_dependency fin_dep;
   gfc_dependency this_dep;
-
 
   fin_dep = GFC_DEP_ERROR;
   /* Dependencies due to pointers should already have been identified.
@@ -1186,7 +1170,7 @@ gfc_dep_resolver (gfc_ref * lref, gfc_ref * rref)
 	  return 0;
 	
 	case REF_ARRAY:
-          if (lref->u.ar.dimen != rref->u.ar.dimen)
+	  if (lref->u.ar.dimen != rref->u.ar.dimen)
 	    {
 	      if (lref->u.ar.type == AR_FULL)
 		fin_dep = gfc_full_array_ref_p (rref) ? GFC_DEP_EQUAL
@@ -1195,7 +1179,7 @@ gfc_dep_resolver (gfc_ref * lref, gfc_ref * rref)
 		fin_dep = gfc_full_array_ref_p (lref) ? GFC_DEP_EQUAL
 						      : GFC_DEP_OVERLAP;
 	      else
-                return 1;
+		return 1;
 	      break;
 	    }
 

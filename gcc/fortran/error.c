@@ -1,6 +1,6 @@
 /* Handle errors.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software
-   Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught & Niels Kristian Bech Jensen
 
 This file is part of GCC.
@@ -69,12 +69,10 @@ error_char (char c)
     {
       if (cur_error_buffer->index >= cur_error_buffer->allocated)
 	{
-	  cur_error_buffer->allocated =
-	    cur_error_buffer->allocated
-	    ? cur_error_buffer->allocated * 2 : 1000;
-	  cur_error_buffer->message
-	    = xrealloc (cur_error_buffer->message,
-			cur_error_buffer->allocated);
+	  cur_error_buffer->allocated = cur_error_buffer->allocated
+				      ? cur_error_buffer->allocated * 2 : 1000;
+	  cur_error_buffer->message = xrealloc (cur_error_buffer->message,
+						cur_error_buffer->allocated);
 	}
       cur_error_buffer->message[cur_error_buffer->index++] = c;
     }
@@ -152,7 +150,7 @@ error_integer (int i)
 static void error_printf (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 
 static void
-show_locus (locus * loc, int c1, int c2)
+show_locus (locus *loc, int c1, int c2)
 {
   gfc_linebuf *lb;
   gfc_file *f;
@@ -308,7 +306,7 @@ show_locus (locus * loc, int c1, int c2)
    loci may or may not be on the same source line.  */
 
 static void
-show_loci (locus * l1, locus * l2)
+show_loci (locus *l1, locus *l2)
 {
   int m, c1, c2;
 
@@ -349,7 +347,6 @@ show_loci (locus * l1, locus * l2)
   show_locus (l1, c1, c2);
 
   return;
-
 }
 
 
@@ -545,10 +542,10 @@ error_print (const char *type, const char *format0, va_list argp)
 	}
 
       format++;
-      if (ISDIGIT(*format))
+      if (ISDIGIT (*format))
 	{
 	  /* This is a position specifier.  See comment above.  */
-	  while (ISDIGIT(*format))
+	  while (ISDIGIT (*format))
 	    format++;
 	    
 	  /* Skip over the dollar sign.  */
@@ -663,17 +660,15 @@ gfc_notify_std (int std, const char *nocmsgid, ...)
   va_list argp;
   bool warning;
 
-  warning = ((gfc_option.warn_std & std) != 0)
-	    && !inhibit_warnings;
-  if ((gfc_option.allow_std & std) != 0
-      && !warning)
+  warning = ((gfc_option.warn_std & std) != 0) && !inhibit_warnings;
+  if ((gfc_option.allow_std & std) != 0 && !warning)
     return SUCCESS;
 
   if (gfc_suppress_error)
     return warning ? SUCCESS : FAILURE;
 
   cur_error_buffer = (warning && !warnings_are_errors)
-    ? &warning_buffer : &error_buffer;
+		   ? &warning_buffer : &error_buffer;
   cur_error_buffer->flag = 1;
   cur_error_buffer->index = 0;
 
@@ -889,7 +884,7 @@ gfc_error_check (void)
 /* Save the existing error state.  */
 
 void
-gfc_push_error (gfc_error_buf * err)
+gfc_push_error (gfc_error_buf *err)
 {
   err->flag = error_buffer.flag;
   if (error_buffer.flag)
@@ -902,7 +897,7 @@ gfc_push_error (gfc_error_buf * err)
 /* Restore a previous pushed error state.  */
 
 void
-gfc_pop_error (gfc_error_buf * err)
+gfc_pop_error (gfc_error_buf *err)
 {
   error_buffer.flag = err->flag;
   if (error_buffer.flag)
@@ -918,7 +913,7 @@ gfc_pop_error (gfc_error_buf * err)
 /* Free a pushed error state, but keep the current error state.  */
 
 void
-gfc_free_error (gfc_error_buf * err)
+gfc_free_error (gfc_error_buf *err)
 {
   if (err->flag)
     gfc_free (err->message);

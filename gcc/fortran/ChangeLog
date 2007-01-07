@@ -1,3 +1,8 @@
+2007-01-07  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* decl.c, dump-parse-tree.c, error.c, data.c, expr.c, dependency.c,
+	convert.c:  Update Copyright dates.  Fix whitespace.
+
 2007-01-07  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* data.c (gfc_assign_data_value): Fix whitespace.
