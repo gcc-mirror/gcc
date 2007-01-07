@@ -6,5 +6,5 @@
 void *p = 0;
 
 void *q = 0 * (INT_MAX + 1);  // { dg-error "invalid conversion" }
-
+// { dg-warning "integer overflow in expression" "" { target *-*-* } 8 }
 

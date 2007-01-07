@@ -1,3 +1,17 @@
+2007-01-07  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/28986
+	* g++.dg/conversion/nullptr1.C: Added overflow warning.
+	* g++.dg/warn/overflow-warn-1.C: New.
+	* g++.dg/warn/overflow-warn-3.C: New.
+	* g++.dg/warn/overflow-warn-4.C: New.
+	* g++.dg/warn/overflow-warn-5.C: New.
+	* g++.dg/warn/overflow-warn-6.C: New.
+	* g++.dg/warn/Woverflow-1.C: New.
+	* g++.dg/warn/Woverflow-2.C: New.
+	* g++.dg/warn/Woverflow-3.C: New.
+	* g++.dg/warn/multiple-overflow-warn-2.C: New.
+	
 2007-01-07  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	PR fortran/27698
