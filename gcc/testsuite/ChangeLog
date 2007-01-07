@@ -1,3 +1,10 @@
+2007-01-07  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	PR fortran/27698
+	* gfortran.dg/invalid_name.f90: New test.
+	* gfortran.dg/do_iterator.f90: Adjust pattern for expected error.
+	* gfortran.dg/gomp/pr29759.f90: Ditto.
+
 2007-01-06  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/present_1.f90:  Update error message.
