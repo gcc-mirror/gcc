@@ -1,7 +1,6 @@
 2007-01-06  Richard Sandiford  <richard@codesourcery.com>
 
-	Backport:
-
+	Backport from mainline:
 	2006-05-23  Richard Sandiford  <richard@codesourcery.com>
 
 	PR rtl-optimization/27736
@@ -47,7 +46,7 @@
 	(process_function_and_variable_attributes): New function.
 	(cgraph_finalize_compilation_unit): Call it.
 	* c-decl.c (finish_decl): Do not worry about used attribute.
-	* c-common.c (handle_externally_visible_attribute): Only validate.	
+	* c-common.c (handle_externally_visible_attribute): Only validate.
 
 2007-01-05  Joel Brobecker  <brobecker@adacore.com>
 
@@ -60,8 +59,9 @@
 	* libgcc2.c (__divdc3): Compare c and d against 0.0 instead of
 	denom against 0.0.
 
-	Backported from mainline
+	Backport from mainline:
 	2006-09-17  Steven Bosscher  <steven@gcc.gnu.org>
+
 	PR c/25993
 	* c-opts.c (c_common_handle_option): Ignore the -std options
 	if the input language is assembly.
