@@ -680,7 +680,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 
       if (function)
 	{
-	  /* Check wether the size for this dimension is negative.  */
+	  /* Check whether the size for this dimension is negative.  */
 	  cond = fold_build2 (LE_EXPR, boolean_type_node, tmp,
 			  gfc_index_zero_node);
 
@@ -3263,7 +3263,7 @@ gfc_array_init_size (tree descriptor, int rank, tree * poffset,
       /* Calculate the size of this dimension.  */
       size = fold_build2 (PLUS_EXPR, gfc_array_index_type, se.expr, size);
 
-      /* Check wether the size for this dimension is negative.  */
+      /* Check whether the size for this dimension is negative.  */
       cond = fold_build2 (LE_EXPR, boolean_type_node, size,
 			  gfc_index_zero_node);
       if (n == 0)
