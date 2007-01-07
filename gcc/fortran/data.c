@@ -1,6 +1,6 @@
 /* Supporting functions for resolving DATA statement.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software
-   Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
    Contributed by Lifang Zeng <zlf605@hotmail.com>
 
 This file is part of GCC.
@@ -22,14 +22,14 @@ Software Foundation, 51 Franklin Street, Fifth Floor,Boston, MA
 
 
 /* Notes for DATA statement implementation:
-                                                                               
+									       
    We first assign initial value to each symbol by gfc_assign_data_value
    during resolveing DATA statement. Refer to check_data_variable and
    traverse_data_list in resolve.c.
-                                                                               
+									       
    The complexity exists in the handling of array section, implied do
    and array of struct appeared in DATA statement.
-                                                                               
+									       
    We call gfc_conv_structure, gfc_con_array_array_initializer,
    etc., to convert the initial value. Refer to trans-expr.c and
    trans-array.c.  */
@@ -42,7 +42,7 @@ static void formalize_init_expr (gfc_expr *);
 /* Calculate the array element offset.  */
 
 static void
-get_array_index (gfc_array_ref * ar, mpz_t * offset)
+get_array_index (gfc_array_ref *ar, mpz_t *offset)
 {
   gfc_expr *e;
   int i;
@@ -61,14 +61,15 @@ get_array_index (gfc_array_ref * ar, mpz_t * offset)
       if ((gfc_is_constant_expr (ar->as->lower[i]) == 0)
 	  || (gfc_is_constant_expr (ar->as->upper[i]) == 0)
 	  || (gfc_is_constant_expr (e) == 0))
-	gfc_error ("non-constant array in DATA statement %L", &ar->where);        
+	gfc_error ("non-constant array in DATA statement %L", &ar->where);
+
       mpz_set (tmp, e->value.integer);
       mpz_sub (tmp, tmp, ar->as->lower[i]->value.integer);
       mpz_mul (tmp, tmp, delta);
       mpz_add (*offset, tmp, *offset);
 
       mpz_sub (tmp, ar->as->upper[i]->value.integer,
-      ar->as->lower[i]->value.integer);
+	       ar->as->lower[i]->value.integer);
       mpz_add_ui (tmp, tmp, 1);
       mpz_mul (delta, tmp, delta);
     }
@@ -87,39 +88,40 @@ find_con_by_offset (splay_tree spt, mpz_t offset)
   gfc_constructor *con;
   splay_tree_node sptn;
 
-/* The complexity is due to needing quick access to the linked list of
-   constructors.  Both a linked list and a splay tree are used, and both are
-   kept up to date if they are array elements (which is the only time that
-   a specific constructor has to be found).  */  
+  /* The complexity is due to needing quick access to the linked list of
+     constructors.  Both a linked list and a splay tree are used, and both
+     are kept up to date if they are array elements (which is the only time
+     that a specific constructor has to be found).  */  
 
   gcc_assert (spt != NULL);
   mpz_init (tmp);
 
-  sptn = splay_tree_lookup (spt, (splay_tree_key) mpz_get_si(offset));
+  sptn = splay_tree_lookup (spt, (splay_tree_key) mpz_get_si (offset));
 
   if (sptn)
     ret = (gfc_constructor*) sptn->value;  
   else
     {
        /* Need to check and see if we match a range, so we will pull
-          the next lowest index and see if the range matches.  */
-       sptn = splay_tree_predecessor (spt, (splay_tree_key) mpz_get_si(offset));
+	  the next lowest index and see if the range matches.  */
+       sptn = splay_tree_predecessor (spt,
+				      (splay_tree_key) mpz_get_si (offset));
        if (sptn)
-         {
-            con = (gfc_constructor*) sptn->value;
-            if (mpz_cmp_ui (con->repeat, 1) > 0)
-              {
-                 mpz_init (tmp);
-                 mpz_add (tmp, con->n.offset, con->repeat);
-                 if (mpz_cmp (offset, tmp) < 0)
-                   ret = con;
-                 mpz_clear (tmp);
-              }
-            else 
-              ret = NULL; /* The range did not match.  */
-         }
+	 {
+	    con = (gfc_constructor*) sptn->value;
+	    if (mpz_cmp_ui (con->repeat, 1) > 0)
+	      {
+		 mpz_init (tmp);
+		 mpz_add (tmp, con->n.offset, con->repeat);
+		 if (mpz_cmp (offset, tmp) < 0)
+		   ret = con;
+		 mpz_clear (tmp);
+	      }
+	    else 
+	      ret = NULL; /* The range did not match.  */
+	 }
       else
-        ret = NULL; /* No pred, so no match.  */
+	ret = NULL; /* No pred, so no match.  */
     }
 
   return ret;
@@ -134,7 +136,7 @@ find_con_by_component (gfc_component *com, gfc_constructor *con)
   for (; con; con = con->next)
     {
       if (com == con->n.component)
-        return con;
+	return con;
     }
   return NULL;
 }
@@ -146,8 +148,8 @@ find_con_by_component (gfc_component *com, gfc_constructor *con)
    according to normal assignment rules.  */
 
 static gfc_expr *
-create_character_intializer (gfc_expr * init, gfc_typespec * ts,
-			     gfc_ref * ref, gfc_expr * rvalue)
+create_character_intializer (gfc_expr *init, gfc_typespec *ts,
+			     gfc_ref *ref, gfc_expr *rvalue)
 {
   int len;
   int start;
@@ -181,14 +183,14 @@ create_character_intializer (gfc_expr * init, gfc_typespec * ts,
       gcc_assert (ref->type == REF_SUBSTRING);
 
       /* Only set a substring of the destination.  Fortran substring bounds
-         are one-based [start, end], we want zero based [start, end).  */
+	 are one-based [start, end], we want zero based [start, end).  */
       start_expr = gfc_copy_expr (ref->u.ss.start);
       end_expr = gfc_copy_expr (ref->u.ss.end);
 
       if ((gfc_simplify_expr (start_expr, 1) == FAILURE)
-	     || (gfc_simplify_expr (end_expr, 1)) == FAILURE)
+	  || (gfc_simplify_expr (end_expr, 1)) == FAILURE)
 	{
-	  gfc_error ("failure to simplify substring reference in DATA"
+	  gfc_error ("failure to simplify substring reference in DATA "
 		     "statement at %L", &ref->u.ss.start->where);
 	  return NULL;
 	}
@@ -225,12 +227,13 @@ create_character_intializer (gfc_expr * init, gfc_typespec * ts,
   return init;
 }
 
+
 /* Assign the initial value RVALUE to  LVALUE's symbol->value. If the
    LVALUE already has an initialization, we extend this, otherwise we
    create a new one.  */
 
 void
-gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
+gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
 {
   gfc_ref *ref;
   gfc_expr *init;
@@ -262,7 +265,7 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
 	}
 
       /* Use the existing initializer expression if it exists.  Otherwise
-         create a new one.  */
+	 create a new one.  */
       if (init == NULL)
 	expr = gfc_get_expr ();
       else
@@ -289,38 +292,40 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
 	  else
 	    mpz_set (offset, index);
 
-          /* Splay tree containing offset and gfc_constructor.  */
-          spt = expr->con_by_offset;
+	  /* Splay tree containing offset and gfc_constructor.  */
+	  spt = expr->con_by_offset;
 
-          if (spt == NULL)
-            {
-               spt = splay_tree_new (splay_tree_compare_ints,NULL,NULL);
-               expr->con_by_offset = spt; 
-               con = NULL;
-            }
-         else
+	  if (spt == NULL)
+	    {
+	       spt = splay_tree_new (splay_tree_compare_ints, NULL, NULL);
+	       expr->con_by_offset = spt; 
+	       con = NULL;
+	    }
+	 else
 	  con = find_con_by_offset (spt, offset);
 
 	  if (con == NULL)
 	    {
+	      splay_tree_key j;
+
 	      /* Create a new constructor.  */
 	      con = gfc_get_constructor ();
 	      mpz_set (con->n.offset, offset);
-              sptn = splay_tree_insert (spt, (splay_tree_key) mpz_get_si(offset),
-                                       (splay_tree_value) con);
-              /* Fix up the linked list.  */
-              sptn = splay_tree_predecessor (spt, (splay_tree_key) mpz_get_si(offset));
-              if (sptn == NULL)
-                {  /* Insert at the head.  */
-                   con->next = expr->value.constructor;
-                   expr->value.constructor = con;
-                }
-              else
-                {  /* Insert in the chain.  */
-                   pred = (gfc_constructor*) sptn->value;
-                   con->next = pred->next;
-                   pred->next = con;
-                }
+	      j = (splay_tree_key) mpz_get_si (offset);
+	      sptn = splay_tree_insert (spt, j, (splay_tree_value) con);
+	      /* Fix up the linked list.  */
+	      sptn = splay_tree_predecessor (spt, j);
+	      if (sptn == NULL)
+		{  /* Insert at the head.  */
+		   con->next = expr->value.constructor;
+		   expr->value.constructor = con;
+		}
+	      else
+		{  /* Insert in the chain.  */
+		   pred = (gfc_constructor*) sptn->value;
+		   con->next = pred->next;
+		   pred->next = con;
+		}
 	    }
 	  break;
 
@@ -374,16 +379,16 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
 	 provokes a warning from other compilers.  */
       if (init != NULL)
 	{
-	  /* Order in which the expressions arrive here depends on whether they
-	     are from data statements or F95 style declarations. Therefore,
-	     check which is the most recent.  */
+	  /* Order in which the expressions arrive here depends on whether
+	     they are from data statements or F95 style declarations.
+	     Therefore, check which is the most recent.  */
 #ifdef USE_MAPPED_LOCATION
 	  expr = (LOCATION_LINE (init->where.lb->location)
 		  > LOCATION_LINE (rvalue->where.lb->location))
-	    ? init : rvalue;
+	       ? init : rvalue;
 #else
-	  expr = (init->where.lb->linenum > rvalue->where.lb->linenum) ?
-		    init : rvalue;
+	  expr = (init->where.lb->linenum > rvalue->where.lb->linenum)
+	       ? init : rvalue;
 #endif
 	  gfc_notify_std (GFC_STD_GNU, "Extension: re-initialization "
 			  "of '%s' at %L", symbol->name, &expr->where);
@@ -400,12 +405,13 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
     last_con->expr = expr;
 }
 
+
 /* Similarly, but initialize REPEAT consecutive values in LVALUE the same
    value in RVALUE.  For the nonce, LVALUE must refer to a full array, not
    an array section.  */
 
 void
-gfc_assign_data_value_range (gfc_expr * lvalue, gfc_expr * rvalue,
+gfc_assign_data_value_range (gfc_expr *lvalue, gfc_expr *rvalue,
 			     mpz_t index, mpz_t repeat)
 {
   gfc_ref *ref;
@@ -471,42 +477,44 @@ gfc_assign_data_value_range (gfc_expr * lvalue, gfc_expr * rvalue,
 
 	  /* Find the same element in the existing constructor.  */
 
-          /* Splay tree containing offset and gfc_constructor.  */
-          spt = expr->con_by_offset;
+	  /* Splay tree containing offset and gfc_constructor.  */
+	  spt = expr->con_by_offset;
 
-          if (spt == NULL)
-            {
-               spt = splay_tree_new (splay_tree_compare_ints,NULL,NULL);
-               expr->con_by_offset = spt;
-               con = NULL;
-            }
-          else 
-            con = find_con_by_offset (spt, offset);
+	  if (spt == NULL)
+	    {
+	       spt = splay_tree_new (splay_tree_compare_ints, NULL, NULL);
+	       expr->con_by_offset = spt;
+	       con = NULL;
+	    }
+	  else 
+	    con = find_con_by_offset (spt, offset);
 
-          if (con == NULL)
-            {
-              /* Create a new constructor.  */
-              con = gfc_get_constructor ();
-              mpz_set (con->n.offset, offset);
-              if (ref->next == NULL)
-                mpz_set (con->repeat, repeat);
-              sptn = splay_tree_insert (spt, (splay_tree_key) mpz_get_si(offset),
-                                       (splay_tree_value) con);
-              /* Fix up the linked list.  */
-              sptn = splay_tree_predecessor (spt, (splay_tree_key) mpz_get_si(offset));
-              if (sptn == NULL)
-                {  /* Insert at the head.  */
-                   con->next = expr->value.constructor;
-                   expr->value.constructor = con;
-                }
-              else
-                {  /* Insert in the chain.  */
-                   pred = (gfc_constructor*) sptn->value;
-                   con->next = pred->next;
-                   pred->next = con;
-                }
-            }
-          else
+	  if (con == NULL)
+	    {
+	      splay_tree_key j;
+	      /* Create a new constructor.  */
+	      con = gfc_get_constructor ();
+	      mpz_set (con->n.offset, offset);
+	      j = (splay_tree_key) mpz_get_si (offset);
+	  
+	      if (ref->next == NULL)
+		mpz_set (con->repeat, repeat);
+	      sptn = splay_tree_insert (spt, j, (splay_tree_value) con);
+	      /* Fix up the linked list.  */
+	      sptn = splay_tree_predecessor (spt, j);
+	      if (sptn == NULL)
+		{  /* Insert at the head.  */
+		   con->next = expr->value.constructor;
+		   expr->value.constructor = con;
+		}
+	      else
+		{  /* Insert in the chain.  */
+		   pred = (gfc_constructor*) sptn->value;
+		   con->next = pred->next;
+		   pred->next = con;
+		}
+	    }
+	  else
 	    gcc_assert (ref->next != NULL);
 	  break;
 
@@ -612,10 +620,9 @@ gfc_advance_section (mpz_t *section_index, gfc_array_ref *ar,
       else
 	cmp = mpz_cmp (section_index[i], ar->as->upper[i]->value.integer);
 
-      if ((cmp > 0 && forwards)
-	  || (cmp < 0 && ! forwards))
+      if ((cmp > 0 && forwards) || (cmp < 0 && !forwards))
 	{
-          /* Reset index to start, then loop to advance the next index.  */
+	  /* Reset index to start, then loop to advance the next index.  */
 	  if (ar->start[i])
 	    mpz_set (section_index[i], ar->start[i]->value.integer);
 	  else
@@ -635,7 +642,7 @@ gfc_advance_section (mpz_t *section_index, gfc_array_ref *ar,
       mpz_add (*offset_ret, tmp, *offset_ret);
 
       mpz_sub (tmp, ar->as->upper[i]->value.integer, 
-               ar->as->lower[i]->value.integer);
+	       ar->as->lower[i]->value.integer);
       mpz_add_ui (tmp, tmp, 1);
       mpz_mul (delta, tmp, delta);
     }
@@ -648,7 +655,7 @@ gfc_advance_section (mpz_t *section_index, gfc_array_ref *ar,
    order.  Also insert NULL entries if necessary.  */
 
 static void
-formalize_structure_cons (gfc_expr * expr)
+formalize_structure_cons (gfc_expr *expr)
 {
   gfc_constructor *head;
   gfc_constructor *tail;
@@ -710,7 +717,7 @@ formalize_structure_cons (gfc_expr * expr)
    elements of the constructors are in the correct order.  */
 
 static void
-formalize_init_expr (gfc_expr * expr)
+formalize_init_expr (gfc_expr *expr)
 {
   expr_t type;
   gfc_constructor *c;
@@ -789,7 +796,7 @@ gfc_get_section_index (gfc_array_ref *ar, mpz_t *section_index, mpz_t *offset)
 	}
 
       mpz_sub (tmp, ar->as->upper[i]->value.integer, 
-               ar->as->lower[i]->value.integer);
+	       ar->as->lower[i]->value.integer);
       mpz_add_ui (tmp, tmp, 1);
       mpz_mul (delta, tmp, delta);
     }
