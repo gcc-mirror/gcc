@@ -10,4 +10,4 @@ DO I=1,5       ! { dg-error "cannot be redefined" "changing do-iterator 3" }
    READ(5,*,iostat=i) j ! { dg-error "cannot be redefined" "changing do-iterator 3" }
 ENDDO
 END
-
+! { dg-error "Invalid character" "character" { target *-*-* } 7 }

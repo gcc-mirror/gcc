@@ -1,3 +1,9 @@
+2007-01-07  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	PR fortran/27698
+	* match.c (gfc_match_name): Print diagnostics for invalid
+	character in names.
+
 2007-01-06  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* array.c: Fix whitespace in comment table.
