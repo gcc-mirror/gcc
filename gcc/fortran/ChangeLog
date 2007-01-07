@@ -1,4 +1,8 @@
-2007-01-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+2007-01-06  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* array.c, bbt.c, check.c:  Update copyright years.  Whitespace.
+
+2007-01-06  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* arith.c: Update copyright years.  Whitespace.
 
