@@ -1,3 +1,10 @@
+2007-01-07  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/28986
+	* typeck.c (build_binary_op): Call overflow_warning if
+	TREE_OVERFLOW_P is true for the result and not for any of the
+	operands.
+	
 2007-01-06  Lee Millward  <lee.millward@codesourcery.com>
 
        PR c++/19439
