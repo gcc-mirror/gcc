@@ -1,5 +1,10 @@
 2007-01-07  Bernhard Fischer  <aldot@gcc.gnu.org>
 
+	* trans-array.c (gfc_trans_create_temp_array, gfc_array_init_size):
+	Commentary typo fix.
+
+2007-01-07  Bernhard Fischer  <aldot@gcc.gnu.org>
+
 	PR fortran/27698
 	* match.c (gfc_match_name): Print diagnostics for invalid
 	character in names.
