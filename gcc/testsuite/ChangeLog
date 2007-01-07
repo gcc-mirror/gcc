@@ -1,8 +1,8 @@
-2006-01-06  Steven G. Kargl  <kargl@gcc.gnu.org>
+2007-01-06  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/present_1.f90:  Update error message.
 
-2006-01-06  Lee Millward  <lee.millward@codesourcery.com>
+2007-01-06  Lee Millward  <lee.millward@codesourcery.com>
 
        PR c++/19439
        * g++.dg/template/duplicate1.C: New test
