@@ -1,3 +1,8 @@
+2007-01-07  Eric Christopher  <echristo@apple.com>
+
+	* configure.ac: Check for __stack_chk_fail for darwin.
+	* configure: Regenerate.
+
 2007-01-07  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vrp.c (extract_range_from_assert): CSE calls to
@@ -10,7 +15,7 @@
 	* config/avr/avr.c (call_insn_operand): Delete function.
 	* config/avr/avr.md (*pushqi, *pushhi, *pushsi, *pushsf): Use REG_SP
 	instead of register number. Use predicates.
-	* config/avr/predicates.md (const0_operand, reg_or_0_operand, 
+	* config/avr/predicates.md (const0_operand, reg_or_0_operand,
 	call_insn_operand): Add.
 
 2007-01-06  Jan Hubicka  <jh@suse.cz>
