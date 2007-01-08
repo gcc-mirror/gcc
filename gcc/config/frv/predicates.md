@@ -396,7 +396,7 @@
 ;; appropriate type.
 
 (define_predicate "reg_or_0_operand"
-  (match_code "reg,subreg,const_int")
+  (match_code "reg,subreg,const_int,const_double")
 {
   switch (GET_CODE (op))
     {
