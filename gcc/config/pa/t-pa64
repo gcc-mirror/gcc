@@ -22,7 +22,7 @@ jvrc-stub.o: stublib.c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) -c -O2 -DL_Jv_RegisterClasses stublib.c \
 	  -o jvrc-stub.o
 
-libgcc_stub.a: $(LIBGCCSTUB_OBJS)
-	-rm -rf libgcc_stub.a
-	$(AR) rc libgcc_stub.a $(LIBGCCSTUB_OBJS)
-	$(RANLIB) libgcc_stub.a
+$(T)libgcc_stub.a: $(LIBGCCSTUB_OBJS)
+	-rm -rf $(T)libgcc_stub.a
+	$(AR) rc $(T)libgcc_stub.a $(LIBGCCSTUB_OBJS)
+	$(RANLIB) $(T)libgcc_stub.a
