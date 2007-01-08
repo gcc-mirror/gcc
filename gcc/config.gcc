@@ -801,6 +801,10 @@ bfin*-uclinux*)
         tmake_file=bfin/t-bfin-elf
         use_collect2=no
         ;;
+bfin*-rtems*)
+	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h bfin/rtems.h rtems.h"
+	tmake_file="bfin/t-bfin t-rtems bfin/t-rtems"
+        ;;
 bfin*-*)
 	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h"
         tmake_file=bfin/t-bfin
