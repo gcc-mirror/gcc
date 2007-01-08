@@ -1,5 +1,13 @@
 2007-01-08  Jan Hubicka  <jh@suse.cz>
 
+	* cgraphunit.c (cgraph_process_new_functions): Reset reachable flag.
+	(cgraph_analyze_function): break out from ...
+	(cgraph_finalize_compilation_unit): ... here.
+	(cgraph_expand_function): Remove forgoten commented out line.
+	(cgraph_optimize): Analyze functions.
+
+2007-01-08  Jan Hubicka  <jh@suse.cz>
+
 	* tree-pas.h (TODO_remove_function): New flag.
 	(TODO_update*): Renumber.
 	(pass_ipa_increase_alignment,
