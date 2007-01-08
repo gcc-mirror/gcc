@@ -1,3 +1,25 @@
+2007-01-08  Chen Liqin  <liqin@sunnorth.com.cn>
+	* config/score/t-score-elf (MULTILIB_OPTIONS): Change.
+	* config/score/predicates.md (const_uimm5, sr0_operand, const_simm12,
+	const_simm15, const_pow2, const_npow2): Added.
+	* config/score/misc.md (insv, extv, extzv, movmemsi, 
+	move_lbu_a/b, mov_lhu_a/b etc): Added and fix some bug.
+	* config/score/score.c (score_address_cost, score_select_cc_mode): 
+	Added.
+	Change CONST_OK_FOR_LETTER_P/EXTRA_CONSTRAINT define.
+	Update score_rtx_costs for MACRO TARGET_RTX_COSTS.
+	Update score_print_operand.
+	* config/score/score.h (DATA_ALIGNMENT, SELECT_CC_MODE): Added.
+	Adjust register allocate order and update some macro define.
+	* config/score/score-mdaux.c (mdx_unaligned_load, mdx_unsigned_store,
+	mdx_block_move_straight, mdx_block_move_loop_head,
+	mdx_block_move_loop_body, mdx_block_move_loop_foot, mdx_block_move_loop,
+	mdx_block_move): Added.
+	(mdx_movsicc, mdp_select_add_imm, mdp_select, mds_zero_extract_andi,
+	mdp_limm): Updated and fix some bug and typo.
+	* config/score/score.md (movqi/hi/si, add/sub/zero/ext): Updated.
+	(movsf, movdf, doloop_end): Added.
+
 2007-01-08  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/arm/arm.c, config/arm/arm.h, config/arm/arm.md,

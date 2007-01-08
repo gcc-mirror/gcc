@@ -242,7 +242,7 @@ _flush_cache:
         #nop!
         addi    r8, 16
         bcnz    2b
-        .cprestore      12              # pic used
+        .cprestore r0, 12               # pic used
         addi    r0, 8                   # pic used
         br      r3
 #endif
@@ -278,7 +278,7 @@ __mulsi3_loop2:
         cmpi.c  a1, 0
         bne     __mulsi3_loop
         mv      r4, t1
-        .cprestore 12                   # pic used
+        .cprestore r0, 12               # pic used
         addi    r0, 8                   # pic used
         br      ra
         .end    __mulsi3
@@ -334,7 +334,7 @@ __uds_loop3:
 __uds_exit:
         mv      a1, a0
         mv      r4, t4
-        .cprestore 12                   # pic used
+        .cprestore r0, 12               # pic used
         addi    r0, 8                   # pic used
         br      ra
         .end    __udivsi3
@@ -350,7 +350,7 @@ __umodsi3:
         la      r29, __udivsi3
         brl     r29
         mv      r4, a1
-        .cprestore 12                   # pic used
+        .cprestore r0, 12               # pic used
         addi    r0, 8                   # pic used
         br      t3
         .end    __umodsi3
@@ -383,7 +383,7 @@ __divsi3_adjust:
         bge     __divsi3_exit
         neg     r4, r4
 __divsi3_exit:
-        .cprestore 12                   # pic used
+        .cprestore r0, 12               # pic used
         addi    r0, 8                   # pic used
         br      t3
         .end    __divsi3

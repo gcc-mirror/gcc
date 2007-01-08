@@ -59,8 +59,8 @@
 
 (define_constants
    [(BITTST         0)
-    (LOAD_ADD       1)
-    (STORE_ADD      2)
+    (CPLOAD         1)
+    (CPRESTORE      2)
 
     (SCB            3)
     (SCW            4)
@@ -88,10 +88,22 @@
 (include "misc.md")
 (include "mac.md")
 
-(define_insn "movqi"
+(define_expand "movqi"
+  [(set (match_operand:QI 0 "nonimmediate_operand")
+        (match_operand:QI 1 "general_operand"))]
+  ""
+{
+  if (MEM_P (operands[0])
+      && !register_operand (operands[1], QImode))
+    {
+      operands[1] = force_reg (QImode, operands[1]);
+    }
+})
+
+(define_insn "*movqi_insns"
   [(set (match_operand:QI 0 "nonimmediate_operand" "=d,d,d,m,d,*x,d,*a")
         (match_operand:QI 1 "general_operand" "i,d,m,d,*x,d,*a,d"))]
-  ""
+  "!MEM_P (operands[0]) || register_operand (operands[1], QImode)"
 {
   switch (which_alternative)
     {
@@ -109,10 +121,22 @@
   [(set_attr "type" "arith,move,load,store,fce,tce,fsr,tsr")
    (set_attr "mode" "QI")])
 
-(define_insn "movhi"
+(define_expand "movhi"
+  [(set (match_operand:HI 0 "nonimmediate_operand")
+        (match_operand:HI 1 "general_operand"))]
+  ""
+{
+  if (MEM_P (operands[0])
+      && !register_operand (operands[1], HImode))
+    {
+      operands[1] = force_reg (HImode, operands[1]);
+    }
+})
+
+(define_insn "*movhi_insns"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=d,d,d,m,d,*x,d,*a")
         (match_operand:HI 1 "general_operand" "i,d,m,d,*x,d,*a,d"))]
-  ""
+  "!MEM_P (operands[0]) || register_operand (operands[1], HImode)"
 {
   switch (which_alternative)
     {
@@ -130,10 +154,22 @@
   [(set_attr "type" "arith,move,load,store,fce,tce,fsr,tsr")
    (set_attr "mode" "HI")])
 
-(define_insn "movsi"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,m,d,*x,d,*a,d,c")
-        (match_operand:SI 1 "general_operand" "i,d,m,d,*x,d,*a,d,c,d"))]
+(define_expand "movsi"
+  [(set (match_operand:SI 0 "nonimmediate_operand")
+        (match_operand:SI 1 "general_operand"))]
   ""
+{
+  if (MEM_P (operands[0])
+      && !register_operand (operands[1], SImode))
+    {
+      operands[1] = force_reg (SImode, operands[1]);
+    }
+})
+
+(define_insn "*movsi_insns"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,m,d,*x,d,*a,d,*c")
+        (match_operand:SI 1 "general_operand" "i,d,m,d,*x,d,*a,d,*c,d"))]
+  "!MEM_P (operands[0]) || register_operand (operands[1], SImode)"
 {
   switch (which_alternative)
     {
@@ -169,46 +205,103 @@
   DONE;
 })
 
-(define_insn "addsi3"
-  [(set (match_operand:SI 0 "register_operand" "=d,d,d")
-        (plus:SI (match_operand:SI 1 "register_operand" "0,d,%d")
-                 (match_operand:SI 2 "arith_operand" "L,N,d")))]
+(define_expand "movsf"
+  [(set (match_operand:SF 0 "nonimmediate_operand")
+        (match_operand:SF 1 "general_operand"))]
   ""
-  "@
-   addi    %0, %c2
-   addri   %0, %1, %c2
-   add     %0, %1, %2"
+{
+  if (MEM_P (operands[0])
+      && !register_operand (operands[1], SFmode))
+    {
+      operands[1] = force_reg (SFmode, operands[1]);
+    }
+})
+
+(define_insn "*movsf_insns"
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=d,d,d,m")
+        (match_operand:SF 1 "general_operand" "i,d,m,d"))]
+  "!MEM_P (operands[0]) || register_operand (operands[1], SFmode)"
+{
+  switch (which_alternative)
+    {
+    case 0: return \"li      %0, %D1\";;
+    case 1: return mdp_move (operands);
+    case 2: return mdp_linsn (operands, MDA_WORD, false);
+    case 3: return mdp_sinsn (operands, MDA_WORD);
+    default: gcc_unreachable ();
+    }
+}
+  [(set_attr "type" "arith,move,load,store")
+   (set_attr "mode" "SI")])
+
+(define_insn_and_split "movdf"
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=d,d,d,m")
+        (match_operand:DF 1 "general_operand" "i,d,m,d"))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+{
+  mds_movdi (operands);
+  DONE;
+})
+
+(define_insn "addsi3"
+  [(set (match_operand:SI 0 "register_operand" "=d,d,d,d")
+        (plus:SI (match_operand:SI 1 "register_operand" "0,0,d,d")
+                 (match_operand:SI 2 "arith_operand" "I,L,N,d")))]
+  ""
+{
+  switch (which_alternative)
+    {
+    case 0: return \"addis %0, %U2\";
+    case 1: return mdp_select_add_imm (operands, false);
+    case 2: return \"addri %0, %1, %c2\";
+    case 3: return mdp_select (operands, "add", true, "", false);
+    default: gcc_unreachable ();
+    }
+}
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
 
 (define_insn "*addsi3_cmp"
   [(set (reg:CC_NZ CC_REGNUM)
-        (compare:CC_NZ (plus:SI (match_operand:SI 0 "register_operand" "d,d,d")
-                                (match_operand:SI 1 "arith_operand" "N,L,d"))
-                       (const_int 0)))]
+        (compare:CC_NZ (plus:SI
+                        (match_operand:SI 1 "register_operand" "0,0,d,d")
+                        (match_operand:SI 2 "arith_operand" "I,L,N,d"))
+                       (const_int 0)))
+   (clobber (match_scratch:SI 0 "=d,d,d,d"))]
   ""
-  "@
-   %[       addri.c r1, %0, %c1       %]
-   %[       m%V0    r1, %0\;addi.c  r1, %2        %]
-   %[       add.c   r1, %0, %1        %]"
+{
+  switch (which_alternative)
+    {
+    case 0: return \"addis.c %0, %U2\";
+    case 1: return mdp_select_add_imm (operands, true);
+    case 2: return \"addri.c %0, %1, %c2\";
+    case 3: return mdp_select (operands, "add", true, "", true);
+    default: gcc_unreachable ();
+    }
+}
   [(set_attr "type" "arith")
    (set_attr "up_c" "yes")
    (set_attr "mode" "SI")])
 
-(define_insn "addsi3_ucc"
+(define_insn "*addsi3_ucc"
   [(set (reg:CC_NZ CC_REGNUM)
-        (compare:CC_NZ (plus:SI (match_operand:SI 1 "register_operand" "0,d,d")
-                                (match_operand:SI 2 "arith_operand" "L,N,d"))
+        (compare:CC_NZ (plus:SI
+                        (match_operand:SI 1 "register_operand" "0,0,d,d")
+                        (match_operand:SI 2 "arith_operand" "I,L,N,d"))
                        (const_int 0)))
-   (set (match_operand:SI 0 "register_operand" "=d,d,d")
+   (set (match_operand:SI 0 "register_operand" "=d,d,d,d")
         (plus:SI (match_dup 1) (match_dup 2)))]
   ""
 {
   switch (which_alternative)
     {
-    case 0: return mdp_add_imm_ucc (operands);
-    case 1: return \"addri.c %0, %1, %c2\";
-    case 2: return mdp_select (operands, "add", true, "");
+    case 0: return \"addis.c %0, %U2\";
+    case 1: return mdp_select_add_imm (operands, true);
+    case 2: return \"addri.c %0, %1, %c2\";
+    case 3: return mdp_select (operands, "add", true, "", true);
     default: gcc_unreachable ();
     }
 }
@@ -217,9 +310,9 @@
    (set_attr "mode" "SI")])
 
 (define_insn "adddi3"
-  [(set (match_operand:DI 0 "register_operand" "=*e,d")
-        (plus:DI (match_operand:DI 1 "register_operand" "*0,d")
-                 (match_operand:DI 2 "register_operand" "*e,d")))
+  [(set (match_operand:DI 0 "register_operand" "=e,d")
+        (plus:DI (match_operand:DI 1 "register_operand" "0,d")
+                 (match_operand:DI 2 "register_operand" "e,d")))
   (clobber (reg:CC CC_REGNUM))]
   ""
   "@
@@ -233,17 +326,22 @@
         (minus:SI (match_operand:SI 1 "register_operand" "d")
                   (match_operand:SI 2 "register_operand" "d")))]
   ""
-  "sub     %0, %1, %2"
+{
+  return mdp_select (operands, "sub", false, "", false);
+}
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
 
 (define_insn "*subsi3_cmp"
   [(set (reg:CC_NZ CC_REGNUM)
-        (compare:CC_NZ (minus:SI (match_operand:SI 0 "register_operand" "d")
-                                 (match_operand:SI 1 "register_operand" "d"))
-                       (const_int 0)))]
+        (compare:CC_NZ (minus:SI (match_operand:SI 1 "register_operand" "d")
+                                 (match_operand:SI 2 "register_operand" "d"))
+                       (const_int 0)))
+   (clobber (match_scratch:SI 0 "=d"))]
   ""
-  "%[        sub.c   r1, %0, %1        %]"
+{
+  return mdp_select (operands, "sub", false, "", true);
+}
   [(set_attr "type" "arith")
    (set_attr "up_c" "yes")
    (set_attr "mode" "SI")])
@@ -255,11 +353,10 @@
    (set (reg:CC CC_REGNUM)
         (compare:CC (match_dup 1) (match_dup 2)))]
   ""
-  [(parallel
-       [(set (reg:CC CC_REGNUM)
-             (compare:CC (match_dup 1) (match_dup 2)))
-        (set (match_dup 0)
-             (minus:SI (match_dup 1) (match_dup 2)))])])
+  [(set (reg:CC CC_REGNUM)
+        (compare:CC (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+        (minus:SI (match_dup 1) (match_dup 2)))])
 
 (define_insn "subsi3_ucc_pcmp"
   [(parallel
@@ -270,7 +367,7 @@
              (minus:SI (match_dup 1) (match_dup 2)))])]
   ""
 {
-  return mdp_select (operands, "sub", false, "");
+  return mdp_select (operands, "sub", false, "", true);
 }
   [(set_attr "type" "arith")
    (set_attr "up_c" "yes")
@@ -285,16 +382,16 @@
         (minus:SI (match_dup 1) (match_dup 2)))]
   ""
 {
-  return mdp_select (operands, "sub", false, "");
+  return mdp_select (operands, "sub", false, "", true);
 }
   [(set_attr "type" "arith")
    (set_attr "up_c" "yes")
    (set_attr "mode" "SI")])
 
 (define_insn "subdi3"
-  [(set (match_operand:DI 0 "register_operand" "=*e,d")
-        (minus:DI (match_operand:DI 1 "register_operand" "*0,d")
-                  (match_operand:DI 2 "register_operand" "*e,d")))
+  [(set (match_operand:DI 0 "register_operand" "=e,d")
+        (minus:DI (match_operand:DI 1 "register_operand" "0,d")
+                  (match_operand:DI 2 "register_operand" "e,d")))
    (clobber (reg:CC CC_REGNUM))]
   ""
   "@
@@ -306,36 +403,47 @@
 (define_insn "andsi3"
   [(set (match_operand:SI 0 "register_operand" "=d,d,d,d")
         (and:SI (match_operand:SI 1 "register_operand" "0,0,d,d")
-                (match_operand:SI 2 "arith_operand" "K,Q,M,d")))]
+                (match_operand:SI 2 "arith_operand" "I,K,M,d")))]
   ""
-  "@
-   andi    %0, %c2
-   andis   %0, %U2
-   andri   %0, %1, %c2
-   and     %0, %1, %2"
+{
+  switch (which_alternative)
+    {
+    case 0: return \"andis %0, %U2\";
+    case 1: return \"andi  %0, %c2";
+    case 2: return \"andri %0, %1, %c2\";
+    case 3: return mdp_select (operands, "and", true, "", false);
+    default: gcc_unreachable ();
+    }
+}
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
 
 (define_insn "andsi3_cmp"
   [(set (reg:CC_NZ CC_REGNUM)
-        (compare:CC_NZ (and:SI (match_operand:SI 0 "register_operand" "d,d,d,d")
-                               (match_operand:SI 1 "arith_operand" "M,K,Q,d"))
-                       (const_int 0)))]
+        (compare:CC_NZ (and:SI (match_operand:SI 1 "register_operand" "0,0,0,d")
+                               (match_operand:SI 2 "arith_operand" "I,K,M,d"))
+                       (const_int 0)))
+   (clobber (match_scratch:SI 0 "=d,d,d,d"))]
   ""
-  "@
-   %[        andri.c r1, %0, %c1      %]
-   %[        m%V0    r1, %0\;andi.c  r1, %c1        %]
-   %[        m%V0    r1, %0\;andis.c r1, %U1        %]
-   %[        and.c   r1, %0, %1       %]"
+{
+  switch (which_alternative)
+    {
+    case 0: return \"andis.c %0, %U2\";
+    case 1: return \"andi.c  %0, %c2";
+    case 2: return \"andri.c %0, %1, %c2\";
+    case 3: return mdp_select (operands, "and", true, "", true);
+    default: gcc_unreachable ();
+    }
+}
   [(set_attr "type" "arith")
    (set_attr "up_c" "yes")
    (set_attr "mode" "SI")])
 
-(define_insn "andsi3_ucc"
+(define_insn "*andsi3_ucc"
   [(set (reg:CC_NZ CC_REGNUM)
         (compare:CC_NZ (and:SI
                         (match_operand:SI 1 "register_operand" "0,0,d,d")
-                        (match_operand:SI 2 "arith_operand" "K,Q,M,d"))
+                        (match_operand:SI 2 "arith_operand" "I,K,M,d"))
                        (const_int 0)))
    (set (match_operand:SI 0 "register_operand" "=d,d,d,d")
         (and:SI (match_dup 1) (match_dup 2)))]
@@ -343,10 +451,10 @@
 {
   switch (which_alternative)
     {
-    case 0:  return \"andi.c  %0, %c2\";
-    case 1:  return \"andis.c %0, %U2\";
-    case 2:  return \"andri.c %0, %1, %c2\";
-    case 3:  return mdp_select (operands, "and", true, "");
+    case 0: return \"andis.c %0, %U2\";
+    case 1: return \"andi.c  %0, %c2";
+    case 2: return \"andri.c %0, %1, %c2\";
+    case 3: return mdp_select (operands, "and", true, "", true);
     default: gcc_unreachable ();
     }
 }
@@ -355,12 +463,12 @@
    (set_attr "mode" "SI")])
 
 (define_insn_and_split "*zero_extract_andi"
-  [(set (reg:CC_NZ CC_REGNUM)
-        (compare:CC_NZ (zero_extract:SI
-                        (match_operand:SI 0 "register_operand" "d")
-                        (match_operand:SI 1 "const_bi_operand" "")
-                        (match_operand:SI 2 "const_bi_operand" ""))
-                       (const_int 0)))]
+  [(set (reg:CC CC_REGNUM)
+        (compare:CC (zero_extract:SI
+                     (match_operand:SI 0 "register_operand" "d")
+                     (match_operand:SI 1 "const_uimm5" "")
+                     (match_operand:SI 2 "const_uimm5" ""))
+                    (const_int 0)))]
   ""
   "#"
   ""
@@ -373,26 +481,39 @@
 (define_insn "iorsi3"
   [(set (match_operand:SI 0 "register_operand" "=d,d,d,d")
         (ior:SI (match_operand:SI 1 "register_operand" "0,0,d,d")
-                (match_operand:SI 2 "arith_operand" "K,Q,M,d")))]
+                (match_operand:SI 2 "arith_operand" "I,K,M,d")))]
   ""
-  "@
-   ori     %0, %c2
-   oris    %0, %U2
-   orri    %0, %1, %c2
-   or      %0, %1, %2"
+{
+  switch (which_alternative)
+    {
+    case 0: return \"oris %0, %U2\";
+    case 1: return \"ori  %0, %c2\";
+    case 2: return \"orri %0, %1, %c2\";
+    case 3: return mdp_select (operands, "or", true, "", false);
+    default: gcc_unreachable ();
+    }
+}
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
 
 (define_insn "iorsi3_ucc"
   [(set (reg:CC_NZ CC_REGNUM)
-        (compare:CC_NZ (ior:SI (match_operand:SI 1 "register_operand" "d")
-                               (match_operand:SI 2 "register_operand" "d"))
+        (compare:CC_NZ (ior:SI
+                        (match_operand:SI 1 "register_operand" "0,0,d,d")
+                        (match_operand:SI 2 "arith_operand" "I,K,M,d"))
                        (const_int 0)))
-   (set (match_operand:SI 0 "register_operand" "=d")
+   (set (match_operand:SI 0 "register_operand" "=d,d,d,d")
         (ior:SI (match_dup 1) (match_dup 2)))]
   ""
 {
-  return mdp_select (operands, "or", true, "");
+  switch (which_alternative)
+    {
+    case 0: return \"oris.c %0, %U2\";
+    case 1: return \"ori.c  %0, %c2\";
+    case 2: return \"orri.c %0, %1, %c2\";
+    case 3: return mdp_select (operands, "or", true, "", true);
+    default: gcc_unreachable ();
+    }
 }
   [(set_attr "type" "arith")
    (set_attr "up_c" "yes")
@@ -400,11 +521,22 @@
 
 (define_insn "iorsi3_cmp"
   [(set (reg:CC_NZ CC_REGNUM)
-        (compare:CC_NZ (ior:SI (match_operand:SI 0 "register_operand" "d")
-                               (match_operand:SI 1 "register_operand" "d"))
-                       (const_int 0)))]
+        (compare:CC_NZ (ior:SI
+                        (match_operand:SI 1 "register_operand" "0,0,d,d")
+                        (match_operand:SI 2 "arith_operand" "I,K,M,d"))
+                       (const_int 0)))
+   (clobber (match_scratch:SI 0 "=d,d,d,d"))]
   ""
-  "%[        or.c    r1, %0, %1       %]"
+{
+  switch (which_alternative)
+    {
+    case 0: return \"oris.c %0, %U2\";
+    case 1: return \"ori.c  %0, %c2\";
+    case 2: return \"orri.c %0, %1, %c2\";
+    case 3: return mdp_select (operands, "or", true, "", true);
+    default: gcc_unreachable ();
+    }
+}
   [(set_attr "type" "arith")
    (set_attr "up_c" "yes")
    (set_attr "mode" "SI")])
@@ -414,7 +546,9 @@
         (xor:SI (match_operand:SI 1 "register_operand" "d")
                 (match_operand:SI 2 "register_operand" "d")))]
   ""
-  "xor     %0, %1, %2"
+{
+  return mdp_select (operands, "xor", true, "", false);
+}
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
 
@@ -427,7 +561,7 @@
         (xor:SI (match_dup 1) (match_dup 2)))]
   ""
 {
-  return mdp_select (operands, "xor", true, "");
+  return mdp_select (operands, "xor", true, "", true);
 }
   [(set_attr "type" "arith")
    (set_attr "up_c" "yes")
@@ -435,11 +569,14 @@
 
 (define_insn "xorsi3_cmp"
   [(set (reg:CC_NZ CC_REGNUM)
-        (compare:CC_NZ (xor:SI (match_operand:SI 0 "register_operand" "d")
-                               (match_operand:SI 1 "register_operand" "d"))
-                       (const_int 0)))]
+        (compare:CC_NZ (xor:SI (match_operand:SI 1 "register_operand" "d")
+                               (match_operand:SI 2 "register_operand" "d"))
+                       (const_int 0)))
+   (clobber (match_scratch:SI 0 "=d"))]
   ""
-  "%[        xor.c   r1, %0, %1       %]"
+{
+  return mdp_select (operands, "xor", true, "", true);
+}
   [(set_attr "type" "arith")
    (set_attr "up_c" "yes")
    (set_attr "mode" "SI")])
@@ -459,20 +596,7 @@
   [(set_attr "type" "arith,load")
    (set_attr "mode" "SI")])
 
-(define_insn "extendqisi2_cmp"
-  [(set (reg:CC_N CC_REGNUM)
-        (compare:CC_N (ashiftrt:SI
-                       (ashift:SI (match_operand:SI 0 "register_operand" "d")
-                                  (const_int 24))
-                       (const_int 24))
-                      (const_int 0)))]
-  ""
-  "%[        extsb.c r1, %0       %]"
-  [(set_attr "type" "arith")
-   (set_attr "up_c" "yes")
-   (set_attr "mode" "SI")])
-
-(define_insn "extendqisi2_ucc"
+(define_insn "*extendqisi2_ucc"
   [(set (reg:CC_N CC_REGNUM)
         (compare:CC_N (ashiftrt:SI
                        (ashift:SI (match_operand:SI 1 "register_operand" "d")
@@ -487,19 +611,18 @@
    (set_attr "up_c" "yes")
    (set_attr "mode" "SI")])
 
-(define_insn "zero_extendqisi2"
-  [(set (match_operand:SI 0 "register_operand""=d,d")
-        (zero_extend:SI (match_operand:QI 1 "register_operand" "d,m")))]
+(define_insn "*extendqisi2_cmp"
+  [(set (reg:CC_N CC_REGNUM)
+        (compare:CC_N (ashiftrt:SI
+                       (ashift:SI (match_operand:SI 1 "register_operand" "d")
+                                  (const_int 24))
+                       (const_int 24))
+                      (const_int 0)))
+   (clobber (match_scratch:SI 0 "=d"))]
   ""
-{
-  switch (which_alternative)
-    {
-    case 0: return \"extzb   %0, %1\";
-    case 1: return mdp_linsn (operands, MDA_BYTE, false);
-    default: gcc_unreachable ();
-    }
-}
-  [(set_attr "type" "arith, load")
+  "extsb.c %0, %1"
+  [(set_attr "type" "arith")
+   (set_attr "up_c" "yes")
    (set_attr "mode" "SI")])
 
 (define_insn "extendhisi2"
@@ -517,20 +640,7 @@
   [(set_attr "type" "arith, load")
    (set_attr "mode" "SI")])
 
-(define_insn "extendhisi2_cmp"
-  [(set (reg:CC_N CC_REGNUM)
-        (compare:CC_N (ashiftrt:SI
-                       (ashift:SI (match_operand:SI 0 "register_operand" "d")
-                                  (const_int 16))
-                       (const_int 16))
-                      (const_int 0)))]
-  ""
-  "%[        extsh.c r1, %0       %]"
-  [(set_attr "type" "arith")
-   (set_attr "up_c" "yes")
-   (set_attr "mode" "SI")])
-
-(define_insn "extendhisi2_ucc"
+(define_insn "*extendhisi2_ucc"
   [(set (reg:CC_N CC_REGNUM)
         (compare:CC_N (ashiftrt:SI
                        (ashift:SI (match_operand:SI 1 "register_operand" "d")
@@ -541,6 +651,64 @@
        (sign_extend:SI (match_operand:HI 2 "register_operand" "0")))]
   ""
   "extsh.c %0, %1"
+  [(set_attr "type" "arith")
+   (set_attr "up_c" "yes")
+   (set_attr "mode" "SI")])
+
+(define_insn "*extendhisi2_cmp"
+  [(set (reg:CC_N CC_REGNUM)
+        (compare:CC_N (ashiftrt:SI
+                       (ashift:SI (match_operand:SI 1 "register_operand" "d")
+                                  (const_int 16))
+                       (const_int 16))
+                      (const_int 0)))
+   (clobber (match_scratch:SI 0 "=d"))]
+  ""
+  "extsh.c %0, %1"
+  [(set_attr "type" "arith")
+   (set_attr "up_c" "yes")
+   (set_attr "mode" "SI")])
+
+(define_insn "zero_extendqisi2"
+  [(set (match_operand:SI 0 "register_operand" "=d,d")
+        (zero_extend:SI (match_operand:QI 1 "nonimmediate_operand" "d,m")))]
+  ""
+{
+  switch (which_alternative)
+    {
+    case 0: return \"extzb   %0, %1\";
+    case 1: return mdp_linsn (operands, MDA_BYTE, false);
+    default: gcc_unreachable ();
+    }
+  }
+  [(set_attr "type" "arith, load")
+   (set_attr "mode" "SI")])
+
+(define_insn "*zero_extendqisi2_ucc"
+  [(set (reg:CC_N CC_REGNUM)
+        (compare:CC_N (lshiftrt:SI
+                       (ashift:SI (match_operand:SI 1 "register_operand" "d")
+                                  (const_int 24))
+                       (const_int 24))
+                      (const_int 0)))
+   (set (match_operand:SI 0 "register_operand" "=d")
+        (zero_extend:SI (match_operand:QI 2 "register_operand" "0")))]
+  ""
+  "extzb.c %0, %1"
+  [(set_attr "type" "arith")
+   (set_attr "up_c" "yes")
+   (set_attr "mode" "SI")])
+
+(define_insn "*zero_extendqisi2_cmp"
+  [(set (reg:CC_N CC_REGNUM)
+        (compare:CC_N (lshiftrt:SI
+                       (ashift:SI (match_operand:SI 1 "register_operand" "d")
+                                  (const_int 24))
+                       (const_int 24))
+                      (const_int 0)))
+   (clobber (match_scratch:SI 0 "=d"))]
+  ""
+  "extzb.c %0, %1"
   [(set_attr "type" "arith")
    (set_attr "up_c" "yes")
    (set_attr "mode" "SI")])
@@ -560,6 +728,35 @@
   [(set_attr "type" "arith, load")
    (set_attr "mode" "SI")])
 
+(define_insn "*zero_extendhisi2_ucc"
+  [(set (reg:CC_N CC_REGNUM)
+        (compare:CC_N (lshiftrt:SI
+                       (ashift:SI (match_operand:SI 1 "register_operand" "d")
+                                  (const_int 16))
+                       (const_int 16))
+                      (const_int 0)))
+  (set (match_operand:SI 0 "register_operand" "=d")
+       (zero_extend:SI (match_operand:HI 2 "register_operand" "0")))]
+  ""
+  "extzh.c %0, %1"
+  [(set_attr "type" "arith")
+   (set_attr "up_c" "yes")
+   (set_attr "mode" "SI")])
+
+(define_insn "*zero_extendhisi2_cmp"
+  [(set (reg:CC_N CC_REGNUM)
+        (compare:CC_N (lshiftrt:SI
+                       (ashift:SI (match_operand:SI 1 "register_operand" "d")
+                                  (const_int 16))
+                       (const_int 16))
+                      (const_int 0)))
+   (clobber (match_scratch:SI 0 "=d"))]
+  ""
+  "extzh.c %0, %1"
+  [(set_attr "type" "arith")
+   (set_attr "up_c" "yes")
+   (set_attr "mode" "SI")])
+
 (define_insn "mulsi3"
   [(set (match_operand:SI 0 "register_operand" "=l")
         (mult:SI (match_operand:SI 1 "register_operand" "d")
@@ -572,7 +769,8 @@
 
 (define_insn "mulsidi3"
   [(set (match_operand:DI 0 "register_operand" "=x")
-        (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "d"))
+        (mult:DI (sign_extend:DI
+                  (match_operand:SI 1 "register_operand" "d"))
                  (sign_extend:DI
                   (match_operand:SI 2 "register_operand" "d"))))]
   "!TARGET_SCORE5U"
@@ -582,7 +780,8 @@
 
 (define_insn "umulsidi3"
   [(set (match_operand:DI 0 "register_operand" "=x")
-        (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "d"))
+        (mult:DI (zero_extend:DI
+                  (match_operand:SI 1 "register_operand" "d"))
                  (zero_extend:DI
                   (match_operand:SI 2 "register_operand" "d"))))]
   "!TARGET_SCORE5U"
@@ -635,8 +834,8 @@
 {
   switch (which_alternative)
     {
-    case 0: return mdp_select (operands, "slli", false, "c");
-    case 1: return mdp_select (operands, "sll", false, "");
+    case 0: return mdp_select (operands, "slli", false, "c", true);
+    case 1: return mdp_select (operands, "sll", false, "", true);
     default: gcc_unreachable ();
     }
 }
@@ -647,13 +846,19 @@
 (define_insn "ashlsi3_cmp"
   [(set (reg:CC_NZ CC_REGNUM)
         (compare:CC_NZ (ashift:SI
-                        (match_operand:SI 0 "register_operand" "d,d")
-                        (match_operand:SI 1 "arith_operand" "J,d"))
-                       (const_int 0)))]
+                        (match_operand:SI 1 "register_operand" "d,d")
+                        (match_operand:SI 2 "arith_operand" "J,d"))
+                       (const_int 0)))
+   (clobber (match_scratch:SI 0 "=d,d"))]
   ""
-  "@
-   %[        slli.c  r1, %0, %c1      %]
-   %[        sll.c   r1, %0, %1       %]"
+{
+  switch (which_alternative)
+    {
+    case 0: return mdp_select (operands, "slli", false, "c", true);
+    case 1: return mdp_select (operands, "sll", false, "", true);
+    default: gcc_unreachable ();
+    }
+}
   [(set_attr "type" "arith")
    (set_attr "up_c" "yes")
    (set_attr "mode" "SI")])
@@ -682,7 +887,7 @@
   switch (which_alternative)
     {
     case 0: return \"srai.c  %0, %1, %c2\";
-    case 1: return mdp_select (operands, "sra", false, "");
+    case 1: return mdp_select (operands, "sra", false, "", true);
     default: gcc_unreachable ();
     }
 }
@@ -693,48 +898,19 @@
 (define_insn "ashrsi3_cmp"
   [(set (reg:CC_NZ CC_REGNUM)
         (compare:CC_NZ (ashiftrt:SI
-                        (match_operand:SI 0 "register_operand" "d,d")
-                        (match_operand:SI 1 "arith_operand" "J,d"))
-                       (const_int 0)))]
-  ""
-  "@
-   %[        srai.c  r1, %0, %c1      %]
-   %[        sra.c   r1, %0, %1       %]"
-  [(set_attr "type" "arith")
-   (set_attr "up_c" "yes")
-   (set_attr "mode" "SI")])
-
-(define_insn "ashrsi3_ucc_n"
-  [(set (reg:CC_N CC_REGNUM)
-        (compare:CC_N (ashiftrt:SI
-                       (match_operand:SI 1 "register_operand" "d,d")
-                       (match_operand:SI 2 "arith_operand" "J,d"))
-                      (const_int 0)))
-   (set (match_operand:SI 0 "register_operand" "=d,d")
-        (ashiftrt:SI (match_dup 1) (match_dup 2)))]
+                        (match_operand:SI 1 "register_operand" "d,d")
+                        (match_operand:SI 2 "arith_operand" "J,d"))
+                       (const_int 0)))
+   (clobber (match_scratch:SI 0 "=d,d"))]
   ""
 {
   switch (which_alternative)
     {
     case 0: return \"srai.c  %0, %1, %c2\";
-    case 1: return mdp_select (operands, "sra", false, "");
+    case 1: return mdp_select (operands, "sra", false, "", true);
     default: gcc_unreachable ();
     }
 }
-  [(set_attr "type" "arith")
-   (set_attr "up_c" "yes")
-   (set_attr "mode" "SI")])
-
-(define_insn "ashrsi3_cmp_n"
-  [(set (reg:CC_N CC_REGNUM)
-        (compare:CC_N (ashiftrt:SI
-                       (match_operand:SI 0 "register_operand" "d,d")
-                       (match_operand:SI 1 "arith_operand" "J,d"))
-                      (const_int 0)))]
-  ""
-  "@
-   %[        srai.c  r1, %0, %c1      %]
-   %[        sra.c   r1, %0, %1       %]"
   [(set_attr "type" "arith")
    (set_attr "up_c" "yes")
    (set_attr "mode" "SI")])
@@ -762,8 +938,8 @@
 {
   switch (which_alternative)
     {
-    case 0: return mdp_select (operands, "srli", false, "c");
-    case 1: return mdp_select (operands, "srl", false, "");
+    case 0: return mdp_select (operands, "srli", false, "c", true);
+    case 1: return mdp_select (operands, "srl", false, "", true);
     default: gcc_unreachable ();
     }
 }
@@ -774,13 +950,19 @@
 (define_insn "lshrsi3_cmp"
   [(set (reg:CC_NZ CC_REGNUM)
         (compare:CC_NZ (lshiftrt:SI
-                        (match_operand:SI 0 "register_operand" "d,d")
-                        (match_operand:SI 1 "arith_operand" "J,d"))
-                       (const_int 0)))]
+                        (match_operand:SI 1 "register_operand" "d,d")
+                        (match_operand:SI 2 "arith_operand" "J,d"))
+                       (const_int 0)))
+   (clobber (match_scratch:SI 0 "=d,d"))]
   ""
-  "@
-   %[        srli.c  r1, %0, %c1      %]
-   %[        srl.c   r1, %0, %1       %]"
+{
+  switch (which_alternative)
+    {
+    case 0: return mdp_select (operands, "srli", false, "c", true);
+    case 1: return mdp_select (operands, "srl", false, "", true);
+    default: gcc_unreachable ();
+    }
+}
   [(set_attr "type" "arith")
    (set_attr "up_c" "yes")
    (set_attr "mode" "SI")])
@@ -793,11 +975,24 @@
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
 
+(define_insn "*negsi2_cmp"
+  [(set (reg:CC_NZ CC_REGNUM)
+        (compare:CC_NZ (neg:SI (match_operand:SI 1 "register_operand" "e,d"))
+                       (const_int 0)))
+   (clobber (match_scratch:SI 0 "=e,d"))]
+  ""
+  "@
+   neg!    %0, %1
+   neg.c   %0, %1"
+  [(set_attr "type" "arith")
+   (set_attr "up_c" "yes")
+   (set_attr "mode" "SI")])
+
 (define_insn "negsi2_ucc"
-  [(set (reg:CC CC_REGNUM)
-        (compare:CC (neg:SI (match_operand:SI 1 "register_operand" "*e,d"))
-                    (const_int 0)))
-   (set (match_operand:SI 0 "register_operand" "=*e,d")
+  [(set (reg:CC_NZ CC_REGNUM)
+        (compare:CC_NZ (neg:SI (match_operand:SI 1 "register_operand" "e,d"))
+                       (const_int 0)))
+   (set (match_operand:SI 0 "register_operand" "=e,d")
         (neg:SI (match_dup 1)))]
   ""
   "@
@@ -817,9 +1012,9 @@
 
 (define_insn "one_cmplsi2_ucc"
   [(set (reg:CC_NZ CC_REGNUM)
-        (compare:CC_NZ (not:SI (match_operand:SI 1 "register_operand" "*e,d"))
+        (compare:CC_NZ (not:SI (match_operand:SI 1 "register_operand" "e,d"))
                        (const_int 0)))
-   (set (match_operand:SI 0 "register_operand" "=*e,d")
+   (set (match_operand:SI 0 "register_operand" "=e,d")
         (not:SI (match_dup 1)))]
   ""
   "@
@@ -831,12 +1026,13 @@
 
 (define_insn "one_cmplsi2_cmp"
   [(set (reg:CC_NZ CC_REGNUM)
-        (compare:CC_NZ (not:SI (match_operand:SI 0 "register_operand" "*e,d"))
-                       (const_int 0)))]
+        (compare:CC_NZ (not:SI (match_operand:SI 1 "register_operand" "e,d"))
+                       (const_int 0)))
+   (clobber (match_scratch:SI 0 "=e,d"))]
   ""
   "@
-   %[        not!    r1, %0       %]
-   %[        not.c   r1, %0       %]"
+   not!    %0, %1
+   not.c   %0, %1"
   [(set_attr "type" "arith")
    (set_attr "up_c" "yes")
    (set_attr "mode" "SI")])
@@ -877,8 +1073,8 @@
 
 (define_insn "cmpsi_nz"
   [(set (reg:CC_NZ CC_REGNUM)
-        (compare:CC_NZ (match_operand:SI 0 "register_operand" "d,*e,d")
-                       (match_operand:SI 1 "arith_operand" "L,*e,d")))]
+        (compare:CC_NZ (match_operand:SI 0 "register_operand" "d,e,d")
+                       (match_operand:SI 1 "arith_operand" "L,e,d")))]
   ""
   "@
    cmpi.c  %0, %c1
@@ -890,8 +1086,8 @@
 
 (define_insn "cmpsi_n"
   [(set (reg:CC_N CC_REGNUM)
-        (compare:CC_N (match_operand:SI 0 "register_operand" "d,*e,d")
-                      (match_operand:SI 1 "arith_operand" "L,*e,d")))]
+        (compare:CC_N (match_operand:SI 0 "register_operand" "d,e,d")
+                      (match_operand:SI 1 "arith_operand" "L,e,d")))]
   ""
   "@
    cmpi.c  %0, %c1
@@ -901,10 +1097,23 @@
     (set_attr "up_c" "yes")
     (set_attr "mode" "SI")])
 
+(define_insn "*cmpsi_to_addsi"
+  [(set (reg:CC_NZ CC_REGNUM)
+        (compare:CC_NZ (match_operand:SI 1 "register_operand" "0,d")
+                       (neg:SI (match_operand:SI 2 "register_operand" "e,d"))))
+   (clobber (match_scratch:SI 0 "=e,d"))]
+  ""
+  "@
+   add!    %0, %2
+   add.c   %0, %1, %2"
+   [(set_attr "type" "cmp")
+    (set_attr "up_c" "yes")
+    (set_attr "mode" "SI")])
+
 (define_insn "cmpsi_cc"
   [(set (reg:CC CC_REGNUM)
-        (compare:CC (match_operand:SI 0 "register_operand" "d,*e,d")
-                    (match_operand:SI 1 "arith_operand" "L,*e,d")))]
+        (compare:CC (match_operand:SI 0 "register_operand" "d,e,d")
+                    (match_operand:SI 1 "arith_operand" "L,e,d")))]
   ""
   "@
    cmpi.c  %0, %c1
@@ -1078,17 +1287,17 @@
    (clobber (reg:SI RT_REGNUM))]
   "SIBLING_CALL_P (insn)"
 {
-  if (!flag_pic) 
-    switch (which_alternative) 
+  if (!flag_pic)
+    switch (which_alternative)
       {
       case 0: return \"br%S0   %0\";
       case 1: return \"j       %0\";
       default: gcc_unreachable ();
       }
   else
-    switch (which_alternative) 
+    switch (which_alternative)
       {
-      case 0: return \"mv      r29, %0\;.cpadd  r29\;br      r29\";
+      case 0: return \"mv      r29, %0\;br      r29\";
       case 1: return \"la      r29, %0\;br      r29\";
       default: gcc_unreachable ();
       }
@@ -1112,17 +1321,17 @@
    (clobber (reg:SI RT_REGNUM))]
   "SIBLING_CALL_P (insn)"
 {
-  if (!flag_pic) 
-    switch (which_alternative) 
+  if (!flag_pic)
+    switch (which_alternative)
       {
       case 0: return \"br%S1   %1\";
       case 1: return \"j       %1\";
       default: gcc_unreachable ();
       }
   else
-    switch (which_alternative) 
+    switch (which_alternative)
       {
-      case 0: return \"mv      r29, %1\;.cpadd  r29\;br      r29\";
+      case 0: return \"mv      r29, %1\;br      r29\";
       case 1: return \"la      r29, %1\;br      r29\";
       default: gcc_unreachable ();
       }
@@ -1154,7 +1363,7 @@
   else
      switch (which_alternative)
       {
-      case 0: return \"mv      r29, %0\;.cpadd  r29\;brl     r29\";
+      case 0: return \"mv      r29, %0\;brl     r29\";
       case 1: return \"la      r29, %0\;brl     r29\";
       default: gcc_unreachable ();
       }
@@ -1163,7 +1372,7 @@
 
 (define_expand "call_value"
   [(parallel [(set (match_operand 0 "" "")
-              (call (match_operand 1 "" "") (match_operand 2 "" "")))
+                   (call (match_operand 1 "" "") (match_operand 2 "" "")))
               (use (match_operand 3 "" ""))])]
   ""
 {
@@ -1188,7 +1397,7 @@
   else
     switch (which_alternative)
       {
-      case 0: return \"mv      r29, %1\;.cpadd  r29\;brl     r29\";
+      case 0: return \"mv      r29, %1\;brl     r29\";
       case 1: return \"la      r29, %1\;brl     r29\";
       default: gcc_unreachable ();
       }
@@ -1277,13 +1486,59 @@
 )
 
 (define_insn "cpload"
-  [(unspec:SI [(const_int 1)] 1)]
+  [(unspec_volatile:SI [(const_int 1)] CPLOAD)]
   "flag_pic"
   ".cpload r29"
 )
 
-(define_insn "cprestore"
-  [(unspec:SI [(match_operand:SI 0 "" "")] 2)]
+(define_insn "cprestore_use_fp"
+  [(unspec_volatile:SI [(match_operand:SI 0 "" "")] CPRESTORE)
+   (use (reg:SI FP_REGNUM))]
   "flag_pic"
-  ".cprestore %0"
+  ".cprestore r2, %0"
 )
+
+(define_insn "cprestore_use_sp"
+  [(unspec_volatile:SI [(match_operand:SI 0 "" "")] CPRESTORE)
+   (use (reg:SI SP_REGNUM))]
+  "flag_pic"
+  ".cprestore r0, %0"
+)
+
+(define_expand "doloop_end"
+  [(use (match_operand 0 "" ""))    ; loop pseudo
+   (use (match_operand 1 "" ""))    ; iterations; zero if unknown
+   (use (match_operand 2 "" ""))    ; max iterations
+   (use (match_operand 3 "" ""))    ; loop level
+   (use (match_operand 4 "" ""))]   ; label
+  ""
+  {
+    if (INTVAL (operands[3]) > 1)
+      FAIL;
+
+    if (GET_MODE (operands[0]) == SImode)
+      {
+        rtx sr0 = gen_rtx_REG (SImode, CN_REGNUM);
+        emit_jump_insn (gen_doloop_end_si (sr0, operands[4]));
+      }
+    else
+      FAIL;
+
+    DONE;
+  })
+
+(define_insn "doloop_end_si"
+  [(set (pc)
+        (if_then_else
+         (ne (match_operand:SI 0 "sr0_operand" "")
+             (const_int 0))
+         (label_ref (match_operand 1 "" ""))
+         (pc)))
+   (set (match_dup 0)
+        (plus:SI (match_dup 0)
+                 (const_int -1)))
+   (clobber (reg:CC CC_REGNUM))
+]
+  ""
+  "bcnz %1"
+  [(set_attr "type" "branch")])

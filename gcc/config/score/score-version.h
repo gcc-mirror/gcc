@@ -18,4 +18,4 @@
    the Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.  */
 
-#define SCORE_GCC_VERSION "1.1"
+#define SCORE_GCC_VERSION "1.2"
