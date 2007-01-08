@@ -277,7 +277,7 @@
 )
 
 ;; Thumb-2 always has load/store halfword instructions, so we can avoid a lot
-;; of the messyness assocuated with the ARM patterns.
+;; of the messyness associated with the ARM patterns.
 (define_insn "*thumb2_movhi_insn"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,m,r")    
 	(match_operand:HI 1 "general_operand"      "rI,n,r,m"))]
@@ -858,7 +858,7 @@
   "TARGET_THUMB2"
   "*
     /* ??? Output both instructions unconditionally, otherwise the conditional
-       executon insn counter gets confused.
+       execution insn counter gets confused.
     if (REGNO (operands[1])
         != REGNO (operands[0]) + (WORDS_BIG_ENDIAN ? 1 : 0)) */
       output_asm_insn (\"mov%?\\t%Q0, %1\", operands);
@@ -890,7 +890,7 @@
   "TARGET_THUMB2"
   "*
     /* ??? Output both instructions unconditionally, otherwise the conditional
-       executon insn counter gets confused.
+       execution insn counter gets confused.
     if (REGNO (operands[1])
         != REGNO (operands[0]) + (WORDS_BIG_ENDIAN ? 1 : 0)) */
       output_asm_insn (\"mov%?\\t%Q0, %1\", operands);

@@ -1881,7 +1881,7 @@ typedef struct
 #define ASM_OUTPUT_LABELREF(FILE, NAME)		\
    arm_asm_output_labelref (FILE, NAME)
 
-/* Output IT instructions for conditonally executed Thumb-2 instructions.  */
+/* Output IT instructions for conditionally executed Thumb-2 instructions.  */
 #define ASM_OUTPUT_OPCODE(STREAM, PTR)	\
   if (TARGET_THUMB2)			\
     thumb2_asm_output_opcode (STREAM);
@@ -1962,7 +1962,7 @@ typedef struct
    The usual definition accepts all pseudo regs; the other rejects
    them unless they have been allocated suitable hard regs.
    The symbol REG_OK_STRICT causes the latter definition to be used.
-   Thumb-2 has the same restictions as arm.  */
+   Thumb-2 has the same restrictions as arm.  */
 #ifndef REG_OK_STRICT
 
 #define ARM_REG_OK_FOR_BASE_P(X)		\

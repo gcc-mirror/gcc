@@ -1,3 +1,9 @@
+2007-01-08  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/arm/arm.c, config/arm/arm.h, config/arm/arm.md,
+	config/arm/thumb2.md: Fix comment typos.
+	* doc/extend.texi: Fix a typo.
+
 2007-01-07  Eric Christopher  <echristo@apple.com>
 
 	* configure.ac: Check for __stack_chk_fail for darwin.
