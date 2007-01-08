@@ -1,3 +1,12 @@
+2007-01-08  Mark Shinwell  <shinwell@codesourcery.com>
+
+	* call.c (standard_conversion): Pass flag to
+	vector_types_convertible_p to disallow emission of note.
+	* typeck.c (convert_for_assignment): Pass flag to
+	vector_types_convertible_p to allow emission of note.
+	(ptr_reasonably_similar): Pass flag to vector_types_convertible_p
+	to disallow emission of note.
+
 2007-01-07  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/28986

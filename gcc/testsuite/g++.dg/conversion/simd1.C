@@ -5,9 +5,9 @@
 
 #define vector __attribute__((vector_size(16)))
 
-vector signed int vld (int a1, const vector signed int *a2) { return *a2; } /* { dg-error "near match" } */
+vector signed int vld (int a1, const vector signed int *a2) { return *a2; } /* { dg-error "vld" } */
 /* { dg-warning "vector returned by ref" "" { target { powerpc*-*-linux* && ilp32 } }  8 } */
-vector signed short vld (int a1, const vector signed short *a2) { return *a2; } /* { dg-error "near match" } */
+vector signed short vld (int a1, const vector signed short *a2) { return *a2; } /* { dg-error "vld" } */
 
 extern int i;
 extern vector signed short vss;
@@ -17,7 +17,7 @@ extern const vector signed short *cvssp;
 
 void foo ()
 {
-  vss = vld(i, vscp);        /* { dg-error "no match" } */
+  vss = vld(i, vscp);        /* { dg-error "no matching function for call" } */
   vss = vld(i, vssp);
   vss = vld(i, cvssp);
 }

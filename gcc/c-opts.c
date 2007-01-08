@@ -705,6 +705,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       flag_implicit_templates = value;
       break;
 
+    case OPT_flax_vector_conversions:
+      flag_lax_vector_conversions = value;
+      break;
+
     case OPT_fms_extensions:
       flag_ms_extensions = value;
       break;
