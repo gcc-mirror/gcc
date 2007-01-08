@@ -1,3 +1,9 @@
+2007-01-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/23603
+	* gcc.dg/tree-ssa/vrp31.c: New testcase.
+	* gcc.dg/tree-ssa/vrp32.c: Likewise.
+
 2007-01-08  Mark Shinwell  <shinwell@codesourcery.com>
 
 	* gcc.target/i386/20020531-1.c: Use "char" not "unsigned char"
