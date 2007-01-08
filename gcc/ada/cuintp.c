@@ -62,7 +62,7 @@ build_cst_from_int (tree type, HOST_WIDE_INT low)
   if (TREE_CODE (type) == REAL_TYPE)
     return convert (type, build_int_cst (NULL_TREE, low));
   else
-    return force_fit_type (build_int_cst (type, low), false, false, false);
+    return build_int_cst_type (type, low);
 }
 
 /* Similar to UI_To_Int, but return a GCC INTEGER_CST or REAL_CST node,

@@ -1234,9 +1234,8 @@ do_java_lex (YYSTYPE *java_lval)
 	}
 
       /* Sign extend the value.  */
-      value = build_int_cst_wide (long_suffix ? long_type_node : int_type_node,
-				  low, high);
-      value = force_fit_type (value, 0, false, false);
+      value = build_int_cst_wide_type (long_suffix ? long_type_node
+				       : int_type_node, low, high);
 
       if (radix != 10)
 	{

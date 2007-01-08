@@ -320,8 +320,7 @@ get_constant (JCF *jcf, int index)
 	lshift_double (num, 0, 32, 64, &lo, &hi, 0);
 	num = JPOOL_UINT (jcf, index+1);
 	add_double (lo, hi, num, 0, &lo, &hi);
-	value = build_int_cst_wide (long_type_node, lo, hi);
-	value = force_fit_type (value, 0, false, false);
+	value = build_int_cst_wide_type (long_type_node, lo, hi);
 	break;
       }
 

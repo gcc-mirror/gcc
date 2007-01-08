@@ -10808,13 +10808,11 @@ fold_builtin_object_size (tree arglist)
      if there are any side-effects, it returns (size_t) -1 for types 0 and 1
      and (size_t) 0 for types 2 and 3.  */
   if (TREE_SIDE_EFFECTS (ptr))
-    return fold_convert (size_type_node,
-			 object_size_type < 2
-			 ? integer_minus_one_node : integer_zero_node);
+    return build_int_cst_type (size_type_node, object_size_type < 2 ? -1 : 0);
 
   if (TREE_CODE (ptr) == ADDR_EXPR)
     ret = build_int_cstu (size_type_node,
-			compute_builtin_object_size (ptr, object_size_type));
+			  compute_builtin_object_size (ptr, object_size_type));
 
   else if (TREE_CODE (ptr) == SSA_NAME)
     {
@@ -10831,9 +10829,10 @@ fold_builtin_object_size (tree arglist)
 
   if (ret)
     {
-      ret = force_fit_type (ret, -1, false, false);
-      if (TREE_CONSTANT_OVERFLOW (ret))
-	ret = 0;
+      unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (ret);
+      HOST_WIDE_INT high = TREE_INT_CST_HIGH (ret);
+      if (fit_double_type (low, high, &low, &high, TREE_TYPE (ret)))
+	ret = NULL_TREE;
     }
 
   return ret;

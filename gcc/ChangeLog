@@ -1,3 +1,20 @@
+2007-01-08  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (build_int_cst_wide_type): Export.
+	* tree.c (build_int_cst_wide_type): New function.
+	(build_int_cst_wide): Fix comment.
+	* builtins.c (fold_builtin_object_size): Use build_int_cst
+	to build -1 or 0 of the correct type.  Use fit_double_type
+	to check for overflow.
+	* fold-const.c (optimize_bit_field_compare): Use build_int_cst_type
+	to build the mask.
+	(decode_field_reference): Likewise.
+	(all_ones_mask_p): Likewise.
+	(native_interpret_int): Use build_int_cst_wide_type.
+	(fold_binary): Use build_int_cst_type to build an all-ones
+	value.
+	* stor-layout.c (set_sizetype): Use build_int_cst_wide_type.
+
 2007-01-08  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/pa/t-pa64 (libgcc_stub.a): Use $(T).
