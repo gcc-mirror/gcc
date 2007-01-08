@@ -1,3 +1,19 @@
+2007-01-08  Roger Sayle  <roger@eyesopen.com>
+
+	* trans-array.c (constant_array_constructor_p): New function to
+	determine whether an array constructor consists only of constant
+	elements, and if so return it's size.
+	(gfc_build_constant_array_constructor): Construct a statically
+	initialized gfortran array for a given EXPR_ARRAY.
+	(gfc_trans_constant_array_constructor): Efficiently scalarize
+	a constant array constructor.
+	(gfc_trans_array_constructor):  Tidy up use of CONST_STRING.
+	Special case scalarization of constant array constructors, all of
+	whose elements are specified, using constant_array_constructor_p 
+	and gfc_trans_constant_array_constructor.
+	(gfc_conv_scalarized_array_ref): Check whetger info->offset is zero
+	before adding it to index, to avoid creating a NON_LVALUE_EXPR.
+
 2007-01-08  Kazu Hirata  <kazu@codesourcery.com>
 
 	gfortran.texi: Fix typos.

@@ -1463,6 +1463,119 @@ get_array_ctor_strlen (gfc_constructor * c, tree * len)
   return is_const;
 }
 
+/* Check whether the array constructor C consists entirely of constant
+   elements, and if so returns the number of those elements, otherwise
+   return zero.  Note, an empty or NULL array constructor returns zero.  */
+
+static unsigned HOST_WIDE_INT
+constant_array_constructor_p (gfc_constructor * c)
+{
+  unsigned HOST_WIDE_INT nelem = 0;
+
+  while (c)
+    {
+      if (c->iterator
+	  || c->expr->rank > 0
+	  || c->expr->expr_type != EXPR_CONSTANT)
+	return 0;
+      c = c->next;
+      nelem++;
+    }
+  return nelem;
+}
+
+
+/* Given EXPR, the constant array constructor specified by an EXPR_ARRAY,
+   and the tree type of it's elements, TYPE, return a static constant
+   variable that is compile-time initialized.  */
+
+static tree
+gfc_build_constant_array_constructor (gfc_expr * expr, tree type)
+{
+  tree tmptype, list, init, tmp;
+  HOST_WIDE_INT nelem;
+  gfc_constructor *c;
+  gfc_array_spec as;
+  gfc_se se;
+
+
+  /* First traverse the constructor list, converting the constants
+     to tree to build an initializer.  */
+  nelem = 0;
+  list = NULL_TREE;
+  c = expr->value.constructor;
+  while (c)
+    {
+      gfc_init_se (&se, NULL);
+      gfc_conv_constant (&se, c->expr);
+      if (c->expr->ts.type == BT_CHARACTER
+	  && POINTER_TYPE_P (type))
+	se.expr = gfc_build_addr_expr (pchar_type_node, se.expr);
+      list = tree_cons (NULL_TREE, se.expr, list);
+      c = c->next;
+      nelem++;
+    }
+
+  /* Next detemine the tree type for the array.  We use the gfortran
+     front-end's gfc_get_nodesc_array_type in order to create a suitable
+     GFC_ARRAY_TYPE_P that may be used by the scalarizer.  */
+
+  memset (&as, 0, sizeof (gfc_array_spec));
+
+  as.rank = 1;
+  as.type = AS_EXPLICIT;
+  as.lower[0] = gfc_int_expr (0);
+  as.upper[0] = gfc_int_expr (nelem - 1);
+  tmptype = gfc_get_nodesc_array_type (type, &as, 3);
+
+  init = build_constructor_from_list (tmptype, nreverse (list));
+
+  TREE_CONSTANT (init) = 1;
+  TREE_INVARIANT (init) = 1;
+  TREE_STATIC (init) = 1;
+
+  tmp = gfc_create_var (tmptype, "A");
+  TREE_STATIC (tmp) = 1;
+  TREE_CONSTANT (tmp) = 1;
+  TREE_INVARIANT (tmp) = 1;
+  TREE_READONLY (tmp) = 1;
+  DECL_INITIAL (tmp) = init;
+
+  return tmp;
+}
+
+
+/* Translate a constant EXPR_ARRAY array constructor for the scalarizer.
+   This mostly initializes the scalarizer state info structure with the
+   appropriate values to directly use the array created by the function
+   gfc_build_constant_array_constructor.  */
+
+static void
+gfc_trans_constant_array_constructor (gfc_loopinfo * loop,
+				      gfc_ss * ss, tree type)
+{
+  gfc_ss_info *info;
+  tree tmp;
+
+  tmp = gfc_build_constant_array_constructor (ss->expr, type);
+
+  info = &ss->data.info;
+
+  info->descriptor = tmp;
+  info->data = build_fold_addr_expr (tmp);
+  info->offset = fold_build1 (NEGATE_EXPR, gfc_array_index_type,
+			      loop->from[0]);
+
+  info->delta[0] = gfc_index_zero_node;
+  info->start[0] = gfc_index_zero_node;
+  info->end[0] = gfc_index_zero_node;
+  info->stride[0] = gfc_index_one_node;
+  info->dim[0] = 0;
+
+  if (info->dimen > loop->temp_dim)
+    loop->temp_dim = info->dimen;
+}
+
 
 /* Array constructors are handled by constructing a temporary, then using that
    within the scalarization loop.  This is not optimal, but seems by far the
@@ -1476,7 +1589,6 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
   tree offsetvar;
   tree desc;
   tree type;
-  bool const_string;
   bool dynamic;
 
   ss->data.info.dimen = loop->dimen;
@@ -1484,7 +1596,7 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
   c = ss->expr->value.constructor;
   if (ss->expr->ts.type == BT_CHARACTER)
     {
-      const_string = get_array_ctor_strlen (c, &ss->string_length);
+      bool const_string = get_array_ctor_strlen (c, &ss->string_length);
       if (!ss->string_length)
 	gfc_todo_error ("complex character array constructors");
 
@@ -1493,10 +1605,7 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
 	type = build_pointer_type (type);
     }
   else
-    {
-      const_string = TRUE;
-      type = gfc_typenode_for_spec (&ss->expr->ts);
-    }
+    type = gfc_typenode_for_spec (&ss->expr->ts);
 
   /* See if the constructor determines the loop bounds.  */
   dynamic = false;
@@ -1516,6 +1625,25 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
       mpz_sub_ui (size, size, 1);
       loop->to[0] = gfc_conv_mpz_to_tree (size, gfc_index_integer_kind);
       mpz_clear (size);
+    }
+
+  /* Special case constant array constructors.  */
+  if (!dynamic
+      && loop->dimen == 1
+      && INTEGER_CST_P (loop->from[0])
+      && INTEGER_CST_P (loop->to[0]))
+    {
+      unsigned HOST_WIDE_INT nelem = constant_array_constructor_p (c);
+      if (nelem > 0)
+	{
+	  tree diff = fold_build2 (MINUS_EXPR, gfc_array_index_type,
+				   loop->to[0], loop->from[0]);
+	  if (compare_tree_int (diff, nelem - 1) == 0)
+	    {
+	      gfc_trans_constant_array_constructor (loop, ss, type);
+	      return;
+	    }
+	}
     }
 
   gfc_trans_create_temp_array (&loop->pre, &loop->post, loop, &ss->data.info,
@@ -2045,7 +2173,8 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
 				       info->stride0);
   /* Add the offset for this dimension to the stored offset for all other
      dimensions.  */
-  index = fold_build2 (PLUS_EXPR, gfc_array_index_type, index, info->offset);
+  if (!integer_zerop (info->offset))
+    index = fold_build2 (PLUS_EXPR, gfc_array_index_type, index, info->offset);
 
   tmp = build_fold_indirect_ref (info->data);
   se->expr = gfc_build_array_ref (tmp, index);
