@@ -1,3 +1,9 @@
+2007-01-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* interface.c, intrinsic.c, gfortranspec.c, io.c, f95-lang.c,
+	iresolve.c, match.c:  Update Copyright years.  Whitespace.
+
+
 2007-01-08  Richard Guenther  <rguenther@suse.de>
 
 	* trans-io.c (transfer_array_desc): Use build_int_cst instead

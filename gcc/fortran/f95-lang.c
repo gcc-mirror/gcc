@@ -1,5 +1,5 @@
 /* gfortran backend interface
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Contributed by Paul Brook.
 
@@ -238,7 +238,7 @@ gfc_expand_function (tree fndecl)
 
   tree_rest_of_compilation (fndecl);
 }
-
+
 
 /* Prepare expr to be an argument of a TRUTH_NOT_EXPR,
    or validate its data type for an `if' or `while' statement or ?..: exp.
@@ -267,8 +267,7 @@ gfc_truthvalue_conversion (tree expr)
 	  return expr;
 	}
       else if (TREE_CODE (expr) == NOP_EXPR)
-        return build1 (NOP_EXPR, boolean_type_node,
-	               TREE_OPERAND (expr, 0));
+        return build1 (NOP_EXPR, boolean_type_node, TREE_OPERAND (expr, 0));
       else
         return build1 (NOP_EXPR, boolean_type_node, expr);
 
@@ -284,6 +283,7 @@ gfc_truthvalue_conversion (tree expr)
     }
 }
 
+
 static void
 gfc_create_decls (void)
 {
@@ -295,6 +295,7 @@ gfc_create_decls (void)
 
   gfc_init_constants ();
 }
+
 
 static void
 gfc_be_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
@@ -314,7 +315,8 @@ gfc_be_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
   errorcount += errors;
   warningcount += warnings;
 }
-
+
+
 /* Initialize everything.  */
 
 static bool
@@ -353,15 +355,16 @@ gfc_print_identifier (FILE * file ATTRIBUTE_UNUSED,
 {
   return;
 }
-
+
 
 /* These functions and variables deal with binding contours.  We only
    need these functions for the list of PARM_DECLs, but we leave the
    functions more general; these are a simplified version of the
    functions from GNAT.  */
 
-/* For each binding contour we allocate a binding_level structure which records
-   the entities defined or declared in that contour. Contours include:
+/* For each binding contour we allocate a binding_level structure which
+   records the entities defined or declared in that contour.  Contours
+   include:
 
         the global one
         one for each subprogram definition
@@ -394,7 +397,8 @@ static GTY(()) struct binding_level *global_binding_level;
 
 /* Binding level structures are initialized by copying this one.  */
 static struct binding_level clear_binding_level = { NULL, NULL, NULL };
-
+
+
 /* Return nonzero if we are currently in the global binding level.  */
 
 int
@@ -457,7 +461,7 @@ poplevel (int keep, int reverse, int functionbody)
      reverse order except for PARM_DECL node, which are explicitly stored in
      the right order.  */
   decl_chain = (reverse) ? nreverse (current_binding_level->names)
-    : current_binding_level->names;
+			 : current_binding_level->names;
 
   /* If there were any declarations in the current binding level, or if this
      binding level is a function body, or if there are any nested blocks then
@@ -515,7 +519,8 @@ poplevel (int keep, int reverse, int functionbody)
 
   return block_node;
 }
-
+
+
 /* Insert BLOCK at the end of the list of subblocks of the
    current binding level.  This is used when a BIND_EXPR is expanded,
    to handle the BLOCK node inside the BIND_EXPR.  */
@@ -527,6 +532,7 @@ insert_block (tree block)
   current_binding_level->blocks
     = chainon (current_binding_level->blocks, block);
 }
+
 
 /* Records a ..._DECL node DECL as belonging to the current lexical scope.
    Returns the ..._DECL node.  */
@@ -625,6 +631,7 @@ gfc_init_decl_processing (void)
   gfc_init_types ();
 }
 
+
 /* Mark EXP saying that we need to be able to take the
    address of it; it should not be allocated in a register.
    In Fortran 95 this is only the case for variables with
@@ -632,6 +639,7 @@ gfc_init_decl_processing (void)
    likely future Cray pointer extension.
    Value is 1 if successful.  */
 /* TODO: Check/fix mark_addressable.  */
+
 bool
 gfc_mark_addressable (tree exp)
 {
@@ -659,9 +667,8 @@ gfc_mark_addressable (tree exp)
 	  {
 	    if (TREE_PUBLIC (x))
 	      {
-		error
-		  ("global register variable %qs used in nested function",
-		   IDENTIFIER_POINTER (DECL_NAME (x)));
+		error ("global register variable %qs used in nested function",
+		       IDENTIFIER_POINTER (DECL_NAME (x)));
 		return false;
 	      }
 	    pedwarn ("register variable %qs used in nested function",
@@ -702,6 +709,7 @@ gfc_mark_addressable (tree exp)
       }
 }
 
+
 /* Return the typed-based alias set for T, which may be an expression
    or a type.  Return -1 if we don't do anything special.  */
 
@@ -720,6 +728,7 @@ gfc_get_alias_set (tree t)
   return -1;
 }
 
+
 /* press the big red button - garbage (ggc) collection is on */
 
 int ggc_p = 1;
@@ -736,10 +745,10 @@ gfc_builtin_function (tree decl)
 
 
 static void
-gfc_define_builtin (const char * name,
+gfc_define_builtin (const char *name,
 		    tree type,
 		    int code,
-		    const char * library_name,
+		    const char *library_name,
 		    bool const_p)
 {
   tree decl;
@@ -773,7 +782,7 @@ gfc_define_builtin (const char * name,
 /* Create function types for builtin functions.  */
 
 static void
-build_builtin_fntypes (tree * fntype, tree type)
+build_builtin_fntypes (tree *fntype, tree type)
 {
   tree tmp;
 
@@ -788,6 +797,7 @@ build_builtin_fntypes (tree * fntype, tree type)
   tmp = tree_cons (NULL_TREE, type, tmp);
   fntype[2] = build_function_type (type, tmp);
 }
+
 
 static tree
 builtin_type_for_size (int size, bool unsignedp)
