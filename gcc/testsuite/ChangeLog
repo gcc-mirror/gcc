@@ -1,3 +1,15 @@
+2007-01-08  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* g++.dg/warn/overflow-warn-1.C: Fix testcase.
+	* g++.dg/warn/overflow-warn-3.C: Likewise.
+	* g++.dg/warn/overflow-warn-4.C: Likewise.
+	* g++.dg/warn/overflow-warn-5.C: Likewise.
+	* g++.dg/warn/overflow-warn-6.C: Likewise.
+	* g++.dg/warn/Woverflow-1.C: Likewise.
+	* g++.dg/warn/Woverflow-2.C: Likewise.
+	* g++.dg/warn/Woverflow-3.C: Likewise.
+	* g++.dg/warn/multiple-overflow-warn-2.C: Likewise.
+
 2007-01-08  Roger Sayle  <roger@eyesopen.com>
 
 	* gfortran.dg/array_constructor_14.f90: New test case.
