@@ -44,14 +44,10 @@ convert_to_pointer (tree type, tree expr)
   if (TREE_TYPE (expr) == type)
     return expr;
 
+  /* Propagate overflow to the NULL pointer.  */
   if (integer_zerop (expr))
-    {
-      tree t = build_int_cst (type, 0);
-      if (TREE_OVERFLOW (expr) || TREE_CONSTANT_OVERFLOW (expr))
-	t = force_fit_type (t, 0, TREE_OVERFLOW (expr),
-			    TREE_CONSTANT_OVERFLOW (expr));
-      return t;
-    }
+    return force_fit_type_double (type, 0, 0, 0, TREE_OVERFLOW (expr),
+				  TREE_CONSTANT_OVERFLOW (expr));
 
   switch (TREE_CODE (TREE_TYPE (expr)))
     {

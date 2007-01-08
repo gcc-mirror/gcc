@@ -1,5 +1,23 @@
 2007-01-08  Richard Guenther  <rguenther@suse.de>
 
+	* tree.h (force_fit_type_double): Export.
+	(force_fit_type): Remove.
+	* fold-const.c (force_fit_type_double): New function.
+	(force_fit_type): Remove.
+	(int_const_binop): Use it.
+	(fold_convert_const_int_from_int): Likewise.
+	(fold_convert_const_int_from_real): Likewise.
+	(fold_div_compare): Likewise.
+	(fold_sign_changed_comparison): Likewise.
+	(fold_unary): Likewise.
+	(fold_negate_const): Likewise.
+	(fold_abs_const): Likewise. 
+	(fold_not_const): Likewise.
+	* c-common.c (shorten_compare): Use force_fit_type_double.
+	* convert.c (convert_to_pointer): Likewise.
+
+2007-01-08  Richard Guenther  <rguenther@suse.de>
+
 	* tree.h (build_int_cst_wide_type): Export.
 	* tree.c (build_int_cst_wide_type): New function.
 	(build_int_cst_wide): Fix comment.
