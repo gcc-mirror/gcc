@@ -2211,3 +2211,69 @@ vectorize_loops (void)
 
   return num_vectorized_loops > 0 ? TODO_cleanup_cfg : 0;
 }
+
+/* Increase alignment of global arrays to improve vectorization potential.
+   TODO:
+   - Consider also structs that have an array field.
+   - Use ipa analysis to prune arrays that can't be vectorized?
+     This should involve global alignment analysis and in the future also
+     array padding.  */
+
+static unsigned int
+increase_alignment (void)
+{
+  struct varpool_node *vnode;
+
+  /* Increase the alignment of all global arrays for vectorization.  */
+  for (vnode = varpool_nodes_queue;
+       vnode;
+       vnode = vnode->next_needed)
+    {
+      tree vectype, decl = vnode->decl;
+      unsigned int alignment;
+
+      if (TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE)
+	continue;
+      vectype = get_vectype_for_scalar_type (TREE_TYPE (TREE_TYPE (decl)));
+      if (!vectype)
+	continue;
+      alignment = TYPE_ALIGN (vectype);
+      if (DECL_ALIGN (decl) >= alignment)
+	continue;
+
+      if (vect_can_force_dr_alignment_p (decl, alignment))
+	{ 
+	  DECL_ALIGN (decl) = TYPE_ALIGN (vectype);
+	  DECL_USER_ALIGN (decl) = 1;
+	  if (dump_file)
+	    { 
+	      fprintf (dump_file, "Increasing alignment of decl: ");
+	      print_generic_expr (dump_file, decl, TDF_SLIM);
+	    }
+	}
+    }
+  return 0;
+}
+
+static int
+gate_increase_alignment (void)
+{
+  return flag_section_anchors && flag_tree_vectorize;
+}
+
+struct tree_opt_pass pass_ipa_increase_alignment = 
+{
+  "increase_alignment",			/* name */
+  gate_increase_alignment,		/* gate */
+  increase_alignment,			/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  0,					/* tv_id */
+  0,					/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0, 					/* todo_flags_finish */
+  0					/* letter */
+};

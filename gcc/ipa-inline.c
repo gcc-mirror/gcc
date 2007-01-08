@@ -925,7 +925,6 @@ cgraph_decide_inlining (void)
   int old_insns = 0;
   int i;
 
-  timevar_push (TV_INLINE_HEURISTICS);
   max_count = 0;
   for (node = cgraph_nodes; node; node = node->next)
     if (node->analyzed && (node->needed || node->reachable))
@@ -1083,7 +1082,6 @@ cgraph_decide_inlining (void)
 	     ncalls_inlined, nfunctions_inlined, initial_insns,
 	     overall_insns);
   free (order);
-  timevar_pop (TV_INLINE_HEURISTICS);
   return 0;
 }
 
@@ -1146,6 +1144,7 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node, bool early)
 	}
   if (early && inlined)
     {
+      timevar_push (TV_INTEGRATION);
       push_cfun (DECL_STRUCT_FUNCTION (node->decl));
       tree_register_cfg_hooks ();
       current_function_decl = node->decl;
@@ -1153,6 +1152,7 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node, bool early)
       node->local.self_insns = node->global.insns;
       current_function_decl = NULL;
       pop_cfun ();
+      timevar_pop (TV_INTEGRATION);
     }
   return inlined;
 }
@@ -1172,12 +1172,13 @@ struct tree_opt_pass pass_ipa_inline =
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
-  TV_INTEGRATION,			/* tv_id */
+  TV_INLINE_HEURISTICS,			/* tv_id */
   0,	                                /* properties_required */
   PROP_cfg,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_cgraph | TODO_dump_func,	/* todo_flags_finish */
+  TODO_dump_cgraph | TODO_dump_func
+  | TODO_remove_functions,		/* todo_flags_finish */
   0					/* letter */
 };
 
@@ -1223,7 +1224,6 @@ cgraph_early_inlining (void)
 	    ggc_collect ();
 	}
     }
-  cgraph_remove_unreachable_nodes (true, dump_file);
 #ifdef ENABLE_CHECKING
   for (node = cgraph_nodes; node; node = node->next)
     gcc_assert (!node->global.inlined_to);
@@ -1249,12 +1249,13 @@ struct tree_opt_pass pass_early_ipa_inline =
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
-  TV_INTEGRATION,			/* tv_id */
+  TV_INLINE_HEURISTICS,			/* tv_id */
   0,	                                /* properties_required */
   PROP_cfg,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_cgraph | TODO_dump_func,	/* todo_flags_finish */
+  TODO_dump_cgraph | TODO_dump_func
+  | TODO_remove_functions,		/* todo_flags_finish */
   0					/* letter */
 };
 

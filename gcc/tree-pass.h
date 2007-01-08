@@ -166,6 +166,7 @@ struct dump_file_info
 #define TODO_cleanup_cfg        	(1 << 5)
 #define TODO_verify_loops		(1 << 6)
 #define TODO_dump_cgraph		(1 << 7)
+#define TODO_remove_functions		(1 << 8)
 
 /* To-do flags for calls to update_ssa.  */
 
@@ -177,13 +178,13 @@ struct dump_file_info
    in blocks that have one or more edges with no incoming definition
    for O_j.  This would lead to uninitialized warnings for O_j's
    symbol.  */
-#define TODO_update_ssa			(1 << 8)
+#define TODO_update_ssa			(1 << 9)
 
 /* Update the SSA form without inserting any new PHI nodes at all.
    This is used by passes that have either inserted all the PHI nodes
    themselves or passes that need only to patch use-def and def-def
    chains for virtuals (e.g., DCE).  */
-#define TODO_update_ssa_no_phi		(1 << 9)
+#define TODO_update_ssa_no_phi		(1 << 10)
 
 /* Insert PHI nodes everywhere they are needed.  No pruning of the
    IDF is done.  This is used by passes that need the PHI nodes for
@@ -194,7 +195,7 @@ struct dump_file_info
    may be doing something wrong.  Inserting PHI nodes for an old name
    where not all edges carry a new replacement may lead to silent
    codegen errors or spurious uninitialized warnings.  */
-#define TODO_update_ssa_full_phi	(1 << 10)
+#define TODO_update_ssa_full_phi	(1 << 11)
 
 /* Passes that update the SSA form on their own may want to delegate
    the updating of virtual names to the generic updater.  Since FUD
@@ -202,20 +203,20 @@ struct dump_file_info
    to do.  NOTE: If this flag is used, any OLD->NEW mappings for real
    names are explicitly destroyed and only the symbols marked for
    renaming are processed.  */
-#define TODO_update_ssa_only_virtuals	(1 << 11)
+#define TODO_update_ssa_only_virtuals	(1 << 12)
 
 /* Some passes leave unused local variables that can be removed from
    cfun->unexpanded_var_list.  This reduces the size of dump files and
    the memory footprint for VAR_DECLs.  */
-#define TODO_remove_unused_locals	(1 << 12)
+#define TODO_remove_unused_locals	(1 << 13)
 
 /* Internally used for the first in a sequence of passes.  It is set
    for the passes that are handed to register_dump_files.  */
-#define TODO_set_props			(1 << 13)
+#define TODO_set_props			(1 << 14)
 
 /* Set by passes that may make SMT's that were previously never used
    in statements, used.  */
-#define TODO_update_smt_usage           (1 << 14)
+#define TODO_update_smt_usage           (1 << 15)
 
 #define TODO_update_ssa_any		\
     (TODO_update_ssa			\
@@ -316,6 +317,8 @@ extern struct tree_opt_pass pass_ipa_type_escape;
 extern struct tree_opt_pass pass_ipa_pta;
 extern struct tree_opt_pass pass_early_local_passes;
 extern struct tree_opt_pass pass_all_early_optimizations;
+extern struct tree_opt_pass pass_ipa_increase_alignment;
+extern struct tree_opt_pass pass_ipa_function_and_variable_visibility;
 
 extern struct tree_opt_pass pass_all_optimizations;
 extern struct tree_opt_pass pass_cleanup_cfg_post_optimizing;

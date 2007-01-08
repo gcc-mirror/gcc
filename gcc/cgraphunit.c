@@ -165,7 +165,6 @@ static void cgraph_expand_all_functions (void);
 static void cgraph_mark_functions_to_output (void);
 static void cgraph_expand_function (struct cgraph_node *);
 static void cgraph_output_pending_asms (void);
-static void cgraph_increase_alignment (void);
 
 static FILE *cgraph_dump_file;
 
@@ -1138,78 +1137,6 @@ cgraph_output_in_order (void)
   cgraph_asm_nodes = NULL;
 }
 
-/* Mark visibility of all functions.
-
-   A local function is one whose calls can occur only in the current
-   compilation unit and all its calls are explicit, so we can change
-   its calling convention.  We simply mark all static functions whose
-   address is not taken as local.
-
-   We also change the TREE_PUBLIC flag of all declarations that are public
-   in language point of view but we want to overwrite this default
-   via visibilities for the backend point of view.  */
-
-static void
-cgraph_function_and_variable_visibility (void)
-{
-  struct cgraph_node *node;
-  struct varpool_node *vnode;
-
-  for (node = cgraph_nodes; node; node = node->next)
-    {
-      if (node->reachable
-	  && (DECL_COMDAT (node->decl)
-	      || (!flag_whole_program
-		  && TREE_PUBLIC (node->decl) && !DECL_EXTERNAL (node->decl))))
-	node->local.externally_visible = true;
-      if (!node->local.externally_visible && node->analyzed
-	  && !DECL_EXTERNAL (node->decl))
-	{
-	  gcc_assert (flag_whole_program || !TREE_PUBLIC (node->decl));
-	  TREE_PUBLIC (node->decl) = 0;
-	}
-      node->local.local = (!node->needed
-			   && node->analyzed
-			   && !DECL_EXTERNAL (node->decl)
-			   && !node->local.externally_visible);
-    }
-  for (vnode = varpool_nodes_queue; vnode; vnode = vnode->next_needed)
-    {
-      if (vnode->needed
-	  && !flag_whole_program
-	  && (DECL_COMDAT (vnode->decl) || TREE_PUBLIC (vnode->decl)))
-	vnode->externally_visible = 1;
-      if (!vnode->externally_visible)
-	{
-	  gcc_assert (flag_whole_program || !TREE_PUBLIC (vnode->decl));
-	  TREE_PUBLIC (vnode->decl) = 0;
-	}
-     gcc_assert (TREE_STATIC (vnode->decl));
-    }
-
-  /* Because we have to be conservative on the boundaries of source
-     level units, it is possible that we marked some functions in
-     reachable just because they might be used later via external
-     linkage, but after making them local they are really unreachable
-     now.  */
-  cgraph_remove_unreachable_nodes (true, cgraph_dump_file);
-
-  if (cgraph_dump_file)
-    {
-      fprintf (cgraph_dump_file, "\nMarking local functions:");
-      for (node = cgraph_nodes; node; node = node->next)
-	if (node->local.local)
-	  fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
-      fprintf (cgraph_dump_file, "\n\n");
-      fprintf (cgraph_dump_file, "\nMarking externally visible functions:");
-      for (node = cgraph_nodes; node; node = node->next)
-	if (node->local.externally_visible)
-	  fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
-      fprintf (cgraph_dump_file, "\n\n");
-    }
-  cgraph_function_flags_ready = true;
-}
-
 /* Return true when function body of DECL still needs to be kept around
    for later re-use.  */
 bool
@@ -1273,13 +1200,6 @@ cgraph_optimize (void)
     }
   if (!quiet_flag)
     fprintf (stderr, "Performing interprocedural optimizations\n");
-
-  cgraph_function_and_variable_visibility ();
-  if (cgraph_dump_file)
-    {
-      fprintf (cgraph_dump_file, "Marked ");
-      dump_cgraph (cgraph_dump_file);
-    }
   cgraph_state = CGRAPH_STATE_IPA;
     
   /* Don't run the IPA passes if there was any error or sorry messages.  */
@@ -1289,7 +1209,6 @@ cgraph_optimize (void)
   /* This pass remove bodies of extern inline functions we never inlined.
      Do this later so other IPA passes see what is really going on.  */
   cgraph_remove_unreachable_nodes (false, dump_file);
-  cgraph_increase_alignment ();
   cgraph_global_info_ready = true;
   if (cgraph_dump_file)
     {
@@ -1357,52 +1276,6 @@ cgraph_optimize (void)
     }
 #endif
 }
-
-/* Increase alignment of global arrays to improve vectorization potential.
-   TODO:
-   - Consider also structs that have an array field.
-   - Use ipa analysis to prune arrays that can't be vectorized?
-     This should involve global alignment analysis and in the future also
-     array padding.  */
-
-static void
-cgraph_increase_alignment (void)
-{
-  if (flag_section_anchors && flag_tree_vectorize)
-    {
-      struct varpool_node *vnode;
-
-      /* Increase the alignment of all global arrays for vectorization.  */
-      for (vnode = varpool_nodes_queue;
-           vnode;
-           vnode = vnode->next_needed)
-        {
-          tree vectype, decl = vnode->decl;
-          unsigned int alignment;
-
-          if (TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE)
-            continue;
-          vectype = get_vectype_for_scalar_type (TREE_TYPE (TREE_TYPE (decl)));
-          if (!vectype)
-            continue;
-          alignment = TYPE_ALIGN (vectype);
-          if (DECL_ALIGN (decl) >= alignment)
-            continue;
-
-          if (vect_can_force_dr_alignment_p (decl, alignment))
-            { 
-              DECL_ALIGN (decl) = TYPE_ALIGN (vectype);
-              DECL_USER_ALIGN (decl) = 1;
-              if (cgraph_dump_file)
-                { 
-                  fprintf (cgraph_dump_file, "Increasing alignment of decl: ");
-                  print_generic_expr (cgraph_dump_file, decl, TDF_SLIM);
-                }
-            }
-        }
-    }
-}
-
 /* Generate and emit a static constructor or destructor.  WHICH must be
    one of 'I' or 'D'.  BODY should be a STATEMENT_LIST containing
    GENERIC statements.  */
