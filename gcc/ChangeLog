@@ -1,3 +1,13 @@
+2007-01-08  Richard Guenther  <rguenther@suse.de>
+
+	* builtins.c (fold_builtin_int_roundingfn): Use fit_double_type.
+	* tree.c (build_int_cst_type): Likewise.
+	(size_in_bytes): Don't call force_fit_type on the result.
+	(int_fits_type_p): Use fit_double_type.
+	* fold-const.c (fit_double_type): New function.
+	(force_fit_type): Use it.
+	* tree.h (fit_double_type): Export.
+
 2007-01-08  Jan Hubicka  <jh@suse.cz>
 
 	* tree-vectorizer.c (gate_increase_alignment): Fix return type.

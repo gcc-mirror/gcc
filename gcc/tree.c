@@ -779,53 +779,14 @@ build_int_cstu (tree type, unsigned HOST_WIDE_INT low)
 tree
 build_int_cst_type (tree type, HOST_WIDE_INT low)
 {
-  unsigned HOST_WIDE_INT val = (unsigned HOST_WIDE_INT) low;
-  unsigned HOST_WIDE_INT hi, mask;
-  unsigned bits;
-  bool signed_p;
-  bool negative;
+  unsigned HOST_WIDE_INT low1;
+  HOST_WIDE_INT hi;
 
-  if (!type)
-    type = integer_type_node;
+  gcc_assert (type);
 
-  bits = TYPE_PRECISION (type);
-  signed_p = !TYPE_UNSIGNED (type);
+  fit_double_type (low, low < 0 ? -1 : 0, &low1, &hi, type);
 
-  if (bits >= HOST_BITS_PER_WIDE_INT)
-    negative = (low < 0);
-  else
-    {
-      /* If the sign bit is inside precision of LOW, use it to determine
-	 the sign of the constant.  */
-      negative = ((val >> (bits - 1)) & 1) != 0;
-
-      /* Mask out the bits outside of the precision of the constant.  */
-      mask = (((unsigned HOST_WIDE_INT) 2) << (bits - 1)) - 1;
-
-      if (signed_p && negative)
-	val |= ~mask;
-      else
-	val &= mask;
-    }
-
-  /* Determine the high bits.  */
-  hi = (negative ? ~(unsigned HOST_WIDE_INT) 0 : 0);
-
-  /* For unsigned type we need to mask out the bits outside of the type
-     precision.  */
-  if (!signed_p)
-    {
-      if (bits <= HOST_BITS_PER_WIDE_INT)
-	hi = 0;
-      else
-	{
-	  bits -= HOST_BITS_PER_WIDE_INT;
-	  mask = (((unsigned HOST_WIDE_INT) 2) << (bits - 1)) - 1;
-	  hi &= mask;
-	}
-    }
-
-  return build_int_cst_wide (type, val, hi);
+  return build_int_cst_wide (type, low1, hi);
 }
 
 /* These are the hash table functions for the hash table of INTEGER_CST
@@ -1817,9 +1778,6 @@ size_in_bytes (tree type)
       lang_hooks.types.incomplete_type_error (NULL_TREE, type);
       return size_zero_node;
     }
-
-  if (TREE_CODE (t) == INTEGER_CST)
-    t = force_fit_type (t, 0, false, false);
 
   return t;
 }
@@ -6009,12 +5967,13 @@ int_fits_type_p (tree c, tree type)
   tree type_low_bound = TYPE_MIN_VALUE (type);
   tree type_high_bound = TYPE_MAX_VALUE (type);
   bool ok_for_low_bound, ok_for_high_bound;
-  tree tmp;
+  unsigned HOST_WIDE_INT low;
+  HOST_WIDE_INT high;
 
   /* If at least one bound of the type is a constant integer, we can check
      ourselves and maybe make a decision. If no such decision is possible, but
      this type is a subtype, try checking against that.  Otherwise, use
-     force_fit_type, which checks against the precision.
+     fit_double_type, which checks against the precision.
 
      Compute the status for each possibly constant bound, and return if we see
      one does not match. Use ok_for_xxx_bound for this purpose, assigning -1
@@ -6069,12 +6028,10 @@ int_fits_type_p (tree c, tree type)
       && TYPE_PRECISION (type) == TYPE_PRECISION (TREE_TYPE (type)))
     return int_fits_type_p (c, TREE_TYPE (type));
 
-  /* Or to force_fit_type, if nothing else.  */
-  tmp = copy_node (c);
-  TREE_TYPE (tmp) = type;
-  tmp = force_fit_type (tmp, -1, false, false);
-  return TREE_INT_CST_HIGH (tmp) == TREE_INT_CST_HIGH (c)
-         && TREE_INT_CST_LOW (tmp) == TREE_INT_CST_LOW (c);
+  /* Or to fit_double_type, if nothing else.  */
+  low = TREE_INT_CST_LOW (c);
+  high = TREE_INT_CST_HIGH (c);
+  return !fit_double_type (low, high, &low, &high, type);
 }
 
 /* Subprogram of following function.  Called by walk_tree.

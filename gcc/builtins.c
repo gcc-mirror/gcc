@@ -7576,7 +7576,8 @@ fold_builtin_int_roundingfn (tree fndecl, tree arglist)
       if (! REAL_VALUE_ISNAN (x) && ! REAL_VALUE_ISINF (x))
 	{
 	  tree itype = TREE_TYPE (TREE_TYPE (fndecl));
-	  tree ftype = TREE_TYPE (arg), result;
+	  tree ftype = TREE_TYPE (arg);
+	  unsigned HOST_WIDE_INT lo2;
 	  HOST_WIDE_INT hi, lo;
 	  REAL_VALUE_TYPE r;
 
@@ -7602,11 +7603,8 @@ fold_builtin_int_roundingfn (tree fndecl, tree arglist)
 	    }
 
 	  REAL_VALUE_TO_INT (&lo, &hi, r);
-	  result = build_int_cst_wide (itype, lo, hi);
-	  result = force_fit_type (result, 0, false, false);
-	  if (TREE_INT_CST_LOW (result) == lo
-	      && TREE_INT_CST_HIGH (result) == hi)
-	    return result;
+	  if (!fit_double_type (lo, hi, &lo2, &hi, itype))
+	    return build_int_cst_wide (itype, lo2, hi);
 	}
     }
 
