@@ -1,3 +1,27 @@
+2007-01-08  Jan Hubicka  <jh@suse.cz>
+
+	* tree-pas.h (TODO_remove_function): New flag.
+	(TODO_update*): Renumber.
+	(pass_ipa_increase_alignment,
+	pass_ipa_function_and_variable_visibility): New passes.
+	* cgraphunit.c (cgraph_increase_alignment): Move to tree-vectorizer.c
+	(cgraph_function_and_variable_visibility): Move to ipa.c
+	(cgraph_optimize): Don't call cgraph_function_and_variable_visibility,
+	cgraph_increase_alignment.
+	* ipa-inline.c (cgraph_decide_inlining): Don't push timevar.
+	(cgraph_decide_inlining_incrementally): Push TV_INTEGRATION before
+	calling tree-inline.
+	(cgraph_early_inlining): Do not call cgraph_remove_unreachable_nodes.
+	(pass_ipa_inline, pass_early_ipa_inlining): Set TODO_remove_functions
+	* tree-vectorizer.c (increase_alignment): Move here from cgraphunit.c
+	(gate_increase_alignment): New function.
+	(pass_ipa_increase_alignment): New pass.
+	* ipa.c: Inline tree-pass.h and timevar.h
+	(function_and_variable_visibility): Move here from cgraphunit.c
+	* tree-optimize.c (pass_early_local_passes): Add TODO_remove_functions.
+	* passes.c (init_optimization_passes): Add the two new passes.
+	(execute_todo): Handle cgraph_remove_functions.
+
 2007-01-08  Nick Clifton  <nickc@redhat.com>
 
 	* config/frv/predicates.md (reg_or_0_operand): Accept

@@ -101,7 +101,7 @@ struct tree_opt_pass pass_early_local_passes =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0,					/* todo_flags_finish */
+  TODO_remove_functions,		/* todo_flags_finish */
   0					/* letter */
 };
 

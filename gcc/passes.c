@@ -439,8 +439,10 @@ init_optimization_passes (void)
 #define NEXT_PASS(PASS)  (p = next_pass_1 (p, &PASS))
   /* Interprocedural optimization passes.  */
   p = &all_ipa_passes;
+  NEXT_PASS (pass_ipa_function_and_variable_visibility);
   NEXT_PASS (pass_early_ipa_inline);
   NEXT_PASS (pass_early_local_passes);
+  NEXT_PASS (pass_ipa_increase_alignment);
   NEXT_PASS (pass_ipa_cp);
   NEXT_PASS (pass_ipa_inline);
   NEXT_PASS (pass_ipa_reference);
@@ -829,6 +831,13 @@ execute_todo (unsigned int flags)
 #endif
 
   do_per_function (execute_function_todo, (void *)(size_t) flags);
+
+  /* Always remove functions just as before inlining: IPA passes might be
+     interested to see bodies of extern inline functions that are not inlined
+     to analyze side effects.  The full removal is done just at the end
+     of IPA pass queue.  */
+  if (flags & TODO_remove_functions)
+    cgraph_remove_unreachable_nodes (true, dump_file);
 
   if ((flags & TODO_dump_cgraph)
       && dump_file && !current_function_decl)
