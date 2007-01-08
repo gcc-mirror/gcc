@@ -393,6 +393,12 @@ is_replaceable_p (tree stmt)
       && FLOAT_TYPE_P (TREE_TYPE (GENERIC_TREE_OPERAND (stmt, 1))))
     return false;
 
+  /* An assignment with a register variable on the RHS is not
+     replaceable.  */
+  if (TREE_CODE (GENERIC_TREE_OPERAND (stmt, 1)) == VAR_DECL
+      && DECL_HARD_REGISTER (GENERIC_TREE_OPERAND (stmt, 1)))
+    return false;
+
   /* Calls to functions with side-effects cannot be replaced.  */
   if ((call_expr = get_call_expr_in (stmt)) != NULL_TREE)
     {
