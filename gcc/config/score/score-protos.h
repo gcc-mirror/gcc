@@ -36,7 +36,7 @@ enum reg_class score_preferred_reload_class (rtx x, enum reg_class class);
 enum reg_class score_secondary_reload_class (enum reg_class class,
                                              enum machine_mode mode, rtx x);
 
-int score_const_ok_for_letter_p (int value, char c);
+int score_const_ok_for_letter_p (HOST_WIDE_INT value, char c);
 
 int score_extra_constraint (rtx op, char c);
 

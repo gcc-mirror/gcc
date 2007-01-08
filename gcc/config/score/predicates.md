@@ -35,13 +35,11 @@
   (ior (match_operand 0 "const_call_insn_operand")
        (match_operand 0 "register_operand")))
 
-(define_predicate "const_bi_operand"
-  (and (match_code "const_int")
-       (match_test "CONST_OK_FOR_LETTER_P (INTVAL (op), 'J')")))
-
-(define_predicate "pindex_off_operand"
-  (and (match_code "const_int")
-       (match_test "CONST_OK_FOR_LETTER_P (INTVAL (op), 'P')")))
+(define_predicate "const_uimm5"
+  (match_code "const_int")
+{
+  return IMM_IN_RANGE (INTVAL (op), 5, 0);
+})
 
 (define_predicate "hireg_operand"
   (and (match_code "reg")
@@ -50,6 +48,10 @@
 (define_predicate "loreg_operand"
   (and (match_code "reg")
        (match_test "REGNO (op) == LO_REGNUM")))
+
+(define_predicate "sr0_operand"
+  (and (match_code "reg")
+       (match_test "REGNO (op) == CN_REGNUM")))
 
 (define_predicate "g32reg_operand"
   (and (match_code "reg")
@@ -61,3 +63,26 @@
 (define_predicate "branch_nz_operator"
   (match_code "eq,ne,lt,ge"))
 
+(define_predicate "const_simm12"
+  (match_code "const_int")
+{
+  return IMM_IN_RANGE (INTVAL (op), 12, 1);
+})
+
+(define_predicate "const_simm15"
+  (match_code "const_int")
+{
+  return IMM_IN_RANGE (INTVAL (op), 15, 1);
+})
+
+(define_predicate "const_pow2"
+  (match_code "const_int")
+{
+  return IMM_IS_POW_OF_2 ((unsigned HOST_WIDE_INT) INTVAL (op), 0, 31);
+})
+
+(define_predicate "const_npow2"
+  (match_code "const_int")
+{
+  return IMM_IS_POW_OF_2 (~(unsigned HOST_WIDE_INT) INTVAL (op), 0, 31);
+})

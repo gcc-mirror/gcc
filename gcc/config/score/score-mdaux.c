@@ -108,10 +108,9 @@ score_symbol_type score_classify_symbol (rtx x)
   if (GET_CODE (x) == LABEL_REF)
     return SYMBOL_GENERAL;
 
-  if (GET_CODE (x) != SYMBOL_REF)
-    gcc_unreachable ();
+  gcc_assert (GET_CODE (x) == SYMBOL_REF);
 
-  if (CONSTANT_POOL_ADDRESS_P(x))
+  if (CONSTANT_POOL_ADDRESS_P (x))
     {
       if (GET_MODE_SIZE (get_pool_mode (x)) <= SCORE_SDATA_MAX)
         return SYMBOL_SMALL_DATA;
@@ -185,14 +184,14 @@ mda_compute_frame_size (HOST_WIDE_INT size)
   f->mask = 0;
   f->var_size = SCORE_STACK_ALIGN (size);
   f->args_size = current_function_outgoing_args_size;
-  f->cprestore_size = SCORE_STACK_ALIGN (STARTING_FRAME_OFFSET) - f->args_size;
+  f->cprestore_size = flag_pic ? UNITS_PER_WORD : 0;
   if (f->var_size == 0 && current_function_is_leaf)
     f->args_size = f->cprestore_size = 0;
 
   if (f->args_size == 0 && current_function_calls_alloca)
     f->args_size = UNITS_PER_WORD;
 
-  f->total_size = f->var_size + f->args_size;
+  f->total_size = f->var_size + f->args_size + f->cprestore_size;
   for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
     {
       if (score_save_reg_p (regno))
@@ -205,7 +204,7 @@ mda_compute_frame_size (HOST_WIDE_INT size)
   if (current_function_calls_eh_return)
     {
       unsigned int i;
-      for (i = 0; ; ++i)
+      for (i = 0;; ++i)
         {
           regno = EH_RETURN_DATA_REGNO (i);
           if (regno == INVALID_REGNUM)
@@ -215,7 +214,7 @@ mda_compute_frame_size (HOST_WIDE_INT size)
         }
     }
 
-  f->total_size += SCORE_STACK_ALIGN (f->gp_reg_size);
+  f->total_size += f->gp_reg_size;
   f->num_gp = f->gp_reg_size / UNITS_PER_WORD;
 
   if (f->mask)
@@ -226,12 +225,7 @@ mda_compute_frame_size (HOST_WIDE_INT size)
       f->gp_sp_offset = offset;
     }
   else
-    {
-      f->gp_sp_offset = 0;
-    }
-
-  if ((f->total_size == f->gp_reg_size) && flag_pic)
-    f->total_size += 8;
+    f->gp_sp_offset = 0;
 
   return f;
 }
@@ -294,8 +288,13 @@ mdx_prologue (void)
   if (frame_pointer_needed)
     EMIT_PL (emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx));
 
-  if (flag_pic)
-    emit_insn (gen_cprestore (GEN_INT (size + 4)));
+  if (flag_pic && f->cprestore_size)
+    {
+      if (frame_pointer_needed)
+        emit_insn (gen_cprestore_use_fp (GEN_INT (size - f->cprestore_size)));
+      else
+        emit_insn (gen_cprestore_use_sp (GEN_INT (size - f->cprestore_size)));
+    }
 
 #undef EMIT_PL
 }
@@ -392,7 +391,7 @@ mda_classify_address (struct score_address_info *info,
       info->offset = XEXP (x, 1);
       return (mda_valid_base_register_p (info->reg, strict)
               && GET_CODE (info->offset) == CONST_INT
-              && CONST_OK_FOR_LETTER_P (INTVAL (info->offset), 'O'));
+              && IMM_IN_RANGE (INTVAL (info->offset), 15, 1));
     case PRE_DEC:
     case POST_DEC:
     case PRE_INC:
@@ -405,7 +404,7 @@ mda_classify_address (struct score_address_info *info,
       return mda_valid_base_register_p (info->reg, strict);
     case CONST_INT:
       info->type = ADD_CONST_INT;
-      return CONST_OK_FOR_LETTER_P (INTVAL (x), 'O');
+      return IMM_IN_RANGE (INTVAL (x), 15, 1);
     case CONST:
     case LABEL_REF:
     case SYMBOL_REF:
@@ -443,7 +442,7 @@ mda_symbolic_constant_p (rtx x, enum score_symbol_type *symbol_type)
     return 1;
 
   /* if offset > 15bit, must reload  */
-  if (!CONST_OK_FOR_LETTER_P (offset, 'O'))
+  if (!IMM_IN_RANGE (offset, 15, 1))
     return 0;
 
   switch (*symbol_type)
@@ -459,11 +458,9 @@ mda_symbolic_constant_p (rtx x, enum score_symbol_type *symbol_type)
 void
 mdx_movsicc (rtx *ops)
 {
-  enum machine_mode mode = CCmode;
+  enum machine_mode mode;
 
-  if (GET_CODE (ops[1]) == EQ || GET_CODE (ops[1]) == NE)
-    mode = CC_NZmode;
-
+  mode = score_select_cc_mode (GET_CODE (ops[1]), ops[2], ops[3]);
   emit_insn (gen_rtx_SET (VOIDmode, gen_rtx_REG (mode, CC_REGNUM),
                           gen_rtx_COMPARE (mode, cmp_op0, cmp_op1)));
 }
@@ -533,14 +530,15 @@ mds_movdi (rtx *ops)
 void
 mds_zero_extract_andi (rtx *ops)
 {
-  if (INTVAL (ops[1]) == 1 && const_bi_operand (ops[2], SImode))
+  if (INTVAL (ops[1]) == 1 && const_uimm5 (ops[2], SImode))
     emit_insn (gen_zero_extract_bittst (ops[0], ops[2]));
   else
     {
       unsigned HOST_WIDE_INT mask;
       mask = (0xffffffffU & ((1U << INTVAL (ops[1])) - 1U));
       mask = mask << INTVAL (ops[2]);
-      emit_insn (gen_andsi3_cmp (ops[0], gen_int_mode (mask, SImode)));
+      emit_insn (gen_andsi3_cmp (ops[3], ops[0],
+                                 gen_int_mode (mask, SImode)));
     }
 }
 
@@ -637,17 +635,20 @@ mdp_sinsn (rtx *ops, enum mda_mem_unit unit)
 const char *
 mdp_limm (rtx *ops)
 {
-  gcc_assert (GET_CODE (ops[0]) == REG);
+  HOST_WIDE_INT v;
 
-  if (G16_REG_P (REGNO (ops[0]))
-      && CONST_OK_FOR_LETTER_P (INTVAL (ops[1]), 'I'))
+  gcc_assert (GET_CODE (ops[0]) == REG);
+  gcc_assert (GET_CODE (ops[1]) == CONST_INT);
+
+  v = INTVAL (ops[1]);
+  if (G16_REG_P (REGNO (ops[0])) && IMM_IN_RANGE (v, 8, 0))
     return "ldiu!   %0, %c1";
-  else if (CONST_OK_FOR_LETTER_P (INTVAL (ops[1]), 'L'))
+  else if (IMM_IN_RANGE (v, 16, 1))
     return "ldi     %0, %c1";
-  else if (EXTRA_CONSTRAINT (ops[1], 'Q'))
+  else if ((v & 0xffff) == 0)
     return "ldis    %0, %U1";
   else
-    return "li      %0, %D1";
+    return "li      %0, %c1";
 }
 
 /* Output asm insn for move.  */
@@ -670,69 +671,389 @@ mdp_move (rtx *ops)
     return "mv      %0, %1";
 }
 
-/* Score support add/sub with exponent immediate insn,
-   use to judge imm condition.  */
-static unsigned int
-num_bits1 (unsigned HOST_WIDE_INT v)
+/* Emit lcb/lce insns.  */
+bool
+mdx_unaligned_load (rtx *ops)
 {
-  int i, n = 0;
+  rtx dst = ops[0];
+  rtx src = ops[1];
+  rtx len = ops[2];
+  rtx off = ops[3];
+  rtx addr_reg;
 
-  for (i = 0; i < BITS_PER_WORD; i++)
-    n += BITSET_P (v, i) ? 1 : 0;
-  return n;
+  if (INTVAL (len) != BITS_PER_WORD
+      || (INTVAL (off) % BITS_PER_UNIT) != 0)
+    return false;
+
+  gcc_assert (GET_MODE_SIZE (GET_MODE (dst)) == GET_MODE_SIZE (SImode));
+
+  addr_reg = copy_addr_to_reg (XEXP (src, 0));
+  emit_insn (gen_move_lcb (addr_reg, addr_reg));
+  emit_insn (gen_move_lce (addr_reg, addr_reg, dst));
+
+  return true;
 }
 
-/* Generate add insn, insn will affect condition flag. Optimize used.  */
+/* Emit scb/sce insns.  */
+bool
+mdx_unaligned_store (rtx *ops)
+{
+  rtx dst = ops[0];
+  rtx len = ops[1];
+  rtx off = ops[2];
+  rtx src = ops[3];
+  rtx addr_reg;
+
+  if (INTVAL(len) != BITS_PER_WORD
+      || (INTVAL(off) % BITS_PER_UNIT) != 0)
+    return false;
+
+  gcc_assert (GET_MODE_SIZE (GET_MODE (src)) == GET_MODE_SIZE (SImode));
+
+  addr_reg = copy_addr_to_reg (XEXP (dst, 0));
+  emit_insn (gen_move_scb (addr_reg, addr_reg, src));
+  emit_insn (gen_move_sce (addr_reg, addr_reg));
+
+  return true;
+}
+
+/* If length is short, generate move insns straight.  */
+static void
+mdx_block_move_straight (rtx dst, rtx src, HOST_WIDE_INT length)
+{
+  HOST_WIDE_INT leftover;
+  int i, reg_count;
+  rtx *regs;
+
+  leftover = length % UNITS_PER_WORD;
+  length -= leftover;
+  reg_count = length / UNITS_PER_WORD;
+
+  regs = alloca (sizeof (rtx) * reg_count);
+  for (i = 0; i < reg_count; i++)
+    regs[i] = gen_reg_rtx (SImode);
+
+  /* Load from src to regs.  */
+  if (MEM_ALIGN (src) >= BITS_PER_WORD)
+    {
+      HOST_WIDE_INT offset = 0;
+      for (i = 0; i < reg_count; offset += UNITS_PER_WORD, i++)
+        emit_move_insn (regs[i], adjust_address (src, SImode, offset));
+    }
+  else if (reg_count >= 1)
+    {
+      rtx src_reg = copy_addr_to_reg (XEXP (src, 0));
+
+      emit_insn (gen_move_lcb (src_reg, src_reg));
+      for (i = 0; i < (reg_count - 1); i++)
+        emit_insn (gen_move_lcw (src_reg, src_reg, regs[i]));
+      emit_insn (gen_move_lce (src_reg, src_reg, regs[i]));
+    }
+
+  /* Store regs to dest.  */
+  if (MEM_ALIGN (dst) >= BITS_PER_WORD)
+    {
+      HOST_WIDE_INT offset = 0;
+      for (i = 0; i < reg_count; offset += UNITS_PER_WORD, i++)
+        emit_move_insn (adjust_address (dst, SImode, offset), regs[i]);
+    }
+  else if (reg_count >= 1)
+    {
+      rtx dst_reg = copy_addr_to_reg (XEXP (dst, 0));
+
+      emit_insn (gen_move_scb (dst_reg, dst_reg, regs[0]));
+      for (i = 1; i < reg_count; i++)
+        emit_insn (gen_move_scw (dst_reg, dst_reg, regs[i]));
+      emit_insn (gen_move_sce (dst_reg, dst_reg));
+    }
+
+  /* Mop up any left-over bytes.  */
+  if (leftover > 0)
+    {
+      src = adjust_address (src, BLKmode, length);
+      dst = adjust_address (dst, BLKmode, length);
+      move_by_pieces (dst, src, leftover,
+                      MIN (MEM_ALIGN (src), MEM_ALIGN (dst)), 0);
+    }
+}
+
+/* Generate loop head when dst or src is unaligned.  */
+static void
+mdx_block_move_loop_head (rtx dst_reg, HOST_WIDE_INT dst_align,
+                          rtx src_reg, HOST_WIDE_INT src_align,
+                          HOST_WIDE_INT length)
+{
+  bool src_unaligned = (src_align < BITS_PER_WORD);
+  bool dst_unaligned = (dst_align < BITS_PER_WORD);
+
+  rtx temp = gen_reg_rtx (SImode);
+
+  gcc_assert (length == UNITS_PER_WORD);
+
+  if (src_unaligned)
+    {
+      emit_insn (gen_move_lcb (src_reg, src_reg));
+      emit_insn (gen_move_lcw (src_reg, src_reg, temp));
+    }
+  else
+    emit_insn (gen_move_lw_a (src_reg,
+                              src_reg, gen_int_mode (4, SImode), temp));
+
+  if (dst_unaligned)
+    emit_insn (gen_move_scb (dst_reg, dst_reg, temp));
+  else
+    emit_insn (gen_move_sw_a (dst_reg,
+                              dst_reg, gen_int_mode (4, SImode), temp));
+}
+
+/* Generate loop body, copy length bytes per iteration.  */
+static void
+mdx_block_move_loop_body (rtx dst_reg, HOST_WIDE_INT dst_align,
+                          rtx src_reg, HOST_WIDE_INT src_align,
+                          HOST_WIDE_INT length)
+{
+  int reg_count = length / UNITS_PER_WORD;
+  rtx *regs = alloca (sizeof (rtx) * reg_count);
+  int i;
+  bool src_unaligned = (src_align < BITS_PER_WORD);
+  bool dst_unaligned = (dst_align < BITS_PER_WORD);
+
+  for (i = 0; i < reg_count; i++)
+    regs[i] = gen_reg_rtx (SImode);
+
+  if (src_unaligned)
+    {
+      for (i = 0; i < reg_count; i++)
+        emit_insn (gen_move_lcw (src_reg, src_reg, regs[i]));
+    }
+  else
+    {
+      for (i = 0; i < reg_count; i++)
+        emit_insn (gen_move_lw_a (src_reg,
+                                  src_reg, gen_int_mode (4, SImode), regs[i]));
+    }
+
+  if (dst_unaligned)
+    {
+      for (i = 0; i < reg_count; i++)
+        emit_insn (gen_move_scw (dst_reg, dst_reg, regs[i]));
+    }
+  else
+    {
+      for (i = 0; i < reg_count; i++)
+        emit_insn (gen_move_sw_a (dst_reg,
+                                  dst_reg, gen_int_mode (4, SImode), regs[i]));
+    }
+}
+
+/* Generate loop foot, copy the leftover bytes.  */
+static void
+mdx_block_move_loop_foot (rtx dst_reg, HOST_WIDE_INT dst_align,
+                          rtx src_reg, HOST_WIDE_INT src_align,
+                          HOST_WIDE_INT length)
+{
+  bool src_unaligned = (src_align < BITS_PER_WORD);
+  bool dst_unaligned = (dst_align < BITS_PER_WORD);
+
+  HOST_WIDE_INT leftover;
+
+  leftover = length % UNITS_PER_WORD;
+  length -= leftover;
+
+  if (length > 0)
+    mdx_block_move_loop_body (dst_reg, dst_align,
+                              src_reg, src_align, length);
+
+  if (dst_unaligned)
+    emit_insn (gen_move_sce (dst_reg, dst_reg));
+
+  if (leftover > 0)
+    {
+      HOST_WIDE_INT src_adj = src_unaligned ? -4 : 0;
+      HOST_WIDE_INT dst_adj = dst_unaligned ? -4 : 0;
+      rtx temp;
+
+      gcc_assert (leftover < UNITS_PER_WORD);
+
+      if (leftover >= UNITS_PER_WORD / 2
+          && src_align >= BITS_PER_WORD / 2
+          && dst_align >= BITS_PER_WORD / 2)
+        {
+          temp = gen_reg_rtx (HImode);
+          emit_insn (gen_move_lhu_b (src_reg, src_reg,
+                                     gen_int_mode (src_adj, SImode), temp));
+          emit_insn (gen_move_sh_b (dst_reg, dst_reg,
+                                    gen_int_mode (dst_adj, SImode), temp));
+          leftover -= UNITS_PER_WORD / 2;
+          src_adj = UNITS_PER_WORD / 2;
+          dst_adj = UNITS_PER_WORD / 2;
+        }
+
+      while (leftover > 0)
+        {
+          temp = gen_reg_rtx (QImode);
+          emit_insn (gen_move_lbu_b (src_reg, src_reg,
+                                     gen_int_mode (src_adj, SImode), temp));
+          emit_insn (gen_move_sb_b (dst_reg, dst_reg,
+                                    gen_int_mode (dst_adj, SImode), temp));
+          leftover--;
+          src_adj = 1;
+          dst_adj = 1;
+        }
+    }
+}
+
+#define MIN_MOVE_REGS 3
+#define MIN_MOVE_BYTES (MIN_MOVE_REGS * UNITS_PER_WORD)
+#define MAX_MOVE_REGS 4
+#define MAX_MOVE_BYTES (MAX_MOVE_REGS * UNITS_PER_WORD)
+
+/* The length is large, generate a loop if necessary.
+   The loop is consisted by loop head/body/foot.  */
+static void
+mdx_block_move_loop (rtx dst, rtx src, HOST_WIDE_INT length)
+{
+  HOST_WIDE_INT src_align = MEM_ALIGN (src);
+  HOST_WIDE_INT dst_align = MEM_ALIGN (dst);
+  HOST_WIDE_INT loop_mov_bytes;
+  HOST_WIDE_INT iteration = 0;
+  HOST_WIDE_INT head_length = 0, leftover;
+  rtx label, src_reg, dst_reg, final_dst;
+
+  bool gen_loop_head = (src_align < BITS_PER_WORD
+                        || dst_align < BITS_PER_WORD);
+
+  if (gen_loop_head)
+    head_length += UNITS_PER_WORD;
+
+  for (loop_mov_bytes = MAX_MOVE_BYTES;
+       loop_mov_bytes >= MIN_MOVE_BYTES;
+       loop_mov_bytes -= UNITS_PER_WORD)
+    {
+      iteration = (length - head_length) / loop_mov_bytes;
+      if (iteration > 1)
+        break;
+    }
+  if (iteration <= 1)
+    {
+      mdx_block_move_straight (dst, src, length);
+      return;
+    }
+
+  leftover = (length - head_length) % loop_mov_bytes;
+  length -= leftover;
+
+  src_reg = copy_addr_to_reg (XEXP (src, 0));
+  dst_reg = copy_addr_to_reg (XEXP (dst, 0));
+  final_dst = expand_simple_binop (Pmode, PLUS, dst_reg, GEN_INT (length),
+                                   0, 0, OPTAB_WIDEN);
+
+  if (gen_loop_head)
+    mdx_block_move_loop_head (dst_reg, dst_align,
+                              src_reg, src_align, head_length);
+
+  label = gen_label_rtx ();
+  emit_label (label);
+
+  mdx_block_move_loop_body (dst_reg, dst_align,
+                            src_reg, src_align, loop_mov_bytes);
+
+  emit_insn (gen_cmpsi (dst_reg, final_dst));
+  emit_jump_insn (gen_bne (label));
+
+  mdx_block_move_loop_foot (dst_reg, dst_align,
+                            src_reg, src_align, leftover);
+}
+
+/* Generate block move, for misc.md: "movmemsi".  */
+bool
+mdx_block_move (rtx *ops)
+{
+  rtx dst = ops[0];
+  rtx src = ops[1];
+  rtx length = ops[2];
+
+  if (TARGET_LITTLE_ENDIAN
+      && (MEM_ALIGN (src) < BITS_PER_WORD || MEM_ALIGN (dst) < BITS_PER_WORD)
+      && INTVAL (length) >= UNITS_PER_WORD)
+    return false;
+
+  if (GET_CODE (length) == CONST_INT)
+    {
+      if (INTVAL (length) <= 2 * MAX_MOVE_BYTES)
+        {
+           mdx_block_move_straight (dst, src, INTVAL (length));
+           return true;
+        }
+      else if (optimize &&
+               !(flag_unroll_loops || flag_unroll_all_loops))
+        {
+          mdx_block_move_loop (dst, src, INTVAL (length));
+          return true;
+        }
+    }
+  return false;
+}
+
+/* Generate add insn.  */
 const char *
-mdp_add_imm_ucc (rtx *ops)
+mdp_select_add_imm (rtx *ops, bool set_cc)
 {
   HOST_WIDE_INT v = INTVAL (ops[2]);
 
   gcc_assert (GET_CODE (ops[2]) == CONST_INT);
   gcc_assert (REGNO (ops[0]) == REGNO (ops[1]));
 
-  if (G16_REG_P (REGNO (ops[0])))
+  if (set_cc && G16_REG_P (REGNO (ops[0])))
     {
-      if (v > 0 && num_bits1 (v) == 1 && IMM_IN_RANGE (ffs (v) - 1, 4, 0))
+      if (v > 0 && IMM_IS_POW_OF_2 ((unsigned HOST_WIDE_INT) v, 0, 15))
         {
           ops[2] = GEN_INT (ffs (v) - 1);
           return "addei!  %0, %c2";
         }
 
-      if (v < 0 && num_bits1 (-v) == 1 && IMM_IN_RANGE (ffs (-v) - 1, 4, 0))
+      if (v < 0 && IMM_IS_POW_OF_2 ((unsigned HOST_WIDE_INT) (-v), 0, 15))
         {
           ops[2] = GEN_INT (ffs (-v) - 1);
           return "subei!  %0, %c2";
         }
     }
+
+  if (set_cc)
     return "addi.c  %0, %c2";
+  else
+    return "addi    %0, %c2";
 }
 
-/* Output arith insn, insn will update condition flag.  */
+/* Output arith insn.  */
 const char *
-mdp_select (rtx *ops, const char *inst_pre, bool commu, const char *let)
+mdp_select (rtx *ops, const char *inst_pre,
+            bool commu, const char *letter, bool set_cc)
 {
   gcc_assert (GET_CODE (ops[0]) == REG);
   gcc_assert (GET_CODE (ops[1]) == REG);
 
-  if (G16_REG_P (REGNO (ops[0]))
+  if (set_cc && G16_REG_P (REGNO (ops[0]))
       && (GET_CODE (ops[2]) == REG ? G16_REG_P (REGNO (ops[2])) : 1)
       && REGNO (ops[0]) == REGNO (ops[1]))
     {
-      snprintf (ins, INS_BUF_SZ, "%s!        %%0, %%%s2", inst_pre, let);
+      snprintf (ins, INS_BUF_SZ, "%s!  %%0, %%%s2", inst_pre, letter);
       return ins;
     }
 
-  if (commu && G16_REG_P (REGNO (ops[0]))
+  if (commu && set_cc && G16_REG_P (REGNO (ops[0]))
       && G16_REG_P (REGNO (ops[1]))
       && REGNO (ops[0]) == REGNO (ops[2]))
     {
       gcc_assert (GET_CODE (ops[2]) == REG);
-      snprintf (ins, INS_BUF_SZ, "%s!        %%0, %%%s1", inst_pre, let);
+      snprintf (ins, INS_BUF_SZ, "%s!  %%0, %%%s1", inst_pre, letter);
       return ins;
     }
 
-  snprintf (ins, INS_BUF_SZ, "%s.c        %%0, %%1, %%%s2", inst_pre, let);
+  if (set_cc)
+    snprintf (ins, INS_BUF_SZ, "%s.c  %%0, %%1, %%%s2", inst_pre, letter);
+  else
+    snprintf (ins, INS_BUF_SZ, "%s    %%0, %%1, %%%s2", inst_pre, letter);
   return ins;
 }
 
