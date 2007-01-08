@@ -1779,7 +1779,7 @@ transfer_array_desc (gfc_se * se, gfc_typespec * ts, tree addr_expr)
   if (ts->type == BT_CHARACTER)
     charlen_arg = se->string_length;
   else
-    charlen_arg = build_int_cstu (NULL_TREE, 0);
+    charlen_arg = build_int_cst (NULL_TREE, 0);
 
   kind_arg = build_int_cst (NULL_TREE, ts->kind);
 

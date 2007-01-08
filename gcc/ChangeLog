@@ -1,3 +1,17 @@
+2007-01-08  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-ccp.c (maybe_fold_offset_to_array_ref): Use type
+	of offset to build the index.
+	* tree-pretty-print.c (dump_generic_node): Don't build negated
+	const just for printing.
+	* c-pretty-print.c (pp_c_integer_constant): Likewise.
+	* builtins.c (fold_builtin_int_roundingfn): Check if result
+	fits the type by using force_fit_type and comparing the result.
+	* predict.c (predict_loops): Use compare_tree_int for comparison.
+	* tree.c (build_int_cst): Fall back to integer_type_node for
+	NULL_TREE type.
+	(build_int_cst_wide): Assert type is non-null.
+
 2007-01-08  Roberto Costa  <roberto.costa@st.com>
 
 	* tree-vrp.c (extract_range_from_cond_expr): New.

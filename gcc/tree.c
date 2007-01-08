@@ -752,6 +752,10 @@ copy_list (tree list)
 tree
 build_int_cst (tree type, HOST_WIDE_INT low)
 {
+  /* Support legacy code.  */
+  if (!type)
+    type = integer_type_node;
+
   return build_int_cst_wide (type, low, low < 0 ? -1 : 0);
 }
 
@@ -864,8 +868,7 @@ build_int_cst_wide (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
   int ix = -1;
   int limit = 0;
 
-  if (!type)
-    type = integer_type_node;
+  gcc_assert (type);
 
   switch (TREE_CODE (type))
     {

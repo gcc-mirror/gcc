@@ -7602,9 +7602,11 @@ fold_builtin_int_roundingfn (tree fndecl, tree arglist)
 	    }
 
 	  REAL_VALUE_TO_INT (&lo, &hi, r);
-	  result = build_int_cst_wide (NULL_TREE, lo, hi);
-	  if (int_fits_type_p (result, itype))
-	    return fold_convert (itype, result);
+	  result = build_int_cst_wide (itype, lo, hi);
+	  result = force_fit_type (result, 0, false, false);
+	  if (TREE_INT_CST_LOW (result) == lo
+	      && TREE_INT_CST_HIGH (result) == hi)
+	    return result;
 	}
     }
 
