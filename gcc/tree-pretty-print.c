@@ -748,23 +748,20 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       else if (! host_integerp (node, 0))
 	{
 	  tree val = node;
+	  unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (val);
+	  HOST_WIDE_INT high = TREE_INT_CST_HIGH (val);
 
 	  if (tree_int_cst_sgn (val) < 0)
 	    {
 	      pp_character (buffer, '-');
-	      val = build_int_cst_wide (NULL_TREE,
-					-TREE_INT_CST_LOW (val),
-					~TREE_INT_CST_HIGH (val)
-					+ !TREE_INT_CST_LOW (val));
+	      high = ~high + !low;
+	      low = -low;
 	    }
 	  /* Would "%x%0*x" or "%x%*0x" get zero-padding on all
 	     systems?  */
-	  {
-	    sprintf (pp_buffer (buffer)->digit_buffer, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
-		     TREE_INT_CST_HIGH (val),
-		     TREE_INT_CST_LOW (val));
-	    pp_string (buffer, pp_buffer (buffer)->digit_buffer);
-	  }
+	  sprintf (pp_buffer (buffer)->digit_buffer,
+		   HOST_WIDE_INT_PRINT_DOUBLE_HEX, high, low);
+	  pp_string (buffer, pp_buffer (buffer)->digit_buffer);
 	}
       else
 	pp_wide_integer (buffer, TREE_INT_CST_LOW (node));

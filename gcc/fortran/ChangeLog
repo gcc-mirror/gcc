@@ -1,3 +1,8 @@
+2007-01-08  Richard Guenther  <rguenther@suse.de>
+
+	* trans-io.c (transfer_array_desc): Use build_int_cst instead
+	of build_int_cstu.
+
 2007-01-08  Roger Sayle  <roger@eyesopen.com>
 
 	* trans-array.c (constant_array_constructor_p): New function to
