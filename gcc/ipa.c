@@ -220,7 +220,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
    in language point of view but we want to overwrite this default
    via visibilities for the backend point of view.  */
 
-static void
+static unsigned int
 function_and_variable_visibility (void)
 {
   struct cgraph_node *node;
@@ -272,6 +272,7 @@ function_and_variable_visibility (void)
       fprintf (dump_file, "\n\n");
     }
   cgraph_function_flags_ready = true;
+  return 0;
 }
 
 struct tree_opt_pass pass_ipa_function_and_variable_visibility = 

@@ -1,6 +1,7 @@
 2007-01-08  Jan Hubicka  <jh@suse.cz>
 
 	* tree-vectorizer.c (gate_increase_alignment): Fix return type.
+	* ipa.c (function_and_variable_visibility): Fix return type.
 
 2007-01-08  Richard Guenther  <rguenther@suse.de>
 
