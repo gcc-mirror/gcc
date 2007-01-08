@@ -1,3 +1,10 @@
+2007-01-08  Mark Shinwell  <shinwell@codesourcery.com>
+
+	PR tree-optimization/29877
+	* gcc.dg/pr16194.c: Skip test entirely if we don't know the
+	name of a hard register for the target concerned.  Adjust dg-error
+	directives to cope with new behaviour of TER.
+
 2007-01-07  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/28986

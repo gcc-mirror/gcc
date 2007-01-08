@@ -2,6 +2,7 @@
 /* { dg-options "-O" } */
 /* { dg-bogus "internal compiler error" "ICE" { target *-*-* } 0 } */
 
+#undef SKIP
 #define ASMDECL __asm (REG);
 #define CLOBBER_LIST : REG
 #define INP_CLOBBER_LIST : CLOBBER_LIST
@@ -18,16 +19,14 @@
 # define REG "6"
 #elif defined (__x86_64__)
 # define REG "rax"
+#elif defined (__m68k__)
+# define REG "%d0"
 #else
-  /* Make this test harmless for any target not recognized above.  */
-# undef ASMDECL
-# define ASMDECL
-# define REG "conflict"
-# undef CLOBBER_LIST
-# define CLOBBER_LIST
-# undef INP_CLOBBER_LIST
-# define INP_CLOBBER_LIST
+/* Make this test harmless for any target not recognized above.  */
+# define SKIP 1
 #endif
+
+#ifndef SKIP
 
 struct A
 {
@@ -47,7 +46,7 @@ struct C
 void bug (void)
 {
   register char* dst ASMDECL;
-  __asm__ ("":"=g"(*dst): : REG); /* { dg-error "conflict" } */
+  __asm__ ("":"=g"(*dst): : REG);
 }
 
 /* The tree optimizers currently prevent us from finding an overlap -
@@ -56,12 +55,22 @@ void bug (void)
 void bug2 (void)
 {
   register char* dst ASMDECL;
-  __asm__ ("": :"g"(*dst) CLOBBER_LIST); /* { dg-error "conflict" } */
+  __asm__ ("": :"g"(*dst) CLOBBER_LIST);
 }
 
 void
 foo (void)
 {
   register struct C *dst ASMDECL;
-  __asm__ ("" : "=g"(dst->c.b[1].a) INP_CLOBBER_LIST); /* { dg-error "conflict" } */
+  __asm__ ("" : "=g"(dst->c.b[1].a) INP_CLOBBER_LIST);
 }
+
+#else
+
+int main ()
+{
+  return 0;
+}
+
+#endif
+
