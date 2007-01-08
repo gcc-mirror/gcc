@@ -45,7 +45,7 @@ extern int target_flags;
 
 #define CE_REG_P(REGNO)        REG_CONTAIN (REGNO, CE_REG_FIRST, CE_REG_NUM)
 
-#define UIMM_IN_RANGE(V, W)  ((V) >= 0 && (V) < ((HOST_WIDE_INT)1 << (W)))
+#define UIMM_IN_RANGE(V, W)  ((V) >= 0 && (V) < ((HOST_WIDE_INT) 1 << (W)))
 
 #define SIMM_IN_RANGE(V, W)                            \
   ((V) >= (-1 * ((HOST_WIDE_INT) 1 << ((W) - 1)))      \
@@ -53,6 +53,11 @@ extern int target_flags;
 
 #define IMM_IN_RANGE(V, W, S) \
   ((S) ? SIMM_IN_RANGE (V, W) : UIMM_IN_RANGE (V, W))
+
+#define IMM_IS_POW_OF_2(V, E1, E2)                \
+  ((V) >= ((unsigned HOST_WIDE_INT) 1 << (E1))     \
+   && (V) <= ((unsigned HOST_WIDE_INT) 1 << (E2))  \
+   && ((V) & ((V) - 1)) == 0)
 
 #define SCORE_STACK_ALIGN(LOC)          (((LOC) + 3) & ~3)
 

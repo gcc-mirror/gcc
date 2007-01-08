@@ -67,7 +67,9 @@ static int score_symbol_insns (enum score_symbol_type);
 
 static int score_address_insns (rtx, enum machine_mode);
 
-static bool score_rtx_costs (rtx, int, int, int *);
+static bool score_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *);
+
+static int score_address_cost (rtx);
 
 #undef  TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START           th_asm_file_start
@@ -126,6 +128,9 @@ static bool score_rtx_costs (rtx, int, int, int *);
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS                score_rtx_costs
 
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST             score_address_cost
+
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS     TARGET_DEFAULT
 
@@ -154,7 +159,7 @@ score_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 static rtx
 score_add_offset (rtx temp, rtx reg, HOST_WIDE_INT offset)
 {
-  if (!CONST_OK_FOR_LETTER_P (offset, 'O'))
+  if (!IMM_IN_RANGE (offset, 15, 1))
     {
       reg = expand_simple_binop (GET_MODE (reg), PLUS,
                                  gen_int_mode (offset & 0xffffc000,
@@ -499,12 +504,13 @@ enum reg_class score_char_to_class[256];
 void
 score_override_options (void)
 {
+  flag_pic = false;
   if (!flag_pic)
     sdata_max = g_switch_set ? g_switch_value : DEFAULT_SDATA_MAX;
   else
     {
       sdata_max = 0;
-      if (g_switch_set)
+      if (g_switch_set && (g_switch_value != 0))
         warning (0, "-fPIC and -G are incompatible");
     }
 
@@ -540,7 +546,7 @@ score_reg_class (int regno)
       || regno == ARG_POINTER_REGNUM)
     return ALL_REGS;
 
-  for (c = 0 ; c < N_REG_CLASSES ; c++)
+  for (c = 0; c < N_REG_CLASSES; c++)
     if (TEST_HARD_REG_BIT (reg_class_contents[c], regno))
       return c;
 
@@ -551,10 +557,10 @@ score_reg_class (int regno)
 enum reg_class
 score_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, enum reg_class class)
 {
-  if (reg_class_subset_p (G32_REGS, class))
-    class = G32_REGS;
   if (reg_class_subset_p (G16_REGS, class))
-    class = G16_REGS;
+    return G16_REGS;
+  if (reg_class_subset_p (G32_REGS, class))
+    return G32_REGS;
   return class;
 }
 
@@ -576,41 +582,34 @@ score_secondary_reload_class (enum reg_class class,
 
 /* Implement CONST_OK_FOR_LETTER_P macro.  */
 /* imm constraints
-   I        IMM8        (i15-2-form)
-   J        IMM5        (i15_1-form)
-   K        IMM16       (i-form)
-   L        IMM16s      (i-form)
-   M        IMM14       (ri-form)
-   N        IMM14s      (ri-form)
-   O        IMM15s      (ri-form)
-   P        IMM12s      (rix-form) / IMM10s(cop-form) << 2  */
+   I        imm16 << 16
+   J        uimm5
+   K        uimm16
+   L        simm16
+   M        uimm14
+   N        simm14  */
 int
-score_const_ok_for_letter_p (int value, char c)
+score_const_ok_for_letter_p (HOST_WIDE_INT value, char c)
 {
   switch (c)
     {
-    case 'I': return IMM_IN_RANGE (value, 8, 0);
+    case 'I': return ((value & 0xffff) == 0);
     case 'J': return IMM_IN_RANGE (value, 5, 0);
     case 'K': return IMM_IN_RANGE (value, 16, 0);
     case 'L': return IMM_IN_RANGE (value, 16, 1);
     case 'M': return IMM_IN_RANGE (value, 14, 0);
     case 'N': return IMM_IN_RANGE (value, 14, 1);
-    case 'O': return IMM_IN_RANGE (value, 15, 1);
-    case 'P': return IMM_IN_RANGE (value, 12, 1);
     default : return 0;
     }
 }
 
 /* Implement EXTRA_CONSTRAINT macro.  */
-/* Q        const_hi    imm
-   Z        symbol_ref  */
+/* Z        symbol_ref  */
 int
 score_extra_constraint (rtx op, char c)
 {
   switch (c)
     {
-    case 'Q':
-      return (GET_CODE (op) == CONST_INT && (INTVAL (op) & 0xffff) == 0);
     case 'Z':
       return GET_CODE (op) == SYMBOL_REF;
     default:
@@ -917,10 +916,8 @@ score_address_insns (rtx x, enum machine_mode mode)
   int factor;
 
   if (mode == BLKmode)
-    /* BLKmode is used for single unaligned loads and stores.  */
     factor = 1;
   else
-    /* Each word of a multi-word value will be accessed individually.  */
     factor = (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
   if (mda_classify_address (&addr, mode, x, false))
@@ -938,24 +935,53 @@ score_address_insns (rtx x, enum machine_mode mode)
 
 /* Implement TARGET_RTX_COSTS macro.  */
 static bool
-score_rtx_costs (rtx x, int code, int outer_code, int *total)
+score_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
+                 int *total)
 {
   enum machine_mode mode = GET_MODE (x);
 
   switch (code)
     {
     case CONST_INT:
-      /* These can be used anywhere. */
-      *total = 0;
+      if (outer_code == SET)
+        {
+          if (CONST_OK_FOR_LETTER_P (INTVAL (x), 'I')
+              || CONST_OK_FOR_LETTER_P (INTVAL (x), 'L'))
+            *total = COSTS_N_INSNS (1);
+          else
+            *total = COSTS_N_INSNS (2);
+        }
+      else if (outer_code == PLUS || outer_code == MINUS)
+        {
+          if (CONST_OK_FOR_LETTER_P (INTVAL (x), 'N'))
+            *total = 0;
+          else if (CONST_OK_FOR_LETTER_P (INTVAL (x), 'I')
+                   || CONST_OK_FOR_LETTER_P (INTVAL (x), 'L'))
+            *total = 1;
+          else
+            *total = COSTS_N_INSNS (2);
+        }
+      else if (outer_code == AND || outer_code == IOR)
+        {
+          if (CONST_OK_FOR_LETTER_P (INTVAL (x), 'M'))
+            *total = 0;
+          else if (CONST_OK_FOR_LETTER_P (INTVAL (x), 'I')
+                   || CONST_OK_FOR_LETTER_P (INTVAL (x), 'K'))
+            *total = 1;
+          else
+            *total = COSTS_N_INSNS (2);
+        }
+      else
+        {
+          *total = 0;
+        }
       return true;
 
-      /* Otherwise fall through to the handling below because
-         we'll need to construct the constant.  */
     case CONST:
     case SYMBOL_REF:
     case LABEL_REF:
     case CONST_DOUBLE:
-      *total = COSTS_N_INSNS (1);
+      *total = COSTS_N_INSNS (2);
       return true;
 
     case MEM:
@@ -1011,7 +1037,8 @@ score_rtx_costs (rtx x, int code, int outer_code, int *total)
           *total = COSTS_N_INSNS (4);
           return true;
         }
-      return false;
+      *total = COSTS_N_INSNS (1);
+      return true;
 
     case NEG:
       if (mode == DImode)
@@ -1022,27 +1049,50 @@ score_rtx_costs (rtx x, int code, int outer_code, int *total)
       return false;
 
     case MULT:
-      *total = COSTS_N_INSNS (12);
+      *total = optimize_size ? COSTS_N_INSNS (2) : COSTS_N_INSNS (12);
       return true;
 
     case DIV:
     case MOD:
     case UDIV:
     case UMOD:
-      *total = COSTS_N_INSNS (33);
+      *total = optimize_size ? COSTS_N_INSNS (2) : COSTS_N_INSNS (33);
       return true;
 
     case SIGN_EXTEND:
-      *total = COSTS_N_INSNS (2);
-      return true;
-
     case ZERO_EXTEND:
-      *total = COSTS_N_INSNS (1);
+      switch (GET_MODE (XEXP (x, 0)))
+        {
+        case QImode:
+        case HImode:
+          if (GET_CODE (XEXP (x, 0)) == MEM)
+            {
+              *total = COSTS_N_INSNS (2);
+
+              if (!TARGET_LITTLE_ENDIAN &&
+                  side_effects_p (XEXP (XEXP (x, 0), 0)))
+                *total = 100;
+            }
+          else
+            *total = COSTS_N_INSNS (1);
+          break;
+
+        default:
+          *total = COSTS_N_INSNS (1);
+          break;
+        }
       return true;
 
     default:
       return false;
     }
+}
+
+/* Implement TARGET_ADDRESS_COST macro.  */
+int
+score_address_cost (rtx addr)
+{
+  return score_address_insns (addr, SImode);
 }
 
 /* Implement ASM_OUTPUT_EXTERNAL macro.  */
@@ -1089,18 +1139,16 @@ score_return_addr (int count, rtx frame ATTRIBUTE_UNUSED)
 /* Implement PRINT_OPERAND macro.  */
 /* Score-specific operand codes:
    '['        print .set nor1 directive
-   ']'        print .set r1        directive
-
+   ']'        print .set r1 directive
    'U'        print hi part of a CONST_INT rtx
-   'D'        print first part of const double
-   'S'        selectively print '!' if operand is 15bit instruction accessible
-   'V'        print "v!" if operand is 15bit instruction accessible, or
-   "lfh!"
-
+   'E'        print log2(v)
+   'F'        print log2(~v)
+   'D'        print SFmode const double
+   'S'        selectively print "!" if operand is 15bit instruction accessible
+   'V'        print "v!" if operand is 15bit instruction accessible, or "lfh!"
    'L'        low  part of DImode reg operand
    'H'        high part of DImode reg operand
-
-   'C'  print part of opcode for a branch condition.  */
+   'C'        print part of opcode for a branch condition.  */
 void
 score_print_operand (FILE *file, rtx op, int c)
 {
@@ -1125,9 +1173,11 @@ score_print_operand (FILE *file, rtx op, int c)
   else if (c == 'D')
     {
       if (GET_CODE (op) == CONST_DOUBLE)
-        fprintf (file, HOST_WIDE_INT_PRINT_HEX,
-                 TARGET_LITTLE_ENDIAN
-                 ? CONST_DOUBLE_LOW (op) : CONST_DOUBLE_HIGH (op));
+        {
+          rtx temp = gen_lowpart (SImode, op);
+          gcc_assert (GET_MODE (op) == SFmode);
+          fprintf (file, HOST_WIDE_INT_PRINT_HEX, INTVAL (temp));
+        }
       else
         output_addr_const (file, op);
     }
@@ -1142,23 +1192,17 @@ score_print_operand (FILE *file, rtx op, int c)
       gcc_assert (code == REG);
       fprintf (file, G16_REG_P (REGNO (op)) ? "v!" : "lfh!");
     }
-  else if (code == REG)
-    {
-      int regnum = REGNO (op);
-      if ((c == 'H' && !WORDS_BIG_ENDIAN)
-          || (c == 'L' && WORDS_BIG_ENDIAN))
-        regnum ++;
-      fprintf (file, "%s", reg_names[regnum]);
-    }
   else if (c == 'C')
     {
+      enum machine_mode mode = GET_MODE (XEXP (op, 0));
+
       switch (code)
         {
         case EQ: fputs ("eq", file); break;
         case NE: fputs ("ne", file); break;
         case GT: fputs ("gt", file); break;
-        case GE: fputs ("ge", file); break;
-        case LT: fputs ("lt", file); break;
+        case GE: fputs (mode != CCmode ? "pl" : "ge", file); break;
+        case LT: fputs (mode != CCmode ? "mi" : "lt", file); break;
         case LE: fputs ("le", file); break;
         case GTU: fputs ("gtu", file); break;
         case GEU: fputs ("cs", file); break;
@@ -1167,6 +1211,46 @@ score_print_operand (FILE *file, rtx op, int c)
         default:
           output_operand_lossage ("invalid operand for code: '%c'", code);
         }
+    }
+  else if (c == 'E')
+    {
+      unsigned HOST_WIDE_INT i;
+      unsigned HOST_WIDE_INT pow2mask = 1;
+      unsigned HOST_WIDE_INT val;
+
+      val = INTVAL (op);
+      for (i = 0; i < 32; i++)
+        {
+          if (val == pow2mask)
+            break;
+          pow2mask <<= 1;
+        }
+      gcc_assert (i < 32);
+      fprintf (file, HOST_WIDE_INT_PRINT_HEX, i);
+    }
+  else if (c == 'F')
+    {
+      unsigned HOST_WIDE_INT i;
+      unsigned HOST_WIDE_INT pow2mask = 1;
+      unsigned HOST_WIDE_INT val;
+
+      val = ~INTVAL (op);
+      for (i = 0; i < 32; i++)
+        {
+          if (val == pow2mask)
+            break;
+          pow2mask <<= 1;
+        }
+      gcc_assert (i < 32);
+      fprintf (file, HOST_WIDE_INT_PRINT_HEX, i);
+    }
+  else if (code == REG)
+    {
+      int regnum = REGNO (op);
+      if ((c == 'H' && !WORDS_BIG_ENDIAN)
+          || (c == 'L' && WORDS_BIG_ENDIAN))
+        regnum ++;
+      fprintf (file, "%s", reg_names[regnum]);
     }
   else
     {
@@ -1231,6 +1315,50 @@ score_print_operand_address (FILE *file, rtx x)
     }
   print_rtl (stderr, x);
   gcc_unreachable ();
+}
+
+/* Implement SELECT_CC_MODE macro.  */
+enum machine_mode
+score_select_cc_mode (enum rtx_code op, rtx x, rtx y)
+{
+  if ((op == EQ || op == NE || op == LT || op == GE)
+      && y == const0_rtx
+      && GET_MODE (x) == SImode)
+    {
+      switch (GET_CODE (x))
+        {
+        case PLUS:
+        case MINUS:
+        case NEG:
+        case AND:
+        case IOR:
+        case XOR:
+        case NOT:
+        case ASHIFT:
+        case LSHIFTRT:
+        case ASHIFTRT:
+          return CC_NZmode;
+
+        case SIGN_EXTEND:
+        case ZERO_EXTEND:
+        case ROTATE:
+        case ROTATERT:
+          return (op == LT || op == GE) ? CC_Nmode : CCmode;
+
+        default:
+          return CCmode;
+        }
+    }
+
+  if ((op == EQ || op == NE)
+      && (GET_CODE (y) == NEG)
+      && register_operand (XEXP (y, 0), SImode)
+      && register_operand (x, SImode))
+    {
+      return CC_NZmode;
+    }
+
+  return CCmode;
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

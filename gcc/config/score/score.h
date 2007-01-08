@@ -28,19 +28,20 @@ extern GTY(()) rtx cmp_op0;
 extern GTY(()) rtx cmp_op1;
 
 /* Controlling the Compilation Driver.  */
+#undef SWITCH_TAKES_ARG
 #define SWITCH_TAKES_ARG(CHAR) \
   (DEFAULT_SWITCH_TAKES_ARG (CHAR) || (CHAR) == 'G')
 
 /* CC1_SPEC is the set of arguments to pass to the compiler proper.  */
 #undef CC1_SPEC
-#define CC1_SPEC                 "%{!mel:-meb}"
+#define CC1_SPEC                 "%{G*} %{!mel:-meb}"
 
 #undef ASM_SPEC
 #define ASM_SPEC \
   "%{!mel:-EB} %{mel:-EL} %{mscore5u:-SCORE5U} %{mscore7:-SCORE7} %{G*}"
 
 #undef LINK_SPEC
-#define LINK_SPEC                 "%{!mel:-EB} %{mel:-EL} %{G*}"
+#define LINK_SPEC                "%{!mel:-EB} %{mel:-EL} %{G*}"
 
 /* Run-time Target Specification.  */
 #define TARGET_CPU_CPP_BUILTINS()               \
@@ -96,7 +97,7 @@ extern GTY(()) rtx cmp_op1;
 
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY                  BITS_PER_WORD
-#define STACK_BOUNDARY                 64
+#define STACK_BOUNDARY                 BITS_PER_WORD
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY              BITS_PER_WORD
@@ -115,11 +116,40 @@ extern GTY(()) rtx cmp_op1;
    data to make it all fit in fewer cache lines.  Another is to
    cause character arrays to be word-aligned so that `strcpy' calls
    that copy constants to character arrays can be done inline.  */
-#define DATA_ALIGNMENT(TYPE, ALIGN)                                     \
-  ((((ALIGN) < BITS_PER_WORD)                                           \
-    && (TREE_CODE (TYPE) == ARRAY_TYPE                                  \
-        || TREE_CODE (TYPE) == UNION_TYPE                               \
+#define DATA_ALIGNMENT(TYPE, ALIGN)                                      \
+  ((((ALIGN) < BITS_PER_WORD)                                            \
+    && (TREE_CODE (TYPE) == ARRAY_TYPE                                   \
+        || TREE_CODE (TYPE) == UNION_TYPE                                \
         || TREE_CODE (TYPE) == RECORD_TYPE)) ? BITS_PER_WORD : (ALIGN))
+
+/* If defined, a C expression to compute the alignment given to a
+   constant that is being placed in memory.  EXP is the constant
+   and ALIGN is the alignment that the object would ordinarily have.
+   The value of this macro is used instead of that alignment to align
+   the object.
+
+   If this macro is not defined, then ALIGN is used.
+
+   The typical use of this macro is to increase alignment for string
+   constants to be word aligned so that `strcpy' calls that copy
+   constants can be done inline.  */
+#define CONSTANT_ALIGNMENT(EXP, ALIGN)                                  \
+  ((TREE_CODE (EXP) == STRING_CST  || TREE_CODE (EXP) == CONSTRUCTOR)   \
+   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
+
+/* If defined, a C expression to compute the alignment for a local
+   variable.  TYPE is the data type, and ALIGN is the alignment that
+   the object would ordinarily have.  The value of this macro is used
+   instead of that alignment to align the object.
+
+   If this macro is not defined, then ALIGN is used.
+
+   One use of this macro is to increase alignment of medium-size
+   data to make it all fit in fewer cache lines.  */
+#define LOCAL_ALIGNMENT(TYPE, ALIGN)                                    \
+  ((TREE_CODE (TYPE) == ARRAY_TYPE                                      \
+    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode                           \
+    && (ALIGN) < BITS_PER_WORD) ? BITS_PER_WORD : (ALIGN))
 
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY           32
@@ -209,7 +239,7 @@ extern GTY(()) rtx cmp_op1;
 {                                                        \
   /* General Purpose Registers  */                       \
   1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,        \
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1,        \
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,        \
   /* Control Registers  */                               \
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,        \
   /* CEH/ CEL/ CNT/ LCR/ SCR / ARG_POINTER_REGNUM/ FRAME_POINTER_REGNUM */\
@@ -245,8 +275,8 @@ extern GTY(()) rtx cmp_op1;
 }
 
 #define REG_ALLOC_ORDER                                                   \
-{   0,  1,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17,        \
-   18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,  2,  3,        \
+{   0,  1,  6,  7,  8,  9, 10, 11,  4,  5, 22, 23, 24, 25, 26, 27,        \
+   12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 28, 29, 30, 31,  2,  3,        \
    32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,        \
    48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,        \
    64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,        \
@@ -386,18 +416,18 @@ enum reg_class
   score_preferred_reload_class (X, CLASS)
 
 /* If we need to load shorts byte-at-a-time, then we need a scratch.  */
-#define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X)        \
+#define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X) \
   score_secondary_reload_class (CLASS, MODE, X)
 
 /* Return the register class of a scratch register needed to copy IN into
    or out of a register in CLASS in MODE.  If it can be done directly,
    NO_REGS is returned.  */
-#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X)       \
+#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X) \
   score_secondary_reload_class (CLASS, MODE, X)
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
-#define CLASS_MAX_NREGS(CLASS, MODE)    \
+#define CLASS_MAX_NREGS(CLASS, MODE) \
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)    \
@@ -607,8 +637,8 @@ typedef struct score_args
 #define HAVE_PRE_DECREMENT              1
 #define HAVE_POST_INCREMENT             1
 #define HAVE_POST_DECREMENT             1
-#define HAVE_PRE_MODIFY_DISP            0
-#define HAVE_POST_MODIFY_DISP           0
+#define HAVE_PRE_MODIFY_DISP            1
+#define HAVE_POST_MODIFY_DISP           1
 #define HAVE_PRE_MODIFY_REG             0
 #define HAVE_POST_MODIFY_REG            0
 
@@ -659,6 +689,13 @@ typedef struct score_args
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)       {}
 
 #define LEGITIMATE_CONSTANT_P(X)        1
+
+/* Condition Code Status.  */
+#define SELECT_CC_MODE(OP, X, Y)        score_select_cc_mode (OP, X, Y)
+
+/* Return nonzero if SELECT_CC_MODE will never return MODE for a
+   floating point inequality comparison.  */
+#define REVERSIBLE_CC_MODE(MODE)        1
 
 /* Describing Relative Costs of Operations  */
 /* Compute extra cost of moving data between one register class and another.  */
@@ -753,32 +790,32 @@ typedef struct score_args
   sprintf ((LABEL), "*%s%s%ld", (LOCAL_LABEL_PREFIX), (PREFIX), (long) (NUM))
 
 /* Output of Assembler Instructions.  */
-#define REGISTER_NAMES                                                   \
-{ "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7",                        \
-  "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",                  \
-  "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23",                \
-  "r24", "r25", "r26", "r27", "r28", "r29", "r30", "r31",                \
-                                                                         \
-  "cr0", "cr1", "cr2", "cr3", "cr4", "cr5", "cr6", "cr7",                \
-  "cr8", "cr9", "cr10", "cr11", "cr12", "cr13", "cr14", "cr15",          \
-                                                                         \
-  "ceh", "cel", "sr0", "sr1", "sr2", "_arg", "_frame", "",               \
-  "cr24", "cr25", "cr26", "cr27", "cr28", "cr29", "cr30", "cr31",        \
-                                                                         \
-  "c1r0", "c1r1", "c1r2", "c1r3", "c1r4", "c1r5", "c1r6", "c1r7",        \
-  "c1r8", "c1r9", "c1r10", "c1r11", "c1r12", "c1r13", "c1r14", "c1r15",  \
-  "c1r16", "c1r17", "c1r18", "c1r19", "c1r20", "c1r21", "c1r22", "c1r23",\
-  "c1r24", "c1r25", "c1r26", "c1r27", "c1r28", "c1r29", "c1r30", "c1r31",\
-                                                                         \
-  "c2r0", "c2r1", "c2r2", "c2r3", "c2r4", "c2r5", "c2r6", "c2r7",        \
-  "c2r8", "c2r9", "c2r10", "c2r11", "c2r12", "c2r13", "c2r14", "c2r15",  \
-  "c2r16", "c2r17", "c2r18", "c2r19", "c2r20", "c2r21", "c2r22", "c2r23",\
-  "c2r24", "c2r25", "c2r26", "c2r27", "c2r28", "c2r29", "c2r30", "c2r31",\
-                                                                         \
-  "c3r0", "c3r1", "c3r2", "c3r3", "c3r4", "c3r5", "c3r6", "c3r7",        \
-  "c3r8", "c3r9", "c3r10", "c3r11", "c3r12", "c3r13", "c3r14", "c3r15",  \
-  "c3r16", "c3r17", "c3r18", "c3r19", "c3r20", "c3r21", "c3r22", "c3r23",\
-  "c3r24", "c3r25", "c3r26", "c3r27", "c3r28", "c3r29", "c3r30", "c3r31",\
+#define REGISTER_NAMES                                                    \
+{ "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7",                         \
+  "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",                   \
+  "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23",                 \
+  "r24", "r25", "r26", "r27", "r28", "r29", "r30", "r31",                 \
+                                                                          \
+  "cr0", "cr1", "cr2", "cr3", "cr4", "cr5", "cr6", "cr7",                 \
+  "cr8", "cr9", "cr10", "cr11", "cr12", "cr13", "cr14", "cr15",           \
+                                                                          \
+  "ceh", "cel", "sr0", "sr1", "sr2", "_arg", "_frame", "",                \
+  "cr24", "cr25", "cr26", "cr27", "cr28", "cr29", "cr30", "cr31",         \
+                                                                          \
+  "c1r0", "c1r1", "c1r2", "c1r3", "c1r4", "c1r5", "c1r6", "c1r7",         \
+  "c1r8", "c1r9", "c1r10", "c1r11", "c1r12", "c1r13", "c1r14", "c1r15",   \
+  "c1r16", "c1r17", "c1r18", "c1r19", "c1r20", "c1r21", "c1r22", "c1r23", \
+  "c1r24", "c1r25", "c1r26", "c1r27", "c1r28", "c1r29", "c1r30", "c1r31", \
+                                                                          \
+  "c2r0", "c2r1", "c2r2", "c2r3", "c2r4", "c2r5", "c2r6", "c2r7",         \
+  "c2r8", "c2r9", "c2r10", "c2r11", "c2r12", "c2r13", "c2r14", "c2r15",   \
+  "c2r16", "c2r17", "c2r18", "c2r19", "c2r20", "c2r21", "c2r22", "c2r23", \
+  "c2r24", "c2r25", "c2r26", "c2r27", "c2r28", "c2r29", "c2r30", "c2r31", \
+                                                                          \
+  "c3r0", "c3r1", "c3r2", "c3r3", "c3r4", "c3r5", "c3r6", "c3r7",         \
+  "c3r8", "c3r9", "c3r10", "c3r11", "c3r12", "c3r13", "c3r14", "c3r15",   \
+  "c3r16", "c3r17", "c3r18", "c3r19", "c3r20", "c3r21", "c3r22", "c3r23", \
+  "c3r24", "c3r25", "c3r26", "c3r27", "c3r28", "c3r29", "c3r30", "c3r31", \
 }
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.  */
@@ -907,4 +944,4 @@ struct extern_list GTY ((chain_next ("%h.next")))
   int size;                             /* size in bytes  */
 };
 
-extern GTY (()) struct extern_list      *extern_head ;
+extern GTY (()) struct extern_list      *extern_head;
