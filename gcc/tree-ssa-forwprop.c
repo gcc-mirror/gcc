@@ -561,6 +561,7 @@ forward_propagate_into_cond (tree cond_expr)
 	  tree def = SSA_NAME_DEF_STMT (test_var);
 	  block_stmt_iterator bsi = bsi_for_stmt (def);
 	  bsi_remove (&bsi, true);
+	  release_defs (def);
 	}
     }
 
@@ -999,7 +1000,10 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		{
 		  bool some = false;
 		  if (forward_propagate_addr_expr (stmt, &some))
-		    bsi_remove (&bsi, true);
+		    {
+		      release_defs (stmt);
+		      bsi_remove (&bsi, true);
+		    }
 		  else
 		    bsi_next (&bsi);
 		  if (some)
