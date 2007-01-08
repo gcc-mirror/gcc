@@ -1,3 +1,7 @@
+2007-01-08  Kazu Hirata  <kazu@codesourcery.com>
+
+	gfortran.texi: Fix typos.
+
 2007-01-07  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* decl.c, dump-parse-tree.c, error.c, data.c, expr.c, dependency.c,

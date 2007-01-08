@@ -867,7 +867,7 @@ variable immediately preceding the initialization.  In other words,
 something like @code{INTEGER I,J/2,3/} is not valid.  This style of
 initialization is only allowed in declarations without double colons
 (@code{::}); the double colons were introduced in Fortran 90, which also
-introduced a standard syntax for initializating variables in type
+introduced a standard syntax for initializing variables in type
 declarations.
 
 Examples of standard-conforming code equivalent to the above example
@@ -1076,7 +1076,7 @@ zero, and @code{.TRUE.} is interpreted as one.  When converting from
 
 GNU Fortran supports Hollerith constants in assignments, function
 arguments, and @code{DATA} and @code{ASSIGN} statements.  A Hollerith
-constant is written as a string of characters preceeded by an integer
+constant is written as a string of characters preceded by an integer
 constant indicating the character count, and the letter @code{H} or
 @code{h}, and stored in bytewise fashion in a numeric (@code{INTEGER},
 @code{REAL}, or @code{complex}) or @code{LOGICAL} variable.  The
