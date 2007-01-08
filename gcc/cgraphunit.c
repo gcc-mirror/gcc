@@ -279,6 +279,7 @@ cgraph_process_new_functions (void)
 	     it into reachable functions list.  */
 
 	  node->next_needed = NULL;
+	  node->needed = node->reachable = false;
 	  cgraph_finalize_function (fndecl, false);
 	  cgraph_mark_reachable_node (node);
 	  output = true;
@@ -780,38 +781,21 @@ process_function_and_variable_attributes (struct cgraph_node *first,
     }
 }
 
-/* Analyze the whole compilation unit once it is parsed completely.  */
+/* Process CGRAPH_NODES_NEEDED queue, analyze each function (and transitively
+   each reachable functions) and build cgraph.
+   The function can be called multiple times after inserting new nodes
+   into beggining of queue.  Just the new part of queue is re-scanned then.  */
 
-void
-cgraph_finalize_compilation_unit (void)
+static void
+cgraph_analyze_functions (void)
 {
-  struct cgraph_node *node, *next;
   /* Keep track of already processed nodes when called multiple times for
      intermodule optimization.  */
   static struct cgraph_node *first_analyzed;
   struct cgraph_node *first_processed = first_analyzed;
   static struct varpool_node *first_analyzed_var;
+  struct cgraph_node *node, *next;
 
-  if (errorcount || sorrycount)
-    return;
-
-  finish_aliases_1 ();
-
-  if (!flag_unit_at_a_time)
-    {
-      cgraph_output_pending_asms ();
-      cgraph_assemble_pending_functions ();
-      varpool_output_debug_info ();
-      return;
-    }
-
-  if (!quiet_flag)
-    {
-      fprintf (stderr, "\nAnalyzing compilation unit\n");
-      fflush (stderr);
-    }
-
-  timevar_push (TV_CGRAPH);
   process_function_and_variable_attributes (first_processed,
 					    first_analyzed_var);
   first_processed = cgraph_nodes;
@@ -825,6 +809,7 @@ cgraph_finalize_compilation_unit (void)
 	  fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
       fprintf (cgraph_dump_file, "\n");
     }
+  cgraph_process_new_functions ();
 
   /* Propagate reachability flag and lower representation of all reachable
      functions.  In the future, lowering will introduce new functions and
@@ -864,6 +849,7 @@ cgraph_finalize_compilation_unit (void)
       first_processed = cgraph_nodes;
       first_analyzed_var = varpool_nodes;
       varpool_analyze_pending_decls ();
+      cgraph_process_new_functions ();
     }
 
   /* Collect entry points to the unit.  */
@@ -907,6 +893,34 @@ cgraph_finalize_compilation_unit (void)
     }
   first_analyzed = cgraph_nodes;
   ggc_collect ();
+}
+
+/* Analyze the whole compilation unit once it is parsed completely.  */
+
+void
+cgraph_finalize_compilation_unit (void)
+{
+  if (errorcount || sorrycount)
+    return;
+
+  finish_aliases_1 ();
+
+  if (!flag_unit_at_a_time)
+    {
+      cgraph_output_pending_asms ();
+      cgraph_assemble_pending_functions ();
+      varpool_output_debug_info ();
+      return;
+    }
+
+  if (!quiet_flag)
+    {
+      fprintf (stderr, "\nAnalyzing compilation unit\n");
+      fflush (stderr);
+    }
+
+  timevar_push (TV_CGRAPH);
+  cgraph_analyze_functions ();
   timevar_pop (TV_CGRAPH);
 }
 /* Figure out what functions we want to assemble.  */
@@ -970,7 +984,6 @@ cgraph_expand_function (struct cgraph_node *node)
     announce_function (decl);
 
   gcc_assert (node->lowered);
-  /*cgraph_lower_function (node);*/
 
   /* Generate RTL for the body of DECL.  */
   lang_hooks.callgraph.expand_function (decl);
@@ -1190,7 +1203,7 @@ cgraph_optimize (void)
   /* Frontend may output common variables after the unit has been finalized.
      It is safe to deal with them here as they are always zero initialized.  */
   varpool_analyze_pending_decls ();
-  cgraph_process_new_functions ();
+  cgraph_analyze_functions ();
 
   timevar_push (TV_CGRAPHOPT);
   if (pre_ipa_mem_report)
