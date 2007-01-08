@@ -1,5 +1,19 @@
 2007-01-08  Mark Shinwell  <shinwell@codesourcery.com>
 
+	* gcc.target/i386/20020531-1.c: Use "char" not "unsigned char"
+	in __v8qi typedef.
+	* gcc.target/powerpc/altivec-vec-merge.c (foo): Add casts.
+	* gcc.dg/simd-1.c: Update dg-error directives to reflect new
+	compiler behaviour.
+	* gcc.dg/simd-5.c: Likewise.
+	* gcc.dg/simd-6.c: Likewise.
+	* g++.dg/conversion/simd1.C: Likewise.
+	* g++.dg/conversion/simd3.C: Likewise.
+	* g++.dg/ext/attribute-test-2.C (data): Add "vs" member.
+	(main): Use it.
+
+2007-01-08  Mark Shinwell  <shinwell@codesourcery.com>
+
 	PR tree-optimization/29877
 	* gcc.dg/pr16194.c: Skip test entirely if we don't know the
 	name of a hard register for the target concerned.  Adjust dg-error

@@ -332,7 +332,7 @@ NAME (T a1, U a2) \
 __altivec_binary_pred(vec_cmplt,
   __builtin_vec_cmpgt (a2, a1))
 __altivec_binary_pred(vec_cmple,
-  __builtin_altivec_cmpge (a2, a1))
+  __builtin_vec_cmpge (a2, a1))
 
 __altivec_scalar_pred(vec_all_in,
   __builtin_altivec_vcmpbfp_p (__CR6_EQ, a1, a2))
@@ -402,7 +402,7 @@ __altivec_scalar_pred(vec_any_nle,
 #undef __altivec_binary_pred
 #else
 #define vec_cmplt(a1, a2) __builtin_vec_cmpgt ((a2), (a1))
-#define vec_cmple(a1, a2) __builtin_altivec_vcmpgefp ((a2), (a1))
+#define vec_cmple(a1, a2) __builtin_vec_cmpge ((a2), (a1))
 
 #define vec_all_in(a1, a2) __builtin_altivec_vcmpbfp_p (__CR6_EQ, (a1), (a2))
 #define vec_any_out(a1, a2) __builtin_altivec_vcmpbfp_p (__CR6_EQ_REV, (a1), (a2))

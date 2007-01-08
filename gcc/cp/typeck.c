@@ -6296,7 +6296,7 @@ convert_for_assignment (tree type, tree rhs,
   coder = TREE_CODE (rhstype);
 
   if (TREE_CODE (type) == VECTOR_TYPE && coder == VECTOR_TYPE
-      && vector_types_convertible_p (type, rhstype))
+      && vector_types_convertible_p (type, rhstype, true))
     return convert (type, rhs);
 
   if (rhs == error_mark_node || rhstype == error_mark_node)
@@ -6863,7 +6863,7 @@ ptr_reasonably_similar (tree to, tree from)
 	continue;
 
       if (TREE_CODE (to) == VECTOR_TYPE
-	  && vector_types_convertible_p (to, from))
+	  && vector_types_convertible_p (to, from, false))
 	return 1;
 
       if (TREE_CODE (to) == INTEGER_TYPE

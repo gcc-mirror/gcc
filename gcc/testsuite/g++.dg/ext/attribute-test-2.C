@@ -15,8 +15,8 @@ public:
      return (__attribute__((vector_size(16))) short) vec;
    }
 
-   operator __attribute__((vector_size(16))) int (void) {
-     return (__attribute__((vector_size(16))) int) vec1;
+   operator __attribute__((vector_size(16))) unsigned int (void) {
+     return (__attribute__((vector_size(16))) unsigned int) vec1;
    }
 
    vector_holder () {
@@ -30,6 +30,7 @@ public:
 union u {
               char f[16];
               vector unsigned int v;
+              vector short vs;
 } data;
 
 
@@ -37,10 +38,10 @@ vector_holder vh;
 
 int main()
 {
-  data.v = (__attribute__((vector_size(16))) short) vh;
+  data.vs = (__attribute__((vector_size(16))) short) vh;
   if (data.f[0] != 'a' || data.f[15] != 'd')
     abort(); 
-  data.v = (__attribute__((vector_size(16))) int) vh;
+  data.v = (__attribute__((vector_size(16))) unsigned int) vh;
   if (data.f[0] != 'm' || data.f[15] != 'p')
     abort(); 
 
