@@ -1,3 +1,8 @@
+2007-01-08  Ralf Corsépius <ralf.corsepius@rtems.org>
+
+	* config/bfin/rtems.h, config/bfin/t-rtems: New.
+	* config.gcc: Add bfin*-rtems*.
+
 2007-01-08  Chen liqin  <liqin@sunnorth.com.cn>
 	* config/score/t-score-elf (MULTILIB_OPTIONS): Change.
 	* config/score/predicates.md (const_uimm5, sr0_operand, const_simm12,
