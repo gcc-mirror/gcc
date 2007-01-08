@@ -1,3 +1,13 @@
+2007-01-09  Ben Elliston  <bje@au.ibm.com>
+
+	* genautomata.c (STATS_OPTION): New option.
+	(stats_flag): New flag.
+	(gen_automata_option): Handle it.
+	(initiate_automaton_gen): Ditto.
+	(write_automata): Output statistics only if stats_flag is
+	set. Likewise, output time statistics only if time_flag is set.
+	* doc/md.texi (Processor pipeline description): Document new flag.
+
 2007-01-08  Richard Guenther  <rguenther@suse.de>
 
 	* builtins.c (fold_builtin_int_roundingfn): Use fit_double_type.

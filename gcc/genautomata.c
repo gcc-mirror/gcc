@@ -1,5 +1,5 @@
 /* Pipeline hazard description translator.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007
    Free Software Foundation, Inc.
 
    Written by Vladimir Makarov <vmakarov@redhat.com>
@@ -238,15 +238,11 @@ static arc_t next_out_arc              (arc_t);
    macros.  */
 
 #define NO_MINIMIZATION_OPTION "-no-minimization"
-
 #define TIME_OPTION "-time"
-
+#define STATS_OPTION "-stats"
 #define V_OPTION "-v"
-
 #define W_OPTION "-w"
-
 #define NDFA_OPTION "-ndfa"
-
 #define PROGRESS_OPTION "-progress"
 
 /* The following flags are set up by function `initiate_automaton_gen'.  */
@@ -266,6 +262,9 @@ static int split_argument;
 
 /* Flag of output time statistics (`-time').  */
 static int time_flag;
+
+/* Flag of automata statistics (`-stats').  */
+static int stats_flag;
 
 /* Flag of creation of description file which contains description of
    result automaton and statistics information (`-v').  */
@@ -1511,6 +1510,8 @@ gen_automata_option (rtx def)
     no_minimization_flag = 1;
   else if (strcmp (XSTR (def, 0), TIME_OPTION + 1) == 0)
     time_flag = 1;
+  else if (strcmp (XSTR (def, 0), STATS_OPTION + 1) == 0)
+    stats_flag = 1;
   else if (strcmp (XSTR (def, 0), V_OPTION + 1) == 0)
     v_flag = 1;
   else if (strcmp (XSTR (def, 0), W_OPTION + 1) == 0)
@@ -8937,6 +8938,7 @@ initiate_automaton_gen (int argc, char **argv)
   split_argument = 0;  /* default value */
   no_minimization_flag = 0;
   time_flag = 0;
+  stats_flag = 0;
   v_flag = 0;
   w_flag = 0;
   progress_flag = 0;
@@ -8945,6 +8947,8 @@ initiate_automaton_gen (int argc, char **argv)
       no_minimization_flag = 1;
     else if (strcmp (argv [i], TIME_OPTION) == 0)
       time_flag = 1;
+    else if (strcmp (argv [i], STATS_OPTION) == 0)
+      stats_flag = 1;
     else if (strcmp (argv [i], V_OPTION) == 0)
       v_flag = 1;
     else if (strcmp (argv [i], W_OPTION) == 0)
@@ -9206,9 +9210,11 @@ write_automata (void)
 	fprintf (stderr, "done\n");
       output_statistics (output_description_file);
     }
-  output_statistics (stderr);
+  if (stats_flag)
+    output_statistics (stderr);
   ticker_off (&output_time);
-  output_time_statistics (stderr);
+  if (time_flag)
+    output_time_statistics (stderr);
   finish_states ();
   finish_arcs ();
   finish_automata_lists ();

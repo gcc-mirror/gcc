@@ -7250,8 +7250,12 @@ only worth to do when we are debugging the description and need to
 look more accurately at reservations of states.
 
 @item
-@dfn{time} means printing additional time statistics about
-generation of automata.
+@dfn{time} means printing time statistics about the generation of
+automata.
+
+@item
+@dfn{stats} means printing statistics about the generated automata
+such as the number of DFA states, NDFA states and arcs.
 
 @item
 @dfn{v} means a generation of the file describing the result automata.
