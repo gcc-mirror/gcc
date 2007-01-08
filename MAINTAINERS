@@ -53,6 +53,7 @@ h8 port			Kazu Hirata		kazu@codesourcery.com
 hppa port		Jeff Law		law@redhat.com
 hppa port		Dave Anglin		dave.anglin@nrc.ca
 i386 port		Richard Henderson	rth@redhat.com
+i386 port		Jan Hubicka		jh@suse.cz
 ia64 port		Jim Wilson		wilson@specifixinc.com
 iq2000 port		Nick Clifton		nickc@redhat.com
 m32c port		DJ Delorie		dj@redhat.com

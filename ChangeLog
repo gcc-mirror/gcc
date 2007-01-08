@@ -1,3 +1,7 @@
+2007-01-08  Jan Hubicka  <jh@suse.cz>
+
+	* MAINTAINERS: Add myself as build system maintainer.
+
 2007-01-08  Kai Tietz	<kai.tietz@onevision.com>
 
 	* configure.in: Add support for an x86_64-mingw* target.
