@@ -2255,7 +2255,7 @@ increase_alignment (void)
   return 0;
 }
 
-static int
+static bool
 gate_increase_alignment (void)
 {
   return flag_section_anchors && flag_tree_vectorize;
