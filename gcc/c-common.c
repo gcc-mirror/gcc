@@ -2316,12 +2316,11 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 	{
 	  /* Convert primop1 to target type, but do not introduce
 	     additional overflow.  We know primop1 is an int_cst.  */
-	  tree tmp = build_int_cst_wide (*restype_ptr,
-					 TREE_INT_CST_LOW (primop1),
-					 TREE_INT_CST_HIGH (primop1));
-
-	  primop1 = force_fit_type (tmp, 0, TREE_OVERFLOW (primop1),
-				    TREE_CONSTANT_OVERFLOW (primop1));
+	  primop1 = force_fit_type_double (*restype_ptr,
+					   TREE_INT_CST_LOW (primop1),
+					   TREE_INT_CST_HIGH (primop1), 0,
+					   TREE_OVERFLOW (primop1),
+					   TREE_CONSTANT_OVERFLOW (primop1));
 	}
       if (type != *restype_ptr)
 	{
