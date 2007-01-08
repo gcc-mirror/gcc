@@ -278,6 +278,9 @@ case "${host}" in
   i[[3456789]]86-*-go32* | i[[3456789]]86-*-msdosdjgpp*)
     noconfigdirs="$noconfigdirs tcl tk expect dejagnu send-pr uudecode guile itcl gnuserv libffi"
     ;;
+  x86_64-*-mingw*)
+    noconfigdirs="$noconfigdirs expect dejagnu autoconf automake send-pr rcs guile perl texinfo libtool newlib"
+    ;;
   i[[3456789]]86-*-mingw32*)
     # noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl itcl gnuserv"
     noconfigdirs="$noconfigdirs expect dejagnu autoconf automake send-pr rcs guile perl texinfo libtool newlib"
@@ -619,6 +622,10 @@ case "${target}" in
     target_configdirs="$target_configdirs target-winsup"
     noconfigdirs="$noconfigdirs expect target-libgloss target-newlib ${libgcj}"
     ;;    
+  x86_64-*-mingw*)
+    target_configdirs="$target_configdirs target-winsup"
+    noconfigdirs="$noconfigdirs expect target-libgloss target-newlib ${libgcj}"
+    ;;    
   *-*-cygwin*)
     target_configdirs="$target_configdirs target-libtermcap target-winsup"
     noconfigdirs="$noconfigdirs target-gperf target-libgloss ${libgcj}"
@@ -933,6 +940,8 @@ case "${host}" in
     host_makefile_frag="config/mh-cygwin"
     ;;
   *-mingw32*)
+    ;;
+  *-mingw64*)
     ;;
   *-interix*)
     host_makefile_frag="config/mh-interix"
