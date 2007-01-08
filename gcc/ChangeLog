@@ -1,3 +1,7 @@
+2007-01-08  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/pa/t-pa64 (libgcc_stub.a): Use $(T).
+
 2007-01-09  Ben Elliston  <bje@au.ibm.com>
 
 	* genautomata.c (STATS_OPTION): New option.
