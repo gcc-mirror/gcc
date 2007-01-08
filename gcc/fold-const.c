@@ -192,6 +192,77 @@ decode (HOST_WIDE_INT *words, unsigned HOST_WIDE_INT *low,
   *hi = words[2] + words[3] * BASE;
 }
 
+/* Force the double-word integer L1, H1 to be within the range of the
+   integer type TYPE.  Stores the properly truncated and sign-extended
+   double-word integer in *LV, *HV.  Returns true if the operation
+   overflows, that is, argument and result are different.  */
+
+int
+fit_double_type (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
+		 unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv, tree type)
+{
+  unsigned HOST_WIDE_INT low0 = l1;
+  HOST_WIDE_INT high0 = h1;
+  unsigned int prec;
+  int sign_extended_type;
+
+  if (POINTER_TYPE_P (type)
+      || TREE_CODE (type) == OFFSET_TYPE)
+    prec = POINTER_SIZE;
+  else
+    prec = TYPE_PRECISION (type);
+
+  /* Size types *are* sign extended.  */
+  sign_extended_type = (!TYPE_UNSIGNED (type)
+			|| (TREE_CODE (type) == INTEGER_TYPE
+			    && TYPE_IS_SIZETYPE (type)));
+
+  /* First clear all bits that are beyond the type's precision.  */
+  if (prec >= 2 * HOST_BITS_PER_WIDE_INT)
+    ;
+  else if (prec > HOST_BITS_PER_WIDE_INT)
+    h1 &= ~((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
+  else
+    {
+      h1 = 0;
+      if (prec < HOST_BITS_PER_WIDE_INT)
+	l1 &= ~((HOST_WIDE_INT) (-1) << prec);
+    }
+
+  /* Then do sign extension if necessary.  */
+  if (!sign_extended_type)
+    /* No sign extension */;
+  else if (prec >= 2 * HOST_BITS_PER_WIDE_INT)
+    /* Correct width already.  */;
+  else if (prec > HOST_BITS_PER_WIDE_INT)
+    {
+      /* Sign extend top half? */
+      if (h1 & ((unsigned HOST_WIDE_INT)1
+		<< (prec - HOST_BITS_PER_WIDE_INT - 1)))
+	h1 |= (HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT);
+    }
+  else if (prec == HOST_BITS_PER_WIDE_INT)
+    {
+      if ((HOST_WIDE_INT)l1 < 0)
+	h1 = -1;
+    }
+  else
+    {
+      /* Sign extend bottom half? */
+      if (l1 & ((unsigned HOST_WIDE_INT)1 << (prec - 1)))
+	{
+	  h1 = -1;
+	  l1 |= (HOST_WIDE_INT)(-1) << prec;
+	}
+    }
+
+  *lv = l1;
+  *hv = h1;
+
+  /* If the value didn't fit, signal overflow.  */
+  return l1 != low0 || h1 != high0;
+}
+
 /* T is an INT_CST node.  OVERFLOWABLE indicates if we are interested
    in overflow of the value, when >0 we are only interested in signed
    overflow, for <0 we are interested in any overflow.  OVERFLOWED
@@ -213,66 +284,23 @@ force_fit_type (tree t, int overflowable,
 {
   unsigned HOST_WIDE_INT low;
   HOST_WIDE_INT high;
-  unsigned int prec;
   int sign_extended_type;
+  bool overflow;
 
   gcc_assert (TREE_CODE (t) == INTEGER_CST);
 
-  low = TREE_INT_CST_LOW (t);
-  high = TREE_INT_CST_HIGH (t);
-
-  if (POINTER_TYPE_P (TREE_TYPE (t))
-      || TREE_CODE (TREE_TYPE (t)) == OFFSET_TYPE)
-    prec = POINTER_SIZE;
-  else
-    prec = TYPE_PRECISION (TREE_TYPE (t));
   /* Size types *are* sign extended.  */
   sign_extended_type = (!TYPE_UNSIGNED (TREE_TYPE (t))
 			|| (TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE
 			    && TYPE_IS_SIZETYPE (TREE_TYPE (t))));
 
-  /* First clear all bits that are beyond the type's precision.  */
+  low = TREE_INT_CST_LOW (t);
+  high = TREE_INT_CST_HIGH (t);
 
-  if (prec >= 2 * HOST_BITS_PER_WIDE_INT)
-    ;
-  else if (prec > HOST_BITS_PER_WIDE_INT)
-    high &= ~((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
-  else
-    {
-      high = 0;
-      if (prec < HOST_BITS_PER_WIDE_INT)
-	low &= ~((HOST_WIDE_INT) (-1) << prec);
-    }
-
-  if (!sign_extended_type)
-    /* No sign extension */;
-  else if (prec >= 2 * HOST_BITS_PER_WIDE_INT)
-    /* Correct width already.  */;
-  else if (prec > HOST_BITS_PER_WIDE_INT)
-    {
-      /* Sign extend top half? */
-      if (high & ((unsigned HOST_WIDE_INT)1
-		  << (prec - HOST_BITS_PER_WIDE_INT - 1)))
-	high |= (HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT);
-    }
-  else if (prec == HOST_BITS_PER_WIDE_INT)
-    {
-      if ((HOST_WIDE_INT)low < 0)
-	high = -1;
-    }
-  else
-    {
-      /* Sign extend bottom half? */
-      if (low & ((unsigned HOST_WIDE_INT)1 << (prec - 1)))
-	{
-	  high = -1;
-	  low |= (HOST_WIDE_INT)(-1) << prec;
-	}
-    }
+  overflow = fit_double_type (low, high, &low, &high, TREE_TYPE (t));
 
   /* If the value changed, return a new node.  */
-  if (overflowed || overflowed_const
-      || low != TREE_INT_CST_LOW (t) || high != TREE_INT_CST_HIGH (t))
+  if (overflowed || overflowed_const || overflow)
     {
       t = build_int_cst_wide (TREE_TYPE (t), low, high);
 
