@@ -2003,14 +2003,11 @@ set_sizetype (tree type)
 
       orig_max = TYPE_MAX_VALUE (sizetype);
 
-      /* Build a new node with the same values, but a different type.  */
-      new_max = build_int_cst_wide (sizetype,
-				    TREE_INT_CST_LOW (orig_max),
-				    TREE_INT_CST_HIGH (orig_max));
-
-      /* Now sign extend it using force_fit_type to ensure
-	 consistency.  */
-      new_max = force_fit_type (new_max, 0, 0, 0);
+      /* Build a new node with the same values, but a different type.
+	 Sign extend it to ensure consistency.  */
+      new_max = build_int_cst_wide_type (sizetype,
+					 TREE_INT_CST_LOW (orig_max),
+					 TREE_INT_CST_HIGH (orig_max));
       TYPE_MAX_VALUE (sizetype) = new_max;
     }
 }

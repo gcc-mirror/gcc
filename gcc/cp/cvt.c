@@ -251,9 +251,7 @@ cp_convert_to_pointer (tree type, tree expr, bool force)
 	{
 	  /* A NULL pointer-to-member is represented by -1, not by
 	     zero.  */
-	  expr = build_int_cst (type, -1);
-	  /* Fix up the representation of -1 if appropriate.  */
-	  expr = force_fit_type (expr, 0, false, false);
+	  expr = build_int_cst_type (type, -1);
 	}
       else
 	expr = build_int_cst (type, 0);

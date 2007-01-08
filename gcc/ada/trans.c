@@ -2729,10 +2729,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	gnu_result = DECL_INITIAL (get_gnu_tree (Entity (gnat_node)));
       else
 	gnu_result
-	  = force_fit_type
-	    (build_int_cst
-	      (gnu_result_type, UI_To_CC (Char_Literal_Value (gnat_node))),
-	     false, false, false);
+	  = build_int_cst_type
+	      (gnu_result_type, UI_To_CC (Char_Literal_Value (gnat_node)));
       break;
 
     case N_Real_Literal:

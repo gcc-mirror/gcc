@@ -1,3 +1,8 @@
+2007-01-08  Richard Guenther  <rguenther@suse.de>
+
+	* lex.c (do_java_lex): Use build_int_cst_wide_type.
+	* jcf-parse.c (get_constant): Likewise.
+
 2006-11-12  Jan Hubicka  <jh@suse.cz>
 
 	* resource.c (compile_resource_data): Update for new varpool names.

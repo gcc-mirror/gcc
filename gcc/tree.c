@@ -789,6 +789,17 @@ build_int_cst_type (tree type, HOST_WIDE_INT low)
   return build_int_cst_wide (type, low1, hi);
 }
 
+/* Create an INT_CST node of TYPE and value HI:LOW.  The value is truncated
+   and sign extended according to the value range of TYPE.  */
+
+tree
+build_int_cst_wide_type (tree type,
+			 unsigned HOST_WIDE_INT low, HOST_WIDE_INT high)
+{
+  fit_double_type (low, high, &low, &high, type);
+  return build_int_cst_wide (type, low, high);
+}
+
 /* These are the hash table functions for the hash table of INTEGER_CST
    nodes of a sizetype.  */
 
@@ -817,10 +828,9 @@ int_cst_hash_eq (const void *x, const void *y)
 	  && TREE_INT_CST_LOW (xt) == TREE_INT_CST_LOW (yt));
 }
 
-/* Create an INT_CST node of TYPE and value HI:LOW.  If TYPE is NULL,
-   integer_type_node is used.  The returned node is always shared.
-   For small integers we use a per-type vector cache, for larger ones
-   we use a single hash table.  */
+/* Create an INT_CST node of TYPE and value HI:LOW.
+   The returned node is always shared.  For small integers we use a
+   per-type vector cache, for larger ones we use a single hash table.  */
 
 tree
 build_int_cst_wide (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)

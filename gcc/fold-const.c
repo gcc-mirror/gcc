@@ -3478,9 +3478,7 @@ optimize_bit_field_compare (enum tree_code code, tree compare_type,
     lbitpos = nbitsize - lbitsize - lbitpos;
 
   /* Make the mask to be used against the extracted field.  */
-  mask = build_int_cst (unsigned_type, -1);
-  mask = force_fit_type (mask, 0, false, false);
-  mask = fold_convert (unsigned_type, mask);
+  mask = build_int_cst_type (unsigned_type, -1);
   mask = const_binop (LSHIFT_EXPR, mask, size_int (nbitsize - lbitsize), 0);
   mask = const_binop (RSHIFT_EXPR, mask,
 		      size_int (nbitsize - lbitsize - lbitpos), 0);
@@ -3638,8 +3636,7 @@ decode_field_reference (tree exp, HOST_WIDE_INT *pbitsize,
   unsigned_type = lang_hooks.types.type_for_size (*pbitsize, 1);
   precision = TYPE_PRECISION (unsigned_type);
 
-  mask = build_int_cst (unsigned_type, -1);
-  mask = force_fit_type (mask, 0, false, false);
+  mask = build_int_cst_type (unsigned_type, -1);
 
   mask = const_binop (LSHIFT_EXPR, mask, size_int (precision - *pbitsize), 0);
   mask = const_binop (RSHIFT_EXPR, mask, size_int (precision - *pbitsize), 0);
@@ -3664,8 +3661,7 @@ all_ones_mask_p (tree mask, int size)
   unsigned int precision = TYPE_PRECISION (type);
   tree tmask;
 
-  tmask = build_int_cst (lang_hooks.types.signed_type (type), -1);
-  tmask = force_fit_type (tmask, 0, false, false);
+  tmask = build_int_cst_type (lang_hooks.types.signed_type (type), -1);
 
   return
     tree_int_cst_equal (mask,
@@ -7113,8 +7109,7 @@ native_interpret_int (tree type, unsigned char *ptr, int len)
 	      << (bitpos - HOST_BITS_PER_WIDE_INT);
     }
 
-  return force_fit_type (build_int_cst_wide (type, lo, hi),
-			 0, false, false);
+  return build_int_cst_wide_type (type, lo, hi);
 }
 
 
@@ -8802,8 +8797,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0)
 	      && !TYPE_TRAP_SIGNED (type))
 	    {
-	      t1 = build_int_cst (type, -1);
-	      t1 = force_fit_type (t1, 0, false, false);
+	      t1 = build_int_cst_type (type, -1);
 	      return omit_one_operand (type, t1, arg1);
 	    }
 
@@ -8812,8 +8806,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0)
 	      && !TYPE_TRAP_SIGNED (type))
 	    {
-	      t1 = build_int_cst (type, -1);
-	      t1 = force_fit_type (t1, 0, false, false);
+	      t1 = build_int_cst_type (type, -1);
 	      return omit_one_operand (type, t1, arg0);
 	  }
 
@@ -9601,8 +9594,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       if (TREE_CODE (arg0) == BIT_NOT_EXPR
 	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
 	{
-	  t1 = build_int_cst (type, -1);
-	  t1 = force_fit_type (t1, 0, false, false);
+	  t1 = build_int_cst_type (type, -1);
 	  return omit_one_operand (type, t1, arg1);
 	}
 
@@ -9610,8 +9602,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       if (TREE_CODE (arg1) == BIT_NOT_EXPR
 	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
 	{
-	  t1 = build_int_cst (type, -1);
-	  t1 = force_fit_type (t1, 0, false, false);
+	  t1 = build_int_cst_type (type, -1);
 	  return omit_one_operand (type, t1, arg0);
 	}
 
@@ -9717,8 +9708,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       if (TREE_CODE (arg0) == BIT_NOT_EXPR
 	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
 	{
-	  t1 = build_int_cst (type, -1);
-	  t1 = force_fit_type (t1, 0, false, false);
+	  t1 = build_int_cst_type (type, -1);
 	  return omit_one_operand (type, t1, arg1);
 	}
 
@@ -9726,8 +9716,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       if (TREE_CODE (arg1) == BIT_NOT_EXPR
 	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
 	{
-	  t1 = build_int_cst (type, -1);
-	  t1 = force_fit_type (t1, 0, false, false);
+	  t1 = build_int_cst_type (type, -1);
 	  return omit_one_operand (type, t1, arg0);
 	}
 
