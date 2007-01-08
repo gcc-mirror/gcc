@@ -449,7 +449,7 @@ static int thumb_call_reg_needed;
 #define FL_THUMB2     (1 << 16)	      /* Thumb-2.  */
 #define FL_NOTM	      (1 << 17)	      /* Instructions not present in the 'M'
 					 profile.  */
-#define FL_DIV	      (1 << 18)	      /* Hardware divde.  */
+#define FL_DIV	      (1 << 18)	      /* Hardware divide.  */
 
 #define FL_IWMMXT     (1 << 29)	      /* XScale v2 or "Intel Wireless MMX technology".  */
 
@@ -2501,7 +2501,7 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
 	    else
 	      i -= 7;
 	  }
-	/* Arm allows rotates by a multiple of two. Thumb-2 allows arbitary
+	/* Arm allows rotates by a multiple of two. Thumb-2 allows arbitrary
 	   shifts.  */
 	if (TARGET_ARM)
 	  i -= 2;
@@ -7702,11 +7702,11 @@ get_jump_table_size (rtx insn)
       switch (modesize)
 	{
 	case 1:
-	  /* Round up size  of TBB table to a hafword boundary.  */
+	  /* Round up size of TBB table to a haflword boundary.  */
 	  size = (size + 1) & ~(HOST_WIDE_INT)1;
 	  break;
 	case 2:
-	  /* No padding neccessary for TBH.  */
+	  /* No padding necessary for TBH.  */
 	  break;
 	case 4:
 	  /* Add two bytes for alignment on Thumb.  */
@@ -10448,7 +10448,7 @@ arm_output_epilogue (rtx sibling)
       if (frame_pointer_needed)
 	{
 	  /* For Thumb-2 restore sp from the frame pointer.
-	     Operand restrictions mean we have to incrememnt FP, then copy
+	     Operand restrictions mean we have to increment FP, then copy
 	     to SP.  */
 	  amount = offsets->locals_base - offsets->saved_regs;
 	  operands[0] = hard_frame_pointer_rtx;
@@ -11116,7 +11116,7 @@ arm_compute_initial_elimination_offset (unsigned int from, unsigned int to)
 }
 
 
-/* Emit RTL to save coprocessor registers on funciton entry.  Returns the
+/* Emit RTL to save coprocessor registers on function entry.  Returns the
    number of bytes pushed.  */
 
 static int
@@ -11592,7 +11592,7 @@ arm_print_operand (FILE *stream, rtx x, int code)
   
     case '.':
       /* The current condition code for a condition code setting instruction.
-	 Preceeded by 's' in unified syntax, otherwise followed by 's'.  */
+	 Preceded by 's' in unified syntax, otherwise followed by 's'.  */
       if (TARGET_UNIFIED_ASM)
 	{
 	  fputc('s', stream);
@@ -12240,7 +12240,7 @@ thumb2_final_prescan_insn (rtx insn)
 	  continue;
 	}
 
-      /* ??? Recognise conditional jumps, and combine them with IT blocks.  */
+      /* ??? Recognize conditional jumps, and combine them with IT blocks.  */
       if (GET_CODE (body) != COND_EXEC)
 	break;
       /* Allow up to 4 conditionally executed instructions in a block.  */
@@ -16473,7 +16473,7 @@ arm_output_addr_const_extra (FILE *fp, rtx x)
 
 /* Output assembly for a shift instruction.
    SET_FLAGS determines how the instruction modifies the condition codes.
-   0 - Do not set conditiona codes.
+   0 - Do not set condition codes.
    1 - Set condition codes.
    2 - Use smallest instruction.  */
 const char *

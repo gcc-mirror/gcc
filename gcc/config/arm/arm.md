@@ -10518,8 +10518,8 @@
      
     /* For the StrongARM at least it is faster to
        use STR to store only a single register.
-       In Thumb mode always use push, and the assmebler will pick
-       something approporiate.  */
+       In Thumb mode always use push, and the assembler will pick
+       something appropriate.  */
     if (num_saves == 1 && TARGET_ARM)
       output_asm_insn (\"str\\t%1, [%m0, #-4]!\", operands);
     else

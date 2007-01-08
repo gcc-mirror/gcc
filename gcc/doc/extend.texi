@@ -1965,7 +1965,7 @@ void f () __attribute__ ((interrupt ("IRQ")));
 
 Permissible values for this parameter are: IRQ, FIQ, SWI, ABORT and UNDEF@.
 
-On ARMv7-M the interrupt type is ignored, and the attibute means the function
+On ARMv7-M the interrupt type is ignored, and the attribute means the function
 may be called with a word aligned stack pointer.
 
 @item interrupt_handler
