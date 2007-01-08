@@ -50,6 +50,7 @@ static void expr_object_size (struct object_size_info *, tree, tree);
 static bool merge_object_sizes (struct object_size_info *, tree, tree,
 				unsigned HOST_WIDE_INT);
 static bool plus_expr_object_size (struct object_size_info *, tree, tree);
+static bool cond_expr_object_size (struct object_size_info *, tree, tree);
 static unsigned int compute_object_sizes (void);
 static void init_offset_limit (void);
 static void check_for_plus_in_loops (struct object_size_info *, tree);
@@ -621,6 +622,40 @@ plus_expr_object_size (struct object_size_info *osi, tree var, tree value)
 }
 
 
+/* Compute object_sizes for PTR, defined to VALUE, which is
+   a COND_EXPR.  Return true if the object size might need reexamination
+   later.  */
+
+static bool
+cond_expr_object_size (struct object_size_info *osi, tree var, tree value)
+{
+  tree then_, else_;
+  int object_size_type = osi->object_size_type;
+  unsigned int varno = SSA_NAME_VERSION (var);
+  bool reexamine = false;
+
+  gcc_assert (TREE_CODE (value) == COND_EXPR);
+
+  if (object_sizes[object_size_type][varno] == unknown[object_size_type])
+    return false;
+
+  then_ = COND_EXPR_THEN (value);
+  else_ = COND_EXPR_ELSE (value);
+
+  if (TREE_CODE (then_) == SSA_NAME)
+    reexamine |= merge_object_sizes (osi, var, then_, 0);
+  else
+    expr_object_size (osi, var, then_);
+
+  if (TREE_CODE (else_) == SSA_NAME)
+    reexamine |= merge_object_sizes (osi, var, else_, 0);
+  else
+    expr_object_size (osi, var, else_);
+
+  return reexamine;
+}
+
+
 /* Compute object sizes for VAR.
    For ADDR_EXPR an object size is the number of remaining bytes
    to the end of the object (where what is considered an object depends on
@@ -710,6 +745,9 @@ collect_object_sizes_for (struct object_size_info *osi, tree var)
 
 	else if (TREE_CODE (rhs) == PLUS_EXPR)
 	  reexamine = plus_expr_object_size (osi, var, rhs);
+
+        else if (TREE_CODE (rhs) == COND_EXPR)
+	  reexamine = cond_expr_object_size (osi, var, rhs);
 
 	else
 	  expr_object_size (osi, var, rhs);
