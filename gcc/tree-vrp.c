@@ -236,6 +236,20 @@ set_value_range_to_varying (value_range_t *vr)
 }
 
 
+/* Set value range VR to a range of a truthvalue of type TYPE.  */
+
+static inline void
+set_value_range_to_truthvalue (value_range_t *vr, tree type)
+{
+  if (TYPE_PRECISION (type) == 1)
+    set_value_range_to_varying (vr);
+  else
+    set_value_range (vr, VR_RANGE,
+		     build_int_cst (type, 0), build_int_cst (type, 1),
+		     vr->equiv);
+}
+
+
 /* Set value range VR to VR_UNDEFINED.  */
 
 static inline void
@@ -1439,7 +1453,8 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
 	}
       else
 	{
-	  set_value_range_to_varying (vr);
+	  /* The result of a TRUTH_*_EXPR is always true or false.  */
+	  set_value_range_to_truthvalue (vr, TREE_TYPE (expr));
 	  return;
 	}
     }
@@ -1920,7 +1935,8 @@ extract_range_from_comparison (value_range_t *vr, tree expr)
       set_value_range (vr, VR_RANGE, val, val, vr->equiv);
     }
   else
-    set_value_range_to_varying (vr);
+    /* The result of a comparison is always true or false.  */
+    set_value_range_to_truthvalue (vr, TREE_TYPE (expr));
 }
 
 
@@ -4182,6 +4198,7 @@ vrp_visit_phi_node (tree phi)
   tree lhs = PHI_RESULT (phi);
   value_range_t *lhs_vr = get_value_range (lhs);
   value_range_t vr_result = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
+  bool all_const = true;
 
   copy_value_range (&vr_result, lhs_vr);
 
@@ -4209,7 +4226,10 @@ vrp_visit_phi_node (tree phi)
 	  value_range_t vr_arg;
 
 	  if (TREE_CODE (arg) == SSA_NAME)
-	    vr_arg = *(get_value_range (arg));
+	    {
+	      vr_arg = *(get_value_range (arg));
+	      all_const = false;
+	    }
 	  else
 	    {
 	      vr_arg.type = VR_RANGE;
@@ -4240,7 +4260,8 @@ vrp_visit_phi_node (tree phi)
   /* To prevent infinite iterations in the algorithm, derive ranges
      when the new value is slightly bigger or smaller than the
      previous one.  */
-  if (lhs_vr->type == VR_RANGE && vr_result.type == VR_RANGE)
+  if (lhs_vr->type == VR_RANGE && vr_result.type == VR_RANGE
+      && !all_const)
     {
       if (!POINTER_TYPE_P (TREE_TYPE (lhs)))
 	{

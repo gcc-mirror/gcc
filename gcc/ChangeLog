@@ -1,3 +1,14 @@
+2007-01-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/23603
+	* tree-vrp.c (set_value_range_to_truthvalue): New function.
+	(extract_range_from_binary): Fall back to truthvalue instead of
+	varying for TRUTH_*_EXPR.
+	(extract_range_from_comparison): Fall back to truthvalue instead of
+	varying.
+	(vrp_visit_phi_node): Don't adjust new range bounds to +INF/-INF
+	if all visited PHI values were constant.
+
 2007-01-08  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_process_new_functions): Reset reachable flag.
