@@ -43,6 +43,7 @@ static sbitmap found_in_subgraph;
 
 /* Local functions.  */
 static int compare_values (tree val1, tree val2);
+static void vrp_meet (value_range_t *, value_range_t *);
 
 /* Location information for ASSERT_EXPRs.  Each instance of this
    structure describes an ASSERT_EXPR for an SSA name.  Since a single
@@ -1919,6 +1920,40 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
 }
 
 
+/* Extract range information from a conditional expression EXPR based on
+   the ranges of each of its operands and the expression code.  */
+
+static void
+extract_range_from_cond_expr (value_range_t *vr, tree expr)
+{
+  tree op0, op1;
+  value_range_t vr0 = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
+  value_range_t vr1 = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
+
+  /* Get value ranges for each operand.  For constant operands, create
+     a new value range with the operand to simplify processing.  */
+  op0 = COND_EXPR_THEN (expr);
+  if (TREE_CODE (op0) == SSA_NAME)
+    vr0 = *(get_value_range (op0));
+  else if (is_gimple_min_invariant (op0))
+    set_value_range (&vr0, VR_RANGE, op0, op0, NULL);
+  else
+    set_value_range_to_varying (&vr0);
+
+  op1 = COND_EXPR_ELSE (expr);
+  if (TREE_CODE (op1) == SSA_NAME)
+    vr1 = *(get_value_range (op1));
+  else if (is_gimple_min_invariant (op1))
+    set_value_range (&vr1, VR_RANGE, op1, op1, NULL);
+  else
+    set_value_range_to_varying (&vr1);
+
+  /* The resulting value range is the union of the operand ranges */
+  vrp_meet (&vr0, &vr1);
+  copy_value_range (vr, &vr0);
+}
+
+
 /* Extract range information from a comparison expression EXPR based
    on the range of its operand and the expression code.  */
 
@@ -1961,6 +1996,8 @@ extract_range_from_expr (value_range_t *vr, tree expr)
     extract_range_from_binary_expr (vr, expr);
   else if (TREE_CODE_CLASS (code) == tcc_unary)
     extract_range_from_unary_expr (vr, expr);
+  else if (code == COND_EXPR)
+    extract_range_from_cond_expr (vr, expr);
   else if (TREE_CODE_CLASS (code) == tcc_comparison)
     extract_range_from_comparison (vr, expr);
   else if (is_gimple_min_invariant (expr))

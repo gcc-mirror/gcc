@@ -2109,6 +2109,10 @@ get_maxval_strlen (tree arg, tree *length, bitmap visited, int type)
   
   if (TREE_CODE (arg) != SSA_NAME)
     {
+      if (TREE_CODE (arg) == COND_EXPR)
+        return get_maxval_strlen (COND_EXPR_THEN (arg), length, visited, type)
+               && get_maxval_strlen (COND_EXPR_ELSE (arg), length, visited, type);
+
       if (type == 2)
 	{
 	  val = arg;
@@ -2437,6 +2441,13 @@ fold_stmt (tree *stmt_p)
 		}
 	    }
 	}
+    }
+  else if (TREE_CODE (rhs) == COND_EXPR)
+    {
+      tree temp = fold (COND_EXPR_COND (rhs));
+      if (temp != COND_EXPR_COND (rhs))
+        result = fold_build3 (COND_EXPR, TREE_TYPE (rhs), temp,
+                              COND_EXPR_THEN (rhs), COND_EXPR_ELSE (rhs));
     }
 
   /* If we couldn't fold the RHS, hand over to the generic fold routines.  */

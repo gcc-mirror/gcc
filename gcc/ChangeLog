@@ -1,3 +1,16 @@
+2007-01-08  Roberto Costa  <roberto.costa@st.com>
+
+	* tree-vrp.c (extract_range_from_cond_expr): New.
+	(extract_range_from_expr): Handle COND_EXPR nodes used as expressions.
+	* tree-ssa-ccp.c (get_maxval_strlen): Handle COND_EXPR nodes used
+	as expressions.
+	(fold_stmt): Bug fix, avoid infinite recursion when folding COND_EXPRs.
+	* tree-ssa-forwprop.c (simplify_cond, forward_propagate_into_cond,
+	tree_ssa_forward_propagate_single_use_vars): Handle COND_EXPR nodes
+	used as expressions.
+	* tree-object-size.c (cond_expr_object_size): New.
+	(collect_object_sizes_for): Handle COND_EXPR nodes used as expressions.
+
 2007-01-08  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-forwprop.c (forward_propagate_into_cond,
