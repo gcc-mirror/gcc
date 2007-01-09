@@ -1,5 +1,5 @@
 @c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,
-@c 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+@c 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -615,19 +615,26 @@ Here is the order of prefixes tried for exec files:
 Any prefixes specified by the user with @option{-B}.
 
 @item
-The environment variable @code{GCC_EXEC_PREFIX}, if any.
+The environment variable @code{GCC_EXEC_PREFIX} or, if @code{GCC_EXEC_PREFIX}
+is not set and the compiler has not been installed in the configure-time 
+@var{prefix}, the location in which the compiler has actually been installed.
 
 @item
 The directories specified by the environment variable @code{COMPILER_PATH}.
 
 @item
-The macro @code{STANDARD_EXEC_PREFIX}.
+The macro @code{STANDARD_EXEC_PREFIX}, if the compiler has been installed
+in the configured-time @var{prefix}. 
 
 @item
-@file{/usr/lib/gcc/}.
+The location @file{/usr/libexec/gcc/}, but only if this is a native compiler. 
 
 @item
-The macro @code{MD_EXEC_PREFIX}, if any.
+The location @file{/usr/lib/gcc/}, but only if this is a native compiler. 
+
+@item
+The macro @code{MD_EXEC_PREFIX}, if defined, but only if this is a native 
+compiler.
 @end enumerate
 
 Here is the order of prefixes tried for startfiles:
@@ -637,31 +644,45 @@ Here is the order of prefixes tried for startfiles:
 Any prefixes specified by the user with @option{-B}.
 
 @item
-The environment variable @code{GCC_EXEC_PREFIX}, if any.
+The environment variable @code{GCC_EXEC_PREFIX} or its automatically determined
+value based on the installed toolchain location.
 
 @item
 The directories specified by the environment variable @code{LIBRARY_PATH}
 (or port-specific name; native only, cross compilers do not use this).
 
 @item
-The macro @code{STANDARD_EXEC_PREFIX}.
+The macro @code{STANDARD_EXEC_PREFIX}, but only if the toolchain is installed
+in the configured @var{prefix} or this is a native compiler. 
 
 @item
-@file{/usr/lib/gcc/}.
+The location @file{/usr/lib/gcc/}, but only if this is a native compiler.
 
 @item
-The macro @code{MD_EXEC_PREFIX}, if any.
+The macro @code{MD_EXEC_PREFIX}, if defined, but only if this is a native 
+compiler.
 
 @item
-The macro @code{MD_STARTFILE_PREFIX}, if any.
+The macro @code{MD_STARTFILE_PREFIX}, if defined, but only if this is a 
+native compiler, or we have a target system root.
 
 @item
-The macro @code{STANDARD_STARTFILE_PREFIX}.
+The macro @code{MD_STARTFILE_PREFIX_1}, if defined, but only if this is a 
+native compiler, or we have a target system root.
 
 @item
+The macro @code{STANDARD_STARTFILE_PREFIX}, with any sysroot modifications.
+If this path is relative it will be prefixed by @code{GCC_EXEC_PREFIX} and
+the machine suffix or @code{STANDARD_EXEC_PREFIX} and the machine suffix.
+
+@item
+The macro @code{STANDARD_STARTFILE_PREFIX_1}, but only if this is a native
+compiler, or we have a target system root. The default for this macro is
 @file{/lib/}.
 
 @item
+The macro @code{STANDARD_STARTFILE_PREFIX_2}, but only if this is a native
+compiler, or we have a target system root. The default for this macro is
 @file{/usr/lib/}.
 @end enumerate
 

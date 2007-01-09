@@ -1,3 +1,10 @@
+2007-01-09  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* doc/tm.texi: Update documentation to reflect reality of exec
+	and start file search behaviours. Update copyright year.
+	* doc/invoke.texi: Explain how GCC_EXEC_PREFIX is used to find
+	header file directories.
+
 2007-01-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*sinxf2): Rename to *sinxf2_i387.

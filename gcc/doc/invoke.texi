@@ -13947,7 +13947,8 @@ If GCC cannot find the subprogram using the specified prefix, it
 tries looking in the usual places for the subprogram.
 
 The default value of @env{GCC_EXEC_PREFIX} is
-@file{@var{prefix}/lib/gcc/} where @var{prefix} is the value
+@file{@var{prefix}/lib/gcc/} where @var{prefix} is the prefix to
+the installed compiler. In many cases @var{prefix} is the value
 of @code{prefix} when you ran the @file{configure} script.
 
 Other prefixes specified with @option{-B} take precedence over this prefix.
@@ -13963,7 +13964,9 @@ replacing that beginning with the specified prefix to produce an
 alternate directory name.  Thus, with @option{-Bfoo/}, GCC will search
 @file{foo/bar} where it would normally search @file{/usr/local/lib/bar}.
 These alternate directories are searched first; the standard directories
-come next.
+come next. If a standard directory begins with the configured 
+@var{prefix} then the value of @var{prefix} is replaced by 
+@env{GCC_EXEC_PREFIX} when looking for header files.
 
 @item COMPILER_PATH
 @findex COMPILER_PATH
