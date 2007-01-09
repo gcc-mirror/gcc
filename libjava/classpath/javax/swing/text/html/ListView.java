@@ -94,9 +94,6 @@ public class ListView
   public void paint(Graphics g, Shape allocation)
   {
     super.paint(g, allocation);
-    // FIXME: Why is this overridden? I think that painting would be done
-    // by the superclass and the stylesheet... Maybe find out when this
-    // stuff is implemented properly.
   }
 
   /**

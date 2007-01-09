@@ -1,5 +1,5 @@
 /* java.math.BigInteger -- Arbitary precision integers
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,7 +57,7 @@ import java.util.Random;
  * @date December 20, 1999.
  * @status believed complete and correct.
  */
-public class BigInteger extends Number implements Comparable
+public class BigInteger extends Number implements Comparable<BigInteger>
 {
   /** All integers are stored in 2's-complement form.
    * If words == null, the ival is the value of this BigInteger.
@@ -83,7 +83,8 @@ public class BigInteger extends Number implements Comparable
   private static final int numFixNum = maxFixNum-minFixNum+1;
   private static final BigInteger[] smallFixNums = new BigInteger[numFixNum];
 
-  static {
+  static
+  {
     for (int i = numFixNum;  --i >= 0; )
       smallFixNums[i] = new BigInteger(i + minFixNum);
   }
@@ -92,14 +93,14 @@ public class BigInteger extends Number implements Comparable
    * The constant zero as a BigInteger.
    * @since 1.2
    */
-  public static final BigInteger ZERO = smallFixNums[-minFixNum];
+  public static final BigInteger ZERO = smallFixNums[0 - minFixNum];
 
   /**
    * The constant one as a BigInteger.
    * @since 1.2
    */
   public static final BigInteger ONE = smallFixNums[1 - minFixNum];
-  
+
   /**
    * The constant ten as a BigInteger.
    * @since 1.5
@@ -197,8 +198,20 @@ public class BigInteger extends Number implements Comparable
   private void init(int numBits, Random rnd)
   {
     int highbits = numBits & 31;
+    // minimum number of bytes to store the above number of bits
+    int highBitByteCount = (highbits + 7) / 8;
+    // number of bits to discard from the last byte
+    int discardedBitCount = highbits % 8;
+    if (discardedBitCount != 0)
+      discardedBitCount = 8 - discardedBitCount;
+    byte[] highBitBytes = new byte[highBitByteCount];
     if (highbits > 0)
-      highbits = rnd.nextInt() >>> (32 - highbits);
+      {
+        rnd.nextBytes(highBitBytes);
+        highbits = (highBitBytes[highBitByteCount - 1] & 0xFF) >>> discardedBitCount;
+        for (int i = highBitByteCount - 2; i >= 0; i--)
+          highbits = (highbits << 8) | (highBitBytes[i] & 0xFF);
+      }
     int nwords = numBits / 32;
 
     while (highbits == 0 && nwords > 0)
@@ -225,8 +238,13 @@ public class BigInteger extends Number implements Comparable
     this(bitLength, rnd);
 
     // Keep going until we find a probable prime.
+    BigInteger result;
     while (true)
       {
+        // ...but first ensure that BI has bitLength bits
+        result = setBit(bitLength - 1);
+        this.ival = result.ival;
+        this.words = result.words;
 	if (isProbablePrime(certainty))
 	  return;
 
@@ -377,14 +395,7 @@ public class BigInteger extends Number implements Comparable
     return MPN.cmp(x.words, y.words, x_len);
   }
 
-  // JDK1.2
-  public int compareTo(Object obj)
-  {
-    if (obj instanceof BigInteger)
-      return compareTo(this, (BigInteger) obj);
-    throw new ClassCastException();
-  }
-
+  /** @since 1.2 */
   public int compareTo(BigInteger val)
   {
     return compareTo(this, val);
@@ -1589,24 +1600,31 @@ public class BigInteger extends Number implements Comparable
     // but slightly more expensive, for little practical gain.
     if (len <= 15 && radix <= 16)
       return valueOf(Long.parseLong(s, radix));
-    
-    int byte_len = 0;
-    byte[] bytes = new byte[len];
-    boolean negative = false;
-    for (int i = 0;  i < len;  i++)
+
+    int i, digit;
+    boolean negative;
+    byte[] bytes;
+    char ch = s.charAt(0);
+    if (ch == '-')
       {
-	char ch = s.charAt(i);
-	if (ch == '-')
-	  negative = true;
-	else if (ch == '_' || (byte_len == 0 && (ch == ' ' || ch == '\t')))
-	  continue;
-	else
-	  {
-	    int digit = Character.digit(ch, radix);
-	    if (digit < 0)
-	      break;
-	    bytes[byte_len++] = (byte) digit;
-	  }
+        negative = true;
+        i = 1;
+        bytes = new byte[len - 1];
+      }
+    else
+      {
+        negative = false;
+        i = 0;
+        bytes = new byte[len];
+      }
+    int byte_len = 0;
+    for ( ; i < len;  i++)
+      {
+        ch = s.charAt(i);
+        digit = Character.digit(ch, radix);
+        if (digit < 0)
+          throw new NumberFormatException();
+        bytes[byte_len++] = (byte) digit;
       }
     return valueOf(bytes, byte_len, negative, radix);
   }

@@ -58,7 +58,8 @@ public class IncompleteAnnotationException extends RuntimeException
    * @param type the type of annotation from which an element is missing.
    * @param name the name of the missing element.
    */
-  public IncompleteAnnotationException(Class type, String name)
+  public IncompleteAnnotationException(Class<? extends Annotation> type,
+				       String name)
   {
     this.annotationType = type;
     this.elementName = name;
@@ -70,7 +71,7 @@ public class IncompleteAnnotationException extends RuntimeException
    *
    * @return the type of annotation.
    */
-  public Class annotationType()
+  public Class<? extends Annotation> annotationType()
   {
     return annotationType;
   }
@@ -94,7 +95,7 @@ public class IncompleteAnnotationException extends RuntimeException
    * @serial the type of the annotation from which an
    *         element was missing.
    */
-  private Class annotationType;
+  private Class<? extends Annotation> annotationType;
 
   /**
    * The name of the missing element.

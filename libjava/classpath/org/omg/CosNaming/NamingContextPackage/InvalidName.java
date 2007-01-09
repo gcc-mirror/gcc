@@ -1,5 +1,5 @@
 /* InvalidName.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,7 +40,6 @@ package org.omg.CosNaming.NamingContextPackage;
 
 import org.omg.CORBA.UserException;
 import org.omg.CORBA.portable.IDLEntity;
-import org.omg.CosNaming.NameComponent;
 
 /**
  * The exception is thrown if the name has the zero length or is otherwise

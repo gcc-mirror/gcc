@@ -92,7 +92,10 @@ extern struct state_table *cp_gtk_native_text_layout_state_table;
 #define FONT_METRICS_DESCENT     2
 #define FONT_METRICS_MAX_DESCENT 3
 #define FONT_METRICS_MAX_ADVANCE 4
-#define NUM_FONT_METRICS 5
+#define FONT_METRICS_HEIGHT 5
+#define FONT_METRICS_UNDERLINE_OFFSET 6
+#define FONT_METRICS_UNDERLINE_THICKNESS 7
+#define NUM_FONT_METRICS 8
 
 #define TEXT_METRICS_X_BEARING 0
 #define TEXT_METRICS_Y_BEARING 1

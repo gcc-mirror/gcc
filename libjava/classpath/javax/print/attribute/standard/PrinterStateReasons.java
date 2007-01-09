@@ -45,6 +45,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.PrintServiceAttribute;
 
 /**
@@ -68,7 +69,8 @@ import javax.print.attribute.PrintServiceAttribute;
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class PrinterStateReasons extends HashMap
+public final class PrinterStateReasons
+  extends HashMap<PrinterStateReason, Severity>
   implements PrintServiceAttribute
 {
   private static final long serialVersionUID = -3731791085163619457L;
@@ -121,13 +123,11 @@ public final class PrinterStateReasons extends HashMap
    * <code>PrinterStateReason</code> and keys are not of type 
    * <code>Severity</code>.
    */
-  public PrinterStateReasons(Map map)
+  public PrinterStateReasons(Map<PrinterStateReason,Severity> map)
   {
     super(map.size(), 0.75f);
-    Iterator it = map.entrySet().iterator();
-    while (it.hasNext())
+    for (Map.Entry<PrinterStateReason,Severity> entry : map.entrySet())
       {
-        Map.Entry entry = (Map.Entry) it.next();
         put(entry.getKey(), entry.getValue());
       }
   }
@@ -139,7 +139,7 @@ public final class PrinterStateReasons extends HashMap
    * @param severity the severity level for the constructed set.
    * @return The set of printer state reasons.
    */
-  public Set printerStateReasonSet(Severity severity)
+  public Set<PrinterStateReason> printerStateReasonSet(Severity severity)
   {
     if (severity == null)
       throw new NullPointerException("severity is null");
@@ -171,7 +171,7 @@ public final class PrinterStateReasons extends HashMap
    * <code>PrinterStateReason</code> and severity is not a 
    * <code>Severity</code> instance.
    */
-  public Object put(Object reason, Object severity)
+  public Severity put(PrinterStateReason reason,Severity severity)
   {
     if (reason == null)
       throw new NullPointerException("reason is null");    
@@ -186,7 +186,7 @@ public final class PrinterStateReasons extends HashMap
    *
    * @return The class <code>PrintStateReasons</code> itself.
    */
-  public Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return PrinterStateReasons.class;
   }

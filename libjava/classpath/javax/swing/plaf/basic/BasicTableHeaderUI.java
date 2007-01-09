@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -415,9 +413,8 @@ public class BasicTableHeaderUI extends TableHeaderUI
   }
 
   protected void installKeyboardActions()
-    throws NotImplementedException
   {
-    // TODO: Implement this properly.
+    // AFAICS, the RI does nothing here.
   }
 
   /**
@@ -448,9 +445,8 @@ public class BasicTableHeaderUI extends TableHeaderUI
   }
 
   protected void uninstallKeyboardActions()
-    throws NotImplementedException
   {
-    // TODO: Implement this properly.
+    // AFAICS, the RI does nothing here.
   }
   
   /**

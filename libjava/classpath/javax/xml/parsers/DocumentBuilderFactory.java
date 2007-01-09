@@ -50,7 +50,7 @@ import javax.xml.validation.Schema;
  * Factory for obtaining document builders.
  * Instances of this class are <em>not</em> guaranteed to be thread safe.
  *
- * @author (a href='mailto:dog@gnu.org'>Chris Burdess</a)
+ * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
 public abstract class DocumentBuilderFactory
 {

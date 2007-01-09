@@ -1,6 +1,6 @@
 /* InstrumentationImpl.java -- GNU implementation of
    java.lang.instrument.Instrumentation
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -63,11 +63,11 @@ public final class InstrumentationImpl implements Instrumentation
 {
 
   /* List of transformers */
-  /* FIXME[GENERICS]: Should be ClassFileTransformer list */
-  private ArrayList transformers = new ArrayList();
+  private ArrayList<ClassFileTransformer> transformers =
+    new ArrayList<ClassFileTransformer>();
 
   
-  private InstrumentationImpl()
+  InstrumentationImpl()
   {
   }
 
@@ -210,9 +210,8 @@ public final class InstrumentationImpl implements Instrumentation
    * 
    * @return the new class file
    */
-  /* FIXME[GENERICS]: Should be Class<?> */
   public byte[] callTransformers(ClassLoader loader, String className,
-				 Class classBeingRedefined, ProtectionDomain protectionDomain, 
+				 Class<?> classBeingRedefined, ProtectionDomain protectionDomain, 
 				 byte[] classfileBuffer)
   {
     byte[] newBuffer = null;
@@ -220,11 +219,10 @@ public final class InstrumentationImpl implements Instrumentation
     ClassFileTransformer current;
     synchronized (transformers)
       {
-        Iterator i = transformers.iterator();
+        Iterator<ClassFileTransformer> i = transformers.iterator();
         while (i.hasNext())
           {
-	    /* FIXME[GENERICS]: Remove cast */
-            current = (ClassFileTransformer) i.next();
+            current = i.next();
             try
               {
                 newBuffer = current.transform(loader, className,

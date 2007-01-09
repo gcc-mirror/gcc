@@ -97,6 +97,11 @@ public abstract class AWTEvent extends EventObject
   protected boolean consumed;
 
   /**
+   * Used for implementing a simple linked list in EventQueue.
+   */
+  transient AWTEvent queueNext;
+
+  /**
    * Who knows? It's in the serial version.
    *
    * @serial No idea what this is for.

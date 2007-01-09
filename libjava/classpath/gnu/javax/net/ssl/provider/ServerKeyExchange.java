@@ -38,249 +38,136 @@ exception statement from your version.  */
 
 package gnu.javax.net.ssl.provider;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.io.StringWriter;
 
-import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
-import java.security.PublicKey;
-import java.security.interfaces.RSAPublicKey;
-
-import javax.crypto.interfaces.DHPublicKey;
-import javax.crypto.spec.DHParameterSpec;
-
-import javax.net.ssl.SSLProtocolException;
-
-import gnu.javax.crypto.key.dh.GnuDHPublicKey;
-import gnu.javax.crypto.key.srp6.SRPPublicKey;
-
-class ServerKeyExchange implements Handshake.Body
+/**
+ * The server key exchange message.
+ *
+ * <pre>
+struct
+{
+  select (KeyExchangeAlgorithm)
+  {
+    case diffie_hellman:
+      ServerDHParams params;
+      Signature signed_params;
+    case rsa:
+      ServerRSAParams params;
+      Signature signed_params;
+    case srp:
+      ServerSRPParams params;
+      Signature signed_params;
+  };
+} ServerKeyExchange;
+</pre>
+ */
+public class ServerKeyExchange implements Handshake.Body
 {
 
-  // Fields.
-  // -------------------------------------------------------------------------
+  protected ByteBuffer buffer;
+  protected final CipherSuite suite;
 
-  private PublicKey publicKey;
-  private Signature signature;
-  private byte[] srpSalt;
-
-  // Constructor.
-  // -------------------------------------------------------------------------
-
-  ServerKeyExchange(PublicKey publicKey, Signature signature)
+  public ServerKeyExchange(final ByteBuffer buffer, final CipherSuite suite)
   {
-    this(publicKey, signature, null);
+    suite.getClass();
+    this.buffer = buffer.duplicate().order(ByteOrder.BIG_ENDIAN);
+    this.suite = suite;
   }
 
-  ServerKeyExchange(PublicKey publicKey, Signature signature, byte[] srpSalt)
+  public int length ()
   {
-    this.publicKey = publicKey;
-    this.signature = signature;
-    this.srpSalt = srpSalt;
+    if (suite.keyExchangeAlgorithm ().equals (KeyExchangeAlgorithm.NONE))
+      return 0;
+    int len = 0;
+    ServerKeyExchangeParams params = params();
+    Signature sig = signature();
+    if (params != null)
+      len += params.length();
+    if (sig != null)
+      len += sig.length();
+    return len;
   }
 
-  // Class methods.
-  // -------------------------------------------------------------------------
-
-  static ServerKeyExchange read(InputStream in, CipherSuite suite,
-                                PublicKey serverKey)
-    throws IOException
+  /**
+   * Returns the server's key exchange parameters. The value returned will
+   * depend on the key exchange algorithm this object was created with.
+   *
+   * @return The server's key exchange parameters.
+   */
+  public ServerKeyExchangeParams params ()
   {
-    DataInputStream din = new DataInputStream(in);
-    PublicKey key = null;
-    byte[] salt = null;
-    String kex = suite.getKeyExchange();
-    if (kex.equals("DHE"))
-      {
-        BigInteger p, g, y;
-        byte[] buf = new byte[din.readUnsignedShort()];
-        din.readFully(buf);
-        p = new BigInteger(1, buf);
-        buf = new byte[din.readUnsignedShort()];
-        din.readFully(buf);
-        g = new BigInteger(1, buf);
-        buf = new byte[din.readUnsignedShort()];
-        din.readFully(buf);
-        y = new BigInteger(1, buf);
-        key = new GnuDHPublicKey(null, p, g, y);
-      }
-    else if (kex.equals("RSA"))
-      {
-        BigInteger n, e;
-        byte[] buf = new byte[din.readUnsignedShort()];
-        din.readFully(buf);
-        n = new BigInteger(1, buf);
-        buf = new byte[din.readUnsignedShort()];
-        din.readFully(buf);
-        e = new BigInteger(1, buf);
-        key = new JessieRSAPublicKey(n, e);
-      }
-    else if (kex.equals("SRP"))
-      {
-        BigInteger N, g, B;
-        byte[] buf = new byte[din.readUnsignedShort()];
-        din.readFully(buf);
-        N = new BigInteger(1, buf);
-        buf = new byte[din.readUnsignedShort()];
-        din.readFully(buf);
-        g = new BigInteger(1, buf);
-        salt = new byte[din.readUnsignedByte()];
-        din.readFully(salt);
-        buf = new byte[din.readUnsignedShort()];
-        din.readFully(buf);
-        B = new BigInteger(1, buf);
-        try
-          {
-            key = new SRPPublicKey(N, g, B);
-          }
-        catch (IllegalArgumentException iae)
-          {
-            throw new SSLProtocolException(iae.getMessage());
-          }
-      }
-    else
-      {
-        throw new SSLProtocolException("invalid kex algorithm");
-      }
-
-    Signature sig = null;
-    if (!suite.getSignature().equals("anon"))
-      {
-        sig = Signature.read(in, suite, serverKey);
-      }
-    return new ServerKeyExchange(key, sig, salt);
+    KeyExchangeAlgorithm kex = suite.keyExchangeAlgorithm ();
+    if (kex == KeyExchangeAlgorithm.RSA)
+      return new ServerRSAParams(buffer.duplicate ());
+    else if (kex == KeyExchangeAlgorithm.DHE_DSS
+             || kex == KeyExchangeAlgorithm.DHE_RSA
+             || kex == KeyExchangeAlgorithm.DH_anon)
+      return new ServerDHParams(buffer.duplicate());
+//     else if (kex.equals (KeyExchangeAlgorithm.SRP))
+//       return new ServerSRPParams (buffer.duplicate ());
+    else if (kex == KeyExchangeAlgorithm.NONE)
+      return null;
+    else if (kex == KeyExchangeAlgorithm.DHE_PSK)
+      return new ServerDHE_PSKParameters(buffer.duplicate());
+    else if (kex == KeyExchangeAlgorithm.PSK)
+      return new ServerPSKParameters(buffer.duplicate());
+    else if (kex == KeyExchangeAlgorithm.RSA_PSK)
+      return new ServerPSKParameters(buffer.duplicate());
+    throw new IllegalArgumentException ("unsupported key exchange: " + kex);
   }
 
-  // Instance methods.
-  // -------------------------------------------------------------------------
-
-  public void write(OutputStream out) throws IOException
+  /**
+   * Returns the digital signature made over the key exchange parameters.
+   *
+   * @return The signature.
+   */
+  public Signature signature ()
   {
-    write(out, ProtocolVersion.TLS_1);
-  }
-
-  public void write(OutputStream out, ProtocolVersion version)
-    throws IOException
-  {
-    if (publicKey instanceof DHPublicKey)
-      {
-        writeBigint(out, ((DHPublicKey) publicKey).getParams().getP());
-        writeBigint(out, ((DHPublicKey) publicKey).getParams().getG());
-        writeBigint(out, ((DHPublicKey) publicKey).getY());
-      }
-    else if (publicKey instanceof RSAPublicKey)
-      {
-        writeBigint(out, ((RSAPublicKey) publicKey).getModulus());
-        writeBigint(out, ((RSAPublicKey) publicKey).getPublicExponent());
-      }
-    else if (publicKey instanceof SRPPublicKey)
-      {
-        writeBigint(out, ((SRPPublicKey) publicKey).getN());
-        writeBigint(out, ((SRPPublicKey) publicKey).getG());
-        out.write(srpSalt.length);
-        out.write(srpSalt);
-        writeBigint(out, ((SRPPublicKey) publicKey).getY());
-      }
-    if (signature != null)
-      {
-        signature.write(out, version);
-      }
-  }
-
-  PublicKey getPublicKey()
-  {
-    return publicKey;
-  }
-
-  Signature getSignature()
-  {
-    return signature;
-  }
-
-  byte[] getSRPSalt()
-  {
-    return srpSalt;
+    KeyExchangeAlgorithm kex = suite.keyExchangeAlgorithm();
+    if (kex == KeyExchangeAlgorithm.NONE
+        || kex == KeyExchangeAlgorithm.DH_anon
+        || kex == KeyExchangeAlgorithm.DHE_PSK
+        || kex == KeyExchangeAlgorithm.PSK
+        || kex == KeyExchangeAlgorithm.RSA_PSK)
+      return null;
+    ServerKeyExchangeParams params = params();
+    ByteBuffer sigbuf = ((ByteBuffer) buffer.position(params.length ())).slice ();
+    return new Signature (sigbuf, suite.signatureAlgorithm ());
   }
 
   public String toString()
   {
-    StringWriter str = new StringWriter();
-    PrintWriter out = new PrintWriter(str);
-    out.println("struct {");
-    out.println("  publicKey = struct {");
-    if (publicKey instanceof DHPublicKey)
-      {
-        out.println("    p = " +
-                   ((DHPublicKey) publicKey).getParams().getP().toString(16) +
-                   ";");
-        out.println("    g = " +
-                   ((DHPublicKey) publicKey).getParams().getG().toString(16) +
-                   ";");
-        out.println("    y = " + ((DHPublicKey) publicKey).getY().toString(16) +
-                   ";");
-        out.println("  } DHPublicKey;");
-      }
-    else if (publicKey instanceof RSAPublicKey)
-      {
-        out.println("    modulus = " +
-                   ((RSAPublicKey) publicKey).getModulus().toString(16) +
-                   ";");
-        out.println("    exponent = " +
-                   ((RSAPublicKey) publicKey).getPublicExponent().toString(16) +
-                   ";");
-        out.println("  } RSAPublicKey;");
-      }
-    else if (publicKey instanceof SRPPublicKey)
-      {
-        out.println("    N = "+((SRPPublicKey) publicKey).getN().toString(16)+";");
-        out.println("    g = "+((SRPPublicKey) publicKey).getG().toString(16)+";");
-        out.println("    salt = " + Util.toHexString(srpSalt, ':') + ";");
-        out.println("    B = "+((SRPPublicKey) publicKey).getY().toString(16)+";");
-        out.println("  } SRPPublicKey;");
-      }
-    if (signature != null)
-      {
-        out.println("  signature =");
-        BufferedReader r = new BufferedReader(new StringReader(signature.toString()));
-        String s;
-        try
-          {
-            while ((s = r.readLine()) != null)
-              {
-                out.print("    ");
-                out.println(s);
-              }
-          }
-        catch (IOException ignored)
-          {
-          }
-      }
-    out.println("} ServerKeyExchange;");
-    return str.toString();
+    return toString (null);
   }
 
-  private void writeBigint(OutputStream out, BigInteger bigint)
-    throws IOException
+  public String toString (final String prefix)
   {
-    byte[] b = bigint.toByteArray();
-    if (b[0] == 0x00)
+    StringWriter str = new StringWriter();
+    PrintWriter out = new PrintWriter(str);
+    if (prefix != null) out.print (prefix);
+    out.println("struct {");
+    if (prefix != null) out.print (prefix);
+    out.print ("  algorithm: ");
+    out.print (suite.keyExchangeAlgorithm ());
+    out.println (";");
+    if (!suite.keyExchangeAlgorithm ().equals (KeyExchangeAlgorithm.NONE))
       {
-        out.write((b.length - 1) >>> 8 & 0xFF);
-        out.write((b.length - 1) & 0xFF);
-        out.write(b, 1, b.length - 1);
+        if (prefix != null) out.print (prefix);
+        out.println ("  parameters:");
+        out.println (params ().toString (prefix != null ? prefix+"  " : "  "));
       }
-    else
+    if (!suite.signatureAlgorithm ().equals (SignatureAlgorithm.ANONYMOUS))
       {
-        out.write(b.length >>> 8 & 0xFF);
-        out.write(b.length & 0xFF);
-        out.write(b);
+        if (prefix != null) out.print (prefix);
+        out.println ("  signature:");
+        out.println (signature ().toString (prefix != null ? prefix+"  " : "  "));
       }
+    if (prefix != null) out.print (prefix);
+    out.print ("} ServerKeyExchange;");
+    return str.toString();
   }
 }

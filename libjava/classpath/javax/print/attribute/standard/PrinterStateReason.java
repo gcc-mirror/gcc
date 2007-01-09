@@ -293,7 +293,7 @@ public class PrinterStateReason extends EnumSyntax
    *
    * @return The class <code>PrintStateReason</code> itself.
    */
-  public final Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return PrinterStateReason.class;
   }

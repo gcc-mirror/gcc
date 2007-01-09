@@ -1,5 +1,5 @@
 /* IntBuffer.java -- 
-   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,7 +42,7 @@ package java.nio;
  * @since 1.4
  */
 public abstract class IntBuffer extends Buffer
-  implements Comparable
+  implements Comparable<IntBuffer>
 {
   int array_offset;
   int[] backing_buffer;
@@ -273,7 +273,7 @@ public abstract class IntBuffer extends Buffer
   {
     if (obj instanceof IntBuffer)
       {
-        return compareTo (obj) == 0;
+        return compareTo ((IntBuffer) obj) == 0;
       }
 
     return false;
@@ -285,10 +285,8 @@ public abstract class IntBuffer extends Buffer
    * @exception ClassCastException If obj is not an object derived from
    * <code>IntBuffer</code>.
    */
-  public int compareTo (Object obj)
+  public int compareTo (IntBuffer other)
   {
-    IntBuffer other = (IntBuffer) obj;
-
     int num = Math.min(remaining(), other.remaining());
     int pos_this = position();
     int pos_other = other.position();

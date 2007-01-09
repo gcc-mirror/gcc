@@ -37,13 +37,21 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.ImageCapabilities;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
+import java.awt.ImageCapabilities;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.DirectColorModel;
 import java.awt.image.ImageObserver;
+import java.awt.image.Raster;
+import java.awt.image.SampleModel;
+import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.VolatileImage;
+import java.awt.image.WritableRaster;
 
 public class GtkVolatileImage extends VolatileImage
 {
@@ -52,6 +60,12 @@ public class GtkVolatileImage extends VolatileImage
 
   final GtkComponentPeer component;
 
+  static ColorModel gdkColorModel = new DirectColorModel(32,
+                                                         0x000000FF,
+                                                         0x0000FF00,
+                                                         0x00FF0000,
+                                                         0xFF000000);
+                                                         
   /**
    * Don't touch, accessed from native code.
    */
@@ -62,6 +76,17 @@ public class GtkVolatileImage extends VolatileImage
   native void destroy(long pointer);
 
   native int[] nativeGetPixels(long pointer);
+  
+  /**
+   * Gets the pixels in the current image from GDK.
+   * 
+   * Note that pixels are in 32-bit RGBA, non-premultiplied, which is different
+   * from Cairo's premultiplied ARGB, which is different from Java's standard
+   * non-premultiplied ARGB.  Caution is advised when using this method, to
+   * ensure that the data format remains consistent with what you expect.
+   *  
+   * @return the current pixels, as reported by GDK.
+   */
   public int[] getPixels()
   {
     return nativeGetPixels(nativePointer);
@@ -113,9 +138,11 @@ public class GtkVolatileImage extends VolatileImage
 
   public BufferedImage getSnapshot()
   {
-    CairoSurface cs = new CairoSurface( width, height );
-    cs.setPixels( getPixels() );
-    return CairoSurface.getBufferedImage( cs );
+    WritableRaster raster = Raster.createWritableRaster(createGdkSampleModel(width, height),
+                                                        new Point(0, 0));
+    raster.setDataElements(0, 0, getPixels());
+    return new BufferedImage(gdkColorModel, raster,
+                             gdkColorModel.isAlphaPremultiplied(), null);
   }
 
   public Graphics getGraphics()
@@ -166,5 +193,15 @@ public class GtkVolatileImage extends VolatileImage
   public Object getProperty(String name, ImageObserver observer)
   {
     return null;
+  }
+  
+  /**
+   * Creates a SampleModel that matches GDK's native format
+   */
+  protected static SampleModel createGdkSampleModel(int w, int h)
+  {
+    return new SinglePixelPackedSampleModel(DataBuffer.TYPE_INT, w, h,
+                                            new int[]{0x000000FF, 0x0000FF00,
+                                                      0x00FF0000, 0xFF000000});
   }
 }

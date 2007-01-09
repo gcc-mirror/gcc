@@ -39,6 +39,9 @@ exception statement from your version. */
 package javax.swing.text;
 
 import java.io.Serializable;
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -57,6 +60,76 @@ import javax.swing.undo.UndoableEdit;
 public final class StringContent 
   implements AbstractDocument.Content, Serializable
 {
+  /**
+   * Stores a reference to a mark that can be resetted to the original value
+   * after a mark has been moved. This is used for undoing actions. 
+   */
+  private class UndoPosRef
+  {
+    /**
+     * The mark that might need to be reset.
+     */
+    private Mark mark;
+
+    /**
+     * The original offset to reset the mark to.
+     */
+    private int undoOffset;
+
+    /**
+     * Creates a new UndoPosRef.
+     *
+     * @param m the mark
+     */
+    UndoPosRef(Mark m)
+    {
+      mark = m;
+      undoOffset = mark.mark;
+    }
+
+    /**
+     * Resets the position of the mark to the value that it had when
+     * creating this UndoPosRef.
+     */
+    void reset()
+    {
+      mark.mark = undoOffset;
+    }
+  }
+
+  /**
+   * Holds a mark into the buffer that is used by StickyPosition to find
+   * the actual offset of the position. This is pulled out of the
+   * GapContentPosition object so that the mark and position can be handled
+   * independently, and most important, so that the StickyPosition can
+   * be garbage collected while we still hold a reference to the Mark object. 
+   */
+  private class Mark
+  {
+    /**
+     * The actual mark into the buffer.
+     */
+    int mark;
+
+
+    /**
+     * The number of GapContentPosition object that reference this mark. If
+     * it reaches zero, it get's deleted by
+     * {@link StringContent#garbageCollect()}.
+     */
+    int refCount;
+
+    /**
+     * Creates a new Mark object for the specified offset.
+     *
+     * @param offset the offset
+     */
+    Mark(int offset)
+    {
+      mark = offset;
+    }
+  }
+
   /** The serialization UID (compatible with JDK1.5). */
   private static final long serialVersionUID = 4755994433709540381L;
 
@@ -65,7 +138,12 @@ public final class StringContent
 
   private int count;
 
-  private Vector positions = new Vector();
+  /**
+   * Holds the marks for the positions.
+   *
+   * This is package private to avoid accessor methods.
+   */
+  Vector marks;
 
   private class InsertUndo extends AbstractUndoableEdit
   {
@@ -74,6 +152,8 @@ public final class StringContent
     private int length;
 
     private String redoContent;
+
+    private Vector positions;
 
     public InsertUndo(int start, int length)
     {
@@ -87,10 +167,10 @@ public final class StringContent
       super.undo();
       try
         {
-          StringContent.this.checkLocation(this.start, this.length);
-          this.redoContent = new String(StringContent.this.content, this.start,
-              this.length);
-          StringContent.this.remove(this.start, this.length);
+          if (marks != null)
+            positions = getPositionsInRange(null, start, length);
+          redoContent = getString(start, length);
+          remove(start, length);
         }
       catch (BadLocationException b)
         {
@@ -103,7 +183,13 @@ public final class StringContent
       super.redo();
       try
         {
-          StringContent.this.insertString(this.start, this.redoContent);
+          insertString(start, redoContent);
+          redoContent = null;
+          if (positions != null)
+            {
+              updateUndoPositions(positions);
+              positions = null;
+            }
         }
       catch (BadLocationException b)
         {
@@ -115,14 +201,19 @@ public final class StringContent
   private class RemoveUndo extends AbstractUndoableEdit
   {
     private int start;
-
+    private int len;
     private String undoString;
+
+    Vector positions;
 
     public RemoveUndo(int start, String str)
     {
       super();
       this.start = start;
+      len = str.length();
       this.undoString = str;
+      if (marks != null)
+        positions = getPositionsInRange(null, start, str.length());
     }
 
     public void undo()
@@ -131,6 +222,12 @@ public final class StringContent
       try
         {
           StringContent.this.insertString(this.start, this.undoString);
+          if (positions != null)
+            {
+              updateUndoPositions(positions);
+              positions = null;
+            }
+          undoString = null;
         }
       catch (BadLocationException bad)
         {
@@ -143,8 +240,10 @@ public final class StringContent
       super.redo();
       try
         {
-          int end = this.undoString.length();
-          StringContent.this.remove(this.start, end);
+          undoString = getString(start, len);
+          if (marks != null)
+            positions = getPositionsInRange(null, start, len);
+          remove(this.start, len);
         }
       catch (BadLocationException bad)
         {
@@ -155,17 +254,18 @@ public final class StringContent
 
   private class StickyPosition implements Position
   {
-    private int offset = -1;
+    Mark mark;
 
     public StickyPosition(int offset)
     {
-      this.offset = offset;
-    }
+      // Try to make space.
+      garbageCollect();
 
-    // This is package-private to avoid an accessor method.
-    void setOffset(int offset)
-    {
-      this.offset = this.offset >= 0 ? offset : -1;
+      mark = new Mark(offset);
+      mark.refCount++;
+      marks.add(mark);
+
+      new WeakReference(this, queueOfDeath);
     }
 
     /**
@@ -173,9 +273,23 @@ public final class StringContent
      */
     public int getOffset()
     {
-      return offset < 0 ? 0 : offset;
+      return mark.mark;
     }
   }
+
+  /**
+   * Used in {@link #remove(int,int)}.
+   */
+  private static final char[] EMPTY = new char[0];
+
+  /**
+   * Queues all references to GapContentPositions that are about to be
+   * GC'ed. This is used to remove the corresponding marks from the
+   * positionMarks array if the number of references to that mark reaches zero.
+   *
+   * This is package private to avoid accessor synthetic methods.
+   */
+  ReferenceQueue queueOfDeath;
 
   /**
    * Creates a new instance containing the string "\n".  This is equivalent
@@ -196,6 +310,7 @@ public final class StringContent
   public StringContent(int initialLength)
   {
     super();
+    queueOfDeath = new ReferenceQueue();
     if (initialLength < 1)
       initialLength = 1;
     this.content = new char[initialLength];
@@ -207,14 +322,13 @@ public final class StringContent
                                        int offset,
                                        int length)
   {
-    Vector refPos = new Vector();
-    Iterator iter = this.positions.iterator();
+    Vector refPos = v == null ? new Vector() : v;
+    Iterator iter = marks.iterator();
     while(iter.hasNext())
       {
-        Position p = (Position) iter.next();
-        if ((offset <= p.getOffset())
-            && (p.getOffset() <= (offset + length)))
-          refPos.add(p);
+        Mark m = (Mark) iter.next();
+        if (offset <= m.mark && m.mark <= offset + length)
+          refPos.add(new UndoPosRef(m));
       }
     return refPos;
   }
@@ -231,10 +345,10 @@ public final class StringContent
    */
   public Position createPosition(int offset) throws BadLocationException
   {
-    if (offset < this.count || offset > this.count)
-      checkLocation(offset, 0);
+    // Lazily create marks vector.
+    if (marks == null)
+      marks = new Vector();
     StickyPosition sp = new StickyPosition(offset);
-    this.positions.add(sp);
     return sp;
   }
   
@@ -246,7 +360,7 @@ public final class StringContent
    */
   public int length()
   {
-    return this.count;
+    return count;
   }
   
   /**
@@ -268,27 +382,23 @@ public final class StringContent
     if (str == null)
       throw new NullPointerException();
     char[] insert = str.toCharArray();
-    char[] temp = new char[this.content.length + insert.length];
-    this.count += insert.length;
-    // Copy array and insert the string.
-    if (where > 0)
-      System.arraycopy(this.content, 0, temp, 0, where);
-    System.arraycopy(insert, 0, temp, where, insert.length);
-    System.arraycopy(this.content, where, temp, (where + insert.length), 
-        (temp.length - where - insert.length));
-    if (this.content.length < temp.length)
-      this.content = new char[temp.length];
-    // Copy the result in the original char array.
-    System.arraycopy(temp, 0, this.content, 0, temp.length);
+    replace(where, 0, insert);
+
     // Move all the positions.
-    Vector refPos = getPositionsInRange(this.positions, where, 
-                                        temp.length - where);
-    Iterator iter = refPos.iterator();
-    while (iter.hasNext())
+    if (marks != null)
       {
-        StickyPosition p = (StickyPosition)iter.next();
-        p.setOffset(p.getOffset() + str.length());
+        Iterator iter = marks.iterator();
+        int start = where;
+        if (start == 0)
+          start = 1;
+        while (iter.hasNext())
+          {
+            Mark m = (Mark) iter.next();
+            if (m.mark >= start)
+              m.mark += str.length();
+          }
       }
+
     InsertUndo iundo = new InsertUndo(where, insert.length);
     return iundo;
   }
@@ -308,32 +418,51 @@ public final class StringContent
   public UndoableEdit remove(int where, int nitems) throws BadLocationException
   {
     checkLocation(where, nitems + 1);
-    char[] temp = new char[(this.content.length - nitems)];
-    this.count = this.count - nitems;
     RemoveUndo rundo = new RemoveUndo(where, new String(this.content, where, 
         nitems));
-    // Copy array.
-    System.arraycopy(this.content, 0, temp, 0, where);
-    System.arraycopy(this.content, where + nitems, temp, where, 
-        this.content.length - where - nitems);
-    this.content = new char[temp.length];
-    // Then copy the result in the original char array.
-    System.arraycopy(temp, 0, this.content, 0, this.content.length);
+
+    replace(where, nitems, EMPTY);
     // Move all the positions.
-    Vector refPos = getPositionsInRange(this.positions, where, 
-        this.content.length + nitems - where);
-    Iterator iter = refPos.iterator();
-    while (iter.hasNext())
+    if (marks != null)
       {
-        StickyPosition p = (StickyPosition)iter.next();
-        int result = p.getOffset() - nitems;
-        p.setOffset(result);
-        if (result < 0)
-          this.positions.remove(p);
+        Iterator iter = marks.iterator();
+        while (iter.hasNext())
+          {
+            Mark m = (Mark) iter.next();
+            if (m.mark >= where + nitems)
+              m.mark -= nitems;
+            else if (m.mark >= where)
+              m.mark = where;
+          }
       }
     return rundo;
   }
-  
+
+  private void replace(int offs, int numRemove, char[] insert)
+  {
+    int insertLength = insert.length;
+    int delta = insertLength - numRemove;
+    int src = offs + numRemove;
+    int numMove = count - src;
+    int dest = src + delta;
+    if (count + delta >= content.length)
+      {
+        // Grow data array.
+        int newLength = Math.max(2 * content.length, count + delta);
+        char[] newContent = new char[newLength];
+        System.arraycopy(content, 0, newContent, 0, offs);
+        System.arraycopy(insert, 0, newContent, offs, insertLength);
+        System.arraycopy(content, src, newContent, dest, numMove);
+        content = newContent;
+      }
+    else
+      {
+        System.arraycopy(content, src, content, dest, numMove);
+        System.arraycopy(insert, 0, content, offs, insertLength);
+      }
+    count += delta;
+  }
+
   /**
    * Returns a new <code>String</code> containing the characters in the 
    * specified range.
@@ -348,6 +477,8 @@ public final class StringContent
    */
   public String getString(int where, int len) throws BadLocationException
   {
+    // The RI throws a StringIndexOutOfBoundsException here, which
+    // smells like a bug. We throw a BadLocationException instead.
     checkLocation(where, len);
     return new String(this.content, where, len);
   }
@@ -368,22 +499,28 @@ public final class StringContent
   public void getChars(int where, int len, Segment txt) 
     throws BadLocationException
   {
-    checkLocation(where, len);
-    txt.array = this.content;
+    if (where + len > count)
+      throw new BadLocationException("Invalid location", where + len);
+    txt.array = content;
     txt.offset = where;
     txt.count = len;
   }
 
 
   /**
-   * @specnote This method is not very well specified and the positions vector
-   *           is implementation specific. The undo positions are managed
-   *           differently in this implementation, this method is only here
-   *           for binary compatibility.
+   * Resets the positions in the specified vector to their original offset
+   * after a undo operation is performed. For example, after removing some
+   * content, the positions in the removed range will all be set to one
+   * offset. This method restores the positions to their original offsets
+   * after an undo.
    */
   protected void updateUndoPositions(Vector positions)
   {
-    // We do nothing here.
+    for (Iterator i = positions.iterator(); i.hasNext();)
+      {
+        UndoPosRef pos = (UndoPosRef) i.next();
+        pos.reset();
+      }
   }
 
   /** 
@@ -405,6 +542,29 @@ public final class StringContent
     else if ((where + len) > this.count)
       throw new BadLocationException("Invalid range", this.count);
   }
-  
+
+  /**
+   * Polls the queue of death for GapContentPositions, updates the
+   * corresponding reference count and removes the corresponding mark
+   * if the refcount reaches zero.
+   *
+   * This is package private to avoid accessor synthetic methods.
+   */
+  void garbageCollect()
+  {
+    Reference ref = queueOfDeath.poll();
+    while (ref != null)
+      {
+        if (ref != null)
+          {
+            StickyPosition pos = (StickyPosition) ref.get();
+            Mark m = pos.mark;
+            m.refCount--;
+            if (m.refCount == 0)
+              marks.remove(m);
+          }
+        ref = queueOfDeath.poll();
+      }
+  }
 }
 

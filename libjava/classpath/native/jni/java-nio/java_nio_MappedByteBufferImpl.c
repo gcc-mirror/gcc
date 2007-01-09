@@ -1,5 +1,5 @@
 /* java_nio_MappedByteBufferImpl.c - Native methods for MappedByteBufferImpl
-   Copyright (C) 2004,2005  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -43,7 +43,6 @@ exception statement from your version. */
 
 #include "java_nio_MappedByteBufferImpl.h"
 
-#include <errno.h>
 #include <string.h>
 #include <stdlib.h>
 #ifdef HAVE_UNISTD_H

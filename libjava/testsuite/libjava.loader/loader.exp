@@ -21,7 +21,7 @@ proc gcj_loader_test_one {srcfile} {
 
   set errname [file rootname [file tail $srcfile]]
   set args [libjava_arguments link]
-  lappend args "additional_flags=--main=[file rootname [file tail $srcfile]] $srcdir/$subdir/MyLoader.java $objdir/[gcj_object_file_name $args dummy]"
+  lappend args "additional_flags=--main=[file rootname [file tail $srcfile]] [gcj_object_file_name $args dummy]"
   set x [libjava_prune_warnings \
 	     [libjava_tcompile $srcfile "$executable" executable $args]]
 
@@ -45,19 +45,19 @@ proc gcj_loader_run {} {
   global build_triplet host_triplet
   global GCJ_UNDER_TEST
 
-  set file "${srcdir}/${subdir}/dummy.java"
-  if {! [bytecompile_file $file [pwd]]} {
-    fail "bytecompile $file"
-    # FIXME - should use `untested' on all remaining tests.
-    # But that is hard.
-    return 0
-  }
-  pass "bytecompile $file"
+#   set file "${srcdir}/${subdir}/dummy.java"
+#   if {! [bytecompile_file $file [pwd]]} {
+#     fail "bytecompile $file"
+#     # FIXME - should use `untested' on all remaining tests.
+#     # But that is hard.
+#     return 0
+#   }
+#   pass "bytecompile $file"
 
   set args [libjava_arguments compile]
-  lappend args "additional_flags=--resource $objdir/dummy.class"
+  lappend args "additional_flags=--resource $srcdir/$subdir/dummy.class"
   set x [libjava_prune_warnings \
-	   [libjava_tcompile "$objdir/dummy.class" "$objdir/[gcj_object_file_name $args dummy]" object $args]]
+	   [libjava_tcompile "$srcdir/$subdir/dummy.class" "$objdir/[gcj_object_file_name $args dummy]" object $args]]
 
     if { $x != "" } {
 	verbose "resource compilation failed: $x" 2
@@ -67,7 +67,7 @@ proc gcj_loader_run {} {
     }
   pass "resource compilation: dummy.class"
 
-  catch { lsort [glob -nocomplain ${srcdir}/${subdir}/Test*.java] } srcfiles
+  catch { lsort [glob -nocomplain ${srcdir}/${subdir}/Test*.jar] } srcfiles
 
   foreach x $srcfiles {
     gcj_loader_test_one $x

@@ -97,6 +97,8 @@ package java.util;
  * non-deterministic behavior.
  *
  * @author Eric Blake (ebb9@email.byu.edu)
+ * @author Tom Tromey (tromey@redhat.com)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @see Object#hashCode()
  * @see Collection
  * @see Map
@@ -106,7 +108,7 @@ package java.util;
  * @since 1.4
  * @status updated to 1.4
  */
-public class LinkedHashMap extends HashMap
+public class LinkedHashMap<K,V> extends HashMap<K,V>
 {
   /**
    * Compatible with JDK 1.4.
@@ -130,16 +132,16 @@ public class LinkedHashMap extends HashMap
    * Class to represent an entry in the hash table. Holds a single key-value
    * pair and the doubly-linked insertion order list.
    */
-  class LinkedHashEntry extends HashEntry
+  class LinkedHashEntry<K,V> extends HashEntry<K,V>
   {
     /**
      * The predecessor in the iteration list. If this entry is the root
      * (eldest), pred points to the newest entry.
      */
-    LinkedHashEntry pred;
+    LinkedHashEntry<K,V> pred;
 
     /** The successor in the iteration list, null if this is the newest. */
-    LinkedHashEntry succ;
+    LinkedHashEntry<K,V> succ;
 
     /**
      * Simple constructor.
@@ -147,7 +149,7 @@ public class LinkedHashMap extends HashMap
      * @param key the key
      * @param value the value
      */
-    LinkedHashEntry(Object key, Object value)
+    LinkedHashEntry(K key, V value)
     {
       super(key, value);
       if (root == null)
@@ -186,7 +188,7 @@ public class LinkedHashMap extends HashMap
               succ = null;
               pred = root.pred;
               pred.succ = this;
-              root.pred = this;
+	      root.pred = this;
             }
         }
     }
@@ -197,7 +199,7 @@ public class LinkedHashMap extends HashMap
      *
      * @return the value of this key as it is removed
      */
-    Object cleanup()
+    V cleanup()
     {
       if (this == root)
         {
@@ -243,7 +245,7 @@ public class LinkedHashMap extends HashMap
    *          are not cloned in this constructor.</b>
    * @throws NullPointerException if m is null
    */
-  public LinkedHashMap(Map m)
+  public LinkedHashMap(Map<? extends K, ? extends V> m)
   {
     super(m);
     accessOrder = false;
@@ -335,10 +337,10 @@ public class LinkedHashMap extends HashMap
    * @see #put(Object, Object)
    * @see #containsKey(Object)
    */
-  public Object get(Object key)
+  public V get(Object key)
   {
     int idx = hash(key);
-    HashEntry e = buckets[idx];
+    HashEntry<K,V> e = buckets[idx];
     while (e != null)
       {
         if (equals(key, e.key))
@@ -390,7 +392,7 @@ public class LinkedHashMap extends HashMap
    *        earliest element inserted.
    * @return true if <code>eldest</code> should be removed
    */
-  protected boolean removeEldestEntry(Map.Entry eldest)
+  protected boolean removeEldestEntry(Map.Entry<K,V> eldest)
   {
     return false;
   }
@@ -407,7 +409,7 @@ public class LinkedHashMap extends HashMap
    * @see #removeEldestEntry(Map.Entry)
    * @see LinkedHashEntry#LinkedHashEntry(Object, Object)
    */
-  void addEntry(Object key, Object value, int idx, boolean callRemove)
+  void addEntry(K key, V value, int idx, boolean callRemove)
   {
     LinkedHashEntry e = new LinkedHashEntry(key, value);
     e.next = buckets[idx];

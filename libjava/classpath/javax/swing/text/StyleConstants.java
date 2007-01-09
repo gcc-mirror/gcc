@@ -40,6 +40,7 @@ package javax.swing.text;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.util.ArrayList;
 
 import javax.swing.Icon;
 
@@ -163,6 +164,12 @@ public class StyleConstants
   
   public static final Object ResolveAttribute = new StyleConstants("resolver");
 
+  /**
+   * All StyleConstants keys. This is used in StyleContext to register
+   * all known keys as static attribute keys for serialization.
+   */
+  static ArrayList keys;
+
   String keyname;
 
   // Package-private to avoid accessor constructor for use by
@@ -170,6 +177,9 @@ public class StyleConstants
   StyleConstants(String k) 
   {
     keyname = k;
+    if (keys == null)
+      keys = new ArrayList();
+    keys.add(this);
   }
 
   /**
@@ -729,6 +739,7 @@ public class StyleConstants
    */
   public static void setIcon(MutableAttributeSet a, Icon c)
   {
+    a.addAttribute(AbstractDocument.ElementNameAttribute, IconElementName);
     a.addAttribute(IconAttribute, c);
   }
  

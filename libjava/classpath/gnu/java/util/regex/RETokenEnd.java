@@ -45,6 +45,12 @@ final class RETokenEnd extends REToken {
   private String newline;
   private boolean check_java_line_terminators;
 
+  /**
+   * Indicates whether this token is a real one generated at compile time,
+   * or a fake one temporarily added by RE#getMatchImpl.
+   */
+  private boolean fake = false;
+
   RETokenEnd(int subIndex,String newline) { 
     super(subIndex);
     this.newline = newline;
@@ -57,8 +63,17 @@ final class RETokenEnd extends REToken {
     this.check_java_line_terminators = b;
   }
 
+  void setFake(boolean fake) {
+    this.fake = fake;
+  }
+
   int getMaximumLength() {
     return 0;
+  }
+
+  boolean match(CharIndexed input, REMatch mymatch) {
+    if (!fake) return super.match(input, mymatch);
+    return super.matchFake(input, mymatch);
   }
 
     REMatch matchThis(CharIndexed input, REMatch mymatch) {

@@ -54,15 +54,79 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.ButtonModel;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.ActionMapUIResource;
+import javax.swing.plaf.ButtonUI;
 
-public class BasicButtonListener implements MouseListener, MouseMotionListener,
-  FocusListener, ChangeListener, PropertyChangeListener
+public class BasicButtonListener
+  implements MouseListener, MouseMotionListener, FocusListener, ChangeListener,
+             PropertyChangeListener
 {
+  /**
+   * Implements the keyboard action for Swing buttons.
+   */
+  private class ButtonAction
+    extends AbstractAction
+  {
+    /**
+     * The key for pressed action.
+     */
+    static final String PRESSED = "pressed";
+
+    /**
+     * The key for released action.
+     */
+    static final String RELEASED = "released";
+
+    /**
+     * Performs the action.
+     */
+    public void actionPerformed(ActionEvent event)
+    {
+      Object cmd = getValue("__command__");
+      AbstractButton b = (AbstractButton) event.getSource();
+      ButtonModel m = b.getModel();
+      if (PRESSED.equals(cmd))
+        {
+          m.setArmed(true);
+          m.setPressed(true);
+          if (! b.isFocusOwner())
+            b.requestFocus();
+        }
+      else if (RELEASED.equals(cmd))
+        {
+          m.setPressed(false);
+          m.setArmed(false);
+        }
+    }
+
+    /**
+     * Indicates if this action is enabled.
+     *
+     * @param source the source of the action
+     *
+     * @return <code>true</code> when enabled, <code>false</code> otherwise
+     */
+    public boolean isEnabled(Object source)
+    {
+      boolean enabled = true;
+      if (source instanceof AbstractButton)
+        {
+          AbstractButton b = (AbstractButton) source;
+          enabled = b.isEnabled();
+        }
+      return enabled;
+    }
+  }
+
   public BasicButtonListener(AbstractButton b)
   {
     // Do nothing here.
@@ -73,12 +137,12 @@ public class BasicButtonListener implements MouseListener, MouseMotionListener,
     // Store the TextLayout for this in a client property for speed-up
     // painting of the label.
     String property = e.getPropertyName();
+    AbstractButton b = (AbstractButton) e.getSource();
     if ((property.equals(AbstractButton.TEXT_CHANGED_PROPERTY)
          || property.equals("font"))
         && SystemProperties.getProperty("gnu.javax.swing.noGraphics2D")
         == null)
       {
-        AbstractButton b = (AbstractButton) e.getSource();
         String text = b.getText();
         if (text == null)
           text = "";
@@ -86,12 +150,25 @@ public class BasicButtonListener implements MouseListener, MouseMotionListener,
                                                       false, false);
         TextLayout layout = new TextLayout(text, b.getFont(), frc);
         b.putClientProperty(BasicGraphicsUtils.CACHED_TEXT_LAYOUT, layout);
+
+        // Update HTML renderer.
+        BasicHTML.updateRenderer(b, b.getText());
+      }
+    else if (property.equals(AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY))
+      {
+        checkOpacity(b);
       }
   }
-  
+
+  /**
+   * Checks the <code>contentAreaFilled</code> property and updates the
+   * opaque property of the button.
+   *
+   * @param b the button to check
+   */
   protected void checkOpacity(AbstractButton b) 
   {    
-    // TODO: What should be done here?
+    b.setOpaque(b.isContentAreaFilled());
   }
   
   public void focusGained(FocusEvent e) 
@@ -116,6 +193,26 @@ public class BasicButtonListener implements MouseListener, MouseMotionListener,
   
   public void installKeyboardActions(JComponent c)
   {
+    ButtonUI ui = ((AbstractButton) c).getUI();
+    if (ui instanceof BasicButtonUI)
+      {
+        // Install InputMap.
+        BasicButtonUI basicUI = (BasicButtonUI) ui;
+        String prefix = basicUI.getPropertyPrefix(); 
+        InputMap focusInputMap =
+          (InputMap) UIManager.get(prefix + "focusInputMap");
+        SwingUtilities.replaceUIInputMap(c, JComponent.WHEN_FOCUSED,
+                                         focusInputMap);
+
+        ActionMap am = (ActionMap) UIManager.get(prefix + "actionMap");
+        if (am == null)
+          {
+            am = createDefaultActionMap();
+            UIManager.put(prefix + "actionMap", am);
+          }
+        SwingUtilities.replaceUIActionMap(c, am);
+      }
+    
     c.getActionMap().put("pressed", 
                          new AbstractAction() 
                          {
@@ -142,31 +239,46 @@ public class BasicButtonListener implements MouseListener, MouseMotionListener,
                            }
                        });    
   }
-  
+
+  /**
+   * Creates and returns the default action map for Swing buttons.
+   *
+   * @return the default action map for Swing buttons
+   */
+  private ActionMap createDefaultActionMap()
+  {
+    Action action = new ButtonAction();
+    ActionMapUIResource am = new ActionMapUIResource();
+    am.put(ButtonAction.PRESSED, action);
+    am.put(ButtonAction.RELEASED, action);
+    return am;
+  }
+
   public void uninstallKeyboardActions(JComponent c)
   {
-    c.getActionMap().put("pressed", null);
-    c.getActionMap().put("released", null);
+    SwingUtilities.replaceUIActionMap(c, null);
+    SwingUtilities.replaceUIInputMap(c, JComponent.WHEN_FOCUSED, null);
   }
   
   public void stateChanged(ChangeEvent e)
   {
-    // TODO: What should be done here, if anything?
+    // Need to repaint when the button state changes.
+    ((AbstractButton) e.getSource()).repaint();
   }
   
   public void mouseMoved(MouseEvent e)
   {
-    // TODO: What should be done here, if anything?
+    // Nothing to do here.
   }
   
   public void mouseDragged(MouseEvent e)
   {
-    // TODO: What should be done here, if anything?
+    // Nothing to do here.
   }
   
   public void mouseClicked(MouseEvent e)
   {
-    // TODO: What should be done here, if anything?
+    // Nothing to do here.
   }
 
   /**

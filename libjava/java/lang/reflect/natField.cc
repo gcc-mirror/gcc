@@ -29,10 +29,24 @@ details.  */
 #include <java/lang/Boolean.h>
 #include <java/lang/Character.h>
 
+typedef JArray< ::java::lang::annotation::Annotation * > * anno_a_t;
+
 jint
 java::lang::reflect::Field::getModifiersInternal ()
 {
   return _Jv_FromReflectedField (this)->flags;
+}
+
+jstring
+java::lang::reflect::Field::getSignature()
+{
+  return declaringClass->getReflectionSignature (this);
+}
+
+anno_a_t
+java::lang::reflect::Field::getDeclaredAnnotationsInternal()
+{
+  return (anno_a_t) declaringClass->getDeclaredAnnotations(this);
 }
 
 jstring

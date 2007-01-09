@@ -46,6 +46,8 @@ import java.awt.LayoutManager;
 import java.awt.Rectangle;
 import java.io.Serializable;
 
+import javax.swing.border.Border;
+
 /**
  * ScrollPaneLayout
  * @author	Andrew Selkirk
@@ -277,6 +279,16 @@ public class ScrollPaneLayout
       width += rowHead.getPreferredSize().width;
     if (colHead != null && colHead.isVisible())
       height += colHead.getPreferredSize().height;
+
+    // Add insets of viewportBorder if present.
+    Border vpBorder = sc.getViewportBorder();
+    if (vpBorder != null)
+      {
+        Insets i = vpBorder.getBorderInsets(sc);
+        width += i.left + i.right;
+        height += i.top + i.bottom;
+      }
+
     Insets i = sc.getInsets();
     return new Dimension(width + i.left + i.right,
                          height + i.left + i.right);
@@ -299,6 +311,15 @@ public class ScrollPaneLayout
     if (sc.getHorizontalScrollBarPolicy()
         != JScrollPane.HORIZONTAL_SCROLLBAR_NEVER)
       height += sc.getHorizontalScrollBar().getMinimumSize().height;
+
+    // Add insets of viewportBorder if present.
+    Border vpBorder = sc.getViewportBorder();
+    if (vpBorder != null)
+      {
+        i = vpBorder.getBorderInsets(sc);
+        width += i.left + i.right;
+        height += i.top + i.bottom;
+      }
 
     return new Dimension(width, height);
   }
@@ -341,6 +362,15 @@ public class ScrollPaneLayout
     int x1 = 0, x2 = 0, x3 = 0, x4 = 0;
     int y1 = 0, y2 = 0, y3 = 0, y4 = 0;
     Rectangle scrollPaneBounds = SwingUtilities.calculateInnerArea(sc, null);
+
+    // If there is a viewportBorder, remove its insets from the available
+    // space.
+    Border vpBorder = sc.getViewportBorder();
+    Insets vpi;
+    if (vpBorder != null)
+      vpi = vpBorder.getBorderInsets(sc);
+    else
+      vpi = new Insets(0, 0, 0, 0);
 
     x1 = scrollPaneBounds.x;
     y1 = scrollPaneBounds.y;
@@ -404,7 +434,9 @@ public class ScrollPaneLayout
 
     // now set the layout
     if (viewport != null)
-      viewport.setBounds(new Rectangle(x2, y2, x3 - x2, y3 - y2));
+      viewport.setBounds(new Rectangle(x2 + vpi.left, y2 + vpi.top,
+                                       x3 - x2 - vpi.left - vpi.right,
+                                       y3 - y2 - vpi.top - vpi.bottom));
 
     if (colHead != null)
       colHead.setBounds(new Rectangle(x2, y1, x3 - x2, y2 - y1));
@@ -415,7 +447,7 @@ public class ScrollPaneLayout
     if (showVsb)
       {
         vsb.setVisible(true);
-        vsb.setBounds(new Rectangle(x3, y2, x4 - x3, y3 - y2));
+        vsb.setBounds(new Rectangle(x3, y2, x4 - x3, y3 - y2 ));
       }
     else if (vsb != null)
       vsb.setVisible(false);
@@ -423,7 +455,7 @@ public class ScrollPaneLayout
     if (showHsb)
       {
         hsb.setVisible(true);
-        hsb.setBounds(new Rectangle(x2, y3, x3 - x2, y4 - y3));
+        hsb.setBounds(new Rectangle(x2 , y3, x3 - x2, y4 - y3));
       }
     else if (hsb != null)
       hsb.setVisible(false);

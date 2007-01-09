@@ -166,7 +166,7 @@ public class DefaultButtonModel implements ButtonModel, Serializable
    *
    * @return array of listeners
    */
-  public EventListener[] getListeners(Class listenerType)
+  public <T extends EventListener> T[] getListeners(Class<T> listenerType)
   {
     return listenerList.getListeners(listenerType);
   }
@@ -425,7 +425,7 @@ public class DefaultButtonModel implements ButtonModel, Serializable
   public void setRollover(boolean r)
   {
     // if this call does not represent a CHANGE in state, then return
-    if ((r && isRollover()) || (!r && !isRollover()))
+    if (r == isRollover())
       return;
     
     // cannot set ROLLOVER property unless button is enabled

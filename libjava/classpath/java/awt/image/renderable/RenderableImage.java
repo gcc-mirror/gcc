@@ -46,7 +46,7 @@ public interface RenderableImage
 {
   String HINTS_OBSERVED = "HINTS_OBSERVED";
   
-  Vector getSources();
+  Vector<RenderableImage> getSources();
   Object getProperty(String name);
   String[] getPropertyNames();
   boolean isDynamic();

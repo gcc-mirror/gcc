@@ -51,7 +51,7 @@ public interface Attribute extends Cloneable, Serializable
 {
   long serialVersionUID = 8707690322213556804L;
 
-  NamingEnumeration getAll() throws NamingException;
+  NamingEnumeration<?> getAll() throws NamingException;
   Object get() throws NamingException;
   int size();
   String getID();

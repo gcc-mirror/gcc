@@ -54,6 +54,8 @@ import org.omg.CosNaming.NamingContextPackage.NotFound;
 import org.omg.CosNaming.NamingContextPackage.NotFoundReason;
 import org.omg.CosNaming._NamingContextImplBase;
 
+import gnu.CORBA.SafeForDirectCalls;
+
 import java.util.Iterator;
 import java.util.Map;
 
@@ -69,7 +71,7 @@ import java.util.Map;
  */
 public class TransientContext
   extends _NamingContextImplBase
-  implements NamingContext, NamingContextOperations
+  implements NamingContext, NamingContextOperations, SafeForDirectCalls
 {
   /**
    * Use serial version UID for interoperability.

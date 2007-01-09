@@ -16,6 +16,10 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkFramePeer_setMenuBarWidth (
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkFramePeer_setMenuBarPeer (JNIEnv *env, jobject, jobject);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkFramePeer_removeMenuBarPeer (JNIEnv *env, jobject);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkFramePeer_gtkFixedSetVisible (JNIEnv *env, jobject, jboolean);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkFramePeer_maximize (JNIEnv *env, jobject);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkFramePeer_unmaximize (JNIEnv *env, jobject);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkFramePeer_iconify (JNIEnv *env, jobject);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkFramePeer_deiconify (JNIEnv *env, jobject);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkFramePeer_nativeSetIconImage (JNIEnv *env, jobject, jobject);
 
 #ifdef __cplusplus

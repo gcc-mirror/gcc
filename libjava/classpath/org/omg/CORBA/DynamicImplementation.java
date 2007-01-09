@@ -1,5 +1,5 @@
 /* DynamicImplementation.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -61,7 +61,7 @@ public class DynamicImplementation
 {
   /**
    * Invoke the method of the CORBA object. After converting the parameters,
-   * this method delegates call to the {@link ObjectImpl#invoke}.
+   * this method delegates call to the {@link ObjectImpl#_invoke}.
    * 
    * @deprecated since 1.4.
    * 

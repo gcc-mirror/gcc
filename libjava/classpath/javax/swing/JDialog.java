@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package javax.swing;
 
+import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
@@ -97,7 +98,7 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
   protected boolean rootPaneCheckingEnabled = false;
 
   /** The default action taken when closed. */
-  private int close_action = HIDE_ON_CLOSE;
+  private int closeAction = HIDE_ON_CLOSE;
   
   /** Whether JDialogs are decorated by the Look and Feel. */
   private static boolean decorated;
@@ -245,6 +246,10 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
    */
   protected void dialogInit()
   {
+    // We need to explicitly enable events here so that our processKeyEvent()
+    // and processWindowEvent() gets called.
+    enableEvents(AWTEvent.WINDOW_EVENT_MASK);
+
     // FIXME: Do a check on GraphicsEnvironment.isHeadless()
     setLocale(JComponent.getDefaultLocale());
     getRootPane(); // Will do set/create.
@@ -507,37 +512,23 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
    */
   protected void processWindowEvent(WindowEvent e)
   {
-    //	System.out.println("PROCESS_WIN_EV-1: " + e);
     super.processWindowEvent(e);
-    //	System.out.println("PROCESS_WIN_EV-2: " + e);
-    switch (e.getID())
+    if (e.getID() == WindowEvent.WINDOW_CLOSING)
       {
-      case WindowEvent.WINDOW_CLOSING:
-        {
-	  switch (getDefaultCloseOperation())
-	    {
-	    case DISPOSE_ON_CLOSE:
-	      {
-		dispose();
-		break;
-	      }
-	    case HIDE_ON_CLOSE:
-	      {
-		setVisible(false);
-		break;
-	      }
-	    case DO_NOTHING_ON_CLOSE:
-	      break;
-	    }
-	  break;
-        }
-      case WindowEvent.WINDOW_CLOSED:
-      case WindowEvent.WINDOW_OPENED:
-      case WindowEvent.WINDOW_ICONIFIED:
-      case WindowEvent.WINDOW_DEICONIFIED:
-      case WindowEvent.WINDOW_ACTIVATED:
-      case WindowEvent.WINDOW_DEACTIVATED:
-	break;
+        switch (closeAction)
+          {
+          case EXIT_ON_CLOSE:
+            System.exit(0);
+            break;
+          case DISPOSE_ON_CLOSE:
+            dispose();
+            break;
+          case HIDE_ON_CLOSE:
+            setVisible(false);
+            break;
+          case DO_NOTHING_ON_CLOSE:
+            break;
+          }
       }
   }
 
@@ -554,7 +545,7 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
        must return the invalid code, and the behaviour
        defaults to DO_NOTHING_ON_CLOSE.  processWindowEvent
        above handles this */
-    close_action = operation;
+    closeAction = operation;
   }
 
   /**
@@ -565,7 +556,7 @@ public class JDialog extends Dialog implements Accessible, WindowConstants,
    */
   public int getDefaultCloseOperation()
   {
-    return close_action;
+    return closeAction;
   }
 
   /**

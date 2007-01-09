@@ -54,7 +54,8 @@ import java.util.Set;
  * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
  * @author Eric Blake (ebb9@email.byu.edu)
  */
-public class RenderingHints implements Map, Cloneable
+public class RenderingHints
+  implements Map<Object,Object>, Cloneable
 {
   /**
    * The base class used to represent keys.
@@ -550,7 +551,7 @@ public class RenderingHints implements Map, Cloneable
    * @param init  a map containing a collection of hints (<code>null</code> 
    *              permitted).
    */
-  public RenderingHints(Map init)
+  public RenderingHints(Map<Key,?> init)
   {
     if (init != null)
       putAll(init);
@@ -704,7 +705,7 @@ public class RenderingHints implements Map, Cloneable
    * @throws IllegalArgumentException if the map contains a value that is
    *         not compatible with its key.
    */
-  public void putAll(Map m)
+  public void putAll(Map<?,?> m)
   {
     // preprocess map to generate appropriate exceptions
     Iterator iterator = m.keySet().iterator();
@@ -723,7 +724,7 @@ public class RenderingHints implements Map, Cloneable
    * 
    * @return A set of keys.
    */
-  public Set keySet()
+  public Set<Object> keySet()
   {
     return hintMap.keySet();
   }
@@ -735,7 +736,7 @@ public class RenderingHints implements Map, Cloneable
    * 
    * @return A collection of values.
    */
-  public Collection values()
+  public Collection<Object> values()
   {
     return hintMap.values();
   }
@@ -745,7 +746,7 @@ public class RenderingHints implements Map, Cloneable
    * 
    * @return A set of entries.
    */
-  public Set entrySet()
+  public Set<Map.Entry<Object,Object>> entrySet()
   {
     return Collections.unmodifiableSet(hintMap.entrySet());
   }

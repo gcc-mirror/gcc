@@ -40,20 +40,31 @@ package gnu.classpath.examples.swing;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.LinkedList;
 
+import javax.swing.BoxLayout;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
-import javax.swing.text.Element;
-import javax.swing.text.html.HTMLDocument;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.text.html.FormSubmitEvent;
 
 /**
  * Parses and displays HTML content.
@@ -62,28 +73,54 @@ import javax.swing.text.html.HTMLDocument;
  */
 public class HtmlDemo extends JPanel
 { 
-  
-  JTextPane html = new JTextPane();
 
-  JTextArea text = new JTextArea("<html><body>" +
-    "123456789HR!<hr>987654321"+
-    "123456789BR!<br>987654321"+
-    "<p id='insertHere'>Insertion target</p><p>"+
-    "<font color=red>ma</font>"+
-    "<sup>sup</sup>normal<sub>sub</sub>normal</p><p>Table:"+
-    "<table><tr>a<td>b<td>c<tr>x<td>y<td>z</table></body></html>");  
-  
-  JPanel buttons;
+  private class LoadActionListener
+    implements ActionListener
+  {
+
+    public void actionPerformed(ActionEvent event)
+    {
+      String urlStr = url.getText();
+      try
+        {
+          setPage(new URL(url.getText()));
+        }
+      catch (MalformedURLException ex)
+        {
+          // Do something more useful here.
+          ex.printStackTrace();
+        }
+    }
+  }
+
+  /**
+   * Setting this to true causes the parsed element structure to be dumped.
+   */
+  private static final boolean DEBUG = true;
+
+  /**
+   * The URL entry field.
+   */
+  JTextField url = new JTextField(); 
+
+  JTextPane html = new JTextPane();
   
   int n;
+
+  /**
+   * The browsing history.
+   *
+   * Package private to avoid accessor method.
+   */
+  LinkedList history;
 
   public HtmlDemo()
   {
     super();
-    html.setContentType("text/html"); // not now.
+    history = new LinkedList();
     createContent();
   }
-  
+
   /**
    * Returns a panel with the demo content. The panel uses a BorderLayout(), and
    * the BorderLayout.SOUTH area is empty, to allow callers to add controls to
@@ -93,158 +130,128 @@ public class HtmlDemo extends JPanel
   private void createContent()
   {
     setLayout(new BorderLayout());
-    
-    JPanel center = new JPanel();
-    GridLayout layout = new GridLayout();
-    layout.setRows(2);
-    center.setLayout(layout);
-    center.add(new JScrollPane(text));
-    center.add(new JScrollPane(html));
-    
-    buttons = new JPanel();
-    
-    JButton parse = new JButton("parse");
-    parse.addActionListener(new ActionListener()
-      {
-        public void actionPerformed(ActionEvent event)
-          {
-            String t = text.getText();
-            System.out.println("HtmlDemo.java.createContent:Parsing started");
-            html.setText(t);
-            System.out.println("HtmlDemo.java.createContent:Parsing completed");            
-          }
-      });
-    
-    buttons.add(parse);
-    
-    JButton insertBeforeEnd = new JButton("before end");
-    insertBeforeEnd.addActionListener(new ActionListener()
-      {
-        public void actionPerformed(ActionEvent event)
-          {
-            HTMLDocument doc = (HTMLDocument) html.getDocument();
-            Element el = doc.getElement("insertHere");
-            System.out.println("Element found:"+el);
-            try
-              {
-                doc.insertBeforeEnd(el,"before end "+(n++));
-              }
-            catch (Exception e)
-              {
-                e.printStackTrace();
-              }
-          }
-      });
-    
-    JButton insertBeforeStart = new JButton("before start");
-    insertBeforeStart.addActionListener(new ActionListener()
-      {
-        public void actionPerformed(ActionEvent event)
-          {
-            HTMLDocument doc = (HTMLDocument) html.getDocument();
-            Element el = doc.getElement("insertHere");
-            System.out.println("Element found:"+el);
-            try
-              {
-                doc.insertBeforeStart(el,"before start "+(n++));
-              }
-            catch (Exception e)
-              {
-                e.printStackTrace();
-              }
-          }
-      });
-    
-    JButton insertAfterEnd = new JButton("after end");
-    insertAfterEnd.addActionListener(new ActionListener()
-      {
-        public void actionPerformed(ActionEvent event)
-          {
-            HTMLDocument doc = (HTMLDocument) html.getDocument();
-            Element el = doc.getElement("insertHere");
-            System.out.println("Element found:"+el);
-            try
-              {
-                doc.insertAfterEnd(el,"after end "+(n++));
-              }
-            catch (Exception e)
-              {
-                e.printStackTrace();
-              }
-          }
-      });
-    
-    JButton insertAfterStart = new JButton("after start");
-    insertAfterStart.addActionListener(new ActionListener()
-      {
-        public void actionPerformed(ActionEvent event)
-          {
-            HTMLDocument doc = (HTMLDocument) html.getDocument();
-            Element el = doc.getElement("insertHere");
-            System.out.println("Element found:"+el);
-            try
-              {
-                doc.insertAfterStart(el,"after start "+(n++));
-              }
-            catch (Exception e)
-              {
-                e.printStackTrace();
-              }
-          }
-      });
-    
 
-    JButton setInner = new JButton("inner");
-    setInner.addActionListener(new ActionListener()
+    JEditorPane.registerEditorKitForContentType("text/html",
+                                             BrowserEditorKit.class.getName());
+    html.setEditable(false);
+    html.addHyperlinkListener(new HyperlinkListener()
+    {
+
+      public void hyperlinkUpdate(HyperlinkEvent event)
       {
-        public void actionPerformed(ActionEvent event)
+        if (event instanceof FormSubmitEvent)
           {
-            HTMLDocument doc = (HTMLDocument) html.getDocument();
-            Element el = doc.getElement("insertHere");
-            System.out.println("Element found:"+el);
-            try
+            submitForm((FormSubmitEvent) event);
+          }
+        else
+          {
+            URL u = event.getURL();
+            if (u != null)
               {
-                doc.setInnerHTML(el,"inner "+(n++));
-              }
-            catch (Exception e)
-              {
-                e.printStackTrace();
+                setPage(u);
               }
           }
-      });
-    
-    JButton setOuter = new JButton("outer");
-    setOuter.addActionListener(new ActionListener()
+      }
+      
+    });
+
+    JScrollPane scroller = new JScrollPane(html);
+    JPanel urlPanel = new JPanel();
+    urlPanel.setLayout(new BoxLayout(urlPanel, BoxLayout.X_AXIS));
+    url.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+    LoadActionListener action = new LoadActionListener();
+    url.addActionListener(action);
+    urlPanel.add(url);
+    JButton loadButton = new JButton("go");
+    urlPanel.add(loadButton);
+    loadButton.addActionListener(action);
+
+    // Setup control panel.
+    JToolBar controlPanel = createToolBar();
+    JPanel browserPanel = new JPanel();
+    browserPanel.setLayout(new BorderLayout());
+    browserPanel.add(urlPanel, BorderLayout.NORTH);
+    browserPanel.add(scroller, BorderLayout.CENTER);
+    add(controlPanel, BorderLayout.NORTH);
+    add(browserPanel, BorderLayout.CENTER);
+
+    // Load start page.
+    try
       {
-        public void actionPerformed(ActionEvent event)
-          {
-            HTMLDocument doc = (HTMLDocument) html.getDocument();
-            Element el = doc.getElement("insertHere");
-            System.out.println("Element found:"+el);
-            try
-              {
-                doc.setOuterHTML(el,"outer "+(n++));
-              }
-            catch (Exception e)
-              {
-                e.printStackTrace();
-              }
-          }
-      });
-    
-
-    buttons.add(insertBeforeStart);
-    buttons.add(insertAfterStart);    
-    buttons.add(insertBeforeEnd);
-    buttons.add(insertAfterEnd);
-
-    buttons.add(setInner);
-    buttons.add(setOuter);
-    
-    add(center, BorderLayout.CENTER);
-    add(buttons, BorderLayout.SOUTH);
+        URL startpage = getClass().getResource("welcome.html");
+        html.setPage(startpage);
+        url.setText(startpage.toString());
+        history.addLast(startpage);
+      }
+    catch (Exception ex)
+      {
+        System.err.println("couldn't load page: "/* + startpage*/);
+        ex.printStackTrace();
+      }
+    setPreferredSize(new Dimension(800, 600));
   }
  
+
+  /**
+   * Creates the toolbar with the control buttons.
+   *
+   * @return the toolbar with the control buttons
+   */
+  JToolBar createToolBar()
+  {
+    JToolBar tb = new JToolBar();
+    Icon backIcon = Demo.getIcon("/gnu/classpath/examples/icons/back.png",
+                                 "back");
+    JButton back = new JButton(backIcon);
+    back.addActionListener(new ActionListener()
+    {
+      public void actionPerformed(ActionEvent ev)
+      {
+        if (history.size() > 1)
+          {
+            URL last = (URL) history.removeLast();
+            last = (URL) history.getLast();
+            url.setText(last.toString());
+            try
+              {
+                html.setPage(last);
+              }
+            catch (IOException ex)
+              {
+                // Do something more useful.
+                ex.printStackTrace();
+              }
+          }
+      }
+    });
+    tb.add(back);
+    Icon reloadIcon = Demo.getIcon("/gnu/classpath/examples/icons/reload.png",
+                                   "reload");
+    JButton reload = new JButton(reloadIcon);
+    reload.addActionListener(new ActionListener()
+    {
+      public void actionPerformed(ActionEvent ev)
+      {
+        if (history.size() > 0)
+          {
+            URL last = (URL) history.getLast();
+            url.setText(last.toString());
+            try
+              {
+                html.setPage(last);
+              }
+            catch (IOException ex)
+              {
+                // Do something more useful.
+                ex.printStackTrace();
+              }
+          }
+      }
+    });
+    tb.add(reload);
+    return tb;
+  }
+
   /**
    * The executable method to display the editable table.
    * 
@@ -259,24 +266,99 @@ public class HtmlDemo extends JPanel
        public void run()
        {
          HtmlDemo demo = new HtmlDemo();
-         
-         JButton exit = new JButton("exit");
-         exit.addActionListener(new ActionListener()
-           {
-             public void actionPerformed(ActionEvent event)
-               {
-                 System.exit(0);
-               }
-           });
-         
-         demo.buttons.add(exit);
-         
          JFrame frame = new JFrame();
          frame.getContentPane().add(demo);
-         frame.setSize(new Dimension(700, 480));
+         frame.setSize(new Dimension(750, 480));
          frame.setVisible(true);
        }
      });
+  }
+
+  /**
+   * Helper method to navigate to a new URL.
+   *
+   * @param u the new URL to navigate to
+   */
+  void setPage(URL u)
+  {
+    try
+      {
+        url.setText(u.toString());
+        html.setPage(u);
+        history.addLast(u);
+      }
+    catch (IOException ex)
+      {
+        // Do something more useful here.
+        ex.printStackTrace();
+      }
+  }
+
+  /**
+   * Submits a form when a FormSubmitEvent is received. The HTML API
+   * provides automatic form submit but when this is enabled we don't
+   * receive any notification and can't update our location field.
+   *
+   * @param ev the form submit event
+   */
+  void submitForm(FormSubmitEvent ev)
+  {
+    URL url = ev.getURL();
+    String data = ev.getData();
+    FormSubmitEvent.MethodType method = ev.getMethod();
+    if (method == FormSubmitEvent.MethodType.POST)
+      {
+        try
+          {
+            URLConnection conn = url.openConnection();
+            postData(conn, data);
+          }
+        catch (IOException ex)
+          {
+            // Deal with this.
+            ex.printStackTrace();
+          }
+      }
+    else
+      {
+        try
+          {
+            url = new URL(url.toString() + "?" + data);
+          }
+        catch (MalformedURLException ex)
+          {
+            ex.printStackTrace();
+          }
+      }
+    setPage(url);
+  }
+
+  /**
+   * Posts the form data for forms with HTTP POST method.
+   *
+   * @param conn the connection
+   * @param data the form data
+   */
+  private void postData(URLConnection conn, String data)
+  {
+    conn.setDoOutput(true);
+    PrintWriter out = null;
+    try
+      {
+        out = new PrintWriter(new OutputStreamWriter(conn.getOutputStream()));
+        out.print(data);
+        out.flush();
+      }
+    catch (IOException ex)
+      {
+        // Deal with this!
+        ex.printStackTrace();
+      }
+    finally
+      {
+        if (out != null)
+          out.close();
+      }
   }
 
   /**

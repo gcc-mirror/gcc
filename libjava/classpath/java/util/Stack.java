@@ -1,6 +1,7 @@
 /* Stack.java - Class that provides a Last In First Out (LIFO)
    datatype, known more commonly as a Stack
-   Copyright (C) 1998, 1999, 2001, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2004, 2005
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -58,7 +59,7 @@ package java.util;
  * @since 1.0
  * @status updated to 1.4
  */
-public class Stack extends Vector
+public class Stack<T> extends Vector<T>
 {
   // We could use Vector methods internally for the following methods,
   // but have used Vector fields directly for efficiency (i.e. this
@@ -84,7 +85,7 @@ public class Stack extends Vector
    * @return the Object pushed onto the stack
    * @see Vector#addElement(Object)
    */
-  public Object push(Object item)
+  public T push(T item)
   {
     // When growing the Stack, use the Vector routines in case more
     // memory is needed.
@@ -101,13 +102,13 @@ public class Stack extends Vector
    * @return the Object popped from the stack
    * @throws EmptyStackException if the stack is empty
    */
-  public synchronized Object pop()
+  public synchronized T pop()
   {
     if (elementCount == 0)
       throw new EmptyStackException();
 
     modCount++;
-    Object obj = elementData[--elementCount];
+    T obj = elementData[--elementCount];
 
     // Set topmost element to null to assist the gc in cleanup.
     elementData[elementCount] = null;
@@ -120,7 +121,7 @@ public class Stack extends Vector
    * @return the top Object on the stack
    * @throws EmptyStackException if the stack is empty
    */
-  public synchronized Object peek()
+  public synchronized T peek()
   {
     if (elementCount == 0)
       throw new EmptyStackException();

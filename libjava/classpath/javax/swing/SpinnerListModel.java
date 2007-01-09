@@ -118,7 +118,7 @@ public class SpinnerListModel extends AbstractSpinnerModel
    * @see SpinnerListModel#getNextValue()
    * @see SpinnerListModel#getValue()
    */ 
-  public SpinnerListModel(List list)
+  public SpinnerListModel(List<?> list)
   {
     // Retain a reference to the valid list.
     setList(list);
@@ -163,7 +163,7 @@ public class SpinnerListModel extends AbstractSpinnerModel
    *
    * @return The backing list.
    */
-  public List getList()
+  public List<?> getList()
   {
     return list;
   }
@@ -239,7 +239,7 @@ public class SpinnerListModel extends AbstractSpinnerModel
    *
    * @see ChangeEvent
    */
-  public void setList(List list)
+  public void setList(List<?> list)
   {
     // Check for null or zero size list.
     if (list == null || list.size() == 0)

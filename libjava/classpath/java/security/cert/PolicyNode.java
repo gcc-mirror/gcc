@@ -38,6 +38,12 @@ exception statement from your version. */
 
 package java.security.cert;
 
+import java.util.Iterator;
+import java.util.Set;
+
+/**
+ * @since 1.4
+ */
 public interface PolicyNode
 {
 
@@ -47,7 +53,7 @@ public interface PolicyNode
    *
    * @return An iterator over the child nodes.
    */
-  java.util.Iterator getChildren();
+  Iterator<? extends PolicyNode> getChildren();
 
   /**
    * Get the depth of this node within the tree, starting at 0 for the
@@ -64,7 +70,7 @@ public interface PolicyNode
    *
    * @return The set of expected policies.
    */
-  java.util.Set getExpectedPolicies();
+  Set<String> getExpectedPolicies();
 
   /**
    * Returns the parent node of this node, or null if this is the root
@@ -81,7 +87,7 @@ public interface PolicyNode
    *
    * @return The set of {@link PolicyQualifierInfo} objects.
    */
-  java.util.Set getPolicyQualifiers();
+  Set<? extends PolicyQualifierInfo> getPolicyQualifiers();
 
   /**
    * Get the policy OID this node represents. The root node should return

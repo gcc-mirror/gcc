@@ -1,5 +1,5 @@
 /* InputStream.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -72,7 +72,7 @@ public abstract class InputStream
    *
    * As specified in OMG specification, this reads a single
    * boolean and then delegates either to {@link #read_Object()} (for false)
-   * or to {@link #read_Value()} (for true).
+   * or to {@link #read_value()} (for true).
    *
    * @return an abstract interface, unmarshaled from the stream.
    */
@@ -93,7 +93,7 @@ public abstract class InputStream
    *
    * As specified in OMG specification, this reads a single
    * boolean and then delegates either to {@link #read_Object(Class)} (for false)
-   * or to {@link #read_Value(Class)} (for true).
+   * or to {@link #read_value(Class)} (for true).
    *
    * @param clz a base class for the abstract interface.
    *
@@ -124,8 +124,6 @@ public abstract class InputStream
    * of the value type, it is recommended (faster) to use
    * {@link #read_value(Class)} or {@link #read_value(Serializable)}
    * instead.
-   *
-   * @param repository_id a repository id of the value type.
    *
    * @return an value type structure, unmarshaled from the stream
    */

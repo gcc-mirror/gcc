@@ -90,6 +90,11 @@ public class GtkComponentPeer extends GtkGenericPeer
 
   Insets insets;
 
+  /**
+   * The current repaint area. Use should be guarded by synchronizing on this.
+   */
+  private Rectangle currentPaintArea;
+
   /* this isEnabled differs from Component.isEnabled, in that it
      knows if a parent is disabled.  In that case Component.isEnabled 
      may return true, but our isEnabled will always return false */
@@ -308,13 +313,30 @@ public class GtkComponentPeer extends GtkGenericPeer
     // seems expensive.  However, the graphics state does not carry
     // over between calls to paint, and resetting the graphics object
     // may even be more costly than simply creating a new one.
-    Graphics g = getGraphics();
 
-    g.setClip(event.getUpdateRect());
+    // Make sure that the paintArea includes the area from the event
+    // in the case when an application sends PaintEvents directly.
+    coalescePaintEvent(event);
+    Rectangle paintArea;
+    synchronized (this)
+      {
+        paintArea = currentPaintArea;
+        currentPaintArea = null;
+      }
 
-    awtComponent.paint(g);
-
-    g.dispose();
+    if (paintArea != null)
+      {
+        Graphics g = getGraphics();
+        try
+          {
+            g.setClip(paintArea);
+            awtComponent.paint(g);
+          }
+        finally
+          {
+            g.dispose();
+          }
+      }
   }
 
   // This method and its overrides are the only methods in the peers
@@ -327,13 +349,29 @@ public class GtkComponentPeer extends GtkGenericPeer
         || (awtComponent.getWidth() < 1 || awtComponent.getHeight() < 1))
       return;
 
-    Graphics g = getGraphics();
+    // Make sure that the paintArea includes the area from the event
+    // in the case when an application sends PaintEvents directly.
+    coalescePaintEvent(event);
+    Rectangle paintArea;
+    synchronized (this)
+      {
+        paintArea = currentPaintArea;
+        currentPaintArea = null;
+      }
 
-    g.setClip(event.getUpdateRect());
-
-    awtComponent.update(g);
-
-    g.dispose();
+    if (paintArea != null)
+    {
+      Graphics g = getGraphics();
+      try
+        {
+          g.setClip(paintArea);
+          awtComponent.update(g);
+        }
+      finally
+        {
+          g.dispose();
+        }
+    }
   }
 
   public boolean isFocusTraversable () 
@@ -514,7 +552,7 @@ public class GtkComponentPeer extends GtkGenericPeer
 	y = 0;
       }
 
-    if (Thread.currentThread() == GtkToolkit.mainThread)
+    if (Thread.currentThread() == GtkMainThread.mainThread)
       gtkWidgetSetCursorUnlocked(cursor.getType(), image, x, y);
     else
       gtkWidgetSetCursor(cursor.getType(), image, x, y);
@@ -562,7 +600,7 @@ public class GtkComponentPeer extends GtkGenericPeer
 	b = (bounds.width > 0) && (bounds.height > 0);
       }
 
-    if (Thread.currentThread() == GtkToolkit.mainThread)
+    if (Thread.currentThread() == GtkMainThread.mainThread)
       setVisibleNativeUnlocked (b);
     else
       setVisibleNative (b);
@@ -754,7 +792,14 @@ public class GtkComponentPeer extends GtkGenericPeer
 
   public void coalescePaintEvent (PaintEvent e)
   {
-    
+    synchronized (this)
+    {
+      Rectangle newRect = e.getUpdateRect();
+      if (currentPaintArea == null)
+        currentPaintArea = newRect;
+      else
+        Rectangle.union(currentPaintArea, newRect, currentPaintArea);
+    }
   }
 
   public void updateCursorImmediately ()

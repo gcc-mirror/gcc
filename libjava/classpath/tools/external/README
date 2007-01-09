@@ -1,0 +1,9 @@
+ASM is a bytecode processing library used by GNU Classpath's rmic and
+javah tools.  It is not maintained as part of GNU Classpath, but is
+imported into the repository for simpler builds.
+
+The ASM project pages are at http://asm.objectweb.org/
+
+The currently imported version is ASM 2.2.3.  The sources were checked
+out of CVS using the ASM_2_2_3 tag.  I've only imported a subset of
+the whole checkout: namely, LICENSE.txt and the sources themselves.

@@ -104,7 +104,7 @@ public class TexturePaintContext
         double scaleY = anchor.getHeight() / image.getHeight();
         transform = (AffineTransform) xform.clone();
         transform.scale(scaleX, scaleY);
-        transform.translate(-anchor.getMinX(), -anchor.getMaxX());
+        transform.translate(-anchor.getMinX(), -anchor.getMinY());
         transform = transform.createInverse();
       }
     catch (NoninvertibleTransformException ex)
@@ -177,6 +177,12 @@ public class TexturePaintContext
             // The modulo operation gives us the replication effect.
             dx = ((dx - minX) % width) + minX;  
             dy = ((dy - minY) % height) + minY;
+            
+            // Handle possible negative values (replicating above the top-left)
+            if (dx < 0)
+              dx += width;
+            if (dy < 0)
+              dy += height;
 
             // Copy the pixel.
             pixel = source.getDataElements(dx, dy, pixel);

@@ -68,6 +68,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -148,6 +150,12 @@ public class JarFile extends ZipFile
    * Only accessed with lock on this JarFile.
    */
   HashMap entryCerts;
+
+  /**
+   * A {@link Map} of message digest algorithm names to their implementation.
+   * Used to reduce object (algorithm implementation) instantiation.
+   */
+  private HashMap digestAlgorithms = new HashMap();
 
   static boolean DEBUG = false;
   static void debug(Object msg)
@@ -313,7 +321,7 @@ public class JarFile extends ZipFile
    *
    * @exception IllegalStateException when the JarFile is already closed
    */
-  public Enumeration entries() throws IllegalStateException
+  public Enumeration<JarEntry> entries() throws IllegalStateException
   {
     return new JarEnumeration(super.entries(), this);
   }
@@ -322,13 +330,13 @@ public class JarFile extends ZipFile
    * Wraps a given Zip Entries Enumeration. For every zip entry a
    * JarEntry is created and the corresponding Attributes are looked up.
    */
-  private static class JarEnumeration implements Enumeration
+  private static class JarEnumeration implements Enumeration<JarEntry>
   {
 
-    private final Enumeration entries;
+    private final Enumeration<? extends ZipEntry> entries;
     private final JarFile jarfile;
 
-    JarEnumeration(Enumeration e, JarFile f)
+    JarEnumeration(Enumeration<? extends ZipEntry> e, JarFile f)
     {
       entries = e;
       jarfile = f;
@@ -339,7 +347,7 @@ public class JarFile extends ZipFile
       return entries.hasMoreElements();
     }
 
-    public Object nextElement()
+    public JarEntry nextElement()
     {
       ZipEntry zip = (ZipEntry) entries.nextElement();
       JarEntry jar = new JarEntry(zip);
@@ -374,19 +382,8 @@ public class JarFile extends ZipFile
 		  }
 		jarfile.signaturesRead = true; // fudge it.
 	      }
-
-	  // Include the certificates only if we have asserted that the
-	  // signatures are valid. This means the certificates will not be
-	  // available if the entry hasn't been read yet.
-	  if (jarfile.entryCerts != null
-	      && jarfile.verified.get(zip.getName()) == Boolean.TRUE)
-	    {
-	      Set certs = (Set) jarfile.entryCerts.get(jar.getName());
-	      if (certs != null)
-		jar.certs = (Certificate[])
-		  certs.toArray(new Certificate[certs.size()]);
-	    }
 	}
+      jar.jarfile = jarfile;
       return jar;
     }
   }
@@ -431,18 +428,7 @@ public class JarFile extends ZipFile
 		}
 	      signaturesRead = true;
 	    }
-	// See the comments in the JarEnumeration for why we do this
-	// check.
-	if (DEBUG)
-	  debug("entryCerts=" + entryCerts + " verified " + name
-		+ " ? " + verified.get(name));
-	if (entryCerts != null && verified.get(name) == Boolean.TRUE)
-	  {
-	    Set certs = (Set) entryCerts.get(name);
-	    if (certs != null)
-	      jarEntry.certs = (Certificate[])
-		certs.toArray(new Certificate[certs.size()]);
-	  }
+        jarEntry.jarfile = this;
 	return jarEntry;
       }
     return null;
@@ -599,6 +585,31 @@ public class JarFile extends ZipFile
         validCerts.clear();
       }
 
+    // Read the manifest into a HashMap (String fileName, String entry)
+    // The fileName might be split into multiple lines in the manifest.
+    // Such additional lines will start with a space.
+    InputStream in = super.getInputStream(super.getEntry(MANIFEST_NAME));
+    ByteArrayOutputStream baStream = new ByteArrayOutputStream();
+    byte[] ba = new byte[1024];
+    while (true)
+      {
+        int len = in.read(ba);
+        if (len < 0)
+          break;
+        baStream.write(ba, 0, len);
+      }
+    in.close();
+
+    HashMap hmManifestEntries = new HashMap();
+    Pattern p = Pattern.compile("Name: (.+?\r?\n(?: .+?\r?\n)*)"
+                                + ".+?-Digest: .+?\r?\n\r?\n");
+    Matcher m = p.matcher(baStream.toString());
+    while (m.find())
+      {
+        String fileName = m.group(1).replaceAll("\r?\n ?", "");
+        hmManifestEntries.put(fileName, m.group());
+      }
+
     // Phase 3: verify the signature file signatures against the manifest,
     // mapping the entry name to the target certificates.
     this.entryCerts = new HashMap();
@@ -614,7 +625,7 @@ public class JarFile extends ZipFile
             Map.Entry e2 = (Map.Entry) it2.next();
             String entryname = String.valueOf(e2.getKey());
             Attributes attr = (Attributes) e2.getValue();
-            if (verifyHashes(entryname, attr))
+            if (verifyHashes(entryname, attr, hmManifestEntries))
               {
                 if (DEBUG)
                   debug("entry " + entryname + " has certificates " + certificates);
@@ -721,39 +732,29 @@ public class JarFile extends ZipFile
   }
 
   /**
-   * Verifies that the digest(s) in a signature file were, in fact, made
-   * over the manifest entry for ENTRY.
-   *
+   * Verifies that the digest(s) in a signature file were, in fact, made over
+   * the manifest entry for ENTRY.
+   * 
    * @param entry The entry name.
    * @param attr The attributes from the signature file to verify.
+   * @param hmManifestEntries Mappings of Jar file entry names to their manifest
+   *          entry text; i.e. the base-64 encoding of their 
    */
-  private boolean verifyHashes(String entry, Attributes attr)
+  private boolean verifyHashes(String entry, Attributes attr,
+                               HashMap hmManifestEntries)
   {
     int verified = 0;
 
-    // The bytes for ENTRY's manifest entry, which are signed in the
-    // signature file.
-    byte[] entryBytes = null;
-    try
-      {
-	ZipEntry e = super.getEntry(entry);
-	if (e == null)
-	  {
-	    if (DEBUG)
-	      debug("verifyHashes: no entry '" + entry + "'");
-	    return false;
-	  }
-        entryBytes = readManifestEntry(e);
-      }
-    catch (IOException ioe)
+    String stringEntry = (String) hmManifestEntries.get(entry);
+    if (stringEntry == null)
       {
         if (DEBUG)
-          {
-            debug(ioe);
-            ioe.printStackTrace();
-          }
+          debug("could not find " + entry + " in manifest");
         return false;
       }
+    // The bytes for ENTRY's manifest entry, which are signed in the
+    // signature file.
+    byte[] entryBytes = stringEntry.getBytes();
 
     for (Iterator it = attr.entrySet().iterator(); it.hasNext(); )
       {
@@ -765,9 +766,14 @@ public class JarFile extends ZipFile
         try
           {
             byte[] hash = Base64InputStream.decode((String) e.getValue());
-            MessageDigest md = MessageDigest.getInstance(alg, provider);
-            md.update(entryBytes);
-            byte[] hash2 = md.digest();
+            MessageDigest md = (MessageDigest) digestAlgorithms.get(alg);
+            if (md == null)
+              {
+                md = MessageDigest.getInstance(alg, provider);
+                digestAlgorithms.put(alg, md);
+              }
+            md.reset();
+            byte[] hash2 = md.digest(entryBytes);
             if (DEBUG)
               debug("verifying SF entry " + entry + " alg: " + md.getAlgorithm()
                     + " expect=" + new java.math.BigInteger(hash).toString(16)
@@ -798,100 +804,6 @@ public class JarFile extends ZipFile
 
     // We have to find at least one valid digest.
     return verified > 0;
-  }
-
-  /**
-   * Read the raw bytes that comprise a manifest entry. We can't use the
-   * Manifest object itself, because that loses information (such as line
-   * endings, and order of entries).
-   */
-  private byte[] readManifestEntry(ZipEntry entry) throws IOException
-  {
-    InputStream in = super.getInputStream(super.getEntry(MANIFEST_NAME));
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    byte[] target = ("Name: " + entry.getName()).getBytes();
-    int t = 0, c, prev = -1, state = 0, l = -1;
-
-    while ((c = in.read()) != -1)
-      {
-//         if (DEBUG)
-//           debug("read "
-//                 + (c == '\n' ? "\\n" : (c == '\r' ? "\\r" : String.valueOf((char) c)))
-//                 + " state=" + state + " prev="
-//                 + (prev == '\n' ? "\\n" : (prev == '\r' ? "\\r" : String.valueOf((char) prev)))
-//                 + " t=" + t + (t < target.length ? (" target[t]=" + (char) target[t]) : "")
-//                 + " l=" + l);
-        switch (state)
-          {
-
-          // Step 1: read until we find the "target" bytes: the start
-          // of the entry we need to read.
-          case 0:
-            if (((byte) c) != target[t])
-              t = 0;
-            else
-              {
-                t++;
-                if (t == target.length)
-                  {
-                    out.write(target);
-                    state = 1;
-                  }
-              }
-            break;
-
-          // Step 2: assert that there is a newline character after
-          // the "target" bytes.
-          case 1:
-            if (c != '\n' && c != '\r')
-              {
-                out.reset();
-                t = 0;
-                state = 0;
-              }
-            else
-              {
-                out.write(c);
-                state = 2;
-              }
-            break;
-
-          // Step 3: read this whole entry, until we reach an empty
-          // line.
-          case 2:
-            if (c == '\n')
-              {
-                out.write(c);
-                // NL always terminates a line.
-                if (l == 0 || (l == 1 && prev == '\r'))
-                  return out.toByteArray();
-                l = 0;
-              }
-            else
-              {
-                // Here we see a blank line terminated by a CR,
-                // followed by the next entry. Technically, `c' should
-                // always be 'N' at this point.
-                if (l == 1 && prev == '\r')
-                  return out.toByteArray();
-                out.write(c);
-                l++;
-              }
-            prev = c;
-            break;
-
-          default:
-            throw new RuntimeException("this statement should be unreachable");
-          }
-      }
-
-    // The last entry, with a single CR terminating the line.
-    if (state == 2 && prev == '\r' && l == 0)
-      return out.toByteArray();
-
-    // We should not reach this point, we didn't find the entry (or, possibly,
-    // it is the last entry and is malformed).
-    throw new IOException("could not find " + entry + " in manifest");
   }
 
   /**

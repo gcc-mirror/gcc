@@ -316,7 +316,7 @@ public class DomAttr
     
   private void mutating(String oldValue, String newValue, short why)
   {
-    if (!reportMutations || parent == null)
+    if (!reportMutations || parent == null || equal(newValue, oldValue))
       {
         return;
       }

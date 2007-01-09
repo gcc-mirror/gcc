@@ -38,7 +38,6 @@ exception statement from your version. */
 package gnu.java.nio;
 
 import java.io.IOException;
-import java.nio.channels.spi.SelectorProvider;
 import gnu.classpath.Configuration;
 
 /**
@@ -58,7 +57,24 @@ final class VMPipe
         System.loadLibrary ("javanio");
       }
   }
-
-  static native void init(PipeImpl self, SelectorProvider provider)
-    throws IOException;
+  
+  /**
+   * Create a pipe, consisting of a readable VMChannel and a writable
+   * VMChannel. The readable channel is returned is the first element
+   * of the array, and the writable in the second.
+   *
+   * @return A pair of VMChannels; the first readable, the second
+   *  writable.
+   * @throws IOException If the pipe cannot be created.
+   */
+  static VMChannel[] pipe() throws IOException
+  {
+    VMChannel[] pipe = new VMChannel[2];
+    int[] fds = pipe0();
+    pipe[0] = new VMChannel(fds[0]);
+    pipe[1] = new VMChannel(fds[1]);
+    return pipe;
+  }
+  
+  private static native int[] pipe0() throws IOException;
 }

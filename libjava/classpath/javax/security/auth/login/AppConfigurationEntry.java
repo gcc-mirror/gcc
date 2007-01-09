@@ -56,7 +56,7 @@ public class AppConfigurationEntry
 
   public AppConfigurationEntry (final String loginModuleName,
                                 final LoginModuleControlFlag controlFlag,
-                                final Map options)
+                                final Map<String, ?> options)
   {
     if (loginModuleName == null || loginModuleName.length() == 0)
       throw new IllegalArgumentException ("module name cannot be null nor empty");
@@ -88,7 +88,7 @@ public class AppConfigurationEntry
     return loginModuleName;
   }
 
-  public Map getOptions()
+  public Map<String, ?> getOptions()
   {
     return options;
   }

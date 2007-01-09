@@ -1,4 +1,4 @@
-/* Constructed.java -- constructed type.
+/* Constructed.java -- Constructed type.
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -38,20 +38,49 @@ exception statement from your version.  */
 
 package gnu.javax.net.ssl.provider;
 
-import java.io.IOException;
-import java.io.OutputStream;
-
 /**
  * The base interface to SSL constructed types.
+ * 
+ * <p><b>Contract for ByteBuffer-based constructed types:</b>
+ * 
+ * <p>Most implementations of this interface supported by this library
+ * take a "view" of an underlying ByteBuffer. The general contract of
+ * such classes is that they <em>will not</em> modify the position or
+ * limit of the buffer when doing read operations. That is, the position
+ * of the underlying buffer <em>should</em> remain at 0 throughout the
+ * lifetime of the object, and the limit should be either set to the
+ * capacity of the buffer, or to the size of the object (in most cases,
+ * the length of the protocol object is determined by the contents of
+ * the object, so the limit isn't useful in such cases. Of course, if the
+ * limit is set to something other than the object's length, it must be
+ * larger than the object length).
+ * 
+ * <p>Setter methods (usually in a class that implements the {@link Builder}
+ * interface) may modify the limit, but the general contract remains that
+ * the position remain at zero, and that the limit be at least as large as
+ * the object length.
+ * 
+ * <p>Thus, very often the code will use <em>absolute</em> getters and setters
+ * for primitive types, or it will use the {@link java.nio.ByteBuffer#duplicate()}
+ * method, and sometimes the {@link java.nio.ByteBuffer#slice()} method, and
+ * will change the position or limit of the duplicate buffer.
  */
-interface Constructed
+public interface Constructed
 {
+  /**
+   * Returns the total length, in bytes, of this structure.
+   *
+   * @return The length of this structure.
+   */
+  int length();
 
   /**
-   * Writes this structure's encoded form to the given output stream.
+   * Returns a printable representation of this structure, with the
+   * given prefix prepended to each line.
    *
-   * @param out The output stream.
-   * @throws IOException If an I/O error occurs.
+   * @param prefix The prefix to prepend to each line of the
+   * output. This value may be <code>null</code>.
+   * @return A printable representation of this structure.
    */
-  void write(OutputStream out) throws IOException;
+  String toString(String prefix);
 }

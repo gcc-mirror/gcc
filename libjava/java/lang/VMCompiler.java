@@ -73,6 +73,11 @@ final class VMCompiler
   // Temporary directory to use.
   public static String gcjJitTmpdir;
 
+  public static boolean precompiles()
+  {
+    return (canUseCompiler & useCompiler);
+  }
+
   // This maps a ClassLoader to a set of SharedLibHelper objects that
   // it has used.  We do things this way to ensure that a
   // SharedLibHelper is collected if and only if the ClassLoader is.
@@ -186,8 +191,7 @@ final class VMCompiler
 				   int offset, int len,
 				   ProtectionDomain domain)
   {
-    if (precompiledMapFiles == null
-	&& (! useCompiler || ! canUseCompiler))
+    if (precompiledMapFiles == null && !precompiles())
       return null;
 
     byte digest[];
@@ -232,7 +236,7 @@ final class VMCompiler
 	  }
       }
  
-    if (! useCompiler || ! canUseCompiler)
+    if (!precompiles())
       return null;
 
     try

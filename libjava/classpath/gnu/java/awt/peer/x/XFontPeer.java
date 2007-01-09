@@ -608,13 +608,6 @@ public class XFontPeer
     throw new UnsupportedOperationException("Not yet implemented.");
   }
 
-  public Rectangle2D getStringBounds(Font font, CharacterIterator ci,
-                                     int begin, int limit, FontRenderContext frc)
-  {
-    // TODO: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented.");
-  }
-
   /**
    * Encodes a font name + style + size specification into a X logical font
    * description (XLFD) as described here:

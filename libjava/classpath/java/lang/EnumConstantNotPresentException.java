@@ -54,7 +54,7 @@ public class EnumConstantNotPresentException extends RuntimeException
    * The enum's type.  Note that the name is fixed by the
    * serialization spec.
    */
-  private Class enumType;
+  private Class<? extends Enum> enumType;
 
   /**
    * The name of the missing enum constant.  Note that the name is
@@ -68,7 +68,8 @@ public class EnumConstantNotPresentException extends RuntimeException
    * @param theEnum the enum's class
    * @param name the name of the missing enum constant
    */
-  public EnumConstantNotPresentException(Class theEnum, String name)
+  public EnumConstantNotPresentException(Class<? extends Enum> theEnum,
+					 String name)
   {
     super("enum " + theEnum + " is missing the constant " + name);
     enumType = theEnum;
@@ -88,7 +89,7 @@ public class EnumConstantNotPresentException extends RuntimeException
    * Return the enum type which is missing a constant.
    * @return the enum type which is missing a constant
    */
-  public Class enumType()
+  public Class<? extends Enum> enumType()
   {
     return enumType;
   }

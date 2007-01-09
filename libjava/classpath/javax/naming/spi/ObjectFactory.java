@@ -70,6 +70,7 @@ public interface ObjectFactory
    *           
    * @see NamingManager#getObjectInstance(Object, Name, Context, Hashtable)           
    */
-  Object getObjectInstance(Object refObj, Name name, Context nameCtx,
-                           Hashtable environment) throws Exception;
+  Object getObjectInstance (Object refObj, Name name, Context nameCtx,
+                            Hashtable<?, ?> environment)
+    throws Exception;
 }

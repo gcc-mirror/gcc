@@ -182,7 +182,8 @@ public class Introspector {
   public static final int IGNORE_ALL_BEANINFO = 3;
 
   static String[] beanInfoSearchPath = {"gnu.java.beans.info"};
-  static Hashtable beanInfoCache = new Hashtable();
+  static Hashtable<Class<?>,BeanInfo> beanInfoCache = 
+    new Hashtable<Class<?>,BeanInfo>();
   
   private Introspector() {}
   
@@ -195,13 +196,13 @@ public class Introspector {
    * @param beanClass the class to get BeanInfo about.
    * @return the BeanInfo object representing the class.
    */
-  public static BeanInfo getBeanInfo(Class beanClass) 
+  public static BeanInfo getBeanInfo(Class<?> beanClass) 
     throws IntrospectionException 
   {
     BeanInfo cachedInfo;
     synchronized(beanClass) 
       {
-	cachedInfo = (BeanInfo)beanInfoCache.get(beanClass);
+	cachedInfo = beanInfoCache.get(beanClass);
 	if(cachedInfo != null) 
 	  {
 	    return cachedInfo;
@@ -245,7 +246,7 @@ public class Introspector {
    * @throws IntrospectionException If something goes wrong while retrieving
    *    the bean data.
    */
-  public static BeanInfo getBeanInfo(Class beanClass, int flag)
+  public static BeanInfo getBeanInfo(Class<?> beanClass, int flag)
     throws IntrospectionException
   {
     IntrospectionIncubator ii;
@@ -312,7 +313,7 @@ public class Introspector {
    * @throws NullPointerException if clz is null.
    * @since 1.2
    */
-  public static void flushFromCaches(Class clz)
+  public static void flushFromCaches(Class<?> clz)
   {
     synchronized (clz)
       {
@@ -394,7 +395,7 @@ public class Introspector {
    * @param stopClass the class to stop at.
    * @return the BeanInfo object representing the class.
    */
-  public static BeanInfo getBeanInfo(Class beanClass, Class stopClass) 
+  public static BeanInfo getBeanInfo(Class<?> beanClass, Class<?> stopClass) 
     throws IntrospectionException 
   {
     ExplicitInfo explicit = new ExplicitInfo(beanClass, stopClass);

@@ -1,7 +1,7 @@
 /* This file read a Java(TM) .class file.
    It is not stand-alone:  It depends on tons of macros, and the
    intent is you #include this file after you've defined the macros.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2005
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -28,12 +28,12 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "jcf.h"
 #include "zipfile.h"
 
-static int get_attribute (JCF *);
+static int get_attribute (JCF *, int, jv_attr_type);
 static int jcf_parse_preamble (JCF *);
 static int jcf_parse_constant_pool (JCF *);
 static void jcf_parse_class (JCF *);
 static int jcf_parse_fields (JCF *);
-static int jcf_parse_one_method (JCF *);
+static int jcf_parse_one_method (JCF *, int);
 static int jcf_parse_methods (JCF *);
 static int jcf_parse_final_attributes (JCF *);
 #ifdef NEED_PEEK_ATTRIBUTE
@@ -103,7 +103,8 @@ skip_attribute (JCF *jcf, int number_of_attribute)
 #endif
 
 static int
-get_attribute (JCF *jcf)
+get_attribute (JCF *jcf, int index, 
+	       jv_attr_type attr_type ATTRIBUTE_UNUSED)
 {
   uint16 attribute_name = (JCF_FILL (jcf, 6), JCF_readu2 (jcf));
   uint32 attribute_length = JCF_readu4 (jcf);
@@ -168,7 +169,7 @@ get_attribute (JCF *jcf)
       attributes_count = JCF_readu2 (jcf);
       for (j = 0; j < attributes_count; j++)
 	{
-	  int code = get_attribute (jcf);
+	  int code = get_attribute (jcf, index, JV_METHOD_ATTR);
 	  if (code != 0)
 	    return code;
 	}
@@ -196,6 +197,14 @@ get_attribute (JCF *jcf)
     {
       uint16 count = JCF_readu2 (jcf);
       HANDLE_LOCALVARIABLETABLE_ATTRIBUTE (count);
+    }
+  else
+#endif
+#ifdef HANDLE_LOCALVARIABLETYPETABLE_ATTRIBUTE
+  if (MATCH_ATTRIBUTE ("LocalVariableTypeTable"))
+    {
+      uint16 count = JCF_readu2 (jcf);
+      HANDLE_LOCALVARIABLETYPETABLE_ATTRIBUTE (count);
     }
   else
 #endif
@@ -232,6 +241,55 @@ get_attribute (JCF *jcf)
   if (MATCH_ATTRIBUTE ("SourceDebugExtension")) /* JSR 45 */
     {
       HANDLE_SOURCEDEBUGEXTENSION_ATTRIBUTE (attribute_length);
+    }
+  else
+#endif
+#ifdef HANDLE_ENCLOSINGMETHOD_ATTRIBUTE
+  if (MATCH_ATTRIBUTE ("EnclosingMethod"))
+    {
+      HANDLE_ENCLOSINGMETHOD_ATTRIBUTE ();
+    }
+  else
+#endif
+#ifdef HANDLE_SIGNATURE_ATTRIBUTE
+  if (MATCH_ATTRIBUTE ("Signature"))
+    {
+      HANDLE_SIGNATURE_ATTRIBUTE ();
+    }
+  else
+#endif
+#ifdef HANDLE_RUNTIMEVISIBLEANNOTATIONS_ATTRIBUTE
+  if (MATCH_ATTRIBUTE ("RuntimeVisibleAnnotations"))
+    {
+      HANDLE_RUNTIMEVISIBLEANNOTATIONS_ATTRIBUTE ();
+    }
+  else
+#endif
+#ifdef HANDLE_RUNTIMEINVISIBLEANNOTATIONS_ATTRIBUTE
+  if (MATCH_ATTRIBUTE ("RuntimeInvisibleAnnotations"))
+    {
+      HANDLE_RUNTIMEINVISIBLEANNOTATIONS_ATTRIBUTE ();
+    }
+  else
+#endif
+#ifdef HANDLE_RUNTIMEVISIBLEPARAMETERANNOTATIONS_ATTRIBUTE
+  if (MATCH_ATTRIBUTE ("RuntimeVisibleParameterAnnotations"))
+    {
+      HANDLE_RUNTIMEVISIBLEPARAMETERANNOTATIONS_ATTRIBUTE ();
+    }
+  else
+#endif
+#ifdef HANDLE_RUNTIMEINVISIBLEPARAMETERANNOTATIONS_ATTRIBUTE
+  if (MATCH_ATTRIBUTE ("RuntimeInvisibleParameterAnnotations"))
+    {
+      HANDLE_RUNTIMEINVISIBLEPARAMETERANNOTATIONS_ATTRIBUTE ();
+    }
+  else
+#endif
+#ifdef HANDLE_ANNOTATIONDEFAULT_ATTRIBUTE
+  if (MATCH_ATTRIBUTE ("AnnotationDefault"))
+    {
+      HANDLE_ANNOTATIONDEFAULT_ATTRIBUTE ();
     }
   else
 #endif
@@ -384,7 +442,7 @@ jcf_parse_fields (JCF* jcf)
 #endif
       for (j = 0; j < attribute_count; j++)
 	{
-	  int code = get_attribute (jcf);
+	  int code = get_attribute (jcf, i, JV_FIELD_ATTR);
 	  if (code != 0)
 	    return code;
 	}
@@ -401,7 +459,7 @@ jcf_parse_fields (JCF* jcf)
 /* Read methods. */
 
 static int
-jcf_parse_one_method (JCF* jcf)
+jcf_parse_one_method (JCF* jcf, int index)
 {
   int i;
   uint16 access_flags = (JCF_FILL (jcf, 8), JCF_readu2 (jcf));
@@ -413,7 +471,7 @@ jcf_parse_one_method (JCF* jcf)
 #endif
   for (i = 0; i < attribute_count; i++)
     {
-      int code = get_attribute (jcf);
+      int code = get_attribute (jcf, index, JV_METHOD_ATTR);
       if (code != 0)
 	return code;
     }
@@ -435,7 +493,7 @@ jcf_parse_methods (JCF* jcf)
 #endif
   for (i = 0; i < methods_count; i++)
     {
-      int code = jcf_parse_one_method (jcf);
+      int code = jcf_parse_one_method (jcf, i);
       if (code != 0)
 	return code;
     }
@@ -456,7 +514,7 @@ jcf_parse_final_attributes (JCF *jcf)
 #endif
   for (i = 0; i < attributes_count; i++)
     {
-      int code = get_attribute (jcf);
+      int code = get_attribute (jcf, i, JV_CLASS_ATTR);
       if (code != 0)
 	return code;
     }

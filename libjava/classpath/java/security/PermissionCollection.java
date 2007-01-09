@@ -120,7 +120,7 @@ public abstract class PermissionCollection implements Serializable
    *
    * @return an <code>Enumeration</code> of this collection's objects
    */
-  public abstract Enumeration elements();
+  public abstract Enumeration<Permission> elements();
 
   /**
    * This method sets this <code>PermissionCollection</code> object to be
@@ -159,7 +159,7 @@ public abstract class PermissionCollection implements Serializable
     StringBuffer sb = new StringBuffer(super.toString());
 
     sb.append(" (\n");
-    Enumeration e = elements();
+    Enumeration<Permission> e = elements();
     while (e.hasMoreElements())
       sb.append(' ').append(e.nextElement()).append('\n');
     return sb.append(")\n").toString();

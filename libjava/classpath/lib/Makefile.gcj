@@ -25,7 +25,7 @@ Makefile.deps: classes
 -include Makefile.deps $(all_deps_files)
 
 ## Like GCJ but include some common flags.
-GCJF = $(GCJ) -Wno-deprecated --encoding=UTF-8 \
+GCJF = $(GCJ) -fsource=1.5 -ftarget=1.5 -g -Wno-deprecated --encoding=UTF-8 \
     --bootclasspath '' --classpath $(compile_classpath) \
     -C -d .
 

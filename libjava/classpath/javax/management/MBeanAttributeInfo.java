@@ -38,6 +38,7 @@ exception statement from your version. */
 package javax.management;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
 /**
  * Describes the attributes of a management bean.
@@ -109,13 +110,21 @@ public class MBeanAttributeInfo
 				       "not be null.");
     if (getter == null)
       {
-	attributeType = setter.getParameterTypes()[0].getName();
+	Type t = setter.getGenericParameterTypes()[0];
+	if (t instanceof Class)
+	  attributeType = ((Class) t).getName();
+	else
+	  attributeType = t.toString();
 	isRead = false;
 	is = false;
       }
     else
       {
-	attributeType = getter.getReturnType().getName();
+	Type t = getter.getGenericReturnType();
+	if (t instanceof Class)
+	  attributeType = ((Class) t).getName();
+	else
+	  attributeType = t.toString();
 	isRead = true;
 	is = getter.getName().startsWith("is");
       }

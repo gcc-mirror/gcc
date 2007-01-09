@@ -1,5 +1,5 @@
 /* TransientContextExt.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.CORBA.NamingService;
 
+import gnu.CORBA.SafeForDirectCalls;
+
 import org.omg.CORBA.NO_IMPLEMENT;
 import org.omg.CORBA.Object;
 import org.omg.CORBA.portable.Delegate;
@@ -61,7 +63,7 @@ import org.omg.CosNaming._NamingContextExtImplBase;
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class Ext
-  extends _NamingContextExtImplBase
+  extends _NamingContextExtImplBase implements SafeForDirectCalls
 {
   /**
    * The older version of the naming context, where all relevant calls

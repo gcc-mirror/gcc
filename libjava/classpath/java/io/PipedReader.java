@@ -261,6 +261,10 @@ public class PipedReader extends Reader
       if (closed)
 	throw new IOException ("Pipe closed");
 
+      // Don't block if nothing was requested.
+      if (len == 0)
+        return 0;
+
       // If the buffer is empty, wait until there is something in the pipe 
       // to read.
       try

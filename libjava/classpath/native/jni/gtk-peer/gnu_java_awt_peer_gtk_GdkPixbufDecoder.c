@@ -210,7 +210,8 @@ query_formats (JNIEnv *env, jclass clazz)
   jobject jformat;
   GSList *formats, *f;
   GdkPixbufFormat *format;
-  char **ch, *name;
+  gchar **ch, *name;
+  gint count;
 
   jclass formatClass;
   jmethodID addExtensionID;
@@ -240,14 +241,16 @@ query_formats (JNIEnv *env, jclass clazz)
       string = (*env)->NewStringUTF(env, name);
       g_assert(string != NULL);
 
-      jformat = (*env)->CallStaticObjectMethod 
+      jformat = (*env)->CallStaticObjectMethod
 	(env, clazz, registerFormatID, string,
 	 (jboolean) gdk_pixbuf_format_is_writable(format));
       (*env)->DeleteLocalRef(env, string);
+      g_free(name);
 
       g_assert(jformat != NULL);
-      
+
       ch = gdk_pixbuf_format_get_extensions(format);
+      count = 0;
       while (*ch)
 	{
 	  string = (*env)->NewStringUTF(env, *ch);
@@ -255,9 +258,12 @@ query_formats (JNIEnv *env, jclass clazz)
 	  (*env)->CallVoidMethod (env, jformat, addExtensionID, string);
 	  (*env)->DeleteLocalRef(env, string);
 	  ++ch;
+	  ++count;
 	}
-      
+      g_strfreev(ch - count);
+
       ch = gdk_pixbuf_format_get_mime_types(format);
+      count = 0;
       while (*ch)
 	{
 	  string = (*env)->NewStringUTF(env, *ch);
@@ -265,12 +271,13 @@ query_formats (JNIEnv *env, jclass clazz)
 	  (*env)->CallVoidMethod (env, jformat, addMimeTypeID, string);
 	  (*env)->DeleteLocalRef(env, string);
 	  ++ch;
+	  ++count;
 	}
-
+      g_strfreev(ch - count);
       (*env)->DeleteLocalRef(env, jformat);
     }
-  
-  g_slist_free(formats);  
+
+  g_slist_free(formats);
 }
 
 

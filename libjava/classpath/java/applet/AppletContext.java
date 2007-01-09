@@ -1,5 +1,5 @@
 /* AppletContext.java -- access the applet's runtime environment
-   Copyright (C) 1999, 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -52,7 +52,7 @@ import java.util.Iterator;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @since 1.0
- * @status updated to 1.4
+ * @status updated to 1.5
  */
 public interface AppletContext
 {
@@ -90,7 +90,7 @@ public interface AppletContext
    *
    * @return a list of all the applets
    */
-  Enumeration getApplets();
+  Enumeration<Applet> getApplets();
 
   /**
    * Displays the web page pointed to by the specified URL in the window
@@ -150,5 +150,5 @@ public interface AppletContext
    * @return an iterator over the association keys
    * @since 1.4
    */
-  Iterator getStreamKeys();
+  Iterator<String> getStreamKeys();
 } // interface AppletContext

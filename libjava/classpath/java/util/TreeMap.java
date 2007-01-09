@@ -90,8 +90,8 @@ import java.io.Serializable;
  * @since 1.2
  * @status updated to 1.4
  */
-public class TreeMap extends AbstractMap
-  implements SortedMap, Cloneable, Serializable
+public class TreeMap<K, V> extends AbstractMap<K, V>
+  implements SortedMap<K, V>, Cloneable, Serializable
 {
   // Implementation note:
   // A red-black tree is a binary search tree with the additional properties
@@ -140,7 +140,7 @@ public class TreeMap extends AbstractMap
   /**
    * The cache for {@link #entrySet()}.
    */
-  private transient Set entries;
+  private transient Set<Map.Entry<K,V>> entries;
 
   /**
    * Counts the number of modifications this TreeMap has undergone, used
@@ -154,7 +154,7 @@ public class TreeMap extends AbstractMap
    * Package visible for use by nested classes.
    * @serial the comparator ordering this tree, or null
    */
-  final Comparator comparator;
+  final Comparator<? super K> comparator;
 
   /**
    * Class to represent an entry in the tree. Holds a single key-value pair,
@@ -162,25 +162,25 @@ public class TreeMap extends AbstractMap
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static final class Node extends AbstractMap.BasicMapEntry
+  private static final class Node<K, V> extends AbstractMap.SimpleEntry<K, V>
   {
     // All fields package visible for use by nested classes.
     /** The color of this node. */
     int color;
 
     /** The left child node. */
-    Node left = nil;
+    Node<K, V> left = nil;
     /** The right child node. */
-    Node right = nil;
+    Node<K, V> right = nil;
     /** The parent node. */
-    Node parent = nil;
+    Node<K, V> parent = nil;
 
     /**
      * Simple constructor.
      * @param key the key
      * @param value the value
      */
-    Node(Object key, Object value, int color)
+    Node(K key, V value, int color)
     {
       super(key, value);
       this.color = color;
@@ -210,7 +210,7 @@ public class TreeMap extends AbstractMap
    * @param c the sort order for the keys of this map, or null
    *        for the natural order
    */
-  public TreeMap(Comparator c)
+  public TreeMap(Comparator<? super K> c)
   {
     comparator = c;
     fabricateTree(0);
@@ -230,7 +230,7 @@ public class TreeMap extends AbstractMap
    * @throws NullPointerException if map is null
    * @see Comparable
    */
-  public TreeMap(Map map)
+  public TreeMap(Map<? extends K, ? extends V> map)
   {
     this((Comparator) null);
     putAll(map);
@@ -244,7 +244,7 @@ public class TreeMap extends AbstractMap
    * @param sm a SortedMap, whose entries will be put into this TreeMap
    * @throws NullPointerException if sm is null
    */
-  public TreeMap(SortedMap sm)
+  public TreeMap(SortedMap<K, ? extends V> sm)
   {
     this(sm.comparator());
     int pos = sm.size();
@@ -313,7 +313,7 @@ public class TreeMap extends AbstractMap
    *
    * @return the map's comparator
    */
-  public Comparator comparator()
+  public Comparator<? super K> comparator()
   {
     return comparator;
   }
@@ -329,7 +329,7 @@ public class TreeMap extends AbstractMap
    */
   public boolean containsKey(Object key)
   {
-    return getNode(key) != nil;
+    return getNode((K) key) != nil;
   }
 
   /**
@@ -364,19 +364,19 @@ public class TreeMap extends AbstractMap
    * @see #values()
    * @see Map.Entry
    */
-  public Set entrySet()
+  public Set<Map.Entry<K,V>> entrySet()
   {
     if (entries == null)
       // Create an AbstractSet with custom implementations of those methods
       // that can be overriden easily and efficiently.
-      entries = new AbstractSet()
+      entries = new AbstractSet<Map.Entry<K,V>>()
       {
         public int size()
         {
           return size;
         }
 
-        public Iterator iterator()
+        public Iterator<Map.Entry<K,V>> iterator()
         {
           return new TreeIterator(ENTRIES);
         }
@@ -390,8 +390,8 @@ public class TreeMap extends AbstractMap
         {
           if (! (o instanceof Map.Entry))
             return false;
-          Map.Entry me = (Map.Entry) o;
-          Node n = getNode(me.getKey());
+          Map.Entry<K,V> me = (Map.Entry<K,V>) o;
+          Node<K,V> n = getNode(me.getKey());
           return n != nil && AbstractSet.equals(me.getValue(), n.value);
       }
 
@@ -399,8 +399,8 @@ public class TreeMap extends AbstractMap
         {
           if (! (o instanceof Map.Entry))
             return false;
-          Map.Entry me = (Map.Entry) o;
-          Node n = getNode(me.getKey());
+          Map.Entry<K,V> me = (Map.Entry<K,V>) o;
+          Node<K,V> n = getNode(me.getKey());
           if (n != nil && AbstractSet.equals(me.getValue(), n.value))
             {
               removeNode(n);
@@ -418,7 +418,7 @@ public class TreeMap extends AbstractMap
    * @return the first key
    * @throws NoSuchElementException if the map is empty
    */
-  public Object firstKey()
+  public K firstKey()
   {
     if (root == nil)
       throw new NoSuchElementException();
@@ -439,10 +439,10 @@ public class TreeMap extends AbstractMap
    * @see #put(Object, Object)
    * @see #containsKey(Object)
    */
-  public Object get(Object key)
+  public V get(Object key)
   {
     // Exploit fact that nil.value == null.
-    return getNode(key).value;
+    return getNode((K) key).value;
   }
 
   /**
@@ -460,9 +460,9 @@ public class TreeMap extends AbstractMap
    * @throws NullPointerException if toKey is null, but the comparator does not
    *         tolerate null elements
    */
-  public SortedMap headMap(Object toKey)
+  public SortedMap<K, V> headMap(K toKey)
   {
-    return new SubMap(nil, toKey);
+    return new SubMap((K)(Object)nil, toKey);
   }
 
   /**
@@ -474,19 +474,19 @@ public class TreeMap extends AbstractMap
    * @see #values()
    * @see #entrySet()
    */
-  public Set keySet()
+  public Set<K> keySet()
   {
     if (keys == null)
       // Create an AbstractSet with custom implementations of those methods
       // that can be overriden easily and efficiently.
-      keys = new AbstractSet()
+      keys = new AbstractSet<K>()
       {
         public int size()
         {
           return size;
         }
 
-        public Iterator iterator()
+        public Iterator<K> iterator()
         {
           return new TreeIterator(KEYS);
         }
@@ -503,7 +503,7 @@ public class TreeMap extends AbstractMap
 
         public boolean remove(Object key)
         {
-          Node n = getNode(key);
+          Node<K,V> n = getNode((K) key);
           if (n == nil)
             return false;
           removeNode(n);
@@ -519,7 +519,7 @@ public class TreeMap extends AbstractMap
    * @return the last key
    * @throws NoSuchElementException if the map is empty
    */
-  public Object lastKey()
+  public K lastKey()
   {
     if (root == nil)
       throw new NoSuchElementException("empty");
@@ -542,10 +542,10 @@ public class TreeMap extends AbstractMap
    * @see #get(Object)
    * @see Object#equals(Object)
    */
-  public Object put(Object key, Object value)
+  public V put(K key, V value)
   {
-    Node current = root;
-    Node parent = nil;
+    Node<K,V> current = root;
+    Node<K,V> parent = nil;
     int comparison = 0;
 
     // Find new node's parent.
@@ -595,13 +595,13 @@ public class TreeMap extends AbstractMap
    * @throws NullPointerException if a key in m is null, and the comparator
    *         does not tolerate nulls
    */
-  public void putAll(Map m)
+  public void putAll(Map<? extends K, ? extends V> m)
   {
     Iterator itr = m.entrySet().iterator();
     int pos = m.size();
     while (--pos >= 0)
       {
-        Map.Entry e = (Map.Entry) itr.next();
+        Map.Entry<K,V> e = (Map.Entry<K,V>) itr.next();
         put(e.getKey(), e.getValue());
       }
   }
@@ -619,13 +619,13 @@ public class TreeMap extends AbstractMap
    * @throws NullPointerException if key is null, but the comparator does
    *         not tolerate nulls
    */
-  public Object remove(Object key)
+  public V remove(Object key)
   {
-    Node n = getNode(key);
+    Node<K, V> n = getNode((K)key);
     if (n == nil)
       return null;
     // Note: removeNode can alter the contents of n, so save value now.
-    Object result = n.value;
+    V result = n.value;
     removeNode(n);
     return result;
   }
@@ -659,7 +659,7 @@ public class TreeMap extends AbstractMap
    *         comparator does not tolerate null elements
    * @throws IllegalArgumentException if fromKey is greater than toKey
    */
-  public SortedMap subMap(Object fromKey, Object toKey)
+  public SortedMap<K, V> subMap(K fromKey, K toKey)
   {
     return new SubMap(fromKey, toKey);
   }
@@ -679,9 +679,9 @@ public class TreeMap extends AbstractMap
    * @throws NullPointerException if fromKey is null, but the comparator
    *         does not tolerate null elements
    */
-  public SortedMap tailMap(Object fromKey)
+  public SortedMap<K, V> tailMap(K fromKey)
   {
-    return new SubMap(fromKey, nil);
+    return new SubMap(fromKey, (K)(Object)nil);
   }
 
   /**
@@ -694,19 +694,19 @@ public class TreeMap extends AbstractMap
    * @see #keySet()
    * @see #entrySet()
    */
-  public Collection values()
+  public Collection<V> values()
   {
     if (values == null)
       // We don't bother overriding many of the optional methods, as doing so
       // wouldn't provide any significant performance advantage.
-      values = new AbstractCollection()
+      values = new AbstractCollection<V>()
       {
         public int size()
         {
           return size;
         }
 
-        public Iterator iterator()
+        public Iterator<V> iterator()
         {
           return new TreeIterator(VALUES);
         }
@@ -729,7 +729,7 @@ public class TreeMap extends AbstractMap
    *         or are not Comparable with natural ordering
    * @throws NullPointerException if o1 or o2 is null with natural ordering
    */
-  final int compare(Object o1, Object o2)
+  final int compare(K o1, K o2)
   {
     return (comparator == null
             ? ((Comparable) o1).compareTo(o2)
@@ -742,7 +742,7 @@ public class TreeMap extends AbstractMap
    * @param node the child of the node just deleted, possibly nil
    * @param parent the parent of the node just deleted, never nil
    */
-  private void deleteFixup(Node node, Node parent)
+  private void deleteFixup(Node<K,V> node, Node<K,V> parent)
   {
     // if (parent == nil)
     //   throw new InternalError();
@@ -754,7 +754,7 @@ public class TreeMap extends AbstractMap
         if (node == parent.left)
           {
             // Rebalance left side.
-            Node sibling = parent.right;
+            Node<K,V> sibling = parent.right;
             // if (sibling == nil)
             //   throw new InternalError();
             if (sibling.color == RED)
@@ -798,7 +798,7 @@ public class TreeMap extends AbstractMap
         else
           {
             // Symmetric "mirror" of left-side case.
-            Node sibling = parent.left;
+            Node<K,V> sibling = parent.left;
             // if (sibling == nil)
             //   throw new InternalError();
             if (sibling.color == RED)
@@ -931,7 +931,7 @@ public class TreeMap extends AbstractMap
    *
    * @return the first node
    */
-  final Node firstNode()
+  final Node<K, V> firstNode()
   {
     // Exploit fact that nil.left == nil.
     Node node = root;
@@ -947,9 +947,9 @@ public class TreeMap extends AbstractMap
    * @param key the key to search for
    * @return the node where the key is found, or nil
    */
-  final Node getNode(Object key)
+  final Node<K, V> getNode(K key)
   {
-    Node current = root;
+    Node<K,V> current = root;
     while (current != nil)
       {
         int comparison = compare(key, current.key);
@@ -970,13 +970,13 @@ public class TreeMap extends AbstractMap
    * @param key the upper bound, exclusive
    * @return the previous node
    */
-  final Node highestLessThan(Object key)
+  final Node<K,V> highestLessThan(K key)
   {
     if (key == nil)
       return lastNode();
 
-    Node last = nil;
-    Node current = root;
+    Node<K,V> last = nil;
+    Node<K,V> current = root;
     int comparison = 0;
 
     while (current != nil)
@@ -998,7 +998,7 @@ public class TreeMap extends AbstractMap
    *
    * @param n the newly inserted node
    */
-  private void insertFixup(Node n)
+  private void insertFixup(Node<K,V> n)
   {
     // Only need to rebalance when parent is a RED node, and while at least
     // 2 levels deep into the tree (ie: node has a grandparent). Remember
@@ -1073,7 +1073,7 @@ public class TreeMap extends AbstractMap
    *
    * @return the last node
    */
-  private Node lastNode()
+  private Node<K,V> lastNode()
   {
     // Exploit fact that nil.right == nil.
     Node node = root;
@@ -1091,13 +1091,13 @@ public class TreeMap extends AbstractMap
    * @param first true to return the first element instead of nil for nil key
    * @return the next node
    */
-  final Node lowestGreaterThan(Object key, boolean first)
+  final Node<K,V> lowestGreaterThan(K key, boolean first)
   {
     if (key == nil)
       return first ? firstNode() : nil;
 
-    Node last = nil;
-    Node current = root;
+    Node<K,V> last = nil;
+    Node<K,V> current = root;
     int comparison = 0;
 
     while (current != nil)
@@ -1120,7 +1120,7 @@ public class TreeMap extends AbstractMap
    * @param node the current node, not nil
    * @return the prior node in sorted order
    */
-  private Node predecessor(Node node)
+  private Node<K,V> predecessor(Node<K,V> node)
   {
     if (node.left != nil)
       {
@@ -1169,21 +1169,21 @@ public class TreeMap extends AbstractMap
 
   /**
    * Construct a tree from sorted keys in linear time, with values of "".
-   * Package visible for use by TreeSet.
+   * Package visible for use by TreeSet, which uses a value type of String.
    *
    * @param keys the iterator over the sorted keys
    * @param count the number of nodes to insert
    * @see TreeSet#TreeSet(SortedSet)
    */
-  final void putKeysLinear(Iterator keys, int count)
+  final void putKeysLinear(Iterator<K> keys, int count)
   {
     fabricateTree(count);
-    Node node = firstNode();
+    Node<K,V> node = firstNode();
 
     while (--count >= 0)
       {
         node.key = keys.next();
-        node.value = "";
+        node.value = (V) "";
         node = successor(node);
       }
   }
@@ -1211,10 +1211,10 @@ public class TreeMap extends AbstractMap
    *
    * @param node the node to remove
    */
-  final void removeNode(Node node)
+  final void removeNode(Node<K,V> node)
   {
-    Node splice;
-    Node child;
+    Node<K,V> splice;
+    Node<K,V> child;
 
     modCount++;
     size--;
@@ -1268,7 +1268,7 @@ public class TreeMap extends AbstractMap
    *
    * @param node the node to rotate
    */
-  private void rotateLeft(Node node)
+  private void rotateLeft(Node<K,V> node)
   {
     Node child = node.right;
     // if (node == nil || child == nil)
@@ -1301,7 +1301,7 @@ public class TreeMap extends AbstractMap
    *
    * @param node the node to rotate
    */
-  private void rotateRight(Node node)
+  private void rotateRight(Node<K,V> node)
   {
     Node child = node.left;
     // if (node == nil || child == nil)
@@ -1336,7 +1336,7 @@ public class TreeMap extends AbstractMap
    * @param node the current node, not nil
    * @return the next node in sorted order
    */
-  final Node successor(Node node)
+  final Node<K,V> successor(Node<K,V> node)
   {
     if (node.right != nil)
       {
@@ -1346,7 +1346,7 @@ public class TreeMap extends AbstractMap
         return node;
       }
 
-    Node parent = node.parent;
+    Node<K,V> parent = node.parent;
     // Exploit fact that nil.right == nil and node is non-nil.
     while (node == parent.right)
       {
@@ -1489,24 +1489,26 @@ public class TreeMap extends AbstractMap
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private final class SubMap extends AbstractMap implements SortedMap
+  private final class SubMap<SK extends K,SV extends V>
+    extends AbstractMap<SK,SV>
+    implements SortedMap<SK,SV>
   {
     /**
      * The lower range of this view, inclusive, or nil for unbounded.
      * Package visible for use by nested classes.
      */
-    final Object minKey;
+    final SK minKey;
 
     /**
      * The upper range of this view, exclusive, or nil for unbounded.
      * Package visible for use by nested classes.
      */
-    final Object maxKey;
+    final SK maxKey;
 
     /**
      * The cache for {@link #entrySet()}.
      */
-    private Set entries;
+    private Set<Map.Entry<SK,SV>> entries;
 
     /**
      * Create a SubMap representing the elements between minKey (inclusive)
@@ -1517,9 +1519,9 @@ public class TreeMap extends AbstractMap
      * @param maxKey the upper bound
      * @throws IllegalArgumentException if minKey &gt; maxKey
      */
-    SubMap(Object minKey, Object maxKey)
+    SubMap(SK minKey, SK maxKey)
     {
-      if (minKey != nil && maxKey != nil && compare(minKey, maxKey) > 0)
+      if (minKey != nil && maxKey != nil && compare((K) minKey, (K) maxKey) > 0)
         throw new IllegalArgumentException("fromKey > toKey");
       this.minKey = minKey;
       this.maxKey = maxKey;
@@ -1533,10 +1535,10 @@ public class TreeMap extends AbstractMap
      * @param key the key to check
      * @return true if the key is in range
      */
-    boolean keyInRange(Object key)
+    boolean keyInRange(SK key)
     {
-      return ((minKey == nil || compare(key, minKey) >= 0)
-              && (maxKey == nil || compare(key, maxKey) < 0));
+      return ((minKey == nil || compare((K) key, (K) minKey) >= 0)
+              && (maxKey == nil || compare((K) key, (K) maxKey) < 0));
     }
 
     public void clear()
@@ -1551,14 +1553,14 @@ public class TreeMap extends AbstractMap
         }
     }
 
-    public Comparator comparator()
+    public Comparator<? super SK> comparator()
     {
       return comparator;
     }
 
     public boolean containsKey(Object key)
     {
-      return keyInRange(key) && TreeMap.this.containsKey(key);
+      return keyInRange((SK) key) && TreeMap.this.containsKey(key);
     }
 
     public boolean containsValue(Object value)
@@ -1574,19 +1576,19 @@ public class TreeMap extends AbstractMap
       return false;
     }
 
-    public Set entrySet()
+    public Set<Map.Entry<SK,SV>> entrySet()
     {
       if (entries == null)
         // Create an AbstractSet with custom implementations of those methods
         // that can be overriden easily and efficiently.
-        entries = new AbstractSet()
+        entries = new AbstractSet<Map.Entry<SK,SV>>()
         {
           public int size()
           {
             return SubMap.this.size();
           }
 
-          public Iterator iterator()
+          public Iterator<Map.Entry<SK,SV>> iterator()
           {
             Node first = lowestGreaterThan(minKey, true);
             Node max = lowestGreaterThan(maxKey, false);
@@ -1602,11 +1604,11 @@ public class TreeMap extends AbstractMap
           {
             if (! (o instanceof Map.Entry))
               return false;
-            Map.Entry me = (Map.Entry) o;
-            Object key = me.getKey();
+            Map.Entry<SK,SV> me = (Map.Entry<SK,SV>) o;
+            SK key = me.getKey();
             if (! keyInRange(key))
               return false;
-            Node n = getNode(key);
+            Node<K,V> n = getNode((K) key);
             return n != nil && AbstractSet.equals(me.getValue(), n.value);
           }
 
@@ -1614,11 +1616,11 @@ public class TreeMap extends AbstractMap
           {
             if (! (o instanceof Map.Entry))
               return false;
-            Map.Entry me = (Map.Entry) o;
-            Object key = me.getKey();
+            Map.Entry<SK,SV> me = (Map.Entry<SK,SV>) o;
+            SK key = me.getKey();
             if (! keyInRange(key))
               return false;
-            Node n = getNode(key);
+            Node<K,V> n = getNode((K) key);
             if (n != nil && AbstractSet.equals(me.getValue(), n.value))
               {
                 removeNode(n);
@@ -1630,29 +1632,29 @@ public class TreeMap extends AbstractMap
       return entries;
     }
 
-    public Object firstKey()
+    public SK firstKey()
     {
-      Node node = lowestGreaterThan(minKey, true);
+      Node<SK,SV> node = (Node<SK,SV>) lowestGreaterThan(minKey, true);
       if (node == nil || ! keyInRange(node.key))
         throw new NoSuchElementException();
       return node.key;
     }
 
-    public Object get(Object key)
+    public SV get(Object key)
     {
-      if (keyInRange(key))
-        return TreeMap.this.get(key);
+      if (keyInRange((SK) key))
+        return (SV) TreeMap.this.get(key);
       return null;
     }
 
-    public SortedMap headMap(Object toKey)
+    public SortedMap<SK,SV> headMap(SK toKey)
     {
       if (! keyInRange(toKey))
         throw new IllegalArgumentException("key outside range");
       return new SubMap(minKey, toKey);
     }
 
-    public Set keySet()
+    public Set<SK> keySet()
     {
       if (this.keys == null)
         // Create an AbstractSet with custom implementations of those methods
@@ -1664,7 +1666,7 @@ public class TreeMap extends AbstractMap
             return SubMap.this.size();
           }
 
-          public Iterator iterator()
+          public Iterator<SK> iterator()
           {
             Node first = lowestGreaterThan(minKey, true);
             Node max = lowestGreaterThan(maxKey, false);
@@ -1678,16 +1680,16 @@ public class TreeMap extends AbstractMap
 
           public boolean contains(Object o)
           {
-            if (! keyInRange(o))
+            if (! keyInRange((SK) o))
               return false;
-            return getNode(o) != nil;
+            return getNode((K) o) != nil;
           }
 
           public boolean remove(Object o)
           {
-            if (! keyInRange(o))
+            if (! keyInRange((SK) o))
               return false;
-            Node n = getNode(o);
+            Node n = getNode((K) o);
             if (n != nil)
               {
                 removeNode(n);
@@ -1699,25 +1701,25 @@ public class TreeMap extends AbstractMap
       return this.keys;
     }
 
-    public Object lastKey()
+    public SK lastKey()
     {
-      Node node = highestLessThan(maxKey);
+      Node<SK,SV> node = (Node<SK,SV>) highestLessThan(maxKey);
       if (node == nil || ! keyInRange(node.key))
         throw new NoSuchElementException();
-      return node.key;
+      return (SK) node.key;
     }
 
-    public Object put(Object key, Object value)
+    public SV put(SK key, SV value)
     {
       if (! keyInRange(key))
         throw new IllegalArgumentException("Key outside range");
-      return TreeMap.this.put(key, value);
+      return (SV) TreeMap.this.put(key, value);
     }
 
-    public Object remove(Object key)
+    public SV remove(Object key)
     {
-      if (keyInRange(key))
-        return TreeMap.this.remove(key);
+      if (keyInRange((SK)key))
+        return (SV) TreeMap.this.remove(key);
       return null;
     }
 
@@ -1734,21 +1736,21 @@ public class TreeMap extends AbstractMap
       return count;
     }
 
-    public SortedMap subMap(Object fromKey, Object toKey)
+    public SortedMap<SK, SV> subMap(SK fromKey, SK toKey)
     {
       if (! keyInRange(fromKey) || ! keyInRange(toKey))
         throw new IllegalArgumentException("key outside range");
       return new SubMap(fromKey, toKey);
     }
 
-    public SortedMap tailMap(Object fromKey)
+    public SortedMap<SK, SV> tailMap(SK fromKey)
     {
       if (! keyInRange(fromKey))
         throw new IllegalArgumentException("key outside range");
       return new SubMap(fromKey, maxKey);
     }
 
-    public Collection values()
+    public Collection<SV> values()
     {
       if (this.values == null)
         // Create an AbstractCollection with custom implementations of those
@@ -1760,7 +1762,7 @@ public class TreeMap extends AbstractMap
             return SubMap.this.size();
           }
 
-          public Iterator iterator()
+          public Iterator<SV> iterator()
           {
             Node first = lowestGreaterThan(minKey, true);
             Node max = lowestGreaterThan(maxKey, false);

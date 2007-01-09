@@ -1,5 +1,5 @@
 /* ListIterator.java -- Extended Iterator for iterating over ordered lists
-   Copyright (C) 1998, 1999, 2001, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -59,7 +59,7 @@ package java.util;
  * @since 1.2
  * @status updated to 1.4
  */
-public interface ListIterator extends Iterator
+public interface ListIterator<E> extends Iterator<E>
 {
   /**
    * Tests whether there are elements remaining in the list in the forward
@@ -88,7 +88,7 @@ public interface ListIterator extends Iterator
    * @return the next element in the list in the forward direction
    * @throws NoSuchElementException if there are no more elements
    */
-  Object next();
+  E next();
 
   /**
    * Obtain the next element in the list in the reverse direction. Repeated
@@ -100,7 +100,7 @@ public interface ListIterator extends Iterator
    * @return the next element in the list in the reverse direction
    * @throws NoSuchElementException if there are no more elements
    */
-  Object previous();
+  E previous();
 
   /**
    * Find the index of the element that would be returned by a call to next.
@@ -134,7 +134,7 @@ public interface ListIterator extends Iterator
    * @throws UnsupportedOperationException if this ListIterator does not
    *         support the add operation.
    */
-  void add(Object o);
+  void add(E o);
 
   /**
    * Remove from the list the element last returned by a call to next or
@@ -166,5 +166,5 @@ public interface ListIterator extends Iterator
    * @throws UnsupportedOperationException if this ListIterator does not
    *         support the set operation
    */
-  void set(Object o);
+  void set(E o);
 }

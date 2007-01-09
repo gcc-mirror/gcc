@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package java.awt.image;
 
-import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -67,7 +66,8 @@ public class LookupOp implements BufferedImageOp, RasterOp
   private LookupTable lut;
   private RenderingHints hints;
   
-  /** Construct a new LookupOp.
+  /**
+   * Construct a new LookupOp using the given LookupTable.
    * 
    * @param lookup LookupTable to use.
    * @param hints Rendering hints (can be null).
@@ -78,16 +78,40 @@ public class LookupOp implements BufferedImageOp, RasterOp
     this.hints = hints;
   }
   
-  /* (non-Javadoc)
-   * @see java.awt.image.BufferedImageOp#filter(java.awt.image.BufferedImage, java.awt.image.BufferedImage)
+  /**
+   * Converts the source image using the lookup table specified in the
+   * constructor.  The resulting image is stored in the destination image if one
+   * is provided; otherwise a new BufferedImage is created and returned. 
+   * 
+   * The source image cannot use an IndexColorModel, and the destination image
+   * (if one is provided) must have the same size.
+   *
+   * @param src The source image.
+   * @param dst The destination image.
+   * @throws IllegalArgumentException if the rasters and/or color spaces are
+   *            incompatible.
+   * @throws ArrayIndexOutOfBoundsException if a pixel in the source is not
+   *    contained in the LookupTable.
+   * @return The convolved image.
    */
   public final BufferedImage filter(BufferedImage src, BufferedImage dst)
   {
     if (src.getColorModel() instanceof IndexColorModel)
       throw new IllegalArgumentException("LookupOp.filter: IndexColorModel "
 					 + "not allowed");
+    
+    if (lut.getNumComponents() != 1
+         && lut.getNumComponents() != src.getColorModel().getNumComponents()
+         && lut.getNumComponents() != src.getColorModel().getNumColorComponents())
+     throw new IllegalArgumentException("LookupOp.filter: Incompatible " +
+                "lookup table and source image");
+    
     if (dst == null)
-      dst = createCompatibleDestImage(src, src.getColorModel());
+      dst = createCompatibleDestImage(src, null);
+    
+    else if (src.getHeight() != dst.getHeight() || src.getWidth() != dst.getWidth())
+      throw new IllegalArgumentException("Source and destination images are " +
+                "different sizes.");
 
     // Set up for potential colormodel mismatch
     BufferedImage tgt;
@@ -116,32 +140,34 @@ public class LookupOp implements BufferedImageOp, RasterOp
           sr.getPixel(x, y, dbuf);
           System.arraycopy(dbuf, 0, tmp, 0, tmpBands);
           dr.setPixel(x, y, lut.lookupPixel(tmp, dbuf));
+          
+          /* The reference implementation does not use LookupTable.lookupPixel,
+           * but rather it seems to copy the table into a native array.  The
+           * effect of this (a probable bug in their implementation) is that
+           * an out-of-bounds lookup on a ByteLookupTable will *not* throw an
+           * out of bounds exception, but will instead return random garbage.
+           * A bad lookup on a ShortLookupTable, however, will throw an
+           * exception.
+           * 
+           * Instead of mimicing this behaviour, we always throw an
+           * ArrayOutofBoundsException by virtue of using
+           * LookupTable.lookupPixle.
+           */
         }
     }
-    else if (lut.getNumComponents() != 1
-	     &&
-	     lut.getNumComponents() != src.getColorModel().getNumComponents())
-      throw new IllegalArgumentException("LookupOp.filter: "
-					 + "Incompatible lookup "
-					 + "table and source image");
-
-    // No alpha to ignore
-    int[] dbuf = new int[src.getColorModel().getNumComponents()];
-        
-    // Filter the pixels
-    for (int y = src.getMinY(); y < src.getHeight() + src.getMinY(); y++)
-      for (int x = src.getMinX(); x < src.getWidth() + src.getMinX(); x++)
-        dr.setPixel(x, y, lut.lookupPixel(sr.getPixel(x, y, dbuf), dbuf));
-
-    if (tgt != dst)
+    else
     {
-      // Convert between color models.
-      // TODO Check that premultiplied alpha is handled correctly here.
-      Graphics2D gg = dst.createGraphics();
-      gg.setRenderingHints(hints);
-      gg.drawImage(tgt, 0, 0, null);
-      gg.dispose();
+      // No alpha to ignore
+      int[] dbuf = new int[src.getColorModel().getNumComponents()];
+          
+      // Filter the pixels
+      for (int y = src.getMinY(); y < src.getHeight() + src.getMinY(); y++)
+        for (int x = src.getMinX(); x < src.getWidth() + src.getMinX(); x++)
+          dr.setPixel(x, y, lut.lookupPixel(sr.getPixel(x, y, dbuf), dbuf));
     }
+    
+    if (tgt != dst)
+      new ColorConvertOp(hints).filter(tgt, dst);
     
     return dst;
   }
@@ -160,18 +186,27 @@ public class LookupOp implements BufferedImageOp, RasterOp
   public BufferedImage createCompatibleDestImage(BufferedImage src,
 						 ColorModel dstCM)
   {
-    // FIXME: set properties to those in src
-    return new BufferedImage(dstCM,
-			     src.getRaster().createCompatibleWritableRaster(),
-			     src.isPremultiplied, null);
+    if (dstCM != null)
+      return new BufferedImage(dstCM,
+                               src.getRaster().createCompatibleWritableRaster(),
+                               src.isAlphaPremultiplied(), null);
+    
+    // This is a strange exception, done for compatibility with the reference
+    // (as demonstrated by a mauve testcase)
+    int imgType = src.getType();
+    if (imgType == BufferedImage.TYPE_USHORT_GRAY)
+      imgType = BufferedImage.TYPE_BYTE_GRAY;
+
+    return new BufferedImage(src.getWidth(), src.getHeight(), imgType);
   }
 
-  /** Return corresponding destination point for source point.
+  /**
+   * Returns the corresponding destination point for a given source point.
    * 
-   * LookupOp will return the value of src unchanged.
+   * This Op will return the source point unchanged.
+   * 
    * @param src The source point.
    * @param dst The destination point.
-   * @see java.awt.image.RasterOp#getPoint2D(java.awt.geom.Point2D, java.awt.geom.Point2D)
    */
   public final Point2D getPoint2D(Point2D src, Point2D dst)
   {
@@ -182,7 +217,11 @@ public class LookupOp implements BufferedImageOp, RasterOp
     return dst;
   }
 
-  /** Return the LookupTable for this op. */
+  /**
+   * Return the LookupTable for this op.
+   * 
+   *  @return The lookup table.
+   */
   public final LookupTable getTable()
   {
     return lut;
@@ -196,7 +235,8 @@ public class LookupOp implements BufferedImageOp, RasterOp
     return hints;
   }
 
-  /** Filter a raster through a lookup table.
+  /**
+   * Filter a raster through a lookup table.
    * 
    * Applies the lookup table for this Rasterop to each pixel of src and
    * puts the results in dest.  If dest is null, a new Raster is created and
@@ -206,8 +246,9 @@ public class LookupOp implements BufferedImageOp, RasterOp
    * @param dest The destination raster.
    * @return The WritableRaster with the filtered pixels.
    * @throws IllegalArgumentException if lookup table has more than one
-   * component but not the same as src and dest.
-   * @see java.awt.image.RasterOp#filter(java.awt.image.Raster, java.awt.image.WritableRaster)
+   *    component but not the same as src and dest.
+   * @throws ArrayIndexOutOfBoundsException if a pixel in the source is not
+   *    contained in the LookupTable.
    */
   public final WritableRaster filter(Raster src, WritableRaster dest)
   {
@@ -216,12 +257,13 @@ public class LookupOp implements BufferedImageOp, RasterOp
       dest = createCompatibleDestRaster(src);
     else
       if (src.getNumBands() != dest.getNumBands())
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("Source and destination rasters " +
+                "are incompatible.");
 
-    if (lut.getNumComponents() != 1
-	&& lut.getNumComponents() != src.getNumBands())
-      throw new IllegalArgumentException();
-
+    if (lut.getNumComponents() != 1 
+        && lut.getNumComponents() != src.getNumBands())
+      throw new IllegalArgumentException("Lookup table is incompatible with " +
+            "this raster.");
    
     // Allocate pixel storage. 
     int[] tmp = new int[src.getNumBands()];
@@ -230,6 +272,19 @@ public class LookupOp implements BufferedImageOp, RasterOp
     for (int y = src.getMinY(); y < src.getHeight() + src.getMinY(); y++)
       for (int x = src.getMinX(); x < src.getWidth() + src.getMinX(); x++)
         dest.setPixel(x, y, lut.lookupPixel(src.getPixel(x, y, tmp), tmp));
+    
+    /* The reference implementation does not use LookupTable.lookupPixel,
+     * but rather it seems to copy the table into a native array.  The
+     * effect of this (a probable bug in their implementation) is that
+     * an out-of-bounds lookup on a ByteLookupTable will *not* throw an
+     * out of bounds exception, but will instead return random garbage.
+     * A bad lookup on a ShortLookupTable, however, will throw an
+     * exception.
+     * 
+     * Instead of mimicing this behaviour, we always throw an
+     * ArrayOutofBoundsException by virtue of using
+     * LookupTable.lookupPixle.
+     */
     return dest;
   }
 

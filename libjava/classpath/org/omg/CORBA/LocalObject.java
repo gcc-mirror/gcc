@@ -1,5 +1,5 @@
 /* LocalObject.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -253,12 +253,12 @@ public class LocalObject
   
   /**
    * This method is called from <code>rmic</code> generated stubs if the
-   * {@link Util#isLocal()}, called passing <code>this</code> as parameter,
+   * {@link Util#isLocal}, called passing <code>this</code> as parameter,
    * returns true. If the method returns null, the requested method is then
    * invoked on <code>this</code>. Else it is invoked on the returned object,
    * casting it into the interface that the local object implements. In this
    * case, the generated stub also later calls 
-   * {@link _servant_postinvoke(ServantObject)}, passing that returned target
+   * {@link #_servant_postinvoke(ServantObject)}, passing that returned target
    * as parameter.
    * 
    * @param operation the name of the method being invoked.
@@ -275,7 +275,7 @@ public class LocalObject
   
   /**
    * This method is called from <code>rmic</code> generated stubs if the
-   * {@link Util#isLocal()}, called passing <code>this</code> as parameter,
+   * {@link Util#isLocal}, called passing <code>this</code> as parameter,
    * returns true, and the {@link #_servant_preinvoke} return non-null object.
    * The stub then invokes the requrested method on that returned object and
    * later calls _servant_postinvoke, passing that returned target as parameter.
@@ -289,7 +289,7 @@ public class LocalObject
   
   /**
    * Invokes the operation. This method takes the OutputStream that was previously 
-   * returned by a {@link _request()} and returns an InputStream which 
+   * returned by a {@link #_request(String)} and returns an InputStream which 
    * contains the reply. Up till jdk 1.5 inclusive this method is marked as
    * unimplemented.
    * 
@@ -304,7 +304,7 @@ public class LocalObject
   /**
    * While it may look that this should return true, the jdk 1.5 API states
    * that it must throw NO_IMPLEMENT instead. The rmi stubs do not call this
-   * method to check if the object is local; they call {@link Util#isLocal()}
+   * method to check if the object is local; they call {@link Util#isLocal}
    * instead (passing <code>this</code> as parameter).  
    * 
    * @return never.

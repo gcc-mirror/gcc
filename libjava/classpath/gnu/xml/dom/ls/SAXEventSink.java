@@ -43,6 +43,7 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.xml.XMLConstants;
 import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 import org.w3c.dom.Entity;
@@ -72,7 +73,7 @@ import gnu.xml.dom.DomNode;
  *
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
-class SAXEventSink
+public class SAXEventSink
   implements ContentHandler, LexicalHandler, DTDHandler, DeclHandler
 {
 
@@ -108,6 +109,11 @@ class SAXEventSink
   void interrupt()
   {
     interrupted = true;
+  }
+
+  protected Document getDocument()
+  {
+    return doc;
   }
 
   // -- ContentHandler2 --

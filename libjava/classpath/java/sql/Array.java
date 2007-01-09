@@ -84,7 +84,7 @@ public interface Array
    * @return The contents of the array as an array of Java objects.
    * @exception SQLException If an error occurs.
    */
-  Object getArray(Map map) throws SQLException;
+  Object getArray(Map<String, Class<?>> map) throws SQLException;
 
   /**
    * Returns a portion of this array starting at <code>start</code>
@@ -94,7 +94,7 @@ public interface Array
    * The object returned will be an array of Java objects of
    * the appropriate types.
    *
-   * @param start The index into this array to start returning elements from.
+   * @param start The offset into this array to start returning elements from.
    * @param count The requested number of elements to return.
    * @return The requested portion of the array.
    * @exception SQLException If an error occurs.
@@ -110,13 +110,14 @@ public interface Array
    * <code>Map</code> will be used for overriding selected SQL type to
    * Java class mappings.
    *
-   * @param start The index into this array to start returning elements from.
+   * @param start The offset into this array to start returning elements from.
    * @param count The requested number of elements to return.
    * @param map A mapping of SQL types to Java classes.
    * @return The requested portion of the array.
    * @exception SQLException If an error occurs.
    */
-  Object getArray(long start, int count, Map map) throws SQLException;
+  Object getArray(long start, int count, Map<String, Class<?>> map)
+    throws SQLException;
 
   /**
    * Returns the elements in the array as a <code>ResultSet</code>.
@@ -143,7 +144,7 @@ public interface Array
    * @exception SQLException If an error occurs.
    * @see ResultSet
    */
-  ResultSet getResultSet(Map map) throws SQLException;
+  ResultSet getResultSet(Map<String, Class<?>> map) throws SQLException;
 
   /**
    * This method returns a portion of the array as a <code>ResultSet</code>.
@@ -180,6 +181,6 @@ public interface Array
    * @exception SQLException If an error occurs.
    * @see ResultSet
    */  
-  ResultSet getResultSet(long start, int count, Map map)
+  ResultSet getResultSet(long start, int count, Map<String, Class<?>> map)
     throws SQLException;
 }

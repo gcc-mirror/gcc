@@ -1,5 +1,5 @@
 /* Iterator.java -- Interface for iterating over collections
-   Copyright (C) 1998, 2001, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -54,7 +54,7 @@ package java.util;
  * @since 1.2
  * @status updated to 1.4
  */
-public interface Iterator
+public interface Iterator<E>
 {
   /**
    * Tests whether there are elements remaining in the collection. In other
@@ -70,7 +70,7 @@ public interface Iterator
    * @return the next element in the collection
    * @throws NoSuchElementException if there are no more elements
    */
-  Object next();
+  E next();
 
   /**
    * Remove from the underlying collection the last element returned by next

@@ -1,5 +1,5 @@
 /* java.lang.ref.WeakReference
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -54,14 +54,14 @@ package java.lang.ref;
  * @author Jochen Hoenicke 
  * @see java.util.WeakHashMap 
  */
-public class WeakReference 
-  extends Reference
+public class WeakReference<T>
+  extends Reference<T>
 {
   /**
    * Create a new weak reference, that is not registered to any queue.
    * @param referent the object we refer to.
    */
-  public WeakReference(Object referent)
+  public WeakReference(T referent)
   {
     super(referent);
   }
@@ -72,7 +72,7 @@ public class WeakReference
    * @param q the reference queue to register on.
    * @exception NullPointerException if q is null.
    */
-  public WeakReference(Object referent, ReferenceQueue q)
+  public WeakReference(T referent, ReferenceQueue<? super T> q)
   {
     super(referent, q);
   }

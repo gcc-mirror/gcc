@@ -54,7 +54,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -76,6 +75,8 @@ import javax.crypto.interfaces.DHPublicKey;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactorySpi;
 import javax.net.ssl.ManagerFactoryParameters;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.X509ExtendedKeyManager;
 import javax.net.ssl.X509KeyManager;
 
 import gnu.javax.net.ssl.NullManagerParameters;
@@ -122,13 +123,17 @@ public class X509KeyManagerFactory extends KeyManagerFactorySpi
       }
     else if (params instanceof PrivateCredentials)
       {
-        List chains = ((PrivateCredentials) params).getCertChains();
-        List keys = ((PrivateCredentials) params).getPrivateKeys();
+        List<X509Certificate[]> chains
+          = ((PrivateCredentials) params).getCertChains();
+        List<PrivateKey> keys
+          = ((PrivateCredentials) params).getPrivateKeys();
         int i = 0;
-        HashMap certMap = new HashMap();
-        HashMap keyMap = new HashMap();
-        Iterator c = chains.iterator();
-        Iterator k = keys.iterator();
+        HashMap<String, X509Certificate[]> certMap
+          = new HashMap<String, X509Certificate[]>();
+        HashMap<String, PrivateKey> keyMap
+          = new HashMap<String, PrivateKey>();
+        Iterator<X509Certificate[]> c = chains.iterator();
+        Iterator<PrivateKey> k = keys.iterator();
         while (c.hasNext() && k.hasNext())
           {
             certMap.put(String.valueOf(i), c.next());
@@ -171,8 +176,9 @@ public class X509KeyManagerFactory extends KeyManagerFactorySpi
           }
       }
 
-    HashMap p = new HashMap();
-    HashMap c = new HashMap();
+    HashMap<String, PrivateKey> p = new HashMap<String, PrivateKey>();
+    HashMap<String, X509Certificate[]> c
+      = new HashMap<String, X509Certificate[]>();
     Enumeration aliases = store.aliases();
     UnrecoverableKeyException exception = null;
     while (aliases.hasMoreElements())
@@ -236,18 +242,19 @@ public class X509KeyManagerFactory extends KeyManagerFactorySpi
   // Inner class.
   // -------------------------------------------------------------------------
 
-  private class Manager implements X509KeyManager
+  private class Manager extends X509ExtendedKeyManager
   {
     // Fields.
     // -----------------------------------------------------------------------
 
-    private final Map privateKeys;
-    private final Map certChains;
+    private final Map<String, PrivateKey> privateKeys;
+    private final Map<String, X509Certificate[]> certChains;
 
     // Constructor.
     // -----------------------------------------------------------------------
 
-    Manager(Map privateKeys, Map certChains)
+    Manager(Map<String, PrivateKey> privateKeys,
+            Map<String, X509Certificate[]> certChains)
     {
       this.privateKeys = privateKeys;
       this.certChains = certChains;
@@ -267,6 +274,19 @@ public class X509KeyManagerFactory extends KeyManagerFactorySpi
         }
       return null;
     }
+    
+    public @Override String chooseEngineClientAlias(String[] keyTypes,
+                                                    Principal[] issuers,
+                                                    SSLEngine engine)
+    {
+      for (String type : keyTypes)
+        {
+          String[] s = getClientAliases(type, issuers);
+          if (s.length > 0)
+            return s[0];
+        }
+      return null;
+    }
 
     public String[] getClientAliases(String keyType, Principal[] issuers)
     {
@@ -281,6 +301,16 @@ public class X509KeyManagerFactory extends KeyManagerFactorySpi
         return s[0];
       return null;
     }
+    
+    public @Override String chooseEngineServerAlias(String keyType,
+                                                    Principal[] issuers,
+                                                    SSLEngine engine)
+    {
+      String[] s = getServerAliases(keyType, issuers);
+      if (s.length > 0)
+        return s[0];
+      return null;
+    }
 
     public String[] getServerAliases(String keyType, Principal[] issuers)
     {
@@ -289,7 +319,7 @@ public class X509KeyManagerFactory extends KeyManagerFactorySpi
 
     private String[] getAliases(String keyType, Principal[] issuers)
     {
-      LinkedList l = new LinkedList();
+      LinkedList<String> l = new LinkedList<String>();
       for (Iterator i = privateKeys.keySet().iterator(); i.hasNext(); )
         {
           String alias = (String) i.next();
@@ -300,21 +330,27 @@ public class X509KeyManagerFactory extends KeyManagerFactorySpi
           if (privKey == null)
             continue;
           PublicKey pubKey = chain[0].getPublicKey();
-          if (keyType.equals("RSA") || keyType.equals("DHE_RSA") ||
-              keyType.equals("SRP_RSA") || keyType.equals("rsa_sign"))
+          if (keyType.equalsIgnoreCase("RSA")
+              || keyType.equalsIgnoreCase("DHE_RSA")
+              || keyType.equalsIgnoreCase("SRP_RSA")
+              || keyType.equalsIgnoreCase("rsa_sign")
+              || keyType.equalsIgnoreCase("RSA_PSK"))
             {
               if (!(privKey instanceof RSAPrivateKey) ||
                   !(pubKey instanceof RSAPublicKey))
                 continue;
             }
-          if (keyType.equals("DHE_DSS") || keyType.equals("dss_sign") ||
-              keyType.equals("SRP_DSS"))
+          else if (keyType.equalsIgnoreCase("DHE_DSS")
+              || keyType.equalsIgnoreCase("dss_sign")
+              || keyType.equalsIgnoreCase("SRP_DSS")
+              || keyType.equalsIgnoreCase("DSA"))
             {
               if (!(privKey instanceof DSAPrivateKey) ||
                   !(pubKey instanceof DSAPublicKey))
                 continue;
             }
-          if (keyType.equals("DH_RSA") || keyType.equals("rsa_fixed_dh"))
+          else if (keyType.equalsIgnoreCase("DH_RSA")
+              || keyType.equalsIgnoreCase("rsa_fixed_dh"))
             {
               if (!(privKey instanceof DHPrivateKey) ||
                   !(pubKey instanceof DHPublicKey))
@@ -322,7 +358,8 @@ public class X509KeyManagerFactory extends KeyManagerFactorySpi
               if (!chain[0].getSigAlgName().equalsIgnoreCase("RSA"))
                 continue;
             }
-          if (keyType.equals("DH_DSS") || keyType.equals("dss_fixed_dh"))
+          else if (keyType.equalsIgnoreCase("DH_DSS")
+              || keyType.equalsIgnoreCase("dss_fixed_dh"))
             {
               if (!(privKey instanceof DHPrivateKey) ||
                   !(pubKey instanceof DHPublicKey))
@@ -330,19 +367,23 @@ public class X509KeyManagerFactory extends KeyManagerFactorySpi
               if (!chain[0].getSigAlgName().equalsIgnoreCase("DSA"))
                 continue;
             }
+          else // Unknown key type; ignore it.
+            continue;
           if (issuers == null || issuers.length == 0)
             {
               l.add(alias);
               continue;
             }
-          for (int j = 0; j < issuers.length; j++)
-            if (chain[0].getIssuerDN().equals(issuers[j]))
-              {
-                l.add(alias);
-                break;
-              }
+          for (Principal issuer : issuers)
+            {
+              if (chain[0].getIssuerDN().equals(issuer))
+                {
+                  l.add(alias);
+                  break;
+                }
+            }
         }
-      return (String[]) l.toArray(new String[l.size()]);
+      return l.toArray(new String[l.size()]);
     }
 
     public X509Certificate[] getCertificateChain(String alias)

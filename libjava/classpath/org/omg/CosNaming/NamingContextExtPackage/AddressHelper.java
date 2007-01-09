@@ -1,5 +1,5 @@
 /* AddressHelper.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,6 @@ import org.omg.CORBA.ORB;
 import org.omg.CORBA.TypeCode;
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
-import org.omg.CORBA.portable.Streamable;
 
 /**
  * Helper operations for address. Address is directly mapped into

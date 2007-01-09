@@ -141,7 +141,9 @@ class PluginAppletViewer
     pluginOutputStream.newLine();
     pluginOutputStream.flush();
 
-    System.err.println("  PIPE: applet viewer wrote: " + message);
+    System.err.println
+      ("  " + Messages.getString("PluginAppletViewer.AppletViewerWrote")
+       + message);
   }
 
   /**
@@ -155,7 +157,9 @@ class PluginAppletViewer
   {
     String message = pluginInputStream.readLine();
 
-    System.err.println("  PIPE: applet viewer read: " + message);
+    System.err.println
+      ("  " + Messages.getString("PluginAppletViewer.AppletViewerRead")
+       + message);
 
     if (message == null || message.equals("shutdown"))
       {
@@ -163,7 +167,9 @@ class PluginAppletViewer
 	pluginInputStream.close();
 	pluginOutputStream.close();
 
-	System.err.println("appletviewer: exiting plugin applet viewer");
+	System.err.println
+          (Messages.getString("PluginAppletViewer.AppletViewerExiting"));
+
 	System.exit(0);
       }
 

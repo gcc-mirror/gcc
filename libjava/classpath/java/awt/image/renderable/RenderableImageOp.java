@@ -55,7 +55,7 @@ public class RenderableImageOp implements RenderableImage
     this.block = (ParameterBlock) block.clone();
   }
 
-  public Vector getSources()
+  public Vector<RenderableImage> getSources()
   {
     if (block.sources == null)
       return null;

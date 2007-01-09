@@ -75,10 +75,9 @@ public interface ClassFileTransformer
    * @see Instrumentation#redefineClasses(java.lang.instrument.ClassDefinition[])
    *
    */
-  /* FIXME[GENERICS]: Class should be Class<?> */
   byte[] transform(ClassLoader loader,
                  String className,
-                 Class classBeingRedefined,
+                 Class<?> classBeingRedefined,
                  ProtectionDomain protectionDomain,
                  byte[] classfileBuffer)
                  throws IllegalClassFormatException;

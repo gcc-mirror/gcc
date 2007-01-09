@@ -60,22 +60,24 @@ public class InitialLdapContext
     this (null, null);
   }
 
-  public InitialLdapContext (Hashtable environment, Control[] connControls)
+  public InitialLdapContext (Hashtable<?, ?> environment,
+                             Control[] connControls)
     throws NamingException
   {
     super (false);
 
+    Hashtable myenv = null;
     if (connControls != null)
       {
 	if (environment == null)
-	  environment = new Hashtable ();
+	  myenv = new Hashtable ();
 	else
-	  environment = (Hashtable) environment.clone ();
-	environment.put ("java.naming.ldap.control.connect",
+	  myenv = (Hashtable) environment.clone ();
+	myenv.put ("java.naming.ldap.control.connect",
 			 connControls);
       }
 
-    init (environment);
+    init (myenv);
   }
 
   private LdapContext getDefaultInitLdapCtx ()

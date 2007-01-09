@@ -83,7 +83,17 @@ public class WrappedPlainView extends BoxView implements TabExpander
   
   /** The height of the line (used while painting) **/
   int lineHeight;
-  
+
+  /**
+   * The base offset for tab calculations.
+   */
+  private int tabBase;
+
+  /**
+   * The tab size.
+   */
+  private int tabSize;
+
   /**
    * The instance returned by {@link #getLineBuffer()}.
    */
@@ -121,10 +131,13 @@ public class WrappedPlainView extends BoxView implements TabExpander
    */
   public float nextTabStop(float x, int tabStop)
   {
-    JTextComponent host = (JTextComponent)getContainer();
-    float tabSizePixels = getTabSize()
-                          * host.getFontMetrics(host.getFont()).charWidth('m');
-    return (float) (Math.floor(x / tabSizePixels) + 1) * tabSizePixels;
+    int next = (int) x;
+    if (tabSize != 0)
+      {
+        int numTabs = ((int) x - tabBase) / tabSize;
+        next = tabBase + (numTabs + 1) * tabSize;
+      }
+    return next;
   }
   
   /**
@@ -274,44 +287,32 @@ public class WrappedPlainView extends BoxView implements TabExpander
    */
   protected int calculateBreakPosition(int p0, int p1)
   {
-    Container c = getContainer();
-    
-    int li = getLeftInset();
-    int ti = getTopInset();
-    
-    Rectangle alloc = new Rectangle(li, ti,
-                                    getWidth()-getRightInset()-li,
-                                    getHeight()-getBottomInset()-ti);
-
-    // Mimic a behavior observed in the RI.
-    if (alloc.isEmpty())
-      return 0;
-    
-    updateMetrics();
-    
+    Segment s = new Segment();
     try
       {
-        getDocument().getText(p0, p1 - p0, getLineBuffer());
+        getDocument().getText(p0, p1 - p0, s);
       }
-    catch (BadLocationException ble)
+    catch (BadLocationException ex)
       {
-        // this shouldn't happen
-        throw new InternalError("Invalid offsets p0: " + p0 + " - p1: " + p1);
+        assert false : "Couldn't load text";
       }
-
+    int width = getWidth();
+    int pos;
     if (wordWrap)
-      return Utilities.getBreakLocation(lineBuffer, metrics, alloc.x,
-                                          alloc.x + alloc.width, this, p0);
+      pos = p0 + Utilities.getBreakLocation(s, metrics, tabBase,
+                                            tabBase + width, this, p0);
     else
-      return p0 + Utilities.getTabbedTextOffset(lineBuffer, metrics, alloc.x,
-                                             alloc.x + alloc.width, this, 0,
-                                             true);
+      pos = p0 + Utilities.getTabbedTextOffset(s, metrics, tabBase,
+                                               tabBase + width, this, p0,
+                                               false);
+    return pos;
   }
   
   void updateMetrics()
   {
     Container component = getContainer();
     metrics = component.getFontMetrics(component.getFont());
+    tabSize = getTabSize()* metrics.charWidth('m');
   }
   
   /**
@@ -350,9 +351,15 @@ public class WrappedPlainView extends BoxView implements TabExpander
    */
   public void insertUpdate (DocumentEvent e, Shape a, ViewFactory f)
   {
-    super.insertUpdate(e, a, viewFactory);
+    // Update children efficiently.
+    updateChildren(e, a);
 
-    // No repaint needed, as this is done by the WrappedLine instances.
+    // Notify children.
+    Rectangle r = a != null && isAllocationValid() ? getInsideAllocation(a)
+                                                   : null;
+    View v = getViewAtPosition(e.getOffset(), r);
+    if (v != null)
+      v.insertUpdate(e, r, f);
   }
   
   /**
@@ -361,9 +368,15 @@ public class WrappedPlainView extends BoxView implements TabExpander
    */
   public void removeUpdate (DocumentEvent e, Shape a, ViewFactory f)
   {
-    super.removeUpdate(e, a, viewFactory);
-    
-    // No repaint needed, as this is done by the WrappedLine instances.
+    // Update children efficiently.
+    updateChildren(e, a);
+
+    // Notify children.
+    Rectangle r = a != null && isAllocationValid() ? getInsideAllocation(a)
+                                                   : null;
+    View v = getViewAtPosition(e.getOffset(), r);
+    if (v != null)
+      v.removeUpdate(e, r, f);
   }
   
   /**
@@ -373,11 +386,39 @@ public class WrappedPlainView extends BoxView implements TabExpander
    */
   public void changedUpdate (DocumentEvent e, Shape a, ViewFactory f)
   {
-    super.changedUpdate(e, a, viewFactory);
-    
-    // No repaint needed, as this is done by the WrappedLine instances.
+    // Update children efficiently.
+    updateChildren(e, a);
   }
-    
+
+  /**
+   * Helper method. Updates the child views in response to
+   * insert/remove/change updates. This is here to be a little more efficient
+   * than the BoxView implementation.
+   *
+   * @param ev the document event
+   * @param a the shape
+   */
+  private void updateChildren(DocumentEvent ev, Shape a)
+  {
+    Element el = getElement();
+    DocumentEvent.ElementChange ec = ev.getChange(el);
+    if (ec != null)
+      {
+        Element[] removed = ec.getChildrenRemoved();
+        Element[] added = ec.getChildrenAdded();
+        View[] addedViews = new View[added.length];
+        for (int i = 0; i < added.length; i++)
+          addedViews[i] = new WrappedLine(added[i]);
+        replace(ec.getIndex(), removed.length, addedViews);
+        if (a != null)
+          {
+            preferenceChanged(null, true, true);
+            getContainer().repaint();
+          }
+      }
+    updateMetrics();
+  }
+
   class WrappedLineCreator implements ViewFactory
   {
     // Creates a new WrappedLine
@@ -397,6 +438,9 @@ public class WrappedPlainView extends BoxView implements TabExpander
    */
   public void paint(Graphics g, Shape a)
   {
+    Rectangle r = a instanceof Rectangle ? (Rectangle) a : a.getBounds();
+    tabBase = r.x;
+
     JTextComponent comp = (JTextComponent)getContainer();
     // Ensure metrics are up-to-date.
     updateMetrics();
@@ -434,7 +478,6 @@ public class WrappedPlainView extends BoxView implements TabExpander
     public WrappedLine(Element elem)
     {
       super(elem);
-      determineNumLines();
     }
 
     /**
@@ -449,10 +492,34 @@ public class WrappedPlainView extends BoxView implements TabExpander
       int currStart = getStartOffset();
       int currEnd;
       int count = 0;
+
+      // Determine layered highlights.
+      Container c = getContainer();
+      LayeredHighlighter lh = null;
+      JTextComponent tc = null;
+      if (c instanceof JTextComponent)
+        {
+          tc = (JTextComponent) c;
+          Highlighter h = tc.getHighlighter();
+          if (h instanceof LayeredHighlighter)
+            lh = (LayeredHighlighter) h;
+        }
+
       while (currStart < end)
         {
           currEnd = calculateBreakPosition(currStart, end);
 
+          // Paint layered highlights, if any.
+          if (lh != null)
+            {
+              // Exclude trailing newline in last line.
+              if (currEnd == end)
+                lh.paintLayeredHighlights(g, currStart, currEnd - 1, s, tc,
+                                          this);
+              else
+                lh.paintLayeredHighlights(g, currStart, currEnd, s, tc, this);
+                
+            }
           drawLine(currStart, currEnd, g, rect.x, rect.y + metrics.getAscent());
           
           rect.y += lineHeight;          
@@ -472,37 +539,29 @@ public class WrappedPlainView extends BoxView implements TabExpander
         }
       
     }
-    
+
     /**
      * Calculates the number of logical lines that the Element
      * needs to be displayed and updates the variable numLines
      * accordingly.
      */
-    void determineNumLines()
+    private int determineNumLines()
     {      
-      numLines = 0;
+      int nLines = 0;
       int end = getEndOffset();
-      if (end == 0)
-        return;
-            
-      int breakPoint;
       for (int i = getStartOffset(); i < end;)
         {
-          numLines ++;
+          nLines++;
           // careful: check that there's no off-by-one problem here
           // depending on which position calculateBreakPosition returns
-          breakPoint = calculateBreakPosition(i, end);
+          int breakPoint = calculateBreakPosition(i, end);
           
-          if (breakPoint == 0)
-            return;
-          
-          // If breakPoint is equal to the current index no further
-          // line is needed and we can end the loop.
           if (breakPoint == i)
-            break;
+            i = breakPoint + 1;
           else
             i = breakPoint;
         }
+      return nLines;
     }
     
     /**
@@ -547,7 +606,7 @@ public class WrappedPlainView extends BoxView implements TabExpander
       // Throwing a BadLocationException is an observed behavior of the RI.
       if (rect.isEmpty())
         throw new BadLocationException("Unable to calculate view coordinates "
-                                       + "when allocation area is empty.", 5);
+                                       + "when allocation area is empty.", pos);
       
       Segment s = getLineBuffer();
       int lineHeight = metrics.getHeight();
@@ -624,7 +683,7 @@ public class WrappedPlainView extends BoxView implements TabExpander
         return currLineStart;
 
       if (y > rect.y + rect.height)
-        return end;
+        return end - 1;
       
       // Note: rect.x and rect.width do not represent the width of painted
       // text but the area where text *may* be painted. This means the width
@@ -685,22 +744,14 @@ public class WrappedPlainView extends BoxView implements TabExpander
      */
     void updateDamage (Rectangle a)
     {
-      // If the allocation area is empty we can't do anything useful.
-      // As determining the number of lines is impossible in that state we
-      // reset it to an invalid value which can then be recalculated at a
-      // later point.
-      if (a == null || a.isEmpty())
+      int nLines = determineNumLines();
+      if (numLines != nLines)
         {
-          numLines = 1;
-          return;
+          numLines = nLines;
+          preferenceChanged(this, false, true);
+          getContainer().repaint();
         }
-      
-      int oldNumLines = numLines;
-      determineNumLines();
-      
-      if (numLines != oldNumLines)
-        preferenceChanged(this, false, true);
-      else
+      else if (a != null)
         getContainer().repaint(a.x, a.y, a.width, a.height);
     }
     
@@ -714,7 +765,8 @@ public class WrappedPlainView extends BoxView implements TabExpander
      */
     public void insertUpdate (DocumentEvent changes, Shape a, ViewFactory f)
     {
-      updateDamage((Rectangle)a); 
+      Rectangle r = a instanceof Rectangle ? (Rectangle) a : a.getBounds();
+      updateDamage(r); 
     }
     
     /**
@@ -736,7 +788,8 @@ public class WrappedPlainView extends BoxView implements TabExpander
       // However this seems to cause no trouble and as it reduces the
       // number of method calls it can stay this way.
       
-      updateDamage((Rectangle)a); 
+      Rectangle r = a instanceof Rectangle ? (Rectangle) a : a.getBounds();
+      updateDamage(r); 
     }
   }
 }

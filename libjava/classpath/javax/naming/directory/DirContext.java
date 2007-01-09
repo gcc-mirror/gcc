@@ -72,12 +72,32 @@ public interface DirContext extends Context
   DirContext getSchema(String name) throws NamingException;
   DirContext getSchemaClassDefinition(Name name) throws NamingException;
   DirContext getSchemaClassDefinition(String name) throws NamingException;
-  NamingEnumeration search(Name name, Attributes matchingAttributes, String[] attributesToReturn) throws NamingException;
-  NamingEnumeration search(String name, Attributes matchingAttributes, String[] attributesToReturn) throws NamingException;
-  NamingEnumeration search(Name name, Attributes matchingAttributes) throws NamingException;
-  NamingEnumeration search(String name, Attributes matchingAttributes) throws NamingException;
-  NamingEnumeration search(Name name, String filter, SearchControls cons) throws NamingException;
-  NamingEnumeration search(String name, String filter, SearchControls cons) throws NamingException;
-  NamingEnumeration search(Name name, String filterExpr, Object[] filterArgs, SearchControls cons) throws NamingException;
-  NamingEnumeration search(String name, String filterExpr, Object[] filterArgs, SearchControls cons) throws NamingException;
+  NamingEnumeration<SearchResult> search(Name name,
+                                         Attributes matchingAttributes,
+                                         String[] attributesToReturn)
+    throws NamingException;
+  NamingEnumeration<SearchResult> search(String name,
+                                         Attributes matchingAttributes,
+                                         String[] attributesToReturn)
+    throws NamingException;
+  NamingEnumeration<SearchResult> search(Name name,
+                                         Attributes matchingAttributes)
+    throws NamingException;
+  NamingEnumeration<SearchResult> search(String name,
+                                         Attributes matchingAttributes)
+    throws NamingException;
+  NamingEnumeration<SearchResult> search(Name name, String filter,
+                                         SearchControls cons)
+    throws NamingException;
+  NamingEnumeration<SearchResult> search(String name, String filter,
+                                         SearchControls cons)
+    throws NamingException;
+  NamingEnumeration<SearchResult> search(Name name, String filterExpr,
+                                         Object[] filterArgs,
+                                         SearchControls cons)
+    throws NamingException;
+  NamingEnumeration<SearchResult> search(String name, String filterExpr,
+                                         Object[] filterArgs,
+                                         SearchControls cons)
+    throws NamingException;
 }

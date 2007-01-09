@@ -39,8 +39,8 @@ exception statement from your version. */
 package gnu.classpath.tools.keytool;
 
 import gnu.classpath.Configuration;
+import gnu.classpath.tools.common.ClasspathToolParser;
 import gnu.classpath.tools.common.ProviderUtil;
-import gnu.classpath.tools.getopt.ClasspathToolParser;
 import gnu.classpath.tools.getopt.Option;
 import gnu.classpath.tools.getopt.OptionException;
 import gnu.classpath.tools.getopt.OptionGroup;
@@ -294,14 +294,6 @@ public class Main
 
     if (Configuration.DEBUG)
       log.exiting(this.getClass().getName(), "teardown"); //$NON-NLS-1$
-  }
-
-  private void printHelp()
-  {
-    if (helpPrinted)
-      return;
-
-    helpPrinted = true;
   }
 
   // Inner class(es)

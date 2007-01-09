@@ -1,5 +1,5 @@
 /* AbstractSpinnerModel.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,6 +47,8 @@ import javax.swing.event.EventListenerList;
 /**
  * Provides standard implementations for some of the methods in
  * {@link SpinnerModel}.
+ * 
+ * @since 1.4
  *
  * @author Ka-Hing Cheung
  */
@@ -54,6 +56,7 @@ public abstract class AbstractSpinnerModel implements SpinnerModel
 {
   private ChangeEvent changeEvent = new ChangeEvent(this);
   
+  /** Stores the listeners registered with the model. */
   protected EventListenerList listenerList = new EventListenerList();
 
   /**
@@ -65,9 +68,10 @@ public abstract class AbstractSpinnerModel implements SpinnerModel
   }
 
   /**
-   * Adds a <code>ChangeListener</code>.
+   * Registers a <code>ChangeListener</code> with the model so that it will
+   * receive {@link ChangeEvent} notifications when the model changes.
    *
-   * @param listener the listener to add
+   * @param listener the listener to add (<code>null</code> is ignored).
    */
   public void addChangeListener(ChangeListener listener)
   {
@@ -80,7 +84,7 @@ public abstract class AbstractSpinnerModel implements SpinnerModel
    * @param c the type of listener
    * @return the listeners that are of the specific type
    */
-  public EventListener[] getListeners(Class c)
+  public <T extends EventListener> T[] getListeners(Class<T> c)
   {
     return listenerList.getListeners(c);
   }

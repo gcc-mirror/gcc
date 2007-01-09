@@ -1,5 +1,5 @@
 /* Time.java -- Wrapper around java.util.Date
-   Copyright (C) 1999, 2000, 2003, 2004, 2006  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -312,7 +312,7 @@ public class Timestamp extends java.util.Date
    * @see #compareTo(Timestamp)
    * @since 1.2
    */
-  public int compareTo(Object obj)
+  public int compareTo(java.util.Date obj)
   {
     return compareTo((Timestamp) obj);
   }

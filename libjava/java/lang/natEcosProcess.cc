@@ -1,6 +1,6 @@
 // natEcosProcess.cc - Native side of eCos processes.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -17,9 +17,9 @@ details.  */
 #include <gcj/cni.h>
 #include <jvm.h>
 
-#include <java/lang/ConcreteProcess.h>
+#include <java/lang/EcosProcess.h>
 
 void
-java::lang::ConcreteProcess::destroy (void)
+java::lang::EcosProcess::destroy (void)
 {
 }

@@ -1,5 +1,5 @@
 /* gnu.java.net.protocol.jar.Handler - jar protocol handler for java.net
-   Copyright (C) 1999, 2002, 2003, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2003, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,6 +45,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.StringTokenizer;
 
 /**
  * @author Kresten Krab Thorup (krab@gnu.org)
@@ -114,7 +117,7 @@ public class Handler extends URLStreamHandler
               file = file.substring(0, idx + 1) + url_string;
           }
         
-        setURL (url, "jar", url.getHost(), url.getPort(), file, null);
+        setURL (url, "jar", url.getHost(), url.getPort(), flat(file), null);
         return;
       }
 
@@ -146,6 +149,45 @@ public class Handler extends URLStreamHandler
       throw new URLParseError("unexpected protocol " + url.getProtocol());
         
     setURL (url, "jar", url.getHost(), url.getPort(), url_string, null);
+  }
+
+  /**
+   * Makes the given jar url string 'flat' by removing any . and .. from
+   * jar file path because ZipFile entries can only handle flat paths.
+   * Inside jar files '/' is always the path separator.
+   */
+  private static String flat(String url_string)
+  {
+    int jar_stop = url_string.indexOf("!/");
+    String jar_path = url_string.substring(jar_stop + 1, url_string.length());
+
+    if (jar_path.indexOf("/.") < 0)
+      return url_string;
+
+    ArrayList tokens = new ArrayList();
+    StringTokenizer st = new StringTokenizer(jar_path, "/");
+    while (st.hasMoreTokens())
+      {
+	String token = st.nextToken();
+        if (token.equals("."))
+          continue;
+        else if (token.equals(".."))
+	  {
+	    if (! tokens.isEmpty())
+	      tokens.remove(tokens.size() - 1);
+	  }
+        else 
+	  tokens.add(token);
+      }
+
+    StringBuffer path = new StringBuffer(url_string.length());
+    path.append(url_string.substring(0, jar_stop + 1));
+
+    Iterator it = tokens.iterator();
+    while (it.hasNext())
+      path.append('/').append(it.next());
+
+    return path.toString();
   }
 
   /**

@@ -38,12 +38,14 @@ exception statement from your version. */
 
 package java.lang;
 
+import gnu.java.lang.reflect.ClassSignatureParser;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericDeclaration;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -53,6 +55,11 @@ import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Collection;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Inherited;
 
 /**
  * A Class represents a Java type.  There will never be multiple Class
@@ -83,7 +90,8 @@ import java.util.HashSet;
  * @since 1.0
  * @see ClassLoader
  */
-public final class Class implements Type, GenericDeclaration, Serializable
+public final class Class<T>
+  implements Type, AnnotatedElement, GenericDeclaration, Serializable
 {
   /**
    * Class is non-instantiable from Java code; only the VM can create
@@ -112,7 +120,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
    * @throws ExceptionInInitializerError if the class loads, but an exception
    *         occurs during initialization
    */
-  public static native Class forName (String className)
+  public static native Class<?> forName (String className)
     throws ClassNotFoundException;
 
   // A private internal method that is called by compiler-generated code.
@@ -147,8 +155,8 @@ public final class Class implements Type, GenericDeclaration, Serializable
    * @see ClassLoader
    * @since 1.2
    */
-  public static native Class forName (String className, boolean initialize,
-				      ClassLoader loader)
+  public static native Class<?> forName (String className, boolean initialize,
+					 ClassLoader loader)
     throws ClassNotFoundException;
   
   /**
@@ -163,7 +171,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
    * @throws SecurityException if the security check fails
    * @since 1.1
    */
-  public Class[] getClasses()
+  public Class<?>[] getClasses()
   {
     memberAccessCheck(Member.PUBLIC);
     return internalGetClasses();
@@ -172,16 +180,16 @@ public final class Class implements Type, GenericDeclaration, Serializable
   /**
    * Like <code>getClasses()</code> but without the security checks.
    */
-  private Class[] internalGetClasses()
+  private Class<?>[] internalGetClasses()
   {
-    ArrayList list = new ArrayList();
+    ArrayList<Class> list = new ArrayList<Class>();
     list.addAll(Arrays.asList(getDeclaredClasses(true)));
     Class superClass = getSuperclass();
     if (superClass != null)
       list.addAll(Arrays.asList(superClass.internalGetClasses()));
-    return (Class[])list.toArray(new Class[list.size()]);
+    return list.toArray(new Class<?>[list.size()]);
   }
-  
+
   /**
    * Get the ClassLoader that loaded this class.  If the class was loaded
    * by the bootstrap classloader, this method will return null.
@@ -216,7 +224,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
    * @see Array
    * @since 1.1
    */
-  public native Class getComponentType ();
+  public native Class<?> getComponentType ();
 
   /**
    * Get a public constructor declared in this class. If the constructor takes
@@ -232,7 +240,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
    * @see #getConstructors()
    * @since 1.1
    */
-  public native Constructor getConstructor(Class[] args)
+  public native Constructor<T> getConstructor(Class<?>... args)
     throws NoSuchMethodException;
 
   /**
@@ -247,7 +255,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
    * @throws SecurityException if the security check fails
    * @since 1.1
    */
-  public Constructor[] getConstructors()
+  public Constructor<?>[] getConstructors()
   {
     memberAccessCheck(Member.PUBLIC);
     return getDeclaredConstructors(true);
@@ -267,7 +275,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
    * @see #getDeclaredConstructors()
    * @since 1.1
    */
-  public native Constructor getDeclaredConstructor(Class[] args)
+  public native Constructor<T> getDeclaredConstructor(Class<?>... args)
     throws NoSuchMethodException;
 
   /**
@@ -282,13 +290,13 @@ public final class Class implements Type, GenericDeclaration, Serializable
    * @throws SecurityException if the security check fails
    * @since 1.1
    */
-  public Class[] getDeclaredClasses()
+  public Class<?>[] getDeclaredClasses()
   {
     memberAccessCheck(Member.DECLARED);
     return getDeclaredClasses(false);
   }
 
-  native Class[] getDeclaredClasses (boolean publicOnly);
+  native Class<?>[] getDeclaredClasses (boolean publicOnly);
 
   /**
    * Get all the declared constructors of this class. This returns an array of
@@ -302,13 +310,13 @@ public final class Class implements Type, GenericDeclaration, Serializable
    * @throws SecurityException if the security check fails
    * @since 1.1
    */
-  public Constructor[] getDeclaredConstructors()
+  public Constructor<?>[] getDeclaredConstructors()
   {
     memberAccessCheck(Member.DECLARED);
     return getDeclaredConstructors(false);
   }
 
-  native Constructor[] getDeclaredConstructors (boolean publicOnly);
+  native Constructor<?>[] getDeclaredConstructors (boolean publicOnly);
 
   /**
    * Get a field declared in this class, where name is its simple name. The
@@ -369,7 +377,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
    * @see #getDeclaredMethods()
    * @since 1.1
    */
-  public Method getDeclaredMethod(String methodName, Class[] args)
+  public Method getDeclaredMethod(String methodName, Class<?>... args)
     throws NoSuchMethodException
   {
     memberAccessCheck(Member.DECLARED);
@@ -409,7 +417,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
    * @since 1.1
    */
   // This is marked as unimplemented in the JCL book.
-  public native Class getDeclaringClass ();
+  public native Class<?> getDeclaringClass ();
 
   private native Field getField (String fieldName, int hash)
     throws NoSuchFieldException;
@@ -498,7 +506,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
    *
    * @return the interfaces this class directly implements
    */
-  public native Class[] getInterfaces ();
+  public native Class<?>[] getInterfaces ();
 
   private final native void getSignature(StringBuffer buffer);
   private static final native String getSignature(Class[] args,
@@ -528,7 +536,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
    * @see #getMethods()
    * @since 1.1
    */
-  public Method getMethod(String methodName, Class[] args)
+  public Method getMethod(String methodName, Class<?>... args)
     throws NoSuchMethodException
   {
     memberAccessCheck(Member.PUBLIC);
@@ -701,7 +709,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
    *
    * @return the direct superclass of this class
    */
-  public native Class getSuperclass ();
+  public native Class<? super T> getSuperclass ();
   
   /**
    * Return whether this class is an array type.
@@ -725,7 +733,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
    * @throws NullPointerException if c is null
    * @since 1.1
    */
-  public native boolean isAssignableFrom (Class c);
+  public native boolean isAssignableFrom (Class<?> c);
  
   /**
    * Discover whether an Object is an instance of this Class.  Think of it
@@ -783,7 +791,7 @@ public final class Class implements Type, GenericDeclaration, Serializable
    * @throws ExceptionInInitializerError if class initialization caused by
    *         this call fails with an exception
    */
-  public native Object newInstance ()
+  public native T newInstance ()
     throws InstantiationException, IllegalAccessException;
 
   // We need a native method to retrieve the protection domain, because we
@@ -930,6 +938,123 @@ public final class Class implements Type, GenericDeclaration, Serializable
       }
   }
 
+
+  /**
+   * <p>
+   * Casts this class to represent a subclass of the specified class.
+   * This method is useful for `narrowing' the type of a class so that
+   * the class object, and instances of that class, can match the contract
+   * of a more restrictive method.  For example, if this class has the
+   * static type of <code>Class&lt;Object&gt;</code>, and a dynamic type of
+   * <code>Class&lt;Rectangle&gt;</code>, then, assuming <code>Shape</code> is
+   * a superclass of <code>Rectangle</code>, this method can be used on
+   * this class with the parameter, <code>Class&lt;Shape&gt;</code>, to retain
+   * the same instance but with the type
+   * <code>Class&lt;? extends Shape&gt;</code>.
+   * </p>
+   * <p>
+   * If this class can be converted to an instance which is parameterised
+   * over a subtype of the supplied type, <code>U</code>, then this method
+   * returns an appropriately cast reference to this object.  Otherwise,
+   * a <code>ClassCastException</code> is thrown.
+   * </p>
+   * 
+   * @param klass the class object, the parameterized type (<code>U</code>) of
+   *              which should be a superclass of the parameterized type of
+   *              this instance.
+   * @return a reference to this object, appropriately cast.
+   * @throws ClassCastException if this class can not be converted to one
+   *                            which represents a subclass of the specified
+   *                            type, <code>U</code>. 
+   * @since 1.5
+   */
+  public <U> Class<? extends U> asSubclass(Class<U> klass)
+  {
+    if (! klass.isAssignableFrom(this))
+      throw new ClassCastException();
+    return (Class<? extends U>) this;
+  }
+
+  /**
+   * Returns the specified object, cast to this <code>Class</code>' type.
+   *
+   * @param obj the object to cast
+   * @throws ClassCastException  if obj is not an instance of this class
+   * @since 1.5
+   */
+  public T cast(Object obj)
+  {
+    if (obj != null && ! isInstance(obj))
+      throw new ClassCastException();
+    return (T) obj;
+  }
+
+  /**
+   * Returns the enumeration constants of this class, or
+   * null if this class is not an <code>Enum</code>.
+   *
+   * @return an array of <code>Enum</code> constants
+   *         associated with this class, or null if this
+   *         class is not an <code>enum</code>.
+   * @since 1.5
+   */
+  public T[] getEnumConstants()
+  {
+    if (isEnum())
+      {
+	try
+	  {
+	    return (T[]) getMethod("values").invoke(null);
+	  }
+	catch (NoSuchMethodException exception)
+	  {
+	    throw new Error("Enum lacks values() method");
+	  }
+	catch (IllegalAccessException exception)
+	  {
+	    throw new Error("Unable to access Enum class");
+	  }
+	catch (InvocationTargetException exception)
+	  {
+	    throw new
+	      RuntimeException("The values method threw an exception",
+			       exception);
+	  }
+      }
+    else
+      {
+	return null;
+      }
+  }
+
+  /**
+   * Returns true if this class is an <code>Enum</code>.
+   *
+   * @return true if this is an enumeration class.
+   * @since 1.5
+   */
+  public native boolean isEnum();
+
+
+  /**
+   * Returns true if this class is a synthetic class, generated by
+   * the compiler.
+   *
+   * @return true if this is a synthetic class.
+   * @since 1.5
+   */
+  public native boolean isSynthetic();
+
+
+  /**
+   * Returns true if this class is an <code>Annotation</code>.
+   *
+   * @return true if this is an annotation class.
+   * @since 1.5
+   */
+  public native boolean isAnnotation();
+
+
   /**
    * Returns the simple name for this class, as used in the source
    * code.  For normal classes, this is the content returned by
@@ -945,8 +1070,224 @@ public final class Class implements Type, GenericDeclaration, Serializable
    */
   public String getSimpleName()
   {
-    // FIXME write real implementation
-    return "";
+    StringBuffer sb = new StringBuffer();
+    Class klass = this;
+    int arrayCount = 0;
+    while (klass.isArray())
+      {
+	klass = klass.getComponentType();
+	++arrayCount;
+      }
+    if (! klass.isAnonymousClass())
+      {
+	String fullName = klass.getName();
+	sb.append(fullName, fullName.lastIndexOf(".") + 1, fullName.length());
+      }
+    while (arrayCount-- > 0)
+      sb.append("[]");
+    return sb.toString();
+  }
+
+  /**
+   * Returns the class which immediately encloses this class.  If this class
+   * is a top-level class, this method returns <code>null</code>.
+   *
+   * @return the immediate enclosing class, or <code>null</code> if this is
+   *         a top-level class.
+   * @since 1.5
+   */
+  public native Class<?> getEnclosingClass();
+
+  /**
+   * Returns the constructor which immediately encloses this class.  If
+   * this class is a top-level class, or a local or anonymous class
+   * immediately enclosed by a type definition, instance initializer
+   * or static initializer, then <code>null</code> is returned.
+   *
+   * @return the immediate enclosing constructor if this class is
+   *         declared within a constructor.  Otherwise, <code>null</code>
+   *         is returned.
+   * @since 1.5
+   */
+  public native Constructor<T> getEnclosingConstructor();
+
+  /**
+   * Returns the method which immediately encloses this class.  If
+   * this class is a top-level class, or a local or anonymous class
+   * immediately enclosed by a type definition, instance initializer
+   * or static initializer, then <code>null</code> is returned.
+   *
+   * @return the immediate enclosing method if this class is
+   *         declared within a method.  Otherwise, <code>null</code>
+   *         is returned.
+   * @since 1.5
+   */
+  public native Method getEnclosingMethod();
+
+  private native String getClassSignature();
+
+  /**
+   * <p>
+   * Returns an array of <code>Type</code> objects which represent the
+   * interfaces directly implemented by this class or extended by this
+   * interface.
+   * </p>
+   * <p>
+   * If one of the superinterfaces is a parameterized type, then the
+   * object returned for this interface reflects the actual type
+   * parameters used in the source code.  Type parameters are created
+   * using the semantics specified by the <code>ParameterizedType</code>
+   * interface, and only if an instance has not already been created.
+   * </p>
+   * <p>
+   * The order of the interfaces in the array matches the order in which
+   * the interfaces are declared.  For classes which represent an array,
+   * an array of two interfaces, <code>Cloneable</code> and
+   * <code>Serializable</code>, is always returned, with the objects in
+   * that order.  A class representing a primitive type or void always
+   * returns an array of zero size.
+   * </p>
+   *
+   * @return an array of interfaces implemented or extended by this class.
+   * @throws GenericSignatureFormatError if the generic signature of one
+   *         of the interfaces does not comply with that specified by the Java
+   *         Virtual Machine specification, 3rd edition.
+   * @throws TypeNotPresentException if any of the superinterfaces refers
+   *         to a non-existant type.
+   * @throws MalformedParameterizedTypeException if any of the interfaces
+   *         refer to a parameterized type that can not be instantiated for
+   *         some reason.
+   * @since 1.5
+   * @see java.lang.reflect.ParameterizedType
+   */
+  public Type[] getGenericInterfaces()
+  {
+    if (isPrimitive())
+      return new Type[0];
+
+    String sig = getClassSignature();
+    if (sig == null)
+      return getInterfaces();
+
+    ClassSignatureParser p = new ClassSignatureParser(this, sig);
+    return p.getInterfaceTypes();
+  }
+
+  /**
+   * <p>
+   * Returns a <code>Type</code> object representing the direct superclass,
+   * whether class, interface, primitive type or void, of this class.
+   * If this class is an array class, then a class instance representing
+   * the <code>Object</code> class is returned.  If this class is primitive,
+   * an interface, or a representation of either the <code>Object</code>
+   * class or void, then <code>null</code> is returned.
+   * </p>
+   * <p>
+   * If the superclass is a parameterized type, then the
+   * object returned for this interface reflects the actual type
+   * parameters used in the source code.  Type parameters are created
+   * using the semantics specified by the <code>ParameterizedType</code>
+   * interface, and only if an instance has not already been created.
+   * </p>
+   *
+   * @return the superclass of this class.
+   * @throws GenericSignatureFormatError if the generic signature of the
+   *         class does not comply with that specified by the Java
+   *         Virtual Machine specification, 3rd edition.
+   * @throws TypeNotPresentException if the superclass refers
+   *         to a non-existant type.
+   * @throws MalformedParameterizedTypeException if the superclass
+   *         refers to a parameterized type that can not be instantiated for
+   *         some reason.
+   * @since 1.5
+   * @see java.lang.reflect.ParameterizedType
+   */
+  public Type getGenericSuperclass()
+  {
+    if (isArray())
+      return Object.class;
+
+    if (isPrimitive() || isInterface() || this == Object.class)
+      return null;
+
+    String sig = getClassSignature();
+    if (sig == null)
+      return getSuperclass();
+
+    ClassSignatureParser p = new ClassSignatureParser(this, sig);
+    return p.getSuperclassType();
+  }
+
+  /**
+   * Returns an array of <code>TypeVariable</code> objects that represents
+   * the type variables declared by this class, in declaration order.
+   * An array of size zero is returned if this class has no type
+   * variables.
+   *
+   * @return the type variables associated with this class. 
+   * @throws GenericSignatureFormatError if the generic signature does
+   *         not conform to the format specified in the Virtual Machine
+   *         specification, version 3.
+   * @since 1.5
+   */
+  public TypeVariable<Class<T>>[] getTypeParameters()
+  {
+    String sig = getClassSignature();
+    if (sig == null)
+      return (TypeVariable<Class<T>>[])new TypeVariable[0];
+
+    ClassSignatureParser p = new ClassSignatureParser(this, sig);
+    return p.getTypeParameters();
+  }
+
+  /**
+   * Returns this class' annotation for the specified annotation type,
+   * or <code>null</code> if no such annotation exists.
+   *
+   * @param annotationClass the type of annotation to look for.
+   * @return this class' annotation for the specified type, or
+   *         <code>null</code> if no such annotation exists.
+   * @since 1.5
+   */
+  public <A extends Annotation> A getAnnotation(Class<A> annotationClass)
+  {
+    A foundAnnotation = null;
+    Annotation[] annotations = getAnnotations();
+    for (Annotation annotation : annotations)
+      if (annotation.annotationType() == annotationClass)
+	foundAnnotation = (A) annotation;
+    return foundAnnotation;
+  }
+
+  /**
+   * Returns all annotations associated with this class.  If there are
+   * no annotations associated with this class, then a zero-length array
+   * will be returned.  The returned array may be modified by the client
+   * code, but this will have no effect on the annotation content of this
+   * class, and hence no effect on the return value of this method for
+   * future callers.
+   *
+   * @return this class' annotations.
+   * @since 1.5
+   */
+  public Annotation[] getAnnotations()
+  {
+    HashMap<Class, Annotation> map = new HashMap<Class, Annotation>();
+    for (Annotation a : getDeclaredAnnotations())
+      map.put((Class) a.annotationType(), a);
+    for (Class<? super T> s = getSuperclass();
+	 s != null;
+	 s = s.getSuperclass())
+      {
+	for (Annotation a : s.getDeclaredAnnotations())
+	  {
+	    Class k = (Class) a.annotationType();
+	    if (! map.containsKey(k) && k.isAnnotationPresent(Inherited.class))
+	      map.put(k, a);
+	  }
+      }
+    Collection<Annotation> v = map.values();
+    return v.toArray(new Annotation[v.size()]);
   }
 
   /**
@@ -962,89 +1303,50 @@ public final class Class implements Type, GenericDeclaration, Serializable
    */
   public Annotation[] getDeclaredAnnotations()
   {
-    // FIXME write real implementation
-    return new Annotation[0];
+    Annotation[] result = getDeclaredAnnotationsInternal();
+    if (result == null)
+      result = new Annotation[0];
+    return result;
+  }
+
+  private native Annotation[] getDeclaredAnnotationsInternal();
+
+  /**
+   * Returns true if an annotation for the specified type is associated
+   * with this class.  This is primarily a short-hand for using marker
+   * annotations.
+   *
+   * @param annotationClass the type of annotation to look for.
+   * @return true if an annotation exists for the specified type.
+   * @since 1.5
+   */
+  public boolean isAnnotationPresent(Class<? extends Annotation> 
+				     annotationClass)
+  {
+    return getAnnotation(annotationClass) != null;
   }
 
   /**
-   * Returns the class which immediately encloses this class.  If this class
-   * is a top-level class, this method returns <code>null</code>.
+   * Returns true if this object represents an anonymous class.
    *
-   * @return the immediate enclosing class, or <code>null</code> if this is
-   *         a top-level class.
+   * @return true if this object represents an anonymous class.
    * @since 1.5
    */
-   /* FIXME[GENERICS]: Should return Class<?> */
-  public Class getEnclosingClass()
-  {
-    // FIXME write real implementation
-    return null;
-  }
+  public native boolean isAnonymousClass();
 
   /**
-   * Returns the constructor which immediately encloses this class.  If
-   * this class is a top-level class, or a local or anonymous class
-   * immediately enclosed by a type definition, instance initializer
-   * or static initializer, then <code>null</code> is returned.
+   * Returns true if this object represents an local class.
    *
-   * @return the immediate enclosing constructor if this class is
-   *         declared within a constructor.  Otherwise, <code>null</code>
-   *         is returned.
+   * @return true if this object represents an local class.
    * @since 1.5
    */
-   /* FIXME[GENERICS]: Should return Constructor<?> */
-  public Constructor getEnclosingConstructor()
-  {
-    // FIXME write real implementation
-    return null;
-  }
+  public native boolean isLocalClass();
 
   /**
-   * Returns the method which immediately encloses this class.  If
-   * this class is a top-level class, or a local or anonymous class
-   * immediately enclosed by a type definition, instance initializer
-   * or static initializer, then <code>null</code> is returned.
+   * Returns true if this object represents an member class.
    *
-   * @return the immediate enclosing method if this class is
-   *         declared within a method.  Otherwise, <code>null</code>
-   *         is returned.
+   * @return true if this object represents an member class.
    * @since 1.5
    */
-  public Method getEnclosingMethod()
-  {
-    // FIXME write real implementation
-    return null;
-  }
-
-  /**
-   * Returns an array of <code>TypeVariable</code> objects that represents
-   * the type variables declared by this class, in declaration order.
-   * An array of size zero is returned if this class has no type
-   * variables.
-   *
-   * @return the type variables associated with this class.
-   * @throws GenericSignatureFormatError if the generic signature does
-   *         not conform to the format specified in the Virtual Machine
-   *         specification, version 3.
-   * @since 1.5
-   */
-   /* FIXME[GENERICS]: Should return TypeVariable<Class<T>> */
-  public TypeVariable[] getTypeParameters()
-  {
-    // FIXME - provide real implementation.
-    return new TypeVariable[0];
-  }
-
-  /**
-   * Returns true if this class is an <code>Enum</code>.
-   *
-   * @return true if this is an enumeration class.
-   * @since 1.5
-   */
-  public boolean isEnum()
-  {
-    // FIXME - provide real implementation.
-    return false;
-  }
-
+  public native boolean isMemberClass();
 }

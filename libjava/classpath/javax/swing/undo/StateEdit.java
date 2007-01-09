@@ -121,14 +121,14 @@ public class StateEdit
    * The state of <code>object</code> at the time of constructing
    * this <code>StateEdit</code>.
    */
-  protected Hashtable preState;
+  protected Hashtable<Object, Object> preState;
 
 
   /**
    * The state of <code>object</code> at the time when {@link #end()}
    * was called.
    */
-  protected Hashtable postState;
+  protected Hashtable<Object, Object> postState;
 
 
   /**

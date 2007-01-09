@@ -42,6 +42,7 @@ import java.net.URL;
 
 /**
  * @deprecated
+ * @since 1.1
  */
 public interface LoaderHandler
 {
@@ -54,13 +55,13 @@ public interface LoaderHandler
   /**
    * @deprecated
    */
-  Class loadClass(String name)
+  Class<?> loadClass(String name)
     throws MalformedURLException, ClassNotFoundException;
 
   /**
    * @deprecated
    */
-  Class loadClass(URL codebase, String name)
+  Class<?> loadClass(URL codebase, String name)
     throws MalformedURLException, ClassNotFoundException;
 
   /**

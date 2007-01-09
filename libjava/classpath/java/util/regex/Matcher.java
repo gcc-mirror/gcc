@@ -218,7 +218,7 @@ public final class Matcher implements MatchResult
  
   public boolean lookingAt ()
   {
-    match = pattern.getRE().getMatch(inputCharIndexed, 0);
+    match = pattern.getRE().getMatch(inputCharIndexed, 0, RE.REG_FIX_STARTING_POSITION, null);
     if (match != null)
       {
 	if (match.getStartIndex() == 0)
@@ -243,7 +243,7 @@ public final class Matcher implements MatchResult
    */
   public boolean matches ()
   {
-    match = pattern.getRE().getMatch(inputCharIndexed, 0, RE.REG_TRY_ENTIRE_MATCH);
+    match = pattern.getRE().getMatch(inputCharIndexed, 0, RE.REG_TRY_ENTIRE_MATCH|RE.REG_FIX_STARTING_POSITION, null);
     if (match != null)
       {
 	if (match.getStartIndex() == 0)
@@ -278,6 +278,7 @@ public final class Matcher implements MatchResult
   public Matcher reset (CharSequence input)
   {
     this.input = input;
+    this.inputCharIndexed = RE.makeCharIndexed(input, 0);
     return reset();
   }
   
@@ -307,6 +308,28 @@ public final class Matcher implements MatchResult
   {
     assertMatchOp();
     return match.getStartIndex(group);
+  }
+
+  /**
+   * @return True if and only if the matcher hit the end of input.
+   */
+  public boolean hitEnd()
+  {
+    return inputCharIndexed.hitEnd();
+  }
+
+  /**
+   * @return A string expression of this matcher.
+   */
+  public String toString()
+  {
+    StringBuilder sb = new StringBuilder();
+    sb.append(this.getClass().getName())
+      .append("[pattern=").append(pattern.pattern())
+      .append(" region=").append("0").append(",").append(input.length())
+      .append(" lastmatch=").append(match == null ? "" : match.toString())
+      .append("]");
+    return sb.toString();
   }
 
   private void assertMatchOp()

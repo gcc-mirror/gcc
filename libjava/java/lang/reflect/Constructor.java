@@ -40,6 +40,7 @@ exception statement from your version. */
 package java.lang.reflect;
 
 import gnu.java.lang.reflect.MethodSignatureParser;
+import java.lang.annotation.Annotation;
 
 /**
  * The Constructor class represents a constructor of a class. It also allows
@@ -75,7 +76,7 @@ import gnu.java.lang.reflect.MethodSignatureParser;
  * @since 1.1
  * @status updated to 1.4
  */
-public final class Constructor extends AccessibleObject
+public final class Constructor<T> extends AccessibleObject
   implements Member, GenericDeclaration
 {
   private static final int CONSTRUCTOR_MODIFIERS
@@ -92,7 +93,7 @@ public final class Constructor extends AccessibleObject
    * Gets the class that declared this constructor.
    * @return the class that declared this member
    */
-  public Class getDeclaringClass()
+  public Class<T> getDeclaringClass ()
   {
     return declaringClass;
   }
@@ -235,8 +236,8 @@ public final class Constructor extends AccessibleObject
     return b.toString();
   }
 
-  /* FIXME[GENERICS]: Add X extends GenericDeclaration and TypeVariable<X> */
-  static void addTypeParameters(StringBuilder sb, TypeVariable[] typeArgs)
+  static <X extends GenericDeclaration>
+  void addTypeParameters(StringBuilder sb, TypeVariable<X>[] typeArgs)
   {
     if (typeArgs.length == 0)
       return;
@@ -320,8 +321,7 @@ public final class Constructor extends AccessibleObject
    *         specification, version 3.
    * @since 1.5
    */
-  /* FIXME[GENERICS]: Add <Constructor<T>> */
-  public TypeVariable[] getTypeParameters()
+  public TypeVariable<Constructor<T>>[] getTypeParameters()
   {
     String sig = getSignature();
     if (sig == null)
@@ -334,11 +334,7 @@ public final class Constructor extends AccessibleObject
    * Return the String in the Signature attribute for this constructor. If there
    * is no Signature attribute, return null.
    */
-  private String getSignature()
-  {
-    // FIXME: libgcj doesn't record this information yet.
-    return null;
-  }
+  private native String getSignature();
 
   /**
    * Returns an array of <code>Type</code> objects that represents
@@ -382,11 +378,41 @@ public final class Constructor extends AccessibleObject
     return p.getGenericParameterTypes();
   }
 
+  public <T extends Annotation> T getAnnotation(Class<T> annoClass)
+  {
+    Annotation[] annos = getDeclaredAnnotations();
+    for (int i = 0; i < annos.length; ++i)
+      if (annos[i].annotationType() == annoClass)
+	return (T) annos[i];
+    return null;
+  }
+
+  public Annotation[] getDeclaredAnnotations()
+  {
+    Annotation[] result = getDeclaredAnnotationsInternal();
+    if (result == null)
+      result = new Annotation[0];
+    return result;
+  }
+
+  public Annotation[][] getParameterAnnotations()
+  {
+    // FIXME: should check that we have the right number
+    // of parameters ...?
+    Annotation[][] result = getParameterAnnotationsInternal();
+    if (result == null)
+      result = new Annotation[0][0];
+    return result;
+  }
+
+  private native Annotation[] getDeclaredAnnotationsInternal();
+  private native Annotation[][] getParameterAnnotationsInternal();
+
   // Update cached values from method descriptor in class.
   private native void getType ();
 
   // Declaring class.
-  private Class declaringClass;
+  private Class<T> declaringClass;
 
   // Exception types.
   private Class[] exception_types;

@@ -926,15 +926,11 @@ public class MetalBorders
     /** The border insets. */
     protected static Insets borderInsets = new Insets(1, 0, 1, 0);
     
-    // TODO: find where this color really comes from
-    private static Color borderColor = new Color(153, 153, 153);
-    
     /**
      * Creates a new border instance.
      */
     public MenuBarBorder()
     {
-      // Nothing to do here.
     }
     
     /**
@@ -951,7 +947,17 @@ public class MetalBorders
     public void paintBorder(Component c, Graphics g, int x, int y, int w,
         int h)
     {
-      g.setColor(borderColor);
+      // Although it is not correct to decide on the static property
+      // currentTheme which color to use the RI does it like that.
+      // The trouble is that by simply changing the current theme to
+      // e.g. DefaultMetalLookAndFeel this method will use another color
+      // although a change in painting behavior should be expected only
+      // after setting a new look and feel and updating all components.
+      if(MetalLookAndFeel.getCurrentTheme() instanceof OceanTheme)
+        g.setColor(UIManager.getColor("MenuBar.borderColor"));
+      else
+        g.setColor(MetalLookAndFeel.getControlShadow());
+      
       g.drawLine(x, y + h - 1, x + w, y + h - 1);
     }
     

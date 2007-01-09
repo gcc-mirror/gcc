@@ -46,228 +46,220 @@ package java.awt.image;
  */
 public abstract class RGBImageFilter extends ImageFilter
 {
-    protected ColorModel origmodel;
+  protected ColorModel origmodel;
 
-    protected ColorModel newmodel;
+  protected ColorModel newmodel;
     
-    /**
-       Specifies whether to apply the filter to the index entries of the 
-       IndexColorModel. Subclasses should set this to true if the filter 
-       does not depend on the pixel's coordinate.
-     */
-    protected boolean canFilterIndexColorModel = false;
+  /**
+   * Specifies whether to apply the filter to the index entries of the
+   * IndexColorModel. Subclasses should set this to true if the filter
+   * does not depend on the pixel's coordinate.
+   */
+  protected boolean canFilterIndexColorModel = false;
 
-    /**
-       Construct new RGBImageFilter.
-     */
-    public RGBImageFilter() 
-    {
-    }
+  /**
+   * Construct new RGBImageFilter.
+   */
+  public RGBImageFilter() 
+  {
+  }
 
-    /**
-     * Sets the ColorModel used to filter with. If the specified ColorModel is IndexColorModel 
-     * and canFilterIndexColorModel is true, we subsitute the ColorModel for a filtered one
-     * here and in setPixels whenever the original one appears. Otherwise overrides the default
-     * ColorModel of ImageProducer and specifies the default RGBColorModel
-     *
-     * @param model the color model to be used most often by setPixels
-     * @see ColorModel */
-    public void setColorModel(ColorModel model) 
-    {
-	origmodel = model;
-	newmodel = model;
+  /**
+   * Sets the ColorModel used to filter with. If the specified ColorModel is
+   * IndexColorModel and canFilterIndexColorModel is true, we subsitute the
+   * ColorModel for a filtered one here and in setPixels whenever the original
+   * one appears. Otherwise overrides the default ColorModel of ImageProducer
+   * and specifies the default RGBColorModel
+   *
+   * @param model the color model to be used most often by setPixels
+   *
+   * @see ColorModel
+   */
+  public void setColorModel(ColorModel model) 
+  {
+    if ((model instanceof IndexColorModel) && canFilterIndexColorModel)
+      {
+        ColorModel newCM = filterIndexColorModel((IndexColorModel) model);
+        substituteColorModel(model, newCM);
+        consumer.setColorModel(newmodel);
+      }
+    else
+      {
+        consumer.setColorModel(ColorModel.getRGBdefault());
+      }
+  }
 
-	if( ( model instanceof IndexColorModel) && canFilterIndexColorModel  ) {
-		newmodel = filterIndexColorModel( (IndexColorModel) model );
-		if (consumer != null)
-		  consumer.setColorModel(newmodel);
-	    }
-	else {
-	  if (consumer != null)
-	    consumer.setColorModel(ColorModel.getRGBdefault());
-	}
-    }
-    
-    /**
-       Registers a new ColorModel to subsitute for the old ColorModel when 
-       setPixels encounters the a pixel with the old ColorModel. The pixel 
-       remains unchanged except for a new ColorModel.
-       
-       @param oldcm the old ColorModel
-       @param newcm the new ColorModel
-     */
-    public void substituteColorModel(ColorModel oldcm,
-				     ColorModel newcm)
-    {
-	origmodel = oldcm;
-	newmodel = newcm;
-    }
+  /**
+   * Registers a new ColorModel to subsitute for the old ColorModel when 
+   * setPixels encounters the a pixel with the old ColorModel. The pixel 
+   * remains unchanged except for a new ColorModel.
+   * 
+   * @param oldcm the old ColorModel
+   * @param newcm the new ColorModel
+   */
+  public void substituteColorModel(ColorModel oldcm, ColorModel newcm)
+  {
+    origmodel = oldcm;
+    newmodel = newcm;
+  }
 
-    /**
-       Filters an IndexColorModel through the filterRGB function. Uses
-       coordinates of -1 to indicate its filtering an index and not a pixel.
+  /**
+   * Filters an IndexColorModel through the filterRGB function. Uses
+   * coordinates of -1 to indicate its filtering an index and not a pixel.
+   *
+   * @param icm an IndexColorModel to filter
+   */
+  public IndexColorModel filterIndexColorModel(IndexColorModel icm) 
+  {
+    int len = icm.getMapSize();
+    byte[] reds = new byte[len];
+    byte[] greens = new byte[len];
+    byte[] blues = new byte[len];
+    byte[] alphas = new byte[len];
 
-       @param icm an IndexColorModel to filter
-     */
-    public IndexColorModel filterIndexColorModel(IndexColorModel icm) 
-    {
-	int len = icm.getMapSize(), rgb;
-	byte reds[] = new byte[len], greens[] = new byte[len], blues[] = new byte[len], alphas[]  = new byte[len];
-	
-	icm.getAlphas( alphas );
-	icm.getReds( reds );
-	icm.getGreens( greens );
-	icm.getBlues( blues );
+    icm.getAlphas( alphas );
+    icm.getReds( reds );
+    icm.getGreens( greens );
+    icm.getBlues( blues );
 
-	for( int i = 0; i < len; i++ )
-	    {
-		rgb = filterRGB( -1, -1, makeColor ( alphas[i], reds[i], greens[i], blues[i] ) );
-		alphas[i] = (byte)(( 0xff000000 & rgb ) >> 24);
-		reds[i] = (byte)(( 0xff0000 & rgb ) >> 16);
-		greens[i] = (byte)(( 0xff00 & rgb ) >> 8);
-		blues[i] = (byte)(0xff & rgb);
-	    }
-	return new IndexColorModel( icm.getPixelSize(), len, reds, greens, blues, alphas );
-    }
+    int transparent = icm.getTransparentPixel();
+    boolean needAlpha = false;
+    for( int i = 0; i < len; i++ )
+      {
+        int rgb = filterRGB(-1, -1, icm.getRGB(i));
+        alphas[i] = (byte) (rgb >> 24);
+        if (alphas[i] != ((byte) 0xff) && i != transparent)
+          needAlpha = true;
+        reds[i] = (byte) (rgb >> 16);
+        greens[i] = (byte) (rgb >> 8);
+        blues[i] = (byte) (rgb);
+      }
+    IndexColorModel newIcm;
+    if (needAlpha)
+      newIcm = new IndexColorModel(icm.getPixelSize(), len, reds, greens,
+                                   blues, alphas);
+    else
+      newIcm = new IndexColorModel(icm.getPixelSize(), len, reds, greens,
+                                   blues, transparent);
+    return newIcm;
+  }
 
-    private int makeColor( byte a, byte r, byte g, byte b )
-    {
-	return ( 0xff000000 & (a << 24) | 0xff0000 & (r << 16) | 0xff00 & (g << 8) | 0xff & b ); 
-    }
+  /**
+   * This functions filters a set of RGB pixels through filterRGB.
+   *
+   * @param x the x coordinate of the rectangle
+   * @param y the y coordinate of the rectangle
+   * @param w the width of the rectangle
+   * @param h the height of the rectangle
+   * @param pixels the array of pixel values
+   * @param offset the index of the first pixels in the
+   *        <code>pixels</code> array
+   * @param scansize the width to use in extracting pixels from the
+   *        <code>pixels</code> array
+   */
+  public void filterRGBPixels(int x, int y, int w, int h, int[] pixels,
+                              int offset, int scansize)
+  {
+    int index = offset;
+    for (int yp = 0; yp < h; yp++)
+      {
+        for (int xp = 0; xp < w; xp++)
+          {
+            pixels[index] = filterRGB(xp + x, yp + y, pixels[index]);
+            index++;
+          }
+        index += scansize - w;
+      }
+    consumer.setPixels(x, y, w, h, ColorModel.getRGBdefault(), pixels, offset,
+                       scansize);
+  }
 
-    /**
-       This functions filters a set of RGB pixels through filterRGB.
+  /**
+   * If the ColorModel is the same ColorModel which as already converted 
+   * then it converts it the converted ColorModel. Otherwise it passes the 
+   * array of pixels through filterRGBpixels.
+   *
+   * @param x the x coordinate of the rectangle
+   * @param y the y coordinate of the rectangle
+   * @param w the width of the rectangle
+   * @param h the height of the rectangle
+   * @param model the <code>ColorModel</code> used to translate the pixels
+   * @param pixels the array of pixel values
+   * @param offset the index of the first pixels in the <code>pixels</code>
+   *        array
+   * @param scansize the width to use in extracting pixels from the
+   *        <code>pixels</code> array
+   */
+  public void setPixels(int x, int y, int w, int h, ColorModel model,
+                        byte[] pixels, int offset, int scansize)
+  {
+    if (model == origmodel)
+      {
+        consumer.setPixels(x, y, w, h, newmodel, pixels, offset, scansize);
+      }
+    else
+      {
+        int[] filtered = new int[w];
+        int index = offset;
+        for (int yp = 0; yp < h; yp++)
+          {
+            for (int xp = 0; xp < w; xp++)
+              {
+                filtered[xp] = model.getRGB((pixels[index] & 0xff));
+                index++;
+              }
+            index += scansize - w;
+            filterRGBPixels(x, y + yp, w, 1, filtered, 0, w);
+          }
+      }
+  }
 
-       @param x the x coordinate of the rectangle
-       @param y the y coordinate of the rectangle
-       @param w the width of the rectangle
-       @param h the height of the rectangle
-       @param pixels the array of pixel values
-       @param offset the index of the first pixels in the <code>pixels</code> array
-       @param scansize the width to use in extracting pixels from the <code>pixels</code> array
-    */
-    public void filterRGBPixels(int x, int y, int w, int h, int[] pixels,
-				int offset, int scansize)
-    {
-      for (int yp = 0; yp < h; yp++)
-	{
-	  for (int xp = 0; xp < w; xp++)
-	    {
-	      pixels[offset + xp] = filterRGB(xp + x, yp + y, pixels[offset + xp]);
-	    }
-	  offset += scansize;
-	}
-    }
+  /**
+   * This function delivers a rectangle of pixels where any
+   * pixel(m,n) is stored in the array as an <code>int</code> at
+   * index (n * scansize + m + offset).  
+   *
+   * @param x the x coordinate of the rectangle
+   * @param y the y coordinate of the rectangle
+   * @param w the width of the rectangle
+   * @param h the height of the rectangle
+   * @param model the <code>ColorModel</code> used to translate the pixels
+   * @param pixels the array of pixel values
+   * @param offset the index of the first pixels in the <code>pixels</code>
+   *        array
+   * @param scansize the width to use in extracting pixels from the
+   *        <code>pixels</code> array
+   */
+  public void setPixels(int x, int y, int w, int h, ColorModel model,
+                        int[] pixels, int offset, int scansize)
+  {
+    if (model == origmodel)
+      {
+        consumer.setPixels(x, y, w, h, newmodel, pixels, offset, scansize);
+      }
+    else
+      {
+        int[] filtered = new int[w];
+        int index = offset;
+        for (int yp = 0; yp < h; yp++)
+          {
+            for (int xp = 0; xp < w; xp++)
+              {
+                filtered[xp] = model.getRGB((pixels[index] & 0xff));
+                index++;
+              }
+            index += scansize - w;
+            filterRGBPixels(x, y + yp, w, 1, filtered, 0, w);
+          }
+      }
+  }
 
-
-    /**
-     * If the ColorModel is the same ColorModel which as already converted 
-     * then it converts it the converted ColorModel. Otherwise it passes the 
-     * array of pixels through filterRGBpixels.
-     *
-     * @param x the x coordinate of the rectangle
-     * @param y the y coordinate of the rectangle
-     * @param w the width of the rectangle
-     * @param h the height of the rectangle
-     * @param model the <code>ColorModel</code> used to translate the pixels
-     * @param pixels the array of pixel values
-     * @param offset the index of the first pixels in the <code>pixels</code> array
-     * @param scansize the width to use in extracting pixels from the <code>pixels</code> array
-     */
-    public void setPixels(int x, int y, int w, int h, 
-                          ColorModel model, byte[] pixels,
-                          int offset, int scansize)
-    {
-	if(model == origmodel && (model instanceof IndexColorModel) && canFilterIndexColorModel)
-	{
-	  if (consumer != null)
-	    consumer.setPixels(x, y, w, h, newmodel, pixels, offset, scansize);
-	}
-	else
-	{
-	    int intPixels[] =
-		convertColorModelToDefault( x, y, w, h, model, pixels, offset, scansize );
-	    filterRGBPixels( x, y, w, h, intPixels, offset, scansize );
-	    if (consumer != null)
-	      consumer.setPixels(x, y, w, h, ColorModel.getRGBdefault(), intPixels, offset, scansize);
-	}
-    }
-
-    /**
-     * This function delivers a rectangle of pixels where any
-     * pixel(m,n) is stored in the array as an <code>int</code> at
-     * index (n * scansize + m + offset).  
-     *
-     * @param x the x coordinate of the rectangle
-     * @param y the y coordinate of the rectangle
-     * @param w the width of the rectangle
-     * @param h the height of the rectangle
-     * @param model the <code>ColorModel</code> used to translate the pixels
-     * @param pixels the array of pixel values
-     * @param offset the index of the first pixels in the <code>pixels</code> array
-     * @param scansize the width to use in extracting pixels from the <code>pixels</code> array
-     */
-    public void setPixels(int x, int y, int w, int h, 
-                          ColorModel model, int[] pixels,
-                          int offset, int scansize)
-    {
-	if(model == origmodel && (model instanceof IndexColorModel) && canFilterIndexColorModel)
-	{
-	  if (consumer != null)
-	    consumer.setPixels(x, y, w, h, newmodel, pixels, offset, scansize);
-	}
-	else
-	{
-	    //FIXME: Store the filtered pixels in a separate temporary buffer?
-	  convertColorModelToDefault( x, y, w, h, model, pixels, offset, scansize );
-	  filterRGBPixels( x, y, w, h, pixels, offset, scansize );
-	  if (consumer != null)
-	    consumer.setPixels(x, y, w, h, ColorModel.getRGBdefault(), pixels, offset, scansize);
-	}
-    }
-
-    private int[] convertColorModelToDefault(int x, int y, int w, int h, 
-                                            ColorModel model, byte pixels[],
-                                            int offset, int scansize)
-    {
-	int intPixels[] = new int[pixels.length];
-	for (int i = 0; i < pixels.length; i++)
-	    intPixels[i] = makeColorbyDefaultCM(model, pixels[i]);
-	return intPixels;
-    }
-
-    private void convertColorModelToDefault(int x, int y, int w, int h, 
-                                            ColorModel model, int pixels[],
-                                            int offset, int scansize)
-    {
-	for (int i = 0; i < pixels.length; i++)
-	    pixels[i] = makeColorbyDefaultCM(model, pixels[i]);
-    }
-
-    private int makeColorbyDefaultCM(ColorModel model, byte rgb) 
-    {
-	return makeColor( model.getAlpha( rgb ) * 4, model.getRed( rgb ) * 4, model.getGreen( rgb ) * 4, model.getBlue( rgb ) * 4 );
-    }
-
-    private int makeColorbyDefaultCM(ColorModel model, int rgb) 
-    {
-	return makeColor( model.getAlpha( rgb ), model.getRed( rgb ), model.getGreen( rgb ), model.getBlue( rgb ) );
-    }
-
-    private int makeColor( int a, int r, int g, int b )
-    {
-	return (int)( 0xff000000 & (a << 24) | 0xff0000 & (r << 16) | 0xff00 & (g << 8) | 0xff & b ); 
-    }
-
-
-    /**
-       Filters a single pixel from the default ColorModel.
-
-       @param x x-coordinate
-       @param y y-coordinate
-       @param rgb color
-     */
-    public abstract int filterRGB(int x,
-				  int y,
-				  int rgb);
+  /**
+   * Filters a single pixel from the default ColorModel.
+   *
+   * @param x x-coordinate
+   * @param y y-coordinate
+   * @param rgb color
+   */
+  public abstract int filterRGB(int x, int y, int rgb);
 }

@@ -113,8 +113,8 @@ public abstract class AlgorithmParametersSpi
    * @throws InvalidParameterSpecException if the paramSpec is an
    * invalid parameter class
    */
-  protected abstract AlgorithmParameterSpec engineGetParameterSpec(Class
-								   paramSpec)
+  protected abstract <T extends AlgorithmParameterSpec> 
+  T engineGetParameterSpec(Class<T> paramSpec)
     throws InvalidParameterSpecException;
 
 

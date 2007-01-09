@@ -39,6 +39,9 @@ exception statement from your version.  */
 package gnu.javax.net.ssl.provider;
 
 import java.math.BigInteger;
+import java.security.AccessController;
+
+import gnu.java.security.action.GetSecurityPropertyAction;
 import gnu.javax.crypto.key.dh.GnuDHPrivateKey;
 
 /**
@@ -72,7 +75,8 @@ final class DiffieHellman
   static GnuDHPrivateKey getParams()
   {
     BigInteger p = DiffieHellman.GROUP_5;
-    String group = Util.getSecurityProperty("jessie.key.dh.group");
+    String group = AccessController.doPrivileged
+      (new GetSecurityPropertyAction("jessie.key.dh.group"));
     if (group != null)
       {
         group = group.trim();

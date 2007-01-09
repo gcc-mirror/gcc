@@ -38,67 +38,25 @@ exception statement from your version.  */
 
 package gnu.javax.net.ssl.provider;
 
-import java.io.EOFException;
-import java.io.InputStream;
-import java.io.IOException;
-
-final class CertificateType implements Enumerated
+public enum CertificateType
 {
-
-  // Constants and fields.
-  // -------------------------------------------------------------------------
-
-  static final CertificateType X509     = new CertificateType(0);
-  static final CertificateType OPEN_PGP = new CertificateType(1);
+  X509     (0),
+  OPEN_PGP (1);
 
   private final int value;
-
-  // Constructor.
-  // -------------------------------------------------------------------------
 
   private CertificateType(int value)
   {
     this.value = value;
   }
 
-  // Class method.
-  // -------------------------------------------------------------------------
-
-  static CertificateType read(InputStream in) throws IOException
-  {
-    int value = in.read();
-    if (value == -1)
-      {
-        throw new EOFException("unexpected end of input stream");
-      }
-    switch (value & 0xFF)
-      {
-      case 0: return X509;
-      case 1: return OPEN_PGP;
-      default: return new CertificateType(value);
-      }
-  }
-
-  // Instance methods.
-  // -------------------------------------------------------------------------
-
-  public byte[] getEncoded()
-  {
-    return new byte[] { (byte) value };
-  }
-
-  public int getValue()
-  {
-    return value;
-  }
-
-  public String toString()
+  public static CertificateType forValue (final int value)
   {
     switch (value)
       {
-      case 0: return "X.509";
-      case 1: return "OpenPGP";
-      default: return "unknown(" + value + ")";
+        case 0: return X509;
+        case 1: return OPEN_PGP;
+        default: throw new IllegalArgumentException ("unknown certificate type: " + value);
       }
   }
 }

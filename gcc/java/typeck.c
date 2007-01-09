@@ -356,7 +356,7 @@ tree
 build_java_array_type (tree element_type, HOST_WIDE_INT length)
 {
   tree sig, t, fld, atype, arfld;
-  char buf[23]; /* 20 for the digits of a 64 bit number + "[]" + \0 */
+  char buf[23];
   tree elsig = build_java_signature (element_type);
   tree el_name = element_type;
   buf[0] = '[';

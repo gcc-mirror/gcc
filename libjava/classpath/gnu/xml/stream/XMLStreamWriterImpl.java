@@ -664,12 +664,10 @@ public class XMLStreamWriterImpl
   public void writeDTD(String dtd)
     throws XMLStreamException
   {
-    // Really thoroughly pointless method...
     try
       {
-        if (!isName(dtd))
-          throw new IllegalArgumentException("illegal Name: " + dtd);
-
+        // XXX: Should we parse the doctypedecl at this point to ensure
+        // wellformedness?
         writer.write("<!DOCTYPE ");
         writer.write(dtd);
         writer.write('>');

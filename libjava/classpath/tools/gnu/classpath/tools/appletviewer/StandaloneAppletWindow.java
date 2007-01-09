@@ -128,57 +128,57 @@ class StandaloneAppletWindow
     addHierarchyListener(this);
     addHierarchyBoundsListener(this);
     
-    restartItem = new MenuItem(Main.messages.getString("gcjwebplugin.menu_restart"));
+    restartItem = new MenuItem(Messages.getString("StandaloneAppletWindow.MenuRestart"));
     restartItem.setEnabled(false);
     restartItem.addActionListener(this);
-    reloadItem = new MenuItem(Main.messages.getString("gcjwebplugin.menu_reload"));
+    reloadItem = new MenuItem(Messages.getString("StandaloneAppletWindow.MenuReload"));
     reloadItem.setEnabled(false);
     reloadItem.addActionListener(this);
-    cancelItem = new MenuItem(Main.messages.getString("gcjwebplugin.menu_cancel"));
+    cancelItem = new MenuItem(Messages.getString("StandaloneAppletWindow.MenuCancel"));
     cancelItem.setEnabled(false);
     cancelItem.addActionListener(this);
-    saveItem = new MenuItem(Main.messages.getString("gcjwebplugin.menu_save"));
+    saveItem = new MenuItem(Messages.getString("StandaloneAppletWindow.MenuSave"));
     saveItem.setEnabled(false);
     saveItem.addActionListener(this);
-    startItem = new MenuItem(Main.messages.getString("gcjwebplugin.menu_start"));
+    startItem = new MenuItem(Messages.getString("StandaloneAppletWindow.MenuStart"));
     startItem.setEnabled(false);
     startItem.addActionListener(this);
-    cloneItem = new MenuItem(Main.messages.getString("gcjwebplugin.menu_clone"));
+    cloneItem = new MenuItem(Messages.getString("StandaloneAppletWindow.MenuClone"));
     cloneItem.setEnabled(false);
     cloneItem.addActionListener(this);
-    closeItem = new MenuItem(Main.messages.getString("gcjwebplugin.menu_close"));
+    closeItem = new MenuItem(Messages.getString("StandaloneAppletWindow.MenuClose"));
     closeItem.setEnabled(false);
     closeItem.addActionListener(this);
     tagItem =
-      new MenuItem(Main.messages.getString("gcjwebplugin.menu_tag"));
+      new MenuItem(Messages.getString("StandaloneAppletWindow.MenuTag"));
     tagItem.setEnabled(false);
     tagItem.addActionListener(this);
     infoItem =
-      new MenuItem(Main.messages.getString("gcjwebplugin.menu_info"));
+      new MenuItem(Messages.getString("StandaloneAppletWindow.MenuInfo"));
     infoItem.setEnabled(false);
     infoItem.addActionListener(this);
     editItem =
-      new MenuItem(Main.messages.getString("gcjwebplugin.menu_edit"));
+      new MenuItem(Messages.getString("StandaloneAppletWindow.MenuEdit"));
     editItem.setEnabled(false);
     editItem.addActionListener(this);
     editItem.setEnabled(false);
     encodingItem =
-      new MenuItem(Main.messages.getString("gcjwebplugin.menu_encoding"));
+      new MenuItem(Messages.getString("StandaloneAppletWindow.MenuEncoding"));
     encodingItem.setEnabled(false);
     encodingItem.addActionListener(this);
     printItem =
-      new MenuItem(Main.messages.getString("gcjwebplugin.menu_print"));
+      new MenuItem(Messages.getString("StandaloneAppletWindow.MenuPrint"));
     printItem.setEnabled(false);
     printItem.addActionListener(this);
     propertiesItem =
-      new MenuItem(Main.messages.getString("gcjwebplugin.menu_properties"));
+      new MenuItem(Messages.getString("StandaloneAppletWindow.MenuProperties"));
     propertiesItem.setEnabled(false);
     propertiesItem.addActionListener(this);
-    quitItem = new MenuItem(Main.messages.getString("gcjwebplugin.menu_quit"));
+    quitItem = new MenuItem(Messages.getString("StandaloneAppletWindow.MenuQuit"));
     quitItem.addActionListener(this);
 
     MenuBar menuBar = new MenuBar();
-    Menu menuApplet = new Menu(Main.messages.getString("gcjwebplugin.menu_title"));
+    Menu menuApplet = new Menu(Messages.getString("StandaloneAppletWindow.MenuTitle"));
     menuBar.add(menuApplet);
     menuApplet.add(restartItem);
     menuApplet.add(reloadItem);
@@ -199,7 +199,8 @@ class StandaloneAppletWindow
     menuApplet.add(closeItem);
     menuApplet.add(quitItem);
     setMenuBar(menuBar);
-    setTitle("GNU Classpath Applet Viewer: " + tag.code);
+    setTitle(Messages.getString("StandaloneAppletWindow.WindowTitle")
+             + " " + tag.code);
 
     AppletContext context = (AppletContext) contexts.get(tag.codebase);
     ((StandaloneAppletContext) context).addApplet(applet);

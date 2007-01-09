@@ -209,6 +209,17 @@ public class Constants
                 }
                );
 
+  /**
+   * Ordinary HTML tag closing pattern.
+   */
+  public static final pattern TAG_CLOSE =
+    new pattern(new node[]
+                {
+                  new node(BEGIN), new node(WS, true), new node(SLASH),
+                  new node(WS, true), new node(NUMTOKEN)
+                }
+               );
+
   /* Special tokens */
 
   /**

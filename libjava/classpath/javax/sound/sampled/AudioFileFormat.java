@@ -153,7 +153,7 @@ public class AudioFileFormat
    * @param properties the properties
    */
   public AudioFileFormat(Type type, AudioFormat fmt, int frameLen,
-			 Map properties)
+			 Map<String, Object> properties)
   {
     this.byteLength = AudioSystem.NOT_SPECIFIED;
     this.format = fmt;
@@ -226,7 +226,7 @@ public class AudioFileFormat
    * Return the properties associated with this format, as a Map.
    * The returned Map is unmodifiable.
    */
-  public Map properties()
+  public Map<String, Object> properties()
   {
     return properties;
   }

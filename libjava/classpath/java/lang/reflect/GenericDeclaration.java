@@ -58,6 +58,5 @@ public interface GenericDeclaration
    *         class file does not conform to that specified in the 3rd edition
    *         of the Java Virtual Machine Specification.
    */
-  /* FIXME[GENERICS]: Should be TypeVariable<?>[] */
-  TypeVariable[] getTypeParameters();
+  TypeVariable<?>[] getTypeParameters();
 }

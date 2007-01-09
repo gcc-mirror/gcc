@@ -1,5 +1,5 @@
 /* ObjectImpl.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package org.omg.CORBA.portable;
 
+import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.Context;
 import org.omg.CORBA.ContextList;
 import org.omg.CORBA.DomainManager;
@@ -156,9 +157,9 @@ public abstract class ObjectImpl
    * @throws BAD_PARAM if the policy of the given type is not
    * associated with this object, or if it is not supported by this ORB.
    */
-  public Policy _get_policy(int type)
+  public Policy _get_policy(int a_policy_type)
   {
-    return delegate.get_policy(this, type);
+    return delegate.get_policy(this, a_policy_type);
   }
 
   /**
@@ -173,7 +174,7 @@ public abstract class ObjectImpl
    * object. The returned value must not change during the object
    * lifetime.
    *
-   * @param maximum the maximal value to return.
+   * @param max the maximal value to return.
    *
    * @return the hashcode.
    */
@@ -204,7 +205,7 @@ public abstract class ObjectImpl
   /**
    * Check if this object can be referenced by the given repository id.
    *
-   * @param repositoryIdentifer the repository id.
+   * @param idl_id the repository id.
    *
    * @return true if the passed parameter is a repository id of this
    * CORBA object.
@@ -232,8 +233,6 @@ public abstract class ObjectImpl
 
   /**
    * Returns true if the object is local.
-   *
-   * @param self the object to check.
    *
    * @return false, always (following 1.4 specs). Override to get
    * functionality.
@@ -278,10 +277,8 @@ public abstract class ObjectImpl
    * Release the reply stream back to ORB after finishing reading the data
    * from it.
    *
-   * @param input the stream, normally returned by {@link #invoke} or
+   * @param stream the stream, normally returned by {@link #_invoke} or
    * {@link ApplicationException#getInputStream()}, can be null.
-   *
-   * @throws NO_IMPLEMENT, always (following the 1.4 specification).
    */
   public void _releaseReply(InputStream stream)
   {
@@ -292,7 +289,7 @@ public abstract class ObjectImpl
   /**
    * Create a request to invoke the method of this CORBA object.
    *
-   * @param operation the name of the method to invoke.
+   * @param method the name of the method to invoke.
    *
    * @return the request.
    */
@@ -304,7 +301,7 @@ public abstract class ObjectImpl
   /**
    * Create a request to invoke the method of this CORBA object.
    *
-   * @param operation the name of the method to invoke.
+   * @param method the name of the method to invoke.
    * @param response_expected specifies if this is one way message or the
    * response to the message is expected.
    *
@@ -323,7 +320,6 @@ public abstract class ObjectImpl
    *
    * The default method returns without action.
    *
-   * @param self the object.
    * @param servant the servant.
    */
   public void _servant_postinvoke(ServantObject servant)
@@ -336,9 +332,8 @@ public abstract class ObjectImpl
    * The servant can also be casted to the expected type, calling the
    * required method directly.
    *
-   * @param self the object
-   * @param operation the operation
-   * @param expectedType the expected type of the servant.
+   * @param method the operation
+   * @param expected_type the expected type of the servant.
    *
    * This implementation always returns null; override for different
    * behavior.
@@ -372,10 +367,10 @@ public abstract class ObjectImpl
    * them.
    */
   public org.omg.CORBA.Object _set_policy_override(Policy[] policies,
-                                                   SetOverrideType set_add
+                                                   SetOverrideType how
                                                   )
   {
-    return delegate.set_policy_override(this, policies, set_add);
+    return delegate.set_policy_override(this, policies, how);
   }
 
   /**

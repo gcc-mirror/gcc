@@ -62,6 +62,10 @@ class CharIndexedCharSequence implements CharIndexed, Serializable {
 	return ((anchor += index) < len);
     }
 
+    public boolean move1(int index) {
+	return ((anchor += index) <= len);
+    }
+
     public CharIndexed lookBehind(int index, int length) {
 	if (length > (anchor + index)) length = anchor + index;
 	return new CharIndexedCharSequence(s, anchor + index - length);
@@ -77,6 +81,15 @@ class CharIndexedCharSequence implements CharIndexed, Serializable {
 	lastMatch.anchor = anchor;
     }
     public REMatch getLastMatch() { return lastMatch; }
+
+    private int rightmostTriedPosition = 0;
+    public void setHitEnd(REMatch match) {
+        int pos = anchor + match.index;
+        if (pos > rightmostTriedPosition) rightmostTriedPosition = pos;
+    }
+    public boolean hitEnd() { return rightmostTriedPosition >= len; }
+
     public int getAnchor() { return anchor; }
     public void setAnchor(int anchor) { this.anchor = anchor; }
+
 }

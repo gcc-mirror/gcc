@@ -57,7 +57,6 @@ public abstract class View implements SwingConstants
   public static final int X_AXIS = 0;
   public static final int Y_AXIS = 1;
     
-  private float width, height;
   private Element elt;
   private View parent;
 
@@ -93,7 +92,14 @@ public abstract class View implements SwingConstants
       {
         int numChildren = getViewCount();
         for (int i = 0; i < numChildren; i++)
-          getView(i).setParent(null);
+          {
+            View child = getView(i);
+            // It is important that we only reset the parent on views that
+            // actually belong to us. In FlowView the child may already be
+            // reparented.
+            if (child.getParent() == this)
+              child.setParent(null);
+          }
       }
 
     this.parent = parent;
@@ -263,7 +269,7 @@ public abstract class View implements SwingConstants
 
   public void removeAll()
   {
-    replace(0, getViewCount(), new View[0]); 
+    replace(0, getViewCount(), null);
   }
 
   public void remove(int index)
@@ -307,15 +313,16 @@ public abstract class View implements SwingConstants
   {
     int index = getViewIndex(x, y, allocation);
 
-    if (index < -1)
-      return null;
-
-    Shape childAllocation = getChildAllocation(index, allocation);
-
-    if (childAllocation.getBounds().contains(x, y))
-      return getView(index).getToolTipText(x, y, childAllocation);
-
-    return null;
+    String text = null;
+    if (index >= 0)
+      {
+        allocation = getChildAllocation(index, allocation);
+        Rectangle r = allocation instanceof Rectangle ? (Rectangle) allocation
+                                                      : allocation.getBounds();
+        if (r.contains(x, y))
+          text = getView(index).getToolTipText(x, y, allocation);
+      }
+    return text;
   }
 
   /**
@@ -328,13 +335,17 @@ public abstract class View implements SwingConstants
 
   public void preferenceChanged(View child, boolean width, boolean height)
   {
-    if (parent != null)
-      parent.preferenceChanged(this, width, height);
+    View p = getParent();
+    if (p != null)
+      p.preferenceChanged(this, width, height);
   }
 
   public int getBreakWeight(int axis, float pos, float len)
   {
-    return BadBreakWeight;
+    int weight = BadBreakWeight;
+    if (len > getPreferredSpan(axis))
+      weight = GoodBreakWeight;
+    return weight;
   }
 
   public View breakView(int axis, int offset, float pos, float len)
@@ -370,12 +381,18 @@ public abstract class View implements SwingConstants
    */
   public void insertUpdate(DocumentEvent ev, Shape shape, ViewFactory vf)
   {
-    Element el = getElement();
-    DocumentEvent.ElementChange ec = ev.getChange(el);
-    if (ec != null)
-      updateChildren(ec, ev, vf);
-    forwardUpdate(ec, ev, shape, vf);
-    updateLayout(ec, ev, shape);
+    if (getViewCount() > 0)
+      {
+        Element el = getElement();
+        DocumentEvent.ElementChange ec = ev.getChange(el);
+        if (ec != null)
+          {
+            if (! updateChildren(ec, ev, vf))
+              ec = null;
+          }
+        forwardUpdate(ec, ev, shape, vf);
+        updateLayout(ec, ev, shape);
+      }
   }
 
   /**
@@ -429,12 +446,18 @@ public abstract class View implements SwingConstants
    */
   public void changedUpdate(DocumentEvent ev, Shape shape, ViewFactory vf)
   {
-    Element el = getElement();
-    DocumentEvent.ElementChange ec = ev.getChange(el);
-    if (ec != null)
-      updateChildren(ec, ev, vf);
-    forwardUpdate(ec, ev, shape, vf);
-    updateLayout(ec, ev, shape);
+    if (getViewCount() > 0)
+      {
+        Element el = getElement();
+        DocumentEvent.ElementChange ec = ev.getChange(el);
+        if (ec != null)
+          {
+            if (! updateChildren(ec, ev, vf))
+              ec = null;
+          }
+        forwardUpdate(ec, ev, shape, vf);
+        updateLayout(ec, ev, shape);
+      }
   }
 
   /**
@@ -465,10 +488,15 @@ public abstract class View implements SwingConstants
     Element[] removed = ec.getChildrenRemoved();
     int index = ec.getIndex();
 
-    View[] newChildren = new View[added.length];
-    for (int i = 0; i < added.length; ++i)
-      newChildren[i] = vf.create(added[i]);
-    replace(index, removed.length, newChildren);
+    View[] newChildren = null;
+    if (added != null)
+      {
+        newChildren = new View[added.length];
+        for (int i = 0; i < added.length; ++i)
+          newChildren[i] = vf.create(added[i]);
+      }
+    int numRemoved = removed != null ? removed.length : 0;
+    replace(index, numRemoved, newChildren);
 
     return true;
   }
@@ -598,10 +626,12 @@ public abstract class View implements SwingConstants
                               DocumentEvent ev, Shape shape)
   {
     if (ec != null && shape != null)
-      preferenceChanged(null, true, true);
-    Container c = getContainer();
-    if (c != null)
-      c.repaint();
+      {
+        preferenceChanged(null, true, true);
+        Container c = getContainer();
+        if (c != null)
+          c.repaint();
+      }
   }
 
   /**
@@ -750,7 +780,9 @@ public abstract class View implements SwingConstants
    */
   public int viewToModel(float x, float y, Shape a)
   {
-    return viewToModel(x, y, a, new Position.Bias[0]);
+    Position.Bias[] biasRet = new Position.Bias[1];
+    biasRet[0] = Position.Bias.Forward;
+    return viewToModel(x, y, a, biasRet);
   }
 
   /**

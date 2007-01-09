@@ -40,6 +40,7 @@ package java.security.cert;
 
 import gnu.java.security.Engine;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -52,7 +53,7 @@ import java.util.Collection;
  * A CertStore is a read-only repository for certificates and
  * certificate revocation lists.
  *
- * @since JDK 1.4
+ * @since 1.4
  */
 public class CertStore
 {
@@ -123,59 +124,63 @@ public class CertStore
   }
 
   /**
-   * Get an instance of the given certificate store from the first
+   * Returns an instance of the given certificate store type from the first
    * installed provider.
-   *
-   * @param type     The type of CertStore to create.
-   * @param params   The parameters to initialize this cert store with.
+   * 
+   * @param type The type of <code>CertStore</code> to create.
+   * @param params The parameters to initialize this cert store with.
    * @return The new instance.
-   * @throws InvalidAlgorithmParameterException If the instance rejects
-   *         the specified parameters.
-   * @throws NoSuchAlgorithmException If no installed provider
-   *         implements the specified CertStore.
-   * @throws IllegalArgumentException If <i>provider</i> is null.
+   * @throws InvalidAlgorithmParameterException If the instance rejects the
+   *           specified parameters.
+   * @throws NoSuchAlgorithmException If no installed provider implements the
+   *           specified CertStore.
+   * @throws IllegalArgumentException if <code>type</code> is
+   *           <code>null</code> or is an empty string.
    */
   public static CertStore getInstance(String type, CertStoreParameters params)
     throws InvalidAlgorithmParameterException, NoSuchAlgorithmException
   {
     Provider[] p = Security.getProviders();
+    NoSuchAlgorithmException lastException = null;
     for (int i = 0; i < p.length; i++)
-      {
-        try
-          {
-            return getInstance(type, params, p[i]);
-          }
-        catch (NoSuchAlgorithmException e)
-          {
-	    // Ignored.
-          }
-      }
-
+      try
+        {
+          return getInstance(type, params, p[i]);
+        }
+      catch (NoSuchAlgorithmException x)
+        {
+          lastException = x;
+        }
+    if (lastException != null)
+      throw lastException;
     throw new NoSuchAlgorithmException(type);
   }
 
   /**
-   * Get an instance of the given certificate store from the named
+   * Returns an instance of the given certificate store type from a named
    * provider.
-   *
-   * @param type     The type of CertStore to create.
-   * @param params   The parameters to initialize this cert store with.
-   * @param provider The name of the provider from which to get the
-   *        implementation.
+   * 
+   * @param type The type of <code>CertStore</code> to create.
+   * @param params The parameters to initialize this cert store with.
+   * @param provider The name of the provider to use.
    * @return The new instance.
-   * @throws InvalidAlgorithmParameterException If the instance rejects
-   *         the specified parameters.
+   * @throws InvalidAlgorithmParameterException If the instance rejects the
+   *           specified parameters.
    * @throws NoSuchAlgorithmException If the specified provider does not
-   *         implement the specified CertStore.
-   * @throws NoSuchProviderException If no provider named
-   *         <i>provider</i> is installed.
-   * @throws IllegalArgumentException If <i>provider</i> is null.
+   *           implement the specified CertStore.
+   * @throws NoSuchProviderException If no provider named <i>provider</i> is
+   *           installed.
+   * @throws IllegalArgumentException if either <code>type</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>type</code> is an empty string.
    */
   public static CertStore getInstance(String type, CertStoreParameters params,
                                       String provider)
     throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
            NoSuchProviderException
   {
+    if (provider == null)
+      throw new IllegalArgumentException("provider MUST NOT be null");
     Provider p = Security.getProvider(provider);
     if (p == null)
       throw new NoSuchProviderException(provider);
@@ -183,47 +188,51 @@ public class CertStore
   }
 
   /**
-   * Get an instance of the given certificate store from the given
+   * Returns an instance of the given certificate store type from a given
    * provider.
    *
-   * @param type     The type of CertStore to create.
+   * @param type The type of <code>CertStore</code> to create.
    * @param params   The parameters to initialize this cert store with.
-   * @param provider The provider from which to get the implementation.
+   * @param provider The provider to use.
    * @return The new instance.
    * @throws InvalidAlgorithmParameterException If the instance rejects
    *         the specified parameters.
    * @throws NoSuchAlgorithmException If the specified provider does not
    *         implement the specified CertStore.
-   * @throws IllegalArgumentException If <i>provider</i> is null.
+   * @throws IllegalArgumentException if either <code>type</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>type</code> is an empty string.
    */
   public static CertStore getInstance(String type, CertStoreParameters params,
                                       Provider provider)
-    throws InvalidAlgorithmParameterException, NoSuchAlgorithmException
+      throws InvalidAlgorithmParameterException, NoSuchAlgorithmException
   {
-    if (provider == null)
-      throw new IllegalArgumentException("null provider");
-
+    StringBuilder sb = new StringBuilder("CertStore of type [")
+        .append(type).append("] from provider[")
+        .append(provider).append("] could not be created");
+    Throwable cause;
     try
       {
-        return new CertStore((CertStoreSpi) Engine.getInstance(CERT_STORE,
-          type, provider, new Object[] { params }), provider, type, params);
+        Object[] args = new Object[] { params };
+        Object spi = Engine.getInstance(CERT_STORE, type, provider, args);
+        return new CertStore((CertStoreSpi) spi, provider, type, params);
       }
-    catch (ClassCastException cce)
+    catch (InvocationTargetException x)
       {
-        throw new NoSuchAlgorithmException(type);
+        cause = x.getCause();
+        if (cause instanceof NoSuchAlgorithmException)
+          throw (NoSuchAlgorithmException) cause;
+        if (cause == null)
+          cause = x;
       }
-    catch (java.lang.reflect.InvocationTargetException ite)
+    catch (ClassCastException x)
       {
-        Throwable cause = ite.getCause();
-        if (cause instanceof InvalidAlgorithmParameterException)
-          throw (InvalidAlgorithmParameterException) cause;
-        else
-          throw new NoSuchAlgorithmException(type);
+        cause = x;
       }
+    NoSuchAlgorithmException x = new NoSuchAlgorithmException(sb.toString());
+    x.initCause(cause);
+    throw x;
   }
-
-// Instance methods.
-  // ------------------------------------------------------------------------
 
   /**
    * Return the type of certificate store this instance represents.
@@ -268,7 +277,7 @@ public class CertStore
    * @return The collection of certificates.
    * @throws CertStoreException If the certificates cannot be retrieved.
    */
-  public final Collection getCertificates(CertSelector selector)
+  public final Collection<? extends Certificate> getCertificates(CertSelector selector)
     throws CertStoreException
   {
     return storeSpi.engineGetCertificates(selector);
@@ -286,7 +295,7 @@ public class CertStore
    * @return The collection of certificate revocation lists.
    * @throws CertStoreException If the CRLs cannot be retrieved.
    */
-  public final Collection getCRLs(CRLSelector selector)
+  public final Collection<? extends CRL> getCRLs(CRLSelector selector)
     throws CertStoreException
   {
     return storeSpi.engineGetCRLs(selector);

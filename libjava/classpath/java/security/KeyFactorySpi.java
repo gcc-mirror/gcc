@@ -113,7 +113,8 @@ public abstract class KeyFactorySpi
    * is inappropriate for this key or the key is 
    * unrecognized.
    */
-  protected abstract KeySpec engineGetKeySpec(Key key, Class keySpec)
+  protected abstract <T extends KeySpec> T engineGetKeySpec(Key key,
+                                                            Class<T> keySpec)
     throws InvalidKeySpecException;
 
 
@@ -121,11 +122,11 @@ public abstract class KeyFactorySpi
    * Translates the key from an unknown or untrusted provider
    * into a key for this key factory.
    *
-   * @param the key from an unknown or untrusted provider
+   * @param key key from an unknown or untrusted provider
    *
    * @return the translated key
    *
-   * @throws InvalidKeySpecException if the key cannot be 
+   * @throws InvalidKeyException if the key cannot be 
    * processed by this key factory
    */
   protected abstract Key engineTranslateKey(Key key)

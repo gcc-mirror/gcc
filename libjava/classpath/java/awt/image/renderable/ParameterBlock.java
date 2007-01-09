@@ -45,20 +45,20 @@ import java.util.Vector;
 public class ParameterBlock implements Cloneable, Serializable
 {
   private static final long serialVersionUID = -7577115551785240750L;
-  protected Vector sources;
-  protected Vector parameters;
+  protected Vector<Object> sources;
+  protected Vector<Object> parameters;
 
   public ParameterBlock()
   {
-    this(new Vector(), new Vector());
+    this(new Vector<Object>(), new Vector<Object>());
   }
 
-  public ParameterBlock(Vector sources)
+  public ParameterBlock(Vector<Object> sources)
   {
-    this(sources, new Vector());
+    this(sources, new Vector<Object>());
   }
 
-  public ParameterBlock(Vector sources, Vector parameters)
+  public ParameterBlock(Vector<Object> sources, Vector<Object> parameters)
   {
     this.sources = sources;
     this.parameters = parameters;
@@ -80,9 +80,9 @@ public class ParameterBlock implements Cloneable, Serializable
   {
     ParameterBlock pb = (ParameterBlock) shallowClone();
     if (sources != null)
-      pb.sources = (Vector) sources.clone();
+      pb.sources = (Vector<Object>) sources.clone();
     if (parameters != null)
-      pb.parameters = (Vector) parameters.clone();
+      pb.parameters = (Vector<Object>) parameters.clone();
     return pb;
   }
 
@@ -119,12 +119,12 @@ public class ParameterBlock implements Cloneable, Serializable
     return sources.size();
   }
 
-  public Vector getSources()
+  public Vector<Object> getSources()
   {
     return sources;
   }
 
-  public void setSources(Vector sources)
+  public void setSources(Vector<Object> sources)
   {
     this.sources = sources;
   }
@@ -140,12 +140,12 @@ public class ParameterBlock implements Cloneable, Serializable
     return parameters.size();
   }
 
-  public Vector getParameters()
+  public Vector<Object> getParameters()
   {
     return parameters;
   }
 
-  public void setParameters(Vector parameters)
+  public void setParameters(Vector<Object> parameters)
   {
     this.parameters = parameters;
   }

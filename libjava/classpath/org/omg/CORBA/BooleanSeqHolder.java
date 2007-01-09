@@ -1,5 +1,5 @@
 /* BooleanSeqHolder.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -87,7 +87,7 @@ public final class BooleanSeqHolder
   }
 
   /**
-   * Fill in the {@link value } field by reading the required data
+   * Fill in the {@link #value } field by reading the required data
    * from the given stream. This method first reads the array size
    * (as CORBA <code>long</code>) and then calls the
    * {@link org.omg.CORBA.portable.InputStream#read_boolean_array }.
@@ -111,7 +111,7 @@ public final class BooleanSeqHolder
   }
 
   /**
-   * Write the {@link value } field to the given stream.
+   * Write the {@link #value } field to the given stream.
    * This method first writes the array size
    * (as CORBA <code>long</code>) and then calls the
    * {@link org.omg.CORBA.portable.OutputStream#write_boolean_array }.

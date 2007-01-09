@@ -130,7 +130,11 @@ public class RE extends REToken {
   private static final String VERSION = "1.1.5-dev";
 
   // The localized strings are kept in a separate file
-  private static ResourceBundle messages = PropertyResourceBundle.getBundle("gnu/java/util/regex/MessagesBundle", Locale.getDefault());
+  // Used by getLocalizedMessage().
+  private static ResourceBundle messages;
+
+  // Name of the bundle that contains the localized messages.
+  private static final String bundle = "gnu/java/util/regex/MessagesBundle";
 
   // These are, respectively, the first and last tokens in our linked list
   // If there is only one token, firstToken == lastToken
@@ -252,6 +256,13 @@ public class RE extends REToken {
    */
   public static final int REG_ICASE_USASCII = 0x0800;
 
+  /**
+   * Execution flag.
+   * Do not move the position at which the search begins.  If not set,
+   * the starting position will be moved until a match is found.
+   */
+  public static final int REG_FIX_STARTING_POSITION = 0x1000;
+
   /** Returns a string representing the version of the gnu.regexp package. */
   public static final String version() {
     return VERSION;
@@ -259,6 +270,8 @@ public class RE extends REToken {
 
   // Retrieves a message from the ResourceBundle
   static final String getLocalizedMessage(String key) {
+    if (messages == null)
+      messages = PropertyResourceBundle.getBundle(bundle, Locale.getDefault());
     return messages.getString(key);
   }
 
@@ -1643,6 +1656,7 @@ public class RE extends REToken {
   
     /* Implements abstract method REToken.match() */
     boolean match(CharIndexed input, REMatch mymatch) {
+        input.setHitEnd(mymatch);
 	if (firstToken == null) {
 	    return next(input, mymatch);
 	}
@@ -1720,15 +1734,23 @@ public class RE extends REToken {
 
   REMatch getMatchImpl(CharIndexed input, int anchor, int eflags, StringBuffer buffer) {
       boolean tryEntireMatch = ((eflags & REG_TRY_ENTIRE_MATCH) != 0);
+      boolean doMove = ((eflags & REG_FIX_STARTING_POSITION) == 0);
       RE re = (tryEntireMatch ? (RE) this.clone() : this);
       if (tryEntireMatch) {
-	  re.chain(new RETokenEnd(0, null));
+	  RETokenEnd reEnd = new RETokenEnd(0, null);
+	  reEnd.setFake(true);
+	  re.chain(reEnd);
       }
       // Create a new REMatch to hold results
       REMatch mymatch = new REMatch(numSubs, anchor, eflags);
       do {
+          /* The following potimization is commented out because
+             the matching should be tried even if the length of
+             input is obviously too short in order that
+             java.util.regex.Matcher#hitEnd() may work correctly.
 	  // Optimization: check if anchor + minimumLength > length
 	  if (minimumLength == 0 || input.charAt(minimumLength-1) != CharIndexed.OUT_OF_BOUNDS) {
+          */
 	      if (re.match(input, mymatch)) {
 		  REMatch best = mymatch;
 		  // We assume that the match that coms first is the best.
@@ -1749,13 +1771,17 @@ public class RE extends REToken {
 		  input.setLastMatch(best);
 		  return best;
 	      }
-	  }
+	  /* End of the optimization commented out
+          }
+	  */
 	  mymatch.clear(++anchor);
 	  // Append character to buffer if needed
 	  if (buffer != null && input.charAt(0) != CharIndexed.OUT_OF_BOUNDS) {
 	      buffer.append(input.charAt(0));
 	  }
-      } while (input.move(1));
+      // java.util.regex.Matcher#hitEnd() requires that the search should
+      // be tried at the end of input, so we use move1(1) instead of move(1) 
+      } while (doMove && input.move1(1));
       
       // Special handling at end of input for e.g. "$"
       if (minimumLength == 0) {

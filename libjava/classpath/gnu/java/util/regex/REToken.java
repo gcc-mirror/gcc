@@ -72,6 +72,16 @@ abstract class REToken implements Serializable, Cloneable {
 
     /** Returns true if the match succeeded, false if it failed. */
     boolean match(CharIndexed input, REMatch mymatch) {
+	return match(input, mymatch, false);
+    }
+    boolean matchFake(CharIndexed input, REMatch mymatch) {
+	return match(input, mymatch, true);
+    }
+
+    private boolean match(CharIndexed input, REMatch mymatch, boolean fake) {
+	if (!fake) {
+	    setHitEnd(input, mymatch);
+	}
 	REMatch m = matchThis(input, mymatch);
 	if (m == null) return false;
 	if (next(input, m)) {
@@ -79,6 +89,11 @@ abstract class REToken implements Serializable, Cloneable {
 	    return true;
 	}
 	return false;
+    }
+
+    /** Sets whether the matching occurs at the end of input */
+    void setHitEnd(CharIndexed input, REMatch mymatch) {
+        input.setHitEnd(mymatch);
     }
 
     /** Returns true if the match succeeded, false if it failed.

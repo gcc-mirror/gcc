@@ -89,12 +89,30 @@ public final class AccessControlContext
   public AccessControlContext(AccessControlContext acc,
 			      DomainCombiner combiner)
   {
+    AccessControlContext acc2 = null;
     SecurityManager sm = System.getSecurityManager ();
     if (sm != null)
       {
-        sm.checkPermission (new SecurityPermission ("createAccessControlContext"));
+	Permission perm =
+	  new SecurityPermission ("createAccessControlContext");
+
+	// The default SecurityManager.checkPermission(perm) just calls 
+	// AccessController.checkPermission(perm) which in turn just
+	// calls AccessController.getContext().checkPermission(perm).
+	// This means AccessController.getContext() is called twice,
+	// once for the security check and once by us.  It's a very
+	// expensive call (on gcj at least) so if we're using the
+	// default security manager we avoid this duplication.
+	if (sm.getClass() == SecurityManager.class)
+	  {
+	    acc2 = AccessController.getContext ();
+	    acc2.checkPermission (perm);
+	  }
+	else
+	  sm.checkPermission (perm);
       }
-    AccessControlContext acc2 = AccessController.getContext();
+    if (acc2 == null)
+      acc2 = AccessController.getContext ();
     protectionDomains = combiner.combine (acc2.protectionDomains,
                                           acc.protectionDomains);
     this.combiner = combiner;

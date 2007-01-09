@@ -65,7 +65,7 @@ public class CompositeName implements Name, Cloneable, Serializable
     elts = new Vector ();
   }
 
-  protected CompositeName (Enumeration comps)
+  protected CompositeName (Enumeration<String> comps)
   {
     elts = new Vector ();
     try
@@ -230,7 +230,7 @@ public class CompositeName implements Name, Cloneable, Serializable
     return (String) elts.get (posn);
   }
 
-  public Enumeration getAll ()
+  public Enumeration<String> getAll ()
   {
     return elts.elements ();
   }

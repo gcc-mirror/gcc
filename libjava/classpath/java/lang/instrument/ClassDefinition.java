@@ -60,8 +60,7 @@ public final class ClassDefinition
    * @param theClassFile the new class file
    * @throws NullPointerException if one of the argument is null
    */
-  /* FIXME[GENERICS]: Signature should be (Class<?>, byte[]) */
-  public ClassDefinition(Class theClass, byte[] theClassFile)
+  public ClassDefinition(Class<?> theClass, byte[] theClassFile)
   {
     if (theClass == null || theClassFile == null)
       throw new NullPointerException();
@@ -72,8 +71,7 @@ public final class ClassDefinition
   /**
    * @return the Class
    */
-  /* FIXME[GENERICS]: Should return Class<?> */
-  public Class getDefinitionClass()
+  public Class<?> getDefinitionClass()
   {
     return theClass;
   }

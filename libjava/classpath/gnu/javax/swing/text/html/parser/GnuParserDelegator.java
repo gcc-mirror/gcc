@@ -43,6 +43,7 @@ import java.io.Reader;
 import java.io.Serializable;
 
 import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.HTMLEditorKit.ParserCallback;
 import javax.swing.text.html.parser.DTD;
@@ -92,7 +93,7 @@ public class GnuParserDelegator extends ParserDelegator implements Serializable
 
     protected final void handleStartTag(TagElement tag)
     {
-      htmlAttributeSet attributes = gnu.getAttributes();
+      SimpleAttributeSet attributes = gnu.getAttributes();
 
       if (tag.fictional())
         attributes.addAttribute(ParserCallback.IMPLIED, Boolean.TRUE);

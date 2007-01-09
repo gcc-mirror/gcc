@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -227,10 +228,16 @@ public class HTTPConnection
    * @param secure whether to use a secure connection
    * @param connectionTimeout the connection timeout
    * @param timeout the socket read timeout
+   *
+   * @throws IllegalArgumentException if either connectionTimeout or
+   * timeout less than zero.
    */
   public HTTPConnection(String hostname, int port, boolean secure,
                         int connectionTimeout, int timeout)
   {
+    if (connectionTimeout < 0 || timeout < 0)
+      throw new IllegalArgumentException();
+    
     this.hostname = hostname;
     this.port = port;
     this.secure = secure;
@@ -471,14 +478,32 @@ public class HTTPConnection
     {
       String ttl =
         SystemProperties.getProperty("classpath.net.http.keepAliveTTL");
-      connectionTTL = (ttl != null && ttl.length() > 0) ?
-        1000 * Math.max(1, Integer.parseInt(ttl)) : 10000;
+      connectionTTL = 10000;
+      if (ttl != null && ttl.length() > 0)
+        try
+          {
+            int v = 1000 * Integer.parseInt(ttl);
+            if (v >= 0)
+              connectionTTL = v;
+          }
+        catch (NumberFormatException _)
+          {
+            // Ignore.
+          }
 
       String mc = SystemProperties.getProperty("http.maxConnections");
-      maxConnections = (mc != null && mc.length() > 0) ?
-        Math.max(Integer.parseInt(mc), 1) : 5;
-      if (maxConnections < 1)
-        maxConnections =  1;
+      maxConnections = 5;
+      if (mc != null && mc.length() > 0)
+        try
+          {
+            int v = Integer.parseInt(mc);
+            if (v > 0)
+              maxConnections = v;
+          }
+        catch (NumberFormatException _)
+          {
+            // Ignore.
+          }
 
       HTTPConnection c = null;
       
@@ -490,12 +515,23 @@ public class HTTPConnection
             {
               c = cc;
               it.remove();
+              // Update the timeout.
+              if (c.socket != null)
+                try
+                  {
+                    c.socket.setSoTimeout(timeout);
+                  }
+                catch (SocketException _)
+                  {
+                    // Ignore.
+                  }
               break;
             }
         }
       if (c == null)
         {
-          c = new HTTPConnection(host, port, secure, connectionTimeout, timeout);
+          c = new HTTPConnection(host, port, secure,
+                                 connectionTimeout, timeout);
           c.setPool(this);
         }
       return c;

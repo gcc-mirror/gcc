@@ -266,6 +266,8 @@ public class OceanTheme extends DefaultMetalTheme
     defaults.put("Tree.selectionBorderColor", PRIMARY1);
 
     // Borders.
+    defaults.put("List.focusCellHighlightBorder",
+                 new LineBorderUIResource(getPrimary1()));
     defaults.put("Table.focusCellHighlightBorder",
                  new LineBorderUIResource(getPrimary1()));
 

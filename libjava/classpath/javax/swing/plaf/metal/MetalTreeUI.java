@@ -38,14 +38,15 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.JComponent;
 import javax.swing.JTree;
+import javax.swing.UIManager;
 import javax.swing.tree.TreePath;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicTreeUI;
@@ -55,6 +56,68 @@ import javax.swing.plaf.basic.BasicTreeUI;
  */
 public class MetalTreeUI extends BasicTreeUI
 {
+  /**
+   * Listens for property changes of the line style and updates the
+   * internal setting.
+   */
+  private class LineStyleListener
+    implements PropertyChangeListener
+  {
+
+    public void propertyChange(PropertyChangeEvent e)
+    {
+      if (e.getPropertyName().equals(LINE_STYLE_PROPERTY))
+        decodeLineStyle(e.getNewValue());
+    }
+      
+  }
+
+  /**
+   * The key to the lineStyle client property.
+   */
+  private static final String LINE_STYLE_PROPERTY = "JTree.lineStyle";
+
+  /**
+   * The property value indicating no line style.
+   */
+  private static final String LINE_STYLE_VALUE_NONE = "None";
+
+  /**
+   * The property value indicating angled line style.
+   */
+  private static final String LINE_STYLE_VALUE_ANGLED = "Angled";
+
+  /**
+   * The property value indicating horizontal line style.
+   */
+  private static final String LINE_STYLE_VALUE_HORIZONTAL = "Horizontal";
+
+  /**
+   * The line style for None.
+   */
+  private static final int LINE_STYLE_NONE = 0;
+
+  /**
+   * The line style for Angled.
+   */
+  private static final int LINE_STYLE_ANGLED = 1;
+
+  /**
+   * The line style for Horizontal.
+   */
+  private static final int LINE_STYLE_HORIZONTAL = 2;
+
+  /**
+   * The current line style.
+   */
+  private int lineStyle;
+
+  /**
+   * Listens for changes on the line style property and updates the
+   * internal settings.
+   */
+  private PropertyChangeListener lineStyleListener;
+
   /**
    * Constructs a new instance of <code>MetalTreeUI</code>.
    */
@@ -103,8 +166,13 @@ public class MetalTreeUI extends BasicTreeUI
    */
   public void installUI(JComponent c)
   {
-    // TODO: What to do here, if anything?
     super.installUI(c);
+
+    Object lineStyleProp = c.getClientProperty(LINE_STYLE_PROPERTY);
+    decodeLineStyle(lineStyleProp);
+    if (lineStyleListener == null)
+      lineStyleListener = new LineStyleListener();
+    c.addPropertyChangeListener(lineStyleListener);
   }
   
   /**
@@ -124,8 +192,10 @@ public class MetalTreeUI extends BasicTreeUI
    */
   public void uninstallUI(JComponent c)
   {
-    // TODO: What to do here?
     super.uninstallUI(c);
+    if (lineStyleListener != null)
+      c.removePropertyChangeListener(lineStyleListener);
+    lineStyleListener = null;
   }
   
   /**
@@ -135,9 +205,15 @@ public class MetalTreeUI extends BasicTreeUI
    * @param lineStyleFlag - String representation
    */     
   protected void decodeLineStyle(Object lineStyleFlag)
-    throws NotImplementedException
   {
-    // FIXME: not implemented
+    if (lineStyleFlag == null || lineStyleFlag.equals(LINE_STYLE_VALUE_ANGLED))
+      lineStyle = LINE_STYLE_ANGLED;
+    else if (lineStyleFlag.equals(LINE_STYLE_VALUE_HORIZONTAL))
+      lineStyle = LINE_STYLE_HORIZONTAL;
+    else if (lineStyleFlag.equals(LINE_STYLE_VALUE_NONE))
+      lineStyle = LINE_STYLE_NONE;
+    else
+      lineStyle = LINE_STYLE_ANGLED;
   }
 
   /**
@@ -170,6 +246,9 @@ public class MetalTreeUI extends BasicTreeUI
     // Calls BasicTreeUI's paint since it takes care of painting all
     // types of icons. 
     super.paint(g, c);
+
+    if (lineStyle == LINE_STYLE_HORIZONTAL)
+      paintHorizontalSeparators(g, c);
   }
   
   /**
@@ -179,9 +258,28 @@ public class MetalTreeUI extends BasicTreeUI
    * @param c - the current component to draw
    */
   protected void paintHorizontalSeparators(Graphics g, JComponent c)
-    throws NotImplementedException
   {
-    // FIXME: not implemented
+    g.setColor(UIManager.getColor("Tree.line"));
+    Rectangle clip = g.getClipBounds();
+    int row0 = getRowForPath(tree, getClosestPathForLocation(tree, 0, clip.y));
+    int row1 =
+      getRowForPath(tree, getClosestPathForLocation(tree, 0,
+                                                    clip.y + clip.height - 1));
+    if (row0 >= 0 && row1 >= 0)
+      {
+        for (int i = row0; i <= row1; i++)
+          {
+            TreePath p = getPathForRow(tree, i);
+            if (p != null && p.getPathCount() == 2)
+              {
+                Rectangle r = getPathBounds(tree, getPathForRow(tree, i));
+                if (r != null)
+                  {
+                    g.drawLine(clip.x, r.y, clip.x + clip.width, r.y);
+                  }
+              }
+          }
+      }
   }
 
   
@@ -197,7 +295,8 @@ public class MetalTreeUI extends BasicTreeUI
   protected void paintVerticalPartOfLeg(Graphics g, Rectangle clipBounds,
                                     Insets insets, TreePath path)
   {
-    super.paintVerticalPartOfLeg(g, clipBounds, insets, path);
+    if (lineStyle == LINE_STYLE_ANGLED)
+      super.paintVerticalPartOfLeg(g, clipBounds, insets, path);
   }
 
   /**
@@ -211,7 +310,8 @@ public class MetalTreeUI extends BasicTreeUI
                                         boolean isExpanded, boolean hasBeenExpanded,
                                         boolean isLeaf)
   {
-    super.paintHorizontalPartOfLeg(g, clipBounds, insets, bounds, path, row, 
-                                   isExpanded, hasBeenExpanded, isLeaf);
+    if (lineStyle == LINE_STYLE_ANGLED)
+      super.paintHorizontalPartOfLeg(g, clipBounds, insets, bounds, path, row, 
+                                     isExpanded, hasBeenExpanded, isLeaf);
   }
 }

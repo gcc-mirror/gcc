@@ -129,6 +129,12 @@ public class gnuServantObject extends ObjectImpl
    * ids are requested from the servant.
    */
   public final String[] repository_ids;
+  
+  /**
+   * True indicates that the NO_RETAIN policy applies for the servant.
+   * The servant must be discarded after the each call.
+   */
+  boolean noRetain;
 
   /**
    * Create an object with no connected servant. The servant must be set later.
@@ -147,6 +153,8 @@ public class gnuServantObject extends ObjectImpl
     manager = a_poa.the_POAManager();
     poa = a_poa;
     orb = an_orb;
+    
+    noRetain = poa.applies(ServantRetentionPolicyValue.NON_RETAIN);    
   }
   
   /**
@@ -182,6 +190,8 @@ public class gnuServantObject extends ObjectImpl
       }
     repository_ids = null;
     orb = an_orb;
+    
+    noRetain = poa != null && poa.applies(ServantRetentionPolicyValue.NON_RETAIN);
   }
 
   /**
@@ -222,7 +232,7 @@ public class gnuServantObject extends ObjectImpl
     boolean forwarding_allowed
   ) throws gnuForwardRequest
   {
-    if (servant != null)
+    if (servant != null && !noRetain)
       {
         return servantToHandler(servant);
       }
@@ -641,13 +651,14 @@ public class gnuServantObject extends ObjectImpl
                     poa.servant_locator.postinvoke(Id, poa, method,
                       cookie.value, servant
                     );
-                    servant = null;
                   }
               }
           }
         finally
           {
             orb.currents.remove(Thread.currentThread());
+            if (noRetain)
+              servant = null;
           }
       }
     catch (ForwardRequest fex)

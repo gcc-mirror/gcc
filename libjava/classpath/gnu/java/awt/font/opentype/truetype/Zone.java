@@ -45,7 +45,7 @@ import java.awt.geom.PathIterator;
 /**
  * A collection of points with some additional information.
  */
-final class Zone
+public final class Zone
 {
   private final int[] pos;
   private final int[] origPos;

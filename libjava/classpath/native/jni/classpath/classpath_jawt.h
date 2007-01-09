@@ -54,6 +54,7 @@ jint     classpath_jawt_get_awt_version (void);
 Display* classpath_jawt_get_default_display (JNIEnv* env, jobject canvas);
 Drawable classpath_jawt_get_drawable (JNIEnv* env, jobject canvas);
 VisualID classpath_jawt_get_visualID (JNIEnv* env, jobject canvas);
+int      classpath_jawt_get_depth (JNIEnv* env, jobject canvas);
 jint     classpath_jawt_lock (void);
 void     classpath_jawt_unlock (void);
 

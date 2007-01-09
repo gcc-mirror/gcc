@@ -38,10 +38,10 @@ exception statement from your version.  */
 
 package gnu.javax.net.ssl.provider;
 
-import java.io.DataInputStream;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+import java.nio.ByteBuffer;
 
 final class Finished implements Handshake.Body
 {
@@ -49,95 +49,125 @@ final class Finished implements Handshake.Body
   // Fields.
   // -------------------------------------------------------------------------
 
-  /** TLSv1.x verify data. */
-  private final byte[] verifyData;
-
-  /** SSLv3 message digest pair. */
-  private final byte[] md5, sha;
+  private final ByteBuffer buffer;
+  private final ProtocolVersion version;
 
   // Constructor.
   // -------------------------------------------------------------------------
 
-  Finished(byte[] verifyData)
+  Finished (final ByteBuffer buffer, final ProtocolVersion version)
   {
-    this.verifyData = verifyData;
-    md5 = sha = null;
-  }
-
-  Finished(byte[] md5, byte[] sha)
-  {
-    this.md5 = md5;
-    this.sha = sha;
-    verifyData = null;
-  }
-
-  // Class methods.
-  // -------------------------------------------------------------------------
-
-  static Finished read(InputStream in, CipherSuite suite)
-    throws IOException
-  {
-    DataInputStream din = new DataInputStream(in);
-    if (suite.getVersion().equals(ProtocolVersion.SSL_3))
-      {
-        byte[] md5 = new byte[16];
-        byte[] sha = new byte[20];
-        din.readFully(md5);
-        din.readFully(sha);
-        return new Finished(md5, sha);
-      }
-    else
-      {
-        byte[] buf = new byte[12];
-        din.readFully(buf);
-        return new Finished(buf);
-      }
+    buffer.getClass ();
+    version.getClass ();
+    this.buffer = buffer;
+    this.version = version;
   }
 
   // Instance methods.
   // -------------------------------------------------------------------------
 
-  public void write(OutputStream out) throws IOException
+  public int length ()
   {
-    if (verifyData != null)
-      out.write(verifyData);
-    else
+    if (version.compareTo(ProtocolVersion.TLS_1) >= 0)
+      return 12;
+    if (version == ProtocolVersion.SSL_3)
+      return 36;
+    throw new IllegalArgumentException ("length for this version unknown");
+  }
+
+  byte[] verifyData()
+  {
+    if (version.compareTo(ProtocolVersion.TLS_1) >= 0)
       {
-        out.write(md5);
-        out.write(sha);
+        byte[] verify = new byte[12];
+        buffer.position (0);
+        buffer.get (verify);
+        return verify;
       }
+    throw new IllegalArgumentException ("not TLSv1.0 or later");
   }
 
-  byte[] getVerifyData()
+  byte[] md5Hash()
   {
-    return verifyData;
-  }
-
-  byte[] getMD5Hash()
-  {
-    return md5;
-  }
-
-  byte[] getSHAHash()
-  {
-    return sha;
-  }
-
-  public String toString()
-  {
-    String nl = System.getProperty("line.separator");
-    if (verifyData != null)
+    if (version == ProtocolVersion.SSL_3)
       {
-        return "struct {" + nl +
-          "  verifyData = " + Util.toHexString(verifyData, ':') + ";" + nl +
-          "} Finished;" + nl;
+        byte[] md5 = new byte[16];
+        buffer.position (0);
+        buffer.get (md5);
+        return md5;
       }
-    else
+    throw new IllegalArgumentException ("not SSLv3");
+  }
+
+  byte[] shaHash()
+  {
+    if (version == ProtocolVersion.SSL_3)
       {
-        return "struct {" + nl +
-          "  md5Hash = " + Util.toHexString(md5, ':') + ";" + nl +
-          "  shaHash = " + Util.toHexString(sha, ':') + ";" + nl +
-          "} Finished;" + nl;
+        byte[] sha = new byte[20];
+        buffer.position (16);
+        buffer.get (sha);
+        return sha;
       }
+    throw new IllegalArgumentException ("not SSLv3");
+  }
+
+  void setVerifyData (final byte[] verifyData, final int offset)
+  {
+    if (version == ProtocolVersion.SSL_3)
+      throw new IllegalArgumentException ("not TLSv1");
+    buffer.position (0);
+    buffer.put (verifyData, offset, 12);
+  }
+
+  void setMD5Hash (final byte[] md5, final int offset)
+  {
+    if (version != ProtocolVersion.SSL_3)
+      throw new IllegalArgumentException ("not SSLv3");
+    buffer.position (0);
+    buffer.put (md5, offset, 16);
+  }
+
+  void setShaHash (final byte[] sha, final int offset)
+  {
+    if (version != ProtocolVersion.SSL_3)
+      throw new IllegalArgumentException ("not SSLv3");
+    buffer.position (16);
+    buffer.put (sha, offset, 20);
+  }
+
+  public String toString ()
+  {
+    return toString (null);
+  }
+
+  public String toString (final String prefix)
+  {
+    StringWriter str = new StringWriter ();
+    PrintWriter out = new PrintWriter (str);
+    if (prefix != null)
+      out.print (prefix);
+    out.println ("struct {");
+    if (prefix != null)
+      out.print (prefix);
+    if (version.compareTo(ProtocolVersion.TLS_1) >= 0)
+      {
+        out.print ("  verifyData = ");
+        out.print (Util.toHexString (verifyData (), ':'));
+      }
+    else if (version == ProtocolVersion.SSL_3)
+      {
+        out.print ("  md5 = ");
+        out.print (Util.toHexString (md5Hash (), ':'));
+        out.println (';');
+        if (prefix != null)
+          out.print (prefix);
+        out.print ("  sha = ");
+        out.print (Util.toHexString (shaHash (), ':'));
+      }
+    out.println (';');
+    if (prefix != null)
+      out.print (prefix);
+    out.print ("} Finished;");
+    return str.toString ();
   }
 }

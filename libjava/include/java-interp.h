@@ -45,6 +45,12 @@ int  _Jv_count_arguments (_Jv_Utf8Const *signature,
 			  jboolean staticp = true);
 void _Jv_VerifyMethod (_Jv_InterpMethod *method);
 void _Jv_CompileMethod (_Jv_InterpMethod* method);
+int _Jv_init_cif (_Jv_Utf8Const* signature,
+		  int arg_count,
+		  jboolean staticp,
+		  ffi_cif *cif,
+		  ffi_type **arg_types,
+		  ffi_type **rtype_p);
 
 /* the interpreter is written in C++, primarily because it makes it easy for
  * the entire thing to be "friend" with class Class. */
@@ -312,18 +318,27 @@ public:
 // The interpreted call stack, represented by a linked list of frames.
 struct _Jv_InterpFrame
 {
-  _Jv_InterpMethod *self;
+  union
+  {
+    void *meth;
+    _Jv_InterpMethod *self;
+    _Jv_Method *proxyMethod;
+  };
   java::lang::Thread *thread;
   _Jv_InterpFrame *next;
-  pc_t pc;
-
-  _Jv_InterpFrame (_Jv_InterpMethod *s, java::lang::Thread *thr)
+  union
   {
-    self = s;
+    pc_t pc;
+    jclass proxyClass;
+  };
+  
+  _Jv_InterpFrame (void *meth, java::lang::Thread *thr, jclass proxyClass = NULL)
+  {
+    this->meth = meth;
     thread = thr;
     next = (_Jv_InterpFrame *) thr->interp_frame;
     thr->interp_frame = (gnu::gcj::RawData *) this;
-    pc = NULL;
+    this->proxyClass = proxyClass;
   }
 
   ~_Jv_InterpFrame ()

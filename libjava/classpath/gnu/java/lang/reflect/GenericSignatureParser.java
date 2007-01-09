@@ -60,7 +60,6 @@ final class TypeVariableImpl extends TypeImpl implements TypeVariable
         return this;
     }
 
-    /* FIXME[GENERICS]: Remove cast */
     public Type[] getBounds()
     {
         resolve(bounds);
@@ -141,10 +140,9 @@ final class ParameterizedTypeImpl extends TypeImpl implements ParameterizedType
         return this;
     }
 
-    /* FIXME[GENERICS]: Remove cast */
     public Type[] getActualTypeArguments()
     {
-        return (Type[]) typeArgs.clone();
+      return (Type[]) typeArgs.clone();
     }
 
     public Type getRawType()
@@ -276,12 +274,11 @@ final class UnresolvedTypeVariable extends TypeImpl implements Type
         GenericDeclaration d = decl;
         while (d != null)
         {
-	    TypeVariable[] vars = d.getTypeParameters();
-            for (int a = 0; a < vars.length  ; ++a)
+            for (TypeVariable t : d.getTypeParameters())
             {
-                if (vars[a].getName().equals(name))
+                if (t.getName().equals(name))
                 {
-                    return vars[a];
+                    return t;
                 }
             }
             d = getParent(d);
@@ -414,7 +411,7 @@ class GenericSignatureParser
     TypeVariable[] readFormalTypeParameters()
     {
         consume('<');
-        ArrayList params = new ArrayList();
+        ArrayList<TypeVariable> params = new ArrayList<TypeVariable>();
         do
         {
             // TODO should we handle name clashes?
@@ -430,7 +427,7 @@ class GenericSignatureParser
     {
         String identifier = readIdentifier();
         consume(':');
-        ArrayList bounds = new ArrayList();
+        ArrayList<Type> bounds = new ArrayList<Type>();
         if (peekChar() != ':')
         {
             bounds.add(readFieldTypeSignature());
@@ -501,7 +498,7 @@ class GenericSignatureParser
     private Type[] readTypeArguments()
     {
         consume('<');
-        ArrayList list = new ArrayList();
+        ArrayList<Type> list = new ArrayList<Type>();
         do
         {
             list.add(readTypeArgument());

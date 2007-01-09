@@ -1,0 +1,132 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+	"-//Puppy Crawl//DTD Check Configuration 1.2//EN"
+	"http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
+<!--
+
+Changes to this file need to be discussed on classpath@gnu.org
+mailing list first and probably documented in the hacking guide.
+
+-->
+<module name="Checker">
+  <module name="PackageHtml"/>
+
+  <module name="TreeWalker">
+    <property name="tabWidth" value="8"/>
+    
+    <!-- Javadoc related checks -->
+    <!--
+    <module name="JavadocType">
+      <property name="scope" value="protected"/>
+    </module>
+    <module name="JavadocMethod">
+      <property name="scope" value="protected"/>
+      <property name="allowUndeclaredRTE" value="true"/>
+    </module>
+    <module name="JavadocVariable">
+      <property name="scope" value="protected"/>
+    </module>
+    -->
+    <module name="JavadocStyle">
+      <property name="checkFirstSentence" value="false"/>
+      <property name="checkHtml" value="true"/>
+    </module>
+
+    <!-- File header checks -->
+    <module name="RegexpHeader">
+      <property name="headerFile" value="scripts/checkstyle-header.regex"/>
+      <property name="multiLines" value="2, 3, 38"/>
+    </module>
+
+    <!-- import checks -->
+    <module name="AvoidStarImport"/>
+    <module name="RedundantImport"/>
+    <module name="UnusedImports"/>
+    <module name="ImportOrder">
+      <property name="groups" value="gnu,java,javax,org"/>
+      <property name="ordered" value="true"/>
+      <property name="separated" value="true"/>
+    </module>
+
+    <!-- size checks -->
+    <!--
+    <module name="LineLength">
+      <property name="max" value="80"/>
+    </module>
+    -->
+
+    <!-- modifier checks -->
+    <module name="ModifierOrder"/>
+    <module name="RedundantModifier"/>
+    
+    <!-- block checks -->
+    <!--
+    <module name="EmptyBlock">
+      <property name="option" value="text"/>
+    </module>
+    <module name="LeftCurly">
+      <property name="option" value="nl"/>
+    </module>
+    <module name="RightCurly">
+      <property name="option" value="alone"/>
+    </module>
+    <module name="AvoidNestedBlocks"/>
+    -->
+
+    <!-- coding problem checks -->
+    <!--
+    <module name="ArrayTrailingComma"/>
+    <module name="CovariantEquals"/>
+    <module name="DoubleCheckedLocking"/>
+    <module name="EmptyStatement"/>
+    <module name="EqualsHashCode"/>
+    <module name="HiddenField"/>
+    -->
+    <module name="IllegalInstantiation">
+      <property name="classes" value="java.lang.Boolean"/>
+    </module>
+    <!--
+    <module name="InnerAssignment"/>
+    <module name="MagicNumber"/>
+    <module name="RedundantThrows"/>
+    <module name="SimplifyBooleanExpression"/>
+    <module name="SimplifyBooleanReturn"/>
+    <module name="NestedIfDepth"/>
+    <module name="NestedTryDepth"/>
+    <module name="SuperClone"/>
+    <module name="SuperFinalize"/>
+    <module name="IllegalCatch"/>
+    -->
+    <module name="PackageDeclaration"/>
+    <!--
+    <module name="DeclarationOrder"/>
+    <module name="DefaultComesLast"/>
+    <module name="UnnecessaryParentheses"/>
+    -->
+    
+    <!-- design problem checks -->
+    <!--
+    <module name="FinalClass"/>
+    <module name="HideUtilityClassConstructor"/>
+    -->
+    
+    <!-- miscellaneous checks -->
+    <!--
+    <module name="TodoComment"/>
+    <module name="UpperEll"/>
+    <module name="ArrayTypeStyle"/>
+    <module name="Indentation">
+      <property name="basicOffset" value="2"/>
+      <property name="braceAdjustment" value="2"/>
+      <property name="caseIndent" value="0"/>
+    </module>
+    -->
+  </module>
+  <!--
+  <module name="StrictDuplicateCode"/>
+  -->
+
+  <module name="SuppressionFilter">
+    <property name="file" value="scripts/checkstyle-suppressions.xml"/>
+  </module>
+</module>

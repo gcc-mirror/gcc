@@ -76,8 +76,8 @@ import java.io.Serializable;
  * @since 1.2
  * @status updated to 1.4
  */
-public class HashSet extends AbstractSet
-  implements Set, Cloneable, Serializable
+public class HashSet<T> extends AbstractSet<T>
+  implements Set<T>, Cloneable, Serializable
 {
   /**
    * Compatible with JDK 1.2.
@@ -87,7 +87,7 @@ public class HashSet extends AbstractSet
   /**
    * The HashMap which backs this Set.
    */
-  private transient HashMap map;
+  private transient HashMap<T, String> map;
 
   /**
    * Construct a new, empty HashSet whose backing HashMap has the default
@@ -133,7 +133,7 @@ public class HashSet extends AbstractSet
    * @param c a collection of initial set elements
    * @throws NullPointerException if c is null
    */
-  public HashSet(Collection c)
+  public HashSet(Collection<? extends T> c)
   {
     this(Math.max(2 * c.size(), HashMap.DEFAULT_CAPACITY));
     addAll(c);
@@ -146,7 +146,7 @@ public class HashSet extends AbstractSet
    * @param o the Object to add to this Set
    * @return true if the set did not already contain o
    */
-  public boolean add(Object o)
+  public boolean add(T o)
   {
     return map.put(o, "") == null;
   }
@@ -167,16 +167,16 @@ public class HashSet extends AbstractSet
    */
   public Object clone()
   {
-    HashSet copy = null;
+    HashSet<T> copy = null;
     try
       {
-        copy = (HashSet) super.clone();
+        copy = (HashSet<T>) super.clone();
       }
     catch (CloneNotSupportedException x)
       {
         // Impossible to get here.
       }
-    copy.map = (HashMap) map.clone();
+    copy.map = (HashMap<T, String>) map.clone();
     return copy;
   }
 
@@ -210,7 +210,7 @@ public class HashSet extends AbstractSet
    * @return a set iterator
    * @see ConcurrentModificationException
    */
-  public Iterator iterator()
+  public Iterator<T> iterator()
   {
     // Avoid creating intermediate keySet() object by using non-public API.
     return map.iterator(HashMap.KEYS);
@@ -263,7 +263,7 @@ public class HashSet extends AbstractSet
   {
     s.defaultWriteObject();
     // Avoid creating intermediate keySet() object by using non-public API.
-    Iterator it = map.iterator(HashMap.KEYS);
+    Iterator<T> it = map.iterator(HashMap.KEYS);
     s.writeInt(map.buckets.length);
     s.writeFloat(map.loadFactor);
     s.writeInt(map.size);
@@ -288,6 +288,6 @@ public class HashSet extends AbstractSet
 
     map = init(s.readInt(), s.readFloat());
     for (int size = s.readInt(); size > 0; size--)
-      map.put(s.readObject(), "");
+      map.put((T) s.readObject(), "");
   }
 }

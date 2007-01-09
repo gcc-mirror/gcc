@@ -121,7 +121,7 @@ public class ServiceRegistry
    * @throws ClassCastException if <code>categories</code> does not
    * iterate over instances of {@link java.lang.Class}.
    */
-  public ServiceRegistry(Iterator categories)
+  public ServiceRegistry(Iterator<Class<?>> categories)
   {
     ArrayList cats = new ArrayList(/* expected size */ 10);
 
@@ -178,8 +178,8 @@ public class ServiceRegistry
    * @throws IllegalArgumentException if <code>spi</code> is
    * <code>null</code>.
    */
-  public static Iterator lookupProviders(Class spi,
-                                         ClassLoader loader)
+  public static <T> Iterator<T> lookupProviders(Class<T> spi,
+                                                ClassLoader loader)
   {
     return ServiceFactory.lookupProviders(spi, loader);
   }
@@ -200,7 +200,7 @@ public class ServiceRegistry
    *
    * @see #lookupProviders(Class, ClassLoader)
    */
-  public static Iterator lookupProviders(Class spi)
+  public static <T> Iterator<T> lookupProviders(Class<T> spi)
   {
     return ServiceFactory.lookupProviders(spi);
   }
@@ -212,7 +212,7 @@ public class ServiceRegistry
    * @return an unmodifiable {@link
    * java.util.Iterator}&lt;{@link java.lang.Class}&gt;.
    */
-  public Iterator getCategories()
+  public Iterator<Class<?>> getCategories()
   {
     return new Iterator()
       {
@@ -317,8 +317,8 @@ public class ServiceRegistry
    * @throws ClassCastException if <code>provider</code> does not
    * implement <code>category</code>.
    */
-  public synchronized boolean registerServiceProvider(Object provider,
-                                                      Class category)
+  public synchronized <T> boolean registerServiceProvider(T provider,
+                                                          Class<T> category)
   {
     for (int i = 0; i < categories.length; i++)
       if (categories[i] == category)
@@ -383,7 +383,7 @@ public class ServiceRegistry
    * #ServiceRegistry(Iterator) constructor} of this
    * <code>ServiceRegistry</code>.
    */
-  public synchronized void registerServiceProviders(Iterator providers)
+  public synchronized void registerServiceProviders(Iterator<?> providers)
   {
     if (providers == null)
       throw new IllegalArgumentException();
@@ -467,8 +467,8 @@ public class ServiceRegistry
    * @throws ClassCastException if <code>provider</code> does not
    * implement <code>category</code>.
    */
-  public synchronized boolean deregisterServiceProvider(Object provider,
-                                                        Class category)
+  public synchronized <T> boolean deregisterServiceProvider(T provider,
+                                                            Class<T> category)
   {
     for (int i = 0; i < categories.length; i++)
       if (categories[i] == category)
@@ -535,7 +535,7 @@ public class ServiceRegistry
    * #ServiceRegistry(Iterator) constructor} of this
    * <code>ServiceRegistry</code>.
    */
-  public synchronized void deregisterAll(Class category)
+  public synchronized void deregisterAll(Class<?> category)
   {
     boolean ok = false;
 
@@ -663,7 +663,8 @@ public class ServiceRegistry
    *
    * @see #getServiceProviders(Class, Filter, boolean)
    */
-  public Iterator getServiceProviders(Class category, boolean useOrdering)
+  public <T> Iterator<T> getServiceProviders(Class<T> category,
+                                             boolean useOrdering)
   {
     return getServiceProviders(category, null, useOrdering);
   }
@@ -691,9 +692,9 @@ public class ServiceRegistry
    * #ServiceRegistry(Iterator) constructor} of this
    * <code>ServiceRegistry</code>.
    */
-  public synchronized Iterator getServiceProviders(Class category,
-                                                   Filter filter,
-                                                   boolean useOrdering)
+  public synchronized <T> Iterator<T> getServiceProviders(Class<T> category,
+                                                          Filter filter,
+                                                          boolean useOrdering)
   {
     int catid;
     LinkedList provs;
@@ -751,7 +752,7 @@ public class ServiceRegistry
    * 
    * @param providerClass a class to search for.
    */
-  public synchronized Object getServiceProviderByClass(Class providerClass)
+  public synchronized <T> T getServiceProviderByClass(Class<T> providerClass)
   {
     if (providerClass == null)
       throw new IllegalArgumentException();
@@ -772,7 +773,7 @@ public class ServiceRegistry
           {
             Object provider = iter.next();
             if (providerClass.isInstance(provider))
-              return provider;
+              return (T) provider;
           }
       }
 
@@ -799,9 +800,9 @@ public class ServiceRegistry
    * @see #unsetOrdering
    * @see #getServiceProviders(Class, Filter, boolean)
    */
-  public synchronized boolean setOrdering(Class category,
-                                          Object firstProvider,
-                                          Object secondProvider)
+  public synchronized <T> boolean setOrdering(Class<T> category,
+                                              T firstProvider,
+                                              T secondProvider)
   {
     return addConstraint(getCategoryID(category), firstProvider,
                          secondProvider);
@@ -826,9 +827,9 @@ public class ServiceRegistry
    *
    * @see #setOrdering
    */
-  public synchronized boolean unsetOrdering(Class category,
-                                            Object firstProvider,
-                                            Object secondProvider)
+  public synchronized <T> boolean unsetOrdering(Class<T> category,
+                                                T firstProvider,
+                                                T secondProvider)
   {
     return removeConstraint(getCategoryID(category),
                             firstProvider, secondProvider);

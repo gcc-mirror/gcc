@@ -59,6 +59,7 @@ import java.util.Set;
  * the most-trusted certificate.
  *
  * @see PKIXParameters
+ * @since 1.4
  */
 public abstract class PKIXCertPathChecker implements Cloneable
 {
@@ -116,7 +117,7 @@ public abstract class PKIXCertPathChecker implements Cloneable
    * @return An immutable set of Strings of the supported X.509 OIDs, or
    *         null if no extensions are supported.
    */
-  public abstract Set getSupportedExtensions();
+  public abstract Set<String> getSupportedExtensions();
 
   /**
    * Checks a certificate, removing any critical extensions that are
@@ -128,6 +129,6 @@ public abstract class PKIXCertPathChecker implements Cloneable
    * @throws CertPathValidatorException If this certificate fails this
    *         check.
    */
-  public abstract void check(Certificate cert, Collection unresolvedCritExts)
+  public abstract void check(Certificate cert, Collection<String> unresolvedCritExts)
   throws CertPathValidatorException;
 }

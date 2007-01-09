@@ -1,0 +1,6 @@
+#! /bin/sh
+
+# Sanitize a jsr166 download.
+
+# Remove code copyright Sun.
+find . -name '*.java' -print | xargs grep -l 'Copyright.*Sun' | xargs rm

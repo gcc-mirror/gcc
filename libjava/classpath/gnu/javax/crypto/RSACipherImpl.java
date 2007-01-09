@@ -40,6 +40,7 @@ package gnu.javax.crypto;
 
 import gnu.classpath.debug.Component;
 import gnu.classpath.debug.SystemLogger;
+import gnu.java.security.sig.rsa.EME_PKCS1_V1_5;
 import gnu.java.security.util.ByteArray;
 
 import java.math.BigInteger;
@@ -53,7 +54,6 @@ import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.AlgorithmParameterSpec;
-import java.util.logging.Logger;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -65,7 +65,8 @@ import javax.crypto.ShortBufferException;
 public class RSACipherImpl
     extends CipherSpi
 {
-  private static final Logger logger = SystemLogger.SYSTEM;
+  private static final SystemLogger logger = SystemLogger.SYSTEM;
+
   private static final byte[] EMPTY = new byte[0];
   private int opmode = -1;
   private RSAPrivateKey decipherKey = null;
@@ -199,22 +200,12 @@ public class RSACipherImpl
     engineUpdate(in, offset, length);
     if (opmode == Cipher.DECRYPT_MODE)
       {
-        if (pos < dataBuffer.length)
-          throw new IllegalBlockSizeException("expecting exactly "
-                                              + dataBuffer.length + " bytes");
-        BigInteger enc = new BigInteger(1, dataBuffer);
-        byte[] dec = rsaDecrypt(enc);
-        logger.log(Component.CRYPTO, "RSA: decryption produced\n{0}",
-                   new ByteArray(dec));
-        if (dec[0] != 0x02)
-          throw new BadPaddingException("expected padding type 2");
-        int i;
-        for (i = 1; i < dec.length && dec[i] != 0x00; i++)
-          ; // keep incrementing i
-        int len = dec.length - i - 1; // skip the 0x00 byte
-        byte[] result = new byte[len];
-        System.arraycopy(dec, i + 1, result, 0, len);
-        pos = 0;
+        BigInteger enc = new BigInteger (1, dataBuffer);
+        byte[] dec = rsaDecrypt (enc);
+        logger.log (Component.CRYPTO, "RSA: decryption produced\n{0}",
+                    new ByteArray (dec));
+        EME_PKCS1_V1_5 pkcs = EME_PKCS1_V1_5.getInstance(decipherKey);
+        byte[] result = pkcs.decode(dec);
         return result;
       }
     else
@@ -222,24 +213,18 @@ public class RSACipherImpl
         offset = dataBuffer.length - pos;
         if (offset < 3)
           throw new IllegalBlockSizeException("input is too large to encrypt");
-        byte[] dec = new byte[dataBuffer.length];
-        dec[0] = 0x02;
+        EME_PKCS1_V1_5 pkcs = EME_PKCS1_V1_5.getInstance(encipherKey);
         if (random == null)
           random = new SecureRandom();
-        byte[] pad = new byte[offset - 2];
-        random.nextBytes(pad);
-        for (int i = 0; i < pad.length; i++)
-          if (pad[i] == 0)
-            pad[i] = 1;
-        System.arraycopy(pad, 0, dec, 1, pad.length);
-        dec[dec.length - pos] = 0x00;
-        System.arraycopy(dataBuffer, 0, dec, offset, pos);
-        logger.log(Component.CRYPTO, "RSA: produced padded plaintext\n{0}",
-                   new ByteArray(dec));
-        BigInteger x = new BigInteger(1, dec);
-        BigInteger y = x.modPow(encipherKey.getPublicExponent(),
-                                encipherKey.getModulus());
-        byte[] enc = y.toByteArray();
+        byte[] em = new byte[pos];
+        System.arraycopy(dataBuffer, 0, em, 0, pos);
+        byte[] dec = pkcs.encode(em, random);
+        logger.log (Component.CRYPTO, "RSA: produced padded plaintext\n{0}",
+                    new ByteArray (dec));
+        BigInteger x = new BigInteger (1, dec);
+        BigInteger y = x.modPow (encipherKey.getPublicExponent (),
+                                 encipherKey.getModulus ());
+        byte[] enc = y.toByteArray ();
         if (enc[0] == 0x00)
           {
             byte[] tmp = new byte[enc.length - 1];
@@ -298,7 +283,17 @@ public class RSACipherImpl
       }
     BigInteger dec = enc.modPow(decipherKey.getPrivateExponent(), n);
     if (pubExp != null)
-      dec = dec.multiply(r.modInverse(n)).mod(n);
-    return dec.toByteArray();
+      {
+        dec = dec.multiply (r.modInverse (n)).mod (n);
+      }
+
+    byte[] decb = dec.toByteArray();
+    if (decb[0] != 0x00)
+      {
+        byte[] b = new byte[decb.length + 1];
+        System.arraycopy(decb, 0, b, 1, decb.length);
+        decb = b;
+      }
+    return decb;
   }
 }

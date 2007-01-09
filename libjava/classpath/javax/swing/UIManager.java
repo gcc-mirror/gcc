@@ -154,8 +154,16 @@ public class UIManager implements Serializable
 
     UIDefaults fallback;
 
+    /**
+     * Creates a new <code>MultiplexUIDefaults</code> instance with 
+     * <code>d</code> as the fallback defaults.
+     * 
+     * @param d  the fallback defaults (<code>null</code> not permitted).
+     */
     MultiplexUIDefaults(UIDefaults d)
     {
+      if (d == null) 
+        throw new NullPointerException();
       fallback = d;
     }
 
@@ -400,6 +408,8 @@ public class UIManager implements Serializable
    * @param key  the key.
    * 
    * @return The object.
+   * 
+   * @since 1.4
    */
   public static Object get(Object key, Locale locale)
   {
@@ -407,61 +417,120 @@ public class UIManager implements Serializable
   }
 
   /**
-   * Returns a boolean value from the defaults table,
-   * <code>false</code> if key is not present.
+   * Returns a boolean value from the defaults table.  If there is no value
+   * for the specified key, or the value is not an instance of {@link Boolean},
+   * this method returns <code>false</code>.
+   * 
+   * @param key  the key (<code>null</code> not permitted).
    *
+   * @return The boolean value associated with the specified key.
+   * 
+   * @throws NullPointerException if <code>key</code> is <code>null</code>.
+   * 
    * @since 1.4
    */
   public static boolean getBoolean(Object key)
   {
-    Boolean value = (Boolean) get(key);
-    return value != null ? value.booleanValue() : false;
+    Object value = get(key);
+    if (value instanceof Boolean) 
+      return ((Boolean) value).booleanValue();
+    return false;
   }
   
   /**
-   * Returns a boolean value from the defaults table,
-   * <code>false</code> if key is not present.
+   * Returns a boolean value from the defaults table.  If there is no value
+   * for the specified key, or the value is not an instance of {@link Boolean},
+   * this method returns <code>false</code>.
+   * 
+   * @param key  the key (<code>null</code> not permitted).
+   * @param locale  the locale.
    *
+   * @return The boolean value associated with the specified key.
+   * 
+   * @throws NullPointerException if <code>key</code> is <code>null</code>.
+   * 
    * @since 1.4
    */
   public static boolean getBoolean(Object key, Locale locale)
   {
-    Boolean value = (Boolean) get(key, locale);
-    return value != null ? value.booleanValue() : false;
+    Object value = get(key, locale);
+    if (value instanceof Boolean) 
+      return ((Boolean) value).booleanValue();
+    return false;
   }
     
   /**
    * Returns a border from the defaults table. 
+   * 
+   * @param key  the key (<code>null</code> not permitted).
+   * 
+   * @return The border associated with the given key, or <code>null</code>.
+   * 
+   * @throws NullPointerException if <code>key</code> is <code>null</code>.
    */
   public static Border getBorder(Object key)
   {
-    return (Border) get(key);
+    Object value = get(key);
+    if (value instanceof Border) 
+      return (Border) value;
+    return null;
   }
     
   /**
-   * Returns a border from the defaults table.
+   * Returns a border from the defaults table. 
+   * 
+   * @param key  the key (<code>null</code> not permitted).
+   * @param locale  the locale.
+   * 
+   * @return The border associated with the given key, or <code>null</code>.
+   * 
+   * @throws NullPointerException if <code>key</code> is <code>null</code>.
    *
    * @since 1.4
    */
   public static Border getBorder(Object key, Locale locale)
   {
-    return (Border) get(key, locale);
+    Object value = get(key, locale);
+    if (value instanceof Border) 
+      return (Border) value;
+    return null;
   }
     
   /**
    * Returns a drawing color from the defaults table. 
+   * 
+   * @param key  the key (<code>null</code> not permitted).
+   * 
+   * @return The color associated with the given key, or <code>null</code>.
+   * 
+   * @throws NullPointerException if <code>key</code> is <code>null</code>.
    */
   public static Color getColor(Object key)
   {
-    return (Color) get(key);
+    Object value = get(key);
+    if (value instanceof Color) 
+      return (Color) value;
+    return null;
   }
 
   /**
    * Returns a drawing color from the defaults table. 
+   * 
+   * @param key  the key (<code>null</code> not permitted).
+   * @param locale  the locale.
+   * 
+   * @return The color associated with the given key, or <code>null</code>.
+   * 
+   * @throws NullPointerException if <code>key</code> is <code>null</code>.
+   * 
+   * @since 1.4
    */
   public static Color getColor(Object key, Locale locale)
   {
-    return (Color) get(key);
+    Object value = get(key, locale);
+    if (value instanceof Color) 
+      return (Color) value;
+    return null;
   }
 
   /**
@@ -483,24 +552,44 @@ public class UIManager implements Serializable
   public static UIDefaults getDefaults()
   {
     if (currentUIDefaults == null)
-      currentUIDefaults = new MultiplexUIDefaults(null);
+      currentUIDefaults = new MultiplexUIDefaults(new UIDefaults());
     return currentUIDefaults;
   }
 
   /**
    * Returns a dimension from the defaults table. 
+   * 
+   * @param key  the key (<code>null</code> not permitted).
+   * 
+   * @return The color associated with the given key, or <code>null</code>.
+   * 
+   * @throws NullPointerException if <code>key</code> is <code>null</code>.
    */
   public static Dimension getDimension(Object key)
   {
-    return (Dimension) get(key);
+    Object value = get(key);
+    if (value instanceof Dimension) 
+      return (Dimension) value;
+    return null;
   }
 
   /**
    * Returns a dimension from the defaults table. 
+   * 
+   * @param key  the key (<code>null</code> not permitted).
+   * @param locale  the locale.
+   * 
+   * @return The color associated with the given key, or <code>null</code>.
+   * 
+   * @throws NullPointerException if <code>key</code> is <code>null</code>.
+   * @since 1.4
    */
   public static Dimension getDimension(Object key, Locale locale)
   {
-    return (Dimension) get(key, locale);
+    Object value = get(key, locale);
+    if (value instanceof Dimension) 
+      return (Dimension) value;
+    return null;
   }
 
   /**
@@ -510,10 +599,17 @@ public class UIManager implements Serializable
    * @param key an Object that specifies the font. Typically,
    *        this is a String such as
    *        <code>TitledBorder.font</code>.
+   *        
+   * @return The font associated with the given key, or <code>null</code>.
+   * 
+   * @throws NullPointerException if <code>key</code> is <code>null</code>.
    */
   public static Font getFont(Object key)
   {
-    return (Font) get(key);
+    Object value = get(key);
+    if (value instanceof Font) 
+      return (Font) value;
+    return null;
   }
 
   /**
@@ -523,30 +619,66 @@ public class UIManager implements Serializable
    * @param key an Object that specifies the font. Typically,
    *        this is a String such as
    *        <code>TitledBorder.font</code>.
+   * @param locale  the locale.
+   *        
+   * @return The font associated with the given key, or <code>null</code>.
+   * 
+   * @throws NullPointerException if <code>key</code> is <code>null</code>.
+   *        
+   * @since 1.4
    */
   public static Font getFont(Object key, Locale locale)
   {
-    return (Font) get(key, locale);
+    Object value = get(key, locale);
+    if (value instanceof Font) 
+      return (Font) value;
+    return null;
   }
 
   /**
-   * Returns an Icon from the defaults table.
+   * Returns an icon from the defaults table. 
+   * 
+   * @param key  the key (<code>null</code> not permitted).
+   * 
+   * @return The icon associated with the given key, or <code>null</code>.
+   * 
+   * @throws NullPointerException if <code>key</code> is <code>null</code>.
    */
   public static Icon getIcon(Object key)
   {
-    return (Icon) get(key);
+    Object value = get(key);
+    if (value instanceof Icon) 
+      return (Icon) value;
+    return null;
   }
   
   /**
-   * Returns an Icon from the defaults table.
+   * Returns an icon from the defaults table. 
+   * 
+   * @param key  the key (<code>null</code> not permitted).
+   * @param locale  the locale.
+   * 
+   * @return The icon associated with the given key, or <code>null</code>.
+   * 
+   * @throws NullPointerException if <code>key</code> is <code>null</code>.
+   * @since 1.4
    */
   public static Icon getIcon(Object key, Locale locale)
   {
-    return (Icon) get(key, locale);
+    Object value = get(key, locale);
+    if (value instanceof Icon) 
+      return (Icon) value;
+    return null;
   }
   
   /**
    * Returns an Insets object from the defaults table.
+   * 
+   * @param key  the key (<code>null</code> not permitted).
+   * 
+   * @return The insets associated with the given key, or <code>null</code>.
+   * 
+   * @throws NullPointerException if <code>key</code> is <code>null</code>.   
    */
   public static Insets getInsets(Object key)
   {
@@ -559,6 +691,14 @@ public class UIManager implements Serializable
 
   /**
    * Returns an Insets object from the defaults table.
+   * 
+   * @param key  the key (<code>null</code> not permitted).
+   * @param locale  the locale.
+   * 
+   * @return The insets associated with the given key, or <code>null</code>.
+   * 
+   * @throws NullPointerException if <code>key</code> is <code>null</code>.   
+   * @since 1.4
    */
   public static Insets getInsets(Object key, Locale locale)
   {
@@ -580,20 +720,41 @@ public class UIManager implements Serializable
     return installed;
   }
 
+  /**
+   * Returns the integer value of the {@link Integer} associated with the
+   * given key.  If there is no value, or the value is not an instance of
+   * {@link Integer}, this method returns 0.
+   * 
+   * @param key  the key (<code>null</code> not permitted).
+   * 
+   * @return The integer value associated with the given key, or 0.
+   */
   public static int getInt(Object key)
   {
-    Integer x = (Integer) get(key);
-    if (x == null)
-      return 0;
-    return x.intValue();
+    Object x = get(key);
+    if (x instanceof Integer)
+      return ((Integer) x).intValue();
+    return 0;
   }
 
+  /**
+   * Returns the integer value of the {@link Integer} associated with the
+   * given key.  If there is no value, or the value is not an instance of
+   * {@link Integer}, this method returns 0.
+   * 
+   * @param key  the key (<code>null</code> not permitted).
+   * @param locale  the locale.
+   * 
+   * @return The integer value associated with the given key, or 0.
+   * 
+   * @since 1.4
+   */
   public static int getInt(Object key, Locale locale)
   {
-    Integer x = (Integer) get(key, locale);
-    if (x == null)
-      return 0;
-    return x.intValue();
+    Object x = get(key, locale);
+    if (x instanceof Integer)
+      return ((Integer) x).intValue();
+    return 0;
   }
 
   /**
@@ -620,19 +781,38 @@ public class UIManager implements Serializable
   }
 
   /**
-   * Returns a string from the defaults table.
+   * Returns the {@link String} associated with the given key.  If the value 
+   * is not a {@link String}, this method returns <code>null</code>.
+   * 
+   * @param key  the key (<code>null</code> not permitted).
+   * 
+   * @return The string associated with the given key, or <code>null</code>.
    */
   public static String getString(Object key)
   {
-    return (String) get(key);
+    Object s = get(key);
+    if (s instanceof String)
+      return (String) s;
+    return null;
   }
   
   /**
-   * Returns a string from the defaults table.
+   * Returns the {@link String} associated with the given key.  If the value 
+   * is not a {@link String}, this method returns <code>null</code>.
+   * 
+   * @param key  the key (<code>null</code> not permitted).
+   * @param locale  the locale.
+   * 
+   * @return The string associated with the given key, or <code>null</code>.
+   * 
+   * @since 1.4
    */
   public static String getString(Object key, Locale locale)
   {
-    return (String) get(key, locale);
+    Object s = get(key, locale);
+    if (s instanceof String)
+      return (String) s;
+    return null;
   }
   
   /**
@@ -686,6 +866,9 @@ public class UIManager implements Serializable
 
   /**
    * Stores an object in the defaults table.
+   * 
+   * @param key  the key.
+   * @param value  the value.
    */
   public static Object put(Object key, Object value)
   {

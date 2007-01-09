@@ -94,7 +94,7 @@ public interface AclEntry extends Cloneable
   /**
    * This method adds the specified permission to this ACL entry.
    *
-   * @param perm The <code>Permission</code> to add
+   * @param permission The <code>Permission</code> to add
    *
    * @return <code>true</code> if the permission was added or <code>false</code> if it was already set for this entry
    */
@@ -113,7 +113,7 @@ public interface AclEntry extends Cloneable
    * This method tests whether or not the specified permission is associated
    * with this ACL entry.
    *
-   * @param perm The <code>Permission</code> to test
+   * @param permission The <code>Permission</code> to test
    *
    * @return <code>true</code> if this permission is associated with this entry or <code>false</code> otherwise
    */
@@ -125,7 +125,7 @@ public interface AclEntry extends Cloneable
    *
    * @return A list of permissions for this ACL entry
    */
-  Enumeration permissions();
+  Enumeration<Permission> permissions();
 
   /**
    * This method returns this object as a <code>String</code>.

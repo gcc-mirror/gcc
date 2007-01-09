@@ -39,11 +39,13 @@ exception statement from your version. */
 package sun.reflect.annotation;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.annotation.AnnotationTypeMismatchException;
 import java.lang.annotation.IncompleteAnnotationException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
@@ -72,6 +74,24 @@ public final class AnnotationInvocationHandler
     {
         this.type = type;
         this.memberValues = memberValues;
+    }
+
+    public static Annotation create(Class type, Map memberValues)
+    {
+      for (Method m : type.getDeclaredMethods())
+	{
+	  String name = m.getName();
+	  if (! memberValues.containsKey(name))
+	    {
+	      // FIXME: what to do about exceptions here?
+	      memberValues.put(name, m.getDefaultValue());
+	    }
+	}
+      AnnotationInvocationHandler handler
+	= new AnnotationInvocationHandler(type, memberValues);
+      return (Annotation) Proxy.newProxyInstance(type.getClassLoader(),
+						 new Class[] { type },
+						 handler);
     }
 
     /**
@@ -295,6 +315,38 @@ public final class AnnotationInvocationHandler
         return returnType;
     }
 
+    private Object arrayClone(Object obj)
+    {
+        if (obj instanceof boolean[])
+	    return ((boolean[]) obj).clone();
+
+        if (obj instanceof byte[])
+	    return ((byte[]) obj).clone();
+
+        if (obj instanceof char[])
+	    return ((char[]) obj).clone();
+
+        if (obj instanceof short[])
+	    return ((short[]) obj).clone();
+
+        if (obj instanceof int[])
+	    return ((int[]) obj).clone();
+
+        if (obj instanceof float[])
+	    return ((float[]) obj).clone();
+
+        if (obj instanceof long[])
+	    return ((long[]) obj).clone();
+
+        if (obj instanceof double[])
+	    return ((double[]) obj).clone();
+
+        if (obj instanceof Object[])
+	    return ((Object[]) obj).clone();
+
+        return obj;
+    }
+
     public Object invoke(Object proxy, Method method, Object[] args)
       throws Throwable
     {
@@ -325,6 +377,10 @@ public final class AnnotationInvocationHandler
                     throw new AnnotationTypeMismatchException(method,
                         val.getClass().getName());
                 }
+		if (val.getClass().isArray())
+		{
+		    val = arrayClone(val);
+		}
                 return val;
             }
         }

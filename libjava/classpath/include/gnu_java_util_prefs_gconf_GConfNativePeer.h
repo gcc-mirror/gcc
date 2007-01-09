@@ -20,8 +20,10 @@ JNIEXPORT jboolean JNICALL Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_
 JNIEXPORT jstring JNICALL Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1get_1string (JNIEnv *env, jclass, jstring);
 JNIEXPORT jboolean JNICALL Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1unset (JNIEnv *env, jclass, jstring);
 JNIEXPORT void JNICALL Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1suggest_1sync (JNIEnv *env, jclass);
-JNIEXPORT jobject JNICALL Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1gconf_1client_1all_1nodes (JNIEnv *env, jclass, jstring);
-JNIEXPORT jobject JNICALL Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1gconf_1client_1all_1keys (JNIEnv *env, jclass, jstring);
+JNIEXPORT jobject JNICALL Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1all_1nodes (JNIEnv *env, jclass, jstring);
+JNIEXPORT jobject JNICALL Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1all_1keys (JNIEnv *env, jclass, jstring);
+JNIEXPORT jstring JNICALL Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1escape_1key (JNIEnv *env, jclass, jstring);
+JNIEXPORT jstring JNICALL Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1unescape_1key (JNIEnv *env, jclass, jstring);
 
 #ifdef __cplusplus
 }

@@ -38,9 +38,6 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import gnu.classpath.NotImplementedException;
-
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -54,7 +51,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
@@ -65,15 +61,15 @@ import javax.swing.JViewport;
 import javax.swing.LookAndFeel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.ScrollPaneLayout;
-import javax.swing.Scrollable;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ActionMapUIResource;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.ScrollPaneUI;
+import javax.swing.plaf.UIResource;
 
 /**
  * A UI delegate for the {@link JScrollPane} component.
@@ -102,19 +98,8 @@ public class BasicScrollPaneUI extends ScrollPaneUI
       JScrollBar hsb = scrollpane.getHorizontalScrollBar();
       JViewport vp = scrollpane.getViewport();
       Point viewPosition = vp.getViewPosition();
-      int xpos = hsb.getValue();
-
-      if (xpos != viewPosition.x)
-        {
-          viewPosition.x = xpos;
-          vp.setViewPosition(viewPosition);
-        }
-
-      viewPosition.y = 0;
-      JViewport columnHeader = scrollpane.getColumnHeader();
-      if (columnHeader != null 
-          && !columnHeader.getViewPosition().equals(viewPosition))
-        columnHeader.setViewPosition(viewPosition);
+      viewPosition.x = hsb.getValue();
+      vp.setViewPosition(viewPosition);
     }
 
   }
@@ -139,18 +124,8 @@ public class BasicScrollPaneUI extends ScrollPaneUI
       JScrollBar vsb = scrollpane.getVerticalScrollBar();
       JViewport vp = scrollpane.getViewport();
       Point viewPosition = vp.getViewPosition();
-      int ypos = vsb.getValue();
-      if (ypos != viewPosition.y)
-        {
-          viewPosition.y = ypos;
-          vp.setViewPosition(viewPosition);
-        }
-
-      viewPosition.x = 0;
-      JViewport rowHeader = scrollpane.getRowHeader();
-      if (rowHeader != null 
-          && !rowHeader.getViewPosition().equals(viewPosition))
-        rowHeader.setViewPosition(viewPosition);
+      viewPosition.y = vsb.getValue();
+      vp.setViewPosition(viewPosition);
     }
  
   }
@@ -174,9 +149,6 @@ public class BasicScrollPaneUI extends ScrollPaneUI
      */
     public void stateChanged(ChangeEvent event)
     {
-      JViewport vp = scrollpane.getViewport();
-      JScrollBar hsb = scrollpane.getHorizontalScrollBar();
-      JScrollBar vsb = scrollpane.getVerticalScrollBar();
       syncScrollPaneWithViewport();
     }
 
@@ -254,102 +226,23 @@ public class BasicScrollPaneUI extends ScrollPaneUI
      */
     public void mouseWheelMoved(MouseWheelEvent e)
     {
-      if (scrollpane.getViewport().getComponentCount() == 0)
-        return;
-
-      Component target = scrollpane.getViewport().getComponent(0);
-      JScrollBar bar = scrollpane.getVerticalScrollBar();
-      Scrollable scrollable = (target instanceof Scrollable) ? (Scrollable) target
-                                                            : null;
-
-      boolean tracksHeight = scrollable != null
-                             && scrollable.getScrollableTracksViewportHeight();
-      int wheel = e.getWheelRotation() * ROWS_PER_WHEEL_CLICK;
-      int delta;
-
-      // If possible, scroll vertically.
-      if (bar != null && ! tracksHeight)
+      if (scrollpane.isWheelScrollingEnabled() && e.getScrollAmount() != 0)
         {
-          if (scrollable != null)
+          // Try to scroll vertically first.
+          JScrollBar scrollBar = scrollpane.getVerticalScrollBar();
+          if (scrollBar == null || ! scrollBar.isVisible())
+            scrollBar = scrollpane.getHorizontalScrollBar();
+          if (scrollBar != null && scrollBar.isVisible())
             {
-              bounds(target);
-              delta = scrollable.getScrollableUnitIncrement(
-                rect, SwingConstants.VERTICAL, wheel);
-            }
-          else
-            {
-              // Scroll non scrollables.
-              delta = wheel * SCROLL_NON_SCROLLABLES;
-            }
-          scroll(bar, delta);
-        }
-      // If not, try to scroll horizontally
-      else
-        {
-          bar = scrollpane.getHorizontalScrollBar();
-          boolean tracksWidth = scrollable != null
-                                && scrollable.getScrollableTracksViewportWidth();
-
-          if (bar != null && ! tracksWidth)
-            {
-              if (scrollable != null)
-                {
-                  bounds(target);
-                  delta = scrollable.getScrollableUnitIncrement(
-                     rect, SwingConstants.HORIZONTAL, wheel);
-                }
-              else
-                {
-                  // Scroll non scrollables.
-                  delta = wheel * SCROLL_NON_SCROLLABLES;
-                }
-              scroll(bar, delta);
+              int direction = e.getWheelRotation() < 0 ? -1 : 1;
+              int scrollType = e.getScrollType();
+              if (scrollType == MouseWheelEvent.WHEEL_UNIT_SCROLL)
+                BasicScrollBarUI.scrollByUnits(scrollBar, direction,
+                                               e.getScrollAmount());
+              else if (scrollType == MouseWheelEvent.WHEEL_BLOCK_SCROLL)
+                BasicScrollBarUI.scrollByBlock(scrollBar, direction);
             }
         }
-    }
-    
-    /**
-     * Place the component bounds into rect. The x and y values 
-     * need to be reversed.
-     * 
-     * @param target the target being scrolled
-     */
-    final void bounds(Component target)
-    {
-      // Viewport bounds, translated by the scroll bar positions.
-      target.getParent().getBounds(rect);
-      rect.x = getValue(scrollpane.getHorizontalScrollBar());
-      rect.y = getValue(scrollpane.getVerticalScrollBar());
-    }
-    
-    /**
-     * Get the scroll bar value or 0 if there is no such scroll bar.
-     * 
-     * @param bar  the scroll bar (<code>null</code> permitted).
-     * 
-     * @return The scroll bar value, or 0.
-     */
-    final int getValue(JScrollBar bar)
-    {
-      return bar != null ? bar.getValue() : 0;
-    }
-    
-    /**
-     * Scroll the given distance.
-     * 
-     * @param bar the scrollbar to scroll
-     * @param delta the distance
-     */
-    final void scroll(JScrollBar bar, int delta)
-    {
-      int y = bar.getValue() + delta;
-
-      if (y < bar.getMinimum())
-        y = bar.getMinimum();
-      if (y > bar.getMaximum())
-        y = bar.getMaximum();
-
-      bar.setValue(y);
     }
   }
   
@@ -436,16 +329,24 @@ public class BasicScrollPaneUI extends ScrollPaneUI
                                      "ScrollPane.foreground",
                                      "ScrollPane.font");
     LookAndFeel.installBorder(p, "ScrollPane.border");
+
+    // Install Viewport border.
+    Border vpBorder = p.getViewportBorder();
+    if (vpBorder == null || vpBorder instanceof UIResource)
+      {
+        vpBorder = UIManager.getBorder("ScrollPane.viewportBorder");
+        p.setViewportBorder(vpBorder);
+      }
+
     p.setOpaque(true);
   }
 
   protected void uninstallDefaults(JScrollPane p)
   {
-    p.setForeground(null);
-    p.setBackground(null);
-    p.setFont(null);
-    p.setBorder(null);
-    scrollpane = null;
+    LookAndFeel.uninstallBorder(p);
+    Border vpBorder = p.getViewportBorder();
+    if (vpBorder != null && vpBorder instanceof UIResource)
+      p.setViewportBorder(null);
   }
     
   public void installUI(final JComponent c) 
@@ -770,9 +671,8 @@ public class BasicScrollPaneUI extends ScrollPaneUI
 
   public void uninstallUI(final JComponent c) 
   {
-    super.uninstallUI(c);
-    this.uninstallDefaults((JScrollPane) c);
-    uninstallListeners((JScrollPane) c);
+    uninstallDefaults((JScrollPane) c);
+    uninstallListeners(c);
     installKeyboardActions((JScrollPane) c);
   }
 
@@ -808,29 +708,65 @@ public class BasicScrollPaneUI extends ScrollPaneUI
   }
 
   public void paint(Graphics g, JComponent c)
-  {      
-    // do nothing; the normal painting-of-children algorithm, along with
-    // ScrollPaneLayout, does all the relevant work.
+  {
+    Border vpBorder = scrollpane.getViewportBorder();
+    if (vpBorder != null)
+      {
+        Rectangle r = scrollpane.getViewportBorderBounds();
+        vpBorder.paintBorder(scrollpane, g, r.x, r.y, r.width, r.height);
+      }
   }
 
   /**
-   * Synchronizes the scrollbars with the viewport's extents.
+   * Synchronizes the scrollbar and header settings positions and extent
+   * with the viewport's view position and extent.
    */
   protected void syncScrollPaneWithViewport()
   {
     JViewport vp = scrollpane.getViewport();
 
-    // Update the horizontal scrollbar.
-    JScrollBar hsb = scrollpane.getHorizontalScrollBar();
-    hsb.setMaximum(vp.getViewSize().width);
-    hsb.setValue(vp.getViewPosition().x);
-    hsb.setVisibleAmount(vp.getExtentSize().width);
-    
-    // Update the vertical scrollbar.
-    JScrollBar vsb = scrollpane.getVerticalScrollBar();
-    vsb.setMaximum(vp.getViewSize().height);
-    vsb.setValue(vp.getViewPosition().y);
-    vsb.setVisibleAmount(vp.getExtentSize().height);
+    if (vp != null)
+      {
+        Dimension extentSize = vp.getExtentSize();
+        Point viewPos = vp.getViewPosition();
+        Dimension viewSize = vp.getViewSize();
+
+        // Update the vertical scrollbar.
+        JScrollBar vsb = scrollpane.getVerticalScrollBar();
+        if (vsb != null)
+          {
+            int extent = extentSize.height;
+            int max = viewSize.height;
+            int val = Math.max(0, Math.min(viewPos.y, max - extent));
+            vsb.setValues(val, extent, 0, max);
+          }
+
+        // Update the horizontal scrollbar.
+        JScrollBar hsb = scrollpane.getHorizontalScrollBar();
+        if (hsb != null)
+          {
+            int extent = extentSize.width;
+            int max = viewSize.width;
+            int val = Math.max(0, Math.min(viewPos.x, max - extent));
+            hsb.setValues(val, extent, 0, max);
+          }
+
+        // Update the row header.
+        JViewport rowHeader = scrollpane.getRowHeader();
+        if (rowHeader != null)
+          {
+            Point p = new Point(0, viewPos.y);
+            rowHeader.setViewPosition(p);
+          }
+
+        // Update the column header.
+        JViewport colHeader = scrollpane.getColumnHeader();
+        if (colHeader != null)
+          {
+            Point p = new Point(viewPos.x, 0);
+            colHeader.setViewPosition(p);
+          }
+      }
   }
 
   /**
@@ -863,7 +799,8 @@ public class BasicScrollPaneUI extends ScrollPaneUI
    */
   protected void updateScrollBarDisplayPolicy(PropertyChangeEvent ev)
   {
-    // TODO: Find out what should be done here. Or is this only a hook?
+    scrollpane.revalidate();
+    scrollpane.repaint();
   }
 
   /**

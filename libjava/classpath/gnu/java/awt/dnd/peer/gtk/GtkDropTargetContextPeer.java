@@ -50,10 +50,10 @@ public class GtkDropTargetContextPeer
     extends GtkGenericPeer
     implements DropTargetContextPeer
 {
-
-  public GtkDropTargetContextPeer()
+  
+  public GtkDropTargetContextPeer(Object obj)
   {
-    super(null);
+    super(obj);
   }
   
   public void setTargetActions(int actions)

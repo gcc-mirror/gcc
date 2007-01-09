@@ -58,7 +58,7 @@ public abstract class SoundbankResource
    * @param name the name of the resource
    * @param dataClass the class used to represent the audio data
    */
-  protected SoundbankResource(Soundbank soundbank, String name, Class dataClass)
+  protected SoundbankResource(Soundbank soundbank, String name, Class<?> dataClass)
   {
     this.soundbank = soundbank;   
     this.name = name;
@@ -90,7 +90,7 @@ public abstract class SoundbankResource
    * 
    * @return the class used to represent the audio data for this resource
    */
-  public Class getDataClass()
+  public Class<?> getDataClass()
   {
     return dataClass;
   }

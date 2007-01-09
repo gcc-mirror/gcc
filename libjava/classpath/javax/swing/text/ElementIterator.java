@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package javax.swing.text;
 
+import java.util.Stack;
+
 /**
  * This class can be used to iterate over the {@link Element} tree of
  * a {@link Document} or an {@link Element}.  This iterator performs
@@ -46,20 +48,41 @@ package javax.swing.text;
  */
 public class ElementIterator implements Cloneable
 {
+  /**
+   * Uses to track the iteration on the stack. 
+   */
+  private class ElementRef
+  {
+    /**
+     * The element.
+     */
+    Element element;
+
+    /**
+     * The child index. -1 means the element itself. >= 0 values mean the
+     * n-th child of the element.
+     */
+    int index;
+
+    /**
+     * Creates a new ElementRef.
+     *
+     * @param el the element
+     */
+    ElementRef(Element el)
+    {
+      element = el;
+      index = -1;
+    }
+  }
+
   // The root element.
   private Element root;
-  // The current element.
-  private Element currentElement;
-  // The depth to which we have descended in the tree.
-  private int currentDepth;
 
-  // This is at least as big as the current depth, and at index N
-  // contains the index of the child element we're currently
-  // examining.
-  private int[] state;
-
-  // The previous item.
-  private Element previousItem;
+  /**
+   * Holds ElementRefs.
+   */
+  private Stack stack;
 
   /**
    * Create a new ElementIterator to iterate over the given document.
@@ -67,9 +90,7 @@ public class ElementIterator implements Cloneable
    */
   public ElementIterator(Document document)
   {
-    this.root = document.getDefaultRootElement();
-    this.currentElement = root;
-    this.state = new int[5];
+    root = document.getDefaultRootElement();
   }
 
   /**
@@ -79,8 +100,6 @@ public class ElementIterator implements Cloneable
   public ElementIterator(Element root)
   {
     this.root = root;
-    this.currentElement = root;
-    this.state = new int[5];
   }
 
   /**
@@ -105,7 +124,24 @@ public class ElementIterator implements Cloneable
    */
   public Element current()
   {
-    return currentElement;
+    Element current;
+    if (stack == null)
+      current = first();
+    else
+      {
+        current = null;
+        if (! stack.isEmpty())
+          {
+            ElementRef ref = (ElementRef) stack.peek();
+            Element el = ref.element;
+            int index = ref.index;
+            if (index == -1)
+              current = el;
+            else
+              current = el.getElement(index);
+          }
+      }
+    return current;
   }
 
   /**
@@ -113,7 +149,10 @@ public class ElementIterator implements Cloneable
    */
   public int depth()
   {
-    return currentDepth;
+    int depth = 0;
+    if (stack != null)
+      depth = stack.size();
+    return depth;
   }
 
   /**
@@ -121,11 +160,15 @@ public class ElementIterator implements Cloneable
    */
   public Element first()
   {
-    // Reset the iterator.
-    currentElement = root;
-    currentDepth = 0;
-    previousItem = null;
-    return root;
+    Element first = null;
+    if (root != null)
+      {
+        stack = new Stack();
+        if (root.getElementCount() > 0)
+          stack.push(new ElementRef(root));
+        first = root;
+      }
+    return first;
   }
 
   /**
@@ -134,39 +177,41 @@ public class ElementIterator implements Cloneable
    */
   public Element next()
   {
-    previousItem = currentElement;
-    if (currentElement == null)
-      return null;
-    if (! currentElement.isLeaf())
+    Element next;
+    if (stack == null)
+      next = first();
+    else
       {
-	++currentDepth;
-	if (currentDepth > state.length)
-	  {
-	    int[] newState = new int[state.length * 2];
-	    System.arraycopy(state, 0, newState, 0, state.length);
-	    state = newState;
-	  }
-	state[currentDepth] = 0;
-	currentElement = currentElement.getElement(0);
-	return currentElement;
+        next = null;
+        if (! stack.isEmpty())
+          {
+            ElementRef ref = (ElementRef) stack.peek();
+            Element el = ref.element;
+            int index = ref.index;
+            if (el.getElementCount() > index + 1)
+              {
+                Element child = el.getElement(index + 1);
+                if (child.isLeaf())
+                  ref.index++;
+                else
+                  stack.push(new ElementRef(child));
+                next = child;
+                next = child;
+              }
+            else
+              {
+                stack.pop();
+                if (! stack.isEmpty())
+                  {
+                    ElementRef top = (ElementRef) stack.peek();
+                    top.index++;
+                    next = next();
+                  }
+              }
+          }
+        // else return null.
       }
-
-    while (currentDepth > 0)
-      {
-	// At a leaf, or done with a non-leaf's children, so go up a
-	// level.
-	--currentDepth;
-	currentElement = currentElement.getParentElement();
-	++state[currentDepth];
-	if (state[currentDepth] < currentElement.getElementCount())
-	  {
-	    currentElement = currentElement.getElement(state[currentDepth]);
-	    return currentElement;
-	  }
-      }
-
-    currentElement = null;
-    return currentElement;
+    return next;
   }
 
   /**
@@ -174,8 +219,54 @@ public class ElementIterator implements Cloneable
    */
   public Element previous()
   {
-    if (currentElement == null || currentElement == root)
-      return null;
-    return previousItem;
+    Element previous = null;
+    int stackSize;
+    if (stack != null && (stackSize = stack.size()) > 0)
+      {
+        ElementRef ref = (ElementRef) stack.peek();
+        Element el = ref.element;
+        int index = ref.index;
+        if (index > 0)
+          {
+            previous = deepestLeaf(el.getElement(--index));
+          }
+        else if (index == 0)
+          {
+            previous = el;
+          }
+        else if (index == -1)
+          {
+            ElementRef top = (ElementRef) stack.pop();
+            ElementRef item = (ElementRef) stack.peek();
+            stack.push(top);
+            index = item.index;
+            el = item.element;
+            previous = index == -1 ? el : deepestLeaf(el.getElement(index));
+          }
+      }
+    return previous;
+  }
+
+  /**
+   * Determines and returns the deepest leaf of the element <code>el</code>.
+   *
+   * @param el the base element
+   *
+   * @returnthe deepest leaf of the element <code>el</code>
+   */
+  private Element deepestLeaf(Element el)
+  {
+    Element leaf;
+    if (el.isLeaf())
+      leaf = el;
+    else
+      {
+        int count = el.getElementCount();
+        if (count == 0)
+          leaf = el;
+        else
+          leaf = deepestLeaf(el.getElement(count - 1));
+      }
+    return leaf;
   }
 }

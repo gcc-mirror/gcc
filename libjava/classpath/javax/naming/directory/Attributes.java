@@ -52,8 +52,8 @@ public interface Attributes extends Cloneable, Serializable
   boolean isCaseIgnored();
   int size();
   Attribute get(String attrID);
-  NamingEnumeration getAll();
-  NamingEnumeration getIDs();
+  NamingEnumeration<? extends Attribute> getAll();
+  NamingEnumeration<String> getIDs();
   Attribute put(String attrID, Object val);
   Attribute put(Attribute attr);
   Attribute remove(String attrID);

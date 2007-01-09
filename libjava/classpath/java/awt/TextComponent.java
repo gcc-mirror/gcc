@@ -391,7 +391,9 @@ public class TextComponent extends Component
    */
   public synchronized void setSelectionStart(int selectionStart)
   {
-    select(selectionStart, getSelectionEnd());
+    select(selectionStart, 
+           (getSelectionEnd() < selectionStart) 
+                              ? selectionStart : getSelectionEnd());
   }
 
   /**
@@ -610,7 +612,7 @@ public class TextComponent extends Component
    * @exception ClassCastException If listenerType doesn't specify a class or
    * interface that implements java.util.EventListener.
    */
-  public EventListener[] getListeners(Class listenerType)
+  public <T extends EventListener> T[] getListeners(Class<T> listenerType)
   {
     if (listenerType == TextListener.class)
       return AWTEventMulticaster.getListeners(textListener, listenerType);

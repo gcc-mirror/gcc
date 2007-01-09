@@ -38,143 +38,94 @@ exception statement from your version.  */
 
 package gnu.javax.net.ssl.provider;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.io.StringWriter;
 
-import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
-import java.security.PublicKey;
-import java.security.interfaces.RSAKey;
-import javax.crypto.interfaces.DHPublicKey;
-
-final class ClientKeyExchange implements Handshake.Body
+/**
+ * The client key exchange message.
+ *
+ * <pre>
+struct {
+  select (KeyExchangeAlgorithm) {
+    case rsa: EncryptedPreMasterSecret;
+    case diffie_hellman: ClientDiffieHellmanPublic;
+  } exchange_keys;
+} ClientKeyExchange;</pre>
+ */
+public class ClientKeyExchange implements Handshake.Body
 {
 
   // Fields.
   // -------------------------------------------------------------------------
 
-  private final Object exObject;
+  protected ByteBuffer buffer;
+  protected final CipherSuite suite;
+  protected final ProtocolVersion version;
 
   // Constructors.
   // -------------------------------------------------------------------------
 
-  ClientKeyExchange(byte[] encryptedSecret)
+  public ClientKeyExchange (final ByteBuffer buffer, final CipherSuite suite,
+                            final ProtocolVersion version)
   {
-    exObject = encryptedSecret;
-  }
-
-  ClientKeyExchange(BigInteger bigint)
-  {
-    exObject = bigint;
-  }
-
-  // Class method.
-  // -------------------------------------------------------------------------
-
-  static ClientKeyExchange read(InputStream in, CipherSuite suite,
-                                PublicKey key)
-    throws IOException
-  {
-    DataInputStream din = new DataInputStream(in);
-    if (suite.getKeyExchange().equals("RSA"))
-      {
-        int len = 0;
-        if (suite.getVersion() == ProtocolVersion.SSL_3)
-          {
-            len = (((RSAKey) key).getModulus().bitLength()+7) / 8;
-          }
-        else
-          {
-            len = din.readUnsignedShort();
-          }
-        byte[] buf = new byte[len];
-        din.readFully(buf);
-        return new ClientKeyExchange(buf);
-      }
-    else if (suite.getKeyExchange().equals("SRP"))
-      {
-        byte[] buf = new byte[din.readUnsignedShort()];
-        din.readFully(buf);
-        return new ClientKeyExchange(new BigInteger(1, buf));
-      }
-    else if (key == null || !(key instanceof DHPublicKey))  // explicit.
-      {
-        byte[] buf = new byte[din.readUnsignedShort()];
-        din.readFully(buf);
-        return new ClientKeyExchange(new BigInteger(1, buf));
-      }
-    else
-      {
-        return new ClientKeyExchange(new byte[0]);
-      }
+    suite.getClass();
+    version.getClass ();
+    this.buffer = buffer.duplicate().order(ByteOrder.BIG_ENDIAN);
+    this.suite = suite;
+    this.version = version;
   }
 
   // Instance methods.
   // -------------------------------------------------------------------------
 
-  public void write(OutputStream out) throws IOException
+  public ExchangeKeys exchangeKeys ()
   {
-    throw new UnsupportedOperationException("use write(java.io.OutputStream,ProtocolVersion) instead");
+    KeyExchangeAlgorithm alg = suite.keyExchangeAlgorithm();
+    if (alg == KeyExchangeAlgorithm.RSA)
+      return new EncryptedPreMasterSecret(buffer, version);
+    else if (alg == KeyExchangeAlgorithm.DH_anon
+             || alg == KeyExchangeAlgorithm.DHE_DSS
+             || alg == KeyExchangeAlgorithm.DHE_RSA)
+      return new ClientDiffieHellmanPublic(buffer.duplicate());
+    else if (alg == KeyExchangeAlgorithm.DHE_PSK)
+      return new ClientDHE_PSKParameters(buffer.duplicate());
+    else if (alg == KeyExchangeAlgorithm.PSK)
+      return new ClientPSKParameters(buffer.duplicate());
+    else if (alg == KeyExchangeAlgorithm.RSA_PSK)
+      return new ClientRSA_PSKParameters(buffer.duplicate());
+    else if (alg == KeyExchangeAlgorithm.NONE)
+      return new EmptyExchangeKeys();
+    throw new IllegalArgumentException("unsupported key exchange: " + alg);
   }
 
-  public void write(OutputStream out, ProtocolVersion version) throws IOException
+  public int length()
   {
-    if (exObject instanceof byte[])
-      {
-        byte[] b = (byte[]) exObject;
-        if (b.length > 0)
-          {
-            if (version != ProtocolVersion.SSL_3)
-              {
-                out.write(b.length >>> 8 & 0xFF);
-                out.write(b.length & 0xFF);
-              }
-            out.write(b);
-          }
-      }
-    else
-      {
-        byte[] bigint = ((BigInteger) exObject).toByteArray();
-        if (bigint[0] == 0x00)
-          {
-            out.write(bigint.length - 1 >>> 8 & 0xFF);
-            out.write(bigint.length - 1 & 0xFF);
-            out.write(bigint, 1, bigint.length - 1);
-          }
-        else
-          {
-            out.write(bigint.length >>> 8 & 0xFF);
-            out.write(bigint.length & 0xFF);
-            out.write(bigint);
-          }
-      }
+    if (suite.keyExchangeAlgorithm() == KeyExchangeAlgorithm.NONE)
+      return 0;
+    return exchangeKeys().length();
   }
 
-  Object getExchangeObject()
+  public String toString ()
   {
-    return exObject;
+    return toString (null);
   }
 
-  public String toString()
+  public String toString (final String prefix)
   {
     StringWriter str = new StringWriter();
     PrintWriter out = new PrintWriter(str);
+    if (prefix != null)
+      out.print (prefix);
     out.println("struct {");
-    if (exObject instanceof byte[] && ((byte[]) exObject).length > 0)
-      {
-        out.println("  encryptedPreMasterSecret =");
-        out.print(Util.hexDump((byte[]) exObject, "    "));
-      }
-    else if (exObject instanceof BigInteger)
-      {
-        out.println("  clientPublic = " + ((BigInteger) exObject).toString(16) + ";");
-      }
+    String subprefix = "  ";
+    if (prefix != null)
+      subprefix = prefix + subprefix;
+    out.println (exchangeKeys ().toString (subprefix));
+    if (prefix != null)
+      out.print (prefix);
     out.println("} ClientKeyExchange;");
     return str.toString();
   }

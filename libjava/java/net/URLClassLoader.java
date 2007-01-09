@@ -1080,7 +1080,10 @@ public class URLClassLoader extends SecureClassLoader
     if (resource == null)
       {
 	String message = className + " not found";
-	if (runtimeInitialized())
+	// Calling this.toString() during VM startup when a
+	// security manager is in force causes the stack to
+	// be unwound before it can properly be decoded.
+	if (Thread.currentThread() != null)
 	  message += " in " + this;
 	throw new ClassNotFoundException(message);
       }
@@ -1442,11 +1445,4 @@ public class URLClassLoader extends SecureClassLoader
         return loader;
       }
   }
-
-  /**
-   * Tell whether runtime initialization is complete.
-   *
-   * @return whether runtime initialization is complete.
-   */
-  private static native boolean runtimeInitialized();  
 }

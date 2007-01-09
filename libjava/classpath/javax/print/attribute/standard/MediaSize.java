@@ -66,13 +66,13 @@ public class MediaSize extends Size2DSyntax
   implements Attribute
 {
   private static final long serialVersionUID = -1967958664615414771L;
-
-  private static ArrayList mediaCache;
+  
+  private static ArrayList<MediaSize> mediaCache;
   
   static
     {
-      mediaCache = new ArrayList();
-      
+      mediaCache = new ArrayList<MediaSize>();
+
       // We call one instance of every container class to make sure it gets
       // loaded during class initialization and therefore all other static
       // fields of this container class also.
@@ -86,7 +86,7 @@ public class MediaSize extends Size2DSyntax
       tmp = MediaSize.NA.LEGAL;
       tmp = MediaSize.Other.EXECUTIVE;
     }
-  
+
   private MediaSizeName mediaName;
   
   /**
@@ -180,10 +180,11 @@ public class MediaSize extends Size2DSyntax
    *
    * @return The class <code>MediaSize</code> itself.
    */
-  public final Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return MediaSize.class;
   }
+
     
   /**
    * Searches for a MediaSize object with the given dimensions.
@@ -201,7 +202,7 @@ public class MediaSize extends Size2DSyntax
     if (x <= 0.0f || y <= 0.0f)
       throw new IllegalArgumentException(
         "x and/or y may not be less or equal 0");
-
+  
     if (units < 1)
       throw new IllegalArgumentException("units may not be less then 1");
 

@@ -90,9 +90,6 @@ final class VMMemoryManagerMXBeanImpl
    * @param name the name of the memory manager.
    * @return true if this memory manager is valid.
    */
-  static boolean isValid(String name)
-  {
-    return false;
-  }
+  static native boolean isValid(String name);
 
 }

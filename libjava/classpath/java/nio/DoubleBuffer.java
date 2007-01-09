@@ -1,5 +1,5 @@
 /* DoubleBuffer.java -- 
-   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,7 +42,7 @@ package java.nio;
  * @since 1.4
  */
 public abstract class DoubleBuffer extends Buffer
-  implements Comparable
+  implements Comparable<DoubleBuffer>
 {
   int array_offset;
   double[] backing_buffer;
@@ -273,7 +273,7 @@ public abstract class DoubleBuffer extends Buffer
   {
     if (obj instanceof DoubleBuffer)
       {
-        return compareTo (obj) == 0;
+        return compareTo ((DoubleBuffer) obj) == 0;
       }
 
     return false;
@@ -285,10 +285,8 @@ public abstract class DoubleBuffer extends Buffer
    * @exception ClassCastException If obj is not an object derived from
    * <code>DoubleBuffer</code>.
    */
-  public int compareTo (Object obj)
+  public int compareTo (DoubleBuffer other)
   {
-    DoubleBuffer other = (DoubleBuffer) obj;
-
     int num = Math.min(remaining(), other.remaining());
     int pos_this = position();
     int pos_other = other.position();

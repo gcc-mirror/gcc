@@ -36,12 +36,18 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.lang;
 
+import gnu.classpath.VMStackWalker;
 import gnu.gcj.RawData;
 import gnu.gcj.RawDataManaged;
 import gnu.java.util.WeakIdentityHashMap;
+
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
+
+import java.util.HashMap;
 import java.util.Map;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
@@ -83,6 +89,7 @@ import java.util.Map;
  * @author Tom Tromey
  * @author John Keiser
  * @author Eric Blake (ebb9@email.byu.edu)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @see Runnable
  * @see Runtime#exit(int)
  * @see #run()
@@ -121,7 +128,15 @@ public class Thread implements Runnable
   private int priority;
 
   boolean interrupt_flag;
-  private boolean alive_flag;
+
+  /** A thread is either alive, dead, or being sent a signal; if it is
+      being sent a signal, it is also alive.  Thus, if you want to
+      know if a thread is alive, it is sufficient to test 
+      alive_status != THREAD_DEAD. */
+  private static final byte THREAD_DEAD = 0;
+  private static final byte THREAD_ALIVE = 1;
+  private static final byte THREAD_SIGNALED = 2;
+
   private boolean startable_flag;
 
   /** The context classloader for this Thread. */
@@ -132,6 +147,9 @@ public class Thread implements Runnable
 
   /** The next thread ID to use.  */
   private static long nextThreadId;
+
+  /** Used to generate the next thread ID to use.  */
+  private static long totalThreadsCreated;
 
   /** The default exception handler.  */
   private static UncaughtExceptionHandler defaultHandler;
@@ -144,6 +162,19 @@ public class Thread implements Runnable
   /** The uncaught exception handler.  */
   UncaughtExceptionHandler exceptionHandler;
 
+  /** This object is recorded while the thread is blocked to permit
+   * monitoring and diagnostic tools to identify the reasons that
+   * threads are blocked.
+   */
+  private Object parkBlocker;
+
+  /** Used by Unsafe.park and Unsafe.unpark.  Se Unsafe for a full
+      description.  */
+  static final byte THREAD_PARK_RUNNING = 0;
+  static final byte THREAD_PARK_PERMIT = 1;
+  static final byte THREAD_PARK_PARKED = 2;
+  static final byte THREAD_PARK_DEAD = 3;
+
   /** The access control state for this thread.  Package accessible
     * for use by java.security.VMAccessControlState's native method.
     */
@@ -152,8 +183,11 @@ public class Thread implements Runnable
   // This describes the top-most interpreter frame for this thread.
   RawData interp_frame;
 
+  // Current state.
+  volatile int state;
+
   // Our native data - points to an instance of struct natThread.
-  private RawDataManaged data;
+  RawDataManaged data;
 
   /**
    * Allocates a new <code>Thread</code> object. This constructor has
@@ -368,7 +402,6 @@ public class Thread implements Runnable
 
     data = null;
     interrupt_flag = false;
-    alive_flag = false;
     startable_flag = true;
 
     synchronized (Thread.class)
@@ -438,7 +471,10 @@ public class Thread implements Runnable
   public native int countStackFrames();
 
   /**
-   * Get the currently executing Thread.
+   * Get the currently executing Thread. In the situation that the
+   * currently running thread was created by native code and doesn't
+   * have an associated Thread object yet, a new Thread object is
+   * constructed and associated with the native thread.
    *
    * @return the currently executing Thread
    */
@@ -447,6 +483,19 @@ public class Thread implements Runnable
   /**
    * Originally intended to destroy this thread, this method was never
    * implemented by Sun, and is hence a no-op.
+   *
+   * @deprecated This method was originally intended to simply destroy
+   *             the thread without performing any form of cleanup operation.
+   *             However, it was never implemented.  It is now deprecated
+   *             for the same reason as <code>suspend()</code>,
+   *             <code>stop()</code> and <code>resume()</code>; namely,
+   *             it is prone to deadlocks.  If a thread is destroyed while
+   *             it still maintains a lock on a resource, then this resource
+   *             will remain locked and any attempts by other threads to
+   *             access the resource will result in a deadlock.  Thus, even
+   *             an implemented version of this method would be still be
+   *             deprecated, due to its unsafe nature.
+   * @throws NoSuchMethodError as this method was never implemented.
    */
   public void destroy()
   {
@@ -579,10 +628,7 @@ public class Thread implements Runnable
    *
    * @return whether this Thread is alive
    */
-  public final synchronized boolean isAlive()
-  {
-    return alive_flag;
-  }
+  public final native boolean isAlive();
 
   /**
    * Tell whether this is a daemon Thread or not.
@@ -638,7 +684,9 @@ public class Thread implements Runnable
     throws InterruptedException;
 
   /**
-   * Resume a suspended thread.
+   * Resume this Thread.  If the thread is not suspended, this method does
+   * nothing. To mirror suspend(), there may be a security check:
+   * <code>checkAccess</code>.
    *
    * @throws SecurityException if you cannot resume the Thread
    * @see #checkAccess()
@@ -713,7 +761,7 @@ public class Thread implements Runnable
    *
    * @return the context class loader
    * @throws SecurityException when permission is denied
-   * @see setContextClassLoader(ClassLoader)
+   * @see #setContextClassLoader(ClassLoader)
    * @since 1.2
    */
   public synchronized ClassLoader getContextClassLoader()
@@ -721,24 +769,15 @@ public class Thread implements Runnable
     if (contextClassLoader == null)
       contextClassLoader = ClassLoader.getSystemClassLoader();
 
+    // Check if we may get the classloader
     SecurityManager sm = System.getSecurityManager();
-    // FIXME: we can't currently find the caller's class loader.
-    ClassLoader callers = null;
-    if (sm != null && callers != null)
+    if (contextClassLoader != null && sm != null)
       {
-	// See if the caller's class loader is the same as or an
-	// ancestor of this thread's class loader.
-	while (callers != null && callers != contextClassLoader)
-	  {
-	    // FIXME: should use some internal version of getParent
-	    // that avoids security checks.
-	    callers = callers.getParent();
-	  }
-
-	if (callers != contextClassLoader)
-	  sm.checkPermission(new RuntimePermission("getClassLoader"));
+        // Get the calling classloader
+	ClassLoader cl = VMStackWalker.getCallingClassLoader();
+        if (cl != null && !cl.isAncestorOf(contextClassLoader))
+          sm.checkPermission(new RuntimePermission("getClassLoader"));
       }
-
     return contextClassLoader;
   }
 
@@ -751,7 +790,7 @@ public class Thread implements Runnable
    *
    * @param classloader the new context class loader
    * @throws SecurityException when permission is denied
-   * @see getContextClassLoader()
+   * @see #getContextClassLoader()
    * @since 1.2
    */
   public synchronized void setContextClassLoader(ClassLoader classloader)
@@ -781,8 +820,10 @@ public class Thread implements Runnable
   }
 
   /**
-   * Causes the currently executing thread object to temporarily pause
-   * and allow other threads to execute.
+   * Yield to another thread. The Thread will not lose any locks it holds
+   * during this time. There are no guarantees which thread will be
+   * next to run, and it could even be this one, but most VMs will choose
+   * the highest priority thread that has been waiting longest.
    */
   public static native void yield();
 
@@ -793,8 +834,10 @@ public class Thread implements Runnable
    * choose the highest priority thread that has been waiting longest.
    *
    * @param ms the number of milliseconds to sleep, or 0 for forever
-   * @throws InterruptedException if the Thread is interrupted; it's
-   *         <i>interrupted status</i> will be cleared
+   * @throws InterruptedException if the Thread is (or was) interrupted;
+   *         it's <i>interrupted status</i> will be cleared
+   * @throws IllegalArgumentException if ms is negative
+   * @see #interrupt()
    * @see #notify()
    * @see #wait(long)
    */
@@ -808,18 +851,21 @@ public class Thread implements Runnable
    * time. The Thread will not lose any locks it has during this time. There
    * are no guarantees which thread will be next to run, but most VMs will
    * choose the highest priority thread that has been waiting longest.
-   *
-   * <p>Note that 1,000,000 nanoseconds == 1 millisecond, but most VMs do
-   * not offer that fine a grain of timing resolution. Besides, there is
-   * no guarantee that this thread can start up immediately when time expires,
-   * because some other thread may be active.  So don't expect real-time
-   * performance.
+   * <p>
+   * Note that 1,000,000 nanoseconds == 1 millisecond, but most VMs
+   * do not offer that fine a grain of timing resolution. When ms is
+   * zero and ns is non-zero the Thread will sleep for at least one
+   * milli second. There is no guarantee that this thread can start up
+   * immediately when time expires, because some other thread may be
+   * active.  So don't expect real-time performance.
    *
    * @param ms the number of milliseconds to sleep, or 0 for forever
    * @param ns the number of extra nanoseconds to sleep (0-999999)
-   * @throws InterruptedException if the Thread is interrupted; it's
-   *         <i>interrupted status</i> will be cleared
-   * @throws IllegalArgumentException if ns is invalid
+   * @throws InterruptedException if the Thread is (or was) interrupted;
+   *         it's <i>interrupted status</i> will be cleared
+   * @throws IllegalArgumentException if ms or ns is negative
+   *         or ns is larger than 999999.
+   * @see #interrupt()
    * @see #notify()
    * @see #wait(long, int)
    */
@@ -870,10 +916,11 @@ public class Thread implements Runnable
 
   /**
    * Cause this Thread to stop abnormally and throw the specified exception.
-   * If you stop a Thread that has not yet started, it will stop immediately
-   * when it is actually started. <b>WARNING</b>This bypasses Java security,
-   * and can throw a checked exception which the call stack is unprepared to
-   * handle. Do not abuse this power.
+   * If you stop a Thread that has not yet started, the stop is ignored
+   * (contrary to what the JDK documentation says).
+   * <b>WARNING</b>This bypasses Java security, and can throw a checked
+   * exception which the call stack is unprepared to handle. Do not abuse
+   * this power.
    *
    * <p>This is inherently unsafe, as it can interrupt synchronized blocks and
    * leave data in bad states.  Hence, there is a security check:
@@ -996,6 +1043,7 @@ public class Thread implements Runnable
    */
   public UncaughtExceptionHandler getUncaughtExceptionHandler()
   {
+    // FIXME: if thread is dead, should return null...
     return exceptionHandler != null ? exceptionHandler : group;
   }
 
@@ -1094,7 +1142,7 @@ public class Thread implements Runnable
    * @author Andrew John Hughes <gnu_andrew@member.fsf.org>
    * @since 1.5
    * @see Thread#getUncaughtExceptionHandler()
-   * @see Thread#setUncaughtExceptionHander(java.lang.Thread.UncaughtExceptionHandler)
+   * @see Thread#setUncaughtExceptionHandler(UncaughtExceptionHandler)
    * @see Thread#getDefaultUncaughtExceptionHandler()
    * @see
    * Thread#setDefaultUncaughtExceptionHandler(java.lang.Thread.UncaughtExceptionHandler)
@@ -1113,6 +1161,32 @@ public class Thread implements Runnable
     void uncaughtException(Thread thr, Throwable exc);
   }
 
+  /** 
+   * <p>
+   * Represents the current state of a thread, according to the VM rather
+   * than the operating system.  It can be one of the following:
+   * </p>
+   * <ul>
+   * <li>NEW -- The thread has just been created but is not yet running.</li>
+   * <li>RUNNABLE -- The thread is currently running or can be scheduled
+   * to run.</li>
+   * <li>BLOCKED -- The thread is blocked waiting on an I/O operation
+   * or to obtain a lock.</li>
+   * <li>WAITING -- The thread is waiting indefinitely for another thread
+   * to do something.</li>
+   * <li>TIMED_WAITING -- The thread is waiting for a specific amount of time
+   * for another thread to do something.</li>
+   * <li>TERMINATED -- The thread has exited.</li>
+   * </ul>
+   *
+   * @since 1.5 
+   */
+  public enum State
+  {
+    BLOCKED, NEW, RUNNABLE, TERMINATED, TIMED_WAITING, WAITING;
+  }
+
+
   /**
    * Returns the current state of the thread.  This
    * is designed for monitoring thread behaviour, rather
@@ -1120,9 +1194,103 @@ public class Thread implements Runnable
    *
    * @return the current thread state.
    */
-  public String getState()
+  public native State getState();
+
+  /**
+   * <p>
+   * Returns a map of threads to stack traces for each
+   * live thread.  The keys of the map are {@link Thread}
+   * objects, which map to arrays of {@link StackTraceElement}s.
+   * The results obtained from Calling this method are
+   * equivalent to calling {@link getStackTrace()} on each
+   * thread in succession.  Threads may be executing while
+   * this takes place, and the results represent a snapshot
+   * of the thread at the time its {@link getStackTrace()}
+   * method is called.
+   * </p>
+   * <p>
+   * The stack trace information contains the methods called
+   * by the thread, with the most recent method forming the
+   * first element in the array.  The array will be empty
+   * if the virtual machine can not obtain information on the
+   * thread. 
+   * </p>
+   * <p>
+   * To execute this method, the current security manager
+   * (if one exists) must allow both the
+   * <code>"getStackTrace"</code> and
+   * <code>"modifyThreadGroup"</code> {@link RuntimePermission}s.
+   * </p>
+   * 
+   * @return a map of threads to arrays of {@link StackTraceElement}s.
+   * @throws SecurityException if a security manager exists, and
+   *                           prevents either or both the runtime
+   *                           permissions specified above.
+   * @since 1.5
+   * @see #getStackTrace()
+   */
+  public static Map<Thread, StackTraceElement[]> getAllStackTraces()
   {
-    // FIXME - Provide real implementation.
-    return "NEW";
+    ThreadGroup group = currentThread().group;
+    while (group.getParent() != null)
+      group = group.getParent();
+    int arraySize = group.activeCount();
+    Thread[] threadList = new Thread[arraySize];
+    int filled = group.enumerate(threadList);
+    while (filled == arraySize)
+      {
+	arraySize *= 2;
+	threadList = new Thread[arraySize];
+	filled = group.enumerate(threadList);
+      }
+    Map traces = new HashMap();
+    for (int a = 0; a < filled; ++a)
+      traces.put(threadList[a],
+		 threadList[a].getStackTrace());
+    return traces;
   }
+
+  /**
+   * <p>
+   * Returns an array of {@link StackTraceElement}s
+   * representing the current stack trace of this thread.
+   * The first element of the array is the most recent
+   * method called, and represents the top of the stack.
+   * The elements continue in this order, with the last
+   * element representing the bottom of the stack.
+   * </p>
+   * <p>
+   * A zero element array is returned for threads which
+   * have not yet started (and thus have not yet executed
+   * any methods) or for those which have terminated.
+   * Where the virtual machine can not obtain a trace for
+   * the thread, an empty array is also returned.  The
+   * virtual machine may also omit some methods from the
+   * trace in non-zero arrays.
+   * </p>
+   * <p>
+   * To execute this method, the current security manager
+   * (if one exists) must allow both the
+   * <code>"getStackTrace"</code> and
+   * <code>"modifyThreadGroup"</code> {@link RuntimePermission}s.
+   * </p>
+   *
+   * @return a stack trace for this thread.
+   * @throws SecurityException if a security manager exists, and
+   *                           prevents the use of the
+   *                           <code>"getStackTrace"</code>
+   *                           permission.
+   * @since 1.5
+   * @see #getAllStackTraces()
+   */
+  public StackTraceElement[] getStackTrace()
+  {
+    SecurityManager sm = SecurityManager.current; // Be thread-safe.
+    if (sm != null)
+      sm.checkPermission(new RuntimePermission("getStackTrace"));
+    ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+    ThreadInfo info = bean.getThreadInfo(getId(), Integer.MAX_VALUE);
+    return info.getStackTrace();
+  }
+
 }

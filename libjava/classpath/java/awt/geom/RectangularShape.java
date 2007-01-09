@@ -326,15 +326,12 @@ public abstract class RectangularShape implements Shape, Cloneable
 
   /**
    * Returns a bounding box for this shape, in integer format. Notice that you
-   * may get a tighter bound with getBounds2D. If the frame is empty, the
-   * box is the default empty box at the origin.
+   * may get a tighter bound with getBounds2D.
    *
    * @return a bounding box
    */
   public Rectangle getBounds()
   {
-    if (isEmpty())
-      return new Rectangle();
     double x = getX();
     double y = getY();
     double maxx = Math.ceil(x + getWidth());

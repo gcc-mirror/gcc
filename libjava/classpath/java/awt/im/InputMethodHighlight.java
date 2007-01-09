@@ -41,6 +41,7 @@ import java.awt.Toolkit;
 import java.text.Annotation;
 import java.text.AttributedCharacterIterator;
 import java.util.Map;
+import java.awt.font.TextAttribute;
 
 /**
  * This describes the highlight attributes of text composed in an input method.
@@ -95,7 +96,7 @@ public class InputMethodHighlight
   private final int variation;
 
   /** The unmodifiable map of rendering styles. */
-  private final Map style;
+  private final Map<TextAttribute, ?> style;
 
   /**
    * Create an input method highlight style, with variation 0 and null style
@@ -134,7 +135,7 @@ public class InputMethodHighlight
    * @since 1.3
    */
   public InputMethodHighlight(boolean selected, int state, int variation,
-                              Map style)
+                              Map<TextAttribute, ?> style)
   {
     if (state != RAW_TEXT && state != CONVERTED_TEXT)
       throw new IllegalArgumentException();
@@ -181,7 +182,7 @@ public class InputMethodHighlight
    * @return the style map
    * @since 1.3
    */
-  public Map getStyle()
+  public Map<TextAttribute, ?> getStyle()
   {
     return style;
   }

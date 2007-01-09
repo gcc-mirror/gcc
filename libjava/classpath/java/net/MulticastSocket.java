@@ -202,13 +202,41 @@ public class MulticastSocket extends DatagramSocket
   {
     if (isClosed())
       throw new SocketException("socket is closed");
-
-    Enumeration e = netIf.getInetAddresses();
-
-    if (! e.hasMoreElements())
-      throw new SocketException("no network devices found");
-
-    InetAddress address = (InetAddress) e.nextElement();
+    
+    InetAddress address;
+    if (netIf != null)
+      out:
+      {
+        Enumeration e = netIf.getInetAddresses();
+        if (getLocalAddress() instanceof Inet4Address)
+          {
+            // Search for a IPv4 address.
+            while (e.hasMoreElements())
+              {
+                address = (InetAddress) e.nextElement();
+                if (address instanceof Inet4Address)
+                  break out;
+              }
+            throw new SocketException("interface " + netIf.getName() + " has no IPv6 address");
+          }
+        else if (getLocalAddress() instanceof Inet6Address)
+          {
+            // Search for a IPv6 address.
+            while (e.hasMoreElements())
+              {
+                address = (InetAddress) e.nextElement();
+                if (address instanceof Inet6Address)
+                  break out;
+              }
+            throw new SocketException("interface " + netIf.getName() + " has no IPv6 address");
+          }
+        else
+          throw new SocketException("interface " + netIf.getName() + " has no suitable IP address");
+      }
+    else
+      address = InetAddress.ANY_IF;
+    
+    
     getImpl().setOption(SocketOptions.IP_MULTICAST_IF, address);
   }
 
@@ -230,6 +258,10 @@ public class MulticastSocket extends DatagramSocket
 
     InetAddress address =
       (InetAddress) getImpl().getOption(SocketOptions.IP_MULTICAST_IF);
+    
+    if (address.isAnyLocalAddress())
+      return NetworkInterface.createAnyInterface();
+    
     NetworkInterface netIf = NetworkInterface.getByInetAddress(address);
 
     return netIf;

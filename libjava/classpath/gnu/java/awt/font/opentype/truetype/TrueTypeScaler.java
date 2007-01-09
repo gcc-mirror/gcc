@@ -198,6 +198,12 @@ public final class TrueTypeScaler
     return glyphZone.getPath();
   }
 
+  public Zone getRawOutline(int glyphIndex, AffineTransform transform)
+  {
+    Zone zone = new Zone(glyphZone.getCapacity());
+    glyphLoader.loadGlyph(glyphIndex, transform, zone);
+    return zone;
+  }
 
   /**
    * Determines the advance width and height for a glyph.

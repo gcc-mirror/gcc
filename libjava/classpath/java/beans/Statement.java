@@ -1,5 +1,5 @@
 /* Statement.java
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -346,16 +346,20 @@ public class Statement
   /** Return the statement object. */
   public Object getTarget() { return target; }
 
-  /** Return a string representation. */
+  /** 
+   * Returns a string representation of this <code>Statement</code>. 
+   * 
+   * @return A string representation of this <code>Statement</code>. 
+   */
   public String toString()
   {
     StringBuffer result = new StringBuffer(); 
 
-    String targetName = target.getClass().getName();
-    if ( targetName.startsWith("java"))
-      {
-        targetName = targetName.substring(targetName.lastIndexOf('.') + 1);
-      }
+    String targetName;
+    if (target != null)
+      targetName = target.getClass().getSimpleName();
+    else 
+      targetName = "null";
 
     result.append(targetName);
     result.append(".");
@@ -369,10 +373,10 @@ public class Statement
         result.append(
           ( arguments[i] == null ) ? "null" : 
             ( arguments[i] instanceof String ) ? "\"" + arguments[i] + "\"" :
-            arguments[i].getClass().getName());
+            arguments[i].getClass().getSimpleName());
         sep = ", ";
       }
-    result.append(")");
+    result.append(");");
 
     return result.toString();
   }

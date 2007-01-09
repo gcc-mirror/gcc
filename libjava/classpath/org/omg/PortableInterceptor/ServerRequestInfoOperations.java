@@ -1,5 +1,5 @@
 /* ServerRequestInfoOperations.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.PortableInterceptor;
 
 import org.omg.CORBA.Any;
+import org.omg.CORBA.BAD_INV_ORDER;
 import org.omg.CORBA.INV_POLICY;
 import org.omg.CORBA.Policy;
 import org.omg.IOP.ServiceContext;
@@ -287,7 +288,7 @@ public interface ServerRequestInfoOperations
   /**
    * Checks if the servant is the given repository id.
    *
-   * @param the repository id to compare.
+   * @param id the repository id to compare.
    *
    * @return true if the servant repository id matches the parameter, false
    * otherwise.

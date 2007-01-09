@@ -83,7 +83,8 @@ import java.awt.Font;
 
 public class PropertyEditorManager
 {
-  static java.util.Hashtable editors = new java.util.Hashtable();
+  static java.util.Hashtable<Class<?>,Class<?>> editors =
+    new java.util.Hashtable<Class<?>,Class<?>>();
   static String[] editorSearchPath = { "gnu.java.beans.editors",
                                        "sun.beans.editors" };
 
@@ -118,7 +119,7 @@ public class PropertyEditorManager
    *        will edit.
    * @param editorClass the PropertyEditor class.
    */
-  public static void registerEditor(Class editedClass, Class editorClass)
+  public static void registerEditor(Class<?> editedClass, Class<?> editorClass)
   {
     editors.put(editedClass, editorClass);
   }
@@ -132,7 +133,7 @@ public class PropertyEditorManager
    * @return a PropertyEditor instance that can edit the
    *         specified class.
    */
-  public static PropertyEditor findEditor(Class editedClass)
+  public static PropertyEditor findEditor(Class<?> editedClass)
   {
     try
       {

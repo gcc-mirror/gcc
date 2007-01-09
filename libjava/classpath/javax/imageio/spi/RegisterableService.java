@@ -62,7 +62,7 @@ public interface RegisterableService
    * @param category the service category for which this provider has
    * been registered as an implementor.
    */
-  void onRegistration(ServiceRegistry registry, Class category);
+  void onRegistration(ServiceRegistry registry, Class<?> category);
 
 
   /**
@@ -78,6 +78,6 @@ public interface RegisterableService
    * @param category the service category for which this provider has
    * been registered as an implementor.
    */
-  void onDeregistration(ServiceRegistry registry, Class category);
+  void onDeregistration(ServiceRegistry registry, Class<?> category);
 }
 

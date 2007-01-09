@@ -52,7 +52,7 @@ import javax.naming.Referenceable;
  * @author Warren Levy (warrenl@redhat.com)
  */
 public interface ObjectFactoryBuilder
-{ 
+{
   /**
    * Create a new object using the supplied environment.
    * 
@@ -65,6 +65,6 @@ public interface ObjectFactoryBuilder
    * @throws NamingException
    */
   ObjectFactory createObjectFactory(Object refInfo,
-  					   Hashtable environment)
+  					   Hashtable<?, ?> environment)
 					   throws NamingException;
 }

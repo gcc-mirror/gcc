@@ -4,7 +4,7 @@
 # of options to pass to the compiler.  Returns 0 on failure, 1 on
 # success.
 proc gcj_jni_compile_c_to_so {file {options {}}} {
-  global srcdir
+  global srcdir subdir
   global host_triplet
   verbose "options: $options"
   set options_cxx $options
@@ -31,7 +31,7 @@ proc gcj_jni_compile_c_to_so {file {options {}}} {
 
   lappend options "additional_flags=${so_flag} -fPIC"
   # Find the generated header.
-  lappend options "additional_flags=-I. -I.."
+  lappend options "additional_flags=-I. -I.. -I$srcdir/$subdir"
 
   # Ensure that the generated header has correct prototypes.
   set cfile [file rootname $file].c
@@ -60,10 +60,16 @@ proc gcj_jni_compile_c_to_so {file {options {}}} {
 
 # Build a header file from a .class file.  Return 0 on failure.
 proc gcj_jni_build_header {file} {
+  global libgcj_jar
+
   set gcjh [find_gcjh]
   set file [file rootname $file]
+
+  set cmd "$gcjh -jni -force -classpath .:$libgcj_jar $file"
+  verbose $cmd
+
   set x [string trim [libjava_prune_warnings \
-			[lindex [local_exec "$gcjh -jni $file" "" "" 300] 1]]]
+			[lindex [local_exec $cmd "" "" 300] 1]]]
   if {$x != ""} {
     verbose "local_exec failed: $x" 2
     fail "$file header generation"
@@ -100,19 +106,19 @@ proc gcj_jni_test_one {file} {
     return 1
   }
 
-  if {! [bytecompile_file $file [pwd]]} {
-    fail "bytecompile $file"
-    # FIXME - should use `untested' on all remaining tests.
-    # But that is hard.
-    return 0
-  }
-  pass "bytecompile $file"
+#   if {! [bytecompile_file $file [pwd]]} {
+#     fail "bytecompile $file"
+#     # FIXME - should use `untested' on all remaining tests.
+#     # But that is hard.
+#     return 0
+#   }
+#   pass "bytecompile $file"
 
-  set bytefile [file rootname [file tail $file]].class
-  if {! [gcj_jni_build_header $bytefile]} {
-    # FIXME
-    return 0
-  }
+#   set bytefile [file rootname [file tail $file]].class
+#   if {! [gcj_jni_build_header $bytefile]} {
+#     # FIXME
+#     return 0
+#   }
 
   set cfile [file rootname $file].c
   set cxxflags ""
@@ -180,7 +186,8 @@ proc gcj_jni_test_one {file} {
   # cxxldlibflags to libjava_invoke.
   if {$INTERPRETER == "yes" && $gij != ""} {
     libjava_invoke $errname "gij test" opts $gij \
-      "" $resultfile $cxxldlibflags $main
+      "" $resultfile $cxxldlibflags \
+      -classpath $file $main
   }
 
   # When we succeed we remove all our clutter.
@@ -194,7 +201,7 @@ proc gcj_jni_test_one {file} {
 # options to pass to the compiler.  Returns 0 on failure, 1 on
 # success.
 proc gcj_jni_invocation_compile_c_to_binary {file {options {}}} {
-  global srcdir
+  global srcdir subdir
   global host_triplet
   verbose "options: $options"
   set options_cxx $options
@@ -208,7 +215,7 @@ proc gcj_jni_invocation_compile_c_to_binary {file {options {}}} {
       lappend options "additional_flags= -bind_at_load -multiply_defined suppress"
   }
   # Find the generated header.
-  lappend options "additional_flags=-I. -I.."
+  lappend options "additional_flags=-I. -I.. -I$srcdir/$subdir"
 
   # Find jni.h and jni_md.h.
   lappend options "additional_flags=-I$srcdir/../include -I$srcdir/../classpath/include"
@@ -231,6 +238,7 @@ proc gcj_jni_invocation_compile_c_to_binary {file {options {}}} {
 # Do all the work for a single invocation API test.  Return 0 on
 # failure.
 proc gcj_jni_invocation_test_one {file} {
+  global env
   global runtests
   global host_triplet
   global INTERPRETER
@@ -242,13 +250,13 @@ proc gcj_jni_invocation_test_one {file} {
     return 1
   }
 
-  if {! [bytecompile_file $file [pwd]]} {
-    fail "bytecompile $file"
-    # FIXME - should use `untested' on all remaining tests.
-    # But that is hard.
-    return 0
-  }
-  pass "bytecompile $file"
+#   if {! [bytecompile_file $file [pwd]]} {
+#     fail "bytecompile $file"
+#     # FIXME - should use `untested' on all remaining tests.
+#     # But that is hard.
+#     return 0
+#   }
+#   pass "bytecompile $file"
 
   set cfile [file rootname $file].c
   # Darwin needs -liconv linked, otherwise we get some unresolved.
@@ -281,10 +289,14 @@ proc gcj_jni_invocation_test_one {file} {
 
   set resultfile [file rootname $file].out
 
+  set env(CLASSPATH) $file
+  verbose "CLASSPATH = $env(CLASSPATH)"
   if {! [gcj_invoke $main $resultfile ""]} {
+    unset env(CLASSPATH)
     # FIXME
     return 0
   }
+  unset env(CLASSPATH)
 
   # We purposely ignore errors here; we still want to run the other
   # appropriate tests.
@@ -304,14 +316,14 @@ proc gcj_jni_run {} {
 
   # For now we only test JNI on native builds.
   if {$build_triplet == $host_triplet} {
-    catch { lsort [glob -nocomplain ${srcdir}/${subdir}/*.java] } srcfiles
+    catch { lsort [glob -nocomplain ${srcdir}/${subdir}/*.jar] } srcfiles
 
     foreach x $srcfiles {
       gcj_jni_test_one $x
     }
 
     # Run JNI invocation API tests
-    catch { lsort [glob -nocomplain ${srcdir}/${subdir}/invocation/*.java] } srcfiles
+    catch { lsort [glob -nocomplain ${srcdir}/${subdir}/invocation/*.jar] } srcfiles
 
     foreach x $srcfiles {
       gcj_jni_invocation_test_one $x

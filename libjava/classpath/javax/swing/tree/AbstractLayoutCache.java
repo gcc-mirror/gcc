@@ -149,9 +149,11 @@ public abstract class AbstractLayoutCache
   protected Rectangle getNodeDimensions(Object value, int row, int depth,
                                         boolean expanded, Rectangle bounds)
   {
-    if (nodeDimensions == null)
-      throw new InternalError("The NodeDimensions are not set");
-    return nodeDimensions.getNodeDimensions(value, row, depth, expanded, bounds);
+    Rectangle d = null;
+    if (nodeDimensions != null)
+      d = nodeDimensions.getNodeDimensions(value, row, depth, expanded,
+					   bounds);
+    return d;
   }
 
   /**
@@ -224,7 +226,12 @@ public abstract class AbstractLayoutCache
    */
   public void setSelectionModel(TreeSelectionModel model)
   {
+    if (treeSelectionModel != null)
+      treeSelectionModel.setRowMapper(null);
     treeSelectionModel = model;
+    if (treeSelectionModel != null)
+      treeSelectionModel.setRowMapper(this);
+    
   }
 
   /**
@@ -337,7 +344,7 @@ public abstract class AbstractLayoutCache
    * 
    * @return Enumeration
    */
-  public abstract Enumeration getVisiblePathsFrom(TreePath path);
+  public abstract Enumeration<TreePath> getVisiblePathsFrom(TreePath path);
 
   /**
    * getVisibleChildCount
@@ -425,9 +432,13 @@ public abstract class AbstractLayoutCache
    */
   public int[] getRowsForPaths(TreePath[] paths)
   {
-    int[] rows = new int[paths.length];
-    for (int i = 0; i < rows.length; i++)
-      rows[i] = getRowForPath(paths[i]);
+    int[] rows = null;
+    if (paths != null)
+      {
+        rows = new int[paths.length];
+        for (int i = 0; i < rows.length; i++)
+          rows[i] = getRowForPath(paths[i]);
+      }
     return rows;
   }
 
@@ -440,6 +451,6 @@ public abstract class AbstractLayoutCache
    */
   protected boolean isFixedRowHeight()
   {
-    return false; 
+    return rowHeight > 0;
   }
 }

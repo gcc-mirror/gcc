@@ -181,7 +181,8 @@ Java_gnu_java_awt_peer_gtk_CairoSurface_nativeSetPixels
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_CairoSurface_nativeDrawSurface 
 (JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
- jlong surfacePointer, jlong context, jdoubleArray java_matrix, double alpha)
+ jlong surfacePointer, jlong context, jdoubleArray java_matrix, double alpha,
+ jint interpolation)
 {
   struct cairographics2d *gr = JLONG_TO_PTR(struct cairographics2d, context);
   cairo_t *cr = gr->cr;
@@ -205,6 +206,27 @@ Java_gnu_java_awt_peer_gtk_CairoSurface_nativeDrawSurface
 
    p = cairo_pattern_create_for_surface (surface);
    cairo_pattern_set_matrix (p, &mat);
+   switch ((enum java_awt_rendering_hints_filter) interpolation)
+     {
+     case java_awt_rendering_hints_VALUE_INTERPOLATION_NEAREST_NEIGHBOR:
+       cairo_pattern_set_filter (p, CAIRO_FILTER_NEAREST);
+       break;
+     case java_awt_rendering_hints_VALUE_INTERPOLATION_BILINEAR:
+       cairo_pattern_set_filter (p, CAIRO_FILTER_BILINEAR);
+       break; 
+     case java_awt_rendering_hints_VALUE_INTERPOLATION_BICUBIC:
+       cairo_pattern_set_filter (p, CAIRO_FILTER_GAUSSIAN);
+       break; 
+     case java_awt_rendering_hints_VALUE_ALPHA_INTERPOLATION_SPEED:
+       cairo_pattern_set_filter (p, CAIRO_FILTER_FAST);
+       break;
+     case java_awt_rendering_hints_VALUE_ALPHA_INTERPOLATION_DEFAULT:
+       cairo_pattern_set_filter (p, CAIRO_FILTER_NEAREST);
+       break;
+     case java_awt_rendering_hints_VALUE_ALPHA_INTERPOLATION_QUALITY:
+       cairo_pattern_set_filter (p, CAIRO_FILTER_BEST);
+       break;
+     }
 
    cairo_set_source(cr, p);
    if (alpha == 1.0)

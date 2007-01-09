@@ -774,14 +774,9 @@ public abstract class Arc2D extends RectangularShape
       y = a.getY();
       w = a.getWidth();
       h = a.getHeight();
-      double start = a.getAngleStart() * (Math.PI / 180);
-      double extent = a.getAngleExtent() * (Math.PI / 180);
+      double start = Math.toRadians(a.getAngleStart());
+      double extent = Math.toRadians(a.getAngleExtent());
 
-      if (extent < 0)
-        {
-	  extent = -extent;
-	  start = 2 * Math.PI - extent + start;
-        }
       this.start = start;
       this.extent = extent;
 
@@ -790,11 +785,11 @@ public abstract class Arc2D extends RectangularShape
 	limit = -1;
       else if (extent == 0)
 	limit = type;
-      else if (extent <= Math.PI / 2.0)
+      else if (Math.abs(extent) <= Math.PI / 2.0)
 	limit = type + 1;
-      else if (extent <= Math.PI)
+      else if (Math.abs(extent) <= Math.PI)
 	limit = type + 2;
-      else if (extent <= 3.0 * (Math.PI / 2.0))
+      else if (Math.abs(extent) <= 3.0 * (Math.PI / 2.0))
 	limit = type + 3;
       else
 	limit = type + 4;
@@ -909,9 +904,20 @@ public abstract class Arc2D extends RectangularShape
       double kappa = (Math.sqrt(2.0) - 1.0) * (4.0 / 3.0);
       double quad = (Math.PI / 2.0);
 
-      double curr_begin = start + (current - 1) * quad;
-      double curr_extent = Math.min((start + extent) - curr_begin, quad);
-      double portion_of_a_quadrant = curr_extent / quad;
+      double curr_begin;
+      double curr_extent;
+      if (extent > 0)
+        {
+          curr_begin = start + (current - 1) * quad;
+          curr_extent = Math.min((start + extent) - curr_begin, quad);
+        }
+      else
+        {
+          curr_begin = start - (current - 1) * quad;
+          curr_extent = Math.max((start + extent) - curr_begin, -quad);
+        }
+      
+      double portion_of_a_quadrant = Math.abs(curr_extent / quad);
 
       double x0 = xmid + rx * Math.cos(curr_begin);
       double y0 = ymid - ry * Math.sin(curr_begin);
@@ -932,7 +938,11 @@ public abstract class Arc2D extends RectangularShape
       // will *subtract* the y value of this control vector from our first
       // point.
       cvec[0] = 0;
-      cvec[1] = len;
+      if (extent > 0)
+        cvec[1] = len;
+      else
+        cvec[1] = -len;
+      
       trans.scale(rx, ry);
       trans.rotate(angle);
       trans.transform(cvec, 0, cvec, 0, 1);
@@ -942,7 +952,11 @@ public abstract class Arc2D extends RectangularShape
       // control vector #2 would, ideally, be sticking out and to the
       // right, in a first quadrant arc segment. again, subtraction of y.
       cvec[0] = 0;
-      cvec[1] = -len;
+      if (extent > 0)
+        cvec[1] = -len;
+      else
+        cvec[1] = len;
+      
       trans.rotate(curr_extent);
       trans.transform(cvec, 0, cvec, 0, 1);
       coords[2] = x1 + cvec[0];

@@ -1,6 +1,6 @@
 /* Dictionary.java -- an abstract (and essentially worthless) 
    class which is Hashtable's superclass
-   Copyright (C) 1998, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,7 +57,7 @@ package java.util;
  * @since 1.0
  * @status updated to 1.4
  */
-public abstract class Dictionary
+public abstract class Dictionary<K, V>
 {
   // WARNING: Dictionary is a CORE class in the bootstrap cycle. See the
   // comments in vm/reference/java/lang/Runtime for implications of this fact.
@@ -75,7 +75,7 @@ public abstract class Dictionary
    * @return an Enumeration of the values
    * @see #keys()
    */
-  public abstract Enumeration elements();
+  public abstract Enumeration<V> elements();
 
   /** 
    * Returns the value associated with the supplied key, or null
@@ -87,7 +87,7 @@ public abstract class Dictionary
    * @throws NullPointerException if key is null
    * @see #put(Object, Object)
    */
-  public abstract Object get(Object key);
+  public abstract V get(Object key);
 
   /**
    * Returns true when there are no elements in this Dictionary.
@@ -102,7 +102,7 @@ public abstract class Dictionary
    * @return an Enumeration of the keys
    * @see #elements()
    */
-  public abstract Enumeration keys();
+  public abstract Enumeration<K> keys();
 
   /**
    * Inserts a new value into this Dictionary, located by the
@@ -115,7 +115,7 @@ public abstract class Dictionary
    * @throws NullPointerException if key or value is null
    * @see #get(Object)
    */
-  public abstract Object put(Object key, Object value);
+  public abstract V put(K key, V value);
 
   /**
    * Removes from the Dictionary the value located by the given key. A null
@@ -125,7 +125,7 @@ public abstract class Dictionary
    * @return the value associated with the removed key
    * @throws NullPointerException if key is null
    */
-  public abstract Object remove(Object key);
+  public abstract V remove(Object key);
 
   /**
    * Returns the number of values currently in this Dictionary.

@@ -53,6 +53,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamSource;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -118,10 +119,9 @@ class XSLURIResolver
 
     try
       {
-        URL url = resolveURL(systemId, base, href);
         Node node = null;
         InputStream in = null;
-        if (source instanceof StreamSource)
+        if (source != null && source instanceof StreamSource)
           {
             StreamSource ss = (StreamSource) source;
             in = ss.getInputStream();
@@ -134,8 +134,25 @@ class XSLURIResolver
                   }
               }
           }
+        else if (source != null && source instanceof SAXSource)
+          {
+            SAXSource ss = (SAXSource) source;
+            if (ss.getInputSource() != null)
+              {
+                in =  ss.getInputSource().getByteStream();
+                if (in == null)
+                  {
+                    Reader reader = ss.getInputSource().getCharacterStream();
+                    if (reader != null)
+                      {
+                        in = new ReaderInputStream(reader);
+                      }
+                  }
+              }
+          }
         if (in == null)
           {
+            URL url = resolveURL(systemId, base, href);
             if (url != null)
               {
                 systemId = url.toString();

@@ -505,15 +505,21 @@ public class JRootPane extends JComponent implements Accessible
   }
 
   /**
-   * DOCUMENT ME!
+   * Set the layered pane for the root pane. 
    *
-   * @param f DOCUMENT ME!
+   * @param f The JLayeredPane to be used.
+   * 
+   * @throws IllegalComponentStateException if JLayeredPane
+   * parameter is null.
    */
   public void setLayeredPane(JLayeredPane f)
   {
+    if (f == null)
+      throw new IllegalComponentStateException();
+    
     if (layeredPane != null)
       remove(layeredPane);
-
+    
     layeredPane = f;
     add(f, -1);
   }

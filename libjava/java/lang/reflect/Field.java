@@ -41,6 +41,7 @@ package java.lang.reflect;
 import gnu.java.lang.ClassHelper;
 
 import gnu.java.lang.reflect.FieldSignatureParser;
+import java.lang.annotation.Annotation;
 
 /**
  * The Field class represents a member variable of a class. It also allows
@@ -88,7 +89,7 @@ public final class Field
   // The Class (or primitive TYPE) of this field.
   private Class type;
 
-  private static final int FIELD_MODIFIERS
+  static final int FIELD_MODIFIERS
     = Modifier.FINAL | Modifier.PRIVATE | Modifier.PROTECTED
       | Modifier.PUBLIC | Modifier.STATIC | Modifier.TRANSIENT
       | Modifier.VOLATILE;
@@ -104,7 +105,7 @@ public final class Field
    * is a non-inherited member.
    * @return the class that declared this member
    */
-  public Class getDeclaringClass()
+  public Class<?> getDeclaringClass()
   {
     return declaringClass;
   }
@@ -158,7 +159,7 @@ public final class Field
    * Gets the type of this field.
    * @return the type of this field
    */
-  public native Class getType();
+  public native Class<?> getType();
 
   /**
    * Compare two objects to see if they are semantically equivalent.
@@ -733,15 +734,30 @@ public final class Field
     return p.getFieldType();
   }
 
+  public <T extends Annotation> T getAnnotation(Class<T> annoClass)
+  {
+    Annotation[] annos = getDeclaredAnnotations();
+    for (int i = 0; i < annos.length; ++i)
+      if (annos[i].annotationType() == annoClass)
+	return (T) annos[i];
+    return null;
+  }
+
+  public Annotation[] getDeclaredAnnotations()
+  {
+    Annotation[] result = getDeclaredAnnotationsInternal();
+    if (result == null)
+      result = new Annotation[0];
+    return result;
+  }
+
+  private native Annotation[] getDeclaredAnnotationsInternal();
+
   /**
    * Return the String in the Signature attribute for this field. If there
    * is no Signature attribute, return null.
    */
-  private String getSignature()
-  {
-    // FIXME: libgcj doesn't record Signature attributes yet.
-    return null;
-  }
+  private native String getSignature();
 
   native void setByte (Class caller, Object obj, byte b, boolean checkFinal)
     throws IllegalArgumentException, IllegalAccessException;

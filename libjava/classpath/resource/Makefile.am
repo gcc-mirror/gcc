@@ -1,7 +1,7 @@
 ## used by automake to generate Makefile.in
 
 logging_DATA = java/util/logging/logging.properties
-loggingdir = $(toolexeclibdir)
+loggingdir = $(prefix)/lib
 
 security_DATA = java/security/classpath.security
-securitydir = $(toolexeclibdir)/security
+securitydir = $(prefix)/lib/security

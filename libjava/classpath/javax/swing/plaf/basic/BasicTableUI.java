@@ -443,11 +443,14 @@ public class BasicTableUI extends TableUI
   public Dimension getPreferredSize(JComponent comp) 
   {
     int prefTotalColumnWidth = 0;
-    for (int i = 0; i < table.getColumnCount(); i++)
+    TableColumnModel tcm = table.getColumnModel();
+
+    for (int i = 0; i < tcm.getColumnCount(); i++)
       {
-        TableColumn col = table.getColumnModel().getColumn(i);
+        TableColumn col = tcm.getColumn(i);
         prefTotalColumnWidth += col.getPreferredWidth();
       }
+
     return new Dimension(prefTotalColumnWidth, getHeight());
   }
 
@@ -455,7 +458,7 @@ public class BasicTableUI extends TableUI
    * Returns the table height. This helper method is used by
    * {@link #getMinimumSize(JComponent)}, {@link #getPreferredSize(JComponent)}
    * and {@link #getMaximumSize(JComponent)} to determine the table height.
-   *
+   * 
    * @return the table height
    */
   private int getHeight()

@@ -38,15 +38,16 @@ exception statement from your version. */
 package gnu.java.net;
 
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
+import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.SocketImpl;
 import java.net.SocketOptions;
-import java.net.UnknownHostException;
 
 import gnu.classpath.Configuration;
+import gnu.java.nio.VMChannel;
 
 /**
  * The VM interface for {@link gnu.java.net.PlainSocketImpl}.
@@ -56,6 +57,12 @@ import gnu.classpath.Configuration;
  */
 public final class VMPlainSocketImpl
 {
+  /** Option id for time to live
+   */
+  private static final int CP_IP_TTL = 0x1E61;
+
+  private final State nfd;
+  
   /**
    * Static initializer to load native library.
    */
@@ -66,249 +73,440 @@ public final class VMPlainSocketImpl
         System.loadLibrary("javanet");
       }
   }
-
-  /**
-   * Sets the specified option on a socket to the passed in object.
-   * The optionId parameter is one of the defined constants in
-   * the SocketImpl interface.
-   *
-   * @param socket the socket object
-   * @param optionId the identifier of the option
-   * @param value the value to set the option to
-   *
-   * @throws SocketException if an error occurs
-   */
-  static native void setOption(PlainSocketImpl socket, int optionId, Object value)
-    throws SocketException;
-
-  /**
-   * Returns the current setting of the specified option. The optionId
-   * is one of the defined constants in this interface.
-   *
-   * @param socket the socket object
-   * @param optionId the option identifier
-   *
-   * @return the current value of the option
-   *
-   * @throws SocketException ff an error occurs
-   */
-  static native Object getOption(PlainSocketImpl socket, int optionId)
-    throws SocketException;
-
-  /**
-   * Creates a new socket that is not bound to any local address/port and
-   * is not connected to any remote address/port.
-   *
-   * @param socket the socket object
-   *
-   * @throws IOException if something goes wrong while creating the socket
-   */
-  static native void create(PlainSocketImpl socket) throws IOException;
-
-  /**
-   * Connects to the remote address and port specified as arguments.
-   *
-   * @param socket the socket object
-   * @param addr the remote address to connect to
-   * @param port the remote port to connect to
-   *
-   * @throws IOException if an error occurs
-   */
-  static native void connect(PlainSocketImpl socket, InetAddress addr,
-                             int port) throws IOException;
-
-  /**
-   * Binds to the specified port on the specified addr.  Note that this addr
-   * must represent a local IP address.  **** How bind to INADDR_ANY? ****
-   *
-   * @param socket the socket object
-   * @param addr the address to bind to
-   * @param port the port number to bind to
-   *
-   * @exception IOException If an error occurs
-   */
-  static native void bind(PlainSocketImpl socket, InetAddress addr, int port)
-    throws IOException;
-
-  /**
-   * Starts listening for connections on a socket. The queueLen parameter
-   * is how many pending connections will queue up waiting to be serviced
-   * before being accepted.  If the queue of pending requests exceeds this
-   * number, additional connections will be refused.
-   *
-   * @param socket the socket object
-   * @param queueLen the length of the pending connection queue
-   * 
-   * @exception IOException if an error occurs
-   */
-  static native void listen(PlainSocketImpl socket, int queueLen)
-    throws IOException;
-
-  /**
-   * Accepts a new connection on this socket.
-   *
-   * @param socket the socket object
-   * @param impl the socket object to accept this connection.
-   */
-  static native void accept(PlainSocketImpl socket, SocketImpl impl)
-    throws IOException;
-
-  /**
-   * Returns the number of bytes that the caller can read from this socket
-   * without blocking. 
-   *
-   * @param socket the socket object
-   *
-   * @return the number of readable bytes before blocking
-   *
-   * @throws IOException If an error occurs
-   */
-  static native int available(PlainSocketImpl socket) throws IOException;
-
-  /**
-   * Closes the socket.  This will cause any InputStream or OutputStream
-   * objects for this Socket to be closed as well.
-   *
-   * <p>
-   * Note that if the SO_LINGER option is set on this socket, then the
-   * operation could block.
-   * </p>
-   *
-   * @param socket the socket object
-   *
-   * @throws IOException if an error occurs
-   */
-  static native void close(PlainSocketImpl socket) throws IOException;
-
-  /**
-   * Internal method used by SocketInputStream for reading data from
-   * the connection.  Reads up to len bytes of data into the buffer
-   * buf starting at offset bytes into the buffer.
-   *
-   * @param socket the socket object
-   *
-   * @return the actual number of bytes read or -1 if end of stream.
-   *
-   * @throws IOException if an error occurs
-   */
-  static native int read(PlainSocketImpl socket, byte[] buf, int offset,
-                         int len) throws IOException;
-
-  /**
-   * Internal method used by SocketInputStream for reading data from
-   * the connection.  Reads and returns one byte of data.
-   *
-   * @param socket the socket object
-   *
-   * @return read byte or -1 if end of stream.
-   *
-   * @throws IOException if an error occurs
-   */
-  static int read(PlainSocketImpl socket) throws IOException
+  
+  public VMPlainSocketImpl()
   {
-    byte[] buf = new byte[1];
-    if (read(socket, buf, 0, 1) > 0)
-      return buf[0] & 0xFF;
-    else
-      return -1;
+    // XXX consider adding security check here.
+    nfd = new State();
+  }
+  
+  public VMPlainSocketImpl(VMChannel channel) throws IOException
+  {
+    this();
+    nfd.setChannelFD(channel.getState());
+  }
+  
+  public State getState()
+  {
+    return nfd;
   }
 
-  /**
-   * Internal method used by SocketOuputStream for writing data to
-   * the connection. Writes up to len bytes of data from the buffer
-   * <code>buf</code> starting at <cod>offset</code> bytes into the buffer.
+  /** This method exists to hide the CP_IP_TTL value from
+   * higher levels.
    *
-   * @param socket the socket object
-   * @param buf the buffer to write to the stream
-   * @param offset the start offset in the buffer
-   * @param len the number of bytes to write
-   *
-   * @throws IOException if an error occurs
+   * Always think of JNode ... :)
    */
-  static native void write(PlainSocketImpl socket, byte[] buf, int offset,
-                           int len) throws IOException;
-
-  /**
-   * Internal method used by SocketOuputStream for writing data to
-   * the connection. Writes exactly one byte to the socket.
-   *
-   * @param socket the socket object
-   * @param data the byte to write to the socket
-   *
-   * @throws IOException if an error occurs
-   */
-  static void write(PlainSocketImpl socket, int data)
-    throws IOException
+  public void setTimeToLive(int ttl)
+    throws SocketException
   {
-    write(socket, new byte[]{ (byte) data }, 0, 1);
-  }
-
-  /**
-   * Sets the input stream for this socket to the end of the stream. Any
-   * attempts to read more bytes from the stream will return an EOF.
-   *
-   * @param socket the socket object
-   *
-   * @throws IOException if I/O errors occur
-   */
-  static native void shutdownInput(PlainSocketImpl socket) throws IOException;
-
-  /**
-   * Disables the output stream for this socket. Any attempt to write more
-   * data to the socket will throw an IOException.
-   *
-   * @param socket the socket object
-   *
-   * @throws IOException if I/O errors occur
-   */
-  static native void shutdownOutput(PlainSocketImpl socket) throws IOException;
-
-  /**
-   * Connects to the remote socket address with a specified timeout.
-   *
-   * @param socket the socket object
-   * @param address the remote address to connect to
-   * @param timeout the timeout to use for this connect, 0 means infinite.
-   *
-   * @throws IOException if an error occurs
-   */
-  static synchronized void connect(PlainSocketImpl socket,
-                                      SocketAddress address, int timeout)
-    throws IOException
-  {
-    InetSocketAddress sockAddr = (InetSocketAddress) address;
-    InetAddress addr = sockAddr.getAddress();
-
-    if (addr == null)
-      throw new UnknownHostException(sockAddr.getHostName());
-
-    int port = sockAddr.getPort();
-
-    if (timeout < 0)
-      throw new IllegalArgumentException("negative timeout");
-
-    Object oldTimeoutObj = null;
     try
       {
-        oldTimeoutObj = getOption(socket, SocketOptions.SO_TIMEOUT);
-        setOption(socket, SocketOptions.SO_TIMEOUT, new Integer(timeout));
-        connect(socket, addr, port);
+        setOption(nfd.getNativeFD(), CP_IP_TTL, ttl);
       }
-    finally
+    catch (IOException ioe)
       {
-        if (oldTimeoutObj != null)
-          setOption(socket, SocketOptions.SO_TIMEOUT, oldTimeoutObj);
+        SocketException se = new SocketException();
+        se.initCause(ioe);
+        throw se;
       }
   }
 
-  /**
-   * Send one byte of urgent data over the socket.
-   *
-   * @param socket the socket object
-   * @param data the byte to send
-   */
-  static void sendUrgendData(PlainSocketImpl socket, int data)
+  public int getTimeToLive()
+    throws SocketException
   {
-    throw new InternalError ("PlainSocketImpl::sendUrgentData not implemented");
+    try
+      {
+        return getOption(nfd.getNativeFD(), CP_IP_TTL);
+      }
+    catch (IOException ioe)
+      {
+        SocketException se = new SocketException();
+        se.initCause(ioe);
+        throw se;
+      }
+  }
+
+  public void setOption(int optionId, Object optionValue)
+    throws SocketException
+  {
+    int value;
+    if (optionValue instanceof Integer)
+      value = ((Integer) optionValue).intValue();
+    else if (optionValue instanceof Boolean)
+      // Switching off the linger behavior is done by setting
+      // the value to -1. This is how the Java API interprets
+      // it.
+      value = ((Boolean) optionValue).booleanValue()
+              ? 1
+              : (optionId == SocketOptions.SO_LINGER)
+              ? -1
+              : 0;
+    else
+      throw new IllegalArgumentException("option value type "
+                                         + optionValue.getClass().getName());
+    
+    try
+      {
+        setOption(nfd.getNativeFD(), optionId, value);
+      }
+    catch (IOException ioe)
+      {
+        SocketException se = new SocketException();
+        se.initCause(ioe);
+        throw se;
+      }
+  }
+  
+  private static native void setOption(int fd, int id, int value)
+    throws SocketException;
+
+  public void setMulticastInterface(int optionId, InetAddress addr)
+    throws SocketException
+  {
+    try
+      {
+        if (addr instanceof Inet4Address)
+          setMulticastInterface(nfd.getNativeFD(), optionId, (Inet4Address) addr);
+        else if (addr instanceof Inet6Address)
+          {
+            NetworkInterface iface = NetworkInterface.getByInetAddress(addr);
+            setMulticastInterface6(nfd.getNativeFD(), optionId, iface.getName());
+          }
+        else
+          throw new SocketException("Unknown address format: " + addr);
+      }
+    catch (SocketException se)
+      {
+        throw se;
+      }
+    catch (IOException ioe)
+      {
+        SocketException se = new SocketException();
+        se.initCause(ioe);
+        throw se;
+      }
+  }
+
+  private static native void setMulticastInterface(int fd,
+                                                   int optionId,
+                                                   Inet4Address addr);
+
+  private static native void setMulticastInterface6(int fd,
+                                                    int optionId,
+                                                    String ifName);
+
+  /**
+   * Get a socket option. This implementation is only required to support
+   * socket options that are boolean values, which include:
+   * 
+   *  SocketOptions.IP_MULTICAST_LOOP
+   *  SocketOptions.SO_BROADCAST
+   *  SocketOptions.SO_KEEPALIVE
+   *  SocketOptions.SO_OOBINLINE
+   *  SocketOptions.SO_REUSEADDR
+   *  SocketOptions.TCP_NODELAY
+   * 
+   * and socket options that are integer values, which include:
+   * 
+   *  SocketOptions.IP_TOS
+   *  SocketOptions.SO_LINGER
+   *  SocketOptions.SO_RCVBUF
+   *  SocketOptions.SO_SNDBUF
+   *  SocketOptions.SO_TIMEOUT
+   *
+   * @param optionId The option ID to fetch.
+   * @return A {@link Boolean} or {@link Integer} containing the socket
+   *  option.
+   * @throws SocketException
+   */
+  public Object getOption(int optionId) throws SocketException
+  {
+    int value;
+    try
+      {
+        value = getOption(nfd.getNativeFD(), optionId);
+      }
+    catch (IOException ioe)
+      {
+        SocketException se = new SocketException();
+        se.initCause(ioe);
+        throw se;
+      }
+    
+    switch (optionId)
+      {
+        case SocketOptions.IP_MULTICAST_LOOP:
+        case SocketOptions.SO_BROADCAST:
+        case SocketOptions.SO_KEEPALIVE:
+        case SocketOptions.SO_OOBINLINE:
+        case SocketOptions.SO_REUSEADDR:
+        case SocketOptions.TCP_NODELAY:
+          return Boolean.valueOf(value != 0);
+          
+        case SocketOptions.IP_TOS:
+        case SocketOptions.SO_LINGER:
+        case SocketOptions.SO_RCVBUF:
+        case SocketOptions.SO_SNDBUF:
+        case SocketOptions.SO_TIMEOUT:
+          return new Integer(value);
+          
+        default:
+          throw new SocketException("getting option " + optionId +
+                                    " not supported here");
+      }
+  }
+  
+  private static native int getOption(int fd, int id) throws SocketException;
+
+  /**
+   * Returns an Inet4Address or Inet6Address instance belonging to the
+   * interface which is set as the multicast interface.
+   *
+   * The optionId is provided to make it possible that the native
+   * implementation may do something different depending on whether
+   * the value is SocketOptions.IP_MULTICAST_IF or 
+   * SocketOptions.IP_MULTICAST_IF2.
+   */
+  public InetAddress getMulticastInterface(int optionId)
+    throws SocketException
+  {
+    try
+      {
+        return getMulticastInterface(nfd.getNativeFD(), optionId);
+      }
+    catch (IOException ioe)
+      {
+        SocketException se = new SocketException();
+        se.initCause(ioe);
+        throw se;
+      }
+  }
+
+  private static native InetAddress getMulticastInterface(int fd,
+                                                          int optionId);
+  
+  /**
+   * Binds this socket to the given local address and port.
+   *
+   * @param address The address to bind to; the InetAddress is either
+   *  an IPv4 or IPv6 address.
+   * @throws IOException If binding fails; for example, if the port
+   *  in the given InetSocketAddress is privileged, and the current
+   *  process has insufficient privileges.
+   */
+  public void bind(InetSocketAddress address) throws IOException
+  {
+    InetAddress addr = address.getAddress();
+    if (addr instanceof Inet4Address)
+      {
+        bind (nfd.getNativeFD(), addr.getAddress(), address.getPort());
+      }
+    else if (addr instanceof Inet6Address)
+      bind6 (nfd.getNativeFD(), addr.getAddress(), address.getPort());
+    else
+      throw new SocketException ("unsupported address type");
+  }
+  
+  /**
+   * Native bind function for IPv4 addresses. The addr array must be
+   * exactly four bytes long.
+   * 
+   * VMs without native support need not implement this.
+   *
+   * @param fd The native file descriptor integer.
+   * @param addr The IPv4 address, in network byte order.
+   * @param port The port to bind to.
+   * @throws IOException
+   */
+  private static native void bind(int fd, byte[] addr, int port)
+    throws IOException;
+  
+  /**
+   * Native bind function for IPv6 addresses. The addr array must be
+   * exactly sixteen bytes long.
+   * 
+   * VMs without native support need not implement this.
+   *
+   * @param fd The native file descriptor integer.
+   * @param addr The IPv6 address, in network byte order.
+   * @param port The port to bind to.
+   * @throws IOException
+   */
+  private static native void bind6(int fd, byte[] addr, int port)
+    throws IOException;
+
+  /**
+   * Listen on this socket for incoming connections.
+   *
+   * @param backlog The backlog of connections.
+   * @throws IOException If listening fails.
+   * @see gnu.java.nio.VMChannel#accept()
+   */
+  public void listen(int backlog) throws IOException
+  {
+    listen(nfd.getNativeFD(), backlog);
+  }
+  
+  /**
+   * Native listen function. VMs without native support need not implement
+   * this.
+   *
+   * @param fd The file descriptor integer.
+   * @param backlog The listen backlog size.
+   * @throws IOException
+   */
+  private static native void listen(int fd, int backlog) throws IOException;
+
+  public void join(InetAddress group) throws IOException
+  {
+    if (group instanceof Inet4Address)
+      join(nfd.getNativeFD(), group.getAddress());
+    else if (group instanceof Inet6Address)
+      join6(nfd.getNativeFD(), group.getAddress());
+    else
+      throw new IllegalArgumentException("unknown address type");
+  }
+  
+  private static native void join(int fd, byte[] addr) throws IOException;
+  
+  private static native void join6(int fd, byte[] addr) throws IOException;
+  
+  public void leave(InetAddress group) throws IOException
+  {
+    if (group instanceof Inet4Address)
+      leave(nfd.getNativeFD(), group.getAddress());
+    else if (group instanceof Inet6Address)
+      leave6(nfd.getNativeFD(), group.getAddress());
+    else
+      throw new IllegalArgumentException("unknown address type");
+  }
+  
+  private static native void leave(int fd, byte[] addr) throws IOException;
+  
+  private static native void leave6(int fd, byte[] addr) throws IOException;
+
+  public void joinGroup(InetSocketAddress addr, NetworkInterface netif)
+    throws IOException
+  {
+    InetAddress address = addr.getAddress();
+    
+    if (address instanceof Inet4Address)
+      joinGroup(nfd.getNativeFD(), address.getAddress(),
+                netif != null ? netif.getName() : null);
+    else if (address instanceof Inet6Address)
+      joinGroup6(nfd.getNativeFD(), address.getAddress(),
+                 netif != null ? netif.getName() : null);
+    else
+      throw new IllegalArgumentException("unknown address type");
+  }
+  
+  private static native void joinGroup(int fd, byte[] addr, String ifname)
+    throws IOException;
+  
+  private static native void joinGroup6(int fd, byte[] addr, String ifname)
+    throws IOException;
+  
+  public void leaveGroup(InetSocketAddress addr, NetworkInterface netif)
+    throws IOException
+  {
+    InetAddress address = addr.getAddress();
+    if (address instanceof Inet4Address)
+      leaveGroup(nfd.getNativeFD(), address.getAddress(),
+                 netif != null ? netif.getName() : null);
+    else if (address instanceof Inet6Address)
+      leaveGroup6(nfd.getNativeFD(), address.getAddress(),
+                 netif != null ? netif.getName() : null);
+    else
+      throw new IllegalArgumentException("unknown address type");
+  }
+  
+  private static native void leaveGroup(int fd, byte[] addr, String ifname)
+    throws IOException;
+  
+  private static native void leaveGroup6(int fd, byte[] addr, String ifname)
+    throws IOException;
+  
+  
+  public void shutdownInput() throws IOException
+  {
+    shutdownInput(nfd.getNativeFD());
+  }
+  
+  private static native void shutdownInput(int native_fd) throws IOException;
+  
+  public void shutdownOutput() throws IOException
+  {
+    shutdownOutput(nfd.getNativeFD());
+  }
+  
+  private static native void shutdownOutput(int native_fd) throws IOException;
+  
+  public void sendUrgentData(int data) throws IOException
+  {
+    sendUrgentData(nfd.getNativeFD(), data);
+  }
+  
+  private static native void sendUrgentData(int natfive_fd, int data) throws IOException;
+  
+  public void close() throws IOException
+  {
+    nfd.close();
+  }
+  
+  // Inner classes.
+  
+  /**
+   * Our wrapper for the native file descriptor. In this implementation,
+   * it is a simple wrapper around {@link VMChannel.State}, to simplify
+   * management of the native state.
+   */
+  public final class State
+  {
+    private VMChannel.State channelFd;
+    
+    State()
+    {
+      channelFd = null;
+    }
+    
+    public boolean isValid()
+    {
+      if (channelFd != null)
+        return channelFd.isValid();
+      return false;
+    }
+    
+    public int getNativeFD() throws IOException
+    {
+      return channelFd.getNativeFD();
+    }
+    
+    public void setChannelFD(final VMChannel.State nfd) throws IOException
+    {
+      if (this.channelFd != null && this.channelFd.isValid())
+        throw new IOException("file descriptor already initialized");
+      this.channelFd = nfd;
+    }
+    
+    public void close() throws IOException
+    {
+      if (channelFd == null)
+        throw new IOException("invalid file descriptor");
+      channelFd.close();
+    }
+    
+    protected void finalize() throws Throwable
+    {
+      try
+        {
+          if (isValid())
+            close();
+        }
+      finally
+        {
+          super.finalize();
+        }
+    }
   }
 }
+

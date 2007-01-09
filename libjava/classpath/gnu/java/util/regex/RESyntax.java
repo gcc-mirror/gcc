@@ -54,8 +54,6 @@ import java.util.BitSet;
 public final class RESyntax implements Serializable {
     static final String DEFAULT_LINE_SEPARATOR = System.getProperty("line.separator");
 
-    private static final String SYNTAX_IS_FINAL = RE.getLocalizedMessage("syntax.final");
-
     private BitSet bits;
 
     // true for the constant defined syntaxes
@@ -513,7 +511,8 @@ public final class RESyntax implements Serializable {
    * @return a reference to this object for easy chaining.
    */
   public RESyntax set(int index) {
-      if (isFinal) throw new IllegalAccessError(SYNTAX_IS_FINAL);
+    if (isFinal)
+      throw new IllegalAccessError(RE.getLocalizedMessage("syntax.final"));
     bits.set(index);
     return this;
   }
@@ -525,7 +524,8 @@ public final class RESyntax implements Serializable {
    * @return a reference to this object for easy chaining.
    */
   public RESyntax clear(int index) {
-      if (isFinal) throw new IllegalAccessError(SYNTAX_IS_FINAL);
+      if (isFinal)
+        throw new IllegalAccessError(RE.getLocalizedMessage("syntax.final"));
       bits.clear(index);
       return this;
   }
@@ -548,7 +548,8 @@ public final class RESyntax implements Serializable {
      * @return this object for convenient chaining 
      */
     public RESyntax setLineSeparator(String aSeparator) {
-	if (isFinal) throw new IllegalAccessError(SYNTAX_IS_FINAL);
+	if (isFinal)
+          throw new IllegalAccessError(RE.getLocalizedMessage("syntax.final"));
 	lineSeparator = aSeparator;
 	return this;
     }

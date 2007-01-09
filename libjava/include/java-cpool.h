@@ -28,6 +28,7 @@ details.  */
 #define JV_CONSTANT_InterfaceMethodref (11L)
 #define JV_CONSTANT_NameAndType (12L)
 #define JV_CONSTANT_ResolvedFlag (16L)
+#define JV_CONSTANT_LazyFlag (32L)
 #define JV_CONSTANT_ResolvedString (16L | 8L)
 #define JV_CONSTANT_ResolvedClass  (16L | 7L)
 

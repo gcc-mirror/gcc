@@ -1,5 +1,5 @@
 /* SortedMap.java -- A map that makes guarantees about the order of its keys
-   Copyright (C) 1998, 2001, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -72,7 +72,7 @@ package java.util;
  * @since 1.2
  * @status updated to 1.4
  */
-public interface SortedMap extends Map
+public interface SortedMap<K, V> extends Map<K, V>
 {
   /**
    * Returns the comparator used in sorting this map, or null if it is
@@ -80,7 +80,7 @@ public interface SortedMap extends Map
    *
    * @return the sorting comparator
    */
-  Comparator comparator();
+  Comparator<? super K> comparator();
 
   /**
    * Returns the first (lowest sorted) key in the map.
@@ -88,7 +88,7 @@ public interface SortedMap extends Map
    * @return the first key
    * @throws NoSuchElementException if this map is empty.
    */
-  Object firstKey();
+  K firstKey();
 
   /**
    * Returns a view of the portion of the map strictly less than toKey. The
@@ -110,7 +110,7 @@ public interface SortedMap extends Map
    * @throws NullPointerException if toKey is null but the map does not allow
    *         null keys
    */
-  SortedMap headMap(Object toKey);
+  SortedMap<K, V> headMap(K toKey);
 
   /**
    * Returns the last (highest sorted) key in the map.
@@ -118,7 +118,7 @@ public interface SortedMap extends Map
    * @return the last key
    * @throws NoSuchElementException if this map is empty.
    */
-  Object lastKey();
+  K lastKey();
 
   /**
    * Returns a view of the portion of the map greater than or equal to
@@ -146,7 +146,7 @@ public interface SortedMap extends Map
    * @throws NullPointerException if fromKey or toKey is null but the map
    *         does not allow null keys
    */
-  SortedMap subMap(Object fromKey, Object toKey);
+  SortedMap<K, V> subMap(K fromKey, K toKey);
 
   /**
    * Returns a view of the portion of the map greater than or equal to
@@ -169,5 +169,5 @@ public interface SortedMap extends Map
    * @throws NullPointerException if fromKey is null but the map does not allow
    *         null keys
    */
-  SortedMap tailMap(Object fromKey);
+  SortedMap<K, V> tailMap(K fromKey);
 }

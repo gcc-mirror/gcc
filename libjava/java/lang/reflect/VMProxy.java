@@ -65,7 +65,7 @@ final class VMProxy
    * If this is true, HAVE_NATIVE_GET_PROXY_CLASS should be false.
    * @see java.lang.reflect.Proxy
    */
-  static boolean HAVE_NATIVE_GENERATE_PROXY_CLASS = false;
+  static boolean HAVE_NATIVE_GENERATE_PROXY_CLASS = true;
 
   /**
    * Optional native method to replace (and speed up) the pure Java
@@ -136,8 +136,5 @@ final class VMProxy
    * @see #getProxyClass(ClassLoader, Class[])
    * @see ProxyData#generateProxyClass(ClassLoader)
    */
-  static Class generateProxyClass(ClassLoader loader, Proxy.ProxyData data)
-  {
-    return null;
-  }
+  static native Class generateProxyClass(ClassLoader loader, Proxy.ProxyData data);
 }

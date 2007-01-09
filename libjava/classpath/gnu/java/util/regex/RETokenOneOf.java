@@ -120,6 +120,7 @@ final class RETokenOneOf extends REToken {
   }
 
     boolean match(CharIndexed input, REMatch mymatch) {
+      setHitEnd(input, mymatch);
       if (matchesOneChar) return matchOneChar(input, mymatch);
       else return matchOneRE(input, mymatch);
     }

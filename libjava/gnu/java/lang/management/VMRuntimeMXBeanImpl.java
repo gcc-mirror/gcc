@@ -39,6 +39,9 @@ package gnu.java.lang.management;
 
 import gnu.classpath.SystemProperties;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 /**
  * Provides access to information about the virtual machine.
  *
@@ -55,10 +58,7 @@ final class VMRuntimeMXBeanImpl
    *
    * @return the command-line arguments.
    */
-  static String[] getInputArguments()
-  {
-    return new String[0];
-  }
+  static native String[] getInputArguments();
 
   /**
    * Returns a developer-chosen name for the virtual
@@ -75,8 +75,18 @@ final class VMRuntimeMXBeanImpl
    */
   static String getName()
   {
+    String hostName;
+    try
+      {
+	hostName = InetAddress.getLocalHost().getHostName();
+      }
+    catch (UnknownHostException e)
+      {
+	hostName = "Unknown host";
+      }
     return SystemProperties.getProperty("java.vm.name") + " " +
-      SystemProperties.getProperty("java.vm.version");
+      SystemProperties.getProperty("java.vm.version") + " [" +
+      getPID() + "@" + hostName + "]";
   }
 
   /**
@@ -87,9 +97,13 @@ final class VMRuntimeMXBeanImpl
    *
    * @return the VM start time.
    */
-  static long getStartTime()
-  {
-    return -1;
-  }
+  static native long getStartTime();
+
+  /**
+   * The process identifier of the runtime.
+   *
+   * @return the PID of the runtime.
+   */
+  private static native long getPID();
 
 }

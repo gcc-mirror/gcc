@@ -1,5 +1,5 @@
 /* TAG_CODE_SETS.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ package org.omg.IOP;
  * profile provides information about the native and supported encodings
  * for the "narrow" (usually 8 bit) and "wide" (usually 16 bit) characters.
  * In Gnu Classpath implementation the class, responsible for providing
- * this information is {@link gnu.CORBA.CharSets_OSF}.
+ * this information is {@link gnu.CORBA.GIOP.CharSets_OSF}.
  * </p>
  * <p>
  * If this profile is missing, it is assumed, that the "narrow" characters

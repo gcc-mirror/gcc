@@ -1,0 +1,441 @@
+/* Main.java - javah main program
+ Copyright (C) 2006 Free Software Foundation, Inc.
+
+ This file is part of GNU Classpath.
+
+ GNU Classpath is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2, or (at your option)
+ any later version.
+
+ GNU Classpath is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with GNU Classpath; see the file COPYING.  If not, write to the
+ Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ 02110-1301 USA.
+
+ Linking this library statically or dynamically with other modules is
+ making a combined work based on this library.  Thus, the terms and
+ conditions of the GNU General Public License cover the whole
+ combination.
+
+ As a special exception, the copyright holders of this library give you
+ permission to link this library with independent modules to produce an
+ executable, regardless of the license terms of these independent
+ modules, and to copy and distribute the resulting executable under
+ terms of your choice, provided that you also meet, for each linked
+ independent module, the terms and conditions of the license of that
+ module.  An independent module is a module which is not derived from
+ or based on this library.  If you modify this library, you may extend
+ this exception to your version of the library, but you are not
+ obligated to do so.  If you do not wish to do so, delete this
+ exception statement from your version. */
+
+
+package gnu.classpath.tools.javah;
+
+import gnu.classpath.tools.common.ClasspathToolParser;
+import gnu.classpath.tools.getopt.Option;
+import gnu.classpath.tools.getopt.OptionException;
+import gnu.classpath.tools.getopt.Parser;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+
+import org.objectweb.asm.ClassReader;
+
+public class Main
+{
+  // This is an option group for classpath-related options,
+  // and also is used for loading classes.
+  PathOptionGroup classpath = new PathOptionGroup();
+
+  // The output directory.
+  String outputDir;
+
+  // The output file name used if/when -o option is used.
+  String outFileName;
+
+  // The loader that we use to load class files.
+  URLClassLoader loader;
+
+  // In -all mode, the name of the directory to scan.
+  String allDirectory;
+
+  // True for verbose mode.
+  boolean verbose;
+
+  // True if we're emitting stubs.
+  boolean stubs;
+
+  // True if we're emitting CNI code.
+  boolean cni;
+
+  // True if output files should always be written.
+  boolean force;
+
+  // Map class names to class wrappers.
+  HashMap classMap = new HashMap();
+
+  // Map class names to lists of Text objects.
+  HashMap textMap = new HashMap();
+
+  void readCommandFile(String textFileName) throws OptionException
+  {
+    FileInputStream fis;
+    try
+      {
+        fis = new FileInputStream(textFileName);
+      }
+    catch (FileNotFoundException ignore)
+      {
+        throw new OptionException("file \"" + textFileName + "\" not found");
+      }
+    BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
+    String currentClass = null;
+    ArrayList currentValues = null;
+    while (true)
+      {
+        String line;
+        try
+          {
+            line = reader.readLine();
+          }
+        catch (IOException _)
+          {
+            break;
+          }
+        if (line == null)
+          break;
+        line = line.trim();
+        if (line.length() == 0 || line.charAt(0) == '#')
+          continue;
+        int index = line.indexOf(' ');
+        String cmd = line.substring(0, index);
+        String value = line.substring(index + 1);
+        int cmdValue;
+        if ("class".equals(cmd))
+          {
+            if (currentClass != null)
+              {
+                textMap.put(currentClass, currentValues);
+              }
+            currentClass = value;
+            currentValues = new ArrayList();
+            continue;
+          }
+        if (currentClass == null)
+          throw new OptionException("no class set");
+        if ("add".equals(cmd))
+          cmdValue = Text.ADD;
+        else if ("append".equals(cmd))
+          cmdValue = Text.APPEND;
+        else if ("prepend".equals(cmd))
+          cmdValue = Text.PREPEND;
+        else if ("friend".equals(cmd))
+          cmdValue = Text.FRIEND;
+        else
+          throw new OptionException("unrecognized command: " + cmd);
+        currentValues.add(new Text(cmdValue, value));
+      }
+    if (currentClass != null)
+      {
+        textMap.put(currentClass, currentValues);
+      }
+  }
+
+  void scanDirectory(File dir, final HashSet results)
+  {
+    File[] files = dir.listFiles(new FileFilter()
+    {
+      public boolean accept(File pathname)
+      {
+        if (pathname.isDirectory())
+          {
+            scanDirectory(pathname, results);
+            return false;
+          }
+        return pathname.getName().endsWith(".class");
+      }
+    });
+    if (files != null)
+      results.addAll(Arrays.asList(files));
+  }
+
+  private Parser getParser()
+  {
+    ClasspathToolParser result = new ClasspathToolParser("javah", true);
+    result.setHeader("usage: javah [OPTIONS] CLASS...");
+    result.add(classpath);
+    result.add(new Option('d', "Set output directory", "DIR")
+    {
+      public void parsed(String dir) throws OptionException
+      {
+        if (outputDir != null)
+          throw new OptionException("-d already seen");
+        if (outFileName != null)
+          throw new OptionException("only one of -d or -o may be used");
+        outputDir = dir;
+      }
+    });
+    result.add(new Option('o',
+                          "Set output file (only one of -d or -o may be used)",
+                          "FILE")
+    {
+      public void parsed(String fileName) throws OptionException
+      {
+        if (outFileName != null)
+          throw new OptionException("-o already seen");
+        if (outputDir != null)
+          throw new OptionException("only one of -d or -o may be used");
+        outFileName = fileName;
+      }
+    });
+    result.add(new Option("cmdfile", "Read command file", "FILE")
+    {
+      public void parsed(String file) throws OptionException
+      {
+        readCommandFile(file);
+      }
+    });
+    result.add(new Option("all", "Operate on all class files under directory",
+                          "DIR")
+    {
+      public void parsed(String arg) throws OptionException
+      {
+        // FIXME: lame restriction...
+        if (allDirectory != null)
+          throw new OptionException("-all already specified");
+        allDirectory = arg;
+      }
+    });
+    result.add(new Option("stubs", "Emit stub implementation")
+    {
+      public void parsed(String arg0) throws OptionException
+      {
+        stubs = true;
+      }
+    });
+    result.add(new Option("jni", "Emit JNI stubs or header (default)")
+    {
+      public void parsed(String arg0) throws OptionException
+      {
+        if (cni)
+          throw new OptionException("only one of -jni or -cni may be used");
+        cni = false;
+      }
+    });
+    result.add(new Option("cni", "Emit CNI stubs or header (default JNI)")
+    {
+      public void parsed(String arg0) throws OptionException
+      {
+        cni = true;
+      }
+    });
+    result.add(new Option("verbose", "Set verbose mode")
+    {
+      public void parsed(String arg0) throws OptionException
+      {
+        verbose = true;
+      }
+    });
+    result.add(new Option("force", "Output files should always be written")
+    {
+      public void parsed(String arg0) throws OptionException
+      {
+        force = true;
+      }
+    });
+    return result;
+  }
+
+  private File makeOutputDirectory() throws IOException
+  {
+    File outputFile;
+    if (outputDir == null)
+      outputFile = new File(".");
+    else
+      outputFile = new File(outputDir);
+    return outputFile;
+  }
+
+  /**
+   * @return The {@link File} object where the generated code will be written.
+   *         Returns <code>null</code> if the option <code>-force</code> was
+   *         specified on the command line and the designated file already
+   *         exists.
+   * @throws IOException if <code>outFileName</code> is not a writable file.
+   */
+  private File makeOutputFile() throws IOException
+  {
+    File result = new File(outFileName);
+    if (result.exists())
+      {
+        if (! result.isFile())
+          throw new IOException("'" + outFileName + "' is not a file");
+        if (! force)
+          {
+            if (verbose)
+              System.err.println("["+ outFileName
+                                 + " already exists.  Use -force to overwrite]");
+            return null;
+          }
+        if (! result.delete())
+          throw new IOException("Was unable to delete existing file: "
+                                + outFileName);
+      }
+    return result;
+  }
+
+  private void writeHeaders(ArrayList klasses, Printer printer)
+      throws IOException
+  {
+    Iterator i = klasses.iterator();
+    while (i.hasNext())
+      {
+        ClassWrapper klass = (ClassWrapper) i.next();
+        if (verbose)
+          System.err.println("[writing " + klass + "]");
+        printer.printClass(klass);
+      }
+  }
+
+  private void run(String[] args) throws IOException
+  {
+    Parser p = getParser();
+    String[] classNames = p.parse(args);
+    loader = classpath.getLoader();
+
+    boolean isDirectory = outFileName == null;
+    File outputFile = isDirectory ? makeOutputDirectory() : makeOutputFile();
+    if (outputFile == null)
+      return;
+
+    Printer printer;
+    if (! cni)
+      {
+        if (stubs)
+          printer = new JniStubPrinter(this, outputFile, isDirectory, force);
+        else
+          printer = new JniIncludePrinter(this, outputFile, isDirectory, force);
+      }
+    else
+      {
+        if (stubs)
+          printer = new CniStubPrinter(this, outputFile, isDirectory, force);
+        else
+          printer = new CniIncludePrinter(this, outputFile, isDirectory, force);
+      }
+
+    // First we load all of the files. That way if
+    // there are references between the files we will
+    // be loading the set that the user asked for.
+    HashSet klasses = new HashSet();
+    if (allDirectory != null)
+      scanDirectory(new File(allDirectory), klasses);
+    // Add the command-line arguments. We use the type of
+    // an item in 'klasses' to decide how to load each class.
+    for (int i = 0; i < classNames.length; ++i)
+      {
+        if (classNames[i].endsWith(".class"))
+          {
+            klasses.add(new File(classNames[i]));
+          }
+        else
+          {
+            klasses.add(classNames[i]);
+          }
+      }
+
+    Iterator i = klasses.iterator();
+    ArrayList results = new ArrayList();
+    while (i.hasNext())
+      {
+        // Let user specify either kind of class name or a
+        // file name.
+        Object item = i.next();
+        ClassWrapper klass;
+        if (item instanceof File)
+          {
+            // Load class from file.
+            if (verbose)
+              System.err.println("[reading file " + item + "]");
+            klass = getClass((File) item);
+          }
+        else
+          {
+            // Load class given the class name.
+            String className = ((String) item).replace('.', '/');
+            if (verbose)
+              System.err.println("[reading class " + className + "]");
+            klass = getClass(className);
+          }
+        results.add(klass);
+      }
+
+    writeHeaders(results, printer);
+  }
+
+  public ArrayList getClassTextList(String name)
+  {
+    return (ArrayList) textMap.get(name);
+  }
+
+  private ClassWrapper readClass(InputStream is) throws IOException
+  {
+    ClassReader r = new ClassReader(is);
+    ClassWrapper result = new ClassWrapper(this);
+    r.accept(result, true);
+    is.close();
+    return result;
+  }
+
+  private ClassWrapper getClass(File fileName) throws IOException
+  {
+    InputStream is = new FileInputStream(fileName);
+    ClassWrapper result = readClass(is);
+    if (classMap.containsKey(result.name))
+      throw new IllegalArgumentException("class " + result.name
+                                         + " already loaded");
+    classMap.put(result.name, result);
+    return result;
+  }
+
+  public ClassWrapper getClass(String name) throws IOException
+  {
+    if (! classMap.containsKey(name))
+      {
+        String resource = name.replace('.', '/') + ".class";
+        URL url = loader.findResource(resource);
+        if (url == null)
+          throw new IOException("can't find class file " + resource);
+        InputStream is = url.openStream();
+        ClassWrapper result = readClass(is);
+        classMap.put(name, result);
+      }
+    return (ClassWrapper) classMap.get(name);
+  }
+
+  public static void main(String[] args) throws IOException
+  {
+    Main m = new Main();
+    m.run(args);
+  }
+}

@@ -428,10 +428,6 @@ class PluginAppletWindow
         if (contexts.get(tag.getCodeBase()) == null)
           contexts.put(tag.getCodeBase(), new PluginAppletContext());
 
-        int result = AppletWarning.show();
-        if (result == JOptionPane.NO_OPTION)
-          return;
-
         add(applet);
 
         AppletContext context = (AppletContext) contexts.get(tag.getCodeBase());

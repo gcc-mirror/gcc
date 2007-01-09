@@ -65,7 +65,7 @@ public class Sequence
   /**
    * The MIDI tracks used by this sequence. 
    */
-  protected Vector tracks;
+  protected Vector<Track> tracks;
   
   /**
    * Tempo-based timing.  Resolution is specified in ticks per beat.
@@ -107,7 +107,7 @@ public class Sequence
     this.divisionType = divisionType;
     this.resolution = resolution;
     
-    tracks = new Vector(numTracks);
+    tracks = new Vector<Track>(numTracks);
     while (numTracks > 0)
       tracks.set(--numTracks, new Track());
   }
@@ -189,7 +189,7 @@ public class Sequence
    */
   public Track[] getTracks()
   {
-    return (Track[]) tracks.toArray(new Track[tracks.size()]);
+    return tracks.toArray(new Track[tracks.size()]);
   }
   
   /**
@@ -224,10 +224,10 @@ public class Sequence
   public long getTickLength()
   {
     long length = 0;
-    Iterator itr = tracks.iterator();
+    Iterator<Track> itr = tracks.iterator();
     while (itr.hasNext())
     {
-      Track track = (Track) itr.next();
+      Track track = itr.next();
       long trackTicks = track.ticks();
       if (trackTicks > length)
         length = trackTicks;

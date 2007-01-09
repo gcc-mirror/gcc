@@ -125,7 +125,7 @@ public abstract class AbstractTableModel implements TableModel, Serializable
    * 
    * @return The class.
    */
-  public Class getColumnClass(int columnIndex)
+  public Class<?> getColumnClass(int columnIndex)
   {
     return Object.class;
   }
@@ -294,7 +294,7 @@ public abstract class AbstractTableModel implements TableModel, Serializable
    * 
    * @return An array of listeners (possibly empty).
    */
-  public EventListener[] getListeners(Class listenerType)
+  public <T extends EventListener> T[] getListeners(Class<T> listenerType)
   {
     return listenerList.getListeners(listenerType);
   }

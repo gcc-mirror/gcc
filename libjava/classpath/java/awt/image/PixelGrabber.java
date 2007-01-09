@@ -55,7 +55,7 @@ public class PixelGrabber implements ImageConsumer
 
   ColorModel model = ColorModel.getRGBdefault();
   int hints;
-  Hashtable props;
+  Hashtable<?,?> props;
 
   int int_pixel_buffer[];
   boolean ints_delivered = false;
@@ -442,7 +442,7 @@ public class PixelGrabber implements ImageConsumer
    * @param props a list of properties associated with the image being
    * produced
    */
-  public synchronized void setProperties(Hashtable props)
+  public synchronized void setProperties(Hashtable<?,?> props)
   {
     this.props = props;
   }

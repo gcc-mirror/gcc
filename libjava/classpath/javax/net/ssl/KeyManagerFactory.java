@@ -132,49 +132,55 @@ public class KeyManagerFactory
   }
 
   /**
-   * Get an instance of the named key manager factory, from the first
+   * Create an instance of the named key manager factory, from the first
    * provider that implements it.
-   *
+   * 
    * @param algorithm The type of key manager factory to get.
    * @return An appropriate implementation of that algoritm.
-   * @throws NoSuchAlgorithmException If no provider implements the
-   *   requested algorithm.
+   * @throws NoSuchAlgorithmException If no provider implements the requested
+   *           algorithm.
+   * @throws IllegalArgumentException if <code>algorithm</code> is
+   *           <code>null</code> or is an empty string.
    */
   public static final KeyManagerFactory getInstance(String algorithm)
-    throws NoSuchAlgorithmException
+      throws NoSuchAlgorithmException
   {
-    Provider[] provs = Security.getProviders();
-    for (int i = 0; i < provs.length; i++)
-      {
-        try
-          {
-            return getInstance(algorithm, provs[i]);
-          }
-        catch (NoSuchAlgorithmException ignore)
-          {
-          }
-      }
+    Provider[] p = Security.getProviders();
+    NoSuchAlgorithmException lastException = null;
+    for (int i = 0; i < p.length; i++)
+      try
+        {
+          return getInstance(algorithm, p[i]);
+        }
+      catch (NoSuchAlgorithmException x)
+        {
+          lastException = x;
+        }
+    if (lastException != null)
+      throw lastException;
     throw new NoSuchAlgorithmException(algorithm);
   }
 
   /**
-   * Get an instance of the named key manager factory, from the named
+   * Create an instance of the named key manager factory, from the named
    * provider.
-   *
+   * 
    * @param algorithm The type of key manager factory to get.
-   * @param provider The name of the provider to get the
-   *   implementation from.
+   * @param provider The name of the provider to get the implementation from.
    * @return An appropriate implementation of that algorithm.
-   * @throws NoSuchAlgorithmException If the provider does not
-   *   implement the requested algorithm.
-   * @throws NoSuchProviderException If the named provider does not
-   *   exist.
+   * @throws NoSuchAlgorithmException If the provider does not implement the
+   *           requested algorithm.
+   * @throws NoSuchProviderException If the named provider does not exist.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>algorithm</code> is an empty string.
    */
-  public static final KeyManagerFactory getInstance(String algorithm, String provider)
-    throws NoSuchAlgorithmException, NoSuchProviderException
+  public static final KeyManagerFactory getInstance(String algorithm,
+                                                    String provider)
+      throws NoSuchAlgorithmException, NoSuchProviderException
   {
     if (provider == null)
-      throw new IllegalArgumentException("provider is null");
+      throw new IllegalArgumentException("provider MUST NOT be null");
     Provider p = Security.getProvider(provider);
     if (p == null)
       throw new NoSuchProviderException(provider);
@@ -182,39 +188,47 @@ public class KeyManagerFactory
   }
 
   /**
-   * Get an instance of the named key manager factory, from the given
+   * Create an instance of the named key manager factory, from the given
    * provider.
-   *
+   * 
    * @param algorithm The type of key manager factory to get.
    * @param provider The provider to get the implementation from.
    * @return An appropriate implementation of that algorithm.
-   * @throws NoSuchAlgorithmException If the provider does not
-   *   implement the requested algorithm.
-   * @throws IllegalArgumentException If <i>provider</i> is null.
+   * @throws NoSuchAlgorithmException If the provider does not implement the
+   *           requested algorithm.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>algorithm</code> is an empty string.
    */
-  public static final KeyManagerFactory getInstance(String algorithm, Provider provider)
-    throws NoSuchAlgorithmException
+  public static final KeyManagerFactory getInstance(String algorithm,
+                                                    Provider provider)
+      throws NoSuchAlgorithmException
   {
-    if (provider == null)
-      throw new IllegalArgumentException("provider is null");
+    StringBuilder sb = new StringBuilder("KeyManagerFactory algorithm [")
+        .append(algorithm).append("] from provider[")
+        .append(provider).append("] could not be created");
+    Throwable cause;
     try
       {
-        return new KeyManagerFactory((KeyManagerFactorySpi)
-          Engine.getInstance(KEY_MANAGER_FACTORY, algorithm, provider),
-          provider, algorithm);
+        Object spi = Engine.getInstance(KEY_MANAGER_FACTORY, algorithm, provider);
+        return new KeyManagerFactory((KeyManagerFactorySpi) spi, provider, algorithm);
       }
-    catch (InvocationTargetException ite)
+    catch (InvocationTargetException x)
       {
-        throw new NoSuchAlgorithmException(algorithm);
+        cause = x.getCause();
+        if (cause instanceof NoSuchAlgorithmException)
+          throw (NoSuchAlgorithmException) cause;
+        if (cause == null)
+          cause = x;
       }
-    catch (ClassCastException cce)
+    catch (ClassCastException x)
       {
-        throw new NoSuchAlgorithmException(algorithm);
+        cause = x;
       }
+    NoSuchAlgorithmException x = new NoSuchAlgorithmException(sb.toString());
+    x.initCause(cause);
+    throw x;
   }
-
-  // Instance methods.
-  // -------------------------------------------------------------------
 
   /**
    * Returns the name of this key manager factory algorithm.

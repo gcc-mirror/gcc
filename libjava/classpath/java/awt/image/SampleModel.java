@@ -246,9 +246,7 @@ public abstract class SampleModel
   public void setDataElements(int x, int y, int w, int h,
                               Object obj, DataBuffer data)
   {
-    int size = w * h;
     int numDataElements = getNumDataElements();
-    int dataSize = numDataElements * size;
     
     Object pixelData;
     switch (getTransferType())
@@ -257,25 +255,34 @@ public abstract class SampleModel
         pixelData = new byte[numDataElements];
         break;
       case DataBuffer.TYPE_USHORT:
+      case DataBuffer.TYPE_SHORT:
         pixelData = new short[numDataElements];
         break;
       case DataBuffer.TYPE_INT:
         pixelData = new int[numDataElements];
         break;
+      case DataBuffer.TYPE_FLOAT:
+        pixelData = new float[numDataElements];
+        break;
+      case DataBuffer.TYPE_DOUBLE:
+        pixelData = new double[numDataElements];
+        break;
       default:
-        // Seems like the only sensible thing to do.
-        throw new ClassCastException();
+        // The RI silently igores invalid types.
+        pixelData = null;
       }
-    int inOffset = 0;
 
-    for (int yy = y; yy < (y + h); yy++)
+    int inOffset = 0;
+    if (pixelData != null)
       {
-        for (int xx = x; xx < (x + w); xx++)
+        for (int yy=y; yy<(y+h); yy++)
           {
-            System.arraycopy(obj, inOffset, pixelData, 0,
-                             numDataElements);
-            setDataElements(xx, yy, pixelData, data);
-            inOffset += numDataElements;
+            for (int xx=x; xx<(x+w); xx++)
+              {
+                System.arraycopy(obj, inOffset, pixelData, 0, numDataElements);
+                setDataElements(xx, yy, pixelData, data);
+                inOffset += numDataElements;
+              }
           }
       }
   }

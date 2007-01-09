@@ -898,7 +898,8 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
 	b.setRolloverEnabled(false);
 
         // Save old border in hashtable.
-        borders.put(b, b.getBorder());
+	if (b.getBorder() != null)
+          borders.put(b, b.getBorder());
         
 	b.setBorder(nonRolloverBorder);
       }
@@ -932,7 +933,8 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
         b.setRolloverEnabled(false);
         
         // Save old border in hashtable.
-        borders.put(b, b.getBorder());
+        if (b.getBorder() != null)
+	  borders.put(b, b.getBorder());
         
         b.setBorder(rolloverBorder);
       }

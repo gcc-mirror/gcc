@@ -42,12 +42,14 @@ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/../../config/lead-dot.m4 \
+	$(top_srcdir)/../../config/no-executables.m4 \
 	$(top_srcdir)/../../libtool.m4 $(top_srcdir)/m4/acattribute.m4 \
 	$(top_srcdir)/m4/accross.m4 $(top_srcdir)/m4/acinclude.m4 \
 	$(top_srcdir)/m4/ax_create_stdint_h.m4 \
-	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
-	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/gcc_attribute.m4 $(top_srcdir)/m4/iconv.m4 \
+	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
+	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/pkg.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -59,9 +61,9 @@ am__vpath_adj = case $$p in \
     *) f=$$p;; \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(nativeexeclibdir)"
-nativeexeclibLTLIBRARIES_INSTALL = $(INSTALL)
-LTLIBRARIES = $(nativeexeclib_LTLIBRARIES)
+am__installdirs = "$(DESTDIR)$(gcjversionedlibdir)"
+gcjversionedlibLTLIBRARIES_INSTALL = $(INSTALL)
+LTLIBRARIES = $(gcjversionedlib_LTLIBRARIES)
 libgtkpeer_la_DEPENDENCIES =  \
 	$(top_builddir)/native/jni/classpath/native_state.lo \
 	$(top_builddir)/native/jni/classpath/jcl.lo
@@ -224,6 +226,8 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION = @JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION@
+JAVA_MAINTAINER_MODE_FALSE = @JAVA_MAINTAINER_MODE_FALSE@
+JAVA_MAINTAINER_MODE_TRUE = @JAVA_MAINTAINER_MODE_TRUE@
 JAY = @JAY@
 JAY_SKELETON = @JAY_SKELETON@
 JIKES = @JIKES@
@@ -345,9 +349,10 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
-toolexeclibdir = @toolexeclibdir@
 vm_classes = @vm_classes@
-nativeexeclib_LTLIBRARIES = libgtkpeer.la
+gcc_version := $(shell cat $(top_srcdir)/../../gcc/BASE-VER)
+gcjversionedlibdir = $(libdir)/gcj-$(gcc_version)
+gcjversionedlib_LTLIBRARIES = libgtkpeer.la
 
 # GTK JNI sources.
 libgtkpeer_la_SOURCES = gnu_java_awt_peer_gtk_CairoSurface.c \
@@ -398,10 +403,12 @@ libgtkpeer_la_SOURCES = gnu_java_awt_peer_gtk_CairoSurface.c \
 			gtk_jawt.c \
 			gtkpeer.h
 
+libgtkpeer_la_LDFLAGS = -rpath $(gcjversionedlibdir) \
+	-version-info `grep -v '^\#' $(top_srcdir)/../libtool-version`
+
 libgtkpeer_la_LIBADD = $(top_builddir)/native/jni/classpath/native_state.lo \
 		       $(top_builddir)/native/jni/classpath/jcl.lo
 
-libgtkpeer_la_LDFLAGS = -avoid-version
 AM_LDFLAGS = @CLASSPATH_MODULE@ @GTK_LIBS@ @FREETYPE2_LIBS@ \
              @PANGOFT2_LIBS@ @X_PRE_LIBS@ @X_LIBS@ @X_EXTRA_LIBS@ @XTEST_LIBS@
 
@@ -446,35 +453,35 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-install-nativeexeclibLTLIBRARIES: $(nativeexeclib_LTLIBRARIES)
+install-gcjversionedlibLTLIBRARIES: $(gcjversionedlib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
-	test -z "$(nativeexeclibdir)" || $(mkdir_p) "$(DESTDIR)$(nativeexeclibdir)"
-	@list='$(nativeexeclib_LTLIBRARIES)'; for p in $$list; do \
+	test -z "$(gcjversionedlibdir)" || $(mkdir_p) "$(DESTDIR)$(gcjversionedlibdir)"
+	@list='$(gcjversionedlib_LTLIBRARIES)'; for p in $$list; do \
 	  if test -f $$p; then \
 	    f=$(am__strip_dir) \
-	    echo " $(LIBTOOL) --mode=install $(nativeexeclibLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(nativeexeclibdir)/$$f'"; \
-	    $(LIBTOOL) --mode=install $(nativeexeclibLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(nativeexeclibdir)/$$f"; \
+	    echo " $(LIBTOOL) --mode=install $(gcjversionedlibLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(gcjversionedlibdir)/$$f'"; \
+	    $(LIBTOOL) --mode=install $(gcjversionedlibLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(gcjversionedlibdir)/$$f"; \
 	  else :; fi; \
 	done
 
-uninstall-nativeexeclibLTLIBRARIES:
+uninstall-gcjversionedlibLTLIBRARIES:
 	@$(NORMAL_UNINSTALL)
-	@set -x; list='$(nativeexeclib_LTLIBRARIES)'; for p in $$list; do \
+	@set -x; list='$(gcjversionedlib_LTLIBRARIES)'; for p in $$list; do \
 	  p=$(am__strip_dir) \
-	  echo " $(LIBTOOL) --mode=uninstall rm -f '$(DESTDIR)$(nativeexeclibdir)/$$p'"; \
-	  $(LIBTOOL) --mode=uninstall rm -f "$(DESTDIR)$(nativeexeclibdir)/$$p"; \
+	  echo " $(LIBTOOL) --mode=uninstall rm -f '$(DESTDIR)$(gcjversionedlibdir)/$$p'"; \
+	  $(LIBTOOL) --mode=uninstall rm -f "$(DESTDIR)$(gcjversionedlibdir)/$$p"; \
 	done
 
-clean-nativeexeclibLTLIBRARIES:
-	-test -z "$(nativeexeclib_LTLIBRARIES)" || rm -f $(nativeexeclib_LTLIBRARIES)
-	@list='$(nativeexeclib_LTLIBRARIES)'; for p in $$list; do \
+clean-gcjversionedlibLTLIBRARIES:
+	-test -z "$(gcjversionedlib_LTLIBRARIES)" || rm -f $(gcjversionedlib_LTLIBRARIES)
+	@list='$(gcjversionedlib_LTLIBRARIES)'; for p in $$list; do \
 	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
 	  test "$$dir" != "$$p" || dir=.; \
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
 libgtkpeer.la: $(libgtkpeer_la_OBJECTS) $(libgtkpeer_la_DEPENDENCIES) 
-	$(LINK) -rpath $(nativeexeclibdir) $(libgtkpeer_la_LDFLAGS) $(libgtkpeer_la_OBJECTS) $(libgtkpeer_la_LIBADD) $(LIBS)
+	$(LINK) -rpath $(gcjversionedlibdir) $(libgtkpeer_la_LDFLAGS) $(libgtkpeer_la_OBJECTS) $(libgtkpeer_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -635,7 +642,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES)
 installdirs:
-	for dir in "$(DESTDIR)$(nativeexeclibdir)"; do \
+	for dir in "$(DESTDIR)$(gcjversionedlibdir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
 install: install-am
@@ -664,7 +671,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-nativeexeclibLTLIBRARIES \
+clean-am: clean-gcjversionedlibLTLIBRARIES clean-generic clean-libtool \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -683,9 +690,9 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-gcjversionedlibLTLIBRARIES
 
-install-exec-am: install-nativeexeclibLTLIBRARIES
+install-exec-am:
 
 install-info: install-info-am
 
@@ -711,20 +718,21 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-info-am uninstall-nativeexeclibLTLIBRARIES
+uninstall-am: uninstall-gcjversionedlibLTLIBRARIES uninstall-info-am
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-libtool clean-nativeexeclibLTLIBRARIES ctags distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-exec \
-	install-exec-am install-info install-info-am install-man \
-	install-nativeexeclibLTLIBRARIES install-strip installcheck \
+.PHONY: CTAGS GTAGS all all-am check check-am clean \
+	clean-gcjversionedlibLTLIBRARIES clean-generic clean-libtool \
+	ctags distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-exec install-exec-am \
+	install-gcjversionedlibLTLIBRARIES install-info \
+	install-info-am install-man install-strip installcheck \
 	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-info-am \
-	uninstall-nativeexeclibLTLIBRARIES
+	tags uninstall uninstall-am \
+	uninstall-gcjversionedlibLTLIBRARIES uninstall-info-am
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

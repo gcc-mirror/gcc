@@ -72,7 +72,7 @@ public class MethodSignatureParser extends GenericSignatureParser
             typeParameters = new TypeVariable[0];
         }
         consume('(');
-        ArrayList args = new ArrayList();
+        ArrayList<Type> args = new ArrayList<Type>();
         while (peekChar() != ')')
         {
             args.add(readTypeSignature());
@@ -81,7 +81,7 @@ public class MethodSignatureParser extends GenericSignatureParser
         args.toArray(argTypes);
         consume(')');
         retType = readTypeSignature();
-        ArrayList throwsSigs = new ArrayList();
+        ArrayList<Type> throwsSigs = new ArrayList<Type>();
         while (peekChar() == '^')
         {
             consume('^');

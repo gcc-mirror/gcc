@@ -4,13 +4,13 @@
 # of options to pass to the compiler.  Returns 0 on failure, 1 on
 # success.
 proc gcj_cni_compile_cxx_to_o {file {options {}}} {
-  global srcdir
+  global srcdir subdir
 
   set name [file rootname [file tail $file]]
   set oname ${name}.o
 
   # Find the generated header.
-  lappend options "additional_flags=-I. -I.."
+  lappend options "additional_flags=-I. -I.. -I$srcdir/$subdir"
   # Find libgcj headers.
   lappend options "additional_flags=-I$srcdir/.."
 
@@ -28,28 +28,33 @@ proc gcj_cni_compile_cxx_to_o {file {options {}}} {
 
 # Build header files given name of .java file.  Return 0 on failure.
 proc gcj_cni_build_headers {file} {
-  set gcjh [find_gcjh]
-  set jvscan [find_jvscan]
+  global libgcj_jar
 
-  set class_out [string trim \
-		   [libjava_prune_warnings \
-		      [lindex [local_exec "$jvscan --encoding=UTF-8 $file --list-class" "" "" 300] 1]]]
-  if {[string match "*parse error*" $class_out]} {
-    fail "$file header generation"
-    return 0
+  set gcjh [find_gcjh]
+
+  # Currently we only build a header file for the main class from the
+  # .java file, and then others on an ad hoc basis.
+  set list {}
+  set main [file rootname [file tail $file]]
+  lappend list $main
+  # ... for instance, an obvious hack.
+  if {$main == "shortfield"} {
+    lappend list shortfieldbase
   }
 
-  foreach file [split $class_out] {
+  foreach file $list {
+    set cmd "$gcjh -cni -force -classpath .:$libgcj_jar $file"
+    verbose $cmd
     set x [string trim [libjava_prune_warnings \
-			  [lindex [local_exec "$gcjh $file" "" "" 300] 1]]]
+			  [lindex [local_exec $cmd "" "" 300] 1]]]
     if {$x != ""} {
       verbose "local_exec failed: $x" 2
-      fail "$file header generation"
+      fail "$main header generation"
       return 0
     }
   }
 
-  pass "$file header generation"
+  pass "$main header generation"
   return 1
 }
 
@@ -64,18 +69,18 @@ proc gcj_cni_test_one {file} {
     return 1
   }
 
-  if {! [bytecompile_file $file [pwd]]} {
-    fail "bytecompile $file"
-    # FIXME - should use `untested' on all remaining tests.
-    # But that is hard.
-    return 0
-  }
-  pass "bytecompile $file"
+#   if {! [bytecompile_file $file [pwd]]} {
+#     fail "bytecompile $file"
+#     # FIXME - should use `untested' on all remaining tests.
+#     # But that is hard.
+#     return 0
+#   }
+#   pass "bytecompile $file"
 
-  if {! [gcj_cni_build_headers $file]} {
-    # FIXME
-    return 0
-  }
+#   if {! [gcj_cni_build_headers $file]} {
+#     # FIXME
+#     return 0
+#   }
 
   set cfile [file join [file dirname $file] nat$main.cc]
   if {! [gcj_cni_compile_cxx_to_o $cfile]} {
@@ -106,7 +111,7 @@ proc gcj_cni_run {} {
 
   # For now we only test CNI on native builds.
   if {$build_triplet == $host_triplet} {
-    catch { lsort [glob -nocomplain ${srcdir}/${subdir}/*.java] } srcfiles
+    catch { lsort [glob -nocomplain ${srcdir}/${subdir}/*.jar] } srcfiles
 
     foreach x $srcfiles {
       gcj_cni_test_one $x

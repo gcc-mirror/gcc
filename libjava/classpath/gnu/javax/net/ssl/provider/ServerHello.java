@@ -38,179 +38,194 @@ exception statement from your version.  */
 
 package gnu.javax.net.ssl.provider;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.io.StringWriter;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.nio.ByteBuffer;
 
-import javax.net.ssl.SSLProtocolException;
-
-class ServerHello implements Handshake.Body
+/**
+ * The server hello message.
+ *
+ * <pre>
+struct
+{
+  ProtocolVersion server_version;
+  Random random;
+  SessionID session_id;
+  CipherSuite cipher_suite;
+  CompressionMethod compression_method;
+  Extensions server_hello_extension_list&lt;0..2^16-1&gt;
+} ServerHello;
+</pre>
+ *
+ * <p>Server hello messages may contain extra data after the
+ * <tt>compression_method</tt> field, which are interpreted as
+ * extensions to the basic handshake.
+ */
+public class ServerHello implements Handshake.Body
 {
 
   // Fields.
   // -------------------------------------------------------------------------
 
-  private final ProtocolVersion version;
-  private final Random random;
-  private final byte[] sessionId;
-  private final CipherSuite suite;
-  private final CompressionMethod comp;
-  private final List extensions;
+  protected static final int RANDOM_OFFSET = 2;
+  protected static final int SESSID_OFFSET = 32 + RANDOM_OFFSET;
+  protected static final int SESSID_OFFSET2 = SESSID_OFFSET + 1;
 
+  protected ByteBuffer buffer;
+  protected boolean disableExtensions;
+  
   // Constructor.
   // -------------------------------------------------------------------------
 
-  ServerHello(ProtocolVersion version, Random random,
-              byte[] sessionId, CipherSuite suite,
-              CompressionMethod comp)
+  public ServerHello (final ByteBuffer buffer)
   {
-    this(version, random, sessionId, suite, comp, null);
+    this.buffer = buffer;
+    disableExtensions = false;
   }
 
-  ServerHello(ProtocolVersion version, Random random,
-              byte[] sessionId, CipherSuite suite,
-              CompressionMethod comp, List extensions)
+  public int length ()
   {
-    this.version = version;
-    this.random = random;
-    this.sessionId = sessionId;
-    this.suite = suite;
-    this.comp = comp;
-    this.extensions = extensions;
+    int sessionLen = buffer.get(SESSID_OFFSET) & 0xFF;
+    int len = SESSID_OFFSET2 + sessionLen + 3;
+    int elen = 0;
+    if (!disableExtensions && len + 1 < buffer.limit()
+        && (elen = buffer.getShort(len)) != 0)
+      len += 2 + elen;
+    return len;
   }
 
-  // Class methods.
-  // -------------------------------------------------------------------------
-
-  static ServerHello read(InputStream in) throws IOException
+  /**
+   * Returns the server's protocol version. This will read two bytes
+   * from the beginning of the underlying buffer, and return an
+   * instance of the appropriate {@link ProtocolVersion}; if the
+   * version read is a supported version, this method returns a static
+   * constant instance.
+   *
+   * @return The server's protocol version.
+   */
+  public ProtocolVersion version()
   {
-    ProtocolVersion vers = ProtocolVersion.read(in);
-    Random rand = Random.read(in);
-    byte[] id = new byte[in.read() & 0xFF];
-    in.read(id);
-    CipherSuite suite = CipherSuite.read(in).resolve(vers);
-    CompressionMethod comp = CompressionMethod.read(in);
-    List ext = null;
-    if (in.available() > 0)
-      {
-        ext = new LinkedList();
-        int len = (in.read() >>> 8 & 0xFF) | (in.read() & 0xFF);
-        int count = 0;
-        while (count < len)
-          {
-            Extension e = Extension.read(in);
-            ext.add(e);
-            count += e.getValue().length + 4;
-          }
-      }
-    return new ServerHello(vers, rand, id, suite, comp, ext);
+    return ProtocolVersion.getInstance (buffer.getShort (0));
   }
 
-  // Instance methods.
-  // -------------------------------------------------------------------------
-
-  public void write(OutputStream out) throws IOException
+  /**
+   * Returns the server's random value. This method returns a
+   * lightwieght wrapper around the existing bytes; modifications to
+   * the underlying buffer will modify the returned object, and
+   * vice-versa.
+   *
+   * @return The server's random value.
+   */
+  public Random random()
   {
-    version.write(out);
-    random.write(out);
-    out.write(sessionId.length);
-    out.write(sessionId);
-    suite.write(out);
-    out.write(comp.getValue());
-    if (extensions != null)
-      {
-        ByteArrayOutputStream out2 = new ByteArrayOutputStream();
-        for (Iterator i = extensions.iterator(); i.hasNext(); )
-          ((Extension) i.next()).write(out2);
-        out.write(out2.size() >>> 8 & 0xFF);
-        out.write(out2.size() & 0xFF);
-        out2.writeTo(out);
-      }
+    ByteBuffer randomBuf =
+      ((ByteBuffer) buffer.duplicate ().position (RANDOM_OFFSET)
+       .limit (SESSID_OFFSET)).slice ();
+    return new Random (randomBuf);
   }
 
-  ProtocolVersion getVersion()
+  /**
+   * Returns the session ID. This method returns a new byte array with
+   * the session ID bytes.
+   *
+   * @return The session ID.
+   */
+  public byte[] sessionId()
   {
-    return version;
+    int idlen = buffer.get (SESSID_OFFSET) & 0xFF;
+    byte[] sessionId = new byte[idlen];
+    buffer.position (SESSID_OFFSET2);
+    buffer.get (sessionId);
+    return sessionId;
   }
 
-  Random getRandom()
+  /**
+   * Returns the server's chosen cipher suite. The returned cipher
+   * suite will be "resolved" to this structure's version.
+   *
+   * @return The server's chosen cipher suite.
+   */
+  public CipherSuite cipherSuite()
   {
-    return random;
+    int offset = SESSID_OFFSET2 + (buffer.get(SESSID_OFFSET) & 0xFF);
+    return CipherSuite.forValue(buffer.getShort(offset)).resolve();
   }
 
-  byte[] getSessionId()
+  /**
+   * Returns the server's chosen compression method.
+   *
+   * @return The chosen compression method.
+   */
+  public CompressionMethod compressionMethod()
   {
-    return (byte[]) sessionId.clone();
+    int offset = SESSID_OFFSET2 + (buffer.get(SESSID_OFFSET) & 0xFF) + 2;
+    return CompressionMethod.getInstance(buffer.get(offset) & 0xFF);
   }
 
-  CipherSuite getCipherSuite()
+  public int extensionsLength()
   {
-    return suite;
+    int offset = SESSID_OFFSET2 + (buffer.get (SESSID_OFFSET) & 0xFF) + 3;
+    if (offset + 1 >= buffer.limit())
+      return 0;
+    return buffer.getShort(offset) & 0xFFFF;
   }
-
-  CompressionMethod getCompressionMethod()
+  
+  public ExtensionList extensions ()
   {
-    return comp;
-  }
-
-  List getExtensions()
-  {
-    return extensions;
+    int offset = SESSID_OFFSET2 + (buffer.get (SESSID_OFFSET) & 0xFF) + 3;
+    if (offset + 1 >= buffer.limit())
+      return null;
+    int len = buffer.getShort(offset) & 0xFFFF;
+    if (len == 0)
+      len = buffer.limit() - offset - 2;
+    ByteBuffer ebuf = ((ByteBuffer) buffer.duplicate().position(offset)
+                       .limit(offset + len + 2)).slice();
+    return new ExtensionList(ebuf);
   }
 
   public String toString()
   {
+    return toString(null);
+  }
+
+  public String toString (final String prefix)
+  {
     StringWriter str = new StringWriter();
     PrintWriter out = new PrintWriter(str);
-    out.println("struct {");
-    out.println("  version = " + version + ";");
-    BufferedReader r = new BufferedReader(new StringReader(random.toString()));
-    String s;
-    try
-      {
-        while ((s = r.readLine()) != null)
-          {
-            out.print("  ");
-            out.println(s);
-          }
-      }
-    catch (IOException ignored)
-      {
-      }
-    out.println("  sessionId = " + Util.toHexString(sessionId, ':') + ";");
-    out.println("  cipherSuite = " + suite + ";");
-    out.println("  compressionMethod = " + comp + ";");
-    if (extensions != null)
-      {
-        out.println("  extensions = {");
-        for (Iterator i = extensions.iterator(); i.hasNext(); )
-          {
-            r = new BufferedReader(new StringReader(i.next().toString()));
-            try
-              {
-                while ((s = r.readLine()) != null)
-                  {
-                    out.print("    ");
-                    out.println(s);
-                  }
-              }
-            catch (IOException ignored)
-              {
-              }
-          }
-        out.println("  };");
-      }
-    out.println("} ServerHello;");
+    if (prefix != null)
+      out.print (prefix);
+    out.println ("struct {");
+    String subprefix = "  ";
+    if (prefix != null)
+      subprefix += prefix;
+    out.print (subprefix);
+    out.print ("version: ");
+    out.print (version ());
+    out.println (";");
+    out.print (subprefix);
+    out.println ("random:");
+    out.println (random ().toString (subprefix));
+    out.print (subprefix);
+    out.print ("sessionId:         ");
+    out.print (Util.toHexString(sessionId (), ':'));
+    out.println (";");
+    out.print (subprefix);
+    out.print ("cipherSuite:       ");
+    out.print (cipherSuite ());
+    out.println (";");
+    out.print (subprefix);
+    out.print ("compressionMethod: ");
+    out.print (compressionMethod ());
+    out.println (";");
+    ExtensionList exts = extensions ();
+    out.print (subprefix);
+    out.println ("extensions:");
+    out.println (exts != null ? exts.toString (subprefix+"  ")
+                                : subprefix + "  (nil)");
+    if (prefix != null)
+      out.print (prefix);
+    out.print ("} ServerHello;");
     return str.toString();
   }
 }

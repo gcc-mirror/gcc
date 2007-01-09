@@ -62,9 +62,14 @@ To import a new release:
   scripts/makemake.tcl > sources.am
   automake
 - Build, fix, till everything works.
+  Be sure to update gnu/classpath/Configuration.java to reflect
+    the new version
   Possibly update the gcj/javaprims.h file with scripts/classes.pl
   (See below, it can only be done after the first source->bytecode
    pass has finished.)
+  You will need to configure with --enable-maintainer-mode and you
+  will need to update the .class files and generated CNI header files in
+  your working tree
 
 Over time we plan to remove as many of the remaining divergences as
 possible.

@@ -1,5 +1,5 @@
 /* ExceptionDetailMessage.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ package org.omg.IOP;
  * USER_EXCEPTION reply status, as the alternative to the stack trace
  * that might contain sensitive or unwanted information. The service
  * context contains the CDR-encapsulated wide string, usually
- * returned by {@link Exception#getMessage}.
+ * returned by {@link Exception#getMessage()}.
  * </p><p>
  * The applications may also send the more comprehensive UnknownExceptionInfo
  * ( = 9 ) service context that contains the thrown exception, written

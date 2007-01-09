@@ -79,7 +79,7 @@ public class MBeanFeatureInfo
   /**
    * The <code>toString()</code> result of this instance.
    */
-  protected transient String string;
+  transient String string;
 
   /**
    * Constructs a new {@link MBeanFeatureInfo} with the specified

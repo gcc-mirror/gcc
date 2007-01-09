@@ -10,19 +10,27 @@ extern "C"
 {
 #endif
 
-JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_setOption (JNIEnv *env, jclass, jobject, jint, jobject);
-JNIEXPORT jobject JNICALL Java_gnu_java_net_VMPlainSocketImpl_getOption (JNIEnv *env, jclass, jobject, jint);
-JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_create (JNIEnv *env, jclass, jobject);
-JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_connect (JNIEnv *env, jclass, jobject, jobject, jint);
-JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_bind (JNIEnv *env, jclass, jobject, jobject, jint);
-JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_listen (JNIEnv *env, jclass, jobject, jint);
-JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_accept (JNIEnv *env, jclass, jobject, jobject);
-JNIEXPORT jint JNICALL Java_gnu_java_net_VMPlainSocketImpl_available (JNIEnv *env, jclass, jobject);
-JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_close (JNIEnv *env, jclass, jobject);
-JNIEXPORT jint JNICALL Java_gnu_java_net_VMPlainSocketImpl_read (JNIEnv *env, jclass, jobject, jbyteArray, jint, jint);
-JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_write (JNIEnv *env, jclass, jobject, jbyteArray, jint, jint);
-JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_shutdownInput (JNIEnv *env, jclass, jobject);
-JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_shutdownOutput (JNIEnv *env, jclass, jobject);
+JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_setOption (JNIEnv *env, jclass, jint, jint, jint);
+JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_setMulticastInterface (JNIEnv *env, jclass, jint, jint, jobject);
+JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_setMulticastInterface6 (JNIEnv *env, jclass, jint, jint, jstring);
+JNIEXPORT jint JNICALL Java_gnu_java_net_VMPlainSocketImpl_getOption (JNIEnv *env, jclass, jint, jint);
+JNIEXPORT jobject JNICALL Java_gnu_java_net_VMPlainSocketImpl_getMulticastInterface (JNIEnv *env, jclass, jint, jint);
+JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_bind (JNIEnv *env, jclass, jint, jbyteArray, jint);
+JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_bind6 (JNIEnv *env, jclass, jint, jbyteArray, jint);
+JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_listen (JNIEnv *env, jclass, jint, jint);
+JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_join (JNIEnv *env, jclass, jint, jbyteArray);
+JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_join6 (JNIEnv *env, jclass, jint, jbyteArray);
+JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_leave (JNIEnv *env, jclass, jint, jbyteArray);
+JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_leave6 (JNIEnv *env, jclass, jint, jbyteArray);
+JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_joinGroup (JNIEnv *env, jclass, jint, jbyteArray, jstring);
+JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_joinGroup6 (JNIEnv *env, jclass, jint, jbyteArray, jstring);
+JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_leaveGroup (JNIEnv *env, jclass, jint, jbyteArray, jstring);
+JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_leaveGroup6 (JNIEnv *env, jclass, jint, jbyteArray, jstring);
+JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_shutdownInput (JNIEnv *env, jclass, jint);
+JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_shutdownOutput (JNIEnv *env, jclass, jint);
+JNIEXPORT void JNICALL Java_gnu_java_net_VMPlainSocketImpl_sendUrgentData (JNIEnv *env, jclass, jint, jint);
+#undef gnu_java_net_VMPlainSocketImpl_CP_IP_TTL
+#define gnu_java_net_VMPlainSocketImpl_CP_IP_TTL 7777L
 
 #ifdef __cplusplus
 }

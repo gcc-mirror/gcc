@@ -90,7 +90,7 @@ final class VMMemoryMXBeanImpl
    * information when memory is allocated and deallocated.  The
    * format of the output is left up to the virtual machine.
    *
-   * @return true if verbose class loading output is on.
+   * @return true if verbose memory usage output is on.
    */
   static native boolean isVerbose();
 
@@ -101,7 +101,7 @@ final class VMMemoryMXBeanImpl
    * may be called by multiple threads concurrently, but there
    * is only one global setting of verbosity that is affected.
    *
-   * @param verbose the new setting for verbose class loading
+   * @param verbose the new setting for verbose memory usage
    *                output.
    */
   static native void setVerbose(boolean verbose);

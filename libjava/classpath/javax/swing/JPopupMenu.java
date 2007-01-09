@@ -820,7 +820,14 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
    */
   public void menuSelectionChanged(boolean changed)
   {
-    if (! changed)
+    if (invoker instanceof JMenu)
+      {
+        // We need to special case this since the JMenu calculates the
+        // position etc of the popup.
+        JMenu menu = (JMenu) invoker;
+        menu.setPopupMenuVisible(changed);
+      }
+    else if (! changed)
       setVisible(false);
   }
 
@@ -893,6 +900,20 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
     {
       return "PopupMenuSeparatorUI";
     }
+  }
+
+  /**
+   * Returns <code>true</code> if the component is guaranteed to be painted
+   * on top of others. This returns false by default and is overridden by
+   * components like JMenuItem, JPopupMenu and JToolTip to return true for
+   * added efficiency.
+   *
+   * @return <code>true</code> if the component is guaranteed to be painted
+   *         on top of others
+   */
+  boolean onTop()
+  {
+    return true;
   }
 
   protected class AccessibleJPopupMenu extends AccessibleJComponent

@@ -1598,6 +1598,14 @@
 	* javax/swing/plaf/basic/BasicComboBoxUI.java:
 	(paintCurrentValue): renders "" if no item is selected
 
+2004-12-18  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/String.java (String(StringBuilder)): Rewrote.
+	* java/lang/StringBuilder.java (shared): Removed.
+	(ensureCapacity): Updated.
+	(substrinng): Likewise.
+	(toString): Likewise.
+
 2004-12-17  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/locale/LocaleInformation_de.java,
@@ -2608,47 +2616,47 @@
 	change event.
 
 2004-11-28  Michael Koch  <konqueror@gmx.de>
-
+  
 	* gnu/java/awt/peer/gtk/GdkGraphics2D.java: Fix typo.
-
+  
 2004-11-27  Sven de Marothy  <sven@physto.se>
-
+  
 	* gnu/java/awt/peer/gtk/GdkGraphics2D.java
-	Reformatted.
-	(drawRaster): Added FIXME.
-	(drawRaster): Changed to work with packed-sample models.
-
+        Reformatted.
+        (drawRaster): Added FIXME.
+        (drawRaster): Changed to work with packed-sample models.
+  
 2004-11-26  Michael Koch  <konqueror@gmx.de>
-
+  
 	* javax/swing/JList.java, javax/swing/JTree.java:
 	Added much new methods and fixed much methods setting bound properties.
-
+  
 2004-11-26  Sven de Marothy  <sven@physto.se>
-
-	* gnu/java/awt/peer/gtk/GdkGraphics2D.java
-	(drawRaster): Set alpha component to opaque if image has no alpha
+  
+        * gnu/java/awt/peer/gtk/GdkGraphics2D.java
+        (drawRaster): Set alpha component to opaque if image has no alpha
 	
 2004-11-26  Jeroen Frijters  <jeroen@frijters.net>
-
+  
 	* java/io/File.java
 	(canWrite): Moved directory write test to VMFile.
 	* vm/reference/java/io/VMFile.java
 	(canWriteDirectory): New method.
-
+  
 2004-11-25  Sven de Marothy  <sven@physto.se>
-
+  
 	* java/awt/image/MultiPixelPackedSampleModel.java
 	(MultiPixelPackedSampleModel): Corrected parameters, order of bit 
 	shifts and masks, stride length off by one.		
-	
+  	
 2004-11-25  Sven de Marothy  <sven@physto.se>
-
+  
 	* java/awt/image/IndexColorModel.java
 	(IndexColorModel): Add FIXME with respect to alpha handling.
 	(getAlpha): Default to returning opaque pixels.
-
+  
 2004-11-25  Mark Wielaard  <mark@klomp.org>
-
+  
 	* doc/vmintegration.texinfo: Fix link to Japhar.
 	* doc/www.gnu.org/stories.wml: Likewise.
 	* doc/www.gnu.org/announce/19990206.wml: Likewise.
@@ -2668,91 +2676,91 @@
 	getAccessibleContext): Implement.
 	(TextComponent): Extends Accessible.
 	(getIndexAtPoint, getCharacterBounds): New methods.
-
+  
 2004-11-23 Jerry Quinn <jlquinn@optonline.net>
-
+  
 	* java/awt/Button.java
 	(AccessibleAWTButton.getAccessibleActionDescription): Explain the
 	source of 'click'.
-
+  
 2004-11-23 Jerry Quinn <jlquinn@optonline.net>
-
+  
 	* java/awt/Checkbox.java: Remove stub comments.
-
+  
 2004-11-23 Jerry Quinn <jlquinn@optonline.net>
-
+  
 	* java/awt/Button.java
 	(AccessibleAWTButton.getAccessibleActionDescription): Return
 	'click'.
-
+  
 2004-11-23 Jerry Quinn <jlquinn@optonline.net>
-
+  
 	* java/awt/Checkbox.java (AccessibleAWTCheckBox): Remove todo
 	comments.
-
+  
 2004-11-23 Jerry Quinn <jlquinn@optonline.net>
-
+  
 	* java/awt/Checkbox.java (itemStateChanged): Implement function.
 	(getAccessibleContext): Add AccessibleAWTCheckBox to item listeners.
 	
 2004-11-23 Jerry Quinn <jlquinn@optonline.net>
-
+  
 	* java/awt/TextArea.java (AccessibleAWTTextArea,
 	getAccessibleContext): Implement.
 	* java/awt/TextField.java (AccessibleAWTTextField,
 	getAccessibleContext): Implement.
-
+  
 2004-11-23 Jerry Quinn <jlquinn@optonline.net>
-
+  
 	* java/awt/Checkbox.java (AccessibleAWTCheckBox): Implement.
 	(getAccessibleContext): Implement.
 	
 2004-11-23 Jerry Quinn <jlquinn@optonline.net>
-
+  
 	* java/awt/MenuItem.java (AccessibleAWTMenuItem): Implement.
-
+  
 2004-11-23 Jerry Quinn <jlquinn@optonline.net>
-
+  
 	* java/awt/Choice.java (AccessibleAWTChoice): Implement.
-
+  
 2004-11-23 Jerry Quinn <jlquinn@optonline.net>
-
+  
 	* java/awt/MenuItem.java (AccessibleAWTMenuItem): Implement.
-
+  
 2004-11-23  Michael Koch  <konqueror@gmx.de>
-
+  
 	* javax/swing/DefaultSingleSelectionModel.java,
 	javax/swing/JPasswordField.java,
 	javax/swing/tree/AbstractLayoutCache.java:
 	Reformatted and javadocs cleaned up.
-
+  
 2004-11-23  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/nio/channels/spi/AbstractSelectableChannel.java
 	(register): Only reuse valid selection keys.
-
+  
 2004-11-23  Michael Koch  <konqueror@gmx.de>
-
+  
 	* gnu/java/nio/NIOServerSocket.java
 	(getPlainSocketImpl): Removed debug code.
-
+  
 2004-11-23  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/awt/Component.java:
 	Fixed argument names to match javadocs.
 	(setFont): Rewritten set property first and then fire event.
 	(setLocale): Likewise.
 	* javax/swing/text/JTextComponent.java
 	(setEditable): Likewise.
-
+  
 2004-11-23  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/util/zip/InflaterInputStream.java
 	(onebytebuffer): Little reformatting to match libgcj's version.
 	(read): Likewise.
-
+  
 2004-11-23  Michael Koch  <konqueror@gmx.de>
-
+  
 	* gnu/java/nio/NIOServerSocket.java
 	(getPlainSocketImpl): Implemented in java with reflection.
 	* include/gnu_java_nio_NIOServerSocket.h,
@@ -2761,20 +2769,20 @@
 	Don't generate include/gnu_java_nio_NIOServerSocket.h.
 	* native/jni/java-nio/Makefile.am:
 	Don't build native/jni/java-nio/gnu_java_nio_NIOServerSocket.c.
-
+  
 2004-11-22  Michael Koch  <konqueror@gmx.de>
-
+  
 	* gnu/java/nio/SocketChannelImpl.java
 	(read): Made check for blocking un-ambiguous.
 	Removed wrong check for data array length.
-
+  
 2004-11-22  Patrik Reali  <reali@acm.org>
-
+  
 	* doc/www.gnu.org/newsitems.txt doc/www.gnu.org/announce/20041115.wml
 	doc/www.gnu.org/downloads/downloads.wml: classpath 0.12 announcement
-
+  
 2004-11-21  Michael Koch  <konqueror@gmx.de>
-
+  
 	* gnu/java/nio/SocketChannelImpl.java
 	(read): Only return 0 when no bytes for reading available in
 	non-blocking mode.
@@ -2787,9 +2795,9 @@
 	(propertyChangeSupportSerializedDataVersion): Made static.
 	* java/beans/VetoableChangeSupport.java
 	(propertyChangeSupportSerializedDataVersion): Likewise.
-
+  
 2004-11-21  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/awt/CardLayout.java:
 	Made some constants static.
 	(serialVersionUID): Made private.
@@ -2798,20 +2806,20 @@
 	(getModifiersEx): Added missing @param tag.
 	* java/awt/image/RGBImageFilter.java
 	(filterRGBPixels): Reformatted, removed wrong @param tag.
-
+  
 2004-11-21  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/net/URLConnection.java
 	(getContent): Added missing @return tag.
-
+  
 2004-11-21  Michael Koch  <konqueror@gmx.de>
-
+  
 	* javax/swing/text/FieldView.java,
 	javax/swing/text/JTextComponent.java:
 	Removed debug code.
-
+  
 2004-11-21  Jeroen Frijters  <jeroen@frijters.net>
-
+  
 	* java/nio/DirectByteBufferImpl.java
 	(ReadOnly): New inner subclass.
 	(ReadWrite): New inner subclass.
@@ -2828,17 +2836,17 @@
 	* java/nio/MappedByteBufferImpl.java
 	(slice, duplicate): Modified to instantiate appropriate
 	DirectByteBufferImpl subclass.
-
+  
 2004-11-21  Michael Koch  <konqueror@gmx.de>
-
+  
 	* javax/swing/BorderFactory.java
 	(BorderFactory): Added private constructor.
 	* javax/swing/SwingUtilities.java
 	(SwingUtilities): Likewise.
 	(computeStringWidth): New method.
-
+  
 2004-11-21  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/awt/color/ICC_Profile.java
 	(icSigNamedColorTag): Removed.
 	* java/awt/datatransfer/DataFlavor.java
@@ -2846,9 +2854,9 @@
 	* java/awt/image/AffineTransformOp.java:
 	Reworked javadocs.
 	(TYPE_BICUBIC): Added @since tag.
-
+  
 2004-11-21  Michael Koch  <konqueror@gmx.de>
-
+  
 	* gnu/classpath/RawData.java: Made abstract.
 	* gnu/classpath/RawData32.java,
 	gnu/classpath/RawData64.java: New files.
@@ -2869,14 +2877,14 @@
 	* native/jni/java-nio/java_nio_VMDirectByteBuffer.c,
 	* vm/reference/java/nio/VMDirectByteBuffer.java:
 	New files.
-
+  
 2004-11-20  Tom Tromey  <tromey@redhat.com>
-
+  
 	* java/util/ResourceBundle.java (tryBundle): Use
 	Class.isAssignableFrom rather than catching ClassCastException.
-
+  
 2004-11-20  Bryce McKinlay  <mckinlay@redhat.com>
-
+  
 	* java/util/ResourceBundle.java (bundleCache): Renamed from
 	resourceBundleCache. Update comments.
 	(getObject): Don't catch MissingResourceException.
@@ -2892,9 +2900,9 @@
 	name using given classloader.
 	(tryBundle(String, Locale, ClassLoader, boolean): New. Qualify 
 	baseName for given Locale and attempt to load bundle.
-
+  
 2004-11-18  Jeroen Frijters  <jeroen@frijters.net>
-
+  
 	* gnu/java/io/decode/DecoderUTF8.java
 	(charsInByteArray, convertToChars, read): Added surrogate pair
 	support.
@@ -2935,96 +2943,96 @@
 	(OutputStreamWriter): Removed call to Encoder.setBadCharValue().
 	* java/lang/String.java: Removed try/catch block around
 	Encoder/Decoder calls that no longer throw CharConversionException.
-
+  
 2004-11-17  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/awt/print/PrinterJob.java: Reformatted.
-
+  
 2004-11-17  Jerry Quinn  <jlquinn@optonline.net>
-
+  
 	* java/awt/print/PrinterJob.java (lookupPrintServices,
 	getPrintService, setPrintService): Implement.
 	(lookupStreamPrintServices): Add commented out implementation.
 	(printer): New field.
-
+  
 2004-11-17  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/net/Socket.java (getPort): Return 0 in error case.
-
+  
 2004-11-17  Michael Koch  <konqueror@gmx.de>
-
+  
 	*  java/nio/DirectByteBufferImpl.java
 	(owner): Updated comment.
 	(allocate): New method.
-
+  
 2004-11-17  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/net/URL.java (URL): Handle case when argument is null.
-
+  
 2004-11-17  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/beans/Beans.java,
 	java/beans/PropertyChangeEvent.java,
 	java/beans/PropertyEditorSupport.java:
 	Fixed javadocs.
-
+  
 2004-11-17  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/util/Timer.java (DEFAULT_SIZE): Made static.
-
+  
 2004-11-17  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/awt/image/AffineTransformOp.java,
 	java/awt/image/ColorConvertOp.java,
 	java/awt/image/LookupOp.java,
 	java/awt/image/RescaleOp.java:
 	Added final keywords where they belong.
-
+  
 2004-11-17  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/awt/CardLayout.java,
 	java/awt/Component.java,
 	java/awt/Font.java,
 	java/awt/image/SinglePixelPackedSampleModel.java:
 	Fixed javadocs and argument names all over.
-
+  
 2004-11-17  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/awt/image/DataBufferShort.java: Fixed file header.
 	* java/awt/image/DataBufferUShort.java: Likewise.
 	(DataBufferUShort): Throw NullPointerException if dataArray is null.
-
+  
 2004-11-17  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/net/InetAddress.java (getCanonicalHostName):
 	Support IPv6 addresses.
-
+  
 2004-11-17  Sven de Marothy  <sven@physto.se>
-
+  
 	* java/awt/geom/Arc2D.java,
 	(setAngleStart): Corrected (wrong sign on atan2 y parameter)
 	(setAngles): Likewise
 	(containsAngle): Return false on zero extent, don't include final angle
 	(contains): Treat OPEN-type arcs like CHORD ones, not as PIE ones.
-
+  
 2004-11-16  Sven de Marothy  <sven@physto.se>
-
+  
 	* java/awt/geom/AffineTransform.java,
 	(inverseTransform): Fixed bug and simplified code.
 	(createTransformedShape): Return null on null parameter.
-
+  
 2004-11-16  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/util/Collections.java (synchronizedSortedMap):
 	Removed some cruft in javadoc.
-
+  
 2004-11-16  Michael Koch  <konqueror@gmx.de>
-
+  
 	* gnu/java/locale/LocaleInformation_de.java:
 	Added some new locale informations to the contents object.
-
+  
 2004-11-16  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/io/BufferedReader.java,
 	java/io/FileInputStream.java,
 	java/io/FileOutputStream.java,
@@ -3045,9 +3053,9 @@
 	java/nio/ByteOrder.java,
 	java/nio/channels/Channel.java:
 	Fixed javadocs all over.
-
+  
 2004-11-16  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/awt/color/ICC_ColorSpace.java,
 	java/awt/color/ICC_Profile.java,
 	java/awt/color/ICC_ProfileGray.java,
@@ -3059,22 +3067,22 @@
 	(EPSILON): Made static.
 	(RS_EPSILON): Likewise.
 	(PE_EPSILON): Likewide.
-
+  
 2004-11-16  Michael Koch  <konqueror@gmx.de>
-
+  
 	* gnu/java/locale/LocaleInformation_de.java:
 	Fix compile error.
-
+  
 2004-11-16  Sven de Marothy  <sven@physto.se>
-
+  
 	* javax/swing/SwingUtilities.java:
 	(computeDifference): Implemented
 	(computeIntersection): Likewise
 	(computeUnion): Likewise
 	(isRectangleContainingRectangle): Likewise
-
+  
 2004-11-16  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/awt/BasicStroke.java,
 	java/awt/Button.java,
 	java/awt/Canvas.java,
@@ -3108,50 +3116,50 @@
 	java/awt/image/ShortLookupTable.java,
 	java/awt/print/Book.java:
 	Fixed javadocs and method argument names all over.
-
+  
 2004-11-16  Michael Koch  <konqueror@gmx.de>
-
+  
 	* gnu/java/locale/LocaleInformation_de.java: Reordered entries in
 	contents array, added support for ap/pm and territorial names.
-
+  
 2004-11-16  Michael Koch  <konqueror@gmx.de>
-
+  
 	* gnu/java/locale/LocaleInformation_de.java: Reformatted. Replaced
 	some definitions with their generated counterparts.
-
+  
 2004-11-16  Michael Koch  <konqueror@gmx.de>
-
+  
 	* gnu/java/locale/LocaleInformation_de.java: Removed some comments to
 	make it easier to merge this with the new generated classes.
-
+  
 2004-11-16  Michael Koch  <konqueror@gmx.de>
-
+  
 	* configure.ac: Added scripts/Makefile to output files.
 	* Makefile.am (SUBDIRS): Add scripts
 	* scripts/Makefile.am: New file.
-
+  
 2004-11-16  Michael Koch  <konqueror@gmx.de>
-
+  
 	* gnu/java/awt/peer/gtk/GdkFontPeer.java
 	(buildString): Optimise String building.
-
+  
 2004-11-15  Michael Koch  <konqueror@gmx.de>
-
+  
 	* native/jni/Makefile.am: Add checking of JNI methods.
 	* scripts/check_jni_methods.sh: New file.
-
+  
 2004-11-15  Michael Koch  <konqueror@gmx.de>
-
+  
 	* acinclude.m4 (CLASSPATH_WITH_GLIBJ): Added support to not build the
 	class files/glibj.zip. Handle --disable-examples argument.
 	* Makefile.am: Build examples subdir conditionally.
-
+  
 2004-11-15  Craig Black  <craig.black@aonix.com>
-
+  
 	* gnu/java/beans/BeanInfoEmbryo.java: Use TreeMap for proper sorting.
-
+  
 2004-11-15  Jeroen Frijters  <jeroen@frijters.net>
-
+  
 	* java/lang/StackTraceElement.java: Made final.
 	* java/nio/channels/Channels.java: Added private constructor.
 	* java/rmi/Naming.java: Added private constructor.
@@ -3195,42 +3203,42 @@
 	(SynchronizedPrintRequestAttributeSet): Made private.
 	(SynchronizedPrintServiceAttributeSet): Made private.
 	* javax/security/auth/PrivateCredentialPermission.java: Made final.
-
+  
 2004-11-14  Mark Wielaard  <mark@klomp.org>
-
+  
 	* configure.ac: Set version to 0.12+cvs.
-
+  
 2004-11-14  Mark Wielaard  <mark@klomp.org>
-
+  
 	* configure.ac: Set version to 0.12.
 	* NEWS: Add new items for this release.
-
+  
 2004-11-14  Mattias Rehnberg  <Mattias.Rehnberg@home.se>
-
+  
 	* java/net/Inet6Address.java (getHostAddress): Fix textual
 	representation of IPv6 address with embedded zeroes 
 	to conform to RFC 2373.
-
+  
 2004-11-14  Mark Wielaard  <mark@klomp.org>
-
+  
 	* configure.ac (--disable-Werror): Make no the default.
-
+  
 2004-11-14  Mark Wielaard  <mark@klomp.org>
-
+  
 	* javax/swing/ToolTipManager.java (mouseMoved): Set currentComponent
 	when not yet set.
-
+  
 2004-11-13  Robert Schuster <thebohemian@gmx.net>
-
+  
 	Complete 1.4 support
 	* java/beans/PropertyDescriptor.java:
 	(setReadMethod): New method
 	(setWriteMethod): New method
 	(equals): Implemented (1.4)
 	(checkMethods): operates on arguments now (private)
-
+  
 2004-11-12  Steven Augart  <augart@watson.ibm.com>
-
+  
 	* gnu/classpath/Configuration.java.in: Added
 	JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION. 
 	* configure.ac: Added
@@ -3239,29 +3247,29 @@
 	JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION. 
 	
 2004-11-12  Sven de Marothy  <sven@physto.se>
-
+  
 	* java/awt/Polygon.java (contains): Reimplemented.
-
+  
 2004-11-11  Mark Wielaard  <mark@klomp.org>
-
+  
 	* gnu/java/awt/peer/gtk/GdkGraphics2D.java: Indentation fixups.
 	* gnu/java/awt/peer/gtk/GtkToolkit.java: Likewise.
-
+  
 2004-11-11  Paul Jenner  <psj.home@ntlworld.com>
-
+  
 	* java/awt/image/Raster.java
 	(createPackedRaster): Implemented.
-
+  
 2004-11-11  Mark Wielaard  <mark@klomp.org>
-
+  
 	* javax/swing/plaf/basic/BasicTableHeaderUI.java: Indentation fixups.
 	* javax/swing/plaf/basic/BasicViewportUI.java: Likewise.
 	* javax/swing/text/PlainDocument.java: Likewise.
 	* javax/swing/text/SimpleAttributeSet.java: Likewise.
 	* javax/swing/text/Utilities.java: Likewise.
-
+  
 2004-11-11  Graydon Hoare  <graydon@redhat.com>
-
+  
 	* javax/swing/plaf/basic/BasicTextUI.java:
 	Listen to focus events, indicate focus via caret.
 	* javax/swing/text/GapContent.java (getString): Return substring.
@@ -3271,14 +3279,14 @@
 	(removeUpdate): Likewise.
 	* javax/swing/text/Utilities.java (drawTabbedText): Always advance
 	on tab and newline, even if no painting happens.
-
+  
 2004-11-11  Thomas Fitzsimmons  <fitzsim@redhat.com>
-
+  
 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontPeer.c (setFont):
 	Set pango context's description and language.
-
+  
 2004-11-11  Mark Wielaard  <mark@klomp.org>
-
+  
 	* include/gnu_java_awt_peer_gtk_GdkFontMetrics.h: Regenerated.
 	* include/gnu_java_awt_peer_gtk_GdkGraphics.h: Likewise.
 	* include/gnu_java_awt_peer_gtk_GtkClipboard.h: Likewise.
@@ -3288,9 +3296,9 @@
 	* include/java_lang_Math.h: Likewise.
 	* include/java_lang_VMProcess.h: Likewise.
 	* include/java_net_InetAddress.h: Likewise.
-
+  
 2004-11-11  Graydon Hoare  <graydon@redhat.com>
-
+  
 	* gnu/java/awt/peer/gtk/GdkGraphics2D.java
 	(GdkGraphics2D): Set clip after transform.
 	(drawImage): Protect against null image.
@@ -3406,14 +3414,14 @@
 	(capitalize): added documentation
 	(DoubleKey): [class] added documentation
 	(isReachable): new method, refactoring of a large expression
-
+  
 2004-11-08  Jeroen Frijters  <jeroen@frijters.net>
-
+  
 	* java/net/URLStreamHandler.java
 	(parseURL): Fixed file path canonicalisation.
-
+  
 2004-11-08  Jeroen Frijters  <jeroen@frijters.net>
-
+  
 	* java/io/File.java:
 	(createTempFile): Use VMFile.IS_DOS_8_3 instead of separatorChar
 	to determine file system naming restrictions.
@@ -3512,9 +3520,9 @@
 	* gnu/java/security/pkcs/PKCS7SignedData.java,
 	* gnu/java/security/pkcs/SignerInfo.java:
 	new files.
-
+  
 2004-11-07  Casey Marshall  <csm@gnu.org>
-
+  
 	* gnu/java/security/provider/Gnu.java
 	(<init>): add entries in a priviliged action.
 	Add new algorithms.
@@ -3567,29 +3575,29 @@
 	* gnu/java/security/x509/ext/SubjectAlternativeNames.java,
 	* gnu/java/security/x509/ext/SubjectKeyIdentifier.java:
 	new files.
-
+  
 2004-11-07  Sven de Marothy  <sven@physto.se>
-
+  
 	* java/awt/geom/GeneralPath.java (evaluateCrossings):
 	Fixed epsilon value, should always be nonzero.
-
+  
 2004-11-07  Jerry Quinn  <jlquinn@optonline.net>
-
+  
 	* java/awt/image/BandedSampleModel.java (scanlineStride): Remove
 	field hiding ComponentSampleModel.scanlineStride.
-
+  
 2004-11-06  Thomas Fitzsimmons  <fitzsim@redhat.com>
-
+  
 	* java/awt/DefaultKeyboardFocusManager.java (dispatchEvent):
 	Track Window focus owner on FOCUS_GAINED events.
-
+  
 2004-11-06  Tom Tromey  <tromey@redhat.com>
-
+  
 	* doc/hacking.texinfo (Source Code Style Guide): Fixed
 	grammatical error.
-
+  
 2004-11-06  Tom Tromey  <tromey@redhat.com>
-
+  
 	* gnu/java/rmi/server/UnicastConnectionManager.java (clients): Now
 	package-private.
 	(connections): Likewise.
@@ -3601,16 +3609,16 @@
 	(ptr): Likewise.
 	* gnu/java/security/PolicyFile.java (debug): Now package-private.
 	* gnu/classpath/ServiceFactory.java (log): Now package-private.
-
+  
 2004-11-06  Tom Tromey  <tromey@redhat.com>
-
+  
 	* javax/naming/directory/BasicAttributes.java (attributes): Now
 	package-private.
 	* javax/imageio/spi/ServiceRegistry.java (categories): Now
 	package-private.
-
+  
 2004-11-06  Tom Tromey  <tromey@redhat.com>
-
+  
 	* java/net/URLClassLoader.java (URLClassLoader): Now
 	package-private.
 	* java/nio/charset/CoderResult.java (CoderResult): Now
@@ -3620,27 +3628,27 @@
 	* java/rmi/server/RMIClassLoader.java (MyClassLoader): Now
 	package-private.
 	* java/util/TimeZone.java (timezones): Now package-private.
-
+  
 2004-11-06  Tom Tromey  <tromey@redhat.com>
-
+  
 	* java/security/Permissions.java (perms): Now package-private.
 	* java/security/UnresolvedPermission.java (permissions): Now
 	package-private.
-
+  
 2004-11-06  Tom Tromey  <tromey@redhat.com>
-
+  
 	* java/io/FilePermission.java: Reindented.
-
+  
 2004-11-06  Tom Tromey  <tromey@redhat.com>
-
+  
 	* java/io/ObjectOutputStream.java (currentObjectStreamClass): Now
 	package-private.
 	(setBlockDataMode): Likewise.
 	* java/io/DeleteFileHelper.java (DeleteFileHelper): Now
 	package-private.
-
+  
 2004-11-06  Tom Tromey  <tromey@redhat.com>
-
+  
 	* gnu/java/nio/charset/ISO_8859_1.java (Decoder): Now
 	package-private.
 	(Encoder): Likewise.
@@ -3649,9 +3657,9 @@
 	* gnu/java/nio/charset/US_ASCII.java (Decoder): Now
 	package-private.
 	(Encoder): Likewise.
-
+  
 2004-11-06  Robert Schuster  <theBohemian@gmx.net>
-
+  
 	Fixes bug #10908
 	* gnu/java/beans/IntrospectionIncubator.java:
 	(addMethod): static methods are discarded now, too.
@@ -3678,126 +3686,176 @@
 	* java/awt/image/BandCombineOp.java,
 	java/awt/image/LookupOp.java,
 	java/awt/image/ConvolveOp.java: New classes.
-
+  
 2004-11-06  Andrew Haley  <aph@redhat.com>
-
+  
 	* java/io/ObjectInputStream.java
 	(readObject): ENDBLOCKDATA is generated if the class has a write
 	method, not if it has a read method.
-
+  
 2004-11-06  Mark Wielaard  <mark@klomp.org>
-
+  
 	* java/util/Vector.java (readObject): Removed.
-
+  
 2004-11-06  Tom Tromey  <tromey@redhat.com>
-
+  
 	* gnu/java/net/protocol/http/Connection.java (sendRequest): Fix
 	typo.
-
+  
 2004-11-06  Michael Koch  <konqueror@gmx.de>
-
+  
 	PR libjava/14009
 	* gnu/java/net/protocol/http/Connection.java
 	(sendRequest): Handle case when url.getFile() returns an empty string.
-
+  
 2004-11-06  Patrik Reali  <reali@acm.org>
-
+  
 	* doc/www.gnu.org/newsitems.txt: JDK 1.0 compatibility news
+  
+2004-11-06  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Void.java (TYPE): Added cast to initializer.
+	* java/lang/Short.java (TYPE): Added cast to initializer.
+	* java/lang/Long.java (TYPE): Added cast to initializer.
+	* java/lang/Integer.java (TYPE): Added cast to initializer.
+	* java/lang/Float.java (TYPE): Added cast to initializer.
+	* java/lang/Double.java (TYPE): Added cast to initializer.
+	* java/lang/Character.java (TYPE): Added cast to initializer.
+	* java/lang/Byte.java (TYPE): Added cast to initializer.
+	* java/lang/Boolean.java (TYPE): Added cast to initializer.
+	* java/util/Hashtable.java (elements): Fixed return type.
 
 2004-11-05  Noa Resare  <noa@resare.com>
-
+  
 	* java/net/Socket.java(getPort): Return 0 instead of -1 on
 	unconnected sockets.
-
+  
 2004-11-05  Sven de Marothy <sven@physto.se>
 	
 	* gnu/java/awt/peer/gtk/GtkComponentPeer.java
 	(createImage): Created bitmap should be filled with bg color
-
+  
 2004-11-04  Torsten Rupp  <rupp@aicas.com>
-
+  
 	* native/jni/java-net/gnu_java_net_PlainDatagramSocketImpl.c:
 	Replaced 'this' arguments by 'obj' to make source compatible with
 	C++ compilers.
-
+  
 2004-11-04  Torsten Rupp  <rupp@aicas.com>
-
+  
 	* native/jni/java-net/gnu_java_net_PlainDatagramSocketImpl.c:
 	Add dummy return values for WITHOUT_NETWORK code path.
 	(Java_gnu_java_net_PlainDatagramSocketImpl_receive0): Check fid not
 	NULL for maxlen field id.
-
+  
 2004-11-04  Torsten Rupp  <rupp@aicas.com>
-
+  
 	* native/jni/java-net/gnu_java_net_PlainSocketImpl.c: Added missing
 	return values for WITHOUT_NETWORK code path.
-
+  
 2004-11-03  Tom Tromey  <tromey@redhat.com>
-
+  
 	* Makefile.am (EXTRA_DIST): Added ChangeLog-2003.
-
+  
 2004-11-03  Tom Tromey  <tromey@redhat.com>
-
+  
 	* include/jni.h (struct JNINativeInterface) <NewObjectArray>: Now
 	returns jobjectArray.
 	(_Jv_JNIEnv::NewObjectArray): Likewise.
+  
+2004-11-03  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/Collection.java (iterator): Fixed return type.
+
+	* java/util/AbstractSet.java (removeAll): Fixed iterator
+	declaration.
+	* java/util/AbstractList.java (RandomAccessSubList): RandomAccess
+	is not generic.
 
 2004-11-02  Mattias Rehnberg  <Mattias.Rehnberg@home.se>
 
 	* java/io/Vector.java
 	(readObject, writeObject): New function to match Sun's
 	serialized output for Vector.
-
-	* java/io/ObjectOutputStream.java
+  
+  	* java/io/ObjectOutputStream.java
 	(writeObject): Move the assignment of the class handle to after
 	the assignment of class descriptor handle.
-
+  
 2004-11-02  Thomas Fitzsimmons  <fitzsim@redhat.com>
-
+  
 	* java/awt/Font.java (name): New field.
 	(size): Likewise.
 	(style): Likewise.
-
+  
 2004-11-01  Andrew John Hughes <gnu_andrew@member.fsf.org>
-
+  
 	* java/util/GregorianCalendar.java:
 	Added/amended documentation.
 	
 2004-11-01  Jeroen Frijters  <jeroen@frijters.net>
-
+  
 	* java/lang/ClassLoader.java:
 	(addFileURL): New method.
 	(getSystemClassLoaderUrls): Fixed to treat lone separators as
 	current directory.
+  
+2004-11-01  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/AbstractMap.java: Removed old FIXME comment.
+
+	* java/lang/Long.java (rotateRight): Fixed return type.
+	* java/lang/Integer.java (reverse): Use correct name for
+	variable.
+	* java/lang/Character.java (valueOf): Use MIN_VALUE, not
+	MIN_CACHE.
+	* java/lang/Byte.java (valueOf): Use MIN_VALUE, not MIN_CACHE.
+
+	* gnu/java/util/DoubleEnumeration.java: Genericized.
+
+	* java/lang/Appendable.java (append): Throws IOException.
+
+	* java/util/Hashtable.java: Genericized.
+
+	* java/util/HashMap.java (putAll): Use correct type for iterator.
+	(putAllInternal): Likewise.
+	* java/lang/Class.java (cast): Call VMClass.cast.
+	* java/util/Collections.java (UnmodifiableMap.remove): Corrected
+	return type.
+	(entrySet): Likewise.
+	(entries): Corrected type.
+
+	* vm/reference/java/lang/reflect/Constructor.java
+	(getTypeParameters): Stubbed.
 
 2004-10-31  Robert Schuster <thebohemian@gmx.net>
-
+  
 	Fixes documentation and indentation
 	* java/beans/PropertyEditorSupport.java:
 	 reworked initial API doc
 	(value): changed name from val
-
+  
 2004-10-31  Robert Schuster <thebohemian@gmx.net>
-
+  
 	Updates to 1.5
 	* java/beans/PropertyEditorSupport.java
 	(PropertyEditorSupport()): Changed modifier to public
 	(PropertyEditorSupport(Object): Changed modifier to public
 	(setSource): New method
 	(getSource): New method
-
+  
 2004-10-31  Robert Schuster <thebohemian@gmx.net>
-
+  
 	Fixes bug #10799
 	* java/beans/PropertyEditorSupport.java
 	(setValue): Fire property change event
-
+  
 2004-10-31  Noa Resare  <noa@resare.com>
-
+  
 	* java/util/Calendar.java (explicitDSTOffset): New instance field.
 	(set(int,int)): Set and use new field.
 	(set(int,int,int)): Check new field.
-
+  
 2004-10-29  Jerry Quinn  <jlquinn@optonline.net>
 
 	* java/awt/image/ColorConvertOp.java: New class.
@@ -3956,36 +4014,36 @@
 
 2004-10-26  Andreas Tobler  <a.tobler@schweiz.ch>
 
-	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.c
-	(Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_create): Use the
-	GTK_TEXT_VIEW macro.
-
-	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c
-	(connect_awt_hook_cb): Mark unused variable unused.
-
-	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkClipboard.c
+ 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.c
+ 	(Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_create): Use the
+ 	GTK_TEXT_VIEW macro.
+ 
+ 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c
+ 	(connect_awt_hook_cb): Mark unused variable unused.
+ 
+ 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkClipboard.c
 	(selection_get): Do the cast right.
-
-	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c
-	(Java_gnu_java_awt_peer_gtk_GtkChoicePeer_create): According to
-	the gtk API gtk_combo_box_new_text actually returns a GtkWidget.
-	Remove unused var menu.
-	(selection_changed): Remove unused value.
-
-	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.c
-	(Java_gnu_java_awt_peer_gtk_GtkButtonPeer_setNativeBounds): Fix pointer
-	warning with using an intermediate variable.
-
-	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkPixbufDecoder.c
-	(area_updated): Fix unused var warning for BE archs.
-
-	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.c
-	(Java_gnu_java_awt_peer_gtk_GdkGraphics_connectSignals): Remove unused
-	var.
-	(realize_cb): Mark unused variable unused.
-
-	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGlyphVector.c
-	(seek_glyphstring_idx): Fix a C90 warning.
+ 
+ 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c
+ 	(Java_gnu_java_awt_peer_gtk_GtkChoicePeer_create): According to
+ 	the gtk API gtk_combo_box_new_text actually returns a GtkWidget.
+ 	Remove unused var menu.
+ 	(selection_changed): Remove unused value.
+ 
+ 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.c
+ 	(Java_gnu_java_awt_peer_gtk_GtkButtonPeer_setNativeBounds): Fix pointer
+ 	warning with using an intermediate variable.
+ 
+ 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkPixbufDecoder.c
+ 	(area_updated): Fix unused var warning for BE archs.
+ 
+ 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.c
+ 	(Java_gnu_java_awt_peer_gtk_GdkGraphics_connectSignals): Remove unused
+ 	var.
+ 	(realize_cb): Mark unused variable unused.
+ 
+ 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGlyphVector.c
+ 	(seek_glyphstring_idx): Fix a C90 warning.
 
 2004-10-26  Andreas Tobler  <a.tobler@schweiz.ch>
 
@@ -4749,7 +4807,7 @@
 
 2004-10-20  Andrew John Hughes <gnu_andrew@member.fsf.org>
 
-	* java/util/Currency.java:
+	* java/util/Currency.java
 	Documented variables and methods more fully.
 	Caches the currency instances, so that a request
 	for a locale, l, only ever returns the same
@@ -4758,11 +4816,11 @@
 	
 2004-10-20  Andrew John Hughes <gnu_andrew@member.fsf.org>
 
-	* java/util/Collections.java:
+	* java/util/Collections.java
 	Added documentation.
-	* java/util/SortedMap.java:
+	* java/util/SortedMap.java
 	Clarified some method examples.
-	* java/util/SortedSet.java:
+	* java/util/SortedSet.java
 	Clarified some method examples.
 	
 2004-10-20  Michael Koch  <konqueror@gmx.de>
@@ -5167,6 +5225,13 @@
 	* autogen.sh: Replaced with a GNOME-like script that aborts when the
 	versions of autoconf, automake or libtool are not sufficient.
 
+
+2004-10-14  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/StringBuilder.java (append): Typo fix; indentation
+	fix.
+	* java/beans/BeanDescriptor.java (BeanDescriptor): Typo fix.
+
 2004-10-13  Michael Koch  <konqueror@gmx.de>
 
 	* java/awt/image/ByteLookupTable.java
@@ -5378,10 +5443,10 @@
 
 2004-10-10  Sven de Marothy  <sven@physto.se>
 
-	* native/jni/java-lang/java_lang_Double.c
-	(parseDouble): Add handling of NaN/Infinity (bug #10491)
-	* java/nio/ByteBufferHelper.java
-	(putDouble): Use Double.toRawLongBits instead (bug #9106)
+        * native/jni/java-lang/java_lang_Double.c
+        (parseDouble): Add handling of NaN/Infinity (bug #10491)
+        * java/nio/ByteBufferHelper.java
+        (putDouble): Use Double.toRawLongBits instead (bug #9106)
 
 2004-10-10  Andreas Tobler  <a.tobler@schweiz.ch>
 
@@ -5433,6 +5498,107 @@
 2004-10-09  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* javax/swing/JList.java (init): Revert accidental commit.
+
+2004-10-09  Tom Tromey  <tromey@redhat.com>
+
+	* java/beans/EventHandler.java (create): Now generic methods.
+	* java/beans/Beans.java (getInstanceOf): Updated argument type.
+	(isInstanceOf): Likewise.
+	* java/beans/BeanDescriptor.java (beanClass, customizerClass):
+	Updated type.
+	(BeanDescriptor): Updated argument types.
+	(getBeanClass, getCustomizerClass): Updated return types.
+
+	* java/lang/reflect/Proxy.java (getProxyClass): Updated argument
+	and return types.
+	(isProxyClass): Likewise.
+	(newProxyInstance): Likewise.
+
+	* java/applet/AppletContext.java (getApplets): Updated return
+	type.
+	(getStreamKeys): Likewise.
+
+	* java/lang/String.java: Implement Comparable<String>.
+
+	* java/util/Properties.java: Extend Hashtable<Object, Object>.
+	(save): Mark as @Deprecated.
+	* java/lang/System.java (clearProperty): New method.
+	(setProperty): Check for empty key.
+	(getProperty): Likewise.
+
+	* java/lang/SecurityManager.java (currentLoadedClass): Updated
+	return type.
+
+	* java/lang/Float.java: Updated status.
+	* java/lang/Void.java: Updated status.
+	* java/lang/Double.java: Updated status.
+	* java/lang/Long.java: Updated status.
+	* java/lang/Character.java: Updated status.
+	* java/lang/Integer.java: Updated status.
+	* java/lang/Short.java: Updated status.
+	* java/lang/Byte.java: Updated status.
+	* java/lang/Boolean.java: Updated status.
+
+	* java/lang/ClassLoader.java (defineClass): New method.
+	(findClass): Updated return type.
+	(findLoadedClass): Likewise.
+	(findSystemClass): Likewise.
+	(findResources): Likewise.
+	(getSystemResources): Likewise.
+	(loadClass): Likewise.
+	(resolveClass): Updated argument type.
+	(setSigners): Likewise.
+	(loadedClasses, definedPackages): Updated types.
+	(packageAssertionStatus): Likewise.
+	(systemClassAssertionStatus): Likewise.
+	(classAssertionStatus): Likewise.
+	(defineClass): Updated return type.
+	(getResource): Likewise.
+	(clearAssertionStatus): Clear packageAssertionStatus and
+	classAssertionStatus.
+
+	* java/lang/Void.java (TYPE): Changed type.
+	* java/lang/Character.java: Implement Comparable<Character>.
+	(TYPE): Changed type.
+	(SIZE): New field.
+	(MAX_CACHE, charCache): New fields.
+	(valueOf): New method.
+	(reverseBytes): Likewise.
+	* java/lang/Double.java: Implement Comparable<Double>.
+	(TYPE): Changed type.
+	(SIZE): New field.
+	(valueOf): New method.
+	* java/lang/Float.java: Implement Comparable<Float>
+	(TYPE): Changed type.
+	(SIZE): New field.
+	(valueOf): New method.
+	* java/lang/Short.java: Implement Comparable<Short>.
+	(TYPE): Changed type.
+	(MIN_CACHE, MAX_CACHE, shortCache): New fields.
+	(valueOf): New method.
+	(reverseBytes): Likewise.
+	* java/lang/Byte.java: Implement Comparable<Byte>.
+	(TYPE): Changed type.
+	(SIZE): New field.
+	(byteCache): Likewise.
+	(valueOf): New method.
+	* java/lang/Boolean.java (TYPE): Changed type.
+	* java/lang/Long.java (TYPE): Changed type.
+	(SIZE): New field.
+	(valueOf): New method.
+	(bitCount, rotateLeft, rotateRight, highestOneBit,
+	numberOfLeadingZeros, lowestOneBit, numberOfTrailingZeros,
+	signum, reverseBytes, reverse): New methods.
+	Implement Comparable<Long>.
+	* java/lang/Integer.java: Implement Comparable<Integer>.
+	(SIZE): New field.
+	(intCache): Likewise.
+	(MIN_CACHE, MAX_CACHE): Likewise.
+	(valueOf): New method.
+	(bitCount, rotateLeft, rotateRight, highestOneBit,
+	numberOfLeadingZeros, lowestOneBit, numberOfTrailingZeros,
+	signum, reverseBytes, reverse): New methods.
+	(TYPE): Changed type.
 
 2004-10-08  Bryce McKinlay  <mckinlay@redhat.com>
 
@@ -6001,22 +6167,22 @@
 	java/awt/GridBagConstraints.java,
 	java/awt/GridBagLayout.java,
 	java/awt/GridLayout.java,
-	java/awt/Image.java,
+ 	java/awt/Image.java,
 	java/awt/KeyboardFocusManager.java,
-	java/awt/Label.java,
-	java/awt/List.java,
+ 	java/awt/Label.java,
+ 	java/awt/List.java,
 	java/awt/MediaTracker.java,
-	java/awt/Menu.java,
-	java/awt/MenuBar.java,
-	java/awt/MenuComponent.java,
-	java/awt/Panel.java,
-	java/awt/PopupMenu.java,
+ 	java/awt/Menu.java,
+ 	java/awt/MenuBar.java,
+ 	java/awt/MenuComponent.java,
+ 	java/awt/Panel.java,
+ 	java/awt/PopupMenu.java,
 	java/awt/ScrollPane.java,
-	java/awt/Scrollbar.java,
-	java/awt/SystemColor.java,
-	java/awt/TextArea.java,
-	java/awt/TextField.java,
-	java/awt/Toolkit.java,
+ 	java/awt/Scrollbar.java,
+ 	java/awt/SystemColor.java,
+ 	java/awt/TextArea.java,
+ 	java/awt/TextField.java,
+ 	java/awt/Toolkit.java,
 	java/awt/Window.java,
 	java/awt/color/ICC_Profile.java,
 	java/awt/datatransfer/DataFlavor.java,
@@ -6027,7 +6193,7 @@
 	java/awt/dnd/DropTargetContext.java,
 	java/awt/dnd/DropTargetDragEvent.java,
 	java/awt/dnd/peer/DropTargetContextPeer.java,
-	java/awt/event/AdjustmentEvent.java,
+ 	java/awt/event/AdjustmentEvent.java,
 	java/awt/event/InputEvent.java,
 	java/awt/event/InvocationEvent.java,
 	java/awt/event/KeyEvent.java,
@@ -6068,7 +6234,7 @@
 	efficient.
 
 2004-09-27  Bryce McKinlay  <mckinlay@redhat.com>
-
+ 
 	* java.util.Calendar.java (cache): New private static field. Cached
 	mappings of locales->calendar classes.
 	(ctorArgTypes): New private static field. Singleton argument for
@@ -6119,7 +6285,7 @@
 	(getLineOfOffset): Likewise.
 	(getRowHeight): Likewise.
 	(replaceRange): Likewise.
-	(insert): Reformatted.
+ 	(insert): Reformatted.
 
 2004-09-27  Michael Koch  <konqueror@gmx.de>
 
@@ -6131,6 +6297,10 @@
 	(NumberEdito): Likewise.
 	(getModel): Likewise.
 	(setModel): Likewise.
+
+2004-09-27  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Deprecated.java: Fixed retention.
 
 2004-09-26  Michael Koch  <konqueror@gmx.de>
 
@@ -6335,6 +6505,23 @@
 	* javax/swing/UIDefaults.java
 	(removePropertyChangeListener): Made public.
 
+2004-09-26  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/lang/Appendable.java
+	Documented this class.
+	(append(CharSequence, int, int)): added.
+
+2004-09-26  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/lang/Comparable.java
+	Updated status to be 1.5.
+	* java/lang/Iterable.java
+	Added missing documentation.
+	* java/lang/Readable.java
+	Added documentation.
+	* java/lang/Thread.java
+	(UncaughtExceptionHandler): documented.
+	
 2004-09-25  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/JApplet.java:
@@ -6352,7 +6539,7 @@
 	(setUI): New method.
 
 2004-09-25  Shashank Bapat  <shashankbapat@yahoo.com>
-	    Mark Wielaard  <mark@klomp.org>
+           Mark Wielaard  <mark@klomp.org>
 
 	* gnu/regexp/RE.java (initialize): Add RETokenLookAhead support.
 	* gnu/regexp/RETokenLookAhead.java: New file.
@@ -6941,6 +7128,12 @@
 
 	* configure.ac: Set version to 0.11+cvs.
 
+2004-09-18  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/annotation/Retention.java: Documented.
+	* java/lang/annotation/RetentionPolicy.java: Documented.
+	* java/lang/StringBuilder.java: Updated documentation.
+
 2004-09-17  Tom Tromey  <tromey@redhat.com>
 
 	* vm/reference/java/lang/VMProcess.java (ProcessThread): Added
@@ -7167,6 +7360,17 @@
 	(getDefaultTimeZone): Fixed test to distinguish between hours and
 	minutes in specified timezone.
 
+2004-09-07  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/SuppressWarnings.java: Document.
+
+	* java/lang/StringBuilder.java: New file.
+	* java/lang/String.java (String(StringBuilder)): New constructor.
+	* java/lang/StringBuffer.java: Added comment.
+
+	* java/lang/Override.java: Documented.
+	* java/lang/Deprecated.java: Documented.
+
 2004-09-06  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
 	* java/awt/Canvas.java
@@ -7247,7 +7451,7 @@
 
 2004-09-05  Mark Wielaard  <mark@klomp.org>
 
-	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGlyphVector.c
+ 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGlyphVector.c
 	(setChars): Only call pango_itemize() when vec->glyphitems != NULL.
 	Only call pango_shape() when gi->glyphs->num_glyphs > 0.
 
@@ -7567,7 +7771,7 @@
 	(modelToView): New method.
 	* javax/swing/text/PlainView.java
 	(modelToView): Made public.
-
+ 
 2004-09-04  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/text/AbstractDocument.java
@@ -7790,6 +7994,13 @@
 	* examples/gnu/classpath/examples/swing/Demo.java:
 	Added demo for JTextField.
 
+
+2004-09-04  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/SuppressWarnings.java: Added imports.
+	* java/lang/Override.java: Added imports.
+	* java/lang/Deprecated.java: Added imports.
+
 2004-09-03  Mark Wielaard  <mark@klomp.org>
 
 	* Makefile.am (SUBDIRS): Remove external.
@@ -7799,6 +8010,12 @@
 	* lib/gen-classlist.sh.in: Likewise.
 	* external/*: Removed.
 	* NEWS: Mention GNU JAXP.
+
+2004-09-03  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/EnumMap.java: New file.
+	* java/util/EnumSet.java: New file.
+	* java/util/BitSet.java (containsAll): New method.
 
 2004-08-31  Mark Wielaard  <mark@klomp.org>
 
@@ -7834,6 +8051,7 @@
 
 	* vm/reference/java/io/VMFile.java:
 	Reindented.
+
 
 2004-08-29  Mark Wielaard  <mark@klomp.org>
 
@@ -7901,8 +8119,40 @@
 
 2004-08-27  Sven de Marothy  <sven@physto.se>
 
-	* java/awt/geom/Area.java
+ 	* java/awt/geom/Area.java
 	Implemented.
+
+2004-08-26  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/reflect/AnnotatedElement.java: New file.
+	* vm/reference/java/lang/reflect/Constructor.java (Constructor):
+	Now generic.  Implements GenericDeclaration.
+	(clazz): Now generic.
+	(getDeclaringClass): Likewise.
+	(getExceptionTypes): Likewise.
+	(getParameterTypes): Likewise.
+	(newInstance): Likewise.
+	(constructNative): Likewise.
+	* java/lang/reflect/GenericDeclaration.java: New file.
+	* java/lang/reflect/GenericSignatureFormatError.java: New file.
+	* java/lang/reflect/WildcardType.java: New file.
+	* java/lang/reflect/TypeVariable.java: New file.
+	* java/lang/reflect/ParameterizedType.java: New file.
+	* java/lang/MalformedParameterizedTypeException.java: New file.
+	* java/lang/TypeNotPresentException.java: New file.
+	* java/lang/reflect/GenericArrayType.java: New file.
+	* java/lang/reflect/Type.java: New file.
+
+	* java/io/Writer.java (Writer): Implements Closeable, Flushable,
+	Appendable.
+	(append): New methods.
+	* java/io/OutputStream.java (OutputStream): Implements Closeable,
+	Flushable.
+	* java/io/Reader.java (Reader): Implements Closeable.
+	* java/io/InputStream.java (InputStream): Implements Closeable.
+	* java/nio/channels/Channel.java (Channel): Extends Closeable.
+	* java/io/Flushable.java: New file.
+	* java/io/Closeable.java: New file.
 
 2004-08-25  Mark Wielaard  <mark@klomp.org>
 
@@ -7912,7 +8162,7 @@
 
 	* java/awt/geom/Arc2D.java
 	Reformatted.
-	setArc(): Correct documentation to say 'upper left corner'.
+	(setArc()): Correct documentation to say 'upper left corner'.
 	(setArcByTangent,contains,intersects): Implemented.
 	(containsAngle): Corrected to handle negative extents.
 	ArcIterator: Set to private.
@@ -7933,7 +8183,7 @@
 
 	* java/awt/KeyboardFocusManager.java
 	Added missing documentation.
-
+ 
 2004-08-22  Patrik Reali  <reali@acm.org>
 
 	* doc/www.gnu.org/newsitems.txt: news on JSpinner and java crypto
@@ -7963,7 +8213,7 @@
 	(getContext): set `inGetContext' as early as possible.
 	Include the call just prior to `doPrivileged' too.
 	Handle new form of `contexts' stack.
-
+ 
 2004-08-20  Casey Marshall  <csm@gnu.org>
 
 	* java/security/cert/X509CRLSelector.java: new file.
@@ -7978,16 +8228,16 @@
 	* javax/swing/JTextArea.java
 	Implemented insert() method and added additional
 	documentation.
-
+ 
 2004-08-18  Andrew John Hughes  <gnu_andrew@member.fsf.org>
-
+ 
 	* javax/swing/SpinnerListModel.java, javax/swing/SpinnerModel.java
 	Implemented SpinnerListModel.  Added documentation to
 	SpinnerModel.
-
+ 
 2004-08-18  Bryce McKinlay  <mckinlay@redhat.com>
-
-	PR libgcj/17081
+ 
+ 	PR libgcj/17081
 	* java/net/URI.java (string): New field. Make all other fields
 	transient.
 	(readObject): Implemented.
@@ -8013,24 +8263,24 @@
 	* java/util/AbstractCollection.java, java/util/AbstractList.java,
 	java/util/AbstractMap.java, java/util/AbstractSequentialList.java,
 	java/util/ArrayList.java, java/util/Arrays.java,
-	java/util/BitSet.java, java/util/Calendar.java,
-	java/util/Collection.java, java/util/ListIterator.java,
-	java/util/Map.java, java/util/SortedSet.java:
-	Added additional exceptions to documentation, along
-	with some additions and corrections.
-
+ 	java/util/BitSet.java, java/util/Calendar.java,
+ 	java/util/Collection.java, java/util/ListIterator.java,
+ 	java/util/Map.java, java/util/SortedSet.java:
+ 	Added additional exceptions to documentation, along
+ 	with some additions and corrections.
+ 
 2004-08-16  Tom Tromey  <tromey@redhat.com>
 
 	* .classpath: Updated.
 
 2004-08-16  Tom Tromey  <tromey@redhat.com>
 
-	Bug 9596.
+ 	Bug 9596.
 	* java/lang/Class.java (getName): Fixed javadoc.
-
+ 
 2004-08-16  Tom Tromey  <tromey@redhat.com>
 
-	Bug 9949.
+        Bug 9949.
 	* java/text/AttributedString.java (AttributedString): Use
 	ArrayList to build array of attribute ranges.  Don't use
 	`attribs' before it is set.
@@ -8065,6 +8315,12 @@
 	* java/io/File.java File(String,String): Fixed handling of empty
 	path.
 
+2004-08-16  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/AbstractQueue.java (addAll): Return a result.
+	(element): Fixed typo.
+	* java/util/PriorityQueue.java: New file.
+
 2004-08-15  Casey Marshall  <csm@gnu.org>
 
 	* java/security/DummyKeyPairGenerator.java (clone): removed
@@ -8079,40 +8335,82 @@
 	* java/security/SignatureSpi.java (clone): likewise.
 	* javax/crypto/MacSpi.java (clone): likewise.
 
+2004-08-15  Matthias Pfisterer  <Matthias.Pfisterer@web.de>
+	    Tom Tromey  <tromey@redhat.com>
+
+	* java/util/HashMap.java (HashMap): Fixed parameterization in
+	`new'.
+	(putAll): Fixed parameterization.
+	(containsValue): Likewise.
+	(clone): Likewise.
+	(getEntry): Likewise.
+	* java/util/Dictionary.java (remove): Fixed parameterization.
+	* java/util/Collections.java (shuffle): Fixed indentation and
+	type of iterator.
+	(copy): Fixed argument types.
+	(SingletonSet.containsAll): Fixed type parameterizations.
+	(SingletonList.containsAll): Likewise.
+	(EmptyMap.get): Likewise.
+	(isSequential): Likewise.
+	(EmptySet): Genericized.
+	(EmptyList): Likewise.
+	(EmptyMap): Likewise.
+	(compare): Likewise.
+	(SynchronizedCollection.containsAll): Fixed type
+	parameterization.
+	(SynchronizedCollection.iterator): Likewise.
+	(SynchronizedList.listIterator): Likewise.
+	(SynchronizedList.subList): Likewise.
+	(SynchronizedMap.keySet): Likewise.
+	(SynchronizedMap.values): Likewise.
+	(synchronizedSortedSet): Likewise.
+	(UnmodifiableCollection.containsAll): Likewise.
+	(UnmodifiableList.listIterator): Likewise.
+	* java/util/Calendar.java: Implement Comparable<Calendar>.
+	(compareTo): New method.
+	* java/util/Arrays.java (sort): Declare type variable.
+	(asList): Corrected argument type.
+	(ArrayList): Genericized.
+	* java/util/ArrayList.java: Genericized.
+	* java/util/AbstractSet.java (removeAll): Fix type errors in
+	iterator declarations.
+	* java/util/AbstractSequentialList.java (addAll): Genericize
+	iterator `i'.
+
 2004-08-14  Ka-Hing Cheung  <kahing@javabsp.org>
 
 	* javax/swing/AbstractSpinnerModel.java,
-	javax/swing/JSpinner.java,
+ 	javax/swing/JSpinner.java,
 	javax/swing/SpinnerNumberModel.java,
-	javax/swing/plaf/basic/BasicSpinnerUI.java:
-	New files.
+ 	javax/swing/plaf/basic/BasicSpinnerUI.java:
+ 	New files.
 	* javax/swing/plaf/basic/BasicLookAndFeel.java
-	(initClassDefaults): Added defaults for BasicSpinnerUI.
-
+ 	(initClassDefaults): Added defaults for BasicSpinnerUI.
+ 
 2004-08-14  Mark Wielaard  <mark@klomp.org>
-
+ 
 	* examples/gnu/classpath/examples/swing/Demo.java (mkSpinner):
-	New method.
-	(mkButtonBar): Add Spinner.
+ 	New method.
+ 	(mkButtonBar): Add Spinner.
 
 2004-08-14  Casey Marshall <csm@gnu.org>
-
+ 
 	The Big Crypto Merge of 2004.
-
+ 
 	* configure.ac: generate jgss resource Makefiles.
 
 	* lib/Makefile.am: updated for jgss resources.
-
+ 
 	* lib/gen-classlist.sh.in: updated for classes in org/.
 
 	* javax/security/auth/x500/X500Principal.java: replaced with GNU
-	Crypto's version.
-
+ 	Crypto's version.
+ 
 	* resource/org/Makefile.am,
 	* resource/org/ietf/Makefile.am,
 	* resource/org/ietf/jgss/Makefile.am:
 	new files.
-
+ 
 	Files imported from GNU Crypto.
 	* javax/crypto/BadPaddingException.java
 	* javax/crypto/Cipher.java
@@ -8266,7 +8564,7 @@
 	(toIso88591, toUtf16Be, toUtf8): new methods.
 	* gnu/java/security/der/DERValue.java: formatting changes only.
 	* gnu/java/security/der/DER.java: likewise.
-
+ 
 2004-08-14  Mark Wielaard  <mark@klomp.org>
 
 	* configure.ac: Add --enable-gtk-cairo checking (cairo, pangoft2).
@@ -8297,7 +8595,7 @@
 
 	* java/lang/Rectangle.java (intersects): Check r.width and r.height
 	first.
-
+ 
 2004-08-13  Tom Tromey  <tromey@redhat.com>
 
 	* java/nio/CharBuffer.java (put): Fix typo.
@@ -8307,13 +8605,9 @@
 	* java/nio/LongBuffer.java (put): Fix typo.
 	* java/nio/ShortBuffer.java (put): Fix typo.
 
-2004-08-09  Florian Weimer  <fw@deneb.enyo.de>
-
-	* java/nio/ByteBuffer.java (put): Fix typo.
-
 2004-08-12  Guilhem Lavaux  <guilhem@kaffe.org>
 
-	* java/net/URL.java (URL): Delete whitespaces in the protocol string.
+ 	* java/net/URL.java (URL): Delete whitespaces in the protocol string.
 
 2004-08-12  Tom Tromey  <tromey@redhat.com>
 
@@ -8324,15 +8618,19 @@
 
 	* doc/www.gnu.org/newsitems.txt: added newitem about generics branch 
 
+2004-08-09  Florian Weimer  <fw@deneb.enyo.de>
+
+	* java/nio/ByteBuffer.java (put): Fix typo.
+
 2004-08-09  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
-	PR AWT/16121
+PR AWT/16121
 	* native/jni/gtk-peer/gthread-jni.c: Include stdio.h.  Eliminate
 	type-punning compiler warnings using unions.
 	(throw): Replace bzero with memset.
-
+ 
 2004-08-09  Andreas Tobler  <a.tobler@schweiz.ch>
-	    Thomas Fitzsimmons  <fitzsim@redhat.com>
+          Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkPixbufDecoder.c: Move
 	NSA_PB macros to gtkpeer.h.  Include gtkpeer.h.
@@ -8414,12 +8712,12 @@
 	(nativeSetIconImage): Rename to nativeSetIconImageFromDecoder.
 	(free_pixbuf_data): New helper function.
 	(nativeSetIconImageFromData): New function.
-
+ 
 2004-08-08  Kim Ho  <kho@redhat.com>
 
 	* java/awt/Component.java:
 	(processMouseEvent): Consume event after
-	listene	rs process it.
+	listeners process it.
 	(processMouseMotionEvent): ditto.
 	(processMouseWheelEvent): ditto.
 	* java/awt/Container.java:
@@ -8442,11 +8740,112 @@
 	(createRigidArea): Likewise.
 	(createVerticalBox): Likewise.
 
+2004-08-08  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Enum.java: Added package declaration.
+
+	* java/util/Collections.java (reverseOrder): Syntax fix.
+
+	* external/jaxp/source/gnu/xml/aelfred2/XmlParser.java: Don't use
+	`enum' keyword.
+
+	* java/lang/Class.java, java/lang/Enum.java,
+	java/lang/InheritableThreadLocal.java,
+	java/util/AbstractCollection.java, java/util/Arrays.java,
+	java/util/Collections.java, java/util/LinkedList.java,
+	java/util/TreeSet.java, java/util/Vector.java: Fixed minor syntax
+	errors.
+
+2004-08-07  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/AbstractQueue.java: New file.
+	* java/util/LinkedList.java (element): New method.
+	(offer): Likewise.
+	(peek): Likewise.
+	(poll): Likewise.
+	(remove): Likewise.
+	(LinkedList): Implement Queue.
+	* java/util/Queue.java: New file.
+
+	* java/lang/Enum.java: New file.
+	* java/lang/Object.java (getClass): Now generic.
+
+	* java/lang/StringBuffer.java (StringBuffer(CharSequence)): New
+	constructor.
+	(append(CharSequence)): New method
+	(append(CharSequence,int,int)): Likewise.
+	(StringBuffer): Implements Appendable.
+
+	* java/lang/ref/WeakReference.java: Now generic.
+	* java/lang/ref/SoftReference.java: Now generic.
+	* java/lang/ref/ReferenceQueue.java: Now generic.
+	* java/lang/ref/Reference.java: Now generic.
+	* java/lang/ref/PhantomReference.java: Now generic.
+
+	* java/lang/annotation/AnnotationFormatError.java: New file.
+	* java/lang/annotation/IncompleteAnnotationException.java: New
+	file.
+	* java/lang/annotation/AnnotationTypeMismatchException.java: New
+	file.
+	* java/lang/annotation/RetentionPolicy.java: New file.
+	* java/lang/annotation/ElementType.java: New file.
+	* java/lang/annotation/Target.java: New file.
+	* java/lang/annotation/Retention.java: New file.
+	* java/lang/annotation/Inherited.java: New file.
+	* java/lang/annotation/Documented.java: New file.
+	* java/lang/annotation/Annotation.java: New file.
+	* java/lang/Override.java: Fixed formatting.
+	* java/lang/Deprecated.java: Now Documented.
+
 2004-08-06  Tom Tromey  <tromey@redhat.com>
 
 	* java/net/DatagramSocket.java: Fixed typo.
 
 	* java/awt/image/Kernel.java (clone): Use super.clone().
+
+2004-08-06  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Class.java (asSubClass): Cast `this', not argument.
+
+	* vm/reference/java/lang/VMClass.java (cast): Declare.
+	* java/io/SequenceInputStream.java (SequenceInputStream):
+	Constructor now generic.
+	(e): Updated.
+	(getNextStream): Likewise.
+	* java/lang/Thread.java (UncaughtExceptionHandler): New
+	interface.
+	(State): New enum.
+	* java/lang/Readable.java: New file.
+	* java/lang/Appendable.java: New file.
+	* java/lang/Iterable.java: Documented.
+	* java/lang/Class.java (asSubClass): New method.
+	(Class): Now generic.
+	* java/lang/Boolean.java (parseBoolean): New methods.
+	(compareTo): Likewise.
+	(Boolean): Now implements Comparable.
+	* java/lang/ThreadLocal.java: Now generic.
+	* java/lang/InheritableThreadLocal.java: Now generic.
+	* java/lang/Deprecated.java: New file.
+	* java/lang/Override.java: New file.
+	* java/lang/SuppressWarnings.java: New file.
+
+2004-08-05  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Iterable.java: New file.
+	* java/lang/Comparable.java, java/util/AbstractCollection.java,
+	java/util/AbstractList.java, java/util/AbstractMap.java,
+	java/util/AbstractSequentialList.java, java/util/AbstractSet.java,
+	java/util/Arrays.java, java/util/Collection.java,
+	java/util/Collections.java, java/util/Comparator.java,
+	java/util/Dictionary.java, java/util/Enumeration.java,
+	java/util/HashMap.java, java/util/HashSet.java,
+	java/util/Iterator.java, java/util/LinkedHashSet.java,
+	java/util/LinkedList.java, java/util/List.java,
+	java/util/ListIterator.java, java/util/Map.java,
+	java/util/Set.java, java/util/SortedMap.java,
+	java/util/SortedSet.java, java/util/Stack.java,
+	java/util/TreeSet.java, java/util/Vector.java: Updated to use
+	generics.
 
 2004-08-04  Patrik Reali  <reali@acm.org>
 
@@ -8464,6 +8863,17 @@
 	external/Makefile.am,
 	lib/Makefile.am:
 	Fixed usage of find.
+
+2004-08-01  Sven de Marothy  <sven@physto.se>
+
+	* java/awt/geom/CubicCurve2.java: Reindent.
+	(contains): Implemented.
+	(intersects): Implemented.
+	* java/awt/geom/QuadCurve2D.java: Likewise.
+	* java/awt/geom/GeneralPath.java: Reindent and document.
+	Fully (re)implemented using separate xpoints and ypoints
+	float[] coords.
+	* java/awt/geom/RoundRectangle2D.java: Several bugfixes (Bug #6007).
 
 2004-08-01  Sven de Marothy  <sven@physto.se>
 

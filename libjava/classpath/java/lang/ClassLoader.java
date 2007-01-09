@@ -120,7 +120,6 @@ import java.util.StringTokenizer;
  * @author Eric Blake (ebb9@email.byu.edu)
  * @see Class
  * @since 1.0
- * @status still missing 1.4 functionality
  */
 public abstract class ClassLoader
 {
@@ -128,7 +127,7 @@ public abstract class ClassLoader
    * All packages defined by this classloader. It is not private in order to
    * allow native code (and trusted subclasses) access to this field.
    */
-  final HashMap definedPackages = new HashMap();
+  final HashMap<String, Package> definedPackages = new HashMap<String, Package>();
 
   /**
    * The classloader that is consulted before this classloader.
@@ -227,7 +226,7 @@ public abstract class ClassLoader
    * by the null key. This map must be synchronized on this instance.
    */
   // Package visible for use by Class.
-  Map packageAssertionStatus;
+  Map<String, Boolean> packageAssertionStatus;
 
   /**
    * The map of class assertion status overrides, or null if no class
@@ -236,7 +235,7 @@ public abstract class ClassLoader
    * instance.
    */
   // Package visible for use by Class.
-  Map classAssertionStatus;
+  Map<String, Boolean> classAssertionStatus;
 
   /**
    * VM private data.
@@ -289,7 +288,7 @@ public abstract class ClassLoader
    * @return the loaded class
    * @throws ClassNotFoundException if the class cannot be found
    */
-  public Class loadClass(String name) throws ClassNotFoundException
+  public Class<?> loadClass(String name) throws ClassNotFoundException
   {
     return loadClass(name, false);
   }
@@ -314,11 +313,11 @@ public abstract class ClassLoader
    * @return the loaded class
    * @throws ClassNotFoundException if the class cannot be found
    */
-  protected synchronized Class loadClass(String name, boolean resolve)
+  protected synchronized Class<?> loadClass(String name, boolean resolve)
     throws ClassNotFoundException
   {
     // Have we already loaded this class?
-    Class c = findLoadedClass(name);
+    Class<?> c = findLoadedClass(name);
     if (c == null)
       {
 	// Can the class be loaded by a parent?
@@ -335,11 +334,11 @@ public abstract class ClassLoader
 		return parent.loadClass(name, resolve);
 	      }
 	  }
-	catch (ClassNotFoundException e)
+        catch (ClassNotFoundException e)
 	  {
 	  }
-	// Still not found, we have to do it ourself.
-	c = findClass(name);
+        // Still not found, we have to do it ourself.
+        c = findClass(name);
       }
     if (resolve)
       resolveClass(c);
@@ -388,7 +387,7 @@ public abstract class ClassLoader
    * @throws ClassNotFoundException when the class can not be found
    * @since 1.2
    */
-  protected Class findClass(String name) throws ClassNotFoundException
+  protected Class<?> findClass(String name) throws ClassNotFoundException
   {
     throw new ClassNotFoundException(name);
   }
@@ -406,7 +405,7 @@ public abstract class ClassLoader
    *         offset + len exceeds data
    * @deprecated use {@link #defineClass(String, byte[], int, int)} instead
    */
-  protected final Class defineClass(byte[] data, int offset, int len)
+  protected final Class<?> defineClass(byte[] data, int offset, int len)
     throws ClassFormatError
   {
     return defineClass(null, data, offset, len);
@@ -431,8 +430,8 @@ public abstract class ClassLoader
    * @throws SecurityException if name starts with "java."
    * @since 1.1
    */
-  protected final Class defineClass(String name, byte[] data, int offset,
-                                    int len) throws ClassFormatError
+  protected final Class<?> defineClass(String name, byte[] data, int offset,
+				       int len) throws ClassFormatError
   {
     return defineClass(name, data, offset, len, null);
   }
@@ -460,9 +459,9 @@ public abstract class ClassLoader
    *         do not match up
    * @since 1.2
    */
-  protected final synchronized Class defineClass(String name, byte[] data,
-						 int offset, int len,
-						 ProtectionDomain domain)
+  protected final synchronized Class<?> defineClass(String name, byte[] data,
+						    int offset, int len,
+						    ProtectionDomain domain)
     throws ClassFormatError
   {
     checkInitialized();
@@ -493,8 +492,8 @@ public abstract class ClassLoader
    *         do not match up
    * @since 1.5
    */
-  protected final Class defineClass(String name, ByteBuffer buf,
-				    ProtectionDomain domain)
+  protected final Class<?> defineClass(String name, ByteBuffer buf,
+				       ProtectionDomain domain)
     throws ClassFormatError
   {
     byte[] data = new byte[buf.remaining()];
@@ -510,7 +509,7 @@ public abstract class ClassLoader
    * @throws NullPointerException if c is null
    * @throws LinkageError if linking fails
    */
-  protected final void resolveClass(Class c)
+  protected final void resolveClass(Class<?> c)
   {
     checkInitialized();
     VMClassLoader.resolveClass(c);
@@ -525,7 +524,7 @@ public abstract class ClassLoader
    * @return the found class
    * @throws ClassNotFoundException if the class cannot be found
    */
-  protected final Class findSystemClass(String name)
+  protected final Class<?> findSystemClass(String name)
     throws ClassNotFoundException
   {
     checkInitialized();
@@ -563,7 +562,7 @@ public abstract class ClassLoader
    * @param signers the signers to set
    * @since 1.1
    */
-  protected final void setSigners(Class c, Object[] signers)
+  protected final void setSigners(Class<?> c, Object[] signers)
   {
     checkInitialized();
     c.setSigners(signers);
@@ -576,7 +575,7 @@ public abstract class ClassLoader
    * @return the found Class, or null if it is not found
    * @since 1.1
    */
-  protected final synchronized Class findLoadedClass(String name)
+  protected final synchronized Class<?> findLoadedClass(String name)
   {
     checkInitialized();
     return VMClassLoader.findLoadedClass(this, name);
@@ -631,14 +630,14 @@ public abstract class ClassLoader
    * @since 1.2
    * @specnote this was <code>final</code> prior to 1.5
    */
-  public Enumeration getResources(String name) throws IOException
+  public Enumeration<URL> getResources(String name) throws IOException
   {
-    Enumeration parentResources;
+    Enumeration<URL> parentResources;
     if (parent == null)
       parentResources = VMClassLoader.getResources(name);
     else
       parentResources = parent.getResources(name);
-    return new DoubleEnumeration(parentResources, findResources(name));
+    return new DoubleEnumeration<URL>(parentResources, findResources(name));
   }
 
   /**
@@ -658,9 +657,9 @@ public abstract class ClassLoader
    * @throws IOException if I/O errors occur in the process
    * @since 1.2
    */
-  protected Enumeration findResources(String name) throws IOException
+  protected Enumeration<URL> findResources(String name) throws IOException
   {
-    return EmptyEnumeration.getInstance();
+    return (Enumeration<URL>) EmptyEnumeration.getInstance();
   }
 
   /**
@@ -705,7 +704,8 @@ public abstract class ClassLoader
    * @throws IOException if I/O errors occur in the process
    * @since 1.2
    */
-  public static Enumeration getSystemResources(String name) throws IOException
+  public static Enumeration<URL> getSystemResources(String name)
+    throws IOException
   {
     return StaticData.systemClassLoader.getResources(name);
   }
@@ -865,7 +865,7 @@ public abstract class ClassLoader
       {
 	synchronized (definedPackages)
 	  {
-	    p = (Package) definedPackages.get(name);
+	    p = definedPackages.get(name);
 	  }
       }
     return p;
@@ -955,7 +955,7 @@ public abstract class ClassLoader
   {
     if (packageAssertionStatus == null)
       packageAssertionStatus
-        = new HashMap(StaticData.systemPackageAssertionStatus);
+        = new HashMap<String, Boolean>(StaticData.systemPackageAssertionStatus);
     packageAssertionStatus.put(name, Boolean.valueOf(enabled));
   }
   
@@ -975,8 +975,8 @@ public abstract class ClassLoader
                                                    boolean enabled)
   {
     if (classAssertionStatus == null)
-      classAssertionStatus = 
-        new HashMap(StaticData.systemClassAssertionStatus);
+      classAssertionStatus
+	= new HashMap<String, Boolean>(StaticData.systemClassAssertionStatus);
     // The toString() hack catches null, as required.
     classAssertionStatus.put(name.toString(), Boolean.valueOf(enabled));
   }
@@ -994,8 +994,8 @@ public abstract class ClassLoader
   public synchronized void clearAssertionStatus()
   {
     defaultAssertionStatus = false;
-    packageAssertionStatus = new HashMap();
-    classAssertionStatus = new HashMap();
+    packageAssertionStatus = null;
+    classAssertionStatus = null;
   }
 
   /**
@@ -1147,4 +1147,5 @@ public abstract class ClassLoader
     if (! initialized)
       throw new SecurityException("attempt to use uninitialized class loader");
   }
+
 }

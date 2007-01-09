@@ -117,8 +117,12 @@ public class FontRenderContext
    */
   public int hashCode ()
   {
-    // FIXME: check what SUN does here.
-    return affineTransform == null ? 0 : affineTransform.hashCode ();
+    int code = ( isAntiAliased ? 1 : 0 ) + ( usesFractionalMetrics ? 2 : 0 );
+
+    if( affineTransform != null && !affineTransform.isIdentity() )
+      code ^= affineTransform.hashCode();
+
+    return code;
   }
 
   public boolean isAntiAliased ()

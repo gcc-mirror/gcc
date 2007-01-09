@@ -38,10 +38,16 @@ exception statement from your version. */
 
 package java.awt;
 
+import gnu.java.awt.LowPriorityEvent;
+import gnu.java.awt.peer.NativeEventLoopRunningEvent;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.InputMethodEvent;
 import java.awt.event.InvocationEvent;
+import java.awt.event.PaintEvent;
+import java.awt.peer.ComponentPeer;
+import java.awt.peer.LightweightPeer;
 import java.lang.reflect.InvocationTargetException;
 import java.util.EmptyStackException;
 
@@ -61,11 +67,47 @@ import java.util.EmptyStackException;
  */
 public class EventQueue
 {
-  private static final int INITIAL_QUEUE_DEPTH = 8;
-  private AWTEvent[] queue = new AWTEvent[INITIAL_QUEUE_DEPTH];
+  /**
+   * Indicates events that are processed with normal priority. This is normally
+   * all events except PaintEvents.
+   */
+  private static final int NORM_PRIORITY = 0;
 
-  private int next_in = 0; // Index where next event will be added to queue
-  private int next_out = 0; // Index of next event to be removed from queue
+  /**
+   * Indicates events that are processed with lowes priority. This is normally
+   * all PaintEvents and LowPriorityEvents.
+   */
+  private static final int LOW_PRIORITY = 1;
+
+  /**
+   * Implements the actual queue. EventQueue has 2 internal queues for
+   * different priorities:
+   * 1 PaintEvents are always dispatched with low priority.
+   * 2. All other events are dispatched with normal priority.
+   *
+   * This makes sure that the actual painting (output) is performed _after_ all
+   * available input has been processed and that the paint regions are
+   * coalesced as much as possible.
+   */
+  private class Queue
+  {
+    /**
+     * The first item in the queue. This is where events are popped from.
+     */
+    AWTEvent queueHead;
+
+    /**
+     * The last item. This is where events are posted to.
+     */
+    AWTEvent queueTail;
+  }
+
+  /**
+   * The three internal event queues.
+   *
+   * @see Queue
+   */
+  private Queue[] queues;
 
   private EventQueue next;
   private EventQueue prev;
@@ -73,31 +115,25 @@ public class EventQueue
   private long lastWhen = System.currentTimeMillis();
 
   private EventDispatchThread dispatchThread = new EventDispatchThread(this);
-  private boolean shutdown = false;
+  private boolean nativeLoopRunning = false;
 
-  synchronized private void setShutdown (boolean b) 
+  private boolean isShutdown ()
   {
-    shutdown = b;
-  }
-
-  synchronized boolean isShutdown ()
-  {
-    if (shutdown)
-      return true;
-
     // This is the exact self-shutdown condition specified in J2SE:
     // http://java.sun.com/j2se/1.4.2/docs/api/java/awt/doc-files/AWTThreadIssues.html
-    
-    // FIXME: check somewhere that the native queue is empty
-    if (peekEvent() == null)
-      {
-        Frame[] frames = Frame.getFrames();
-        for (int i = 0; i < frames.length; ++i)
-          if (frames[i].isDisplayable())
-            return false;
-        return true;
-      }
-    return false;
+
+    if (nativeLoopRunning)
+      return false;
+
+    if (peekEvent() != null)
+      return false;
+
+    Frame[] frames = Frame.getFrames();
+    for (int i = 0; i < frames.length; ++i)
+      if (frames[i].isDisplayable())
+        return false;
+
+    return true;
   }
 
   /**
@@ -105,6 +141,9 @@ public class EventQueue
    */
   public EventQueue()
   {
+    queues = new Queue[2];
+    queues[NORM_PRIORITY] = new Queue();
+    queues[LOW_PRIORITY] = new Queue();
   }
 
   /**
@@ -122,28 +161,64 @@ public class EventQueue
     if (next != null)
       return next.getNextEvent();
 
-    while (next_in == next_out)
-      {
-        // We are not allowed to return null from this method, yet it
-        // is possible that we actually have run out of native events
-        // in the enclosing while() loop, and none of the native events
-        // happened to cause AWT events. We therefore ought to check
-        // the isShutdown() condition here, before risking a "native
-        // wait". If we check it before entering this function we may
-        // wait forever for events after the shutdown condition has
-        // arisen.
+    AWTEvent res = getNextEventImpl(true);
 
+    while (res == null)
+      {
         if (isShutdown())
-          throw new InterruptedException();
+          {
+            // Explicitly set dispathThread to null.  If we don't do
+            // this, there is a race condition where dispatchThread
+            // can be != null even after the event dispatch thread has
+            // stopped running.  If that happens, then the
+            // dispatchThread == null check in postEventImpl will
+            // fail, and a new event dispatch thread will not be
+            // created, leaving invokeAndWaits waiting indefinitely.
+            dispatchThread = null;
+
+            // Interrupt the event dispatch thread.
+            throw new InterruptedException();
+          }
 
         wait();
+        res = getNextEventImpl(true);
       }
 
-    AWTEvent res = queue[next_out];
-
-    if (++next_out == queue.length)
-      next_out = 0;
     return res;
+  }
+
+  /**
+   * Fetches and possibly removes the next event from the internal queues.
+   * This method returns immediately. When all queues are empty, this returns
+   * <code>null</code>:
+   *
+   * @param remove <true> when the event should be removed from the queue,
+   *        <code>false</code> otherwise
+   *
+   * @return the next event or <code>null</code> when all internal queues
+   *         are empty
+   */
+  private AWTEvent getNextEventImpl(boolean remove)
+  {
+    AWTEvent next = null;
+    for (int i = 0; i < queues.length && next == null; i++)
+      {
+        Queue q = queues[i];
+        if (q.queueHead != null)
+          {
+            // Got an event, remove it.
+            next = q.queueHead;
+            if (remove)
+              {
+                // Unlink event from the queue.
+                q.queueHead = next.queueNext;
+                if (q.queueHead == null)
+                  q.queueTail = null;
+                next.queueNext = null;
+              }
+          }
+      }
+    return next;
   }
 
   /**
@@ -160,10 +235,7 @@ public class EventQueue
     if (next != null)
       return next.peekEvent();
 
-    if (next_in != next_out)
-      return queue[next_out];
-    else
-      return null;
+    return getNextEventImpl(false);
   }
 
   /**
@@ -184,14 +256,18 @@ public class EventQueue
     if (next != null)
       return next.peekEvent(id);
 
-    int i = next_out;
-    while (i != next_in)
+    AWTEvent evt = null;
+    for (int i = 0; i < queues.length && evt == null; i++)
       {
-        AWTEvent qevt = queue[i];
-        if (qevt.id == id)
-          return qevt;
+        Queue q = queues[i];
+        evt = q.queueHead;
+        while (evt != null && evt.id != id)
+          evt = evt.queueNext;
+        // At this point we either have found an event (evt != null -> exit
+        // for loop), or we have found no event (evt == null -> search next
+        // internal queue).
       }
-    return null;
+    return evt;
   }
 
   /**
@@ -201,7 +277,42 @@ public class EventQueue
    *
    * @exception NullPointerException If event is null.
    */
-  public synchronized void postEvent(AWTEvent evt)
+  public void postEvent(AWTEvent evt)
+  {
+    postEventImpl(evt);
+  }
+
+  /**
+   * Sorts events to their priority and calls
+   * {@link #postEventImpl(AWTEvent, int)}.
+   *
+   * @param evt the event to post
+   */
+  private synchronized final void postEventImpl(AWTEvent evt)
+  {
+    int priority = NORM_PRIORITY;
+    if (evt instanceof PaintEvent || evt instanceof LowPriorityEvent)
+      priority = LOW_PRIORITY;
+    // TODO: Maybe let Swing RepaintManager events also be processed with
+    // low priority.
+    if (evt instanceof NativeEventLoopRunningEvent)
+      {
+        nativeLoopRunning = ((NativeEventLoopRunningEvent) evt).isRunning();
+        notify();
+        return;
+      }
+    postEventImpl(evt, priority);
+  }
+
+  /**
+   * Actually performs the event posting. This is needed because the
+   * RI doesn't use the public postEvent() method when transferring events
+   * between event queues in push() and pop().
+   * 
+   * @param evt the event to post
+   * @param priority the priority of the event
+   */
+  private final void postEventImpl(AWTEvent evt, int priority)
   {
     if (evt == null)
       throw new NullPointerException();
@@ -212,52 +323,71 @@ public class EventQueue
         return;
       }
 
-    /* Check for any events already on the queue with the same source 
-       and ID. */	
-    int i = next_out;
-    while (i != next_in)
+    Object source = evt.getSource();
+
+    Queue q = queues[priority];
+    if (source instanceof Component)
       {
-        AWTEvent qevt = queue[i];
-        Object src;
-        if (qevt.id == evt.id
-            && (src = qevt.getSource()) == evt.getSource()
-            && src instanceof Component)
+        // For PaintEvents, ask the ComponentPeer to coalesce the event
+        // when the component is heavyweight.
+        Component comp = (Component) source;
+        ComponentPeer peer = comp.peer;
+        if (peer != null && evt instanceof PaintEvent
+            && ! (peer instanceof LightweightPeer))
+          peer.coalescePaintEvent((PaintEvent) evt);
+
+        // Check for any events already on the queue with the same source
+        // and ID.
+        AWTEvent previous = null;
+        for (AWTEvent qevt = q.queueHead; qevt != null; qevt = qevt.queueNext)
           {
-            /* If there are, call coalesceEvents on the source component 
-               to see if they can be combined. */
-            Component srccmp = (Component) src;
-            AWTEvent coalesced_evt = srccmp.coalesceEvents(qevt, evt);
-            if (coalesced_evt != null)
+            Object src = qevt.getSource();
+            if (qevt.id == evt.id && src == comp)
               {
-                /* Yes. Replace the existing event with the combined event. */
-                queue[i] = coalesced_evt;
-                return;
+                // If there are, call coalesceEvents on the source component 
+                // to see if they can be combined.
+                Component srccmp = (Component) src;
+                AWTEvent coalescedEvt = srccmp.coalesceEvents(qevt, evt);
+                if (coalescedEvt != null)
+                  {
+                    // Yes. Replace the existing event with the combined event.
+                    if (qevt != coalescedEvt)
+                      {
+                        if (previous != null)
+                          {
+                            assert previous.queueNext == qevt;
+                            previous.queueNext = coalescedEvt;
+                          }
+                        else
+                          {
+                            assert q.queueHead == qevt;
+                            q.queueHead = coalescedEvt;
+                          }
+                        coalescedEvt.queueNext = qevt.queueNext;
+                        if (q.queueTail == qevt)
+                          q.queueTail = coalescedEvt;
+                        qevt.queueNext = null;
+                      }
+                    return;
+                  }
               }
-            break;
+            previous = qevt;
           }
-        if (++i == queue.length)
-          i = 0;
       }
 
-    queue[next_in] = evt;    
-    if (++next_in == queue.length)
-      next_in = 0;
-
-    if (next_in == next_out)
+    if (q.queueHead == null)
       {
-        /* Queue is full. Extend it. */
-        AWTEvent[] oldQueue = queue;
-        queue = new AWTEvent[queue.length * 2];
-
-        int len = oldQueue.length - next_out;
-        System.arraycopy(oldQueue, next_out, queue, 0, len);
-        if (next_out != 0)
-          System.arraycopy(oldQueue, 0, queue, len, next_out);
-
-        next_out = 0;
-        next_in = oldQueue.length;
+        // We have an empty queue. Set this event both as head and as tail.
+        q.queueHead = evt;
+        q.queueTail = evt;
       }
-    
+    else
+      {
+        // Note: queueTail should not be null here.
+        q.queueTail.queueNext = evt;
+        q.queueTail = evt;
+      }
+
     if (dispatchThread == null || !dispatchThread.isAlive())
       {
         dispatchThread = new EventDispatchThread(this);
@@ -287,15 +417,15 @@ public class EventQueue
       throw new Error("Can't call invokeAndWait from event dispatch thread");
 
     EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue(); 
-    Thread current = Thread.currentThread();
+    Object notifyObject = new Object();
 
-    InvocationEvent ie = 
-      new InvocationEvent(eq, runnable, current, true);
+    InvocationEvent ie =
+      new InvocationEvent(eq, runnable, notifyObject, true);
 
-    synchronized (current)
+    synchronized (notifyObject)
       {
         eq.postEvent(ie);
-        current.wait();
+        notifyObject.wait();
       }
 
     Exception exception;
@@ -387,17 +517,26 @@ public class EventQueue
     if (dispatchThread == null)
       dispatchThread = new EventDispatchThread(this);
 
-    int i = next_out;
-    while (i != next_in)
+    synchronized (newEventQueue)
       {
-        newEventQueue.postEvent(queue[i]);
-        next_out = i;
-        if (++i == queue.length)
-          i = 0;
+        // The RI transfers the events without calling the new eventqueue's
+        // push(), but using getNextEvent().
+        while (peekEvent() != null)
+          {
+            try
+              {
+                newEventQueue.postEventImpl(getNextEvent());
+              }
+            catch (InterruptedException ex)
+              {
+                // What should we do with this?
+                ex.printStackTrace();
+              }
+          }
+        newEventQueue.prev = this;
       }
 
     next = newEventQueue;
-    newEventQueue.prev = this;    
   }
 
   /** Transfer any pending events from this queue back to the parent queue that
@@ -408,36 +547,49 @@ public class EventQueue
     */
   protected void pop() throws EmptyStackException
   {
-    if (prev == null)
-      throw new EmptyStackException();
-
     /* The order is important here, we must get the prev lock first,
        or deadlock could occur as callers usually get here following
        prev's next pointer, and thus obtain prev's lock before trying
        to get this lock. */
-    synchronized (prev)
+    EventQueue previous = prev;
+    if (previous == null)
+      throw new EmptyStackException();
+    synchronized (previous)
       {
-        prev.next = next;
-        if (next != null)
-          next.prev = prev;
-
         synchronized (this)
           {
-            int i = next_out;
-            while (i != next_in)
+            EventQueue nextQueue = next;
+            if (nextQueue != null)
               {
-                prev.postEvent(queue[i]);
-                next_out = i;
-                if (++i == queue.length)
-                  i = 0;
+                nextQueue.pop();
               }
-	    // Empty the queue so it can be reused
-	    next_in = 0;
-	    next_out = 0;
+            else
+              {
+                previous.next = null;
 
-            setShutdown(true);
-	    dispatchThread = null;
-            this.notifyAll();
+                // The RI transfers the events without calling the new eventqueue's
+                // push(), so this should be OK and most effective.
+                while (peekEvent() != null)
+                  {
+                    try
+                      {
+                        previous.postEventImpl(getNextEvent());
+                      }
+                    catch (InterruptedException ex)
+                      {
+                        // What should we do with this?
+                        ex.printStackTrace();
+                      }
+                  }
+                prev = null;
+                // Tell our EventDispatchThread that it can end
+                // execution.
+                if (dispatchThread != null)
+                  {
+                    dispatchThread.interrupt();
+                    dispatchThread = null;
+                  }
+              }
           }
       }
   }

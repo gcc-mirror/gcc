@@ -126,15 +126,17 @@ public class PropertyResourceBundle extends ResourceBundle
    *
    * @return an enumeration of the keys
    */
-  public Enumeration getKeys()
+  public Enumeration<String> getKeys()
   {
     if (parent == null)
-      return properties.propertyNames();
+      // FIXME: bogus cast.
+      return (Enumeration<String>) properties.propertyNames();
     // We make a new Set that holds all the keys, then return an enumeration
     // for that. This prevents modifications from ruining the enumeration,
     // as well as ignoring duplicates.
-    Set s = new HashSet();
-    Enumeration e = properties.propertyNames();
+    Set<String> s = new HashSet<String>();
+    // FIXME: bogus cast.
+    Enumeration<String> e = (Enumeration<String>) properties.propertyNames();
     while (e.hasMoreElements())
       s.add(e.nextElement());
     ResourceBundle bundle = parent;

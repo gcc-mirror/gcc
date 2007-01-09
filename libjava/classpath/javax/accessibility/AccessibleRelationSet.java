@@ -64,7 +64,8 @@ public class AccessibleRelationSet
    * @see #toArray()
    * @see #clear()
    */
-  protected Vector relations = new Vector();
+  protected Vector<AccessibleRelation> relations
+    = new Vector<AccessibleRelation>();
 
   /**
    * Create an empty relation set.

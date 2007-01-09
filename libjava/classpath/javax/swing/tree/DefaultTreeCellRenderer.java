@@ -77,7 +77,7 @@ public class DefaultTreeCellRenderer
   protected boolean hasFocus;
 
   /**
-   * drawsFocusBorderAroundIcon  // FIXME: is this used?
+   * Indicates if the focus border is also drawn around the icon.
    */
   private boolean drawsFocusBorderAroundIcon;
 
@@ -152,6 +152,8 @@ public class DefaultTreeCellRenderer
     setBackgroundNonSelectionColor(UIManager.getColor("Tree.textBackground"));
     setBackgroundSelectionColor(UIManager.getColor("Tree.selectionBackground"));
     setBorderSelectionColor(UIManager.getColor("Tree.selectionBorderColor"));
+    Object val = UIManager.get("Tree.drawsFocusBorderAroundIcon");
+    drawsFocusBorderAroundIcon = val != null && ((Boolean) val).booleanValue();
   }
 
   /**
@@ -499,45 +501,63 @@ public class DefaultTreeCellRenderer
    */
   public void paint(Graphics g)
   {
-    // paint background
-    Rectangle vr = new Rectangle();
-    Rectangle ir = new Rectangle();
-    Rectangle tr = new Rectangle();
+    // Determine background color.
+    Color bgColor;
+    if (selected)
+      bgColor = getBackgroundSelectionColor();
+    else
+      {
+        bgColor = getBackgroundNonSelectionColor();
+	if (bgColor == null)
+          bgColor = getBackground();
+      }
+    // Paint background.
+    int xOffset = -1;
+    if (bgColor != null)
+      {
+        Icon i = getIcon();
+	xOffset = getXOffset();
+	g.setColor(bgColor);
+	g.fillRect(xOffset, 0, getWidth() - xOffset, getHeight());
+      }
 
-    Insets insets = new Insets(0, 0, 0, 0);
-    Border border = UIManager.getBorder("Tree.selectionBorder");
-    if (border != null)
-      insets = border.getBorderInsets(this);
-
-    FontMetrics fm = getToolkit().getFontMetrics(getFont());
-    SwingUtilities.layoutCompoundLabel((JLabel) this, fm, getText(),
-                                       getIcon(), getVerticalAlignment(),
-                                       getHorizontalAlignment(),
-                                       getVerticalTextPosition(),
-                                       getHorizontalTextPosition(), vr, ir, tr,
-                                       getIconTextGap());
-
-    // Reusing one rectangle.
-    Rectangle bounds = getBounds(ir);
-    
-    bounds.x = tr.x - insets.left;
-    bounds.width = tr.width + insets.left + insets.right;
-    
-    g.setColor(super.getBackground());
-    g.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-
-    super.paint(g);
-    
-    // Paint the border of the focused element only (lead selection)
     if (hasFocus)
       {
-        Color b = getBorderSelectionColor();
-        if (b != null)
-          {
-            g.setColor(b);
-            g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height - 1);
-          }
+        if (drawsFocusBorderAroundIcon)
+          xOffset = 0;
+	else if (xOffset == -1)
+          xOffset = getXOffset();
+	paintFocus(g, xOffset, 0, getWidth() - xOffset, getHeight());
       }
+    super.paint(g);
+  }
+
+  /**
+   * Paints the focus indicator.
+   */
+  private void paintFocus(Graphics g, int x, int y, int w, int h)
+  {
+    Color col = getBorderSelectionColor();
+    if (col != null)
+      {
+        g.setColor(col);
+	g.drawRect(x, y, w - 1, h - 1);
+      }
+  }
+
+  /**
+   * Determines the X offset of the label that is caused by
+   * the icon.
+   *
+   * @return the X offset of the label
+   */
+  private int getXOffset()
+  {
+    Icon i = getIcon();
+    int offs = 0;
+    if (i != null && getText() != null)
+      offs = i.getIconWidth() + Math.max(0, getIconTextGap() - 1);
+    return offs;
   }
 
   /**
@@ -547,19 +567,9 @@ public class DefaultTreeCellRenderer
    */
   public Dimension getPreferredSize()
   {
-    Rectangle vr = new Rectangle();
-    Rectangle ir = new Rectangle();
-    Rectangle tr = new Rectangle();
-
-    FontMetrics fm = getToolkit().getFontMetrics(getFont());
-    SwingUtilities.layoutCompoundLabel((JLabel) this, fm, getText(),
-                                       getIcon(), getVerticalAlignment(),
-                                       getHorizontalAlignment(),
-                                       getVerticalTextPosition(),
-                                       getHorizontalTextPosition(), vr, ir, tr,
-                                       getIconTextGap());
-    Rectangle cr = ir.union(tr);
-    return new Dimension(cr.width, cr.height);
+    Dimension size = super.getPreferredSize();
+    size.width += 3;
+    return size;
   } 
 
   /**

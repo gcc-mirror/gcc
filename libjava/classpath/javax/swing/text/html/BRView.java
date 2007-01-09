@@ -44,8 +44,7 @@ import javax.swing.text.Element;
  * Handled the HTML BR tag.
  */
 class BRView
-    extends NullView 
-
+  extends InlineView
 {
   /**
    * Creates the new BR view.
@@ -66,6 +65,6 @@ class BRView
     if (axis == X_AXIS)
       return ForcedBreakWeight;
     else
-      return BadBreakWeight;
+      return super.getBreakWeight(axis, pos, len);
   }
 }

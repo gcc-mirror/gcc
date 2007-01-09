@@ -1,5 +1,5 @@
 /* Request.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -137,7 +137,7 @@ public abstract class Request
   public abstract ContextList contexts();
 
   /**
-   * Get the context, previously set using {@link #cts(Context)}.
+   * Get the context, previously set using {@link #ctx(Context)}.
    * The context contains the details about this request.
    */
   public abstract Context ctx();
@@ -168,7 +168,7 @@ public abstract class Request
 
   /**
    * Allow to access the response that has been previously sent using
-   * {@link send_deferred()}.
+   * {@link #send_deferred()}.
    *
    * @throws WrongTransaction if the transaction scope mismatches.
    */
@@ -190,7 +190,7 @@ public abstract class Request
 
   /**
    * Check if the response is received to the request that was
-   * previously send using {@link send_deferred()}.
+   * previously send using {@link #send_deferred()}.
    *
    * @return true if the response has been already received, false otherwise.
    */

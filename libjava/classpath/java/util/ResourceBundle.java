@@ -91,6 +91,14 @@ baseName</pre>
 public abstract class ResourceBundle
 {
   /**
+   * Maximum size of our cache of <code>ResourceBundle</code>s keyed by
+   * {@link BundleKey} instances.
+   * 
+   * @see BundleKey
+   */
+  private static final int CACHE_SIZE = 100;
+
+  /**
    * The parent bundle. This is consulted when you call getObject and there
    * is no such resource in the current bundle. This field may be null.
    */
@@ -104,21 +112,22 @@ public abstract class ResourceBundle
   private Locale locale;
 
   /**
-   * The resource bundle cache.
+   * A VM-wide cache of resource bundles already fetched.
+   * <p>
+   * This {@link Map} is a Least Recently Used (LRU) cache, of the last
+   * {@link #CACHE_SIZE} accessed <code>ResourceBundle</code>s keyed by the
+   * tuple: default locale, resource-bundle name, resource-bundle locale, and
+   * classloader.
+   * 
+   * @see BundleKey
    */
-  private static Map bundleCache;
-
-  /**
-   * The last default Locale we saw. If this ever changes then we have to
-   * reset our caches.
-   */
-  private static Locale lastDefaultLocale;
-
-  /**
-   * The `empty' locale is created once in order to optimize
-   * tryBundle().
-   */
-  private static final Locale emptyLocale = new Locale("");
+  private static Map bundleCache = new LinkedHashMap(CACHE_SIZE + 1, 0.75F, true)
+  {
+    public boolean removeEldestEntry(Map.Entry entry)
+    {
+      return size() > CACHE_SIZE;
+    }
+  };
 
   /**
    * The constructor. It does nothing special.
@@ -246,6 +255,7 @@ public abstract class ResourceBundle
       by the combination of bundle name, locale, and class loader. */
   private static class BundleKey
   {
+    Locale defaultLocale;
     String baseName;
     Locale locale;
     ClassLoader classLoader;
@@ -253,18 +263,19 @@ public abstract class ResourceBundle
 
     BundleKey() {}
 
-    BundleKey(String s, Locale l, ClassLoader cl)
+    BundleKey(Locale dl, String s, Locale l, ClassLoader cl)
     {
-      set(s, l, cl);
+      set(dl, s, l, cl);
     }
     
-    void set(String s, Locale l, ClassLoader cl)
+    void set(Locale dl, String s, Locale l, ClassLoader cl)
     {
+      defaultLocale = dl;
       baseName = s;
       locale = l;
       classLoader = cl;
-      hashcode = baseName.hashCode() ^ locale.hashCode() ^
-        classLoader.hashCode();
+      hashcode = defaultLocale.hashCode() ^ baseName.hashCode()
+          ^ locale.hashCode() ^ classLoader.hashCode();
     }
     
     public int hashCode()
@@ -277,10 +288,11 @@ public abstract class ResourceBundle
       if (! (o instanceof BundleKey))
         return false;
       BundleKey key = (BundleKey) o;
-      return hashcode == key.hashcode &&
-	baseName.equals(key.baseName) &&
-        locale.equals(key.locale) &&
-	classLoader.equals(key.classLoader);
+      return hashcode == key.hashcode
+          && defaultLocale.equals(key.defaultLocale)
+          && baseName.equals(key.baseName)
+          && locale.equals(key.locale)
+          && classLoader.equals(key.classLoader);
     }    
   }
   
@@ -370,61 +382,39 @@ public abstract class ResourceBundle
   public static synchronized ResourceBundle getBundle
     (String baseName, Locale locale, ClassLoader classLoader)
   {
-    // If the default locale changed since the last time we were called,
-    // all cache entries are invalidated.
     Locale defaultLocale = Locale.getDefault();
-    if (defaultLocale != lastDefaultLocale)
-      {
-	bundleCache = new HashMap();
-	lastDefaultLocale = defaultLocale;
-      }
-
     // This will throw NullPointerException if any arguments are null.
-    lookupKey.set(baseName, locale, classLoader);
-    
+    lookupKey.set(defaultLocale, baseName, locale, classLoader);
     Object obj = bundleCache.get(lookupKey);
-    ResourceBundle rb = null;
-    
     if (obj instanceof ResourceBundle)
-      {
-        return (ResourceBundle) obj;
-      }
-    else if (obj == nullEntry)
-      {
-        // Lookup has failed previously. Fall through.
-      }
-    else
-      {
-	// First, look for a bundle for the specified locale. We don't want
-	// the base bundle this time.
-	boolean wantBase = locale.equals(defaultLocale);
-	ResourceBundle bundle = tryBundle(baseName, locale, classLoader, 
-					  wantBase);
+      return (ResourceBundle) obj;
 
-        // Try the default locale if neccessary.
-	if (bundle == null && !locale.equals(defaultLocale))
-	  bundle = tryBundle(baseName, defaultLocale, classLoader, true);
+    if (obj == nullEntry)
+      throw new MissingResourceException("Bundle " + baseName
+                                         + " not found for locale " + locale
+                                         + " by classloader " + classLoader,
+                                         baseName, "");
+    // First, look for a bundle for the specified locale. We don't want
+    // the base bundle this time.
+    boolean wantBase = locale.equals(defaultLocale);
+    ResourceBundle bundle = tryBundle(baseName, locale, classLoader, wantBase);
+    // Try the default locale if neccessary.
+    if (bundle == null && ! wantBase)
+      bundle = tryBundle(baseName, defaultLocale, classLoader, true);
 
-	BundleKey key = new BundleKey(baseName, locale, classLoader);
-        if (bundle == null)
-	  {
-	    // Cache the fact that this lookup has previously failed.
-	    bundleCache.put(key, nullEntry);
-	  }
-	else
-	  {
-            // Cache the result and return it.
-	    bundleCache.put(key, bundle);
-	    return bundle;
-	  }
+    BundleKey key = new BundleKey(defaultLocale, baseName, locale, classLoader);
+    if (bundle == null)
+      {
+        // Cache the fact that this lookup has previously failed.
+        bundleCache.put(key, nullEntry);
+        throw new MissingResourceException("Bundle " + baseName
+                                           + " not found for locale " + locale
+                                           + " by classloader " + classLoader,
+                                           baseName, "");
       }
-
-    throw new MissingResourceException("Bundle " + baseName 
-				       + " not found for locale "
-				       + locale
-				       + " by classloader "
-				       + classLoader,
-				       baseName, "");
+    // Cache the result and return it.
+    bundleCache.put(key, bundle);
+    return bundle;
   }
 
   /**
@@ -447,7 +437,7 @@ public abstract class ResourceBundle
    *
    * @return an enumeration of the keys
    */
-  public abstract Enumeration getKeys();
+  public abstract Enumeration<String> getKeys();
 
   /**
    * Tries to load a class or a property file with the specified name.

@@ -37,8 +37,14 @@ exception statement from your version. */
 
 package javax.xml.validation;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.IOException;
 import java.net.URL;
+import java.util.Properties;
 import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
@@ -68,11 +74,106 @@ public abstract class SchemaFactory
    */
   public static final SchemaFactory newInstance(String schemaLanguage)
   {
+    ClassLoader loader = Thread.currentThread().getContextClassLoader();
+    if (loader == null)
+      {
+        loader = SchemaFactory.class.getClassLoader();
+      }
+    final String factoryClassName = "javax.xml.validation.SchemaFactory";
+    String className = null;
+    int count = 0;
+    do
+      {
+        className = getFactoryClassName(loader, schemaLanguage, count++);
+        if (className != null)
+          {
+            try
+              {
+                Class t = (loader != null) ? loader.loadClass(className) :
+                    Class.forName(className);
+                return (SchemaFactory) t.newInstance();
+              }
+            catch (Exception e)
+              {
+                // Ignore any errors and continue algorithm.
+                // This method doesn't have a means of propagating
+                // class instantiation errors.
+                className = null;
+              }
+        }
+    }
+    while (className == null && count < 2);
+    try
+      {
+        String serviceKey = "/META-INF/services/" + factoryClassName;
+        InputStream in = (loader != null) ?
+          loader.getResourceAsStream(serviceKey) :
+          SchemaFactory.class.getResourceAsStream(serviceKey);
+        if (in != null)
+          {
+            BufferedReader r =
+              new BufferedReader(new InputStreamReader(in));
+            try
+              {
+                for (String line = r.readLine(); line != null;
+                        line = r.readLine())
+                  {
+                    Class t = (loader != null) ? loader.loadClass(className) :
+                        Class.forName(className);
+                    SchemaFactory ret = (SchemaFactory) t.newInstance();
+                    if (ret.isSchemaLanguageSupported(schemaLanguage))
+                      return ret;
+                  }
+              }
+            catch (Exception e)
+              {
+                // Fall through. See above.
+              }
+            finally
+              {
+                r.close();
+              }
+          }
+      }
+    catch (IOException e)
+      {
+      }
+    // Default schema factories for Classpath
     if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(schemaLanguage))
       return new gnu.xml.validation.xmlschema.XMLSchemaSchemaFactory();
     if (XMLConstants.RELAXNG_NS_URI.equals(schemaLanguage))
       return new gnu.xml.validation.relaxng.RELAXNGSchemaFactory();
     throw new IllegalArgumentException(schemaLanguage);
+  }
+
+  private static String getFactoryClassName(ClassLoader loader,
+          String schemaLanguage, int attempt)
+  {
+    final String factoryClassName = "javax.xml.validation.SchemaFactory";
+    final String propertyName = factoryClassName + ":" + schemaLanguage;
+    switch (attempt)
+      {
+        case 0:
+          return System.getProperty(propertyName);
+        case 1:
+          try
+            {
+              File file = new File(System.getProperty("java.home"));
+              file = new File(file, "lib");
+              file = new File(file, "jaxp.properties");
+              InputStream in = new FileInputStream(file);
+              Properties props = new Properties();
+              props.load(in);
+              in.close();
+              return props.getProperty(propertyName);
+            }
+          catch (IOException e)
+            {
+              return null;
+            }
+        default:
+          return null;
+      }
   }
 
   /**

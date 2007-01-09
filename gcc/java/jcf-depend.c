@@ -1,6 +1,6 @@
 /* Functions for handling dependency tracking when reading .class files.
 
-   Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -100,7 +100,7 @@ jcf_dependency_set_dep_file (const char *name)
 }
 
 void
-jcf_dependency_add_file (const char *filename, int system_p)
+jcf_dependency_add_file (const char *filename ATTRIBUTE_UNUSED, int system_p)
 {
   if (! dependencies)
     return;
@@ -109,7 +109,10 @@ jcf_dependency_add_file (const char *filename, int system_p)
   if (system_p && ! system_files)
     return;
 
-  deps_add_dep (dependencies, filename);
+
+  /* FIXME: Don't emit any dependencies.  In many cases we'll just see
+     temporary files emitted by ecj... */
+  /* deps_add_dep (dependencies, filename); */
 }
 
 void

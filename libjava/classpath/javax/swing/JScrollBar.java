@@ -50,6 +50,8 @@ import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleState;
 import javax.accessibility.AccessibleStateSet;
 import javax.accessibility.AccessibleValue;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ScrollBarUI;
 
 /**
@@ -172,6 +174,28 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
     }
   }
 
+  /**
+   * Listens for changes on the model and fires them to interested
+   * listeners on the JScrollBar, after re-sourcing them.
+   */
+  private class ScrollBarChangeListener
+    implements ChangeListener
+  {
+
+    public void stateChanged(ChangeEvent event)
+    {
+      Object o = event.getSource();
+      if (o instanceof BoundedRangeModel)
+        {
+          BoundedRangeModel m = (BoundedRangeModel) o;
+          fireAdjustmentValueChanged(AdjustmentEvent.ADJUSTMENT_VALUE_CHANGED,
+                                     AdjustmentEvent.TRACK, m.getValue(),
+                                     m.getValueIsAdjusting());
+        }
+    }
+    
+  }
+
   private static final long serialVersionUID = -8195169869225066566L;
   
   /** How much the thumb moves when moving in a block. */
@@ -185,6 +209,12 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
 
   /** How much the thumb moves when moving in a unit. */
   protected int unitIncrement = 1;
+
+  /**
+   * This ChangeListener forwards events fired from the model and re-sources
+   * them to originate from this JScrollBar.
+   */
+  private ChangeListener sbChangeListener;
 
   /** 
    * Creates a new horizontal JScrollBar object with a minimum
@@ -220,6 +250,8 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
   public JScrollBar(int orientation, int value, int extent, int min, int max)
   {
     model = new DefaultBoundedRangeModel(value, extent, min, max);
+    sbChangeListener = new ScrollBarChangeListener();
+    model.addChangeListener(sbChangeListener);
     if (orientation != SwingConstants.HORIZONTAL
         && orientation != SwingConstants.VERTICAL)
       throw new IllegalArgumentException(orientation
@@ -319,12 +351,13 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
    */
   public void setModel(BoundedRangeModel newModel)
   {
-    if (model != newModel)
-      {
-	BoundedRangeModel oldModel = model;
-	model = newModel;
-	firePropertyChange("model", oldModel, model);
-      }
+    BoundedRangeModel oldModel = model;
+    if (oldModel != null)
+      oldModel.removeChangeListener(sbChangeListener);
+    model = newModel;
+    if (model != null)
+      model.addChangeListener(sbChangeListener);
+    firePropertyChange("model", oldModel, model);
   }
 
   /**
@@ -424,12 +457,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
    */
   public void setValue(int value)
   {
-    if (isEnabled() && value != getValue())
-    {
-      model.setValue(value);
-      fireAdjustmentValueChanged(AdjustmentEvent.ADJUSTMENT_VALUE_CHANGED,
-                                 AdjustmentEvent.TRACK, value);
-    }
+    model.setValue(value);
   }
 
   /**
@@ -451,12 +479,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
    */
   public void setVisibleAmount(int extent)
   {
-    if (extent != getVisibleAmount())
-    {
-      model.setExtent(extent);
-      fireAdjustmentValueChanged(AdjustmentEvent.ADJUSTMENT_VALUE_CHANGED,
-                                 AdjustmentEvent.TRACK, extent);
-    }
+    model.setExtent(extent);
   }
 
   /**
@@ -476,12 +499,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
    */
   public void setMinimum(int minimum)
   {
-    if (minimum != getMinimum())
-    {
-      model.setMinimum(minimum);
-      fireAdjustmentValueChanged(AdjustmentEvent.ADJUSTMENT_VALUE_CHANGED,
-                                 AdjustmentEvent.TRACK, minimum);
-    }
+    model.setMinimum(minimum);
   }
 
   /**
@@ -501,12 +519,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
    */
   public void setMaximum(int maximum)
   {
-    if (maximum != getMaximum())
-    {
-      model.setMaximum(maximum);
-      fireAdjustmentValueChanged(AdjustmentEvent.ADJUSTMENT_VALUE_CHANGED,
-                                 AdjustmentEvent.TRACK, maximum);
-    }
+    model.setMaximum(maximum);
   }
 
   /**
@@ -540,17 +553,8 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
    */
   public void setValues(int newValue, int newExtent, int newMin, int newMax)
   {
-    if (!isEnabled())
-      newValue = model.getValue();
-    // It seems to be that on any change the value is fired.
-    if (newValue != getValue() || newExtent != getVisibleAmount() ||
-        newMin != getMinimum() || newMax != getMaximum())
-    {
-      model.setRangeProperties(newValue, newExtent, newMin, newMax,
-                               model.getValueIsAdjusting());
-      fireAdjustmentValueChanged(AdjustmentEvent.ADJUSTMENT_VALUE_CHANGED,
-                                 AdjustmentEvent.TRACK, newValue);
-    }
+    model.setRangeProperties(newValue, newExtent, newMin, newMax,
+                             model.getValueIsAdjusting());
   }
 
   /**
@@ -596,15 +600,30 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
    */
   protected void fireAdjustmentValueChanged(int id, int type, int value)
   {
+    fireAdjustmentValueChanged(id, type, value, getValueIsAdjusting());
+  }
+
+  /**
+   * Helper method for firing adjustment events that can have their
+   * isAdjusting field modified.
+   *
+   * This is package private to avoid an accessor method.
+   *
+   * @param id the ID of the event
+   * @param type the type of the event
+   * @param value the value
+   * @param isAdjusting if the scrollbar is adjusting or not
+   */
+  void fireAdjustmentValueChanged(int id, int type, int value,
+                                          boolean isAdjusting)
+  {
     Object[] adjustmentListeners = listenerList.getListenerList();
-    AdjustmentEvent adjustmentEvent = new AdjustmentEvent(this, 
-                                            AdjustmentEvent.ADJUSTMENT_VALUE_CHANGED,
-					    AdjustmentEvent.TRACK,
-					    value);
+    AdjustmentEvent adjustmentEvent = new AdjustmentEvent(this, id, type,
+                                                          value, isAdjusting);
     for (int i = adjustmentListeners.length - 2; i >= 0; i -= 2)
       {
-	if (adjustmentListeners[i] == AdjustmentListener.class)
-	  ((AdjustmentListener) adjustmentListeners[i + 1]).adjustmentValueChanged(adjustmentEvent);
+        if (adjustmentListeners[i] == AdjustmentListener.class)
+          ((AdjustmentListener) adjustmentListeners[i + 1]).adjustmentValueChanged(adjustmentEvent);
       }
   }
 

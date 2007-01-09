@@ -241,18 +241,22 @@ typedef struct JCF GTY(()) {
 
 #define ACC_VISIBILITY (ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED)
 
-#define CONSTANT_Class 7
-#define CONSTANT_Fieldref 9
-#define CONSTANT_Methodref 10
-#define CONSTANT_InterfaceMethodref 11
-#define CONSTANT_String 8
-#define CONSTANT_Integer 3
-#define CONSTANT_Float 4
-#define CONSTANT_Long 5
-#define CONSTANT_Double 6
-#define CONSTANT_NameAndType 12
-#define CONSTANT_Utf8 1
-#define CONSTANT_Unicode 2
+enum cpool_tag
+{
+  CONSTANT_Class = 7,
+  CONSTANT_Fieldref = 9,
+  CONSTANT_Methodref = 10,
+  CONSTANT_InterfaceMethodref = 11,
+  CONSTANT_String = 8,
+  CONSTANT_Integer = 3,
+  CONSTANT_Float = 4,
+  CONSTANT_Long = 5,
+  CONSTANT_Double = 6,
+  CONSTANT_NameAndType = 12,
+  CONSTANT_Utf8 = 1,
+  CONSTANT_Unicode = 2,
+  CONSTANT_None = 0
+};
 
 #define DEFAULT_CLASS_PATH "."
 
@@ -309,6 +313,7 @@ extern void jcf_path_seal (int);
 extern void *jcf_path_start (void);
 extern void *jcf_path_next (void *);
 extern char *jcf_path_name (void *);
+extern char *jcf_path_compute (const char *);
 extern int jcf_path_is_zipfile (void *);
 extern int jcf_path_is_system (void *);
 extern int jcf_path_max_len (void);

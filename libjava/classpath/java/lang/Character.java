@@ -1,5 +1,5 @@
 /* java.lang.Character -- Wrapper class for char, and Unicode subsets
-   Copyright (C) 1998, 1999, 2001, 2002, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -65,11 +65,12 @@ import java.util.Locale;
  * @author Paul N. Fisher
  * @author Jochen Hoenicke
  * @author Eric Blake (ebb9@email.byu.edu)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @see CharData
  * @since 1.0
- * @status updated to 1.4
+ * @status partly updated to 1.5; some things still missing
  */
-public final class Character implements Serializable, Comparable
+public final class Character implements Serializable, Comparable<Character>
 {
   /**
    * A subset of Unicode blocks.
@@ -154,10 +155,8 @@ public final class Character implements Serializable, Comparable
     /** The canonical name of the block according to the Unicode standard. */
     private final String canonicalName;
 
-    /** Constants for the <code>forName()</code> method */
-    private static final int CANONICAL_NAME = 0;
-    private static final int NO_SPACES_NAME = 1;
-    private static final int CONSTANT_NAME = 2;
+    /** Enumeration for the <code>forName()</code> method */
+    private enum NameType { CANONICAL, NO_SPACES, CONSTANT; };
 
     /**
      * Constructor for strictly defined blocks.
@@ -169,7 +168,7 @@ public final class Character implements Serializable, Comparable
      *        standard.
      */
     private UnicodeBlock(int start, int end, String name,
-             String canonicalName)
+			 String canonicalName)
     {
       super(name);
       this.start = start;
@@ -203,8 +202,8 @@ public final class Character implements Serializable, Comparable
     public static UnicodeBlock of(int codePoint)
     {
       if (codePoint > MAX_CODE_POINT)
-    throw new IllegalArgumentException("The supplied integer value is " +
-                       "too large to be a codepoint.");
+	throw new IllegalArgumentException("The supplied integer value is " +
+					   "too large to be a codepoint.");
       // Simple binary search for the correct block.
       int low = 0;
       int hi = sets.length - 1;
@@ -258,59 +257,51 @@ public final class Character implements Serializable, Comparable
      */
     public static final UnicodeBlock forName(String blockName)
     {
-      int type;
+      NameType type;
       if (blockName.indexOf(' ') != -1)
-        type = CANONICAL_NAME;
+        type = NameType.CANONICAL;
       else if (blockName.indexOf('_') != -1)
-        type = CONSTANT_NAME;
+        type = NameType.CONSTANT;
       else
-        type = NO_SPACES_NAME;
+        type = NameType.NO_SPACES;
       Collator usCollator = Collator.getInstance(Locale.US);
       usCollator.setStrength(Collator.PRIMARY);
       /* Special case for deprecated blocks not in sets */
       switch (type)
       {
-        case CANONICAL_NAME:
+        case CANONICAL:
           if (usCollator.compare(blockName, "Surrogates Area") == 0)
             return SURROGATES_AREA;
           break;
-        case NO_SPACES_NAME:
+        case NO_SPACES:
           if (usCollator.compare(blockName, "SurrogatesArea") == 0)
             return SURROGATES_AREA;
           break;
-        case CONSTANT_NAME:
+        case CONSTANT:
           if (usCollator.compare(blockName, "SURROGATES_AREA") == 0) 
             return SURROGATES_AREA;
           break;
       }
       /* Other cases */
-      int setLength = sets.length;
       switch (type)
       {
-        case CANONICAL_NAME:
-          for (int i = 0; i < setLength; i++)
-            {
-              UnicodeBlock block = sets[i];
-              if (usCollator.compare(blockName, block.canonicalName) == 0)
-                return block;
-            }
+        case CANONICAL:
+          for (UnicodeBlock block : sets)
+            if (usCollator.compare(blockName, block.canonicalName) == 0)
+              return block;
           break;
-        case NO_SPACES_NAME:
-          for (int i = 0; i < setLength; i++)
-            {
-              UnicodeBlock block = sets[i];
-              String nsName = block.canonicalName.replaceAll(" ","");
-              if (usCollator.compare(blockName, nsName) == 0)
-                return block;
-            }        
-          break;
-        case CONSTANT_NAME:
-          for (int i = 0; i < setLength; i++)
-            {
-              UnicodeBlock block = sets[i];
-              if (usCollator.compare(blockName, block.toString()) == 0)
-                return block;
-            }
+        case NO_SPACES:
+          for (UnicodeBlock block : sets)
+	    {
+	      String nsName = block.canonicalName.replaceAll(" ","");
+	      if (usCollator.compare(blockName, nsName) == 0)
+		return block;
+	    }
+	  break;
+        case CONSTANT:
+          for (UnicodeBlock block : sets)
+            if (usCollator.compare(blockName, block.toString()) == 0)
+              return block;
           break;
       }
       throw new IllegalArgumentException("No Unicode block found for " +
@@ -1513,10 +1504,11 @@ public final class Character implements Serializable, Comparable
      * this.  These are also returned from calls to <code>of(int)</code>
      * and <code>of(char)</code>.
      */
+    @Deprecated
     public static final UnicodeBlock SURROGATES_AREA
       = new UnicodeBlock(0xD800, 0xDFFF,
                          "SURROGATES_AREA",
-             "Surrogates Area");
+			 "Surrogates Area");
 
     /**
      * The defined subsets.
@@ -1979,11 +1971,78 @@ public final class Character implements Serializable, Comparable
   public static final char MAX_VALUE = '\uFFFF';
 
   /**
+   * The minimum Unicode 4.0 code point.  This value is <code>0</code>.
+   * @since 1.5
+   */
+  public static final int MIN_CODE_POINT = 0;
+
+  /**
+   * The maximum Unicode 4.0 code point, which is greater than the range
+   * of the char data type.
+   * This value is <code>0x10FFFF</code>.
+   * @since 1.5
+   */
+  public static final int MAX_CODE_POINT = 0x10FFFF;
+
+  /**
+   * The minimum Unicode high surrogate code unit, or
+   * <emph>leading-surrogate</emph>, in the UTF-16 character encoding.
+   * This value is <code>'\uD800'</code>.
+   * @since 1.5
+   */
+  public static final char MIN_HIGH_SURROGATE = '\uD800';
+
+  /**
+   * The maximum Unicode high surrogate code unit, or
+   * <emph>leading-surrogate</emph>, in the UTF-16 character encoding.
+   * This value is <code>'\uDBFF'</code>.
+   * @since 1.5
+   */
+  public static final char MAX_HIGH_SURROGATE = '\uDBFF';
+
+  /**
+   * The minimum Unicode low surrogate code unit, or
+   * <emph>trailing-surrogate</emph>, in the UTF-16 character encoding.
+   * This value is <code>'\uDC00'</code>.
+   * @since 1.5
+   */
+  public static final char MIN_LOW_SURROGATE = '\uDC00';
+
+  /**
+   * The maximum Unicode low surrogate code unit, or
+   * <emph>trailing-surrogate</emph>, in the UTF-16 character encoding.
+   * This value is <code>'\uDFFF'</code>.
+   * @since 1.5
+   */
+  public static final char MAX_LOW_SURROGATE = '\uDFFF';  
+
+  /**
+   * The minimum Unicode surrogate code unit in the UTF-16 character encoding.
+   * This value is <code>'\uD800'</code>.
+   * @since 1.5
+   */
+  public static final char MIN_SURROGATE = MIN_HIGH_SURROGATE;
+
+  /**
+   * The maximum Unicode surrogate code unit in the UTF-16 character encoding.
+   * This value is <code>'\uDFFF'</code>.
+   * @since 1.5
+   */
+  public static final char MAX_SURROGATE = MAX_LOW_SURROGATE;
+
+  /**
+   * The lowest possible supplementary Unicode code point (the first code
+   * point outside the basic multilingual plane (BMP)).
+   * This value is <code>0x10000</code>.
+   */ 
+  public static final int MIN_SUPPLEMENTARY_CODE_POINT = 0x10000;
+
+  /**
    * Class object representing the primitive char data type.
    *
    * @since 1.1
    */
-  public static final Class TYPE = VMClassLoader.getPrimitiveClass('C');
+  public static final Class<Character> TYPE = (Class<Character>) VMClassLoader.getPrimitiveClass('C');
 
   /**
    * The number of bits needed to represent a <code>char</code>.
@@ -2378,7 +2437,7 @@ public final class Character implements Serializable, Comparable
    * Stores unicode attribute offset lookup table. Exploit package visibility
    * of String.value to avoid copying the array.
    * @see CharData#DATA
-   */  
+   */
   private static final char[][] data = 
     new char[][]{
                  String.zeroBasedStringValue(CharData.DATA[0]),
@@ -2528,71 +2587,6 @@ public final class Character implements Serializable, Comparable
   private static final int MIRROR_MASK = 0x40;
 
   /**
-   * Min value for supplementary code point.
-   *
-   * @since 1.5
-   */
-  public static final int MIN_SUPPLEMENTARY_CODE_POINT = 0x10000;
-
-  /**
-   * Min value for code point.
-   *
-   * @since 1.5
-   */
-  public static final int MIN_CODE_POINT = 0; 
- 
- 
-  /**
-   * Max value for code point.
-   *
-   * @since 1.5
-   */
-  public static final int MAX_CODE_POINT = 0x010ffff;
-
-
-  /**
-   * Minimum high surrogate code in UTF-16 encoding.
-   *
-   * @since 1.5
-   */
-  public static final char MIN_HIGH_SURROGATE = '\ud800';
-
-  /**
-   * Maximum high surrogate code in UTF-16 encoding.
-   *
-   * @since 1.5
-   */
-  public static final char MAX_HIGH_SURROGATE = '\udbff';
- 
-  /**
-   * Minimum low surrogate code in UTF-16 encoding.
-   *
-   * @since 1.5
-   */
-  public static final char MIN_LOW_SURROGATE = '\udc00';
-
-  /**
-   * Maximum low surrogate code in UTF-16 encoding.
-   *
-   * @since 1.5
-   */
-  public static final char MAX_LOW_SURROGATE = '\udfff';
-
-  /**
-   * Minimum surrogate code in UTF-16 encoding.
-   *
-   * @since 1.5
-   */
-  public static final char MIN_SURROGATE = MIN_HIGH_SURROGATE;
-
-  /**
-   * Maximum low surrogate code in UTF-16 encoding.
-   *
-   * @since 1.5
-   */
-  public static final char MAX_SURROGATE = MAX_LOW_SURROGATE;
-
-  /**
    * Grabs an attribute offset from the Unicode attribute database. The lower
    * 5 bits are the character type, the next 2 bits are flags, and the top
    * 9 bits are the offset into the attribute tables.
@@ -2605,6 +2599,7 @@ public final class Character implements Serializable, Comparable
    * @see CharData#DATA
    * @see CharData#SHIFT
    */
+  // Package visible for use in String.
   static char readCodePoint(int codePoint)
   {
     int plane = codePoint >>> 16;
@@ -2778,7 +2773,7 @@ public final class Character implements Serializable, Comparable
   {
     return isTitleCase((int)ch);
   }
-  
+
   /**
    * Determines if a character is a Unicode titlecase letter. For example,
    * the character "Lj" (Latin capital L with small letter j) is titlecase.
@@ -3282,7 +3277,7 @@ public final class Character implements Serializable, Comparable
                | (1 << CURRENCY_SYMBOL)
                | (1 << CONNECTOR_PUNCTUATION))) != 0;
   }
-  
+
   /**
    * Determines if a character can follow the first letter in
    * a Java identifier.  This is the combination of isJavaLetter (isLetter,
@@ -3468,6 +3463,7 @@ public final class Character implements Serializable, Comparable
   {
     return isIdentifierIgnorable((int)ch);
   }
+
   /**
    * Determines if a character is ignorable in a Unicode identifier. This
    * includes the non-whitespace ISO control characters (<code>'\u0000'</code>
@@ -3610,7 +3606,7 @@ public final class Character implements Serializable, Comparable
         return title[i + 1];
     return toUpperCase(ch);
   }
-  
+
   /**
    * Converts a Unicode character into its titlecase equivalent mapping.
    * If a mapping does not exist, then the character passed is returned.
@@ -4103,6 +4099,7 @@ public final class Character implements Serializable, Comparable
     // The result will correctly be signed.
     return getDirectionality((int)ch);
   }
+
   
   /**
    * Returns the Unicode directionality property of the character. This
@@ -4198,30 +4195,13 @@ public final class Character implements Serializable, Comparable
   }
 
   /**
-   * Compares an object to this Character.  Assuming the object is a
-   * Character object, this method performs the same comparison as
-   * compareTo(Character).
-   *
-   * @param o object to compare
-   * @return the comparison value
-   * @throws ClassCastException if o is not a Character object
-   * @throws NullPointerException if o is null
-   * @see #compareTo(Character)
-   * @since 1.2
-   */
-  public int compareTo(Object o)
-  {
-    return compareTo((Character) o);
-  }
-
-  /**
    * Returns an <code>Character</code> object wrapping the value.
    * In contrast to the <code>Character</code> constructor, this method
    * will cache some values.  It is used by boxing conversion.
    *
    * @param val the value to wrap
    * @return the <code>Character</code>
-   * 
+   *
    * @since 1.5
    */
   public static Character valueOf(char val)
@@ -4230,9 +4210,9 @@ public final class Character implements Serializable, Comparable
       return new Character(val);
     synchronized (charCache)
       {
-    if (charCache[val - MIN_VALUE] == null)
-      charCache[val - MIN_VALUE] = new Character(val);
-    return charCache[val - MIN_VALUE];
+	if (charCache[val - MIN_VALUE] == null)
+	  charCache[val - MIN_VALUE] = new Character(val);
+	return charCache[val - MIN_VALUE];
       }
   }
 

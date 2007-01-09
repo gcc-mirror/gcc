@@ -1,4 +1,4 @@
-/* ContentType.java -- record layer content type.
+/* ContentType.java -- SSL record layer content type.
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -45,22 +45,23 @@ import java.io.IOException;
 /**
  * The content type enumeration, which marks packets in the record layer.
  *
- * <pre>enum { change_cipher_spec(20), alert(21), handshake(22),
- *             application_data(23), (255) } ContentType;</pre>
+ * <pre>
+enum { change_cipher_spec(20), alert(21), handshake(22),
+       application_data(23), (255) } ContentType;</pre>
+ *
+ * <p>There is also a "pseudo" content type, <code>client_hello_v2
+ * (1)</code>, which is used for backwards compatibility with SSLv2.
  *
  * @author Casey Marshall (rsdio@metastatic.org)
  */
-final class ContentType implements Enumerated
+public enum ContentType
 {
 
-  // Constants and fields.
-  // ------------------------------------------------------------------------
-
-  static final ContentType CLIENT_HELLO_V2    = new ContentType( 1);
-  static final ContentType CHANGE_CIPHER_SPEC = new ContentType(20);
-  static final ContentType ALERT              = new ContentType(21);
-  static final ContentType HANDSHAKE          = new ContentType(22);
-  static final ContentType APPLICATION_DATA   = new ContentType(23);
+  CLIENT_HELLO_V2    ( 1),
+  CHANGE_CIPHER_SPEC (20),
+  ALERT              (21),
+  HANDSHAKE          (22),
+  APPLICATION_DATA   (23);
 
   private int value;
 
@@ -72,16 +73,8 @@ final class ContentType implements Enumerated
     this.value = value;
   }
 
-  // Class methods.
-  // ------------------------------------------------------------------------
-
-  static final ContentType read(InputStream in) throws IOException
+  static final ContentType forInteger (final int value)
   {
-    int value = in.read();
-    if (value == -1)
-      {
-        throw new EOFException("unexpected end of input stream");
-      }
     switch (value & 0xFF)
       {
       case  1: return CLIENT_HELLO_V2;
@@ -89,47 +82,12 @@ final class ContentType implements Enumerated
       case 21: return ALERT;
       case 22: return HANDSHAKE;
       case 23: return APPLICATION_DATA;
-      default: return new ContentType(value);
+      default: return null;
       }
-  }
-
-  // Instance methods.
-  // ------------------------------------------------------------------------
-
-  public byte[] getEncoded()
-  {
-    return new byte[] { (byte) value };
   }
 
   public int getValue()
   {
     return value;
-  }
-
-  public boolean equals(Object o)
-  {
-    if (o == null || !(o instanceof ContentType))
-      {
-        return false;
-      }
-    return ((ContentType) o).value == value;
-  }
-
-  public int hashCode()
-  {
-    return getValue();
-  }
-
-  public String toString()
-  {
-    switch (value)
-      {
-      case  1: return "v2_client_hello";
-      case 20: return "change_cipher_spec";
-      case 21: return "alert";
-      case 22: return "handshake";
-      case 23: return "application_data";
-      default: return "unknown(" + value + ")";
-      }
   }
 }

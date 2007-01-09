@@ -97,6 +97,11 @@ public class Dialog extends Window
   private EventQueue eq2 = null;
 
   /**
+   * The number used to generate the name returned by getName.
+   */
+  private static transient long next_dialog_number;
+
+  /**
    * Initializes a new instance of <code>Dialog</code> with the specified
    * parent, that is resizable and not modal, and which has no title.
    * 
@@ -190,6 +195,7 @@ public class Dialog extends Window
     visible = false;
 
     setLayout(new BorderLayout());
+    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
   /**
@@ -273,6 +279,7 @@ public class Dialog extends Window
     visible = false;
 
     setLayout(new BorderLayout());
+    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
   /**
@@ -530,5 +537,19 @@ public class Dialog extends Window
       accessibleContext = new AccessibleAWTDialog();
     return accessibleContext;
   }
+  
+  /**
+   * Generate a unique name for this <code>Dialog</code>.
+   *
+   * @return A unique name for this <code>Dialog</code>.
+   */
+  String generateName()
+  {
+    return "dialog" + getUniqueLong();
+  }
 
+  private static synchronized long getUniqueLong()
+  {
+    return next_dialog_number++;
+  }
 }

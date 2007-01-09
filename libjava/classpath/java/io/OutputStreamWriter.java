@@ -223,6 +223,7 @@ public class OutputStreamWriter extends Writer
     encoder.onMalformedInput(CodingErrorAction.REPLACE);
     encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
     outputBuffer = CharBuffer.allocate(BUFFER_SIZE);
+    encodingName = EncodingHelper.getOldCanonical(cs.name());
   }
   
   /**
@@ -240,6 +241,11 @@ public class OutputStreamWriter extends Writer
     this.out = out;
     encoder = enc;
     outputBuffer = CharBuffer.allocate(BUFFER_SIZE);
+    Charset cs = enc.charset();
+    if (cs == null)
+      encodingName = "US-ASCII";
+    else
+      encodingName = EncodingHelper.getOldCanonical(cs.name());
   }
 
   /**

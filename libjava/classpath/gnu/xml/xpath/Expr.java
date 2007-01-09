@@ -59,6 +59,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -79,6 +80,38 @@ public abstract class Expr
     new DecimalFormat("####################################################" +
                       ".####################################################",
                       new DecimalFormatSymbols(Locale.US));
+
+  static class ExprNodeSet implements NodeList
+  {
+
+    private ArrayList list;
+
+    ExprNodeSet(Collection collection)
+    {
+      if (collection instanceof ArrayList)
+        list = (ArrayList) collection;
+      else
+        list = new ArrayList(collection);
+    }
+
+    public int getLength()
+    {
+      return list.size();
+    }
+
+    public Node item(int index)
+    {
+      try
+        {
+          return (Node) list.get(index);
+        }
+      catch (ArrayIndexOutOfBoundsException e)
+        {
+          return null;
+        }
+    }
+    
+  }
 
   public Object evaluate(Object item, QName returnType)
     throws XPathExpressionException
@@ -132,6 +165,8 @@ public abstract class Expr
               {
                 throw new XPathExpressionException("return value is not a node-set");
               }
+            if (ret != null)
+              ret = new ExprNodeSet((Collection) ret);
           }
       }
     return ret;

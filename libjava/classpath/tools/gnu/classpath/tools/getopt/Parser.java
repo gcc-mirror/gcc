@@ -72,6 +72,8 @@ public class Parser
 
   private OptionGroup defaultGroup = new OptionGroup();
 
+  private OptionGroup finalGroup;
+
   // These are used while parsing.
   private int currentIndex;
 
@@ -166,7 +168,7 @@ public class Parser
     this.longOnly = longOnly;
 
     // Put standard options in their own section near the end.
-    OptionGroup finalGroup = new OptionGroup(Messages.getString("Parser.StdOptions")); //$NON-NLS-1$
+    finalGroup = new OptionGroup(Messages.getString("Parser.StdOptions")); //$NON-NLS-1$
     finalGroup.add(new Option("help", Messages.getString("Parser.PrintHelp")) //$NON-NLS-1$ //$NON-NLS-2$
     {
       public void parsed(String argument) throws OptionException
@@ -181,15 +183,6 @@ public class Parser
       {
         System.out.println(versionString);
         System.exit(0);
-      }
-    });
-    finalGroup.add(new Option('J', Messages.getString("Parser.JArgument"), Messages.getString("Parser.JName")) //$NON-NLS-1$ //$NON-NLS-2$
-    {
-      public void parsed(String argument) throws OptionException
-      {
-        // -J should be handled by the appletviewer wrapper binary.
-        // We add it here so that it shows up in the --help output.
-        // Note that there is a special case for this in OptionGroup.
       }
     });
     add(finalGroup);
@@ -227,6 +220,18 @@ public class Parser
   {
     options.add(opt);
     defaultGroup.add(opt);
+  }
+
+  /**
+   * This is like {@link #add(Option)}, but adds the option to the "final"
+   * group.  This should be used sparingly, if at all; it is intended for
+   * other very generic options like --help or --version.
+   * @param opt the option to add
+   */
+  protected synchronized void addFinal(Option opt)
+  {
+    options.add(opt);
+    finalGroup.add(opt);
   }
 
   /**
@@ -314,11 +319,10 @@ public class Parser
     String option = real.substring(index);
     String justName = option;
     int eq = option.indexOf('=');
-    if (eq != - 1)
+    if (eq != -1)
       justName = option.substring(0, eq);
-    char shortName = 0;
-    if (justName.length() == 1)
-      shortName = justName.charAt(0);
+    boolean isPlainShort = justName.length() == 1;
+    char shortName = justName.charAt(0);
     Option found = null;
     for (int i = options.size() - 1; i >= 0; --i)
       {
@@ -328,8 +332,14 @@ public class Parser
             found = opt;
             break;
           }
-        if (shortName != 0 && opt.getShortName() == shortName)
+        if ((isPlainShort || opt.isJoined())
+            && opt.getShortName() == shortName)
           {
+            if (! isPlainShort)
+              {
+                // The rest of the option string is the argument.
+                eq = 0;
+              }
             found = opt;
             break;
           }
@@ -343,7 +353,7 @@ public class Parser
     String argument = null;
     if (found.getTakesArgument())
       {
-        if (eq == - 1)
+        if (eq == -1)
           argument = getArgument(real);
         else
           argument = option.substring(eq + 1);
@@ -358,35 +368,42 @@ public class Parser
     found.parsed(argument);
   }
 
-  private void handleShortOption(char option) throws OptionException
-  {
-    Option found = null;
-    for (int i = options.size() - 1; i >= 0; --i)
-      {
-        Option opt = (Option) options.get(i);
-        if (option == opt.getShortName())
-          {
-            found = opt;
-            break;
-          }
-      }
-    if (found == null)
-      {
-        String msg = MessageFormat.format(Messages.getString("Parser.UnrecDash"), //$NON-NLS-1$
-                                          new Object[] { "" + option }); //$NON-NLS-1$
-        throw new OptionException(msg);
-      }
-    String argument = null;
-    if (found.getTakesArgument())
-      argument = getArgument("-" + option); //$NON-NLS-1$
-    found.parsed(argument);
-  }
-
   private void handleShortOptions(String option) throws OptionException
   {
-    for (int i = 1; i < option.length(); ++i)
+    for (int charIndex = 1; charIndex < option.length(); ++charIndex)
       {
-        handleShortOption(option.charAt(i));
+        char optChar = option.charAt(charIndex);
+        Option found = null;
+        for (int i = options.size() - 1; i >= 0; --i)
+          {
+            Option opt = (Option) options.get(i);
+            if (optChar == opt.getShortName())
+              {
+                found = opt;
+                break;
+              }
+          }
+        if (found == null)
+          {
+            String msg = MessageFormat.format(Messages.getString("Parser.UnrecDash"), //$NON-NLS-1$
+                                              new Object[] { "" + optChar }); //$NON-NLS-1$
+            throw new OptionException(msg);
+          }
+        String argument = null;
+        if (found.getTakesArgument())
+          {
+            // If this is a joined short option, and there are more
+            // characters left in this argument, use those as the
+            // argument.
+            if (found.isJoined() && charIndex + 1 < option.length())
+              {
+                argument = option.substring(charIndex + 1);
+                charIndex = option.length();
+              }
+            else
+              argument = getArgument("-" + optChar); //$NON-NLS-1$
+          }
+        found.parsed(argument);
       }
   }
 

@@ -69,7 +69,7 @@ public final class InvalidPolicy
 
   /**
    * Create InvalidPolicy with no explaining
-   * message and leaving {@link index} with default 0 value.
+   * message and leaving {@link #index} with default 0 value.
    */
   public InvalidPolicy()
   {
@@ -77,7 +77,7 @@ public final class InvalidPolicy
 
   /**
    * Create the InvalidPolicy with explaining
-   * message and initialisintg {@link index} to the passed value.
+   * message and initialisintg {@link #index} to the passed value.
    *
    * @param why a string, explaining, why this exception has been thrown.
    * @param a_index a value for index.
@@ -90,7 +90,7 @@ public final class InvalidPolicy
 
   /**
    * Create the InvalidPolicy without explaining
-   * message and initialisintg {@link index} to the passed value.
+   * message and initialisintg {@link #index} to the passed value.
    *
    * @param a_index a value for index.
    */

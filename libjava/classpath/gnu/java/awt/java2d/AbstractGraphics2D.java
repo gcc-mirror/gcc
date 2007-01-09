@@ -100,6 +100,20 @@ import java.util.Map;
  * {@link #updateRaster(Raster, int, int, int, int)} method, which always gets
  * called after a chunk of data got painted into the raster.
  * </p>
+ * <p>Alternativly the backend can provide a method for filling Shapes by
+ * overriding the protected method fillShape(). This can be accomplished
+ * by a polygon filling function of the backend. Keep in mind though that
+ * Shapes can be quite complex (i.e. non-convex and containing holes, etc)
+ * which is not supported by all polygon fillers. Also it must be noted
+ * that fillShape() is expected to handle painting and compositing as well as
+ * clipping and transformation. If your backend can't support this natively,
+ * then you can fallback to the implementation in this class. You'll need
+ * to provide a writable Raster then, see above.</p>
+ * <p>Another alternative is to implement fillScanline() which only requires
+ * the backend to be able to draw horizontal lines in device space,
+ * which is usually very cheap.
+ * The implementation should still handle painting and compositing,
+ * but no more clipping and transformation is required by the backend.</p>
  * <p>The backend is free to provide implementations for the various raw*
  * methods for optimized AWT 1.1 style painting of some primitives. This should
  * accelerate painting of Swing greatly. When doing so, the backend must also
@@ -126,6 +140,9 @@ import java.util.Map;
  *   in plain Java because they involve lots of shuffling around with large
  *   arrays. In fact, you really would want to let the graphics card to the
  *   work, they are made for this.</li>
+ * <li>Provide an accelerated implementation for fillShape(). For instance,
+ * OpenGL can fill shapes very efficiently. There are some considerations
+ * to be made though, see above for details.</li>
  * </ol>
  * </p>
  *
@@ -142,6 +159,12 @@ public abstract class AbstractGraphics2D
    * It is advisable to choose powers of two.
    */
   private static final int AA_SAMPLING = 8;
+
+  /**
+   * Caches certain shapes to avoid massive creation of such Shapes in
+   * the various draw* and fill* methods.
+   */
+  private static final ThreadLocal shapeCache = new ThreadLocal();
 
   /**
    * The transformation for this Graphics2D instance
@@ -184,11 +207,6 @@ public abstract class AbstractGraphics2D
   private RenderingHints renderingHints;
 
   /**
-   * The paint raster.
-   */
-  private Raster paintRaster;
-
-  /**
    * The raster of the destination surface. This is where the painting is
    * performed.
    */
@@ -219,7 +237,7 @@ public abstract class AbstractGraphics2D
    * AbstractGraphics2D object and will be the most commonly used setting
    * in Swing rendering and should therefore be optimized as much as possible.
    */
-  private boolean isOptimized;
+  private boolean isOptimized = true;
 
   /**
    * Creates a new AbstractGraphics2D instance.
@@ -270,7 +288,6 @@ public abstract class AbstractGraphics2D
   public boolean drawImage(Image image, AffineTransform xform,
                            ImageObserver obs)
   {
-    boolean ret = false;
     Rectangle areaOfInterest = new Rectangle(0, 0, image.getWidth(obs),
                                              image.getHeight(obs));
     return drawImageImpl(image, xform, obs, areaOfInterest);
@@ -982,7 +999,8 @@ public abstract class AbstractGraphics2D
         else
           copy.clip = new GeneralPath(clip);
 
-        copy.renderingHints = new RenderingHints(renderingHints);
+	copy.renderingHints = new RenderingHints(null);
+	copy.renderingHints.putAll(renderingHints);
         copy.transform = new AffineTransform(transform);
         // The remaining state is inmmutable and doesn't need to be copied.
         return copy;
@@ -1143,14 +1161,31 @@ public abstract class AbstractGraphics2D
   {
     if (isOptimized)
       {
-        int tx = (int) transform.getTranslateX();
-        int ty = (int) transform.getTranslateY();
-        rawDrawLine(x1 + tx, y1 + ty, x2 + tx, y2 + ty);
+        rawDrawLine(x1, y1, x2, y2);
       }
     else
       {
-        Line2D line = new Line2D.Double(x1, y1, x2, y2);
-        draw(line);
+        ShapeCache sc = getShapeCache();
+        if (sc.line == null)
+          sc.line = new Line2D.Float();
+        sc.line.setLine(x1, y1, x2, y2);
+        draw(sc.line);
+      }
+  }
+
+  public void drawRect(int x, int y, int w, int h)
+  {
+    if (isOptimized)
+      {
+        rawDrawRect(x, y, w, h);
+      }
+    else
+      {
+        ShapeCache sc = getShapeCache();
+        if (sc.rect == null)
+          sc.rect = new Rectangle();
+        sc.rect.setBounds(x, y, w, h);
+        draw(sc.rect);
       }
   }
 
@@ -1166,13 +1201,15 @@ public abstract class AbstractGraphics2D
   {
     if (isOptimized)
       {
-        int tx = (int) transform.getTranslateX();
-        int ty = (int) transform.getTranslateY();
-        rawFillRect(x + tx, y + ty, width, height);
+        rawFillRect(x, y, width, height);
       }
     else
       {
-        fill(new Rectangle(x, y, width, height));
+        ShapeCache sc = getShapeCache();
+        if (sc.rect == null)
+          sc.rect = new Rectangle();
+        sc.rect.setBounds(x, y, width, height);
+        fill(sc.rect);
       }
   }
 
@@ -1213,8 +1250,11 @@ public abstract class AbstractGraphics2D
   public void drawRoundRect(int x, int y, int width, int height, int arcWidth,
                             int arcHeight)
   {
-    draw(new RoundRectangle2D.Double(x, y, width, height, arcWidth,
-                                     arcHeight));
+    ShapeCache sc = getShapeCache();
+    if (sc.roundRect == null)
+      sc.roundRect = new RoundRectangle2D.Float();
+    sc.roundRect.setRoundRect(x, y, width, height, arcWidth, arcHeight);
+    draw(sc.roundRect);
   }
 
   /**
@@ -1230,8 +1270,11 @@ public abstract class AbstractGraphics2D
   public void fillRoundRect(int x, int y, int width, int height, int arcWidth,
                             int arcHeight)
   {
-    fill(new RoundRectangle2D.Double(x, y, width, height, arcWidth,
-                                     arcHeight));
+    ShapeCache sc = getShapeCache();
+    if (sc.roundRect == null)
+      sc.roundRect = new RoundRectangle2D.Float();
+    sc.roundRect.setRoundRect(x, y, width, height, arcWidth, arcHeight);
+    fill(sc.roundRect);
   }
 
   /**
@@ -1244,7 +1287,11 @@ public abstract class AbstractGraphics2D
    */
   public void drawOval(int x, int y, int width, int height)
   {
-    draw(new Ellipse2D.Double(x, y, width, height));
+    ShapeCache sc = getShapeCache();
+    if (sc.ellipse == null)
+      sc.ellipse = new Ellipse2D.Float();
+    sc.ellipse.setFrame(x, y, width, height);
+    draw(sc.ellipse);
   }
 
   /**
@@ -1257,7 +1304,11 @@ public abstract class AbstractGraphics2D
    */
   public void fillOval(int x, int y, int width, int height)
   {
-    fill(new Ellipse2D.Double(x, y, width, height));
+    ShapeCache sc = getShapeCache();
+    if (sc.ellipse == null)
+      sc.ellipse = new Ellipse2D.Float();
+    sc.ellipse.setFrame(x, y, width, height);
+    fill(sc.ellipse);
   }
 
   /**
@@ -1266,8 +1317,11 @@ public abstract class AbstractGraphics2D
   public void drawArc(int x, int y, int width, int height, int arcStart,
                       int arcAngle)
   {
-    draw(new Arc2D.Double(x, y, width, height, arcStart, arcAngle,
-                          Arc2D.OPEN));
+    ShapeCache sc = getShapeCache();
+    if (sc.arc == null)
+      sc.arc = new Arc2D.Float();
+    sc.arc.setArc(x, y, width, height, arcStart, arcAngle, Arc2D.OPEN);
+    draw(sc.arc);
   }
 
   /**
@@ -1276,8 +1330,11 @@ public abstract class AbstractGraphics2D
   public void fillArc(int x, int y, int width, int height, int arcStart,
                       int arcAngle)
   {
-    fill(new Arc2D.Double(x, y, width, height, arcStart, arcAngle,
-                          Arc2D.OPEN));
+    ShapeCache sc = getShapeCache();
+    if (sc.arc == null)
+      sc.arc = new Arc2D.Float();
+    sc.arc.setArc(x, y, width, height, arcStart, arcAngle, Arc2D.PIE);
+    draw(sc.arc);
   }
 
   public void drawPolyline(int[] xPoints, int[] yPoints, int npoints)
@@ -1291,7 +1348,13 @@ public abstract class AbstractGraphics2D
    */
   public void drawPolygon(int[] xPoints, int[] yPoints, int npoints)
   {
-    draw(new Polygon(xPoints, yPoints, npoints));
+    ShapeCache sc = getShapeCache();
+    if (sc.polygon == null)
+      sc.polygon = new Polygon();
+    sc.polygon.xpoints = xPoints;
+    sc.polygon.ypoints = yPoints;
+    sc.polygon.npoints = npoints;
+    draw(sc.polygon);
   }
 
   /**
@@ -1299,7 +1362,13 @@ public abstract class AbstractGraphics2D
    */
   public void fillPolygon(int[] xPoints, int[] yPoints, int npoints)
   {
-    fill(new Polygon(xPoints, yPoints, npoints));
+    ShapeCache sc = getShapeCache();
+    if (sc.polygon == null)
+      sc.polygon = new Polygon();
+    sc.polygon.xpoints = xPoints;
+    sc.polygon.ypoints = yPoints;
+    sc.polygon.npoints = npoints;
+    fill(sc.polygon);
   }
 
   /**
@@ -1460,8 +1529,12 @@ public abstract class AbstractGraphics2D
   }
 
   /**
-   * Fills the specified shape. The shape has already been clipped against the
-   * current clip.
+   * Fills the specified shape. Override this if your backend can efficiently
+   * fill shapes. This is possible on many systems via a polygon fill
+   * method or something similar. But keep in mind that Shapes can be quite
+   * complex (non-convex, with holes etc), which is not necessarily supported
+   * by all polygon fillers. Also note that you must perform clipping
+   * before filling the shape.
    *
    * @param s the shape to fill
    * @param isFont <code>true</code> if the shape is a font outline
@@ -1531,6 +1604,11 @@ public abstract class AbstractGraphics2D
   protected void rawDrawLine(int x0, int y0, int x1, int y1)
   {
     draw(new Line2D.Float(x0, y0, x1, y1));
+  }
+
+  protected void rawDrawRect(int x, int y, int w, int h)
+  {
+    draw(new Rectangle(x, y, w, h));
   }
 
   /**
@@ -1627,11 +1705,7 @@ public abstract class AbstractGraphics2D
   }
 
   /**
-   * Fills the specified polygon. This should be overridden by backends
-   * that support accelerated (native) polygon filling, which is the
-   * case for most toolkit window and offscreen image implementations.
-   *
-   * The polygon is already clipped when this method is called.
+   * Fills the specified polygon without anti-aliasing.
    */
   private void fillShapeImpl(ArrayList segs, Rectangle2D deviceBounds2D,
                              Rectangle2D userBounds,
@@ -1662,7 +1736,7 @@ public abstract class AbstractGraphics2D
     for (Iterator i = segs.iterator(); i.hasNext();)
       {
         PolyEdge edge = (PolyEdge) i.next();
-        int yindex = (int) ((int) Math.ceil(edge.y0) - (int) Math.ceil(icMinY));
+        int yindex = (int) Math.ceil(edge.y0) - (int) Math.ceil(icMinY);
         if (edgeTable[yindex] == null) // Create bucket when needed.
           edgeTable[yindex] = new ArrayList();
         edgeTable[yindex].add(edge); // Add edge to the bucket of its line.
@@ -1766,7 +1840,8 @@ public abstract class AbstractGraphics2D
   }
 
   /**
-   * Paints a scanline between x0 and x1.
+   * Paints a scanline between x0 and x1. Override this when your backend
+   * can efficiently draw/fill horizontal lines.
    *
    * @param x0 the left offset
    * @param x1 the right offset
@@ -1972,8 +2047,7 @@ public abstract class AbstractGraphics2D
         // Render full scanline.
         //System.err.println("scanline: " + y);
         if (! emptyScanline)
-          fillScanlineAA(alpha, leftX, (int) y, rightX - leftX, pCtx,
-                         (int) minX);
+          fillScanlineAA(alpha, leftX, y, rightX - leftX, pCtx, (int) minX);
       }
 
     pCtx.dispose();
@@ -1986,7 +2060,7 @@ public abstract class AbstractGraphics2D
    *
    * @param alpha the alpha values in the scanline
    * @param x0 the beginning of the scanline
-   * @param y the y coordinate of the line
+   * @param yy the y coordinate of the line
    */
   private void fillScanlineAA(int[] alpha, int x0, int yy, int numPixels,
                               PaintContext pCtx, int offs)
@@ -1997,7 +2071,6 @@ public abstract class AbstractGraphics2D
     Raster paintRaster = pCtx.getRaster(x0, yy, numPixels, 1);
     //System.err.println("paintColorModel: " + pCtx.getColorModel());
     WritableRaster aaRaster = paintRaster.createCompatibleWritableRaster();
-    int numBands = paintRaster.getNumBands();
     ColorModel cm = pCtx.getColorModel();
     double lastAlpha = 0.;
     int lastAlphaInt = 0;
@@ -2156,10 +2229,10 @@ public abstract class AbstractGraphics2D
   private static Rectangle computeIntersection(int x, int y, int w, int h,
                                                Rectangle rect)
   {
-    int x2 = (int) rect.x;
-    int y2 = (int) rect.y;
-    int w2 = (int) rect.width;
-    int h2 = (int) rect.height;
+    int x2 = rect.x;
+    int y2 = rect.y;
+    int w2 = rect.width;
+    int h2 = rect.height;
 
     int dx = (x > x2) ? x : x2;
     int dy = (y > y2) ? y : y2;
@@ -2265,5 +2338,21 @@ public abstract class AbstractGraphics2D
       }
     deviceBounds.setRect(minX, minY, maxX - minX, maxY - minY);
     return segs;
+  }
+
+  /**
+   * Returns the ShapeCache for the calling thread.
+   *
+   * @return the ShapeCache for the calling thread
+   */
+  private ShapeCache getShapeCache()
+  {
+    ShapeCache sc = (ShapeCache) shapeCache.get();
+    if (sc == null)
+      {
+        sc = new ShapeCache();
+        shapeCache.set(sc);
+      }
+    return sc;
   }
 }

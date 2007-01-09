@@ -38,6 +38,9 @@ exception statement from your version. */
 
 package java.io;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import gnu.classpath.Configuration;
 import gnu.java.io.PlatformHelper;
 
@@ -209,6 +212,108 @@ final class VMFile
   }
 
   /**
+   * Returns the path as an absolute path name. The value returned is the
+   * current directory plus the separatory string plus the path of the file.
+   * The current directory is determined from the <code>user.dir</code> system
+   * property.
+   *
+   * @param path the path to convert to absolute path
+   *
+   * @return the absolute path that corresponds to <code>path</code>
+   */
+  static String getAbsolutePath(String path)
+  {
+    if (File.separatorChar == '\\' 
+      && path.length() > 0 && path.charAt (0) == '\\')
+      {
+        // On Windows, even if the path starts with a '\\' it is not
+        // really absolute until we prefix the drive specifier from
+        // the current working directory to it.
+        return System.getProperty ("user.dir").substring (0, 2) + path;
+      }
+    else if (File.separatorChar == '\\'
+             && path.length() > 1 && path.charAt (1) == ':'
+             && ((path.charAt (0) >= 'a' && path.charAt (0) <= 'z')
+             || (path.charAt (0) >= 'A' && path.charAt (0) <= 'Z')))
+      {
+        // On Windows, a process has a current working directory for
+        // each drive and a path like "G:foo\bar" would mean the 
+        // absolute path "G:\wombat\foo\bar" if "\wombat" is the 
+        // working directory on the G drive.
+        String drvDir = null;
+        try
+          {
+            drvDir = new File (path.substring (0, 2)).getCanonicalPath();
+          }
+        catch (IOException e)
+          {
+            drvDir = path.substring (0, 2) + "\\";
+          }
+
+        // Note: this would return "C:\\." for the path "C:.", if "\"
+        // is the working folder on the C drive, but this is 
+        // consistent with what Sun's JRE 1.4.1.01 actually returns!
+        if (path.length() > 2)
+          return drvDir + '\\' + path.substring (2, path.length());
+        else
+          return drvDir;
+      }
+    else if (path.equals(""))
+      return System.getProperty ("user.dir");
+    else
+      return System.getProperty ("user.dir") + File.separatorChar + path;
+  }
+
+  /**
+   * This method returns true if the path represents an absolute file
+   * path and false if it does not.  The definition of an absolute path varies
+   * by system.  As an example, on GNU systems, a path is absolute if it starts
+   * with a "/".
+   *
+   * @param path the path to check
+   *
+   * @return <code>true</code> if path represents an absolute file name,
+   *         <code>false</code> otherwise.
+   */
+  static boolean isAbsolute(String path)
+  {
+    if (File.separatorChar == '\\')
+        return path.startsWith(File.separator + File.separator)
+               || (path.length() > 2
+                   && ((path.charAt(0) >= 'a' && path.charAt(0) <= 'z')
+                       || (path.charAt(0) >= 'A' && path.charAt(0) <= 'Z'))
+                       && path.charAt(1) == ':'
+                       && path.charAt(2) == '\\');
+    else
+      return path.startsWith(File.separator);
+  }
+
+  /**
+   * Returns a <code>URL</code> with the <code>file:</code>
+   * protocol that represents this file.  The exact form of this URL is
+   * system dependent.
+   *
+   * @param file the file to convert to URL
+   *
+   * @return a <code>URL</code> for this object.
+   *
+   * @throws MalformedURLException if the URL cannot be created
+   *         successfully.
+   */
+  static URL toURL(File file)
+    throws MalformedURLException
+  {
+    // On Win32, Sun's JDK returns URLs of the form "file:/c:/foo/bar.txt",
+    // while on UNIX, it returns URLs of the form "file:/foo/bar.txt". 
+    if (File.separatorChar == '\\')
+      return new URL ("file:/" + file.getAbsolutePath().replace ('\\', '/')
+                      + (file.isDirectory() ? "/" : ""));
+    else
+      return new URL ("file:" + file.getAbsolutePath()
+                      + (file.isDirectory() ? "/" : ""));
+  }
+
+   /**
    * This method returns a canonical representation of the pathname of
    * this file.  The actual form of the canonical representation is
    * system-dependent.  On the GNU system, conversion to canonical

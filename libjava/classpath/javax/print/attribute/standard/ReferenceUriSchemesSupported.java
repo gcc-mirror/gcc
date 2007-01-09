@@ -128,7 +128,7 @@ public class ReferenceUriSchemesSupported extends EnumSyntax
    *
    * @return The class <code>ReferenceUriSchemesSupported</code> itself.
    */
-  public final Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return ReferenceUriSchemesSupported.class;
   }

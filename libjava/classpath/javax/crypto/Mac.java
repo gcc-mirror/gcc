@@ -41,6 +41,7 @@ package javax.crypto;
 import gnu.java.security.Engine;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -107,95 +108,103 @@ public class Mac implements Cloneable
     virgin = true;
   }
 
-  // Class methods.
-  // ------------------------------------------------------------------------
-
   /**
-   * Get an instance of the named algorithm from the first provider with
-   * an appropriate implementation.
-   *
+   * Create an instance of the named algorithm from the first provider with an
+   * appropriate implementation.
+   * 
    * @param algorithm The name of the algorithm.
-   * @return An appropriate Mac instance, if the specified algorithm
-   *         is implemented by a provider.
-   * @throws java.security.NoSuchAlgorithmException If no implementation
-   *         of the named algorithm is installed.
+   * @return An appropriate Mac instance, if the specified algorithm is
+   *         implemented by a provider.
+   * @throws NoSuchAlgorithmException If no implementation of the named
+   *           algorithm is installed.
+   * @throws IllegalArgumentException if <code>algorithm</code> is
+   *           <code>null</code> or is an empty string.
    */
   public static final Mac getInstance(String algorithm)
-    throws NoSuchAlgorithmException
+      throws NoSuchAlgorithmException
   {
-    Provider[] provs = Security.getProviders();
-    String msg = "";
-    for (int i = 0; i < provs.length; i++)
-      {
-        try
-          {
-            return getInstance(algorithm, provs[i]);
-          }
-        catch (NoSuchAlgorithmException nsae)
-          {
-            msg = nsae.getMessage();
-          }
-      }
-    throw new NoSuchAlgorithmException(msg);
+    Provider[] p = Security.getProviders();
+    NoSuchAlgorithmException lastException = null;
+    for (int i = 0; i < p.length; i++)
+      try
+        {
+          return getInstance(algorithm, p[i]);
+        }
+      catch (NoSuchAlgorithmException x)
+        {
+          lastException = x;
+        }
+      if (lastException != null)
+        throw lastException;
+      throw new NoSuchAlgorithmException(algorithm);
   }
 
   /**
-   * Get an instance of the named algorithm from the named provider.
-   *
+   * Create an instance of the named algorithm from the named provider.
+   * 
    * @param algorithm The name of the algorithm.
-   * @param provider  The name of the provider.
+   * @param provider The name of the provider.
    * @return An appropriate Mac instance, if the specified algorithm is
    *         implemented by the named provider.
-   * @throws java.security.NoSuchAlgorithmException If the named provider
-   *         has no implementation of the algorithm.
-   * @throws java.security.NoSuchProviderException If the named provider
-   *         does not exist.
+   * @throws NoSuchAlgorithmException If the named provider has no
+   *           implementation of the algorithm.
+   * @throws NoSuchProviderException If the named provider does not exist.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>algorithm</code> is an empty string.
    */
   public static final Mac getInstance(String algorithm, String provider)
-    throws NoSuchAlgorithmException, NoSuchProviderException
+      throws NoSuchAlgorithmException, NoSuchProviderException
   {
+    if (provider == null)
+      throw new IllegalArgumentException("provider MUST NOT be null");
     Provider p = Security.getProvider(provider);
     if (p == null)
-      {
-        throw new NoSuchProviderException(provider);
-      }
+      throw new NoSuchProviderException(provider);
     return getInstance(algorithm, p);
   }
 
   /**
-   * Get an instance of the named algorithm from a provider.
-   *
+   * Create an instance of the named algorithm from a provider.
+   * 
    * @param algorithm The name of the algorithm.
-   * @param provider  The provider.
+   * @param provider The provider.
    * @return An appropriate Mac instance, if the specified algorithm is
    *         implemented by the provider.
-   * @throws java.security.NoSuchAlgorithmException If the provider
-   *         has no implementation of the algorithm.
+   * @throws NoSuchAlgorithmException If the provider has no implementation of
+   *           the algorithm.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>algorithm</code> is an empty string.
    */
   public static final Mac getInstance(String algorithm, Provider provider)
-    throws NoSuchAlgorithmException
+      throws NoSuchAlgorithmException
   {
+    StringBuilder sb = new StringBuilder("Mac algorithm [")
+        .append(algorithm).append("] from provider[")
+        .append(provider).append("] could not be created");
+    Throwable cause;
     try
       {
-        return new Mac((MacSpi) Engine.getInstance(SERVICE, algorithm, provider),
-                       provider, algorithm);
+        Object spi = Engine.getInstance(SERVICE, algorithm, provider);
+        return new Mac((MacSpi) spi, provider, algorithm);
       }
-    catch (InvocationTargetException ite)
+    catch (InvocationTargetException x)
       {
-        if (ite.getCause() == null)
-          throw new NoSuchAlgorithmException(algorithm);
-        if (ite.getCause() instanceof NoSuchAlgorithmException)
-          throw (NoSuchAlgorithmException) ite.getCause();
-        throw new NoSuchAlgorithmException(algorithm);
+        cause = x.getCause();
+        if (cause instanceof NoSuchAlgorithmException)
+          throw (NoSuchAlgorithmException) cause;
+        if (cause == null)
+          cause = x;
       }
-    catch (ClassCastException cce)
+    catch (ClassCastException x)
       {
-        throw new NoSuchAlgorithmException(algorithm);
+        cause = x;
       }
+    NoSuchAlgorithmException x = new NoSuchAlgorithmException(sb.toString());
+    x.initCause(cause);
+    throw x;
   }
-
-  // Instance methods.
-  // ------------------------------------------------------------------------
 
   /**
    * Finishes the computation of a MAC and returns the digest.
@@ -397,6 +406,18 @@ public class Mac implements Cloneable
     macSpi.engineUpdate(input, offset, length);
   }
 
+  /**
+   * Update this MAC with the remaining bytes in the given buffer
+   * @param buffer The input buffer.
+   * @since 1.5
+   */
+  public final void update (final ByteBuffer buffer)
+  {
+    if (virgin)
+      throw new IllegalStateException ("not initialized");
+    macSpi.engineUpdate(buffer);
+  }
+  
   /**
    * Clone this instance, if the underlying implementation supports it.
    *

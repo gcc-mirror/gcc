@@ -183,6 +183,27 @@ public class StringWriter extends Writer
     buffer.append(str.substring(offset, offset + len));
   }
 
+  /** @since 1.5 */
+  public StringWriter append(char c)
+  {
+    write(c);
+    return this;
+  }
+
+  /** @since 1.5 */
+  public StringWriter append(CharSequence cs)
+  {
+    write(cs == null ? "null" : cs.toString());
+    return this;
+  }
+
+  /** @since 1.5 */
+  public StringWriter append(CharSequence cs, int start, int end)
+  {
+    write(cs == null ? "null" : cs.subSequence(start, end).toString());
+    return this;
+  }
+
   /**
    * This is the <code>StringBuffer</code> that we use to store bytes that
    * are written.

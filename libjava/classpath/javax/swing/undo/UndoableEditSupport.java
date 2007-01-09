@@ -69,7 +69,8 @@ public class UndoableEditSupport
   /**
    * The currently registered listeners.
    */
-  protected Vector listeners = new Vector();
+  protected Vector<UndoableEditListener> listeners =
+    new Vector<UndoableEditListener>();
 
 
   /**
@@ -148,7 +149,7 @@ public class UndoableEditSupport
   public synchronized UndoableEditListener[] getUndoableEditListeners()
   {
     UndoableEditListener[] result = new UndoableEditListener[listeners.size()];
-    return (UndoableEditListener[]) listeners.toArray(result);
+    return listeners.toArray(result);
   }
 
 

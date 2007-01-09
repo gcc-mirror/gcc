@@ -285,7 +285,7 @@ public class InternationalFormatter
         if (minimum != null && minimum.compareTo(o) > 0)
           throw new ParseException("The value may not be less than the"
                                     + " specified minimum", 0);
-        if (maximum != null && minimum.compareTo(o) < 0)
+        if (maximum != null && maximum.compareTo(o) < 0)
           throw new ParseException("The value may not be greater than the"
                                     + " specified maximum", 0);
         return o;

@@ -64,6 +64,28 @@ public abstract class SSLContextSpi
   // Abstract methods.
   // -------------------------------------------------------------------
 
+  // Sun, you've broken existing applications by introducing new
+  // abstract methods! Goodjob!!!
+
+  /**
+   * Returns a new {@link SSLEngine} for this context.
+   *
+   * @return A new SSLEngine.
+   * @since 1.5
+   */
+  protected abstract SSLEngine engineCreateSSLEngine ();
+
+  /**
+   * Returns a new {@link SSLEngine} for this context, for the given
+   * host name and port number.
+   *
+   * @param host The local host name.
+   * @param port The local port number.
+   * @return A new SSLEngine.
+   * @since 1.5
+   */
+  protected abstract SSLEngine engineCreateSSLEngine (String host, int port);
+
   /**
    * Returns the set of SSL sessions available for client connections.
    *

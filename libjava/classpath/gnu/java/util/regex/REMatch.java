@@ -307,12 +307,12 @@ public final class REMatch implements Serializable, Cloneable {
     }
 
 /*  The following are used for debugging purpose
-    static String d(REMatch m) {
+    public static String d(REMatch m) {
 	if (m == null) return "null";
         else return "[" + m.index + "]";
     }
 
-    String substringUptoIndex(CharIndexed input) {
+    public String substringUptoIndex(CharIndexed input) {
 	StringBuffer sb = new StringBuffer();
 	for (int i = 0; i < index; i++) {
 	    sb.append(input.charAt(i));

@@ -168,6 +168,9 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void *env)
       p = (GC_PTR) c->aux_info;
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
 
+      p = (GC_PTR) c->reflection_data;
+      MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c);
+
       // The class chain must be marked for runtime-allocated Classes
       // loaded by the bootstrap ClassLoader.
       p = (GC_PTR) c->next_or_version;

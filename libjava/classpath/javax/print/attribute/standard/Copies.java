@@ -37,6 +37,7 @@ exception statement from your version.  */
 
 package javax.print.attribute.standard;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.IntegerSyntax;
 import javax.print.attribute.PrintJobAttribute;
 import javax.print.attribute.PrintRequestAttribute;
@@ -97,7 +98,7 @@ public final class Copies extends IntegerSyntax
    *
    * @return The class <code>Copies</code> itself.
    */
-  public Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return Copies.class;
   }

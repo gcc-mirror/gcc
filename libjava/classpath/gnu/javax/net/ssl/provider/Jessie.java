@@ -59,31 +59,42 @@ import java.security.Provider;
  */
 public class Jessie extends Provider
 {
+  private static final long serialVersionUID = -1;
 
-  public static final String VERSION = "1.0.0";
-  public static final double VERSION_DOUBLE = 1.0;
+  public static final String VERSION = "2.0.0";
+  public static final double VERSION_DOUBLE = 2.0;
 
   public Jessie()
   {
     super("Jessie", VERSION_DOUBLE,
-          "Implementing SSLv3, TLSv1 SSL Contexts; X.509 Key Manager Factories;" +
-          System.getProperty("line.separator") +
-          "X.509 and SRP Trust Manager Factories, continuously-seeded secure random." );
+          "Implementing TLSv1.1, with SSLv3, TLSv1.0 compatibility modes; "
+          + "X.509 Key Manager Factory; "
+          + "X.509 Trust Manager Factory; "
+          + "SSLv3 MD5 and SHA Mac.");
 
-    AccessController.doPrivileged(new PrivilegedAction()
+    AccessController.doPrivileged(new PrivilegedAction<Object>()
       {
         public Object run()
         {
-          put("SSLContext.SSLv3", Context.class.getName());
-          put("Alg.Alias.SSLContext.SSL",     "SSLv3");
-          put("Alg.Alias.SSLContext.TLSv1",   "SSLv3");
-          put("Alg.Alias.SSLContext.TLS",     "SSLv3");
-          //put("Alg.Alias.SSLContext.TLSv1.1", "SSLv3");
+          put("SSLContext.TLSv1.1", SSLContextImpl.class.getName());
+          put("Alg.Alias.SSLContext.SSLv3",   "TLSv1.1");
+          put("Alg.Alias.SSLContext.TLSv1",   "TLSv1.1");
+          put("Alg.Alias.SSLContext.TLSv1.0", "TLSv1.1");
+          put("Alg.Alias.SSLContext.TLS",     "TLSv1.1");
+          put("Alg.Alias.SSLContext.SSL",     "TLSv1.1");
 
           put("KeyManagerFactory.JessieX509",   X509KeyManagerFactory.class.getName());
           put("TrustManagerFactory.JessieX509", X509TrustManagerFactory.class.getName());
-          put("TrustManagerFactory.SRP",        SRPTrustManagerFactory.class.getName());
+          put("KeyManagerFactory.JessiePSK",    PreSharedKeyManagerFactoryImpl.class.getName());
+          //put("TrustManagerFactory.SRP",        SRPTrustManagerFactory.class.getName());
 
+          put("Mac.SSLv3HMac-MD5", SSLv3HMacMD5Impl.class.getName());
+          put("Mac.SSLv3HMac-SHA", SSLv3HMacSHAImpl.class.getName());
+          
+          put("Signature.TLSv1.1-RSA", SSLRSASignatureImpl.class.getName());
+          put("Alg.Alias.Signature.TLSv1-RSA", "TLSv1.1-RSA");
+          put("Alg.Alias.Signature.SSLv3-RSA", "TLSv1.1-RSA");
+          
           return null;
         }
       });

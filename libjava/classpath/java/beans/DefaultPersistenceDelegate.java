@@ -154,8 +154,8 @@ public class DefaultPersistenceDelegate extends PersistenceDelegate
     return new Expression(oldInstance, oldInstance.getClass(), "new", args);
   }
 
-  protected void initialize(Class type, Object oldInstance, Object newInstance,
-                            Encoder out)
+  protected void initialize(Class<?> type, Object oldInstance,
+                            Object newInstance, Encoder out)
   {
     // Calling the supertype's implementation of initialize makes it
     // possible that descendants of classes like AbstractHashMap

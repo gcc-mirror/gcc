@@ -31,25 +31,21 @@ proc gcj_jvmti_compile_cxx_to_o {file {options {}}} {
 
 # Build header files given name of .java file.  Return 0 on failure.
 proc gcj_jvmti_build_headers {file} {
-  set gcjh [find_gcjh]
-  set jvscan [find_jvscan]
+  global libgcj_jar
 
-  set class_out [string trim \
-		   [libjava_prune_warnings \
-		      [lindex [local_exec "$jvscan --encoding=UTF-8 $file --list-class" "" "" 300] 1]]]
-  if {[string match "*parse error*" $class_out]} {
+  set gcjh [find_gcjh]
+
+  # Currently we only build a header file for the main class from the
+  # .java file.  If we need more than this, we'll have to figure
+  # something out.
+  set file [file rootname [file tail $file]]
+
+  set x [string trim [libjava_prune_warnings \
+			[lindex [local_exec "$gcjh -cni -force -classpath .:$libgcj_jar $file" "" "" 300] 1]]]
+  if {$x != ""} {
+    verbose "local_exec failed: $x" 2
     fail "$file header generation"
     return 0
-  }
-
-  foreach file [split $class_out] {
-    set x [string trim [libjava_prune_warnings \
-			  [lindex [local_exec "$gcjh $file" "" "" 300] 1]]]
-    if {$x != ""} {
-      verbose "local_exec failed: $x" 2
-      fail "$file header generation"
-      return 0
-    }
   }
 
   pass "$file header generation"
@@ -67,18 +63,18 @@ proc gcj_jvmti_test_one {file} {
     return 1
   }
 
-  if {! [bytecompile_file $file [pwd]]} {
-    fail "bytecompile $file"
-    # FIXME - should use `untested' on all remaining tests.
-    # But that is hard.
-    return 0
-  }
-  pass "bytecompile $file"
+#   if {! [bytecompile_file $file [pwd]]} {
+#     fail "bytecompile $file"
+#     # FIXME - should use `untested' on all remaining tests.
+#     # But that is hard.
+#     return 0
+#   }
+#   pass "bytecompile $file"
 
-  if {! [gcj_jvmti_build_headers $file]} {
-    # FIXME
-    return 0
-  }
+#   if {! [gcj_jvmti_build_headers $file]} {
+#     # FIXME
+#     return 0
+#   }
 
   set cfile [file join [file dirname $file] nat$main.cc]
   if {! [gcj_jvmti_compile_cxx_to_o $cfile]} {
@@ -109,7 +105,7 @@ proc gcj_jvmti_run {} {
 
   # For now we only test JVMTI on native builds.
   if {$build_triplet == $host_triplet} {
-    catch { lsort [glob -nocomplain ${srcdir}/${subdir}/*.java] } srcfiles
+    catch { lsort [glob -nocomplain ${srcdir}/${subdir}/*.jar] } srcfiles
 
     foreach x $srcfiles {
       gcj_jvmti_test_one $x

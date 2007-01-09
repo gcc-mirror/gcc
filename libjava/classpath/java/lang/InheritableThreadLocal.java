@@ -1,5 +1,5 @@
 /* InheritableThreadLocal -- a ThreadLocal which inherits values across threads
-   Copyright (C) 2000, 2001, 2002, 2003, 2005, 2006  Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -54,12 +54,15 @@ import java.util.Iterator;
  *
  * @author Mark Wielaard (mark@klomp.org)
  * @author Eric Blake (ebb9@email.byu.edu)
+ * @author Tom Tromey (tromey@redhat.com)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @see ThreadLocal
  * @since 1.2
  * @status updated to 1.4
  */
-public class InheritableThreadLocal extends ThreadLocal
+public class InheritableThreadLocal<T> extends ThreadLocal<T>
 {
+
   /**
    * Creates a new InheritableThreadLocal that has no values associated
    * with it yet.
@@ -77,7 +80,7 @@ public class InheritableThreadLocal extends ThreadLocal
    *        the moment of creation of the child
    * @return the initial value for the child thread
    */
-  protected Object childValue(Object parentValue)
+  protected T childValue(T parentValue)
   {
     return parentValue;
   }
@@ -85,7 +88,7 @@ public class InheritableThreadLocal extends ThreadLocal
   /**
    * Generates the childValues of all <code>InheritableThreadLocal</code>s
    * that are in the heritage of the current Thread for the newly created
-   * childThread. Should be called from the contructor Thread.
+   * childThread. Should be called from the constructor Thread.
    *
    * @param childThread the newly created thread, to inherit from this thread
    * @see Thread#Thread(ThreadGroup, Runnable, String)
@@ -102,14 +105,14 @@ public class InheritableThreadLocal extends ThreadLocal
             Object key = keys.next();
             if (key instanceof InheritableThreadLocal)
               {
-                InheritableThreadLocal local = (InheritableThreadLocal)key;
+		InheritableThreadLocal local = (InheritableThreadLocal)key;
                 Object parentValue = parentThread.locals.get(key);
-                Object childValue = local.childValue(parentValue == NULL
-                                                     ? null : parentValue);
+		Object childValue = local.childValue(parentValue == sentinel
+						? null : parentValue);
                 if (childThread.locals == null)
                     childThread.locals = new WeakIdentityHashMap();
                 childThread.locals.put(key, (childValue == null
-                                             ? NULL : childValue));
+                                             ? sentinel : childValue));
               }
           }
       }

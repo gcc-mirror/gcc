@@ -59,7 +59,7 @@ public abstract class ImageInputStreamSpi
    * Indicates which kind of input is processable by the streams
    * created by {@link #createInputStreamInstance(Object)}.
    */
-  protected Class inputClass;
+  protected Class<?> inputClass;
 
 
   /**
@@ -80,7 +80,7 @@ public abstract class ImageInputStreamSpi
    * or <code>version</code> is <code>null</code>.
    */
   public ImageInputStreamSpi(String vendorName, String version,
-                             Class inputClass)
+                             Class<?> inputClass)
   {
     super(vendorName, version);
     this.inputClass = inputClass;
@@ -91,7 +91,7 @@ public abstract class ImageInputStreamSpi
    * Determines which kind of input is processable by the streams
    * created by {@link #createInputStreamInstance(Object)}.
    */
-  public Class getInputClass()
+  public Class<?> getInputClass()
   {
     return inputClass;
   }

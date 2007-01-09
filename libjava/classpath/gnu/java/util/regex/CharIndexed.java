@@ -77,6 +77,13 @@ public interface CharIndexed {
     boolean move(int index);
 
     /**
+     * Shifts the input buffer by a given number of positions.  Returns
+     * true if the new cursor position is valid or cursor position is at
+     * the end of input.
+     */
+    boolean move1(int index); // I cannot think of a better name for this.
+
+    /**
      * Returns true if the most recent move() operation placed the cursor
      * position at a valid position in the input.
      */
@@ -103,6 +110,16 @@ public interface CharIndexed {
      * Returns the REMatch last found on this input.
      */
     REMatch getLastMatch();
+
+    /**
+     * Sets the information used for hitEnd().
+     */
+    void setHitEnd(REMatch match);
+
+    /**
+     * Returns whether the matcher has hit the end of input.
+     */
+    boolean hitEnd();
 
     /**
      * Returns the anchor.

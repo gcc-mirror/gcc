@@ -62,7 +62,7 @@ public class BasicAttribute implements Attribute
   /** True if this attribute's values are ordered.  */
   protected boolean ordered;
   /** Values for this attribute.  */
-  protected transient Vector values;
+  protected transient Vector<Object> values;
 
   // Used by cloning.
   private BasicAttribute ()
@@ -182,7 +182,7 @@ public class BasicAttribute implements Attribute
     return values.get (index);
   }
 
-  public NamingEnumeration getAll ()
+  public NamingEnumeration<?> getAll ()
     throws NamingException
   {
     return new BasicAttributeEnumeration ();

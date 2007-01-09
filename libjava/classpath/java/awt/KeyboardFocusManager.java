@@ -1,5 +1,5 @@
 /* KeyboardFocusManager.java -- manage component focusing via the keyboard
-   Copyright (C) 2002, 2004  Free Software Foundation
+   Copyright (C) 2002, 2004, 2005 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -555,7 +555,9 @@ public abstract class KeyboardFocusManager
    * @see #UP_CYCLE_TRAVERSAL_KEYS
    * @see #DOWN_CYCLE_TRAVERSAL_KEYS
    */
-  public void setDefaultFocusTraversalKeys (int id, Set keystrokes)
+  public void setDefaultFocusTraversalKeys (int id,
+					    Set<? extends AWTKeyStroke>
+					    keystrokes)
   {
     if (id != KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS &&
         id != KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS &&
@@ -627,7 +629,7 @@ public abstract class KeyboardFocusManager
    * @see #UP_CYCLE_TRAVERSAL_KEYS
    * @see #DOWN_CYCLE_TRAVERSAL_KEYS
    */
-  public Set getDefaultFocusTraversalKeys (int id)
+  public Set<AWTKeyStroke> getDefaultFocusTraversalKeys (int id)
   {
     if (id < FORWARD_TRAVERSAL_KEYS || id > DOWN_CYCLE_TRAVERSAL_KEYS)
       throw new IllegalArgumentException ();
@@ -989,9 +991,9 @@ public abstract class KeyboardFocusManager
    * @return A list of explicitly registered key event dispatchers.
    * @see KeyboardFocusManager#addKeyEventDispatcher(java.awt.KeyEventDispatcher)
    */
-  protected List getKeyEventDispatchers ()
+  protected List<KeyEventDispatcher> getKeyEventDispatchers ()
   {
-    return (List) keyEventDispatchers.clone ();
+    return (List<KeyEventDispatcher>) keyEventDispatchers.clone ();
   }
 
   /**
@@ -1046,9 +1048,9 @@ public abstract class KeyboardFocusManager
    * @return A list of explicitly registered key event post processors.
    * @see KeyboardFocusManager#addKeyEventPostProcessor(java.awt.KeyEventPostProcessor)
    */
-  protected List getKeyEventPostProcessors ()
+  protected List<KeyEventPostProcessor> getKeyEventPostProcessors ()
   {
-    return (List) keyEventPostProcessors.clone ();
+    return (List<KeyEventPostProcessor>) keyEventPostProcessors.clone ();
   }
 
   /**

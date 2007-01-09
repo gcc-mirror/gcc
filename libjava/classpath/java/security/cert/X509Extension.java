@@ -70,7 +70,7 @@ import java.util.Set;
  	
 	@author Mark Benvenuto
 
-	@since JDK 1.2
+	@since 1.2
 */
 public interface X509Extension
 {
@@ -91,7 +91,7 @@ public interface X509Extension
      @return A Set containing the OIDs. If there are no CRITICAL
      extensions or extensions at all this returns null.
   */
-  Set getCriticalExtensionOIDs();
+  Set<String> getCriticalExtensionOIDs();
 
   /**
      Returns a set of the NON-CRITICAL extension OIDs from the 
@@ -101,7 +101,7 @@ public interface X509Extension
      @return A Set containing the OIDs. If there are no NON-CRITICAL
      extensions or extensions at all this returns null.
   */
-  Set getNonCriticalExtensionOIDs();
+  Set<String> getNonCriticalExtensionOIDs();
 
   /**
      Returns the DER encoded OCTET string for the specified

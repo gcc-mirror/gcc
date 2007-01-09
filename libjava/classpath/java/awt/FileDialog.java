@@ -95,6 +95,11 @@ private FilenameFilter filter;
   */
 private int mode;
 
+/**
+ * The number used to generate the name returned by getName.
+ */
+private static transient long next_file_dialog_number;
+
 /*************************************************************************/
 
 /*
@@ -300,7 +305,11 @@ getFile()
 public synchronized void
 setFile(String file)
 {
-  this.file = file;
+  if ("".equals(file))
+    this.file = null;
+  else
+    this.file = file;
+  
   if (peer != null)
     {
       FileDialogPeer f = (FileDialogPeer) peer;
@@ -364,6 +373,23 @@ paramString()
 {
   return ("dir=" + dir + ",file=" + file +
 	  ",mode=" + mode + "," + super.paramString());
+}
+
+/**
+ * Generate a unique name for this <code>FileDialog</code>.
+ *
+ * @return A unique name for this <code>FileDialog</code>.
+ */
+String 
+generateName()
+{
+  return "filedlg" + getUniqueLong();
+}
+
+private static synchronized long 
+getUniqueLong()
+{
+  return next_file_dialog_number++;
 }
 
 } // class FileDialog 

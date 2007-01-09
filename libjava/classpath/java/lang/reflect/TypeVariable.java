@@ -58,9 +58,7 @@ package java.lang.reflect;
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
  */ 
-/* FIXME[GENERICS]: Should be TypeVariable<T extends GenericDeclaration> */
-public interface TypeVariable
-  extends Type
+public interface TypeVariable<T extends GenericDeclaration> extends Type
 {
 
   /**
@@ -86,8 +84,7 @@ public interface TypeVariable
    * @return the <code>GenericDeclaration</code> object for this type
    *         variable.
    */
-  /* FIXME[GENERICS]: Should return type T */
-  GenericDeclaration getGenericDeclaration();
+  T getGenericDeclaration();
 
   /**
    * Returns the name of the type variable, as written in the source

@@ -39,7 +39,7 @@ exception statement from your version. */
 package gnu.classpath.tools.keytool;
 
 import gnu.classpath.Configuration;
-import gnu.classpath.tools.getopt.ClasspathToolParser;
+import gnu.classpath.tools.common.ClasspathToolParser;
 import gnu.classpath.tools.getopt.Option;
 import gnu.classpath.tools.getopt.OptionException;
 import gnu.classpath.tools.getopt.OptionGroup;
@@ -217,7 +217,6 @@ class GenKeyCmd extends Command
   protected String _providerClassName;
   private int keySize;
   private X500DistinguishedName distinguishedName;
-  private Parser cmdOptionsParser;
 
   // default 0-arguments constructor
 

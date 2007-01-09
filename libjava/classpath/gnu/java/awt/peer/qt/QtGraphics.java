@@ -669,12 +669,13 @@ public abstract class QtGraphics extends Graphics2D
 
   public RenderingHints getRenderingHints()
   {
-    return new RenderingHints( renderingHints );
+    return (RenderingHints) renderingHints.clone();
   }
   
-  public void setRenderingHints(Map hints)
+  public void setRenderingHints(Map<?,?> hints)
   {
-    renderingHints = new RenderingHints( hints );
+    renderingHints = new RenderingHints( null );
+    renderingHints.putAll(hints);
     updateRenderingHints();
   }
 

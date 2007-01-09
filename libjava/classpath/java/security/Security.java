@@ -138,7 +138,7 @@ public final class Security
 	    Exception exception = null;
 	    try
 	      {
-            ClassLoader sys = ClassLoader.getSystemClassLoader();
+		ClassLoader sys = ClassLoader.getSystemClassLoader();
 		providers.addElement(Class.forName(name, true, sys).newInstance());
 	      }
 	    catch (ClassNotFoundException x)
@@ -408,9 +408,9 @@ public final class Security
    *         {@link Provider}s.
    * @since 1.4
    */
-  public static Set getAlgorithms(String serviceName)
+  public static Set<String> getAlgorithms(String serviceName)
   {
-    HashSet result = new HashSet();
+    HashSet<String> result = new HashSet<String>();
     if (serviceName == null || serviceName.length() == 0)
       return result;
 
@@ -541,7 +541,7 @@ public final class Security
    *           {@link Map}'s <i>keys</i>.
    * @see #getProviders(String)
    */
-  public static Provider[] getProviders(Map filter)
+  public static Provider[] getProviders(Map<String,String> filter)
   {
     if (providers == null || providers.isEmpty())
       return null;
@@ -549,7 +549,7 @@ public final class Security
     if (filter == null)
       return getProviders();
 
-    Set querries = filter.keySet();
+    Set<String> querries = filter.keySet();
     if (querries == null || querries.isEmpty())
       return getProviders();
 
@@ -572,7 +572,7 @@ public final class Security
           throw new InvalidParameterException(
               "missing dot in '" + String.valueOf(querry)+"'");
 
-        value = (String) filter.get(querry);
+        value = filter.get(querry);
         // deconstruct querry into [service, algorithm, attribute]
         if (value == null || value.trim().length() == 0) // <service>.<algorithm>
           {

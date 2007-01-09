@@ -1,5 +1,5 @@
 /* DropTargetContext.java --
-   Copyright (C) 2002, 2003, 2004, 2006,  Free Software Foundation
+   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -49,6 +49,7 @@ import java.util.List;
 
 /**
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.2
  */
 public class DropTargetContext implements Serializable
@@ -128,51 +129,51 @@ public class DropTargetContext implements Serializable
    *
    * @exception InvalidDnDOperationException If a drop is not outstanding.
    */
-  public void dropComplete(boolean success)
+  public void dropComplete (boolean success)
   {
     if (dtcp != null)
       dtcp.dropComplete(success);
   }
 
-  protected void acceptDrag(int dragOperation)
+  protected void acceptDrag (int dragOperation)
   {
     if (dtcp != null)
       dtcp.acceptDrag(dragOperation);
   }
 
-  protected void rejectDrag()
+  protected void rejectDrag ()
   {
     if (dtcp != null)
       dtcp.rejectDrag();
   }
 
-  protected void acceptDrop(int dropOperation)
+  protected void acceptDrop (int dropOperation)
   {
     if (dtcp != null)
       dtcp.acceptDrop(dropOperation);
   }
 
-  protected void rejectDrop()
+  protected void rejectDrop ()
   {
     if (dtcp != null)
       dtcp.rejectDrop();    
   }
 
-  protected DataFlavor[] getCurrentDataFlavors()
+  protected DataFlavor[] getCurrentDataFlavors ()
   {
     if (dtcp != null)
       dtcp.getTransferDataFlavors();
     return null;
   }
 
-  protected List getCurrentDataFlavorsAsList()
+  protected List<DataFlavor> getCurrentDataFlavorsAsList ()
   {
-    return Arrays.asList(getCurrentDataFlavors());
+    return Arrays.asList(getCurrentDataFlavors ());
   }
 
-  protected boolean isDataFlavorSupported(DataFlavor flavor)
+  protected boolean isDataFlavorSupported (DataFlavor flavor)
   {
-    return getCurrentDataFlavorsAsList().contains(flavor);
+    return getCurrentDataFlavorsAsList().contains (flavor);
   }
 
   /**

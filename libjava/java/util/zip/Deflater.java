@@ -174,12 +174,32 @@ public class Deflater
   /** 
    * Gets the number of input bytes processed so far.
    */
-  public native int getTotalIn();
+  @Deprecated
+  public int getTotalIn()
+  {
+    return (int) getBytesRead();
+  }
+
+  /** 
+   * Gets the number of input bytes processed so far.
+   * @since 1.5
+   */
+  public native long getBytesRead();
 
   /** 
    * Gets the number of output bytes so far.
    */
-  public native int getTotalOut();
+  @Deprecated
+  public int getTotalOut()
+  {
+    return (int) getBytesWritten();
+  }
+
+  /** 
+   * Gets the number of output bytes so far.
+   * @since 1.5
+   */
+  public native long getBytesWritten();
 
   /** 
    * Finalizes this object.

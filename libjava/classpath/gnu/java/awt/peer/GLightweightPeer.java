@@ -54,24 +54,13 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.PaintEvent;
 import java.awt.image.ColorModel;
 import java.awt.image.ImageObserver;
 import java.awt.image.ImageProducer;
 import java.awt.image.VolatileImage;
-import java.awt.peer.ComponentPeer;
 import java.awt.peer.ContainerPeer;
 import java.awt.peer.LightweightPeer;
-
-/*
- * Another possible implementation strategy for lightweight peers is
- * to make GLightweightPeer a placeholder class that implements
- * LightweightPeer.  Then the Component and Container classes could
- * identify a peer as lightweight and handle it specially.  The
- * current approach is probably more clear but less efficient.
- */
 
 /**
  * A stub class that implements the ComponentPeer and ContainerPeer
@@ -85,47 +74,48 @@ import java.awt.peer.LightweightPeer;
 public class GLightweightPeer 
   implements LightweightPeer, ContainerPeer
 {
-  private Component comp;
-
-  private Insets containerInsets;
-
-  public GLightweightPeer(Component comp)
+  public GLightweightPeer()
   {
-    this.comp = comp;
+    // Nothing to do here.
   }
 
   // -------- java.awt.peer.ContainerPeer implementation:
   
   public Insets insets()
   {
-    return getInsets ();
+    // Nothing to do here for lightweights.
+    return null;
   }
   
   public Insets getInsets()
   {
-    if (containerInsets == null)
-      containerInsets = new Insets (0,0,0,0);
-    return containerInsets;
+    // Nothing to do here for lightweights.
+    return null;
   }
   
   public void beginValidate()
   {
+    // Nothing to do here for lightweights.
   }
   
   public void endValidate()
   {
+    // Nothing to do here for lightweights.
   }
   
   public void beginLayout()
   {
+    // Nothing to do here for lightweights.
   }
   
   public void endLayout()
   {
+    // Nothing to do here for lightweights.
   }
   
   public boolean isPaintPending()
   {
+    // Nothing to do here for lightweights.
     return false;
   }
 
@@ -133,122 +123,188 @@ public class GLightweightPeer
 
   public int checkImage(Image img, int width, int height, ImageObserver o)
   {
-    return comp.getToolkit().checkImage(img, width, height, o);
+    // Nothing to do here for lightweights.
+    return -1;
   }
 
   public Image createImage(ImageProducer prod)
   {
-    return comp.getToolkit().createImage(prod);
+    // Nothing to do here for lightweights.
+    return null;
   }
 
   /* This method is not called. */
   public Image createImage(int width, int height)
   {
+    // Nothing to do here for lightweights.
     return null;
   }
 
-  public void disable() {}
+  public void disable()
+  {
+    // Nothing to do here for lightweights.
+  }
 
-  public void dispose() {}
+  public void dispose()
+  {
+    // Nothing to do here for lightweights.
+  }
 
-  public void enable() {}
+  public void enable()
+  {
+    // Nothing to do here for lightweights.
+  }
 
   public GraphicsConfiguration getGraphicsConfiguration()
   {
+    // Nothing to do here for lightweights.
     return null;
   }
 
   public FontMetrics getFontMetrics(Font f)
   {
-    return comp.getToolkit().getFontMetrics(f);
+    // We shouldn't end up here, but if we do we can still try do something
+    // reasonable.
+    Toolkit tk = Toolkit.getDefaultToolkit();
+    return tk.getFontMetrics(f);
   }
 
   /* Returning null here tells the Component object that called us to
    * use its parent's Graphics. */
   public Graphics getGraphics()
   {
+    // Nothing to do here for lightweights.
     return null;
   }
 
   public Point getLocationOnScreen()
   {
-    Point parentLocation = comp.getParent().getLocationOnScreen();
-    return new Point (parentLocation.x + comp.getX(),
-                      parentLocation.y + comp.getY());
+    // Nothing to do here for lightweights.
+    return null;
   }
 
   public Dimension getMinimumSize()
   {
-    return new Dimension(comp.getWidth(), comp.getHeight());
+    return minimumSize();
   }
 
-  /* A lightweight component's preferred size is equivalent to its
-   * Component width and height values. */
   public Dimension getPreferredSize()
   {
-    return new Dimension(comp.getWidth(), comp.getHeight());
+    return preferredSize();
   }
 
   /* Returning null here tells the Component object that called us to
    * use its parent's Toolkit. */
   public Toolkit getToolkit()
   {
+    // Nothing to do here for lightweights.
     return null;
   }
 
-  public void handleEvent(AWTEvent e) {}
+  public void handleEvent(AWTEvent e)
+  {
+    // This can only happen when an application posts a PaintEvent for
+    // a lightweight component directly. We still support painting for
+    // this case.
+    if (e instanceof PaintEvent)
+      {
+        PaintEvent pe = (PaintEvent) e;
+        Component target = (Component) e.getSource();
+        if (target != null && target.isShowing())
+          {
+            Graphics g = target.getGraphics();
+            if (g != null)
+              {
+                try
+                  {
+                    Rectangle clip = pe.getUpdateRect();
+                    g.setClip(clip);
+                    target.paint(g);
+                  }
+                finally
+                  {
+                    g.dispose();
+                  }
+              }
+          }
+      }
+  }
 
-  public void hide() {}
+  public void hide()
+  {
+    // Nothing to do here for lightweights.
+  }
 
   public boolean isFocusable() 
   {
+    // Nothing to do here for lightweights.
     return false;
   }
 
   public boolean isFocusTraversable()
   {
+    // Nothing to do here for lightweights.
     return false;
   }
 
   public Dimension minimumSize()
   {
-    return getMinimumSize();
+    return new Dimension(0, 0);
   }
 
   public Dimension preferredSize()
   {
-    return getPreferredSize();
+    return new Dimension(0, 0);
   }
 
-  public void paint(Graphics graphics) {}
+  public void paint(Graphics graphics)
+  {
+    // Nothing to do here for lightweights.
+  }
 
   public boolean prepareImage(Image img, int width, int height,
 			      ImageObserver o)
   {
-    return comp.getToolkit().prepareImage(img, width, height, o);
-  }
-
-  public void print(Graphics graphics) {}
-
-  public void repaint(long tm, int x, int y, int width, int height)
-  {
-    Component p = comp.getParent();
-    if (p != null)
-      p.repaint(tm, x + comp.getX(), y + comp.getY(), width, height);
-  }
-
-  public void requestFocus() {}
-
-  public boolean requestFocus(Component source, boolean bool1, boolean bool2, long x)
-  {
+    // Nothing to do here for lightweights.
     return false;
   }
 
-  public void reshape(int x, int y, int width, int height) {}
+  public void print(Graphics graphics)
+  {
+    // Nothing to do here for lightweights.
+  }
 
-  public void setBackground(Color color) {}
+  public void repaint(long tm, int x, int y, int width, int height)
+  {
+    // Nothing to do here for lightweights.
+  }
 
-  public void setBounds(int x, int y, int width, int height) {}
+  public void requestFocus()
+  {
+    // Nothing to do here for lightweights.
+  }
+
+  public boolean requestFocus(Component source, boolean bool1, boolean bool2,
+                              long x)
+  {
+    // Nothing to do here for lightweights.
+    return false;
+  }
+
+  public void reshape(int x, int y, int width, int height)
+  {
+    // Nothing to do here for lightweights.
+  }
+
+  public void setBackground(Color color)
+  {
+    // Nothing to do here for lightweights.
+  }
+
+  public void setBounds(int x, int y, int width, int height)
+  {
+    // Nothing to do here for lightweights.
+  }
 
   /**
    * Sets the cursor on the heavy-weight parent peer.
@@ -256,110 +312,141 @@ public class GLightweightPeer
    */
   public void setCursor(Cursor cursor)
   {
-    Component p = comp.getParent();
-    while (p != null && p.isLightweight())
-      p = p.getParent();
-
-    if (p != null)
-      {
-	// Don't actually change the cursor of the component
-	// otherwise other childs inherit this cursor.
-	ComponentPeer peer = p.getPeer();
-	if (peer != null)
-	  peer.setCursor(cursor);
-      }
+    // Nothing to do here for lightweights.
   }
 
-  public void setEnabled(boolean enabled) {}
-
-  public void setEventMask(long eventMask) {}
-
-  public void setFont(Font font) {}
-
-  public void setForeground(Color color) {}
-
-  public void setVisible(boolean visible) {}
-
-  public void show() {}
-
-  public ColorModel getColorModel ()
+  public void setEnabled(boolean enabled)
   {
-    return comp.getColorModel ();
+    // Nothing to do here for lightweights.
+  }
+
+  public void setEventMask(long eventMask)
+  {
+    // Nothing to do here for lightweights.
+  }
+
+  public void setFont(Font font)
+  {
+    // Nothing to do here for lightweights.
+  }
+
+  public void setForeground(Color color)
+  {
+    // Nothing to do here for lightweights.
+  }
+
+  public void setVisible(boolean visible)
+  {
+    // Nothing to do here for lightweights.
+  }
+
+  public void show()
+  {
+    // Nothing to do here for lightweights.
+  }
+
+  public ColorModel getColorModel()
+  {
+    // Nothing to do here for lightweights.
+    return null;
   }
 
   public boolean isObscured()
   {
+    // Nothing to do here for lightweights.
     return false;
   }
 
   public boolean canDetermineObscurity()
   {
+    // Nothing to do here for lightweights.
     return false;
   }
 
-  public void coalescePaintEvent(PaintEvent e) { }
+  public void coalescePaintEvent(PaintEvent e)
+  {
+    // Nothing to do here for lightweights.
+  }
 
-  public void updateCursorImmediately() { }
+  public void updateCursorImmediately()
+  {
+    // Nothing to do here for lightweights.
+  }
 
   public VolatileImage createVolatileImage(int width, int height) 
   { 
+    // Nothing to do here for lightweights.
     return null; 
   }
 
   public boolean handlesWheelScrolling()
   {
+    // Nothing to do here for lightweights.
     return false;
   }
 
   public void createBuffers(int x, BufferCapabilities capabilities) 
-    throws AWTException { }
+    throws AWTException
+  {
+    // Nothing to do here for lightweights.
+  }
 
   public Image getBackBuffer()
   {
+    // Nothing to do here for lightweights.
     return null;
   }
 
-  public void flip(BufferCapabilities.FlipContents contents) { }
+  public void flip(BufferCapabilities.FlipContents contents)
+  {
+    // Nothing to do here for lightweights.
+  }
 
-  public void destroyBuffers() { }
+  public void destroyBuffers()
+  {
+    // Nothing to do here for lightweights.
+  }
 
   public boolean isRestackSupported()
   {
+    // Nothing to do here for lightweights.
     return false;
   }
 
   public void cancelPendingPaint(int x, int y, int width, int height)
   {
-    
+    // Nothing to do here for lightweights.
   }
 
   public void restack()
   {
-    
+    // Nothing to do here for lightweights.
   }
 
   public Rectangle getBounds()
   {
+    // Nothing to do here for lightweights.
     return null;
   }
 
   public void reparent(ContainerPeer parent)
   {
-    
+    // Nothing to do here for lightweights.
   }
 
   public void setBounds(int x, int y, int z, int width, int height)
   {
-    
+    // Nothing to do here for lightweights.
   }
 
   public boolean isReparentSupported()
   {
-    return false;
+    // Nothing to do here for lightweights.
+    return true;
   }
 
   public void layout()
   {
-    
+    // Nothing to do here for lightweights.
   }
 }

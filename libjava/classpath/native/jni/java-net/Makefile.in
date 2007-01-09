@@ -42,12 +42,14 @@ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/../../config/lead-dot.m4 \
+	$(top_srcdir)/../../config/no-executables.m4 \
 	$(top_srcdir)/../../libtool.m4 $(top_srcdir)/m4/acattribute.m4 \
 	$(top_srcdir)/m4/accross.m4 $(top_srcdir)/m4/acinclude.m4 \
 	$(top_srcdir)/m4/ax_create_stdint_h.m4 \
-	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
-	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/gcc_attribute.m4 $(top_srcdir)/m4/iconv.m4 \
+	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
+	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/pkg.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -65,19 +67,17 @@ LTLIBRARIES = $(nativeexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libjavanet_la_DEPENDENCIES =  \
 	$(top_builddir)/native/jni/classpath/jcl.lo \
+	$(top_builddir)/native/jni/native-lib/libclasspathnative.la \
 	$(am__DEPENDENCIES_1)
 am__libjavanet_la_SOURCES_DIST = javanet.c javanet.h \
 	java_net_VMInetAddress.c java_net_VMNetworkInterface.c \
-	java_net_VMURLConnection.c \
-	gnu_java_net_VMPlainDatagramSocketImpl.c \
-	gnu_java_net_VMPlainSocketImpl.c \
+	java_net_VMURLConnection.c gnu_java_net_VMPlainSocketImpl.c \
 	gnu_java_net_local_LocalSocketImpl.c local.c local.h
 @ENABLE_LOCAL_SOCKETS_FALSE@am__objects_1 = gnu_java_net_local_LocalSocketImpl.lo
 @ENABLE_LOCAL_SOCKETS_TRUE@am__objects_1 = gnu_java_net_local_LocalSocketImpl.lo \
 @ENABLE_LOCAL_SOCKETS_TRUE@	local.lo
 am_libjavanet_la_OBJECTS = javanet.lo java_net_VMInetAddress.lo \
 	java_net_VMNetworkInterface.lo java_net_VMURLConnection.lo \
-	gnu_java_net_VMPlainDatagramSocketImpl.lo \
 	gnu_java_net_VMPlainSocketImpl.lo $(am__objects_1)
 libjavanet_la_OBJECTS = $(am_libjavanet_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/include
@@ -198,6 +198,8 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION = @JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION@
+JAVA_MAINTAINER_MODE_FALSE = @JAVA_MAINTAINER_MODE_FALSE@
+JAVA_MAINTAINER_MODE_TRUE = @JAVA_MAINTAINER_MODE_TRUE@
 JAY = @JAY@
 JAY_SKELETON = @JAY_SKELETON@
 JIKES = @JIKES@
@@ -319,7 +321,6 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
-toolexeclibdir = @toolexeclibdir@
 vm_classes = @vm_classes@
 nativeexeclib_LTLIBRARIES = libjavanet.la
 @ENABLE_LOCAL_SOCKETS_FALSE@local_sources = gnu_java_net_local_LocalSocketImpl.c
@@ -332,11 +333,13 @@ libjavanet_la_SOURCES = javanet.c \
 			java_net_VMInetAddress.c \
 			java_net_VMNetworkInterface.c \
 			java_net_VMURLConnection.c \
-			gnu_java_net_VMPlainDatagramSocketImpl.c \
                         gnu_java_net_VMPlainSocketImpl.c \
 			$(local_sources)
 
-libjavanet_la_LIBADD = $(top_builddir)/native/jni/classpath/jcl.lo $(LIBMAGIC)
+libjavanet_la_LIBADD = $(top_builddir)/native/jni/classpath/jcl.lo \
+		       $(top_builddir)/native/jni/native-lib/libclasspathnative.la \
+		       $(LIBMAGIC)
+
 AM_LDFLAGS = @CLASSPATH_MODULE@
 AM_CPPFLAGS = @CLASSPATH_INCLUDES@
 AM_CFLAGS = @WARNING_CFLAGS@ @STRICT_WARNING_CFLAGS@ @ERROR_CFLAGS@
@@ -409,7 +412,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_net_VMPlainDatagramSocketImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_net_VMPlainSocketImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_net_local_LocalSocketImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/java_net_VMInetAddress.Plo@am__quote@

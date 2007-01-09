@@ -45,7 +45,6 @@ import java.util.prefs.BackingStoreException;
  * Native peer for GConf based preference backend.
  * 
  * @author Mario Torre <neugens@limasoftware.net>
- * @version 1.0.1
  */
 public final class GConfNativePeer
 {
@@ -150,7 +149,7 @@ public final class GConfNativePeer
    */
   public List getKeys(String node) throws BackingStoreException
   {
-    return gconf_client_gconf_client_all_keys(node);
+    return gconf_client_all_keys(node);
   }
 
   /**
@@ -162,9 +161,25 @@ public final class GConfNativePeer
    */
   public List getChildrenNodes(String node) throws BackingStoreException
   {
-    return gconf_client_gconf_client_all_nodes(node);
+    return gconf_client_all_nodes(node);
   }
 
+  /**
+   * Escape the given string so the it is a valid GConf name.
+   */
+  public static String escapeString(String plain)
+  {
+    return gconf_escape_key(plain);
+  }
+  
+  /**
+   * Unescape a string escaped with {@link #escapeString}.
+   */
+  public static String unescapeString(String escaped)
+  {
+    return gconf_unescape_key(escaped);
+  }
+  
   /**
    * Suggest to the backend GConf daemon to synch with the database.
    */
@@ -270,8 +285,9 @@ public final class GConfNativePeer
    * Suggest to the GConf native peer a sync with the database.
    *
    */
-  native static final protected void gconf_client_suggest_sync();
-
+  native static final protected void gconf_client_suggest_sync()
+    throws BackingStoreException;
+  
   /**
    * Returns a list of all nodes under the given node.
    * 
@@ -279,8 +295,9 @@ public final class GConfNativePeer
    * @return A list of nodes under the given source node.
    */
   native
-  static final protected List gconf_client_gconf_client_all_nodes(String node);
-
+  static final protected List gconf_client_all_nodes(String node)
+    throws BackingStoreException;
+  
   /**
    * Returns a list of all keys stored in the given node.
    * 
@@ -288,8 +305,28 @@ public final class GConfNativePeer
    * @return A list of all keys stored in the given node.
    */
   native
-  static final protected List gconf_client_gconf_client_all_keys(String node);
+  static final protected List gconf_client_all_keys(String node)
+    throws BackingStoreException;
 
+  /**
+   * Escape the input String so that it's a valid element for GConf.
+   * 
+   * @param plain the String to escape.
+   * @return An escaped String for use with GConf.
+   */
+  native
+  static final protected String gconf_escape_key(String plain);
+  
+  /**
+   * Converts a string escaped with gconf_escape_key back into its
+   * original form.
+   * 
+   * @param escaped key as returned by gconf_escape_key 
+   * @return An unescaped key.
+   */
+  native
+  static final protected String gconf_unescape_key(String escaped);
+  
   static
     {
       System.loadLibrary("gconfpeer");

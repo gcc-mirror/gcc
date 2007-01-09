@@ -37,6 +37,7 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 #include <jni.h>
+#include <ltdl.h>
 #include <string.h>
 #include <stdlib.h>
 #include "config.h"
@@ -50,6 +51,9 @@ union env_union
   void *void_env;
   JNIEnv *jni_env;
 };
+
+/* Typedef for JNI_CreateJavaVM dlopen call. */
+typedef jint createVM (JavaVM **, void **, void *);
 
 int
 main (int argc, const char** argv)
@@ -68,6 +72,10 @@ main (int argc, const char** argv)
   int non_vm_argc;
   int i;
   int classpath_found = 0;
+  /* Variables for JNI_CreateJavaVM dlopen call. */
+  lt_dlhandle libjvm_handle = NULL;
+  createVM* libjvm_create = NULL;
+  int libjvm_error = 0;
 
   env = NULL;
   jvm = NULL;
@@ -128,7 +136,7 @@ main (int argc, const char** argv)
 	  goto destroy;
 	}
 
-      vm_args.options[vm_args.nOptions++].optionString = "-Djava.class.path=" TOOLS_ZIP;
+      vm_args.options[vm_args.nOptions++].optionString = "-Xbootclasspath/p:" TOOLS_ZIP;
     }
 
   /* Terminate vm_args.options with a NULL element. */
@@ -152,7 +160,27 @@ main (int argc, const char** argv)
   vm_args.version = JNI_VERSION_1_2;
   vm_args.ignoreUnrecognized = JNI_TRUE;
 
-  result = JNI_CreateJavaVM (&jvm, &tmp.void_env, &vm_args);
+  /* dlopen libjvm.so */
+  libjvm_error = lt_dlinit ();
+  if (libjvm_error)
+    {
+      fprintf (stderr, TOOLNAME ": lt_dlinit failed.\n");
+      goto destroy;
+    }
+
+  libjvm_handle = lt_dlopenext (LIBJVM);
+  if (!libjvm_handle)
+    {
+      fprintf (stderr, TOOLNAME ": failed to open " LIBJVM "\n");
+      goto destroy;
+    }
+  libjvm_create = (createVM*) lt_dlsym (libjvm_handle, "JNI_CreateJavaVM");
+  if (!libjvm_create)
+    {
+      fprintf (stderr, TOOLNAME ": failed to load JNI_CreateJavaVM symbol from " LIBJVM "\n");
+      goto destroy;
+    }
+  result = (*libjvm_create) (&jvm, &tmp.void_env, &vm_args);
 
   if (result < 0)
     {
@@ -215,6 +243,16 @@ main (int argc, const char** argv)
       if (jvm != NULL)
 	(*jvm)->DestroyJavaVM (jvm);
     }
+
+  /* libltdl cleanup */
+  if (libjvm_handle)
+    {
+      if (lt_dlclose (libjvm_handle) != 0)
+        fprintf (stderr, TOOLNAME ": failed to close " LIBJVM "\n");
+    }
+
+  if (lt_dlexit () != 0)
+    fprintf (stderr, TOOLNAME ": lt_dlexit failed.\n");
 
   return 1;
 }

@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package java.awt.image;
 
-import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -51,11 +50,13 @@ import java.awt.geom.Rectangle2D;
  * with elements in the kernel to compute a new pixel.
  * 
  * Each band in a Raster is convolved and copied to the destination Raster.
+ * For BufferedImages, convolution is applied to all components.  Color 
+ * conversion will be applied if needed.
  * 
- * For BufferedImages, convolution is applied to all components.  If the
- * source is not premultiplied, the data will be premultiplied before
- * convolving.  Premultiplication will be undone if the destination is not
- * premultiplied.  Color conversion will be applied if needed.
+ * Note that this filter ignores whether the source or destination is alpha
+ * premultiplied.  The reference spec states that data will be premultiplied
+ * prior to convolving and divided back out afterwards (if needed), but testing
+ * has shown that this is not the case with their implementation.
  * 
  * @author jlquinn@optonline.net
  */
@@ -104,59 +105,83 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
     hints = null;
   }
 
-  
-  /* (non-Javadoc)
-   * @see java.awt.image.BufferedImageOp#filter(java.awt.image.BufferedImage,
-   * java.awt.image.BufferedImage)
+  /**
+   * Converts the source image using the kernel specified in the
+   * constructor.  The resulting image is stored in the destination image if one
+   * is provided; otherwise a new BufferedImage is created and returned. 
+   * 
+   * The source and destination BufferedImage (if one is supplied) must have
+   * the same dimensions.
+   *
+   * @param src The source image.
+   * @param dst The destination image.
+   * @throws IllegalArgumentException if the rasters and/or color spaces are
+   *            incompatible.
+   * @return The convolved image.
    */
   public final BufferedImage filter(BufferedImage src, BufferedImage dst)
   {
     if (src == dst)
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException("Source and destination images " +
+            "cannot be the same.");
     
     if (dst == null)
       dst = createCompatibleDestImage(src, src.getColorModel());
     
     // Make sure source image is premultiplied
     BufferedImage src1 = src;
-    if (!src.isPremultiplied)
+    // The spec says we should do this, but mauve testing shows that Sun's
+    // implementation does not check this.
+    /*
+    if (!src.isAlphaPremultiplied())
     {
       src1 = createCompatibleDestImage(src, src.getColorModel());
       src.copyData(src1.getRaster());
       src1.coerceData(true);
     }
+    */
 
     BufferedImage dst1 = dst;
-    if (!src.getColorModel().equals(dst.getColorModel()))
+    if (src1.getColorModel().getColorSpace().getType() != dst.getColorModel().getColorSpace().getType())
       dst1 = createCompatibleDestImage(src, src.getColorModel());
 
     filter(src1.getRaster(), dst1.getRaster());
     
+    // Since we don't coerceData above, we don't need to divide it back out.
+    // This is wrong (one mauve test specifically tests converting a non-
+    // premultiplied image to a premultiplied image, and it shows that Sun
+    // simply ignores the premultipled flag, contrary to the spec), but we
+    // mimic it for compatibility.
+    /*
+	if (! dst.isAlphaPremultiplied())
+	  dst1.coerceData(false);
+    */
+
+    // Convert between color models if needed
     if (dst1 != dst)
-    {
-      // Convert between color models.
-      // TODO Check that premultiplied alpha is handled correctly here.
-      Graphics2D gg = dst.createGraphics();
-      gg.setRenderingHints(hints);
-      gg.drawImage(dst1, 0, 0, null);
-      gg.dispose();
-    }
-    
+      new ColorConvertOp(hints).filter(dst1, dst);
+
     return dst;
   }
 
-  /* (non-Javadoc)
-   * @see
-   * java.awt.image.BufferedImageOp#createCompatibleDestImage(java.awt.image.BufferedImage,
-   * java.awt.image.ColorModel)
+  /**
+   * Creates an empty BufferedImage with the size equal to the source and the
+   * correct number of bands. The new image is created with the specified 
+   * ColorModel, or if no ColorModel is supplied, an appropriate one is chosen.
+   *
+   * @param src The source image.
+   * @param dstCM A color model for the destination image (may be null).
+   * @return The new compatible destination image.
    */
   public BufferedImage createCompatibleDestImage(BufferedImage src,
-						 ColorModel dstCM)
+                                                 ColorModel dstCM)
   {
-    // FIXME: set properties to those in src
-    return new BufferedImage(dstCM,
-			     src.getRaster().createCompatibleWritableRaster(),
-			     src.isPremultiplied, null);
+    if (dstCM != null)
+      return new BufferedImage(dstCM,
+                               src.getRaster().createCompatibleWritableRaster(),
+                               src.isAlphaPremultiplied(), null);
+
+    return new BufferedImage(src.getWidth(), src.getHeight(), src.getType());
   }
 
   /* (non-Javadoc)
@@ -168,6 +193,8 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
   }
   
   /**
+   * Get the edge condition for this Op.
+   * 
    * @return The edge condition.
    */
   public int getEdgeCondition()
@@ -185,9 +212,22 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
     return (Kernel) kernel.clone();
   }
 
-  /* (non-Javadoc)
-   * @see java.awt.image.RasterOp#filter(java.awt.image.Raster,
-   * java.awt.image.WritableRaster)
+  /**
+   * Converts the source raster using the kernel specified in the constructor.  
+   * The resulting raster is stored in the destination raster if one is 
+   * provided; otherwise a new WritableRaster is created and returned.
+   * 
+   * If the convolved value for a sample is outside the range of [0-255], it
+   * will be clipped.
+   * 
+   * The source and destination raster (if one is supplied) cannot be the same,
+   * and must also have the same dimensions.
+   *
+   * @param src The source raster.
+   * @param dest The destination raster.
+   * @throws IllegalArgumentException if the rasters identical.
+   * @throws ImagingOpException if the convolution is not possible.
+   * @return The transformed raster.
    */
   public final WritableRaster filter(Raster src, WritableRaster dest)
   {
@@ -209,6 +249,11 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
     int top = kernel.getYOrigin();
     int bottom = Math.max(kHeight - top - 1, 0);
     
+    // Calculate max sample values for clipping
+    int[] maxValue = src.getSampleModel().getSampleSize();
+    for (int i = 0; i < maxValue.length; i++)
+      maxValue[i] = (int)Math.pow(2, maxValue[i]) - 1;
+    
     // process the region that is reachable...
     int regionW = src.width - left - right;
     int regionH = src.height - top - bottom;
@@ -228,7 +273,14 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
                 v += tmp[tmp.length - i - 1] * kvals[i];
                 // FIXME: in the above line, I've had to reverse the order of 
                 // the samples array to make the tests pass.  I haven't worked 
-                // out why this is necessary. 
+                // out why this is necessary.
+
+              // This clipping is is undocumented, but determined by testing.
+              if (v > maxValue[b])
+                v = maxValue[b];
+              else if (v < 0)
+                v = 0;
+
               dest.setSample(x + kernel.getXOrigin(), y + kernel.getYOrigin(), 
                              b, v);
             }
@@ -310,13 +362,14 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
     return src.getBounds();
   }
 
-  /** Return corresponding destination point for source point.
+  /**
+   * Returns the corresponding destination point for a source point. Because
+   * this is not a geometric operation, the destination and source points will
+   * be identical.
    * 
-   * ConvolveOp will return the value of src unchanged.
    * @param src The source point.
-   * @param dst The destination point.
-   * @see java.awt.image.RasterOp#getPoint2D(java.awt.geom.Point2D,
-   * java.awt.geom.Point2D)
+   * @param dst The transformed destination point.
+   * @return The transformed destination point.
    */
   public final Point2D getPoint2D(Point2D src, Point2D dst)
   {

@@ -116,7 +116,7 @@ public abstract class ImageReader
    * A list of installed progress listeners.  Initially null, meaning
    * no installed listeners.
    */
-  protected List progressListeners = null;
+  protected List<IIOReadProgressListener> progressListeners = null;
 
   /**
    * true if this reader should only read data further ahead in the
@@ -129,19 +129,19 @@ public abstract class ImageReader
    * A list of installed update listeners.  Initially null, meaning no
    * installed listeners.
    */
-  protected List updateListeners = null;
+  protected List<IIOReadUpdateListener> updateListeners = null;
 
   /**
    * A list of installed warning listeners.  Initially null, meaning
    * no installed listeners.
    */
-  protected List warningListeners = null;
+  protected List<IIOReadWarningListener> warningListeners = null;
 
   /**
    * A list of warning locales corresponding with the list of
    * installed warning listeners.  Initially null, meaning no locales.
    */
-  protected List warningLocales = null;
+  protected List<Locale> warningLocales = null;
 
   /**
    * Construct an image reader.
@@ -371,7 +371,7 @@ public abstract class ImageReader
    * out-of-bounds
    * @exception IOException if a read error occurs
    */
-  public abstract Iterator getImageTypes(int imageIndex)
+  public abstract Iterator<ImageTypeSpecifier> getImageTypes(int imageIndex)
     throws IOException;
 
   /**
@@ -1594,7 +1594,7 @@ public abstract class ImageReader
    * height is greater than Integer.MAX_VALUE
    */
   protected static BufferedImage getDestination (ImageReadParam param,
-						 Iterator imageTypes,
+						 Iterator<ImageTypeSpecifier> imageTypes,
 						 int width,
 						 int height)
     throws IIOException
@@ -1694,7 +1694,7 @@ public abstract class ImageReader
    */
   public IIOMetadata getImageMetadata (int imageIndex,
                                        String formatName,
-                                       Set nodeNames)
+                                       Set<String> nodeNames)
     throws IOException
   {
     if (formatName == null || nodeNames == null)
@@ -1808,7 +1808,7 @@ public abstract class ImageReader
    * @exception IOException if a read error occurs
    */
   public IIOMetadata getStreamMetadata (String formatName,
-                                        Set nodeNames)
+                                        Set<String> nodeNames)
     throws IOException
   {
     if (formatName == null || nodeNames == null)
@@ -1915,7 +1915,7 @@ public abstract class ImageReader
    * destination image regions are empty
    * @exception IOException if a read error occurs
    */
-  public Iterator readAll (Iterator params)
+  public Iterator<IIOImage> readAll (Iterator<? extends ImageReadParam> params)
     throws IOException
   {
     List l = new ArrayList ();

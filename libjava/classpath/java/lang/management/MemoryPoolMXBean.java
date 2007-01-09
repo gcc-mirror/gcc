@@ -162,7 +162,7 @@ public interface MemoryPoolMXBean
    *
    * @return the type of this pool.
    */
-  String getType();
+  MemoryType getType();
 
   /**
    * Returns memory usage statistics for the current memory usage

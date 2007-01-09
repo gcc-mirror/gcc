@@ -1,5 +1,5 @@
 /* Boolean.java -- object wrapper for boolean
-   Copyright (C) 1998, 2001, 2002, 2005, 2006  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -49,7 +49,7 @@ import java.io.Serializable;
  * @since 1.0
  * @status updated to 1.5
  */
-public final class Boolean implements Serializable, Comparable
+public final class Boolean implements Serializable, Comparable<Boolean>
 {
   /**
    * Compatible with JDK 1.0.2+.
@@ -78,7 +78,7 @@ public final class Boolean implements Serializable, Comparable
    *
    * @since 1.1
    */
-  public static final Class TYPE = VMClassLoader.getPrimitiveClass('Z');
+  public static final Class<Boolean> TYPE = (Class<Boolean>) VMClassLoader.getPrimitiveClass('Z');
 
   /**
    * The immutable value of this Boolean.
@@ -237,14 +237,6 @@ public final class Boolean implements Serializable, Comparable
   }
 
   /**
-   * Bridge method
-   */
-  public int compareTo(Object other)
-  {
-    return compareTo((Boolean)other);
-  }
-
-  /**
    * If the String argument is "true", ignoring case, return true.
    * Otherwise, return false.
    *
@@ -255,5 +247,5 @@ public final class Boolean implements Serializable, Comparable
   {
     return "true".equalsIgnoreCase(b) ? true : false;
   }
-
+  
 }

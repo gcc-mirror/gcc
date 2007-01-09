@@ -136,7 +136,7 @@ public interface ImageConsumer
      *
      * @param props the list of properties associated with this image 
      */
-    void setProperties(Hashtable props);
+    void setProperties(Hashtable<?,?> props);
 
     /**
      * This <code>ColorModel</code> should indicate the model used by

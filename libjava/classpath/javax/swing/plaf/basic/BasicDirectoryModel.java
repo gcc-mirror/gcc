@@ -381,7 +381,7 @@ public class BasicDirectoryModel extends AbstractListModel
    *
    * @return a Vector
    */
-  public Vector getDirectories()
+  public Vector<File> getDirectories()
   {
     // Synchronize this with the UpdateSwingRequest for the case when
     // contents is modified.
@@ -418,7 +418,7 @@ public class BasicDirectoryModel extends AbstractListModel
    *
    * @return a Vector
    */
-  public Vector getFiles()
+  public Vector<File>  getFiles()
   {
     synchronized (contents)
       {
@@ -562,7 +562,7 @@ public class BasicDirectoryModel extends AbstractListModel
    *
    * @param v The Vector to sort.
    */
-  protected void sort(Vector v)
+  protected void sort(Vector<? extends File> v)
   {
     Collections.sort(v, comparator);
   }

@@ -48,7 +48,9 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 
 public final class ServerSocketChannelImpl extends ServerSocketChannel
+  implements VMChannelOwner
 {
+  private VMChannel channel;
   private NIOServerSocket serverSocket;
   private boolean connected;
 
@@ -56,13 +58,15 @@ public final class ServerSocketChannelImpl extends ServerSocketChannel
     throws IOException
   {
     super (provider);
-    serverSocket = new NIOServerSocket (this);
+    serverSocket = new NIOServerSocket(this);
+    channel = serverSocket.getPlainSocketImpl().getVMChannel();
     configureBlocking(true);
   }
 
+  // XXX do we need this?
   public void finalizer()
   {
-    if (connected)
+    if (channel.getState().isValid())
       {
         try
           {
@@ -77,12 +81,12 @@ public final class ServerSocketChannelImpl extends ServerSocketChannel
   protected void implCloseSelectableChannel () throws IOException
   {
     connected = false;
-    serverSocket.close();
+    channel.close();
   }
 
   protected void implConfigureBlocking (boolean blocking) throws IOException
   {
-    serverSocket.setSoTimeout (blocking ? 0 : NIOConstants.DEFAULT_TIMEOUT);
+    channel.setBlocking(blocking);
   }
 
   public SocketChannel accept () throws IOException
@@ -98,27 +102,28 @@ public final class ServerSocketChannelImpl extends ServerSocketChannel
     try
       {
         begin();
-        serverSocket.getPlainSocketImpl().setInChannelOperation(true);
-          // indicate that a channel is initiating the accept operation
-          // so that the socket ignores the fact that we might be in
-          // non-blocking mode.
-        NIOSocket socket = (NIOSocket) serverSocket.accept();
-        completed = true;
-        return socket.getChannel();
-      }
-    catch (SocketTimeoutException e)
-      {
-        return null;
+        VMChannel client = channel.accept();
+        if (client == null)
+          return null;
+        else
+          {
+            completed = true;
+            return new SocketChannelImpl(provider(), client, false);
+          }
       }
     finally
       {
-        serverSocket.getPlainSocketImpl().setInChannelOperation(false);
         end (completed);
       }
   }
 
-  public ServerSocket socket ()
+  public ServerSocket socket()
   {
     return serverSocket;
+  }
+  
+  public VMChannel getVMChannel()
+  {
+    return channel;
   }
 }

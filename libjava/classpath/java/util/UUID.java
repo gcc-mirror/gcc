@@ -77,7 +77,7 @@ import java.security.NoSuchAlgorithmException;
  */
 public final class UUID 
   extends Object 
-  implements Serializable, Comparable // genericizeme!
+  implements Serializable, Comparable<UUID>
 {
   private static final long serialVersionUID = -4856846361193249489L;
 
@@ -119,17 +119,6 @@ public final class UUID
     if( version() != 1 )
       throw new UnsupportedOperationException("Not a type 1 UUID");
     return (int)((leastSigBits & 0x3FFF000000000000L) >> 48);
-  }
-
-  /**
-   * Compare this UUID to another.
-   * The comparison is performed as between two 128-bit integers.
-   *
-   * @return -1 if this < val, 0 if they are equal, 1 if this > val.
-   */
-  public int compareTo(Object val)
-  {
-    return compareTo((UUID)val);
   }
 
   /**

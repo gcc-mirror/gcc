@@ -115,15 +115,24 @@ public class CompoundBorder extends AbstractBorder
    */
   public boolean isBorderOpaque()
   {
-    // While it would be safe to assume true for the opacity of
-    // a null border, this behavior would not be according to
-    // the API specification. Also, it is pathological to have
-    // null borders anyway.
-    if ((insideBorder == null) || (outsideBorder == null))
-      return false;
+    // Although the API specification states that this method 
+    // returns true if both the inside and outside borders are non-null
+    // and opaque, and false otherwise, a mauve test shows that if both
+    // the inside or outside borders are null, then true is returned.
+    if ((insideBorder == null) && (outsideBorder == null))
+      return true;
 
-    return insideBorder.isBorderOpaque()
-      && outsideBorder.isBorderOpaque();
+    // A mauve test shows that if the inside border has a null value,
+    // then true is returned if the outside border is opaque; if the
+    // outside border has a null value, then true is returned if the
+    // inside border is opaque; else, true is returned if both the
+    // inside and outside borders are opaque.
+    if (insideBorder == null)
+      return outsideBorder.isBorderOpaque();
+    else if (outsideBorder == null)
+      return insideBorder.isBorderOpaque();
+    else
+      return insideBorder.isBorderOpaque() && outsideBorder.isBorderOpaque();
   }
 
   /**

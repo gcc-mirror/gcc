@@ -40,6 +40,7 @@ package java.security.cert;
 
 import gnu.java.security.Engine;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.AccessController;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
@@ -124,90 +125,102 @@ public class CertPathValidator {
   }
 
   /**
-   * Get an instance of the given validator from the first provider that
+   * Returns an instance of the given validator from the first provider that
    * implements it.
-   *
+   * 
    * @param algorithm The name of the algorithm to get.
    * @return The new instance.
-   * @throws NoSuchAlgorithmException If no installed provider
-   * implements the requested algorithm.
+   * @throws NoSuchAlgorithmException If no installed provider implements the
+   *           requested algorithm.
+   * @throws IllegalArgumentException if <code>algorithm</code> is
+   *           <code>null</code> or is an empty string.
    */
   public static CertPathValidator getInstance(String algorithm)
     throws NoSuchAlgorithmException
   {
     Provider[] p = Security.getProviders();
+    NoSuchAlgorithmException lastException = null;
     for (int i = 0; i < p.length; i++)
-      {
-        try
-          {
-            return getInstance(algorithm, p[i]);
-          }
-        catch (NoSuchAlgorithmException e)
-          {
-	    // Ignored.
-          }
-      }
+      try
+        {
+          return getInstance(algorithm, p[i]);
+        }
+      catch (NoSuchAlgorithmException x)
+        {
+          lastException = x;
+        }
+    if (lastException != null)
+      throw lastException;
     throw new NoSuchAlgorithmException(algorithm);
   }
 
   /**
-   * Get an instance of the given validator from the named provider.
-   *
+   * Returns an instance of the given validator from the named provider.
+   * 
    * @param algorithm The name of the algorithm to get.
-   * @param provider  The name of the provider from which to get the
-   * implementation.
+   * @param provider The name of the provider from which to get the
+   *          implementation.
    * @return The new instance.
-   * @throws NoSuchAlgorithmException If the named provider does not
-   * implement the algorithm.
-   * @throws NoSuchProviderException If no provider named
-   * <i>provider</i> is installed.
+   * @throws NoSuchAlgorithmException If the named provider does not implement
+   *           the algorithm.
+   * @throws NoSuchProviderException If no provider named <i>provider</i> is
+   *           installed.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>algorithm</code> is an empty string.
    */
-  public static CertPathValidator getInstance(String algorithm,
-                                              String provider)
-    throws NoSuchAlgorithmException, NoSuchProviderException
+  public static CertPathValidator getInstance(String algorithm, String provider)
+      throws NoSuchAlgorithmException, NoSuchProviderException
   {
+    if (provider == null)
+      throw new IllegalArgumentException("provider MUST NOT be null");
     Provider p = Security.getProvider(provider);
     if (p == null)
       throw new NoSuchProviderException(provider);
-
     return getInstance(algorithm, p);
   }
 
   /**
-   * Get an instance of the given validator from the given provider.
-   *
+   * Returns an instance of the given validator from the given provider.
+   * 
    * @param algorithm The name of the algorithm to get.
-   * @param provider  The provider from which to get the implementation.
+   * @param provider The provider from which to get the implementation.
    * @return The new instance.
-   * @throws NoSuchAlgorithmException If the provider does not implement
-   * the algorithm.
-   * @throws IllegalArgumentException If <i>provider</i> is null.
+   * @throws NoSuchAlgorithmException If the provider does not implement the
+   *           algorithm.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>algorithm</code> is an empty string.
    */
   public static CertPathValidator getInstance(String algorithm,
                                               Provider provider)
     throws NoSuchAlgorithmException
   {
-    if (provider == null)
-      throw new IllegalArgumentException("null provider");
-
+    StringBuilder sb = new StringBuilder("CertPathValidator for algorithm [")
+        .append(algorithm).append("] from provider[")
+        .append(provider).append("] could not be created");
+    Throwable cause;
     try
       {
-        return new CertPathValidator((CertPathValidatorSpi)
-          Engine.getInstance(CERT_PATH_VALIDATOR, algorithm, provider),
-          provider, algorithm);
+        Object spi = Engine.getInstance(CERT_PATH_VALIDATOR, algorithm, provider);
+        return new CertPathValidator((CertPathValidatorSpi) spi, provider, algorithm);
       }
-    catch (java.lang.reflect.InvocationTargetException ite)
+    catch (InvocationTargetException x)
       {
-        throw new NoSuchAlgorithmException(algorithm);
+        cause = x.getCause();
+        if (cause instanceof NoSuchAlgorithmException)
+          throw (NoSuchAlgorithmException) cause;
+        if (cause == null)
+          cause = x;
       }
-    catch (ClassCastException cce)
+    catch (ClassCastException x)
       {
-        throw new NoSuchAlgorithmException(algorithm);
+        cause = x;
       }
+    NoSuchAlgorithmException x = new NoSuchAlgorithmException(sb.toString());
+    x.initCause(cause);
+    throw x;
   }
-
-  // Instance methods.
-  // ------------------------------------------------------------------------
 
   /**
    * Return the name of this validator.

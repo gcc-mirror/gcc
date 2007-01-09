@@ -48,14 +48,14 @@ package java.beans;
  **/
 
 public class BeanDescriptor extends FeatureDescriptor {
-	Class beanClass;
-	Class customizerClass;
+	Class<?> beanClass;
+	Class<?> customizerClass;
 
 	/** Create a new BeanDescriptor with the given beanClass and
 	 ** no customizer class.
 	 ** @param beanClass the class of the Bean.
 	 **/
-	public BeanDescriptor(Class beanClass) {
+	public BeanDescriptor(Class<?> beanClass) {
 		this(beanClass,null);
 	}
 
@@ -64,7 +64,7 @@ public class BeanDescriptor extends FeatureDescriptor {
 	 ** @param beanClass the class of the Bean.
 	 ** @param customizerClass the class of the Bean's Customizer.
 	 **/
-	public BeanDescriptor(Class beanClass, Class customizerClass) {
+	public BeanDescriptor(Class<?> beanClass, Class<?> customizerClass) {
 		this.beanClass = beanClass;
 		this.customizerClass = customizerClass;
 
@@ -78,12 +78,12 @@ public class BeanDescriptor extends FeatureDescriptor {
 	}
 
 	/** Get the Bean's class. **/
-	public Class getBeanClass() {
+	public Class<?> getBeanClass() {
 		return beanClass;
 	}
 
 	/** Get the Bean's customizer's class. **/
-	public Class getCustomizerClass() {
+	public Class<?> getCustomizerClass() {
 		return customizerClass;
 	}
 }

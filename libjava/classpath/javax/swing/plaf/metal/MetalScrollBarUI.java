@@ -1,5 +1,5 @@
 /* MetalScrollBarUI.java
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -169,6 +169,7 @@ public class MetalScrollBarUI extends BasicScrollBarUI
     Boolean prop = (Boolean) scrollbar.getClientProperty(FREE_STANDING_PROP);
     isFreeStanding = prop == null ? true : prop.booleanValue();
     scrollBarShadowColor = UIManager.getColor("ScrollBar.shadow");
+    scrollBarWidth = UIManager.getInt("ScrollBar.width");
     super.installDefaults();
   }
     
@@ -187,7 +188,10 @@ public class MetalScrollBarUI extends BasicScrollBarUI
   
   /**
    * Creates a new button to use as the control at the lower end of the
-   * {@link JScrollBar}.
+   * {@link JScrollBar}.  This method assigns the new button (an instance of
+   * {@link MetalScrollButton} to the {@link #decreaseButton} field, and also 
+   * returns the button.  The button width is determined by the 
+   * <code>ScrollBar.width</code> setting in the UI defaults.
    * 
    * @param orientation  the orientation of the button ({@link #NORTH},
    *                     {@link #SOUTH}, {@link #EAST} or {@link #WEST}).
@@ -196,7 +200,6 @@ public class MetalScrollBarUI extends BasicScrollBarUI
    */
   protected JButton createDecreaseButton(int orientation)
   {
-    scrollBarWidth = UIManager.getInt("ScrollBar.width");
     decreaseButton = new MetalScrollButton(orientation, scrollBarWidth, 
             isFreeStanding);
     return decreaseButton;
@@ -204,7 +207,10 @@ public class MetalScrollBarUI extends BasicScrollBarUI
 
   /**
    * Creates a new button to use as the control at the upper end of the
-   * {@link JScrollBar}.
+   * {@link JScrollBar}.  This method assigns the new button (an instance of
+   * {@link MetalScrollButton} to the {@link #increaseButton} field, and also 
+   * returns the button.  The button width is determined by the 
+   * <code>ScrollBar.width</code> setting in the UI defaults.
    * 
    * @param orientation  the orientation of the button ({@link #NORTH},
    *                     {@link #SOUTH}, {@link #EAST} or {@link #WEST}).
@@ -213,7 +219,6 @@ public class MetalScrollBarUI extends BasicScrollBarUI
    */
   protected JButton createIncreaseButton(int orientation)
   {
-    scrollBarWidth = UIManager.getInt("ScrollBar.width");
     increaseButton = new MetalScrollButton(orientation, scrollBarWidth, 
             isFreeStanding);
     return increaseButton;

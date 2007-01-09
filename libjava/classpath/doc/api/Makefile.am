@@ -36,6 +36,7 @@ clean-local:
 
 create_html:
 	-$(MKDIR) html > /dev/null 2>&1
+if CREATE_API_DOCS
 	$(GJDOC) \
 	-use \
 	-sourcepath "$(sourcepath)" \
@@ -51,3 +52,4 @@ create_html:
 	-header $(classpathbox) -footer $(classpathbox) \
 	-subpackages java:javax:org
 	touch create_html
+endif

@@ -48,6 +48,7 @@ import java.io.StringReader;
 import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
@@ -107,6 +108,7 @@ public class BasicHTML
       editorKit = kit;
       document = doc;
       setView(view);
+      setSize(view.getPreferredSpan(X_AXIS), view.getPreferredSpan(Y_AXIS));
     }
 
     /**
@@ -148,6 +150,14 @@ public class BasicHTML
         v.setParent(this);
 
       view = v;
+    }
+
+    /**
+     * Overridden to forward to real view.
+     */
+    public void setSize(float w, float h)
+    {
+      view.setSize(w, h);
     }
 
     /**
@@ -345,6 +355,22 @@ public class BasicHTML
     public Document getDocument()
     {
       return document;
+    }
+
+    /**
+     * Overridden to return null, as a RootView has no attributes on its own.
+     */
+    public AttributeSet getAttributes()
+    {
+      return null;
+    }
+
+    /**
+     * Overridden to provide an element for the view.
+     */
+    public Element getElement()
+    {
+      return view.getElement();
     }
   }
 

@@ -1,7 +1,7 @@
 // Locator2Impl.java - extended LocatorImpl
 // http://www.saxproject.org
 // Public Domain: no warranty.
-// $Id: Locator2Impl.java,v 1.1 2004/12/23 22:38:42 mark Exp $
+// $Id: Locator2Impl.java,v 1.2 2006/12/10 20:25:41 gnu_andrew Exp $
 
 package org.xml.sax.ext;
 

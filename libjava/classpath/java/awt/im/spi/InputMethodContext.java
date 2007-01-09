@@ -1,5 +1,5 @@
 /* InputMethodContext.java -- communication between an input method and client
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,6 +53,7 @@ import javax.swing.JFrame;
  * {@link InputMethod#setInputMethodContext(InputMethodContext)}.
  *
  * @author Eric Blake (ebb9@email.byu.edu)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.3
  * @status updated to 1.4
  */

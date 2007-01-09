@@ -1021,9 +1021,18 @@ public class SAXParser
         SAXParser parser = new SAXParser(validating, namespaceAware,
                                          xIncludeAware);
         InputSource input = new InputSource(args[pos]);
-        XMLReader reader = parser.getXMLReader();
-        reader.setContentHandler(handler);
-        reader.parse(input);
+        java.io.FileReader fr = new java.io.FileReader(args[pos]);
+        input.setCharacterStream(fr);
+        try
+          {
+            XMLReader reader = parser.getXMLReader();
+            reader.setContentHandler(handler);
+            reader.parse(input);
+          }
+        finally
+          {
+            fr.close();
+          }
         pos++;
       }
   }

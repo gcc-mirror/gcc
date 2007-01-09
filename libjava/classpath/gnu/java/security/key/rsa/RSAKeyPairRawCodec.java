@@ -81,11 +81,11 @@ public class RSAKeyPairRawCodec
    * the <code>toByteArray()</code> method on the RSA parameter <code>e</code>.
    * </li>
    * </ol>
-   * 
+   *
    * @param key the key to encode.
    * @return the <i>Raw</i> format encoding of the designated key.
    * @exception IllegalArgumentException if the designated key is not an RSA
-   *              one.
+   *                                     one.
    */
   public byte[] encodePublicKey(PublicKey key)
   {

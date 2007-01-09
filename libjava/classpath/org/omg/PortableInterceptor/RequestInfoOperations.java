@@ -1,5 +1,5 @@
 /* RequestInfoOperations.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,6 +40,7 @@ package org.omg.PortableInterceptor;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
+import org.omg.CORBA.NO_RESOURCES;
 import org.omg.CORBA.TypeCode;
 import org.omg.Dynamic.Parameter;
 import org.omg.IOP.ServiceContext;
@@ -182,7 +183,7 @@ public interface RequestInfoOperations
    * the client. However up till JDK 1.5 inclusive this method always returns
    * SYNC_WITH_TRANSPORT.
    *
-   * @return {@link org.omg.Messaging.SYNC_WITH_TRANSPORT.value (1), always.
+   * @return {@link org.omg.Messaging.SYNC_WITH_TRANSPORT#value} (1), always.
    *
    * @specnote as defined in the Suns 1.5 JDK API.
    */

@@ -142,7 +142,7 @@ public abstract class SSLSocketFactory extends SocketFactory
         catch (Exception ex)
           {
             throw new RuntimeException("error instantiating default socket factory: "
-                                       + ex.toString());
+                                       + ex.toString(), ex);
           }
       }
     try

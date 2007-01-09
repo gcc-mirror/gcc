@@ -89,7 +89,7 @@ public final class Formatter
   /**
    * The output of the formatter.
    */
-  private StringBuilder out;
+  private Appendable out;
 
   /**
    * The locale used by the formatter.
@@ -143,6 +143,15 @@ public final class Formatter
     = SystemProperties.getProperty("line.separator");
 
   /**
+   * The type of numeric output format for a {@link BigDecimal}.
+   */
+  public enum BigDecimalLayoutForm
+  {
+    DECIMAL_FLOAT,
+    SCIENTIFIC
+  }
+
+  /**
    * Constructs a new <code>Formatter</code> using the default
    * locale and a {@link StringBuilder} as the output stream.
    */
@@ -170,7 +179,7 @@ public final class Formatter
    *
    * @param app the output stream to use.
    */
-  public Formatter(StringBuilder app)
+  public Formatter(Appendable app)
   {
     this(app, Locale.getDefault());
   }
@@ -183,10 +192,186 @@ public final class Formatter
    * @param app the output stream to use.
    * @param loc the locale to use.
    */
-  public Formatter(StringBuilder app, Locale loc)
+  public Formatter(Appendable app, Locale loc)
   {
     this.out = app == null ? new StringBuilder() : app;
     this.locale = loc;
+  }
+
+  /**
+   * Constructs a new <code>Formatter</code> using the default
+   * locale and character set, with the specified file as the
+   * output stream.
+   *
+   * @param file the file to use for output.
+   * @throws FileNotFoundException if the file does not exist
+   *                               and can not be created.
+   * @throws SecurityException if a security manager is present
+   *                           and doesn't allow writing to the file.
+   */
+  public Formatter(File file) 
+    throws FileNotFoundException
+  {
+    this(new OutputStreamWriter(new FileOutputStream(file)));
+  }
+
+  /**
+   * Constructs a new <code>Formatter</code> using the default
+   * locale, with the specified file as the output stream
+   * and the supplied character set.
+   *
+   * @param file the file to use for output.
+   * @param charset the character set to use for output.
+   * @throws FileNotFoundException if the file does not exist
+   *                               and can not be created.
+   * @throws SecurityException if a security manager is present
+   *                           and doesn't allow writing to the file.
+   * @throws UnsupportedEncodingException if the supplied character
+   *                                      set is not supported.
+   */
+  public Formatter(File file, String charset)
+    throws FileNotFoundException, UnsupportedEncodingException
+  {
+    this(file, charset, Locale.getDefault());
+  }
+
+  /**
+   * Constructs a new <code>Formatter</code> using the specified
+   * file as the output stream with the supplied character set
+   * and locale.  If the locale is <code>null</code>, then no
+   * localization is applied.
+   *
+   * @param file the file to use for output.
+   * @param charset the character set to use for output.
+   * @param loc the locale to use.
+   * @throws FileNotFoundException if the file does not exist
+   *                               and can not be created.
+   * @throws SecurityException if a security manager is present
+   *                           and doesn't allow writing to the file.
+   * @throws UnsupportedEncodingException if the supplied character
+   *                                      set is not supported.
+   */
+  public Formatter(File file, String charset, Locale loc)
+    throws FileNotFoundException, UnsupportedEncodingException
+  {
+    this(new OutputStreamWriter(new FileOutputStream(file), charset),
+	 loc);
+  }
+
+  /**
+   * Constructs a new <code>Formatter</code> using the default
+   * locale and character set, with the specified output stream.
+   *
+   * @param out the output stream to use.
+   */
+  public Formatter(OutputStream out)
+  {
+    this(new OutputStreamWriter(out));
+  }
+
+  /**
+   * Constructs a new <code>Formatter</code> using the default
+   * locale, with the specified file output stream and the
+   * supplied character set.
+   *
+   * @param out the output stream.
+   * @param charset the character set to use for output.
+   * @throws UnsupportedEncodingException if the supplied character
+   *                                      set is not supported.
+   */
+  public Formatter(OutputStream out, String charset)
+    throws UnsupportedEncodingException
+  {
+    this(out, charset, Locale.getDefault());
+  }
+
+  /**
+   * Constructs a new <code>Formatter</code> using the specified
+   * output stream with the supplied character set and locale.
+   * If the locale is <code>null</code>, then no localization is
+   * applied.
+   *
+   * @param file the output stream.
+   * @param charset the character set to use for output.
+   * @param loc the locale to use.
+   * @throws UnsupportedEncodingException if the supplied character
+   *                                      set is not supported.
+   */
+  public Formatter(OutputStream out, String charset, Locale loc)
+    throws UnsupportedEncodingException
+  {
+    this(new OutputStreamWriter(out, charset), loc);
+  }
+
+  /**
+   * Constructs a new <code>Formatter</code> using the default
+   * locale with the specified output stream.  The character
+   * set used is that of the output stream.
+   *
+   * @param out the output stream to use.
+   */
+  public Formatter(PrintStream out)
+  {
+    this((Appendable) out);
+  }
+
+  /**
+   * Constructs a new <code>Formatter</code> using the default
+   * locale and character set, with the specified file as the
+   * output stream.
+   *
+   * @param file the file to use for output.
+   * @throws FileNotFoundException if the file does not exist
+   *                               and can not be created.
+   * @throws SecurityException if a security manager is present
+   *                           and doesn't allow writing to the file.
+   */
+  public Formatter(String file) throws FileNotFoundException
+  {
+    this(new OutputStreamWriter(new FileOutputStream(file)));
+  }
+
+  /**
+   * Constructs a new <code>Formatter</code> using the default
+   * locale, with the specified file as the output stream
+   * and the supplied character set.
+   *
+   * @param file the file to use for output.
+   * @param charset the character set to use for output.
+   * @throws FileNotFoundException if the file does not exist
+   *                               and can not be created.
+   * @throws SecurityException if a security manager is present
+   *                           and doesn't allow writing to the file.
+   * @throws UnsupportedEncodingException if the supplied character
+   *                                      set is not supported.
+   */
+  public Formatter(String file, String charset)
+    throws FileNotFoundException, UnsupportedEncodingException
+  {
+    this(file, charset, Locale.getDefault());
+  }
+
+  /**
+   * Constructs a new <code>Formatter</code> using the specified
+   * file as the output stream with the supplied character set
+   * and locale.  If the locale is <code>null</code>, then no
+   * localization is applied.
+   *
+   * @param file the file to use for output.
+   * @param charset the character set to use for output.
+   * @param loc the locale to use.
+   * @throws FileNotFoundException if the file does not exist
+   *                               and can not be created.
+   * @throws SecurityException if a security manager is present
+   *                           and doesn't allow writing to the file.
+   * @throws UnsupportedEncodingException if the supplied character
+   *                                      set is not supported.
+   */
+  public Formatter(String file, String charset, Locale loc)
+    throws FileNotFoundException, UnsupportedEncodingException
+  {
+    this(new OutputStreamWriter(new FileOutputStream(file), charset),
+	 loc);
   }
 
   /**
@@ -201,6 +386,16 @@ public final class Formatter
   {
     if (closed)
       return;
+    try
+      {
+	if (out instanceof Closeable)
+	  ((Closeable) out).close();
+      }
+    catch (IOException _)
+      {
+	// FIXME: do we ignore these or do we set ioException?
+	// The docs seem to indicate that we should ignore.
+      }
     closed = true;
   }
 
@@ -215,6 +410,16 @@ public final class Formatter
   {
     if (closed)
       throw new FormatterClosedException();
+    try
+      {
+	if (out instanceof Flushable)
+	  ((Flushable) out).flush();
+      }
+    catch (IOException _)
+      {
+	// FIXME: do we ignore these or do we set ioException?
+	// The docs seem to indicate that we should ignore.
+      }
   }
 
   /**
@@ -544,9 +749,6 @@ public final class Formatter
     noPrecision(precision);
 
     // Some error checking.
-    if ((flags & FormattableFlags.ZERO) != 0
-	&& (flags & FormattableFlags.LEFT_JUSTIFY) == 0)
-      throw new IllegalFormatFlagsException(getName(flags));
     if ((flags & FormattableFlags.PLUS) != 0
 	&& (flags & FormattableFlags.SPACE) != 0)
       throw new IllegalFormatFlagsException(getName(flags));
@@ -984,7 +1186,7 @@ public final class Formatter
       advance();
     if (start == index)
       return -1;
-    return Integer.decode(format.substring(start, index)).intValue();
+    return Integer.decode(format.substring(start, index));
   }
 
   /**
@@ -1090,7 +1292,7 @@ public final class Formatter
    *                                between it and the arguments.
    * @throws FormatterClosedException if the formatter is closed.
    */ 
-  public Formatter format(Locale loc, String fmt, Object[] args)
+  public Formatter format(Locale loc, String fmt, Object... args)
   {
     if (closed)
       throw new FormatterClosedException();
@@ -1233,7 +1435,7 @@ public final class Formatter
    *                                between it and the arguments.
    * @throws FormatterClosedException if the formatter is closed.
    */
-  public Formatter format(String format, Object[] args)
+  public Formatter format(String format, Object... args)
   {
     return format(locale, format, args);
   }
@@ -1269,7 +1471,7 @@ public final class Formatter
    * @return the formatter's output stream.
    * @throws FormatterClosedException if the formatter is closed.
    */
-  public StringBuilder out()
+  public Appendable out()
   {
     if (closed)
       throw new FormatterClosedException();

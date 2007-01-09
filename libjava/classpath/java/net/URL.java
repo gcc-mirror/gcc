@@ -322,7 +322,8 @@ public final class URL implements Serializable
    */
   public URL(String spec) throws MalformedURLException
   {
-    this((URL) null, spec != null ? spec : "", (URLStreamHandler) null);
+    this((URL) null, spec != null ? spec : "", (URLStreamHandler) null,
+	 false);
   }
 
   /**
@@ -343,7 +344,9 @@ public final class URL implements Serializable
    */
   public URL(URL context, String spec) throws MalformedURLException
   {
-    this(context, spec, (context == null) ? (URLStreamHandler)null : context.ph);
+    this(context, spec,
+	 (context == null) ? (URLStreamHandler) null : context.ph,
+	 false);
   }
 
   /**
@@ -377,6 +380,23 @@ public final class URL implements Serializable
   public URL(URL context, String spec, URLStreamHandler ph)
     throws MalformedURLException
   {
+    this(context, spec, ph, true);
+  }
+
+  /**
+   * Private constructor called by all other constructors taking
+   * a context and spec.
+   *
+   * @param context The context in which to parse the specification
+   * @param spec The string to parse as an URL
+   * @param ph The stream handler for the URL
+   * @param phFromUser Whether or not the user supplied the URLStreamHandler
+   *
+   */
+  private URL(URL context, String spec, URLStreamHandler ph,
+	      boolean phFromUser)
+    throws MalformedURLException
+  {
     /* A protocol is defined by the doc as the substring before a ':'
      * as long as the ':' occurs before any '/'.
      *
@@ -397,7 +417,11 @@ public final class URL implements Serializable
     if ((colon = spec.indexOf("://", 1)) > 0
 	&& ((colon < slash || slash < 0))
         && ! spec.regionMatches(colon, "://:", 0, 4))
-      context = null;
+      {
+	context = null;
+	if (! phFromUser)
+	  ph = null;
+      }
 
     boolean protocolSpecified = false;
 
@@ -458,7 +482,7 @@ public final class URL implements Serializable
     if (ph != null)
       {
 	SecurityManager s = System.getSecurityManager();
-	if (s != null)
+	if (s != null && phFromUser)
 	  s.checkPermission(new NetPermission("specifyStreamHandler"));
 
 	this.ph = ph;

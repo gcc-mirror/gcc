@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package javax.print.attribute.standard;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.IntegerSyntax;
 import javax.print.attribute.PrintJobAttribute;
 
@@ -102,7 +103,7 @@ public final class JobKOctetsProcessed extends IntegerSyntax
    *
    * @return The class <code>JobKOctetsProcessed</code> itself.
    */
-  public Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return JobKOctetsProcessed.class;
   }

@@ -1,5 +1,5 @@
 /* BindingType.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -62,7 +62,7 @@ public class BindingType
 
   /**
    * This constant means that the binding has been created by the
-   * means, different from the listed in {@link _ncontext} description.
+   * means, different from the listed in {@link #_ncontext} description.
    */
   public static final int _nobject = 0;
 
@@ -75,7 +75,7 @@ public class BindingType
 
   /**
    * This constant means that the binding has been created by the
-   * means, different from the listed in {@link _ncontext} description.
+   * means, different from the listed in {@link #_ncontext} description.
    */
   public static final BindingType nobject = new BindingType(_nobject);
 
@@ -101,7 +101,7 @@ public class BindingType
    * @param value the binding type code.
    * @return the matching binding type instance.
    *
-   * @throws BAD_KIND if there is no matching binding type for
+   * @throws BAD_PARAM if there is no matching binding type for
    * the passed value.
    */
   public static BindingType from_int(int value)

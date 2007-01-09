@@ -26,8 +26,8 @@ foreach x $srcfiles {
 
     verbose "inpfile is $inpfile"
 
-    test_libjava $options "${prefix}.java" "" $inpfile $resfile $args
-    test_libjava $options "${prefix}.java" "-O3" $inpfile $resfile $args
+    test_libjava $options "${prefix}.jar" "" $inpfile $resfile $args
+    test_libjava $options "${prefix}.jar" "-O3" $inpfile $resfile $args
 }
 
 # Local Variables:

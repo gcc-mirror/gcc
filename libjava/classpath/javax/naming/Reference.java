@@ -58,7 +58,7 @@ public class Reference implements Cloneable, Serializable
    * The list of addresses, stored in this reference. The object may be 
    * have by several different addresses.
    */
-  protected Vector addrs;
+  protected Vector<RefAddr> addrs;
   
   /**
    * The name of the class factory to create an instance of the object,
@@ -218,7 +218,7 @@ public class Reference implements Cloneable, Serializable
   /**
    * Get the enumeration over all defined addresses of the object.
    */
-  public Enumeration getAll ()
+  public Enumeration<RefAddr> getAll ()
   {
     return addrs.elements ();
   }

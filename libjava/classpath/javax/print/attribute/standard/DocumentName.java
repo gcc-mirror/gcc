@@ -40,6 +40,7 @@ package javax.print.attribute.standard;
 
 import java.util.Locale;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.DocAttribute;
 import javax.print.attribute.TextSyntax;
 
@@ -98,7 +99,7 @@ public final class DocumentName extends TextSyntax
    *
    * @return The class <code>DocumentName</code> itself.
    */
-  public Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return DocumentName.class;
   }

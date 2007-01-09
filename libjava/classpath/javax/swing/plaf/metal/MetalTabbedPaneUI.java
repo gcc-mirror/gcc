@@ -1159,7 +1159,7 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
             g.drawLine(x + 1, y + 1, x + 1, rect.y + 1);
             if (rect.y + rect.height < y + h - 2)
               {
-                g.drawLine(x + y, rect.y + rect.height + 1, x + 1, y + h + 2);
+                g.drawLine(x + 1, rect.y + rect.height + 1, x + 1, y + h + 2);
               }
           }
       }

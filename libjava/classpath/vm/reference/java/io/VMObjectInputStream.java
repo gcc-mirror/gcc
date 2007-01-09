@@ -40,10 +40,7 @@ exception statement from your version. */
 package java.io;
 
 import gnu.classpath.Configuration;
-import gnu.classpath.VMStackWalker;
 import java.lang.reflect.Constructor;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 final class VMObjectInputStream
 {
@@ -53,42 +50,6 @@ final class VMObjectInputStream
       {
 	System.loadLibrary("javaio");
       }
-  }
-
-  /**
-   * PrivilegedAction needed for Class.getClassLoader()
-   */ 
-  private static PrivilegedAction loaderAction = new PrivilegedAction()
-  {
-   /**
-     * Returns the first user defined class loader on the call stack, or the
-     * context class loader of the current thread, when no non-null class loader
-     * was found.
-     */
-    public Object run()
-    {
-      Class[] ctx = VMStackWalker.getClassContext();
-
-      for (int i = 0; i < ctx.length; i++)
-        {
-          ClassLoader cl = ctx[i].getClassLoader();
-          if (cl != null)
-            return cl;
-        }
-      return Thread.currentThread().getContextClassLoader();
-    }
-    };
-
-  /**
-   * Returns the first user defined class loader on the call stack, or the
-   * context class loader of the current thread, when no non-null class loader
-   * was found.
-   * 
-   * @return the class loader
-   */
-  static ClassLoader currentClassLoader()
-  {
-    return (ClassLoader) AccessController.doPrivileged(loaderAction);
   }
 
   /**

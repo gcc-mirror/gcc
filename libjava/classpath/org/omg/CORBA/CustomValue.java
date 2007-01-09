@@ -1,5 +1,5 @@
 /* CustomValue.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
+import org.omg.CORBA.portable.StreamableValue;
 import org.omg.CORBA.portable.ValueBase;
 
 /**
@@ -50,7 +51,7 @@ import org.omg.CORBA.portable.ValueBase;
  * in the receiving context.
  *
  * If the value base does not implement this interface, it normally implements
- * {@link org.omg.CORBA.portable.StremableValue} instead.
+ * {@link StreamableValue} instead.
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */

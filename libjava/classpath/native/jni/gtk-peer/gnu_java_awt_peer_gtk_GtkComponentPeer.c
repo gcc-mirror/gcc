@@ -659,16 +659,16 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_setNativeBounds
   width = width < 0 ? 0 : width;
   height = height < 0 ? 0 : height;
 
-  if (GTK_IS_VIEWPORT (widget->parent))
-    gtk_widget_set_size_request (widget, width, height);
-  else
+  if (!(width == 0 && height == 0))
     {
-      if (!(width == 0 && height == 0))
-        {
-          gtk_widget_set_size_request (widget, width, height);
-          if (widget->parent != NULL)
-            gtk_fixed_move (GTK_FIXED (widget->parent), widget, x, y);
-        }
+      gtk_widget_set_size_request (widget, width, height);
+      /* The GTK_IS_FIXED check here prevents gtk_fixed_move being
+         called when our parent is a GtkScrolledWindow.  In that
+         case though, moving the child widget is invalid since a
+         ScrollPane only has one child and that child is always
+         located at (0, 0) in viewport coordinates. */
+      if (widget->parent != NULL && GTK_IS_FIXED (widget->parent))
+        gtk_fixed_move (GTK_FIXED (widget->parent), widget, x, y);
     }
 
   gdk_threads_leave ();

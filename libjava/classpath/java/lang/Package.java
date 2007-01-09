@@ -345,14 +345,13 @@ public class Package
    *         <code>null</code> if no such annotation exists.
    * @since 1.5
    */
-  /* FIXME[GENERICS]: <T extends Annotation> T getAnnotation(Class <T>) */
-  public Annotation getAnnotation(Class annotationClass)
+  public <A extends Annotation> A getAnnotation(Class<A> annotationClass)
   {
-    Annotation foundAnnotation = null;
+    A foundAnnotation = null;
     Annotation[] annotations = getAnnotations();
-    for (int i = 0; i < annotations.length; i++)
-      if (annotations[i].annotationType() == annotationClass)
-	foundAnnotation = annotations[i];
+    for (Annotation annotation : annotations)
+      if (annotation.annotationType() == annotationClass)
+	foundAnnotation = (A) annotation;
     return foundAnnotation;
   }
 
@@ -406,8 +405,7 @@ public class Package
    * @return true if an annotation exists for the specified type.
    * @since 1.5
    */
-  /* FIXME[GENERICS]: Signature is Class<? extends Annotation> */
-  public boolean isAnnotationPresent(Class
+  public boolean isAnnotationPresent(Class<? extends Annotation> 
 				     annotationClass)
   {
     return getAnnotation(annotationClass) != null;

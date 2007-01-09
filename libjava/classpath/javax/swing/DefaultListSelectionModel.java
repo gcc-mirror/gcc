@@ -815,7 +815,7 @@ public class DefaultListSelectionModel implements Cloneable,
    * @see #getListSelectionListeners
    * @since 1.3
    */
-  public EventListener[] getListeners(Class listenerType)
+  public <T extends EventListener> T[] getListeners(Class<T> listenerType)
   {
     return listenerList.getListeners(listenerType);
   }

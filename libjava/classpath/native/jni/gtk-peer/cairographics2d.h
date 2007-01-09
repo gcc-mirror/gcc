@@ -97,7 +97,8 @@ enum java_awt_rendering_hints_filter
     java_awt_rendering_hints_VALUE_INTERPOLATION_BILINEAR = 1,
     java_awt_rendering_hints_VALUE_ALPHA_INTERPOLATION_SPEED = 2,
     java_awt_rendering_hints_VALUE_ALPHA_INTERPOLATION_QUALITY = 3,
-    java_awt_rendering_hints_VALUE_ALPHA_INTERPOLATION_DEFAULT = 4
+    java_awt_rendering_hints_VALUE_ALPHA_INTERPOLATION_DEFAULT = 4,
+    java_awt_rendering_hints_VALUE_INTERPOLATION_BICUBIC = 5
  
   };
 

@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <assert.h>
-#include <register2.h>
+#include <jni.h>
 
 static int
 twentythree (JNIEnv *env, jclass k)

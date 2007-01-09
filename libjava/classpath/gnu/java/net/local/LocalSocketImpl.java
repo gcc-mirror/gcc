@@ -38,6 +38,8 @@ exception statement from your version.  */
 
 package gnu.java.net.local;
 
+import gnu.classpath.Configuration;
+
 import java.io.FileDescriptor;
 import java.io.InputStream;
 import java.io.IOException;
@@ -66,7 +68,10 @@ final class LocalSocketImpl extends SocketImpl
   {
     try
       {
-        System.loadLibrary ("javanet");
+        if (Configuration.INIT_LOAD_LIBRARY)
+          {
+            System.loadLibrary ("javanet");
+          }
       }
     catch (Exception x)
       {

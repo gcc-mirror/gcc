@@ -42,12 +42,14 @@ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/../../config/lead-dot.m4 \
+	$(top_srcdir)/../../config/no-executables.m4 \
 	$(top_srcdir)/../../libtool.m4 $(top_srcdir)/m4/acattribute.m4 \
 	$(top_srcdir)/m4/accross.m4 $(top_srcdir)/m4/acinclude.m4 \
 	$(top_srcdir)/m4/ax_create_stdint_h.m4 \
-	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
-	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/gcc_attribute.m4 $(top_srcdir)/m4/iconv.m4 \
+	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
+	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/pkg.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -159,6 +161,8 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION = @JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION@
+JAVA_MAINTAINER_MODE_FALSE = @JAVA_MAINTAINER_MODE_FALSE@
+JAVA_MAINTAINER_MODE_TRUE = @JAVA_MAINTAINER_MODE_TRUE@
 JAY = @JAY@
 JAY_SKELETON = @JAY_SKELETON@
 JIKES = @JIKES@
@@ -280,7 +284,6 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
-toolexeclibdir = @toolexeclibdir@
 vm_classes = @vm_classes@
 @CREATE_API_DOCS_TRUE@noinst_DATA = html
 sourcepath = $(top_builddir):$(top_srcdir):$(top_srcdir)/vm/reference:$(top_srcdir)/external/w3c_dom:$(top_srcdir)/external/sax
@@ -475,21 +478,21 @@ clean-local:
 
 create_html:
 	-$(MKDIR) html > /dev/null 2>&1
-	$(GJDOC) \
-	-use \
-	-sourcepath "$(sourcepath)" \
-	-encoding UTF-8 \
-	-breakiterator \
-	-licensetext \
-	-linksource \
-	-splitindex \
-	-validhtml \
-	-d html \
-	-doctitle "GNU Classpath $(VERSION)" \
-	-windowtitle "GNU Classpath $(VERSION) Documentation" \
-	-header $(classpathbox) -footer $(classpathbox) \
-	-subpackages java:javax:org
-	touch create_html
+@CREATE_API_DOCS_TRUE@	$(GJDOC) \
+@CREATE_API_DOCS_TRUE@	-use \
+@CREATE_API_DOCS_TRUE@	-sourcepath "$(sourcepath)" \
+@CREATE_API_DOCS_TRUE@	-encoding UTF-8 \
+@CREATE_API_DOCS_TRUE@	-breakiterator \
+@CREATE_API_DOCS_TRUE@	-licensetext \
+@CREATE_API_DOCS_TRUE@	-linksource \
+@CREATE_API_DOCS_TRUE@	-splitindex \
+@CREATE_API_DOCS_TRUE@	-validhtml \
+@CREATE_API_DOCS_TRUE@	-d html \
+@CREATE_API_DOCS_TRUE@	-doctitle "GNU Classpath $(VERSION)" \
+@CREATE_API_DOCS_TRUE@	-windowtitle "GNU Classpath $(VERSION) Documentation" \
+@CREATE_API_DOCS_TRUE@	-header $(classpathbox) -footer $(classpathbox) \
+@CREATE_API_DOCS_TRUE@	-subpackages java:javax:org
+@CREATE_API_DOCS_TRUE@	touch create_html
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

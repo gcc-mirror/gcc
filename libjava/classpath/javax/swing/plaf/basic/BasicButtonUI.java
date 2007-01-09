@@ -42,12 +42,14 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.Rectangle;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonModel;
 import javax.swing.Icon;
-import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.LookAndFeel;
@@ -56,12 +58,46 @@ import javax.swing.UIManager;
 import javax.swing.plaf.ButtonUI;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.UIResource;
+import javax.swing.text.View;
 
 /**
  * A UI delegate for the {@link JButton} component.
  */
 public class BasicButtonUI extends ButtonUI
 {
+  /**
+   * Cached rectangle for layouting the label. Used in paint() and
+   * BasicGraphicsUtils.getPreferredButtonSize().
+   */
+  static Rectangle viewR = new Rectangle();
+
+  /**
+   * Cached rectangle for layouting the label. Used in paint() and
+   * BasicGraphicsUtils.getPreferredButtonSize().
+   */
+  static Rectangle iconR = new Rectangle();
+
+  /**
+   * Cached rectangle for layouting the label. Used in paint() and
+   * BasicGraphicsUtils.getPreferredButtonSize().
+   */
+  static Rectangle textR = new Rectangle();
+
+  /**
+   * Cached Insets instance, used in paint().
+   */
+  static Insets cachedInsets;
+
+  /**
+   * The shared button UI.
+   */
+  private static BasicButtonUI sharedUI;
+
+  /**
+   * The shared BasicButtonListener.
+   */
+  private static BasicButtonListener sharedListener;
+
   /**
    * A constant used to pad out elements in the button's layout and
    * preferred size calculations.
@@ -86,7 +122,9 @@ public class BasicButtonUI extends ButtonUI
    */
   public static ComponentUI createUI(final JComponent c) 
   {
-    return new BasicButtonUI();
+    if (sharedUI == null)
+      sharedUI = new BasicButtonUI();
+    return sharedUI;
   }
 
   /**
@@ -153,14 +191,29 @@ public class BasicButtonUI extends ButtonUI
   protected void installDefaults(AbstractButton b)
   {
     String prefix = getPropertyPrefix();
+    // Install colors and font.
     LookAndFeel.installColorsAndFont(b, prefix + "background",
                                      prefix + "foreground", prefix + "font");
+    // Install border.
     LookAndFeel.installBorder(b, prefix + "border");
+
+    // Install margin property.
     if (b.getMargin() == null || b.getMargin() instanceof UIResource)
       b.setMargin(UIManager.getInsets(prefix + "margin"));
-    b.setIconTextGap(UIManager.getInt(prefix + "textIconGap"));
-    b.setInputMap(JComponent.WHEN_FOCUSED, 
-                  (InputMap) UIManager.get(prefix + "focusInputMap"));
+
+    // Install rollover property.
+    Object rollover = UIManager.get(prefix + "rollover");
+    if (rollover != null)
+      LookAndFeel.installProperty(b, "rolloverEnabled", rollover);
+
+    // Fetch default textShiftOffset.
+    defaultTextShiftOffset = UIManager.getInt(prefix + "textShiftOffset");
+
+    // Make button opaque if needed.
+    if (b.isContentAreaFilled())
+      LookAndFeel.installProperty(b, "opaque", Boolean.TRUE);
+    else
+      LookAndFeel.installProperty(b, "opaque", Boolean.FALSE);
   }
 
   /**
@@ -170,20 +223,9 @@ public class BasicButtonUI extends ButtonUI
    */
   protected void uninstallDefaults(AbstractButton b)
   {
-    if (b.getFont() instanceof UIResource)
-      b.setFont(null);
-    if (b.getForeground() instanceof UIResource)
-      b.setForeground(null);
-    if (b.getBackground() instanceof UIResource)
-      b.setBackground(null);
-    if (b.getBorder() instanceof UIResource)
-      b.setBorder(null);
-    b.setIconTextGap(defaultTextIconGap);
-    if (b.getMargin() instanceof UIResource)
-      b.setMargin(null);
+    // The other properties aren't uninstallable.
+    LookAndFeel.uninstallBorder(b);
   }
-
-  protected BasicButtonListener listener;
 
   /**
    * Creates and returns a new instance of {@link BasicButtonListener}.  This
@@ -196,7 +238,13 @@ public class BasicButtonUI extends ButtonUI
    */
   protected BasicButtonListener createButtonListener(AbstractButton b)
   {
-    return new BasicButtonListener(b);
+    // Note: The RI always returns a new instance here. However,
+    // the BasicButtonListener class is perfectly suitable to be shared
+    // between multiple buttons, so we return a shared instance here
+    // for efficiency.
+    if (sharedListener == null)
+      sharedListener = new BasicButtonListener(b);
+    return sharedListener;
   }
 
   /**
@@ -206,12 +254,19 @@ public class BasicButtonUI extends ButtonUI
    */
   protected void installListeners(AbstractButton b)
   {
-    listener = createButtonListener(b);
-    b.addChangeListener(listener);
-    b.addPropertyChangeListener(listener);
-    b.addFocusListener(listener);    
-    b.addMouseListener(listener);
-    b.addMouseMotionListener(listener);
+    BasicButtonListener listener = createButtonListener(b);
+    if (listener != null)
+      {
+        b.addChangeListener(listener);
+        b.addPropertyChangeListener(listener);
+        b.addFocusListener(listener);    
+        b.addMouseListener(listener);
+        b.addMouseMotionListener(listener);
+      }
+    // Fire synthetic property change event to let the listener update
+    // the TextLayout cache.
+    listener.propertyChange(new PropertyChangeEvent(b, "font", null,
+                                                    b.getFont()));
   }
 
   /**
@@ -221,21 +276,29 @@ public class BasicButtonUI extends ButtonUI
    */
   protected void uninstallListeners(AbstractButton b)
   {
-    b.removeChangeListener(listener);
-    b.removePropertyChangeListener(listener);
-    b.removeFocusListener(listener);    
-    b.removeMouseListener(listener);
-    b.removeMouseMotionListener(listener);
+    BasicButtonListener listener = getButtonListener(b);
+    if (listener != null)
+      {
+        b.removeChangeListener(listener);
+        b.removePropertyChangeListener(listener);
+        b.removeFocusListener(listener);    
+        b.removeMouseListener(listener);
+        b.removeMouseMotionListener(listener);
+      }
   }
 
   protected void installKeyboardActions(AbstractButton b)
   {
-    listener.installKeyboardActions(b);
+    BasicButtonListener listener = getButtonListener(b);
+    if (listener != null)
+      listener.installKeyboardActions(b);
   }
 
   protected void uninstallKeyboardActions(AbstractButton b)
   {
-    listener.uninstallKeyboardActions(b);
+    BasicButtonListener listener = getButtonListener(b);
+    if (listener != null)
+      listener.uninstallKeyboardActions(b);
   }
 
   /**
@@ -253,9 +316,75 @@ public class BasicButtonUI extends ButtonUI
       {
         AbstractButton b = (AbstractButton) c;
         installDefaults(b);
+        // It is important to install the listeners before installing
+        // the keyboard actions, because the keyboard actions
+        // are actually installed on the listener instance.
         installListeners(b);
         installKeyboardActions(b);
+        BasicHTML.updateRenderer(b, b.getText());
       }
+  }
+
+  /**
+   * Uninstalls the UI from the component.
+   *
+   * @param c the component from which to uninstall the UI
+   */
+  public void uninstallUI(JComponent c)
+  {
+    if (c instanceof AbstractButton)
+      {
+        AbstractButton b = (AbstractButton) c;
+        uninstallKeyboardActions(b);
+        uninstallListeners(b);
+        uninstallDefaults(b);
+        BasicHTML.updateRenderer(b, "");
+        b.putClientProperty(BasicGraphicsUtils.CACHED_TEXT_LAYOUT, null);
+      }
+  }
+
+  /**
+   * Calculates the minimum size for the specified component.
+   *
+   * @param c the component for which to compute the minimum size
+   *
+   * @return the minimum size for the specified component
+   */
+  public Dimension getMinimumSize(JComponent c)
+  {
+    Dimension size = getPreferredSize(c);
+    // When the HTML view has a minimum width different from the preferred
+    // width, then substract this here accordingly. The height is not
+    // affected by that.
+    View html = (View) c.getClientProperty(BasicHTML.propertyKey);
+    if (html != null)
+      {
+        size.width -= html.getPreferredSpan(View.X_AXIS)
+                      - html.getPreferredSpan(View.X_AXIS);
+      }
+    return size;
+  }
+
+  /**
+   * Calculates the maximum size for the specified component.
+   *
+   * @param c the component for which to compute the maximum size
+   *
+   * @return the maximum size for the specified component
+   */
+  public Dimension getMaximumSize(JComponent c)
+  {
+    Dimension size = getPreferredSize(c);
+    // When the HTML view has a maximum width different from the preferred
+    // width, then add this here accordingly. The height is not
+    // affected by that.
+    View html = (View) c.getClientProperty(BasicHTML.propertyKey);
+    if (html != null)
+      {
+        size.width += html.getMaximumSpan(View.X_AXIS)
+                      - html.getPreferredSpan(View.X_AXIS);
+      }
+    return size;
   }
 
   /**
@@ -269,8 +398,8 @@ public class BasicButtonUI extends ButtonUI
   public Dimension getPreferredSize(JComponent c) 
   {
     AbstractButton b = (AbstractButton) c;
-    Dimension d = BasicGraphicsUtils.getPreferredButtonSize(b, 
-        defaultTextIconGap + defaultTextShiftOffset);
+    Dimension d = BasicGraphicsUtils.getPreferredButtonSize(b,
+                                                           b.getIconTextGap());
     return d;
   }
 
@@ -315,38 +444,50 @@ public class BasicButtonUI extends ButtonUI
   {
     AbstractButton b = (AbstractButton) c;
 
-    Rectangle tr = new Rectangle();
-    Rectangle ir = new Rectangle();
-    Rectangle vr = new Rectangle();
+    Insets i = c.getInsets(cachedInsets);
+    viewR.x = i.left;
+    viewR.y = i.top;
+    viewR.width = c.getWidth() - i.left - i.right;
+    viewR.height = c.getHeight() - i.top - i.bottom;
+    textR.x = 0;
+    textR.y = 0;
+    textR.width = 0;
+    textR.height = 0;
+    iconR.x = 0;
+    iconR.y = 0;
+    iconR.width = 0;
+    iconR.height = 0;
 
     Font f = c.getFont();
-
     g.setFont(f);
+    Icon icon = b.getIcon();
+    String text = b.getText();
+    text = SwingUtilities.layoutCompoundLabel(c, g.getFontMetrics(f), 
+                                              text, icon,
+                                              b.getVerticalAlignment(), 
+                                              b.getHorizontalAlignment(),
+                                              b.getVerticalTextPosition(), 
+                                              b.getHorizontalTextPosition(),
+                                              viewR, iconR, textR, 
+                                              text == null ? 0
+                                                         : b.getIconTextGap());
 
-    if (b.isBorderPainted())
-      SwingUtilities.calculateInnerArea(b, vr);
-    else
-      vr = SwingUtilities.getLocalBounds(b);
-    String text = SwingUtilities.layoutCompoundLabel(c, g.getFontMetrics(f), 
-                                                     b.getText(),
-                                                     currentIcon(b),
-                                                     b.getVerticalAlignment(), 
-                                                     b.getHorizontalAlignment(),
-                                                     b.getVerticalTextPosition(), 
-                                                     b.getHorizontalTextPosition(),
-                                                     vr, ir, tr, 
-                                                     b.getIconTextGap() 
-                                                     + defaultTextShiftOffset);
-    
-    if ((b.getModel().isArmed() && b.getModel().isPressed()) 
-        || b.isSelected())
+    ButtonModel model = b.getModel();
+    if (model.isArmed() && model.isPressed())
       paintButtonPressed(g, b);
-	
-    paintIcon(g, c, ir);
+
+    if (icon != null)
+      paintIcon(g, c, iconR);
     if (text != null)
-      paintText(g, b, tr, text);
+      {
+        View html = (View) b.getClientProperty(BasicHTML.propertyKey);
+        if (html != null)
+          html.paint(g, textR);
+        else
+          paintText(g, b, textR, text);
+      }
     if (b.isFocusOwner() && b.isFocusPainted())
-      paintFocus(g, b, vr, tr, ir);
+      paintFocus(g, b, viewR, textR, iconR);
   }
 
   /**
@@ -386,7 +527,16 @@ public class BasicButtonUI extends ButtonUI
     Icon i = currentIcon(b);
 
     if (i != null)
-      i.paintIcon(c, g, iconRect.x, iconRect.y);
+      {
+        ButtonModel m = b.getModel();
+        if (m.isPressed() && m.isArmed())
+          {
+            int offs = getTextShiftOffset();
+            i.paintIcon(c, g, iconRect.x + offs, iconRect.y + offs);
+          }
+        else
+          i.paintIcon(c, g, iconRect.x, iconRect.y);
+      }
   }
 
   /**
@@ -419,22 +569,7 @@ public class BasicButtonUI extends ButtonUI
   protected void paintText(Graphics g, JComponent c, Rectangle textRect,
                            String text) 
   {	
-    paintText(g, (AbstractButton) c, textRect, text);
-  }
-
-  /**
-   * Paints the "text" property of an {@link AbstractButton}.
-   *
-   * @param g The graphics context to paint with
-   * @param b The button to paint the state of
-   * @param textRect The area in which to paint the text
-   * @param text The text to paint
-   *
-   * @since 1.4
-   */
-  protected void paintText(Graphics g, AbstractButton b, Rectangle textRect,
-			   String text)
-  {
+    AbstractButton b = (AbstractButton) c;
     Font f = b.getFont();
     g.setFont(f);
     FontMetrics fm = g.getFontMetrics(f);
@@ -454,5 +589,48 @@ public class BasicButtonUI extends ButtonUI
         BasicGraphicsUtils.drawString(b, g, text, -1, textRect.x,
                                       textRect.y + fm.getAscent());
       }
+  }
+
+  /**
+   * Paints the "text" property of an {@link AbstractButton}.
+   *
+   * @param g The graphics context to paint with
+   * @param b The button to paint the state of
+   * @param textRect The area in which to paint the text
+   * @param text The text to paint
+   *
+   * @since 1.4
+   */
+  protected void paintText(Graphics g, AbstractButton b, Rectangle textRect,
+			   String text)
+  {
+    paintText(g, (JComponent) b, textRect, text);
   } 
+
+  /**
+   * A helper method that finds the BasicButtonListener for the specified
+   * button. This is there because this UI class is stateless and
+   * shared for all buttons, and thus can't store the listener
+   * as instance field. (We store our shared instance in sharedListener,
+   * however, subclasses may override createButtonListener() and we would
+   * be lost in this case).
+   *
+   * @param b the button
+   *
+   * @return the UI event listener
+   */
+  private BasicButtonListener getButtonListener(AbstractButton b)
+  {
+    // The listener gets installed as PropertyChangeListener,
+    // so look for it in the list of property change listeners.
+    PropertyChangeListener[] listeners = b.getPropertyChangeListeners();
+    BasicButtonListener l = null;
+    for (int i = 0; listeners != null && l == null && i < listeners.length;
+           i++)
+      {
+        if (listeners[i] instanceof BasicButtonListener)
+          l = (BasicButtonListener) listeners[i];
+      }
+    return l;
+  }
 }

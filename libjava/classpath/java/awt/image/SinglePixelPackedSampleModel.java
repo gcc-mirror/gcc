@@ -412,110 +412,31 @@ public class SinglePixelPackedSampleModel extends SampleModel
     return (samples & bitMasks[b]) >>> bitOffsets[b];
   }
   
-  /**
-   * This method implements a more efficient way to set data elements than the 
-   * default implementation of the super class. It sets the data elements line 
-   * by line instead of pixel by pixel.
-   * 
-   * @param x The x-coordinate of the data elements in <code>obj</code>.
-   * @param y The y-coordinate of the data elements in <code>obj</code>.
-   * @param w The width of the data elements in <code>obj</code>.
-   * @param h The height of the data elements in <code>obj</code>.
-   * @param obj The primitive array containing the data elements to set.
-   * @param data The DataBuffer to store the data elements into.
-   * @see java.awt.image.SampleModel#setDataElements(int, int, int, int, 
-   *     java.lang.Object, java.awt.image.DataBuffer)
-   */
-  public void setDataElements(int x, int y, int w, int h,
-				Object obj, DataBuffer data)
-  {
-    
-    Object pixelData;
-    switch (getTransferType())
-    {
-      case DataBuffer.TYPE_BYTE:
-        pixelData = ((DataBufferByte) data).getData();
-        break;
-       case DataBuffer.TYPE_USHORT:
-         pixelData = ((DataBufferUShort) data).getData();
-         break;
-       case DataBuffer.TYPE_INT:
-         pixelData = ((DataBufferInt) data).getData();
-         break;
-       default:
-          // Seems like the only sensible thing to do.
-          throw new ClassCastException();
-    }
-    
-    int inOffset = 0;
-    int dataOffset = scanlineStride*y + x + data.getOffset();
-    for (int yy=y; yy<(y+h); yy++)
-    {
-      System.arraycopy(obj,inOffset,pixelData,dataOffset,w);
-      dataOffset += scanlineStride;
-      inOffset += w;
-    }
-  }
-  
-  
   public void setDataElements(int x, int y, Object obj, DataBuffer data)
   {
-    int offset = scanlineStride*y + x + data.getOffset();
     
     int transferType = getTransferType();
-    if (getTransferType() != data.getDataType())
-      {
-	throw new IllegalArgumentException("transfer type ("+
-					   getTransferType()+"), "+
-					   "does not match data "+
-					   "buffer type (" +
-					   data.getDataType() +
-					   ").");
-      }
-
-    try
-      {
-	switch (transferType)
-	  {
-	  case DataBuffer.TYPE_BYTE:
-	    {
-	      DataBufferByte out = (DataBufferByte) data;
-	      byte[] in = (byte[]) obj;
-	      out.getData()[offset] = in[0];
-	      return;
-	    }
-	  case DataBuffer.TYPE_USHORT:
-	    {
-	      DataBufferUShort out = (DataBufferUShort) data;
-	      short[] in = (short[]) obj;
-	      out.getData()[offset] = in[0];
-	      return;
-	    }
-	  case DataBuffer.TYPE_INT:
-	    {
-	      DataBufferInt out = (DataBufferInt) data;
-	      int[] in = (int[]) obj;
-	      out.getData()[offset] = in[0];
-	      return;
-	    }
-	    // FIXME: Fill in the other possible types.
-	  default:
-	    throw new InternalError();
-	  }
-      }
-    catch (ArrayIndexOutOfBoundsException aioobe)
-      {
-	String msg = "While writing data elements" +
-	  ", x="+x+", y="+y+
-	  ", width="+width+", height="+height+
-	  ", scanlineStride="+scanlineStride+
-	  ", offset="+offset+
-	  ", data.getSize()="+data.getSize()+
-	  ", data.getOffset()="+data.getOffset()+
-	  ": " +
-	  aioobe;
-	throw new ArrayIndexOutOfBoundsException(msg);
-      }
+        switch (transferType)
+          {
+          case DataBuffer.TYPE_BYTE:
+            {
+              byte[] in = (byte[]) obj;
+              data.setElem(y * scanlineStride + x, ((int) in[0]) & 0xff);
+              break;
+            }
+          case DataBuffer.TYPE_USHORT:
+            {
+              short[] in = (short[]) obj;
+          data.setElem(y * scanlineStride + x, ((int) in[0]) & 0xffff);
+          break;
+            }
+          case DataBuffer.TYPE_INT:
+            {
+              int[] in = (int[]) obj;
+          data.setElem(y * scanlineStride + x, in[0]);
+          break;
+            }
+          }
     }
 
   /**

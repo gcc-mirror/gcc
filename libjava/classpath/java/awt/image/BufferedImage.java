@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package java.awt.image;
 
+import gnu.java.awt.Buffers;
 import gnu.java.awt.ComponentDataBlitOp;
 
 import java.awt.Graphics;
@@ -79,26 +80,36 @@ public class BufferedImage extends Image
                           TYPE_BYTE_BINARY    = 12,
                           TYPE_BYTE_INDEXED   = 13;
   
-  static final int[] bits3 = { 8, 8, 8 };
-  static final int[] bits4 = { 8, 8, 8, 8 };
-  static final int[] bits1byte = { 8 };
-  static final int[] bits1ushort = { 16 };
+  /**
+   * Vector of TileObservers (or null)
+   */
+  Vector tileObservers;
   
-  static final int[] masks_int = { 0x00ff0000,
-				   0x0000ff00,
-				   0x000000ff,
-				   DataBuffer.TYPE_INT };
-  static final int[] masks_565 = { 0xf800,
-				   0x07e0,
-				   0x001f,
-				   DataBuffer.TYPE_USHORT};
-  static final int[] masks_555 = { 0x7c00,
-				   0x03e0,
-				   0x001f,
-				   DataBuffer.TYPE_USHORT};
+  /**
+   * The image's WritableRaster
+   */
+  WritableRaster raster;
 
-  Vector observers;
-  
+  /**
+   * The associated ColorModel
+   */
+  ColorModel colorModel;
+
+  /**
+   * The image's properties (or null)
+   */
+  Hashtable properties;
+
+  /**
+   * Whether alpha is premultiplied
+   */
+  boolean isPremultiplied;
+
+  /**
+   * The predefined type, if any.
+   */
+  int type;
+
   /**
    * Creates a new <code>BufferedImage</code> with the specified width, height
    * and type.  Valid <code>type</code> values are:
@@ -119,155 +130,181 @@ public class BufferedImage extends Image
    *   <li>{@link #TYPE_BYTE_INDEXED}</li>
    * </ul>
    * 
-   * @param w  the width (must be > 0).
-   * @param h  the height (must be > 0).
+   * @param width the width (must be > 0).
+   * @param height the height (must be > 0).
    * @param type  the image type (see the list of valid types above).
    * 
-   * @throws IllegalArgumentException if <code>w</code> or <code>h</code> is
-   *     less than or equal to zero.
+   * @throws IllegalArgumentException if <code>width</code> or
+   *     <code>height</code> is less than or equal to zero.
    * @throws IllegalArgumentException if <code>type</code> is not one of the
    *     specified values.
    */
-  public BufferedImage(int w, int h, int type)
+  public BufferedImage(int width, int height, int type)
   {
+    SampleModel sm = null;
     ColorModel cm = null;
-    
-    boolean alpha = false;
-    boolean premultiplied = false;
-    switch (type)
+    boolean premultiplied = (type == BufferedImage.TYPE_INT_ARGB_PRE || 
+			     type == BufferedImage.TYPE_4BYTE_ABGR_PRE);
+
+    switch( type )
       {
-      case TYPE_4BYTE_ABGR_PRE:
-      case TYPE_INT_ARGB_PRE:
-	premultiplied = true;
-	// fall through
-      case TYPE_INT_ARGB:
-      case TYPE_4BYTE_ABGR:
-	alpha = true;
-      }
-	
-    ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_sRGB);
-    switch (type)
-      {
-      case TYPE_INT_RGB:
-      case TYPE_INT_ARGB:
-      case TYPE_INT_ARGB_PRE:
-      case TYPE_USHORT_565_RGB:
-      case TYPE_USHORT_555_RGB:
-	int[] masks = null;
-	switch (type)
-	  {
-	  case TYPE_INT_RGB:
-	  case TYPE_INT_ARGB:
-	  case TYPE_INT_ARGB_PRE:
-	    masks = masks_int;
-	    break;
-	  case TYPE_USHORT_565_RGB:
-	    masks = masks_565;
-	    break;
-	  case TYPE_USHORT_555_RGB:
-	    masks = masks_555;
-	    break;
-	  }
-	
-	cm = new DirectColorModel(cs,
-				  32, // 32 bits in an int
-				  masks[0], // r
-				  masks[1], // g
-				  masks[2], // b
-				  alpha ? 0xff000000 : 0,
-				  premultiplied,
-				  masks[3] // data type
-				  );
+      case BufferedImage.TYPE_INT_RGB:
+	sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_INT, 
+					       width, height,
+					       new int[]{ 0x00FF0000, 
+							  0x0000FF00, 
+							  0x000000FF } ) ;
+	cm = new DirectColorModel( 24, 0xff0000, 0xff00, 0xff );
 	break;
 	
-      case TYPE_INT_BGR:
-	String msg =
-	  "FIXME: Programmer is confused. Why (and how) does a " +
-	  "TYPE_INT_BGR image use ComponentColorModel to store " +
-	  "8-bit values? Is data type TYPE_INT or TYPE_BYTE. What " +
-	  "is the difference between TYPE_INT_BGR and TYPE_3BYTE_BGR?";
-	throw new UnsupportedOperationException(msg);
-	
-      case TYPE_3BYTE_BGR:
-      case TYPE_4BYTE_ABGR:
-      case TYPE_4BYTE_ABGR_PRE:
-      case TYPE_BYTE_GRAY:
-      case TYPE_USHORT_GRAY:
-	int[] bits = null;
-	int dataType = DataBuffer.TYPE_BYTE;
-	switch (type) {
-	case TYPE_3BYTE_BGR:
-	  bits = bits3;
-	  break;
-	case TYPE_4BYTE_ABGR:
-	case TYPE_4BYTE_ABGR_PRE:
-	  bits = bits4;
-	  break;
-        case TYPE_BYTE_GRAY:
-          bits = bits1byte;
-          cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
-          break;
-        case TYPE_USHORT_GRAY:
-          bits = bits1ushort;
-          cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
-          dataType = DataBuffer.TYPE_USHORT;
-          break;
-	}
-	cm = new ComponentColorModel(cs, bits, alpha, premultiplied,
-				     alpha ?
-				     Transparency.TRANSLUCENT:
-				     Transparency.OPAQUE,
-				     dataType);
+      case BufferedImage.TYPE_3BYTE_BGR:
+	sm = new PixelInterleavedSampleModel( DataBuffer.TYPE_BYTE,
+					      width, height,
+					      3, width * 3, 
+					      new int[]{ 2, 1, 0 } );
+	cm = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
+                                  false, false,
+                                  BufferedImage.OPAQUE,
+                                  DataBuffer.TYPE_BYTE);
+        break;
+
+      case BufferedImage.TYPE_INT_ARGB:
+      case BufferedImage.TYPE_INT_ARGB_PRE:
+	sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_INT, 
+					       width, height,
+					       new int[]{ 0x00FF0000, 
+							  0x0000FF00, 
+							  0x000000FF, 
+							  0xFF000000 } );
+        if (premultiplied)
+          cm = new DirectColorModel( ColorSpace.getInstance(ColorSpace.CS_sRGB),
+                                     32, 0xff0000, 0xff00, 0xff, 0xff000000,
+                                     true,
+                                     Buffers.smallestAppropriateTransferType(32));
+        else
+          cm = new DirectColorModel( 32, 0xff0000, 0xff00, 0xff, 0xff000000 );
 	break;
-      case TYPE_BYTE_BINARY:
-	byte[] vals = { 0, (byte) 0xff };
-	cm = new IndexColorModel(8, 2, vals, vals, vals);
+
+      case BufferedImage.TYPE_4BYTE_ABGR:
+      case BufferedImage.TYPE_4BYTE_ABGR_PRE:
+        sm = new PixelInterleavedSampleModel(DataBuffer.TYPE_BYTE, 
+                                             width, height,
+                                             4, 4*width,
+                                             new int[]{3, 2, 1, 0});
+        cm = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
+                                     true, premultiplied,
+                                     BufferedImage.TRANSLUCENT,
+                                     DataBuffer.TYPE_BYTE);
 	break;
-      case TYPE_BYTE_INDEXED:
-	String msg2 = "type not implemented yet";
-	throw new UnsupportedOperationException(msg2);
-	// FIXME: build color-cube and create color model
+
+      case BufferedImage.TYPE_INT_BGR:
+	sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_INT, 
+					       width, height,
+					       new int[]{ 0x000000FF, 
+							  0x0000FF00, 
+							  0x00FF0000 } ) ;
+	cm = new DirectColorModel( 24, 0xff, 0xff00, 0xff0000 );
+        break;
+
+      case BufferedImage.TYPE_USHORT_565_RGB:
+	sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_USHORT,
+					       width, height,
+					       new int[]{ 0xF800, 
+							  0x7E0, 
+							  0x1F } ) ;
+	cm = new DirectColorModel( 16, 0xF800, 0x7E0, 0x1F );
+	break;
+      case BufferedImage.TYPE_USHORT_555_RGB:
+	sm = new SinglePixelPackedSampleModel( DataBuffer.TYPE_USHORT,
+					       width, height,
+					       new int[]{ 0x7C00, 
+							  0x3E0, 
+							  0x1F } ) ;
+	cm = new DirectColorModel( 15, 0x7C00, 0x3E0, 0x1F );
+	break;
+
+      case BufferedImage.TYPE_BYTE_INDEXED:
+	cm = createDefaultIndexedColorModel( false );
+
+      case BufferedImage.TYPE_BYTE_GRAY:
+	sm = new PixelInterleavedSampleModel( DataBuffer.TYPE_BYTE,
+					      width, height,
+					      1, width, new int[]{ 0 } );
+	break;
+
+      case BufferedImage.TYPE_USHORT_GRAY:
+	sm = new PixelInterleavedSampleModel( DataBuffer.TYPE_USHORT,
+					      width, height,
+					      1, width, new int[]{ 0 } );
+	break;
+
+      case BufferedImage.TYPE_BYTE_BINARY:
+	cm = createDefaultIndexedColorModel( true );
+	sm = new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE, 
+					     width, height, 1);
+	break;
+
       default:
-        throw new IllegalArgumentException("Unknown image type " + type);
+	sm = null;
       }
+
+    if( sm == null )
+      throw new IllegalArgumentException("Unknown predefined image type.");
     
-    init(cm,
-	 cm.createCompatibleWritableRaster(w, h),
-	 premultiplied,
-	 null, // no properties
-	 type
-	 );
+    if( cm == null ) // only for the grayscale types 
+      {
+	int buftype;
+	int[] bits = new int[1];
+	if( type == BufferedImage.TYPE_BYTE_GRAY )
+	  {
+	    buftype = DataBuffer.TYPE_BYTE;
+	    bits[0] = 8;
+	  }
+	else
+	  {
+	    buftype = DataBuffer.TYPE_USHORT;
+	    bits[0] = 16;
+	  }
+	ColorSpace graySpace = ColorSpace.getInstance( ColorSpace.CS_GRAY );
+
+	cm = new ComponentColorModel( graySpace, bits, false, false, 
+				      Transparency.OPAQUE, buftype );
+      }
+
+    init( cm,
+	  Raster.createWritableRaster(sm, new Point( 0, 0 ) ),
+	  premultiplied,
+	  null, // no properties
+	  type );
   }
 
   public BufferedImage(int w, int h, int type,
 		       IndexColorModel indexcolormodel)
   {
     if ((type != TYPE_BYTE_BINARY) && (type != TYPE_BYTE_INDEXED))
-      throw new IllegalArgumentException("type must be binary or indexed");
+      throw new IllegalArgumentException("Type must be TYPE_BYTE_BINARY or TYPE_BYTE_INDEXED");
+    if( indexcolormodel.getMapSize() > 16 && type == TYPE_BYTE_BINARY )
+      throw new IllegalArgumentException("Type TYPE_BYTE_BINARY cannot have a larger than 16-color palette.");
+    if( indexcolormodel.getMapSize() > 256 )
+      throw new IllegalArgumentException("Byte type cannot have a larger than 256-color palette.");
 
-    init(indexcolormodel,
-	 indexcolormodel.createCompatibleWritableRaster(w, h),
-	 false, // not premultiplied (guess)
-	 null, // no properties
-	 type);
+    init( indexcolormodel,
+	  indexcolormodel.createCompatibleWritableRaster(w, h),
+	  indexcolormodel.isAlphaPremultiplied(),
+	  null, // no properties
+	  type );
   }
 
   public BufferedImage(ColorModel colormodel, 
 		       WritableRaster writableraster,
 		       boolean premultiplied,
-		       Hashtable properties)
+		       Hashtable<?,?> properties)
   {
     init(colormodel, writableraster, premultiplied, properties,
 	 TYPE_CUSTOM);
-    // TODO: perhaps try to identify type?
   }
  
-  WritableRaster raster;
-  ColorModel colorModel;
-  Hashtable properties;
-  boolean isPremultiplied;
-  int type;
-  
+
   private void init(ColorModel cm,
 		    WritableRaster writableraster,
 		    boolean premultiplied,
@@ -280,12 +317,48 @@ public class BufferedImage extends Image
     isPremultiplied = premultiplied;
     this.type = type;
   }
-    
-  //public void addTileObserver(TileObserver tileobserver) {}
+
+  /**
+   * Creates the default palettes for the predefined indexed color types
+   * (256-color or black-and-white)
+   *
+   * @param binary - If <code>true</code>, a black and white palette,
+   * otherwise a default 256-color palette is returned.
+   */    
+  private IndexColorModel createDefaultIndexedColorModel( boolean binary )
+  {
+    if( binary )
+      {
+	byte[] t = new byte[]{ 0, (byte)255 };
+	return new IndexColorModel( 1, 2, t, t, t );
+      }
+
+    byte[] r = new byte[256];
+    byte[] g = new byte[256];
+    byte[] b = new byte[256];
+    int index = 0;
+    for( int i = 0; i < 6; i++ )
+      for( int j = 0; j < 6; j++ )
+	for( int k = 0; k < 6; k++ )
+	  {
+	    r[ index ] = (byte)(i * 51);
+	    g[ index ] = (byte)(j * 51);
+	    b[ index ] = (byte)(k * 51);
+	    index++;
+	  }
+    while( index < 256 )
+      {
+	r[ index ] = g[ index ] = b[ index ] = 
+	  (byte)(18 + (index - 216) * 6);
+	index++;
+      }
+    return new IndexColorModel( 8, 256, r, g, b );
+  }
   
   public void coerceData(boolean premultiplied)
   {
     colorModel = colorModel.coerceData(raster, premultiplied);
+    isPremultiplied = premultiplied;
   }
 
   public WritableRaster copyData(WritableRaster dest)
@@ -555,7 +628,7 @@ public class BufferedImage extends Image
       };
   }
   
-  public Vector getSources()
+  public Vector<RenderedImage> getSources()
   {
     return null;
   }
@@ -726,10 +799,10 @@ public class BufferedImage extends Image
    */
   public void addTileObserver (TileObserver to)
   {
-    if (observers == null)
-      observers = new Vector ();
+    if (tileObservers == null)
+      tileObservers = new Vector ();
 	
-    observers.add (to);
+    tileObservers.add (to);
   }
 	
   /**
@@ -741,10 +814,10 @@ public class BufferedImage extends Image
    */
   public void removeTileObserver (TileObserver to)
   {
-    if (observers == null)
+    if (tileObservers == null)
       return;
 	
-    observers.remove (to);
+    tileObservers.remove (to);
   }
 
   /**

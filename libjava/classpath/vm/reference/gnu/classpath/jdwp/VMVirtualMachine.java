@@ -199,7 +199,7 @@ public class VMVirtualMachine
    * @return an array of virtual machine methods
    */
   public static native VMMethod[] getAllClassMethods (Class klass)
-    throws JdwpException;
+  { return null; }
 
   /**
    * A factory method for getting valid virtual machine methods
@@ -213,7 +213,7 @@ public class VMVirtualMachine
    * @throws JdwpException for any other error
    */
   public static native VMMethod getClassMethod(Class klass, long id)
-    throws JdwpException;
+  { return null; }
 
   /**
    * Returns the thread's call stack

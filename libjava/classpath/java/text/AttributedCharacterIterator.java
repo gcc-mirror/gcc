@@ -1,5 +1,5 @@
 /* AttributedCharacterIterator.java -- Iterate over attributes
-   Copyright (C) 1998, 1999, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2004, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,7 +53,10 @@ import java.util.Set;
  * that is defined for a particular value across an entire range of
  * characters or which is undefined over a range of characters.
  *
+ * @since 1.2
+ * 
  * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @since 1.2
  */
 public interface AttributedCharacterIterator extends CharacterIterator
 {
@@ -68,7 +71,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
      * This is the attribute for the language of the text.  The value of
      * attributes of this key type are instances of <code>Locale</code>.
      */
-    public static final Attribute LANGUAGE = new Attribute ("LANGUAGE");
+    public static final Attribute LANGUAGE = new Attribute("language");
 
     /**
      * This is the attribute for the reading form of text.  This is used
@@ -77,7 +80,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
      * instances of <code>Annotation</code> which wrappers a 
      * <code>String</code>.
      */
-    public static final Attribute READING = new Attribute ("READING");
+    public static final Attribute READING = new Attribute("reading");
 
     /**
      * This is the attribute for input method segments.  The value of attributes
@@ -85,7 +88,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
      * a <code>String</code>.
      */
     public static final Attribute INPUT_METHOD_SEGMENT =
-      new Attribute ("INPUT_METHOD_SEGMENT");
+      new Attribute("input_method_segment");
 
     /**
      * The name of the attribute key
@@ -98,7 +101,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
      *
      * @param name The name of this attribute key.
      */
-    protected Attribute (String name)
+    protected Attribute(String name)
     {
       this.name = name;
     }
@@ -156,7 +159,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
      * @return <code>true</code> if the specified object is equal to this one, 
      *         <code>false</code> otherwise.
      */
-    public final boolean equals (Object obj)
+    public final boolean equals(Object obj)
     {
       if (obj == this)
         return true;
@@ -192,7 +195,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
    *
    * @return A list of keys 
    */
-  Set getAllAttributeKeys();
+  Set<Attribute> getAllAttributeKeys();
 
   /**
    * Returns a <code>Map</code> of the attributes defined for the current 
@@ -200,7 +203,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
    *
    * @return A <code>Map</code> of the attributes for the current character.
    */
-  Map getAttributes();
+  Map<Attribute, Object> getAttributes();
 
   /**
    * Returns the value of the specified attribute for the
@@ -211,7 +214,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
    *
    * @return The value of the specified attribute
    */
-  Object getAttribute (AttributedCharacterIterator.Attribute attrib);
+  Object getAttribute(AttributedCharacterIterator.Attribute attrib);
 
   /**
    * Returns the index of the first character in the run that
@@ -230,7 +233,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
    *
    * @return The start index of the run.
    */
-  int getRunStart (Set attribs);
+  int getRunStart(Set<? extends Attribute> attribs);
   
   /**
    * Returns the index of the first character in the run that
@@ -240,7 +243,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
    *
    * @return The start index of the run.
    */
-  int getRunStart (AttributedCharacterIterator.Attribute attrib);
+  int getRunStart(AttributedCharacterIterator.Attribute attrib);
   
   /**
    * Returns the index of the character after the end of the run
@@ -259,7 +262,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
    *
    * @return The end index of the run.
    */
-  int getRunLimit (Set attribs);
+  int getRunLimit(Set<? extends Attribute> attribs);
   
   /**
    * Returns the index of the character after the end of the run
@@ -269,6 +272,6 @@ public interface AttributedCharacterIterator extends CharacterIterator
    * 
    * @return The end index of the run.
    */
-  int getRunLimit (AttributedCharacterIterator.Attribute attrib);
+  int getRunLimit(AttributedCharacterIterator.Attribute attrib);
 
 } // interface AttributedCharacterIterator

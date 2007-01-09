@@ -43,6 +43,7 @@ import gnu.java.security.Engine;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.security.cert.CertificateException;
 import java.util.Date;
 import java.util.Enumeration;
@@ -108,105 +109,100 @@ public class KeyStore
     this.type = type;
   }
 
-  // Class methods.
-  // ------------------------------------------------------------------------
-
-  /** 
-   * Gets an instance of the KeyStore class representing
-   * the specified keystore. If the type is not 
-   * found then, it throws KeyStoreException.
-   *
-   * @param type the type of keystore to choose
-   * @return a KeyStore repesenting the desired type
-   * @throws KeyStoreException if the type of keystore is not implemented
-   *         by providers or the implementation cannot be instantiated.
+  /**
+   * Returns an instance of a <code>KeyStore</code> representing the specified
+   * type, from the first provider that implements it.
+   * 
+   * @param type the type of keystore to create.
+   * @return a <code>KeyStore</code> repesenting the desired type.
+   * @throws KeyStoreException if the designated type of is not implemented by
+   *           any provider, or the implementation could not be instantiated.
+   * @throws IllegalArgumentException if <code>type</code> is
+   *           <code>null</code> or is an empty string.
    */
   public static KeyStore getInstance(String type) throws KeyStoreException
   {
     Provider[] p = Security.getProviders();
-
+    KeyStoreException lastException = null;
     for (int i = 0; i < p.length; i++)
-      {
-        try
-          {
-            return getInstance(type, p[i]);
-          }
-        catch (KeyStoreException e)
-          {
-	    // Ignore.
-          }
-      }
-
+      try
+        {
+          return getInstance(type, p[i]);
+        }
+      catch (KeyStoreException x)
+        {
+          lastException = x;
+        }
+    if (lastException != null)
+      throw lastException;
     throw new KeyStoreException(type);
   }
 
-  /** 
-   * Gets an instance of the KeyStore class representing
-   * the specified key store from the specified provider. 
-   * If the type is not found then, it throws KeyStoreException. 
-   * If the provider is not found, then it throws 
-   * NoSuchProviderException.
-   *
-   * @param type the type of keystore to choose
-   * @param provider the provider name
-   * @return a KeyStore repesenting the desired type
-   * @throws KeyStoreException if the type of keystore is not 
-   *          implemented by the given provider
-   * @throws NoSuchProviderException if the provider is not found
-   * @throws IllegalArgumentException if the provider string is 
-   *           null or empty
+  /**
+   * Returns an instance of a <code>KeyStore</code> representing the specified
+   * type, from the named provider.
+   * 
+   * @param type the type of keystore to create.
+   * @param provider the name of the provider to use.
+   * @return a <code>KeyStore</code> repesenting the desired type.
+   * @throws KeyStoreException if the designated type is not implemented by the
+   *           given provider.
+   * @throws NoSuchProviderException if the provider is not found.
+   * @throws IllegalArgumentException if either <code>type</code> or
+   *           <code>provider</code> is <code>null</code> or empty.
    */
   public static KeyStore getInstance(String type, String provider)
     throws KeyStoreException, NoSuchProviderException
   {
-    if (provider == null || provider.length() == 0)
-      throw new IllegalArgumentException("Illegal provider");
-
+    if (provider == null)
+      throw new IllegalArgumentException("provider MUST NOT be null");
+    provider = provider.trim();
+    if (provider.length() == 0)
+      throw new IllegalArgumentException("provider MUST NOT be empty");
     Provider p = Security.getProvider(provider);
     if (p == null)
       throw new NoSuchProviderException(provider);
-
     return getInstance(type, p);
   }
 
-  /** 
-   * Gets an instance of the KeyStore class representing
-   * the specified key store from the specified provider. 
-   * If the type is not found then, it throws KeyStoreException. 
-   * If the provider is not found, then it throws 
-   * NoSuchProviderException.
-   *
-   * @param type the type of keystore to choose
-   * @param provider the keystore provider
-   * @return a KeyStore repesenting the desired type
-   * @throws KeyStoreException if the type of keystore is not 
-   *          implemented by the given provider
-   * @throws IllegalArgumentException if the provider object is null
+  /**
+   * Returns an instance of a <code>KeyStore</code> representing the specified
+   * type, from the specified provider.
+   * 
+   * @param type the type of keystore to create.
+   * @param provider the provider to use.
+   * @return a <code>KeyStore</code> repesenting the desired type.
+   * @throws KeyStoreException if the designated type is not implemented by the
+   *           given provider.
+   * @throws IllegalArgumentException if either <code>type</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>type</code> is an empty string.
    * @since 1.4
    */
   public static KeyStore getInstance(String type, Provider provider)
-    throws KeyStoreException 
+      throws KeyStoreException
   {
-    if (provider == null)
-      throw new IllegalArgumentException("Illegal provider");
+    Throwable cause;
     try
       {
-        return new KeyStore(
-          (KeyStoreSpi) Engine.getInstance(KEY_STORE, type, provider),
-          provider, type);
+        Object spi = Engine.getInstance(KEY_STORE, type, provider);
+        return new KeyStore((KeyStoreSpi) spi, provider, type);
       }
-    catch (NoSuchAlgorithmException nsae)
+    catch (NoSuchAlgorithmException x)
       {
-        throw new KeyStoreException(type);
+        cause = x;
       }
-    catch (java.lang.reflect.InvocationTargetException ite)
+    catch (InvocationTargetException x)
       {
-	throw new KeyStoreException(type);
+        cause = x.getCause() != null ? x.getCause() : x;
       }
-    catch (ClassCastException cce)
+    catch (ClassCastException x)
       {
-        throw new KeyStoreException(type);
+        cause = x;
       }
+    KeyStoreException x = new KeyStoreException(type);
+    x.initCause(cause);
+    throw x;
   }
 
   /**
@@ -392,7 +388,7 @@ public class KeyStore
 
      @return an Enumeration of the aliases
    */
-  public final Enumeration aliases() throws KeyStoreException
+  public final Enumeration<String> aliases() throws KeyStoreException
   {
     return keyStoreSpi.engineAliases();
   }

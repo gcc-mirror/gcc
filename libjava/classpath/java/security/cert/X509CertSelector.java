@@ -76,6 +76,7 @@ import javax.security.auth.x500.X500Principal;
  * use or modify this class then they need to synchronize on the object.
  *
  * @author Casey Marshall (csm@gnu.org)
+ * @since 1.4
  */
 public class X509CertSelector implements CertSelector, Cloneable
 {
@@ -573,7 +574,7 @@ public class X509CertSelector implements CertSelector, Cloneable
    *
    * @return The set of key purpose OIDs (strings).
    */
-  public Set getExtendedKeyUsage()
+  public Set<String> getExtendedKeyUsage()
   {
     if (keyPurposeSet != null)
       return Collections.unmodifiableSet(keyPurposeSet);
@@ -588,7 +589,7 @@ public class X509CertSelector implements CertSelector, Cloneable
    * @param keyPurposeSet The set of key purpose OIDs.
    * @throws IOException If any element of the set is not a valid OID string.
    */
-  public void setExtendedKeyUsage(Set keyPurposeSet) throws IOException
+  public void setExtendedKeyUsage(Set<String> keyPurposeSet) throws IOException
   {
     if (keyPurposeSet == null)
       {
@@ -653,7 +654,7 @@ public class X509CertSelector implements CertSelector, Cloneable
    * @param altNames The alternative names.
    * @throws IOException If any element of the argument is invalid.
    */
-  public void setSubjectAlternativeNames(Collection altNames)
+  public void setSubjectAlternativeNames(Collection<List<?>> altNames)
     throws IOException
   {
     if (altNames == null)
@@ -786,7 +787,7 @@ public class X509CertSelector implements CertSelector, Cloneable
   // certificate, and check it against the specified set.
 
   // FIXME
-//   public void setPolicy(Set policy) throws IOException
+//   public void setPolicy(Set<String> policy) throws IOException
 //   {
 //     if (policy != null)
 //       {
@@ -807,7 +808,7 @@ public class X509CertSelector implements CertSelector, Cloneable
 //   }
 
   // FIXME
-//   public void setPathToNames(Collection names) throws IOException
+//   public void setPathToNames(Collection<List<?>> names) throws IOException
 //   {
 //     if (names == null)
 //       {
@@ -843,19 +844,19 @@ public class X509CertSelector implements CertSelector, Cloneable
 //   }
 
   // FIXME
-//   public Collection getSubjectAlternativeNames()
+//   public Collection<List<?>> getSubjectAlternativeNames()
 //   {
 //     return null;
 //   }
 
   // FIXME
-//   public Set getPolicy()
+//   public Set<String> getPolicy()
 //   {
 //     return null;
 //   }
 
   // FIXME
-//   public Collection getPathToNames()
+//   public Collection<List<?>> getPathToNames()
 //   {
 //     return null;
 //   }

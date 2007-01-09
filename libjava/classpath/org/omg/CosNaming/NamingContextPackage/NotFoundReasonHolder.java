@@ -1,5 +1,5 @@
 /* NotFoundReasonHolder.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -81,7 +81,9 @@ public final class NotFoundReasonHolder
 
   /**
    * Get the type code of {@link NotFoundReason}.
-   * @return
+   * 
+   * @return the typecode of enumeration, allowed value names being
+   *         "missing_node", "not_context" and "not_object"
    */
   public TypeCode _type()
   {

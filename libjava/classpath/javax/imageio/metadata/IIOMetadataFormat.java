@@ -106,15 +106,15 @@ public interface IIOMetadataFormat
 
   int getObjectArrayMinLength (String elementName);
 
-  Class getObjectClass (String elementName);
+  Class<?> getObjectClass (String elementName);
 
   Object getObjectDefaultValue (String elementName);
 
   Object[] getObjectEnumerations (String elementName);
 
-  Comparable getObjectMaxValue (String elementName);
+  Comparable<?> getObjectMaxValue (String elementName);
 
-  Comparable getObjectMinValue (String elementName);
+  Comparable<?> getObjectMinValue (String elementName);
 
   int getObjectValueType (String elementName);
 

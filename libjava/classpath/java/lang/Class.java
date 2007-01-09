@@ -42,17 +42,14 @@ import gnu.classpath.VMStackWalker;
 import gnu.java.lang.reflect.ClassSignatureParser;
 
 import java.io.InputStream;
-import java.io.ObjectStreamClass;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
+import java.lang.annotation.Inherited;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericDeclaration;
-import java.lang.reflect.GenericSignatureFormatError;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.MalformedParameterizedTypeException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -66,6 +63,7 @@ import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -97,11 +95,10 @@ import java.util.HashSet;
  * @author Eric Blake (ebb9@email.byu.edu)
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
- * @author Tom Tromey (tromey@cygnus.com)
  * @since 1.0
  * @see ClassLoader
  */
-public final class Class 
+public final class Class<T> 
   implements Serializable, Type, AnnotatedElement, GenericDeclaration
 {
   /**
@@ -147,7 +144,7 @@ public final class Class
   final transient Object vmdata;
 
   /** newInstance() caches the default constructor */
-  private transient Constructor constructor;
+  private transient Constructor<T> constructor;
 
   /**
    * Class is non-instantiable from Java code; only the VM can create
@@ -184,7 +181,7 @@ public final class Class
    * @throws ExceptionInInitializerError if the class loads, but an exception
    *         occurs during initialization
    */
-  public static Class forName(String name) throws ClassNotFoundException
+  public static Class<?> forName(String name) throws ClassNotFoundException
   {
     return VMClass.forName(name, true, VMStackWalker.getCallingClassLoader());
   }
@@ -216,8 +213,8 @@ public final class Class
    * @see ClassLoader
    * @since 1.2
    */
-  public static Class forName(String name, boolean initialize,
-                              ClassLoader classloader)
+  public static Class<?> forName(String name, boolean initialize,
+				 ClassLoader classloader)
     throws ClassNotFoundException
   {
     if (classloader == null)
@@ -232,7 +229,7 @@ public final class Class
               sm.checkPermission(new RuntimePermission("getClassLoader"));
           }
       }
-    return VMClass.forName(name, initialize, classloader);
+    return (Class<?>) VMClass.forName(name, initialize, classloader);
   }
   
   /**
@@ -247,7 +244,7 @@ public final class Class
    * @throws SecurityException if the security check fails
    * @since 1.1
    */
-  public Class[] getClasses()
+  public Class<?>[] getClasses()
   {
     memberAccessCheck(Member.PUBLIC);
     return internalGetClasses();
@@ -256,14 +253,14 @@ public final class Class
   /**
    * Like <code>getClasses()</code> but without the security checks.
    */
-  private Class[] internalGetClasses()
+  private Class<?>[] internalGetClasses()
   {
-    ArrayList list = new ArrayList();
+    ArrayList<Class> list = new ArrayList<Class>();
     list.addAll(Arrays.asList(getDeclaredClasses(true)));
     Class superClass = getSuperclass();
     if (superClass != null)
       list.addAll(Arrays.asList(superClass.internalGetClasses()));
-    return (Class[])list.toArray(new Class[list.size()]);
+    return list.toArray(new Class<?>[list.size()]);
   }
   
   /**
@@ -307,7 +304,7 @@ public final class Class
    * @see Array
    * @since 1.1
    */
-  public Class getComponentType()
+  public Class<?> getComponentType()
   {
     return VMClass.getComponentType (this);
   }
@@ -326,7 +323,8 @@ public final class Class
    * @see #getConstructors()
    * @since 1.1
    */
-  public Constructor getConstructor(Class[] types) throws NoSuchMethodException
+  public Constructor<T> getConstructor(Class<?>... types)
+    throws NoSuchMethodException
   {
     memberAccessCheck(Member.PUBLIC);
     Constructor[] constructors = getDeclaredConstructors(true);
@@ -351,7 +349,7 @@ public final class Class
    * @throws SecurityException if the security check fails
    * @since 1.1
    */
-  public Constructor[] getConstructors()
+  public Constructor<?>[] getConstructors()
   {
     memberAccessCheck(Member.PUBLIC);
     return getDeclaredConstructors(true);
@@ -371,7 +369,7 @@ public final class Class
    * @see #getDeclaredConstructors()
    * @since 1.1
    */
-  public Constructor getDeclaredConstructor(Class[] types)
+  public Constructor<T> getDeclaredConstructor(Class<?>... types)
     throws NoSuchMethodException
   {
     memberAccessCheck(Member.DECLARED);
@@ -397,13 +395,13 @@ public final class Class
    * @throws SecurityException if the security check fails
    * @since 1.1
    */
-  public Class[] getDeclaredClasses()
+  public Class<?>[] getDeclaredClasses()
   {
     memberAccessCheck(Member.DECLARED);
     return getDeclaredClasses(false);
   }
 
-  Class[] getDeclaredClasses (boolean publicOnly)
+  Class<?>[] getDeclaredClasses (boolean publicOnly)
   {
     return VMClass.getDeclaredClasses (this, publicOnly);
   }
@@ -420,13 +418,13 @@ public final class Class
    * @throws SecurityException if the security check fails
    * @since 1.1
    */
-  public Constructor[] getDeclaredConstructors()
+  public Constructor<?>[] getDeclaredConstructors()
   {
     memberAccessCheck(Member.DECLARED);
     return getDeclaredConstructors(false);
   }
 
-  Constructor[] getDeclaredConstructors (boolean publicOnly)
+  Constructor<?>[] getDeclaredConstructors (boolean publicOnly)
   {
     return VMClass.getDeclaredConstructors (this, publicOnly);
   }
@@ -500,7 +498,7 @@ public final class Class
    * @see #getDeclaredMethods()
    * @since 1.1
    */
-  public Method getDeclaredMethod(String methodName, Class[] types)
+  public Method getDeclaredMethod(String methodName, Class<?>... types)
     throws NoSuchMethodException
   {
     memberAccessCheck(Member.DECLARED);
@@ -544,7 +542,7 @@ public final class Class
    * @return the declaring class of this class
    * @since 1.1
    */
-  public Class getDeclaringClass()
+  public Class<?> getDeclaringClass()
   {
     return VMClass.getDeclaringClass (this);
   }
@@ -597,7 +595,7 @@ public final class Class
    */
   private Field[] internalGetFields()
   {
-    HashSet set = new HashSet();
+    HashSet<Field> set = new HashSet<Field>();
     set.addAll(Arrays.asList(getDeclaredFields(true)));
     Class[] interfaces = getInterfaces();
     for (int i = 0; i < interfaces.length; i++)
@@ -605,7 +603,7 @@ public final class Class
     Class superClass = getSuperclass();
     if (superClass != null)
       set.addAll(Arrays.asList(superClass.internalGetFields()));
-    return (Field[])set.toArray(new Field[set.size()]);
+    return set.toArray(new Field[set.size()]);
   }
 
   /**
@@ -633,7 +631,7 @@ public final class Class
    *
    * @return the interfaces this class directly implements
    */
-  public Class[] getInterfaces()
+  public Class<?>[] getInterfaces()
   {
     return VMClass.getInterfaces (this);
   }
@@ -663,7 +661,7 @@ public final class Class
 	{
 	  MethodKey m = (MethodKey) o;
 	  if (m.name.equals(name) && m.params.length == params.length
-              && m.returnType == returnType)
+	      && m.returnType == returnType)
 	    {
 	      for (int i = 0; i < params.length; i++)
 		{
@@ -704,7 +702,7 @@ public final class Class
    * @see #getMethods()
    * @since 1.1
    */
-  public Method getMethod(String methodName, Class[] types)
+  public Method getMethod(String methodName, Class<?>... types)
     throws NoSuchMethodException
   {
     memberAccessCheck(Member.PUBLIC);
@@ -821,7 +819,7 @@ public final class Class
    */
   private Method[] internalGetMethods()
   {
-    HashMap map = new HashMap();
+    HashMap<MethodKey,Method> map = new HashMap<MethodKey,Method>();
     Method[] methods;
     Class[] interfaces = getInterfaces();
     for(int i = 0; i < interfaces.length; i++)
@@ -846,7 +844,7 @@ public final class Class
       {
 	map.put(new MethodKey(methods[i]), methods[i]);
       }
-    return (Method[])map.values().toArray(new Method[map.size()]);
+    return map.values().toArray(new Method[map.size()]);
   }
 
   /**
@@ -1003,7 +1001,7 @@ public final class Class
    *
    * @return the direct superclass of this class
    */
-  public Class getSuperclass()
+  public Class<? super T> getSuperclass()
   {
     return VMClass.getSuperclass (this);
   }
@@ -1033,7 +1031,7 @@ public final class Class
    * @throws NullPointerException if c is null
    * @since 1.1
    */
-  public boolean isAssignableFrom(Class c)
+  public boolean isAssignableFrom(Class<?> c)
   {
     return VMClass.isAssignableFrom (this, c);
   }
@@ -1103,11 +1101,11 @@ public final class Class
    * @throws ExceptionInInitializerError if class initialization caused by
    *         this call fails with an exception
    */
-  public Object newInstance()
+  public T newInstance()
     throws InstantiationException, IllegalAccessException
   {
     memberAccessCheck(Member.PUBLIC);
-    Constructor constructor;
+    Constructor<T> constructor;
     synchronized(this)
       {
 	constructor = this.constructor;
@@ -1307,12 +1305,11 @@ public final class Class
    *                            type, <code>U</code>. 
    * @since 1.5
    */
-   /* FIXME[GENERICS]: Should be <U> Class<? extends U> asSubClass(Class<U> klass */
-  public Class asSubclass(Class klass)
+  public <U> Class<? extends U> asSubclass(Class<U> klass)
   {
     if (! klass.isAssignableFrom(this))
       throw new ClassCastException();
-    return this; /* FIXME[GENERICS]: Should cast to Class<? extends U> */ 
+    return (Class<? extends U>) this;
   }
 
   /**
@@ -1322,12 +1319,11 @@ public final class Class
    * @throws ClassCastException  if obj is not an instance of this class
    * @since 1.5
    */
-  /* FIXME[GENERICS]: Should be T cast(Object obj) */
-  public Object cast(Object obj)
+  public T cast(Object obj)
   {
     if (obj != null && ! isInstance(obj))
       throw new ClassCastException();
-    return obj; /* FIXME[GENERICS]: Should be cast to T */
+    return (T) obj;
   }
 
   /**
@@ -1395,15 +1391,13 @@ public final class Class
    *         class is not an <code>enum</code>.
    * @since 1.5
    */
-  /* FIXME[GENERICS]: T[] getEnumConstants() */
-  public Object[] getEnumConstants()
+  public T[] getEnumConstants()
   {
     if (isEnum())
       {
 	try
 	  {
-	    return (Object[])
-	      getMethod("values", new Class[0]).invoke(null, new Object[0]);
+	    return (T[]) getMethod("values").invoke(null);
 	  }
 	catch (NoSuchMethodException exception)
 	  {
@@ -1490,14 +1484,13 @@ public final class Class
    *         <code>null</code> if no such annotation exists.
    * @since 1.5
    */
-  /* FIXME[GENERICS]: <T extends Annotation> T getAnnotation(Class <T>) */
-  public Annotation getAnnotation(Class annotationClass)
+  public <A extends Annotation> A getAnnotation(Class<A> annotationClass)
   {
-    Annotation foundAnnotation = null;
+    A foundAnnotation = null;
     Annotation[] annotations = getAnnotations();
-    for (int i = 0; i < annotations.length; i++)
-      if (annotations[i].annotationType() == annotationClass)
-	foundAnnotation = annotations[i];
+    for (Annotation annotation : annotations)
+      if (annotation.annotationType() == annotationClass)
+	foundAnnotation = (A) annotation;
     return foundAnnotation;
   }
 
@@ -1514,15 +1507,22 @@ public final class Class
    */
   public Annotation[] getAnnotations()
   {
-    HashSet set = new HashSet();
-    set.addAll(Arrays.asList(getDeclaredAnnotations()));
-    Class[] interfaces = getInterfaces();
-    for (int i = 0; i < interfaces.length; i++)
-      set.addAll(Arrays.asList(interfaces[i].getAnnotations()));
-    Class superClass = getSuperclass();
-    if (superClass != null)
-      set.addAll(Arrays.asList(superClass.getAnnotations()));
-    return (Annotation[]) set.toArray(new Annotation[set.size()]);
+    HashMap<Class, Annotation> map = new HashMap<Class, Annotation>();
+    for (Annotation a : getDeclaredAnnotations())
+      map.put((Class) a.annotationType(), a);
+    for (Class<? super T> s = getSuperclass();
+	 s != null;
+	 s = s.getSuperclass())
+      {
+	for (Annotation a : s.getDeclaredAnnotations())
+	  {
+	    Class k = (Class) a.annotationType();
+	    if (! map.containsKey(k) && k.isAnnotationPresent(Inherited.class))
+	      map.put(k, a);
+	  }
+      }
+    Collection<Annotation> v = map.values();
+    return v.toArray(new Annotation[v.size()]);
   }
 
   /**
@@ -1588,8 +1588,7 @@ public final class Class
    *         a top-level class.
    * @since 1.5
    */
-   /* FIXME[GENERICS]: Should return Class<?> */
-  public Class getEnclosingClass()
+  public Class<?> getEnclosingClass()
   {
     return VMClass.getEnclosingClass(this);
   }
@@ -1605,8 +1604,7 @@ public final class Class
    *         is returned.
    * @since 1.5
    */
-   /* FIXME[GENERICS]: Should return Constructor<?> */
-  public Constructor getEnclosingConstructor()
+  public Constructor<?> getEnclosingConstructor()
   {
     return VMClass.getEnclosingConstructor(this);
   }
@@ -1731,12 +1729,11 @@ public final class Class
    *         specification, version 3.
    * @since 1.5
    */
-   /* FIXME[GENERICS]: Should return TypeVariable<Class<T>> */
-  public TypeVariable[] getTypeParameters()
+  public TypeVariable<Class<T>>[] getTypeParameters()
   {
     String sig = VMClass.getClassSignature(this);
     if (sig == null)
-      return new TypeVariable[0];
+      return (TypeVariable<Class<T>>[])new TypeVariable[0];
 
     ClassSignatureParser p = new ClassSignatureParser(this, sig);
     return p.getTypeParameters();
@@ -1751,8 +1748,7 @@ public final class Class
    * @return true if an annotation exists for the specified type.
    * @since 1.5
    */
-  /* FIXME[GENERICS]: Should be Class<? extends Annotation> */
-  public boolean isAnnotationPresent(Class
+  public boolean isAnnotationPresent(Class<? extends Annotation> 
 				     annotationClass)
   {
     return getAnnotation(annotationClass) != null;

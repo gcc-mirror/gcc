@@ -77,7 +77,7 @@ public interface DirStateFactory extends StateFactory
 
   DirStateFactory.Result getStateToBind(Object obj, Name name,
   					       Context nameCtx,
-					       Hashtable environment,
+					       Hashtable<?, ?> environment,
 					       Attributes inAttrs)
 					       throws NamingException;
 }

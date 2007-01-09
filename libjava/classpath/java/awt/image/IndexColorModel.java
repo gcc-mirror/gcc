@@ -134,10 +134,6 @@ public class IndexColorModel extends ColorModel
     if (size < 1)
       throw new IllegalArgumentException("size < 1");
     map_size = size;
-    if (0 <= trans && trans < size) {
-      this.trans = trans;
-      transparency = BITMASK;
-    }
     rgb = new int[size];
     for (int i = 0; i < size; i++)
       {
@@ -146,6 +142,9 @@ public class IndexColorModel extends ColorModel
                   | ((greens[i] & 0xff) << 8)
                   | (blues[i] & 0xff));
       }
+
+    setTransparentPixel(trans);
+
     // Generate a bigint with 1's for every pixel
     validBits = validBits.setBit(size).subtract(BigInteger.ONE);
   }
@@ -275,8 +274,6 @@ public class IndexColorModel extends ColorModel
       throw new IllegalArgumentException("size < 1");
     map_size = size;
     opaque = !hasAlpha;
-    if (0 <= trans && trans < size)
-      this.trans = trans;
 
     rgb = new int[size];
     if (hasAlpha)
@@ -317,6 +314,8 @@ public class IndexColorModel extends ColorModel
       if (trans != -1)
 	transparency = BITMASK;
     }
+
+    setTransparentPixel(trans);
 
     // Generate a bigint with 1's for every pixel
     validBits = validBits.setBit(size).subtract(BigInteger.ONE);
@@ -361,15 +360,14 @@ public class IndexColorModel extends ColorModel
       throw new IllegalArgumentException("size < 1");
     map_size = size;
     opaque = !hasAlpha;
-    if (0 <= trans && trans < size)
-      this.trans = trans;
-
     rgb = new int[size];
     if (!hasAlpha)
       for (int i = 0; i < size; i++)
 	rgb[i] = cmap[i + start] | 0xff000000;
     else
       System.arraycopy(cmap, start, rgb, 0, size);
+
+    setTransparentPixel(trans);
 
     // Generate a bigint with 1's for every pixel
     validBits = validBits.setBit(size).subtract(BigInteger.ONE);
@@ -584,12 +582,7 @@ public class IndexColorModel extends ColorModel
    */
   public final int getAlpha(int pixel)
   {
-    if (opaque && pixel != trans) 
-      return 255;
-    if ((pixel == trans && trans != -1) || pixel >= map_size)
-      return 0;
-
-    return (0xFF000000 & rgb[pixel]) >> 24;
+    return (rgb[pixel] >> 24) & 0xFF;
   }
 
   /**
@@ -693,5 +686,44 @@ public class IndexColorModel extends ColorModel
         im.setRGB(x, y, rgb[raster.getSample(x, y, 0)]);
 
     return im;
+  }
+
+  /**
+   * Creates a {@link SampleModel} that is compatible to this color model.
+   * This will be a {@link MultiPixelPackedSampleModel} for bits/pixel of
+   * 1, 2 or 4, or a {@link ComponentColorModel} for the other cases.
+   *
+   * @param w the width of the sample model to create
+   * @param h the height of the sample model to create
+   *
+   * @return a compatible sample model
+   */
+  public SampleModel createCompatibleSampleModel(int w, int h)
+  {
+    SampleModel sm;
+    if (pixel_bits == 1 || pixel_bits == 2 || pixel_bits == 4)
+      sm = new MultiPixelPackedSampleModel(transferType, w, h, pixel_bits);
+    else
+      sm = new ComponentSampleModel(transferType, w, h, 1, w, new int[]{0});
+    return sm;
+  }
+
+  /**
+   * Sets the transparent pixel. This is called by the various constructors.
+   *
+   * @param t the transparent pixel
+   */
+  private void setTransparentPixel(int t)
+  {
+    if (t >= 0 && t < map_size)
+      {
+        rgb[t] &= 0xffffff; // Make the value transparent.
+        trans = t;
+        if (transparency == OPAQUE)
+          {
+            transparency = BITMASK;
+            hasAlpha = true;
+          }
+      }
   }
 }

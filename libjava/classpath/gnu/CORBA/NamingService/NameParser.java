@@ -193,9 +193,6 @@ public class NameParser
 
     boolean corbaname;
 
-    // The alternative addresses, if given.
-    ArrayList alt_addr = new ArrayList();
-
     // The version numbers with default values.
     int major = 1;
     int minor = 0;

@@ -78,7 +78,7 @@ package java.util;
  * @since 1.2
  * @status updated to 1.4
  */
-public interface Map
+public interface Map<K, V>
 {
   /**
    * Remove all entries from this Map (optional operation).
@@ -127,7 +127,7 @@ public interface Map
    * @return the set view of all mapping entries
    * @see Map.Entry
    */
-  Set entrySet();
+  Set<Map.Entry<K, V>> entrySet();
 
   /**
    * Compares the specified object with this map for equality. Returns
@@ -153,7 +153,7 @@ public interface Map
    * @throws NullPointerException if this map does not accept null keys
    * @see #containsKey(Object)
    */
-  Object get(Object key);
+  V get(Object key);
 
   /**
    * Associates the given key to the given value (optional operation). If the
@@ -172,7 +172,7 @@ public interface Map
    *         and the map forbids null keys or values
    * @see #containsKey(Object)
    */
-  Object put(Object key, Object value);
+  V put(K key, V value);
 
   /**
    * Returns the hash code for this map. This is the sum of all hashcodes
@@ -204,7 +204,7 @@ public interface Map
    *
    * @return the set view of all keys
    */
-  Set keySet();
+  Set<K> keySet();
 
   /**
    * Copies all entries of the given map to this one (optional operation). If
@@ -219,7 +219,7 @@ public interface Map
    *         if <code>m</code> is null.
    * @see #put(Object, Object)
    */
-  void putAll(Map m);
+  void putAll(Map<? extends K, ? extends V> m);
 
   /**
    * Removes the mapping for this key if present (optional operation). If
@@ -234,7 +234,7 @@ public interface Map
    * @throws ClassCastException if the type of the key is not a valid type
    *         for this map.
    */
-  Object remove(Object key);
+  V remove(Object o);
 
   /**
    * Returns the number of key-value mappings in the map. If there are more
@@ -257,7 +257,7 @@ public interface Map
    *
    * @return the collection view of all values
    */
-  Collection values();
+  Collection<V> values();
 
   /**
    * A map entry (key-value pair). The Map.entrySet() method returns a set
@@ -273,14 +273,14 @@ public interface Map
    * @since 1.2
    * @status updated to 1.4
    */
-  interface Entry
+  interface Entry<K, V>
   {
     /**
      * Get the key corresponding to this entry.
      *
      * @return the key
      */
-    Object getKey();
+    K getKey();
 
     /**
      * Get the value corresponding to this entry. If you already called
@@ -288,7 +288,7 @@ public interface Map
      *
      * @return the value
      */
-    Object getValue();
+    V getValue();
 
     /**
      * Replaces the value with the specified object (optional operation).
@@ -303,7 +303,7 @@ public interface Map
      *         prevents it from existing in this map
      * @throws NullPointerException if the map forbids null values
      */
-    Object setValue(Object value);
+    V setValue(V value);
 
 
     /**

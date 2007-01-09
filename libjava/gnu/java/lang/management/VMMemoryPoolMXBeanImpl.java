@@ -59,10 +59,7 @@ final class VMMemoryPoolMXBeanImpl
    *         containing the statistics or <code>null</code>
    *         if this pool does not support such statistics.
    */
-  static MemoryUsage getCollectionUsage(String name)
-  {
-    return null;
-  }
+  static native MemoryUsage getCollectionUsage(String name);
 
   /**
    * Returns the collection usage threshold for the specified pool.
@@ -74,10 +71,7 @@ final class VMMemoryPoolMXBeanImpl
    * @param name the name of the pool to obtain statistics on.
    * @return the collection usage threshold.
    */
-  static long getCollectionUsageThreshold(String name)
-  {
-    return -1;
-  }
+  static native long getCollectionUsageThreshold(String name);
 
   /**
    * Returns the number of times the collection usage threshold
@@ -90,10 +84,7 @@ final class VMMemoryPoolMXBeanImpl
    * @param name the name of the pool to obtain statistics on.
    * @return the collection usage threshold count.
    */
-  static long getCollectionUsageThresholdCount(String name)
-  {
-    return -1;
-  }
+  static native long getCollectionUsageThresholdCount(String name);
 
   /**
    * Returns an array of names of memory managers which manage
@@ -102,10 +93,7 @@ final class VMMemoryPoolMXBeanImpl
    * @param name the name of the pool to obtain statistics on.
    * @return a list of memory managers for the pool.
    */
-  static String[] getMemoryManagerNames(String name)
-  {
-    return new String[0];
-  }
+  static native String[] getMemoryManagerNames(String name);
 
   /**
    * Returns the peak usage level of the specified pool.
@@ -115,22 +103,16 @@ final class VMMemoryPoolMXBeanImpl
    * @return a {@link java.lang.management.MemoryUsage} object
    *         containing the statistics.
    */
-  static MemoryUsage getPeakUsage(String name)
-  {
-    return null;
-  }
+  static native MemoryUsage getPeakUsage(String name);
 
   /**
-   * Returns the type of memory used by the specified pool.
+   * Returns the type of memory used by the specified pool. 
    * The value must be either "HEAP" or "NON_HEAP".
    *
    * @param name the name of the pool to obtain statistics on.
    * @return the type of the given pool.
    */
-  static String getType(String name)
-  {
-    return "HEAP";
-  }
+  static native String getType(String name);
 
   /**
    * Returns the current usage level of the specified pool.
@@ -140,10 +122,7 @@ final class VMMemoryPoolMXBeanImpl
    * @return a {@link java.lang.management.MemoryUsage} object
    *         containing the statistics.
    */
-  static MemoryUsage getUsage(String name)
-  {
-    return null;
-  }
+  static native MemoryUsage getUsage(String name);
 
   /**
    * Returns the usage threshold for the specified pool.
@@ -156,10 +135,7 @@ final class VMMemoryPoolMXBeanImpl
    * @param name the name of the pool to obtain statistics on.
    * @return the usage threshold.
    */
-  static long getUsageThreshold(String name)
-  {
-    return -1;
-  }
+  static native long getUsageThreshold(String name);
 
   /**
    * Returns the number of times the usage threshold
@@ -172,10 +148,7 @@ final class VMMemoryPoolMXBeanImpl
    * @param name the name of the pool to obtain statistics on.
    * @return the usage threshold count.
    */
-  static long getUsageThresholdCount(String name)
-  {
-    return -1;
-  }
+  static native long getUsageThresholdCount(String name);
   
   /**
    * Returns true if the specified pool is still valid i.e.
@@ -184,10 +157,7 @@ final class VMMemoryPoolMXBeanImpl
    * @param name the name of the pool to check the validity of.
    * @return true if the pool is valid.
    */
-  static boolean isValid(String name)
-  {
-    return false;
-  }
+  static native boolean isValid(String name);
   
   /**
    * Resets the peak usage level to the current usage level for
@@ -195,9 +165,7 @@ final class VMMemoryPoolMXBeanImpl
    *
    * @param name the name of the pool to reset the peak usage of.
    */
-  static void resetPeakUsage(String name)
-  {
-  }
+  static native void resetPeakUsage(String name);
 
   /**
    * Sets the collection usage threshold for the specified
@@ -210,9 +178,7 @@ final class VMMemoryPoolMXBeanImpl
    * @param name the name of the pool to set the threshold of.
    * @param threshold the new threshold level.
    */
-  static void setCollectionUsageThreshold(String name, long threshold)
-  {
-  }
+  static native void setCollectionUsageThreshold(String name, long threshold);
 
   /**
    * Sets the usage threshold for the specified pool to the supplied value.
@@ -224,8 +190,6 @@ final class VMMemoryPoolMXBeanImpl
    * @param name the name of the pool to set the threshold of.
    * @param threshold the new threshold level.
    */
-  static void setUsageThreshold(String name, long threshold)
-  {
-  }
+  static native void setUsageThreshold(String name, long threshold);
 
 }

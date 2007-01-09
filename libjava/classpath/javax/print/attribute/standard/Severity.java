@@ -97,7 +97,7 @@ public final class Severity extends EnumSyntax
    *
    * @return The class <code>Severity</code> itself.
    */
-  public Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return Severity.class;
   }

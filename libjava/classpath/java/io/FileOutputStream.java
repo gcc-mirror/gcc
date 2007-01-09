@@ -38,8 +38,9 @@ exception statement from your version. */
 
 package java.io;
 
-import gnu.java.nio.channels.FileChannelImpl;
+import gnu.java.nio.FileChannelImpl;
 
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
@@ -155,10 +156,23 @@ public class FileOutputStream extends OutputStream
     if (s != null)
       s.checkWrite(file.getPath());
 
-   ch = FileChannelImpl.create(file, (append
-				    ? FileChannelImpl.WRITE
-				    | FileChannelImpl.APPEND
-				    : FileChannelImpl.WRITE));
+    try
+      {
+        ch = FileChannelImpl.create(file, (append
+            ? FileChannelImpl.WRITE
+            | FileChannelImpl.APPEND
+            : FileChannelImpl.WRITE));
+      }
+    catch (FileNotFoundException fnfe)
+      {
+        throw fnfe;
+      }
+    catch (IOException ioe)
+      {
+        FileNotFoundException fnfe = new FileNotFoundException(file.getPath());
+        fnfe.initCause(ioe);
+        throw fnfe;
+      }
   }
 
   /**
@@ -266,7 +280,7 @@ public class FileOutputStream extends OutputStream
         || offset + len > buf.length)
       throw new ArrayIndexOutOfBoundsException ();
     
-    ch.write (buf, offset, len);
+    ch.write(ByteBuffer.wrap(buf, offset, len));
   }
 
   /**

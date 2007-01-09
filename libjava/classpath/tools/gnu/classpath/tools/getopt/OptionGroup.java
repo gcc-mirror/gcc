@@ -231,10 +231,7 @@ public class OptionGroup
               {
                 if (argName != null)
                   {
-                    // This is a silly hack just for '-J'.  We don't
-                    // support joined options in general, but this option
-                    // is filtered out before argument processing can see it.
-                    if (option.getShortName() != 'J')
+                    if (! option.isJoined())
                       {
                         out.print(' ');
                         ++column;

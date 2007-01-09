@@ -61,8 +61,9 @@ public abstract class LdapReferralException extends ReferralException
   }
 
   public abstract Context getReferralContext() throws NamingException;
-  public abstract Context getReferralContext(Hashtable env)
+  public abstract Context getReferralContext(Hashtable<?, ?> env)
     throws NamingException;
-  public abstract Context getReferralContext(Hashtable env, Control[] reqCtls)
+  public abstract Context getReferralContext(Hashtable<?, ?> env,
+                                             Control[] reqCtls)
     throws NamingException;
 }

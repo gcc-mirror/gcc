@@ -70,7 +70,7 @@ import java.util.ResourceBundle;
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @date March 18, 1999
  */
-public abstract class Collator implements Comparator, Cloneable
+public abstract class Collator implements Comparator<Object>, Cloneable
 {
   /**
    * This constant is a strength value which indicates that only primary

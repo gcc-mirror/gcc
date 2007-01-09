@@ -101,96 +101,102 @@ public class KeyAgreement
     virgin = true;
   }
 
-  // Class methods.
-  // ------------------------------------------------------------------------
-
   /**
    * Get an implementation of an algorithm from the first provider that
    * implements it.
-   *
+   * 
    * @param algorithm The name of the algorithm to get.
    * @return The proper KeyAgreement instacne, if found.
-   * @throws java.security.NoSuchAlgorithmException If the specified
-   *         algorithm is not implemented by any installed provider.
+   * @throws NoSuchAlgorithmException If the specified algorithm is not
+   *           implemented by any installed provider.
+   * @throws IllegalArgumentException if <code>algorithm</code> is
+   *           <code>null</code> or is an empty string.
    */
   public static final KeyAgreement getInstance(String algorithm)
-    throws NoSuchAlgorithmException
+      throws NoSuchAlgorithmException
   {
-    Provider[] provs = Security.getProviders();
-    String msg = algorithm;
-    for (int i = 0; i < provs.length; i++)
-      {
-        try
-          {
-            return getInstance(algorithm, provs[i]);
-          }
-        catch (NoSuchAlgorithmException nsae)
-          {
-            msg = nsae.getMessage();
-          }
-      }
-    throw new NoSuchAlgorithmException(msg);
+    Provider[] p = Security.getProviders();
+    NoSuchAlgorithmException lastException = null;
+    for (int i = 0; i < p.length; i++)
+      try
+        {
+          return getInstance(algorithm, p[i]);
+        }
+      catch (NoSuchAlgorithmException x)
+        {
+          lastException = x;
+        }
+    if (lastException != null)
+      throw lastException;
+    throw new NoSuchAlgorithmException(algorithm);
   }
 
   /**
-   * Get an implementation of an algorithm from a named provider.
-   *
-   * @param algorithm The name of the algorithm to get.
-   * @param provider  The name of the provider from which to get the
-   *        implementation.
+   * Return an implementation of an algorithm from a named provider.
+   * 
+   * @param algorithm The name of the algorithm to create.
+   * @param provider The name of the provider from which to get the
+   *          implementation.
    * @return The proper KeyAgreement instance, if found.
-   * @throws java.security.NoSuchAlgorithmException If the named provider
-   *         does not implement the algorithm.
-   * @throws java.security.NoSuchProviderException If the named provider
-   *         does not exist.
+   * @throws NoSuchAlgorithmException If the named provider does not implement
+   *           the algorithm.
+   * @throws NoSuchProviderException If the named provider does not exist.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>algorithm</code> is an empty string.
    */
-  public static final KeyAgreement getInstance(String algorithm,
-                                               String provider)
-    throws NoSuchAlgorithmException, NoSuchProviderException
+  public static final KeyAgreement getInstance(String algorithm, String provider)
+      throws NoSuchAlgorithmException, NoSuchProviderException
   {
+    if (provider == null)
+      throw new IllegalArgumentException("provider MUST NOT be null");
     Provider p = Security.getProvider(provider);
     if (p == null)
-      {
-        throw new NoSuchProviderException(provider);
-      }
+      throw new NoSuchProviderException(provider);
     return getInstance(algorithm, p);
   }
 
   /**
-   * Get an implementation of an algorithm from a specific provider.
-   *
+   * Return an implementation of an algorithm from a specific provider.
+   * 
    * @param algorithm The name of the algorithm to get.
-   * @param provider  The provider from which to get the implementation.
+   * @param provider The provider from which to get the implementation.
    * @return The proper KeyAgreement instance, if found.
-   * @throws java.security.NoSuchAlgorithmException If this provider
-   *         does not implement the algorithm.
+   * @throws NoSuchAlgorithmException If this provider does not implement the
+   *           algorithm.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>algorithm</code> is an empty string.
    */
   public static final KeyAgreement getInstance(String algorithm,
                                                Provider provider)
     throws NoSuchAlgorithmException
   {
+    StringBuilder sb = new StringBuilder("KeyAgreement algorithm [")
+        .append(algorithm).append("] from provider[")
+        .append(provider).append("] could not be created");
+    Throwable cause;
     try
       {
-        return new KeyAgreement((KeyAgreementSpi)
-          Engine.getInstance(SERVICE, algorithm, provider),
-          provider, algorithm);
+        Object spi = Engine.getInstance(SERVICE, algorithm, provider);
+        return new KeyAgreement((KeyAgreementSpi) spi, provider, algorithm);
       }
-    catch (InvocationTargetException ite)
+    catch (InvocationTargetException x)
       {
-        if (ite.getCause() == null)
-          throw new NoSuchAlgorithmException(algorithm);
-        if (ite.getCause() instanceof NoSuchAlgorithmException)
-          throw (NoSuchAlgorithmException) ite.getCause();
-        throw new NoSuchAlgorithmException(algorithm);
+        cause = x.getCause();
+        if (cause instanceof NoSuchAlgorithmException)
+          throw (NoSuchAlgorithmException) cause;
+        if (cause == null)
+          cause = x;
       }
-    catch (ClassCastException cce)
+    catch (ClassCastException x)
       {
-        throw new NoSuchAlgorithmException(algorithm);
+        cause = x;
       }
+    NoSuchAlgorithmException x = new NoSuchAlgorithmException(sb.toString());
+    x.initCause(cause);
+    throw x;
   }
-
-  // Instance methods.
-  // ------------------------------------------------------------------------
 
   /**
    * Do a phase in the key agreement. The number of times this method is

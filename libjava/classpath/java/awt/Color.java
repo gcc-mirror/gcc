@@ -534,14 +534,31 @@ public class Color implements Paint, Serializable
   {
     // Do not inline getRGB() to this.value, because of SystemColor.
     int value = getRGB();
-    int red = (value & RED_MASK) >> 16;
-    int green = (value & GREEN_MASK) >> 8;
-    int blue = value & BLUE_MASK;
-    // We have to special case 0-2 because they won't scale by division.
-    red = red < 3 ? 3 : (int) Math.min(255, red / BRIGHT_SCALE);
-    green = green < 3 ? 3 : (int) Math.min(255, green / BRIGHT_SCALE);
-    blue = blue < 3 ? 3 : (int) Math.min(255, blue / BRIGHT_SCALE);
-    return new Color(red, green, blue, 255);
+    int[] hues = new int[3];
+    hues[0] = (value & RED_MASK) >> 16;
+    hues[1] = (value & GREEN_MASK) >> 8;
+    hues[2] = value & BLUE_MASK;
+  
+    // (0,0,0) is a special case.
+    if (hues[0] == 0 && hues[1] == 0 && hues[2] ==0)
+      {
+        hues[0] = 3;
+        hues[1] = 3;
+        hues[2] = 3;
+      }
+    else
+      {                    
+        for (int index = 0; index < 3; index++)
+          {
+            
+            if (hues[index] > 2)
+              hues[index] = (int) Math.min(255, hues[index]/0.7f);
+            if (hues[index] == 1 || hues[index] == 2)
+              hues[index] = 4;
+          }
+      }
+
+    return new Color(hues[0], hues[1], hues[2], 255);
   }
 
   /**

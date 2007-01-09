@@ -1,5 +1,5 @@
 /* Reader.java -- base class of classes that read input as a stream of chars
-   Copyright (C) 1998, 1999, 2000, 2003  Free Software Foundation
+   Copyright (C) 1998, 1999, 2000, 2003, 2004, 2005  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.io;
  
+import java.nio.CharBuffer;
+
 /* Written using "Java Class Libraries", 2nd edition, plus online
  * API docs for JDK 1.2 beta from http://www.javasoft.com.
  * Status:  Believed complete and correct.
@@ -53,7 +55,7 @@ package java.io;
  * @date April 21, 1998.  
  * @author Aaron M. Renn (arenn@urbanophile.com) 
  */
-public abstract class Reader
+public abstract class Reader implements Closeable, Readable
 {
   /**
    * This is the <code>Object</code> used for synchronizing critical code
@@ -150,6 +152,19 @@ public abstract class Reader
     char[] buf = new char[1];
     int count = read(buf, 0, 1);
     return count > 0 ? buf[0] : -1;
+  }
+
+  /** @since 1.5 */
+  public int read(CharBuffer buffer) throws IOException
+  {
+    // We want to call put(), so we don't manipulate the CharBuffer
+    // directly.
+    int rem = buffer.remaining();
+    char[] buf = new char[rem];
+    int result = read(buf, 0, rem);
+    if (result != -1)
+      buffer.put(buf, 0, result);
+    return result;
   }
 
   /**

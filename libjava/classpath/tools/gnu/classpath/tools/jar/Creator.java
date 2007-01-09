@@ -142,15 +142,18 @@ public class Creator
       throws IOException
   {
     boolean isDirectory = file.isDirectory();
-    InputStream inputStream = null;
     if (isDirectory)
       {
         if (filename.charAt(filename.length() - 1) != '/')
           filename += '/';
+	writeFile(isDirectory, null, filename, verbose);
       }
     else
-      inputStream = new FileInputStream(file);
-    writeFile(isDirectory, inputStream, filename, verbose);
+      {
+	InputStream inputStream = new FileInputStream(file);
+	writeFile(isDirectory, inputStream, filename, verbose);
+	inputStream.close();
+      }
   }
 
   private void addEntries(ArrayList result, Entry entry)

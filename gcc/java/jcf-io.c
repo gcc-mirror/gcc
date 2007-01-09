@@ -1,5 +1,5 @@
 /* Utility routines for finding and reading Java(TM) .class files.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2002, 2003, 2004, 2005
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -449,6 +449,9 @@ find_class (const char *classname, int classname_length, JCF *jcf,
   int buflen;
   char *buffer;
   hashval_t hash;
+
+  /* FIXME: ecj hack.  */
+  source_ok = 0;
 
   /* Create the hash table, if it does not already exist.  */
   if (!memoized_class_lookups)

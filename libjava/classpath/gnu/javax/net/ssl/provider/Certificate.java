@@ -1,4 +1,4 @@
-/* Certificate.java -- SSL Certificate message.
+/* Certificate.java -- SSL certificate message.
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -38,157 +38,140 @@ exception statement from your version.  */
 
 package gnu.javax.net.ssl.provider;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.EOFException;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.io.StringWriter;
 
-import java.security.cert.CertificateEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
-import javax.net.ssl.SSLProtocolException;
+/**
+ * The certificate object. This is used by both the client and the server
+ * to send their certificates (if any) to one another.
+ * 
+ * <pre>opaque ASN.1Cert&lt;1..2^24-1&gt;;
 
-final class Certificate implements Handshake.Body
+struct {
+  ASN.1Cert certificate_list&lt;0..2^24-1&gt;;
+} Certificate;</pre>
+ *
+ * @author Casey Marshall (csm@gnu.org)
+ */
+public class Certificate implements Handshake.Body
 {
 
   // Fields.
   // -------------------------------------------------------------------------
 
-  private final X509Certificate[] certs;
+  protected ByteBuffer buffer;
+  protected final CertificateType type;
 
   // Constructors.
   // -------------------------------------------------------------------------
 
-  Certificate(X509Certificate[] certs)
+  public Certificate (final ByteBuffer buffer, final CertificateType type)
   {
-    if (certs == null)
-      {
-        throw new NullPointerException();
-      }
-    this.certs = certs;
-  }
-
-  // Class methods.
-  // -------------------------------------------------------------------------
-
-  static Certificate read(InputStream in, CertificateType type)
-    throws IOException
-  {
-    if (type == CertificateType.X509)
-      {
-        int len = (in.read() & 0xFF) << 16 | (in.read() & 0xFF) << 8
-                | (in.read() & 0xFF);
-        byte[] buf = new byte[len];
-        int count = 0;
-        while (count < len)
-          {
-            int l = in.read(buf, count, len - count);
-            if (l == -1)
-              {
-                throw new EOFException("unexpected end of stream");
-              }
-            count += l;
-          }
-        try
-          {
-            LinkedList certs = new LinkedList();
-            CertificateFactory fact = CertificateFactory.getInstance("X.509");
-            ByteArrayInputStream bin = new ByteArrayInputStream(buf);
-            count = 0;
-            while (count < len)
-              {
-                int len2 = (bin.read() & 0xFF) << 16 | (bin.read() & 0xFF) << 8
-                         | (bin.read() & 0xFF);
-                certs.add(fact.generateCertificate(bin));
-                count += len2 + 3;
-              }
-            return new Certificate((X509Certificate[])
-              certs.toArray(new X509Certificate[certs.size()]));
-          }
-        catch (CertificateException ce)
-          {
-            SSLProtocolException sslpe = new SSLProtocolException(ce.getMessage());
-            sslpe.initCause (ce);
-            throw sslpe;
-          }
-      }
-    else if (type == CertificateType.OPEN_PGP)
-      {
-        throw new UnsupportedOperationException("not yet implemented");
-      }
-    else
-      throw new Error("unsupported certificate type "+type);
+    buffer.getClass ();
+    type.getClass ();
+    this.buffer = buffer.duplicate().order(ByteOrder.BIG_ENDIAN);
+    this.type = type;
   }
 
   // Instance methods.
   // -------------------------------------------------------------------------
 
-  public void write(OutputStream out) throws IOException
+  public int length ()
   {
-    ByteArrayOutputStream bout = new ByteArrayOutputStream();
-    try
-      {
-        for (int i = 0; i < certs.length; i++)
-          {
-            byte[] enc = certs[i].getEncoded();
-            bout.write((enc.length >>> 16) & 0xFF);
-            bout.write((enc.length >>>  8) & 0xFF);
-            bout.write( enc.length & 0xFF);
-            bout.write(enc);
-          }
-      }
-    catch (CertificateEncodingException cee)
-      {
-        throw new Error("cannot encode certificates");
-      }
-    catch (IOException ignored)
-      {
-      }
-    out.write(bout.size() >>> 16 & 0xFF);
-    out.write(bout.size() >>>  8 & 0xFF);
-    out.write(bout.size() & 0xFF);
-    bout.writeTo(out);
+    return (((buffer.get (0) & 0xFF) << 24)
+            | buffer.getShort (1)) + 3;
   }
 
-  X509Certificate[] getCertificates()
+  public List<java.security.cert.Certificate> certificates ()
+    throws CertificateException, NoSuchAlgorithmException
   {
-    return certs;
+    LinkedList<java.security.cert.Certificate> list
+      = new LinkedList<java.security.cert.Certificate>();
+    CertificateFactory factory = CertificateFactory.getInstance(type.toString());
+    int length = (((buffer.get(0) & 0xFF) << 16)
+                  | (buffer.getShort(1) & 0xFFFF));
+    ByteBuffer b = (ByteBuffer) buffer.duplicate().position(3);
+    for (int i = 3; i < length; )
+      {
+        int length2 = (((b.get () & 0xFF) << 16)
+                       | (b.getShort () & 0xFFFF));
+        byte[] buf = new byte[length2];
+        b.position(i+3);
+        b.get (buf);
+        list.add(factory.generateCertificate (new ByteArrayInputStream (buf)));
+        i += length2 + 3;
+        b.position(i);
+      }
+    return list;
   }
 
-  public String toString()
+  public String toString ()
+  {
+    return toString (null);
+  }
+
+  public String toString (final String prefix)
   {
     StringWriter str = new StringWriter();
     PrintWriter out = new PrintWriter(str);
-    out.println("struct {");
-    out.println("  certificateList =");
-    for (int i = 0; i < certs.length; i++)
+    if (prefix != null)
+      out.print (prefix);
+    out.println ("struct {");
+    try
       {
-        BufferedReader r =
-          new BufferedReader(new StringReader(certs[i].toString()));
-        String s;
-        try
+        List certs = certificates ();
+        if (prefix != null)
+          out.print (prefix);
+        out.print ("  certificateList: [");
+        out.print (certs.size ());
+        out.println ("] {");
+        for (Iterator it = certs.iterator (); it.hasNext (); )
           {
-            while ((s = r.readLine()) != null)
-              {
-                out.print("    ");
-                out.println(s);
-              }
+            java.security.cert.Certificate cert =
+              (java.security.cert.Certificate) it.next ();
+            if (prefix != null)
+              out.print (prefix);
+            out.print ("    ");
+            if (cert instanceof X509Certificate)
+              out.print (((X509Certificate) cert).getSubjectDN ());
+            else
+              out.print (cert);
+            out.println (";");
           }
-        catch (IOException ignored)
-          {
-          }
+        if (prefix != null)
+          out.print (prefix);
+        out.println ("  };");
       }
-    out.println("} Certificate;");
+    catch (CertificateException ce)
+      {
+        if (prefix != null)
+          out.print (prefix);
+        out.print ("  ");
+        out.print (ce);
+        out.println (";");
+      }
+    catch (NoSuchAlgorithmException nsae)
+      {
+        if (prefix != null)
+          out.print (prefix);
+        out.print ("  ");
+        out.print (nsae);
+        out.println (";");
+      }
+    out.print ("} Certificate;");
     return str.toString();
   }
 }

@@ -38,14 +38,18 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.Point;
+import gnu.java.awt.Buffers;
+
 import java.awt.Graphics2D;
-import java.awt.image.DataBuffer;
-import java.awt.image.Raster;
-import java.awt.image.WritableRaster;
+import java.awt.Point;
+import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
 import java.awt.image.DirectColorModel;
+import java.awt.image.SampleModel;
+import java.awt.image.SinglePixelPackedSampleModel;
+import java.awt.image.WritableRaster;
 import java.nio.ByteOrder;
 import java.util.Hashtable;
 
@@ -54,7 +58,7 @@ import java.util.Hashtable;
  *
  * @author Sven de Marothy
  */
-public class CairoSurface extends DataBuffer
+public class CairoSurface extends WritableRaster
 {
   int width = -1, height = -1;
 
@@ -68,13 +72,27 @@ public class CairoSurface extends DataBuffer
    */
   long bufferPointer;
 
+  // FIXME: use only the cairoCM_pre colormodel
+  // since that's what Cairo really uses (is there a way to do this cheaply?
+  // we use a non-multiplied model most of the time to avoid costly coercion
+  // operations...)
+  static ColorModel cairoColorModel = new DirectColorModel(32, 0x00FF0000,
+                                                           0x0000FF00,
+                                                           0x000000FF,
+                                                           0xFF000000);
 
-  static ColorModel nativeModel = new DirectColorModel(32,
-						       0x00FF0000,
-						       0x0000FF00,
-						       0x000000FF,
-						       0xFF000000);
-
+  static ColorModel cairoCM_pre = new DirectColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
+                                                       32, 0x00FF0000,
+                                                       0x0000FF00,
+                                                       0x000000FF,
+                                                       0xFF000000,
+                                                       true,
+                                                       Buffers.smallestAppropriateTransferType(32));
+  
+  // This CM corresponds to the CAIRO_FORMAT_RGB24 type in Cairo 
+  static ColorModel cairoCM_opaque = new DirectColorModel(24, 0x00FF0000,
+                                                          0x0000FF00,
+                                                          0x000000FF);
   /**
    * Allocates and clears the buffer and creates the cairo surface.
    * @param width, height - the image size
@@ -102,11 +120,13 @@ public class CairoSurface extends DataBuffer
    * with an affine transform given by i2u.
    */
   public native void nativeDrawSurface(long surfacePointer, long contextPointer,
-                                       double[] i2u, double alpha);
+                                       double[] i2u, double alpha,
+                                       int interpolation);
 
-  public void drawSurface(long contextPointer, double[] i2u, double alpha)
+  public void drawSurface(long contextPointer, double[] i2u, double alpha,
+                          int interpolation)
   {
-    nativeDrawSurface(surfacePointer, contextPointer, i2u, alpha);
+    nativeDrawSurface(surfacePointer, contextPointer, i2u, alpha, interpolation);
   }
 
   /**
@@ -138,18 +158,20 @@ public class CairoSurface extends DataBuffer
    */
   public CairoSurface(int width, int height)
   {
-    super(DataBuffer.TYPE_INT, width * height);
+    super(createCairoSampleModel(width, height),
+	      null, new Point(0, 0));
 
     if(width <= 0 || height <= 0)
       throw new IllegalArgumentException("Image must be at least 1x1 pixels.");
-
+    
     this.width = width;
     this.height = height;
-
     create(width, height, width);
 
     if(surfacePointer == 0 || bufferPointer == 0)
       throw new Error("Could not allocate bitmap.");
+
+    dataBuffer = new CairoDataBuffer();
   }
 
   /**
@@ -158,18 +180,7 @@ public class CairoSurface extends DataBuffer
    */
   CairoSurface(GtkImage image)
   {
-    super(DataBuffer.TYPE_INT, image.width * image.height);
-
-    if(image.width <= 0 || image.height <= 0)
-      throw new IllegalArgumentException("Image must be at least 1x1 pixels.");
-
-    width = image.width;
-    height = image.height;
-
-    create(width, height, width);
-
-    if(surfacePointer == 0 || bufferPointer == 0)
-      throw new Error("Could not allocate bitmap.");
+    this(image.width, image.height);
 
     // Copy the pixel data from the GtkImage.
     int[] data = image.getPixels();
@@ -260,32 +271,37 @@ public class CairoSurface extends DataBuffer
    */    
   public static BufferedImage getBufferedImage(CairoSurface surface)
   {
-    WritableRaster raster = Raster.createPackedRaster
-      (surface, surface.width, surface.height, surface.width, 
-       new int[]{ 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000 },
-       new Point(0,0));
-
-    return new BufferedImage(nativeModel, raster, true, new Hashtable());
+    return new BufferedImage(cairoColorModel, surface,
+                             cairoColorModel.isAlphaPremultiplied(),
+                             new Hashtable());
   }
 
-  /**
-   * DataBank.getElem implementation
-   */
-  public int getElem(int bank, int i)
+  private class CairoDataBuffer extends DataBuffer
   {
-    if(bank != 0 || i < 0 || i >= width*height)
-      throw new IndexOutOfBoundsException(i+" size: "+width*height);
-    return nativeGetElem(bufferPointer, i);
-  }
+    public CairoDataBuffer()
+    {
+      super(DataBuffer.TYPE_INT, width * height);
+    }
+
+    /**
+     * DataBuffer.getElem implementation
+     */
+    public int getElem(int bank, int i)
+    {
+      if(bank != 0 || i < 0 || i >= width * height)
+	throw new IndexOutOfBoundsException(i+" size: "+width * height);
+      return nativeGetElem(bufferPointer, i);
+    }
   
-  /**
-   * DataBank.setElem implementation
-   */
-  public void setElem(int bank, int i, int val)
-  {
-    if(bank != 0 || i < 0 || i >= width*height)
-      throw new IndexOutOfBoundsException(i+" size: "+width*height);
-    nativeSetElem(bufferPointer, i, val);
+    /**
+     * DataBuffer.setElem implementation
+     */
+    public void setElem(int bank, int i, int val)
+    {
+      if(bank != 0 || i < 0 || i >= width*height)
+	throw new IndexOutOfBoundsException(i+" size: "+width * height);
+      nativeSetElem(bufferPointer, i, val);
+    }
   }
 
   /**
@@ -318,5 +334,15 @@ public class CairoSurface extends DataBuffer
                              int height, int dx, int dy, int stride)
   {
     copyAreaNative2(bufferPointer, x, y, width, height, dx, dy, stride);
+  }
+  
+  /**
+   * Creates a SampleModel that matches Cairo's native format
+   */
+  protected static SampleModel createCairoSampleModel(int w, int h)
+  {
+    return new SinglePixelPackedSampleModel(DataBuffer.TYPE_INT, w, h,
+                                            new int[]{0x00FF0000, 0x0000FF00,
+                                                      0x000000FF, 0xFF000000});    
   }
 }

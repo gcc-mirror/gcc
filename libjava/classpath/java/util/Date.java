@@ -108,7 +108,7 @@ import java.text.SimpleDateFormat;
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  */
 public class Date
-    implements Cloneable, Comparable, Serializable
+    implements Cloneable, Comparable<Date>, Serializable
 {
   /**
    * This is the serialization UID for this class
@@ -351,24 +351,6 @@ public class Date
   public int compareTo(Date when)
   {
     return (time < when.time) ? -1 : (time == when.time) ? 0 : 1;
-  }
-
-  /**
-   * Compares this Date to another object.  This behaves like
-   * <code>compareTo(Date)</code>, but it takes a generic object
-   * and throws a <code>ClassCastException</code> if obj is
-   * not a <code>Date</code>.
-   * 
-   * @param obj the other date.
-   * @return 0, if the date represented
-   * by obj is exactly the same as the time represented by this
-   * object, a negative if this Date is before the other Date, and
-   * a positive value otherwise.  
-   * @exception ClassCastException if obj is not of type Date.
-   */
-  public int compareTo(Object obj)
-  {
-    return compareTo((Date) obj);
   }
 
   /**

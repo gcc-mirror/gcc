@@ -1,5 +1,5 @@
 /* ByteBuffer.java -- 
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,7 +42,7 @@ package java.nio;
  * @since 1.4
  */
 public abstract class ByteBuffer extends Buffer
-  implements Comparable
+  implements Comparable<ByteBuffer>
 {
   ByteOrder endian = ByteOrder.BIG_ENDIAN;
 
@@ -290,7 +290,7 @@ public abstract class ByteBuffer extends Buffer
   {
     if (obj instanceof ByteBuffer)
       {
-        return compareTo (obj) == 0;
+        return compareTo ((ByteBuffer) obj) == 0;
       }
 
     return false;
@@ -302,10 +302,8 @@ public abstract class ByteBuffer extends Buffer
    * @exception ClassCastException If obj is not an object derived from
    * <code>ByteBuffer</code>.
    */
-  public int compareTo (Object obj)
+  public int compareTo (ByteBuffer other)
   {
-    ByteBuffer other = (ByteBuffer) obj;
-
     int num = Math.min(remaining(), other.remaining());
     int pos_this = position();
     int pos_other = other.position();

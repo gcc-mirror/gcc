@@ -38,6 +38,7 @@ exception statement from your version. */
 package javax.management;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
 import java.util.Arrays;
 
@@ -113,13 +114,23 @@ public class MBeanOperationInfo
   public MBeanOperationInfo(String desc, Method method)
   {
     super(method.getName(), desc);
-    Class[] paramTypes = method.getParameterTypes();
+    Type[] paramTypes = method.getGenericParameterTypes();
     signature = new MBeanParameterInfo[paramTypes.length];
     for (int a = 0; a < paramTypes.length; ++a)
-      signature[a] = new MBeanParameterInfo(null,
-					    paramTypes[a].getName(),
-					    null);
-    type = method.getReturnType().getName();
+      {
+	Type t = paramTypes[a];
+	if (t instanceof Class)
+	  signature[a] = new MBeanParameterInfo(null,
+						((Class) t).getName(),
+						 null);
+	else
+	  signature[a] = new MBeanParameterInfo(null, t.toString(), null);
+      }
+    Type retType = method.getGenericReturnType();
+    if (retType instanceof Class)
+      type = ((Class) retType).getName();
+    else
+      type = retType.toString();
     if (method.getReturnType() == Void.TYPE)
       {
 	if (paramTypes.length == 0)
@@ -140,7 +151,8 @@ public class MBeanOperationInfo
    * Constructs a @link{MBeanOperationInfo} with the specified name,
    * description, parameter information, return type and impact. A
    * <code>null</code> value for the parameter information is the same
-   * as passing in an empty array.
+   * as passing in an empty array.  A copy of the parameter array is
+   * taken, so later changes have no effect.
    *
    * @param name the name of the constructor.
    * @param desc a description of the attribute.
@@ -158,7 +170,10 @@ public class MBeanOperationInfo
     if (sig == null)
       signature = new MBeanParameterInfo[0];
     else
-      signature = sig;
+      {
+	signature = new MBeanParameterInfo[sig.length];
+	System.arraycopy(sig, 0, signature, 0, sig.length);
+      }
     this.type = type;
     this.impact = impact;
   }

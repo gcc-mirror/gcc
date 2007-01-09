@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.nio;
 
+import java.io.IOException;
+
 
 /**
  * @author Michael Barker <mike@middlesoft.co.uk>
@@ -63,7 +65,14 @@ public class SocketChannelSelectionKeyImpl extends SelectionKeyImpl
    */
   public int getNativeFD()
   {
-    return ch.getPlainSocketImpl().getNativeFD();
+    try
+      {
+        return ch.getVMChannel().getState().getNativeFD();
+      }
+    catch (IOException ioe)
+      {
+        return 0; // FIXME
+      }
   }
 
 }

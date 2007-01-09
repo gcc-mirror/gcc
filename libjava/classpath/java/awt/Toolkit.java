@@ -41,6 +41,7 @@ package java.awt;
 
 import gnu.classpath.SystemProperties;
 import gnu.java.awt.peer.GLightweightPeer;
+import gnu.java.awt.peer.headless.HeadlessToolkit;
 
 import java.awt.datatransfer.Clipboard;
 import java.awt.dnd.DragGestureEvent;
@@ -51,6 +52,7 @@ import java.awt.dnd.peer.DragSourceContextPeer;
 import java.awt.event.AWTEventListener;
 import java.awt.event.AWTEventListenerProxy;
 import java.awt.event.KeyEvent;
+import java.awt.font.TextAttribute;
 import java.awt.im.InputMethodHighlight;
 import java.awt.image.ColorModel;
 import java.awt.image.ImageObserver;
@@ -86,6 +88,7 @@ import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -119,7 +122,8 @@ public abstract class Toolkit
   /** The toolkit properties. */
   private static Properties props = new Properties();
 
-  protected final Map desktopProperties = new Properties();
+  protected final Map<String,Object> desktopProperties = 
+    new Hashtable<String,Object>();
 
   protected final PropertyChangeSupport desktopPropsSupport
     = new PropertyChangeSupport(this);
@@ -129,6 +133,11 @@ public abstract class Toolkit
    * event queue can efficiently access this list.
    */
   AWTEventListenerProxy[] awtEventListeners;
+
+  /**
+   * The shared peer for all lightweight components.
+   */
+  private GLightweightPeer lightweightPeer;
 
   /**
    * Default constructor for subclasses.
@@ -379,7 +388,9 @@ public abstract class Toolkit
    */
   protected LightweightPeer createComponent(Component target)
   {
-    return new GLightweightPeer(target);
+    if (lightweightPeer == null)
+      lightweightPeer = new GLightweightPeer();
+    return lightweightPeer;
   }
 
   /**
@@ -540,10 +551,11 @@ public abstract class Toolkit
    *
    * @throws AWTError If the toolkit cannot be loaded.
    */
-  public static Toolkit getDefaultToolkit()
+  public static synchronized Toolkit getDefaultToolkit()
   {
     if (toolkit != null)
       return toolkit;
+
     String toolkit_name = SystemProperties.getProperty("awt.toolkit",
                                                        default_toolkit_name);
     try
@@ -573,8 +585,18 @@ public abstract class Toolkit
       }
     catch (Throwable t)
       {
-	AWTError e = new AWTError("Cannot load AWT toolkit: " + toolkit_name);
-	throw (AWTError) e.initCause(t);
+        // Check for the headless property.
+        if (GraphicsEnvironment.isHeadless())
+          {
+            toolkit = new HeadlessToolkit();
+            return toolkit;
+          }
+        else
+          {
+            AWTError e = new AWTError("Cannot load AWT toolkit: "
+                                      + toolkit_name);
+            throw (AWTError) e.initCause(t);
+          }
       }
   }
 
@@ -964,8 +986,8 @@ public abstract class Toolkit
   /**
    * @since 1.3
    */
-  public DragGestureRecognizer
-    createDragGestureRecognizer(Class recognizer, DragSource ds,
+  public <T extends DragGestureRecognizer> T
+    createDragGestureRecognizer(Class<T> recognizer, DragSource ds,
                                 Component comp, int actions,
                                 DragGestureListener l)
   {
@@ -1252,7 +1274,8 @@ public abstract class Toolkit
   /**
    * @since 1.3
    */
-  public abstract Map mapInputMethodHighlight(InputMethodHighlight highlight);
+  public abstract Map<TextAttribute,?>
+    mapInputMethodHighlight(InputMethodHighlight highlight);
 
   /**
    * Initializes the accessibility framework. In particular, this loads the

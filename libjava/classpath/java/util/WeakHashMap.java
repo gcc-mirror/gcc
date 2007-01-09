@@ -1,6 +1,6 @@
 /* WeakHashMap -- a hashtable that keeps only weak references
    to its keys, allowing the virtual machine to reclaim them
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -77,14 +77,16 @@ import java.lang.ref.WeakReference;
  *
  * @author Jochen Hoenicke
  * @author Eric Blake (ebb9@email.byu.edu)
+ * @author Tom Tromey (tromey@redhat.com)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  *
  * @see HashMap
  * @see WeakReference
  * @see LinkedHashMap
  * @since 1.2
- * @status updated to 1.4
+ * @status updated to 1.4 (partial 1.5)
  */
-public class WeakHashMap extends AbstractMap implements Map
+public class WeakHashMap<K,V> extends AbstractMap<K,V> 
 {
   // WARNING: WeakHashMap is a CORE class in the bootstrap cycle. See the
   // comments in vm/reference/java/lang/Runtime for implications of this fact.
@@ -349,19 +351,19 @@ public class WeakHashMap extends AbstractMap implements Map
    *
    * @author Jochen Hoenicke
    */
-  private static class WeakBucket extends WeakReference
+  private static class WeakBucket<K, V> extends WeakReference<K>
   {
     /**
      * The value of this entry.  The key is stored in the weak
      * reference that we extend.
      */
-    Object value;
+    V value;
 
     /**
      * The next bucket describing another entry that uses the same
      * slot.
      */
-    WeakBucket next;
+    WeakBucket<K, V> next;
 
     /**
      * The slot of this entry. This should be
@@ -384,7 +386,7 @@ public class WeakHashMap extends AbstractMap implements Map
      * @param slot the slot.  This must match the slot where this bucket
      *        will be enqueued.
      */
-    public WeakBucket(Object key, ReferenceQueue queue, Object value,
+    public WeakBucket(K key, ReferenceQueue queue, V value,
                       int slot)
     {
       super(key, queue);
@@ -397,18 +399,18 @@ public class WeakHashMap extends AbstractMap implements Map
      * current bucket.  It also keeps a strong reference to the
      * key; bad things may happen otherwise.
      */
-    class WeakEntry implements Map.Entry
+    class WeakEntry implements Map.Entry<K, V>
     {
       /**
        * The strong ref to the key.
        */
-      Object key;
+      K key;
 
       /**
        * Creates a new entry for the key.
        * @param key the key
        */
-      public WeakEntry(Object key)
+      public WeakEntry(K key)
       {
         this.key = key;
       }
@@ -426,7 +428,7 @@ public class WeakHashMap extends AbstractMap implements Map
        * Returns the key.
        * @return the key
        */
-      public Object getKey()
+      public K getKey()
       {
         return key == NULL_KEY ? null : key;
       }
@@ -435,7 +437,7 @@ public class WeakHashMap extends AbstractMap implements Map
        * Returns the value.
        * @return the value
        */
-      public Object getValue()
+      public V getValue()
       {
         return value;
       }
@@ -446,9 +448,9 @@ public class WeakHashMap extends AbstractMap implements Map
        * @param newVal the new value
        * @return the old value
        */
-      public Object setValue(Object newVal)
+      public V setValue(V newVal)
       {
-        Object oldVal = value;
+        V oldVal = value;
         value = newVal;
         return oldVal;
       }
@@ -491,7 +493,7 @@ public class WeakHashMap extends AbstractMap implements Map
      */
     WeakEntry getEntry()
     {
-      final Object key = this.get();
+      final K key = this.get();
       if (key == null)
         return null;
       return new WeakEntry(key);
@@ -559,7 +561,7 @@ public class WeakHashMap extends AbstractMap implements Map
    * @throws NullPointerException if m is null
    * @since 1.3
    */
-  public WeakHashMap(Map m)
+  public WeakHashMap(Map<? extends K, ? extends V> m)
   {
     this(m.size(), DEFAULT_LOAD_FACTOR);
     putAll(m);
@@ -754,10 +756,10 @@ public class WeakHashMap extends AbstractMap implements Map
    *         the key wasn't in this map, or if the mapped value was
    *         explicitly set to null.
    */
-  public Object get(Object key)
+  public V get(Object key)
   {
     cleanQueue();
-    WeakBucket.WeakEntry entry = internalGet(key);
+    WeakBucket<K, V>.WeakEntry entry = internalGet(key);
     return entry == null ? null : entry.getValue();
   }
 
@@ -769,10 +771,10 @@ public class WeakHashMap extends AbstractMap implements Map
    *         null if the key wasn't in this map, or if the mapped value
    *         was explicitly set to null.
    */
-  public Object put(Object key, Object value)
+  public V put(K key, V value)
   {
     cleanQueue();
-    WeakBucket.WeakEntry entry = internalGet(key);
+    WeakBucket<K, V>.WeakEntry entry = internalGet(key);
     if (entry != null)
       return entry.setValue(value);
 
@@ -791,10 +793,10 @@ public class WeakHashMap extends AbstractMap implements Map
    *         null if the key wasn't in this map, or if the mapped value was
    *         explicitly set to null.
    */
-  public Object remove(Object key)
+  public V remove(Object key)
   {
     cleanQueue();
-    WeakBucket.WeakEntry entry = internalGet(key);
+    WeakBucket<K, V>.WeakEntry entry = internalGet(key);
     if (entry == null)
       return null;
 
@@ -811,7 +813,7 @@ public class WeakHashMap extends AbstractMap implements Map
    * this weak hash map.
    * @return a set representation of the entries.
    */
-  public Set entrySet()
+  public Set<Map.Entry<K,V>> entrySet()
   {
     cleanQueue();
     return theEntrySet;
@@ -846,7 +848,7 @@ public class WeakHashMap extends AbstractMap implements Map
    * this weak hash map.
    * @return a set representation of the keys.
    */
-  public Set keySet()
+  public Set<K> keySet()
   {
     cleanQueue();
     return super.keySet();
@@ -857,7 +859,7 @@ public class WeakHashMap extends AbstractMap implements Map
    * key already exists in this map, its value is replaced.
    * @param m the map to copy in
    */
-  public void putAll(Map m)
+  public void putAll(Map<? extends K, ? extends V> m)
   {
     super.putAll(m);
   }
@@ -870,7 +872,7 @@ public class WeakHashMap extends AbstractMap implements Map
    * this weak hash map.
    * @return a collection representation of the values.
    */
-  public Collection values()
+  public Collection<V> values()
   {
     cleanQueue();
     return super.values();

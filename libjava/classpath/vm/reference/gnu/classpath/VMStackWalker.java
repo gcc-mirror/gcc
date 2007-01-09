@@ -1,5 +1,5 @@
 /* VMStackWalker.java -- Reference implementation of VM hooks for stack access
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -112,5 +112,20 @@ public final class VMStackWalker
    * is here to work around access permissions.
    */
   public static native ClassLoader getClassLoader(Class cl);
-}
 
+  /**
+   * Walk up the stack and return the first non-null class loader.
+   * If there aren't any non-null class loaders on the stack, return null.
+   */
+  public static ClassLoader firstNonNullClassLoader()
+  {
+    Class[] stack = getClassContext();
+    for (int i = 0; i < stack.length; i++)
+      {
+        ClassLoader loader = getClassLoader(stack[i]);
+        if (loader != null)
+          return loader;
+      }
+    return null;
+  }
+}

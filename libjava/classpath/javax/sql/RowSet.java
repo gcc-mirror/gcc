@@ -78,9 +78,9 @@ public interface RowSet extends ResultSet
 
   void setTransactionIsolation(int level) throws SQLException;
 
-  Map getTypeMap() throws SQLException;
+  Map<String, Class<?>> getTypeMap() throws SQLException;
 
-  void setTypeMap(Map map) throws SQLException;
+  void setTypeMap(Map<String, Class<?>> map) throws SQLException;
 
   String getCommand();
 

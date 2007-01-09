@@ -38,6 +38,9 @@ exception statement from your version. */
 
 package java.io;
 
+import java.util.Formatter;
+import java.util.Locale;
+
 import gnu.gcj.convert.UnicodeToBytes;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
@@ -58,7 +61,7 @@ import gnu.gcj.convert.UnicodeToBytes;
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Tom Tromey (tromey@cygnus.com)
  */
-public class PrintStream extends FilterOutputStream
+public class PrintStream extends FilterOutputStream implements Appendable
 {
   /* Notice the implementation is quite similar to OutputStreamWriter.
    * This leads to some minor duplication, because neither inherits
@@ -561,6 +564,53 @@ public class PrintStream extends FilterOutputStream
       {
         setError ();
       }
+  }
+
+  /** @since 1.5 */
+  public PrintStream append(char c)
+  {
+    print(c);
+    return this;
+  }
+
+  /** @since 1.5 */
+  public PrintStream append(CharSequence cs)
+  {
+    print(cs == null ? "null" : cs.toString());
+    return this;
+  }
+
+  /** @since 1.5 */
+  public PrintStream append(CharSequence cs, int start, int end)
+  {
+    print(cs == null ? "null" : cs.subSequence(start, end).toString());
+    return this;
+  }
+
+  /** @since 1.5 */
+  public PrintStream printf(String format, Object... args)
+  {
+    return format(format, args);
+  }
+
+  /** @since 1.5 */
+  public PrintStream printf(Locale locale, String format, Object... args)
+  {
+    return format(locale, format, args);
+  }
+
+  /** @since 1.5 */
+  public PrintStream format(String format, Object... args)
+  {
+    return format(Locale.getDefault(), format, args);
+  }
+
+  /** @since 1.5 */
+  public PrintStream format(Locale locale, String format, Object... args)
+  {
+    Formatter f = new Formatter(this, locale);
+    f.format(format, args);
+    return this;
   }
 } // class PrintStream
 

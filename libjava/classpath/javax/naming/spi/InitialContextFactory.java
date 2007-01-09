@@ -66,5 +66,6 @@ public interface InitialContextFactory
    * @return the new initial context
    * @throws NamingException if the naming exception has occured
    */
-  Context getInitialContext(Hashtable environment) throws NamingException;
+  Context getInitialContext (Hashtable<?, ?> environment)
+    throws NamingException;
 }

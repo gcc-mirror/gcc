@@ -1,5 +1,5 @@
 /* gnu.java.util.DoubleEnumeration
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -63,7 +63,7 @@ import java.util.NoSuchElementException;
  * @author Jochen Hoenicke
  * @author Mark Wielaard (mark@klomp.org)
  */
-public class DoubleEnumeration implements Enumeration
+public class DoubleEnumeration<T> implements Enumeration<T>
 {
   /**
    * This is true as long as one of the enumerations has more
@@ -82,17 +82,17 @@ public class DoubleEnumeration implements Enumeration
   /**
    * The first enumeration.
    */
-  private Enumeration e1;
+  private Enumeration<T> e1;
   /**
    * The second enumeration.
    */
-  private Enumeration e2;
+  private Enumeration<T> e2;
 
   /**
    * Creates a new Enumeration combining the given two enumerations.
    * The enumerations mustn't be accessed by other classes.
    */
-  public DoubleEnumeration(Enumeration e1, Enumeration e2)
+  public DoubleEnumeration(Enumeration<T> e1, Enumeration<T> e2)
   {
     this.e1 = e1;
     this.e2 = e2;
@@ -126,7 +126,7 @@ public class DoubleEnumeration implements Enumeration
    * element of the second enumeration. If both enumeration don't have
    * any elements it throws a <code>NoSuchElementException</code>.
    */
-  public Object nextElement()
+  public T nextElement()
   {
     if (!hasMoreElements())
       throw new NoSuchElementException();

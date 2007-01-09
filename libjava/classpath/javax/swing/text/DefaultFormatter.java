@@ -216,7 +216,7 @@ public class DefaultFormatter extends JFormattedTextField.AbstractFormatter
    */
   public DefaultFormatter()
   {
-    commitsOnValidEdit = true;
+    commitsOnValidEdit = false;
     overwriteMode = true;
     allowsInvalid = true;
   }
@@ -330,7 +330,7 @@ public class DefaultFormatter extends JFormattedTextField.AbstractFormatter
    *
    * @return the class that is used for values
    */
-  public Class getValueClass()
+  public Class<?> getValueClass()
   {
     return valueClass;
   }
@@ -342,7 +342,7 @@ public class DefaultFormatter extends JFormattedTextField.AbstractFormatter
    *
    * @see #getValueClass()
    */
-  public void setValueClass(Class valueClass)
+  public void setValueClass(Class<?> valueClass)
   {
     this.valueClass = valueClass;
   }

@@ -45,8 +45,6 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.BoundedRangeModel;
 import javax.swing.JTextField;
@@ -225,7 +223,7 @@ public class FieldView extends PlainView
 
   public int getResizeWeight(int axis)
   {
-    return axis = axis == X_AXIS ? 1 : 0;
+    return axis == X_AXIS ? 1 : 0;
   }
   
   public Shape modelToView(int pos, Shape a, Position.Bias bias)

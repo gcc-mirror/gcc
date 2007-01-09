@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package java.awt.dnd;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Image;
@@ -268,7 +266,8 @@ public class DragSourceContext
     for (int i = 0; i < dsl.length; i++)
       dsl[i].dragExit(e);
     
-    updateCurrentCursor(0, 0, DEFAULT);
+    updateCurrentCursor(DnDConstants.ACTION_NONE, DnDConstants.ACTION_NONE,
+                        DEFAULT);
   }
 
   /**
@@ -340,26 +339,45 @@ public class DragSourceContext
    * @param status - the status of the cursor (constant).
    */
   protected void updateCurrentCursor(int dropOp, int targetAct, int status)
-    throws NotImplementedException
   {
-    // FIXME: Not implemented fully
-    if (!useCustomCursor)
+    if (! useCustomCursor)
       {
-        Cursor cursor = null;
+        Cursor newCursor = null;
         switch (status)
           {
-          case ENTER:
-            break;
-          case CHANGED:
-            break;
-          case OVER:
-            break;
           default:
-            break;
+            targetAct = DnDConstants.ACTION_NONE;
+          case ENTER:
+          case CHANGED:
+          case OVER:
+            int action = dropOp & targetAct;
+            if (action == DnDConstants.ACTION_NONE)
+              {
+                if ((dropOp & DnDConstants.ACTION_LINK) != 0)
+                  newCursor = DragSource.DefaultLinkNoDrop;
+                else if ((dropOp & DnDConstants.ACTION_MOVE) != 0)
+                  newCursor = DragSource.DefaultMoveNoDrop;
+                else
+                  newCursor = DragSource.DefaultCopyNoDrop;
+              }
+            else
+              {
+                if ((dropOp & DnDConstants.ACTION_LINK) != 0)
+                  newCursor = DragSource.DefaultLinkDrop;
+                else if ((dropOp & DnDConstants.ACTION_MOVE) != 0)
+                  newCursor = DragSource.DefaultMoveDrop;
+                else
+                  newCursor = DragSource.DefaultCopyDrop;
+              }
           }
         
-        this.cursor = cursor;
-        peer.setCursor(cursor);
+        if (cursor == null || ! cursor.equals(newCursor))
+          {
+            cursor = newCursor;
+            DragSourceContextPeer p = peer;
+            if (p != null)
+              p.setCursor(cursor);
+          }
       }
   }
 } // class DragSourceContext

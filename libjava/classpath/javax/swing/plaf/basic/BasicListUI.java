@@ -921,7 +921,7 @@ public class BasicListUI extends ListUI
    */
   protected void maybeUpdateLayoutState()
   {
-    if (updateLayoutStateNeeded != 0)
+    if (updateLayoutStateNeeded != 0 || !list.isValid())
       {
         updateLayoutState();
         updateLayoutStateNeeded = 0;

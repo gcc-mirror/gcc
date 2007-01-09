@@ -435,8 +435,8 @@ public final class AttributeSetUtilities
    * that implements interfaceName
    * @exception NullPointerException if object is null
    */
-  public static Class verifyAttributeCategory(Object object,
-                                              Class interfaceName)
+  public static Class<?> verifyAttributeCategory(Object object,
+                                                 Class<?> interfaceName)
   {
     if (object == null)
       throw new NullPointerException("object may not be null");
@@ -461,7 +461,7 @@ public final class AttributeSetUtilities
    * @exception NullPointerException if object is null
    */
   public static Attribute verifyAttributeValue(Object object,
-                                               Class interfaceName)
+                                               Class<?> interfaceName)
   {
     if (object == null)
       throw new NullPointerException("object may not be null");
@@ -482,7 +482,7 @@ public final class AttributeSetUtilities
    * @exception IllegalArgumentException if the categories are not equal
    * @exception NullPointerException if category is null
    */
-  public static void verifyCategoryForValue(Class category,
+  public static void verifyCategoryForValue(Class<?> category,
                                             Attribute attribute)
   {
     if (category == null || attribute == null)

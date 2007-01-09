@@ -289,7 +289,7 @@ public class GridLayout implements LayoutManager, Serializable
   public String toString ()
   {
     return (getClass ().getName () + "["
-	    + ",hgap=" + hgap + ",vgap=" + vgap
+	    + "hgap=" + hgap + ",vgap=" + vgap
 	    + ",rows=" + rows + ",cols=" + cols
 	    + "]");
   }

@@ -1,5 +1,5 @@
 /* ComponentEvent.java -- notification of events for components
-   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -114,24 +114,27 @@ public class ComponentEvent extends AWTEvent
    */
   public String paramString()
   {
+    StringBuffer s = new StringBuffer();
+    
     // Unlike Sun, we don't throw NullPointerException or ClassCastException
     // when source was illegally changed.
-    switch (id)
-      {
-      case COMPONENT_MOVED:
-        return "COMPONENT_MOVED "
-          + (source instanceof Component
-             ? ((Component) source).getBounds() : (Object) "");
-      case COMPONENT_RESIZED:
-        return "COMPONENT_RESIZED "
-          + (source instanceof Component
-             ? ((Component) source).getBounds() : (Object) "");
-      case COMPONENT_SHOWN:
-        return "COMPONENT_SHOWN";
-      case COMPONENT_HIDDEN:
-        return "COMPONENT_HIDDEN";
-      default:
-        return "unknown type";
-      }
+    if (id == COMPONENT_MOVED)
+      s.append("COMPONENT_MOVED ");
+    else if (id == COMPONENT_RESIZED) 
+      s.append("COMPONENT_RESIZED ");
+    else if (id == COMPONENT_SHOWN)
+      s.append("COMPONENT_SHOWN ");
+    else if (id == COMPONENT_HIDDEN)
+      s.append("COMPONENT_HIDDEN ");
+    else
+      return "unknown type";
+
+    s.append("(").append(getComponent().getX()).append(",")
+      .append(getComponent().getY()).append(" ")
+      .append(getComponent().getWidth()).append("x")
+      .append(getComponent().getHeight()).append(")");
+
+    return s.toString();
   }
+  
 } // class ComponentEvent

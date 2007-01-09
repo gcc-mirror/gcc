@@ -54,7 +54,6 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.UIResource;
-import javax.swing.plaf.basic.BasicButtonListener;
 import javax.swing.plaf.basic.BasicButtonUI;
 
 /**
@@ -66,55 +65,25 @@ public class MetalButtonUI
   extends BasicButtonUI
 {
 
-  /** The color used to draw the focus rectangle around the text and/or icon. */
+  /**
+   * The shared button UI.
+   */
+  private static MetalButtonUI sharedUI;
+
+  /**
+   * The color used to draw the focus rectangle around the text and/or icon.
+   */
   protected Color focusColor;
     
-  /** The background color for the button when it is pressed. */
+  /**
+   * The background color for the button when it is pressed.
+   */
   protected Color selectColor;
 
-  /** The color for disabled button labels. */
+  /**
+   * The color for disabled button labels.
+   */
   protected Color disabledTextColor;
-
-  /**
-   * Creates a new instance.
-   */
-  public MetalButtonUI()
-  {
-    super();
-    focusColor = UIManager.getColor(getPropertyPrefix() + "focus");
-    selectColor = UIManager.getColor(getPropertyPrefix() + "select");
-    disabledTextColor = UIManager.getColor(getPropertyPrefix() + "disabledText");
-  }
-
-  /**
-   * Returns the color for the focus border.
-   *
-   * @return the color for the focus border
-   */
-  protected Color getFocusColor()
-  {
-    return focusColor;
-  }
-
-  /**
-   * Returns the color that indicates a selected button.
-   *
-   * @return the color that indicates a selected button
-   */
-  protected Color getSelectColor()
-  {
-    return selectColor;
-  }
-
-  /**
-   * Returns the color for the text label of disabled buttons.
-   *
-   * @return the color for the text label of disabled buttons
-   */
-  protected Color getDisabledTextColor()
-  {
-    return disabledTextColor;
-  }
 
   /**
    * Returns a UI delegate for the specified component.
@@ -125,7 +94,51 @@ public class MetalButtonUI
    */
   public static ComponentUI createUI(JComponent c) 
   {
-    return new MetalButtonUI();
+    if (sharedUI == null)
+      sharedUI = new MetalButtonUI();
+    return sharedUI;
+  }
+
+  /**
+   * Creates a new instance.
+   */
+  public MetalButtonUI()
+  {
+    super();
+  }
+
+  /**
+   * Returns the color for the focus border.
+   *
+   * @return the color for the focus border
+   */
+  protected Color getFocusColor()
+  {
+    focusColor = UIManager.getColor(getPropertyPrefix() + "focus");
+    return focusColor;
+  }
+
+  /**
+   * Returns the color that indicates a selected button.
+   *
+   * @return the color that indicates a selected button
+   */
+  protected Color getSelectColor()
+  {
+    selectColor = UIManager.getColor(getPropertyPrefix() + "select");
+    return selectColor;
+  }
+
+  /**
+   * Returns the color for the text label of disabled buttons.
+   *
+   * @return the color for the text label of disabled buttons
+   */
+  protected Color getDisabledTextColor()
+  {
+    disabledTextColor = UIManager.getColor(getPropertyPrefix()
+                                           + "disabledText");
+    return disabledTextColor;
   }
 
   /**
@@ -137,31 +150,18 @@ public class MetalButtonUI
    */
   public void installDefaults(AbstractButton button)
   {
+    // This is overridden to be public, for whatever reason.
     super.installDefaults(button);
-    button.setRolloverEnabled(UIManager.getBoolean(
-                                            getPropertyPrefix() + "rollover"));
   }
-    
+
   /**
    * Removes the defaults added by {@link #installDefaults(AbstractButton)}.
    */
   public void uninstallDefaults(AbstractButton button) 
   {
+    // This is overridden to be public, for whatever reason.
     super.uninstallDefaults(button);
-    button.setRolloverEnabled(false);
   }
-
-  /**
-   * Returns a button listener for the specified button.
-   * 
-   * @param button  the button.
-   * 
-   * @return A button listener.
-   */
-  protected BasicButtonListener createButtonListener(AbstractButton button) 
-  {
-    return new MetalButtonListener(button);
-  }    
 
   /**
    * Paints the background of the button to indicate that it is in the
@@ -175,7 +175,7 @@ public class MetalButtonUI
     if (b.isContentAreaFilled())
     {
       Rectangle area = b.getVisibleRect();
-      g.setColor(selectColor);
+      g.setColor(getSelectColor());
       g.fillRect(area.x, area.y, area.width, area.height);
     }
   }

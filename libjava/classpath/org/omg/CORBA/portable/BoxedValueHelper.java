@@ -1,5 +1,5 @@
 /* BoxedValueHelper.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -63,7 +63,7 @@ public interface BoxedValueHelper
   /**
    * Read this value type from the CDR stream.
    *
-   * @param is a stream to read from.
+   * @param istream is a stream to read from.
    *
    * @return a loaded value type.
    */
@@ -72,7 +72,7 @@ public interface BoxedValueHelper
   /**
    * Write this value type to the CDR stream.
    *
-   * @param os a stream to write to.
+   * @param ostream a stream to write to.
    * @param value a value to write.
    */
   void write_value(OutputStream ostream, Serializable value);

@@ -1,3 +1,1234 @@
+2007-01-05  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.loader/loader.exp (gcj_loader_run): Find
+	dummy.class in srcdir.
+
+2007-01-03  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.cni/cni.exp (gcj_cni_compile_cxx_to_o): Add -I
+	for srcdir.
+
+2007-01-03  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/*: Added many .jar and .h files.
+	* testsuite/libjava.special/special.exp
+	(gcj_special_try_compiler): New proc.
+	* testsuite/libjava.loader/loader.exp (gcj_loader_run): Don't
+	bytecompile source.  Search for .jar files.
+	(gcj_loader_test_one): Don't look for MyLoader.java.
+	* testsuite/libjava.jvmti/jvmti.exp (gcj_jvmti_test_one): Don't
+	bytecompile sources or build headers.
+	(gcj_jvmti_run): Look for .jar files.
+	* testsuite/libjava.jni/jni.exp (gcj_jni_run): Compile .jar
+	files.
+	(gcj_jni_test_one): Don't bytecompile sources or build headers.
+	Set classpath when invoking gij.
+	(gcj_jni_invocation_test_one): Likewise.
+	* testsuite/libjava.cni/cni.exp (gcj_cni_test_one): Don't build
+	headers or bytecompile sources.
+	(gcj_cni_run): Use .jar files, not .java files.
+	* testsuite/libjava.lang/lang.exp: Compile .jar files.
+
+2007-01-02  Tom Tromey  <tromey@redhat.com>
+
+	* configure: Rebuilt.
+	* configure.ac: Check for gjar.
+
+2007-01-02  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.jacks/jacks.exp: Removed.
+	* testsuite/libjava.jacks/jacks.xfail: Removed.
+
+2006-12-22  Tom Tromey  <tromey@redhat.com>
+
+	* sources.am, Makefile.in: Rebuilt.
+	* java/io/natObjectInputStream.cc (allocateObject): Now method on
+	VMObjectStream.
+	(currentLoader): Removed.
+	* java/io/ObjectInputStream.java: Removed.
+	* java/io/VMObjectInputStream.java: New file.
+	* scripts/classes.pl (scan): Ignore .svn directories.
+	* gcj/javaprims.h: Updated.
+
+2006-12-22  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.jni/register2.c: Include jni.h, not
+	register2.h.
+	* testsuite/libjava.cni/cni.exp (gcj_cni_build_headers):
+	Special-case shortfield.
+
+2006-12-20  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natClass.cc (getDeclaredAnnotations): Call
+	ClassLoader.getDeclaredAnnotations and
+	ClassLoader.putDeclaredAnnotations.
+	* java/lang/ClassLoader.java (AnnotationsKey): New class.
+	(getDeclaredAnnotations, putDeclaredAnnotations): New.
+
+2006-12-19  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natClassLoader.cc (_Jv_CheckABIVersion): Move here
+	from include/jvm.h.
+	Add BC ABI Version 1.
+	Throw a ClassFormatError if we're not ABI-compatible.
+	(_Jv_RegisterClasses): Throw a ClassFormatError if we're not
+	ABI-compatible.
+	(_Jv_RegisterClasses_Counted): Likewise.
+	(_Jv_NewClassFromInitializer): Likewise.
+	Call Class::initializerSize to get size of initializer struct.
+	* include/jvm.h (_Jv_CheckABIVersion): Move to natClassLoader.cc.
+	* java/lang/Class.h (Class::initializerSize): New function.
+
+2006-12-18  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.jvmti/jvmti.exp (gcj_jvmti_build_headers):
+	Don't use jv-scan.
+
+2006-12-18  Tom Tromey  <tromey@redhat.com>
+
+	* HACKING: Updated.
+	* gnu/classpath/Configuration.java (CLASSPATH_VERSION): Now 0.93.
+
+2006-12-15  Tom Tromey  <tromey@redhat.com>
+
+	* configure, Makefile.in: Rebuilt.
+	* Makefile.am (gcjh.stamp): Use JAVA_MAINTAINER_MODE.
+	* configure.ac: Added --enable-java-maintainer-mode.
+
+2006-12-15  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.compile: Removed.
+
+2006-12-15  Andrew Haley  <aph@redhat.com>
+
+	* Makefile.am (AM_MAKEFLAGS): Pass JAR to sub-make.
+	(libgcj_tools_la_GCJFLAGS): Pass -fsource-filename to gcj.
+
+2006-12-14  Gary Benson  <gbenson@redhat.com>
+
+	* include/java-stack.h (stackwalker_nnl_trace_fn,
+	GetStackWalkerFirstNonNullLoader): Declare.
+	* stacktrace.cc (stackwalker_nnl_trace_fn,
+	GetStackWalkerFirstNonNullLoader): New methods.
+	* gnu/classpath/natVMStackWalker.cc
+	(firstNonNullClassLoader): New method.
+	* gnu/classpath/VMStackWalker.java
+	(firstNonNullClassLoader): Replace with native method.
+
+2006-12-13  Gary Benson  <gbenson@redhat.com>
+
+	* stacktrace.cc (stackwalker_trace_fn,
+	GetStackWalkerCallingClass): Be less strict about caller.
+	* gnu/classpath/natVMStackWalker.cc
+	(getCallingClassLoader): New method.
+	* gnu/classpath/VMStackWalker.java
+	(getCallingClassLoader): Replace with native method.
+
+2006-12-12  Tom Tromey  <tromey@redhat.com>
+
+	* sources.am, Makefile.in: Rebuilt.
+	* gnu/java/rmi/rmic/CompilerProcess.java: Removed.
+	* gnu/java/rmi/rmic/RMICException.java: Removed.
+	* gnu/java/rmi/rmic/Compiler.java: Removed.
+	* gnu/java/rmi/rmic/Compile_gcj.java: Removed.
+	* gnu/java/rmi/rmic/Compile_jikes.java: Removed.
+	* gnu/java/rmi/rmic/TabbedWriter.java: Removed.
+	* gnu/java/rmi/rmic/Compile_kjc.java: Removed.
+	* gnu/java/rmi/rmic/RMIC.java: Removed.
+	* Makefile.am (toolexeclib_LTLIBRARIES): Uncomment
+	libgcj-tools.la.
+	(jar_DATA): Uncomment libgcj-tools jar.
+	(libgcj_tools_la_SOURCES): Uncomment.
+	(libgcj_tools_la_GCJFLAGS): Likewise.
+	(libgcj_tools_la_LDFLAGS): Likewise.
+	(libgcj_tools_la_DEPENDENCIES): Likewise.
+	(libgcj_tools_la_LINK): Likewise.
+	(libgcj-tools-$(gcc_version).jar): Uncomment.
+	(bin_PROGRAMS): Add gappletviewer, gjarsigner, gkeytool, gjar,
+	gjavah, gnative2ascii, gorbd, grmid, gserialver, gtnameserv.
+	(gjar_SOURCES): New variable.
+	(gjar_LDFLAGS): Likewise.
+	(gjar_LINK): Likewise.
+	(gjar_LDADD): Likewise.
+	(gjar_DEPENDENCIES): Likewise.
+	(gjavah_SOURCES): Likewise.
+	(gjavah_LDFLAGS): Likewise.
+	(gjavah_LINK): Likewise.
+	(gjavah_LDADD): Likewise.
+	(gjavah_DEPENDENCIES): Likewise.
+	(gnative2ascii_SOURCES): Likewise.
+	(gnative2ascii_LDFLAGS): Likewise.
+	(gnative2ascii_LINK): Likewise.
+	(gnative2ascii_LDADD): Likewise.
+	(gnative2ascii_DEPENDENCIES): Likewise.
+	(gorbd_SOURCES): Likewise.
+	(gorbd_LDFLAGS): Likewise.
+	(gorbd_LINK): Likewise.
+	(gorbd_LDADD): Likewise.
+	(gorbd_DEPENDENCIES): Likewise.
+	(grmid_SOURCES): Likewise.
+	(grmid_LDFLAGS): Likewise.
+	(grmid_LINK): Likewise.
+	(grmid_LDADD): Likewise.
+	(grmid_DEPENDENCIES): Likewise.
+	(gserialver_SOURCES): Likewise.
+	(gserialver_LDFLAGS): Likewise.
+	(gserialver_LINK): Likewise.
+	(gserialver_LDADD): Likewise.
+	(gserialver_DEPENDENCIES): Likewise.
+	(gtnameserv_SOURCES): Likewise.
+	(gtnameserv_LDFLAGS): Likewise.
+	(gtnameserv_LINK): Likewise.
+	(gtnameserv_LDADD): Likewise.
+	(gtnameserv_DEPENDENCIES): Likewise.
+	(grmic_LDADD): Link against tools library.
+	(grmic_LDFLAGS): Changed --main.
+	(grmiregistry_LDADD): Link against tools library.
+	(grmiregistry_LDFLAGS): Changed --main.
+	(grmic_DEPENDENCIES): Updated.
+	(grmiregistry_DEPENDENCIES): Likewise.
+
+2006-12-12  Tom Tromey  <tromey@redhat.com>
+
+	* sources.am, Makefile.in: Rebuilt.
+	* gnu/java/nio/FileLockImpl.java: New override.
+	* gnu/java/nio/SelectorProviderImpl.java: New override.
+	* gnu/java/nio/PipeImpl.java: New override.
+	* gnu/java/nio/SocketChannelSelectionKeyImpl.java: New override.
+	* gnu/java/nio/NIOSocket.java: New override.
+	* gnu/java/nio/SocketChannelSelectionKey.java: New override.
+	* java/io/FileDescriptor.java: New override.
+	* java/io/RandomAccessFile.java: New override.
+	* java/io/FileInputStream.java: New override.
+	* java/io/FileOutputStream.java: New override.
+	* configure.ac: Pass --disable-Werror, --disable-tool-wrappers to
+	Classpath configure.
+	* java/io/ObjectInputStream.java (readClassDescriptor): Don't pass
+	class loader to ObjectStreamField.
+	* java/net/DatagramSocket.java: New override.
+	* java/net/Socket.java: New override.
+	* java/net/MulticastSocket.java: New override.
+	* gnu/classpath/VMStackWalker.java (firstNonNullClassLoader): New
+	method from Classpath.
+	* java/lang/Class.java (newInstance): Fixed return type.
+	(forName): Likewise.
+	(getClasses): Likewise.
+	(getComponentType): Likewise.
+	(getConstructors): Likewise.
+	(getDeclaredClasses): Likewise.
+	(getDeclaredConstructors): Likewise.
+	(getDeclaringClass): Likewise.
+	(getInterfaces): Likewise.
+	(getSuperclass): Likewise.
+	(internalGetClasses): Genericized.
+	(getMethod): Likewise.
+	(isAssignableFrom): Likewise.
+	* java/util/zip/natDeflater.cc (getBytesWritten): Renamed.
+	(getBytesRead): Likewise.
+	* java/util/zip/Deflater.java (getBytesRead, getBytesWritten): New
+	methods.
+	(getTotalIn, getTotalOut): Rewrote.
+	* java/net/NetworkInterface.java: New override.
+	* java/lang/ClassLoader.java (defineClass): New overload from
+	Classpath.
+
+2006-12-11  Gary Benson  <gbenson@redhat.com>
+
+	* gcj/Makefile.in: Rebuilt.
+
+2006-12-11  Gary Benson  <gbenson@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* include/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2006-12-08  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* configure, Makefile.in: Rebuilt.
+	* configure.ac: (GCJ_FOR_ECJX) New substitution.
+	(host_exeext): Likewise.
+	(ENABLE_SHARED): New conditional,
+	* Makefile.am: Added GCJ_FOR_ECJX and GCJ_FOR_ECJX_LINK.
+	(install-exec-hook): Correctly rename ecjx to ecj1.
+	(ecjx_LINK, ecjx_LDFLAGS, ecjx_LDADD, ecjx_DEPENDENCIES): Define
+	as a function of whether we're doing a native and/or shared build.
+
+2006-12-08  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* posix-threads.cc (_Jv_ThreadUnpark): Removed.
+	(ParkHelper::unpark): Ported from _Jv_ThreadUnpark.
+	(ParkHelper::deactivate): Implemented.
+	(_Jv_ThreadPark): Removed.
+	(ParkHelper::park): Ported from _Jv_ThreadPark; moved
+	mutex locking and unlocking to inside if statement.
+	* win32-threads.cc (compare_and_exchange): New helper function.
+	(_Jv_ThreadUnpark, _Jv_ThreadPark): Removed.
+	(ParkHelper::init): Implemented.
+	(ParkHelper::init_event): Implemented.
+	(ParkHelper::deactivate): Implemented.
+	(ParkHelper::destroy): Implemented.
+	(ParkHelper::unpark): Implemented.
+	(ParkHelper::park): Implemented.
+	* java/lang/natThread.cc (initialize_native): Use ParkHelper
+	instead of POSIX synchronization constructs.
+	(finalize_native):  Likewise.
+	(interrupt): Use ParkHelper method instead of _Jv_ThreadUnpark().
+	(finish_): Use ParkHelper::deactivate().
+	* include/jvm.h (struct natThread): Use ParkHelper instead of POSIX
+	synchronization constructs.
+	* include/posix-threads.h: Include sysdep/locks.h
+	(_Jv_ThreadUnpark, _Jv_ThreadPark): Removed.
+	(ParkHelper): New struct.
+	(ParkHelper::init): Implemented.
+	(ParkHelper::destroy): Implemented.
+	* include/win32-threads.h (ParkHelper): New struct.
+	(TEXT): undefined this macro.
+	* sun/misc/natUnsafe.cc (unpark): Use ParkHelper instead of
+	_Jv_ThreadUnpark.
+	(park):  Use ParkHelper instead of _Jv_ThreadPark.
+
+2006-12-08  Ben Konrath  <bkonrath@redhat.com>
+
+	PR libgcj/30110:
+	* Makefile.am: Add contents of classpath/external to src.zip.
+	* Makefile.in: Regenerate.
+
+2006-12-07  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/30076:
+	* defineclass.cc (read_fields): Sort fields here.
+	(handleFieldsEnd): Removed.
+	(handleField): Added field map argument.
+	(struct _Jv_ClassReader): Updated.
+	(handleParameterAnnotations): Use writeInt for the length.
+
+2006-12-07  Gary Benson  <gbenson@redhat.com>
+
+	* include/java-stack.h (stackwalker_trace_fn,
+	GetStackWalkerCallingClass): Declare.
+	* stacktrace.cc (stackwalker_trace_fn,
+	GetStackWalkerCallingClass): New methods.
+	* gnu/classpath/natVMStackWalker.cc
+	(getCallingClass): Use the above.
+	* gnu/classpath/VMStackWalker.java
+	(getCallingClass): Replace with native method.
+
+2006-12-06  Tom Tromey  <tromey@redhat.com>
+
+	PR java/24938:
+	* sources.am, Makefile.in: Rebuilt.
+	* gnu/CORBA/DynAn/gnuDynValue.java: Removed.
+	* gnu/CORBA/DynAn/RecordAny.java: Removed.
+	* gnu/CORBA/DynAn/RecordAny.h: Rebuilt.
+
+2006-12-06  Andrew Haley  <aph@redhat.com>
+
+	* gcj/javaprims.h (_Jv_is_proxy): Declare.
+	* java/lang/reflect/natVMProxy.cc (_Jv_is_proxy): Define
+	(run_proxy): Register this proxy invocation with a _Jv_InterpFrame.
+	* include/java-stack.h (struct _Jv_StackFrame): Add proxyClass and
+	proxyMethod.
+	* stacktrace.cc (UnwindTraceFn): Add frame_proxy handling.
+	(getLineNumberForFrame): Likewise.
+	(FillInFrameInfo): Likewise.
+
+2006-12-05  Andrew Haley  <aph@redhat.com>
+
+	* Makefile.am: Add java/lang/reflect/natVMProxy.cc.
+	* java/lang/reflect/Method.java (exception_types, parameter_types,
+	return_type): Make package private.
+	* include/jvm.h (_Jv_makeUtf8Const(const char *s)): New function.
+	(_Jv_Linker::layout_vtable_methods): Given
+	public linkage.
+	(_Jv_Linker::search_method_in_class): Likewise.
+	* interpret.cc (_Jv_init_cif): Renamed from init_cif.  Given
+	public linkage.
+	* include/java-interp.h (_Jv_init_cif): Likewise.
+	* java/lang/reflect/natVMProxy.cc: New file.
+	* java/lang/VMCompiler.java (precompiles): New method.
+	(compileClass): Use it.
+	* java/lang/reflect/VMProxy.java
+	(HAVE_NATIVE_GENERATE_PROXY_CLASS): true.
+	(generateProxyClass): Native.
+	
+2006-12-05  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libexecsubdir): New variable.
+	(install-exec-hook): Install ecj1 in libexecsubdir.
+	(libexecsub_PROGRAMS): Renamed.
+
+2006-12-05  Tom Tromey  <tromey@redhat.com>
+
+	PR java/29495:
+	* testsuite/libjava.lang/PR29495.out: New file.
+	* testsuite/libjava.lang/PR29495.java: New file.
+
+2006-12-05  Gary Benson  <gbenson@redhat.com>
+
+	* gnu/classpath/natVMStackWalker.cc: Comment fixes.
+
+2006-12-05  Gary Benson  <gbenson@redhat.com>
+
+	* gnu/classpath/natVMStackWalker.cc (getCallingClass): Unwind
+	the stack when the caller is a compiled frame and the caller
+	of the caller is an interpreted frame.
+
+2006-12-04  Adam Megacz <megacz@cs.berkeley.edu>
+
+	* gnu/gcj/runtime/natSharedLibLoader.cc (init): add "::" to fix
+	syntax error
+
+2006-12-04  Adam Megacz <megacz@cs.berkeley.edu>
+
+	* include/win32.h (_Jv_platform_process): change to Win32Process
+	
+2006-12-04  Gary Benson  <gbenson@redhat.com>
+
+	* stacktrace.cc (GetClassContext): Remove.
+	* include/java-stack.h (GetClassContext): Likewise.
+
+2006-12-04  Gary Benson  <gbenson@redhat.com>
+
+	* java/lang/SecurityManager.java: Removed.
+	* java/lang/VMSecurityManager.java: Likewise.
+	* java/lang/natVMSecurityManager.cc: Likewise.
+	* javax/naming/spi/NamingManager.java: Likewise.
+	* gnu/CORBA/ObjectCreator.java: Likewise.
+	* sun/reflect/Reflection.java: Replaced with reference.
+	* sun/reflect/natReflection.cc: Removed.
+	* gcj/javaprims.h: Removed reference to VMSecurityManager.
+	* Makefile.am (nat_source_files): Removed natReflection.cc
+	and natVMSecurityManager.cc.
+	* sources.am, Makefile.in: Rebuilt.	
+	
+2006-12-01  Gary Benson  <gbenson@redhat.com>
+
+	* java/net/URLClassLoader.java
+	(findClass): Inhibit calling this.toString() further into VM
+	initialization.
+	(runtimeInitialized): Removed.
+	* java/net/natURLClassLoader.cc: Removed.
+	* Makefile.am: Reflect the above.
+	* Makefile.in: Rebuilt.	
+
+2006-11-30  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Class.java (getAnnotations): Don't recurse.
+
+2006-11-30  Gary Benson  <gbenson@redhat.com>
+
+	* include/java-stack.h (GetStackWalkerStack): Declare.
+	* stacktrace.cc (GetStackWalkerStack): New method.
+	* gnu/classpath/natVMStackWalker.cc (getClassContext): Likewise.
+	* gnu/classpath/VMStackWalker.java
+	(getClassContext): Replace stub with native method declaration.
+	(getCallingClass): Remove "throws NotImplementedException".
+	(getCallingClassLoader): Likewise.
+
+2006-11-30  Gary Benson  <gbenson@redhat.com>
+
+	* java/lang/ClassLoader.java: Merged javadoc.
+	(getParent, getSystemClassLoader): Use VMStackWalker.
+
+2006-11-30  Gary Benson  <gbenson@redhat.com>
+
+	* java/lang/Thread.java: Merged javadoc.
+	(getContextClassLoader): Use VMStackWalker.
+
+2006-11-29  Gary Benson  <gbenson@redhat.com>
+
+	* java/lang/Package.java: Removed.
+	* java/security/Security.java: Likewise.
+	* java/util/ResourceBundle.java: Likewise.
+	* java/util/natResourceBundle.cc: Likewise.
+	* Makefile.am (nat_source_files): Removed natResourceBundle.cc.
+	* sources.am, Makefile.in: Rebuilt.
+
+2006-11-29  Gary Benson  <gbenson@redhat.com>
+
+	* gnu/classpath/VMStackWalker.java: Added javadoc.
+
+2006-11-27  Andrew Haley  <aph@redhat.com>
+
+	* sun/reflect/misc/ReflectUtil.java (checkPackageAccess):
+	Implement.
+
+2006-11-23  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natClassLoader.cc (_Jv_RegisterClasses): Abort if we
+	are ABI-incompatible.
+
+2006-11-23  Andrew Haley  <aph@redhat.com>
+
+	* Makefile.am (nat_source_files): Add gnu/classpath/natVMStackWalker.cc.
+	* sources.am: Rebuild.
+	* gnu/classpath/natVMStackWalker.cc: New file.
+	* gnu/classpath/VMStackWalker.java: New file.
+	* headers.txt: prepend 
+	_Jv_Thread_t* _Jv_ThreadGetData(java::lang::Thread* thread)
+	* include/java-stack.h: Add VMStackWalker namespace.
+	Add friend class gnu::classpath::VMStackWalker.
+
+2006-11-23  Gary Benson  <gbenson@redhat.com>
+
+	* java/security/Security.java: Merge with classpath.
+	* java/lang/Package.java: Likewise.
+
+2006-11-21  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/Class.h: (isEnum, isSynthetic, isAnnotation): Move
+	to native code. 
+	* java/lang/Class.java (isEnum, isSynthetic, isAnnotation):
+	Likewise.
+
+2006-11-17  Andrew Haley  <aph@redhat.com>
+
+	* java/net/natVMURLConnection.cc: Check for HAVE_MAGIC_OPEN.
+	* configure.ac: Add HAVE_MAGIC_OPEN.
+	* include/config.h.in: Regenerated.
+	* configure: Regenerated.
+	
+2006-11-07  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/VMCompiler.java (compileClass): Revert mistaken
+	change.
+
+	* java/lang/natVMClassLoader.cc (defineClass): Register the new
+	class with the initiating loader.
+
+2006-11-06  Andrew Haley  <aph@redhat.com>
+
+	* defineclass.cc (prepare_pool_entry): Be careful about which
+	constant pool entries have their '/' characters stripped.
+	(handleGenericSignature): Likewise.
+	(handleAnnotationElement): Likewise.
+	(handleAnnotation): Likewise.
+	(read_one_class_attribute): Likewise.
+	(handleMethod): Likewise.
+
+	* include/java-cpool.h (JV_CONSTANT_LazyFlag): New.
+	* java/lang/natClass.cc (check_constant): Likewise.
+	* link.cc (resolve_pool_entry): Mask JV_CONSTANT_LazyFlag.
+
+2006-11-01  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natClass.cc (parseAnnotationElement): Set result from
+	anno_class.
+
+2006-10-21  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.lang/PR260.out: Rewrote for 1.5.
+	* testsuite/libjava.lang/pr179.out: Rewrote for 1.5.
+	* testsuite/libjava.lang/pr179.java: Updated comments.
+	* testsuite/libjava.compile/inner_1.xfail: Removed.
+
+2006-10-20  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.cni/cni.exp (gcj_cni_build_headers): Don't use
+	jv-scan.
+	* testsuite/lib/libjava.exp (test_libjava_from_javac): Removed.
+	(find_jvscan): Removed.
+
+2006-10-20  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.jni/jni.exp (gcj_jni_build_header): Use
+	-force.
+	* testsuite/lib/libjava.exp (find_gcjh): Find 'gjavah' instead.
+	* testsuite/libjava.cni/cni.exp (gcj_cni_build_headers): Pass -cni
+	and -force to gcjh.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (MYGCJH): Use gjavah.
+
+2006-10-18  Tom Tromey  <tromey@redhat.com>
+
+	PR classpath/28203:
+	* java/lang/Class.java (getAnnotations): Rewrote.
+	* java/lang/reflect/Method.java (METHOD_MODIFIERS): Now
+	package-private.
+	* java/lang/reflect/Field.java (FIELD_MODIFIERS): Now
+	package-private.
+	* gcj/field.h (_Jv_FIELD_CONSTANT_VALUE): Removed.
+	* defineclass.cc (handleConstantValueAttribute): Added found_value
+	argument.  Don't use _Jv_FIELD_CONSTANT_VALUE.
+	(read_one_field_attribute): Updated.
+	(read_fields): Likewise.
+	(handleField): Mask with FIELD_MODIFIERS, not ALL_FLAGS.
+	(handleMethod): Mask with METHOD_MODIFIERS, not ALL_FLAGS.
+
+2006-10-17  Tom Tromey  <tromey@redhat.com>
+
+	* defineclass.cc (handleMemberAnnotations): Write member index
+	after 'kind'.
+	(handleAnnotation): Call prepare_pool_entry.
+	* java/lang/reflect/natMethod.cc (getDeclaredAnnotationsInternal):
+	Removed unused variable.
+	(getParameterAnnotationsInternal): Likewise.
+	* java/lang/reflect/natField.cc (getDeclaredAnnotationsInternal):
+	Removed unused variable.
+	* java/lang/reflect/natConstructor.cc
+	(getDeclaredAnnotationsInternal): Removed unused variable.
+	(getParameterAnnotationsInternal): Likewise.
+	* java/lang/natClass.cc (parseAnnotation): Create annotation.
+	(parseAnnotationElement): Handle 'c' and 'e' cases more
+	correctly.
+	(getMethodDefaultValue): Fixed variable names.
+	(parseAnnotationElement): Create String for 's' entry.
+	* java/lang/reflect/Constructor.java (getAnnotation): New method.
+	* java/lang/reflect/Field.java (getAnnotation): New method.
+	* java/lang/reflect/Method.java (getAnnotation): New method.
+
+2006-10-17  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natClass.cc (parseAnnotationElement): Expect a utf8
+	constant in the "string" case.
+	* defineclass.cc (handleAnnotationElement): Expect a utf8 constant
+	in the "string" case.
+
+2006-10-17  Tom Tromey  <tromey@redhat.com>
+
+	* configure, Makefile.in: Rebuilt.
+	* Makefile.am (install-exec-hook): Now unconditional.  Rename ecjx
+	if needed.
+	(jar_DATA): Add ecj jar when needed.
+	(toolexec_PROGRAMS): New variable.
+	(ecjx_SOURCES, ecjx_LDFLAGS, ecjx_LDADD, ecjx_DEPENDENCIES):
+	Likewise.
+	* prims.cc (JvRunMainName): New function.
+	* include/jvm.h (JvRunMainName): Declare.
+	* configure.ac: Added --with-ecj-jar.
+	(ECJ_JAR): New subst.
+	(ECJ_BUILD_JAR): Likewise.
+	(INSTALL_ECJ_JAR): New conditional.
+	(BUILD_ECJ1): Likewise.
+
+2006-10-13  Tom Tromey  <tromey@redhat.com>
+
+	* HACKING: Updated.
+	* sources.am, Makefile.in: Rebuilt.
+	* scripts/makemake.tcl (emit_bc_rule): Updated for class files in
+	srcdir.
+	(emit_package_rule): Likewise.
+	(emit_process_package_rule): Likewise.
+	* Makefile.am (gcjh.stamp): Conditional on MAINTAINER_MODE.  Put
+	headers in srcdir.
+	(libgcj-$(gcc_version).jar): Updated to find classes in source
+	tree.
+	(BOOTCLASSPATH): Likewise.
+	(install-data-local): Likewise.
+	Added all the .class and CNI .h files.
+
+2006-10-12  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natThreadLocal.cc: New file.
+	* java/lang/ThreadLocal.java: Rewrite to use native TLS.
+	* Makefile.am: Add java/lang/natThreadLocal.cc.
+	* sources.am: Move classpath/java/lang/ThreadLocal.java to
+	java/lang/ThreadLocal.java.
+
+2006-10-11  Tom Tromey  <tromey@redhat.com>
+
+	* sources.am, Makefile.in, include/config.h.in, configure:
+	Rebuilt.
+	* Makefile.am (nat_source_files): Added natConfiguration.cc.
+	* gnu/classpath/natConfiguration.cc: New file.
+	* configure.ac (AWT_TOOLKIT): New define.
+	(LIBGCJ_PREFIX): Likewise.
+	* gnu/classpath/Configuration.java: New file.
+	* sources.am: Rebuilt.
+	* scripts/makemake.tcl: Don't special case Configuration.java.
+
+2006-10-10  Tom Tromey  <tromey@redhat.com>
+
+	* gcj/javaprims.h: Updated.
+	* sources.am, Makefile.in: Rebuilt.
+	* standard.omit.in: Removed process source files.
+	* scripts/makemake.tcl: Removed ConcreteProcess special case.
+	(emit_package_rule): Also special-case Process.
+	(emit_process_package_rule): New proc.
+	* Makefile.am (inner_nat_headers): Removed
+	PLATFORM_INNER_NAT_HDRS.
+	* configure: Rebuilt.
+	* configure.ac (PLATFORM_INNER_NAT_HDRS): Removed subst.
+	Don't create ConcreteProcess.java link.
+	(PLATFORM): New subst.
+	* java/lang/natWin32Process.cc: Updated.
+	* java/lang/natPosixProcess.cc: Updated.
+	* java/lang/natEcosProcess.cc: Updated.
+	* java/lang/Win32Process.java (Win32Process): Renamed from
+	ConcreteProcess.
+	* java/lang/EcosProcess.java (EcosProcess): Renamed from
+	ConcreteProcess.
+	* java/lang/PosixProcess.java (PosixProcess): Renamed from
+	ConcreteProcess.
+	* include/win32.h (_Jv_platform_process): New define.
+	* java/lang/natRuntime.cc (execInternal): Use
+	_Jv_platform_process.
+	* include/posix.h (_Jv_platform_process): New define.
+
+2006-10-09  Andrew Haley  <aph@redhat.com>
+
+	* win32-threads.cc (_Jv_ThreadUnpark, _Jv_ThreadPark): New
+	functions.
+
+2006-10-06  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/29278:
+	* Makefile.in: Rebuilt.
+	* Makefile.am ($(generic_header_files)): Depend on gcjh.stamp.
+	(gcjh.stamp): New target.
+
+2006-10-06  Andrew Haley  <aph@redhat.com>
+
+	* posix-threads.cc (_Jv_ThreadUnpark, _Jv_ThreadPark): Moved here
+	from sun/misc/natUnsafe.cc.
+	* sun/misc/natUnsafe.cc (class spinlock): New class.
+	(compareAndSwap): New methods.
+	(compareAndSwapInt, compareAndSwapLong, compareAndSwapObject) 
+	(putOrderedLong, putLongVolatile, putObjectVolatile, putLong) 
+	(getIntVolatile, getObjectVolatile, getLong, getLongVolatile):
+	Rewrite to use gcj's own atomic functions rather than gcc
+	builtins.
+	(unpark): Moved to posix-threads.cc
+	(park): Likewise.
+	* include/jvm.h (struct natThread::alive_flag): Moved here from
+	Thread.java.
+	(struct natThread): Likewise.
+	* include/posix-threads.h: (_Jv_ThreadUnpark, _Jv_ThreadPark):
+	moved here from sun/misc/natUnsafe.cc.
+	* java/lang/natThread.cc (initialize_native): Set alive_flag here.
+	(isAlive): Moved here from Thread.java.
+	(interrupt): alive_flag is now in the natThread structure.
+	(interrupt): Call _Jv_ThreadUnpark().
+	(finish_): parkPermit and alive_flag are now in the natThread
+	structure.
+	(start): LIkewise.
+	(_Jv_AttachCurrentThread): Likewise.
+	* java/lang/Thread.java (alive_flag): Remove.
+	(parkPermit): Likewise.
+	(Thread): Don't set alive_flag.
+	(isAlive): Make native.
+	
+2006-09-13  Andrew Haley  <aph@redhat.com>
+
+	* Makefile.am: Add sun/reflect/natReflection.cc.
+	* Makefile.in: Rebuild.
+	* sun/reflect/natReflection.cc: New file.
+	* sun/reflect/Reflection.java (getCallerClass): Now native.
+	* stacktrace.cc (GetClassContext): Don't check the class if
+	checkClass is NULL.
+	
+2006-09-12  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/Thread.java (alive_flag): Make it a byte.
+	(THREAD_DEAD, THREAD_ALIVE, THREAD_SIGNALED): new constants.
+	(parkPermit): New variable.
+	(data): Now package private.
+	(Thread): Set alive_flag to THREAD_DEAD, not false.
+	(isAlive): Test against THREAD_DEAD.
+	* java/lang/natThread.cc (initialize_native): Initialize
+	park_mutex and park_cond.
+	(finish_): Set parkPermit THREAD_PARK_DEAD.
+	(interrupt): Rewrite.  Use an atomic update rather than a mutex to
+	access alive_flag.
+	If the thread is parked, unpark it.
+	(start): Set alive_flag to THREAD_ALIVE, not true.
+	(finalize_native): Destroy park_mutex and park_cond.
+	* sun/misc/natUnsafe.cc (unpark): New method.
+	(park): New method.
+	* include/jvm.h (struct natThread): Moved here.
+
+2006-06-07  Andrew Haley  <aph@redhat.com>
+ 
+	* include/jvm.h (_Jv_Linker::maybe_adjust_signature): New.
+	(_Jv_Linker::uaddr): New.
+	* link.cc (resolve_pool_entry): Call search_method_in_superclasses
+	instead of an open-coded loop around search_method_in_class.
+	(search_method_in_class): Add a new arg, check_perms.
+	(search_method_in_superclasses): New.
+	(link_symbol_table): Call maybe_adjust_signature() to extract the
+	least significnt bit of the signature pointer.	Do this three
+	times, for instace method calls, static methods, and interfaces.
+	Call search_method_in_superclasses() instead of
+	_Jv_LookupDeclaredMethod.
+	(typedef uaddr): Delete.
+ 
+2006-09-11  Andrew Haley  <aph@redhat.com>
+
+	* gij.cc (main): Remove bogus code that sets LTDL_SHLIBPATH_VAR
+	and forks.
+
+2006-06-16  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natClassLoader.cc (_Jv_NewClassFromInitializer): Don't
+	copy the whole Class instance from the initializer: instead, copy
+	everything but the first word (the vtable pointer).
+	Change prototype to (const char* class_initializer).
+	(_Jv_RegisterNewClasses): Change prototype to (const char**).
+	* java/lang/Class.h (_Jv_RegisterNewClasses): Change prototype to
+	(const char**).
+
+2006-08-31  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/28698:
+	* libgcj_bc.c (DECLARE_PRIM_TYPE): New macro.  Declare primitive
+	classes.
+
+2006-08-21  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* java/lang/natThread.cc (_Jv_AttachCurrentThread): Attach thread
+	to GC.
+	(_Jv_DetachCurrentThread): Detach thread from GC.
+	* include/boehm-gc.h (_Jv_GCAttachThread, _Jv_GCDetachThread):
+	Declare.
+	* boehm.cc (_Jv_GCAttachThread): New function.
+	(_Jv_GCDetachThread): Likewise.
+
+2006-08-16  Jakub Jelinek  <jakub@redhat.com>
+	    Bryce McKinlay  <bryce@mckinlay.net.nz>
+
+	* configure, Makefile.in: Rebuilt.
+	* Makefile.am (toolexeclib_LTLIBRARIES): Add libgcj_bc.la.
+	(libgcj_bc_la_SOURCES): New variable.
+	(libgcj_bc_la_LDFLAGS): Likewise.
+	(libgcj_bc_la_LIBADD): Likewise.
+	(libgcj_bc_la_DEPENDENCIES): Likewise.
+	(libgcj_bc_la_LINK): Likewise.
+	(libgcj_bc_dummy_LINK): Likewise.
+	(libgcj_bc.la): New target.
+	(install-exec-hook): Likewise.
+	* libgcj.spec.in (*lib): Use LIBGCJ_SPEC.
+	* libgcj_bc.c: New file.
+	* configure.ac (LIBGCJ_SPEC): New subst.
+	* configure.host (use_libgcj_bc): New variable.
+
+2006-08-26  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* link.cc:
+	Increment loaded classes when printing verbose output.
+	* gnu/java/lang/management/natVMMemoryMXBeanImpl.cc:
+	Added comments.
+	* gnu/java/lang/management/natVMMemoryPoolMXBeanImpl.cc:
+	(getMemoryManagerNames(jstring)): Implemented.
+	(isValid(jstring)): Implemented.
+	* gnu/java/lang/management/natVMClassLoadingMXBeanImpl.cc:
+	(getLoadedClassCount()): Implemented.
+	(getUnloadedClassCount()): Likewise.
+	(isVerbose()): Likewise.
+	(setVerbose(jboolean)): Likewise.
+	* java/lang/management/natVMManagementFactory.cc:
+	(getMemoryPoolNames()): Implemented.
+	(getMemoryManagerNames()): Likewise.
+	(getGarbageCollectorNames()): Likewise.
+	* include/jvm.h:
+	Add loaded and unloaded class counts.
+	* defineclasses.c:
+	Increment loaded classes count.
+	* prims.cc:
+	Add loaded and unloaded class counts.
+	
+2006-08-16  Tom Tromey  <tromey@redhat.com>
+
+	* include/posix-threads.h (_Jv_MutexLock): No longer inline.
+	* posix-threads.cc (_Jv_CondWait): Set thread's state.
+	* include/jvm.h (class JvSetThreadState): New class.
+	(JvThreadState): New enum.
+	* java/lang/Thread.java (state): New field.
+	* java/lang/natThread.cc (_Jv_ThreadRun): Use
+	getUncaughtExceptionHandler.
+	(start): Set state.
+	(_Jv_AttachCurrentThread): Likewise.
+	(finish_): Likewise.
+	(getState): Wrote.
+
+2006-08-15  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/gcj/runtime/natSharedLibLoader.cc (init): Added missing
+	'::'.
+	* gnu/gcj/convert/natIconv.cc (init): Added missing '::'.
+	(read): Likewise.
+	* gnu/gcj/natCore.cc (create): Added missing '::'.
+	* gnu/classpath/natSystemProperties.cc (insertSystemProperties):
+	Added missing '::'
+
+2006-08-14  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libgcj_la_LIBADD): Add LIBMAGIC.
+	* java/net/natVMURLConnection.cc: Wrote, based on Classpath.
+	* configure, config.h.in: Rebuilt.
+	* configure.ac: Check for magic.h and -lmagic.
+
+2006-08-14  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natThread.cc (getId): Removed.
+	* java/lang/Thread.java (threadId): New field.
+	(totalThreadsCreated): Likewise.
+	(Thread): Set threadId.
+	(getId): No longer native.
+
+2006-08-14  Tom Tromey  <tromey@redhat.com>
+
+	* sources.am, Makefile.in: Rebuilt.
+	* Makefile.am (nat_source_files): Added new .cc files.
+	(libgcj-$(gcc_version).jar): Include 'sun'.
+	(src.zip): Likewise.
+	* java/lang/natThread.cc (getId): New stub.
+	(getState): Likewise.
+	* scripts/makemake.tcl (emit_source_var): Use -decreasing when
+	sorting.
+	* gnu/java/lang/management/natVMMemoryMXBeanImpl.cc: New file.
+	* gnu/java/lang/management/natVMCompilationMXBeanImpl.cc: New file.
+	* gnu/java/lang/management/natVMGarbageCollectorMXBeanImpl.cc: New
+	file.
+	* gnu/java/lang/management/natVMMemoryPoolMXBeanImpl.cc: New file.
+	* gnu/java/lang/management/natVMMemoryManagerMXBeanImpl.cc: New file.
+	* gnu/java/lang/management/natVMClassLoadingMXBeanImpl.cc: New file.
+	* gnu/java/lang/management/natVMThreadMXBeanImpl.cc: New file.
+	* gnu/java/nio/natVMChannel.cc: New file.
+	* gcj/javaprims.h: Updated.
+	* sources.am: Likewise.
+	* java/lang/management/natVMManagementFactory.cc: New file.
+	* java/net/natVMURLConnection.cc: New file.
+	* java/util/concurrent/atomic/natAtomicLong.cc: New file.
+	* sun/misc/natUnsafe.cc: New file.
+
+2006-08-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* libjava/Makefile.in,
+	* libjava/sources.am:
+	Regenerated.
+	* libjava/scripts/makemake.tcl:
+	Added gconf and dnd peers as BC.
+
+2006-08-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* libjava/Makefile.in,
+	* libjava/sources.am:
+	Regenerated.
+	* libjava/scripts/makemake.tcl:
+	Added external/jsr166.
+	
+2006-08-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* libjava/configure,
+	* libjava/Makefile.in:
+	Regenerated.
+	* libjava/scripts/makemake.tcl:
+	Handle the Escher peers as we handle Qt.
+	* libjava/gcj/Makefile.in:
+	Regenerated.
+	* libjava/configure.ac:
+	Handle Escher peers and disable plugin when Gtk+ is not used.
+	* libjava/sources.am:
+	Regenerated.
+	* libjava/classpath/gnu/java/awt/peer/x/fonts.properties:
+	Removed (as recently on generics branch of Classpath).
+	* libjava/include/Makefile.in,
+	* libjava/testsuite/Makefile.in:
+	Regenerated.
+	
+2006-07-23  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* libjava/Makefile.in:
+	Regenerated.
+	* libjava/scripts/classes.pl:
+	Ignore .svn directories.
+	* libjava/scripts/makemake.tcl:
+	Include sun directory.
+	* libjava/gnu/java/lang/management/VMGarbageCollectorMXBeanImpl.java,
+	* libjava/gnu/java/lang/management/VMMemoryPoolMXBeanImpl.java,
+	* libjava/gnu/java/lang/management/VMClassLoadingMXBeanImpl.java,
+	* libjava/gnu/java/lang/management/VMMemoryManagerMXBeanImpl.java,
+	* libjava/gnu/java/lang/management/VMThreadMXBeanImpl.java,
+	* libjava/gnu/java/lang/management/VMMemoryMXBeanImpl.java,
+	* libjava/gnu/java/lang/management/VMCompilationMXBeanImpl.java,
+	* libjava/gnu/java/nio/VMChannel.java:
+	Copied over from classpath/vm/reference.
+	* libjava/gnu/java/nio/channels/FileChannelImpl.java:
+	(getNativeFD()): Implemented.
+	* libjava/gcj/javaprims.h:
+	Updated for generics merge from 20060709.
+	* libjava/javax/naming/spi/NamingManager.java:
+	Copied over from classpath/vm/reference.
+	* libjava/sources.am:
+	Regenerated.
+	* libjava/java/lang/Thread.java:
+	(getId()): Implemented.
+	(getState()): Likewise.
+	(getAllStackTraces()): Likewise.
+	(getStackTrace()): Likewise.
+	* libjava/java/lang/management/VMManagementFactory.java,
+	* libjava/java/net/VMURLConnection.java:
+	Copied over from classpath/vm/reference.	
+	* libjava/classpath/vm/reference/java/lang/management/VMThreadInfo.java:
+	Removed.
+	* libjava/classpath/native/fdlibm/namespace.h:
+	Changed back to GCJ LOCAL version.
+	* libjava/sun/reflect/Reflection.java,
+	* libjava/sun/reflect/misc/ReflectUtil.java,
+	* libjava/sun/misc/Unsafe.java:
+	Copied over from classpath/vm/reference.
+
+2006-07-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* sources.am, Makefile.in: Rebuilt.
+	* gnu/java/lang/management/VMRuntimeMXBeanImpl.java,
+	* gnu/java/lang/management/natVMRuntimeMXBeanImpl.cc:
+	New files.
+	* include/jvm.h:
+	Add new variables used in prims.cc.
+	* Makefile.am:
+	Add natVMRuntimeMXBeanImpl.cc.
+	* prims.cc:
+	(_Jv_CreateJavaVM): Retain start time and input
+	arguments.
+
+2006-07-21  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/4105:
+	* java/lang/natClass.cc (findInnerClassAttribute): New method.
+	(findDeclaredClasses): Likewise.
+	(getDeclaredClasses): Implemented.
+	(getDeclaringClass): Likewise.
+	(isAnonymousClass): Likewise.
+	(isMemberClass): Likewise.
+	(check_constant): Pass message in exception.  Allow resolved
+	constants.
+	(resolve_class_constant): New function.
+	* defineclass.cc (read_one_class_attribute): Handle InnerClasses.
+	* java/lang/Class.h (isAnonymousClass, isLocalClass,
+	isMemberClass): Declare.
+	* java/lang/Class.java (getSimpleName): Implemented.
+	(isAnonymousClass, isLocalClass, isMemberClass): New methods.
+
+2006-07-16  Tom Tromey  <tromey@redhat.com>
+
+	* configure: Rebuilt.
+	* configure.ac (JV_API_VERSION, JV_VERSION): Claim 1.5.
+
+2006-07-12  Andrew Haley  <aph@redhat.com>
+
+	* Makefile.am (java/lang/Object.lo): Add -fsource-filename.
+	(java/lang/Class.lo): Likewise.
+	* Makefile.in: Regenerate.
+
+2006-07-07  Tom Tromey  <tromey@redhat.com>
+
+	* defineclass.cc (input_data, input_offset): New fields.
+	(reflection_data, data_stream): Likewise.
+	(get_reflection_stream): New method.
+	(_Jv_ClassReader): Initialize new fields.
+	(parse): Call finish_reflection_data.
+	(finish_reflection_data): New method.
+	(handleEnclosingMethod): Likewise.
+	(handleGenericSignature): Likewise.
+	(handleAnnotationElement): Likewise.
+	(handleAnnotation): Likewise.
+	(handleAnnotations): Likewise.
+	(handleMemberAnnotations): Likewise.
+	(handleAnnotationDefault): Likewise.
+	(handleParameterAnnotations): Likewise.
+	(read_one_field_attribute): Handle new attributes.
+	(read_one_method_attribute): Likewise.
+	(read_one_class_attribute): Likewise.
+	* include/jvm.h (resolve_method_entry): New method.
+	* java/lang/Class.h (jv_attr_type, jv_attr_kind): New enums.
+	(Class): Updated for new methods.  Field, Method, Constructor now
+	friends.
+	(reflection_data): New field.
+	* java/lang/Class.java (asSubclass, cast): New methods.
+	(getEnclosingClass, getEnclosingConstructor): Now native.
+	(getEnclosingMethod): Likewise.
+	(getClassSignature): New method.
+	(getGenericInterfaces, getGenericSuperclass, getTypeParameters):
+	Likewise.
+	(Class): Implements AnnotatedElement.
+	(getAnnotation, isAnnotationPresent, getAnnotations): New methods.
+	(getDeclaredAnnotations): New method.
+	(getDeclaredAnnotationsInternal): Likewise.
+	* java/lang/reflect/natConstructor.cc (anno_a_t, anno_aa_t): New
+	typedefs.
+	(getSignature): New method.
+	(getDeclaredAnnotationsInternal): Likewise.
+	(getParameterAnnotationsInternal): Likewise.
+	* java/lang/reflect/natField.cc (anno_a_t): New typedef.
+	(getSignature): New method.
+	(getDeclaredAnnotationsInternal): Likewise.
+	* java/lang/reflect/natMethod.cc (anno_a_t, anno_aa_t): New
+	typedefs.
+	(getSignature): New method.
+	(getDefaultValue): Likewise.
+	(getDeclaredAnnotationsInternal): Likewise.
+	(getParameterAnnotationsInternal): Likewise.
+	* java/lang/reflect/Constructor.java (addTypeParameters):
+	Genericized.
+	(getSignature): Now native.
+	(getDeclaredAnnotations, getDeclaredAnnotationsInternal,
+	getParameterAnnotations, getParameterAnnotationsInternal): New
+	methods.
+	* java/lang/reflect/Field.java (getDeclaringClass, getType):
+	Genericized.
+	(getSignature): Now native.
+	(getDeclaredAnnotations, getDeclaredAnnotationsInternal): New
+	methods.
+	* java/lang/reflect/Method.java (getReturnType): Genericized.
+	(getParameterTypes, getExceptionTypes, getTypeParameters):
+	Likewise.
+	(getSignature): Now native.
+	(getDefaultValue, getDeclaredAnnotations,
+	getParameterAnnotations, getDeclaredAnnotationsInternal,
+	getParameterAnnotationsInternal): New methods.
+	* java/lang/natClass.cc (read_u1): New functions.
+	(read_u2): Likewise.
+	(read_4): New function.
+	(getReflectionSignature): New methods.
+	(getClassSignature): New method.
+	(getEnclosingMethodData): Likewise.
+	(getEnclosingClass): Likewise.
+	(getEnclosingMethod): Likewise.
+	(getEnclosingConstructor): Likewise.
+	(check_constant): New function.
+	(parseAnnotationElement): Likewise.
+	(parseAnnotation): Likewise.
+	(parseAnnotations): Likewise.
+	(parseParameterAnnotations): Likewise.
+	(getMethodDefaultValue): New method.
+	(getDeclaredAnnotations): New methods.
+	(getDeclaredAnnotationsInternal): New method.
+	* boehm.cc (_Jv_MarkObj): Mark 'reflection_data' field.
+	* link.cc (resolve_method_entry): New method.
+	(resolve_pool_entry): Use it.
+
+2006-07-07  Andrew Haley  <aph@redhat.com>
+
+	* Makefile.am: Use -fsource-filename when compiling libgcj.
+	* Makefile.in: Regenerate.
+
+2006-06-23  Tom Tromey  <tromey@redhat.com>
+
+	Merged in classpath-generics.
+	* sources.am, Makefile.in: Rebuilt.
+	* Makefile.am (generic_header_files): Don't filter out omitted
+	headers.
+	(generic_header_files): Rewrote.
+	(MYGCJH): New variable.
+	Removed all .h rules.
+	* headers.txt: New file.
+	* java/io/PrintStream.java (PrintStream): Implement Appendable.
+	* java/lang/Class.java: Genericized.
+	(getEnumConstants): New method.
+	(isEnum): Likewise.
+	(isSynthetic): Likewise.
+	(isAnnotation): Likewise.
+	* java/lang/reflect/Constructor.java (getDeclaringClass,
+	getTypeParameters, declaringClass): Genericized.
+	* java/lang/reflect/Method.java (invoke): Now varargs.
+	* java/lang/ref/Reference.java (Reference): Imported genericized
+	version from Classpath.
+	(get): Now native.
+	* java/lang/ref/natReference.cc (get): New method.
+	* java/lang/ProcessBuilder.java: New file.
+	* java/lang/System.java (environmentMap): New field.
+	(clearProperty): New method.
+	(getenv): Likewise.
+	(EnvironmentCollection): New class.
+	(EnvironmentMap): Likewise.
+	(EnvironmentSet): Likewise.
+	* java/lang/StringBuilder.java (StringBuilder): Implements
+	Appendable.
+	* gnu/classpath/SystemProperties.java (remove): New method.
+
+2006-06-23  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.loader/TestLeak.java: Don't use wildcard
+	import for java.lang.reflect.
+
+2006-06-21  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/classpath/natSystemProperties.cc (insertSystemProperties):
+	Set java.class.version to 49.
+
+2006-06-21  Tom Tromey  <tromey@redhat.com>
+
+	* link.cc (resolve_pool_entry): Initialize field's declaring
+	class, not its qualifying class.
+
+2006-06-21  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.jacks/jacks.xfail: Updated for ecj.
+
+2006-06-20  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.compile/Where.xfail: Now 'no-link'.
+
+2006-06-19  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/java/lang/natMainThread.cc (call_main): Link main class.
+
+2006-06-19  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/lib/libjava.exp (test_libjava): Don't compile via
+	bytecode.  Run BC compilations from source.
+
+2006-06-19  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.lang/TestProxy.java: Don't use wildcard
+	imports for java.lang.reflect.
+
+2006-06-13  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.lang/stringconst.xfail: Removed.
+	* testsuite/libjava.lang/ArrayStore2.xfail: Removed.
+
+2006-06-08  Tom Tromey  <tromey@redhat.com>
+
+	* sources.am, Makefile.in: Rebuilt.
+	* Makefile.am (libgcj_la_LIBADD): Add Object.lo and Class.lo.
+	(java/lang/Object.lo): New target.
+	(java/lang/Class.lo): Likewise.
+	* scripts/makemake.tcl (emit_package_rule): Add special case for
+	Object and Class.
+
+2006-06-06  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (gcj_dbtool_DEPENDENCIES): Add gcj_dbtool.lo.
+
+2006-06-06  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_headers): Don't list Main.h.
+	(generic_header_files): Likewise.
+
+2006-06-05  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.loader/TestLeak.java (MyLoader): Now static.
+	* testsuite/libjava.jacks/jacks.exp (gcj_jacks_write): Use -w.
+	* testsuite/lib/libjava.exp (libjava_arguments): Add -w.
+	* testsuite/libjava.compile/G19990210_2.java: Removed.
+	* testsuite/libjava.compile/PR208.java: Removed.
+	* testsuite/libjava.compile/PR208.xfail: Removed.
+	* testsuite/libjava.compile/support/Case.java: Removed.
+	* testsuite/libjava.compile/Case.java: Removed.
+
+2006-06-04  Tom Tromey  <tromey@redhat.com>
+
+	* sources.am, Makefile.in: Rebuilt.
+	* Makefile.am (gcj_dbtool_LDADD): Add
+	gnu-gcj-tools-gcj_dbtool.lo.
+	(gcj_dbtool_SOURCES): Updated.
+	(EXTRA_libgcj_la_SOURCES): New macro.
+	* scripts/makemake.tcl (emit_package_rule): Compile class files
+	from the package.
+	(gcj_dbtool/Main.java, Class.java, Object.java): Removed
+	package_map settings.
+	(emit_package_rule): Special case gnu.gcj.tools.gcj_dbtool.
+
+2006-06-04  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Class.java (getClassLoaderInternal): Now native.
+
 2006-12-20  Adam Megacz <megacz@cs.berkeley.edu>
 
        * configure.ac: add $built_gcc_dir to $GCJH and $GCJ when

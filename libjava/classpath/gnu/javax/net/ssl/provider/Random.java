@@ -45,80 +45,110 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-class Random implements Constructed
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
+/**
+ * An SSL nonce.
+ *
+ * <pre>
+struct
+{
+  uint32 gmt_unix_time;
+  opaque random_bytes[28];
+} Random;
+ */
+public class Random implements Builder, Constructed
 {
 
   // Fields.
   // -------------------------------------------------------------------------
 
-  private final int gmtUnixTime;
-  private final byte[] randomBytes;
+  static final int RANDOM_LENGTH = 28;
+
+  private final ByteBuffer buffer;
 
   // Constructors.
   // -------------------------------------------------------------------------
 
-  Random(int gmtUnixTime, byte[] randomBytes)
+  public Random (final ByteBuffer buffer)
   {
-    this.gmtUnixTime = gmtUnixTime;
-    this.randomBytes = (byte[]) randomBytes.clone();
+    this.buffer = buffer.duplicate().order(ByteOrder.BIG_ENDIAN);
   }
 
-  // Class methods.
-  // -------------------------------------------------------------------------
-
-  static Random read(InputStream in) throws IOException
+  public Random copy()
   {
-    int time = (in.read() & 0xFF) << 24 | (in.read() & 0xFF) << 16
-             | (in.read() & 0xFF) <<  8 | (in.read() & 0xFF);
+    ByteBuffer buffer = ByteBuffer.allocate(32);
+    buffer.put((ByteBuffer) this.buffer.duplicate().position(0));
+    return new Random(buffer);
+  }
+
+  public int length()
+  {
+    return RANDOM_LENGTH + 4;
+  }
+  
+  public ByteBuffer buffer()
+  {
+    return ((ByteBuffer) buffer.duplicate().position(0).limit(length())).slice();
+  }
+
+  public int gmtUnixTime ()
+  {
+    return buffer.getInt(0);
+  }
+
+  public byte[] randomBytes()
+  {
     byte[] buf = new byte[28];
-    in.read(buf);
-    return new Random(time, buf);
+    buffer.position (4);
+    buffer.get (buf);
+    return buf;
   }
 
-  // Instance methods.
-  // -------------------------------------------------------------------------
-
-  public void write(OutputStream out) throws IOException
+  public void setGmtUnixTime (final int gmtUnixTime)
   {
-    out.write((gmtUnixTime >>> 24) & 0xFF);
-    out.write((gmtUnixTime >>> 16) & 0xFF);
-    out.write((gmtUnixTime >>>  8) & 0xFF);
-    out.write(gmtUnixTime & 0xFF);
-    out.write(randomBytes);
+    buffer.putInt (0, gmtUnixTime);
   }
 
-  byte[] getEncoded()
+  public void setRandomBytes (final byte[] randomBytes)
   {
-    ByteArrayOutputStream bout = new ByteArrayOutputStream(32);
-    try
-      {
-        write(bout);
-      }
-    catch (IOException cantHappen)
-      {
-        throw new Error(cantHappen.toString());
-      }
-    return bout.toByteArray();
+    setRandomBytes (randomBytes, 0);
   }
 
-  int getTime()
+  public void setRandomBytes (final byte[] randomBytes, final int offset)
   {
-    return gmtUnixTime;
+    if (randomBytes.length - offset < RANDOM_LENGTH)
+      throw new IllegalArgumentException ("random value too short");
+    buffer.position (4);
+    buffer.put (randomBytes, offset, RANDOM_LENGTH);
   }
 
-  byte[] getRandomBytes()
-  {
-    return randomBytes;
-  }
-
-  public String toString()
+  public String toString (final String prefix)
   {
     StringWriter str = new StringWriter();
     PrintWriter out = new PrintWriter(str);
+    if (prefix != null)
+      out.print (prefix);
     out.println("struct {");
-    out.println("  gmt_unix_time = " + gmtUnixTime + ";");
-    out.println("  random_bytes = " + Util.toHexString(randomBytes, ':') + ";");
-    out.println("} Random;");
+    if (prefix != null)
+      out.print (prefix);
+    out.print ("  gmt_unix_time: ");
+    out.print (gmtUnixTime ());
+    out.println (";");
+    if (prefix != null)
+      out.print (prefix);
+    out.print ("  random_bytes:  ");
+    out.print (Util.toHexString (randomBytes (), ':'));
+    out.println (";");
+    if (prefix != null)
+      out.print (prefix);
+    out.print ("} Random;");
     return str.toString();
+  }
+
+  public String toString ()
+  {
+    return toString (null);
   }
 }

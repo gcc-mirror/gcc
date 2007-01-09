@@ -117,7 +117,7 @@ public interface Acl extends Owner
    *
    * @return An enumeration of the ACL entries
    */
-  Enumeration entries();
+  Enumeration<AclEntry> entries();
 
   /**
    * This method tests whether or not the specified <code>Principal</code>
@@ -142,7 +142,7 @@ public interface Acl extends Owner
    *
    * @return A list of permissions for the <code>Principal</code>.
    */
-  Enumeration getPermissions(Principal user);
+  Enumeration<Permission> getPermissions(Principal user);
 
   /**
    * This method returns the ACL as a <code>String</code>

@@ -230,9 +230,63 @@ public class TagParser
               t.archives = parseArchives(val, t);
               val = t.archives.toString();
             }
-
+          val = unescapeString(val);
           t.parameters.put(key.toLowerCase(), val);
         }
+  }
+  
+  /**
+   * This method does the same thing as the g_strcompress function in glib.
+   * 
+   * @param value
+   * @return value in its original one-byte equivalence.
+   */
+  private static String unescapeString(String value)
+  {
+    String unescVal = "";
+    for (int i = 0; i < value.length(); i++)
+      {
+        if (i == value.length() - 1)
+          {
+            unescVal = unescVal.concat(value.substring(i));
+            break;
+          }
+        if (value.charAt(i) == '\\')
+          {
+            switch (value.charAt(i + 1))
+              {
+              case 'b':
+                unescVal = unescVal.concat("\b");
+                break;
+              case 'f':
+                unescVal = unescVal.concat("\f");
+                break;
+              case 'n':
+                unescVal = unescVal.concat("\n");
+                break;
+              case 'r':
+                unescVal = unescVal.concat("\r");
+                break;
+              case 't':
+                unescVal = unescVal.concat("\t");
+                break;
+              case '\\':
+                unescVal = unescVal.concat("\\");
+                break;
+              case '\"':
+                unescVal = unescVal.concat("\"");
+                break;
+              default:
+                unescVal = unescVal.concat("\\");
+                unescVal = unescVal.concat(value.substring(i + 1, i + 2));
+                break;
+              }
+            i++;
+          }
+        else
+          unescVal = unescVal.concat(value.substring(i, i + 1));
+      }
+    return unescVal;
   }
   
   /**

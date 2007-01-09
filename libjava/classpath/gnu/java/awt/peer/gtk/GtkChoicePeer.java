@@ -84,7 +84,7 @@ public class GtkChoicePeer extends GtkComponentPeer
 
   public void select (int position)
   {
-    if (Thread.currentThread() == GtkToolkit.mainThread)
+    if (Thread.currentThread() == GtkMainThread.mainThread)
       selectNativeUnlocked (position);
     else
       selectNative (position);

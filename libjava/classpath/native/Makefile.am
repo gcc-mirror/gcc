@@ -12,6 +12,6 @@ if CREATE_PLUGIN
   PLUGINDIR = plugin
 endif
 
-SUBDIRS = fdlibm $(JNIDIR) $(JAWTDIR) $(PLUGINDIR) target
-DIST_SUBDIRS = fdlibm jni jawt plugin target
+SUBDIRS = fdlibm $(JNIDIR) $(JAWTDIR) $(PLUGINDIR)
+DIST_SUBDIRS = fdlibm jni jawt plugin
 

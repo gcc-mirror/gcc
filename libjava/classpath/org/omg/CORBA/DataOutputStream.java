@@ -1,5 +1,5 @@
 /* DataOutputStream.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -190,63 +190,63 @@ public interface DataOutputStream
   /**
    * Write array of Any's to the output stream.
    *
-   * @param value a value to write.
+   * @param seq a value to write.
    */
   void write_any_array(Any[] seq, int offset, int length);
 
   /**
    * Write array of boolean's to the output stream.
    *
-   * @param value a value to write.
+   * @param seq a value to write.
    */
   void write_boolean_array(boolean[] seq, int offset, int length);
 
   /**
    * Write array of narrow chars to the output stream.
    *
-   * @param value a value to write.
+   * @param seq a value to write.
    */
   void write_char_array(char[] seq, int offset, int length);
 
   /**
    * Write array of wide chars to the output stream.
    *
-   * @param value a value to write.
+   * @param seq a value to write.
    */
   void write_wchar_array(char[] seq, int offset, int length);
 
   /**
    * Write array of octets (bytes) to the output stream.
    *
-   * @param value a value to write.
+   * @param seq a value to write.
    */
   void write_octet_array(byte[] seq, int offset, int length);
 
   /**
    * Write array of shorts (16 bit integers) to the output stream.
    *
-   * @param value a value to write.
+   * @param seq a value to write.
    */
   void write_short_array(short[] seq, int offset, int length);
 
   /**
    * Write array of unsigned shorts (16 bit integers) to the output stream.
    *
-   * @param value a value to write.
+   * @param seq a value to write.
    */
   void write_ushort_array(short[] seq, int offset, int length);
 
   /**
    * Write array of CORBA longs (java ints) to the output stream.
    *
-   * @param value a value to write.
+   * @param seq a value to write.
    */
   void write_long_array(int[] seq, int offset, int length);
 
   /**
    * Write array of unsigned CORBA longs (java ints) to the output stream.
    *
-   * @param value a value to write.
+   * @param seq a value to write.
    */
   void write_ulong_array(int[] seq, int offset, int length);
 
@@ -254,28 +254,28 @@ public interface DataOutputStream
    * Write array of unsigned CORBA long longs (java longs)
    * to the output stream.
    *
-   * @param value a value to write.
+   * @param seq a value to write.
    */
   void write_ulonglong_array(long[] seq, int offset, int length);
 
   /**
    * Write arrayo fo CORBA long longs (java ints) to the output stream.
    *
-   * @param value a value to write.
+   * @param seq a value to write.
    */
   void write_longlong_array(long[] seq, int offset, int length);
 
   /**
    * Write array of floats to the output stream.
    *
-   * @param value a value to write.
+   * @param seq a value to write.
    */
   void write_float_array(float[] seq, int offset, int length);
 
   /**
    * Write array of doubles to the output stream.
    *
-   * @param value a value to write.
+   * @param seq a value to write.
    */
   void write_double_array(double[] seq, int offset, int length);
 }

@@ -174,7 +174,7 @@ public class DefaultSingleSelectionModel
    *
    * @since 1.3
    */
-  public EventListener[] getListeners(Class listenerClass)
+  public <T extends EventListener> T[] getListeners(Class<T> listenerClass)
   {
     return listenerList.getListeners(listenerClass);
   }

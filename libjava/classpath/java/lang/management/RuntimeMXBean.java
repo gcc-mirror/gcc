@@ -106,7 +106,7 @@ public interface RuntimeMXBean
    *                           denies ManagementPermission("monitor").
    * @see java.lang.management.ManagementPermission
    */
-  List getInputArguments();
+  List<String> getInputArguments();
 
   /**
    * Returns the library path.  This is equivalent to obtaining the
@@ -212,7 +212,7 @@ public interface RuntimeMXBean
    *
    * @return the map of system properties.
    */
-  Map getSystemProperties();
+  Map<String,String> getSystemProperties();
 
   /**
    * Returns the uptime of the virtual machine in milliseconds.

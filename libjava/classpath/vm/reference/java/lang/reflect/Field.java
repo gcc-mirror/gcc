@@ -102,7 +102,7 @@ extends AccessibleObject implements Member
    * is a non-inherited member.
    * @return the class that declared this member
    */
-  public Class getDeclaringClass()
+  public Class<?> getDeclaringClass()
   {
     return declaringClass;
   }
@@ -159,7 +159,7 @@ extends AccessibleObject implements Member
    * Gets the type of this field.
    * @return the type of this field
    */
-  public native Class getType();
+  public native Class<?> getType();
 
   /**
    * Compare two objects to see if they are semantically equivalent.
@@ -213,7 +213,7 @@ extends AccessibleObject implements Member
     sb.append(getName());
     return sb.toString();
   }
- 
+
   public String toGenericString()
   {
     StringBuilder sb = new StringBuilder(64);
@@ -658,5 +658,4 @@ extends AccessibleObject implements Member
    * is no Signature attribute, return null.
    */
   private native String getSignature();
-
 }

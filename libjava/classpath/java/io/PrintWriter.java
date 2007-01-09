@@ -1,5 +1,5 @@
 /* PrintWriter.java -- prints primitive values and objects to a stream as text
-   Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+   Copyright (C) 1998, 1999, 2000, 2001, 2005  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -36,6 +36,9 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package java.io;
+
+import java.util.Locale;
+import java.util.Formatter;
 
 /* Written using "Java Class Libraries", 2nd edition, plus online
  * API docs for JDK 1.2 beta from http://www.javasoft.com.
@@ -636,5 +639,52 @@ public class PrintWriter extends Writer
   {
     write(str, 0, str.length());
   }  
+
+  /** @since 1.5 */
+  public PrintWriter append(char c)
+  {
+    write(c);
+    return this;
+  }
+
+  /** @since 1.5 */
+  public PrintWriter append(CharSequence cs)
+  {
+    write(cs == null ? "null" : cs.toString());
+    return this;
+  }
+
+  /** @since 1.5 */
+  public PrintWriter append(CharSequence cs, int start, int end)
+  {
+    write(cs == null ? "null" : cs.subSequence(start, end).toString());
+    return this;
+  }
+
+  /** @since 1.5 */
+  public PrintWriter printf(String format, Object... args)
+  {
+    return format(format, args);
+  }
+
+  /** @since 1.5 */
+  public PrintWriter printf(Locale locale, String format, Object... args)
+  {
+    return format(locale, format, args);
+  }
+
+  /** @since 1.5 */
+  public PrintWriter format(String format, Object... args)
+  {
+    return format(Locale.getDefault(), format, args);
+  }
+
+  /** @since 1.5 */
+  public PrintWriter format(Locale locale, String format, Object... args)
+  {
+    Formatter f = new Formatter(this, locale);
+    f.format(format, args);
+    return this;
+  }
 }
 

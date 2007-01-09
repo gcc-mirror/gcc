@@ -35,8 +35,14 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
+#ifdef HAVE_CONFIG_H
 #include <config.h>
+#endif /* HAVE_CONFIG_H */
+
 #include <errno.h>
+#include <string.h>
+#include <unistd.h>
 
 #include <jni.h>
 #include <jcl.h>
@@ -45,12 +51,33 @@ exception statement from your version. */
 
 #define IO_EXCEPTION "java/io/IOException"
 
-JNIEXPORT void JNICALL
-Java_gnu_java_nio_VMPipe_init (JNIEnv * env,
-			       jclass cls __attribute__ ((__unused__)),
-			       jobject self __attribute__ ((__unused__)),
-			       jobject provider __attribute__ ((__unused__)))
+/*
+ * Class:     gnu_java_nio_VMPipe
+ * Method:    pipe0
+ * Signature: ()[I
+ */
+JNIEXPORT jintArray JNICALL
+Java_gnu_java_nio_VMPipe_pipe0 (JNIEnv *env,
+                                jclass c __attribute__((unused)))
 {
-  JCL_ThrowException (env, IO_EXCEPTION,
-		      "gnu.java.nio.VMPipe.init(): not implemented");
+  int fd[2];
+  jintArray array;
+  jint* elem;
+  int ret;
+
+  /* FIXME: autoconf this? */
+  ret = pipe (fd);
+
+  if (ret == -1)
+    {
+      JCL_ThrowException (env, "java/io/IOException", strerror (errno));
+      return NULL;
+    }
+
+  array = (*env)->NewIntArray (env, 2);
+  elem = (*env)->GetIntArrayElements (env, array, NULL);
+  elem[0] = fd[0];
+  elem[1] = fd[1];
+  (*env)->ReleaseIntArrayElements (env, array, elem, 0);
+  return array;
 }

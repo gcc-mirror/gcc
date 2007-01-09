@@ -41,6 +41,8 @@ package java.security.cert;
 import gnu.java.security.Engine;
 
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Provider;
@@ -56,7 +58,7 @@ import java.util.List;
  *
  * @author Mark Benvenuto
  * @author Casey Marshall
- * @since JDK 1.2
+ * @since 1.2
  * @status Fully compatible with JDK 1.4.
  */
 public class CertificateFactory
@@ -84,105 +86,101 @@ public class CertificateFactory
     this.type = type;
   }
 
-// Class methods.
-  // ------------------------------------------------------------------------
-
-  /** 
-   * Gets an instance of the CertificateFactory class representing
-   * the specified certificate factory. If the type is not 
-   * found then, it throws CertificateException.
-   *
-   * @param type     The type of certificate factory to create.
-   * @return a CertificateFactory repesenting the desired type
-   * @throws CertificateException If the type of certificate is not
-   *    implemented by any installed provider.
+  /**
+   * Returns an instance of a <code>CertificateFactory</code> representing the
+   * specified certificate factory type.
+   * 
+   * @param type The type of certificate factory to create.
+   * @return A <code>CertificateFactory</code> of the desired type.
+   * @throws CertificateException If the type of certificate factory is not
+   *           implemented by any installed provider.
+   * @throws IllegalArgumentException if <code>type</code> is
+   *           <code>null</code> or is an empty string.
    */
   public static final CertificateFactory getInstance(String type)
-    throws CertificateException
+      throws CertificateException
   {
     Provider[] p = Security.getProviders();
-
+    CertificateException lastException = null;
     for (int i = 0; i < p.length; i++)
-      {
-        try
-          {
-            return getInstance(type, p[i]);
-          }
-        catch (CertificateException e)
-          {
-	    // Ignored.
-          }
-      }
-
+      try
+        {
+          return getInstance(type, p[i]);
+        }
+      catch (CertificateException x)
+        {
+          lastException = x;
+        }
+    if (lastException != null)
+      throw lastException;
     throw new CertificateException(type);
   }
 
-  /** 
-   * Gets an instance of the CertificateFactory class representing
-   * the specified certificate factory from the specified provider. 
-   * If the type is not found then, it throws {@link CertificateException}. 
-   * If the provider is not found, then it throws 
-   * {@link java.security.NoSuchProviderException}.
-   *
-   * @param type     The type of certificate factory to create.
-   * @param provider The name of the provider from which to get the
-   *        implementation.
-   * @return A CertificateFactory for the desired type.
-   * @throws CertificateException If the type of certificate is not
-   *         implemented by the named provider.
+  /**
+   * Returns an instance of a <code>CertificateFactory</code> representing the
+   * specified certificate factory type from the named provider.
+   * 
+   * @param type The type of certificate factory to create.
+   * @param provider The name of the provider to use.
+   * @return A <code>CertificateFactory</code> for the desired type.
+   * @throws CertificateException If the type of certificate is not implemented
+   *           by the named provider.
    * @throws NoSuchProviderException If the named provider is not installed.
+   * @throws IllegalArgumentException if either <code>type</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>type</code> is an empty string.
    */
   public static final CertificateFactory getInstance(String type,
                                                      String provider) 
     throws CertificateException, NoSuchProviderException
   {
+    if (provider == null)
+      throw new IllegalArgumentException("provider MUST NOT be null");
     Provider p = Security.getProvider(provider);
-    if( p == null)
+    if (p == null)
       throw new NoSuchProviderException(provider);
-
     return getInstance(type, p);
   }
 
   /**
-   * Get a certificate factory for the given certificate type from the
-   * given provider.
-   *
-   * @param type     The type of certificate factory to create.
+   * Returns an instance of a <code>CertificateFactory</code> representing the
+   * specified certificate factory type from the designated provider.
+   * 
+   * @param type The type of certificate factory to create.
    * @param provider The provider from which to get the implementation.
-   * @return A CertificateFactory for the desired type.
-   * @throws CertificateException If the type of certificate is not
-   *         implemented by the provider.
-   * @throws IllegalArgumentException If the provider is null.
+   * @return A <code>CertificateFactory</code> for the desired type.
+   * @throws CertificateException If the type of certificate is not implemented
+   *           by the provider.
+   * @throws IllegalArgumentException if either <code>type</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>type</code> is an empty string.
    */
   public static final CertificateFactory getInstance(String type,
                                                      Provider provider)
-    throws CertificateException
+      throws CertificateException
   {
-    if (provider == null)
-      throw new IllegalArgumentException("null provider");
-
+    Throwable cause;
     try
       {
-        return new CertificateFactory((CertificateFactorySpi)
-          Engine.getInstance(CERTIFICATE_FACTORY, type, provider),
-          provider, type);
+        Object spi = Engine.getInstance(CERTIFICATE_FACTORY, type, provider);
+        return new CertificateFactory((CertificateFactorySpi) spi, provider, type);
       }
-    catch (ClassCastException cce)
+    catch (ClassCastException x)
       {
-        throw new CertificateException(type);
+        cause = x;
       }
-    catch (java.lang.reflect.InvocationTargetException ite)
+    catch (InvocationTargetException x)
       {
-        throw new CertificateException(type);
+        cause = x.getCause() != null ? x.getCause() : x;
       }
-    catch (NoSuchAlgorithmException nsae)
+    catch (NoSuchAlgorithmException x)
       {
-        throw new CertificateException(nsae.getMessage());
+        cause = x;
       }
+    CertificateException x = new CertificateException(type);
+    x.initCause(cause);
+    throw x;
   }
-
-// Instance methods.
-  // ------------------------------------------------------------------------
 
   /**
    * Gets the provider of this implementation.
@@ -249,7 +247,7 @@ public class CertificateFactory
    * @throws CertificateException If an error occurs decoding the
    *   certificates.
    */
-  public final Collection generateCertificates(InputStream inStream)
+  public final Collection<? extends Certificate> generateCertificates(InputStream inStream)
     throws CertificateException
   {
     return certFacSpi.engineGenerateCertificates(inStream);
@@ -291,7 +289,7 @@ public class CertificateFactory
    *    InputStream data.
    * @throws CRLException If an error occurs decoding the CRLs.
    */
-  public final Collection generateCRLs(InputStream inStream)
+  public final Collection<? extends CRL> generateCRLs(InputStream inStream)
     throws CRLException
   {
     return certFacSpi.engineGenerateCRLs( inStream );
@@ -338,7 +336,7 @@ public class CertificateFactory
    * @throws CertificateException If an error occurs generating the
    *   CertPath.
    */
-  public final CertPath generateCertPath(List certificates)
+  public final CertPath generateCertPath(List<? extends Certificate> certificates)
     throws CertificateException
   {
     return certFacSpi.engineGenerateCertPath(certificates);
@@ -351,7 +349,7 @@ public class CertificateFactory
    *
    * @return The Iterator of supported encodings.
    */
-  public final Iterator getCertPathEncodings()
+  public final Iterator<String> getCertPathEncodings()
   {
     return certFacSpi.engineGetCertPathEncodings();
   }

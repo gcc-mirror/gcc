@@ -36,7 +36,10 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 package gnu.java.awt.peer.swing;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -69,6 +72,13 @@ public class SwingTextFieldPeer
     implements SwingComponent
   {
 
+      TextField textField;
+      
+      SwingTextField(TextField textField)
+      {
+         this.textField = textField; 
+      }
+      
     /**
      * Overridden to provide normal behaviour even without a real peer
      * attached.
@@ -90,8 +100,8 @@ public class SwingTextFieldPeer
     public boolean isShowing()
     {
       boolean retVal = false;
-      if (SwingTextFieldPeer.this.awtComponent != null)
-        retVal = SwingTextFieldPeer.this.awtComponent.isShowing();
+      if (textField != null)
+        retVal = textField.isShowing();
       return retVal;
     }
 
@@ -151,7 +161,19 @@ public class SwingTextFieldPeer
       ev.setSource(this);
       processKeyEvent(ev);
     }
-    
+
+    public Container getParent()
+    {
+      Container par = null;
+      if (textField != null)
+        par = textField.getParent();
+      return par;
+    }
+
+    public Graphics getGraphics()
+    {
+      return SwingTextFieldPeer.this.getGraphics();
+    }
   }
 
   /**
@@ -162,7 +184,7 @@ public class SwingTextFieldPeer
    */
   public SwingTextFieldPeer(TextField textField)
   {
-    SwingTextField swingTextField = new SwingTextField();
+    SwingTextField swingTextField = new SwingTextField(textField);
     swingTextField.setText(textField.getText());
     init(textField, swingTextField);
   }
@@ -283,7 +305,7 @@ public class SwingTextFieldPeer
    * @param startPos the start index of the selection
    * @param endPos the start index of the selection
    */
-  public void select(int startPos, int endPos)
+  public void select(int start_pos, int endPos)
   {
     // TODO: Must be implemented.
   }

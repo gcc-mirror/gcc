@@ -52,6 +52,7 @@ import java.util.Locale;
 import gnu.java.awt.font.FontDelegate;
 import gnu.java.awt.font.GNUGlyphVector;
 import gnu.java.awt.font.opentype.truetype.TrueTypeScaler;
+import gnu.java.awt.font.opentype.truetype.Zone;
 
 
 /**
@@ -117,7 +118,7 @@ public final class OpenTypeFont
    * OpenType fonts with PostScript outlines, other values are
    * acceptable (such as 1000).
    */
-  private int unitsPerEm;
+  public int unitsPerEm;
 
 
   /**
@@ -697,6 +698,20 @@ public final class OpenTypeFont
                              antialias, fractionalMetrics);
   }
 
+  /**
+   * Fetches the raw glyph outline for the specified glyph index. This is used
+   * for the autofitter only ATM and is otherwise not usable for outside code.
+   *
+   * @param glyph the glyph index to fetch
+   * @param transform the transform to apply
+   *
+   * @return the raw outline of that glyph
+   */
+  public synchronized Zone getRawGlyphOutline(int glyph,
+                                              AffineTransform transform)
+  {
+    return scaler.getRawOutline(glyph, transform);
+  }
 
   /**
    * Returns a name for the specified glyph. This is useful for

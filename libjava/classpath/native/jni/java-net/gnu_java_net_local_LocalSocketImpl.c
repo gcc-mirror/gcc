@@ -38,9 +38,7 @@ exception statement from your version.  */
 
 #define _GNU_SOURCE
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif /* HAVE_CONFIG_H */
 
 #include <gnu_java_net_local_LocalSocketImpl.h>
 

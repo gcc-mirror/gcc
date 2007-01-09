@@ -1,6 +1,6 @@
-// natObjectInputStream.cc - Native part of ObjectInputStream class.
+// natObjectInputStream.cc - Native part of VMObjectInputStream class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2005  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2005, 2006  Free Software Foundation
 
    This ObjectInputStream is part of libgcj.
 
@@ -14,8 +14,7 @@ details.  */
 #include <jvm.h>
 #include <gcj/method.h>
 
-#include <java/io/ObjectInputStream$GetField.h>
-#include <java/io/ObjectInputStream.h>
+#include <java/io/VMObjectInputStream.h>
 #include <java/io/IOException.h>
 #include <java/lang/Class.h>
 #include <java/lang/reflect/Modifier.h>
@@ -32,7 +31,7 @@ details.  */
 #endif
 
 jobject
-java::io::ObjectInputStream::allocateObject (jclass klass, jclass,
+java::io::VMObjectInputStream::allocateObject (jclass klass, jclass,
   ::java::lang::reflect::Constructor *ctr)
 {
   jobject obj = NULL;
@@ -68,13 +67,4 @@ java::io::ObjectInputStream::allocateObject (jclass klass, jclass,
   _Jv_CallAnyMethodA (obj, JvPrimClass (void), meth, false, arg_types, NULL);
 
   return obj;
-}
-
-java::lang::ClassLoader *
-java::io::ObjectInputStream::currentLoader ()
-{
-  jclass caller = _Jv_StackTrace::GetCallingClass (&ObjectInputStream::class$);
-  if (caller)
-    return caller->getClassLoaderInternal();
-  return NULL;
 }

@@ -1,5 +1,5 @@
 /* ORBIdHelper.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -58,7 +58,7 @@ import org.omg.CORBA.portable.OutputStream;
 public abstract class ORBIdHelper
 {
   /**
-   * Insert the ORB Id into Any (uses {@link Any.insert_string}).
+   * Insert the ORB Id into Any (uses {@link Any#insert_string}).
    *
    * @param a the Any to insert into.
    * @param that the string to insert.
@@ -69,7 +69,7 @@ public abstract class ORBIdHelper
   }
 
   /**
-   * Extract the ORB Id from Any ((uses {@link Any.extract_string}).
+   * Extract the ORB Id from Any ((uses {@link Any#extract_string}).
    *
    * @param a the Any to extract from.
    */
@@ -107,7 +107,7 @@ public abstract class ORBIdHelper
   }
 
   /**
-   * Calls {@link OutputStream#write_string()}.
+   * Calls {@link OutputStream#write_string(String)}.
    *
    * @param output the stream to write into.
    * @param value the string (ORB Id) value to write.

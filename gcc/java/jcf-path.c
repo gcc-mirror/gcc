@@ -1,5 +1,5 @@
 /* Handle CLASSPATH, -classpath, and path searching.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2006
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -455,6 +455,38 @@ jcf_path_next (void *x)
 {
   struct entry *ent = (struct entry *) x;
   return (void *) ent->next;
+}
+
+static const char
+PATH_SEPARATOR_STR[] = {PATH_SEPARATOR, '\0'};
+
+char *
+jcf_path_compute (const char *prefix)
+{
+  struct entry *iter;
+  char *result;
+  int length = strlen (prefix) + 1;
+  int first;
+
+  for (iter = sealed; iter != NULL; iter = iter->next)
+    length += strlen (iter->name) + 1;
+
+  result = (char *) xmalloc (length);
+  strcpy (result, prefix);
+  first = 1;
+  for (iter = sealed; iter != NULL; iter = iter->next)
+    {
+      if (! first)
+	strcat (result, PATH_SEPARATOR_STR);
+      first = 0;
+      strcat (result, iter->name);
+      /* Ugly: we want to strip the '/' from zip entries when
+	 computing a string classpath.  */
+      if ((iter->flags & FLAG_ZIP) != 0)
+	result[strlen (result) - 1] = '\0';
+    }
+
+  return result;
 }
 
 /* We guarantee that the return path will either be a zip file, or it

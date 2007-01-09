@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package javax.swing.text;
 
-import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 
@@ -312,19 +311,21 @@ public class DefaultEditorKit extends EditorKit
     public void actionPerformed(ActionEvent event)
     {
       JTextComponent t = getTextComponent(event);
-      int offs = t.getDocument().getLength();
-      Caret c = t.getCaret();
-      c.setDot(0);
-      c.moveDot(offs);
-      
-      try
-      {   
-        c.setMagicCaretPosition(t.modelToView(offs).getLocation());
-      }
-    catch(BadLocationException ble)
-      {
-        // Can't happen.
-      }
+      if (t != null)
+        {
+          int offs = t.getDocument().getLength();
+          Caret c = t.getCaret();
+          c.setDot(0);
+          c.moveDot(offs);
+          try
+            {   
+              c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+            }
+          catch(BadLocationException ble)
+            {
+              // Can't happen.
+            }
+        }
     }
   }
 
@@ -339,15 +340,18 @@ public class DefaultEditorKit extends EditorKit
     public void actionPerformed(ActionEvent event)
     {
       JTextComponent t = getTextComponent(event);
-      Caret c = t.getCaret();
-      c.moveDot(0);
-      try
-        {   
-          c.setMagicCaretPosition(t.modelToView(0).getLocation());
-        }
-      catch(BadLocationException ble)
+      if (t != null)
         {
-          // Can't happen.
+          Caret c = t.getCaret();
+          c.moveDot(0);
+          try
+            {   
+              c.setMagicCaretPosition(t.modelToView(0).getLocation());
+            }
+          catch(BadLocationException ble)
+            {
+              // Can't happen.
+            }
         }
     }
   }
@@ -363,16 +367,19 @@ public class DefaultEditorKit extends EditorKit
     public void actionPerformed(ActionEvent event)
     {
       JTextComponent t = getTextComponent(event);
-      int offs = t.getDocument().getLength();
-      Caret c = t.getCaret();
-      c.moveDot(offs);
-      try
-        {   
-          c.setMagicCaretPosition(t.modelToView(offs).getLocation());
-        }
-      catch(BadLocationException ble)
+      if (t != null)
         {
-          // Can't happen.
+          int offs = t.getDocument().getLength();
+          Caret c = t.getCaret();
+          c.moveDot(offs);
+          try
+            {   
+              c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+            }
+          catch(BadLocationException ble)
+            {
+              // Can't happen.
+            }
         }
     }
   }
@@ -389,17 +396,19 @@ public class DefaultEditorKit extends EditorKit
     public void actionPerformed(ActionEvent event)
     {
       JTextComponent t = getTextComponent(event);
-      Caret c = t.getCaret();
-      try
+      if (t != null)
         {
-          int offs = Utilities.getRowStart(t, c.getDot());
-          c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+          Caret c = t.getCaret();
+          try
+            {
+              int offs = Utilities.getRowStart(t, c.getDot());
+              c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+            }
+          catch(BadLocationException ble)
+            {
+              // Can't happen.
+            }
         }
-      catch(BadLocationException ble)
-      {
-        // Can't happen.
-      }
-
     }
   }
 
@@ -414,17 +423,19 @@ public class DefaultEditorKit extends EditorKit
     public void actionPerformed(ActionEvent event)
     {
       JTextComponent t = getTextComponent(event);
-      Caret c = t.getCaret();
-      try
+      if (t != null)
         {
-          int offs = Utilities.getRowEnd(t, c.getDot());
-          c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+          Caret c = t.getCaret();
+          try
+            {
+              int offs = Utilities.getRowEnd(t, c.getDot());
+              c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+            }
+          catch(BadLocationException ble)
+            {
+              // Can't happen.
+            }
         }
-      catch(BadLocationException ble)
-        {
-        // Can't happen.
-        }
-
     }
   }
   
@@ -438,20 +449,21 @@ public class DefaultEditorKit extends EditorKit
     public void actionPerformed(ActionEvent event)
     {
       JTextComponent t = getTextComponent(event);
-      Caret c = t.getCaret();
-      try
+      if (t != null)
         {
-          int offs1 = Utilities.getRowStart(t, c.getDot());
-          int offs2 = Utilities.getRowEnd(t, c.getDot());
-          
-          c.setDot(offs2);
-          c.moveDot(offs1);
-          
-          c.setMagicCaretPosition(t.modelToView(offs2).getLocation());
-        }
-      catch(BadLocationException ble)
-        {
-          // Can't happen.
+          Caret c = t.getCaret();
+          try
+            {
+              int offs1 = Utilities.getRowStart(t, c.getDot());
+              int offs2 = Utilities.getRowEnd(t, c.getDot());
+              c.setDot(offs2);
+              c.moveDot(offs1);
+              c.setMagicCaretPosition(t.modelToView(offs2).getLocation());
+            }
+          catch(BadLocationException ble)
+            {
+              // Can't happen.
+            }
         }
     }
   }
@@ -466,51 +478,52 @@ public class DefaultEditorKit extends EditorKit
     public void actionPerformed(ActionEvent event)
     {
       JTextComponent t = getTextComponent(event);
-      Caret c = t.getCaret();
-      int dot = c.getDot();
-
-      try
+      if (t != null)
         {
-          int wordStart = Utilities.getWordStart(t, dot);
-      
-          if (dot == wordStart)
+          Caret c = t.getCaret();
+          int dot = c.getDot();
+          try
             {
-              // Current cursor position is on the first character in a word.
-              c.setDot(wordStart);
-              c.moveDot(Utilities.getWordEnd(t, wordStart));
-            }
-          else
-            {
-              // Current cursor position is not on the first character
-              // in a word. 
-              int nextWord = Utilities.getNextWord(t, dot);
-              int previousWord = Utilities.getPreviousWord(t, dot);
-              int previousWordEnd = Utilities.getWordEnd(t, previousWord);
-              
-              // Cursor position is in the space between two words. In such a
-              // situation just select the space.
-              if (dot >= previousWordEnd && dot <= nextWord)
+              int wordStart = Utilities.getWordStart(t, dot);
+
+              if (dot == wordStart)
                 {
-                  c.setDot(previousWordEnd);
-                  c.moveDot(nextWord);
+                  // Current cursor position is on the first character in a word.
+                  c.setDot(wordStart);
+                  c.moveDot(Utilities.getWordEnd(t, wordStart));
                 }
               else
                 {
-                  // Cursor position is inside a word. Just select it then.
-                  c.setDot(previousWord);
-                  c.moveDot(previousWordEnd);
+                  // Current cursor position is not on the first character
+                  // in a word. 
+                  int nextWord = Utilities.getNextWord(t, dot);
+                  int previousWord = Utilities.getPreviousWord(t, dot);
+                  int previousWordEnd = Utilities.getWordEnd(t, previousWord);
+                  
+                  // Cursor position is in the space between two words. In such a
+                  // situation just select the space.
+                  if (dot >= previousWordEnd && dot <= nextWord)
+                    {
+                      c.setDot(previousWordEnd);
+                      c.moveDot(nextWord);
+                    }
+                  else
+                    {
+                      // Cursor position is inside a word. Just select it then.
+                      c.setDot(previousWord);
+                      c.moveDot(previousWordEnd);
+                    }
                 }
-            }
 
-          // If the position was updated change the magic caret position
-          // as well.
-          if (c.getDot() != dot)
-            c.setMagicCaretPosition(t.modelToView(c.getDot()).getLocation());
-          
-        }
-      catch(BadLocationException ble)
-        {
-          // Can't happen.
+              // If the position was updated change the magic caret position
+              // as well.
+              if (c.getDot() != dot)
+                c.setMagicCaretPosition(t.modelToView(c.getDot()).getLocation());
+            }
+          catch(BadLocationException ble)
+            {
+              // Can't happen.
+            }
         }
     }
   }
@@ -715,21 +728,23 @@ public class DefaultEditorKit extends EditorKit
     public void actionPerformed(ActionEvent event)
     {
       JTextComponent t = getTextComponent(event);
-      try
-     {
-       int offs = Utilities.getRowEnd(t, t.getCaretPosition());
-       
-       if (offs > -1)
-         {
-           Caret c = t.getCaret();
-           c.setDot(offs);
-           c.setMagicCaretPosition(t.modelToView(offs).getLocation());
-         }
-     }
-     catch (BadLocationException ble)
-     {
-       // Nothing to do here
-     }
+      if (t != null)
+        {
+          try
+            {
+              int offs = Utilities.getRowEnd(t, t.getCaretPosition());
+              if (offs > -1)
+                {
+                  Caret c = t.getCaret();
+                  c.setDot(offs);
+                  c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+                }
+            }
+          catch (BadLocationException ble)
+            {
+              // Nothing to do here
+            }
+        }
     }
   }
 
@@ -744,21 +759,23 @@ public class DefaultEditorKit extends EditorKit
     public void actionPerformed(ActionEvent event)
     {
       JTextComponent t = getTextComponent(event);
-      try
-      {
-        int offs = Utilities.getRowStart(t, t.getCaretPosition());
-        
-        if (offs > -1)
-          {
-            Caret c = t.getCaret();
-            c.setDot(offs);
-            c.setMagicCaretPosition(t.modelToView(offs).getLocation());
-          }
-      }
-      catch (BadLocationException ble)
-      {
-        // Do nothing here.
-      }
+      if (t != null)
+        {
+          try
+            {
+              int offs = Utilities.getRowStart(t, t.getCaretPosition());
+              if (offs > -1)
+                {
+                  Caret c = t.getCaret();
+                  c.setDot(offs);
+                  c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+                }
+            }
+          catch (BadLocationException ble)
+            {
+              // Do nothing here.
+            }
+        }
     }
   }
 
@@ -773,16 +790,19 @@ public class DefaultEditorKit extends EditorKit
     public void actionPerformed(ActionEvent event)
     {
       JTextComponent t = getTextComponent(event);
-      Caret c = t.getCaret();
-      c.setDot(0);
-      try
-      {   
-        c.setMagicCaretPosition(t.modelToView(0).getLocation());
-      }
-      catch(BadLocationException ble)
-      {
-        // Can't happen.
-      }
+      if (t != null)
+        {
+          Caret c = t.getCaret();
+          c.setDot(0);
+          try
+            {
+              c.setMagicCaretPosition(t.modelToView(0).getLocation());
+            }
+          catch(BadLocationException ble)
+            {
+              // Can't happen.
+            }
+        }
     }
   }
 
@@ -797,16 +817,19 @@ public class DefaultEditorKit extends EditorKit
     public void actionPerformed(ActionEvent event)
     {
       JTextComponent t = getTextComponent(event);
-      int offs = t.getDocument().getLength();
-      Caret c = t.getCaret();
-      c.setDot(offs);
-      try
-        {   
-          c.setMagicCaretPosition(t.modelToView(offs).getLocation());
-        }
-      catch(BadLocationException ble)
+      if (t != null)
         {
-          // Can't happen.
+          int offs = t.getDocument().getLength();
+          Caret c = t.getCaret();
+          c.setDot(offs);
+          try
+            {   
+              c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+            }
+          catch(BadLocationException ble)
+            {
+              // Can't happen.
+            }
         }
     }
   }
@@ -862,7 +885,9 @@ public class DefaultEditorKit extends EditorKit
      */
     public void actionPerformed(ActionEvent event)
     {
-      getTextComponent(event).copy();
+      JTextComponent target = getTextComponent(event);
+      if (target != null)
+        target.copy();
     }
   }
 
@@ -893,7 +918,9 @@ public class DefaultEditorKit extends EditorKit
      */
     public void actionPerformed(ActionEvent event)
     {
-      getTextComponent(event).cut();
+      JTextComponent target = getTextComponent(event);
+      if (target != null)
+        target.cut();
     }
   }
 
@@ -922,7 +949,9 @@ public class DefaultEditorKit extends EditorKit
      */
     public void actionPerformed(ActionEvent event)
     {
-      getTextComponent(event).paste();
+      JTextComponent target = getTextComponent(event);
+      if (target != null)
+        target.paste();
     }
   }
 
@@ -957,14 +986,26 @@ public class DefaultEditorKit extends EditorKit
     {
       // first we filter the following events:
       // - control characters
-      // - key events with the ALT modifier (FIXME: filter that too!)
-      int cp = event.getActionCommand().codePointAt(0);
-      if (Character.isISOControl(cp))
-        return;
-
-      JTextComponent t = getTextComponent(event);
-      if (t != null && t.isEnabled() && t.isEditable())
-        t.replaceSelection(event.getActionCommand());
+      // - key events with the ALT modifier
+      JTextComponent target = getTextComponent(event);
+      if ((target != null) && (event != null))
+        {
+          if ((target.isEditable()) && (target.isEnabled()))
+            {
+              String content = event.getActionCommand();
+              int mod = event.getModifiers();
+              if ((content != null) && (content.length() > 0)
+                  && (mod & ActionEvent.ALT_MASK) == 0
+                  && (mod & ActionEvent.CTRL_MASK) == 0)
+                {
+                  char c = content.charAt(0);
+                  if ((c >= 0x20) && (c != 0x7F))
+                    {
+                      target.replaceSelection(content);
+                    }
+                }
+            }
+        }
     }    
   }
 
@@ -992,7 +1033,8 @@ public class DefaultEditorKit extends EditorKit
     public void actionPerformed(ActionEvent event)
     {
       JTextComponent t = getTextComponent(event);
-      t.replaceSelection("\n");
+      if (t != null)
+        t.replaceSelection("\n");
     }
   }
 
@@ -1047,7 +1089,8 @@ public class DefaultEditorKit extends EditorKit
     public void actionPerformed(ActionEvent event)
     {
       JTextComponent t = getTextComponent(event);
-      t.replaceSelection("\t");
+      if (t != null)
+        t.replaceSelection("\t");
     }
   }
 

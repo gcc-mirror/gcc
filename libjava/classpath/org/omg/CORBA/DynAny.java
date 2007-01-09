@@ -1,5 +1,5 @@
 /* DynAny.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -280,7 +280,7 @@ public interface DynAny
    * Insert the {@link Any} value into the enclosed
    * {@link Any} inside this DynAny.
    *
-   * @param a_x the value being inserted.
+   * @param an_any the value being inserted.
    * @throws InvalidValue if the value type does not match the
    * typecode of the enclosed {@link Any}.
    */
@@ -458,7 +458,7 @@ public interface DynAny
                throws InvalidValue;
 
   /**
-   * Advances the internal pointer, described in the {@link current_component},
+   * Advances the internal pointer, described in the {@link #current_component},
    * one position forward.
    *
    * @return true if the pointer now points to the new component,
@@ -468,13 +468,13 @@ public interface DynAny
   boolean next();
 
   /**
-   * Moves the internal pointer, described in the {@link current_component},
+   * Moves the internal pointer, described in the {@link #current_component},
    * to the first component.
    */
   void rewind();
 
   /**
-   * Moves the internal pointer, described in the {@link current_component},
+   * Moves the internal pointer, described in the {@link #current_component},
    * to the given position.
    *
    * @param p the number of the internal component on that the internal

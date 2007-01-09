@@ -58,6 +58,10 @@ final class RETokenEndSub extends REToken {
 	return super.findMatch(input, mymatch);
     }
 
+    void setHitEnd(CharIndexed input, REMatch mymatch) {
+	// Do nothing
+    }
+
     void dump(StringBuffer os) {
 	// handled by RE
 	// But add something for debugging.

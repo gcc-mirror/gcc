@@ -95,7 +95,8 @@ public interface SaslServerFactory
    * of an error.
    */
   SaslServer createSaslServer(String mechanism, String protocol,
-                              String serverName, Map props, CallbackHandler cbh)
+                              String serverName, Map<String, ?> props,
+                              CallbackHandler cbh)
     throws SaslException;
 
   /**
@@ -111,5 +112,5 @@ public interface SaslServerFactory
    * properties, if present in props, are ignored.
    * @return a non-null array containing IANA-registered SASL mechanism names.
    */
-  String[] getMechanismNames(Map props);
+  String[] getMechanismNames(Map<String, ?> props);
 }

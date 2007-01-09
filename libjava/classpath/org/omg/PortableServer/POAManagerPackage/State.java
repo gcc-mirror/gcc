@@ -1,5 +1,5 @@
 /* State.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +41,8 @@ package org.omg.PortableServer.POAManagerPackage;
 import gnu.CORBA.Minor;
 
 import org.omg.CORBA.BAD_OPERATION;
+import org.omg.CORBA.BAD_PARAM;
+import org.omg.CORBA.TRANSIENT;
 import org.omg.CORBA.portable.IDLEntity;
 
 import java.io.Serializable;
@@ -54,7 +56,7 @@ import java.io.Serializable;
  * receive and process requests.</li>
  * <li>DISCARDING When the manager is in the discarding state,
  * the associated POAs discard all incoming requests. The sending clients
- * receive the {@link org.omg.TRANSIENT} system exception, with standard
+ * receive the {@link TRANSIENT} system exception, with standard
  * minor code 1. This mode is needed for flow control, when the system is
  * flooded with requests.
  * </li>

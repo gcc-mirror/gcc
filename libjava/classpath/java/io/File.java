@@ -60,7 +60,7 @@ import java.net.URL;
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Tom Tromey (tromey@cygnus.com)
  */
-public class File implements Serializable, Comparable
+public class File implements Serializable, Comparable<File>
 {
   private static final long serialVersionUID = 301077366599181567L;
 
@@ -286,7 +286,8 @@ public class File implements Serializable, Comparable
         // example, is a valid and minimal path).
         if (plen > 1 && p.charAt (plen - 1) == separatorChar)
 	  {
-	    if (! (separatorChar == '\\' && plen == 3 && p.charAt (1) == ':'))
+	    if (! (separatorChar == '\\' && ((plen == 3 && p.charAt(1) == ':')
+                || (plen == 2 && p.charAt(0) == separatorChar))))
 	      return p.substring (0, plen - 1);
 	  }
 	else
@@ -303,7 +304,16 @@ public class File implements Serializable, Comparable
 	  {
 	    dupIndex++;
 	    if (dupIndex == plen)
-	      return newpath.toString();
+              {
+                if ((separatorChar == '\\'
+                    && newpath.length() == 2
+                    && newpath.charAt(1) == ':')
+                    || (separatorChar != '\\' && newpath.length() == 0))
+                  {
+                    newpath.append(separatorChar);
+                  }
+	        return newpath.toString();
+              }
 	  }
 	newpath.append(separatorChar);
 	last = dupIndex;
@@ -315,7 +325,9 @@ public class File implements Serializable, Comparable
     int end;
     if (plen > 1 && p.charAt (plen - 1) == separatorChar)
     {
-      if (separatorChar == '\\' && plen == 3 && p.charAt (1) == ':')
+      if (separatorChar == '\\'
+        && ((plen == 3 && p.charAt(1) == ':')
+            || (plen == 2 && p.charAt(0) == separatorChar)))
         end = plen;
       else
         end = plen - 1;
@@ -427,45 +439,8 @@ public class File implements Serializable, Comparable
   {
     if (isAbsolute())
       return path;
-    else if (separatorChar == '\\' 
-             && path.length() > 0 && path.charAt (0) == '\\')
-      {
-        // On Windows, even if the path starts with a '\\' it is not
-        // really absolute until we prefix the drive specifier from
-        // the current working directory to it.
-        return System.getProperty ("user.dir").substring (0, 2) + path;
-      }
-    else if (separatorChar == '\\' 
-             && path.length() > 1 && path.charAt (1) == ':'
-             && ((path.charAt (0) >= 'a' && path.charAt (0) <= 'z')
-                 || (path.charAt (0) >= 'A' && path.charAt (0) <= 'Z')))
-      {
-        // On Windows, a process has a current working directory for
-        // each drive and a path like "G:foo\bar" would mean the 
-        // absolute path "G:\wombat\foo\bar" if "\wombat" is the 
-        // working directory on the G drive.
-        String drvDir = null;
-        try
-          {
-            drvDir = new File (path.substring (0, 2)).getCanonicalPath();
-          }
-        catch (IOException e)
-          {
-            drvDir = path.substring (0, 2) + "\\";
-          }
-        
-        // Note: this would return "C:\\." for the path "C:.", if "\"
-        // is the working folder on the C drive, but this is 
-        // consistent with what Sun's JRE 1.4.1.01 actually returns!
-        if (path.length() > 2)
-          return drvDir + '\\' + path.substring (2, path.length());
-        else
-          return drvDir;
-      }
-    else if (path.equals(""))
-      return System.getProperty ("user.dir");
     else
-      return System.getProperty ("user.dir") + separatorChar + path;
+      return VMFile.getAbsolutePath(path);
   }
 
   /**
@@ -657,15 +632,7 @@ public class File implements Serializable, Comparable
    */
   public boolean isAbsolute()
   {
-    if (separatorChar == '\\')
-	return path.startsWith(dupSeparator) || 
-	    (path.length() > 2 && 
-	     ((path.charAt(0) >= 'a' && path.charAt(0) <= 'z') ||
-	      (path.charAt(0) >= 'A' && path.charAt(0) <= 'Z')) &&
-	     path.charAt(1) == ':' &&
-	     path.charAt(2) == '\\');
-    else
-	return path.startsWith(separator);
+    return VMFile.isAbsolute(path);
   }
 
   /**
@@ -787,8 +754,9 @@ public class File implements Serializable, Comparable
     String files[] = VMFile.list(path);
     
     // Check if an error occured in listInternal().
+    // This is an unreadable directory, pretend there is nothing inside.
     if (files == null)
-      return null;
+      return new String[0];
 
     if (filter == null)
       return files;
@@ -998,14 +966,7 @@ public class File implements Serializable, Comparable
    */
   public URL toURL() throws MalformedURLException
   {
-    // On Win32, Sun's JDK returns URLs of the form "file:/c:/foo/bar.txt",
-    // while on UNIX, it returns URLs of the form "file:/foo/bar.txt". 
-    if (separatorChar == '\\')
-      return new URL ("file:/" + getAbsolutePath().replace ('\\', '/')
-		      + (isDirectory() ? "/" : ""));
-    else
-      return new URL ("file:" + getAbsolutePath()
-		      + (isDirectory() ? "/" : ""));
+    return VMFile.toURL(this);
   }
 
 
@@ -1289,32 +1250,6 @@ public class File implements Serializable, Comparable
       return path.compareTo (other.path);
     else
       return path.compareToIgnoreCase (other.path);
-  }
-
-  /**
-   * This method compares the specified <code>Object</code> to this one
-   * to test for equality.  It does this by comparing the canonical path names
-   * of the files.  This method is identical to <code>compareTo(File)</code>
-   * except that if the <code>Object</code> passed to it is not a 
-   * <code>File</code>, it throws a <code>ClassCastException</code>
-   * <p>
-   * The canonical paths of the files are determined by calling the
-   * <code>getCanonicalPath</code> method on each object.
-   * <p>
-   * This method returns a 0 if the specified <code>Object</code> is equal
-   * to this one, a negative value if it is less than this one 
-   * a positive value if it is greater than this one.
-   *
-   * @return An integer as described above
-   *
-   * @exception ClassCastException If the passed <code>Object</code> is 
-   * not a <code>File</code>
-   *
-   * @since 1.2
-   */
-  public int compareTo(Object obj)
-  {
-    return compareTo((File) obj);
   }
 
   /**

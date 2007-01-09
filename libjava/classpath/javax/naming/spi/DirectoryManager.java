@@ -93,7 +93,7 @@ public class DirectoryManager extends NamingManager
 
   public static Object getObjectInstance (Object refInfo, Name name,
 					  Context nameCtx,
-					  Hashtable environment,
+					  Hashtable<?, ?> environment,
 					  Attributes attrs)
     throws Exception
   {
@@ -186,7 +186,7 @@ public class DirectoryManager extends NamingManager
   public static DirStateFactory.Result getStateToBind (Object obj,
 						       Name name,
 						       Context nameCtx,
-						       Hashtable environment,
+						       Hashtable<?, ?> environment,
 						       Attributes attrs)
     throws NamingException
   {

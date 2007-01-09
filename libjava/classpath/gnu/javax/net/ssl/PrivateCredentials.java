@@ -51,6 +51,7 @@ import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Security;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -95,16 +96,16 @@ public class PrivateCredentials implements ManagerFactoryParameters
   public static final String BEGIN_RSA = "-----BEGIN RSA PRIVATE KEY";
   public static final String END_RSA   = "-----END RSA PRIVATE KEY";
 
-  private List privateKeys;
-  private List certChains;
+  private List<PrivateKey> privateKeys;
+  private List<X509Certificate[]> certChains;
 
   // Constructor.
   // -------------------------------------------------------------------------
 
   public PrivateCredentials()
   {
-    privateKeys = new LinkedList();
-    certChains = new LinkedList();
+    privateKeys = new LinkedList<PrivateKey>();
+    certChains = new LinkedList<X509Certificate[]>();
   }
 
   // Instance methods.
@@ -115,7 +116,7 @@ public class PrivateCredentials implements ManagerFactoryParameters
            IOException, NoSuchAlgorithmException, WrongPaddingException
   {
     CertificateFactory cf = CertificateFactory.getInstance("X.509");
-    Collection certs = cf.generateCertificates(certChain);
+    Collection<? extends Certificate> certs = cf.generateCertificates(certChain);
     X509Certificate[] chain = (X509Certificate[]) certs.toArray(new X509Certificate[0]);
 
     String alg = null;
@@ -199,11 +200,12 @@ public class PrivateCredentials implements ManagerFactoryParameters
           (BigInteger) der.read().getValue(),  // d mod (q-1)
           (BigInteger) der.read().getValue()); // coefficient
       }
+
     privateKeys.add(kf.generatePrivate(spec));
     certChains.add(chain);
   }
 
-  public List getPrivateKeys()
+  public List<PrivateKey> getPrivateKeys()
   {
     if (isDestroyed())
       {
@@ -212,7 +214,7 @@ public class PrivateCredentials implements ManagerFactoryParameters
     return privateKeys;
   }
 
-  public List getCertChains()
+  public List<X509Certificate[]> getCertChains()
   {
     return certChains;
   }

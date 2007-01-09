@@ -1,5 +1,5 @@
 /* java.lang.ref.PhantomReference
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,8 +46,8 @@ package java.lang.ref;
  *
  * @author Jochen Hoenicke 
  */
-public class PhantomReference 
-  extends Reference
+public class PhantomReference<T>
+  extends Reference<T>
 {
   /**
    * Creates a new phantom reference.
@@ -56,7 +56,7 @@ public class PhantomReference
    * finalized.  This mustn't be <code>null</code>.
    * @exception NullPointerException if q is null.
    */
-  public PhantomReference(Object referent, ReferenceQueue q)
+  public PhantomReference(T referent, ReferenceQueue<? super T> q)
   {
     super(referent, q);
   }
@@ -66,7 +66,7 @@ public class PhantomReference
    * @return <code>null</code>, since the refered object may be
    * finalized and thus not accessible.  
    */
-  public Object get()
+  public T get()
   {
     return null;
   }

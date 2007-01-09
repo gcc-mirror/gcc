@@ -1,5 +1,5 @@
 /* AttributedStringIterator.java -- Class to iterate over AttributedString
-   Copyright (C) 1998, 1999, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2004, 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -71,12 +71,21 @@ class AttributedStringIterator implements AttributedCharacterIterator
 
   /*************************************************************************/
 
+  /**
+   * Creates a new instance.
+   * 
+   * @param sci  an iterator for the string content.
+   * @param attribs  the attribute ranges.
+   * @param beginIndex  the start index.
+   * @param endIndex  the end index.
+   * @param restricts  the attributes that the user is interested in.
+   */
   AttributedStringIterator(StringCharacterIterator sci, 
                            AttributedString.AttributeRange[] attribs,
-                           int begin_index, int end_index,
+                           int beginIndex, int endIndex,
                            AttributedCharacterIterator.Attribute[] restricts)
   {
-    this.ci = new StringCharacterIterator(sci, begin_index, end_index);
+    this.ci = new StringCharacterIterator(sci, beginIndex, endIndex);
     this.attribs = attribs;
     this.restricts = restricts;
   }
@@ -154,8 +163,8 @@ class AttributedStringIterator implements AttributedCharacterIterator
 
     for (int i = 0; i < attribs.length; i++)
     {
-      if (attribs[i].begin_index > getEndIndex()
-	  || attribs[i].end_index <= getBeginIndex())
+      if (attribs[i].beginIndex > getEndIndex()
+	  || attribs[i].endIndex <= getBeginIndex())
 	continue;
 
       Set key_set = attribs[i].attribs.keySet();
@@ -178,7 +187,7 @@ class AttributedStringIterator implements AttributedCharacterIterator
 
   public int getRunLimit()
   {
-    return(getRunLimit(getAttributes().keySet()));
+    return getRunLimit(getAllAttributeKeys());
   }
 
   public int getRunLimit(AttributedCharacterIterator.Attribute attrib)
@@ -333,7 +342,7 @@ class AttributedStringIterator implements AttributedCharacterIterator
       return null;
     for (int i = attribs.length - 1; i >= 0; i--)
       {
-        if (pos >= attribs[i].begin_index && pos < attribs[i].end_index)
+        if (pos >= attribs[i].beginIndex && pos < attribs[i].endIndex)
           {
             Set keys = attribs[i].attribs.keySet();
             if (keys.contains(key)) 
@@ -373,8 +382,8 @@ class AttributedStringIterator implements AttributedCharacterIterator
   
     for (int i = 0; i < attribs.length; i++)
       {
-         if ((ci.getIndex() >= attribs[i].begin_index) &&
-             (ci.getIndex() < attribs[i].end_index))
+         if ((ci.getIndex() >= attribs[i].beginIndex) &&
+             (ci.getIndex() < attribs[i].endIndex))
            m.putAll(attribs[i].attribs);
       }
 

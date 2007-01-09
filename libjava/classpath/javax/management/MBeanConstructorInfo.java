@@ -38,6 +38,7 @@ exception statement from your version. */
 package javax.management;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Type;
 
 import java.util.Arrays;
 
@@ -77,22 +78,29 @@ public class MBeanConstructorInfo
   public MBeanConstructorInfo(String desc, Constructor cons)
   {
     super(cons.getName(), desc);
-    Class[] paramTypes = cons.getParameterTypes();
+    Type[] paramTypes = cons.getGenericParameterTypes();
     signature = new MBeanParameterInfo[paramTypes.length];
     for (int a = 0; a < paramTypes.length; ++a)
-      signature[a] = new MBeanParameterInfo(null,
-					    paramTypes[a].getName(),
-					    null);
+      {
+	Type t = paramTypes[a];
+	if (t instanceof Class)
+	  signature[a] = new MBeanParameterInfo(null,
+						((Class) t).getName(),
+						null);
+	else
+	  signature[a] = new MBeanParameterInfo(null, t.toString(), null);
+      }
   }
 
   /**
    * Constructs a @link{MBeanConstructorInfo} with the specified
    * name, description and parameter information. A <code>null</code>
    * value for the parameter information is the same as passing in
-   * an empty array.
+   * an empty array.  A copy of the parameter array is taken, so
+   * later changes have no effect.
    *
    * @param name the name of the constructor.
-   * @param desc a description of the attribute.
+   * @param desc a description of the constructor.
    * @param sig the signature of the constructor, as a series
    *            of {@link MBeanParameterInfo} objects, one for
    *            each parameter.
@@ -104,7 +112,10 @@ public class MBeanConstructorInfo
     if (sig == null)
       signature = new MBeanParameterInfo[0];
     else
-      signature = sig;
+      {
+	signature = new MBeanParameterInfo[sig.length];
+	System.arraycopy(sig, 0, signature, 0, sig.length);
+      }
   }
 
   /**

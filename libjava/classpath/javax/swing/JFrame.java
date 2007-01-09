@@ -157,6 +157,10 @@ public class JFrame extends Frame
 
   protected void frameInit()
   {
+    // We need to explicitly enable events here so that our processKeyEvent()
+    // and processWindowEvent() gets called.
+    enableEvents(AWTEvent.WINDOW_EVENT_MASK | AWTEvent.KEY_EVENT_MASK);
+
     super.setLayout(new BorderLayout());
     setBackground(UIManager.getDefaults().getColor("control"));
     enableEvents(AWTEvent.WINDOW_EVENT_MASK);
@@ -351,39 +355,22 @@ public class JFrame extends Frame
   protected void processWindowEvent(WindowEvent e)
   {
     super.processWindowEvent(e);
-    switch (e.getID())
+    if (e.getID() == WindowEvent.WINDOW_CLOSING)
       {
-      case WindowEvent.WINDOW_CLOSING:
-        {
-	  switch (closeAction)
-	    {
-	    case EXIT_ON_CLOSE:
-	      {
-		System.exit(0);
-		break;
-	      }
-	    case DISPOSE_ON_CLOSE:
-	      {
-		dispose();
-		break;
-	      }
-	    case HIDE_ON_CLOSE:
-	      {
-		setVisible(false);
-		break;
-	      }
-	    case DO_NOTHING_ON_CLOSE:
-	      break;
-	    }
-	  break;
-        }
-      case WindowEvent.WINDOW_CLOSED:
-      case WindowEvent.WINDOW_OPENED:
-      case WindowEvent.WINDOW_ICONIFIED:
-      case WindowEvent.WINDOW_DEICONIFIED:
-      case WindowEvent.WINDOW_ACTIVATED:
-      case WindowEvent.WINDOW_DEACTIVATED:
-	break;
+        switch (closeAction)
+	  {
+	  case EXIT_ON_CLOSE:
+	    System.exit(0);
+	    break;
+	  case DISPOSE_ON_CLOSE:
+	    dispose();
+	    break;
+	  case HIDE_ON_CLOSE:
+	    setVisible(false);
+	    break;
+	  case DO_NOTHING_ON_CLOSE:
+	    break;
+	  }
       }
   }
 

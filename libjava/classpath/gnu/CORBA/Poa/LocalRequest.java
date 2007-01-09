@@ -193,11 +193,14 @@ public class LocalRequest extends gnuRequest implements ResponseHandler,
   /**
    * Make an invocation and return a stream from where the results can be read.
    *
-   * @param the invoke handler (can be null, then it is obtained self
+   * @param handler the invoke handler (can be null, then it is obtained self
    * dependently).
    */
   public org.omg.CORBA.portable.InputStream v_invoke(InvokeHandler handler)
   {
+    // Check maybe POA is in the discarding mode (will throw TRANSIENT if it is).
+    poa.checkDiscarding();  
+    
     // Local request must be intercepted both by server and request
     // interceptors.
     boolean s_intercept = false;
@@ -246,7 +249,7 @@ public class LocalRequest extends gnuRequest implements ResponseHandler,
 
             s_interceptor.receive_request_service_contexts(s_info);
           }
-
+        
         if (handler == null)
           {
             handler = object.getHandler(operation(), cookie, false);

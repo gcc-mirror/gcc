@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package javax.swing.text;
 
+import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -92,11 +93,6 @@ public class BoxView
   private int[] span = new int[2];
 
   /**
-   * The SizeRequirements of the child views along the X_AXIS and Y_AXIS.
-   */
-  private SizeRequirements[][] childReqs = new SizeRequirements[2][];
-
-  /**
    * Creates a new <code>BoxView</code> for the given
    * <code>Element</code> and axis. Valid values for the axis are
    * {@link View#X_AXIS} and {@link View#Y_AXIS}.
@@ -110,6 +106,8 @@ public class BoxView
     myAxis = axis;
     layoutValid[0] = false;
     layoutValid[1] = false;
+    requirementsValid[X_AXIS] = false;
+    requirementsValid[Y_AXIS] = false;
     span[0] = 0;
     span[1] = 0;
     requirements[0] = new SizeRequirements();
@@ -146,7 +144,10 @@ public class BoxView
    */
   public void setAxis(int axis)
   {
+    boolean changed = axis != myAxis;
     myAxis = axis;
+    if (changed)
+      preferenceChanged(null, true, true);
   }
 
   /**
@@ -227,54 +228,47 @@ public class BoxView
    */
   public void replace(int offset, int length, View[] views)
   {
-    int numViews = 0;
-    if (views != null)
-      numViews = views.length;
-
-    // Resize and copy data for cache arrays.
-    // The spansX cache.
-    int oldSize = getViewCount();
-
-    int[] newSpansX = new int[oldSize - length + numViews];
-    System.arraycopy(spans[X_AXIS], 0, newSpansX, 0, offset);
-    System.arraycopy(spans[X_AXIS], offset + length, newSpansX,
-                     offset + numViews,
-                     oldSize - (offset + length));
-    spans[X_AXIS] = newSpansX;
-
-    // The spansY cache.
-    int[] newSpansY = new int[oldSize - length + numViews];
-    System.arraycopy(spans[Y_AXIS], 0, newSpansY, 0, offset);
-    System.arraycopy(spans[Y_AXIS], offset + length, newSpansY,
-                     offset + numViews,
-                     oldSize - (offset + length));
-    spans[Y_AXIS] = newSpansY;
-
-    // The offsetsX cache.
-    int[] newOffsetsX = new int[oldSize - length + numViews];
-    System.arraycopy(offsets[X_AXIS], 0, newOffsetsX, 0, offset);
-    System.arraycopy(offsets[X_AXIS], offset + length, newOffsetsX,
-                     offset + numViews,
-                     oldSize - (offset + length));
-    offsets[X_AXIS] = newOffsetsX;
-
-    // The offsetsY cache.
-    int[] newOffsetsY = new int[oldSize - length + numViews];
-    System.arraycopy(offsets[Y_AXIS], 0, newOffsetsY, 0, offset);
-    System.arraycopy(offsets[Y_AXIS], offset + length, newOffsetsY,
-                     offset + numViews,
-                     oldSize - (offset + length));
-    offsets[Y_AXIS] = newOffsetsY;
-
     // Actually perform the replace.
     super.replace(offset, length, views);
 
-    // Invalidate layout information.
-    layoutValid[X_AXIS] = false;
-    requirementsValid[X_AXIS] = false;
-    layoutValid[Y_AXIS] = false;
-    requirementsValid[Y_AXIS] = false;
+    // Resize and copy data for cache arrays.
+    int newItems = views != null ? views.length : 0;
+    int minor = 1 - myAxis;
+    offsets[myAxis] = replaceLayoutArray(offsets[myAxis], offset, newItems);
+    spans[myAxis] = replaceLayoutArray(spans[myAxis], offset, newItems);
+    layoutValid[myAxis] = false;
+    requirementsValid[myAxis] = false;
+    offsets[minor] = replaceLayoutArray(offsets[minor], offset, newItems);
+    spans[minor] = replaceLayoutArray(spans[minor], offset, newItems);
+    layoutValid[minor] = false;
+    requirementsValid[minor] = false;
   }
+
+  /**
+   * Helper method. This updates the layout cache arrays in response
+   * to a call to {@link #replace(int, int, View[])}.
+   *
+   * @param oldArray the old array
+   *
+   * @return the replaced array
+   */
+  private int[] replaceLayoutArray(int[] oldArray, int offset, int newItems)
+
+  {
+    int num = getViewCount();
+    int[] newArray = new int[num];
+    System.arraycopy(oldArray, 0, newArray, 0, offset);
+    System.arraycopy(oldArray, offset, newArray, offset + newItems,
+                     num - newItems - offset);
+    return newArray;
+  }
+
+  /**
+   * A Rectangle instance to be reused in the paint() method below.
+   */
+  private final Rectangle tmpRect = new Rectangle();
+
+  private Rectangle clipRect = new Rectangle();
 
   /**
    * Renders the <code>Element</code> that is associated with this
@@ -285,26 +279,20 @@ public class BoxView
    */
   public void paint(Graphics g, Shape a)
   {
-    Rectangle alloc;
-    if (a instanceof Rectangle)
-      alloc = (Rectangle) a;
-    else
-      alloc = a.getBounds();
+    // Try to avoid allocation if possible (almost all cases).
+    Rectangle alloc = a instanceof Rectangle ? (Rectangle) a : a.getBounds();
 
-    int x = alloc.x + getLeftInset();
-    int y = alloc.y + getTopInset();
+    // This returns a cached instance.
+    alloc = getInsideAllocation(alloc);
 
-    Rectangle clip = g.getClipBounds();
-    Rectangle tmp = new Rectangle();
     int count = getViewCount();
-    for (int i = 0; i < count; ++i)
+    for (int i = 0; i < count; i++)
       {
-        tmp.x = x + getOffset(X_AXIS, i);
-        tmp.y = y + getOffset(Y_AXIS, i);
-        tmp.width = getSpan(X_AXIS, i);
-        tmp.height = getSpan(Y_AXIS, i);
-        if (tmp.intersects(clip))
-          paintChild(g, tmp, i);
+        View child = getView(i);
+        tmpRect.setBounds(alloc);
+        childAllocation(i, tmpRect);
+        if (g.hitClip(tmpRect.x, tmpRect.y, tmpRect.width, tmpRect.height))
+          paintChild(g, tmpRect, i);
       }
   }
 
@@ -373,9 +361,9 @@ public class BoxView
   }
 
   /**
-   * This method is obsolete and no longer in use. It is replaced by
-   * {@link #calculateMajorAxisRequirements(int, SizeRequirements)} and
-   * {@link #calculateMinorAxisRequirements(int, SizeRequirements)}.
+   * Calculates size requirements for a baseline layout. This is not
+   * used by the BoxView itself, but by subclasses that wish to perform
+   * a baseline layout, like the FlowView's rows.
    *
    * @param axis the axis that is examined
    * @param sr the <code>SizeRequirements</code> object to hold the result,
@@ -387,50 +375,94 @@ public class BoxView
   protected SizeRequirements baselineRequirements(int axis,
                                                   SizeRequirements sr)
   {
-    updateChildRequirements(axis);
+    // Create new instance if sr == null.
+    if (sr == null)
+      sr = new SizeRequirements();
+    sr.alignment = 0.5F;
 
-    SizeRequirements res = sr;
-    if (res == null)
-      res = new SizeRequirements();
-
-    float minLeft = 0;
-    float minRight = 0;
-    float prefLeft = 0;
-    float prefRight = 0;
-    float maxLeft = 0;
-    float maxRight = 0;
-    for (int i = 0; i < childReqs[axis].length; i++)
+    // Calculate overall ascent and descent.
+    int totalAscentMin = 0;
+    int totalAscentPref = 0;
+    int totalAscentMax = 0;
+    int totalDescentMin = 0;
+    int totalDescentPref = 0;
+    int totalDescentMax = 0;
+    
+    int count = getViewCount();
+    for (int i = 0; i < count; i++)
       {
-        float myMinLeft = childReqs[axis][i].minimum * childReqs[axis][i].alignment;
-        float myMinRight = childReqs[axis][i].minimum - myMinLeft;
-        minLeft = Math.max(myMinLeft, minLeft);
-        minRight = Math.max(myMinRight, minRight);
-        float myPrefLeft = childReqs[axis][i].preferred * childReqs[axis][i].alignment;
-        float myPrefRight = childReqs[axis][i].preferred - myPrefLeft;
-        prefLeft = Math.max(myPrefLeft, prefLeft);
-        prefRight = Math.max(myPrefRight, prefRight);
-        float myMaxLeft = childReqs[axis][i].maximum * childReqs[axis][i].alignment;
-        float myMaxRight = childReqs[axis][i].maximum - myMaxLeft;
-        maxLeft = Math.max(myMaxLeft, maxLeft);
-        maxRight = Math.max(myMaxRight, maxRight);
-      }
-    int minSize = (int) (minLeft + minRight);
-    int prefSize = (int) (prefLeft + prefRight);
-    int maxSize = (int) (maxLeft + maxRight);
-    float align = prefLeft / (prefRight + prefLeft);
-    if (Float.isNaN(align))
-      align = 0;
+        View v = getView(i);
+        float align = v.getAlignment(axis);
+        int span = (int) v.getPreferredSpan(axis);
+        int ascent = (int) (align * span);
+        int descent = span - ascent;
 
-    res.alignment = align;
-    res.maximum = maxSize;
-    res.preferred = prefSize;
-    res.minimum = minSize;
-    return res;
+        totalAscentPref = Math.max(ascent, totalAscentPref);
+        totalDescentPref = Math.max(descent, totalDescentPref);
+        if (v.getResizeWeight(axis) > 0)
+          {
+            // If the view is resizable, then use the min and max size
+            // of the view.
+            span = (int) v.getMinimumSpan(axis);
+            ascent = (int) (align * span);
+            descent = span - ascent;
+            totalAscentMin = Math.max(ascent, totalAscentMin);
+            totalDescentMin = Math.max(descent, totalDescentMin);
+
+            span = (int) v.getMaximumSpan(axis);
+            ascent = (int) (align * span);
+            descent = span - ascent;
+            totalAscentMax = Math.max(ascent, totalAscentMax);
+            totalDescentMax = Math.max(descent, totalDescentMax);
+          }
+        else
+          {
+            // If the view is not resizable, use the preferred span.
+            totalAscentMin = Math.max(ascent, totalAscentMin);
+            totalDescentMin = Math.max(descent, totalDescentMin);
+            totalAscentMax = Math.max(ascent, totalAscentMax);
+            totalDescentMax = Math.max(descent, totalDescentMax);
+          }
+      }
+
+    // Preferred overall span is the sum of the preferred ascent and descent.
+    // With overflow check.
+    sr.preferred = (int) Math.min((long) totalAscentPref
+                                  + (long) totalDescentPref,
+                                  Integer.MAX_VALUE);
+
+    // Align along the baseline.
+    if (sr.preferred > 0)
+      sr.alignment = (float) totalAscentPref / sr.preferred;
+
+    if (sr.alignment == 0)
+      {
+        // Nothing above the baseline, use the descent.
+        sr.minimum = totalDescentMin;
+        sr.maximum = totalDescentMax;
+      }
+    else if (sr.alignment == 1.0F)
+      {
+        // Nothing below the baseline, use the descent.
+        sr.minimum = totalAscentMin;
+        sr.maximum = totalAscentMax;
+      }
+    else
+      {
+        sr.minimum = Math.max((int) (totalAscentMin / sr.alignment),
+                              (int) (totalDescentMin / (1.0F - sr.alignment)));
+        sr.maximum = Math.min((int) (totalAscentMax / sr.alignment),
+                              (int) (totalDescentMax / (1.0F - sr.alignment)));
+      }
+    return sr;
   }
 
   /**
-   * Calculates the layout of the children of this <code>BoxView</code> along
-   * the specified axis.
+   * Calculates the baseline layout of the children of this
+   * <code>BoxView</code> along the specified axis.
+   *
+   * This is not used by the BoxView itself, but by subclasses that wish to
+   * perform a baseline layout, like the FlowView's rows.
    *
    * @param span the target span
    * @param axis the axis that is examined
@@ -440,13 +472,36 @@ public class BoxView
   protected void baselineLayout(int span, int axis, int[] offsets,
                                 int[] spans)
   {
-    updateChildRequirements(axis);
-    updateRequirements(axis);
+    int totalAscent = (int) (span * getAlignment(axis));
+    int totalDescent = span - totalAscent;
 
-    // Calculate the spans and offsets using the SizeRequirements uility
-    // methods.
-    SizeRequirements.calculateAlignedPositions(span, requirements[axis],
-                                               childReqs[axis], offsets, spans);
+    int count = getViewCount();
+    for (int i = 0; i < count; i++)
+      {
+        View v = getView(i);
+        float align = v.getAlignment(axis);
+        int viewSpan;
+        if (v.getResizeWeight(axis) > 0)
+          {
+            // If possible, then resize for best fit.
+            int min = (int) v.getMinimumSpan(axis);
+            int max = (int) v.getMaximumSpan(axis);
+            if (align == 0.0F)
+              viewSpan = Math.max(Math.min(max, totalDescent), min);
+            else if (align == 1.0F)
+              viewSpan = Math.max(Math.min(max, totalAscent), min);
+            else
+              {
+                int fit = (int) Math.min(totalAscent / align,
+                                         totalDescent / (1.0F - align));
+                viewSpan = Math.max(Math.min(max, fit), min);
+              }
+          }
+        else
+          viewSpan = (int) v.getPreferredSpan(axis);
+        offsets[i] = totalAscent - (int) (viewSpan * align);
+        spans[i] = viewSpan;
+      }
   }
 
   /**
@@ -476,8 +531,8 @@ public class BoxView
       {
         View child = getView(i);
         min += child.getMinimumSpan(axis);
-        pref = child.getPreferredSpan(axis);
-        max = child.getMaximumSpan(axis);
+        pref += child.getPreferredSpan(axis);
+        max += child.getMaximumSpan(axis);
       }
 
     res.minimum = (int) min;
@@ -509,7 +564,7 @@ public class BoxView
 
     res.minimum = 0;
     res.preferred = 0;
-    res.maximum = 0;
+    res.maximum = Integer.MAX_VALUE;
     res.alignment = 0.5F;
     int n = getViewCount();
     for (int i = 0; i < n; i++)
@@ -568,9 +623,9 @@ public class BoxView
     boolean result = false;
 
     if (myAxis == X_AXIS)
-      result = x > r.x;
+      result = x > r.x + r.width;
     else
-      result = y > r.y;
+      result = y > r.y + r.height;
 
     return result;
   }
@@ -589,24 +644,54 @@ public class BoxView
   {
     View result = null;
     int count = getViewCount();
-    Rectangle copy = new Rectangle(r);
-
-    for (int i = 0; i < count; ++i)
+    if (myAxis == X_AXIS)
       {
-        copy.setBounds(r);
-        // The next call modifies copy.
-        childAllocation(i, copy);
-        if (copy.contains(x, y))
+        // Border case. Requested point is left from the box.
+        if (x < r.x + offsets[X_AXIS][0])
           {
-            // Modify r on success.
-            r.setBounds(copy);
-            result = getView(i);
-            break;
+            childAllocation(0, r);
+            result = getView(0);
+          }
+        else
+          {
+            // Search views inside box.
+            for (int i = 0; i < count && result == null; i++)
+              {
+                if (x < r.x + offsets[X_AXIS][i])
+                  {
+                    childAllocation(i - 1, r);
+                    result = getView(i - 1);
+                  }
+              }
           }
       }
-    
-    if (result == null && count > 0)
-      return getView(count - 1);
+    else // Same algorithm for Y_AXIS.
+      {
+        // Border case. Requested point is above the box.
+        if (y < r.y + offsets[Y_AXIS][0])
+          {
+            childAllocation(0, r);
+            result = getView(0);
+          }
+        else
+          {
+            // Search views inside box.
+            for (int i = 0; i < count && result == null; i++)
+              {
+                if (y < r.y + offsets[Y_AXIS][i])
+                  {
+                    childAllocation(i - 1, r);
+                    result = getView(i - 1);
+                  }
+              }
+          }
+      }
+    // Not found, other border case: point is right from or below the box.
+    if (result == null)
+      {
+        childAllocation(count - 1, r);
+        result = getView(count - 1);
+      }
     return result;
   }
 
@@ -623,9 +708,6 @@ public class BoxView
    */
   protected void childAllocation(int index, Rectangle a)
   {
-    if (! isAllocationValid())
-      layout(a.width, a.height);
-
     a.x += offsets[X_AXIS][index];
     a.y += offsets[Y_AXIS][index];
     a.width = spans[X_AXIS][index];
@@ -643,49 +725,32 @@ public class BoxView
    */
   protected void layout(int width, int height)
   {
-    int[] newSpan = new int[]{ width, height };
-    int count = getViewCount();
+    layoutAxis(X_AXIS, width);
+    layoutAxis(Y_AXIS, height);
+  }
 
-    // Update minor axis as appropriate. We need to first update the minor
-    // axis layout because that might affect the children's preferences along
-    // the major axis.
-    int minorAxis = myAxis == X_AXIS ? Y_AXIS : X_AXIS;
-    if ((! isLayoutValid(minorAxis)) || newSpan[minorAxis] != span[minorAxis])
+  private void layoutAxis(int axis, int s)
+  {
+    if (span[axis] != s)
+      layoutValid[axis] = false;
+    if (! layoutValid[axis])
       {
-        layoutValid[minorAxis] = false;
-        span[minorAxis] = newSpan[minorAxis];
-        layoutMinorAxis(span[minorAxis], minorAxis, offsets[minorAxis],
-                        spans[minorAxis]);
+        span[axis] = s;
+        updateRequirements(axis);
+        if (axis == myAxis)
+          layoutMajorAxis(span[axis], axis, offsets[axis], spans[axis]);
+        else
+          layoutMinorAxis(span[axis], axis, offsets[axis], spans[axis]);
+        layoutValid[axis] = true;
 
-        // Update the child view's sizes.
-        for (int i = 0; i < count; ++i)
+        // Push out child layout.
+        int viewCount = getViewCount();
+        for (int i = 0; i < viewCount; i++)
           {
-            getView(i).setSize(spans[X_AXIS][i], spans[Y_AXIS][i]);
+            View v = getView(i);
+            v.setSize(spans[X_AXIS][i], spans[Y_AXIS][i]);
           }
-        layoutValid[minorAxis] = true;
       }
-
-
-    // Update major axis as appropriate.
-    if ((! isLayoutValid(myAxis)) || newSpan[myAxis] != span[myAxis])
-      {
-        layoutValid[myAxis] = false;
-        span[myAxis] = newSpan[myAxis];
-        layoutMajorAxis(span[myAxis], myAxis, offsets[myAxis],
-                        spans[myAxis]);
-
-        // Update the child view's sizes.
-        for (int i = 0; i < count; ++i)
-          {
-            getView(i).setSize(spans[X_AXIS][i], spans[Y_AXIS][i]);
-          }
-        layoutValid[myAxis] = true;
-      }
-
-    if (layoutValid[myAxis] == false)
-	  System.err.println("WARNING: Major axis layout must be valid after layout");
-    if (layoutValid[minorAxis] == false)
-      System.err.println("Minor axis layout must be valid after layout");
   }
 
   /**
@@ -708,7 +773,7 @@ public class BoxView
       {
         View child = getView(i);
         spans[i] = (int) child.getPreferredSpan(axis);
-        sumPref = spans[i];
+        sumPref += spans[i];
       }
 
     // Try to adjust the spans so that we fill the targetSpan.
@@ -776,7 +841,7 @@ public class BoxView
         View child = getView(i);
         int max = (int) child.getMaximumSpan(axis);
         if (max < targetSpan)
-          {System.err.println("align: " + child);
+          {
             // Align child when it can't be made as wide as the target span.
             float align = child.getAlignment(axis);
             offsets[i] = (int) ((targetSpan - max) * align);
@@ -811,7 +876,9 @@ public class BoxView
    */
   public int getWidth()
   {
-    return span[X_AXIS];
+    // The RI returns the following here, however, I'd think that is a bug.
+    // return span[X_AXIS] + getLeftInset() - getRightInset();
+    return span[X_AXIS] + getLeftInset() + getRightInset();
   }
 
   /**
@@ -821,7 +888,9 @@ public class BoxView
    */
   public int getHeight()
   {
-    return span[Y_AXIS];
+    // The RI returns the following here, however, I'd think that is a bug.
+    // return span[Y_AXIS] + getTopInset() - getBottomInset();
+    return span[Y_AXIS] + getTopInset() + getBottomInset();
   }
 
   /**
@@ -833,7 +902,8 @@ public class BoxView
    */
   public void setSize(float width, float height)
   {
-    layout((int) width, (int) height);
+    layout((int) (width - getLeftInset() - getRightInset()),
+           (int) (height - getTopInset() - getBottomInset()));
   }
 
   /**
@@ -944,9 +1014,11 @@ public class BoxView
   {
     if (axis != X_AXIS && axis != Y_AXIS)
       throw new IllegalArgumentException("Illegal axis argument");
-    int weight = 1;
-    if (axis == myAxis)
-      weight = 0;
+    updateRequirements(axis);
+    int weight = 0;
+    if ((requirements[axis].preferred != requirements[axis].minimum)
+        || (requirements[axis].preferred != requirements[axis].maximum))
+      weight = 1;
     return weight;
   }
 
@@ -973,13 +1045,39 @@ public class BoxView
   protected void forwardUpdate(DocumentEvent.ElementChange ec, DocumentEvent e,
                                Shape a, ViewFactory vf)
   {
-    // FIXME: What to do here?
+    boolean wasValid = isLayoutValid(myAxis);
     super.forwardUpdate(ec, e, a, vf);
+    // Trigger repaint when one of the children changed the major axis.
+    if (wasValid && ! isLayoutValid(myAxis))
+      {
+        Container c = getContainer();
+        if (a != null && c != null)
+          {
+            int pos = e.getOffset();
+            int index = getViewIndexAtPosition(pos);
+            Rectangle r = getInsideAllocation(a);
+            if (myAxis == X_AXIS)
+              {
+                r.x += offsets[myAxis][index];
+                r.width -= offsets[myAxis][index];
+              }
+            else
+              {
+                r.y += offsets[myAxis][index];
+                r.height -= offsets[myAxis][index];
+              }
+            c.repaint(r.x, r.y, r.width, r.height);
+          }
+      }
   }
 
   public int viewToModel(float x, float y, Shape a, Position.Bias[] bias)
   {
-    // FIXME: What to do here?
+    if (! isAllocationValid())
+      {
+        Rectangle r = a instanceof Rectangle ? (Rectangle) a : a.getBounds();
+        setSize(r.width, r.height);
+      }
     return super.viewToModel(x, y, a, bias);
   }
 
@@ -987,32 +1085,6 @@ public class BoxView
   {
     // FIXME: What to do here?
     return super.flipEastAndWestAtEnds(position, bias);
-  }
-
-  /**
-   * Updates the child requirements along the specified axis. The requirements
-   * are only updated if the layout for the specified axis is marked as
-   * invalid.
-   *
-   * @param axis the axis to be updated
-   */
-  private void updateChildRequirements(int axis)
-  {
-    if (! isLayoutValid(axis))
-      {
-        int numChildren = getViewCount();
-        if (childReqs[axis] == null || childReqs[axis].length != numChildren)
-          childReqs[axis] = new SizeRequirements[numChildren];
-        for (int i = 0; i < numChildren; ++i)
-          {
-            View child = getView(i);
-            childReqs[axis][i] =
-              new SizeRequirements((int) child.getMinimumSpan(axis),
-                                   (int) child.getPreferredSpan(axis),
-                                   (int) child.getMaximumSpan(axis),
-                                   child.getAlignment(axis));
-          }
-      }
   }
 
   /**
@@ -1024,6 +1096,8 @@ public class BoxView
    */
   private void updateRequirements(int axis)
   {
+    if (axis != Y_AXIS && axis != X_AXIS)
+      throw new IllegalArgumentException("Illegal axis: " + axis);
     if (! requirementsValid[axis])
       {
         if (axis == myAxis)

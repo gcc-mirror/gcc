@@ -1,5 +1,5 @@
 /* PolicyErrorHelper.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -59,8 +59,8 @@ public abstract class PolicyErrorHelper
 {
   /**
    * Create the PolicyError typecode. The typecode defines a structure, named
-   * "PolicyError", containing the {@link PolicyErrorCode} (alias int) field,
-   * named "reason".
+   * "PolicyError", containing the PolicyErrorCode (alias int, see 
+   * {@link PolicyErrorCodeHelper}) field, named "reason".
    */
   public static TypeCode type()
   {

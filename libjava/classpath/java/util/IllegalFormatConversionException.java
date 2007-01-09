@@ -67,7 +67,7 @@ public class IllegalFormatConversionException
    * @serial the mismatching argument type.
    */
   // Note: name fixed by serialization.
-  Class arg;
+  Class<?> arg;
 
   /**
    * Constructs a new <code>IllegalFormatConversionException</code>
@@ -78,7 +78,7 @@ public class IllegalFormatConversionException
    * @param arg the type which doesn't match the conversion character.
    * @throws NullPointerException if <code>arg</code> is null.
    */
-  public IllegalFormatConversionException(char c, Class arg)
+  public IllegalFormatConversionException(char c, Class<?> arg)
   {
     super("The type, " + arg + ", is invalid for the conversion character, " +
 	  c + ".");
@@ -103,7 +103,7 @@ public class IllegalFormatConversionException
    *
    * @return the type of the mismatched argument.
    */
-  public Class getArgumentClass()
+  public Class<?> getArgumentClass()
   {
     return arg;
   }

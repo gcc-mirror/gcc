@@ -76,7 +76,7 @@ import java.lang.reflect.Method;
  */
 public class IndexedPropertyDescriptor extends PropertyDescriptor
 {
-  private Class indexedPropertyType;
+  private Class<?> indexedPropertyType;
   private Method setIndex;
   private Method getIndex;
 
@@ -112,7 +112,7 @@ public class IndexedPropertyDescriptor extends PropertyDescriptor
    * @exception IntrospectionException if the methods are not found or
    *            invalid.
    */
-  public IndexedPropertyDescriptor(String name, Class beanClass)
+  public IndexedPropertyDescriptor(String name, Class<?> beanClass)
     throws IntrospectionException
   {
     super(name);
@@ -161,7 +161,7 @@ public class IndexedPropertyDescriptor extends PropertyDescriptor
    *
    * @exception IntrospectionException if the methods are not found or invalid.
    */
-  public IndexedPropertyDescriptor(String name, Class beanClass,
+  public IndexedPropertyDescriptor(String name, Class<?> beanClass,
                                    String getMethodName, String setMethodName,
                                    String getIndexName, String setIndexName)
     throws IntrospectionException
@@ -272,7 +272,7 @@ public class IndexedPropertyDescriptor extends PropertyDescriptor
          : Array.newInstance(this.indexedPropertyType,0).getClass());
   }
 
-  public Class getIndexedPropertyType()
+  public Class<?> getIndexedPropertyType()
   {
     return indexedPropertyType;
   }

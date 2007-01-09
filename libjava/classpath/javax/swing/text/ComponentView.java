@@ -39,11 +39,11 @@ package javax.swing.text;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Shape;
 
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 /**
@@ -62,9 +62,159 @@ public class ComponentView extends View
 {
 
   /**
+   * A special container that sits between the component and the hosting
+   * container. This is used to propagate invalidate requests and cache
+   * the component's layout sizes.
+   */
+  private class Interceptor
+    extends Container
+  {
+    Dimension min;
+    Dimension pref;
+    Dimension max;
+    float alignX;
+    float alignY;
+
+    /**
+     * Creates a new instance that hosts the specified component.
+     */
+    Interceptor(Component c)
+    {
+      setLayout(null);
+      add(c);
+      cacheComponentSizes();
+    }
+
+    /**
+     * Intercepts the normal invalidate call and propagates the invalidate
+     * request up using the View's preferenceChanged().
+     */
+    public void invalidate()
+    {
+      super.invalidate();
+      if (getParent() != null)
+        preferenceChanged(null, true, true);
+    }
+
+    /**
+     * This is overridden to simply cache the layout sizes.
+     */
+    public void doLayout()
+    {
+      cacheComponentSizes();
+    }
+
+    /**
+     * Overridden to also reshape the component itself.
+     */
+    public void reshape(int x, int y, int w, int h)
+    {
+      super.reshape(x, y, w, h);
+      if (getComponentCount() > 0)
+        getComponent(0).setSize(w, h);
+      cacheComponentSizes();
+    }
+
+    /**
+     * Overridden to also show the component.
+     */
+    public void show()
+    {
+      super.show();
+      if (getComponentCount() > 0)
+        getComponent(0).setVisible(true);
+    }
+
+    /**
+     * Overridden to also hide the component.
+     */
+    public void hide()
+    {
+      super.hide();
+      if (getComponentCount() > 0)
+        getComponent(0).setVisible(false);
+    }
+
+    /**
+     * Overridden to return the cached value.
+     */
+    public Dimension getMinimumSize()
+    {
+      maybeValidate();
+      return min;
+    }
+
+    /**
+     * Overridden to return the cached value.
+     */
+    public Dimension getPreferredSize()
+    {
+      maybeValidate();
+      return pref;
+    }
+
+    /**
+     * Overridden to return the cached value.
+     */
+    public Dimension getMaximumSize()
+    {
+      maybeValidate();
+      return max;
+    }
+
+    /**
+     * Overridden to return the cached value.
+     */
+    public float getAlignmentX()
+    {
+      maybeValidate();
+      return alignX;
+    }
+
+    /**
+     * Overridden to return the cached value.
+     */
+    public float getAlignmentY()
+    {
+      maybeValidate();
+      return alignY;
+    }
+
+    /**
+     * Validates the container only when necessary.
+     */
+    private void maybeValidate()
+    {
+      if (! isValid())
+        validate();
+    }
+
+    /**
+     * Fetches the component layout sizes into the cache.
+     */
+    private void cacheComponentSizes()
+    {
+      if (getComponentCount() > 0)
+        {
+          Component c = getComponent(0);
+          min = c.getMinimumSize();
+          pref = c.getPreferredSize();
+          max = c.getMaximumSize();
+          alignX = c.getAlignmentX();
+          alignY = c.getAlignmentY();
+        }
+    }
+  }
+
+  /**
    * The component that is displayed by this view.
    */
   private Component comp;
+
+  /**
+   * The intercepting container.
+   */
+  private Interceptor interceptor;
 
   /**
    * Creates a new instance of <code>ComponentView</code> for the specified
@@ -99,13 +249,20 @@ public class ComponentView extends View
    */
   public float getAlignment(int axis)
   {
-    float align;
-    if (axis == X_AXIS)
-      align = getComponent().getAlignmentX();
-    else if (axis == Y_AXIS)
-      align = getComponent().getAlignmentY();
+    float align = 0.0F;
+    // I'd rather throw an IllegalArgumentException for illegal axis,
+    // but the Harmony testsuite indicates fallback to super behaviour.
+    if (interceptor != null && (axis == X_AXIS || axis == Y_AXIS))
+      {
+        if (axis == X_AXIS)
+          align = interceptor.getAlignmentX();
+        else if (axis == Y_AXIS)
+          align = interceptor.getAlignmentY();
+        else
+          assert false : "Must not reach here";
+      }
     else
-      throw new IllegalArgumentException();
+      align = super.getAlignment(axis);
     return align;
   }
 
@@ -118,8 +275,6 @@ public class ComponentView extends View
    */
   public final Component getComponent()
   {
-    if (comp == null)
-      comp = createComponent();
     return comp;
   }
 
@@ -135,49 +290,70 @@ public class ComponentView extends View
    */
   public float getMaximumSpan(int axis)
   {
-    float span;
-    if (axis == X_AXIS)
-      span = getComponent().getMaximumSize().width;
-    else if (axis == Y_AXIS)
-      span = getComponent().getMaximumSize().height;
-    else
-      throw new IllegalArgumentException();
+    if (axis != X_AXIS && axis != Y_AXIS)
+      throw new IllegalArgumentException("Illegal axis");
+    float span = 0;
+    if (interceptor != null)
+      {
+        if (axis == X_AXIS)
+          span = interceptor.getMaximumSize().width;
+        else if (axis == Y_AXIS)
+          span = interceptor.getMaximumSize().height;
+        else
+          assert false : "Must not reach here";
+      }
     return span;
   }
 
   public float getMinimumSpan(int axis)
   {
-    float span;
-    if (axis == X_AXIS)
-      span = getComponent().getMinimumSize().width;
-    else if (axis == Y_AXIS)
-      span = getComponent().getMinimumSize().height;
-    else
-      throw new IllegalArgumentException();
+    if (axis != X_AXIS && axis != Y_AXIS)
+      throw new IllegalArgumentException("Illegal axis");
+    float span = 0;
+    if (interceptor != null)
+      {
+        if (axis == X_AXIS)
+          span = interceptor.getMinimumSize().width;
+        else if (axis == Y_AXIS)
+          span = interceptor.getMinimumSize().height;
+        else
+          assert false : "Must not reach here";
+      }
     return span;
   }
 
   public float getPreferredSpan(int axis)
   {
-    float span;
-    if (axis == X_AXIS)
-      span = getComponent().getPreferredSize().width;
-    else if (axis == Y_AXIS)
-      span = getComponent().getPreferredSize().height;
-    else
-      throw new IllegalArgumentException();
+    if (axis != X_AXIS && axis != Y_AXIS)
+      throw new IllegalArgumentException("Illegal axis");
+    float span = 0;
+    if (interceptor != null)
+      {
+        if (axis == X_AXIS)
+          span = interceptor.getPreferredSize().width;
+        else if (axis == Y_AXIS)
+          span = interceptor.getPreferredSize().height;
+        else
+          assert false : "Must not reach here";
+      }
     return span;
   }
 
   public Shape modelToView(int pos, Shape a, Position.Bias b)
     throws BadLocationException
   {
-    Element el = getElement();
-    if (pos < el.getStartOffset() || pos >= el.getEndOffset())
-      throw new BadLocationException("Illegal offset for this view", pos);
-    Rectangle r = a.getBounds();
-    Component c = getComponent();
-    return new Rectangle(r.x, r.y, c.getWidth(), c.getHeight());
+    int p0 = getStartOffset();
+    int p1 = getEndOffset();
+    if (pos >= p0 && pos <= p1)
+      {
+        Rectangle viewRect = a.getBounds();
+        if (pos == p1)
+          viewRect.x += viewRect.width;
+        viewRect.width = 0;
+        return viewRect;
+      }
+    else
+      throw new BadLocationException("Illegal position", pos);
   }
 
   /**
@@ -191,8 +367,11 @@ public class ComponentView extends View
    */
   public void paint(Graphics g, Shape a)
   {
-    Rectangle r = a.getBounds();
-    getComponent().setBounds(r.x, r.y, r.width, r.height);
+    if (interceptor != null)
+      {
+        Rectangle r = a instanceof Rectangle ? (Rectangle) a : a.getBounds();
+        interceptor.setBounds(r.x, r.y, r.width, r.height);
+      }
   }
 
   /**
@@ -209,15 +388,33 @@ public class ComponentView extends View
    */
   public void setParent(final View p)
   {
+    super.setParent(p);
     if (SwingUtilities.isEventDispatchThread())
-      setParentImpl(p);
+      setParentImpl();
     else
       SwingUtilities.invokeLater
       (new Runnable()
        {
          public void run()
          {
-           setParentImpl(p);
+           Document doc = getDocument();
+           try
+             {
+               if (doc instanceof AbstractDocument)
+                 ((AbstractDocument) doc).readLock();
+               setParentImpl();
+               Container host = getContainer();
+               if (host != null)
+                 {
+                   preferenceChanged(null, true, true);
+                   host.repaint();
+                 }
+             }
+           finally
+             {
+               if (doc instanceof AbstractDocument)
+                 ((AbstractDocument) doc).readUnlock();
+             }
          }
        });
   }
@@ -225,23 +422,41 @@ public class ComponentView extends View
   /**
    * The implementation of {@link #setParent}. This is package private to
    * avoid a synthetic accessor method.
-   *
-   * @param p the parent view to set
    */
-  private void setParentImpl(View p)
+  void setParentImpl()
   {
-    super.setParent(p);
+    View p = getParent();
     if (p != null)
       {
-        Component c = getComponent();
-        p.getContainer().add(c);
+        Container c = getContainer();
+        if (c != null)
+          {
+            if (interceptor == null)
+              {
+                // Create component and put it inside the interceptor.
+                Component created = createComponent();
+                if (created != null)
+                  {
+                    comp = created;
+                    interceptor = new Interceptor(comp);
+                  }
+              }
+            if (interceptor != null)
+              {
+                // Add the interceptor to the hosting container.
+                if (interceptor.getParent() == null)
+                  c.add(interceptor, this);
+              }
+          }
       }
     else
       {
-        Component c = getComponent();
-        Container parent = c.getParent();
-        parent.remove(c);
-        comp = null;
+        if (interceptor != null)
+          {
+            Container parent = interceptor.getParent();
+            if (parent != null)
+              parent.remove(interceptor);
+          }
       }
   }
     
@@ -259,10 +474,21 @@ public class ComponentView extends View
    */
   public int viewToModel(float x, float y, Shape a, Position.Bias[] b)
   {
-    // The element should only have one character position and it is clear
-    // that this position is the position that best matches the given screen
-    // coordinates, simply because this view has only this one position.
-    Element el = getElement();
-    return el.getStartOffset();
+    int pos;
+    // I'd rather do the following. The harmony testsuite indicates
+    // that a simple cast is performed.
+    //Rectangle r = a instanceof Rectangle ? (Rectangle) a : a.getBounds();
+    Rectangle r = (Rectangle) a;
+    if (x < r.x + r.width / 2)
+      {
+        b[0] = Position.Bias.Forward;
+        pos = getStartOffset();
+      }
+    else
+      {
+        b[0] = Position.Bias.Backward;
+        pos = getEndOffset();
+      }
+    return pos;
   }
 }

@@ -1,5 +1,5 @@
 /* Binding_iterator.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.CORBA.NamingService;
 
+import gnu.CORBA.SafeForDirectCalls;
+
 import org.omg.CosNaming.Binding;
 import org.omg.CosNaming.BindingHolder;
 import org.omg.CosNaming.BindingListHolder;
@@ -51,7 +53,7 @@ import org.omg.CosNaming._BindingIteratorImplBase;
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class Binding_iterator_impl
-  extends _BindingIteratorImplBase
+  extends _BindingIteratorImplBase implements SafeForDirectCalls
 {
   /**
    * The value, returned by the {@link #next_one} when there

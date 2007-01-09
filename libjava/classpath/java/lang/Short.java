@@ -1,5 +1,5 @@
 /* Short.java -- object wrapper for short
-   Copyright (C) 1998, 2001, 2002, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,10 +48,12 @@ package java.lang;
  * @author Paul Fisher
  * @author John Keiser
  * @author Eric Blake (ebb9@email.byu.edu)
+ * @author Tom Tromey (tromey@redhat.com)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.1
- * @status updated to 1.4
+ * @status updated to 1.5
  */
-public final class Short extends Number implements Comparable
+public final class Short extends Number implements Comparable<Short>
 {
   /**
    * Compatible with JDK 1.1+.
@@ -74,7 +76,7 @@ public final class Short extends Number implements Comparable
    * The primitive type <code>short</code> is represented by this
    * <code>Class</code> object.
    */
-  public static final Class TYPE = VMClassLoader.getPrimitiveClass('S');
+  public static final Class<Short> TYPE = (Class<Short>) VMClassLoader.getPrimitiveClass('S');
 
   /**
    * The number of bits needed to represent a <code>short</code>.
@@ -208,7 +210,6 @@ public final class Short extends Number implements Comparable
    *
    * @param val the value to wrap
    * @return the <code>Short</code>
-   *
    * @since 1.5
    */
   public static Short valueOf(short val)
@@ -217,9 +218,9 @@ public final class Short extends Number implements Comparable
       return new Short(val);
     synchronized (shortCache)
       {
-    if (shortCache[val - MIN_CACHE] == null)
-      shortCache[val - MIN_CACHE] = new Short(val);
-    return shortCache[val - MIN_CACHE];
+	if (shortCache[val - MIN_CACHE] == null)
+	  shortCache[val - MIN_CACHE] = new Short(val);
+	return shortCache[val - MIN_CACHE];
       }
   }
 
@@ -368,22 +369,6 @@ public final class Short extends Number implements Comparable
   public int compareTo(Short s)
   {
     return value - s.value;
-  }
-
-  /**
-   * Behaves like <code>compareTo(Short)</code> unless the Object
-   * is not a <code>Short</code>.
-   *
-   * @param o the object to compare
-   * @return the comparison
-   * @throws ClassCastException if the argument is not a <code>Short</code>
-   * @see #compareTo(Short)
-   * @see Comparable
-   * @since 1.2
-   */
-  public int compareTo(Object o)
-  {
-    return compareTo((Short)o);
   }
 
   /**

@@ -97,7 +97,7 @@ import javax.security.auth.x500.X500Principal;
 
 	@author Mark Benvenuto
 
-	@since JDK 1.2
+	@since 1.2
 */
 public abstract class X509CRL extends CRL implements X509Extension
 {
@@ -304,7 +304,7 @@ public abstract class X509CRL extends CRL implements X509Extension
 
      @return a set of revoked certificates.
   */
-  public abstract Set getRevokedCertificates();
+  public abstract Set<? extends X509CRLEntry> getRevokedCertificates();
 
   /**
      Returns the DER ASN.1 encoded tbsCertList which is 

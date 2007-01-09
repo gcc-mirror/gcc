@@ -59,7 +59,7 @@ public interface FlavorTable extends FlavorMap
    * @param flavor the flavor to look up, or null to return all natives
    * @return the sorted list of natives
    */
-  List getNativesForFlavor(DataFlavor flavor);
+  List<String> getNativesForFlavor(DataFlavor flavor);
 
   /**
    * Returns a list of flavors corresponding to the given String native. The
@@ -69,5 +69,5 @@ public interface FlavorTable extends FlavorMap
    * @param name the native name to look up, or null to return all flavors
    * @return the sorted list of flavors
    */
-  List getFlavorsForNative(String name);
+  List<DataFlavor> getFlavorsForNative(String name);
 }

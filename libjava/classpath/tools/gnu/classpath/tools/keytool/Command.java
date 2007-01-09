@@ -56,7 +56,6 @@ import gnu.java.security.hash.MD5;
 import gnu.java.security.hash.Sha160;
 import gnu.java.security.util.Util;
 import gnu.java.security.x509.X500DistinguishedName;
-import gnu.javax.security.auth.callback.ConsoleCallbackHandler;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -1203,7 +1202,8 @@ abstract class Command
    * <p>
    * If no installed providers were found, this method falls back on the GNU
    * provider, by-passing the Security search mechanism. The default console
-   * callback handler implementation is {@link ConsoleCallbackHandler}.
+   * callback handler implementation is
+   * {@link gnu.javax.security.auth.callback.ConsoleCallbackHandler}.
    * 
    * @return a console-based {@link CallbackHandler}.
    */

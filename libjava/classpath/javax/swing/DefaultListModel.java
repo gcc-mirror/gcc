@@ -309,7 +309,7 @@ public class DefaultListModel extends AbstractListModel
    *
    * @return A new enumeration which iterates over the list
    */
-  public Enumeration elements()
+  public Enumeration<?> elements()
   {
     return elements.elements();
   }

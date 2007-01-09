@@ -1,6 +1,6 @@
 /* Process expressions for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
-   Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+   2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -885,6 +885,7 @@ build_java_arrayaccess (tree array, tree type, tree index)
   tree data_field;
   tree ref;
   tree array_type = TREE_TYPE (TREE_TYPE (array));
+  tree size_exp = fold_convert (sizetype, size_in_bytes (type));
 
   if (!is_array_type_p (TREE_TYPE (array)))
     {
@@ -919,16 +920,34 @@ build_java_arrayaccess (tree array, tree type, tree index)
      to have the bounds check evaluated first. */
   if (throw != NULL_TREE)
     index = build2 (COMPOUND_EXPR, int_type_node, throw, index);
- 
+
   data_field = lookup_field (&array_type, get_identifier ("data"));
 
   ref = build3 (COMPONENT_REF, TREE_TYPE (data_field),    
 		build_java_indirect_ref (array_type, array, 
 					 flag_check_references),
 		data_field, NULL_TREE);
-  
-  node = build4 (ARRAY_REF, type, ref, index, NULL_TREE, NULL_TREE);
-  return node;
+
+  /* Take the address of the data field and convert it to a pointer to
+     the element type.  */
+  node = build1 (NOP_EXPR, build_pointer_type (type), build_address_of (ref));
+
+  /* Multiply the index by the size of an element to obtain a byte
+     offset.  Convert the result to a pointer to the element type.  */
+  index = fold_convert (TREE_TYPE (node),
+			build2 (MULT_EXPR, sizetype, 
+				fold_convert (sizetype, index), 
+				size_exp));
+
+  /* Sum the byte offset and the address of the data field.  */
+  node = fold_build2 (PLUS_EXPR, TREE_TYPE (node), node, index);
+
+  /* Finally, return
+
+    *((&array->data) + index*size_exp)
+
+  */
+  return build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (node)), node);
 }
 
 /* Generate code to throw an ArrayStoreException if OBJECT is not assignable
@@ -1127,7 +1146,7 @@ expand_java_arraystore (tree rhs_type_node)
 				 && TYPE_PRECISION (rhs_type_node) <= 32) ? 
 				 int_type_node : rhs_type_node);
   tree index = pop_value (int_type_node);
-  tree array_type, array;
+  tree array_type, array, temp, access;
 
   /* If we're processing an `aaload' we might as well just pick
      `Object'.  */
@@ -1149,14 +1168,31 @@ expand_java_arraystore (tree rhs_type_node)
   index = save_expr (index);
   array = save_expr (array);
 
+  /* We want to perform the bounds check (done by
+     build_java_arrayaccess) before the type check (done by
+     build_java_arraystore_check).  So, we call build_java_arrayaccess
+     -- which returns an ARRAY_REF lvalue -- and we then generate code
+     to stash the address of that lvalue in a temp.  Then we call
+     build_java_arraystore_check, and finally we generate a
+     MODIFY_EXPR to set the array element.  */
+
+  access = build_java_arrayaccess (array, rhs_type_node, index);
+  temp = build_decl (VAR_DECL, NULL_TREE, 
+		     build_pointer_type (TREE_TYPE (access)));
+  java_add_local_var (temp);
+  java_add_stmt (build2 (MODIFY_EXPR, TREE_TYPE (temp),
+			 temp, 
+			 build_fold_addr_expr (access)));
+
   if (TREE_CODE (rhs_type_node) == POINTER_TYPE)
     {
       tree check = build_java_arraystore_check (array, rhs_node);
       java_add_stmt (check);
     }
   
-  array = build_java_arrayaccess (array, rhs_type_node, index);
-  java_add_stmt (build2 (MODIFY_EXPR, TREE_TYPE (array), array, rhs_node));  
+  java_add_stmt (build2 (MODIFY_EXPR, TREE_TYPE (access), 
+			 build1 (INDIRECT_REF, TREE_TYPE (access), temp),
+			 rhs_node));  
 }
 
 /* Expand the evaluation of ARRAY[INDEX]. build_java_check_indexed_type makes 
@@ -2048,13 +2084,32 @@ typedef struct
   tree (*rewrite_arglist) (tree arglist);
 } rewrite_rule;
 
+/* Add __builtin_return_address(0) to the end of an arglist.  */
+
+
+static tree 
+rewrite_arglist_getcaller (tree arglist)
+{
+  tree retaddr 
+    = (build_function_call_expr 
+       (built_in_decls[BUILT_IN_RETURN_ADDRESS],
+	build_tree_list (NULL_TREE, integer_zero_node)));
+  
+  DECL_INLINE (current_function_decl) = 0;
+
+  return chainon (arglist, 
+		  tree_cons (NULL_TREE, retaddr, 
+			     NULL_TREE));
+}
+
 /* Add this.class to the end of an arglist.  */
 
 static tree 
 rewrite_arglist_getclass (tree arglist)
 {
   return chainon (arglist, 
-		  tree_cons (NULL_TREE, build_class_ref (output_class), NULL_TREE));
+		  tree_cons (NULL_TREE, build_class_ref (output_class),
+			     NULL_TREE));
 }
 
 static rewrite_rule rules[] =
@@ -2064,6 +2119,14 @@ static rewrite_rule rules[] =
    {"java.lang.Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;",
     "(Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/Class;",
     ACC_FINAL|ACC_PRIVATE|ACC_STATIC, rewrite_arglist_getclass},
+   {"gnu.classpath.VMStackWalker", "getCallingClass", "()Ljava/lang/Class;",
+    "(Lgnu/gcj/RawData;)Ljava/lang/Class;",
+    ACC_FINAL|ACC_PRIVATE|ACC_STATIC, rewrite_arglist_getcaller},
+   {"gnu.classpath.VMStackWalker", "getCallingClassLoader", 
+    "()Ljava/lang/ClassLoader;",
+    "(Lgnu/gcj/RawData;)Ljava/lang/ClassLoader;",
+    ACC_FINAL|ACC_PRIVATE|ACC_STATIC, rewrite_arglist_getcaller},
+
    {NULL, NULL, NULL, NULL, 0, NULL}};
 
 /* Scan the rules list for replacements for *METHOD_P and replace the
@@ -2848,7 +2911,8 @@ expand_java_field_op (int is_static, int is_putting, int field_ref_index)
       tree context = DECL_CONTEXT (field_ref);
       if (context != self_type && CLASS_INTERFACE (TYPE_NAME (context)))
 	field_ref = build_class_init (context, field_ref);
-      field_ref = build_class_init (self_type, field_ref);
+      else
+	field_ref = build_class_init (self_type, field_ref);
     }
   if (is_putting)
     {
@@ -3645,7 +3709,6 @@ force_evaluation_order (tree node)
   if (flag_syntax_only)
     return node;
   if (TREE_CODE (node) == CALL_EXPR
-      || TREE_CODE (node) == NEW_CLASS_EXPR
       || (TREE_CODE (node) == COMPOUND_EXPR
 	  && TREE_CODE (TREE_OPERAND (node, 0)) == CALL_EXPR
 	  && TREE_CODE (TREE_OPERAND (node, 1)) == SAVE_EXPR)) 
