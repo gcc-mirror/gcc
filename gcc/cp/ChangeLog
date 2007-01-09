@@ -1,3 +1,10 @@
+2007-01-08  Geoffrey Keating  <geoffk@apple.com>
+
+	* rtti.c: Include target.h.
+	(emit_support_tinfos): If ! targetm.cxx.library_rtti_comdat (),
+	don't emit typeinfo for fundamental types as weak.
+	* Make-lang.in (cp/rtti.o): Update and correct dependencies.
+
 2007-01-08  Richard Guenther  <rguenther@suse.de>
 
 	* cvt.c (cp_convert_to_pointer): Use build_int_cst_type.

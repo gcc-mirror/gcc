@@ -9080,6 +9080,12 @@ classes whose virtual table will be emitted in only one translation
 unit will not be COMDAT.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_CXX_LIBRARY_RTTI_COMDAT (void)
+This hook returns true (the default) if the RTTI information for
+the basic types which is defined in the C++ runtime should always
+be COMDAT, false if it should not be COMDAT.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_CXX_USE_AEABI_ATEXIT (void)
 This hook returns true if @code{__aeabi_atexit} (as defined by the ARM EABI)
 should be used to register static destructors when @option{-fuse-cxa-atexit}

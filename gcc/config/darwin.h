@@ -482,6 +482,10 @@ extern GTY(()) int darwin_ms_struct;
    with names, so it's safe to make the class data not comdat.  */
 #define TARGET_CXX_CLASS_DATA_ALWAYS_COMDAT hook_bool_void_false
 
+/* For efficiency, on Darwin the RTTI information that is always
+   emitted in the standard C++ library should not be COMDAT.  */
+#define TARGET_CXX_LIBRARY_RTTI_COMDAT hook_bool_void_false
+
 /* We make exception information linkonce. */
 #undef TARGET_USES_WEAK_UNWIND_INFO
 #define TARGET_USES_WEAK_UNWIND_INFO 1
