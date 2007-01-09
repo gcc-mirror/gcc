@@ -13,6 +13,5 @@ void f(void)
   gt = spu_cmpgt(a, a1); /* { dg-error "integer from pointer without a cast" } */
   gt = spu_cmpgt(a, b); /* { dg-error "parameter list" } */
   gt = spu_cmpgt(a, a);
-  /* Remove this xfail once, we reject implict conversions between vector types.  */
-  a = spu_cmpgt(a, a); /* { dg-error "" "" { xfail *-*-* } } */
+  a = spu_cmpgt(a, a); /* { dg-error "" } */
 }
