@@ -1,3 +1,8 @@
+2007-01-09  Nicolas Pitre  <nico@cam.org>
+
+	PR target/30173
+	* arm/ieee754-df.S (Lad_s): Also test the low word of X for zero.
+
 2006-12-27  Ian Lance Taylor  <iant@google.com>
 
 	PR debug/26964
