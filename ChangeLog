@@ -5,6 +5,7 @@
 2007-01-08  Kai Tietz	<kai.tietz@onevision.com>
 
 	* configure.in: Add support for an x86_64-mingw* target.
+	* configure: Regenerate.
 
 2007-01-05  Daniel Jacobowitz  <dan@codesourcery.com>
 
