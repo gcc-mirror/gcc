@@ -1,3 +1,21 @@
+2007-01-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*sinxf2): Rename to *sinxf2_i387.
+	(*cosxf2): Rename to cosxf2_i387.
+
+	(*sindf2, *sinsf2): Extend operand 1 to XFmode.  Macroize patterns
+	using X87MODEF12 mode macro. Rename patterns to
+	*sin_extend<mode>xf2_i387.  Use SSE_FLOAT_MODE_P to disable patterns
+	for SSE math.
+	(*cosdf2, *cossf2): Ditto.
+	(sincosdf3, sincossf3): Ditto.  Rewrite corresponding splitters
+	to match extended input operands.
+
+	(sincos<mode>3): New expander.
+
+	(*sinextendsfdf2, *cosextendsfdf2, *sincosextendsfdf3): Remove
+	insn patterns and corresponding splitters.
+
 2007-01-09  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/t-linux (TARGET_LIBGCC2_CFLAGS): Delete.
