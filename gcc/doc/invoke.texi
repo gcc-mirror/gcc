@@ -4623,7 +4623,8 @@ Optimize yet more.  @option{-O3} turns on all optimizations specified by
 
 @item -O0
 @opindex O0
-Do not optimize.  This is the default.
+Reduce compilation time and make debugging produce the expected
+results.  This is the default.
 
 @item -Os
 @opindex Os
