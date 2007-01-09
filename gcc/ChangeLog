@@ -1,3 +1,7 @@
+2007-01-08  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/invoke.texi (Optimize Options): Correct description of -O0.
+
 2007-01-08  Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (force_fit_type_double): Export.
