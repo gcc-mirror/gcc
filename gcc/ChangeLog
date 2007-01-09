@@ -1,3 +1,8 @@
+2007-01-09  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/t-linux (TARGET_LIBGCC2_CFLAGS): Delete.
+	(SHLIB_MAPFILES, SHLIB_LINK, SHLIB_INSTALL): Likewise.
+
 2007-01-09  Nicolas Pitre  <nico@cam.org>
 
 	PR target/30173

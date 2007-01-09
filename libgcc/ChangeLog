@@ -1,3 +1,8 @@
+2007-01-09  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/t-linux: New.
+	* config.host (sh*-*-linux*): Set tmake_file.
+
 2007-01-05  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* Makefile.in (install): Handle multilibs.

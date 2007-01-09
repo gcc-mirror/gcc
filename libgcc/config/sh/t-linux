@@ -1,0 +1,37 @@
+HOST_LIBGCC2_CFLAGS = -fpic -DNO_FPSCR_VALUES
+
+# Override t-slibgcc-elf-ver to export some libgcc symbols with
+# the symbol versions that glibc used, and hide some lib1func
+# routines which should not be called via PLT.  We have to create
+# the list from scratch.
+SHLIB_MAPFILES = \
+	$(gcc_srcdir)/libgcc-std.ver \
+	$(gcc_srcdir)/config/sh/libgcc-excl.ver \
+	$(gcc_srcdir)/config/sh/libgcc-glibc.ver
+
+# Override SHLIB_LINK and SHLIB_INSTALL to use linker script
+# libgcc_s.so.
+SHLIB_LINK = $(CC) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
+	-Wl,--soname=@shlib_base_name@.so.1 \
+	-Wl,--version-script=@shlib_map_file@ \
+	-o @multilib_dir@/@shlib_base_name@.so.1.tmp @multilib_flags@ \
+	@shlib_objs@ -lc && \
+	rm -f @multilib_dir@/@shlib_base_name@.so && \
+	if [ -f @multilib_dir@/@shlib_base_name@.so.1 ]; then \
+	  mv -f @multilib_dir@/@shlib_base_name@.so.1 \
+		@multilib_dir@/@shlib_base_name@.so.1.backup; \
+	else true; fi && \
+	mv @multilib_dir@/@shlib_base_name@.so.1.tmp \
+	   @multilib_dir@/@shlib_base_name@.so.1 && \
+	(echo "/* GNU ld script"; \
+	 echo "   Use the shared library, but some functions are only in"; \
+	 echo "   the static library.  */"; \
+	 echo "GROUP ( @shlib_base_name@.so.1 libgcc.a )" \
+	) > @multilib_dir@/@shlib_base_name@.so
+SHLIB_INSTALL = \
+	$(mkinstalldirs) $(DESTDIR)$(slibdir)@shlib_slibdir_qual@; \
+	$(INSTALL_DATA) @multilib_dir@/@shlib_base_name@.so.1 \
+	  $(DESTDIR)$(slibdir)@shlib_slibdir_qual@/@shlib_base_name@.so.1; \
+	rm -f $(DESTDIR)$(slibdir)@shlib_slibdir_qual@/@shlib_base_name@.so; \
+	$(INSTALL_DATA) @multilib_dir@/@shlib_base_name@.so \
+	  $(DESTDIR)$(slibdir)@shlib_slibdir_qual@/@shlib_base_name@.so
