@@ -41,6 +41,7 @@ package java.security;
 import gnu.java.security.Engine;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.InvalidParameterSpecException;
 
@@ -91,106 +92,115 @@ public class AlgorithmParameters
   /**
    * Returns a new instance of <code>AlgorithmParameters</code> representing
    * the specified algorithm parameters.
+   * <p>
+   * The returned <code>AlgorithmParameters</code> must still be initialized
+   * with an <code>init()</code> method.
    * 
-   * <p>The returned <code>AlgorithmParameters</code> must still be initialized
-   * with an <code>init()</code> method.</p>
-   * 
-   * @param algorithm
-   *          the algorithm to use.
+   * @param algorithm the algorithm to use.
    * @return the new instance repesenting the desired algorithm.
-   * @throws NoSuchAlgorithmException
-   *           if the algorithm is not implemented by any provider.
+   * @throws NoSuchAlgorithmException if the algorithm is not implemented by any
+   *           provider.
+   * @throws IllegalArgumentException if <code>algorithm</code> is
+   *           <code>null</code> or is an empty string.
    */
   public static AlgorithmParameters getInstance(String algorithm)
-    throws NoSuchAlgorithmException
+      throws NoSuchAlgorithmException
   {
     Provider[] p = Security.getProviders();
-
+    NoSuchAlgorithmException lastException = null;
     for (int i = 0; i < p.length; i++)
       try
         {
           return getInstance(algorithm, p[i]);
         }
-      catch (NoSuchAlgorithmException e)
-	{
-	  // Ignore this.
-	}
-
+      catch (NoSuchAlgorithmException x)
+        {
+          lastException = x;
+        }
+    if (lastException != null)
+      throw lastException;
     throw new NoSuchAlgorithmException(algorithm);
   }
 
   /**
    * Returns a new instance of <code>AlgorithmParameters</code> representing
    * the specified algorithm parameters from a named provider.
+   * <p>
+   * The returned <code>AlgorithmParameters</code> must still be intialized
+   * with an <code>init()</code> method.
+   * </p>
    * 
-   * <p>The returned <code>AlgorithmParameters</code> must still be intialized
-   * with an <code>init()</code> method.</p>
-   * 
-   * @param algorithm
-   *          the algorithm to use.
-   * @param provider
-   *          the name of the {@link Provider} to use.
+   * @param algorithm the algorithm to use.
+   * @param provider the name of the {@link Provider} to use.
    * @return the new instance repesenting the desired algorithm.
-   * @throws NoSuchAlgorithmException
-   *           if the algorithm is not implemented by the named provider.
-   * @throws NoSuchProviderException
-   *           if the named provider was not found.
-   * @throws IllegalArgumentException
-   *           if <code>provider</code> is <code>null</code> or is an empty
-   *           string.
+   * @throws NoSuchAlgorithmException if the algorithm is not implemented by the
+   *           named provider.
+   * @throws NoSuchProviderException if the named provider was not found.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code> or empty.
    */
-  public static AlgorithmParameters getInstance(String algorithm, String provider)
-    throws NoSuchAlgorithmException, NoSuchProviderException
+  public static AlgorithmParameters getInstance(String algorithm,
+                                                String provider)
+      throws NoSuchAlgorithmException, NoSuchProviderException
   {
-    if (provider == null || provider.length() == 0)
-      throw new IllegalArgumentException("Illegal provider");
-    
+    if (provider == null)
+      throw new IllegalArgumentException("provider MUST NOT be null");
+    provider = provider.trim();
+    if (provider.length() == 0)
+      throw new IllegalArgumentException("provider MUST NOT be empty");
     Provider p = Security.getProvider(provider);
     if (p == null)
       throw new NoSuchProviderException(provider);
-
     return getInstance(algorithm, p);
   }
 
   /**
    * Returns a new instance of <code>AlgorithmParameters</code> representing
    * the specified algorithm parameters from the specified {@link Provider}.
+   * <p>
+   * The returned <code>AlgorithmParameters</code> must still be intialized
+   * with an <code>init()</code> method.
    * 
-   * <p>The returned <code>AlgorithmParameters</code> must still be intialized
-   * with an <code>init()</code> method.</p>
-   * 
-   * @param algorithm
-   *          the algorithm to use.
-   * @param provider
-   *          the {@link Provider} to use.
+   * @param algorithm the algorithm to use.
+   * @param provider the {@link Provider} to use.
    * @return the new instance repesenting the desired algorithm.
-   * @throws NoSuchAlgorithmException
-   *           if the algorithm is not implemented by the {@link Provider}.
-   * @throws IllegalArgumentException
-   *           if <code>provider</code> is <code>null</code>.
+   * @throws NoSuchAlgorithmException if the algorithm is not implemented by the
+   *           {@link Provider}.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>algorithm</code> is an empty string.
    * @since 1.4
    */
   public static AlgorithmParameters getInstance(String algorithm,
                                                 Provider provider)
-    throws NoSuchAlgorithmException
+      throws NoSuchAlgorithmException
   {
-    if (provider == null)
-      throw new IllegalArgumentException("Illegal provider");
-
+    StringBuilder sb = new StringBuilder("AlgorithmParameters for algorithm [")
+        .append(algorithm).append("] from provider[")
+        .append(provider).append("] could not be created");
+    Throwable cause;
     try
       {
-	return new AlgorithmParameters((AlgorithmParametersSpi)
-	  Engine.getInstance(ALGORITHM_PARAMETERS, algorithm, provider),
-	  provider, algorithm);
+        Object spi = Engine.getInstance(ALGORITHM_PARAMETERS, algorithm, provider);
+        return new AlgorithmParameters((AlgorithmParametersSpi) spi,
+                                       provider,
+                                       algorithm);
       }
-    catch (java.lang.reflect.InvocationTargetException ite)
+    catch (InvocationTargetException x)
       {
-	throw new NoSuchAlgorithmException(algorithm);
+        cause = x.getCause();
+        if (cause instanceof NoSuchAlgorithmException)
+          throw (NoSuchAlgorithmException) cause;
+        if (cause == null)
+          cause = x;
       }
-    catch (ClassCastException cce)
+    catch (ClassCastException x)
       {
-	throw new NoSuchAlgorithmException(algorithm);
+        cause = x;
       }
+    NoSuchAlgorithmException x = new NoSuchAlgorithmException(sb.toString());
+    x.initCause(cause);
+    throw x;
   }
 
   /** @return the provider of this parameter object. */
@@ -258,7 +268,8 @@ public class AlgorithmParameters
    * @throws InvalidParameterSpecException
    *           if <code>paramSpec</code> is invalid.
    */
-  public final AlgorithmParameterSpec getParameterSpec(Class paramSpec)
+  public final <T extends AlgorithmParameterSpec>
+  T getParameterSpec(Class<T> paramSpec)
     throws InvalidParameterSpecException
   {
     return paramSpi.engineGetParameterSpec(paramSpec);

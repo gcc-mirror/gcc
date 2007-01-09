@@ -172,13 +172,8 @@ public abstract class FileSystemView
   {
     if (defaultFileSystemView == null)
       {
-        if (File.separator.equals("/"))
-          defaultFileSystemView = new UnixFileSystemView();
-        // FIXME: need to implement additional views
-        // else if (File.Separator.equals("\"))
-        //   return new Win32FileSystemView();
-        // else 
-        //   return new GenericFileSystemView();
+        // FIXME: We need to support other file systems too.
+        defaultFileSystemView = new UnixFileSystemView();
       }
     return defaultFileSystemView;
   }

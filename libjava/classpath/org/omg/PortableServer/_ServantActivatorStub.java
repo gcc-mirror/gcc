@@ -1,5 +1,5 @@
 /* _ServantActivatorStub.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,17 +38,9 @@ exception statement from your version. */
 
 package org.omg.PortableServer;
 
-import org.omg.CORBA.MARSHAL;
-import org.omg.CORBA.ORB;
-import org.omg.CORBA.ObjectHelper;
-import org.omg.CORBA.portable.ApplicationException;
-import org.omg.CORBA.portable.Delegate;
-import org.omg.CORBA.portable.InputStream;
-import org.omg.CORBA.portable.ObjectImpl;
-import org.omg.CORBA.portable.OutputStream;
-import org.omg.CORBA.portable.RemarshalException;
-
 import java.io.Serializable;
+
+import org.omg.CORBA.portable.ObjectImpl;
 
 /**
  * <p>This ServantActivator stub is an optional base for the

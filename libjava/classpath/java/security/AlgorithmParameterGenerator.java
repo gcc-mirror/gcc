@@ -40,6 +40,7 @@ package java.security;
 
 import gnu.java.security.Engine;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.spec.AlgorithmParameterSpec;
 
 /**
@@ -97,26 +98,29 @@ public class AlgorithmParameterGenerator
    * Returns a new <code>AlgorithmParameterGenerator</code> instance which
    * generates algorithm parameters for the specified algorithm.
    * 
-   * @param algorithm
-   *          the name of algorithm to use.
+   * @param algorithm the name of algorithm to use.
    * @return the new instance.
-   * @throws NoSuchAlgorithmException
-   *           if <code>algorithm</code> is not implemented by any provider.
+   * @throws NoSuchAlgorithmException if <code>algorithm</code> is not
+   *           implemented by any provider.
+   * @throws IllegalArgumentException if <code>algorithm</code> is
+   *           <code>null</code> or is an empty string.
    */
   public static AlgorithmParameterGenerator getInstance(String algorithm)
-    throws NoSuchAlgorithmException
+      throws NoSuchAlgorithmException
   {
     Provider[] p = Security.getProviders();
+    NoSuchAlgorithmException lastException = null;
     for (int i = 0; i < p.length; i++)
       try
         {
           return getInstance(algorithm, p[i]);
         }
-      catch (NoSuchAlgorithmException e)
-	{
-	  // Ignore.
-	}
-
+      catch (NoSuchAlgorithmException x)
+        {
+          lastException = x;
+        }
+    if (lastException != null)
+      throw lastException;
     throw new NoSuchAlgorithmException(algorithm);
   }
 
@@ -124,27 +128,27 @@ public class AlgorithmParameterGenerator
    * Returns a new <code>AlgorithmParameterGenerator</code> instance which
    * generates algorithm parameters for the specified algorithm.
    * 
-   * @param algorithm
-   *          the name of algorithm to use.
-   * @param provider
-   *          the name of the {@link Provider} to use.
+   * @param algorithm the name of algorithm to use.
+   * @param provider the name of the {@link Provider} to use.
    * @return the new instance.
-   * @throws NoSuchAlgorithmException
-   *           if the algorithm is not implemented by the named provider.
-   * @throws NoSuchProviderException
-   *           if the named provider was not found.
+   * @throws NoSuchAlgorithmException if the algorithm is not implemented by the
+   *           named provider.
+   * @throws NoSuchProviderException if the named provider was not found.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code> or empty.
    */
   public static AlgorithmParameterGenerator getInstance(String algorithm,
-							String provider)
-    throws NoSuchAlgorithmException, NoSuchProviderException
+                                                        String provider)
+      throws NoSuchAlgorithmException, NoSuchProviderException
   {
-    if (provider == null || provider.length() == 0)
-      throw new IllegalArgumentException("Illegal provider");
-
+    if (provider == null)
+      throw new IllegalArgumentException("provider MUST NOT be null");
+    provider = provider.trim();
+    if (provider.length() == 0)
+      throw new IllegalArgumentException("provider MUST NOT be empty");
     Provider p = Security.getProvider(provider);
     if (p == null)
       throw new NoSuchProviderException(provider);
-
     return getInstance(algorithm, p);
   }
 
@@ -152,38 +156,50 @@ public class AlgorithmParameterGenerator
    * Returns a new <code>AlgorithmParameterGenerator</code> instance which
    * generates algorithm parameters for the specified algorithm.
    * 
-   * @param algorithm
-   *          the name of algorithm to use.
-   * @param provider
-   *          the {@link Provider} to use.
+   * @param algorithm the name of algorithm to use.
+   * @param provider the {@link Provider} to use.
    * @return the new instance.
-   * @throws NoSuchAlgorithmException
-   *           if the algorithm is not implemented by {@link Provider}.
+   * @throws NoSuchAlgorithmException if the algorithm is not implemented by
+   *           {@link Provider}.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>algorithm</code> is an empty string.
    * @since 1.4
    * @see Provider
    */
   public static AlgorithmParameterGenerator getInstance(String algorithm,
                                                         Provider provider)
-    throws NoSuchAlgorithmException
+      throws NoSuchAlgorithmException
   {
-    if (provider == null)
-      throw new IllegalArgumentException("Illegal provider");
-
+    StringBuilder sb = new StringBuilder()
+        .append("AlgorithmParameterGenerator for algorithm [")
+        .append(algorithm).append("] from provider[")
+        .append(provider).append("] could not be created");
+    Throwable cause;
     try
       {
-	return new AlgorithmParameterGenerator(
-	  (AlgorithmParameterGeneratorSpi) Engine.getInstance(
-	    ALGORITHM_PARAMETER_GENERATOR, algorithm, provider),
-	  provider, algorithm);
+        Object spi = Engine.getInstance(ALGORITHM_PARAMETER_GENERATOR,
+                                        algorithm,
+                                        provider);
+        return new AlgorithmParameterGenerator((AlgorithmParameterGeneratorSpi) spi,
+                                               provider,
+                                               algorithm);
       }
-    catch (java.lang.reflect.InvocationTargetException ite)
+    catch (InvocationTargetException x)
       {
-	throw new NoSuchAlgorithmException(algorithm);
+        cause = x.getCause();
+        if (cause instanceof NoSuchAlgorithmException)
+          throw (NoSuchAlgorithmException) cause;
+        if (cause == null)
+          cause = x;
       }
-    catch (ClassCastException cce)
+    catch (ClassCastException x)
       {
-	throw new NoSuchAlgorithmException(algorithm);
+        cause = x;
       }
+    NoSuchAlgorithmException x = new NoSuchAlgorithmException(sb.toString());
+    x.initCause(cause);
+    throw x;
   }
 
   /** @return the {@link Provider} of this generator. */

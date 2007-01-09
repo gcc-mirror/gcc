@@ -1,5 +1,5 @@
 /* Java(TM) language-specific gimplification routines.
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -34,10 +34,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 static tree java_gimplify_labeled_block_expr (tree);
 static tree java_gimplify_exit_block_expr (tree);
-static tree java_gimplify_case_expr (tree);
-static tree java_gimplify_default_expr (tree);
 static tree java_gimplify_block (tree);
-static tree java_gimplify_new_array_init (tree);
 static tree java_gimplify_try_expr (tree);
 static enum gimplify_status java_gimplify_modify_expr (tree*, tree*, tree *);
 static enum gimplify_status java_gimplify_component_ref (tree*, tree*, tree *);
@@ -92,28 +89,8 @@ java_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED,
       *expr_p = java_gimplify_exit_block_expr (*expr_p);
       break;
 
-    case CASE_EXPR:
-      *expr_p = java_gimplify_case_expr (*expr_p);
-      break;
-
-    case DEFAULT_EXPR:
-      *expr_p = java_gimplify_default_expr (*expr_p);
-      break;
-
-    case NEW_ARRAY_INIT:
-      *expr_p = java_gimplify_new_array_init (*expr_p);
-      break;
-
     case TRY_EXPR:
       *expr_p = java_gimplify_try_expr (*expr_p);
-      break;
-
-    case JAVA_CATCH_EXPR:
-      *expr_p = TREE_OPERAND (*expr_p, 0);
-      break;
-
-    case JAVA_EXC_OBJ_EXPR:
-      *expr_p = build_exception_object_ref (TREE_TYPE (*expr_p));
       break;
 
     case VAR_DECL:
@@ -147,15 +124,6 @@ java_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED,
     case COMPARE_EXPR:
     case COMPARE_L_EXPR:
     case COMPARE_G_EXPR:
-    case UNARY_PLUS_EXPR:
-    case NEW_ARRAY_EXPR:
-    case NEW_ANONYMOUS_ARRAY_EXPR:
-    case NEW_CLASS_EXPR:
-    case THIS_EXPR:
-    case SYNCHRONIZED_EXPR:
-    case CONDITIONAL_EXPR:
-    case INSTANCEOF_EXPR:
-    case CLASS_LITERAL:
       gcc_unreachable ();
 
     case COMPONENT_REF:
@@ -360,21 +328,6 @@ java_gimplify_self_mod_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED,
 }
 
     
-static tree
-java_gimplify_case_expr (tree expr)
-{
-  tree label = create_artificial_label ();
-  return build3 (CASE_LABEL_EXPR, void_type_node,
-		 TREE_OPERAND (expr, 0), NULL_TREE, label);
-}
-
-static tree
-java_gimplify_default_expr (tree expr ATTRIBUTE_UNUSED)
-{
-  tree label = create_artificial_label ();
-  return build3 (CASE_LABEL_EXPR, void_type_node, NULL_TREE, NULL_TREE, label);
-}
-
 /* Gimplify BLOCK into a BIND_EXPR.  */
 
 static tree
@@ -409,46 +362,6 @@ java_gimplify_block (tree java_block)
   BLOCK_EXPR_BODY (java_block) = NULL_TREE;
 
   return build3 (BIND_EXPR, TREE_TYPE (java_block), decls, body, block);
-}
-
-/* Gimplify a NEW_ARRAY_INIT node into array/element assignments.  */
-
-static tree
-java_gimplify_new_array_init (tree exp)
-{
-  tree array_type = TREE_TYPE (TREE_TYPE (exp));
-  tree data_field = lookup_field (&array_type, get_identifier ("data"));
-  tree element_type = TYPE_ARRAY_ELEMENT (array_type);
-  HOST_WIDE_INT ilength = java_array_type_length (array_type);
-  tree length = build_int_cst (NULL_TREE, ilength);
-  tree init = TREE_OPERAND (exp, 0);
-  tree value;
-  unsigned HOST_WIDE_INT cnt;
-
-  tree array_ptr_type = build_pointer_type (array_type);
-  tree tmp = create_tmp_var (array_ptr_type, "array");
-  tree body = build2 (GIMPLE_MODIFY_STMT, array_ptr_type, tmp,
-		      build_new_array (element_type, length));
-
-  int index = 0;
-
-  /* FIXME: try to allocate array statically?  */
-  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (init), cnt, value)
-    {
-      /* FIXME: Should use build_java_arrayaccess here, but avoid
-	 bounds checking.  */
-      tree lhs = build3 (COMPONENT_REF, TREE_TYPE (data_field),    
-			 build_java_indirect_ref (array_type, tmp, 0),
-			 data_field, NULL_TREE);
-      tree assignment = build2 (GIMPLE_MODIFY_STMT, element_type,
-				build4 (ARRAY_REF, element_type, lhs,
-					build_int_cst (NULL_TREE, index++),
-					NULL_TREE, NULL_TREE),
-				value);
-      body = build2 (COMPOUND_EXPR, element_type, body, assignment);
-    }
-
-  return build2 (COMPOUND_EXPR, array_ptr_type, body, tmp);
 }
 
 static tree

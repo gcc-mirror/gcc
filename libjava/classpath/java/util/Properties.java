@@ -104,7 +104,7 @@ s16=1,3</pre>
  * @see PropertyResourceBundle
  * @status updated to 1.4
  */
-public class Properties extends Hashtable
+public class Properties extends Hashtable<Object, Object>
 {
   // WARNING: Properties is a CORE class in the bootstrap cycle. See the
   // comments in vm/reference/java/lang/Runtime for implications of this fact.
@@ -370,6 +370,7 @@ label   = Name:\\u0020</pre>
    *         value that are not strings
    * @deprecated use {@link #store(OutputStream, String)} instead
    */
+  @Deprecated
   public void save(OutputStream out, String header)
   {
     try
@@ -489,7 +490,7 @@ label   = Name:\\u0020</pre>
    *
    * @return an Enumeration of all defined keys
    */
-  public Enumeration propertyNames()
+  public Enumeration<?> propertyNames()
   {
     // We make a new Set that holds all the keys, then return an enumeration
     // for that. This prevents modifications from ruining the enumeration,

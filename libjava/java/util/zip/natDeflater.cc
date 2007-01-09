@@ -1,6 +1,6 @@
 // natDeflater.cc - Implementation of Deflater native methods.
 
-/* Copyright (C) 1999, 2002  Free Software Foundation
+/* Copyright (C) 1999, 2002, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -93,16 +93,16 @@ java::util::zip::Deflater::getAdler ()
   return s->adler;
 }
 
-jint
-java::util::zip::Deflater::getTotalIn ()
+jlong
+java::util::zip::Deflater::getBytesRead ()
 {
   JvSynchronize sync (this);
   z_streamp s = (z_streamp) zstream;
   return s->total_in;
 }
 
-jint
-java::util::zip::Deflater::getTotalOut ()
+jlong
+java::util::zip::Deflater::getBytesWritten ()
 {
   JvSynchronize sync (this);
   z_streamp s = (z_streamp) zstream;

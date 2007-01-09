@@ -89,7 +89,7 @@ public interface PrintService
    * @throws IllegalArgumentException if category is not a class that
    * implements <code>PrintServiceAttribute</code>.
    */
-  PrintServiceAttribute getAttribute(Class category);
+  <T extends PrintServiceAttribute> T getAttribute(Class<T> category);
   
   /**
    * Returns the attributes describing this print service. The returned 
@@ -123,7 +123,7 @@ public interface PrintService
    * @throws IllegalArgumentException if <code>category</code> is a class
    * not implementing <code>Attribute</code> 
    */
-  Object getDefaultAttributeValue(Class category);
+  Object getDefaultAttributeValue(Class<? extends Attribute> category);
   
   /**
    * Returns the name of this print service.
@@ -145,7 +145,7 @@ public interface PrintService
    * 
    * @return The class array of all supported attribute categories.
    */
-  Class[] getSupportedAttributeCategories();
+  Class<?>[] getSupportedAttributeCategories();
   
   /**
    * Determines and returns all supported attribute values of a given 
@@ -177,7 +177,9 @@ public interface PrintService
    * implementing <code>Attribute</code>, or if <code>flavor</code> is not
    * supported
    */
-  Object getSupportedAttributeValues(Class category, DocFlavor flavor, AttributeSet attributes);
+  Object getSupportedAttributeValues(Class<? extends Attribute> category,
+                                     DocFlavor flavor,
+                                     AttributeSet attributes);
   
   /**
    * Determines and returns an array of all supported document flavors which
@@ -189,7 +191,7 @@ public interface PrintService
    * the specific doc flavor and attributes set.
    * </p>
    * 
-   * @return The supported document flavors.
+   * @return the supported document flavors
    */
   DocFlavor[] getSupportedDocFlavors();
   
@@ -240,7 +242,7 @@ public interface PrintService
    * @throws IllegalArgumentException if <code>category</code> is a class not
    * implementing <code>Attribute</code>.
    */
-  boolean isAttributeCategorySupported(Class category);
+  boolean isAttributeCategorySupported(Class<? extends Attribute> category);
   
   /**
    * Determines if a given attribute value is supported when creating a print 

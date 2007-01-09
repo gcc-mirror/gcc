@@ -23,10 +23,31 @@ details.  */
 #include <java/lang/InstantiationException.h>
 #include <gcj/method.h>
 
+typedef JArray< ::java::lang::annotation::Annotation * > * anno_a_t;
+typedef JArray< JArray< ::java::lang::annotation::Annotation * > *> * anno_aa_t;
+
 jint
 java::lang::reflect::Constructor::getModifiersInternal ()
 {
   return _Jv_FromReflectedConstructor (this)->accflags;
+}
+
+jstring
+java::lang::reflect::Constructor::getSignature()
+{
+  return declaringClass->getReflectionSignature (this);
+}
+
+anno_a_t
+java::lang::reflect::Constructor::getDeclaredAnnotationsInternal()
+{
+  return (anno_a_t) declaringClass->getDeclaredAnnotations(this, false);
+}
+
+anno_aa_t
+java::lang::reflect::Constructor::getParameterAnnotationsInternal()
+{
+  return (anno_aa_t) declaringClass->getDeclaredAnnotations(this, true);
 }
 
 void

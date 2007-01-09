@@ -1,5 +1,5 @@
 /* Delegate.java --
-Copyright (C) 2005 Free Software Foundation, Inc.
+Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -242,7 +242,7 @@ public abstract class Delegate
 
   /**
    * Return the hashcode for this CORBA object. The default implementation
-   * delegates call to {@link #hash(int)}, passing Integer.MAX_VALUE as an
+   * delegates call to {@link #hash(org.omg.CORBA.Object, int)}, passing Integer.MAX_VALUE as an
    * argument.
    *
    * @param target the object, for that the hash code must be computed.
@@ -408,7 +408,7 @@ public abstract class Delegate
    *
    * @param self the CORBA object, to that the string representation must be
    * returned. By default, the call is delegated to
-   * {@link java.lang.Object.toString()}.
+   * {@link java.lang.Object#toString()}.
    *
    * @return the string representation.
    */

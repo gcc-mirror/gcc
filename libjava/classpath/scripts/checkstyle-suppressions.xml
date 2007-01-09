@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+	"-//Puppy Crawl//DTD Suppressions 1.0//EN"
+	"http://www.puppycrawl.com/dtds/suppressions_1_0.dtd">
+<!--
+
+Changes to this file need to be discussed on classpath@gnu.org
+mailing list first and probably documented in the hacking guide.
+
+-->
+<suppressions>
+  <suppress checks="AvoidStarImport"
+            files="gnu/java/awt/peer/gtk/GtkToolkit.java"
+	    lines="48,59"/>
+  <suppress checks="IllegalInstantiation"
+            files="java/lang/Boolean.java"
+	    lines="65,73"/>
+  <suppress checks="IllegalInstantiation"
+            files="java/util/logging/LogManager.java"
+	    lines="674"/>
+  <suppress checks="RegexpHeader"
+	    files="javax/rmi/CORBA/SystemException.java"
+	    lines="1"/>
+  <suppress checks="RegexpHeader"
+	    files="javax/rmi/CORBA/ObjectImpl.java"
+	    lines="1"/>
+  <suppress checks="RegexpHeader"
+	    files="javax/rmi/ORB.java"
+	    lines="1"/>
+  <suppress checks="RegexpHeader"
+	    files="javax/rmi/BAD_OPERATION.java"
+	    lines="1"/>
+</suppressions>
+

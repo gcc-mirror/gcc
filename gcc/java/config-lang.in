@@ -1,6 +1,6 @@
 # Top level configure fragment for the GNU compiler for the Java(TM)
 # language.
-#  Copyright (C) 1994, 1995, 2000, 2001, 2003 Free Software Foundation, Inc.
+#  Copyright (C) 1994, 1995, 2000, 2001, 2003, 2007 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -34,9 +34,9 @@ language="java"
 
 compilers="jc1\$(exeext) jvgenmain\$(exeext)"
 
-stagestuff="jc1\$(exeext) gcj\$(exeext) jvgenmain\$(exeext) gcjh\$(exeext) gjnih\$(exeext) jv-scan\$(exeext) jcf-dump\$(exeext)"
+stagestuff="jc1\$(exeext) gcj\$(exeext) jvgenmain\$(exeext) jcf-dump\$(exeext)"
 
-gtfiles="\$(srcdir)/java/java-tree.h \$(srcdir)/java/jcf.h \$(srcdir)/java/lex.h \$(srcdir)/java/parse.h \$(srcdir)/java/builtins.c \$(srcdir)/java/class.c \$(srcdir)/java/constants.c \$(srcdir)/java/decl.c \$(srcdir)/java/expr.c \$(srcdir)/java/jcf-parse.c \$(srcdir)/java/jcf-write.c \$(srcdir)/java/lang.c \$(srcdir)/java/mangle.c \$(srcdir)/java/parse.y \$(srcdir)/java/resource.c"
+gtfiles="\$(srcdir)/java/java-tree.h \$(srcdir)/java/jcf.h \$(srcdir)/java/parse.h \$(srcdir)/java/builtins.c \$(srcdir)/java/class.c \$(srcdir)/java/constants.c \$(srcdir)/java/decl.c \$(srcdir)/java/expr.c \$(srcdir)/java/jcf-parse.c \$(srcdir)/java/lang.c \$(srcdir)/java/mangle.c \$(srcdir)/java/resource.c"
 
 target_libs=${libgcj_saved}
 lang_dirs="zlib fastjar"

@@ -40,6 +40,7 @@ package java.security.cert;
 
 import gnu.java.security.Engine;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -111,50 +112,54 @@ public class CertPathBuilder
   }
 
   /**
-   * Get an instance of a named CertPathBuilder, from the first provider
-   * that implements it.
-   *
-   * @param algorithm The name of the CertPathBuilder to create.
+   * Returns an instance of a named <code>CertPathBuilder</code> from the
+   * first provider that implements it.
+   * 
+   * @param algorithm The name of the <code>CertPathBuilder</code> to create.
    * @return The new instance.
-   * @throws NoSuchAlgorithmException If no installed provider
-   *   implements the named algorithm.
+   * @throws NoSuchAlgorithmException If no installed provider implements the
+   *           named algorithm.
+   * @throws IllegalArgumentException if <code>algorithm</code> is
+   *           <code>null</code> or is an empty string.
    */
   public static CertPathBuilder getInstance(String algorithm)
-    throws NoSuchAlgorithmException
+      throws NoSuchAlgorithmException
   {
     Provider[] p = Security.getProviders();
-
+    NoSuchAlgorithmException lastException = null;
     for (int i = 0; i < p.length; i++)
-      {
-        try
-          {
-            return getInstance(algorithm, p[i]);
-          }
-        catch (NoSuchAlgorithmException e)
-          {
-	    // Ignored.
-          }
-      }
-
+      try
+        {
+          return getInstance(algorithm, p[i]);
+        }
+      catch (NoSuchAlgorithmException x)
+        {
+          lastException = x;
+        }
+    if (lastException != null)
+      throw lastException;
     throw new NoSuchAlgorithmException(algorithm);
   }
 
   /**
-   * Get an instance of a named CertPathBuilder from the named
+   * Returns an instance of a named <code>CertPathBuilder</code> from a named
    * provider.
-   *
-   * @param algorithm The name of the CertPathBuilder to create.
-   * @param provider  The name of the provider from which to get the
-   *   implementation.
+   * 
+   * @param algorithm The name of the <code>CertPathBuilder</code> to create.
+   * @param provider The name of the provider to use.
    * @return The new instance.
-   * @throws NoSuchAlgorithmException If no installed provider
-   *   implements the named algorithm.
-   * @throws NoSuchProviderException If the named provider does not
-   *   exist.
+   * @throws NoSuchAlgorithmException If no installed provider implements the
+   *           named algorithm.
+   * @throws NoSuchProviderException If the named provider does not exist.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>algorithm</code> is an empty string.
    */
   public static CertPathBuilder getInstance(String algorithm, String provider)
-    throws NoSuchAlgorithmException, NoSuchProviderException
+      throws NoSuchAlgorithmException, NoSuchProviderException
   {
+    if (provider == null)
+      throw new IllegalArgumentException("provider MUST NOT be null");
     Provider p = Security.getProvider(provider);
     if (p == null)
       throw new NoSuchProviderException(provider);
@@ -162,40 +167,46 @@ public class CertPathBuilder
   }
 
   /**
-   * Get an instance of a named CertPathBuilder from the specified
-   * provider.
-   *
-   * @param algorithm The name of the CertPathBuilder to create.
-   * @param provider  The provider from which to get the implementation.
+   * Returns an instance of a named <code>CertPathBuilder</code> from the
+   * specified provider.
+   * 
+   * @param algorithm The name of the <code>CertPathBuilder</code> to create.
+   * @param provider The provider to use.
    * @return The new instance.
-   * @throws NoSuchAlgorithmException If no installed provider
-   *   implements the named algorithm.
-   * @throws IllegalArgumentException If <i>provider</i> in
-   *   <tt>null</tt>.
+   * @throws NoSuchAlgorithmException If no installed provider implements the
+   *           named algorithm.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>algorithm</code> is an empty string.
    */
   public static CertPathBuilder getInstance(String algorithm, Provider provider)
-    throws NoSuchAlgorithmException
+      throws NoSuchAlgorithmException
   {
-    if (provider == null)
-      throw new IllegalArgumentException("null provider");
+    StringBuilder sb = new StringBuilder("CertPathBuilder for algorithm [")
+        .append(algorithm).append("] from provider[")
+        .append(provider).append("] could not be created");
+    Throwable cause;
     try
       {
-        return new CertPathBuilder((CertPathBuilderSpi)
-          Engine.getInstance(CERT_PATH_BUILDER, algorithm, provider),
-          provider, algorithm);
+        Object spi = Engine.getInstance(CERT_PATH_BUILDER, algorithm, provider);
+        return new CertPathBuilder((CertPathBuilderSpi) spi, provider, algorithm);
       }
-    catch (java.lang.reflect.InvocationTargetException ite)
+    catch (InvocationTargetException x)
       {
-        throw new NoSuchAlgorithmException(algorithm);
+        cause = x.getCause();
+        if (cause instanceof NoSuchAlgorithmException)
+          throw (NoSuchAlgorithmException) cause;
+        if (cause == null)
+          cause = x;
       }
-    catch (ClassCastException cce)
+    catch (ClassCastException x)
       {
-        throw new NoSuchAlgorithmException(algorithm);
+        cause = x;
       }
+    NoSuchAlgorithmException x = new NoSuchAlgorithmException(sb.toString());
+    x.initCause(cause);
+    throw x;
   }
-
-  // Instance methods.
-  // ------------------------------------------------------------------------
 
   /**
    * Return the name of this CertPathBuilder algorithm.

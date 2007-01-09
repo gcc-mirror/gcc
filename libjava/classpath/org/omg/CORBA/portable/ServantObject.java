@@ -1,5 +1,5 @@
 /* ServantObject.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ package org.omg.CORBA.portable;
  *
  * @see ObjectImpl#_servant_preinvoke(String, Class)
  * @see ObjectImpl#_servant_postinvoke(ServantObject)
- * @see Delegate#servant_preinvoke(org.omg.CORBA.Object, String operation, Class)
+ * @see Delegate#servant_preinvoke(org.omg.CORBA.Object, String, Class)
  * @see Delegate#servant_postinvoke(org.omg.CORBA.Object, ServantObject)
  *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)

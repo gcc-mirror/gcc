@@ -1,5 +1,5 @@
 /* MemoryImageSource.java -- Java class for providing image data
-   Copyright (C) 1999, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +41,9 @@ package java.awt.image;
 import java.util.Hashtable;
 import java.util.Vector;
 
+/**
+ * An image producer that delivers image data from an array.
+ */
 public class MemoryImageSource implements ImageProducer
 {
   private boolean animated = false;
@@ -73,10 +76,19 @@ public class MemoryImageSource implements ImageProducer
   }
 
   /**
-   * Constructs an ImageProducer from memory
+   * Constructs an ImageProducer from memory.
+   * 
+   * @param w  the image width.
+   * @param h  the image height.
+   * @param cm  the color model.
+   * @param pix  the image data.
+   * @param off  the offset to the first pixel in the array.
+   * @param scan  the number of array elements from a pixel on one row to the
+   *     corresponding pixel on the next row.
+   * @param props  image properties (<code>null</code> permitted). 
    */
   public MemoryImageSource(int w, int h, ColorModel cm, byte[] pix, int off,
-                           int scan, Hashtable props)
+                           int scan, Hashtable<?,?> props)
   {
     width = w;
     height = h;
@@ -106,10 +118,19 @@ public class MemoryImageSource implements ImageProducer
   }
 
   /**
-     Constructs an ImageProducer from memory
-  */
+   * Constructs an ImageProducer from memory
+   * 
+   * @param w  the image width.
+   * @param h  the image height.
+   * @param cm  the color model.
+   * @param pix  the image data.
+   * @param off  the offset to the first pixel in the array.
+   * @param scan  the number of array elements from a pixel on one row to the
+   *     corresponding pixel on the next row.
+   * @param props  image properties (<code>null</code> permitted). 
+   */
   public MemoryImageSource(int w, int h, ColorModel cm, int[] pix, int off,
-                           int scan, Hashtable props)
+                           int scan, Hashtable<?,?> props)
   {
     width = w;
     height = h;
@@ -122,16 +143,32 @@ public class MemoryImageSource implements ImageProducer
   }
 
   /**
-   * Constructs an ImageProducer from memory using the default RGB ColorModel
+   * Constructs an ImageProducer from memory using the default RGB ColorModel.
+   * 
+   * @param w  the image width.
+   * @param h  the image height.
+   * @param pix  the image data.
+   * @param off  the offset to the first pixel in the array.
+   * @param scan  the number of array elements from a pixel on one row to the
+   *     corresponding pixel on the next row.
+   * @param props  image properties (<code>null</code> permitted). 
+
    */
   public MemoryImageSource(int w, int h, int[] pix, int off, int scan,
-                           Hashtable props)
+                           Hashtable<?,?> props)
   {
     this(w, h, ColorModel.getRGBdefault(), pix, off, scan, props);
   }
 
   /**
-   * Constructs an ImageProducer from memory using the default RGB ColorModel
+   * Constructs an ImageProducer from memory using the default RGB ColorModel.
+   * 
+   * @param w  the image width.
+   * @param h  the image height.
+   * @param pix  the image data.
+   * @param off  the offset to the first pixel in the array.
+   * @param scan  the number of array elements from a pixel on one row to the
+   *     corresponding pixel on the next row. 
    */
   public MemoryImageSource(int w, int h, int[] pix, int off, int scan)
   {
@@ -141,6 +178,8 @@ public class MemoryImageSource implements ImageProducer
   /**
    * Used to register an <code>ImageConsumer</code> with this
    * <code>ImageProducer</code>.
+   * 
+   * @param ic  the image consumer.
    */
   public synchronized void addConsumer(ImageConsumer ic)
   {
@@ -153,6 +192,8 @@ public class MemoryImageSource implements ImageProducer
   /**
    * Used to determine if the given <code>ImageConsumer</code> is
    * already registered with this <code>ImageProducer</code>.
+   * 
+   * @param ic  the image consumer.
    */
   public synchronized boolean isConsumer(ImageConsumer ic)
   {
@@ -164,6 +205,8 @@ public class MemoryImageSource implements ImageProducer
   /**
    * Used to remove an <code>ImageConsumer</code> from the list of
    * registered consumers for this <code>ImageProducer</code>.
+   * 
+   * @param ic  the image consumer.
    */
   public synchronized void removeConsumer(ImageConsumer ic)
   {
@@ -197,6 +240,8 @@ public class MemoryImageSource implements ImageProducer
    * Used to register an <code>ImageConsumer</code> with this
    * <code>ImageProducer</code> and then request that this producer
    * resend the image data in the order top-down, left-right.
+   * 
+   * @param ic  the image consumer.
    */
   public void requestTopDownLeftRightResend(ImageConsumer ic)
   {
@@ -219,7 +264,7 @@ public class MemoryImageSource implements ImageProducer
    * sending animation. If this flag is set then full buffers are sent
    * in the newPixels methods instead of just regions.
    *
-   * @param fullbuffers - a flag indicating whether to send the full buffers
+   * @param fullbuffers a flag indicating whether to send the full buffers
    */
   public synchronized void setFullBufferUpdates(boolean fullbuffers)
   {
@@ -260,6 +305,11 @@ public class MemoryImageSource implements ImageProducer
   /**
    * Send an animation frame to the image consumers containing the specified
    * pixels unless setFullBufferUpdates is set.
+   * 
+   * @param x  the x-coordinate.
+   * @param y  the y-coordinate.
+   * @param w  the width.
+   * @param h  the height.
    */
   public synchronized void newPixels(int x, int y, int w, int h)
   {
@@ -306,6 +356,12 @@ public class MemoryImageSource implements ImageProducer
    *
    * If framenotify is set then a notification is sent when the frame
    * is sent otherwise no status is sent.
+   * 
+   * @param x  the x-coordinate.
+   * @param y  the y-coordinate.
+   * @param w  the width.
+   * @param h  the height.
+   * @param framenotify  send notification?
    */
   public synchronized void newPixels(int x, int y, int w, int h,
                                      boolean framenotify)

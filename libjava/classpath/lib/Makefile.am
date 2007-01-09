@@ -5,20 +5,21 @@ JAVA_DEPEND = java.dep
 ## this file and restart the make process again
 sinclude $(JAVA_DEPEND)
 
-## GCJ LOCAL: prune .svn directories
-propertydirs :=  $(shell cd $(top_srcdir)/resource && $(FIND) gnu java javax org META-INF -type d ! -name CVS -print | fgrep -v .svn)
 propertyfiles :=  $(shell cd $(top_srcdir)/resource && $(FIND) gnu java javax org -name \*\.properties -print)
+cssfiles := $(shell cd $(top_srcdir) && $(FIND) gnu java javax org -name \*\.css -print)
+## GCJ LOCAL: prune .svn directories
 metafiles :=  $(shell cd $(top_srcdir)/resource && $(FIND) META-INF -name CVS -prune -o -name \*\.in -prune -o -type f -print | fgrep -v .svn)
 ## END GCJ LOCAL
 iconfiles :=  $(shell cd $(top_srcdir) && $(FIND) gnu/javax/swing/plaf/gtk/icons -name *.png -type f -print)
 
-compile_classpath = $(vm_classes):$(top_srcdir):$(top_srcdir)/external/w3c_dom:$(top_srcdir)/external/sax:$(top_srcdir)/external/relaxngDatatype:.:$(USER_CLASSLIB):$(PATH_TO_ESCHER)
+compile_classpath = $(vm_classes):$(top_srcdir):$(top_srcdir)/external/w3c_dom:$(top_srcdir)/external/sax:$(top_srcdir)/external/relaxngDatatype:$(top_srcdir)/external/jsr166:.:$(USER_CLASSLIB):$(PATH_TO_ESCHER)
 
 # handling source to bytecode compiler programs like gcj, jikes  and kjc
 if FOUND_GCJ
-## This should never be used when gcj is the compiler.
 ## See the compile-classes target.
-JAVAC = exit 1
+## There's no point in warning, and we always want debug info.
+## GCJ LOCAL: use srcdir
+JAVAC = $(GCJ) -C -g -w --encoding=UTF-8 -bootclasspath '' --classpath $(compile_classpath) -d $(srcdir) @classes
 else
 if FOUND_JIKES
 JAVAC = $(JIKES) $(JIKESWARNINGS) +F $(JIKESENCODING) -bootclasspath '' -extdirs '' -sourcepath '' --classpath $(compile_classpath) -d . @classes
@@ -45,11 +46,7 @@ COLLECTIONS = collections.jar
 
 collections.jar: mkcollections.pl
 	./mkcollections.pl $(top_srcdir)
-if FOUND_GCJ
-	$(GCJ) -C `$(FIND) $(COLLECTIONS_PREFIX) -name '*.java' -type f -print`
-else
 	$(JAVAC) `$(FIND) $(COLLECTIONS_PREFIX) -name '*.java' -type f -print`
-endif
 	if test "$(FASTJAR)" != ""; then \
 	  $(FASTJAR) cf $@ $(COLLECTIONS_PREFIX); \
 	else \
@@ -107,22 +104,26 @@ glibj.zip: classes compile-classes resources
 endif # USE_PREBUILT_GLIBJ_ZIP
 
 resources: copy-vmresources.sh
-	if ! [ -e gnu ]; then mkdir gnu; fi
-	if ! [ -e gnu/java ]; then mkdir gnu/java; fi
-	if ! [ -e gnu/java/locale ]; then mkdir gnu/java/locale; fi
-	if ! [ -e gnu/javax/swing/plaf/gtk/icons ]; then mkdir -p gnu/javax/swing/plaf/gtk/icons; fi
-	list='$(propertydirs)'; for p in $$list; do \
-	  if ! [ -e $$p ]; then mkdir $$p; fi; \
+	@list='$(propertyfiles)'; for p in $$list; do \
+          dirname=`dirname $$p`; \
+          if ! test -d "$$dirname"; then mkdir -p "$$dirname"; fi; \
+	  cp $(top_srcdir)/resource/$$p $$p; \
 	done
-	list='$(propertyfiles)'; for p in $$list; do \
-	  cp -f $(top_srcdir)/resource/$$p $$p; \
+	@list='$(cssfiles)'; for p in $$list; do \
+          dirname=`dirname $$p`; \
+          if ! test -d "$$dirname"; then mkdir -p "$$dirname"; fi; \
+	  cp $(top_srcdir)/$$p $$p; \
 	done
-	list='$(metafiles)'; for p in $$list; do \
-	  cp -f $(top_srcdir)/resource/$$p $$p; \
+	@list='$(metafiles)'; for p in $$list; do \
+          dirname=`dirname $$p`; \
+          if ! test -d "$$dirname"; then mkdir -p "$$dirname"; fi; \
+	  cp $(top_srcdir)/resource/$$p $$p; \
 	done
-	$(SHELL) ./copy-vmresources.sh
-	list='$(iconfiles)'; for p in $$list; do \
-	  cp -f $(top_srcdir)/$$p $$p; \
+	@$(SHELL) ./copy-vmresources.sh
+	@list='$(iconfiles)'; for p in $$list; do \
+          dirname=`dirname $$p`; \
+          if ! test -d "$$dirname"; then mkdir -p "$$dirname"; fi; \
+	  cp $(top_srcdir)/$$p $$p; \
 	done
 	touch resources
 
@@ -152,22 +153,24 @@ endif # REGEN_PARSER
 
 $(JAVA_DEPEND): genclasses
 
-if FOUND_GCJ
-## When building with gcj, we do a recursive make.  We split this rule
-## out specially, rather than simply defining JAVAC, so that GNU make
-## will see the recursive make invocation and still allow parallel
-## builds.
+# if FOUND_GCJ
+# ## When building with gcj, we do a recursive make.  We split this rule
+# ## out specially, rather than simply defining JAVAC, so that GNU make
+# ## will see the recursive make invocation and still allow parallel
+# ## builds.
+# compile-classes: classes $(JAVA_SRCS) Makefile
+# 	$(MAKE) -f $(srcdir)/Makefile.gcj \
+# 	  GCJ='$(GCJ)' \
+# 	  compile_classpath='$(top_builddir):$(compile_classpath)' \
+# 	  top_srcdir=$(top_srcdir)
+# 	touch compile-classes
+# else
 compile-classes: classes $(JAVA_SRCS) Makefile
-	$(MAKE) -f $(srcdir)/Makefile.gcj \
-	  GCJ='$(GCJ)' \
-	  compile_classpath='$(top_builddir):$(compile_classpath)' \
-	  top_srcdir=$(top_srcdir)
-	touch compile-classes
-else
-compile-classes: classes $(JAVA_SRCS) Makefile
+if JAVA_MAINTAINER_MODE
 	$(JAVAC)
-	touch compile-classes
 endif
+	touch compile-classes
+# endif
 
 EXTRA_DIST = standard.omit.in mkcollections.pl.in Makefile.gcj split-for-gcj.sh
 CLEANFILES = compile-classes resources classes \

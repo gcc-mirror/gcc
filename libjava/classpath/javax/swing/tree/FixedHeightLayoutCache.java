@@ -480,7 +480,7 @@ public class FixedHeightLayoutCache
    * @param parentPath the parent path
    * @return the enumeration over pathes
    */
-  public Enumeration getVisiblePathsFrom(TreePath parentPath)
+  public Enumeration<TreePath> getVisiblePathsFrom(TreePath parentPath)
   {
     if (dirty)
       update();

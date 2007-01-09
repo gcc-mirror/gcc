@@ -1,5 +1,5 @@
 /* ClientRequestInfoOperations.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.PortableInterceptor;
 
 import org.omg.CORBA.Any;
+import org.omg.CORBA.BAD_INV_ORDER;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.INV_POLICY;
 import org.omg.CORBA.Policy;
@@ -285,8 +286,6 @@ public interface ClientRequestInfoOperations extends RequestInfoOperations
    * @param type the type of the policy being requested.
    *
    * @return should return the policy that applies to this operation.
-   *
-   * @throws NO_IMPLEMENT always.
    */
   Policy get_request_policy(int type) throws INV_POLICY;
 

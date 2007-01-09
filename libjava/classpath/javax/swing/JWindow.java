@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package javax.swing;
 
+import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -158,6 +159,10 @@ public class JWindow extends Window implements Accessible, RootPaneContainer
 
   protected void windowInit()
   {
+    // We need to explicitly enable events here so that our processKeyEvent()
+    // and processWindowEvent() gets called.
+    enableEvents(AWTEvent.KEY_EVENT_MASK);
+
     super.setLayout(new BorderLayout(1, 1));
     getRootPane(); // will do set/create
     // Now we're done init stage, adds and layouts go to content pane.

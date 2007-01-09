@@ -41,7 +41,7 @@ package gnu.classpath.tools.getopt;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-public class Messages
+class Messages
 {
   private static final String BUNDLE_NAME
     = "gnu.classpath.tools.getopt.Messages"; //$NON-NLS-1$

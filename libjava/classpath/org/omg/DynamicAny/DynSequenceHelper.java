@@ -1,5 +1,5 @@
 /* DynSequenceHelper.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,9 +40,9 @@ package org.omg.DynamicAny;
 
 import gnu.CORBA.OrbRestricted;
 
+import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.TypeCode;
-import org.omg.CORBA.ORB;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.MARSHAL;
@@ -85,15 +85,13 @@ public abstract class DynSequenceHelper
    * Narrow the given object to the DynSequence. For the objects that are
    * always local, this operation does not differ from the ordinary
    * {@link #narrow} (ClassCastException will be thrown if narrowing something
-   * different).
+   * different). See OMG issue 4158.
    * 
    * @param obj the object to cast.
    * 
    * @return the casted DynSequence.
    * 
    * @since 1.5 
-   * 
-   * @see OMG issue 4158.
    */
   public static DynSequence unchecked_narrow(org.omg.CORBA.Object obj)
   {
@@ -159,7 +157,7 @@ public abstract class DynSequenceHelper
    * This should read DynSequence from the CDR input stream, but (following the
    * JDK 1.5 API) it does not.
    * 
-   * @param input a org.omg.CORBA.portable stream to read from.
+   * @param output a org.omg.CORBA.portable stream to write into.
    * 
    * @specenote Sun throws the same exception.
    * 

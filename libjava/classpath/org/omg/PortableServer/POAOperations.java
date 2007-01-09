@@ -1,5 +1,5 @@
 /* POAOperations.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,7 +38,11 @@ exception statement from your version. */
 
 package org.omg.PortableServer;
 
+import org.omg.CORBA.BAD_INV_ORDER;
+import org.omg.CORBA.BAD_PARAM;
+import org.omg.CORBA.OBJ_ADAPTER;
 import org.omg.CORBA.Policy;
+import org.omg.CORBA.TRANSIENT;
 import org.omg.PortableServer.POAPackage.AdapterAlreadyExists;
 import org.omg.PortableServer.POAPackage.AdapterNonExistent;
 import org.omg.PortableServer.POAPackage.InvalidPolicy;
@@ -107,7 +111,7 @@ public interface POAOperations
    * the Active Object Map using this Id a a key. If the servant
    * activator is set, its incarnate method will be called. In this case,
    * the passed servant in this method can be null; in this case, the servant,
-   * returned by {@link ServantLocatorOperations#incarnate} will
+   * returned by {@link ServantActivatorOperations#incarnate} will
    * be used.
    *
    * @param a_servant a servant that would serve the object with the
@@ -129,7 +133,7 @@ public interface POAOperations
    * object with the provided Object Id. If the servant activator is
    * set, its incarnate method will be called. In this case,
    * the passed servant in this method can be null; in this case, the servant,
-   * returned by {@link ServantLocatorOperations#incarnate} will
+   * returned by {@link ServantActivatorOperations#incarnate} will
    * be used.
    *
    * @param an_Object_Id an object id for the given object.
@@ -241,7 +245,7 @@ public interface POAOperations
   /**
    * Set a servant manager for this POA.
    *
-   * @param a servant manager being set. If the RETAIN policy applies, the
+   * @param a_manager servant manager being set. If the RETAIN policy applies, the
    * manager must implement a {@link ServantActivator}. If the NON_RETAIN
    * policy applies, the manager must implement a {@link ServantLocator}.
    *
@@ -298,7 +302,7 @@ public interface POAOperations
    * @param the_Object_Id the object id.
    *
    * @throws ObjectNotActive if there is no active object with such Id.
-   * @throws WrongPolicy. This method requires either RETAIN or
+   * @throws WrongPolicy This method requires either RETAIN or
    * USE_DEFAULT_SERVANT policies and reaises the WrongPolicy if none of them
    * apply to this POA.
    */
@@ -328,7 +332,7 @@ public interface POAOperations
    *
    * @throws ObjectNotActive if none of the conditions above are satisfied.
    * @throws WrongAdapter if the object reference was not created with this POA.
-   * @throws WrongPolicy. This method requires either RETAIN or
+   * @throws WrongPolicy This method requires either RETAIN or
    * USE_DEFAULT_SERVANT policies and reaises the WrongPolicy if none of them
    * apply to this POA.
    */
@@ -408,7 +412,7 @@ public interface POAOperations
   /**
   * Set the adapter activator for this POA.
   *
-  * @param the activator being set.
+  * @param activator the activator being set.
   */
   void the_activator(AdapterActivator activator);
 
@@ -437,7 +441,7 @@ public interface POAOperations
    * <p> Destroy this POA and all descendant POAs. The destroyed POAs can be
    * later re-created via {@link AdapterActivator} or by invoking
    * {@link #create_POA}.
-   * This differs from {@link PoaManagerOperations#deactivate} that does
+   * This differs from {@link POAManagerOperations#deactivate} that does
    * not allow recreation of the deactivated POAs. After deactivation,
    * recreation is only possible if the POAs were later destroyed.
    * </p><p>
@@ -462,7 +466,7 @@ public interface POAOperations
   /**
    * Create the IdUniquenessPolicy policy.
    *
-   * @param value states which one Id uniqueness policy will apply.
+   * @param a_value states which one Id uniqueness policy will apply.
    *
    * @return the created policy.
    */
@@ -471,7 +475,7 @@ public interface POAOperations
   /**
    * Create the ImplicitActivationPolicy policy.
    *
-   * @param value states which one activation policy will apply.
+   * @param a_value states which one activation policy will apply.
    *
    * @return the created policy.
    */
@@ -480,7 +484,7 @@ public interface POAOperations
   /**
    * Create the LifespanPolicy policy.
    *
-   * @param value states which one object lifespan policy will apply.
+   * @param a_value states which one object lifespan policy will apply.
    *
    * @return the created policy.
    */
@@ -489,7 +493,7 @@ public interface POAOperations
   /**
    * Create the RequestProcessingPolicy policy.
    *
-   * @param value states which one request processing policy will apply.
+   * @param a_value states which one request processing policy will apply.
    *
    * @return the created policy.
    */
@@ -498,7 +502,7 @@ public interface POAOperations
   /**
    * Create the ServantRetentionPolicy policy.
    *
-   * @param value states which one servant retention policy will apply.
+   * @param a_value states which one servant retention policy will apply.
    *
    * @return the created policy.
    */
@@ -507,7 +511,7 @@ public interface POAOperations
   /**
    * Create the ThreadPolicy policy.
    *
-   * @param value states which one thread policy will apply.
+   * @param a_value states which one thread policy will apply.
    *
    * @return the created policy.
    */

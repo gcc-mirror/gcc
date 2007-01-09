@@ -83,64 +83,101 @@ public abstract class AbstractCallbackHandler implements CallbackHandler
     this.name = name;
   }
 
-  // Class methods.
-  // -------------------------------------------------------------------------
-
+  /**
+   * Create an instance of <code>CallbackHandler</code> of the designated
+   * <code>type</code> from the first Security Provider which offers it.
+   * 
+   * @param type the type of callback handler to create.
+   * @return a newly created instance of <code>ClassbackHandler</code>.
+   * @throws NoSuchAlgorithmException if no security provider is found to offer
+   *           an implementation of <code>CallbackHandler</code> of the
+   *           designated <code>type</code>.
+   */
   public static CallbackHandler getInstance(String type)
-    throws NoSuchAlgorithmException
+      throws NoSuchAlgorithmException
   {
     Provider[] p = Security.getProviders();
+    NoSuchAlgorithmException lastException = null;
     for (int i = 0; i < p.length; i++)
-      {
-        try
-          {
-            return getInstance(type, p[i]);
-          }
-        catch (NoSuchAlgorithmException ignored)
-          {
-          }
-      }
+      try
+        {
+          return getInstance(type, p[i]);
+        }
+      catch (NoSuchAlgorithmException x)
+        {
+          lastException = x;
+        }
+    if (lastException != null)
+      throw lastException;
     throw new NoSuchAlgorithmException(type);
   }
 
+  /**
+   * Create an instance of <code>CallbackHandler</code> of the designated
+   * <code>type</code> from the named security <code>provider</code>.
+   * 
+   * @param type the type of callback handler to create.
+   * @param provider a named security provider to use.
+   * @return a newly created instance of <code>ClassbackHandler</code>.
+   * @throws NoSuchAlgorithmException if no security provider is found to offer
+   *           an implementation of <code>CallbackHandler</code> of the
+   *           designated <code>type</code>.
+   * @throws IllegalArgumentException if either <code>type</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>type</code> is an empty string.
+   */
   public static CallbackHandler getInstance(String type, String provider)
-    throws NoSuchAlgorithmException, NoSuchProviderException
+      throws NoSuchAlgorithmException, NoSuchProviderException
   {
+    if (provider == null)
+      throw new IllegalArgumentException("provider MUST NOT be null");
     Provider p = Security.getProvider(provider);
     if (p == null)
-      {
-        throw new NoSuchProviderException(provider);
-      }
+      throw new NoSuchProviderException(provider);
     return getInstance(type, p);
   }
 
+  /**
+   * Create an instance of <code>CallbackHandler</code> of the designated
+   * <code>type</code> from the designated security <code>provider</code>.
+   * 
+   * @param type the type of callback handler to create.
+   * @param provider a security provider to use.
+   * @return a newly created instance of <code>ClassbackHandler</code>.
+   * @throws NoSuchAlgorithmException if no security provider is found to offer
+   *           an implementation of <code>CallbackHandler</code> of the
+   *           designated <code>type</code>.
+   * @throws IllegalArgumentException if either <code>type</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>type</code> is an empty string.
+   */
   public static CallbackHandler getInstance(String type, Provider provider)
     throws NoSuchAlgorithmException
   {
+    StringBuilder sb = new StringBuilder("CallbackHandler of type [")
+        .append(type).append("] from provider[")
+        .append(provider).append("] could not be created");
+    Throwable cause;
     try
       {
         return (CallbackHandler) Engine.getInstance(SERVICE, type, provider);
       }
-    catch (InvocationTargetException ite)
+    catch (InvocationTargetException x)
       {
-        Throwable cause = ite.getCause();
+        cause = x.getCause();
         if (cause instanceof NoSuchAlgorithmException)
           throw (NoSuchAlgorithmException) cause;
-        NoSuchAlgorithmException nsae = new NoSuchAlgorithmException(type);
-        if (cause != null)
-          nsae.initCause (cause);
-        throw nsae;
+        if (cause == null)
+          cause = x;
       }
-    catch (ClassCastException cce)
+    catch (ClassCastException x)
       {
-        NoSuchAlgorithmException nsae = new NoSuchAlgorithmException(type);
-        nsae.initCause (cce);
-        throw nsae;
+        cause = x;
       }
+    NoSuchAlgorithmException x = new NoSuchAlgorithmException(sb.toString());
+    x.initCause(cause);
+    throw x;
   }
-
-  // Instance methods.
-  // -------------------------------------------------------------------------
 
   public void handle(Callback[] callbacks)
     throws IOException, UnsupportedCallbackException

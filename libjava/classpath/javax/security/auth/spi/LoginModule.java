@@ -95,7 +95,7 @@ public interface LoginModule
    * @param options A mapping of options given to this module.
    */
   void initialize(Subject subject, CallbackHandler handler,
-                  Map sharedState, Map options);
+                  Map<String, ?> sharedState, Map<String, ?> options);
 
   /**
    * Authenticates a subject to the system. This is the primary

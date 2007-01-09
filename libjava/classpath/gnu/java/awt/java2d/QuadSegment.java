@@ -145,7 +145,52 @@ public class QuadSegment extends Segment
 
     Point2D cp;
     QuadSegment s;
-    if( plus )
+    if(!plus)
+      {
+        n1[0] = -n1[0];
+        n1[1] = -n1[1];
+        n2[0] = -n2[0];
+        n2[1] = -n2[1];
+      }
+    
+    // Handle special cases where the control point is equal to an end point
+    // or end points are equal (ie, straight lines)
+    if (curve.getP1().equals(curve.getCtrlPt()))
+      {
+        cp = curve.getCtrlPt();
+        cp.setLocation(cp.getX() + n2[0], cp.getY() + n2[1]);
+        n1[0] = n2[0];
+        n1[1] = n2[1];
+      }
+    else if (curve.getP2().equals(curve.getCtrlPt()))
+      {
+        cp = curve.getCtrlPt();
+        cp.setLocation(cp.getX() + n1[0], cp.getY() + n1[1]);
+        n2[0] = n1[0];
+        n2[1] = n1[1];
+      }
+    else if (curve.getP1().equals(curve.getP2()))
+      {
+        cp = curve.getCtrlPt();
+
+        double deltaX = curve.getX1() - curve.getCtrlX();
+        double deltaY = curve.getY1() - curve.getCtrlY();
+        double length = Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
+        double ratio = radius / length;
+        deltaX *= ratio;
+        deltaY *= ratio;
+        
+        if (plus)
+          cp.setLocation(cp.getX() + deltaX, cp.getY() + deltaY);
+        else
+          cp.setLocation(cp.getX() - deltaX, cp.getY() - deltaY);
+      }
+    else if (n1[0] == n2[0] && n1[1] == n2[1])
+      {
+        cp = curve.getCtrlPt();
+        cp.setLocation(cp.getX() + n1[0], cp.getY() + n1[1]);
+      }
+    else
       {
         cp = lineIntersection(curve.getX1() + n1[0], 
                               curve.getY1() + n1[1],
@@ -155,25 +200,11 @@ public class QuadSegment extends Segment
                               curve.getCtrlY() + n2[1],
                               curve.getX2() + n2[0], 
                               curve.getY2() + n2[1], true);
-        s = new QuadSegment(curve.getX1() + n1[0], curve.getY1() + n1[1],
-                            cp.getX(), cp.getY(),
-                            curve.getX2() + n2[0], curve.getY2() + n2[1]);
       }
-    else
-      {
-        cp = lineIntersection(curve.getX1() - n1[0], 
-                              curve.getY1() - n1[1],
-                              curve.getCtrlX() - n1[0],
-                              curve.getCtrlY() - n1[1],
-                              curve.getCtrlX() - n2[0],
-                              curve.getCtrlY() - n2[1],
-                              curve.getX2() - n2[0], 
-                              curve.getY2() - n2[1], true);
-
-        s = new QuadSegment(curve.getX1() - n1[0], curve.getY1() - n1[1],
-                            cp.getX(), cp.getY(),
-                            curve.getX2() - n2[0], curve.getY2() - n2[1]);
-      }
+    
+    s = new QuadSegment(curve.getX1() + n1[0], curve.getY1() + n1[1],
+                        cp.getX(), cp.getY(),
+                        curve.getX2() + n2[0], curve.getY2() + n2[1]);
 
     return s;
   }

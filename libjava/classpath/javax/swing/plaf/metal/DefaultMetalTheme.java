@@ -38,8 +38,11 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
+import gnu.classpath.SystemProperties;
+
 import java.awt.Font;
 
+import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.FontUIResource;
 
@@ -63,10 +66,6 @@ public class DefaultMetalTheme extends MetalTheme
   private static final ColorUIResource SECONDARY3 = 
     new ColorUIResource(204, 204, 204);
   
-  private static final FontUIResource CONTROL_TEXT_FONT =
-    new FontUIResource("Dialog", Font.BOLD, 12);
-  private static final FontUIResource MENU_TEXT_FONT =
-    new FontUIResource("Dialog", Font.BOLD, 12);
   private static final FontUIResource SUB_TEXT_FONT =
     new FontUIResource("Dialog", Font.PLAIN, 10);
   private static final FontUIResource SYSTEM_TEXT_FONT =
@@ -75,6 +74,40 @@ public class DefaultMetalTheme extends MetalTheme
     new FontUIResource("Dialog", Font.PLAIN, 12);
   private static final FontUIResource WINDOW_TITLE_FONT =
     new FontUIResource("Dialog", Font.BOLD, 12);
+  
+  /**
+   * The control text font for swing.boldMetal=false.
+   */
+  private static final FontUIResource PLAIN_CONTROL_TEXT_FONT =
+    new FontUIResource("Dialog", Font.PLAIN, 12);
+
+  /**
+   * The standard control text font.
+   */
+  private static final FontUIResource BOLD_CONTROL_TEXT_FONT =
+    new FontUIResource("Dialog", Font.BOLD, 12);
+
+  /**
+   * The menu text font for swing.boldMetal=false.
+   */
+  private static final FontUIResource PLAIN_MENU_TEXT_FONT =
+    new FontUIResource("Dialog", Font.PLAIN, 12);
+
+  /**
+   * The menu control text font.
+   */
+  private static final FontUIResource BOLD_MENU_TEXT_FONT =
+    new FontUIResource("Dialog", Font.BOLD, 12);
+
+  /**
+   * Indicates the control text font.
+   */
+  static final int CONTROL_TEXT_FONT = 1;
+
+  /**
+   * Indicates the menu text font.
+   */
+  static final int MENU_TEXT_FONT = 2;
   
   /**
    * Creates a new instance of this theme.
@@ -156,23 +189,28 @@ public class DefaultMetalTheme extends MetalTheme
 
   /**
    * Returns the font used for text on controls.  In this case, the font is
-   * <code>FontUIResource("Dialog", Font.BOLD, 12)</code>.
+   * <code>FontUIResource("Dialog", Font.BOLD, 12)</code>, unless the
+   * <code>swing.boldMetal</code> UI default is set to {@link Boolean#FALSE} 
+   * in which case it is <code>FontUIResource("Dialog", Font.PLAIN, 12)</code>.
    * 
    * @return The font.
    */
   public FontUIResource getControlTextFont()
   {
-    return CONTROL_TEXT_FONT;
+    return getFont(CONTROL_TEXT_FONT);
   }
+  
   /**
    * Returns the font used for text in menus.  In this case, the font is
-   * <code>FontUIResource("Dialog", Font.BOLD, 12)</code>.
+   * <code>FontUIResource("Dialog", Font.BOLD, 12)</code>, unless the
+   * <code>swing.boldMetal</code> UI default is set to {@link Boolean#FALSE} 
+   * in which case it is <code>FontUIResource("Dialog", Font.PLAIN, 12)</code>.
    * 
    * @return The font used for text in menus.
    */
   public FontUIResource getMenuTextFont()
   {
-    return MENU_TEXT_FONT;
+    return getFont(MENU_TEXT_FONT);
   }
   
   /**
@@ -217,5 +255,51 @@ public class DefaultMetalTheme extends MetalTheme
   public FontUIResource getWindowTitleFont()
   {
     return WINDOW_TITLE_FONT;
+  }
+
+  /**
+   * Returns the appropriate font. The font type to return is identified
+   * by the specified id.
+   *
+   * @param id the font type to return
+   *
+   * @return the correct font
+   */
+  private FontUIResource getFont(int id)
+  {
+    FontUIResource font = null;
+    switch (id)
+      {
+      case CONTROL_TEXT_FONT:
+        if (isBoldMetal())
+          font = BOLD_CONTROL_TEXT_FONT;
+        else
+          font = PLAIN_CONTROL_TEXT_FONT;
+        break;
+      case MENU_TEXT_FONT:
+        if (isBoldMetal())
+          font = BOLD_MENU_TEXT_FONT;
+        else
+          font = PLAIN_MENU_TEXT_FONT;
+      break;
+      // TODO: Add other font types and their mapping here.
+      }
+    return font;
+  }
+
+  /**
+   * Determines if the theme should be bold or not. The theme is bold by
+   * default, this can be turned off by setting the system property
+   * swing.boldMetal to true, or by putting the property with the same name
+   * into the current UIManager's defaults.
+   *
+   * @return <code>true</code>, when the theme is bold, <code>false</code>
+   *         otherwise
+   */
+  private boolean isBoldMetal()
+  {
+    Object boldMetal = UIManager.get("swing.boldMetal");
+    return (boldMetal == null || ! Boolean.FALSE.equals(boldMetal))
+        && ! ("false".equals(SystemProperties.getProperty("swing.boldMetal")));
   }
 }

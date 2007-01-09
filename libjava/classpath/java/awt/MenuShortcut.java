@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt;
 
+import java.awt.event.KeyEvent;
+
 /**
   * This class implements a keyboard accelerator for a menu item.
   *
@@ -70,6 +72,8 @@ private int key;
   */
 private boolean usesShift;
 
+private String keyName;
+
 /*************************************************************************/
 
 /**
@@ -99,6 +103,7 @@ MenuShortcut(int key, boolean usesShift)
 {
   this.key = key;
   this.usesShift = usesShift;
+  setKeyName(key);
 }
 
 /*************************************************************************/
@@ -181,7 +186,11 @@ equals(Object obj)
 public String
 toString()
 {
-  return(getClass().getName() + "[" + paramString () + "]");
+  String temp = "Ctrl+";
+  if (usesShift)
+    temp = temp + "Shift+";
+  temp = temp + keyName;
+  return temp;
 }
 
 public int
@@ -204,4 +213,224 @@ paramString()
   return "key=" + key + ",usesShift=" + usesShift;
 }
 
-} // class MenuShortcut 
+private void 
+setKeyName(int key)
+{
+  if (key == '\n')
+    keyName = "Enter";
+  else if (key == '\b')
+    keyName = "Backspace";
+  else if (key == '\t')
+    keyName = "Tab";
+  else if (key == ' ')
+    keyName = "Space";
+  else if (key == ',')
+    keyName = "Comma";
+  else if (key == '.')
+    keyName = "Period";
+  else if (key == '/')
+    keyName = "Slash";
+  else if (key == '\\')
+    keyName = "Back Slash";
+  else if (key == ';')
+    keyName = "Semicolon";
+  else if (key == '=')
+    keyName = "Equals";
+  else if (key == '[')
+    keyName = "Open Bracket";
+  else if (key == ']')
+    keyName = "Close Bracket";
+  else if (key == '0')
+    keyName = "0";
+  else if (key == '1')
+    keyName = "1";
+  else if (key == '2')
+    keyName = "2";
+  else if (key == '3')
+    keyName = "3";
+  else if (key == '4')
+    keyName = "4";
+  else if (key == '5')
+    keyName = "5";
+  else if (key == '6')
+    keyName = "6";
+  else if (key == '7')
+    keyName = "7";
+  else if (key == '8')
+    keyName = "8";
+  else if (key == '9')
+    keyName = "9";
+  else if (key == 'A')
+    keyName = "A";
+  else if (key == 'B')
+    keyName = "B";
+  else if (key == 'C')
+    keyName = "C";
+  else if (key == 'D')
+    keyName = "D";
+  else if (key == 'E')
+    keyName = "E";
+  else if (key == 'F')
+    keyName = "F";
+  else if (key == 'G')
+    keyName = "G";
+  else if (key == 'H')
+    keyName = "H";
+  else if (key == 'I')
+    keyName = "I";
+  else if (key == 'J')
+    keyName = "J";
+  else if (key == 'K')
+    keyName = "K";
+  else if (key == 'L')
+    keyName = "L";
+  else if (key == 'M')
+    keyName = "M";
+  else if (key == 'N')
+    keyName = "N";
+  else if (key == 'O')
+    keyName = "O";
+  else if (key == 'P')
+    keyName = "P";
+  else if (key == 'Q')
+    keyName = "Q";
+  else if (key == 'R')
+    keyName = "R";
+  else if (key == 'S')
+    keyName = "S";
+  else if (key == 'T')
+    keyName = "T";
+  else if (key == 'U')
+    keyName = "U";
+  else if (key == 'V')
+    keyName = "V";
+  else if (key == 'W')
+    keyName = "W";
+  else if (key == 'X')
+    keyName = "X";
+  else if (key == 'Y')
+    keyName = "Y";
+  else if (key == 'Z')
+    keyName = "Z";
+  else if (key == 3)
+    keyName = "Cancel";
+  else if (key == 12)
+    keyName = "Clear";
+  else if (key == 16)
+    keyName = "Shift";
+  else if (key == 17)
+    keyName = "Ctrl";
+  else if (key == 18)
+    keyName = "Alt";
+  else if (key == 19)
+    keyName = "Pause";
+  else if (key == 20)
+    keyName = "Caps Lock";
+  else if (key == 21)
+    keyName = "Kana";
+  else if (key == 24)
+    keyName = "Final";
+  else if (key == 25)
+    keyName = "Kanji";
+  else if (key == 27)
+    keyName = "Escape";
+  else if (key == 28)
+    keyName = "Convert";
+  else if (key == 29)
+    keyName = "No Convert";
+  else if (key == 30)
+    keyName = "Accept";
+  else if (key == 31)
+    keyName = "Mode Change";
+  else if (key == 33)
+    keyName = "Page Up";
+  else if (key == 34)
+    keyName = "Page Down";
+  else if (key == 35)
+    keyName = "End";
+  else if (key == 36)
+    keyName = "Home";
+  else if (key == 37)
+    keyName = "Left";
+  else if (key == 38)
+    keyName = "Up";
+  else if (key == 39)
+    keyName = "Right";
+  else if (key == 40)
+    keyName = "Down";
+  else if (key == 96)
+    keyName = "NumPad-0";
+  else if (key == 97)
+    keyName = "NumPad-1";
+  else if (key == 98)
+    keyName = "NumPad-2";
+  else if (key == 99)
+    keyName = "NumPad-3";
+  else if (key == 100)
+    keyName = "NumPad-4";
+  else if (key == 101)
+    keyName = "NumPad-5";
+  else if (key == 102)
+    keyName = "NumPad-6";
+  else if (key == 103)
+    keyName = "NumPad-7";
+  else if (key == 104)
+    keyName = "NumPad-8";
+  else if (key == 105)
+    keyName = "NumPad-9";
+  else if (key == 106)
+    keyName = "NumPad *";
+  else if (key == 107)
+    keyName = "NumPad +";
+  else if (key == 108)
+    keyName = "NumPad ,";
+  else if (key == 109)
+    keyName = "NumPad -";
+  else if (key == 110)
+    keyName = "NumPad .";
+  else if (key == 111)
+    keyName = "NumPad /";
+  else if (key == 112)
+    keyName = "F1";
+  else if (key == 113)
+    keyName = "F2";
+  else if (key == 114)
+    keyName = "F3";
+  else if (key == 115)
+    keyName = "F4";
+  else if (key == 116)
+    keyName = "F5";
+  else if (key == 117)
+    keyName = "F6";
+  else if (key == 118)
+    keyName = "F7";
+  else if (key == 119)
+    keyName = "F8";
+  else if (key == 120)
+    keyName = "F9";
+  else if (key == 121)
+    keyName = "F10";
+  else if (key == 122)
+    keyName = "F11";
+  else if (key == 123)
+    keyName = "F12";
+  else if (key == 127)
+    keyName = "Delete";
+  else if (key == 144)
+    keyName = "Num Lock";
+  else if (key == 145)
+    keyName = "Scroll Lock";
+  else if (key == 154)
+    keyName = "Print Screen";
+  else if (key == 155)
+    keyName = "Insert";
+  else if (key == 156)
+    keyName = "Help";
+  else if (key == 157)
+    keyName = "Meta";
+  else if (key == 192)
+    keyName = "Back Quote";
+  else if (key == 222)
+    keyName = "Quote";
+}
+} // class MenuShortcut

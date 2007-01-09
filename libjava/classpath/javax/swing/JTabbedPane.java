@@ -760,11 +760,7 @@ public class JTabbedPane extends JComponent implements Serializable,
     this.tabPlacement = tabPlacement;
     layoutPolicy = tabLayoutPolicy;
     
-    changeEvent = new ChangeEvent(this);
-    changeListener = createChangeListener();
-
-    model = new DefaultSingleSelectionModel();
-    model.addChangeListener(changeListener);
+    setModel(new DefaultSingleSelectionModel());
 
     updateUI();
   }
@@ -877,16 +873,24 @@ public class JTabbedPane extends JComponent implements Serializable,
   /**
    * This method changes the model property of the JTabbedPane.
    *
-   * @param model The new model to use with the JTabbedPane.
+   * @param m The new model to use with the JTabbedPane.
    */
-  public void setModel(SingleSelectionModel model)
+  public void setModel(SingleSelectionModel m)
   {
-    if (model != this.model)
+    if (m != model)
       {
 	SingleSelectionModel oldModel = this.model;
-	this.model.removeChangeListener(changeListener);
-	this.model = model;
-	this.model.addChangeListener(changeListener);
+        if (oldModel != null && changeListener != null)
+          oldModel.removeChangeListener(changeListener);
+
+	model = m;
+
+        if (model != null)
+          {
+            if (changeListener == null)
+              changeListener = createChangeListener();
+            model.addChangeListener(changeListener);
+          }
 	firePropertyChange("model", oldModel, this.model);
       }
   }
@@ -1050,7 +1054,10 @@ public class JTabbedPane extends JComponent implements Serializable,
       }
 
     if (getSelectedIndex() == -1)
-      setSelectedIndex(0);
+      {
+        setSelectedIndex(0);
+        fireStateChanged();
+      }
 
     revalidate();
     repaint();

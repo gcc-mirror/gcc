@@ -62,7 +62,7 @@ public class AccessibleStateSet
    * @see #toArray()
    * @see #clear()
    */
-  protected Vector states = new Vector();
+  protected Vector<AccessibleState> states = new Vector<AccessibleState>();
 
   /**
    * Create an empty state set.

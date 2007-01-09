@@ -119,13 +119,37 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
   {
     JLabel lab = (JLabel) c;
     Insets insets = lab.getInsets();
-    FontMetrics fm = lab.getFontMetrics(lab.getFont());
-    layoutCL(lab, fm, lab.getText(), lab.getIcon(), vr, ir, tr);
-    Rectangle cr = SwingUtilities.computeUnion(tr.x, tr.y, tr.width, tr.height,
-                                               ir);
-    return new Dimension(insets.left + cr.width + insets.right, insets.top
-        + cr.height + insets.bottom);
-
+    int insetsX = insets.left + insets.right;
+    int insetsY = insets.top + insets.bottom;
+    Icon icon = lab.getIcon();
+    String text = lab.getText();
+    Dimension ret;
+    if (icon == null && text == null)
+      ret = new Dimension(insetsX, insetsY);
+    else if (icon != null && text == null)
+      ret = new Dimension(icon.getIconWidth() + insetsX,
+                          icon.getIconHeight() + insetsY);
+    else
+      {
+        FontMetrics fm = lab.getFontMetrics(lab.getFont());
+        ir.x = 0;
+        ir.y = 0;
+        ir.width = 0;
+        ir.height = 0;
+        tr.x = 0;
+        tr.y = 0;
+        tr.width = 0;
+        tr.height = 0;
+        vr.x = 0;
+        vr.y = 0;
+        vr.width = Short.MAX_VALUE;
+        vr.height = Short.MAX_VALUE;
+        layoutCL(lab, fm, text, icon, vr, ir, tr);
+        Rectangle cr = SwingUtilities.computeUnion(tr.x, tr.y, tr.width,
+                                                   tr.height, ir);
+        ret = new Dimension(cr.width + insetsX, cr.height + insetsY);
+      }
+    return ret;
   }
 
   /**
@@ -166,13 +190,20 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
   {
     JLabel b = (JLabel) c;
     FontMetrics fm = g.getFontMetrics();
-    vr = SwingUtilities.calculateInnerArea(c, vr);
 
-    if (vr.width < 0)
-      vr.width = 0;
-    if (vr.height < 0)
-      vr.height = 0;
-
+    Insets i = c.getInsets();
+    vr.x = i.left;
+    vr.y = i.right;
+    vr.width = c.getWidth() - i.left + i.right;
+    vr.height = c.getHeight() - i.top + i.bottom;
+    ir.x = 0;
+    ir.y = 0;
+    ir.width = 0;
+    ir.height = 0;
+    tr.x = 0;
+    tr.y = 0;
+    tr.width = 0;
+    tr.height = 0;
     Icon icon = (b.isEnabled()) ? b.getIcon() : b.getDisabledIcon();
 
     String text = layoutCL(b, fm, b.getText(), icon, vr, ir, tr);

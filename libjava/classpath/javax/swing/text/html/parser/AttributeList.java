@@ -122,7 +122,7 @@ public final class AttributeList
    * null, if this parameter was not specified.
    * Values, defined in DTD, are case insensitive.
    */
-  public Vector values;
+  public Vector<?> values;
 
   /**
    * The modifier of this attribute. This field contains one of the
@@ -176,7 +176,7 @@ public final class AttributeList
    * Equals to null for the last attribute definition.
    */
   public AttributeList(String a_name, int a_type, int a_modifier,
-                       String a_default, Vector allowed_values,
+                       String a_default, Vector<?> allowed_values,
                        AttributeList a_next
                       )
   {
@@ -251,7 +251,7 @@ public final class AttributeList
   /**
    * Get the allowed values of this attribute.
    */
-  public Enumeration getValues()
+  public Enumeration<?> getValues()
   {
     return values.elements();
   }

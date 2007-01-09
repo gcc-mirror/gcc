@@ -1,5 +1,5 @@
 /* ServantLocatorOperations.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -60,7 +60,7 @@ public interface ServantLocatorOperations
    * @param operation the name of the method or operation being invoked.
    * @param cookie_holder the holder where the servant manager can store
    * an arbitrary java.lang.Object. This object will be later passed as a
-   * <code>cookie</code> parameter for {@link postinvoke}, to create tie
+   * <code>cookie</code> parameter for {@link #postinvoke}, to create tie
    * between preinvoke and postinvoke. The application should <i>not</i>
    * suppose that each call of preinvoke is followed by the subsequent
    * postinvoke for the same invocation; under multi threaded policy these

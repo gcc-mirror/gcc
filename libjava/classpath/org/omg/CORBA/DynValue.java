@@ -1,5 +1,5 @@
 /* DynValue.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -72,7 +72,7 @@ public interface DynValue
 
   /**
    * Get all members of the enclosed value type object.
-   * @return
+   * @return members, as an array of the name - value pairs.
    */
   NameValuePair[] get_members();
 

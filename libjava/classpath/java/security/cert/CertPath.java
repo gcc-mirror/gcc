@@ -161,7 +161,7 @@ public abstract class CertPath implements Serializable
    *
    * @return the iterator of supported encodings in the path
    */
-  public abstract Iterator getEncodings();
+  public abstract Iterator<String> getEncodings();
 
   /**
    * Compares this path to another for semantic equality. To be equal, both
@@ -226,7 +226,7 @@ public abstract class CertPath implements Serializable
    *
    * @return the list of certificates, non-null but possibly empty
    */
-  public abstract List getCertificates();
+  public abstract List<? extends Certificate> getCertificates();
 
   /**
    * Serializes the path in its encoded form, to ensure reserialization with

@@ -1,4 +1,6 @@
-import java.lang.reflect.*;
+import java.lang.reflect.Proxy;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 import java.net.*;
 
 public class TestProxy

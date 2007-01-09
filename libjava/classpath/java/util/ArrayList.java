@@ -81,8 +81,8 @@ import java.lang.reflect.Array;
  * @see AbstractList
  * @status updated to 1.4
  */
-public class ArrayList extends AbstractList
-  implements List, RandomAccess, Cloneable, Serializable
+public class ArrayList<E> extends AbstractList<E>
+  implements List<E>, RandomAccess, Cloneable, Serializable
 {
   /**
    * Compatible with JDK 1.2
@@ -103,7 +103,7 @@ public class ArrayList extends AbstractList
   /**
    * Where the data is stored.
    */
-  private transient Object[] data;
+  private transient E[] data;
 
   /**
    * Construct a new ArrayList with the supplied initial capacity.
@@ -116,7 +116,7 @@ public class ArrayList extends AbstractList
     // Must explicitly check, to get correct exception.
     if (capacity < 0)
       throw new IllegalArgumentException();
-    data = new Object[capacity];
+    data = (E[]) new Object[capacity];
   }
 
   /**
@@ -135,7 +135,7 @@ public class ArrayList extends AbstractList
    * @param c the collection whose elements will initialize this list
    * @throws NullPointerException if c is null
    */
-  public ArrayList(Collection c)
+  public ArrayList(Collection<? extends E> c)
   {
     this((int) (c.size() * 1.1f));
     addAll(c);
@@ -151,7 +151,7 @@ public class ArrayList extends AbstractList
     // so don't update modCount.
     if (size != data.length)
       {
-        Object[] newData = new Object[size];
+        E[] newData = (E[]) new Object[size];
         System.arraycopy(data, 0, newData, 0, size);
         data = newData;
       }
@@ -173,7 +173,7 @@ public class ArrayList extends AbstractList
 
     if (minCapacity > current)
       {
-        Object[] newData = new Object[Math.max(current * 2, minCapacity)];
+        E[] newData = (E[]) new Object[Math.max(current * 2, minCapacity)];
         System.arraycopy(data, 0, newData, 0, size);
         data = newData;
       }
@@ -247,11 +247,11 @@ public class ArrayList extends AbstractList
    */
   public Object clone()
   {
-    ArrayList clone = null;
+    ArrayList<E> clone = null;
     try
       {
-        clone = (ArrayList) super.clone();
-        clone.data = (Object[]) data.clone();
+        clone = (ArrayList<E>) super.clone();
+        clone.data = (E[]) data.clone();
       }
     catch (CloneNotSupportedException e)
       {
@@ -268,7 +268,7 @@ public class ArrayList extends AbstractList
    */
   public Object[] toArray()
   {
-    Object[] array = new Object[size];
+    E[] array = (E[]) new Object[size];
     System.arraycopy(data, 0, array, 0, size);
     return array;
   }
@@ -287,11 +287,10 @@ public class ArrayList extends AbstractList
    *         an element in this list
    * @throws NullPointerException if a is null
    */
-  public Object[] toArray(Object[] a)
+  public <T> T[] toArray(T[] a)
   {
     if (a.length < size)
-      a = (Object[]) Array.newInstance(a.getClass().getComponentType(),
-                                       size);
+      a = (T[]) Array.newInstance(a.getClass().getComponentType(), size);
     else if (a.length > size)
       a[size] = null;
     System.arraycopy(data, 0, a, 0, size);
@@ -304,7 +303,7 @@ public class ArrayList extends AbstractList
    * @param index the index of the element we are fetching
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
    */
-  public Object get(int index)
+  public E get(int index)
   {
     checkBoundExclusive(index);
     return data[index];
@@ -319,10 +318,10 @@ public class ArrayList extends AbstractList
    * @return the element previously at the specified index
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= 0
    */
-  public Object set(int index, Object e)
+  public E set(int index, E e)
   {
     checkBoundExclusive(index);
-    Object result = data[index];
+    E result = data[index];
     data[index] = e;
     return result;
   }
@@ -334,7 +333,7 @@ public class ArrayList extends AbstractList
    * @param e the element to be appended to this list
    * @return true, the add will always succeed
    */
-  public boolean add(Object e)
+  public boolean add(E e)
   {
     modCount++;
     if (size == data.length)
@@ -352,7 +351,7 @@ public class ArrayList extends AbstractList
    * @param e the item being added
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
    */
-  public void add(int index, Object e)
+  public void add(int index, E e)
   {
     checkBoundInclusive(index);
     modCount++;
@@ -371,10 +370,10 @@ public class ArrayList extends AbstractList
    * @return the removed Object
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
    */
-  public Object remove(int index)
+  public E remove(int index)
   {
     checkBoundExclusive(index);
-    Object r = data[index];
+    E r = data[index];
     modCount++;
     if (index != --size)
       System.arraycopy(data, index + 1, data, index, size - index);
@@ -407,7 +406,7 @@ public class ArrayList extends AbstractList
    * @return true if the list was modified, in other words c is not empty
    * @throws NullPointerException if c is null
    */
-  public boolean addAll(Collection c)
+  public boolean addAll(Collection<? extends E> c)
   {
     return addAll(size, c);
   }
@@ -422,10 +421,10 @@ public class ArrayList extends AbstractList
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; 0
    * @throws NullPointerException if c is null
    */
-  public boolean addAll(int index, Collection c)
+  public boolean addAll(int index, Collection<? extends E> c)
   {
     checkBoundInclusive(index);
-    Iterator itr = c.iterator();
+    Iterator<? extends E> itr = c.iterator();
     int csize = c.size();
 
     modCount++;
@@ -502,7 +501,7 @@ public class ArrayList extends AbstractList
    * @return true if this list changed
    * @throws NullPointerException if c is null
    */
-  boolean removeAllInternal(Collection c)
+  boolean removeAllInternal(Collection<?> c)
   {
     int i;
     int j;
@@ -530,7 +529,7 @@ public class ArrayList extends AbstractList
    * @throws NullPointerException if c is null
    * @since 1.2
    */
-  boolean retainAllInternal(Collection c)
+  boolean retainAllInternal(Collection<?> c)
   {
     int i;
     int j;
@@ -584,8 +583,8 @@ public class ArrayList extends AbstractList
     // the `size' field.
     s.defaultReadObject();
     int capacity = s.readInt();
-    data = new Object[capacity];
+    data = (E[]) new Object[capacity];
     for (int i = 0; i < size; i++)
-      data[i] = s.readObject();
+      data[i] = (E) s.readObject();
   }
 }

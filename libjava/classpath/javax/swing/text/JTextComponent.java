@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package javax.swing.text;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Container;
@@ -47,6 +45,7 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -59,6 +58,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.text.BreakIterator;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -67,6 +67,7 @@ import javax.accessibility.AccessibleAction;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleEditableText;
 import javax.accessibility.AccessibleRole;
+import javax.accessibility.AccessibleState;
 import javax.accessibility.AccessibleStateSet;
 import javax.accessibility.AccessibleText;
 import javax.swing.Action;
@@ -105,12 +106,7 @@ public abstract class JTextComponent extends JComponent
     /**
      * The caret's offset.
      */
-    int dot = 0;
-
-    /**
-     * The current JTextComponent.
-     */
-    JTextComponent textComp = JTextComponent.this;
+    private int caretDot;
 
     /**
      * Construct an AccessibleJTextComponent.
@@ -118,7 +114,8 @@ public abstract class JTextComponent extends JComponent
     public AccessibleJTextComponent()
     {
       super();
-      textComp.addCaretListener(this);
+      JTextComponent.this.addCaretListener(this);
+      caretDot = getCaretPosition();
     }
 
     /**
@@ -129,8 +126,7 @@ public abstract class JTextComponent extends JComponent
      */
     public int getCaretPosition()
     {
-      dot = textComp.getCaretPosition();
-      return dot;
+      return JTextComponent.this.getCaretPosition();
     }
 
     /**
@@ -141,7 +137,7 @@ public abstract class JTextComponent extends JComponent
      */
     public String getSelectedText()
     {
-      return textComp.getSelectedText();
+      return JTextComponent.this.getSelectedText();
     }
 
     /**
@@ -156,9 +152,10 @@ public abstract class JTextComponent extends JComponent
      */
     public int getSelectionStart()
     {
-      if (getSelectedText() == null || (textComp.getText().equals("")))
+      if (getSelectedText() == null
+          || (JTextComponent.this.getText().equals("")))
         return 0;
-      return textComp.getSelectionStart();
+      return JTextComponent.this.getSelectionStart();
     }
 
     /**
@@ -173,9 +170,7 @@ public abstract class JTextComponent extends JComponent
      */
     public int getSelectionEnd()
     {
-      if (getSelectedText() == null || (textComp.getText().equals("")))
-        return 0;
-      return textComp.getSelectionEnd();
+      return JTextComponent.this.getSelectionEnd();
     }
 
     /**
@@ -185,10 +180,20 @@ public abstract class JTextComponent extends JComponent
      * @param e - the caret update event
      */
     public void caretUpdate(CaretEvent e)
-      throws NotImplementedException
     {
-      // TODO: fire appropriate event.
-      dot = e.getDot();
+      int dot = e.getDot();
+      int mark = e.getMark();
+      if (caretDot != dot)
+        {
+          firePropertyChange(ACCESSIBLE_CARET_PROPERTY, new Integer(caretDot),
+                             new Integer(dot));
+          caretDot = dot;
+        }
+      if (mark != dot)
+        {
+          firePropertyChange(ACCESSIBLE_SELECTION_PROPERTY, null,
+                             getSelectedText());
+        }
     }
 
     /**
@@ -197,10 +202,10 @@ public abstract class JTextComponent extends JComponent
      * @return the accessible state set of this component
      */
     public AccessibleStateSet getAccessibleStateSet()
-      throws NotImplementedException
     {
       AccessibleStateSet state = super.getAccessibleStateSet();
-      // TODO: Figure out what state must be added here to the super's state.
+      if (isEditable())
+        state.add(AccessibleState.EDITABLE);
       return state;
     }
 
@@ -248,9 +253,9 @@ public abstract class JTextComponent extends JComponent
      * @param e - the insertion event
      */
     public void insertUpdate(DocumentEvent e)
-      throws NotImplementedException
     {
-      // TODO
+      firePropertyChange(ACCESSIBLE_TEXT_PROPERTY, null,
+                         new Integer(e.getOffset()));
     }
 
     /**
@@ -261,9 +266,9 @@ public abstract class JTextComponent extends JComponent
      * @param e - the removal event
      */
     public void removeUpdate(DocumentEvent e)
-      throws NotImplementedException
     {
-      // TODO
+      firePropertyChange(ACCESSIBLE_TEXT_PROPERTY, null,
+                         new Integer(e.getOffset()));
     }
 
     /**
@@ -274,9 +279,9 @@ public abstract class JTextComponent extends JComponent
      * @param e - text change event
      */
     public void changedUpdate(DocumentEvent e)
-      throws NotImplementedException
     {
-      // TODO
+      firePropertyChange(ACCESSIBLE_TEXT_PROPERTY, null,
+                         new Integer(e.getOffset()));
     }
 
     /**
@@ -289,9 +294,8 @@ public abstract class JTextComponent extends JComponent
      * @return a character index, or -1
      */
     public int getIndexAtPoint(Point p)
-      throws NotImplementedException
     {
-      return 0; // TODO
+      return viewToModel(p);
     }
 
     /**
@@ -305,9 +309,51 @@ public abstract class JTextComponent extends JComponent
      * @return a character's bounding box, or null
      */
     public Rectangle getCharacterBounds(int index)
-      throws NotImplementedException
     {
-      return null; // TODO
+      // This is basically the same as BasicTextUI.modelToView().
+      
+      Rectangle bounds = null;
+      if (index >= 0 && index < doc.getLength() - 1)
+        {
+          if (doc instanceof AbstractDocument)
+            ((AbstractDocument) doc).readLock();
+          try
+            {
+              TextUI ui = getUI();
+              if (ui != null)
+                {
+                  // Get editor rectangle.
+                  Rectangle rect = new Rectangle();
+                  Insets insets = getInsets();
+                  rect.x = insets.left;
+                  rect.y = insets.top;
+                  rect.width = getWidth() - insets.left - insets.right;
+                  rect.height = getHeight() - insets.top - insets.bottom;
+                  View rootView = ui.getRootView(JTextComponent.this);
+                  if (rootView != null)
+                    {
+                      rootView.setSize(rect.width, rect.height);
+                      Shape s = rootView.modelToView(index,
+                                                     Position.Bias.Forward,
+                                                     index + 1,
+                                                     Position.Bias.Backward,
+                                                     rect);
+                      if (s != null)
+                        bounds = s.getBounds();
+                    }
+                }
+            }
+          catch (BadLocationException ex)
+            {
+              // Ignore (return null).
+            }
+          finally
+            {
+              if (doc instanceof AbstractDocument)
+                ((AbstractDocument) doc).readUnlock();
+            }
+        }
+      return bounds;
     }
 
     /**
@@ -317,7 +363,7 @@ public abstract class JTextComponent extends JComponent
      */
     public int getCharCount()
     {
-      return textComp.getText().length();
+      return JTextComponent.this.getText().length();
     }
 
    /** 
@@ -329,9 +375,26 @@ public abstract class JTextComponent extends JComponent
     * @return the character's attributes
     */
     public AttributeSet getCharacterAttribute(int index)
-      throws NotImplementedException
     {
-      return null; // TODO
+      AttributeSet atts;
+      if (doc instanceof AbstractDocument)
+        ((AbstractDocument) doc).readLock();
+      try
+        {
+          Element el = doc.getDefaultRootElement();
+          while (! el.isLeaf())
+            {
+              int i = el.getElementIndex(index);
+              el = el.getElement(i);
+            }
+          atts = el.getAttributes();
+        }
+      finally
+        {
+          if (doc instanceof AbstractDocument)
+            ((AbstractDocument) doc).readUnlock();
+        }
+      return atts;
     }
 
     /**
@@ -344,9 +407,8 @@ public abstract class JTextComponent extends JComponent
      * @return the part of text at that index, or null
      */
     public String getAtIndex(int part, int index)
-      throws NotImplementedException
     {
-      return null; // TODO
+      return getAtIndexImpl(part, index, 0);
     }
     
     /**
@@ -359,9 +421,8 @@ public abstract class JTextComponent extends JComponent
      * @return the part of text after that index, or null
      */
     public String getAfterIndex(int part, int index)
-      throws NotImplementedException
     {
-      return null; // TODO
+      return getAtIndexImpl(part, index, 1);
     }
 
     /**
@@ -374,11 +435,84 @@ public abstract class JTextComponent extends JComponent
      * @return the part of text before that index, or null
      */
     public String getBeforeIndex(int part, int index)
-      throws NotImplementedException
     {
-      return null; // TODO
+      return getAtIndexImpl(part, index, -1);
     }
-    
+
+    /**
+     * Implements getAtIndex(), getBeforeIndex() and getAfterIndex().
+     *
+     * @param part the part to return, either CHARACTER, WORD or SENTENCE
+     * @param index the index
+     * @param dir the direction, -1 for backwards, 0 for here, +1 for forwards
+     *
+     * @return the resulting string
+     */
+    private String getAtIndexImpl(int part, int index, int dir)
+    {
+      String ret = null;
+      if (doc instanceof AbstractDocument)
+        ((AbstractDocument) doc).readLock();
+      try
+        {
+          BreakIterator iter = null;
+          switch (part)
+          {
+            case CHARACTER:
+              iter = BreakIterator.getCharacterInstance(getLocale());
+              break;
+            case WORD:
+              iter = BreakIterator.getWordInstance(getLocale());
+              break;
+            case SENTENCE:
+              iter = BreakIterator.getSentenceInstance(getLocale());
+              break;
+            default:
+              break;
+          }
+          String text = doc.getText(0, doc.getLength() - 1);
+          iter.setText(text);
+          int start = index;
+          int end = index;
+          switch (dir)
+          {
+          case 0:
+            if (iter.isBoundary(index))
+              {
+                start = index;
+                end = iter.following(index);
+              }
+            else
+              {
+                start = iter.preceding(index);
+                end = iter.next();
+              }
+            break;
+          case 1:
+            start = iter.following(index);
+            end = iter.next();
+            break;
+          case -1:
+            end = iter.preceding(index);
+            start = iter.previous();
+            break;
+          default:
+            assert false;
+          }
+          ret = text.substring(start, end);
+        }
+      catch (BadLocationException ex)
+        {
+          // Ignore (return null).
+        }
+      finally
+        {
+          if (doc instanceof AbstractDocument)
+            ((AbstractDocument) doc).readUnlock();
+        }
+      return ret;
+    }
+
     /**
      * Returns the number of actions for this object. The zero-th
      * object represents the default action.
@@ -386,9 +520,8 @@ public abstract class JTextComponent extends JComponent
      * @return the number of actions (0-based).
      */
     public int getAccessibleActionCount()
-      throws NotImplementedException
     {
-      return 0; // TODO
+      return getActions().length;
     }
     
     /**
@@ -400,10 +533,12 @@ public abstract class JTextComponent extends JComponent
      * @return description of the i-th action
      */
     public String getAccessibleActionDescription(int i)
-      throws NotImplementedException
     {
-      // TODO: Not implemented fully
-      return super.getAccessibleDescription();
+      String desc = null;
+      Action[] actions = getActions();
+      if (i >= 0 && i < actions.length)
+        desc = (String) actions[i].getValue(Action.NAME);
+      return desc;
     }
     
     /**
@@ -415,9 +550,17 @@ public abstract class JTextComponent extends JComponent
      * @return true if the action was performed successfully
      */
     public boolean doAccessibleAction(int i)
-      throws NotImplementedException
     {
-      return false; // TODO
+      boolean ret = false;
+      Action[] actions = getActions();
+      if (i >= 0 && i < actions.length)
+        {
+          ActionEvent ev = new ActionEvent(JTextComponent.this,
+                                           ActionEvent.ACTION_PERFORMED, null);
+          actions[i].actionPerformed(ev);
+          ret = true;
+        }
+      return ret;
     }
     
     /**
@@ -426,9 +569,8 @@ public abstract class JTextComponent extends JComponent
      * @param s - the new text contents.
      */
     public void setTextContents(String s)
-      throws NotImplementedException
     {
-      // TODO
+      setText(s);
     }
 
     /**
@@ -438,9 +580,16 @@ public abstract class JTextComponent extends JComponent
      * @param s - the new text
      */
     public void insertTextAtIndex(int index, String s)
-      throws NotImplementedException
     {
-      replaceText(index, index, s);
+      try
+        {
+          doc.insertString(index, s, null);
+        }
+      catch (BadLocationException ex)
+        {
+          // What should we do with this?
+          ex.printStackTrace();
+        }
     }
 
     /**
@@ -453,7 +602,7 @@ public abstract class JTextComponent extends JComponent
     {
       try
       {
-        return textComp.getText(start, end - start);
+        return JTextComponent.this.getText(start, end - start);
       }
       catch (BadLocationException ble)
       {
@@ -481,8 +630,8 @@ public abstract class JTextComponent extends JComponent
      */
     public void cut(int start, int end)
     {
-      textComp.select(start, end);
-      textComp.cut();
+      JTextComponent.this.select(start, end);
+      JTextComponent.this.cut();
     }
 
     /**
@@ -492,8 +641,8 @@ public abstract class JTextComponent extends JComponent
      */
     public void paste(int start)
     {
-      textComp.setCaretPosition(start);
-      textComp.paste();
+      JTextComponent.this.setCaretPosition(start);
+      JTextComponent.this.paste();
     }
 
     /**
@@ -506,8 +655,8 @@ public abstract class JTextComponent extends JComponent
      */
     public void replaceText(int start, int end, String s)
     {
-      textComp.select(start, end);
-      textComp.replaceSelection(s);
+      JTextComponent.this.select(start, end);
+      JTextComponent.this.replaceSelection(s);
     }
 
     /**
@@ -518,7 +667,7 @@ public abstract class JTextComponent extends JComponent
      */
     public void selectText(int start, int end)
     {
-      textComp.select(start, end);
+      JTextComponent.this.select(start, end);
     }
 
     /**
@@ -529,9 +678,12 @@ public abstract class JTextComponent extends JComponent
      * @param s - the new attribute set for the text in the range
      */
     public void setAttributes(int start, int end, AttributeSet s)
-      throws NotImplementedException
     {
-      // TODO
+      if (doc instanceof StyledDocument)
+        {
+          StyledDocument sdoc = (StyledDocument) doc;
+          sdoc.setCharacterAttributes(start, end - start, s, true);
+        }
     }
   }
 

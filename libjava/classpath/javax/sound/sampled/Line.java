@@ -57,7 +57,7 @@ public interface Line
      * for instance TargetDataLine.class.
      * @param klass the class of the line
      */
-    public Info(Class klass)
+    public Info(Class<?> klass)
     {
       this.klass = klass;
     }
@@ -65,7 +65,7 @@ public interface Line
     /**
      * Return the line's class.
      */
-    public Class getLineClass()
+    public Class<?> getLineClass()
     {
       return klass;
     }

@@ -119,6 +119,11 @@ final class GlyphLoader
                  0, 0);
   }
 
+  public void loadGlyph(int glyphIndex, AffineTransform transform,
+                        Zone glyphZone)
+  {
+    loadGlyph(glyphIndex, unitsPerEm, transform, false, glyphZone);
+  }
 
   private void loadSubGlyph(int glyphIndex,
                             double pointSize,

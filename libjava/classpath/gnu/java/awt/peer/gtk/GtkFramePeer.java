@@ -57,6 +57,11 @@ public class GtkFramePeer extends GtkWindowPeer
   native void removeMenuBarPeer ();
   native void gtkFixedSetVisible (boolean visible);
 
+  private native void maximize();
+  private native void unmaximize();
+  private native void iconify();
+  private native void deiconify();
+
   int getMenuBarHeight ()
   {
     return menuBar == null ? 0 : getMenuBarHeight (menuBar);
@@ -199,12 +204,25 @@ public class GtkFramePeer extends GtkWindowPeer
 
   public int getState ()
   {
-    return 0;
+    return windowState;
   }
 
   public void setState (int state)
   {
-
+    switch (state)
+      {
+        case Frame.NORMAL:
+          if ((windowState & Frame.ICONIFIED) != 0)
+            deiconify();
+          if ((windowState & Frame.MAXIMIZED_BOTH) != 0)
+            unmaximize();
+          break;
+        case Frame.ICONIFIED:
+          iconify();
+          break;
+        case Frame.MAXIMIZED_BOTH:
+          maximize();
+      }
   }
 
   public void setMaximizedBounds (Rectangle r)

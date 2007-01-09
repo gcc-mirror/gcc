@@ -90,23 +90,20 @@ import java.io.Serializable;
  * @since 1.4
  * @status updated to 1.4
  */
-public class IdentityHashMap extends AbstractMap
-  implements Map, Serializable, Cloneable
+public class IdentityHashMap<K,V> extends AbstractMap<K,V>
+  implements Map<K,V>, Serializable, Cloneable
 {
   /** The default capacity. */
   private static final int DEFAULT_CAPACITY = 21;
 
   /**
-   * This object is used to mark deleted items. Package visible for use by
-   * nested classes.
+   * This object is used to mark a slot whose key or value is 'null'.
+   * This is more efficient than using a special value to mark an empty
+   * slot, because null entries are rare, empty slots are common, and
+   * the JVM will clear new arrays for us.
+   * Package visible for use by nested classes.
    */
-  static final Object tombstone = new Object();
-
-  /**
-   * This object is used to mark empty slots.  We need this because
-   * using null is ambiguous. Package visible for use by nested classes.
-   */
-  static final Object emptyslot = new Object();
+  static final Object nullslot = new Object();
 
   /**
    * Compatible with JDK 1.4.
@@ -134,7 +131,7 @@ public class IdentityHashMap extends AbstractMap
   /**
    * The cache for {@link #entrySet()}.
    */
-  private transient Set entries;
+  private transient Set<Map.Entry<K,V>> entries;
 
   /**
    * The threshold for rehashing, which is 75% of (table.length / 2).
@@ -166,7 +163,6 @@ public class IdentityHashMap extends AbstractMap
     if (max < 2)
       max = 2;
     table = new Object[max << 1];
-    Arrays.fill(table, emptyslot);
     threshold = (max >> 2) * 3;
   }
 
@@ -177,7 +173,7 @@ public class IdentityHashMap extends AbstractMap
    * @param m The map whose elements are to be put in this map
    * @throws NullPointerException if m is null
    */
-  public IdentityHashMap(Map m)
+  public IdentityHashMap(Map<? extends K, ? extends V> m)
   {
     this(Math.max(m.size() << 1, DEFAULT_CAPACITY));
     putAll(m);
@@ -191,7 +187,7 @@ public class IdentityHashMap extends AbstractMap
     if (size != 0)
       {
         modCount++;
-        Arrays.fill(table, emptyslot);
+        Arrays.fill(table, null);
         size = 0;
       }
   }
@@ -227,6 +223,7 @@ public class IdentityHashMap extends AbstractMap
    */
   public boolean containsKey(Object key)
   {
+    key = xform(key);
     return key == table[hash(key)];
   }
 
@@ -241,6 +238,7 @@ public class IdentityHashMap extends AbstractMap
    */
   public boolean containsValue(Object value)
   {
+    value = xform(value);
     for (int i = table.length - 1; i > 0; i -= 2)
       if (table[i] == value)
         return true;
@@ -274,19 +272,19 @@ public class IdentityHashMap extends AbstractMap
    * @see #values()
    * @see Map.Entry
    */
-  public Set entrySet()
+  public Set<Map.Entry<K,V>> entrySet()
   {
     if (entries == null)
-      entries = new AbstractSet()
+      entries = new AbstractSet<Map.Entry<K,V>>()
       {
         public int size()
         {
           return size;
         }
 
-        public Iterator iterator()
+        public Iterator<Map.Entry<K,V>> iterator()
         {
-          return new IdentityIterator(ENTRIES);
+          return new IdentityIterator<Map.Entry<K,V>>(ENTRIES);
         }
 
         public void clear()
@@ -299,7 +297,9 @@ public class IdentityHashMap extends AbstractMap
           if (! (o instanceof Map.Entry))
             return false;
           Map.Entry m = (Map.Entry) o;
-          return m.getValue() == table[hash(m.getKey()) + 1];
+          Object value = xform(m.getValue());
+          Object key = xform(m.getKey());
+          return value == table[hash(key) + 1];
         }
 
         public int hashCode()
@@ -311,14 +311,13 @@ public class IdentityHashMap extends AbstractMap
         {
           if (! (o instanceof Map.Entry))
             return false;
-          Object key = ((Map.Entry) o).getKey();
+          Object key = xform(((Map.Entry) o).getKey());
           int h = hash(key);
           if (table[h] == key)
             {
               size--;
               modCount++;
-              table[h] = tombstone;
-              table[h + 1] = tombstone;
+              IdentityHashMap.this.removeAtIndex(h);
               return true;
             }
           return false;
@@ -358,10 +357,11 @@ public class IdentityHashMap extends AbstractMap
    * @see #put(Object, Object)
    * @see #containsKey(Object)
    */
-  public Object get(Object key)
+  public V get(Object key)
   {
+    key = xform(key);
     int h = hash(key);
-    return table[h] == key ? table[h + 1] : null;
+    return (V) (table[h] == key ? unxform(table[h + 1]) : null);
   }
 
   /**
@@ -378,10 +378,11 @@ public class IdentityHashMap extends AbstractMap
     for (int i = table.length - 2; i >= 0; i -= 2)
       {
         Object key = table[i];
-        if (key == emptyslot || key == tombstone)
+        if (key == null)
           continue;
-        hash += (System.identityHashCode(key)
-                 ^ System.identityHashCode(table[i + 1]));
+        // FIXME: this is a lame computation.
+        hash += (System.identityHashCode(unxform(key))
+                 ^ System.identityHashCode(unxform(table[i + 1])));
       }
     return hash;
   }
@@ -414,19 +415,19 @@ public class IdentityHashMap extends AbstractMap
    * @see #values()
    * @see #entrySet()
    */
-  public Set keySet()
+  public Set<K> keySet()
   {
     if (keys == null)
-      keys = new AbstractSet()
+      keys = new AbstractSet<K>()
       {
         public int size()
         {
           return size;
         }
 
-        public Iterator iterator()
+        public Iterator<K> iterator()
         {
-          return new IdentityIterator(KEYS);
+          return new IdentityIterator<K>(KEYS);
         }
 
         public void clear()
@@ -445,23 +446,22 @@ public class IdentityHashMap extends AbstractMap
           for (int i = table.length - 2; i >= 0; i -= 2)
             {
               Object key = table[i];
-              if (key == emptyslot || key == tombstone)
+              if (key == null)
                 continue;
-              hash += System.identityHashCode(key);
+              hash += System.identityHashCode(unxform(key));
             }
           return hash;
-
         }
 
         public boolean remove(Object o)
         {
+          o = xform(o);
           int h = hash(o);
           if (table[h] == o)
             {
               size--;
               modCount++;
-              table[h] = tombstone;
-              table[h + 1] = tombstone;
+              removeAtIndex(h);
               return true;
             }
           return false;
@@ -484,8 +484,20 @@ public class IdentityHashMap extends AbstractMap
    * @return the prior mapping of the key, or null if there was none
    * @see #get(Object)
    */
-  public Object put(Object key, Object value)
+  public V put(K key, V value)
   {
+    key = (K) xform(key);
+    value = (V) xform(value);
+
+    // We don't want to rehash if we're overwriting an existing slot.
+    int h = hash(key);
+    if (table[h] == key)
+      {
+        V r = (V) unxform(table[h + 1]);
+        table[h + 1] = value;
+        return r;
+      }
+
     // Rehash if the load factor is too high.
     if (size > threshold)
       {
@@ -493,25 +505,25 @@ public class IdentityHashMap extends AbstractMap
         // This isn't necessarily prime, but it is an odd number of key/value
         // slots, which has a higher probability of fewer collisions.
         table = new Object[(old.length * 2) + 2];
-        Arrays.fill(table, emptyslot);
         size = 0;
         threshold = (table.length >>> 3) * 3;
 
         for (int i = old.length - 2; i >= 0; i -= 2)
           {
-            Object oldkey = old[i];
-            if (oldkey != tombstone && oldkey != emptyslot)
-              // Just use put.  This isn't very efficient, but it is ok.
-              put(oldkey, old[i + 1]);
+            K oldkey = (K) old[i];
+            if (oldkey != null)
+              {
+                h = hash(oldkey);
+                table[h] = oldkey;
+                table[h + 1] = old[i + 1];
+                ++size;
+                // No need to update modCount here, we'll do it
+                // just after the loop.
+              }
           }
-      }
 
-    int h = hash(key);
-    if (table[h] == key)
-      {
-        Object r = table[h + 1];
-        table[h + 1] = value;
-        return r;
+        // Now that we've resize, recompute the hash value.
+        h = hash(key);
       }
 
     // At this point, we add a new mapping.
@@ -529,10 +541,44 @@ public class IdentityHashMap extends AbstractMap
    * @param m the map to copy
    * @throws NullPointerException if m is null
    */
-  public void putAll(Map m)
+  public void putAll(Map<? extends K, ? extends V> m)
   {
     // Why did Sun specify this one? The superclass does the right thing.
     super.putAll(m);
+  }
+
+  /**
+   * Remove the element at index and update the table to compensate.
+   * This is package-private for use by inner classes.
+   * @param i index of the removed element
+   */
+  final void removeAtIndex(int i)
+  {
+    // This is Algorithm R from Knuth, section 6.4.
+    // Variable names are taken directly from the text.
+    while (true)
+      {
+        table[i] = null;
+        table[i + 1] = null;
+        int j = i;
+        int r;
+        do
+          {
+            i -= 2;
+            if (i < 0)
+              i = table.length - 2;
+            Object key = table[i];
+            if (key == null)
+              return;
+            r = Math.abs(System.identityHashCode(key)
+                         % (table.length >> 1)) << 1;
+          }
+        while ((i <= r && r < j)
+            || (r < j && j < i)
+            || (j < i && i <= r));
+        table[j] = table[i];
+        table[j + 1] = table[i + 1];
+      }
   }
 
   /**
@@ -549,17 +595,17 @@ public class IdentityHashMap extends AbstractMap
    * @param key the key used to locate the value to remove
    * @return whatever the key mapped to, if present
    */
-  public Object remove(Object key)
+  public V remove(Object key)
   {
+    key = xform(key);
     int h = hash(key);
     if (table[h] == key)
       {
         modCount++;
         size--;
-        Object r = table[h + 1];
-        table[h] = tombstone;
-        table[h + 1] = tombstone;
-        return r;
+        Object r = unxform(table[h + 1]);
+        removeAtIndex(h);
+        return (V) r;
       }
     return null;
   }
@@ -591,19 +637,19 @@ public class IdentityHashMap extends AbstractMap
    * @see #keySet()
    * @see #entrySet()
    */
-  public Collection values()
+  public Collection<V> values()
   {
     if (values == null)
-      values = new AbstractCollection()
+      values = new AbstractCollection<V>()
       {
         public int size()
         {
           return size;
         }
 
-        public Iterator iterator()
+        public Iterator<V> iterator()
         {
-          return new IdentityIterator(VALUES);
+          return new IdentityIterator<V>(VALUES);
         }
 
         public void clear()
@@ -613,13 +659,14 @@ public class IdentityHashMap extends AbstractMap
 
         public boolean remove(Object o)
         {
+          o = xform(o);
+          // This approach may look strange, but it is ok.
           for (int i = table.length - 1; i > 0; i -= 2)
             if (table[i] == o)
               {
                 modCount++;
-                table[i - 1] = tombstone;
-                table[i] = tombstone;
                 size--;
+                IdentityHashMap.this.removeAtIndex(i - 1);
                 return true;
               }
           return false;
@@ -629,8 +676,31 @@ public class IdentityHashMap extends AbstractMap
   }
 
   /**
+   * Transform a reference from its external form to its internal form.
+   * This is package-private for use by inner classes.
+   */
+  final Object xform(Object o)
+  {
+    if (o == null)
+      o = nullslot;
+    return o;
+  }
+
+  /**
+   * Transform a reference from its internal form to its external form.
+   * This is package-private for use by inner classes.
+   */
+  final Object unxform(Object o)
+  {
+    if (o == nullslot)
+      o = null;
+    return o;
+  }
+
+  /**
    * Helper method which computes the hash code, then traverses the table
-   * until it finds the key, or the spot where the key would go.
+   * until it finds the key, or the spot where the key would go.  the key
+   * must already be in its internal form.
    *
    * @param key the key to check
    * @return the index where the key belongs
@@ -638,36 +708,23 @@ public class IdentityHashMap extends AbstractMap
    * @see #put(Object, Object)
    */
   // Package visible for use by nested classes.
-  int hash(Object key)
+  final int hash(Object key)
   {
-    // Implementation note: it is feasible for the table to have no
-    // emptyslots, if it is full with entries and tombstones, so we must
-    // remember where we started. If we encounter the key or an emptyslot,
-    // we are done.  If we encounter a tombstone, the key may still be in
-    // the array.  If we don't encounter the key, we use the first emptyslot
-    // or tombstone we encountered as the location where the key would go.
-    // By requiring at least 2 key/value slots, and rehashing at 75%
-    // capacity, we guarantee that there will always be either an emptyslot
-    // or a tombstone somewhere in the table.
     int h = Math.abs(System.identityHashCode(key) % (table.length >> 1)) << 1;
-    int del = -1;
-    int save = h;
 
-    do
+    while (true)
       {
-        if (table[h] == key)
+        // By requiring at least 2 key/value slots, and rehashing at 75%
+        // capacity, we guarantee that there will always be either an empty
+        // slot somewhere in the table.
+        if (table[h] == key || table[h] == null)
           return h;
-        if (table[h] == emptyslot)
-          break;
-        if (table[h] == tombstone && del < 0)
-          del = h;
+        // We use linear probing as it is friendlier to the cache and
+        // it lets us efficiently remove entries.
         h -= 2;
         if (h < 0)
           h = table.length - 2;
       }
-    while (h != save);
-
-    return del < 0 ? h : del;
   }
 
   /**
@@ -679,7 +736,7 @@ public class IdentityHashMap extends AbstractMap
    * @author Tom Tromey (tromey@redhat.com)
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private class IdentityIterator implements Iterator
+  private class IdentityIterator<I> implements Iterator<I>
   {
     /**
      * The type of this Iterator: {@link #KEYS}, {@link #VALUES},
@@ -717,7 +774,7 @@ public class IdentityHashMap extends AbstractMap
      * @throws ConcurrentModificationException if the Map was modified
      * @throws NoSuchElementException if there is none
      */
-    public Object next()
+    public I next()
     {
       if (knownMod != modCount)
         throw new ConcurrentModificationException();
@@ -731,10 +788,11 @@ public class IdentityHashMap extends AbstractMap
           loc -= 2;
           key = table[loc];
         }
-      while (key == emptyslot || key == tombstone);
-
-      return type == KEYS ? key : (type == VALUES ? table[loc + 1]
-                                   : new IdentityEntry(loc));
+      while (key == null);
+  
+      return (I) (type == KEYS ? unxform(key) 
+		  : (type == VALUES ? unxform(table[loc + 1])
+		     : new IdentityEntry(loc)));
     }
 
     /**
@@ -748,12 +806,11 @@ public class IdentityHashMap extends AbstractMap
     {
       if (knownMod != modCount)
         throw new ConcurrentModificationException();
-      if (loc == table.length || table[loc] == tombstone)
+      if (loc == table.length)
         throw new IllegalStateException();
       modCount++;
       size--;
-      table[loc] = tombstone;
-      table[loc + 1] = tombstone;
+      removeAtIndex(loc);
       knownMod++;
     }
   } // class IdentityIterator
@@ -768,7 +825,7 @@ public class IdentityHashMap extends AbstractMap
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private final class IdentityEntry implements Map.Entry
+  private final class IdentityEntry<EK,EV> implements Map.Entry<EK,EV>
   {
     /** The location of this entry. */
     final int loc;
@@ -797,12 +854,13 @@ public class IdentityHashMap extends AbstractMap
      */
     public boolean equals(Object o)
     {
-      if (knownMod != modCount || table[loc] == tombstone)
+      if (knownMod != modCount)
         throw new ConcurrentModificationException();
       if (! (o instanceof Map.Entry))
         return false;
       Map.Entry e = (Map.Entry) o;
-      return table[loc] == e.getKey() && table[loc + 1] == e.getValue();
+      return table[loc] == xform(e.getKey())
+             && table[loc + 1] == xform(e.getValue());
     }
 
     /**
@@ -812,11 +870,11 @@ public class IdentityHashMap extends AbstractMap
      * @throws ConcurrentModificationException if the entry was invalidated
      *         by modifying the Map or calling Iterator.remove()
      */
-    public Object getKey()
+    public EK getKey()
     {
-      if (knownMod != modCount || table[loc] == tombstone)
+      if (knownMod != modCount)
         throw new ConcurrentModificationException();
-      return table[loc];
+      return (EK) unxform(table[loc]);
     }
 
     /**
@@ -826,11 +884,11 @@ public class IdentityHashMap extends AbstractMap
      * @throws ConcurrentModificationException if the entry was invalidated
      *         by modifying the Map or calling Iterator.remove()
      */
-    public Object getValue()
+    public EV getValue()
     {
-      if (knownMod != modCount || table[loc] == tombstone)
+      if (knownMod != modCount)
         throw new ConcurrentModificationException();
-      return table[loc + 1];
+      return (EV) unxform(table[loc + 1]);
     }
 
     /**
@@ -844,10 +902,10 @@ public class IdentityHashMap extends AbstractMap
      */
     public int hashCode()
     {
-      if (knownMod != modCount || table[loc] == tombstone)
+      if (knownMod != modCount)
         throw new ConcurrentModificationException();
-      return (System.identityHashCode(table[loc])
-              ^ System.identityHashCode(table[loc + 1]));
+      return (System.identityHashCode(unxform(table[loc]))
+              ^ System.identityHashCode(unxform(table[loc + 1])));
     }
 
     /**
@@ -858,12 +916,12 @@ public class IdentityHashMap extends AbstractMap
      * @throws ConcurrentModificationException if the entry was invalidated
      *         by modifying the Map or calling Iterator.remove()
      */
-    public Object setValue(Object value)
+    public EV setValue(EV value)
     {
-      if (knownMod != modCount || table[loc] == tombstone)
+      if (knownMod != modCount)
         throw new ConcurrentModificationException();
-      Object r = table[loc + 1];
-      table[loc + 1] = value;
+      EV r = (EV) unxform(table[loc + 1]);
+      table[loc + 1] = xform(value);
       return r;
     }
 
@@ -877,9 +935,9 @@ public class IdentityHashMap extends AbstractMap
      */
     public String toString()
     {
-      if (knownMod != modCount || table[loc] == tombstone)
+      if (knownMod != modCount)
         throw new ConcurrentModificationException();
-      return table[loc] + "=" + table[loc + 1];
+      return unxform(table[loc]) + "=" + unxform(table[loc + 1]);
     }
   } // class IdentityEntry
 
@@ -902,7 +960,7 @@ public class IdentityHashMap extends AbstractMap
     table = new Object[Math.max(num << 1, DEFAULT_CAPACITY) << 1];
     // Read key/value pairs.
     while (--num >= 0)
-      put(s.readObject(), s.readObject());
+      put((K) s.readObject(), (V) s.readObject());
   }
 
   /**
@@ -922,10 +980,10 @@ public class IdentityHashMap extends AbstractMap
     for (int i = table.length - 2; i >= 0; i -= 2)
       {
         Object key = table[i];
-        if (key != tombstone && key != emptyslot)
+        if (key != null)
           {
-            s.writeObject(key);
-            s.writeObject(table[i + 1]);
+            s.writeObject(unxform(key));
+            s.writeObject(unxform(table[i + 1]));
           }
       }
   }

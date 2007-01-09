@@ -625,7 +625,7 @@ public class DefaultTableModel extends AbstractTableModel
     if (columnCount > columnIdentifiers.size())
       columnIdentifiers.setSize(columnCount);
            
-    if (rowCount > dataVector.size())
+    if (dataVector != null && rowCount > dataVector.size())
       {
         int rowsToAdd = rowCount - dataVector.size();
         addExtraRows(rowsToAdd, columnCount);

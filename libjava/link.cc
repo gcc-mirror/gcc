@@ -264,6 +264,107 @@ _Jv_Linker::find_field (jclass klass, jclass owner,
   return the_field;
 }
 
+_Jv_Method *
+_Jv_Linker::resolve_method_entry (jclass klass, jclass &found_class,
+				  int class_index, int name_and_type_index,
+				  bool init, bool is_iface)
+{
+  _Jv_Constants *pool = &klass->constants;
+  jclass owner = resolve_pool_entry (klass, class_index).clazz;
+
+  if (init && owner != klass)
+    _Jv_InitClass (owner);
+
+  _Jv_ushort name_index, type_index;
+  _Jv_loadIndexes (&pool->data[name_and_type_index],
+		   name_index,
+		   type_index);
+
+  _Jv_Utf8Const *method_name = pool->data[name_index].utf8;
+  _Jv_Utf8Const *method_signature = pool->data[type_index].utf8;
+
+  _Jv_Method *the_method = 0;
+  found_class = 0;
+
+  // We're going to cache a pointer to the _Jv_Method object
+  // when we find it.  So, to ensure this doesn't get moved from
+  // beneath us, we first put all the needed Miranda methods
+  // into the target class.
+  wait_for_state (klass, JV_STATE_LOADED);
+
+  // First search the class itself.
+  the_method = search_method_in_class (owner, klass,
+				       method_name, method_signature);
+
+  if (the_method != 0)
+    {
+      found_class = owner;
+      goto end_of_method_search;
+    }
+
+  // If we are resolving an interface method, search the
+  // interface's superinterfaces (A superinterface is not an
+  // interface's superclass - a superinterface is implemented by
+  // the interface).
+  if (is_iface)
+    {
+      _Jv_ifaces ifaces;
+      ifaces.count = 0;
+      ifaces.len = 4;
+      ifaces.list = (jclass *) _Jv_Malloc (ifaces.len
+					   * sizeof (jclass *));
+
+      get_interfaces (owner, &ifaces);
+
+      for (int i = 0; i < ifaces.count; i++)
+	{
+	  jclass cls = ifaces.list[i];
+	  the_method = search_method_in_class (cls, klass, method_name, 
+					       method_signature);
+	  if (the_method != 0)
+	    {
+	      found_class = cls;
+	      break;
+	    }
+	}
+
+      _Jv_Free (ifaces.list);
+
+      if (the_method != 0)
+	goto end_of_method_search;
+    }
+
+  // Finally, search superclasses. 
+  the_method = (search_method_in_superclasses 
+		(owner->getSuperclass (), klass, method_name, 
+		 method_signature, &found_class));
+  
+
+ end_of_method_search:
+
+  // FIXME: if (cls->loader != klass->loader), then we
+  // must actually check that the types of arguments
+  // correspond.  That is, for each argument type, and
+  // the return type, doing _Jv_FindClassFromSignature
+  // with either loader should produce the same result,
+  // i.e., exactly the same jclass object. JVMS 5.4.3.3    
+    
+  if (the_method == 0)
+    {
+      java::lang::StringBuffer *sb = new java::lang::StringBuffer();
+      sb->append(JvNewStringLatin1("method "));
+      sb->append(owner->getName());
+      sb->append(JvNewStringLatin1("."));
+      sb->append(_Jv_NewStringUTF(method_name->chars()));
+      sb->append(JvNewStringLatin1(" with signature "));
+      sb->append(_Jv_NewStringUTF(method_signature->chars()));
+      sb->append(JvNewStringLatin1(" was not found."));
+      throw new java::lang::NoSuchMethodError (sb->toString());
+    }
+
+  return the_method;
+}
+
 _Jv_word
 _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
 {
@@ -289,7 +390,7 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
   if ((pool->tags[index] & JV_CONSTANT_ResolvedFlag) != 0)
     return pool->data[index];
 
-  switch (pool->tags[index])
+  switch (pool->tags[index] & ~JV_CONSTANT_LazyFlag)
     {
     case JV_CONSTANT_Class:
       {
@@ -365,8 +466,9 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
         if (owner->state == JV_STATE_PHANTOM)
           throw new java::lang::NoClassDefFoundError(owner->getName());
 
-	if (owner != klass)
-	  _Jv_InitClass (owner);
+	// We don't initialize 'owner', but we do make sure that its
+	// fields exist.
+	wait_for_state (owner, JV_STATE_PREPARED);
 
 	_Jv_ushort name_index, type_index;
 	_Jv_loadIndexes (&pool->data[name_and_type_index],
@@ -381,8 +483,9 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
 					   &found_class,
 					   field_name,
 					   field_type_name);
-	if (owner != found_class)
-	  _Jv_InitClass (found_class);
+	// Initialize the field's declaring class, not its qualifying
+	// class.
+	_Jv_InitClass (found_class);
 	pool->data[index].field = the_field;
 	pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
       }
@@ -395,96 +498,13 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
 	_Jv_loadIndexes (&pool->data[index],
 			 class_index,
 			 name_and_type_index);
-	jclass owner = (resolve_pool_entry (klass, class_index)).clazz;
 
-	if (owner != klass)
-	  _Jv_InitClass (owner);
-
-	_Jv_ushort name_index, type_index;
-	_Jv_loadIndexes (&pool->data[name_and_type_index],
-			 name_index,
-			 type_index);
-
-	_Jv_Utf8Const *method_name = pool->data[name_index].utf8;
-	_Jv_Utf8Const *method_signature = pool->data[type_index].utf8;
-
-	_Jv_Method *the_method = 0;
-	jclass found_class = 0;
-
-	// We're going to cache a pointer to the _Jv_Method object
-	// when we find it.  So, to ensure this doesn't get moved from
-	// beneath us, we first put all the needed Miranda methods
-	// into the target class.
-	wait_for_state (klass, JV_STATE_LOADED);
-
-	// First search the class itself.
-	the_method = search_method_in_class (owner, klass,
-					     method_name, method_signature);
-
-	if (the_method != 0)
-	  {
-	    found_class = owner;
-	    goto end_of_method_search;
-	  }
-
-	// If we are resolving an interface method, search the
-	// interface's superinterfaces (A superinterface is not an
-	// interface's superclass - a superinterface is implemented by
-	// the interface).
-	if (pool->tags[index] == JV_CONSTANT_InterfaceMethodref)
-	  {
-	    _Jv_ifaces ifaces;
-	    ifaces.count = 0;
-	    ifaces.len = 4;
-	    ifaces.list = (jclass *) _Jv_Malloc (ifaces.len
-						 * sizeof (jclass *));
-
-	    get_interfaces (owner, &ifaces);
-
-	    for (int i = 0; i < ifaces.count; i++)
-	      {
-		jclass cls = ifaces.list[i];
-		the_method = search_method_in_class (cls, klass, method_name, 
-						     method_signature);
-		if (the_method != 0)
-		  {
-		    found_class = cls;
-		    break;
-		  }
-	      }
-
-	    _Jv_Free (ifaces.list);
-
-	    if (the_method != 0)
-	      goto end_of_method_search;
-	  }
-
-	// Finally, search superclasses.
-	the_method = (search_method_in_superclasses 
-		      (owner->getSuperclass (), klass, method_name, 
-		       method_signature, &found_class));
-	
-      end_of_method_search:
-    
-	// FIXME: if (cls->loader != klass->loader), then we
-	// must actually check that the types of arguments
-	// correspond.  That is, for each argument type, and
-	// the return type, doing _Jv_FindClassFromSignature
-	// with either loader should produce the same result,
-	// i.e., exactly the same jclass object. JVMS 5.4.3.3    
-    
-	if (the_method == 0)
-	  {
-	    java::lang::StringBuffer *sb = new java::lang::StringBuffer();
-	    sb->append(JvNewStringLatin1("method "));
-	    sb->append(owner->getName());
-	    sb->append(JvNewStringLatin1("."));
-	    sb->append(_Jv_NewStringUTF(method_name->chars()));
-	    sb->append(JvNewStringLatin1(" with signature "));
-	    sb->append(_Jv_NewStringUTF(method_signature->chars()));
-	    sb->append(JvNewStringLatin1(" was not found."));
-	    throw new java::lang::NoSuchMethodError (sb->toString());
-	  }
+	_Jv_Method *the_method;
+	jclass found_class;
+	the_method = resolve_method_entry (klass, found_class,
+					   class_index, name_and_type_index,
+					   true,
+					   pool->tags[index] == JV_CONSTANT_InterfaceMethodref);
       
 	pool->data[index].rmethod
 	  = klass->engine->resolve_method(the_method,
@@ -1950,11 +1970,14 @@ _Jv_Linker::wait_for_state (jclass klass, int state)
   // Print some debugging info if requested.  Interpreted classes are
   // handled in defineclass, so we only need to handle the two
   // pre-compiled cases here.
-  if (gcj::verbose_class_flag
-      && (klass->state == JV_STATE_COMPILED
+  if ((klass->state == JV_STATE_COMPILED
 	  || klass->state == JV_STATE_PRELOADING)
       && ! _Jv_IsInterpretedClass (klass))
-    print_class_loaded (klass);
+    {
+      if (gcj::verbose_class_flag)
+	print_class_loaded (klass);
+      ++gcj::loadedClasses;
+    }
 
   try
     {

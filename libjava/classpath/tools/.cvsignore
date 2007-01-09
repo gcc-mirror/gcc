@@ -4,3 +4,16 @@ Makefile.in
 Makefile
 tools.zip
 appletviewer
+.deps
+gappletviewer
+gjarsigner
+gkeytool
+gjar
+gnative2ascii
+gserialver
+gjavah
+gorbd
+grmic
+grmid
+grmiregistry
+gtnameserv

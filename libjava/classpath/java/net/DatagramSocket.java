@@ -1,5 +1,5 @@
 /* DatagramSocket.java -- A class to model UDP sockets
-   Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -180,7 +180,18 @@ public class DatagramSocket
         if (factory != null)
           impl = factory.createDatagramSocketImpl();
         else
-          impl = new PlainDatagramSocketImpl();
+          {
+            try
+              {
+                impl = new PlainDatagramSocketImpl();
+              }
+            catch (IOException ioe)
+              {
+                SocketException se = new SocketException();
+                se.initCause(ioe);
+                throw se;
+              }
+          }
       }
     else
       try
@@ -194,7 +205,16 @@ public class DatagramSocket
         {
 	  System.err.println("Could not instantiate class: java.net."
 	                     + propVal + "DatagramSocketImpl");
-	  impl = new PlainDatagramSocketImpl();
+          try
+            {
+              impl = new PlainDatagramSocketImpl();
+            }
+          catch (IOException ioe)
+            {
+              SocketException se = new SocketException();
+              se.initCause(ioe);
+              throw se;
+            }
         }
 
     if (address != null)
@@ -305,7 +325,7 @@ public class DatagramSocket
 
 	SecurityManager s = System.getSecurityManager();
 	if (s != null)
-	  s.checkConnect(localAddr.getHostName(), -1);
+	  s.checkConnect(localAddr.getHostAddress(), -1);
       }
     catch (SecurityException e)
       {
@@ -505,7 +525,7 @@ public class DatagramSocket
 
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
-      sm.checkConnect(address.getHostName(), port);
+      sm.checkConnect(address.getHostAddress(), port);
 
     try
       {
@@ -578,11 +598,17 @@ public class DatagramSocket
         && ! ((DatagramChannelImpl) getChannel()).isInChannelOperation())
       throw new IllegalBlockingModeException();
 
-    getImpl().receive(p);
+    DatagramPacket p2 = new DatagramPacket(p.getData(), p.getOffset(), p.maxlen);
+    getImpl().receive(p2);
+    p.length = p2.length;
+    if (p2.getAddress() != null)
+      p.setAddress(p2.getAddress());
+    if (p2.getPort() != -1)
+      p.setPort(p2.getPort());
 
     SecurityManager s = System.getSecurityManager();
     if (s != null && isConnected())
-      s.checkAccept(p.getAddress().getHostName(), p.getPort());
+      s.checkAccept(p.getAddress().getHostAddress(), p.getPort());
   }
 
   /**
@@ -649,6 +675,9 @@ public class DatagramSocket
   {
     if (isClosed())
       throw new SocketException("socket is closed");
+    
+    if (address == null)
+      address = new InetSocketAddress(InetAddress.ANY_IF, 0);
 
     if (! (address instanceof InetSocketAddress))
       throw new IllegalArgumentException("unsupported address type");

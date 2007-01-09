@@ -104,7 +104,7 @@ public class DefaultComboBoxModel extends AbstractListModel
    * 
    * @throws NullPointerException if <code>vector</code> is <code>null</code>.
    */
-  public DefaultComboBoxModel(Vector vector)
+  public DefaultComboBoxModel(Vector<?> vector)
   {
     this.list = vector;
     if (getSize() > 0)
@@ -224,18 +224,26 @@ public class DefaultComboBoxModel extends AbstractListModel
    */
   public void setSelectedItem(Object object)
   {
-    if (selectedItem == null)
-      {
-        if (object == null)
-          return;
-      }
-    else
-      {
-        if (selectedItem.equals(object))
-          return;
-      }
+    // No item is selected and object is null, so no change required.
+    if (selectedItem == null && object == null)
+      return;
+
+    // object is already selected so no change required.
+    if (selectedItem != null && selectedItem.equals(object))
+      return;
+
+    // Simply return if object is not in the list.
+    if (object != null && getIndexOf(object) == -1)
+      return;
+
+    // Here we know that object is either an item in the list or null.
+
+    // Handle the three change cases: selectedItem is null, object is
+    // non-null; selectedItem is non-null, object is null;
+    // selectedItem is non-null, object is non-null and they're not
+    // equal.
     selectedItem = object;
-    fireContentsChanged(this, -1, -1);    
+    fireContentsChanged(this, -1, -1);
   }
 
   /**

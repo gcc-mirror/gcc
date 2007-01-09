@@ -156,7 +156,7 @@ import java.util.Set;
  * @see Class
  * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.3
- * @status updated to 1.4, except for the use of ProtectionDomain
+ * @status updated to 1.5, except for the use of ProtectionDomain
  */
 public class Proxy implements Serializable
 {
@@ -255,8 +255,8 @@ public class Proxy implements Serializable
    */
   // synchronized so that we aren't trying to build the same class
   // simultaneously in two threads
-  public static synchronized Class getProxyClass(ClassLoader loader,
-                                                 Class[] interfaces)
+  public static synchronized Class<?> getProxyClass(ClassLoader loader,
+						    Class<?>... interfaces)
   {
     interfaces = (Class[]) interfaces.clone();
     ProxyType pt = new ProxyType(loader, interfaces);
@@ -310,7 +310,7 @@ public class Proxy implements Serializable
    * @see Constructor#newInstance(Object[])
    */
   public static Object newProxyInstance(ClassLoader loader,
-                                        Class[] interfaces,
+                                        Class<?>[] interfaces,
                                         InvocationHandler handler)
   {
     try
@@ -358,7 +358,7 @@ public class Proxy implements Serializable
    */
   // This is synchronized on the off chance that another thread is
   // trying to add a class to the map at the same time we read it.
-  public static synchronized boolean isProxyClass(Class clazz)
+  public static synchronized boolean isProxyClass(Class<?> clazz)
   {
     if (! Proxy.class.isAssignableFrom(clazz))
       return false;

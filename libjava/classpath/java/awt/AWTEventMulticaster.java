@@ -1175,16 +1175,17 @@ public class AWTEventMulticaster
    * @throws IllegalArgumentException if type is Void.TYPE
    * @since 1.4
    */
-  public static EventListener[] getListeners(EventListener l, Class type)
+  public static <T extends EventListener> T[] getListeners(EventListener l,
+							   Class<T> type)
   {
-    ArrayList list = new ArrayList();
+    ArrayList<EventListener> list = new ArrayList<EventListener>();
     if (l instanceof AWTEventMulticaster)
       ((AWTEventMulticaster) l).getListeners(list, type);
     else if (type.isInstance(l))
       list.add(l);
     EventListener[] r = (EventListener[]) Array.newInstance(type, list.size());
     list.toArray(r);
-    return r;
+    return (T[]) r;
   }
 
   /**

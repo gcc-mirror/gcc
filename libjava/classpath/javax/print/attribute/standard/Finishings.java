@@ -38,6 +38,7 @@ exception statement from your version.  */
 
 package javax.print.attribute.standard;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.DocAttribute;
 import javax.print.attribute.EnumSyntax;
 import javax.print.attribute.PrintJobAttribute;
@@ -238,7 +239,7 @@ public class Finishings extends EnumSyntax
    *
    * @return the class <code>Finishings</code> itself
    */
-  public final Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return Finishings.class;
   }

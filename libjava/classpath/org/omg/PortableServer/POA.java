@@ -1,5 +1,5 @@
 /* POA.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -55,8 +55,8 @@ import org.omg.CORBA.portable.IDLEntity;
  * strategies are possible.
  * </p>
  *
- * @see org.omg.CORBA.ORB.resolve_initial_references
- * @see POAOperations.servant_to_reference
+ * @see org.omg.CORBA.ORB#resolve_initial_references
+ * @see POAOperations#servant_to_reference
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */

@@ -180,6 +180,41 @@ _Jv_UnregisterInitiatingLoader (jclass klass, java::lang::ClassLoader *loader)
 // _Jv_RegisterNewClasses() are of Type 2.
 
 
+// Check that the file we're trying to load has been compiled with a
+// compatible version of gcj.  In previous versions of libgcj we
+// silently failed to register classes of an incompatible ABI version,
+// but this was totally bogus.
+void
+_Jv_CheckABIVersion (unsigned long value)
+{
+  // We are compatible with GCJ 4.0.0 BC-ABI classes. This release used a
+  // different format for the version ID string.
+   if (value == OLD_GCJ_40_BC_ABI_VERSION)
+     return;
+     
+  // The 20 low-end bits are used for the version number.
+  unsigned long version = value & 0xfffff;
+
+  if (value & FLAG_BINARYCOMPAT_ABI)
+    {
+      int abi_rev = version % 100;
+      int abi_ver = version - abi_rev;
+      // We are compatible with abi_rev 0 and 1.
+      if (abi_ver == GCJ_40_BC_ABI_VERSION && abi_rev <= 1)
+        return;
+    }
+  else
+    {
+      // C++ ABI
+      if (version == GCJ_CXX_ABI_VERSION)
+	return;
+    }
+
+  throw new ::java::lang::ClassFormatError
+    (JvNewStringLatin1 ("Library compiled with later ABI version than"
+			" this version of libgcj supports"));
+}
+
 // This function is called many times during startup, before main() is
 // run.  At that point in time we know for certain we are running 
 // single-threaded, so we don't need to lock when adding classes to the 
@@ -194,8 +229,8 @@ _Jv_RegisterClasses (const jclass *classes)
     {
       jclass klass = *classes;
 
-      if (_Jv_CheckABIVersion ((unsigned long) klass->next_or_version))
-	(*_Jv_RegisterClassHook) (klass);
+      _Jv_CheckABIVersion ((unsigned long) klass->next_or_version);
+      (*_Jv_RegisterClassHook) (klass);
     }
 }
 
@@ -211,32 +246,37 @@ _Jv_RegisterClasses_Counted (const jclass * classes, size_t count)
     {
       jclass klass = classes[i];
 
-      if (_Jv_CheckABIVersion ((unsigned long) klass->next_or_version))
-	(*_Jv_RegisterClassHook) (klass);
+      _Jv_CheckABIVersion ((unsigned long) klass->next_or_version);
+      (*_Jv_RegisterClassHook) (klass);
     }
 }
 
 // Create a class on the heap from an initializer struct.
-jclass
+inline jclass
 _Jv_NewClassFromInitializer (const char *class_initializer)
 {
+  const unsigned long version 
+    = ((unsigned long) 
+       ((::java::lang::Class *)class_initializer)->next_or_version);
+  _Jv_CheckABIVersion (version);
+  
   /* We create an instance of java::lang::Class and copy all of its
      fields except the first word (the vtable pointer) from
      CLASS_INITIALIZER.  This first word is pre-initialized by
      _Jv_AllocObj, and we don't want to overwrite it.  */
-
+  
   jclass new_class
-    = (jclass)_Jv_AllocObj (sizeof (java::lang::Class),
-			    &java::lang::Class::class$);
+    = (jclass)_Jv_AllocObj (sizeof (::java::lang::Class),
+			    &::java::lang::Class::class$);
   const char *src = class_initializer + sizeof (void*);
   char *dst = (char*)new_class + sizeof (void*);
-  size_t len = sizeof (*new_class) - sizeof (void*);
+  size_t len = (::java::lang::Class::initializerSize (version) 
+		- sizeof (void*));
   memcpy (dst, src, len);
-
+  
   new_class->engine = &_Jv_soleIndirectCompiledEngine;
-
-  if (_Jv_CheckABIVersion ((unsigned long) new_class->next_or_version))
-    (*_Jv_RegisterClassHook) (new_class);
+  
+  (*_Jv_RegisterClassHook) (new_class);
   
   return new_class;
 }

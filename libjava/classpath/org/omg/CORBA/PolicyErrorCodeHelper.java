@@ -1,5 +1,5 @@
 /* PolicyErrorCodeHelper.java --
-Copyright (C) 2005 Free Software Foundation, Inc.
+Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,7 +57,7 @@ public abstract class PolicyErrorCodeHelper
 {
 
   /**
-   * Delegates call to {@link Any.extract_short()}.
+   * Delegates call to {@link Any#extract_short()}.
    */
   public static short extract(Any a)
   {
@@ -75,7 +75,7 @@ public abstract class PolicyErrorCodeHelper
   }
 
   /**
-   * Delegates call to {@link Any.insert_short(short)}.
+   * Delegates call to {@link Any#insert_short(short)}.
    */
   public static void insert(Any a, short that)
   {
@@ -83,7 +83,7 @@ public abstract class PolicyErrorCodeHelper
   }
 
   /**
-   * Delegates call to {@link InputStream.read_short()}.
+   * Delegates call to {@link InputStream#read_short()}.
    */
   public static short read(InputStream istream)
   {
@@ -106,7 +106,7 @@ public abstract class PolicyErrorCodeHelper
   }
 
   /**
-   * Delegates call to {@link OutputStream#write_short()}.
+   * Delegates call to {@link OutputStream#write_short(short)}.
    */
   public static void write(OutputStream ostream, short value)
   {

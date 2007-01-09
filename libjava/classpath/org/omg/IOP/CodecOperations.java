@@ -1,5 +1,5 @@
 /* CodecOperations.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -66,7 +66,7 @@ public interface CodecOperations
    * by this {@link Codec} (wide char and wide string are not supported
    * by ENCODING_CDR_ENCAPS v 1.0).
    *
-   * @see decode(byte[])
+   * @see #decode(byte[])
    */
   byte[] encode(Any that)
          throws InvalidTypeForEncoding;
@@ -83,7 +83,7 @@ public interface CodecOperations
    *
    * @throws FormatMismatch on the invalid structure of the byte array.
    *
-   * @see encode(Any)
+   * @see #encode(Any)
    */
   Any decode(byte[] them)
       throws FormatMismatch;
@@ -96,7 +96,7 @@ public interface CodecOperations
   * @return the array, containing the encoded value alone (no preceeding
   * typecode).
   *
-  * @see decode_value(byte[], TypeCode)
+  * @see #decode_value(byte[], TypeCode)
   */
   byte[] encode_value(Any that_value)
                throws InvalidTypeForEncoding;
@@ -119,7 +119,7 @@ public interface CodecOperations
    * @throws TypeMismatch if discovered that the the byte array defines a
    * different structure.
    *
-   * @see encode_value(Any)
+   * @see #encode_value(Any)
    */
   Any decode_value(byte[] them, TypeCode type)
             throws FormatMismatch, TypeMismatch;

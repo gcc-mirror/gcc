@@ -43,6 +43,7 @@ import java.awt.Insets;
 import java.awt.MenuBar;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
+import java.awt.peer.ComponentPeer;
 import java.awt.peer.FramePeer;
 
 /**
@@ -53,9 +54,9 @@ import java.awt.peer.FramePeer;
  * As a minimum, a subclass must implement all the remaining abstract methods
  * as well as the following methods:
  * <ul>
- * <li>{@link java.awt.peer.ComponentPeer#getLocationOnScreen()}</li>
- * <li>{@link java.awt.peer.ComponentPeer#getGraphics()}</li>
- * <li>{@link java.awt.peer.ComponentPeer#createImage(int, int)}</li>
+ * <li>{@link ComponentPeer#getLocationOnScreen()}</li>
+ * <li>{@link ComponentPeer#getGraphics()}</li>
+ * <li>{@link ComponentPeer#createImage(int, int)}</li>
  * </ul>
  *
  * @author Roman Kennke (kennke@aicas.com)
@@ -97,9 +98,9 @@ public abstract class SwingFramePeer
    *
    * @param g the graphics context to use for painting
    */
-  protected void peerPaint(Graphics g)
+  protected void peerPaintComponent(Graphics g)
   {
-    super.peerPaint(g);
+    super.peerPaintComponent(g);
     if (menuBar != null)
       menuBar.peerPaint(g);
   }

@@ -77,11 +77,11 @@ import java.util.Arrays;
  * @since 1.1
  * @status updated to 1.4
  */
-public final class Constructor
+public final class Constructor<T>
   extends AccessibleObject
   implements GenericDeclaration, Member
 {
-  private Class clazz;
+  private Class<T> clazz;
   private int slot;
   
   private static final int CONSTRUCTOR_MODIFIERS
@@ -104,7 +104,7 @@ public final class Constructor
    * Gets the class that declared this constructor.
    * @return the class that declared this member
    */
-  public Class getDeclaringClass()
+  public Class<T> getDeclaringClass()
   {
     return clazz;
   }
@@ -166,7 +166,7 @@ public final class Constructor
    *
    * @return a list of the types of the constructor's parameters
    */
-  public native Class[] getParameterTypes();
+  public native Class<?>[] getParameterTypes();
 
   /**
    * Get the exception types this constructor says it throws, in no particular
@@ -175,7 +175,7 @@ public final class Constructor
    *
    * @return a list of the types in the constructor's throws clause
    */
-  public native Class[] getExceptionTypes();
+  public native Class<?>[] getExceptionTypes();
 
   /**
    * Compare two objects to see if they are semantically equivalent.
@@ -244,8 +244,8 @@ public final class Constructor
     return sb.toString();
   }
 
-  /* FIXME[GENERICS]: Add X extends GenericDeclaration and TypeVariable<X> */
-  static void addTypeParameters(StringBuilder sb, TypeVariable[] typeArgs)
+  static <X extends GenericDeclaration>
+  void addTypeParameters(StringBuilder sb, TypeVariable<X>[] typeArgs)
   {
     if (typeArgs.length == 0)
       return;
@@ -313,15 +313,15 @@ public final class Constructor
    * @throws ExceptionInInitializerError if construction triggered class
    *         initialization, which then failed
    */
-  public Object newInstance(Object args[])
+  public T newInstance(Object... args)
     throws InstantiationException, IllegalAccessException,
            InvocationTargetException
   {
     return constructNative(args, clazz, slot);
   }
 
-  private native Object constructNative(Object[] args, Class declaringClass,
-                                        int slot)
+  private native T constructNative(Object[] args, Class declaringClass,
+				   int slot)
     throws InstantiationException, IllegalAccessException,
            InvocationTargetException;
 
@@ -337,8 +337,7 @@ public final class Constructor
    *         specification, version 3.
    * @since 1.5
    */
-  /* FIXME[GENERICS]: Add <Constructor<T>> */
-  public TypeVariable[] getTypeParameters()
+  public TypeVariable<Constructor<T>>[] getTypeParameters()
   {
     String sig = getSignature();
     if (sig == null)
@@ -395,4 +394,3 @@ public final class Constructor
     return p.getGenericParameterTypes();
   }
 }
-

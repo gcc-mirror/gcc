@@ -1,5 +1,5 @@
 /* Program to generate "main" a Java(TM) class containing a main method.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -57,14 +57,23 @@ main (int argc, char **argv)
   FILE *stream;
   const char *mangled_classname;
   int i, last_arg;
+  int indirect = 0;
+  char *prog_name = argv[0];
 
   /* Unlock the stdio streams.  */
   unlock_std_streams ();
 
   gcc_init_libintl ();
 
+  if (argc > 1 && ! strcmp (argv[1], "-findirect-dispatch"))
+    {
+      indirect = 1;
+      ++argv;
+      --argc;
+    }
+
   if (argc < 2)
-    usage (argv[0]);
+    usage (prog_name);
 
   for (i = 1; i < argc; ++i)
     {
@@ -77,7 +86,7 @@ main (int argc, char **argv)
     }
 
   if (i < argc - 2 || i == argc)
-    usage (argv[0]);
+    usage (prog_name);
   last_arg = i;
 
   classname = argv[i];
@@ -85,7 +94,7 @@ main (int argc, char **argv)
   /* gcj always appends `main' to classname.  We need to strip this here.  */
   p = strrchr (classname, 'm');
   if (p == NULL || p == classname || strcmp (p, "main") != 0)
-    usage (argv[0]);
+    usage (prog_name);
   else
     *p = '\0';
 
@@ -99,7 +108,7 @@ main (int argc, char **argv)
       if (stream == NULL)
 	{
 	  fprintf (stderr, _("%s: Cannot open output file: %s\n"),
-		   argv[0], outfile);
+		   prog_name, outfile);
 	  exit (1);
 	}
     }
@@ -130,13 +139,18 @@ main (int argc, char **argv)
   fprintf (stream, "int main (int argc, const char **argv)\n");
   fprintf (stream, "{\n");
   fprintf (stream, "   _Jv_Compiler_Properties = props;\n");
-  fprintf (stream, "   extern void *%s;\n", mangled_classname);
-  fprintf (stream, "   JvRunMain (%s, argc, argv);\n", mangled_classname);
+  if (indirect)
+    fprintf (stream, "   JvRunMainName (\"%s\", argc, argv);\n", classname);
+  else
+    {
+      fprintf (stream, "   extern void *%s;\n", mangled_classname);
+      fprintf (stream, "   JvRunMain (%s, argc, argv);\n", mangled_classname);
+    }
   fprintf (stream, "}\n");
   if (stream != stdout && fclose (stream) != 0)
     {
       fprintf (stderr, _("%s: Failed to close output file %s\n"),
-	       argv[0], argv[2]);
+	       prog_name, argv[2]);
       exit (1);
     }
   return 0;

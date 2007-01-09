@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package java.security;
 
+import java.nio.ByteBuffer;
 import java.security.spec.AlgorithmParameterSpec;
 
 /**
@@ -130,6 +131,24 @@ public abstract class SignatureSpi
   protected abstract void engineUpdate(byte[] b, int off, int len)
     throws SignatureException;
 
+  /**
+   * Update this signature with the {@link java.nio.Buffer#remaining()}
+   * bytes of the given buffer.
+   * 
+   * @param input The input buffer.
+   * @throws SignatureException
+   */
+  protected void engineUpdate(ByteBuffer input) throws SignatureException
+  {
+    byte[] buf = new byte[4096];
+    while (input.hasRemaining())
+      {
+        int l = Math.min(input.remaining(), buf.length);
+        input.get(buf, 0, l);
+        engineUpdate(buf, 0, l);
+      }
+  }
+  
   /**
    * Returns the signature bytes of all the data fed to this instance. The
    * format of the output depends on the underlying signature algorithm.

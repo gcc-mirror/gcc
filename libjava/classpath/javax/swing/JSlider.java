@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package javax.swing;
 
-import java.awt.Dimension;
 import java.awt.MenuContainer;
 import java.awt.image.ImageObserver;
 import java.beans.PropertyChangeEvent;
@@ -56,6 +55,7 @@ import javax.accessibility.AccessibleValue;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.SliderUI;
+import javax.swing.plaf.UIResource;
 
 /**
  * A visual component that allows selection of a value within a
@@ -112,6 +112,22 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
                                                    ImageObserver,
                                                    MenuContainer, Serializable
 {
+
+  /**
+   * A little testing shows that the reference implementation creates
+   * labels from a class named LabelUIResource.
+   */
+  private class LabelUIResource
+    extends JLabel
+    implements UIResource
+  {
+    LabelUIResource(String text, int align)
+    {
+      super(text, align);
+      setName("Slider.label");
+    }
+  }
+
   private static final long serialVersionUID = -1441275936141218479L;
 
   /**
@@ -425,6 +441,7 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
    */
   public void updateUI()
   {
+    updateLabelUIs();
     setUI((SliderUI) UIManager.getUI(this));
   }
 
@@ -721,6 +738,7 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
         int oldOrientation = this.orientation;
         this.orientation = orientation;
         firePropertyChange("orientation", oldOrientation, this.orientation);
+        revalidate();
       }
   }
 
@@ -751,7 +769,10 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
       {
         Dictionary oldTable = labelTable;
         labelTable = table;
+        updateLabelUIs();
         firePropertyChange("labelTable", oldTable, labelTable);
+        revalidate();
+        repaint();
       }
   }
 
@@ -761,12 +782,18 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
    */
   protected void updateLabelUIs()
   {
-    if (labelTable == null)
-      return;
-    for (Enumeration list = labelTable.elements(); list.hasMoreElements();)
+    if (labelTable != null)
       {
-        JLabel label = (JLabel) list.nextElement();
-        label.updateUI();
+        for (Enumeration list = labelTable.elements(); list.hasMoreElements();)
+          {
+            Object o = list.nextElement();
+            if (o instanceof JComponent)
+              {
+                JComponent jc = (JComponent) o;
+                jc.updateUI();
+                jc.setSize(jc.getPreferredSize());
+              }
+          }
       }
   }
 
@@ -810,23 +837,11 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
     if (start < getMinimum() || start > getMaximum())
       throw new IllegalArgumentException("The 'start' value is out of range.");
     Hashtable table = new Hashtable();
-    JLabel label;
-    Dimension dim;
-
-    int max = sliderModel.getMaximum();
-
+    int max = getMaximum();
     for (int i = start; i <= max; i += increment)
       {
-        label = new JLabel(String.valueOf(i));
-        label.setVerticalAlignment(CENTER);
-        label.setHorizontalAlignment(CENTER);
-        
-        // Make sure these labels have the width and height
-        // they want.
-        dim = label.getPreferredSize();
-        label.setBounds(label.getX(), label.getY(),
-                        (int) dim.getWidth(),
-                        (int) dim.getHeight()); 
+        LabelUIResource label = new LabelUIResource(String.valueOf(i),
+                                                    JLabel.CENTER);
         table.put(new Integer(i), label);
       }
     return table;
@@ -867,6 +882,7 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
         boolean oldInverted = isInverted;
         isInverted = inverted;
         firePropertyChange("inverted", oldInverted, isInverted);
+        repaint();
       }
   }
 
@@ -898,7 +914,11 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
       {
         int oldSpacing = majorTickSpacing;
         majorTickSpacing = spacing;
+        if (labelTable == null && majorTickSpacing > 0 && getPaintLabels())
+          setLabelTable(createStandardLabels(majorTickSpacing));
         firePropertyChange("majorTickSpacing", oldSpacing, majorTickSpacing);
+        if (getPaintTicks())
+          repaint();
       }
   }
 
@@ -932,6 +952,8 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
         int oldSpacing = minorTickSpacing;
         minorTickSpacing = spacing;
         firePropertyChange("minorTickSpacing", oldSpacing, minorTickSpacing);
+        if (getPaintTicks())
+          repaint();
       }
   }
 
@@ -1001,6 +1023,8 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
         boolean oldPaintTicks = paintTicks;
         paintTicks = paint;
         firePropertyChange("paintTicks", oldPaintTicks, paintTicks);
+        revalidate();
+        repaint();
       }
   }
 
@@ -1031,6 +1055,7 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
     {
       paintTrack = paint;
       firePropertyChange("paintTrack", !paint, paint);
+      repaint();
     }
   }
 
@@ -1062,8 +1087,10 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
       {
         paintLabels = paint;
         if (paint && majorTickSpacing > 0 && labelTable == null)
-          labelTable = createStandardLabels(majorTickSpacing);
+          setLabelTable(createStandardLabels(majorTickSpacing));
         firePropertyChange("paintLabels", !paint, paint);
+        revalidate();
+        repaint();
       }
   }
 

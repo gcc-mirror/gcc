@@ -52,7 +52,7 @@ import java.util.Enumeration;
  * exception has been thrown, not other method should be called of that
  * enumeration.</p>
  */
-public interface NamingEnumeration extends Enumeration
+public interface NamingEnumeration<T> extends Enumeration<T>
 {
   /**
    * Returns the next element in this enumeration. The naming - specific
@@ -62,7 +62,7 @@ public interface NamingEnumeration extends Enumeration
    * @return the next element of this enumeration
    * @throws NamingException
    */
-  Object next() throws NamingException;
+  T next() throws NamingException;
   
   /**
    * Checks if there are more unvisited elements in the enumeration, throwing

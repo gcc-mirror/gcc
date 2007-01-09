@@ -84,7 +84,7 @@ public interface TableModel
    * 
    * @return The class.
    */
-  Class getColumnClass(int columnIndex);
+  Class<?> getColumnClass(int columnIndex);
 
   /**
    * Returns <code>true</code> if the cell is editable, and <code>false</code>

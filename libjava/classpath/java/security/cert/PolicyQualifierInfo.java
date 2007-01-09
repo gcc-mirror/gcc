@@ -59,9 +59,10 @@ import java.io.IOException;
  * PolicyQualifierId ::= OBJECT IDENTIFIER
  * </pre>
  *
- * @since JDK 1.4
+ * @since 1.4
+ * @specnote this class was final in 1.4, but beginning with 1.5 is not
  */
-public final class PolicyQualifierInfo
+public class PolicyQualifierInfo
 {
 
   // Fields.

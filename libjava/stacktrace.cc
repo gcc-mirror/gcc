@@ -21,9 +21,12 @@ details.  */
 #include <java/lang/Boolean.h>
 #include <java/lang/Class.h>
 #include <java/lang/Long.h>
+#include <java/lang/reflect/Method.h>
 #include <java/security/AccessController.h>
 #include <java/util/ArrayList.h>
+#include <java/util/IdentityHashMap.h>
 #include <gnu/classpath/jdwp/Jdwp.h>
+#include <gnu/classpath/VMStackWalker.h>
 #include <gnu/java/lang/MainThread.h>
 #include <gnu/gcj/runtime/NameFinder.h>
 #include <gnu/gcj/runtime/StringBuffer.h>
@@ -132,8 +135,17 @@ _Jv_StackTrace::UnwindTraceFn (struct _Unwind_Context *context, void *state_ptr)
       state->frames[pos].interp.pc = state->interp_frame->pc;
       state->interp_frame = state->interp_frame->next;
     }
-  else
+  else 
 #endif
+  // We handle proxies in the same way as interpreted classes
+  if (_Jv_is_proxy (func_addr))
+    {
+      state->frames[pos].type = frame_proxy;
+      state->frames[pos].proxyClass = state->interp_frame->proxyClass;
+      state->frames[pos].proxyMethod = state->interp_frame->proxyMethod;
+      state->interp_frame = state->interp_frame->next;
+    }
+  else 
     {
 #ifdef HAVE_GETIPINFO
       _Unwind_Ptr ip;
@@ -200,6 +212,13 @@ _Jv_StackTrace::getLineNumberForFrame(_Jv_StackFrame *frame, NameFinder *finder,
       return;
     }
 #endif
+
+  if (frame->type == frame_proxy)
+    {
+      *sourceFileName = NULL;
+      *lineNum = 0;
+      return;
+    }
 
   // Use _Jv_platform_dladdr() to determine in which binary the address IP
   // resides.
@@ -272,6 +291,11 @@ _Jv_StackTrace::FillInFrameInfo (_Jv_StackFrame *frame)
 		break;
 	      }
 	  }
+    }
+  else if (frame->type == frame_proxy)
+    {
+      klass = frame->proxyClass;
+      meth = frame->proxyMethod;
     }
 #ifdef INTERPRETER
   else if (frame->type == frame_interpreter)
@@ -466,55 +490,6 @@ _Jv_StackTrace::GetCallerInfo (jclass checkClass, jclass *caller_class,
     *caller_meth = trace_data.foundMeth;
 }
 
-// Return a java array containing the Java classes on the stack above CHECKCLASS.
-JArray<jclass> *
-_Jv_StackTrace::GetClassContext (jclass checkClass)
-{
-  JArray<jclass> *result = NULL;
-
-  int trace_size = 100;
-  _Jv_StackFrame frames[trace_size];
-  _Jv_UnwindState state (trace_size);
-  state.frames = (_Jv_StackFrame *) &frames;
-
-  //JvSynchronized (ncodeMap);
-  UpdateNCodeMap ();
-
-  _Unwind_Backtrace (UnwindTraceFn, &state);
-
-  // Count the number of Java frames on the stack.
-  int jframe_count = 0;
-  bool seen_checkClass = false;
-  int start_pos = -1;
-  for (int i = 0; i < state.pos; i++)
-    {
-      _Jv_StackFrame *frame = &state.frames[i];
-      FillInFrameInfo (frame);
-      
-      if (seen_checkClass)
-	{
-	  if (frame->klass)
-	    {
-	      jframe_count++;
-	      if (start_pos == -1)
-		start_pos = i;
-	    }
-	}
-      else
-	seen_checkClass = frame->klass == checkClass;
-    }
-  result = (JArray<jclass> *) _Jv_NewObjectArray (jframe_count, &Class::class$, NULL);
-  int pos = 0;
-  
-  for (int i = start_pos; i < state.pos; i++)
-    {
-      _Jv_StackFrame *frame = &state.frames[i];
-      if (frame->klass)
-        elements(result)[pos++] = frame->klass;
-    }
-  return result;
-}
-
 _Unwind_Reason_Code
 _Jv_StackTrace::non_system_trace_fn (_Jv_UnwindState *state)
 {
@@ -629,4 +604,219 @@ _Jv_StackTrace::GetAccessControlStack (void)
   r[1] = (jobject) new Boolean (trace_data.privileged);
   
   return result;
+}
+
+JArray<jclass> *
+_Jv_StackTrace::GetStackWalkerStack ()
+{
+  int trace_size = 100;
+  _Jv_StackFrame frames[trace_size];
+  _Jv_UnwindState state (trace_size);
+  state.frames = (_Jv_StackFrame *) &frames;
+
+  UpdateNCodeMap ();
+  _Unwind_Backtrace (UnwindTraceFn, &state);
+
+  int num_frames = 0, start_frame = -1;
+  enum
+    {
+      VMSW_GETCLASSCONTEXT,
+      JLRM_INVOKE_OR_USER_FN,
+      USER_FN
+    }
+  expect = VMSW_GETCLASSCONTEXT;
+  for (int i = 0; i < state.pos; i++)
+    {
+      _Jv_StackFrame *frame = &state.frames[i];
+      FillInFrameInfo (frame);
+      if (!frame->klass || !frame->meth)
+	continue;
+
+      switch (expect)
+	{
+	case VMSW_GETCLASSCONTEXT:
+	  JvAssert (
+	    frame->klass == &::gnu::classpath::VMStackWalker::class$
+	    && strcmp (frame->meth->name->chars(), "getClassContext") == 0);
+	  expect = JLRM_INVOKE_OR_USER_FN;
+	  break;
+
+	case JLRM_INVOKE_OR_USER_FN:
+	  if (frame->klass != &::java::lang::reflect::Method::class$
+	      || strcmp (frame->meth->name->chars(), "invoke") != 0)
+	    start_frame = i;
+	  expect = USER_FN;
+	  break;
+
+	case USER_FN:
+	  if (start_frame == -1)
+	    start_frame = i;
+	  break;
+	}
+
+      if (start_frame != -1)
+	{
+	  if (frame->klass == &::gnu::java::lang::MainThread::class$)
+	    break;
+	  num_frames++;
+	}
+    }
+  JvAssert (num_frames > 0 && start_frame > 0);
+
+  JArray<jclass> *result = (JArray<jclass> *)
+    _Jv_NewObjectArray (num_frames, &::java::lang::Class::class$, NULL);
+  jclass *c = elements (result);
+
+  for (int i = start_frame, j = 0; i < state.pos && j < num_frames; i++)
+    {
+      _Jv_StackFrame *frame = &state.frames[i];
+      if (!frame->klass || !frame->meth)
+	continue;
+      c[j] = frame->klass;
+      j++;
+    }
+ 
+  return result;
+}
+
+typedef enum
+  {
+    VMSW_GET_CALLING_ITEM,
+    JLRM_INVOKE_OR_CALLER,
+    CALLER,
+    CALLER_OF_CALLER
+  } gswcc_expect;
+
+struct StackWalkerTraceData
+{
+  gswcc_expect expect;
+  jclass result;
+};
+
+_Unwind_Reason_Code
+_Jv_StackTrace::stackwalker_trace_fn (_Jv_UnwindState *state)
+{
+  StackWalkerTraceData *trace_data = (StackWalkerTraceData *)
+    state->trace_data;
+  _Jv_StackFrame *frame = &state->frames[state->pos];
+  FillInFrameInfo (frame);
+
+  if (!(frame->klass && frame->meth))
+    return _URC_NO_REASON;
+
+  switch (trace_data->expect)
+    {
+    case VMSW_GET_CALLING_ITEM:
+      JvAssert (frame->klass == &::gnu::classpath::VMStackWalker::class$);
+      trace_data->expect = JLRM_INVOKE_OR_CALLER;
+      break;
+
+    case JLRM_INVOKE_OR_CALLER:
+      if (frame->klass == &::java::lang::reflect::Method::class$
+	  && strcmp (frame->meth->name->chars(), "invoke") == 0)
+	trace_data->expect = CALLER;
+      else
+	trace_data->expect = CALLER_OF_CALLER;
+      break;
+
+    case CALLER:
+      trace_data->expect = CALLER_OF_CALLER;
+      break;
+
+    case CALLER_OF_CALLER:
+      trace_data->result = frame->klass;
+      return _URC_NORMAL_STOP;
+    }
+
+  return _URC_NO_REASON;
+}
+
+jclass
+_Jv_StackTrace::GetStackWalkerCallingClass (void)
+{
+  int trace_size = 100;
+  _Jv_StackFrame frames[trace_size];
+  _Jv_UnwindState state (trace_size);
+  state.frames = (_Jv_StackFrame *) &frames;
+
+  StackWalkerTraceData trace_data;
+  trace_data.expect = VMSW_GET_CALLING_ITEM;
+  trace_data.result = NULL;
+  
+  state.trace_function = stackwalker_trace_fn;
+  state.trace_data = (void *) &trace_data;
+
+  UpdateNCodeMap();
+  _Unwind_Backtrace (UnwindTraceFn, &state);
+
+  return trace_data.result;
+}
+
+struct StackWalkerNNLTraceData
+{
+  gswcc_expect expect;
+  ClassLoader *result;
+};
+
+_Unwind_Reason_Code
+_Jv_StackTrace::stackwalker_nnl_trace_fn (_Jv_UnwindState *state)
+{
+  StackWalkerNNLTraceData *trace_data = (StackWalkerNNLTraceData *)
+    state->trace_data;
+  _Jv_StackFrame *frame = &state->frames[state->pos];
+  FillInFrameInfo (frame);
+
+  if (!(frame->klass && frame->meth))
+    return _URC_NO_REASON;
+
+  switch (trace_data->expect)
+    {
+    case VMSW_GET_CALLING_ITEM:
+      JvAssert (frame->klass == &::gnu::classpath::VMStackWalker::class$);
+      trace_data->expect = JLRM_INVOKE_OR_CALLER;
+      break;
+
+    case JLRM_INVOKE_OR_CALLER:
+      if (frame->klass == &::java::lang::reflect::Method::class$
+	  && strcmp (frame->meth->name->chars(), "invoke") == 0)
+	trace_data->expect = CALLER;
+      else
+	trace_data->expect = CALLER_OF_CALLER;
+      break;
+
+    case CALLER:
+      trace_data->expect = CALLER_OF_CALLER;
+      break;
+
+    case CALLER_OF_CALLER:
+      ClassLoader *cl = frame->klass->getClassLoaderInternal ();
+      if (cl != NULL)
+	{
+	  trace_data->result = cl;
+	  return _URC_NORMAL_STOP;
+	}
+    }
+
+  return _URC_NO_REASON;
+}
+
+ClassLoader *
+_Jv_StackTrace::GetStackWalkerFirstNonNullLoader (void)
+{
+  int trace_size = 100;
+  _Jv_StackFrame frames[trace_size];
+  _Jv_UnwindState state (trace_size);
+  state.frames = (_Jv_StackFrame *) &frames;
+
+  StackWalkerNNLTraceData trace_data;
+  trace_data.expect = VMSW_GET_CALLING_ITEM;
+  trace_data.result = NULL;
+  
+  state.trace_function = stackwalker_nnl_trace_fn;
+  state.trace_data = (void *) &trace_data;
+
+  UpdateNCodeMap();
+  _Unwind_Backtrace (UnwindTraceFn, &state);
+
+  return trace_data.result;
 }

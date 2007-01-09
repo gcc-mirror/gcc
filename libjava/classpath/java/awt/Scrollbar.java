@@ -341,17 +341,22 @@ public class Scrollbar extends Component implements Accessible, Adjustable
   public synchronized void setValues(int value, int visibleAmount,
                                      int minimum, int maximum)
   {
-    if (maximum < minimum)
-      maximum = minimum;
+    if (visibleAmount <= 0)
+      visibleAmount = 1;
+    
+    if (maximum <= minimum)
+      maximum = minimum + 1;
 
     if (value < minimum)
       value = minimum;
 
-    if (value > maximum)
-      value = maximum;
-
     if (visibleAmount > maximum - minimum)
       visibleAmount = maximum - minimum;
+    
+    // According to documentation, the actual maximum
+    // value is (maximum - visibleAmount)
+    if (value > maximum - visibleAmount)
+      value = maximum - visibleAmount;
 
     ScrollbarPeer peer = (ScrollbarPeer) getPeer();
     if (peer != null
@@ -362,30 +367,7 @@ public class Scrollbar extends Component implements Accessible, Adjustable
     this.value = value;
     this.visibleAmount = visibleAmount;
     this.minimum = minimum;
-    this.maximum = maximum;
-
-    int range = maximum - minimum;
-    if (lineIncrement > range)
-      {
-	if (range == 0)
-	  lineIncrement = 1;
-	else
-	  lineIncrement = range;
-
-	if (peer != null)
-	  peer.setLineIncrement(lineIncrement);
-      }
-
-    if (pageIncrement > range)
-      {
-	if (range == 0)
-	  pageIncrement = 1;
-	else
-	  pageIncrement = range;
-
-	if (peer != null)
-	  peer.setPageIncrement(pageIncrement);
-      }
+    this.maximum = maximum;      
   }
 
   /**
@@ -437,19 +419,13 @@ public class Scrollbar extends Component implements Accessible, Adjustable
   {
     if (lineIncrement < 0)
       throw new IllegalArgumentException("Unit increment less than zero.");
-
-    int range = maximum - minimum;
-    if (lineIncrement > range)
-      {
-	if (range == 0)
-	  lineIncrement = 1;
-	else
-	  lineIncrement = range;
-      }
-
-    if (lineIncrement == this.lineIncrement)
+    
+    if (lineIncrement == 0)
+      lineIncrement = 1;
+         
+   if (lineIncrement == this.lineIncrement)
       return;
-
+    
     this.lineIncrement = lineIncrement;
 
     ScrollbarPeer peer = (ScrollbarPeer) getPeer();
@@ -507,15 +483,9 @@ public class Scrollbar extends Component implements Accessible, Adjustable
     if (pageIncrement < 0)
       throw new IllegalArgumentException("Block increment less than zero.");
 
-    int range = maximum - minimum;
-    if (pageIncrement > range)
-      {
-	if (range == 0)
-	  pageIncrement = 1;
-	else
-	  pageIncrement = range;
-      }
-
+    if (pageIncrement == 0)
+      pageIncrement = 1;
+    
     if (pageIncrement == this.pageIncrement)
       return;
 
@@ -647,7 +617,7 @@ public class Scrollbar extends Component implements Accessible, Adjustable
    * @exception ClassCastException If listenerType doesn't specify a class or
    * interface that implements java.util.EventListener.
    */
-  public EventListener[] getListeners(Class listenerType)
+  public <T extends EventListener> T[] getListeners(Class<T> listenerType)
   {
     if (listenerType == AdjustmentListener.class)
       return AWTEventMulticaster.getListeners(adjustment_listeners,

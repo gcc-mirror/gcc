@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.text;
 
+import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Shape;
 
@@ -85,7 +87,17 @@ public abstract class FlowView extends BoxView
      */
     public void insertUpdate(FlowView fv, DocumentEvent e, Rectangle alloc)
     {
-      // The default implementation does nothing.
+      if (alloc == null)
+        {
+          fv.layoutChanged(X_AXIS);
+          fv.layoutChanged(Y_AXIS);
+        }
+      else
+        {
+          Component host = fv.getContainer();
+          if (host != null)
+            host.repaint(alloc.x, alloc.y, alloc.width, alloc.height);
+        }
     }
 
     /**
@@ -101,7 +113,17 @@ public abstract class FlowView extends BoxView
      */
     public void removeUpdate(FlowView fv, DocumentEvent e, Rectangle alloc)
     {
-      // The default implementation does nothing.
+      if (alloc == null)
+        {
+          fv.layoutChanged(X_AXIS);
+          fv.layoutChanged(Y_AXIS);
+        }
+      else
+        {
+          Component host = fv.getContainer();
+          if (host != null)
+            host.repaint(alloc.x, alloc.y, alloc.width, alloc.height);
+        }
     }
 
     /**
@@ -117,7 +139,17 @@ public abstract class FlowView extends BoxView
      */
     public void changedUpdate(FlowView fv, DocumentEvent e, Rectangle alloc)
     {
-      // The default implementation does nothing.
+      if (alloc == null)
+        {
+          fv.layoutChanged(X_AXIS);
+          fv.layoutChanged(Y_AXIS);
+        }
+      else
+        {
+          Component host = fv.getContainer();
+          if (host != null)
+            host.repaint(alloc.x, alloc.y, alloc.width, alloc.height);
+        }
     }
 
     /**
@@ -143,18 +175,35 @@ public abstract class FlowView extends BoxView
      */
     public void layout(FlowView fv)
     {
-      fv.removeAll();
-      Element el = fv.getElement();
+      int start = fv.getStartOffset();
+      int end = fv.getEndOffset();
 
-      int rowStart = el.getStartOffset();
-      int end = el.getEndOffset();
-      int rowIndex = 0;
-      while (rowStart >= 0 && rowStart < end)
+      // Preserve the views from the logical view from beeing removed.
+      View lv = getLogicalView(fv);
+      int viewCount = lv.getViewCount();
+      for (int i = 0; i < viewCount; i++)
+        {
+          View v = lv.getView(i);
+          v.setParent(lv);
+        }
+
+      // Then remove all views from the flow view.
+      fv.removeAll();
+
+      for (int rowIndex = 0; start < end; rowIndex++)
         {
           View row = fv.createRow();
           fv.append(row);
-          rowStart = layoutRow(fv, rowIndex, rowStart);
-          rowIndex++;
+          int next = layoutRow(fv, rowIndex, start);
+          if (row.getViewCount() == 0)
+            {
+              row.append(createView(fv, start, Integer.MAX_VALUE, rowIndex));
+              next = row.getEndOffset();
+            }
+          if (start < next)
+            start = next;
+          else
+            assert false: "May not happen";
         }
     }
 
@@ -179,46 +228,69 @@ public abstract class FlowView extends BoxView
       int axis = fv.getFlowAxis();
       int span = fv.getFlowSpan(rowIndex);
       int x = fv.getFlowStart(rowIndex);
-      int offset = pos;
-      View logicalView = getLogicalView(fv);
-      // Special case when span == 0. We need to layout the row as if it had
-      // a span of Integer.MAX_VALUE.
-      if (span == 0)
-        span = Integer.MAX_VALUE;
+      int end = fv.getEndOffset();
 
-      Row: while (span > 0)
+      // Needed for adjusting indentation in adjustRow().
+      int preX = x;
+      int availableSpan = span;
+
+      TabExpander tabExp = fv instanceof TabExpander ? (TabExpander) fv : null;
+
+      boolean forcedBreak = false;
+      while (pos < end && span >= 0)
         {
-          if (logicalView.getViewIndex(offset, Position.Bias.Forward) == - 1)
-            break;
-          View view = createView(fv, offset, span, rowIndex);
-          if (view == null)
+          View view = createView(fv, pos, span, rowIndex);
+          if (view == null
+              || (span == 0 && view.getPreferredSpan(axis) > 0))
             break;
 
-          int viewSpan = (int) view.getPreferredSpan(axis);
-          int breakWeight = view.getBreakWeight(axis, x, span);
-
-          row.append(view);
-          offset += (view.getEndOffset() - view.getStartOffset());
-          x += viewSpan;
-          span -= viewSpan;
+          int viewSpan;
+          if (axis == X_AXIS && view instanceof TabableView)
+            viewSpan = (int) ((TabableView) view).getTabbedSpan(x, tabExp);
+          else
+            viewSpan = (int) view.getPreferredSpan(axis);
 
           // Break if the line if the view does not fit in this row or the
           // line just must be broken.
-          if (span < 0 || breakWeight >= View.ForcedBreakWeight)
+          int breakWeight = view.getBreakWeight(axis, pos, span);
+          if (breakWeight >= ForcedBreakWeight)
             {
-              int flowStart = fv.getFlowStart(axis);
-              int flowSpan = fv.getFlowSpan(axis);
-              adjustRow(fv, rowIndex, flowSpan, flowStart);
               int rowViewCount = row.getViewCount();
               if (rowViewCount > 0)
-                offset = row.getView(rowViewCount - 1).getEndOffset();
-              else
-                offset = - 1;
-              break Row;
+                {
+                  view = view.breakView(axis, pos, x, span);
+                  if (view != null)
+                    {
+                      if (axis == X_AXIS && view instanceof TabableView)
+                        viewSpan =
+                          (int) ((TabableView) view).getTabbedSpan(x, tabExp);
+                      else
+                        viewSpan = (int) view.getPreferredSpan(axis);
+                    }
+                  else
+                    viewSpan = 0;
+                }
+              forcedBreak = true;
             }
+          span -= viewSpan;
+          x += viewSpan;
+          if (view != null)
+            {
+              row.append(view);
+              pos = view.getEndOffset();
+            }
+          if (forcedBreak)
+            break;
         }
 
-      return offset != pos ? offset : - 1;
+      if (span < 0)
+        adjustRow(fv, rowIndex, availableSpan, preX);
+      else if (row.getViewCount() == 0)
+        {
+          View view = createView(fv, pos, Integer.MAX_VALUE, rowIndex);
+          row.append(view);
+        }
+      return row.getEndOffset();
     }
 
     /**
@@ -246,15 +318,11 @@ public abstract class FlowView extends BoxView
                               int rowIndex)
     {
        View logicalView = getLogicalView(fv);
-       // FIXME: Handle the bias thing correctly.
-       int index = logicalView.getViewIndex(startOffset, Position.Bias.Forward);
-       View retVal = null;
-       if (index >= 0)
-         {
-           retVal = logicalView.getView(index);
-           if (retVal.getStartOffset() != startOffset)
-             retVal = retVal.createFragment(startOffset, retVal.getEndOffset());
-         }
+       int index = logicalView.getViewIndex(startOffset,
+                                            Position.Bias.Forward);
+       View retVal = logicalView.getView(index);
+       if (retVal.getStartOffset() != startOffset)
+         retVal = retVal.createFragment(startOffset, retVal.getEndOffset());
        return retVal;
     }
 
@@ -279,37 +347,82 @@ public abstract class FlowView extends BoxView
       View row = fv.getView(rowIndex);
       int count = row.getViewCount();
       int breakIndex = -1;
-      int maxBreakWeight = View.BadBreakWeight;
-      int breakX = x;
-      int breakSpan = desiredSpan;
-      int currentX = x;
-      int currentSpan = desiredSpan;
+      int breakWeight = BadBreakWeight;
+      int breakSpan = 0;
+      int currentSpan = 0;
       for (int i = 0; i < count; ++i)
         {
           View view = row.getView(i);
-          int weight = view.getBreakWeight(axis, currentX, currentSpan);
-          if (weight >= maxBreakWeight)
+          int spanLeft = desiredSpan - currentSpan;
+          int weight = view.getBreakWeight(axis, x + currentSpan, spanLeft);
+          if (weight >= breakWeight && weight > BadBreakWeight)
             {
               breakIndex = i;
-              breakX = currentX;
               breakSpan = currentSpan;
-              maxBreakWeight = weight;
+              breakWeight = weight;
+              if (weight >= ForcedBreakWeight)
+                // Don't search further.
+                break;
             }
-          int size = (int) view.getPreferredSpan(axis);
-          currentX += size;
-          currentSpan -= size;
+          currentSpan += view.getPreferredSpan(axis);
         }
 
       // If there is a potential break location found, break the row at
       // this location.
-      if (breakIndex > -1)
+      if (breakIndex >= 0)
         {
+          int spanLeft = desiredSpan - breakSpan;
           View toBeBroken = row.getView(breakIndex);
           View brokenView = toBeBroken.breakView(axis,
                                                  toBeBroken.getStartOffset(),
-                                                 breakX, breakSpan);
+                                                 x + breakSpan, spanLeft);
+          View lv = getLogicalView(fv);
+          for (int i = breakIndex; i < count; i++)
+            {
+              View tmp = row.getView(i);
+              if (contains(lv, tmp))
+                tmp.setParent(lv);
+              else if (tmp.getViewCount() > 0)
+                reparent(tmp, lv);
+            }
           row.replace(breakIndex, count - breakIndex,
-                      new View[]{brokenView});
+                      new View[]{ brokenView });
+        }
+
+    }
+
+    /**
+     * Helper method to determine if one view contains another as child.
+     */
+    private boolean contains(View view, View child)
+    {
+      boolean ret = false;
+      int n  = view.getViewCount();
+      for (int i = 0; i < n && ret == false; i++)
+        {
+          if (view.getView(i) == child)
+            ret = true;
+        }
+      return ret;
+    }
+
+    /**
+     * Helper method that reparents the <code>view</code> and all of its
+     * decendents to the <code>parent</code> (the logical view).
+     *
+     * @param view the view to reparent
+     * @param parent the new parent
+     */
+    private void reparent(View view, View parent)
+    {
+      int n = view.getViewCount();
+      for (int i = 0; i < n; i++)
+        {
+          View tmp = view.getView(i);
+          if (contains(parent, tmp))
+            tmp.setParent(parent);
+          else
+            reparent(tmp, parent);
         }
     }
   }
@@ -320,14 +433,135 @@ public abstract class FlowView extends BoxView
    * visual representation, this is handled by the physical view implemented
    * in the <code>FlowView</code>.
    */
-  class LogicalView extends BoxView
+  class LogicalView extends CompositeView
   {
     /**
      * Creates a new LogicalView instance.
      */
-    LogicalView(Element el, int axis)
+    LogicalView(Element el)
     {
-      super(el, axis);
+      super(el);
+    }
+
+    /**
+     * Overridden to return the attributes of the parent
+     * (== the FlowView instance).
+     */
+    public AttributeSet getAttributes()
+    {
+      View p = getParent();
+      return p != null ? p.getAttributes() : null;
+    }
+
+    protected void childAllocation(int index, Rectangle a)
+    {
+      // Nothing to do here (not visual).
+    }
+
+    protected View getViewAtPoint(int x, int y, Rectangle r)
+    {
+      // Nothing to do here (not visual).
+      return null;
+    }
+
+    protected boolean isAfter(int x, int y, Rectangle r)
+    {
+      // Nothing to do here (not visual).
+      return false;
+    }
+
+    protected boolean isBefore(int x, int y, Rectangle r)
+    {
+      // Nothing to do here (not visual).
+      return false;
+    }
+
+    public float getPreferredSpan(int axis)
+    {
+      float max = 0;
+      float pref = 0;
+      int n = getViewCount();
+      for (int i = 0; i < n; i++)
+        {
+          View v = getView(i);
+          pref += v.getPreferredSpan(axis);
+          if (v.getBreakWeight(axis, 0, Integer.MAX_VALUE)
+              >= ForcedBreakWeight)
+            {
+              max = Math.max(max, pref);
+              pref = 0;
+            }
+        }
+      max = Math.max(max, pref);
+      return max;
+    }
+
+    public float getMinimumSpan(int axis)
+    {
+      float max = 0;
+      float min = 0;
+      boolean wrap = true;
+      int n = getViewCount();
+      for (int i = 0; i < n; i++)
+        {
+          View v = getView(i);
+          if (v.getBreakWeight(axis, 0, Integer.MAX_VALUE)
+              == BadBreakWeight)
+            {
+              min += v.getPreferredSpan(axis);
+              wrap = false;
+            }
+          else if (! wrap)
+            {
+              max = Math.max(min, max);
+              wrap = true;
+              min = 0;
+            }
+        }
+      max = Math.max(max, min);
+      return max;
+    }
+
+    public void paint(Graphics g, Shape s)
+    {
+      // Nothing to do here (not visual).
+    }
+
+    /**
+     * Overridden to handle possible leaf elements.
+     */
+    protected void loadChildren(ViewFactory f)
+    {
+      Element el = getElement();
+      if (el.isLeaf())
+        {
+          View v = new LabelView(el);
+          append(v);
+        }
+      else
+        super.loadChildren(f);
+    }
+
+    /**
+     * Overridden to reparent the children to this logical view, in case
+     * they have been parented by a row.
+     */
+    protected void forwardUpdateToView(View v, DocumentEvent e, Shape a,
+                                       ViewFactory f)
+    {
+      v.setParent(this);
+      super.forwardUpdateToView(v, e, a, f);
+    }
+
+    /**
+     * Overridden to handle possible leaf element.
+     */
+    protected int getViewIndexAtPosition(int pos)
+    {
+      int index = 0;
+      if (! getElement().isLeaf())
+        index = super.getViewIndexAtPosition(pos);
+      return index;
     }
   }
 
@@ -357,11 +591,6 @@ public abstract class FlowView extends BoxView
   protected FlowStrategy strategy;
 
   /**
-   * Indicates if the flow should be rebuild during the next layout.
-   */
-  private boolean layoutDirty;
-
-  /**
    * Creates a new <code>FlowView</code> for the given
    * <code>Element</code> and <code>axis</code>.
    *
@@ -374,7 +603,7 @@ public abstract class FlowView extends BoxView
   {
     super(element, axis);
     strategy = sharedStrategy;
-    layoutDirty = true;
+    layoutSpan = Short.MAX_VALUE;
   }
 
   /**
@@ -423,7 +652,7 @@ public abstract class FlowView extends BoxView
    */
   public int getFlowStart(int index)
   {
-    return getLeftInset(); // TODO: Is this correct?
+    return 0;
   }
 
   /**
@@ -449,9 +678,11 @@ public abstract class FlowView extends BoxView
   {
     if (layoutPool == null)
       {
-        layoutPool = new LogicalView(getElement(), getAxis());
-        layoutPool.setParent(this);
+        layoutPool = new LogicalView(getElement());
       }
+    layoutPool.setParent(this);
+    // Initialize the flow strategy.
+    strategy.insertUpdate(this, null, null);
   }
 
   /**
@@ -466,31 +697,32 @@ public abstract class FlowView extends BoxView
   protected void layout(int width, int height)
   {
     int flowAxis = getFlowAxis();
+    int span; 
     if (flowAxis == X_AXIS)
-      {
-        if (layoutSpan != width)
-          {
-            layoutChanged(Y_AXIS);
-            layoutSpan = width;
-          }
-      }
+      span = (int) width;
     else
+      span = (int) height;
+
+    if (layoutSpan != span)
       {
-        if (layoutSpan != height)
+        layoutChanged(flowAxis);
+        layoutChanged(getAxis());
+        layoutSpan = span;
+      }
+
+    if (! isLayoutValid(flowAxis))
+      {
+        int axis = getAxis();
+        int oldSpan = axis == X_AXIS ? getWidth() : getHeight();
+        strategy.layout(this);
+        int newSpan = (int) getPreferredSpan(axis);
+        if (oldSpan != newSpan)
           {
-            layoutChanged(X_AXIS);
-            layoutSpan = height;
+            View parent = getParent();
+            if (parent != null)
+              parent.preferenceChanged(this, axis == X_AXIS, axis == Y_AXIS);
           }
       }
-
-    if (layoutDirty)
-      {
-        strategy.layout(this);
-        layoutDirty = false;
-      }
-
-    if (getPreferredSpan(getAxis()) != height)
-      preferenceChanged(this, false, true);
 
     super.layout(width, height);
   }
@@ -510,7 +742,6 @@ public abstract class FlowView extends BoxView
     // be updated accordingly.
     layoutPool.insertUpdate(changes, a, vf);
     strategy.insertUpdate(this, changes, getInsideAllocation(a));
-    layoutDirty = true;
   }
 
   /**
@@ -526,7 +757,6 @@ public abstract class FlowView extends BoxView
   {
     layoutPool.removeUpdate(changes, a, vf);
     strategy.removeUpdate(this, changes, getInsideAllocation(a));
-    layoutDirty = true;
   }
 
   /**
@@ -542,7 +772,6 @@ public abstract class FlowView extends BoxView
   {
     layoutPool.changedUpdate(changes, a, vf);
     strategy.changedUpdate(this, changes, getInsideAllocation(a));
-    layoutDirty = true;
   }
 
   /**
@@ -604,7 +833,7 @@ public abstract class FlowView extends BoxView
       res = new SizeRequirements();
     res.minimum = (int) layoutPool.getMinimumSpan(axis);
     res.preferred = Math.max(res.minimum,
-                             (int) layoutPool.getMinimumSpan(axis));
+                             (int) layoutPool.getPreferredSpan(axis));
     res.maximum = Integer.MAX_VALUE;
     res.alignment = 0.5F;
     return res;

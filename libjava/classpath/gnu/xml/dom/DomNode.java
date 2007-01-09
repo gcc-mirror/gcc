@@ -668,6 +668,7 @@ public abstract class DomNode
               {
                 insertionEvent(null, child);
               }
+            length++;
           }
         
         return child;
@@ -1561,7 +1562,7 @@ public abstract class DomNode
         // Climb to the top of this subtree and handle capture, letting
         // each node (from the top down) capture until one stops it or
         // until we get to this one.
-        current = parent;
+        current = (parent == null) ? this : parent;
         if (current.depth >= ANCESTORS_INIT)
           {
             DomNode[] newants = new DomNode[current.depth + 1];

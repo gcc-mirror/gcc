@@ -61,6 +61,16 @@ DWORD _Jv_ThreadDataKey;
 #define FLAG_DAEMON  0x02
 
 //
+// Helper
+//
+inline bool
+compare_and_exchange(LONG volatile* dest, LONG cmp, LONG xchg)
+{
+  return InterlockedCompareExchange((LONG*) dest, xchg, cmp) == cmp;
+    // Seems like a bug in the MinGW headers that we have to do this cast.
+}
+
+//
 // Condition variables.
 //
 
@@ -420,3 +430,138 @@ _Jv_ThreadInterrupt (_Jv_Thread_t *data)
   LeaveCriticalSection (&data->interrupt_mutex);
 }
 
+// park() / unpark() support
+
+void
+ParkHelper::init ()
+{
+  // We initialize our critical section, but not our event.
+  InitializeCriticalSection (&cs);
+  event = NULL;
+}
+
+void
+ParkHelper::init_event()
+{
+  EnterCriticalSection (&cs);
+  if (!event)
+    {
+      // Create an auto-reset event.
+      event = CreateEvent(NULL, 0, 0, NULL);
+      if (!event) JvFail("CreateEvent() failed");
+    }
+  LeaveCriticalSection (&cs);
+}
+
+void
+ParkHelper::deactivate ()
+{
+  permit = ::java::lang::Thread::THREAD_PARK_DEAD;
+}
+
+void
+ParkHelper::destroy()
+{
+  if (event) CloseHandle (event);
+  DeleteCriticalSection (&cs);
+}
+
+/**
+ * Releases the block on a thread created by _Jv_ThreadPark().  This
+ * method can also be used to terminate a blockage caused by a prior
+ * call to park.  This operation is unsafe, as the thread must be
+ * guaranteed to be live.
+ *
+ * @param thread the thread to unblock.
+ */
+void
+ParkHelper::unpark ()
+{
+  using namespace ::java::lang;
+  LONG volatile* ptr = &permit;
+
+  // If this thread is in state RUNNING, give it a permit and return
+  // immediately.
+  if (compare_and_exchange
+      (ptr, Thread::THREAD_PARK_RUNNING, Thread::THREAD_PARK_PERMIT))
+    return;
+  
+  // If this thread is parked, put it into state RUNNING and send it a
+  // signal.
+  if (compare_and_exchange 
+      (ptr, Thread::THREAD_PARK_PARKED, Thread::THREAD_PARK_RUNNING))
+    {
+      init_event ();
+      SetEvent (event);
+    }
+}
+
+/**
+ * Blocks the thread until a matching _Jv_ThreadUnpark() occurs, the
+ * thread is interrupted or the optional timeout expires.  If an
+ * unpark call has already occurred, this also counts.  A timeout
+ * value of zero is defined as no timeout.  When isAbsolute is true,
+ * the timeout is in milliseconds relative to the epoch.  Otherwise,
+ * the value is the number of nanoseconds which must occur before
+ * timeout.  This call may also return spuriously (i.e.  for no
+ * apparent reason).
+ *
+ * @param isAbsolute true if the timeout is specified in milliseconds from
+ *                   the epoch.
+ * @param time either the number of nanoseconds to wait, or a time in
+ *             milliseconds from the epoch to wait for.
+ */
+void
+ParkHelper::park (jboolean isAbsolute, jlong time)
+{
+  using namespace ::java::lang;
+  LONG volatile* ptr = &permit;
+
+  // If we have a permit, return immediately.
+  if (compare_and_exchange 
+      (ptr, Thread::THREAD_PARK_PERMIT, Thread::THREAD_PARK_RUNNING))
+    return;
+
+  // Determine the number of milliseconds to wait.
+  jlong millis = 0, nanos = 0;
+  
+  if (time)
+    {
+      if (isAbsolute)
+	{
+	  millis = time - ::java::lang::System::currentTimeMillis();
+	  nanos = 0;
+	}
+      else
+	{
+	  millis = 0;
+	  nanos = time;
+	}
+	
+      if (nanos)
+        {
+          millis += nanos / 1000000;
+          if (millis == 0)
+            millis = 1;
+            // ...otherwise, we'll block indefinitely.
+        }
+    }
+    
+  if (millis < 0) return;
+      // Can this ever happen?
+      
+  if (compare_and_exchange 
+      (ptr, Thread::THREAD_PARK_RUNNING, Thread::THREAD_PARK_PARKED))
+    {
+      init_event();
+      
+      DWORD timeout = millis==0 ? INFINITE : (DWORD) millis;
+      WaitForSingleObject (event, timeout);
+      
+      // If we were unparked by some other thread, this will already
+      // be in state THREAD_PARK_RUNNING.  If we timed out, we have to
+      // do it ourself.
+      compare_and_exchange 
+	(ptr, Thread::THREAD_PARK_PARKED, Thread::THREAD_PARK_RUNNING);
+    }
+}

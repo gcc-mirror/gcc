@@ -352,11 +352,11 @@ removeActionListener(ActionListener listener)
  *
  * @since 1.3 
  */
-  public EventListener[] getListeners(Class listenerType)
+  public <T extends EventListener> T[] getListeners(Class<T> listenerType)
   {
     if (listenerType == ActionListener.class)
-      return getActionListeners();
-    return (EventListener[]) Array.newInstance(listenerType, 0);
+      return (T[]) getActionListeners();
+    return (T[]) Array.newInstance(listenerType, 0);
   }
 
 /*************************************************************************/

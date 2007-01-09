@@ -47,13 +47,16 @@ final class VMURLConnection
 {
   public static final int LENGTH = 1024;
 
-  // private static native void init();
-
-  private static String guessContentTypeFromBuffer(byte[] b, int valid)
+  static
   {
-    // FIXME - write real implementation
-    return null;
+    if (Configuration.INIT_LOAD_LIBRARY)
+      System.loadLibrary("javanet");
+    init();
   }
+
+  private static native void init();
+
+  private static native String guessContentTypeFromBuffer(byte[] b, int valid);
 
   /**
    * This is called from URLConnection to guess the mime type of a

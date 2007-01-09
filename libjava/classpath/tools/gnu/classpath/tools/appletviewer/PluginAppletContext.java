@@ -54,7 +54,7 @@ class PluginAppletContext extends CommonAppletContext
       }
     catch(IOException e)
       {
-        System.err.println("showDocument failed: " + e);
+        throw new RuntimeException("showDocument failed.", e);
       }
   }
 
@@ -66,7 +66,7 @@ class PluginAppletContext extends CommonAppletContext
       }
     catch(IOException e)
       {
-        System.err.println("showDocument failed: " + e);
+        throw new RuntimeException("showStatus failed.", e);
       }
   }
 }

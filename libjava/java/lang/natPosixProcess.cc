@@ -27,8 +27,8 @@ details.  */
 #include <gcj/cni.h>
 #include <jvm.h>
 
-#include <java/lang/ConcreteProcess$ProcessManager.h>
-#include <java/lang/ConcreteProcess.h>
+#include <java/lang/PosixProcess$ProcessManager.h>
+#include <java/lang/PosixProcess.h>
 #include <java/lang/IllegalThreadStateException.h>
 #include <java/lang/InternalError.h>
 #include <java/lang/InterruptedException.h>
@@ -98,7 +98,7 @@ sigchld_handler (int)
 
 // Get ready to enter the main reaper thread loop.
 void
-java::lang::ConcreteProcess$ProcessManager::init ()
+java::lang::PosixProcess$ProcessManager::init ()
 {
   using namespace java::lang;
   // Remenber our PID so other threads can kill us.
@@ -124,7 +124,7 @@ error:
 }
 
 void
-java::lang::ConcreteProcess$ProcessManager::waitForSignal ()
+java::lang::PosixProcess$ProcessManager::waitForSignal ()
 {
   // Wait for SIGCHLD
   sigset_t mask;
@@ -145,7 +145,7 @@ java::lang::ConcreteProcess$ProcessManager::waitForSignal ()
   return;
 }
 
-jboolean java::lang::ConcreteProcess$ProcessManager::reap ()
+jboolean java::lang::PosixProcess$ProcessManager::reap ()
 {
   using namespace java::lang;
 
@@ -168,7 +168,7 @@ jboolean java::lang::ConcreteProcess$ProcessManager::reap ()
         return true;   // No children to wait for.
 
       // Look up the process in our pid map.
-      ConcreteProcess * process = removeProcessFromMap ((jlong) pid);
+      PosixProcess * process = removeProcessFromMap ((jlong) pid);
 
       // Note that if process==NULL, then we have an unknown child.
       // This is not common, but can happen, and isn't an error.
@@ -176,7 +176,7 @@ jboolean java::lang::ConcreteProcess$ProcessManager::reap ()
 	{
 	  JvSynchronize sync (process);
 	  process->status = WIFEXITED (status) ? WEXITSTATUS (status) : -1;
-	  process->state = ConcreteProcess::STATE_TERMINATED;
+	  process->state = PosixProcess::STATE_TERMINATED;
           process->processTerminationCleanup();
 	  process->notifyAll ();
 	}
@@ -187,7 +187,7 @@ error:
 }
 
 void
-java::lang::ConcreteProcess$ProcessManager::signalReaper ()
+java::lang::PosixProcess$ProcessManager::signalReaper ()
 {
   int c = pthread_kill ((pthread_t) reaperPID, SIGCHLD);
   if (c == 0)
@@ -197,7 +197,7 @@ java::lang::ConcreteProcess$ProcessManager::signalReaper ()
 }
 
 void
-java::lang::ConcreteProcess::nativeDestroy ()
+java::lang::PosixProcess::nativeDestroy ()
 {
   int c = kill ((pid_t) pid, SIGKILL);
   if (c == 0)
@@ -207,7 +207,7 @@ java::lang::ConcreteProcess::nativeDestroy ()
 }
 
 void
-java::lang::ConcreteProcess::nativeSpawn ()
+java::lang::PosixProcess::nativeSpawn ()
 {
   using namespace java::io;
 

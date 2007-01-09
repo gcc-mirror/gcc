@@ -1,5 +1,5 @@
 /* java.lang.ref.SoftReference
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,14 +47,14 @@ package java.lang.ref;
  *
  * @author Jochen Hoenicke 
  */
-public class SoftReference 
-  extends Reference
+public class SoftReference<T>
+  extends Reference<T>
 {
   /**
    * Create a new soft reference, that is not registered to any queue.
    * @param referent the object we refer to.
    */
-  public SoftReference(Object referent)
+  public SoftReference(T referent)
   {
     super(referent);
   }
@@ -65,7 +65,7 @@ public class SoftReference
    * @param q the reference queue to register on.
    * @exception NullPointerException if q is null.
    */
-  public SoftReference(Object referent, ReferenceQueue q)
+  public SoftReference(T referent, ReferenceQueue<? super T> q)
   {
     super(referent, q);
   }
@@ -75,7 +75,7 @@ public class SoftReference
    * @return the object, this reference refers to, or null if the 
    * reference was cleared.
    */
-  public Object get()
+  public T get()
   {
     /* Why is this overloaded??? 
      * Maybe for a kind of LRU strategy. */

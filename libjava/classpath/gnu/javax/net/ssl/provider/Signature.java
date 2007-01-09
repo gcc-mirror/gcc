@@ -1,4 +1,4 @@
-/* Signature.java -- SSL signature message.
+/* Signature.java -- SSL Signature structure.
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -49,6 +49,8 @@ import java.io.StringWriter;
 
 import java.math.BigInteger;
 
+import java.nio.ByteBuffer;
+
 import java.security.PublicKey;
 import java.security.interfaces.RSAKey;
 
@@ -56,103 +58,115 @@ import java.util.Arrays;
 
 import gnu.java.security.der.*;
 
-class Signature implements Constructed
+/**
+ * The signature structure.
+ *
+ * <pre>
+select (SignatureAlgorithm)
+{
+case anonymous:
+  struct { };
+case rsa:
+  digitally-signed struct
+  {
+    opaque md5_hash[16];
+    opaque sha_hash[20];
+  };
+case dsa:
+  digitally-signed struct
+  {
+    opaque sha_hash[20];
+  };
+} Signature;</pre>
+ */
+public class Signature implements Builder, Constructed
 {
 
   // Fields.
   // -------------------------------------------------------------------------
 
-  private final Object sigValue;
-  private final String sigAlg;
+  private final ByteBuffer buffer;
+  private final SignatureAlgorithm alg;
 
   // Constructor.
   // -------------------------------------------------------------------------
 
-  Signature(Object sigValue, String sigAlg)
+  public Signature (final ByteBuffer buffer, final SignatureAlgorithm alg)
   {
-    this.sigValue = sigValue;
-    this.sigAlg = sigAlg;
+    this.buffer = buffer;
+    this.alg = alg;
   }
-
-  // Class method.
-  // -------------------------------------------------------------------------
-
-  static Signature read(InputStream in, CipherSuite suite, PublicKey key)
-    throws IOException
+  
+  public Signature (final byte[] sigValue, final SignatureAlgorithm alg)
   {
-    Object sigValue = null;
-    DataInputStream din = new DataInputStream(in);
-    int len = din.readUnsignedShort();
-    sigValue = new byte[len];
-    din.readFully((byte[]) sigValue);
-    if (suite.getSignature() == "DSS")
-      {
-        DERReader der = new DERReader(new ByteArrayInputStream((byte[]) sigValue));
-        if (der.read().getTag() != DER.SEQUENCE)
-          {
-            throw new IOException("expecting DER SEQUENCE");
-          }
-        BigInteger r = (BigInteger) der.read().getValue();
-        BigInteger s = (BigInteger) der.read().getValue();
-        sigValue = new BigInteger[] { r, s };
-      }
-    return new Signature(sigValue, suite.getSignature());
+    buffer = ByteBuffer.allocate(sigValue.length + 2);
+    buffer.putShort((short) sigValue.length);
+    buffer.put(sigValue);
+    buffer.position(0);
+    this.alg = alg;
   }
 
   // Instance methods.
   // -------------------------------------------------------------------------
 
-  public void write(OutputStream out) throws IOException
+  public int length ()
   {
-    write(out, ProtocolVersion.TLS_1);
+    if (alg.equals (SignatureAlgorithm.ANONYMOUS))
+      return 0;
+    return (buffer.getShort (0) & 0xFFFF) + 2;
+  }
+  
+  public ByteBuffer buffer()
+  {
+    return (ByteBuffer) buffer.duplicate().limit(length());
   }
 
-  public void write(OutputStream out, ProtocolVersion version)
-    throws IOException
+  public byte[] signature ()
   {
-    byte[] result = null;
-    if (sigValue instanceof byte[])
-      {
-        result = (byte[]) sigValue;
-      }
-    else
-      {
-        DERValue r = new DERValue(DER.INTEGER, ((BigInteger[]) sigValue)[0]);
-        DERValue s = new DERValue(DER.INTEGER, ((BigInteger[]) sigValue)[1]);
-        DERValue sig = new DERValue(DER.SEQUENCE|DER.CONSTRUCTED,
-                                    Arrays.asList(new Object[] { r, s }));
-        result = sig.getEncoded();
-      }
-    out.write(result.length >>> 8 & 0xFF);
-    out.write(result.length & 0xFF);
-    out.write(result);
+    if (alg.equals (SignatureAlgorithm.ANONYMOUS))
+      return new byte[0];
+    int length = buffer.getShort (0) & 0xFFFF;
+    byte[] buf = new byte[length];
+    ((ByteBuffer) buffer.duplicate().position(2)).get(buf);
+    return buf;
   }
 
-  Object getSigValue()
+  public void setSignature (final byte[] signature)
   {
-    return sigValue;
+    setSignature (signature, 0, signature.length);
   }
 
-  String getSigAlg()
+  public void setSignature (final byte[] signature, final int offset, final int length)
   {
-    return sigAlg;
+    if (alg.equals (SignatureAlgorithm.ANONYMOUS))
+      return;
+    buffer.putShort (0, (short) length);
+    buffer.position (2);
+    buffer.put (signature, offset, length);
   }
 
-  public String toString()
+  public String toString ()
+  {
+    return toString (null);
+  }
+
+  public String toString (final String prefix)
   {
     StringWriter str = new StringWriter();
     PrintWriter out = new PrintWriter(str);
+    if (prefix != null)
+      out.print (prefix);
     out.println("struct {");
-    if (sigAlg.equals("RSA"))
+    if (!alg.equals (SignatureAlgorithm.ANONYMOUS))
       {
-        out.print(Util.hexDump((byte[]) sigValue, "  "));
+        String subprefix = "  ";
+        if (prefix != null)
+          subprefix = prefix + subprefix;
+        out.print (Util.hexDump (signature (), subprefix));
       }
-    else
-      {
-        out.println("  r = " + ((BigInteger[]) sigValue)[0].toString(16) + ";");
-        out.println("  s = " + ((BigInteger[]) sigValue)[1].toString(16) + ";");
-      }
-    out.println("} Signature;");
+    if (prefix != null)
+      out.print (prefix);
+    out.print ("} Signature;");
     return str.toString();
   }
 }

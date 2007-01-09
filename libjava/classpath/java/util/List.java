@@ -1,5 +1,5 @@
 /* List.java -- An ordered collection which allows indexed access
-   Copyright (C) 1998, 2001, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -80,7 +80,7 @@ package java.util;
  * @since 1.2
  * @status updated to 1.4
  */
-public interface List extends Collection
+public interface List<E> extends Collection<E>
 {
   /**
    * Insert an element into the list at a given position (optional operation).
@@ -100,7 +100,7 @@ public interface List extends Collection
    * @throws NullPointerException if o is null and this list doesn't support
    *         the addition of null values.
    */
-  void add(int index, Object o);
+  void add(int index, E o);
 
   /**
    * Add an element to the end of the list (optional operation). If the list
@@ -118,7 +118,7 @@ public interface List extends Collection
    * @throws NullPointerException if o is null and this list doesn't support
    *         the addition of null values.
    */
-  boolean add(Object o);
+  boolean add(E o);
 
   /**
    * Insert the contents of a collection into the list at a given position
@@ -143,7 +143,7 @@ public interface List extends Collection
    * @throws NullPointerException if the specified collection is null
    * @see #add(int, Object)
    */
-  boolean addAll(int index, Collection c);
+  boolean addAll(int index, Collection<? extends E> c);
 
   /**
    * Add the contents of a collection to the end of the list (optional
@@ -165,7 +165,7 @@ public interface List extends Collection
    *         doesn't support the addition of null values.
    * @see #add(Object)
    */
-  boolean addAll(Collection c);
+  boolean addAll(Collection<? extends E> c);
 
   /**
    * Clear the list, such that a subsequent call to isEmpty() would return
@@ -202,7 +202,7 @@ public interface List extends Collection
    *         list does not support null values.
    * @see #contains(Object)
    */
-  boolean containsAll(Collection c);
+  boolean containsAll(Collection<?> c);
 
   /**
    * Test whether this list is equal to another object. A List is defined to be
@@ -226,7 +226,7 @@ public interface List extends Collection
    * @return the element at index index in this list
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
    */
-  Object get(int index);
+  E get(int index);
 
   /**
    * Obtains a hash code for this list. In order to obey the general
@@ -276,7 +276,7 @@ while (i.hasNext())
    *
    * @return an Iterator over the elements of this list, in order
    */
-  Iterator iterator();
+  Iterator<E> iterator();
 
   /**
    * Obtain the last index at which a given object is to be found in this
@@ -297,7 +297,7 @@ while (i.hasNext())
    * @return a ListIterator over the elements of this list, in order, starting
    *         at the beginning
    */
-  ListIterator listIterator();
+  ListIterator<E> listIterator();
 
   /**
    * Obtain a ListIterator over this list, starting at a given position.
@@ -310,7 +310,7 @@ while (i.hasNext())
    *         at index
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
    */
-  ListIterator listIterator(int index);
+  ListIterator<E> listIterator(int index);
 
   /**
    * Remove the element at a given position in this list (optional operation).
@@ -322,7 +322,7 @@ while (i.hasNext())
    *         remove operation
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
    */
-  Object remove(int index);
+  E remove(int index);
 
   /**
    * Remove the first occurence of an object from this list (optional
@@ -357,7 +357,7 @@ while (i.hasNext())
    * @see #remove(Object)
    * @see #contains(Object)
    */
-  boolean removeAll(Collection c);
+  boolean removeAll(Collection<?> c);
 
   /**
    * Remove all elements of this list that are not contained in a given
@@ -376,7 +376,7 @@ while (i.hasNext())
    * @see #remove(Object)
    * @see #contains(Object)
    */
-  boolean retainAll(Collection c);
+  boolean retainAll(Collection<?> c);
 
   /**
    * Replace an element of this list with another object (optional operation).
@@ -394,7 +394,7 @@ while (i.hasNext())
    * @throws NullPointerException if o is null and this
    *         list does not support null values.
    */
-  Object set(int index, Object o);
+  E set(int index, E o);
 
   /**
    * Get the number of elements in this list. If the list contains more
@@ -420,7 +420,7 @@ while (i.hasNext())
    * @throws IndexOutOfBoundsException if fromIndex &lt; 0
    *         || toIndex &gt; size() || fromIndex &gt; toIndex
    */
-  List subList(int fromIndex, int toIndex);
+  List<E> subList(int fromIndex, int toIndex);
 
   /**
    * Copy the current contents of this list into an array.
@@ -447,5 +447,5 @@ while (i.hasNext())
    *         collection is not a subtype of the element type of a
    * @throws NullPointerException if the specified array is null
    */
-  Object[] toArray(Object[] a);
+  <T> T[] toArray(T[] a);
 }

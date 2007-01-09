@@ -1,5 +1,5 @@
 /* ORBInitInfoOperations.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.PortableInterceptor;
 
+import org.omg.CORBA.BAD_INV_ORDER;
+import org.omg.CORBA.ORB;
 import org.omg.IOP.CodecFactory;
 import org.omg.PortableInterceptor.ORBInitInfoPackage.DuplicateName;
 
@@ -90,7 +92,7 @@ public interface ORBInitInfoOperations
     throws DuplicateName;
 
   /**
-   * Allocate a slot on a {@link PortableInterceptor.Current}. While slots can
+   * Allocate a slot on a {@link Current} of this interceptor. While slots can
    * be allocated by this method, they cannot be initialized.
    * {@link CurrentOperations#get_slot} and {@link CurrentOperations#set_slot}
    * throw {@link org.omg.CORBA.BAD_INV_ORDER} while called from the interceptor
@@ -103,8 +105,8 @@ public interface ORBInitInfoOperations
   /**
    * Returns the arguments passed to the ORB.init.
    *
-   * @return the first parameter, passed to the method
-   * {@link org.omg.CORBA.ORB#init}.
+   * @return the first parameter, passed to the methods from the group
+   * org.omg.CORBA.ORB#init(String[], ...).
    */
   String[] arguments();
 
@@ -127,7 +129,7 @@ public interface ORBInitInfoOperations
 
   /**
    * Register the initial reference. The registered object will be accessible by
-   * the {@link ORB.resolve_initial_references} under the object_name.
+   * the {@link ORB#resolve_initial_references} under the object_name.
    *
    * @param object_name the name of the object to register.
    * @param object the object to register.

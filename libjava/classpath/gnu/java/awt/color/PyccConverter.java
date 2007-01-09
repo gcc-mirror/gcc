@@ -37,7 +37,6 @@ exception statement from your version. */
 
 package gnu.java.awt.color;
 
-
 /**
  * PyccConverter - conversion routines for the PhotoYCC colorspace
  *
@@ -52,21 +51,21 @@ public class PyccConverter implements ColorSpaceConverter
 {
   public float[] toRGB(float[] in)
   {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   public float[] fromRGB(float[] in)
   {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   public float[] toCIEXYZ(float[] in)
   {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   public float[] fromCIEXYZ(float[] in)
   {
-    return null;
+    throw new UnsupportedOperationException();
   }
 }

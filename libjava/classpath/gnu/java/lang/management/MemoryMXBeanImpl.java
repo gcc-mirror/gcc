@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.java.lang.management;
 
+import gnu.classpath.ListenerData;
+
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryNotificationInfo;
 import java.lang.management.MemoryUsage;
@@ -166,49 +168,6 @@ public final class MemoryMXBeanImpl
   {
     checkControlPermissions();
     VMMemoryMXBeanImpl.setVerbose(verbose);
-  }
-
-  private class ListenerData
-  {
-    private NotificationListener listener;
-    private NotificationFilter filter;
-    private Object passback;
-
-    public ListenerData(NotificationListener listener,
-			NotificationFilter filter, Object passback)
-    {
-      this.listener = listener;
-      this.filter = filter;
-      this.passback = passback;
-    }
-    
-    public NotificationListener getListener()
-    {
-      return listener;
-    }
-
-    public NotificationFilter getFilter()
-    {
-      return filter;
-    }
-
-    public Object getPassback()
-    {
-      return passback;
-    }
-
-    public boolean equals(Object obj)
-    {
-      if (obj instanceof ListenerData)
-	{
-	  ListenerData data = (ListenerData) obj;
-	  return (data.getListener() == listener &&
-		  data.getFilter() == filter &&
-		  data.getPassback() == passback);
-	}
-      return false;
-    }
-
   }
 
   public void addNotificationListener(NotificationListener listener,

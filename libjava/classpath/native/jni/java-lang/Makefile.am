@@ -7,7 +7,8 @@ libjavalang_la_SOURCES = java_lang_VMSystem.c \
 			 java_lang_VMProcess.c
 
 libjavalang_la_LIBADD = $(wildcard $(top_builddir)/native/fdlibm/*.lo) \
-			$(top_builddir)/native/jni/classpath/jcl.lo
+			$(top_builddir)/native/jni/classpath/jcl.lo \
+			$(top_builddir)/native/jni/native-lib/libclasspathnative.la
 
 libjavalangreflect_la_SOURCES = java_lang_reflect_VMArray.c
 

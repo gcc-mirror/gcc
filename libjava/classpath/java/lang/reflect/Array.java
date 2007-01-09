@@ -95,7 +95,7 @@ public final class Array
    * @throws NegativeArraySizeException when length is less than 0
    * @throws OutOfMemoryError if memory allocation fails
    */
-  public static Object newInstance(Class componentType, int length)
+  public static Object newInstance(Class<?> componentType, int length)
   {
     if (! componentType.isPrimitive())
       return VMArray.createObjectArray(componentType, length);
@@ -143,7 +143,7 @@ public final class Array
    *         than 0
    * @throws OutOfMemoryError if memory allocation fails
    */
-  public static Object newInstance(Class componentType, int[] dimensions)
+  public static Object newInstance(Class<?> componentType, int[] dimensions)
   {
     if (dimensions.length <= 0)
       throw new IllegalArgumentException ("Empty dimensions array.");

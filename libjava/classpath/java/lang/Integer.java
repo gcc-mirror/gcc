@@ -51,10 +51,11 @@ package java.lang;
  * @author Warren Levy
  * @author Eric Blake (ebb9@email.byu.edu)
  * @author Tom Tromey (tromey@redhat.com)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.0
- * @status largely updated to 1.5
+ * @status updated to 1.5
  */
-public final class Integer extends Number implements Comparable
+public final class Integer extends Number implements Comparable<Integer>
 {
   /**
    * Compatible with JDK 1.0.2+.
@@ -78,7 +79,7 @@ public final class Integer extends Number implements Comparable
    * <code>Class</code> object.
    * @since 1.1
    */
-  public static final Class TYPE = VMClassLoader.getPrimitiveClass('I');
+  public static final Class<Integer> TYPE = (Class<Integer>) VMClassLoader.getPrimitiveClass('I');
 
   /**
    * The number of bits needed to represent an <code>int</code>.
@@ -523,22 +524,6 @@ public final class Integer extends Number implements Comparable
       return 0;
     // Returns just -1 or 1 on inequality; doing math might overflow.
     return value > i.value ? 1 : -1;
-  }
-
-  /**
-   * Behaves like <code>compareTo(Integer)</code> unless the Object
-   * is not an <code>Integer</code>.
-   *
-   * @param o the object to compare
-   * @return the comparison
-   * @throws ClassCastException if the argument is not an <code>Integer</code>
-   * @see #compareTo(Integer)
-   * @see Comparable
-   * @since 1.2
-   */
-  public int compareTo(Object o)
-  {
-    return compareTo((Integer) o);
   }
 
   /**

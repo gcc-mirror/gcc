@@ -225,4 +225,18 @@ public class JToolTip extends JComponent implements Accessible
   {
     setUI((ToolTipUI) UIManager.getUI(this));
   }
+
+  /**
+   * Returns <code>true</code> if the component is guaranteed to be painted
+   * on top of others. This returns false by default and is overridden by
+   * components like JMenuItem, JPopupMenu and JToolTip to return true for
+   * added efficiency.
+   *
+   * @return <code>true</code> if the component is guaranteed to be painted
+   *         on top of others
+   */
+  boolean onTop()
+  {
+    return true;
+  }
 }

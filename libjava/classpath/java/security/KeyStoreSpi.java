@@ -187,7 +187,7 @@ public abstract class KeyStoreSpi
    *
    * @return an Enumeration of the aliases
    */
-  public abstract Enumeration engineAliases();
+  public abstract Enumeration<String> engineAliases();
 
   /**
    * Determines if the keystore contains the specified alias.

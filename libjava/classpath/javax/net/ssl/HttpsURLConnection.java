@@ -38,9 +38,12 @@ exception statement from your version. */
 
 package javax.net.ssl;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.Principal;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 
 /**
  * A URL connection that connects via the <i>Secure Socket Layer</i>
@@ -243,6 +246,48 @@ public abstract class HttpsURLConnection extends HttpURLConnection
     if (factory == null)
       throw new IllegalArgumentException("factory cannot be null");
     this.factory = factory;
+  }
+
+  /**
+   * Returns the local principal for this connection.
+   *
+   * <p>The default implementation will return the {@link
+   * javax.security.x500.X500Principal} for the end entity certificate
+   * in the local certificate chain if those certificates are of type
+   * {@link java.security.cert.X509Certificate}. Otherwise, this
+   * method returns <code>null</code>.
+   *
+   * @return The local principal.
+   * @since 1.5
+   */
+  public Principal getLocalPrincipal ()
+  {
+    Certificate[] c = getLocalCertificates ();
+    if (c != null && c.length > 0 && (c[0] instanceof X509Certificate))
+      return ((X509Certificate) c[0]).getSubjectX500Principal ();
+    return null;
+  }
+
+  /**
+   * Returns the remote peer's principal for this connection.
+   *
+   * <p>The default implementation will return the {@link
+   * javax.security.x500.X500Principal} for the end entity certificate
+   * in the remote peer's certificate chain if those certificates are
+   * of type {@link java.security.cert.X509Certificate}. Otherwise,
+   * this method returns <code>null</code>.
+   *
+   * @return The remote principal.
+   * @throws SSLPeerUnverifiedException If the remote peer has not
+   * been verified.
+   * @since 1.5
+   */
+  public Principal getPeerPrincipal () throws SSLPeerUnverifiedException
+  {
+    Certificate[] c = getServerCertificates ();
+    if (c != null && c.length > 0 && (c[0] instanceof X509Certificate))
+      return ((X509Certificate) c[0]).getSubjectX500Principal ();
+    return null;
   }
 
   // Abstract methods.

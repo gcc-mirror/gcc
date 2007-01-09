@@ -533,4 +533,12 @@ public final class FileChannelImpl extends FileChannel
 
     return this;
   }
+
+  /**
+   * @return The native file descriptor.
+   */
+  public int getNativeFD()
+  {
+    return fd;
+  }
 }

@@ -260,6 +260,14 @@ final class RETokenNamedProperty extends REToken {
           return new UnicodeCategoryHandler(Character.UNASSIGNED);
       if (name.equals("Lu"))
           return new UnicodeCategoryHandler(Character.UPPERCASE_LETTER);
+      if (name.equals("all"))
+	return new Handler() 
+	  {
+	    public boolean includes(char c)
+	    {
+	      return true;
+	    }
+	  };
       throw new REException("unsupported name " + name, REException.REG_ESCAPE, 0);
   }
 

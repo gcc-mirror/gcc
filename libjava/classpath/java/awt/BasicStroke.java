@@ -43,6 +43,7 @@ import gnu.java.awt.java2d.LineSegment;
 import gnu.java.awt.java2d.QuadSegment;
 import gnu.java.awt.java2d.Segment;
 
+import java.awt.geom.FlatteningPathIterator;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
@@ -486,8 +487,157 @@ public class BasicStroke implements Stroke
 
   private Shape dashedStroke(PathIterator pi)
   {
-    GeneralPath out = new GeneralPath();
-    return out;
+    // The choice of (flatnessSq == width / 3) is made to be consistent with
+    // the flattening in CubicSegment.getDisplacedSegments
+    FlatteningPathIterator flat = new FlatteningPathIterator(pi,
+                                                             Math.sqrt(width / 3));
+
+    // Holds the endpoint of the current segment (or piece of a segment)
+    double[] coords = new double[2];
+
+    // Holds end of the last segment
+    double x, y, x0, y0;
+    x = x0 = y = y0 = 0;
+
+    // Various useful flags
+    boolean pathOpen = false;
+    boolean dashOn = true;
+    boolean offsetting = (phase != 0);
+
+    // How far we are into the current dash
+    double distance = 0;
+    int dashIndex = 0;
+
+    // And variables to hold the final output
+    GeneralPath output = new GeneralPath();
+    Segment[] p;
+
+    // Iterate over the FlatteningPathIterator
+    while (! flat.isDone())
+      {
+        switch (flat.currentSegment(coords))
+          {
+          case PathIterator.SEG_MOVETO:
+            x0 = x = coords[0];
+            y0 = y = coords[1];
+
+            if (pathOpen)
+              {
+                capEnds();
+                convertPath(output, start);
+                start = end = null;
+                pathOpen = false;
+              }
+
+            break;
+
+          case PathIterator.SEG_LINETO:
+            boolean segmentConsumed = false;
+
+            while (! segmentConsumed)
+              {
+                // Find the total remaining length of this segment
+                double segLength = Math.sqrt((x - coords[0]) * (x - coords[0])
+                                             + (y - coords[1])
+                                             * (y - coords[1]));
+                boolean spanBoundary = true;
+                double[] segmentEnd = null;
+
+                // The current segment fits entirely inside the current dash
+                if ((offsetting && distance + segLength <= phase)
+                    || distance + segLength <= dash[dashIndex])
+                  {
+                    spanBoundary = false;
+                  }
+                
+                // Otherwise, we need to split the segment in two, as this
+                // segment spans a dash boundry
+                else
+                  {
+                    segmentEnd = (double[]) coords.clone();
+
+                    // Calculate the remaining distance in this dash,
+                    // and coordinates of the dash boundary
+                    double reqLength;
+                    if (offsetting)
+                      reqLength = phase - distance;
+                    else
+                      reqLength = dash[dashIndex] - distance;
+
+                    coords[0] = x + ((coords[0] - x) * reqLength / segLength);
+                    coords[1] = y + ((coords[1] - y) * reqLength / segLength);
+                  }
+
+                if (offsetting || ! dashOn)
+                  {
+                    // Dash is off, or we are in offset - treat this as a
+                    // moveTo
+                    x0 = x = coords[0];
+                    y0 = y = coords[1];
+
+                    if (pathOpen)
+                      {
+                        capEnds();
+                        convertPath(output, start);
+                        start = end = null;
+                        pathOpen = false;
+                      }
+                  }
+                else
+                  {
+                    // Dash is on - treat this as a lineTo
+                    p = (new LineSegment(x, y, coords[0], coords[1])).getDisplacedSegments(width / 2.0);
+
+                    if (! pathOpen)
+                      {
+                        start = p[0];
+                        end = p[1];
+                        pathOpen = true;
+                      }
+                    else
+                      addSegments(p);
+
+                    x = coords[0];
+                    y = coords[1];
+                  }
+
+                // Update variables depending on whether we spanned a
+                // dash boundary or not
+                if (! spanBoundary)
+                  {
+                    distance += segLength;
+                    segmentConsumed = true;
+                  }
+                else
+                  {
+                    if (offsetting)
+                      offsetting = false;
+                    dashOn = ! dashOn;
+                    distance = 0;
+                    coords = segmentEnd;
+
+                    if (dashIndex + 1 == dash.length)
+                      dashIndex = 0;
+                    else
+                      dashIndex++;
+
+                    // Since the value of segmentConsumed is still false,
+                    // the next run of the while loop will complete the segment
+                  }
+              }
+            break;
+
+          // This is a flattened path, so we don't need to deal with curves
+          }
+        flat.next();
+      }
+
+    if (pathOpen)
+      {
+        capEnds();
+        convertPath(output, start);
+      }
+    return output;
   }
 
   /**
@@ -611,9 +761,13 @@ public class BasicStroke implements Stroke
         p1 = new double[]{a.last.P2.getX(), a.last.P2.getY()};
         dx = p1[0] - p0[0];
         dy = p1[1] - p0[1];
-        l = Math.sqrt(dx * dx + dy * dy);
-        dx = (2.0/3.0)*width*dx/l;
-        dy = (2.0/3.0)*width*dy/l;
+        if (dx != 0 && dy != 0)
+          {
+            l = Math.sqrt(dx * dx + dy * dy);
+            dx = (2.0/3.0)*width*dx/l;
+            dy = (2.0/3.0)*width*dy/l;
+          }
+        
         c1 = new Point2D.Double(p1[0] + dx, p1[1] + dy);
         c2 = new Point2D.Double(b.P1.getX() + dx, b.P1.getY() + dy);
         a.add(new CubicSegment(a.last.P2, c1, c2, b.P1));

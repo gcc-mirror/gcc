@@ -1,5 +1,5 @@
 /* ForwardRequestHelper.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.PortableServer;
 
 import gnu.CORBA.Minor;
+import gnu.CORBA.ObjectCreator;
 import gnu.CORBA.OrbRestricted;
 import gnu.CORBA.Poa.ForwardRequestHolder;
 

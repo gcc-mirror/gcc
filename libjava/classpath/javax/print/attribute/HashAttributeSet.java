@@ -110,7 +110,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    *
    * @exception NullPointerException if interfaceName is null
    */
-  protected HashAttributeSet(Class interfaceName)
+  protected HashAttributeSet(Class<?> interfaceName)
   {
     if (interfaceName == null)
       throw new NullPointerException("interfaceName may not be null");
@@ -129,7 +129,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    * interfaceName
    * @exception NullPointerException if attribute or interfaceName is null
    */
-  protected HashAttributeSet(Attribute attribute, Class interfaceName)
+  protected HashAttributeSet(Attribute attribute, Class<?> interfaceName)
   {
     this(interfaceName);
     
@@ -151,7 +151,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    * interface of interfaceName
    * @exception NullPointerException if attributes or interfaceName is null
    */
-  protected HashAttributeSet(Attribute[] attributes, Class interfaceName)
+  protected HashAttributeSet(Attribute[] attributes, Class<?> interfaceName)
   {
     this(interfaceName);
     
@@ -173,7 +173,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    * @exception ClassCastException if any element of attributes is not an
    * interface of interfaceName
    */
-  protected HashAttributeSet(AttributeSet attributes, Class interfaceName)
+  protected HashAttributeSet(AttributeSet attributes, Class<?> interfaceName)
   {
     this(interfaceName);
     
@@ -256,7 +256,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    * @return <code>true</code> if an attribute of the category is contained
    * in the set, <code>false</code> otherwise.
    */
-  public boolean containsKey(Class category)
+  public boolean containsKey(Class<?> category)
   {
     return attributeMap.containsKey(category);
   }
@@ -301,7 +301,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    * @throws ClassCastException if category is not implementing 
    * <code>Attribute</code>.
    */
-  public Attribute get(Class category)
+  public Attribute get(Class<?> category)
   {
     if (category == null)
       throw new NullPointerException("category may not be null");
@@ -359,7 +359,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    * @return <code>true</code> if an attribute is removed, false in all other cases. 
    * @throws UnmodifiableSetException if the set does not support modification.
    */
-  public boolean remove(Class category)
+  public boolean remove(Class<?> category)
   {
     if (category == null)
       return false;

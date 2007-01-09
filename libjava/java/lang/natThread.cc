@@ -18,6 +18,8 @@ details.  */
 
 #include <gnu/gcj/RawDataManaged.h>
 #include <java/lang/Thread.h>
+#include <java/lang/Thread$State.h>
+#include <java/lang/Thread$UncaughtExceptionHandler.h>
 #include <java/lang/ThreadGroup.h>
 #include <java/lang/IllegalArgumentException.h>
 #include <java/lang/IllegalThreadStateException.h>
@@ -32,24 +34,6 @@ details.  */
 
 
 
-// This structure is used to represent all the data the native side
-// needs.  An object of this type is assigned to the `data' member of
-// the Thread class.
-struct natThread
-{
-  // These are used to interrupt sleep and join calls.  We can share a
-  // condition variable here since it only ever gets notified when the thread
-  // exits.
-  _Jv_Mutex_t join_mutex;
-  _Jv_ConditionVariable_t join_cond;
-
-  // This is private data for the thread system layer.
-  _Jv_Thread_t *thread;
-
-  // Each thread has its own JNI object.
-  JNIEnv *jni_env;
-};
-
 static void finalize_native (jobject ptr);
 
 // This is called from the constructor to initialize the native side
@@ -59,6 +43,9 @@ java::lang::Thread::initialize_native (void)
 {
   natThread *nt = (natThread *) _Jv_AllocBytes (sizeof (natThread));
   
+  state = JV_NEW;
+  nt->alive_flag = THREAD_DEAD;
+
   data = (gnu::gcj::RawDataManaged *) nt;
   
   // Register a finalizer to clean up the native thread resources.
@@ -66,6 +53,9 @@ java::lang::Thread::initialize_native (void)
 
   _Jv_MutexInit (&nt->join_mutex);
   _Jv_CondInit (&nt->join_cond);
+
+  nt->park_helper.init();
+
   nt->thread = _Jv_ThreadInitData (this);
   // FIXME: if JNI_ENV is set we will want to free it.  It is
   // malloc()d.
@@ -83,7 +73,9 @@ finalize_native (jobject ptr)
 #ifdef _Jv_HaveMutexDestroy
   _Jv_MutexDestroy (&nt->join_mutex);
 #endif
-  _Jv_FreeJNIEnv(nt->jni_env);
+  _Jv_FreeJNIEnv((JNIEnv*)nt->jni_env);
+  
+  nt->park_helper.destroy();
 }
 
 jint
@@ -111,14 +103,34 @@ java::lang::Thread::holdsLock (jobject obj)
   return !_Jv_ObjectCheckMonitor (obj);
 }
 
+jboolean
+java::lang::Thread::isAlive (void)
+{
+  natThread *nt = (natThread *) data;
+  return nt->alive_flag != (obj_addr_t)THREAD_DEAD;
+}
+
 void
 java::lang::Thread::interrupt (void)
 {
   checkAccess ();
+
   natThread *nt = (natThread *) data;
-  JvSynchronize sync (this);
-  if (alive_flag)
-    _Jv_ThreadInterrupt (nt->thread);
+
+  // If a thread is in state ALIVE, we atomically set it to state
+  // SIGNALED and send it a signal.  Once we've sent it the signal, we
+  // set its state back to ALIVE.
+  if (compare_and_swap 
+      (&nt->alive_flag, Thread::THREAD_ALIVE, Thread::THREAD_SIGNALED))
+    {
+      _Jv_ThreadInterrupt (nt->thread);
+      compare_and_swap 
+	(&nt->alive_flag, THREAD_SIGNALED, Thread::THREAD_ALIVE);
+
+      // Even though we've interrupted this thread, it might still be
+      // parked.
+      nt->park_helper.unpark ();
+    }
 }
 
 void
@@ -197,8 +209,10 @@ java::lang::Thread::sleep (jlong millis, jint nanos)
 void
 java::lang::Thread::finish_ ()
 {
+  __sync_synchronize();
   natThread *nt = (natThread *) data;
   
+  nt->park_helper.deactivate ();
   group->removeThread (this);
 
 #ifdef ENABLE_JVMPI  
@@ -226,7 +240,8 @@ java::lang::Thread::finish_ ()
 
   {
     JvSynchronize sync (this);
-    alive_flag = false;
+    nt->alive_flag = THREAD_DEAD;
+    state = JV_TERMINATED;
   }
 
   _Jv_CondNotifyAll (&nt->join_cond, &nt->join_mutex);
@@ -307,7 +322,7 @@ _Jv_ThreadRun (java::lang::Thread* thread)
       // this results in an uncaught exception, that is ignored.
       try
 	{
-	  thread->group->uncaughtException (thread, t);
+	  thread->getUncaughtExceptionHandler()->uncaughtException (thread, t);
 	}
       catch (java::lang::Throwable *f)
 	{
@@ -334,9 +349,10 @@ java::lang::Thread::start (void)
   if (!startable_flag)
     throw new IllegalThreadStateException;
 
-  alive_flag = true;
-  startable_flag = false;
   natThread *nt = (natThread *) data;
+  nt->alive_flag = THREAD_ALIVE;
+  startable_flag = false;
+  state = JV_RUNNABLE;
   _Jv_ThreadStart (this, nt->thread, (_Jv_ThreadStartFunc *) &_Jv_ThreadRun);
 }
 
@@ -392,13 +408,40 @@ java::lang::Thread::yield (void)
   _Jv_ThreadYield ();
 }
 
+::java::lang::Thread$State *
+java::lang::Thread::getState()
+{
+  _Jv_InitClass(&::java::lang::Thread$State::class$);
+
+  switch (state)
+    {
+    case JV_BLOCKED:
+      return ::java::lang::Thread$State::BLOCKED;
+    case JV_NEW:
+      return ::java::lang::Thread$State::NEW;
+
+    case JV_RUNNABLE:
+      return ::java::lang::Thread$State::RUNNABLE;
+    case JV_TERMINATED:
+      return ::java::lang::Thread$State::TERMINATED;
+    case JV_TIMED_WAITING:
+      return ::java::lang::Thread$State::TIMED_WAITING;
+    case JV_WAITING:
+      return ::java::lang::Thread$State::WAITING;
+    }
+
+  // We don't really need a default, but this makes the compiler
+  // happy.
+  return ::java::lang::Thread$State::RUNNABLE;
+}
+
 JNIEnv *
 _Jv_GetCurrentJNIEnv ()
 {
   java::lang::Thread *t = _Jv_ThreadCurrent ();
   if (t == NULL)
     return NULL;
-  return ((natThread *) t->data)->jni_env;
+  return (JNIEnv *)((natThread *) t->data)->jni_env;
 }
 
 void
@@ -419,8 +462,9 @@ _Jv_AttachCurrentThread(java::lang::Thread* thread)
   if (thread == NULL || thread->startable_flag == false)
     return -1;
   thread->startable_flag = false;
-  thread->alive_flag = true;
   natThread *nt = (natThread *) thread->data;
+  nt->alive_flag = ::java::lang::Thread::THREAD_ALIVE;
+  thread->state = JV_RUNNABLE;
   _Jv_ThreadRegister (nt->thread);
   return 0;
 }

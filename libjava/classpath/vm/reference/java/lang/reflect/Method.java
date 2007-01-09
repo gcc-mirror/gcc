@@ -104,7 +104,7 @@ extends AccessibleObject implements Member, GenericDeclaration
    * is a non-inherited member.
    * @return the class that declared this member
    */
-  public Class getDeclaringClass()
+  public Class<?> getDeclaringClass()
   {
     return declaringClass;
   }
@@ -172,7 +172,7 @@ extends AccessibleObject implements Member, GenericDeclaration
    * Gets the return type of this method.
    * @return the type of this method
    */
-  public native Class getReturnType();
+  public native Class<?> getReturnType();
 
   /**
    * Get the parameter list for this method, in declaration order. If the
@@ -180,7 +180,7 @@ extends AccessibleObject implements Member, GenericDeclaration
    *
    * @return a list of the types of the method's parameters
    */
-  public native Class[] getParameterTypes();
+  public native Class<?>[] getParameterTypes();
 
   /**
    * Get the exception types this method says it throws, in no particular
@@ -189,7 +189,7 @@ extends AccessibleObject implements Member, GenericDeclaration
    *
    * @return a list of the types in the method's throws clause
    */
-  public native Class[] getExceptionTypes();
+  public native Class<?>[] getExceptionTypes();
 
   /**
    * Compare two objects to see if they are semantically equivalent.
@@ -349,7 +349,7 @@ extends AccessibleObject implements Member, GenericDeclaration
    * @throws ExceptionInInitializerError if accessing a static method triggered
    *         class initialization, which then failed
    */
-  public Object invoke(Object o, Object[] args)
+  public Object invoke(Object o, Object... args)
     throws IllegalAccessException, InvocationTargetException
   {
     return invokeNative(o, args, declaringClass, slot);
@@ -375,8 +375,7 @@ extends AccessibleObject implements Member, GenericDeclaration
    *         specification, version 3.
    * @since 1.5
    */
-  /* FIXME[GENERICS]: Should be TypeVariable<Method>[] */
-  public TypeVariable[] getTypeParameters()
+  public TypeVariable<Method>[] getTypeParameters()
   {
     String sig = getSignature();
     if (sig == null)
@@ -451,4 +450,3 @@ extends AccessibleObject implements Member, GenericDeclaration
     return p.getGenericReturnType();
   }
 }
-

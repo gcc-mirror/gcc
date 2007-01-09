@@ -40,6 +40,8 @@ package java.security;
 
 import gnu.java.security.Engine;
 
+import java.lang.reflect.InvocationTargetException;
+import java.nio.ByteBuffer;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.spec.AlgorithmParameterSpec;
@@ -127,28 +129,29 @@ public abstract class Signature extends SignatureSpi
    * Returns an instance of <code>Signature</code> representing the specified
    * signature.
    * 
-   * @param algorithm
-   *          the algorithm to use.
+   * @param algorithm the algorithm to use.
    * @return a new instance repesenting the desired algorithm.
-   * @throws NoSuchAlgorithmException
-   *           if the algorithm is not implemented by any provider.
+   * @throws NoSuchAlgorithmException if the algorithm is not implemented by any
+   *           provider.
+   * @throws IllegalArgumentException if <code>algorithm</code> is
+   *           <code>null</code> or is an empty string.
    */
   public static Signature getInstance(String algorithm)
-    throws NoSuchAlgorithmException
+      throws NoSuchAlgorithmException
   {
     Provider[] p = Security.getProviders();
+    NoSuchAlgorithmException lastException = null;
     for (int i = 0; i < p.length; i++)
-      {
-        try
-          {
-            return getInstance(algorithm, p[i]);
-          }
-	catch (NoSuchAlgorithmException e)
-	  {
-	    // Ignored.
-	  }
-      }
-
+      try
+        {
+          return getInstance(algorithm, p[i]);
+        }
+      catch (NoSuchAlgorithmException x)
+        {
+          lastException = x;
+        }
+    if (lastException != null)
+      throw lastException;
     throw new NoSuchAlgorithmException(algorithm);
   }
 
@@ -156,28 +159,26 @@ public abstract class Signature extends SignatureSpi
    * Returns an instance of <code>Signature</code> representing the specified
    * signature from the named provider.
    * 
-   * @param algorithm
-   *          the algorithm to use.
-   * @param provider
-   *          the name of the provider to use.
+   * @param algorithm the algorithm to use.
+   * @param provider the name of the provider to use.
    * @return a new instance repesenting the desired algorithm.
-   * @throws IllegalArgumentException if <code>provider</code> is
-   *           <code>null</code> or is an empty string.
-   * @throws NoSuchProviderException
-   *           if the named provider was not found.
-   * @throws NoSuchAlgorithmException
-   *           if the algorithm is not implemented by the named provider.
+   * @throws NoSuchProviderException if the named provider was not found.
+   * @throws NoSuchAlgorithmException if the algorithm is not implemented by the
+   *           named provider.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code> or empty.
    */
   public static Signature getInstance(String algorithm, String provider)
-    throws NoSuchAlgorithmException, NoSuchProviderException
+      throws NoSuchAlgorithmException, NoSuchProviderException
   {
-    if (provider == null || provider.length() == 0)
-      throw new IllegalArgumentException("Illegal provider");
-
+    if (provider == null)
+      throw new IllegalArgumentException("provider MUST NOT be null");
+    provider = provider.trim();
+    if (provider.length() == 0)
+      throw new IllegalArgumentException("provider MUST NOT be empty");
     Provider p = Security.getProvider(provider);
     if (p == null)
       throw new NoSuchProviderException(provider);
-
     return getInstance(algorithm, p);
   }
 
@@ -185,35 +186,41 @@ public abstract class Signature extends SignatureSpi
    * Returns an instance of <code>Signature</code> representing the specified
    * signature from the specified {@link Provider}.
    * 
-   * @param algorithm
-   *          the algorithm to use.
-   * @param provider
-   *          the {@link Provider} to use.
+   * @param algorithm the algorithm to use.
+   * @param provider the {@link Provider} to use.
    * @return a new instance repesenting the desired algorithm.
-   * @throws NoSuchAlgorithmException
-   *           if the algorithm is not implemented by the {@link Provider}.
+   * @throws NoSuchAlgorithmException if the algorithm is not implemented by the
+   *           {@link Provider}.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>algorithm</code> is an empty string.
    */
   public static Signature getInstance(String algorithm, Provider provider)
     throws NoSuchAlgorithmException
   {
-    if (provider == null)
-      throw new IllegalArgumentException("Illegal provider");
-
-    Signature result = null;
-    Object o = null;
+    StringBuilder sb = new StringBuilder("Signature algorithm [")
+        .append(algorithm).append("] from provider[")
+        .append(provider).append("] ");
+    Object o;
     try
       {
         o = Engine.getInstance(SIGNATURE, algorithm, provider);
       }
-    catch (java.lang.reflect.InvocationTargetException ite)
+    catch (InvocationTargetException x)
       {
-        throw new NoSuchAlgorithmException(algorithm);
+        Throwable cause = x.getCause();
+        if (cause instanceof NoSuchAlgorithmException)
+          throw (NoSuchAlgorithmException) cause;
+        if (cause == null)
+          cause = x;
+        sb.append("could not be created");
+        NoSuchAlgorithmException y = new NoSuchAlgorithmException(sb.toString());
+        y.initCause(cause);
+        throw y;
       }
-
+    Signature result;
     if (o instanceof SignatureSpi)
-      {
-        result = new DummySignature((SignatureSpi) o, algorithm);
-      }
+      result = new DummySignature((SignatureSpi) o, algorithm);
     else if (o instanceof Signature)
       {
         result = (Signature) o;
@@ -221,7 +228,8 @@ public abstract class Signature extends SignatureSpi
       }
     else
       {
-        throw new NoSuchAlgorithmException(algorithm);
+        sb.append("is of an unexpected Type: ").append(o.getClass().getName());
+        throw new NoSuchAlgorithmException(sb.toString());
       }
     result.provider = provider;
     return result;
@@ -466,6 +474,22 @@ public abstract class Signature extends SignatureSpi
       engineUpdate(data, off, len);
     else
       throw new SignatureException();
+  }
+  
+  /**
+   * Update this signature with the {@link java.nio.Buffer#remaining()}
+   * bytes of the input buffer.
+   * 
+   * @param input The input buffer.
+   * @throws SignatureException If this instance was not properly
+   *  initialized.
+   */
+  public final void update(ByteBuffer input) throws SignatureException
+  {
+    if (state != UNINITIALIZED)
+      engineUpdate(input);
+    else
+      throw new SignatureException("not initialized");
   }
 
   /**

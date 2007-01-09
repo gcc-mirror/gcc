@@ -415,8 +415,9 @@ final class VMClassLoader
       {
         byte[] modifiedData = new byte[len];
         System.arraycopy(data, offset, modifiedData, 0, len);
+        String jvmName = name.replace('.', '/');
         modifiedData =
-          ((InstrumentationImpl)instrumenter).callTransformers(loader, name,
+          ((InstrumentationImpl)instrumenter).callTransformers(loader, jvmName,
             null, pd, modifiedData);
         
         return defineClass(loader, name, modifiedData, 0, modifiedData.length,

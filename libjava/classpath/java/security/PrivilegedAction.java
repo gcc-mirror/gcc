@@ -47,9 +47,9 @@ package java.security;
  * @see AccessController
  * @see PrivilegedExceptionAction
  * @since 1.1
- * @status updated to 1.4
+ * @status updated to 1.5
  */
-public interface PrivilegedAction
+public interface PrivilegedAction<T>
 {
   /**
    * This method performs an operation that requires higher privileges to
@@ -60,5 +60,5 @@ public interface PrivilegedAction
    * @see AccessController#doPrivileged(PrivilegedAction)
    * @see AccessController#doPrivileged(PrivilegedAction, AccessControlContext)
    */
-  Object run();
+  T run();
 } // interface PrivilegedAction

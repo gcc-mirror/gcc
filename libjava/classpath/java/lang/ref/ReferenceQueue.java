@@ -1,5 +1,5 @@
 /* java.lang.ref.ReferenceQueue
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,7 +50,7 @@ package java.lang.ref;
  * @author Jochen Hoenicke
  * @see Reference#enqueue()
  */
-public class ReferenceQueue
+public class ReferenceQueue<T>
 {
   /**
    * This is a linked list of references.  If this is null, the list is
@@ -60,7 +60,13 @@ public class ReferenceQueue
    * itself (not to null, since <code>nextOnQueue</code> is used to 
    * determine if a reference is enqueued).
    */
-  private Reference first;
+  private Reference<? extends T> first;
+
+  /**
+   * This is the lock that protects our linked list and is used to signal
+   * a thread waiting in remove().
+   */
+  private final Object lock = new Object();
 
   /**
    * Creates a new empty reference queue.
@@ -76,7 +82,7 @@ public class ReferenceQueue
    * @return a reference on the queue, if there is one,
    * <code>null</code> otherwise.  
    */
-  public synchronized Reference poll()
+  public Reference<? extends T> poll()
   { 
     return dequeue();
   }
@@ -84,29 +90,41 @@ public class ReferenceQueue
   /**
    * This is called by reference to enqueue itself on this queue.  
    * @param ref the reference that should be enqueued.
+   * @return true if successful, false if not.
    */
-  synchronized void enqueue(Reference ref)
-  {
-    /* last reference will point to itself */
-    ref.nextOnQueue = first == null ? ref : first;
-    first = ref;
-    /* this wakes only one remove thread. */
-    notify();
+  final boolean enqueue(Reference<? extends T> ref)
+    {
+    synchronized (lock)
+      {
+        if (ref.queue != this)
+          return false;
+
+        /* last reference will point to itself */
+        ref.nextOnQueue = first == null ? ref : first;
+        ref.queue = null;
+        first = ref;
+        /* this wakes only one remove thread. */
+        lock.notify();
+        return true;
+      }
   }
 
   /**
    * Remove a reference from the queue, if there is one.
    * @return the first element of the queue, or null if there isn't any.
    */
-  private Reference dequeue()
+  private Reference<? extends T> dequeue()
   {
-    if (first == null)
-      return null;
-
-    Reference result = first;
-    first = (first == first.nextOnQueue) ? null : first.nextOnQueue;
-    result.nextOnQueue = null;
-    return result;
+    synchronized (lock)
+      {
+        if (first == null)
+          return null;
+  
+        Reference<? extends T> result = first;
+        first = (first == first.nextOnQueue) ? null : first.nextOnQueue;
+        result.nextOnQueue = null;
+        return result;
+      }
   }
 
   /**
@@ -118,12 +136,13 @@ public class ReferenceQueue
    * <code>null</code> if timeout period expired.  
    * @exception InterruptedException if the wait was interrupted.
    */
-  public synchronized Reference remove(long timeout)
+  public Reference<? extends T> remove(long timeout)
     throws InterruptedException
   {
-    if (first == null)
+    synchronized (lock)
       {
-	wait(timeout);
+        if (first == null)
+          lock.wait(timeout);
       }
 
     return dequeue();
@@ -137,7 +156,7 @@ public class ReferenceQueue
    * @return the reference removed from the queue.  
    * @exception InterruptedException if the wait was interrupted.
    */
-  public Reference remove()
+  public Reference<? extends T> remove()
     throws InterruptedException
   {
     return remove(0L);

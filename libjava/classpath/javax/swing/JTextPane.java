@@ -214,20 +214,11 @@ public class JTextPane
    */
   public void insertIcon(Icon icon)
   {
-    SimpleAttributeSet atts = new SimpleAttributeSet();
-    atts.addAttribute(StyleConstants.IconAttribute, icon);
-    atts.addAttribute(StyleConstants.NameAttribute,
-                      StyleConstants.IconElementName);
-    try
-      {
-        getDocument().insertString(getCaret().getDot(), " ", atts);
-      }
-    catch (BadLocationException ex)
-      {
-        AssertionError err = new AssertionError("Unexpected bad location");
-        err.initCause(ex);
-        throw err;
-      }
+    MutableAttributeSet inputAtts = getInputAttributes();
+    inputAtts.removeAttributes(inputAtts);
+    StyleConstants.setIcon(inputAtts, icon);
+    replaceSelection(" ");
+    inputAtts.removeAttributes(inputAtts);
   }
 
   /**

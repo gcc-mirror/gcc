@@ -1,5 +1,5 @@
 /* DropTargetDropEvent.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -123,7 +123,7 @@ public class DropTargetDropEvent extends DropTargetEvent
     return context.getCurrentDataFlavors();
   }
 
-  public List getCurrentDataFlavorsAsList()
+  public List<DataFlavor> getCurrentDataFlavorsAsList()
   {
     return context.getCurrentDataFlavorsAsList();
   }

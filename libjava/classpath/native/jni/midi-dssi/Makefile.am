@@ -9,4 +9,7 @@ libgjsmdssi_la_LDFLAGS = -avoid-version
 
 AM_LDFLAGS = @CLASSPATH_MODULE@
 AM_CPPFLAGS = @CLASSPATH_INCLUDES@ 
-AM_CFLAGS = @WARNING_CFLAGS@ @STRICT_WARNING_CFLAGS@ @ERROR_CFLAGS@
+# No STRICT_WARNING_CFLAGS here as we use dlsym to load the address of 
+# a function,and ISO C prohibits casting void pointers, like those returned
+# by dlsym, to function pointers.
+AM_CFLAGS = @WARNING_CFLAGS@ @ERROR_CFLAGS@

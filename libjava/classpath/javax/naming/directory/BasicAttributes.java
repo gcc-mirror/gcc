@@ -126,12 +126,12 @@ public class BasicAttributes implements Attributes
     return null;
   }
 
-  public NamingEnumeration getAll ()
+  public NamingEnumeration<Attribute> getAll ()
   {
     return new BasicAttributesEnumeration (false);
   }
 
-  public NamingEnumeration getIDs ()
+  public NamingEnumeration<String> getIDs ()
   {
     return new BasicAttributesEnumeration (true);
   }

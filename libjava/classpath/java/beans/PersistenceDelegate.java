@@ -52,8 +52,8 @@ package java.beans;
 public abstract class PersistenceDelegate
 {
 
-  protected void initialize(Class type, Object oldInstance, Object newInstance,
-                            Encoder out)
+  protected void initialize(Class<?> type, Object oldInstance,
+                            Object newInstance, Encoder out)
   {
     if (type != Object.class)
       {

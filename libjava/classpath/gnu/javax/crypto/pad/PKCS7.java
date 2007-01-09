@@ -100,8 +100,8 @@ public final class PKCS7
       throws WrongPaddingException
   {
     int limit = offset + length;
-    int result = in[limit - 1] & 0xFF;
-    for (int i = 0; i < result; i++)
+    int result = in[--limit] & 0xFF;
+    for (int i = 0; i < result - 1; i++)
       if (result != (in[--limit] & 0xFF))
         throw new WrongPaddingException();
     if (Configuration.DEBUG)

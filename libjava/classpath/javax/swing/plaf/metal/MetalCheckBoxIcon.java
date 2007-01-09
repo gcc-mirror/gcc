@@ -1,5 +1,5 @@
 /* MetalCheckBoxIcon.java -- An icon for JCheckBoxes in the Metal L&F
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,8 +42,8 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.io.Serializable;
 
+import javax.swing.AbstractButton;
 import javax.swing.Icon;
-import javax.swing.JCheckBox;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.plaf.UIResource;
@@ -134,8 +134,9 @@ public class MetalCheckBoxIcon
       MetalUtils.paintGradient(g, x, y, getIconWidth(), getIconHeight(),
                                SwingConstants.VERTICAL, "CheckBox.gradient");
     border.paintBorder(c, g, x, y, getIconWidth(), getIconHeight());
-    JCheckBox cb = (JCheckBox) c;
-    if (cb.isSelected())
-      drawCheck(c, g, x, y);
+    
+    AbstractButton b = (AbstractButton) c;
+    if (b.isSelected())
+      drawCheck(b, g, x, y);
   }
 }

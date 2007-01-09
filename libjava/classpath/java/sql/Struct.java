@@ -73,5 +73,5 @@ public interface Struct
    * @return The attributes of this structure type.
    * @exception SQLException If a error occurs.
    */
-  Object[] getAttributes(Map map) throws SQLException;
+  Object[] getAttributes(Map<String, Class<?>> map) throws SQLException;
 }

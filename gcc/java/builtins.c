@@ -34,7 +34,12 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "flags.h"
 #include "langhooks.h"
 #include "java-tree.h"
-
+#include <stdarg.h>
+#include "convert.h"
+#include "rtl.h"
+#include "insn-codes.h"
+#include "expr.h"
+#include "optabs.h"
 
 static tree max_builtin (tree, tree);
 static tree min_builtin (tree, tree);
@@ -42,6 +47,13 @@ static tree abs_builtin (tree, tree);
 static tree convert_real (tree, tree);
 
 static tree java_build_function_call_expr (tree, tree);
+
+static tree putObject_builtin (tree, tree);
+static tree compareAndSwapInt_builtin (tree, tree);
+static tree compareAndSwapLong_builtin (tree, tree);
+static tree compareAndSwapObject_builtin (tree, tree);
+static tree putVolatile_builtin (tree, tree);
+static tree getVolatile_builtin (tree, tree);
 
 
 
@@ -90,6 +102,25 @@ static GTY(()) struct builtin_record java_builtins[] =
   { { "java.lang.Double" }, { "longBitsToDouble" }, convert_real, 0 },
   { { "java.lang.Float" }, { "floatToRawIntBits" }, convert_real, 0 },
   { { "java.lang.Double" }, { "doubleToRawLongBits" }, convert_real, 0 },
+  { { "sun.misc.Unsafe" }, { "putInt" }, putObject_builtin, 0},
+  { { "sun.misc.Unsafe" }, { "putLong" }, putObject_builtin, 0},
+  { { "sun.misc.Unsafe" }, { "putObject" }, putObject_builtin, 0},
+  { { "sun.misc.Unsafe" }, { "compareAndSwapInt" }, 
+    compareAndSwapInt_builtin, 0},
+  { { "sun.misc.Unsafe" }, { "compareAndSwapLong" }, 
+    compareAndSwapLong_builtin, 0},
+  { { "sun.misc.Unsafe" }, { "compareAndSwapObject" }, 
+    compareAndSwapObject_builtin, 0},
+  { { "sun.misc.Unsafe" }, { "putOrderedInt" }, putVolatile_builtin, 0},
+  { { "sun.misc.Unsafe" }, { "putOrderedLong" }, putVolatile_builtin, 0},
+  { { "sun.misc.Unsafe" }, { "putOrderedObject" }, putVolatile_builtin, 0},
+  { { "sun.misc.Unsafe" }, { "putIntVolatile" }, putVolatile_builtin, 0},
+  { { "sun.misc.Unsafe" }, { "putLongVolatile" }, putVolatile_builtin, 0},
+  { { "sun.misc.Unsafe" }, { "putObjectVolatile" }, putVolatile_builtin, 0},
+  { { "sun.misc.Unsafe" }, { "getObjectVolatile" }, getVolatile_builtin, 0},
+  { { "sun.misc.Unsafe" }, { "getIntVolatile" }, getVolatile_builtin, 0},
+  { { "sun.misc.Unsafe" }, { "getLongVolatile" }, getVolatile_builtin, 0},
+  { { "sun.misc.Unsafe" }, { "getLong" }, getVolatile_builtin, 0},
   { { NULL }, { NULL }, NULL, END_BUILTINS }
 };
 
@@ -143,6 +174,265 @@ convert_real (tree method_return_type, tree method_arguments)
 		 TREE_VALUE (method_arguments));
 }
 
+
+
+/* Provide builtin support for atomic operations.  These are
+   documented at length in libjava/sun/misc/Unsafe.java.  */
+
+/* FIXME.  There are still a few things wrong with this logic.  In
+   particular, atomic writes of multi-word integers are not truly
+   atomic: this requires more work.
+
+   In general, double-word compare-and-swap cannot portably be
+   implemented, so we need some kind of fallback for 32-bit machines.
+
+*/
+
+
+/* Macros to unmarshal arguments from a TREE_LIST into a few
+   variables.  We also convert the offset arg from a long to an
+   integer that is the same size as a pointer.  */
+
+#define UNMARSHAL3(METHOD_ARGUMENTS)					\
+tree this_arg, obj_arg, offset_arg;					\
+do									\
+{									\
+  tree chain = METHOD_ARGUMENTS;					\
+  this_arg = TREE_VALUE (chain);					\
+  chain = TREE_CHAIN (chain);						\
+  obj_arg = TREE_VALUE (chain);						\
+  chain = TREE_CHAIN (chain);						\
+  offset_arg = fold_convert (java_type_for_size (POINTER_SIZE, 0),	\
+			     TREE_VALUE (chain));			\
+}									\
+while (0)
+
+#define UNMARSHAL4(METHOD_ARGUMENTS)					\
+tree value_type, this_arg, obj_arg, offset_arg, value_arg;		\
+do									\
+{									\
+  tree chain = METHOD_ARGUMENTS;					\
+  this_arg = TREE_VALUE (chain);					\
+  chain = TREE_CHAIN (chain);						\
+  obj_arg = TREE_VALUE (chain);						\
+  chain = TREE_CHAIN (chain);						\
+  offset_arg = fold_convert (java_type_for_size (POINTER_SIZE, 0),	\
+			     TREE_VALUE (chain));			\
+  chain = TREE_CHAIN (chain);						\
+  value_arg = TREE_VALUE (chain);					\
+  value_type = TREE_TYPE (value_arg);					\
+}									\
+while (0)
+
+#define UNMARSHAL5(METHOD_ARGUMENTS)					\
+tree value_type, this_arg, obj_arg, offset_arg, expected_arg, value_arg; \
+do									\
+{									\
+  tree chain = METHOD_ARGUMENTS;					\
+  this_arg = TREE_VALUE (chain);					\
+  chain = TREE_CHAIN (chain);						\
+  obj_arg = TREE_VALUE (chain);						\
+  chain = TREE_CHAIN (chain);						\
+  offset_arg = fold_convert (java_type_for_size (POINTER_SIZE, 0),	\
+			     TREE_VALUE (chain));			\
+  chain = TREE_CHAIN (chain);						\
+  expected_arg = TREE_VALUE (chain);					\
+  chain = TREE_CHAIN (chain);						\
+  value_arg = TREE_VALUE (chain);					\
+  value_type = TREE_TYPE (value_arg);					\
+}									\
+while (0)
+
+/* Construct an arglist from a call.  */
+
+static tree
+build_arglist_for_builtin (tree arg, ...)
+{
+  va_list ap;
+  tree nextarg;
+  tree newarglist = build_tree_list (NULL_TREE, arg);
+
+  va_start(ap, arg);
+  while ((nextarg = va_arg(ap, tree)))
+    newarglist = tree_cons (NULL_TREE, nextarg, newarglist);
+
+  return nreverse (newarglist);
+}
+
+/* Add an address to an offset, forming a sum.  */
+
+static tree
+build_addr_sum (tree type, tree addr, tree offset)
+{
+  tree ptr_type = build_pointer_type (type);
+  return  fold_build2 (PLUS_EXPR, 
+		       ptr_type, 
+		       fold_convert (ptr_type, addr), offset);
+}
+
+/* Make sure that this-arg is non-NULL.  This is a security check.  */
+
+static tree
+build_check_this (tree stmt, tree this_arg)
+{
+  return build2 (COMPOUND_EXPR, TREE_TYPE (stmt), 
+		 java_check_reference (this_arg, 1), stmt);
+}
+
+/* Now the builtins.  These correspond to the primitive functions in
+   libjava/sun/misc/natUnsafe.cc.  */
+
+static tree
+putObject_builtin (tree method_return_type ATTRIBUTE_UNUSED, 
+		   tree method_arguments)
+{
+  tree addr, stmt;
+  UNMARSHAL4 (method_arguments);
+
+  addr = build_addr_sum (value_type, obj_arg, offset_arg);
+  stmt = fold_build2 (MODIFY_EXPR, value_type,
+		      build_java_indirect_ref (value_type, addr,
+					       flag_check_references),
+		      value_arg);
+
+  return build_check_this (stmt, this_arg);
+}
+
+static tree
+compareAndSwapInt_builtin (tree method_return_type ATTRIBUTE_UNUSED,
+			   tree method_arguments)
+{
+  enum machine_mode mode = TYPE_MODE (int_type_node);
+  if (sync_compare_and_swap_cc[mode] != CODE_FOR_nothing 
+      || sync_compare_and_swap[mode] != CODE_FOR_nothing)
+    {
+      tree newarglist, addr, stmt;
+      UNMARSHAL5 (method_arguments);
+
+      addr = build_addr_sum (int_type_node, obj_arg, offset_arg);
+
+      newarglist 
+	= build_arglist_for_builtin (addr, expected_arg, value_arg, NULL_TREE);
+      stmt = (build_function_call_expr
+	      (built_in_decls[BUILT_IN_BOOL_COMPARE_AND_SWAP_4],
+	       newarglist));
+
+      return build_check_this (stmt, this_arg);
+    }
+  return NULL_TREE;
+}
+
+static tree
+compareAndSwapLong_builtin (tree method_return_type ATTRIBUTE_UNUSED,
+			    tree method_arguments)
+{
+  enum machine_mode mode = TYPE_MODE (long_type_node);
+  if (sync_compare_and_swap_cc[mode] != CODE_FOR_nothing 
+      || sync_compare_and_swap[mode] != CODE_FOR_nothing)
+    {
+      tree newarglist, addr, stmt;
+      UNMARSHAL5 (method_arguments);
+
+      addr = build_addr_sum (long_type_node, obj_arg, offset_arg);
+
+      newarglist 
+	= build_arglist_for_builtin (addr, expected_arg, value_arg, NULL_TREE);
+      stmt = (build_function_call_expr
+	      (built_in_decls[BUILT_IN_BOOL_COMPARE_AND_SWAP_8],
+	       newarglist));
+
+      return build_check_this (stmt, this_arg);
+    }
+  return NULL_TREE;
+}
+static tree
+compareAndSwapObject_builtin (tree method_return_type ATTRIBUTE_UNUSED, 
+			      tree method_arguments)
+{
+  enum machine_mode mode = TYPE_MODE (ptr_type_node);
+  if (sync_compare_and_swap_cc[mode] != CODE_FOR_nothing 
+      || sync_compare_and_swap[mode] != CODE_FOR_nothing)
+  {
+    tree newarglist, addr, stmt;
+    int builtin;
+
+    UNMARSHAL5 (method_arguments);
+    builtin = (POINTER_SIZE == 32 
+	       ? BUILT_IN_BOOL_COMPARE_AND_SWAP_4 
+	       : BUILT_IN_BOOL_COMPARE_AND_SWAP_8);
+
+    addr = build_addr_sum (value_type, obj_arg, offset_arg);
+
+    newarglist 
+      = build_arglist_for_builtin (addr, expected_arg, value_arg, NULL_TREE);
+    stmt = (build_function_call_expr
+	    (built_in_decls[builtin],
+	     newarglist));
+
+    return build_check_this (stmt, this_arg);
+  }
+  return NULL_TREE;
+}
+
+static tree
+putVolatile_builtin (tree method_return_type ATTRIBUTE_UNUSED, 
+		     tree method_arguments)
+{
+  tree newarglist, addr, stmt, modify_stmt;
+  UNMARSHAL4 (method_arguments);
+  
+  addr = build_addr_sum (value_type, obj_arg, offset_arg);
+  addr 
+    = fold_convert (build_pointer_type (build_type_variant (value_type, 0, 1)),
+		    addr);
+  
+  newarglist = NULL_TREE;
+  stmt = (build_function_call_expr
+	  (built_in_decls[BUILT_IN_SYNCHRONIZE],
+	   newarglist));
+  modify_stmt = fold_build2 (MODIFY_EXPR, value_type,
+			     build_java_indirect_ref (value_type, addr,
+						      flag_check_references),
+			     value_arg);
+  stmt = build2 (COMPOUND_EXPR, TREE_TYPE (modify_stmt), 
+		 stmt, modify_stmt);
+
+  return build_check_this (stmt, this_arg);
+}
+
+static tree
+getVolatile_builtin (tree method_return_type ATTRIBUTE_UNUSED, 
+		     tree method_arguments)
+{
+  tree newarglist, addr, stmt, modify_stmt, tmp;
+  UNMARSHAL3 (method_arguments);
+  
+  addr = build_addr_sum (method_return_type, obj_arg, offset_arg);
+  addr 
+    = fold_convert (build_pointer_type (build_type_variant 
+					(method_return_type, 0, 1)), addr);
+  
+  newarglist = NULL_TREE;
+  stmt = (build_function_call_expr
+	  (built_in_decls[BUILT_IN_SYNCHRONIZE],
+	   newarglist));
+  
+  tmp = build_decl (VAR_DECL, NULL, method_return_type);
+  DECL_IGNORED_P (tmp) = 1;
+  DECL_ARTIFICIAL (tmp) = 1;
+  pushdecl (tmp);
+
+  modify_stmt = fold_build2 (MODIFY_EXPR, method_return_type,
+			     tmp,
+			     build_java_indirect_ref (method_return_type, addr,
+						      flag_check_references));
+
+  stmt = build2 (COMPOUND_EXPR, void_type_node, modify_stmt, stmt);
+  stmt = build2 (COMPOUND_EXPR, method_return_type, stmt, tmp);
+  
+  return stmt;
+}
+  
 
 
 #define BUILTIN_NOTHROW 1
@@ -258,10 +548,27 @@ initialize_builtins (void)
 		  boolean_ftype_boolean_boolean,
 		  "__builtin_expect",
 		  BUILTIN_CONST | BUILTIN_NOTHROW);
-		  
+  define_builtin (BUILT_IN_BOOL_COMPARE_AND_SWAP_4, 
+		  "__sync_bool_compare_and_swap_4",
+		  build_function_type_list (boolean_type_node,
+					    int_type_node, 
+					    build_pointer_type (int_type_node),
+					    int_type_node, NULL_TREE), 
+		  "__sync_bool_compare_and_swap_4", 0);
+  define_builtin (BUILT_IN_BOOL_COMPARE_AND_SWAP_8, 
+		  "__sync_bool_compare_and_swap_8",
+		  build_function_type_list (boolean_type_node,
+					    long_type_node, 
+					    build_pointer_type (long_type_node),
+					    int_type_node, NULL_TREE), 
+		  "__sync_bool_compare_and_swap_8", 0);
   define_builtin (BUILT_IN_SYNCHRONIZE, "__sync_synchronize",
 		  build_function_type (void_type_node, void_list_node),
 		  "__sync_synchronize", BUILTIN_NOTHROW);
+  
+  define_builtin (BUILT_IN_RETURN_ADDRESS, "__builtin_return_address",
+		  build_function_type_list (ptr_type_node, int_type_node, NULL_TREE),
+		  "__builtin_return_address", BUILTIN_NOTHROW);
 
   build_common_builtin_nodes ();
 }

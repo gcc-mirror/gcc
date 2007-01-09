@@ -1,5 +1,5 @@
 /* Context.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,7 @@ package org.omg.CORBA;
  * used to represent information about various circumstances of the
  * invocation. A Context if first created by
  * {@link org.omg.CORBA.ORB#get_default_context() } and then invoking
- * {@link create_child(String)} of the default context.
+ * {@link #create_child(String)} of the default context.
  *
  * The contexts are named.
  *
@@ -66,7 +66,7 @@ public abstract class Context
 
   /**
    * Create a child of this Context, giving it a name.
-   * @param name a name of the child context.
+   * @param child a name of the child context.
    *
    * @return the newly created context.
    */

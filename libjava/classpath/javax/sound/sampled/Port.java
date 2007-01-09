@@ -89,7 +89,7 @@ public interface Port extends Line
      * @param name the name of the line
      * @param isSource true if this is an input source
      */
-    public Info(Class klass, String name, boolean isSource)
+    public Info(Class<?> klass, String name, boolean isSource)
     {
       super(klass);
       this.name = name;

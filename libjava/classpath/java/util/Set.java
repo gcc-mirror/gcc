@@ -1,5 +1,6 @@
 /* Set.java -- A collection that prohibits duplicates
-   Copyright (C) 1998, 2001, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2004, 2005
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -66,7 +67,7 @@ package java.util;
  * @since 1.2
  * @status updated to 1.4
  */
-public interface Set extends Collection
+public interface Set<E> extends Collection<E>
 {
   /**
    * Adds the specified element to the set if it is not already present
@@ -83,7 +84,7 @@ public interface Set extends Collection
    *         being added
    * @throws NullPointerException if null is not permitted in this set
    */
-  boolean add(Object o);
+  boolean add(E o);
 
   /**
    * Adds all of the elements of the given collection to this set (optional
@@ -102,7 +103,7 @@ public interface Set extends Collection
    *         if the argument c is null
    * @see #add(Object)
    */
-  boolean addAll(Collection c);
+  boolean addAll(Collection<? extends E> c);
 
   /**
    * Removes all elements from this set (optional operation). This set will
@@ -139,7 +140,7 @@ public interface Set extends Collection
    *         set doesn't support null values.
    * @see #contains(Object)
    */
-  boolean containsAll(Collection c);
+  boolean containsAll(Collection<?> c);
 
   /**
    * Compares the specified object to this for equality. For sets, the object
@@ -173,7 +174,7 @@ public interface Set extends Collection
    *
    * @return a set iterator
    */
-  Iterator iterator();
+  Iterator<E> iterator();
 
   /**
    * Removes the specified element from this set (optional operation). If
@@ -205,7 +206,7 @@ public interface Set extends Collection
    *         set doesn't support removing null values.
    * @see #remove(Object)
    */
-  boolean removeAll(Collection c);
+  boolean removeAll(Collection<?> c);
 
   /**
    * Retains only the elements in this set that are also in the specified
@@ -222,7 +223,7 @@ public interface Set extends Collection
    *         set doesn't support retaining null values.
    * @see #remove(Object)
    */
-  boolean retainAll(Collection c);
+  boolean retainAll(Collection<?> c);
 
   /**
    * Returns the number of elements in the set. If there are more
@@ -260,5 +261,5 @@ public interface Set extends Collection
    * @throws NullPointerException if a is null
    * @see #toArray()
    */
-  Object[] toArray(Object[] a);
+  <T> T[] toArray(T[] a);
 }

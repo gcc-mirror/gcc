@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package javax.net.ssl;
 
+import java.security.Principal;
 import java.security.cert.Certificate;
 
 import javax.security.cert.X509Certificate;
@@ -108,6 +109,20 @@ public class HandshakeCompletedEvent extends java.util.EventObject
   }
 
   /**
+   * Returns the local identity used in this connection, or
+   * <code>null</code> if there is none.
+   *
+   * @return The local identity.
+   * @since 1.5
+   */
+  public Principal getLocalPrincipal ()
+  {
+    if (session != null)
+      return session.getLocalPrincipal ();
+    return null;
+  }
+
+  /**
    * Returns the peer's certificates being used in this connection.
    *
    * @return The peer's certificates.
@@ -125,6 +140,22 @@ public class HandshakeCompletedEvent extends java.util.EventObject
   {
     if (session != null)
       return session.getPeerCertificateChain();
+    return null;
+  }
+
+  /**
+   * Returns the peer's identity, or <code>null</code> if there is
+   * none.
+   *
+   * @return The peer's identity.
+   * @throws SSLPeerUnverifiedException If the remote peer's identity
+   * could not be verified.
+   * @since 1.5
+   */
+  public Principal getPeerPrincipal () throws SSLPeerUnverifiedException
+  {
+    if (session != null)
+      return session.getPeerPrincipal ();
     return null;
   }
 

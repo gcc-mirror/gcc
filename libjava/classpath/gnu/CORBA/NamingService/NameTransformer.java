@@ -1,5 +1,5 @@
 /* NameTransformer.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -74,10 +74,6 @@ public class NameTransformer
   {
     ArrayList components = new ArrayList();
     StringTokenizer st = new StringTokenizer(a_name, "./\\", true);
-
-    String id;
-    String kind;
-    String next;
 
     // Create the buffer array, reserving the last element for null.
     String[] n = new String[ st.countTokens() + 1 ];

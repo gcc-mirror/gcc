@@ -1,5 +1,5 @@
 /* Comparable.java -- Interface for comparaing objects to obtain an ordering
-   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -66,9 +66,9 @@ package java.lang;
  * @see java.util.TreeSet
  * @see java.util.TreeMap
  * @since 1.2
- * @status updated to 1.4
+ * @status updated to 1.5
  */
-public interface Comparable
+public interface Comparable<T>
 {
   /**
    * Compares this object with another, and returns a numerical result based
@@ -94,5 +94,5 @@ public interface Comparable
    * @throws NullPointerException if o is null
    * @throws ClassCastException if o cannot be compared
    */
-  int compareTo(Object o);
+  int compareTo(T o);
 }

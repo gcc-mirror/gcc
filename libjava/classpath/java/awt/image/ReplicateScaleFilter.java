@@ -46,6 +46,7 @@ import java.util.Hashtable;
  * exact method is not defined by Sun but some sort of fast Box filter should
  * probably be correct.
  * <br>
+ * Currently this filter does nothing and needs to be implemented.
  *
  * @author C. Brian Jones (cbj@gnu.org) 
  */
@@ -116,11 +117,11 @@ public class ReplicateScaleFilter extends ImageFilter
 	}
 	else if (destWidth < 0)
 	{
-	    destWidth = (int) (width * ((double) destHeight / srcHeight));
+	    destWidth = width * destHeight / srcHeight;
 	}
 	else if (destHeight < 0)
 	{
-	    destHeight = (int) (height * ((double) destWidth / srcWidth));
+	    destHeight = height * destWidth / srcWidth;
 	}
 
 	if (consumer != null)
@@ -133,11 +134,12 @@ public class ReplicateScaleFilter extends ImageFilter
      *
      * @param props the list of properties associated with this image 
      */
-    public void setProperties(Hashtable props)
+    public void setProperties(Hashtable<?, ?> props)
     {
-	props.put("filters", "ReplicateScaleFilter");
-	if (consumer != null)
-	  consumer.setProperties(props);
+      Hashtable<Object, Object> prop2 = (Hashtable<Object, Object>) props;
+      prop2.put("filters", "ReplicateScaleFilter");
+      if (consumer != null)
+        consumer.setProperties(prop2);
     }
 
     /**
@@ -157,19 +159,35 @@ public class ReplicateScaleFilter extends ImageFilter
     public void setPixels(int x, int y, int w, int h, 
 	   ColorModel model, byte[] pixels, int offset, int scansize)
     {
-	double rx = ((double) srcWidth) / destWidth;
-	double ry = ((double) srcHeight) / destHeight;
-
-	int destScansize = (int) Math.round(scansize / rx);
-
-	byte[] destPixels = replicatePixels(x, y, w, h,
-                                           model, pixels, offset, scansize,
-	                                   rx, ry, destScansize);
-
-	if (consumer != null)
-	  consumer.setPixels((int) Math.floor(x/rx), (int) Math.floor(y/ry),
-			     (int) Math.ceil(w/rx), (int) Math.ceil(h/ry),
-			     model, destPixels, 0, destScansize);
+      if (srcrows == null || srccols == null)
+        setupSources();
+      int dx1 = (2 * x * destWidth + srcWidth - 1) / (2 * destWidth);
+      int dy1 = (2 * y * destHeight + srcHeight - 1) / (2 * destHeight);
+      byte[] pix;
+      if (outpixbuf != null && outpixbuf instanceof byte[])
+        {
+          pix = (byte[]) outpixbuf;
+        }
+      else
+        {
+          pix = new byte[destWidth];
+          outpixbuf = pix;
+        }
+      int sy, sx;
+      for (int yy = dy1; (sy = srcrows[yy]) < y + h; yy++)
+        {
+          int offs = offset + scansize * (sy - y);
+          int xx;
+          for (xx = dx1; (sx = srccols[xx]) < x + w; xx++)
+            {
+              pix[xx] = pixels[offs + sx - x];
+            }
+          if (xx > dx1)
+            {
+              consumer.setPixels(dx1, yy, xx - dx1, 1, model, pix, dx1,
+                                 destWidth);
+            }
+        }
     }
 
     /**
@@ -189,59 +207,52 @@ public class ReplicateScaleFilter extends ImageFilter
     public void setPixels(int x, int y, int w, int h, 
            ColorModel model, int[] pixels, int offset, int scansize)
     {
-	double rx = ((double) srcWidth) / destWidth;
-	double ry = ((double) srcHeight) / destHeight;
-
-	int destScansize = (int) Math.round(scansize / rx);
-
-	int[] destPixels = replicatePixels(x, y, w, h,
-                                           model, pixels, offset, scansize,
-	                                   rx, ry, destScansize);
-
-	if (consumer != null)
-	  consumer.setPixels((int) Math.floor(x/rx), (int) Math.floor(y/ry),
-			     (int) Math.ceil(w/rx), (int) Math.ceil(h/ry),
-			     model, destPixels, 0, destScansize);
+      if (srcrows == null || srccols == null)
+        setupSources();
+      int dx1 = (2 * x * destWidth + srcWidth - 1) / (2 * destWidth);
+      int dy1 = (2 * y * destHeight + srcHeight - 1) / (2 * destHeight);
+      int[] pix;
+      if (outpixbuf != null && outpixbuf instanceof int[])
+        {
+          pix = (int[]) outpixbuf;
+        }
+      else
+        {
+          pix = new int[destWidth];
+          outpixbuf = pix;
+        }
+      int sy, sx;
+      for (int yy = dy1; (sy = srcrows[yy]) < y + h; yy++)
+        {
+          int offs = offset + scansize * (sy - y);
+          int xx;
+          for (xx = dx1; (sx = srccols[xx]) < x + w; xx++)
+            {
+              pix[xx] = pixels[offs + sx - x];
+            }
+          if (xx > dx1)
+            {
+              consumer.setPixels(dx1, yy, xx - dx1, 1, model, pix, dx1,
+                                 destWidth);
+            }
+        }
     }
 
-    private byte[] replicatePixels(int srcx, int srcy, int srcw, int srch,
-                                   ColorModel model, byte[] srcPixels,
-                                   int srcOffset, int srcScansize,
-                                   double rx, double ry, int destScansize)
-    {
-	byte[] destPixels =
-	  new byte[(int) Math.ceil(srcw/rx) * (int) Math.ceil(srch/ry)];
-
-	int a, b;
-	for (int i = 0; i < destPixels.length; i++)
-	{
-	    a = (int) ((int) ( ((double) i) / destScansize) * ry) * srcScansize;
-	    b = (int) ((i % destScansize) * rx);
-	    if ((a + b + srcOffset) < srcPixels.length)
-		destPixels[i] = srcPixels[a + b + srcOffset];
-	}
-
-	return destPixels;
-    }
-
-    private int[] replicatePixels(int srcx, int srcy, int srcw, int srch,
-                                  ColorModel model, int[] srcPixels,
-                                  int srcOffset, int srcScansize,
-                                  double rx, double ry, int destScansize)
-    {
-	int[] destPixels =
-	  new int[(int) Math.ceil(srcw/rx) * (int) Math.ceil(srch/ry)];
-
-	int a, b;
-	for (int i = 0; i < destPixels.length; i++)
-	{
-	    a = (int) ((int) ( ((double) i) / destScansize) * ry) * srcScansize;
-	    b = (int) ((i % destScansize) * rx);
-	    if ((a + b + srcOffset) < srcPixels.length)
-		destPixels[i] = srcPixels[a + b + srcOffset];
-	}
-
-	return destPixels;
-    }
+  /**
+   * Sets up the srcrows and srccols arrays.
+   */
+  private void setupSources()
+  {
+    srcrows = new int[destHeight + 1];
+    for (int y = 0; y <= destHeight; y++)
+      {
+        srcrows[y] = (2 * y * srcHeight + srcHeight) / (2 * destHeight);
+      }
+    srccols = new int[destWidth + 1];
+    for (int x = 0; x <= destWidth; x++)
+      {
+        srccols[x] = (2 * x * srcWidth + srcWidth) / (2 * destWidth);
+      }
+  }
 }
 

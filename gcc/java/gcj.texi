@@ -68,8 +68,6 @@ man page gfdl(7).
                             Generate header files from Java class files
 * gjnih: (gcj)Invoking gjnih.
                             Generate JNI header files from Java class files
-* jv-scan: (gcj)Invoking jv-scan.
-                            Print information about Java source files
 * jcf-dump: (gcj)Invoking jcf-dump.
                             Print information about Java class files
 * gij: (gcj)Invoking gij.   GNU interpreter for Java bytecode
@@ -121,7 +119,6 @@ files and object files, and it can read both Java source code and
 * Compatibility::	Compatibility between gcj and other tools for Java
 * Invoking gcjh::       Generate header files from class files
 * Invoking gjnih::      Generate JNI header files from class files
-* Invoking jv-scan::    Print information about source files
 * Invoking jcf-dump::   Print information about class files
 * Invoking gij::	Interpreting Java bytecodes
 * Invoking gcj-dbtool:: Tool for manipulating class file databases.
@@ -156,7 +153,7 @@ gcj [@option{-I}@var{dir}@dots{}] [@option{-d} @var{dir}@dots{}]
     @var{sourcefile}@dots{}
 @c man end
 @c man begin SEEALSO gcj
-gcc(1), gcjh(1), gjnih(1), gij(1), jv-scan(1), jcf-dump(1), gfdl(7),
+gcc(1), gcjh(1), gjnih(1), gij(1), jcf-dump(1), gfdl(7),
 and the Info entries for @file{gcj} and @file{gcc}.
 @c man end
 @end ignore
@@ -305,6 +302,10 @@ behavior in this particular case.)
 This forces the compiler to always check for the special zero length
 attribute @code{gnu.gcj.gcj-compiled} in @code{java.lang.Object} and
 issue an error if it isn't found.
+
+@item -fsource=@var{VERSION}
+This option is used to choose the source version accepted by
+@command{gcj}.  The default is @samp{1.5}.
 @end table
 
 @node Encodings
@@ -456,6 +457,11 @@ protocol handler as @samp{core:/@var{resource-name}}.  Note that
 instance, it could be used in a call to @code{ResourceBundle.getBundle}.
 The actual file name to be compiled this way must be specified
 separately.
+
+@item -ftarget=@var{VERSION}
+This can be used with @option{-C} to choose the version of bytecode
+emitted by @command{gcj}.  The default is @samp{1.5}.  When not
+generating bytecode, this option has no effect.
 
 @item -d @var{directory}
 When used with @code{-C}, this causes all generated @file{.class} files
@@ -751,7 +757,7 @@ gcjh [@option{-stubs}] [@option{-jni}]
     @var{classname}@dots{}
 @c man end
 @c man begin SEEALSO gcjh
-gcc(1), gcj(1), gij(1), jv-scan(1), jcf-dump(1), gfdl(7),
+gcc(1), gcj(1), gij(1), jcf-dump(1), gfdl(7),
 and the Info entries for @file{gcj} and @file{gcc}.
 @c man end
 @end ignore
@@ -865,7 +871,7 @@ gjnih [@option{-stubs}] [@option{-jni}]
     @var{classname}@dots{}
 @c man end
 @c man begin SEEALSO gjnih
-gcc(1), gcj(1), gcjh(1), gij(1), jv-scan(1), jcf-dump(1), gfdl(7),
+gcc(1), gcj(1), gcjh(1), gij(1), jcf-dump(1), gfdl(7),
 and the Info entries for @file{gcj} and @file{gcc}.
 @c man end
 @end ignore
@@ -952,69 +958,6 @@ All remaining options are considered to be names of classes.
 
 @c man end
 
-@node Invoking jv-scan
-@chapter Invoking jv-scan
-
-@c man title jv-scan print information about Java source file
-
-@c man begin DESCRIPTION jv-scan
-
-The @code{jv-scan} program can be used to print information about a Java
-source file (@file{.java} file).
-
-@c man end
-
-@ignore
-@c man begin SYNOPSIS jv-scan
-jv-scan [@option{--no-assert}] [@option{--complexity}] 
-    [@option{--encoding}=@var{name}] [@option{--print-main}] 
-    [@option{--list-class}] [@option{--list-filename}]
-    [@option{--version}] [@option{--help}]
-    [@option{-o} @var{file}] @var{inputfile}@dots{}
-@c man end
-@c man begin SEEALSO jv-scan
-gcc(1), gcj(1), gcjh(1), gij(1), jcf-dump(1), gfdl(7),
-and the Info entries for @file{gcj} and @file{gcc}.
-@c man end
-@end ignore
-
-@c man begin OPTIONS jv-scan
-
-@table @gcctabopt
-@item --no-assert
-Don't recognize the @code{assert} keyword, for backwards compatibility
-with older versions of the language specification.
-
-@item --complexity
-This prints a complexity measure, related to cyclomatic complexity, for
-each input file.
-
-@item --encoding=@var{name}
-This works like the corresponding @command{gcj} option.
-
-@item --print-main
-This prints the name of the class in this file containing a @code{main}
-method.
-
-@item --list-class
-This lists the names of all classes defined in the input files.
-
-@item --list-filename
-If @code{--list-class} is given, this option causes @code{jv-scan} to
-also print the name of the file in which each class was found.
-
-@item -o @var{file}
-Print output to the named file.
-
-@item --help
-Print help, then exit.
-
-@item --version
-Print version number, then exit.
-@end table
-
-@c man end
-
 @node Invoking jcf-dump
 @chapter Invoking jcf-dump
 
@@ -1092,7 +1035,7 @@ gij [@option{-jar}] [@option{OPTION}] @dots{} @var{CLASS} [@var{ARGS}@dots{}]
   [@option{--showversion}] [@option{--version}] [@option{--help}][@option{-?}]
 @c man end
 @c man begin SEEALSO gij
-gcc(1), gcj(1), gcjh(1), jv-scan(1), jcf-dump(1), gfdl(7),
+gcc(1), gcj(1), gcjh(1), jcf-dump(1), gfdl(7),
 and the Info entries for @file{gcj} and @file{gcc}.
 @c man end
 @end ignore
@@ -1219,7 +1162,7 @@ gcj-dbtool [@option{-0}] [@option{-}] [@option{-n}] [@option{-a}] [@option{-f}]
 
 @c man end
 @c man begin SEEALSO gij
-gcc(1), gcj(1), gcjh(1), jv-scan(1), jcf-dump(1), gfdl(7),
+gcc(1), gcj(1), gcjh(1), jcf-dump(1), gfdl(7),
 and the Info entries for @file{gcj} and @file{gcc}.
 @c man end
 @end ignore

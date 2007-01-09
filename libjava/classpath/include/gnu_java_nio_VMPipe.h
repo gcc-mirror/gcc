@@ -10,7 +10,7 @@ extern "C"
 {
 #endif
 
-JNIEXPORT void JNICALL Java_gnu_java_nio_VMPipe_init (JNIEnv *env, jclass, jobject, jobject);
+JNIEXPORT jintArray JNICALL Java_gnu_java_nio_VMPipe_pipe0 (JNIEnv *env, jclass);
 
 #ifdef __cplusplus
 }

@@ -272,7 +272,7 @@ public class MenuBar extends MenuComponent
    *
    * @return a list of all shortcuts for the menus in this menu bar
    */
-  public synchronized Enumeration shortcuts()
+  public synchronized Enumeration<MenuShortcut> shortcuts()
   {
     Vector shortcuts = new Vector();
     Enumeration e = menus.elements();

@@ -1,5 +1,5 @@
 /* DomainManagerOperations.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,7 @@ package org.omg.CORBA;
 
 /**
  * Provides the means to access the policies of the domain, with that
- * the implementing {@link DomainManage} is associated.
+ * the implementing {@link DomainManager} is associated.
  *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */

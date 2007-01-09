@@ -1,5 +1,5 @@
 /* WCharSeqHolder.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -87,10 +87,10 @@ public final class WCharSeqHolder
   }
 
   /**
-   * Fill in the {@link value } field by reading the required data
+   * Fill in the {@link #value } field by reading the required data
    * from the given stream. This method first reads the array size
    * (as CORBA <code>long</code>) and then calls the
-   * {@link org.omg.CORBA.portable.InputStream#input.read_wchar_array }.
+   * {@link org.omg.CORBA.portable.InputStream#read_wchar_array }.
    *
    * @param input the input stream to read from.
    */
@@ -111,10 +111,10 @@ public final class WCharSeqHolder
   }
 
   /**
-   * Write the {@link value } field to the given stream.
+   * Write the {@link #value } field to the given stream.
    * This method first writes the array size
    * (as CORBA <code>long</code>) and then calls the
-   * {@link org.omg.CORBA.portable.OutputStream#input.write_wchar_array }.
+   * {@link org.omg.CORBA.portable.OutputStream#write_wchar_array }.
    *
    * @param output the output stream to write into.
    */

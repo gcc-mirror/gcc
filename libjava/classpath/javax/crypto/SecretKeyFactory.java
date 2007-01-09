@@ -94,93 +94,101 @@ public class SecretKeyFactory
     this.algorithm = algorithm;
   }
 
-  // Class methods.
-  // ------------------------------------------------------------------------
-
   /**
-   * Create a new secret key factory from the first appropriate
-   * instance.
-   *
+   * Create a new secret key factory from the first appropriate instance.
+   * 
    * @param algorithm The algorithm name.
    * @return The appropriate key factory, if found.
-   * @throws java.security.NoSuchAlgorithmException If no provider
-   *         implements the specified algorithm.
+   * @throws NoSuchAlgorithmException If no provider implements the specified
+   *           algorithm.
+   * @throws IllegalArgumentException if <code>algorithm</code> is
+   *           <code>null</code> or is an empty string.
    */
   public static final SecretKeyFactory getInstance(String algorithm)
-    throws NoSuchAlgorithmException
+      throws NoSuchAlgorithmException
   {
-    Provider[] provs = Security.getProviders();
-    for (int i = 0; i < provs.length; i++)
-      {
-        try
-          {
-            return getInstance(algorithm, provs[i]);
-          }
-        catch (NoSuchAlgorithmException nsae)
-          {
-          }
-      }
-    throw new NoSuchAlgorithmException(algorithm);
+    Provider[] p = Security.getProviders();
+    NoSuchAlgorithmException lastException = null;
+    for (int i = 0; i < p.length; i++)
+      try
+        {
+          return getInstance(algorithm, p[i]);
+        }
+      catch (NoSuchAlgorithmException x)
+        {
+          lastException = x;
+        }
+      if (lastException != null)
+        throw lastException;
+      throw new NoSuchAlgorithmException(algorithm);
   }
 
   /**
    * Create a new secret key factory from the named provider.
-   *
+   * 
    * @param algorithm The algorithm name.
-   * @param provider  The provider name.
+   * @param provider The provider name.
    * @return The appropriate key factory, if found.
-   * @throws java.security.NoSuchAlgorithmException If the named
-   *         provider does not implement the algorithm.
-   * @throws java.security.NoSuchProviderException If the named provider
-   *         does not exist.
+   * @throws NoSuchAlgorithmException If the named provider does not implement
+   *           the algorithm.
+   * @throws NoSuchProviderException If the named provider does not exist.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>algorithm</code> is an empty string.
    */
   public static final SecretKeyFactory getInstance(String algorithm,
                                                    String provider)
-    throws NoSuchAlgorithmException, NoSuchProviderException
+      throws NoSuchAlgorithmException, NoSuchProviderException
   {
+    if (provider == null)
+      throw new IllegalArgumentException("provider MUST NOT be null");
     Provider p = Security.getProvider(provider);
     if (p == null)
-      {
-        throw new NoSuchProviderException(provider);
-      }
+      throw new NoSuchProviderException(provider);
     return getInstance(algorithm, p);
   }
 
   /**
    * Create a new secret key factory from the specified provider.
-   *
+   * 
    * @param algorithm The algorithm name.
-   * @param provider  The provider.
+   * @param provider The provider.
    * @return The appropriate key factory, if found.
-   * @throws java.security.NoSuchAlgorithmException If the provider
-   *         does not implement the algorithm.
+   * @throws NoSuchAlgorithmException If the provider does not implement the
+   *           algorithm.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>algorithm</code> is an empty string.
    */
   public static final SecretKeyFactory getInstance(String algorithm,
                                                    Provider provider)
-    throws NoSuchAlgorithmException
+      throws NoSuchAlgorithmException
   {
+    StringBuilder sb = new StringBuilder("SecretKeyFactory algorithm [")
+        .append(algorithm).append("] from provider[")
+        .append(provider).append("] could not be created");
+    Throwable cause;
     try
       {
-        return new SecretKeyFactory((SecretKeyFactorySpi)
-          Engine.getInstance(SERVICE, algorithm, provider),
-          provider, algorithm);
+        Object spi = Engine.getInstance(SERVICE, algorithm, provider);
+        return new SecretKeyFactory((SecretKeyFactorySpi) spi, provider, algorithm);
       }
-    catch (InvocationTargetException ite)
+    catch (InvocationTargetException x)
       {
-        if (ite.getCause() == null)
-          throw new NoSuchAlgorithmException(algorithm);
-        if (ite.getCause() instanceof NoSuchAlgorithmException)
-          throw (NoSuchAlgorithmException) ite.getCause();
-        throw new NoSuchAlgorithmException(algorithm);
+        cause = x.getCause();
+        if (cause instanceof NoSuchAlgorithmException)
+          throw (NoSuchAlgorithmException) cause;
+        if (cause == null)
+          cause = x;
       }
-    catch (ClassCastException cce)
+    catch (ClassCastException x)
       {
-        throw new NoSuchAlgorithmException(algorithm);
+        cause = x;
       }
+    NoSuchAlgorithmException x = new NoSuchAlgorithmException(sb.toString());
+    x.initCause(cause);
+    throw x;
   }
-
-  // Instance methods.
-  // ------------------------------------------------------------------------
 
   /**
    * Generate a secret key from a key specification, if possible.

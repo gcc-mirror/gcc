@@ -48,10 +48,8 @@ import java.lang.reflect.Field;
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
  */
-/* FIXME[GENERICS]: Should be Enum<T extends Enum<T>>
-   and Comparable<T> */
-public abstract class Enum
-  implements Comparable, Serializable
+public abstract class Enum<T extends Enum<T>>
+  implements Comparable<T>, Serializable
 {
 
   /**
@@ -62,13 +60,13 @@ public abstract class Enum
   /**
    * The name of this enum constant.
    */
-  String name;
+  final String name;
 
   /**
    * The number of this enum constant.  Each constant is given a number
    * which matches the order in which it was declared, starting with zero.
    */
-  int ordinal;
+  final int ordinal;
 
   /**
    * This constructor is used by the compiler to create enumeration constants.
@@ -91,8 +89,8 @@ public abstract class Enum
    * @exception IllegalArgumentException when there is no value s in
    * the enum etype.
    */
-  /* FIXME[GENERICS]: Should be <S extends Enum<S>> S valueOf(Class<S>) */
-  public static Enum valueOf(Class etype, String s)
+  @SuppressWarnings("unchecked")
+  public static <S extends Enum<S>> S valueOf(Class<S> etype, String s)
   {
     if (etype == null || s == null)
       throw new NullPointerException();
@@ -102,8 +100,7 @@ public abstract class Enum
         Field f = etype.getDeclaredField(s);
         if (! f.isEnumConstant())
           throw new IllegalArgumentException(s);
-	/* FIXME[GENERICS]: Should cast to S */
-        return (Enum) f.get(null); 
+        return (S) f.get(null);
       }
     catch (NoSuchFieldException exception)
       {
@@ -167,32 +164,11 @@ public abstract class Enum
    * @throws ClassCastException if <code>e</code> is not an enumeration
    *                            constant of the same class.
    */ 
-  public final int compareTo(Enum e)
+  public final int compareTo(T e)
   {
     if (getDeclaringClass() != e.getDeclaringClass())
       throw new ClassCastException();
     return ordinal - e.ordinal;
-  }
-
-  /**
-   * Returns an integer which represents the relative ordering of this
-   * enumeration constant.  Enumeration constants are ordered by their
-   * ordinals, which represents their declaration order.  So, comparing
-   * two identical constants yields zero, while one declared prior to
-   * this returns a positive integer and one declared after yields a
-   * negative integer.
-   *
-   * @param o the enumeration constant to compare.
-   * @return a negative integer if <code>e.ordinal < this.ordinal</code>,
-   *         zero if <code>e.ordinal == this.ordinal</code> and a positive
-   *         integer if <code>e.ordinal > this.ordinal</code>.
-   * @throws ClassCastException if <code>e</code> is not an enumeration
-   *                            constant of the same class.
-   */ 
-  /* FIXME[GENERICS]: Remove this method */
-  public final int compareTo(Object o)
-  {
-    return compareTo((Enum)o);
   }
 
   /**
@@ -235,8 +211,7 @@ public abstract class Enum
    *
    * @return the type of this enumeration constant.
    */
-  /* FIXME[GENERICS]: Should return Class<T> */
-  public final Class getDeclaringClass()
+  public final Class<T> getDeclaringClass()
   {
     Class k = getClass();
     // We might be in an anonymous subclass of the enum class, so go

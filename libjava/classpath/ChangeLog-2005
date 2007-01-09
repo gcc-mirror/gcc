@@ -1028,6 +1028,16 @@
 	  handle XML namespace; handle xml:base; normalize CR/LF pairs
 	  created as a result of mixed text and character entity references.
 
+2005-12-14  Nicolas Geoffray  <nicolas.geoffray@menlina.com>
+
+	* java/lang/ClassLoader
+	(defineClass(String,byte[],int,int,ProtectionDomain)):
+	Calls VMClassLoader.defineClassWithTransformers instead
+	of VMClassLoader.defineClass.
+	* vm/reference/java/lang/VMClassLoader
+	(defineClassWithTransformers): New method.
+	(instrumenter): New Field. 
+
 2005-12-14  Roman Kennke  <kennke@aicas.com>
 
 	* gnu/java/awt/peer/gtk/GdkGraphics.java
@@ -1110,6 +1120,17 @@
 	PR classpath/25389:
 	* java/io/File.java (File): Throw IllegalArgumentException if URI is
 	non-hierarchical.
+
+2005-12-13  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/instrument/ClassDefinition.java: Reformatted.
+	* java/lang/instrument/UnmodifiableClassException.java: Reformatted.
+	* java/lang/instrument/IllegalClassFormatException.java: Reformatted.
+
+2005-12-13  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/instrument/ClassDefinition.java (ClassDefinition): Now
+	public.
 
 2005-12-13  Lillian Angel  <langel@redhat.com>
 
@@ -1311,168 +1332,144 @@
 
 	* lib/copy-vmresources.sh.in: Added some '.' after find. 
 	
-2005-12-09  Lillian Angel  <langel@redhat.com>
+2005-12-09  Tom Tromey  <tromey@redhat.com>
 
-	* javax/swing/text/html/CSS.java:
-	Fixed class signature.
-	* javax/swing/text/html/HTMLEditorKit.java:
-	Fixed class signature.
-	(LinkController): New class added with only stubs. Functions
-	are not implmented yet.
-	(InsertHTMLTextAction): New class. Constructors implemented.
-	(insertHTML): Implemented.
-	(insertAtBoundary): Added, not yet implemented.
-	(insertAtBoundry): Implemented.
-	(actionPerformed): Added, not yet implemented.
-	(HTMLTextAction): New class.
-	(getHTMLDocument): Implemented.
-	(getHTMLEditorKit): Implemented.
-	(getElementsAt): Implemented.
-	(elementCountToTag): Added, not yet implemented.
-	(findElementMatchingTag): Likewise.
-	(getViewFactory): Implemented.
-	(HTMLFactory): Moved to beginning of class, with other inner classes.
-	(ParserCallBack): Added constructor, not yet implemented.
-	(clone): Added, not yet implemented. Calls super.
-	(createInputAttributes): Likewise.
-	(install): Likewise.
-	(deinstall): Likewise.
-	(getActions): Likewise.
-	(getInputAttributes): Likewise.
-	(getDefaultCursor): Implemented.
-	(getLinkCursor): Implemented.
-	(SetLinkCursor): Implemented.
-	(setDefaultLinkCursor): Implemented.
-	(AccessibleContext): Can't implement until AccessibleHTML is
-	implemented. Currently, returns null because accessibility is not supported.
-
-2005-12-09  Anthony Balkissoon  <abalkiss@redhat.com>
-
-	* javax/swing/JEditorPane.java:
-	(setText): Allow the EditorKit to read the text into the Document,
-	allowing for other than plain text.
-
-2005-12-09  Lillian Angel  <langel@redhat.com>
-
-	* javax/swing/text/html/HTMLDocument.java
-	(getReader): Added function. Not implemented. It was
-	added so a certain mauve test committed compiles with
-	classpath fine.
-
-2005-12-09  Lillian Angel  <langel@redhat.com>
-
-	* javax/swing/text/html/HTMLEditorKit.java
-	(getViewFactory): Fixed class name of ViewFactory returned.
-	(HTMLFactory): Fixed class name to match API.
-
-2005-12-08  Lillian Angel  <langel@redhat.com>
-
-	* javax/swing/text/html/HTMLEditorKit.java
-	(insertHTML): Added method, not implemented yet.
-	(read): Likewise.
-	(write): Likewise.
-	(getContentType): Implemented.
-	(getViewFactory): Implemented.
-	(HTMLViewFactory): New package-private inner class, implemented.
-
-2005-12-08  Lillian Angel  <langel@redhat.com>
-
-	* javax/swing/text/StyledEditorKit.java
-	(create): Reverted to use BoxView. I need to write
-	a mauve test to be sure about this.
-
-2005-12-08  Lillian Angel  <langel@redhat.com>
-
-	* javax/swing/text/StyledEditorKit.java
-	(create): Changed to use BlockView here instead of BoxView.
-
-2005-12-08  Anthony Balkissoon  <abalkiss@redhat.com>
-
-	* javax/swing/JEditorPane.java:
-	(init): Changed to no-argument instead of taking in an EditorKit and
-	passing it to setEditorKit.  Callers will have to call setEditorKit
-	themselves.
-	(JEditorPane()): Changed call to init to have no arguments, call
-	setEditorKit after init.
-	(JEditorPane(String, String)): Likewise.
-	(JEditorPane(URL)): Don't call default constructor, call init and then
-	setEditorKit using the appropriate EditorKit for text/html.
-
-2005-12-08  Anthony Balkissoon  <abalkiss@redhat.com>
-
-	* javax/swing/JEditorPane.java:
-	(registerMap): New field.
-	(editorMap): New field.
-	(JEditorPane()): Call init instead of setEditorKit.
-	(JEditorPane(String, String)): Likewise.
-	(init): New method.
-	(createEditorKitForContentType): Implemented and documented.
-	(getEditorKitClassNameForContentType): Likewise.
-	(getEditorKitForContentType): Likewise.
-	(registerEditorKitForContentType): Likewise.
-	(replaceSelection): Call super (this is temporary until the real
-	implementation happens.  There is already a TODO noting that this needs
-	to be implemented.
-	(setEditorKitForContentType): Implemented and documented.
-
-2005-12-08  Lillian Angel  <langel@redhat.com>
-
-	* javax/swing/text/html/BlockView.java:
-	New class added.
-	(BlockView): Implemented.
-	(setParent): Implemented.
-	(calculateMajorAxisRequirements): Added, not fully implemented.
-	(calculateMinorAxisRequirements): Likewise.
-	(layoutMinorAxis): Likewise.
-	(paint): Implemented, but some code is commented out since
-	StyleSheet is not yet implemented.
-	(getAttributes): Likewise.
-	(getResizeWeight): Implemented.
-	(getAlignment): Implemented.
-	(changedUpdate): Implemented.
-	(getPreferredSpan): Implemented.
-	(getMinimumSpan): Implemented.
-	(getMaximumSpan): Implemented.
-	(setPropertiesFromAttributes): Added, not implemented yet. Need
-	to wait for StyleSheet to be implemented.
-
-2005-12-08  Tom Tromey  <tromey@redhat.com>
-
-	* javax/security/auth/login/LoginContext.java (LoginContext): New
-	constructor.
-	* javax/security/auth/login/CredentialNotFoundException.java: New
-	file.
-	* javax/security/auth/login/CredentialExpiredException.java: Extends
-	CredentialException.
-	* javax/security/auth/login/CredentialException.java: New file.
-	* javax/security/auth/login/AccountNotFoundException.java: New file.
-	* javax/security/auth/login/AccountLockedException.java: New file.
-	* javax/security/auth/login/AccountExpiredException.java: Extends
-	AccountException.
-	* javax/security/auth/login/AccountException.java: New file.
-
-2005-12-08  Roman Kennke  <kennke@aicas.com>
-
-	* javax/swing/JComponent.java
-	(JComponent): Don't set a layout here. The default setting should be
-	null.
-
-2005-12-07  Tom Tromey  <tromey@redhat.com>
-
-	* java/lang/Float.java (toHexString): New method.
-	* java/lang/Double.java (toHexString): New method.
-
-2005-12-07  Gary Benson  <gbenson@redhat.com>
-
-	* java/io/RandomAccessFile.java (RandomAccessFile): Don't create
-	DataOutputStream for read-only files to avoid unnecessary security
-	manager check.
-
-2005-12-07  Ito Kazumitsu  <kaz@maczuka.gcd.org>
-
-	Fixes bug #25273
-	* java/text/DecimalFormat.java(scanFormat): Don't set
-	minimumIntegerDigits to 0. 
+	* javax/print/attribute/standard/Chromaticity.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/ColorSupported.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/Compression.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/Copies.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/CopiesSupported.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/DateTimeAtCompleted.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/DateTimeAtCreation.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/DateTimeAtProcessing.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/Destination.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/DocumentName.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/Fidelity.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/Finishings.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/JobHoldUntil.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/JobImpressions.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/JobImpressionsCompleted.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/JobImpressionsSupported.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/JobKOctets.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/JobKOctetsProcessed.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/JobKOctetsSupported.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/JobMediaSheets.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/JobMediaSheetsCompleted.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/JobMediaSheetsSupported.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/JobMessageFromOperator.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/JobName.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/JobOriginatingUserName.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/JobPriority.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/JobPrioritySupported.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/JobSheets.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/JobState.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/JobStateReason.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/JobStateReasons.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/Media.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/MediaPrintableArea.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/MediaSize.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/MultipleDocumentHandling.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/NumberOfDocuments.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/NumberOfInterveningJobs.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/NumberUp.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/NumberUpSupported.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/OrientationRequested.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/OutputDeviceAssigned.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/PDLOverrideSupported.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/PageRanges.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/PagesPerMinute.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/PagesPerMinuteColor.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/PresentationDirection.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/PrintQuality.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/PrinterInfo.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/PrinterIsAcceptingJobs.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/PrinterLocation.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/PrinterMakeAndModel.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/PrinterMessageFromOperator.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/PrinterMoreInfo.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/PrinterMoreInfoManufacturer.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/PrinterName.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/PrinterResolution.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/PrinterState.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/PrinterStateReason.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/PrinterStateReasons.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/PrinterURI.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/QueuedJobCount.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/ReferenceUriSchemesSupported.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/RequestingUserName.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/Severity.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/SheetCollate.java
+	(getCategory): Genericized.
+	* javax/print/attribute/standard/Sides.java
+	(getCategory): Genericized.
+	* javax/print/attribute/HashAttributeSet.java (get): Genericized.
+	(remove): Likewise.
+	* javax/print/attribute/Attribute.java (getCategory): Fixed return
+	type.
 
 2005-12-06  Anthony Balkissoon  <abalkiss@redhat.com> 
 
@@ -1538,6 +1535,73 @@
 	preferred size. Also, I added a comment explaining a possible bug
 	in this method.
 
+2005-12-06  Tom Tromey  <tromey@redhat.com>
+
+	* javax/security/auth/Subject.java (Subject): Genericized.
+	(getPrincipals): Likewise.
+	(getPrivateCredentials): Likewise.
+	(getPublicCredentials): Likewise.
+	(getPublicCredentials): Likewise.
+
+2005-12-06  Tom Tromey  <tromey@redhat.com>
+
+	* javax/imageio/ImageIO.java (ImageReaderIterator): Genericized.
+	Added new constructor.
+	(ImageWriterIterator): Likewise.
+	(getReadersByFilter): Genericized.
+	(getWritersByFilter): Likewise.
+	(getImageReadersBySuffix): Likewise.
+	(getImageWriters): Likewise.
+	(hasNext): Likewise.
+	* javax/print/attribute/AttributeSetUtilities.java
+	(verifyAttributeCategory): Genericized.
+	(verifyAttributeValue): Likewise.
+	(verifyCategoryForValue): Likewise.
+	* javax/print/attribute/AttributeSet.java (containsKey): Genericized.
+	(get): Likewise.
+	(remove): Likewise.
+	* javax/print/attribute/Attribute.java (getCategory): Genericized.
+	* javax/print/attribute/HashAttributeSet.java (HashAttributeSet):
+	Genericized.
+	(containsKey): Likewise.
+	* javax/imageio/spi/ServiceRegistry.java (deregisterAll):
+	Genericized.
+	* javax/imageio/spi/IIOServiceProvider.java (onDeregistration):
+	Genericized.
+	(onRegistration): Likewise.
+	* javax/imageio/metadata/IIOMetadataFormatImpl.java (getObjectClass):
+	Genericized.
+	(getObjectMaxValue): Likewise.
+	(getObjectMinValue): Likewise.
+	* javax/imageio/ImageIO.java (getImageReadersBySuffix): Genericized.
+	(getImageWriters): Likewise.
+
+2005-12-05  Casey Marshall <csm@gnu.org>
+
+	* native/jni/classpath/jcl.h (environ): define, or declare
+	'extern.'
+	* native/jni/java-lang/java_lang_VMProcess.c: include <jcl.h>.
+	Remove 'extern' define.
+	* native/jni/java-lang/java_lang_VMSystem.c
+	(Java_java_lang_VMSystem_environ): don't declare 'environ.'
+
+2005-12-05  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/instrument/Instrumentation.java (redefineClasses): Javadoc
+	fix.
+	* java/lang/instrument/ClassFileTransformer.java (transform): Javadoc
+	fix.
+
+2005-12-04  Nicolas Geoffray  <nicolas.geoffray@menlina.com>
+
+	* vm/reference/java/lang/VMInstrumentationImpl.java
+	(redefineClasses): Added an extra parameter of type
+	java.lang.instrument.Instrument.
+	* java/lang/InstrumentationImpl.java
+	(redefineClasses): Added the Instrumentation object
+	to the arguments of VMInstrumentationImpl.redefineClasses
+	call. 
+
 2005-12-05  Mark Wielaard  <mark@klomp.org>
 
 	Fixes bug classpath/25257
@@ -1562,11 +1626,54 @@
 	(getClipboard): Return null when access denied.
 	(clipboard): Removed static field.
 
+2005-12-03  Nicolas Geoffray  <nicolas.geoffray@menlina.com>
+	
+	* java/lang/instrument: New directory.
+	* java/lang/instrument/ClassDefinition.java:
+	New file.
+	* java/lang/instrument/ClassFileTransformer.java:
+	New file.
+	* java/lang/instrument/IllegalClassFormatException.java:
+	New file.
+	* java/lang/instrument/Instrumentation.java:
+	New file.
+	* java/lang/instrument/UnmodifiableClassException.java:
+	New file.
+	* java/lang/InstrumentationImpl.java:
+	New file.
+	* vm/reference/java/lang/VMInstrumentationImpl.java:
+	New file. 
+
 2005-12-03  Mark Wielaard  <mark@klomp.org>
 
 	* configure.ac (AC_CONFIG_FILES): Removed
 	native/jni/sampled-jack/Makefile.
 	(AC_ARG_ENABLE [jack]): Removed.
+
+2005-12-02  Tom Tromey  <tromey@redhat.com>
+
+	* javax/sound/sampled/Port.java (Info): Genericized.
+	* javax/sound/sampled/Line.java (Info): Genericized.
+	(getLineClass): Likewise.
+	* javax/sound/sampled/DataLine.java (Info): Genericized.
+	* javax/sound/sampled/AudioFormat.java (AudioFormat): Genericized.
+	(properties): Likewise.
+	* javax/sound/sampled/AudioFileFormat.java (AudioFileFormat):
+	Genericized.
+	(properties): Likewise.
+
+2005-12-02  Tom Tromey  <tromey@redhat.com>
+
+	* javax/naming/directory/InitialDirContext.java (search): Genericized.
+	* javax/naming/directory/BasicAttributes.java (getAll): Genericized.
+	(getIDs): Likewise.
+	* javax/naming/directory/BasicAttribute.java (getAll): Fixed return
+	type.
+	* javax/naming/InitialContext.java: Genericized.
+	(list): Likewise.
+	(listBindings): Likewise.
+	* javax/naming/CompoundName.java (getAll): Genericized.
+	* javax/naming/CompositeName.java (getAll): Genericized.
 
 2005-12-02  Anthony Balkissoon  <abalkiss@redhat.com>
 
@@ -1607,6 +1714,65 @@
 	(createFormatter): Changed this to createFormatterFactory because we
 	should return a factory, not just a formatter.
 	(createFormatterFactory): New method adapted from createFormatter.
+
+2005-12-01  Tom Tromey  <tromey@redhat.com>
+
+	* javax/imageio/spi/RegisterableService.java (onRegistration):
+	Genericized.
+	(onDeregistration): Likewise.
+	* javax/imageio/spi/ServiceRegistry.java (ServiceRegistry):
+	Genericized.
+	(deregisterServiceProvider): Likewise.
+	(getCategories): Likewise.
+	(getServiceProviderByClass): Likewise.
+	(getServiceProviders): Likewise.
+	(lookupProviders): Likewise.
+	(registerServiceProvider): Likewise.
+	(registerServiceProviders): Likewise.
+	(setOrdering): Likewise.
+	(unsetOrdering): Likewise.
+	* javax/imageio/spi/ImageOutputStreamSpi.java (outputClass):
+	Genericized.
+	(ImageOutputStreamSpi): Likewise.
+	(getOutputClass): Likewise.
+	* javax/imageio/spi/ImageInputStreamSpi.java (inputClass):
+	Genericized.
+	(ImageInputStreamSpi): Likewise.
+	(getInputClass): Likewise.
+	* javax/imageio/metadata/IIOMetadataFormatImpl.java (addAttribute):
+	Genericized.
+	(addObjectValue): Likewise.
+	* javax/imageio/metadata/IIOMetadataFormat.java (getObjectClass):
+	Genericized.
+	(getObjectMaxValue): Likewise.
+	(getObjectMinValue): Likewise.
+	* javax/imageio/ImageIO.java (getImageReaders): Genericized.
+	(getImageReadersByFormatName): Likewise.
+	(getImageReadersByMIMEType): Likewise.
+	(getImageTranscoders): Likewise.
+	(getImageWritersByFormatName): Likewise.
+	(getImageWritersByMIMEType): Likewise.
+	(getImageWritersBySuffix): Likewise.
+	(getImageReader): Use getOriginatingProvider.
+	(getImageWriter): Likewise.
+	* javax/imageio/ImageWriter.java (progressListeners): Genericized.
+	(warningListeners): Likewise.
+	(warningLocales): Likewise.
+	(prepareInsertEmpty): Likewise.
+	(prepareWriteEmpty): Likewise.
+	* javax/imageio/ImageReader.java (progressListeners): Genericized.
+	(updateListeners): Likewise.
+	(warningListeners): Likewise.
+	(warningLocales): Likewise.
+	(getDestination): Likewise.
+	(getImageMetadata): Likewise.
+	(getImageTypes): Likewise.
+	(getStreamMetadata): Likewise.
+	(readAll): Likewise.
+	* javax/imageio/IIOImage.java (IIOImage): Genericized.
+	(thumbnails): Likewise.
+	(getThumbnails): Likewise.
+	(setThumbnails): Likewise.
 
 2005-12-01  Anthony Green  <green@redhat.com>
 
@@ -1741,6 +1907,48 @@
 	(nativeToFlavorMap): removed generalization.
 	(flavorToNativeMap): likewise.
 
+2005-11-29  Tom Tromey  <tromey@redhat.com>
+
+	* javax/swing/text/StyleContext.java (removeAttributes): Genericized.
+	(getAttributeNames): Likewise.
+	* javax/swing/text/SimpleAttributeSet.java (getAttributeNames):
+	Genericized.
+	(removeAttributes): Likewise.
+	* javax/swing/text/DefaultStyledDocument.java (getStyleNames):
+	Genericized.
+	* javax/swing/text/AbstractDocument.java (getAttributeNames):
+	Genericized.
+	(removeAttributes): Likewise.
+	* javax/swing/table/TableColumnModel.java (getColumns): Genericized.
+	* javax/swing/table/AbstractTableModel.java (getColumnClass):
+	Genericized.
+	* javax/swing/tree/VariableHeightLayoutCache.java
+	(getVisiblePathsFrom): Genericized.
+	* javax/swing/tree/FixedHeightLayoutCache.java (getVisiblePathsFrom):
+	Genericized.
+	* javax/swing/undo/StateEdit.java (postState): Genericized.
+	(preState): Likewise.
+	* javax/security/sasl/SaslServerFactory.java (createSaslServer):
+	Genericized.
+	* javax/security/sasl/SaslClientFactory.java (createSaslClient):
+	Genericized.
+	(getMechanismNames): Likewise.
+	* javax/security/sasl/Sasl.java (createSaslClient): Genericized.
+	(createSaslServer): Likewise.
+	(getSaslClientFactories): Likewise.
+	(getSaslServerFactories): Likewise.
+	* javax/security/auth/spi/LoginModule.java (initialize): Genericized.
+	* javax/security/auth/login/AppConfigurationEntry.java
+	(AppConfigurationEntry): Genericized.
+	(getOptions): Likewise.
+	* javax/sql/RowSet.java (getTypeMap): Genericized.
+	(setTypeMap): Likewise.
+	* java/sql/Array.java (getResultSet): Genericized.
+	* java/security/cert/X509CertSelector.java (getExtendedKeyUsage):
+	Genericized.
+	* java/security/Permissions.java (elements): Genericized.
+	* java/rmi/server/RMIClassLoader.java (loadClass): Genericized.
+
 2005-11-29  Lillian Angel  <langel@redhat.com>
 
 	* javax/swing/plaf/metal/MetalFileChooserUI.java
@@ -1874,6 +2082,91 @@
 
 2005-11-27  Tom Tromey  <tromey@redhat.com>
 
+	* javax/print/attribute/standard/PrinterStateReasons.java:
+	Genericized.
+	* javax/print/attribute/standard/JobStateReasons.java: Genericized.
+	* javax/print/PrintService.java (getAttribute): Genericized.
+	(getDefaultAttributeValue): Likewise.
+	(getSupportedAttributeCategories): Likewise.
+	(getSupportedAttributeValues): Likewise.
+	(isAttributeValueSupported): Likewise.
+
+2005-11-27  Tom Tromey  <tromey@redhat.com>
+
+	* javax/naming/spi/StateFactory.java (getStateToBind): Genericized.
+	* javax/naming/spi/Resolver.java (resolveToClass): Genericized.
+	* javax/naming/spi/ObjectFactoryBuilder.java (createObjectFactory):
+	Genericized.
+	* javax/naming/spi/NamingManager.java (getInitialContext):
+	Genericized.
+	(getURLContext): Likewise.
+	(getObjectInstance): Likewise.
+	(getStateToBind): Likewise.
+	* javax/naming/spi/InitialContextFactoryBuilder.java
+	(createInitialContextFactory): Genericized.
+	* javax/naming/spi/InitialContextFactory.java (getInitialContext):
+	Genericized.
+	* javax/naming/spi/DirectoryManager.java (getObjectInstance):
+	Genericized.
+	(getStateToBind): Likewise.
+	* javax/naming/spi/DirStateFactory.java (getStateToBind):
+	Genericized.
+	* javax/naming/spi/ObjectFactory.java (getObjectInstance):
+	Genericized.
+	* javax/naming/spi/DirObjectFactory.java (getObjectInstance):
+	Genericized.
+	* javax/naming/ldap/LdapReferralException.java (getReferralContext):
+	Genericized.
+	* javax/naming/ldap/ControlFactory.java (getControlInstance):
+	Genericized.
+	* javax/naming/ldap/InitialLdapContext.java (InitialLdapContext):
+	Genericized.
+	* javax/naming/directory/DirContext.java (search): Genericized.
+	* javax/naming/directory/Attributes.java (getAll): Genericized.
+	(getIDs): Likewise.
+	* javax/naming/directory/Attribute.java (getAll): Genericized.
+	* javax/naming/directory/BasicAttribute.java (values): Genericized.
+	(getAll): Likewise.
+	* javax/naming/directory/InitialDirContext.java (InitialDirContext):
+	Genericized.
+	* javax/naming/ReferralException.java (getReferralContext):
+	Genericized.
+	* javax/naming/Name.java (getAll): Genericized.
+	* javax/naming/Context.java (getEnvironment): Genericized.
+	(list): Likewise.
+	(listBindings): Likewise.
+	* javax/naming/NamingEnumeration.java: Genericized.
+	(next): Likewise.
+	* javax/naming/Reference.java (addrs): Genericized.
+	(getAll): Likewise.
+	* javax/naming/CannotProceedException.java (environment): Genericized.
+	(getEnvironment): Likewise.
+	(setEnvironment): Likewise.
+	* javax/naming/InitialContext.java (myProps): Genericized.
+	(InitialContext): Likewise.
+	(init): Likewise.
+	* javax/naming/CompoundName.java (CompoundName): Genericized.
+	* javax/naming/CompositeName.java (CompositeName): Genericized.
+
+2005-11-27  Tom Tromey  <tromey@redhat.com>
+
+	* java/sql/Struct.java (getAttributes): Genericized.
+	* java/sql/ResultSet.java (getObject): Genericized.
+	* java/sql/Ref.java (getObject): Genericized.
+	* java/sql/DriverManager.java (getDrivers): Genericized.
+	* java/sql/Connection.java (getTypeMap): Genericized.
+	(setTypeMap): Likewise.
+	* java/sql/CallableStatement.java (getObject): Genericized.
+	(getObject): Likewise.
+	* java/sql/Array.java (getBaseTypeName): Fixed javadoc.
+	(getArray): Likewise.
+	(getResultSet): Likewise.
+	(getResultSet): Likewise.
+	(getArray): Genericized.
+	(getResultSet): Likewise.
+
+2005-11-27  Tom Tromey  <tromey@redhat.com>
+
 	* java/beans/PropertyChangeSupport.java (fireIndexedPropertyChange):
 	New methods.
 	* java/beans/IndexedPropertyChangeEvent.java: New file.
@@ -1882,6 +2175,181 @@
 
 	* java/lang/StackTraceElement.java (StackTraceElement): New
 	constructor.
+
+2005-11-25  Tom Tromey  <tromey@redhat.com>
+
+	* javax/swing/text/StyleContext.java (getStyleNames): Genericized.
+	* javax/swing/text/MutableAttributeSet.java (removeAttributes):
+	Genericized.
+	* javax/swing/text/DefaultFormatter.java (getValueClass): Genericized.
+	(setValueClass): Likewise.
+	* javax/swing/text/AttributeSet.java (getAttributeNames): Genericized.
+	* javax/swing/text/AbstractDocument.java (getDocumentProperties):
+	Genericized.
+	(setDocumentProperties): Likewise.
+	(removeAttributes): Likewise.
+	* javax/swing/SwingUtilities.java (getAncestorOfClass): Genericized.
+	* javax/swing/LookAndFeel.java (makeIcon): Genericized.
+	* javax/swing/JTable.java (getColumnClass): Genericized.
+	(getDefaultRenderer): Likewise.
+	(setDefaultRenderer): Likewise.
+	(getDefaultEditor): Likewise.
+	(setDefaultEditor): Likewise.
+	* javax/swing/JLayeredPane.java (getComponentToLayer): Genericized.
+	* javax/swing/DefaultListModel.java (elements): Genericized.
+	* javax/swing/ButtonGroup.java (buttons): Genericized.
+	(getElements): Likewise.
+	* javax/swing/SpinnerListModel.java (SpinnerListModel): Genericized.
+	(getList): Likewise.
+	(setList): Likewise.
+	* javax/swing/SortingFocusTraversalPolicy.java
+	(SortingFocusTraversalPolicy): Genericized.
+	(getComparator): Likewise.
+	(setComparator): Likewise.
+	* javax/swing/JTree.java (JTree): Genericized.
+	(getDescendantToggledPaths): Likewise.
+	(getExpandedDescendants): Likewise.
+	(removeDescendantToggledPaths): Likewise.
+	* javax/swing/JList.java (JList): Genericized.
+	Likewise.
+	* javax/swing/JComboBox.java (JComboBox): Genericized.
+	* javax/swing/DefaultComboBoxModel.java (DefaultComboBoxModel):
+	Genericized.
+	* javax/swing/UIDefaults.java: Genericized superclass.
+	(getUIClass): Likewise.
+	* javax/swing/event/EventListenerList.java (getListenerCount):
+	Genericized.
+	* javax/swing/plaf/basic/BasicDirectoryModel.java (getDirectories):
+	Genericized.
+	(getFiles): Likewise.
+	(sort): Likewise.
+	* javax/swing/plaf/basic/BasicTreeUI.java (drawingCache): Genericized.
+	* javax/swing/plaf/basic/BasicFileChooserUI.java (iconCache):
+	Genericized.
+	* javax/swing/table/TableModel.java (getColumnClass): Genericized.
+	* javax/swing/table/DefaultTableColumnModel.java (tableColumns):
+	Genericized.
+	(getColumns): Likewise.
+	(moveColumn): Updated.
+	* javax/swing/text/html/parser/ContentModel.java (getElements):
+	Genericized.
+	* javax/swing/text/html/parser/DTD.java (entityHash): Fixed type.
+	* javax/swing/text/html/parser/AttributeList.java (AttributeList):
+	Genericized.
+	(values): Likewise.
+	(getValues): Likewise.
+	* javax/swing/tree/AbstractLayoutCache.java (getVisiblePathsFrom):
+	Genericized.
+	* javax/swing/tree/DefaultMutableTreeNode.java (EMPTY_ENUMERATION):
+	Genericized.
+	* javax/swing/undo/StateEditable.java (restoreState): Genericized.
+	(storeState): Likewise.
+
+2005-11-25  Tom Tromey  <tromey@redhat.com>
+
+	* java/rmi/server/RMIClassLoaderSpi.java (loadClass): Genericized.
+	(loadProxyClass): Likewise.
+	(getClassAnnotation): Likewise.
+	* java/rmi/server/RMIClassLoader.java (loadClass): Genericized.
+	(getClassAnnotation): Likewise.
+	* java/rmi/server/LoaderHandler.java (loadClass): Genericized.
+
+2005-11-25  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/Font.java (Font): Genericized.
+	(deriveFont): Likewise.
+	(getAttributes): Likewise.
+	(getFont): Likewise.
+
+2005-11-25  Tom Tromey  <tromey@redhat.com>
+
+	* java/text/NumberFormat.java (format): No longer final.
+	* java/text/AttributedCharacterIterator.java (getAllAttributeKeys):
+	Genericized.
+	(getAttributes): Likewise.
+	(getRunLimit): Likewise.
+	(getRunStart): Likewise.
+	* java/text/AttributedString.java (AttributedString): Genericized.
+	(addAttributes): Likewise.
+	* java/text/Collator.java: Implement Comparator<Object>.
+
+2005-11-25  Tom Tromey  <tromey@redhat.com>
+
+	* java/security/cert/X509Extension.java (getCriticalExtensionOIDs):
+	Genericized.
+	(getNonCriticalExtensionOIDs): Likewise.
+	* java/security/cert/X509Certificate.java (getExtendedKeyUsage):
+	Genericized.
+	(getIssuerAlternativeNames): Likewise.
+	(getSubjectAlternativeNames): Likewise.
+	* java/security/cert/X509CertSelector.java (setExtendedKeyUsage):
+	Genericized.
+	(setSubjectAlternativeNames): Likewise.
+	* java/security/cert/X509CRLSelector.java (getIssuerNames):
+	Genericized.
+	(setIssuerNames): Likewise.
+	* java/security/cert/X509CRL.java (getRevokedCertificates):
+	Genericized.
+	* java/security/cert/PolicyNode.java (getChildren): Genericized.
+	(getExpectedPolicies): Likewise.
+	(getPolicyQualifiers): Likewise.
+	* java/security/cert/PKIXCertPathChecker.java (check): Genericized.
+	(getSupportedExtensions): Likewise.
+	* java/security/cert/CertificateFactorySpi.java
+	(engineGenerateCertPath): Genericized.
+	(engineGenerateCertificates): Likewise.
+	(engineGenerateCRLs): Likewise.
+	(engineGetCertPathEncodings): Likewise.
+	* java/security/cert/CertificateFactory.java (generateCertificates):
+	Genericized.
+	(generateCertPath): Likewise.
+	(generateCRLs): Likewise.
+	(getCertPathEncodings): Likewise.
+	* java/security/cert/CertStoreSpi.java (engineGetCertificates):
+	Genericized.
+	(engineGetCRLs): Likewise.
+	* java/security/cert/CertStore.java (getCertificates): Genericized.
+	(getCRLs): Likewise.
+	* java/security/cert/CertPath.java (getCertificates): Genericized.
+	(getEncodings): Likewise.
+	* java/security/cert/PKIXParameters.java (PKIXParameters):
+	Genericized.
+	(getCertStores): Likewise.
+	(getCertPathCheckers): Likewise.
+	(getInitialPolicies): Likewise.
+	(getTrustAnchors): Likewise.
+	(setCertPathCheckers): Likewise.
+	(setCertStores): Likewise.
+	(setInitialPolicies): Likewise.
+	(setTrustAnchors): Likewise.
+	* java/security/cert/PKIXBuilderParameters.java
+	(PKIXBuilderParameters): Genericized.
+	* java/security/cert/CollectionCertStoreParameters.java
+	(CollectionCertStoreParameters): Genericized.
+	(getCollection): Likewise.
+	* java/security/cert/PolicyQualifierInfo.java: No longer final.
+
+2005-11-25  Tom Tromey  <tromey@redhat.com>
+
+	* java/security/Security.java (getAlgorithms): Genericized.
+	(getProviders): Likewise.
+	* java/security/SecureClassLoader.java (defineClass): Genericized.
+	(protectionDomainCache): Likewise.
+	* java/security/PermissionCollection.java (elements): Genericized.
+	(toString): Updated.
+	* java/security/KeyStoreSpi.java (engineAliases): Genericized.
+	* java/security/KeyStore.java (aliases): Genericized.
+	* java/security/KeyFactorySpi.java (engineGetKeySpec): Genericized.
+	(engineTranslateKey): Fixed javadoc.
+	* java/security/KeyFactory.java (getKeySpec): Genericized.
+	* java/security/IdentityScope.java (identities): Genericized.
+	* java/security/AlgorithmParametersSpi.java (engineGetParameterSpec):
+	Genericized.
+	* java/security/AlgorithmParameters.java (getParameterSpec):
+	Genericized.
+	* java/security/AccessController.java (doPrivileged): Genericized.
+	* java/security/PrivilegedExceptionAction.java: Genericized.
+	* java/security/PrivilegedAction.java: Genericized.
 
 2005-11-25  Guilhem Lavaux  <guilhem@kaffe.org>
 
@@ -4851,8 +5319,18 @@
 
 2005-11-02  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
-	* AUTHORS: Added myself.
+	* examples/Makefile.am:
+	Comment out JIKES and GCJ conditionals.
+	* lib/Makefile.am:
+	Comment out JIKES, KJC and GCJ conditionals.
+	* m4/acinclude.m4:
+	Comment out selection of GCJ, Jikes and KJC as compilers for
+	the branch.
 	
+2005-11-02  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* AUTHORS: Added myself.
+
 2005-11-02  Mark Wielaard  <mark@klomp.org>
 
 	* javax/swing/Timer.java (Waker.run): Only break out when !running.
@@ -4869,6 +5347,24 @@
 2005-11-02  Guilhem Lavaux  <guilhem@kaffe.org>
 
 	* lib/copy-vmresources.sh.in: Added definition for top_srcdir.
+
+2005-11-02  Mark Wielaard  <mark@klomp.org>
+
+	* configure.ac (AC_INIT): Set version to 0.19-generics.
+	* lib/Makefile.am: Add typeHiding, unchecked, unused and varargsCast
+	to ECJ compile warning rule.
+
+2005-11-02  Tom Tromey  <tromey@redhat.com>
+
+	* javax/sound/midi/Instrument.java (Instrument): Genericized argument
+	type.
+	* javax/sound/midi/SoundbankResource.java (SoundbankResource):
+	Genericized argument type.
+	(getDataClass): Genericized return type.
+	* javax/sound/midi/Sequence.java (tracks): Changed type.
+	(init): Updated.
+	(getTracks): Updated.
+	(getTickLength): Updated.
 
 2005-11-02  Andreas Tobler  <a.tobler@schweiz.ch>
 
@@ -5952,6 +6448,44 @@
 	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetGetLocationOnScreen):
 	Call gdk_window_get_root_origin instead of gdk_window_get_origin
 	so that the window decorations are correctly respected.
+
+2005-10-24  Tom Tromey  <tromey@redhat.com>
+
+	* javax/accessibility/AccessibleStateSet.java (states):
+	Changed type.
+	* javax/accessibility/AccessibleRelationSet.java (relations):
+	Changed type.
+
+2005-10-24  Tom Tromey  <tromey@redhat.com>
+
+	* java/security/acl/Group.java (isMember): Javadoc fix.
+	(members): Changed return type.
+	* java/security/acl/AclEntry.java (addPermission): Fixed javadoc.
+	(checkPermission): Likewise.
+	(permissions): Changed return type.
+	* java/security/acl/Acl.java (entries): Changed return type.
+	(getPermissions): Likewise.
+
+2005-10-24  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/java/nio/SelectorImpl.java (keys): Changed type.
+	(selected): Likewise.
+	(SelectorImpl): Updated.
+	(keys): Changed return type.
+	(getFDsAsArray): Updated.
+	(select): Likewise.
+	(selectedKeys): Changed return type.
+	(deregisterCancelledKeys): Updated.
+	* java/nio/channels/Selector.java (selectedKeys): Changed return
+	type.
+	(keys): Likewise.
+
+2005-10-24  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/image/ReplicateScaleFilter.java (setProperties): Changed
+	argument type.
+	* java/awt/image/CropImageFilter.java (setProperties): Changed
+	argument type.
 
 2005-10-24  Tom Tromey  <tromey@redhat.com>
 
@@ -7075,6 +7609,82 @@
 	org/omg/CORBA/ORB.java: Adapted to support the 
 	gnu.CORBA.ListenerPort property.
 
+2005-10-16  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/awt/image/BufferedImage.java:
+	(getSources()): Genericized.
+	* java/awt/image/ImageFilter.java:
+	(setProperties(Hashtable<?,?>)): Likewise.
+	* java/awt/image/MemoryImageSource.java:
+	(MemoryImageSource(int,int,int[],int,int,Hashtable<?,?>)): Likewise.
+	* java/awt/image/PixelGrabber.java:
+	(setProperties(Hashtable<?,?>)): Likewise.
+	* java/awt/image/renderable/RenderableImageOp.java:
+	(getSources()): Likewise.
+	* java/beans/Beans.java:
+	(getInstanceOf(Object,Class<?>)): Likewise.
+	(isInstanceOf(Object,Class<?>)): Likewise.
+	* java/beans/EventSetDescriptor.java:
+	(EventSetDescriptor(Class<?>,String,Class<?>,String)): Likewise.
+	(EventSetDescriptor(Class<?>,String,Class<?>,String[],String,String)):
+	Likewise.
+	(EventSetDescriptor(Class<?>,Method[],Method,Method)): Likewise.
+	(EventSetDescriptor(String,Class<?>,MethodDescriptor,Method,Method)):
+	Likewise.
+	(getListenerType()): Likewise.
+	* java/beans/FeatureDescriptor.java:
+	(FeatureDescriptor()): Likewise.
+	(attributeNames()): Likewise.
+	* java/beans/IndexedPropertyDescriptor.java:
+	(IndexedPropertyDescriptor(String,Class<?>)): Likewise.
+	(IndexedPropertyDescriptor(String,Class<?>,String,String,String,String)):
+	Likewise.
+	(getIndexedPropertyType()): Likewise.
+	* java/beans/Introspector.java:
+	(getBeanInfo(Class<?>)): Likewise.
+	(flushFromCaches(Class<?>)): Likewise.
+	(getBeanInfo(Class<?>,Class<?>)): Likewise.
+	* java/beans/PropertyDescriptor.java:
+	(PropertyDescriptor(String,Class<?>)): Likewise.
+	(getPropertyType()): Likewise.
+	(getPropertyEditorClass()): Likewise.
+	(setPropertyEditorClass(Class<?>)): Likewise.
+	(checkMethods(Method,Method)): Likewise.
+	* java/beans/PropertyEditorManager.java:
+	(registerEditor(Class<?>,Class<?>)): Likewise.
+	(getEditor(Class<?>)): Likewise.
+	* java/io/ObjectInputStream.java:
+	(resolveClass(ObjectStreamClass)): Likewise.
+	* java/io/ObjectOutputStream.java:
+	(annotateClass(Class<?>)): Likewise.
+	(annotateProxyClass(Class<?>)): Likewise.
+	* java/io/ObjectStreamClass.java:
+	(lookup(Class<?>)): Likewise.
+	(forClass()): Likewise.
+	* java/io/ObjectStreamField.java:
+	(ObjectStreamField(String,Class<?>)): Likewise.
+	(ObjectStreamField(String,Class<?>,boolean)): Likewise.
+	* java/net/NetworkInterface.java:
+	(getInetAddresses()): Likewise.
+	(getNetworkInterfaces()): Likewise.
+	* java/net/URLClassLoader.java:
+	(findClass(String)): Likewise.
+	(findResources(String)): Likewise.
+	* java/net/URLConnection.java:
+	(getHeaderFields()): Likewise.
+	(getRequestProperties()): Likewise.
+	* javax/swing/text/TextAction.java:
+	(augmentList(Action[],Action[])): Likewise.
+	* javax/swing/text/html/HTML.java:
+	(attrMap): Likewise.
+	(tagMap): Likewise.
+	* javax/swing/text/html/parser/DTD.java:
+	(dtdHash): Likewise.
+	(elementHash): Likewise.
+	(entityHash): Likewise.
+	(defineAttributes(String,AttributeList)): Likewise.
+	(newElement(String)): Likewise.
+
 2005-10-15  Audrius Meskauskas  <AudriusA@Bioinformatics.org>
 
 	* org/omg/CORBA/DynamicImplementation.java: Made concrete.
@@ -7435,6 +8045,77 @@
 	* javax/swing/plaf/metal/MetalLookAndFeel.java
 	(initComponentDefaults): added default value for 
 	'List.focusCellHighlightBorder'.
+
+2005-10-12  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/awt/datatransfer/DataFlavor.java:
+	(DataFlavor(Class<?>,String,String): Genericized.
+	* java/awt/dnd/DragGestureEvent.java:
+	(DragGestureEvent(DragGestureRecognizer,int,Point,
+	List<? extends InputEvent>)): Likewise.
+	(iterator()): Likewise.
+	* java/awt/dnd/DragSource.java:
+	(createDragGestureRecognizer(Class<T>,Component,int,
+	DragGestureListener)): Likewise.
+	* java/awt/dnd/DropTargetContext.java:
+	(getCurrentDataFlavorsAsList()): Likewise.
+	* java/awt/dnd/DropTargetDragEvent.java:
+	(getCurrentDataFlavorsAsList()): Likewise.
+	* java/awt/dnd/DropTargetDropEvent.java:
+	(getCurrentDataFlavorsAsList()): Likewise.
+	* java/awt/font/TextLayout.java:
+	(TextLayout(String,Map<? extends
+	AttributedCharacterIterator.Attribute>, FontRenderContext)): Likewise.
+	* java/awt/image/BufferedImage.java:
+	(BufferedImage(ColorModel,WritableRaster,boolean,Hashtable<?,?>)):
+	Likewise.
+	* java/awt/image/ImageConsumer.java:
+	(setProperties(Hashtable<?,?>)): Likewise.
+	* java/awt/image/MemoryImageSource.java:
+	(MemoryImageSource(int,int,ColorModel,byte[],int,int,Hashtable<?,?>)):
+	Likewise.
+	(MemoryImageSource(int,int,ColorModel,int[],int,int,Hashtable<?,?>)):
+	Likewise.	
+	* java/awt/image/RenderedImage.java:
+	(getSources()): Likewise.
+	* java/awt/image/renderable/ParameterBlock.java:
+	(sources): Likewise.
+	(parameters): Likewise.
+	(ParameterBlock()): Likewise.
+	(ParameterBlock(Vector<Object>)): Likewise.
+	(ParameterBlock(Vector<Object>,Vector<Object>)): Likewise.
+	(clone()): Added casts to handle new Vector type.
+	(getSources()): Genericized.
+	(setSources(Vector<Object>)): Likewise.
+	(getParameters()): Likewise.
+	(setParameters(Vector<Object>)): Likewise.
+	* java/awt/image/renderable/RenderableImage.java:
+	(getSources()): Likewise.
+	* javax/swing/tree/DefaultMutableTreeNode.java:
+	(children): Likewise.
+	(getSharedAncestor(DefaultMutableTreeNode)): Likewise.
+	(getDepth()): Likewise.
+	(pathFromAncestorEnumeration(TreeNode)): Likewise.
+	(PostOrderEnumeration)): Likewise.
+	* javax/swing/undo/CompoundEdit.java:
+	(edits): Likewise.
+	(CompoundEdit()): Likewise.
+	(undo()): Likewise.
+	(redo()): Likewise.
+	(lastEdit()): Likewise.
+	(die()): Likewise.
+	(isSignificant()): Likewise.
+	* javax/swing/undo/UndoableEditSupport.java:
+	(listeners): Likewise.
+	(getUndoableEditListeners()): Likewise.
+	* lib/Makefile.am:
+	Turn off listing unused imports (at least for now).
+	* org/omg/CosNaming/_NamingContextExtImplBase.java:
+	(_methods): Likewise.
+	* org/omg/CosNaming/_NamingContextImplBase.java:
+	(methods): Likewise.
+	* vm/reference/java/lang/reflect/Method.java:
+	(getTypeParameters()): Corrected return type.
 
 2005-10-12  Lillian Angel  <langel@redhat.com>
 
@@ -8129,6 +8810,27 @@
 	(createLineBorder(Color)): Forward call to
 	createLineBorder(Color, int) with thickness of 1.
 
+2005-10-06  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/ListResourceBundle.java (getKeys): Fixed return type.
+	* java/util/ResourceBundle.java (getKeys): Fixed return type.
+	* java/util/AbstractMap.java (entrySet): Fixed return type.
+	(clone): Updated.
+	(equals): Likewise.
+	(iterator): Likewise.
+	* java/util/Collections.java (fill): Fixed argument type.
+	(reverse): Likewise.
+	(unmodifiableCollection): Likewise.
+	(UnmodifiableCollection): Likewise.
+	(UnmodifiableIterator): Likewise.
+	(unmodifiableSet): Likewise.
+	(UnmodifiableSet): Likewise.
+	(unmodifiableList): Likewise.
+	* java/util/TreeSet.java (TreeSet(SortedSet<T>)): Fixed argument
+	type.
+	(headSet): Fixed return type.
+	* java/util/StringTokenizer.java: Implements Enumeration<Object>.
+
 2005-10-06  Anthony Green  <green@redhat.com>
 
 	* native/jni/midi-dssi/gnu_javax_sound_midi_dssi_DSSISynthesizer.c
@@ -8277,6 +8979,93 @@
 2005-10-06  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* configure.ac: Add Qt4 configury bits for OS-X.
+
+2005-10-05  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/jar/Attributes.java: Implements Map<Object,Object>.
+	(map): Changed type.
+	(entrySet): Changed return type.
+	(keySet): Likewise.
+	(putAll): Changed argument type.
+	(values): Changed return type.
+	* java/util/jar/Manifest.java (getEntries): Genericized.
+	(Manifest): Updated.
+	(entries): Changed type.
+	(read_individual_sections): Updated.
+	(read_section_name): Likewise.
+	(write_main_attributes): Likewise.
+	(write_attribute_entry): Likewise.
+	(write_individual_sections): Likewise.
+	(write_entry_attributes): Likewise.
+	* java/util/jar/JarFile.java (entries): Genericized.
+	(JarEnumeration): Implements Enumeration<JarEntry>.
+	(JarEnumeration.nextElement): Changed return type.
+	(JarEnumeration.entries): Changed type.
+
+2005-10-05  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/datatransfer/SystemFlavorMap.java (getNativesForFlavors):
+	Genericized.
+	(getFlavorsForNatives): Likewise.
+	(getFlavorsForNative): Likewise.
+	(getNativesForFlavor): Likewise.
+	* java/awt/datatransfer/DataFlavor.java (DataFlavor): Genericized.
+	(getDefaultRepresentationClass): Likewise.
+	(getRepresentationClass): Likewise.
+	(tryToLoadClass): Likewise.
+	(representationClass): Likewise.
+	* java/awt/datatransfer/FlavorTable.java (getNativesForFlavor):
+	Genericized.
+	(getFlavorsForNative): Likewise.
+	* java/awt/datatransfer/FlavorMap.java (getFlavorsForNatives):
+	Genericized.
+	(getNativesForFlavors): Likewise.
+
+2005-10-05  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/zip/ZipFile.java (entries): Fixed return type.
+
+2005-10-05  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/prefs/Preferences.java (systemNodeForPackage): Genericized.
+	(userNodeForPackage): Likewise.
+
+2005-10-05  Tom Tromey  <tromey@redhat.com>
+
+	* javax/swing/tree/DefaultTreeSelectionModel.java (getListeners):
+	Genericized.
+	* javax/swing/tree/DefaultTreeModel.java (getListeners): Genericized.
+	* javax/swing/Timer.java (getListeners): Genericized.
+	* javax/swing/text/StyleContext.java (getListeners): Genericized.
+	* javax/swing/text/DefaultCaret.java (getListeners): Genericized.
+	* javax/swing/text/AbstractDocument.java (getListeners):
+	Genericized.
+	* javax/swing/table/DefaultTableColumnModel.java (getListeners):
+	Genericized.
+	* javax/swing/table/AbstractTableModel.java (getListeners):
+	Genericized.
+	* javax/swing/JComponent.java (getListeners): Genericized.
+	* javax/swing/DefaultSingleSelectionModel.java (getListeners):
+	Genericized.
+	* javax/swing/DefaultListSelectionModel.java (getListeners):
+	Genericized.
+	* javax/swing/DefaultButtonModel.java (getListeners): Genericized.
+	* javax/swing/DefaultBoundedRangeModel.java (getListeners):
+	Genericized.
+	* javax/swing/AbstractSpinnerModel.java (getListeners): Genericized.
+	* javax/swing/event/EventListenerList.java (add): Genericized.
+	(getListeners): Likewise.
+	(remove): Likewise.
+	* java/awt/dnd/DragSource.java (getListeners): Genericized.
+	* java/awt/TextField.java (getListeners): Genericized.
+	* java/awt/Window.java (getListeners): Genericized.
+	* java/awt/Scrollbar.java (getListeners): Genericized.
+	* java/awt/List.java (getListeners): Genericized.
+	* java/awt/Choice.java (getListeners): Genericized.
+	* java/awt/TextComponent.java (getListeners): Genericized.
+	* java/awt/CheckboxMenuItem.java (getListeners): Genericized.
+	* java/awt/Button.java (getListeners): Genericized.
+	* java/awt/Container.java (getListeners): Genericized.
 
 2005-10-05  Lillian Angel  <langel@redhat.com>
 
@@ -8511,6 +9300,16 @@
 	(columnSelectionChanged): New listener method.
 	(resizeAndRepaint): New method.
 	(initializeLocalVars): New method.
+
+2005-10-04  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/Dialog.java (show): Now deprecated.
+	(hide): Likewise.
+
+2005-10-04  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/ref/Reference.java (nextOnQueue): Changed type.
+	* java/lang/ref/ReferenceQueue.java (first): Changed type.
 
 2005-10-04  David Gilbert  <david.gilbert@object-refinery.com>
 
@@ -9045,6 +9844,21 @@
 	* javax/imageio/ImageWriter.java: Complete and document.
 	* javax/imageio/package.html: Write.
 
+2005-10-01  Jeroen Frijters  <jeroen@frijters.net>
+
+	* vm/reference/java/lang/reflect/Constructor.java
+	(getSignature): New method.
+	(getGenericExceptionTypes): New method.
+	(getGenericParameterTypes): New method.
+	* vm/reference/java/lang/reflect/Field.java
+	(getGenericType): New method.
+	(getSignature): New method.
+	* vm/reference/java/lang/reflect/Method.java
+	(getSignature): New method.
+	(getGenericExceptionTypes): New method.
+	(getGenericParameterTypes): New method.
+	(getGenericReturnType): New method.
+
 2005-10-01  Tom Tromey  <tromey@redhat.com>
 
 	PR classpath/23890:
@@ -9089,6 +9903,14 @@
 	(Java_gnu_java_awt_peer_gtk_GdkGraphics2D_setTexturePixelsUnlocked):
 	Call cairo_pattern_set_extend after gr->pattern has been set and checked
 	versus NULL.
+
+2005-09-30  Jeroen Frijters  <jeroen@frijters.net>
+
+	* gnu/java/lang/reflect/FieldSignatureParser.java: New file.
+	* gnu/java/lang/reflect/ClassSignatureParser.java,
+	gnu/java/lang/reflect/GenericSignatureParser.java,
+	gnu/java/lang/reflect/MethodSignatureParser.java:
+	Finished implementation.
 
 2005-09-30  Roman Kennke  <kennke@aicas.com>
 
@@ -9444,6 +10266,65 @@
 	* javax/swing/plaf/basic/BasicMenuItemUI.java
 	(paintMenuItem): adjusted arrow icon position.
 
+2005-09-28  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/java/awt/peer/qt/QtGraphics.java:
+	(getRenderingHints()): Create a clone as no such
+	constructor exists with generic typing.
+	(setRenderingHints(Map<?,?>)): Added parametric typing
+	and fixed use of RenderingHints constructor.
+	* java/awt/AWTEventMulticaster.java:
+	(getListeners(EventListener,Class<T>)): Added generic
+	typing.
+	* java/awt/Component.java:
+	(getListeners(Class<T>)): Likewise.
+	(getFocusTraversalKeys(int)): Likewise.
+	* java/awt/Font.java:
+	(Font(Map<? extends Attribute,?>)): Likewise.
+	(deriveFont(Map<? extends Attribute,?>)): Likewise.
+	(getAttributes()): Likewise.
+	(getAvailableAttributes()): Simplified naming with static import.
+	(getFont(Map<? extends Attribute,?>)): Added generic typing.
+	* java/awt/Graphics2D.java:
+	(setRenderingHints(Map<?,?>)): Likewise.
+	(addRenderingHints(Map<?,?>)): Likewise.
+	* java/awt/KeyboardFocusManager.java:
+	(setDefaultFocusTraversalKeys(int,Set<? extends KeyStroke>)):
+	Likewise.
+	(getKeyEventDispatchers()): Likewise.
+	(getKeyEventPostProcessors()): Likewise.
+	* java/awt/MenuItem.java:
+	(getListeners(Class<T>)): Likewise.
+	* java/awt/RenderingHints.java:
+	(RenderingHints(Map<Key,?>)): Likewise.
+	(putAll(Map<?,?>)): Likewise.
+	(keySet()): Likewise.
+	(values()): Likewise.
+	(entrySet()): Likewise.
+	* java/awt/Toolkit.java:
+	(desktopProperties): Likewise.
+	(createDragGestureRecognizer(Class<T>,DragSource,Component,int,
+	DragGestureListener)): Likewise.
+	(mapInputMethodHighlight(InputMethodHighlight)): Likewise.
+	* java/lang/Class.java:
+	(getDeclaringClass()): Likewise.
+	* java/lang/Enum.java:
+	(valueOf(Class<S>,String)): Fixed return type.
+	* java/lang/SecurityManager.java:
+	(checkMemberAccess(Class<?>,int)): Likewise.
+	* java/lang/reflect/Array.java:
+	(newInstance(Class<?>,int)): Likewise.
+	(newInstance(Class<?>,int[])): Likewise.
+	* vm/reference/java/lang/reflect/Constructor.java:
+	(getTypeParameters()): Type parameter changed from ? to Constructor.
+	* vm/reference/java/lang/reflect/Field.java:
+	(getDeclaringClass()): Added generic typing.
+	(getType()): Likewise.
+	* vm/reference/java/lang/reflect/Method.java:
+	(getDeclaringClass()): Likewise.
+	(getExceptionTypes()): Likewise.
+	(getParameterTypes()): Likewise.
+
 2005-09-28  Anthony Balkissoon  <abalkiss@redhat.com>
 
 	* javax/swing/text/AbstractDocument.java:
@@ -9689,6 +10570,79 @@
 	* javax/swing/plaf/metal/MetalBorders.java
 	(ToolBarBorder): now implements SwingConstants.
 	
+2005-09-27  Tom Tromey  <tromey@redhat.com>
+
+	* java/sql/Timestamp.java (compareTo(Date)): Changed argument type
+	from Object.
+	* javax/naming/Name.java (Name): Implements Comparable<Object>.
+	* java/util/Date.java (Date): Implements Comparable<Date>.
+	(compareTo(Object)): Removed.
+	* java/text/CollationKey.java (CollationKey): Implements
+	Comparable<CollationKey>.
+	(compareTo(Object)): Removed.
+	* java/net/URI.java (URI): Implements Comparable<URI>.
+	(compareTo): Updated argument type.
+	* java/math/BigDecimal.java (BigInteger): Implements
+	Comparable<BigDecimal>.
+	(compareTo(Object)): Removed.
+	* java/math/BigInteger.java (BigInteger): Implements
+	Comparable<BigInteger>.
+	(compareTo(Object)): Removed.
+	* java/io/File.java (File): Implements Comparable<File>.
+	(compareTo(Object)): Removed.
+
+2005-09-27  Tom Tromey  <tromey@redhat.com>
+
+	* java/nio/charset/spi/CharsetProvider.java (charsets): Changed
+	return type.
+	* java/nio/charset/Charset.java (aliases): Changed return type.
+	(availableCharsets): Likewise.
+	* java/nio/channels/spi/AbstractSelector.java (cancelledKeys):
+	Changed type.
+	(AbstractSelector): Updated.
+	(cancelledKeys): Updated.
+
+2005-09-27  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/logging/LogManager.java (loggers): Genericized type.
+	(LogManager): Updated.
+	(addLogger): Likewise.
+	(findAncestor): Likewise.
+	(getLogger): Likewise.
+	(getLoggerNames): Fixed return type.
+	(reset): Updated.
+
+2005-09-27  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/zip/ZipFile.java (entries): Updated return type.
+	(ZipEntryEnumeration): Updated 'implements' type.
+	(entries): Updated type.
+	(ZipEntryEnumeration.elements): Likewise.
+	(readEntries): Updated.
+	(getEntries): Likewise.
+	(getEntry): Likewise.
+	(getInputStream): Likewise.
+
+2005-09-27  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Compiler.java (compileClass): Updated argument type.
+
+2005-09-27  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/im/InputMethodHighlight.java (InputMethodHighlight):
+	Updated argument types.
+	(getStyle): Updated return type.
+	* java/awt/MenuBar.java (shortcuts): Updated return type.
+	* java/awt/Window.java (hide): Now deprecated.
+	(show): Likewise.
+
+2005-09-27  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/String.java (CASE_INSENSITIVE_ORDER): Now a
+	Comparator<String>.
+	(CaseInsensitiveComparator): Updated.
+	(CaseInsensitiveComparator.compare): Changed argument types.
+
 2005-09-27  Anthony Green  <green@redhat.com>
 
 	* javax/sound/midi/MidiSystem.java (getSequence): Add
@@ -9830,6 +10784,18 @@
 	* javax/sound/midi/MidiFileFormat.java (bytes, microseconds):
 	Rename to byteLength and microsecondLength respectively.
 
+2005-09-26  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/Formatter.java (format): Set fmtLocale.
+	(applyLocalization): New method.
+	(basicIntegralConversion): Likewise.
+	(hexOrOctalConversion): Use it.
+	(decimalConversion): New method.
+	(format): Use decimalConversion, dateTimeConversion.
+	(genericFormat): Upper-case earlier.  Justify correctly.
+	(singleDateTimeConversion): New method.
+	(dateTimeConversion): Likewise.
+
 2005-09-26  Lillian Angel  <langel@redhat.com>
 
 	* javax/swing/ToolTipManager.java
@@ -9956,6 +10922,43 @@
 	(adjustGreater): New helper function.
 	(adjustSmaller): New helper function.
 
+2005-09-25  Jeroen Frijters  <jeroen@frijters.net>
+
+	* gnu/java/lang/reflect/ClassSignatureParser.java,
+	gnu/java/lang/reflect/GenericSignatureParser.java,
+	gnu/java/lang/reflect/MethodSignatureParser.java: New files.
+	* java/lang/Class.java
+	(constructor): Changed type to generic type.
+	(cast, getEnumConstants): Added cast.
+	(getGenericInterfaces, getGenericSuperclass, getTypeParameters):
+	Implemented.
+	* vm/reference/java/lang/VMClass.java
+	(getSimpleName, getDeclaredAnnotations, getCanonicalName,
+	getEnclosingClass, getEnclosingConstructor, getEnclosingMethod,
+	isAnonymousClass, isLocalClass, isMemberClass):
+	Removed generic types from signatures.
+	(getGenericInterfaces, getGenericSuperclass, getTypeParameters):
+	Removed.
+	(getClassSignature): New method.
+	* vm/reference/java/lang/reflect/Constructor.java
+	(getTypeParameters): Implemented.
+	* vm/reference/java/lang/reflect/Method.java
+	(getTypeParameters, getSignature): New methods.
+
+2005-09-25  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/lang/System.java,
+	vm/reference/java/lang/VMSystem.java: Removed generic type
+	from VMSystem.environ() signature.
+
+2005-09-25  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/lang/MalformedParameterizedTypeException.java: Removed.
+
+2005-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/Formatter.java (lineSeparator): Use SystemProperties.
+
 2005-09-25  Casey Marshall  <csm@gnu.org>
 
 	Fixes PR classpath/23916. Fix suggested by Santiago Gala
@@ -9996,6 +10999,26 @@
 	* gnu/java/security/provider/DiffieHellmanKeyFactoryImpl.java,
 	* gnu/java/security/provider/DiffieHellmanKeyPairGeneratorImpl.java:
 	new files.
+
+2005-09-24  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/FormattableFlags.java (PLUS, SPACE, ZERO, COMMA,
+	PAREN): New constants.
+	* java/util/UnknownFormatConversionException.java
+	(UnknownFormatConversionException): Set exception text.
+	* java/util/IllegalFormatException.java (IllegalFormatException):
+	New constructor.
+	* java/util/FormatFlagsConversionMismatchException.java
+	(FormatFlagsConversionMismatchException): Set exception text.
+	* java/lang/String.java (format): New methods.
+	* java/io/PrintStream.java (printf): New methods.
+	(format): Likewise.
+	* java/io/PrintWriter.java (printf): New methods.
+	(format): Likewise.
+	* java/util/Formattable.java: New file.
+	* java/util/FormatterClosedException.java (serialVersionUID):
+	Fixed.
+	* java/util/Formatter.java: New file.
 
 2005-09-24  Roman Kennke  <kennke@aicas.com>
 
@@ -10555,11 +11578,57 @@
 	* javax/swing/filechooser/FileFilter.java: reformatted and added API
 	docs.
 
-2004-10-09  Tom Tromey  <tromey@redhat.com>
+2005-09-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
-	* java/lang/ClassLoader.java 
-	(defineClass(String,ByteBuffer,ProtectionDomain)): New method.
-
+	* gnu/classpath/ByteArray.java,
+	* gnu/classpath/ObjectPool.java,
+	* gnu/javax/crypto/DiffieHellmanImpl.java,
+	* gnu/javax/crypto/GnuDHPrivateKey.java,
+	* gnu/javax/crypto/RSACipherImpl.java,
+	* java/lang/Deprecated.java,
+	* java/lang/Enum.java,
+	* java/lang/Iterable.java,
+	* java/lang/MalformedParameterizedTypeException.java,
+	* java/lang/Override.java,
+	* java/lang/ProcessBuilder.java,
+	* java/lang/SuppressWarnings.java,
+	* java/lang/annotation/Annotation.java,
+	* java/lang/annotation/Documented.java,
+	* java/lang/annotation/ElementType.java,
+	* java/lang/annotation/IncompleteAnnotationException.java,
+	* java/lang/annotation/Inherited.java,
+	* java/lang/annotation/Retention.java,
+	* java/lang/annotation/RetentionPolicy.java,
+	* java/lang/annotation/Target.java,
+	* java/lang/reflect/AnnotatedElement.java,
+	* java/lang/reflect/GenericDeclaration.java,
+	* java/lang/reflect/MalformedParameterizedTypeException.java,
+	* java/lang/reflect/TypeVariable.java,
+	* java/util/AbstractQueue.java,
+	* java/util/DuplicateFormatFlagsException.java,
+	* java/util/EnumMap.java,
+	* java/util/EnumSet.java,
+	* java/util/FormatFlagsConversionMismatchException.java,
+	* java/util/FormatterClosedException.java,
+	* java/util/IllegalFormatCodePointException.java,
+	* java/util/IllegalFormatConversionException.java,
+	* java/util/IllegalFormatException.java,
+	* java/util/IllegalFormatFlagsException.java,
+	* java/util/IllegalFormatPrecisionException.java,
+	* java/util/IllegalFormatWidthException.java,
+	* java/util/InputMismatchException.java,
+	* java/util/InvalidPropertiesFormatException.java,
+	* java/util/MissingFormatArgumentException.java,
+	* java/util/MissingFormatWidthException.java,
+	* java/util/PriorityQueue.java,
+	* java/util/Queue.java,
+	* java/util/UnknownFormatConversionException.java,
+	* java/util/UnknownFormatFlagsException.java,
+	* org/omg/CORBA/SendingContext/RunTimeOperations.java,
+	* org/omg/CORBA/SendingContext/Runtime.java,
+	* vm/reference/java/lang/VMPackage.java:
+	Fixed address within GPL.
+	
 2005-09-21  Lillian Angel  <langel@redhat.com>
 
 	* javax/swing/ToolTipManager.java
@@ -10797,6 +11866,36 @@
 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c
 	(isRealized): Leave GDK critical region when exiting early.
 
+2005-09-19  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/util/Collections.java:
+	Fixes Bug #PR22921.
+	(emptySet()): Implemented.
+	(emptyList()): Implemented.
+	(emptyMap()): Implemented.
+	(rotate(List<?>,int)): Fixed signature.
+	(shuffle(List<?>)): Fixed signature.
+	(shuffle(List<?>,Random)): Fixed signature.
+	(frequency(Collection<?>,Object)): Documented.
+	(addAll(Collection<? super T>, T... a)): Implemented.
+	(disjoint(Collection<?>,Collection<?>)): Implemented.
+	(swap(List<?>,int,int)): Fixed signature.
+	(checkedCollection(Collection<E>,Class<E>)): Implemented.
+	(Collections.CheckedCollection): New inner class.
+	(Collections.CheckedIterator): New inner class.
+	(checkedList(List<E>, Class<E>)): Implemented.
+	(Collections.CheckedList): New inner class.
+	(Collections.CheckedRandomAccessList): New inner class.
+	(Collections.CheckedListIterator): New inner class.
+	(checkedMap(Map<K,V>,Class<K>,Class<V>)): Implemented.
+	(Collections.CheckedMap): New inner class.
+	(checkedSet(Set<E>,Class<E>)): Implemented.
+	(Collections.CheckedSet): New inner class.
+	(checkedSortedMap(SortedMap<K,V>,Class<K>,Class<V>)): Implemented.
+	(Collections.CheckedSortedMap): New inner class.
+	(checkedSortedSet(SortedSet<E>,Class<E>)): Implemented.
+	(Collections.CheckedSortedSet): New inner class.
+	
 2005-09-19  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/PopupMenu.java (AccessibleAWTPopupMenu.serialVersionUID):
@@ -11413,6 +12512,10 @@
 	* javax/swing/plaf/metal/MetalBorders.java
 	(ButtonBorder.paintBorder): draw a different border for a disabled 
 	button.
+
+2005-09-15  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/EnumConstantNotPresentException.java: New file.
 
 2005-09-15  Anthony Green  <green@redhat.com>
 
@@ -15789,8 +16892,79 @@
 
 2005-08-14  Sven de Marothy  <sven@physto.se>
 
+	* gnu/java/awt/ClasspathToolkit.java
+	(getScreenSize, getColorModel, getFontMetrics, getImage, createImage,
+	 createImageProducer, registerImageIOSpis):
+	Remove redundant (overloaded) methods.
+	* gnu/java/awt/peer/gtk/GtkToolkit.java
+	(registerImageIOSpis): Move registration to static initializer.
+	* javax/imageio/spi/IIORegistry.java:
+	Remove call to Toolkit registration method.
+	
+2005-08-13  Mark Wielaard  <mark@klomp.org>
+
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java (repaintTimer): Make
+	field final.
+
+2005-08-14  Sven de Marothy  <sven@physto.se>
+
 	* java/awt/Container.java
 	(addImpl): Call addNotify() only if the container has a peer.
+
+2005-08-13  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/Collections.java (reverseOrder): New method.
+	(frequency): Likewise.
+	(ReverseComparator): No longer final.
+
+2005-08-13  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/Timer.java (Timer(String)): New constructor.
+	(Timer(String,boolean)): Likewise.
+	(purge): New method.
+	(TaskQueue.purge): Likewise.
+
+2005-08-13  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/FormattableFlags.java: New file.
+
+2005-08-13  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/UnknownFormatConversionException.java
+	(serialVersionUID): New field.
+	(s): Renamed from 'conv' for serialization.
+	* java/util/MissingFormatWidthException.java (serialVersionUID):
+	New field.
+	(s): Renamed from 'width' for serialization.
+	* java/util/MissingFormatArgumentException.java
+	(serialVersionUID): New field.
+	(s): Renamed from 'spec' for serialization.
+	* java/util/IllegalFormatWidthException.java (serialVersionUID):
+	New field.
+	(w): Renamed from 'width' for serialization.
+	* java/util/IllegalFormatPrecisionException.java
+	(serialVersionUID): New field.
+	(p): Renamed from 'precision' for serialization.
+	* java/util/IllegalFormatFlagsException.java (serialVersionUID):
+	New field.
+	* java/util/IllegalFormatConversionException.java
+	(serialVersionUID): New field.
+	(c): Renamed from 'conv' for serialization.
+	(arg): Renamed from 'argClass' for serialization.
+	* java/util/IllegalFormatCodePointException.java
+	(serialVersionUID): New field.
+	(c): Renamed from 'codepoint' for serialization.
+	* java/util/FormatFlagsConversionMismatchException.java
+	(serialVersionUID): New field.
+	(f): Renamed from 'flags' for serialization.
+	(c): Renamed from 'conversion' for serialization.
+	* java/util/DuplicateFormatFlagsException.java (serialVersionUID):
+	New field.
+	* java/util/IllegalFormatException.java (serialVersionUID): New
+	field.
+	* java/util/FormatterClosedException.java (serialVersionUID): New
+	field.
+	* java/util/InvalidPropertiesFormatException.java: New file.
 
 2005-08-13  Jeroen Frijters  <jeroen@frijters.net>
 
@@ -16761,6 +17935,11 @@
 	(installUI): set the items visible. Fixes exceptions that are
 	thrown because item is not explicitly set visible.
 
+2005-08-03  Ewout Prangsma  <ewout@prangsma.net>
+
+	* java/lang/Enum.java:
+	(valueOf(Class<S>,String)): Implemented.
+	
 2005-08-03  Roman Kennke  <roman@kennke.org>
 
 	* javax/swing/plaf/basic/BasicViewportUI.java
@@ -17116,7 +18295,7 @@
         * scripts/eclipse-gnu.xml: Drop extends, implements, 
         throws into new line. 
 
-2005-07-31  Jan Roehrich  <jan@roehrich.info>
+2005-07-31  Jan Roehrich <jan@roehrich.info>
 
 	* javax.swing.plaf.basic.BasicTreeUI: fixed indentation.
 
@@ -21087,6 +22266,12 @@
 	* org/omg/IOP/TransactionService.java, 
 	org/omg/IOP/CodeSets.java: New files.
 
+2005-06-17  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/lang/ThreadLocal.java,
+	java/util/TreeMap.java: Fixes to make compiling with Eclipse Java
+	Compiler SVN HEAD possible.
+
 2005-06-17  Audrius Meskauskas <AudriusA@Bioinformatics.org>
 
 	* org/omg/PortableServer/ID_ASSIGNMENT_POLICY_ID.java, 
@@ -21414,6 +22599,21 @@
 	* java/util/regex/Pattern.java (constructor): Switch syntax from PERL5
 	to JAVA_1_4.
 
+2005-06-11  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* doc/unicode/Blocks-4.0.0.txt:
+	New block listings for Unicode 4.0.0.
+	* java/lang/Character.java:
+	Added new fields for 1.5, both in Character and UnicodeBlock.
+	(UnicodeBlock.of(int)): Implemented.
+	(UnicodeBlock.forName(String)): Implemented.
+	* java/lang/annotation/ElementType.java:
+	Corrected serial UID.
+	* java/lang/annotation/RetentionPolicy.java:
+	Likewise.
+	* scripts/unicode-blocks.pl
+	Updated to handle Unicode 4.0.0.
+	
 2005-06-11  Audrius Meskauskas <AudriusA@Bioinformatics.org>
 
 	* org/omg/CORBA/ORB.java,
@@ -21487,6 +22687,72 @@
 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c
 	(gdkDrawDrawable): Check if cairo pattern is non-null before 
 	setting its matrix.
+	
+2005-06-09  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/lang/Class.java:
+	(internalGetClasses()): Use collections with type parameters.
+	(internalGetFields()): Likewise.
+	(internalGetMethods()): Likewise.
+	(getSuperclass()): Changed to new return type.
+	(asSubclass(Class<U>)): Documented.
+	(getEnumConstants()): Calls VMClass.
+	(getAnnotation(Class<?>)): Implemented.
+	(getAnnotations()): Implemented.
+	(getCanonicalName()): Implemented.
+	(getDeclaredAnnotations()): Implemented.
+	(getEnclosingClass()): Implemented.
+	(getEnclosingConstructor()): Implemented.
+	(getEnclosingMethod()): Implemented.
+	(getGenericInterfaces()): Implemented.
+	(getGenericSuperclass()): Implemented.
+	(getTypeParameters()): Implemented.
+	(isAnnotationPresent(Class<?>)): Implemented.
+	(isAnonymousClass()): Implemented.
+	(isLocalClass()): Implemented.
+	(isMemberClass()): Implemented.
+	* java/lang/Package.java:
+	(getAnnotation(Class<?>)): Implemented.
+	(getAnnotations()): Implemented.
+	(getDeclaredAnnotations()): Implemented.
+	(isAnnotationPresent(Class<?>)): Implemented.
+	* java/lang/annotation/AnnotationTypeMismatchException.java:
+	Added serial version UID.
+	* java/lang/annotation/ElementType.java: Likewise.
+	* java/lang/annotation/RetentionPolicy.java: Likewise.
+	* java/lang/reflect/AnnotatedElement.java: Documented.
+	* java/lang/reflect/Modifier.java:
+	(toString(int)): Switched to using StringBuilder.
+	(toString(int,StringBuilder)): Likewise.
+	* vm/reference/java/lang/VMClass.java:
+	(getSuperClass(Class<T>)): Updated return type.
+	(getSimpleName(Class<?>)): Use VM methods directly.
+	(getEnumConstants(Class<T>)): Implementation moved from Class.
+	(getDeclaredAnnotations(Class<?>)): New native method.
+	(getCanonicalName(Class<?>)): Implemented.
+	(getEnclosingClass(Class<?>)): New native method.
+	(getEnclosingConstructor(Class<?>)): New native method.
+	(getEnclosingMethod(Class<?>)): New native method.
+	(getGenericInterfaces(Class<?>)): New native method.
+	(getGenericSuperclass(Class<?>)): New native method.
+	(getTypeParameters(Class<T>)): New native method.
+	(isAnonymousClass(Class<?>)): New native method.
+	(isLocalClass(Class<?>)): New native method.
+	(isMemberClass(Class<?>)): New native method.
+	* vm/reference/java/lang/VMPackage.java:
+	New VM class corresponding to java.lang.Package.
+	(getDeclaredAnnotations(Class<?>)): New native method.
+	* vm/reference/java/lang/VMSystem.java:
+	Removed unnecessary imports.
+	* vm/reference/java/lang/reflect/Constructor.java:
+	(toString()): Changed StringBuffer to StringBuilder.
+	(getTypeParameters()): Changed to native method.
+	* vm/reference/java/lang/reflect/Field.java:
+	(toString()): Changed StringBuffer to StringBuilder.
+	* vm/reference/java/lang/reflect/Method.java:
+	(getReturnType()): Updated return type.
+	(toString()): Changed StringBuffer to StringBuilder.
+	(invoke(Object,...)): Updated arguments.
 	
 2005-06-09  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
@@ -22201,8 +23467,8 @@
 
 2005-05-29  Audrius Meskauskas  <AudriusA@Bioinformatics.org>
 
-	* org/omg/CORBA/Functional_ORB.java (serve, useProperties, init): Implementing
-	the property-configurable time-outs. 
+	* org/omg/CORBA/Functional_ORB.java (serve, useProperties, init):
+	Implementing the property-configurable time-outs. 
 
 2005-05-29  Audrius Meskauskas  <AudriusA@Bioinformatics.org>
 
@@ -24037,10 +25303,37 @@
 	(getPreferredSpan): Corrected the calculation of the span of
 	the view.
 
+2005-05-05  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/lang/Class.java:
+	(getSimpleName()): Implemented.
+	* vm/reference/java/lang/VMClass.java:
+	(getSimpleName()): Reference implementation.
+
+2005-05-05  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* include/java_lang_VMProcess.h:
+	Regenerated.
+	* native/jni/java-lang/java_lang_VMProcess.c:
+	Added missing #include statement.
+	
 2005-05-05  Chris Burdess  <dog@gnu.org>
 
 	* gnu/xml/transform/StreamSerializer.java: Produce compact,
 	human-readable XML for non-UTF/ASCII encodings using NIO.
+
+2005-05-04  Tom Tromey  <tromey@redhat.com>
+
+	* native/jni/java-lang/java_lang_VMProcess.c
+	(Java_java_lang_VMProcess_nativeSpawn): Added 'redirect'
+	argument.  Use defines instead of contents.
+	* vm/reference/java/lang/VMProcess.java (redirect): New field.
+	(spawn): Updated.
+	(setProcessInfo): Updated.
+	(VMProcess): Added 'redirect' argument.
+	(nativeSpawn): Likewise.
+	(exec): New overload.
+	* java/lang/ProcessBuilder.java: New file.
 
 2005-05-04  Mark Wielaard  <mark@klomp.org>
 
@@ -24277,7 +25570,7 @@
 
 2005-04-28  Robert Schuster  <thebohemian@gmx.net>
 
-	* java/beans/Introspector.java: Fixed bug #12624, BeanDescriptors
+	* java/beans/Introspector: Fixed bug #12624, BeanDescriptors
 	will now be set correctly.
 	(flushCaches): Now flushes all cached intermediate data.
 
@@ -24710,6 +26003,118 @@
 	include/gnu_java_nio_charset_iconv_IconvEncoder.h:
 	Regenerated with gcjh from gcc 4.0 branch.
 
+2005-04-20  Tom Tromey  <tromey@redhat.com>
+
+	* .classpath: Updated.
+
+2005-04-20  Tom Tromey  <tromey@redhat.com>
+
+	* vm/reference/java/lang/VMThread.java (run): Use thread's
+	uncaught handler.
+	* java/lang/Thread.java (defaultHandler): New field.
+	(setDefaultUncaughtExceptionHandler,
+	getDefaultUncaughtExceptionHandler, setUncaughtExceptionHandler,
+	getUncaughtExceptionHandler): New methods.
+	* java/lang/ThreadGroup.java (ThreadGroup): Implements
+	UncaughtExceptionHandler.
+	(uncaughtException): Use getDefaultUncaughtExceptionHandler.
+
+2005-04-20  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/reflect/MalformedParameterizedTypeException.java: New
+	file.
+
+2005-04-20  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/PriorityQueue.java (PriorityQueue): Implements
+	Serializable.
+	(serialVersionUID): New field.
+	* java/util/EnumMap.java (serialVersionUID): New field.
+	* java/util/EnumSet.java (serialVersionUID): New field.
+
+2005-04-20  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/Arrays.java (hashCode): New methods.
+	(deepHashCode): New method.
+	(deepEquals): Likewise.
+	(toString): New methods.
+	(deepToString): New method.
+
+2005-04-20  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/zip/Inflater.java (getTotalIn): Deprecated.
+	(getBytesRead): New method
+	(getTotalOut): Deprecated.
+	(getBytesWritten): New method.
+	(totalIn, totalOut): Now 'long'.
+	* java/util/zip/DeflaterEngine.java (totalIn): Now 'long'.
+	(getTotalIn): Return 'long'.
+	* java/util/zip/Deflater.java (totalOut): Now 'long'.
+	(getTotalOut): Deprecated.
+	(getBytesWritten): New method.
+	(getTotalIn): Deprecated.
+	(getBytesRead): New method.
+
+2005-04-20  Tom Tromey  <tromey@redhat.com>
+
+	* java/nio/charset/Charset.java (compareTo): Changed argument
+	type.
+	* java/nio/ShortBuffer.java (compareTo): Changed argument type.
+	* java/nio/LongBuffer.java (compareTo): Changed argument type.
+	* java/nio/IntBuffer.java (compareTo): Changed argument type.
+	* java/nio/FloatBuffer.java (compareTo): Changed argument type.
+	* java/nio/DoubleBuffer.java (compareTo): Changed argument type.
+	* java/nio/ByteBuffer.java (compareTo): Changed argument type.
+	* java/nio/CharBuffer.java (CharBuffer): Implements Readable,
+	Appendable.
+	(append): New methods.
+	(compareTo): Changed argument type.
+	(read): New method.
+
+2005-04-20  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/PrintStream.java (append): Don't throw IOException.
+	* java/io/StringWriter.java (append): New overloads.
+	* java/io/PrintWriter.java (append): New overloads.
+	(PrintWriter): New constructors.
+	* java/io/CharArrayWriter.java (append): New overloads.
+	* java/io/RandomAccessFile.java (RandomAccessFile): Implements
+	Closeable.
+	* java/io/Reader.java (Reader): Implements Readable.
+	(read): New method.
+
+2005-04-20  Tom Tromey  <tromey@redhat.com>
+
+	* java/math/BigInteger.java (TEN): New constant.
+	* java/math/BigDecimal.java (ZERO, ONE): Now public.
+	(TEN): New constant.
+
+2005-04-20  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Short.java (reverseBytes): Argument is 'short'.
+
+2005-04-20  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/ThreadLocal.java (remove): New method.
+
+2005-04-20  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/DuplicateFormatFlagsException.java: New file.
+	* java/util/FormatFlagsConversionMismatchException.java: New
+	file.
+	* java/util/FormatterClosedException.java: New file.
+	* java/util/IllegalFormatCodePointException.java: New file.
+	* java/util/IllegalFormatConversionException.java: New file.
+	* java/util/UnknownFormatFlagsException.java: New file.
+	* java/util/UnknownFormatConversionException.java: New file.
+	* java/util/MissingFormatWidthException.java: New file.
+	* java/util/MissingFormatArgumentException.java: New file.
+	* java/util/InputMismatchException.java: New file.
+	* java/util/IllegalFormatWidthException.java: New file.
+	* java/util/IllegalFormatPrecisionException.java: New file.
+	* java/util/IllegalFormatFlagsException.java: New file.
+	* java/util/IllegalFormatException.java: New file.
+
 2005-04-20  Roman Kennke  <roman@kennke.org>
 
 	* javax/swing/plaf/basic/BasicLookAndFeel.java
@@ -24828,6 +26233,12 @@
 	* gnu/java/io/encode/EncoderWindows1252.java,
 	* gnu/java/io/encode/package.html:
 	Removed
+	
+2005-04-19  Sven de Marothy  <sven@physto.se>
+
+	* java/util/Calendar.java:
+	(compareTo(java.util.Calendar)): Handle instability
+	in obtaining the milliseconds value.
 	
 2005-04-19  Michael Koch  <konqueror@gmx.de>
 
@@ -25041,9 +26452,42 @@
 2005-04-17  Roman Kennke  <roman@kennke.org>
 
 	* javax/swing/text/SimpleAttributeSet.java
+	(addAttribute): Removed null pointer check.
+	* javax/swing/text/StyleContext.java
+	(NamedStyle.setResolveParent): Added null pointer check.
+
+2005-04-17  Roman Kennke  <roman@kennke.org>
+
+	* examples/gnu/classpath/exammples/swing/Demo.java:
+	Print a short summary for available values for the property
+	swing.defaultlaf.
+	Set MetalLookAndFeel as default.
+	Pulled out GNULookAndFeel so that it is accessible.
+	* examples/gnu/classpath/exammples/swing/GNULookAndFeel.java:
+	Pulled out this class from Demo.java.
+
+2005-04-17  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/UIManager.java:
+	Make the UIManager respect the swing.defaultlaf system
+	property.
+
+2005-04-17  Roman Kennke  <roman@kennke.org>
+
+	* javax/swing/text/SimpleAttributeSet.java
 	(addAttribute): Check for null and remove key in that case.
 	This fixes http://gcc.gnu.org/bugzilla/show_bug.cgi?id=21064 .
 
+2005-04-16  Ewout Prangsma  <ewout@prangsma.net>
+	
+	* java/util/PriorityQueue.java:
+	(PriorityQueue(Collection<? extends E>)): Added explicit cast
+	for comparators.
+	(PriorityQueue(PriorityQueue<? extends E>)): Likewise.
+	(PriorityQueue(SortedSet<? extends E>)): Likewise.
+	* java/util/TreeSet.java:
+	(TreeSet(SortedSet<? extends T>)): Likewise.
+		
 2005-04-16  Roman Kennke  <roman@kennke.org>
 
 	* java/awt/BorderLayout.java
@@ -25674,6 +27118,36 @@
 	the whole screen. This is not a fully accelerated fullscreen
 	exclusive mode.
 
+2005-04-04  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/lang/Class.java:
+	(newInstance): Returns an instance of T instead of Object.
+	(isEnum()): Now calls VMClass for a proper implementation.
+	(isSynthetic()): New method implemented.
+	(isAnnotation()): New method implemented.
+	* vm/reference/java/lang/VMClass.java:
+	(isEnum()): New native method.
+	(isSynthetic()): New native method.
+	(isAnnotation()): New native method.
+	* vm/reference/java/lang/reflect/Constructor.java:
+	(newInstance(Object...)): Changed input parameter to a vararg.
+
+2005-04-03  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/lang/System.java:
+	(getenv()): Use Collections.unmodifiableMap to wrap an
+	EnvironmentMap.
+	(EnvironmentCollection): Reduced to just String check changes.
+	(EnvironmentSet): Likewise.
+	(EnvironmentMap): Likewise.
+	(EnvironmentIterator): Removed.
+	
+2005-04-02  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/lang/StringBuilder.java:
+	Change references to System.arraycopy to
+	VMSystem.arraycopy.
+
 2005-04-03  Guilhem Lavaux  <guilhem@kaffe.org>
 	Rei Odaira <ray@is.s.u-tokyo.ac.jp>
 
@@ -25841,7 +27315,7 @@
 
 	* gnu/xml/dom/html2/DomHTMLParser.java:
 	Changed 'enum' references to become 'enumeration'.
-	
+
 2005-03-22  Archie Cobbs  <archie@dellroad.org>
 
 	* configure.ac: Generate scripts/classpath.spec.
@@ -25863,7 +27337,19 @@
 	* doc/www.gnu.org/events/escape_fosdem05.wml: Add link to kaffe
 	presentation.
 
-2005-03-17  Archie Cobbs  <archie@dellroad.org>
+2005-03-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/lang/Class.java:
+	Implements java.lang.reflect.Type
+	* java/lang/ClassLoader.java:
+	(getResources(String)): No longer final.
+	* java/lang/Enum.java:
+	Added serialization UID.
+	* java/lang/Thread.java:
+	(destroy()): Deprecated.
+	(Thread.State): Added serialization UID.
+	
+2005-03-19  Archie Cobbs  <archie@dellroad.org>
 
 	* vm/reference/java/lang/VMClassLoader.java: handle ZIP files
 	on the boot loader class path in getResources()
@@ -25875,6 +27361,22 @@
 	org/omg/CORBA/CompletionStatusHelper.java:
 	New files.
 
+2005-03-19  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/lang/IllegalArgumentException:
+	(IllegalArgumentException(String, Throwable)):
+	Implemented.
+	(IllegalArgumentException(Throwable)): Likewise.
+	(IllegalStateException(String, Throwable)):
+	Implemented.
+	(IllegalStateException(Throwable)): Likewise.
+	(SecurityException(String, Throwable)):
+	Implemented.
+	(SecurityException(Throwable)): Likewise.
+	(UnsupportedOperationException(String, Throwable)):
+	Implemented.
+	(UnsupportedOperationException(Throwable)): Likewise.
+
 2005-03-18  Mark Wielaard  <mark@klomp.org>
 
 	* doc/www/downloads/downloads.wml: Add 0.14.
@@ -25885,17 +27387,6 @@
 	* java/util/zip/GZIPInputStream.java:
 	(GZIPInputStream): Read header in constructor.
 	
-2005-03-18  Andrew John Hughes  <gnu_andrew@member.fsf.org>
-
-	* gnu/javax/swing/text/html/parser/htmlAttributeSet.java:
-	(getAttributeNames()): Replaced 'enum' with 'enumeration'.
-	* gnu/javax/swing/text/html/parser/htmlValidator.java:
-	(validateParameters(TagElement,htmlAttributeSet)):
-	Replaced 'enum' with 'enumeration'.
-	(validateAttribute(TagElement,htmlAttributeSet,
-	                   Enumeration,Enumeration)):
-	Likewise.
-
 2005-03-18  Audrius Meskauskas  <audriusa@bluewin.ch>
 
 	* ChangeLog.usermap: New file (replacing).
@@ -26064,6 +27555,17 @@
 2005-03-13  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/xml/aelfred2/XmlParser.java: Fixed typo.
+
+2005-03-13  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/javax/swing/text/html/parser/htmlAttributeSet.java:
+	(getAttributeNames()): Replaced 'enum' with 'enumeration'.
+	* gnu/javax/swing/text/html/parser/htmlValidator.java:
+	(validateParameters(TagElement,htmlAttributeSet)):
+	Replaced 'enum' with 'enumeration'.
+	(validateAttribute(TagElement,htmlAttributeSet,
+	                   Enumeration,Enumeration)):
+	Likewise.
 
 2005-03-12  Audrius Meskauskas  <audriusa@bluewin.ch>
 
@@ -26787,14 +28289,14 @@
 	org/omg/CORBA/CompletionStatus.java:
 	Documenting that serialVersionUID is from v1.4.
 	
-2005-04-06  Audrius Meskauskas  <audriusa@bluewin.ch>
+2005-03-06  Audrius Meskauskas  <audriusa@bluewin.ch>
 	* org/omg/CORBA/Context.java,
 	org/omg/CORBA/ContextList.java: New files.
 
-2005-04-06  Audrius Meskauskas  <audriusa@bluewin.ch>
+2005-03-06  Audrius Meskauskas  <audriusa@bluewin.ch>
 	* org/omg/CORBA/TCKind.java: Making fields final.
 
-2005-04-06  Audrius Meskauskas  <audriusa@bluewin.ch>
+2005-03-06  Audrius Meskauskas  <audriusa@bluewin.ch>
 
 	* org/omg/CORBA/Any.java,
 	org/omg/CORBA/Principal.java,
@@ -27404,16 +28906,6 @@
 
 2005-02-20  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
-	Merge of interfaces and exceptions to HEAD from
-	the generics branch.
-
-	* java/lang/StringBuilder.java: Serial version updated.
-	* java/lang/annotation/AnnotationTypeMismatchException.java: Likewise.
-
-	Changes from generics branch:
-	
-	2005-02-20  Andrew John Hughes  <gnu_andrew@member.fsf.org>
-
 	* java/io/Closeable.java: Documented.
 	* java/io/Flushable.java: Documented.
 	* java/lang/Appendable.java: Corrected line overrun.
@@ -27426,32 +28918,98 @@
 	* java/lang/reflect/ParameterizedType.java: Likewise.
 	* java/lang/reflect/Type.java: Likewise.
 	* java/lang/reflect/WildcardType.java: Likewise.	
-	
-	2005-01-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
-	* java/lang/annotation/AnnotationTypeMismatchException.java:
-	Added import of java.lang.reflect.Method
+2005-02-20  Mark Wielaard  <mark@klomp.org>
 
-	2004-08-26  Tom Tromey  <tromey@redhat.com>
+	* java/util/SimpleTimeZone.java (getOffset): Calculate beforeEnd by
+	taking dstSavings into account.
 
-	* java/lang/reflect/GenericSignatureFormatError.java: New file.
-	* java/lang/reflect/WildcardType.java: New file.
-	* java/lang/reflect/ParameterizedType.java: New file.
-	* java/lang/reflect/GenericArrayType.java: New file.
-	* java/lang/reflect/Type.java: New file.
-	* java/io/Flushable.java: New file.
-	* java/io/Closeable.java: New file.
+2005-02-20  Sven de Marothy <sven@physto.se>
 
-	2004-08-07  Tom Tromey  <tromey@redhat.com>
-	
-	* java/lang/annotation/AnnotationFormatError.java: New file.
-	* java/lang/annotation/AnnotationTypeMismatchException.java: New
-	file.
+	* java/text/SimpleDateFormat.java,
+	(parse): Set DST_OFFSET to the correct value.
 
-	2004-08-06  Tom Tromey  <tromey@redhat.com>
+2005-02-20  Rutger Ovidius  <ovidr@users.sourceforge.net>
 
-	* java/lang/Readable.java: New file.
+	* gnu/java/security/provider/Gnu.java (Gnu): Add SHA-160 alias.
 
+2005-02-20  Mark Wielaard  <mark@klomp.org>
+
+	* java/text/SimpleDateFormat.java
+	(SimpleDateFormat(String, DateFormatSymbols)): Throw
+	NullPointerException when formatData is null.
+
+2005-02-19  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/locale/LocaleInformation_af.java,
+	gnu/java/locale/LocaleInformation_am.java,
+	gnu/java/locale/LocaleInformation_ca.java,
+	gnu/java/locale/LocaleInformation_cs.java,
+	gnu/java/locale/LocaleInformation_cy.java,
+	gnu/java/locale/LocaleInformation_da.java,
+	gnu/java/locale/LocaleInformation_de.java,
+	gnu/java/locale/LocaleInformation_el.java,
+	gnu/java/locale/LocaleInformation_en.java,
+	gnu/java/locale/LocaleInformation_eo.java,
+	gnu/java/locale/LocaleInformation_es.java,
+	gnu/java/locale/LocaleInformation_et.java,
+	gnu/java/locale/LocaleInformation_eu.java,
+	gnu/java/locale/LocaleInformation_fa.java,
+	gnu/java/locale/LocaleInformation_fi.java,
+	gnu/java/locale/LocaleInformation_fr.java,
+	gnu/java/locale/LocaleInformation_ga.java,
+	gnu/java/locale/LocaleInformation_hr.java,
+	gnu/java/locale/LocaleInformation_hu.java,
+	gnu/java/locale/LocaleInformation_hy.java,
+	gnu/java/locale/LocaleInformation_id.java,
+	gnu/java/locale/LocaleInformation_is.java,
+	gnu/java/locale/LocaleInformation_it.java,
+	gnu/java/locale/LocaleInformation_ja.java,
+	gnu/java/locale/LocaleInformation_ka.java,
+	gnu/java/locale/LocaleInformation_ko.java,
+	gnu/java/locale/LocaleInformation_lo.java,
+	gnu/java/locale/LocaleInformation_lt.java,
+	gnu/java/locale/LocaleInformation_lv.java,
+	gnu/java/locale/LocaleInformation_mk.java,
+	gnu/java/locale/LocaleInformation_mn.java,
+	gnu/java/locale/LocaleInformation_ms.java,
+	gnu/java/locale/LocaleInformation_mt.java,
+	gnu/java/locale/LocaleInformation_nb.java,
+	gnu/java/locale/LocaleInformation_nl.java,
+	gnu/java/locale/LocaleInformation_nn.java,
+	gnu/java/locale/LocaleInformation_pl.java,
+	gnu/java/locale/LocaleInformation_pt.java,
+	gnu/java/locale/LocaleInformation_ro.java,
+	gnu/java/locale/LocaleInformation_ru.java,
+	gnu/java/locale/LocaleInformation_sk.java,
+	gnu/java/locale/LocaleInformation_sl.java,
+	gnu/java/locale/LocaleInformation_sq.java,
+	gnu/java/locale/LocaleInformation_sv.java,
+	gnu/java/locale/LocaleInformation_th.java,
+	gnu/java/locale/LocaleInformation_tr.java,
+	gnu/java/locale/LocaleInformation_vi.java,
+	gnu/java/locale/LocaleInformation_zh.java,
+	gnu/java/locale/LocaleInformation_zh_Hant.java: Updated.
+	* gnu/java/locale/LocaleInformation_az_Cyrl.java: New file.
+
+2005-02-19  Archie Cobbs  <archie@dellroad.org>
+
+	* java/lang/Throwable.java: simplify initializing cause in constructor
+
+2005-02-19  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JToggleButton.java: Removed empty line.
+
+2005-02-18  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* java/util/LinkedHashMap (addEntry): Call remove() with key argument, 
+	not the HashEntry. Reported by Jean-Marie White.
+
+2005-02-18  Mark Wielaard  <mark@klomp.org>
+
+	* doc/www.gnu.org/events/escape_fosdem05.wml: New event.
+	* doc/www.gnu.org/newsitems.txt: Add Escape the Java Trap.
+	* doc/www.gnu.org/events/events.wml: Likewise.
 2005-02-20  Mark Wielaard  <mark@klomp.org>
 
 	* java/util/SimpleTimeZone.java (getOffset): Calculate beforeEnd by
@@ -28383,11 +29941,12 @@
 
 2005-02-14  Sven de Marothy  <sven@physto.se>
 
-	* java/util/Calendar.java 
-	(clear): Dates should clear to local time.
-	* java/util/GregorianCalendar.java      
-	(computeTime): Fix priority problem with DAY_OF_WEEK,
-	Handle non-sunday-startig weeks and minimumDaysInFirstWeek.
+        * java/util/Calendar.java 
+        (clear): Dates should clear to local time.
+
+        * java/util/GregorianCalendar.java      
+        (computeTime): Fix priority problem with DAY_OF_WEEK,
+        Handle non-sunday-startig weeks and minimumDaysInFirstWeek.
 
 2005-02-13  Mark Wielaard  <mark@klomp.org>
 
@@ -28793,8 +30352,7 @@
 
 2005-02-05  C. Brian Jones  <cbj@gnu.org>
 
-	* gnu/java/rmi/registry/: Added back to classpath again, used by core
-	library.
+	* gnu/java/rmi/registry/: added back to classpath again, used by core library
 	* gnu/java/rmi/registry/RegistryImpl.java: ditto
 	* gnu/java/rmi/registry/RegistryImpl_Skel.java: ditto
 	* gnu/java/rmi/registry/RegistryImpl_Stub.java: ditto
@@ -28961,6 +30519,27 @@
 	javax/security/auth/callback/TextOutputCallback.java,
 	javax/security/auth/callback/UnsupportedCallbackException.java:
 	Removed CVS version tags.
+
+2005-02-01  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/lang/Appendable.java:
+	Changed formatting to match HEAD.
+	* java/text/MessageFormat.java:
+	Likewise.
+	* javax/swing/AbstractSet.java,
+	javax/swing/DefaultCellRenderer.java:
+	Finally removed.
+
+2005-01-31  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* acinclude.m4:
+	(CLASSPATH_FIND_JAVAC): Add ECJ option.
+	(CLASSPATH_WITH_ECJ): New function.
+	(CLASSPATH_CHECK_ECJ): New function.
+	* examples/Makefile.am:
+	Allow examples to be built with ecj.
+	* lib/Makefile.am:
+	Allow Classpath to be built with ecj.
 	
 2005-01-31  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
@@ -29683,7 +31262,7 @@
 	(formatWithAttribute(java.util.Date, gnu.java.text.FormatBuffer,
 	java.text.FieldPosition)): Changed to use CompiledField.
 	New handler for RFC 822 timezones added.
-	
+
 2005-01-22  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
 	* java/awt/Checkbox.java:
@@ -29761,6 +31340,25 @@
 	* javax/print/attribute/standard/MediaPrintableArea.java,
 	javax/print/attribute/standard/MediaSize.java:
 	New files.
+
+2005-01-20  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* include/java_lang_VMSystem.h:
+	(Java_java_lang_VMSystem_environ): added
+	* java/lang/System.java:
+	Added cached environmentMap.
+	(getenv()): documented and implemented
+	(EnvironmentCollection): new class for use
+	by getenv()
+	(EnvironmentSet): likewise
+	(EnvironmentIterator): clone of
+	UnmodifiableIterator from java.util
+	* native/jni/java-lang/java_lang_VMSystem.c:
+	(environ(JNIEnv, jclass)): implemented
+	* vm/reference/java/lang/VMSystem.java:
+	(getenv()): removed
+	(environ()): new native method
+	(getenv(String)): made native like HEAD
 
 2005-01-20  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
@@ -29855,26 +31453,6 @@
 	(AccessibleAWTCheckbox.getAccessibleStateSet()): implemented and
 	documented
 	(getAccessibleContext()): name of accessible class corrected
-	
-2005-01-19  Andrew John Hughes  <gnu_andrew@member.fsf.org>
-
-	Merge of java.lang.Appendable to HEAD from
-	the generics branch.
-	
-	2004-08-06  Tom Tromey  <tromey@redhat.com>
-
-	* java/lang/Appendable.java: New file.
-
-	2004-09-26  Andrew John Hughes  <gnu_andrew@member.fsf.org>
-
-	* java/lang/Appendable.java
-	Documented this class.
-	(append(CharSequence, int, int)): added.
-
-	2004-10-31  Robert Schuster <thebohemian@gmx.net>
-
-	* java/lang/Appendable.java (append):
-	Throws IOException.
 
 2005-01-19  Michael Koch  <konqueror@gmx.de>
 
@@ -30009,6 +31587,35 @@
 	javax/imageio/metadata/IIONamedNodeMap.java,
 	javax/imageio/metadata/IIONodeList.java:
 	New files
+	
+2005-01-17  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/util/IdentityHashMap.java:
+	added parameteric typing
+	(entries): generically typed
+	(IdentityHashMap(Map<? extends K, ? extends V>)):
+	likewise
+	(entrySet()): likewise
+	(entrySet().iterator()): likewise
+	(get(Object)): likewise
+	(keySet()): likewise
+	(keySet().iterator()): likewise
+	(put(K,V)): likewise
+	(putAll(Map<? extends K, ? extends V>)): likewise
+	(remove(Object)): likewise
+	(values()): likewise
+	(values().iterator()): likewise
+	(IdentityIterator): likewise
+	(IdentityIterator.next()): likewise
+	(IdentityEntry): likewise
+	(IdentityEntry.getKey()): likewise
+	(IdentityEntry.getValue()): likewise
+	(IdentityEntry.putValue(V)): likewise
+	(readObject()): appropriate casting
+	
+2005-01-16  Tom Tromey  <tromey@redhat.com>
+
+	* .classpath: Updated.
 
 2005-01-17  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
@@ -30022,65 +31629,119 @@
 	* java/lang/ClassLoader.java (getExtClassLoaderUrls): Add check for
 	null returned from getFiles().
 
-2005-01-15  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+2005-01-16  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+	        
+	Final merge of HEAD patches to generics branch
+	All changes are listed in merged Changelog.
+	In addition,
+	* java/lang/System.java:
+	(getenv()): changed Runtime.securityManager to
+	SecurityManager.current
+	(getenv(String)): likewise
+	(remove(String)): pointed to SystemProperties
+	* gnu/classpath/SystemProperties.java:
+	(remove(String)): implemented and documented
 
+2005-01-15  Tom Tromey  <tromey@redhat.com>
+
+	* javax/imageo/metadata: Merged from trunk.
+
+2005-01-15  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+  
 	* java/text/SimpleDateFormat.java:
 	(getDateFormatSymbols()): return a copy
 	(setDateFormatSymbols(java.text.DateFormatSymbols)):
 	throw exception on null input
 	(clone()): implemented to clone internal fields
-
+  
 2005-01-15  Mark Wielaard  <mark@klomp.org>
-
+  
 	Reported by Martin Platter <motse@complang.tuwien.ac.at>
 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.c
 	(Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_nativeSetFile):
 	Correct method signature of gtkSetFilename.
 
 2005-01-14  Sven de Marothy <sven@physto.se>
-
+  
 	* java/util/GregorianCalendar.java
 	(GregorianCalendar): Update fields in the constructor
-
+  
 2005-01-14  Arnaud Vandyck  <avdyk@gnu.org>
-
+  
 	* javax/swing/text/StringContent.java: New file.
-
+  
 2005-01-13  Andrew John Hughes  <gnu_andrew@member.fsf.org>
-
+  
 	* java/text/SimpleDateFormat.java:
 	(parse): extend try{} block so all illegal arguments
 	are caught and returned as null
-
+  
 2005-01-13  Sven de Marothy <sven@physto.se>
-
+  
 	* java/text/SimpleDateFormat.java
 	(parse): comparison should be case-insensitive, ignore null strings.
-
+  
 2005-01-13  Jeroen Frijters  <jeroen@frijters.net>
-
+  
 	* vm/reference/java/nio/channels/VMChannels.java: Class shouldn't
 	be public.
 	(newInputStream,newOutputStream): No need to be public.
-
+  
 2005-01-13  Michael Koch  <konqueror@gmx.de>
-
+  
 	* scripts/check_jni_methods.sh: Don't use GNU sed specific features.
+  
+2005-01-13  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/util/Arrays.java:
+	(sort(T[],int,int,Comparator<? super T>)): Typed
+	Object[] to T[]
+	* java/util/Collections.java;
+	(compare(T,T,<? super T>)): typed generically
+	(binarySearch(List<? extends T>,T,Comparator<? super T>)):
+	re-typed and added casts to List<T>
+	(rotate(List<? super Object>, int)): added (incorrect?)
+	super type to compile
+	(shuffle(List<? super Object>): likewise
+	(shuffle(List<? super Object, Random)): likewise
+	(entrySet()): singleton version changed for accuracy
+	(swap(List<? super Object>,int,int)): added (incorrect?)
+	super type to compile
+	(entrySet()): unmodifiable version removed invalid
+	static typing of K and V
+	* java/util/HashMap.java:
+	(entries): re-typed to Set<Map.Entry<K,V>>
+	(putAll(Map<? extends K, ? extends V>)): cast and foreach
+	statement added
+	(putAllInternal(Map<? extends K, ? extends V>)): likewise
+	* java/util/Hashtable.java:
+	same as for HashMap
+	* java/util/LinkedHashEntry.java:
+	(pred,succ): generically typed
+	(LinkedHashEntry(K,V)): likewise
+	(cleanup()): likewise
+	(get(Object)): likewise
+	(addEntry(K,V,int,boolean)): likewise
+	* java/util/LinkedList.java:
+	changed incorrect cast
+	(LinkedListItr<I>): re-typed to unique I from T
+	* java/util/TreeSet.java:
+	cast set to SortedSet<T> before using
 
 2005-01-12  Andrew John Hughes  <gnu_andrew@member.fsf.org>
-
+  
 	* java/text/DecimalFormatSymbols.java
 	(DecimalFormatSymbols(java.util.Locale)): defaults
 	changed to "?" and "XXX" to match a nuance of Sun's
 	impl. along with documentation
-
+  
 2005-01-12  Michael Koch  <konqueror@gmx.de>
-
+  
 	* gnu/java/security/x509/X509Certificate.java
 	(parse): Handle val == null case.
-
+  
 2005-01-12  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/nio/channels/Channels.java
 	(newInputStream(ReadableByteChannel)):
 	Call VMChannels.newInputStream(ReadableByteChannel).
@@ -30089,14 +31750,14 @@
 	(newInputStream(FileChannelImpl)): Removed.
 	(newOutputStream(FileChannelImpl)): Likewise.
 	* vm/reference/java/nio/channels/VMChannels.java: Nw file.
-	* native/jni/java-nio/Makefile.am:
+  	* native/jni/java-nio/Makefile.am:
 	* native/jni/java-nio/java_nio_channels_Channels.c,
 	include/java_nio_channels_Channels.h: Removed.
 	* include/Makefile.am: Don't generate java_nio_channels_Channels.h.
 	Removed java_nio_channels_Channels.c.
-
+  
 2005-01-12  Michael Koch  <konqueror@gmx.de>
-
+  
 	* gnu/java/net/PlainSocketImpl.java
 	(shutdownInput): Made native. Throws IOException. Added Javadoc.
 	(shutdownOutput): Likewise.
@@ -30110,48 +31771,93 @@
 	* native/jni/java-net/javanet.h
 	(_javanet_shutdownInput): Likewise.
 	(_javanet_shutdownOutput): Likewise.
-
+  
 2005-01-12  Michael Koch  <konqueror@gmx.de>
-
+  
 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
 	(Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetVisible):
 	Removed setting of gdk_env.
+  
+2005-01-12  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/util/Collections.java
+	all occurences of
+	(toArray(E[] a)): fixed parameteric type to be different
+	from collection type
+	(entrySet()): immutable version retyped to return Map.Entry<K,V>
+	* java/util/TreeMap.java
+	Completion of generic typing for all methods and variables
+	(entries, comparator): generically typed
+	(TreeMap(Comparator<? super K>): likewise
+	(TreeMap(Map <? extends K, ? extends V>): likewise
+	(TreeMap(SortedMap<K, ? extends V> sm): likewise
+	(comparator()): likewise
+	(containsKey(Object)): cast to K for getKey()
+	(entrySet()): generically typed
+	(get(Object)): cast to K for getKey()
+	(keySet()): generically typed
+	(put(K,V)): likewise
+	(putAll(Map<? extends K, ? extends V>)): likewise
+	(remove(Object)): removed invalid generic typing
+	(values()): generically typed
+	(deleteFixup(Node<K,V>, Node<K,V>)): likewise
+	(highestLessThan(K)): likewise
+	(insertFixup(Node<K,V>)): likewise
+	(lastNode()): likewise
+	(lowestGreatThan(K, boolean): likewise
+	(predecessor(Node<K,V>)): likewise
+	(putKeysLinear(Iterator<K>, int)): likewise and doc
+	correction
+	(removeNode(Node<K,V>)): generically typed
+	(rotateLeft(Node<K,V>)): likewise
+	(rotateRight(Node<K,V>)): likewise
+	(sucessor(Node<K,V>)): likewise
+	(SubMap): generically typed with SK and SV
+	
+2005-01-12  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/util/EnumMap.java
+	Corrected comment for accuracy.
+	* java/util/EnumSet.java
+	Corrected indenting.
+	* java/util/Hashtable.java
+	Corrected bracketing of author.
 
 2005-01-11  Mark Wielaard  <mark@klomp.org>
-
+  
 	* acinclude.m4 (CLASSPATH_WITH_GJDOC): Test for gjdoc, not jay.
-
+  
 2005-01-12  Thomas Fitzsimmons  <fitzsim@redhat.com>
-
+  
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkRobotPeer.c
 	(mouseWheel): Call XFlush.
 	(keyPress): Likewise.
 	(keyRelease): Likewise.
-
+  
 2005-01-11  Michael Koch  <konqueror@gmx.de>
-
+  
 	* javax/swing/UIDefaults.java (UIDefaults):
 	Fixed typo in javadoc (Thanks to Thomas Zander for reporting)
 	Fixed HTML entity and removed a redundant comma.
-
+  
 2005-01-11  Michael Koch  <konqueror@gmx.de>
-
+  
 	* configure.ac: Check for gdk-pixbuf-2.0.
-
+  
 2005-01-11  Graydon Hoare  <graydon@redhat.com>
-
+  
 	* gnu/java/awt/ClasspathToolkit.java
 	(registerImageIOSpis): New method.
 	* gnu/java/awt/image/ImageDecoder.java
 	(imageDecoder): New constructor using InputStream
 	(startProduction): Handle existing InputStream.
-	* gnu/java/awt/peer/gtk/GdkGraphics2D.java
+  	* gnu/java/awt/peer/gtk/GdkGraphics2D.java
 	(findSimpleIntegerArray): Make public and static.
 	(updateBufferedImage): Set each pixel, in a loop.
 	* gnu/java/awt/peer/gtk/GdkPixbufDecoder.java:
 	Implement ImageIO SPI classes.
 	(createBufferedImage): Rewrite in terms of SPI classes.
-	* gnu/java/awt/peer/gtk/GtkToolkit.java
+  	* gnu/java/awt/peer/gtk/GtkToolkit.java
 	(registerImageIOSpis): New method.
 	* java/lang/reflect/natMethod.cc
 	(_Jv_CallAnyMethodA): Borrow a patch from aph, applied to trunk,
@@ -30213,9 +31919,9 @@
 	(Currency(java.util.Locale)): throw IllegalArgumentException
 	for empty country string and NullPointerException for null
 	locale or country
-
+  
 2005-01-11  Graydon Hoare  <graydon@redhat.com>
-
+  
 	* gnu/java/awt/ClasspathToolkit.java
 	(nativeQueueEmpty)
 	(wakeNativeQueue)
@@ -30267,59 +31973,124 @@
 	* gnu/java/awt/peer/gtk/GtkWindowPeer.java: Likewise.
 	* gnu/java/awt/peer/gtk/GtkGenericPeer.java: Likewise.
 	(q): New method.
-
+  
 2005-01-11  Michael Koch  <konqueror@gmx.de>
-
+  
 	* native/jni/gtk-peer/Makefile.am:
 	Removed gnu_java_awt_peer_gtk_GtkMainThread.c.
 	* include/Makefile.am:
 	Don't generate gnu_java_awt_peer_gtk_GtkMainThread.h
 	* include/gnu_java_awt_peer_gtk_GtkMainThread.h: Removed.
-
+  
 2005-01-11  Michael Koch  <konqueror@gmx.de>
-
+  
 	* javax/swing/text/DefaultEditorKit.java
 	(deinstall): Removed.
 	(install): Likewise.
-
+  
 2005-01-11  Michael Koch  <konqueror@gmx.de>
-
+  
 	* javax/swing/UIDefaults.java (put): Handle value of null.
-
+  
 2005-01-11  Chris Burdess  <dog@gnu.org>
-
+  
 	* gnu/java/net/protocol/http/HTTPConnection.java: Use correct form of
 	Host header when using a non-default port number.
-
+  
 2005-01-11  Chris Burdess  <dog@gnu.org>
-
+  
 	* javax/net/ssl/HttpsURLConnection.java: Do not request SSLv3
 	provider during class initialization.
-
+  
 2005-01-11  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/awt/Robot.java,
 	java/awt/Scrollbar.java,
 	java/awt/print/PrinterJob.java,
 	javax/swing/JTable.java,
 	javax/swing/text/AbstractDocument.java:
 	Reworked import statements.
-
+  
 2005-01-11  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/beans/XMLDecoder.java: Reworked imports, fixed class javadoc.
 	* java/io/File.java,
 	java/lang/System.java,
 	java/net/Inet4Address.java,
 	java/util/Currency.java,
 	java/util/ResourceBundle.java: Reworked imports.
+  
+2005-01-11  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/AbstractList.java (set, add): Fixed argument types.
+	* java/util/ArrayList.java: Properly handle generic arrays.
+	* java/util/Arrays.java (sort): Fixed type of temporary 'elem'.
+	* java/util/BitSet.java (containsAll): Use correct variable name.
+	* java/util/Collections.java (copy): Use correct
+	parameterizations.
+	(min): Likewise.
+	(putAll): Likewise.
+	(compare): Fixed argument types.
+	(sort): Properly handle generic arrays.
+	* java/util/EnumSet.java (clone): Ignore
+	CloneNotSupportedException.
+	(addAll, contains, containsAll, remove, removeAll, retainAll,
+	copyOf, complementOf): Don't use generic instanceof.
+	(copyOf): Cast result of 'clone'.
+	* java/util/HashMap.java (HashMap): Properly handle generic
+	arrays.
+	(clone): Likewise.
+	(rehash): Likewise.
+	(readObject): Likewise.
+	(putAll): Don't use generic instanceof.
+	(getEntry): Likewise.
+	(putAllInternal): Use correct parameterizations.
+	(next): Fixed return type.
+	* java/util/Hashtable.java (Hashtable): Properly handle generic
+	arrays.
+	(clone): Likewise.
+	(rehash): Likewise.
+	(readObject): Likewise.
+	(hash): Fixed argument type.
+	(getEntry): Don't use generic instanceof.
+	(next): Cast return values.
+	(nextElement): Fixed return type.
+	* java/util/LinkedList.java (toArray): Added cast.
+	(LinkedListItr): Now generic.
+	* java/util/TreeMap.java (TreeMap): Now generic.
+	(Node): Likewise.
+	(left, right, parent): Updated types.
+	(firstKey, get, headMap, lastKey, remove, subMap, tailMap,
+	firstNode, getNode): Updated types.
+	* java/util/TreeSet.java (TreeSet): Fixed cast.
+	(clone): Likewise.
+	(readObject): Likewise.
+	* java/util/Vector.java (Vector): Properly handle generic arrays.
+	(trimToSize): Likewise.
+	(ensureCapacity): Likewise.
+	(toArray): Likewise.
+	(addAll): Fixed parameterization.
+	* java/util/WeakHashMap.java (WeakBucket): Now generic.
+	(value, next): Updated types.
+	(WeakEntry): Parameterized superinterface.
+	(key, getKey, getValue, setValue): Updated types.
+	(getEntry): Fixed type of local 'key'.
+	(get): Updated.
+	(put): Fixed return type.
+	(remove): Updated.
+
+2005-01-11  Tom Tromey  <tromey@redhat.com>
+
+	* .classpath: Updated for Eclipse 3.1.
+	* .settings/org.eclipse.jdt.core.prefs: New file.
+	* .settings/org.eclipse.jdt.ui.prefs: New file.
 
 2005-01-10  Tom Tromey  <tromey@redhat.com>
-
+  
 	* java/io/BufferedInputStream.java: Fixed indentation.
-
+  
 2005-01-10  Michael Koch  <konqueror@gmx.de>
-
+  
 	* javax/swing/JEditorPane.java
 	(read): Implemented.
 	(write): Likewise.
@@ -30336,19 +32107,127 @@
 	(setEditorKit): Likewise.
 	(setEditorKitForContentType): Removed wrong implementation.
 	(setPage): Implemented.
-
+  
 2005-01-10  Michael Koch  <konqueror@gmx.de>
-
+  
 	* scripts/check_jni_methods.sh: Dont ignore
 	Java_gnu_java_awt_peer_gtk_GtkFramePeer_nativeSetIconImageFromData.
-
+  
 2005-01-10  Thomas Fitzsimmons  <fitzsim@redhat.com>
-
+  
 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFramePeer.c
 	(nativeSetIconImageFromData): Re-add native implementation.
+  
+2005-01-10  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
+	* java/util/AbstractMap.java:
+	(putAll(Map<? extends K, ? extends V>)): added cast to
+	Map<K,V>
+	* java/util/EnumMap.java:
+	Corrected instanceof tests, generic array creation,
+	use of Enum.getDeclaringClass() and wrong typing
+	of iterator methods
+	(clone()): re-written to use the EnumMap(EnumMap)
+	constructor
+	
+2005-01-10  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/awt/AWTKeyStroke.java:
+	Typed static cache and vktable generically
+	(removeEldestEntry(Map.Entry<AWTKeyStroke,AWTKeyStroke>)):
+	typed generically
+	(registerSubclass(Class<?>)): typed generically
+	(readResolve()): removed unnecessary cast
+	(setFocusTraversalKeys(int, Set<? extends AWTKeyStroke>)):
+	typed generically
+	* java/awt/Container.java:
+	(setFocusTraversalKeys(int, Set<? extends AWTKeyStroke>)):
+	typed generically
+	(getFocusTraversalKeys(int)): typed generically
+	* java/awt/GridBagLayout.java:
+	comptable, internalcomptable now generically typed
+	(GridBagLayout()): generic typing
+	(sortBySpan(Component,int,ArrayList<Component>,boolean)):
+	typed generically
+	* java/awt/KeyboardFocusManager.java:
+	(getDefaultFocusTraversalKeys(int)): typed generically
+	* java/awt/dnd/DragGestureRecognizer.java:
+	typed events generically
+	* java/awt/dnd/DropTargetContext.java:
+	removed unnecessary import and added serialization UID
+	* java/awt/im/InputContext.java:
+	typed descriptors and recent generically
+	* java/awt/im/spi/InputMethodContext.java:
+	removed unnecessary import
+	* java/io/DeleteFileHelper.java:
+	filesToDelete typed generically
+	(add(java.io.File)): typed generically
+	(deleteFiles()): iteration changed to foreach
+	* java/io/ObjectInputStream.java:
+	typed objectLookupTable, validators, classLookupTable, oscs
+	generically
+	(resolveProxyClass(String[]): typed generically
+	* java/io/ObjectOutputStream.java:
+	removed unnecessary import
+	typed OIDLookupTable generically
+	* java/io/ObjectStreamClass.java:
+	typed oscs and classLookupTable generically
+	* java/io/ObjectStreamField.java:
+	type typed generically
+	(getType()): typed generically
+	(checkFieldType()): typed generically
+	* java/lang/Byte.java:
+	(compareTo(Object)): removed as unneeded
+	* java/lang/Character.java:
+	(compareTo(Object)): removed as unneeded
+	* java/lang/Class.java:
+	Typing changed from K to T in accordance with docs
+	and semantics (is a type, not a key)
+	(getEnumConstants()): implemented using reflection
+	(isEnum()): implemented using reflection
+	* java/lang/Double.java:
+	(compareTo(Object)): removed as unneeded
+	* java/lang/Float.java:
+	(compareTo(Object)): removed as unneeded
+	* java/lang/InheritableThreadLocal.java:
+	removed invalid static generic typing
+	* java/lang/Integer.java:
+	(compareTo(Object)): removed as unneeded
+	* java/lang/Long.java:
+	(compareTo(Object)): removed as unneeded
+	* java/lang/Short.java:
+	(compareTo(Object)): removed as unneeded
+	* java/util/AbstractQueue.java:
+	Typing changed from T to E in accordance with docs
+	and semantics (is primarily a element)
+	* java/util/Collection.java:
+	(containsAll(Collection<?> c)): typed generically
+	* java/util/EnumMap.java:
+	(EnumMap(Class<K>)): removed invalid array creation
+	* java/util/LinkedHashMap.java:
+	Added generic typing
+	(LinkedHashMap(Map<? extends K, ? extends V>)): added
+	generics
+	(get(Object)): returns V instead of Object
+	(removeEldestEntry(Map.Entry<K,V>)): typed generically
+	* java/util/PriorityQueue.java:
+	removed invalid generic instanceof and generic array
+	creation
+	(iterator().remove()): added reference to outer class
+	* java/util/WeakHashMap.java
+	Added generic typing
+	(WeakHashMap(Map<? extends K, ? extends V>)): added
+	generics
+	(get(Object)): returns V instead of Object
+	(put(K,V)): generically typed
+	(remove(Object)): returns V instead of Object
+	(entrySet()): returns generic set
+	(keySet()): returns generic set
+	(putAll(Map<? extends K, ? extends V>)): generically typed
+	(values()): returns generic collection
+	
 2005-01-09  Mark Wielaard  <mark@klomp.org>
-
+  
 	* java/security/AlgorithmParameterGenerator.java (getInstance):
 	Mention provider when throwing NoSuchProviderException.
 	* java/security/AlgorithmParameters.java (getInstance): Likewise.
@@ -30356,9 +32235,9 @@
 	* java/security/KeyStore.java (getInstance): Likewise.
 	* java/security/SecureRandom.java (getInstance): Likewise.
 	* java/security/cert/CertificateFactory.java (getInstance): Likewise.
-
+  
 2005-01-09  Mark Wielaard  <mark@klomp.org>
-
+  
 	* native/jni/java-io/java_io_VMFile.c
 	(Java_java_io_VMFile_create): Call JCL_free_cstring() when done with
 	string.
@@ -30369,13 +32248,13 @@
 	(Java_java_lang_VMSystem_getenv): Likewise.
 	* native/jni/java-nio/gnu_java_nio_channels_FileChannelImpl.c
 	(Java_gnu_java_nio_channels_FileChannelImpl_open): Likewise.
-
+  
 2005-01-09  Mark Wielaard  <mark@klomp.org>
-
+  
 	* configure.ac: Update version to 0.13+cvs.
-
+  
 2005-01-09  Mark Wielaard  <mark@klomp.org>
-
+  
 	* acinclude.m4 (CLASSPATH_WITH_GJDOC): Renamed from
 	CLASSPATH_ENABLE_GJDOC. Can now take argument to use as gjdoc program.
 	Doesn't depend on xml tools.
@@ -30391,36 +32270,36 @@
 	(clean): Also remove create_html file.
 	(create_html): Rewritten.
 	* doc/api/classpath-copyright.xml: Removed.
-
+  
 2005-01-09  Patrik Reali  <reali@acm.org>
-
+  
 	* doc/www.gnu.org/newsitems.txt doc/www.gnu.org/announce/20050107.wml 
 	doc/www.gnu.org/downloads/downloads.wml: classpath 0.13 release news
-
+  
 2005-01-08  Ito Kazumitsu  <kaz@maczuka.gcd.org>
-
+  
 	* java/nio/charset/Charset.java (providers):
 	New method to make an array of CharsetProviders defined in
 	META-INF/services/java.nio.charset.spi.CharsetProvider.
 	(charsetForName, availableCharsets): Use the
 	new method providers().
-
+  
 2005-01-08  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/util/SimpleTimeZone.java (checkRule):
 	Throw IllegalArgumentException on invalid month values.
-
+  
 2005-01-08  Michael Koch  <konqueror@gmx.de>
-
+  
 	* gnu/java/net/protocol/http/HTTPConnection.java
 	(newRequest): Use "/" as path if no path given in URL.
-
+  
 2005-01-08  Michael Koch  <konqueror@gmx.de>
-
+  
 	* resource/Makefile.am: Install classpath.security file.
-
+  
 2005-01-08  Michael Koch  <konqueror@gmx.de>
-
+  
 	* resource/java/util/iso639_fr.properties,
 	resource/java/util/iso3166.properties,
 	resource/java/util/iso3166_de.properties,
@@ -30430,15 +32309,15 @@
 	resource/java/util/iso639-a2-old.properties,
 	resource/java/util/iso3166-a3.properties,
 	resource/java/util/iso639_ga.properties: Removed.
-
+  
 2005-01-07  Tom Tromey  <tromey@redhat.com>
-
+  
 	* java/lang/Package.java (getPackages): Use VMClassLoader when
 	appropriate.
 	(getPackage): Likewise.
-
+  
 2005-01-07  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/nio/Buffer.java (address): New field.
 	* java/nio/DirectByteBufferImpl.java (address): Removed.
 	* java/nio/MappedByteBufferImpl.java (address): Likewise..
@@ -30449,9 +32328,9 @@
 	* java/nio/IntViewBufferImpl.java (IntViewBufferImpl): Likewise.
 	* java/nio/LongViewBufferImpl.java (LongViewBufferImpl): Likewise.
 	* java/nio/ShortViewBufferImpl.java (ShortViewBufferImpl): Likewise.
-
+  
 2005-01-07  Olga Rodimina  <rodimina@redhat.com>
-
+  
 	* javax/swing/JTable.java
 	(columnAtPoint): New Method. Implemented.
 	(rowAtPoint): Likewise.
@@ -30537,6 +32416,39 @@
 	* java/util/SimpleTimeZone.java:
 	(getOffset): offset end date with daylight savings
 
+2005-01-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/io/PrintStream.java:
+	(PrintStream(String, String)): added UnsupportedEncodingException
+	(PrintStream(File, String)): added UnsupportedEncodingException
+	* java/lang/Deprecated.java:
+	Changed import to java.lang.annotation.RetentionPolicy.RUNTIME
+	* java/lang/InheritableThreadLocal.java:
+	Corrected typo `Locals' to `Local'
+	* java/lang/String.java:
+	(compareTo(Object)): removed
+	* java/lang/annotation/AnnotationTypeMismatchException.java:
+	Added import of java.lang.reflect.Method
+	* java/lang/annotation/Documentation.java:
+	Added import of java.lang.annotation.RetentionPolicy.RUNTIME
+	* java/lang/annotation/Inherited.java:
+	Added import of java.lang.annotation.RetentionPolicy.RUNTIME
+	Added import of java.lang.annotation.ElementType.ANNOTATION_TYPE
+	* java/lang/annotation/Retention.java: ditto
+	* java/lang/annotation/Target.java: ditto
+	* java/lang/reflect/AnnotatedElement.java:
+	Added import of java.lang.annotation.Annotation
+	* java/util/AbstractCollection.java:
+	(toArray(T[])): converted returned type to T[] from Object[]
+	* java/util/EnumMap.java:
+	Added import of java.io.Serializable
+	* java/util/EnumSet.java: ditto
+	* java/util/TreeSet.java:
+	(TreeSet(SortedMap<T,String> backingMap)): type of input parameter
+	corrected.
+	* vm/reference/java/lang/VMClass.java:
+	(cast(Object, Class<K>)): typed method parameterically
+	
 2005-01-06  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/ClassLoader.java (findClass): Fixed documentation.
@@ -30546,41 +32458,41 @@
 	* configure.ac: Update version to 0.13.
 	* NEWS: Add news about 0.13.
 	* INSTALL: Mention new dependencies and configure flags.
-
+  
 2005-01-06  Mark Wielaard  <mark@klomp.org>
-
+  
 	* configure.ac: Add explicit X and libXtst tests when gtk+ peers are
 	enabled.
-
+  
 2005-01-06  Michael Koch  <konqueror@gmx.de>
-
+  
 	* java/util/TimeZone.java
 	(setID): Throw NullPointerException if needed.
-
+  
 2005-01-05  Mark Wielaard  <mark@klomp.org>
-
+  
 	* lib/gen-classlist.sh.in: Don't split locales in classes.locale1
 	and classes.locale2.
 	* lib/Makefile.am (JAVAC): Compile only classes.locale.
 	(CLEANFILES): Remove classes.locale1 and classes.locale2,
 	add classes.locale.
-
+  
 2005-01-05  Tom Tromey  <tromey@redhat.com>
-
+  
 	* java/util/zip/ZipEntry.java (setCompressedSize): Allow any
 	argument.
 	(compressedSize): Now 'long'.  Default to -1.
 	(getCompressedSize): Rewrote.
-
+  
 2005-01-05  Ranjit Mathew  <rmathew@hotmail.com>
-
+  
 	* java/util/IdentityHashMap.java (put): Replace mistaken use
 	of "<<" by "*".
-
+  
 2005-01-05  Michael Koch  <konqueror@gmx.de>
-
+  
 	* gnu/java/locale/LocaleInformation_mn_MN.java:
-	New file.
+  	New file.
 	* gnu/java/locale/LocaleInformation_aa.java,
 	gnu/java/locale/LocaleInformation_aa_DJ.java,
 	gnu/java/locale/LocaleInformation_aa_ER.java,
@@ -30829,9 +32741,9 @@
 	gnu/java/locale/LocaleInformation_zh_SG_Hans.java,
 	gnu/java/locale/LocaleInformation_zh_TW_Hant.java:
 	Regenerated.
-
+  
 2005-01-04  Tom Tromey  <tromey@redhat.com>
-
+  
 	* vm/reference/java/lang/VMProcess.java (VMProcess): Constructor
 	now package-private.
 	(processThread, workList, reapedPid, reapedExitValue, state, cmd,
@@ -30842,32 +32754,32 @@
 	modifiers.
 	* vm/reference/java/security/VMAccessController.java
 	(DEFAULT_CONTEXT): Reordered modifiers.
-
+  
 	* gnu/java/nio/SelectorImpl.java: Removed unused import.
 	* gnu/java/security/der/DERWriter.java: Removed unused import.
 	* gnu/java/net/protocol/http/Connection.java: Removed unused
 	import.
 	* gnu/java/nio/PipeImpl.java (read): Reordered modifiers.  Fixed
 	indentation.
-	(write): Likewise.
+  	(write): Likewise.
 	* gnu/java/rmi/server/ConnectionRunnerPool.java
 	(getConnectionRunner): Reordered modifiers.
 	* gnu/java/text/FormatCharacterIterator.java (debug): Removed
 	useless `final'.
 	(dumpTable): Likewise.
 	* gnu/java/net/PlainDatagramSocketImpl.java (bind): Reordered
-	modifiers.
+  	modifiers.
 	(create, setOption, getOption, close, join, leave): Likewise.
 	* gnu/java/net/PlainSocketImpl.java (create): Reordered
 	modifiers.
 	(bind, listen, accept): Likewise.
-
+  
 2005-01-04  Tom Tromey  <tromey@redhat.com>
-
+  
 	* Makefile.am (EXTRA_DIST): Added ChangeLog-2004.
-
+  
 2005-01-04  Robert Schuster <thebohemian@gmx.net>
-
+  
        * gnu/java/beans/DummyAppletStub.java: Add dummy implementation
        of AppletStub for java.beans.Beans.instantiate.
        * gnu/java/beans/DummyAppletContext.java: Add dummy implementation
@@ -30877,9 +32789,9 @@
        (instantiate): Added two more overloaded variants, reworked user
        documentation, fixed exception behavior, fixed behavior when
        deserializing null.
-
+  
 2005-01-03  Michael Koch  <konqueror@gmx.de>
-
+  
 	* javax/swing/plaf/metal/MetalLookAndFeel.java
 	(getControlTextFont): New method.
 	(getMenuTextFont): Likewise.
@@ -30887,22 +32799,22 @@
 	(getSystemTextFont): Likewise.
 	(getUserTextFont): Likewise.
 	(getWindowTitleFont): Likewise.
-
+  
 2005-01-03  Michael Koch  <konqueror@gmx.de>
-
+  
 	* javax/swing/text/AbstractDocument.java
 	(documentFilter): New field.
 	(getDocumentFilter): New method.
 	(setDocumentFilter): Likewise.
-	(dump): Likewise.
-
+  	(dump): Likewise.
+  
 2005-01-03  Michael Koch  <konqueror@gmx.de>
-
-	* javax/swing/JTree.java
+  
+  	* javax/swing/JTree.java
 	(DynamicUtilTreeNode.hasChildren): Clarify javadoc.
-
+  
 2005-01-03  Thomas Fitzsimmons  <fitzsim@redhat.com>
-
+  
 	* gnu/java/awt/ClasspathToolkit.java (createRobot): New method.
 	* gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java
 	(getDefaultScreenDevice): Implement.
@@ -31034,10 +32946,10 @@
 	* native/jni/xmlj/xmlj_sax.c: Likewise.
 	* native/jni/xmlj/xmlj_transform.c: Likewise.
 	* native/jni/xmlj/xmlj_xpath.c: Likewise.
-
+  
 2005-01-02  Michael Koch  <konqueror@gmx.de>
-
-	* javax/swing/text/AbstractDocument.java
+  
+  	* javax/swing/text/AbstractDocument.java
 	(AbstractElement.getLength): Fixed off-by-one error.
 	(AbstractElement.children): Made abstract.
 	(AbstractElement.getAllowsChildren): Likewise.
@@ -31051,19 +32963,29 @@
 	(LeafElement.toString): Likewise.
 	* javax/swing/text/GapContent.java
 	(GapContent): Put default content into buffer.
-	* javax/swing/text/PlainDocument.java
+  	* javax/swing/text/PlainDocument.java
 	(reindex): Use empty attribute sets instead of null.
 	(createDefaultRoot): Reimplemented.
 	(insertUpdate): Call super method.
 	(removeUpdate): Likewise.
 	(getParagraphElement): Implemented.
+  
+2005-01-02  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/PrintStream.java: Implement Appendable.
+	(PrintStream(String)): New constructor.
+	(PrintStream(String,String)): Likewise.
+	(PrintStream(File)): New constructor.
+	(PrintStream(File,String)): Likewise.
+	(append): New methods.
+
+	* java/lang/System.java (getenv): Added @since.
+
+	* java/lang/System.java (getenv(String)): Rewrote.
+	(getenv): New method.
+	* vm/reference/java/lang/VMSystem.java (getenv): New methods.
 
 2005-01-01  Michael Koch  <konqueror@gmx.de>
-
+  
 	* javax/swing/DefaultBoundedRangeModel.java
 	(fireValueChanged): Fixed off-by-one error.
-
-
-Local Variables:
-coding: iso-latin-1-unix	
-End:

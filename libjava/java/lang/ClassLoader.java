@@ -39,12 +39,14 @@ exception statement from your version. */
 package java.lang;
 
 import gnu.classpath.SystemProperties;
+import gnu.classpath.VMStackWalker;
 import gnu.java.util.DoubleEnumeration;
 import gnu.java.util.EmptyEnumeration;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Policy;
@@ -52,6 +54,9 @@ import java.security.ProtectionDomain;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.lang.annotation.Annotation;
 
 /**
  * The ClassLoader is a way of customizing the way Java gets its classes
@@ -156,6 +161,85 @@ public abstract class ClassLoader
    */
   static final ClassLoader systemClassLoader =
     VMClassLoader.getSystemClassLoader();
+
+  /**
+   * This cache maps from a Class to its associated annotations.  It's
+   * declared here so that when this class loader becomes unreachable,
+   * so will the corresponding cache.
+   */
+
+  private final ConcurrentHashMap<AnnotationsKey,Object[]> 
+    declaredAnnotations 
+      = new ConcurrentHashMap<AnnotationsKey,Object[]>();
+  
+  static final class AnnotationsKey
+  {
+    final int /* jv_attr_type */ member_type;
+    final int member_index;
+    final int /* jv_attr_kind */ kind_req;
+    final Class declaringClass;
+    final int hashCode;
+
+    public AnnotationsKey (Class declaringClass,
+			   int member_type,
+			   int member_index,
+			   int kind_req)
+    {
+      this.member_type = member_type;
+      this.member_index = member_index;
+      this.kind_req = kind_req;
+      this.declaringClass = declaringClass;
+      hashCode = (member_type ^ member_index ^ kind_req
+		  ^ declaringClass.hashCode());
+    }
+
+    public boolean equals(Object obj)
+    {
+      AnnotationsKey other = (AnnotationsKey)obj;
+      return (this.member_type == other.member_type
+	      && this.member_index == other.member_index
+	      && this.kind_req == other.kind_req
+	      && this.declaringClass == other.declaringClass);
+    }
+
+    public int hashCode()
+    {
+      return hashCode;
+    }
+
+    public static final Annotation[] NIL = new Annotation[0];
+  }
+  
+  final Object[] getDeclaredAnnotations(Class declaringClass,
+					int member_type,
+					int member_index,
+					int kind_req)
+  {
+    Object[] result 
+      = declaredAnnotations.get (new AnnotationsKey
+				 (declaringClass,
+				  member_type,
+				  member_index,
+				  kind_req));
+    if (result != AnnotationsKey.NIL && result != null)
+      return (Object[])result.clone();
+    return null;
+  }
+
+  final Object[] putDeclaredAnnotations(Class declaringClass,
+					int member_type,
+					int member_index,
+					int kind_req,
+					Object[] annotations)
+  {
+    declaredAnnotations.put 
+      (new AnnotationsKey
+       (declaringClass,	member_type,
+	member_index, kind_req), 
+       annotations == null ? AnnotationsKey.NIL : annotations);
+
+    return annotations == null ? null : (Object[])annotations.clone();
+  }
 
   static
   {
@@ -487,6 +571,35 @@ public abstract class ClassLoader
   }
 
   /**
+   * Helper to define a class using the contents of a byte buffer. If
+   * the domain is null, the default of
+   * <code>Policy.getPolicy().getPermissions(new CodeSource(null,
+   * null))</code> is used. Once a class has been defined in a
+   * package, all further classes in that package must have the same
+   * set of certificates or a SecurityException is thrown.
+   *
+   * @param name the name to give the class.  null if unknown
+   * @param buf a byte buffer containing bytes that form a class.
+   * @param domain the ProtectionDomain to give to the class, null for the
+   *        default protection domain
+   * @return the class that was defined
+   * @throws ClassFormatError if data is not in proper classfile format
+   * @throws NoClassDefFoundError if the supplied name is not the same as
+   *                              the one specified by the byte buffer.
+   * @throws SecurityException if name starts with "java.", or if certificates
+   *         do not match up
+   * @since 1.5
+   */
+  protected final Class<?> defineClass(String name, ByteBuffer buf,
+				       ProtectionDomain domain)
+    throws ClassFormatError
+  {
+    byte[] data = new byte[buf.remaining()];
+    buf.get(data);
+    return defineClass(name, data, 0, data.length, domain);
+  }
+
+  /**
    * Links the class, if that has not already been done. Linking basically
    * resolves all references to other classes made by this class.
    *
@@ -530,8 +643,7 @@ public abstract class ClassLoader
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
       {
-        Class c = VMSecurityManager.getClassContext(ClassLoader.class)[0];
-        ClassLoader cl = c.getClassLoader();
+	ClassLoader cl = VMStackWalker.getCallingClassLoader();
 	if (cl != null && ! cl.isAncestorOf(this))
           sm.checkPermission(new RuntimePermission("getClassLoader"));
       }
@@ -744,14 +856,15 @@ public abstract class ClassLoader
 
   /**
    * Returns the system classloader. The system classloader (also called
-   * the application classloader) is the classloader that was used to
+   * the application classloader) is the classloader that is used to
    * load the application classes on the classpath (given by the system
    * property <code>java.class.path</code>. This is set as the context
    * class loader for a thread. The system property
    * <code>java.system.class.loader</code>, if defined, is taken to be the
    * name of the class to use as the system class loader, which must have
-   * a public constructor which takes a ClassLoader as a parent; otherwise this
-   * uses gnu.java.lang.SystemClassLoader.
+   * a public constructor which takes a ClassLoader as a parent. The parent
+   * class loader passed in the constructor is the default system class
+   * loader.
    *
    * <p>Note that this is different from the bootstrap classloader that
    * actually loads all the real "system" classes (the bootstrap classloader
@@ -773,8 +886,7 @@ public abstract class ClassLoader
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
       {
-	Class c = VMSecurityManager.getClassContext(ClassLoader.class)[0];
-	ClassLoader cl = c.getClassLoader();
+	ClassLoader cl = VMStackWalker.getCallingClassLoader();
 	if (cl != null && cl != systemClassLoader)
 	  sm.checkPermission(new RuntimePermission("getClassLoader"));
       }
@@ -898,7 +1010,7 @@ public abstract class ClassLoader
    *
    * @param name the (system specific) name of the requested library
    * @return the full pathname to the requested library, or null
-   * @see Runtime#loadLibrary()
+   * @see Runtime#loadLibrary(String)
    * @since 1.2
    */
   protected String findLibrary(String name)
@@ -928,7 +1040,7 @@ public abstract class ClassLoader
    *
    * @param name the package (and subpackages) to affect
    * @param enabled true to set the default to enabled
-   * @see #setDefaultAssertionStatus(String, boolean)
+   * @see #setDefaultAssertionStatus(boolean)
    * @see #setClassAssertionStatus(String, boolean)
    * @see #clearAssertionStatus()
    * @since 1.4
@@ -949,7 +1061,7 @@ public abstract class ClassLoader
    * @param name the class to affect
    * @param enabled true to set the default to enabled
    * @throws NullPointerException if name is null
-   * @see #setDefaultAssertionStatus(String, boolean)
+   * @see #setDefaultAssertionStatus(boolean)
    * @see #setPackageAssertionStatus(String, boolean)
    * @see #clearAssertionStatus()
    * @since 1.4

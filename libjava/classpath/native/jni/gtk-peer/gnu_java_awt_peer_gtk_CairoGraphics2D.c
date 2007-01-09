@@ -49,7 +49,6 @@ exception statement from your version. */
 #include <stdio.h>
 #include <stdlib.h>
 
-static void install_font_peer(cairo_t *cr, struct peerfont *pfont);
 static void update_pattern_transform (struct cairographics2d *gr);
 
 /**
@@ -134,7 +133,11 @@ Java_gnu_java_awt_peer_gtk_CairoGraphics2D_setGradient
   cairo_pattern_add_color_stop_rgba(pattern, 1.0, r2 / 255.0, g2 / 255.0, 
 				    b2 / 255.0, a2 / 255.0);
 
-  extend = (cyclic == JNI_TRUE) ? CAIRO_EXTEND_REFLECT : CAIRO_EXTEND_NONE;
+  #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 2, 0)
+  	extend = (cyclic == JNI_TRUE) ? CAIRO_EXTEND_REFLECT : CAIRO_EXTEND_PAD;
+  #else
+  	extend = (cyclic == JNI_TRUE) ? CAIRO_EXTEND_REFLECT : CAIRO_EXTEND_NONE;
+  #endif
 
   cairo_pattern_set_extend( pattern, extend );
 
@@ -143,9 +146,10 @@ Java_gnu_java_awt_peer_gtk_CairoGraphics2D_setGradient
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_CairoGraphics2D_setTexturePixels
+Java_gnu_java_awt_peer_gtk_CairoGraphics2D_setPaintPixels
  (JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
-  jlong pointer, jintArray jarr, jint w, jint h, jint stride)
+  jlong pointer, jintArray jarr, jint w, jint h, jint stride, jboolean repeat,
+  jint x, jint y)
 {
   struct cairographics2d *gr = NULL;
   jint *jpixels = NULL;
@@ -180,15 +184,21 @@ Java_gnu_java_awt_peer_gtk_CairoGraphics2D_setTexturePixels
   g_assert (gr->pattern_surface != NULL);
   gr->pattern = cairo_pattern_create_for_surface (gr->pattern_surface);
   g_assert (gr->pattern != NULL);
-  cairo_pattern_set_extend (gr->pattern, CAIRO_EXTEND_REPEAT);
-  cairo_set_source (gr->cr, gr->pattern);
+  
+  cairo_set_source_surface(gr->cr, gr->pattern_surface, x, y);
+  
+  if (repeat)
+  	cairo_pattern_set_extend(cairo_get_source(gr->cr), CAIRO_EXTEND_REPEAT);
+  else
+  	cairo_pattern_set_extend(cairo_get_source(gr->cr), CAIRO_EXTEND_NONE);
 }
 
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_CairoGraphics2D_drawPixels 
 (JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
  jlong pointer, jintArray java_pixels, 
- jint w, jint h, jint stride, jdoubleArray java_matrix, jdouble alpha)
+ jint w, jint h, jint stride, jdoubleArray java_matrix, jdouble alpha,
+ jint interpolation)
 {
   jint *native_pixels = NULL;
   jdouble *native_matrix = NULL;
@@ -215,8 +225,28 @@ Java_gnu_java_awt_peer_gtk_CairoGraphics2D_drawPixels
 
    p = cairo_pattern_create_for_surface (surf);
    cairo_pattern_set_matrix (p, &mat);
-   if (gr->pattern)
-     cairo_pattern_set_filter (p, cairo_pattern_get_filter (gr->pattern));
+   switch ((enum java_awt_rendering_hints_filter) interpolation)
+     {
+     case java_awt_rendering_hints_VALUE_INTERPOLATION_NEAREST_NEIGHBOR:
+       cairo_pattern_set_filter (p, CAIRO_FILTER_NEAREST);
+       break;
+     case java_awt_rendering_hints_VALUE_INTERPOLATION_BILINEAR:
+       cairo_pattern_set_filter (p, CAIRO_FILTER_BILINEAR);
+       break; 
+     case java_awt_rendering_hints_VALUE_INTERPOLATION_BICUBIC:
+       cairo_pattern_set_filter (p, CAIRO_FILTER_GAUSSIAN);
+       break; 
+     case java_awt_rendering_hints_VALUE_ALPHA_INTERPOLATION_SPEED:
+       cairo_pattern_set_filter (p, CAIRO_FILTER_FAST);
+       break;
+     case java_awt_rendering_hints_VALUE_ALPHA_INTERPOLATION_DEFAULT:
+       cairo_pattern_set_filter (p, CAIRO_FILTER_NEAREST);
+       break;
+     case java_awt_rendering_hints_VALUE_ALPHA_INTERPOLATION_QUALITY:
+       cairo_pattern_set_filter (p, CAIRO_FILTER_BEST);
+       break;
+     }
+   
    cairo_set_source (gr->cr, p);
    if (alpha == 1.)
      cairo_paint (gr->cr);
@@ -297,8 +327,6 @@ Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoDrawGlyphVector
   pfont = (struct peerfont *)NSA_GET_FONT_PTR (env, font);
   g_assert (pfont != NULL);
 
-  install_font_peer(gr->cr, pfont);
-
   glyphs = g_malloc( sizeof(cairo_glyph_t) * n);
   g_assert (glyphs != NULL);
 
@@ -322,6 +350,37 @@ Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoDrawGlyphVector
   g_free(glyphs);
 }
 
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoSetFont
+(JNIEnv *env __attribute__ ((unused)), jobject obj __attribute__ ((unused)),
+ jlong pointer, jobject font)
+{
+  struct cairographics2d *gr = NULL;
+  struct peerfont *pfont = NULL;
+  FT_Face face = NULL;
+  cairo_font_face_t *ft = NULL;
+
+  gr = JLONG_TO_PTR(struct cairographics2d, pointer);
+  g_assert (gr != NULL);
+  
+  pfont = (struct peerfont *)NSA_GET_FONT_PTR (env, font);
+  g_assert (pfont != NULL);
+
+  face = pango_fc_font_lock_face( (PangoFcFont *)pfont->font );
+  g_assert (face != NULL);
+
+  ft = cairo_ft_font_face_create_for_ft_face (face, 0);
+  g_assert (ft != NULL);
+
+  cairo_set_font_face (gr->cr, ft);
+  cairo_set_font_size (gr->cr,
+                       (pango_font_description_get_size (pfont->desc) /
+                       (double)PANGO_SCALE));
+                       
+  cairo_font_face_destroy (ft);
+  pango_fc_font_unlock_face((PangoFcFont *)pfont->font);
+}
 
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoSetOperator 
@@ -679,37 +738,6 @@ Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoPreserveClip
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoSurfaceSetFilter
-(JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
- jlong pointer, jint filter)
-{
-  struct cairographics2d *gr = JLONG_TO_PTR(struct cairographics2d, pointer);
-  g_assert (gr != NULL);
-  
-  if (gr->pattern == NULL)
-    return;
-  
-  switch ((enum java_awt_rendering_hints_filter) filter)
-    {
-    case java_awt_rendering_hints_VALUE_INTERPOLATION_NEAREST_NEIGHBOR:
-      cairo_pattern_set_filter (gr->pattern, CAIRO_FILTER_NEAREST);
-      break;
-    case java_awt_rendering_hints_VALUE_INTERPOLATION_BILINEAR:
-      cairo_pattern_set_filter (gr->pattern, CAIRO_FILTER_BILINEAR);
-      break; 
-    case java_awt_rendering_hints_VALUE_ALPHA_INTERPOLATION_SPEED:
-      cairo_pattern_set_filter (gr->pattern, CAIRO_FILTER_FAST);
-      break;
-    case java_awt_rendering_hints_VALUE_ALPHA_INTERPOLATION_DEFAULT:
-      cairo_pattern_set_filter (gr->pattern, CAIRO_FILTER_NEAREST);
-      break;
-    case java_awt_rendering_hints_VALUE_ALPHA_INTERPOLATION_QUALITY:
-      cairo_pattern_set_filter (gr->pattern, CAIRO_FILTER_BEST);
-      break;
-    }
-}
-
-JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoDrawLine
 (JNIEnv *env __attribute__ ((unused)), jobject obj __attribute__ ((unused)),
  jlong pointer, jdouble x1, jdouble y1, jdouble x2, jdouble y2)
@@ -747,45 +775,6 @@ Java_gnu_java_awt_peer_gtk_CairoGraphics2D_cairoFillRect
   cairo_new_path(gr->cr);
   cairo_rectangle(gr->cr, x, y, w, h);
   cairo_fill(gr->cr);
-}
-
-
-/************************** FONT STUFF ****************************/
-static void
-install_font_peer(cairo_t *cr,
-		  struct peerfont *pfont)
-{
-  cairo_font_face_t *ft;
-  FT_Face face = NULL;
-
-  g_assert(cr != NULL);
-  g_assert(pfont != NULL);
-
-  if (pfont->graphics_resource == NULL)
-    {
-      face = pango_fc_font_lock_face( (PangoFcFont *)pfont->font );
-      g_assert (face != NULL);
-
-      ft = cairo_ft_font_face_create_for_ft_face (face, 0);
-      g_assert (ft != NULL);
-
-      cairo_set_font_face (cr, ft);
-      /*      cairo_font_face_destroy (ft);*/
-      cairo_set_font_size (cr,
-                           (pango_font_description_get_size (pfont->desc) /
-                            (double)PANGO_SCALE));
-      ft = cairo_get_font_face (cr);
-      pango_fc_font_unlock_face( (PangoFcFont *)pfont->font );
-      pfont->graphics_resource = ft;
-    }
-  else
-    {
-      ft = (cairo_font_face_t *) pfont->graphics_resource;
-      cairo_set_font_face (cr, ft);
-      cairo_set_font_size (cr,
-                           (pango_font_description_get_size (pfont->desc) /
-                            (double)PANGO_SCALE));
-    }
 }
 
 static void 

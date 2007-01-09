@@ -406,7 +406,7 @@ public class JLayeredPane extends JComponent implements Accessible
    * Return a hashtable mapping child components of this container to
    * Integer objects representing the component's layer assignments.
    */
-  protected Hashtable getComponentToLayer()
+  protected Hashtable<Component, Integer> getComponentToLayer()
   {
     return componentToLayer;
   }

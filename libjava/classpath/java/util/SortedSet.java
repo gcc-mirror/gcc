@@ -1,6 +1,6 @@
 /* SortedSet.java -- A set that makes guarantees about the order of its
    elements
-   Copyright (C) 1998, 2001, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -74,7 +74,7 @@ package java.util;
  * @since 1.2
  * @status updated to 1.4
  */
-public interface SortedSet extends Set
+public interface SortedSet<E> extends Set<E>
 {
   /**
    * Returns the comparator used in sorting this set, or null if it is
@@ -82,7 +82,7 @@ public interface SortedSet extends Set
    *
    * @return the sorting comparator
    */
-  Comparator comparator();
+  Comparator<? super E> comparator();
 
   /**
    * Returns the first (lowest sorted) element in the set.
@@ -90,7 +90,7 @@ public interface SortedSet extends Set
    * @return the first element
    * @throws NoSuchElementException if the set is empty.
    */
-  Object first();
+  E first();
 
   /**
    * Returns a view of the portion of the set strictly less than toElement. The
@@ -113,7 +113,7 @@ public interface SortedSet extends Set
    * @throws NullPointerException if toElement is null but the set does not
    *         allow null elements
    */
-  SortedSet headSet(Object toElement);
+  SortedSet<E> headSet(E toElement);
 
   /**
    * Returns the last (highest sorted) element in the set.
@@ -121,7 +121,7 @@ public interface SortedSet extends Set
    * @return the last element
    * @throws NoSuchElementException if the set is empty.
    */
-  Object last();
+  E last();
 
   /**
    * Returns a view of the portion of the set greater than or equal to
@@ -149,7 +149,7 @@ public interface SortedSet extends Set
    * @throws NullPointerException if fromElement or toElement is null but the
    *         set does not allow null elements
    */
-  SortedSet subSet(Object fromElement, Object toElement);
+  SortedSet<E> subSet(E fromElement, E toElement);
 
   /**
    * Returns a view of the portion of the set greater than or equal to
@@ -172,5 +172,5 @@ public interface SortedSet extends Set
    * @throws NullPointerException if fromElement is null but the set does not
    *         allow null elements
    */
-  SortedSet tailSet(Object fromElement);
+  SortedSet<E> tailSet(E fromElement);
 }

@@ -79,157 +79,169 @@ public final class Engine
   /** This class cannot be instantiated. */
   private Engine() { }
 
-  // Class method.
-  // ------------------------------------------------------------------------
-
   /**
-   * Get the implementation for <i>algorithm</i> for service
-   * <i>service</i> from <i>provider</i>. The service is e.g.
-   * "Signature", and the algorithm "DSA".
-   *
-   * @param service   The service name.
+   * Return the implementation for <i>algorithm</i> for service <i>service</i>
+   * from <i>provider</i>. The service is e.g. "Signature", and the algorithm
+   * "DSA".
+   * 
+   * @param service The service name.
    * @param algorithm The name of the algorithm to get.
-   * @param provider  The provider to get the implementation from.
-   * @return The engine class for the specified algorithm; the object
-   *         returned is typically a subclass of the SPI class for that
-   *         service, but callers should check that this is so.
-   * @throws NoSuchAlgorithmException If the implementation cannot be
-   *         found or cannot be instantiated.
-   * @throws InvocationTargetException If the SPI class's constructor
-   *         throws an exception.
-   * @throws IllegalArgumentException If any of the three arguments are null.
+   * @param provider The provider to get the implementation from.
+   * @return The engine class for the specified algorithm; the object returned
+   *         is typically a subclass of the SPI class for that service, but
+   *         callers should check that this is so.
+   * @throws NoSuchAlgorithmException If the implementation cannot be found or
+   *           cannot be instantiated.
+   * @throws InvocationTargetException If the SPI class's constructor throws an
+   *           exception.
+   * @throws IllegalArgumentException If any of the three arguments is null.
    */
   public static Object getInstance(String service, String algorithm,
                                    Provider provider)
-    throws InvocationTargetException, NoSuchAlgorithmException
+      throws InvocationTargetException, NoSuchAlgorithmException
   {
     return getInstance(service, algorithm, provider, NO_ARGS);
   }
 
   /**
-   * Get the implementation for <i>algorithm</i> for service
-   * <i>service</i> from <i>provider</i>, passing <i>initArgs</i> to the
-   * SPI class's constructor (which cannot be null; pass a zero-length
-   * array if the SPI takes no arguments). The service is e.g.
-   * "Signature", and the algorithm "DSA".
-   *
-   * @param service   The service name.
+   * Return the implementation for <i>algorithm</i> for service <i>service</i>
+   * from <i>provider</i>, passing <i>initArgs</i> to the SPI class's
+   * constructor (which cannot be null; pass a zero-length array if the SPI
+   * takes no arguments). The service is e.g. "Signature", and the algorithm
+   * "DSA".
+   * 
+   * @param service The service name.
    * @param algorithm The name of the algorithm to get.
-   * @param provider  The provider to get the implementation from.
-   * @param initArgs  The arguments to pass to the SPI class's
-   *        constructor (cannot be null).
-   * @return The engine class for the specified algorithm; the object
-   *         returned is typically a subclass of the SPI class for that
-   *         service, but callers should check that this is so.
-   * @throws NoSuchAlgorithmException If the implementation cannot be
-   *         found or cannot be instantiated.
-   * @throws InvocationTargetException If the SPI class's constructor
-   *         throws an exception.
-   * @throws IllegalArgumentException If any of the four arguments are null.
+   * @param provider The provider to get the implementation from.
+   * @param initArgs The arguments to pass to the SPI class's constructor
+   *          (cannot be null).
+   * @return The engine class for the specified algorithm; the object returned
+   *         is typically a subclass of the SPI class for that service, but
+   *         callers should check that this is so.
+   * @throws NoSuchAlgorithmException If the implementation cannot be found or
+   *           cannot be instantiated.
+   * @throws InvocationTargetException If the SPI class's constructor throws an
+   *           exception.
+   * @throws IllegalArgumentException If any of the four arguments is
+   *           <code>null</code> or if either <code>service</code>, or
+   *           <code>algorithm</code> is an empty string.
    */
   public static Object getInstance(String service, String algorithm,
                                    Provider provider, Object[] initArgs)
-    throws InvocationTargetException, NoSuchAlgorithmException
+      throws InvocationTargetException, NoSuchAlgorithmException
   {
-    if (service != null)
-      service = service.trim();
+    if (service == null)
+      throw new IllegalArgumentException("service MUST NOT be null");
+    service = service.trim();
+    if (service.length() == 0)
+      throw new IllegalArgumentException("service MUST NOT be empty");
+    if (algorithm == null)
+      throw new IllegalArgumentException("algorithm MUST NOT be null");
+    algorithm = algorithm.trim();
+    if (algorithm.length() == 0)
+      throw new IllegalArgumentException("algorithm MUST NOT be empty");
+    if (provider == null)
+      throw new IllegalArgumentException("provider MUST NOT be null");
+    if (initArgs == null)
+      throw new IllegalArgumentException("Constructor's parameters MUST NOT be null");
 
-    if (algorithm != null)
-      algorithm = algorithm.trim();
-
-    if (service == null || service.length() == 0
-        || algorithm == null || algorithm.length() == 0
-        || provider == null || initArgs == null)
-      throw new IllegalArgumentException();
-
-    
     Enumeration enumer = provider.propertyNames();
     String key;
     String alias;
     int count = 0;
     boolean algorithmFound = false;
-
+    StringBuilder sb = new StringBuilder();
     while (enumer.hasMoreElements())
       {
         key = (String) enumer.nextElement();
-
         if (key.equalsIgnoreCase(service + "." + algorithm))
           {
             // remove the service portion from the key
             algorithm = key.substring(service.length() + 1); 
-            
             algorithmFound = true;
             break;
-
           }
         else if (key.equalsIgnoreCase(ALG_ALIAS + service + "." + algorithm))
           {
-
             alias = (String) provider.getProperty(key);
-            
             if (! algorithm.equalsIgnoreCase(alias)) // does not refer to itself
               {
                 algorithm = alias;
                 if (count++ > MAX_ALIASES)
-                  throw new NoSuchAlgorithmException("too many aliases");
-                
+                  {
+                    sb.append("Algorithm [").append(algorithm)
+                        .append("] of type [").append(service)
+                        .append("] from provider [").append(provider)
+                        .append("] has too many aliases");
+                    throw new NoSuchAlgorithmException(sb.toString());
+                  }
                 // need to reset enumeration to now look for the alias
                 enumer = provider.propertyNames();
               }
           }
       }
-    
+
     if (! algorithmFound)
       {
-        throw new NoSuchAlgorithmException(algorithm);
+        sb.append("Algorithm [").append(algorithm).append("] of type [")
+            .append(service).append("] from provider [")
+            .append(provider).append("] is not found");
+        throw new NoSuchAlgorithmException(sb.toString());
       }
-    
-    
-    // Find and instantiate the implementation.
+
+    // Find and instantiate the implementation
     Class clazz = null;
     ClassLoader loader = provider.getClass().getClassLoader();
     Constructor constructor = null;
-    String error = algorithm;
-
+    String className = provider.getProperty(service + "." + algorithm);
+    sb.append("Class [").append(className).append("] for algorithm [")
+        .append(algorithm).append("] of type [").append(service)
+        .append("] from provider [").append(provider).append("] ");
+    Throwable cause = null;
     try
       {
         if (loader != null)
-          clazz = loader.loadClass(provider.getProperty(service+"."+algorithm));
+          clazz = loader.loadClass(className);
         else
-          clazz = Class.forName(provider.getProperty(service+"."+algorithm));
+          clazz = Class.forName(className);
         constructor = getCompatibleConstructor(clazz, initArgs);
         return constructor.newInstance(initArgs);
       }
-    catch (ClassNotFoundException cnfe)
+    catch (ClassNotFoundException x)
       {
-        error = "class not found: " + algorithm;
+        sb.append("cannot not be found");
+        cause = x;
       }
-    catch (IllegalAccessException iae)
+    catch (IllegalAccessException x)
       {
-        error = "illegal access: " + iae.getMessage();
+        sb.append("cannot be accessed");
+        cause = x;
       }
-    catch (InstantiationException ie)
+    catch (InstantiationException x)
       {
-        error = "instantiation exception: " + ie.getMessage();
+        sb.append("cannot be instantiated");
+        cause = x;
       }
-    catch (ExceptionInInitializerError eiie)
+    catch (ExceptionInInitializerError x)
       {
-        error = "exception in initializer: " + eiie.getMessage();
+        sb.append("cannot be initialized");
+        cause = x;
       }
-    catch (SecurityException se)
+    catch (SecurityException x)
       {
-        error = "security exception: " + se.getMessage();
+        sb.append("caused a security violation");
+        cause = x;
       }
-    catch (NoSuchMethodException nsme)
+    catch (NoSuchMethodException x)
       {
-        error = "no appropriate constructor found";
+        sb.append("does not have/expose an appropriate constructor");
+        cause = x;
       }
 
-    throw new NoSuchAlgorithmException(error);
+    NoSuchAlgorithmException x = new NoSuchAlgorithmException(sb.toString());
+    x.initCause(cause);
+    throw x;
   }
-
-  // Own methods.
-  // ------------------------------------------------------------------------
 
   /**
    * Find a constructor in the given class that can take the specified

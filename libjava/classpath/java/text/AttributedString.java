@@ -1,5 +1,5 @@
 /* AttributedString.java -- Models text with attributes
-   Copyright (C) 1998, 1999, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2004, 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,8 +50,11 @@ import java.util.Set;
  * This class models a <code>String</code> with attributes over various
  * subranges of the string.  It allows applications to access this 
  * information via the <code>AttributedCharacterIterator</code> interface.
+ * 
+ * @since 1.2
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @since 1.2
  */
 public class AttributedString
 {
@@ -66,23 +69,23 @@ public class AttributedString
     Map attribs;
 
     /** The beginning index of the attributes */
-    int begin_index;
+    int beginIndex;
 
     /** The ending index of the attributes */
-    int end_index;
+    int endIndex;
 
     /**
      * Creates a new attribute range.
      * 
      * @param attribs  the attributes.
-     * @param begin_index  the start index.
-     * @param end_index  the end index.
+     * @param beginIndex  the start index.
+     * @param endIndex  the end index.
      */
-    AttributeRange(Map attribs, int begin_index, int end_index) 
+    AttributeRange(Map attribs, int beginIndex, int endIndex) 
     {
       this.attribs = attribs;
-      this.begin_index = begin_index;
-      this.end_index = end_index;
+      this.beginIndex = beginIndex;
+      this.endIndex = endIndex;
     }
 
   } // Inner class AttributeRange
@@ -116,7 +119,8 @@ public class AttributedString
    * @param str The <code>String</code> to be attributed.
    * @param attributes The attribute list.
    */
-  public AttributedString(String str, Map attributes)
+  public AttributedString(String str,
+                          Map<? extends AttributedCharacterIterator.Attribute, ?> attributes)
   {
     this(str);
 
@@ -147,13 +151,13 @@ public class AttributedString
    *
    * @param aci The <code>AttributedCharacterIterator</code> containing the 
    *            text and attribute information.
-   * @param begin_index The beginning index of the text subrange.
-   * @param end_index The ending index of the text subrange.
+   * @param beginIndex The beginning index of the text subrange.
+   * @param endIndex The ending index of the text subrange.
    */
-  public AttributedString(AttributedCharacterIterator aci, int begin_index,
-                          int end_index)
+  public AttributedString(AttributedCharacterIterator aci, int beginIndex,
+                          int endIndex)
   {
-    this(aci, begin_index, end_index, null);
+    this(aci, beginIndex, endIndex, null);
   }
 
   /**
@@ -181,9 +185,9 @@ public class AttributedString
     StringBuffer sb = new StringBuffer("");
 
     // Get the valid attribute list
-    Set all_attribs = aci.getAllAttributeKeys();
+    Set allAttribs = aci.getAllAttributeKeys();
     if (attributes != null)
-      all_attribs.retainAll(Arrays.asList(attributes));
+      allAttribs.retainAll(Arrays.asList(attributes));
 
     // Loop through and extract the attributes
     char c = aci.setIndex(begin);
@@ -193,7 +197,7 @@ public class AttributedString
       { 
         sb.append(c);
 
-        Iterator iter = all_attribs.iterator();
+        Iterator iter = allAttribs.iterator();
         while(iter.hasNext())
           {
             Object obj = iter.next();
@@ -206,9 +210,10 @@ public class AttributedString
               (AttributedCharacterIterator.Attribute)obj;
 
             // Make sure the attribute is defined.
-            int rl = aci.getRunLimit(attrib);
-            if (rl == -1)
+            Object attribObj = aci.getAttribute(attrib);
+            if (attribObj == null)
               continue;
+            int rl = aci.getRunLimit(attrib);
             if (rl > end)
               rl = end;
             rl -= begin;
@@ -220,22 +225,21 @@ public class AttributedString
 
             // If the attribute run starts before the beginning index, we
             // need to junk it if it is an Annotation.
-            Object attrib_obj = aci.getAttribute(attrib);
-	    rs -= begin;
+            rs -= begin;
             if (rs < 0)
               {
-                if (attrib_obj instanceof Annotation)
+                if (attribObj instanceof Annotation)
                    continue;
 
                 rs = 0;
               }
 
             // Create a map object.  Yes this will only contain one attribute
-            Map new_map = new Hashtable();
-            new_map.put(attrib, attrib_obj);
+            Map newMap = new Hashtable();
+            newMap.put(attrib, attribObj);
 
             // Add it to the attribute list.
-            accum.add(new AttributeRange(new_map, rs, rl));
+            accum.add(new AttributeRange(newMap, rs, rl));
           }
 
         c = aci.next();
@@ -290,27 +294,28 @@ public class AttributedString
    * specified subrange of the string.
    *
    * @param attributes The list of attributes.
-   * @param begin_index The beginning index.
-   * @param end_index The ending index
+   * @param beginIndex The beginning index.
+   * @param endIndex The ending index
    *
    * @throws NullPointerException if <code>attributes</code> is 
    *         <code>null</code>.
    * @throws IllegalArgumentException if the subrange is not valid.
    */
-  public void addAttributes(Map attributes, int begin_index, int end_index)
+  public void addAttributes(Map<? extends AttributedCharacterIterator.Attribute, ?> attributes,
+			    int beginIndex, int endIndex)
   {
     if (attributes == null)
       throw new NullPointerException("null attribute");
 
-    if ((begin_index < 0) || (end_index > sci.getEndIndex()) ||
-        (end_index <= begin_index))
+    if ((beginIndex < 0) || (endIndex > sci.getEndIndex()) ||
+        (endIndex <= beginIndex))
       throw new IllegalArgumentException("bad range");
 
     AttributeRange[] new_list = new AttributeRange[attribs.length + 1];
     System.arraycopy(attribs, 0, new_list, 0, attribs.length);
     attribs = new_list;
-    attribs[attribs.length - 1] = new AttributeRange(attributes, begin_index, 
-                                                     end_index);
+    attribs[attribs.length - 1] = new AttributeRange(attributes, beginIndex, 
+                                                     endIndex);
   } 
 
   /**
@@ -351,20 +356,20 @@ public class AttributedString
    * returned.  
    *
    * @param attributes A list of attributes to include in the returned iterator.
-   * @param begin_index The beginning index of the subrange.
-   * @param end_index The ending index of the subrange.
+   * @param beginIndex The beginning index of the subrange.
+   * @param endIndex The ending index of the subrange.
    *
    * @return An <code>AttributedCharacterIterator</code> for this string.
    */
   public AttributedCharacterIterator getIterator(
           AttributedCharacterIterator.Attribute[] attributes, 
-          int begin_index, int end_index)
+          int beginIndex, int endIndex)
   {
-    if ((begin_index < 0) || (end_index > sci.getEndIndex()) ||
-        (end_index < begin_index))
+    if ((beginIndex < 0) || (endIndex > sci.getEndIndex()) ||
+        (endIndex < beginIndex))
       throw new IllegalArgumentException("bad range");
 
-    return(new AttributedStringIterator(sci, attribs, begin_index, end_index,
+    return(new AttributedStringIterator(sci, attribs, beginIndex, endIndex,
                                         attributes));
   }
 

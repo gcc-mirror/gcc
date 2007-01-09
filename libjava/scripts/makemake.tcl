@@ -49,10 +49,13 @@ set package_map(gnu/xml) bc
 set package_map(javax/imageio) bc
 set package_map(javax/xml) bc
 set package_map(gnu/java/beans) bc
+set package_map(gnu/java/awt/dnd/peer/gtk) bc
 set package_map(gnu/java/util/prefs/gconf) bc
 set package_map(gnu/java/awt/peer/gtk) bc
 set package_map(gnu/java/awt/dnd/peer/gtk) bc
 set package_map(gnu/java/awt/peer/qt) bc
+set package_map(gnu/java/awt/peer/x) bc
+set package_map(gnu/java/util/prefs/gconf) bc
 set package_map(gnu/javax/sound/midi) bc
 set package_map(org/xml) bc
 set package_map(org/w3c) bc
@@ -61,15 +64,6 @@ set package_map(javax/rmi) bc
 set package_map(org/omg) bc
 set package_map(gnu/CORBA) bc
 set package_map(gnu/javax/rmi) bc
-
-# This is handled specially by the Makefile.
-# We still want it byte-compiled so it isn't in the .omit file.
-set package_map(gnu/gcj/tools/gcj_dbtool/Main.java) ignore
-
-# These are handled specially.  If we list Class.java with other files
-# in java.lang, we hit a compiler bug.
-set package_map(java/lang/Class.java) ignore
-set package_map(java/lang/Object.java) ignore
 
 # More special cases.  These end up in their own library.
 # Note that if we BC-compile AWT we must update these as well.
@@ -225,7 +219,7 @@ proc scan_directory {basedir subdir} {
 # Scan known packages beneath the base directory for .java source
 # files.
 proc scan_packages {basedir} {
-  foreach subdir {gnu java javax org META-INF} {
+  foreach subdir {gnu java javax org sun META-INF} {
     if {[file exists $basedir/$subdir]} {
       scan_directory $basedir $subdir
     }
@@ -253,12 +247,16 @@ proc emit_bc_rule {package} {
   if {[info exists exclusion_map($package)]} {
     set omit "| grep -v $exclusion_map($package)"
   }
-  puts  "\t@find classpath/lib/$package -name '*.class'${omit} > $tname"
+  puts  "\t@find \$(srcdir)/classpath/lib/$package -name '*.class'${omit} > $tname"
   puts "\t\$(LTGCJCOMPILE) -fjni -findirect-dispatch -fno-indirect-classes -c -o $loname @$tname"
   puts "\t@rm -f $tname"
   puts ""
 
-  lappend bc_objects $loname
+  # We skip these because they are built into their own libraries and
+  # are handled specially in Makefile.am.
+  if {$loname != "gnu-java-awt-peer-qt.lo" && $loname != "gnu-java-awt-peer-x.lo"} {
+    lappend bc_objects $loname
+  }
 }
 
 # Emit a rule for a 'package' package.
@@ -275,22 +273,44 @@ proc emit_package_rule {package} {
   set lname $base.list
   set dname $base.deps
 
+  if {$pkgname == "java/lang"} {
+    # Object and Class are special cases due to an apparent compiler
+    # bug.  Process is a special case because we don't build all
+    # concrete implementations of Process on all platforms.
+    set omit "| tr ' ' '\\n' | fgrep -v Object.class | fgrep -v Class.class | grep -v '\[^/\]Process' "
+  } else {
+    set omit ""
+  }
+
   # A rule to make the phony file we are going to compile.
   puts "$lname: \$($varname)"
   puts "\t@\$(mkinstalldirs) \$(dir \$@)"
-  puts "\t@for file in \$($varname); do \\"
-  puts "\t  if test -f \$(srcdir)/\$\$file; then \\"
-  puts "\t    echo \$(srcdir)/\$\$file; \\"
-  puts "\t  else echo \$\$file; fi; \\"
-  puts "\tdone > $lname"
+  puts "\techo \$(srcdir)/classpath/lib/$package/*.class $omit> $lname"
   puts ""
   puts "-include $dname"
   puts ""
   puts ""
 
-  if {$pkgname != "gnu/gcj/xlib" && $pkgname != "gnu/awt/xlib"} {
+  if {$pkgname != "gnu/gcj/xlib" && $pkgname != "gnu/awt/xlib"
+      && $pkgname != "gnu/gcj/tools/gcj_dbtool"} {
     lappend package_files $lname
   }
+}
+
+# Emit a package-like rule for a platform-specific Process
+# implementation.
+proc emit_process_package_rule {platform} {
+  set base "java/process-$platform"
+  set lname $base.list
+  set dname $base.deps
+
+  puts "$lname: java/lang/${platform}Process.java"
+  puts "\t@\$(mkinstalldirs) \$(dir \$@)"
+  puts "\techo \$(srcdir)/classpath/lib/java/lang/${platform}Process*.class > $lname"
+  puts ""
+  puts "-include $dname"
+  puts ""
+  puts ""
 }
 
 # Emit a source file variable for a package, and corresponding header
@@ -326,7 +346,9 @@ proc emit_source_var {package} {
   if {$package_map($package) != "bc"} {
     # Ugly code to build up the appropriate patsubst.
     set result "\$(patsubst %.java,%.h,\$($varname))"
-    foreach dir [lsort [array names dirs]] {
+    # We use -decreasing so that classpath/external will be stripped
+    # before classpath.
+    foreach dir [lsort -decreasing [array names dirs]] {
       if {$dir != "."} {
 	set result "\$(patsubst $dir/%,%,$result)"
       }
@@ -363,22 +385,21 @@ if {[llength $argv] > 0 && [lindex $argv 0] == "-verbose"} {
 
 # Read the proper .omit files.
 read_omit_file standard.omit.in
-read_omit_file classpath/lib/standard.omit
+read_omit_file classpath/lib/standard.omit.in
 
 # Scan classpath first.
 scan_packages classpath
 scan_packages classpath/external/sax
 scan_packages classpath/external/w3c_dom
 scan_packages classpath/external/relaxngDatatype
+scan_packages classpath/external/jsr166
 # Resource files.
 scan_packages classpath/resource
 # Now scan our own files; this will correctly override decisions made
 # when scanning classpath.
 scan_packages .
 # Files created by the build.
-classify_source_file . java/lang/ConcreteProcess.java
 classify_source_file classpath gnu/java/locale/LocaleData.java
-classify_source_file classpath gnu/classpath/Configuration.java
 classify_source_file classpath gnu/java/security/Configuration.java
 
 puts "## This file was automatically generated by scripts/makemake.tcl"
@@ -405,6 +426,10 @@ foreach package [lsort [array names package_map]] {
     error "unrecognized type: $package_map($package)"
   }
 }
+
+emit_process_package_rule Ecos
+emit_process_package_rule Win32
+emit_process_package_rule Posix
 
 pp_var all_packages_source_files $package_files
 pp_var ordinary_header_files $header_vars "\$(" ")"

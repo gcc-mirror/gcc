@@ -40,6 +40,7 @@ package javax.print.attribute.standard;
 
 import java.util.Locale;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.PrintRequestAttribute;
 import javax.print.attribute.TextSyntax;
 
@@ -92,7 +93,7 @@ public final class RequestingUserName extends TextSyntax
    *
    * @return The class <code>RequestingUserName</code> itself.
    */
-  public Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return RequestingUserName.class;
   }

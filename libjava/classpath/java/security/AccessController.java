@@ -88,7 +88,7 @@ public final class AccessController
    * should be be called.
    * @return the result of the <code>action.run()</code> method.
    */
-  public static Object doPrivileged(PrivilegedAction action)
+  public static <T> T doPrivileged(PrivilegedAction<T> action)
   {
     VMAccessController.pushContext(null);
     try
@@ -115,8 +115,8 @@ public final class AccessController
    * domains should be added to the protection domain of the calling class.
    * @return the result of the <code>action.run()</code> method.
    */
-  public static Object doPrivileged(PrivilegedAction action,
-                                    AccessControlContext context)
+  public static <T> T doPrivileged(PrivilegedAction<T> action,
+                                   AccessControlContext context)
   {
     VMAccessController.pushContext(context);
     try
@@ -145,7 +145,7 @@ public final class AccessController
    * @exception PrivilegedActionException wrapped around any checked exception
    * that is thrown in the <code>run()</code> method.
    */
-  public static Object doPrivileged(PrivilegedExceptionAction action)
+  public static <T> T doPrivileged(PrivilegedExceptionAction<T> action)
     throws PrivilegedActionException
   {
     VMAccessController.pushContext(null);
@@ -185,8 +185,8 @@ public final class AccessController
    * @exception PrivilegedActionException wrapped around any checked exception
    * that is thrown in the <code>run()</code> method.
    */
-  public static Object doPrivileged(PrivilegedExceptionAction action,
-                                    AccessControlContext context)
+  public static <T> T doPrivileged(PrivilegedExceptionAction<T> action,
+                                   AccessControlContext context)
     throws PrivilegedActionException
   {
     VMAccessController.pushContext(context);

@@ -247,6 +247,11 @@ public class JSplitPane extends JComponent implements Accessible
   /** The component on the right or bottom. */
   protected Component rightComponent;
 
+  /**
+   * The divider location.
+   */
+  private int dividerLocation;
+
   /** Determines how extra space should be allocated. */
   private transient double resizeWeight;
 
@@ -288,7 +293,7 @@ public class JSplitPane extends JComponent implements Accessible
     continuousLayout = newContinuousLayout;
     setLeftComponent(newLeftComponent);
     setRightComponent(newRightComponent);
-
+    dividerLocation = -1;
     updateUI();
   }
 
@@ -355,10 +360,6 @@ public class JSplitPane extends JComponent implements Accessible
    */
   protected void addImpl(Component comp, Object constraints, int index)
   {
-    int left = 0;
-    int right = 1;
-    int div = 2;
-    int place;
     if (constraints == null)
       {
         if (leftComponent == null)
@@ -431,10 +432,7 @@ public class JSplitPane extends JComponent implements Accessible
    */
   public int getDividerLocation()
   {
-    if (ui != null)
-      return ((SplitPaneUI) ui).getDividerLocation(this);
-    else
-      return -1;
+    return dividerLocation;
   }
 
   /**
@@ -722,17 +720,13 @@ public class JSplitPane extends JComponent implements Accessible
    */
   public void setDividerLocation(int location)
   {
-    if (ui != null && location != getDividerLocation())
-      {
-        int oldLocation = getDividerLocation();        
-        if (location < 0)
-          ((SplitPaneUI) ui).resetToPreferredSizes(this);
-        else
-            ((SplitPaneUI) ui).setDividerLocation(this, location);
-        
-        firePropertyChange(DIVIDER_LOCATION_PROPERTY, oldLocation, 
-                           getDividerLocation());
-      }
+    int oldLocation = dividerLocation;
+    dividerLocation = location;
+    SplitPaneUI ui = getUI();
+    if (ui != null)
+      ui.setDividerLocation(this, location);
+    firePropertyChange(DIVIDER_LOCATION_PROPERTY, oldLocation, 
+                       location);
   }
 
   /**

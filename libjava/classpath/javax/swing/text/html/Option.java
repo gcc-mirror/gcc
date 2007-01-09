@@ -72,10 +72,10 @@ public class Option
    */
   public Option(AttributeSet attr)
   {
-    attributes = attr;
+    // Protect the attribute set.
+    attributes = attr.copyAttributes();
     label = null;
-    selected = false;
-    // FIXME: Probably initialize something using the attributes.
+    selected = attr.getAttribute(HTML.Attribute.SELECTED) != null;
   }
 
   /**
@@ -151,7 +151,9 @@ public class Option
    */
   public String getValue()
   {
-    // FIXME: Return some attribute here if specified.
-    return label;
+    String value = (String) attributes.getAttribute(HTML.Attribute.VALUE);
+    if (value == null)
+      value = label;
+    return value;
   }
 }

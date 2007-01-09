@@ -153,7 +153,7 @@ public abstract class htmlValidator
    * Remove the given tag from the stack or (if found) from the list
    * of the forcibly closed tags.
    */
-  public void closeTag(TagElement tElement)
+  public boolean closeTag(TagElement tElement)
   {
     HTML.Tag tag = tElement.getHTMLTag();
     hTag x;
@@ -191,11 +191,12 @@ public abstract class htmlValidator
                   }
 
                 stack.remove(x);
-                return;
+                return true;
               }
           }
       }
     s_error("Closing unopened <" + tag + ">");
+    return false;
   }
 
   /**

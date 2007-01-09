@@ -201,7 +201,7 @@ public abstract class IdentityScope extends Identity
    * 
    * @return an {@link Enumeration} of the identities in this scope.
    */
-  public abstract Enumeration identities();
+  public abstract Enumeration<Identity> identities();
 
   /**
    * Returns a string representing this instance. It includes the name, the

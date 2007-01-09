@@ -30,10 +30,22 @@ details.  */
 using namespace gnu::gcj::runtime;
 using namespace java::lang;
 
+extern "Java"
+{
+  namespace gnu
+  {
+    namespace classpath
+    {
+        class VMStackWalker;
+    }
+  }
+}
+
 enum _Jv_FrameType
 {
   frame_native,
-  frame_interpreter
+  frame_interpreter,
+  frame_proxy
 };
 
 #ifdef INTERPRETER
@@ -55,6 +67,10 @@ struct _Jv_StackFrame
 #ifdef INTERPRETER
     _Jv_InterpFrameInfo interp;
 #endif
+    struct {
+      jclass proxyClass;
+      _Jv_Method *proxyMethod;
+    };
     struct {
       void *ip;
       void *start_ip;
@@ -85,12 +101,14 @@ struct _Jv_UnwindState
       length = ln;
       pos = 0;
       frames = NULL;
+#ifdef INTERPRETER
       Thread *thread = Thread::currentThread();
       // Check for NULL currentThread(), in case an exception is created 
       // very early during the runtime startup.
-#ifdef INTERPRETER
       if (thread)
 	interp_frame = (_Jv_InterpFrame *) thread->interp_frame;
+      else
+	interp_frame = NULL;
 #endif
       trace_function = NULL;
       trace_data = NULL;
@@ -117,6 +135,8 @@ private:
   static _Unwind_Reason_Code calling_class_trace_fn (_Jv_UnwindState *state);
   static _Unwind_Reason_Code non_system_trace_fn (_Jv_UnwindState *state);
   static _Unwind_Reason_Code accesscontrol_trace_fn (_Jv_UnwindState *state);
+  static _Unwind_Reason_Code stackwalker_trace_fn (_Jv_UnwindState *state);
+  static _Unwind_Reason_Code stackwalker_nnl_trace_fn (_Jv_UnwindState *state);
 
 public:
   static _Jv_StackTrace *GetStackTrace (void);
@@ -125,11 +145,14 @@ public:
     java::lang::Throwable *throwable);
   static jclass GetCallingClass (jclass);
   static void GetCallerInfo (jclass checkClass, jclass *, _Jv_Method **);
-  static JArray<jclass> *GetClassContext (jclass checkClass);
   static ClassLoader *GetFirstNonSystemClassLoader (void);
   static jobjectArray GetAccessControlStack ();
+  static JArray<jclass> *GetStackWalkerStack ();
+  static jclass GetStackWalkerCallingClass ();
+  static ClassLoader *GetStackWalkerFirstNonNullLoader ();
 
   friend jclass _Jv_GetMethodDeclaringClass (jmethodID);
+  friend class gnu::classpath::VMStackWalker;
 };
 
 // Information about a given address.

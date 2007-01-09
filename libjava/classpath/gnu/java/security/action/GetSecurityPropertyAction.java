@@ -50,7 +50,7 @@ import java.security.Security;
  * String passwd = AccessController.doPrivileged(action);
  * </code>
  */
-public class GetSecurityPropertyAction implements PrivilegedAction
+public class GetSecurityPropertyAction implements PrivilegedAction<String>
 {
   private String name;
   private String value;
@@ -83,7 +83,7 @@ public class GetSecurityPropertyAction implements PrivilegedAction
     return this;
   }
 
-  public Object run()
+  public String run()
   {
     String val = Security.getProperty(name);
     if (val == null)

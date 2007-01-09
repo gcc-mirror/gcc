@@ -122,6 +122,41 @@ classpath_jawt_get_visualID (JNIEnv* env, jobject canvas)
 
 /* Does not require locking: meant to be called after the drawing
    surface is locked. */
+int
+classpath_jawt_get_depth (JNIEnv* env, jobject canvas)
+{
+  GtkWidget *widget;
+  GdkVisual *visual;
+  void *ptr;
+  jobject peer;
+  jclass class_id;
+  jmethodID method_id;
+
+  class_id = (*env)->GetObjectClass (env, canvas);
+
+  method_id = (*env)->GetMethodID (env, class_id,
+				   "getPeer",
+				   "()Ljava/awt/peer/ComponentPeer;");
+
+  peer = (*env)->CallObjectMethod (env, canvas, method_id);
+
+  ptr = NSA_GET_PTR (env, peer);
+
+  widget = GTK_WIDGET (ptr);
+
+  if (GTK_WIDGET_REALIZED (widget))
+    {
+      visual = gtk_widget_get_visual (widget);
+      g_assert (visual != NULL);
+
+      return visual->depth;
+    }
+  else
+    return (VisualID) NULL;
+}
+
+/* Does not require locking: meant to be called after the drawing
+   surface is locked. */
 Drawable
 classpath_jawt_get_drawable (JNIEnv* env, jobject canvas)
 {

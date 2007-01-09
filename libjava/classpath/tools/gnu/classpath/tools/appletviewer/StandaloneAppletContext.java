@@ -58,7 +58,8 @@ class StandaloneAppletContext extends CommonAppletContext
 
   public void showDocument(URL url, String target)
   {
-    System.err.println("showDocument is not implemented in standalone mode");
+    System.err.println
+      (Messages.getString("StandaloneAppletContext.ShowDocumentError"));
   }
 
   // In standalone mode, there are potentially several windows, each

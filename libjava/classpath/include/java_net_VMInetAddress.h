@@ -14,6 +14,7 @@ JNIEXPORT jstring JNICALL Java_java_net_VMInetAddress_getLocalHostname (JNIEnv *
 JNIEXPORT jbyteArray JNICALL Java_java_net_VMInetAddress_lookupInaddrAny (JNIEnv *env, jclass);
 JNIEXPORT jstring JNICALL Java_java_net_VMInetAddress_getHostByAddr (JNIEnv *env, jclass, jbyteArray);
 JNIEXPORT jobjectArray JNICALL Java_java_net_VMInetAddress_getHostByName (JNIEnv *env, jclass, jstring);
+JNIEXPORT jbyteArray JNICALL Java_java_net_VMInetAddress_aton (JNIEnv *env, jclass, jstring);
 
 #ifdef __cplusplus
 }

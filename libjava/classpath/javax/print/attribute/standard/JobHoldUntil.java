@@ -40,6 +40,7 @@ package javax.print.attribute.standard;
 
 import java.util.Date;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.DateTimeSyntax;
 import javax.print.attribute.PrintJobAttribute;
 import javax.print.attribute.PrintRequestAttribute;
@@ -98,7 +99,7 @@ public final class JobHoldUntil extends DateTimeSyntax
    *
    * @return The class <code>JobHoldUntil</code> itself.
    */
-  public Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return JobHoldUntil.class;
   }

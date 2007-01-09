@@ -37,14 +37,20 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.swing;
 
+import gnu.classpath.SystemProperties;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Insets;
-import java.awt.Shape;
+import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.peer.ComponentPeer;
 import java.awt.peer.ContainerPeer;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * A peer for Container to be used with the Swing based AWT peers.
@@ -57,13 +63,53 @@ public class SwingContainerPeer
 {
 
   /**
+   * Stores all heavyweight descendents of the container. This is used
+   * in {@link #peerPaintChildren(Graphics)}.
+   */
+  private LinkedList heavyweightDescendents;
+
+  /**
+   * The backbuffer used for painting UPDATE events.
+   */
+  private Image backbuffer;
+
+  /**
    * Creates a new SwingContainerPeer.
    *
    * @param awtCont
    */
-  public SwingContainerPeer(Component awtCont)
+  public SwingContainerPeer(Container awtCont)
   {
-    init(awtCont, null);
+    heavyweightDescendents = new LinkedList();
+  }
+
+  /**
+   * Registers a heavyweight descendent. This is then painted by
+   * {@link #peerPaintChildren(Graphics)}.
+   *
+   * @param comp the descendent to register
+   *
+   * @see #peerPaintChildren(Graphics)
+   * @see #removeHeavyweightDescendent(Component)
+   */
+  synchronized void addHeavyweightDescendent(Component comp)
+  {
+    heavyweightDescendents.add(comp);
+    focusOwner = null;
+  }
+
+  /**
+   * Unregisters a heavyweight descendent.
+   *
+   * @param comp the descendent to unregister
+   *
+   * @see #peerPaintChildren(Graphics)
+   * @see #addHeavyweightDescendent(Component)
+   */
+  synchronized void removeHeavyweightDescendent(Component comp)
+  {
+    heavyweightDescendents.remove(comp);
+    focusOwner = null;
   }
 
   /**
@@ -92,12 +138,7 @@ public class SwingContainerPeer
    */
   public Insets getInsets()
   {
-    Insets retVal;
-    if (swingComponent != null)
-      retVal = swingComponent.getJComponent().getInsets();
-    else
-      retVal = new Insets(0, 0, 0, 0);
-    return retVal;
+    return insets();
   }
 
   /**
@@ -171,38 +212,83 @@ public class SwingContainerPeer
   }
 
   /**
-   * Triggers painting of a component. This calls peerPaint on all the child
-   * components of this container.
-   *
-   * @param g the graphics context to paint to
+   * Performs the super behaviour (call peerPaintComponent() and
+   * awtComponent.paint()), and forwards the paint request to the heavyweight
+   * descendents of the container.
    */
-  protected void peerPaint(Graphics g)
+  protected void peerPaint(Graphics g, boolean update)
   {
-    Container c = (Container) awtComponent;
-    Component[] children = c.getComponents();
-    for (int i = children.length - 1; i >= 0; --i)
+    if (isDoubleBuffering())
       {
-        Component child = children[i];
-        ComponentPeer peer = child.getPeer();
-        boolean translated = false;
-        boolean clipped = false;
-        Shape oldClip = g.getClip();
+        int width = awtComponent.getWidth();
+        int height = awtComponent.getHeight();
+        if (backbuffer == null
+            || backbuffer.getWidth(awtComponent) < width
+            || backbuffer.getHeight(awtComponent) < height)
+          backbuffer = awtComponent.createImage(width, height);
+        Graphics g2 = backbuffer.getGraphics();
+        Rectangle clip = g.getClipRect();
         try
-        {
-          g.translate(child.getX(), child.getY());
-          translated = true;
-          g.setClip(0, 0, child.getWidth(), child.getHeight());
-          clipped = true;
-          if (peer instanceof SwingComponentPeer)
-            ((SwingComponentPeer) peer).peerPaint(g);
-        }
+          {
+            g2.setClip(clip);
+            super.peerPaint(g2, update);
+            peerPaintChildren(g2);
+          }
         finally
-        {
-          if (translated)
-            g.translate(- child.getX(), - child.getY());
-          if (clipped)
-            g.setClip(oldClip);
-        }
+          {
+            g2.dispose();
+          }
+        g.drawImage(backbuffer, 0, 0, awtComponent);
+      }
+    else
+      {
+        super.peerPaint(g, update);
+        peerPaintChildren(g);
+      }
+  }
+
+  /**
+   * Determines if we should do double buffering or not.
+   *
+   * @return if we should do double buffering or not
+   */
+  private boolean isDoubleBuffering()
+  {
+    Object prop =
+      SystemProperties.getProperty("gnu.awt.swing.doublebuffering", "false");
+    return prop.equals("true");
+  }
+
+  /**
+   * Paints any heavyweight child components.
+   *
+   * @param g the graphics to use for painting
+   */
+  protected synchronized void peerPaintChildren(Graphics g)
+  {
+    // TODO: Is this the right painting order?
+    for (Iterator i = heavyweightDescendents.iterator(); i.hasNext();)
+      {
+        Component child = (Component) i.next();
+        ComponentPeer peer = child.getPeer();
+
+        if (peer instanceof SwingComponentPeer && child.isVisible())
+          {
+            // TODO: The translation here doesn't work for deeper
+            // nested children. Fix this!
+            Graphics g2 = g.create(child.getX(), child.getY(),
+                                   child.getWidth(), child.getHeight());
+            try
+              {
+                // update() is only called for the topmost component if
+                // necessary, all other components only get paint() called.
+                ((SwingComponentPeer) peer).peerPaint(g2, false);
+              }
+            finally
+              {
+                g2.dispose();
+              }
+          }
       }
   }
 
@@ -214,17 +300,13 @@ public class SwingContainerPeer
   protected void handleMouseEvent(MouseEvent ev)
   {
     Component comp = awtComponent.getComponentAt(ev.getPoint());
-    if(comp == null)
-      comp = awtComponent;
-    if (comp != null)
+    if(comp == null) comp = awtComponent;
+    ComponentPeer peer = comp.getPeer();
+    if (awtComponent != comp && !comp.isLightweight() && peer instanceof SwingComponentPeer)
       {
-        ComponentPeer peer = comp.getPeer();
-        if (awtComponent != comp && !comp.isLightweight() && peer instanceof SwingComponentPeer)
-          {
-            ev.translatePoint(comp.getX(), comp.getY());
-            ev.setSource(comp);
-            ((SwingComponentPeer) peer).handleMouseEvent(ev);
-          }
+        ev.translatePoint(comp.getX(), comp.getY());
+        ev.setSource(comp);
+        ((SwingComponentPeer) peer).handleMouseEvent(ev);
       }
   }
 
@@ -246,4 +328,39 @@ public class SwingContainerPeer
           }
       }
   }
+  
+  /**
+   * Handles key events on the component. This is usually forwarded to the
+   * SwingComponent's processKeyEvent() method.
+   *
+   * @param e the key event
+   */
+  protected void handleKeyEvent(KeyEvent e)
+  {
+    Component owner = getFocusOwner();
+    if(owner != null)
+      owner.dispatchEvent(e);
+    else 
+      super.handleKeyEvent(e);
+  }
+
+  private Component focusOwner = null;
+  
+  private Component getFocusOwner()
+  {
+      if(focusOwner == null)
+      {
+        for(Iterator iter=heavyweightDescendents.iterator(); iter.hasNext();)
+        {
+           Component child = (Component) iter.next();
+          if(child.isFocusable())
+          {
+              focusOwner = child;
+            break;
+          }          
+      }
+      }
+      return focusOwner;
+  }
+  
 }

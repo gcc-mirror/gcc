@@ -1,5 +1,5 @@
 /* AnySeqHelper.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +41,7 @@ package org.omg.DynamicAny;
 import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
+import org.omg.CORBA.AnySeqHolder;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.TCKind;
 import org.omg.CORBA.TypeCode;

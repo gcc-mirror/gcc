@@ -82,7 +82,7 @@ public abstract class Selector
    *
    * @exception ClosedSelectorException If this selector is closed.
    */
-  public abstract Set keys();
+  public abstract Set<SelectionKey> keys();
 
   /**
    * Returns the SelectorProvider that created the selector.
@@ -115,7 +115,7 @@ public abstract class Selector
    *
    * @exception ClosedSelectorException If this selector is closed.
    */
-  public abstract Set selectedKeys();
+  public abstract Set<SelectionKey> selectedKeys();
 
   /**
    * Selects a set of keys whose corresponding channels are ready

@@ -396,7 +396,7 @@ public class MessageFormat extends Format
    * @param pattern The pattern used when formatting.
    * @param arguments The array containing the objects to be formatted.
    */
-  public static String format (String pattern, Object arguments[])
+  public static String format (String pattern, Object... arguments)
   {
     MessageFormat mf = new MessageFormat (pattern);
     StringBuffer sb = new StringBuffer ();

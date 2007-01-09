@@ -58,7 +58,7 @@ package java.util;
  * @see java.io.StreamTokenizer
  * @status updated to 1.4
  */
-public class StringTokenizer implements Enumeration
+public class StringTokenizer implements Enumeration<Object>
 {
   // WARNING: StringTokenizer is a CORE class in the bootstrap cycle. See the
   // comments in vm/reference/java/lang/Runtime for implications of this fact.

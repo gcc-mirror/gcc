@@ -458,16 +458,3 @@ AC_DEFUN([CLASSPATH_CHECK_ECJ],
     AC_PATH_PROG(ECJ, "ecj")
   fi
 ])
-
-dnl -----------------------------------------------------------
-dnl GCJ LOCAL: Calculate toolexeclibdir
-dnl -----------------------------------------------------------
-AC_DEFUN([CLASSPATH_TOOLEXECLIBDIR],
-[
-  multi_os_directory=`$CC -print-multi-os-directory`
-  case $multi_os_directory in
-    .) toolexeclibdir=${libdir} ;; # Avoid trailing /.
-    *) toolexeclibdir=${libdir}/${multi_os_directory} ;;
-  esac
-  AC_SUBST(toolexeclibdir)
-])

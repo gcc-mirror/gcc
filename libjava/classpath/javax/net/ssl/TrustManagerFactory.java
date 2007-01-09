@@ -93,96 +93,105 @@ public class TrustManagerFactory
     this.algorithm = algorithm;
   }
 
-  // Class methods.
-  // -------------------------------------------------------------------------
-
   /**
-   * Returns an instance of a trust manager factory for the given algorithm
-   * from the first provider that implements it.
-   *
+   * Returns an instance of a trust manager factory for the given algorithm from
+   * the first provider that implements it.
+   * 
    * @param algorithm The name of the algorithm to get.
    * @return The instance of the trust manager factory.
    * @throws NoSuchAlgorithmException If no provider implements the given
-   *   algorithm.
+   *           algorithm.
+   * @throws IllegalArgumentException if <code>algorithm</code> is
+   *           <code>null</code> or is an empty string.
    */
   public static final TrustManagerFactory getInstance(String algorithm)
-    throws NoSuchAlgorithmException
+      throws NoSuchAlgorithmException
   {
-    Provider[] provs = Security.getProviders();
-    for (int i = 0; i < provs.length; i++)
-      {
-        try
-          {
-            return getInstance(algorithm, provs[i]);
-          }
-        catch (NoSuchAlgorithmException ignore)
-          {
-          }
-      }
+    Provider[] p = Security.getProviders();
+    NoSuchAlgorithmException lastException = null;
+    for (int i = 0; i < p.length; i++)
+      try
+        {
+          return getInstance(algorithm, p[i]);
+        }
+      catch (NoSuchAlgorithmException x)
+        {
+          lastException = x;
+        }
+    if (lastException != null)
+      throw lastException;
     throw new NoSuchAlgorithmException(algorithm);
   }
 
   /**
-   * Returns an instance of a trust manager factory for the given algorithm
-   * from the named provider.
-   *
+   * Returns an instance of a trust manager factory for the given algorithm from
+   * the named provider.
+   * 
    * @param algorithm The name of the algorithm to get.
    * @param provider The name of the provider to get the instance from.
    * @return The instance of the trust manager factory.
    * @throws NoSuchAlgorithmException If the provider does not implement the
-   *   given algorithm.
+   *           given algorithm.
    * @throws NoSuchProviderException If there is no such named provider.
-   * @throws IllegalArgumentException If the provider argument is null.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>algorithm</code> is an empty string.
    */
   public static final TrustManagerFactory getInstance(String algorithm,
                                                       String provider)
     throws NoSuchAlgorithmException, NoSuchProviderException
   {
     if (provider == null)
-      {
-        throw new IllegalArgumentException();
-      }
+      throw new IllegalArgumentException("provider MUST NOT be null");
     Provider p = Security.getProvider(provider);
     if (p == null)
-      {
-        throw new NoSuchProviderException(provider);
-      }
+      throw new NoSuchProviderException(provider);
     return getInstance(algorithm, p);
   }
 
   /**
-   * Returns an instance of a trust manager factory for the given algorithm
-   * from the specified provider.
-   *
+   * Returns an instance of a trust manager factory for the given algorithm from
+   * the specified provider.
+   * 
    * @param algorithm The name of the algorithm to get.
    * @param provider The provider to get the instance from.
    * @return The instance of the trust manager factory.
    * @throws NoSuchAlgorithmException If the provider does not implement the
-   *   given algorithm.
-   * @throws IllegalArgumentException If the provider argument is null.
+   *           given algorithm.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>algorithm</code> is an empty string.
    */
   public static final TrustManagerFactory getInstance(String algorithm,
                                                       Provider provider)
-    throws NoSuchAlgorithmException
+      throws NoSuchAlgorithmException
   {
-    if (provider == null)
-      {
-        throw new IllegalArgumentException();
-      }
+    StringBuilder sb = new StringBuilder("TrustManagerFactory algorithm [")
+        .append(algorithm).append("] from provider[")
+        .append(provider).append("] could not be created");
+    Throwable cause;
     try
       {
-        return new TrustManagerFactory((TrustManagerFactorySpi)
-          Engine.getInstance(TRUST_MANAGER_FACTORY, algorithm, provider),
-          provider, algorithm);
+        Object spi = Engine.getInstance(TRUST_MANAGER_FACTORY, algorithm, provider);
+        return new TrustManagerFactory((TrustManagerFactorySpi) spi,
+                                       provider,
+                                       algorithm);
       }
-    catch (InvocationTargetException ite)
+    catch (InvocationTargetException x)
       {
-        throw new NoSuchAlgorithmException(algorithm);
+        cause = x.getCause();
+        if (cause instanceof NoSuchAlgorithmException)
+          throw (NoSuchAlgorithmException) cause;
+        if (cause == null)
+          cause = x;
       }
-    catch (ClassCastException cce)
+    catch (ClassCastException x)
       {
-        throw new NoSuchAlgorithmException(algorithm);
+        cause = x;
       }
+    NoSuchAlgorithmException x = new NoSuchAlgorithmException(sb.toString());
+    x.initCause(cause);
+    throw x;
   }
 
   /**

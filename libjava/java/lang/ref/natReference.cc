@@ -1,6 +1,6 @@
 // natReference.cc - Native code for References
 
-/* Copyright (C) 2001, 2002, 2003, 2005  Free Software Foundation
+/* Copyright (C) 2001, 2002, 2003, 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -367,4 +367,11 @@ void
      _Jv_GCRegisterDisappearingLink ((jobject *) p);
       add_to_hash (this);
     }
+}
+
+::java::lang::Object *
+::java::lang::ref::Reference::get()
+{
+  JvSynchronize sync (lock);
+  return referent;
 }

@@ -270,7 +270,7 @@ public interface Context
    * @return the enumeration over the names, known for the given subcontext.
    * @throws NamingException
    */
-  NamingEnumeration list(Name name) throws NamingException;
+  NamingEnumeration<NameClassPair> list(Name name) throws NamingException;
 
   /**
    * Creates and returns the enumeration over the name bindings that are present
@@ -284,7 +284,7 @@ public interface Context
    * @return the enumeration over the names, known for the given subcontext.
    * @throws NamingException
    */
-  NamingEnumeration list(String name) throws NamingException;
+  NamingEnumeration<NameClassPair> list(String name) throws NamingException;
 
   /**
    * Creates and returns the enumeration over the name - object bindings that
@@ -297,7 +297,7 @@ public interface Context
    * @return the enumeration over the names, known for the given subcontext.
    * @throws NamingException
    */
-  NamingEnumeration listBindings(Name name) throws NamingException;
+  NamingEnumeration<Binding> listBindings(Name name) throws NamingException;
 
   /**
    * Creates and returns the enumeration over the name - object bindings that
@@ -310,7 +310,7 @@ public interface Context
    * @return the enumeration over the names, known for the given subcontext.
    * @throws NamingException
    */
-  NamingEnumeration listBindings(String name) throws NamingException;
+  NamingEnumeration<Binding> listBindings(String name) throws NamingException;
 
   /**
    * Creates the new naming subcontext and binds it to the current (this)
@@ -467,7 +467,7 @@ public interface Context
    * @return the table, representing the environment of this context
    * @throws NamingException
    */
-  Hashtable getEnvironment() throws NamingException;
+  Hashtable<?,?> getEnvironment() throws NamingException;
   
   /**
    * Releases all resources, associated with this context. The close() method

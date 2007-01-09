@@ -193,6 +193,28 @@ void _Jv_ThreadInterrupt (_Jv_Thread_t *data);
 // See java/lang/natWin32Process.cc (waitFor) for an example.
 HANDLE _Jv_Win32GetInterruptEvent (void);
 
+// park() / unpark() support
+
+struct ParkHelper
+{
+  // We use LONG instead of obj_addr_t to avoid pulling in locks.h,
+  // which depends on size_t, ...
+  volatile LONG permit;
+
+  // The critical section is used for lazy initialization of our event
+  CRITICAL_SECTION cs;
+  HANDLE event;
+  
+  void init ();
+  void deactivate ();
+  void destroy ();
+  void park (jboolean isAbsolute, jlong time);
+  void unpark ();
+  
+private:
+  void init_event();
+};
+
 // Remove defines from <windows.h> that conflict with various things in libgcj code
 
 #undef TRUE
@@ -204,5 +226,6 @@ HANDLE _Jv_Win32GetInterruptEvent (void);
 #undef interface
 #undef STRICT
 #undef VOID
+#undef TEXT
 
 #endif /* __JV_WIN32_THREADS__ */

@@ -164,7 +164,7 @@ public abstract class AbstractListModel implements ListModel, Serializable
    *
    * @return The set of listeners of the specified type
    */
-  public EventListener[] getListeners(Class listenerType)
+  public <T extends EventListener> T[] getListeners(Class<T> listenerType)
   {
     return listenerList.getListeners(listenerType);
   }

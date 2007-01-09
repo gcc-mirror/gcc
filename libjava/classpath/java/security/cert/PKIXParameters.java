@@ -56,6 +56,7 @@ import java.util.Set;
  * (Public-Key Infrastructure (X.509)) algorithm.
  *
  * @see CertPathBuilder
+ * @since 1.4
  */
 public class PKIXParameters implements CertPathParameters
 {
@@ -144,7 +145,7 @@ public class PKIXParameters implements CertPathParameters
    * @throws ClassCastException If every element in <i>trustAnchors</i>
    *         is not a {@link TrustAnchor}.
    */
-  public PKIXParameters(Set trustAnchors)
+  public PKIXParameters(Set<TrustAnchor> trustAnchors)
     throws InvalidAlgorithmParameterException
   {
     this();
@@ -199,7 +200,7 @@ public class PKIXParameters implements CertPathParameters
    *
    * @return A (never null, never empty) immutable set of trust anchors.
    */
-  public Set getTrustAnchors()
+  public Set<TrustAnchor> getTrustAnchors()
   {
     return Collections.unmodifiableSet(trustAnchors);
   }
@@ -216,7 +217,7 @@ public class PKIXParameters implements CertPathParameters
    * @throws ClassCastException If every element in <i>trustAnchors</i>
    *         is not a {@link TrustAnchor}.
    */
-  public void setTrustAnchors(Set trustAnchors)
+  public void setTrustAnchors(Set<TrustAnchor> trustAnchors)
     throws InvalidAlgorithmParameterException
   {
     if (trustAnchors.isEmpty())
@@ -235,7 +236,7 @@ public class PKIXParameters implements CertPathParameters
    * @return An immutable set of initial policy OID strings, or the
    *         empty set if any policy is acceptable.
    */
-  public Set getInitialPolicies()
+  public Set<String> getInitialPolicies()
   {
     return Collections.unmodifiableSet(initPolicies);
   }
@@ -249,7 +250,7 @@ public class PKIXParameters implements CertPathParameters
    * @throws ClassCastException If any element in <i>initPolicies</i> is
    *         not a string.
    */
-  public void setInitialPolicies(Set initPolicies)
+  public void setInitialPolicies(Set<String> initPolicies)
   {
     this.initPolicies.clear();
     if (initPolicies == null)
@@ -277,7 +278,7 @@ public class PKIXParameters implements CertPathParameters
    *
    * @return The list of cert stores.
    */
-  public List getCertStores()
+  public List<CertStore> getCertStores()
   {
     return Collections.unmodifiableList(certStores);
   }
@@ -288,7 +289,7 @@ public class PKIXParameters implements CertPathParameters
    *
    * @param certStores The cert stores.
    */
-  public void setCertStores(List certStores)
+  public void setCertStores(List<CertStore> certStores)
   {
     this.certStores.clear();
     if (certStores == null)
@@ -446,7 +447,7 @@ public class PKIXParameters implements CertPathParameters
    *
    * @return An immutable list of all certificate path checkers.
    */
-  public List getCertPathCheckers()
+  public List<PKIXCertPathChecker> getCertPathCheckers()
   {
     return Collections.unmodifiableList(pathCheckers);
   }
@@ -459,7 +460,7 @@ public class PKIXParameters implements CertPathParameters
    * @throws ClassCastException If any element of <i>pathCheckers</i> is
    *         not a {@link PKIXCertPathChecker}.
    */
-  public void setCertPathCheckers(List pathCheckers)
+  public void setCertPathCheckers(List<PKIXCertPathChecker> pathCheckers)
   {
     this.pathCheckers.clear();
     if (pathCheckers == null)

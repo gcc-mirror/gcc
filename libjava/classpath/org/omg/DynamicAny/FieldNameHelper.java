@@ -59,7 +59,7 @@ import org.omg.CORBA.portable.OutputStream;
 public abstract class FieldNameHelper
 {
   /**
-   * Insert the FieldName into Any (uses {@link Any.insert_string}).
+   * Insert the FieldName into Any (uses {@link Any#insert_string}).
    *
    * @param a the Any to insert into.
    * @param that the string to insert.
@@ -70,7 +70,7 @@ public abstract class FieldNameHelper
   }
 
   /**
-   * Extract the FieldName from Any ((uses {@link Any.extract_string}).
+   * Extract the FieldName from Any ((uses {@link Any#extract_string}).
    *
    * @param a the Any to extract from.
    */
@@ -100,7 +100,7 @@ public abstract class FieldNameHelper
   /**
    * Calls {@link InputStream#read_string()}.
    *
-   * @param instream the stream to read from.
+   * @param istream the stream to read from.
    */
   public static String read(InputStream istream)
   {
@@ -108,7 +108,7 @@ public abstract class FieldNameHelper
   }
 
   /**
-   * Calls {@link OutputStream#write_string()}.
+   * Calls {@link OutputStream#write_string(String)}.
    *
    * @param ostream the stream to write into.
    * @param value the string (FieldName) value to write.

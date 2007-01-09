@@ -51,6 +51,7 @@ import java.util.Collections;
  * collection may be changed at any time.
  *
  * @see CertStore
+ * @since 1.4
  */
 public class CollectionCertStoreParameters implements CertStoreParameters
 {
@@ -81,7 +82,7 @@ public class CollectionCertStoreParameters implements CertStoreParameters
    * @param collection The collection.
    * @throws NullPointerException If <i>collection</i> is null.
    */
-  public CollectionCertStoreParameters(Collection collection)
+  public CollectionCertStoreParameters(Collection<?> collection)
   {
     if (collection == null)
       throw new NullPointerException();
@@ -103,7 +104,7 @@ public class CollectionCertStoreParameters implements CertStoreParameters
    *
    * @return The collection.
    */
-  public Collection getCollection()
+  public Collection<?> getCollection()
   {
     return collection;
   }

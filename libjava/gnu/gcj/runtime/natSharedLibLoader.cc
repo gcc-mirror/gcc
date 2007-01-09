@@ -87,9 +87,9 @@ gnu::gcj::runtime::SharedLibHelper::init(void)
 
   if (flags==0)
     flags = RTLD_GLOBAL | RTLD_LAZY;
-  JvSynchronize dummy1(&java::lang::Class::class$);
+  JvSynchronize dummy1(&::java::lang::Class::class$);
   SharedLibDummy dummy2;
-  curLoader = ((void*)loader == java::lang::VMClassLoader::bootLoader
+  curLoader = ((void*)loader == ::java::lang::VMClassLoader::bootLoader
 	       ? NULL : loader);
   curHelper = this;
   _Jv_RegisterClassHook = _Jv_sharedlib_register_hook;
@@ -98,13 +98,13 @@ gnu::gcj::runtime::SharedLibHelper::init(void)
   if (h == NULL)
     {
       const char *msg = dlerror();
-      throw new java::lang::UnknownError(JvNewStringLatin1(msg));
+      throw new ::java::lang::UnknownError(JvNewStringLatin1(msg));
     }
   handler = (gnu::gcj::RawData*) h;
 #else
   const char *msg
     = "shared library class loading is not supported on this platform";
-  throw new java::lang::UnsupportedOperationException(JvNewStringLatin1(msg));
+  throw new ::java::lang::UnsupportedOperationException(JvNewStringLatin1(msg));
 #endif
 }
 

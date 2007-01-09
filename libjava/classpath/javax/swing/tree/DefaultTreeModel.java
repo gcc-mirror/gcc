@@ -210,17 +210,32 @@ public class DefaultTreeModel
   }
 
   /**
-   * isLeaf
+   * Returns if the specified node is a leaf or not. When
+   * {@link #asksAllowsChildren} is true, then this checks if the TreeNode
+   * allows children, otherwise it returns the TreeNode's <code>leaf</code>
+   * property.
    * 
-   * @param node TODO
-   * @return boolean
+   * @param node the node to check
+   *
+   * @return boolean <code>true</code> if the node is a leaf node,
+   *         <code>false</code> otherwise
+   *
+   * @throws ClassCastException if the specified node is not a
+   *         <code>TreeNode</code> instance
+   *
+   * @see TreeNode#getAllowsChildren()
+   * @see TreeNode#isLeaf()
    */
   public boolean isLeaf(Object node)
   {
-    if (node instanceof TreeNode)
-      return ((TreeNode) node).isLeaf();
+    // The RI throws a ClassCastException when node isn't a TreeNode, so do we.
+    TreeNode treeNode = (TreeNode) node;
+    boolean leaf;
+    if (asksAllowsChildren)
+      leaf = ! treeNode.getAllowsChildren();
     else
-      return true;
+      leaf = treeNode.isLeaf();
+    return leaf;
   }
 
   /**
@@ -600,7 +615,7 @@ public class DefaultTreeModel
    *
    * @since 1.3
    */
-  public EventListener[] getListeners(Class listenerType)
+  public <T extends EventListener> T[] getListeners(Class<T> listenerType)
   {
     return listenerList.getListeners(listenerType);
   }

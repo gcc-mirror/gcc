@@ -1,5 +1,5 @@
 /* CharBuffer.java -- 
-   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,11 +38,13 @@ exception statement from your version. */
 
 package java.nio;
 
+import java.io.IOException;
+
 /**
  * @since 1.4
  */
 public abstract class CharBuffer extends Buffer
-  implements Comparable, CharSequence
+  implements Comparable<CharBuffer>, CharSequence, Readable, Appendable
 {
   int array_offset;
   char[] backing_buffer;
@@ -161,6 +163,18 @@ public abstract class CharBuffer extends Buffer
       }
 
     return this;
+  }
+
+  /** @since 1.5 */
+  public int read(CharBuffer buffer) throws IOException
+  {
+    // We want to call put(), so we don't manipulate the CharBuffer
+    // directly.
+    int rem = Math.min(buffer.remaining(), remaining());
+    char[] buf = new char[rem];
+    get(buf);
+    buffer.put(buf);
+    return rem;
   }
 
   /**
@@ -323,7 +337,7 @@ public abstract class CharBuffer extends Buffer
   {
     if (obj instanceof CharBuffer)
       {
-        return compareTo (obj) == 0;
+        return compareTo ((CharBuffer) obj) == 0;
       }
 
     return false;
@@ -335,10 +349,8 @@ public abstract class CharBuffer extends Buffer
    * @exception ClassCastException If obj is not an object derived from
    * <code>CharBuffer</code>.
    */
-  public int compareTo (Object obj)
+  public int compareTo (CharBuffer other)
   {
-    CharBuffer other = (CharBuffer) obj;
-
     int num = Math.min(remaining(), other.remaining());
     int pos_this = position();
     int pos_other = other.position();
@@ -502,5 +514,26 @@ public abstract class CharBuffer extends Buffer
       throw new IndexOutOfBoundsException ();
     
     return get (position () + index);
+  }
+
+  /** @since 1.5 */
+  public CharBuffer append(char c)
+  {
+    put(c);
+    return this;
+  }
+
+  /** @since 1.5 */
+  public CharBuffer append(CharSequence cs)
+  {
+    put(cs == null ? "null" : cs.toString());
+    return this;
+  }
+
+  /** @since 1.5 */
+  public CharBuffer append(CharSequence cs, int start, int end)
+  {
+    put(cs == null ? "null" : cs.subSequence(start, end).toString());
+    return this;
   }
 }

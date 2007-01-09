@@ -741,4 +741,15 @@ public class BitSet implements Cloneable, Serializable
         bits = nd;
       }
   }
+
+  // This is used by EnumSet for efficiency.
+  final boolean containsAll(BitSet other)
+  {
+    for (int i = other.bits.length - 1; i >= 0; i--)
+      {
+	if ((bits[i] & other.bits[i]) != other.bits[i])
+	  return false;
+      }
+    return true;
+  }
 }

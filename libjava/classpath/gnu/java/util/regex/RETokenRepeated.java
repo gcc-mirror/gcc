@@ -38,8 +38,7 @@ exception statement from your version. */
 
 package gnu.java.util.regex;
 
-// import java.util.Vector;
-// import java.util.Stack;
+import java.util.ArrayList;
 
 final class RETokenRepeated extends REToken {
     private REToken token;
@@ -168,19 +167,63 @@ final class RETokenRepeated extends REToken {
 	}
     }
 
+    private static class FindMatchControlStack extends ArrayList {
+	private void push(FindMatchControl control) {
+	    add(control);
+	}
+	private FindMatchControl pop() {
+	    return (FindMatchControl)remove(size()-1);
+	}
+	private boolean empty() {
+	    return isEmpty();
+	}
+    }
+
+    private static class FindMatchControl {
+	DoablesFinder finder;
+	FindMatchControl(DoablesFinder finder) {
+	    this.finder = finder;
+	}
+    }
+
     private REMatch findMatch(BacktrackStack stack) {
-        // Avoid using recursive calls.
+	return findMatch(stack, new FindMatchControlStack());
+    }
+
+    private REMatch findMatch(BacktrackStack stack,
+		FindMatchControlStack controlStack) {
+	REMatch result = null;
+	StackedInfo si = null;
+	CharIndexed input = null;
+        int numRepeats = 0;
+        REMatch mymatch = null;
+	int[] visited = null;
+        DoablesFinder finder = null;
+
+        // Avoid using recursive calls because a match can be very long.
+
+	// This is the first entry point of this method.
+	// If you want to call this method recursively and you need the
+	// result returned, save necessary information in a FindMatchControl
+	// object and push it to controlStack, then continue from this point.
+	// You can check the result after exiting MAIN_LOOP.
+	MAIN_LOOP0:
+	while (true) {
+
+	// This is the second entry point of this method.
+	// If you want to call this method recursively but you do not need the
+	// result returned, just continue from this point.
 	MAIN_LOOP:
 	while (true) {
 
-	if (stack.empty()) return null;
-	StackedInfo si = (StackedInfo)(stack.peek());
-	CharIndexed input = si.input;
-        int numRepeats = si.numRepeats;
-        REMatch mymatch = si.match;
-	int[] visited = si.visited;
-        DoablesFinder finder = si.finder;
-        
+	if (stack.empty()) break MAIN_LOOP;
+	si = (StackedInfo)(stack.peek());
+	input = si.input;
+        numRepeats = si.numRepeats;
+        mymatch = si.match;
+	visited = si.visited;
+        finder = si.finder;
+
 	if (mymatch.backtrackStack == null)
 	  mymatch.backtrackStack = new BacktrackStack();
 	
@@ -192,12 +235,13 @@ final class RETokenRepeated extends REToken {
 	            m1.backtrackStack.push(new BacktrackStack.Backtrack(
 		        this, input, mymatch, stack));
 		}
-		return m1;
+		result = m1;
+		break MAIN_LOOP;
 	    }
 	    if (stingy) {
 		continue MAIN_LOOP;
 	    }
-	    return null;
+	    break MAIN_LOOP;
 	}
 
         if (finder == null) {
@@ -238,7 +282,8 @@ final class RETokenRepeated extends REToken {
 	            m1.backtrackStack.push(new BacktrackStack.Backtrack(
 		        this, input, mymatch, stack));
 		}
-	        return m1;
+		result = m1;
+		break MAIN_LOOP;
 	    }
 	    else {
 		continue MAIN_LOOP;
@@ -247,8 +292,82 @@ final class RETokenRepeated extends REToken {
 
 	visited = addVisited(mymatch.index, visited);
 
+	TryAnotherResult taresult = tryAnother(stack, input, mymatch, numRepeats, finder, visited);
+	visited = taresult.visited;
+	switch (taresult.status) {
+	    case TryAnotherResult.TRY_FURTHER:
+	        controlStack.push(new FindMatchControl(
+		    finder));
+	        continue MAIN_LOOP0;
+	    case TryAnotherResult.RESULT_FOUND:
+	        result = taresult.result;
+	        break MAIN_LOOP;
+	}
+
+	if (!stack.empty()) {
+	    stack.pop();
+        }
+	if (possessive) {
+	    stack.clear();
+	}
+	REMatch m1 = matchRest(input, mymatch);
+	if (m1 != null) {
+	    if (! stack.empty()) {
+	        m1.backtrackStack.push(new BacktrackStack.Backtrack(
+	            this, input, mymatch, stack));
+	    }
+	    result = m1;
+	    break MAIN_LOOP;
+	}
+
+	} // MAIN_LOOP
+
+	if (controlStack.empty()) return result;
+	FindMatchControl control = controlStack.pop();
+	if (possessive) {
+	    return result;
+	}
+	if (result != null) {
+	    result.backtrackStack.push(new BacktrackStack.Backtrack(
+                this, input, mymatch, stack));
+	    return result;
+	}
+
+	finder = control.finder;
+
+	TryAnotherResult taresult = tryAnother(stack, input, mymatch, numRepeats, finder, visited);
+	visited = taresult.visited;
+	switch (taresult.status) {
+	    case TryAnotherResult.TRY_FURTHER:
+	        controlStack.push(new FindMatchControl(
+		    finder));
+	        continue MAIN_LOOP0;
+	    case TryAnotherResult.RESULT_FOUND:
+	        return taresult.result;
+	}
+	continue MAIN_LOOP0;
+
+	} // MAIN_LOOP0
+    }
+
+    private static class TryAnotherResult {
+	REMatch result;
+        int status;
+        static final int RESULT_FOUND = 1;
+	static final int TRY_FURTHER = 2;
+	static final int NOTHING_FOUND = 3; 
+	int[] visited;
+    }
+
+    private TryAnotherResult tryAnother(BacktrackStack stack,
+		CharIndexed input, REMatch mymatch, int numRepeats,
+		DoablesFinder finder, int[] visited) {
+
+	TryAnotherResult taresult = new TryAnotherResult();
+	taresult.visited = visited;
+
 	DO_THIS:
-	do {
+	{
 
 	    boolean emptyMatchFound = false;
 
@@ -263,61 +382,45 @@ final class RETokenRepeated extends REToken {
 
 	    if (!emptyMatchFound) {
 		int n = doable.index;
-		if (! visitedContains(n, visited)) {
-		    visited = addVisited(n, visited);
-	        }
-		else {
+		if (visitedContains(n, visited)) {
 		    continue DO_ONE_DOABLE;
 		}
+		visited = addVisited(n, visited);
 	        stack.push(new StackedInfo(
-		    input, numRepeats + 1, doable, visited, null));
-	        REMatch m1 = findMatch(stack);
-		if (possessive) {
-		    return m1;
-		}
-		if (m1 != null) {
-		    m1.backtrackStack.push(new BacktrackStack.Backtrack(
-                        this, input, mymatch, stack));
-		    return m1;
-		}
+	            input, numRepeats + 1, doable, visited, null));
+		taresult.visited = visited;
+		taresult.status = TryAnotherResult.TRY_FURTHER;
+		return taresult;
 	    }
 	    else {
 	        REMatch m1 = matchRest(input, doable);
 		if (possessive) {
-		    return m1;
+		    taresult.result = m1;
+		    taresult.status = TryAnotherResult.RESULT_FOUND;
+		    return taresult;
 		}
 	        if (m1 != null) {
 		    if (! stack.empty()) {
 		        m1.backtrackStack.push(new BacktrackStack.Backtrack(
                             this, input, mymatch, stack));
-		    } 
-		    return m1;
+		    }
+		    taresult.result = m1;
+		    taresult.status = TryAnotherResult.RESULT_FOUND;
+		    return taresult;
 		}
 	    }
 
 	    } // DO_ONE_DOABLE
 
-	} while (false); // DO_THIS only once;
+	} // DO_THIS
 
-	if (!stack.empty()) {
-	    stack.pop();
-        }
-	if (possessive) {
-	    stack.clear();
-	}
-	REMatch m1 = matchRest(input, mymatch);
-	if (m1 != null) {
-	    if (! stack.empty()) {
-	        m1.backtrackStack.push(new BacktrackStack.Backtrack(
-	            this, input, mymatch, stack));
-	    }
-	    return m1;
-	}
+	taresult.status = TryAnotherResult.NOTHING_FOUND;
+	return taresult;
 
-	} // MAIN_LOOP
     }
 
     boolean match(CharIndexed input, REMatch mymatch) {
+	setHitEnd(input, mymatch);
 	REMatch m1 = findMatch(input, mymatch);
 	if (m1 != null) {
 	    mymatch.assignFrom(m1);

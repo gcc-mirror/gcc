@@ -55,14 +55,26 @@ import java.nio.channels.spi.SelectorProvider;
  * @author Michael Koch
  */
 public final class DatagramChannelImpl extends DatagramChannel
+  implements VMChannelOwner
 {
   private NIODatagramSocket socket;
+  private VMChannel channel;
   
   /**
    * Indicates whether this channel initiated whatever operation
    * is being invoked on our datagram socket.
    */
   private boolean inChannelOperation;
+
+  protected DatagramChannelImpl (SelectorProvider provider)
+    throws IOException
+  {
+    super (provider);
+    socket = new NIODatagramSocket (new PlainDatagramSocketImpl(), this);
+    channel = new VMChannel();
+    channel.initSocket(false);
+    configureBlocking(true);
+  }
 
   /**
    * Indicates whether our datagram socket should ignore whether
@@ -85,14 +97,6 @@ public final class DatagramChannelImpl extends DatagramChannel
     inChannelOperation = b;
   }
  
-  protected DatagramChannelImpl (SelectorProvider provider)
-    throws IOException
-  {
-    super (provider);
-    socket = new NIODatagramSocket (new PlainDatagramSocketImpl(), this);
-    configureBlocking(true);
-  }
-
   public DatagramSocket socket ()
   {
     return socket;
@@ -101,13 +105,13 @@ public final class DatagramChannelImpl extends DatagramChannel
   protected void implCloseSelectableChannel ()
     throws IOException
   {
-    socket.close ();
+    channel.close();
   }
     
   protected void implConfigureBlocking (boolean blocking)
     throws IOException
   {
-    socket.setSoTimeout (blocking ? 0 : NIOConstants.DEFAULT_TIMEOUT);
+    channel.setBlocking(blocking);
   }
 
   public DatagramChannel connect (SocketAddress remote)
@@ -116,20 +120,34 @@ public final class DatagramChannelImpl extends DatagramChannel
     if (!isOpen())
       throw new ClosedChannelException();
     
-    socket.connect (remote);
+    try
+      {
+        channel.connect((InetSocketAddress) remote, 0);
+      }
+    catch (ClassCastException cce)
+      {
+        throw new IOException("unsupported socked address type");
+      }
     return this;
   }
     
   public DatagramChannel disconnect ()
     throws IOException
   {
-    socket.disconnect ();
+    channel.disconnect();
     return this;
   }
     
-  public boolean isConnected ()
+  public boolean isConnected()
   {
-    return socket.isConnected ();
+    try
+      {
+        return channel.getPeerAddress() != null;
+      }
+    catch (IOException ioe)
+      {
+        return false;
+      }
   }
     
   public int write (ByteBuffer src)
@@ -138,7 +156,7 @@ public final class DatagramChannelImpl extends DatagramChannel
     if (!isConnected ())
       throw new NotYetConnectedException ();
     
-    return send (src, socket.getRemoteSocketAddress());
+    return channel.write(src);
   }
 
   public long write (ByteBuffer[] srcs, int offset, int length)
@@ -152,13 +170,11 @@ public final class DatagramChannelImpl extends DatagramChannel
         || (length < 0)
         || (length > (srcs.length - offset)))
       throw new IndexOutOfBoundsException();
-      
-    long result = 0;
 
-    for (int index = offset; index < offset + length; index++)
-      result += write (srcs [index]);
-
-    return result;
+    /* We are connected, meaning we will write these bytes to
+     * the host we connected to, so we don't need to explicitly
+     * give the host. */
+    return channel.writeGathering(srcs, offset, length);
   }
 
   public int read (ByteBuffer dst)
@@ -167,9 +183,7 @@ public final class DatagramChannelImpl extends DatagramChannel
     if (!isConnected ())
       throw new NotYetConnectedException ();
     
-    int remaining = dst.remaining();
-    receive (dst);
-    return remaining - dst.remaining();
+    return channel.read(dst);
   }
     
   public long read (ByteBuffer[] dsts, int offset, int length)
@@ -184,12 +198,8 @@ public final class DatagramChannelImpl extends DatagramChannel
         || (length > (dsts.length - offset)))
       throw new IndexOutOfBoundsException();
       
-    long result = 0;
-
-    for (int index = offset; index < offset + length; index++)
-      result += read (dsts [index]);
-
-    return result;
+    /* Likewise, see the comment int write above. */
+    return channel.readScattering(dsts, offset, length);
   }
     
   public SocketAddress receive (ByteBuffer dst)
@@ -200,49 +210,12 @@ public final class DatagramChannelImpl extends DatagramChannel
     
     try
       {
-        DatagramPacket packet;
-        int len = dst.remaining();
-        
-        if (dst.hasArray())
-          {
-            packet = new DatagramPacket (dst.array(),
-                                         dst.arrayOffset() + dst.position(),
-                                         len);
-          }
-        else
-          {
-            packet = new DatagramPacket (new byte [len], len);
-          }
-
-        boolean completed = false;
-
-        try
-          {
-            begin();
-            setInChannelOperation(true);
-            socket.receive (packet);
-            completed = true;
-          }
-        finally
-          {
-            end (completed);
-            setInChannelOperation(false);
-          }
-
-        if (!dst.hasArray())
-          {
-            dst.put (packet.getData(), packet.getOffset(), packet.getLength());
-          }
-        else
-          {
-            dst.position (dst.position() + packet.getLength());
-          }
-
-        return packet.getSocketAddress();
+        begin();
+        return channel.receive(dst);
       }
-    catch (SocketTimeoutException e)
+    finally
       {
-        return null;
+        end(true);
       }
   }
     
@@ -252,46 +225,18 @@ public final class DatagramChannelImpl extends DatagramChannel
     if (!isOpen())
       throw new ClosedChannelException();
     
-    if (target instanceof InetSocketAddress
-	&& ((InetSocketAddress) target).isUnresolved())
+    if (!(target instanceof InetSocketAddress))
+      throw new IOException("can only send to inet socket addresses");
+    
+    InetSocketAddress dst = (InetSocketAddress) target;
+    if (dst.isUnresolved())
       throw new IOException("Target address not resolved");
 
-    byte[] buffer;
-    int offset = 0;
-    int len = src.remaining();
-    
-    if (src.hasArray())
-      {
-        buffer = src.array();
-        offset = src.arrayOffset() + src.position();
-      }
-    else
-      {
-        buffer = new byte [len];
-        src.get (buffer);
-      }
-
-    DatagramPacket packet = new DatagramPacket (buffer, offset, len, target);
-
-    boolean completed = false;
-    try
-      {
-        begin();
-        setInChannelOperation(true);
-        socket.send(packet);
-        completed = true;
-      }
-    finally
-      {
-        end (completed);
-        setInChannelOperation(false);
-      }
-      
-    if (src.hasArray())
-      {
-	src.position (src.position() + len);
-      }
-
-    return len;
+    return channel.send(src, dst);
+  }
+  
+  public VMChannel getVMChannel()
+  {
+    return channel;
   }
 }

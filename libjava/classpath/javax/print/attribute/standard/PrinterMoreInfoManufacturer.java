@@ -40,6 +40,7 @@ package javax.print.attribute.standard;
 
 import java.net.URI;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.PrintServiceAttribute;
 import javax.print.attribute.URISyntax;
 
@@ -98,7 +99,7 @@ public final class PrinterMoreInfoManufacturer extends URISyntax
    *
    * @return The class <code>PrinterMoreInfoManufacturer</code> itself.
    */
-  public Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return PrinterMoreInfoManufacturer.class;
   }

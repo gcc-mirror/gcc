@@ -74,7 +74,7 @@ public interface Group extends Principal
    * This method tests whether or not a given <code>Principal</code> is a
    * member of this group.
    *
-   * @param user The <code>Principal</code> to test for membership
+   * @param member The <code>Principal</code> to test for membership
    *
    * @return <code>true</code> if the user is member, <code>false</code> otherwise
    */
@@ -86,5 +86,5 @@ public interface Group extends Principal
    *
    * @return The list of all members of the group
    */
-  Enumeration members();
+  Enumeration<? extends Principal> members();
 }

@@ -1,5 +1,5 @@
 /* Byte.java -- object wrapper for byte
-   Copyright (C) 1998, 2001, 2002, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -49,10 +49,12 @@ package java.lang;
  * @author John Keiser
  * @author Per Bothner
  * @author Eric Blake (ebb9@email.byu.edu)
+ * @author Tom Tromey (tromey@redhat.com)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.1
  * @status updated to 1.5
  */
-public final class Byte extends Number implements Comparable
+public final class Byte extends Number implements Comparable<Byte>
 {
   /**
    * Compatible with JDK 1.1+.
@@ -75,7 +77,7 @@ public final class Byte extends Number implements Comparable
    * The primitive type <code>byte</code> is represented by this
    * <code>Class</code> object.
    */
-  public static final Class TYPE = VMClassLoader.getPrimitiveClass('B');
+  public static final Class<Byte> TYPE = (Class<Byte>) VMClassLoader.getPrimitiveClass('B');
 
   /**
    * The number of bits needed to represent a <code>byte</code>.
@@ -86,6 +88,7 @@ public final class Byte extends Number implements Comparable
   // This caches Byte values, and is used by boxing conversions via
   // valueOf().  We're required to cache all possible values here.
   private static Byte[] byteCache = new Byte[MAX_VALUE - MIN_VALUE + 1];
+
 
   /**
    * The immutable value of this Byte.
@@ -208,20 +211,18 @@ public final class Byte extends Number implements Comparable
    *
    * @param val the value to wrap
    * @return the <code>Byte</code>
-   * 
-   * @since 1.5
    */
   public static Byte valueOf(byte val)
   {
     synchronized (byteCache)
       {
-    if (byteCache[val - MIN_VALUE] == null)
-      byteCache[val - MIN_VALUE] = new Byte(val);
-    return byteCache[val - MIN_VALUE];
+	if (byteCache[val - MIN_VALUE] == null)
+	  byteCache[val - MIN_VALUE] = new Byte(val);
+	return byteCache[val - MIN_VALUE];
       }
   }
 
- /**
+  /**
    * Convert the specified <code>String</code> into a <code>Byte</code>.
    * The <code>String</code> may represent decimal, hexadecimal, or
    * octal numbers.
@@ -369,19 +370,4 @@ public final class Byte extends Number implements Comparable
     return value - b.value;
   }
 
-  /**
-   * Behaves like <code>compareTo(Byte)</code> unless the Object
-   * is not a <code>Byte</code>.
-   *
-   * @param o the object to compare
-   * @return the comparison
-   * @throws ClassCastException if the argument is not a <code>Byte</code>
-   * @see #compareTo(Byte)
-   * @see Comparable
-   * @since 1.2
-   */
-  public int compareTo(Object o)
-  {
-    return compareTo((Byte) o);
-  }
 }

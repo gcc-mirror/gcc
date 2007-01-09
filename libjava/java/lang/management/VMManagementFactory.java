@@ -54,10 +54,7 @@ final class VMManagementFactory
    *
    * @return a list of memory pool names.
    */
-  static String[] getMemoryPoolNames()
-  {
-    return new String[0];
-  }
+  static native String[] getMemoryPoolNames();
 
   /**
    * Return a list of the names of the currently available
@@ -66,10 +63,7 @@ final class VMManagementFactory
    *
    * @return a list of memory manager names.
    */
-  static String[] getMemoryManagerNames()
-  {
-    return new String[0];
-  }
+  static native String[] getMemoryManagerNames();
 
   /**
    * Return a list of the names of the currently available
@@ -77,8 +71,5 @@ final class VMManagementFactory
    *
    * @return a list of garbage collector names.
    */
-  static String[] getGarbageCollectorNames()
-  {
-    return new String[0];
-  }
+  static native String[] getGarbageCollectorNames();
 }

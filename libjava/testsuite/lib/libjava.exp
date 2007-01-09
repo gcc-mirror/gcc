@@ -75,14 +75,9 @@ proc libjava_find_program {prog} {
     return $file
 }
 
-# Find `jv-scan'.
-proc find_jvscan {} {
-    return [libjava_find_program jv-scan]
-}
-
 # Find `gcjh'.
 proc find_gcjh {} {
-    return [libjava_find_program gcjh]
+    return [libjava_find_program gjavah]
 }
 
 proc find_javac {} {
@@ -377,6 +372,9 @@ proc libjava_arguments {{mode compile}} {
     set env(CLASSPATH) \
 	[join [list . $srcdir/$subdir $objdir $libgcj_jar] $sep]
     verbose "CLASSPATH is $env(CLASSPATH)"
+
+    # Disable all warnings, as ecj is rather chatty.
+    lappend args "additional_flags=-w"
 
     if {$mode == "link"} {
 	global wrapper_file wrap_compile_flags
@@ -690,207 +688,6 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
 #
 # Run the test specified by srcfile and resultfile. compile_args and
 # exec_args are options telling this proc how to work.
-#
-proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile exec_args } {
-    global base_dir
-    global srcdir subdir objdir
-    global TOOL_OPTIONS
-    global GCJ_UNDER_TEST
-    global tmpdir
-    global runtests
-    global INTERPRETER
-
-    # Make opts into an array.
-    set opts(_) x
-    unset opts(_)
-    foreach item $exec_args {
-	set opts($item) x
-    }
-
-    # If we need threads and we don't have them then set the `no-exec'
-    # flag.  This is case is also handled specially later.
-    if {[info exists opts(need-threads)]} {
-	global libjava_uses_threads
-	if {! $libjava_uses_threads} {
-	    set opts(no-exec) x
-	}
-    }
-    set errname [file rootname [file tail $srcfile]]
-    if {! [runtest_file_p $runtests $errname]} {
-        return
-    }
-
-    # bytecompile files with Sun's compiler for now.
-    set bc_ok [bytecompile_file $srcfile $objdir]
-
-    set javac [find_javac]
-    # This is an ugly heuristic but it will have to do.
-    if {[string match *gcj* $javac]} {
-	set tag gcjC
-    } else {
-	set tag javac
-    }
-    if {[info exists opts(xfail-$tag)]} {
-	setup_xfail *-*-*
-    }
-    if {! $bc_ok} then {
-	if {[info exists opts(shouldfail)]} {
-	    pass "$errname byte compilation"
-	    return
-	}
-	fail "$errname byte compilation"
-	untested "$errname compilation from bytecode"
-	if {! [info exists opts(no-exec)]
-	    || [info exists opts(need-threads)]} {
-	    untested "$errname execution from bytecode->native test"
-	    untested "$errname output from bytecode->native test"
-	}
-	return
-    }
-    if {[info exists opts(shouldfail)]} {
-	fail "$errname byte compilation"
-	return
-    }
-    pass "$errname byte compilation"
-
-    set removeList {}
-
-    # Find name to use for --main, and name of all class files.
-    set jvscan [find_jvscan]
-    verbose "jvscan is $jvscan"
-    set main_name [string trim \
-		     [libjava_prune_warnings \
-			[lindex [local_exec "$jvscan --encoding=UTF-8 $srcfile --print-main" "" "" 300] 1]]]
-    verbose "main name is $main_name"
-    set class_out [string trim \
-		     [libjava_prune_warnings \
-			[lindex [local_exec "$jvscan --encoding=UTF-8 $srcfile --list-class" "" "" 300] 1]]]
-    verbose "class list is $class_out"
-
-    if {[string match "*parse error*" $main_name]
-	|| [string match "*parse error*" $class_out]} {
-	untested "$errname compilation from bytecode"
-	if {! [info exists opts(no-exec)]
-	    || [info exists opts(need-threads)]} {
-	    untested "$errname execution from bytecode->native test"
-	    untested "$errname output from bytecode->native test"
-	}
-	return
-    }
-
-    # Turn "a b" into "a.class b.class".
-    # Also, turn "foo.bar" into "foo/bar.class".
-    set class_files {}
-    foreach file [split [string trim $class_out]] {
-	set file [join [split $file .] /]
-	lappend class_files $objdir/$file.class
-    }
-
-    eval lappend removeList $class_files
-
-    # Usually it is an error for a test program not to have a `main'
-    # method.  However, for no-exec tests it is ok.  Treat no-link
-    # like no-exec here.
-    if {[info exists opts(no-link)]} {
-	set opts(no-exec) x
-    }
-    set largs {}
-
-    if {[info exists opts(no-exec)]} {
-	set type object
-	set mode compile
-    } elseif {$main_name == ""} {
-	perror "No `main' given in program $errname"
-	return
-    } else {
-	set type executable
-	lappend largs "additional_flags=--main=$main_name"
-	# DOS/win32 targets default to .exe if no suffix is given
-        # We then try to delete a file that doesn't exist.  It is
-	# simpler to add the suffix everywhere.
-	set executable "${objdir}/${main_name}.exe"
-	set mode link
-    }
-
-    # We purposely ignore errors here; we still want to run the other
-    # appropriate tests.
-    set gij [libjava_find_gij]
-    # libjava_find_gij will return "" if it couldn't find the
-    # program; in this case we want to skip the test.
-    if {$INTERPRETER == "yes" && $gij != ""} {
-	libjava_invoke $errname "gij test" opts $gij \
-	  $inpfile $resultfile "" $main_name
-    }
-
-    # Initial arguments.
-    set args [libjava_arguments $mode]
-    eval lappend args $largs
-
-    if { $compile_args != "" } {
-	lappend args "additional_flags=$compile_args"
-    }
-
-    if { $compile_args != "" } {
-	set errname "$errname $compile_args"
-    }
-
-    verbose "compilation command = $args" 2
-    # When compiling and not linking, we have to build each .o
-    # separately.  We do this because DejaGNU's target_compile won't
-    # accept an empty "destfile" argument when the mode is "compile".
-    if {$mode == "compile"} {
-	foreach c_file $class_files {
-	    set executable [file rootname [file tail $c_file]].o
-	    # Don't write files which contain $ chars.
-	    regsub -all "\\$" $executable "\^" executable
-	    set x [libjava_prune_warnings \
-		     [libjava_tcompile '$c_file' "$executable" $type $args]]
-	    lappend removeList $executable
-	    if {$x != ""} {
-		break
-	    }
-	}
-    } else {
-	# This is so evil: we de-listify CLASS_FILES so that we can
-	# turn around and quote the `$' in it for the shell.  I really
-	# hate DejaGNU.  It is so !@#$!@# unpredictable.
-	set hack ""
-	foreach stupid $class_files {
-	    set hack "$hack $stupid"
-	}
-	lappend removeList $executable
-	set x [libjava_prune_warnings \
-		 [libjava_tcompile $hack "$executable" $type $args]]
-    }
-    if {[info exists opts(xfail-byte)]} {
-	setup_xfail *-*-*
-    }
-    if { $x != "" } {
-	verbose "target_compile failed: $x" 2
-	fail "$errname compilation from bytecode"
-	if {! [info exists opts(no-exec)]
-	    || [info exists opts(need-threads)]} {
-	    untested "$errname execution from bytecode->native test"
-	    untested "$errname output from bytecode->native test"
-	}
-	return;
-    }
-    pass "$errname compilation from bytecode"
-
-    # Set up the options the way they are expected by libjava_invoke.
-    if {[info exists opts(xfail-byte-output)]} {
-	set opts(xfail-output) x
-    }
-    if {[libjava_invoke $errname "bytecode->native test" opts $executable \
-	   $inpfile $resultfile ""]} {
-	# Everything ok, so clean up.
-	eval gcj_cleanup $removeList
-    }
-}
-
-#
-# Run the test specified by srcfile and resultfile. compile_args and
-# exec_args are options telling this proc how to work.
 #   `no-link'     don't try to link the program
 #   `no-exec'     don't try to run the test
 #   `xfail-gcj'   compilation from source will fail
@@ -914,14 +711,12 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 #
 proc test_libjava { options srcfile compile_args inpfile resultfile exec_args } {
     test_libjava_from_source $options $srcfile $compile_args $inpfile $resultfile $exec_args
-    test_libjava_from_javac $options $srcfile $compile_args $inpfile $resultfile $exec_args
-    
-    # Test BC-ABI compilation, currently for bytecode->native only
+
+    # Test BC-ABI compilation.
     set compile_args_bcabi $compile_args
     lappend compile_args_bcabi "-findirect-dispatch"
-
-    test_libjava_from_javac $options $srcfile $compile_args_bcabi $inpfile $resultfile $exec_args
- }
+    test_libjava_from_source $options $srcfile $compile_args_bcabi $inpfile $resultfile $exec_args
+}
 
 #
 # libjava_version -- extract and print the version number of libjavap

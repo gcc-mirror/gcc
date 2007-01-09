@@ -40,6 +40,7 @@ package javax.print.attribute.standard;
 
 import java.util.Locale;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.PrintJobAttribute;
 import javax.print.attribute.TextSyntax;
 
@@ -98,7 +99,7 @@ public final class OutputDeviceAssigned extends TextSyntax
    *
    * @return The class <code>OutputDeviceAssigned</code> itself.
    */
-  public Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return OutputDeviceAssigned.class;
   }

@@ -1,5 +1,5 @@
 /* UtilDelegateImpl.java --
-   Copyright (C) 2002, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.javax.rmi.CORBA;
 
+import gnu.classpath.VMStackWalker;
+
 import gnu.CORBA.Minor;
 import gnu.CORBA.ObjectCreator;
 import gnu.CORBA.Poa.ORB_1_4;
@@ -70,6 +72,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.rmi.AccessException;
 import java.rmi.MarshalException;
 import java.rmi.NoSuchObjectException;
@@ -374,37 +377,24 @@ public class UtilDelegateImpl
     throws ClassNotFoundException
   {
     if (loader == null)
-      loader = Thread.currentThread().getContextClassLoader();
+      loader = VMStackWalker.firstNonNullClassLoader();
 
     String p_useCodebaseOnly = System.getProperty("java.rmi.server.useCodebaseOnly");
 
     boolean useCodebaseOnly = p_useCodebaseOnly != null
       && p_useCodebaseOnly.trim().equalsIgnoreCase("true");
 
-    try
-      {
-        if (remoteCodebase != null && !useCodebaseOnly)
-          return RMIClassLoader.loadClass(remoteCodebase, className);
-      }
-    catch (Exception e)
-      {
-        // This failed but try others.
-      }
+    if (useCodebaseOnly)
+      remoteCodebase = null;
 
     try
       {
-        if (remoteCodebase == null || useCodebaseOnly)
-          return RMIClassLoader.loadClass(remoteCodebase, className);
+        return RMIClassLoader.loadClass(remoteCodebase, className, loader);
       }
-    catch (Exception e)
+    catch (MalformedURLException x)
       {
-        // This failed but try others.
+        throw new ClassNotFoundException(className, x);
       }
-
-    if (loader != null)
-      return Class.forName(className, true, loader);
-
-    throw new ClassNotFoundException(className + " at " + remoteCodebase);
   }
 
   /**

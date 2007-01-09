@@ -42,15 +42,33 @@ import gnu.java.awt.Buffers;
 
 import java.awt.Point;
 import java.awt.color.ColorSpace;
+import java.util.Arrays;
 
 public class ComponentColorModel extends ColorModel
 {
+  // Find sum of all elements of the array.
   private static int sum(int[] values)
   {
     int sum = 0;
     for (int i=0; i<values.length; i++)
       sum += values[i];
     return sum;
+  }
+  
+  // Create an appropriate array of bits, given a colorspace (ie, number of
+  // bands), size of the storage data type, and presence of an alpha band.
+  private static int[] findBits(ColorSpace colorSpace, int transferType,
+                                boolean hasAlpha)
+  {
+    int[] bits;
+    if (hasAlpha)
+      bits = new int[colorSpace.getNumComponents()+1];
+    else
+      bits = new int[colorSpace.getNumComponents()];
+
+    Arrays.fill(bits, DataBuffer.getDataTypeSize(transferType));
+    
+    return bits;
   }
 
   public ComponentColorModel(ColorSpace colorSpace, int[] bits,
@@ -84,8 +102,8 @@ public class ComponentColorModel extends ColorModel
 			     boolean isAlphaPremultiplied,
 			     int transparency, int transferType)
   {	
-    this(colorSpace, null, hasAlpha, isAlphaPremultiplied,
-         transparency, transferType);
+    this(colorSpace, findBits(colorSpace, transferType, hasAlpha), hasAlpha,
+         isAlphaPremultiplied, transparency, transferType);
   }
 
   public int getRed(int pixel)
@@ -288,17 +306,16 @@ public class ComponentColorModel extends ColorModel
 
   public ColorModel coerceData(WritableRaster raster,
 			       boolean isAlphaPremultiplied) {
-    if (this.isAlphaPremultiplied == isAlphaPremultiplied)
+    if (this.isAlphaPremultiplied == isAlphaPremultiplied || !hasAlpha())
       return this;
 
     /* TODO: provide better implementation based on the
        assumptions we can make due to the specific type of the
        color model. */
-    super.coerceData(raster, isAlphaPremultiplied);
+    super.coerceDataWorker(raster, isAlphaPremultiplied);
     
-    return new ComponentColorModel(cspace, bits, hasAlpha(),
-				   isAlphaPremultiplied, // argument
-				   transparency, transferType);
+    return new ComponentColorModel(cspace, hasAlpha, isAlphaPremultiplied,
+                                   transparency, transferType);
   }
 
   public boolean isCompatibleRaster(Raster raster)

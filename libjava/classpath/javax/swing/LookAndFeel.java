@@ -284,7 +284,7 @@ public abstract class LookAndFeel
    * @return A {@link UIDefaults.LazyValue} that serves up an 
    *     {@link IconUIResource}.
    */
-  public static Object makeIcon(Class baseClass, String gifFile)
+  public static Object makeIcon(Class<?> baseClass, String gifFile)
   {
     final URL file = baseClass.getResource(gifFile);
     return new UIDefaults.LazyValue() 

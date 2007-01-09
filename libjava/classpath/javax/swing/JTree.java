@@ -1230,8 +1230,32 @@ public class JTree extends JComponent implements Scrollable, Accessible
 	 */
     public void treeNodesRemoved(TreeModelEvent ev)
     {
-      // TODO: The API docs suggest that this method should do something
-      // but I cannot really see what has to be done here ...
+      if (ev != null)
+        {
+          TreePath parent = ev.getTreePath();
+          Object[] children = ev.getChildren();
+          TreeSelectionModel sm = getSelectionModel();
+          if (children != null)
+            {
+              TreePath path;
+              Vector toRemove = new Vector();
+              // Collect items that we must remove.
+              for (int i = children.length - 1; i >= 0; i--)
+                {
+                  path = parent.pathByAddingChild(children[i]);
+                  if (nodeStates.containsKey(path))
+                    toRemove.add(path);
+                  // Clear selection while we are at it.
+                  if (sm != null)
+                    removeDescendantSelectedPaths(path, true);
+                }
+              if (toRemove.size() > 0)
+                removeDescendantToggledPaths(toRemove.elements());
+              TreeModel model = getModel();
+              if (model == null || model.isLeaf(parent.getLastPathComponent()))
+                nodeStates.remove(parent);
+            }
+        }
     }
 
     /**
@@ -1243,9 +1267,38 @@ public class JTree extends JComponent implements Scrollable, Accessible
      */
     public void treeStructureChanged(TreeModelEvent ev)
     {
-      // Set state of new path.
-      TreePath path = ev.getTreePath();
-      setExpandedState(path, isExpanded(path));
+      if (ev != null)
+        {
+          TreePath parent = ev.getTreePath();
+          if (parent != null)
+            {
+              if (parent.getPathCount() == 1)
+                {
+                  // We have a new root, clear everything.
+                  clearToggledPaths();
+                  Object root = treeModel.getRoot();
+                  if (root != null && treeModel.isLeaf(root))
+                    nodeStates.put(parent, Boolean.TRUE);
+                }
+              else if (nodeStates.containsKey(parent))
+                {
+                  Vector toRemove = new Vector();
+                  boolean expanded = isExpanded(parent);
+                  toRemove.add(parent);
+                  removeDescendantToggledPaths(toRemove.elements());
+                  if (expanded)
+                    {
+                      TreeModel model = getModel();
+                      if (model != null
+                          || model.isLeaf(parent.getLastPathComponent()))
+                        collapsePath(parent);
+                      else
+                        nodeStates.put(parent, Boolean.TRUE);
+                    }
+                }
+              removeDescendantSelectedPaths(parent, false);
+            }
+        }
     }
   }
 
@@ -1279,13 +1332,6 @@ public class JTree extends JComponent implements Scrollable, Accessible
       TreeSelectionEvent rewritten = 
         (TreeSelectionEvent) ev.cloneWithSource(JTree.this);
       fireValueChanged(rewritten);
-
-      // Only repaint the changed nodes.
-      TreePath[] changed = ev.getPaths();
-      for (int i = 0; i < changed.length; i++)
-        {
-          repaint(getPathBounds(changed[i]));
-        }
     }
   }
 
@@ -1406,8 +1452,10 @@ public class JTree extends JComponent implements Scrollable, Accessible
    * This contains the state of all nodes in the tree. Al/ entries map the
    * TreePath of a note to to its state. Valid states are EXPANDED and
    * COLLAPSED. Nodes not in this Hashtable are assumed state COLLAPSED.
+   *
+   * This is package private to avoid accessor methods.
    */
-  private Hashtable nodeStates = new Hashtable();
+  Hashtable nodeStates = new Hashtable();
 
   protected transient TreeCellEditor cellEditor;
 
@@ -1486,7 +1534,7 @@ public class JTree extends JComponent implements Scrollable, Accessible
    * 
    * @param value the initial nodes in the tree
    */
-  public JTree(Hashtable value)
+  public JTree(Hashtable<?, ?> value)
   {
     this(createTreeModel(value));
   }
@@ -1509,8 +1557,7 @@ public class JTree extends JComponent implements Scrollable, Accessible
   public JTree(TreeModel model)
   {
     setRootVisible(true);
-    setSelectionModel(new EmptySelectionModel());
-    selectionModel.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+    setSelectionModel( new DefaultTreeSelectionModel() );
     
     // The root node appears expanded by default.
     nodeStates = new Hashtable();
@@ -1554,7 +1601,7 @@ public class JTree extends JComponent implements Scrollable, Accessible
    * 
    * @param value the initial nodes in the tree
    */
-  public JTree(Vector value)
+  public JTree(Vector<?> value)
   {
     this(createTreeModel(value));
   }
@@ -1685,29 +1732,52 @@ public class JTree extends JComponent implements Scrollable, Accessible
   public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation,
                                         int direction)
   {
-    int delta;
+    int delta = 0;
 
     // Round so that the top would start from the row boundary
     if (orientation == SwingConstants.VERTICAL)
       {
-        // One pixel down, otherwise picks another row too high.
-        int row = getClosestRowForLocation(visibleRect.x, visibleRect.y + 1);
-        row = row + direction;
-        if (row < 0)
-          row = 0;
-
-        Rectangle newTop = getRowBounds(row);
-        delta = newTop.y - visibleRect.y;
+        int row = getClosestRowForLocation(0, visibleRect.y);
+        if (row != -1)
+          {
+            Rectangle b = getRowBounds(row);
+            if (b.y != visibleRect.y)
+              {
+                if (direction < 0)
+                  delta = Math.max(0, visibleRect.y - b.y);
+                else
+                  delta = b.y + b.height - visibleRect.y;
+              }
+            else
+              {
+                if (direction < 0)
+                  {
+                    if (row != 0)
+                      {
+                        b = getRowBounds(row - 1);
+                        delta = b.height;
+                      }
+                  }
+                else
+                  delta = b.height;
+              }
+          }
       }
     else
-      delta = direction * rowHeight == 0 ? 20 : rowHeight;
+      // The RI always  returns 4 for HORIZONTAL scrolling.
+      delta = 4;
     return delta;
   }
 
   public int getScrollableBlockIncrement(Rectangle visibleRect,
                                          int orientation, int direction)
   {
-    return getScrollableUnitIncrement(visibleRect, orientation, direction);
+    int block;
+    if (orientation == SwingConstants.VERTICAL)
+      block = visibleRect.height;
+    else
+      block = visibleRect.width;
+    return block;
   }
 
   public boolean getScrollableTracksViewportHeight()
@@ -2050,14 +2120,16 @@ public class JTree extends JComponent implements Scrollable, Accessible
     if (selectionModel == model)
       return;
 
+    if( model == null )
+      model = EmptySelectionModel.sharedInstance();
+
     if (selectionModel != null)
       selectionModel.removeTreeSelectionListener(selectionRedirector);
 
     TreeSelectionModel oldValue = selectionModel;
     selectionModel = model;
 
-    if (selectionModel != null)
-      selectionModel.addTreeSelectionListener(selectionRedirector);
+    selectionModel.addTreeSelectionListener(selectionRedirector);
 
     firePropertyChange(SELECTION_MODEL_PROPERTY, oldValue, model);
     revalidate();
@@ -2184,12 +2256,27 @@ public class JTree extends JComponent implements Scrollable, Accessible
 
   public void setSelectionPath(TreePath path)
   {
+    clearSelectionPathStates();
     selectionModel.setSelectionPath(path);
   }
 
   public void setSelectionPaths(TreePath[] paths)
   {
+    clearSelectionPathStates();
     selectionModel.setSelectionPaths(paths);
+  }
+  
+  /**
+   * This method, and all calls to it, should be removed once the
+   * DefaultTreeModel fires events properly.  Maintenance of the nodeStates
+   * table should really be done in the TreeModelHandler.  
+   */
+  private void clearSelectionPathStates()
+  {
+    TreePath[] oldPaths = selectionModel.getSelectionPaths();
+    if (oldPaths != null)
+      for (int i = 0; i < oldPaths.length; i++)
+        nodeStates.remove(oldPaths[i]);
   }
 
   public void setSelectionRow(int row)
@@ -2197,7 +2284,7 @@ public class JTree extends JComponent implements Scrollable, Accessible
     TreePath path = getPathForRow(row);
 
     if (path != null)
-      selectionModel.setSelectionPath(path);
+      setSelectionPath(path);
   }
 
   public void setSelectionRows(int[] rows)
@@ -2272,11 +2359,13 @@ public class JTree extends JComponent implements Scrollable, Accessible
 
   public void removeSelectionPath(TreePath path)
   {
+    clearSelectionPathStates();
     selectionModel.removeSelectionPath(path);
   }
 
   public void removeSelectionPaths(TreePath[] paths)
   {
+    clearSelectionPathStates();
     selectionModel.removeSelectionPaths(paths);
   }
 
@@ -2285,7 +2374,7 @@ public class JTree extends JComponent implements Scrollable, Accessible
     TreePath path = getPathForRow(row);
 
     if (path != null)
-      selectionModel.removeSelectionPath(path);
+      removeSelectionPath(path);
   }
 
   public void removeSelectionRows(int[] rows)
@@ -2331,7 +2420,7 @@ public class JTree extends JComponent implements Scrollable, Accessible
     if (selectionModel != null)
       {
         TreePath oldValue = selectionModel.getLeadSelectionPath();
-        if (path.equals(oldValue))
+        if (path == oldValue || path != null && path.equals(oldValue))
           return;
        
         // Repaint the previous and current rows with the lead selection path.
@@ -2409,9 +2498,19 @@ public class JTree extends JComponent implements Scrollable, Accessible
     return selectionModel.isPathSelected(path);
   }
 
+  /**
+   * Returns <code>true</code> when the specified row is selected,
+   * <code>false</code> otherwise. This call is delegated to the
+   * {@link TreeSelectionModel#isRowSelected(int)} method.
+   *
+   * @param row the row to check
+   *
+   * @return <code>true</code> when the specified row is selected,
+   *         <code>false</code> otherwise
+   */
   public boolean isRowSelected(int row)
   {
-    return selectionModel.isPathSelected(getPathForRow(row));
+    return selectionModel.isRowSelected(row);
   }
 
   public boolean isSelectionEmpty()
@@ -2725,7 +2824,7 @@ public class JTree extends JComponent implements Scrollable, Accessible
     nodeStates.clear();
   }
 
-  protected Enumeration getDescendantToggledPaths(TreePath parent)
+  protected Enumeration<TreePath> getDescendantToggledPaths(TreePath parent)
   {
     if (parent == null)
       return null;
@@ -2874,7 +2973,7 @@ public class JTree extends JComponent implements Scrollable, Accessible
    *
    * @return An Enumeration containing TreePath objects
    */
-  public Enumeration getExpandedDescendants(TreePath path)
+  public Enumeration<TreePath> getExpandedDescendants(TreePath path)
   {
     Enumeration paths = nodeStates.keys();
     Vector relevantPaths = new Vector();
@@ -3002,7 +3101,7 @@ public class JTree extends JComponent implements Scrollable, Accessible
    * @param toRemove - Enumeration of TreePaths that need to be removed from
    * cache of toggled tree paths.
    */
-  protected void removeDescendantToggledPaths(Enumeration toRemove)
+  protected void removeDescendantToggledPaths(Enumeration<TreePath> toRemove)
   {
     while (toRemove.hasMoreElements())
       {

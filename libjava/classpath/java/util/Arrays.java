@@ -362,7 +362,7 @@ public class Arrays
    * @throws NullPointerException if a null element is compared with natural
    *         ordering (only possible when c is null)
    */
-  public static int binarySearch(Object[] a, Object key, Comparator c)
+  public static <T> int binarySearch(T[] a, T key, Comparator<? super T> c)
   {
     int low = 0;
     int hi = a.length - 1;
@@ -2163,7 +2163,7 @@ public class Arrays
    * @throws NullPointerException if a null element is compared with natural
    *         ordering (only possible when c is null)
    */
-  public static void sort(Object[] a, Comparator c)
+  public static <T> void sort(T[] a, Comparator<? super T> c)
   {
     sort(a, 0, a.length, c);
   }
@@ -2213,7 +2213,8 @@ public class Arrays
    * @throws NullPointerException if a null element is compared with natural
    *         ordering (only possible when c is null)
    */
-  public static void sort(Object[] a, int fromIndex, int toIndex, Comparator c)
+  public static <T> void sort(T[] a, int fromIndex, int toIndex,
+			      Comparator<? super T> c)
   {
     if (fromIndex > toIndex)
       throw new IllegalArgumentException("fromIndex " + fromIndex
@@ -2235,7 +2236,7 @@ public class Arrays
               {
                 // not already sorted
                 int j = i;
-                Object elem = a[j];
+                T elem = a[j];
                 do
                   {
                     a[j] = a[j - 1];
@@ -2253,9 +2254,9 @@ public class Arrays
     if (len <= 6)
       return;
 
-    Object[] src = a;
-    Object[] dest = new Object[len];
-    Object[] t = null; // t is used for swapping src and dest
+    T[] src = a;
+    T[] dest = (T[]) new Object[len];
+    T[] t = null; // t is used for swapping src and dest
 
     // The difference of the fromIndex of the src and dest array.
     int srcDestDiff = -fromIndex;
@@ -2349,7 +2350,7 @@ public class Arrays
    * @see RandomAccess
    * @see Arrays.ArrayList
    */
-  public static List asList(final Object[] a)
+  public static <T> List<T> asList(final T... a)
   {
     return new Arrays.ArrayList(a);
   }
@@ -2546,11 +2547,10 @@ public class Arrays
   }
 
   /** 
-   * Returns the hashcode of an array of integer numbers.  If two arrays
+   * Returns the hashcode of an array of objects.  If two arrays
    * are equal, according to <code>equals()</code>, they should have the
    * same hashcode.  The hashcode returned by the method is equal to that
-   * obtained by the corresponding <code>List</code> object.  This has the same
-   * data, but represents ints in their wrapper class, <code>Integer</code>.
+   * obtained by the corresponding <code>List</code> object.  
    * For <code>null</code>, 0 is returned.
    *
    * @param v an array of integer numbers for which the hash code should be
@@ -2571,7 +2571,6 @@ public class Arrays
     return result;
   }
 
-  /** @since 1.5 */
   public static int deepHashCode(Object[] v)
   {
     if (v == null)
@@ -2914,7 +2913,7 @@ public class Arrays
    * @author Eric Blake (ebb9@email.byu.edu)
    * @status updated to 1.4
    */
-  private static final class ArrayList extends AbstractList
+  private static final class ArrayList<E> extends AbstractList<E>
     implements Serializable, RandomAccess
   {
     // We override the necessary methods, plus others which will be much
@@ -2929,14 +2928,14 @@ public class Arrays
      * The array we are viewing.
      * @serial the array
      */
-    private final Object[] a;
+    private final E[] a;
 
     /**
      * Construct a list view of the array.
      * @param a the array to view
      * @throws NullPointerException if a is null
      */
-    ArrayList(Object[] a)
+    ArrayList(E[] a)
     {
       // We have to explicitly check.
       if (a == null)
@@ -2951,7 +2950,7 @@ public class Arrays
      * @param index The index to retrieve an object from.
      * @return The object at the array index specified.
      */ 
-    public Object get(int index)
+    public E get(int index)
     {
       return a[index];
     }
@@ -2974,9 +2973,9 @@ public class Arrays
      * @param element The new object.
      * @return The object replaced by this operation.
      */
-    public Object set(int index, Object element)
+    public E set(int index, E element)
     {
-      Object old = a[index];
+      E old = a[index];
       a[index] = element;
       return old;
     }
@@ -3047,12 +3046,12 @@ public class Arrays
      * @return The array containing the objects in this list,
      *         which may or may not be == to array.
      */
-    public Object[] toArray(Object[] array)
+    public <T> T[] toArray(T[] array)
     {
       int size = a.length;
       if (array.length < size)
-        array = (Object[])
-          Array.newInstance(array.getClass().getComponentType(), size);
+        array = (T[]) Array.newInstance(array.getClass().getComponentType(),
+					size);
       else if (array.length > size)
         array[size] = null;
 

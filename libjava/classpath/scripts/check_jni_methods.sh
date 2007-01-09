@@ -35,9 +35,6 @@ cat > $TMPFILE3 << EOF
 -Java_gnu_java_awt_peer_gtk_GtkMenuComponentPeer_dispose
 -Java_java_lang_VMSystem_arraycopy
 -Java_java_lang_VMSystem_identityHashCode
--Java_gnu_java_util_prefs_gconf_GConfNativePeer_finalize_1class
--Java_gnu_java_util_prefs_gconf_GConfNativePeer_init_1id_1cache
--Java_gnu_java_util_prefs_gconf_GConfNativePeer_init_1class
 EOF
 
 # Compare again silently.

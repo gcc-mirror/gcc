@@ -326,10 +326,4 @@ public class XFontPeer2
     throw new UnsupportedOperationException("Not yet implemented");
   }
 
-  public Rectangle2D getStringBounds(Font font, CharacterIterator ci, int begin, int limit, FontRenderContext frc)
-  {
-    // FIXME: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented");
-  }
-
 }

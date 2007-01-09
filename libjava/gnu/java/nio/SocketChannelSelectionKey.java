@@ -51,6 +51,8 @@ public final class SocketChannelSelectionKey
     
   public int getNativeFD()
   {
-    return ((SocketChannelImpl) ch).getNativeFD();
+    NIOSocket socket =
+        (NIOSocket) ((SocketChannelImpl) ch).socket();
+    return socket.getPlainSocketImpl().getNativeFD();
   }
 }

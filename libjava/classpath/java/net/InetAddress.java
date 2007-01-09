@@ -59,7 +59,7 @@ import java.io.Serializable;
  * @author Per Bothner
  * @author Gary Benson (gbenson@redhat.com)
  *
- * @specnote This class is not final since JK 1.4
+ * @specnote This class is not final since JDK 1.4
  */
 public class InetAddress implements Serializable
 {
@@ -87,7 +87,7 @@ public class InetAddress implements Serializable
       }
     catch (UnknownHostException e)
       {
-	throw new RuntimeException("should never happen", e);
+	throw (InternalError) new InternalError().initCause(e);
       }
     ANY_IF.hostName = ANY_IF.getHostName();
   }
@@ -104,7 +104,7 @@ public class InetAddress implements Serializable
       }
     catch (UnknownHostException e)
       {
-	throw new RuntimeException("should never happen", e);
+	throw (InternalError) new InternalError().initCause(e);
       }
   }    
 
@@ -522,7 +522,7 @@ public class InetAddress implements Serializable
       }
     catch (UnknownHostException e)
       {
-	throw new RuntimeException("should never happen", e);
+	throw (InternalError) new InternalError().initCause(e);
       }
   }
 

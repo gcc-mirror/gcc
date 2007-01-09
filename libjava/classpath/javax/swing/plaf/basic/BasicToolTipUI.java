@@ -40,19 +40,20 @@ package javax.swing.plaf.basic;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.JComponent;
 import javax.swing.JToolTip;
 import javax.swing.LookAndFeel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.ToolTipUI;
+import javax.swing.text.View;
 
 /**
  * This is the Basic Look and Feel UI class for JToolTip.
@@ -60,11 +61,38 @@ import javax.swing.plaf.ToolTipUI;
 public class BasicToolTipUI extends ToolTipUI
 {
 
+  /**
+   * Receives notification when a property of the JToolTip changes.
+   * This updates the HTML renderer if appropriate.
+   */
+  private class PropertyChangeHandler
+    implements PropertyChangeListener
+  {
+
+    public void propertyChange(PropertyChangeEvent e)
+    {
+      String prop = e.getPropertyName();
+      if (prop.equals("tiptext") || prop.equals("font")
+          || prop.equals("foreground"))
+        {
+          JToolTip tip = (JToolTip) e.getSource();
+          String text = tip.getTipText();
+          BasicHTML.updateRenderer(tip, text);
+        }
+    }
+    
+  }
+
   /** The shared instance of BasicToolTipUI used for all ToolTips. */
   private static BasicToolTipUI shared;
 
   /** The tooltip's text */
   private String text;
+
+  /**
+   * Handles property changes.
+   */
+  private PropertyChangeListener propertyChangeHandler;
 
   /**
    * Creates a new BasicToolTipUI object.
@@ -98,7 +126,12 @@ public class BasicToolTipUI extends ToolTipUI
    */
   public Dimension getMaximumSize(JComponent c)
   {
-    return getPreferredSize(c);
+    Dimension d = getPreferredSize(c);
+    View view = (View) c.getClientProperty(BasicHTML.propertyKey);
+    if (view != null)
+      d.width += view.getMaximumSpan(View.X_AXIS)
+                 - view.getPreferredSpan(View.X_AXIS);
+    return d;
   }
 
   /**
@@ -110,7 +143,12 @@ public class BasicToolTipUI extends ToolTipUI
    */
   public Dimension getMinimumSize(JComponent c)
   {
-    return getPreferredSize(c);
+    Dimension d = getPreferredSize(c);
+    View view = (View) c.getClientProperty(BasicHTML.propertyKey);
+    if (view != null)
+      d.width -= view.getPreferredSpan(View.X_AXIS)
+                 - view.getMinimumSpan(View.X_AXIS);
+    return d;
   }
 
   /**
@@ -123,22 +161,25 @@ public class BasicToolTipUI extends ToolTipUI
   public Dimension getPreferredSize(JComponent c)
   {
     JToolTip tip = (JToolTip) c;
-    FontMetrics fm;
-    Toolkit g = tip.getToolkit();
-    text = tip.getTipText();
-    
-    Rectangle vr = new Rectangle();
-    Rectangle ir = new Rectangle();
-    Rectangle tr = new Rectangle();
-    Insets insets = tip.getInsets();
-    fm = g.getFontMetrics(tip.getFont());
-    SwingUtilities.layoutCompoundLabel(tip, fm, text, null,
-                                       SwingConstants.CENTER,
-                                       SwingConstants.CENTER,
-                                       SwingConstants.CENTER,
-                                       SwingConstants.CENTER, vr, ir, tr, 0);
-    return new Dimension(insets.left + tr.width + insets.right,
-                         insets.top + tr.height + insets.bottom);
+    String str = tip.getTipText();
+    FontMetrics fm = c.getFontMetrics(c.getFont());
+    Insets i = c.getInsets();
+    Dimension d = new Dimension(i.left + i.right, i.top + i.bottom);
+    if (str != null && ! str.equals(""))
+      {
+        View view = (View) c.getClientProperty(BasicHTML.propertyKey);
+        if (view != null)
+          {
+            d.width += (int) view.getPreferredSpan(View.X_AXIS);
+            d.height += (int) view.getPreferredSpan(View.Y_AXIS);
+          }
+        else
+          {
+            d.width += fm.stringWidth(str) + 6;
+            d.height += fm.getHeight();
+          }
+      }
+    return d;
   }
 
   /**
@@ -160,7 +201,8 @@ public class BasicToolTipUI extends ToolTipUI
    */
   protected void installListeners(JComponent c)
   {
-    // TODO: Implement this properly.
+    propertyChangeHandler = new PropertyChangeHandler();
+    c.addPropertyChangeListener(propertyChangeHandler);
   }
 
   /**
@@ -172,6 +214,7 @@ public class BasicToolTipUI extends ToolTipUI
   {
     c.setOpaque(true);
     installDefaults(c);
+    BasicHTML.updateRenderer(c, ((JToolTip) c).getTipText());
     installListeners(c);
   }
 
@@ -186,26 +229,25 @@ public class BasicToolTipUI extends ToolTipUI
     JToolTip tip = (JToolTip) c;
 
     String text = tip.getTipText();
-    Toolkit t = tip.getToolkit();
-    if (text == null)
-      return;
-
-    Rectangle vr = new Rectangle();
-    vr = SwingUtilities.calculateInnerArea(tip, vr);
-    Rectangle ir = new Rectangle();
-    Rectangle tr = new Rectangle();
-    FontMetrics fm = t.getFontMetrics(tip.getFont());
+    Font font = c.getFont();
+    FontMetrics fm = c.getFontMetrics(font);
     int ascent = fm.getAscent();
-    SwingUtilities.layoutCompoundLabel(tip, fm, text, null,
-                                       SwingConstants.CENTER,
-                                       SwingConstants.CENTER,
-                                       SwingConstants.CENTER,
-                                       SwingConstants.CENTER, vr, ir, tr, 0);
+    Insets i = c.getInsets();
+    Dimension size = c.getSize();
+    Rectangle paintR = new Rectangle(i.left, i.top,
+                                     size.width - i.left - i.right,
+                                     size.height - i.top - i.bottom);
     Color saved = g.getColor();
+    Font oldFont = g.getFont();
     g.setColor(Color.BLACK);
 
-    g.drawString(text, vr.x, vr.y + ascent); 
+    View view = (View) c.getClientProperty(BasicHTML.propertyKey);
+    if (view != null)
+      view.paint(g, paintR);
+    else
+      g.drawString(text, paintR.x + 3, paintR.y + ascent); 
 
+    g.setFont(oldFont);
     g.setColor(saved);   
   }
 
@@ -229,7 +271,11 @@ public class BasicToolTipUI extends ToolTipUI
    */
   protected void uninstallListeners(JComponent c)
   {
-    // TODO: Implement this properly.
+    if (propertyChangeHandler != null)
+      {
+        c.removePropertyChangeListener(propertyChangeHandler);
+        propertyChangeHandler = null;
+      }
   }
 
   /**
@@ -240,6 +286,7 @@ public class BasicToolTipUI extends ToolTipUI
   public void uninstallUI(JComponent c)
   {
     uninstallDefaults(c);
+    BasicHTML.updateRenderer(c, "");
     uninstallListeners(c);
   }
 }

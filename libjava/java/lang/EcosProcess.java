@@ -1,6 +1,6 @@
 // EcosProcess.java - Subclass of Process for eCos systems.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -22,9 +22,7 @@ import java.io.IOException;
 
 // This is entirely internal to our implementation.
 
-// This file is copied to `ConcreteProcess.java' before compilation.
-// Hence the class name apparently does not match the file name.
-final class ConcreteProcess extends Process
+final class EcosProcess extends Process
 {
   // See natEcosProcess.cc to understand why this is native.
   public native void destroy ();
@@ -53,7 +51,7 @@ final class ConcreteProcess extends Process
     return 0;
   }
 
-  public ConcreteProcess (String[] progarray,
+  public EcosProcess (String[] progarray,
                           String[] envp,
                           File dir)
     throws IOException

@@ -1,6 +1,6 @@
 // natIconv.cc -- Java side of iconv() reader.
 
-/* Copyright (C) 2000, 2001, 2003  Free Software Foundation
+/* Copyright (C) 2000, 2001, 2003, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -47,13 +47,13 @@ gnu::gcj::convert::Input_iconv::init (jstring encoding)
 
   iconv_t h = iconv_open ("UCS-2", buffer);
   if (h == (iconv_t) -1)
-    throw new java::io::UnsupportedEncodingException (encoding);
+    throw new ::java::io::UnsupportedEncodingException (encoding);
 
   JvAssert (h != NULL);
   handle = reinterpret_cast<gnu::gcj::RawData *> (h);
 #else /* HAVE_ICONV */
   // If no iconv, just throw an exception.
-  throw new java::io::UnsupportedEncodingException (encoding);
+  throw new ::java::io::UnsupportedEncodingException (encoding);
 #endif /* HAVE_ICONV */
 }
 
@@ -96,7 +96,7 @@ gnu::gcj::convert::Input_iconv::read (jcharArray outbuffer,
       // some conversion might have taken place.  So we fall through
       // to the normal case.
       if (errno != EINVAL && errno != E2BIG)
-	throw new java::io::CharConversionException ();
+	throw new ::java::io::CharConversionException ();
     }
 
   if (iconv_byte_swap)
@@ -147,13 +147,13 @@ gnu::gcj::convert::Output_iconv::init (jstring encoding)
 
   iconv_t h = iconv_open (buffer, "UCS-2");
   if (h == (iconv_t) -1)
-    throw new java::io::UnsupportedEncodingException (encoding);
+    throw new ::java::io::UnsupportedEncodingException (encoding);
 
   JvAssert (h != NULL);
   handle = reinterpret_cast<gnu::gcj::RawData *> (h);
 #else /* HAVE_ICONV */
   // If no iconv, just throw an exception.
-  throw new java::io::UnsupportedEncodingException (encoding);
+  throw new ::java::io::UnsupportedEncodingException (encoding);
 #endif /* HAVE_ICONV */
 }
 

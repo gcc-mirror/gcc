@@ -356,7 +356,8 @@ public class Sasl
   public static SaslClient createSaslClient(String[] mechanisms,
                                             String authorizationID,
                                             String protocol,
-                                            String serverName, Map props,
+                                            String serverName,
+                                            Map<String, ?> props,
                                             CallbackHandler cbh)
     throws SaslException
   {
@@ -444,7 +445,7 @@ public class Sasl
    * {@link SaslClient} instance.
    * @see #createSaslClient(String[],String,String,String,Map,CallbackHandler)
    */
-  public static Enumeration getSaslClientFactories()
+  public static Enumeration<SaslClientFactory> getSaslClientFactories()
   {
     Vector result = new Vector();
     HashSet names = new HashSet();
@@ -559,7 +560,8 @@ public class Sasl
    */
   public static SaslServer createSaslServer(String mechanism, String protocol,
                                             String serverName,
-                                            Map props, CallbackHandler cbh)
+                                            Map<String, ?> props,
+                                            CallbackHandler cbh)
     throws SaslException
   {
     if (mechanism == null)
@@ -636,7 +638,7 @@ public class Sasl
    * {@link SaslServer} instance.
    * @see #createSaslServer(String,String,String,Map,CallbackHandler)
    */
-  public static Enumeration getSaslServerFactories()
+  public static Enumeration<SaslServerFactory> getSaslServerFactories()
   {
     Vector result = new Vector();
     HashSet names = new HashSet();

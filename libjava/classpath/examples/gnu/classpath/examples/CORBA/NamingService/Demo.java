@@ -39,7 +39,6 @@ exception statement from your version. */
 package gnu.classpath.examples.CORBA.NamingService;
 
 import gnu.CORBA.IOR;
-import gnu.CORBA.NamingService.NamingServiceTransient;
 
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.Object;
@@ -97,7 +96,7 @@ public class Demo
       {
         public void run()
         {
-          NamingServiceTransient.main(args);
+          gnu.classpath.tools.tnameserv.Main.main(args);
         }
       }.start();
 

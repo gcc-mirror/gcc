@@ -180,17 +180,9 @@ public class BasicMenuItemUI extends MenuItemUI
   private ItemListener itemListener;
 
   /**
-   * Number of spaces between accelerator and menu item's label.
+   * A PropertyChangeListener to make UI updates after property changes.
    */
-  private int defaultAcceleratorLabelGap = 10;
-
-  /**
-   * The gap between different menus on the MenuBar.
-   */
-  private int MenuGap = 10;
-  
-  /** A PropertyChangeListener to make UI updates after property changes **/
-  PropertyChangeHandler propertyChangeListener;
+  private PropertyChangeHandler propertyChangeListener;
 
   /**
    * The view rectangle used for layout of the menu item.
@@ -262,7 +254,6 @@ public class BasicMenuItemUI extends MenuItemUI
                 || property.equals("font"))
                && SystemProperties.getProperty("gnu.javax.swing.noGraphics2D")
                == null)
-               
         {
           AbstractButton b = (AbstractButton) e.getSource();
           String text = b.getText();
@@ -373,7 +364,7 @@ public class BasicMenuItemUI extends MenuItemUI
    */
   protected void doClick(MenuSelectionManager msm)
   {
-    menuItem.doClick();
+    menuItem.doClick(0);
     msm.clearSelectedPath();
   }
 
@@ -411,14 +402,10 @@ public class BasicMenuItemUI extends MenuItemUI
   {
     ArrayList path = new ArrayList();
 
-    // Path to menu should also include its popup menu.
-    if (menuItem instanceof JMenu)
-      path.add(((JMenu) menuItem).getPopupMenu());
-
     Component c = menuItem;
     while (c instanceof MenuElement)
       {
-        path.add(0, (MenuElement) c);
+        path.add(0, c);
 
         if (c instanceof JPopupMenu)
           c = ((JPopupMenu) c).getInvoker();
@@ -453,6 +440,7 @@ public class BasicMenuItemUI extends MenuItemUI
 
     // Layout the menu item. The result gets stored in the rectangle
     // fields of this class.
+    resetRectangles(null);
     layoutMenuItem(m, accelText);
 
     // The union of the text and icon areas is the label area.
@@ -606,6 +594,11 @@ public class BasicMenuItemUI extends MenuItemUI
     menuItem.addMenuKeyListener(menuKeyListener);
     menuItem.addItemListener(itemListener);
     menuItem.addPropertyChangeListener(propertyChangeListener);
+    // Fire synthetic property change event to let the listener update
+    // the TextLayout cache.
+    propertyChangeListener.propertyChange(new PropertyChangeEvent(menuItem,
+                                                                  "font", null,
+                                                          menuItem.getFont()));
   }
 
   /**
@@ -704,6 +697,8 @@ public class BasicMenuItemUI extends MenuItemUI
 
     // Layout menu item. The result gets stored in the rectangle fields
     // of this class.
+    resetRectangles(m);
+
     layoutMenuItem(m, accelText);
 
     // Paint the background.
@@ -936,6 +931,7 @@ public class BasicMenuItemUI extends MenuItemUI
     uninstallListeners();
     uninstallDefaults();
     uninstallComponents(menuItem);
+    c.putClientProperty(BasicGraphicsUtils.CACHED_TEXT_LAYOUT, null);
     menuItem = null;
   }
 
@@ -950,47 +946,6 @@ public class BasicMenuItemUI extends MenuItemUI
   public void update(Graphics g, JComponent c)
   {
     paint(g, c);
-  }
-
-  /**
-   * Return text representation of the specified accelerator
-   * 
-   * @param accelerator
-   *          Accelerator for which to return string representation
-   * @return $String$ Text representation of the given accelerator
-   */
-  private String getAcceleratorText(KeyStroke accelerator)
-  {
-    // convert keystroke into string format
-    String modifiersText = "";
-    int modifiers = accelerator.getModifiers();
-    char keyChar = accelerator.getKeyChar();
-    int keyCode = accelerator.getKeyCode();
-
-    if (modifiers != 0)
-      modifiersText = KeyEvent.getKeyModifiersText(modifiers)
-                      + acceleratorDelimiter;
-
-    if (keyCode == KeyEvent.VK_UNDEFINED)
-      return modifiersText + keyChar;
-    else
-      return modifiersText + KeyEvent.getKeyText(keyCode);
-  }
-
-  /**
-   * Calculates and return rectange in which accelerator should be displayed
-   * 
-   * @param accelerator
-   *          accelerator for which to return the display rectangle
-   * @param fm
-   *          The font metrics used to measure the text
-   * @return $Rectangle$ reactangle which will be used to display accelerator
-   */
-  private Rectangle getAcceleratorRect(KeyStroke accelerator, FontMetrics fm)
-  {
-    int width = fm.stringWidth(getAcceleratorText(accelerator));
-    int height = fm.getHeight();
-    return new Rectangle(0, 0, width, height);
   }
 
   /**
@@ -1103,15 +1058,14 @@ public class BasicMenuItemUI extends MenuItemUI
      */
     public void mouseReleased(MouseEvent e)
     {
-      Rectangle size = menuItem.getBounds();
       MenuSelectionManager manager = MenuSelectionManager.defaultManager();
-      if (e.getX() > 0 && e.getX() < size.width && e.getY() > 0
-          && e.getY() < size.height)
+      int x = e.getX();
+      int y = e.getY();
+      if (x > 0 && x < menuItem.getWidth() && y > 0
+          && y < menuItem.getHeight())
         {
-          manager.clearSelectedPath();
-          menuItem.doClick();
+          doClick(manager);
         }
-
       else
         manager.processMouseEvent(e);
     }
@@ -1130,7 +1084,7 @@ public class BasicMenuItemUI extends MenuItemUI
      */
     public void menuDragMouseDragged(MenuDragMouseEvent e)
     {
-      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+      MenuSelectionManager manager = e.getMenuSelectionManager();
       manager.setSelectedPath(e.getPath());
     }
 
@@ -1143,7 +1097,7 @@ public class BasicMenuItemUI extends MenuItemUI
      */
     public void menuDragMouseEntered(MenuDragMouseEvent e)
     {
-      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+      MenuSelectionManager manager = e.getMenuSelectionManager();
       manager.setSelectedPath(e.getPath());
     }
 
@@ -1155,7 +1109,7 @@ public class BasicMenuItemUI extends MenuItemUI
      */
     public void menuDragMouseExited(MenuDragMouseEvent e)
     {
-      // TODO: What should be done here, if anything?
+      // Nothing to do here yet.
     }
 
     /**
@@ -1167,13 +1121,14 @@ public class BasicMenuItemUI extends MenuItemUI
      */
     public void menuDragMouseReleased(MenuDragMouseEvent e)
     {
-      MenuElement[] path = e.getPath();
-
-      if (path[path.length - 1] instanceof JMenuItem)
-        ((JMenuItem) path[path.length - 1]).doClick();
-
-      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
-      manager.clearSelectedPath();
+      MenuSelectionManager manager = e.getMenuSelectionManager();
+      int x = e.getX();
+      int y = e.getY();
+      if (x >= 0 && x < menuItem.getWidth() && y >= 0
+          && y < menuItem.getHeight())
+        doClick(manager);
+      else
+        manager.clearSelectedPath();
     }
   }
 
@@ -1275,6 +1230,33 @@ public class BasicMenuItemUI extends MenuItemUI
   }
 
   /**
+   * Resets the cached layout rectangles. If <code>i</code> is not null, then
+   * the view rectangle is set to the inner area of the component, otherwise
+   * it is set to (0, 0, Short.MAX_VALUE, Short.MAX_VALUE), this is needed
+   * for layouting.
+   *
+   * @param i the component for which to initialize the rectangles
+   */
+  private void resetRectangles(JMenuItem i)
+  {
+    // Reset rectangles.
+    iconRect.setBounds(0, 0, 0, 0);
+    textRect.setBounds(0, 0, 0, 0);
+    accelRect.setBounds(0, 0, 0, 0);
+    checkIconRect.setBounds(0, 0, 0, 0);
+    arrowIconRect.setBounds(0, 0, 0, 0);
+    if (i == null)
+      viewRect.setBounds(0, 0, Short.MAX_VALUE, Short.MAX_VALUE);
+    else
+      {
+        Insets insets = i.getInsets();
+        viewRect.setBounds(insets.left, insets.top,
+                           i.getWidth() - insets.left - insets.right,
+                           i.getHeight() - insets.top - insets.bottom);
+      }
+  }
+
+  /**
    * A helper method that lays out the menu item. The layout is stored
    * in the fields of this class.
    *
@@ -1283,24 +1265,6 @@ public class BasicMenuItemUI extends MenuItemUI
    */
   private void layoutMenuItem(JMenuItem m, String accelText)
   {
-    int width = m.getWidth();
-    int height = m.getHeight();
-
-    // Reset rectangles.
-    iconRect.setBounds(0, 0, 0, 0);
-    textRect.setBounds(0, 0, 0, 0);
-    accelRect.setBounds(0, 0, 0, 0);
-    checkIconRect.setBounds(0, 0, 0, 0);
-    arrowIconRect.setBounds(0, 0, 0, 0);
-    viewRect.setBounds(0, 0, width, height);
-
-    // Substract insets to the view rect.
-    Insets insets = m.getInsets();
-    viewRect.x += insets.left;
-    viewRect.y += insets.top;
-    viewRect.width -= insets.left + insets.right;
-    viewRect.height -= insets.top + insets.bottom;
-
     // Fetch the fonts.
     Font font = m.getFont();
     FontMetrics fm = m.getFontMetrics(font);

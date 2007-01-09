@@ -42,15 +42,16 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-final class ProtocolVersion implements Comparable, Constructed
+public final class ProtocolVersion
+  implements Comparable<ProtocolVersion>, Constructed
 {
 
   // Constants and fields.
   // -------------------------------------------------------------------------
 
-  static final ProtocolVersion SSL_3 = new ProtocolVersion(3, 0);
-  static final ProtocolVersion TLS_1 = new ProtocolVersion(3, 1);
-  static final ProtocolVersion TLS_1_1 = new ProtocolVersion(3, 2);
+  public static final ProtocolVersion SSL_3 = new ProtocolVersion(3, 0);
+  public static final ProtocolVersion TLS_1 = new ProtocolVersion(3, 1);
+  public static final ProtocolVersion TLS_1_1 = new ProtocolVersion(3, 2);
 
   private final int major;
   private final int minor;
@@ -67,14 +68,25 @@ final class ProtocolVersion implements Comparable, Constructed
   // Class methods.
   // -------------------------------------------------------------------------
 
-  static ProtocolVersion read(InputStream in) throws IOException
+  public static ProtocolVersion read(InputStream in) throws IOException
   {
     int major = in.read() & 0xFF;
     int minor = in.read() & 0xFF;
     return getInstance(major, minor);
   }
 
-  static ProtocolVersion getInstance(int major, int minor)
+  public static ProtocolVersion forName (final String name)
+  {
+    if (name.equalsIgnoreCase ("SSLv3"))
+      return SSL_3;
+    if (name.equalsIgnoreCase ("TLSv1"))
+      return TLS_1;
+    if (name.equalsIgnoreCase("TLSv1.1"))
+      return TLS_1_1;
+    throw new IllegalArgumentException ("unknown protocol name: " + name);
+  }
+
+  public static ProtocolVersion getInstance(final int major, final int minor)
   {
     if (major == 3)
       {
@@ -88,35 +100,46 @@ final class ProtocolVersion implements Comparable, Constructed
     return new ProtocolVersion(major, minor);
   }
 
+  public static ProtocolVersion getInstance (final short raw_value)
+  {
+    int major = raw_value >>> 8 & 0xFF;
+    int minor = raw_value & 0xFF;
+    return getInstance (major, minor);
+  }
+
   // Instance methods.
   // -------------------------------------------------------------------------
 
-  public void write(OutputStream out) throws IOException
+  public int length ()
   {
-    out.write(major);
-    out.write(minor);
+    return 2;
   }
 
-  byte[] getEncoded()
+  public byte[] getEncoded()
   {
     return new byte[] {
       (byte) major, (byte) minor
     };
   }
 
-  int getMajor()
+  public int major()
   {
     return major;
   }
 
-  int getMinor()
+  public int minor()
   {
     return minor;
   }
 
+  public int rawValue ()
+  {
+    return (major << 8) | minor;
+  }
+
   public boolean equals(Object o)
   {
-    if (o == null || !(o instanceof ProtocolVersion))
+    if (!(o instanceof ProtocolVersion))
       {
         return false;
       }
@@ -129,33 +152,31 @@ final class ProtocolVersion implements Comparable, Constructed
     return major << 8 | minor;
   }
 
-  public int compareTo(Object o)
+  public int compareTo(ProtocolVersion that)
   {
-    if (o == null || !(o instanceof ProtocolVersion))
+    if (major > that.major)
       {
         return 1;
       }
-    if (this.equals(o))
-      {
-        return 0;
-      }
-    if (major > ((ProtocolVersion) o).major)
-      {
-        return 1;
-      }
-    else if (major < ((ProtocolVersion) o).major)
+    else if (major < that.major)
       {
         return -1;
       }
-    if (minor > ((ProtocolVersion) o).minor)
+
+    if (minor > that.minor)
       {
         return 1;
       }
-    else if (minor < ((ProtocolVersion) o).minor)
+    else if (minor < that.minor)
       {
         return -1;
       }
     return 0;
+  }
+
+  public String toString (String prefix)
+  {
+    return toString ();
   }
 
   public String toString()

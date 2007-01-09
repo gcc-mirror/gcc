@@ -41,6 +41,7 @@ exception statement from your version. */
 
 #include <jni.h>
 #include "jcl.h"
+#include "cpnet.h"
 
 /*************************************************************************/
 
@@ -54,6 +55,7 @@ exception statement from your version. */
 #define CONNECT_EXCEPTION "java/net/ConnectException"
 #define SOCKET_EXCEPTION "java/net/SocketException"
 #define UNKNOWN_HOST_EXCEPTION "java/net/UnknownHostException"
+#define NULL_EXCEPTION "java/lang/NullPointerException"
 
 /* Socket Option Identifiers - Don't change or binary compatibility with 
                                the JDK will be broken! These also need to
@@ -78,15 +80,16 @@ exception statement from your version. */
  */
 
 extern int _javanet_get_int_field(JNIEnv *, jobject, const char *);
-extern int _javanet_get_netaddr(JNIEnv *, jobject);
+extern cpnet_address *_javanet_get_ip_netaddr(JNIEnv *, jobject);
+extern jobject _javanet_create_inetaddress (JNIEnv *, cpnet_address *);
 extern void _javanet_create(JNIEnv *, jobject, jboolean);
 extern void _javanet_close(JNIEnv *, jobject, int);
 extern void _javanet_connect(JNIEnv *, jobject, jobject, jint, jboolean);
 extern void _javanet_bind(JNIEnv *, jobject, jobject, jint, int);
 extern void _javanet_listen(JNIEnv *, jobject, jint);
 extern void _javanet_accept(JNIEnv *, jobject, jobject);
-extern int _javanet_recvfrom(JNIEnv *, jobject, jarray, int, int, int *, int *);
-extern void _javanet_sendto(JNIEnv *, jobject, jarray, int, int, int, int);
+extern int _javanet_recvfrom(JNIEnv *, jobject, jarray, int, int, cpnet_address **);
+extern void _javanet_sendto(JNIEnv *, jobject, jarray, int, int, cpnet_address *);
 extern jobject _javanet_get_option(JNIEnv *, jobject, jint);
 extern void _javanet_set_option(JNIEnv *, jobject, jint, jobject);
 extern void _javanet_shutdownInput (JNIEnv *, jobject);

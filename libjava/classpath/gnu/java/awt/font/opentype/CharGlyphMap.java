@@ -61,7 +61,7 @@ import java.nio.IntBuffer;
  *
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-abstract class CharGlyphMap
+public abstract class CharGlyphMap
 {
   private static final int PLATFORM_UNICODE = 0;
   private static final int PLATFORM_MACINTOSH = 1;

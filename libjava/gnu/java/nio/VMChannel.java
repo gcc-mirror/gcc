@@ -80,9 +80,19 @@ public class VMChannel
   
   public static VMChannel getVMChannel(FileChannelImpl file)
   {
-    return null; // XXX - return new VMChannel(file.getNativeFD());
+    return new VMChannel(file.getNativeFD());
   }
 
+  static
+  {
+    // load the shared library needed for native methods.
+    if (Configuration.INIT_LOAD_LIBRARY)
+      {
+        System.loadLibrary ("javanio");
+      }
+    initIDs();
+  }
+  
   /**
    * Set the file descriptor to have the required blocking
    * setting.
@@ -90,10 +100,7 @@ public class VMChannel
    * @param fd
    * @param blocking
    */
-  public void setBlocking(int fd, boolean blocking)
-  {
-    throw new RuntimeException("XXX - Implement me!");
-  }
+  public native void setBlocking(int fd, boolean blocking);
   
   public void setBlocking(boolean blocking)
   {
@@ -110,11 +117,8 @@ public class VMChannel
    * @return Number of bytes read.
    * @throws IOException If an error occurs or dst is not a direct buffers. 
    */
-  int read(int fd, ByteBuffer dst)
-    throws IOException
-  {
-    throw new IOException("XXX - Implement me!");
-  }
+  native int read(int fd, ByteBuffer dst)
+    throws IOException;
   
   public int read(ByteBuffer dst)
     throws IOException
@@ -134,11 +138,8 @@ public class VMChannel
    * @return Number of bytes read.
    * @throws IOException If an error occurs or the dsts are not direct buffers. 
    */
-  long readScattering(int fd, ByteBuffer[] dsts, int offset, int length)
-    throws IOException
-  {
-    throw new IOException("XXX - Implement me!");
-  }
+  native long readScattering(int fd, ByteBuffer[] dsts, int offset, int length)
+    throws IOException;
 
   public long readScattering(ByteBuffer[] dsts, int offset, int length)
     throws IOException
@@ -158,11 +159,8 @@ public class VMChannel
    * @return Number of bytes written.
    * @throws IOException
    */
-  int write(int fd, ByteBuffer src)
-    throws IOException
-  {
-    throw new IOException("XXX - Implement me!");
-  }
+  native int write(int fd, ByteBuffer src)
+    throws IOException;
 
   public int write(ByteBuffer src)
     throws IOException
@@ -182,12 +180,9 @@ public class VMChannel
    * @return Number of bytes written.
    * @throws IOException
    */
-  long writeGathering(int fd, ByteBuffer[] srcs, int offset, int length)
-    throws IOException
-  {
-    throw new IOException("XXX - Implement me!");
-  }
- 
+  native long writeGathering(int fd, ByteBuffer[] srcs, int offset, int length)
+    throws IOException;
+  
   public long writeGathering(ByteBuffer[] srcs, int offset, int length)
     throws IOException
   {
@@ -196,4 +191,7 @@ public class VMChannel
     
     return writeGathering(fd, srcs, offset, length);
   }
+  
+  private native static void initIDs();
+
 }

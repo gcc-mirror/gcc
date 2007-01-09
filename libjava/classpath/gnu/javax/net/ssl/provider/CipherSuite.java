@@ -38,407 +38,521 @@ exception statement from your version.  */
 
 package gnu.javax.net.ssl.provider;
 
-import java.io.DataInputStream;
-import java.io.InputStream;
+import gnu.java.security.action.GetSecurityPropertyAction;
+
 import java.io.IOException;
 import java.io.OutputStream;
 
-import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
 
+import java.security.AccessController;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.Provider;
-import java.security.Security;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.NullCipher;
 
-import gnu.javax.crypto.cipher.CipherFactory;
-import gnu.javax.crypto.cipher.IBlockCipher;
-import gnu.javax.crypto.mac.IMac;
-import gnu.javax.crypto.mac.MacFactory;
-import gnu.javax.crypto.mode.IMode;
-import gnu.javax.crypto.mode.ModeFactory;
-
-final class CipherSuite implements Constructed
+public final class CipherSuite implements Constructed
 {
 
   // Constants and fields.
   // -------------------------------------------------------------------------
 
-  private static final List tlsSuiteNames = new LinkedList();
-  private static final HashMap namesToSuites = new HashMap();
+  private static final List<String> tlsSuiteNames = new LinkedList<String>();
+  private static final HashMap<String, CipherSuite> namesToSuites = new HashMap<String, CipherSuite>();
 
-  // SSL CipherSuites.
-  static final CipherSuite SSL_NULL_WITH_NULL_NULL =
-    new CipherSuite("null", "null", "null", "null", 0, 0x00, 0x00,
-                    "SSL_NULL_WITH_NULL_NULL", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_RSA_WITH_NULL_MD5 =
-    new CipherSuite("null", "RSA", "RSA", "SSLMAC-MD5", 0, 0x00, 0x01,
-                    "SSL_RSA_WITH_NULL_MD5", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_RSA_WITH_NULL_SHA =
-    new CipherSuite("null", "RSA", "RSA", "SSLMAC-SHA", 0, 0x00, 0x02,
-                    "SSL_RSA_WITH_NULL_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_RSA_EXPORT_WITH_RC4_40_MD5 =
-    new CipherSuite("RC4", "RSA", "RSA", "SSLMAC-MD5", 5, 0x00, 0x03,
-                    "SSL_RSA_EXPORT_WITH_RC4_40_MD5", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_RSA_WITH_RC4_128_MD5 =
-    new CipherSuite("RC4", "RSA", "RSA", "SSLMAC-MD5", 16, 0x00, 0x04,
-                    "SSL_RSA_WITH_RC4_128_MD5", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_RSA_WITH_RC4_128_SHA =
-    new CipherSuite("RC4", "RSA", "RSA", "SSLMAC-SHA", 16, 0x00, 0x05,
-                    "SSL_RSA_WITH_RC4_128_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_RSA_EXPORT_WITH_DES40_CBC_SHA =
-    new CipherSuite("DES", "RSA", "RSA", "SSLMAC-SHA", 5, 0x00, 0x08,
-                    "SSL_RSA_EXPORT_WITH_DES40_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_RSA_WITH_DES_CBC_SHA =
-    new CipherSuite("DES", "RSA", "RSA", "SSLMAC-SHA", 8, 0x00, 0x09,
-                    "SSL_RSA_WITH_DES_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_RSA_WITH_3DES_EDE_CBC_SHA =
-    new CipherSuite("TripleDES", "RSA", "RSA", "SSLMAC-SHA", 24, 0x00, 0x0A,
-                    "SSL_RSA_WITH_3DES_EDE_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DH_DSS_EXPORT_WITH_DES40_CBC_SHA =
-    new CipherSuite("DES", "DH", "DSS", "SSLMAC-SHA", 5, 0x00, 0x0B,
-                    "SSL_DH_DSS_EXPORT_WITH_DES40_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DH_DSS_WITH_DES_CBC_SHA =
-    new CipherSuite("DES", "DH", "DSS", "SSLMAC-SHA", 8, 0x00, 0x0C,
-                    "SSL_DH_DSS_WITH_DES_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DH_DSS_WITH_3DES_EDE_CBC_SHA =
-    new CipherSuite("TripleDES", "DH", "DSS", "SSLMAC-SHA", 24, 0x00, 0x0D,
-                    "SSL_DH_DSS_WITH_3DES_EDE_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DH_RSA_EXPORT_WITH_DES40_CBC_SHA =
-    new CipherSuite("DES", "DH", "RSA", "SSLMAC-SHA", 5, 0x00, 0x0E,
-                    "SSL_DH_RSA_EXPORT_WITH_DES40_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DH_RSA_WITH_DES_CBC_SHA =
-    new CipherSuite("DES", "DH", "RSA", "SSLMAC-SHA", 8, 0x00, 0x0F,
-                    "SSL_DH_RSA_WITH_DES_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DH_RSA_WITH_3DES_EDE_CBC_SHA =
-    new CipherSuite("TripleDES", "DH", "RSA", "SSLMAC-SHA", 24, 0x00, 0x10,
-                    "SSL_DH_RSA_WITH_3DES_EDE_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA =
-    new CipherSuite("DES", "DHE", "DSS", "SSLMAC-SHA", 5, 0x00, 0x11,
-                    "SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DHE_DSS_WITH_DES_CBC_SHA =
-    new CipherSuite("DES", "DHE", "DSS", "SSLMAC-SHA", 8, 0x00, 0x12,
-                    "SSL_DHE_DSS_WITH_DES_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA =
-    new CipherSuite("TripleDES", "DHE", "DSS", "SSLMAC-SHA", 24, 0x00, 0x13,
-                    "SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA =
-    new CipherSuite("DES", "DHE", "RSA", "SSLMAC-SHA", 5, 0x00, 0x14,
-                    "SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DHE_RSA_WITH_DES_CBC_SHA =
-    new CipherSuite("DES", "DHE", "RSA", "SSLMAC-SHA", 8, 0x00, 0x15,
-                    "SSL_DHE_RSA_WITH_DES_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA =
-    new CipherSuite("TripleDES", "DHE", "RSA", "SSLMAC-SHA", 24, 0x00, 0x16,
-                    "SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA", ProtocolVersion.SSL_3);
-
-  // AES CipherSuites.
-  static final CipherSuite SSL_RSA_WITH_AES_128_CBC_SHA =
-    new CipherSuite("AES", "RSA", "RSA", "SSLMAC-SHA", 16, 0x00, 0x2F,
-                    "SSL_RSA_WITH_AES_128_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DH_DSS_WITH_AES_128_CBC_SHA =
-    new CipherSuite("AES", "DH", "DSS", "SSLMAC-SHA", 16, 0x00, 0x30,
-                    "SSL_DH_DSS_WITH_AES_128_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DH_RSA_WITH_AES_128_CBC_SHA =
-    new CipherSuite("AES", "DH", "RSA", "SSLMAC-SHA", 16, 0x00, 0x31,
-                    "SSL_DH_RSA_WITH_AES_128_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DHE_DSS_WITH_AES_128_CBC_SHA =
-    new CipherSuite("AES", "DHE", "DSS", "SSLMAC-SHA", 16, 0x00, 0x32,
-                    "SSL_DHE_DSS_WITH_AES_128_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DHE_RSA_WITH_AES_128_CBC_SHA =
-    new CipherSuite("AES", "DHE", "RSA", "SSLMAC-SHA", 16, 0x00, 0x33,
-                    "SSL_DHE_RSA_WITH_AES_128_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_RSA_WITH_AES_256_CBC_SHA =
-    new CipherSuite("AES", "RSA", "RSA", "SSLMAC-SHA", 32, 0x00, 0x35,
-                    "SSL_RSA_WITH_AES_256_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DH_DSS_WITH_AES_256_CBC_SHA =
-    new CipherSuite("AES", "DH", "DSS", "SSLMAC-SHA", 32, 0x00, 0x36,
-                    "SSL_DH_DSS_WITH_AES_256_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DH_RSA_WITH_AES_256_CBC_SHA =
-    new CipherSuite("AES", "DH", "RSA", "SSLMAC-SHA", 32, 0x00, 0x37,
-                    "SSL_DH_RSA_WITH_AES_256_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DHE_DSS_WITH_AES_256_CBC_SHA =
-    new CipherSuite("AES", "DHE", "DSS", "SSLMAC-SHA", 32, 0x00, 0x38,
-                    "SSL_DHE_DSS_WITH_AES_256_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DHE_RSA_WITH_AES_256_CBC_SHA =
-    new CipherSuite("AES", "DHE", "RSA", "SSLMAC-SHA", 32, 0x00, 0x39,
-                    "SSL_DHE_RSA_WITH_AES_256_CBC_SHA", ProtocolVersion.SSL_3);
-
-  // Ciphersuites from the OpenPGP extension draft.
-  static final CipherSuite SSL_DHE_DSS_WITH_CAST_128_CBC_SHA =
-    new CipherSuite("CAST5", "DHE", "DSS", "HMAC-SHA", 16, 0x00, 0x70,
-                    "SSL_DHE_DSS_WITH_CAST_128_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DHE_DSS_WITH_CAST_128_CBC_RMD =
-    new CipherSuite("CAST5", "DHE", "DSS", "HMAC-RIPEMD-160", 16, 0x00, 0x71,
-                    "SSL_DHE_DSS_WITH_CAST_128_CBC_RMD", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DHE_DSS_WITH_3DES_EDE_CBC_RMD =
-    new CipherSuite("TripleDES", "DHE", "DSS", "HMAC-RIPEMD-160", 24, 0x00, 0x72,
-                    "SSL_DHE_DSS_WITH_3DES_EDE_CBC_RMD", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DHE_DSS_WITH_AES_128_CBC_RMD =
-    new CipherSuite("AES", "DHE", "DSS", "HMAC-RIPEMD-160", 16, 0x00, 0x73,
-                    "SSL_DHE_DSS_WITH_AES_128_CBC_RMD", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DHE_DSS_WITH_AES_256_CBC_RMD =
-    new CipherSuite("AES", "DHE", "DSS", "HMAC-RIPEMD-160", 32, 0x00, 0x74,
-                    "SSL_DHE_DSS_WITH_AES_256_CBC_RMD", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DHE_RSA_WITH_CAST_128_CBC_SHA =
-    new CipherSuite("CAST5", "DHE", "RSA", "HMAC-SHA", 16, 0x00, 0x75,
-                    "SSL_DHE_RSA_WITH_CAST_128_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DHE_RSA_WITH_CAST_128_CBC_RMD =
-    new CipherSuite("CAST5", "DHE", "RSA", "HMAC-RIPEMD-160", 16, 0x00, 0x76,
-                    "SSL_DHE_RSA_WITH_CAST_128_CBC_RMD", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DHE_RSA_WITH_3DES_EDE_CBC_RMD =
-    new CipherSuite("TripleDES", "DHE", "RSA", "HMAC-RIPEMD-160", 24, 0x00, 0x77,
-                    "SSL_DHE_RSA_WITH_3DES_EDE_CBC_RMD", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DHE_RSA_WITH_AES_128_CBC_RMD =
-    new CipherSuite("AES", "DHE", "RSA", "HMAC-RIPEMD-160", 16, 0x00, 0x78,
-                    "SSL_DHE_RSA_WITH_AES_128_CBC_RMD", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_DHE_RSA_WITH_AES_256_CBC_RMD =
-    new CipherSuite("AES", "DHE", "RSA", "HMAC-RIPEMD-160", 32, 0x00, 0x79,
-                    "SSL_DHE_RSA_WITH_AES_256_CBC_RMD", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_RSA_WITH_CAST_128_CBC_SHA =
-    new CipherSuite("CAST5", "RSA", "RSA", "HMAC-SHA", 16, 0x00, 0x7A,
-                    "SSL_RSA_WITH_CAST_128_CBC_SHA", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_RSA_WITH_CAST_128_CBC_RMD =
-    new CipherSuite("CAST5", "RSA", "RSA", "HMAC-RIPEMD-160", 16, 0x00, 0x7B,
-                    "SSL_RSA_WITH_CAST_128_CBC_RMD", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_RSA_WITH_3DES_EDE_CBC_RMD =
-    new CipherSuite("TripleDES", "RSA", "RSA", "HMAC-RIPEMD-160", 24, 0x00, 0x7C,
-                    "SSL_RSA_WITH_3DES_EDE_CBC_RMD", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_RSA_WITH_AES_128_CBC_RMD =
-    new CipherSuite("AES", "RSA", "RSA", "HMAC-RIPEMD-160", 16, 0x00, 0x7D,
-                    "SSL_RSA_WITH_AES_128_CBC_RMD", ProtocolVersion.SSL_3);
-  static final CipherSuite SSL_RSA_WITH_AES_256_CBC_RMD =
-    new CipherSuite("AES", "RSA", "RSA", "HMAC-RIPEMD-160", 32, 0x00, 0x7E,
-                    "SSL_RSA_WITH_AES_256_CBC_RMD", ProtocolVersion.SSL_3);
-
-  static final CipherSuite TLS_NULL_WITH_NULL_NULL =
-    new CipherSuite("null", "null", "null", "null", 0, 0x00, 0x00,
-                    "TLS_NULL_WITH_NULL_NULL", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_RSA_WITH_NULL_MD5 =
-    new CipherSuite("null", "RSA", "RSA", "HMAC-MD5", 0, 0x00, 0x01,
-                    "TLS_RSA_WITH_NULL_MD5", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_RSA_WITH_NULL_SHA =
-    new CipherSuite("null", "RSA", "RSA", "HMAC-SHA", 0, 0x00, 0x02,
-                    "TLS_RSA_WITH_NULL_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_RSA_EXPORT_WITH_RC4_40_MD5 =
-    new CipherSuite("RC4", "RSA", "RSA", "HMAC-MD5", 5, 0x00, 0x03,
-                    "TLS_RSA_EXPORT_WITH_RC4_40_MD5", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_RSA_WITH_RC4_128_MD5 =
-    new CipherSuite("RC4", "RSA", "RSA", "HMAC-MD5", 16, 0x00, 0x04,
-                    "TLS_RSA_WITH_RC4_128_MD5", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_RSA_WITH_RC4_128_SHA =
-    new CipherSuite("RC4", "RSA", "RSA", "HMAC-SHA", 16, 0x00, 0x05,
-                    "TLS_RSA_WITH_RC4_128_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_RSA_EXPORT_WITH_DES40_CBC_SHA =
-    new CipherSuite("DES", "RSA", "RSA", "HMAC-SHA", 5, 0x00, 0x08,
-                    "TLS_RSA_EXPORT_WITH_DES40_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_RSA_WITH_DES_CBC_SHA =
-    new CipherSuite("DES", "RSA", "RSA", "HMAC-SHA", 8, 0x00, 0x09,
-                    "TLS_RSA_WITH_DES_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_RSA_WITH_3DES_EDE_CBC_SHA =
-    new CipherSuite("TripleDES", "RSA", "RSA", "HMAC-SHA", 24, 0x00, 0x0A,
-                    "TLS_RSA_WITH_3DES_EDE_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DH_DSS_EXPORT_WITH_DES40_CBC_SHA =
-    new CipherSuite("DES", "DH", "DSS", "HMAC-SHA", 5, 0x00, 0x0B,
-                    "TLS_DH_DSS_EXPORT_WITH_DES40_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DH_DSS_WITH_DES_CBC_SHA =
-    new CipherSuite("DES", "DH", "DSS", "HMAC-SHA", 8, 0x00, 0x0C,
-                    "TLS_DH_DSS_WITH_DES_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DH_DSS_WITH_3DES_EDE_CBC_SHA =
-    new CipherSuite("TripleDES", "DH", "DSS", "HMAC-SHA", 24, 0x00, 0x0D,
-                    "TLS_DH_DSS_WITH_3DES_EDE_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DH_RSA_EXPORT_WITH_DES40_CBC_SHA =
-    new CipherSuite("DES", "DH", "RSA", "HMAC-SHA", 5, 0x00, 0x0E,
-                    "TLS_DH_RSA_EXPORT_WITH_DES40_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DH_RSA_WITH_DES_CBC_SHA =
-    new CipherSuite("DES", "DH", "RSA", "HMAC-SHA", 8, 0x00, 0x0F,
-                    "TLS_DH_RSA_WITH_DES_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DH_RSA_WITH_3DES_EDE_CBC_SHA =
-    new CipherSuite("TripleDES", "DH", "RSA", "HMAC-SHA", 24, 0x00, 0x10,
-                    "TLS_DH_RSA_WITH_3DES_EDE_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA =
-    new CipherSuite("DES", "DHE", "DSS", "HMAC-SHA", 5, 0x00, 0x11,
-                    "TLS_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DHE_DSS_WITH_DES_CBC_SHA =
-    new CipherSuite("DES", "DHE", "DSS", "HMAC-SHA", 8, 0x00, 0x12,
-                    "TLS_DHE_DSS_WITH_DES_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA =
-    new CipherSuite("TripleDES", "DHE", "DSS", "HMAC-SHA", 24, 0x00, 0x13,
-                    "TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA =
-    new CipherSuite("DES", "DHE", "RSA", "HMAC-SHA", 5, 0x00, 0x14,
-                    "TLS_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DHE_RSA_WITH_DES_CBC_SHA =
-    new CipherSuite("DES", "DHE", "RSA", "HMAC-SHA", 8, 0x00, 0x15,
-                    "TLS_DHE_RSA_WITH_DES_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA =
-    new CipherSuite("TripleDES", "DHE", "RSA", "HMAC-SHA", 24, 0x00, 0x16,
-                    "TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA", ProtocolVersion.TLS_1);
+  // Core TLS cipher suites.
+  public static final CipherSuite TLS_NULL_WITH_NULL_NULL =
+    new CipherSuite (CipherAlgorithm.NULL,
+                     KeyExchangeAlgorithm.NONE,
+                     SignatureAlgorithm.ANONYMOUS,
+                     MacAlgorithm.NULL, 0, 0x00, 0x00,
+                     "TLS_NULL_WITH_NULL_NULL");
+  public static final CipherSuite TLS_RSA_WITH_NULL_MD5 =
+    new CipherSuite (CipherAlgorithm.NULL,
+                     KeyExchangeAlgorithm.RSA,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.MD5, 0, 0x00, 0x01,
+                     "TLS_RSA_WITH_NULL_MD5");
+  public static final CipherSuite TLS_RSA_WITH_NULL_SHA =
+    new CipherSuite (CipherAlgorithm.NULL,
+                     KeyExchangeAlgorithm.RSA,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.SHA, 0, 0x00, 0x02,
+                     "TLS_RSA_WITH_NULL_SHA");
+  public static final CipherSuite TLS_RSA_EXPORT_WITH_RC4_40_MD5 =
+    new CipherSuite (CipherAlgorithm.RC4,
+                     KeyExchangeAlgorithm.RSA,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.MD5, 5, 0x00, 0x03,
+                     "TLS_RSA_EXPORT_WITH_RC4_40_MD5");
+  public static final CipherSuite TLS_RSA_WITH_RC4_128_MD5 =
+    new CipherSuite (CipherAlgorithm.RC4,
+                     KeyExchangeAlgorithm.RSA,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.MD5, 16, 0x00, 0x04,
+                     "TLS_RSA_WITH_RC4_128_MD5");
+  public static final CipherSuite TLS_RSA_WITH_RC4_128_SHA =
+    new CipherSuite (CipherAlgorithm.RC4,
+                     KeyExchangeAlgorithm.RSA,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.SHA, 16, 0x00, 0x05,
+                     "TLS_RSA_WITH_RC4_128_SHA");
+  public static final CipherSuite TLS_RSA_EXPORT_WITH_DES40_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.DES,
+                     KeyExchangeAlgorithm.RSA,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.SHA, 5, 0x00, 0x08,
+                     "TLS_RSA_EXPORT_WITH_DES40_CBC_SHA");
+  public static final CipherSuite TLS_RSA_WITH_DES_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.DES,
+                     KeyExchangeAlgorithm.RSA,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.SHA, 8, 0x00, 0x09,
+                     "TLS_RSA_WITH_DES_CBC_SHA");
+  public static final CipherSuite TLS_RSA_WITH_3DES_EDE_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.DESede,
+                     KeyExchangeAlgorithm.RSA,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.SHA, 24, 0x00, 0x0A,
+                     "TLS_RSA_WITH_3DES_EDE_CBC_SHA");
+  public static final CipherSuite TLS_DH_DSS_EXPORT_WITH_DES40_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.DES,
+                     KeyExchangeAlgorithm.DH_DSS,
+                     SignatureAlgorithm.ANONYMOUS,
+                     MacAlgorithm.SHA, 5, 0x00, 0x0B,
+                     "TLS_DH_DSS_EXPORT_WITH_DES40_CBC_SHA");
+  public static final CipherSuite TLS_DH_DSS_WITH_DES_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.DES,
+                     KeyExchangeAlgorithm.DH_DSS,
+                     SignatureAlgorithm.ANONYMOUS,
+                     MacAlgorithm.SHA, 8, 0x00, 0x0C,
+                     "TLS_DH_DSS_WITH_DES_CBC_SHA");
+  public static final CipherSuite TLS_DH_DSS_WITH_3DES_EDE_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.DESede,
+                     KeyExchangeAlgorithm.DH_DSS,
+                     SignatureAlgorithm.ANONYMOUS,
+                     MacAlgorithm.SHA, 24, 0x00, 0x0D,
+                     "TLS_DH_DSS_WITH_3DES_EDE_CBC_SHA");
+  public static final CipherSuite TLS_DH_RSA_EXPORT_WITH_DES40_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.DES,
+                     KeyExchangeAlgorithm.DH_RSA,
+                     SignatureAlgorithm.ANONYMOUS,
+                     MacAlgorithm.SHA, 5, 0x00, 0x0E,
+                     "TLS_DH_RSA_EXPORT_WITH_DES40_CBC_SHA");
+  public static final CipherSuite TLS_DH_RSA_WITH_DES_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.DES,
+                     KeyExchangeAlgorithm.DH_RSA,
+                     SignatureAlgorithm.ANONYMOUS,
+                     MacAlgorithm.SHA, 8, 0x00, 0x0F,
+                     "TLS_DH_RSA_WITH_DES_CBC_SHA");
+  public static final CipherSuite TLS_DH_RSA_WITH_3DES_EDE_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.DESede,
+                     KeyExchangeAlgorithm.DH_RSA,
+                     SignatureAlgorithm.ANONYMOUS,
+                     MacAlgorithm.SHA, 24, 0x00, 0x10,
+                     "TLS_DH_RSA_WITH_3DES_EDE_CBC_SHA");
+  public static final CipherSuite TLS_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.DES,
+                     KeyExchangeAlgorithm.DHE_DSS, true,
+                     SignatureAlgorithm.DSA,
+                     MacAlgorithm.SHA, 5, 0x00, 0x11,
+                     "TLS_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA");
+  public static final CipherSuite TLS_DHE_DSS_WITH_DES_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.DES,
+                     KeyExchangeAlgorithm.DHE_DSS, true,
+                     SignatureAlgorithm.DSA,
+                     MacAlgorithm.SHA, 8, 0x00, 0x12,
+                     "TLS_DHE_DSS_WITH_DES_CBC_SHA");
+  public static final CipherSuite TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.DESede,
+                     KeyExchangeAlgorithm.DHE_DSS, true,
+                     SignatureAlgorithm.DSA,
+                     MacAlgorithm.SHA, 24, 0x00, 0x13,
+                     "TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA");
+  public static final CipherSuite TLS_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.DES,
+                     KeyExchangeAlgorithm.DHE_RSA, true,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.SHA, 5, 0x00, 0x14,
+                     "TLS_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA");
+  public static final CipherSuite TLS_DHE_RSA_WITH_DES_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.DES,
+                     KeyExchangeAlgorithm.DHE_RSA, true,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.SHA, 8, 0x00, 0x15,
+                     "TLS_DHE_RSA_WITH_DES_CBC_SHA");
+  public static final CipherSuite TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.DESede,
+                     KeyExchangeAlgorithm.DHE_RSA, true,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.SHA, 24, 0x00, 0x16,
+                     "TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA");
 
   // AES CipherSuites.
-  static final CipherSuite TLS_RSA_WITH_AES_128_CBC_SHA =
-    new CipherSuite("AES", "RSA", "RSA", "HMAC-SHA", 16, 0x00, 0x2F,
-                    "TLS_RSA_WITH_AES_128_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DH_DSS_WITH_AES_128_CBC_SHA =
-    new CipherSuite("AES", "DH", "DSS", "HMAC-SHA", 16, 0x00, 0x30,
-                    "TLS_DH_DSS_WITH_AES_128_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DH_RSA_WITH_AES_128_CBC_SHA =
-    new CipherSuite("AES", "DH", "RSA", "HMAC-SHA", 16, 0x00, 0x31,
-                    "TLS_DH_RSA_WITH_AES_128_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DHE_DSS_WITH_AES_128_CBC_SHA =
-    new CipherSuite("AES", "DHE", "DSS", "HMAC-SHA", 16, 0x00, 0x32,
-                    "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DHE_RSA_WITH_AES_128_CBC_SHA =
-    new CipherSuite("AES", "DHE", "RSA", "HMAC-SHA", 16, 0x00, 0x33,
-                    "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_RSA_WITH_AES_256_CBC_SHA =
-    new CipherSuite("AES", "RSA", "RSA", "HMAC-SHA", 32, 0x00, 0x35,
-                    "TLS_RSA_WITH_AES_256_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DH_DSS_WITH_AES_256_CBC_SHA =
-    new CipherSuite("AES", "DH", "DSS", "HMAC-SHA", 32, 0x00, 0x36,
-                    "TLS_DH_DSS_WITH_AES_256_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DH_RSA_WITH_AES_256_CBC_SHA =
-    new CipherSuite("AES", "DH", "RSA", "HMAC-SHA", 32, 0x00, 0x37,
-                    "TLS_DH_RSA_WITH_AES_256_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DHE_DSS_WITH_AES_256_CBC_SHA =
-    new CipherSuite("AES", "DHE", "DSS", "HMAC-SHA", 32, 0x00, 0x38,
-                    "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DHE_RSA_WITH_AES_256_CBC_SHA =
-    new CipherSuite("AES", "DHE", "RSA", "HMAC-SHA", 32, 0x00, 0x39,
-                    "TLS_DHE_RSA_WITH_AES_256_CBC_SHA", ProtocolVersion.TLS_1);
+  public static final CipherSuite TLS_RSA_WITH_AES_128_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.RSA,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.SHA, 16, 0x00, 0x2F,
+                     "TLS_RSA_WITH_AES_128_CBC_SHA");
+  public static final CipherSuite TLS_DH_DSS_WITH_AES_128_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.DH_DSS,
+                     SignatureAlgorithm.ANONYMOUS,
+                     MacAlgorithm.SHA, 16, 0x00, 0x30,
+                     "TLS_DH_DSS_WITH_AES_128_CBC_SHA");
+  public static final CipherSuite TLS_DH_RSA_WITH_AES_128_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.DH_RSA,
+                     SignatureAlgorithm.ANONYMOUS,
+                     MacAlgorithm.SHA, 16, 0x00, 0x31,
+                     "TLS_DH_RSA_WITH_AES_128_CBC_SHA");
+  public static final CipherSuite TLS_DHE_DSS_WITH_AES_128_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.DHE_DSS, true,
+                     SignatureAlgorithm.DSA,
+                     MacAlgorithm.SHA, 16, 0x00, 0x32,
+                     "TLS_DHE_DSS_WITH_AES_128_CBC_SHA");
+  public static final CipherSuite TLS_DHE_RSA_WITH_AES_128_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.DHE_RSA, true,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.SHA, 16, 0x00, 0x33,
+                     "TLS_DHE_RSA_WITH_AES_128_CBC_SHA");
+  public static final CipherSuite TLS_RSA_WITH_AES_256_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.RSA,
+                     SignatureAlgorithm.ANONYMOUS,
+                     MacAlgorithm.SHA, 32, 0x00, 0x35,
+                     "TLS_RSA_WITH_AES_256_CBC_SHA");
+  public static final CipherSuite TLS_DH_DSS_WITH_AES_256_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.DH_DSS,
+                     SignatureAlgorithm.ANONYMOUS,
+                     MacAlgorithm.SHA, 32, 0x00, 0x36,
+                     "TLS_DH_DSS_WITH_AES_256_CBC_SHA");
+  public static final CipherSuite TLS_DH_RSA_WITH_AES_256_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.DH_RSA,
+                     SignatureAlgorithm.ANONYMOUS,
+                     MacAlgorithm.SHA, 32, 0x00, 0x37,
+                     "TLS_DH_RSA_WITH_AES_256_CBC_SHA");
+  public static final CipherSuite TLS_DHE_DSS_WITH_AES_256_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.DHE_DSS, true,
+                     SignatureAlgorithm.DSA,
+                     MacAlgorithm.SHA, 32, 0x00, 0x38,
+                     "TLS_DHE_DSS_WITH_AES_256_CBC_SHA");
+  public static final CipherSuite TLS_DHE_RSA_WITH_AES_256_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.DHE_RSA, true,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.SHA, 32, 0x00, 0x39,
+                     "TLS_DHE_RSA_WITH_AES_256_CBC_SHA");
 
   // Secure remote password (SRP) ciphersuites
-  static final CipherSuite TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA =
-    new CipherSuite("TripleDES", "SRP", "anon", "HMAC-SHA", 24, 0x00, 0x50,
-                    "TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_SRP_SHA_RSA_WITH_3DES_EDE_CBC_SHA =
-    new CipherSuite("TripleDES", "SRP", "RSA", "HMAC-SHA", 24, 0x00, 0x51,
-                    "TLS_SRP_SHA_RSA_WITH_3DES_EDE_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_SRP_SHA_DSS_WITH_3DES_EDE_CBC_SHA =
-    new CipherSuite("TripleDES", "SRP", "DSS", "HMAC-SHA", 24, 0x00, 0x52,
-                    "TLS_SRP_SHA_DSS_WITH_3DES_EDE_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_SRP_SHA_WITH_AES_128_CBC_SHA =
-    new CipherSuite("AES", "SRP", "anon", "HMAC-SHA", 16, 0x00, 0x53,
-                    "TLS_SRP_SHA_WITH_AES_128_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_SRP_SHA_RSA_WITH_AES_128_CBC_SHA =
-    new CipherSuite("AES", "SRP", "RSA", "HMAC-SHA", 16, 0x00, 0x54,
-                    "TLS_SRP_SHA_RSA_WITH_AES_128_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_SRP_SHA_DSS_WITH_AES_128_CBC_SHA =
-    new CipherSuite("AES", "SRP", "DSS", "HMAC-SHA", 16, 0x00, 0x55,
-                    "TLS_SRP_SHA_DSS_WITH_AES_128_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_SRP_SHA_WITH_AES_256_CBC_SHA =
-    new CipherSuite("AES", "SRP", "anon", "HMAC-SHA", 32, 0x00, 0x56,
-                    "TLS_SRP_SHA_WITH_AES_256_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_SRP_SHA_RSA_WITH_AES_256_CBC_SHA =
-    new CipherSuite("AES", "SRP", "RSA", "HMAC-SHA", 32, 0x00, 0x57,
-                    "TLS_SRP_SHA_RSA_WITH_AES_256_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_SRP_SHA_DSS_WITH_AES_256_CBC_SHA =
-    new CipherSuite("AES", "SRP", "DSS", "HMAC-SHA", 32, 0x00, 0x58,
-                    "TLS_SRP_SHA_DSS_WITH_AES_256_CBC_SHA", ProtocolVersion.TLS_1);
+  // Actual ID values are TBD, so these are omitted until they are specified.
+  /*public static final CipherSuite TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.DESede,
+                     KeyExchangeAlgorithm.SRP,
+                     SignatureAlgorithm.ANONYMOUS,
+                     MacAlgorithm.SHA, 24, 0x00, 0x50,
+                     "TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA");
+  public static final CipherSuite TLS_SRP_SHA_RSA_WITH_3DES_EDE_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.DESede,
+                     KeyExchangeAlgorithm.SRP,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.SHA, 24, 0x00, 0x51,
+                     "TLS_SRP_SHA_RSA_WITH_3DES_EDE_CBC_SHA");
+  public static final CipherSuite TLS_SRP_SHA_DSS_WITH_3DES_EDE_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.DESede,
+                     KeyExchangeAlgorithm.SRP,
+                     SignatureAlgorithm.DSA,
+                     MacAlgorithm.SHA, 24, 0x00, 0x52,
+                     "TLS_SRP_SHA_DSS_WITH_3DES_EDE_CBC_SHA");
+  public static final CipherSuite TLS_SRP_SHA_WITH_AES_128_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.SRP,
+                     SignatureAlgorithm.ANONYMOUS,
+                     MacAlgorithm.SHA, 16, 0x00, 0x53,
+                     "TLS_SRP_SHA_WITH_AES_128_CBC_SHA");
+  public static final CipherSuite TLS_SRP_SHA_RSA_WITH_AES_128_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.SRP,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.SHA, 16, 0x00, 0x54,
+                     "TLS_SRP_SHA_RSA_WITH_AES_128_CBC_SHA");
+  public static final CipherSuite TLS_SRP_SHA_DSS_WITH_AES_128_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.SRP,
+                     SignatureAlgorithm.DSA,
+                     MacAlgorithm.SHA, 16, 0x00, 0x55,
+                     "TLS_SRP_SHA_DSS_WITH_AES_128_CBC_SHA");
+  public static final CipherSuite TLS_SRP_SHA_WITH_AES_256_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.SRP,
+                     SignatureAlgorithm.ANONYMOUS,
+                     MacAlgorithm.SHA, 32, 0x00, 0x56,
+                     "TLS_SRP_SHA_WITH_AES_256_CBC_SHA");
+  public static final CipherSuite TLS_SRP_SHA_RSA_WITH_AES_256_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.SRP,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.SHA, 32, 0x00, 0x57,
+                     "TLS_SRP_SHA_RSA_WITH_AES_256_CBC_SHA");
+  public static final CipherSuite TLS_SRP_SHA_DSS_WITH_AES_256_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.SRP,
+                     SignatureAlgorithm.DSA,
+                     MacAlgorithm.SHA, 32, 0x00, 0x58,
+                     "TLS_SRP_SHA_DSS_WITH_AES_256_CBC_SHA");*/
+  
+  // Pre-shared key suites.
+  public static final CipherSuite TLS_PSK_WITH_RC4_128_SHA =
+    new CipherSuite(CipherAlgorithm.RC4,
+                    KeyExchangeAlgorithm.PSK,
+                    SignatureAlgorithm.ANONYMOUS,
+                    MacAlgorithm.SHA, 16, 0x00, 0x8A,
+                    "TLS_PSK_WITH_RC4_128_SHA");
+  public static final CipherSuite TLS_PSK_WITH_3DES_EDE_CBC_SHA =
+    new CipherSuite(CipherAlgorithm.DESede,
+                    KeyExchangeAlgorithm.PSK,
+                    SignatureAlgorithm.ANONYMOUS,
+                    MacAlgorithm.SHA, 24, 0x00, 0x8B,
+                    "TLS_PSK_WITH_3DES_EDE_CBC_SHA");
+  public static final CipherSuite TLS_PSK_WITH_AES_128_CBC_SHA =
+    new CipherSuite(CipherAlgorithm.AES,
+                    KeyExchangeAlgorithm.PSK,
+                    SignatureAlgorithm.ANONYMOUS,
+                    MacAlgorithm.SHA, 16, 0x00, 0x8C,
+                    "TLS_PSK_WITH_AES_128_CBC_SHA");
+  public static final CipherSuite TLS_PSK_WITH_AES_256_CBC_SHA =
+    new CipherSuite(CipherAlgorithm.AES,
+                    KeyExchangeAlgorithm.PSK,
+                    SignatureAlgorithm.ANONYMOUS,
+                    MacAlgorithm.SHA, 32, 0x00, 0x8D,
+                    "TLS_PSK_WITH_AES_256_CBC_SHA");
+
+  public static final CipherSuite TLS_DHE_PSK_WITH_RC4_128_SHA =
+    new CipherSuite(CipherAlgorithm.RC4,
+                    KeyExchangeAlgorithm.DHE_PSK, true,
+                    SignatureAlgorithm.ANONYMOUS,
+                    MacAlgorithm.SHA, 16, 0x00, 0x8E,
+                    "TLS_DHE_PSK_WITH_RC4_128_SHA");
+  public static final CipherSuite TLS_DHE_PSK_WITH_3DES_EDE_CBC_SHA =
+    new CipherSuite(CipherAlgorithm.DESede,
+                    KeyExchangeAlgorithm.DHE_PSK, true,
+                    SignatureAlgorithm.ANONYMOUS,
+                    MacAlgorithm.SHA, 24, 0x00, 0x8F,
+                    "TLS_DHE_PSK_WITH_3DES_EDE_CBC_SHA");
+  public static final CipherSuite TLS_DHE_PSK_WITH_AES_128_CBC_SHA =
+    new CipherSuite(CipherAlgorithm.AES,
+                    KeyExchangeAlgorithm.DHE_PSK, true,
+                    SignatureAlgorithm.ANONYMOUS,
+                    MacAlgorithm.SHA, 16, 0x00, 0x90,
+                    "TLS_DHE_PSK_WITH_AES_128_CBC_SHA");
+  public static final CipherSuite TLS_DHE_PSK_WITH_AES_256_CBC_SHA =
+    new CipherSuite(CipherAlgorithm.AES,
+                    KeyExchangeAlgorithm.DHE_PSK, true,
+                    SignatureAlgorithm.ANONYMOUS,
+                    MacAlgorithm.SHA, 32, 0x00, 0x91,
+                    "TLS_DHE_PSK_WITH_AES_256_CBC_SHA");
+  
+  public static final CipherSuite TLS_RSA_PSK_WITH_RC4_128_SHA =
+    new CipherSuite(CipherAlgorithm.RC4,
+                    KeyExchangeAlgorithm.RSA_PSK,
+                    SignatureAlgorithm.ANONYMOUS,
+                    MacAlgorithm.SHA, 16, 0x00, 0x92,
+                    "TLS_RSA_PSK_WITH_RC4_128_SHA");
+  public static final CipherSuite TLS_RSA_PSK_WITH_3DES_EDE_CBC_SHA =
+    new CipherSuite(CipherAlgorithm.DESede,
+                    KeyExchangeAlgorithm.RSA_PSK,
+                    SignatureAlgorithm.ANONYMOUS,
+                    MacAlgorithm.SHA, 24, 0x00, 0x93,
+                    "TLS_RSA_PSK_WITH_3DES_EDE_CBC_SHA");
+  public static final CipherSuite TLS_RSA_PSK_WITH_AES_128_CBC_SHA =
+    new CipherSuite(CipherAlgorithm.AES,
+                    KeyExchangeAlgorithm.RSA_PSK,
+                    SignatureAlgorithm.ANONYMOUS,
+                    MacAlgorithm.SHA, 16, 0x00, 0x94,
+                    "TLS_RSA_PSK_WITH_AES_128_CBC_SHA");
+  public static final CipherSuite TLS_RSA_PSK_WITH_AES_256_CBC_SHA =
+    new CipherSuite(CipherAlgorithm.AES,
+                    KeyExchangeAlgorithm.RSA_PSK,
+                    SignatureAlgorithm.ANONYMOUS,
+                    MacAlgorithm.SHA, 32, 0x00, 0x95,
+                    "TLS_RSA_PSK_WITH_AES_256_CBC_SHA");
 
   // Ciphersuites from the OpenPGP extension draft.
-  static final CipherSuite TLS_DHE_DSS_WITH_CAST_128_CBC_SHA =
-    new CipherSuite("CAST5", "DHE", "DSS", "HMAC-SHA", 16, 0x00, 0x70,
-                    "TLS_DHE_DSS_WITH_CAST_128_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DHE_DSS_WITH_CAST_128_CBC_RMD =
-    new CipherSuite("CAST5", "DHE", "DSS", "HMAC-RIPEMD-160", 16, 0x00, 0x71,
-                    "TLS_DHE_DSS_WITH_CAST_128_CBC_RMD", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DHE_DSS_WITH_3DES_EDE_CBC_RMD =
-    new CipherSuite("TripleDES", "DHE", "DSS", "HMAC-RIPEMD-160", 24, 0x00, 0x72,
-                    "TLS_DHE_DSS_WITH_3DES_EDE_CBC_RMD", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DHE_DSS_WITH_AES_128_CBC_RMD =
-    new CipherSuite("AES", "DHE", "DSS", "HMAC-RIPEMD-160", 16, 0x00, 0x73,
-                    "TLS_DHE_DSS_WITH_AES_128_CBC_RMD", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DHE_DSS_WITH_AES_256_CBC_RMD =
-    new CipherSuite("AES", "DHE", "DSS", "HMAC-RIPEMD-160", 32, 0x00, 0x74,
-                    "TLS_DHE_DSS_WITH_AES_256_CBC_RMD", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DHE_RSA_WITH_CAST_128_CBC_SHA =
-    new CipherSuite("CAST5", "DHE", "RSA", "HMAC-SHA", 16, 0x00, 0x75,
-                    "TLS_DHE_RSA_WITH_CAST_128_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DHE_RSA_WITH_CAST_128_CBC_RMD =
-    new CipherSuite("CAST5", "DHE", "RSA", "HMAC-RIPEMD-160", 16, 0x00, 0x76,
-                    "TLS_DHE_RSA_WITH_CAST_128_CBC_RMD", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DHE_RSA_WITH_3DES_EDE_CBC_RMD =
-    new CipherSuite("TripleDES", "DHE", "RSA", "HMAC-RIPEMD-160", 24, 0x00, 0x77,
-                    "TLS_DHE_RSA_WITH_3DES_EDE_CBC_RMD", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DHE_RSA_WITH_AES_128_CBC_RMD =
-    new CipherSuite("AES", "DHE", "RSA", "HMAC-RIPEMD-160", 16, 0x00, 0x78,
-                    "TLS_DHE_RSA_WITH_AES_128_CBC_RMD", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_DHE_RSA_WITH_AES_256_CBC_RMD =
-    new CipherSuite("AES", "DHE", "RSA", "HMAC-RIPEMD-160", 32, 0x00, 0x79,
-                    "TLS_DHE_RSA_WITH_AES_256_CBC_RMD", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_RSA_WITH_CAST_128_CBC_SHA =
-    new CipherSuite("CAST5", "RSA", "RSA", "HMAC-SHA", 16, 0x00, 0x7A,
-                    "TLS_RSA_WITH_CAST_128_CBC_SHA", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_RSA_WITH_CAST_128_CBC_RMD =
-    new CipherSuite("CAST5", "RSA", "RSA", "HMAC-RIPEMD-160", 16, 0x00, 0x7B,
-                    "TLS_RSA_WITH_CAST_128_CBC_RMD", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_RSA_WITH_3DES_EDE_CBC_RMD =
-    new CipherSuite("TripleDES", "RSA", "RSA", "HMAC-RIPEMD-160", 24, 0x00, 0x7C,
-                    "TLS_RSA_WITH_3DES_EDE_CBC_RMD", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_RSA_WITH_AES_128_CBC_RMD =
-    new CipherSuite("AES", "RSA", "RSA", "HMAC-RIPEMD-160", 16, 0x00, 0x7D,
-                    "TLS_RSA_WITH_AES_128_CBC_RMD", ProtocolVersion.TLS_1);
-  static final CipherSuite TLS_RSA_WITH_AES_256_CBC_RMD =
-    new CipherSuite("AES", "RSA", "RSA", "HMAC-RIPEMD-160", 32, 0x00, 0x7E,
-                    "TLS_RSA_WITH_AES_256_CBC_RMD", ProtocolVersion.TLS_1);
+  // These disappeared from a more recent draft.
+/*  public static final CipherSuite TLS_DHE_DSS_WITH_CAST_128_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.CAST5,
+                     KeyExchangeAlgorithm.DIFFIE_HELLMAN, true,
+                     SignatureAlgorithm.DSA,
+                     MacAlgorithm.SHA, 16, 0x00, 0x70,
+                     "TLS_DHE_DSS_WITH_CAST_128_CBC_SHA");
+  public static final CipherSuite TLS_DHE_DSS_WITH_CAST_128_CBC_RMD =
+    new CipherSuite (CipherAlgorithm.CAST5,
+                     KeyExchangeAlgorithm.DIFFIE_HELLMAN, true,
+                     SignatureAlgorithm.DSA,
+                     MacAlgorithm.HMAC_RMD, 16, 0x00, 0x71,
+                     "TLS_DHE_DSS_WITH_CAST_128_CBC_RMD");
+  public static final CipherSuite TLS_DHE_DSS_WITH_3DES_EDE_CBC_RMD =
+    new CipherSuite (CipherAlgorithm.DESede,
+                     KeyExchangeAlgorithm.DIFFIE_HELLMAN, true,
+                     SignatureAlgorithm.DSA,
+                     MacAlgorithm.HMAC_RMD, 24, 0x00, 0x72,
+                     "TLS_DHE_DSS_WITH_3DES_EDE_CBC_RMD");
+  public static final CipherSuite TLS_DHE_DSS_WITH_AES_128_CBC_RMD =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.DIFFIE_HELLMAN, true,
+                     SignatureAlgorithm.DSA,
+                     MacAlgorithm.HMAC_RMD, 16, 0x00, 0x73,
+                     "TLS_DHE_DSS_WITH_AES_128_CBC_RMD");
+  public static final CipherSuite TLS_DHE_DSS_WITH_AES_256_CBC_RMD =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.DIFFIE_HELLMAN, true,
+                     SignatureAlgorithm.DSA,
+                     MacAlgorithm.HMAC_RMD, 32, 0x00, 0x74,
+                     "TLS_DHE_DSS_WITH_AES_256_CBC_RMD");
+  public static final CipherSuite TLS_DHE_RSA_WITH_CAST_128_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.CAST5,
+                     KeyExchangeAlgorithm.DIFFIE_HELLMAN, true,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.SHA, 16, 0x00, 0x75,
+                     "TLS_DHE_RSA_WITH_CAST_128_CBC_SHA");
+  public static final CipherSuite TLS_DHE_RSA_WITH_CAST_128_CBC_RMD =
+    new CipherSuite (CipherAlgorithm.CAST5,
+                     KeyExchangeAlgorithm.DIFFIE_HELLMAN, true,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.HMAC_RMD, 16, 0x00, 0x76,
+                     "TLS_DHE_RSA_WITH_CAST_128_CBC_RMD");
+  public static final CipherSuite TLS_DHE_RSA_WITH_3DES_EDE_CBC_RMD =
+    new CipherSuite (CipherAlgorithm.DESede,
+                     KeyExchangeAlgorithm.DIFFIE_HELLMAN, true,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.HMAC_RMD, 24, 0x00, 0x77,
+                     "TLS_DHE_RSA_WITH_3DES_EDE_CBC_RMD");
+  public static final CipherSuite TLS_DHE_RSA_WITH_AES_128_CBC_RMD =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.DIFFIE_HELLMAN, true,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.HMAC_RMD, 16, 0x00, 0x78,
+                     "TLS_DHE_RSA_WITH_AES_128_CBC_RMD");
+  public static final CipherSuite TLS_DHE_RSA_WITH_AES_256_CBC_RMD =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.DIFFIE_HELLMAN, true,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.HMAC_RMD, 32, 0x00, 0x79,
+                     "TLS_DHE_RSA_WITH_AES_256_CBC_RMD");
+  public static final CipherSuite TLS_RSA_WITH_CAST_128_CBC_SHA =
+    new CipherSuite (CipherAlgorithm.CAST5,
+                     KeyExchangeAlgorithm.RSA,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.SHA, 16, 0x00, 0x7A,
+                     "TLS_RSA_WITH_CAST_128_CBC_SHA");
+  public static final CipherSuite TLS_RSA_WITH_CAST_128_CBC_RMD =
+    new CipherSuite (CipherAlgorithm.CAST5,
+                     KeyExchangeAlgorithm.RSA,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.HMAC_RMD, 16, 0x00, 0x7B,
+                     "TLS_RSA_WITH_CAST_128_CBC_RMD");
+  public static final CipherSuite TLS_RSA_WITH_3DES_EDE_CBC_RMD =
+    new CipherSuite (CipherAlgorithm.DESede,
+                     KeyExchangeAlgorithm.RSA,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.HMAC_RMD, 24, 0x00, 0x7C,
+                     "TLS_RSA_WITH_3DES_EDE_CBC_RMD");
+  public static final CipherSuite TLS_RSA_WITH_AES_128_CBC_RMD =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.RSA,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.HMAC_RMD, 16, 0x00, 0x7D,
+                     "TLS_RSA_WITH_AES_128_CBC_RMD");
+  public static final CipherSuite TLS_RSA_WITH_AES_256_CBC_RMD =
+    new CipherSuite (CipherAlgorithm.AES,
+                     KeyExchangeAlgorithm.RSA,
+                     SignatureAlgorithm.RSA,
+                     MacAlgorithm.HMAC_RMD, 32, 0x00, 0x7E,
+                     "TLS_RSA_WITH_AES_256_CBC_RMD"); */
 
-  private final String cipherName;
-  private final String kexName;
-  private final String sigName;
-  private final String macName;
+  private final CipherAlgorithm cipherAlgorithm;
+  private final KeyExchangeAlgorithm keyExchangeAlgorithm;
+  private final SignatureAlgorithm signatureAlgorithm;
+  private final MacAlgorithm macAlgorithm;
+  private final boolean ephemeralDH;
   private final boolean exportable;
   private final boolean isStream;
   private final int keyLength;
   private final byte[] id;
   private final String name;
-  private final ProtocolVersion version;
+  private final boolean isResolved;
 
   // Constructors.
   // -------------------------------------------------------------------------
 
-  private CipherSuite(String cipherName, String kexName, String sigName,
-                      String macName, int keyLength, int id1, int id2,
-                      String name, ProtocolVersion version)
+  private CipherSuite (final CipherAlgorithm cipherAlgorithm,
+                       final KeyExchangeAlgorithm keyExchangeAlgorithm,
+                       final SignatureAlgorithm signatureAlgorithm,
+                       final MacAlgorithm macAlgorithm,
+                       final int keyLength,
+                       final int id1,
+                       final int id2,
+                       final String name)
   {
-    this.cipherName = cipherName.intern();
-    this.kexName = kexName.intern();
-    this.sigName = sigName.intern();
-    this.macName = macName.intern();
+    this (cipherAlgorithm, keyExchangeAlgorithm, false, signatureAlgorithm,
+          macAlgorithm, keyLength, id1, id2, name);
+  }
+
+  private CipherSuite (final CipherAlgorithm cipherAlgorithm,
+                       final KeyExchangeAlgorithm keyExchangeAlgorithm,
+                       final boolean ephemeralDH,
+                       final SignatureAlgorithm signatureAlgorithm,
+                       final MacAlgorithm macAlgorithm,
+                       final int keyLength,
+                       final int id1,
+                       final int id2,
+                       final String name)
+  {
+    this.cipherAlgorithm = cipherAlgorithm;
+    this.keyExchangeAlgorithm = keyExchangeAlgorithm;
+    this.ephemeralDH = ephemeralDH;
+    this.signatureAlgorithm = signatureAlgorithm;
+    this.macAlgorithm = macAlgorithm;
     this.exportable = keyLength <= 5;
-    this.isStream = cipherName.equals("null") || cipherName.equals("RC4");
+    this.isStream = (cipherAlgorithm == CipherAlgorithm.NULL
+                     || cipherAlgorithm == CipherAlgorithm.RC4);
     this.keyLength = keyLength;
     this.id = new byte[] { (byte) id1, (byte) id2 };
     this.name = name.intern();
-    this.version = version;
     namesToSuites.put(name, this);
     if (name.startsWith("TLS"))
       {
         tlsSuiteNames.add(name);
       }
+    isResolved = true;
   }
 
   private CipherSuite(byte[] id)
   {
-    cipherName = null;
-    kexName = null;
-    sigName = null;
-    macName = null;
+    cipherAlgorithm = null;
+    keyExchangeAlgorithm = null;
+    signatureAlgorithm = null;
+    macAlgorithm = null;
+    ephemeralDH = false;
     exportable = false;
     isStream = false;
     keyLength = 0;
     this.id = id;
     name = null;
-    version = null;
+    isResolved = false;
   }
 
   // Class methods.
@@ -450,274 +564,243 @@ final class CipherSuite implements Constructed
    *
    * @return The named cipher suite.
    */
-  static CipherSuite forName(String name)
+  public static CipherSuite forName(String name)
   {
-    return (CipherSuite) namesToSuites.get(name);
+    if (name.startsWith("SSL_"))
+      name = "TLS_" + name.substring(4);
+    return namesToSuites.get(name);
   }
 
-  static List availableSuiteNames()
+  public static CipherSuite forValue(final short raw_value)
+  {
+    byte[] b = new byte[] { (byte) (raw_value >>> 8), (byte) raw_value };
+    return new CipherSuite(b).resolve();
+  }
+
+  public static List<String> availableSuiteNames()
   {
     return tlsSuiteNames;
   }
 
-  static CipherSuite read(InputStream in) throws IOException
+  // Intance methods.
+  // -------------------------------------------------------------------------
+
+  public CipherAlgorithm cipherAlgorithm ()
   {
-    DataInputStream din = new DataInputStream(in);
-    byte[] id = new byte[2];
-    din.readFully(id);
-    return new CipherSuite(id);
+    return cipherAlgorithm;
   }
 
-  static IMode getCipher(String cbcCipherName)
+  public Cipher cipher () throws NoSuchAlgorithmException, NoSuchPaddingException
   {
-    IBlockCipher cipher = CipherFactory.getInstance(cbcCipherName);
-    if (cipher == null)
-      {
-        return null;
-      }
-    return ModeFactory.getInstance("CBC", cipher, cipher.defaultBlockSize());
-  }
+    if (cipherAlgorithm == null)
+      throw new NoSuchAlgorithmException (toString () + ": unresolved cipher suite");
+    if (cipherAlgorithm == CipherAlgorithm.NULL)
+      return new NullCipher ();
 
-  static Cipher getJCECipher (final String name)
-    throws NoSuchAlgorithmException, NoSuchPaddingException
-  {
-    final String provider = Util.getSecurityProperty ("jessie.with.jce.provider");
-    if (name.equals ("RC4"))
-      {
-        if (provider != null)
-          {
-            try
-              {
-                return Cipher.getInstance (name, provider);
-              }
-            catch (NoSuchProviderException nsae)
-              {
-                // Fall through. Try any available provider.
-              }
-          }
-
-        return Cipher.getInstance (name);
-      }
+    String alg = null;
+    if (cipherAlgorithm == CipherAlgorithm.RC4)
+      alg = "RC4";
     else
-      {
-        // Oh, hey! Look! Something else Sun doesn't understand: SSLv3 padding
-        // is different than TLSv1 in subtle, but important, ways. But they
-        // sorta look the same, so why not make them equivalent?
-        //
-        // There should be a seperate padding "TLS1Padding".
-        if (provider != null)
-          {
-            try
-              {
-                return Cipher.getInstance (name + "/CBC/SSL3Padding", provider);
-              }
-            catch (NoSuchProviderException nspe)
-              {
-                // Fall through. Try any available provider.
-              }
-          }
-        return Cipher.getInstance (name + "/CBC/SSL3Padding");
-      }
-  }
-
-  static IMac getMac(String macName)
-  {
-    if (macName.startsWith("SSLMAC-"))
-      {
-        return new SSLHMac(macName.substring(7));
-      }
-    else
-      {
-        return MacFactory.getInstance(macName);
-      }
-  }
-
-  static Mac getJCEMac (final String name)
-    throws NoSuchAlgorithmException
-  {
-    final String provider = Util.getSecurityProperty ("jessie.with.jce.provider");
+      alg = cipherAlgorithm + "/CBC/NoPadding";
+    GetSecurityPropertyAction gspa =
+      new GetSecurityPropertyAction ("jessie.jce.provider");
+    final String provider = (String) AccessController.doPrivileged (gspa);
     if (provider != null)
       {
         try
           {
-            return Mac.getInstance (name, provider);
+            return Cipher.getInstance (alg, provider);
           }
         catch (NoSuchProviderException nspe)
           {
-            // Fall through. Try any available provider.
           }
       }
-    return Mac.getInstance (name);
+    return Cipher.getInstance (alg);
   }
 
-  // Intance methods.
-  // -------------------------------------------------------------------------
+  public MacAlgorithm macAlgorithm ()
+  {
+    return macAlgorithm;
+  }
+
+  public Mac mac(ProtocolVersion version) throws NoSuchAlgorithmException
+  {
+    if (macAlgorithm == null)
+      throw new NoSuchAlgorithmException(toString() + ": unresolved cipher suite");
+    if (macAlgorithm == MacAlgorithm.NULL)
+      return null;
+    
+    String macAlg = null;
+    if (version == ProtocolVersion.SSL_3)
+      {
+        macAlg = "SSLv3HMac-" + macAlgorithm;
+      }
+    else
+      {
+        if (macAlgorithm == MacAlgorithm.MD5)
+          macAlg = "HMac-MD5";
+        if (macAlgorithm == MacAlgorithm.SHA)
+          macAlg = "HMac-SHA1";
+      }
+    
+    GetSecurityPropertyAction gspa =
+      new GetSecurityPropertyAction ("jessie.jce.provider");
+    final String provider = AccessController.doPrivileged (gspa);
+    if (provider != null)
+      {
+        try
+          {
+            return Mac.getInstance(macAlg, provider);
+          }
+        catch (NoSuchProviderException nspe)
+          {
+            // Ignore; try any installed provider.
+          }
+      }
+    return Mac.getInstance(macAlg);
+  }
+
+  public SignatureAlgorithm signatureAlgorithm ()
+  {
+    return signatureAlgorithm;
+  }
+
+  public KeyExchangeAlgorithm keyExchangeAlgorithm ()
+  {
+    return keyExchangeAlgorithm;
+  }
+
+  public boolean isEphemeralDH ()
+  {
+    return ephemeralDH;
+  }
+
+  public int length ()
+  {
+    return 2;
+  }
 
   public void write(OutputStream out) throws IOException
   {
     out.write(id);
   }
 
-  CipherSuite resolve(ProtocolVersion version)
+  public void put (final ByteBuffer buf)
   {
-    if (version == ProtocolVersion.SSL_3)
+    buf.put (id);
+  }
+  
+  public CipherSuite resolve()
+  {
+    if (id[0] == 0x00) switch (id[1] & 0xFF)
       {
-        if (id[0] == 0x00) switch (id[1])
-          {
-          case 0x00: return SSL_NULL_WITH_NULL_NULL;
-          case 0x01: return SSL_RSA_WITH_NULL_MD5;
-          case 0x02: return SSL_RSA_WITH_NULL_SHA;
-          case 0x03: return SSL_RSA_EXPORT_WITH_RC4_40_MD5;
-          case 0x04: return SSL_RSA_WITH_RC4_128_MD5;
-          case 0x05: return SSL_RSA_WITH_RC4_128_SHA;
-          case 0x08: return SSL_RSA_EXPORT_WITH_DES40_CBC_SHA;
-          case 0x09: return SSL_RSA_WITH_DES_CBC_SHA;
-          case 0x0A: return SSL_RSA_WITH_3DES_EDE_CBC_SHA;
-          case 0x0B: return SSL_DH_DSS_EXPORT_WITH_DES40_CBC_SHA;
-          case 0x0C: return SSL_DH_DSS_WITH_DES_CBC_SHA;
-          case 0x0D: return SSL_DH_DSS_WITH_3DES_EDE_CBC_SHA;
-          case 0x0E: return SSL_DH_RSA_EXPORT_WITH_DES40_CBC_SHA;
-          case 0x0F: return SSL_DH_RSA_WITH_DES_CBC_SHA;
-          case 0x10: return SSL_DH_RSA_WITH_3DES_EDE_CBC_SHA;
-          case 0x11: return SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA;
-          case 0x12: return SSL_DHE_DSS_WITH_DES_CBC_SHA;
-          case 0x13: return SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA;
-          case 0x14: return SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA;
-          case 0x15: return SSL_DHE_RSA_WITH_DES_CBC_SHA;
-          case 0x16: return SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA;
-          case 0x2F: return SSL_RSA_WITH_AES_128_CBC_SHA;
-          case 0x30: return SSL_DH_DSS_WITH_AES_128_CBC_SHA;
-          case 0x31: return SSL_DH_RSA_WITH_AES_128_CBC_SHA;
-          case 0x32: return SSL_DHE_DSS_WITH_AES_128_CBC_SHA;
-          case 0x33: return SSL_DHE_RSA_WITH_AES_128_CBC_SHA;
-          case 0x35: return SSL_RSA_WITH_AES_256_CBC_SHA;
-          case 0x36: return SSL_DH_DSS_WITH_AES_256_CBC_SHA;
-          case 0x37: return SSL_DH_RSA_WITH_AES_256_CBC_SHA;
-          case 0x38: return SSL_DHE_DSS_WITH_AES_256_CBC_SHA;
-          case 0x39: return SSL_DHE_RSA_WITH_AES_256_CBC_SHA;
-          }
-      }
-    else if (version == ProtocolVersion.TLS_1 ||
-             version == ProtocolVersion.TLS_1_1)
-      {
-        if (id[0] == 0x00) switch (id[1])
-          {
-          case 0x00: return TLS_NULL_WITH_NULL_NULL;
-          case 0x01: return TLS_RSA_WITH_NULL_MD5;
-          case 0x02: return TLS_RSA_WITH_NULL_SHA;
-          case 0x03: return TLS_RSA_EXPORT_WITH_RC4_40_MD5;
-          case 0x04: return TLS_RSA_WITH_RC4_128_MD5;
-          case 0x05: return TLS_RSA_WITH_RC4_128_SHA;
-          case 0x08: return TLS_RSA_EXPORT_WITH_DES40_CBC_SHA;
-          case 0x09: return TLS_RSA_WITH_DES_CBC_SHA;
-          case 0x0A: return TLS_RSA_WITH_3DES_EDE_CBC_SHA;
-          case 0x0B: return TLS_DH_DSS_EXPORT_WITH_DES40_CBC_SHA;
-          case 0x0C: return TLS_DH_DSS_WITH_DES_CBC_SHA;
-          case 0x0D: return TLS_DH_DSS_WITH_3DES_EDE_CBC_SHA;
-          case 0x0E: return TLS_DH_RSA_EXPORT_WITH_DES40_CBC_SHA;
-          case 0x0F: return TLS_DH_RSA_WITH_DES_CBC_SHA;
-          case 0x10: return TLS_DH_RSA_WITH_3DES_EDE_CBC_SHA;
-          case 0x11: return TLS_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA;
-          case 0x12: return TLS_DHE_DSS_WITH_DES_CBC_SHA;
-          case 0x13: return TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA;
-          case 0x14: return TLS_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA;
-          case 0x15: return TLS_DHE_RSA_WITH_DES_CBC_SHA;
-          case 0x16: return TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA;
-          case 0x2F: return TLS_RSA_WITH_AES_128_CBC_SHA;
-          case 0x30: return TLS_DH_DSS_WITH_AES_128_CBC_SHA;
-          case 0x31: return TLS_DH_RSA_WITH_AES_128_CBC_SHA;
-          case 0x32: return TLS_DHE_DSS_WITH_AES_128_CBC_SHA;
-          case 0x33: return TLS_DHE_RSA_WITH_AES_128_CBC_SHA;
-          case 0x35: return TLS_RSA_WITH_AES_256_CBC_SHA;
-          case 0x36: return TLS_DH_DSS_WITH_AES_256_CBC_SHA;
-          case 0x37: return TLS_DH_RSA_WITH_AES_256_CBC_SHA;
-          case 0x38: return TLS_DHE_DSS_WITH_AES_256_CBC_SHA;
-          case 0x39: return TLS_DHE_RSA_WITH_AES_256_CBC_SHA;
-          case 0x50: return TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA;
-          case 0x51: return TLS_SRP_SHA_RSA_WITH_3DES_EDE_CBC_SHA;
-          case 0x52: return TLS_SRP_SHA_DSS_WITH_3DES_EDE_CBC_SHA;
-          case 0x53: return TLS_SRP_SHA_WITH_AES_128_CBC_SHA;
-          case 0x54: return TLS_SRP_SHA_RSA_WITH_AES_128_CBC_SHA;
-          case 0x55: return TLS_SRP_SHA_DSS_WITH_AES_128_CBC_SHA;
-          case 0x56: return TLS_SRP_SHA_WITH_AES_256_CBC_SHA;
-          case 0x57: return TLS_SRP_SHA_RSA_WITH_AES_256_CBC_SHA;
-          case 0x58: return TLS_SRP_SHA_DSS_WITH_AES_256_CBC_SHA;
-          case 0x70: return TLS_DHE_DSS_WITH_CAST_128_CBC_SHA;
-          case 0x71: return TLS_DHE_DSS_WITH_CAST_128_CBC_RMD;
-          case 0x72: return TLS_DHE_DSS_WITH_3DES_EDE_CBC_RMD;
-          case 0x73: return TLS_DHE_DSS_WITH_AES_128_CBC_RMD;
-          case 0x74: return TLS_DHE_DSS_WITH_AES_256_CBC_RMD;
-          case 0x75: return TLS_DHE_RSA_WITH_CAST_128_CBC_SHA;
-          case 0x76: return TLS_DHE_RSA_WITH_CAST_128_CBC_RMD;
-          case 0x77: return TLS_DHE_RSA_WITH_3DES_EDE_CBC_RMD;
-          case 0x78: return TLS_DHE_RSA_WITH_AES_128_CBC_RMD;
-          case 0x79: return TLS_DHE_RSA_WITH_AES_256_CBC_RMD;
-          case 0x7A: return TLS_RSA_WITH_CAST_128_CBC_SHA;
-          case 0x7B: return TLS_RSA_WITH_CAST_128_CBC_RMD;
-          case 0x7C: return TLS_RSA_WITH_3DES_EDE_CBC_RMD;
-          case 0x7D: return TLS_RSA_WITH_AES_128_CBC_RMD;
-          case 0x7E: return TLS_RSA_WITH_AES_256_CBC_RMD;
-          }
+      case 0x00: return TLS_NULL_WITH_NULL_NULL;
+      case 0x01: return TLS_RSA_WITH_NULL_MD5;
+      case 0x02: return TLS_RSA_WITH_NULL_SHA;
+      case 0x03: return TLS_RSA_EXPORT_WITH_RC4_40_MD5;
+      case 0x04: return TLS_RSA_WITH_RC4_128_MD5;
+      case 0x05: return TLS_RSA_WITH_RC4_128_SHA;
+      case 0x08: return TLS_RSA_EXPORT_WITH_DES40_CBC_SHA;
+      case 0x09: return TLS_RSA_WITH_DES_CBC_SHA;
+      case 0x0A: return TLS_RSA_WITH_3DES_EDE_CBC_SHA;
+      case 0x0B: return TLS_DH_DSS_EXPORT_WITH_DES40_CBC_SHA;
+      case 0x0C: return TLS_DH_DSS_WITH_DES_CBC_SHA;
+      case 0x0D: return TLS_DH_DSS_WITH_3DES_EDE_CBC_SHA;
+      case 0x0E: return TLS_DH_RSA_EXPORT_WITH_DES40_CBC_SHA;
+      case 0x0F: return TLS_DH_RSA_WITH_DES_CBC_SHA;
+      case 0x10: return TLS_DH_RSA_WITH_3DES_EDE_CBC_SHA;
+      case 0x11: return TLS_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA;
+      case 0x12: return TLS_DHE_DSS_WITH_DES_CBC_SHA;
+      case 0x13: return TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA;
+      case 0x14: return TLS_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA;
+      case 0x15: return TLS_DHE_RSA_WITH_DES_CBC_SHA;
+      case 0x16: return TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA;
+      case 0x2F: return TLS_RSA_WITH_AES_128_CBC_SHA;
+      case 0x30: return TLS_DH_DSS_WITH_AES_128_CBC_SHA;
+      case 0x31: return TLS_DH_RSA_WITH_AES_128_CBC_SHA;
+      case 0x32: return TLS_DHE_DSS_WITH_AES_128_CBC_SHA;
+      case 0x33: return TLS_DHE_RSA_WITH_AES_128_CBC_SHA;
+      case 0x35: return TLS_RSA_WITH_AES_256_CBC_SHA;
+      case 0x36: return TLS_DH_DSS_WITH_AES_256_CBC_SHA;
+      case 0x37: return TLS_DH_RSA_WITH_AES_256_CBC_SHA;
+      case 0x38: return TLS_DHE_DSS_WITH_AES_256_CBC_SHA;
+      case 0x39: return TLS_DHE_RSA_WITH_AES_256_CBC_SHA;
+      /*case 0x50: return TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA;
+      case 0x51: return TLS_SRP_SHA_RSA_WITH_3DES_EDE_CBC_SHA;
+      case 0x52: return TLS_SRP_SHA_DSS_WITH_3DES_EDE_CBC_SHA;
+      case 0x53: return TLS_SRP_SHA_WITH_AES_128_CBC_SHA;
+      case 0x54: return TLS_SRP_SHA_RSA_WITH_AES_128_CBC_SHA;
+      case 0x55: return TLS_SRP_SHA_DSS_WITH_AES_128_CBC_SHA;
+      case 0x56: return TLS_SRP_SHA_WITH_AES_256_CBC_SHA;
+      case 0x57: return TLS_SRP_SHA_RSA_WITH_AES_256_CBC_SHA;
+      case 0x58: return TLS_SRP_SHA_DSS_WITH_AES_256_CBC_SHA;
+      case 0x70: return TLS_DHE_DSS_WITH_CAST_128_CBC_SHA;
+      case 0x71: return TLS_DHE_DSS_WITH_CAST_128_CBC_RMD;
+      case 0x72: return TLS_DHE_DSS_WITH_3DES_EDE_CBC_RMD;
+      case 0x73: return TLS_DHE_DSS_WITH_AES_128_CBC_RMD;
+      case 0x74: return TLS_DHE_DSS_WITH_AES_256_CBC_RMD;
+      case 0x75: return TLS_DHE_RSA_WITH_CAST_128_CBC_SHA;
+      case 0x76: return TLS_DHE_RSA_WITH_CAST_128_CBC_RMD;
+      case 0x77: return TLS_DHE_RSA_WITH_3DES_EDE_CBC_RMD;
+      case 0x78: return TLS_DHE_RSA_WITH_AES_128_CBC_RMD;
+      case 0x79: return TLS_DHE_RSA_WITH_AES_256_CBC_RMD;
+      case 0x7A: return TLS_RSA_WITH_CAST_128_CBC_SHA;
+      case 0x7B: return TLS_RSA_WITH_CAST_128_CBC_RMD;
+      case 0x7C: return TLS_RSA_WITH_3DES_EDE_CBC_RMD;
+      case 0x7D: return TLS_RSA_WITH_AES_128_CBC_RMD;
+      case 0x7E: return TLS_RSA_WITH_AES_256_CBC_RMD;*/
+      case 0x8A: return TLS_PSK_WITH_RC4_128_SHA;
+      case 0x8B: return TLS_PSK_WITH_3DES_EDE_CBC_SHA;
+      case 0x8C: return TLS_PSK_WITH_AES_128_CBC_SHA;
+      case 0x8D: return TLS_PSK_WITH_AES_256_CBC_SHA;
+      case 0x8E: return TLS_DHE_PSK_WITH_RC4_128_SHA;
+      case 0x8F: return TLS_DHE_PSK_WITH_3DES_EDE_CBC_SHA;
+      case 0x90: return TLS_DHE_PSK_WITH_AES_128_CBC_SHA;
+      case 0x91: return TLS_DHE_PSK_WITH_AES_256_CBC_SHA;
+      case 0x92: return TLS_RSA_PSK_WITH_RC4_128_SHA;
+      case 0x93: return TLS_RSA_PSK_WITH_3DES_EDE_CBC_SHA;
+      case 0x94: return TLS_RSA_PSK_WITH_AES_128_CBC_SHA;
+      case 0x95: return TLS_RSA_PSK_WITH_AES_256_CBC_SHA;
       }
     return this;
   }
-
-  String getCipher()
+  
+  public boolean isResolved()
   {
-    return cipherName;
+    return isResolved;
   }
 
-  int getKeyLength()
+  public int keyLength()
   {
     return keyLength;
   }
 
-  String getKeyExchange()
-  {
-    return kexName;
-  }
-
-  String getSignature()
-  {
-    return sigName;
-  }
-
-  String getMac()
-  {
-    return macName;
-  }
-
-  boolean isExportable()
+  public boolean isExportable()
   {
     return exportable;
   }
 
-  boolean isStreamCipher()
+  public boolean isStreamCipher()
   {
     return isStream;
   }
 
-  String getAuthType()
-  {
-    if (kexName.equals("RSA"))
-      {
-        if (isExportable())
-          {
-            return "RSA_EXPORT";
-          }
-        return "RSA";
-      }
-    return kexName + "_" + sigName;
-  }
+//   String getAuthType()
+//   {
+//     if (keyExchangeAlgorithm == KeyExchangeAlgorithm.RSA)
+//       {
+//         if (isExportable())
+//           {
+//             return "RSA_EXPORT";
+//           }
+//         return "RSA";
+//       }
+//     return kexName + "_" + sigName;
+//   }
 
-  byte[] getId()
+  public byte[] id()
   {
     return id;
-  }
-
-  ProtocolVersion getVersion()
-  {
-    return version;
   }
 
   public boolean equals(Object o)
@@ -728,26 +811,26 @@ final class CipherSuite implements Constructed
       }
     if (o == this)
       return true;
-    byte[] id = ((CipherSuite) o).getId();
-    return id[0] == this.id[0] &&
-           id[1] == this.id[1];
+    byte[] id = ((CipherSuite) o).id();
+    return (id[0] == this.id[0] &&
+            id[1] == this.id[1]);
   }
 
   public int hashCode()
   {
-    if (version == null)
-      {
-        return 0xFFFF0000 | (id[0] & 0xFF) << 8 | (id[1] & 0xFF);
-      }
-    return version.getMajor() << 24 | version.getMinor() << 16
-      | (id[0] & 0xFF) << 8 | (id[1] & 0xFF);
+    return 0xFFFF0000 | (id[0] & 0xFF) << 8 | (id[1] & 0xFF);
+  }
+
+  public String toString (String prefix)
+  {
+    return toString ();
   }
 
   public String toString()
   {
     if (name == null)
       {
-        return "UNKNOWN { " + (id[0] & 0xFF) + ", " + (id[1] & 0xFF) + " }";
+        return "{ " + (id[0] & 0xFF) + ", " + (id[1] & 0xFF) + " }";
       }
     return name;
   }

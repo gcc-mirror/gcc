@@ -98,22 +98,31 @@ public class SimpleDelegate
   }
 
   /**
-   * Not implemented.
-   *
-   * @throws NO_IMPLEMENT, always.
+   * Create the request for the local call
    */
   public Request create_request(org.omg.CORBA.Object target, Context context,
                                 String operation, NVList parameters,
                                 NamedValue returns
                                )
   {
-    throw new NO_IMPLEMENT();
+    if (orb instanceof OrbFunctional)
+      {
+        ((OrbFunctional) orb).ensureRunning();
+      }
+    gnuRequest g = new gnuRequest();
+    g.setORB(orb);
+    g.setOperation(operation);
+    g.setIor(ior);
+    g.m_target = target;
+    g.ctx(context);
+    g.set_args(parameters);
+    if (returns != null)
+      g.set_result(returns);
+    return g;    
   }
 
   /**
-   * Not implemented.
-   *
-   * @throws NO_IMPLEMENT, always.
+   * Create the request for the local call.
    */
   public Request create_request(org.omg.CORBA.Object target, Context context,
                                 String operation, NVList parameters,
@@ -121,7 +130,22 @@ public class SimpleDelegate
                                 ContextList ctx_list
                                )
   {
-    throw new NO_IMPLEMENT();
+    if (orb instanceof OrbFunctional)
+      {
+        ((OrbFunctional) orb).ensureRunning();
+      }
+    gnuRequest g = new gnuRequest();
+    g.setORB(orb);
+    g.setOperation(operation);
+    g.setIor(ior);
+    g.m_target = target;
+    g.ctx(context);
+    g.set_args(parameters);
+    g.set_exceptions(exceptions);
+    g.set_context_list(ctx_list);
+    if (returns != null)
+      g.set_result(returns);
+    return g;
   }
 
   /**

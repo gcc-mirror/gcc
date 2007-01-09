@@ -1,4 +1,4 @@
-Installing GNU Classpath - Last updated: September 7, 2005
+Installing GNU Classpath - Last updated: June 19, 2006
 
 First, this is a development release only! Unless you are interested in
 active development and debugging, or just like running random alpha code,
@@ -54,6 +54,11 @@ Suggested Software
 	For building gcjwebplugin you'll need the Mozilla plugin
 	support headers and libraries.
 
+	The GConf-based backend for java.util.prefs needs the following
+	library headers:
+
+	- gconf 2.11.2 (or higher)
+
 	For building the Qt AWT peer JNI native libraries you have to
 	specify --enable-qt-peer and need the following library:
 
@@ -65,10 +70,10 @@ Suggested Software
 	http://escher.sourceforge.net
 
 	Please note that at the moment most operating systems do not
-    ship Qt4 by default. We recommend using GNU Classpath' Qt4
-    support only for its developers and bug reporters. See
-    http://developer.classpath.org/mediation/ClasspathShowcase
-    for details on how to get it to work.
+	ship Qt4 by default. We recommend using GNU Classpath' Qt4
+	support only for its developers and bug reporters. See
+	http://developer.classpath.org/mediation/ClasspathShowcase
+	for details on how to get it to work.
 
 	For building the xmlj JAXP implementation (disabled by default, use
 	configure --enable-xmlj) you need the following installed:

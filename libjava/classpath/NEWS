@@ -1,5 +1,59 @@
+New in release 0.94 (UNRELEASED)
+
+* The ASM library is now included.  A separate copy is no longer needed.
+
+* The setReadTimeout and getReadTimeout methods have been added to
+  java.net.URLConnection.  They are now fully implemented for http URLs.  
+
+New in release 0.93 (Dec 8, 2006)
+
+* CORBA objects that exist on the same virtual machine and only are connected
+  to another ORB are now accessed directly and no longer via network. It is
+  the same feature that RMI implementation provides. These faster calls should
+  be completely transparent, as the parameters are cloned, where required. 
+  Currently the direct calls are only possible for the non-deprecated objects
+  that are connected to the ORB via POA.
+* The 'javah' tool has been added.  It requires the ASM library
+  (see asm.objectweb.org); it can be enabled with the --with-asm
+  option to configure
+* Added the rmi and corbaname URL context factories for JNDI.
+* Fixes in the JNDI InitialContext now allows to plug-in user implementation.
+* Removed currentClassLoader method from
+  vm/reference/java/io/ObjectInputStream.java.
+* Added firstNonNullClassLoader method to
+  vm/reference/gnu/classpath/VMStackWalker.java. VMs are encouraged to
+  provide a more efficient implementation.
+* Added aton method to vm/reference/java/net/VMInetAddress.java.
+* NetworkInterface has been implemented for systems that provide the
+  `getifaddrs' function.
+* java.nio.channels.Selector implementations have been added that use
+  the kqueue notification mechanism on Mac OS X and *BSD, and that use
+  the epoll notification mechanism on Linux 2.6.
+* java.nio has been refactored to support more non-blocking operations
+  natively. Blocking IO classes have been refactored to call
+  non-blocking classes. Non-blocking accepts, connects, and
+  scatter-gather IO should now be better supported.
+* HTML support for Swing has been greatly enhanced.
+
+Runtime interface changes:
+
+* java.net.VMNetworkInterface and java.net.NetworkInterface have been
+  updated to keep native-modified state in the former, and to simplify
+  the native code in our reference implementation.
+* gnu.java.nio.VMChannel has been expanded to better support native
+  non-blocking IO. Most native state data (such as file descriptor
+  integers) has been abstracted away into private state in the runtime
+  interface.
+* gnu.java.nio.VMPipe has been similarly changed.
+* gnu.java.net.VMPlainSocketImpl has been changed to remove some
+  functionality now provided by VMChannel; datagram socket-specific
+  methods have also been moved here, deprecating VMPlainDatagramSocketImpl.
+* gnu.java.net.VMPlainDatagramSocketImpl removed.
+
 New in release 0.92 (Aug 9, 2006)
 
+* GConf is used as a backend for java.util.prefs. GNU Classpath 
+  thanks to Mario Torre for this contribution!
 * libjawtgnu.so has been renamed libjawt.so for binary compatibility.
   libjawt.so should be installed in a VM-specific directory rather
   than directly in /usr/lib.  Proprietary VMs put their libjawt.so
@@ -29,6 +83,7 @@ New in release 0.92 (Aug 9, 2006)
   * jarsigner
   A new configure option --enable-tool-wrappers causes wrapper
   binaries to be built for VMs that support the JNI Invocation API.
+* We've imported the JSR 166 (concurrency) reference implementation.
 * javax.sound.midi providers have been added to read and
   write standard MIDI files.
 * A javax.sound.sampled .au and .wav file readers have been added.

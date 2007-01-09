@@ -1,5 +1,5 @@
 /* FixedHolder.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,7 +39,6 @@ exception statement from your version. */
 package org.omg.CORBA;
 
 import gnu.CORBA.typecodes.FixedTypeCode;
-import gnu.CORBA.typecodes.PrimitiveTypeCode;
 
 import java.math.BigDecimal;
 
@@ -88,7 +87,7 @@ public final class FixedHolder
   }
 
   /**
-   * Fill in the {@link value } field by reading the required data
+   * Fill in the {@link #value } field by reading the required data
    * from the given stream. For <code>fixed</code>, the functionality
    * is delegated to
    * {@link org.omg.CORBA.portable.InputStream#read_fixed}.
@@ -112,7 +111,7 @@ public final class FixedHolder
   }
 
   /**
-   * Write the {@link value } field to the given stream.
+   * Write the {@link #value } field to the given stream.
    * For <code>fixed</code>, the functionality
    * is delegated to
    * {@link org.omg.CORBA.portable.OutputStream#write_fixed(BigDecimal) }.

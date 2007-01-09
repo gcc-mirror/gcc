@@ -44,6 +44,7 @@ import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.IllegalBlockingModeException;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
@@ -106,7 +107,15 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
    */
   protected final void implCloseChannel() throws IOException
   {
-    implCloseSelectableChannel();
+    try
+      {
+        implCloseSelectableChannel();
+      }
+    finally
+      {
+        for (Iterator it = keys.iterator(); it.hasNext(); )
+          ((SelectionKey) it.next()).cancel();
+      }
   }
 
   /**
@@ -234,8 +243,8 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
 
 	if (key != null && key.isValid())
 	  {
-	    if (att != null)
-	      key.attach(att);
+            key.interestOps(ops);
+            key.attach(att);
 	  }
 	else
 	  {

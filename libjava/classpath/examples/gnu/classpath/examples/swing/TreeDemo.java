@@ -39,17 +39,17 @@ exception statement from your version. */
 package gnu.classpath.examples.swing;
 
 import java.awt.BorderLayout;
-import java.awt.JobAttributes.DefaultSelectionType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.DebugGraphics;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
@@ -59,7 +59,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
 
 public class TreeDemo
   extends JPanel
@@ -222,11 +221,39 @@ public class TreeDemo
     p2.add(add);
     p2.add(cbSingle);
     p2.add(cbRoot);
-    
+
     tree.getSelectionModel().
       setSelectionMode(DefaultTreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
 
+    // Panel for selecting line style.
+    ActionListener l = new ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        JRadioButton b = (JRadioButton) e.getSource();
+        tree.putClientProperty("JTree.lineStyle", b.getText());
+        tree.repaint();
+      }
+    };
+    JPanel lineStylePanel = new JPanel();
+    ButtonGroup buttons = new ButtonGroup();
+    lineStylePanel.add(new JLabel("Line style: "));
+    JRadioButton none = new JRadioButton("None");
+    lineStylePanel.add(none);
+    buttons.add(none);
+    none.addActionListener(l);
+    JRadioButton angled = new JRadioButton("Angled");
+    lineStylePanel.add(angled);
+    buttons.add(angled);
+    angled.addActionListener(l);
+    JRadioButton horizontal = new JRadioButton("Horizontal");
+    lineStylePanel.add(horizontal);
+    buttons.add(horizontal);
+    horizontal.addActionListener(l);
+    p2.add(lineStylePanel);
+
     add(p2, BorderLayout.NORTH);
+
     add(new JScrollPane(tree), BorderLayout.CENTER);
     add(choice, BorderLayout.SOUTH);
   }

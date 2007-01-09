@@ -1,5 +1,5 @@
 /* CompoundEdit.java -- Combines multiple UndoableEdits.
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -75,7 +75,7 @@ public class CompoundEdit
    * The <code>UndoableEdit</code>s being combined into a compound
    * editing action.
    */
-  protected Vector edits;
+  protected Vector<UndoableEdit> edits;
 
 
   /**
@@ -92,7 +92,7 @@ public class CompoundEdit
    */
   public CompoundEdit()
   {
-    edits = new Vector();
+    edits = new Vector<UndoableEdit>();
     inProgress = true;
   }
   
@@ -118,7 +118,7 @@ public class CompoundEdit
     super.undo();
 
     for (int i = edits.size() - 1; i >= 0; i--)
-      ((UndoableEdit) edits.elementAt(i)).undo();
+      edits.elementAt(i).undo();
   }
 
 
@@ -143,7 +143,7 @@ public class CompoundEdit
     super.redo();
 
     for (int i = 0; i < edits.size(); i++)
-      ((UndoableEdit) edits.elementAt(i)).redo();
+      edits.elementAt(i).redo();
   }
 
   
@@ -156,7 +156,7 @@ public class CompoundEdit
     if (edits.size() == 0)
       return null;
     else
-      return (UndoableEdit) edits.elementAt(edits.size() - 1);
+      return edits.elementAt(edits.size() - 1);
   }
 
 
@@ -172,7 +172,7 @@ public class CompoundEdit
   public void die()
   {
     for (int i = edits.size() - 1; i >= 0; i--)
-      ((UndoableEdit) edits.elementAt(i)).die();
+      edits.elementAt(i).die();
 
     super.die();
   }
@@ -316,7 +316,7 @@ public class CompoundEdit
   public boolean isSignificant()
   {
     for (int i = edits.size() - 1; i >= 0; i--)
-      if (((UndoableEdit) edits.elementAt(i)).isSignificant())
+      if (edits.elementAt(i).isSignificant())
         return true;
 
     return false;

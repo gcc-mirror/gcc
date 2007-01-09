@@ -79,7 +79,8 @@ class StandaloneAppletViewer extends Main
     {
       if (!(code.equals("") || code.endsWith(".class")))
         {
-          System.err.println("appletviewer: option '--code' requires a class filename");
+          System.err.println
+            (Messages.getString("StandaloneAppletViewer.CodeOptionError"));
           System.exit(1);
         }
       
@@ -118,13 +119,16 @@ class StandaloneAppletViewer extends Main
   {
     if (verbose)
       {
-        System.out.println("parsed applet tags:");
+        System.out.println
+          (Messages.getString("StandaloneAppletViewer.ParsedAppletTags"));
 
         for (int i = 0; i < appletTags.size(); i++)
           {
             AppletTag tag = (AppletTag) appletTags.get(i);
 
-            System.out.println(" tag " + i + ":");
+            System.out.println
+              (" " + Messages.getString("StandaloneAppletViewer.Tag")
+               + " " + i + ":");
             System.out.println(tag);
           }
       }

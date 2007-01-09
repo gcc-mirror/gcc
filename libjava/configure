@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os build_libsubdir build_subdir host_subdir target_subdir libgcj_basedir host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical LN_S mkinstalldirs CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LDFLAGS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE AS ac_ct_AS LD ac_ct_LD AR ac_ct_AR RANLIB ac_ct_RANLIB JAR ZIP UNZIP BASH_JAR_TRUE BASH_JAR_FALSE MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBGCJ_CFLAGS LIBGCJ_CXXFLAGS LIBGCJ_JAVAFLAGS LIBGCJ_LD_SYMBOLIC LIBGCJDEBUG TOOLKIT XLIB_AWT_TRUE XLIB_AWT_FALSE GCJH INCLTDL LIBLTDL DIRLTDL LIBTOOL CXXCPP CPPFLAGS GCJ GCJFLAGS GCJDEPMODE am__fastdepGCJ_TRUE am__fastdepGCJ_FALSE subdirs TESTSUBDIR_TRUE TESTSUBDIR_FALSE JAVA_HOME_SET_TRUE JAVA_HOME_SET_FALSE JAVA_HOME INTERPRETER LIBFFI LIBFFIINCS PLATFORM_INNER_NAT_HDRS CPP EGREP USING_WIN32_PLATFORM_TRUE USING_WIN32_PLATFORM_FALSE USING_POSIX_PLATFORM_TRUE USING_POSIX_PLATFORM_FALSE USING_DARWIN_CRT_TRUE USING_DARWIN_CRT_FALSE SYSTEMSPEC LIBGCJTESTSPEC ZLIBSPEC ZLIBTESTSPEC X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS extra_ldflags_libjava GCLIBS GCINCS GCDEPS GCSPEC JC1GCSPEC GCTESTSPEC USING_BOEHMGC_TRUE USING_BOEHMGC_FALSE USING_NOGC_TRUE USING_NOGC_FALSE THREADLIBS THREADINCS THREADDEPS THREADSPEC THREADSTARTFILESPEC THREADLDFLAGS THREADCXXFLAGS USING_POSIX_THREADS_TRUE USING_POSIX_THREADS_FALSE USING_WIN32_THREADS_TRUE USING_WIN32_THREADS_FALSE USING_NO_THREADS_TRUE USING_NO_THREADS_FALSE USE_LIBGCJ_BC_TRUE USE_LIBGCJ_BC_FALSE LIBGCJ_SPEC HASH_SYNC_SPEC USING_GCC_TRUE USING_GCC_FALSE LIBICONV LTLIBICONV PKG_CONFIG GTK_CFLAGS GTK_LIBS GLIB_CFLAGS GLIB_LIBS LIBART_CFLAGS LIBART_LIBS CLASSPATH_SEPARATOR ac_ct_GCJ ZLIBS SYS_ZLIBS ZINCS DIVIDESPEC CHECKREFSPEC EXCEPTIONSPEC BACKTRACESPEC IEEESPEC NATIVE_TRUE NATIVE_FALSE NEEDS_DATA_START_TRUE NEEDS_DATA_START_FALSE GCC_UNWIND_INCLUDE toolexecdir toolexecmainlibdir toolexeclibdir dbexecdir GCJVERSION gxx_include_dir libstdcxx_incdir ALLOCA PERL SYSDEP_SOURCES LD_START_STATIC_SPEC LD_FINISH_STATIC_SPEC here LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os build_libsubdir build_subdir host_subdir target_subdir libgcj_basedir host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical LN_S mkinstalldirs JAVA_MAINTAINER_MODE_TRUE JAVA_MAINTAINER_MODE_FALSE CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LDFLAGS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE AS ac_ct_AS LD ac_ct_LD AR ac_ct_AR RANLIB ac_ct_RANLIB JAR ZIP UNZIP BASH_JAR_TRUE BASH_JAR_FALSE MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBGCJ_CFLAGS LIBGCJ_CXXFLAGS LIBGCJ_JAVAFLAGS LIBGCJ_LD_SYMBOLIC LIBGCJDEBUG TOOLKIT XLIB_AWT_TRUE XLIB_AWT_FALSE X_AWT_TRUE X_AWT_FALSE GCJ_FOR_ECJX GCJH host_exeext INCLTDL LIBLTDL DIRLTDL LIBTOOL CXXCPP CPPFLAGS GCJ GCJFLAGS GCJDEPMODE am__fastdepGCJ_TRUE am__fastdepGCJ_FALSE subdirs TESTSUBDIR_TRUE TESTSUBDIR_FALSE ECJ_BUILD_JAR ECJ_JAR BUILD_ECJ1_TRUE BUILD_ECJ1_FALSE INSTALL_ECJ_JAR_TRUE INSTALL_ECJ_JAR_FALSE JAVA_HOME_SET_TRUE JAVA_HOME_SET_FALSE JAVA_HOME INTERPRETER LIBFFI LIBFFIINCS PLATFORM CPP EGREP USING_WIN32_PLATFORM_TRUE USING_WIN32_PLATFORM_FALSE USING_POSIX_PLATFORM_TRUE USING_POSIX_PLATFORM_FALSE USING_DARWIN_CRT_TRUE USING_DARWIN_CRT_FALSE SYSTEMSPEC LIBGCJTESTSPEC ZLIBSPEC ZLIBTESTSPEC X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS extra_ldflags_libjava GCLIBS GCINCS GCDEPS GCSPEC JC1GCSPEC GCTESTSPEC USING_BOEHMGC_TRUE USING_BOEHMGC_FALSE USING_NOGC_TRUE USING_NOGC_FALSE THREADLIBS THREADINCS THREADDEPS THREADSPEC THREADSTARTFILESPEC THREADLDFLAGS THREADCXXFLAGS USING_POSIX_THREADS_TRUE USING_POSIX_THREADS_FALSE USING_WIN32_THREADS_TRUE USING_WIN32_THREADS_FALSE USING_NO_THREADS_TRUE USING_NO_THREADS_FALSE USE_LIBGCJ_BC_TRUE USE_LIBGCJ_BC_FALSE LIBGCJ_SPEC HASH_SYNC_SPEC USING_GCC_TRUE USING_GCC_FALSE LIBICONV LTLIBICONV LIBMAGIC PKG_CONFIG GTK_CFLAGS GTK_LIBS GLIB_CFLAGS GLIB_LIBS LIBART_CFLAGS LIBART_LIBS CLASSPATH_SEPARATOR ac_ct_GCJ ZLIBS SYS_ZLIBS ZINCS DIVIDESPEC CHECKREFSPEC EXCEPTIONSPEC BACKTRACESPEC IEEESPEC NATIVE_TRUE NATIVE_FALSE ENABLE_SHARED_TRUE ENABLE_SHARED_FALSE NEEDS_DATA_START_TRUE NEEDS_DATA_START_FALSE GCC_UNWIND_INCLUDE toolexecdir toolexecmainlibdir toolexeclibdir dbexecdir GCJVERSION gxx_include_dir libstdcxx_incdir ALLOCA PERL SYSDEP_SOURCES LD_START_STATIC_SPEC LD_FINISH_STATIC_SPEC here LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -855,6 +855,8 @@ Optional Features:
   --enable-multilib       build many library versions (default)
   --enable-plugin         build gcjwebplugin web browser plugin
   --enable-gconf-peer     compile GConf native peers for util.preferences
+  --enable-java-maintainer-mode
+                          allow rebuilding of .class and .h files
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
   --enable-maintainer-mode  enable make rules and dependencies not useful
@@ -887,8 +889,10 @@ Optional Packages:
                           configure in a subdirectory
   --with-cross-host=HOST  configure with a cross compiler from HOST
   --with-newlib           configure with newlib
+  --with-escher=ABS.PATH  specify path to escher dir or JAR for X peers
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-pic              try to use only PIC/non-PIC objects default=use both
+  --with-ecj-jar=FILE     use preinstalled ecj jar
   --with-java-home=DIRECTORY
                           value of java.home system property
   --with-win32-nlsapi=ansi or unicows or unicode
@@ -1657,6 +1661,22 @@ else
 
 fi;
 
+# Check whether --enable-java-maintainer-mode or --disable-java-maintainer-mode was given.
+if test "${enable_java_maintainer_mode+set}" = set; then
+  enableval="$enable_java_maintainer_mode"
+
+fi;
+
+
+if test "$enable_java_maintainer_mode" = yes; then
+  JAVA_MAINTAINER_MODE_TRUE=
+  JAVA_MAINTAINER_MODE_FALSE='#'
+else
+  JAVA_MAINTAINER_MODE_TRUE='#'
+  JAVA_MAINTAINER_MODE_FALSE=
+fi
+
+
 # It may not be safe to run linking tests in AC_PROG_CC/AC_PROG_CXX.
 
 
@@ -1670,7 +1690,6 @@ fi;
 # (5) For libstdc++-v3, -fno-builtin must be present here so that a
 # non-conflicting form of std::exit can be guessed by AC_PROG_CXX, and
 # used in later tests.  This may not be necessary in libjava; I don't know.
-
 
 
 save_CXXFLAGS="$CXXFLAGS"
@@ -2651,11 +2670,11 @@ if test -n "$ac_tool_prefix"; then
 set dummy $ac_tool_prefix$ac_prog; ac_word=$2
 echo "$as_me:$LINENO: checking for $ac_word" >&5
 echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
-if test "${glibcxx_cv_prog_CXX+set}" = set; then
+if test "${ac_cv_prog_CXX+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   if test -n "$CXX"; then
-  glibcxx_cv_prog_CXX="$CXX" # Let the user override the test.
+  ac_cv_prog_CXX="$CXX" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
@@ -2664,7 +2683,7 @@ do
   test -z "$as_dir" && as_dir=.
   for ac_exec_ext in '' $ac_executable_extensions; do
   if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    glibcxx_cv_prog_CXX="$ac_tool_prefix$ac_prog"
+    ac_cv_prog_CXX="$ac_tool_prefix$ac_prog"
     echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -2673,7 +2692,7 @@ done
 
 fi
 fi
-CXX=$glibcxx_cv_prog_CXX
+CXX=$ac_cv_prog_CXX
 if test -n "$CXX"; then
   echo "$as_me:$LINENO: result: $CXX" >&5
 echo "${ECHO_T}$CXX" >&6
@@ -4053,7 +4072,7 @@ fi
   test -n "$AWK" && break
 done
 
-for ac_prog in jar fastjar
+for ac_prog in jar fastjar gjar
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -4878,6 +4897,29 @@ _ACEOF
   fi
 fi;
 
+
+# Check whether --with-escher or --without-escher was given.
+if test "${with_escher+set}" = set; then
+  withval="$with_escher"
+
+fi;
+case "$with_escher" in
+"")
+        use_escher=false
+        ;;
+"no")
+        use_escher=false
+        ;;
+"yes")
+        { { echo "$as_me:$LINENO: error: Please supply an absolute path to Escher library" >&5
+echo "$as_me: error: Please supply an absolute path to Escher library" >&2;}
+   { (exit 1); exit 1; }; }
+        ;;
+*)
+        use_escher=true
+        ;;
+esac
+
 # Determine which AWT peer libraries to build
 # Check whether --enable-java-awt or --disable-java-awt was given.
 if test "${enable_java_awt+set}" = set; then
@@ -4889,6 +4931,7 @@ peerlibs="`echo ${enable_java_awt} | tr ',' ' '`"
 use_xlib_awt=""
 use_gtk_awt=""
 use_qt_awt=""
+use_x_awt=""
 # The default toolkit to use is the first one specified.
 TOOLKIT=
 
@@ -4929,10 +4972,17 @@ for peer in $peerlibs ; do
 	 fi
       fi
       ;;
+    x)
+      use_x_awt=yes
+      if test -z "$TOOLKIT"; then
+	 TOOLKIT=gnu.java.awt.peer.x.XToolkit
+      fi
+      ;;
     no)
       use_xlib_awt=
       use_gtk_awt=
       use_qt_awt=
+      use_x_awt=
       break
       ;;
     *)
@@ -4952,11 +5002,36 @@ else
 fi
 
 
+
+if test "$use_x_awt" = yes; then
+  X_AWT_TRUE=
+  X_AWT_FALSE='#'
+else
+  X_AWT_TRUE='#'
+  X_AWT_FALSE=
+fi
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define AWT_TOOLKIT "$TOOLKIT"
+_ACEOF
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define LIBGCJ_PREFIX "$prefix"
+_ACEOF
+
+
 # Create standard.omit based on decisions we just made.
 cp $srcdir/standard.omit.in standard.omit
 if test "$use_xlib_awt" != yes; then
    echo gnu/awt/xlib >> standard.omit
    echo gnu/gcj/xlib >> standard.omit
+fi
+if test "$use_x_awt" != yes; then
+   echo gnu/java/awt/peer/x >> standard.omit
 fi
 
 if test -z "${with_multisubdir}"; then
@@ -4967,19 +5042,23 @@ fi
 
 NATIVE=yes
 
-# Which gcj do we use?
+# Which gcj and host gcj (for ecjx) do we use?
 which_gcj=default
+host_exeext=${ac_exeext}
+GCJ_FOR_ECJX=
 built_gcc_dir="`cd ${builddotdot}/../../${host_subdir}/gcc && ${PWDCMD-pwd}`"
 if test -n "${with_cross_host}"; then
   # We are being configured with a cross compiler. We can't
   # use ac_exeext, because that is for the target platform.
   NATIVE=no
   cross_host_exeext=
+  GCJ_FOR_ECJX="${with_cross_host}-gcj"
   case "${with_cross_host}" in
      *mingw* | *cygwin*)
          cross_host_exeext=.exe
      ;;
   esac
+  host_exeext=${cross_host_exeext}
   if test -x "${built_gcc_dir}/gcj${cross_host_exeext}"; then
      if test x"$build_noncanonical" = x"$with_cross_host"; then
         # Ordinary cross (host!=target and host=build)
@@ -5028,6 +5107,8 @@ esac
 
 
 
+
+
 # Create it, so that compile/link tests don't fail
 test -f libgcj.spec || touch libgcj.spec
 
@@ -5036,7 +5117,8 @@ test -f libgcj.spec || touch libgcj.spec
 # Set up to configure Classpath.
 # FIXME: no supported way to pass args in autoconf.
 ac_configure_args="$ac_configure_args --with-fastjar=$JAR"
-ac_configure_args="$ac_configure_args --enable-tool-wrappers"
+# Disable tool wrappers to avoid ltdl.h configure check.
+ac_configure_args="$ac_configure_args --disable-tool-wrappers"
 ac_configure_args="$ac_configure_args --disable-load-library"
 ac_configure_args="$ac_configure_args --${LIBGCJDEBUG}-debug"
 ac_configure_args="$ac_configure_args --enable-default-toolkit=$TOOLKIT"
@@ -5054,7 +5136,7 @@ if test "$gconf_enabled" != yes; then
   ac_configure_args="$ac_configure_args --enable-default-preferences-peer=gnu.java.util.prefs.FileBasedFactory"
 fi
 if test "$use_gtk_awt" != yes; then
-  ac_configure_args="$ac_configure_args --disable-gtk-peer"
+  ac_configure_args="$ac_configure_args --disable-gtk-peer --disable-plugin"
 fi
 if test "$use_qt_awt" != yes; then
   ac_configure_args="$ac_configure_args --disable-qt-peer"
@@ -5062,6 +5144,20 @@ else
   # We need this as qt is disabled by default in classpath.
   ac_configure_args="$ac_configure_args --enable-qt-peer"
 fi
+if test "$use_x_awt" != yes; then
+  ac_configure_args="$ac_configure_args --without-escher"
+else
+  # We need this as escher is disabled by default in classpath.
+  if test "$use_escher" != true; then
+    { { echo "$as_me:$LINENO: error: Please supply an absolute path to the Escher library" >&5
+echo "$as_me: error: Please supply an absolute path to the Escher library" >&2;}
+   { (exit 1); exit 1; }; }
+  else
+    ac_configure_args="$ac_configure_args --with-escher=$with_escher"
+  fi
+fi
+# -Werror causes unavoidable problems in code using alsa.
+ac_configure_args="$ac_configure_args --disable-Werror"
 
 # Only use libltdl for non-newlib builds.
 if test "x${with_newlib}" = "x" || test "x${with_newlib}" = "xno"; then
@@ -5875,7 +5971,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 5878 "configure"' > conftest.$ac_ext
+  echo '#line 5974 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -6773,6 +6869,45 @@ if test -z "$enable_hash_synchronization"; then
 fi
 
 
+install_ecj_jar=no
+ECJ_BUILD_JAR=
+ECJ_JAR=
+
+# Check whether --with-ecj-jar or --without-ecj-jar was given.
+if test "${with_ecj_jar+set}" = set; then
+  withval="$with_ecj_jar"
+  ECJ_JAR=$withval
+else
+  if test -f $libgcj_basedir/../ecj.jar; then
+	   ECJ_BUILD_JAR=$libgcj_basedir/../ecj.jar
+	   ECJ_JAR='$(jardir)/ecj.jar'
+	   install_ecj_jar=yes
+	 fi
+fi;
+
+
+
+
+if test "$ECJ_JAR" != ""; then
+  BUILD_ECJ1_TRUE=
+  BUILD_ECJ1_FALSE='#'
+else
+  BUILD_ECJ1_TRUE='#'
+  BUILD_ECJ1_FALSE=
+fi
+
+
+
+if test $install_ecj_jar = yes; then
+  INSTALL_ECJ_JAR_TRUE=
+  INSTALL_ECJ_JAR_FALSE='#'
+else
+  INSTALL_ECJ_JAR_TRUE='#'
+  INSTALL_ECJ_JAR_FALSE=
+fi
+
+
+
 # Check whether --with-java-home or --without-java-home was given.
 if test "${with_java_home+set}" = set; then
   withval="$with_java_home"
@@ -6878,7 +7013,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   :
 else
   cat > conftest.$ac_ext << EOF
-#line 6881 "configure"
+#line 7016 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -7008,7 +7143,6 @@ if test "${with_ecos+set}" = set; then
 
 fi;
 
-PLATFORM_INNER_NAT_HDRS=
 case "$TARGET_ECOS" in
    no) case "$host" in
       *mingw*)
@@ -7048,7 +7182,6 @@ fi
             PLATFORM=Posix
 	    PLATFORMNET=Posix
 	    PLATFORMH=posix.h
-	    PLATFORM_INNER_NAT_HDRS='java/lang/ConcreteProcess$$ProcessManager.h'
       ;;
       esac
       ;;
@@ -7479,10 +7612,8 @@ test -d gnu || mkdir gnu
           ac_config_links="$ac_config_links java/io/natFile.cc:java/io/natFile${FILE-${PLATFORM}}.cc"
 
 
-# Likewise for ConcreteProcess.java and natConcreteProcess.cc.
+# Likewise for natConcreteProcess.cc.
 test -d java/lang || mkdir java/lang
-          ac_config_links="$ac_config_links java/lang/ConcreteProcess.java:java/lang/${PLATFORM}Process.java"
-
           ac_config_links="$ac_config_links java/lang/natConcreteProcess.cc:java/lang/nat${PLATFORM}Process.cc"
 
 
@@ -7633,7 +7764,7 @@ ac_x_header_dirs='
 /usr/openwin/share/include'
 
 if test "$ac_x_includes" = no; then
-  # Guess where to find include files, by looking for Intrinsic.h.
+  # Guess where to find include files, by looking for Xlib.h.
   # First, try using that file with no special directory specified.
   cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
@@ -7641,7 +7772,7 @@ _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-#include <X11/Intrinsic.h>
+#include <X11/Xlib.h>
 _ACEOF
 if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
   (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
@@ -7668,7 +7799,7 @@ else
 sed 's/^/| /' conftest.$ac_ext >&5
 
   for ac_dir in $ac_x_header_dirs; do
-  if test -r "$ac_dir/X11/Intrinsic.h"; then
+  if test -r "$ac_dir/X11/Xlib.h"; then
     ac_x_includes=$ac_dir
     break
   fi
@@ -7694,11 +7825,11 @@ _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-#include <X11/Intrinsic.h>
+#include <X11/Xlib.h>
 int
 main ()
 {
-XtMalloc (0)
+XrmInitialize ()
   ;
   return 0;
 }
@@ -13736,6 +13867,88 @@ fi
 
    fi
 
+   LIBMAGIC=
+   echo "$as_me:$LINENO: checking for magic_open in -lmagic" >&5
+echo $ECHO_N "checking for magic_open in -lmagic... $ECHO_C" >&6
+if test "${ac_cv_lib_magic_magic_open+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lmagic  $LIBS"
+if test x$gcc_no_link = xyes; then
+  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
+echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char magic_open ();
+int
+main ()
+{
+magic_open ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_magic_magic_open=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_magic_magic_open=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_magic_magic_open" >&5
+echo "${ECHO_T}$ac_cv_lib_magic_magic_open" >&6
+if test $ac_cv_lib_magic_magic_open = yes; then
+
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_MAGIC_OPEN 1
+_ACEOF
+
+      LIBMAGIC="-lmagic"
+fi
+
+
+
    # Test for Gtk stuff, if asked for.
    if test "$use_gtk_awt" = yes; then
 
@@ -15001,6 +15214,16 @@ fi
 
 
 
+if test "$enable_shared" = yes; then
+  ENABLE_SHARED_TRUE=
+  ENABLE_SHARED_FALSE='#'
+else
+  ENABLE_SHARED_TRUE='#'
+  ENABLE_SHARED_FALSE=
+fi
+
+
+
 if test "$NEEDS_DATA_START" = yes && test "$NATIVE" = yes; then
   NEEDS_DATA_START_TRUE=
   NEEDS_DATA_START_FALSE='#'
@@ -15069,12 +15292,12 @@ _ACEOF
 
 
 cat >>confdefs.h <<\_ACEOF
-#define JV_VERSION "1.4.2"
+#define JV_VERSION "1.5.0"
 _ACEOF
 
 
 cat >>confdefs.h <<\_ACEOF
-#define JV_API_VERSION "1.4"
+#define JV_API_VERSION "1.5"
 _ACEOF
 
 
@@ -15131,11 +15354,12 @@ esac
 
 
 
+
 for ac_header in unistd.h bstring.h sys/time.h sys/types.h fcntl.h \
 		  sys/ioctl.h sys/filio.h sys/stat.h sys/select.h \
 		  sys/socket.h netinet/in.h arpa/inet.h netdb.h net/if.h \
 		  pwd.h sys/config.h stdint.h langinfo.h locale.h \
-		  dirent.h sys/rw_lock.h ifaddrs.h
+		  dirent.h sys/rw_lock.h magic.h ifaddrs.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 if eval "test \"\${$as_ac_Header+set}\" = set"; then
@@ -16549,17 +16773,12 @@ if test "${have_tls+set}" = set; then
 else
 
     if test "$cross_compiling" = yes; then
-  if test x$gcc_no_link = xyes; then
-  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
-echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
-   { (exit 1); exit 1; }; }
-fi
-cat >conftest.$ac_ext <<_ACEOF
-__thread int a; int b; int main() { return a = b; }
+  cat >conftest.$ac_ext <<_ACEOF
+__thread int foo;
 _ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>conftest.er1
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
   ac_status=$?
   grep -v '^ *+' conftest.er1 >conftest.err
   rm -f conftest.er1
@@ -16573,7 +16792,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest$ac_exeext'
+	 { ac_try='test -s conftest.$ac_objext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -16586,8 +16805,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 
 have_tls=no
 fi
-rm -f conftest.err conftest.$ac_objext \
-      conftest$ac_exeext conftest.$ac_ext
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 
 else
   cat >conftest.$ac_ext <<_ACEOF
@@ -16906,6 +17124,13 @@ LIBOBJS=$ac_libobjs
 LTLIBOBJS=$ac_ltlibobjs
 
 
+if test -z "${JAVA_MAINTAINER_MODE_TRUE}" && test -z "${JAVA_MAINTAINER_MODE_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"JAVA_MAINTAINER_MODE\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"JAVA_MAINTAINER_MODE\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
 if test -z "${AMDEP_TRUE}" && test -z "${AMDEP_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"AMDEP\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
@@ -16948,6 +17173,13 @@ echo "$as_me: error: conditional \"XLIB_AWT\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
+if test -z "${X_AWT_TRUE}" && test -z "${X_AWT_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"X_AWT\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"X_AWT\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
 if test -z "${am__fastdepGCJ_TRUE}" && test -z "${am__fastdepGCJ_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"am__fastdepGCJ\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
@@ -16959,6 +17191,20 @@ if test -z "${TESTSUBDIR_TRUE}" && test -z "${TESTSUBDIR_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"TESTSUBDIR\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 echo "$as_me: error: conditional \"TESTSUBDIR\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${BUILD_ECJ1_TRUE}" && test -z "${BUILD_ECJ1_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"BUILD_ECJ1\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"BUILD_ECJ1\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${INSTALL_ECJ_JAR_TRUE}" && test -z "${INSTALL_ECJ_JAR_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"INSTALL_ECJ_JAR\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"INSTALL_ECJ_JAR\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -17043,6 +17289,13 @@ if test -z "${NATIVE_TRUE}" && test -z "${NATIVE_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"NATIVE\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 echo "$as_me: error: conditional \"NATIVE\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${ENABLE_SHARED_TRUE}" && test -z "${ENABLE_SHARED_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"ENABLE_SHARED\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"ENABLE_SHARED\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -17521,7 +17774,6 @@ do
   "scripts/jar" ) CONFIG_FILES="$CONFIG_FILES scripts/jar" ;;
   "include/platform.h" ) CONFIG_LINKS="$CONFIG_LINKS include/platform.h:include/$PLATFORMH" ;;
   "java/io/natFile.cc" ) CONFIG_LINKS="$CONFIG_LINKS java/io/natFile.cc:java/io/natFile${FILE-${PLATFORM}}.cc" ;;
-  "java/lang/ConcreteProcess.java" ) CONFIG_LINKS="$CONFIG_LINKS java/lang/ConcreteProcess.java:java/lang/${PLATFORM}Process.java" ;;
   "java/lang/natConcreteProcess.cc" ) CONFIG_LINKS="$CONFIG_LINKS java/lang/natConcreteProcess.cc:java/lang/nat${PLATFORM}Process.cc" ;;
   "java/net/natVMInetAddress.cc" ) CONFIG_LINKS="$CONFIG_LINKS java/net/natVMInetAddress.cc:java/net/natVMInetAddress${PLATFORMNET}.cc" ;;
   "java/net/natVMNetworkInterface.cc" ) CONFIG_LINKS="$CONFIG_LINKS java/net/natVMNetworkInterface.cc:java/net/natVMNetworkInterface${PLATFORMNET}.cc" ;;
@@ -17647,6 +17899,8 @@ s,@target_os@,$target_os,;t t
 s,@target_noncanonical@,$target_noncanonical,;t t
 s,@LN_S@,$LN_S,;t t
 s,@mkinstalldirs@,$mkinstalldirs,;t t
+s,@JAVA_MAINTAINER_MODE_TRUE@,$JAVA_MAINTAINER_MODE_TRUE,;t t
+s,@JAVA_MAINTAINER_MODE_FALSE@,$JAVA_MAINTAINER_MODE_FALSE,;t t
 s,@CC@,$CC,;t t
 s,@ac_ct_CC@,$ac_ct_CC,;t t
 s,@EXEEXT@,$EXEEXT,;t t
@@ -17714,7 +17968,11 @@ s,@LIBGCJDEBUG@,$LIBGCJDEBUG,;t t
 s,@TOOLKIT@,$TOOLKIT,;t t
 s,@XLIB_AWT_TRUE@,$XLIB_AWT_TRUE,;t t
 s,@XLIB_AWT_FALSE@,$XLIB_AWT_FALSE,;t t
+s,@X_AWT_TRUE@,$X_AWT_TRUE,;t t
+s,@X_AWT_FALSE@,$X_AWT_FALSE,;t t
+s,@GCJ_FOR_ECJX@,$GCJ_FOR_ECJX,;t t
 s,@GCJH@,$GCJH,;t t
+s,@host_exeext@,$host_exeext,;t t
 s,@INCLTDL@,$INCLTDL,;t t
 s,@LIBLTDL@,$LIBLTDL,;t t
 s,@DIRLTDL@,$DIRLTDL,;t t
@@ -17729,13 +17987,19 @@ s,@am__fastdepGCJ_FALSE@,$am__fastdepGCJ_FALSE,;t t
 s,@subdirs@,$subdirs,;t t
 s,@TESTSUBDIR_TRUE@,$TESTSUBDIR_TRUE,;t t
 s,@TESTSUBDIR_FALSE@,$TESTSUBDIR_FALSE,;t t
+s,@ECJ_BUILD_JAR@,$ECJ_BUILD_JAR,;t t
+s,@ECJ_JAR@,$ECJ_JAR,;t t
+s,@BUILD_ECJ1_TRUE@,$BUILD_ECJ1_TRUE,;t t
+s,@BUILD_ECJ1_FALSE@,$BUILD_ECJ1_FALSE,;t t
+s,@INSTALL_ECJ_JAR_TRUE@,$INSTALL_ECJ_JAR_TRUE,;t t
+s,@INSTALL_ECJ_JAR_FALSE@,$INSTALL_ECJ_JAR_FALSE,;t t
 s,@JAVA_HOME_SET_TRUE@,$JAVA_HOME_SET_TRUE,;t t
 s,@JAVA_HOME_SET_FALSE@,$JAVA_HOME_SET_FALSE,;t t
 s,@JAVA_HOME@,$JAVA_HOME,;t t
 s,@INTERPRETER@,$INTERPRETER,;t t
 s,@LIBFFI@,$LIBFFI,;t t
 s,@LIBFFIINCS@,$LIBFFIINCS,;t t
-s,@PLATFORM_INNER_NAT_HDRS@,$PLATFORM_INNER_NAT_HDRS,;t t
+s,@PLATFORM@,$PLATFORM,;t t
 s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
 s,@USING_WIN32_PLATFORM_TRUE@,$USING_WIN32_PLATFORM_TRUE,;t t
@@ -17784,6 +18048,7 @@ s,@USING_GCC_TRUE@,$USING_GCC_TRUE,;t t
 s,@USING_GCC_FALSE@,$USING_GCC_FALSE,;t t
 s,@LIBICONV@,$LIBICONV,;t t
 s,@LTLIBICONV@,$LTLIBICONV,;t t
+s,@LIBMAGIC@,$LIBMAGIC,;t t
 s,@PKG_CONFIG@,$PKG_CONFIG,;t t
 s,@GTK_CFLAGS@,$GTK_CFLAGS,;t t
 s,@GTK_LIBS@,$GTK_LIBS,;t t
@@ -17803,6 +18068,8 @@ s,@BACKTRACESPEC@,$BACKTRACESPEC,;t t
 s,@IEEESPEC@,$IEEESPEC,;t t
 s,@NATIVE_TRUE@,$NATIVE_TRUE,;t t
 s,@NATIVE_FALSE@,$NATIVE_FALSE,;t t
+s,@ENABLE_SHARED_TRUE@,$ENABLE_SHARED_TRUE,;t t
+s,@ENABLE_SHARED_FALSE@,$ENABLE_SHARED_FALSE,;t t
 s,@NEEDS_DATA_START_TRUE@,$NEEDS_DATA_START_TRUE,;t t
 s,@NEEDS_DATA_START_FALSE@,$NEEDS_DATA_START_FALSE,;t t
 s,@GCC_UNWIND_INCLUDE@,$GCC_UNWIND_INCLUDE,;t t

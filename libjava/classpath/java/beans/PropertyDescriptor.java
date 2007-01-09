@@ -65,11 +65,11 @@ import java.lang.reflect.Method;
  **/
 public class PropertyDescriptor extends FeatureDescriptor
 {
-    Class propertyType;
+    Class<?> propertyType;
     Method getMethod;
     Method setMethod;
 
-    Class propertyEditorClass;
+    Class<?> propertyEditorClass;
     boolean bound;
     boolean constrained;
 
@@ -103,7 +103,7 @@ public class PropertyDescriptor extends FeatureDescriptor
      ** @exception IntrospectionException if the methods are not found 
      **            or invalid.
      **/
-    public PropertyDescriptor(String name, Class beanClass)
+    public PropertyDescriptor(String name, Class<?> beanClass)
         throws IntrospectionException
     {
         setName(name);
@@ -159,7 +159,7 @@ public class PropertyDescriptor extends FeatureDescriptor
      **/
     public PropertyDescriptor(
         String name,
-        Class beanClass,
+        Class<?> beanClass,
         String getMethodName,
         String setMethodName)
         throws IntrospectionException
@@ -213,7 +213,7 @@ public class PropertyDescriptor extends FeatureDescriptor
      ** This is the type the get method returns and the set method
      ** takes in.
      **/
-    public Class getPropertyType()
+    public Class<?> getPropertyType()
     {
         return propertyType;
     }
@@ -330,7 +330,7 @@ public class PropertyDescriptor extends FeatureDescriptor
     }
 
     /** Get the PropertyEditor class.  Defaults to null. **/
-    public Class getPropertyEditorClass()
+    public Class<?> getPropertyEditorClass()
     {
         return propertyEditorClass;
     }
@@ -341,7 +341,7 @@ public class PropertyDescriptor extends FeatureDescriptor
      ** @param propertyEditorClass the PropertyEditor class for this 
      **        class to use.
      **/
-    public void setPropertyEditorClass(Class propertyEditorClass)
+    public void setPropertyEditorClass(Class<?> propertyEditorClass)
     {
         this.propertyEditorClass = propertyEditorClass;
     }
@@ -516,10 +516,10 @@ public class PropertyDescriptor extends FeatureDescriptor
      * @return The common property type of the two method.
      * @throws IntrospectionException If any of the above requirements are not met.
      */
-    private Class checkMethods(Method readMethod, Method writeMethod)
+    private Class<?> checkMethods(Method readMethod, Method writeMethod)
         throws IntrospectionException
     {
-        Class newPropertyType = propertyType;
+        Class<?> newPropertyType = propertyType;
 
         // a valid read method has zero arguments and a non-void return type.
         if (readMethod != null)

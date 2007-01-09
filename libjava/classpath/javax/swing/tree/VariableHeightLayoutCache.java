@@ -40,6 +40,7 @@ package javax.swing.tree;
 import gnu.javax.swing.tree.GnuPath;
 
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -60,8 +61,11 @@ import javax.swing.event.TreeModelEvent;
  * @author Audrius Meskauskas
  */
 public class VariableHeightLayoutCache
-                extends AbstractLayoutCache
+  extends AbstractLayoutCache
 {
+
+  private static final Rectangle RECT_CACHE = new Rectangle();
+
   /**
    * The cached node record.
    */
@@ -73,8 +77,8 @@ public class VariableHeightLayoutCache
       depth = aDepth;
       parent = aParent;
       node = aNode;
-      
-      isExpanded = expanded.contains(aNode); 
+      isExpanded = expanded.contains(aNode);
+      bounds = new Rectangle(0, -1, 0, 0);
     }
     
     /**
@@ -102,7 +106,7 @@ public class VariableHeightLayoutCache
      * Using this field saves one hashtable access operation.
      */
     final boolean isExpanded;
-    
+
     /**
      * The cached bounds of the tree row.
      */
@@ -160,11 +164,6 @@ public class VariableHeightLayoutCache
      */
     Rectangle getBounds()
     {
-      // This method may be called in the context when the tree rectangle is
-      // not known. To work around this, it is assumed near infinitely large.
-      if (bounds == null)
-        bounds = getNodeDimensions(node, row, depth, isExpanded, 
-                                   new Rectangle());
       return bounds;      
     }
   }
@@ -182,7 +181,7 @@ public class VariableHeightLayoutCache
   /**
    * Maps row numbers to nodes.
    */
-  Hashtable row2node = new Hashtable();
+  ArrayList row2node = new ArrayList();
   
   /**
    * If true, the row map must be recomputed before using.
@@ -236,45 +235,54 @@ public class VariableHeightLayoutCache
       return;
 
     Object root = treeModel.getRoot();
-
-    if (rootVisible)
-      {
-        countRows(root, null, 0);
-      }
-    else
-      {
-        int sc = treeModel.getChildCount(root);
-        for (int i = 0; i < sc; i++)
-          {
-            Object child = treeModel.getChild(root, i);
-            countRows(child, root, 0);
-          }
-      }
+    countRows(root, null, 0, 0);
     dirty = false;
   }
   
   /**
    * Recursively counts all rows in the tree.
    */
-  private final void countRows(Object node, Object parent, int depth)
+  private final int countRows(Object node, Object parent, int depth, int y)
   {
-    Integer n = new Integer(row2node.size());
-    row2node.put(n, node);
-    
-    NodeRecord nr = new NodeRecord(n.intValue(), depth, node, parent);
+    boolean visible = node != treeModel.getRoot() || rootVisible;
+    int row = row2node.size();
+    if (visible)
+      {
+        row2node.add(node);
+      }
+    NodeRecord nr = new NodeRecord(row, depth, node, parent);
+    NodeDimensions d = getNodeDimensions();
+    Rectangle r = RECT_CACHE;
+    if (d != null)
+      r = d.getNodeDimensions(node, row, depth, nr.isExpanded, r);
+    else
+      r.setBounds(0, 0, 0, 0);
+
+    if (! visible)
+      r.y = -1;
+    else
+      r.y = Math.max(0, y);
+
+    if (isFixedRowHeight())
+      r.height = getRowHeight();
+
+    nr.bounds.setBounds(r);
     nodes.put(node, nr);
-     
-    // For expanded nodes
+
+    if (visible)
+      y += r.height;
+
+    int sc = treeModel.getChildCount(node);
+    int deeper = depth + 1;
     if (expanded.contains(node))
       {
-        int sc = treeModel.getChildCount(node);
-        int deeper = depth + 1;
         for (int i = 0; i < sc; i++)
           {
             Object child = treeModel.getChild(node, i);
-            countRows(child, node, deeper);
+            y = countRows(child, node, deeper, y);
           }
       }
+    return y;
   }
 
   /**
@@ -309,10 +317,14 @@ public class VariableHeightLayoutCache
   public void setExpandedState(TreePath path, boolean isExpanded)
   {
     if (isExpanded)
-      expanded.add(path.getLastPathComponent());
+      {
+        int length = path.getPathCount();
+        for (int i = 0; i < length; i++)
+          expanded.add(path.getPathComponent(i));
+      }
     else
       expanded.remove(path.getLastPathComponent());
-    
+
     dirty = true;
   }
   
@@ -339,25 +351,21 @@ public class VariableHeightLayoutCache
       return null;
     if (dirty)
       update();
-    Object last = path.getLastPathComponent();
-    NodeRecord r = (NodeRecord) nodes.get(last);
-    if (r == null)
-    // This node is not visible.
-      {
-        rect.x = rect.y = rect.width = rect.height = 0;
-      }
-    else
-      {
-        if (r.bounds == null)
-          {
-            Rectangle dim = getNodeDimensions(last, r.row, r.depth,
-                                              r.isExpanded, rect);
-            r.bounds = dim;
-          }
 
-        rect.setRect(r.bounds);
+    Object last = path.getLastPathComponent();
+    Rectangle result = null;
+    NodeRecord r = (NodeRecord) nodes.get(last);
+    if (r != null)
+      {
+        // The RI allows null arguments for rect, in which case a new Rectangle
+        // is created.
+        result = rect;
+        if (result == null)
+          result = new Rectangle(r.bounds);
+        else
+          result.setBounds(r.bounds);
       }
-    return rect;
+    return result;
   } 
 
   /**
@@ -370,14 +378,17 @@ public class VariableHeightLayoutCache
   {
     if (dirty)
       update();
-    Object last = row2node.get(new Integer(row));
-    if (last == null)
-      return null;
-    else
+
+    TreePath path = null;
+    // Search row in the nodes map. TODO: This is inefficient, optimize this.
+    Enumeration nodesEnum = nodes.elements();
+    while (nodesEnum.hasMoreElements() && path == null)
       {
-        NodeRecord r = (NodeRecord) nodes.get(last);
-        return r.getPath();
+        NodeRecord record = (NodeRecord) nodesEnum.nextElement();
+        if (record.row == row)
+          path = record.getPath();
       }
+    return path;
   } 
 
   /**
@@ -390,7 +401,9 @@ public class VariableHeightLayoutCache
   {
     if (path == null)
       return -1;
-    if (dirty) update();
+
+    if (dirty)
+      update();
 
     NodeRecord r = (NodeRecord) nodes.get(path.getLastPathComponent());
     if (r == null)
@@ -451,8 +464,8 @@ public class VariableHeightLayoutCache
   {
     if (y < r.y)
       return r.y - y;
-    else if (y > r.y + r.height)
-      return y - (r.y + r.height);
+    else if (y > r.y + r.height - 1)
+      return y - (r.y + r.height - 1);
     else
       return 0;
   }
@@ -468,7 +481,7 @@ public class VariableHeightLayoutCache
    */
   public int getVisibleChildCount(TreePath path)  
   {
-    if (isExpanded(path))
+    if (! isExpanded(path) || treeModel == null)
       return 0; 
     else
       return treeModel.getChildCount(path.getLastPathComponent());
@@ -481,7 +494,7 @@ public class VariableHeightLayoutCache
    * @param parentPath the parent path
    * @return the enumeration over pathes
    */
-  public Enumeration getVisiblePathsFrom(TreePath parentPath)
+  public Enumeration<TreePath> getVisiblePathsFrom(TreePath parentPath)
   {
     if (dirty)
       update();
@@ -493,7 +506,7 @@ public class VariableHeightLayoutCache
       {
         node = parentPath.getPathComponent(i);
         nr = (NodeRecord) nodes.get(node);
-        if (nr.row >= 0)
+        if (nr != null && nr.row >= 0)
           p.add(node);
       }
     return p.elements();
@@ -558,15 +571,11 @@ public class VariableHeightLayoutCache
   public void setModel(TreeModel newModel)
   {
     treeModel = newModel;
-    // We need to clear the table and update the layout,
-    // so that we don't end up with wrong data in the tables.
-    expanded.clear();
-    update();
+    dirty = true;
     if (treeModel != null)
       {
         // The root node is expanded by default.
         expanded.add(treeModel.getRoot());
-        dirty = true;
       }
   }
   
@@ -590,15 +599,14 @@ public class VariableHeightLayoutCache
   {
     if (dirty)
       update();
-    totalHeight = 0;
-    Enumeration en = nodes.elements();
-    while (en.hasMoreElements())
+    int height = 0;
+    int rowCount = getRowCount();
+    if (rowCount > 0)
       {
-        NodeRecord nr = (NodeRecord) en.nextElement();
-        Rectangle r = nr.getBounds();
-        totalHeight += r.height;
+        NodeRecord last = (NodeRecord) nodes.get(row2node.get(rowCount - 1));
+        height = last.bounds.y + last.bounds.height;
       }
-    return totalHeight;
+    return height;
   }
 
   /**
@@ -614,10 +622,36 @@ public class VariableHeightLayoutCache
     while (en.hasMoreElements())
       {
         NodeRecord nr = (NodeRecord) en.nextElement();
-        Rectangle r = nr.getBounds();
-        if (r.x + r.width > maximalWidth)
-          maximalWidth = r.x + r.width;
+        if (nr != null)
+          {
+            Rectangle r = nr.getBounds();
+            int width = r.x + r.width;
+            if (width > maximalWidth)
+              maximalWidth = width;
+          }
       }
     return maximalWidth;
+  }
+
+  /**
+   * Sets the node dimensions and invalidates the cached layout.
+   *
+   * @param dim the dimensions to set
+   */
+  public void setNodeDimensions(NodeDimensions dim)
+  {
+    super.setNodeDimensions(dim);
+    dirty = true;
+  }
+
+  /**
+   * Sets the row height and marks the layout as invalid.
+   *
+   * @param height the row height to set
+   */
+  public void setRowHeight(int height)
+  {
+    super.setRowHeight(height);
+    dirty = true;
   }
 }

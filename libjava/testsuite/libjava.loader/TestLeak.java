@@ -1,9 +1,9 @@
 import java.net.*;
-import java.lang.reflect.*;
+import java.lang.reflect.Proxy;
 
 public class TestLeak
 {
-  class MyLoader extends URLClassLoader
+  static class MyLoader extends URLClassLoader
   {
     public MyLoader (URL urls[])
     {

@@ -55,10 +55,7 @@ final class VMClassLoadingMXBeanImpl
    *
    * @return the number of loaded classes.
    */
-  static int getLoadedClassCount()
-  {
-    return -1;
-  }
+  static native int getLoadedClassCount();
 
   /**
    * Returns the number of classes that have been unloaded
@@ -66,10 +63,7 @@ final class VMClassLoadingMXBeanImpl
    *
    * @return the number of unloaded classes.
    */
-  static long getUnloadedClassCount()
-  {
-    return -1;
-  }
+  static native long getUnloadedClassCount();
 
   /**
    * Returns true if the virtual machine will emit additional
@@ -78,10 +72,7 @@ final class VMClassLoadingMXBeanImpl
    *
    * @return true if verbose class loading output is on.
    */
-  static boolean isVerbose()
-  {
-    return false;
-  }
+  static native boolean isVerbose();
 
   /**
    * Turns on or off the emission of additional information
@@ -93,8 +84,6 @@ final class VMClassLoadingMXBeanImpl
    * @param verbose the new setting for verbose class loading
    *                output.
    */
-  static void setVerbose(boolean verbose)
-  {
-  }
+  static native void setVerbose(boolean verbose);
 
 }

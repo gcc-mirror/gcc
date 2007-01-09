@@ -144,7 +144,7 @@ A simple, small bytecode interpreter that works out-of-the-box with
 pure GNU Classpath; it is emerging as the preferred platform for
 quickly testing a new build of GNU Classpath.  Licensed under the GPL.
 
-@item @uref{http://oss.software.ibm.com/jikesrvm,Jikes RVM}
+@item @uref{http://jikesrvm.sourceforge.net/,Jikes RVM}
 A free runtime environment for Java, written in Java.  Works
 out-of-the-box with pure GNU Classpath.  Features an optimizing JIT.
 Runs on the x86 and PowerPC architectures, on the AIX, Linux, and Mac
@@ -1859,8 +1859,7 @@ Classpath places a few requirements on the VM that uses it.
 
 Classpath currently uses only JNI 1.1, except for one JNI 1.2 function
 in the JNI Invocation API: GetEnv().  And GetEnv() is only used in the
-``portable native sync'' code, so it's only actually used by Jikes RVM
-and Kaffe.  
+now deprecated ``portable native sync'' code.
 
 A future direction will probably be to require that all VMs provide
 JNI 1.2.  If this poses problems, please raise them on the classpath
@@ -1870,42 +1869,95 @@ mailing list.
 @comment  node-name,  next,  previous,  up
 @section VM Threading Model
 
-Classpath's AWT peers use GTK+.  GTK+ uses GLIB.  Normally, Classpath
-will initialize GLIB's @dfn{gthreads} to use
-the platform's native threading model@footnote{The native threading
-model is pthreads on Linux and AIX, the two platforms Classpath
-currently runs on.}
+VM authors can implement a number of different threading models. When
+native code is also threaded there is the potential for one threading
+model to deadlock the other. The
+@uref{http://java.sun.com/docs/books/jni/html/other.html#29406,Java
+Native Interface Programmer's Guide and Specification} suggests
+consulting VM documentation in such situations. Classpath uses
+existing libraries, for example the AWT peers can use the GTK+
+graphics library. As these libraries assume a different threading
+model, there is the potential for the native code to deadlock a VM.
 
-If the Java runtime doesn't use the native threading model, then you
-will want Classpath to tell GLIB to use the Java threading primitives
-instead.  Otherwise, GLIB would use the native threading model to
-perform operations such as creating thread-local data, and that just
-doesn't work on systems (such as Kaffe in some configurations, and
-such as Jikes RVM) that use @i{m}:@i{n} threading.
+The different threading models available to a VM author are:
+@enumerate
+@item
+@i{Native threads}: Map a Java thread to an underlying operating system
+thread (normally a POSIX compatible pthread). This approach reduces
+the potential for deadlock as there is only one thread scheduling
+mechanism.
+@item
+@i{Green threads 1}: Green threads are threads scheduled by the VM,
+typically by switching swapping registers. In early VMs green threads
+were seen as advantageous as they didn't require the operating system
+to resechedule, save and swap all of a threads registers. The green
+thread 1 model switches thread on an externally created event, such as
+a timer interrupt. An example of a VM using this approach is Kaffe
+configured with its jthreads model.
+@item
+@i{Green threads 2}: The essential difference with this model is to
+not switch threads on an event, but at fixed points in the code being
+executed by the VM. Points chosen could be backward branches (loops)
+or method calls. This approach can be advantageous to nonconservative
+garbage collectors, as non-running threads would be at known points
+and can have fixed register maps. It can also reduce the number of
+registers it is necessary to swap when switching threads.
+@item
+@i{M:N threading}: a flaw to green threading is that it is unable to
+use multiple processors. @i{M}:@i{N} threading fixes this problem by
+running groups of green threads on multiple underlying native
+threads. An example of a VM using this approach is the Jikes RVM,
+which uses @i{M}:@i{N} threading combined with the green thread 2
+model.
+@end enumerate
 
-Historically, enabling the Java threading primitives had been done at
-build time, by configuring classpath with the
-@option{--portable-native-sync} option.  This had bad consequences,
-though -- it meant that the prebuild GNU Classpath package distributed
-with Debian GNU/Linux would not be usable with VMs that could
-otherwise have used it.  Instead, we encourage
-the use of the Java system property
-@code{gnu.classpath.awt.gtk.portable.native.sync}.  A VM that wants
-GLIB to use the Java threading primitives should modify
-@code{VMRuntime.insertSystemProperties()} to include code like the
-following:
+An example of the problem of mixing threading models is:
+@itemize @bullet
+@item
+A Java thread calls a native method. The native method aquires a lock.
+@item
+The native method calls back into the VM.
+@item
+An event triggers the VM to reschedule the currently running thread.
+@item
+A new VM thread, executing on the same underlying native thread, calls
+a native method.
+@item
+The native method tries to aquire the lock already aquired earlier. As
+the lock is busy the thread waits and allows the operating system to
+reschedule native threads.
+@item
+The operating system reschedules the VM thread again, but the lock is
+still busy and in some threading models will remain busy forever
+(the VM is deadlocked).
+@end itemize
 
-@example
-static void insertSystemProperties(Properties @var{p}) 
-@end example
-...
-@example
-@var{p}.put("gnu.classpath.awt.gtk.portable.native.sync", "true");
-@end example
+VMs that don't use the underlying operating system thread scheduling
+mechanism need to avoid deadlock. One now deprecated approach was to
+build Classpath and VMs on top of a wrapper thread library (aka
+portable native sync). The wrapper thread library used was GLIB's
+@dfn{gthreads}. This approach has been deprecated because:
+@enumerate
+@item
+The wrapper library is only in use by some native libraries. For
+example, GTK+ uses the gthread library but QT does not.
+@item
+The wrapper library can't be in use prior to the VM starting as the VM
+must replace the wrapper libraries functions with its own. This
+prevents the VM from running as a plugin in an application that
+already uses the wrapper library.
+@end enumerate
 
-So, the configure option
-@option{--portable-native-sync} is deprecated, and should go away in a
-subsequent release of GNU Classpath.
+An alternative approach is for the VM to detect deadlocked native code
+and swap Java threads off of that native thread. The VM can't,
+however, swap two blocked native threads that are potentially
+deadlocking each other on a lock. The lock will be associated with the
+native thread. To prevent this from happening the VM must hijack
+functions that operate on locks. This is done by redifining the lock
+functions inside the VM and configuring the linker so that it uses the
+VMs symbol in preference to that of the external thread support
+library. The VM's lock function can then reschedule Java threads if it
+must wait for the lock.
 
 @node Boot Library Path Property,  , VM Threading Model, Miscellaneous VM Requirements
 @comment  node-name,  next,  previous,  up

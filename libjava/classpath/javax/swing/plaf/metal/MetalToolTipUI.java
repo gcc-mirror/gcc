@@ -43,9 +43,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.Insets;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
@@ -54,8 +51,6 @@ import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JToolTip;
 import javax.swing.KeyStroke;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.ComponentUI;
@@ -192,32 +187,14 @@ public class MetalToolTipUI
    */
   public Dimension getPreferredSize(JComponent c)
   {
-    if (isAcceleratorHidden())
-      return super.getPreferredSize(c);
-    else
+    Dimension d = super.getPreferredSize(c);
+    String acc = getAcceleratorString();
+    if (acc != null && ! acc.equals(""))
       {
-        Insets insets = c.getInsets();
-        JToolTip tt = (JToolTip) c;
-        String tipText = tt.getTipText();
-        if (tipText != null)
-          {
-            FontMetrics fm = c.getFontMetrics(c.getFont());
-            int prefH = fm.getHeight() + insets.top + insets.bottom;
-            int prefW = fm.stringWidth(tipText) + insets.left + insets.right;
-
-            // this seems to be the first opportunity we have to get the 
-            // accelerator string from the component (if it has one)
-            acceleratorString = fetchAcceleratorString(c);
-            if (acceleratorString != null)
-              {
-                prefW += padSpaceBetweenStrings;
-                fm = c.getFontMetrics(acceleratorFont);
-                prefW += fm.stringWidth(acceleratorString);                
-              }
-            return new Dimension(prefW, prefH);  
-          }
-        else return new Dimension(0, 0);
+        FontMetrics fm = c.getFontMetrics(c.getFont());
+        d.width += fm.stringWidth(acc);
       }
+    return d;
   }
   
   /**
@@ -228,39 +205,8 @@ public class MetalToolTipUI
    */
   public void paint(Graphics g, JComponent c)
   {
-    JToolTip tip = (JToolTip) c;
-
-    String text = tip.getTipText();
-    Toolkit t = tip.getToolkit();
-    if (text == null)
-      return;
-
-    Rectangle vr = new Rectangle();
-    vr = SwingUtilities.calculateInnerArea(tip, vr);
-    Rectangle ir = new Rectangle();
-    Rectangle tr = new Rectangle();
-    FontMetrics fm = t.getFontMetrics(tip.getFont());
-    int ascent = fm.getAscent();
-    SwingUtilities.layoutCompoundLabel(tip, fm, text, null, 
-            SwingConstants.CENTER, SwingConstants.LEFT,
-            SwingConstants.CENTER, SwingConstants.CENTER, vr, ir, tr, 0);
-    Color saved = g.getColor();
-    g.setColor(Color.BLACK);
-
-    g.drawString(text, vr.x, vr.y + ascent); 
-    
-    // paint accelerator
-    if (acceleratorString != null)
-      {
-        g.setFont(acceleratorFont);
-        g.setColor(acceleratorForeground);
-        fm = t.getFontMetrics(acceleratorFont);
-        int width = fm.stringWidth(acceleratorString);
-        g.drawString(acceleratorString, vr.x + vr.width - width 
-            - padSpaceBetweenStrings / 2, vr.y + vr.height - fm.getDescent());
-      }
-
-    g.setColor(saved);   
+    super.paint(g, c);
+    // Somehow paint accelerator. Keep care for possible HTML rendering.
   }
   
   /**

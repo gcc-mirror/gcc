@@ -14,7 +14,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_dnd_peer_gtk_GtkDragSourceContextPeer_n
 JNIEXPORT void JNICALL Java_gnu_java_awt_dnd_peer_gtk_GtkDragSourceContextPeer_connectSignals (JNIEnv *env, jobject, jobject);
 JNIEXPORT void JNICALL Java_gnu_java_awt_dnd_peer_gtk_GtkDragSourceContextPeer_create (JNIEnv *env, jobject, jobject);
 JNIEXPORT void JNICALL Java_gnu_java_awt_dnd_peer_gtk_GtkDragSourceContextPeer_nativeSetCursor (JNIEnv *env, jobject, jint) ;
-
+JNIEXPORT void JNICALL Java_gnu_java_awt_dnd_peer_gtk_GtkDragSourceContextPeer_setTarget (JNIEnv *env, jobject, jobject);
 
 #ifdef __cplusplus
 }

@@ -91,101 +91,127 @@ public class SSLContext
     this.protocol = protocol;
   }
 
-  // Class methods.
-  // ------------------------------------------------------------------
-
   /**
-   * Get an instance of a context for the specified protocol from the
-   * first provider that implements it.
-   *
+   * Get an instance of a context for the specified protocol from the first
+   * provider that implements it.
+   * 
    * @param protocol The name of the protocol to get a context for.
    * @return The new context.
-   * @throws NoSuchAlgorithm If no provider implements the given
-   *   protocol.
+   * @throws NoSuchAlgorithmException If no provider implements the given
+   *           protocol.
+   * @throws IllegalArgumentException if <code>protocol</code> is
+   *           <code>null</code> or is an empty string.
    */
   public static final SSLContext getInstance(String protocol)
-    throws NoSuchAlgorithmException
+      throws NoSuchAlgorithmException
   {
-    Provider[] provs = Security.getProviders();
-    for (int i = 0; i < provs.length; i++)
-      {
-        try
-          {
-            return getInstance(protocol, provs[i]);
-          }
-        catch (NoSuchAlgorithmException ignore)
-          {
-          }
-      }
+    Provider[] p = Security.getProviders();
+    NoSuchAlgorithmException lastException = null;
+    for (int i = 0; i < p.length; i++)
+      try
+        {
+          return getInstance(protocol, p[i]);
+        }
+      catch (NoSuchAlgorithmException x)
+        {
+          lastException = x;
+        }
+    if (lastException != null)
+      throw lastException;
     throw new NoSuchAlgorithmException(protocol);
   }
 
   /**
-   * Get an instance of a context for the specified protocol from the
-   * named provider.
-   *
+   * Get an instance of a context for the specified protocol from the named
+   * provider.
+   * 
    * @param protocol The name of the protocol to get a context for.
-   * @param provider The name of the provider to get the
-   *   implementation from.
+   * @param provider The name of the provider to get the implementation from.
    * @return The new context.
-   * @throws NoSuchAlgorithmException If the provider does not
-   *   implement the given protocol.
-   * @throws NoSuchProviderException If the named provider does not
-   *   exist.
-   * @throws IllegalArgumentException If <i>provider</i> is null.
+   * @throws NoSuchAlgorithmException If the provider does not implement the
+   *           given protocol.
+   * @throws NoSuchProviderException If the named provider does not exist.
+   * @throws IllegalArgumentException if either <code>protocol</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>protocol</code> is an empty string.
    */
-  public static final SSLContext getInstance(String protocol,
-                                             String provider)
-    throws NoSuchAlgorithmException, NoSuchProviderException
+  public static final SSLContext getInstance(String protocol, String provider)
+      throws NoSuchAlgorithmException, NoSuchProviderException
   {
     if (provider == null)
-      {
-        throw new IllegalArgumentException("null provider");
-      }
+      throw new IllegalArgumentException("provider MUST NOT be null");
     Provider p = Security.getProvider(provider);
     if (p == null)
-      {
-        throw new NoSuchProviderException(provider);
-      }
+      throw new NoSuchProviderException(provider);
     return getInstance(protocol, p);
   }
 
   /**
-   * Get an instance of a context for the specified protocol from the
-   * specified provider.
-   *
+   * Get an instance of a context for the specified protocol from the specified
+   * provider.
+   * 
    * @param protocol The name of the protocol to get a context for.
-   * @param provider The name of the provider to get the
-   *   implementation from.
+   * @param provider The name of the provider to get the implementation from.
    * @return The new context.
-   * @throws NoSuchAlgorithmException If the provider does not
-   *   implement the given protocol.
-   * @throws IllegalArgumentException If <i>provider</i> is null.
+   * @throws NoSuchAlgorithmException If the provider does not implement the
+   *           given protocol.
+   * @throws IllegalArgumentException if either <code>protocol</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>protocol</code> is an empty string.
    */
-  public static final SSLContext getInstance(String protocol,
-                                             Provider provider)
-    throws NoSuchAlgorithmException
+  public static final SSLContext getInstance(String protocol, Provider provider)
+      throws NoSuchAlgorithmException
   {
+    StringBuilder sb = new StringBuilder("SSLContext for protocol [")
+        .append(protocol).append("] from provider[")
+        .append(provider).append("] could not be created");
+    Throwable cause;
     try
       {
-        return new SSLContext((SSLContextSpi)
-          Engine.getInstance(SSL_CONTEXT, protocol, provider),
-          provider, protocol);
+        Object spi = Engine.getInstance(SSL_CONTEXT, protocol, provider);
+        return new SSLContext((SSLContextSpi) spi, provider, protocol);
       }
-    catch (InvocationTargetException ite)
+    catch (InvocationTargetException x)
       {
-        NoSuchAlgorithmException nsae = new NoSuchAlgorithmException(protocol);
-        throw (NoSuchAlgorithmException) nsae.initCause(ite);
+        cause = x.getCause();
+        if (cause instanceof NoSuchAlgorithmException)
+          throw (NoSuchAlgorithmException) cause;
+        if (cause == null)
+          cause = x;
       }
-    catch (ClassCastException cce)
+    catch (ClassCastException x)
       {
-        NoSuchAlgorithmException nsae = new NoSuchAlgorithmException(protocol);
-        throw (NoSuchAlgorithmException) nsae.initCause(cce);
+        cause = x;
       }
+    NoSuchAlgorithmException x = new NoSuchAlgorithmException(sb.toString());
+    x.initCause(cause);
+    throw x;
   }
 
-  // Instance methods.
-  // -----------------------------------------------------------------
+  /**
+   * Creates a new {@link SSLEngine} for this context.
+   *
+   * @return The new SSLEngine.
+   * @since 1.5
+   */
+  public final SSLEngine createSSLEngine ()
+  {
+    return ctxSpi.engineCreateSSLEngine ();
+  }
+
+  /**
+   * Creates a new {@link SSLEngine} for this context, with a given
+   * host name and port number.
+   *
+   * @param host The local host name.
+   * @param port The local port number.
+   * @return The new SSLEngine.
+   * @since 1.5
+   */
+  public final SSLEngine createSSLEngine (final String host, final int port)
+  {
+    return ctxSpi.engineCreateSSLEngine (host, port);
+  }
 
   /**
    * Returns the set of SSL contexts available for client connections.

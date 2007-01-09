@@ -1,5 +1,5 @@
 /* DragGestureRecognizer.java --
-   Copyright (C) 2002,2006 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package java.awt.dnd;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.InputEvent;
@@ -52,6 +50,8 @@ import java.util.TooManyListenersException;
 
 /**
  * STUBBED
+ * @author Michael Koch (konqueror@gmx.de)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.2
  */
 public abstract class DragGestureRecognizer implements Serializable
@@ -65,7 +65,7 @@ public abstract class DragGestureRecognizer implements Serializable
   protected Component component;
   protected transient DragGestureListener dragGestureListener;
   protected int sourceActions;
-  protected ArrayList events = new ArrayList();
+  protected ArrayList<InputEvent> events = new ArrayList<InputEvent>();
 
   protected DragGestureRecognizer(DragSource ds, Component c, int sa,
                                   DragGestureListener dgl)
@@ -127,11 +127,12 @@ public abstract class DragGestureRecognizer implements Serializable
     return events.size() > 0 ? (InputEvent) events.get(0) : null;
   }
 
+  /**
+   * Resets the recognizer. If a gesture is currently recognize, discard it.
+   */
   public void resetRecognizer()
-    throws NotImplementedException
   {
-    events = new ArrayList();
-    // FIXME: Not implemented fully.
+    events.clear();
   }
 
   /**
@@ -164,6 +165,7 @@ public abstract class DragGestureRecognizer implements Serializable
     if(dragGestureListener != null)
       dragGestureListener.dragGestureRecognized
 	(new DragGestureEvent(this, dragAction, p, events));
+    resetRecognizer();
   }
 
   protected void appendEvent(InputEvent e)

@@ -81,6 +81,9 @@ public final class TextHitInfo
 
   public boolean equals(TextHitInfo hitInfo)
   {
+    if (hitInfo == null)
+      return false;
+    
     return (charIndex == hitInfo.getCharIndex ())
             && (leadingEdge == hitInfo.isLeadingEdge ());
   }
@@ -97,7 +100,7 @@ public final class TextHitInfo
 
   public static TextHitInfo beforeOffset(int offset)
   {
-    return new TextHitInfo (offset, false);
+    return new TextHitInfo ((offset - 1), false);
   }
 
   public static TextHitInfo afterOffset(int offset)

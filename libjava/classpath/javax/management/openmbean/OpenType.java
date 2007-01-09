@@ -133,11 +133,11 @@ public abstract class OpenType
       testString = className;
     boolean openTypeFound = false;
     for (int a = 0; a < ALLOWED_CLASSNAMES.length; ++a)
-      if (ALLOWED_CLASSNAMES[a].equals(className))
+      if (ALLOWED_CLASSNAMES[a].equals(testString))
 	openTypeFound = true;
     if (!openTypeFound)
-      throw new OpenDataException("The class name does not specify " +
-				  "a valid open type.");
+      throw new OpenDataException("The class name, " + testString + 
+				  ", does not specify a valid open type.");
     this.className = className;
     typeName = name;
     description = desc;

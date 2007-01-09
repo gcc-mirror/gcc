@@ -44,12 +44,117 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 
 public class TransferHandler implements Serializable
 {
+
+  /**
+   * An implementation of {@link Transferable} that can be used to export
+   * data from a component's property.
+   */
+  private static class PropertyTransferable
+    implements Transferable
+  {
+    /**
+     * The component from which we export.
+     */
+    private JComponent component;
+
+    /**
+     * The property descriptor of the property that we handle.
+     */
+    private PropertyDescriptor property;
+
+    /**
+     * Creates a new PropertyTransferable.
+     *
+     * @param c the component from which we export
+     * @param prop the property from which we export
+     */
+    PropertyTransferable(JComponent c, PropertyDescriptor prop)
+    {
+      component = c;
+      property = prop;
+    }
+
+    /**
+     * Returns the data flavors supported by the Transferable.
+     *
+     * @return the data flavors supported by the Transferable
+     */
+    public DataFlavor[] getTransferDataFlavors()
+    {
+      DataFlavor[] flavors;
+      Class propClass = property.getPropertyType();
+      String mime = DataFlavor.javaJVMLocalObjectMimeType + "; class="
+                    + propClass.getName();
+      try
+        {
+          DataFlavor flavor = new DataFlavor(mime);
+          flavors = new DataFlavor[]{ flavor };
+        }
+      catch (ClassNotFoundException ex)
+        {
+          flavors = new DataFlavor[0];
+        }
+      return flavors;
+    }
+
+    /**
+     * Returns <code>true</code> when the specified data flavor is supported,
+     * <code>false</code> otherwise.
+     *
+     * @return <code>true</code> when the specified data flavor is supported,
+     *         <code>false</code> otherwise
+     */
+    public boolean isDataFlavorSupported(DataFlavor flavor)
+    {
+      Class propClass = property.getPropertyType();
+      return flavor.getPrimaryType().equals("application")
+        && flavor.getSubType().equals("x-java-jvm-local-objectref")
+        && propClass.isAssignableFrom(flavor.getRepresentationClass());
+    }
+
+    /**
+     * Returns the actual transfer data.
+     *
+     * @param flavor the data flavor
+     *
+     * @return the actual transfer data
+     */
+    public Object getTransferData(DataFlavor flavor)
+      throws UnsupportedFlavorException, IOException
+    {
+      if (isDataFlavorSupported(flavor))
+        {
+          Method getter = property.getReadMethod();
+          Object o;
+          try
+            {
+              o = getter.invoke(component, null);
+              return o;
+            }
+          catch (Exception ex)
+            {
+              throw new IOException("Property read failed: "
+                                    + property.getName());
+            }
+        }
+      else
+        throw new UnsupportedFlavorException(flavor);
+    }
+  }
+
   static class TransferAction extends AbstractAction
   {
     private String command;
@@ -123,7 +228,13 @@ public class TransferHandler implements Serializable
   
   private int sourceActions;
   private Icon visualRepresentation;
-  
+
+  /**
+   * The name of the property into/from which this TransferHandler
+   * imports/exports. 
+   */
+  private String propertyName;
+
   public static Action getCopyAction()
   {
     return copyAction;
@@ -146,19 +257,78 @@ public class TransferHandler implements Serializable
 
   public TransferHandler(String property)
   {
+    propertyName = property;
     this.sourceActions = property != null ? COPY : NONE;
   }
 
+  /**
+   * Returns <code>true</code> if the data in this TransferHandler can be
+   * imported into the specified component. This will be the case when:
+   * <ul>
+   *   <li>The component has a readable and writable property with the property
+   *   name specified in the TransferHandler constructor.</li>
+   *   <li>There is a dataflavor with a mime type of
+   *     <code>application/x-java-jvm-local-object-ref</code>.</li>
+   *   <li>The dataflavor's representation class matches the class of the
+   *    property in the component.</li>
+   * </li>
+   *
+   * @param c the component to check
+   * @param flavors the possible data flavors
+   *
+   * @return <code>true</code> if the data in this TransferHandler can be
+   *         imported into the specified component, <code>false</code>
+   *         otherwise
+   */
   public boolean canImport(JComponent c, DataFlavor[] flavors)
-    throws NotImplementedException
   {
-    return false;
+    PropertyDescriptor propDesc = getPropertyDescriptor(c);
+    boolean canImport = false;
+    if (propDesc != null)
+      {
+        // Check if the property is writable. The readable check is already
+        // done in getPropertyDescriptor().
+        Method writer = propDesc.getWriteMethod();
+        if (writer != null)
+          {
+            Class[] params = writer.getParameterTypes();
+            if (params.length == 1)
+              {
+                // Number of parameters ok, now check mime type and
+                // representation class.
+                DataFlavor flavor = getPropertyDataFlavor(params[0], flavors);
+                if (flavor != null)
+                  canImport = true;
+              }
+          }
+      }
+    return canImport;
   }
 
+  /**
+   * Creates a {@link Transferable} that can be used to export data
+   * from the specified component.
+   *
+   * This method returns <code>null</code> when the specified component
+   * doesn't have a readable property that matches the property name
+   * specified in the <code>TransferHandler</code> constructor.
+   *
+   * @param c the component to create a transferable for
+   *
+   * @return a {@link Transferable} that can be used to export data
+   *         from the specified component, or null if the component doesn't
+   *         have a readable property like the transfer handler
+   */
   protected Transferable createTransferable(JComponent c) 
-    throws NotImplementedException
   {
-    return null;
+    Transferable transferable = null;
+    if (propertyName != null)
+      {
+        PropertyDescriptor prop = getPropertyDescriptor(c);
+        if (prop != null)
+          transferable = new PropertyTransferable(c, prop);
+      }
+    return transferable;
   }
 
   public void exportAsDrag(JComponent c, InputEvent e, int action) 
@@ -167,16 +337,64 @@ public class TransferHandler implements Serializable
     // TODO: Implement this properly
   }
 
-  protected void exportDone(JComponent c, Transferable data, int action) 
-    throws NotImplementedException
+  /**
+   * This method is invoked after data has been exported.
+   * Subclasses should implement this method to remove the data that has been
+   * transferred when the action was <code>MOVE</code>.
+   *
+   * The default implementation does nothing because MOVE is not supported.
+   *
+   * @param c the source component
+   * @param data the data that has been transferred or <code>null</code>
+   *        when the action is NONE
+   * @param action the action that has been performed
+   */
+  protected void exportDone(JComponent c, Transferable data, int action)
   {
-    // TODO: Implement this properly
+    // Nothing to do in the default implementation.
   }
 
+  /**
+   * Exports the property of the component <code>c</code> that was
+   * specified for this TransferHandler to the clipboard, performing
+   * the specified action.
+   *
+   * This will check if the action is allowed by calling
+   * {@link #getSourceActions(JComponent)}. If the action is not allowed,
+   * then no export is performed.
+   *
+   * In either case the method {@link #exportDone} will be called with
+   * the action that has been performed, or {@link #NONE} if the action
+   * was not allowed or could otherwise not be completed.
+   * Any IllegalStateException that is thrown by the Clipboard due to
+   * beeing unavailable will be propagated through this method.
+   *
+   * @param c the component from which to export
+   * @param clip the clipboard to which the data will be exported
+   * @param action the action to perform
+   *
+   * @throws IllegalStateException when the clipboard is not available
+   */
   public void exportToClipboard(JComponent c, Clipboard clip, int action) 
-    throws NotImplementedException
+    throws IllegalStateException
   {
-    // TODO: Implement this properly
+    action &= getSourceActions(c);
+    Transferable transferable = createTransferable(c);
+    if (transferable != null && action != NONE)
+      {
+        try
+          {
+            clip.setContents(transferable, null);
+            exportDone(c, transferable, action);
+          }
+        catch (IllegalStateException ex)
+          {
+            exportDone(c, transferable, NONE);
+            throw ex;
+          }
+      }
+    else
+      exportDone(c, null, NONE);
   } 
 
   public int getSourceActions(JComponent c)
@@ -189,9 +407,124 @@ public class TransferHandler implements Serializable
     return visualRepresentation;
   }
 
+  /**
+   * Imports the transfer data represented by <code>t</code> into the specified
+   * component <code>c</code> by setting the property of this TransferHandler
+   * on that component. If this succeeds, this method returns
+   * <code>true</code>, otherwise <code>false</code>.
+   * 
+   *
+   * @param c the component to import into
+   * @param t the transfer data to import
+   *
+   * @return <code>true</code> if the transfer succeeds, <code>false</code>
+   *         otherwise
+   */
   public boolean importData(JComponent c, Transferable t) 
-    throws NotImplementedException
   {
-    return false;
+    boolean ok = false;
+    PropertyDescriptor prop = getPropertyDescriptor(c);
+    if (prop != null)
+      {
+        Method writer = prop.getWriteMethod();
+        if (writer != null)
+          {
+            Class[] params = writer.getParameterTypes();
+            if (params.length == 1)
+              {
+                DataFlavor flavor = getPropertyDataFlavor(params[0],
+                                                   t.getTransferDataFlavors());
+                if (flavor != null)
+                  {
+                    try
+                      {
+                        Object value = t.getTransferData(flavor);
+                        writer.invoke(c, new Object[]{ value });
+                        ok = true;
+                      }
+                    catch (Exception ex)
+                      {
+                        // If anything goes wrong here, do nothing and return
+                        // false;
+                      }
+                  }
+              }
+          }
+      }
+    return ok;
+  }
+
+  /**
+   * Returns the property descriptor for the property of this TransferHandler
+   * in the specified component, or <code>null</code> if no such property
+   * exists in the component. This method only returns properties that are
+   * at least readable (that is, it has a public no-arg getter method).
+   *
+   * @param c the component to check
+   *
+   * @return the property descriptor for the property of this TransferHandler
+   *         in the specified component, or <code>null</code> if no such
+   *         property exists in the component
+   */
+  private PropertyDescriptor getPropertyDescriptor(JComponent c)
+  {
+    PropertyDescriptor prop = null;
+    if (propertyName != null)
+      {
+        Class clazz = c.getClass();
+        BeanInfo beanInfo;
+        try
+          {
+            beanInfo = Introspector.getBeanInfo(clazz);
+          }
+        catch (IntrospectionException ex)
+          {
+            beanInfo = null;
+          }
+        if (beanInfo != null)
+          {
+            PropertyDescriptor[] props = beanInfo.getPropertyDescriptors();
+            for (int i = 0; i < props.length && prop == null; i++)
+              {
+                PropertyDescriptor desc = props[i];
+                if (desc.getName().equals(propertyName))
+                  {
+                    Method reader = desc.getReadMethod();
+                    if (reader != null)
+                      {
+                        Class[] params = reader.getParameterTypes();
+                        if (params == null || params.length == 0)
+                          prop = desc;
+                      }
+                  }
+              }
+          }
+      }
+    return prop;
+  }
+
+  /**
+   * Searches <code>flavors</code> to find a suitable data flavor that
+   * has the mime type application/x-java-jvm-local-objectref and a
+   * representation class that is the same as the specified <code>clazz</code>.
+   * When no such data flavor is found, this returns <code>null</code>.
+   *
+   * @param clazz the representation class required for the data flavor
+   * @param flavors the possible data flavors
+   *
+   * @return the suitable data flavor or null if none is found
+   */
+  private DataFlavor getPropertyDataFlavor(Class clazz, DataFlavor[] flavors)
+  {
+    DataFlavor found = null;
+    for (int i = 0; i < flavors.length && found == null; i++)
+      {
+        DataFlavor flavor = flavors[i];
+        if (flavor.getPrimaryType().equals("application")
+            && flavor.getSubType().equals("x-java-jvm-local-objectref")
+            && clazz.isAssignableFrom(flavor.getRepresentationClass()))
+          found = flavor;
+      }
+    return found;
   }
 }

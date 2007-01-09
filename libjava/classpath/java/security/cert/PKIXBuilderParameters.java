@@ -48,6 +48,7 @@ import java.util.Set;
  * Parameters for building certificate paths using the PKIX algorithm.
  *
  * @see CertPathBuilder
+ * @since 1.4
  */
 public class PKIXBuilderParameters extends PKIXParameters
 {
@@ -97,7 +98,8 @@ public class PKIXBuilderParameters extends PKIXParameters
    * @throws ClassCastException If every element in <i>trustAnchors</i>
    *         is not a {@link TrustAnchor}.
    */
-  public PKIXBuilderParameters(Set trustAnchors, CertSelector targetConstraints)
+  public PKIXBuilderParameters(Set<TrustAnchor> trustAnchors,
+                               CertSelector targetConstraints)
     throws InvalidAlgorithmParameterException
   {
     super(trustAnchors);

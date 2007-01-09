@@ -1,5 +1,5 @@
 /* ServantRetentionPolicyValue.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +41,7 @@ package org.omg.PortableServer;
 import gnu.CORBA.Minor;
 
 import org.omg.CORBA.BAD_OPERATION;
+import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.portable.IDLEntity;
 
 import java.io.Serializable;

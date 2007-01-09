@@ -1,5 +1,5 @@
 /* Rectangle.java -- represents a graphics rectangle
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation
+   Copyright (C) 1999, 2000, 2001, 2002, 2006, Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -119,7 +119,6 @@ public class Rectangle extends Rectangle2D implements Shape, Serializable
    * coordinates of the specified rectangle.
    *
    * @param r the rectangle to copy from
-   * @throws NullPointerException if r is null
    * @since 1.1
    */
   public Rectangle(Rectangle r)
@@ -168,7 +167,6 @@ public class Rectangle extends Rectangle2D implements Shape, Serializable
    *
    * @param p the upper left corner of the rectangle
    * @param d the width and height of the rectangle
-   * @throws NullPointerException if p or d is null
    */
   public Rectangle(Point p, Dimension d)
   {
@@ -185,7 +183,7 @@ public class Rectangle extends Rectangle2D implements Shape, Serializable
    * @param p the upper left corner of the rectangle
    */
   public Rectangle(Point p)
-  {
+  { 
     x = p.x;
     y = p.y;
   }
@@ -198,7 +196,7 @@ public class Rectangle extends Rectangle2D implements Shape, Serializable
    * @param d the width and height of the rectangle
    */
   public Rectangle(Dimension d)
-  {
+  {  
     width = d.width;
     height = d.height;
   }
@@ -299,8 +297,10 @@ public class Rectangle extends Rectangle2D implements Shape, Serializable
   }
 
   /**
-   * Updates this rectangle to have the specified dimensions, as rounded to
-   * integers.
+   * Updates this rectangle to have the specified dimensions, rounded to the
+   * integer precision used by this class (the values are rounded "outwards" so
+   * that the stored rectangle completely encloses the specified double 
+   * precision rectangle).
    *
    * @param x the new X coordinate of the upper left hand corner
    * @param y the new Y coordinate of the upper left hand corner
@@ -310,10 +310,10 @@ public class Rectangle extends Rectangle2D implements Shape, Serializable
    */
   public void setRect(double x, double y, double width, double height)
   {
-    this.x = (int) x;
-    this.y = (int) y;
-    this.width = (int) width;
-    this.height = (int) height;
+    this.x = (int) Math.floor(x);
+    this.y = (int) Math.floor(y);
+    this.width = (int) Math.ceil(x + width) - this.x;
+    this.height = (int) Math.ceil(y + height) - this.y;
   }
 
   /**

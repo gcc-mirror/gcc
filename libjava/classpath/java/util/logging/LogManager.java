@@ -129,7 +129,7 @@ public class LogManager
    * The registered named loggers; maps the name of a Logger to
    * a WeakReference to it.
    */
-  private Map loggers;
+  private Map<String, WeakReference<Logger>> loggers;
 
   /**
    * The properties for the logging framework which have been
@@ -150,7 +150,7 @@ public class LogManager
    * this case.
    */
   private final PropertyChangeSupport pcs = new PropertyChangeSupport( /* source bean */
-                                                                      LogManager.class);
+								      LogManager.class);
 
   protected LogManager()
   {
@@ -269,7 +269,7 @@ public class LogManager
      */
     name = logger.getName();
 
-    ref = (WeakReference) loggers.get(name);
+    ref = loggers.get(name);
     if (ref != null)
       {
 	if (ref.get() != null)
@@ -286,7 +286,7 @@ public class LogManager
       checkAccess();
 
     Logger parent = findAncestor(logger);
-    loggers.put(name, new WeakReference(logger));
+    loggers.put(name, new WeakReference<Logger>(logger));
     if (parent != logger.getParent())
       logger.setParent(parent);
 
@@ -318,26 +318,23 @@ public class LogManager
      * When adding "foo.bar", the logger "foo.bar.baz" should change
      * its parent to "foo.bar".
      */
-    if (parent != Logger.root)
+    for (Iterator iter = loggers.keySet().iterator(); iter.hasNext();)
       {
-	for (Iterator iter = loggers.keySet().iterator(); iter.hasNext();)
-	  {
-	    Logger possChild = (Logger) ((WeakReference) loggers.get(iter.next()))
-              .get();
-	    if ((possChild == null) || (possChild == logger)
-	        || (possChild.getParent() != parent))
-	      continue;
-
-	    if (! possChild.getName().startsWith(name))
-	      continue;
-
-	    if (possChild.getName().charAt(name.length()) != '.')
-	      continue;
-
-	    possChild.setParent(logger);
-	  }
+	Logger possChild = (Logger) ((WeakReference) loggers.get(iter.next()))
+	  .get();
+	if ((possChild == null) || (possChild == logger)
+	    || (possChild.getParent() != parent))
+	  continue;
+	
+	if (! possChild.getName().startsWith(name))
+	  continue;
+	
+	if (possChild.getName().charAt(name.length()) != '.')
+	  continue;
+	
+	possChild.setParent(logger);
       }
-
+    
     return true;
   }
 
@@ -365,15 +362,13 @@ public class LogManager
     int bestNameLength = 0;
 
     Logger cand;
-    String candName;
     int candNameLength;
 
     if (child == Logger.root)
       return null;
 
-    for (Iterator iter = loggers.keySet().iterator(); iter.hasNext();)
+    for (String candName : loggers.keySet())
       {
-	candName = (String) iter.next();
 	candNameLength = candName.length();
 
 	if (candNameLength > bestNameLength
@@ -381,7 +376,7 @@ public class LogManager
 	    && childName.startsWith(candName)
 	    && childName.charAt(candNameLength) == '.')
 	  {
-	    cand = (Logger) ((WeakReference) loggers.get(candName)).get();
+	    cand = loggers.get(candName).get();
 	    if ((cand == null) || (cand == child))
 	      continue;
 
@@ -406,14 +401,14 @@ public class LogManager
    */
   public synchronized Logger getLogger(String name)
   {
-    WeakReference ref;
+    WeakReference<Logger> ref;
 
     /* Throw a NullPointerException if name is null. */
     name.getClass();
 
-    ref = (WeakReference) loggers.get(name);
+    ref = loggers.get(name);
     if (ref != null)
-      return (Logger) ref.get();
+      return ref.get();
     else
       return null;
   }
@@ -426,7 +421,7 @@ public class LogManager
    * @return an Enumeration with the names of the currently
    *    registered Loggers.
    */
-  public synchronized Enumeration getLoggerNames()
+  public synchronized Enumeration<String> getLoggerNames()
   {
     return Collections.enumeration(loggers.keySet());
   }
@@ -449,16 +444,16 @@ public class LogManager
 
     properties = new Properties();
 
-    Iterator iter = loggers.values().iterator();
+    Iterator<WeakReference<Logger>> iter = loggers.values().iterator();
     while (iter.hasNext())
+      for (WeakReference<Logger> ref : loggers.values())
       {
-	WeakReference ref;
 	Logger logger;
 
-	ref = (WeakReference) iter.next();
+	ref = iter.next();
 	if (ref != null)
 	  {
-	    logger = (Logger) ref.get();
+	    logger = ref.get();
 
 	    if (logger == null)
 	      iter.remove();
@@ -713,7 +708,11 @@ public class LogManager
   {
     try
       {
-	return Level.parse(getLogManager().getProperty(propertyName));
+        String value = getLogManager().getProperty(propertyName);
+	if (value != null)
+	  return Level.parse(getLogManager().getProperty(propertyName));
+        else
+	   return defaultValue;
       }
     catch (Exception ex)
       {

@@ -53,7 +53,7 @@ package java.io;
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Per Bothner (bothner@cygnus.com)
  */
-public abstract class Writer
+public abstract class Writer implements Appendable, Closeable, Flushable
 {
   /**
    * This is the object used to synchronize criticial code sections for
@@ -188,5 +188,24 @@ public abstract class Writer
     write(buf, 0, len);
   }
 
-} // class Writer
+  /** @since 1.5 */
+  public Writer append(char c) throws IOException
+  {
+    write(c);
+    return this;
+  }
 
+  /** @since 1.5 */
+  public Writer append(CharSequence cs) throws IOException
+  {
+    write(cs == null ? "null" : cs.toString());
+    return this;
+  }
+
+  /** @since 1.5 */
+  public Writer append(CharSequence cs, int start, int end) throws IOException
+  {
+    write(cs == null ? "null" : cs.subSequence(start, end).toString());
+    return this;
+  }
+}

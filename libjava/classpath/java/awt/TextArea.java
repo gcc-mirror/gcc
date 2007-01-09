@@ -284,11 +284,7 @@ public class TextArea extends TextComponent implements java.io.Serializable
   }
 
   /**
-   * Retrieve the minimum size for this text area, considering the
-   * text area's current row and column values.  A text area's minimum
-   * size depends on the number of rows and columns of text it would
-   * prefer to display, and on the size of the font in which the text
-   * would be displayed.
+   * Retrieve the minimum size for this text area.
    *
    * @return The minimum size for this text field.
    */
@@ -298,11 +294,8 @@ public class TextArea extends TextComponent implements java.io.Serializable
   }
 
   /**
-   * Retrieve the minimum size that this text area would have if its
-   * row and column values were equal to those specified.  A text
-   * area's minimum size depends on the number of rows and columns of
-   * text it would prefer to display, and on the size of the font in
-   * which the text would be displayed.
+   * Retrieve the minimum size for this text area.  If the minimum
+   * size has been set, then rows and columns are used in the calculation.
    *
    * @param rows The number of rows to use in the minimum size
    * calculation.
@@ -317,12 +310,8 @@ public class TextArea extends TextComponent implements java.io.Serializable
   }
 
   /**
-   * Retrieve the minimum size for this text area, considering the
-   * text area's current row and column values.  A text area's minimum
-   * size depends on the number of rows and columns of text it would
-   * prefer to display, and on the size of the font in which the text
-   * would be displayed.
-   *
+   * Retrieve the minimum size for this text area.
+   * 
    * @return The minimum size for this text area.
    *
    * @deprecated This method is deprecated in favor of
@@ -334,11 +323,8 @@ public class TextArea extends TextComponent implements java.io.Serializable
   }
 
   /**
-   * Retrieve the minimum size that this text area would have if its
-   * row and column values were equal to those specified.  A text
-   * area's minimum size depends on the number of rows and columns of
-   * text it would prefer to display, and on the size of the font in
-   * which the text would be displayed.
+   * Retrieve the minimum size for this text area.  If the minimum
+   * size has been set, then rows and columns are used in the calculation.
    *
    * @param rows The number of rows to use in the minimum size
    * calculation.
@@ -352,21 +338,18 @@ public class TextArea extends TextComponent implements java.io.Serializable
    */
   public Dimension minimumSize (int rows, int columns)
   {
+    if (isMinimumSizeSet())
+      return new Dimension(minSize);
+    
     TextAreaPeer peer = (TextAreaPeer) getPeer ();
-
-    // Sun returns Dimension (0,0) in this case.
     if (peer == null)
-      return new Dimension (0, 0);
+      return new Dimension (getWidth(), getHeight());
 
     return peer.getMinimumSize (rows, columns);
   }
 
   /**
-   * Retrieve the preferred size for this text area, considering the
-   * text area's current row and column values.  A text area's preferred
-   * size depends on the number of rows and columns of text it would
-   * prefer to display, and on the size of the font in which the text
-   * would be displayed.
+   * Retrieve the preferred size for this text area.
    *
    * @return The preferred size for this text field.
    */
@@ -376,11 +359,8 @@ public class TextArea extends TextComponent implements java.io.Serializable
   }
 
   /**
-   * Retrieve the preferred size that this text area would have if its
-   * row and column values were equal to those specified.  A text
-   * area's preferred size depends on the number of rows and columns
-   * of text it would prefer to display, and on the size of the font
-   * in which the text would be displayed.
+   * Retrieve the preferred size for this text area.  If the preferred
+   * size has been set, then rows and columns are used in the calculation.
    *
    * @param rows The number of rows to use in the preferred size
    * calculation.
@@ -395,11 +375,7 @@ public class TextArea extends TextComponent implements java.io.Serializable
   }
 
   /**
-   * Retrieve the preferred size for this text area, considering the
-   * text area's current row and column values.  A text area's preferred
-   * size depends on the number of rows and columns of text it would
-   * prefer to display, and on the size of the font in which the text
-   * would be displayed.
+   * Retrieve the preferred size for this text area.
    *
    * @return The preferred size for this text field.
    *
@@ -412,11 +388,8 @@ public class TextArea extends TextComponent implements java.io.Serializable
   }
 
   /**
-   * Retrieve the preferred size that this text area would have if its
-   * row and column values were equal to those specified.  A text
-   * area's preferred size depends on the number of rows and columns
-   * of text it would prefer to display, and on the size of the font
-   * in which the text would be displayed.
+   * Retrieve the preferred size for this text area.  If the preferred
+   * size has been set, then rows and columns are used in the calculation.
    *
    * @param rows The number of rows to use in the preferred size
    * calculation.
@@ -430,11 +403,12 @@ public class TextArea extends TextComponent implements java.io.Serializable
    */
   public Dimension preferredSize (int rows, int columns)
   {
+    if (isPreferredSizeSet())
+      return new Dimension(prefSize);
+    
     TextAreaPeer peer = (TextAreaPeer) getPeer ();
-
-    // Sun returns Dimension (0,0) in this case.
     if (peer == null)
-      return new Dimension (0, 0);
+      return new Dimension (getWidth(), getHeight());
 
     return peer.getPreferredSize (rows, columns);
   }

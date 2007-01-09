@@ -158,7 +158,7 @@ public interface AttributeSet
    * @return the names of the attributes that are stored in this
    *         <code>AttributeSet</code>
    */
-  Enumeration getAttributeNames();
+  Enumeration<?> getAttributeNames();
 
   /**
    * Returns the resolving parent of this <code>AttributeSet</code>.

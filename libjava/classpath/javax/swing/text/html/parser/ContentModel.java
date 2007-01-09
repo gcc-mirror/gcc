@@ -151,13 +151,15 @@ public final class ContentModel
    * discarded.
    * @param elements - a vector to add the values to.
    */
-  public void getElements(Vector elements)
+  public void getElements(Vector<Element> elements)
   {
     ContentModel c = this;
 
     while (c != null)
       {
-        elements.add(c.content);
+        // FIXME: correct?
+        if (c.content instanceof Element)
+          elements.add((Element) c.content);
         c = c.next;
       }
   }

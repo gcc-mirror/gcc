@@ -1,5 +1,5 @@
 /* java.beans.SimpleBeanInfo
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,6 +40,7 @@ package java.beans;
 
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.net.URL;
 
 /**
  ** SimpleBeanInfo is a class you may extend to more easily
@@ -130,10 +131,16 @@ public class SimpleBeanInfo implements BeanInfo {
 	 ** and its BeanInfo are both loaded by the same
 	 ** ClassLoader, generally a reasonable assumption.
 	 ** @param location the URL relative
-	 ** @return the Image in question.
+	 ** @return the Image in question (possibly <code>null</code>).
 	 **/
-	public Image loadImage(String location) {
-		return Toolkit.getDefaultToolkit().getImage(getClass().getResource(location));
+	public Image loadImage(String location) 
+    {
+      if (location == null)
+        return null;
+      URL url = getClass().getResource(location);
+      if (url == null)
+        return null;
+      return Toolkit.getDefaultToolkit().getImage(url);
 	}
 }
 

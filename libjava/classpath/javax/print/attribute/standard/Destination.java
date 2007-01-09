@@ -40,6 +40,7 @@ package javax.print.attribute.standard;
 
 import java.net.URI;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.PrintJobAttribute;
 import javax.print.attribute.PrintRequestAttribute;
 import javax.print.attribute.URISyntax;
@@ -104,7 +105,7 @@ public final class Destination extends URISyntax
    *
    * @return The class <code>Destination</code> itself.
    */
-  public Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return Destination.class;
   }

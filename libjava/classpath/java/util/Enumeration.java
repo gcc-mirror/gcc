@@ -1,5 +1,6 @@
 /* Enumeration.java -- Interface for enumerating lists of objects
-   Copyright (C) 1998, 1999, 2001, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2004, 2005
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -60,7 +61,7 @@ package java.util;
  * @since 1.0
  * @status updated to 1.4
  */
-public interface Enumeration
+public interface Enumeration<E>
 {
   /**
    * Tests whether there are elements remaining in the enumeration.
@@ -77,5 +78,5 @@ public interface Enumeration
    * @return the next element in the enumeration
    * @throws NoSuchElementException if there are no more elements
    */
-  Object nextElement();
+  E nextElement();
 }

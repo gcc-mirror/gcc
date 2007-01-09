@@ -1,5 +1,5 @@
 /* ORB.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,12 +38,14 @@ exception statement from your version. */
 
 package org.omg.CORBA_2_3;
 
+import javax.rmi.CORBA.Tie;
+
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.NO_IMPLEMENT;
 import org.omg.CORBA.portable.ValueFactory;
 
 /**
- * This class should provide the {@link org.omg.CORBA.ORB) ORB extensions,
+ * This class should provide the {@link org.omg.CORBA.ORB}) ORB extensions,
  * defined in the OMG CORBA version 2.3 specification. However in the
  * Sun's API specification is written that this functionality is not
  * implemented at least at least till 1.4 inclusive.
@@ -93,10 +95,9 @@ public abstract class ORB
    *
    * @param repository_id a repository id
    *
-   * @return never
    * @throws NO_IMPLEMENT, always.
    */
-  public void unregister_value_factory(String id)
+  public void unregister_value_factory(String repository_id)
   {
     throw new NO_IMPLEMENT();
   }
@@ -117,7 +118,7 @@ public abstract class ORB
   }
 
   /**
-   * This method is called by RMI-IIOP {@link javax.rmi.Tie#orb(ORB)},
+   * This method is called by RMI-IIOP {@link Tie#orb(ORB)},
    * passing <code>this</code> as parameter. The ORB will try to connect
    * that tie as one of its objects.
    */

@@ -177,7 +177,7 @@ public class AudioFormat
    */
   public AudioFormat(Encoding encoding, float sampleRate, int sampleSizeInBits,
 		     int channels, int frameSize, float frameRate,
-		     boolean bigEndian, Map properties)
+		     boolean bigEndian, Map<String, Object> properties)
   {
     this.encoding = encoding;
     this.sampleRate = sampleRate;
@@ -319,7 +319,7 @@ public class AudioFormat
    * Return a read-only Map holding the properties associated with 
    * this format.
    */
-  public Map properties()
+  public Map<String, Object> properties()
   {
     return properties;
   }

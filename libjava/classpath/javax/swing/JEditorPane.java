@@ -40,6 +40,8 @@ package javax.swing;
 
 import java.awt.Container;
 import java.awt.Dimension;
+import java.io.BufferedInputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -47,6 +49,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.HashMap;
 
 import javax.accessibility.AccessibleContext;
@@ -56,6 +59,8 @@ import javax.accessibility.AccessibleStateSet;
 import javax.accessibility.AccessibleText;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.plaf.TextUI;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
@@ -482,6 +487,34 @@ public class JEditorPane extends JTextComponent
   }
 
   /**
+   * Used to store a mapping for content-type to editor kit class.
+   */
+  private static class EditorKitMapping
+  {
+    /**
+     * The classname of the editor kit.
+     */
+    String className;
+
+    /**
+     * The classloader with which the kit is to be loaded.
+     */
+    ClassLoader classLoader;
+
+    /**
+     * Creates a new EditorKitMapping object.
+     * 
+     * @param cn the classname
+     * @param cl the classloader
+     */
+    EditorKitMapping(String cn, ClassLoader cl)
+    {
+      className = cn;
+      classLoader = cl;
+    }
+  }
+
+  /**
    * An EditorKit used for plain text. This is the default editor kit for
    * JEditorPanes.
    *
@@ -505,18 +538,158 @@ public class JEditorPane extends JTextComponent
     }
   }
 
+  /**
+   * A special stream that can be cancelled.
+   */
+  private class PageStream
+    extends FilterInputStream
+  {
+    /**
+     * True when the stream has been cancelled, false otherwise.
+     */
+    private boolean cancelled;
+
+    protected PageStream(InputStream in)
+    {
+      super(in);
+      cancelled = false;
+    }
+
+    private void checkCancelled()
+      throws IOException
+    {
+      if (cancelled)
+        throw new IOException("Stream has been cancelled");
+    }
+
+    void cancel()
+    {
+      cancelled = true;
+    }
+
+    public int read()
+      throws IOException
+    {
+      checkCancelled();
+      return super.read();
+    }
+
+    public int read(byte[] b, int off, int len)
+      throws IOException
+    {
+      checkCancelled();
+      return super.read(b, off, len);
+    }
+
+    public long skip(long n)
+      throws IOException
+    {
+      checkCancelled();
+      return super.skip(n);
+    }
+
+    public int available()
+      throws IOException
+    {
+      checkCancelled();
+      return super.available();
+    }
+
+    public void reset()
+      throws IOException
+    {
+      checkCancelled();
+      super.reset();
+    }
+  }
+
+  /**
+   * The thread that loads documents asynchronously.
+   */
+  private class PageLoader
+    implements Runnable
+  {
+    private Document doc;
+    private PageStream in;
+    private URL old;
+    URL page;
+    PageLoader(Document doc, InputStream in, URL old, URL page)
+    {
+      this.doc = doc;
+      this.in = new PageStream(in);
+      this.old = old;
+      this.page = page;
+    }
+
+    public void run()
+    {
+      try
+        {
+          read(in, doc);
+        }
+      catch (IOException ex)
+        {
+          UIManager.getLookAndFeel().provideErrorFeedback(JEditorPane.this);
+        }
+      finally
+        {
+          if (SwingUtilities.isEventDispatchThread())
+            firePropertyChange("page", old, page);
+          else
+            {
+              SwingUtilities.invokeLater(new Runnable()
+              {
+                public void run()
+                {
+                  firePropertyChange("page", old, page);
+                }
+              });
+            }
+         }
+     }
+
+     void cancel()
+     {
+       in.cancel();
+     }
+  }
+
   private static final long serialVersionUID = 3140472492599046285L;
   
-  private URL page;
   private EditorKit editorKit;
   
   boolean focus_root;
   
+  /**
+   * Maps content-types to editor kit instances.
+   */
+  static HashMap editorKits;
+
   // A mapping between content types and registered EditorKit types
   static HashMap registerMap;
-  
+
+  static
+  {
+    registerMap = new HashMap();
+    editorKits = new HashMap();
+    registerEditorKitForContentType("application/rtf",
+                                    "javax.swing.text.rtf.RTFEditorKit");
+    registerEditorKitForContentType("text/plain",
+                                    "javax.swing.JEditorPane$PlainEditorKit");
+    registerEditorKitForContentType("text/html",
+                                    "javax.swing.text.html.HTMLEditorKit");
+    registerEditorKitForContentType("text/rtf",
+                                    "javax.swing.text.rtf.RTFEditorKit");
+
+  }
+
   // A mapping between content types and used EditorKits
   HashMap editorMap;  
+
+  /**
+   * The currently loading stream, if any.
+   */
+  private PageLoader loader;
 
   public JEditorPane()
   {
@@ -550,15 +723,6 @@ public class JEditorPane extends JTextComponent
   void init()
   {
     editorMap = new HashMap();
-    registerMap = new HashMap();
-    registerEditorKitForContentType("application/rtf",
-                                    "javax.swing.text.rtf.RTFEditorKit");
-    registerEditorKitForContentType("text/plain",
-                                    "javax.swing.JEditorPane$PlainEditorKit");
-    registerEditorKitForContentType("text/html",
-                                    "javax.swing.text.html.HTMLEditorKit");
-    registerEditorKitForContentType("text/rtf",
-                                    "javax.swing.text.rtf.RTFEditorKit");
   }
 
   protected EditorKit createDefaultEditorKit()
@@ -578,20 +742,28 @@ public class JEditorPane extends JTextComponent
    */
   public static EditorKit createEditorKitForContentType(String type)
   {
-    // TODO: Have to handle the case where a ClassLoader was specified
-    // when the EditorKit was registered
-    EditorKit e = null;
-    String className = (String) registerMap.get(type);
-    if (className != null)
+    // Try cached instance.
+    EditorKit e = (EditorKit) editorKits.get(type);
+    if (e == null)
       {
-        try
-        {
-          e = (EditorKit) Class.forName(className).newInstance();
-        }
-        catch (Exception e2)
-        {    
-          // TODO: Not sure what to do here.
-        }
+        EditorKitMapping m = (EditorKitMapping) registerMap.get(type);
+        if (m != null)
+          {
+            String className = m.className;
+            ClassLoader loader = m.classLoader;
+            try
+              {
+                e = (EditorKit) loader.loadClass(className).newInstance();
+              }
+            catch (Exception e2)
+              {    
+                // The reference implementation returns null when class is not
+                // loadable or instantiatable.
+              }
+          }
+        // Cache this for later retrieval.
+        if (e != null)
+          editorKits.put(type, e);
       }
     return e;
   }
@@ -652,7 +824,9 @@ public class JEditorPane extends JTextComponent
    */
   public static String getEditorKitClassNameForContentType(String type)
   {
-    return (String) registerMap.get(type);
+    EditorKitMapping m = (EditorKitMapping) registerMap.get(type);
+    String kitName = m != null ? m.className : null;
+    return kitName;
   }
 
   /**
@@ -675,10 +849,14 @@ public class JEditorPane extends JTextComponent
     EditorKit e = (EditorKit) editorMap.get(type);
     // Then check to see if we can create one.
     if (e == null)
-      e = createEditorKitForContentType(type);
+      {
+        e = createEditorKitForContentType(type);
+        if (e != null)
+          setEditorKitForContentType(type, e);
+      }
     // Otherwise default to PlainEditorKit.
     if (e == null)
-      e = new PlainEditorKit();
+      e = createDefaultEditorKit();
     return e;
   }
 
@@ -695,10 +873,28 @@ public class JEditorPane extends JTextComponent
   public Dimension getPreferredSize()
   {
     Dimension pref = super.getPreferredSize();
-    if (getScrollableTracksViewportWidth())
-      pref.width = getUI().getMinimumSize(this).width;
-    if (getScrollableTracksViewportHeight())
-      pref.height = getUI().getMinimumSize(this).height;
+    Container parent = getParent();
+    if (parent instanceof JViewport)
+      {
+        JViewport vp = (JViewport) getParent();
+        TextUI ui = getUI();
+        Dimension min = null;
+        if (! getScrollableTracksViewportWidth())
+          {
+            min = ui.getMinimumSize(this);
+            int vpWidth = vp.getWidth();
+            if (vpWidth != 0 && vpWidth < min.width)
+              pref.width = min.width;
+          }
+        if (! getScrollableTracksViewportHeight())
+          {
+            if (min == null)
+              min = ui.getMinimumSize(this);
+            int vpHeight = vp.getHeight();
+            if (vpHeight != 0 && vpHeight < min.height)
+              pref.height = min.height;
+          }
+      }
     return pref;
   }
 
@@ -716,8 +912,11 @@ public class JEditorPane extends JTextComponent
     // Tests show that this returns true when the parent is a JViewport
     // and has a height > minimum UI height.
     Container parent = getParent();
+    int height = parent.getHeight();
+    TextUI ui = getUI();
     return parent instanceof JViewport
-           && parent.getHeight() > getUI().getMinimumSize(this).height;
+           && height >= ui.getMinimumSize(this).height
+           && height <= ui.getMaximumSize(this).height;
   }
 
   /**
@@ -740,13 +939,19 @@ public class JEditorPane extends JTextComponent
 
   public URL getPage()
   {
-    return page;
+    return loader != null ? loader.page : null;
   }
 
   protected InputStream getStream(URL page)
     throws IOException
   {
-    return page.openStream();
+    URLConnection conn = page.openConnection();
+    // Try to detect the content type of the stream data.
+    String type = conn.getContentType();
+    if (type != null)
+      setContentType(type);
+    InputStream stream = conn.getInputStream();
+    return new BufferedInputStream(stream);
   }
 
   public String getText()
@@ -777,10 +982,12 @@ public class JEditorPane extends JTextComponent
     EditorKit kit = getEditorKit();
     if (kit instanceof HTMLEditorKit && desc instanceof HTMLDocument)
       {
-        Document doc = (Document) desc;
+        HTMLDocument doc = (HTMLDocument) desc;
+        setDocument(doc);
         try
           {
-            kit.read(in, doc, 0);
+            InputStreamReader reader = new InputStreamReader(in);
+            kit.read(reader, doc, 0);
           }
         catch (BadLocationException ex)
           {
@@ -805,7 +1012,8 @@ public class JEditorPane extends JTextComponent
   public static void registerEditorKitForContentType(String type,
                                                      String classname)
   {
-    registerMap.put(type, classname);
+    registerEditorKitForContentType(type, classname,
+                               Thread.currentThread().getContextClassLoader());
   }
 
   /**
@@ -815,7 +1023,7 @@ public class JEditorPane extends JTextComponent
                                                      String classname,
                                                      ClassLoader loader)
   {
-    // TODO: Implement this properly.
+    registerMap.put(type, new EditorKitMapping(classname, loader));
   }
 
   /**
@@ -839,6 +1047,13 @@ public class JEditorPane extends JTextComponent
 
   public final void setContentType(String type)
   {
+    // Strip off content type parameters.
+    int paramIndex = type.indexOf(';');
+    if (paramIndex > -1)
+      {
+        // TODO: Handle character encoding.
+        type = type.substring(0, paramIndex).trim();
+      }
     if (editorKit != null
 	&& editorKit.getContentType().equals(type))
       return;
@@ -899,14 +1114,45 @@ public class JEditorPane extends JTextComponent
     if (page == null)
       throw new IOException("invalid url");
 
-    try
+    URL old = getPage();
+    // Only reload if the URL doesn't point to the same file.
+    // This is not the same as equals because there might be different
+    // URLs on the same file with different anchors.
+    if (old == null || ! old.sameFile(page))
       {
-	this.page = page;
-	getEditorKit().read(page.openStream(), getDocument(), 0);
-      }
-    catch (BadLocationException e)
-      {
-	// Ignored. '0' is always a valid offset.
+        InputStream in = getStream(page);
+        if (editorKit != null)
+          {
+            Document doc = editorKit.createDefaultDocument();
+            doc.putProperty(Document.StreamDescriptionProperty, page);
+
+            if (loader != null)
+              loader.cancel();
+            loader = new PageLoader(doc, in, old, page);
+
+            int prio = -1;
+            if (doc instanceof AbstractDocument)
+              {
+                AbstractDocument aDoc = (AbstractDocument) doc;
+                prio = aDoc.getAsynchronousLoadPriority();
+              }
+            if (prio >= 0)
+              {
+                // Load asynchronously.
+                setDocument(doc);
+                Thread loadThread = new Thread(loader,
+                                               "JEditorPane.PageLoader");
+                loadThread.setDaemon(true);
+                loadThread.setPriority(prio);
+                loadThread.start();
+              }
+            else
+              {
+                // Load synchronously.
+                loader.run();
+                setDocument(doc);
+              }
+          }
       }
   }
 

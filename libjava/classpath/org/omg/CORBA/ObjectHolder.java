@@ -1,5 +1,5 @@
 /* ObjectHolder.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
-import gnu.CORBA.typecodes.PrimitiveTypeCode;
 import gnu.CORBA.typecodes.RecordTypeCode;
 
 import org.omg.CORBA.portable.InputStream;
@@ -98,10 +97,10 @@ public final class ObjectHolder
   }
 
   /**
-   * Fill in the {@link value } field by reading the required data
+   * Fill in the {@link #value } field by reading the required data
    * from the given stream. For <code>org.omg.CORBA.Object</code>, the
    * functionality is delegated to
-   * {@link org.omg.CORBA.portable.InputStream#read_Object}.
+   * {@link org.omg.CORBA.portable.InputStream#read_Object()}.
    *
    * @param input the input stream to read from.
    */
@@ -120,7 +119,7 @@ public final class ObjectHolder
   }
 
   /**
-   * Write the {@link value } field to the given stream.
+   * Write the {@link #value } field to the given stream.
    * For <code>Object</code>, the functionality
    * is delegated to
    * {@link org.omg.CORBA.portable.OutputStream#write_Object(Object) }.

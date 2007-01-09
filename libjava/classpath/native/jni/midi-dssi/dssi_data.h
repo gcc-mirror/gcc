@@ -46,8 +46,6 @@ exception statement from your version. */
 
 #include <stdio.h>
 
-#include "target_native.h"
-#include "target_native_misc.h"
 #include "../classpath/jcl.h"
 
 /* Specify the size of the circular buffer.  It only needs to be big

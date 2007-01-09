@@ -55,12 +55,14 @@ public interface TabularData
   /**
    * Calculates the index the specified {@link CompositeData} value
    * would have, if it was to be added to this {@link TabularData}
-   * instance.  This method includes a check that the type of
-   * the given value is the same as the row type of this instance,
-   * but not a check for existing instances of the given value.
-   * The value must also not be <code>null</code>.  Possible indices
-   * are returned by the {@link TabularType#getIndexNames()} method
-   * of this instance's tabular type.
+   * instance.  This method includes a check that the type of the
+   * given value is the same as the row type of this instance, but not
+   * a check for existing instances of the given value.  The value
+   * must also not be <code>null</code>.  Possible indices are
+   * returned by the {@link TabularType#getIndexNames()} method of
+   * this instance's tabular type.  The returned indices are the
+   * values of the fields in the supplied {@link CompositeData}
+   * instance that match the names given in the {@link TabularType}.
    * 
    * @param val the {@link CompositeData} value whose index should
    *            be calculated.
@@ -106,7 +108,7 @@ public interface TabularData
    * Compares the specified object with this object for equality.
    * The object is judged equivalent if it is non-null, and also
    * an instance of {@link TabularData} with the same row type,
-   * and index to value mappings.  The two compared instances may
+   * and {@link CompositeData} values.  The two compared instances may
    * be equivalent even if they represent different implementations
    * of {@link TabularData}.
    *
@@ -123,9 +125,9 @@ public interface TabularData
    * @return the matching {@link CompositeData} value, or
    *         <code>null</code> if one does not exist.
    * @throws NullPointerException if the key is <code>null</code>.
-   * @throws InvalidOpenTypeException if the key does not match
-   *                                  the {@link TabularType} of this
-   *                                  instance.
+   * @throws InvalidKeyException if the key does not match
+   *                             the {@link TabularType} of this
+   *                             instance.
    */
   CompositeData get(Object[] key);
 
@@ -138,14 +140,12 @@ public interface TabularData
   TabularType getTabularType();
 
   /**
-   * Returns the hash code of the composite data type.
-   * This is computed as the sum of the hash codes of the
-   * each index and its value, together with the hash
-   * code of the tabular type.  These are the same elements
-   * of the type that are compared as part of the
-   * {@link #equals(java.lang.Object)} method, thus ensuring
-   * that the hashcode is compatible with the equality
-   * test.
+   * Returns the hash code of the composite data type.  This is
+   * computed as the sum of the hash codes of each value, together
+   * with the hash code of the tabular type.  These are the same
+   * elements of the type that are compared as part of the {@link
+   * #equals(java.lang.Object)} method, thus ensuring that the
+   * hashcode is compatible with the equality test.
    *
    * @return the hash code of this instance.
    */
@@ -196,15 +196,16 @@ public interface TabularData
    * values in the array, as well as from the existing values
    * in the table.  The operation should be atomic; if one
    * value can not be added, then none of the values should
-   * be.
+   * be.  If the array is <code>null</code> or empty, the
+   * method simply returns.
    * 
    * @param vals the {@link CompositeData} values to add.
-   * @throws NullPointerException if <code>val</code> is
+   * @throws NullPointerException if a value from the array is
    *                              <code>null</code>.
-   * @throws InvalidOpenTypeException if the type of the
+   * @throws InvalidOpenTypeException if the type of a
    *                                  given value does not
    *                                  match the row type.
-   * @throws KeyAlreadyExistsException if the value has the
+   * @throws KeyAlreadyExistsException if a value has the
    *                                   same calculated index
    *                                   as an existing value or
    *                                   of one of the other

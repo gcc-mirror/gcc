@@ -53,14 +53,14 @@ import javax.naming.NamingException;
 public interface InitialContextFactoryBuilder
 {
   /**
-   * Create the new inital context factory
+   * Create the new initial context factory
    * 
-   * @param environment the properties, used for creation of the initial context
-   *          factory. The parameter is owned by the caller: it is safe to reuse
-   *          the table for other purposes after the method returns.
+   * @param environment the properties, used for creation of the initial
+   * context factory. The parameter is owned by the caller: it is safe to reuse
+   * the table for other purposes after the method returns.
    * @return the created initial context factory, never null.
    * @throws NamingException on failure
    */
-  InitialContextFactory createInitialContextFactory (Hashtable environment)
+  InitialContextFactory createInitialContextFactory (Hashtable<?, ?> environment)
     throws NamingException;
 }

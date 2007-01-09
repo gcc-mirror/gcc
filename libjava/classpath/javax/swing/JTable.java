@@ -2635,6 +2635,7 @@ public class JTable
     setModel(dm == null ? createDefaultDataModel() : dm);
     setAutoCreateColumnsFromModel(autoCreate);
     initializeLocalVars();
+    
     // The following four lines properly set the lead selection indices.
     // After this, the UI will handle the lead selection indices.
     // FIXME: this should probably not be necessary, if the UI is installed
@@ -2642,11 +2643,13 @@ public class JTable
     // own, but certain variables need to be set before the UI can be installed
     // so we must get the correct order for all the method calls in this
     // constructor.
-    selectionModel.setAnchorSelectionIndex(0);    
-    selectionModel.setLeadSelectionIndex(0);
-    columnModel.getSelectionModel().setAnchorSelectionIndex(0);
-    columnModel.getSelectionModel().setLeadSelectionIndex(0);
-    updateUI();
+    // These four lines are not needed.  A Mauve test that shows this is
+    // gnu.testlet.javax.swing.JTable.constructors(linesNotNeeded).
+    // selectionModel.setAnchorSelectionIndex(-1);
+    // selectionModel.setLeadSelectionIndex(-1);
+    // columnModel.getSelectionModel().setAnchorSelectionIndex(-1);
+    // columnModel.getSelectionModel().setLeadSelectionIndex(-1);
+    updateUI(); 
   }
   
   /**
@@ -2675,10 +2678,12 @@ public class JTable
     setRowHeight(16);
     this.rowMargin = 1;
     this.rowSelectionAllowed = true;
+    
     // this.accessibleContext = new AccessibleJTable();
     this.cellEditor = null;
+    
     // COMPAT: Both Sun and IBM have drag enabled
-    this.dragEnabled = true;
+    this.dragEnabled = false;
     this.preferredViewportSize = new Dimension(450,400);
     this.showHorizontalLines = true;
     this.showVerticalLines = true;
@@ -3267,7 +3272,7 @@ public class JTable
             cellRect.x += cMargin / 2;
             cellRect.width -= cMargin;
           }
-      }
+      } 
 
     return cellRect;
   }
@@ -3303,10 +3308,21 @@ public class JTable
   
   public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction)
   {
-    if (orientation == SwingConstants.VERTICAL)
-      return visibleRect.height * direction;
+    int block;
+    if (orientation == SwingConstants.HORIZONTAL)
+      {
+        block = visibleRect.width;
+      }
     else
-      return visibleRect.width * direction;
+      {
+        int rowHeight = getRowHeight();
+        if (rowHeight > 0)
+          block = Math.max(rowHeight, // Little hack for useful rounding.
+                           (visibleRect.height / rowHeight) * rowHeight);
+        else
+          block = visibleRect.height;
+      }
+    return block;
   }
 
   /**
@@ -3345,24 +3361,40 @@ public class JTable
    *          The values greater than one means that more mouse wheel or similar
    *          events were generated, and hence it is better to scroll the longer
    *          distance.
-   * @author Audrius Meskauskas (audriusa@bioinformatics.org)
+   *          
+   * @author Roman Kennke (kennke@aicas.com)
    */
   public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation,
                                         int direction)
   {
-    int h = (rowHeight + rowMargin);
-    int delta = h * direction;
-
-    // Round so that the top would start from the row boundary
-    if (orientation == SwingConstants.VERTICAL)
+    int unit;
+    if (orientation == SwingConstants.HORIZONTAL)
+      unit = 100;
+    else
       {
-        // Completely expose the top row
-        int near = ((visibleRect.y + delta + h / 2) / h) * h;
-        int diff = visibleRect.y + delta - near;
-        delta -= diff;
+        unit = getRowHeight();
+        // The following adjustment doesn't work for variable height rows.
+        // It fully exposes partially visible rows in the scrolling direction.
+        if (rowHeights == null)
+          {
+            if (direction > 0)
+              {
+                // Scroll down.
+                // How much pixles are exposed from the last item?
+                int exposed = (visibleRect.y + visibleRect.height) % unit;
+                if (exposed > 0 && exposed < unit - 1)
+                  unit = unit - exposed - 1;
+              }
+            else
+              {
+                // Scroll up.
+                int exposed = visibleRect.y % unit;
+                if (exposed > 0 && exposed < unit)
+                  unit = exposed;
+              }
+          }
       }
-    return delta;
-    // TODO when scrollng horizontally, scroll into the column boundary.
+    return unit;
   }
 
   /**
@@ -3397,7 +3429,7 @@ public class JTable
    * 
    * @return the editor, suitable for editing this data type
    */
-  public TableCellEditor getDefaultEditor(Class columnClass)
+  public TableCellEditor getDefaultEditor(Class<?> columnClass)
   {
     if (defaultEditorsByColumnClass.containsKey(columnClass))
       return (TableCellEditor) defaultEditorsByColumnClass.get(columnClass);
@@ -3409,7 +3441,7 @@ public class JTable
         return r;
       }
   }
-  
+
   /**
    * Get the cell renderer for rendering the given cell.
    * 
@@ -3419,7 +3451,9 @@ public class JTable
    */
   public TableCellRenderer getCellRenderer(int row, int column)
   {
-    TableCellRenderer renderer = columnModel.getColumn(column).getCellRenderer();
+    TableCellRenderer renderer = null;
+    if (columnModel.getColumnCount() > 0)
+      renderer = columnModel.getColumn(column).getCellRenderer();
     if (renderer == null)
       {
         int mcolumn = convertColumnIndexToModel(column);
@@ -3427,7 +3461,7 @@ public class JTable
       }
     return renderer;
   }
-  
+
   /**
    * Set default renderer for rendering the given data type.
    * 
@@ -3435,11 +3469,11 @@ public class JTable
    *          rendered.
    * @param rend the renderer that will rend this data type
    */
-  public void setDefaultRenderer(Class columnClass, TableCellRenderer rend)
+  public void setDefaultRenderer(Class<?> columnClass, TableCellRenderer rend)
   {
     defaultRenderersByColumnClass.put(columnClass, rend);
   }
-  
+
   /**
    * Get the default renderer for rendering the given data type.
    * 
@@ -3447,7 +3481,7 @@ public class JTable
    * 
    * @return the appropriate defauld renderer for rendering that data type.
    */
-  public TableCellRenderer getDefaultRenderer(Class columnClass)
+  public TableCellRenderer getDefaultRenderer(Class<?> columnClass)
   {
     if (defaultRenderersByColumnClass.containsKey(columnClass))
       return (TableCellRenderer) defaultRenderersByColumnClass.get(columnClass);
@@ -3536,7 +3570,7 @@ public class JTable
 
     return renderer.getTableCellRendererComponent(this,
                                                   dataModel.getValueAt(row, 
-						                       convertColumnIndexToModel(column)),
+                                                                       convertColumnIndexToModel(column)),
                                                   isSel,
                                                   hasFocus,
                                                   row, column);
@@ -4414,7 +4448,7 @@ public class JTable
   {
     TableColumn resizingColumn = null;
     
-    int ncols = getColumnCount();
+    int ncols = columnModel.getColumnCount();
     if (ncols < 1)
       return;
 
@@ -4423,7 +4457,7 @@ public class JTable
 
     if (tableHeader != null)
       resizingColumn = tableHeader.getResizingColumn();
-
+     
     for (int i = 0; i < ncols; ++i)
       {
         TableColumn col = columnModel.getColumn(i);
@@ -4432,7 +4466,7 @@ public class JTable
         if (resizingColumn == col)
           rCol = i;
       }
-
+ 
     int spill = getWidth() - prefSum;
 
     if (resizingColumn != null)
@@ -4498,9 +4532,11 @@ public class JTable
       }
     else
       {
-        TableColumn [] cols = new TableColumn[ncols];
+        TableColumn[] cols = new TableColumn[ncols];
+
         for (int i = 0; i < ncols; ++i)
           cols[i] = columnModel.getColumn(i);
+
         distributeSpill(cols, spill);
       }
     
@@ -4588,7 +4624,7 @@ public class JTable
   {
     setUI((TableUI) UIManager.getUI(this));
   }
-  
+
   /**
    * Get the class (datatype) of the column. The cells are rendered and edited
    * differently, depending from they data type.
@@ -4598,7 +4634,7 @@ public class JTable
    * @return the class, defining data type of that column (String.class for
    * String, Boolean.class for boolean and so on).
    */
-  public Class getColumnClass(int column)
+  public Class<?> getColumnClass(int column)
   {
     return getModel().getColumnClass(convertColumnIndexToModel(column));
   }
@@ -4619,7 +4655,7 @@ public class JTable
     int modelColumn = columnModel.getColumn(column).getModelIndex();
     return dataModel.getColumnName(modelColumn);
   }
-  
+
   /**
    * Get the column, currently being edited
    * 
@@ -4629,7 +4665,7 @@ public class JTable
   {
     return editingColumn;
   }
-  
+
   /**
    * Set the column, currently being edited
    * 
@@ -4649,7 +4685,7 @@ public class JTable
   {
     return editingRow;
   }
-  
+
   /**
    * Set the row currently being edited.
    * 
@@ -4680,7 +4716,7 @@ public class JTable
   {
     return editorComp != null;
   }
-  
+
   /**
    * Set the default editor for the given column class (column data type).
    * By default, String is handled by text field and Boolean is handled by
@@ -4691,7 +4727,7 @@ public class JTable
    * 
    * @see TableModel#getColumnClass(int)
    */
-  public void setDefaultEditor(Class columnClass, TableCellEditor editor)
+  public void setDefaultEditor(Class<?> columnClass, TableCellEditor editor)
   {
     if (editor != null)
       defaultEditorsByColumnClass.put(columnClass, editor);
@@ -4713,7 +4749,7 @@ public class JTable
     if ((index0 < 0 || index0 > (getRowCount()-1)
          || index1 < 0 || index1 > (getRowCount()-1)))
       throw new IllegalArgumentException("Row index out of range.");
-      	
+        
     getSelectionModel().addSelectionInterval(index0, index1);
   }
   

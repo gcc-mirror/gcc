@@ -40,7 +40,6 @@ package javax.swing.plaf.basic;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
@@ -65,7 +64,6 @@ import javax.swing.ActionMap;
 import javax.swing.BoundedRangeModel;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JSlider;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
@@ -185,8 +183,6 @@ public class BasicSliderUI extends SliderUI
     public void componentResized(ComponentEvent e)
     {
       calculateGeometry();
-
-      slider.revalidate();
       slider.repaint();
     }
   }
@@ -209,7 +205,6 @@ public class BasicSliderUI extends SliderUI
     public void focusGained(FocusEvent e)
     {
       slider.repaint();
-      hasFocus = true;
     }
 
     /**
@@ -221,7 +216,6 @@ public class BasicSliderUI extends SliderUI
     public void focusLost(FocusEvent e)
     {
       slider.repaint();
-      hasFocus = false;
     }
   }
 
@@ -240,25 +234,27 @@ public class BasicSliderUI extends SliderUI
     public void propertyChange(PropertyChangeEvent e)
     {
       // Check for orientation changes.
-      if (e.getPropertyName().equals("orientation"))
-        recalculateIfOrientationChanged();
+      String prop = e.getPropertyName();
+      if (prop.equals("orientation")
+          || prop.equals("inverted")
+          || prop.equals("labelTable")
+          || prop.equals("majorTickSpacing")
+          || prop.equals("minorTickSpacing")
+          || prop.equals("paintTicks")
+          || prop.equals("paintTrack")
+          || prop.equals("paintLabels"))
+        {
+          calculateGeometry();
+          slider.repaint();
+        }
       else if (e.getPropertyName().equals("model"))
         {
           BoundedRangeModel oldModel = (BoundedRangeModel) e.getOldValue();
           oldModel.removeChangeListener(changeListener);
           slider.getModel().addChangeListener(changeListener);
           calculateThumbLocation();
+          slider.repaint();
         }
-      else if (e.getPropertyName().equals("paintTicks"))
-        calculateGeometry();
-
-      // elif the componentOrientation changes (this is a bound property,
-      // just undocumented) we change leftToRightCache. In Sun's 
-      // implementation, the LTR cache changes on a repaint. This is strange
-      // since there is no need to do so. We could events here and 
-      // update the cache. 
-      // elif the border/insets change, we recalculateInsets.
-      slider.repaint();
     }
   }
 
@@ -466,6 +462,7 @@ public class BasicSliderUI extends SliderUI
           if (scrollTimer != null)
             scrollTimer.stop();
         }
+      slider.repaint();
     }
 
     /**
@@ -592,10 +589,7 @@ public class BasicSliderUI extends SliderUI
 
   /** The focus color. */
   private transient Color focusColor;
-  
-  /** True if the slider has focus. */
-  private transient boolean hasFocus;
-  
+
   /** True if the user is dragging the slider. */
   boolean dragging;
 
@@ -935,36 +929,10 @@ public class BasicSliderUI extends SliderUI
    */
   public Dimension getPreferredHorizontalSize()
   {
-    Insets insets = slider.getInsets();
-
-    // The width should cover all the labels (which are usually the
-    // deciding factor of the width)
-    int width = getWidthOfWidestLabel() * (slider.getLabelTable() == null ? 0
-        : slider.getLabelTable().size());
-
-    // If there are not enough labels.
-    // This number is pretty much arbitrary, but it looks nice.
-    if (width < 200)
-      width = 200;
-
-    // We can only draw inside of the focusRectangle, so we have to
-    // pad it with insets.
-    width += insets.left + insets.right + focusInsets.left + focusInsets.right;
-
-    // Height is determined by the thumb, the ticks and the labels.
-    int height = getThumbSize().height;
-
-    if (slider.getPaintTicks() && slider.getMajorTickSpacing() > 0
-        || slider.getMinorTickSpacing() > 0)
-      height += getTickLength();
-
-    if (slider.getPaintLabels())
-      height += getHeightOfTallestLabel();
-
-    height += insets.top + insets.bottom + focusInsets.top
-    + focusInsets.bottom;
-
-    return new Dimension(width, height);
+    Dimension dim = UIManager.getDimension("Slider.horizontalSize");
+    if (dim == null) // Just to be sure we mirror the default.
+      dim = new Dimension(200, 21);
+    return dim;
   }
 
   /**
@@ -975,30 +943,10 @@ public class BasicSliderUI extends SliderUI
    */
   public Dimension getPreferredVerticalSize()
   {
-    Insets insets = slider.getInsets();
-
-    int height = getHeightOfTallestLabel() * (slider.getLabelTable() == null
-                                              ? 0 : slider.getLabelTable()
-                                                          .size());
-
-    if (height < 200)
-      height = 200;
-
-    height += insets.top + insets.bottom + focusInsets.top
-    + focusInsets.bottom;
-
-    int width = getThumbSize().width;
-
-    if (slider.getPaintTicks() && slider.getMajorTickSpacing() > 0
-        || slider.getMinorTickSpacing() > 0)
-      width += getTickLength();
-
-    if (slider.getPaintLabels())
-      width += getWidthOfWidestLabel();
-
-    width += insets.left + insets.right + focusInsets.left + focusInsets.right;
-
-    return new Dimension(width, height);
+    Dimension dim = UIManager.getDimension("Slider.verticalSize");
+    if (dim == null) // Just to be sure we mirror the default.
+      dim = new Dimension(21, 200);
+    return dim;
   }
 
   /**
@@ -1009,21 +957,10 @@ public class BasicSliderUI extends SliderUI
    */
   public Dimension getMinimumHorizontalSize()
   {
-    Insets insets = slider.getInsets();
-    // Height is determined by the thumb, the ticks and the labels.
-    int height = getThumbSize().height; 
-
-    if (slider.getPaintTicks() && slider.getMajorTickSpacing() > 0
-        || slider.getMinorTickSpacing() > 0)
-      height += getTickLength();
-
-    if (slider.getPaintLabels())
-      height += getHeightOfTallestLabel();
-
-    height += insets.top + insets.bottom + focusInsets.top
-        + focusInsets.bottom;
-
-    return new Dimension(36, height);
+    Dimension dim = UIManager.getDimension("Slider.minimumHorizontalSize");
+    if (dim == null) // Just to be sure we mirror the default.
+      dim = new Dimension(36, 21);
+    return dim;
   }
 
   /**
@@ -1034,19 +971,10 @@ public class BasicSliderUI extends SliderUI
    */
   public Dimension getMinimumVerticalSize()
   {
-    Insets insets = slider.getInsets();
-    int width = getThumbSize().width;
-
-    if (slider.getPaintTicks() && slider.getMajorTickSpacing() > 0
-        || slider.getMinorTickSpacing() > 0)
-      width += getTickLength();
-
-    if (slider.getPaintLabels())
-      width += getWidthOfWidestLabel();
-
-    width += insets.left + insets.right + focusInsets.left + focusInsets.right;
-
-    return new Dimension(width, 36);
+    Dimension dim = UIManager.getDimension("Slider.minimumVerticalSize");
+    if (dim == null) // Just to be sure we mirror the default.
+      dim = new Dimension(21, 36);
+    return dim;
   }
 
   /**
@@ -1060,10 +988,25 @@ public class BasicSliderUI extends SliderUI
    */
   public Dimension getPreferredSize(JComponent c)
   {
+    recalculateIfInsetsChanged();
+    Dimension dim;
     if (slider.getOrientation() == JSlider.HORIZONTAL)
-      return getPreferredHorizontalSize();
+      {
+        // Create copy here to protect the UIManager value.
+        dim = new Dimension(getPreferredHorizontalSize());
+        dim.height = insetCache.top + insetCache.bottom;
+        dim.height += focusInsets.top + focusInsets.bottom;
+        dim.height += trackRect.height + tickRect.height + labelRect.height;
+      }
     else
-      return getPreferredVerticalSize();
+      {
+        // Create copy here to protect the UIManager value.
+        dim = new Dimension(getPreferredVerticalSize());
+        dim.width = insetCache.left + insetCache.right;
+        dim.width += focusInsets.left + focusInsets.right;
+        dim.width += trackRect.width + tickRect.width + labelRect.width;
+      }
+    return dim;
   }
 
   /**
@@ -1077,10 +1020,25 @@ public class BasicSliderUI extends SliderUI
    */
   public Dimension getMinimumSize(JComponent c)
   {
+    recalculateIfInsetsChanged();
+    Dimension dim;
     if (slider.getOrientation() == JSlider.HORIZONTAL)
-      return getMinimumHorizontalSize();
+      {
+        // Create copy here to protect the UIManager value.
+        dim = new Dimension(getMinimumHorizontalSize());
+        dim.height = insetCache.top + insetCache.bottom;
+        dim.height += focusInsets.top + focusInsets.bottom;
+        dim.height += trackRect.height + tickRect.height + labelRect.height;
+      }
     else
-      return getMinimumVerticalSize();
+      {
+        // Create copy here to protect the UIManager value.
+        dim = new Dimension(getMinimumVerticalSize());
+        dim.width = insetCache.left + insetCache.right;
+        dim.width += focusInsets.left + focusInsets.right;
+        dim.width += trackRect.width + tickRect.width + labelRect.width;
+      }
+    return dim;
   }
 
   /**
@@ -1093,40 +1051,12 @@ public class BasicSliderUI extends SliderUI
    */
   public Dimension getMaximumSize(JComponent c)
   {
-    Insets insets = slider.getInsets();
+    Dimension dim = getPreferredSize(c);
     if (slider.getOrientation() == JSlider.HORIZONTAL)
-      {
-        // Height is determined by the thumb, the ticks and the labels.
-        int height = getThumbSize().height; 
-
-        if (slider.getPaintTicks() && slider.getMajorTickSpacing() > 0
-            || slider.getMinorTickSpacing() > 0)
-          height += getTickLength();
-
-        if (slider.getPaintLabels())
-          height += getHeightOfTallestLabel();
-
-        height += insets.top + insets.bottom + focusInsets.top
-            + focusInsets.bottom;
-
-        return new Dimension(32767, height);
-      }
+      dim.width = Short.MAX_VALUE;
     else
-      {
-        int width = getThumbSize().width;
-
-        if (slider.getPaintTicks() && slider.getMajorTickSpacing() > 0
-            || slider.getMinorTickSpacing() > 0)
-          width += getTickLength();
-
-        if (slider.getPaintLabels())
-          width += getWidthOfWidestLabel();
-
-        width += insets.left + insets.right + focusInsets.left 
-            + focusInsets.right;
-
-        return new Dimension(width, 32767);
-      }
+      dim.height = Short.MAX_VALUE;
+    return dim;
   }
 
   /**
@@ -1151,12 +1081,10 @@ public class BasicSliderUI extends SliderUI
    */
   protected void calculateFocusRect()
   {
-    insetCache = slider.getInsets();
-    focusRect = SwingUtilities.calculateInnerArea(slider, focusRect);
-    if (focusRect.width < 0)
-      focusRect.width = 0;
-    if (focusRect.height < 0)
-      focusRect.height = 0;
+    focusRect.x = insetCache.left;
+    focusRect.y = insetCache.top;
+    focusRect.width = slider.getWidth() - insetCache.left - insetCache.right;
+    focusRect.height = slider.getHeight() - insetCache.top - insetCache.bottom;
   }
 
   /**
@@ -1181,13 +1109,8 @@ public class BasicSliderUI extends SliderUI
     contentRect.y = focusRect.y + focusInsets.top;
     
     contentRect.width = focusRect.width - focusInsets.left - focusInsets.right;
-    contentRect.height = focusRect.height - focusInsets.top 
-        - focusInsets.bottom;
-
-    if (contentRect.width < 0)
-      contentRect.width = 0;
-    if (contentRect.height < 0)
-      contentRect.height = 0;
+    contentRect.height = focusRect.height - focusInsets.top
+                         - focusInsets.bottom;
   }
 
   /**
@@ -1258,26 +1181,24 @@ public class BasicSliderUI extends SliderUI
   {
     if (slider.getOrientation() == JSlider.HORIZONTAL)
       {
-        trackRect.x = contentRect.x + trackBuffer;
-        int h = getThumbSize().height;
-        if (slider.getPaintTicks() && (slider.getMajorTickSpacing() > 0 
-            || slider.getMinorTickSpacing() > 0))
-          h += getTickLength();
+        int center = thumbRect.height;
+        if (slider.getPaintTicks())
+          center += getTickLength();
         if (slider.getPaintLabels())
-          h += getHeightOfTallestLabel();
-        trackRect.y = contentRect.y + (contentRect.height - h) / 2 - 1;
+          center += getHeightOfTallestLabel();
+        trackRect.x = contentRect.x + trackBuffer;
+        trackRect.y = contentRect.y + (contentRect.height - center - 1) / 2;
         trackRect.width = contentRect.width - 2 * trackBuffer;
         trackRect.height = thumbRect.height;
       }
     else
       {
-        int w = getThumbSize().width;
-        if (slider.getPaintTicks() && (slider.getMajorTickSpacing() > 0
-            || slider.getMinorTickSpacing() > 0))
-          w += getTickLength();  
+        int center = thumbRect.width;
+        if (slider.getPaintTicks())
+          center += getTickLength();
         if (slider.getPaintLabels())
-          w += getWidthOfWidestLabel();
-        trackRect.x = contentRect.x + (contentRect.width - w) / 2 - 1;
+          center += getWidthOfWidestLabel();
+        trackRect.x = contentRect.x + (contentRect.width - center - 1) / 2;
         trackRect.y = contentRect.y + trackBuffer;
         trackRect.width = thumbRect.width;
         trackRect.height = contentRect.height - 2 * trackBuffer;
@@ -1310,28 +1231,28 @@ public class BasicSliderUI extends SliderUI
         tickRect.x = trackRect.x;
         tickRect.y = trackRect.y + trackRect.height;
         tickRect.width = trackRect.width;
-        tickRect.height = slider.getPaintTicks() ? getTickLength() : 0;
+        tickRect.height = getTickLength();
         
         // this makes our Mauve tests pass...can't explain it!
         if (!slider.getPaintTicks())
-          tickRect.y--;
-
-        if (tickRect.y + tickRect.height > contentRect.y + contentRect.height)
-          tickRect.height = contentRect.y + contentRect.height - tickRect.y;
+          {
+            tickRect.y--;
+            tickRect.height = 0;
+          }
       }
     else
       {
         tickRect.x = trackRect.x + trackRect.width;
         tickRect.y = trackRect.y;
-        tickRect.width = slider.getPaintTicks() ? getTickLength() : 0;
+        tickRect.width = getTickLength();
         tickRect.height = trackRect.height;
 
         // this makes our Mauve tests pass...can't explain it!
         if (!slider.getPaintTicks())
-          tickRect.x--;
-
-        if (tickRect.x + tickRect.width > contentRect.x + contentRect.width)
-          tickRect.width = contentRect.x + contentRect.width - tickRect.x;
+          {
+            tickRect.x--;
+            tickRect.width = 0;
+          }
       }
   }
 
@@ -1345,33 +1266,35 @@ public class BasicSliderUI extends SliderUI
       {
         if (slider.getPaintLabels())
           {
-            labelRect.x = contentRect.x;
-            labelRect.y = tickRect.y + tickRect.height - 1;
-            labelRect.width = contentRect.width;
+            labelRect.x = tickRect.x - trackBuffer;
+            labelRect.y = tickRect.y + tickRect.height;
+            labelRect.width = tickRect.width + trackBuffer * 2;
+            labelRect.height = getHeightOfTallestLabel();
           }
         else
           {
-            labelRect.x = trackRect.x;
+            labelRect.x = tickRect.x;
             labelRect.y = tickRect.y + tickRect.height;
-            labelRect.width = trackRect.width;
+            labelRect.width = tickRect.width;
+            labelRect.height = 0;
           }
-        labelRect.height = getHeightOfTallestLabel();
       }
     else
       {
         if (slider.getPaintLabels())
           {
-            labelRect.x = tickRect.x + tickRect.width - 1;
-            labelRect.y = contentRect.y;
-            labelRect.height = contentRect.height;
+            labelRect.x = tickRect.x + tickRect.width;
+            labelRect.y = tickRect.y - trackBuffer;
+            labelRect.width = getWidthOfWidestLabel();
+            labelRect.height = tickRect.height + trackBuffer * 2;
           }
         else
           {
             labelRect.x = tickRect.x + tickRect.width;
-            labelRect.y = trackRect.y;
-            labelRect.height = trackRect.height;
+            labelRect.y = tickRect.y;
+            labelRect.width = 0;
+            labelRect.height = tickRect.height;
           }
-        labelRect.width = getWidthOfWidestLabel();
       }
   }
 
@@ -1384,22 +1307,15 @@ public class BasicSliderUI extends SliderUI
   protected int getWidthOfWidestLabel()
   {
     int widest = 0;
-    Component label;
-
-    if (slider.getLabelTable() == null)
-      return 0;
-
-    Dimension pref;
-    for (Enumeration list = slider.getLabelTable().elements();
-         list.hasMoreElements();)
+    Dictionary table = slider.getLabelTable();
+    if (table != null)
       {
-        Object comp = list.nextElement();
-        if (! (comp instanceof Component))
-          continue;
-        label = (Component) comp;
-        pref = label.getPreferredSize();
-        if (pref != null && pref.width > widest)
-          widest = pref.width;
+        for (Enumeration list = slider.getLabelTable().elements();
+             list.hasMoreElements();)
+          {
+            Component label = (Component) list.nextElement();
+            widest = Math.max(label.getPreferredSize().width, widest);
+          }
       }
     return widest;
   }
@@ -1576,23 +1492,18 @@ public class BasicSliderUI extends SliderUI
    */
   public void paint(Graphics g, JComponent c)
   {
-    // FIXME: Move this to propertyChangeEvent handler, when we get those.
-    leftToRightCache = slider.getComponentOrientation() 
-        != ComponentOrientation.RIGHT_TO_LEFT;
-    // FIXME: This next line is only here because the above line is here.
-    calculateGeometry();
-
-    if (slider.getPaintTrack())
+    recalculateIfInsetsChanged();
+    recalculateIfOrientationChanged();
+    if (slider.getPaintTrack() && hitClip(g, trackRect))
       paintTrack(g);
-    if (slider.getPaintTicks())
+    if (slider.getPaintTicks() && hitClip(g, tickRect))
       paintTicks(g);
-    if (slider.getPaintLabels())
+    if (slider.getPaintLabels() && hitClip(g, labelRect))
       paintLabels(g);
-    
-    paintThumb(g);
-    
-    if (hasFocus)
+    if (slider.hasFocus() && hitClip(g, focusRect))
       paintFocus(g);
+    if (hitClip(g, thumbRect))
+      paintThumb(g);
   }
 
   /**
@@ -1601,18 +1512,12 @@ public class BasicSliderUI extends SliderUI
    */
   protected void recalculateIfInsetsChanged()
   {
-    // Examining a test program shows that either Sun calls private
-    // methods that we don't know about, or these don't do anything.
-    calculateFocusRect();
-
-    calculateContentRect();
-    calculateThumbSize();
-    calculateTrackBuffer();
-    calculateTrackRect();
-    calculateThumbLocation();
-
-    calculateTickRect();
-    calculateLabelRect();
+    Insets insets = slider.getInsets();
+    if (! insets.equals(insetCache))
+      {
+        insetCache = insets;
+        calculateGeometry();
+      }
   }
 
   /**
@@ -1863,45 +1768,30 @@ public class BasicSliderUI extends SliderUI
    */
   public void paintLabels(Graphics g)
   {
-    if (slider.getLabelTable() != null)
+    Dictionary table = slider.getLabelTable();
+    if (table != null)
       {
-        Dictionary table = slider.getLabelTable();
-        Integer tmpKey;
-        Object key;
-        Object element;
-        Component label;
-        if (slider.getOrientation() == JSlider.HORIZONTAL)
+        int min = slider.getMinimum();
+        int max = slider.getMaximum();
+        for (Enumeration list = table.keys(); list.hasMoreElements();)
           {
-            for (Enumeration list = table.keys(); list.hasMoreElements();)
+            Integer key = (Integer) list.nextElement();
+            int value = key.intValue();
+            if (value >= min && value <= max)
               {
-                key = list.nextElement();
-                if (! (key instanceof Integer))
-                  continue;
-                tmpKey = (Integer) key;
-                element = table.get(tmpKey);
-                // We won't paint them if they're not
-                // JLabels so continue anyway
-                if (! (element instanceof JLabel))
-                  continue;
-                label = (Component) element;
-                paintHorizontalLabel(g, tmpKey.intValue(), label);
-              }
-          }
-        else
-          {
-            for (Enumeration list = table.keys(); list.hasMoreElements();)
-              {
-                key = list.nextElement();
-                if (! (key instanceof Integer))
-                  continue;
-                tmpKey = (Integer) key;
-                element = table.get(tmpKey);
-                // We won't paint them if they're not
-                // JLabels so continue anyway
-                if (! (element instanceof JLabel))
-                  continue;
-                label = (Component) element;
-                paintVerticalLabel(g, tmpKey.intValue(), label);
+                Component label = (Component) table.get(key);
+                if (slider.getOrientation() == JSlider.HORIZONTAL)
+                  {
+                    g.translate(0, labelRect.y);
+                    paintHorizontalLabel(g, value, label);
+                    g.translate(0, -labelRect.y);
+                  }
+                else
+                  {
+                    g.translate(labelRect.x, 0);
+                    paintVerticalLabel(g, value, label);
+                    g.translate(-labelRect.x, 0);
+                  }
               }
           }
       }
@@ -1920,51 +1810,11 @@ public class BasicSliderUI extends SliderUI
    */
   protected void paintHorizontalLabel(Graphics g, int value, Component label)
   {
-    // This relies on clipping working properly or we'll end up
-    // painting all over the place. If our preferred size is ignored, then
-    // the labels may not fit inside the slider's bounds. Rather than mucking 
-    // with font sizes and possible icon sizes, we'll set the bounds for
-    // the label and let it get clipped.
-    Dimension dim = label.getPreferredSize();
-    int w = (int) dim.getWidth();
-    int h = (int) dim.getHeight();
-
-    int max = slider.getMaximum();
-    int min = slider.getMinimum();
-
-    if (value > max || value < min)
-      return;
-
-    //           value
-    //             |
-    //        ------------
-    //        |          |
-    //        |          |
-    //        |          |
-    //  The label must move w/2 to the right to fit directly under the value.
-    int xpos = xPositionForValue(value) - w / 2;
-    int ypos = labelRect.y;
-
-    // We want to center the label around the xPositionForValue
-    // So we use xpos - w / 2. However, if value is min and the label 
-    // is large, we run the risk of going out of bounds. So we bring it back
-    // to 0 if it becomes negative.
-    if (xpos < 0)
-      xpos = 0;
-
-    // If the label + starting x position is greater than
-    // the x space in the label rectangle, we reset it to the largest
-    // amount possible in the rectangle. This means ugliness.
-    if (xpos + w > labelRect.x + labelRect.width)
-      w = labelRect.x + labelRect.width - xpos;
-
-    // If the label is too tall. We reset it to the height of the label
-    // rectangle.
-    if (h > labelRect.height)
-      h = labelRect.height;
-
-    label.setBounds(xpos, ypos, w, h);
-    SwingUtilities.paintComponent(g, label, null, label.getBounds());
+    int center = xPositionForValue(value);
+    int left = center - label.getPreferredSize().width / 2;
+    g.translate(left, 0);
+    label.paint(g);
+    g.translate(-left, 0);
   }
 
   /**
@@ -1980,30 +1830,11 @@ public class BasicSliderUI extends SliderUI
    */
   protected void paintVerticalLabel(Graphics g, int value, Component label)
   {
-    Dimension dim = label.getPreferredSize();
-    int w = (int) dim.getWidth();
-    int h = (int) dim.getHeight();
-
-    int max = slider.getMaximum();
-    int min = slider.getMinimum();
-
-    if (value > max || value < min)
-      return;
-
-    int xpos = labelRect.x;
-    int ypos = yPositionForValue(value) - h / 2;
-
-    if (ypos < 0)
-      ypos = 0;
-
-    if (ypos + h > labelRect.y + labelRect.height)
-      h = labelRect.y + labelRect.height - ypos;
-
-    if (w > labelRect.width)
-      w = labelRect.width;
-
-    label.setBounds(xpos, ypos, w, h);
-    SwingUtilities.paintComponent(g, label, null, label.getBounds());
+    int center = yPositionForValue(value);
+    int top = center - label.getPreferredSize().height / 2;
+    g.translate(0, top);
+    label.paint(g);
+    g.translate(0, -top);
   }
 
   /**
@@ -2118,8 +1949,11 @@ public class BasicSliderUI extends SliderUI
    */
   public void setThumbLocation(int x, int y)
   {
-    thumbRect.x = x;
-    thumbRect.y = y;
+    Rectangle union = new Rectangle(thumbRect);
+    thumbRect.setLocation(x, y);
+    SwingUtilities.computeUnion(thumbRect.x, thumbRect.y, thumbRect.width,
+                                thumbRect.height, union);
+    slider.repaint(union);
   }
 
   /**
@@ -2197,21 +2031,21 @@ public class BasicSliderUI extends SliderUI
    */
   protected int xPositionForValue(int value)
   {
-    double min = slider.getMinimum();
-    if (value < min)
-      value = (int) min;
-    double max = slider.getMaximum();
-    if (value > max)
-      value = (int) max;
-    double len = trackRect.width;
-    if ((max - min) <= 0.0)
-      return 0;
-    int xPos = (int) ((value - min) / (max - min) * len + 0.5);
-
-    if (drawInverted())
-      return trackRect.x + Math.max(trackRect.width - xPos - 1, 0);
+    int min = slider.getMinimum();
+    int max = slider.getMaximum();
+    int len = trackRect.width;
+    double range = max - min;
+    double pixPerVal = len / range;
+    int left = trackRect.x;
+    int right = left + trackRect.width - 1;
+    int xpos;
+    if (! drawInverted())
+      xpos = left + (int) Math.round(pixPerVal * ((double) value - min));
     else
-      return trackRect.x + Math.min(xPos, trackRect.width - 1);
+      xpos = right - (int) Math.round(pixPerVal * ((double) value - min));
+    xpos = Math.max(left, xpos);
+    xpos = Math.min(right, xpos);
+    return xpos;
   }
 
   /**
@@ -2225,22 +2059,21 @@ public class BasicSliderUI extends SliderUI
    */
   protected int yPositionForValue(int value)
   {
-    double min = slider.getMinimum();
-    if (value < min)
-      value = (int) min;
-    double max = slider.getMaximum();
-    if (value > max)
-      value = (int) max;
+    int min = slider.getMinimum();
+    int max = slider.getMaximum();
     int len = trackRect.height;
-    if ((max - min) <= 0.0)
-      return 0;
-
-    int yPos = (int) ((value - min) / (max - min) * len + 0.5);
-
+    double range = max - min;
+    double pixPerVal = len / range;
+    int top = trackRect.y;
+    int bottom = top + trackRect.height - 1;
+    int ypos;
     if (! drawInverted())
-      return trackRect.y + trackRect.height - Math.max(yPos, 1);
+      ypos = top + (int) Math.round(pixPerVal * ((double) max - value));
     else
-      return trackRect.y + Math.min(yPos, trackRect.height - 1);
+      ypos = top + (int) Math.round(pixPerVal * ((double) value - min));
+    ypos = Math.max(top, ypos);
+    ypos = Math.min(bottom, ypos);
+    return ypos;
   }
 
   /**
@@ -2493,5 +2326,14 @@ public class BasicSliderUI extends SliderUI
             }
     );
     return map;
+  }
+
+  /**
+   * Small utility method to save me from typing the hell out of myself in
+   * paint().
+   */
+  private boolean hitClip(Graphics g, Rectangle r)
+  {
+    return g.hitClip(r.x, r.y, r.width, r.height);
   }
 }

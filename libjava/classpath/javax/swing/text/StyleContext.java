@@ -43,19 +43,25 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Toolkit;
 import java.io.IOException;
+import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 
 public class StyleContext 
-    implements Serializable, AbstractDocument.AttributeContext
+  implements Serializable, AbstractDocument.AttributeContext
 {
   /** The serialization UID (compatible with JDK1.5). */
   private static final long serialVersionUID = 8042858831190784241L;
@@ -66,11 +72,10 @@ public class StyleContext
     /** The serialization UID (compatible with JDK1.5). */
     private static final long serialVersionUID = -6690628971806226374L;
 
-    protected ChangeEvent changeEvent;
+    protected transient ChangeEvent changeEvent;
     protected EventListenerList listenerList;
       
-    AttributeSet attributes;
-    String name;
+    private transient AttributeSet attributes;
 
     public NamedStyle()
     {
@@ -84,22 +89,26 @@ public class StyleContext
 
     public NamedStyle(String name, Style parent)
     {
-      this.name = name;
-      this.attributes = getEmptySet();
-      this.changeEvent = new ChangeEvent(this);
-      this.listenerList = new EventListenerList();
-      setResolveParent(parent);
+      attributes = getEmptySet();
+      listenerList = new EventListenerList();
+      if (name != null)
+        setName(name);
+      if (parent != null)
+        setResolveParent(parent);
     }
 
     public String getName()
     {
+      String name = null;
+      if (isDefined(StyleConstants.NameAttribute))
+        name = getAttribute(StyleConstants.NameAttribute).toString();
       return name;
     }
 
     public void setName(String n)
     {
-      name = n;
-      fireStateChanged();
+      if (n != null)
+        addAttribute(StyleConstants.NameAttribute, n);
     }
 
     public void addChangeListener(ChangeListener l)
@@ -112,7 +121,7 @@ public class StyleContext
       listenerList.remove(ChangeListener.class, l);
     }
       
-    public EventListener[] getListeners(Class listenerType)
+    public <T extends EventListener> T[] getListeners(Class<T> listenerType)
     {
       return listenerList.getListeners(listenerType);
     }
@@ -127,6 +136,9 @@ public class StyleContext
       ChangeListener[] listeners = getChangeListeners();
       for (int i = 0; i < listeners.length; ++i)
         {
+          // Lazily create event.
+          if (changeEvent == null)
+            changeEvent = new ChangeEvent(this);
           listeners[i].stateChanged(changeEvent);
         }
     }
@@ -155,7 +167,10 @@ public class StyleContext
 
     public AttributeSet copyAttributes()
     {
-      return attributes.copyAttributes();
+      // The RI returns a NamedStyle as copy, so do we.
+      NamedStyle copy = new NamedStyle();
+      copy.attributes = attributes.copyAttributes();
+      return copy;
     }
             
     public Object getAttribute(Object attrName)
@@ -168,7 +183,7 @@ public class StyleContext
       return attributes.getAttributeCount();
     }
 
-    public Enumeration getAttributeNames()
+    public Enumeration<?> getAttributeNames()
     {
       return attributes.getAttributeNames();
     }
@@ -195,7 +210,7 @@ public class StyleContext
       fireStateChanged();
     }
 
-    public void removeAttributes(Enumeration names)
+    public void removeAttributes(Enumeration<?> names)
     {
       attributes = StyleContext.this.removeAttributes(attributes, names);
       fireStateChanged();
@@ -210,112 +225,125 @@ public class StyleContext
     public void setResolveParent(AttributeSet parent)
     {
       if (parent != null)
-        {
-          attributes = StyleContext.this.addAttribute
-            (attributes, ResolveAttribute, parent);
-        }
-      fireStateChanged();
+        addAttribute(StyleConstants.ResolveAttribute, parent);
+      else
+        removeAttribute(StyleConstants.ResolveAttribute);
     }
       
     public String toString()
     {
-      return ("[NamedStyle: name=" + name + ", attrs=" + attributes.toString() + "]");
-    }      
+      return "NamedStyle:" + getName() + " " + attributes;
+    }
+
+    private void writeObject(ObjectOutputStream s)
+      throws IOException
+    {
+      s.defaultWriteObject();
+      writeAttributeSet(s, attributes);
+    }
+
+    private void readObject(ObjectInputStream s)
+      throws ClassNotFoundException, IOException
+    {
+      s.defaultReadObject();
+      attributes = SimpleAttributeSet.EMPTY;
+      readAttributeSet(s, this);
+    }
   }
   
   public class SmallAttributeSet
     implements AttributeSet
   {
     final Object [] attrs;
+    private AttributeSet resolveParent;
     public SmallAttributeSet(AttributeSet a)
     {
-      if (a == null)
-        attrs = new Object[0];
-      else
+      int n = a.getAttributeCount();
+      int i = 0;
+      attrs = new Object[n * 2];
+      Enumeration e = a.getAttributeNames();
+      while (e.hasMoreElements())
         {
-          int n = a.getAttributeCount();
-          int i = 0;
-          attrs = new Object[n * 2];
-          Enumeration e = a.getAttributeNames();
-          while (e.hasMoreElements())
-            {
-              Object name = e.nextElement();
-              attrs[i++] = name;
-              attrs[i++] = a.getAttribute(name);
-            }
+          Object name = e.nextElement();
+          Object value = a.getAttribute(name);
+          if (name == ResolveAttribute)
+            resolveParent = (AttributeSet) value;
+          attrs[i++] = name;
+          attrs[i++] = value;
         }
     }
 
     public SmallAttributeSet(Object [] a)
     {
-      if (a == null)
-        attrs = new Object[0];
-      else
+      attrs = a;
+      for (int i = 0; i < attrs.length; i += 2)
         {
-          attrs = new Object[a.length];
-          System.arraycopy(a, 0, attrs, 0, a.length);
+          if (attrs[i] == ResolveAttribute)
+            resolveParent = (AttributeSet) attrs[i + 1];
         }
     }
 
     public Object clone()
     {
-      return new SmallAttributeSet(this.attrs);
+      return this;
     }
 
     public boolean containsAttribute(Object name, Object value)
     {
-      for (int i = 0; i < attrs.length; i += 2)
-        {
-          if (attrs[i].equals(name) &&
-              attrs[i+1].equals(value))
-            return true;
-        }
-      return false;
+      return value.equals(getAttribute(name));
     }
 
     public boolean containsAttributes(AttributeSet a)
     {
+      boolean res = true;
       Enumeration e = a.getAttributeNames();
-      while (e.hasMoreElements())
+      while (e.hasMoreElements() && res)
         {
           Object name = e.nextElement();
-          Object val = a.getAttribute(name);
-          if (!containsAttribute(name, val))
-            return false;
+          res = a.getAttribute(name).equals(getAttribute(name));
         }
-      return true;			
+      return res;
     }
 
     public AttributeSet copyAttributes()
     {
-      return (AttributeSet) clone();
+      return this;
     }
 
     public boolean equals(Object obj)
     {
-      return 
-        (obj instanceof AttributeSet)
-        && this.isEqual((AttributeSet)obj);
+      boolean eq = false;
+      if (obj instanceof AttributeSet)
+        {
+          AttributeSet atts = (AttributeSet) obj;
+          eq = getAttributeCount() == atts.getAttributeCount()
+               && containsAttributes(atts);
+        }
+      return eq;
     }
  
     public Object getAttribute(Object key)
     {
-      for (int i = 0; i < attrs.length; i += 2)
+      Object att = null;
+      if (key == StyleConstants.ResolveAttribute)
+        att = resolveParent;
+
+      for (int i = 0; i < attrs.length && att == null; i += 2)
         {
           if (attrs[i].equals(key))
-            return attrs[i+1];
+            att = attrs[i + 1];
         }
-            
+
       // Check the resolve parent, unless we're looking for the 
-      // ResolveAttribute, which would cause an infinite loop
-      if (!(key.equals(ResolveAttribute)))
+      // ResolveAttribute, which must not be looked up
+      if (att == null)
           {
-            Object p = getResolveParent();
-            if (p != null && p instanceof AttributeSet)
-              return (((AttributeSet)p).getAttribute(key));
+            AttributeSet parent = getResolveParent();
+            if (parent != null)
+              att = parent.getAttribute(key);
           }
       
-      return null;
+      return att;
     }
 
     public int getAttributeCount()
@@ -323,7 +351,7 @@ public class StyleContext
       return attrs.length / 2;
     }
 
-    public Enumeration getAttributeNames()
+    public Enumeration<?> getAttributeNames()
     {      
       return new Enumeration() 
         {
@@ -342,7 +370,7 @@ public class StyleContext
 
     public AttributeSet getResolveParent()
     {
-      return (AttributeSet) getAttribute(ResolveAttribute);
+      return resolveParent;
     }
 
     public int hashCode()
@@ -362,68 +390,96 @@ public class StyleContext
 	
     public boolean isEqual(AttributeSet attr)
     {
-      return getAttributeCount() == attr.getAttributeCount()
+      boolean eq;
+      // If the other one is also a SmallAttributeSet, it is only considered
+      // equal if it's the same instance.
+      if (attr instanceof SmallAttributeSet)
+        eq = attr == this;
+      else
+        eq = getAttributeCount() == attr.getAttributeCount()
              && this.containsAttributes(attr);
+      return eq;
     }
 	
     public String toString()
     {
-      StringBuffer sb = new StringBuffer();
-      sb.append("[StyleContext.SmallattributeSet:");
-      for (int i = 0; i < attrs.length - 1; ++i)
+      StringBuilder sb = new StringBuilder();
+      sb.append('{');
+      for (int i = 0; i < attrs.length; i += 2)
         {
-          sb.append(" (");
-          sb.append(attrs[i].toString());
-          sb.append("=");
-          sb.append(attrs[i+1].toString());
-          sb.append(")");
+          if (attrs[i + 1] instanceof AttributeSet)
+            {
+              sb.append(attrs[i]);
+              sb.append("=AttributeSet,");
+            }
+          else
+            {
+              sb.append(attrs[i]);
+              sb.append('=');
+              sb.append(attrs[i + 1]);
+              sb.append(',');
+            }
         }
-      sb.append("]");
+      sb.append("}");
       return sb.toString();
     }
   }
 
-  // FIXME: official javadocs suggest that these might be more usefully
-  // implemented using a WeakHashMap, but not sure if that works most
-  // places or whether it really matters anyways.
-  //
-  // FIXME: also not sure if these tables ought to be static (singletons),
-  // shared across all StyleContexts. I think so, but it's not clear in
-  // docs. revert to non-shared if you think it matters.
-  
+  /**
+   * Register StyleConstant keys as static attribute keys for serialization.
+   */
+  static
+  {
+    // Don't let problems while doing this prevent class loading.
+    try
+      {
+        for (Iterator i = StyleConstants.keys.iterator(); i.hasNext();)
+          registerStaticAttributeKey(i.next());
+      }
+    catch (Throwable t)
+      {
+        t.printStackTrace();
+      }
+  }
+
   /**
    * The name of the default style.
    */
   public static final String DEFAULT_STYLE = "default";
   
-  /**
-   * The default style for this style context.
-   */
-  NamedStyle defaultStyle = new NamedStyle(DEFAULT_STYLE, null);
-  
   static Hashtable sharedAttributeSets = new Hashtable();
   static Hashtable sharedFonts = new Hashtable();
 
-  static StyleContext defaultStyleContext = new StyleContext();
+  static StyleContext defaultStyleContext;
   static final int compressionThreshold = 9;
 
   /**
    * These attribute keys are handled specially in serialization.
    */
-  private static Hashtable staticAttributeKeys = new Hashtable();
+  private static Hashtable writeAttributeKeys;
+  private static Hashtable readAttributeKeys;
 
-  EventListenerList listenerList;
-  Hashtable styleTable;
-  
+  private NamedStyle styles;
+
+  /**
+   * Used for searching attributes in the pool.
+   */
+  private transient MutableAttributeSet search = new SimpleAttributeSet();
+
+  /**
+   * A pool of immutable AttributeSets.
+   */
+  private transient Map attributeSetPool =
+    Collections.synchronizedMap(new WeakHashMap());
+
   /**
    * Creates a new instance of the style context. Add the default style
    * to the style table.
    */
   public StyleContext()
   {
-    listenerList = new EventListenerList();
-    styleTable = new Hashtable();
-    styleTable.put(DEFAULT_STYLE, defaultStyle);
+    styles = new NamedStyle(null);
+    addStyle(DEFAULT_STYLE, null);
   }
 
   protected SmallAttributeSet createSmallAttributeSet(AttributeSet a)
@@ -438,30 +494,30 @@ public class StyleContext
 
   public void addChangeListener(ChangeListener listener)
   {
-    listenerList.add(ChangeListener.class, listener);
+    styles.addChangeListener(listener);
   }
 
   public void removeChangeListener(ChangeListener listener)
   {
-    listenerList.remove(ChangeListener.class, listener);
+    styles.removeChangeListener(listener);
   }
 
   public ChangeListener[] getChangeListeners()
   {
-    return (ChangeListener[]) listenerList.getListeners(ChangeListener.class);
+    return styles.getChangeListeners();
   }
     
   public Style addStyle(String name, Style parent)
   {
     Style newStyle = new NamedStyle(name, parent);
     if (name != null)
-      styleTable.put(name, newStyle);
+      styles.addAttribute(name, newStyle);
     return newStyle;
   }
 
   public void removeStyle(String name)
   {
-    styleTable.remove(name);
+    styles.removeAttribute(name);
   }
 
   /**
@@ -476,16 +532,31 @@ public class StyleContext
    */
   public Style getStyle(String name)
   {
-    return (Style) styleTable.get(name);
+    return (Style) styles.getAttribute(name);
   }
   
   /**
    * Get the names of the style. The returned enumeration always
    * contains at least one member, the default style.
    */
-  public Enumeration getStyleNames()
+  public Enumeration<?> getStyleNames()
   {
-    return styleTable.keys();
+    return styles.getAttributeNames();
+  }
+
+  private void readObject(ObjectInputStream in)
+    throws ClassNotFoundException, IOException
+  {
+    search = new SimpleAttributeSet();
+    attributeSetPool = Collections.synchronizedMap(new WeakHashMap());
+    in.defaultReadObject();
+  }
+
+  private void writeObject(ObjectOutputStream out)
+    throws IOException
+  {
+    cleanupPool();
+    out.defaultWriteObject();
   }
 
   //
@@ -577,132 +648,125 @@ public class StyleContext
 
   public static StyleContext getDefaultStyleContext()
   {
+    if (defaultStyleContext == null)
+      defaultStyleContext = new StyleContext();
     return defaultStyleContext;
   }
 
-  public AttributeSet addAttribute(AttributeSet old, Object name, Object value)
+  public synchronized AttributeSet addAttribute(AttributeSet old, Object name,
+                                                Object value)
   {
-    if (old instanceof MutableAttributeSet)
+    AttributeSet ret;
+    if (old.getAttributeCount() + 1 < getCompressionThreshold())
       {
-        ((MutableAttributeSet)old).addAttribute(name, value);
-        return old;
+        search.removeAttributes(search);
+        search.addAttributes(old);
+        search.addAttribute(name, value);
+        reclaim(old);
+        ret = searchImmutableSet();
       }
-    else 
+    else
       {
-        MutableAttributeSet mutable = createLargeAttributeSet(old);
-        mutable.addAttribute(name, value);
-        if (mutable.getAttributeCount() >= getCompressionThreshold())
-          return mutable;
-        else
-          {
-            SmallAttributeSet small = createSmallAttributeSet(mutable);
-            if (sharedAttributeSets.containsKey(small))
-              small = (SmallAttributeSet) sharedAttributeSets.get(small);
-            else
-              sharedAttributeSets.put(small,small);
-            return small;
-          }
+        MutableAttributeSet mas = getMutableAttributeSet(old);
+        mas.addAttribute(name, value);
+        ret = mas;
       }
+    return ret;
   }
 
-  public AttributeSet addAttributes(AttributeSet old, AttributeSet attributes)
+  public synchronized AttributeSet addAttributes(AttributeSet old,
+                                                 AttributeSet attributes)
   {
-    if (old instanceof MutableAttributeSet)
+    AttributeSet ret;
+    if (old.getAttributeCount() + attributes.getAttributeCount()
+        < getCompressionThreshold())
       {
-        ((MutableAttributeSet)old).addAttributes(attributes);
-        return old;
+        search.removeAttributes(search);
+        search.addAttributes(old);
+        search.addAttributes(attributes);
+        reclaim(old);
+        ret = searchImmutableSet();
       }
-    else 
+    else
       {
-        MutableAttributeSet mutable = createLargeAttributeSet(old);
-        mutable.addAttributes(attributes);
-        if (mutable.getAttributeCount() >= getCompressionThreshold())
-          return mutable;
-        else
-          {
-            SmallAttributeSet small = createSmallAttributeSet(mutable);
-            if (sharedAttributeSets.containsKey(small))
-              small = (SmallAttributeSet) sharedAttributeSets.get(small);
-            else
-              sharedAttributeSets.put(small,small);
-            return small;
-          }
+        MutableAttributeSet mas = getMutableAttributeSet(old);
+        mas.addAttributes(attributes);
+        ret = mas;
       }
+    return ret;
   }
 
   public AttributeSet getEmptySet()
   {
-    AttributeSet e = createSmallAttributeSet(null);
-    if (sharedAttributeSets.containsKey(e))
-      e = (AttributeSet) sharedAttributeSets.get(e);
-    else
-      sharedAttributeSets.put(e, e);
-    return e;
+    return SimpleAttributeSet.EMPTY;
   }
 
   public void reclaim(AttributeSet attributes)
   {
-    if (sharedAttributeSets.containsKey(attributes))
-      sharedAttributeSets.remove(attributes);
+    cleanupPool();
   }
 
-  public AttributeSet removeAttribute(AttributeSet old, Object name)
+  public synchronized AttributeSet removeAttribute(AttributeSet old,
+                                                   Object name)
   {
-    if (old instanceof MutableAttributeSet)
+    AttributeSet ret;
+    if (old.getAttributeCount() - 1 <= getCompressionThreshold())
       {
-        ((MutableAttributeSet)old).removeAttribute(name);
-        if (old.getAttributeCount() < getCompressionThreshold())
-          {
-            SmallAttributeSet small = createSmallAttributeSet(old);
-            if (!sharedAttributeSets.containsKey(small))
-              sharedAttributeSets.put(small,small);
-            old = (AttributeSet) sharedAttributeSets.get(small);
-          }
-        return old;
+        search.removeAttributes(search);
+        search.addAttributes(old);
+        search.removeAttribute(name);
+        reclaim(old);
+        ret = searchImmutableSet();
       }
-    else 
-      {          
-        MutableAttributeSet mutable = createLargeAttributeSet(old);
-        mutable.removeAttribute(name);
-        SmallAttributeSet small = createSmallAttributeSet(mutable);
-        if (sharedAttributeSets.containsKey(small))
-          small = (SmallAttributeSet) sharedAttributeSets.get(small);
-        else
-          sharedAttributeSets.put(small,small);
-        return small;
-      }
-  }
-
-  public AttributeSet removeAttributes(AttributeSet old, AttributeSet attributes)
-  {
-    return removeAttributes(old, attributes.getAttributeNames());
-  }
-
-  public AttributeSet removeAttributes(AttributeSet old, Enumeration names)
-  {
-    if (old instanceof MutableAttributeSet)
+    else
       {
-        ((MutableAttributeSet)old).removeAttributes(names);
-        if (old.getAttributeCount() < getCompressionThreshold())
-          {
-            SmallAttributeSet small = createSmallAttributeSet(old);
-            if (!sharedAttributeSets.containsKey(small))
-              sharedAttributeSets.put(small,small);
-            old = (AttributeSet) sharedAttributeSets.get(small);
-          }
-        return old;
+        MutableAttributeSet mas = getMutableAttributeSet(old);
+        mas.removeAttribute(name);
+        ret = mas;
       }
-    else 
-      {          
-        MutableAttributeSet mutable = createLargeAttributeSet(old);
-        mutable.removeAttributes(names);
-        SmallAttributeSet small = createSmallAttributeSet(mutable);
-        if (sharedAttributeSets.containsKey(small))
-          small = (SmallAttributeSet) sharedAttributeSets.get(small);
-        else
-          sharedAttributeSets.put(small,small);
-        return small;
-      }	
+    return ret;
+  }
+
+  public synchronized AttributeSet removeAttributes(AttributeSet old,
+                                                    AttributeSet attributes)
+  {
+    AttributeSet ret;
+    if (old.getAttributeCount() <= getCompressionThreshold())
+      {
+        search.removeAttributes(search);
+        search.addAttributes(old);
+        search.removeAttributes(attributes);
+        reclaim(old);
+        ret = searchImmutableSet();
+      }
+    else
+      {
+        MutableAttributeSet mas = getMutableAttributeSet(old);
+        mas.removeAttributes(attributes);
+        ret = mas;
+      }
+    return ret;
+  }
+
+  public synchronized AttributeSet removeAttributes(AttributeSet old,
+						    Enumeration<?> names)
+  {
+    AttributeSet ret;
+    if (old.getAttributeCount() <= getCompressionThreshold())
+      {
+        search.removeAttributes(search);
+        search.addAttributes(old);
+        search.removeAttributes(names);
+        reclaim(old);
+        ret = searchImmutableSet();
+      }
+    else
+      {
+        MutableAttributeSet mas = getMutableAttributeSet(old);
+        mas.removeAttributes(names);
+        ret = mas;
+      }
+    return ret;
   }
 
   /**
@@ -715,7 +779,7 @@ public class StyleContext
   {
     if (key == null)
       return null;
-    return staticAttributeKeys.get(key);
+    return readAttributeKeys.get(key);
   }
   
   /**
@@ -742,27 +806,25 @@ public class StyleContext
    *           stream
    * @throws IOException - any I/O error
    */
-  public static void readAttributeSet(ObjectInputStream in, MutableAttributeSet a)
+  public static void readAttributeSet(ObjectInputStream in,
+                                      MutableAttributeSet a)
     throws ClassNotFoundException, IOException
   {
-    if (in == null || a == null)
-      return;
-    
-    Object key = in.readObject();
-    Object val = in.readObject();
-    while (key != null && val != null)
+    int count = in.readInt();
+    for (int i = 0; i < count; i++)
       {
-        Object staticKey = staticAttributeKeys.get(key);
-        Object staticVal = staticAttributeKeys.get(val);
-        
-        if (staticKey != null)
-          key = staticKey;
-        if (staticVal != null)
-          val = staticVal;
-        
+        Object key = in.readObject();
+        Object val = in.readObject();
+        if (readAttributeKeys != null)
+          {
+            Object staticKey = readAttributeKeys.get(key);
+            if (staticKey != null)
+              key = staticKey;
+            Object staticVal = readAttributeKeys.get(val);
+            if (staticVal != null)
+              val = staticVal;
+          }
         a.addAttribute(key, val);
-        key = in.readObject();
-        val = in.readObject();
       }
   }
   
@@ -778,18 +840,35 @@ public class StyleContext
   public static void writeAttributeSet(ObjectOutputStream out, AttributeSet a)
     throws IOException
   {
+    int count = a.getAttributeCount();
+    out.writeInt(count);
     Enumeration e = a.getAttributeNames();
     while (e.hasMoreElements())
       {
-        Object oldKey = e.nextElement();
-        Object newKey = getStaticAttribute(oldKey);
-        Object key = (newKey == null) ? oldKey : newKey;
- 
-        out.writeObject(key);
-        out.writeObject(a.getAttribute(oldKey));
+        Object key = e.nextElement();
+        // Write key.
+        if (key instanceof Serializable)
+          out.writeObject(key);
+        else
+          {
+            Object io = writeAttributeKeys.get(key);
+            if (io == null)
+              throw new NotSerializableException(key.getClass().getName()
+                                                 + ", key: " + key);
+            out.writeObject(io);
+          }
+        // Write value.
+        Object val = a.getAttribute(key);
+        Object io = writeAttributeKeys.get(val);
+        if (val instanceof Serializable)
+          out.writeObject(io != null ? io : val);
+        else
+          {
+            if (io == null)
+              throw new NotSerializableException(val.getClass().getName());
+            out.writeObject(io);
+          }
       }
-    out.writeObject(null);
-    out.writeObject(null);
   }
 
   /**
@@ -833,8 +912,79 @@ public class StyleContext
    */
   public static void registerStaticAttributeKey(Object key)
   {
-    if (key != null)
-      staticAttributeKeys.put(key.getClass().getName() + "." + key.toString(),
-                              key);
+    String io = key.getClass().getName() + "." + key.toString();
+    if (writeAttributeKeys == null)
+      writeAttributeKeys = new Hashtable();
+    if (readAttributeKeys == null)
+      readAttributeKeys = new Hashtable();
+    writeAttributeKeys.put(key, io);
+    readAttributeKeys.put(io, key);
+  }
+
+  /**
+   * Returns a string representation of this StyleContext.
+   *
+   * @return a string representation of this StyleContext
+   */
+  public String toString()
+  {
+    cleanupPool();
+    StringBuilder b = new StringBuilder();
+    Iterator i = attributeSetPool.keySet().iterator();
+    while (i.hasNext())
+      {
+        Object att = i.next();
+        b.append(att);
+        b.append('\n');
+      }
+    return b.toString();
+  }
+
+  /**
+   * Searches the AttributeSet pool and returns a pooled instance if available,
+   * or pool a new one.
+   *
+   * @return an immutable attribute set that equals the current search key
+   */
+  private AttributeSet searchImmutableSet()
+  {
+    SmallAttributeSet k = createSmallAttributeSet(search);
+    WeakReference ref = (WeakReference) attributeSetPool.get(k);
+    SmallAttributeSet a;
+    if (ref == null || (a = (SmallAttributeSet) ref.get()) == null)
+      {
+        a = k;
+        attributeSetPool.put(a, new WeakReference(a));
+      }
+    return a;
+  }
+
+  /**
+   * Cleans up the attribute set pool from entries that are no longer
+   * referenced.
+   */
+  private void cleanupPool()
+  {
+    // TODO: How else can we force cleaning up the WeakHashMap?
+    attributeSetPool.size();
+  }
+
+  /**
+   * Returns a MutableAttributeSet that holds a. If a itself is mutable,
+   * this returns a itself, otherwise it creates a new SimpleAtttributeSet
+   * via {@link #createLargeAttributeSet(AttributeSet)}.
+   *
+   * @param a the AttributeSet to create a mutable set for
+   *
+   * @return a mutable attribute set that corresponds to a
+   */
+  private MutableAttributeSet getMutableAttributeSet(AttributeSet a)
+  {
+    MutableAttributeSet mas;
+    if (a instanceof MutableAttributeSet)
+      mas = (MutableAttributeSet) a;
+    else
+      mas = createLargeAttributeSet(a);
+    return mas;
   }
 }

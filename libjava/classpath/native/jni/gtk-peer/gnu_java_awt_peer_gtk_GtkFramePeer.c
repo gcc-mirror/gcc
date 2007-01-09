@@ -188,3 +188,47 @@ Java_gnu_java_awt_peer_gtk_GtkFramePeer_nativeSetIconImage
 
   gdk_threads_leave ();
 }
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkFramePeer_maximize
+(JNIEnv *env, jobject obj)
+{
+  void *ptr;
+  gdk_threads_enter ();
+  ptr = NSA_GET_PTR (env, obj);
+  gtk_window_maximize (GTK_WINDOW (ptr));
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkFramePeer_unmaximize
+(JNIEnv *env, jobject obj)
+{
+  void *ptr;
+  gdk_threads_enter ();
+  ptr = NSA_GET_PTR (env, obj);
+  gtk_window_unmaximize (GTK_WINDOW (ptr));
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkFramePeer_iconify
+(JNIEnv *env, jobject obj)
+{
+  void *ptr;
+  gdk_threads_enter ();
+  ptr = NSA_GET_PTR (env, obj);
+  gtk_window_iconify (GTK_WINDOW (ptr));
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkFramePeer_deiconify
+(JNIEnv *env, jobject obj)
+{
+  void *ptr;
+  gdk_threads_enter ();
+  ptr = NSA_GET_PTR (env, obj);
+  gtk_window_deiconify (GTK_WINDOW (ptr));
+  gdk_threads_leave ();
+}

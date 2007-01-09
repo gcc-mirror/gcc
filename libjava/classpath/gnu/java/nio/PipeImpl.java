@@ -46,22 +46,21 @@ import java.nio.channels.spi.SelectorProvider;
 class PipeImpl extends Pipe
 {
   public static final class SourceChannelImpl extends Pipe.SourceChannel
+    implements VMChannelOwner
   {
-    private int native_fd;
     private VMChannel vmch;
     
     public SourceChannelImpl (SelectorProvider selectorProvider,
-                              int native_fd)
+                              VMChannel channel)
     {
       super (selectorProvider);
-      this.native_fd = native_fd;
-      vmch = VMChannel.getVMChannel(this);
+      vmch = channel;
     }
 
     protected final void implCloseSelectableChannel()
       throws IOException
     {
-      throw new Error ("Not implemented");
+      vmch.close();
     }
 
     protected void implConfigureBlocking (boolean blocking)
@@ -94,30 +93,29 @@ class PipeImpl extends Pipe
 
       return vmch.readScattering(srcs, offset, len);
     }
-
-    public final int getNativeFD()
+    
+    public VMChannel getVMChannel()
     {
-      return native_fd;
+      return vmch;
     }
   }
 
   public static final class SinkChannelImpl extends Pipe.SinkChannel
+    implements VMChannelOwner
   {
-    private int native_fd;
     private VMChannel vmch;
     
     public SinkChannelImpl (SelectorProvider selectorProvider,
-                            int native_fd)
+                            VMChannel channel)
     {
       super (selectorProvider);
-      this.native_fd = native_fd;
-      vmch = VMChannel.getVMChannel(this);
+      vmch = channel;
     }
 
     protected final void implCloseSelectableChannel()
       throws IOException
     {
-      throw new Error ("Not implemented");
+      vmch.close();
     }
 
     protected final void implConfigureBlocking (boolean blocking)
@@ -149,10 +147,10 @@ class PipeImpl extends Pipe
       
       return vmch.writeGathering(srcs, offset, len);
     }
-
-    public final int getNativeFD()
+    
+    public VMChannel getVMChannel()
     {
-      return native_fd;
+      return vmch;
     }
   }
 
@@ -163,7 +161,9 @@ class PipeImpl extends Pipe
     throws IOException
   {
     super();
-    VMPipe.init (this, provider);
+    VMChannel[] pipe = VMPipe.pipe();
+    sink = new SinkChannelImpl(provider, pipe[0]);
+    source = new SourceChannelImpl(provider, pipe[1]);
   }
 
   public Pipe.SinkChannel sink()

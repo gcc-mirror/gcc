@@ -157,161 +157,159 @@ public class Cipher
   /** Our current state (encrypting, wrapping, etc.) */
   private int state;
 
-
-  // Class methods.
-  // ------------------------------------------------------------------------
-
   /**
-   * <p>Creates a new cipher instance for the given transformation.</p>
-   *
-   * <p>The installed providers are tried in order for an
-   * implementation, and the first appropriate instance is returned. If
-   * no installed provider can provide the implementation, an
-   * appropriate exception is thrown.</p>
-   *
+   * Creates a new cipher instance for the given transformation.
+   * <p>
+   * The installed providers are tried in order for an implementation, and the
+   * first appropriate instance is returned. If no installed provider can
+   * provide the implementation, an appropriate exception is thrown.
+   * 
    * @param transformation The transformation to create.
    * @return An appropriate cipher for this transformation.
-   * @throws java.security.NoSuchAlgorithmException If no installed
-   *         provider can supply the appropriate cipher or mode.
-   * @throws javax.crypto.NoSuchPaddingException If no installed
-   *         provider can supply the appropriate padding.
+   * @throws NoSuchAlgorithmException If no installed provider can supply the
+   *           appropriate cipher or mode.
+   * @throws NoSuchPaddingException If no installed provider can supply the
+   *           appropriate padding.
    */
   public static final Cipher getInstance(String transformation)
-    throws NoSuchAlgorithmException, NoSuchPaddingException
+      throws NoSuchAlgorithmException, NoSuchPaddingException
   {
-    Provider[] providers = Security.getProviders();
-    NoSuchPaddingException ex = null;
-    String msg = "";
-    for (int i = 0; i < providers.length; i++)
-      {
-        try
-          {
-            return getInstance(transformation, providers[i]);
-          }
-        catch (NoSuchAlgorithmException nsae)
-          {
-            msg = nsae.getMessage();
-            ex = null;
-          }
-        catch (NoSuchPaddingException nspe)
-          {
-            ex = nspe;
-          }
-      }
-    if (ex != null)
-      {
-        throw ex;
-      }
-    throw new NoSuchAlgorithmException(msg);
+    Provider[] p = Security.getProviders();
+    NoSuchAlgorithmException lastException = null;
+    NoSuchPaddingException lastPaddingException = null;
+    for (int i = 0; i < p.length; i++)
+      try
+        {
+          return getInstance(transformation, p[i]);
+        }
+      catch (NoSuchAlgorithmException x)
+        {
+          lastException = x;
+          lastPaddingException = null;
+        }
+      catch (NoSuchPaddingException x)
+        {
+          lastPaddingException = x;
+        }
+    if (lastPaddingException != null)
+      throw lastPaddingException;
+    if (lastException != null)
+      throw lastException;
+    throw new NoSuchAlgorithmException(transformation);
   }
 
   /**
-   * <p>Creates a new cipher instance for the given transformation and
-   * the named provider.</p>
-   *
+   * Creates a new cipher instance for the given transformation and the named
+   * provider.
+   * 
    * @param transformation The transformation to create.
-   * @param provider       The name of the provider to use.
+   * @param provider The name of the provider to use.
    * @return An appropriate cipher for this transformation.
-   * @throws java.security.NoSuchAlgorithmException If the provider cannot
-   *         supply the appropriate cipher or mode.
-   * @throws java.security.NoSuchProviderException If the named provider
-   *         is not installed.
-   * @throws javax.crypto.NoSuchPaddingException If the provider cannot
-   *         supply the appropriate padding.
+   * @throws NoSuchAlgorithmException If the provider cannot supply the
+   *           appropriate cipher or mode.
+   * @throws NoSuchProviderException If the named provider is not installed.
+   * @throws NoSuchPaddingException If the provider cannot supply the
+   *           appropriate padding.
+   * @throws IllegalArgumentException if either <code>transformation</code> or
+   *           <code>provider</code> is <code>null</code>.
    */
   public static final Cipher getInstance(String transformation, String provider)
-    throws NoSuchAlgorithmException, NoSuchProviderException,
-           NoSuchPaddingException
+      throws NoSuchAlgorithmException, NoSuchProviderException,
+      NoSuchPaddingException
   {
+    if (provider == null)
+      throw new IllegalArgumentException("provider MUST NOT be null");
     Provider p = Security.getProvider(provider);
     if (p == null)
-      {
-        throw new NoSuchProviderException(provider);
-      }
+      throw new NoSuchProviderException(provider);
     return getInstance(transformation, p);
   }
 
   /**
-   * Creates a new cipher instance for the given transform and the given
+   * Creates a new cipher instance for a given transformation from a given
    * provider.
-   *
+   * 
    * @param transformation The transformation to create.
-   * @param provider       The provider to use.
+   * @param provider The provider to use.
    * @return An appropriate cipher for this transformation.
-   * @throws java.security.NoSuchAlgorithmException If the given
-   *         provider cannot supply the appropriate cipher or mode.
-   * @throws javax.crypto.NoSuchPaddingException If the given
-   *         provider cannot supply the appropriate padding scheme.
+   * @throws NoSuchAlgorithmException If the given provider cannot supply the
+   *           appropriate cipher or mode.
+   * @throws NoSuchPaddingException If the given provider cannot supply the
+   *           appropriate padding scheme.
    */
-  public static final Cipher getInstance(String transformation, Provider provider)
-    throws NoSuchAlgorithmException, NoSuchPaddingException
+  public static final Cipher getInstance(String transformation,
+                                         Provider provider)
+      throws NoSuchAlgorithmException, NoSuchPaddingException
   {
-    CipherSpi result = null;
-    String key = null;
-    String alg = null, mode = null, pad = null;
-    String msg = "";
+    StringBuilder sb = new StringBuilder().append("Cipher transformation [")
+        .append(transformation).append("] from provider [")
+        .append(provider).append("] ");
+    Throwable cause;
+    Object spi;
+    CipherSpi result;
     if (transformation.indexOf('/') < 0)
       {
         try
           {
-            result = (CipherSpi) Engine.getInstance(SERVICE, transformation,
-                                                    provider);
-            return new Cipher(result, provider, transformation);
+            spi = Engine.getInstance(SERVICE, transformation, provider);
+            return new Cipher((CipherSpi) spi, provider, transformation);
           }
         catch (Exception e)
           {
-            msg = e.getMessage();
+            if (e instanceof NoSuchAlgorithmException)
+              throw (NoSuchAlgorithmException) e;
+            cause = e;
           }
       }
     else
       {
         StringTokenizer tok = new StringTokenizer(transformation, "/");
         if (tok.countTokens() != 3)
-          {
-            throw new NoSuchAlgorithmException("badly formed transformation");
-          }
-        alg = tok.nextToken();
-        mode = tok.nextToken();
-        pad = tok.nextToken();
+          throw new NoSuchAlgorithmException(sb.append("is malformed").toString());
+
+        String alg = tok.nextToken();
+        String mode = tok.nextToken();
+        String pad = tok.nextToken();
         try
           {
-            result = (CipherSpi) Engine.getInstance(SERVICE, transformation,
-                                                    provider);
-            return new Cipher(result, provider, transformation);
+            spi = Engine.getInstance(SERVICE, transformation, provider);
+            return new Cipher((CipherSpi) spi, provider, transformation);
           }
         catch (Exception e)
           {
-            msg = e.getMessage();
+            cause = e;
           }
+
         try
           {
-            result = (CipherSpi) Engine.getInstance(SERVICE, alg + '/' + mode,
-                                                    provider);
+            spi = Engine.getInstance(SERVICE, alg + '/' + mode, provider);
+            result = (CipherSpi) spi;
             result.engineSetPadding(pad);
             return new Cipher(result, provider, transformation);
           }
         catch (Exception e)
           {
             if (e instanceof NoSuchPaddingException)
-              {
-                throw (NoSuchPaddingException) e;
-              }
-            msg = e.getMessage();
+              throw (NoSuchPaddingException) e;
+            cause = e;
           }
+
         try
           {
-            result = (CipherSpi) Engine.getInstance(SERVICE, alg + "//" + pad,
-                                                    provider);
+            spi = Engine.getInstance(SERVICE, alg + "//" + pad, provider);
+            result = (CipherSpi) spi;
             result.engineSetMode(mode);
             return new Cipher(result, provider, transformation);
           }
         catch (Exception e)
           {
-            msg = e.getMessage();
+            cause = e;
           }
+
         try
           {
-            result = (CipherSpi) Engine.getInstance(SERVICE, alg, provider);
+            spi = Engine.getInstance(SERVICE, alg, provider);
+            result = (CipherSpi) spi;
             result.engineSetMode(mode);
             result.engineSetPadding(pad);
             return new Cipher(result, provider, transformation);
@@ -319,17 +317,15 @@ public class Cipher
         catch (Exception e)
           {
             if (e instanceof NoSuchPaddingException)
-              {
-                throw (NoSuchPaddingException) e;
-              }
-            msg = e.getMessage();
+              throw (NoSuchPaddingException) e;
+            cause = e;
           }
       }
-    throw new NoSuchAlgorithmException(transformation + ": " + msg);
+    sb.append("could not be created");
+    NoSuchAlgorithmException x = new NoSuchAlgorithmException(sb.toString());
+    x.initCause(cause);
+    throw x;
   }
-
-// Constructor.
-  // ------------------------------------------------------------------------
 
   /**
    * Create a cipher.
@@ -346,9 +342,6 @@ public class Cipher
     this.transformation = transformation;
     state = INITIAL_STATE;
   }
-
-// Public instance methods.
-  // ------------------------------------------------------------------------
 
   /**
    * Get the name that this cipher instance was created with; this is

@@ -160,8 +160,7 @@ public class AccessibleObject
     this.flag = flag;
   }
 
-  /* FIXME[GENERICS]: <T extends Annotation> T getAnnotation(Class <T>) */
-  public Annotation getAnnotation(Class annotationClass)
+  public <T extends Annotation> T getAnnotation(Class<T> annotationClass)
   {
     throw new AssertionError("Subclass must override this method");
   }
@@ -176,8 +175,7 @@ public class AccessibleObject
     throw new AssertionError("Subclass must override this method");
   }
 
-  /* FIXME[GENERICS]: Signature is Class<? extends Annotation> */
-  public boolean isAnnotationPresent(Class annotationClass)
+  public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass)
   {
     return getAnnotation(annotationClass) != null;
   }

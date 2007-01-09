@@ -61,7 +61,7 @@ public interface Ref
   /**
    * @since 1.4
    */
-  Object getObject(Map map) throws SQLException;
+  Object getObject(Map<String, Class<?>> map) throws SQLException;
 
   /**
    * @since 1.4

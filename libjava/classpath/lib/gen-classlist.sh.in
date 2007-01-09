@@ -25,15 +25,22 @@ echo "Adding java source files from srcdir '@top_srcdir@'."
  done) > ${top_builddir}/lib/classes.1
 
 # The same, but for the external code.
-# Right now all external code is in org/.
-for dir in @top_srcdir@/external/w3c_dom \
-   @top_srcdir@/external/sax @top_srcdir@/external/relaxngDatatype; do
-  (cd $dir
-  @FIND@ org -follow -name '*.java' -print |
-  sort -r | sed -e 's,/\([^/]*\)$, \1,' |
-  while read pkg file; do
-     echo $pkg $dir $pkg/$file
-  done)
+for dir in \
+   @top_srcdir@/external/w3c_dom \
+   @top_srcdir@/external/sax \
+   @top_srcdir@/external/relaxngDatatype \
+   @top_srcdir@/external/jsr166 \
+   ; do
+   (cd $dir
+   for subdir in java javax gnu org sun; do
+      if test -d $subdir; then
+	 @FIND@ $subdir -follow -name '*.java' -print |
+	 sort -r | sed -e 's,/\([^/]*\)$, \1,' |
+	 while read pkg file; do
+	    echo $pkg $dir $pkg/$file
+	 done
+      fi
+   done)
 done >> ${top_builddir}/lib/classes.1
 
 # Generate files for the VM classes.
@@ -55,7 +62,9 @@ for dir in $vm_dirlist; do
 done
 
 # Only include generated files once.
-if test ! "${top_builddir}" -ef "@top_srcdir@"; then
+abs_top_builddir=`cd "${top_builddir}"; pwd`
+abs_top_srcdir=`cd "@top_srcdir@"; pwd`
+if test "$abs_top_builddir" != "$abs_top_srcdir"; then
   echo "Adding generated files in builddir '${top_builddir}'."
   # Currently the only generated files are in gnu.*.
   (cd ${top_builddir}; @FIND@ gnu -follow -name '*.java' -print) |
@@ -95,7 +104,7 @@ rm vm.add
 rm tmp.omit
 
 new=
-if test -e ${top_builddir}/lib/classes.2; then
+if test -f ${top_builddir}/lib/classes.2; then
   p=`diff ${top_builddir}/lib/classes.2 ${top_builddir}/lib/classes.1`
   if test "$p" != ""; then
     new="true"

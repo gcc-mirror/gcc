@@ -59,7 +59,7 @@ public abstract class ControlFactory
 
   public static Control getControlInstance (Control control,
 					    Context ctx,
-					    Hashtable env)
+					    Hashtable<?, ?> env)
     throws NamingException
   {
     String path = (String) env.get (LdapContext.CONTROL_FACTORIES);

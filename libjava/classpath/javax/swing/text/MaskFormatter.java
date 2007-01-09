@@ -110,9 +110,7 @@ public class MaskFormatter extends DefaultFormatter
    */
   public MaskFormatter (String mask) throws java.text.ParseException
   {
-    // Override super's default behaviour, in MaskFormatter the default
-    // is not to allow invalid values
-    setAllowsInvalid(false);
+    this();
     setMask (mask);
   }
   
@@ -307,60 +305,124 @@ public class MaskFormatter extends DefaultFormatter
    */
   public Object stringToValue (String value) throws ParseException
   {
-    int vLength = value.length();
-    
-    // For value to be a valid it must be the same length as the mask
-    // note this doesn't take into account symbols that occupy more than 
-    // one character, this is something we may possibly need to fix.
-    if (maskLength != vLength)
-      throw new ParseException ("stringToValue passed invalid value", vLength);
-    
-    // Check if the value is valid according to the mask and valid/invalid 
-    // sets.
-    try
-    {
-      convertValue(value, false);      
-    }
-    catch (ParseException pe)
-    {
-      throw new ParseException("stringToValue passed invalid value",
-                                 pe.getErrorOffset());
-    }
-    
-    if (!getValueContainsLiteralCharacters())
-      value = stripLiterals(value);
-    return super.stringToValue(value);
+    return super.stringToValue(convertStringToValue(value));
   }
   
-  /**
-   * Strips the literal characters from the given String.
-   * @param value the String to strip
-   * @return the stripped String
-   */
-  String stripLiterals(String value)
+  private String convertStringToValue(String value)
+    throws ParseException
   {
     StringBuffer result = new StringBuffer();
-    for (int i = 0; i < value.length(); i++)
+    char valueChar;
+    boolean isPlaceHolder;
+
+    int length = mask.length();
+    for (int i = 0, j = 0; j < length; j++)
       {
-        // Only append the characters that don't correspond to literal
-        // characters in the mask.
-        switch (mask.charAt(i))
+        char maskChar = mask.charAt(j);
+
+        if (i < value.length())
+          {
+            isPlaceHolder = false;
+            valueChar = value.charAt(i);
+            if (maskChar != ESCAPE_CHAR && maskChar != valueChar)
+              {
+                if (invalidChars != null
+                    && invalidChars.indexOf(valueChar) != -1)
+                  throw new ParseException("Invalid character: " + valueChar, i);
+                if (validChars != null
+                    && validChars.indexOf(valueChar) == -1)
+                  throw new ParseException("Invalid character: " + valueChar, i);
+              }
+          }
+        else if (placeHolder != null && i < placeHolder.length())
+          {
+            isPlaceHolder = true;
+            valueChar = placeHolder.charAt(i);
+          }
+        else
+          {
+            isPlaceHolder = true;
+            valueChar = placeHolderChar;
+          }
+
+        // This switch block on the mask character checks that the character 
+        // within <code>value</code> at that point is valid according to the
+        // mask and also converts to upper/lowercase as needed.
+        switch (maskChar)
           {
           case NUM_CHAR:
+            if (! Character.isDigit(valueChar))
+              throw new ParseException("Number expected: " + valueChar, i);
+            result.append(valueChar);
+            i++;
+            break;
           case UPPERCASE_CHAR:
+            if (! Character.isLetter(valueChar))
+              throw new ParseException("Letter expected", i);
+            result.append(Character.toUpperCase(valueChar));
+            i++;
+            break;
           case LOWERCASE_CHAR:
+            if (! Character.isLetter(valueChar))
+              throw new ParseException("Letter expected", i);
+            result.append(Character.toLowerCase(valueChar));
+            i++;
+            break;
           case ALPHANUM_CHAR:
+            if (! Character.isLetterOrDigit(valueChar))
+              throw new ParseException("Letter or number expected", i);
+            result.append(valueChar);
+            i++;
+            break;
           case LETTER_CHAR:
+            if (! Character.isLetter(valueChar))
+              throw new ParseException("Letter expected", i);
+            result.append(valueChar);
+            i++;
+            break;
           case HEX_CHAR:
+            if (hexString.indexOf(valueChar) == -1 && ! isPlaceHolder)
+              throw new ParseException("Hexadecimal character expected", i);
+            result.append(valueChar);
+            i++;
+            break;
           case ANYTHING_CHAR:
-            result.append(value.charAt(i));
+            result.append(valueChar);
+            i++;
+            break;
+          case ESCAPE_CHAR:
+            // Escape character, check the next character to make sure that 
+            // the literals match
+            j++;
+            if (j < length)
+              {
+                maskChar = mask.charAt(j);
+                if (! isPlaceHolder && getValueContainsLiteralCharacters()
+                    && valueChar != maskChar)
+                  throw new ParseException ("Invalid character: "+ valueChar, i);
+                if (getValueContainsLiteralCharacters())
+                  {
+                    result.append(maskChar);
+                  }
+                i++;
+              }
+            else if (! isPlaceHolder)
+              throw new ParseException("Bad match at trailing escape: ", i);
             break;
           default:
+            if (! isPlaceHolder && getValueContainsLiteralCharacters()
+                && valueChar != maskChar)
+              throw new ParseException ("Invalid character: "+ valueChar, i);
+            if (getValueContainsLiteralCharacters())
+              {
+                result.append(maskChar);
+              }
+            i++;
           }
       }
     return result.toString();
   }
-  
+
   /**
    * Returns a String representation of the Object value based on the mask.
    * 
@@ -368,21 +430,10 @@ public class MaskFormatter extends DefaultFormatter
    * @throws ParseException if value is invalid for this mask and valid/invalid
    * character sets
    */
-  public String valueToString (Object value) throws ParseException
+  public String valueToString(Object value) throws ParseException
   {
-    String result = super.valueToString(value);
-    int rLength = result.length();
-    
-    // If value is longer than the mask, truncate it.  Note we may need to 
-    // account for symbols that are more than one character long.
-    if (rLength > maskLength)
-      result = result.substring(0, maskLength);
-    
-    // Verify the validity and convert to upper/lowercase as needed.
-    result = convertValue(result, true);        
-    if (rLength < maskLength)
-      return pad(result, rLength);    
-    return result;
+    String string = value != null ? value.toString() : "";
+    return convertValueToString(string);
   }
   
   /**
@@ -390,194 +441,116 @@ public class MaskFormatter extends DefaultFormatter
    * sure that it is valid.  If <code>convert</code> is true, it also
    * converts letters to upper/lowercase as required by the mask.
    * @param value the String to convert
-   * @param convert true if we should convert letters to upper/lowercase
    * @return the converted String
    * @throws ParseException if the given String isn't valid for the mask
    */
-  String convertValue(String value, boolean convert) throws ParseException
+  private String convertValueToString(String value)
+    throws ParseException
   {
-    StringBuffer result = new StringBuffer(value);
-    char markChar;
-    char resultChar;
-    boolean literal;
+    StringBuffer result = new StringBuffer();
+    char valueChar;
+    boolean isPlaceHolder;
 
-    // this boolean is specifically to avoid calling the isCharValid method
-    // when neither invalidChars or validChars has been set
-    boolean checkCharSets = (invalidChars != null || validChars != null);
-
-    for (int i = 0, j = 0; i < value.length(); i++, j++)
+    int length = mask.length();
+    for (int i = 0, j = 0; j < length; j++)
       {
-        literal = false;
-        resultChar = result.charAt(i);
+        char maskChar = mask.charAt(j);
+        if (i < value.length())
+          {
+            isPlaceHolder = false;
+            valueChar = value.charAt(i);
+            if (maskChar != ESCAPE_CHAR && valueChar != maskChar)
+              {
+                if (invalidChars != null
+                    && invalidChars.indexOf(valueChar) != -1)
+                  throw new ParseException("Invalid character: " + valueChar,
+                                           i);
+                if (validChars != null && validChars.indexOf(valueChar) == -1)
+                  throw new ParseException("Invalid character: " + valueChar +" maskChar: " + maskChar,
+                                           i);
+              }
+          }
+        else if (placeHolder != null && i < placeHolder.length())
+          {
+            isPlaceHolder = true;
+            valueChar = placeHolder.charAt(i);
+          }
+        else
+          {
+            isPlaceHolder = true;
+            valueChar = placeHolderChar;
+          }
+
         // This switch block on the mask character checks that the character 
         // within <code>value</code> at that point is valid according to the
         // mask and also converts to upper/lowercase as needed.
-        switch (mask.charAt(j))
+        switch (maskChar)
           {
           case NUM_CHAR:
-            if (!Character.isDigit(resultChar))
-              throw new ParseException("Number expected", i);
+            if ( ! isPlaceHolder && ! Character.isDigit(valueChar))
+              throw new ParseException("Number expected: " + valueChar, i);
+            result.append(valueChar);
+            i++;
             break;
           case UPPERCASE_CHAR:
-            if (!Character.isLetter(resultChar))
+            if (! Character.isLetter(valueChar))
               throw new ParseException("Letter expected", i);
-            if (convert)
-              result.setCharAt(i, Character.toUpperCase(resultChar));
+            result.append(Character.toUpperCase(valueChar));
+            i++;
             break;
           case LOWERCASE_CHAR:
-            if (!Character.isLetter(resultChar))
+            if (! Character.isLetter(valueChar))
               throw new ParseException("Letter expected", i);
-            if (convert)
-              result.setCharAt(i, Character.toLowerCase(resultChar));
+            result.append(Character.toLowerCase(valueChar));
+            i++;
             break;
           case ALPHANUM_CHAR:
-            if (!Character.isLetterOrDigit(resultChar))
+            if (! Character.isLetterOrDigit(valueChar))
               throw new ParseException("Letter or number expected", i);
+            result.append(valueChar);
+            i++;
             break;
           case LETTER_CHAR:
-            if (!Character.isLetter(resultChar))
+            if (! Character.isLetter(valueChar))
               throw new ParseException("Letter expected", i);
+            result.append(valueChar);
+            i++;
             break;
           case HEX_CHAR:
-            if (hexString.indexOf(resultChar) == -1)
+            if (hexString.indexOf(valueChar) == -1 && ! isPlaceHolder)
               throw new ParseException("Hexadecimal character expected", i);
+            result.append(valueChar);
+            i++;
             break;
           case ANYTHING_CHAR:
+            result.append(valueChar);
+            i++;
             break;
           case ESCAPE_CHAR:
             // Escape character, check the next character to make sure that 
             // the literals match
             j++;
-            literal = true;
-            if (resultChar != mask.charAt(j))
-              throw new ParseException ("Invalid character: "+resultChar, i);
+            if (j < length)
+              {
+                maskChar = mask.charAt(j);
+                if (! isPlaceHolder && getValueContainsLiteralCharacters()
+                    && valueChar != maskChar)
+                  throw new ParseException ("Invalid character: "+ valueChar, i);
+                if (getValueContainsLiteralCharacters())
+                  i++;
+                result.append(maskChar);
+              }
             break;
           default:
-            literal = true;
-            if (!getValueContainsLiteralCharacters() && convert)
-              throw new ParseException ("Invalid character: "+resultChar, i);
-            else if (resultChar != mask.charAt(j))
-              throw new ParseException ("Invalid character: "+resultChar, i);
+            if (! isPlaceHolder && getValueContainsLiteralCharacters()
+                && valueChar != maskChar)
+              throw new ParseException ("Invalid character: "+ valueChar, i);
+            if (getValueContainsLiteralCharacters())
+              i++;
+            result.append(maskChar);
           }
-        // If necessary, check if the character is valid.
-        if (!literal && checkCharSets && !isCharValid(resultChar))
-          throw new ParseException("invalid character: "+resultChar, i);
-
-      }
-    return result.toString();
-  }
-  
-  /**
-   * Convenience method used by many other methods to check if a character is 
-   * valid according to the mask, the validChars, and the invalidChars.  To
-   * be valid a character must:
-   * 1. be allowed by the mask
-   * 2. be present in any non-null validChars String
-   * 3. not be present in any non-null invalidChars String
-   * @param testChar the character to test
-   * @return true if the character is valid
-   */
-  boolean isCharValid(char testChar)
-  {
-    char lower = Character.toLowerCase(testChar);
-    char upper = Character.toUpperCase(testChar);
-    // If validChars isn't null, the character must appear in it.
-    if (validChars != null)
-      if (validChars.indexOf(lower) == -1 && validChars.indexOf(upper) == -1)
-        return false;
-    // If invalidChars isn't null, the character must not appear in it.
-    if (invalidChars != null)
-      if (invalidChars.indexOf(lower) != -1
-          || invalidChars.indexOf(upper) != -1)
-        return false;
-    return true;
-  }
-  
-  /**
-   * Pads the value with literals, the placeholder String and/or placeholder
-   * character as appropriate.
-   * @param value the value to pad
-   * @param currLength the current length of the value
-   * @return the padded String
-   */
-  String pad (String value, int currLength)
-  {
-    StringBuffer result = new StringBuffer(value);
-    int index = currLength;
-    while (result.length() < maskLength)
-      {
-        // The character used to pad may be a literal, a character from the 
-        // place holder string, or the place holder character.  getPadCharAt
-        // will find the proper one for us.
-        result.append (getPadCharAt(index));
-        index++;
       }
     return result.toString();
   }
 
-  /**
-   * Returns the character with which to pad the value at the given index
-   * position.  If the mask has a literal at this position, this is returned
-   * otherwise if the place holder string is initialized and is longer than 
-   * <code>i</code> characters then the character at position <code>i</code>
-   * from this String is returned.  Else, the place holder character is 
-   * returned.
-   * @param i the index at which we want to pad the value
-   * @return the character with which we should pad the value
-   */
-  char getPadCharAt(int i)
-  {
-    boolean escaped = false;
-    int target = i;
-    char maskChar;
-    int holderLength = placeHolder == null ? -1 : placeHolder.length();
-    // We must iterate through the mask from the beginning, because the given
-    // index doesn't account for escaped characters.  For example, with the 
-    // mask "1A'A''A1" index 2 refers to the literalized A, not to the 
-    // single quotation.
-    for (int n = 0; n < mask.length(); n++)
-      {
-        maskChar = mask.charAt(n);
-        if (maskChar == ESCAPE_CHAR && !escaped)
-          {
-            target++;
-            escaped = true;
-          }
-        else if (escaped == true)
-          {
-            // Check if target == n which means we've come to the character
-            // we want to return and since it is a literal (because escaped 
-            // is true), we return it.
-            if (target == n)
-              return maskChar;
-            escaped = false;
-          }
-        if (target == n)
-          {
-            // We've come to the character we want to return.  It wasn't
-            // escaped so if it isn't a literal we should return either
-            // the character from place holder string or the place holder
-            // character, depending on whether or not the place holder
-            // string is long enough.
-            switch (maskChar)
-            {
-            case NUM_CHAR:
-            case UPPERCASE_CHAR:
-            case LOWERCASE_CHAR:
-            case ALPHANUM_CHAR:
-            case LETTER_CHAR:
-            case HEX_CHAR:
-            case ANYTHING_CHAR:
-              if (holderLength > i)
-                return placeHolder.charAt(i);
-              else
-                return placeHolderChar;
-            default:
-              return maskChar;
-            }
-          }
-      }
-    // This shouldn't happen
-    throw new AssertionError("MaskFormatter.getMaskCharAt failed");
-  }
 }

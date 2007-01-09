@@ -56,6 +56,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.swing.text.ChangedCharSetException;
+import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.parser.AttributeList;
 import javax.swing.text.html.parser.DTD;
@@ -250,9 +251,9 @@ public class Parser
    * Get the attributes of the current tag.
    * @return The attribute set, representing the attributes of the current tag.
    */
-  public htmlAttributeSet getAttributes()
+  public SimpleAttributeSet getAttributes()
   {
-    return attributes;
+    return new SimpleAttributeSet(attributes);
   }
 
   /**
@@ -497,6 +498,9 @@ public class Parser
         mustBe(t.kind);
       }
     hTag = new Token(start, last);
+
+    // Consume any whitespace immediately following a comment.
+    optional(WS);
     handleComment();
   }
 
@@ -579,6 +583,8 @@ public class Parser
                  );
           }
       }
+    // Consume any whitespace that follows the Sgml insertion.
+    optional(WS);
   }
 
   /**
@@ -658,7 +664,10 @@ public class Parser
     else
       text = textProcessor.preprocess(buffer);
 
-    if (text != null && text.length > 0)
+    if (text != null && text.length > 0
+        // According to the specs we need to discard whitespace immediately
+        // before a closing tag.
+        && (text.length > 1 || text[0] != ' ' || ! TAG_CLOSE.matches(this)))
       {
         TagElement pcdata = new TagElement(dtd.getElement("#pcdata"));
         attributes = htmlAttributeSet.EMPTY_HTML_ATTRIBUTE_SET;
@@ -889,6 +898,8 @@ public class Parser
   protected void parseDocument()
                         throws ParseException
   {
+    // Read up any initial whitespace.
+    optional(WS);
     while (getTokenAhead().kind != EOF)
       {
         advanced = false;
@@ -979,13 +990,15 @@ public class Parser
                           + next.getImage() + "'");
                     attrValue = value.getImage();
                   }
-                else if (next.kind == SLASH)
-                // The slash in this context is treated as the ordinary
-                // character, not as a token. The slash may be part of
+                else if (next.kind == SLASH || next.kind == OTHER)
+                // The slash and other characters (like %) in this context is
+                // treated as the ordinary
+                // character, not as a token. The character may be part of
                 // the unquoted URL.
                   {
                     StringBuffer image = new StringBuffer(value.getImage());
-                    while (next.kind == NUMTOKEN || next.kind == SLASH)
+                    while (next.kind == NUMTOKEN || next.kind == SLASH
+                           || next.kind == OTHER)
                       {
                         image.append(getNextToken().getImage());
                         next = getTokenAhead();
@@ -1177,6 +1190,13 @@ public class Parser
       {
         validator.validateTag(tag, attributes);
         handleEmptyTag(tag);
+        HTML.Tag h = tag.getHTMLTag();
+        // When a block tag is closed, consume whitespace that follows after
+        // it.
+        // For some unknown reason a FRAME tag is not treated as block element.
+        // However in this case it should be treated as such.
+        if (isBlock(h))
+          optional(WS);
       }
     catch (ChangedCharSetException ex)
       {
@@ -1192,8 +1212,8 @@ public class Parser
    */
   private void _handleEndTag(TagElement tag)
   {
-    validator.closeTag(tag);
-    _handleEndTag_remaining(tag);
+    if (validator.closeTag(tag))
+       _handleEndTag_remaining(tag);
   }
 
   /**
@@ -1212,6 +1232,11 @@ public class Parser
       preformatted--;
     if (preformatted < 0)
       preformatted = 0;
+
+    // When a block tag is closed, consume whitespace that follows after
+    // it.
+    if (isBlock(h))
+      optional(WS);
 
     if (h == HTML.Tag.TITLE)
       {
@@ -1238,6 +1263,9 @@ public class Parser
     handleStartTag(tag);
 
     HTML.Tag h = tag.getHTMLTag();
+
+    if (isBlock(h))
+      optional(WS);
 
     if (h.isPreformatted())
       preformatted++;
@@ -1418,8 +1446,6 @@ public class Parser
 
     hTag = new Token(start, next);
 
-    attributes.setResolveParent(defaulter.getDefaultParameters(name.getImage()));
-
     if (!end)
       {
         // The tag body contains errors. If additionally the tag
@@ -1457,7 +1483,12 @@ public class Parser
         if (te.getElement().type == DTDConstants.EMPTY)
           _handleEmptyTag(te);
         else
-          _handleStartTag(te);
+          {
+            // According to the specs we need to consume whitespace following
+            // immediately after a opening tag.
+            optional(WS);
+            _handleStartTag(te);
+          }
       }
   }
 
@@ -1482,5 +1513,20 @@ public class Parser
   private void ws_error()
   {
     error("Whitespace here is not permitted");
+  }
+
+  /**
+   * Returns true when the specified tag should be considered a block tag
+   * wrt whitespace handling. We need this special handling, since there
+   * are a couple of tags that we must treat as block tags but which aren't
+   * officially block tags.
+   *
+   * @param tag the tag to check
+   * @return true when the specified tag should be considered a block tag
+   *         wrt whitespace handling
+   */
+  private boolean isBlock(HTML.Tag tag)
+  {
+    return tag.isBlock() || tag == HTML.Tag.STYLE || tag == HTML.Tag.FRAME;
   }
 }

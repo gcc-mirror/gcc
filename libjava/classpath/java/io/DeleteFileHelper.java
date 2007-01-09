@@ -1,5 +1,5 @@
 /* DeleteFileHelper.java -- Helper class to delete files on VM exit
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,22 +40,22 @@ package java.io;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * @author Guilhem Lavaux (guilhem@kaffe.org)
  * @author Jeroen Frijters (jeroen@sumatra.nl)
  * @author Michael Koch (konqueror@gmx.de)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  */
 final class DeleteFileHelper extends Thread
 {
-  private static ArrayList filesToDelete;
+  private static ArrayList<File> filesToDelete;
 
   static synchronized void add(File file)
   {
     if (filesToDelete == null)
       {
-        filesToDelete = new ArrayList();
+        filesToDelete = new ArrayList<File>();
         
         AccessController.doPrivileged(new PrivilegedAction()
           {
@@ -81,13 +81,10 @@ final class DeleteFileHelper extends Thread
 
   private static synchronized void deleteFiles()
   {
-    Iterator it = filesToDelete.iterator();
-	
-    while (it.hasNext())
+    for (File file : filesToDelete)
       {
 	try
 	  {
-	    File file = (File) it.next();
 	    file.delete();
 	  }
 	catch (Exception e)

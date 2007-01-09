@@ -59,7 +59,7 @@ public abstract class ImageOutputStreamSpi
    * Indicates which kind of output is produced by the streams
    * created by {@link #createOutputStreamInstance(Object)}.
    */
-  protected Class outputClass;
+  protected Class<?> outputClass;
 
 
   /**
@@ -80,7 +80,7 @@ public abstract class ImageOutputStreamSpi
    * or <code>version</code> is <code>null</code>.
    */
   public ImageOutputStreamSpi(String vendorName, String version,
-                              Class outputClass)
+                              Class<?> outputClass)
   {
     super(vendorName, version);
     this.outputClass = outputClass;
@@ -91,7 +91,7 @@ public abstract class ImageOutputStreamSpi
    * Determines which kind of output is produced by the streams
    * created by {@link #createOutputStreamInstance(Object)}.
    */
-  public Class getOutputClass()
+  public Class<?> getOutputClass()
   {
     return outputClass;
   }

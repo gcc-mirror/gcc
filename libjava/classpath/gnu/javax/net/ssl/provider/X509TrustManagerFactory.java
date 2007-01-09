@@ -45,17 +45,20 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
+import java.security.AccessController;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Security;
-import java.security.SignatureException;
+import java.security.cert.CertPath;
+import java.security.cert.CertPathValidator;
+import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.PKIXParameters;
+import java.security.cert.TrustAnchor;
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.ManagerFactoryParameters;
@@ -63,6 +66,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactorySpi;
 import javax.net.ssl.X509TrustManager;
 
+import gnu.java.security.action.GetPropertyAction;
+import gnu.java.security.x509.X509CertPath;
 import gnu.javax.net.ssl.NullManagerParameters;
 import gnu.javax.net.ssl.StaticTrustAnchors;
 
@@ -76,21 +81,22 @@ public class X509TrustManagerFactory extends TrustManagerFactorySpi
   // Constants and fields.
   // -------------------------------------------------------------------------
 
+  private static final String sep
+    = AccessController.doPrivileged(new GetPropertyAction("file.separator"));
+  
   /**
    * The location of the JSSE key store.
    */
-  private static final String JSSE_CERTS = Util.getProperty("java.home")
-    + Util.getProperty("file.separator") + "lib"
-    + Util.getProperty("file.separator") + "security"
-    + Util.getProperty("file.separator") + "jssecerts";
+  private static final String JSSE_CERTS
+    = AccessController.doPrivileged(new GetPropertyAction("java.home"))
+      + sep + "lib" + sep + "security" + sep + "jssecerts";
 
   /**
    * The location of the system key store, containing the CA certs.
    */
-  private static final String CA_CERTS = Util.getProperty("java.home")
-    + Util.getProperty("file.separator") + "lib"
-    + Util.getProperty("file.separator") + "security"
-    + Util.getProperty("file.separator") + "cacerts";
+  private static final String CA_CERTS
+    = AccessController.doPrivileged(new GetPropertyAction("java.home"))
+      + sep + "lib" + sep + "security" + sep + "cacerts";
 
   private Manager current;
 
@@ -135,13 +141,14 @@ public class X509TrustManagerFactory extends TrustManagerFactorySpi
   {
     if (store == null)
       {
-        String s = Util.getProperty("javax.net.ssl.trustStoreType");
+        GetPropertyAction gpa = new GetPropertyAction("javax.net.ssl.trustStoreType");
+        String s = AccessController.doPrivileged(gpa);
         if (s == null)
           s = KeyStore.getDefaultType();
         store = KeyStore.getInstance(s);
         try
           {
-            s = Util.getProperty("javax.net.ssl.trustStore");
+            s = AccessController.doPrivileged(gpa.setParameters("javax.net.ssl.trustStore"));
             FileInputStream in = null;
             if (s == null)
               {
@@ -158,24 +165,24 @@ public class X509TrustManagerFactory extends TrustManagerFactorySpi
               {
                 in = new FileInputStream(s);
               }
-            String p = Util.getProperty("javax.net.ssl.trustStorePassword");
+            String p = AccessController.doPrivileged(gpa.setParameters("javax.net.ssl.trustStorePassword"));
             store.load(in, p != null ? p.toCharArray() : null);
           }
         catch (IOException ioe)
           {
-            throw new KeyStoreException(ioe.toString());
+            throw new KeyStoreException(ioe);
           }
         catch (CertificateException ce)
           {
-            throw new KeyStoreException(ce.toString());
+            throw new KeyStoreException(ce);
           }
         catch (NoSuchAlgorithmException nsae)
           {
-            throw new KeyStoreException(nsae.toString());
+            throw new KeyStoreException(nsae);
           }
       }
 
-    LinkedList l = new LinkedList();
+    LinkedList<X509Certificate> l = new LinkedList<X509Certificate>();
     Enumeration aliases = store.aliases();
     while (aliases.hasMoreElements())
       {
@@ -185,10 +192,9 @@ public class X509TrustManagerFactory extends TrustManagerFactorySpi
         Certificate c = store.getCertificate(alias);
         if (!(c instanceof X509Certificate))
           continue;
-        l.add(c);
+        l.add((X509Certificate) c);
       }
-    current = this.new Manager((X509Certificate[])
-                               l.toArray(new X509Certificate[l.size()]));
+    current = this.new Manager(l.toArray(new X509Certificate[l.size()]));
   }
 
   // Inner class.
@@ -203,14 +209,21 @@ public class X509TrustManagerFactory extends TrustManagerFactorySpi
     // Fields.
     // -----------------------------------------------------------------------
 
-    private final X509Certificate[] trusted;
+    private final Set<TrustAnchor> anchors;
 
     // Constructor.
     // -----------------------------------------------------------------------
 
     Manager(X509Certificate[] trusted)
     {
-      this.trusted = trusted;
+      anchors = new HashSet<TrustAnchor>();
+      if (trusted != null)
+        {
+          for (X509Certificate cert : trusted)
+            {
+              anchors.add(new TrustAnchor(cert, null));
+            }
+        }
     }
 
     // Instance methodns.
@@ -230,9 +243,7 @@ public class X509TrustManagerFactory extends TrustManagerFactorySpi
 
     public X509Certificate[] getAcceptedIssuers()
     {
-      if (trusted == null)
-        return new X509Certificate[0];
-      return (X509Certificate[]) trusted.clone();
+      return anchors.toArray(new X509Certificate[anchors.size()]);
     }
 
     // Own methods.
@@ -241,58 +252,44 @@ public class X509TrustManagerFactory extends TrustManagerFactorySpi
     private void checkTrusted(X509Certificate[] chain, String authType)
       throws CertificateException
     {
-      // NOTE: this is not a full-featured path validation algorithm.
-      //
-      // Step 0: check if the target is valid now.
-      chain[0].checkValidity();
-
-      // Step 1: verify that the chain is complete and valid.
-      for (int i = 1; i < chain.length; i++)
+      CertPathValidator validator = null;
+      
+      try
         {
-          chain[i].checkValidity();
-          try
-            {
-              chain[i-1].verify(chain[i].getPublicKey());
-            }
-          catch (NoSuchAlgorithmException nsae)
-            {
-              throw new CertificateException(nsae.toString());
-            }
-          catch (NoSuchProviderException nspe)
-            {
-              throw new CertificateException(nspe.toString());
-            }
-          catch (InvalidKeyException ike)
-            {
-              throw new CertificateException(ike.toString());
-            }
-          catch (SignatureException se)
-            {
-              throw new CertificateException(se.toString());
-            }
+          validator = CertPathValidator.getInstance("PKIX");
         }
-
-      // Step 2: verify that the root of the chain was issued by a trust anchor.
-      if (trusted == null || trusted.length == 0)
-        throw new CertificateException("no trust anchors");
-      for (int i = 0; i < trusted.length; i++)
+      catch (NoSuchAlgorithmException nsae)
         {
-          try
-            {
-              trusted[i].checkValidity();
-              chain[chain.length-1].verify(trusted[i].getPublicKey());
-              return;
-            }
-          catch (Exception e)
-            {
-            }
-          //catch (CertificateException ce) { }
-          //catch (NoSuchAlgorithmException nsae) { }
-          //catch (NoSuchProviderException nspe) { }
-          //catch (InvalidKeyException ike) { }
-          //catch (SignatureException se) { }
+          throw new CertificateException(nsae);
         }
-      throw new CertificateException();
+      
+      CertPath path = new X509CertPath(Arrays.asList(chain));
+      
+      PKIXParameters params = null;
+      try
+        {
+          params = new PKIXParameters(anchors);
+          // XXX we probably do want to enable revocation, but it's a pain
+          // in the ass.
+          params.setRevocationEnabled(false);
+        }
+      catch (InvalidAlgorithmParameterException iape)
+        {
+          throw new CertificateException(iape);
+        }
+      
+      try
+        {
+          validator.validate(path, params);
+        }
+      catch (CertPathValidatorException cpve)
+        {
+          throw new CertificateException(cpve);
+        }
+      catch (InvalidAlgorithmParameterException iape)
+        {
+          throw new CertificateException(iape);
+        }
     }
   }
 }

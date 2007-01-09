@@ -106,5 +106,6 @@ public abstract class SelectionKeyImpl extends AbstractSelectionKey
     return impl;
   }
 
+  /* @deprecated */
   public abstract int getNativeFD();
 }

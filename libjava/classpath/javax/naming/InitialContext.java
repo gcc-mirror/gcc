@@ -73,7 +73,7 @@ public class InitialContext implements Context
   /**
    * The environment, associated with this initial context.
    */
-  protected Hashtable myProps;
+  protected Hashtable<Object,Object> myProps;
   
   /**
    * The list of the properties, to that the second alternative value must
@@ -111,7 +111,7 @@ public class InitialContext implements Context
    *          created.
    * @throws NamingException
    */
-  public InitialContext(Hashtable environment) throws NamingException
+  public InitialContext(Hashtable<?,?> environment) throws NamingException
   {
     init(environment);
   }
@@ -166,13 +166,13 @@ public class InitialContext implements Context
    *          not later reuse this structure for other purposes.
    * @since 1.3
    */
-  protected void init(Hashtable environment) throws NamingException
+  protected void init(Hashtable<?, ?> environment) throws NamingException
   {
     // If is documented that the caller should not modify the environment.
     if (environment != null)
-      myProps = environment;
+      myProps = (Hashtable<Object, Object>) environment;
     else
-      myProps = new Hashtable();
+      myProps = new Hashtable<Object, Object>();
 
     Applet napplet = (Applet) myProps.get(Context.APPLET);
 
@@ -424,25 +424,25 @@ public class InitialContext implements Context
   }
 
   /** @inheritDoc */  
-  public NamingEnumeration list (Name name) throws NamingException
+  public NamingEnumeration<NameClassPair> list (Name name) throws NamingException
   {
     return getURLOrDefaultInitCtx (name).list (name);
   }
 
   /** @inheritDoc */  
-  public NamingEnumeration list (String name) throws NamingException
+  public NamingEnumeration<NameClassPair> list (String name) throws NamingException
   {
     return getURLOrDefaultInitCtx (name).list (name);
   }
 
   /** @inheritDoc */  
-  public NamingEnumeration listBindings (Name name) throws NamingException
+  public NamingEnumeration<Binding> listBindings (Name name) throws NamingException
   {
     return getURLOrDefaultInitCtx (name).listBindings (name);
   }
 
   /** @inheritDoc */  
-  public NamingEnumeration listBindings (String name) throws NamingException
+  public NamingEnumeration<Binding> listBindings (String name) throws NamingException
   {
     return getURLOrDefaultInitCtx (name).listBindings (name);
   }
@@ -522,7 +522,7 @@ public class InitialContext implements Context
   }
 
   /** @inheritDoc */  
-  public Hashtable getEnvironment () throws NamingException
+  public Hashtable<?,?> getEnvironment () throws NamingException
   {
     return myProps;
   }

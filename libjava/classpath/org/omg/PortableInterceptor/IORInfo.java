@@ -1,5 +1,5 @@
 /* IORInfo.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ import java.io.Serializable;
  * Provides the server-side ORB service possibility to add components to the new
  * IOR being created. Also, provides access to policies, applicable to the
  * object, referenced by that IOR. The ORB passes an instance of IORInfo as a
- * parameter to {@link IORInterceptor#establish_components}.
+ * parameter to {@link IORInterceptorOperations#establish_components}.
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */

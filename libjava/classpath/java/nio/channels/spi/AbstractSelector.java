@@ -1,5 +1,5 @@
 /* AbstractSelector.java --
-   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -49,7 +49,7 @@ public abstract class AbstractSelector extends Selector
 {
   private boolean closed;
   private SelectorProvider provider;
-  private HashSet cancelledKeys;
+  private HashSet<SelectionKey> cancelledKeys;
 
   /**
    * Initializes the slector.
@@ -59,7 +59,7 @@ public abstract class AbstractSelector extends Selector
   protected AbstractSelector(SelectorProvider provider)
   {
     this.provider = provider;
-    this.cancelledKeys = new HashSet();
+    this.cancelledKeys = new HashSet<SelectionKey>();
   }
 
   /**
@@ -115,7 +115,7 @@ public abstract class AbstractSelector extends Selector
    *
    * @return the cancelled keys set
    */
-  protected final Set cancelledKeys()
+  protected final Set<SelectionKey> cancelledKeys()
   {
     if (! isOpen())
       throw new ClosedSelectorException();

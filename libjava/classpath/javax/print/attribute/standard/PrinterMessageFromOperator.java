@@ -40,6 +40,7 @@ package javax.print.attribute.standard;
 
 import java.util.Locale;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.PrintServiceAttribute;
 import javax.print.attribute.TextSyntax;
 
@@ -95,7 +96,7 @@ public final class PrinterMessageFromOperator extends TextSyntax
    *
    * @return The class <code>PrinterMessageFromOperator</code> itself.
    */
-  public Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return PrinterMessageFromOperator.class;
   }

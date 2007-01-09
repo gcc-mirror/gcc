@@ -748,7 +748,6 @@ public class BasicGraphicsUtils
     }
   }
 
-
   /**
    * Determines the preferred width and height of an AbstractButton,
    * given the gap between the button&#x2019;s text and icon.
@@ -769,24 +768,31 @@ public class BasicGraphicsUtils
   public static Dimension getPreferredButtonSize(AbstractButton b,
                                                  int textIconGap)
   {
-    Rectangle contentRect;
-    Rectangle viewRect;
-    Rectangle iconRect = new Rectangle();
-    Rectangle textRect = new Rectangle();
-    Insets insets = b.getInsets();
-    
-    viewRect = new Rectangle();
+    // These cached rectangles are use here and in BasicButtonUI.paint(),
+    // so these two methods must never be executed concurrently. Maybe
+    // we must use other Rectangle instances here. OTOH, Swing is
+    // designed to be not thread safe, and every layout and paint operation
+    // should be performed from the EventDispatchThread, so it _should_ be
+    // OK to do this optimization.
+    Rectangle viewRect = BasicButtonUI.viewR;
+    viewRect.x = 0;
+    viewRect.y = 0;
+    viewRect.width = Short.MAX_VALUE;
+    viewRect.height = Short.MAX_VALUE;
+    Rectangle iconRect = BasicButtonUI.iconR;
+    iconRect.x = 0;
+    iconRect.y = 0;
+    iconRect.width = 0;
+    iconRect.height = 0;
+    Rectangle textRect = BasicButtonUI.textR;
+    textRect.x = 0;
+    textRect.y = 0;
+    textRect.width = 0;
+    textRect.height = 0;
 
-     /* java.awt.Toolkit.getFontMetrics is deprecated. However, it
-     * seems not obvious how to get to the correct FontMetrics object
-     * otherwise. The real problem probably is that the method
-     * javax.swing.SwingUtilities.layoutCompundLabel should take a
-     * LineMetrics, not a FontMetrics argument. But fixing this that
-     * would change the public API.
-     */
    SwingUtilities.layoutCompoundLabel(
       b, // for the component orientation
-      b.getToolkit().getFontMetrics(b.getFont()), // see comment above
+      b.getFontMetrics(b.getFont()), // see comment above
       b.getText(),
       b.getIcon(),
       b.getVerticalAlignment(), 
@@ -804,13 +810,12 @@ public class BasicGraphicsUtils
      *  +------------------------+       +------------------------+
      */
 
-    contentRect = textRect.union(iconRect);
-    
-    return new Dimension(insets.left
-			 + contentRect.width 
-			 + insets.right + b.getHorizontalAlignment(),
-                         insets.top
-			 + contentRect.height 
-			 + insets.bottom);
+    Rectangle contentRect =
+      SwingUtilities.computeUnion(textRect.x, textRect.y, textRect.width,
+                                  textRect.height, iconRect);
+
+    Insets insets = b.getInsets();
+    return new Dimension(insets.left + contentRect.width + insets.right,
+                         insets.top + contentRect.height + insets.bottom);
   }
 }

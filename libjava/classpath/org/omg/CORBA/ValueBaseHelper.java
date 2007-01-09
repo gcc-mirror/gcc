@@ -1,5 +1,5 @@
 /* ValueBaseHelper.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,7 +43,9 @@ import gnu.CORBA.typecodes.RecordTypeCode;
 
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
+import org.omg.CORBA.portable.ValueBase;
 
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 /**
@@ -105,7 +107,7 @@ public abstract class ValueBaseHelper
 
   /**
    * Get the typecode of the value type.
-   * @return
+   * @return the typecode of the value type
    */
   public static TypeCode type()
   {

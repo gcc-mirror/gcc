@@ -110,7 +110,7 @@ public abstract class IIOServiceProvider
    * @param category the service category for which this provider has
    * been registered as an implementor.
    */
-  public void onRegistration(ServiceRegistry registry, Class category)
+  public void onRegistration(ServiceRegistry registry, Class<?> category)
   {
   }
 
@@ -128,7 +128,7 @@ public abstract class IIOServiceProvider
    * @param category the service category for which this provider has
    * been registered as an implementor.
    */
-  public void onDeregistration(ServiceRegistry registry, Class category)
+  public void onDeregistration(ServiceRegistry registry, Class<?> category)
   {
   }
 

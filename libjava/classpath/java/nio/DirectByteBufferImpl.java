@@ -233,7 +233,7 @@ abstract class DirectByteBufferImpl extends ByteBuffer
   {
     int pos = position();
     if (this.mark != -1)
-    reset();
+      reset();
     int mark = position();
     position(pos);
     DirectByteBufferImpl result;

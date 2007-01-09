@@ -1,5 +1,5 @@
 /* NameDynAnyPairHelper.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -151,7 +151,7 @@ public abstract class NameDynAnyPairHelper
    * The method should write this object to the CDR input stream, but
    * (following the JDK 1.5 API) it does not.
    *
-   * @param input a org.omg.CORBA.portable stream to read from.
+   * @param output a org.omg.CORBA.portable stream to write into.
    *
    * @specenote Sun throws the same exception.
    *

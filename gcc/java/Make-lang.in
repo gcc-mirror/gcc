@@ -1,6 +1,7 @@
 # Top level -*- makefile -*- fragment for the GNU compiler for the Java(TM)
 # language.
-#   Copyright (C) 1996, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+#   Copyright (C) 1996, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+#   2005, 2006, 2007 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -43,18 +44,15 @@
 # Actual names to use when installing a native compiler.
 JAVA_INSTALL_NAME := $(shell echo gcj|sed '$(program_transform_name)')
 JAVA_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcj|sed '$(program_transform_name)')
-GCJH_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcjh|sed '$(program_transform_name)')
 
 GCJ = gcj
 
 # Define the names for selecting java in LANGUAGES.
-java: jc1$(exeext) $(GCJ)$(exeext) jvgenmain$(exeext) \
-      gcjh$(exeext) jv-scan$(exeext) jcf-dump$(exeext) \
-      gjnih$(exeext)
+java: jc1$(exeext) $(GCJ)$(exeext) jvgenmain$(exeext) jcf-dump$(exeext)
 
 # Define the name of target independent tools to be installed in $(bindir)
 # Names are subject to changes
-JAVA_TARGET_INDEPENDENT_BIN_TOOLS = gcjh gjnih jv-scan jcf-dump
+JAVA_TARGET_INDEPENDENT_BIN_TOOLS = jcf-dump
 
 # Tell GNU make to ignore these if they exist.
 .PHONY: java
@@ -67,54 +65,27 @@ jvspec.o: $(srcdir)/java/jvspec.c $(SYSTEM_H) coretypes.h $(TM_H) \
 		$(INCLUDES) $(srcdir)/java/jvspec.c $(OUTPUT_OPTION))
 
 # Create the compiler driver for $(GCJ).
-$(GCJ)$(exeext): $(GCC_OBJS) jvspec.o version.o \
+$(GCJ)$(exeext): $(GCC_OBJS) jvspec.o java/jcf-path.o version.o \
 	   prefix.o intl.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) jvspec.o \
-	  prefix.o intl.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
+	  java/jcf-path.o prefix.o intl.o \
+	  version.o $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Create a version of the $(GCJ) driver which calls the cross-compiler.
 $(GCJ)-cross$(exeext): $(GCJ)$(exeext)
 	-rm -f $(GCJ)-cross$(exeext)
 	cp $(GCJ)$(exeext) $(GCJ)-cross$(exeext)
 
-java.srcextra: java/parse.c java/parse-scan.c
-	-cp -p $^ $(srcdir)/java
-
-java/parse.c: java/parse.y
-	-$(BISON) -t --name-prefix=java_ $(BISONFLAGS) -o $@ $<
-
-java/parse-scan.c: java/parse-scan.y
-	-$(BISON) -t $(BISONFLAGS) -o $@ $< 
-
-$(srcdir)/java/keyword.h: $(srcdir)/java/keyword.gperf
-	(cd $(srcdir)/java || exit 1; \
-	gperf -L ANSI-C -C -F ', 0' -p -t -j1 -i 1 -g -o -N java_keyword -k1,4,$$ \
-		keyword.gperf > k$$$$.h || { \
-	echo "Please update gperf from ftp://ftp.gnu.org/pub/gnu/gperf/" >&2; \
-	rm -f k$$$$.h; \
-	exit 1; } ; \
-	mv -f k$$$$.h keyword.h)
-
-gt-java-parse.h : s-gtype ; @true
+java.srcextra:
 
 # Executables built by this Makefile:
-JAVA_OBJS = java/parse.o java/class.o java/decl.o java/expr.o \
+JAVA_OBJS = java/class.o java/decl.o java/expr.o \
   java/constants.o java/lang.o java/typeck.o java/except.o \
   java/verify-glue.o java/verify-impl.o \
   java/zextract.o java/jcf-io.o java/win32-host.o java/jcf-parse.o java/mangle.o \
   java/mangle_name.o java/builtins.o java/resource.o \
-  java/jcf-write.o java/buffer.o java/check-init.o java/jcf-depend.o \
+  java/jcf-depend.o \
   java/jcf-path.o java/boehm.o java/java-gimplify.o
-
-GCJH_OBJS = java/gjavah.o java/jcf-io.o java/jcf-depend.o java/jcf-path.o \
-  java/win32-host.o java/zextract.o version.o errors.o ggc-none.o \
-  intl.o
-
-GJNIH_OBJS = java/gjavah-jni.o java/jcf-io.o java/jcf-depend.o java/jcf-path.o \
-  java/win32-host.o java/zextract.o version.o errors.o \
-  ggc-none.o intl.o
-
-JVSCAN_OBJS = java/parse-scan.o java/jv-scan.o version.o intl.o
 
 JCFDUMP_OBJS = java/jcf-dump.o java/jcf-io.o java/jcf-depend.o java/jcf-path.o \
 		java/win32-host.o java/zextract.o errors.o version.o ggc-none.o intl.o
@@ -128,25 +99,12 @@ java-warn = $(STRICT_WARN)
 jvspec.o-warn = -Wno-error
 
 # Bison-1.75 output often yields (harmless) -Wtraditional warnings
-java/parse-scan.o-warn = -Wno-error
 java/parse.o-warn = -Wno-error
 
 jc1$(exeext): $(JAVA_OBJS) $(BACKEND) $(LIBDEPS) attribs.o
 	rm -f $@
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 		$(JAVA_OBJS) $(BACKEND) $(ZLIB) $(LIBICONV) $(LIBS) attribs.o
-
-gcjh$(exeext): $(GCJH_OBJS) $(LIBDEPS)
-	rm -f $@
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GCJH_OBJS) $(CPPLIBS) $(ZLIB) $(LIBS)
-
-gjnih$(exeext): $(GJNIH_OBJS) $(LIBDEPS)
-	rm -f $@
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GJNIH_OBJS) $(CPPLIBS) $(ZLIB) $(LIBS)
-
-jv-scan$(exeext): $(JVSCAN_OBJS) $(LIBDEPS)
-	rm -f $@
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(JVSCAN_OBJS) $(LIBICONV) $(LIBS)
 
 jcf-dump$(exeext): $(JCFDUMP_OBJS) $(LIBDEPS)
 	rm -f $@
@@ -179,9 +137,9 @@ java.srcinfo: doc/gcj.info
 java.dvi: doc/gcj.dvi
 java.pdf: doc/gcj.pdf
 java.html: $(build_htmldir)/java/index.html
-JAVA_MANFILES = doc/gcj.1 doc/gcjh.1 doc/jv-scan.1 doc/jcf-dump.1 doc/gij.1 \
+JAVA_MANFILES = doc/gcj.1 doc/jcf-dump.1 doc/gij.1 \
                 doc/jv-convert.1 doc/grmic.1 doc/grmiregistry.1 \
-		doc/gcj-dbtool.1 doc/gjnih.1
+		doc/gcj-dbtool.1
 
 java.man: $(JAVA_MANFILES)
 
@@ -191,14 +149,10 @@ java.srcman: $(JAVA_MANFILES)
 check-java :
 
 # Install hooks:
-# jc1, gcj, jvgenmain, and gcjh are installed elsewhere as part
+# jc1, gcj, and jvgenmain are installed elsewhere as part
 # of $(COMPILERS).
 
 # Install gcj as well as the target-independent tools.
-# For a native build, we special-case gcjh and also install
-# its explicitly-prefixed variant. This allows us to write
-# portable makefiles for both cross builds (where gcjh *must*
-# be explicitly prefixed) and native builds.
 java.install-common: installdirs
 	-if [ -f $(GCJ)$(exeext) ]; then \
 	  rm -f $(DESTDIR)$(bindir)/$(JAVA_INSTALL_NAME)$(exeext); \
@@ -218,13 +172,6 @@ java.install-common: installdirs
 	    rm -f $(DESTDIR)$(bindir)/$$tool_transformed_name$(exeext); \
 	    $(INSTALL_PROGRAM) $$tool$(exeext) $(DESTDIR)$(bindir)/$$tool_transformed_name$(exeext); \
 	    chmod a+x $(DESTDIR)$(bindir)/$$tool_transformed_name$(exeext); \
-	    if [ -f $(GCJ)-cross$(exeext) ]; then \
-	      true; \
-	    elif [ $$tool = gcjh ]; then \
-	      rm -f $(DESTDIR)$(bindir)/$(GCJH_TARGET_INSTALL_NAME)$(exeext); \
-	      ( cd $(DESTDIR)$(bindir) && \
-	        $(LN) $$tool_transformed_name$(exeext) $(GCJH_TARGET_INSTALL_NAME)$(exeext) ); \
-	    fi; \
           fi ; \
        done
 
@@ -233,9 +180,6 @@ java.install-man:
 java.uninstall:
 	-rm -rf $(DESTDIR)$(bindir)/$(JAVA_INSTALL_NAME)$(exeext)
 	-rm -rf $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext)
-	-rm -rf $(DESTDIR)$(man1dir)/gcjh$(man1ext)
-	-rm -rf $(DESTDIR)$(man1dir)/gjnih$(man1ext)
-	-rm -rf $(DESTDIR)$(man1dir)/jv-scan$(man1ext)
 	-rm -rf $(DESTDIR)$(man1dir)/jcf-dump$(man1ext)
 	-rm -rf $(DESTDIR)$(man1dir)/gij$(man1ext)
 	-rm -rf $(DESTDIR)$(man1dir)/jv-convert$(man1ext)
@@ -249,18 +193,16 @@ java.install-info: $(DESTDIR)$(infodir)/gcj.info
 # We just have to delete files specific to us.
 
 java.mostlyclean:
-	-rm -f java/parse.c java/parse-scan.c
 	-rm -f java/*$(objext) $(DEMANGLER_PROG)
 	-rm -f java/*$(coverageexts)
-	-rm -f jc1$(exeext) $(GCJ)$(exeext) jvgenmain$(exeext) gcjh$(exeext) \
-          gjnih$(exeext) jv-scan$(exeext) jcf-dump$(exeext) s-java
+	-rm -f jc1$(exeext) $(GCJ)$(exeext) jvgenmain$(exeext) \
+          jcf-dump$(exeext) s-java
 java.clean:
 java.distclean:
 	-rm -f java/config.status java/Makefile
-	-rm -f java/parse.output java/y.tab.c
 java.maintainer-clean:
-	-rm -f $(docobjdir)/gcj.1 $(docobjdir)/gcjh.1 $(docobjdir)/gjnih.1
-	-rm -f $(docobjdir)/jv-scan.1 $(docobjdir)/jcf-dump.1
+	-rm -f $(docobjdir)/gcj.1
+	-rm -f $(docobjdir)/jcf-dump.1
 	-rm -f $(docobjdir)/gij.1
 	-rm -f $(docobjdir)/jv-convert.1
 	-rm -f $(docobjdir)/grmic.1
@@ -286,22 +228,14 @@ java.stagefeedback: stageprofile-start
 #
 # .o:.h dependencies.
 JAVA_TREE_H = $(TREE_H) $(HASHTAB_H) java/java-tree.h java/java-tree.def
-JAVA_LEX_C = java/lex.c java/keyword.h java/chartables.h
 
 java/jcf-dump.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(JAVA_TREE_H) \
   java/jcf-dump.c java/jcf-reader.c java/jcf.h java/javaop.h java/javaop.def \
   version.h $(GGC_H) intl.h
-java/gjavah.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(JAVA_TREE_H) \
-  java/gjavah.c java/jcf-reader.c java/jcf.h java/javaop.h version.h $(GGC_H) \
-  intl.h
 java/boehm.o: java/boehm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(TREE_H) $(JAVA_TREE_H) java/parse.h toplev.h
-java/buffer.o: java/buffer.c $(CONFIG_H) java/buffer.h $(SYSTEM_H) coretypes.h \
-  $(TM_H) toplev.h
 java/builtins.o: java/builtins.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(JAVA_TREE_H) $(GGC_H) $(FLAGS_H) langhooks.h gt-java-builtins.h
-java/check-init.o: java/check-init.c $(CONFIG_H) $(JAVA_TREE_H) $(SYSTEM_H) \
-  coretypes.h $(TM_H) toplev.h
 java/class.o: java/class.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(JAVA_TREE_H) $(RTL_H) java/jcf.h java/parse.h toplev.h output.h $(GGC_H) \
   $(TARGET_H) $(FUNCTION_H) gt-java-class.h $(CGRAPH_H)
@@ -323,11 +257,6 @@ java/jcf-depend.o: java/jcf-depend.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 java/jcf-parse.o: java/jcf-parse.c $(CONFIG_H) $(JAVA_TREE_H) $(FLAGS_H) \
   input.h java/java-except.h $(SYSTEM_H) coretypes.h $(TM_H) toplev.h \
   java/parse.h $(GGC_H) debug.h $(REAL_H) gt-java-jcf-parse.h $(TM_P_H)
-java/jcf-write.o: java/jcf-write.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
-  $(RTL_H) java/java-opcodes.h java/parse.h java/buffer.h $(SYSTEM_H) \
-  coretypes.h $(TM_H) toplev.h $(GGC_H) gt-java-jcf-write.h $(TM_P_H)
-java/jv-scan.o: java/jv-scan.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  version.h intl.h
 java/jvgenmain.o: java/jvgenmain.c $(CONFIG_H) $(JAVA_TREE_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) intl.h
 java/lang.o: java/lang.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h input.h \
@@ -341,7 +270,7 @@ java/resource.o: java/resource.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(JAVA_TREE_H) $(RTL_H) java/jcf.h java/parse.h toplev.h output.h $(GGC_H) \
   $(TARGET_H) $(FUNCTION_H) gt-java-resource.h $(EXPR_H)
 java/typeck.o: java/typeck.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
-  java/convert.h toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(GGC_H) $(REAL_H)
+  toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(GGC_H) $(REAL_H)
 java/win32-host.o: java/win32-host.c $(CONFIG_H) $(SYSTEM_H) coretypes.h java/jcf.h
 java/verify-glue.o: java/verify-glue.c $(CONFIG_H) $(SYSTEM_H) $(JAVA_TREE_H) \
   coretypes.h $(TM_H) java/verify.h toplev.h
@@ -351,13 +280,6 @@ java/zextract.o: java/zextract.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   java/zipfile.h
 java/java-gimplify.o: java/java-gimplify.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) $(JAVA_TREE_H) $(TREE_GIMPLE_H) toplev.h
-
-java/parse-scan.o: java/parse-scan.c $(CONFIG_H) $(SYSTEM_H) \
-  coretypes.h $(TM_H) toplev.h $(JAVA_LEX_C) java/parse.h java/lex.h input.h
-java/parse.o: java/parse.c java/jcf-reader.c $(CONFIG_H) $(SYSTEM_H) \
-  coretypes.h $(TM_H) $(FUNCTION_H) $(JAVA_TREE_H) $(JAVA_LEX_C) java/parse.h \
-  java/lex.h input.h $(GGC_H) debug.h gt-java-parse.h gtype-java.h $(TARGET_H) \
-  $(TREE_DUMP_H)
 
 # jcf-io.o needs $(ZLIBINC) added to cflags.
 java/jcf-io.o: java/jcf-io.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
@@ -372,14 +294,6 @@ java/jcf-path.o: java/jcf-path.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	  -DLIBGCJ_ZIP_FILE='"$(datadir)/java/libgcj-$(version).jar"' \
 	  -DDEFAULT_TARGET_VERSION=\"$(version)\" \
 	  $(srcdir)/java/jcf-path.c $(OUTPUT_OPTION)
-
-# create gjnih's object
-java/gjavah-jni.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(JAVA_TREE_H) \
-  java/gjavah.c java/jcf-reader.c java/jcf.h java/javaop.h version.h $(GGC_H) \
-  intl.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(ZLIBINC) \
-		-DJNI_DEFAULT=1 \
-		$(srcdir)/java/gjavah.c $(OUTPUT_OPTION)
 
 TEXI_JAVA_FILES = java/gcj.texi $(gcc_docdir)/include/fdl.texi		\
 	 $(gcc_docdir)/include/gpl.texi $(gcc_docdir)/include/gcc-common.texi   \
@@ -403,17 +317,11 @@ $(build_htmldir)/java/index.html: $(TEXI_JAVA_FILES)
 	rm -f $(@D)/*
 	$(TEXI2HTML) -I $(gcc_docdir)/include -I $(srcdir)/java -o $(@D) $<
 
-.INTERMEDIATE: gcj.pod gcjh.pod jv-scan.pod jcf-dump.pod gij.pod \
-  jv-convert.pod grmic.pod grmiregistry.pod gcj-dbtool.pod gjnih.pod
+.INTERMEDIATE: gcj.pod jcf-dump.pod gij.pod \
+  jv-convert.pod grmic.pod grmiregistry.pod gcj-dbtool.pod
 
 gcj.pod: java/gcj.texi
 	-$(TEXI2POD) -D gcj < $< > $@
-gcjh.pod: java/gcj.texi
-	-$(TEXI2POD) -D gcjh < $< > $@
-gjnih.pod: java/gcj.texi
-	-$(TEXI2POD) -D gjnih < $< > $@
-jv-scan.pod: java/gcj.texi
-	-$(TEXI2POD) -D jv-scan < $< > $@
 jcf-dump.pod: java/gcj.texi
 	-$(TEXI2POD) -D jcf-dump < $< > $@
 gij.pod: java/gcj.texi

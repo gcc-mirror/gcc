@@ -1041,7 +1041,7 @@ public class JList extends JComponent implements Accessible, Scrollable
    *
    * @param items  the initial list items.
    */
-  public JList(Vector items)
+  public JList(Vector<?> items)
   {
     init(createListModel(items));
   }
@@ -1643,9 +1643,20 @@ public class JList extends JComponent implements Accessible, Scrollable
    * @param listData The object array to build a new list model on
    * @see #setModel
    */
-  public void setListData(Vector listData)
+  public void setListData(final Vector<?> listData)
   {
-    setModel(createListModel(listData));
+    setModel(new AbstractListModel()
+      {
+	public int getSize()
+	{
+	  return listData.size();
+	}
+	
+	public Object getElementAt(int i)
+	{
+	  return listData.elementAt(i);
+	}
+      });
   }
 
   /**
@@ -1935,72 +1946,74 @@ public class JList extends JComponent implements Accessible, Scrollable
   public int getScrollableUnitIncrement(Rectangle visibleRect,
                                         int orientation, int direction)
   {
-    ListUI lui = this.getUI();
+    int unit = -1;
     if (orientation == SwingConstants.VERTICAL)
       {
-        if (direction > 0)
+        int row = getFirstVisibleIndex();
+        if (row == -1)
+          unit = 0;
+        else if (direction > 0)
           {
-            // Scrolling down
-            Point bottomLeft = new Point(visibleRect.x,
-                                         visibleRect.y + visibleRect.height);
-            int curIdx = lui.locationToIndex(this, bottomLeft);
-            Rectangle curBounds = lui.getCellBounds(this, curIdx, curIdx);
-            if (curBounds.y + curBounds.height == bottomLeft.y)
-              {
-                // we are at the exact bottom of the current cell, so we 
-                // are being asked to scroll to the end of the next one
-                if (curIdx + 1 < model.getSize())
-                  {
-                    // there *is* a next item in the list
-                    Rectangle nxtBounds = lui.getCellBounds(this, curIdx + 1, curIdx + 1);
-                    return nxtBounds.height;
-                  }
-                else
-                  {
-                    // no next item, no advance possible
-                    return 0;
-                  }
-              }
+            // Scrolling down.
+            Rectangle bounds = getCellBounds(row, row);
+            if (bounds != null)
+              unit = bounds.height - (visibleRect.y - bounds.y);
             else
-              {
-                // we are part way through an existing cell, so we are being
-                // asked to scroll to the bottom of it
-                return (curBounds.y + curBounds.height) - bottomLeft.y;
-              }		      
+              unit = 0;
           }
         else
           {
-            // scrolling up
-            Point topLeft = new Point(visibleRect.x, visibleRect.y);
-            int curIdx = lui.locationToIndex(this, topLeft);
-            Rectangle curBounds = lui.getCellBounds(this, curIdx, curIdx);
-            if (curBounds.y == topLeft.y)
+            // Scrolling up.
+            Rectangle bounds = getCellBounds(row, row);
+            // First row.
+            if (row == 0 && bounds.y == visibleRect.y)
+              unit = 0; // No need to scroll.
+            else if (bounds.y == visibleRect.y)
               {
-                // we are at the exact top of the current cell, so we 
-                // are being asked to scroll to the top of the previous one
-                if (curIdx > 0)
-                  {
-                    // there *is* a previous item in the list
-                    Rectangle nxtBounds = lui.getCellBounds(this, curIdx - 1, curIdx - 1);
-                    return -nxtBounds.height;
-                  }
+                // Scroll to previous row.
+                Point loc = bounds.getLocation();
+                loc.y--;
+                int prev = locationToIndex(loc);
+                Rectangle prevR = getCellBounds(prev, prev);
+                if (prevR == null || prevR.y >= bounds.y)
+                  unit = 0; // For multicolumn lists.
                 else
-                  {
-                    // no previous item, no advance possible
-                    return 0;
-                  }
+                  unit = prevR.height;
               }
             else
+              unit = visibleRect.y - bounds.y;
+          }
+      }
+    else if (orientation == SwingConstants.HORIZONTAL && getLayoutOrientation() != VERTICAL)
+      {
+        // Horizontal scrolling.
+        int i = locationToIndex(visibleRect.getLocation());
+        if (i != -1)
+          {
+            Rectangle b = getCellBounds(i, i);
+            if (b != null)
               {
-                // we are part way through an existing cell, so we are being
-                // asked to scroll to the top of it
-                return curBounds.y - topLeft.y;
-              }		      
+                if (b.x != visibleRect.x)
+                  {
+                    if (direction < 0)
+                      unit = Math.abs(b.x - visibleRect.x);
+                    else
+                      unit = b.width + b.x - visibleRect.x;
+                  }
+                else
+                  unit = b.width;
+              }
           }
       }
 
-    // FIXME: handle horizontal scrolling (also wrapping?)
-    return 1;
+    if (unit == -1)
+      {
+        // This fallback seems to be used by the RI for the degenerate cases
+        // not covered above.
+        Font f = getFont();
+        unit = f != null ? f.getSize() : 1;
+      }
+    return unit;
   }
 
   /**
@@ -2029,10 +2042,120 @@ public class JList extends JComponent implements Accessible, Scrollable
   public int getScrollableBlockIncrement(Rectangle visibleRect,
                                          int orientation, int direction)
   {
-      if (orientation == VERTICAL)
-	  return visibleRect.height * direction;
-      else
-	  return visibleRect.width * direction;
+    int block = -1;
+    if (orientation == SwingConstants.VERTICAL)
+      {
+        // Default block scroll. Special cases are handled below for
+        // better usability.
+        block = visibleRect.height;
+        if (direction > 0)
+          {
+            // Scroll down.
+            // Scroll so that after scrolling the last line aligns with
+            // the lower boundary of the visible area.
+            Point p = new Point(visibleRect.x,
+                                visibleRect.y + visibleRect.height - 1);
+            int last = locationToIndex(p);
+            if (last != -1)
+              {
+                Rectangle lastR = getCellBounds(last, last);
+                if (lastR != null)
+                  {
+                    block = lastR.y - visibleRect.y;
+                    if (block == 0&& last < getModel().getSize() - 1)
+                      block = lastR.height;
+                  }
+              }
+          }
+        else
+          {
+            // Scroll up.
+            // Scroll so that after scrolling the first line aligns with
+            // the upper boundary of the visible area.
+            Point p = new Point(visibleRect.x,
+                                visibleRect.y - visibleRect.height);
+            int newFirst = locationToIndex(p);
+            if (newFirst != -1)
+              {
+                int first = getFirstVisibleIndex();
+                if (first == -1)
+                  first = locationToIndex(visibleRect.getLocation());
+                Rectangle newFirstR = getCellBounds(newFirst, newFirst);
+                Rectangle firstR = getCellBounds(first, first);
+                if (newFirstR != null && firstR != null)
+                  {
+                    // Search first item that would left the current first
+                    // item visible when scrolled to.
+                    while (newFirstR.y + visibleRect.height
+                           < firstR.y + firstR.height
+                           && newFirstR.y < firstR.y)
+                      {
+                        newFirst++;
+                        newFirstR = getCellBounds(newFirst, newFirst);
+                      }
+                    block = visibleRect.y - newFirstR.y;
+                    if (block <= 0 && newFirstR.y > 0)
+                      {
+                        newFirst--;
+                        newFirstR = getCellBounds(newFirst, newFirst);
+                        if (newFirstR != null)
+                          block = visibleRect.y - newFirstR.y;
+                      }
+                  }
+              }
+          }
+      }
+    else if (orientation == SwingConstants.HORIZONTAL
+             && getLayoutOrientation() != VERTICAL)
+      {
+        // Default block increment. Special cases are handled below for
+        // better usability.
+        block = visibleRect.width;
+        if (direction > 0)
+          {
+            // Scroll right.
+            Point p = new Point(visibleRect.x + visibleRect.width + 1,
+                                visibleRect.y);
+            int last = locationToIndex(p);
+            if (last != -1)
+              {
+                Rectangle lastR = getCellBounds(last, last);
+                if (lastR != null)
+                  {
+                    block = lastR.x  - visibleRect.x;
+                    if (block < 0)
+                      block += lastR.width;
+                    else if (block == 0 && last < getModel().getSize() - 1)
+                      block = lastR.width;
+                  }
+              }
+          }
+        else
+          {
+            // Scroll left.
+            Point p = new Point(visibleRect.x - visibleRect.width,
+                                visibleRect.y);
+            int first = locationToIndex(p);
+            if (first != -1)
+              {
+                Rectangle firstR = getCellBounds(first, first);
+                if (firstR != null)
+                  {
+                    if (firstR.x < visibleRect.x - visibleRect.width)
+                      {
+                        if (firstR.x + firstR.width > visibleRect.x)
+                          block = visibleRect.x - firstR.x;
+                        else
+                          block = visibleRect.x - firstR.x - firstR.width;
+                      }
+                    else
+                      block = visibleRect.x - firstR.x;
+                  }
+              }
+          }
+      }
+
+    return block;
   }
 
   /**

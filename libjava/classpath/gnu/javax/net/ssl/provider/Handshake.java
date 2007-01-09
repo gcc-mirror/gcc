@@ -1,4 +1,4 @@
-/* Handshake.java -- SSL handshake message.
+/* Handshake.java -- SSL Handshake message.
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -49,6 +49,8 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 
+import java.nio.ByteBuffer;
+
 import java.security.PublicKey;
 
 import java.util.ArrayList;
@@ -56,305 +58,218 @@ import java.util.Collections;
 
 import javax.net.ssl.SSLProtocolException;
 
-final class Handshake implements Constructed
+/**
+ * An SSL handshake message. SSL handshake messages have the following
+ * form:
+ *
+ * <pre>
+struct
+{
+  HandshakeType msg_type;
+  uint24        length;
+  select (msg_type)
+  {
+    case hello_request:       HelloRequest;
+    case client_hello:        ClientHello;
+    case server_hello:        ServerHello;
+    case certificate:         Certificate;
+    case server_key_exchange: ServerKeyExchange;
+    case certificate_request: CertificateRequest;
+    case server_hello_done:   ServerHelloDone;
+    case certificate_verify:  CertificateVerify;
+    case client_key_exchange: ClientKeyExchange;
+    case finished:            Finished;
+  } body;
+};</pre>
+ */
+public final class Handshake implements Constructed
 {
 
   // Fields.
   // -------------------------------------------------------------------------
 
-  private static final buffer BUF = new buffer();
-
-  private final Type type;
-  private final Body body;
+  private final ByteBuffer buffer;
+  private final CipherSuite suite;
+  private final ProtocolVersion version;
 
   // Constructors.
   // -------------------------------------------------------------------------
 
-  Handshake(Type type, Body body)
+  public Handshake (final ByteBuffer buffer)
   {
-    this.type = type;
-    this.body = body;
+    this (buffer, null, ProtocolVersion.TLS_1_1);
   }
 
-  // Class methods.
-  // -------------------------------------------------------------------------
-
-  static Handshake read(byte[] buffer) throws IOException
+  public Handshake (final ByteBuffer buffer, final CipherSuite suite,
+                    final ProtocolVersion version)
   {
-    return read(new ByteArrayInputStream(buffer));
-  }
-
-  static Handshake read(byte[] buffer, CipherSuite suite, PublicKey key)
-    throws IOException
-  {
-    return read(new ByteArrayInputStream(buffer), suite, key);
-  }
-
-  static Handshake read(InputStream in) throws IOException
-  {
-    return read(in, null, null);
-  }
-
-  static Handshake read(InputStream in, CipherSuite suite, PublicKey key)
-    throws IOException
-  {
-    return read(in, suite, key, null);
-  }
-
-  static Handshake read(InputStream in, CertificateType certType)
-    throws IOException
-  {
-    return read(in, null, null, certType);
-  }
-
-  static Handshake read(InputStream in, CipherSuite suite, PublicKey key,
-                        CertificateType certType)
-    throws IOException
-  {
-    Type type = Type.read(in);
-    byte[] lenbuf = new byte[3];
-    in.read(lenbuf);
-    int len = (lenbuf[0] & 0xFF) << 16 | (lenbuf[1] & 0xFF) << 8
-            | (lenbuf[2] & 0xFF);
-    Body body = null;
-    if (type == Type.HELLO_REQUEST)
-      {
-        body = null;
-      }
-    else if (type == Type.CLIENT_HELLO)
-      {
-        // Most likely a V2 hello. If the first byte is 0x30, and if this
-        // is not a V2 client hello, then it is a V3 client hello with
-        // at least 1.5 million cipher specs, which is unlikely.
-        if (lenbuf[0] == 3 && (lenbuf[1] >= 0 && lenbuf[1] <= 2))
-          {
-            ProtocolVersion vers = null;
-            switch (lenbuf[1])
-              {
-              case 0:
-                vers = ProtocolVersion.SSL_3;
-                break;
-              case 1:
-                vers = ProtocolVersion.TLS_1;
-                break;
-              case 2:
-                vers = ProtocolVersion.TLS_1_1;
-                break;
-              }
-            int specLen = (lenbuf[2] & 0xFF) << 8 | (in.read() & 0xFF);
-            int idLen   = (in.read() & 0xFF) << 8 | (in.read() & 0xFF);
-            int chalLen = (in.read() & 0xFF) << 8 | (in.read() & 0xFF);
-
-            ArrayList suites = new ArrayList(specLen / 3);
-            for (int i = 0; i < specLen; i += 3)
-              {
-                if (in.read() == 0)
-                  {
-                    suites.add(CipherSuite.read(in).resolve(vers));
-                  }
-                else
-                  {
-                    in.read();
-                    in.read();
-                  }
-              }
-            byte[] id = new byte[idLen];
-            in.read(id);
-            byte[] challenge = new byte[chalLen];
-            in.read(challenge);
-            if (challenge.length > 32)
-              challenge = Util.trim(challenge, 32);
-            else if (challenge.length < 32)
-              {
-                byte[] b = new byte[32];
-                System.arraycopy(challenge, 0, b, b.length - challenge.length,
-                                 challenge.length);
-                challenge = b;
-              }
-            int time = (challenge[0] & 0xFF) << 24 | (challenge[1] & 0xFF) << 16
-                     | (challenge[2] & 0xFF) <<  8 | (challenge[3] & 0xFF);
-            Random rand = new Random(time, Util.trim(challenge, 4, 28));
-            return new Handshake(Handshake.Type.CLIENT_HELLO,
-              new ClientHello(vers, rand, id, suites,
-                              Collections.singletonList(CompressionMethod.NULL)));
-          }
-        // Since hello messages may contain extensions, we read the whole
-        // thing here.
-        byte[] buf = new byte[len];
-        int count = 0;
-        while (count < len)
-          {
-            int l = in.read(buf, count, len - count);
-            if (l == -1)
-              {
-                throw new EOFException("unexpected end of input stream");
-              }
-            count += l;
-          }
-        body = ClientHello.read(new ByteArrayInputStream(buf));
-      }
-    else if (type == Type.SERVER_HELLO)
-      {
-        byte[] buf = new byte[len];
-        int count = 0;
-        while (count < len)
-          {
-            int l = in.read(buf, count, len - count);
-            if (l == -1)
-              {
-                throw new EOFException("unexpected end of input stream");
-              }
-            count += l;
-          }
-        body = ServerHello.read(new ByteArrayInputStream(buf));
-      }
-    else if (type == Type.CERTIFICATE)
-      {
-        body = Certificate.read(in, certType);
-      }
-    else if (type == Type.SERVER_KEY_EXCHANGE)
-      {
-        body = ServerKeyExchange.read(in, suite, key);
-      }
-    else if (type == Type.CERTIFICATE_REQUEST)
-      {
-        body = CertificateRequest.read(in);
-      }
-    else if (type == Type.CERTIFICATE_VERIFY)
-      {
-        body = (CertificateVerify) CertificateVerify.read(in, suite, key);
-      }
-    else if (type == Type.CLIENT_KEY_EXCHANGE)
-      {
-        body = ClientKeyExchange.read(in, suite, key);
-      }
-    else if (type == Type.SERVER_HELLO_DONE)
-      {
-        body = null;
-      }
-    else if (type == Type.FINISHED)
-      {
-        body = Finished.read(in, suite);
-      }
-    else
-      {
-        throw new SSLProtocolException("unknown HandshakeType: " +
-                                       type.getValue());
-      }
-
-    return new Handshake(type, body);
+    this.buffer = buffer;
+    this.suite = suite;
+    this.version = version;
   }
 
   // Instance methods.
   // -------------------------------------------------------------------------
 
-  public void write(OutputStream out)
+  /**
+   * Returns the handshake type.
+   *
+   * @return The handshake type.
+   */
+  public Type type()
   {
-    throw new UnsupportedOperationException();
+    return Type.forInteger (buffer.get (0) & 0xFF);
   }
 
-  public int write(OutputStream out, ProtocolVersion version)
-    throws IOException
+  /**
+   * Returns the message length.
+   *
+   * @return The message length.
+   */
+  public int length ()
   {
-    out.write(type.getValue());
-    if (body == null)
+    // Length is a uint24.
+    return buffer.getInt (0) & 0xFFFFFF;
+  }
+
+  /**
+   * Returns the handshake message body. Depending on the handshake
+   * type, some implementation of the Body interface is returned.
+   *
+   * @return The handshake body.
+   */
+  public Body body()
+  {
+    Type type = type ();
+    ByteBuffer bodyBuffer = bodyBuffer ();
+    switch (type)
       {
-        out.write(0);
-        out.write(0);
-        out.write(0);
-        return 4;
+      case HELLO_REQUEST:
+        return new HelloRequest ();
+
+      case CLIENT_HELLO:
+        return new ClientHello (bodyBuffer);
+
+      case SERVER_HELLO:
+        return new ServerHello (bodyBuffer);
+
+      case CERTIFICATE:
+        return new Certificate (bodyBuffer, CertificateType.X509);
+
+      case SERVER_KEY_EXCHANGE:
+        return new ServerKeyExchange (bodyBuffer, suite);
+
+      case CERTIFICATE_REQUEST:
+        return new CertificateRequest (bodyBuffer);
+
+      case SERVER_HELLO_DONE:
+        return new ServerHelloDone ();
+
+      case CERTIFICATE_VERIFY:
+        return new CertificateVerify (bodyBuffer, suite.signatureAlgorithm ());
+
+      case CLIENT_KEY_EXCHANGE:
+        return new ClientKeyExchange (bodyBuffer, suite, version);
+
+      case FINISHED:
+        return new Finished (bodyBuffer, version);
+
+      case CERTIFICATE_URL:
+      case CERTIFICATE_STATUS:
+        throw new UnsupportedOperationException ("FIXME");
       }
-    else
-      {
-        ByteArrayOutputStream bout = BUF.getBuffer();
-        bout.reset();
-        if (body instanceof ServerKeyExchange)
-          {
-            ((ServerKeyExchange) body).write(bout, version);
-          }
-        else if (body instanceof ClientKeyExchange)
-          {
-            ((ClientKeyExchange) body).write(bout, version);
-          }
-        else if (body instanceof CertificateVerify)
-          {
-            ((CertificateVerify) body).write(bout, version);
-          }
-        else
-          {
-            body.write(bout);
-          }
-        out.write(bout.size() >>> 16 & 0xFF);
-        out.write(bout.size() >>>  8 & 0xFF);
-        out.write(bout.size() & 0xFF);
-        bout.writeTo(out);
-        return 4 + bout.size();
-      }
+    throw new IllegalArgumentException ("unknown handshake type " + type);
   }
 
-  Type getType()
+  /**
+   * Returns a subsequence of the underlying buffer, containing only
+   * the bytes that compose the handshake body.
+   *
+   * @return The body's byte buffer.
+   */
+  public ByteBuffer bodyBuffer ()
   {
-    return type;
+    int length = length ();
+    return ((ByteBuffer) buffer.position (4).limit (4 + length)).slice ();
   }
 
-  Body getBody()
+  /**
+   * Sets the handshake body type.
+   *
+   * @param type The handshake type.
+   */
+  public void setType (final Type type)
   {
-    return body;
+    buffer.put (0, (byte) type.getValue ());
+  }
+
+  /**
+   * Sets the length of the handshake body.
+   *
+   * @param length The handshake body length.
+   * @throws java.nio.ReadOnlyBufferException If the underlying buffer
+   * is not writable.
+   * @throws IllegalArgumentException of <code>length</code> is not
+   * between 0 and 16777215, inclusive.
+   */
+  public void setLength (final int length)
+  {
+    if (length < 0 || length > 0xFFFFFF)
+      throw new IllegalArgumentException ("length " + length + " out of range;"
+                                          + " must be between 0 and 16777215");
+    buffer.put (1, (byte) (length >>> 16));
+    buffer.put (2, (byte) (length >>>  8));
+    buffer.put (3, (byte)  length);
   }
 
   public String toString()
   {
+    return toString (null);
+  }
+
+  public String toString (final String prefix)
+  {
     StringWriter str = new StringWriter();
     PrintWriter out = new PrintWriter(str);
-    String nl = System.getProperty("line.separator");
-    StringBuffer buf = new StringBuffer();
+    if (prefix != null) out.print (prefix);
     out.println("struct {");
-    out.println("  type = " + type + ";");
-    if (body != null)
-      {
-        BufferedReader r = new BufferedReader(new StringReader(body.toString()));
-        String s;
-        try
-          {
-            while ((s = r.readLine()) != null)
-              {
-                out.print("  ");
-                out.println(s);
-              }
-          }
-        catch (IOException ignored)
-          {
-          }
-      }
-    out.println("} Handshake;");
+    if (prefix != null) out.print (prefix);
+    out.print ("  type: ");
+    out.print (type ());
+    out.println (";");
+    Body body = body ();
+    out.println (body.toString (prefix != null ? (prefix + "  ") : "  "));
+    if (prefix != null) out.print (prefix);
+    out.print ("} Handshake;");
     return str.toString();
   }
 
   // Inner class.
   // -------------------------------------------------------------------------
 
-  static interface Body extends Constructed
+  public static interface Body extends Constructed
   {
+    int length ();
+
+    String toString (String prefix);
   }
 
-  static class Type implements Enumerated
+  public static enum Type
   {
-
-    // Constants and fields.
-    // -----------------------------------------------------------------------
-
-    public static final Type
-      HELLO_REQUEST       = new Type( 0), CLIENT_HELLO        = new Type( 1),
-      SERVER_HELLO        = new Type( 2), CERTIFICATE         = new Type(11),
-      SERVER_KEY_EXCHANGE = new Type(12), CERTIFICATE_REQUEST = new Type(13),
-      SERVER_HELLO_DONE   = new Type(14), CERTIFICATE_VERIFY  = new Type(15),
-      CLIENT_KEY_EXCHANGE = new Type(16), FINISHED            = new Type(20),
-      CERTIFICATE_URL     = new Type(21), CERTIFICATE_STATUS  = new Type(22);
+    HELLO_REQUEST       ( 0),
+    CLIENT_HELLO        ( 1),
+    SERVER_HELLO        ( 2),
+    CERTIFICATE         (11),
+    SERVER_KEY_EXCHANGE (12),
+    CERTIFICATE_REQUEST (13),
+    SERVER_HELLO_DONE   (14),
+    CERTIFICATE_VERIFY  (15),
+    CLIENT_KEY_EXCHANGE (16),
+    FINISHED            (20),
+    CERTIFICATE_URL     (21),
+    CERTIFICATE_STATUS  (22);
 
     private final int value;
-
-    // Constructor.
-    // -----------------------------------------------------------------------
 
     private Type(int value)
     {
@@ -364,18 +279,20 @@ final class Handshake implements Constructed
     // Class methods.
     // -----------------------------------------------------------------------
 
-    public static Type read(InputStream in) throws IOException
+    /**
+     * Convert a raw handshake type value to a type enum value.
+     * 
+     * @return The corresponding enum value for the raw integer value.
+     * @throws IllegalArgumentException If the value is not a known handshake
+     *  type.
+     */
+    public static Type forInteger (final int value)
     {
-      int i = in.read();
-      if (i == -1)
+      switch (value & 0xFF)
         {
-          throw new EOFException("unexpected end of input stream");
-        }
-      switch (i & 0xFF)
-        {
-        case  0: return HELLO_REQUEST;
-        case  1: return CLIENT_HELLO;
-        case  2: return SERVER_HELLO;
+        case 0:  return HELLO_REQUEST;
+        case 1:  return CLIENT_HELLO;
+        case 2:  return SERVER_HELLO;
         case 11: return CERTIFICATE;
         case 12: return SERVER_KEY_EXCHANGE;
         case 13: return CERTIFICATE_REQUEST;
@@ -385,56 +302,13 @@ final class Handshake implements Constructed
         case 20: return FINISHED;
         case 21: return CERTIFICATE_URL;
         case 22: return CERTIFICATE_STATUS;
-        default: return new Type(i);
+        default: throw new IllegalArgumentException ("unsupported value type " + value);
         }
-    }
-
-    // Instance methods.
-    // -----------------------------------------------------------------------
-
-    public byte[] getEncoded()
-    {
-      return new byte[] { (byte) value };
     }
 
     public int getValue()
     {
       return value;
-    }
-
-    public String toString()
-    {
-      switch (value)
-        {
-        case  0: return "hello_request";
-        case  1: return "client_hello";
-        case  2: return "server_hello";
-        case 11: return "certificate";
-        case 12: return "server_key_exchange";
-        case 13: return "certificate_request";
-        case 14: return "server_hello_done";
-        case 15: return "certificate_verify";
-        case 16: return "client_key_exchange";
-        case 20: return "finished";
-        case 21: return "certificate_url";
-        case 22: return "certificate_status";
-        default: return "unknown(" + value + ")";
-        }
-    }
-  }
-
-  private static class buffer extends ThreadLocal
-  {
-    static final int SIZE = 2048;
-
-    protected Object initialValue()
-    {
-      return new ByteArrayOutputStream(SIZE);
-    }
-
-    ByteArrayOutputStream getBuffer()
-    {
-      return (ByteArrayOutputStream) get();
     }
   }
 }

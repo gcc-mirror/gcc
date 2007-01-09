@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.PortableInterceptor;
 
+import org.omg.CORBA.SystemException;
+
 
 /**
  * Defines operations, applicable to the server side request interceptor. The
@@ -50,16 +52,16 @@ public interface ServerRequestInterceptorOperations
 {
   /**
    * ORB calls this method before invoking the servant manager. Operation
-       * parameters are not available at this point. The interceptor has possibility
+   * parameters are not available at this point. The interceptor has possibility
    * to forward the request by throwing {@link ForwardRequest}.
-   *
-       * @throws SystemException if it does, the receive_request_service_contexts is
-       * not called for the subsequent interceptors, calling send_exception instead.
-   * The completion status of such exception must be COMPLETED_NO.
-   *
+   * 
+   * @throws SystemException if it does, the receive_request_service_contexts is
+   *           not called for the subsequent interceptors, calling
+   *           send_exception instead. The completion status of such exception
+   *           must be COMPLETED_NO.
    * @throws ForwardRequest to forward the invocation to another target. The
-   * receive_request_service_contexts is not called for the subsequent
-   * interceptors, calling send_other instead.
+   *           receive_request_service_contexts is not called for the subsequent
+   *           interceptors, calling send_other instead.
    */
   void receive_request_service_contexts(ServerRequestInfo info)
     throws ForwardRequest;

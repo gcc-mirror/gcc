@@ -51,6 +51,6 @@ import javax.naming.directory.Attributes;
 public interface DirObjectFactory extends ObjectFactory
 {
   Object getObjectInstance(Object obj, Name name, Context nameCtx,
-  				  Hashtable environment, Attributes attrs)
+  				  Hashtable<?, ?> environment, Attributes attrs)
 				  throws Exception;
 }

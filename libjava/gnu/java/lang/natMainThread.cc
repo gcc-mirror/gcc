@@ -29,6 +29,10 @@ gnu::java::lang::MainThread::call_main (void)
   Utf8Const* main_signature = _Jv_makeUtf8Const ("([Ljava.lang.String;)V", 22);
   Utf8Const* main_name = _Jv_makeUtf8Const ("main", 4);
 
+  // This is one of the few places where we might have access to an
+  // unlinked class.
+  _Jv_Linker::wait_for_state (klass, JV_STATE_LOADING);
+
   _Jv_Method *meth = _Jv_LookupDeclaredMethod (klass, main_name,
 					       main_signature);
 

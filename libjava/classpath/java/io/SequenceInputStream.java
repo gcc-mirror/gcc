@@ -1,5 +1,5 @@
 /* SequenceInputStream.java -- Reads multiple input streams in sequence
-   Copyright (C) 1998, 1999, 2001, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -71,8 +71,11 @@ public class SequenceInputStream extends InputStream
   /** Secondary input stream; not used if constructed w/ enumeration. */
   private InputStream in2;
 
-  /** The enumeration handle; not used if constructed w/ 2 explicit input streams. */
-  private Enumeration e;
+  /**
+   * The enumeration handle; not used if constructed w/ 2 explicit
+   * input streams.
+   */
+  private Enumeration<? extends InputStream> e;
 
  /**
   * This method creates a new <code>SequenceInputStream</code> that obtains
@@ -82,10 +85,10 @@ public class SequenceInputStream extends InputStream
   * @param e An <code>Enumeration</code> that will return a list of
   * <code>InputStream</code>s to read in sequence
   */
-  public SequenceInputStream(Enumeration e)
+  public SequenceInputStream(Enumeration<? extends InputStream> e)
   {
     this.e = e;
-    in = (InputStream) e.nextElement();
+    in = e.nextElement();
     in2 = null;
   }
 
@@ -207,14 +210,13 @@ public class SequenceInputStream extends InputStream
     if (e != null)
       {
         if (e.hasMoreElements())
-	  nextIn = (InputStream) e.nextElement();
+	  nextIn = e.nextElement();
       }
-    else
-      if (in2 != null)
-	{
-	  nextIn = in2;
-	  in2 = null;
-	}
+    else if (in2 != null)
+      {
+	nextIn = in2;
+	in2 = null;
+      }
 
     return nextIn;
   }

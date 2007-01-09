@@ -74,8 +74,7 @@ public interface AnnotatedElement
    *         <code>null</code> if no such annotation exists.
    * @throws NullPointerException if the annotation class is <code>null</code>.
    */
-  /* FIXME[GENERICS]: <T extends Annotation> T getAnnotation(Class <T>) */
-  Annotation getAnnotation(Class annotationClass);
+  <T extends Annotation> T getAnnotation(Class<T> annotationClass);
 
   /**
    * Returns all annotations associated with the element.  If there are
@@ -111,7 +110,6 @@ public interface AnnotatedElement
    * @return true if an annotation exists for the specified type.
    * @since 1.5
    */
-  /* FIXME[GENERICS]: Signature is Class<? extends Annotation> */
-  boolean isAnnotationPresent(Class annotationClass);
+  boolean isAnnotationPresent(Class<? extends Annotation> annotationClass);
 
 }

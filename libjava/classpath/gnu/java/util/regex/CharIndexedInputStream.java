@@ -166,6 +166,16 @@ class CharIndexedInputStream implements CharIndexed {
 	    "difficult to support getLastMatch for an input stream");
     }
 
+    public void setHitEnd(REMatch match) {
+	throw new UnsupportedOperationException(
+	    "difficult to support setHitEnd for an input stream");
+    }
+
+    public boolean hitEnd() {
+	throw new UnsupportedOperationException(
+	    "difficult to support hitEnd for an input stream");
+    }
+
     public int getAnchor() {
 	throw new UnsupportedOperationException(
 	    "difficult to support getAnchor for an input stream");
@@ -176,6 +186,10 @@ class CharIndexedInputStream implements CharIndexed {
 	    "difficult to support setAnchor for an input stream");
     }
 
+    public boolean move1(int index) {
+	throw new UnsupportedOperationException(
+	    "difficult to support move1 for an input stream");
+    }
 
 }
 

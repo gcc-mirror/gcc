@@ -1,5 +1,5 @@
 /* JarEntry.java - Represents an entry in a jar file
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,7 @@ package java.util.jar;
 
 import java.io.IOException;
 import java.security.cert.Certificate;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 
 /**
@@ -60,7 +61,7 @@ public class JarEntry extends ZipEntry
   // (Package local) fields
 
   Attributes attr;
-  Certificate certs[];
+  JarFile jarfile;
 
   // Constructors
 
@@ -79,7 +80,7 @@ public class JarEntry extends ZipEntry
   {
     super(name);
     attr = null;
-    certs = null;
+    jarfile = null;
   }
 
   /**
@@ -93,7 +94,7 @@ public class JarEntry extends ZipEntry
   {
     super(entry);
     attr = null;
-    certs = null;
+    jarfile = null;
   }
 
   /**
@@ -112,7 +113,7 @@ public class JarEntry extends ZipEntry
     catch (IOException _)
       {
       }
-    certs = entry.getCertificates();
+    jarfile = entry.jarfile;
   }
 
   // Methods
@@ -153,13 +154,19 @@ public class JarEntry extends ZipEntry
    */
   public Certificate[] getCertificates()
   {
-    if (certs != null)
+    if (jarfile != null)
       {
-	return (Certificate[])certs.clone();
+        synchronized (jarfile)
+          {
+            if (jarfile.entryCerts != null)
+              {
+                Set certs = (Set) jarfile.entryCerts.get(getName());
+                if (certs != null
+                    && jarfile.verified.get(getName()) == Boolean.TRUE)
+                  return (Certificate[]) certs.toArray(new Certificate[certs.size()]);
+              }
+          }
       }
-    else
-      {
-	return null;
-      }
+    return null;
   }
 }

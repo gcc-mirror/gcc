@@ -1,6 +1,6 @@
 // natWin32Process.cc - Native side of Win32 process code.
 
-/* Copyright (C) 2003  Free Software Foundation
+/* Copyright (C) 2003, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -14,7 +14,7 @@ details.  */
 // Conflicts with the definition in "java/lang/reflect/Modifier.h"
 #undef STRICT
 
-#include <java/lang/ConcreteProcess.h>
+#include <java/lang/Win32Process.h>
 #include <java/lang/IllegalThreadStateException.h>
 #include <java/lang/InterruptedException.h>
 #include <java/lang/NullPointerException.h>
@@ -30,7 +30,7 @@ details.  */
 using gnu::java::nio::channels::FileChannelImpl;
 
 void
-java::lang::ConcreteProcess::cleanup (void)
+java::lang::Win32Process::cleanup (void)
 {
   // FIXME:
   // We used to close the input, output and
@@ -42,7 +42,7 @@ java::lang::ConcreteProcess::cleanup (void)
   // to the POSIX approach.
   //
   // What I wanted to do is have private nested
-  // classes in ConcreteProcess which extend FileInputStream
+  // classes in Win32Process which extend FileInputStream
   // and FileOutputStream, respectively, but override
   // close() to permit multiple calls to close(). This
   // led to class header and platform configury issues
@@ -63,7 +63,7 @@ java::lang::ConcreteProcess::cleanup (void)
 }
 
 void
-java::lang::ConcreteProcess::destroy (void)
+java::lang::Win32Process::destroy (void)
 {
   if (! hasExited ())
     {
@@ -76,7 +76,7 @@ java::lang::ConcreteProcess::destroy (void)
 }
 
 jboolean
-java::lang::ConcreteProcess::hasExited (void)
+java::lang::Win32Process::hasExited (void)
 {
   DWORD exitStatus;
 
@@ -100,7 +100,7 @@ java::lang::ConcreteProcess::hasExited (void)
 }
 
 jint
-java::lang::ConcreteProcess::waitFor (void)
+java::lang::Win32Process::waitFor (void)
 {
   if (! hasExited ())
     {
@@ -209,7 +209,7 @@ HANDLE ChildProcessPipe::getChildHandle()
 }
 
 void
-java::lang::ConcreteProcess::startProcess (jstringArray progarray,
+java::lang::Win32Process::startProcess (jstringArray progarray,
                                            jstringArray envp,
                                            java::io::File *dir)
 {

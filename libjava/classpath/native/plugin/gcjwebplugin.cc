@@ -283,10 +283,6 @@ GCJ_New (NPMIMEType pluginType, NPP instance, uint16 mode,
       goto cleanup_done;
     }
 
-  // Initialize threads (needed for mutexes).
-  if (!g_thread_supported ())
-    g_thread_init (NULL);
-
   // data
   plugin_data_new (&data);
   if (data == NULL)
@@ -1686,6 +1682,11 @@ NP_Initialize (NPNetscapeFuncs* browserTable, NPPluginFuncs* pluginTable)
   pluginTable->getvalue = NewNPP_GetValueProc (GCJ_GetValue);
   
   initialized = true;
+
+  // Initialize threads (needed for mutexes).
+  if (!g_thread_supported ())
+    g_thread_init (NULL);
+
   plugin_instance_mutex = g_mutex_new ();
 
   PLUGIN_DEBUG ("NP_Initialize: using " APPLETVIEWER_EXECUTABLE ".");

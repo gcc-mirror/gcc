@@ -61,7 +61,7 @@ public abstract class ReferralException extends NamingException
 
   public abstract Object getReferralInfo();
   public abstract Context getReferralContext() throws NamingException;
-  public abstract Context getReferralContext(Hashtable env)
+  public abstract Context getReferralContext(Hashtable<?, ?> env)
     throws NamingException;
   public abstract boolean skipReferral();
   public abstract void retryReferral();

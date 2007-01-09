@@ -108,7 +108,7 @@ public class DropTargetDragEvent extends DropTargetEvent
     return context.getCurrentDataFlavors ();
   }
   
-  public List getCurrentDataFlavorsAsList ()
+  public List<DataFlavor> getCurrentDataFlavorsAsList ()
   {
     return context.getCurrentDataFlavorsAsList ();
   }
@@ -147,7 +147,6 @@ public class DropTargetDragEvent extends DropTargetEvent
    */
   public Transferable getTransferable()
   {
-    // FIXME: Not implemented
-    return null;
+    return context.getTransferable();
   }
 } // class DropTargetDragEvent

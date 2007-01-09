@@ -142,7 +142,7 @@ public class StyledEditorKit extends DefaultEditorKit
       Element el = doc.getCharacterElement(editor.getSelectionStart());
       boolean isBold = StyleConstants.isBold(el.getAttributes());
       SimpleAttributeSet atts = new SimpleAttributeSet();
-      StyleConstants.setItalic(atts, ! isBold);
+      StyleConstants.setBold(atts, ! isBold);
       setCharacterAttributes(editor, atts, false);
     }
   }
@@ -335,35 +335,21 @@ public class StyledEditorKit extends DefaultEditorKit
                                                 AttributeSet atts,
                                                 boolean replace)
     {
-      Document doc = editor.getDocument();
-      if (doc instanceof StyledDocument)
-	{
-	  StyledDocument styleDoc = (StyledDocument) editor.getDocument();
-	  EditorKit kit = editor.getEditorKit();
-	  if (!(kit instanceof StyledEditorKit))
-	    {
-	      StyledEditorKit styleKit = (StyledEditorKit) kit;
-	      int start = editor.getSelectionStart();
-	      int end = editor.getSelectionEnd();
-	      int dot = editor.getCaret().getDot();
-	      if (start == dot && end == dot)
-		{
-		  // If there is no selection, then we only update the
-		  // input attributes.
-		  MutableAttributeSet inputAttributes =
-		    styleKit.getInputAttributes();
-		  inputAttributes.addAttributes(atts);
-		}
-	      else
-		styleDoc.setCharacterAttributes(start, end, atts, replace);
-	    }
-	  else
-	    throw new AssertionError("The EditorKit for StyledTextActions "
-				     + "is expected to be a StyledEditorKit");
-	}
-      else
-	throw new AssertionError("The Document for StyledTextActions is "
-				 + "expected to be a StyledDocument.");
+      int p0 = editor.getSelectionStart();
+      int p1 = editor.getSelectionEnd();
+      if (p0 != p1)
+        {
+          StyledDocument doc = getStyledDocument(editor);
+          doc.setCharacterAttributes(p0, p1 - p0, atts, replace);
+        }
+      // Update input attributes.
+      StyledEditorKit kit = getStyledEditorKit(editor);
+      MutableAttributeSet inputAtts = kit.getInputAttributes();
+      if (replace)
+        {
+          inputAtts.removeAttributes(inputAtts);
+        }
+      inputAtts.addAttributes(atts);
     }
 
     /**

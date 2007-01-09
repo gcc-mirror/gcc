@@ -65,7 +65,7 @@ import java.util.Arrays;
  * @author Tom Tromey (tromey@cygnus.com)
  * @date March 25, 1999
  */
-public final class CollationKey implements Comparable
+public class CollationKey implements Comparable<CollationKey>
 {
   /**
    * This is the <code>Collator</code> this object was created from.
@@ -109,21 +109,6 @@ public final class CollationKey implements Comparable
       }
 
     return key.length - ck.key.length;
-  }
-
-  /**
-   * This method compares the specified object to this one.  The specified
-   * object must be an instance of <code>CollationKey</code> or an exception
-   * will be thrown.  An integer is returned which indicates whether the
-   * specified object is less than, greater than, or equal to this object.
-   *
-   * @param obj The <code>Object</code> to compare against this one.
-   *
-   * @return A negative integer if this object is less than the specified object, 0 if it is equal or a positive integer if it is greater than the specified object.
-   */
-  public int compareTo (Object obj)
-  {
-    return compareTo ((CollationKey) obj);
   }
 
   /**

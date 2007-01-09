@@ -60,7 +60,7 @@ public interface LoggingMXBean
   /**
    * Return a list of all logger names.
    */
-  List/*<String>*/ getLoggerNames();
+  List<String> getLoggerNames();
 
   /**
    * Return the name of the parent of the indicated logger.

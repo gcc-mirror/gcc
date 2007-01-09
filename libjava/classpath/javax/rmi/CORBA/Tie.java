@@ -103,7 +103,7 @@ public interface Tie
   /**
    * Get the object that delegates calls to this tie.
    * 
-   * @see org.omg.PortableServer.Servant#_this_object
+   * @see org.omg.PortableServer.Servant#_this_object()
    */
   org.omg.CORBA.Object thisObject();
 
@@ -112,12 +112,12 @@ public interface Tie
    * Depending on the POA policies, it may be possible to activate the Tie
    * again. The ties that are not derived from
    * {@link org.omg.PortableServer.Servant} deactivate themselves by
-   * {@link ORB.disconnect}.
+   * {@link ORB#disconnect}.
    * 
    * @throws NoSuchObjectException if there are no objects served by this Tie,
    * or if the these objects are already deactivated.
    * 
-   * @see org.omg.PortableServer.POA#deactivate_object
+   * @see org.omg.PortableServer.POAOperations#deactivate_object
    */
   void deactivate()
     throws NoSuchObjectException;

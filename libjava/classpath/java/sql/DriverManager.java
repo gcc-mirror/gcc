@@ -264,7 +264,7 @@ public class DriverManager
    *
    * @return An <code>Enumeration</code> of all currently loaded JDBC drivers.
    */
-  public static Enumeration getDrivers()
+  public static Enumeration<Driver> getDrivers()
   {
     Vector v = new Vector();
     Enumeration e = drivers.elements();

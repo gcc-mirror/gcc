@@ -48,6 +48,11 @@ details.  */
 #include <java/lang/UnsupportedOperationException.h>
 #endif
 
+typedef JArray< ::java::lang::annotation::Annotation * > * anno_a_t;
+typedef JArray< JArray< ::java::lang::annotation::Annotation * > *> * anno_aa_t;
+
+
+
 struct cpair
 {
   jclass prim;
@@ -186,6 +191,30 @@ jint
 java::lang::reflect::Method::getModifiersInternal ()
 {
   return _Jv_FromReflectedMethod (this)->accflags;
+}
+
+jstring
+java::lang::reflect::Method::getSignature()
+{
+  return declaringClass->getReflectionSignature (this);
+}
+
+jobject
+java::lang::reflect::Method::getDefaultValue()
+{
+  return declaringClass->getMethodDefaultValue(this);
+}
+
+anno_a_t
+java::lang::reflect::Method::getDeclaredAnnotationsInternal()
+{
+  return (anno_a_t) declaringClass->getDeclaredAnnotations(this, false);
+}
+
+anno_aa_t
+java::lang::reflect::Method::getParameterAnnotationsInternal()
+{
+  return (anno_aa_t) declaringClass->getDeclaredAnnotations(this, true);
 }
 
 jstring

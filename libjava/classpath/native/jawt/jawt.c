@@ -116,6 +116,8 @@ static JAWT_DrawingSurfaceInfo*
                                                             surface->target);
   surface_info_x11->visualID = classpath_jawt_get_visualID (surface->env,
                                                             surface->target);
+  surface_info_x11->depth = classpath_jawt_get_depth (surface->env,
+                                                            surface->target);
 
   /* FIXME: also include bounding rectangle of drawing surface */
   /* FIXME: also include current clipping region */

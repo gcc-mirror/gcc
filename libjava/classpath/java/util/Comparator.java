@@ -1,5 +1,5 @@
 /* Comparator.java -- Interface for objects that specify an ordering
-   Copyright (C) 1998, 2001, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -71,7 +71,7 @@ package java.util;
  * @since 1.2
  * @status updated to 1.4
  */
-public interface Comparator
+public interface Comparator<T>
 {
   /**
    * Return an integer that is negative, zero or positive depending on whether
@@ -102,7 +102,7 @@ public interface Comparator
    * @throws ClassCastException if the elements are not of types that can be
    *         compared by this ordering.
    */
-  int compare(Object o1, Object o2);
+  int compare(T o1, T o2);
 
   /**
    * Return true if the object is equal to this object.  To be

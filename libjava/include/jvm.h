@@ -30,6 +30,10 @@ details.  */
 #include <gcj/cni.h>
 #include <gcj/field.h>
 
+#include <java/lang/Thread.h>
+
+#include <sysdep/locks.h>
+
 /* Macro for possible unused arguments.  */
 #define MAYBE_UNUSED __attribute__((__unused__))
 
@@ -137,6 +141,10 @@ extern int _Jv_strLengthUtf8(const char* str, int len);
 typedef struct _Jv_Utf8Const Utf8Const;
 _Jv_Utf8Const *_Jv_makeUtf8Const (const char *s, int len);
 _Jv_Utf8Const *_Jv_makeUtf8Const (jstring string);
+static inline _Jv_Utf8Const *_Jv_makeUtf8Const (const char *s)
+{
+  return _Jv_makeUtf8Const (s, strlen (s));
+}
 extern jboolean _Jv_equalUtf8Consts (const _Jv_Utf8Const *, const _Jv_Utf8Const *);
 extern jboolean _Jv_equal (_Jv_Utf8Const *, jstring, jint);
 extern jboolean _Jv_equaln (_Jv_Utf8Const *, jstring, jint);
@@ -233,6 +241,18 @@ namespace gcj
 
   /* Thread stack size specified by the -Xss runtime argument. */
   extern size_t stack_size;
+
+  /* The start time */
+  extern jlong startTime;
+  
+  /* The VM arguments */
+  extern JArray<jstring>* vmArgs;
+
+  // Currently loaded classes
+  extern jint loadedClasses;
+
+  // Unloaded classes
+  extern jlong unloadedClasses;
 }
 
 // This class handles all aspects of class preparation and linking.
@@ -250,7 +270,6 @@ private:
   static void link_symbol_table(jclass);
   static void link_exception_table(jclass);
   static void layout_interface_methods(jclass);
-  static void layout_vtable_methods(jclass);
   static void set_vtable_entries(jclass, _Jv_VTable *);
   static void make_vtable(jclass);
   static void ensure_fields_laid_out(jclass);
@@ -264,10 +283,6 @@ private:
   static int get_alignment_from_class(jclass);
   static void generate_itable(jclass, _Jv_ifaces *, jshort *);
   static jshort append_partial_itable(jclass, jclass, void **, jshort);
-  static _Jv_Method *search_method_in_class (jclass, jclass,
-					     _Jv_Utf8Const *,
-					     _Jv_Utf8Const *,
-					     bool check_perms = true);
   static _Jv_Method *search_method_in_superclasses (jclass cls, jclass klass, 
 						    _Jv_Utf8Const *method_name,
  						    _Jv_Utf8Const *method_signature,
@@ -298,9 +313,17 @@ public:
   static void print_class_loaded (jclass);
   static void resolve_class_ref (jclass, jclass *);
   static void wait_for_state(jclass, int);
+  static _Jv_Method *resolve_method_entry (jclass, jclass &,
+					   int, int,
+					   bool, bool);
   static _Jv_word resolve_pool_entry (jclass, int, bool =false);
   static void resolve_field (_Jv_Field *, java::lang::ClassLoader *);
   static void verify_type_assertions (jclass);
+  static _Jv_Method *search_method_in_class (jclass, jclass,
+					     _Jv_Utf8Const *,
+					     _Jv_Utf8Const *,
+					     bool check_perms = true);
+  static void layout_vtable_methods(jclass);
 };
 
 /* Type of pointer used as finalizer.  */
@@ -394,6 +417,8 @@ void _Jv_FreeMethodCache ();
 void _Jv_SetStackSize (const char *arg);
 
 extern "C" void JvRunMain (jclass klass, int argc, const char **argv);
+extern "C" void JvRunMainName (const char *name, int argc, const char **argv);
+
 void _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, 
 		  bool is_jar);
 
@@ -633,30 +658,8 @@ extern void _Jv_RegisterBootstrapPackages ();
 // New style version IDs used by GCJ 4.0.1 and later.
 #define GCJ_40_BC_ABI_VERSION (4 * 100000 + 0 * 1000)
 
-inline bool
-_Jv_CheckABIVersion (unsigned long value)
-{
-  // We are compatible with GCJ 4.0.0 BC-ABI classes. This release used a
-  // different format for the version ID string.
-   if (value == OLD_GCJ_40_BC_ABI_VERSION)
-     return true;
-     
-  // The 20 low-end bits are used for the version number.
-  unsigned long version = value & 0xfffff;
+void _Jv_CheckABIVersion (unsigned long value);
 
-  if (value & FLAG_BINARYCOMPAT_ABI)
-    {
-      int abi_rev = version % 100;
-      int abi_ver = version - abi_rev;
-      if (abi_ver == GCJ_40_BC_ABI_VERSION && abi_rev <= 0)
-        return true;
-    }
-  else
-    // C++ ABI
-    return version == GCJ_CXX_ABI_VERSION;
-  
-  return false;
-}
 
 inline bool
 _Jv_ClassForBootstrapLoader (unsigned long value)
@@ -694,5 +697,72 @@ _Jv_IsPhantomClass (jclass c)
 
 // A helper function defined in prims.cc.
 char* _Jv_PrependVersionedLibdir (char* libpath);
+
+
+// An enum for use with JvSetThreadState.  We use a C++ enum rather
+// than the Java enum to avoid problems with class initialization
+// during VM bootstrap.
+typedef enum
+{
+  JV_BLOCKED,
+  JV_NEW,
+  JV_RUNNABLE,
+  JV_TERMINATED,
+  JV_TIMED_WAITING,
+  JV_WAITING
+} JvThreadState;
+
+// Temporarily set the thread's state.
+class JvSetThreadState
+{
+private:
+  ::java::lang::Thread *thread;
+  jint saved;
+
+public:
+
+  // Note that 'cthread' could be NULL -- during VM startup there may
+  // not be a Thread available.
+  JvSetThreadState(::java::lang::Thread *cthread, JvThreadState nstate)
+    : thread (cthread),
+      saved (cthread ? cthread->state : (jint)JV_NEW)
+  {
+    if (thread)
+      thread->state = nstate;
+  }
+
+  ~JvSetThreadState()
+  {
+    if (thread)
+      thread->state = saved;
+  }
+};
+
+// This structure is used to represent all the data the native side
+// needs.  An object of this type is assigned to the `data' member of
+// the Thread class.
+struct natThread
+{
+  // A thread is either alive, dead, or being sent a signal; if it is
+  // being sent a signal, it is also alive.  Thus, if you want to know
+  // if a thread is alive, it is sufficient to test alive_status !=
+  // THREAD_DEAD.
+  volatile obj_addr_t alive_flag;
+
+  // These are used to interrupt sleep and join calls.  We can share a
+  // condition variable here since it only ever gets notified when the thread
+  // exits.
+  _Jv_Mutex_t join_mutex;
+  _Jv_ConditionVariable_t join_cond;
+
+  // These are used by Unsafe.park() and Unsafe.unpark().
+  ParkHelper park_helper;
+
+  // This is private data for the thread system layer.
+  _Jv_Thread_t *thread;
+
+  // Each thread has its own JNI object.
+  void *jni_env;
+};
 
 #endif /* __JAVA_JVM_H__ */

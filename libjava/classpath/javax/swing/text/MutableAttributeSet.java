@@ -90,7 +90,7 @@ public interface MutableAttributeSet extends AttributeSet
    * @throws NullPointerException if <code>names</code> is <code>null</code> 
    *         or contains any <code>null</code> values.
    */
-  void removeAttributes(Enumeration names);
+  void removeAttributes(Enumeration<?> names);
 
   /**
    * Removes attributes from this set if they are found in the 

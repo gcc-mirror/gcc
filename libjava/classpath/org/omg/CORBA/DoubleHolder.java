@@ -1,5 +1,5 @@
 /* DoubleHolder.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -91,7 +91,7 @@ public final class DoubleHolder
   }
 
   /**
-   * Fill in the {@link value } field by reading the required data
+   * Fill in the {@link #value } field by reading the required data
    * from the given stream. For <code>double</code>, the functionality
    * is delegated to
    * {@link org.omg.CORBA.portable.InputStream#read_double}.
@@ -113,7 +113,7 @@ public final class DoubleHolder
   }
 
   /**
-   * Write the {@link value } field to the given stream.
+   * Write the {@link #value } field to the given stream.
    * For <code>double</code>, the functionality
    * is delegated to
    * {@link org.omg.CORBA.portable.OutputStream#write_double(double) }.

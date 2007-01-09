@@ -150,7 +150,7 @@ public final class Permissions extends PermissionCollection
    *
    * @return an <code>Enumeration</code> of this collection's elements
    */
-  public Enumeration elements()
+  public Enumeration<Permission> elements()
   {
     return new Enumeration()
     {

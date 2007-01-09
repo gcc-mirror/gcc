@@ -94,94 +94,102 @@ public class KeyGenerator
     this.algorithm = algorithm;
   }
 
-  // Class methods.
-  // ------------------------------------------------------------------------
-
   /**
-   * Create a new key generator, returning the first available
-   * implementation.
-   *
+   * Create a new key generator, returning the first available implementation.
+   * 
    * @param algorithm The generator algorithm name.
-   * @throws java.security.NoSuchAlgorithmException If the specified
-   *         algorithm does not exist.
+   * @throws NoSuchAlgorithmException If the specified algorithm does not exist.
+   * @throws IllegalArgumentException if <code>algorithm</code> is
+   *           <code>null</code> or is an empty string.
    */
   public static final KeyGenerator getInstance(String algorithm)
-    throws NoSuchAlgorithmException
+      throws NoSuchAlgorithmException
   {
-    Provider[] provs = Security.getProviders();
-    String msg = algorithm;
-    for (int i = 0; i < provs.length; i++)
-      {
-        try
-          {
-            return getInstance(algorithm, provs[i]);
-          }
-        catch (NoSuchAlgorithmException nsae)
-          {
-            msg = nsae.getMessage();
-          }
-      }
-    throw new NoSuchAlgorithmException(msg);
+    Provider[] p = Security.getProviders();
+    NoSuchAlgorithmException lastException = null;
+    for (int i = 0; i < p.length; i++)
+      try
+        {
+          return getInstance(algorithm, p[i]);
+        }
+      catch (NoSuchAlgorithmException x)
+        {
+          lastException = x;
+        }
+    if (lastException != null)
+      throw lastException;
+    throw new NoSuchAlgorithmException(algorithm);
   }
 
   /**
    * Create a new key generator from the named provider.
-   *
+   * 
    * @param algorithm The generator algorithm name.
-   * @param provider  The name of the provider to use.
+   * @param provider The name of the provider to use.
    * @return An appropriate key generator, if found.
-   * @throws java.security.NoSuchAlgorithmException If the specified
-   *         algorithm is not implemented by the named provider.
-   * @throws java.security.NoSuchProviderException If the named provider
-   *         does not exist.
+   * @throws NoSuchAlgorithmException If the specified algorithm is not
+   *           implemented by the named provider.
+   * @throws NoSuchProviderException If the named provider does not exist.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>algorithm</code> is an empty string.
    */
   public static final KeyGenerator getInstance(String algorithm, String provider)
-    throws NoSuchAlgorithmException, NoSuchProviderException
+      throws NoSuchAlgorithmException, NoSuchProviderException
   {
+    if (provider == null)
+      throw new IllegalArgumentException("provider MUST NOT be null");
     Provider p = Security.getProvider(provider);
     if (p == null)
-      {
-        throw new NoSuchProviderException(provider);
-      }
+      throw new NoSuchProviderException(provider);
     return getInstance(algorithm, p);
   }
 
   /**
    * Create a new key generator from the supplied provider.
-   *
+   * 
    * @param algorithm The generator algorithm name.
-   * @param provider  The provider to use.
+   * @param provider The provider to use.
    * @return An appropriate key generator, if found.
-   * @throws java.security.NoSuchAlgorithmException If the specified
-   *         algorithm is not implemented by the provider.
+   * @throws NoSuchAlgorithmException If the specified algorithm is not
+   *           implemented by the provider.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>algorithm</code> is an empty string.
    */
-  public static final KeyGenerator getInstance(String algorithm, Provider provider)
-    throws NoSuchAlgorithmException
+  public static final KeyGenerator getInstance(String algorithm,
+                                               Provider provider)
+      throws NoSuchAlgorithmException
   {
+    StringBuilder sb = new StringBuilder("KeyGenerator algorithm [")
+        .append(algorithm).append("] from provider[")
+        .append(provider).append("] could not be created");
+    Throwable cause;
     try
       {
-        KeyGenerator instance = new KeyGenerator((KeyGeneratorSpi)
-          Engine.getInstance(SERVICE, algorithm, provider),
-          provider, algorithm);
+        Object spi = Engine.getInstance(SERVICE, algorithm, provider);
+        KeyGenerator instance = new KeyGenerator((KeyGeneratorSpi) spi,
+                                                 provider,
+                                                 algorithm);
         instance.init(new SecureRandom());
         return instance;
       }
-    catch (InvocationTargetException ite)
+    catch (InvocationTargetException x)
       {
-        if (ite.getCause() == null)
-          throw new NoSuchAlgorithmException(algorithm);
-        if (ite.getCause() instanceof NoSuchAlgorithmException)
-          throw (NoSuchAlgorithmException) ite.getCause();
-        throw new NoSuchAlgorithmException(algorithm);
+        cause = x.getCause();
+        if (cause instanceof NoSuchAlgorithmException)
+          throw (NoSuchAlgorithmException) cause;
+        if (cause == null)
+          cause = x;
       }
-    catch (ClassCastException cce)
+    catch (ClassCastException x)
       {
-        throw new NoSuchAlgorithmException(algorithm);
+        cause = x;
       }
+    NoSuchAlgorithmException x = new NoSuchAlgorithmException(sb.toString());
+    x.initCause(cause);
+    throw x;
   }
-
-  // Instance methods.
-  // ------------------------------------------------------------------------
 
   /**
    * Generate a key.

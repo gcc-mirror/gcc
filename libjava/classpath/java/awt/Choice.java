@@ -255,8 +255,8 @@ public class Choice extends Component
   /**
    * Adds the specified item to this choice box.
    *
-   * This method is oboslete since Java 2 platform 1.1. Please use @see add
-   * instead.
+   * This method is oboslete since Java 2 platform 1.1. Please use 
+   * {@link #add(String)} instead.
    *
    * @param item The item to add.
    *
@@ -320,9 +320,6 @@ public class Choice extends Component
    */
   public synchronized void remove(int index)
   {
-    if ((index < 0) || (index > getItemCount()))
-      throw new IllegalArgumentException("Bad index: " + index);
-
     pItems.removeElementAt(index);
 
     if (peer != null)
@@ -332,14 +329,14 @@ public class Choice extends Component
       selectedIndex = -1;
     else 
       {
-       if( selectedIndex > index )
-         selectedIndex--;
-       else if( selectedIndex == index )
-         selectedIndex = 0;
+	if( selectedIndex > index ) 
+	  selectedIndex--;
+	else if( selectedIndex == index )
+	  selectedIndex = 0;
 
-       if( peer != null )
-         ((ChoicePeer)peer).select( selectedIndex );
-       }
+	if( peer != null )
+	  ((ChoicePeer)peer).select( selectedIndex );
+      }
   }
 
   /**
@@ -523,11 +520,11 @@ public class Choice extends Component
    *
    * @since 1.3
    */
-  public EventListener[] getListeners (Class listenerType)
+  public <T extends EventListener> T[] getListeners (Class<T> listenerType)
   {
     if (listenerType == ItemListener.class)
       return AWTEventMulticaster.getListeners (item_listeners, listenerType);
-    
+
     return super.getListeners (listenerType);
   }
 

@@ -991,7 +991,8 @@ public final class Bidi
 	    && dir != Character.DIRECTIONALITY_ARABIC_NUMBER
 	    && dir != Character.DIRECTIONALITY_COMMON_NUMBER_SEPARATOR
 	    && dir != Character.DIRECTIONALITY_SEGMENT_SEPARATOR
-	    && dir != Character.DIRECTIONALITY_WHITESPACE)
+	    && dir != Character.DIRECTIONALITY_WHITESPACE
+            && dir != Character.DIRECTIONALITY_PARAGRAPH_SEPARATOR)
 	  return true;
       }
 

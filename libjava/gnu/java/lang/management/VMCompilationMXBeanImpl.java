@@ -61,9 +61,6 @@ final class VMCompilationMXBeanImpl
    * @return the number of milliseconds spent
    *         compiling.
    */
-  static long getTotalCompilationTime()
-  {
-    return -1;
-  }
+  static native long getTotalCompilationTime();
 
 }

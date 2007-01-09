@@ -36,9 +36,7 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version.  */
 
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif /* HAVE_CONFIG_H */
 
 #ifdef ENABLE_LOCAL_SOCKETS
 

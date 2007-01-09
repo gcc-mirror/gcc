@@ -105,16 +105,15 @@ public class DragSource implements Serializable
         ds = null;
         throw new HeadlessException();
       }
-    
+
     if (ds == null)
       ds = new DragSource();
     return ds;
   }
 
   public static boolean isDragImageSupported()
-    throws NotImplementedException
   {
-    // FIXME: Implement this
+    // In all cases, Sun returns false here.
     return false;
   }
 
@@ -140,8 +139,6 @@ public class DragSource implements Serializable
     // This function sends the same message to the context, which then forwards
     // it to the peer, passing itself as a parameter. Now, the native system has
     // access to the Transferable through the context.
-
-    // FIXME: Add check to determine if dragging.
     
     try
       {
@@ -228,15 +225,16 @@ public class DragSource implements Serializable
   {
     return flavorMap;
   }
-
-  public DragGestureRecognizer createDragGestureRecognizer(Class recognizer,
-                                                           Component c,
-                                                           int actions,
-                                                           DragGestureListener dgl)
+  
+  public <T extends DragGestureRecognizer> T
+		    createDragGestureRecognizer(Class<T> recognizer,
+						Component c,
+						int actions,
+						DragGestureListener dgl)
   {
-    return Toolkit.getDefaultToolkit().createDragGestureRecognizer(recognizer,
-                                                                   this, c,
-                                                                   actions, dgl);
+    return (T) Toolkit.getDefaultToolkit().createDragGestureRecognizer(recognizer,
+								       this, c,
+								       actions, dgl);
   }
 
   public DragGestureRecognizer createDefaultDragGestureRecognizer(Component c,
@@ -299,23 +297,23 @@ public class DragSource implements Serializable
   /**
    * @since 1.4
    */
-  public EventListener[] getListeners (Class listenerType)
+  public <T extends EventListener> T[] getListeners (Class<T> listenerType)
   {
     if (listenerType == DragSourceListener.class)
       return DnDEventMulticaster.getListeners (dragSourceListener,
-                                               listenerType);
+					       listenerType);
 
     if (listenerType == DragSourceMotionListener.class)
       return DnDEventMulticaster.getListeners (dragSourceMotionListener,
-                                               listenerType);
+					       listenerType);
 
     // Return an empty EventListener array.
-    return new EventListener [0];
+    return (T[]) new EventListener [0];
   }
   
   /**
    * TODO
-   * @return
+   * @return TODO
    * 
    * @since 1.5
    */
@@ -323,6 +321,6 @@ public class DragSource implements Serializable
     throws NotImplementedException
   {
     // FIXME: Not implemented.
-    return 4;
+    return 8;
   }
 } // class DragSource

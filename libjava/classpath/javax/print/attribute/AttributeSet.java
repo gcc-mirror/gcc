@@ -110,7 +110,7 @@ public interface AttributeSet
    * @return <code>true</code> if an attribute of the category is contained
    * in the set, <code>false</code> otherwise.
    */
-  boolean containsKey (Class category);
+  boolean containsKey (Class<?> category);
   
   /**
    * Checks if this attribute set contains the given attribute.
@@ -143,7 +143,7 @@ public interface AttributeSet
    * @throws ClassCastException if category is not implementing 
    * <code>Attribute</code>.
    */
-  Attribute get (Class category);
+  Attribute get (Class<?> category);
   
   /**
    * Returns the hashcode value. The hashcode value is the sum of all hashcodes
@@ -178,7 +178,7 @@ public interface AttributeSet
    * @return <code>true</code> if an attribute is removed, false in all other cases. 
    * @throws UnmodifiableSetException if the set does not support modification.
    */
-  boolean remove (Class category);
+  boolean remove (Class<?> category);
   
   /**
    * Returns the number of elements in this attribute set.

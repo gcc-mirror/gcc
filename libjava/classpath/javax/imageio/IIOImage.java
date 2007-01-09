@@ -79,8 +79,7 @@ public class IIOImage
   /**
    * A list of BufferedImage thumbnails of this image.
    */
-  // for 1.5 these lists are List<? extends BufferedImage>
-  protected List thumbnails;
+  protected List<? extends BufferedImage> thumbnails;
 
   /**
    * Construct an IIOImage containing raster image data, thumbnails
@@ -92,7 +91,8 @@ public class IIOImage
    *
    * @exception IllegalArgumentException if raster is null
    */
-  public IIOImage (Raster raster, List thumbnails, IIOMetadata metadata)
+  public IIOImage (Raster raster, List<? extends BufferedImage> thumbnails,
+                   IIOMetadata metadata)
   {
     if (raster == null)
       throw new IllegalArgumentException ("raster may not be null");
@@ -112,7 +112,8 @@ public class IIOImage
    *
    * @exception IllegalArgumentException if image is null
    */
-  public IIOImage (RenderedImage image, List thumbnails, IIOMetadata metadata)
+  public IIOImage (RenderedImage image, List<? extends BufferedImage> thumbnails,
+                   IIOMetadata metadata)
   {
     if (image == null)
       throw new IllegalArgumentException ("image may not be null");
@@ -192,7 +193,7 @@ public class IIOImage
    *
    * @return a list of thumbnails or null
    */
-  public List getThumbnails()
+  public List<? extends BufferedImage> getThumbnails()
   {
     return thumbnails;
   }
@@ -260,7 +261,7 @@ public class IIOImage
    *
    * @param thumbnails a new list of thumbnails or null
    */
-  public void setThumbnails (List thumbnails)
+  public void setThumbnails (List<? extends BufferedImage> thumbnails)
   {
     this.thumbnails = thumbnails;
   }

@@ -1,5 +1,5 @@
 /* String.java -- immutable character sequences; the object of string literals
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -54,6 +54,7 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.text.Collator;
 import java.util.Comparator;
+import java.util.Formatter;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -82,10 +83,13 @@ import java.util.regex.PatternSyntaxException;
  * @author Paul N. Fisher
  * @author Eric Blake (ebb9@email.byu.edu)
  * @author Per Bothner (bothner@cygnus.com)
+ * @author Tom Tromey (tromey@redhat.com)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.0
  * @status updated to 1.4; but could use better data sharing via offset field
  */
-public final class String implements Serializable, Comparable, CharSequence
+public final class String
+  implements Serializable, Comparable<String>, CharSequence
 {
   // WARNING: String is a CORE class in the bootstrap cycle. See the comments
   // in vm/reference/java/lang/Runtime for implications of this fact.
@@ -144,7 +148,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * compatibility with Sun's JDK.
    */
   private static final class CaseInsensitiveComparator
-    implements Comparator, Serializable
+    implements Comparator<String>, Serializable
   {
     /**
      * Compatible with JDK 1.2.
@@ -168,9 +172,9 @@ public final class String implements Serializable, Comparable, CharSequence
      * @throws ClassCastException if either argument is not a String
      * @see #compareToIgnoreCase(String)
      */
-    public int compare(Object o1, Object o2)
+    public int compare(String o1, String o2)
     {
-      return ((String) o1).compareToIgnoreCase((String) o2);
+      return o1.compareToIgnoreCase(o2);
     }
   } // class CaseInsensitiveComparator
 
@@ -182,7 +186,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @see Collator#compare(String, String)
    * @since 1.2
    */
-  public static final Comparator CASE_INSENSITIVE_ORDER
+  public static final Comparator<String> CASE_INSENSITIVE_ORDER
     = new CaseInsensitiveComparator();
 
   /**
@@ -916,22 +920,6 @@ public final class String implements Serializable, Comparable, CharSequence
           return result;
       }
     return count - anotherString.count;
-  }
-
-  /**
-   * Behaves like <code>compareTo(java.lang.String)</code> unless the Object
-   * is not a <code>String</code>.  Then it throws a
-   * <code>ClassCastException</code>.
-   *
-   * @param o the object to compare against
-   * @return the comparison
-   * @throws NullPointerException if o is null
-   * @throws ClassCastException if o is not a <code>String</code>
-   * @since 1.2
-   */
-  public int compareTo(Object o)
-  {
-    return compareTo((String) o);
   }
 
   /**
@@ -1674,7 +1662,6 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return String containing the chars from data[offset..offset+count]
    * @throws NullPointerException if data is null
    * @throws IndexOutOfBoundsException if (offset &lt; 0 || count &lt; 0
-   *         || offset + count &lt; 0 (overflow)
    *         || offset + count &gt; data.length)
    *         (while unspecified, this is a StringIndexOutOfBoundsException)
    * @see #String(char[], int, int)
@@ -1695,6 +1682,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return String containing the chars from data[offset..offset+count]
    * @throws NullPointerException if data is null
    * @throws IndexOutOfBoundsException if (offset &lt; 0 || count &lt; 0
+   *         || offset + count &lt; 0 (overflow)
    *         || offset + count &lt; 0 (overflow)
    *         || offset + count &gt; data.length)
    *         (while unspecified, this is a StringIndexOutOfBoundsException)
@@ -1790,6 +1778,20 @@ public final class String implements Serializable, Comparable, CharSequence
   public static String valueOf(double d)
   {
     return Double.toString(d);
+  }
+
+
+  /** @since 1.5 */
+  public static String format(Locale locale, String format, Object... args)
+  {
+    Formatter f = new Formatter(locale);
+    return f.format(format, args).toString();
+  }
+
+  /** @since 1.5 */
+  public static String format(String format, Object... args)
+  {
+    return format(Locale.getDefault(), format, args);
   }
 
   /**

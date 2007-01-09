@@ -155,7 +155,6 @@ public abstract class Vio
    * read(InputStream, Class) or read(InputStream, Serializable).
    * 
    * @param input a stream to read from.
-   * @param repository_id a repository id of the object being read, may be null.
    * 
    * @return the loaded value.
    * 
@@ -173,7 +172,7 @@ public abstract class Vio
    * is known. Hence it may be faster to use the alternative methods,
    * read(InputStream, Class) or read(InputStream, Serializable).
    * 
-   * @param an_input a stream to read from.
+   * @param input a stream to read from.
    * @param repository_id a repository id of the object being read, may be null.
    * 
    * @return the loaded value.
@@ -904,7 +903,7 @@ public abstract class Vio
    * 
    * @param output an output stream to write into.
    * @param value a value to write.
-   * @param id a value repository id (can be either single string or string
+   * @param ids a value repository id (can be either single string or string
    * array).
    * @param helper a helper, writing object - specifical part. Can be null if
    * the value should be written using other methods.

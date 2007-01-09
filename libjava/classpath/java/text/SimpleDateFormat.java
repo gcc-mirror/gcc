@@ -917,7 +917,25 @@ public class SimpleDateFormat extends DateFormat
 		|| ((ch < 'a' || ch > 'z')
 		    && (ch < 'A' || ch > 'Z')))
 	      {
-		if (! expect (dateStr, pos, ch))
+                if (quote_start == -1 && ch == ' ')
+                  {
+                    // A single unquoted space in the pattern may match
+                    // any number of spaces in the input.
+                    int index = pos.getIndex();
+                    int save = index;
+                    while (index < dateStr.length()
+                           && Character.isWhitespace(dateStr.charAt(index)))
+                      ++index;
+                    if (index > save)
+                      pos.setIndex(index);
+                    else
+                      {
+                        // Didn't see any whitespace.
+                        pos.setErrorIndex(index);
+                        return null;
+                      }
+                  }
+                else if (! expect (dateStr, pos, ch))
 		  return null;
 		continue;
 	      }

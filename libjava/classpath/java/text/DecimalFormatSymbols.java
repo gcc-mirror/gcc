@@ -63,13 +63,13 @@ import java.util.ResourceBundle;
  * API docs for JDK 1.2 from http://www.javasoft.com.
  * Status:  Believed complete and correct to 1.2.
  */
-public final class DecimalFormatSymbols implements Cloneable, Serializable
+public class DecimalFormatSymbols implements Cloneable, Serializable
 {
   public Object clone ()
   {
     try
       {
-	return super.clone ();
+        return super.clone();
       }
     catch(CloneNotSupportedException e)
       {

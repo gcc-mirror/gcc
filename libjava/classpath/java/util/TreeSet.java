@@ -1,5 +1,5 @@
 /* TreeSet.java -- a class providing a TreeMap-backed SortedSet
-   Copyright (C) 1999, 2000, 2001, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -68,6 +68,8 @@ import java.io.Serializable;
  * @author Jon Zeppieri
  * @author Bryce McKinlay
  * @author Eric Blake (ebb9@email.byu.edu)
+ * @author Tom Tromey (tromey@redhat.com)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @see Collection
  * @see Set
  * @see HashSet
@@ -79,8 +81,8 @@ import java.io.Serializable;
  * @since 1.2
  * @status updated to 1.4
  */
-public class TreeSet extends AbstractSet
-  implements SortedSet, Cloneable, Serializable
+public class TreeSet<T> extends AbstractSet<T>
+  implements SortedSet<T>, Cloneable, Serializable
 {
   /**
    * Compatible with JDK 1.2.
@@ -92,7 +94,7 @@ public class TreeSet extends AbstractSet
    */
   // Not final because of readObject. This will always be one of TreeMap or
   // TreeMap.SubMap, which both extend AbstractMap.
-  private transient SortedMap map;
+  private transient SortedMap<T, String> map;
 
   /**
    * Construct a new TreeSet whose backing TreeMap using the "natural"
@@ -103,7 +105,7 @@ public class TreeSet extends AbstractSet
    */
   public TreeSet()
   {
-    map = new TreeMap();
+    map = new TreeMap<T, String>();
   }
 
   /**
@@ -113,9 +115,9 @@ public class TreeSet extends AbstractSet
    *
    * @param comparator the Comparator this Set will use
    */
-  public TreeSet(Comparator comparator)
+  public TreeSet(Comparator<? super T> comparator)
   {
-    map = new TreeMap(comparator);
+    map = new TreeMap<T, String>(comparator);
   }
 
   /**
@@ -130,9 +132,9 @@ public class TreeSet extends AbstractSet
    * @throws NullPointerException if the collection is null
    * @see Comparable
    */
-  public TreeSet(Collection collection)
+  public TreeSet(Collection<? extends T> collection)
   {
-    map = new TreeMap();
+    map = new TreeMap<T, String>();
     addAll(collection);
   }
 
@@ -145,11 +147,14 @@ public class TreeSet extends AbstractSet
    *        and will initialize itself with all its elements
    * @throws NullPointerException if sortedSet is null
    */
-  public TreeSet(SortedSet sortedSet)
+  public TreeSet(SortedSet<T> sortedSet)
   {
-    map = new TreeMap(sortedSet.comparator());
-    Iterator itr = sortedSet.iterator();
-    ((TreeMap) map).putKeysLinear(itr, sortedSet.size());
+    Iterator<T> itr;
+
+    map = new TreeMap<T, String>
+      ((Comparator<? super T>)sortedSet.comparator());
+    itr = ((SortedSet<T>) sortedSet).iterator();
+    ((TreeMap<T, String>) map).putKeysLinear(itr, sortedSet.size());
   }
 
   /**
@@ -158,7 +163,7 @@ public class TreeSet extends AbstractSet
    *
    * @param backingMap the submap
    */
-  private TreeSet(SortedMap backingMap)
+  private TreeSet(SortedMap<T,String> backingMap)
   {
     map = backingMap;
   }
@@ -171,7 +176,7 @@ public class TreeSet extends AbstractSet
    * @throws ClassCastException if the element cannot be compared with objects
    *         already in the set
    */
-  public boolean add(Object obj)
+  public boolean add(T obj)
   {
     return map.put(obj, "") == null;
   }
@@ -185,11 +190,11 @@ public class TreeSet extends AbstractSet
    * @throws ClassCastException if an element in c cannot be compared with
    *         objects already in the set
    */
-  public boolean addAll(Collection c)
+  public boolean addAll(Collection<? extends T> c)
   {
     boolean result = false;
     int pos = c.size();
-    Iterator itr = c.iterator();
+    Iterator<? extends T> itr = c.iterator();
     while (--pos >= 0)
       result |= (map.put(itr.next(), "") == null);
     return result;
@@ -210,12 +215,12 @@ public class TreeSet extends AbstractSet
    */
   public Object clone()
   {
-    TreeSet copy = null;
+    TreeSet<T> copy = null;
     try
       {
-        copy = (TreeSet) super.clone();
+        copy = (TreeSet<T>) super.clone();
         // Map may be either TreeMap or TreeMap.SubMap, hence the ugly casts.
-        copy.map = (SortedMap) ((AbstractMap) map).clone();
+        copy.map = (SortedMap<T, String>) ((AbstractMap<T, String>) map).clone();
       }
     catch (CloneNotSupportedException x)
       {
@@ -229,7 +234,7 @@ public class TreeSet extends AbstractSet
    *
    * @return the comparator, or null if the set uses natural ordering
    */
-  public Comparator comparator()
+  public Comparator<? super T> comparator()
   {
     return map.comparator();
   }
@@ -253,7 +258,7 @@ public class TreeSet extends AbstractSet
    * @return the first element
    * @throws NoSuchElementException if the set is empty
    */
-  public Object first()
+  public T first()
   {
     return map.firstKey();
   }
@@ -273,9 +278,9 @@ public class TreeSet extends AbstractSet
    * @throws NullPointerException if to is null, but the comparator does not
    *         tolerate null elements
    */
-  public SortedSet headSet(Object to)
+  public SortedSet<T> headSet(T to)
   {
-    return new TreeSet(map.headMap(to));
+    return new TreeSet<T>(map.headMap(to));
   }
 
   /**
@@ -294,7 +299,7 @@ public class TreeSet extends AbstractSet
    *
    * @return an iterator
    */
-  public Iterator iterator()
+  public Iterator<T> iterator()
   {
     return map.keySet().iterator();
   }
@@ -305,7 +310,7 @@ public class TreeSet extends AbstractSet
    * @return the last element
    * @throws NoSuchElementException if the set is empty
    */
-  public Object last()
+  public T last()
   {
     return map.lastKey();
   }
@@ -351,9 +356,9 @@ public class TreeSet extends AbstractSet
    *         does not tolerate null elements
    * @throws IllegalArgumentException if from is greater than to
    */
-  public SortedSet subSet(Object from, Object to)
+  public SortedSet<T> subSet(T from, T to)
   {
-    return new TreeSet(map.subMap(from, to));
+    return new TreeSet<T>(map.subMap(from, to));
   }
 
   /**
@@ -371,9 +376,9 @@ public class TreeSet extends AbstractSet
    * @throws NullPointerException if from is null, but the comparator
    *         does not tolerate null elements
    */
-  public SortedSet tailSet(Object from)
+  public SortedSet<T> tailSet(T from)
   {
-    return new TreeSet(map.tailMap(from));
+    return new TreeSet<T>(map.tailMap(from));
   }
 
   /**
@@ -387,7 +392,7 @@ public class TreeSet extends AbstractSet
   private void writeObject(ObjectOutputStream s) throws IOException
   {
     s.defaultWriteObject();
-    Iterator itr = map.keySet().iterator();
+    Iterator<T> itr = map.keySet().iterator();
     int pos = map.size();
     s.writeObject(map.comparator());
     s.writeInt(pos);
@@ -408,9 +413,9 @@ public class TreeSet extends AbstractSet
     throws IOException, ClassNotFoundException
   {
     s.defaultReadObject();
-    Comparator comparator = (Comparator) s.readObject();
+    Comparator<? super T> comparator = (Comparator<? super T>) s.readObject();
     int size = s.readInt();
-    map = new TreeMap(comparator);
-    ((TreeMap) map).putFromObjStream(s, size, false);
+    map = new TreeMap<T, String>(comparator);
+    ((TreeMap<T, String>) map).putFromObjStream(s, size, false);
   }
 }

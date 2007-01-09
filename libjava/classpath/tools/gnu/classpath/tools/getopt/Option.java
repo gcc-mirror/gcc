@@ -44,7 +44,10 @@ package gnu.classpath.tools.getopt;
  * like '--verbose'; if the parser is working in "long option only" mode, then a
  * long flag has a single dash, like '-verbose'. Both a long and a short form
  * may be specified; it is not valid to have neither. A description is mandatory
- * for options; this is used to automatically generate '--help' output.
+ * for options; this is used to automatically generate '--help' output.  An option
+ * which takes an argument and which has a short form can also be "joined", in
+ * this case the option's argument can either be separated, like "-I path" or
+ * joined with the short option name, like "-Ipath".
  */
 public abstract class Option
 {
@@ -56,6 +59,8 @@ public abstract class Option
 
   private String argumentName;
 
+  private boolean joined;
+
   /**
    * Create a new option with the given short name and description.
    * 
@@ -64,6 +69,8 @@ public abstract class Option
    */
   protected Option(char shortName, String description)
   {
+    if (shortName == 0)
+      throw new IllegalArgumentException("short name must not be \\0");
     this.shortName = shortName;
     this.description = description;
   }
@@ -78,9 +85,31 @@ public abstract class Option
    */
   protected Option(char shortName, String description, String argumentName)
   {
+    if (shortName == 0)
+      throw new IllegalArgumentException("short name must not be \\0");
     this.shortName = shortName;
     this.description = description;
     this.argumentName = argumentName;
+  }
+
+  /**
+   * Create a new option with the given short name and description.
+   * 
+   * @param shortName the short name
+   * @param description the description
+   * @param argumentName the descriptive name of the argument, if this option
+   *          takes an argument; otherwise null
+   * @param joined true if the short option is joined to its argument
+   */
+  protected Option(char shortName, String description, String argumentName,
+                   boolean joined)
+  {
+    if (shortName == 0)
+      throw new IllegalArgumentException("short name must not be \\0");
+    this.shortName = shortName;
+    this.description = description;
+    this.argumentName = argumentName;
+    this.joined = joined;
   }
 
   /**
@@ -122,6 +151,8 @@ public abstract class Option
    */
   protected Option(String longName, char shortName, String description)
   {
+    if (shortName == 0)
+      throw new IllegalArgumentException("short name must not be \\0");
     this.shortName = shortName;
     this.longName = longName;
     this.description = description;
@@ -140,10 +171,35 @@ public abstract class Option
   protected Option(String longName, char shortName, String description,
                    String argumentName)
   {
+    if (shortName == 0)
+      throw new IllegalArgumentException("short name must not be \\0");
     this.shortName = shortName;
     this.longName = longName;
     this.argumentName = argumentName;
     this.description = description;
+  }
+
+  /**
+   * Create a new option with the given short and long names and description.
+   * The long name should be specified without any leading dashes.
+   * 
+   * @param longName the long name
+   * @param shortName the short name
+   * @param description the description
+   * @param argumentName the descriptive name of the argument, if this option
+   *          takes an argument; otherwise null
+   * @param joined true if the short option is joined to its argument
+   */
+  protected Option(String longName, char shortName, String description,
+                   String argumentName, boolean joined)
+  {
+    if (shortName == 0)
+      throw new IllegalArgumentException("short name must not be \\0");
+    this.shortName = shortName;
+    this.longName = longName;
+    this.argumentName = argumentName;
+    this.description = description;
+    this.joined = joined;
   }
 
   /**
@@ -185,6 +241,16 @@ public abstract class Option
   public String getDescription()
   {
     return description;
+  }
+
+  /**
+   * Return true if this is a "joined" option, false otherwise.
+   * Only the short form of an option can be joined; this will always
+   * return false for an option which does not have a short form.
+   */
+  public boolean isJoined()
+  {
+    return joined;
   }
 
   /**

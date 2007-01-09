@@ -66,7 +66,7 @@ public class InitialDirContext extends InitialContext implements DirContext
     super (lazy);
   }
 
-  public InitialDirContext (Hashtable environment)
+  public InitialDirContext (Hashtable<?, ?> environment)
     throws NamingException
   {
     super (environment);
@@ -205,58 +205,65 @@ public class InitialDirContext extends InitialContext implements DirContext
     return getURLOrDefaultInitDirCtx (name).getSchemaClassDefinition (name);
   }
 
-  public NamingEnumeration search(Name name, Attributes matchingAttributes,
-				  String[] attributesToReturn)
+  public NamingEnumeration<SearchResult> search(Name name,
+                                                Attributes matchingAttributes,
+                                                String[] attributesToReturn)
     throws NamingException
   {
     return getURLOrDefaultInitDirCtx (name).search (name, matchingAttributes,
 						    attributesToReturn);
   }
 
-  public NamingEnumeration search(String name, Attributes matchingAttributes,
-				  String[] attributesToReturn)
+  public NamingEnumeration<SearchResult> search(String name,
+                                                Attributes matchingAttributes,
+                                                String[] attributesToReturn)
     throws NamingException
   {
     return getURLOrDefaultInitDirCtx (name).search (name, matchingAttributes,
 						    attributesToReturn);
   }
 
-  public NamingEnumeration search(Name name, Attributes matchingAttributes)
+  public NamingEnumeration<SearchResult> search(Name name,
+                                                Attributes matchingAttributes)
     throws NamingException
   {
     return getURLOrDefaultInitDirCtx (name).search (name, matchingAttributes);
   }
 
-  public NamingEnumeration search(String name, Attributes matchingAttributes)
+  public NamingEnumeration<SearchResult> search(String name,
+                                                Attributes matchingAttributes)
     throws NamingException
   {
     return getURLOrDefaultInitDirCtx (name).search (name, matchingAttributes);
   }
 
-  public NamingEnumeration search(Name name, String filter,
-				  SearchControls cons)
+  public NamingEnumeration<SearchResult> search(Name name, String filter,
+                                                SearchControls cons)
     throws NamingException
   {
     return getURLOrDefaultInitDirCtx (name).search (name, filter, cons);
   }
 
-  public NamingEnumeration search(String name, String filter,
-				  SearchControls cons)
+  public NamingEnumeration<SearchResult> search(String name, String filter,
+                                                SearchControls cons)
     throws NamingException
   {
     return getURLOrDefaultInitDirCtx (name).search (name, filter, cons);
   }
 
-  public NamingEnumeration search(Name name, String filterExpr,
-				  Object[] filterArgs, SearchControls cons)
+  public NamingEnumeration<SearchResult> search(Name name, String filterExpr,
+                                                Object[] filterArgs,
+                                                SearchControls cons)
     throws NamingException
   {
     return getURLOrDefaultInitDirCtx (name).search (name, filterExpr,
 						    filterArgs, cons);
   }
 
-  public NamingEnumeration search(String name, String filterExpr,
-				  Object[] filterArgs, SearchControls cons)
+  public NamingEnumeration<SearchResult> search(String name,
+                                                String filterExpr,
+                                                Object[] filterArgs,
+                                                SearchControls cons)
     throws NamingException
   {
     return getURLOrDefaultInitDirCtx (name).search (name, filterExpr,

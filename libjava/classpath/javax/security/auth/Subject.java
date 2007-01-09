@@ -91,8 +91,9 @@ public final class Subject implements Serializable
     readOnly = false;
   }
 
-  public Subject (final boolean readOnly, final Set principals,
-                  final Set pubCred, final Set privCred)
+  public Subject (final boolean readOnly,
+                  final Set<? extends Principal> principals,
+                  final Set<?> pubCred, final Set<?> privCred)
   {
     if (principals == null || pubCred == null || privCred == null)
       {
@@ -265,12 +266,12 @@ public final class Subject implements Serializable
       privCred.containsAll (that.getPrivateCredentials());
   }
 
-  public Set getPrincipals()
+  public Set<Principal> getPrincipals()
   {
     return principals;
   }
 
-  public Set getPrincipals(Class clazz)
+  public <T extends Principal> Set<T> getPrincipals(Class<T> clazz)
   {
     HashSet result = new HashSet (principals.size());
     for (Iterator it = principals.iterator(); it.hasNext(); )
@@ -284,12 +285,12 @@ public final class Subject implements Serializable
     return Collections.unmodifiableSet (result);
   }
 
-  public Set getPrivateCredentials()
+  public Set<Object> getPrivateCredentials()
   {
     return privCred;
   }
 
-  public Set getPrivateCredentials (Class clazz)
+  public <T> Set<T> getPrivateCredentials (Class<T> clazz)
   {
     HashSet result = new HashSet (privCred.size());
     for (Iterator it = privCred.iterator(); it.hasNext(); )
@@ -303,12 +304,12 @@ public final class Subject implements Serializable
     return Collections.unmodifiableSet (result);
   }
 
-  public Set getPublicCredentials()
+  public Set<Object> getPublicCredentials()
   {
     return pubCred;
   }
 
-  public Set getPublicCredentials (Class clazz)
+  public <T> Set<T> getPublicCredentials (Class<T> clazz)
   {
     HashSet result = new HashSet (pubCred.size());
     for (Iterator it = pubCred.iterator(); it.hasNext(); )

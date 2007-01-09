@@ -54,7 +54,7 @@ import java.util.List;
    Certificate factories are used to generate certificates and
    certificate revocation lists (CRL) from their encoding.
    
-   @since JDK 1.2
+   @since 1.2
    
    @author Mark Benvenuto
  */
@@ -117,7 +117,7 @@ public abstract class CertificateFactorySpi
 
      @throws CertificateException Certificate parsing error
   */
-  public abstract Collection engineGenerateCertificates(InputStream inStream)
+  public abstract Collection<? extends Certificate> engineGenerateCertificates(InputStream inStream)
     throws CertificateException;
 
   /**
@@ -157,7 +157,7 @@ public abstract class CertificateFactorySpi
 
      @throws CRLException CRL parsing error
   */
-  public abstract Collection engineGenerateCRLs(InputStream inStream)
+  public abstract Collection<? extends CRL> engineGenerateCRLs(InputStream inStream)
     throws CRLException;
 
   // 1.4 instance methods.
@@ -204,7 +204,7 @@ public abstract class CertificateFactorySpi
    * @throws CertificateException If an error occurs generating the
    *   CertPath.
    */
-  public CertPath engineGenerateCertPath(List certificates)
+  public CertPath engineGenerateCertPath(List<? extends Certificate> certificates)
     throws CertificateException
   {
     throw new UnsupportedOperationException("not implemented");
@@ -217,7 +217,7 @@ public abstract class CertificateFactorySpi
    *
    * @return The Iterator of supported encodings.
    */
-  public Iterator engineGetCertPathEncodings()
+  public Iterator<String> engineGetCertPathEncodings()
   {
     throw new UnsupportedOperationException("not implemented");
   }

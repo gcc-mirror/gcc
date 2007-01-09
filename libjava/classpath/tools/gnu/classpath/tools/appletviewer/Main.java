@@ -37,17 +37,19 @@ exception statement from your version. */
 
 package gnu.classpath.tools.appletviewer;
 
-import gnu.classpath.tools.getopt.ClasspathToolParser;
+import gnu.classpath.tools.common.ClasspathToolParser;
 import gnu.classpath.tools.getopt.Option;
 import gnu.classpath.tools.getopt.OptionException;
 import gnu.classpath.tools.getopt.OptionGroup;
 import gnu.classpath.tools.getopt.Parser;
 import java.applet.Applet;
 import java.awt.Dimension;
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -58,12 +60,6 @@ import java.util.ResourceBundle;
 
 class Main
 {
-  /**
-   * The localized strings are kept in a separate file.
-   */
-  public static final ResourceBundle messages = ResourceBundle.getBundle
-    ("gnu.classpath.tools.appletviewer.MessagesBundle");
-
   private static HashMap classLoaderCache = new HashMap();
   
   private static ClassLoader getClassLoader(URL codebase, ArrayList archives)
@@ -108,7 +104,7 @@ class Main
       }
 
     if (applet == null)
-      applet = new ErrorApplet("Error loading applet");
+      applet = new ErrorApplet(Messages.getString ("Main.ErrorApplet"));
 
     return applet;
   }
@@ -125,68 +121,72 @@ class Main
   public static void main(String[] args) throws IOException
   {
     parser = new ClasspathToolParser("appletviewer", true);
-    parser.setHeader("usage: appletviewer [OPTION] -code CODE | URL...");
+    parser.setHeader(Messages.getString("Main.Usage"));
 
-    OptionGroup attributeGroup = new OptionGroup("Applet tag options");
+    OptionGroup attributeGroup
+      = new OptionGroup(Messages.getString("Main.AppletTagOptions"));
 
-    attributeGroup.add(new Option("code", Main.messages.getString
-                                  ("gcjwebplugin.code_description"),
-                                  "CODE")
+    attributeGroup.add(new Option("code",
+                                  Messages.getString("Main.CodeDescription"),
+                                  Messages.getString("Main.CodeArgument"))
       {
         public void parsed(String argument) throws OptionException
         {
           code = argument;
         }
       });
-    attributeGroup.add(new Option("codebase", Main.messages.getString
-                                  ("gcjwebplugin.codebase_description"),
-                                  "CODEBASE")
+    attributeGroup.add
+      (new Option("codebase",
+                  Messages.getString("Main.CodebaseDescription"),
+                  Messages.getString("Main.CodebaseArgument"))
       {
         public void parsed(String argument) throws OptionException
         {
           codebase = argument;
         }
       });
-    attributeGroup.add(new Option("archive", Main.messages.getString
-                                  ("gcjwebplugin.archive_description"),
-                                  "ARCHIVE")
+    attributeGroup.add
+      (new Option("archive",
+                  Messages.getString("Main.ArchiveDescription"),
+                  Messages.getString("Main.ArchiveArgument"))
       {
         public void parsed(String argument) throws OptionException
         {
           archive = argument;
         }
       });
-    attributeGroup.add(new Option("width", Main.messages.getString
-                                  ("gcjwebplugin.width_description"),
-                                  "WIDTH")
+    attributeGroup.add(new Option("width",
+                                  Messages.getString("Main.WidthDescription"),
+                                  Messages.getString("Main.WidthArgument"))
       {
         public void parsed(String argument) throws OptionException
         {
           dimensions.width = Integer.parseInt(argument);
         }
       });
-    attributeGroup.add(new Option("height", Main.messages.getString
-                                  ("gcjwebplugin.height_description"),
-                                  "HEIGHT")
+    attributeGroup.add(new Option("height",
+                                  Messages.getString("Main.HeightDescription"),
+                                  Messages.getString("Main.HeightArgument"))
       {
         public void parsed(String argument) throws OptionException
         {
           dimensions.height = Integer.parseInt(argument);
         }
       });
-    attributeGroup.add(new Option("param", Main.messages.getString
-                                  ("gcjwebplugin.param_description"),
-                                  "NAME,VALUE")
+    attributeGroup.add(new Option("param",
+                                  Messages.getString("Main.ParamDescription"),
+                                  Messages.getString("Main.ParamArgument"))
       {
         public void parsed(String argument) throws OptionException
         {
           parameters.add(argument);
         }
       });
-    OptionGroup pluginGroup = new OptionGroup("Plugin option");
-    pluginGroup.add(new Option("plugin", Main.messages.getString
-                               ("gcjwebplugin.plugin_description"),
-                               "INPUT,OUTPUT")
+    OptionGroup pluginGroup
+      = new OptionGroup(Messages.getString("Main.PluginOption"));
+    pluginGroup.add(new Option("plugin",
+                               Messages.getString("Main.PluginDescription"),
+                               Messages.getString("Main.PluginArgument"))
       {
         public void parsed(String argument) throws OptionException
         {
@@ -196,29 +196,34 @@ class Main
           pipeOutName = argument.substring(comma + 1);
         }
       });
-    OptionGroup debuggingGroup = new OptionGroup("Debugging option");
-    debuggingGroup.add(new Option("verbose", Main.messages.getString
-                                  ("gcjwebplugin.verbose_description"),
-                                  (String) null)
+    OptionGroup debuggingGroup
+      = new OptionGroup(Messages.getString("Main.DebuggingOption"));
+    debuggingGroup.add
+      (new Option("verbose",
+                  Messages.getString("Main.VerboseDescription"),
+                  (String) null)
       {
         public void parsed(String argument) throws OptionException
         {
           verbose = true;
         }
       });
-    OptionGroup compatibilityGroup = new OptionGroup("Compatibility options");
-    compatibilityGroup.add(new Option("debug", Main.messages.getString
-                                      ("gcjwebplugin.debug_description"),
-                                      (String) null)
+    OptionGroup compatibilityGroup
+      = new OptionGroup(Messages.getString("Main.CompatibilityOptions"));
+    compatibilityGroup.add
+      (new Option("debug",
+                  Messages.getString("Main.DebugDescription"),
+                  (String) null)
       {
         public void parsed(String argument) throws OptionException
         {
           // Currently ignored.
         }
       });
-    compatibilityGroup.add(new Option("encoding", Main.messages.getString
-                                      ("gcjwebplugin.encoding_description"),
-                                      "CHARSET")
+    compatibilityGroup.add
+      (new Option("encoding",
+                  Messages.getString("Main.EncodingDescription"),
+                  Messages.getString("Main.EncodingArgument"))
       {
         public void parsed(String argument) throws OptionException
         {
@@ -249,6 +254,7 @@ class Main
 
     if (pluginMode)
       {
+        // Plugin will warn user about missing security manager.
 	InputStream in;
 	OutputStream out;
 
@@ -259,13 +265,37 @@ class Main
       }
     else
       {
+        // Warn user about missing security manager.
+        System.err.println(Messages.getString("Main.SecurityWarning") + "\n");
+
+        System.err.println(Messages.getString("Main.ContinuationPrompt"));
+
+        BufferedReader stdin
+          = new BufferedReader(new InputStreamReader(System.in));
+        String response = null;
+
+        try
+          {
+            response = stdin.readLine();
+          }
+        catch (IOException e)
+          {
+            throw new RuntimeException("Failed to read response"
+                                       + " to continuation prompt.", e);
+          }
+
+        if (!(response.equals("c") || response.equals("C")))
+          {
+            System.exit(0);
+          }
+
         if (code == null)
           {
             // The --code option wasn't given and there are no URL
             // arguments so we have nothing to work with.
             if (args.length == 0)
               {
-                System.err.println(Main.messages.getString("gcjwebplugin.no_input_files"));
+                System.err.println(Messages.getString("Main.NoInputFiles"));
                 System.exit(1);
               }
             // Create a standalone appletviewer from a list of URLs.
@@ -275,7 +305,8 @@ class Main
           {
             // Create a standalone appletviewer from the --code
             // option.
-            new StandaloneAppletViewer(code, codebase, archive, parameters, dimensions);
+            new StandaloneAppletViewer(code, codebase, archive,
+                                       parameters, dimensions);
           }
       }
   }
@@ -284,7 +315,7 @@ class Main
   {
     if (verbose)
       {
-        System.out.println("raw arguments:");
+        System.out.println(Messages.getString("Main.RawArguments"));
 
         for (int i = 0; i < args.length; i++)
           System.out.println(" " + args[i]);

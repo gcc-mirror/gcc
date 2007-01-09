@@ -121,7 +121,7 @@ public final class Inet6Address extends InetAddress
    */
   public boolean isMulticastAddress()
   {
-    return ipaddress[0] == 0xFF;
+    return ipaddress[0] == (byte) 0xFF;
   }
 
   /**

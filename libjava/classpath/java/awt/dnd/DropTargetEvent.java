@@ -41,6 +41,10 @@ import java.util.EventObject;
 
 public class DropTargetEvent extends EventObject
 {
+
+  /**
+   * Serialization identifier for Sun 1.5 compatability
+   */
   private static final long serialVersionUID = 2821229066521922993L;
 
   protected DropTargetContext context;

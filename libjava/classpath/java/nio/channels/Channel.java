@@ -1,5 +1,5 @@
 /* Channel.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,8 +39,9 @@ exception statement from your version. */
 package java.nio.channels;
 
 import java.io.IOException;
+import java.io.Closeable;
 
-public interface Channel
+public interface Channel extends Closeable
 {
   /**
    * Tells whether this channel is open or not

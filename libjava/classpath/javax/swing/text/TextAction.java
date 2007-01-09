@@ -38,14 +38,15 @@ exception statement from your version. */
 
 package javax.swing.text;
 
+import java.awt.Component;
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.SwingConstants;
 
 /**
  * TextAction
@@ -73,10 +74,16 @@ public abstract class TextAction extends AbstractAction
    */
   protected final JTextComponent getTextComponent(ActionEvent event)
   {
-    if (event.getSource() instanceof JTextComponent)
-      return (JTextComponent) event.getSource();
-
-    return getFocusedComponent();
+    JTextComponent target = null;
+    if (event != null)
+      {
+        Object source = event.getSource();
+        if (source instanceof JTextComponent)
+          target = (JTextComponent) source;
+      }
+    if (target == null)
+      target = getFocusedComponent();
+    return target;
   }
 
   /**
@@ -89,16 +96,28 @@ public abstract class TextAction extends AbstractAction
    */
   public static final Action[] augmentList(Action[] list1, Action[] list2)
   {
-    HashSet actionSet = new HashSet();
+    HashMap<Object,Action> actions = new HashMap<Object,Action>();
 
     for (int i = 0; i < list1.length; ++i)
-      actionSet.add(list1[i]);
+      {
+        Action a = list1[i];
+        Object name = a.getValue(Action.NAME);
+        actions.put(name != null ? name : "", a);
+      }
 
     for (int i = 0; i < list2.length; ++i)
-      actionSet.add(list2[i]);
+      {
+        Action a = list2[i];
+        Object name = a.getValue(Action.NAME);
+        actions.put(name != null ? name : "", a);
+      }
+    Action[] augmented = new Action[actions.size()];
+    
+    int i = 0;
+    for (Iterator<Action> it = actions.values().iterator(); it.hasNext(); i++)
+      augmented[i] = it.next();
+    return augmented;
 
-    ArrayList list = new ArrayList(actionSet);
-    return (Action[]) list.toArray(new Action[actionSet.size()]);
   }
 
   /**
@@ -108,7 +127,13 @@ public abstract class TextAction extends AbstractAction
    */
   protected final JTextComponent getFocusedComponent()
   {
-    return null; // TODO
+    KeyboardFocusManager kfm =
+      KeyboardFocusManager.getCurrentKeyboardFocusManager();
+    Component focused = kfm.getPermanentFocusOwner();
+    JTextComponent textComp = null;
+    if (focused instanceof JTextComponent)
+      textComp = (JTextComponent) focused;
+    return textComp;
   }
   
   /** Abstract helper class which implements everything needed for an

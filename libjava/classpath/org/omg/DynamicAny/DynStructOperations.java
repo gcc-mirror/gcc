@@ -1,5 +1,5 @@
 /* DynStructOperations.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 This file is part of GNU Classpath.
 
 GNU Classpath is free software; you can redistribute it and/or modify
@@ -101,7 +101,7 @@ public interface DynStructOperations
    * @specnote The name-based value assignment is not supported by Sun's jdk
    * 1.4.
    *
-   * @param an array of NameDynValuePair's, each defining a single field in the
+   * @param value an array of NameDynValuePair's, each defining a single field in the
    * structure.
    *
    * @throws TypeMismatch if the member of the passed array has a different type
@@ -125,7 +125,7 @@ public interface DynStructOperations
    * @specnote The name-based value assignment is not supported by Sun's jdk
    * 1.4.
    *
-   * @param an array of NameValuePair's, each defining a single field in the
+   * @param value an array of NameValuePair's, each defining a single field in the
    * structure.
    *
    * @throws TypeMismatch if the member of the passed array has a different type

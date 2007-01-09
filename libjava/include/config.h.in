@@ -1,5 +1,8 @@
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Name of default AWT toolkit */
+#undef AWT_TOOLKIT
+
 /* Define to one of `_getb67', `GETB67', `getb67' for Cray-2 and Cray-YMP
    systems. This function is required for `alloca.c' support on those systems.
    */
@@ -180,6 +183,12 @@
 
 /* Define to 1 if you have the `lstat' function. */
 #undef HAVE_LSTAT
+
+/* Define to 1 if you have the <magic.h> header file. */
+#undef HAVE_MAGIC_H
+
+/* Define if you have magic_open(). */
+#undef HAVE_MAGIC_OPEN
 
 /* Define to 1 if you have the `memcpy' function. */
 #undef HAVE_MEMCPY
@@ -389,6 +398,9 @@
 
 /* Define if we want to use debug calls into the garbage collector. */
 #undef LIBGCJ_GC_DEBUG
+
+/* Installation prefix */
+#undef LIBGCJ_PREFIX
 
 /* Define if using POSIX threads on Linux. */
 #undef LINUX_THREADS

@@ -64,7 +64,7 @@ public interface DataLine extends Line
      * @param klass the class of the line
      * @param fmt the supported format
      */
-    public Info(Class klass, AudioFormat fmt)
+    public Info(Class<?> klass, AudioFormat fmt)
     {
       super(klass);
       this.minBufferSize = AudioSystem.NOT_SPECIFIED;
@@ -80,7 +80,7 @@ public interface DataLine extends Line
      * @param minSize the minimum buffer size
      * @param maxSize the maximum buffer size
      */
-    public Info(Class klass, AudioFormat[] fmts, int minSize, int maxSize)
+    public Info(Class<?> klass, AudioFormat[] fmts, int minSize, int maxSize)
     {
       super(klass);
       this.minBufferSize = minSize;
@@ -96,7 +96,7 @@ public interface DataLine extends Line
      * @param fmt the supported format
      * @param size the buffer size
      */
-    public Info(Class klass, AudioFormat fmt, int size)
+    public Info(Class<?> klass, AudioFormat fmt, int size)
     {
       super(klass);
       this.minBufferSize = size;

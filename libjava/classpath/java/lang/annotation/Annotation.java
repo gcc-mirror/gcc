@@ -54,8 +54,7 @@ public interface Annotation
    *
    * @return the class of which this annotation is an instance.
    */
-  /* FIXME[GENERICS]: Should return Class<? extends Annotation> */
-  Class annotationType();
+  Class<? extends Annotation> annotationType();
 
   /**
    * <p>

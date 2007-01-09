@@ -938,47 +938,54 @@ public class OrbFunctional extends OrbRestricted
 
   /**
    * Start the ORBs main working cycle (receive invocation - invoke on the local
-   * object - send response - wait for another invocation).
-   *
-   * The method only returns after calling {@link #shutdown(boolean)}.
+   * object - send response - wait for another invocation). The method only
+   * returns after calling {@link #shutdown(boolean)}.
    */
   public void run()
   {
-    running = true;
-
-    // Instantiate the port server for each socket.
-    Iterator iter = connected_objects.entrySet().iterator();
-    Map.Entry m;
-    Connected_objects.cObject obj;
-
-    while (iter.hasNext())
+    CollocatedOrbs.registerOrb(this);
+    try
       {
-        m = (Map.Entry) iter.next();
-        obj = (Connected_objects.cObject) m.getValue();
+        running = true;
 
-        portServer subserver;
+        // Instantiate the port server for each socket.
+        Iterator iter = connected_objects.entrySet().iterator();
+        Map.Entry m;
+        Connected_objects.cObject obj;
 
-        if (obj.identity == null)
+        while (iter.hasNext())
           {
-            subserver = new portServer(obj.port);
-            portServers.add(subserver);
-          }
-        else
-          subserver = (portServer) identities.get(obj.identity);
-        
-        if (!subserver.isAlive())
-          {
-            // Reuse the current thread for the last portServer.
-            if (!iter.hasNext())
+            m = (Map.Entry) iter.next();
+            obj = (Connected_objects.cObject) m.getValue();
+
+            portServer subserver;
+
+            if (obj.identity == null)
               {
-                // Discard the iterator, eliminating lock checks.
-                iter = null;
-                subserver.run();
-                return;
+                subserver = new portServer(obj.port);
+                portServers.add(subserver);
               }
             else
-              subserver.start();
+              subserver = (portServer) identities.get(obj.identity);
+
+            if (! subserver.isAlive())
+              {
+                // Reuse the current thread for the last portServer.
+                if (! iter.hasNext())
+                  {
+                    // Discard the iterator, eliminating lock checks.
+                    iter = null;
+                    subserver.run();
+                    return;
+                  }
+                else
+                  subserver.start();
+              }
           }
+      }
+    finally
+      {
+        CollocatedOrbs.unregisterOrb(this);
       }
   }
   
@@ -1051,22 +1058,26 @@ public class OrbFunctional extends OrbRestricted
     org.omg.CORBA.Object object = find_local_object(ior);
     if (object == null)
       {
-        ObjectImpl impl = StubLocator.search(this, ior);
-        try
+        // Check maybe the local object on another ORB, but same VM.
+        object = CollocatedOrbs.searchLocalObject(ior);
+        if (object == null)
           {
-            if (impl._get_delegate() == null)
-              impl._set_delegate(new IorDelegate(this, ior));
-          }
-        catch (BAD_OPERATION ex)
-          {
-            // Some colaborants may throw this exception
-            // in response to the attempt to get the unset delegate.
-            impl._set_delegate(new IorDelegate(this, ior));
-          }
+            // Surely remote object.
+            ObjectImpl impl = StubLocator.search(this, ior);
+            try
+              {
+                if (impl._get_delegate() == null)
+                  impl._set_delegate(new IorDelegate(this, ior));
+              }
+            catch (BAD_OPERATION ex)
+              {
+                // Some colaborants may throw this exception
+                // in response to the attempt to get the unset delegate.
+                impl._set_delegate(new IorDelegate(this, ior));
+              }
 
-        object = impl;
-        // TODO remove commented out code below.
-        // connected_objects.add(ior.key, impl, ior.Internet.port, null);
+            object = impl;
+          }
       }
     return object;
   }
@@ -1239,15 +1250,10 @@ public class OrbFunctional extends OrbRestricted
       }
     if (ior.Id == null)
       ior.Id = ref.object.getClass().getName();
-    try
-      {
-        ior.Internet.host = InetAddress.getLocalHost().getHostAddress();
-        ior.Internet.port = ref.port;
-      }
-    catch (UnknownHostException ex)
-      {
-        throw new BAD_OPERATION("Cannot resolve the local host address");
-      }
+
+    ior.Internet.host = CollocatedOrbs.localHost;
+    ior.Internet.port = ref.port;
+
     return ior;
   }
 
@@ -1774,5 +1780,15 @@ public class OrbFunctional extends OrbRestricted
   {
     running = false;
     super.finalize();
+  }
+  
+  /**
+   * Get the number of objects that are connected to this ORB.
+   * 
+   * @return the number of objects, connected to this ORB.
+   */
+  public int countConnectedObjects()
+  { 
+    return connected_objects.size();
   }
 }

@@ -1,6 +1,3 @@
-java/lang/EcosProcess.java
-java/lang/Win32Process.java
-java/lang/PosixProcess.java
 gnu/java/nio/charset/iconv
 java/util/zip/DeflaterConstants.java
 java/util/zip/DeflaterEngine.java
@@ -11,3 +8,9 @@ java/util/zip/InflaterHuffmanTree.java
 java/util/zip/OutputWindow.java
 java/util/zip/PendingBuffer.java
 java/util/zip/StreamManipulator.java
+gnu/java/nio/NIOSocketImpl.java
+gnu/java/nio/KqueueSelectorImpl.java
+gnu/java/nio/EpollSelectorImpl.java
+gnu/java/nio/FileChannelImpl.java
+gnu/java/nio/KqueueSelectionKeyImpl.java
+gnu/java/nio/EpollSelectionKeyImpl.java

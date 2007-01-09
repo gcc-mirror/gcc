@@ -49,7 +49,7 @@ import java.security.PrivilegedAction;
  * String port = AccessController.doPrivileged(action);
  * </code>
  */
-public class GetPropertyAction implements PrivilegedAction
+public class GetPropertyAction implements PrivilegedAction<String>
 {
   String name;
   String value = null;
@@ -68,7 +68,7 @@ public class GetPropertyAction implements PrivilegedAction
     setParameters(propName, defaultValue);
   }
   
-  public Object run()
+  public String run()
   {
     return System.getProperty(name, value);
   }

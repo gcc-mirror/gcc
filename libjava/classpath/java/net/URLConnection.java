@@ -49,6 +49,7 @@ import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -174,9 +175,14 @@ public abstract class URLConnection
   private static boolean dateformats_initialized;
   
   /**
-   * The timeout period.
+   * The connection timeout period.
    */
-  private int timeout;
+  private int connectTimeout;
+
+  /**
+   * The read timeout period.
+   */
+  private int readTimeout;
 
   /* Cached ParsePosition, used when parsing dates. */
   private ParsePosition position;
@@ -216,8 +222,8 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the connection timeout speed, in milliseconds, or zero if the timeout
-   * is infinite or not set.
+   * Returns the connection timeout speed, in milliseconds, or zero if
+   * the timeout is infinite or not set.
    *
    * @return The timeout.
    *
@@ -225,7 +231,7 @@ public abstract class URLConnection
    */
   public int getConnectTimeout()
   {
-    return timeout;
+    return connectTimeout;
   }
 
   /**
@@ -235,7 +241,7 @@ public abstract class URLConnection
    *
    * Throws an <code>IllegalArgumentException</code> if timeout < 0.
    *
-   * @param timeout - The timeout, in milliseconds.
+   * @param timeout the timeout, in milliseconds.
    *
    * @since 1.5
    */
@@ -244,7 +250,45 @@ public abstract class URLConnection
   {
     if( timeout < 0 )
       throw new IllegalArgumentException("Timeout must be 0 or positive.");
-    this.timeout = timeout;
+    connectTimeout = timeout;
+  }
+
+  /**
+   * Returns the read timeout, in milliseconds, or zero if the timeout
+   * is infinite or not set.
+   *
+   * @return The timeout.
+   *
+   * @see #setReadTimeout
+   *
+   * @since 1.5
+   */
+  public int getReadTimeout()
+  {
+    return readTimeout;
+  }
+
+  /**
+   * Set the read timeout, in milliseconds, or zero if the timeout
+   * is to be considered infinite. Note that in certain socket 
+   * implementations/platforms this method may not have any effect.
+   *
+   * Throws an <code>IllegalArgumentException</code> if timeout < 0.
+   *
+   * @param timeout - The timeout, in milliseconds.
+   *
+   * @throws IllegalArgumentException if timeout is negative.
+   *
+   * @see #getReadTimeout
+   *
+   * @since 1.5
+   */
+  public void setReadTimeout(int timeout)
+    throws IllegalArgumentException
+  {
+    if( timeout < 0 )
+      throw new IllegalArgumentException("Timeout must be 0 or positive.");
+    readTimeout = timeout;
   }
 
   /**
@@ -359,10 +403,10 @@ public abstract class URLConnection
    *
    * @since 1.4
    */
-  public Map getHeaderFields()
+  public Map<String,List<String>> getHeaderFields()
   {
     // Subclasses for specific protocols override this.
-    return Collections.EMPTY_MAP;
+    return Collections.emptyMap();
   }
 
   /**
@@ -862,14 +906,14 @@ public abstract class URLConnection
    *
    * @since 1.4
    */
-  public Map getRequestProperties()
+  public Map<String,List<String>> getRequestProperties()
   {
     if (connected)
       throw new IllegalStateException("Already connected");
 
     // Overridden by subclasses that support reading header fields from the
     // request.
-    return Collections.EMPTY_MAP;
+    return Collections.emptyMap();
   }
 
   /**

@@ -177,9 +177,15 @@ public class BasicInternalFrameTitlePane extends JComponent
       try
         {
           if (frame.isMaximizable() && ! frame.isMaximum())
-            frame.setMaximum(true);
+            {
+              frame.setMaximum(true);
+              maxButton.setIcon(minIcon);
+            }
           else if (frame.isMaximum())
-            frame.setMaximum(false);
+            {
+              frame.setMaximum(false);
+              maxButton.setIcon(maxIcon);
+            }
         }
       catch (PropertyVetoException pve)
         {

@@ -67,7 +67,7 @@ public class DefaultMutableTreeNode
    * An empty enumeration, returned by {@link #children()} if a node has no
    * children.
    */
-  public static final Enumeration EMPTY_ENUMERATION =
+  public static final Enumeration<TreeNode> EMPTY_ENUMERATION =
     EmptyEnumeration.getInstance();
 
   /**
@@ -78,7 +78,7 @@ public class DefaultMutableTreeNode
   /**
    * The child nodes for this node (may be empty).
    */
-  protected Vector children = new Vector();
+  protected Vector<MutableTreeNode> children = new Vector<MutableTreeNode>();
 
   /**
    * userObject
@@ -480,7 +480,7 @@ public class DefaultMutableTreeNode
   public TreeNode getSharedAncestor(DefaultMutableTreeNode node)
   {
     TreeNode current = this;
-    ArrayList list = new ArrayList();
+    ArrayList<TreeNode> list = new ArrayList<TreeNode>();
 
     while (current != null)
       {
@@ -527,7 +527,7 @@ public class DefaultMutableTreeNode
         || children.size() == 0)
       return 0;
 
-    Stack stack = new Stack();
+    Stack<Integer> stack = new Stack<Integer>();
     stack.push(new Integer(0));
     TreeNode node = getChildAt(0);
     int depth = 0;
@@ -765,7 +765,7 @@ public class DefaultMutableTreeNode
       throw new IllegalArgumentException();
     
     TreeNode parent = this;
-    Vector nodes = new Vector();
+    Vector<TreeNode> nodes = new Vector<TreeNode>();
     nodes.add(this);
 
     while (parent != node && parent != null)
@@ -1148,7 +1148,7 @@ public class DefaultMutableTreeNode
    static class PostorderEnumeration implements Enumeration
    {
 
-       Stack nodes = new Stack();
+       Stack<TreeNode> nodes = new Stack<TreeNode>();
        Stack childrenEnums = new Stack();
 
        PostorderEnumeration(TreeNode node)

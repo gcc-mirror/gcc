@@ -112,8 +112,10 @@ public class ActivatableRef extends UnicastRef
   public void readExternal(ObjectInput in) throws IOException,
       ClassNotFoundException
   {
-    super.readExternal(in);
     actId = (ActivationID) in.readObject();
+    String type = in.readUTF();
+    // XXX handle type.equals("") (null reference)
+    super.readExternal(in);
   }
 
   /**
@@ -121,8 +123,10 @@ public class ActivatableRef extends UnicastRef
    */
   public void writeExternal(ObjectOutput out) throws IOException
   {
-    super.writeExternal(out);
     out.writeObject(actId);
+    // XXX write a "" if the "nested" reference is a null reference
+    out.writeUTF("UnicastRef2");
+    super.writeExternal(out);
   }
   
   /**

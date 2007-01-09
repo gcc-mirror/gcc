@@ -1,5 +1,5 @@
 /* RMIObjectInputStream.java --
-   Copyright (c) 1996, 1997, 1998, 1999, 2002, 2004
+   Copyright (c) 1996, 1997, 1998, 1999, 2002, 2004, 2006
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -39,11 +39,11 @@ exception statement from your version. */
 
 package gnu.java.rmi.server;
 
+import gnu.classpath.VMStackWalker;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
-import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.rmi.server.RMIClassLoader;
 import java.util.ArrayList;
@@ -57,16 +57,14 @@ public RMIObjectInputStream(InputStream strm) throws IOException {
 }
 
 protected Class resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
-	String annotation = (String)getAnnotation();
-	
 	try {
-		if(annotation == null)
-		    return (RMIClassLoader.loadClass(desc.getName()));
-		else
-		    return (RMIClassLoader.loadClass(annotation, desc.getName()));
+                return RMIClassLoader.loadClass(
+                    (String)getAnnotation(),
+                    desc.getName(),
+                    VMStackWalker.firstNonNullClassLoader());
 	}
-	catch (MalformedURLException _) {
-		throw new ClassNotFoundException(desc.getName());
+	catch (MalformedURLException x) {
+		throw new ClassNotFoundException(desc.getName(), x);
 	}
 }
 
@@ -81,45 +79,16 @@ protected Object getAnnotation()
   protected Class resolveProxyClass(String intfs[]) throws IOException,
       ClassNotFoundException
   {
-    String annotation = (String) getAnnotation();
-
-    Class clss[] = new Class[intfs.length];
-
-    for (int i = 0; i < intfs.length; i++)
+    try 
       {
-        if (annotation == null)
-          clss[i] = RMIClassLoader.loadClass(intfs[i]);
-        else
-          clss[i] = RMIClassLoader.loadClass(annotation, intfs[i]);
+        return RMIClassLoader.loadProxyClass(
+            (String)getAnnotation(),
+            intfs,
+            VMStackWalker.firstNonNullClassLoader());
       }
-    
-    ClassLoader loader;
-    
-    if (clss.length > 0)
+    catch (MalformedURLException x) 
       {
-        // Chain all class loaders (they may differ).
-        ArrayList loaders = new ArrayList(intfs.length);
-        ClassLoader cx;
-        for (int i = 0; i < clss.length; i++)
-          {
-            cx = clss[i].getClassLoader();
-            if (!loaders.contains(cx))
-              {
-                loaders.add(0, cx);
-              }
-          }
-        loader = new CombinedClassLoader(loaders);
-      }
-    else
-       loader = ClassLoader.getSystemClassLoader();
-
-    try
-      {
-        return Proxy.getProxyClass(loader, clss);
-      }
-    catch (IllegalArgumentException e)
-      {
-        throw new ClassNotFoundException(null, e);
+        throw new ClassNotFoundException(null, x);
       }
   }
 

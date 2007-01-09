@@ -41,6 +41,7 @@ package java.security.cert;
 import java.math.BigInteger;
 import java.security.Principal;
 import java.util.Date;
+import java.util.List;
 
 /**
  * X509Certificate is the abstract class for X.509 certificates.
@@ -131,7 +132,7 @@ import java.util.Date;
  * Profile</a></i>.</li>
  * </ol>
  *
- * @since JDK 1.2
+ * @since 1.2
  * @author Mark Benvenuto
  * @author Casey Marshall (rsdio@metastatic.org)
  */
@@ -487,7 +488,7 @@ public abstract class X509Certificate
    * @throws CertificateParsingException If this extension cannot be
    * parsed from its encoded form.
    */
-  public java.util.List getExtendedKeyUsage()
+  public java.util.List<String> getExtendedKeyUsage()
     throws CertificateParsingException
   {
     throw new UnsupportedOperationException();
@@ -531,7 +532,7 @@ public abstract class X509Certificate
    * be parsed.
    * @since JDK 1.4
    */
-  public java.util.Collection getSubjectAlternativeNames()
+  public java.util.Collection<List<?>> getSubjectAlternativeNames()
     throws CertificateParsingException
   {
     throw new UnsupportedOperationException();
@@ -558,7 +559,7 @@ public abstract class X509Certificate
    * be parsed.
    * @since JDK 1.4
    */
-  public java.util.Collection getIssuerAlternativeNames()
+  public java.util.Collection<List<?>> getIssuerAlternativeNames()
     throws CertificateParsingException
   {
     throw new UnsupportedOperationException();

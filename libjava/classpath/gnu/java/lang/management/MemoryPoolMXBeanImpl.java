@@ -40,6 +40,7 @@ package gnu.java.lang.management;
 import gnu.classpath.SystemProperties;
 
 import java.lang.management.MemoryPoolMXBean;
+import java.lang.management.MemoryType;
 import java.lang.management.MemoryUsage;
 
 import javax.management.NotCompliantMBeanException;
@@ -133,9 +134,10 @@ public final class MemoryPoolMXBeanImpl
       return null;
   }
 
-  public String getType()
+  public MemoryType getType()
   {
-    return VMMemoryPoolMXBeanImpl.getType(name);
+    return 
+      MemoryType.valueOf(VMMemoryPoolMXBeanImpl.getType(name));
   }
 
   public MemoryUsage getUsage()

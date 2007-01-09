@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package gnu.java.nio;
 
-import gnu.java.nio.channels.FileChannelImpl;
-
 import java.io.IOException;
 import java.nio.channels.FileLock;
 

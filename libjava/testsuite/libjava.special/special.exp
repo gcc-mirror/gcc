@@ -1,5 +1,10 @@
 # Special test cases.  These require tricky build procedures.
 
+proc gcj_special_try_compiler {} {
+  global srcdir subdir
+  return [bytecompile_file ${srcdir}/${subdir}/pr21115I.java [pwd]]
+}
+
 proc gcj_special_pr21115 {} {
   global srcdir subdir env
 
@@ -94,5 +99,10 @@ proc gcj_special_lazy_illegal_access {} {
   return 1
 }
 
-gcj_special_pr21115
-gcj_special_lazy_illegal_access
+# For these tests it is simpler to require that gcj work.  So we try
+# the compiler and if it fails, we simply skip the tests.
+
+if {[gcj_special_try_compiler]} {
+  gcj_special_pr21115
+  gcj_special_lazy_illegal_access
+}

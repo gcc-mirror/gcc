@@ -1,5 +1,5 @@
 /* Collection.java -- Interface that represents a collection of objects
-   Copyright (C) 1998, 2001, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -67,6 +67,8 @@ package java.util;
  *
  * @author Original author unknown
  * @author Eric Blake (ebb9@email.byu.edu)
+ * @author Tom Tromey (tromey@redhat.com)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @see List
  * @see Set
  * @see Map
@@ -81,9 +83,9 @@ package java.util;
  * @see Arrays
  * @see AbstractCollection
  * @since 1.2
- * @status updated to 1.5 (minus generics)
+ * @status updated to 1.4
  */
-public interface Collection extends Iterable
+public interface Collection<E> extends Iterable<E>
 {
   /**
    * Add an element to this collection.
@@ -99,7 +101,7 @@ public interface Collection extends Iterable
    * @throws IllegalArgumentException if o cannot be added to this
    *   collection for some other reason.
    */
-  boolean add(Object o);
+  boolean add(E o);
 
   /**
    * Add the contents of a given collection to this collection.
@@ -116,7 +118,7 @@ public interface Collection extends Iterable
    * @throws IllegalArgumentException if some element of c cannot be added
    *   to this collection for some other reason.
    */
-  boolean addAll(Collection c);
+  boolean addAll(Collection<? extends E> c);
 
   /**
    * Clear the collection, such that a subsequent call to isEmpty() would
@@ -152,7 +154,7 @@ public interface Collection extends Iterable
    *   collection does not support null values.
    * @throws NullPointerException if c itself is null.
    */
-  boolean containsAll(Collection c);
+  boolean containsAll(Collection<?> c);
 
   /**
    * Test whether this collection is equal to some object. The Collection
@@ -200,7 +202,7 @@ public interface Collection extends Iterable
    *
    * @return an Iterator over the elements of this collection, in any order.
    */
-  Iterator iterator();
+  Iterator<E> iterator();
 
   /**
    * Remove a single occurrence of an object from this collection. That is,
@@ -233,7 +235,7 @@ public interface Collection extends Iterable
    *   collection does not support removing null values.
    * @throws NullPointerException if c itself is null.
    */
-  boolean removeAll(Collection c);
+  boolean removeAll(Collection<?> c);
 
   /**
    * Remove all elements of this collection that are not contained in a given
@@ -249,7 +251,7 @@ public interface Collection extends Iterable
    *   collection does not support retaining null values.
    * @throws NullPointerException if c itself is null.
    */
-  boolean retainAll(Collection c);
+  boolean retainAll(Collection<?> c);
 
   /**
    * Get the number of elements in this collection.
@@ -284,5 +286,5 @@ public interface Collection extends Iterable
    * @throws ArrayStoreException if the type of any element of the
    *   collection is not a subtype of the element type of a.
    */
-  Object[] toArray(Object[] a);
+  <T> T[] toArray(T[] a);
 }

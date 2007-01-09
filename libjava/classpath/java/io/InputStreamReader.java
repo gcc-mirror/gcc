@@ -135,6 +135,16 @@ public class InputStreamReader extends Reader
   private boolean hasSavedSurrogate = false;
 
   /**
+   * A byte array to be reused in read(byte[], int, int).
+   */
+  private byte[] bytesCache;
+
+  /**
+   * Locks the bytesCache above in read(byte[], int, int).
+   */
+  private Object cacheLock = new Object();
+
+  /**
    * This method initializes a new instance of <code>InputStreamReader</code>
    * to read from the specified stream using the default encoding.
    *
@@ -355,9 +365,21 @@ public class InputStreamReader extends Reader
       throw new IOException("Reader has been closed");
     if (isDone)
       return -1;
-    if(decoder != null){
-	int totalBytes = (int)((double)length * maxBytesPerChar);
-	byte[] bytes = new byte[totalBytes];
+    if(decoder != null)
+      {
+	int totalBytes = (int)((double) length * maxBytesPerChar);
+        if (byteBuffer != null)
+          totalBytes = Math.max(totalBytes, byteBuffer.remaining());
+	byte[] bytes;
+        // Fetch cached bytes array if available and big enough.
+        synchronized(cacheLock)
+          {
+            bytes = bytesCache;
+            if (bytes == null || bytes.length < totalBytes)
+              bytes = new byte[totalBytes];
+            else
+              bytesCache = null;
+          }
 
 	int remaining = 0;
 	if(byteBuffer != null)
@@ -410,12 +432,40 @@ public class InputStreamReader extends Reader
 	    byteBuffer = null;
 
 	read = cb.position() - startPos;
-	return (read <= 0) ? -1 : read;
-    } else {
-	byte[] bytes = new byte[length];
+
+        // Put cached bytes array back if we are finished and the cache
+        // is null or smaller than the used bytes array.
+        synchronized (cacheLock)
+          {
+            if (byteBuffer == null
+                && (bytesCache == null || bytesCache.length < bytes.length))
+              bytesCache = bytes;
+          }
+        return (read <= 0) ? -1 : read;
+      }
+    else
+      {
+	byte[] bytes;
+        // Fetch cached bytes array if available and big enough.
+        synchronized (cacheLock)
+          {
+            bytes = bytesCache;
+            if (bytes == null || length < bytes.length)
+              bytes = new byte[length];
+            else
+              bytesCache = null;
+          }
+
 	int read = in.read(bytes);
 	for(int i=0;i<read;i++)
           buf[offset+i] = (char)(bytes[i]&0xFF);
+
+        // Put back byte array into cache if appropriate.
+        synchronized (cacheLock)
+          {
+            if (bytesCache == null || bytesCache.length < bytes.length)
+              bytesCache = bytes;
+          }
 	return read;
     }
   }

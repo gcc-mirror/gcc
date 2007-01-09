@@ -77,8 +77,10 @@ struct state_table *cp_gtk_native_state_table;
 struct state_table *cp_gtk_native_global_ref_table;
 
 static jclass gtkgenericpeer;
+static jclass gtktoolkit;
 static JavaVM *java_vm;
 static jmethodID printCurrentThreadID;
+static jmethodID setRunningID;
 
 union env_union
 {
@@ -99,7 +101,9 @@ GtkWindowGroup *cp_gtk_global_window_group;
 double cp_gtk_dpi_conversion_factor;
 
 static void init_glib_threads(JNIEnv *, jint);
-
+static gboolean post_set_running_flag (gpointer);
+static gboolean set_running_flag (gpointer);
+static gboolean clear_running_flag (gpointer);
 static void init_dpi_conversion_factor (void);
 static void dpi_changed_cb (GtkSettings  *settings,
                             GParamSpec   *pspec);
@@ -199,6 +203,10 @@ Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkInit (JNIEnv *env,
   cp_gtk_global_window_group = gtk_window_group_new ();
 
   init_dpi_conversion_factor ();
+
+  gtktoolkit = (*env)->FindClass(env, "gnu/java/awt/peer/gtk/GtkMainThread");
+  setRunningID = (*env)->GetStaticMethodID (env, gtktoolkit,
+                                            "setRunning", "(Z)V");
 }
 
 
@@ -324,7 +332,21 @@ Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkMain
 {
   gdk_threads_enter ();
 
+  gtk_init_add (post_set_running_flag, NULL);
+  gtk_quit_add (gtk_main_level (), clear_running_flag, NULL);
+
   gtk_main ();
+
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkQuit
+(JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)))
+{
+  gdk_threads_enter ();
+
+  gtk_main_quit ();
 
   gdk_threads_leave ();
 }
@@ -490,4 +512,29 @@ gdk_color_to_java_color (GdkColor gdk_color)
   blue  = (float) gdk_color.blue  * factor;
 
   return (jint) (0xff000000 | (red << 16) | (green << 8) | blue);
+}
+
+static gboolean
+post_set_running_flag (gpointer data __attribute__((unused)))
+{
+  g_idle_add (set_running_flag, NULL);
+  return FALSE;
+}
+
+static gboolean
+set_running_flag (gpointer data __attribute__((unused)))
+{
+  (*cp_gtk_gdk_env ())->CallStaticVoidMethod (cp_gtk_gdk_env (),
+                                              gtktoolkit,
+                                              setRunningID, TRUE);
+  return FALSE;
+}
+
+static gboolean
+clear_running_flag (gpointer data __attribute__((unused)))
+{
+  (*cp_gtk_gdk_env ())->CallStaticVoidMethod (cp_gtk_gdk_env (),
+                                              gtktoolkit,
+                                              setRunningID, FALSE);
+  return FALSE;
 }

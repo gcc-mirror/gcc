@@ -156,7 +156,7 @@ import java.util.regex.Pattern;
  * @since 1.4
  */
 public final class URI 
-  implements Comparable, Serializable
+  implements Comparable<URI>, Serializable
 {
   /**
    * For serialization compatability.
@@ -1229,7 +1229,7 @@ public final class URI
   }
 
   /**
-   * Compare the URI with another object that must also be a URI.
+   * Compare the URI with another URI.
    * Undefined components are taken to be less than any other component.
    * The following criteria are observed:
    * </p>
@@ -1265,16 +1265,14 @@ public final class URI
    * </ul>
    * </ul>
    *
-   * @param obj This object to compare this URI with
+   * @param uri The other URI to compare this URI with
    * @return a negative integer, zero or a positive integer depending
    *         on whether this URI is less than, equal to or greater
    *         than that supplied, respectively.
-   * @throws ClassCastException if the given object is not a URI
    */
-  public int compareTo(Object obj) 
+  public int compareTo(URI uri) 
     throws ClassCastException
   {
-    URI uri = (URI) obj;
     if (scheme == null && uri.getScheme() != null)
       return -1;
     if (scheme != null)

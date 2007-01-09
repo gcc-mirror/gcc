@@ -38,20 +38,28 @@ exception statement from your version. */
 
 package javax.swing;
 
+import gnu.classpath.SystemProperties;
+import gnu.java.awt.LowPriorityEvent;
+
+import java.applet.Applet;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.InvocationEvent;
 import java.awt.image.VolatileImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+
+import javax.swing.text.JTextComponent;
 
 /**
  * <p>The repaint manager holds a set of dirty regions, invalid components,
@@ -64,6 +72,7 @@ import java.util.WeakHashMap;
  * <p>See <a
  * href="http://java.sun.com/products/jfc/tsc/articles/painting/index.html">this
  * document</a> for more details.</p>
+ * document</a> for more details.</p>
  *
  * @author Roman Kennke (kennke@aicas.com)
  * @author Graydon Hoare (graydon@redhat.com)
@@ -71,6 +80,44 @@ import java.util.WeakHashMap;
  */
 public class RepaintManager
 {
+  /**
+   * An InvocationEvent subclass that implements LowPriorityEvent. This is used
+   * to defer the execution of RepaintManager requests as long as possible on
+   * the event queue. This way we make sure that all available input is
+   * processed before getting active with the RepaintManager. This allows
+   * for better optimization (more validate and repaint requests can be
+   * coalesced) and thus has a positive effect on performance for GUI
+   * applications under heavy load.
+   */
+  private static class RepaintWorkerEvent
+    extends InvocationEvent
+    implements LowPriorityEvent
+  {
+
+    /**
+     * Creates a new RepaintManager event.
+     *
+     * @param source the source
+     * @param runnable the runnable to execute
+     */
+    public RepaintWorkerEvent(Object source, Runnable runnable,
+                              Object notifier, boolean catchEx)
+    {
+      super(source, runnable, notifier, catchEx);
+    }
+
+    /**
+     * An application that I met implements its own event dispatching and
+     * calls dispatch() via reflection, and only checks declared methods,
+     * that is, it expects this method to be in the event's class, not
+     * in a superclass. So I put this in here... sigh.
+     */
+    public void dispatch()
+    {
+      super.dispatch();
+    }
+  }
+  
   /**
    * The current repaint managers, indexed by their ThreadGroups.
    */
@@ -197,19 +244,6 @@ public class RepaintManager
   private WeakHashMap offscreenBuffers;
 
   /**
-   * Indicates if the RepaintManager is currently repainting an area.
-   */
-  private boolean repaintUnderway;
-
-  /**
-   * This holds buffer commit requests when the RepaintManager is working.
-   * This maps Component objects (the top level components) to Rectangle
-   * objects (the area of the corresponding buffer that must be blitted on
-   * the component).
-   */
-  private HashMap commitRequests;
-
-  /**
    * The maximum width and height to allocate as a double buffer. Requests
    * beyond this size are ignored.
    *
@@ -230,10 +264,10 @@ public class RepaintManager
     invalidComponents = new ArrayList();
     repaintWorker = new RepaintWorker();
     doubleBufferMaximumSize = new Dimension(2000,2000);
-    doubleBufferingEnabled = true;
+    doubleBufferingEnabled =
+      SystemProperties.getProperty("gnu.swing.doublebuffering", "true")
+                      .equals("true");
     offscreenBuffers = new WeakHashMap();
-    repaintUnderway = false;
-    commitRequests = new HashMap();
   }
 
   /**
@@ -355,7 +389,7 @@ public class RepaintManager
     if (! repaintWorker.isLive())
       {
         repaintWorker.setLive(true);
-        SwingUtilities.invokeLater(repaintWorker);
+        invokeLater(repaintWorker);
       }
   }
 
@@ -397,23 +431,21 @@ public class RepaintManager
   {
     if (w <= 0 || h <= 0 || !component.isShowing())
       return;
-
-    Component parent = component.getParent();
-    
     component.computeVisibleRect(rectCache);
     SwingUtilities.computeIntersection(x, y, w, h, rectCache);
 
     if (! rectCache.isEmpty())
       {
-        if (dirtyComponents.containsKey(component))
+        synchronized (dirtyComponents)
           {
-            SwingUtilities.computeUnion(rectCache.x, rectCache.y,
-                                        rectCache.width, rectCache.height,
-                                   (Rectangle) dirtyComponents.get(component));
-          }
-        else
-          {
-            synchronized (dirtyComponents)
+            Rectangle dirtyRect = (Rectangle)dirtyComponents.get(component);
+            if (dirtyRect != null)
+              {
+                SwingUtilities.computeUnion(rectCache.x, rectCache.y,
+                                            rectCache.width, rectCache.height,
+                                            dirtyRect);
+              }
+            else
               {
                 dirtyComponents.put(component, rectCache.getBounds());
               }
@@ -422,7 +454,7 @@ public class RepaintManager
         if (! repaintWorker.isLive())
           {
             repaintWorker.setLive(true);
-            SwingUtilities.invokeLater(repaintWorker);
+            invokeLater(repaintWorker);
           }
       }
   }
@@ -536,7 +568,7 @@ public class RepaintManager
    */
   public void paintDirtyRegions()
   {
-    // Short cicuit if there is nothing to paint.
+    // Short circuit if there is nothing to paint.
     if (dirtyComponents.size() == 0)
       return;
 
@@ -557,7 +589,6 @@ public class RepaintManager
         compileRepaintRoots(dirtyComponentsWork, dirty, repaintRoots);
       }
 
-    repaintUnderway = true;
     for (Iterator i = repaintRoots.iterator(); i.hasNext();)
       {
         JComponent comp = (JComponent) i.next();
@@ -567,13 +598,11 @@ public class RepaintManager
         comp.paintImmediately(damaged);
       }
     dirtyComponentsWork.clear();
-    repaintUnderway = false;
-    commitRemainingBuffers();
   }
-  
+
   /**
    * Compiles a list of components that really get repainted. This is called
-   * once for each component in the dirtyComponents HashMap, each time with
+   * once for each component in the dirtyRegions HashMap, each time with
    * another <code>dirty</code> parameter. This searches up the component
    * hierarchy of <code>dirty</code> to find the highest parent that is also
    * marked dirty and merges the dirty regions.
@@ -588,6 +617,29 @@ public class RepaintManager
     Component current = dirty;
     Component root = dirty;
 
+    // This will contain the dirty region in the root coordinate system,
+    // possibly clipped by ancestor's bounds.
+    Rectangle originalDirtyRect = (Rectangle) dirtyRegions.get(dirty); 
+    rectCache.setBounds(originalDirtyRect);
+
+    // The bounds of the current component.
+    int x = dirty.getX();
+    int y = dirty.getY();
+    int w = dirty.getWidth();
+    int h = dirty.getHeight();
+
+    // Do nothing if dirty region is clipped away by the component's bounds.
+    rectCache = SwingUtilities.computeIntersection(0, 0, w, h, rectCache);
+    if (rectCache.isEmpty())
+      return;
+
+    // The cumulated offsets. 
+    int dx = 0;
+    int dy = 0;
+    // The actual offset for the found root.
+    int rootDx = 0;
+    int rootDy = 0;
+
     // Search the highest component that is also marked dirty.
     Component parent;
     while (true)
@@ -597,10 +649,29 @@ public class RepaintManager
           break;
 
         current = parent;
+        // Update the offset.
+        dx += x;
+        dy += y;
+        rectCache.x += x;
+        rectCache.y += y;
+        
+        x = current.getX();
+        y = current.getY();
+        w = current.getWidth();
+        h = current.getHeight();
+        rectCache = SwingUtilities.computeIntersection(0, 0, w, h, rectCache);
+
+        // Don't paint if the dirty regions is clipped away by any of
+        // its ancestors.
+        if (rectCache.isEmpty())
+          return;
+
         // We can skip to the next up when this parent is not dirty.
         if (dirtyRegions.containsKey(parent))
           {
             root = current;
+            rootDx = dx;
+            rootDy = dy;
           }
       }
 
@@ -608,15 +679,16 @@ public class RepaintManager
     // the are different.
     if (root != dirty)
       {
-        Rectangle dirtyRect = (Rectangle) dirtyRegions.get(dirty);
-        dirtyRect = SwingUtilities.convertRectangle(dirty, dirtyRect, root);
-        Rectangle rootRect = (Rectangle) dirtyRegions.get(root);
-        SwingUtilities.computeUnion(dirtyRect.x, dirtyRect.y, dirtyRect.width,
-                                    dirtyRect.height, rootRect);
+        rectCache.x += rootDx - dx;
+        rectCache.y += rootDy - dy;
+        Rectangle dirtyRect = (Rectangle) dirtyRegions.get(root);
+        SwingUtilities.computeUnion(rectCache.x, rectCache.y, rectCache.width,
+                                    rectCache.height, dirtyRect);
       }
 
     // Adds the root to the roots set.
-    roots.add(root);
+    if (! roots.contains(root))
+      roots.add(root);
   }
 
   /**
@@ -643,128 +715,43 @@ public class RepaintManager
         width = Math.min(doubleBufferMaximumSize.width, width);
         int height = Math.max(proposedHeight, root.getHeight());
         height = Math.min(doubleBufferMaximumSize.height, height);
-        buffer = root.createImage(width, height);
+        buffer = component.createImage(width, height);
         offscreenBuffers.put(root, buffer);
       }
     return buffer;
   }
 
   /**
-   * Blits the back buffer of the specified root component to the screen. If
-   * the RepaintManager is currently working on a paint request, the commit
-   * requests are queued up and committed at once when the paint request is
-   * done (by {@link #commitRemainingBuffers}). This is package private because
-   * it must get called by JComponent.
+   * Blits the back buffer of the specified root component to the screen.
+   * This is package private because it must get called by JComponent.
    *
    * @param comp the component to be painted
-   * @param area the area to paint on screen, in comp coordinates
+   * @param x the area to paint on screen, in comp coordinates
+   * @param y the area to paint on screen, in comp coordinates
+   * @param w the area to paint on screen, in comp coordinates
+   * @param h the area to paint on screen, in comp coordinates
    */
-  void commitBuffer(Component comp, Rectangle area)
+  void commitBuffer(Component comp, int x, int y, int w, int h)
   {
-    // Determine the component that we finally paint the buffer upon.
-    // We need to paint on the nearest heavyweight component, so that Swing
-    // hierarchies inside (non-window) heavyweights get painted correctly.
-    // Otherwise we would end up blitting the backbuffer behind the heavyweight
-    // which is wrong.
-    Component root = getHeavyweightParent(comp);
-    // FIXME: Optimize this.
-    Rectangle rootRect = SwingUtilities.convertRectangle(comp, area, root);
-
-    // We synchronize on dirtyComponents here because that is what
-    // paintDirtyRegions also synchronizes on while painting.
-    synchronized (dirtyComponents)
+    Component root = comp;
+    while (root != null
+	   && ! (root instanceof Window || root instanceof Applet))
       {
-        // If the RepaintManager is not currently painting, then directly
-        // blit the requested buffer on the screen.
-        if (true || ! repaintUnderway)
-          {
-            blitBuffer(root, rootRect);
-          }
-
-        // Otherwise queue this request up, until all the RepaintManager work
-        // is done.
-        else
-          {
-            if (commitRequests.containsKey(root))
-              SwingUtilities.computeUnion(rootRect.x, rootRect.y,
-                                          rootRect.width, rootRect.height,
-                                         (Rectangle) commitRequests.get(root));
-            else
-              commitRequests.put(root, rootRect);
-          }
-      }
-  }
-
-  /**
-   * Copies the buffer to the screen. Note that the root component here is
-   * not necessarily the component with which the offscreen buffer is
-   * associated. The offscreen buffers are always allocated for the toplevel
-   * windows. However, painted is performed on lower-level heavyweight
-   * components too, if they contain Swing components.
-   *
-   * @param root the heavyweight component to blit upon
-   * @param rootRect the rectangle in the root component's coordinate space
-   */
-  private void blitBuffer(Component root, Rectangle rootRect)
-  {
-    if (! root.isShowing())
-      return;
-
-    // Find the Window from which we use the backbuffer.
-    Component bufferRoot = root;
-    Rectangle bufferRect = rootRect.getBounds();
-    if (!(bufferRoot instanceof Window))
-      {
-        bufferRoot = SwingUtilities.getWindowAncestor(bufferRoot);
-        SwingUtilities.convertRectangleToAncestor(root, rootRect, bufferRoot);
+	x += root.getX();
+	y += root.getY();
+	root = root.getParent();
       }
 
-    Graphics g = root.getGraphics();
-    Image buffer = (Image) offscreenBuffers.get(bufferRoot);
-
-    // Make sure we have a sane clip at this point.
-    g.clipRect(rootRect.x, rootRect.y, rootRect.width, rootRect.height);
-    g.drawImage(buffer, rootRect.x - bufferRect.x, rootRect.y - bufferRect.y,
-                root);
-    g.dispose();
-
-  }
-
-  /**
-   * Finds and returns the nearest heavyweight parent for the specified
-   * component. If the component isn't contained inside a heavyweight parent,
-   * this returns null.
-   *
-   * @param comp the component
-   *
-   * @return the nearest heavyweight parent for the specified component or
-   *         null if the component has no heavyweight ancestor
-   */
-  private Component getHeavyweightParent(Component comp)
-  {
-    while (comp != null && comp.isLightweight())
-      comp = comp.getParent();
-    return comp;
-  }
-
-  /**
-   * Commits the queued up back buffers to screen all at once.
-   */
-  private void commitRemainingBuffers()
-  {
-    // We synchronize on dirtyComponents here because that is what
-    // paintDirtyRegions also synchronizes on while painting.
-    synchronized (dirtyComponents)
+    if (root != null)
       {
-        Set entrySet = commitRequests.entrySet();
-        Iterator i = entrySet.iterator();
-        while (i.hasNext())
+        Graphics g = root.getGraphics();
+        Image buffer = (Image) offscreenBuffers.get(root);
+        if (buffer != null)
           {
-            Map.Entry entry = (Map.Entry) i.next();
-            Component root = (Component) entry.getKey();
-            Rectangle area = (Rectangle) entry.getValue();
-            blitBuffer(root, area);
-            i.remove();
+            // Make sure we have a sane clip at this point.
+            g.clipRect(x, y, w, h);
+            g.drawImage(buffer, 0, 0, root);
+            g.dispose();
           }
       }
   }
@@ -857,5 +844,19 @@ public class RepaintManager
   public String toString()
   {
     return "RepaintManager";
+  }
+
+  /**
+   * Sends an RepaintManagerEvent to the event queue with the specified
+   * runnable. This is similar to SwingUtilities.invokeLater(), only that the
+   * event is a low priority event in order to defer the execution a little
+   * more.
+   */
+  private void invokeLater(Runnable runnable)
+  {
+    Toolkit tk = Toolkit.getDefaultToolkit();
+    EventQueue evQueue = tk.getSystemEventQueue();
+    InvocationEvent ev = new RepaintWorkerEvent(evQueue, runnable, null, false);
+    evQueue.postEvent(ev);
   }
 }

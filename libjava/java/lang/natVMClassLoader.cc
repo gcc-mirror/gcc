@@ -47,6 +47,9 @@ java::lang::VMClassLoader::defineClass (java::lang::ClassLoader *loader,
   jclass klass = VMCompiler::compileClass(loader, name, data,
 					  offset, length, pd);
 
+  if (klass)
+    _Jv_RegisterInitiatingLoader (klass, klass->loader);
+
 #ifdef INTERPRETER
   if (klass == NULL)
     {

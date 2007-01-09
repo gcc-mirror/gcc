@@ -91,7 +91,7 @@ public class SortingFocusTraversalPolicy
    *
    * @param comparator the comparator to set
    */
-  public SortingFocusTraversalPolicy(Comparator comparator)
+  public SortingFocusTraversalPolicy(Comparator<? super Component> comparator)
   {
     this.comparator = comparator;
   }
@@ -119,7 +119,7 @@ public class SortingFocusTraversalPolicy
    * 
    * @see #setComparator
    */
-  protected Comparator getComparator()
+  protected Comparator<? super Component> getComparator()
   {
     return comparator;
   }
@@ -131,7 +131,7 @@ public class SortingFocusTraversalPolicy
    * 
    * @see #getComparator
    */
-  protected void setComparator(Comparator comparator)
+  protected void setComparator(Comparator<? super Component> comparator)
   {
     this.comparator = comparator;
   }

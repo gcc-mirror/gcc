@@ -1,0 +1,68 @@
+#!/bin/sh
+
+# cvs may timeout ...
+set -e
+
+export CVS_RSH=ssh
+
+CLASSPATH_CVSSRCDIR=$HOME/src/cvs/classpath
+CLASSPATH_SRCDIR=$HOME/src/classpath
+CLASSPATH_BUILDDIR=$HOME/src/classpath/build
+
+DATE=`date +"%Y%m%d"`
+OUTPUTDIR=$HOME/public_html/classpath/daily
+LOGFILE=$OUTPUTDIR/classpath-$DATE.log
+
+echo -n > $LOGFILE
+
+if [ -d $CLASSPATH_CVSSRCDIR ] ; then
+  echo "update cvs source tree" >> $LOGFILE
+  cd $CLASSPATH_CVSSRCDIR
+  cvs -z 3 update >> $LOGFILE 2>&1
+fi
+
+if [ -d $CLASSPATH_SRCDIR ] ; then
+
+  # delete old sources
+  echo "delete old source tree" >> $LOGFILE
+
+  # workaround for automake safety behaviour with umask
+  chmod u+w -R $CLASSPATH_SRCDIR
+
+  rm -rf $CLASSPATH_SRCDIR
+
+fi
+
+echo "copy cvs tree to source tree" >> $LOGFILE
+cp -a $CLASSPATH_CVSSRCDIR $CLASSPATH_SRCDIR
+cd $CLASSPATH_SRCDIR
+
+# patch version in configure.ac
+if [ -f configure.ac ] ; then
+  mv configure.ac configure.ac.orig
+  sed "s/, \[.*cvs\]/, [$DATE]/" < configure.ac.orig > configure.ac
+fi
+
+# generate autofriends stuff
+./autogen.sh >> $LOGFILE 2>&1
+
+# create build directory
+mkdir build
+cd build
+  
+# configure and build classpath
+export LD_LIBRARY_PATH=/usr/local/lib
+../configure --prefix=$HOME/local/classpath --with-jikes=/usr/bin/jikes --enable-glibj=both --enable-jni --enable-gtk-peer --enable-regen-headers >> $LOGFILE 2>&1
+make >> $LOGFILE 2>&1
+make install >> $LOGFILE 2>&1
+
+make dist >> $LOGFILE 2>&1
+#make distcheck >> $LOGFILE 2>&1
+cp classpath-$DATE.tar.gz $OUTPUTDIR
+
+cd $OUTPUTDIR
+ln -sf classpath-$DATE.tar.gz LATEST-SNAPSHOT
+ln -sf classpath-$DATE.log LATEST-BUILDLOG
+
+exit 0
+

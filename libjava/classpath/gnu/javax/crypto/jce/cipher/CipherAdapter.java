@@ -373,14 +373,24 @@ class CipherAdapter
     engineInit(opmode, key, spec, random);
   }
 
-  protected byte[] engineUpdate(byte[] input, int off, int len)
+  protected byte[] engineUpdate(byte[] input, int inOff, int inLen)
   {
+    if (inLen == 0) // nothing to process
+      return new byte[0];
     final int blockSize = mode.currentBlockSize();
-    final int count = (partLen + len) / blockSize;
-    final byte[] out = new byte[count * blockSize];
+    int blockCount = (partLen + inLen) / blockSize;
+
+    // always keep data for unpadding in padded decryption mode;
+    // might even be a complete block
+    if (pad != null
+        && ((Integer) attributes.get(IMode.STATE)).intValue() == IMode.DECRYPTION
+        && (partLen + inLen) % blockSize == 0)
+      blockCount--;
+
+    final byte[] out = new byte[blockCount * blockSize];
     try
       {
-        engineUpdate(input, off, len, out, 0);
+        engineUpdate(input, inOff, inLen, out, 0);
       }
     catch (ShortBufferException x) // should not happen
       {
@@ -395,7 +405,15 @@ class CipherAdapter
     if (inLen == 0) // nothing to process
       return 0;
     final int blockSize = mode.currentBlockSize();
-    final int blockCount = (partLen + inLen) / blockSize;
+    int blockCount = (partLen + inLen) / blockSize;
+
+    // always keep data for unpadding in padded decryption mode;
+    // might even be a complete block
+    if (pad != null
+        && ((Integer) attributes.get(IMode.STATE)).intValue() == IMode.DECRYPTION
+        && (partLen + inLen) % blockSize == 0)
+      blockCount--;
+
     final int result = blockCount * blockSize;
     if (result > out.length - outOff)
       throw new ShortBufferException();
@@ -447,16 +465,21 @@ class CipherAdapter
             break;
           case IMode.DECRYPTION:
             int padLen;
+            byte[] buf3 = new byte[buf.length + partLen];
             try
               {
-                padLen = pad.unpad(buf, 0, buf.length);
+                if (partLen != mode.currentBlockSize())
+                  throw new WrongPaddingException();
+                System.arraycopy(buf, 0, buf3, 0, buf.length);
+                mode.update(partBlock, 0, buf3, buf.length);
+                padLen = pad.unpad(buf3, 0, buf3.length);
               }
             catch (WrongPaddingException wpe)
               {
                 throw new BadPaddingException(wpe.getMessage());
               }
-            result = new byte[buf.length - padLen];
-            System.arraycopy(buf, 0, result, 0, result.length);
+            result = new byte[buf3.length - padLen];
+            System.arraycopy(buf3, 0, result, 0, result.length);
             break;
           default:
             throw new IllegalStateException();

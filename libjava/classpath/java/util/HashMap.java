@@ -96,8 +96,8 @@ import java.io.Serializable;
  * @since 1.2
  * @status updated to 1.4
  */
-public class HashMap extends AbstractMap
-  implements Map, Cloneable, Serializable
+public class HashMap<K, V> extends AbstractMap<K, V>
+  implements Map<K, V>, Cloneable, Serializable
 {
   /**
    * Default number of buckets. This is the value the JDK 1.3 uses. Some
@@ -136,7 +136,7 @@ public class HashMap extends AbstractMap
    * Array containing the actual key-value mappings.
    * Package visible for use by nested and subclasses.
    */
-  transient HashEntry[] buckets;
+  transient HashEntry<K, V>[] buckets;
 
   /**
    * Counts the number of modifications this HashMap has undergone, used
@@ -154,7 +154,7 @@ public class HashMap extends AbstractMap
   /**
    * The cache for {@link #entrySet()}.
    */
-  private transient Set entries;
+  private transient Set<Map.Entry<K, V>> entries;
 
   /**
    * Class to represent an entry in the hash table. Holds a single key-value
@@ -162,19 +162,19 @@ public class HashMap extends AbstractMap
    *
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  static class HashEntry extends AbstractMap.BasicMapEntry
+  static class HashEntry<K, V> extends AbstractMap.SimpleEntry<K, V>
   {
     /**
      * The next entry in the linked list. Package visible for use by subclass.
      */
-    HashEntry next;
+    HashEntry<K, V> next;
 
     /**
      * Simple constructor.
      * @param key the key
      * @param value the value
      */
-    HashEntry(Object key, Object value)
+    HashEntry(K key, V value)
     {
       super(key, value);
     }
@@ -194,7 +194,7 @@ public class HashMap extends AbstractMap
      *
      * @return the value of this key as it is removed
      */
-    Object cleanup()
+    V cleanup()
     {
       return value;
     }
@@ -220,7 +220,7 @@ public class HashMap extends AbstractMap
    *        <b>NOTE: key / value pairs are not cloned in this constructor.</b>
    * @throws NullPointerException if m is null
    */
-  public HashMap(Map m)
+  public HashMap(Map<? extends K, ? extends V> m)
   {
     this(Math.max(m.size() * 2, DEFAULT_CAPACITY), DEFAULT_LOAD_FACTOR);
     putAll(m);
@@ -256,7 +256,7 @@ public class HashMap extends AbstractMap
 
     if (initialCapacity == 0)
       initialCapacity = 1;
-    buckets = new HashEntry[initialCapacity];
+    buckets = (HashEntry<K, V>[]) new HashEntry[initialCapacity];
     this.loadFactor = loadFactor;
     threshold = (int) (initialCapacity * loadFactor);
   }
@@ -292,10 +292,10 @@ public class HashMap extends AbstractMap
    * @see #put(Object, Object)
    * @see #containsKey(Object)
    */
-  public Object get(Object key)
+  public V get(Object key)
   {
     int idx = hash(key);
-    HashEntry e = buckets[idx];
+    HashEntry<K, V> e = buckets[idx];
     while (e != null)
       {
         if (equals(key, e.key))
@@ -316,7 +316,7 @@ public class HashMap extends AbstractMap
   public boolean containsKey(Object key)
   {
     int idx = hash(key);
-    HashEntry e = buckets[idx];
+    HashEntry<K, V> e = buckets[idx];
     while (e != null)
       {
         if (equals(key, e.key))
@@ -339,17 +339,17 @@ public class HashMap extends AbstractMap
    * @see #get(Object)
    * @see Object#equals(Object)
    */
-  public Object put(Object key, Object value)
+  public V put(K key, V value)
   {
     int idx = hash(key);
-    HashEntry e = buckets[idx];
+    HashEntry<K, V> e = buckets[idx];
 
     while (e != null)
       {
         if (equals(key, e.key))
           {
             e.access(); // Must call this for bookkeeping in LinkedHashMap.
-            Object r = e.value;
+	    V r = e.value;
             e.value = value;
             return r;
           }
@@ -378,23 +378,25 @@ public class HashMap extends AbstractMap
    *
    * @param m the map to be hashed into this
    */
-  public void putAll(Map m)
+  public void putAll(Map<? extends K, ? extends V> m)
   {
-    Iterator itr = m.entrySet().iterator();
-    while (itr.hasNext())
+    Map<K,V> addMap;
+
+    addMap = (Map<K,V>) m;
+    for (Map.Entry<K,V> e : addMap.entrySet())
       {
-        Map.Entry e = (Map.Entry) itr.next();
         // Optimize in case the Entry is one of our own.
-        if (e instanceof AbstractMap.BasicMapEntry)
+        if (e instanceof AbstractMap.SimpleEntry)
           {
-            AbstractMap.BasicMapEntry entry = (AbstractMap.BasicMapEntry) e;
+            AbstractMap.SimpleEntry<? extends K, ? extends V> entry
+	      = (AbstractMap.SimpleEntry<? extends K, ? extends V>) e;
             put(entry.key, entry.value);
           }
         else
           put(e.getKey(), e.getValue());
       }
   }
-  
+
   /**
    * Removes from the HashMap and returns the value which is mapped by the
    * supplied key. If the key maps to nothing, then the HashMap remains
@@ -405,11 +407,11 @@ public class HashMap extends AbstractMap
    * @param key the key used to locate the value to remove
    * @return whatever the key mapped to, if present
    */
-  public Object remove(Object key)
+  public V remove(Object key)
   {
     int idx = hash(key);
-    HashEntry e = buckets[idx];
-    HashEntry last = null;
+    HashEntry<K, V> e = buckets[idx];
+    HashEntry<K, V> last = null;
 
     while (e != null)
       {
@@ -455,7 +457,7 @@ public class HashMap extends AbstractMap
   {
     for (int i = buckets.length - 1; i >= 0; i--)
       {
-        HashEntry e = buckets[i];
+        HashEntry<K, V> e = buckets[i];
         while (e != null)
           {
             if (equals(value, e.value))
@@ -474,16 +476,16 @@ public class HashMap extends AbstractMap
    */
   public Object clone()
   {
-    HashMap copy = null;
+    HashMap<K, V> copy = null;
     try
       {
-        copy = (HashMap) super.clone();
+        copy = (HashMap<K, V>) super.clone();
       }
     catch (CloneNotSupportedException x)
       {
         // This is impossible.
       }
-    copy.buckets = new HashEntry[buckets.length];
+    copy.buckets = (HashEntry<K, V>[]) new HashEntry[buckets.length];
     copy.putAllInternal(this);
     // Clear the entry cache. AbstractMap.clone() does the others.
     copy.entries = null;
@@ -499,19 +501,19 @@ public class HashMap extends AbstractMap
    * @see #values()
    * @see #entrySet()
    */
-  public Set keySet()
+  public Set<K> keySet()
   {
     if (keys == null)
       // Create an AbstractSet with custom implementations of those methods
       // that can be overridden easily and efficiently.
-      keys = new AbstractSet()
+      keys = new AbstractSet<K>()
       {
         public int size()
         {
           return size;
         }
 
-        public Iterator iterator()
+        public Iterator<K> iterator()
         {
           // Cannot create the iterator directly, because of LinkedHashMap.
           return HashMap.this.iterator(KEYS);
@@ -550,19 +552,19 @@ public class HashMap extends AbstractMap
    * @see #keySet()
    * @see #entrySet()
    */
-  public Collection values()
+  public Collection<V> values()
   {
     if (values == null)
       // We don't bother overriding many of the optional methods, as doing so
       // wouldn't provide any significant performance advantage.
-      values = new AbstractCollection()
+      values = new AbstractCollection<V>()
       {
         public int size()
         {
           return size;
         }
 
-        public Iterator iterator()
+        public Iterator<V> iterator()
         {
           // Cannot create the iterator directly, because of LinkedHashMap.
           return HashMap.this.iterator(VALUES);
@@ -589,19 +591,19 @@ public class HashMap extends AbstractMap
    * @see #values()
    * @see Map.Entry
    */
-  public Set entrySet()
+  public Set<Map.Entry<K, V>> entrySet()
   {
     if (entries == null)
       // Create an AbstractSet with custom implementations of those methods
       // that can be overridden easily and efficiently.
-      entries = new AbstractSet()
+      entries = new AbstractSet<Map.Entry<K, V>>()
       {
         public int size()
         {
           return size;
         }
 
-        public Iterator iterator()
+        public Iterator<Map.Entry<K, V>> iterator()
         {
           // Cannot create the iterator directly, because of LinkedHashMap.
           return HashMap.this.iterator(ENTRIES);
@@ -619,7 +621,7 @@ public class HashMap extends AbstractMap
 
         public boolean remove(Object o)
         {
-          HashEntry e = getEntry(o);
+          HashEntry<K, V> e = getEntry(o);
           if (e != null)
             {
               HashMap.this.remove(e.key);
@@ -641,9 +643,9 @@ public class HashMap extends AbstractMap
    * @param callRemove whether to call the removeEldestEntry method
    * @see #put(Object, Object)
    */
-  void addEntry(Object key, Object value, int idx, boolean callRemove)
+  void addEntry(K key, V value, int idx, boolean callRemove)
   {
-    HashEntry e = new HashEntry(key, value);
+    HashEntry<K, V> e = new HashEntry<K, V>(key, value);
     e.next = buckets[idx];
     buckets[idx] = e;
   }
@@ -657,14 +659,14 @@ public class HashMap extends AbstractMap
    * @see #entrySet()
    */
   // Package visible, for use in nested classes.
-  final HashEntry getEntry(Object o)
+  final HashEntry<K, V> getEntry(Object o)
   {
     if (! (o instanceof Map.Entry))
       return null;
-    Map.Entry me = (Map.Entry) o;
-    Object key = me.getKey();
+    Map.Entry<K, V> me = (Map.Entry<K, V>) o;
+    K key = me.getKey();
     int idx = hash(key);
-    HashEntry e = buckets[idx];
+    HashEntry<K, V> e = buckets[idx];
     while (e != null)
       {
         if (equals(e.key, key))
@@ -693,9 +695,10 @@ public class HashMap extends AbstractMap
    * @param type {@link #KEYS}, {@link #VALUES}, or {@link #ENTRIES}
    * @return the appropriate iterator
    */
-  Iterator iterator(int type)
+  <T> Iterator<T> iterator(int type)
   {
-    return new HashIterator(type);
+    // FIXME: bogus cast here.
+    return new HashIterator<T>(type);
   }
 
   /**
@@ -705,15 +708,16 @@ public class HashMap extends AbstractMap
    *
    * @param m the map to initialize this from
    */
-  void putAllInternal(Map m)
+  void putAllInternal(Map<? extends K, ? extends V> m)
   {
-    Iterator itr = m.entrySet().iterator();
+    Map<K,V> addMap;
+
+    addMap = (Map<K,V>) m;
     size = 0;
-    while (itr.hasNext())
+    for (Map.Entry<K,V> e : addMap.entrySet())
       {
         size++;
-	Map.Entry e = (Map.Entry) itr.next();
-	Object key = e.getKey();
+	K key = e.getKey();
 	int idx = hash(key);
 	addEntry(key, e.getValue(), idx, false);
       }
@@ -730,20 +734,20 @@ public class HashMap extends AbstractMap
    */
   private void rehash()
   {
-    HashEntry[] oldBuckets = buckets;
+    HashEntry<K, V>[] oldBuckets = buckets;
 
     int newcapacity = (buckets.length * 2) + 1;
     threshold = (int) (newcapacity * loadFactor);
-    buckets = new HashEntry[newcapacity];
+    buckets = (HashEntry<K, V>[]) new HashEntry[newcapacity];
 
     for (int i = oldBuckets.length - 1; i >= 0; i--)
       {
-        HashEntry e = oldBuckets[i];
+        HashEntry<K, V> e = oldBuckets[i];
         while (e != null)
           {
             int idx = hash(e.key);
-            HashEntry dest = buckets[idx];
-            HashEntry next = e.next;
+            HashEntry<K, V> dest = buckets[idx];
+            HashEntry<K, V> next = e.next;
             e.next = buckets[idx];
             buckets[idx] = e;
             e = next;
@@ -769,10 +773,10 @@ public class HashMap extends AbstractMap
     s.writeInt(buckets.length);
     s.writeInt(size);
     // Avoid creating a wasted Set by creating the iterator directly.
-    Iterator it = iterator(ENTRIES);
+    Iterator<HashEntry<K, V>> it = iterator(ENTRIES);
     while (it.hasNext())
       {
-        HashEntry entry = (HashEntry) it.next();
+        HashEntry<K, V> entry = it.next();
         s.writeObject(entry.key);
         s.writeObject(entry.value);
       }
@@ -796,13 +800,13 @@ public class HashMap extends AbstractMap
     s.defaultReadObject();
 
     // Read and use capacity, followed by key/value pairs.
-    buckets = new HashEntry[s.readInt()];
+    buckets = (HashEntry<K, V>[]) new HashEntry[s.readInt()];
     int len = s.readInt();
     size = len;
     while (len-- > 0)
       {
         Object key = s.readObject();
-        addEntry(key, s.readObject(), hash(key), false);
+        addEntry((K) key, (V) s.readObject(), hash(key), false);
       }
   }
 
@@ -813,7 +817,7 @@ public class HashMap extends AbstractMap
    *
    * @author Jon Zeppieri
    */
-  private final class HashIterator implements Iterator
+  private final class HashIterator<T> implements Iterator<T>
   {
     /**
      * The type of this Iterator: {@link #KEYS}, {@link #VALUES},
@@ -861,7 +865,7 @@ public class HashMap extends AbstractMap
      * @throws ConcurrentModificationException if the HashMap was modified
      * @throws NoSuchElementException if there is none
      */
-    public Object next()
+    public T next()
     {
       if (knownMod != modCount)
         throw new ConcurrentModificationException();
@@ -876,10 +880,10 @@ public class HashMap extends AbstractMap
       next = e.next;
       last = e;
       if (type == VALUES)
-        return e.value;
+        return (T) e.value;
       if (type == KEYS)
-        return e.key;
-      return e;
+        return (T) e.key;
+      return (T) e;
     }
 
     /**

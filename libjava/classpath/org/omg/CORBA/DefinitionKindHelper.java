@@ -1,5 +1,5 @@
 /* DefinitionKindHelper.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,10 +40,7 @@ package org.omg.CORBA;
 
 import gnu.CORBA.DefinitionKindHolder;
 import gnu.CORBA.OrbRestricted;
-import gnu.CORBA.gnuAny;
-import gnu.CORBA.typecodes.PrimitiveTypeCode;
 
-import org.omg.CORBA.TypeCodePackage.BadKind;
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
 

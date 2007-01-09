@@ -68,14 +68,14 @@ public class FeatureDescriptor
   boolean hidden;
   boolean preferred;
 
-  Hashtable valueHash;
+  Hashtable<String,Object> valueHash;
 
   /**
    * Instantiate this FeatureDescriptor with appropriate default values.
    */
   public FeatureDescriptor()
   {
-    valueHash = new Hashtable();
+    valueHash = new Hashtable<String,Object>();
   }
 
   /**
@@ -225,7 +225,7 @@ public class FeatureDescriptor
    * @return an Enumerator over all the programmatic key names associated
    * with this feature.
    */
-  public Enumeration attributeNames()
+  public Enumeration<String> attributeNames()
   {
     return valueHash.keys();
   }

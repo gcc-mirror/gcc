@@ -250,7 +250,7 @@ public interface CallableStatement extends PreparedStatement
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  Object getObject(int index, Map map) throws SQLException;
+  Object getObject(int index, Map<String, Class<?>> map) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -865,7 +865,7 @@ public interface CallableStatement extends PreparedStatement
    * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  Object getObject(String name, Map map) throws SQLException;
+  Object getObject(String name, Map<String, Class<?>> map) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java

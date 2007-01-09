@@ -42,11 +42,12 @@ import gnu.java.security.action.GetPropertyAction;
 
 import java.security.AccessController;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public final class SystemLogger
+public final class SystemLogger extends Logger
 {
-  public static final Logger SYSTEM = Logger.getLogger ("gnu.classpath");
+  public static final SystemLogger SYSTEM = new SystemLogger();
 
   static
   {
@@ -62,12 +63,40 @@ public final class SystemLogger
             Component c = Component.forName (tok.nextToken ());
             if (c != null)
               PreciseFilter.GLOBAL.enable (c);
-            SYSTEM.log (java.util.logging.Level.INFO, "enabled: {0}", c);
+            SYSTEM.log (Level.INFO, "enabled: {0}", c);
           }
       }
+  }
 
-    java.util.logging.Handler[] h = SYSTEM.getHandlers ();
-    for (int i = 0; i < h.length; i++)
-        System.out.println (h[i]);
+  /**
+   * Fetch the system logger instance. The logger returned is meant for debug
+   * and diagnostic logging for Classpath internals.
+   *
+   * @return The system logger.
+   */
+  public static SystemLogger getSystemLogger()
+  {
+    // XXX Check some permission here?
+    return SYSTEM;
+  }
+  
+  /**
+   * Keep only one instance of the system logger.
+   */
+  private SystemLogger()
+  {
+    super("gnu.classpath", null);
+  }
+  
+  /**
+   * Variable-arguments log method.
+   * 
+   * @param level The level to log to.
+   * @param format The format string.
+   * @param args The arguments.
+   */
+  public void logv(Level level, String format, Object... args)
+  {
+    log(level, format, args);
   }
 }

@@ -39,7 +39,7 @@ exception statement from your version. */
 
 package java.io;
 
-import gnu.java.io.ObjectIdentityWrapper;
+import gnu.classpath.VMStackWalker;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -55,6 +55,13 @@ import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.Vector;
 
+/**
+ * @author Tom Tromey (tromey@redhat.com)
+ * @author Jeroen Frijters (jeroen@frijters.net)
+ * @author Guilhem Lavaux (guilhem@kaffe.org)
+ * @author Michael Koch (konqueror@gmx.de)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
+ */
 public class ObjectInputStream extends InputStream
   implements ObjectInput, ObjectStreamConstants
 {
@@ -97,8 +104,8 @@ public class ObjectInputStream extends InputStream
     this.blockDataInput = new DataInputStream(this);
     this.realInputStream = new DataInputStream(in);
     this.nextOID = baseWireHandle;
-    this.objectLookupTable = new Hashtable();
-    this.classLookupTable = new Hashtable();
+    this.objectLookupTable = new Vector<Object>();
+    this.classLookupTable = new Hashtable<Class,ObjectStreamClass>();
     setBlockDataMode(true);
     readStreamHeader();
   }
@@ -197,10 +204,9 @@ public class ObjectInputStream extends InputStream
        case TC_REFERENCE:
  	{
  	  if(dump) dumpElement("REFERENCE ");
- 	  Integer oid = new Integer(this.realInputStream.readInt());
- 	  if(dump) dumpElementln(Integer.toHexString(oid.intValue()));
- 	  ret_val = ((ObjectIdentityWrapper)
- 		     this.objectLookupTable.get(oid)).object;
+ 	  int oid = realInputStream.readInt();
+ 	  if(dump) dumpElementln(Integer.toHexString(oid));
+ 	  ret_val = lookupHandle(oid);
  	  break;
  	}
  	
@@ -348,12 +354,12 @@ public class ObjectInputStream extends InputStream
  	  int handle = assignNewHandle(obj);
  	  Object prevObject = this.currentObject;
  	  ObjectStreamClass prevObjectStreamClass = this.currentObjectStreamClass;
-	  TreeSet prevObjectValidators = this.currentObjectValidators;
+	  TreeSet<ValidatorAndPriority> prevObjectValidators =
+	    this.currentObjectValidators;
  	  
  	  this.currentObject = obj;
 	  this.currentObjectValidators = null;
- 	  ObjectStreamClass[] hierarchy =
- 	    inputGetObjectStreamClasses(clazz);
+ 	  ObjectStreamClass[] hierarchy = hierarchy(clazz);
  	  
  	  for (int i = 0; i < hierarchy.length; i++)      
           {
@@ -539,8 +545,6 @@ public class ObjectInputStream extends InputStream
 						  flags, fields);
     assignNewHandle(osc);
 
-    ClassLoader callersClassLoader = currentLoader();
-	      
     for (int i = 0; i < field_count; i++)
       {
 	if(dump) dumpElement("  TYPE CODE=");
@@ -560,12 +564,17 @@ public class ObjectInputStream extends InputStream
 	  class_name = String.valueOf(type_code);
 		  
 	fields[i] =
-	  new ObjectStreamField(field_name, class_name, callersClassLoader);
+	  new ObjectStreamField(field_name, class_name);
       }
 	      
     /* Now that fields have been read we may resolve the class
      * (and read annotation if needed). */
     Class clazz = resolveClass(osc);
+    ClassLoader loader = clazz.getClassLoader();
+    for (int i = 0; i < field_count; i++)
+      {
+        fields[i].resolveType(loader);
+      }
     boolean oldmode = setBlockDataMode(true);
     osc.setClass(clazz, lookupClass(clazz.getSuperclass()));
     classLookupTable.put(clazz, osc);
@@ -753,7 +762,7 @@ public class ObjectInputStream extends InputStream
 				       + "ObjectInputValidation object");
 
     if (currentObjectValidators == null)
-      currentObjectValidators = new TreeSet();
+      currentObjectValidators = new TreeSet<ValidatorAndPriority>();
     
     currentObjectValidators.add(new ValidatorAndPriority(validator, priority));
   }
@@ -775,7 +784,7 @@ public class ObjectInputStream extends InputStream
    *
    * @see java.io.ObjectOutputStream#annotateClass (java.lang.Class)
    */
-  protected Class resolveClass(ObjectStreamClass osc)
+  protected Class<?> resolveClass(ObjectStreamClass osc)
     throws ClassNotFoundException, IOException
   {
     String name = osc.getName();
@@ -814,7 +823,7 @@ public class ObjectInputStream extends InputStream
    */
   private ClassLoader currentLoader()
   {
-    return VMObjectInputStream.currentClassLoader();
+    return VMStackWalker.firstNonNullClassLoader();
   }
 
   /**
@@ -842,41 +851,20 @@ public class ObjectInputStream extends InputStream
   }
 
   /**
-   * Reconstruct class hierarchy the same way
-   * {@link java.io.ObjectStreamClass#getObjectStreamClasses(Class)} does
-   * but using lookupClass instead of ObjectStreamClass.lookup. This
-   * dup is necessary localize the lookup table. Hopefully some future
-   * rewritings will be able to prevent this.
+   * Reconstruct class hierarchy the same way {@link
+   * java.io.ObjectStreamClass#hierarchy} does but using lookupClass
+   * instead of ObjectStreamClass.lookup.
    *
    * @param clazz This is the class for which we want the hierarchy.
    *
    * @return An array of valid {@link java.io.ObjectStreamClass} instances which
    * represent the class hierarchy for clazz.
    */
-  private ObjectStreamClass[] inputGetObjectStreamClasses(Class clazz)
-  {
+  private ObjectStreamClass[] hierarchy(Class clazz)
+  { 
     ObjectStreamClass osc = lookupClass(clazz);
 
-    if (osc == null)
-      return new ObjectStreamClass[0];
-    else
-      {
-        Vector oscs = new Vector();
-
-        while (osc != null)
-          {
-            oscs.addElement(osc);
-            osc = osc.getSuper();
-	  }
-
-        int count = oscs.size();
-	ObjectStreamClass[] sorted_oscs = new ObjectStreamClass[count];
-
-        for (int i = count - 1; i >= 0; i--)
-          sorted_oscs[count - i - 1] = (ObjectStreamClass) oscs.elementAt(i);
-
-        return sorted_oscs;
-      }
+    return osc == null ? new ObjectStreamClass[0] : osc.hierarchy(); 
   }
 
   /**
@@ -898,12 +886,12 @@ public class ObjectInputStream extends InputStream
   }
 
 
-  protected Class resolveProxyClass(String[] intfs)
+  protected Class<?> resolveProxyClass(String[] intfs)
     throws IOException, ClassNotFoundException
   {
     ClassLoader cl = currentLoader();
     
-    Class[] clss = new Class[intfs.length];
+    Class<?>[] clss = new Class<?>[intfs.length];
     if(cl == null)
       {
 	for (int i = 0; i < intfs.length; i++)
@@ -1560,9 +1548,47 @@ public class ObjectInputStream extends InputStream
    */
   private int assignNewHandle(Object obj)
   {
-    this.objectLookupTable.put(new Integer(this.nextOID),
-			       new ObjectIdentityWrapper(obj));
-    return this.nextOID++;
+    int handle = this.nextOID;
+    this.nextOID = handle + 1;
+    rememberHandle(obj,handle);
+    return handle;
+  }
+
+  /**
+   * Remember the object associated with the given handle.
+   *
+   * @param obj an object
+   *
+   * @param handle a handle, must be >= baseWireHandle
+   *
+   * @see #lookupHandle
+   */
+  private void rememberHandle(Object obj, int handle)
+  {
+    Vector olt = this.objectLookupTable;
+    handle = handle - baseWireHandle;
+
+    if (olt.size() <= handle)
+      olt.setSize(handle + 1);
+
+    olt.set(handle, obj);
+  }
+  
+  /**
+   * Look up the object associated with a given handle.
+   *
+   * @param handle a handle, must be >= baseWireHandle
+   *
+   * @return the object remembered for handle or null if none.
+   *
+   * @see #rememberHandle
+   */
+  private Object lookupHandle(int handle)
+  {
+    Vector olt = this.objectLookupTable;
+    handle = handle - baseWireHandle;
+    Object result = handle < olt.size() ? olt.get(handle) : null;
+    return result;
   }
 
   private Object processResolution(ObjectStreamClass osc, Object obj, int handle)
@@ -1596,9 +1622,7 @@ public class ObjectInputStream extends InputStream
     if (this.resolveEnabled)
       obj = resolveObject(obj);
 
-    this.objectLookupTable.put(new Integer(handle),
-			       new ObjectIdentityWrapper(obj));
-
+    rememberHandle(obj, handle);
     return obj;
   }
 
@@ -1875,10 +1899,10 @@ public class ObjectInputStream extends InputStream
   {
     try
       {
-	Iterator it = currentObjectValidators.iterator();
+	Iterator<ValidatorAndPriority> it = currentObjectValidators.iterator();
 	while(it.hasNext())
 	  {
-	    ValidatorAndPriority vap = (ValidatorAndPriority) it.next();
+	    ValidatorAndPriority vap = it.next();
 	    ObjectInputValidation validator = vap.validator;
 	    validator.validateObject();
 	  }
@@ -1931,13 +1955,13 @@ public class ObjectInputStream extends InputStream
   private boolean useSubclassMethod;
   private int nextOID;
   private boolean resolveEnabled;
-  private Hashtable objectLookupTable;
+  private Vector<Object> objectLookupTable;
   private Object currentObject;
   private ObjectStreamClass currentObjectStreamClass;
-  private TreeSet currentObjectValidators;
+  private TreeSet<ValidatorAndPriority> currentObjectValidators;
   private boolean readDataFromBlock;
   private boolean fieldsAlreadyRead;
-  private Hashtable classLookupTable;
+  private Hashtable<Class,ObjectStreamClass> classLookupTable;
   private GetField prereadFields;
 
   private static boolean dump;

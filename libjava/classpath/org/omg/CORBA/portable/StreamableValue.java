@@ -1,5 +1,5 @@
 /* StreamableValue.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ import java.io.Serializable;
  * If the value type does not provide the user defined methods for reading
  * and writing its content, it must implement this interface for reading
  * and writing the content in a default way. This is done by implementing
- * the {@link Streamable#read} and {@link Streamable#write}. IDL compiler
+ * the {@link Streamable#_read} and {@link Streamable#_write}. IDL compiler
  * should generate the implementation of this interface automatically.
  *
  * @see CustomValue for specifying the user-defined io methods.

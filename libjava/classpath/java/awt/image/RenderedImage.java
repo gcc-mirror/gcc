@@ -46,7 +46,7 @@ import java.util.Vector;
  */
 public interface RenderedImage
 {
-  Vector getSources();
+  Vector<RenderedImage> getSources();
   Object getProperty(String name);
   String[] getPropertyNames();
   ColorModel getColorModel();

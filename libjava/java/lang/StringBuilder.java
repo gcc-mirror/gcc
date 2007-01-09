@@ -74,9 +74,8 @@ import java.io.Serializable;
  *
  * @since 1.5
  */
-// FIX15: Implement Appendable when co-variant methods are available
 public final class StringBuilder
-  implements Serializable, CharSequence
+  implements Serializable, CharSequence, Appendable
 {
   // Implementation note: if you change this class, you usually will
   // want to change StringBuffer as well.

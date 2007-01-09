@@ -42,8 +42,8 @@ public interface Position
 {
   static final class Bias
   {
-    public static final Bias Backward = new Bias("backward");
-    public static final Bias Forward = new Bias("forward");
+    public static final Bias Backward = new Bias("Backward");
+    public static final Bias Forward = new Bias("Forward");
 
     private String name;
     

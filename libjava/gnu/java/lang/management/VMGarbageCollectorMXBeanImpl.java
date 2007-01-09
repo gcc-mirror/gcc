@@ -61,10 +61,7 @@ final class VMGarbageCollectorMXBeanImpl
    * @return the number of collections made, or -1 if this is
    *         undefined.
    */
-  static long getCollectionCount(String name)
-  {
-    return -1;
-  }
+  static native long getCollectionCount(String name);
 
   /**
    * Returns the accumulated number of milliseconds this garbage
@@ -78,9 +75,6 @@ final class VMGarbageCollectorMXBeanImpl
    * @return the accumulated number of milliseconds spent collecting,
    *         or -1 if this is undefined.
    */
-  static long getCollectionTime(String name)
-  {
-    return -1;
-  }
+  static native long getCollectionTime(String name);
 
 }

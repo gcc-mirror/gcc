@@ -41,16 +41,22 @@ package javax.swing.plaf.basic;
 import gnu.classpath.NotImplementedException;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 
+import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPopupMenu;
 import javax.swing.LookAndFeel;
+import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
+import javax.swing.Timer;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -69,6 +75,32 @@ import javax.swing.plaf.ComponentUI;
  */
 public class BasicMenuUI extends BasicMenuItemUI
 {
+  /**
+   * Selects a menu. This is used to delay menu selection.
+   */
+  class SelectMenuAction
+    extends AbstractAction
+  {
+    /**
+     * Performs the action.
+     */
+    public void actionPerformed(ActionEvent event)
+    {
+      JMenu menu = (JMenu) menuItem;
+      MenuSelectionManager defaultManager =
+        MenuSelectionManager.defaultManager();
+      MenuElement path[] = defaultManager.getSelectedPath();
+      if(path.length > 0 && path[path.length - 1] == menu)
+        {
+          MenuElement newPath[] = new MenuElement[path.length + 1];
+          System.arraycopy(path, 0, newPath, 0, path.length);
+          newPath[path.length] = menu.getPopupMenu();
+          defaultManager.setSelectedPath(newPath);
+      }
+    }
+    
+  }
+
   protected ChangeListener changeListener;
 
   /* MenuListener listens to MenuEvents fired by JMenu */
@@ -201,6 +233,7 @@ public class BasicMenuUI extends BasicMenuItemUI
    */
   protected void installDefaults()
   {
+    
     LookAndFeel.installBorder(menuItem, "Menu.border");
     LookAndFeel.installColorsAndFont(menuItem, "Menu.background",
                                      "Menu.foreground", "Menu.font");
@@ -212,6 +245,7 @@ public class BasicMenuUI extends BasicMenuItemUI
     selectionForeground = UIManager.getColor("Menu.selectionForeground");
     arrowIcon = UIManager.getIcon("Menu.arrowIcon");
     oldBorderPainted = UIManager.getBoolean("Menu.borderPainted");
+    ((JMenu) menuItem).setDelay(200);
   }
 
   /**
@@ -234,9 +268,10 @@ public class BasicMenuUI extends BasicMenuItemUI
   }
 
   protected void setupPostTimer(JMenu menu)
-  throws NotImplementedException
   {
-    // TODO: Implement this properly.
+    Timer timer = new Timer(menu.getDelay(), new SelectMenuAction());
+    timer.setRepeats(false);
+    timer.start();
   }
 
   /**
@@ -285,8 +320,7 @@ public class BasicMenuUI extends BasicMenuItemUI
   {
     public void mouseClicked(MouseEvent e)
     {
-      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
-      manager.processMouseEvent(e);
+      // Nothing to do here.
     }
 
     public void mouseDragged(MouseEvent e)
@@ -313,29 +347,46 @@ public class BasicMenuUI extends BasicMenuItemUI
 
     public void mouseEntered(MouseEvent e)
     {
-      /* When mouse enters menu item, it should be considered selected
-
-       if (i) if this menu is a submenu in some other menu
-          (ii) or if this menu is in a menu bar and some other menu in a 
-          menu bar was just selected and has its popup menu visible. 
-               (If nothing was selected, menu should be pressed before
-               it will be selected)
-      */
       JMenu menu = (JMenu) menuItem;
-
-      // NOTE: the following if used to require !menu.isArmed but I could find
-      // no reason for this and it was preventing some JDK-compatible behaviour.
-      // Specifically, if a menu is selected but its popup menu not visible,
-      // and then another menu is selected whose popup menu IS visible, when
-      // the mouse is moved over the first menu, its popup menu should become
-      // visible.
-
-      if (! menu.isTopLevelMenu() || popupVisible())
+      if (menu.isEnabled())
         {
-	  // set new selection and forward this event to MenuSelectionManager
-	  MenuSelectionManager manager = MenuSelectionManager.defaultManager();
-	  manager.setSelectedPath(getPath());
-	  manager.processMouseEvent(e);
+          MenuSelectionManager manager =
+            MenuSelectionManager.defaultManager();
+          MenuElement[] selectedPath = manager.getSelectedPath();
+          if (! menu.isTopLevelMenu())
+            {
+              // Open the menu immediately or delayed, depending on the
+              // delay value.
+              if(! (selectedPath.length > 0
+                  && selectedPath[selectedPath.length - 1] == menu.getPopupMenu()))
+                {
+                  if(menu.getDelay() == 0)
+                    {
+                      MenuElement[] path = getPath();
+                      MenuElement[] newPath = new MenuElement[path.length + 1];
+                      System.arraycopy(path, 0, newPath, 0, path.length);
+                      newPath[path.length] = menu.getPopupMenu();
+                      manager.setSelectedPath(newPath);
+                    }
+                  else
+                    {
+                      manager.setSelectedPath(getPath());
+                      setupPostTimer(menu);
+                    }
+                }
+            }
+          else
+            {
+              if(selectedPath.length > 0
+                  && selectedPath[0] == menu.getParent())
+                {
+                  MenuElement[] newPath = new MenuElement[3];
+                  newPath[0] = (MenuElement) menu.getParent();
+                  newPath[1] = menu;
+                  newPath[2] = menu.getPopupMenu();
+                  manager.setSelectedPath(newPath);
+                }
+            }
         }
     }
 
@@ -354,29 +405,48 @@ public class BasicMenuUI extends BasicMenuItemUI
     {
       MenuSelectionManager manager = MenuSelectionManager.defaultManager();
       JMenu menu = (JMenu) menuItem;
-      manager.processMouseEvent(e);
-
-      // Menu should be displayed when the menu is pressed only if 
-      // it is top-level menu
-      if (menu.isTopLevelMenu())
+      if (menu.isEnabled())
         {
-	  if (menu.getPopupMenu().isVisible())
-	    // If menu is visible and menu button was pressed.. 
-	    // then need to cancel the menu
-	    manager.clearSelectedPath();
-	  else
-	    {
-	      // Display the menu
-	      int x = 0;
-	      int y = menu.getHeight();
+          // Open up the menu immediately if it's a toplevel menu.
+          // But not yet the popup, which might be opened delayed, see below.
+          if (menu.isTopLevelMenu())
+            {
+              if (menu.isSelected())
+                manager.clearSelectedPath();
+              else
+                {
+                  Container cnt = menu.getParent();
+                  if (cnt != null && cnt instanceof JMenuBar)
+                    {
+                      MenuElement[] me = new MenuElement[2];
+                      me[0] = (MenuElement) cnt;
+                      me[1] = menu;
+                      manager.setSelectedPath(me);
+                   }
+                }
+            }
 
-	      manager.setSelectedPath(getPath());
+          // Open the menu's popup. Either do that immediately if delay == 0,
+          // or delayed when delay > 0.
+          MenuElement[] selectedPath = manager.getSelectedPath();
+          if (selectedPath.length > 0
+              && selectedPath[selectedPath.length - 1] != menu.getPopupMenu())
+            {
+              if(menu.isTopLevelMenu() || menu.getDelay() == 0)
+                {
+                  MenuElement[] newPath =
+                    new MenuElement[selectedPath.length + 1];
+                  System.arraycopy(selectedPath, 0, newPath, 0,
+                                   selectedPath.length);
+                  newPath[selectedPath.length] = menu.getPopupMenu();
+                  manager.setSelectedPath(newPath);
+                }
+              else
+                {
+                  setupPostTimer(menu);
+                }
+            }
 
-	      JMenuBar mb = (JMenuBar) menu.getParent();
-
-	      // set selectedIndex of the selectionModel of a menuBar
-	      mb.getSelectionModel().setSelectedIndex(mb.getComponentIndex(menu));
-	    }
         }
     }
 
@@ -493,8 +563,44 @@ public class BasicMenuUI extends BasicMenuItemUI
      */
     public void menuDragMouseDragged(MenuDragMouseEvent e)
     {
-      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
-      manager.setSelectedPath(e.getPath());
+      if (menuItem.isEnabled())
+        {
+          MenuSelectionManager manager = e.getMenuSelectionManager();
+          MenuElement path[] = e.getPath();
+
+          Point p = e.getPoint();
+          if(p.x >= 0 && p.x < menuItem.getWidth()
+              && p.y >= 0 && p.y < menuItem.getHeight())
+            {
+              JMenu menu = (JMenu) menuItem;
+              MenuElement[] selectedPath = manager.getSelectedPath();
+              if(! (selectedPath.length > 0
+                  && selectedPath[selectedPath.length-1]
+                                  == menu.getPopupMenu()))
+                {
+                  if(menu.isTopLevelMenu() || menu.getDelay() == 0
+                     || e.getID() == MouseEvent.MOUSE_DRAGGED)
+                    {
+                      MenuElement[] newPath = new MenuElement[path.length + 1];
+                      System.arraycopy(path, 0, newPath, 0, path.length);
+                      newPath[path.length] = menu.getPopupMenu();
+                      manager.setSelectedPath(newPath);
+                    }
+                  else
+                    {
+                      manager.setSelectedPath(path);
+                      setupPostTimer(menu);
+                    }
+                }
+            }
+          else if (e.getID() == MouseEvent.MOUSE_RELEASED)
+            {
+              Component comp = manager.componentForPoint(e.getComponent(),
+                                                         e.getPoint());
+              if (comp == null)
+                manager.clearSelectedPath();
+            }
+        }
     }
 
     /**
@@ -505,8 +611,7 @@ public class BasicMenuUI extends BasicMenuItemUI
      */
     public void menuDragMouseEntered(MenuDragMouseEvent e)
     {
-      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
-      manager.setSelectedPath(e.getPath());
+      // Nothing to do here.
     }
 
     /**

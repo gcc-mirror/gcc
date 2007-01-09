@@ -44,7 +44,7 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBuffer;
+import java.awt.image.Raster;
 import java.util.Locale;
 
 public class GdkGraphicsEnvironment extends GraphicsEnvironment
@@ -103,9 +103,9 @@ public class GdkGraphicsEnvironment extends GraphicsEnvironment
 
   public Graphics2D createGraphics (BufferedImage image)
   {
-    DataBuffer db = image.getRaster().getDataBuffer();
-    if(db instanceof CairoSurface)
-      return ((CairoSurface)db).getGraphics();
+    Raster raster = image.getRaster();
+    if(raster instanceof CairoSurface)
+      return ((CairoSurface)raster).getGraphics();
 
     return new BufferedImageGraphics( image );
   }

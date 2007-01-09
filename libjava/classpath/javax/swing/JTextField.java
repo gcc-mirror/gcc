@@ -270,7 +270,8 @@ public class JTextField extends JTextComponent
    */
   protected void fireActionPerformed()
   {
-    ActionEvent event = new ActionEvent(this, 0, getText());
+    ActionEvent event = new ActionEvent(this, 0, 
+                          actionCommand == null ? getText() : actionCommand);
     ActionListener[] listeners = getActionListeners();
 
     for (int index = 0; index < listeners.length; ++index)

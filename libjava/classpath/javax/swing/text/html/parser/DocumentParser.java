@@ -38,13 +38,13 @@ exception statement from your version. */
 
 package javax.swing.text.html.parser;
 
-import gnu.javax.swing.text.html.parser.htmlAttributeSet;
 import javax.swing.text.html.parser.Parser;
 
 import java.io.IOException;
 import java.io.Reader;
 
 import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.html.HTMLEditorKit;
 
 /**
@@ -117,7 +117,7 @@ public class DocumentParser
     protected final void handleStartTag(TagElement tag)
     {
       parser.handleStartTag(tag);
-      htmlAttributeSet attributes = gnu.getAttributes();
+      SimpleAttributeSet attributes = gnu.getAttributes();
 
       if (tag.fictional())
         attributes.addAttribute(HTMLEditorKit.ParserCallback.IMPLIED,

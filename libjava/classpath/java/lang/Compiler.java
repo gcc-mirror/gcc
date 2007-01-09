@@ -74,7 +74,7 @@ public final class Compiler
    *         compilation failed, <code>true</code> if compilation succeeded
    * @throws NullPointerException if oneClass is null
    */
-  public static boolean compileClass(Class oneClass)
+  public static boolean compileClass(Class<?> oneClass)
   {
     return VMCompiler.compileClass(oneClass);
   }

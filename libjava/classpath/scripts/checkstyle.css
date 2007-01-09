@@ -1,0 +1,42 @@
+body {
+  color: black;
+  font-family: sans-serif;
+}
+h1 {
+  color: #990000;
+  border-width: 1px;
+  border-style: solid;
+  border-color: black;
+  padding: 0.2em;
+  background-color: #cccccc;
+  width: 100%;
+}
+h2 {
+  color: #990000;
+  border-width: 1px;
+  border-style: solid;
+  border-color: black;
+  padding: 0.2em;
+  background-color: #cccccc;
+  width: 100%;
+}
+h3 {
+  color: #990000;
+  border-width: 1px;
+  border-style: solid;
+  border-color: black;
+  padding: 0.2em;
+  background-color: #cccccc;
+  width: 100%;
+}
+table {
+  width: 100%;
+}
+th {
+  color: white;
+  background-color: #999999;
+  text-align: left;
+}
+td {
+  background-color: #cccccc;
+}

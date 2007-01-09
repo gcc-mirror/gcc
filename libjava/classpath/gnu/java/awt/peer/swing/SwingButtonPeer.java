@@ -38,6 +38,7 @@ exception statement from your version. */
 package gnu.java.awt.peer.swing;
 
 import java.awt.Button;
+import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
@@ -69,6 +70,13 @@ public class SwingButtonPeer
     extends JButton
     implements SwingComponent
   {
+     Button button;
+
+     SwingButton(Button button)
+     {
+       this.button = button;
+     }
+
     /**
      * Overridden so that this method returns the correct value even without a
      * peer.
@@ -90,8 +98,8 @@ public class SwingButtonPeer
     public boolean isShowing()
     {
       boolean retVal = false;
-      if (SwingButtonPeer.this.awtComponent != null)
-        retVal = SwingButtonPeer.this.awtComponent.isShowing();
+      if (button != null)
+        retVal = button.isShowing();
       return retVal;
     }
 
@@ -168,6 +176,14 @@ public class SwingButtonPeer
       ev.setSource(this);
       processKeyEvent(ev);
     }
+
+    public Container getParent()
+    {
+      Container par = null;
+      if (button != null)
+        par = button.getParent();
+      return par;
+    }
   }
 
   /**
@@ -205,7 +221,7 @@ public class SwingButtonPeer
    */
   public SwingButtonPeer(Button theButton)
   {
-    SwingButton button = new SwingButton();
+    SwingButton button = new SwingButton(theButton);
     button.setText(theButton.getLabel());
     button.addActionListener(new SwingButtonListener());
     init(theButton, button);

@@ -508,7 +508,7 @@ public class URLClassLoader extends SecureClassLoader
    * loaded
    * @return a Class object representing the found class
    */
-  protected Class findClass(final String className)
+  protected Class<?> findClass(final String className)
     throws ClassNotFoundException
   {
     // Just try to find the resource by the (almost) same name
@@ -714,10 +714,10 @@ public class URLClassLoader extends SecureClassLoader
    * @exception IOException when an error occurs accessing one of the
    * locations
    */
-  public Enumeration findResources(String resourceName)
+  public Enumeration<URL> findResources(String resourceName)
     throws IOException
   {
-    Vector resources = new Vector();
+    Vector<URL> resources = new Vector<URL>();
     int max = urlinfos.size();
     for (int i = 0; i < max; i++)
       {

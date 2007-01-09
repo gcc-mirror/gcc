@@ -100,7 +100,7 @@ public interface StateEditable
    * @param state a hash table containing the relevant state
    * information.
    */
-  void restoreState(Hashtable state);
+  void restoreState(Hashtable<?, ?> state);
 
 
   /**
@@ -110,5 +110,5 @@ public interface StateEditable
    * @param state a hash table for storing relevant state
    * information.
    */
-  void storeState(Hashtable state);
+  void storeState(Hashtable<Object, Object> state);
 }

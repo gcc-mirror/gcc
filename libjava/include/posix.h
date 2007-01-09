@@ -69,6 +69,13 @@ details.  */
 #define O_DSYNC O_SYNC
 #endif
 
+// Name of the Process implementation.
+#ifdef ECOS
+#define _Jv_platform_process ::java::lang::EcosProcess
+#else
+#define _Jv_platform_process ::java::lang::PosixProcess
+#endif
+
 // Separator for file name components.
 #define _Jv_platform_file_separator ((jchar) '/')
 // Separator for path components.

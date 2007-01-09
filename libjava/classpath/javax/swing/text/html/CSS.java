@@ -37,8 +37,19 @@ exception statement from your version. */
 
 package javax.swing.text.html;
 
+import gnu.javax.swing.text.html.css.BorderStyle;
+import gnu.javax.swing.text.html.css.BorderWidth;
+import gnu.javax.swing.text.html.css.CSSColor;
+import gnu.javax.swing.text.html.css.FontSize;
+import gnu.javax.swing.text.html.css.FontStyle;
+import gnu.javax.swing.text.html.css.FontWeight;
+import gnu.javax.swing.text.html.css.Length;
+
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.StringTokenizer;
+
+import javax.swing.text.MutableAttributeSet;
 
 /**
  * Provides CSS attributes to be used by the HTML view classes. The constants
@@ -388,6 +399,36 @@ public class CSS implements Serializable
     public static final Attribute WORD_SPACING =
       new Attribute("word-spacing", true, "normal");
 
+    // Some GNU Classpath specific extensions.
+    static final Attribute BORDER_TOP_STYLE =
+      new Attribute("border-top-style", false, null);
+    static final Attribute BORDER_BOTTOM_STYLE =
+      new Attribute("border-bottom-style", false, null);
+    static final Attribute BORDER_LEFT_STYLE =
+      new Attribute("border-left-style", false, null);
+    static final Attribute BORDER_RIGHT_STYLE =
+      new Attribute("border-right-style", false, null);
+    static final Attribute BORDER_TOP_COLOR =
+      new Attribute("border-top-color", false, null);
+    static final Attribute BORDER_BOTTOM_COLOR =
+      new Attribute("border-bottom-color", false, null);
+    static final Attribute BORDER_LEFT_COLOR =
+      new Attribute("border-left-color", false, null);
+    static final Attribute BORDER_RIGHT_COLOR =
+      new Attribute("border-right-color", false, null);
+    static final Attribute BORDER_SPACING =
+      new Attribute("border-spacing", false, null);
+    static final Attribute POSITION =
+      new Attribute("position", false, null);
+    static final Attribute LEFT =
+      new Attribute("left", false, null);
+    static final Attribute RIGHT =
+      new Attribute("right", false, null);
+    static final Attribute TOP =
+      new Attribute("top", false, null);
+    static final Attribute BOTTOM =
+      new Attribute("bottom", false, null);
+
     /**
      * The attribute string.
      */
@@ -458,5 +499,238 @@ public class CSS implements Serializable
     {
       return defaultValue;
     }
+  }
+
+  /**
+   * Maps attribute values (String) to some converter class, based on the
+   * key.
+   *
+   * @param att the key
+   * @param v the value
+   *
+   * @return the wrapped value
+   */
+  static Object getValue(Attribute att, String v)
+  {
+    Object o;
+    if (att == Attribute.FONT_SIZE)
+      o = new FontSize(v);
+    else if (att == Attribute.FONT_WEIGHT)
+      o = new FontWeight(v);
+    else if (att == Attribute.FONT_STYLE)
+      o = new FontStyle(v);
+    else if (att == Attribute.COLOR || att == Attribute.BACKGROUND_COLOR
+             || att == Attribute.BORDER_COLOR
+             || att == Attribute.BORDER_TOP_COLOR
+             || att == Attribute.BORDER_BOTTOM_COLOR
+             || att == Attribute.BORDER_LEFT_COLOR
+             || att == Attribute.BORDER_RIGHT_COLOR)
+      o = new CSSColor(v);
+    else if (att == Attribute.MARGIN || att == Attribute.MARGIN_BOTTOM
+             || att == Attribute.MARGIN_LEFT || att == Attribute.MARGIN_RIGHT
+             || att == Attribute.MARGIN_TOP || att == Attribute.WIDTH
+             || att == Attribute.HEIGHT
+             || att == Attribute.PADDING || att == Attribute.PADDING_BOTTOM
+             || att == Attribute.PADDING_LEFT || att == Attribute.PADDING_RIGHT
+             || att == Attribute.PADDING_TOP
+             || att == Attribute.LEFT || att == Attribute.RIGHT
+             || att == Attribute.TOP || att == Attribute.BOTTOM)
+      o = new Length(v);
+    else if (att == Attribute.BORDER_WIDTH || att == Attribute.BORDER_TOP_WIDTH
+             || att == Attribute.BORDER_LEFT_WIDTH
+             || att == Attribute.BORDER_RIGHT_WIDTH
+             || att == Attribute.BORDER_BOTTOM_WIDTH)
+      o = new BorderWidth(v);
+    else
+      o = v;
+    return o;
+  }
+
+  static void addInternal(MutableAttributeSet atts, Attribute a, String v)
+  {
+    if (a == Attribute.BACKGROUND)
+      parseBackgroundShorthand(atts, v);
+    else if (a == Attribute.PADDING)
+      parsePaddingShorthand(atts, v);
+    else if (a == Attribute.MARGIN)
+      parseMarginShorthand(atts, v);
+    else if (a == Attribute.BORDER || a == Attribute.BORDER_LEFT
+             || a == Attribute.BORDER_RIGHT || a == Attribute.BORDER_TOP
+             || a == Attribute.BORDER_BOTTOM)
+      parseBorderShorthand(atts, v, a);
+  }
+
+  /**
+   * Parses the background shorthand and translates it to more specific
+   * background attributes.
+   *
+   * @param atts the attributes
+   * @param v the value
+   */
+  private static void parseBackgroundShorthand(MutableAttributeSet atts,
+                                               String v)
+  {
+    StringTokenizer tokens = new StringTokenizer(v, " ");
+    while (tokens.hasMoreElements())
+      {
+        String token = tokens.nextToken();
+        if (CSSColor.isValidColor(token))
+          atts.addAttribute(Attribute.BACKGROUND_COLOR,
+                            new CSSColor(token));
+      }
+  }
+
+  /**
+   * Parses the padding shorthand and translates to the specific padding
+   * values.
+   *
+   * @param atts the attributes
+   * @param v the actual value
+   */
+  private static void parsePaddingShorthand(MutableAttributeSet atts, String v)
+  {
+    StringTokenizer tokens = new StringTokenizer(v, " ");
+    int numTokens = tokens.countTokens();
+    if (numTokens == 1)
+      {
+        Length l = new Length(tokens.nextToken());
+        atts.addAttribute(Attribute.PADDING_BOTTOM, l);
+        atts.addAttribute(Attribute.PADDING_LEFT, l);
+        atts.addAttribute(Attribute.PADDING_RIGHT, l);
+        atts.addAttribute(Attribute.PADDING_TOP, l);
+      }
+    else if (numTokens == 2)
+      {
+        Length l1 = new Length(tokens.nextToken());
+        Length l2 = new Length(tokens.nextToken());
+        atts.addAttribute(Attribute.PADDING_BOTTOM, l1);
+        atts.addAttribute(Attribute.PADDING_TOP, l1);
+        atts.addAttribute(Attribute.PADDING_LEFT, l2);
+        atts.addAttribute(Attribute.PADDING_RIGHT, l2);
+      }
+    else if (numTokens == 3)
+      {
+        Length l1 = new Length(tokens.nextToken());
+        Length l2 = new Length(tokens.nextToken());
+        Length l3 = new Length(tokens.nextToken());
+        atts.addAttribute(Attribute.PADDING_TOP, l1);
+        atts.addAttribute(Attribute.PADDING_LEFT, l2);
+        atts.addAttribute(Attribute.PADDING_RIGHT, l2);
+        atts.addAttribute(Attribute.PADDING_BOTTOM, l3);
+      }
+    else
+      {
+        Length l1 = new Length(tokens.nextToken());
+        Length l2 = new Length(tokens.nextToken());
+        Length l3 = new Length(tokens.nextToken());
+        Length l4 = new Length(tokens.nextToken());
+        atts.addAttribute(Attribute.PADDING_TOP, l1);
+        atts.addAttribute(Attribute.PADDING_RIGHT, l2);
+        atts.addAttribute(Attribute.PADDING_BOTTOM, l3);
+        atts.addAttribute(Attribute.PADDING_LEFT, l4);
+      }
+  }
+
+  /**
+   * Parses the margin shorthand and translates to the specific margin
+   * values.
+   *
+   * @param atts the attributes
+   * @param v the actual value
+   */
+  private static void parseMarginShorthand(MutableAttributeSet atts, String v)
+  {
+    StringTokenizer tokens = new StringTokenizer(v, " ");
+    int numTokens = tokens.countTokens();
+    if (numTokens == 1)
+      {
+        Length l = new Length(tokens.nextToken());
+        atts.addAttribute(Attribute.MARGIN_BOTTOM, l);
+        atts.addAttribute(Attribute.MARGIN_LEFT, l);
+        atts.addAttribute(Attribute.MARGIN_RIGHT, l);
+        atts.addAttribute(Attribute.MARGIN_TOP, l);
+      }
+    else if (numTokens == 2)
+      {
+        Length l1 = new Length(tokens.nextToken());
+        Length l2 = new Length(tokens.nextToken());
+        atts.addAttribute(Attribute.MARGIN_BOTTOM, l1);
+        atts.addAttribute(Attribute.MARGIN_TOP, l1);
+        atts.addAttribute(Attribute.MARGIN_LEFT, l2);
+        atts.addAttribute(Attribute.MARGIN_RIGHT, l2);
+      }
+    else if (numTokens == 3)
+      {
+        Length l1 = new Length(tokens.nextToken());
+        Length l2 = new Length(tokens.nextToken());
+        Length l3 = new Length(tokens.nextToken());
+        atts.addAttribute(Attribute.MARGIN_TOP, l1);
+        atts.addAttribute(Attribute.MARGIN_LEFT, l2);
+        atts.addAttribute(Attribute.MARGIN_RIGHT, l2);
+        atts.addAttribute(Attribute.MARGIN_BOTTOM, l3);
+      }
+    else
+      {
+        Length l1 = new Length(tokens.nextToken());
+        Length l2 = new Length(tokens.nextToken());
+        Length l3 = new Length(tokens.nextToken());
+        Length l4 = new Length(tokens.nextToken());
+        atts.addAttribute(Attribute.MARGIN_TOP, l1);
+        atts.addAttribute(Attribute.MARGIN_RIGHT, l2);
+        atts.addAttribute(Attribute.MARGIN_BOTTOM, l3);
+        atts.addAttribute(Attribute.MARGIN_LEFT, l4);
+      }
+  }
+
+  /**
+   * Parses the CSS border shorthand attribute and translates it to the
+   * more specific border attributes.
+   *
+   * @param atts the attribute
+   * @param value the value
+   */
+  private static void parseBorderShorthand(MutableAttributeSet atts,
+                                           String value, Attribute cssAtt)
+  {
+    StringTokenizer tokens = new StringTokenizer(value, " ");
+    while (tokens.hasMoreTokens())
+      {
+        String token = tokens.nextToken();
+        if (BorderStyle.isValidStyle(token))
+          {
+            if (cssAtt == Attribute.BORDER_LEFT || cssAtt == Attribute.BORDER)
+              atts.addAttribute(Attribute.BORDER_LEFT_STYLE, token);
+            if (cssAtt == Attribute.BORDER_RIGHT || cssAtt == Attribute.BORDER)
+              atts.addAttribute(Attribute.BORDER_RIGHT_STYLE, token);
+            if (cssAtt == Attribute.BORDER_BOTTOM || cssAtt == Attribute.BORDER)
+              atts.addAttribute(Attribute.BORDER_BOTTOM_STYLE, token);
+            if (cssAtt == Attribute.BORDER_TOP || cssAtt == Attribute.BORDER)
+              atts.addAttribute(Attribute.BORDER_TOP_STYLE, token);
+          }
+        else if (BorderWidth.isValid(token))
+          {
+            BorderWidth w = new BorderWidth(token);
+            if (cssAtt == Attribute.BORDER_LEFT || cssAtt == Attribute.BORDER)
+              atts.addAttribute(Attribute.BORDER_LEFT_WIDTH, w);
+            if (cssAtt == Attribute.BORDER_RIGHT || cssAtt == Attribute.BORDER)
+              atts.addAttribute(Attribute.BORDER_RIGHT_WIDTH, w);
+            if (cssAtt == Attribute.BORDER_BOTTOM || cssAtt == Attribute.BORDER)
+              atts.addAttribute(Attribute.BORDER_BOTTOM_WIDTH, w);
+            if (cssAtt == Attribute.BORDER_TOP || cssAtt == Attribute.BORDER)
+              atts.addAttribute(Attribute.BORDER_TOP_WIDTH, w);
+          }
+        else if (CSSColor.isValidColor(token))
+          {
+            CSSColor c = new CSSColor(token);
+            if (cssAtt == Attribute.BORDER_LEFT || cssAtt == Attribute.BORDER)
+              atts.addAttribute(Attribute.BORDER_LEFT_COLOR, c);
+            if (cssAtt == Attribute.BORDER_RIGHT || cssAtt == Attribute.BORDER)
+              atts.addAttribute(Attribute.BORDER_RIGHT_COLOR, c);
+            if (cssAtt == Attribute.BORDER_BOTTOM || cssAtt == Attribute.BORDER)
+              atts.addAttribute(Attribute.BORDER_BOTTOM_COLOR, c);
+            if (cssAtt == Attribute.BORDER_TOP || cssAtt == Attribute.BORDER)
+              atts.addAttribute(Attribute.BORDER_TOP_COLOR, c);
+          }
+      }
   }
 }

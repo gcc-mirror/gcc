@@ -38,34 +38,24 @@ exception statement from your version.  */
 
 package gnu.javax.net.ssl.provider;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.io.StringWriter;
-import java.security.PublicKey;
+import java.nio.ByteBuffer;
 
-final class CertificateVerify extends Signature implements Handshake.Body
+public class CertificateVerify extends Signature implements Handshake.Body
 {
 
   // Contstructor.
   // -------------------------------------------------------------------------
 
-  CertificateVerify(Object sigValue, String sigAlg)
+  public CertificateVerify(final ByteBuffer buffer, final SignatureAlgorithm sigAlg)
   {
-    super(sigValue, sigAlg);
+    super(buffer, sigAlg);
   }
-
-  // Class method.
-  // --------------------------------------------------------------------------
-
-  static Signature read(InputStream in, CipherSuite suite, PublicKey key)
-    throws IOException
+  
+  public CertificateVerify(final byte[] sigVal, final SignatureAlgorithm sigAlg)
   {
-    Signature sig = Signature.read(in, suite, key);
-    return new CertificateVerify(sig.getSigValue(), sig.getSigAlg());
+    super(sigVal, sigAlg);
   }
 
   // Instance method.
@@ -73,23 +63,21 @@ final class CertificateVerify extends Signature implements Handshake.Body
 
   public String toString()
   {
-    StringWriter str = new StringWriter();
-    PrintWriter out = new PrintWriter(str);
+    return toString (null);
+  }
+
+  public String toString (final String prefix)
+  {
+    StringWriter str = new StringWriter ();
+    PrintWriter out = new PrintWriter (str);
+    if (prefix != null) out.print (prefix);
     out.println("struct {");
-    BufferedReader r = new BufferedReader(new StringReader(super.toString()));
-    String s;
-    try
-      {
-        while ((s = r.readLine()) != null)
-          {
-            out.print("  ");
-            out.println(s);
-          }
-      }
-    catch (IOException ignored)
-      {
-      }
-    out.println("} CertificateVerify;");
+    String subprefix = "  ";
+    if (prefix != null)
+      subprefix = prefix + subprefix;
+    out.println (super.toString (subprefix));
+    if (prefix != null) out.print (prefix);
+    out.print ("} CertificateVerify;");
     return str.toString();
   }
 }

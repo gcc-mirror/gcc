@@ -42,6 +42,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.PrintJobAttribute;
 
 /**
@@ -56,7 +57,7 @@ import javax.print.attribute.PrintJobAttribute;
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
-public final class JobStateReasons extends HashSet
+public final class JobStateReasons extends HashSet<JobStateReason>
   implements PrintJobAttribute
 {
   private static final long serialVersionUID = 8849088261264331812L;
@@ -108,12 +109,11 @@ public final class JobStateReasons extends HashSet
    * @throws ClassCastException if values of collection are not of type 
    * <code>JobStateReason</code>.
    */
-  public JobStateReasons(Collection collection)
+  public JobStateReasons(Collection<JobStateReason> collection)
   {
     super(collection.size(), 0.75f);
-    Iterator it = collection.iterator();
-    while (it.hasNext())
-      add(it.next());
+    for (JobStateReason reason : collection)
+      add(reason);
   }
 
   /**
@@ -126,12 +126,12 @@ public final class JobStateReasons extends HashSet
    * @throws ClassCastException if given object is not an instance of
    * <code>JobStateReason</code>.
    */
-  public boolean add(Object o)
+  public boolean add(JobStateReason o)
   {
     if (o == null)
       throw new NullPointerException("reason is null");  
     
-    return super.add((JobStateReason) o);   
+    return add(o);
   }
   
   /**
@@ -139,7 +139,7 @@ public final class JobStateReasons extends HashSet
    *
    * @return The class <code>JobStateReasons</code> itself.
    */
-  public Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return JobStateReasons.class;
   }

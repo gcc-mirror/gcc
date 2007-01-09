@@ -40,6 +40,7 @@ package java.security;
 
 import gnu.java.security.Engine;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 
@@ -93,26 +94,29 @@ public class KeyFactory
    * Returns a new instance of <code>KeyFactory</code> representing the
    * specified key factory.
    * 
-   * @param algorithm
-   *          the name of algorithm to use.
+   * @param algorithm the name of algorithm to use.
    * @return a new instance repesenting the desired algorithm.
-   * @throws NoSuchAlgorithmException
-   *           if the algorithm is not implemented by any provider.
+   * @throws NoSuchAlgorithmException if the algorithm is not implemented by any
+   *           provider.
+   * @throws IllegalArgumentException if <code>algorithm</code> is
+   *           <code>null</code> or is an empty string.
    */
   public static KeyFactory getInstance(String algorithm)
-    throws NoSuchAlgorithmException
+      throws NoSuchAlgorithmException
   {
     Provider[] p = Security.getProviders();
+    NoSuchAlgorithmException lastException = null;
     for (int i = 0; i < p.length; i++)
       try
         {
           return getInstance(algorithm, p[i]);
         }
-      catch (NoSuchAlgorithmException e)
-	{
-	  // Ignore.
-	}
-
+      catch (NoSuchAlgorithmException x)
+        {
+          lastException = x;
+        }
+    if (lastException != null)
+      throw lastException;
     throw new NoSuchAlgorithmException(algorithm);
   }
 
@@ -120,29 +124,26 @@ public class KeyFactory
    * Returns a new instance of <code>KeyFactory</code> representing the
    * specified key factory from the specified provider.
    * 
-   * @param algorithm
-   *          the name of algorithm to use.
-   * @param provider
-   *          the name of the provider to use.
+   * @param algorithm the name of algorithm to use.
+   * @param provider the name of the provider to use.
    * @return a new instance repesenting the desired algorithm.
-   * @throws IllegalArgumentException
-   *           if <code>provider</code> is <code>null</code> or is an empty
-   *           string.
-   * @throws NoSuchAlgorithmException
-   *           if the algorithm is not implemented by the named provider.
-   * @throws NoSuchProviderException
-   *           if the named provider was not found.
+   * @throws NoSuchAlgorithmException if the algorithm is not implemented by the
+   *           named provider.
+   * @throws NoSuchProviderException if the named provider was not found.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code> or empty.
    */
   public static KeyFactory getInstance(String algorithm, String provider)
-    throws NoSuchAlgorithmException, NoSuchProviderException
+      throws NoSuchAlgorithmException, NoSuchProviderException
   {
-    if (provider == null || provider.length() == 0)
-      throw new IllegalArgumentException("Illegal provider");
-
+    if (provider == null)
+      throw new IllegalArgumentException("provider MUST NOT be null");
+    provider = provider.trim();
+    if (provider.length() == 0)
+      throw new IllegalArgumentException("provider MUST NOT be empty");
     Provider p = Security.getProvider(provider);
     if (p == null)
       throw new NoSuchProviderException(provider);
-
     return getInstance(algorithm, p);
   }
 
@@ -150,38 +151,44 @@ public class KeyFactory
    * Returns a new instance of <code>KeyFactory</code> representing the
    * specified key factory from the designated {@link Provider}.
    * 
-   * @param algorithm
-   *          the name of algorithm to use.
-   * @param provider
-   *          the {@link Provider} to use.
+   * @param algorithm the name of algorithm to use.
+   * @param provider the {@link Provider} to use.
    * @return a new instance repesenting the desired algorithm.
-   * @throws IllegalArgumentException
-   *           if <code>provider</code> is <code>null</code>.
-   * @throws NoSuchAlgorithmException
-   *           if the algorithm is not implemented by {@link Provider}.
+   * @throws NoSuchAlgorithmException if the algorithm is not implemented by
+   *           {@link Provider}.
+   * @throws IllegalArgumentException if either <code>algorithm</code> or
+   *           <code>provider</code> is <code>null</code>, or if
+   *           <code>algorithm</code> is an empty string.
    * @since 1.4
    * @see Provider
    */
   public static KeyFactory getInstance(String algorithm, Provider provider)
-    throws NoSuchAlgorithmException
+      throws NoSuchAlgorithmException
   {
-    if (provider == null)
-      throw new IllegalArgumentException("Illegal provider");
-
+    StringBuilder sb = new StringBuilder("KeyFactory for algorithm [")
+        .append(algorithm).append("] from provider[")
+        .append(provider).append("] could not be created");
+    Throwable cause;
     try
       {
-	return new KeyFactory((KeyFactorySpi)
-	  Engine.getInstance(KEY_FACTORY, algorithm, provider),
-          provider, algorithm);
+        Object spi = Engine.getInstance(KEY_FACTORY, algorithm, provider);
+        return new KeyFactory((KeyFactorySpi) spi, provider, algorithm);
       }
-    catch (java.lang.reflect.InvocationTargetException ite)
+    catch (InvocationTargetException x)
       {
-	throw new NoSuchAlgorithmException(algorithm);
+        cause = x.getCause();
+        if (cause instanceof NoSuchAlgorithmException)
+          throw (NoSuchAlgorithmException) cause;
+        if (cause == null)
+          cause = x;
       }
-    catch (ClassCastException cce)
+    catch (ClassCastException x)
       {
-	throw new NoSuchAlgorithmException(algorithm);
-      } 
+        cause = x;
+      }
+    NoSuchAlgorithmException x = new NoSuchAlgorithmException(sb.toString());
+    x.initCause(cause);
+    throw x;
   }
 
   /**
@@ -248,7 +255,7 @@ public class KeyFactory
    *           the requested key specification is inappropriate for this key or
    *           the key is unrecognized.
    */
-  public final KeySpec getKeySpec(Key key, Class keySpec)
+  public final <T extends KeySpec> T getKeySpec(Key key, Class<T> keySpec)
     throws InvalidKeySpecException
   {
     return keyFacSpi.engineGetKeySpec(key, keySpec);

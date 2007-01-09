@@ -82,7 +82,7 @@ public abstract class _NamingContextImplBase
    * As there are quite many methods, it may be sensible to use the hashtable.
    * This field is also reused in NamingContextPOA.
    */
-  static Hashtable methods = new Hashtable();
+  static Hashtable<String,Integer> methods = new Hashtable<String,Integer>();
 
   /**
    * Put all methods into the table.

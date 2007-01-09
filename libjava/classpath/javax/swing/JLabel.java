@@ -38,13 +38,14 @@ exception statement from your version. */
 
 package javax.swing;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 
@@ -54,8 +55,12 @@ import javax.accessibility.AccessibleExtendedComponent;
 import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleText;
 import javax.swing.plaf.LabelUI;
+import javax.swing.plaf.basic.BasicHTML;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.View;
 
 /**
  * A component that displays a static text message and/or an icon.
@@ -303,10 +308,52 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
      * @return the bounding box of the character at the specified index
      */
     public Rectangle getCharacterBounds(int index)
-      throws NotImplementedException
     {
-      // FIXME: Implement this correctly.
-      return new Rectangle();
+      Rectangle bounds = null;
+      View view = (View) getClientProperty(BasicHTML.propertyKey);
+      if (view != null)
+        {
+          Rectangle textR = getTextRectangle();
+          try
+            {
+              Shape s = view.modelToView(index, textR, Position.Bias.Forward);
+              bounds = s.getBounds();
+            }
+          catch (BadLocationException ex)
+            {
+              // Can't return something reasonable in this case.
+            }
+        }
+      return bounds;
+    }
+
+    /**
+     * Returns the rectangle inside the JLabel, in which the actual text is
+     * rendered. This method has been adopted from the Mauve testcase
+     * gnu.testlet.javax.swing.JLabel.AccessibleJLabel.getCharacterBounds.
+     *
+     * @return the rectangle inside the JLabel, in which the actual text is
+     *         rendered
+     */
+    private Rectangle getTextRectangle()
+    {
+      JLabel l = JLabel.this;
+      Rectangle textR = new Rectangle();
+      Rectangle iconR = new Rectangle();
+      Insets i = l.getInsets();
+      int w = l.getWidth();
+      int h = l.getHeight();
+      Rectangle viewR = new Rectangle(i.left, i.top, w - i.left - i.right,
+                                      h - i.top - i.bottom);
+      FontMetrics fm = l.getFontMetrics(l.getFont());
+      SwingUtilities.layoutCompoundLabel(l, fm, l.getText(), l.getIcon(),
+                                         l.getVerticalAlignment(),
+                                         l.getHorizontalAlignment(),
+                                         l.getVerticalTextPosition(),
+                                         l.getHorizontalTextPosition(),
+                                         viewR, iconR, textR,
+                                         l.getIconTextGap());
+      return textR;
     }
 
     /**
@@ -319,10 +366,15 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
      *         point
      */
     public int getIndexAtPoint(Point point)
-      throws NotImplementedException
     {
-      // FIXME: Implement this correctly.
-      return 0;
+      int index = -1;
+      View view = (View) getClientProperty(BasicHTML.propertyKey);
+      if (view != null)
+        {
+          Rectangle r = getTextRectangle();
+          index = view.viewToModel(point.x, point.y, r, new Position.Bias[0]);
+        }
+      return index;
     }
   }
 
@@ -379,11 +431,11 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
    * Creates a new vertically and horizontally centered
    * JLabel object with no text and the given icon.
    *
-   * @param image The icon to use with the label.
+   * @param image The icon to use with the label, <code>null</code> permitted.
    */
   public JLabel(Icon image)
   {
-    this("", image, CENTER);
+    this(null, image, CENTER);
   }
 
   /**
@@ -391,19 +443,21 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
    * given icon and horizontal alignment. By default, the text is TRAILING
    * the image.
    *
-   * @param image The icon to use with the label.
-   * @param horizontalAlignment The horizontal alignment of the label.
+   * @param image The icon to use with the label, <code>null</code> premitted.
+   * @param horizontalAlignment The horizontal alignment of the label, must be
+   * either <code>CENTER</code>, <code>LEFT</code>, <code>RIGHT</code>,
+   * <code>LEADING</code> or <code>TRAILING</code>.
    */
   public JLabel(Icon image, int horizontalAlignment)
   {
-    this("", image, horizontalAlignment);
+    this(null, image, horizontalAlignment);
   }
 
   /**
    * Creates a new horizontally leading and vertically centered JLabel 
    * object with no icon and the given text.
    *
-   * @param text The text to use with the label.
+   * @param text The text to use with the label, <code>null</code> permitted.
    */
   public JLabel(String text)
   {
@@ -414,8 +468,10 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
    * Creates a new vertically centered JLabel object with no icon and the
    * given text and horizontal alignment.
    *
-   * @param text The text to use with the label.
-   * @param horizontalAlignment The horizontal alignment of the label.
+   * @param text The text to use with the label, <code>null</code> permitted.
+   * @param horizontalAlignment The horizontal alignment of the label, must be
+   * either <code>CENTER</code>, <code>LEFT</code>, <code>RIGHT</code>,
+   * <code>LEADING</code> or <code>TRAILING</code>.
    */
   public JLabel(String text, int horizontalAlignment)
   {
@@ -426,12 +482,21 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
    * Creates a new vertically centered JLabel object with the given text,
    * icon, and horizontal alignment.
    *
-   * @param text The text to use with the label.
-   * @param icon The icon to use with the label.
-   * @param horizontalAlignment The horizontal alignment of the label.
+   * @param text The text to use with the label, <code>null</code> permitted.
+   * @param icon The icon to use with the label, <code>null</code> premitted.
+   * @param horizontalAlignment The horizontal alignment of the label, must be
+   * either <code>CENTER</code>, <code>LEFT</code>, <code>RIGHT</code>,
+   * <code>LEADING</code> or <code>TRAILING</code>.
    */
   public JLabel(String text, Icon icon, int horizontalAlignment)
   {
+    if (horizontalAlignment != SwingConstants.LEFT  
+        && horizontalAlignment != SwingConstants.RIGHT 
+        && horizontalAlignment != SwingConstants.CENTER 
+        && horizontalAlignment != SwingConstants.LEADING 
+        && horizontalAlignment != SwingConstants.TRAILING)
+      throw new IllegalArgumentException();
+    
     this.text = text;
     this.icon = icon;
     this.horizontalAlignment = horizontalAlignment;

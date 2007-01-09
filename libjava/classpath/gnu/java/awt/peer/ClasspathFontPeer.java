@@ -832,18 +832,4 @@ public abstract class ClasspathFontPeer
   public abstract Rectangle2D getMaxCharBounds (Font font, 
                                                 FontRenderContext rc);
 
-  /** 
-   * Implementation of {@link Font#getStringBounds(CharacterIterator, int,
-   * int, FontRenderContext)}
-   *
-   * @param font the font this peer is being called from. This may be
-   * useful if you are sharing peers between Font objects. Otherwise it may
-   * be ignored.
-   */
-
-  public abstract Rectangle2D getStringBounds (Font font, 
-                                               CharacterIterator ci, 
-                                               int begin, int limit, 
-                                               FontRenderContext frc);
-
 }

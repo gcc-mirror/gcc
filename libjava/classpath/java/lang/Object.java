@@ -326,7 +326,7 @@ public class Object
    *
    * @return the class of this Object
    */
-  public final Class getClass()
+  public final Class<? extends Object> getClass()
   {
     return VMObject.getClass(this);
   }

@@ -85,34 +85,25 @@ public class NamingServiceTransient
   }
 
   /**
-   * Start the naming service on the current host at the given port. The
-   * parameter -org.omg.CORBA.ORBInitialPort NNN or -ORBInitialPort NNN, if
-   * present, specifies the port, on that the service must be started. If this
-   * key is not specified, the service starts at the port 900.
+   * Start the naming service on the current host at the given port.
    * 
-   * The parameter -ior FILE_NAME, if present, forces to store the ior string of
-   * this naming service to the specified file.
-   * 
-   * @param args the parameter string.
+   * @param portArgument the port on which the service will be
+   * started, or -1 to use the default port, 900
+   * @param fileArgument if non-null, store the IOR string of this
+   * naming service in a file by this name
    */
-  public static void main(String[] args)
+  public static void start(int portArgument, String fileArgument)
   {
     int port = PORT;
-    String iorf = null;
+
+    if (portArgument > -1)
+      port = portArgument;
+
+    String iorf = fileArgument;
     try
       {
         // Create and initialize the ORB
         final OrbFunctional orb = new OrbFunctional();
-
-        if (args.length > 1)
-          for (int i = 0; i < args.length - 1; i++)
-            {
-              if (args[i].endsWith("ORBInitialPort"))
-                port = Integer.parseInt(args[i + 1]);
-
-              if (args[i].equals("-ior"))
-                iorf = args[i + 1];
-            }
 
         OrbFunctional.setPort(port);
 
@@ -133,15 +124,6 @@ public class NamingServiceTransient
             p.close();
           }
 
-        System.out.println("GNU Classpath transient naming service "
-          + "started at " + iorr.Internet.host + ":" + iorr.Internet.port
-          + " key 'NameService'.\n\n"
-          + "Copyright (C) 2006 Free Software Foundation\n"
-          + "This tool comes with ABSOLUTELY NO WARRANTY. "
-          + "This is free software, and you are\nwelcome to "
-          + "redistribute it under conditions, defined in "
-          + "GNU Classpath license.\n\n" + ior);
-
         new Thread()
         {
           public void run()
@@ -154,7 +136,7 @@ public class NamingServiceTransient
     catch (Exception e)
       {
         System.err.println("ERROR: " + e);
-        e.printStackTrace(System.out);
+        e.printStackTrace(System.err);
       }
 
     // Restore the default value for allocating ports for the subsequent

@@ -61,7 +61,7 @@ public class ClassSignatureParser extends GenericSignatureParser
         }
         // SuperclassSignature
         superclassType = readClassTypeSignature();
-        ArrayList interfaces = new ArrayList();
+        ArrayList<Type> interfaces = new ArrayList<Type>();
         while (peekChar() == 'L')
         {
             // SuperinterfaceSignature

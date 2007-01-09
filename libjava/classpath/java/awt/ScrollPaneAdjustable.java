@@ -145,14 +145,26 @@ public class ScrollPaneAdjustable
     this.blockIncrement = blockIncrement;
   }
     
-  public void setMaximum (int maximum)
+  /**
+   * This method should never be called.
+   * 
+   * @param maximum The maximum value to be set.
+   * @throws AWTError Always throws this error when called.
+   */
+  public void setMaximum (int maximum) throws AWTError
   {
-    this.maximum = maximum;
+    throw new AWTError("Can be set by scrollpane only");
   }
 
+  /**
+   * This method should never be called.
+   * 
+   * @param minimum The minimum value to be set.
+   * @throws AWTError Always throws this error when called.
+   */
   public void setMinimum (int minimum)
   {
-    this.minimum = minimum;
+    throw new AWTError("Can be set by scrollpane only");
   }
 
   public void setUnitIncrement (int unitIncrement)
@@ -171,20 +183,36 @@ public class ScrollPaneAdjustable
       maximum = value;
   }
   
+  /**
+   * This method should never be called.
+   * 
+   * @param visibleAmount The visible amount to be set.
+   * @throws AWTError Always throws this error when called.
+   */
   public void setVisibleAmount (int visibleAmount)
   {
-    this.visibleAmount = visibleAmount;
+    throw new AWTError("Can be set by scrollpane only");
   }
 
   public String paramString ()
   {
-    return ("scrollpane=" + sp + ", orientation=" + orientation
-            + ", value=" + value + ", minimum=" + minimum
-            + ", maximum=" + maximum + ", visibleAmount=" + visibleAmount
-            + ", unitIncrement=" + unitIncrement
-            + ", blockIncrement=" + blockIncrement);
+    return paramStringHelper() 
+         + ",[" + getMinimum() + ".." + getMaximum() 
+         + "],val=" + getValue() 
+         + ",vis=" + getVisibleAmount() 
+         + ",unit=" + getUnitIncrement()
+         + ",block=" + getBlockIncrement() 
+         + ",isAdjusting=" + valueIsAdjusting;
   }
 
+  private String paramStringHelper()
+  {
+    if (getOrientation() == HORIZONTAL)
+      return "horizontal";
+    else
+      return "vertical";
+  }
+  
   public String toString()
   {
     return getClass().getName() + "[" + paramString() + "]";
@@ -209,5 +237,6 @@ public class ScrollPaneAdjustable
   {
     this.valueIsAdjusting = valueIsAdjusting;
   }
+  
 } // class ScrollPaneAdjustable
 

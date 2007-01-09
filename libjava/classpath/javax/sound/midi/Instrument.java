@@ -59,7 +59,7 @@ public abstract class Instrument extends SoundbankResource
    * @param dataClass the class used to represent sample data for this instrument
    */
   protected Instrument(Soundbank soundbank, Patch patch, 
-                       String name, Class dataClass)
+                       String name, Class<?> dataClass)
   {
     super(soundbank, name, dataClass);
     this.patch = patch; 

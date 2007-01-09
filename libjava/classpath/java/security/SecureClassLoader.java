@@ -1,5 +1,5 @@
 /* SecureClassLoader.java --- A Secure Class Loader
-   Copyright (C) 1999, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,11 @@ exception statement from your version. */
 
 package java.security;
 
+import java.util.WeakHashMap;
+
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+
 /**
  * A Secure Class Loader for loading classes with additional 
  * support for specifying code source and permissions when
@@ -48,21 +53,16 @@ package java.security;
  */
 public class SecureClassLoader extends ClassLoader
 {
-  java.util.WeakHashMap protectionDomainCache = new java.util.WeakHashMap();
+  private final HashMap<CodeSource,ProtectionDomain> protectionDomainCache
+    = new HashMap<CodeSource, ProtectionDomain>();
 
   protected SecureClassLoader(ClassLoader parent)
   {
     super(parent);
-    SecurityManager sm = System.getSecurityManager();
-    if(sm != null)
-      sm.checkCreateClassLoader();
   }
 
   protected SecureClassLoader()
   {
-    SecurityManager sm = System.getSecurityManager();
-    if(sm != null)
-      sm.checkCreateClassLoader();
   }
 
   /** 
@@ -79,13 +79,38 @@ public class SecureClassLoader extends ClassLoader
    *
    * @exception ClassFormatError if the byte array is not in proper classfile format.
    */
-  protected final Class defineClass(String name, byte[] b, int off, int len,
+  protected final Class<?> defineClass(String name, byte[] b, int off, int len,
 				    CodeSource cs)
   {
+    return super.defineClass(name, b, off, len, getProtectionDomain(cs));
+  }
+
+  /** 
+   * Creates a class using an ByteBuffer and a 
+   * CodeSource.
+   *
+   * @param name the name to give the class.  null if unknown.
+   * @param b the data representing the classfile, in classfile format.
+   * @param cs the CodeSource for the class or null when unknown.
+   *
+   * @return the class that was defined and optional CodeSource.
+   *
+   * @exception ClassFormatError if the byte array is not in proper classfile format.
+   *
+   * @since 1.5
+   */
+  protected final Class defineClass(String name, ByteBuffer b, CodeSource cs)
+  {
+    return super.defineClass(name, b, getProtectionDomain(cs));
+  }
+
+  /* Lookup or create a protection domain for the CodeSource,
+   * if CodeSource is null it will return null. */
+  private ProtectionDomain getProtectionDomain(CodeSource cs)
+  {
+    ProtectionDomain protectionDomain = null;
     if (cs != null)
       {
-	ProtectionDomain protectionDomain;
-	  
 	synchronized (protectionDomainCache)
 	  {
 	    protectionDomain = (ProtectionDomain)protectionDomainCache.get(cs);
@@ -105,10 +130,8 @@ public class SecureClassLoader extends ClassLoader
 		  protectionDomain = domain;
 	      }
 	  }
-	return super.defineClass(name, b, off, len, protectionDomain);
-      } 
-    else
-      return super.defineClass(name, b, off, len);
+      }
+    return protectionDomain;
   }
 
   /**
@@ -117,7 +140,7 @@ public class SecureClassLoader extends ClassLoader
    * java.security.Policy.getPermissions.
    *
    * This method is called by defineClass that takes a CodeSource
-   * arguement to build a proper ProtectionDomain for the class
+   * argument to build a proper ProtectionDomain for the class
    * being defined.
    */
   protected PermissionCollection getPermissions(CodeSource cs)

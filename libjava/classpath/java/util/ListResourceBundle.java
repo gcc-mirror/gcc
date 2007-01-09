@@ -108,21 +108,21 @@ public abstract class ListResourceBundle extends ResourceBundle
    *
    * @return an enumeration of the keys
    */
-  public Enumeration getKeys()
+  public Enumeration<String> getKeys()
   {
     // We make a new Set that holds all the keys, then return an enumeration
     // for that. This prevents modifications from ruining the enumeration,
     // as well as ignoring duplicates.
     final Object[][] contents = getContents();
-    Set s = new HashSet();
+    Set<String> s = new HashSet<String>();
     int i = contents.length;
     while (--i >= 0)
-      s.add(contents[i][0]);
+      s.add((String) contents[i][0]);
     ResourceBundle bundle = parent;
     // Eliminate tail recursion.
     while (bundle != null)
       {
-        Enumeration e = bundle.getKeys();
+        Enumeration<String> e = bundle.getKeys();
         while (e.hasMoreElements())
           s.add(e.nextElement());
         bundle = bundle.parent;

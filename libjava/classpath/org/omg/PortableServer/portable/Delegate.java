@@ -1,5 +1,5 @@
 /* DelegateOperations.java --
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -55,11 +55,11 @@ public interface Delegate
   /**
   * Returns the root POA of the ORB instance, associated with this servant.
   * It is the same POA that would be returned by resolving the initial
-  * reference "RootPOA" for that orb. The default {@link Servant#default_POA}
+  * reference "RootPOA" for that orb. The default {@link Servant#_default_POA()}
   * method forwards call to the delegate can be overridden to
   * obtain the alternative default POA.
   *
-  * @see ORB.resolve_initial_references
+  * @see ORB#resolve_initial_references
   */
   POA default_POA(Servant a_servant);
 

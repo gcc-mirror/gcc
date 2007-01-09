@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package javax.print.attribute.standard;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.EnumSyntax;
 import javax.print.attribute.PrintServiceAttribute;
 
@@ -88,7 +89,7 @@ public final class ColorSupported extends EnumSyntax
    *
    * @return The class <code>ColorSupported</code> itself.
    */
-  public Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return ColorSupported.class;
   }

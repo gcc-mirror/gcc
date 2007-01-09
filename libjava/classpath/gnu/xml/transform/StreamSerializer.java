@@ -324,7 +324,8 @@ public class StreamSerializer
         break;
       case Node.TEXT_NODE:
         value = node.getNodeValue();
-        if (!"yes".equals(node.getUserData("disable-output-escaping")))
+        if (!"yes".equals(node.getUserData("disable-output-escaping")) &&
+            mode != Stylesheet.OUTPUT_TEXT)
           value = encode(value, false, false);
         out.write(encodeText(value));
         break;

@@ -76,20 +76,14 @@ final class VMMemoryMXBeanImpl
    * @return an {@link java.lang.management.MemoryUsage} instance
    *         for non-heap memory.
    */
-  static MemoryUsage getNonHeapMemoryUsage()
-  {
-    return null;
-  }
+  static native MemoryUsage getNonHeapMemoryUsage();
 
   /**
    * Returns the number of objects ready to be garbage collected.
    *
    * @return the number of finalizable objects.
    */
-  static int getObjectPendingFinalizationCount()
-  {
-    return -1;
-  }
+  static native int getObjectPendingFinalizationCount();
 
   /**
    * Returns true if the virtual machine will emit additional
@@ -98,10 +92,7 @@ final class VMMemoryMXBeanImpl
    *
    * @return true if verbose class loading output is on.
    */
-  static boolean isVerbose()
-  {
-    return false;
-  }
+  static native boolean isVerbose();
 
   /**
    * Turns on or off the emission of additional information
@@ -113,8 +104,6 @@ final class VMMemoryMXBeanImpl
    * @param verbose the new setting for verbose class loading
    *                output.
    */
-  static void setVerbose(boolean verbose)
-  {
-  }
+  static native void setVerbose(boolean verbose);
 
 }

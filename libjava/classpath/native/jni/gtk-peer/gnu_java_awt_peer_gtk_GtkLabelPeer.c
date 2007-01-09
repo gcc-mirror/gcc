@@ -213,7 +213,7 @@ Java_gnu_java_awt_peer_gtk_GtkLabelPeer_setNativeBounds
       gtk_widget_set_size_request (gtk_bin_get_child (GTK_BIN (widget)),
                                    width, height);
 
-      if (widget->parent != NULL)
+      if (widget->parent != NULL && GTK_IS_FIXED (widget->parent))
         gtk_fixed_move (GTK_FIXED (widget->parent), widget, x, y);
     }
 

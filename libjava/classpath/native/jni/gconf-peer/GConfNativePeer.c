@@ -108,8 +108,8 @@ static jclass get_jlist_reference (JNIEnv * env, jclass jlist_class);
  * Method:    init_class
  * Signature: ()V
  */
-JNIEXPORT void
-JNICALL Java_gnu_java_util_prefs_gconf_GConfNativePeer_init_1class
+JNIEXPORT void JNICALL
+Java_gnu_java_util_prefs_gconf_GConfNativePeer_init_1class
   (JNIEnv *env, jclass clazz)
 {
   if (reference_count == 0)
@@ -127,8 +127,8 @@ JNICALL Java_gnu_java_util_prefs_gconf_GConfNativePeer_init_1class
  * Method:    init_id_chache
  * Signature: ()V
  */
-JNIEXPORT void
-JNICALL Java_gnu_java_util_prefs_gconf_GConfNativePeer_init_1id_1cache
+JNIEXPORT void JNICALL
+Java_gnu_java_util_prefs_gconf_GConfNativePeer_init_1id_1cache
   (JNIEnv *env, jclass clazz __attribute__ ((unused)))
 {
   reference_count++;
@@ -157,16 +157,19 @@ JNICALL Java_gnu_java_util_prefs_gconf_GConfNativePeer_init_1id_1cache
 
 /*
  * Class:     gnu_java_util_prefs_gconf_GConfNativePeer
- * Method:    gconf_client_gconf_client_all_keys
+ * Method:    gconf_client_all_keys
  * Signature: (Ljava/lang/String;)Ljava/util/List;
  */
 JNIEXPORT jobject JNICALL
-Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1gconf_1client_1all_1keys
+Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1all_1keys
   (JNIEnv *env, jclass clazz __attribute__ ((unused)), jstring node)
 {
   /* TODO: check all the calls to gdk_threads_enter/leave */
   
   const char *dir = NULL;
+  const char *_val = NULL;
+  const char *_val_unescaped = NULL;
+  
   GError *err = NULL;
   GSList *entries = NULL;
   GSList *tmp;
@@ -208,12 +211,18 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1gconf_1client_1all
   tmp = entries;
   while (tmp != NULL)
     {
-      const char *_val = gconf_entry_get_key (tmp->data);
+      _val = gconf_entry_get_key (tmp->data);
       _val = strrchr (_val, '/');
       ++_val;
+      
+      _val_unescaped = gconf_unescape_key (_val, strlen (_val));
+      
       (*env)->CallBooleanMethod (env, jlist, jlist_add_id,
-				 (*env)->NewStringUTF (env, _val));
+				 (*env)->NewStringUTF (env, _val_unescaped));
+         
       tmp = g_slist_next (tmp);
+      
+      g_free ((gpointer) _val_unescaped);
     }
 
   /* clean up things */
@@ -226,14 +235,17 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1gconf_1client_1all
 
 /*
  * Class:     gnu_java_util_prefs_gconf_GConfNativePeer
- * Method:    gconf_client_gconf_client_all_nodes
+ * Method:    gconf_client_all_nodes
  * Signature: (Ljava/lang/String;)Ljava/util/List;
  */
 JNIEXPORT jobject JNICALL
-Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1gconf_1client_1all_1nodes
+Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1all_1nodes
   (JNIEnv *env, jclass clazz __attribute__ ((unused)), jstring node)
 {
   const char *dir = NULL;
+  const char *_val = NULL;
+  const char *_val_unescaped = NULL;
+  
   GError *err = NULL;
   GSList *entries = NULL;
   GSList *tmp;
@@ -274,12 +286,19 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1gconf_1client_1all
   tmp = entries;
   while (tmp != NULL)
     {
-      const char *_val = tmp->data;
+      _val = tmp->data;
+      
       _val = strrchr (_val, '/');
       ++_val;
+      
+      _val_unescaped = gconf_unescape_key (_val, strlen (_val));
+      
       (*env)->CallBooleanMethod (env, jlist, jlist_add_id,
-				 (*env)->NewStringUTF (env, _val));
+				 (*env)->NewStringUTF (env, _val_unescaped));
+      
       tmp = g_slist_next (tmp);
+      
+      g_free ((gpointer) _val_unescaped);
     }
 
   /* clean up things */
@@ -421,7 +440,7 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1set_1string
   gdk_threads_leave ();
   if (err != NULL)
   	{
-	  g_error_free (err);
+      g_error_free (err);
       err = NULL;
       result = JNI_FALSE;
   	}
@@ -511,8 +530,8 @@ Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1client_1dir_1exists
  * Method:    finalize_class
  * Signature: ()V
  */
-JNIEXPORT void
-JNICALL Java_gnu_java_util_prefs_gconf_GConfNativePeer_finalize_1class
+JNIEXPORT void JNICALL
+Java_gnu_java_util_prefs_gconf_GConfNativePeer_finalize_1class
   (JNIEnv *env, jclass clazz __attribute__ ((unused)))
 {
   if (reference_count == 0)
@@ -532,6 +551,74 @@ JNICALL Java_gnu_java_util_prefs_gconf_GConfNativePeer_finalize_1class
     }
 
   reference_count--;
+}
+
+/*
+ * Class:     gnu_java_util_prefs_gconf_GConfNativePeer
+ * Method:    Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1escape_1key
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jstring JNICALL
+Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1escape_1key
+  (JNIEnv *env, jclass clazz __attribute__ ((unused)), jstring plain)
+{
+  const char *escaped = NULL;
+  const char *_plain = NULL;
+  jstring result = NULL;
+  
+  _plain = JCL_jstring_to_cstring (env, plain);
+  if (_plain == NULL)
+    {
+      return NULL;
+    }
+
+  gdk_threads_enter ();
+  escaped = gconf_escape_key (_plain, strlen (_plain));
+  gdk_threads_leave ();
+  
+  JCL_free_cstring (env, plain, _plain);
+  /* check for NULL, if so prevent string creation */
+  if (escaped != NULL)
+    {
+      result = (*env)->NewStringUTF (env, escaped);
+      g_free ((gpointer) escaped);
+    }
+  
+  return result;
+}
+
+/*
+ * Class:     gnu_java_util_prefs_gconf_GConfNativePeer
+ * Method:    Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1unescape_1key
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jstring JNICALL
+Java_gnu_java_util_prefs_gconf_GConfNativePeer_gconf_1unescape_1key
+  (JNIEnv *env, jclass clazz __attribute__ ((unused)), jstring escaped)
+{
+  const char *plain = NULL;
+  const char *_escaped = NULL;
+  jstring result = NULL;
+  
+  _escaped = JCL_jstring_to_cstring (env, escaped);
+  if (_escaped == NULL)
+    {
+      return NULL;
+    }
+
+  gdk_threads_enter ();
+  plain = gconf_unescape_key (_escaped, strlen (_escaped));
+  gdk_threads_leave ();
+  
+  JCL_free_cstring (env, escaped, _escaped);
+  /* check for NULL, if so prevent string creation */
+  if (plain != NULL)
+    {
+      result = (*env)->NewStringUTF (env, plain);
+      g_free ((gpointer) plain);
+    }
+  
+  return result;
 }
 
 /* ***** END: NATIVE FUNCTIONS ***** */

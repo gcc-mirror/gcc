@@ -60,11 +60,15 @@ import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TemplatesHandler;
+import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPathFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.xml.sax.XMLFilter;
 import gnu.xml.dom.DomDocument;
 
 /**
@@ -73,7 +77,7 @@ import gnu.xml.dom.DomDocument;
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
 public class TransformerFactoryImpl
-  extends TransformerFactory
+  extends SAXTransformerFactory
 {
 
   final XPathFactory xpathFactory;
@@ -316,7 +320,8 @@ public class TransformerFactoryImpl
         StreamSource.FEATURE.equals(name) ||
         StreamResult.FEATURE.equals(name) ||
         DOMSource.FEATURE.equals(name) ||
-        DOMResult.FEATURE.equals(name))
+        DOMResult.FEATURE.equals(name) ||
+        SAXTransformerFactory.FEATURE.equals(name))
       {
         return true;
       }
@@ -345,6 +350,49 @@ public class TransformerFactoryImpl
   {
     return userListener;
   }
+
+  // -- SAXTransformerFactory --
+
+  public TemplatesHandler newTemplatesHandler()
+    throws TransformerConfigurationException
+  {
+    return new SAXTemplatesHandler(this);
+  }
+
+  public TransformerHandler newTransformerHandler()
+    throws TransformerConfigurationException
+  {
+    Transformer transformer = newTransformer();
+    return new SAXTransformerHandler(this, transformer);
+  }
+  
+  public TransformerHandler newTransformerHandler(Source source)
+    throws TransformerConfigurationException
+  {
+    Transformer transformer = newTransformer(source);
+    return new SAXTransformerHandler(this, transformer);
+  }
+  
+  public TransformerHandler newTransformerHandler(Templates templates)
+    throws TransformerConfigurationException
+  {
+    Transformer transformer = templates.newTransformer();
+    return new SAXTransformerHandler(this, transformer);
+  }
+
+  public XMLFilter newXMLFilter(Source source)
+    throws TransformerConfigurationException
+  {
+    throw new UnsupportedOperationException();
+  }
+
+  public XMLFilter newXMLFilter(Templates templates)
+    throws TransformerConfigurationException
+  {
+    throw new UnsupportedOperationException();
+  }
+  
+  // -- SAXTransformerFactory end --
 
   /**
    * Syntax: TransformerFactoryImpl [<stylesheet> [<input> [<output>]]]

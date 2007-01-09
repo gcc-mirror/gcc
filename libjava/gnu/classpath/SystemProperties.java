@@ -1,5 +1,5 @@
 /* SystemProperties.java -- Manage the System properties.
-   Copyright (C) 2004, 2005 Free Software Foundation
+   Copyright (C) 2004, 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -154,4 +154,18 @@ public class SystemProperties
    * @return true if the system is big-endian.
    */
   private static native boolean isWordsBigEndian();
+
+  /**
+   * Removes the supplied system property and its current value.
+   * If the specified property does not exist, nothing happens.
+   * 
+   * @throws NullPointerException if the property name is null.
+   * @return the value of the removed property, or null if no
+   *         such property exists.
+   */
+  public static String remove(String name)
+  {
+    return (String) properties.remove(name);
+  }
+
 }

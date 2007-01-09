@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.security;
 
+import java.nio.ByteBuffer;
+
 /**
    This is the Service Provider Interface (SPI) for MessageDigest
    class in java.security. It provides the back end functionality
@@ -97,6 +99,23 @@ public abstract class MessageDigestSpi
    */
   protected abstract void engineUpdate(byte[]input, int offset, int len);
 
+  /**
+   * Updates this digest with the remaining bytes of a byte buffer.
+   * 
+   * @param input The input buffer.
+   * @since 1.5
+   */
+  protected void engineUpdate (ByteBuffer input)
+  {
+    byte[] buf = new byte[1024];
+    while (input.hasRemaining())
+      {
+        int n = Math.min(input.remaining(), buf.length);
+        input.get (buf, 0, n);
+        engineUpdate (buf, 0, n);
+      }
+  }
+  
   /**
      Computes the final digest of the stored bytes and returns
      them. It performs any necessary padding. The message digest

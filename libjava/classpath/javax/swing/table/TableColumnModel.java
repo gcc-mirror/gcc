@@ -102,7 +102,7 @@ public interface TableColumnModel
    * 
    * @return An enumeration of the columns in the model.
    */
-  Enumeration getColumns();
+  Enumeration<TableColumn> getColumns();
 
   /**
    * Returns the index of the {@link TableColumn} with the given identifier.

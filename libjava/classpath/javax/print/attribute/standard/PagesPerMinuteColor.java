@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package javax.print.attribute.standard;
 
+import javax.print.attribute.Attribute;
 import javax.print.attribute.IntegerSyntax;
 import javax.print.attribute.PrintServiceAttribute;
 
@@ -91,7 +92,7 @@ public final class PagesPerMinuteColor extends IntegerSyntax
    *
    * @return The class <code>PagesPerMinuteColor</code> itself.
    */
-  public Class getCategory()
+  public Class< ? extends Attribute> getCategory()
   {
     return PagesPerMinuteColor.class;
   }
