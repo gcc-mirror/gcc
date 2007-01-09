@@ -265,7 +265,7 @@ cp/tree.o: cp/tree.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h $(RTL_H) \
   $(TARGET_H) debug.h
 cp/ptree.o: cp/ptree.c $(CXX_TREE_H) $(TM_H)
 cp/rtti.o: cp/rtti.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h convert.h \
-  gt-cp-rtti.h
+  $(TARGET_H) gt-cp-rtti.h
 cp/except.o: cp/except.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) $(RTL_H) except.h \
   toplev.h cp/cfns.h $(EXPR_H) libfuncs.h $(TREE_INLINE_H) $(TARGET_H)
 cp/expr.o: cp/expr.c $(CXX_TREE_H) $(TM_H) $(RTL_H) $(FLAGS_H) $(EXPR_H) \

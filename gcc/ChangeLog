@@ -1,5 +1,13 @@
 2007-01-08  Geoffrey Keating  <geoffk@apple.com>
 
+	* target.h (struct gcc_target): New field library_rtti_comdat.
+	* target-def.h (TARGET_CXX_LIBRARY_RTTI_COMDAT): New.
+	(TARGET_CXX): Add TARGET_CXX_LIBRARY_RTTI_COMDAT.
+	* doc/tm.texi (C++ ABI): Document TARGET_CXX_LIBRARY_RTTI_COMDAT.
+	* config/darwin.h (TARGET_CXX_LIBRARY_RTTI_COMDAT): Define.
+
+2007-01-08  Geoffrey Keating  <geoffk@apple.com>
+
 	* doc/invoke.texi (Optimize Options): Correct description of -O0.
 
 2007-01-08  Richard Guenther  <rguenther@suse.de>

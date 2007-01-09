@@ -808,6 +808,10 @@ struct gcc_target
        class data for classes whose virtual table will be emitted in
        only one translation unit will not be COMDAT.  */
     bool (*class_data_always_comdat) (void);
+    /* Returns true (the default) if the RTTI for the basic types,
+       which is always defined in the C++ runtime, should be COMDAT;
+       false if it should not be COMDAT.  */
+    bool (*library_rtti_comdat) (void);
     /* Returns true if __aeabi_atexit should be used to register static
        destructors.  */
     bool (*use_aeabi_atexit) (void);

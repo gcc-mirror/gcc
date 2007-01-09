@@ -596,6 +596,10 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #define TARGET_CXX_CLASS_DATA_ALWAYS_COMDAT hook_bool_void_true
 #endif
 
+#ifndef TARGET_CXX_LIBRARY_RTTI_COMDAT
+#define TARGET_CXX_LIBRARY_RTTI_COMDAT hook_bool_void_true
+#endif
+
 #ifndef TARGET_CXX_USE_AEABI_ATEXIT
 #define TARGET_CXX_USE_AEABI_ATEXIT hook_bool_void_false
 #endif
@@ -619,6 +623,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     TARGET_CXX_KEY_METHOD_MAY_BE_INLINE,	\
     TARGET_CXX_DETERMINE_CLASS_DATA_VISIBILITY,	\
     TARGET_CXX_CLASS_DATA_ALWAYS_COMDAT,        \
+    TARGET_CXX_LIBRARY_RTTI_COMDAT,	        \
     TARGET_CXX_USE_AEABI_ATEXIT,		\
     TARGET_CXX_USE_ATEXIT_FOR_CXA_ATEXIT,	\
     TARGET_CXX_ADJUST_CLASS_AT_DEFINITION	\

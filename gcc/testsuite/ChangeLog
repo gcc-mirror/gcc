@@ -1,3 +1,7 @@
+2007-01-08  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++.dg/rtti/darwin-builtin-linkage.C: New.
+
 2007-01-08  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* gcc.target/spu/intrinsics-1.c: Remove xfail.
