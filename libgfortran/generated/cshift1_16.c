@@ -55,7 +55,7 @@ cshift1 (gfc_array_char * const restrict ret,
   index_type soffset;
   const char *sptr;
   const char *src;
-  /* h.* indicates the  array.  */
+  /* h.* indicates the shift array.  */
   index_type hstride[GFC_MAX_DIMENSIONS];
   index_type hstride0;
   const GFC_INTEGER_16 *hptr;
@@ -144,7 +144,7 @@ cshift1 (gfc_array_char * const restrict ret,
 
   while (rptr)
     {
-      /* Do the  for this dimension.  */
+      /* Do the shift for this dimension.  */
       sh = *hptr;
       sh = (div (sh, len)).rem;
       if (sh < 0)

@@ -70,16 +70,24 @@ maxval_r4 (gfc_array_r4 * const restrict retarray,
     {
       sstride[n] = array->dim[n].stride;
       extent[n] = array->dim[n].ubound + 1 - array->dim[n].lbound;
+
+      if (extent[n] < 0)
+	extent[n] = 0;
     }
   for (n = dim; n < rank; n++)
     {
       sstride[n] = array->dim[n + 1].stride;
       extent[n] =
         array->dim[n + 1].ubound + 1 - array->dim[n + 1].lbound;
+
+      if (extent[n] < 0)
+	extent[n] = 0;
     }
 
   if (retarray->data == NULL)
     {
+      size_t alloc_size;
+
       for (n = 0; n < rank; n++)
         {
           retarray->dim[n].lbound = 0;
@@ -90,12 +98,21 @@ maxval_r4 (gfc_array_r4 * const restrict retarray,
             retarray->dim[n].stride = retarray->dim[n-1].stride * extent[n-1];
         }
 
-      retarray->data
-	 = internal_malloc_size (sizeof (GFC_REAL_4)
-		 		 * retarray->dim[rank-1].stride
-				 * extent[rank-1]);
       retarray->offset = 0;
       retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+
+      alloc_size = sizeof (GFC_REAL_4) * retarray->dim[rank-1].stride
+    		   * extent[rank-1];
+
+      if (alloc_size == 0)
+	{
+	  /* Make sure we have a zero-sized array.  */
+	  retarray->dim[0].lbound = 0;
+	  retarray->dim[0].ubound = -1;
+	  return;
+	}
+      else
+	retarray->data = internal_malloc_size (alloc_size);
     }
   else
     {
@@ -207,6 +224,10 @@ mmaxval_r4 (gfc_array_r4 * const restrict retarray,
       sstride[n] = array->dim[n].stride;
       mstride[n] = mask->dim[n].stride;
       extent[n] = array->dim[n].ubound + 1 - array->dim[n].lbound;
+
+      if (extent[n] < 0)
+	extent[n] = 0;
+
     }
   for (n = dim; n < rank; n++)
     {
@@ -214,10 +235,15 @@ mmaxval_r4 (gfc_array_r4 * const restrict retarray,
       mstride[n] = mask->dim[n + 1].stride;
       extent[n] =
         array->dim[n + 1].ubound + 1 - array->dim[n + 1].lbound;
+
+      if (extent[n] < 0)
+	extent[n] = 0;
     }
 
   if (retarray->data == NULL)
     {
+      size_t alloc_size;
+
       for (n = 0; n < rank; n++)
         {
           retarray->dim[n].lbound = 0;
@@ -228,12 +254,22 @@ mmaxval_r4 (gfc_array_r4 * const restrict retarray,
             retarray->dim[n].stride = retarray->dim[n-1].stride * extent[n-1];
         }
 
-      retarray->data
-	 = internal_malloc_size (sizeof (GFC_REAL_4)
-		 		 * retarray->dim[rank-1].stride
-				 * extent[rank-1]);
+      alloc_size = sizeof (GFC_REAL_4) * retarray->dim[rank-1].stride
+    		   * extent[rank-1];
+
       retarray->offset = 0;
       retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+
+      if (alloc_size == 0)
+	{
+	  /* Make sure we have a zero-sized array.  */
+	  retarray->dim[0].lbound = 0;
+	  retarray->dim[0].ubound = -1;
+	  return;
+	}
+      else
+	retarray->data = internal_malloc_size (alloc_size);
+
     }
   else
     {
