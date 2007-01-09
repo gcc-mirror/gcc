@@ -326,7 +326,7 @@ LSYM(Lad_s):
 	beq	1f
 
 	@ Result is x + 0.0 = x or 0.0 + y = y.
-	teq	r4, #0
+	orrs	ip, r4, xl
 	moveq	xh, yh
 	moveq	xl, yl
 	RETLDM	"r4, r5"
