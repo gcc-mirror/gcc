@@ -4395,7 +4395,7 @@ classpath/java/net/SocketPermission.java \
 classpath/java/net/SocketTimeoutException.java \
 classpath/java/net/URI.java \
 classpath/java/net/URISyntaxException.java \
-java/net/URL.java \
+classpath/java/net/URL.java \
 java/net/URLClassLoader.java \
 classpath/java/net/URLConnection.java \
 classpath/java/net/URLDecoder.java \

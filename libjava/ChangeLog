@@ -1,3 +1,8 @@
+2007-01-10  Gary Benson  <gbenson@redhat.com>
+
+	* java/net/URL.java: Removed.
+	* sources.am, Makefile.in: Rebuilt.
+
 2007-01-10  Matthias Klose  <doko@debian.org>
 
 	* Makefile.am (install-exec-hook): Support $(DESTDIR).

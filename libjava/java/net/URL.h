@@ -34,6 +34,9 @@ public:
   URL(::java::lang::String *);
   URL(::java::net::URL *, ::java::lang::String *);
   URL(::java::net::URL *, ::java::lang::String *, ::java::net::URLStreamHandler *);
+private:
+  URL(::java::net::URL *, ::java::lang::String *, ::java::net::URLStreamHandler *, jboolean);
+public:
   jboolean equals(::java::lang::Object *);
   ::java::lang::Object * getContent();
   ::java::lang::Object * getContent(JArray< ::java::lang::Class * > *);
