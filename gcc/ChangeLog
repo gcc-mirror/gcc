@@ -1,3 +1,8 @@
+2007-01-10  Ian Lance Taylor  <iant@google.com>
+
+	* tree-pretty-print.c (dump_generic_node): Print parentheses when
+	operands have the same priority.
+
 2007-01-10  Tom Tromey  <tromey@redhat.com>
 
 	* fold-const.c (fold_truthop): Don't check can_use_bit_fields_p.
