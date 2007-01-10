@@ -1,3 +1,14 @@
+2007-01-10  Sa Liu  <saliu@de.ibm.com>
+	    Ben Elliston  <bje@au.ibm.com>
+
+	* spu.h (STACK_SAVE_AREA): Use VOIDmode for SAVE_FUNCTION, SImode
+	for SAVE_NONLOCAL and Pmode for any other save level.
+	* spu-protos.h (spu_restore_stack_block): Declare.
+	* spu.md (save_stack_block): Remove.
+	(restore_stack_block): Call spu_restore_stack_block.
+	* spu.c (spu_restore_stack_block): New function.
+	(spu_expand_epilogue): Remove old comment.
+
 2007-01-09  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/30322

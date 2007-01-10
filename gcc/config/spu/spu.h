@@ -96,7 +96,10 @@ extern const char *spu_fixed_range_string;
 
 #define MAX_FIXED_MODE_SIZE 128
 
-#define STACK_SAVEAREA_MODE(save_level) SImode
+#define STACK_SAVEAREA_MODE(save_level) \
+  (save_level == SAVE_FUNCTION ? VOIDmode \
+    : save_level == SAVE_NONLOCAL ? SImode \
+      : Pmode)
 
 #define STACK_SIZE_MODE SImode
 
