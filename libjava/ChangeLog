@@ -1,5 +1,9 @@
 2007-01-10  Tom Tromey  <tromey@redhat.com>
 
+	* HACKING: Various updates.
+
+2007-01-10  Tom Tromey  <tromey@redhat.com>
+
 	* java/lang/natDouble.cc (toString): Added parens.
 	* gnu/gcj/io/shs.h (PROTO): Define.
 	* link.cc (resolve_pool_entry): Added missing braces.
