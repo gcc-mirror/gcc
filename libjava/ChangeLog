@@ -1,3 +1,8 @@
+2007-01-10  Matthias Klose  <doko@debian.org>
+
+	* Makefile.am (install-exec-hook): Support $(DESTDIR).
+	* Makefile.in: Regenerated.
+
 2007-01-05  Tom Tromey  <tromey@redhat.com>
 
 	* testsuite/libjava.loader/loader.exp (gcj_loader_run): Find
