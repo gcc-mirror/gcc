@@ -1,3 +1,8 @@
+2007-01-10  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (arm_rtx_costs_1): Handle mutiply-subtract.
+	* config/arm/arm.md (mulsi3subsi): New insn.
+
 2007-01-10  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* tree-ssa-loop-manip.c (tree_unroll_loop): Make it a wrapper over ...
