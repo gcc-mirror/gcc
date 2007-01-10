@@ -31,6 +31,8 @@ typedef unsigned int uint32_t __attribute__((mode(SI)));
 # endif
 #endif
 
+#define PROTO
+
 /* The SHS block size and message digest sizes, in bytes */
 
 #define SHS_BLOCKSIZE	64

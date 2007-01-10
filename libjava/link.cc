@@ -1,6 +1,6 @@
 // link.cc - Code for linking and resolving classes and pool entries.
 
-/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -408,16 +408,18 @@ _Jv_Linker::resolve_pool_entry (jclass klass, int index, bool lazy)
         // with it should just throw a NoClassDefFoundError with the class'
         // name.
 	if (! found)
-          if (lazy)
-            {
-              found = _Jv_NewClass(name, NULL, NULL);
-              found->state = JV_STATE_PHANTOM;
-              pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
-              pool->data[index].clazz = found;
-              break;
-            }
-          else
-	    throw new java::lang::NoClassDefFoundError (name->toString());
+	  {
+	    if (lazy)
+	      {
+		found = _Jv_NewClass(name, NULL, NULL);
+		found->state = JV_STATE_PHANTOM;
+		pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
+		pool->data[index].clazz = found;
+		break;
+	      }
+	    else
+	      throw new java::lang::NoClassDefFoundError (name->toString());
+	  }
 
 	// Check accessibility, but first strip array types as
 	// _Jv_ClassNameSamePackage can't handle arrays.

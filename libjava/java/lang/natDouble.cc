@@ -1,6 +1,6 @@
 // natDouble.cc - Implementation of java.lang.VMDouble native methods.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2003, 2005, 2006  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2003, 2005, 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -87,7 +87,7 @@ java::lang::VMDouble::toString(jdouble value, jboolean isFloat)
   if (sign)
     *d++ = '-';
 
-  if (value >= 1e-3 && value < 1e7 || value == 0)
+  if ((value >= 1e-3 && value < 1e7) || value == 0)
     {
       if (decpt <= 0)
 	*d++ = '0';
