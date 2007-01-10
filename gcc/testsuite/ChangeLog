@@ -1,3 +1,7 @@
+2007-01-10  Robert Kennedy <jimbob@google.com>
+
+	* gcc.dg/fold-compare-2.c: New test case for fold_comparison.
+
 2007-01-09  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* gfortran.dg/chkbits.f90: Added IBCLR tests; test calls
