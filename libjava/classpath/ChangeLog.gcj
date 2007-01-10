@@ -1,3 +1,15 @@
+2007-01-10  Matthias Klose  <doko@debian.org>
+
+	* resource/gnu/regexp, tools/gnu/classpath/tools/rmi/rmic,
+	tools/gnu/classpath/tools/rmi/rmid, tools/gnu/classpath/tools/giop,
+	doc/www.gnu.org, doc/unicode, testsuite, testsuite/java.sun.awt,
+	testsuite/javax.swing.text.html.parser, testsuite/java.lang,
+	testsuite/java.opstack, testsuite/java.sun.tools, testsuite/java.text,
+	testsuite/scheme, testsuite/config, testsuite/java.net, testsuite/lib,
+	testsuite/java.io, testsuite/java.util, native/target,
+	native/testsuite, native/vmi, org/omg/CORBA/SendingContext,
+	gnu/regexp, test, compat: Remove empty directories.
+
 2006-12-23  Andreas Tobler <a.tobler@schweiz.org>
 
 	* classpath/tools/Makefile.am: Replace cp -a with a more portable
