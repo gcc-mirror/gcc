@@ -180,6 +180,14 @@ aff_combination_add_elt (aff_tree *comb, tree elt, double_int scale)
     comb->rest = elt;
 }
 
+/* Adds CST to C.  */
+
+static void
+aff_combination_add_cst (aff_tree *c, double_int cst)
+{
+  c->offset = double_int_ext_for_comb (double_int_add (c->offset, cst), c);
+}
+
 /* Adds COMB2 to COMB1.  */
 
 void
@@ -187,9 +195,7 @@ aff_combination_add (aff_tree *comb1, aff_tree *comb2)
 {
   unsigned i;
 
-  comb1->offset
-    = double_int_ext_for_comb (double_int_add (comb1->offset, comb2->offset),
-			       comb1);
+  aff_combination_add_cst (comb1, comb2->offset);
   for (i = 0; i < comb2->n; i++)
     aff_combination_add_elt (comb1, comb2->elts[i].val, comb2->elts[i].coef);
   if (comb2->rest)
@@ -204,7 +210,13 @@ aff_combination_convert (aff_tree *comb, tree type)
   unsigned i, j;
   tree comb_type = comb->type;
 
-  gcc_assert (TYPE_PRECISION (type) <= TYPE_PRECISION (comb_type));
+  if  (TYPE_PRECISION (type) > TYPE_PRECISION (comb_type))
+    {
+      tree val = fold_convert (type, aff_combination_to_tree (comb));
+      tree_to_aff_combination (val, type, comb);
+      return;
+    }
+
   comb->type = type;
   if (comb->rest)
     comb->rest = fold_convert (type, comb->rest);
@@ -274,6 +286,13 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
     case NEGATE_EXPR:
       tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
       aff_combination_scale (comb, double_int_minus_one);
+      return;
+
+    case BIT_NOT_EXPR:
+      /* ~x = -x - 1 */
+      tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
+      aff_combination_scale (comb, double_int_minus_one);
+      aff_combination_add_cst (comb, double_int_minus_one);
       return;
 
     case ADDR_EXPR:
@@ -411,4 +430,66 @@ aff_combination_remove_elt (aff_tree *comb, unsigned m)
       comb->rest = NULL_TREE;
       comb->n++;
     }
+}
+
+/* Adds C * COEF * VAL to R.  VAL may be NULL, in that case only
+   C * COEF is added to R.  */
+   
+
+static void
+aff_combination_add_product (aff_tree *c, double_int coef, tree val,
+			     aff_tree *r)
+{
+  unsigned i;
+  tree aval, type;
+
+  for (i = 0; i < c->n; i++)
+    {
+      aval = c->elts[i].val;
+      if (val)
+	{
+	  type = TREE_TYPE (aval);
+	  aval = fold_build2 (MULT_EXPR, type, aval,
+			      fold_convert (type, val));
+	}
+
+      aff_combination_add_elt (r, aval,
+			       double_int_mul (coef, c->elts[i].coef));
+    }
+
+  if (c->rest)
+    {
+      aval = c->rest;
+      if (val)
+	{
+	  type = TREE_TYPE (aval);
+	  aval = fold_build2 (MULT_EXPR, type, aval,
+			      fold_convert (type, val));
+	}
+
+      aff_combination_add_elt (r, aval, coef);
+    }
+
+  if (val)
+    aff_combination_add_elt (r, val,
+			     double_int_mul (coef, c->offset));
+  else
+    aff_combination_add_cst (r, double_int_mul (coef, c->offset));
+}
+
+/* Multiplies C1 by C2, storing the result to R  */
+
+void
+aff_combination_mult (aff_tree *c1, aff_tree *c2, aff_tree *r)
+{
+  unsigned i;
+  gcc_assert (TYPE_PRECISION (c1->type) == TYPE_PRECISION (c2->type));
+
+  aff_combination_zero (r, c1->type);
+
+  for (i = 0; i < c2->n; i++)
+    aff_combination_add_product (c1, c2->elts[i].coef, c2->elts[i].val, r);
+  if (c2->rest)
+    aff_combination_add_product (c1, double_int_one, c2->rest, r);
+  aff_combination_add_product (c1, c2->offset, NULL, r);
 }

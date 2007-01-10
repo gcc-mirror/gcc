@@ -1,3 +1,16 @@
+2007-01-09  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/30322
+	* tree-ssa-loop-ivopts.c (fold_affine_expr, iv_value): Removed.
+	(cand_value_at): Return the value as aff_tree.
+	(may_eliminate_iv): Convert the bound from aff_tree to tree.
+	* tree-affine.c (aff_combination_add_cst, aff_combination_add_product,
+	aff_combination_mult): New functions.
+	(aff_combination_add): Use aff_combination_add_cst.
+	(aff_combination_convert): Allow conversions to a wider type.
+	(tree_to_aff_combination): Handle BIT_NOT_EXPR.
+	* tree-affine.h (aff_combination_mult): Declare.
+
 2007-01-09  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* doc/tm.texi: Update documentation to reflect reality of exec

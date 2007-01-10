@@ -1,3 +1,8 @@
+2007-01-09  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/30322
+	* gcc.dg/tree-ssa/loop-21.c: New test.
+
 2007-01-08  Geoffrey Keating  <geoffk@apple.com>
 
 	* g++.dg/rtti/darwin-builtin-linkage.C: New.

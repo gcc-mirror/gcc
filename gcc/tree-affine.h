@@ -62,6 +62,7 @@ double_int double_int_ext_for_comb (double_int, aff_tree *);
 void aff_combination_const (aff_tree *, tree, double_int);
 void aff_combination_elt (aff_tree *, tree, tree);
 void aff_combination_scale (aff_tree *, double_int);
+void aff_combination_mult (aff_tree *, aff_tree *, aff_tree *);
 void aff_combination_add (aff_tree *, aff_tree *);
 void aff_combination_add_elt (aff_tree *, tree, double_int);
 void aff_combination_remove_elt (aff_tree *, unsigned);
