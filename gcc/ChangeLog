@@ -1,3 +1,10 @@
+2007-01-10  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-ssa-loop-manip.c (tree_unroll_loop): Make it a wrapper over ...
+	(tree_transform_and_unroll_loop): New.
+	* tree-flow.h (transform_callback, tree_transform_and_unroll_loop):
+	Declare.
+
 2007-01-10  Robert Kennedy <jimbob@google.com>
 
 	* fold-const.c (fold_comparison): Fold comparisons like (x *
@@ -24,11 +31,11 @@
 	* config/bfin/t-bfin, config/bfin/t-bfin-elf: Remove GCC_CFLAGS.
 
 2007-01-10  Razya Ladelsky  <razya@il.ibm.com>
-        
-        * function.c (get_last_funcdef_no): New function.
+
+	* function.c (get_last_funcdef_no): New function.
 	* function.h (get_last_funcdef_no): Declare. 
-        * tree-inline.c (initialize_cfun): Add initialization.
-        (tree_function_versioning): Cleanup.
+	* tree-inline.c (initialize_cfun): Add initialization.
+	(tree_function_versioning): Cleanup.
 	
 2007-01-10  Jan Hubicka  <jh@suse.cz>
 
