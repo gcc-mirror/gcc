@@ -1080,6 +1080,7 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, gcov_type count,
   /* Register specific tree functions.  */
   tree_register_cfg_hooks ();
   *new_cfun = *DECL_STRUCT_FUNCTION (callee_fndecl);
+  new_cfun->funcdef_no = get_next_funcdef_no ();
   VALUE_HISTOGRAMS (new_cfun) = NULL;
   new_cfun->unexpanded_var_list = NULL;
   new_cfun->cfg = NULL;
@@ -3303,7 +3304,13 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
   fold_cond_expr_cond ();
   if (gimple_in_ssa_p (cfun))
     {
+      free_dominance_info (CDI_DOMINATORS);
+      free_dominance_info (CDI_POST_DOMINATORS);
+      delete_unreachable_blocks ();
       update_ssa (TODO_update_ssa);
+      fold_cond_expr_cond ();
+      if (need_ssa_update_p ())
+        update_ssa (TODO_update_ssa);
     }
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);

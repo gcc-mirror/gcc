@@ -1,3 +1,10 @@
+2007-01-10  Razya Ladelsky  <razya@il.ibm.com>
+        
+        * function.c (get_last_funcdef_no): New function.
+	* function.h (get_last_funcdef_no): Declare. 
+        * tree-inline.c (initialize_cfun): Add initialization.
+        (tree_function_versioning): Cleanup.
+	
 2007-01-10  Jan Hubicka  <jh@suse.cz>
 
 	* tree-inline.c (setup_one_parameter): Do not propagate into abnormal
