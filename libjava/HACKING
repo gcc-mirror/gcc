@@ -7,6 +7,33 @@ explained in this HACKING file. Please add them if you discover them :)
 
 --
 
+If you plan to modify a .java file, you will need to configure with
+--enable-java-maintainer-mode.  In order to make this work properly,
+you will need to have 'ecj1' and 'gjavah' executables in your PATH at
+build time.
+
+One way to do this is to download ecj.jar (see contrib/download_ecj)
+and write a simple wrapper script like:
+
+    #! /bin/sh
+    gij -cp /home/tromey/gnu/Generics/trunk/ecj.jar \
+       org.eclipse.jdt.internal.compiler.batch.GCCMain \
+       ${1+"$@"}
+
+For gjavah, you can make a tools.zip from the classes in
+classpath/lib/tools/ and write a gjavah script like:
+
+    #! /bin/sh
+    dir=/home/tromey/gnu/Generics/Gcjh
+    gij -cp $dir/tools.zip \
+       gnu.classpath.tools.javah.Main \
+       ${1+"$@"}
+
+Another way to get a version of gjavah is to first do a
+non-maintainer-mode build and use the newly installed gjavah.
+
+--
+
 libgcj uses GNU Classpath as an upstream provider.  Snapshots of
 Classpath are imported into the libgcj source tree.  Some classes are
 overridden by local versions; these files still appear in the libgcj
@@ -81,7 +108,7 @@ before running automake.
 
 In general you should not make any changes in the classpath/
 directory.  Changes here should come via imports from upstream.
-However, there are two (known) exceptions to this rule:
+However, there are three (known) exceptions to this rule:
 
 * In an emergency, such as a bootstrap breakage, it is ok to commit a
   patch provided that the problem is resolved (by fixing a compiler
@@ -90,6 +117,9 @@ However, there are two (known) exceptions to this rule:
 
 * On a release branch to fix a bug, where a full-scale import of
   Classpath is not advisable.
+
+* We maintain a fair number of divergences in the build system.
+  This is a pain but they don't seem suitable for upstream.
 
 --
 
@@ -129,8 +159,3 @@ If you add a class to java.lang, java.io, or java.util
   at that point.  This must be run from the build tree, in
   <build>/classpath/lib; it uses the .class file name to determine
   what to print.
-
-If you're generating a patch there is a program you can get to do an
-offline `cvs add' (it will fake an `add' if you don't have write
-permission yet).  Then you can use `cvs diff -N' to generate the
-patch.  See http://www.red-bean.com/cvsutils/
