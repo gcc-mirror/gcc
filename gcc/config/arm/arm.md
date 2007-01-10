@@ -1294,6 +1294,18 @@
    (set_attr "insn" "mlas")]
 )
 
+(define_insn "*mulsi3subsi"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(minus:SI
+	  (match_operand:SI 3 "s_register_operand" "r")
+	  (mult:SI (match_operand:SI 2 "s_register_operand" "r")
+		   (match_operand:SI 1 "s_register_operand" "r"))))]
+  "TARGET_32BIT && arm_arch_thumb2"
+  "mls%?\\t%0, %2, %1, %3"
+  [(set_attr "insn" "mla")
+   (set_attr "predicable" "yes")]
+)
+
 ;; Unnamed template to match long long multiply-accumulate (smlal)
 
 (define_insn "*mulsidi3adddi"

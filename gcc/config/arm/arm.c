@@ -4752,6 +4752,14 @@ arm_rtx_costs_1 (rtx x, enum rtx_code code, enum rtx_code outer)
 		 ? 0 : 4));
 
     case MINUS:
+      if (GET_CODE (XEXP (x, 1)) == MULT && mode == SImode && arm_arch_thumb2)
+	{
+	  extra_cost = rtx_cost (XEXP (x, 1), code);
+	  if (!REG_OR_SUBREG_REG (XEXP (x, 0)))
+	    extra_cost += 4 * ARM_NUM_REGS (mode);
+	  return extra_cost;
+	}
+
       if (mode == DImode)
 	return (4 + (REG_OR_SUBREG_REG (XEXP (x, 1)) ? 0 : 8)
 		+ ((REG_OR_SUBREG_REG (XEXP (x, 0))
