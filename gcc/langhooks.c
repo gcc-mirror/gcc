@@ -185,13 +185,6 @@ lhd_set_decl_assembler_name (tree decl)
     }
 }
 
-/* By default we always allow bit-field based optimizations.  */
-bool
-lhd_can_use_bit_fields_p (void)
-{
-  return true;
-}
-
 /* Type promotion for variable arguments.  */
 tree
 lhd_type_promotes_to (tree ARG_UNUSED (type))

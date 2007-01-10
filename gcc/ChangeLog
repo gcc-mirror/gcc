@@ -1,3 +1,14 @@
+2007-01-10  Tom Tromey  <tromey@redhat.com>
+
+	* fold-const.c (fold_truthop): Don't check can_use_bit_fields_p.
+	(fold_binary): Likewise.
+	* langhooks.c (lhd_can_use_bit_fields_p): Removed.
+	* langhooks-def.h (lhd_can_use_bit_fields_p): Removed.
+	(LANG_HOOKS_CAN_USE_BIT_FIELDS_P): Removed.
+	(LANG_HOOKS_INITIALIZER): Remove LANG_HOOKS_CAN_USE_BIT_FIELDS_P.
+	* langhooks.h (struct lang_hooks): Removed field
+	'can_use_bit_fields_p'.
+
 2007-01-10  Ralf Corsépius <ralf.corsepius@rtems.org>
 
 	* config/bfin/t-bfin, config/bfin/t-bfin-elf: Remove GCC_CFLAGS.

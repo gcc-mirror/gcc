@@ -1,3 +1,8 @@
+2007-01-10  Tom Tromey  <tromey@redhat.com>
+
+	* lang.c (java_can_use_bit_fields_p): Removed.
+	(LANG_HOOKS_CAN_USE_BIT_FIELDS_P): Removed.
+
 2007-01-09  Andrew Haley  <aph@redhat.com>
 
 	* expr.c (build_java_arrayaccess): Rewrite to generate array

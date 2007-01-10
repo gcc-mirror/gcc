@@ -60,7 +60,6 @@ static tree java_tree_inlining_walk_subtrees (tree *, int *, walk_tree_fn,
 					      void *, struct pointer_set_t *);
 static int merge_init_test_initialization (void * *, void *);
 static int inline_init_test_initialization (void * *, void *);
-static bool java_can_use_bit_fields_p (void);
 static bool java_dump_tree (void *, tree);
 static void dump_compound_expr (dump_info_p, tree);
 static bool java_decl_ok_for_sibcall (tree);
@@ -178,8 +177,6 @@ struct language_function GTY(())
 #define LANG_HOOKS_DECL_PRINTABLE_NAME lang_printable_name
 #undef LANG_HOOKS_PRINT_ERROR_FUNCTION
 #define LANG_HOOKS_PRINT_ERROR_FUNCTION	java_print_error_function
-#undef LANG_HOOKS_CAN_USE_BIT_FIELDS_P
-#define LANG_HOOKS_CAN_USE_BIT_FIELDS_P java_can_use_bit_fields_p
 
 #undef LANG_HOOKS_TYPE_FOR_MODE
 #define LANG_HOOKS_TYPE_FOR_MODE java_type_for_mode
@@ -595,14 +592,6 @@ java_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   jcf_path_init ();
 
   return CL_Java;
-}
-
-static bool
-java_can_use_bit_fields_p (void)
-{
-  /* The bit-field optimizations cause problems when generating class
-     files.  */
-  return flag_emit_class_files ? false : true;
 }
 
 /* Post-switch processing.  */
