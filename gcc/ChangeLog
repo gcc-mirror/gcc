@@ -1,3 +1,8 @@
+2007-01-10  Robert Kennedy <jimbob@google.com>
+
+	* fold-const.c (fold_comparison): Fold comparisons like (x *
+	1000 < 0) to (x < 0).
+
 2007-01-10  Ian Lance Taylor  <iant@google.com>
 
 	* tree-pretty-print.c (dump_generic_node): Print parentheses when
