@@ -11527,13 +11527,13 @@ $(extra_headers) $(srcdir)/java/lang/Object.h $(srcdir)/java/lang/Class.h:
 
 install-exec-hook: install-toolexeclibLTLIBRARIES install-libexecsubPROGRAMS
 @USE_LIBGCJ_BC_TRUE@	@echo Installing dummy lib libgcj_bc.so.1.0.0; \
-@USE_LIBGCJ_BC_TRUE@	rm $(toolexeclibdir)/libgcj_bc.so; \
-@USE_LIBGCJ_BC_TRUE@	mv $(toolexeclibdir)/libgcj_bc.so.1.0.0 $(toolexeclibdir)/libgcj_bc.so; \
+@USE_LIBGCJ_BC_TRUE@	rm $(DESTDIR)$(toolexeclibdir)/libgcj_bc.so; \
+@USE_LIBGCJ_BC_TRUE@	mv $(DESTDIR)$(toolexeclibdir)/libgcj_bc.so.1.0.0 $(DESTDIR)$(toolexeclibdir)/libgcj_bc.so; \
 @USE_LIBGCJ_BC_TRUE@	$(libgcj_bc_dummy_LINK) -xc /dev/null -Wl,-soname,libgcj_bc.so.1 \
-@USE_LIBGCJ_BC_TRUE@	-o $(toolexeclibdir)/libgcj_bc.so.1.0.0 -lgcj || exit; \
-@USE_LIBGCJ_BC_TRUE@	rm $(toolexeclibdir)/libgcj_bc.so.1; \
-@USE_LIBGCJ_BC_TRUE@	$(LN_S) libgcj_bc.so.1.0.0 $(toolexeclibdir)/libgcj_bc.so.1; \
-@USE_LIBGCJ_BC_TRUE@	rm $(toolexeclibdir)/libgcj_bc.la;
+@USE_LIBGCJ_BC_TRUE@	-o $(DESTDIR)$(toolexeclibdir)/libgcj_bc.so.1.0.0 -lgcj || exit; \
+@USE_LIBGCJ_BC_TRUE@	rm $(DESTDIR)$(toolexeclibdir)/libgcj_bc.so.1; \
+@USE_LIBGCJ_BC_TRUE@	$(LN_S) libgcj_bc.so.1.0.0 $(DESTDIR)$(toolexeclibdir)/libgcj_bc.so.1; \
+@USE_LIBGCJ_BC_TRUE@	rm $(DESTDIR)$(toolexeclibdir)/libgcj_bc.la;
 @BUILD_ECJ1_TRUE@@NATIVE_TRUE@	mv $(DESTDIR)$(libexecsubdir)/ecjx$(EXEEXT) $(DESTDIR)$(libexecsubdir)/ecj1$(host_exeext)
 @BUILD_ECJ1_TRUE@@NATIVE_FALSE@	mv $(DESTDIR)$(libexecsubdir)/$(target_noncanonical)-ecjx$(EXEEXT) $(DESTDIR)$(libexecsubdir)/ecj1$(host_exeext)
 
