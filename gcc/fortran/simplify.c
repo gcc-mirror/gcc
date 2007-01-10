@@ -1280,7 +1280,7 @@ gfc_simplify_ibclr (gfc_expr * x, gfc_expr * y)
 
   k = gfc_validate_kind (x->ts.type, x->ts.kind, false);
 
-  if (pos > gfc_integer_kinds[k].bit_size)
+  if (pos >= gfc_integer_kinds[k].bit_size)
     {
       gfc_error ("Second argument of IBCLR exceeds bit size at %L",
 		 &y->where);
@@ -1386,7 +1386,7 @@ gfc_simplify_ibset (gfc_expr * x, gfc_expr * y)
 
   k = gfc_validate_kind (x->ts.type, x->ts.kind, false);
 
-  if (pos > gfc_integer_kinds[k].bit_size)
+  if (pos >= gfc_integer_kinds[k].bit_size)
     {
       gfc_error ("Second argument of IBSET exceeds bit size at %L",
 		 &y->where);

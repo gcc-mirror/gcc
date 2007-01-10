@@ -1,5 +1,10 @@
 2007-01-09  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* simplify.c (gfc_simplify_ibclr): Fix POS comparison.
+	(gfc_simplify_ibset): Same.
+
+2007-01-09  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	PR 30381
 	PR 30420
 	* simplify.c (convert_mpz_to_unsigned): New function.
