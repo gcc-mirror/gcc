@@ -154,20 +154,56 @@ get_kind (bt type, gfc_expr * k, const char *name, int default_kind)
 }
 
 
-/* Checks if X, which is assumed to represent a two's complement
-   integer of binary width BITSIZE, has the signbit set.  If so, makes 
-   X the corresponding negative number.  */
+/* Converts an mpz_t signed variable into an unsigned one, assuming
+   two's complement representations and a binary width of bitsize.
+   The conversion is a no-op unless x is negative; otherwise, it can
+   be accomplished by masking out the high bits.  */
 
 static void
-twos_complement (mpz_t x, int bitsize)
+convert_mpz_to_unsigned (mpz_t x, int bitsize)
 {
   mpz_t mask;
 
+  if (mpz_sgn (x) < 0)
+    {
+      /* Confirm that no bits above the signed range are unset.  */
+      gcc_assert (mpz_scan0 (x, bitsize-1) == ULONG_MAX);
+
+      mpz_init_set_ui (mask, 1);
+      mpz_mul_2exp (mask, mask, bitsize);
+      mpz_sub_ui (mask, mask, 1);
+
+      mpz_and (x, x, mask);
+
+      mpz_clear (mask);
+    }
+  else
+    {
+      /* Confirm that no bits above the signed range are set.  */
+      gcc_assert (mpz_scan1 (x, bitsize-1) == ULONG_MAX);
+    }
+}
+
+
+/* Converts an mpz_t unsigned variable into a signed one, assuming
+   two's complement representations and a binary width of bitsize.
+   If the bitsize-1 bit is set, this is taken as a sign bit and
+   the number is converted to the corresponding negative number.  */
+
+
+static void
+convert_mpz_to_signed (mpz_t x, int bitsize)
+{
+  mpz_t mask;
+
+  /* Confirm that no bits above the unsigned range are set.  */
+  gcc_assert (mpz_scan1 (x, bitsize) == ULONG_MAX);
+
   if (mpz_tstbit (x, bitsize - 1) == 1)
     {
-      mpz_init_set_ui(mask, 1);
-      mpz_mul_2exp(mask, mask, bitsize);
-      mpz_sub_ui(mask, mask, 1);
+      mpz_init_set_ui (mask, 1);
+      mpz_mul_2exp (mask, mask, bitsize);
+      mpz_sub_ui (mask, mask, 1);
 
       /* We negate the number by hand, zeroing the high bits, that is
         make it the corresponding positive number, and then have it
@@ -1253,7 +1289,14 @@ gfc_simplify_ibclr (gfc_expr * x, gfc_expr * y)
 
   result = gfc_copy_expr (x);
 
+  convert_mpz_to_unsigned (result->value.integer,
+			   gfc_integer_kinds[k].bit_size);
+
   mpz_clrbit (result->value.integer, pos);
+
+  convert_mpz_to_signed (result->value.integer,
+			 gfc_integer_kinds[k].bit_size);
+
   return range_check (result, "IBCLR");
 }
 
@@ -1289,9 +1332,8 @@ gfc_simplify_ibits (gfc_expr * x, gfc_expr * y, gfc_expr * z)
 
   if (pos + len > bitsize)
     {
-      gfc_error
-	("Sum of second and third arguments of IBITS exceeds bit size "
-	 "at %L", &y->where);
+      gfc_error ("Sum of second and third arguments of IBITS exceeds "
+		 "bit size at %L", &y->where);
       return &gfc_bad_expr;
     }
 
@@ -1353,9 +1395,13 @@ gfc_simplify_ibset (gfc_expr * x, gfc_expr * y)
 
   result = gfc_copy_expr (x);
 
+  convert_mpz_to_unsigned (result->value.integer,
+			   gfc_integer_kinds[k].bit_size);
+
   mpz_setbit (result->value.integer, pos);
 
-  twos_complement (result->value.integer, gfc_integer_kinds[k].bit_size);
+  convert_mpz_to_signed (result->value.integer,
+			 gfc_integer_kinds[k].bit_size);
 
   return range_check (result, "IBSET");
 }
@@ -1786,7 +1832,7 @@ gfc_simplify_ishft (gfc_expr * e, gfc_expr * s)
 	}
     }
 
-  twos_complement (result->value.integer, isize);
+  convert_mpz_to_signed (result->value.integer, isize);
 
   gfc_free (bits);
   return result;
@@ -1797,7 +1843,7 @@ gfc_expr *
 gfc_simplify_ishftc (gfc_expr * e, gfc_expr * s, gfc_expr * sz)
 {
   gfc_expr *result;
-  int shift, ashift, isize, delta, k;
+  int shift, ashift, isize, ssize, delta, k;
   int i, *bits;
 
   if (e->expr_type != EXPR_CONSTANT || s->expr_type != EXPR_CONSTANT)
@@ -1810,45 +1856,60 @@ gfc_simplify_ishftc (gfc_expr * e, gfc_expr * s, gfc_expr * sz)
     }
 
   k = gfc_validate_kind (e->ts.type, e->ts.kind, false);
+  isize = gfc_integer_kinds[k].bit_size;
 
   if (sz != NULL)
     {
-      if (gfc_extract_int (sz, &isize) != NULL || isize < 0)
+      if (sz->expr_type != EXPR_CONSTANT)
+        return NULL;
+
+      if (gfc_extract_int (sz, &ssize) != NULL || ssize <= 0)
 	{
 	  gfc_error ("Invalid third argument of ISHFTC at %L", &sz->where);
 	  return &gfc_bad_expr;
 	}
+
+      if (ssize > isize)
+	{
+	  gfc_error ("Magnitude of third argument of ISHFTC exceeds "
+		     "BIT_SIZE of first argument at %L", &s->where);
+	  return &gfc_bad_expr;
+	}
     }
   else
-    isize = gfc_integer_kinds[k].bit_size;
+    ssize = isize;
 
   if (shift >= 0)
     ashift = shift;
   else
     ashift = -shift;
 
-  if (ashift > isize)
+  if (ashift > ssize)
     {
-      gfc_error
-	("Magnitude of second argument of ISHFTC exceeds third argument "
-	 "at %L", &s->where);
+      if (sz != NULL)
+	gfc_error ("Magnitude of second argument of ISHFTC exceeds "
+		   "third argument at %L", &s->where);
+      else
+	gfc_error ("Magnitude of second argument of ISHFTC exceeds "
+		   "BIT_SIZE of first argument at %L", &s->where);
       return &gfc_bad_expr;
     }
 
   result = gfc_constant_result (e->ts.type, e->ts.kind, &e->where);
 
+  mpz_set (result->value.integer, e->value.integer);
+
   if (shift == 0)
-    {
-      mpz_set (result->value.integer, e->value.integer);
-      return result;
-    }
+    return result;
 
-  bits = gfc_getmem (isize * sizeof (int));
+  convert_mpz_to_unsigned (result->value.integer, isize);
 
-  for (i = 0; i < isize; i++)
+  bits = gfc_getmem (ssize * sizeof (int));
+
+  for (i = 0; i < ssize; i++)
     bits[i] = mpz_tstbit (e->value.integer, i);
 
-  delta = isize - ashift;
+  delta = ssize - ashift;
 
   if (shift > 0)
     {
@@ -1860,7 +1921,7 @@ gfc_simplify_ishftc (gfc_expr * e, gfc_expr * s, gfc_expr * sz)
 	    mpz_setbit (result->value.integer, i + shift);
 	}
 
-      for (i = delta; i < isize; i++)
+      for (i = delta; i < ssize; i++)
 	{
 	  if (bits[i] == 0)
 	    mpz_clrbit (result->value.integer, i - delta);
@@ -1878,7 +1939,7 @@ gfc_simplify_ishftc (gfc_expr * e, gfc_expr * s, gfc_expr * sz)
 	    mpz_setbit (result->value.integer, i + delta);
 	}
 
-      for (i = ashift; i < isize; i++)
+      for (i = ashift; i < ssize; i++)
 	{
 	  if (bits[i] == 0)
 	    mpz_clrbit (result->value.integer, i + shift);
@@ -1887,7 +1948,7 @@ gfc_simplify_ishftc (gfc_expr * e, gfc_expr * s, gfc_expr * sz)
 	}
     }
 
-  twos_complement (result->value.integer, isize);
+  convert_mpz_to_signed (result->value.integer, isize);
 
   gfc_free (bits);
   return result;
@@ -2580,8 +2641,6 @@ gfc_expr *
 gfc_simplify_not (gfc_expr * e)
 {
   gfc_expr *result;
-  int i;
-  mpz_t mask;
 
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -2589,21 +2648,6 @@ gfc_simplify_not (gfc_expr * e)
   result = gfc_constant_result (e->ts.type, e->ts.kind, &e->where);
 
   mpz_com (result->value.integer, e->value.integer);
-
-  /* Because of how GMP handles numbers, the result must be ANDed with
-     a mask.  For radices <> 2, this will require change.  */
-
-  i = gfc_validate_kind (BT_INTEGER, e->ts.kind, false);
-
-  mpz_init (mask);
-  mpz_add (mask, gfc_integer_kinds[i].huge, gfc_integer_kinds[i].huge);
-  mpz_add_ui (mask, mask, 1);
-
-  mpz_and (result->value.integer, result->value.integer, mask);
-
-  twos_complement (result->value.integer, gfc_integer_kinds[i].bit_size);
-
-  mpz_clear (mask);
 
   return range_check (result, "NOT");
 }

@@ -1,5 +1,14 @@
 2007-01-09  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* gfortran.dg/chkbits.f90: Added IBCLR tests; test calls
+	for different integer kinds.
+	* gfortran.dg/ishft.f90: Renamed to ishft_1.f90...
+	* gfortran.dg/ishft_1.f90: ...Renamed from ishft.f90.
+	* gfortran.dg/ishft_2.f90: New test.
+	* gfortran.dg/ishft_3.f90: New test.
+
+2007-01-09  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* gfortran.dg/altreturn_2.f90: Removed executable bit.
 
 2007-01-09  Zdenek Dvorak <dvorakz@suse.cz>

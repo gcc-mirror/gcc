@@ -1,3 +1,21 @@
+2007-01-09  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	PR 30381
+	PR 30420
+	* simplify.c (convert_mpz_to_unsigned): New function.
+	(convert_mpz_to_signed): New function, largely based on
+	twos_complement().
+	(twos_complement): Removed.
+	(gfc_simplify_ibclr): Add conversions to and from an
+	unsigned representation before bit-twiddling.
+	(gfc_simplify_ibset): Same.
+	(gfc_simplify_ishftc): Add checks for overly large
+	constant arguments, only check the third argument if
+	it's present, carry over high bits into	the result as
+	appropriate, and perform the final conversion back to
+	a signed representation using the correct sign bit.
+	(gfc_simplify_not): Removed unnecessary masking.
+
 2007-01-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/30408
