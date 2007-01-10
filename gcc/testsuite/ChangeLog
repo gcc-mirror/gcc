@@ -1,3 +1,7 @@
+2007-01-09  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* gfortran.dg/altreturn_2.f90: Removed executable bit.
+
 2007-01-09  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/30322
