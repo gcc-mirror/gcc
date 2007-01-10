@@ -1,3 +1,7 @@
+2007-01-10  Ralf Corsépius <ralf.corsepius@rtems.org>
+
+	* config/bfin/t-bfin, config/bfin/t-bfin-elf: GCC_CFLAGS.
+
 2007-01-10  Razya Ladelsky  <razya@il.ibm.com>
         
         * function.c (get_last_funcdef_no): New function.
