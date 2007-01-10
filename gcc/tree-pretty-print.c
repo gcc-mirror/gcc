@@ -1,5 +1,5 @@
 /* Pretty formatting of GENERIC trees in C syntax.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006 
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Adapted from c-pretty-print.c by Diego Novillo <dnovillo@redhat.com>
 
@@ -1259,7 +1259,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
 	/* When the operands are expressions with less priority,
 	   keep semantics of the tree representation.  */
-	if (op_prio (op0) < op_prio (node))
+	if (op_prio (op0) <= op_prio (node))
 	  {
 	    pp_character (buffer, '(');
 	    dump_generic_node (buffer, op0, spc, flags, false);
@@ -1274,7 +1274,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
 	/* When the operands are expressions with less priority,
 	   keep semantics of the tree representation.  */
-	if (op_prio (op1) < op_prio (node))
+	if (op_prio (op1) <= op_prio (node))
 	  {
 	    pp_character (buffer, '(');
 	    dump_generic_node (buffer, op1, spc, flags, false);
