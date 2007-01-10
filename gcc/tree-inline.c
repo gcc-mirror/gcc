@@ -1339,7 +1339,8 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
      represent multiple variables for purposes of debugging. */
   if (gimple_in_ssa_p (cfun) && rhs && def && is_gimple_reg (p)
       && (TREE_CODE (rhs) == SSA_NAME
-	  || is_gimple_min_invariant (rhs)))
+	  || is_gimple_min_invariant (rhs))
+      && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (def))
     {
       insert_decl_map (id, def, rhs);
       return;

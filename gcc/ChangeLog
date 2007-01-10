@@ -1,3 +1,8 @@
+2007-01-10  Jan Hubicka  <jh@suse.cz>
+
+	* tree-inline.c (setup_one_parameter): Do not propagate into abnormal
+	PHIs.
+
 2007-01-10  Sa Liu  <saliu@de.ibm.com>
 	    Ben Elliston  <bje@au.ibm.com>
 
