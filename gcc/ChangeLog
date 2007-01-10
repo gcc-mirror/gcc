@@ -1,3 +1,7 @@
+2007-01-10  Ralf Corsépius <ralf.corsepius@rtems.org>
+
+	* config/bfin/t-bfin, config/bfin/t-bfin-elf: Remove GCC_CFLAGS.
+
 2007-01-09  Nicolas Pitre  <nico@cam.org>
 
 	PR target/30173
