@@ -1,8 +1,21 @@
+2007-01-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30408
+	* resolve.c (resolve_code): Use the code->expr character length
+	directly to set length of llen.
+
+2007-01-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/30408
+	* lang.opt: Add Wcharacter_truncation option.
+	* options.c (gfc_init_options): Initialize
+	gfc_option.warn_character_truncation to zero.
+	(gfc_handle_option): Add case for OPT_Wcharacter_truncation.
+
 2007-01-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* interface.c, intrinsic.c, gfortranspec.c, io.c, f95-lang.c,
 	iresolve.c, match.c:  Update Copyright years.  Whitespace.
-
 
 2007-01-08  Richard Guenther  <rguenther@suse.de>
 

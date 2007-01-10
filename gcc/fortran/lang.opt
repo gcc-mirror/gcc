@@ -45,6 +45,10 @@ Wampersand
 Fortran
 Warn about missing ampersand in continued character constants
 
+Wcharacter-truncation
+Fortran
+Warn about truncated character expressions
+
 Wconversion
 Fortran
 Warn about implicit conversion

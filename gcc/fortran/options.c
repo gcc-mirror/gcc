@@ -59,6 +59,7 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
 
   gfc_option.warn_aliasing = 0;
   gfc_option.warn_ampersand = 0;
+  gfc_option.warn_character_truncation = 0;
   gfc_option.warn_conversion = 0;
   gfc_option.warn_implicit_interface = 0;
   gfc_option.warn_line_truncation = 0;
@@ -408,6 +409,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_Wampersand:
       gfc_option.warn_ampersand = value;
+      break;
+
+    case OPT_Wcharacter_truncation:
+      gfc_option.warn_character_truncation = value;
       break;
 
     case OPT_Wconversion:
