@@ -1,3 +1,9 @@
+2007-01-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcj/30424
+	* sysdep/ia64/locks.h (read_barrier): New.
+	(write_barrier): New.
+
 2007-01-10  Gary Benson  <gbenson@redhat.com>
 
 	* java/net/URL.java: Removed.

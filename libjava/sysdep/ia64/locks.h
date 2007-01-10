@@ -46,4 +46,16 @@ compare_and_swap_release(volatile obj_addr_t *addr,
   return (out == old);
 }
 
+inline static void
+read_barrier()
+{
+  __sync_synchronize ();
+}
+
+inline static void
+write_barrier()
+{
+  __sync_synchronize ();
+}
+
 #endif
