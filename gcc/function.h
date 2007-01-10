@@ -599,4 +599,5 @@ extern bool reference_callee_copied (CUMULATIVE_ARGS *, enum machine_mode,
 
 extern void used_types_insert (tree);
 
+extern int get_next_funcdef_no (void);
 #endif  /* GCC_FUNCTION_H */

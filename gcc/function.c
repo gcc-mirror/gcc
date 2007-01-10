@@ -3773,6 +3773,14 @@ debug_find_var_in_block_tree (tree var, tree block)
   return NULL_TREE;
 }
 
+
+/* Return value of funcdef and increase it.  */
+int
+get_next_funcdef_no(void) 
+{
+  return funcdef_no++;
+}
+
 /* Allocate a function structure for FNDECL and set its contents
    to the defaults.  */
 
@@ -3787,7 +3795,7 @@ allocate_struct_function (tree fndecl)
   cfun->stack_alignment_needed = STACK_BOUNDARY;
   cfun->preferred_stack_boundary = STACK_BOUNDARY;
 
-  current_function_funcdef_no = funcdef_no++;
+  current_function_funcdef_no = get_next_funcdef_no ();
 
   cfun->function_frequency = FUNCTION_FREQUENCY_NORMAL;
 
