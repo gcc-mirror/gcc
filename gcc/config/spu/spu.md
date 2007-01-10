@@ -1,4 +1,4 @@
-;; Copyright (C) 2006 Free Software Foundation, Inc.
+;; Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 ;; This file is free software; you can redistribute it and/or modify it under
 ;; the terms of the GNU General Public License as published by the Free
@@ -3116,16 +3116,19 @@ selb\t%0,%4,%0,%3"
   "spu_allocate_stack (operands[0], operands[1]); DONE;")
 
 ;; These patterns say how to save and restore the stack pointer.  We need not
-;; save the stack pointer at function or block level since we are careful to
-;; preserve the backchain.  Doing nothing at block level means the stack space
-;; is allocated until the end of the function.  This is currently safe to do
-;; because gcc uses the frame pointer for the whole function, so the worst that
-;; happens is wasted stack space.  That could be bad if a VLA is declared in a
-;; loop, because new space will be allocated every iteration, but users can
-;; work around that case.  Ideally we could detect when we are in a loop and
-;; generate the more complicated code in that case.
+;; save the stack pointer at function level since we are careful to preserve 
+;; the backchain.  
+;; 
+
+;; At block level the stack pointer is saved and restored, so that the
+;; stack space allocated within a block is deallocated when leaving
+;; block scope.  By default, according to the SPU ABI, the stack
+;; pointer and available stack size are saved in a register. Upon
+;; restoration, the stack pointer is simply copied back, and the
+;; current available stack size is calculated against the restored
+;; stack pointer.
 ;;
-;; For nonlocal gotos, we must save both the stack pointer and its
+;; For nonlocal gotos, we must save the stack pointer and its
 ;; backchain and restore both.  Note that in the nonlocal case, the
 ;; save area is a memory location.
 
@@ -3141,19 +3144,15 @@ selb\t%0,%4,%0,%3"
   ""
   "DONE;")
 
-(define_expand "save_stack_block"
-  [(match_operand 0 "general_operand" "")
-   (match_operand 1 "general_operand" "")]
-  ""
-  "DONE; ")
-
 (define_expand "restore_stack_block"
-  [(use (match_operand 0 "spu_reg_operand" ""))
-   (set (match_dup 2) (match_dup 3))
-   (set (match_dup 0) (match_operand 1 "spu_reg_operand" ""))
-   (set (match_dup 3) (match_dup 2))]
+  [(match_operand 0 "spu_reg_operand" "")
+   (match_operand 1 "memory_operand" "")]
   ""
-  "DONE;")
+  "
+  {
+    spu_restore_stack_block (operands[0], operands[1]);
+    DONE;
+  }")
 
 (define_expand "save_stack_nonlocal"
   [(match_operand 0 "memory_operand" "")

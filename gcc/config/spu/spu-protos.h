@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 Free Software Foundation, Inc.
+/* Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -78,6 +78,7 @@ extern rtx array_to_constant (enum machine_mode mode, unsigned char *arr);
 extern enum machine_mode spu_eh_return_filter_mode (void);
 extern void spu_allocate_stack (rtx op0, rtx op1);
 extern void spu_restore_stack_nonlocal (rtx op0, rtx op1);
+extern void spu_restore_stack_block (rtx op0, rtx op1);
 extern rtx spu_gen_subreg (enum machine_mode mode, rtx x);
 extern int spu_safe_dma(HOST_WIDE_INT channel);
 extern void spu_builtin_splats (rtx ops[]);
