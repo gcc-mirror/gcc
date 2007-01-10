@@ -2565,21 +2565,6 @@ constant_multiple_of (tree top, tree bot, double_int *mul)
     }
 }
 
-/* Folds EXPR using the affine expressions framework.  */
-
-static tree
-fold_affine_expr (tree expr)
-{
-  tree type = TREE_TYPE (expr);
-  struct affine_tree_combination comb;
-
-  if (TYPE_PRECISION (type) > HOST_BITS_PER_WIDE_INT)
-    return expr;
-
-  tree_to_aff_combination (expr, type, &comb);
-  return aff_combination_to_tree (&comb);
-}
-
 /* If A is (TYPE) BA and B is (TYPE) BB, and the types of BA and BB have the
    same precision that is at least as wide as the precision of TYPE, stores
    BA to A and BB to B, and returns the type of BA.  Otherwise, returns the
@@ -3557,32 +3542,26 @@ determine_use_iv_cost_address (struct ivopts_data *data,
   return cost != INFTY;
 }
 
-/* Computes value of induction variable IV in iteration NITER.  */
+/* Computes value of candidate CAND at position AT in iteration NITER, and
+   stores it to VAL.  */
 
-static tree
-iv_value (struct iv *iv, tree niter)
+static void
+cand_value_at (struct loop *loop, struct iv_cand *cand, tree at, tree niter,
+	       aff_tree *val)
 {
-  tree val;
+  aff_tree step, delta, nit;
+  struct iv *iv = cand->iv;
   tree type = TREE_TYPE (iv->base);
 
-  niter = fold_convert (type, niter);
-  val = fold_build2 (MULT_EXPR, type, iv->step, niter);
-
-  return fold_build2 (PLUS_EXPR, type, iv->base, val);
-}
-
-/* Computes value of candidate CAND at position AT in iteration NITER.  */
-
-static tree
-cand_value_at (struct loop *loop, struct iv_cand *cand, tree at, tree niter)
-{
-  tree val = iv_value (cand->iv, niter);
-  tree type = TREE_TYPE (cand->iv->base);
-
+  tree_to_aff_combination (iv->step, type, &step);
+  tree_to_aff_combination (niter, TREE_TYPE (niter), &nit);
+  aff_combination_convert (&nit, type);
+  aff_combination_mult (&nit, &step, &delta);
   if (stmt_after_increment (loop, cand, at))
-    val = fold_build2 (PLUS_EXPR, type, val, cand->iv->step);
+    aff_combination_add (&delta, &step);
 
-  return val;
+  tree_to_aff_combination (iv->base, type, val);
+  aff_combination_add (val, &delta);
 }
 
 /* Returns period of induction variable iv.  */
@@ -3637,6 +3616,7 @@ may_eliminate_iv (struct ivopts_data *data,
   tree nit, nit_type;
   tree wider_type, period, per_type;
   struct loop *loop = data->current_loop;
+  aff_tree bnd;
   
   if (TREE_CODE (cand->iv->step) != INTEGER_CST)
     return false;
@@ -3681,7 +3661,8 @@ may_eliminate_iv (struct ivopts_data *data,
 				      fold_convert (wider_type, nit))))
     return false;
 
-  *bound = fold_affine_expr (cand_value_at (loop, cand, use->stmt, nit));
+  cand_value_at (loop, cand, use->stmt, nit, &bnd);
+  *bound = aff_combination_to_tree (&bnd);
   return true;
 }
 
