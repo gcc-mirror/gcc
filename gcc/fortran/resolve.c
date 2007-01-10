@@ -5088,10 +5088,11 @@ resolve_code (gfc_code * code, gfc_namespace * ns)
 		&& gfc_option.warn_character_truncation)
 	    {
 	      int llen = 0, rlen = 0;
-	      gfc_symbol *sym;
-	      sym = code->expr->symtree->n.sym;
-	      if (sym->ts.cl->length->expr_type == EXPR_CONSTANT)
-		llen = mpz_get_si (sym->ts.cl->length->value.integer);
+
+	      if (code->expr->ts.cl != NULL
+		    && code->expr->ts.cl->length != NULL
+		    && code->expr->ts.cl->length->expr_type == EXPR_CONSTANT)
+		llen = mpz_get_si (code->expr->ts.cl->length->value.integer);
 
 	      if (code->expr2->expr_type == EXPR_CONSTANT)
 		rlen = code->expr2->value.character.length;
