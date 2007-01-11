@@ -1,3 +1,12 @@
+2007-01-11  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/30415
+	* iresolve.c (gfc_resolve_maxloc):  If the rank
+	of the return array is nonzero and we process an
+	integer array smaller than default kind, coerce
+	the array to default integer.
+	* iresolve.c (gfc_resolve_minloc):  Likewise.
+
 2007-01-11  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* simplify.c: Update copyright to 2007.
