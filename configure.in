@@ -123,7 +123,7 @@ build_tools="build-texinfo build-byacc build-flex build-bison build-m4 build-fix
 
 # these libraries are used by various programs built for the host environment
 #
-host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl libgui zlib libcpp libdecnumber"
+host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl libgui zlib libcpp libdecnumber gmp mpfr"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -1062,9 +1062,10 @@ ACX_PROG_GNAT
 ACX_PROG_CMP_IGNORE_INITIAL
 
 # Check for GMP and MPFR
-gmplibs="-lmpfr"
+gmplibs="-lmpfr -lgmp"
 gmpinc=
-have_gmp=yes
+have_gmp=no
+
 # Specify a location for mpfr
 # check for this first so it ends up on the link line before gmp.
 AC_ARG_WITH(mpfr-dir, [  --with-mpfr-dir=PATH    This option has been REMOVED],
@@ -1088,13 +1089,20 @@ fi
 if test "x$with_mpfr_lib" != x; then
   gmplibs="-L$with_mpfr_lib $gmplibs"
 fi
+if test "x$with_mpfr$with_mpfr_include$with_mpfr_lib" = x && test -d ${srcdir}/mpfr; then
+  gmplibs='-L$$r/$(HOST_SUBDIR)/mpfr/.libs -L$$r/$(HOST_SUBDIR)/mpfr/_libs '"$gmplibs"
+  gmpinc='-I$$r/$(HOST_SUBDIR)/mpfr -I$$s/mpfr '"$gmpinc"
+  # Do not test the mpfr version.  Assume that it is sufficient, since
+  # it is in the source tree, and the library has not been built yet
+  # but it would be included on the link line in the version check below
+  # hence making the test fail.
+  have_gmp=yes
+fi
 
 # Specify a location for gmp
 AC_ARG_WITH(gmp-dir, [  --with-gmp-dir=PATH     This option has been REMOVED],
   AC_MSG_ERROR([The --with-gmp-dir=PATH option has been removed.
 Use --with-gmp=PATH or --with-gmp-include=PATH plus --with-gmp-lib=PATH]))
-
-gmplibs="$gmplibs -lgmp"
 
 AC_ARG_WITH(gmp, [  --with-gmp=PATH         Specify prefix directory for the installed GMP package
                           Equivalent to --with-gmp-include=PATH/include
@@ -1113,42 +1121,58 @@ fi
 if test "x$with_gmp_lib" != x; then
   gmplibs="-L$with_gmp_lib $gmplibs"
 fi
-
-saved_CFLAGS="$CFLAGS"
-CFLAGS="$CFLAGS $gmpinc"
-# Check GMP actually works
-AC_MSG_CHECKING([for correct version of gmp.h])
-AC_TRY_COMPILE([#include "gmp.h"],[
-#if __GNU_MP_VERSION < 4 || (__GNU_MP_VERSION == 4 && __GNU_MP_VERSION_MINOR < 1)
-choke me
-#endif
-], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no]); have_gmp=no])
-
-if test x"$have_gmp" = xyes; then
-  saved_LIBS="$LIBS"
-  LIBS="$LIBS $gmplibs"
-  dnl MPFR 2.2.0 is acceptable but buggy, MPFR 2.2.1 is better.
-  AC_MSG_CHECKING([for correct version of mpfr.h])
-  AC_TRY_LINK([#include <gmp.h>
-#include <mpfr.h>],[
-#if MPFR_VERSION < MPFR_VERSION_NUM(2,2,0)
-  choke me
-#endif
-  mpfr_t n; mpfr_init(n);
-], [AC_TRY_LINK([#include <gmp.h>
-#include <mpfr.h>],[
-#if MPFR_VERSION < MPFR_VERSION_NUM(2,2,1)
-  choke me
-#endif
-  mpfr_t n; mpfr_init(n);
-], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([buggy but acceptable])])],
-   [AC_MSG_RESULT([no]); have_gmp=no])
-  LIBS="$saved_LIBS"
+if test "x$with_gmp$with_gmp_include$with_gmp_lib" = x && test -d ${srcdir}/gmp; then
+  gmplibs='-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/gmp/_libs '"$gmplibs"
+  gmpinc='-I$$r/$(HOST_SUBDIR)/gmp -I$$s/gmp '"$gmpinc"
+  # Do not test the gmp version.  Assume that it is sufficient, since
+  # it is in the source tree, and the library has not been built yet
+  # but it would be included on the link line in the version check below
+  # hence making the test fail.
+  have_gmp=yes
 fi
-CFLAGS="$saved_CFLAGS"
 
-if test -d ${srcdir}/gcc && test x$have_gmp != xyes; then
-  AC_MSG_ERROR([Building GCC requires GMP 4.1+ and MPFR 2.2.1+.
+if test -d ${srcdir}/gcc && test "x$have_gmp" == xno; then
+  have_gmp=yes
+  saved_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS $gmpinc"
+  # Check GMP actually works
+  AC_MSG_CHECKING([for correct version of gmp.h])
+  AC_TRY_COMPILE([#include "gmp.h"],[
+  #if __GNU_MP_VERSION < 4 || (__GNU_MP_VERSION == 4 && __GNU_MP_VERSION_MINOR < 1)
+  choke me
+  #endif
+  ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no]); have_gmp=no])
+
+  if test x"$have_gmp" = xyes; then
+    saved_LIBS="$LIBS"
+    LIBS="$LIBS $gmplibs"
+    dnl MPFR 2.2.0 is acceptable but buggy, MPFR 2.2.1 is better.
+    AC_MSG_CHECKING([for correct version of mpfr.h])
+    AC_TRY_LINK([#include <gmp.h>
+    #include <mpfr.h>],[
+    #if MPFR_VERSION < MPFR_VERSION_NUM(2,2,0)
+    choke me
+    #endif
+    mpfr_t n; mpfr_init(n);
+    mpfr_t x; mpfr_init(x);
+    int t;
+    mpfr_atan2 (n, n, x, GMP_RNDN);
+    mpfr_erfc (n, x, GMP_RNDN);
+    mpfr_subnormalize (x, t, GMP_RNDN);
+    ], [AC_TRY_LINK([#include <gmp.h>
+    #include <mpfr.h>],[
+    #if MPFR_VERSION < MPFR_VERSION_NUM(2,2,1)
+    choke me
+    #endif
+    mpfr_t n; mpfr_init(n);
+    ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([buggy but acceptable])])],
+     [AC_MSG_RESULT([no]); have_gmp=no])
+      LIBS="$saved_LIBS"
+  fi
+  CFLAGS="$saved_CFLAGS"
+
+  if test x$have_gmp != xyes; then
+    AC_MSG_ERROR([Building GCC requires GMP 4.1+ and MPFR 2.2.1+.
 Try the --with-gmp and/or --with-mpfr options to specify their locations.
 Copies of these libraries' source code can be found at their respective
 hosting sites as well as at ftp://gcc.gnu.org/pub/gcc/infrastructure/.
@@ -1156,6 +1180,7 @@ See also http://gcc.gnu.org/install/prerequisites.html for additional info.
 If you obtained GMP and/or MPFR from a vendor distribution package, make
 sure that you have installed both the libraries and the header files.
 They may be located in separate packages.])
+  fi
 fi
 
 # Flags needed for both GMP and/or MPFR
@@ -2095,7 +2120,7 @@ baseargs="$baseargs --program-transform-name='${gcc_transform_name}'"
 # For the build-side libraries, we just need to pretend we're native,
 # and not use the same cache file.  Multilibs are neither needed nor
 # desired.
-build_configargs="--cache-file=../config.cache --build=${build_alias} --host=${build_alias} --target=${target_alias} ${baseargs}"
+build_configargs="--cache-file=../config.cache ${baseargs}"
 
 # For host modules, accept cache file option, or specification as blank.
 case "${cache_file}" in
@@ -2109,7 +2134,7 @@ esac
 
 # Host dirs don't like to share a cache file either, horribly enough.
 # This seems to be due to autoconf 2.5x stupidity.
-host_configargs="--cache-file=./config.cache --build=${build_alias} --host=${host_alias} --target=${target_alias} ${extra_host_args} ${baseargs}"
+host_configargs="--cache-file=./config.cache ${extra_host_args} ${baseargs}"
 
 target_configargs=${baseargs}
 
@@ -2145,7 +2170,7 @@ fi
 # Pass the appropriate --build, --host, --target and --cache-file arguments.
 # We need to pass --target, as newer autoconf's requires consistency
 # for target_alias and gcc doesn't manage it consistently.
-target_configargs="--cache-file=./config.cache --build=${build_alias} --host=${target_alias} --target=${target_alias} ${target_configargs}"
+target_configargs="--cache-file=./config.cache ${target_configargs}"
 
 FLAGS_FOR_TARGET=
 case " $target_configdirs " in

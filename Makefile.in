@@ -26,10 +26,16 @@
 VPATH=@srcdir@
 
 build_alias=@build_alias@
+build_vendor=@build_vendor@
+build_os=@build_os@
 build=@build@
 host_alias=@host_alias@
+host_vendor=@host_vendor@
+host_os=@host_os@
 host=@host@
 target_alias=@target_alias@
+target_vendor=@target_vendor@
+target_os=@target_os@
 target=@target@
 
 program_transform_name = @program_transform_name@
@@ -391,7 +397,7 @@ TARGET_LIB_PATH_libgomp = $$r/$(TARGET_SUBDIR)/libgomp/.libs:
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that programs built for the host machine work.
-HOST_LIB_PATH = $(HOST_LIB_PATH_bfd)$(HOST_LIB_PATH_opcodes)
+HOST_LIB_PATH = $(HOST_LIB_PATH_bfd)$(HOST_LIB_PATH_opcodes)$(HOST_LIB_PATH_gmp)$(HOST_LIB_PATH_mpfr)
 
 # Define HOST_LIB_PATH_gcc here, for the sake of TARGET_LIB_PATH, ouch
 @if gcc
@@ -408,6 +414,16 @@ HOST_LIB_PATH_bfd = \
 HOST_LIB_PATH_opcodes = \
   $$r/$(HOST_SUBDIR)/opcodes/.libs:$$r/$(HOST_SUBDIR)/prev-opcodes/.libs:
 @endif opcodes
+
+@if gmp
+HOST_LIB_PATH_gmp = \
+  $$r/$(HOST_SUBDIR)/gmp/.libs:$$r/$(HOST_SUBDIR)/prev-gmp/.libs:
+@endif gmp
+
+@if mpfr
+HOST_LIB_PATH_mpfr = \
+  $$r/$(HOST_SUBDIR)/mpfr/.libs:$$r/$(HOST_SUBDIR)/prev-mpfr/.libs:
+@endif mpfr
 
 
 # Flags to pass down to all sub-makes.
@@ -599,6 +615,8 @@ configure-host:  \
     maybe-configure-gcc \
     maybe-configure-gawk \
     maybe-configure-gettext \
+    maybe-configure-gmp \
+    maybe-configure-mpfr \
     maybe-configure-gnuserv \
     maybe-configure-gprof \
     maybe-configure-gzip \
@@ -731,6 +749,12 @@ all-host: maybe-all-gcc
 @endif gcc-no-bootstrap
 all-host: maybe-all-gawk
 all-host: maybe-all-gettext
+@if gmp-no-bootstrap
+all-host: maybe-all-gmp
+@endif gmp-no-bootstrap
+@if mpfr-no-bootstrap
+all-host: maybe-all-mpfr
+@endif mpfr-no-bootstrap
 all-host: maybe-all-gnuserv
 all-host: maybe-all-gprof
 all-host: maybe-all-gzip
@@ -854,6 +878,8 @@ info-host: maybe-info-gas
 info-host: maybe-info-gcc
 info-host: maybe-info-gawk
 info-host: maybe-info-gettext
+info-host: maybe-info-gmp
+info-host: maybe-info-mpfr
 info-host: maybe-info-gnuserv
 info-host: maybe-info-gprof
 info-host: maybe-info-gzip
@@ -958,6 +984,8 @@ dvi-host: maybe-dvi-gas
 dvi-host: maybe-dvi-gcc
 dvi-host: maybe-dvi-gawk
 dvi-host: maybe-dvi-gettext
+dvi-host: maybe-dvi-gmp
+dvi-host: maybe-dvi-mpfr
 dvi-host: maybe-dvi-gnuserv
 dvi-host: maybe-dvi-gprof
 dvi-host: maybe-dvi-gzip
@@ -1062,6 +1090,8 @@ pdf-host: maybe-pdf-gas
 pdf-host: maybe-pdf-gcc
 pdf-host: maybe-pdf-gawk
 pdf-host: maybe-pdf-gettext
+pdf-host: maybe-pdf-gmp
+pdf-host: maybe-pdf-mpfr
 pdf-host: maybe-pdf-gnuserv
 pdf-host: maybe-pdf-gprof
 pdf-host: maybe-pdf-gzip
@@ -1166,6 +1196,8 @@ html-host: maybe-html-gas
 html-host: maybe-html-gcc
 html-host: maybe-html-gawk
 html-host: maybe-html-gettext
+html-host: maybe-html-gmp
+html-host: maybe-html-mpfr
 html-host: maybe-html-gnuserv
 html-host: maybe-html-gprof
 html-host: maybe-html-gzip
@@ -1270,6 +1302,8 @@ TAGS-host: maybe-TAGS-gas
 TAGS-host: maybe-TAGS-gcc
 TAGS-host: maybe-TAGS-gawk
 TAGS-host: maybe-TAGS-gettext
+TAGS-host: maybe-TAGS-gmp
+TAGS-host: maybe-TAGS-mpfr
 TAGS-host: maybe-TAGS-gnuserv
 TAGS-host: maybe-TAGS-gprof
 TAGS-host: maybe-TAGS-gzip
@@ -1374,6 +1408,8 @@ install-info-host: maybe-install-info-gas
 install-info-host: maybe-install-info-gcc
 install-info-host: maybe-install-info-gawk
 install-info-host: maybe-install-info-gettext
+install-info-host: maybe-install-info-gmp
+install-info-host: maybe-install-info-mpfr
 install-info-host: maybe-install-info-gnuserv
 install-info-host: maybe-install-info-gprof
 install-info-host: maybe-install-info-gzip
@@ -1478,6 +1514,8 @@ install-html-host: maybe-install-html-gas
 install-html-host: maybe-install-html-gcc
 install-html-host: maybe-install-html-gawk
 install-html-host: maybe-install-html-gettext
+install-html-host: maybe-install-html-gmp
+install-html-host: maybe-install-html-mpfr
 install-html-host: maybe-install-html-gnuserv
 install-html-host: maybe-install-html-gprof
 install-html-host: maybe-install-html-gzip
@@ -1582,6 +1620,8 @@ installcheck-host: maybe-installcheck-gas
 installcheck-host: maybe-installcheck-gcc
 installcheck-host: maybe-installcheck-gawk
 installcheck-host: maybe-installcheck-gettext
+installcheck-host: maybe-installcheck-gmp
+installcheck-host: maybe-installcheck-mpfr
 installcheck-host: maybe-installcheck-gnuserv
 installcheck-host: maybe-installcheck-gprof
 installcheck-host: maybe-installcheck-gzip
@@ -1686,6 +1726,8 @@ mostlyclean-host: maybe-mostlyclean-gas
 mostlyclean-host: maybe-mostlyclean-gcc
 mostlyclean-host: maybe-mostlyclean-gawk
 mostlyclean-host: maybe-mostlyclean-gettext
+mostlyclean-host: maybe-mostlyclean-gmp
+mostlyclean-host: maybe-mostlyclean-mpfr
 mostlyclean-host: maybe-mostlyclean-gnuserv
 mostlyclean-host: maybe-mostlyclean-gprof
 mostlyclean-host: maybe-mostlyclean-gzip
@@ -1790,6 +1832,8 @@ clean-host: maybe-clean-gas
 clean-host: maybe-clean-gcc
 clean-host: maybe-clean-gawk
 clean-host: maybe-clean-gettext
+clean-host: maybe-clean-gmp
+clean-host: maybe-clean-mpfr
 clean-host: maybe-clean-gnuserv
 clean-host: maybe-clean-gprof
 clean-host: maybe-clean-gzip
@@ -1894,6 +1938,8 @@ distclean-host: maybe-distclean-gas
 distclean-host: maybe-distclean-gcc
 distclean-host: maybe-distclean-gawk
 distclean-host: maybe-distclean-gettext
+distclean-host: maybe-distclean-gmp
+distclean-host: maybe-distclean-mpfr
 distclean-host: maybe-distclean-gnuserv
 distclean-host: maybe-distclean-gprof
 distclean-host: maybe-distclean-gzip
@@ -1998,6 +2044,8 @@ maintainer-clean-host: maybe-maintainer-clean-gas
 maintainer-clean-host: maybe-maintainer-clean-gcc
 maintainer-clean-host: maybe-maintainer-clean-gawk
 maintainer-clean-host: maybe-maintainer-clean-gettext
+maintainer-clean-host: maybe-maintainer-clean-gmp
+maintainer-clean-host: maybe-maintainer-clean-mpfr
 maintainer-clean-host: maybe-maintainer-clean-gnuserv
 maintainer-clean-host: maybe-maintainer-clean-gprof
 maintainer-clean-host: maybe-maintainer-clean-gzip
@@ -2153,6 +2201,8 @@ check-host:  \
     maybe-check-gcc \
     maybe-check-gawk \
     maybe-check-gettext \
+    maybe-check-gmp \
+    maybe-check-mpfr \
     maybe-check-gnuserv \
     maybe-check-gprof \
     maybe-check-gzip \
@@ -2283,6 +2333,8 @@ install-host-nogcc:  \
     maybe-install-gas \
     maybe-install-gawk \
     maybe-install-gettext \
+    maybe-install-gmp \
+    maybe-install-mpfr \
     maybe-install-gnuserv \
     maybe-install-gprof \
     maybe-install-gzip \
@@ -2354,6 +2406,8 @@ install-host:  \
     maybe-install-gcc \
     maybe-install-gawk \
     maybe-install-gettext \
+    maybe-install-gmp \
+    maybe-install-mpfr \
     maybe-install-gnuserv \
     maybe-install-gprof \
     maybe-install-gzip \
@@ -2512,7 +2566,8 @@ configure-build-libiberty:
 	libsrcdir="$$s/libiberty"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) $${srcdiroption}  \
+	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif build-libiberty
 
@@ -2566,7 +2621,8 @@ configure-build-bison:
 	libsrcdir="$$s/bison"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) $${srcdiroption}  \
+	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif build-bison
 
@@ -2620,7 +2676,8 @@ configure-build-byacc:
 	libsrcdir="$$s/byacc"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) $${srcdiroption}  \
+	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif build-byacc
 
@@ -2674,7 +2731,8 @@ configure-build-flex:
 	libsrcdir="$$s/flex"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) $${srcdiroption}  \
+	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif build-flex
 
@@ -2728,7 +2786,8 @@ configure-build-m4:
 	libsrcdir="$$s/m4"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) $${srcdiroption}  \
+	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif build-m4
 
@@ -2782,7 +2841,8 @@ configure-build-texinfo:
 	libsrcdir="$$s/texinfo"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) $${srcdiroption}  \
+	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif build-texinfo
 
@@ -2836,7 +2896,8 @@ configure-build-fixincludes:
 	libsrcdir="$$s/fixincludes"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) $${srcdiroption}  \
+	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif build-fixincludes
 
@@ -2894,7 +2955,8 @@ configure-ash:
 	srcdiroption="--srcdir=$${topdir}/ash"; \
 	libsrcdir="$$s/ash"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif ash
 
@@ -3290,7 +3352,8 @@ configure-autoconf:
 	srcdiroption="--srcdir=$${topdir}/autoconf"; \
 	libsrcdir="$$s/autoconf"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif autoconf
 
@@ -3686,7 +3749,8 @@ configure-automake:
 	srcdiroption="--srcdir=$${topdir}/automake"; \
 	libsrcdir="$$s/automake"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif automake
 
@@ -4082,7 +4146,8 @@ configure-bash:
 	srcdiroption="--srcdir=$${topdir}/bash"; \
 	libsrcdir="$$s/bash"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif bash
 
@@ -4477,7 +4542,8 @@ configure-bfd:
 	srcdiroption="--srcdir=$${topdir}/bfd"; \
 	libsrcdir="$$s/bfd"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif bfd
 
@@ -4505,7 +4571,8 @@ configure-stage1-bfd:
 	srcdiroption="--srcdir=$${topdir}/bfd"; \
 	libsrcdir="$$s/bfd"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	   \
 	  --disable-intermodule $(STAGE1_CHECKING) 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif bfd-bootstrap
@@ -4533,7 +4600,8 @@ configure-stage2-bfd:
 	srcdiroption="--srcdir=$${topdir}/bfd"; \
 	libsrcdir="$$s/bfd"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif bfd-bootstrap
@@ -4561,7 +4629,8 @@ configure-stage3-bfd:
 	srcdiroption="--srcdir=$${topdir}/bfd"; \
 	libsrcdir="$$s/bfd"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif bfd-bootstrap
@@ -4589,7 +4658,8 @@ configure-stage4-bfd:
 	srcdiroption="--srcdir=$${topdir}/bfd"; \
 	libsrcdir="$$s/bfd"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif bfd-bootstrap
@@ -4617,7 +4687,8 @@ configure-stageprofile-bfd:
 	srcdiroption="--srcdir=$${topdir}/bfd"; \
 	libsrcdir="$$s/bfd"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif bfd-bootstrap
@@ -4645,7 +4716,8 @@ configure-stagefeedback-bfd:
 	srcdiroption="--srcdir=$${topdir}/bfd"; \
 	libsrcdir="$$s/bfd"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif bfd-bootstrap
@@ -5232,7 +5304,8 @@ configure-opcodes:
 	srcdiroption="--srcdir=$${topdir}/opcodes"; \
 	libsrcdir="$$s/opcodes"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif opcodes
 
@@ -5260,7 +5333,8 @@ configure-stage1-opcodes:
 	srcdiroption="--srcdir=$${topdir}/opcodes"; \
 	libsrcdir="$$s/opcodes"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	   \
 	  --disable-intermodule $(STAGE1_CHECKING) 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif opcodes-bootstrap
@@ -5288,7 +5362,8 @@ configure-stage2-opcodes:
 	srcdiroption="--srcdir=$${topdir}/opcodes"; \
 	libsrcdir="$$s/opcodes"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif opcodes-bootstrap
@@ -5316,7 +5391,8 @@ configure-stage3-opcodes:
 	srcdiroption="--srcdir=$${topdir}/opcodes"; \
 	libsrcdir="$$s/opcodes"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif opcodes-bootstrap
@@ -5344,7 +5420,8 @@ configure-stage4-opcodes:
 	srcdiroption="--srcdir=$${topdir}/opcodes"; \
 	libsrcdir="$$s/opcodes"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif opcodes-bootstrap
@@ -5372,7 +5449,8 @@ configure-stageprofile-opcodes:
 	srcdiroption="--srcdir=$${topdir}/opcodes"; \
 	libsrcdir="$$s/opcodes"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif opcodes-bootstrap
@@ -5400,7 +5478,8 @@ configure-stagefeedback-opcodes:
 	srcdiroption="--srcdir=$${topdir}/opcodes"; \
 	libsrcdir="$$s/opcodes"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif opcodes-bootstrap
@@ -5987,7 +6066,8 @@ configure-binutils:
 	srcdiroption="--srcdir=$${topdir}/binutils"; \
 	libsrcdir="$$s/binutils"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif binutils
 
@@ -6015,7 +6095,8 @@ configure-stage1-binutils:
 	srcdiroption="--srcdir=$${topdir}/binutils"; \
 	libsrcdir="$$s/binutils"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	   \
 	  --disable-intermodule $(STAGE1_CHECKING) 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif binutils-bootstrap
@@ -6043,7 +6124,8 @@ configure-stage2-binutils:
 	srcdiroption="--srcdir=$${topdir}/binutils"; \
 	libsrcdir="$$s/binutils"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif binutils-bootstrap
@@ -6071,7 +6153,8 @@ configure-stage3-binutils:
 	srcdiroption="--srcdir=$${topdir}/binutils"; \
 	libsrcdir="$$s/binutils"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif binutils-bootstrap
@@ -6099,7 +6182,8 @@ configure-stage4-binutils:
 	srcdiroption="--srcdir=$${topdir}/binutils"; \
 	libsrcdir="$$s/binutils"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif binutils-bootstrap
@@ -6127,7 +6211,8 @@ configure-stageprofile-binutils:
 	srcdiroption="--srcdir=$${topdir}/binutils"; \
 	libsrcdir="$$s/binutils"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif binutils-bootstrap
@@ -6155,7 +6240,8 @@ configure-stagefeedback-binutils:
 	srcdiroption="--srcdir=$${topdir}/binutils"; \
 	libsrcdir="$$s/binutils"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif binutils-bootstrap
@@ -6743,7 +6829,8 @@ configure-bison:
 	srcdiroption="--srcdir=$${topdir}/bison"; \
 	libsrcdir="$$s/bison"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif bison
 
@@ -7142,7 +7229,8 @@ configure-byacc:
 	srcdiroption="--srcdir=$${topdir}/byacc"; \
 	libsrcdir="$$s/byacc"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif byacc
 
@@ -7541,7 +7629,8 @@ configure-bzip2:
 	srcdiroption="--srcdir=$${topdir}/bzip2"; \
 	libsrcdir="$$s/bzip2"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif bzip2
 
@@ -7937,7 +8026,8 @@ configure-dejagnu:
 	srcdiroption="--srcdir=$${topdir}/dejagnu"; \
 	libsrcdir="$$s/dejagnu"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif dejagnu
 
@@ -8333,7 +8423,8 @@ configure-diff:
 	srcdiroption="--srcdir=$${topdir}/diff"; \
 	libsrcdir="$$s/diff"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif diff
 
@@ -8729,7 +8820,8 @@ configure-dosutils:
 	srcdiroption="--srcdir=$${topdir}/dosutils"; \
 	libsrcdir="$$s/dosutils"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif dosutils
 
@@ -9119,7 +9211,8 @@ configure-etc:
 	srcdiroption="--srcdir=$${topdir}/etc"; \
 	libsrcdir="$$s/etc"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif etc
 
@@ -9515,7 +9608,8 @@ configure-fastjar:
 	srcdiroption="--srcdir=$${topdir}/fastjar"; \
 	libsrcdir="$$s/fastjar"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif fastjar
 
@@ -9914,7 +10008,8 @@ configure-fileutils:
 	srcdiroption="--srcdir=$${topdir}/fileutils"; \
 	libsrcdir="$$s/fileutils"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif fileutils
 
@@ -10310,7 +10405,8 @@ configure-findutils:
 	srcdiroption="--srcdir=$${topdir}/findutils"; \
 	libsrcdir="$$s/findutils"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif findutils
 
@@ -10706,7 +10802,8 @@ configure-find:
 	srcdiroption="--srcdir=$${topdir}/find"; \
 	libsrcdir="$$s/find"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif find
 
@@ -11102,7 +11199,8 @@ configure-fixincludes:
 	srcdiroption="--srcdir=$${topdir}/fixincludes"; \
 	libsrcdir="$$s/fixincludes"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif fixincludes
 
@@ -11401,7 +11499,8 @@ configure-flex:
 	srcdiroption="--srcdir=$${topdir}/flex"; \
 	libsrcdir="$$s/flex"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif flex
 
@@ -11799,7 +11898,8 @@ configure-gas:
 	srcdiroption="--srcdir=$${topdir}/gas"; \
 	libsrcdir="$$s/gas"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif gas
 
@@ -11827,7 +11927,8 @@ configure-stage1-gas:
 	srcdiroption="--srcdir=$${topdir}/gas"; \
 	libsrcdir="$$s/gas"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	   \
 	  --disable-intermodule $(STAGE1_CHECKING) 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif gas-bootstrap
@@ -11855,7 +11956,8 @@ configure-stage2-gas:
 	srcdiroption="--srcdir=$${topdir}/gas"; \
 	libsrcdir="$$s/gas"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gas-bootstrap
@@ -11883,7 +11985,8 @@ configure-stage3-gas:
 	srcdiroption="--srcdir=$${topdir}/gas"; \
 	libsrcdir="$$s/gas"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gas-bootstrap
@@ -11911,7 +12014,8 @@ configure-stage4-gas:
 	srcdiroption="--srcdir=$${topdir}/gas"; \
 	libsrcdir="$$s/gas"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gas-bootstrap
@@ -11939,7 +12043,8 @@ configure-stageprofile-gas:
 	srcdiroption="--srcdir=$${topdir}/gas"; \
 	libsrcdir="$$s/gas"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gas-bootstrap
@@ -11967,7 +12072,8 @@ configure-stagefeedback-gas:
 	srcdiroption="--srcdir=$${topdir}/gas"; \
 	libsrcdir="$$s/gas"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gas-bootstrap
@@ -12554,7 +12660,8 @@ configure-gcc:
 	srcdiroption="--srcdir=$${topdir}/gcc"; \
 	libsrcdir="$$s/gcc"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif gcc
 
@@ -12582,7 +12689,8 @@ configure-stage1-gcc:
 	srcdiroption="--srcdir=$${topdir}/gcc"; \
 	libsrcdir="$$s/gcc"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	   \
 	  --disable-intermodule $(STAGE1_CHECKING) 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif gcc-bootstrap
@@ -12610,7 +12718,8 @@ configure-stage2-gcc:
 	srcdiroption="--srcdir=$${topdir}/gcc"; \
 	libsrcdir="$$s/gcc"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gcc-bootstrap
@@ -12638,7 +12747,8 @@ configure-stage3-gcc:
 	srcdiroption="--srcdir=$${topdir}/gcc"; \
 	libsrcdir="$$s/gcc"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gcc-bootstrap
@@ -12666,7 +12776,8 @@ configure-stage4-gcc:
 	srcdiroption="--srcdir=$${topdir}/gcc"; \
 	libsrcdir="$$s/gcc"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gcc-bootstrap
@@ -12694,7 +12805,8 @@ configure-stageprofile-gcc:
 	srcdiroption="--srcdir=$${topdir}/gcc"; \
 	libsrcdir="$$s/gcc"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gcc-bootstrap
@@ -12722,7 +12834,8 @@ configure-stagefeedback-gcc:
 	srcdiroption="--srcdir=$${topdir}/gcc"; \
 	libsrcdir="$$s/gcc"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gcc-bootstrap
@@ -12737,7 +12850,7 @@ maybe-all-gcc:
 all-gcc: stage_current
 @endif gcc-bootstrap
 @if gcc
-TARGET-gcc=`if [ -f stage_last ]; then echo quickstrap ; else echo all; fi`
+TARGET-gcc=all
 maybe-all-gcc: all-gcc
 all-gcc: configure-gcc
 	@r=`${PWD_COMMAND}`; export r; \
@@ -13310,7 +13423,8 @@ configure-gawk:
 	srcdiroption="--srcdir=$${topdir}/gawk"; \
 	libsrcdir="$$s/gawk"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif gawk
 
@@ -13706,7 +13820,8 @@ configure-gettext:
 	srcdiroption="--srcdir=$${topdir}/gettext"; \
 	libsrcdir="$$s/gettext"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif gettext
 
@@ -14078,6 +14193,1518 @@ maintainer-clean-gettext:
 
 
 
+.PHONY: configure-gmp maybe-configure-gmp
+maybe-configure-gmp:
+@if gcc-bootstrap
+configure-gmp: stage_current
+@endif gcc-bootstrap
+@if gmp
+maybe-configure-gmp: configure-gmp
+configure-gmp: 
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gmp/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp ; \
+	$(HOST_EXPORTS) \
+	echo Configuring in $(HOST_SUBDIR)/gmp; \
+	cd "$(HOST_SUBDIR)/gmp" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gmp/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gmp"; \
+	libsrcdir="$$s/gmp"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} --disable-shared \
+	  || exit 1
+@endif gmp
+
+
+
+.PHONY: configure-stage1-gmp maybe-configure-stage1-gmp
+maybe-configure-stage1-gmp:
+@if gmp-bootstrap
+maybe-configure-stage1-gmp: configure-stage1-gmp
+configure-stage1-gmp:
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gmp/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	echo Configuring stage 1 in $(HOST_SUBDIR)/gmp ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp ; \
+	cd $(HOST_SUBDIR)/gmp || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gmp/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gmp"; \
+	libsrcdir="$$s/gmp"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
+	   \
+	  --disable-intermodule $(STAGE1_CHECKING) 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" --disable-shared
+@endif gmp-bootstrap
+
+.PHONY: configure-stage2-gmp maybe-configure-stage2-gmp
+maybe-configure-stage2-gmp:
+@if gmp-bootstrap
+maybe-configure-stage2-gmp: configure-stage2-gmp
+configure-stage2-gmp:
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gmp/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	echo Configuring stage 2 in $(HOST_SUBDIR)/gmp ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp ; \
+	cd $(HOST_SUBDIR)/gmp || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gmp/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gmp"; \
+	libsrcdir="$$s/gmp"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ --disable-shared
+@endif gmp-bootstrap
+
+.PHONY: configure-stage3-gmp maybe-configure-stage3-gmp
+maybe-configure-stage3-gmp:
+@if gmp-bootstrap
+maybe-configure-stage3-gmp: configure-stage3-gmp
+configure-stage3-gmp:
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gmp/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	echo Configuring stage 3 in $(HOST_SUBDIR)/gmp ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp ; \
+	cd $(HOST_SUBDIR)/gmp || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gmp/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gmp"; \
+	libsrcdir="$$s/gmp"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ --disable-shared
+@endif gmp-bootstrap
+
+.PHONY: configure-stage4-gmp maybe-configure-stage4-gmp
+maybe-configure-stage4-gmp:
+@if gmp-bootstrap
+maybe-configure-stage4-gmp: configure-stage4-gmp
+configure-stage4-gmp:
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gmp/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	echo Configuring stage 4 in $(HOST_SUBDIR)/gmp ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp ; \
+	cd $(HOST_SUBDIR)/gmp || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gmp/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gmp"; \
+	libsrcdir="$$s/gmp"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ --disable-shared
+@endif gmp-bootstrap
+
+.PHONY: configure-stageprofile-gmp maybe-configure-stageprofile-gmp
+maybe-configure-stageprofile-gmp:
+@if gmp-bootstrap
+maybe-configure-stageprofile-gmp: configure-stageprofile-gmp
+configure-stageprofile-gmp:
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gmp/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	echo Configuring stage profile in $(HOST_SUBDIR)/gmp ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp ; \
+	cd $(HOST_SUBDIR)/gmp || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gmp/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gmp"; \
+	libsrcdir="$$s/gmp"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ --disable-shared
+@endif gmp-bootstrap
+
+.PHONY: configure-stagefeedback-gmp maybe-configure-stagefeedback-gmp
+maybe-configure-stagefeedback-gmp:
+@if gmp-bootstrap
+maybe-configure-stagefeedback-gmp: configure-stagefeedback-gmp
+configure-stagefeedback-gmp:
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gmp/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	echo Configuring stage feedback in $(HOST_SUBDIR)/gmp ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp ; \
+	cd $(HOST_SUBDIR)/gmp || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gmp/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gmp"; \
+	libsrcdir="$$s/gmp"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ --disable-shared
+@endif gmp-bootstrap
+
+
+
+
+
+.PHONY: all-gmp maybe-all-gmp
+maybe-all-gmp:
+@if gcc-bootstrap
+all-gmp: stage_current
+@endif gcc-bootstrap
+@if gmp
+TARGET-gmp=all
+maybe-all-gmp: all-gmp
+all-gmp: configure-gmp
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gmp && \
+	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-gmp))
+@endif gmp
+
+
+
+.PHONY: all-stage1-gmp maybe-all-stage1-gmp
+.PHONY: clean-stage1-gmp maybe-clean-stage1-gmp
+maybe-all-stage1-gmp:
+maybe-clean-stage1-gmp:
+@if gmp-bootstrap
+maybe-all-stage1-gmp: all-stage1-gmp
+all-stage1: all-stage1-gmp
+TARGET-stage1-gmp = $(TARGET-gmp)
+all-stage1-gmp: configure-stage1-gmp
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/gmp && \
+	$(MAKE) $(FLAGS_TO_PASS)  CFLAGS="$(STAGE1_CFLAGS)" LIBCFLAGS="$(STAGE1_CFLAGS)"  \
+		$(TARGET-stage1-gmp)
+
+maybe-clean-stage1-gmp: clean-stage1-gmp
+clean-stage1: clean-stage1-gmp
+clean-stage1-gmp:
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/gmp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-gmp/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/gmp && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE1_CFLAGS)" LIBCFLAGS="$(STAGE1_CFLAGS)"  clean
+@endif gmp-bootstrap
+
+
+.PHONY: all-stage2-gmp maybe-all-stage2-gmp
+.PHONY: clean-stage2-gmp maybe-clean-stage2-gmp
+maybe-all-stage2-gmp:
+maybe-clean-stage2-gmp:
+@if gmp-bootstrap
+maybe-all-stage2-gmp: all-stage2-gmp
+all-stage2: all-stage2-gmp
+TARGET-stage2-gmp = $(TARGET-gmp)
+all-stage2-gmp: configure-stage2-gmp
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/gmp && \
+	$(MAKE) $(FLAGS_TO_PASS) $(POSTSTAGE1_FLAGS_TO_PASS)   \
+		$(TARGET-stage2-gmp)
+
+maybe-clean-stage2-gmp: clean-stage2-gmp
+clean-stage2: clean-stage2-gmp
+clean-stage2-gmp:
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/gmp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-gmp/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/gmp && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
+@endif gmp-bootstrap
+
+
+.PHONY: all-stage3-gmp maybe-all-stage3-gmp
+.PHONY: clean-stage3-gmp maybe-clean-stage3-gmp
+maybe-all-stage3-gmp:
+maybe-clean-stage3-gmp:
+@if gmp-bootstrap
+maybe-all-stage3-gmp: all-stage3-gmp
+all-stage3: all-stage3-gmp
+TARGET-stage3-gmp = $(TARGET-gmp)
+all-stage3-gmp: configure-stage3-gmp
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/gmp && \
+	$(MAKE) $(FLAGS_TO_PASS) $(POSTSTAGE1_FLAGS_TO_PASS)   \
+		$(TARGET-stage3-gmp)
+
+maybe-clean-stage3-gmp: clean-stage3-gmp
+clean-stage3: clean-stage3-gmp
+clean-stage3-gmp:
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/gmp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-gmp/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/gmp && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
+@endif gmp-bootstrap
+
+
+.PHONY: all-stage4-gmp maybe-all-stage4-gmp
+.PHONY: clean-stage4-gmp maybe-clean-stage4-gmp
+maybe-all-stage4-gmp:
+maybe-clean-stage4-gmp:
+@if gmp-bootstrap
+maybe-all-stage4-gmp: all-stage4-gmp
+all-stage4: all-stage4-gmp
+TARGET-stage4-gmp = $(TARGET-gmp)
+all-stage4-gmp: configure-stage4-gmp
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/gmp && \
+	$(MAKE) $(FLAGS_TO_PASS) $(POSTSTAGE1_FLAGS_TO_PASS)   \
+		$(TARGET-stage4-gmp)
+
+maybe-clean-stage4-gmp: clean-stage4-gmp
+clean-stage4: clean-stage4-gmp
+clean-stage4-gmp:
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/gmp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-gmp/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/gmp && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
+@endif gmp-bootstrap
+
+
+.PHONY: all-stageprofile-gmp maybe-all-stageprofile-gmp
+.PHONY: clean-stageprofile-gmp maybe-clean-stageprofile-gmp
+maybe-all-stageprofile-gmp:
+maybe-clean-stageprofile-gmp:
+@if gmp-bootstrap
+maybe-all-stageprofile-gmp: all-stageprofile-gmp
+all-stageprofile: all-stageprofile-gmp
+TARGET-stageprofile-gmp = $(TARGET-gmp)
+all-stageprofile-gmp: configure-stageprofile-gmp
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/gmp && \
+	$(MAKE) $(FLAGS_TO_PASS) $(POSTSTAGE1_FLAGS_TO_PASS) CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  \
+		$(TARGET-stageprofile-gmp)
+
+maybe-clean-stageprofile-gmp: clean-stageprofile-gmp
+clean-stageprofile: clean-stageprofile-gmp
+clean-stageprofile-gmp:
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/gmp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-gmp/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/gmp && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  clean
+@endif gmp-bootstrap
+
+
+.PHONY: all-stagefeedback-gmp maybe-all-stagefeedback-gmp
+.PHONY: clean-stagefeedback-gmp maybe-clean-stagefeedback-gmp
+maybe-all-stagefeedback-gmp:
+maybe-clean-stagefeedback-gmp:
+@if gmp-bootstrap
+maybe-all-stagefeedback-gmp: all-stagefeedback-gmp
+all-stagefeedback: all-stagefeedback-gmp
+TARGET-stagefeedback-gmp = $(TARGET-gmp)
+all-stagefeedback-gmp: configure-stagefeedback-gmp
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/gmp && \
+	$(MAKE) $(FLAGS_TO_PASS) $(POSTSTAGE1_FLAGS_TO_PASS) CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  \
+		$(TARGET-stagefeedback-gmp)
+
+maybe-clean-stagefeedback-gmp: clean-stagefeedback-gmp
+clean-stagefeedback: clean-stagefeedback-gmp
+clean-stagefeedback-gmp:
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/gmp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-gmp/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/gmp && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  clean
+@endif gmp-bootstrap
+
+
+
+
+
+.PHONY: check-gmp maybe-check-gmp
+maybe-check-gmp:
+@if gmp
+maybe-check-gmp: check-gmp
+
+check-gmp:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/gmp && \
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
+
+@endif gmp
+
+.PHONY: install-gmp maybe-install-gmp
+maybe-install-gmp:
+@if gmp
+maybe-install-gmp: install-gmp
+
+install-gmp:
+
+@endif gmp
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-gmp info-gmp
+maybe-info-gmp:
+@if gmp
+maybe-info-gmp: info-gmp
+
+info-gmp: \
+    configure-gmp 
+	@[ -f ./gmp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in gmp" ; \
+	(cd $(HOST_SUBDIR)/gmp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          info) \
+	  || exit 1
+
+@endif gmp
+
+.PHONY: maybe-dvi-gmp dvi-gmp
+maybe-dvi-gmp:
+@if gmp
+maybe-dvi-gmp: dvi-gmp
+
+dvi-gmp: \
+    configure-gmp 
+	@[ -f ./gmp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in gmp" ; \
+	(cd $(HOST_SUBDIR)/gmp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          dvi) \
+	  || exit 1
+
+@endif gmp
+
+.PHONY: maybe-pdf-gmp pdf-gmp
+maybe-pdf-gmp:
+@if gmp
+maybe-pdf-gmp: pdf-gmp
+
+pdf-gmp: \
+    configure-gmp 
+	@[ -f ./gmp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in gmp" ; \
+	(cd $(HOST_SUBDIR)/gmp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          pdf) \
+	  || exit 1
+
+@endif gmp
+
+.PHONY: maybe-html-gmp html-gmp
+maybe-html-gmp:
+@if gmp
+maybe-html-gmp: html-gmp
+
+html-gmp: \
+    configure-gmp 
+	@[ -f ./gmp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in gmp" ; \
+	(cd $(HOST_SUBDIR)/gmp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          html) \
+	  || exit 1
+
+@endif gmp
+
+.PHONY: maybe-TAGS-gmp TAGS-gmp
+maybe-TAGS-gmp:
+@if gmp
+maybe-TAGS-gmp: TAGS-gmp
+
+TAGS-gmp: \
+    configure-gmp 
+	@[ -f ./gmp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in gmp" ; \
+	(cd $(HOST_SUBDIR)/gmp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          TAGS) \
+	  || exit 1
+
+@endif gmp
+
+.PHONY: maybe-install-info-gmp install-info-gmp
+maybe-install-info-gmp:
+@if gmp
+maybe-install-info-gmp: install-info-gmp
+
+install-info-gmp: \
+    configure-gmp \
+    info-gmp 
+	@[ -f ./gmp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in gmp" ; \
+	(cd $(HOST_SUBDIR)/gmp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-info) \
+	  || exit 1
+
+@endif gmp
+
+.PHONY: maybe-install-html-gmp install-html-gmp
+maybe-install-html-gmp:
+@if gmp
+maybe-install-html-gmp: install-html-gmp
+
+install-html-gmp: \
+    configure-gmp \
+    html-gmp 
+	@[ -f ./gmp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in gmp" ; \
+	(cd $(HOST_SUBDIR)/gmp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-html) \
+	  || exit 1
+
+@endif gmp
+
+.PHONY: maybe-installcheck-gmp installcheck-gmp
+maybe-installcheck-gmp:
+@if gmp
+maybe-installcheck-gmp: installcheck-gmp
+
+installcheck-gmp: \
+    configure-gmp 
+	@[ -f ./gmp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in gmp" ; \
+	(cd $(HOST_SUBDIR)/gmp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          installcheck) \
+	  || exit 1
+
+@endif gmp
+
+.PHONY: maybe-mostlyclean-gmp mostlyclean-gmp
+maybe-mostlyclean-gmp:
+@if gmp
+maybe-mostlyclean-gmp: mostlyclean-gmp
+
+mostlyclean-gmp: 
+	@[ -f ./gmp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in gmp" ; \
+	(cd $(HOST_SUBDIR)/gmp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          mostlyclean) \
+	  || exit 1
+
+@endif gmp
+
+.PHONY: maybe-clean-gmp clean-gmp
+maybe-clean-gmp:
+@if gmp
+maybe-clean-gmp: clean-gmp
+
+clean-gmp: 
+	@[ -f ./gmp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in gmp" ; \
+	(cd $(HOST_SUBDIR)/gmp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          clean) \
+	  || exit 1
+
+@endif gmp
+
+.PHONY: maybe-distclean-gmp distclean-gmp
+maybe-distclean-gmp:
+@if gmp
+maybe-distclean-gmp: distclean-gmp
+
+distclean-gmp: 
+	@[ -f ./gmp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in gmp" ; \
+	(cd $(HOST_SUBDIR)/gmp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          distclean) \
+	  || exit 1
+
+@endif gmp
+
+.PHONY: maybe-maintainer-clean-gmp maintainer-clean-gmp
+maybe-maintainer-clean-gmp:
+@if gmp
+maybe-maintainer-clean-gmp: maintainer-clean-gmp
+
+maintainer-clean-gmp: 
+	@[ -f ./gmp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in gmp" ; \
+	(cd $(HOST_SUBDIR)/gmp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          maintainer-clean) \
+	  || exit 1
+
+@endif gmp
+
+
+
+.PHONY: configure-mpfr maybe-configure-mpfr
+maybe-configure-mpfr:
+@if gcc-bootstrap
+configure-mpfr: stage_current
+@endif gcc-bootstrap
+@if mpfr
+maybe-configure-mpfr: configure-mpfr
+configure-mpfr: 
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/mpfr/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr ; \
+	$(HOST_EXPORTS) \
+	echo Configuring in $(HOST_SUBDIR)/mpfr; \
+	cd "$(HOST_SUBDIR)/mpfr" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/mpfr/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/mpfr"; \
+	libsrcdir="$$s/mpfr"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} --disable-shared --with-gmp-build=$$r/$(HOST_SUBDIR)/gmp \
+	  || exit 1
+@endif mpfr
+
+
+
+.PHONY: configure-stage1-mpfr maybe-configure-stage1-mpfr
+maybe-configure-stage1-mpfr:
+@if mpfr-bootstrap
+maybe-configure-stage1-mpfr: configure-stage1-mpfr
+configure-stage1-mpfr:
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/mpfr/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	echo Configuring stage 1 in $(HOST_SUBDIR)/mpfr ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr ; \
+	cd $(HOST_SUBDIR)/mpfr || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/mpfr/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/mpfr"; \
+	libsrcdir="$$s/mpfr"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
+	   \
+	  --disable-intermodule $(STAGE1_CHECKING) 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" --disable-shared --with-gmp-build=$$r/$(HOST_SUBDIR)/gmp
+@endif mpfr-bootstrap
+
+.PHONY: configure-stage2-mpfr maybe-configure-stage2-mpfr
+maybe-configure-stage2-mpfr:
+@if mpfr-bootstrap
+maybe-configure-stage2-mpfr: configure-stage2-mpfr
+configure-stage2-mpfr:
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/mpfr/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	echo Configuring stage 2 in $(HOST_SUBDIR)/mpfr ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr ; \
+	cd $(HOST_SUBDIR)/mpfr || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/mpfr/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/mpfr"; \
+	libsrcdir="$$s/mpfr"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ --disable-shared --with-gmp-build=$$r/$(HOST_SUBDIR)/gmp
+@endif mpfr-bootstrap
+
+.PHONY: configure-stage3-mpfr maybe-configure-stage3-mpfr
+maybe-configure-stage3-mpfr:
+@if mpfr-bootstrap
+maybe-configure-stage3-mpfr: configure-stage3-mpfr
+configure-stage3-mpfr:
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/mpfr/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	echo Configuring stage 3 in $(HOST_SUBDIR)/mpfr ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr ; \
+	cd $(HOST_SUBDIR)/mpfr || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/mpfr/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/mpfr"; \
+	libsrcdir="$$s/mpfr"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ --disable-shared --with-gmp-build=$$r/$(HOST_SUBDIR)/gmp
+@endif mpfr-bootstrap
+
+.PHONY: configure-stage4-mpfr maybe-configure-stage4-mpfr
+maybe-configure-stage4-mpfr:
+@if mpfr-bootstrap
+maybe-configure-stage4-mpfr: configure-stage4-mpfr
+configure-stage4-mpfr:
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/mpfr/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	echo Configuring stage 4 in $(HOST_SUBDIR)/mpfr ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr ; \
+	cd $(HOST_SUBDIR)/mpfr || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/mpfr/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/mpfr"; \
+	libsrcdir="$$s/mpfr"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ --disable-shared --with-gmp-build=$$r/$(HOST_SUBDIR)/gmp
+@endif mpfr-bootstrap
+
+.PHONY: configure-stageprofile-mpfr maybe-configure-stageprofile-mpfr
+maybe-configure-stageprofile-mpfr:
+@if mpfr-bootstrap
+maybe-configure-stageprofile-mpfr: configure-stageprofile-mpfr
+configure-stageprofile-mpfr:
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/mpfr/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	echo Configuring stage profile in $(HOST_SUBDIR)/mpfr ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr ; \
+	cd $(HOST_SUBDIR)/mpfr || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/mpfr/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/mpfr"; \
+	libsrcdir="$$s/mpfr"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ --disable-shared --with-gmp-build=$$r/$(HOST_SUBDIR)/gmp
+@endif mpfr-bootstrap
+
+.PHONY: configure-stagefeedback-mpfr maybe-configure-stagefeedback-mpfr
+maybe-configure-stagefeedback-mpfr:
+@if mpfr-bootstrap
+maybe-configure-stagefeedback-mpfr: configure-stagefeedback-mpfr
+configure-stagefeedback-mpfr:
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/mpfr/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	echo Configuring stage feedback in $(HOST_SUBDIR)/mpfr ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr ; \
+	cd $(HOST_SUBDIR)/mpfr || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/mpfr/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/mpfr"; \
+	libsrcdir="$$s/mpfr"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ --disable-shared --with-gmp-build=$$r/$(HOST_SUBDIR)/gmp
+@endif mpfr-bootstrap
+
+
+
+
+
+.PHONY: all-mpfr maybe-all-mpfr
+maybe-all-mpfr:
+@if gcc-bootstrap
+all-mpfr: stage_current
+@endif gcc-bootstrap
+@if mpfr
+TARGET-mpfr=all
+maybe-all-mpfr: all-mpfr
+all-mpfr: configure-mpfr
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/mpfr && \
+	  $(MAKE) $(FLAGS_TO_PASS)  $(TARGET-mpfr))
+@endif mpfr
+
+
+
+.PHONY: all-stage1-mpfr maybe-all-stage1-mpfr
+.PHONY: clean-stage1-mpfr maybe-clean-stage1-mpfr
+maybe-all-stage1-mpfr:
+maybe-clean-stage1-mpfr:
+@if mpfr-bootstrap
+maybe-all-stage1-mpfr: all-stage1-mpfr
+all-stage1: all-stage1-mpfr
+TARGET-stage1-mpfr = $(TARGET-mpfr)
+all-stage1-mpfr: configure-stage1-mpfr
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/mpfr && \
+	$(MAKE) $(FLAGS_TO_PASS)  CFLAGS="$(STAGE1_CFLAGS)" LIBCFLAGS="$(STAGE1_CFLAGS)"  \
+		$(TARGET-stage1-mpfr)
+
+maybe-clean-stage1-mpfr: clean-stage1-mpfr
+clean-stage1: clean-stage1-mpfr
+clean-stage1-mpfr:
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/mpfr/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-mpfr/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/mpfr && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE1_CFLAGS)" LIBCFLAGS="$(STAGE1_CFLAGS)"  clean
+@endif mpfr-bootstrap
+
+
+.PHONY: all-stage2-mpfr maybe-all-stage2-mpfr
+.PHONY: clean-stage2-mpfr maybe-clean-stage2-mpfr
+maybe-all-stage2-mpfr:
+maybe-clean-stage2-mpfr:
+@if mpfr-bootstrap
+maybe-all-stage2-mpfr: all-stage2-mpfr
+all-stage2: all-stage2-mpfr
+TARGET-stage2-mpfr = $(TARGET-mpfr)
+all-stage2-mpfr: configure-stage2-mpfr
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/mpfr && \
+	$(MAKE) $(FLAGS_TO_PASS) $(POSTSTAGE1_FLAGS_TO_PASS)   \
+		$(TARGET-stage2-mpfr)
+
+maybe-clean-stage2-mpfr: clean-stage2-mpfr
+clean-stage2: clean-stage2-mpfr
+clean-stage2-mpfr:
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/mpfr/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-mpfr/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/mpfr && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
+@endif mpfr-bootstrap
+
+
+.PHONY: all-stage3-mpfr maybe-all-stage3-mpfr
+.PHONY: clean-stage3-mpfr maybe-clean-stage3-mpfr
+maybe-all-stage3-mpfr:
+maybe-clean-stage3-mpfr:
+@if mpfr-bootstrap
+maybe-all-stage3-mpfr: all-stage3-mpfr
+all-stage3: all-stage3-mpfr
+TARGET-stage3-mpfr = $(TARGET-mpfr)
+all-stage3-mpfr: configure-stage3-mpfr
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/mpfr && \
+	$(MAKE) $(FLAGS_TO_PASS) $(POSTSTAGE1_FLAGS_TO_PASS)   \
+		$(TARGET-stage3-mpfr)
+
+maybe-clean-stage3-mpfr: clean-stage3-mpfr
+clean-stage3: clean-stage3-mpfr
+clean-stage3-mpfr:
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/mpfr/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-mpfr/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/mpfr && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
+@endif mpfr-bootstrap
+
+
+.PHONY: all-stage4-mpfr maybe-all-stage4-mpfr
+.PHONY: clean-stage4-mpfr maybe-clean-stage4-mpfr
+maybe-all-stage4-mpfr:
+maybe-clean-stage4-mpfr:
+@if mpfr-bootstrap
+maybe-all-stage4-mpfr: all-stage4-mpfr
+all-stage4: all-stage4-mpfr
+TARGET-stage4-mpfr = $(TARGET-mpfr)
+all-stage4-mpfr: configure-stage4-mpfr
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/mpfr && \
+	$(MAKE) $(FLAGS_TO_PASS) $(POSTSTAGE1_FLAGS_TO_PASS)   \
+		$(TARGET-stage4-mpfr)
+
+maybe-clean-stage4-mpfr: clean-stage4-mpfr
+clean-stage4: clean-stage4-mpfr
+clean-stage4-mpfr:
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/mpfr/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-mpfr/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/mpfr && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		  clean
+@endif mpfr-bootstrap
+
+
+.PHONY: all-stageprofile-mpfr maybe-all-stageprofile-mpfr
+.PHONY: clean-stageprofile-mpfr maybe-clean-stageprofile-mpfr
+maybe-all-stageprofile-mpfr:
+maybe-clean-stageprofile-mpfr:
+@if mpfr-bootstrap
+maybe-all-stageprofile-mpfr: all-stageprofile-mpfr
+all-stageprofile: all-stageprofile-mpfr
+TARGET-stageprofile-mpfr = $(TARGET-mpfr)
+all-stageprofile-mpfr: configure-stageprofile-mpfr
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/mpfr && \
+	$(MAKE) $(FLAGS_TO_PASS) $(POSTSTAGE1_FLAGS_TO_PASS) CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  \
+		$(TARGET-stageprofile-mpfr)
+
+maybe-clean-stageprofile-mpfr: clean-stageprofile-mpfr
+clean-stageprofile: clean-stageprofile-mpfr
+clean-stageprofile-mpfr:
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/mpfr/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-mpfr/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/mpfr && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  clean
+@endif mpfr-bootstrap
+
+
+.PHONY: all-stagefeedback-mpfr maybe-all-stagefeedback-mpfr
+.PHONY: clean-stagefeedback-mpfr maybe-clean-stagefeedback-mpfr
+maybe-all-stagefeedback-mpfr:
+maybe-clean-stagefeedback-mpfr:
+@if mpfr-bootstrap
+maybe-all-stagefeedback-mpfr: all-stagefeedback-mpfr
+all-stagefeedback: all-stagefeedback-mpfr
+TARGET-stagefeedback-mpfr = $(TARGET-mpfr)
+all-stagefeedback-mpfr: configure-stagefeedback-mpfr
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/mpfr && \
+	$(MAKE) $(FLAGS_TO_PASS) $(POSTSTAGE1_FLAGS_TO_PASS) CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  \
+		$(TARGET-stagefeedback-mpfr)
+
+maybe-clean-stagefeedback-mpfr: clean-stagefeedback-mpfr
+clean-stagefeedback: clean-stagefeedback-mpfr
+clean-stagefeedback-mpfr:
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/mpfr/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-mpfr/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/mpfr && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  clean
+@endif mpfr-bootstrap
+
+
+
+
+
+.PHONY: check-mpfr maybe-check-mpfr
+maybe-check-mpfr:
+@if mpfr
+maybe-check-mpfr: check-mpfr
+
+check-mpfr:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/mpfr && \
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
+
+@endif mpfr
+
+.PHONY: install-mpfr maybe-install-mpfr
+maybe-install-mpfr:
+@if mpfr
+maybe-install-mpfr: install-mpfr
+
+install-mpfr:
+
+@endif mpfr
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-mpfr info-mpfr
+maybe-info-mpfr:
+@if mpfr
+maybe-info-mpfr: info-mpfr
+
+info-mpfr: \
+    configure-mpfr 
+	@[ -f ./mpfr/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in mpfr" ; \
+	(cd $(HOST_SUBDIR)/mpfr && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          info) \
+	  || exit 1
+
+@endif mpfr
+
+.PHONY: maybe-dvi-mpfr dvi-mpfr
+maybe-dvi-mpfr:
+@if mpfr
+maybe-dvi-mpfr: dvi-mpfr
+
+dvi-mpfr: \
+    configure-mpfr 
+	@[ -f ./mpfr/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in mpfr" ; \
+	(cd $(HOST_SUBDIR)/mpfr && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          dvi) \
+	  || exit 1
+
+@endif mpfr
+
+.PHONY: maybe-pdf-mpfr pdf-mpfr
+maybe-pdf-mpfr:
+@if mpfr
+maybe-pdf-mpfr: pdf-mpfr
+
+pdf-mpfr: \
+    configure-mpfr 
+	@[ -f ./mpfr/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in mpfr" ; \
+	(cd $(HOST_SUBDIR)/mpfr && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          pdf) \
+	  || exit 1
+
+@endif mpfr
+
+.PHONY: maybe-html-mpfr html-mpfr
+maybe-html-mpfr:
+@if mpfr
+maybe-html-mpfr: html-mpfr
+
+html-mpfr: \
+    configure-mpfr 
+	@[ -f ./mpfr/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in mpfr" ; \
+	(cd $(HOST_SUBDIR)/mpfr && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          html) \
+	  || exit 1
+
+@endif mpfr
+
+.PHONY: maybe-TAGS-mpfr TAGS-mpfr
+maybe-TAGS-mpfr:
+@if mpfr
+maybe-TAGS-mpfr: TAGS-mpfr
+
+TAGS-mpfr: \
+    configure-mpfr 
+	@[ -f ./mpfr/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in mpfr" ; \
+	(cd $(HOST_SUBDIR)/mpfr && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          TAGS) \
+	  || exit 1
+
+@endif mpfr
+
+.PHONY: maybe-install-info-mpfr install-info-mpfr
+maybe-install-info-mpfr:
+@if mpfr
+maybe-install-info-mpfr: install-info-mpfr
+
+install-info-mpfr: \
+    configure-mpfr \
+    info-mpfr 
+	@[ -f ./mpfr/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in mpfr" ; \
+	(cd $(HOST_SUBDIR)/mpfr && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-info) \
+	  || exit 1
+
+@endif mpfr
+
+.PHONY: maybe-install-html-mpfr install-html-mpfr
+maybe-install-html-mpfr:
+@if mpfr
+maybe-install-html-mpfr: install-html-mpfr
+
+install-html-mpfr: \
+    configure-mpfr \
+    html-mpfr 
+	@[ -f ./mpfr/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in mpfr" ; \
+	(cd $(HOST_SUBDIR)/mpfr && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-html) \
+	  || exit 1
+
+@endif mpfr
+
+.PHONY: maybe-installcheck-mpfr installcheck-mpfr
+maybe-installcheck-mpfr:
+@if mpfr
+maybe-installcheck-mpfr: installcheck-mpfr
+
+installcheck-mpfr: \
+    configure-mpfr 
+	@[ -f ./mpfr/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in mpfr" ; \
+	(cd $(HOST_SUBDIR)/mpfr && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          installcheck) \
+	  || exit 1
+
+@endif mpfr
+
+.PHONY: maybe-mostlyclean-mpfr mostlyclean-mpfr
+maybe-mostlyclean-mpfr:
+@if mpfr
+maybe-mostlyclean-mpfr: mostlyclean-mpfr
+
+mostlyclean-mpfr: 
+	@[ -f ./mpfr/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in mpfr" ; \
+	(cd $(HOST_SUBDIR)/mpfr && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          mostlyclean) \
+	  || exit 1
+
+@endif mpfr
+
+.PHONY: maybe-clean-mpfr clean-mpfr
+maybe-clean-mpfr:
+@if mpfr
+maybe-clean-mpfr: clean-mpfr
+
+clean-mpfr: 
+	@[ -f ./mpfr/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in mpfr" ; \
+	(cd $(HOST_SUBDIR)/mpfr && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          clean) \
+	  || exit 1
+
+@endif mpfr
+
+.PHONY: maybe-distclean-mpfr distclean-mpfr
+maybe-distclean-mpfr:
+@if mpfr
+maybe-distclean-mpfr: distclean-mpfr
+
+distclean-mpfr: 
+	@[ -f ./mpfr/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in mpfr" ; \
+	(cd $(HOST_SUBDIR)/mpfr && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          distclean) \
+	  || exit 1
+
+@endif mpfr
+
+.PHONY: maybe-maintainer-clean-mpfr maintainer-clean-mpfr
+maybe-maintainer-clean-mpfr:
+@if mpfr
+maybe-maintainer-clean-mpfr: maintainer-clean-mpfr
+
+maintainer-clean-mpfr: 
+	@[ -f ./mpfr/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in mpfr" ; \
+	(cd $(HOST_SUBDIR)/mpfr && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          maintainer-clean) \
+	  || exit 1
+
+@endif mpfr
+
+
+
 .PHONY: configure-gnuserv maybe-configure-gnuserv
 maybe-configure-gnuserv:
 @if gcc-bootstrap
@@ -14102,7 +15729,8 @@ configure-gnuserv:
 	srcdiroption="--srcdir=$${topdir}/gnuserv"; \
 	libsrcdir="$$s/gnuserv"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif gnuserv
 
@@ -14498,7 +16126,8 @@ configure-gprof:
 	srcdiroption="--srcdir=$${topdir}/gprof"; \
 	libsrcdir="$$s/gprof"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif gprof
 
@@ -14894,7 +16523,8 @@ configure-gzip:
 	srcdiroption="--srcdir=$${topdir}/gzip"; \
 	libsrcdir="$$s/gzip"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif gzip
 
@@ -15290,7 +16920,8 @@ configure-hello:
 	srcdiroption="--srcdir=$${topdir}/hello"; \
 	libsrcdir="$$s/hello"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif hello
 
@@ -15686,7 +17317,8 @@ configure-indent:
 	srcdiroption="--srcdir=$${topdir}/indent"; \
 	libsrcdir="$$s/indent"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif indent
 
@@ -16081,7 +17713,8 @@ configure-intl:
 	srcdiroption="--srcdir=$${topdir}/intl"; \
 	libsrcdir="$$s/intl"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif intl
 
@@ -16109,7 +17742,8 @@ configure-stage1-intl:
 	srcdiroption="--srcdir=$${topdir}/intl"; \
 	libsrcdir="$$s/intl"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	   \
 	  --disable-intermodule $(STAGE1_CHECKING) 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif intl-bootstrap
@@ -16137,7 +17771,8 @@ configure-stage2-intl:
 	srcdiroption="--srcdir=$${topdir}/intl"; \
 	libsrcdir="$$s/intl"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif intl-bootstrap
@@ -16165,7 +17800,8 @@ configure-stage3-intl:
 	srcdiroption="--srcdir=$${topdir}/intl"; \
 	libsrcdir="$$s/intl"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif intl-bootstrap
@@ -16193,7 +17829,8 @@ configure-stage4-intl:
 	srcdiroption="--srcdir=$${topdir}/intl"; \
 	libsrcdir="$$s/intl"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif intl-bootstrap
@@ -16221,7 +17858,8 @@ configure-stageprofile-intl:
 	srcdiroption="--srcdir=$${topdir}/intl"; \
 	libsrcdir="$$s/intl"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif intl-bootstrap
@@ -16249,7 +17887,8 @@ configure-stagefeedback-intl:
 	srcdiroption="--srcdir=$${topdir}/intl"; \
 	libsrcdir="$$s/intl"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif intl-bootstrap
@@ -16837,7 +18476,8 @@ configure-tcl:
 	srcdiroption="--srcdir=$${topdir}/tcl"; \
 	libsrcdir="$$s/tcl"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif tcl
 
@@ -17218,7 +18858,8 @@ configure-itcl:
 	srcdiroption="--srcdir=$${topdir}/itcl"; \
 	libsrcdir="$$s/itcl"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif itcl
 
@@ -17613,7 +19254,8 @@ configure-ld:
 	srcdiroption="--srcdir=$${topdir}/ld"; \
 	libsrcdir="$$s/ld"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif ld
 
@@ -17641,7 +19283,8 @@ configure-stage1-ld:
 	srcdiroption="--srcdir=$${topdir}/ld"; \
 	libsrcdir="$$s/ld"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	   \
 	  --disable-intermodule $(STAGE1_CHECKING) 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif ld-bootstrap
@@ -17669,7 +19312,8 @@ configure-stage2-ld:
 	srcdiroption="--srcdir=$${topdir}/ld"; \
 	libsrcdir="$$s/ld"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif ld-bootstrap
@@ -17697,7 +19341,8 @@ configure-stage3-ld:
 	srcdiroption="--srcdir=$${topdir}/ld"; \
 	libsrcdir="$$s/ld"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif ld-bootstrap
@@ -17725,7 +19370,8 @@ configure-stage4-ld:
 	srcdiroption="--srcdir=$${topdir}/ld"; \
 	libsrcdir="$$s/ld"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif ld-bootstrap
@@ -17753,7 +19399,8 @@ configure-stageprofile-ld:
 	srcdiroption="--srcdir=$${topdir}/ld"; \
 	libsrcdir="$$s/ld"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif ld-bootstrap
@@ -17781,7 +19428,8 @@ configure-stagefeedback-ld:
 	srcdiroption="--srcdir=$${topdir}/ld"; \
 	libsrcdir="$$s/ld"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif ld-bootstrap
@@ -18368,7 +20016,8 @@ configure-libcpp:
 	srcdiroption="--srcdir=$${topdir}/libcpp"; \
 	libsrcdir="$$s/libcpp"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif libcpp
 
@@ -18396,7 +20045,8 @@ configure-stage1-libcpp:
 	srcdiroption="--srcdir=$${topdir}/libcpp"; \
 	libsrcdir="$$s/libcpp"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	   \
 	  --disable-intermodule $(STAGE1_CHECKING) 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif libcpp-bootstrap
@@ -18424,7 +20074,8 @@ configure-stage2-libcpp:
 	srcdiroption="--srcdir=$${topdir}/libcpp"; \
 	libsrcdir="$$s/libcpp"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libcpp-bootstrap
@@ -18452,7 +20103,8 @@ configure-stage3-libcpp:
 	srcdiroption="--srcdir=$${topdir}/libcpp"; \
 	libsrcdir="$$s/libcpp"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libcpp-bootstrap
@@ -18480,7 +20132,8 @@ configure-stage4-libcpp:
 	srcdiroption="--srcdir=$${topdir}/libcpp"; \
 	libsrcdir="$$s/libcpp"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libcpp-bootstrap
@@ -18508,7 +20161,8 @@ configure-stageprofile-libcpp:
 	srcdiroption="--srcdir=$${topdir}/libcpp"; \
 	libsrcdir="$$s/libcpp"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libcpp-bootstrap
@@ -18536,7 +20190,8 @@ configure-stagefeedback-libcpp:
 	srcdiroption="--srcdir=$${topdir}/libcpp"; \
 	libsrcdir="$$s/libcpp"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libcpp-bootstrap
@@ -19123,7 +20778,8 @@ configure-libdecnumber:
 	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
 	libsrcdir="$$s/libdecnumber"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif libdecnumber
 
@@ -19151,7 +20807,8 @@ configure-stage1-libdecnumber:
 	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
 	libsrcdir="$$s/libdecnumber"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	   \
 	  --disable-intermodule $(STAGE1_CHECKING) 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif libdecnumber-bootstrap
@@ -19179,7 +20836,8 @@ configure-stage2-libdecnumber:
 	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
 	libsrcdir="$$s/libdecnumber"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libdecnumber-bootstrap
@@ -19207,7 +20865,8 @@ configure-stage3-libdecnumber:
 	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
 	libsrcdir="$$s/libdecnumber"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libdecnumber-bootstrap
@@ -19235,7 +20894,8 @@ configure-stage4-libdecnumber:
 	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
 	libsrcdir="$$s/libdecnumber"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libdecnumber-bootstrap
@@ -19263,7 +20923,8 @@ configure-stageprofile-libdecnumber:
 	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
 	libsrcdir="$$s/libdecnumber"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libdecnumber-bootstrap
@@ -19291,7 +20952,8 @@ configure-stagefeedback-libdecnumber:
 	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
 	libsrcdir="$$s/libdecnumber"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libdecnumber-bootstrap
@@ -19879,7 +21541,8 @@ configure-libgui:
 	srcdiroption="--srcdir=$${topdir}/libgui"; \
 	libsrcdir="$$s/libgui"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif libgui
 
@@ -20274,7 +21937,8 @@ configure-libiberty:
 	srcdiroption="--srcdir=$${topdir}/libiberty"; \
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif libiberty
 
@@ -20302,7 +21966,8 @@ configure-stage1-libiberty:
 	srcdiroption="--srcdir=$${topdir}/libiberty"; \
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	   \
 	  --disable-intermodule $(STAGE1_CHECKING) 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif libiberty-bootstrap
@@ -20330,7 +21995,8 @@ configure-stage2-libiberty:
 	srcdiroption="--srcdir=$${topdir}/libiberty"; \
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libiberty-bootstrap
@@ -20358,7 +22024,8 @@ configure-stage3-libiberty:
 	srcdiroption="--srcdir=$${topdir}/libiberty"; \
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libiberty-bootstrap
@@ -20386,7 +22053,8 @@ configure-stage4-libiberty:
 	srcdiroption="--srcdir=$${topdir}/libiberty"; \
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libiberty-bootstrap
@@ -20414,7 +22082,8 @@ configure-stageprofile-libiberty:
 	srcdiroption="--srcdir=$${topdir}/libiberty"; \
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libiberty-bootstrap
@@ -20442,7 +22111,8 @@ configure-stagefeedback-libiberty:
 	srcdiroption="--srcdir=$${topdir}/libiberty"; \
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libiberty-bootstrap
@@ -21030,7 +22700,8 @@ configure-libtool:
 	srcdiroption="--srcdir=$${topdir}/libtool"; \
 	libsrcdir="$$s/libtool"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif libtool
 
@@ -21426,7 +23097,8 @@ configure-m4:
 	srcdiroption="--srcdir=$${topdir}/m4"; \
 	libsrcdir="$$s/m4"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif m4
 
@@ -21822,7 +23494,8 @@ configure-make:
 	srcdiroption="--srcdir=$${topdir}/make"; \
 	libsrcdir="$$s/make"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif make
 
@@ -22218,7 +23891,8 @@ configure-mmalloc:
 	srcdiroption="--srcdir=$${topdir}/mmalloc"; \
 	libsrcdir="$$s/mmalloc"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif mmalloc
 
@@ -22608,7 +24282,8 @@ configure-patch:
 	srcdiroption="--srcdir=$${topdir}/patch"; \
 	libsrcdir="$$s/patch"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif patch
 
@@ -23004,7 +24679,8 @@ configure-perl:
 	srcdiroption="--srcdir=$${topdir}/perl"; \
 	libsrcdir="$$s/perl"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif perl
 
@@ -23400,7 +25076,8 @@ configure-prms:
 	srcdiroption="--srcdir=$${topdir}/prms"; \
 	libsrcdir="$$s/prms"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif prms
 
@@ -23796,7 +25473,8 @@ configure-rcs:
 	srcdiroption="--srcdir=$${topdir}/rcs"; \
 	libsrcdir="$$s/rcs"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif rcs
 
@@ -24192,7 +25870,8 @@ configure-readline:
 	srcdiroption="--srcdir=$${topdir}/readline"; \
 	libsrcdir="$$s/readline"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif readline
 
@@ -24588,7 +26267,8 @@ configure-release:
 	srcdiroption="--srcdir=$${topdir}/release"; \
 	libsrcdir="$$s/release"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif release
 
@@ -24972,7 +26652,8 @@ configure-recode:
 	srcdiroption="--srcdir=$${topdir}/recode"; \
 	libsrcdir="$$s/recode"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif recode
 
@@ -25368,7 +27049,8 @@ configure-sed:
 	srcdiroption="--srcdir=$${topdir}/sed"; \
 	libsrcdir="$$s/sed"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif sed
 
@@ -25764,7 +27446,8 @@ configure-send-pr:
 	srcdiroption="--srcdir=$${topdir}/send-pr"; \
 	libsrcdir="$$s/send-pr"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif send-pr
 
@@ -26160,7 +27843,8 @@ configure-shellutils:
 	srcdiroption="--srcdir=$${topdir}/shellutils"; \
 	libsrcdir="$$s/shellutils"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif shellutils
 
@@ -26556,7 +28240,8 @@ configure-sid:
 	srcdiroption="--srcdir=$${topdir}/sid"; \
 	libsrcdir="$$s/sid"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif sid
 
@@ -26952,7 +28637,8 @@ configure-sim:
 	srcdiroption="--srcdir=$${topdir}/sim"; \
 	libsrcdir="$$s/sim"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif sim
 
@@ -27348,7 +29034,8 @@ configure-tar:
 	srcdiroption="--srcdir=$${topdir}/tar"; \
 	libsrcdir="$$s/tar"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif tar
 
@@ -27744,7 +29431,8 @@ configure-texinfo:
 	srcdiroption="--srcdir=$${topdir}/texinfo"; \
 	libsrcdir="$$s/texinfo"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif texinfo
 
@@ -28134,7 +29822,8 @@ configure-textutils:
 	srcdiroption="--srcdir=$${topdir}/textutils"; \
 	libsrcdir="$$s/textutils"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif textutils
 
@@ -28530,7 +30219,8 @@ configure-time:
 	srcdiroption="--srcdir=$${topdir}/time"; \
 	libsrcdir="$$s/time"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif time
 
@@ -28926,7 +30616,8 @@ configure-uudecode:
 	srcdiroption="--srcdir=$${topdir}/uudecode"; \
 	libsrcdir="$$s/uudecode"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif uudecode
 
@@ -29322,7 +31013,8 @@ configure-wdiff:
 	srcdiroption="--srcdir=$${topdir}/wdiff"; \
 	libsrcdir="$$s/wdiff"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif wdiff
 
@@ -29718,7 +31410,8 @@ configure-zip:
 	srcdiroption="--srcdir=$${topdir}/zip"; \
 	libsrcdir="$$s/zip"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif zip
 
@@ -30116,7 +31809,8 @@ configure-zlib:
 	srcdiroption="--srcdir=$${topdir}/zlib"; \
 	libsrcdir="$$s/zlib"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif zlib
 
@@ -30144,7 +31838,8 @@ configure-stage1-zlib:
 	srcdiroption="--srcdir=$${topdir}/zlib"; \
 	libsrcdir="$$s/zlib"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	   \
 	  --disable-intermodule $(STAGE1_CHECKING) 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif zlib-bootstrap
@@ -30172,7 +31867,8 @@ configure-stage2-zlib:
 	srcdiroption="--srcdir=$${topdir}/zlib"; \
 	libsrcdir="$$s/zlib"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif zlib-bootstrap
@@ -30200,7 +31896,8 @@ configure-stage3-zlib:
 	srcdiroption="--srcdir=$${topdir}/zlib"; \
 	libsrcdir="$$s/zlib"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif zlib-bootstrap
@@ -30228,7 +31925,8 @@ configure-stage4-zlib:
 	srcdiroption="--srcdir=$${topdir}/zlib"; \
 	libsrcdir="$$s/zlib"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif zlib-bootstrap
@@ -30256,7 +31954,8 @@ configure-stageprofile-zlib:
 	srcdiroption="--srcdir=$${topdir}/zlib"; \
 	libsrcdir="$$s/zlib"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif zlib-bootstrap
@@ -30284,7 +31983,8 @@ configure-stagefeedback-zlib:
 	srcdiroption="--srcdir=$${topdir}/zlib"; \
 	libsrcdir="$$s/zlib"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif zlib-bootstrap
@@ -30860,7 +32560,8 @@ configure-gdb:
 	srcdiroption="--srcdir=$${topdir}/gdb"; \
 	libsrcdir="$$s/gdb"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif gdb
 
@@ -31256,7 +32957,8 @@ configure-expect:
 	srcdiroption="--srcdir=$${topdir}/expect"; \
 	libsrcdir="$$s/expect"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif expect
 
@@ -31652,7 +33354,8 @@ configure-guile:
 	srcdiroption="--srcdir=$${topdir}/guile"; \
 	libsrcdir="$$s/guile"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif guile
 
@@ -32048,7 +33751,8 @@ configure-tk:
 	srcdiroption="--srcdir=$${topdir}/tk"; \
 	libsrcdir="$$s/tk"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif tk
 
@@ -32444,7 +34148,8 @@ configure-libtermcap:
 	srcdiroption="--srcdir=$${topdir}/libtermcap"; \
 	libsrcdir="$$s/libtermcap"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif libtermcap
 
@@ -32774,7 +34479,8 @@ configure-utils:
 	srcdiroption="--srcdir=$${topdir}/utils"; \
 	libsrcdir="$$s/utils"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif utils
 
@@ -33164,7 +34870,8 @@ configure-gnattools:
 	srcdiroption="--srcdir=$${topdir}/gnattools"; \
 	libsrcdir="$$s/gnattools"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption}  \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif gnattools
 
@@ -33581,7 +35288,8 @@ configure-target-libstdc++-v3:
 	libsrcdir="$$s/libstdc++-v3"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libstdc++-v3
 
@@ -33994,7 +35702,8 @@ configure-target-libmudflap:
 	libsrcdir="$$s/libmudflap"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libmudflap
 
@@ -34407,7 +36116,8 @@ configure-target-libssp:
 	libsrcdir="$$s/libssp"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libssp
 
@@ -34820,7 +36530,8 @@ configure-target-newlib:
 	libsrcdir="$$s/newlib"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-newlib
 
@@ -35232,7 +36943,8 @@ configure-target-libgcc:
 	libsrcdir="$$s/libgcc"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libgcc
 
@@ -35272,7 +36984,8 @@ configure-stage1-target-libgcc:
 	srcdiroption="--srcdir=$${topdir}/libgcc"; \
 	libsrcdir="$$s/libgcc"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	   \
 	  --disable-intermodule $(STAGE1_CHECKING) 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif target-libgcc-bootstrap
@@ -35312,7 +37025,8 @@ configure-stage2-target-libgcc:
 	srcdiroption="--srcdir=$${topdir}/libgcc"; \
 	libsrcdir="$$s/libgcc"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif target-libgcc-bootstrap
@@ -35352,7 +37066,8 @@ configure-stage3-target-libgcc:
 	srcdiroption="--srcdir=$${topdir}/libgcc"; \
 	libsrcdir="$$s/libgcc"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif target-libgcc-bootstrap
@@ -35392,7 +37107,8 @@ configure-stage4-target-libgcc:
 	srcdiroption="--srcdir=$${topdir}/libgcc"; \
 	libsrcdir="$$s/libgcc"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif target-libgcc-bootstrap
@@ -35432,7 +37148,8 @@ configure-stageprofile-target-libgcc:
 	srcdiroption="--srcdir=$${topdir}/libgcc"; \
 	libsrcdir="$$s/libgcc"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif target-libgcc-bootstrap
@@ -35472,7 +37189,8 @@ configure-stagefeedback-target-libgcc:
 	srcdiroption="--srcdir=$${topdir}/libgcc"; \
 	libsrcdir="$$s/libgcc"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption} \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif target-libgcc-bootstrap
@@ -36084,7 +37802,8 @@ configure-target-libgfortran:
 	libsrcdir="$$s/libgfortran"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libgfortran
 
@@ -36497,7 +38216,8 @@ configure-target-libobjc:
 	libsrcdir="$$s/libobjc"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libobjc
 
@@ -36910,7 +38630,8 @@ configure-target-libtermcap:
 	libsrcdir="$$s/libtermcap"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libtermcap
 
@@ -37258,7 +38979,8 @@ configure-target-winsup:
 	libsrcdir="$$s/winsup"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-winsup
 
@@ -37671,7 +39393,8 @@ configure-target-libgloss:
 	libsrcdir="$$s/libgloss"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libgloss
 
@@ -38079,7 +39802,8 @@ configure-target-libiberty:
 	libsrcdir="$$s/libiberty"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libiberty
 
@@ -38492,7 +40216,8 @@ configure-target-gperf:
 	libsrcdir="$$s/gperf"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-gperf
 
@@ -38905,7 +40630,8 @@ configure-target-examples:
 	libsrcdir="$$s/examples"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-examples
 
@@ -39308,7 +41034,8 @@ configure-target-libffi:
 	libsrcdir="$$s/libffi"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libffi
 
@@ -39721,7 +41448,8 @@ configure-target-libjava:
 	libsrcdir="$$s/libjava"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libjava
 
@@ -40134,7 +41862,8 @@ configure-target-zlib:
 	libsrcdir="$$s/zlib"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-zlib
 
@@ -40547,7 +42276,8 @@ configure-target-boehm-gc:
 	libsrcdir="$$s/boehm-gc"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-boehm-gc
 
@@ -40960,7 +42690,8 @@ configure-target-qthreads:
 	libsrcdir="$$s/qthreads"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-qthreads
 
@@ -41373,7 +43104,8 @@ configure-target-rda:
 	libsrcdir="$$s/rda"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-rda
 
@@ -41786,7 +43518,8 @@ configure-target-libada:
 	libsrcdir="$$s/libada"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libada
 
@@ -42199,7 +43932,8 @@ configure-target-libgomp:
 	libsrcdir="$$s/libgomp"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libgomp
 
@@ -42710,6 +44444,16 @@ stage1-start::
 	  mkdir stage1-gcc; \
 	mv stage1-gcc gcc 
 @endif gcc
+@if gmp
+	@cd $(HOST_SUBDIR); [ -d stage1-gmp ] || \
+	  mkdir stage1-gmp; \
+	mv stage1-gmp gmp 
+@endif gmp
+@if mpfr
+	@cd $(HOST_SUBDIR); [ -d stage1-mpfr ] || \
+	  mkdir stage1-mpfr; \
+	mv stage1-mpfr mpfr 
+@endif mpfr
 @if intl
 	@cd $(HOST_SUBDIR); [ -d stage1-intl ] || \
 	  mkdir stage1-intl; \
@@ -42770,6 +44514,16 @@ stage1-end::
 	  cd $(HOST_SUBDIR); mv gcc stage1-gcc  ; \
 	fi
 @endif gcc
+@if gmp
+	@if test -d $(HOST_SUBDIR)/gmp ; then \
+	  cd $(HOST_SUBDIR); mv gmp stage1-gmp  ; \
+	fi
+@endif gmp
+@if mpfr
+	@if test -d $(HOST_SUBDIR)/mpfr ; then \
+	  cd $(HOST_SUBDIR); mv mpfr stage1-mpfr  ; \
+	fi
+@endif mpfr
 @if intl
 	@if test -d $(HOST_SUBDIR)/intl ; then \
 	  cd $(HOST_SUBDIR); mv intl stage1-intl  ; \
@@ -42877,6 +44631,18 @@ stage2-start::
 	mv stage2-gcc gcc  ; \
 	mv stage1-gcc prev-gcc || test -f stage1-lean 
 @endif gcc
+@if gmp
+	@cd $(HOST_SUBDIR); [ -d stage2-gmp ] || \
+	  mkdir stage2-gmp; \
+	mv stage2-gmp gmp  ; \
+	mv stage1-gmp prev-gmp || test -f stage1-lean 
+@endif gmp
+@if mpfr
+	@cd $(HOST_SUBDIR); [ -d stage2-mpfr ] || \
+	  mkdir stage2-mpfr; \
+	mv stage2-mpfr mpfr  ; \
+	mv stage1-mpfr prev-mpfr || test -f stage1-lean 
+@endif mpfr
 @if intl
 	@cd $(HOST_SUBDIR); [ -d stage2-intl ] || \
 	  mkdir stage2-intl; \
@@ -42949,6 +44715,18 @@ stage2-end::
 	  mv prev-gcc stage1-gcc ; :  ; \
 	fi
 @endif gcc
+@if gmp
+	@if test -d $(HOST_SUBDIR)/gmp ; then \
+	  cd $(HOST_SUBDIR); mv gmp stage2-gmp ; \
+	  mv prev-gmp stage1-gmp ; :  ; \
+	fi
+@endif gmp
+@if mpfr
+	@if test -d $(HOST_SUBDIR)/mpfr ; then \
+	  cd $(HOST_SUBDIR); mv mpfr stage2-mpfr ; \
+	  mv prev-mpfr stage1-mpfr ; :  ; \
+	fi
+@endif mpfr
 @if intl
 	@if test -d $(HOST_SUBDIR)/intl ; then \
 	  cd $(HOST_SUBDIR); mv intl stage2-intl ; \
@@ -43084,6 +44862,18 @@ stage3-start::
 	mv stage3-gcc gcc  ; \
 	mv stage2-gcc prev-gcc || test -f stage2-lean 
 @endif gcc
+@if gmp
+	@cd $(HOST_SUBDIR); [ -d stage3-gmp ] || \
+	  mkdir stage3-gmp; \
+	mv stage3-gmp gmp  ; \
+	mv stage2-gmp prev-gmp || test -f stage2-lean 
+@endif gmp
+@if mpfr
+	@cd $(HOST_SUBDIR); [ -d stage3-mpfr ] || \
+	  mkdir stage3-mpfr; \
+	mv stage3-mpfr mpfr  ; \
+	mv stage2-mpfr prev-mpfr || test -f stage2-lean 
+@endif mpfr
 @if intl
 	@cd $(HOST_SUBDIR); [ -d stage3-intl ] || \
 	  mkdir stage3-intl; \
@@ -43156,6 +44946,18 @@ stage3-end::
 	  mv prev-gcc stage2-gcc ; :  ; \
 	fi
 @endif gcc
+@if gmp
+	@if test -d $(HOST_SUBDIR)/gmp ; then \
+	  cd $(HOST_SUBDIR); mv gmp stage3-gmp ; \
+	  mv prev-gmp stage2-gmp ; :  ; \
+	fi
+@endif gmp
+@if mpfr
+	@if test -d $(HOST_SUBDIR)/mpfr ; then \
+	  cd $(HOST_SUBDIR); mv mpfr stage3-mpfr ; \
+	  mv prev-mpfr stage2-mpfr ; :  ; \
+	fi
+@endif mpfr
 @if intl
 	@if test -d $(HOST_SUBDIR)/intl ; then \
 	  cd $(HOST_SUBDIR); mv intl stage3-intl ; \
@@ -43337,6 +45139,18 @@ stage4-start::
 	mv stage4-gcc gcc  ; \
 	mv stage3-gcc prev-gcc || test -f stage3-lean 
 @endif gcc
+@if gmp
+	@cd $(HOST_SUBDIR); [ -d stage4-gmp ] || \
+	  mkdir stage4-gmp; \
+	mv stage4-gmp gmp  ; \
+	mv stage3-gmp prev-gmp || test -f stage3-lean 
+@endif gmp
+@if mpfr
+	@cd $(HOST_SUBDIR); [ -d stage4-mpfr ] || \
+	  mkdir stage4-mpfr; \
+	mv stage4-mpfr mpfr  ; \
+	mv stage3-mpfr prev-mpfr || test -f stage3-lean 
+@endif mpfr
 @if intl
 	@cd $(HOST_SUBDIR); [ -d stage4-intl ] || \
 	  mkdir stage4-intl; \
@@ -43409,6 +45223,18 @@ stage4-end::
 	  mv prev-gcc stage3-gcc ; :  ; \
 	fi
 @endif gcc
+@if gmp
+	@if test -d $(HOST_SUBDIR)/gmp ; then \
+	  cd $(HOST_SUBDIR); mv gmp stage4-gmp ; \
+	  mv prev-gmp stage3-gmp ; :  ; \
+	fi
+@endif gmp
+@if mpfr
+	@if test -d $(HOST_SUBDIR)/mpfr ; then \
+	  cd $(HOST_SUBDIR); mv mpfr stage4-mpfr ; \
+	  mv prev-mpfr stage3-mpfr ; :  ; \
+	fi
+@endif mpfr
 @if intl
 	@if test -d $(HOST_SUBDIR)/intl ; then \
 	  cd $(HOST_SUBDIR); mv intl stage4-intl ; \
@@ -43587,6 +45413,18 @@ stageprofile-start::
 	mv stageprofile-gcc gcc  ; \
 	mv stage1-gcc prev-gcc || test -f stage1-lean 
 @endif gcc
+@if gmp
+	@cd $(HOST_SUBDIR); [ -d stageprofile-gmp ] || \
+	  mkdir stageprofile-gmp; \
+	mv stageprofile-gmp gmp  ; \
+	mv stage1-gmp prev-gmp || test -f stage1-lean 
+@endif gmp
+@if mpfr
+	@cd $(HOST_SUBDIR); [ -d stageprofile-mpfr ] || \
+	  mkdir stageprofile-mpfr; \
+	mv stageprofile-mpfr mpfr  ; \
+	mv stage1-mpfr prev-mpfr || test -f stage1-lean 
+@endif mpfr
 @if intl
 	@cd $(HOST_SUBDIR); [ -d stageprofile-intl ] || \
 	  mkdir stageprofile-intl; \
@@ -43659,6 +45497,18 @@ stageprofile-end::
 	  mv prev-gcc stage1-gcc ; :  ; \
 	fi
 @endif gcc
+@if gmp
+	@if test -d $(HOST_SUBDIR)/gmp ; then \
+	  cd $(HOST_SUBDIR); mv gmp stageprofile-gmp ; \
+	  mv prev-gmp stage1-gmp ; :  ; \
+	fi
+@endif gmp
+@if mpfr
+	@if test -d $(HOST_SUBDIR)/mpfr ; then \
+	  cd $(HOST_SUBDIR); mv mpfr stageprofile-mpfr ; \
+	  mv prev-mpfr stage1-mpfr ; :  ; \
+	fi
+@endif mpfr
 @if intl
 	@if test -d $(HOST_SUBDIR)/intl ; then \
 	  cd $(HOST_SUBDIR); mv intl stageprofile-intl ; \
@@ -43773,6 +45623,18 @@ stagefeedback-start::
 	mv stagefeedback-gcc gcc  ; \
 	mv stageprofile-gcc prev-gcc || test -f stageprofile-lean 
 @endif gcc
+@if gmp
+	@cd $(HOST_SUBDIR); [ -d stagefeedback-gmp ] || \
+	  mkdir stagefeedback-gmp; \
+	mv stagefeedback-gmp gmp  ; \
+	mv stageprofile-gmp prev-gmp || test -f stageprofile-lean 
+@endif gmp
+@if mpfr
+	@cd $(HOST_SUBDIR); [ -d stagefeedback-mpfr ] || \
+	  mkdir stagefeedback-mpfr; \
+	mv stagefeedback-mpfr mpfr  ; \
+	mv stageprofile-mpfr prev-mpfr || test -f stageprofile-lean 
+@endif mpfr
 @if intl
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-intl ] || \
 	  mkdir stagefeedback-intl; \
@@ -43845,6 +45707,18 @@ stagefeedback-end::
 	  mv prev-gcc stageprofile-gcc ; :  ; \
 	fi
 @endif gcc
+@if gmp
+	@if test -d $(HOST_SUBDIR)/gmp ; then \
+	  cd $(HOST_SUBDIR); mv gmp stagefeedback-gmp ; \
+	  mv prev-gmp stageprofile-gmp ; :  ; \
+	fi
+@endif gmp
+@if mpfr
+	@if test -d $(HOST_SUBDIR)/mpfr ; then \
+	  cd $(HOST_SUBDIR); mv mpfr stagefeedback-mpfr ; \
+	  mv prev-mpfr stageprofile-mpfr ; :  ; \
+	fi
+@endif mpfr
 @if intl
 	@if test -d $(HOST_SUBDIR)/intl ; then \
 	  cd $(HOST_SUBDIR); mv intl stagefeedback-intl ; \
@@ -44102,6 +45976,14 @@ all-stage3-gcc: all-stage3-libiberty
 all-stage4-gcc: all-stage4-libiberty
 all-stageprofile-gcc: all-stageprofile-libiberty
 all-stagefeedback-gcc: all-stagefeedback-libiberty
+all-gcc: maybe-all-gmp
+
+all-stage1-gcc: maybe-all-stage1-gmp
+all-stage2-gcc: maybe-all-stage2-gmp
+all-stage3-gcc: maybe-all-stage3-gmp
+all-stage4-gcc: maybe-all-stage4-gmp
+all-stageprofile-gcc: maybe-all-stageprofile-gmp
+all-stagefeedback-gcc: maybe-all-stagefeedback-gmp
 all-gcc: maybe-all-intl
 
 all-stage1-gcc: maybe-all-stage1-intl
@@ -44110,6 +45992,14 @@ all-stage3-gcc: maybe-all-stage3-intl
 all-stage4-gcc: maybe-all-stage4-intl
 all-stageprofile-gcc: maybe-all-stageprofile-intl
 all-stagefeedback-gcc: maybe-all-stagefeedback-intl
+all-gcc: maybe-all-mpfr
+
+all-stage1-gcc: maybe-all-stage1-mpfr
+all-stage2-gcc: maybe-all-stage2-mpfr
+all-stage3-gcc: maybe-all-stage3-mpfr
+all-stage4-gcc: maybe-all-stage4-mpfr
+all-stageprofile-gcc: maybe-all-stageprofile-mpfr
+all-stagefeedback-gcc: maybe-all-stagefeedback-mpfr
 all-gcc: maybe-all-build-texinfo
 
 all-stage1-gcc: maybe-all-build-texinfo
@@ -44226,6 +46116,14 @@ all-stageprofile-libcpp: maybe-all-stageprofile-intl
 all-stagefeedback-libcpp: maybe-all-stagefeedback-intl
 all-fixincludes: maybe-all-libiberty
 all-gnattools: maybe-all-target-libada
+configure-mpfr: maybe-all-gmp
+
+configure-stage1-mpfr: maybe-all-stage1-gmp
+configure-stage2-mpfr: maybe-all-stage2-gmp
+configure-stage3-mpfr: maybe-all-stage3-gmp
+configure-stage4-mpfr: maybe-all-stage4-gmp
+configure-stageprofile-mpfr: maybe-all-stageprofile-gmp
+configure-stagefeedback-mpfr: maybe-all-stagefeedback-gmp
 configure-gdb: maybe-configure-intl
 configure-gdb: maybe-configure-sim
 all-gdb: maybe-all-intl
