@@ -172,7 +172,6 @@ gfc_release_include_path (void)
 {
   gfc_directorylist *p;
 
-  gfc_free (gfc_option.module_dir);
   while (include_dirs != NULL)
     {
       p = include_dirs;
@@ -181,7 +180,6 @@ gfc_release_include_path (void)
       gfc_free (p);
     }
 
-  gfc_free (gfc_option.module_dir);
   while (intrinsic_modules_dirs != NULL)
     {
       p = intrinsic_modules_dirs;
@@ -189,6 +187,8 @@ gfc_release_include_path (void)
       gfc_free (p->path);
       gfc_free (p);
     }
+
+  gfc_free (gfc_option.module_dir);
 }
 
 
