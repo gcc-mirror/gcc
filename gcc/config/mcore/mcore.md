@@ -1,5 +1,5 @@
 ;;  Machine description the Motorola MCore
-;;  Copyright (C) 1993, 1999, 2000, 2004, 2005
+;;  Copyright (C) 1993, 1999, 2000, 2004, 2005, 2007
 ;;  Free Software Foundation, Inc.
 ;;  Contributed by Motorola.
 
@@ -192,11 +192,11 @@
 (define_split 
   [(parallel[
       (set (reg:CC 17)
-           (ne:CC (ne:SI (leu:CC (match_operand:SI 0 "mcore_arith_reg_operand" "r")
-                                 (match_operand:SI 1 "mcore_arith_reg_operand" "r"))
+           (ne:CC (ne:SI (leu:CC (match_operand:SI 0 "mcore_arith_reg_operand" "")
+                                 (match_operand:SI 1 "mcore_arith_reg_operand" ""))
                          (const_int 0))
                   (const_int 0)))
-      (clobber (match_operand:CC 2 "mcore_arith_reg_operand" "=r"))])]
+      (clobber (match_operand:CC 2 "mcore_arith_reg_operand" ""))])]
   ""
   [(set (reg:CC 17) (ne:SI (match_dup 0) (const_int 0)))
    (set (reg:CC 17) (leu:CC (match_dup 0) (match_dup 1)))])
@@ -355,7 +355,8 @@
   if (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < 0
       && ! mcore_arith_S_operand (operands[2]))
     {
-      int not_value = ~ INTVAL (operands[2]);
+      HOST_WIDE_INT not_value = ~ INTVAL (operands[2]);
+
       if (   CONST_OK_FOR_I (not_value)
           || CONST_OK_FOR_M (not_value)
 	  || CONST_OK_FOR_N (not_value))
@@ -730,9 +731,11 @@
   /* Convert adds to subtracts if this makes loading the constant cheaper.
      But only if we are allowed to generate new pseudos.  */
   if (! (reload_in_progress || reload_completed)
-      && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < -32)
+      && GET_CODE (operands[2]) == CONST_INT
+      && INTVAL (operands[2]) < -32)
     {
-      int neg_value = - INTVAL (operands[2]);
+      HOST_WIDE_INT neg_value = - INTVAL (operands[2]);
+
       if (   CONST_OK_FOR_I (neg_value)
 	  || CONST_OK_FOR_M (neg_value)
 	  || CONST_OK_FOR_N (neg_value))
@@ -764,7 +767,7 @@
 ;;        || (INTVAL (operands[2]) < -32 && INTVAL(operands[2]) >= -64))"
 ;;   "*
 ;; {
-;;    int n = INTVAL(operands[2]);
+;;    HOST_WIDE_INT n = INTVAL(operands[2]);
 ;;    if (n > 0)
 ;;      {
 ;;        operands[2] = GEN_INT(n - 32);
@@ -822,7 +825,7 @@
 ;;        || (INTVAL (operands[2]) < -32 && INTVAL(operands[2]) >= -64))"
 ;;   "*
 ;; {
-;;    int n = INTVAL(operands[2]);
+;;    HOST_WIDE_INT n = INTVAL(operands[2]);
 ;;    if ( n > 0)
 ;;      {
 ;;        operands[2] = GEN_INT( n - 32);
@@ -2976,8 +2979,9 @@
         (match_operand:SI 1 "const_int_operand" ""))
    (set (match_operand:SI 2 "mcore_arith_reg_operand" "")
         (ior:SI (match_dup 2) (match_dup 0)))]
-  "TARGET_HARDLIT && mcore_num_ones (INTVAL (operands[1])) == 2 &&
-       mcore_is_dead (insn, operands[0])"
+  "TARGET_HARDLIT
+   && mcore_num_ones (INTVAL (operands[1])) == 2
+   && mcore_is_dead (insn, operands[0])"
   "* return mcore_output_bseti (operands[2], INTVAL (operands[1]));")
 
 (define_peephole
@@ -3276,7 +3280,7 @@
   if (GET_CODE (operands[1]) == CONST_INT
       && INTVAL (operands[1]) < 8 * STACK_UNITS_MAXSTEP)
     {
-      int left = INTVAL(operands[1]);
+      HOST_WIDE_INT left = INTVAL(operands[1]);
 
       /* If it's a long way, get close enough for a last shot.  */
       if (left >= STACK_UNITS_MAXSTEP)
@@ -3295,7 +3299,7 @@
 	  while (left > STACK_UNITS_MAXSTEP);
 	}
       /* Perform the final adjustment.  */
-      emit_insn (gen_addsi3 (stack_pointer_rtx,stack_pointer_rtx,GEN_INT(-left)));
+      emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, GEN_INT (-left)));
 ;;      emit_move_insn (operands[0], virtual_stack_dynamic_rtx);
       DONE;
     }
@@ -3309,7 +3313,7 @@
 
 #if 1
       emit_insn (gen_movsi (tmp, operands[1]));
-      emit_insn (gen_movsi (step, GEN_INT(STACK_UNITS_MAXSTEP)));
+      emit_insn (gen_movsi (step, GEN_INT (STACK_UNITS_MAXSTEP)));
 
       if (GET_CODE (operands[1]) != CONST_INT)
 	{

@@ -1,5 +1,5 @@
 /* Output routines for Motorola MCore processor
-   Copyright (C) 1993, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1993, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -118,7 +118,7 @@ cond_type;
 
 static void       output_stack_adjust           (int, int);
 static int        calc_live_regs                (int *);
-static int        try_constant_tricks           (long, int *, int *);
+static int        try_constant_tricks           (long, HOST_WIDE_INT *, HOST_WIDE_INT *);
 static const char *     output_inline_const     (enum machine_mode, rtx *);
 static void       layout_mcore_frame            (struct mcore_frame *);
 static void       mcore_setup_incoming_varargs	(CUMULATIVE_ARGS *, enum machine_mode, tree, int *, int);
@@ -345,7 +345,7 @@ mcore_print_operand (FILE * stream, rtx x, int code)
 	fprintf (asm_out_file, "%d", exact_log2 (INTVAL (x) + 1));
       break;
     case 'P':
-      fprintf (asm_out_file, "%d", exact_log2 (INTVAL (x)));
+      fprintf (asm_out_file, "%d", exact_log2 (INTVAL (x) & 0xffffffff));
       break;
     case 'Q':
       fprintf (asm_out_file, "%d", exact_log2 (~INTVAL (x)));
@@ -404,7 +404,7 @@ mcore_print_operand (FILE * stream, rtx x, int code)
 static int
 mcore_const_costs (rtx exp, enum rtx_code code)
 {
-  int val = INTVAL (exp);
+  HOST_WIDE_INT val = INTVAL (exp);
 
   /* Easy constants.  */
   if (   CONST_OK_FOR_I (val)	
@@ -432,7 +432,7 @@ mcore_const_costs (rtx exp, enum rtx_code code)
 static int
 mcore_and_cost (rtx x)
 {
-  int val;
+  HOST_WIDE_INT val;
 
   if (GET_CODE (XEXP (x, 1)) != CONST_INT)
     return 2;
@@ -458,7 +458,7 @@ mcore_and_cost (rtx x)
 static int
 mcore_ior_cost (rtx x)
 {
-  int val;
+  HOST_WIDE_INT val;
 
   if (GET_CODE (XEXP (x, 1)) != CONST_INT)
     return 2;
@@ -529,7 +529,7 @@ mcore_modify_comparison (enum rtx_code code)
   
   if (GET_CODE (op1) == CONST_INT)
     {
-      int val = INTVAL (op1);
+      HOST_WIDE_INT val = INTVAL (op1);
       
       switch (code)
 	{
@@ -686,17 +686,17 @@ mcore_output_call (rtx operands[], int index)
 /* Can we load a constant with a single instruction ?  */
 
 int
-const_ok_for_mcore (int value)
+const_ok_for_mcore (HOST_WIDE_INT value)
 {
   if (value >= 0 && value <= 127)
     return 1;
   
   /* Try exact power of two.  */
-  if ((value & (value - 1)) == 0)
+  if (CONST_OK_FOR_M (value))
     return 1;
   
   /* Try exact power of two - 1.  */
-  if ((value & (value + 1)) == 0)
+  if (CONST_OK_FOR_N (value) && value != -1)
     return 1;
   
   return 0;
@@ -705,9 +705,9 @@ const_ok_for_mcore (int value)
 /* Can we load a constant inline with up to 2 instructions ?  */
 
 int
-mcore_const_ok_for_inline (long value)
+mcore_const_ok_for_inline (HOST_WIDE_INT value)
 {
-  int x, y;
+  HOST_WIDE_INT x, y;
    
   return try_constant_tricks (value, & x, & y) > 0;
 }
@@ -715,9 +715,9 @@ mcore_const_ok_for_inline (long value)
 /* Are we loading the constant using a not ?  */
 
 int
-mcore_const_trick_uses_not (long value)
+mcore_const_trick_uses_not (HOST_WIDE_INT value)
 {
-  int x, y;
+  HOST_WIDE_INT x, y;
 
   return try_constant_tricks (value, & x, & y) == 2; 
 }       
@@ -739,120 +739,119 @@ mcore_const_trick_uses_not (long value)
    11: single insn followed by ixw.  */
 
 static int
-try_constant_tricks (long value, int * x, int * y)
+try_constant_tricks (HOST_WIDE_INT value, HOST_WIDE_INT * x, HOST_WIDE_INT * y)
 {
-  int i;
-  unsigned bit, shf, rot;
+  HOST_WIDE_INT i;
+  unsigned HOST_WIDE_INT bit, shf, rot;
 
   if (const_ok_for_mcore (value))
     return 1;	/* Do the usual thing.  */
   
-  if (TARGET_HARDLIT) 
+  if (! TARGET_HARDLIT) 
+    return 0;
+
+  if (const_ok_for_mcore (~value))
     {
-      if (const_ok_for_mcore (~value))
+      *x = ~value;
+      return 2;
+    }
+
+  for (i = 1; i <= 32; i++)
+    {
+      if (const_ok_for_mcore (value - i))
 	{
-	  *x = ~value;
-	  return 2;
+	  *x = value - i;
+	  *y = i;
+
+	  return 3;
 	}
-      
-      for (i = 1; i <= 32; i++)
+
+      if (const_ok_for_mcore (value + i))
 	{
-	  if (const_ok_for_mcore (value - i))
-	    {
-	      *x = value - i;
-	      *y = i;
-	      
-	      return 3;
-	    }
-	  
-	  if (const_ok_for_mcore (value + i))
-	    {
-	      *x = value + i;
-	      *y = i;
-	      
-	      return 4;
-	    }
+	  *x = value + i;
+	  *y = i;
+
+	  return 4;
 	}
-      
-      bit = 0x80000000L;
-      
-      for (i = 0; i <= 31; i++)
+    }
+
+  bit = 0x80000000ULL;
+
+  for (i = 0; i <= 31; i++)
+    {
+      if (const_ok_for_mcore (i - value))
 	{
-	  if (const_ok_for_mcore (i - value))
-	    {
-	      *x = i - value;
-	      *y = i;
-	      
-	      return 5;
-	    }
-	  
-	  if (const_ok_for_mcore (value & ~bit))
-	    {
-	      *y = bit;
-	      *x = value & ~bit;
-	      
-	      return 6;
-	    }
-	  
-	  if (const_ok_for_mcore (value | bit))
-	    {
-	      *y = ~bit;
-	      *x = value | bit;
-	      
-	      return 7;
-	    }
-	  
-	  bit >>= 1;
+	  *x = i - value;
+	  *y = i;
+
+	  return 5;
 	}
-      
-      shf = value;
-      rot = value;
-      
-      for (i = 1; i < 31; i++)
+
+      if (const_ok_for_mcore (value & ~bit))
 	{
-	  int c;
-	  
-	  /* MCore has rotate left.  */
-	  c = rot << 31;
-	  rot >>= 1;
-	  rot &= 0x7FFFFFFF;
-	  rot |= c;   /* Simulate rotate.  */
-	  
-	  if (const_ok_for_mcore (rot))
-	    {
-	      *y = i;
-	      *x = rot;
-	      
-	      return 8;
-	    }
-	  
-	  if (shf & 1)
-	    shf = 0;	/* Can't use logical shift, low order bit is one.  */
-	  
-	  shf >>= 1;
-	  
-	  if (shf != 0 && const_ok_for_mcore (shf))
-	    {
-	      *y = i;
-	      *x = shf;
-	      
-	      return 9;
-	    }
+	  *y = bit;
+	  *x = value & ~bit;
+	  return 6;
 	}
-      
-      if ((value % 3) == 0 && const_ok_for_mcore (value / 3))
+
+      if (const_ok_for_mcore (value | bit))
 	{
-	  *x = value / 3;
-	  
-	  return 10;
+	  *y = ~bit;
+	  *x = value | bit;
+
+	  return 7;
 	}
-      
-      if ((value % 5) == 0 && const_ok_for_mcore (value / 5))
+
+      bit >>= 1;
+    }
+
+  shf = value;
+  rot = value;
+
+  for (i = 1; i < 31; i++)
+    {
+      int c;
+
+      /* MCore has rotate left.  */
+      c = rot << 31;
+      rot >>= 1;
+      rot &= 0x7FFFFFFF;
+      rot |= c;   /* Simulate rotate.  */
+
+      if (const_ok_for_mcore (rot))
 	{
-	  *x = value / 5;
-	  
-	  return 11;
+	  *y = i;
+	  *x = rot;
+
+	  return 8;
 	}
+
+      if (shf & 1)
+	shf = 0;	/* Can't use logical shift, low order bit is one.  */
+
+      shf >>= 1;
+
+      if (shf != 0 && const_ok_for_mcore (shf))
+	{
+	  *y = i;
+	  *x = shf;
+
+	  return 9;
+	}
+    }
+
+  if ((value % 3) == 0 && const_ok_for_mcore (value / 3))
+    {
+      *x = value / 3;
+
+      return 10;
+    }
+
+  if ((value % 5) == 0 && const_ok_for_mcore (value / 5))
+    {
+      *x = value / 5;
+
+      return 11;
     }
   
   return 0;
@@ -910,7 +909,7 @@ mcore_is_dead (rtx first, rtx reg)
 /* Count the number of ones in mask.  */
 
 int
-mcore_num_ones (int mask)
+mcore_num_ones (HOST_WIDE_INT mask)
 {
   /* A trick to count set bits recently posted on comp.compilers.  */
   mask =  (mask >> 1  & 0x55555555) + (mask & 0x55555555);
@@ -924,7 +923,7 @@ mcore_num_ones (int mask)
 /* Count the number of zeros in mask.  */
 
 int
-mcore_num_zeros (int mask)
+mcore_num_zeros (HOST_WIDE_INT mask)
 {
   return 32 - mcore_num_ones (mask);
 }
@@ -1015,8 +1014,8 @@ mcore_output_bclri (rtx dst, int mask)
 const char *
 mcore_output_cmov (rtx operands[], int cmp_t, const char * test)
 {
-  int load_value;
-  int adjust_value;
+  HOST_WIDE_INT load_value;
+  HOST_WIDE_INT adjust_value;
   rtx out_operands[4];
 
   out_operands[0] = operands[0];
@@ -1049,9 +1048,9 @@ mcore_output_cmov (rtx operands[], int cmp_t, const char * test)
      instruction sequence has a different length attribute).  */
   if (load_value >= 0 && load_value <= 127)
     output_asm_insn ("movi\t%0,%1", out_operands);
-  else if ((load_value & (load_value - 1)) == 0)
+  else if (CONST_OK_FOR_M (load_value))
     output_asm_insn ("bgeni\t%0,%P1", out_operands);
-  else if ((load_value & (load_value + 1)) == 0)
+  else if (CONST_OK_FOR_N (load_value))
     output_asm_insn ("bmaski\t%0,%N1", out_operands);
    
   /* Output the constant adjustment.  */
@@ -1079,7 +1078,7 @@ mcore_output_cmov (rtx operands[], int cmp_t, const char * test)
 const char *
 mcore_output_andn (rtx insn ATTRIBUTE_UNUSED, rtx operands[])
 {
-  int x, y;
+  HOST_WIDE_INT x, y;
   rtx out_operands[3];
   const char * load_op;
   char buf[256];
@@ -1089,22 +1088,25 @@ mcore_output_andn (rtx insn ATTRIBUTE_UNUSED, rtx operands[])
   gcc_assert (trick_no == 2);
 
   out_operands[0] = operands[0];
-  out_operands[1] = GEN_INT(x);
+  out_operands[1] = GEN_INT (x);
   out_operands[2] = operands[2];
 
   if (x >= 0 && x <= 127)
     load_op = "movi\t%0,%1";
   
   /* Try exact power of two.  */
-  else if ((x & (x - 1)) == 0)
+  else if (CONST_OK_FOR_M (x))
     load_op = "bgeni\t%0,%P1";
   
   /* Try exact power of two - 1.  */
-  else if ((x & (x + 1)) == 0)
+  else if (CONST_OK_FOR_N (x))
     load_op = "bmaski\t%0,%N1";
   
-  else 
-    load_op = "BADMOVI\t%0,%1";
+  else
+    {
+      load_op = "BADMOVI-andn\t%0, %1";
+      gcc_unreachable ();
+    }
 
   sprintf (buf, "%s\n\tandn\t%%2,%%0", load_op);
   output_asm_insn (buf, out_operands);
@@ -1117,13 +1119,13 @@ mcore_output_andn (rtx insn ATTRIBUTE_UNUSED, rtx operands[])
 static const char *
 output_inline_const (enum machine_mode mode, rtx operands[])
 {
-  int x = 0, y = 0;
+  HOST_WIDE_INT x = 0, y = 0;
   int trick_no;
   rtx out_operands[3];
   char buf[256];
   char load_op[256];
   const char *dst_fmt;
-  int value;
+  HOST_WIDE_INT value;
 
   value = INTVAL (operands[1]);
 
@@ -1153,15 +1155,18 @@ output_inline_const (enum machine_mode mode, rtx operands[])
     sprintf (load_op, "movi\t%s,%%1", dst_fmt);
   
   /* Try exact power of two.  */
-  else if ((x & (x - 1)) == 0)
+  else if (CONST_OK_FOR_M (x))
     sprintf (load_op, "bgeni\t%s,%%P1", dst_fmt);
   
   /* Try exact power of two - 1.  */
-  else if ((x & (x + 1)) == 0)
+  else if (CONST_OK_FOR_N (x))
     sprintf (load_op, "bmaski\t%s,%%N1", dst_fmt);
   
-  else 
-    sprintf (load_op, "BADMOVI\t%s,%%1", dst_fmt);
+  else
+    {
+      sprintf (load_op, "BADMOVI-inline_const %s, %%1", dst_fmt);
+      gcc_unreachable ();
+    }      
 
   switch (trick_no)
     {
@@ -1169,35 +1174,35 @@ output_inline_const (enum machine_mode mode, rtx operands[])
       strcpy (buf, load_op);
       break;
     case 2:   /* not */
-      sprintf (buf, "%s\n\tnot\t%s\t// %d 0x%x", load_op, dst_fmt, value, value);
+      sprintf (buf, "%s\n\tnot\t%s\t// %ld 0x%lx", load_op, dst_fmt, value, value);
       break;
     case 3:   /* add */
-      sprintf (buf, "%s\n\taddi\t%s,%%2\t// %d 0x%x", load_op, dst_fmt, value, value);
+      sprintf (buf, "%s\n\taddi\t%s,%%2\t// %ld 0x%lx", load_op, dst_fmt, value, value);
       break;
     case 4:   /* sub */
-      sprintf (buf, "%s\n\tsubi\t%s,%%2\t// %d 0x%x", load_op, dst_fmt, value, value);
+      sprintf (buf, "%s\n\tsubi\t%s,%%2\t// %ld 0x%lx", load_op, dst_fmt, value, value);
       break;
     case 5:   /* rsub */
       /* Never happens unless -mrsubi, see try_constant_tricks().  */
-      sprintf (buf, "%s\n\trsubi\t%s,%%2\t// %d 0x%x", load_op, dst_fmt, value, value);
+      sprintf (buf, "%s\n\trsubi\t%s,%%2\t// %ld 0x%lx", load_op, dst_fmt, value, value);
       break;
-    case 6:   /* bset */
-      sprintf (buf, "%s\n\tbseti\t%s,%%P2\t// %d 0x%x", load_op, dst_fmt, value, value);
+    case 6:   /* bseti */
+      sprintf (buf, "%s\n\tbseti\t%s,%%P2\t// %ld 0x%lx", load_op, dst_fmt, value, value);
       break;
     case 7:   /* bclr */
-      sprintf (buf, "%s\n\tbclri\t%s,%%Q2\t// %d 0x%x", load_op, dst_fmt, value, value);
+      sprintf (buf, "%s\n\tbclri\t%s,%%Q2\t// %ld 0x%lx", load_op, dst_fmt, value, value);
       break;
     case 8:   /* rotl */
-      sprintf (buf, "%s\n\trotli\t%s,%%2\t// %d 0x%x", load_op, dst_fmt, value, value);
+      sprintf (buf, "%s\n\trotli\t%s,%%2\t// %ld 0x%lx", load_op, dst_fmt, value, value);
       break;
     case 9:   /* lsl */
-      sprintf (buf, "%s\n\tlsli\t%s,%%2\t// %d 0x%x", load_op, dst_fmt, value, value);
+      sprintf (buf, "%s\n\tlsli\t%s,%%2\t// %ld 0x%lx", load_op, dst_fmt, value, value);
       break;
     case 10:  /* ixh */
-      sprintf (buf, "%s\n\tixh\t%s,%s\t// %d 0x%x", load_op, dst_fmt, dst_fmt, value, value);
+      sprintf (buf, "%s\n\tixh\t%s,%s\t// %ld 0x%lx", load_op, dst_fmt, dst_fmt, value, value);
       break;
     case 11:  /* ixw */
-      sprintf (buf, "%s\n\tixw\t%s,%s\t// %d 0x%x", load_op, dst_fmt, dst_fmt, value, value);
+      sprintf (buf, "%s\n\tixw\t%s,%s\t// %ld 0x%lx", load_op, dst_fmt, dst_fmt, value, value);
       break;
     default:
       return "";
@@ -1245,7 +1250,7 @@ mcore_output_move (rtx insn ATTRIBUTE_UNUSED, rtx operands[],
 	}
       else if (GET_CODE (src) == CONST_INT)
 	{
-	  int x, y;
+	  HOST_WIDE_INT x, y;
 	  
 	  if (CONST_OK_FOR_I (INTVAL (src)))       /* r-I */
             return "movi\t%0,%1";
@@ -1342,8 +1347,6 @@ mcore_output_movedouble (rtx operands[], enum machine_mode mode ATTRIBUTE_UNUSED
 		output_asm_insn ("movi	%0,%1", operands);
 	      else if (CONST_OK_FOR_M (INTVAL (src)))
 		output_asm_insn ("bgeni	%0,%P1", operands);
-	      else if (INTVAL (src) == -1)
-		output_asm_insn ("bmaski	%0,32", operands);
 	      else if (CONST_OK_FOR_N (INTVAL (src)))
 		output_asm_insn ("bmaski	%0,%N1", operands);
 	      else
@@ -1360,13 +1363,11 @@ mcore_output_movedouble (rtx operands[], enum machine_mode mode ATTRIBUTE_UNUSED
 		output_asm_insn ("movi	%R0,%1", operands);
 	      else if (CONST_OK_FOR_M (INTVAL (src)))
 		output_asm_insn ("bgeni	%R0,%P1", operands);
-	      else if (INTVAL (src) == -1)
-		output_asm_insn ("bmaski	%R0,32", operands);
 	      else if (CONST_OK_FOR_N (INTVAL (src)))
 		output_asm_insn ("bmaski	%R0,%N1", operands);
 	      else
 		gcc_unreachable ();
-	      
+
 	      if (INTVAL (src) < 0)
 		return "bmaski	%0,32";
 	      else
@@ -1410,7 +1411,7 @@ mcore_expand_insv (rtx operands[])
     {
       /* Do directly with bseti or bclri.  */
       /* RBE: 2/97 consider only low bit of constant.  */
-      if ((INTVAL(operands[3])&1) == 0)
+      if ((INTVAL (operands[3]) & 1) == 0)
 	{
 	  mask = ~(1 << posn);
 	  emit_insn (gen_rtx_SET (SImode, operands[0],
@@ -1445,8 +1446,8 @@ mcore_expand_insv (rtx operands[])
      immediates.  */
 
   /* If setting the entire field, do it directly.  */
-  if (GET_CODE (operands[3]) == CONST_INT && 
-      INTVAL (operands[3]) == ((1 << width) - 1))
+  if (GET_CODE (operands[3]) == CONST_INT
+      && INTVAL (operands[3]) == ((1 << width) - 1))
     {
       mreg = force_reg (SImode, GEN_INT (INTVAL (operands[3]) << posn));
       emit_insn (gen_rtx_SET (SImode, operands[0],
