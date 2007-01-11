@@ -3540,6 +3540,7 @@ remove_range_assertions (void)
 
 	    /* And finally, remove the copy, it is not needed.  */
 	    bsi_remove (&si, true);
+	    release_defs (stmt); 
 	  }
 	else
 	  bsi_next (&si);

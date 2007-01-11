@@ -2109,6 +2109,7 @@ remove_stmt_or_phi (tree t)
     {
       block_stmt_iterator bsi = bsi_for_stmt (t);
       bsi_remove (&bsi, true);
+      release_defs (t);
     }
 }
 
