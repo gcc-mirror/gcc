@@ -1,3 +1,8 @@
+2007-01-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28999
+	* g++.dg/template/typename11.C: New test.
+
 2007-01-10  Robert Kennedy <jimbob@google.com>
 
 	* gcc.dg/fold-compare-2.c: New test case for fold_comparison.
