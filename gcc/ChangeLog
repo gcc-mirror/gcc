@@ -1,3 +1,10 @@
+2007-01-11  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/15185, PR preprocessor/20989:
+	* doc/cppopts.texi <-MT>: Update description of algorithm for
+	computing default target.
+	<-M, -MD>: Reword "basename" text.
+
 2007-01-11  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (expand_builtin_pow, expand_builtin_powi,
