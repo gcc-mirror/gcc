@@ -1709,6 +1709,21 @@ cp_tree_equal (tree t1, tree t2)
 	  return cp_tree_equal (o1, o2);
       }
 
+    case MODOP_EXPR:
+      {
+	tree t1_op1, t2_op1;
+
+	if (!cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0)))
+	  return false;
+
+	t1_op1 = TREE_OPERAND (t1, 1);
+	t2_op1 = TREE_OPERAND (t2, 1);
+	if (TREE_CODE (t1_op1) != TREE_CODE (t2_op1))
+	  return false;
+
+	return cp_tree_equal (TREE_OPERAND (t1, 2), TREE_OPERAND (t2, 2));
+      }
+
     case PTRMEM_CST:
       /* Two pointer-to-members are the same if they point to the same
 	 field or function in the same class.  */

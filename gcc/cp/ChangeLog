@@ -1,3 +1,8 @@
+2007-01-11  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/29573
+	* tree.c (cp_tree_equal): Properly handle MODOP_EXPR trees.
+
 2007-01-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28999
