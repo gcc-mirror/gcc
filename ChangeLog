@@ -1,3 +1,25 @@
+2007-01-11  Paolo Bonzini  <bonzini@gnu.org>
+            Nick Clifton  <nickc@redhat.com>
+            Kaveh R. Ghazi  <ghazi@caip.rutgets.edu>
+
+        * configure.in (build_configargs, host_configargs, target_configargs):
+        Remove build/host/target parameters.
+        (host_libs): Add gmp and mpfr.
+        (GMP tests): Reorganize to allow in-tree GMP/MPFR.
+        * Makefile.def (gmp, mpfr): New.
+        (gcc): Remove target.
+        * Makefile.tpl (build_os, build_vendor, host_os, host_vendor,
+        target_os, target_vendor): New.
+        (configure): Add host_alias/target_alias arguments.  Adjust invocations.
+        * configure: Regenerate.
+        * Makefile.in: Regenerate.
+
+2007-01-11  Matt Fago  <fago@earthlink.net>
+
+	* configure.in: Try to link to functions only in mpfr 2.2.x
+        to improve robustness of configure tests.
+	* configure: Regenerate.
+	
 2007-01-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* MAINTAINERS: Add myself as i386 maintainer.
