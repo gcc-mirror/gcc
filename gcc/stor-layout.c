@@ -1,6 +1,6 @@
 /* C-compiler utilities for types and variables storage layout
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1996, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1195,7 +1195,7 @@ place_field (record_layout_info rli, tree field)
   if (DECL_SIZE (field) == 0)
     /* Do nothing.  */;
   else if (TREE_CODE (DECL_SIZE (field)) != INTEGER_CST
-	   || TREE_CONSTANT_OVERFLOW (DECL_SIZE (field)))
+	   || TREE_OVERFLOW (DECL_SIZE (field)))
     {
       rli->offset
 	= size_binop (PLUS_EXPR, rli->offset,
@@ -1821,7 +1821,7 @@ layout_type (tree type)
 	    && TREE_CODE (TYPE_SIZE_UNIT (element)) == INTEGER_CST
 	    /* If TYPE_SIZE_UNIT overflowed, then it is certainly larger than
 	       TYPE_ALIGN_UNIT.  */
-	    && !TREE_CONSTANT_OVERFLOW (TYPE_SIZE_UNIT (element))
+	    && !TREE_OVERFLOW (TYPE_SIZE_UNIT (element))
 	    && !integer_zerop (TYPE_SIZE_UNIT (element))
 	    && compare_tree_int (TYPE_SIZE_UNIT (element),
 			  	 TYPE_ALIGN_UNIT (element)) < 0)
