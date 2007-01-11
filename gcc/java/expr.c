@@ -1059,13 +1059,9 @@ build_newarray (int atype_value, tree length)
 			     host_integerp (length, 0) == INTEGER_CST
 			     ? tree_low_cst (length, 0) : -1);
 
-  /* If compiling to native, pass a reference to the primitive type class 
-     and save the runtime some work. However, the bytecode generator
-     expects to find the type_code int here. */
-  if (flag_emit_class_files)
-    type_arg = build_int_cst (NULL_TREE, atype_value);
-  else
-    type_arg = build_class_ref (prim_type);
+  /* Pass a reference to the primitive type class and save the runtime
+     some work.  */
+  type_arg = build_class_ref (prim_type);
 
   return build3 (CALL_EXPR, promote_type (type),
 		 build_address_of (soft_newarray_node),

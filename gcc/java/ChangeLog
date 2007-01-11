@@ -1,3 +1,25 @@
+2007-01-11  Tom Tromey  <tromey@redhat.com>
+
+	* typeck.c (convert): Don't use flag_emit_class_files.
+	* lang.c (java_post_options): Don't use flag_emit_class_files.
+	(java_handle_option): Don't use flag_extraneous_semicolon or
+	flag_redundant.
+	* jcf-parse.c (HANDLE_CONSTANTVALUE): Don't use
+	flag_emit_class_files.
+	(load_class): Likewise.
+	* java-tree.h (flag_emit_class_files): Don't declare.
+	(STATIC_CLASS_INIT_OPT_P): Don't use flag_emit_class_files.
+	(flag_extraneous_semicolon): Don't declare.
+	(flag_not_overriding): Likewise.
+	(flag_static_local_jdk1_1): Likewise.
+	(flag_redundant): Likewise.
+	* expr.c (build_newarray): Don't use flag_emit_class_files.
+	* class.c (DEFAULT_ENABLE_ASSERT): Don't use
+	flag_emit_class_files.
+	(build_class_ref): Likewise.
+	* builtins.c (check_for_builtin): Don't use
+	flag_emit_class_files.
+
 2007-01-10  Tom Tromey  <tromey@redhat.com>
 
 	* lang.c (java_can_use_bit_fields_p): Removed.

@@ -912,7 +912,7 @@ handle_signature_attribute (int member_index, JCF *jcf,
 
 #define HANDLE_CONSTANTVALUE(INDEX) \
 { tree constant;  int index = INDEX; \
-  if (! flag_emit_class_files && JPOOL_TAG (jcf, index) == CONSTANT_String) { \
+  if (JPOOL_TAG (jcf, index) == CONSTANT_String) { \
     tree name = get_name_constant (jcf, JPOOL_USHORT1 (jcf, index)); \
     constant = build_utf8_ref (name); \
   } \
@@ -1469,8 +1469,7 @@ load_class (tree class_or_name, int verbose)
   
   if (!class_loaded)
     {
-      if (flag_verify_invocations || ! flag_indirect_dispatch
-	  || flag_emit_class_files)
+      if (flag_verify_invocations || ! flag_indirect_dispatch)
 	{
 	  if (verbose)
 	    error ("cannot find file for class %s", IDENTIFIER_POINTER (saved));
