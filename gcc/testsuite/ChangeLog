@@ -1,3 +1,8 @@
+2007-01-11  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/29573
+	* g++.dg/template/sizeof-template-argument.C: New test.
+
 2007-01-11  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/tailrecursion-4.c: Update dump file.
