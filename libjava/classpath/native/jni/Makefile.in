@@ -290,6 +290,7 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
+toolexeclibdir = @toolexeclibdir@
 vm_classes = @vm_classes@
 @CREATE_CORE_JNI_LIBRARIES_TRUE@JNIDIRS = native-lib java-io java-lang java-net java-nio java-util
 @CREATE_ALSA_LIBRARIES_TRUE@ALSADIR = midi-alsa

@@ -293,11 +293,12 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
+toolexeclibdir = @toolexeclibdir@
 vm_classes = @vm_classes@
 logging_DATA = java/util/logging/logging.properties
-loggingdir = $(prefix)/lib
+loggingdir = $(toolexeclibdir)
 security_DATA = java/security/classpath.security
-securitydir = $(prefix)/lib/security
+securitydir = $(toolexeclibdir)/security
 all: all-am
 
 .SUFFIXES:

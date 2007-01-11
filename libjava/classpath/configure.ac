@@ -236,15 +236,24 @@ AC_ARG_ENABLE([plugin],
 AM_CONDITIONAL(CREATE_PLUGIN, test "x${COMPILE_PLUGIN}" = xyes)
 
 dnl -----------------------------------------------------------
+dnl GCJ LOCAL: Calculates and substitutes toolexeclibdir.  $libdir is
+dnl defined to the same value for all multilibs.  We define toolexeclibdir
+dnl so that we can refer to the multilib installation directories from
+dnl classpath's build files.
+dnl -----------------------------------------------------------
+CLASSPATH_TOOLEXECLIBDIR
+
+dnl -----------------------------------------------------------
 dnl Sets the native libraries installation dir
 dnl -----------------------------------------------------------
+dnl GCJ LOCAL: default to ${toolexeclibdir}/gcj-${gcc_version}
 AC_ARG_WITH([native-libdir],
 	    [AS_HELP_STRING(--with-native-libdir,sets the installation directory for native libraries [default='${libdir}/${PACKAGE}'])],
 	    [
 	     nativeexeclibdir=${withval}
 	    ],
 	    [
-	     nativeexeclibdir='${libdir}/${PACKAGE}'
+	     nativeexeclibdir='${toolexeclibdir}/gcj-'`cat ${srcdir}/../../gcc/BASE-VER`
 	    ])
 
 AC_SUBST(nativeexeclibdir)

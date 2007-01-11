@@ -41,9 +41,10 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(top_srcdir)/gnu/classpath/Configuration.java.in \
 	$(top_srcdir)/gnu/java/security/Configuration.java.in \
 	$(top_srcdir)/resource/META-INF/services/java.util.prefs.PreferencesFactory.in \
-	AUTHORS COPYING ChangeLog INSTALL NEWS TODO config.guess \
-	config.sub depcomp install-sh ltcf-c.sh ltcf-cxx.sh \
-	ltcf-gcj.sh ltconfig ltmain.sh missing mkinstalldirs
+	AUTHORS COPYING ChangeLog INSTALL NEWS TODO compile \
+	config.guess config.sub depcomp install-sh ltcf-c.sh \
+	ltcf-cxx.sh ltcf-gcj.sh ltconfig ltmain.sh missing \
+	mkinstalldirs
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
@@ -311,6 +312,7 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
+toolexeclibdir = @toolexeclibdir@
 vm_classes = @vm_classes@
 
 # lib first, to compile .class files before native code, last examples

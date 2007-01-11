@@ -283,6 +283,7 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
+toolexeclibdir = @toolexeclibdir@
 vm_classes = @vm_classes@
 DISTCLEANFILES = jni_md.h config-int.h
 ARG_JNI_JAVAH = -jni
