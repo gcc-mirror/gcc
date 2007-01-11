@@ -1,4 +1,4 @@
-@c Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+@c Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
 @c Free Software Foundation, Inc.
 @c This is part of the CPP and GCC manuals.
 @c For copying conditions, see the file gcc.texi.
@@ -200,10 +200,11 @@ the included files, including those coming from @option{-include} or
 @option{-imacros} command line options.
 
 Unless specified explicitly (with @option{-MT} or @option{-MQ}), the
-object file name consists of the basename of the source file with any
-suffix replaced with object file suffix.  If there are many included
-files then the rule is split into several lines using @samp{\}-newline.
-The rule has no commands.
+object file name consists of the name of the source file with any
+suffix replaced with object file suffix and with any leading directory
+parts removed.  If there are many included files then the rule is
+split into several lines using @samp{\}-newline.  The rule has no
+commands.
 
 This option does not suppress the preprocessor's debug output, such as
 @option{-dM}.  To avoid mixing such debug output with the dependency
@@ -268,9 +269,9 @@ test.h:
 @opindex MT
 
 Change the target of the rule emitted by dependency generation.  By
-default CPP takes the name of the main input file, including any path,
-deletes any file suffix such as @samp{.c}, and appends the platform's
-usual object suffix.  The result is the target.
+default CPP takes the name of the main input file, deletes any
+directory components and any file suffix such as @samp{.c}, and
+appends the platform's usual object suffix.  The result is the target.
 
 An @option{-MT} option will set the target to be exactly the string you
 specify.  If you want multiple targets, you can specify them as a single
@@ -300,8 +301,9 @@ The default target is automatically quoted, as if it were given with
 @option{-MD} is equivalent to @option{-M -MF @var{file}}, except that
 @option{-E} is not implied.  The driver determines @var{file} based on
 whether an @option{-o} option is given.  If it is, the driver uses its
-argument but with a suffix of @file{.d}, otherwise it take the
-basename of the input file and applies a @file{.d} suffix.
+argument but with a suffix of @file{.d}, otherwise it takes the name
+of the input file, removes any directory components and suffix, and
+applies a @file{.d} suffix.
 
 If @option{-MD} is used in conjunction with @option{-E}, any
 @option{-o} switch is understood to specify the dependency output file
