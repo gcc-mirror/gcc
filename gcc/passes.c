@@ -481,6 +481,15 @@ init_optimization_passes (void)
   NEXT_PASS (pass_build_ssa);
   NEXT_PASS (pass_early_warn_uninitialized);
   NEXT_PASS (pass_cleanup_cfg);
+  NEXT_PASS (pass_rename_ssa_copies);
+  NEXT_PASS (pass_ccp);
+  
+  NEXT_PASS (pass_forwprop);
+  NEXT_PASS (pass_copy_prop);
+  NEXT_PASS (pass_merge_phi);
+  NEXT_PASS (pass_dce);
+  NEXT_PASS (pass_tail_recursion);
+  NEXT_PASS (pass_release_ssa_names);
 
   *p = NULL;
 
@@ -1003,6 +1012,11 @@ execute_ipa_pass_list (struct tree_opt_pass *pass)
     {
       gcc_assert (!current_function_decl);
       gcc_assert (!cfun);
+      if (!quiet_flag)
+	{
+          fprintf (stderr, " <%s>", pass->name ? pass->name : "");
+	  fflush (stderr);
+	}
       if (execute_one_pass (pass) && pass->sub)
 	do_per_function ((void (*)(void *))execute_pass_list, pass->sub);
       if (!current_function_decl)

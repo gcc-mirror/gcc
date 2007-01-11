@@ -26,6 +26,7 @@ Boston, MA 02110-1301, USA.  */
 #include "varray.h"
 #include "ggc.h"
 #include "tree-flow.h"
+#include "tree-pass.h"
 
 /* Rewriting a function into SSA form can create a huge number of SSA_NAMEs,
    many of which may be thrown away shortly after their creation if jumps
@@ -304,3 +305,48 @@ replace_ssa_name_symbol (tree ssa_name, tree sym)
   SSA_NAME_VAR (ssa_name) = sym;
   TREE_TYPE (ssa_name) = TREE_TYPE (sym);
 }
+
+/* Return SSA names that are unused to GGC memory.  This is used to keep
+   footprint of compiler during interprocedural optimization.
+   As a side effect the SSA_NAME_VERSION number reuse is reduced
+   so this function should not be used too often.  */
+static unsigned int
+release_dead_ssa_names (void)
+{
+  tree t, next;
+  int n = 0;
+  referenced_var_iterator rvi;
+
+  /* Current defs point to various dead SSA names that in turn points to dead
+     statements so bunch of dead memory is holded from releasing.  */
+  FOR_EACH_REFERENCED_VAR (t, rvi)
+    set_current_def (t, NULL);
+  /* Now release the freelist.  */
+  for (t = FREE_SSANAMES (cfun); t; t = next)
+    {
+      next = TREE_CHAIN (t);
+      ggc_free (t);
+      n++;
+    }
+  FREE_SSANAMES (cfun) = NULL;
+  if (dump_file)
+    fprintf (dump_file, "Released %i names, %.2f%%\n", n, n * 100.0 / num_ssa_names);
+  return 0;
+}
+
+struct tree_opt_pass pass_release_ssa_names =
+{
+  "release_ssa",			/* name */
+  NULL,					/* gate */
+  release_dead_ssa_names,		/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  0,					/* tv_id */
+  PROP_ssa,				/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0,					/* todo_flags_finish */
+  0					/* letter */
+};
