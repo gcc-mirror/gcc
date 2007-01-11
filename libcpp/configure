@@ -2835,8 +2835,9 @@ else
   enable_werror_always=no
 fi;
 if test $enable_werror_always = yes; then
-  WERROR=-Werror
+  WERROR="$WERROR${WERROR:+ }-Werror"
 fi
+
 
 
 
