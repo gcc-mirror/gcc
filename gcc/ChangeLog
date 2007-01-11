@@ -1,3 +1,9 @@
+2007-01-10  Jan Hubicka  <jh@suse.cz>
+
+	* tree-vrp.c (remove_range_assertions): Release defs.
+	* tree-ssa-loop-ivopts.c (rmeove_statement): Likewise.
+	* tree-ssa-dom.c (remove_stmt_or_phi): Likewise.
+
 2007-01-10  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_rtx_costs_1): Handle mutiply-subtract.
