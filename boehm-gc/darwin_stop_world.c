@@ -10,7 +10,7 @@
    be allocated, is called the red zone. This area as shown in Figure 3-2 may
    be used for any purpose as long as a new stack frame does not need to be
    added to the stack."
-   
+
    Page 50: "If a leaf procedure's red zone usage would exceed 224 bytes, then
    it must set up a stack frame just like routines that call other routines."
 */
@@ -22,44 +22,15 @@
 
 /* Try to work out the right way to access thread state structure members.
    The structure has changed its definition in different Darwin versions.  */
-#if defined(__ppc__)
-# define THREAD_STATE ppc_thread_state_t
-# if defined (HAS_PPC_THREAD_STATE_R0)
-#  define THREAD_FLD(x) x
-# elif defined (HAS_PPC_THREAD_STATE___R0)
+/* This now defaults to the (older) names without __, thus hopefully    */
+/* not breaking any existing Makefile.direct builds.                    */
+#if defined (HAS_PPC_THREAD_STATE___R0) ||	\
+    defined (HAS_PPC_THREAD_STATE64___R0) ||	\
+    defined (HAS_X86_THREAD_STATE32___EAX) ||	\
+    defined (HAS_X86_THREAD_STATE64___RAX)
 #  define THREAD_FLD(x) __ ## x
-# else
-#  error can not work out how to access fields of ppc_thread_state_t
-# endif
-#elif defined(__ppc64__)
-# define THREAD_STATE ppc_thread_state64_t
-# if defined (HAS_PPC_THREAD_STATE64_R0)
-#  define THREAD_FLD(x) x
-# elif defined (HAS_PPC_THREAD_STATE64___R0)
-#  define THREAD_FLD(x) __ ## x
-# else
-#  error can not work out how to access fields of ppc_thread_state64_t
-# endif
-#elif defined(__i386__)
-# define THREAD_STATE i386_thread_state_t
-# if defined (HAS_I386_THREAD_STATE_EAX)
-#  define THREAD_FLD(x) x
-# elif defined (HAS_I386_THREAD_STATE___EAX)
-#  define THREAD_FLD(x) __ ## x
-# else
-#  error can not work out how to access fields of i386_thread_state_t
-# endif
-#elif defined(__x86_64__)
-# define THREAD_STATE i386_thread_state_t
-# if defined (HAS_I386_THREAD_STATE_EAX)
-#  define THREAD_FLD(x) x
-# elif defined (HAS_I386_THREAD_STATE___EAX)
-#  define THREAD_FLD(x) __ ## x
-# else
-#  error can not work out how to access fields of i386_thread_state_t
-# endif
 #else
-# error unknown architecture
+#  define THREAD_FLD(x) x
 #endif
 
 typedef struct StackFrame {
@@ -115,8 +86,8 @@ void GC_push_all_stacks() {
   GC_thread p;
   pthread_t me;
   ptr_t lo, hi;
-  THREAD_STATE state;
-  mach_msg_type_number_t thread_state_count = MACHINE_THREAD_STATE_COUNT;
+  GC_THREAD_STATE_T state;
+  mach_msg_type_number_t thread_state_count = GC_MACH_THREAD_STATE_COUNT;
   
   me = pthread_self();
   if (!GC_thr_initialized) GC_thr_init();
@@ -128,11 +99,8 @@ void GC_push_all_stacks() {
 	lo = GC_approx_sp();
       } else {
 	/* Get the thread state (registers, etc) */
-	r = thread_get_state(
-			     p->stop_info.mach_thread,
-			     MACHINE_THREAD_STATE,
-			     (natural_t*)&state,
-			     &thread_state_count);
+	r = thread_get_state(p->stop_info.mach_thread, GC_MACH_THREAD_STATE,
+			     (natural_t*)&state, &thread_state_count);
 	if(r != KERN_SUCCESS) ABORT("thread_get_state failed");
 
 #if defined(I386)
@@ -144,7 +112,33 @@ void GC_push_all_stacks() {
 	GC_push_one(state . THREAD_FLD (edx)); 
 	GC_push_one(state . THREAD_FLD (edi)); 
 	GC_push_one(state . THREAD_FLD (esi)); 
-	GC_push_one(state . THREAD_FLD (ebp)); 
+	GC_push_one(state . THREAD_FLD (ebp));
+
+#elif defined(X86_64)
+	lo = (void*)state . THREAD_FLD (rsp);
+
+	GC_push_one(state . THREAD_FLD (rax));
+	GC_push_one(state . THREAD_FLD (rbx));
+	GC_push_one(state . THREAD_FLD (rcx));
+	GC_push_one(state . THREAD_FLD (rdx));
+	GC_push_one(state . THREAD_FLD (rdi));
+	GC_push_one(state . THREAD_FLD (rsi));
+	GC_push_one(state . THREAD_FLD (rbp));
+	GC_push_one(state . THREAD_FLD (rsp));
+	GC_push_one(state . THREAD_FLD (r8));
+	GC_push_one(state . THREAD_FLD (r9));
+	GC_push_one(state . THREAD_FLD (r10));
+	GC_push_one(state . THREAD_FLD (r11));
+	GC_push_one(state . THREAD_FLD (r12));
+	GC_push_one(state . THREAD_FLD (r13));
+	GC_push_one(state . THREAD_FLD (r14));
+	GC_push_one(state . THREAD_FLD (r15));
+	GC_push_one(state . THREAD_FLD (rip));
+	GC_push_one(state . THREAD_FLD (rflags));
+	GC_push_one(state . THREAD_FLD (cs));
+	GC_push_one(state . THREAD_FLD (fs));
+	GC_push_one(state . THREAD_FLD (gs));
+
 #elif defined(POWERPC)
 	lo = (void*)(state . THREAD_FLD (r1) - PPC_RED_ZONE_SIZE);
         
@@ -221,9 +215,9 @@ void GC_push_all_stacks() {
 	hi = (ptr_t)FindTopOfStack(0);
       } else {
 #     if defined(__ppc__) || defined(__ppc64__)
-	THREAD_STATE info;
+	GC_THREAD_STATE_T info;
 	mach_msg_type_number_t outCount = THREAD_STATE_MAX;
-	r = thread_get_state(thread, MACHINE_THREAD_STATE,
+	r = thread_get_state(thread, GC_MACH_THREAD_STATE,
 			     (natural_t *)&info, &outCount);
 	if(r != KERN_SUCCESS) ABORT("task_get_state failed");
 
@@ -264,10 +258,10 @@ void GC_push_all_stacks() {
 #      else
 	/* FIXME: Remove after testing:	*/
 	WARN("This is completely untested and likely will not work\n", 0);
-	THREAD_STATE info;
+	GC_THREAD_STATE_T info;
 	mach_msg_type_number_t outCount = THREAD_STATE_MAX;
-	r = thread_get_state(thread, MACHINE_THREAD_STATE,
-			     (natural_t *)&info, &outCount);
+	r = thread_get_state(thread, GC_MACH_THREAD_STATE, (natural_t *)&info,
+			     &outCount);
 	if(r != KERN_SUCCESS) ABORT("task_get_state failed");
 
 	lo = (void*)info . THREAD_FLD (esp);
