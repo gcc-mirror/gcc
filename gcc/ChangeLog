@@ -1,3 +1,15 @@
+2007-01-11  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* ifcvt.c (struct noce_if_info): Add comments to the fields.
+	Remove the b_unconditional field.
+	(noce_try_sign_mask): Do not look at b_unconditional.
+	(noce_process_if_block): Do not use merge_if_blocks.  Update
+	the CFG here.  Do not set b_unconditional.
+	(cond_move_process_if_block): Likewise.
+	(find_cond_trap): Likewise.
+	(check_cond_move_block): Require simple jump insns at the end
+	of the basic block.
+
 2007-01-11  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/1046
