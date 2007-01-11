@@ -22,5 +22,5 @@ foo (int a, int b)
   return t;
 }
 
-/* { dg-final { scan-tree-dump-times "PHI" 1 "mergephi"} } */
-/* { dg-final { cleanup-tree-dump "mergephi" } } */
+/* { dg-final { scan-tree-dump-times "PHI" 1 "mergephi2"} } */
+/* { dg-final { cleanup-tree-dump "mergephi2" } } */

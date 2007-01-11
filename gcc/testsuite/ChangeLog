@@ -1,3 +1,18 @@
+2007-01-11  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/tailrecursion-4.c: Update dump file.
+	* gcc.dg/tree-ssa/tailrecursion-1.c: Update dump file.
+	* gcc.dg/tree-ssa/tailrecursion-2.c: Update dump file.
+	* gcc.dg/tree-ssa/tailrecursion-3.c: Update dump file.
+	* gcc.dg/tree-ssa/pr21658.c: Likewise.
+	* gcc.dg/tree-ssa/pr15349.c: Likewise.
+	* gcc.dg/tree-ssa/pr25501.c: Likewise.
+	* gcc.dg/tree-ssa/vrp11.c: Make more complex so it still test
+	transformation in question.
+	* gcc.dg/tree-ssa/vrp05.c: Likewise.
+	* gcc.dg/tree-ssa/pr20701.c: Likewise.
+	* gcc.dg/always_inline3.c: Likewise.
+
 2007-01-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28999

@@ -17,5 +17,5 @@ f (void)
     link_error ();
 }
 
-/* { dg-final { scan-tree-dump-times "Folded statement: if " 1 "ccp"} } */
-/* { dg-final { cleanup-tree-dump "ccp" } } */
+/* { dg-final { scan-tree-dump-times "Folded statement: if " 1 "ccp1"} } */
+/* { dg-final { cleanup-tree-dump "ccp1" } } */

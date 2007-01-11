@@ -32,5 +32,5 @@ foo (int a)
   return 13;
 }
 
-/* { dg-final { scan-tree-dump-times "Removing basic block" 0 "mergephi"} } */
+/* { dg-final { scan-tree-dump-times "Removing basic block" 0 "mergephi1"} } */
 /* { dg-final { cleanup-tree-dump "mergephi" } } */
