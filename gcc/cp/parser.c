@@ -6093,7 +6093,6 @@ cp_parser_constant_expression (cp_parser* parser,
   parser->integral_constant_expression_p = true;
   parser->allow_non_integral_constant_expression_p = allow_non_constant_p;
   parser->non_integral_constant_expression_p = false;
-  integral_constant_expr_p = true;
   /* Although the grammar says "conditional-expression", we parse an
      "assignment-expression", which also permits "throw-expression"
      and the use of assignment operators.  In the case that
@@ -6105,7 +6104,6 @@ cp_parser_constant_expression (cp_parser* parser,
      constant.  */
   expression = cp_parser_assignment_expression (parser, /*cast_p=*/false);
   /* Restore the old settings.  */
-  integral_constant_expr_p = false;
   parser->integral_constant_expression_p
     = saved_integral_constant_expression_p;
   parser->allow_non_integral_constant_expression_p
@@ -10313,8 +10311,8 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 					 /*check_dependency_p=*/true,
 					 /*type_p=*/true,
 					 is_declaration);
-  /* For everything but enumeration types, consider a template-id.
-     For an enumeration type, consider only a plain identifier.  */
+ /* For everything but enumeration types, consider a template-id.
+    For an enumeration type, consider only a plain identifier.  */
   if (tag_type != enum_type)
     {
       bool template_p = false;
