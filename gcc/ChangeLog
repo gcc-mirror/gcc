@@ -1,3 +1,40 @@
+2007-01-11  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac (strict1_warn): Rename to strict_warn.
+	(WERROR, --enable-werror, symlink hacks, stage1_cflags,
+	cc_set_by_configure, quoted_cc_set_by_configure,
+	stage_prefix_set_by_configure, quoted_stage_prefix_set_by_configure,
+	all_boot_languages, all_stagestuff): Remove.
+	(target_list): Remove bootstrap targets.
+	* Makefile.in (quickstrap): Unconditionally make a synonym of all.
+	(BOOT_LANGUAGES, STAGE1_CFLAGS, STAGE1_CHECKING,
+	REMAKEFLAGS, FLAGS_TO_PASS, PREPEND_DOTDOT_TO_RELATIVE_PATHS,
+	SUBDIR_FLAGS_TO_PASS, WERROR_FLAGS, STRICT2_WARN, LANG_STAGESTUFF,
+	VOL_FILES, POSTSTAGE1_FLAGS_TO_PASS, STAGE2_FLAGS_TO_PASS,
+	STAGEPROFILE_FLAGS_TO_PASS, STAGEFEEDBACK_FLAGS_TO_PASS, stage1_build,
+	stage1_copy, stage2_build, stage2_copy, stageprofile_build,
+	stageprofile_copy, stage3_build, stage3_copy, stagefeedback_build,
+	stagefeedback_copy, stage4_build, clean_s1, clean_sw, bootstrap,
+	bootstrap-lean, bootstrap2, bootstrap2-lean, bootstrap3,
+	bootstrap3-lean, bootstrap4, bootstrap4-lean, unstage1, unstage2,
+	unstage3, unstage4, unstageprofile, unstagefeedback, restage, restage2,
+	restage3, restage4, restageprofile, restagefeedback, bubbleestrap,
+	cleanstrap, unstrap, restrap, *compare, *compare3, *compare4,
+	*compare-lean, *compare3-lean, *compare4-lean, stage1-start, stage1,
+	stage2-start, stage2, stage3-start, stage3, stage4-start, stage4,
+	stageprofile-start, stageprofile, stagefeedback-start, stagefeedback,
+	risky-stage1, risky-stage2, risky-stage3, risky-stage4): Remove.
+	(ORDINARY_FLAGS_TO_PASS): Rename to FLAGS_TO_PASS.
+	(STAGECOPYSTUFF, STAGEMOVESTUFF): Consolidate into MOSTLYCLEANFILES.
+	(mostlyclean): Adjust.
+	(clean, distclean): Don't mention bootstrap stuff.
+	* configure: Regenerate.
+	* ada/config-lang.in, cp/config-lang.in, forttran/config-lang.in,
+	java/config-lang.in, objc/config-lang.in, objcp/config-lang.in,
+	treelang/config-lang.in (stagestuff): Remove.
+	* doc/sourcebuild.texi (stage1, stage2, stage3, stage4,
+	stageprofile, stagefeedback, stagestuff): Remove mention.
+
 2007-01-11  Nick Clifton  <nickc@redhat.com>
 
 	* config/mcore/predicates.md (mcore_general_movesrc_operand):

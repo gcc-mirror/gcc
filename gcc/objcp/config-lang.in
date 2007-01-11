@@ -24,13 +24,10 @@
 #
 # language	- name of language as it would appear in $(LANGUAGES)
 # compilers	- value to add to $(COMPILERS)
-# stagestuff	- files to add to $(STAGESTUFF)
 
 language="obj-c++"
 
 compilers="cc1objplus\$(exeext)"
-
-stagestuff=""
 
 # Per GCC Steering Committee.
 build_by_default="no"

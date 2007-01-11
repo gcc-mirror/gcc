@@ -24,15 +24,12 @@
 # language	- name of language as it would appear in $(LANGUAGES)
 # boot_language - "yes" if we need to build this language in stage1
 # compilers	- value to add to $(COMPILERS)
-# stagestuff	- files to add to $(STAGESTUFF)
 
 language="ada"
 boot_language=yes
 boot_language_boot_flags='ADAFLAGS="$(BOOT_ADAFLAGS)"'
 
 compilers="gnat1\$(exeext)"
-
-stagestuff="gnatbind\$(exeext) gnat1\$(exeext)"
 
 gtfiles="\$(srcdir)/ada/ada-tree.h \$(srcdir)/ada/gigi.h \$(srcdir)/ada/decl.c \$(srcdir)/ada/trans.c \$(srcdir)/ada/utils.c"
 
