@@ -10144,8 +10144,8 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 					 /*check_dependency_p=*/true,
 					 /*type_p=*/true,
 					 is_declaration);
-  /* For everything but enumeration types, consider a template-id.  */
-  /* For an enumeration type, consider only a plain identifier.  */
+  /* For everything but enumeration types, consider a template-id.
+     For an enumeration type, consider only a plain identifier.  */
   if (tag_type != enum_type)
     {
       bool template_p = false;

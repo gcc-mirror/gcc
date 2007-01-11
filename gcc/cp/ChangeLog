@@ -1,3 +1,11 @@
+2007-01-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28999
+	* decl.c (make_typename_type): If the qualified name is not a
+	type, issue an error.
+	* parser.c (cp_parser_elaborated_type_specifier): Fix comment
+	formatting.
+
 2006-12-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29732
