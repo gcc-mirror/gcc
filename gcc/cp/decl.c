@@ -2676,6 +2676,11 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
       name = TREE_OPERAND (name, 0);
       if (TREE_CODE (name) == TEMPLATE_DECL)
 	name = TREE_OPERAND (fullname, 0) = DECL_NAME (name);
+      else if (TREE_CODE (name) == OVERLOAD)
+	{
+	  error ("%qD is not a type", name);
+	  return error_mark_node;
+	}
     }
   if (TREE_CODE (name) == TEMPLATE_DECL)
     {
