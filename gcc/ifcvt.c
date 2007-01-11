@@ -596,12 +596,31 @@ cond_exec_process_if_block (ce_if_block_t * ce_info,
 
 struct noce_if_info
 {
+  /* A basic block that ends in a simple conditional jump.  */
   basic_block test_bb;
+
+  /* The jump that ends TEST_BB.  */
+  rtx jump;
+ 
+  /* The jump condition.  */
+  rtx cond;
+
+  /* New insns should be inserted before this one.  */
+  rtx cond_earliest;
+
+  /* Insns in the THEN and ELSE block.  There is always just this
+     one insns in those blocks.  The insns are single_set insns.
+     If there was no ELSE block, INSN_B is the last insn before
+     COND_EARLIEST, or NULL_RTX.  In the former case, the insn
+     operands are still valid, as if INSN_B was moved down below
+     the jump.  */
   rtx insn_a, insn_b;
-  rtx x, a, b;
-  rtx jump, cond, cond_earliest;
-  /* True if "b" was originally evaluated unconditionally.  */
-  bool b_unconditional;
+
+  /* The SET_SRC of INSN_A and INSN_B.  */
+  rtx a, b;
+
+  /* The SET_DEST of INSN_A.  */
+  rtx x;
 };
 
 static rtx noce_emit_store_flag (struct noce_if_info *, rtx, int, int);
@@ -1877,9 +1896,10 @@ noce_try_sign_mask (struct noce_if_info *if_info)
     return FALSE;
 
   /* This is only profitable if T is cheap, or T is unconditionally
-     executed/evaluated in the original insn sequence.  */
+     executed/evaluated in the original insn sequence.  The latter
+     happens if INSN_B was taken from TEST_BB.  */
   if (rtx_cost (t, SET) >= COSTS_N_INSNS (2)
-      && (!if_info->b_unconditional
+      && (BLOCK_FOR_INSN (if_info->insn_b) != if_info->test_bb
           || t != if_info->b))
     return FALSE;
 
@@ -2173,6 +2193,7 @@ noce_process_if_block (struct ce_if_block * ce_info)
   basic_block test_bb = ce_info->test_bb;	/* test block */
   basic_block then_bb = ce_info->then_bb;	/* THEN */
   basic_block else_bb = ce_info->else_bb;	/* ELSE or NULL */
+  basic_block join_bb;
   struct noce_if_info if_info;
   rtx insn_a, insn_b;
   rtx set_a, set_b;
@@ -2283,7 +2304,6 @@ noce_process_if_block (struct ce_if_block * ce_info)
   if_info.x = x;
   if_info.a = a;
   if_info.b = b;
-  if_info.b_unconditional = else_bb == 0;
 
   /* Try optimizations in some approximation of a useful order.  */
   /* ??? Should first look to see if X is live incoming at all.  If it
@@ -2364,39 +2384,47 @@ noce_process_if_block (struct ce_if_block * ce_info)
   return FALSE;
 
  success:
-  /* The original sets may now be killed.  */
-  delete_insn (insn_a);
-
-  /* Several special cases here: First, we may have reused insn_b above,
-     in which case insn_b is now NULL.  Second, we want to delete insn_b
-     if it came from the ELSE block, because follows the now correct
-     write that appears in the TEST block.  However, if we got insn_b from
-     the TEST block, it may in fact be loading data needed for the comparison.
-     We'll let life_analysis remove the insn if it's really dead.  */
-  if (insn_b && else_bb)
-    delete_insn (insn_b);
-
-  /* The new insns will have been inserted immediately before the jump.  We
-     should be able to remove the jump with impunity, but the condition itself
-     may have been modified by gcse to be shared across basic blocks.  */
-  delete_insn (jump);
 
   /* If we used a temporary, fix it up now.  */
   if (orig_x != x)
     {
+      rtx seq;
+
       start_sequence ();
       noce_emit_move_insn (orig_x, x);
-      insn_b = get_insns ();
+      seq = get_insns ();
       set_used_flags (orig_x);
-      unshare_all_rtl_in_chain (insn_b);
+      unshare_all_rtl_in_chain (seq);
       end_sequence ();
 
-      emit_insn_after_setloc (insn_b, BB_END (test_bb), INSN_LOCATOR (insn_a));
+      emit_insn_before_setloc (seq, BB_END (test_bb), INSN_LOCATOR (insn_a));
     }
 
-  /* Merge the blocks!  */
-  merge_if_block (ce_info);
+  /* The original THEN and ELSE blocks may now be removed.  The test block
+     must now jump to the join block.  If the test block and the join block
+     can be merged, do so.  */
 
+  join_bb = single_succ (then_bb);
+  if (else_bb)
+    {
+      delete_basic_block (else_bb);
+      num_true_changes++;
+    }
+  else
+    remove_edge (find_edge (test_bb, join_bb));
+
+  remove_edge (find_edge (then_bb, join_bb));
+  redirect_edge_and_branch_force (single_succ_edge (test_bb), join_bb);
+  delete_basic_block (then_bb);
+  num_true_changes++;
+  
+  if (can_merge_blocks_p (test_bb, join_bb))
+    {
+      merge_blocks (test_bb, join_bb);
+      num_true_changes++;
+    }
+
+  num_updated_if_blocks++;
   return TRUE;
 }
 
@@ -2463,6 +2491,12 @@ check_cond_move_block (basic_block bb, rtx *vals, rtx cond)
 	return FALSE;
     }
 
+  /* We can only handle simple jumps at the end of the basic block.
+     It is almost impossible to update the CFG otherwise.  */
+  insn = BB_END (bb);
+  if (JUMP_P (insn) && ! onlyjump_p (insn))
+    return FALSE;
+  
   return TRUE;
 }
 
@@ -2537,10 +2571,12 @@ cond_move_convert_if_block (struct noce_if_info *if_infop,
 static int
 cond_move_process_if_block (struct ce_if_block *ce_info)
 {
+  basic_block test_bb = ce_info->test_bb;
   basic_block then_bb = ce_info->then_bb;
   basic_block else_bb = ce_info->else_bb;
+  basic_block join_bb;
   struct noce_if_info if_info;
-  rtx jump, cond, insn, seq, loc_insn;
+  rtx jump, cond, seq, loc_insn;
   int max_reg, size, c, i;
   rtx *then_vals;
   rtx *else_vals;
@@ -2624,21 +2660,30 @@ cond_move_process_if_block (struct ce_if_block *ce_info)
     }
   emit_insn_before_setloc (seq, jump, INSN_LOCATOR (loc_insn));
 
-  FOR_BB_INSNS (then_bb, insn)
-    if (INSN_P (insn) && !JUMP_P (insn))
-      delete_insn (insn);
+  join_bb = single_succ (then_bb);
   if (else_bb)
     {
-      FOR_BB_INSNS (else_bb, insn)
-	if (INSN_P (insn) && !JUMP_P (insn))
-	  delete_insn (insn);
+      delete_basic_block (else_bb);
+      num_true_changes++;
     }
-  delete_insn (jump);
+  else
+    remove_edge (find_edge (test_bb, join_bb));
 
-  merge_if_block (ce_info);
+  remove_edge (find_edge (then_bb, join_bb));
+  redirect_edge_and_branch_force (single_succ_edge (test_bb), join_bb);
+  delete_basic_block (then_bb);
+  num_true_changes++;
+  
+  if (can_merge_blocks_p (test_bb, join_bb))
+    {
+      merge_blocks (test_bb, join_bb);
+      num_true_changes++;
+    }
 
+  num_updated_if_blocks++;
   return TRUE;
 }
+
 
 /* Attempt to convert an IF-THEN or IF-THEN-ELSE block into
    straight line code.  Return true if successful.  */
@@ -3201,29 +3246,20 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
   if (seq == NULL)
     return FALSE;
 
-  num_true_changes++;
-
   /* Emit the new insns before cond_earliest.  */
   emit_insn_before_setloc (seq, cond_earliest, INSN_LOCATOR (trap));
 
   /* Delete the trap block if possible.  */
   remove_edge (trap_bb == then_bb ? then_edge : else_edge);
   if (EDGE_COUNT (trap_bb->preds) == 0)
-    delete_basic_block (trap_bb);
-
-  /* If the non-trap block and the test are now adjacent, merge them.
-     Otherwise we must insert a direct branch.  */
-  if (test_bb->next_bb == other_bb)
     {
-      struct ce_if_block new_ce_info;
-      delete_insn (jump);
-      memset (&new_ce_info, '\0', sizeof (new_ce_info));
-      new_ce_info.test_bb = test_bb;
-      new_ce_info.then_bb = NULL;
-      new_ce_info.else_bb = NULL;
-      new_ce_info.join_bb = other_bb;
-      merge_if_block (&new_ce_info);
+      delete_basic_block (trap_bb);
+      num_true_changes++;
     }
+
+  /* Wire together the blocks again.  */
+  if (current_ir_type () == IR_RTL_CFGLAYOUT)
+    single_succ_edge (test_bb)->flags |= EDGE_FALLTHRU;
   else
     {
       rtx lab, newjump;
@@ -3233,10 +3269,16 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
       LABEL_NUSES (lab) += 1;
       JUMP_LABEL (newjump) = lab;
       emit_barrier_after (newjump);
+    }
+  delete_insn (jump);
 
-      delete_insn (jump);
+  if (can_merge_blocks_p (test_bb, other_bb))
+    {
+      merge_blocks (test_bb, other_bb);
+      num_true_changes++;
     }
 
+  num_updated_if_blocks++;
   return TRUE;
 }
 
