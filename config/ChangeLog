@@ -1,6 +1,11 @@
 2007-01-11  Paolo Bonzini  <bonzini@gnu.org>
 
-	* config/warnings.m4: Add second parameter with name of variable.
+        * warnings.m4: Use m4_expand_once to clear the AC_SUBST'ed variable.
+        (ACX_PROG_CC_WARNINGS_ARE_ERRORS): Fix typo.  Add optional 2nd argument.
+
+2007-01-11  Paolo Bonzini  <bonzini@gnu.org>
+
+	* warnings.m4: Add second parameter with name of variable.
 	Always append to the variable if it exists.
 
 2007-01-01  Mike Stump  <mrs@apple.com>
