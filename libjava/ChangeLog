@@ -1,5 +1,12 @@
 2007-01-10  Tom Tromey  <tromey@redhat.com>
 
+	* gnu/gcj/xlib/*.h: New files.
+	* gnu/awt/xlib/*.h: Likewise.
+	* classpath/lib/gnu/gcj/xlib: New class files.
+	* classpath/lib/gnu/awt/xlib: Likewise.
+
+2007-01-10  Tom Tromey  <tromey@redhat.com>
+
 	* HACKING: Various updates.
 
 2007-01-10  Tom Tromey  <tromey@redhat.com>
