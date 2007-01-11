@@ -1,3 +1,8 @@
+2007-01-11  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* simplify.c: Update copyright to 2007.
+	* scanner.c: Same.
+
 2007-01-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/30430
