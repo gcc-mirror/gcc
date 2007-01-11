@@ -53,13 +53,9 @@ libgtkpeer_la_SOURCES = gnu_java_awt_peer_gtk_CairoSurface.c \
 			gtk_jawt.c \
 			gtkpeer.h
 
-## GCJ LOCAL: encode the library path and  use GCJ's library version
-libgtkpeer_la_LDFLAGS = -rpath $(gcjversionedlibdir) \
-	-version-info `grep -v '^\#' $(top_srcdir)/../libtool-version`
-
 libgtkpeer_la_LIBADD = $(top_builddir)/native/jni/classpath/native_state.lo \
 		       $(top_builddir)/native/jni/classpath/jcl.lo
-## libgtkpeer_la_LDFLAGS = -avoid-version
+libgtkpeer_la_LDFLAGS = -avoid-version
 
 AM_LDFLAGS = @CLASSPATH_MODULE@ @GTK_LIBS@ @FREETYPE2_LIBS@ \
              @PANGOFT2_LIBS@ @X_PRE_LIBS@ @X_LIBS@ @X_EXTRA_LIBS@ @XTEST_LIBS@

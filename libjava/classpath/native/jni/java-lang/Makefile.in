@@ -317,6 +317,7 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
+toolexeclibdir = @toolexeclibdir@
 vm_classes = @vm_classes@
 nativeexeclib_LTLIBRARIES = libjavalang.la libjavalangreflect.la
 libjavalang_la_SOURCES = java_lang_VMSystem.c \

@@ -1,5 +1,38 @@
 2007-01-10  Matthias Klose  <doko@debian.org>
 
+	Readd missing chunks from r116332:
+
+	* m4/acinclude.m4 (CLASSPATH_TOOLEXECLIBDIR): New macro.
+	* resource/Makefile.am (loggingdir): Define to
+	toolexeclibdir.
+	(securitydir): Likewise.
+	* configure.ac: Call CLASSPATH_TOOLEXECLIBDIR.
+	Set default nativeexeclibdir using toolexeclibdir.
+
+	Readd missing chunks from r115839:
+
+	* native/jni/gtk-peer/Makefile.am (libgtkpeer_la_LDFLAGS):
+	Add -avoid-version.
+	* native/jawt/Makefile.am (libjawt_la_LDFLAGS): Add -avoid-version.
+
+	* configure, Makefile.in, doc/Makefile.in, doc/api/Makefile.in,
+	examples/Makefile.in, external/Makefile.in,
+	external/jsr166/Makefile.in, external/relaxngDatatype/Makefile.in,
+	external/sax/Makefile.in, external/w3c_dom/Makefile.in,
+	include/Makefile.in, lib/Makefile.in, native/Makefile.in,
+	native/fdlibm/Makefile.in, native/jawt/Makefile.in,
+	native/jni/Makefile.in, native/jni/classpath/Makefile.in,
+	native/jni/gconf-peer/Makefile.in, native/jni/gtk-peer/Makefile.in
+	native/jni/java-io/Makefile.in, native/jni/java-lang/Makefile.in,
+	native/jni/java-net/Makefile.in, native/jni/java-nio/Makefile.in,
+	native/jni/java-util/Makefile.in, native/jni/midi-alsa/Makefile.in,
+	native/jni/midi-dssi/Makefile.in, native/jni/native-lib/Makefile.in,
+	native/jni/qt-peer/Makefile.in, native/jni/xmlj/Makefile.in,
+	native/plugin/Makefile.in, resource/Makefile.in, scripts/Makefile.in,
+	tools/Makefile.in: Regenerate
+
+2007-01-10  Matthias Klose  <doko@debian.org>
+
 	* resource/gnu/regexp, tools/gnu/classpath/tools/rmi/rmic,
 	tools/gnu/classpath/tools/rmi/rmid, tools/gnu/classpath/tools/giop,
 	doc/www.gnu.org, doc/unicode, testsuite, testsuite/java.sun.awt,

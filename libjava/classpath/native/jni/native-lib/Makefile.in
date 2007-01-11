@@ -300,6 +300,7 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
+toolexeclibdir = @toolexeclibdir@
 vm_classes = @vm_classes@
 noinst_LTLIBRARIES = libclasspathnative.la
 libclasspathnative_la_SOURCES = cpnet.c \
