@@ -640,14 +640,6 @@ Users, standards, GNU Coding Standards}, for details of the standard
 targets.  For GCC, @code{maintainer-clean} should delete
 all generated files in the source directory that are not checked into
 CVS, but should not delete anything checked into CVS@.
-@item stage1
-@itemx stage2
-@itemx stage3
-@itemx stage4
-@itemx stageprofile
-@itemx stagefeedback
-Move to the stage directory files not included in @code{stagestuff} in
-@file{config-lang.in} or otherwise moved by the main @file{Makefile}.
 @end table
 
 @item lang.opt
@@ -707,9 +699,6 @@ languages.
 If defined, a space-separated list of compiler executables that will
 be run by the driver.  The names here will each end
 with @samp{\$(exeext)}.
-@item stagestuff
-If defined, a space-separated list of files that should be moved to
-the @file{stage@var{n}} directories in each stage of bootstrap.
 @item outputs
 If defined, a space-separated list of files that should be generated
 by @file{configure} substituting values in them.  This mechanism can

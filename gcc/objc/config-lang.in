@@ -24,13 +24,10 @@
 #
 # language	- name of language as it would appear in $(LANGUAGES)
 # compilers	- value to add to $(COMPILERS)
-# stagestuff	- files to add to $(STAGESTUFF)
 
 language="objc"
 
 compilers="cc1obj\$(exeext)"
-
-stagestuff="cc1obj\$(exeext)"
 
 target_libs=target-libobjc
 

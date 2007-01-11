@@ -23,14 +23,11 @@
 #
 # language	- name of language as it would appear in $(LANGUAGES)
 # compilers	- value to add to $(COMPILERS)
-# stagestuff	- files to add to $(STAGESTUFF)
 # diff_excludes	- files to ignore when building diffs between two versions.
 
 language="treelang"
 
 compilers="tree1\$(exeext)"
-
-stagestuff=
 
 diff_excludes="-x lex.c -x parse.c -x parse.h"
 headers=

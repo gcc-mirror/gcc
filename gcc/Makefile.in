@@ -24,13 +24,16 @@
 
 # The targets for external use include:
 # all, doc, proto, install, install-cross, install-cross-rest,
-# uninstall, TAGS, mostlyclean, clean, distclean, maintainer-clean,
-# stage1, stage2, stage3, stage4.
+# uninstall, TAGS, mostlyclean, clean, distclean, maintainer-clean.
 
 # This is the default target.
 # Set by autoconf to "all.internal" for a native build, or
 # "all.cross" to build a cross compiler.
 all: @ALL@
+
+# Provide quickstrap as a target that people can type into the gcc directory,
+# and that fails if you're not into it.
+quickstrap: all
 
 # Depend on this to specify a phony target portably.
 force:
@@ -136,27 +139,14 @@ SUBDIRS =@subdirs@ build
 CONFIG_LANGUAGES = @all_selected_languages@
 LANGUAGES = c gcov$(exeext) gcov-dump$(exeext) $(CONFIG_LANGUAGES)
 
-# Selection of languages to be made during stage1 build.
-BOOT_LANGUAGES = c @all_boot_languages@
-
 # Various ways of specifying flags for compilations:
 # CFLAGS is for the user to override to, e.g., do a cross build with -O2.
-# For recursive  bootstrap builds CFLAGS is used to pass in STAGE1_CFLAGS
-# or BOOT_CFLAGS
-# STAGE1_CFLAGS is set by configure on some targets or passed from toplevel
-# and sets the CFLAGS passed to stage1 of a bootstrap compilation.
-# STAGE1_CHECKING enables checking for the stage1 compiler
-# BOOT_CFLAGS is the value of CFLAGS to pass to the stage2, stage3 and stage4
-# bootstrap compilations.
 # XCFLAGS is used for most compilations but not when using the GCC just built.
 # TCFLAGS is used for compilations with the GCC just built.
 XCFLAGS =
 TCFLAGS =
 CFLAGS = @CFLAGS@
 LDFLAGS = @LDFLAGS@
-STAGE1_CFLAGS = -g @stage1_cflags@
-STAGE1_CHECKING_CFLAGS = -DENABLE_CHECKING -DENABLE_ASSERT_CHECKING
-BOOT_CFLAGS = -g -O2
 
 # Flags to determine code coverage. When coverage is disabled, this will
 # contain the optimization flags, as you normally want code coverage
@@ -164,7 +154,7 @@ BOOT_CFLAGS = -g -O2
 COVERAGE_FLAGS = @coverage_flags@
 coverageexts = .{gcda,gcno}
 
-# The warning flags are separate from BOOT_CFLAGS because people tend to
+# The warning flags are separate from CFLAGS because people tend to
 # override optimization flags and we'd like them to still have warnings
 # turned on.  These flags are also used to pass other stage dependent
 # flags from configure.  The user is free to explicitly turn these flags
@@ -172,18 +162,12 @@ coverageexts = .{gcda,gcno}
 # LOOSE_WARN are the warning flags to use when compiling something
 # which is only compiled with gcc, such as libgcc and the frontends
 # other than C.
-# STRICT_WARN and STRICT2_WARN are the additional warning flags to
+# STRICT_WARN are the additional warning flags to
 # apply to the back end and the C front end, which may be compiled
-# with other compilers.  This is partially controlled by configure in
-# stage1, as not all versions of gcc understand -Wno-long-long or
-# -Wno-variadic-macros.
+# with other compilers.
 # CXX_COMPAT_WARN are C++ source compatibility warnings.
 LOOSE_WARN = -W -Wall -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes
-STRICT_WARN = @strict1_warn@
-WERROR_FLAGS = @WERROR@
-STRICT2_WARN = -pedantic -Wno-long-long -Wno-variadic-macros \
-  -Wno-overlength-strings -Wold-style-definition -Wmissing-format-attribute \
-  $(WERROR_FLAGS)
+STRICT_WARN = @strict_warn@
 CXX_COMPAT_WARN = @cxx_compat_warn@
 
 # This is set by --enable-checking.  The idea is to catch forgotten
@@ -279,7 +263,6 @@ STAMP = echo timestamp >
 
 # Make sure the $(MAKE) variable is defined.
 @SET_MAKE@
-REMAKEFLAGS=LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)"
 
 # Locate mkinstalldirs.
 mkinstalldirs=$(SHELL) $(srcdir)/../mkinstalldirs
@@ -874,12 +857,9 @@ INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 
 LANG_MAKEFRAGS = @all_lang_makefrags@
 LANG_MAKEFILES = @all_lang_makefiles@
-LANG_STAGESTUFF = @all_stagestuff@
 
 # Flags to pass to recursive makes.
-# CC is set by configure.  Hosts without symlinks need special handling
-# because we need CC="stage1/xgcc -Bstage1/" to work in the language
-# subdirectories.
+# CC is set by configure.
 # ??? The choices here will need some experimenting with.
 
 export AR_FOR_TARGET
@@ -901,7 +881,7 @@ export RANLIB_FOR_TARGET
 export libsubdir
 export slibdir
 
-ORDINARY_FLAGS_TO_PASS = \
+FLAGS_TO_PASS = \
 	"BISON=$(BISON)" \
 	"BISONFLAGS=$(BISONFLAGS)" \
 	"CFLAGS=$(CFLAGS) $(WARN_CFLAGS)" \
@@ -927,17 +907,6 @@ ORDINARY_FLAGS_TO_PASS = \
 	"libexecsubdir=$(libsubdir)" \
 	"datadir=$(datadir)" \
 	"localedir=$(localedir)"
-FLAGS_TO_PASS = $(ORDINARY_FLAGS_TO_PASS) "CC=@cc_set_by_configure@" \
-	"STAGE_PREFIX=@stage_prefix_set_by_configure@"
-PREPEND_DOTDOT_TO_RELATIVE_PATHS = sed \
-	-e 's|^ *[^ /][^ /]*/|%&|' \
-	-e 's| -B| -B%|g' \
-	-e 's|% *[^- /]|%&|g' \
-	-e 's|%% *|../|g' \
-	-e 's|%||g'
-SUBDIR_FLAGS_TO_PASS = $(ORDINARY_FLAGS_TO_PASS) \
-	"CC=`echo @quoted_cc_set_by_configure@ | $(PREPEND_DOTDOT_TO_RELATIVE_PATHS)`" \
-	"STAGE_PREFIX=`echo @quoted_stage_prefix_set_by_configure@ | $(PREPEND_DOTDOT_TO_RELATIVE_PATHS)`"
 #
 # Lists of files for various purposes.
 
@@ -1024,23 +993,18 @@ OBJS-onestep = libbackend.o $(OBJS-archive)
 
 BACKEND = main.o @TREEBROWSER@ libbackend.a $(CPPLIB) $(LIBDECNUMBER)
 
-# Files to be copied after each stage in building.
-STAGECOPYSTUFF = insn-flags.h insn-config.h insn-codes.h \
+MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
  insn-attr.h insn-attrtab.c insn-opinit.c insn-preds.c insn-constants.h \
  tm-preds.h tm-constrs.h \
  tree-check.h min-insn-modes.c insn-modes.c insn-modes.h \
- genrtl.c genrtl.h gt-*.h gtype-*.h gtype-desc.c gtyp-gen.h
-
-# Files to be moved away after each stage in building.
-STAGEMOVESTUFF = *$(objext) s-* \
+ genrtl.c genrtl.h gt-*.h gtype-*.h gtype-desc.c gtyp-gen.h \
  xgcc$(exeext) cpp$(exeext) cc1$(exeext) cc1*-dummy$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  protoize$(exeext) unprotoize$(exeext) \
  $(SPECS) collect2$(exeext) \
  gcov-iov$(build_exeext) gcov$(exeext) gcov-dump$(exeext) \
- *.[0-9][0-9].* *.[si] *-checksum.c libbackend.a libgcc.mk \
- $(LANG_STAGESTUFF)
+ *.[0-9][0-9].* *.[si] *-checksum.c libbackend.a libgcc.mk
 
 # Defined in libgcc2.c, included only in the static library.
 LIB2FUNCS_ST = _eprintf __gcc_bcmp
@@ -1102,7 +1066,6 @@ LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
 # install-common, install-info, install-man,
 # uninstall,
 # mostlyclean, clean, distclean, maintainer-clean,
-# stage1, stage2, stage3, stage4
 #
 # Each language is linked in with a series of hooks.  The name of each
 # hooked is "lang.${target_name}" (eg: lang.info).  Configure computes
@@ -3525,7 +3488,7 @@ fsf-funding.pod: funding.texi
 # (less duplicated code).
 
 mostlyclean: lang.mostlyclean
-	-rm -f $(STAGECOPYSTUFF) $(STAGEMOVESTUFF)
+	-rm -f $(MOSTLYCLEANFILES)
 	-rm -f *$(coverageexts)
 # Delete build programs
 	-rm -f build/*
@@ -3581,11 +3544,6 @@ clean: mostlyclean lang.clean
 	else if [ "x$(MULTILIB_OPTIONS)" != x ] ; then \
 	  rm -rf `echo $(MULTILIB_OPTIONS) | sed -e 's/\// /g'`; \
 	fi ; fi
-	-rm -fr stage1 stage2 stage3 stage4 stageprofile stagefeedback
-# Delete stamps of bootstrap stages
-	-rm -f stage?_*
-	-rm -f clean?_*
-	-rm -f stage_last
 
 # Delete all files that users would normally create
 # while building and installing GCC.
@@ -3596,7 +3554,6 @@ distclean: clean lang.distclean
 	-rm -f Make-lang Make-hooks Make-host Make-target
 	-rm -f Makefile *.oaux
 	-rm -f gthr-default.h
-	-rm -f */stage1 */stage2 */stage3 */stage4 */include */stageprofile */stagefeedback
 	-rm -f TAGS */TAGS
 	-rm -f *.asm
 	-rm -f site.exp site.bak testsuite/site.exp testsuite/site.bak
@@ -4102,547 +4059,6 @@ TAGS: lang.tags
 	done;						\
 	etags -o TAGS.sub *.y *.h *.c; \
 	etags --include TAGS.sub $$incs)
-
-# ------------------------------------------------------
-# Bootstrap-related targets (not used during 'make all')
-# ------------------------------------------------------
-
-# A list of files to be destroyed during "lean" builds.
-VOL_FILES=`echo $(BACKEND) $(OBJS) $(C_OBJS) *.c *.h gen*`
-
-# Flags to pass to stage2 and later recursive makes.  Note that the
-# WARN_CFLAGS setting can't be to the expansion of GCC_WARN_CFLAGS in
-# the context of the stage_x rule.
-
-POSTSTAGE1_FLAGS_TO_PASS = \
-	ADAFLAGS="$(BOOT_ADAFLAGS)" \
-	CFLAGS="$(BOOT_CFLAGS)" \
-	LDFLAGS="$(BOOT_LDFLAGS)" \
-	WARN_CFLAGS="\$$(GCC_WARN_CFLAGS)" \
-	STRICT_WARN="$(STRICT2_WARN)" \
-	libdir=$(libdir) \
-	LANGUAGES="$(LANGUAGES)" \
-	MAKEINFO="$(MAKEINFO)" \
-	MAKEINFOFLAGS="$(MAKEINFOFLAGS)" \
-	MAKEOVERRIDES= \
-	OUTPUT_OPTION="-o \$$@"
-
-STAGE2_FLAGS_TO_PASS = \
-	CFLAGS="$(BOOT_CFLAGS)" \
-	WERROR="$(WERROR_FLAGS)" \
-
-STAGEPROFILE_FLAGS_TO_PASS = \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"
-
-# Files never linked into the final executable produces warnings about missing
-# profile.
-STAGEFEEDBACK_FLAGS_TO_PASS = \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-use -freorder-blocks-and-partition"
-
-# Only build the C compiler for stage1, because that is the only one that
-# we can guarantee will build with the native compiler, and also it is the
-# only thing useful for building stage2. STAGE1_CFLAGS (via CFLAGS),
-# MAKEINFO and MAKEINFOFLAGS are explicitly passed here to make them
-# overrideable (for a bootstrap build stage1 also builds gcc.info).
-# The stage1 compiler is always built with checking enabled.
-stage1_build:
-	$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)" \
-		CFLAGS="$(STAGE1_CFLAGS) $(STAGE1_CHECKING_CFLAGS)" \
-		MAKEINFO="$(MAKEINFO)" MAKEINFOFLAGS="$(MAKEINFOFLAGS)" \
-		COVERAGE_FLAGS= OBJS-onestep="$(OBJS)"
-	$(STAMP) stage1_build
-	echo stage1_build > stage_last
-
-stage1_copy: stage1_build
-	$(MAKE) stage1
-	$(STAMP) stage1_copy
-	echo stage2_build > stage_last
-
-stage2_build: stage1_copy
-	$(MAKE) CC="$(STAGE_CC_WRAPPER) stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" CC_FOR_BUILD="$(STAGE_CC_WRAPPER) stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" \
-		 STAGE_PREFIX=stage1/ \
-		 $(POSTSTAGE1_FLAGS_TO_PASS) \
-		 $(STAGE2_FLAGS_TO_PASS)
-	$(STAMP) stage2_build
-	echo stage2_build > stage_last
-
-stage2_copy: stage2_build
-	$(MAKE) stage2
-	$(STAMP) stage2_copy
-	echo stage3_build > stage_last
-
-stageprofile_build: stage1_copy
-	$(MAKE) CC="$(STAGE_CC_WRAPPER) stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" CC_FOR_BUILD="$(STAGE_CC_WRAPPER) stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" \
-		 STAGE_PREFIX=stage1/ \
-		 $(POSTSTAGE1_FLAGS_TO_PASS) \
-		 $(STAGEPROFILE_FLAGS_TO_PASS)
-	$(STAMP) stageprofile_build
-	echo stageprofile_build > stage_last
-
-stageprofile_copy: stageprofile_build
-	$(MAKE) stageprofile
-	$(STAMP) stageprofile_copy
-	echo stagefeedback_build > stage_last
-
-stage3_build: stage2_copy
-	$(MAKE) CC="$(STAGE_CC_WRAPPER) stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" CC_FOR_BUILD="$(STAGE_CC_WRAPPER) stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" \
-		 STAGE_PREFIX=stage2/ \
-		 $(POSTSTAGE1_FLAGS_TO_PASS) \
-		 $(STAGE2_FLAGS_TO_PASS)
-	$(STAMP) stage3_build
-	echo stage3_build > stage_last
-
-stagefeedback_build: stageprofile_copy stage1_copy
-	$(MAKE) CC="$(STAGE_CC_WRAPPER) stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" CC_FOR_BUILD="$(STAGE_CC_WRAPPER) stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" \
-		 STAGE_PREFIX=stage1/ \
-		 $(POSTSTAGE1_FLAGS_TO_PASS) \
-		 $(STAGEFEEDBACK_FLAGS_TO_PASS)
-	$(STAMP) stagefeedback_build
-	echo stagefeedback_build > stage_last
-
-stagefeedback_copy: stagefeedback_build
-	$(MAKE) stagefeedback
-	$(STAMP) stagefeedback_copy
-	echo stagefeedback2_build > stage_last
-
-# For bootstrap4:
-stage3_copy: stage3_build
-	$(MAKE) stage3
-	$(STAMP) stage3_copy
-	echo stage4_build > stage_last
-
-stage4_build: stage3_copy
-	$(MAKE) CC="$(STAGE_CC_WRAPPER) stage3/xgcc$(exeext) -Bstage3/ -B$(build_tooldir)/bin/" CC_FOR_BUILD="$(STAGE_CC_WRAPPER) stage3/xgcc$(exeext) -Bstage3/ -B$(build_tooldir)/bin/" \
-		 STAGE_PREFIX=stage3/ \
-		 $(POSTSTAGE1_FLAGS_TO_PASS) \
-		 $(STAGE2_FLAGS_TO_PASS)
-	$(STAMP) stage4_build
-	echo stage4_build > stage_last
-
-# Additional steps for *-lean targets:
-clean_s1: stage1_copy
-	-(cd stage1 && rm -f $(VOL_FILES))
-	$(STAMP) clean_s1
-
-clean_s2: stage2_copy
-	-rm -rf stage1
-	$(STAMP) clean_s2
-
-# The various entry points for bootstrapping.
-
-bootstrap: stage3_build
-	@echo
-	@echo Bootstrap complete - make \"quickstrap\" to redo last build,
-	@echo \"restage1\" through \"restage3\" to rebuild specific stages,
-	@echo \"restrap\" to redo the bootstrap from stage1, or
-	@echo \"cleanstrap\" to redo the bootstrap from scratch.
-
-bootstrap-lean : clean_s1 clean_s2 stage3_build
-	@echo
-	@echo Bootstrap complete - make \"quickstrap\" to redo last build,
-	@echo or \"cleanstrap\" to redo the bootstrap from scratch.
-
-bootstrap2: bootstrap
-
-bootstrap2-lean : bootstrap-lean
-
-bootstrap3 bootstrap3-lean: bootstrap
-
-bootstrap4 bootstrap4-lean: stage4_build
-
-unstage1 unstage2 unstage3 unstage4 unstageprofile unstagefeedback:
-	-set -vx; stage=`echo $@ | sed -e 's/un//'`; \
-	rm -f $$stage/as$(exeext); \
-	rm -f $$stage/nm$(exeext); \
-	rm -f $$stage/collect-ld$(exeext); \
-	if test -d $$stage; then \
-	  mv $$stage/specs $(SPECS) 2>/dev/null || :; \
-	  mv $$stage/* . 2>/dev/null; \
-	  for i in `cd $$stage; echo *` ; do \
-	    if test -d $$stage/$$i; then \
-	      mv $$stage/$$i/* $$i/. 2>/dev/null; \
-	    else \
-	      mv $$stage/$$i .; \
-	    fi; \
-	  done \
-	fi ; \
-	rm -f $${stage}_build $${stage}_copy ;\
-	echo $${stage}_build > stage_last
-
-restage1: unstage1
-	$(MAKE) $(REMAKEFLAGS) stage1_build
-
-restage2: unstage2
-	$(MAKE) $(REMAKEFLAGS) stage2_build
-
-restage3: unstage3
-	$(MAKE) $(REMAKEFLAGS) stage3_build
-
-restage4: unstage4
-	$(MAKE) $(REMAKEFLAGS) stage4_build
-
-restageprofile: unstageprofile
-	$(MAKE) $(REMAKEFLAGS) stageprofile_build
-
-restagefeedback: unstagefeedback
-	$(MAKE) $(REMAKEFLAGS) stagefeedback_build
-
-# Bubble up a bugfix through all the stages.  Primarily useful for fixing
-# bugs that cause the compiler to crash while building stage 2.
-bubblestrap:
-	if test -f stage_last; then \
-	  LAST=`sed -e 's/_build//' < stage_last`; \
-	  if test "$$LAST" != "stage1"; then \
-	    $(MAKE) $(REMAKEFLAGS) $$LAST; \
-	    $(STAMP) $${LAST}_copy; \
-	  fi; \
-	fi
-	if test -f stage1_copy; then $(MAKE) unstage1; fi
-	$(MAKE) $(REMAKEFLAGS) stage1_copy
-	if test -f stage2_copy; then $(MAKE) unstage2; fi
-	$(MAKE) $(REMAKEFLAGS) stage2_copy
-	if test -f stage3_copy; then $(MAKE) unstage3; fi
-	$(MAKE) $(REMAKEFLAGS) stage3_build
-	if test -f stage4_copy; then \
-	  $(MAKE) $(REMAKEFLAGS) stage3_copy; $(MAKE) unstage4; \
-	  $(MAKE) $(REMAKEFLAGS) stage4_build || exit 1; \
-	fi
-
-BOOTSTRAPPING := $(shell if test -f ../stage_last; then echo yes; else echo no; fi)
-ifeq ($(BOOTSTRAPPING),yes)
-# Provide quickstrap as a target that people can type into the gcc directory,
-# and that fails if you're not into it.
-quickstrap: all
-else
-quickstrap:
-	if test -f stage_last ; then \
-	  LAST=`cat stage_last`; rm $$LAST; $(MAKE) $(REMAKEFLAGS) $$LAST; \
-	else \
-	  $(MAKE) $(REMAKEFLAGS) stage1_build; \
-	fi
-endif
-
-cleanstrap:
-	-$(MAKE) clean
-	$(MAKE) $(REMAKEFLAGS) bootstrap
-
-unstrap:
-	-rm -rf stage[234]*
-	$(MAKE) unstage1
-	-rm -f stage_last
-
-# Differs from cleanstrap in that it starts from the earlier stage1 build,
-# not from scratch.
-restrap:
-	$(MAKE) unstrap
-	$(MAKE) $(REMAKEFLAGS) bootstrap
-
-# These targets compare the object files in the current directory with
-# those in a stage directory.  We need to skip the first N bytes of
-# each object file.  The "slow" mechanism assumes nothing special
-# about cmp and uses the tail command to skip.  ./ avoids a bug in
-# some versions of tail.  The "gnu" targets use gnu cmp (diffutils
-# v2.4 or later), to avoid running tail and the overhead of twice
-# copying each object file.  Likewise, the "fast" targets use the skip
-# parameter of cmp available on some systems to accomplish the same
-# thing.  An exit status of 1 is precisely the result we're looking
-# for (other values mean other problems).
-slowcompare slowcompare3 slowcompare4 slowcompare-lean slowcompare3-lean slowcompare4-lean \
-fastcompare fastcompare3 fastcompare4 fastcompare-lean fastcompare3-lean fastcompare4-lean \
- gnucompare  gnucompare3  gnucompare4  gnucompare-lean  gnucompare3-lean  gnucompare4-lean: force
-	-rm -f .bad_compare
-	case "$@" in *compare | *compare-lean ) stage=2 ;; * ) stage=`echo $@ | sed -e 's,^[a-z]*compare\([0-9][0-9]*\).*,\1,'` ;; esac; \
-	for dir in . $(SUBDIRS) libgcc; do \
-	  if [ "`echo $$dir/*$(objext)`" != "$$dir/*$(objext)" ] ; then \
-	    for file in $$dir/*$(objext); do \
-	      case "$@" in \
-		slowcompare* ) \
-		  if tail -c +1 </dev/null >/dev/null 2>&1; then \
-		    skip16='-c +17'; \
-		  else \
-		    skip16='+17c'; \
-		  fi; \
-		  tail $$skip16 ./$$file > tmp-foo1; \
-		  tail $$skip16 stage$$stage/$$file > tmp-foo2; \
-		  cmp tmp-foo1 tmp-foo2 > /dev/null 2>&1; \
-		  cmpret=$$?; \
-		  ;; \
-		fastcompare* ) \
-		  cmp $$file stage$$stage/$$file 16 16 > /dev/null 2>&1; \
-		  cmpret=$$?; \
-		  ;; \
-		gnucompare* ) \
-		  cmp --ignore-initial=16 $$file stage$$stage/$$file > /dev/null 2>&1; \
-		  cmpret=$$?; \
-		  ;; \
-	      esac ; \
-	      if test $$cmpret -eq 1; then \
-		case $$file in \
-		  ./cc*-checksum$(objext) | libgcc/* ) \
-		    echo warning: $$file differs;; \
-		  *) \
-		    echo $$file differs >> .bad_compare;; \
-		esac ; \
-	      fi; \
-	    done; \
-	  else true; fi; \
-	done
-	-rm -f tmp-foo*
-	case "$@" in *compare | *compare-lean ) stage=2 ;; * ) stage=`echo $@ | sed -e 's,^[a-z]*compare\([0-9][0-9]*\).*,\1,'` ;; esac; \
-	if [ -f .bad_compare ]; then \
-	  echo "Bootstrap comparison failure!"; \
-	  cat .bad_compare; \
-	  exit 1; \
-	else \
-	  case "$@" in \
-	    *-lean ) rm -rf stage$$stage ;; \
-	    *) ;; \
-	  esac; true; \
-	fi
-
-# Forwarding wrappers to the most appropriate version.
-compare: @make_compare_target@
-compare3: @make_compare_target@3
-compare4: @make_compare_target@4
-compare-lean: @make_compare_target@-lean
-compare3-lean: @make_compare_target@3-lean
-compare4-lean: @make_compare_target@4-lean
-
-# Copy the object files from a particular stage into a subdirectory.
-stage1-start:
-	-if [ -d stage1 ] ; then true ; else mkdir stage1 ; fi
-	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stage1
-	-subdirs="$(SUBDIRS)"; for dir in $$subdirs; \
-	 do \
-	   if [ -d stage1/$$dir ] ; then true ; else mkdir stage1/$$dir ; fi ; \
-	 done
-	-rm -f stage1/libgcc.a stage1/libgcc_eh.a stage1/libgcov.a
-	-rm -f stage1/libgcc_s*$(SHLIB_EXT)
-	-rm -f stage1/libunwind.a stage1/libunwind*$(SHLIB_EXT)
-# If SPECS is overridden, make sure it is `installed' as specs.
-	-mv $(SPECS) stage1/specs
-	-mv $(STAGEMOVESTUFF) stage1
-	-mv build/* stage1/build
-	-cp -p $(STAGECOPYSTUFF) stage1
-# Copy as/ld if they exist to stage dir, so that running xgcc from the stage
-# dir will work properly.
-	-if [ -f as$(exeext) ] ; then (cd stage1 && $(LN_S) ../as$(exeext) .) ; else true ; fi
-	-if [ -f ld$(exeext) ] ; then (cd stage1 && $(LN_S) ../ld$(exeext) .) ; else true ; fi
-	-if [ -f collect-ld$(exeext) ] ; then (cd stage1 && $(LN_S) ../collect-ld$(exeext) .) ; else true ; fi
-	-cp libgcc.a stage1
-	-$(RANLIB_FOR_TARGET) stage1/libgcc.a
-	-cp libgcov.a stage1
-	-$(RANLIB_FOR_TARGET) stage1/libgcov.a
-	-if [ -f libgcc_eh.a ] ; then cp libgcc_eh.a stage1; \
-	   $(RANLIB_FOR_TARGET) stage1/libgcc_eh.a; \
-	fi
-	-cp libgcc_s*$(SHLIB_EXT) stage1
-	-cp libunwind.a libunwind*$(SHLIB_EXT) stage1
-	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
-	  cp stage1/$${f} . ; \
-	else true; \
-	fi; done
-stage1: force stage1-start lang.stage1
-	-for dir in . $(SUBDIRS) ; \
-	do \
-	  rm -f $$dir/*$(coverageexts) ; \
-	done
-
-stage2-start:
-	-if [ -d stage2 ] ; then true ; else mkdir stage2 ; fi
-	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stage2
-	-subdirs="$(SUBDIRS)"; for dir in $$subdirs; \
-	 do \
-	   if [ -d stage2/$$dir ] ; then true ; else mkdir stage2/$$dir ; fi ; \
-	 done
-	-rm -f stage2/libgcc.a stage2/libgcov.a stage2/libgcc_eh.a
-	-rm -f stage2/libgcc_s*$(SHLIB_EXT)
-	-rm -f stage2/libunwind.a stage2/libunwind*$(SHLIB_EXT)
-# If SPECS is overridden, make sure it is `installed' as specs.
-	-mv $(SPECS) stage2/specs
-	-mv $(STAGEMOVESTUFF) stage2
-	-mv build/* stage2/build
-	-cp -p $(STAGECOPYSTUFF) stage2
-# Copy as/ld if they exist to stage dir, so that running xgcc from the stage
-# dir will work properly.
-	-if [ -f as$(exeext) ] ; then (cd stage2 && $(LN_S) ../as$(exeext) .) ; else true ; fi
-	-if [ -f ld$(exeext) ] ; then (cd stage2 && $(LN_S) ../ld$(exeext) .) ; else true ; fi
-	-if [ -f collect-ld$(exeext) ] ; then (cd stage2 && $(LN_S) ../collect-ld$(exeext) .) ; else true ; fi
-	-cp libgcc.a stage2
-	-$(RANLIB_FOR_TARGET) stage2/libgcc.a
-	-cp libgcov.a stage2
-	-$(RANLIB_FOR_TARGET) stage2/libgcov.a
-	-if [ -f libgcc_eh.a ] ; then cp libgcc_eh.a stage2; \
-	   $(RANLIB_FOR_TARGET) stage2/libgcc_eh.a; \
-	fi
-	-cp libgcc_s*$(SHLIB_EXT) stage2
-	-cp libunwind.a libunwind*$(SHLIB_EXT) stage2
-	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
-	  cp stage2/$${f} . ; \
-	else true; \
-	fi; done
-stage2: force stage2-start lang.stage2
-
-stage3-start:
-	-if [ -d stage3 ] ; then true ; else mkdir stage3 ; fi
-	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stage3
-	-subdirs="$(SUBDIRS)"; for dir in $$subdirs; \
-	 do \
-	   if [ -d stage3/$$dir ] ; then true ; else mkdir stage3/$$dir ; fi ; \
-	 done
-	-rm -f stage3/libgcc.a stage3/libgcov.a stage3/libgcc_eh.a
-	-rm -f stage3/libgcc_s*$(SHLIB_EXT)
-	-rm -f stage3/libunwind.a stage3/libunwind*$(SHLIB_EXT)
-# If SPECS is overridden, make sure it is `installed' as specs.
-	-mv $(SPECS) stage3/specs
-	-mv $(STAGEMOVESTUFF) stage3
-	-mv build/* stage3/build
-	-cp -p $(STAGECOPYSTUFF) stage3
-# Copy as/ld if they exist to stage dir, so that running xgcc from the stage
-# dir will work properly.
-	-if [ -f as$(exeext) ] ; then (cd stage3 && $(LN_S) ../as$(exeext) .) ; else true ; fi
-	-if [ -f ld$(exeext) ] ; then (cd stage3 && $(LN_S) ../ld$(exeext) .) ; else true ; fi
-	-if [ -f collect-ld$(exeext) ] ; then (cd stage3 && $(LN_S) ../collect-ld$(exeext) .) ; else true ; fi
-	-cp libgcc.a stage3
-	-$(RANLIB_FOR_TARGET) stage3/libgcc.a
-	-cp libgcov.a stage3
-	-$(RANLIB_FOR_TARGET) stage3/libgcov.a
-	-if [ -f libgcc_eh.a ] ; then cp libgcc_eh.a stage3; \
-	   $(RANLIB_FOR_TARGET) stage3/libgcc_eh.a; \
-	fi
-	-cp libgcc_s*$(SHLIB_EXT) stage3
-	-cp libunwind.a libunwind*$(SHLIB_EXT) stage3
-	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
-	  cp stage3/$${f} . ; \
-	else true; \
-	fi; done
-stage3: force stage3-start lang.stage3
-
-stage4-start:
-	-if [ -d stage4 ] ; then true ; else mkdir stage4 ; fi
-	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stage4
-	-subdirs="$(SUBDIRS)"; for dir in $$subdirs; \
-	 do \
-	   if [ -d stage4/$$dir ] ; then true ; else mkdir stage4/$$dir ; fi ; \
-	 done
-	-rm -f stage4/libgcc.a stage4/libgcov.a stage4/libgcc_eh.a
-	-rm -f stage4/libgcc_s*$(SHLIB_EXT)
-	-rm -f stage4/libunwind.a stage4/libunwind*$(SHLIB_EXT)
-# If SPECS is overridden, make sure it is `installed' as specs.
-	-mv $(SPECS) stage4/specs
-	-mv $(STAGEMOVESTUFF) stage4
-	-mv build/* stage4/build
-	-cp -p $(STAGECOPYSTUFF) stage4
-# Copy as/ld if they exist to stage dir, so that running xgcc from the stage
-# dir will work properly.
-	-if [ -f as$(exeext) ] ; then (cd stage4 && $(LN_S) ../as$(exeext) .) ; else true ; fi
-	-if [ -f ld$(exeext) ] ; then (cd stage4 && $(LN_S) ../ld$(exeext) .) ; else true ; fi
-	-if [ -f collect-ld$(exeext) ] ; then (cd stage4 && $(LN_S) ../collect-ld$(exeext) .) ; else true ; fi
-	-cp libgcc.a stage4
-	-$(RANLIB_FOR_TARGET) stage4/libgcc.a
-	-cp libgcov.a stage4
-	-$(RANLIB_FOR_TARGET) stage4/libgcov.a
-	-if [ -f libgcc_eh.a ] ; then cp libgcc_eh.a stage4; \
-	   $(RANLIB_FOR_TARGET) stage4/libgcc_eh.a; \
-	fi
-	-cp libgcc_s*$(SHLIB_EXT) stage4
-	-cp libunwind.a libunwind*$(SHLIB_EXT) stage4
-	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
-	  cp stage4/$${f} . ; \
-	else true; \
-	fi; done
-stage4: force stage4-start lang.stage4
-
-stageprofile-start:
-	-if [ -d stageprofile ] ; then true ; else mkdir stageprofile ; fi
-	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stageprofile
-	-subdirs="$(SUBDIRS)"; for dir in $$subdirs; \
-	 do \
-	   if [ -d stageprofile/$$dir ] ; then true ; else mkdir stageprofile/$$dir ; fi ; \
-	 done
-	-rm -f stageprofile/libgcc.a stageprofile/libgcov.a stageprofile/libgcc_eh.a
-	-rm -f stageprofile/libgcc_s*$(SHLIB_EXT)
-	-rm -f stageprofile/libunwind.a stageprofile/libunwind*$(SHLIB_EXT)
-	-mv $(STAGEMOVESTUFF) stageprofile
-	-mv build/* stageprofile/build
-	-cp -p $(STAGECOPYSTUFF) stageprofile
-# Copy as/ld if they exist to stage dir, so that running xgcc from the stage
-# dir will work properly.
-	-if [ -f as$(exeext) ] ; then (cd stageprofile && $(LN_S) ../as$(exeext) .) ; else true ; fi
-	-if [ -f ld$(exeext) ] ; then (cd stageprofile && $(LN_S) ../ld$(exeext) .) ; else true ; fi
-	-if [ -f collect-ld$(exeext) ] ; then (cd stageprofile && $(LN_S) ../collect-ld$(exeext) .) ; else true ; fi
-	-cp libgcc.a stageprofile
-	-$(RANLIB_FOR_TARGET) stageprofile/libgcc.a
-	-cp libgcov.a stageprofile
-	-$(RANLIB_FOR_TARGET) stageprofile/libgcov.a
-	-if [ -f libgcc_eh.a ] ; then cp libgcc_eh.a stageprofile; \
-	   $(RANLIB_FOR_TARGET) stageprofile/libgcc_eh.a; \
-	fi
-	-cp libgcc_s*$(SHLIB_EXT) stageprofile
-	-cp libunwind.a libunwind*$(SHLIB_EXT) stageprofile
-	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
-	  cp stageprofile/$${f} . ; \
-	else true; \
-	fi; done
-stageprofile: force stageprofile-start lang.stageprofile
-
-stagefeedback-start:
-	-if [ -d stagefeedback ] ; then true ; else mkdir stagefeedback ; fi
-	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stagefeedback
-	-subdirs="$(SUBDIRS)"; for dir in $$subdirs; \
-	 do \
-	   if [ -d stagefeedback/$$dir ] ; then true ; else mkdir stagefeedback/$$dir ; fi ; \
-	 done
-	-rm -f stagefeedback/libgcc.a stagefeedback/libgcov.a stagefeedback/libgcc_eh.a
-	-rm -f stagefeedback/libgcc_s*$(SHLIB_EXT)
-	-rm -f stagefeedback/libunwind.a stagefeedback/libunwind*$(SHLIB_EXT)
-	-rm -f *.da
-	-mv $(STAGEMOVESTUFF) stagefeedback
-	-mv build/* stagefeedback/build
-	-cp -p $(STAGECOPYSTUFF) stagefeedback
-# Copy as/ld if they exist to stage dir, so that running xgcc from the stage
-# dir will work properly.
-	-if [ -f as$(exeext) ] ; then (cd stagefeedback && $(LN_S) ../as$(exeext) .) ; else true ; fi
-	-if [ -f ld$(exeext) ] ; then (cd stagefeedback && $(LN_S) ../ld$(exeext) .) ; else true ; fi
-	-if [ -f collect-ld$(exeext) ] ; then (cd stagefeedback && $(LN_S) ../collect-ld$(exeext) .) ; else true ; fi
-	-for dir in fixinc po testsuite $(SUBDIRS); \
-	 do \
-	   rm -f $$dir/*.da ; \
-	 done
-	-cp libgcc.a stagefeedback
-	-$(RANLIB_FOR_TARGET) stagefeedback/libgcc.a
-	-cp libgcov.a stagefeedback
-	-$(RANLIB_FOR_TARGET) stagefeedback/libgcov.a
-	-if [ -f libgcc_eh.a ] ; then cp libgcc_eh.a stagefeedback; \
-	   $(RANLIB_FOR_TARGET) stagefeedback/libgcc_eh.a; \
-	fi
-	-cp libgcc_s*$(SHLIB_EXT) stagefeedback
-	-cp libunwind.a libunwind*$(SHLIB_EXT) stagefeedback
-	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
-	  cp stagefeedback/$${f} . ; \
-	else true; \
-	fi; done
-stagefeedback: force stagefeedback-start lang.stagefeedback
-
-# Copy just the executable files from a particular stage into a subdirectory,
-# and delete the object files.  Use this if you're just verifying a version
-# that is pretty sure to work, and you are short of disk space.
-risky-stage1: stage1
-	-$(MAKE) clean
-
-risky-stage2: stage2
-	-$(MAKE) clean
-
-risky-stage3: stage3
-	-$(MAKE) clean
-
-risky-stage4: stage4
-	-$(MAKE) clean
-
-#In GNU Make, ignore whether `stage*' exists.
-.PHONY: stage1 stage2 stage3 stage4 clean maintainer-clean TAGS bootstrap
-.PHONY: risky-stage1 risky-stage2 risky-stage3 risky-stage4
-.PHONY: stagefeedback stageprofile
 
 # -----------------------------------------------------
 # Rules for generating translated message descriptions.
