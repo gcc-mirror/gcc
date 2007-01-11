@@ -1,3 +1,8 @@
+2007-01-11  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/warnings.m4: Add second parameter with name of variable.
+	Always append to the variable if it exists.
+
 2007-01-01  Mike Stump  <mrs@apple.com>
 
 	* mh-ppc-darwin: Remove support for building with Apple's gcc-3.1.
