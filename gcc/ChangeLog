@@ -1,3 +1,8 @@
+2007-01-11  Roger Sayle  <roger@eyesopen.com>
+
+	* tree.h (TREE_CONSTANT_OVERFLOW): Obsolete.  For the time being,
+	treat TREE_CONSTANT_OVERFLOW as a synonym of TREE_OVERFLOW.
+
 2007-01-11  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac (strict1_warn): Rename to strict_warn.
