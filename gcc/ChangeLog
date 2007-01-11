@@ -1,3 +1,39 @@
+2007-01-11  Nick Clifton  <nickc@redhat.com>
+
+	* config/mcore/predicates.md (mcore_general_movesrc_operand):
+	Accept CONSTs.
+	(mcore_general_movdst_operand): Do not accept CONST_INTs.
+	(mcore_arith_K_S_operand): Run the test for the S constraint not
+	the test for the M constraint.
+	(mcore_addsub_operand): Do not accept integer values that are
+	larger than 32 bits.
+	* config/mcore/mcore.md: Remove unused constraints from split.
+	(andsi3): Use HOST_WIDE_INT instead of int to hold an INTVAL.
+	(addsi3): Likewise.
+	(allocate_stack): Likewise.
+	* config/mcore/mcore.c (mcore_print_operand): Restrict output of P
+	operands to 32 bits.
+	(mcore_const_costs): Use HOST_WIDE_INT instead of int to hold an
+	INTVAL.
+	(mcore_and_cost, mcore_modify_comparison, const_ok_for_mcore,
+	mcore_const_ok_for_inline, mcore_const_trick_uses_not,
+	try_constant_tricks, mcore_num_ones, mcore_num_zeros,
+	mcore_output_bclri, mcore_output_andn, output_inline_const,
+	mcore_output_move, mcore_output_movedouble): Likewise.
+	(mcore_output_cmov): Use CONST_OK_FOR_M and CONST_OK_FOR_N.
+	(output_inline_const): Likewise.
+	(output_inline_const): Fix format strings used in sprintf
+	statements.
+	* config/mcore/mcore-protos.h: Update prototypes for changed
+	functions in mcore.c.
+	* config/mcore/mcore.h (CONST_OK_FOR_I): Cast values to
+	HOST_WIDE_INT and not int.
+	(CONST_OK_FOR_J, CONST_OK_FOR_K, CONST_OK_FOR_L, CONST_OK_FOR_M,
+	CONST_OK_FOR_N): Likewise.
+	(LEGITIMATE_CONSTANT_P): Also check CONSTANT_P.
+	(GO_IF_LEGITIMATE_INDEX): Use HOST_WIDE_INT instead of int to hold
+	an INTVAL.
+
 2007-01-10  Jan Hubicka  <jh@suse.cz>
 
 	* tree-vrp.c (remove_range_assertions): Release defs.
