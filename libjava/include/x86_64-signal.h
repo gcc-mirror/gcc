@@ -29,9 +29,8 @@ static void _Jv_##_name (int, siginfo_t *,			\
 do									\
 {									\
   struct ucontext *_uc = (struct ucontext *)_p;				\
-  volatile struct sigcontext *_sc = (struct sigcontext *) &_uc->uc_mcontext; \
-									\
-  register unsigned char *_rip = (unsigned char *)_sc->rip;		\
+  gregset_t &_gregs = _uc->uc_mcontext.gregs;				\
+  unsigned char *_rip = (unsigned char *)_gregs[REG_RIP];		\
 									\
   /* According to the JVM spec, "if the dividend is the negative	\
    * integer of largest possible magnitude for the type and the		\
@@ -64,15 +63,17 @@ do									\
       if (((_modrm >> 3) & 7) == 7)					\
 	{								\
 	  if (_is_64_bit)						\
-	    _min_value_dividend = (_sc->rax == 0x8000000000000000L);	\
+	    _min_value_dividend =					\
+	      _gregs[REG_RAX] == (greg_t)0x8000000000000000UL;		\
 	  else								\
-	    _min_value_dividend = ((_sc->rax & 0xffffffff) == 0x80000000); \
+	    _min_value_dividend =					\
+	      (_gregs[REG_RAX] & 0xffffffff) == (greg_t)0x80000000UL;	\
 	}								\
 									\
       if (_min_value_dividend)						\
 	{								\
 	  unsigned char _rm = _modrm & 7;				\
-	  _sc->rdx = 0; /* the remainder is zero */			\
+	  _gregs[REG_RDX] = 0; /* the remainder is zero */		\
 	  switch (_modrm >> 6)						\
 	    {								\
 	    case 0:  /* register indirect */				\
@@ -95,7 +96,7 @@ do									\
 	      break;							\
 	    }								\
 	  _rip += 2;							\
-	  _sc->rip = (unsigned long)_rip;				\
+	  _gregs[REG_RIP] = (greg_t)_rip;				\
 	  return;							\
 	}								\
     }									\

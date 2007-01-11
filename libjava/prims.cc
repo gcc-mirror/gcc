@@ -87,7 +87,7 @@ static java::lang::OutOfMemoryError *no_memory;
 // Number of bytes in largest array object we create.  This could be
 // increased to the largest size_t value, so long as the appropriate
 // functions are changed to take a size_t argument instead of jint.
-#define MAX_OBJECT_SIZE ((1<<31) - 1)
+#define MAX_OBJECT_SIZE (((size_t)1<<31) - 1)
 
 // Properties set at compile time.
 const char **_Jv_Compiler_Properties = NULL;
@@ -104,7 +104,8 @@ int _Jv_argc;
 
 // Debugging options
 static bool remoteDebug = false;
-static char *jdwpOptions = "";
+static char defaultJdwpOptions[] = "";
+static char *jdwpOptions = defaultJdwpOptions;
 
 // Argument support.
 int
