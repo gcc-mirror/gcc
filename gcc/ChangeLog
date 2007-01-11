@@ -1,5 +1,31 @@
 2007-01-11  Roger Sayle  <roger@eyesopen.com>
 
+	* builtins.c (expand_builtin_pow, expand_builtin_powi,
+	fold_builtin_cabs, fold_builtin_sqrt, fold_builtin_trunc,
+	fold_builtin_floor, fold_builtin_ceil, fold_builtin_round,
+	fold_builtin_int_int_roundingfn, fold_builtin_bitop,
+	fold_builtin_bswap, real_constp, fold_builtin_pow,
+	fold_builtin_powi, fold_builtin_signbit, fold_builtin_copysign,
+	do_mpfr_arg1, do_mpfr_arg2, do_mpfr_arg3, do_mpfr_sincos): Replace
+	uses of the macro TREE_CONSTANT_OVERFLOW with TREE_OVERFLOW.
+	* convert.c (convert_to_pointer): Likewise.
+	* expr.c (highest_pow2_factor, expand_expr_real_1): Likewise.
+	* fold-const.c (force_fit_type, fold_negate_expr, int_const_binop,
+	const_binop, fold_convert_const_int_from_int,
+	fold_convert_const_int_from_real,
+	fold_convert_const_real_from_real, sign_bit_p,
+	optimize_minmax_comparison, extract_muldiv_1, fold_div_compare,
+	fold_sign_changed_comparison, fold_unary, fold_comparison,
+	fold_binary, multiple_of_p, tree_Expr_non_zero_p,
+	fold_negate_const, fold_abs_const, fold_not_const): Likewise.
+	* print-tree.c (print_node_brief, print_node): Likewise.
+	* stor-layout.c (place_field, layout_type): Likewise.
+	* tree-chrec.c (keep_cast): Likewise.
+	* tree.c (build_vector, build_real, build_real_from_int_cst,
+	build_complex): Likewise.
+
+2007-01-11  Roger Sayle  <roger@eyesopen.com>
+
 	* tree.h (TREE_CONSTANT_OVERFLOW): Obsolete.  For the time being,
 	treat TREE_CONSTANT_OVERFLOW as a synonym of TREE_OVERFLOW.
 

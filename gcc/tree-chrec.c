@@ -1,5 +1,5 @@
 /* Chains of recurrences.
-   Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -1293,10 +1293,7 @@ keep_cast:
 
   /* Don't propagate overflows.  */
   if (CONSTANT_CLASS_P (res))
-    {
-      TREE_CONSTANT_OVERFLOW (res) = 0;
-      TREE_OVERFLOW (res) = 0;
-    }
+    TREE_OVERFLOW (res) = 0;
 
   /* But reject constants that don't fit in their type after conversion.
      This can happen if TYPE_MIN_VALUE or TYPE_MAX_VALUE are not the

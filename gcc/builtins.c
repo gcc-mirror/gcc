@@ -1,6 +1,7 @@
 /* Expand builtin functions.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2688,7 +2689,7 @@ expand_builtin_pow (tree exp, rtx target, rtx subtarget)
   arg1 = TREE_VALUE (TREE_CHAIN (arglist));
 
   if (TREE_CODE (arg1) != REAL_CST
-      || TREE_CONSTANT_OVERFLOW (arg1))
+      || TREE_OVERFLOW (arg1))
     return expand_builtin_mathfn_2 (exp, target, subtarget);
 
   /* Handle constant exponents.  */
@@ -2821,7 +2822,7 @@ expand_builtin_powi (tree exp, rtx target, rtx subtarget)
   /* Handle constant power.  */
 
   if (TREE_CODE (arg1) == INTEGER_CST
-      && ! TREE_CONSTANT_OVERFLOW (arg1))
+      && !TREE_OVERFLOW (arg1))
     {
       HOST_WIDE_INT n = TREE_INT_CST_LOW (arg1);
 
@@ -7013,8 +7014,8 @@ fold_builtin_cabs (tree arglist, tree type, tree fndecl)
       && TREE_CODE (arg) == COMPLEX_CST
       && TREE_CODE (TREE_REALPART (arg)) == REAL_CST
       && TREE_CODE (TREE_IMAGPART (arg)) == REAL_CST
-      && ! TREE_CONSTANT_OVERFLOW (TREE_REALPART (arg))
-      && ! TREE_CONSTANT_OVERFLOW (TREE_IMAGPART (arg)))
+      && !TREE_OVERFLOW (TREE_REALPART (arg))
+      && !TREE_OVERFLOW (TREE_IMAGPART (arg)))
     {
       REAL_VALUE_TYPE r, i;
 
@@ -7092,7 +7093,7 @@ fold_builtin_sqrt (tree arglist, tree type)
 
   /* Optimize sqrt of constant value.  */
   if (TREE_CODE (arg) == REAL_CST
-      && ! TREE_CONSTANT_OVERFLOW (arg))
+      && !TREE_OVERFLOW (arg))
     {
       REAL_VALUE_TYPE r, x;
 
@@ -7441,7 +7442,7 @@ fold_builtin_trunc (tree fndecl, tree arglist)
 
   /* Optimize trunc of constant value.  */
   arg = TREE_VALUE (arglist);
-  if (TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
+  if (TREE_CODE (arg) == REAL_CST && !TREE_OVERFLOW (arg))
     {
       REAL_VALUE_TYPE r, x;
       tree type = TREE_TYPE (TREE_TYPE (fndecl));
@@ -7467,7 +7468,7 @@ fold_builtin_floor (tree fndecl, tree arglist)
 
   /* Optimize floor of constant value.  */
   arg = TREE_VALUE (arglist);
-  if (TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
+  if (TREE_CODE (arg) == REAL_CST && !TREE_OVERFLOW (arg))
     {
       REAL_VALUE_TYPE x;
 
@@ -7506,7 +7507,7 @@ fold_builtin_ceil (tree fndecl, tree arglist)
 
   /* Optimize ceil of constant value.  */
   arg = TREE_VALUE (arglist);
-  if (TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
+  if (TREE_CODE (arg) == REAL_CST && !TREE_OVERFLOW (arg))
     {
       REAL_VALUE_TYPE x;
 
@@ -7537,7 +7538,7 @@ fold_builtin_round (tree fndecl, tree arglist)
 
   /* Optimize round of constant value.  */
   arg = TREE_VALUE (arglist);
-  if (TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
+  if (TREE_CODE (arg) == REAL_CST && !TREE_OVERFLOW (arg))
     {
       REAL_VALUE_TYPE x;
 
@@ -7569,7 +7570,7 @@ fold_builtin_int_roundingfn (tree fndecl, tree arglist)
 
   /* Optimize lround of constant value.  */
   arg = TREE_VALUE (arglist);
-  if (TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
+  if (TREE_CODE (arg) == REAL_CST && !TREE_OVERFLOW (arg))
     {
       const REAL_VALUE_TYPE x = TREE_REAL_CST (arg);
 
@@ -7637,7 +7638,7 @@ fold_builtin_bitop (tree fndecl, tree arglist)
 
   /* Optimize for constant argument.  */
   arg = TREE_VALUE (arglist);
-  if (TREE_CODE (arg) == INTEGER_CST && ! TREE_CONSTANT_OVERFLOW (arg))
+  if (TREE_CODE (arg) == INTEGER_CST && !TREE_OVERFLOW (arg))
     {
       HOST_WIDE_INT hi, width, result;
       unsigned HOST_WIDE_INT lo;
@@ -7729,7 +7730,7 @@ fold_builtin_bswap (tree fndecl, tree arglist)
 
   /* Optimize constant value.  */
   arg = TREE_VALUE (arglist);
-  if (TREE_CODE (arg) == INTEGER_CST && ! TREE_CONSTANT_OVERFLOW (arg))
+  if (TREE_CODE (arg) == INTEGER_CST && !TREE_OVERFLOW (arg))
     {
       HOST_WIDE_INT hi, width, r_hi = 0;
       unsigned HOST_WIDE_INT lo, r_lo = 0;
@@ -7786,7 +7787,7 @@ real_dconstp (tree expr, const REAL_VALUE_TYPE *value)
   STRIP_NOPS (expr);
 
   return ((TREE_CODE (expr) == REAL_CST
-	   && ! TREE_CONSTANT_OVERFLOW (expr)
+	   && !TREE_OVERFLOW (expr)
 	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), *value))
 	  || (TREE_CODE (expr) == COMPLEX_CST
 	      && real_dconstp (TREE_REALPART (expr), value)
@@ -7968,7 +7969,7 @@ fold_builtin_pow (tree fndecl, tree arglist, tree type)
     return omit_one_operand (type, build_real (type, dconst1), arg1);
 
   if (TREE_CODE (arg1) == REAL_CST
-      && ! TREE_CONSTANT_OVERFLOW (arg1))
+      && !TREE_OVERFLOW (arg1))
     {
       REAL_VALUE_TYPE cint;
       REAL_VALUE_TYPE c;
@@ -8027,7 +8028,7 @@ fold_builtin_pow (tree fndecl, tree arglist, tree type)
 	{
 	  /* Attempt to evaluate pow at compile-time.  */
 	  if (TREE_CODE (arg0) == REAL_CST
-	      && ! TREE_CONSTANT_OVERFLOW (arg0))
+	      && !TREE_OVERFLOW (arg0))
 	    {
 	      REAL_VALUE_TYPE x;
 	      bool inexact;
@@ -8131,7 +8132,7 @@ fold_builtin_powi (tree fndecl ATTRIBUTE_UNUSED, tree arglist, tree type)
 
       /* Evaluate powi at compile-time.  */
       if (TREE_CODE (arg0) == REAL_CST
-	  && ! TREE_CONSTANT_OVERFLOW (arg0))
+	  && !TREE_OVERFLOW (arg0))
 	{
 	  REAL_VALUE_TYPE x;
 	  x = TREE_REAL_CST (arg0);
@@ -8819,7 +8820,7 @@ fold_builtin_signbit (tree fndecl, tree arglist)
 
   /* If ARG is a compile-time constant, determine the result.  */
   if (TREE_CODE (arg) == REAL_CST
-      && !TREE_CONSTANT_OVERFLOW (arg))
+      && !TREE_OVERFLOW (arg))
     {
       REAL_VALUE_TYPE c;
 
@@ -8861,8 +8862,8 @@ fold_builtin_copysign (tree fndecl, tree arglist, tree type)
   /* If ARG1 and ARG2 are compile-time constants, determine the result.  */
   if (TREE_CODE (arg1) == REAL_CST
       && TREE_CODE (arg2) == REAL_CST
-      && !TREE_CONSTANT_OVERFLOW (arg1)
-      && !TREE_CONSTANT_OVERFLOW (arg2))
+      && !TREE_OVERFLOW (arg1)
+      && !TREE_OVERFLOW (arg2))
     {
       REAL_VALUE_TYPE c1, c2;
 
@@ -11739,7 +11740,7 @@ do_mpfr_arg1 (tree arg, tree type, int (*func)(mpfr_ptr, mpfr_srcptr, mp_rnd_t),
   /* To proceed, MPFR must exactly represent the target floating point
      format, which only happens when the target base equals two.  */
   if (REAL_MODE_FORMAT (TYPE_MODE (type))->b == 2
-      && TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
+      && TREE_CODE (arg) == REAL_CST && !TREE_OVERFLOW (arg))
     {
       const REAL_VALUE_TYPE *const ra = &TREE_REAL_CST (arg);
 
@@ -11781,8 +11782,8 @@ do_mpfr_arg2 (tree arg1, tree arg2, tree type,
   /* To proceed, MPFR must exactly represent the target floating point
      format, which only happens when the target base equals two.  */
   if (REAL_MODE_FORMAT (TYPE_MODE (type))->b == 2
-      && TREE_CODE (arg1) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg1)
-      && TREE_CODE (arg2) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg2))
+      && TREE_CODE (arg1) == REAL_CST && !TREE_OVERFLOW (arg1)
+      && TREE_CODE (arg2) == REAL_CST && !TREE_OVERFLOW (arg2))
     {
       const REAL_VALUE_TYPE *const ra1 = &TREE_REAL_CST (arg1);
       const REAL_VALUE_TYPE *const ra2 = &TREE_REAL_CST (arg2);
@@ -11826,9 +11827,9 @@ do_mpfr_arg3 (tree arg1, tree arg2, tree arg3, tree type,
   /* To proceed, MPFR must exactly represent the target floating point
      format, which only happens when the target base equals two.  */
   if (REAL_MODE_FORMAT (TYPE_MODE (type))->b == 2
-      && TREE_CODE (arg1) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg1)
-      && TREE_CODE (arg2) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg2)
-      && TREE_CODE (arg3) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg3))
+      && TREE_CODE (arg1) == REAL_CST && !TREE_OVERFLOW (arg1)
+      && TREE_CODE (arg2) == REAL_CST && !TREE_OVERFLOW (arg2)
+      && TREE_CODE (arg3) == REAL_CST && !TREE_OVERFLOW (arg3))
     {
       const REAL_VALUE_TYPE *const ra1 = &TREE_REAL_CST (arg1);
       const REAL_VALUE_TYPE *const ra2 = &TREE_REAL_CST (arg2);
@@ -11874,7 +11875,8 @@ do_mpfr_sincos (tree arg, tree arg_sinp, tree arg_cosp)
   /* To proceed, MPFR must exactly represent the target floating point
      format, which only happens when the target base equals two.  */
   if (REAL_MODE_FORMAT (TYPE_MODE (type))->b == 2
-      && TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
+      && TREE_CODE (arg) == REAL_CST
+      && !TREE_OVERFLOW (arg))
     {
       const REAL_VALUE_TYPE *const ra = &TREE_REAL_CST (arg);
 
