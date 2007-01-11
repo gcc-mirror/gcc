@@ -1,3 +1,8 @@
+2007-01-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (vector_types_convertible_p): Treat opaque types as
+	always convertible if they have the same size, but not otherwise.
+
 2007-01-11  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* ifcvt.c (struct noce_if_info): Add comments to the fields.
