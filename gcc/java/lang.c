@@ -270,8 +270,6 @@ java_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_Wall:
       flag_wall = value;
-      flag_redundant = value;
-      flag_extraneous_semicolon = value;
       /* When -Wall given, enable -Wunused.  We do this because the C
 	 compiler does it, and people expect it.  */
       set_Wunused (value);
@@ -657,8 +655,6 @@ java_post_options (const char **pfilename)
 		     target name here.  */
 		  if ((dependency_tracking & DEPEND_TARGET_SET))
 		    ; /* Nothing.  */
-		  else if (flag_emit_class_files)
-		    jcf_dependency_set_target (NULL);
 		  else
 		    {
 		      strcpy (buf + (dot - filename), TARGET_OBJECT_SUFFIX);

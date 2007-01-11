@@ -1,5 +1,5 @@
 /* Built-in and inline functions for gcj
-   Copyright (C) 2001, 2003, 2004, 2005, 2006
+   Copyright (C) 2001, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -578,7 +578,7 @@ initialize_builtins (void)
 tree
 check_for_builtin (tree method, tree call)
 {
-  if (! flag_emit_class_files && optimize && TREE_CODE (call) == CALL_EXPR)
+  if (optimize && TREE_CODE (call) == CALL_EXPR)
     {
       int i;
       tree method_arguments = TREE_OPERAND (call, 1);

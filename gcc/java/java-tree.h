@@ -131,8 +131,6 @@ struct JCF;
 /* The virtual offset symbol table. Used by the runtime to fill out
    the otable. */
 
-extern int flag_emit_class_files;
-
 extern int flag_filelist_file;
 
 /* When nonzero, permit the use of the assert keyword.  */
@@ -144,10 +142,6 @@ extern int flag_assert;
 
 extern int flag_jni;
 
-/* When nonzero, report the now deprecated empty statements.  */
-
-extern int flag_extraneous_semicolon;
-
 /* When nonzero, always check for a non gcj generated classes archive.  */
 
 extern int flag_force_classes_archive_check;
@@ -158,8 +152,6 @@ extern const char *resource_name;
 /* Turned to 1 if -Wall was encountered. See lang.c for their meanings.  */
 extern int flag_wall;
 extern int flag_redundant;
-extern int flag_not_overriding;
-extern int flag_static_local_jdk1_1;
 
 /* When nonzero, warn when source file is newer than matching class
    file.  */
@@ -1674,7 +1666,7 @@ extern tree *type_map;
 
 /* True when we can perform static class initialization optimization */
 #define STATIC_CLASS_INIT_OPT_P() \
-  (flag_optimize_sci && (optimize >= 2) && ! flag_emit_class_files)
+  (flag_optimize_sci && (optimize >= 2))
 
 /* These are the possible values for the `state' field of the class
    structure.  This must be kept in sync with libgcj.  */
