@@ -1091,14 +1091,18 @@ bool
 vector_types_convertible_p (tree t1, tree t2, bool emit_lax_note)
 {
   static bool emitted_lax_note = false;
-  bool convertible_lax =
-    targetm.vector_opaque_p (t1)
-    || targetm.vector_opaque_p (t2)
-    || (tree_int_cst_equal (TYPE_SIZE (t1), TYPE_SIZE (t2))
-        && (TREE_CODE (TREE_TYPE (t1)) != REAL_TYPE ||
-           TYPE_PRECISION (t1) == TYPE_PRECISION (t2))
-       && INTEGRAL_TYPE_P (TREE_TYPE (t1))
-          == INTEGRAL_TYPE_P (TREE_TYPE (t2)));
+  bool convertible_lax;
+
+  if ((targetm.vector_opaque_p (t1) || targetm.vector_opaque_p (t2))
+      && tree_int_cst_equal (TYPE_SIZE (t1), TYPE_SIZE (t2)))
+    return true;
+
+  convertible_lax =
+    (tree_int_cst_equal (TYPE_SIZE (t1), TYPE_SIZE (t2))
+     && (TREE_CODE (TREE_TYPE (t1)) != REAL_TYPE ||
+	 TYPE_PRECISION (t1) == TYPE_PRECISION (t2))
+     && (INTEGRAL_TYPE_P (TREE_TYPE (t1))
+	 == INTEGRAL_TYPE_P (TREE_TYPE (t2))));
 
   if (!convertible_lax || flag_lax_vector_conversions)
     return convertible_lax;
