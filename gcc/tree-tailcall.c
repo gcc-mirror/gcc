@@ -143,10 +143,10 @@ suitable_for_tail_opt_p (void)
 
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
-
       if (!is_global_var (var)
 	  && (!MTAG_P (var) || TREE_CODE (var) == STRUCT_FIELD_TAG)
-	  && is_call_clobbered (var))
+	  && (gimple_aliases_computed_p (cfun) ? is_call_clobbered (var)
+	      : TREE_ADDRESSABLE (var)))
 	return false;
     }
 
@@ -1023,7 +1023,7 @@ struct tree_opt_pass pass_tail_recursion =
   NULL,					/* next */
   0,					/* static_pass_number */
   0,					/* tv_id */
-  PROP_cfg | PROP_ssa | PROP_alias,	/* properties_required */
+  PROP_cfg | PROP_ssa,			/* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */

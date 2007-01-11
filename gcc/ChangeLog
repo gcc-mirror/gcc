@@ -1,3 +1,20 @@
+2007-01-11  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/1046
+	* tree-tailcall.c (suitable_for_tail_call_opt_p): Use TREE_ADDRESSABLE
+	when alias info is not ready.
+	(pass_tail_recursion): Do not require aliasing.
+	* tree-ssa-copyrename.c (pass_rename_ssa_cop): Likewise.
+	* tree-ssa-ccp.c (pass_ccp, pass_fold_builtins): Likewise.
+	* tree-ssa-copy.c (pass_copy_prop): Likewise.
+	* tree-ssa-forwprop.c (pass_forwprop): Likewise.
+	* tree-ssa-dce.c (pass_dce, pass_dce_loop, pass_cd_dce): Likewise.
+	* passes.c (init_optimization_passes): Execute rename_ssa_copies,
+	ccp, forwprop, copy_prop, merge_phi, copy_prop, dce and tail recursion
+	before inlining.
+	* tree-ssa-operands.c (add_virtual_operand, get_indirect_ref_operand):
+	When aliasing is not build, mark statement as volatile.
+
 2007-01-11  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/15185, PR preprocessor/20989:

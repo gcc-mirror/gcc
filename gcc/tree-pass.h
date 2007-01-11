@@ -398,6 +398,7 @@ extern struct tree_opt_pass pass_shorten_branches;
 extern struct tree_opt_pass pass_set_nothrow_function_flags;
 extern struct tree_opt_pass pass_final;
 extern struct tree_opt_pass pass_rtl_seqabstr;
+extern struct tree_opt_pass pass_release_ssa_names;
 
 /* The root of the compilation pass tree, once constructed.  */
 extern struct tree_opt_pass *all_passes, *all_ipa_passes, *all_lowering_passes;

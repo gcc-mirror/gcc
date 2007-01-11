@@ -1480,6 +1480,8 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
   aliases = v_ann->may_aliases;
   if (aliases == NULL)
     {
+      if (s_ann && !gimple_aliases_computed_p (cfun))
+        s_ann->has_volatile_ops = true;
       /* The variable is not aliased or it is an alias tag.  */
       if (flags & opf_def)
 	append_vdef (var);
@@ -1610,6 +1612,8 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags,
   stmt_ann_t s_ann = stmt_ann (stmt);
 
   s_ann->references_memory = true;
+  if (s_ann && TREE_THIS_VOLATILE (expr))
+    s_ann->has_volatile_ops = true; 
 
   if (SSA_VAR_P (ptr))
     {
@@ -1652,6 +1656,11 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags,
 	  if (v_ann->symbol_mem_tag)
 	    add_virtual_operand (v_ann->symbol_mem_tag, s_ann, flags,
 				 full_ref, offset, size, false);
+          /* Aliasing information is missing; mark statement as volatile so we
+             won't optimize it out too actively.  */
+          else if (s_ann && !gimple_aliases_computed_p (cfun)
+                   && (flags & opf_def))
+            s_ann->has_volatile_ops = true;
 	}
     }
   else if (TREE_CODE (ptr) == INTEGER_CST)
