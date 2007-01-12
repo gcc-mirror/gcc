@@ -1,6 +1,6 @@
 // locks.h - Thread synchronization primitives. SuperH implementation.
 
-/* Copyright (C) 2002  Free Software Foundation
+/* Copyright (C) 2002, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -67,6 +67,18 @@ compare_and_swap_release (volatile obj_addr_t *addr, obj_addr_t old,
 			  obj_addr_t new_val)
 {
   return compare_and_swap (addr, old, new_val);
+}
+
+inline static void
+read_barrier()
+{
+  __asm__ __volatile__(" " : : : "memory");
+}
+
+inline static void
+write_barrier()
+{
+  __asm__ __volatile__(" " : : : "memory");
 }
 
 #endif /* ! __SYSDEP_LOCKS_H__ */
