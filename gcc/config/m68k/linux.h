@@ -23,15 +23,6 @@ Boston, MA 02110-1301, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (68k GNU/Linux with ELF)");
 
-/* Default target comes from config.gcc.  */
-
-#undef TARGET_DEFAULT
-#ifdef TARGET_CPU_DEFAULT
-#define TARGET_DEFAULT TARGET_CPU_DEFAULT
-#else
-#define TARGET_DEFAULT (MASK_BITFIELD|MASK_68881|MASK_68010|MASK_68020)
-#endif
-
 /* for 68k machines this only needs to be TRUE for the 68000 */
 
 #undef STRICT_ALIGNMENT
@@ -92,13 +83,7 @@ Boston, MA 02110-1301, USA.  */
   while (0)
 
 #undef CPP_SPEC
-#if TARGET_DEFAULT & MASK_68881
-#define CPP_SPEC \
-  "%{!msoft-float:-D__HAVE_68881__} %{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
-#else
-#define CPP_SPEC \
-  "%{m68881:-D__HAVE_68881__} %{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
-#endif
+#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 
 /* We override the ASM_SPEC from svr4.h because we must pass -m68040 down
    to the assembler.  */

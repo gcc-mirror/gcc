@@ -32,6 +32,13 @@ Boston, MA 02110-1301, USA.  */
 # define MOTOROLA 0  /* Use the MIT assembly syntax.  */
 #endif
 
+/* Handle --with-cpu default option from configure script.  */
+#define OPTION_DEFAULT_SPECS						\
+  { "cpu",   "%{!mc68000:%{!m68000:%{!m68302:%{!m68010:%{!mc68020:%{!m68020:\
+%{!m68030:%{!m68040:%{!m68020-40:%{!m68020-60:%{!m68060:%{!mcpu32:\
+%{!m68332:%{!m5200:%{!m5206e:%{!m528x:%{!m5307:%{!m5407:%{!mcfv4e:\
+-%(VALUE)}}}}}}}}}}}}}}}}}}}" },
+
 /* Note that some other tm.h files include this one and then override
    many of the definitions that relate to assembler syntax.  */
 
