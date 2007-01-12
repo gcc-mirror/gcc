@@ -1,3 +1,10 @@
+2007-01-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/30435
+	* io/list_read.c (finish_separator): Don't call next_record.
+	(list_formatted_read_scalar): Clean up some comments and whitespace.
+	(nml_read_obj): Whitespace fix.
+
 2007-01-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/30162
