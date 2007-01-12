@@ -1,3 +1,13 @@
+2007-01-12  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/28227:
+	* directives.c (lex_macro_node): Added 'is_def_or_undef'
+	argument.
+	(do_define): Update.
+	(do_undef): Update.
+	(do_ifdef): Update.
+	(do_ifndef): Update.
+
 2007-01-11  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure: Regenerate.

@@ -103,7 +103,7 @@ static void push_conditional (cpp_reader *, int, int, const cpp_hashnode *);
 static unsigned int read_flag (cpp_reader *, unsigned int);
 static int strtoul_for_line (const uchar *, unsigned int, unsigned long *);
 static void do_diagnostic (cpp_reader *, int, int);
-static cpp_hashnode *lex_macro_node (cpp_reader *);
+static cpp_hashnode *lex_macro_node (cpp_reader *, bool);
 static int undefine_macros (cpp_reader *, cpp_hashnode *, void *);
 static void do_include_common (cpp_reader *, enum include_type);
 static struct pragma_entry *lookup_pragma_entry (struct pragma_entry *,
@@ -503,9 +503,11 @@ run_directive (cpp_reader *pfile, int dir_no, const char *buf, size_t count)
 }
 
 /* Checks for validity the macro name in #define, #undef, #ifdef and
-   #ifndef directives.  */
+   #ifndef directives.  IS_DEF_OR_UNDEF is true if this call is
+   processing a #define or #undefine directive, and false
+   otherwise.  */
 static cpp_hashnode *
-lex_macro_node (cpp_reader *pfile)
+lex_macro_node (cpp_reader *pfile, bool is_def_or_undef)
 {
   const cpp_token *token = _cpp_lex_token (pfile);
 
@@ -520,7 +522,7 @@ lex_macro_node (cpp_reader *pfile)
     {
       cpp_hashnode *node = token->val.node;
 
-      if (node == pfile->spec_nodes.n_defined)
+      if (is_def_or_undef && node == pfile->spec_nodes.n_defined)
 	cpp_error (pfile, CPP_DL_ERROR,
 		   "\"defined\" cannot be used as a macro name");
       else if (! (node->flags & NODE_POISONED))
@@ -543,7 +545,7 @@ lex_macro_node (cpp_reader *pfile)
 static void
 do_define (cpp_reader *pfile)
 {
-  cpp_hashnode *node = lex_macro_node (pfile);
+  cpp_hashnode *node = lex_macro_node (pfile, true);
 
   if (node)
     {
@@ -562,7 +564,7 @@ do_define (cpp_reader *pfile)
 static void
 do_undef (cpp_reader *pfile)
 {
-  cpp_hashnode *node = lex_macro_node (pfile);
+  cpp_hashnode *node = lex_macro_node (pfile, true);
 
   if (node)
     {
@@ -1606,7 +1608,7 @@ do_ifdef (cpp_reader *pfile)
 
   if (! pfile->state.skipping)
     {
-      const cpp_hashnode *node = lex_macro_node (pfile);
+      const cpp_hashnode *node = lex_macro_node (pfile, false);
 
       if (node)
 	{
@@ -1628,7 +1630,7 @@ do_ifndef (cpp_reader *pfile)
 
   if (! pfile->state.skipping)
     {
-      node = lex_macro_node (pfile);
+      node = lex_macro_node (pfile, false);
 
       if (node)
 	{

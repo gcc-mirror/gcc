@@ -1,3 +1,8 @@
+2007-01-12  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/28227:
+	* gcc.dg/cpp/pr28227.c: New file.
+
 2007-01-11  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* gcc.dg/tree-ssa/loop-22.c: New test.
