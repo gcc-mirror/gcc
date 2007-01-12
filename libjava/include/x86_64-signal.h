@@ -1,7 +1,7 @@
 // x86_64-signal.h - Catch runtime signals and turn them into exceptions
 // on an x86_64 based GNU/Linux system.
 
-/* Copyright (C) 2003, 2006  Free Software Foundation
+/* Copyright (C) 2003, 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 

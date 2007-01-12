@@ -1,7 +1,7 @@
 // i386-signal.h - Catch runtime signals and turn them into exceptions
 // on an i386 based Linux system.
 
-/* Copyright (C) 1998, 1999, 2001, 2002, 2006  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001, 2002, 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -19,46 +19,51 @@ details.  */
 #define HANDLE_SEGV 1
 #define HANDLE_FPE 1
 
-#define SIGNAL_HANDLER(_name)	\
-static void _name (int _dummy __attribute__ ((__unused__)))
-
-#define MAKE_THROW_FRAME(_exception)
+#define SIGNAL_HANDLER(_name)					\
+static void _Jv_##_name (int, siginfo_t *,			\
+			 void *_p __attribute__ ((__unused__)))
 
 #define HANDLE_DIVIDE_OVERFLOW						\
 do									\
 {									\
-  void **_p = (void **)&_dummy;						\
-  volatile struct sigcontext_struct *_regs = (struct sigcontext_struct *)++_p;\
-									\
-  register unsigned char *_eip = (unsigned char *)_regs->eip;		\
+  struct ucontext *_uc = (struct ucontext *)_p;				\
+  gregset_t &_gregs = _uc->uc_mcontext.gregs;				\
+  unsigned char *_eip = (unsigned char *)_gregs[REG_EIP];		\
 									\
   /* According to the JVM spec, "if the dividend is the negative	\
-   * integer of the smallest magnitude and the divisor is -1, then	\
-   * overflow occurs and the result is equal to the dividend.  Despite	\
-   * the overflow, no exception occurs".				\
+   * integer of largest possible magnitude for the type and the		\
+   * divisor is -1, then overflow occurs and the result is equal to	\
+   * the dividend.  Despite the overflow, no exception occurs".		\
 									\
    * We handle this by inspecting the instruction which generated the	\
-   * signal and advancing eip to point to the following instruction.	\
+   * signal and advancing ip to point to the following instruction.	\
    * As the instructions are variable length it is necessary to do a	\
    * little calculation to figure out where the following instruction	\
    * actually is.							\
 									\
-   */									\
+  */									\
 									\
+  /* Detect a signed division of Integer.MIN_VALUE.  */			\
   if (_eip[0] == 0xf7)							\
     {									\
+      bool _min_value_dividend = false;					\
       unsigned char _modrm = _eip[1];					\
 									\
-      if (_regs->eax == 0x80000000					\
-	  && ((_modrm >> 3) & 7) == 7) /* Signed divide */		\
+      if (((_modrm >> 3) & 7) == 7) /* Signed divide */			\
+	{								\
+	  _min_value_dividend =						\
+	    _gregs[REG_EAX] == (greg_t)0x80000000UL;			\
+	}								\
+									\
+      if (_min_value_dividend)						\
 	{								\
 	  unsigned char _rm = _modrm & 7;				\
-	  _regs->edx = 0; /* the remainder is zero */			\
+	  _gregs[REG_EDX] = 0; /* the remainder is zero */		\
 	  switch (_modrm >> 6)						\
 	    {								\
 	    case 0:  /* register indirect */				\
 	      if (_rm == 5)   /* 32-bit displacement */			\
-		_eip += 4;   						\
+		_eip += 4;						\
 	      if (_rm == 4)  /* A SIB byte follows the ModR/M byte */	\
 		_eip += 1;						\
 	      break;							\
@@ -76,63 +81,70 @@ do									\
 	      break;							\
 	    }								\
 	  _eip += 2;							\
-	  _regs->eip = (unsigned long)_eip;				\
+	  _gregs[REG_EIP] = (greg_t)_eip;				\
 	  return;							\
 	}								\
     }									\
 }									\
 while (0)
 
-/* We use old_kernel_sigaction here because we're calling the kernel
+/* We use kernel_sigaction here because we're calling the kernel
    directly rather than via glibc.  The sigaction structure that the
    syscall uses is a different shape from the one in userland and not
    visible to us in a header file so we define it here.  */
 
-struct old_i386_kernel_sigaction {
-	void (*k_sa_handler) (int);
-	unsigned long k_sa_mask;
-	unsigned long k_sa_flags;
-	void (*sa_restorer) (void);
-};
+extern "C" 
+{
+  struct kernel_sigaction 
+  {
+    void (*k_sa_sigaction)(int,siginfo_t *,void *);
+    unsigned long k_sa_flags;
+    void (*k_sa_restorer) (void);
+    sigset_t k_sa_mask;
+  };
+}
+
+#define MAKE_THROW_FRAME(_exception)
 
 #define RESTORE(name, syscall) RESTORE2 (name, syscall)
-# define RESTORE2(name, syscall) \
+#define RESTORE2(name, syscall)			\
 asm						\
   (						\
    ".text\n"					\
    ".byte 0  # Yes, this really is necessary\n" \
-   "	.align 8\n"				\
+   "	.align 16\n"				\
    "__" #name ":\n"				\
-   "	popl %eax\n"				\
    "	movl $" #syscall ", %eax\n"		\
    "	int  $0x80"				\
    );
 
-RESTORE (restore, __NR_sigreturn)
-static void restore (void) asm ("__restore");
+/* The return code for realtime-signals.  */
+RESTORE (restore_rt, __NR_rt_sigreturn)
+void restore_rt (void) asm ("__restore_rt")
+  __attribute__ ((visibility ("hidden")));
 
-#define INIT_SEGV					\
-do							\
-  {							\
-    struct old_i386_kernel_sigaction kact;		\
-    kact.k_sa_handler = catch_segv;			\
-    kact.k_sa_mask = 0;					\
-    kact.k_sa_flags = 0x4000000;			\
-    kact.sa_restorer = restore;				\
-    syscall (SYS_sigaction, SIGSEGV, &kact, NULL);	\
-  }							\
+#define INIT_SEGV						\
+do								\
+  {								\
+    struct kernel_sigaction act;				\
+    act.k_sa_sigaction = _Jv_catch_segv;			\
+    sigemptyset (&act.k_sa_mask);				\
+    act.k_sa_flags = SA_SIGINFO|0x4000000;			\
+    act.k_sa_restorer = restore_rt;				\
+    syscall (SYS_rt_sigaction, SIGSEGV, &act, NULL, _NSIG / 8);	\
+  }								\
 while (0)  
 
-#define INIT_FPE					\
-do							\
-  {							\
-    struct old_i386_kernel_sigaction kact;		\
-    kact.k_sa_handler = catch_fpe;			\
-    kact.k_sa_mask = 0;					\
-    kact.k_sa_flags = 0x4000000;			\
-    kact.sa_restorer = restore;				\
-    syscall (SYS_sigaction, SIGFPE, &kact, NULL);	\
-  }							\
+#define INIT_FPE						\
+do								\
+  {								\
+    struct kernel_sigaction act;				\
+    act.k_sa_sigaction = _Jv_catch_fpe;				\
+    sigemptyset (&act.k_sa_mask);				\
+    act.k_sa_flags = SA_SIGINFO|0x4000000;			\
+    act.k_sa_restorer = restore_rt;				\
+    syscall (SYS_rt_sigaction, SIGFPE, &act, NULL, _NSIG / 8);	\
+  }								\
 while (0)  
 
 /* You might wonder why we use syscall(SYS_sigaction) in INIT_FPE
@@ -147,9 +159,9 @@ while (0)
  * syscall(SYS_sigaction) causes our handler to be called directly
  * by the kernel, bypassing any wrappers.
 
- * Also, there is at the present time no unwind info in the
- * linuxthreads library's signal handlers and so we can't unwind
- * through them anyway.  */
+ * Also, there may not be any unwind info in the linuxthreads
+ * library's signal handlers and so we can't unwind through them
+ * anyway.  */
 
 #endif /* JAVA_SIGNAL_H */
   
