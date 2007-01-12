@@ -1,3 +1,7 @@
+2007-01-12  Olga Golovanevsky  <olga@il.ibm.com>
+
+        * gcc.dg/torture/pr24750-1.c:  Add prototype of free.
+
 2007-01-12  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/28227:

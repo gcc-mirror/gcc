@@ -1,3 +1,4 @@
+extern void free (void *);
 extern int unknown;
 extern int n0;
 extern short *s0;

@@ -1,3 +1,7 @@
+2007-01-12  Olga Golovanevsky  <olga@il.ibm.com>
+
+	* builtins.def : Add BUILT_IN_FREE.
+	
 2007-01-12  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/30443
