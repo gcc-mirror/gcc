@@ -1,3 +1,8 @@
+2007-01-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* configure.ac: Set insn to "nop" for spu-*-* also.
+	* configure: Regenerate.
+
 2007-01-12  Olga Golovanevsky  <olga@il.ibm.com>
 
 	* builtins.def : Add BUILT_IN_FREE.
