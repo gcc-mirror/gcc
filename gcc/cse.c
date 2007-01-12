@@ -4015,12 +4015,6 @@ cse_insn (rtx insn, rtx libcall_insn)
   rtx tem;
   int n_sets = 0;
 
-#ifdef HAVE_cc0
-  /* Records what this insn does to set CC0.  */
-  this_insn_cc0 = 0;
-  this_insn_cc0_mode = VOIDmode;
-#endif
-
   rtx src_eqv = 0;
   struct table_elt *src_eqv_elt = 0;
   int src_eqv_volatile = 0;
@@ -4030,6 +4024,11 @@ cse_insn (rtx insn, rtx libcall_insn)
   struct set *sets = (struct set *) 0;
 
   this_insn = insn;
+#ifdef HAVE_cc0
+  /* Records what this insn does to set CC0.  */
+  this_insn_cc0 = 0;
+  this_insn_cc0_mode = VOIDmode;
+#endif
 
   /* Find all the SETs and CLOBBERs in this instruction.
      Record all the SETs in the array `set' and count them.
