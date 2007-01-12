@@ -2789,7 +2789,7 @@ standard_68881_constant_p (rtx x)
 
   /* fmovecr must be emulated on the 68040 and 68060, so it shouldn't be
      used at all on those chips.  */
-  if (TUNE_68040 || TUNE_68060)
+  if (TUNE_68040_60)
     return 0;
 
   if (! inited_68881_table)
