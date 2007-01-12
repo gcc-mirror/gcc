@@ -1,3 +1,9 @@
+2007-01-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR fortran/30399
+	* actual_array_constructor_2.f90 actual_array_substr_2.f90: Revert
+	accidental checkin of these testcases.
+
 2006-12-03  Lee Millward  <lee.millward@codesourcery.com>
 
 	PR c++/29022
