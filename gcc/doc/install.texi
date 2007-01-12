@@ -994,8 +994,8 @@ This is an alias for @option{--enable-tls=no}.
 @item --with-cpu=@var{cpu}
 Specify which cpu variant the compiler should generate code for by default.
 @var{cpu} will be used as the default value of the @option{-mcpu=} switch.
-This option is only supported on some targets, including ARM, i386, PowerPC,
-and SPARC@.
+This option is only supported on some targets, including ARM, i386, M68k,
+PowerPC, and SPARC@.
 
 @item --with-schedule=@var{cpu}
 @itemx --with-arch=@var{cpu}
@@ -3389,6 +3389,12 @@ applications.  There are no standard Unix configurations.
 @html
 <hr />
 @end html
+@heading @anchor{m68k-*-*}m68k-*-*
+You can specify a default target using @option{--with-cpu=@var{target}}.
+The recognized values for @var{target} are: @samp{m68000}, @samp{m68010},
+@samp{m68020}, @samp{m68030}, @samp{m68040}, @samp{m68060}, @samp{m68020-40}
+and @samp{m68020-60}.
+
 @heading @anchor{m68k-hp-hpux}m68k-hp-hpux
 HP 9000 series 300 or 400 running HP-UX@.  HP-UX version 8.0 has a bug in
 the assembler that prevents compilation of GCC@.  This

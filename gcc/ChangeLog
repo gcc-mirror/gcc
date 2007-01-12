@@ -1,3 +1,43 @@
+2007-01-12  Nathan Sidwell  <nathan@codesourcery.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* config.gcc (m68k-*-aout*, m68k-*-coff*, m68020-*-elf*, m68k-*-elf*)
+	(m68k-*-uclinux*, m68k-*-linux*, m68k-*-rtems*): Set default_m68k_cpu
+	to the configuration's default CPU.
+	(m68010-*-netbsdelf*, m68k*-*-netbsdelf*, m68k*-*-openbsd*): Likewise.
+	Remove default masks.
+	(m680[012]0-*-*): Set the default with_cpu to the first part of
+	the target name.
+	(m68k*-*-*): Set the default with_cpu to m$default_m68k_cpu.
+	(m68k*-*-linux): Extend the --with-cpu handling to...
+	(m680[012]0-*-*, m68k*-*-*): ...these configurations.  Allow m68000
+	and m68010.  Don't set target_cpu_default2.
+	* doc/install.texi: Document --with-cpu for m68k.
+	* config/m68k/m68k.h (OPTION_DEFAULT_SPECS): Define.
+	* config/m68k/m68k-none.h (TARGET_CPU_DEFAULT, M68K_CPU_m68k)
+	(M68K_CPU_m68000, M68K_CPU_m68010, M68K_CPU_m68020, M68K_CPU_m68030)
+	(M68K_CPU_m68040, M68K_CPU_m68302, M68K_CPU_m68332, TARGET_DEFAULT)
+	(ASM_CPU_DEFAULT_SPEC, CC1_CPU_DEFAULT_SPEC): Delete.
+	(ASM_SPEC): Remove use of %(asm_cpu_default).
+	(EXTRA_SPECS, SUBTARGET_EXTRA_SPECS, MULTILIB_DEFAULTS): Delete.
+	* config/m68k/linux.h (TARGET_DEFAULT): Delete.
+	(CPP_SPEC): Merge definitions.  Do not handle __HAVE_68881__ here.
+	* config/m68k/netbsd-elf.h (TARGET_OS_CPP_BUILTINS): Define
+	__HAVE_FPU__ if TARGET_HARD_FLOAT.
+	(TARGET_DEFAULT): Delete.
+	(EXTRA_SPECS): Delete cpp_cpu_default_spec, cpp_cpu_spec,
+	cpp_fpu_spec, asm_default_spec and netbsd_cpp_spec.
+	(CPP_CPU_SPEC): Delete.
+	(TARGET_VERSION): Merge definitions, using TARGET_68010 to pick
+	the appropriate string.
+	(CPP_CPU_DEFAULT_SPEC, ASM_DEFAULT_SPEC, CPP_FPU_SPEC): Delete.
+	(CPP_SPEC): Define to NETBSD_CPP_SPEC.
+	(ASM_SPEC): Don't use %(asm_default_spec).
+	* config/m68k/m68k.c (TARGET_DEFAULT_TARGET_FLAGS): Remove
+	TARGET_DEFAULT and add MASK_68881.
+	* config/m68k/m68k.md: Remove mention of TARGET_DEFAULT from comments.
+
 2007-01-12  Richard Sandiford  <richard@codesourcery.com>
 
 	* config.gcc (m68010-*-netbsdelf*): Add MASK_68010.
