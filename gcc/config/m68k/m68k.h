@@ -126,6 +126,8 @@ Boston, MA 02110-1301, USA.  */
 /* Size (in bytes) of FPU registers.  */
 #define TARGET_FP_REG_SIZE	(TARGET_COLDFIRE ? 8 : 12)
 
+#define TARGET_ISAB		TARGET_CFV4
+
 #define TUNE_68000_10	(!TARGET_68020 && !TARGET_COLDFIRE)
 #define TUNE_68030	TARGET_68030
 #define TUNE_68040	TARGET_68040
