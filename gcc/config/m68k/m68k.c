@@ -540,6 +540,30 @@ override_options (void)
 
   SUBTARGET_OVERRIDE_OPTIONS;
 }
+
+/* Generate a macro of the form __mPREFIX_cpu_NAME, where PREFIX is the
+   given argument and NAME is the argument passed to -mcpu.  Return NULL
+   if -mcpu was not passed.  */
+
+const char *
+m68k_cpp_cpu_ident (const char *prefix)
+{
+  if (!m68k_cpu_entry)
+    return NULL;
+  return concat ("__m", prefix, "_cpu_", m68k_cpu_entry->name, NULL);
+}
+
+/* Generate a macro of the form __mPREFIX_family_NAME, where PREFIX is the
+   given argument and NAME is the name of the representative device for
+   the -mcpu argument's family.  Return NULL if -mcpu was not passed.  */
+
+const char *
+m68k_cpp_cpu_family (const char *prefix)
+{
+  if (!m68k_cpu_entry)
+    return NULL;
+  return concat ("__m", prefix, "_family_", m68k_cpu_entry->family, NULL);
+}
 
 /* Return nonzero if FUNC is an interrupt function as specified by the
    "interrupt_handler" attribute.  */

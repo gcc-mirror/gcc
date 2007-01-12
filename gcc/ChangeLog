@@ -1,3 +1,16 @@
+2007-01-12  Nathan Sidwell  <nathan@codesourcery.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+
+	* doc/invoke.texi: Document the macros that are defined by
+	m68k's -mtune and -mhard-float options.
+	* config/m68k/m68k-protos.h (m68k_cpp_cpu_ident) Declare.
+	(m68k_cpp_cpu_family): Likewise.
+	* config/m68k/m68k.h (TARGET_CPU_CPP_BUILTINS): Add a full set
+	of __ucfv*__ macros.  Define __mcffpu__ if generating code for
+	ColdFire FPUs.  Define __mcf_cpu_* and __mcf_family_* macros.
+	* config/m68k/m68k.c (m68k_cpp_cpu_ident): New function.
+	(m68k_cpp_cpu_family): Likewise.
+
 2007-01-12  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/m68k/m68k.h (TARGET_CPU_CPP_BUILTINS): Treat all mc68*

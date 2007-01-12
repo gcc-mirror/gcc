@@ -10328,6 +10328,10 @@ below, which also classifies the CPUs into families:
 @var{arch} is compatible with @var{cpu}.  Other combinations of
 @option{-mcpu} and @option{-march} are rejected.
 
+gcc defines the macro @samp{__mcf_cpu_@var{cpu}} when ColdFire target
+@var{cpu} is selected.  It also defines @samp{__mcf_family_@var{family}},
+where the value of @var{family} is given by the table above.
+
 @item -mtune=@var{tune}
 @opindex mtune
 Tune the code for a particular microarchitecture, within the
@@ -10342,6 +10346,17 @@ to run relatively well on 68020, 68030 and 68040 targets.
 @option{-mtune=68020-60} is similar but includes 68060 targets
 as well.  These two options select the same tuning decisions as
 @option{-m68020-40} and @option{-m68020-60} respectively.
+
+gcc defines the macros @samp{__mc@var{arch}} and @samp{__mc@var{arch}__}
+when tuning for 680x0 architecture @var{arch}.  It also defines
+@samp{mc@var{arch}} unless either @option{-ansi} or a non-GNU @option{-std}
+option is used.  If gcc is tuning for a range of architectures,
+as selected by @option{-mtune=68020-40} or @option{-mtune=68020-60},
+it defines the macros for every architecture in the range.
+
+gcc also defines the macro @samp{__m@var{uarch}__} when tuning for
+ColdFire microarchitecture @var{uarch}, where @var{uarch} is one
+of the arguments given above.
 
 @item -m68000
 @itemx -mc68000
@@ -10465,7 +10480,9 @@ The option is equivalent to @option{-march=68020} @option{-mtune=68020-60}.
 @opindex mhard-float
 @opindex m68881
 Generate floating-point instructions.  This is the default for 68020
-and above, and for ColdFire devices that have an FPU.
+and above, and for ColdFire devices that have an FPU.  It defines the
+macro @samp{__HAVE_68881__} on M680x0 targets and @samp{__mcffpu__}
+on ColdFire targets.
 
 @item -msoft-float
 @opindex msoft-float

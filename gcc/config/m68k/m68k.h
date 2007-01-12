@@ -107,6 +107,26 @@ Boston, MA 02110-1301, USA.  */
 	  builtin_define_std ("mc68020");				\
 	  break;							\
 									\
+	case ucfv2:							\
+	  builtin_define ("__mcfv2__");					\
+	  break;							\
+									\
+    	case ucfv3:							\
+	  builtin_define ("__mcfv3__");					\
+	  break;							\
+									\
+	case ucfv4:							\
+	  builtin_define ("__mcfv4__");					\
+	  break;							\
+									\
+	case ucfv4e:							\
+	  builtin_define ("__mcfv4e__");				\
+	  break;							\
+									\
+	case ucfv5:							\
+	  builtin_define ("__mcfv5__");					\
+	  break;							\
+									\
 	default:							\
 	  break;							\
 	}								\
@@ -116,7 +136,16 @@ Boston, MA 02110-1301, USA.  */
 									\
       if (TARGET_COLDFIRE)						\
 	{								\
+	  const char *tmp;						\
+	  								\
+	  tmp = m68k_cpp_cpu_ident ("cf");			   	\
+	  if (tmp)							\
+	    builtin_define (tmp);					\
+	  tmp = m68k_cpp_cpu_family ("cf");				\
+	  if (tmp)							\
+	    builtin_define (tmp);					\
 	  builtin_define ("__mcoldfire__");				\
+									\
 	  if (TARGET_ISAC)						\
 	    builtin_define ("__mcfisac__");				\
 	  else if (TARGET_ISAB)						\
@@ -152,9 +181,10 @@ Boston, MA 02110-1301, USA.  */
 		  break;						\
 		}							\
     	    }								\
-	  if (m68k_tune == ucfv4e)					\
-	    builtin_define ("__mcfv4e__");				\
 	}								\
+									\
+      if (TARGET_COLDFIRE_FPU)						\
+	builtin_define ("__mcffpu__");					\
 									\
       if (TARGET_CF_HWDIV)						\
 	builtin_define ("__mcfhwdiv__");				\
