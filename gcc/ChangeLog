@@ -1,3 +1,9 @@
+2007-01-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa-linux.h (ASM_OUTPUT_INTERNAL_LABEL): Undefine.
+	* pa.h (ASM_OUTPUT_LABEL): Output colon when using GAS.
+	(ASM_OUTPUT_INTERNAL_LABEL): Define.
+
 2007-01-11  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* tree-ssa-loop-ivopts.c (extract_cond_operands): Split from
