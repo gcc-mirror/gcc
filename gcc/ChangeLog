@@ -1,4 +1,10 @@
 2007-01-12  Julian Brown  <julian@codesourcery.com>
+
+	* config/m68k/m68k.h (TUNE_68040_60): New macro.
+	* config/m68k/m68k.c (standard_68881_constant_p): Use it.
+	* config/m68k/m68k.md: Likewise.
+
+2007-01-12  Julian Brown  <julian@codesourcery.com>
 	    Richard Sandiford  <richard@codesourcery.com>
 
 	* config/m68k/m68k.h (TARGET_CPU_CPP_BUILTINS): Use TUNE_68030
