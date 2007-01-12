@@ -3209,16 +3209,17 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
   DECL_ARTIFICIAL (new_decl) = 1;
   DECL_ABSTRACT_ORIGIN (new_decl) = DECL_ORIGIN (old_decl);
 
+  /* Prepare the data structures for the tree copy.  */
+  memset (&id, 0, sizeof (id));
+
   /* Generate a new name for the new version. */
   if (!update_clones)
     {
       DECL_NAME (new_decl) =  create_tmp_var_name (NULL);
       SET_DECL_ASSEMBLER_NAME (new_decl, DECL_NAME (new_decl));
       SET_DECL_RTL (new_decl, NULL_RTX);
+      id.statements_to_fold = pointer_set_create ();
     }
-
-  /* Prepare the data structures for the tree copy.  */
-  memset (&id, 0, sizeof (id));
   
   id.decl_map = splay_tree_new (splay_tree_compare_pointers, NULL, NULL);
   id.src_fn = old_decl;
@@ -3233,7 +3234,6 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
   id.transform_new_cfg = true;
   id.transform_return_to_modify = false;
   id.transform_lang_insert_block = false;
-  id.statements_to_fold = pointer_set_create ();
 
   current_function_decl = new_decl;
   old_entry_block = ENTRY_BLOCK_PTR_FOR_FUNCTION
@@ -3299,18 +3299,25 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
 
   /* Clean up.  */
   splay_tree_delete (id.decl_map);
-  fold_marked_statements (0, id.statements_to_fold);
-  pointer_set_destroy (id.statements_to_fold);
-  fold_cond_expr_cond ();
+  if (!update_clones)
+    {
+      fold_marked_statements (0, id.statements_to_fold);
+      pointer_set_destroy (id.statements_to_fold);
+      fold_cond_expr_cond ();
+    }
   if (gimple_in_ssa_p (cfun))
     {
       free_dominance_info (CDI_DOMINATORS);
       free_dominance_info (CDI_POST_DOMINATORS);
-      delete_unreachable_blocks ();
+      if (!update_clones)
+        delete_unreachable_blocks ();
       update_ssa (TODO_update_ssa);
-      fold_cond_expr_cond ();
-      if (need_ssa_update_p ())
-        update_ssa (TODO_update_ssa);
+      if (!update_clones)
+	{
+	  fold_cond_expr_cond ();
+	  if (need_ssa_update_p ())
+	    update_ssa (TODO_update_ssa);
+	}
     }
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);

@@ -1,3 +1,9 @@
+2007-01-12  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/30443
+	* tree-inline.c (tree_function_versioning): Do not optimize when
+	cloning for inlining.
+
 2007-01-12  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* doc/loop.texi: Document recording of loop exits.
