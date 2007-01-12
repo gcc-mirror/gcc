@@ -1,3 +1,16 @@
+2007-01-11  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/29516
+	* tree-ssa-address.c (tree_mem_ref_addr, add_to_parts,
+	most_expensive_mult_to_index, addr_to_parts,
+	create_mem_ref, maybe_fold_tmr): Make the type of
+	fields of TARGET_MEM_REF sizetype.
+	(move_fixed_address_to_symbol, move_pointer_to_base):
+	New functions.
+	* tree.def (TARGET_MEM_REF): Add comment on types of
+	the operands.
+	* gcc.dg/tree-ssa/loop-20.c: New test.
+
 2007-01-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (vector_types_convertible_p): Treat opaque types as
