@@ -3391,9 +3391,9 @@ applications.  There are no standard Unix configurations.
 @end html
 @heading @anchor{m68k-*-*}m68k-*-*
 You can specify a default target using @option{--with-cpu=@var{target}}.
-The recognized values for @var{target} are: @samp{m68000}, @samp{m68010},
-@samp{m68020}, @samp{m68030}, @samp{m68040}, @samp{m68060}, @samp{m68020-40}
-and @samp{m68020-60}.
+This @var{target} can either be a @option{-mcpu} argument or one of the
+following values: @samp{m68000}, @samp{m68010}, @samp{m68020}, @samp{m68030},
+@samp{m68040}, @samp{m68060}, @samp{m68020-40} and @samp{m68020-60}.
 
 @heading @anchor{m68k-hp-hpux}m68k-hp-hpux
 HP 9000 series 300 or 400 running HP-UX@.  HP-UX version 8.0 has a bug in

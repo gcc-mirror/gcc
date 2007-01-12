@@ -580,10 +580,12 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-mcpu=@var{cpu} -msim -memregs=@var{number}}
 
 @emph{M680x0 Options}
-@gccoptlist{-m68000  -m68020  -m68020-40  -m68020-60  -m68030  -m68040 @gol
--m68060  -mcpu32  -m5200  -mcfv4e -m68881  -mbitfield  @gol
--mc68000  -mc68020   @gol
--mnobitfield  -mrtd  -mshort  -msoft-float  -mpcrel @gol
+@gccoptlist{-march=@var{arch}  -mcpu=@var{cpu}  -mtune=@var{tune}
+-m68000  -m68020  -m68020-40  -m68020-60  -m68030  -m68040 @gol
+-m68060  -mcpu32  -m5200  -m5206e  -m528x  -m5307  -m5407 @gol
+-mcfv4e  -mbitfield  -mc68000  -mc68020 @gol
+-mnobitfield  -mrtd  -mdiv  -mno-div  -mshort @gol
+-mhard-float  -m68881  -msoft-float  -mpcrel @gol
 -malign-int  -mstrict-align  -msep-data  -mno-sep-data @gol
 -mshared-library-id=n  -mid-shared-library  -mno-id-shared-library}
 
@@ -10266,18 +10268,88 @@ Indicates that there is no OS function for flushing the cache.
 @subsection M680x0 Options
 @cindex M680x0 options
 
-These are the @samp{-m} options defined for the 68000 series.  The default
-values for these options depends on which style of 68000 was selected when
-the compiler was configured; the defaults for the most common choices are
-given below.
+These are the @samp{-m} options defined for M680x0 and ColdFire processors.
+The default settings depend on which architecture was selected when
+the compiler was configured; the defaults for the most common choices
+are given below.
 
 @table @gcctabopt
+@item -march=@var{arch}
+@opindex march
+Generate code for a specific M680x0 or ColdFire instruction set
+architecture.  Permissible values of @var{arch} for M680x0
+architectures are: @samp{68000}, @samp{68010}, @samp{68020},
+@samp{68030}, @samp{68040}, @samp{68060} and @samp{cpu32}.  ColdFire
+architectures are selected according to Freescale's ISA classification
+and the permissible values are: @samp{isaa}, @samp{isaaplus},
+@samp{isab} and @samp{isac}.
+
+gcc defines a macro @samp{__mcf@var{arch}__} whenever it is generating
+code for a ColdFire target.  The @var{arch} in this macro is one of the
+@option{-march} arguments given above.
+
+When used together, @option{-march} and @option{-mtune} select code
+that runs on a family of similar processors but that is optimized
+for a particular microarchitecture.
+
+@item -mcpu=@var{cpu}
+@opindex mcpu
+Generate code for a specific M680x0 or ColdFire processor.
+The M680x0 @var{cpu}s are: @samp{68000}, @samp{68010}, @samp{68020},
+@samp{68030}, @samp{68040}, @samp{68060}, @samp{68302}, @samp{68332}
+and @samp{cpu32}.  The ColdFire @var{cpu}s are given by the table
+below, which also classifies the CPUs into families:
+
+@multitable @columnfractions 0.20 0.80
+@headitem Family @tab @samp{-mcpu} arguments
+@item @samp{5206} @tab @samp{5202} @samp{5204} @samp{5206}
+@item @samp{5206e} @tab @samp{5206e}
+@item @samp{5208} @tab @samp{5207} @samp{5208}
+@item @samp{5211a} @tab @samp{5210a} @samp{5211a}
+@item @samp{5213} @tab @samp{5211} @samp{5212} @samp{5213}
+@item @samp{5216} @tab @samp{5214} @samp{5216}
+@item @samp{52235} @tab @samp{52230} @samp{52231} @samp{52232} @samp{52233} @samp{52234} @samp{52235}
+@item @samp{5225} @tab @samp{5224} @samp{5225}
+@item @samp{5235} @tab @samp{5232} @samp{5233} @samp{5234} @samp{5235} @samp{523x}
+@item @samp{5249} @tab @samp{5249}
+@item @samp{5250} @tab @samp{5250}
+@item @samp{5271} @tab @samp{5270} @samp{5271}
+@item @samp{5272} @tab @samp{5272}
+@item @samp{5275} @tab @samp{5274} @samp{5275}
+@item @samp{5282} @tab @samp{5280} @samp{5281} @samp{5282} @samp{528x}
+@item @samp{5307} @tab @samp{5307}
+@item @samp{5329} @tab @samp{5327} @samp{5328} @samp{5329} @samp{532x}
+@item @samp{5373} @tab @samp{5372} @samp{5373} @samp{537x}
+@item @samp{5407} @tab @samp{5407}
+@item @samp{5475} @tab @samp{5470} @samp{5471} @samp{5472} @samp{5473} @samp{5474} @samp{5475} @samp{547x} @samp{5480} @samp{5481} @samp{5482} @samp{5483} @samp{5484} @samp{5485}
+@end multitable
+
+@option{-mcpu=@var{cpu}} overrides @option{-march=@var{arch}} if
+@var{arch} is compatible with @var{cpu}.  Other combinations of
+@option{-mcpu} and @option{-march} are rejected.
+
+@item -mtune=@var{tune}
+@opindex mtune
+Tune the code for a particular microarchitecture, within the
+constraints set by @option{-march} and @option{-mcpu}.
+The M680x0 microarchitectures are: @samp{68000}, @samp{68010},
+@samp{68020}, @samp{68030}, @samp{68040}, @samp{68060}
+and @samp{cpu32}.  The ColdFire microarchitectures
+are: @samp{cfv2}, @samp{cfv3}, @samp{cfv4} and @samp{cfv4e}.
+
+You can also use @option{-mtune=68020-40} for code that needs
+to run relatively well on 68020, 68030 and 68040 targets.
+@option{-mtune=68020-60} is similar but includes 68060 targets
+as well.  These two options select the same tuning decisions as
+@option{-m68020-40} and @option{-m68020-60} respectively.
+
 @item -m68000
 @itemx -mc68000
 @opindex m68000
 @opindex mc68000
 Generate output for a 68000.  This is the default
 when the compiler is configured for 68000-based systems.
+It is equivalent to @option{-march=68000}.
 
 Use this option for microcontrollers with a 68000 or EC000 core,
 including the 68008, 68302, 68306, 68307, 68322, 68328 and 68356.
@@ -10286,6 +10358,7 @@ including the 68008, 68302, 68306, 68307, 68322, 68328 and 68356.
 @opindex m68010
 Generate output for a 68010.  This is the default
 when the compiler is configured for 68010-based systems.
+It is equivalent to @option{-march=68010}.
 
 @item -m68020
 @itemx -mc68020
@@ -10293,22 +10366,19 @@ when the compiler is configured for 68010-based systems.
 @opindex mc68020
 Generate output for a 68020.  This is the default
 when the compiler is configured for 68020-based systems.
-
-@item -m68881
-@opindex m68881
-Generate output containing 68881 instructions for floating point.
-This is the default for most 68020 systems unless @option{--nfp} was
-specified when the compiler was configured.
+It is equivalent to @option{-march=68020}.
 
 @item -m68030
 @opindex m68030
 Generate output for a 68030.  This is the default when the compiler is
-configured for 68030-based systems.
+configured for 68030-based systems.  It is equivalent to
+@option{-march=68030}.
 
 @item -m68040
 @opindex m68040
 Generate output for a 68040.  This is the default when the compiler is
-configured for 68040-based systems.
+configured for 68040-based systems.  It is equivalent to
+@option{-march=68040}.
 
 This option inhibits the use of 68881/68882 instructions that have to be
 emulated by software on the 68040.  Use this option if your 68040 does not
@@ -10317,7 +10387,8 @@ have code to emulate those instructions.
 @item -m68060
 @opindex m68060
 Generate output for a 68060.  This is the default when the compiler is
-configured for 68060-based systems.
+configured for 68060-based systems.  It is equivalent to
+@option{-march=68060}.
 
 This option inhibits the use of 68020 and 68881/68882 instructions that
 have to be emulated by software on the 68060.  Use this option if your 68060
@@ -10327,6 +10398,7 @@ does not have code to emulate those instructions.
 @opindex mcpu32
 Generate output for a CPU32.  This is the default
 when the compiler is configured for CPU32-based systems.
+It is equivalent to @option{-march=cpu32}.
 
 Use this option for microcontrollers with a
 CPU32 or CPU32+ core, including the 68330, 68331, 68332, 68333, 68334,
@@ -10334,16 +10406,41 @@ CPU32 or CPU32+ core, including the 68330, 68331, 68332, 68333, 68334,
 
 @item -m5200
 @opindex m5200
-Generate output for a 520X ``coldfire'' family cpu.  This is the default
+Generate output for a 520X ColdFire CPU.  This is the default
 when the compiler is configured for 520X-based systems.
+It is equivalent to @option{-mcpu=5206}, and is now deprecated
+in favor of that option.
 
 Use this option for microcontroller with a 5200 core, including
-the MCF5202, MCF5203, MCF5204 and MCF5202.
+the MCF5202, MCF5203, MCF5204 and MCF5206.
+
+@item -m5206e
+@opindex m5206e
+Generate output for a 5206e ColdFire CPU.  The option is now
+deprecated in favor of the equivalent @option{-mcpu=5206e}.
+
+@item -m528x
+@opindex m528x
+Generate output for a member of the ColdFire 528X family.
+The option is now deprecated in favor of the equivalent
+@option{-mcpu=528x}.
+
+@item -m5307
+@opindex m5307
+Generate output for a ColdFire 5307 CPU.  The option is now deprecated
+in favor of the equivalent @option{-mcpu=5307}.
+
+@item -m5407
+@opindex m5407
+Generate output for a ColdFire 5407 CPU.  The option is now deprecated
+in favor of the equivalent @option{-mcpu=5407}.
 
 @item -mcfv4e
 @opindex mcfv4e
-Generate output for a ColdFire V4e family cpu (e.g.@: 547x/548x).
+Generate output for a ColdFire V4e family CPU (e.g.@: 547x/548x).
 This includes use of hardware floating point instructions.
+The option is equivalent to @option{-mcpu=547x}, and is now
+deprecated in favor of that option.
 
 @item -m68020-40
 @opindex m68020-40
@@ -10352,6 +10449,8 @@ This results in code which can run relatively efficiently on either a
 68020/68881 or a 68030 or a 68040.  The generated code does use the
 68881 instructions that are emulated on the 68040.
 
+The option is equivalent to @option{-march=68020} @option{-mtune=68020-40}.
+
 @item -m68020-60
 @opindex m68020-60
 Generate output for a 68060, without using any of the new instructions.
@@ -10359,15 +10458,34 @@ This results in code which can run relatively efficiently on either a
 68020/68881 or a 68030 or a 68040.  The generated code does use the
 68881 instructions that are emulated on the 68060.
 
+The option is equivalent to @option{-march=68020} @option{-mtune=68020-60}.
+
+@item -mhard-float
+@itemx -m68881
+@opindex mhard-float
+@opindex m68881
+Generate floating-point instructions.  This is the default for 68020
+and above, and for ColdFire devices that have an FPU.
+
 @item -msoft-float
 @opindex msoft-float
-Generate output containing library calls for floating point.
-@strong{Warning:} the requisite libraries are not available for all m68k
-targets.  Normally the facilities of the machine's usual C compiler are
-used, but this can't be done directly in cross-compilation.  You must
-make your own arrangements to provide suitable library functions for
-cross-compilation.  The embedded targets @samp{m68k-*-aout} and
-@samp{m68k-*-coff} do provide software floating point support.
+Do not generate floating-point instructions; use library calls instead.
+This is the default for 68000, 68010, and 68832 targets.  It is also
+the default for ColdFire devices that have no FPU.
+
+@item -mdiv
+@itemx -mno-div
+@opindex mdiv
+@opindex mno-div
+Generate (do not generate) ColdFire hardware divide and remainder
+instructions.  If @option{-march} is used without @option{-mcpu},
+the default is ``on'' for ColdFire architectures and ``off'' for M680x0
+architectures.  Otherwise, the default is taken from the target CPU
+(either the default CPU, or the one specified by @option{-mcpu}).  For
+example, the default is ``off'' for @option{-mcpu=5206} and ``on'' for
+@option{-mcpu=5206e}.
+
+gcc defines the macro @samp{__mcfhwdiv__} when this option is enabled.
 
 @item -mshort
 @opindex mshort

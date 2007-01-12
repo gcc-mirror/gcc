@@ -1,0 +1,144 @@
+/* m68k device names -*- C -*-
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+   Written by CodeSourcery
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING.  If not, write to the Free
+   Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
+   02110-1301, USA.  */
+
+/* This file lists each target device that we support.  It is used by
+   both C code and build scripts.
+
+   Following Freescale's lead, we group devices into families that share
+   the same core and extension units.  Devices in these families differ
+   only in the set of peripherals they provide.  We pick one device to
+   act as the representative of each family.
+
+   We further group device families into multilibs, again picking one
+   family (and its representative device) to represent each multilib.
+
+   Devices are declared using the construct:
+
+      M68K_DEVICE (NAME, ENUM_VALUE, FAMILY, MULTILIB, MICROARCH, ISA, FLAGS)
+
+   where the arguments are as follows:
+
+      NAME
+	The name of the device as a string.  This string acts as the
+	device's -mcpu argument and is guaranteed to be unique.
+
+      ENUM_VALUE
+	The associated value in the target_device enumeration.
+	This value is also guaranteed to be unique.
+
+      FAMILY
+	The NAME field of the family's representative device.
+
+      MULTILIB
+	The NAME field of the multilib's representative device.
+
+      MICROARCH
+	The class of core used by devices in this family.  The field
+	is a uarch enumeration value without the leading "u".
+
+      ISA
+	The ISA implemented by this family.  The field is
+	an m68k_isa enumeration value.
+
+      FLAGS
+	The FL_* flags that apply to this family, excluding FL_FOR_isa_*.
+	See m68k.h for the full list.
+
+   There is a bit of duplication between devices in the same family,
+   but this approach makes scripting easier.  We keep each entry on
+   a single line for the same reason.  */
+
+/* 680x0 series processors.  */
+M68K_DEVICE ("68000", m68000,   "68000", "68000", 68000,    isa_00,    0)
+M68K_DEVICE ("68010", m68010,   "68010", "68000", 68010,    isa_10,    0)
+M68K_DEVICE ("68020", m68020,   "68020", "68020", 68020,    isa_20,    FL_MMU)
+M68K_DEVICE ("68030", m68030,   "68030", "68020", 68030,    isa_20,    FL_MMU)
+M68K_DEVICE ("68040", m68040,   "68040", "68040", 68040,    isa_40,    FL_MMU)
+M68K_DEVICE ("68060", m68060,   "68060", "68060", 68060,    isa_40,    FL_MMU)
+M68K_DEVICE ("68302", m68302,   "68302", "68000", 68000,    isa_00,    FL_MMU)
+M68K_DEVICE ("68332", m68332,   "68332", "cpu32", cpu32,    isa_cpu32, FL_MMU)
+M68K_DEVICE ("cpu32", cpu32,    "cpu32", "cpu32", cpu32,    isa_cpu32, FL_MMU)
+
+/* ColdFire CFV2 processors.  */
+M68K_DEVICE ("5202",  mcf5202,  "5206",  "5206",  cfv2,     isa_a,     0)
+M68K_DEVICE ("5204",  mcf5204,  "5206",  "5206",  cfv2,     isa_a,     0)
+M68K_DEVICE ("5206",  mcf5206,  "5206",  "5206",  cfv2,     isa_a,     0)
+M68K_DEVICE ("5206e", mcf5206e, "5206e", "5206e", cfv2,     isa_a,     FL_CF_HWDIV | FL_CF_MAC)
+M68K_DEVICE ("5207",  mcf5207,  "5208",  "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("5208",  mcf5208,  "5208",  "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("5210a", mcf5210a, "5211a", "5213",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_MAC)
+M68K_DEVICE ("5211a", mcf5211a, "5211a", "5213",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_MAC)
+M68K_DEVICE ("5211",  mcf5211,  "5213",  "5213",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_MAC)
+M68K_DEVICE ("5212",  mcf5212,  "5213",  "5213",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_MAC)
+M68K_DEVICE ("5213",  mcf5213,  "5213",  "5213",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_MAC)
+M68K_DEVICE ("5214",  mcf5214,  "5216",  "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("5216",  mcf5216,  "5216",  "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("52230", mcf52230, "52235", "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("52231", mcf52231, "52235", "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("52232", mcf52232, "52235", "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("52233", mcf52233, "52235", "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("52234", mcf52234, "52235", "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("52235", mcf52235, "52235", "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("5224",  mcf5224,  "5225",  "5213",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_MAC)
+M68K_DEVICE ("5225",  mcf5225,  "5225",  "5213",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_MAC)
+M68K_DEVICE ("5232",  mcf5232,  "5235",  "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("5233",  mcf5233,  "5235",  "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("5234",  mcf5234,  "5235",  "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("5235",  mcf5235,  "5235",  "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("523x",  mcf523x,  "5235",  "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("5249",  mcf5249,  "5249",  "5249",  cfv2,     isa_a,     FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("5250",  mcf5250,  "5250",  "5249",  cfv2,     isa_a,     FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("5270",  mcf5270,  "5271",  "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("5271",  mcf5271,  "5271",  "5208",  cfv2,     isa_aplus, FL_CF_HWDIV)
+M68K_DEVICE ("5272",  mcf5272,  "5272",  "5206e", cfv2,     isa_a,     FL_CF_HWDIV | FL_CF_MAC)
+M68K_DEVICE ("5274",  mcf5274,  "5275",  "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("5275",  mcf5275,  "5275",  "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("5280",  mcf5280,  "5282",  "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("5281",  mcf5281,  "5282",  "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("5282",  mcf5282,  "5282",  "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("528x",  mcf528x,  "5282",  "5208",  cfv2,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+
+/* CFV3 processors.  */
+M68K_DEVICE ("5307",  mcf5307,  "5307",  "5307",  cfv3,     isa_a,     FL_CF_HWDIV | FL_CF_MAC)
+M68K_DEVICE ("5327",  mcf5327,  "5329",  "5329",  cfv3,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("5328",  mcf5328,  "5329",  "5329",  cfv3,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("5329",  mcf5329,  "5329",  "5329",  cfv3,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("532x",  mcf532x,  "5329",  "5329",  cfv3,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("5372",  mcf5372,  "5373",  "5329",  cfv3,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("5373",  mcf5373,  "5373",  "5329",  cfv3,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+M68K_DEVICE ("537x",  mcf537x,  "5373",  "5329",  cfv3,     isa_aplus, FL_CF_HWDIV | FL_CF_EMAC)
+
+/* CFV4/CFV4e processors.  */
+M68K_DEVICE ("5407",  mcf5407,  "5407",  "5407",  cfv4,     isa_b,     FL_CF_MAC)
+M68K_DEVICE ("5470",  mcf5470,  "5475",  "5475",  cfv4e,    isa_b,     FL_CF_USP | FL_CF_EMAC | FL_CF_FPU | FL_MMU)
+M68K_DEVICE ("5471",  mcf5471,  "5475",  "5475",  cfv4e,    isa_b,     FL_CF_USP | FL_CF_EMAC | FL_CF_FPU | FL_MMU)
+M68K_DEVICE ("5472",  mcf5472,  "5475",  "5475",  cfv4e,    isa_b,     FL_CF_USP | FL_CF_EMAC | FL_CF_FPU | FL_MMU)
+M68K_DEVICE ("5473",  mcf5473,  "5475",  "5475",  cfv4e,    isa_b,     FL_CF_USP | FL_CF_EMAC | FL_CF_FPU | FL_MMU)
+M68K_DEVICE ("5474",  mcf5474,  "5475",  "5475",  cfv4e,    isa_b,     FL_CF_USP | FL_CF_EMAC | FL_CF_FPU | FL_MMU)
+M68K_DEVICE ("5475",  mcf5475,  "5475",  "5475",  cfv4e,    isa_b,     FL_CF_USP | FL_CF_EMAC | FL_CF_FPU | FL_MMU)
+M68K_DEVICE ("547x",  mcf547x,  "5475",  "5475",  cfv4e,    isa_b,     FL_CF_USP | FL_CF_EMAC | FL_CF_FPU | FL_MMU)
+M68K_DEVICE ("5480",  mcf5480,  "5485",  "5475",  cfv4e,    isa_b,     FL_CF_USP | FL_CF_EMAC | FL_CF_FPU | FL_MMU)
+M68K_DEVICE ("5481",  mcf5481,  "5485",  "5475",  cfv4e,    isa_b,     FL_CF_USP | FL_CF_EMAC | FL_CF_FPU | FL_MMU)
+M68K_DEVICE ("5482",  mcf5482,  "5485",  "5475",  cfv4e,    isa_b,     FL_CF_USP | FL_CF_EMAC | FL_CF_FPU | FL_MMU)
+M68K_DEVICE ("5483",  mcf5483,  "5485",  "5475",  cfv4e,    isa_b,     FL_CF_USP | FL_CF_EMAC | FL_CF_FPU | FL_MMU)
+M68K_DEVICE ("5484",  mcf5484,  "5485",  "5475",  cfv4e,    isa_b,     FL_CF_USP | FL_CF_EMAC | FL_CF_FPU | FL_MMU)
+M68K_DEVICE ("5485",  mcf5485,  "5485",  "5475",  cfv4e,    isa_b,     FL_CF_USP | FL_CF_EMAC | FL_CF_FPU | FL_MMU)
+M68K_DEVICE ("548x",  mcf548x,  "5485",  "5475",  cfv4e,    isa_b,     FL_CF_USP | FL_CF_EMAC | FL_CF_FPU | FL_MMU)

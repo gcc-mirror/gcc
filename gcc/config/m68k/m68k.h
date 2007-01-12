@@ -37,7 +37,7 @@ Boston, MA 02110-1301, USA.  */
   { "cpu",   "%{!mc68000:%{!m68000:%{!m68302:%{!m68010:%{!mc68020:%{!m68020:\
 %{!m68030:%{!m68040:%{!m68020-40:%{!m68020-60:%{!m68060:%{!mcpu32:\
 %{!m68332:%{!m5200:%{!m5206e:%{!m528x:%{!m5307:%{!m5407:%{!mcfv4e:\
--%(VALUE)}}}}}}}}}}}}}}}}}}}" },
+%{!mcpu=*:%{!march=*:-%(VALUE)}}}}}}}}}}}}}}}}}}}}}" },
 
 /* Pass flags to gas indicating which type of processor we have.  This
    can be simplified when we can rely on the assembler supporting .cpu
@@ -48,6 +48,7 @@ Boston, MA 02110-1301, USA.  */
 %{m68000}%{m68302}%{mc68000}%{m68010}%{m68020}%{mc68020}%{m68030}\
 %{m68040}%{m68020-40:-m68040}%{m68020-60:-m68040}\
 %{m68060}%{mcpu32}%{m68332}%{m5200}%{m5206e}%{m528x}%{m5307}%{m5407}%{mcfv4e}\
+%{mcpu=*:-mcpu=%*}%{march=*:-march=%*}\
 "
 
 #define ASM_SPEC "%(asm_cpu_spec)"
@@ -100,30 +101,50 @@ Boston, MA 02110-1301, USA.  */
 	  builtin_define_std ("mcpu32");				\
 	}								\
       if (TARGET_COLDFIRE)						\
-	builtin_define ("__mcoldfire__");				\
-      if (TARGET_5200)							\
-	builtin_define ("__mcf5200__");					\
-      if (TARGET_528x)							\
 	{								\
-	  builtin_define ("__mcf528x__");				\
-	  builtin_define ("__mcf5200__");				\
+	  builtin_define ("__mcoldfire__");				\
+	  if (TARGET_ISAC)						\
+	    builtin_define ("__mcfisac__");				\
+	  else if (TARGET_ISAB)						\
+	    {								\
+	      builtin_define ("__mcfisab__");				\
+	      /* ISA_B: Legacy 5407 defines.  */			\
+	      builtin_define ("__mcf5400__");				\
+	      builtin_define ("__mcf5407__");				\
+	    }								\
+	  else if (TARGET_ISAAPLUS)					\
+	    {								\
+	      builtin_define ("__mcfisaaplus__");			\
+	      /* ISA_A+: legacy defines.  */				\
+	      builtin_define ("__mcf528x__");				\
+	      builtin_define ("__mcf5200__");				\
+	    }								\
+	  else 								\
+	    {								\
+	      builtin_define ("__mcfisaa__");				\
+	      /* ISA_A: legacy defines.  */				\
+	      switch (m68k_tune)					\
+		{							\
+		case ucfv2:						\
+		  builtin_define ("__mcf5200__");			\
+		  break;						\
+									\
+		case ucfv3:						\
+		  builtin_define ("__mcf5307__");			\
+		  builtin_define ("__mcf5300__");			\
+		  break;						\
+									\
+		default:						\
+		  break;						\
+		}							\
+    	    }								\
+	  if (m68k_tune == ucfv4e)					\
+	    builtin_define ("__mcfv4e__");				\
 	}								\
-      if (TARGET_CFV3)							\
-	{								\
-	  builtin_define ("__mcf5300__");				\
-	  builtin_define ("__mcf5307__");				\
-	}								\
-      if (TARGET_CFV4)							\
-	{								\
-	  builtin_define ("__mcf5400__");				\
-	  builtin_define ("__mcf5407__");				\
-	}								\
-      if (TARGET_CFV4E)							\
-	{								\
-	  builtin_define ("__mcfv4e__");				\
-	}								\
+									\
       if (TARGET_CF_HWDIV)						\
 	builtin_define ("__mcfhwdiv__");				\
+									\
       builtin_assert ("cpu=m68k");					\
       builtin_assert ("machine=m68k");					\
     }									\
@@ -139,30 +160,53 @@ Boston, MA 02110-1301, USA.  */
 /* Set the default.  */
 #define INT_OP_GROUP INT_OP_DOT_WORD
 
-/* Compile for a CPU32.  A 68020 without bitfields is a good
-   heuristic for a CPU32.  */
-#define TUNE_CPU32	(TARGET_68020 && !TARGET_BITFIELD)
+/* Bit values used by m68k-devices.def to identify processor capabilities.  */
+#define FL_BITFIELD  (1 << 0)    /* Support bitfield instructions.  */
+#define FL_68881     (1 << 1)    /* (Default) support for 68881/2.  */
+#define FL_COLDFIRE  (1 << 2)    /* ColdFire processor.  */
+#define FL_CF_HWDIV  (1 << 3)    /* ColdFire hardware divide supported.  */
+#define FL_CF_MAC    (1 << 4)    /* ColdFire MAC unit supported.  */
+#define FL_CF_EMAC   (1 << 5)    /* ColdFire eMAC unit supported.  */
+#define FL_CF_EMAC_B (1 << 6)    /* ColdFire eMAC-B unit supported.  */
+#define FL_CF_USP    (1 << 7)    /* ColdFire User Stack Pointer supported.  */
+#define FL_CF_FPU    (1 << 8)    /* ColdFire FPU supported.  */
+#define FL_ISA_68000 (1 << 9)
+#define FL_ISA_68010 (1 << 10)
+#define FL_ISA_68020 (1 << 11)
+#define FL_ISA_68040 (1 << 12)
+#define FL_ISA_A     (1 << 13)
+#define FL_ISA_APLUS (1 << 14)
+#define FL_ISA_B     (1 << 15)
+#define FL_ISA_C     (1 << 16)
+#define FL_MMU 	     0   /* Used by multilib machinery.  */
 
-/* Is the target a ColdFire?  */
-#define MASK_COLDFIRE \
-  (MASK_5200 | MASK_528x | MASK_CFV3 | MASK_CFV4 | MASK_CFV4E)
-#define TARGET_COLDFIRE	((target_flags & MASK_COLDFIRE) != 0)
+#define TARGET_68010		((m68k_cpu_flags & FL_ISA_68010) != 0)
+#define TARGET_68020		((m68k_cpu_flags & FL_ISA_68020) != 0)
+#define TARGET_68040_ONLY	((m68k_cpu_flags & FL_ISA_68040) != 0)
+#define TARGET_COLDFIRE		((m68k_cpu_flags & FL_COLDFIRE) != 0)
+#define TARGET_COLDFIRE_FPU	(m68k_fpu == FPUTYPE_COLDFIRE)
+#define TARGET_68881		(m68k_fpu == FPUTYPE_68881)
 
-#define TARGET_COLDFIRE_FPU	TARGET_CFV4E
-
-#define TARGET_HARD_FLOAT	(TARGET_68881 || TARGET_COLDFIRE_FPU)
 /* Size (in bytes) of FPU registers.  */
 #define TARGET_FP_REG_SIZE	(TARGET_COLDFIRE ? 8 : 12)
 
-#define TARGET_ISAB		TARGET_CFV4
+#define TARGET_ISAAPLUS		((m68k_cpu_flags & FL_ISA_APLUS) != 0)
+#define TARGET_ISAB		((m68k_cpu_flags & FL_ISA_B) != 0)
+#define TARGET_ISAC		((m68k_cpu_flags & FL_ISA_C) != 0)
 
-#define TUNE_68000_10	(!TARGET_68020 && !TARGET_COLDFIRE)
-#define TUNE_68010	TARGET_68010
-#define TUNE_68030	TARGET_68030
-#define TUNE_68040	TARGET_68040
-#define TUNE_68060	TARGET_68060
+#define TUNE_68000	(m68k_tune == u68000)
+#define TUNE_68010	(m68k_tune == u68010)
+#define TUNE_68000_10	(TUNE_68000 || TUNE_68010)
+#define TUNE_68030	(m68k_tune == u68030 \
+			 || m68k_tune == u68020_40 \
+			 || m68k_tune == u68020_60)
+#define TUNE_68040	(m68k_tune == u68040 \
+			 || m68k_tune == u68020_40 \
+			 || m68k_tune == u68020_60)
+#define TUNE_68060	(m68k_tune == u68060 || m68k_tune == u68020_60)
 #define TUNE_68040_60	(TUNE_68040 || TUNE_68060)
-#define TUNE_CFV2	TARGET_5200
+#define TUNE_CPU32	(m68k_tune == ucpu32)
+#define TUNE_CFV2	(m68k_tune == ucfv2)
 
 #define OVERRIDE_OPTIONS   override_options()
 
@@ -1104,6 +1148,47 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
 
-/* Variables in m68k.c */
+/* Values used in the MICROARCH argument to M68K_DEVICE.  */
+enum uarch_type
+{
+  u68000,
+  u68010,
+  u68020,
+  u68020_40,
+  u68020_60,
+  u68030,
+  u68040,
+  u68060,
+  ucpu32,
+  ucfv2,
+  ucfv3,
+  ucfv4,
+  ucfv4e,
+  ucfv5,
+  unk_arch
+};
+
+/* An enumeration of all supported target devices.  */
+enum target_device
+{
+#define M68K_DEVICE(NAME,ENUM_VALUE,FAMILY,MULTILIB,MICROARCH,ISA,FLAGS) \
+  ENUM_VALUE,
+#include "m68k-devices.def"
+#undef M68K_DEVICE
+  unk_device
+};
+
+enum fpu_type
+{
+  FPUTYPE_NONE,
+  FPUTYPE_68881,
+  FPUTYPE_COLDFIRE
+};
+
+/* Variables in m68k.c; see there for details.  */
 extern const char *m68k_library_id_string;
 extern int m68k_last_compare_had_fp_operands;
+extern enum target_device m68k_cpu;
+extern enum uarch_type m68k_tune;
+extern enum fpu_type m68k_fpu;
+extern unsigned int m68k_cpu_flags;

@@ -2784,13 +2784,28 @@ case "${target}" in
 
 		# We always have a $with_cpu setting here.
 		case "$with_cpu" in
-		"m68000" | "m68010" | "m68020" | "m68030" | "m68040" | "m68060" | "m68020-40" | "m68020-60")
-			# OK
+		"m68000" | "m68010" | "m68020" | "m68030" | "m68040" | "m68060")
+			m68k_cpu_ident=$with_cpu
+			;;
+		"m68020-40")
+			m68k_cpu_ident=m68020
+			tm_defines="$tm_defines M68K_DEFAULT_TUNE=u68020_40"
+			;;
+		"m68020-60")
+			m68k_cpu_ident=m68020
+			tm_defines="$tm_defines M68K_DEFAULT_TUNE=u68020_60"
 			;;
 		*)
-			echo "Unknown CPU used in --with-cpu=$with_cpu, known values:"  1>&2
-			echo "m68000 m68010 m68020 m68030 m68040 m68060 m68020-40 m68020-60" 1>&2
-			exit 1
+			# We need the C identifier rather than the string.
+			m68k_cpu_ident=`awk -v arg="\"$with_cpu\"" \
+			   'BEGIN { FS="[ \t]*[,()][ \t]*" }; \
+			    $1 == "M68K_DEVICE" && $2 == arg { print $3 }' \
+				 ${srcdir}/config/m68k/m68k-devices.def`
+			if [ x"$m68k_cpu_ident" = x ] ; then
+				echo "Unknown CPU used in --with-cpu=$with_cpu" 1>&2
+				exit 1
+			fi
+			with_cpu="mcpu=$with_cpu"
 			;;
 		esac
 		;;
@@ -3047,6 +3062,10 @@ case ${target} in
 		then
 			target_cpu_default2="${target_cpu_default2}|MASK_GAS|MASK_JUMP_IN_DELAY"
 		fi
+		;;
+
+	m680[012]0-*-* | m68k*-*-*)
+		target_cpu_default2=$m68k_cpu_ident
 		;;
 
 	mips*-*-*)

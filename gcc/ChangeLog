@@ -1,3 +1,67 @@
+2007-01-12  Julian Brown  <julian@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+
+	* config.gcc (m680[012]0-*-*, m68k*-*-*): Set m68k_cpu_ident to
+	the -mcpu= argument associated with the --with-cpu setting.
+	Define M68K_DEFAULT_TUNE to the default -mtune= option,
+	if different from the one implied by the -mcpu setting.
+	Accept --with-cpu=FOO if FOO is listed in m68k-devices.def,
+	using mcpu=FOO as the default CPU option.  Set target_cpu_default2.
+	* doc/invoke.texi: Mention ColdFire in the introduction to the
+	m68k options.  Document the new -march, -mcpu, -mtune, -mdiv,
+	-mno-div and -mhard-float options.  Make -m68881 a synonym for
+	-mhard-float.  Document the previously-undocumented -m5206e,
+	-m528x, -m5307 and -m5407 options.  Tweak the existing option
+	documentation for consistency.
+	* doc/install.texi: Mention new --with-cpu arguments.
+	* config/m68k/m68k.h (OPTION_DEFAULT_SPECS): Only use the
+	default CPU if neither -mcpu nor -march are specified.
+	(ASM_CPU_SPEC): Pass down -mcpu and -march options.
+	(TARGET_CPU_CPP_BUILTINS): Set __mcfisa*__ macros from
+	TARGET_ISA*.  Set the legacy __mcf*__ cpu macros in the same way,
+	using m68k_tune to decide between families that implement the
+	same ISA.  Use m68k_tune to set __mcfv4e__.
+	(FL_BITFIELD, FL_68881, FL_COLDFIRE, FL_CF_HWDIV, FL_CF_MAC)
+	(FL_CF_EMAC, FL_CF_EMAC_B, FL_CF_USP, FL_CF_FPU, FL_ISA_68000)
+	(FL_ISA_68010, FL_ISA_68020, FL_ISA_68040, FL_ISA_A, FL_ISA_B)
+	(FL_ISA_C, FL_ISA_MMU): New macros.
+	(MASK_COLDFIRE): Delete.
+	(TARGET_68010, TARGET_68020, TARGET_68040_ONLY, TARGET_COLDFIRE)
+	(TARGET_ISAB): Redefine in terms of m68k_cpu_flags.
+	(TARGET_68881, TARGET_COLDFIRE_FPU): Redefine in terms of m68k_fpu.
+	(TARGET_HARD_FLOAT): Do not define here.
+	(TARGET_ISAAPLUS, TARGET_ISAC): New macros.
+	(TUNE_68000): New macro.
+	(TUNE_68000_10): Redefine in terms of TUNE_68000 and TUNE_68010.
+	(TUNE_68010, TUNE_68030, TUNE_68040, TUNE_68060, TUNE_CPU32)
+	(TUNE_CFV2): Redefine in terms of m68k_tune.
+	(uarch_type, target_device, fpu_type): New enums.
+	(m68k_cpu, m68k_tune, m68k_fpu, m68k_cpu_flags): Declare.
+	* config/m68k/m68k.c (TARGET_DEFAULT): Remove MASK_68881.
+	(FL_FOR_isa_00, FL_FOR_isa_10, FL_FOR_isa_20, FL_FOR_isa_40)
+	(FL_FOR_isa_cpu32, FL_FOR_isa_a, FL_FOR_isa_aplus, FL_FOR_isa_b)
+	(FL_FOR_isa_c): New macros.
+	(m68k_isa): New enum.
+	(m68k_target_selection): New structure.
+	(all_devices, all_isas, all_microarchs): New tables.
+	(m68k_cpu_entry, m68k_arch_entry, m68k_tune_entry, m68k_cpu)
+	(m68k_tune, m68k_fpu, m68k_cpu_flags): New variables.
+	(MASK_ALL_CPU_BITS): Delete.
+	(m68k_find_selection): New function.
+	(m68k_handle_option): Handle -mcpu=, -march= and -mtune=.
+	Map the legacy target options to a combination of the new ones.
+	(override_options): Set m68k_cpu, m68k_tune, m68k_fpu and
+	m68k_cpu_flags.  Handle M68K_DEFAULT_TUNE.  Use m68k_cpu_flags
+	to derive default MASK_BITFIELD, MASK_CF_HWDIV and MASK_HARD_FLOAT
+	settings.
+	* config/m68k/m68k.opt (m5200, m5206e, m528x, m5307, m5407, mcfv4e)
+	(m68010, m68020, m68020-40, m68020-60, m68030, m68040): Remove Mask
+	properties.
+	(m68881, msoft-float): Change mask from 68881 to HARD_FLOAT.
+	(march=, mcpu=, mdiv, mhard-float, mtune=): New options.
+	* config/m68k/m68k-devices.def: New file.
+
 2007-01-12  Richard Sandiford  <richard@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 

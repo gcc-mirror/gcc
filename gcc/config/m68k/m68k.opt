@@ -20,27 +20,27 @@
 ; 02110-1301, USA.
 
 m5200
-Target RejectNegative Mask(5200)
+Target RejectNegative
 Generate code for a 520X
 
 m5206e
-Target RejectNegative Mask(CF_HWDIV)
+Target RejectNegative
 Generate code for a 5206e
 
 m528x
-Target RejectNegative Mask(528x)
+Target RejectNegative
 Generate code for a 528x
 
 m5307
-Target RejectNegative Mask(CFV3)
+Target RejectNegative
 Generate code for a 5307
 
 m5407
-Target RejectNegative Mask(CFV4)
+Target RejectNegative
 Generate code for a 5407
 
 mcfv4e
-Target RejectNegative Mask(CFV4E)
+Target RejectNegative
 Generate code for a ColdFire v4e
 
 m68000
@@ -48,27 +48,27 @@ Target RejectNegative
 Generate code for a 68000
 
 m68010
-Target RejectNegative Mask(68010)
+Target RejectNegative
 Generate code for a 68010
 
 m68020
-Target RejectNegative Mask(68020)
+Target RejectNegative
 Generate code for a 68020
 
 m68020-40
-Target RejectNegative Mask(68040)
+Target RejectNegative
 Generate code for a 68040, without any new instructions
 
 m68020-60
-Target RejectNegative Mask(68060)
+Target RejectNegative
 Generate code for a 68060, without any new instructions
 
 m68030
-Target RejectNegative Mask(68030)
+Target RejectNegative
 Generate code for a 68030
 
 m68040
-Target RejectNegative Mask(68040_ONLY)
+Target RejectNegative
 Generate code for a 68040
 
 m68060
@@ -89,12 +89,16 @@ Target
 Generate code for a 68851
 
 m68881
-Target RejectNegative Mask(68881)
+Target RejectNegative Mask(HARD_FLOAT)
 Generate code that uses 68881 floating-point instructions
 
 malign-int
 Target Report Mask(ALIGN_INT)
 Align variables on a 32-bit boundary
+
+march=
+Target RejectNegative Joined
+Specify the name of the target architecture
 
 mbitfield
 Target Report RejectNegative Mask(BITFIELD)
@@ -108,9 +112,21 @@ mc68020
 Target RejectNegative
 Generate code for a 68020
 
+mcpu=
+Target RejectNegative Joined
+Specify the target CPU
+
 mcpu32
 Target RejectNegative
 Generate code for a cpu32
+
+mdiv
+Target Report Mask(CF_HWDIV)
+Use hardware division instructions on ColdFire
+
+mhard-float
+Target RejectNegative Mask(HARD_FLOAT) MaskExists
+Generate code which uses hardware floating point instructions
 
 mid-shared-library
 Target Report Mask(ID_SHARED_LIBRARY)
@@ -149,9 +165,13 @@ Target Report RejectNegative Mask(SHORT)
 Consider type 'int' to be 16 bits wide
 
 msoft-float
-Target RejectNegative InverseMask(68881)
+Target RejectNegative InverseMask(HARD_FLOAT)
 Generate code with library calls for floating point
 
 mstrict-align
 Target Report Mask(STRICT_ALIGNMENT)
 Do not use unaligned memory references
+
+mtune=
+Target RejectNegative Joined
+Tune for the specified target CPU or architecture
