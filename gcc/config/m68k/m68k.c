@@ -1562,7 +1562,7 @@ const_method (rtx constant)
   if (USE_MOVQ ((u >> 16) | (u << 16)))
     return SWAP;
 
-  if (TARGET_CFV4)
+  if (TARGET_ISAB)
     {
       /* Try using MVZ/MVS with an immediate value to load constants.  */
       if (i >= 0 && i <= 65535)
@@ -1779,7 +1779,7 @@ valid_mov3q_const (rtx constant)
 {
   int i;
 
-  if (TARGET_CFV4 && GET_CODE (constant) == CONST_INT)
+  if (TARGET_ISAB && GET_CODE (constant) == CONST_INT)
     {
       i = INTVAL (constant);
       if (i == -1 || (i >= 1 && i <= 7))
