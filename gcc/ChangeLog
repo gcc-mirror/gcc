@@ -1,3 +1,37 @@
+2007-01-12  Julian Brown  <julian@codesourcery.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+
+	* config/m68k/m68k.h (TARGET_CPU_CPP_BUILTINS): Use TUNE_68030
+	instead of TARGET_68030, TUNE_68040 instead of TARGET_68040,
+	TUNE_68060 instead of TARGET_68060 and TUNE_CPU32 instead of
+	TARGET_CPU32.
+	(TARGET_CPU32): Rename to...
+	(TUNE_CPU32): ...this.
+	(TUNE_68000_10, TUNE_68030, TUNE_68040, TUNE_68060)
+	(TUNE_CFV2): New macros.
+	* config/m68k/netbsd-elf.h (LONG_DOUBLE_TYPE_SIZE): Simplify;
+	remove conditions that are implied by TARGET_68020.
+	* config/m68k/m68k.c (m68k_output_function_prologue): Use TUNE_68040
+	instead of TARGET_68040 and TUNE_CPU32 instead of TARGET_CPU32.
+	(m68k_output_function_epilogue): Likewise.
+	(m68k_rtx_costs): Likewise.  Use TUNE_68060 instead of TARGET_68060
+	and TUNE_CFV2 instead of TARGET_5200.  Use TUNE_68000_10 instead of
+	"!TARGET_68020 && !TARGET_COLDFIRE" to choose between 68000 and
+	non-68000 timings.  Refactor multiplication and division costs.
+	(output_addsi3): Use TUNE_68040 instead of TARGET_68040 and
+	TUNE_CPU32 instead of TARGET_CPU32.
+	(standard_68881_constant_p): Use TUNE_68040 instead of TARGET_68040
+	and TUNE_68060 instead of TARGET_68060.
+	* config/m68k/m68k.md: Use TUNE_68040 instead of TARGET_68040,
+	TUNE_68060 instead of TARGET_68060, and TUNE_CPU32 instead of
+	TARGET_CPU32.
+	(movsi_const0): Use TUNE_68000_10 rather than "!TARGET_68020
+	&& !TARGET_COLDFIRE" to choose between moveq and clr.
+	Likewise in the unnamed movsf pattern.
+	(ashlsi_17_24, lshrsi_17_24): Guard with TUNE_68000_10 rather than
+	"!TARGET_68020 && !TARGET_COLDFIRE".  Likewise the unnamed
+	ashiftrt pattern.
+
 2007-01-12  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/m68k/m68k.h (TARGET_CPU_CPP_BUILTINS): Increase amount
