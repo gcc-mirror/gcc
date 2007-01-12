@@ -1,5 +1,9 @@
 2007-01-11  Zdenek Dvorak <dvorakz@suse.cz>
 
+	* gcc.dg/tree-ssa/loop-22.c: New test.
+
+2007-01-11  Zdenek Dvorak <dvorakz@suse.cz>
+
 	PR tree-optimization/29516
 	* gcc.dg/tree-ssa/loop-20.c: New test.
 
