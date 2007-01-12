@@ -3086,12 +3086,12 @@ print_operand (FILE *file, rtx op, int letter)
     asm_fprintf (file, "%Rfpcr");
   else if (letter == '$')
     {
-      if (TARGET_68040_ONLY)
+      if (TARGET_68040)
 	fprintf (file, "s");
     }
   else if (letter == '&')
     {
-      if (TARGET_68040_ONLY)
+      if (TARGET_68040)
 	fprintf (file, "d");
     }
   else if (letter == '/')
