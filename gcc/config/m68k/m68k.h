@@ -42,31 +42,31 @@ Boston, MA 02110-1301, USA.  */
       builtin_define_std ("mc68000");					\
       if (TARGET_68040_ONLY)						\
 	{								\
-	  if (TARGET_68060)						\
+	  if (TUNE_68060)						\
 	    builtin_define_std ("mc68060");				\
 	  else								\
 	    builtin_define_std ("mc68040");				\
 	}								\
-      else if (TARGET_68060) /* -m68020-60 */				\
+      else if (TUNE_68060) /* -m68020-60 */				\
 	{								\
 	  builtin_define_std ("mc68060");				\
 	  builtin_define_std ("mc68040");				\
 	  builtin_define_std ("mc68030");				\
 	  builtin_define_std ("mc68020");				\
 	}								\
-      else if (TARGET_68040) /* -m68020-40 */				\
+      else if (TUNE_68040) /* -m68020-40 */				\
 	{								\
 	  builtin_define_std ("mc68040");				\
 	  builtin_define_std ("mc68030");				\
 	  builtin_define_std ("mc68020");				\
 	}								\
-      else if (TARGET_68030)						\
+      else if (TUNE_68030)						\
 	builtin_define_std ("mc68030");					\
       else if (TARGET_68020)						\
 	builtin_define_std ("mc68020");					\
       if (TARGET_68881)							\
 	builtin_define ("__HAVE_68881__");				\
-      if (TARGET_CPU32)							\
+      if (TUNE_CPU32)							\
 	{								\
 	  builtin_define_std ("mc68332");				\
 	  builtin_define_std ("mcpu32");				\
@@ -113,7 +113,7 @@ Boston, MA 02110-1301, USA.  */
 
 /* Compile for a CPU32.  A 68020 without bitfields is a good
    heuristic for a CPU32.  */
-#define TARGET_CPU32	(TARGET_68020 && !TARGET_BITFIELD)
+#define TUNE_CPU32	(TARGET_68020 && !TARGET_BITFIELD)
 
 /* Is the target a ColdFire?  */
 #define MASK_COLDFIRE \
@@ -126,6 +126,11 @@ Boston, MA 02110-1301, USA.  */
 /* Size (in bytes) of FPU registers.  */
 #define TARGET_FP_REG_SIZE	(TARGET_COLDFIRE ? 8 : 12)
 
+#define TUNE_68000_10	(!TARGET_68020 && !TARGET_COLDFIRE)
+#define TUNE_68030	TARGET_68030
+#define TUNE_68040	TARGET_68040
+#define TUNE_68060	TARGET_68060
+#define TUNE_CFV2	TARGET_5200
 
 #define OVERRIDE_OPTIONS   override_options()
 

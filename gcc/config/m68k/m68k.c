@@ -550,7 +550,7 @@ m68k_output_function_prologue (FILE *stream,
 
   if (frame_pointer_needed)
     {
-      if (current_frame.size == 0 && TARGET_68040)
+      if (current_frame.size == 0 && TUNE_68040)
 	/* on the 68040, pea + move is faster than link.w 0 */
 	fprintf (stream, (MOTOROLA
 			  ? "\tpea (%s)\n\tmove.l %s,%s\n"
@@ -584,14 +584,14 @@ m68k_output_function_prologue (FILE *stream,
 		asm_fprintf (stream, "\tsubq" ASM_DOT "l %I%wd,%Rsp\n",
 		             fsize_with_regs);
 	    }
-	  else if (fsize_with_regs <= 16 && TARGET_CPU32)
+	  else if (fsize_with_regs <= 16 && TUNE_CPU32)
 	    /* On the CPU32 it is faster to use two subqw instructions to
 	       subtract a small integer (8 < N <= 16) to a register.  */
 	    asm_fprintf (stream,
 			 "\tsubq" ASM_DOT "w %I8,%Rsp\n"
 			 "\tsubq" ASM_DOT "w %I%wd,%Rsp\n",
 			 fsize_with_regs - 8);
-	  else if (TARGET_68040)
+	  else if (TUNE_68040)
 	    /* Adding negative number is faster on the 68040.  */
 	    asm_fprintf (stream, "\tadd" ASM_DOT "w %I%wd,%Rsp\n",
 			 -fsize_with_regs);
@@ -1054,7 +1054,7 @@ m68k_output_function_epilogue (FILE *stream,
 	    asm_fprintf (stream, "\taddq" ASM_DOT "l %I%wd,%Rsp\n",
 			 fsize_with_regs);
 	}
-      else if (fsize_with_regs <= 16 && TARGET_CPU32)
+      else if (fsize_with_regs <= 16 && TUNE_CPU32)
 	{
 	  /* On the CPU32 it is faster to use two addqw instructions to
 	     add a small integer (8 < N <= 16) to a register.  */
@@ -1065,7 +1065,7 @@ m68k_output_function_epilogue (FILE *stream,
 	}
       else if (fsize_with_regs < 0x8000)
 	{
-	  if (TARGET_68040)
+	  if (TUNE_68040)
 	    asm_fprintf (stream, "\tadd" ASM_DOT "w %I%wd,%Rsp\n",
 			 fsize_with_regs);
 	  else
@@ -1634,12 +1634,21 @@ m68k_rtx_costs (rtx x, int code, int outer_code, int *total)
        sometimes move insns are needed.  */
     /* div?.w is relatively cheaper on 68000 counted in COSTS_N_INSNS
        terms.  */
-#define MULL_COST (TARGET_68060 ? 2 : TARGET_68040 ? 5		\
-		   : (TARGET_COLDFIRE && !TARGET_5200) ? 3	\
-		   : TARGET_COLDFIRE ? 10 : 13)
-#define MULW_COST (TARGET_68060 ? 2 : TARGET_68040 ? 3 : TARGET_68020 ? 8 \
-		   : (TARGET_COLDFIRE && !TARGET_5200) ? 2 : 5)
-#define DIVW_COST (TARGET_68020 ? 27 : TARGET_CF_HWDIV ? 11 : 12)
+#define MULL_COST				\
+  (TUNE_68060 ? 2				\
+   : TUNE_68040 ? 5				\
+   : TUNE_CFV2 ? 10				\
+   : TARGET_COLDFIRE ? 3 : 13)
+
+#define MULW_COST				\
+  (TUNE_68060 ? 2				\
+   : TUNE_68040 ? 3				\
+   : TUNE_68000_10 || TUNE_CFV2 ? 5		\
+   : TARGET_COLDFIRE ? 2 : 8)
+
+#define DIVW_COST				\
+  (TARGET_CF_HWDIV ? 11				\
+   : TUNE_68000_10 || TARGET_COLDFIRE ? 12 : 27)
 
     case PLUS:
       /* An lea costs about three times as much as a simple add.  */
@@ -1661,12 +1670,12 @@ m68k_rtx_costs (rtx x, int code, int outer_code, int *total)
     case ASHIFT:
     case ASHIFTRT:
     case LSHIFTRT:
-      if (TARGET_68060)
+      if (TUNE_68060)
 	{
           *total = COSTS_N_INSNS(1);
 	  return true;
 	}
-      if (! TARGET_68020 && ! TARGET_COLDFIRE)
+      if (TUNE_68000_10)
         {
 	  if (GET_CODE (XEXP (x, 1)) == CONST_INT)
 	    {
@@ -2560,7 +2569,7 @@ output_addsi3 (rtx *operands)
       /* On the CPU32 it is faster to use two addql instructions to
 	 add a small integer (8 < N <= 16) to a register.
 	 Likewise for subql.  */
-      if (TARGET_CPU32 && REG_P (operands[0]))
+      if (TUNE_CPU32 && REG_P (operands[0]))
 	{
 	  if (INTVAL (operands[2]) > 8
 	      && INTVAL (operands[2]) <= 16)
@@ -2579,7 +2588,7 @@ output_addsi3 (rtx *operands)
 	  && INTVAL (operands[2]) >= -0x8000
 	  && INTVAL (operands[2]) < 0x8000)
 	{
-	  if (TARGET_68040)
+	  if (TUNE_68040)
 	    return "add%.w %2,%0";
 	  else
 	    return MOTOROLA ? "lea (%c2,%0),%0" : "lea %0@(%c2),%0";
@@ -2780,7 +2789,7 @@ standard_68881_constant_p (rtx x)
 
   /* fmovecr must be emulated on the 68040 and 68060, so it shouldn't be
      used at all on those chips.  */
-  if (TARGET_68040 || TARGET_68060)
+  if (TUNE_68040 || TUNE_68060)
     return 0;
 
   if (! inited_68881_table)
