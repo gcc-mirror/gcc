@@ -895,6 +895,7 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
 			   tree_block_label (rest));
   bsi_insert_after (&bsi, exit_if, BSI_NEW_STMT);
   new_exit = make_edge (exit_bb, rest, EDGE_FALSE_VALUE | irr);
+  rescan_loop_exit (new_exit, true, false);
   new_exit->count = 0;
   new_exit->probability = 0;
   new_nonexit = single_pred_edge (loop->latch);

@@ -862,7 +862,6 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, edge e)
   copy_bbs (bbs, loop->num_nodes, new_bbs,
 	    &exit, 1, &new_exit, NULL,
 	    e->src);
-  set_single_exit (new_loop, new_exit);
 
   /* Duplicating phi args at exit bbs as coming 
      also from exit of duplicated loop.  */

@@ -108,14 +108,16 @@ edges in the strongly connected components that are not natural loops
 flag is not set for blocks and edges that belong to natural loops that
 are in such an irreducible region (but it is set for the entry and exit
 edges of such a loop, if they lead to/from this region).
-@item @code{LOOPS_HAVE_MARKED_SINGLE_EXITS}: If a loop has exactly one
-exit edge, this edge is recorded in the loop structure.  @code{single_exit}
-function can be used to retrieve this edge.
+@item @code{LOOPS_HAVE_RECORDED_EXITS}: The lists of exits are recorded
+and updated for each loop.  This makes some functions (e.g.,
+@code{get_loop_exit_edges}) more efficient.  Some functions (e.g.,
+@code{single_exit}) can be used only if the lists of exits are
+recorded.
 @end itemize
 
 These properties may also be computed/enforced later, using functions
 @code{create_preheaders}, @code{force_single_succ_latches},
-@code{mark_irreducible_loops} and @code{mark_single_exit_loops}.
+@code{mark_irreducible_loops} and @code{record_loop_exits}.
 
 The memory occupied by the loops structures should be freed with
 @code{loop_optimizer_finalize} function.

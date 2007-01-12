@@ -88,8 +88,8 @@ loop_optimizer_init (unsigned flags)
   if (flags & LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)
     mark_irreducible_loops ();
 
-  if (flags & LOOPS_HAVE_MARKED_SINGLE_EXITS)
-    mark_single_exit_loops ();
+  if (flags & LOOPS_HAVE_RECORDED_EXITS)
+    record_loop_exits ();
 
   /* Dump loops.  */
   flow_loops_dump (dump_file, NULL, 1);
@@ -118,6 +118,8 @@ loop_optimizer_finalize (void)
     }
 
   /* Clean up.  */
+  if (current_loops->state & LOOPS_HAVE_RECORDED_EXITS)
+    release_recorded_exits ();
   flow_loops_free (current_loops);
   free (current_loops);
   current_loops = NULL;
