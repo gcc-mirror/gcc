@@ -783,33 +783,36 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      valarray<_Tp>::shift(int __n) const
      {
        valarray<_Tp> __ret;
+
+       if (_M_size == 0)
+	 return __ret;
+
        _Tp* __restrict__ __tmp_M_data =
 	 std::__valarray_get_storage<_Tp>(_M_size);
 
-       if (__n == 0)                          // no shift
-         std::__valarray_copy_construct(_M_data, _M_data + _M_size,
-					__tmp_M_data);
-       else if (__n > 0)         // __n > 0: shift left
-         {                 
-           if (size_t(__n) > _M_size)
-             std::__valarray_default_construct(__tmp_M_data,
-					       __tmp_M_data + __n);
-           else
-             {
-               std::__valarray_copy_construct(_M_data + __n,
-					      _M_data + _M_size,
-					      __tmp_M_data);
-               std::__valarray_default_construct(__tmp_M_data + _M_size - __n,
-						 __tmp_M_data + _M_size);
-             }
-         }
-       else                        // __n < 0: shift right
-         {                          
-           std::__valarray_copy_construct(_M_data, _M_data + _M_size + __n,
+       if (__n == 0)
+	 std::__valarray_copy_construct(_M_data,
+					_M_data + _M_size, __tmp_M_data);
+       else if (__n > 0)      // shift left
+	 {
+	   if (size_t(__n) > _M_size)
+	     __n = _M_size;
+
+	   std::__valarray_copy_construct(_M_data + __n,
+					  _M_data + _M_size, __tmp_M_data);
+	   std::__valarray_default_construct(__tmp_M_data + _M_size - __n,
+					     __tmp_M_data + _M_size);
+	 }
+       else                   // shift right
+	 {
+	   if (size_t(-__n) > _M_size)
+	     __n = -_M_size;
+
+	   std::__valarray_copy_construct(_M_data, _M_data + _M_size + __n,
 					  __tmp_M_data - __n);
-           std::__valarray_default_construct(__tmp_M_data,
+	   std::__valarray_default_construct(__tmp_M_data,
 					     __tmp_M_data - __n);
-         }
+	 }
 
        __ret._M_size = _M_size;
        __ret._M_data = __tmp_M_data;
@@ -821,26 +824,36 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      valarray<_Tp>::cshift(int __n) const
      {
        valarray<_Tp> __ret;
+
+       if (_M_size == 0)
+	 return __ret;
+
        _Tp* __restrict__ __tmp_M_data =
 	 std::__valarray_get_storage<_Tp>(_M_size);
 
-       if (__n == 0)               // no cshift
-         std::__valarray_copy_construct(_M_data, _M_data + _M_size,
-					__tmp_M_data);
-       else if (__n > 0)           // cshift left
-         {               
-           std::__valarray_copy_construct(_M_data, _M_data + __n,
+       if (__n == 0)
+	 std::__valarray_copy_construct(_M_data,
+					_M_data + _M_size, __tmp_M_data);
+       else if (__n > 0)      // cshift left
+	 {
+	   if (size_t(__n) > _M_size)
+	     __n = __n % _M_size;
+
+	   std::__valarray_copy_construct(_M_data, _M_data + __n,
 					  __tmp_M_data + _M_size - __n);
-           std::__valarray_copy_construct(_M_data + __n, _M_data + _M_size,
+	   std::__valarray_copy_construct(_M_data + __n, _M_data + _M_size,
 					  __tmp_M_data);
-         }
-       else                        // cshift right
-         {                       
-           std::__valarray_copy_construct
-             (_M_data + _M_size + __n, _M_data + _M_size, __tmp_M_data);
-           std::__valarray_copy_construct
-             (_M_data, _M_data + _M_size + __n, __tmp_M_data - __n);
-         }
+	 }
+       else                   // cshift right
+	 {
+	   if (size_t(-__n) > _M_size)
+	     __n = -(-__n % _M_size);
+
+	   std::__valarray_copy_construct(_M_data + _M_size + __n,
+					  _M_data + _M_size, __tmp_M_data);
+	   std::__valarray_copy_construct(_M_data, _M_data + _M_size + __n,
+					  __tmp_M_data - __n);
+	 }
 
        __ret._M_size = _M_size;
        __ret._M_data = __tmp_M_data;
