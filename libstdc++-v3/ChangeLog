@@ -1,5 +1,11 @@
 2007-01-12  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/30416 (continued)
+	* include/std/valarray (valarray<>::shift, valarray<>::cshift):
+	Allways return the same variable, thus facilitating NRVO.
+
+2007-01-12  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/30416
 	* include/std/valarray (valarray<>::shift, valarray<>::cshift):
 	Do not segfault when |n| > size.
