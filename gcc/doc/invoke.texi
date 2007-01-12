@@ -583,9 +583,9 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-march=@var{arch}  -mcpu=@var{cpu}  -mtune=@var{tune}
 -m68000  -m68020  -m68020-40  -m68020-60  -m68030  -m68040 @gol
 -m68060  -mcpu32  -m5200  -m5206e  -m528x  -m5307  -m5407 @gol
--mcfv4e  -mbitfield  -mc68000  -mc68020 @gol
--mnobitfield  -mrtd  -mdiv  -mno-div  -mshort @gol
--mhard-float  -m68881  -msoft-float  -mpcrel @gol
+-mcfv4e  -mbitfield  -mno-bitfield  -mc68000  -mc68020 @gol
+-mnobitfield  -mrtd  -mno-rtd  -mdiv  -mno-div  -mshort @gol
+-mno-short  -mhard-float  -m68881  -msoft-float  -mpcrel @gol
 -malign-int  -mstrict-align  -msep-data  -mno-sep-data @gol
 -mshared-library-id=n  -mid-shared-library  -mno-id-shared-library}
 
@@ -10510,8 +10510,14 @@ Consider type @code{int} to be 16 bits wide, like @code{short int}.
 Additionally, parameters passed on the stack are also aligned to a
 16-bit boundary even on targets whose API mandates promotion to 32-bit.
 
+@item -mno-short
+@opindex -mno-short
+Do not consider type @code{int} to be 16 bits wide.  This is the default.
+
 @item -mnobitfield
+@itemx -mno-bitfield
 @opindex mnobitfield
+@opindex mno-bitfield
 Do not use the bit-field instructions.  The @option{-m68000}, @option{-mcpu32}
 and @option{-m5200} options imply @w{@option{-mnobitfield}}.
 
@@ -10544,6 +10550,11 @@ harmlessly ignored.)
 
 The @code{rtd} instruction is supported by the 68010, 68020, 68030,
 68040, 68060 and CPU32 processors, but not by the 68000 or 5200.
+
+@item -mno-rtd
+@opindex mno-rtd
+Do not use the calling conventions selected by @option{-mrtd}.
+This is the default.
 
 @item -malign-int
 @itemx -mno-align-int
