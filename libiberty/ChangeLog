@@ -1,3 +1,8 @@
+2007-01-12  Ben Elliston  <bje@au.ibm.com>
+
+	* choose-temp.c (choose_temp_base): Check the result of call to
+	mktemp rather than testing the length of the modified string.
+
 2006-12-20  Geoffrey Keating  <geoffk@apple.com>
 
 	* cp-demangle.h: Add comment explaining what to do to avoid

@@ -65,8 +65,7 @@ choose_temp_base (void)
   strcpy (temp_filename, base);
   strcpy (temp_filename + len, TEMP_FILE);
 
-  mktemp (temp_filename);
-  if (strlen (temp_filename) == 0)
+  if (mktemp (temp_filename) == 0)
     abort ();
   return temp_filename;
 }
