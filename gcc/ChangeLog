@@ -9,7 +9,6 @@
 	New functions.
 	* tree.def (TARGET_MEM_REF): Add comment on types of
 	the operands.
-	* gcc.dg/tree-ssa/loop-20.c: New test.
 
 2007-01-11  Joseph Myers  <joseph@codesourcery.com>
 
