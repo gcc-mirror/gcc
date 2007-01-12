@@ -141,6 +141,9 @@ Boston, MA 02111-1307, USA.  */
    ASM_GENERATE_INTERNAL_LABEL(), so do not define it here.  */
 
 /* Use the default.  */
+#undef ASM_OUTPUT_INTERNAL_LABEL
+
+/* Use the default.  */
 #undef TARGET_ASM_GLOBALIZE_LABEL
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP ".globl "
