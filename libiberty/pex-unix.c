@@ -339,7 +339,7 @@ static void
 pex_child_error (struct pex_obj *obj, const char *executable,
 		 const char *errmsg, int err)
 {
-#define writeerr(s) write (STDERR_FILE_NO, s, strlen (s))
+#define writeerr(s) (void) write (STDERR_FILE_NO, s, strlen (s))
   writeerr (obj->pname);
   writeerr (": error trying to exec '");
   writeerr (executable);
