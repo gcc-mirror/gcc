@@ -1,4 +1,12 @@
 2007-01-12  Julian Brown  <julian@codesourcery.com>
+
+	* config/m68k/m68k.h: Use TARGET_68040 instead of TARGET_68040_ONLY.
+	(TARGET_68040_ONLY): Rename to...
+	(TARGET_68040): ...this.
+	* config/m68k/m68k.c: Use TARGET_68040 instead of TARGET_68040_ONLY.
+	* config/m68k/m68k.md: Likewise.
+
+2007-01-12  Julian Brown  <julian@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 	    Richard Sandiford  <richard@codesourcery.com>
 

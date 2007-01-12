@@ -67,7 +67,7 @@ Boston, MA 02110-1301, USA.  */
     {									\
       builtin_define ("__m68k__");					\
       builtin_define_std ("mc68000");					\
-      if (TARGET_68040_ONLY)						\
+      if (TARGET_68040)							\
 	{								\
 	  if (TUNE_68060)						\
 	    builtin_define_std ("mc68060");				\
@@ -182,7 +182,7 @@ Boston, MA 02110-1301, USA.  */
 
 #define TARGET_68010		((m68k_cpu_flags & FL_ISA_68010) != 0)
 #define TARGET_68020		((m68k_cpu_flags & FL_ISA_68020) != 0)
-#define TARGET_68040_ONLY	((m68k_cpu_flags & FL_ISA_68040) != 0)
+#define TARGET_68040		((m68k_cpu_flags & FL_ISA_68040) != 0)
 #define TARGET_COLDFIRE		((m68k_cpu_flags & FL_COLDFIRE) != 0)
 #define TARGET_COLDFIRE_FPU	(m68k_fpu == FPUTYPE_COLDFIRE)
 #define TARGET_68881		(m68k_fpu == FPUTYPE_68881)
@@ -220,7 +220,7 @@ Boston, MA 02110-1301, USA.  */
 /* Set the value of FLT_EVAL_METHOD in float.h.  When using 68040 fp
    instructions, we get proper intermediate rounding, otherwise we
    get extended precision results.  */
-#define TARGET_FLT_EVAL_METHOD ((TARGET_68040_ONLY || ! TARGET_68881) ? 0 : 2)
+#define TARGET_FLT_EVAL_METHOD ((TARGET_68040 || ! TARGET_68881) ? 0 : 2)
 
 #define BITS_BIG_ENDIAN 1
 #define BYTES_BIG_ENDIAN 1
