@@ -771,7 +771,7 @@ __transfer_from_trampoline ()					\
 	&& (INTVAL (XEXP (X, 1)) == 2			\
 	    || INTVAL (XEXP (X, 1)) == 4		\
 	    || (INTVAL (XEXP (X, 1)) == 8		\
-		&& (TARGET_CFV4E || !TARGET_COLDFIRE)))))
+		&& (TARGET_COLDFIRE_FPU || !TARGET_COLDFIRE)))))
 
 /* Coldfire FPU only accepts addressing modes 2-5 */
 #define GO_IF_COLDFIRE_FPU_LEGITIMATE_ADDRESS(MODE, X, ADDR)		\
@@ -819,7 +819,8 @@ __transfer_from_trampoline ()					\
 	{ COPY_ONCE (X); XEXP (X, 1) = force_operand (XEXP (X, 1), 0);}	\
       if (ch && GET_CODE (XEXP (X, 1)) == REG				\
 	  && GET_CODE (XEXP (X, 0)) == REG)				\
-	{ if (TARGET_CFV4E && GET_MODE_CLASS (MODE) == MODE_FLOAT)	\
+	{ if (TARGET_COLDFIRE_FPU					\
+	      && GET_MODE_CLASS (MODE) == MODE_FLOAT)			\
 	    { COPY_ONCE (X); X = force_operand (X, 0);}			\
 	  goto WIN; }							\
       if (ch) { GO_IF_LEGITIMATE_ADDRESS (MODE, X, WIN); }		\
