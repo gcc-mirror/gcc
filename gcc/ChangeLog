@@ -1,5 +1,9 @@
 2007-01-12  Richard Sandiford  <richard@codesourcery.com>
 
+	* doc/invoke.texi: Avoid use of @headitem.
+
+2007-01-12  Richard Sandiford  <richard@codesourcery.com>
+
 	* cse.c (cse_insn): Move HAVE_CC0 code after declarations.
 
 2007-01-12  Richard Sandiford  <richard@codesourcery.com>

@@ -10301,7 +10301,7 @@ and @samp{cpu32}.  The ColdFire @var{cpu}s are given by the table
 below, which also classifies the CPUs into families:
 
 @multitable @columnfractions 0.20 0.80
-@headitem Family @tab @samp{-mcpu} arguments
+@item @strong{Family} @tab @strong{@samp{-mcpu} arguments}
 @item @samp{5206} @tab @samp{5202} @samp{5204} @samp{5206}
 @item @samp{5206e} @tab @samp{5206e}
 @item @samp{5208} @tab @samp{5207} @samp{5208}
