@@ -67,39 +67,53 @@ Boston, MA 02110-1301, USA.  */
     {									\
       builtin_define ("__m68k__");					\
       builtin_define_std ("mc68000");					\
-      if (TARGET_68040)							\
+      /* The other mc680x0 macros have traditionally been derived	\
+	 from the tuning setting.  For example, -m68020-60 defines	\
+	 m68060, even though it generates pure 68020 code.  */		\
+      switch (m68k_tune)						\
 	{								\
-	  if (TUNE_68060)						\
-	    builtin_define_std ("mc68060");				\
-	  else								\
-	    builtin_define_std ("mc68040");				\
-	}								\
-      else if (TUNE_68060) /* -m68020-60 */				\
-	{								\
+	case u68010:							\
+	  builtin_define_std ("mc68010");				\
+	  break;							\
+									\
+	case u68020:							\
+	  builtin_define_std ("mc68020");				\
+	  break;							\
+									\
+	case u68030:							\
+	  builtin_define_std ("mc68030");				\
+	  break;							\
+									\
+	case u68040:							\
+	  builtin_define_std ("mc68040");				\
+	  break;							\
+									\
+	case u68060:							\
 	  builtin_define_std ("mc68060");				\
+	  break;							\
+									\
+	case u68020_60:							\
+	  builtin_define_std ("mc68060");				\
+	  /* Fall through.  */						\
+	case u68020_40:							\
 	  builtin_define_std ("mc68040");				\
 	  builtin_define_std ("mc68030");				\
 	  builtin_define_std ("mc68020");				\
-	}								\
-      else if (TUNE_68040) /* -m68020-40 */				\
-	{								\
-	  builtin_define_std ("mc68040");				\
-	  builtin_define_std ("mc68030");				\
-	  builtin_define_std ("mc68020");				\
-	}								\
-      else if (TUNE_68030)						\
-	builtin_define_std ("mc68030");					\
-      else if (TARGET_68020)						\
-	builtin_define_std ("mc68020");					\
-      else if (TUNE_68010)						\
-	builtin_define_std ("mc68010");					\
-      if (TARGET_68881)							\
-	builtin_define ("__HAVE_68881__");				\
-      if (TUNE_CPU32)							\
-	{								\
+	  break;							\
+									\
+	case ucpu32:							\
 	  builtin_define_std ("mc68332");				\
 	  builtin_define_std ("mcpu32");				\
+	  builtin_define_std ("mc68020");				\
+	  break;							\
+									\
+	default:							\
+	  break;							\
 	}								\
+									\
+      if (TARGET_68881)							\
+	builtin_define ("__HAVE_68881__");				\
+									\
       if (TARGET_COLDFIRE)						\
 	{								\
 	  builtin_define ("__mcoldfire__");				\

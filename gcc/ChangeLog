@@ -1,3 +1,9 @@
+2007-01-12  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/m68k/m68k.h (TARGET_CPU_CPP_BUILTINS): Treat all mc68*
+	macros besides mc68000 as tuning macros.  Use a switch statement
+	to set them and mcpu32.
+
 2007-01-12  Julian Brown  <julian@codesourcery.com>
 
 	* config/m68k/m68k.h: Use TARGET_68040 instead of TARGET_68040_ONLY.
