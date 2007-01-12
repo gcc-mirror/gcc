@@ -61,5 +61,7 @@ extern bool m68k_regno_mode_ok (int, enum machine_mode);
 extern int flags_in_68881 (void);
 extern bool use_return_insn (void);
 extern void override_options (void);
+extern const char *m68k_cpp_cpu_ident (const char *);
+extern const char *m68k_cpp_cpu_family (const char *);
 extern void init_68881_table (void);
 extern int m68k_hard_regno_rename_ok(unsigned int, unsigned int);
