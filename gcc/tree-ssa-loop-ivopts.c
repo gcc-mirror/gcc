@@ -1183,67 +1183,96 @@ find_interesting_uses_op (struct ivopts_data *data, tree op)
   return use;
 }
 
+/* Given a condition *COND_P, checks whether it is a compare of an induction
+   variable and an invariant.  If this is the case, CONTROL_VAR is set
+   to location of the iv, BOUND to the location of the invariant,
+   IV_VAR and IV_BOUND are set to the corresponding induction variable
+   descriptions, and true is returned.  If this is not the case,
+   CONTROL_VAR and BOUND are set to the arguments of the condition and
+   false is returned.  */
+
+static bool
+extract_cond_operands (struct ivopts_data *data, tree *cond_p,
+		       tree **control_var, tree **bound,
+		       struct iv **iv_var, struct iv **iv_bound)
+{
+  /* The nodes returned when COND has just one operand.  Note that you should
+     not modify anything in BOUND or IV_BOUND because of this.  */
+  static struct iv const_iv;
+  static tree zero;
+  tree cond = *cond_p;
+  tree *op0 = &zero, *op1 = &zero, *tmp_op;
+  struct iv *iv0 = &const_iv, *iv1 = &const_iv, *tmp_iv;
+  bool ret = false;
+
+  zero = integer_zero_node;
+  const_iv.step = integer_zero_node;
+
+  if (TREE_CODE (cond) == SSA_NAME)
+    {
+      op0 = cond_p;
+      iv0 = get_iv (data, cond);
+      ret = (iv0 && !integer_zerop (iv0->step));
+      goto end;
+    }
+
+  if (!COMPARISON_CLASS_P (cond))
+    {
+      op0 = cond_p;
+      goto end;
+    }
+
+  op0 = &TREE_OPERAND (cond, 0);
+  op1 = &TREE_OPERAND (cond, 1);
+  if (TREE_CODE (*op0) == SSA_NAME)
+    iv0 = get_iv (data, *op0);
+  if (TREE_CODE (*op1) == SSA_NAME)
+    iv1 = get_iv (data, *op1);
+
+  /* Exactly one of the compared values must be an iv, and the other one must
+     be an invariant.  */
+  if (!iv0 || !iv1)
+    goto end;
+
+  if (integer_zerop (iv0->step))
+    {
+      /* Control variable may be on the other side.  */
+      tmp_op = op0; op0 = op1; op1 = tmp_op;
+      tmp_iv = iv0; iv0 = iv1; iv1 = tmp_iv;
+    }
+  ret = !integer_zerop (iv0->step) && integer_zerop (iv1->step);
+
+end:
+  if (control_var)
+    *control_var = op0;;
+  if (iv_var)
+    *iv_var = iv0;;
+  if (bound)
+    *bound = op1;
+  if (iv_bound)
+    *iv_bound = iv1;
+
+  return ret;
+}
+
 /* Checks whether the condition *COND_P in STMT is interesting
    and if so, records it.  */
 
 static void
 find_interesting_uses_cond (struct ivopts_data *data, tree stmt, tree *cond_p)
 {
-  tree *op0_p;
-  tree *op1_p;
-  struct iv *iv0 = NULL, *iv1 = NULL, *civ;
-  struct iv const_iv;
-  tree zero = integer_zero_node;
+  tree *var_p, *bound_p;
+  struct iv *var_iv, *civ;
 
-  const_iv.step = integer_zero_node;
-
-  if (TREE_CODE (*cond_p) != SSA_NAME
-      && !COMPARISON_CLASS_P (*cond_p))
-    return;
-
-  if (TREE_CODE (*cond_p) == SSA_NAME)
+  if (!extract_cond_operands (data, cond_p, &var_p, &bound_p, &var_iv, NULL))
     {
-      op0_p = cond_p;
-      op1_p = &zero;
-    }
-  else
-    {
-      op0_p = &TREE_OPERAND (*cond_p, 0);
-      op1_p = &TREE_OPERAND (*cond_p, 1);
-    }
-
-  if (TREE_CODE (*op0_p) == SSA_NAME)
-    iv0 = get_iv (data, *op0_p);
-  else
-    iv0 = &const_iv;
-
-  if (TREE_CODE (*op1_p) == SSA_NAME)
-    iv1 = get_iv (data, *op1_p);
-  else
-    iv1 = &const_iv;
-
-  if (/* When comparing with non-invariant value, we may not do any senseful
-	 induction variable elimination.  */
-      (!iv0 || !iv1)
-      /* Eliminating condition based on two ivs would be nontrivial.
-	 ??? TODO -- it is not really important to handle this case.  */
-      || (!integer_zerop (iv0->step)
-	  && !integer_zerop (iv1->step)))
-    {
-      find_interesting_uses_op (data, *op0_p);
-      find_interesting_uses_op (data, *op1_p);
-      return;
-    }
-
-  if (integer_zerop (iv0->step)
-      && integer_zerop (iv1->step))
-    {
-      /* If both are invariants, this is a work for unswitching.  */
+      find_interesting_uses_op (data, *var_p);
+      find_interesting_uses_op (data, *bound_p);
       return;
     }
 
   civ = XNEW (struct iv);
-  *civ = integer_zerop (iv0->step) ? *iv1: *iv0;
+  *civ = *var_iv;
   record_use (data, cond_p, civ, stmt, USE_COMPARE);
 }
 
@@ -3672,9 +3701,11 @@ static bool
 determine_use_iv_cost_condition (struct ivopts_data *data,
 				 struct iv_use *use, struct iv_cand *cand)
 {
-  tree bound = NULL_TREE, op, cond;
-  bitmap depends_on = NULL;
-  unsigned cost;
+  tree bound = NULL_TREE;
+  struct iv *cmp_iv;
+  bitmap depends_on_elim = NULL, depends_on_express = NULL, depends_on;
+  unsigned elim_cost, express_cost, cost;
+  bool ok;
 
   /* Only consider real candidates.  */
   if (!cand->iv)
@@ -3683,35 +3714,44 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
       return false;
     }
 
+  /* Try iv elimination.  */
   if (may_eliminate_iv (data, use, cand, &bound))
-    {
-      cost = force_var_cost (data, bound, &depends_on);
+    elim_cost = force_var_cost (data, bound, &depends_on_elim);
+  else
+    elim_cost = INFTY;
 
-      set_use_iv_cost (data, use, cand, cost, depends_on, bound);
-      return cost != INFTY;
+  /* Try expressing the original giv.  If it is compared with an invariant,
+     note that we cannot get rid of it.  */
+  ok = extract_cond_operands (data, use->op_p, NULL, NULL, NULL, &cmp_iv);
+  gcc_assert (ok);
+
+  express_cost = get_computation_cost (data, use, cand, false,
+				       &depends_on_express);
+  fd_ivopts_data = data;
+  walk_tree (&cmp_iv->base, find_depends, &depends_on_express, NULL);
+
+  /* Choose the better approach.  */
+  if (elim_cost < express_cost)
+    {
+      cost = elim_cost;
+      depends_on = depends_on_elim;
+      depends_on_elim = NULL;
+    }
+  else
+    {
+      cost = express_cost;
+      depends_on = depends_on_express;
+      depends_on_express = NULL;
+      bound = NULL_TREE;
     }
 
-  /* The induction variable elimination failed; just express the original
-     giv.  If it is compared with an invariant, note that we cannot get
-     rid of it.  */
-  cost = get_computation_cost (data, use, cand, false, &depends_on);
+  set_use_iv_cost (data, use, cand, cost, depends_on, bound);
 
-  cond = *use->op_p;
-  if (TREE_CODE (cond) != SSA_NAME)
-    {
-      op = TREE_OPERAND (cond, 0);
-      if (TREE_CODE (op) == SSA_NAME
-	  && !integer_zerop (get_iv (data, op)->step))
-	op = TREE_OPERAND (cond, 1);
-      if (TREE_CODE (op) == SSA_NAME)
-	{
-	  op = get_iv (data, op)->base;
-	  fd_ivopts_data = data;
-	  walk_tree (&op, find_depends, &depends_on, NULL);
-	}
-    }
+  if (depends_on_elim)
+    BITMAP_FREE (depends_on_elim);
+  if (depends_on_express)
+    BITMAP_FREE (depends_on_express);
 
-  set_use_iv_cost (data, use, cand, cost, depends_on, NULL);
   return cost != INFTY;
 }
 
@@ -5087,12 +5127,12 @@ static void
 rewrite_use_compare (struct ivopts_data *data,
 		     struct iv_use *use, struct iv_cand *cand)
 {
-  tree comp;
-  tree *op_p, cond, op, stmts, bound;
+  tree comp, *var_p, op, bound;
   block_stmt_iterator bsi = bsi_for_stmt (use->stmt);
   enum tree_code compare;
   struct cost_pair *cp = get_use_iv_cost (data, use, cand);
-  
+  bool ok;
+
   bound = cp->value;
   if (bound)
     {
@@ -5100,15 +5140,10 @@ rewrite_use_compare (struct ivopts_data *data,
       tree var_type = TREE_TYPE (var);
 
       compare = iv_elimination_compare (data, use);
-      bound = fold_convert (var_type, bound);
-      op = force_gimple_operand (unshare_expr (bound), &stmts,
-				 true, NULL_TREE);
-
-      if (stmts)
-	bsi_insert_before (&bsi, stmts, BSI_SAME_STMT);
+      bound = unshare_expr (fold_convert (var_type, bound));
+      op = force_gimple_operand_bsi (&bsi, bound, true, NULL_TREE);
 
       *use->op_p = build2 (compare, boolean_type_node, var, op);
-      update_stmt (use->stmt);
       return;
     }
 
@@ -5117,17 +5152,10 @@ rewrite_use_compare (struct ivopts_data *data,
   comp = get_computation (data->current_loop, use, cand);
   gcc_assert (comp != NULL_TREE);
 
-  cond = *use->op_p;
-  op_p = &TREE_OPERAND (cond, 0);
-  if (TREE_CODE (*op_p) != SSA_NAME
-      || integer_zerop (get_iv (data, *op_p)->step))
-    op_p = &TREE_OPERAND (cond, 1);
+  ok = extract_cond_operands (data, use->op_p, &var_p, NULL, NULL, NULL);
+  gcc_assert (ok);
 
-  op = force_gimple_operand (comp, &stmts, true, SSA_NAME_VAR (*op_p));
-  if (stmts)
-    bsi_insert_before (&bsi, stmts, BSI_SAME_STMT);
-
-  *op_p = op;
+  *var_p = force_gimple_operand_bsi (&bsi, comp, true, SSA_NAME_VAR (*var_p));
 }
 
 /* Rewrites USE using candidate CAND.  */
