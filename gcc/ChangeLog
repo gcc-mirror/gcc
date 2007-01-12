@@ -1,6 +1,13 @@
 2007-01-12  Nathan Sidwell  <nathan@codesourcery.com>
 	    Richard Sandiford  <richard@codesourcery.com>
 
+	* doc/invoke.texi: Document -mno-bitfield, -mno-rtd and -mno-short.
+	* config/m68k/m68k.opt: Resort options.
+	(mbitfield, mrtd, mshort): Remove RejectNegative properties.
+
+2007-01-12  Nathan Sidwell  <nathan@codesourcery.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+
 	* doc/invoke.texi: Document the macros that are defined by
 	m68k's -mtune and -mhard-float options.
 	* config/m68k/m68k-protos.h (m68k_cpp_cpu_ident) Declare.
