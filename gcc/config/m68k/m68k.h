@@ -35,70 +35,70 @@ Boston, MA 02110-1301, USA.  */
 /* Note that some other tm.h files include this one and then override
    many of the definitions that relate to assembler syntax.  */
 
-#define TARGET_CPU_CPP_BUILTINS()		\
-  do						\
-    {						\
-      builtin_define ("__m68k__");		\
-      builtin_define_std ("mc68000");		\
-      if (TARGET_68040_ONLY)			\
-	{					\
-	  if (TARGET_68060)			\
-	    builtin_define_std ("mc68060");	\
-	  else					\
-	    builtin_define_std ("mc68040");	\
-	}					\
-      else if (TARGET_68060) /* -m68020-60 */	\
-	{					\
-	  builtin_define_std ("mc68060");	\
-	  builtin_define_std ("mc68040");	\
-	  builtin_define_std ("mc68030");	\
-	  builtin_define_std ("mc68020");	\
-	}					\
-      else if (TARGET_68040) /* -m68020-40 */	\
-	{					\
-	  builtin_define_std ("mc68040");	\
-	  builtin_define_std ("mc68030");	\
-	  builtin_define_std ("mc68020");	\
-	}					\
-      else if (TARGET_68030)			\
-	builtin_define_std ("mc68030");		\
-      else if (TARGET_68020)			\
-	builtin_define_std ("mc68020");		\
-      if (TARGET_68881)				\
-	builtin_define ("__HAVE_68881__");	\
-      if (TARGET_CPU32)				\
-	{					\
-	  builtin_define_std ("mc68332");	\
-	  builtin_define_std ("mcpu32");	\
-	}					\
-      if (TARGET_COLDFIRE)			\
-	builtin_define ("__mcoldfire__");	\
-      if (TARGET_5200)				\
-	builtin_define ("__mcf5200__");		\
-      if (TARGET_528x)				\
-	{					\
-	  builtin_define ("__mcf528x__");	\
-	  builtin_define ("__mcf5200__");	\
-	}					\
-      if (TARGET_CFV3)				\
-	{					\
-	  builtin_define ("__mcf5300__");	\
-	  builtin_define ("__mcf5307__");	\
-	}					\
-      if (TARGET_CFV4)				\
-	{					\
-	  builtin_define ("__mcf5400__");	\
-	  builtin_define ("__mcf5407__");	\
-	}					\
-      if (TARGET_CFV4E)				\
-	{					\
-	  builtin_define ("__mcfv4e__");	\
-	}					\
-      if (TARGET_CF_HWDIV)			\
-	builtin_define ("__mcfhwdiv__");	\
-      builtin_assert ("cpu=m68k");		\
-      builtin_assert ("machine=m68k");		\
-    }						\
+#define TARGET_CPU_CPP_BUILTINS()					\
+  do									\
+    {									\
+      builtin_define ("__m68k__");					\
+      builtin_define_std ("mc68000");					\
+      if (TARGET_68040_ONLY)						\
+	{								\
+	  if (TARGET_68060)						\
+	    builtin_define_std ("mc68060");				\
+	  else								\
+	    builtin_define_std ("mc68040");				\
+	}								\
+      else if (TARGET_68060) /* -m68020-60 */				\
+	{								\
+	  builtin_define_std ("mc68060");				\
+	  builtin_define_std ("mc68040");				\
+	  builtin_define_std ("mc68030");				\
+	  builtin_define_std ("mc68020");				\
+	}								\
+      else if (TARGET_68040) /* -m68020-40 */				\
+	{								\
+	  builtin_define_std ("mc68040");				\
+	  builtin_define_std ("mc68030");				\
+	  builtin_define_std ("mc68020");				\
+	}								\
+      else if (TARGET_68030)						\
+	builtin_define_std ("mc68030");					\
+      else if (TARGET_68020)						\
+	builtin_define_std ("mc68020");					\
+      if (TARGET_68881)							\
+	builtin_define ("__HAVE_68881__");				\
+      if (TARGET_CPU32)							\
+	{								\
+	  builtin_define_std ("mc68332");				\
+	  builtin_define_std ("mcpu32");				\
+	}								\
+      if (TARGET_COLDFIRE)						\
+	builtin_define ("__mcoldfire__");				\
+      if (TARGET_5200)							\
+	builtin_define ("__mcf5200__");					\
+      if (TARGET_528x)							\
+	{								\
+	  builtin_define ("__mcf528x__");				\
+	  builtin_define ("__mcf5200__");				\
+	}								\
+      if (TARGET_CFV3)							\
+	{								\
+	  builtin_define ("__mcf5300__");				\
+	  builtin_define ("__mcf5307__");				\
+	}								\
+      if (TARGET_CFV4)							\
+	{								\
+	  builtin_define ("__mcf5400__");				\
+	  builtin_define ("__mcf5407__");				\
+	}								\
+      if (TARGET_CFV4E)							\
+	{								\
+	  builtin_define ("__mcfv4e__");				\
+	}								\
+      if (TARGET_CF_HWDIV)						\
+	builtin_define ("__mcfhwdiv__");				\
+      builtin_assert ("cpu=m68k");					\
+      builtin_assert ("machine=m68k");					\
+    }									\
   while (0)
 
 /* Classify the groups of pseudo-ops used to assemble QI, HI and SI

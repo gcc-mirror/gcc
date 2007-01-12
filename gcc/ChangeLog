@@ -1,3 +1,8 @@
+2007-01-12  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/m68k/m68k.h (TARGET_CPU_CPP_BUILTINS): Increase amount
+	of tabbing before backslashes.
+
 2007-01-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa-linux.h (ASM_OUTPUT_INTERNAL_LABEL): Undefine.
