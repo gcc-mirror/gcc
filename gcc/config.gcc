@@ -1498,16 +1498,16 @@ m68010-*-netbsdelf* | m68k*-*-netbsdelf*)
 	tm_defines="${tm_defines} MOTOROLA USE_GAS"
 	case ${target} in
 	m68010*)
-		target_cpu_default="0"
+		target_cpu_default="MASK_68010"
 		;;
 	*)
-		target_cpu_default="MASK_68020|MASK_68881|MASK_BITFIELD"
+		target_cpu_default="MASK_68020|MASK_68010|MASK_68881|MASK_BITFIELD"
 		;;
 	esac
 	;;
 m68k*-*-openbsd*)
 	# needed to unconfuse gdb
-	tm_defines="${tm_defines} OBSD_OLD_GAS TARGET_DEFAULT=(MASK_68020|MASK_68881|MASK_BITFIELD)"
+	tm_defines="${tm_defines} OBSD_OLD_GAS TARGET_DEFAULT=(MASK_68020|MASK_68010|MASK_68881|MASK_BITFIELD)"
 	tm_file="m68k/m68k.h openbsd.h m68k/openbsd.h"
 	tmake_file="t-libc-ok t-openbsd m68k/t-openbsd"
 	# we need collect2 until our bug is fixed...
@@ -3037,25 +3037,25 @@ case ${target} in
 		case "x$with_cpu" in
 		x)
 			# The most generic
-			target_cpu_default2="(MASK_68020|MASK_68881|MASK_BITFIELD)"
+			target_cpu_default2="(MASK_68020|MASK_68010|MASK_68881|MASK_BITFIELD)"
 			;;
 		xm68020)
-			target_cpu_default2="(MASK_68020|MASK_68881|MASK_BITFIELD)"
+			target_cpu_default2="(MASK_68020|MASK_68010|MASK_68881|MASK_BITFIELD)"
 			;;
 		xm68030)
-			target_cpu_default2="(MASK_68030|MASK_68020|MASK_68881|MASK_BITFIELD)"
+			target_cpu_default2="(MASK_68030|MASK_68020|MASK_68010|MASK_68881|MASK_BITFIELD)"
 			;;
 		xm68040)
-			target_cpu_default2="(MASK_68040|MASK_68040_ONLY|MASK_68020|MASK_68881|MASK_BITFIELD)"
+			target_cpu_default2="(MASK_68040|MASK_68040_ONLY|MASK_68020|MASK_68010|MASK_68881|MASK_BITFIELD)"
 			;;
 		xm68060)
-			target_cpu_default2="(MASK_68060|MASK_68040_ONLY|MASK_68020|MASK_68881|MASK_BITFIELD)"
+			target_cpu_default2="(MASK_68060|MASK_68040_ONLY|MASK_68020|MASK_68010|MASK_68881|MASK_BITFIELD)"
 			;;
 		xm68020-40)
-			target_cpu_default2="(MASK_BITFIELD|MASK_68881|MASK_68020|MASK_68040)"
+			target_cpu_default2="(MASK_BITFIELD|MASK_68881|MASK_68020|MASK_68010|MASK_68040)"
 			;;
 		xm68020-60)
-			target_cpu_default2="(MASK_BITFIELD|MASK_68881|MASK_68020|MASK_68040|MASK_68060)"
+			target_cpu_default2="(MASK_BITFIELD|MASK_68881|MASK_68020|MASK_68010|MASK_68040|MASK_68060)"
 			;;
 		*)
 			echo "Unknown CPU used in --with-cpu=$with_cpu"  1>&2

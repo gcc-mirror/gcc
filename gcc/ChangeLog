@@ -1,3 +1,29 @@
+2007-01-12  Richard Sandiford  <richard@codesourcery.com>
+
+	* config.gcc (m68010-*-netbsdelf*): Add MASK_68010.
+	(m68k*-*-netbsdelf*, m68k*-*-openbsd*, m68k*-linux*): Add
+	MASK_68010 alongside MASK_68020.
+	* doc/invoke.texi: Document -m68010.
+	* config/m68k/m68k.opt (m68010): New.
+	* config/m68k/m68k.h (TARGET_CPU_CPP_BUILTINS): Define mc68010
+	if TUNE_68010.
+	(TUNE_68010): New macro.
+	* config/m68k/m68k-none.h (M68K_CPU_m68k, M68K_CPU_m68010)
+	(M68K_CPU_m68020, M68K_CPU_m68030, M68K_CPU_m68040)
+	(M68K_CPU_m68332): Add MASK_68010.
+	* config/m68k/linux.h (TARGET_DEFAULT): Add MASK_68010 to
+	fallback definition.
+	* config/m68k/netbsd-elf.h (CPP_CPU_SPEC): Remove now-redundant
+	defines.
+	* config/m68k/m68k.c (MASK_ALL_CPU_BITS): Add MASK_68010.
+	(m68k_handle_option): Handle OPT_m68010.  Add MASK_68010
+	to all entries that use MASK_68020.
+	(output_move_simode_const, output_move_himode, output_move_qimode)
+	(output_move_stricthi, output_move_strictqi): Use TARGET_68010
+	instead of TARGET_68020 to select clr behavior.  Remove comment
+	about there being no TARGET_68010.
+	* config/m68k/m68k.md: Likewise throughout.
+
 2007-01-12  Julian Brown  <julian@codesourcery.com>
 
 	* config/m68k/m68k.h (TARGET_ISAB): New macro.

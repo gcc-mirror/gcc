@@ -206,7 +206,7 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 
 #define MASK_ALL_CPU_BITS \
   (MASK_COLDFIRE | MASK_CF_HWDIV | MASK_68060 | MASK_68040 \
-   | MASK_68040_ONLY | MASK_68030 | MASK_68020 | MASK_BITFIELD)
+   | MASK_68040_ONLY | MASK_68030 | MASK_68020 | MASK_68010 | MASK_BITFIELD)
 
 /* Implement TARGET_HANDLE_OPTION.  */
 
@@ -250,37 +250,43 @@ m68k_handle_option (size_t code, const char *arg, int value)
       target_flags &= ~(MASK_ALL_CPU_BITS | MASK_68881);
       return true;
 
+    case OPT_m68010:
+      target_flags &= ~(MASK_ALL_CPU_BITS | MASK_68881);
+      target_flags |= MASK_68010;
+      return true;
+
     case OPT_m68020:
     case OPT_mc68020:
       target_flags &= ~MASK_ALL_CPU_BITS;
-      target_flags |= MASK_68020 | MASK_BITFIELD;
+      target_flags |= MASK_68010 | MASK_68020 | MASK_BITFIELD;
       return true;
 
     case OPT_m68020_40:
       target_flags &= ~MASK_ALL_CPU_BITS;
-      target_flags |= MASK_BITFIELD | MASK_68881 | MASK_68020 | MASK_68040;
+      target_flags |= (MASK_BITFIELD | MASK_68881 | MASK_68010
+		       | MASK_68020 | MASK_68040);
       return true;
 
     case OPT_m68020_60:
       target_flags &= ~MASK_ALL_CPU_BITS;
-      target_flags |= (MASK_BITFIELD | MASK_68881 | MASK_68020
-		       | MASK_68040 | MASK_68060);
+      target_flags |= (MASK_BITFIELD | MASK_68881 | MASK_68010
+		       | MASK_68020 | MASK_68040 | MASK_68060);
       return true;
 
     case OPT_m68030:
       target_flags &= ~MASK_ALL_CPU_BITS;
-      target_flags |= MASK_68020 | MASK_68030 | MASK_BITFIELD;
+      target_flags |= MASK_68010 | MASK_68020 | MASK_68030 | MASK_BITFIELD;
       return true;
 
     case OPT_m68040:
       target_flags &= ~MASK_ALL_CPU_BITS;
-      target_flags |= (MASK_68020 | MASK_68881 | MASK_BITFIELD
+      target_flags |= (MASK_68010 | MASK_68020 | MASK_68881 | MASK_BITFIELD
 		       | MASK_68040_ONLY | MASK_68040);
       return true;
 
     case OPT_m68060:
       target_flags &= ~MASK_ALL_CPU_BITS;
-      target_flags |= (MASK_68020 | MASK_68881 | MASK_BITFIELD
+      target_flags |= (MASK_68010 | MASK_68020 | MASK_68881 | MASK_BITFIELD
 		       | MASK_68040_ONLY | MASK_68060);
       return true;
 
@@ -291,7 +297,7 @@ m68k_handle_option (size_t code, const char *arg, int value)
     case OPT_m68332:
     case OPT_mcpu32:
       target_flags &= ~(MASK_ALL_CPU_BITS | MASK_68881);
-      target_flags |= MASK_68020;
+      target_flags |= MASK_68010 | MASK_68020;
       return true;
 
     case OPT_mshared_library_id_:
@@ -1795,9 +1801,8 @@ output_move_simode_const (rtx *operands)
   if (operands[1] == const0_rtx
       && (DATA_REG_P (operands[0])
 	  || GET_CODE (operands[0]) == MEM)
-      /* clr insns on 68000 read before writing.
-	 This isn't so on the 68010, but we have no TARGET_68010.  */
-      && ((TARGET_68020 || TARGET_COLDFIRE)
+      /* clr insns on 68000 read before writing.  */
+      && ((TARGET_68010 || TARGET_COLDFIRE)
 	  || !(GET_CODE (operands[0]) == MEM
 	       && MEM_VOLATILE_P (operands[0]))))
     return "clr%.l %0";
@@ -1854,9 +1859,8 @@ output_move_himode (rtx *operands)
       if (operands[1] == const0_rtx
 	  && (DATA_REG_P (operands[0])
 	      || GET_CODE (operands[0]) == MEM)
-	  /* clr insns on 68000 read before writing.
-	     This isn't so on the 68010, but we have no TARGET_68010.  */
-	  && ((TARGET_68020 || TARGET_COLDFIRE)
+	  /* clr insns on 68000 read before writing.  */
+	  && ((TARGET_68010 || TARGET_COLDFIRE)
 	      || !(GET_CODE (operands[0]) == MEM
 		   && MEM_VOLATILE_P (operands[0]))))
 	return "clr%.w %0";
@@ -1908,10 +1912,9 @@ output_move_qimode (rtx *operands)
 		&& ! ADDRESS_REG_P (operands[1])
 		&& ! TARGET_COLDFIRE));
 
-  /* clr and st insns on 68000 read before writing.
-     This isn't so on the 68010, but we have no TARGET_68010.  */
+  /* clr and st insns on 68000 read before writing.  */
   if (!ADDRESS_REG_P (operands[0])
-      && ((TARGET_68020 || TARGET_COLDFIRE)
+      && ((TARGET_68010 || TARGET_COLDFIRE)
 	  || !(GET_CODE (operands[0]) == MEM && MEM_VOLATILE_P (operands[0]))))
     {
       if (operands[1] == const0_rtx)
@@ -1944,9 +1947,8 @@ const char *
 output_move_stricthi (rtx *operands)
 {
   if (operands[1] == const0_rtx
-      /* clr insns on 68000 read before writing.
-	 This isn't so on the 68010, but we have no TARGET_68010.  */
-      && ((TARGET_68020 || TARGET_COLDFIRE)
+      /* clr insns on 68000 read before writing.  */
+      && ((TARGET_68010 || TARGET_COLDFIRE)
 	  || !(GET_CODE (operands[0]) == MEM && MEM_VOLATILE_P (operands[0]))))
     return "clr%.w %0";
   return "move%.w %1,%0";
@@ -1956,9 +1958,8 @@ const char *
 output_move_strictqi (rtx *operands)
 {
   if (operands[1] == const0_rtx
-      /* clr insns on 68000 read before writing.
-         This isn't so on the 68010, but we have no TARGET_68010.  */
-      && ((TARGET_68020 || TARGET_COLDFIRE)
+      /* clr insns on 68000 read before writing.  */
+      && ((TARGET_68010 || TARGET_COLDFIRE)
           || !(GET_CODE (operands[0]) == MEM && MEM_VOLATILE_P (operands[0]))))
     return "clr%.b %0";
   return "move%.b %1,%0";
