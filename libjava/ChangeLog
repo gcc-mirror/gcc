@@ -1,3 +1,7 @@
+2007-01-12  Andrew Haley  <aph@redhat.com>
+
+	* include/i386-signal.h: Rewrite to use rt_sigaction.
+
 2007-01-11  Andrew Haley  <aph@redhat.com>
 
 	* prims.cc (jdwpOptions) Fix deprecated cast from char[] constant
