@@ -1,3 +1,9 @@
+2007-01-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa-linux.h (ASM_OUTPUT_INTERNAL_LABEL): Undefine.
+	* pa.h (ASM_OUTPUT_LABEL): Output colon when using GAS.
+	(ASM_OUTPUT_INTERNAL_LABEL): Define.
+
 2007-01-10  Ralf Corsépius <ralf.corsepius@rtems.org>
 
 	* config/bfin/t-bfin, config/bfin/t-bfin-elf: Remove GCC_CFLAGS.
