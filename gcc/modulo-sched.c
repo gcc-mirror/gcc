@@ -892,7 +892,7 @@ sms_schedule (void)
   gcov_type trip_count = 0;
 
   loop_optimizer_init (LOOPS_HAVE_PREHEADERS
-		       | LOOPS_HAVE_MARKED_SINGLE_EXITS);
+		       | LOOPS_HAVE_RECORDED_EXITS);
   if (!current_loops)
     return;  /* There are no loops to schedule.  */
 

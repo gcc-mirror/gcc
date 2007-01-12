@@ -2511,7 +2511,6 @@ perfect_nestify (struct loop *loop,
   newloop = duplicate_loop (loop, olddest->loop_father);  
   newloop->header = headerbb;
   newloop->latch = latchbb;
-  set_single_exit (newloop, e);
   add_bb_to_loop (latchbb, newloop);
   add_bb_to_loop (bodybb, newloop);
   add_bb_to_loop (headerbb, newloop);

@@ -149,8 +149,22 @@ flow_loops_dump (FILE *file, void (*loop_dump_aux) (const struct loop *, FILE *,
 void
 flow_loop_free (struct loop *loop)
 {
+  struct loop_exit *exit, *next;
+
   if (loop->pred)
     free (loop->pred);
+
+  /* Break the list of the loop exit records.  They will be freed when the
+     corresponding edge is rescanned or removed, and this avoids
+     accessing the (already released) head of the list stored in the
+     loop structure.  */
+  for (exit = loop->exits.next; exit != &loop->exits; exit = next)
+    {
+      next = exit->next;
+      exit->next = exit;
+      exit->prev = exit;
+    }
+    
   free (loop);
 }
 
@@ -225,57 +239,6 @@ flow_loop_nodes_find (basic_block header, struct loop *loop)
       free (stack);
     }
   return num_nodes;
-}
-
-/* For each loop that has just a single exit, record the exit edge.  */
-
-void
-mark_single_exit_loops (void)
-{
-  basic_block bb;
-  edge e;
-  struct loop *loop;
-  loop_iterator li;
-
-  FOR_EACH_LOOP (li, loop, 0)
-    {
-      set_single_exit (loop, NULL);
-    }
-
-  FOR_EACH_BB (bb)
-    {
-      edge_iterator ei;
-      if (bb->loop_father == current_loops->tree_root)
-	continue;
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	{
-	  if (e->dest == EXIT_BLOCK_PTR)
-	    continue;
-
-	  if (flow_bb_inside_loop_p (bb->loop_father, e->dest))
-	    continue;
-
-	  for (loop = bb->loop_father;
-	       loop != e->dest->loop_father;
-	       loop = loop->outer)
-	    {
-	      /* If we have already seen an exit, mark this by the edge that
-		 surely does not occur as any exit.  */
-	      if (single_exit (loop))
-		set_single_exit (loop, single_succ_edge (ENTRY_BLOCK_PTR));
-	      else
-		set_single_exit (loop, e);
-	    }
-	}
-    }
-
-  FOR_EACH_LOOP (li, loop, 0)
-    {
-      if (single_exit (loop) == single_succ_edge (ENTRY_BLOCK_PTR))
-	set_single_exit (loop, NULL);
-    }
-
-  current_loops->state |= LOOPS_HAVE_MARKED_SINGLE_EXITS;
 }
 
 static void
@@ -486,6 +449,17 @@ canonicalize_loop_headers (void)
 #endif
 }
 
+/* Allocates and returns new loop structure.  */
+
+struct loop *
+alloc_loop (void)
+{
+  struct loop *loop = XCNEW (struct loop);
+
+  loop->exits.next = loop->exits.prev = &loop->exits;
+  return loop;
+}
+
 /* Find all the natural loops in the function and save in LOOPS structure and
    recalculate loop_depth information in basic block structures.
    Return the number of natural loops found.  */
@@ -571,7 +545,7 @@ flow_loops_find (struct loops *loops)
   loops->larray = VEC_alloc (loop_p, heap, num_loops + 1);
 
   /* Dummy loop containing whole function.  */
-  root = XCNEW (struct loop);
+  root = alloc_loop ();
   root->num_nodes = n_basic_blocks;
   root->latch = EXIT_BLOCK_PTR;
   root->header = ENTRY_BLOCK_PTR;
@@ -608,7 +582,7 @@ flow_loops_find (struct loops *loops)
 
 	  header = BASIC_BLOCK (rc_order[b]);
 
-	  loop = XCNEW (struct loop);
+	  loop = alloc_loop ();
 	  VEC_quick_push (loop_p, loops->larray, loop);
 
 	  loop->header = header;
@@ -638,6 +612,7 @@ flow_loops_find (struct loops *loops)
 
   sbitmap_free (headers);
 
+  loops->exits = NULL;
   loops->state = 0;
   return VEC_length (loop_p, loops->larray);
 }
@@ -799,6 +774,181 @@ get_loop_body_in_bfs_order (const struct loop *loop)
   return blocks;
 }
 
+/* Hash function for struct loop_exit.  */
+
+static hashval_t
+loop_exit_hash (const void *ex)
+{
+  struct loop_exit *exit = (struct loop_exit *) ex;
+
+  return htab_hash_pointer (exit->e);
+}
+
+/* Equality function for struct loop_exit.  Compares with edge.  */
+
+static int
+loop_exit_eq (const void *ex, const void *e)
+{
+  struct loop_exit *exit = (struct loop_exit *) ex;
+
+  return exit->e == e;
+}
+
+/* Frees the list of loop exit descriptions EX.  */
+
+static void
+loop_exit_free (void *ex)
+{
+  struct loop_exit *exit = (struct loop_exit *) ex, *next;
+
+  for (; exit; exit = next)
+    {
+      next = exit->next_e;
+	  
+      exit->next->prev = exit->prev;
+      exit->prev->next = exit->next;
+
+      free (exit);
+    }
+}
+
+/* Returns the list of records for E as an exit of a loop.  */
+
+static struct loop_exit *
+get_exit_descriptions (edge e)
+{
+  return htab_find_with_hash (current_loops->exits, e,
+			      htab_hash_pointer (e));
+}
+
+/* Updates the lists of loop exits in that E appears.
+   If REMOVED is true, E is being removed, and we
+   just remove it from the lists of exits.
+   If NEW_EDGE is true and E is not a loop exit, we
+   do not try to remove it from loop exit lists.  */
+
+void
+rescan_loop_exit (edge e, bool new_edge, bool removed)
+{
+  void **slot;
+  struct loop_exit *exits = NULL, *exit;
+  struct loop *aloop, *cloop;
+
+  if ((current_loops->state & LOOPS_HAVE_RECORDED_EXITS) == 0)
+    return;
+
+  if (!removed
+      && e->src->loop_father != NULL
+      && e->dest->loop_father != NULL
+      && !flow_bb_inside_loop_p (e->src->loop_father, e->dest))
+    {
+      cloop = find_common_loop (e->src->loop_father, e->dest->loop_father);
+      for (aloop = e->src->loop_father;
+	   aloop != cloop;
+	   aloop = aloop->outer)
+	{
+	  exit = XNEW (struct loop_exit);
+	  exit->e = e;
+
+	  exit->next = aloop->exits.next;
+	  exit->prev = &aloop->exits;
+	  exit->next->prev = exit;
+	  exit->prev->next = exit;
+
+	  exit->next_e = exits;
+	  exits = exit;
+	}
+    } 
+
+  if (!exits && new_edge)
+    return;
+
+  slot = htab_find_slot_with_hash (current_loops->exits, e,
+				   htab_hash_pointer (e),
+				   exits ? INSERT : NO_INSERT);
+  if (!slot)
+    return;
+
+  if (exits)
+    {
+      if (*slot)
+	loop_exit_free (*slot);
+      *slot = exits;
+    }
+  else
+    htab_clear_slot (current_loops->exits, slot);
+}
+
+/* For each loop, record list of exit edges, and start maintaining these
+   lists.  */
+
+void
+record_loop_exits (void)
+{
+  basic_block bb;
+  edge_iterator ei;
+  edge e;
+
+  if (current_loops->state & LOOPS_HAVE_RECORDED_EXITS)
+    return;
+  current_loops->state |= LOOPS_HAVE_RECORDED_EXITS;
+
+  gcc_assert (current_loops->exits == NULL);
+  current_loops->exits = htab_create (2 * number_of_loops (),
+				      loop_exit_hash,
+				      loop_exit_eq,
+				      loop_exit_free);
+
+  FOR_EACH_BB (bb)
+    {
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	{
+	  rescan_loop_exit (e, true, false);
+	}
+    }
+}
+
+/* Dumps information about the exit in *SLOT to FILE.
+   Callback for htab_traverse.  */
+
+static int
+dump_recorded_exit (void **slot, void *file)
+{
+  struct loop_exit *exit = *slot;
+  unsigned n = 0;
+  edge e = exit->e;
+
+  for (; exit != NULL; exit = exit->next_e)
+    n++;
+
+  fprintf (file, "Edge %d->%d exits %u loops\n",
+	   e->src->index, e->dest->index, n);
+
+  return 1;
+}
+
+/* Dumps the recorded exits of loops to FILE.  */
+
+extern void dump_recorded_exits (FILE *);
+void
+dump_recorded_exits (FILE *file)
+{
+  if (!current_loops->exits)
+    return;
+  htab_traverse (current_loops->exits, dump_recorded_exit, file);
+}
+
+/* Releases lists of loop exits.  */
+
+void
+release_recorded_exits (void)
+{
+  gcc_assert (current_loops->state & LOOPS_HAVE_RECORDED_EXITS);
+  htab_delete (current_loops->exits);
+  current_loops->exits = NULL;
+  current_loops->state &= ~LOOPS_HAVE_RECORDED_EXITS;
+}
+
 /* Returns the list of the exit edges of a LOOP.  */
 
 VEC (edge, heap) *
@@ -809,15 +959,28 @@ get_loop_exit_edges (const struct loop *loop)
   unsigned i;
   basic_block *body;
   edge_iterator ei;
+  struct loop_exit *exit;
 
   gcc_assert (loop->latch != EXIT_BLOCK_PTR);
 
-  body = get_loop_body (loop);
-  for (i = 0; i < loop->num_nodes; i++)
-    FOR_EACH_EDGE (e, ei, body[i]->succs)
-      if (!flow_bb_inside_loop_p (loop, e->dest))
-	VEC_safe_push (edge, heap, edges, e);
-  free (body);
+  /* If we maintain the lists of exits, use them.  Otherwise we must
+     scan the body of the loop.  */
+  if (current_loops->state & LOOPS_HAVE_RECORDED_EXITS)
+    {
+      for (exit = loop->exits.next; exit->e; exit = exit->next)
+	VEC_safe_push (edge, heap, edges, exit->e);
+    }
+  else
+    {
+      body = get_loop_body (loop);
+      for (i = 0; i < loop->num_nodes; i++)
+	FOR_EACH_EDGE (e, ei, body[i]->succs)
+	  {
+	    if (!flow_bb_inside_loop_p (loop, e->dest))
+	      VEC_safe_push (edge, heap, edges, e);
+	  }
+      free (body);
+    }
 
   return edges;
 }
@@ -846,29 +1009,51 @@ num_loop_branches (const struct loop *loop)
 void
 add_bb_to_loop (basic_block bb, struct loop *loop)
 {
-   int i;
+  int i;
+  edge_iterator ei;
+  edge e;
 
-   gcc_assert (bb->loop_father == NULL);
-   bb->loop_father = loop;
-   bb->loop_depth = loop->depth;
-   loop->num_nodes++;
-   for (i = 0; i < loop->depth; i++)
-     loop->pred[i]->num_nodes++;
+  gcc_assert (bb->loop_father == NULL);
+  bb->loop_father = loop;
+  bb->loop_depth = loop->depth;
+  loop->num_nodes++;
+  for (i = 0; i < loop->depth; i++)
+    loop->pred[i]->num_nodes++;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    {
+      rescan_loop_exit (e, true, false);
+    }
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      rescan_loop_exit (e, true, false);
+    }
 }
 
 /* Remove basic block BB from loops.  */
 void
 remove_bb_from_loops (basic_block bb)
 {
-   int i;
-   struct loop *loop = bb->loop_father;
+  int i;
+  struct loop *loop = bb->loop_father;
+  edge_iterator ei;
+  edge e;
 
-   gcc_assert (loop != NULL);
-   loop->num_nodes--;
-   for (i = 0; i < loop->depth; i++)
-     loop->pred[i]->num_nodes--;
-   bb->loop_father = NULL;
-   bb->loop_depth = 0;
+  gcc_assert (loop != NULL);
+  loop->num_nodes--;
+  for (i = 0; i < loop->depth; i++)
+    loop->pred[i]->num_nodes--;
+  bb->loop_father = NULL;
+  bb->loop_depth = 0;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    {
+      rescan_loop_exit (e, false, true);
+    }
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      rescan_loop_exit (e, false, true);
+    }
 }
 
 /* Finds nearest common ancestor in loop tree for given loops.  */
@@ -951,6 +1136,7 @@ verify_loop_structure (void)
   edge e;
   unsigned num = number_of_loops ();
   loop_iterator li;
+  struct loop_exit *exit, *mexit;
 
   /* Check sizes.  */
   sizes = XCNEWVEC (unsigned, num);
@@ -1088,9 +1274,49 @@ verify_loop_structure (void)
       free (irreds);
     }
 
-  /* Check the single_exit.  */
-  if (current_loops->state & LOOPS_HAVE_MARKED_SINGLE_EXITS)
+  /* Check the recorded loop exits.  */
+  FOR_EACH_LOOP (li, loop, 0)
     {
+      if (loop->exits.e != NULL)
+	{
+	  error ("corrupted head of the exits list of loop %d",
+		 loop->num);
+	  err = 1;
+	}
+      else
+	{
+	  /* Check that the list forms a cycle, and all elements except
+	     for the head are nonnull.  */
+	  for (mexit = &loop->exits, exit = mexit->next, i = 0;
+	       exit->e && exit != mexit;
+	       exit = exit->next)
+	    {
+	      if (i++ & 1)
+		mexit = mexit->next;
+	    }
+
+	  if (exit != &loop->exits)
+	    {
+	      error ("corrupted exits list of loop %d", loop->num);
+	      err = 1;
+	    }
+	}
+
+      if ((current_loops->state & LOOPS_HAVE_RECORDED_EXITS) == 0)
+	{
+	  if (loop->exits.next != &loop->exits)
+	    {
+	      error ("nonempty exits list of loop %d, but exits are not recorded",
+		     loop->num);
+	      err = 1;
+	    }
+	}
+    }
+
+  if (current_loops->state & LOOPS_HAVE_RECORDED_EXITS)
+    {
+      unsigned n_exits = 0, eloops;
+
       memset (sizes, 0, sizeof (unsigned) * num);
       FOR_EACH_BB (bb)
 	{
@@ -1099,50 +1325,53 @@ verify_loop_structure (void)
 	    continue;
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    {
-	      if (e->dest == EXIT_BLOCK_PTR)
-		continue;
-
 	      if (flow_bb_inside_loop_p (bb->loop_father, e->dest))
 		continue;
+
+	      n_exits++;
+	      exit = get_exit_descriptions (e);
+	      if (!exit)
+		{
+		  error ("Exit %d->%d not recorded", 
+			 e->src->index, e->dest->index);
+		  err = 1;
+		}
+	      eloops = 0;
+	      for (; exit; exit = exit->next_e)
+		eloops++;
 
 	      for (loop = bb->loop_father;
 		   loop != e->dest->loop_father;
 		   loop = loop->outer)
 		{
+		  eloops--;
 		  sizes[loop->num]++;
-		  if (single_exit (loop)
-		      && single_exit (loop) != e)
-		    {
-		      error ("wrong single exit %d->%d recorded for loop %d",
-			     single_exit (loop)->src->index,
-			     single_exit (loop)->dest->index,
-			     loop->num);
-		      error ("right exit is %d->%d",
-			     e->src->index, e->dest->index);
-		      err = 1;
-		    }
+		}
+
+	      if (eloops != 0)
+		{
+		  error ("Wrong list of exited loops for edge  %d->%d", 
+			 e->src->index, e->dest->index);
+		  err = 1;
 		}
 	    }
 	}
 
+      if (n_exits != htab_elements (current_loops->exits))
+	{
+	  error ("Too many loop exits recorded");
+	  err = 1;
+	}
+
       FOR_EACH_LOOP (li, loop, 0)
 	{
-	  i = loop->num;
-
-	  if (sizes[i] == 1
-	      && !single_exit (loop))
+	  eloops = 0;
+	  for (exit = loop->exits.next; exit->e; exit = exit->next)
+	    eloops++;
+	  if (eloops != sizes[loop->num])
 	    {
-	      error ("single exit not recorded for loop %d", loop->num);
-	      err = 1;
-	    }
-
-	  if (sizes[i] != 1
-	      && single_exit (loop))
-	    {
-	      error ("loop %d should not have single exit (%d -> %d)",
-		     loop->num,
-		     single_exit (loop)->src->index,
-		     single_exit (loop)->dest->index);
+	      error ("%d exits recorded for loop %d (having %d exits)",
+		     eloops, loop->num, sizes[loop->num]);
 	      err = 1;
 	    }
 	}
@@ -1184,18 +1413,19 @@ loop_exit_edge_p (const struct loop *loop, edge e)
 }
 
 /* Returns the single exit edge of LOOP, or NULL if LOOP has either no exit
-   or more than one exit.  */
+   or more than one exit.  If loops do not have the exits recorded, NULL
+   is returned always.  */
 
 edge
 single_exit (const struct loop *loop)
 {
-  return loop->single_exit_;
-}
+  struct loop_exit *exit = loop->exits.next;
 
-/* Records E as a single exit edge of LOOP.  */
+  if ((current_loops->state & LOOPS_HAVE_RECORDED_EXITS) == 0)
+    return NULL;
 
-void
-set_single_exit (struct loop *loop, edge e)
-{
-  loop->single_exit_ = e;
+  if (exit->e && exit->next == &loop->exits)
+    return exit->e;
+  else
+    return NULL;
 }

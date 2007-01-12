@@ -44,7 +44,7 @@ static void
 tree_loop_optimizer_init (void)
 {
   loop_optimizer_init (LOOPS_NORMAL
-		       | LOOPS_HAVE_MARKED_SINGLE_EXITS);
+		       | LOOPS_HAVE_RECORDED_EXITS);
   if (!current_loops)
     return;
 

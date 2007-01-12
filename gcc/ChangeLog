@@ -1,3 +1,48 @@
+2007-01-12  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* doc/loop.texi: Document recording of loop exits.
+	* cfgloopmanip.c (loopify, duplicate_loop): Use alloc_loop.
+	(update_single_exits_after_duplication,
+	update_single_exit_for_duplicated_loop,
+	update_single_exit_for_duplicated_loops): Removed.
+	(duplicate_loop_to_header_edge): Do not call
+	update_single_exits_after_duplication and
+	update_single_exit_for_duplicated_loops.
+	(loop_version): Do not update single_exit information.
+	(fix_loop_structure): Use record_loop_exits instead of
+	mark_single_exit_loops.
+	* tree-ssa-loop-manip.c (tree_transform_and_unroll_loop): Update
+	the lists of loop exits.
+	* cfghooks.c (redirect_edge_and_branch, redirect_edge_and_branch_force,
+	split_edge, merge_blocks): Update the lists of loop exits.
+	* modulo-sched.c (sms_schedule): Pass LOOPS_HAVE_RECORDED_EXITS to
+	loop_optimizer_init.
+	* loop-init.c (loop_optimizer_init): Call record_loop_exits instead
+	of mark_single_exit_loops.
+	(loop_optimizer_finalize): Call release_recorded_exits.
+	* tree-ssa-loop.c (tree_loop_optimizer_init): Pass
+	LOOPS_HAVE_RECORDED_EXITS to loop_optimizer_init.
+	* tree-vectorizer.c (slpeel_tree_duplicate_loop_to_edge_cfg): Do not
+	update single exit information.
+	* lambda-code.c (perfect_nestify): Ditto.
+	* cfgloop.c (flow_loop_free): Destroy the list of exits of the loop.
+	(mark_single_exit_loops): Removed.
+	(alloc_loop, loop_exit_hash, loop_exit_eq, loop_exit_free,
+	get_exit_descriptions, rescan_loop_exit, record_loop_exits,
+	dump_recorded_exit, dump_recorded_exits, release_recorded_exits): New
+	functions.
+	(get_loop_exit_edges, single_exit): Use recorded exit lists.
+	(add_bb_to_loop, remove_bb_from_loops): Update the lists of loop exits.
+	(verify_loop_structure): Verify consistency of the exit lists.
+	(flow_loops_find): Use alloc_loop.  Initialize exits hash.
+	(set_single_exit): Removed.
+	* cfgloop.h (struct loop_exit): New function.
+	(struct loop): single_exit_ field replaced by exits field.
+	(LOOPS_HAVE_MARKED_SINGLE_EXITS): Replaced by LOOPS_HAVE_RECORDED_EXITS.
+	(struct loops): Added exits hash.
+	(mark_single_exit_loops, set_single_exit): Declaration removed.
+	(release_recorded_exits, record_loop_exits, rescan_loop_exit): Declare.
+
 2007-01-12  Richard Sandiford  <richard@codesourcery.com>
 
 	* doc/invoke.texi: Avoid use of @headitem.
