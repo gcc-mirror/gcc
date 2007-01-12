@@ -2393,6 +2393,8 @@ information are.
 @item
 @uref{#m6812-elf,,m6812-elf}
 @item
+@uref{#m68k-x-x,,m68k-*-*}
+@item
 @uref{#m68k-hp-hpux,,m68k-hp-hpux}
 @item
 @uref{#mips-x-x,,mips-*-*}
@@ -3389,7 +3391,7 @@ applications.  There are no standard Unix configurations.
 @html
 <hr />
 @end html
-@heading @anchor{m68k-*-*}m68k-*-*
+@heading @anchor{m68k-x-x}m68k-*-*
 You can specify a default target using @option{--with-cpu=@var{target}}.
 This @var{target} can either be a @option{-mcpu} argument or one of the
 following values: @samp{m68000}, @samp{m68010}, @samp{m68020}, @samp{m68030},
