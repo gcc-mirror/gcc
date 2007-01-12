@@ -1,3 +1,8 @@
+2007-01-12  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* sysdep/sh/locks.h (read_barrier): New.
+	(write_barrier): Likewise.
+
 2007-01-12  Andrew Haley  <aph@redhat.com>
 
 	* include/i386-signal.h: Rewrite to use rt_sigaction.
