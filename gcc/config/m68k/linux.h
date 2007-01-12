@@ -23,6 +23,11 @@ Boston, MA 02110-1301, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (68k GNU/Linux with ELF)");
 
+/* Add %(asm_cpu_spec) to the svr4.h definition of ASM_SPEC.  */
+#undef ASM_SPEC
+#define ASM_SPEC \
+  "%(asm_cpu_spec) %{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*}"
+
 /* for 68k machines this only needs to be TRUE for the 68000 */
 
 #undef STRICT_ALIGNMENT
@@ -84,13 +89,6 @@ Boston, MA 02110-1301, USA.  */
 
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
-
-/* We override the ASM_SPEC from svr4.h because we must pass -m68040 down
-   to the assembler.  */
-#undef ASM_SPEC
-#define ASM_SPEC \
-  "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
-%{m68040} %{m68060:-m68040}"
 
 /* Provide a LINK_SPEC appropriate for GNU/Linux.  Here we provide support
    for the special GCC options -static and -shared, which allow us to

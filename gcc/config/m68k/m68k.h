@@ -39,6 +39,25 @@ Boston, MA 02110-1301, USA.  */
 %{!m68332:%{!m5200:%{!m5206e:%{!m528x:%{!m5307:%{!m5407:%{!mcfv4e:\
 -%(VALUE)}}}}}}}}}}}}}}}}}}}" },
 
+/* Pass flags to gas indicating which type of processor we have.  This
+   can be simplified when we can rely on the assembler supporting .cpu
+   and .arch directives.  */
+
+#define ASM_CPU_SPEC "\
+%{m68851}%{mno-68851} %{m68881}%{mno-68881} %{msoft-float:-mno-float} \
+%{m68000}%{m68302}%{mc68000}%{m68010}%{m68020}%{mc68020}%{m68030}\
+%{m68040}%{m68020-40:-m68040}%{m68020-60:-m68040}\
+%{m68060}%{mcpu32}%{m68332}%{m5200}%{m5206e}%{m528x}%{m5307}%{m5407}%{mcfv4e}\
+"
+
+#define ASM_SPEC "%(asm_cpu_spec)"
+
+#define EXTRA_SPECS					\
+  { "asm_cpu_spec", ASM_CPU_SPEC },			\
+  SUBTARGET_EXTRA_SPECS
+
+#define SUBTARGET_EXTRA_SPECS
+
 /* Note that some other tm.h files include this one and then override
    many of the definitions that relate to assembler syntax.  */
 
