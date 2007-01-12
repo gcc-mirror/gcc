@@ -47,6 +47,10 @@ m68000
 Target RejectNegative
 Generate code for a 68000
 
+m68010
+Target RejectNegative Mask(68010)
+Generate code for a 68010
+
 m68020
 Target RejectNegative Mask(68020)
 Generate code for a 68020

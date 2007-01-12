@@ -10282,6 +10282,11 @@ when the compiler is configured for 68000-based systems.
 Use this option for microcontrollers with a 68000 or EC000 core,
 including the 68008, 68302, 68306, 68307, 68322, 68328 and 68356.
 
+@item -m68010
+@opindex m68010
+Generate output for a 68010.  This is the default
+when the compiler is configured for 68010-based systems.
+
 @item -m68020
 @itemx -mc68020
 @opindex m68020

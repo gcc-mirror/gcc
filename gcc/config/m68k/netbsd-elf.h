@@ -59,11 +59,7 @@ Boston, MA 02110-1301, USA.  */
 
 
 #define CPP_CPU_SPEC \
-  "%{m68010:-D__mc68010__} \
-   %{m68020:-D__mc68020__} \
-   %{m68030:-D__mc68030__} \
-   %{m68040:-D__mc68040__} \
-   %(cpp_cpu_default_spec)"
+  "%(cpp_cpu_default_spec)"
 
 
 #undef TARGET_VERSION

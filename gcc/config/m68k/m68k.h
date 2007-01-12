@@ -64,6 +64,8 @@ Boston, MA 02110-1301, USA.  */
 	builtin_define_std ("mc68030");					\
       else if (TARGET_68020)						\
 	builtin_define_std ("mc68020");					\
+      else if (TUNE_68010)						\
+	builtin_define_std ("mc68010");					\
       if (TARGET_68881)							\
 	builtin_define ("__HAVE_68881__");				\
       if (TUNE_CPU32)							\
@@ -129,6 +131,7 @@ Boston, MA 02110-1301, USA.  */
 #define TARGET_ISAB		TARGET_CFV4
 
 #define TUNE_68000_10	(!TARGET_68020 && !TARGET_COLDFIRE)
+#define TUNE_68010	TARGET_68010
 #define TUNE_68030	TARGET_68030
 #define TUNE_68040	TARGET_68040
 #define TUNE_68060	TARGET_68060

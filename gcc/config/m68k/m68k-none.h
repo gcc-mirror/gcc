@@ -25,14 +25,14 @@ Boston, MA 02110-1301, USA.  */
 
 /* These are values set by the configure script in TARGET_CPU_DEFAULT.
    They are (sequential integer + (desired value for TARGET_DEFAULT) << 4).  */
-#define M68K_CPU_m68k	(0 + ((MASK_68020|MASK_68881|MASK_BITFIELD)<<4))
+#define M68K_CPU_m68k	(0 + ((MASK_68020|MASK_68010|MASK_68881|MASK_BITFIELD)<<4))
 #define M68K_CPU_m68000 (1 + (0 << 4))
-#define M68K_CPU_m68010 (1 + (0 << 4)) /* make same as m68000 */
-#define M68K_CPU_m68020 (2 + ((MASK_68020|MASK_68881|MASK_BITFIELD) << 4))
-#define M68K_CPU_m68030 (3 + ((MASK_68030|MASK_68020|MASK_68881|MASK_BITFIELD) << 4))
-#define M68K_CPU_m68040 (4 + ((MASK_68040_ONLY|MASK_68020|MASK_68881|MASK_BITFIELD) << 4))
+#define M68K_CPU_m68010 (1 + (MASK_68010 << 4))
+#define M68K_CPU_m68020 (2 + ((MASK_68020|MASK_68010|MASK_68881|MASK_BITFIELD) << 4))
+#define M68K_CPU_m68030 (3 + ((MASK_68030|MASK_68020|MASK_68010|MASK_68881|MASK_BITFIELD) << 4))
+#define M68K_CPU_m68040 (4 + ((MASK_68040_ONLY|MASK_68020|MASK_68010|MASK_68881|MASK_BITFIELD) << 4))
 #define M68K_CPU_m68302 (5 + (0 << 4))
-#define M68K_CPU_m68332 (6 + (MASK_68020 << 4))
+#define M68K_CPU_m68332 (6 + ((MASK_68020|MASK_68010) << 4))
 
 /* This is tested for below, so if target wants to override this, it
    just set this first in cover file.  */
