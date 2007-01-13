@@ -362,7 +362,8 @@ finish_separator (st_parameter_dt *dtp)
 
     case '/':
       dtp->u.p.input_complete = 1;
-      if (!dtp->u.p.namelist_mode) next_record (dtp, 0);
+      if (!dtp->u.p.namelist_mode)
+	return;
       break;
 
     case '\n':
@@ -1492,15 +1493,16 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p, int kind,
 
       c = eat_spaces (dtp);
       if (is_separator (c))
-	{			/* Found a null value.  */
+	{
+	  /* Found a null value.  */
 	  eat_separator (dtp);
 	  dtp->u.p.repeat_count = 0;
 
-	  /* eat_separator sets this flag if the separator was a comma */
+	  /* eat_separator sets this flag if the separator was a comma.  */
 	  if (dtp->u.p.comma_flag)
 	    goto cleanup;
 
-	  /* eat_separator sets this flag if the separator was a \n or \r */
+	  /* eat_separator sets this flag if the separator was a \n or \r.  */
 	  if (dtp->u.p.at_eol)
 	    finish_separator (dtp);
 	  else
@@ -1525,7 +1527,7 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p, int kind,
       else
         {
 	  eat_spaces (dtp);
-          /* trailing spaces prior to end of line */
+          /* Trailing spaces prior to end of line.  */
 	  if (dtp->u.p.at_eol)
 	    finish_separator (dtp);
         }
@@ -2041,7 +2043,7 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
   index_type dlen;
   index_type m;
   index_type obj_name_len;
-  void * pdata ;
+  void * pdata;
 
   /* This object not touched in name parsing.  */
 
