@@ -1,3 +1,12 @@
+2007-01-13  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/14991
+	* docs/html/17_intro/porting-howto.html ([3]): Mention stdio_filebuf.
+	* docs/html/17_intro/porting-howto.xml: Remove.
+
+	* docs/html/17_intro/porting-howto.html: Remove spurious end tags
+	pointed out by validator.w3.org.
+
 2007-01-12  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/30416 (continued)

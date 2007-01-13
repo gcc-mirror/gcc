@@ -113,7 +113,7 @@
 	with this</a>
 </dt>
 </dl></dd>
-<dt>2. <a href="#sec-nocreate">there is no ios::nocreate/ios::noreplace
+<dt>2. <a href="#sec-nocreate">There is no ios::nocreate/ios::noreplace
       in ISO 14882</a>
 </dt>
 <dt>3. <a href="#sec-stream::attach">stream::attach(int
@@ -182,7 +182,6 @@
 	    <b>std::cout</b>) =&gt; can always be used
 	  </p></li>
 </ul></div>
-    </p>
 <p>
       Because there are many compilers which still use an implementation
       that does not have the standard C++-library in namespace
@@ -235,7 +234,6 @@
 	libstdc++ in <b>std::</b> or not).  (ideas from
 	<tt>&lt;<a href="mailto:llewelly@dbritsch.dsl.xmission.com">llewelly@dbritsch.dsl.xmission.com</a>&gt;</tt>, Karl Nelson
 	<tt>&lt;<a href="mailto:kenelson@ece.ucdavis.edu">kenelson@ece.ucdavis.edu</a>&gt;</tt>)
-      </p>
 </div>
 <div class="section">
 <div class="titlepage"><div><h3 class="title">
@@ -248,7 +246,6 @@
 	  namespace std { }
 	  using namespace std;
 	</pre>
-      </p>
 </div>
 <div class="section">
 <div class="titlepage"><div><h3 class="title">
@@ -270,7 +267,7 @@
 	      </pre>
 	      (thanks to Juergen Heinzl who posted this solution on
 	      gnu.gcc.help)
-	    </p></li>
+	    </li>
 <li><p>
 	      Define a macro NS_STD, which is defined to
 	      either &quot;&quot; or &quot;std&quot;
@@ -280,8 +277,6 @@
 	      systems that do not put string in std::.  (This is untested)
 	    </p></li>
 </ul></div>
-	  
-      </p>
 </div>
 <div class="section">
 <div class="titlepage"><div><h3 class="title">
@@ -356,7 +351,7 @@
 </div>
 <div class="section">
 <div class="titlepage"><div><h2 class="title" style="clear: both">
-<a name="sec-nocreate"></a>there is no ios::nocreate/ios::noreplace
+<a name="sec-nocreate"></a>There is no ios::nocreate/ios::noreplace
       in ISO 14882</h2></div></div>
 <p>
       I have seen <b>ios::nocreate</b> being used for
@@ -383,22 +378,8 @@
       It was considered and rejected.  Not all environments use file
       descriptors.  Of those that do, not all of them use integers to represent
       them.
-    </p>
-<p>
-      When using libstdc++-v3, you can use
-      <div class="funcsynopsis">
-<pre class="funcsynopsisinfo">
-	  #include &lt;fstream&gt;
-	</pre>
-<p><code><code class="funcdef">
-	    <b class="fsfunc">basic_filebuf&lt;...&gt;::basic_filebuf&lt;...&gt;
-	    </b>
-	  </code>(<var class="pdparam">file</var>, <var class="pdparam">mode</var>, <var class="pdparam">size</var>);<br>__c_file_type* <var class="pdparam">file</var>;<br>ios_base::open_mode <var class="pdparam">mode</var>;<br>int <var class="pdparam">size</var>;</code></p>
-</div>
-      but the the signature of this constructor has changed often, and
-      it might change again. For the current state of this, check
-      <a href="../ext/howto.html" target="_top">the howto for extensions</a>.
-    </p>
+    </p>  
+
 <p>
       For a portable solution (among systems which use
       filedescriptors), you need to implement a subclass of
@@ -408,6 +389,14 @@
       stream-constructor.  For an example of this, refer to
       <a href="http://www.josuttis.com/cppcode/fdstream.html" target="_top">fdstream example</a> 
       by Nicolai Josuttis.
+    </p>
+
+<p>
+      An extension is also available:
+      <code>&lt;ext/stdio_filebuf.h&gt;</code> contains a derived class called
+      <a href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/class____gnu__cxx_1_1stdio__filebuf.html"><code>__gnu_cxx::stdio_filebuf</code></a>.
+      This class can be constructed from a C <code>FILE*</code> or a file
+      descriptor, and provides the <code>fd()</code> function.
     </p>
 </div>
 <div class="section">
@@ -491,7 +480,6 @@
 	    more =&gt; use <b>if (iterator != iterator_type())</b>
 	    ?</p></li>
 </ul></div>
-    </p>
 </div>
 <div class="section">
 <div class="titlepage"><div><h2 class="title" style="clear: both">
@@ -518,7 +506,6 @@
 	std:: (__ctype_b[(int) ( ( 'X' ) )] &amp; (unsigned short int)
 	_ISspace )  ;
       </pre>
-    </p>
 <p>
       One solution I can think of is to test for -v3 using
       autoconf-macros, and define macros for each of the C-functions
@@ -537,7 +524,6 @@
 
 	[ now include &lt;ctype.h&gt; ]
       </pre>
-    </p>
 <p>
       Another problem arises if you put a <b>using namespace
 	std;</b> declaration at the top, and include <tt>&lt;ctype.h&gt;</tt>. This will result in
@@ -598,7 +584,6 @@
       </pre>
       If you are using other (non-GNU) compilers it might be a good idea
       to check for <b>string::at</b> separately.
-    </p>
 </div>
 <div class="section">
 <div class="titlepage"><div><h2 class="title" style="clear: both">
@@ -611,7 +596,6 @@
 	#define CPP_EOF EOF
 	#endif
       </pre>
-    </p>
 </div>
 <div class="section">
 <div class="titlepage"><div><h2 class="title" style="clear: both">
@@ -637,7 +621,6 @@
       implemented in gcc 2.95.x's libstdc++, so you should use
       <b>erase</b> (which is probably faster than
       <b>operator=(charT*)</b>).
-    </p>
 </div>
 <div class="section">
 <div class="titlepage"><div><h2 class="title" style="clear: both">
@@ -678,7 +661,6 @@
 	    (clear(); str(input);)
 	  </p></li>
 </ul></div>
-    </p>
 <p>
       You can then use output-stringstreams like this:
       <pre class="programlisting">
@@ -701,7 +683,6 @@
 	oss.freeze(false);
 	#endif
       </pre>
-    </p>
 <p>
       Input-stringstreams can be used similarly:
       <pre class="programlisting">
@@ -743,7 +724,6 @@
 	}
       </pre>
       Another example of using stringstreams is in <a href="../21_strings/howto.html" target="_top">this howto</a>.
-    </p>
 <p>
       I have read the Josuttis book on Standard C++, so some information
       comes from there. Additionally, there is information in
