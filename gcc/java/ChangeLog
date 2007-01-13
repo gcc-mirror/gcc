@@ -1,3 +1,21 @@
+2007-01-12  Tom Tromey  <tromey@redhat.com>
+
+	* jcf-dump.c (main): Updated call to find_class.
+	* lang.c (java_init): Removed dead code.
+	* jcf-parse.c (read_class): Don't use java_source field.  Removed
+	dead code.
+	(parse_zip_file_entries): Don't use java_source field.
+	(process_zip_dir): Likewise.
+	(jcf_parse): Removed dead code.
+	(java_parse_file): Likewise.
+	(read_class): Updated call to find_class.
+	* jcf-io.c (find_class): Don't use java_source field.  Removed
+	'source_ok' argument, .java logic.
+	* jcf.h (JCF) <java_source>: Removed field.
+	(JCF_ZERO): Updated.	(find_class): Updated.
+	* decl.c: Removed dead code.
+	* class.c: Removed dead code.
+
 2007-01-11  Tom Tromey  <tromey@redhat.com>
 
 	* typeck.c (convert): Don't use flag_emit_class_files.

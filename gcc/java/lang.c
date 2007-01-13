@@ -353,11 +353,6 @@ FILE *finput;
 static bool
 java_init (void)
 {
-#if 0
-  extern int flag_minimal_debug;
-  flag_minimal_debug = 0;
-#endif
-
   /* FIXME: Indirect dispatch isn't yet compatible with static class
      init optimization.  */
   if (flag_indirect_dispatch)

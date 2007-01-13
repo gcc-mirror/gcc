@@ -1,6 +1,6 @@
 /* Process declarations and variables for the GNU compiler for the
    Java(TM) language.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2007,
    2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -427,18 +427,6 @@ static const struct binding_level clear_binding_level
     0, /* binding_depth */
   };
 
-#if 0
-/* A list (chain of TREE_LIST nodes) of all LABEL_DECLs in the function
-   that have names.  Here so we can clear out their names' definitions
-   at the end of the function.  */
-
-static tree named_labels;
-
-/* A list of LABEL_DECLs from outer contexts that are currently shadowed.  */
-
-static tree shadowed_labels;
-#endif
-
 tree java_global_trees[JTI_MAX];
   
 /* Build (and pushdecl) a "promoted type" for all standard
@@ -625,14 +613,6 @@ java_init_decl_processing (void)
 
   null_pointer_node = build_int_cst (ptr_type_node, 0);
 
-#if 0
-  /* Make a type to be the domain of a few array types
-     whose domains don't really matter.
-     200 is small enough that it always fits in size_t
-     and large enough that it can hold most function names for the
-     initializations of __FUNCTION__ and __PRETTY_FUNCTION__.  */
-  short_array_type_node = build_prim_array_type (short_type_node, 200);
-#endif
   char_type_node = make_node (INTEGER_TYPE);
   TYPE_STRING_FLAG (char_type_node) = 1;
   TYPE_PRECISION (char_type_node) = 16;
@@ -859,9 +839,6 @@ java_init_decl_processing (void)
   field_info_union_node = make_node (UNION_TYPE);
   PUSH_FIELD (field_info_union_node, field, "boffset", int_type_node);
   PUSH_FIELD (field_info_union_node, field, "addr", ptr_type_node);
-#if 0
-  PUSH_FIELD (field_info_union_node, field, "idx", unsigned_short_type_node);
-#endif
   layout_type (field_info_union_node);
 
   PUSH_FIELD (field_type_node, field, "name", utf8const_ptr_type);
@@ -1106,9 +1083,6 @@ java_init_decl_processing (void)
 
   initialize_builtins ();
   soft_fmod_node = built_in_decls[BUILT_IN_FMOD];
-#if 0
-  soft_fmodf_node = built_in_decls[BUILT_IN_FMODF];
-#endif
 
   parse_version ();
 }
@@ -1240,55 +1214,6 @@ pushdecl (tree x)
 	  tree oldlocal = IDENTIFIER_LOCAL_VALUE (name);
 	  IDENTIFIER_LOCAL_VALUE (name) = x;
 
-#if 0
-	  /* Warn if shadowing an argument at the top level of the body.  */
-	  if (oldlocal != 0 && !DECL_EXTERNAL (x)
-	      /* This warning doesn't apply to the parms of a nested fcn.  */
-	      && ! current_binding_level->parm_flag
-	      /* Check that this is one level down from the parms.  */
-	      && current_binding_level->level_chain->parm_flag
-	      /* Check that the decl being shadowed
-		 comes from the parm level, one level up.  */
-	      && chain_member (oldlocal, current_binding_level->level_chain->names))
-	    {
-	      if (TREE_CODE (oldlocal) == PARM_DECL)
-		pedwarn ("declaration of %qs shadows a parameter",
-			 IDENTIFIER_POINTER (name));
-	      else
-		pedwarn ("declaration of %qs shadows a symbol from the parameter list",
-			 IDENTIFIER_POINTER (name));
-	    }
-
-	  /* Maybe warn if shadowing something else.  */
-	  else if (warn_shadow && !DECL_EXTERNAL (x)
-		   /* No shadow warnings for internally generated vars.  */
-		   && DECL_SOURCE_LINE (x) != 0
-		   /* No shadow warnings for vars made for inlining.  */
-		   && ! DECL_FROM_INLINE (x))
-	    {
-	      const char *warnstring = 0;
-
-	      if (TREE_CODE (x) == PARM_DECL
-		  && current_binding_level->level_chain->parm_flag)
-		/* Don't warn about the parm names in function declarator
-		   within a function declarator.
-		   It would be nice to avoid warning in any function
-		   declarator in a declaration, as opposed to a definition,
-		   but there is no way to tell it's not a definition.  */
-		;
-	      else if (oldlocal != 0 && TREE_CODE (oldlocal) == PARM_DECL)
-		warnstring = "declaration of %qs shadows a parameter";
-	      else if (oldlocal != 0)
-		warnstring = "declaration of %qs shadows previous local";
-	      else if (IDENTIFIER_GLOBAL_VALUE (name) != 0
-		       && IDENTIFIER_GLOBAL_VALUE (name) != error_mark_node)
-		warnstring = "declaration of %qs shadows global declaration";
-
-	      if (warnstring)
-		warning (0, warnstring, IDENTIFIER_POINTER (name));
-	    }
-#endif
-
 	  /* If storing a local value, there may already be one (inherited).
 	     If so, record it for restoration when this binding level ends.  */
 	  if (oldlocal != 0)
@@ -1371,14 +1296,6 @@ pushlevel (int unused ATTRIBUTE_UNUSED)
 {
   struct binding_level *newlevel = NULL_BINDING_LEVEL;
 
-#if 0
-  /* If this is the top level of a function,
-     just make sure that NAMED_LABELS is 0.  */
-
-  if (current_binding_level == global_binding_level)
-    named_labels = 0;
-#endif
-
   /* Reuse or create a struct for this binding level.  */
 
   if (free_binding_level)
@@ -1444,14 +1361,6 @@ poplevel (int keep, int reverse, int functionbody)
   else
     fprintf (stderr, "pop  %s level %p pc %d\n",
 	     (is_class_level) ? "class" : "block", current_binding_level, current_pc);
-#if 0
-  if (is_class_level != (current_binding_level == class_binding_level))
-    {
-      indent ();
-      fprintf (stderr, "XXX is_class_level != (current_binding_level == class_binding_level)\n");
-    }
-  is_class_level = 0;
-#endif
 #endif /* defined(DEBUG_JAVA_BINDING_LEVELS) */
 
   /* Get the decls in the order they were written.
@@ -1571,32 +1480,6 @@ poplevel (int keep, int reverse, int functionbody)
 	 found in the FUNCTION_DECL instead.  */
 
       BLOCK_VARS (block) = 0;
-
-      /* Clear out the definitions of all label names,
-	 since their scopes end here,
-	 and add them to BLOCK_VARS.  */
-
-#if 0
-      for (link = named_labels; link; link = TREE_CHAIN (link))
-	{
-	  tree label = TREE_VALUE (link);
-
-	  if (DECL_INITIAL (label) == 0)
-	    {
-	      error ("label %q+D used but not defined", label);
-	      /* Avoid crashing later.  */
-	      define_label (input_location, DECL_NAME (label));
-	    }
-	  else if (warn_unused[UNUSED_LABEL] && !TREE_USED (label))
-	    warning (0, "label %q+D defined but not used", label);
-	  IDENTIFIER_LABEL_VALUE (DECL_NAME (label)) = 0;
-
-	  /* Put the labels into the "variables" of the
-	     top-level block, so debugger can see them.  */
-	  TREE_CHAIN (label) = BLOCK_VARS (block);
-	  BLOCK_VARS (block) = label;
-	}
-#endif
     }
 
   /* Pop the current level, and free the structure for reuse.  */
@@ -1811,14 +1694,6 @@ give_name_to_locals (JCF *jcf)
 	  MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (decl);
 	  DECL_LOCAL_SLOT_NUMBER (decl) = slot;
 	  DECL_LOCAL_START_PC (decl) = start_pc;
-#if 0
-	  /* FIXME: The range used internally for exceptions and local
-	     variable ranges, is a half-open interval: 
-	     start_pc <= pc < end_pc.  However, the range used in the
-	     Java VM spec is inclusive at both ends: 
-	     start_pc <= pc <= end_pc. */
-	  end_pc++;
-#endif
 	  DECL_LOCAL_END_PC (decl) = end_pc;
 
 	  /* Now insert the new decl in the proper place in

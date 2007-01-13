@@ -2,7 +2,7 @@
    Functionally similar to Sun's javap.
 
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006 Free Software Foundation, Inc.
+   2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1290,7 +1290,7 @@ main (int argc, char** argv)
       for (argi = optind; argi < argc; argi++)
 	{
 	  char *arg = argv[argi];
-	  const char *class_filename = find_class (arg, strlen (arg), jcf, 0);
+	  const char *class_filename = find_class (arg, strlen (arg), jcf);
 	  if (class_filename == NULL)
 	    class_filename = find_classfile (arg, jcf, NULL);
 	  if (class_filename == NULL)
