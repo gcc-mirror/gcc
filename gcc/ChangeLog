@@ -1,5 +1,11 @@
 2007-01-12  Roger Sayle  <roger@eyesopen.com>
 
+	* c-typeck.c (null_pointer_constant_p): Replace use of
+	TREE_CONSTANT_OVERFLOW with TREE_OVERFLOW.
+	(build_c_cast): Likewise.
+
+2007-01-12  Roger Sayle  <roger@eyesopen.com>
+
 	* tree.h (force_fit_type_double): Remove unused final argument.
 	* c-common.c (constant_expression_warning): Replace use of
 	TREE_CONSTANT_OVERFLOW with TREE_OVERFLOW.
