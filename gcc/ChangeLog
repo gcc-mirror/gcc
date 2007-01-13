@@ -1,3 +1,8 @@
+2007-01-13  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* ipa-reference.c (analyze_function): Consider also addresses taken
+	in phi nodes.
+
 2007-01-12  Roger Sayle  <roger@eyesopen.com>
 
 	* c-typeck.c (null_pointer_constant_p): Replace use of

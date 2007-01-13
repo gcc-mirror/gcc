@@ -807,6 +807,21 @@ analyze_function (struct cgraph_node *fn)
     FOR_EACH_BB_FN (this_block, this_cfun)
       {
 	block_stmt_iterator bsi;
+	tree phi, op;
+	use_operand_p use;
+	ssa_op_iter iter;
+
+	/* Find the addresses taken in phi node arguments.  */
+	for (phi = phi_nodes (this_block); phi; phi = PHI_CHAIN (phi))
+	  {
+	    FOR_EACH_PHI_ARG (use, phi, iter, SSA_OP_USE)
+	      {
+		op = USE_FROM_PTR (use);
+		if (TREE_CODE (op) == ADDR_EXPR)
+		  check_rhs_var (l, op);
+	      }
+	  }
+
 	for (bsi = bsi_start (this_block); !bsi_end_p (bsi); bsi_next (&bsi))
 	  walk_tree (bsi_stmt_ptr (bsi), scan_for_static_refs, 
 		     fn, visited_nodes);
