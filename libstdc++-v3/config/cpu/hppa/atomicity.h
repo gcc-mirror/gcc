@@ -66,8 +66,7 @@ namespace __gnu_cxx
     
     result = *__mem;
     *__mem = result + __val;
-    /* Reset lock with PA 2.0 "ordered" store.  */
-    __asm__ __volatile__ ("stw,ma %1,0(%0)"
+    __asm__ __volatile__ ("stw %1,0(%0)"
 			  : : "r" (&lock), "r" (tmp) : "memory");
     return result;
   }
@@ -90,8 +89,7 @@ namespace __gnu_cxx
 			  : "memory");
     
     *__mem += __val;
-    /* Reset lock with PA 2.0 "ordered" store.  */
-    __asm__ __volatile__ ("stw,ma %1,0(%0)"
+    __asm__ __volatile__ ("stw %1,0(%0)"
 			  : : "r" (&lock), "r" (tmp) : "memory");
   }
 } // namespace __gnu_cxx
