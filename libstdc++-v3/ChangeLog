@@ -1,3 +1,9 @@
+2007-01-13  John David Anglin  <dave.anglin@nrc-cnrc.gc>
+
+	* config/cpu/hppa/atomicity.h (__exchange_and_add): Don't use ordered
+	store.
+	(__atomic_add): Likewise.
+
 2006-10-06  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/29368
