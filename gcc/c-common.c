@@ -918,7 +918,7 @@ constant_expression_warning (tree value)
   if ((TREE_CODE (value) == INTEGER_CST || TREE_CODE (value) == REAL_CST
        || TREE_CODE (value) == VECTOR_CST
        || TREE_CODE (value) == COMPLEX_CST)
-      && TREE_CONSTANT_OVERFLOW (value)
+      && TREE_OVERFLOW (value)
       && warn_overflow
       && pedantic)
     pedwarn ("overflow in constant expression");
@@ -1257,11 +1257,8 @@ convert_and_check (tree type, tree expr)
       /* Do not diagnose overflow in a constant expression merely
          because a conversion overflowed.  */
       if (TREE_OVERFLOW (result))
-        {
-          TREE_CONSTANT_OVERFLOW (result) = TREE_CONSTANT_OVERFLOW (expr);
-          TREE_OVERFLOW (result) = TREE_OVERFLOW (expr);
-        }
-      
+        TREE_OVERFLOW (result) = TREE_OVERFLOW (expr);
+
       if (TYPE_UNSIGNED (type))
         {
           /* This detects cases like converting -129 or 256 to
@@ -2323,8 +2320,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 	  primop1 = force_fit_type_double (*restype_ptr,
 					   TREE_INT_CST_LOW (primop1),
 					   TREE_INT_CST_HIGH (primop1), 0,
-					   TREE_OVERFLOW (primop1),
-					   TREE_CONSTANT_OVERFLOW (primop1));
+					   TREE_OVERFLOW (primop1));
 	}
       if (type != *restype_ptr)
 	{
@@ -2685,10 +2681,8 @@ c_common_truthvalue_conversion (tree expr)
       return expr;
 
     case INTEGER_CST:
-      /* Avoid integer_zerop to ignore TREE_CONSTANT_OVERFLOW.  */
-      return (TREE_INT_CST_LOW (expr) != 0 || TREE_INT_CST_HIGH (expr) != 0)
-	     ? truthvalue_true_node
-	     : truthvalue_false_node;
+      return integer_zerop (expr) ? truthvalue_false_node
+				  : truthvalue_true_node;
 
     case REAL_CST:
       return real_compare (NE_EXPR, &TREE_REAL_CST (expr), &dconst0)

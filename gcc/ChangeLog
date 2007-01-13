@@ -1,3 +1,21 @@
+2007-01-12  Roger Sayle  <roger@eyesopen.com>
+
+	* tree.h (force_fit_type_double): Remove unused final argument.
+	* c-common.c (constant_expression_warning): Replace use of
+	TREE_CONSTANT_OVERFLOW with TREE_OVERFLOW.
+	(convert_and_check): Likewise.
+	(shorten_compare): Update call to force_fit_type_double.
+	(c_common_truthvalue_conversion) <INTEGER_CST>: Use integer_zerop.
+	* convert.c (convert_to_pointer): Update call to
+	force_fit_type_double.
+	* fold-const.c (force_fit_type_double): Remove overflowed_const
+	argument.
+	(int_const_binop, fold_convert_const_int_from_int,
+	fold_convert_const_int_from_real, fold_div_compare,
+	fold_sign_changed_comparison, fold_unary, fold_negate_const,
+	fold_abs_const, fold_not_const): Remove the final argument from
+	calls to force_fit_type_double.
+
 2007-01-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* configure.ac: Set insn to "nop" for spu-*-* also.

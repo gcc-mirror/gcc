@@ -1,6 +1,6 @@
 /* Front-end tree definitions for GNU compiler.
    Copyright (C) 1989, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4315,7 +4315,7 @@ extern tree fold_abs_const (tree, tree);
 extern tree fold_indirect_ref_1 (tree, tree);
 
 extern tree force_fit_type_double (tree, unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-				   int, bool, bool);
+				   int, bool);
 
 extern int fit_double_type (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 			    unsigned HOST_WIDE_INT *, HOST_WIDE_INT *, tree);
