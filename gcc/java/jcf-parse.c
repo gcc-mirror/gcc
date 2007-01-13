@@ -1295,7 +1295,7 @@ read_class (tree name)
       
       path_name = find_class (IDENTIFIER_POINTER (name),
 			      IDENTIFIER_LENGTH (name),
-			      &this_jcf, 1);
+			      &this_jcf);
       if (path_name == 0)
 	return 0;
       else
@@ -1304,72 +1304,21 @@ read_class (tree name)
 
   current_jcf = jcf;
 
-  if (current_jcf->java_source)
+  if (class == NULL_TREE || ! CLASS_PARSED_P (class))
     {
-      gcc_unreachable ();
-#if 0
-      const char *filename = current_jcf->filename;
-      char *real_path;
-      tree given_file, real_file;
-      FILE *finput;
-      int generate;
-
-      java_parser_context_save_global ();
-      java_push_parser_context ();
-
-      given_file = get_identifier (filename);
-      filename = IDENTIFIER_POINTER (given_file);
-      real_path = lrealpath (filename);
-      real_file = get_identifier (real_path);
-      free (real_path);
-
-      generate = IS_A_COMMAND_LINE_FILENAME_P (given_file);
-      output_class = current_class = NULL_TREE;
-      current_function_decl = NULL_TREE;
-
-      if (! HAS_BEEN_ALREADY_PARSED_P (real_file))
-	{
-	  if (! (finput = fopen (filename, "r")))
-	    fatal_error ("can't reopen %s: %m", filename);
-
-	  parse_source_file_1 (real_file, filename, finput);
-	  parse_source_file_2 ();
-	  parse_source_file_3 ();
-
-	  if (fclose (finput))
-	    fatal_error ("can't close %s: %m", input_filename);
-#ifdef USE_MAPPED_LOCATION
-	  linemap_add (&line_table, LC_LEAVE, false, NULL, 0);
-#endif
-	}
-      JCF_FINISH (current_jcf);
-      java_pop_parser_context (generate);
-      java_parser_context_restore_global ();
-#endif
+      output_class = current_class = class;
+      if (JCF_SEEN_IN_ZIP (current_jcf))
+	read_zip_member(current_jcf,
+			current_jcf->zipd, current_jcf->zipd->zipf);
+      jcf_parse (current_jcf);
+      /* Parsing might change the class, in which case we have to
+	 put it back where we found it.  */
+      if (current_class != class && icv != NULL_TREE)
+	TREE_TYPE (icv) = current_class;
+      class = current_class;
     }
-  else
-    {
-      if (class == NULL_TREE || ! CLASS_PARSED_P (class))
-	{
-/* 	  java_parser_context_save_global (); */
-/* 	  java_push_parser_context (); */
-	  output_class = current_class = class;
-/* 	  ctxp->save_location = input_location; */
-	  if (JCF_SEEN_IN_ZIP (current_jcf))
-	    read_zip_member(current_jcf,
-			    current_jcf->zipd, current_jcf->zipd->zipf);
-	  jcf_parse (current_jcf);
-	  /* Parsing might change the class, in which case we have to
-	     put it back where we found it.  */
-	  if (current_class != class && icv != NULL_TREE)
-	    TREE_TYPE (icv) = current_class;
-	  class = current_class;
-/* 	  java_pop_parser_context (0); */
-/* 	  java_parser_context_restore_global (); */
-	}
-      layout_class (class);
-      load_inner_classes (class);
-    }
+  layout_class (class);
+  load_inner_classes (class);
 
   output_class = save_output_class;
   current_class = save_current_class;
@@ -1557,18 +1506,7 @@ jcf_parse (JCF* jcf)
     TYPE_FIELDS (current_class) = nreverse (TYPE_FIELDS (current_class));
 
   if (current_class == object_type_node)
-    {
-      layout_class_methods (object_type_node);
-      /* If we don't have the right archive, emit a verbose warning.
-	 If we're generating bytecode, emit the warning only if
-	 -fforce-classes-archive-check was specified. */
-#if 0
-      /* ECJ HACK: ignore this.  */
-      if (!jcf->right_zip
-	  && (!flag_emit_class_files || flag_force_classes_archive_check))
-	fatal_error ("the %<java.lang.Object%> that was found in %qs didn't have the special zero-length %<gnu.gcj.gcj-compiled%> attribute.  This generally means that your classpath is incorrectly set.  Use %<info gcj \"Input Options\"%> to see the info page describing how to set the classpath", jcf->filename);
-#endif
-    }
+    layout_class_methods (object_type_node);
   else
     all_class_list = tree_cons (NULL_TREE,
 				TYPE_NAME (current_class), all_class_list );
@@ -2048,13 +1986,6 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 
   bitmap_obstack_release (&bit_obstack);
 
-/*   java_expand_classes (); */
-/*   if (java_report_errors () || flag_syntax_only) */
-/*     return; */
-    
-  /* Expand all classes compiled from source.  */
-/*   java_finish_classes (); */
-
  finish:
   /* Arrange for any necessary initialization to happen.  */
   java_emit_static_constructor ();
@@ -2196,7 +2127,6 @@ parse_zip_file_entries (void)
 	    JCF_ZERO (jcf);
 	    jcf->read_state  = finput;
 	    jcf->filbuf      = jcf_filbuf_from_stdio;
-	    jcf->java_source = 0;
 	    jcf->classname   = NULL;
 	    jcf->filename    = file_name;
 	    jcf->zipd        = zdir;
@@ -2270,7 +2200,6 @@ process_zip_dir (FILE *finput)
 
       jcf->read_state  = finput;
       jcf->filbuf      = jcf_filbuf_from_stdio;
-      jcf->java_source = 0;
       jcf->classname   = class_name;
       jcf->filename    = file_name;
       jcf->zipd        = zdir;

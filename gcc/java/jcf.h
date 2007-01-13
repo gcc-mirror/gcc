@@ -1,6 +1,6 @@
 /* Utility macros to read Java(TM) .class files and byte codes.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2006
-   Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+   2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -106,7 +106,6 @@ typedef struct JCF GTY(()) {
   unsigned char * GTY ((skip)) buffer_end;
   unsigned char * GTY ((skip)) read_ptr;
   unsigned char * GTY ((skip)) read_end;
-  unsigned int java_source : 1;
   unsigned int right_zip : 1;
   unsigned int finished : 1;
   jcf_filbuf_t filbuf;
@@ -178,7 +177,7 @@ typedef struct JCF GTY(()) {
 #define JCF_ZERO(JCF)  \
   ((JCF)->buffer = (JCF)->buffer_end = (JCF)->read_ptr = (JCF)->read_end = 0,\
    (JCF)->read_state = 0, (JCF)->filename = (JCF)->classname = 0, \
-   CPOOL_INIT(&(JCF)->cpool), (JCF)->java_source = 0, (JCF)->zipd = 0, \
+   CPOOL_INIT(&(JCF)->cpool), (JCF)->zipd = 0, \
    (JCF)->finished = 0)
 
 /* Given that PTR points to a 2-byte unsigned integer in network
@@ -260,7 +259,7 @@ enum cpool_tag
 
 #define DEFAULT_CLASS_PATH "."
 
-extern const char *find_class (const char *, int, JCF*, int);
+extern const char *find_class (const char *, int, JCF *);
 extern const char *find_classfile (char *, JCF*, const char *);
 extern int jcf_filbuf_from_stdio (JCF *jcf, int count);
 extern int jcf_unexpected_eof (JCF*, int) ATTRIBUTE_NORETURN;

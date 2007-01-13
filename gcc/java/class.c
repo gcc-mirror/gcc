@@ -669,19 +669,6 @@ add_interface (tree this_class, tree interface_class)
   BINFO_BASE_APPEND (TYPE_BINFO (this_class), interface_binfo);
 }
 
-#if 0
-/* Return the address of a pointer to the first FUNCTION_DECL
-   in the list (*LIST) whose DECL_NAME is NAME. */
-
-static tree *
-find_named_method (tree *list, tree name)
-{
-  while (*list && DECL_NAME (*list) != name)
-    list = &TREE_CHAIN (*list);
-  return list;
-}
-#endif
-
 static tree
 build_java_method_type (tree fntype, tree this_class, int access_flags)
 {
@@ -841,24 +828,6 @@ set_constant_value (tree field, tree constant)
 	DECL_FIELD_FINAL_IUD (field) = 1;
     }
 }
-
-/* Count the number of Unicode chars encoded in a given Ut8 string. */
-
-#if 0
-int
-strLengthUtf8 (char *str, int len)
-{
-  register unsigned char* ptr = (unsigned char*) str;
-  register unsigned char *limit = ptr + len;
-  int str_length = 0;
-  for (; ptr < limit; str_length++) {
-    if (UTF8_GET (ptr, limit) < 0)
-      return -1;
-  }
-  return str_length;
-}
-#endif
-
 
 /* Calculate a hash value for a string encoded in Utf8 format.
  * This returns the same hash value as specified for java.lang.String.hashCode.
@@ -2297,36 +2266,7 @@ maybe_layout_super_class (tree super_class, tree this_class ATTRIBUTE_UNUSED)
       if (TREE_TYPE (super_class) != NULL_TREE)
 	super_class = TREE_TYPE (super_class);
       else
-	{
-#if 0
-	  /* do_resolve_class expects an EXPR_WITH_FILE_LOCATION, so
-	     we give it one.  */
-	  tree this_wrap = NULL_TREE;
-
-	  /* Set the correct context for class resolution.  */
-	  current_class = this_class;
-
-	  if (this_class)
-	    {
-	      tree this_decl = TYPE_NAME (this_class);
-#ifdef USE_MAPPED_LOCATION
-	      this_wrap = build_expr_wfl (this_class,
-					  DECL_SOURCE_LOCATION (this_decl));
-#else
-	      this_wrap = build_expr_wfl (this_class,
-					  DECL_SOURCE_FILE (this_decl),
-					  DECL_SOURCE_LINE (this_decl), 0);
-#endif
-	    }
-	  super_class
-	    = do_resolve_class (DECL_CONTEXT (TYPE_NAME (this_class)),
-				this_class, super_class, NULL_TREE, this_wrap);
-	  if (!super_class)
-	    return NULL_TREE;	/* FIXME, NULL_TREE not checked by caller. */
-	  super_class = TREE_TYPE (super_class);
-#endif
-	  gcc_unreachable ();
-	}
+	gcc_unreachable ();
     }
   if (!TYPE_SIZE (super_class))
     safe_layout_class (super_class);

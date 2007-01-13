@@ -74,10 +74,6 @@ static void expand_cond (enum tree_code, tree, int);
 static void expand_java_goto (int);
 static tree expand_java_switch (tree, int);
 static void expand_java_add_case (tree, int, int);
-#if 0
-static void expand_java_call (int, int);
-static void expand_java_ret (tree); 
-#endif
 static tree pop_arguments (tree); 
 static void expand_invoke (int, int, int); 
 static void expand_java_field_op (int, int, int); 
