@@ -1,6 +1,7 @@
 /* Fold a constant sub-tree into a single node for C-compiler
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,7 +29,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
   @@ for cross-compilers.  */
 
 /* The entry points in this file are fold, size_int_wide, size_binop
-   and force_fit_type.
+   and force_fit_type_double.
 
    fold takes a tree as argument and returns a simplified tree.
 
@@ -39,10 +40,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    size_int takes an integer value, and creates a tree constant
    with type from `sizetype'.
 
-   force_fit_type takes a constant, an overflowable flag and prior
-   overflow indicators.  It forces the value to fit the type and sets
-   TREE_OVERFLOW as appropriate.
-   
+   force_fit_type_double takes a constant, an overflowable flag and a
+   prior overflow indicator.  It forces the value to fit the type and
+   sets TREE_OVERFLOW.
+
    Note: Since the folders get called on non-gimple code as well as
    gimple code, we need to handle GIMPLE tuples as well as their
    corresponding tree equivalents.  */
@@ -281,7 +282,7 @@ fit_double_type (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 tree
 force_fit_type_double (tree type, unsigned HOST_WIDE_INT low,
 		       HOST_WIDE_INT high, int overflowable,
-		       bool overflowed, bool overflowed_const)
+		       bool overflowed)
 {
   int sign_extended_type;
   bool overflow;
@@ -294,7 +295,7 @@ force_fit_type_double (tree type, unsigned HOST_WIDE_INT low,
   overflow = fit_double_type (low, high, &low, &high, type);
 
   /* If we need to set overflow flags, return a new unshared node.  */
-  if (overflowed || overflowed_const || overflow)
+  if (overflowed || overflow)
     {
       if (overflowed
 	  || overflowable < 0
@@ -1607,8 +1608,7 @@ int_const_binop (enum tree_code code, tree arg1, tree arg2, int notrunc)
   else
     t = force_fit_type_double (TREE_TYPE (arg1), low, hi, 1,
 			       ((!uns || is_sizetype) && overflow)
-			       | TREE_OVERFLOW (arg1) | TREE_OVERFLOW (arg2),
-			       false);
+			       | TREE_OVERFLOW (arg1) | TREE_OVERFLOW (arg2));
 
   return t;
 }
@@ -1884,8 +1884,7 @@ fold_convert_const_int_from_int (tree type, tree arg1)
 			     (TREE_INT_CST_HIGH (arg1) < 0
 		 	      && (TYPE_UNSIGNED (type)
 				  < TYPE_UNSIGNED (TREE_TYPE (arg1))))
-			     | TREE_OVERFLOW (arg1),
-			     false);
+			     | TREE_OVERFLOW (arg1));
 
   return t;
 }
@@ -1964,8 +1963,7 @@ fold_convert_const_int_from_real (enum tree_code code, tree type, tree arg1)
     REAL_VALUE_TO_INT (&low, &high, r);
 
   t = force_fit_type_double (type, low, high, -1,
-			     overflow | TREE_OVERFLOW (arg1),
-			     false);
+			     overflow | TREE_OVERFLOW (arg1));
   return t;
 }
 
@@ -6143,7 +6141,7 @@ fold_div_compare (enum tree_code code, tree type, tree arg0, tree arg1)
 				   TREE_INT_CST_HIGH (arg1),
 				   &lpart, &hpart, unsigned_p);
   prod = force_fit_type_double (TREE_TYPE (arg00), lpart, hpart,
-				-1, overflow, false);
+				-1, overflow);
   neg_overflow = false;
 
   if (unsigned_p)
@@ -6159,8 +6157,7 @@ fold_div_compare (enum tree_code code, tree type, tree arg0, tree arg1)
 				       TREE_INT_CST_HIGH (tmp),
 				       &lpart, &hpart, unsigned_p);
       hi = force_fit_type_double (TREE_TYPE (arg00), lpart, hpart,
-				  -1, overflow | TREE_OVERFLOW (prod),
-				  false);
+				  -1, overflow | TREE_OVERFLOW (prod));
     }
   else if (tree_int_cst_sgn (arg01) >= 0)
     {
@@ -6596,8 +6593,7 @@ fold_sign_changed_comparison (enum tree_code code, tree type,
   if (TREE_CODE (arg1) == INTEGER_CST)
     arg1 = force_fit_type_double (inner_type, TREE_INT_CST_LOW (arg1),
 				  TREE_INT_CST_HIGH (arg1), 0,
-				  TREE_OVERFLOW (arg1),
-				  false);
+				  TREE_OVERFLOW (arg1));
   else
     arg1 = fold_convert (inner_type, arg1);
 
@@ -7531,8 +7527,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	    {
 	      tem = force_fit_type_double (type, TREE_INT_CST_LOW (and1),
 					   TREE_INT_CST_HIGH (and1), 0,
-					   TREE_OVERFLOW (and1),
-					   false);
+					   TREE_OVERFLOW (and1));
 	      return fold_build2 (BIT_AND_EXPR, type,
 				  fold_convert (type, and0), tem);
 	    }
@@ -13045,8 +13040,7 @@ fold_negate_const (tree arg0, tree type)
 				   &low, &high);
 	t = force_fit_type_double (type, low, high, 1,
 				   (overflow | TREE_OVERFLOW (arg0))
-				   && !TYPE_UNSIGNED (type),
-				   false);
+				   && !TYPE_UNSIGNED (type));
 	break;
       }
 
@@ -13091,8 +13085,7 @@ fold_abs_const (tree arg0, tree type)
 				     TREE_INT_CST_HIGH (arg0),
 				     &low, &high);
 	  t = force_fit_type_double (type, low, high, -1,
-				     overflow | TREE_OVERFLOW (arg0),
-				     false);
+				     overflow | TREE_OVERFLOW (arg0));
 	}
       break;
 
@@ -13122,8 +13115,7 @@ fold_not_const (tree arg0, tree type)
 
   t = force_fit_type_double (type, ~TREE_INT_CST_LOW (arg0),
 			     ~TREE_INT_CST_HIGH (arg0), 0,
-			     TREE_OVERFLOW (arg0),
-			     false);
+			     TREE_OVERFLOW (arg0));
 
   return t;
 }
