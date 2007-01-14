@@ -309,7 +309,8 @@ gfc_sym_mangled_function_id (gfc_symbol * sym)
   char name[GFC_MAX_MANGLED_SYMBOL_LEN + 1];
 
   if (sym->module == NULL || sym->attr.proc == PROC_EXTERNAL
-      || (sym->module != NULL && sym->attr.if_source == IFSRC_IFBODY))
+      || (sym->module != NULL && (sym->attr.external
+	    || sym->attr.if_source == IFSRC_IFBODY)))
     {
       if (strcmp (sym->name, "MAIN__") == 0
 	  || sym->attr.proc == PROC_INTRINSIC)

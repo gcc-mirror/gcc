@@ -1,3 +1,50 @@
+2007-01-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30408
+	* lang.opt: Add Wcharacter_truncation option.
+	* options.c (gfc_init_options): Initialize
+	gfc_option.warn_character_truncation to zero.
+	(gfc_handle_option): Add case for OPT_Wcharacter_truncation.
+
+	PR fortran/30408
+	* resolve.c (resolve_code): Use the code->expr character length
+	directly to set length of llen.
+
+2007-01-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/23232
+	* decl.c (gfc_in_match_data, gfc_set_in_match_data): New
+	functions to signal that a DATA statement is being matched.
+	(gfc_match_data): Call gfc_set_in_match_data on entry and on
+	exit.
+	* gfortran.h : Add prototypes for above.
+	* expr.c (check_init_expr): Avoid check on parameter or
+	variable if gfc_in_match_data is true.
+	(gfc_match_init_expr): Do not call error on non-reduction of
+	expression if gfc_in_match_data is true.
+
+	PR fortran/27996
+	PR fortran/27998
+	* decl.c (gfc_set_constant_character_len): Add boolean arg to
+	flag array constructor resolution.  Warn if string is being
+	truncated.  Standard dependent error if string is padded. Set
+	new arg to false for all three calls to
+	gfc_set_constant_character_len.
+	* match.h : Add boolean arg to prototype for
+	gfc_set_constant_character_len.
+	* gfortran.h : Add warn_character_truncation to gfc_options.
+	* options.c (set_Wall): Set warn_character_truncation if -Wall
+	is set.
+	* resolve.c (resolve_code): Warn if rhs string in character
+	assignment has to be truncated.
+	* array.c (gfc_resolve_character_array_constructor): Set new
+	argument to true for call to gfc_set_constant_character_len.
+
+	PR fortran/30410
+	* trans-decl.c (gfc_sym_mangled_function_id): Module, external
+	symbols must not have the module name prepended.
+
 2007-01-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/30034
