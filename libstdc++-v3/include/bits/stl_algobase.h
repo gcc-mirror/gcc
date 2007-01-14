@@ -678,7 +678,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _Size>
     inline signed char*
-    fill_n(char* __first, _Size __n, const signed char& __c)
+    fill_n(signed char* __first, _Size __n, const signed char& __c)
     {
       std::fill(__first, __first + __n, __c);
       return __first + __n;
