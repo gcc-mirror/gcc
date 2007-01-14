@@ -1,3 +1,8 @@
+2007-01-14  Daniel Franke  <franke.daniel@gmail.com>
+
+	* libgomp.texi: Document implementation specific default values of
+	environment variables.
+
 2006-12-21  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR libgomp/28209
