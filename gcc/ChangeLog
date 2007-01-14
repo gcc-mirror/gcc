@@ -1,3 +1,19 @@
+2007-01-14  Jan Hubicka  <jh@suse.cz>
+
+	* tree-eh.c (add_stmt_to_eh_region_fn): Do not add call_exprs
+	separately.
+	(remove_stmt_from_eh_region_fn): Do not remove call_exprs.
+	(verify_eh_throw_stmt_node, verify_eh_throw_table_statements): Kill.
+	* except.h (verify_eh_throw_table_statements): Kill prototype.
+	* cfgexpand.c (expand_gimple_basic_block): Propagate Eh regions
+	into call exrepssions.
+	* tree-optimize.c (execute_free_cfg_annotatiosn): Do not call
+	eh trhow verifier.
+	* tree-cfg.c: Include pointer-set.h.
+	(verify_node_sharing): Work on pointer set.
+	(verify_eh_throw_stmt_node): New.
+	(verify_stmts): Use pointers sets, verify throw_stmt.
+
 2007-01-13  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* ipa-reference.c (analyze_function): Consider also addresses taken

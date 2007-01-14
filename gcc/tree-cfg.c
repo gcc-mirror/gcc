@@ -47,6 +47,7 @@ Boston, MA 02110-1301, USA.  */
 #include "hashtab.h"
 #include "tree-ssa-propagate.h"
 #include "value-prof.h"
+#include "pointer-set.h"
 
 /* This file contains functions for building the Control Flow Graph (CFG)
    for a function tree.  */
@@ -3525,8 +3526,7 @@ tree_node_can_be_shared (tree t)
 static tree
 verify_node_sharing (tree * tp, int *walk_subtrees, void *data)
 {
-  htab_t htab = (htab_t) data;
-  void **slot;
+  struct pointer_set_t *visited = (struct pointer_set_t *) data;
 
   if (tree_node_can_be_shared (*tp))
     {
@@ -3534,10 +3534,8 @@ verify_node_sharing (tree * tp, int *walk_subtrees, void *data)
       return NULL;
     }
 
-  slot = htab_find_slot (htab, *tp, INSERT);
-  if (*slot)
-    return (tree) *slot;
-  *slot = *tp;
+  if (pointer_set_insert (visited, *tp))
+    return *tp;
 
   return NULL;
 }
@@ -3572,6 +3570,22 @@ verify_gimple_tuples (tree t)
   return walk_tree (&t, verify_gimple_tuples_1, NULL, NULL) != NULL;
 }
 
+static bool eh_error_found;
+static int
+verify_eh_throw_stmt_node (void **slot, void *data)
+{
+  struct throw_stmt_node *node = (struct throw_stmt_node *)*slot;
+  struct pointer_set_t *visited = (struct pointer_set_t *) data;
+
+  if (!pointer_set_contains (visited, node->stmt))
+    {
+      error ("Dead STMT in EH table");
+      debug_generic_stmt (node->stmt);
+      eh_error_found = true;
+    }
+  return 0;
+}
+
 /* Verify the GIMPLE statement chain.  */
 
 void
@@ -3580,11 +3594,12 @@ verify_stmts (void)
   basic_block bb;
   block_stmt_iterator bsi;
   bool err = false;
-  htab_t htab;
+  struct pointer_set_t *visited, *visited_stmts;
   tree addr;
 
   timevar_push (TV_TREE_STMT_VERIFY);
-  htab = htab_create (37, htab_hash_pointer, htab_eq_pointer, NULL);
+  visited = pointer_set_create ();
+  visited_stmts = pointer_set_create ();
 
   FOR_EACH_BB (bb)
     {
@@ -3595,6 +3610,7 @@ verify_stmts (void)
 	{
 	  int phi_num_args = PHI_NUM_ARGS (phi);
 
+	  pointer_set_insert (visited_stmts, phi);
 	  if (bb_for_stmt (phi) != bb)
 	    {
 	      error ("bb_for_stmt (phi) is set to a wrong basic block");
@@ -3625,7 +3641,7 @@ verify_stmts (void)
 		  err |= true;
 		}
 
-	      addr = walk_tree (&t, verify_node_sharing, htab, NULL);
+	      addr = walk_tree (&t, verify_node_sharing, visited, NULL);
 	      if (addr)
 		{
 		  error ("incorrect sharing of tree nodes");
@@ -3640,6 +3656,7 @@ verify_stmts (void)
 	{
 	  tree stmt = bsi_stmt (bsi);
 
+	  pointer_set_insert (visited_stmts, stmt);
 	  err |= verify_gimple_tuples (stmt);
 
 	  if (bb_for_stmt (stmt) != bb)
@@ -3650,7 +3667,7 @@ verify_stmts (void)
 
 	  bsi_next (&bsi);
 	  err |= verify_stmt (stmt, bsi_end_p (bsi));
-	  addr = walk_tree (&stmt, verify_node_sharing, htab, NULL);
+	  addr = walk_tree (&stmt, verify_node_sharing, visited, NULL);
 	  if (addr)
 	    {
 	      error ("incorrect sharing of tree nodes");
@@ -3660,11 +3677,17 @@ verify_stmts (void)
 	    }
 	}
     }
+  eh_error_found = false;
+  if (get_eh_throw_stmt_table (cfun))
+    htab_traverse (get_eh_throw_stmt_table (cfun),
+		   verify_eh_throw_stmt_node,
+		   visited_stmts);
 
-  if (err)
+  if (err | eh_error_found)
     internal_error ("verify_stmts failed");
 
-  htab_delete (htab);
+  pointer_set_destroy (visited);
+  pointer_set_destroy (visited_stmts);
   verify_histograms ();
   timevar_pop (TV_TREE_STMT_VERIFY);
 }

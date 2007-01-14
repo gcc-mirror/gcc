@@ -112,12 +112,6 @@ add_stmt_to_eh_region_fn (struct function *ifun, tree t, int num)
   slot = htab_find_slot (get_eh_throw_stmt_table (ifun), n, INSERT);
   gcc_assert (!*slot);
   *slot = n;
-  /* ??? For the benefit of calls.c, converting all this to rtl,
-     we need to record the call expression, not just the outer
-     modify statement.  */
-  if (TREE_CODE (t) == GIMPLE_MODIFY_STMT
-      && (t = get_call_expr_in (t)))
-    add_stmt_to_eh_region_fn (ifun, t, num);
 }
 
 void
@@ -141,12 +135,6 @@ remove_stmt_from_eh_region_fn (struct function *ifun, tree t)
   if (slot)
     {
       htab_clear_slot (get_eh_throw_stmt_table (ifun), slot);
-      /* ??? For the benefit of calls.c, converting all this to rtl,
-	 we need to record the call expression, not just the outer
-	 modify statement.  */
-      if (TREE_CODE (t) == GIMPLE_MODIFY_STMT
-	  && (t = get_call_expr_in (t)))
-	remove_stmt_from_eh_region_fn (ifun, t);
       return true;
     }
   else
@@ -2074,25 +2062,3 @@ maybe_clean_or_replace_eh_stmt (tree old_stmt, tree new_stmt)
 
   return false;
 }
-
-#ifdef ENABLE_CHECKING
-static int
-verify_eh_throw_stmt_node (void **slot, void *data ATTRIBUTE_UNUSED)
-{
-  struct throw_stmt_node *node = (struct throw_stmt_node *)*slot;
-
-  gcc_assert (node->stmt->base.ann == NULL);
-  return 1;
-}
-
-void
-verify_eh_throw_table_statements (void)
-{
-  if (!get_eh_throw_stmt_table (cfun))
-    return;
-  htab_traverse (get_eh_throw_stmt_table (cfun),
-		 verify_eh_throw_stmt_node,
-		 NULL);
-}
-
-#endif

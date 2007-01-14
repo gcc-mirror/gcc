@@ -481,6 +481,7 @@ cgraph_release_function_body (struct cgraph_node *node)
       current_function_decl = node->decl;
       delete_tree_ssa ();
       delete_tree_cfg_annotations ();
+      cfun->eh = NULL;
       current_function_decl = old_decl;
       pop_cfun();
     }
