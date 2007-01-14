@@ -1,3 +1,8 @@
+2007-01-14  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/always_inline3.c: Update for pre-inline tail recursion
+	elimination.
+
 2007-01-14  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/30410
