@@ -412,10 +412,6 @@ Specifies the number of threads used by default in subsequent parallel
 sections, if those do not specify a @code{num_threads} clause. The 
 argument of @code{omp_set_num_threads} shall be a positive integer. 
 
-If the argument is negative integer or zero, the application will crash or
-stop, respectively. An enhancement request was filed,
-@uref{http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29949, PR29949}.
-
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{void omp_set_num_threads(int);}
@@ -807,7 +803,8 @@ extensions.
 @item @emph{Description}:
 Enable or disable the dynamic adjustment of the number of threads 
 within a team. The value of this environment variable shall be 
-@code{TRUE} or @code{FALSE}.
+@code{TRUE} or @code{FALSE}. If undefined, dynamic adjustment is
+disabled by default.
 
 @item @emph{See also}:
 @ref{omp_set_dynamic}
@@ -825,7 +822,8 @@ within a team. The value of this environment variable shall be
 @item @emph{Description}:
 Enable or disable nested parallel regions, i. e. whether team members
 are allowed to create new teams. The value of this environment variable 
-shall be @code{TRUE} or @code{FALSE}.
+shall be @code{TRUE} or @code{FALSE}. If undefined, nested parallel 
+regions are disabled by default.
 
 @item @emph{See also}:
 @ref{omp_set_nested}
@@ -862,10 +860,11 @@ positive integer.
 Allows to specify @code{schedule type} and @code{chunk size}. 
 The value of the variable shall have the form: @code{type[,chunk]} where
 @code{type} is one of @code{static}, @code{dynamic} or @code{guided}. 
-The optional @code{chunk size} shall be a positive integer. 
+The optional @code{chunk size} shall be a positive integer. If undefined,
+dynamic scheduling and a chunk size of 1 is used.
 
 @item @emph{Reference}: 
-@uref{http://www.openmp.org/, OpenMP specifications v2.5}, section 4.1
+@uref{http://www.openmp.org/, OpenMP specifications v2.5}, sections 2.5.1 and 4.1
 @end table
 
 
@@ -895,7 +894,8 @@ GCC Patches Mailinglist}
 Set the default thread stack size in kilobytes. This is in opposition 
 to @code{pthread_attr_setstacksize} which gets the number of bytes as an 
 argument. If the stacksize can not be set due to system constraints, an 
-error is reported and the initial stacksize is left unchanged.
+error is reported and the initial stacksize is left unchanged. If undefined,
+the stack size is system dependent.
 
 @item @emph{Reference}: 
 @uref{http://gcc.gnu.org/ml/gcc-patches/2006-06/msg00493.html, 
