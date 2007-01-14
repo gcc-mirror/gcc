@@ -7918,6 +7918,10 @@ print_operand (FILE *file, rtx x, int code)
 	  /* This is the size of op from size of operand.  */
 	  switch (GET_MODE_SIZE (GET_MODE (x)))
 	    {
+	    case 1:
+	      putc ('b', file);
+	      return;
+
 	    case 2:
 #ifdef HAVE_GAS_FILDS_FISTS
 	      putc ('s', file);
