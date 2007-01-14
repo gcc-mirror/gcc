@@ -6130,6 +6130,12 @@ inlining for code having large abstraction penalty (many functions that just
 pass the arguments to other functions) and decrease inlining for code with low
 abstraction penalty.  The default value is 16.
 
+@item min-vect-loop-bound
+The minimum number of iterations under which a loop will not get vectorized 
+when @option{-ftree-vectorize} is used.  The number of iterations after 
+vectorization needs to be greater than the value specified by this option
+to allow vectorization.  The default value is 0.
+
 @item max-unrolled-insns
 The maximum number of instructions that a loop should have if that loop
 is unrolled, and if the loop is unrolled, it determines how many times

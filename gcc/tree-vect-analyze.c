@@ -368,7 +368,10 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
         vectorization_factor, LOOP_VINFO_INT_NITERS (loop_vinfo));
 
   if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-      && LOOP_VINFO_INT_NITERS (loop_vinfo) < vectorization_factor)
+      && ((LOOP_VINFO_INT_NITERS (loop_vinfo) < vectorization_factor)
+	  || (LOOP_VINFO_INT_NITERS (loop_vinfo) <=
+		((unsigned) (PARAM_VALUE (PARAM_MIN_VECT_LOOP_BOUND)) 
+					   * vectorization_factor))))
     {
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
 	fprintf (vect_dump, "not vectorized: iteration count too small.");
