@@ -1,7 +1,11 @@
+2007-01-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* ld-symbolic.m4: New.
+
 2007-01-11  Paolo Bonzini  <bonzini@gnu.org>
 
-        * warnings.m4: Use m4_expand_once to clear the AC_SUBST'ed variable.
-        (ACX_PROG_CC_WARNINGS_ARE_ERRORS): Fix typo.  Add optional 2nd argument.
+	* warnings.m4: Use m4_expand_once to clear the AC_SUBST'ed variable.
+	(ACX_PROG_CC_WARNINGS_ARE_ERRORS): Fix typo.  Add optional 2nd argument.
 
 2007-01-11  Paolo Bonzini  <bonzini@gnu.org>
 
