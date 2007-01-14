@@ -242,8 +242,6 @@ extern void remove_bb_from_loops (basic_block);
 extern void cancel_loop_tree (struct loop *);
 extern void delete_loop (struct loop *);
 
-extern int fix_loop_placement (struct loop *);
-
 enum
 {
   CP_SIMPLE_PREHEADERS = 1
