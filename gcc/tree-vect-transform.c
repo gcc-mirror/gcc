@@ -35,6 +35,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "cfgloop.h"
 #include "expr.h"
 #include "optabs.h"
+#include "params.h"
 #include "recog.h"
 #include "tree-data-ref.h"
 #include "tree-chrec.h"
@@ -4276,6 +4277,7 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio)
   edge update_e;
   basic_block preheader;
   int loop_num;
+  unsigned int th;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_do_peeling_for_loop_bound ===");
@@ -4291,8 +4293,11 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio)
 				   &ratio_mult_vf_name, ratio);
 
   loop_num  = loop->num; 
+  /* Threshold for vectorized loop.  */
+  th = (PARAM_VALUE (PARAM_MIN_VECT_LOOP_BOUND)) * 
+			LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   new_loop = slpeel_tree_peel_loop_to_edge (loop, single_exit (loop),
-					    ratio_mult_vf_name, ni_name, false);
+					    ratio_mult_vf_name, ni_name, false, th);
   gcc_assert (new_loop);
   gcc_assert (loop_num == loop->num);
 #ifdef ENABLE_CHECKING
@@ -4517,7 +4522,7 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo)
   /* Peel the prolog loop and iterate it niters_of_prolog_loop.  */
   new_loop = 
 	slpeel_tree_peel_loop_to_edge (loop, loop_preheader_edge (loop), 
-				       niters_of_prolog_loop, ni_name, true); 
+				       niters_of_prolog_loop, ni_name, true, 0); 
   gcc_assert (new_loop);
 #ifdef ENABLE_CHECKING
   slpeel_verify_cfg_after_peeling (new_loop, loop);

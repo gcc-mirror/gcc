@@ -146,6 +146,12 @@ DEFPARAM (PARAM_MAX_VARIABLE_EXPANSIONS,
 	  "If -fvariable-expansion-in-unroller is used, the maximum number of times that an individual variable will be expanded during loop unrolling",
           1, 0, 0)
      
+/* Limit loop autovectorization to loops with large enough iteration count.  */
+DEFPARAM (PARAM_MIN_VECT_LOOP_BOUND,
+	  "min-vect-loop-bound",
+	  "If -ftree-vectorize is used, the minimal loop bound of a loop to be considered for vectorization",
+	  0, 0, 0)
+
 /* The maximum number of instructions to consider when looking for an
    instruction to fill a delay slot.  If more than this arbitrary
    number of instructions is searched, the time savings from filling
