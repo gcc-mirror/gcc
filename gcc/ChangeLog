@@ -1,5 +1,12 @@
 2007-01-14  Jan Hubicka  <jh@suse.cz>
 
+	* tree-dfa.c (remove_referenced_var): New function.
+	* tree-ssa-live.c (remove_unused_locals): Walk referenced vars and
+	prune referenced vars list too.
+	* tree-flow.h (remove_referenced_var): Declare.
+
+2007-01-14  Jan Hubicka  <jh@suse.cz>
+
 	* tree-eh.c (add_stmt_to_eh_region_fn): Do not add call_exprs
 	separately.
 	(remove_stmt_from_eh_region_fn): Do not remove call_exprs.

@@ -752,6 +752,29 @@ add_referenced_var (tree var)
     }
 }
 
+/* Remove VAR from the list.  */
+
+void
+remove_referenced_var (tree var)
+{
+  var_ann_t v_ann;
+  struct int_tree_map in;
+  void **loc;
+  unsigned int uid = DECL_UID (var);
+
+  clear_call_clobbered (var);
+  v_ann = get_var_ann (var);
+  ggc_free (v_ann);
+  var->base.ann = NULL;
+  gcc_assert (DECL_P (var));
+  in.uid = uid;
+  in.to = var;
+  loc = htab_find_slot_with_hash (gimple_referenced_vars (cfun), &in, uid,
+				  NO_INSERT);
+  ggc_free (*loc);
+  htab_clear_slot (gimple_referenced_vars (cfun), loc);
+}
+
 
 /* Return the virtual variable associated to the non-scalar variable VAR.  */
 

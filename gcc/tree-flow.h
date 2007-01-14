@@ -698,6 +698,7 @@ extern void dump_subvars_for (FILE *, tree);
 extern void debug_subvars_for (tree);
 extern tree get_virtual_var (tree);
 extern void add_referenced_var (tree);
+extern void remove_referenced_var (tree);
 extern void mark_symbols_for_renaming (tree);
 extern void find_new_referenced_vars (tree *);
 
