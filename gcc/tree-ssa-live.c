@@ -449,15 +449,12 @@ remove_unused_locals (void)
 {
   basic_block bb;
   tree t, *cell;
+  referenced_var_iterator rvi;
+  var_ann_t ann;
 
   /* Assume all locals are unused.  */
-  for (t = cfun->unexpanded_var_list; t; t = TREE_CHAIN (t))
-    {
-      tree var = TREE_VALUE (t);
-      if (TREE_CODE (var) != FUNCTION_DECL
-	  && var_ann (var))
-	var_ann (var)->used = false;
-    }
+  FOR_EACH_REFERENCED_VAR (t, rvi)
+    var_ann (t)->used = false;
 
   /* Walk the CFG marking all referenced symbols.  */
   FOR_EACH_BB (bb)
@@ -493,7 +490,6 @@ remove_unused_locals (void)
   for (cell = &cfun->unexpanded_var_list; *cell; )
     {
       tree var = TREE_VALUE (*cell);
-      var_ann_t ann;
 
       if (TREE_CODE (var) != FUNCTION_DECL
 	  && (!(ann = var_ann (var))
@@ -505,6 +501,19 @@ remove_unused_locals (void)
 
       cell = &TREE_CHAIN (*cell);
     }
+
+  /* Remove unused variables from REFERENCED_VARs.  As an special exception
+     keep the variables that are believed to be aliased.  Those can't be
+     easilly removed from the alias sets and and operand caches.
+     They will be removed shortly after next may_alias pass is performed.  */
+  FOR_EACH_REFERENCED_VAR (t, rvi)
+    if (!is_global_var (t)
+	&& !MTAG_P (t)
+	&& TREE_CODE (t) != PARM_DECL
+	&& TREE_CODE (t) != RESULT_DECL
+	&& !(ann = var_ann (t))->used
+	&& !ann->is_aliased && !is_call_clobbered (t) && !ann->symbol_mem_tag)
+        remove_referenced_var (t);
 }
 
 
