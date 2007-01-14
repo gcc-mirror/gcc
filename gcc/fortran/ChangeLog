@@ -1,3 +1,9 @@
+2007-01-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30410
+	* trans-decl.c (gfc_sym_mangled_function_id): Module, external
+	symbols must not have the module name prepended.
+
 2007-01-11  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/30415
