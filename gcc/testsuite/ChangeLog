@@ -1,5 +1,6 @@
 2007-01-14  Jan Hubicka  <jh@suse.cz>
 
+	* gcc.dg/tree-prof/stringop-1.c: Update pattern for memcpy folding.
 	* gcc.dg/tree-ssa/vrp11.c: Fix thinkos in my last patch.
 	* gcc.dg/always_inline3.c: Update for pre-inline tail recursion
 	elimination.
