@@ -1,3 +1,9 @@
+2007-01-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/30413
+	* config/i386/i386.c (print_operand) ['z']: Output 'b' for
+	operands of size 1.
+
 2007-01-14  Jan Hubicka  <jh@suse.cz>
 
 	* tree-dfa.c (remove_referenced_var): New function.
@@ -619,7 +625,6 @@
 
 	* config/i386/i386.md (*sinxf2): Rename to *sinxf2_i387.
 	(*cosxf2): Rename to cosxf2_i387.
-
 	(*sindf2, *sinsf2): Extend operand 1 to XFmode.  Macroize patterns
 	using X87MODEF12 mode macro. Rename patterns to
 	*sin_extend<mode>xf2_i387.  Use SSE_FLOAT_MODE_P to disable patterns
@@ -627,9 +632,7 @@
 	(*cosdf2, *cossf2): Ditto.
 	(sincosdf3, sincossf3): Ditto.  Rewrite corresponding splitters
 	to match extended input operands.
-
 	(sincos<mode>3): New expander.
-
 	(*sinextendsfdf2, *cosextendsfdf2, *sincosextendsfdf3): Remove
 	insn patterns and corresponding splitters.
 

@@ -1,3 +1,8 @@
+2007-01-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/30413
+	* gcc.target/i386/pr30413.c: New test.
+
 2007-01-14  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/30452
