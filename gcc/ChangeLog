@@ -1,3 +1,10 @@
+2007-01-14  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* loop-unswitch.c (unswitch_loop): Do not call fix_loop_placement.
+	* cfgloopmanip.c (fix_loop_placement): Made static.  Use
+	get_loop_exit_edges.  Changed return type to bool.
+	* cfgloop.h (fix_loop_placement): Declaration removed.
+
 2007-01-14  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* param.h (MIN_VECT_LOOP_BOUND): New.

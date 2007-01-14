@@ -120,6 +120,46 @@ fix_bb_placement (basic_block bb)
   return true;
 }
 
+/* Fix placement of LOOP inside loop tree, i.e. find the innermost superloop
+   of LOOP to that leads at least one exit edge of LOOP, and set it
+   as the immediate superloop of LOOP.  Return true if the immediate superloop
+   of LOOP changed.  */
+
+static bool
+fix_loop_placement (struct loop *loop)
+{
+  unsigned i;
+  edge e;
+  VEC (edge, heap) *exits = get_loop_exit_edges (loop);
+  struct loop *father = current_loops->tree_root, *act;
+  bool ret = false;
+
+  for (i = 0; VEC_iterate (edge, exits, i, e); i++)
+    {
+      act = find_common_loop (loop, e->dest->loop_father);
+      if (flow_loop_nested_p (father, act))
+	father = act;
+    }
+
+  if (father != loop->outer)
+    {
+      for (act = loop->outer; act != father; act = act->outer)
+	act->num_nodes -= loop->num_nodes;
+      flow_loop_tree_node_remove (loop);
+      flow_loop_tree_node_add (father, loop);
+
+      /* The exit edges of LOOP no longer exits its original immediate
+	 superloops; remove them from the appropriate exit lists.  */
+      for (i = 0; VEC_iterate (edge, exits, i, e); i++)
+	rescan_loop_exit (e, false, false);
+
+      ret = true;
+    }
+
+  VEC_free (edge, heap, exits);
+  return ret;
+}
+
 /* Fix placements of basic blocks inside loop hierarchy stored in loops; i.e.
    enforce condition condition stated in description of fix_bb_placement. We
    start from basic block FROM that had some of its successors removed, so that
@@ -561,42 +601,6 @@ unloop (struct loop *loop, bool *irred_invalidated)
      there is an irreducible region inside the cancelled loop, the flags will
      be still correct.  */
   fix_bb_placements (latch, &dummy);
-}
-
-/* Fix placement of LOOP inside loop tree, i.e. find the innermost superloop
-   FATHER of LOOP such that all of the edges coming out of LOOP belong to
-   FATHER, and set it as outer loop of LOOP.  Return true if placement of
-   LOOP changed.  */
-
-int
-fix_loop_placement (struct loop *loop)
-{
-  basic_block *body;
-  unsigned i;
-  edge e;
-  edge_iterator ei;
-  struct loop *father = loop->pred[0], *act;
-
-  body = get_loop_body (loop);
-  for (i = 0; i < loop->num_nodes; i++)
-    FOR_EACH_EDGE (e, ei, body[i]->succs)
-      if (!flow_bb_inside_loop_p (loop, e->dest))
-	{
-	  act = find_common_loop (loop, e->dest->loop_father);
-	  if (flow_loop_nested_p (father, act))
-	    father = act;
-	}
-  free (body);
-
-  if (father != loop->outer)
-    {
-      for (act = loop->outer; act != father; act = act->outer)
-	act->num_nodes -= loop->num_nodes;
-      flow_loop_tree_node_remove (loop);
-      flow_loop_tree_node_add (father, loop);
-      return 1;
-    }
-  return 0;
 }
 
 /* Fix placement of superloops of LOOP inside loop tree, i.e. ensure that
