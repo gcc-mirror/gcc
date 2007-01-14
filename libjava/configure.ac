@@ -173,14 +173,22 @@ libgcj_javaflags=
 
 . ${srcdir}/configure.host
 
+ACX_PROG_LD_GNU_SYMBOLIC
+libgcj_ld_symbolic_functions=$SYMBOLIC_LDFLAGS
+if test -z "$libgcj_ld_symbolic"; then
+  libgcj_ld_symbolic=$SYMBOLIC_LDFLAGS
+fi
+
 LIBGCJ_CFLAGS="${libgcj_cflags}"
 LIBGCJ_CXXFLAGS="${libgcj_cxxflags}"
 LIBGCJ_JAVAFLAGS="${libgcj_javaflags}"
 LIBGCJ_LD_SYMBOLIC="${libgcj_ld_symbolic}"
+LIBGCJ_LD_SYMBOLIC_FUNCTIONS="${libgcj_ld_symbolic_functions}"
 AC_SUBST(LIBGCJ_CFLAGS)
 AC_SUBST(LIBGCJ_CXXFLAGS)
 AC_SUBST(LIBGCJ_JAVAFLAGS)
 AC_SUBST(LIBGCJ_LD_SYMBOLIC)
+AC_SUBST(LIBGCJ_LD_SYMBOLIC_FUNCTIONS)
 
 # Only use libltdl for non-newlib builds.
 if test "x${with_newlib}" = "x" || test "x${with_newlib}" = "xno"; then

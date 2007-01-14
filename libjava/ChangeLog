@@ -1,3 +1,21 @@
+2007-01-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.am (libgcj_la_LDFLAGS): Add
+	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS).
+	(libgcj_tools_la_LDFLAGS): Likewise.
+	(libgcj_bc_la_LDFLAGS): Likewise.
+	* Makefile.in: Regenerated.
+
+	* configure.ac: Use ACX_PROG_LD_GNU_SYMBOLIC.  Set
+	LIBGCJ_LD_SYMBOLIC_FUNCTIONS to $SYMBOLIC_LDFLAGS.  Set
+	libgcj_ld_symbolic to $SYMBOLIC_LDFLAGS if it isn't set.
+	Substitute LIBGCJ_LD_SYMBOLIC_FUNCTIONS.
+	* configure: Regenerated.
+	* aclocal.m4: Likewise.
+	* gcj/Makefile.in: Likewise.
+	* include/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
 2007-01-12  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* sysdep/sh/locks.h (read_barrier): New.

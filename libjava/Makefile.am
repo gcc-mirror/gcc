@@ -230,7 +230,8 @@ xlib_nat_files = $(xlib_nat_source_files:.cc=.lo)
 ## The mysterious backslash in the grep pattern is consumed by make.
 libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) $(THREADLDFLAGS) $(THREADLIBS) \
 	$(LIBLTDL) $(SYS_ZLIBS) \
-	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
+	-version-info `grep -v '^\#' $(srcdir)/libtool-version` \
+	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS)
 libgcj_la_LIBADD = \
 	classpath/native/fdlibm/libfdlibm.la \
 	java/lang/Object.lo \
@@ -256,7 +257,8 @@ EXTRA_libgcj_la_SOURCES = java/lang/Object.java
 libgcj_tools_la_SOURCES = classpath/tools/tools.zip
 libgcj_tools_la_GCJFLAGS = $(AM_GCJFLAGS) -findirect-dispatch -fno-indirect-classes  -fsource-filename=$(here)/classpath/tools/all-classes.lst
 libgcj_tools_la_LDFLAGS = -rpath $(toolexeclibdir) \
- -version-info `grep -v '^\#' $(srcdir)/libtool-version`
+ -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
+ $(LIBGCJ_LD_SYMBOLIC_FUNCTIONS)
 libgcj_tools_la_DEPENDENCIES = libgcj.la libgcj.spec
 libgcj_tools_la_LINK = $(LIBLINK)
 
@@ -299,7 +301,8 @@ lib_gnu_awt_xlib_la_LINK = $(LIBLINK)
 ##
 ## This lets us have one soname in BC objects and another in C++ ABI objects.
 libgcj_bc_la_SOURCES = libgcj_bc.c
-libgcj_bc_la_LDFLAGS = -rpath $(toolexeclibdir) -no-static -version-info 1:0:0
+libgcj_bc_la_LDFLAGS = -rpath $(toolexeclibdir) -no-static -version-info 1:0:0 \
+	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS)
 libgcj_bc_la_LIBADD = libgcj.la
 libgcj_bc_la_DEPENDENCIES = libgcj.la
 libgcj_bc_la_LINK = $(LIBLINK)
