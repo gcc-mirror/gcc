@@ -1,3 +1,11 @@
+2007-01-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca
+
+	PR testsuite/24107
+	Backport from mainline
+	2005-10-24  Paul Brook  <paul@codesourcery.com>
+	* gcc.dg/20050922-1.c: Provide definition of uint32_t without using
+	stdint.h.
+
 2007-01-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR fortran/30399
