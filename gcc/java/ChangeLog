@@ -1,3 +1,33 @@
+2007-01-15  Tom Tromey  <tromey@redhat.com>
+
+	* lang.c (dump_compound_expr) <EXPR_WITH_FILE_LOCATION>: Removed
+	case.
+	* java-gimplify.c (java_gimplify_expr) <EXPR_WITH_FILE_LOCATION>:
+	Removed case.
+	* java-tree.h (EXPR_WFL_EMIT_LINE_NOTE): Removed.
+	(EXPR_WFL_NODE): Likewise.
+	(EXPR_WFL_LINECOL): Likewise.
+	(EXPR_WFL_FILENAME): Likewise.
+	(EXPR_WFL_LINENO): Likewise.
+	(build_expr_wfl, expr_add_location): Don't declare.
+	(build_unknown_wfl): Removed.
+	(EXPR_WFL_FILENAME_NODE): Removed.
+	(EXPR_WFL_COLNO): Removed.
+	(EXPR_WFL_SET_LINECOL): Removed.
+	(DECL_FUNCTION_WFL): Removed.
+	(DECL_FIELD_FINAL_WFL): Removed.
+	(struct lang_decl_func) <wfl>: Removed field.
+	<called_constructor>: Likewise.
+	<inner_access>: Likewise.
+	(struct lang_decl_var) <wfl>: Removed field.
+	(DECL_CONSTRUCTOR_CALLS): Removed.
+	(DECL_FUNCTION_ACCESS_DECL): Likewise.
+	(DECL_FUNCTION_INNER_ACCESS): Likewise.
+	(DECL_SPECIFIC_COUNT): Likewise.
+	* java-tree.def (EXPR_WITH_FILE_LOCATION): Removed.
+	* expr.c (build_expr_wfl): Removed.
+	(expr_add_location): Likewise.
+
 2007-01-12  Tom Tromey  <tromey@redhat.com>
 
 	* jcf-dump.c (main): Updated call to find_class.

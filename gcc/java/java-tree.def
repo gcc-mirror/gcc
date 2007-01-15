@@ -24,19 +24,6 @@ DEFTREECODE (EXIT_BLOCK_EXPR, "exit_block_expr", tcc_statement, 1)
    Operand 1 contains chained catch nodes. */
 DEFTREECODE (TRY_EXPR, "try-catch", tcc_expression, 2)
 
-/* Annotates a tree node (usually an expression) with source location
-   information: a file name (EXPR_WFL_FILENAME);  a line number
-   (EXPR_WFL_LINENO); and column number (EXPR_WFL_COLNO).  It is
-   expanded as the contained node (EXPR_WFL_NODE);  a line note should
-   be emitted first if EXPR_WFL_EMIT_LINE_NOTE.  */
-#ifdef USE_MAPPED_LOCATION
-DEFTREECODE (EXPR_WITH_FILE_LOCATION, "expr_with_file_location",
-	     tcc_expression, 2)
-#else
-DEFTREECODE (EXPR_WITH_FILE_LOCATION, "expr_with_file_location",
-	     tcc_expression, 3)
-#endif
-
 /*
 Local variables:
 mode:c
