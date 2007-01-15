@@ -876,13 +876,6 @@ dump_compound_expr (dump_info_p di, tree t)
 	  dump_compound_expr (di, TREE_OPERAND (t, i));
 	  break;
 
-	case EXPR_WITH_FILE_LOCATION:
-	    {
-	      tree wfl_node = EXPR_WFL_NODE (TREE_OPERAND (t, i));
-	      dump_child ("expr", wfl_node);
-	      break;
-	    }
-
 	default:
 	  dump_child ("expr", TREE_OPERAND (t, i));
 	}
