@@ -3,5 +3,5 @@
 !            as characters, of bytes 0xfe and 0xff.
 program main
   if (char (254) /= "þ") call abort
-  if (achar (255) /= "ÿ") call abort
+  if (char (255) /= "ÿ") call abort
 end program main
