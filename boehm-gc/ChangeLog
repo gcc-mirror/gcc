@@ -1,3 +1,9 @@
+2007-01-15  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* os_dep.c (defined(MPROTECT_VDB) && defined(DARWIN)): Adjust mail
+	reference.
+	(catch_exception_raise): Fix typo in the I386 exc_state.
+
 2007-01-11  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* configure.ac: Replaced HAS_I386_THREAD_STATE_* with
