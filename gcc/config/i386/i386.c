@@ -20143,14 +20143,14 @@ void ix86_emit_i387_log1p (rtx op0, rtx op1)
   emit_jump_insn (gen_bge (label1));
 
   emit_move_insn (tmp2, standard_80387_constant_rtx (4)); /* fldln2 */
-  emit_insn (gen_fyl2xp1_xf3 (op0, tmp2, op1));
+  emit_insn (gen_fyl2xp1xf3_i387 (op0, op1, tmp2));
   emit_jump (label2);
 
   emit_label (label1);
   emit_move_insn (tmp, CONST1_RTX (XFmode));
   emit_insn (gen_addxf3 (tmp, op1, tmp));
   emit_move_insn (tmp2, standard_80387_constant_rtx (4)); /* fldln2 */
-  emit_insn (gen_fyl2x_xf3 (op0, tmp2, tmp));
+  emit_insn (gen_fyl2xxf3_i387 (op0, tmp, tmp2));
 
   emit_label (label2);
 }

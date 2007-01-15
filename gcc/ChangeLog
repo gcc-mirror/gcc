@@ -1,3 +1,23 @@
+2007-01-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (fyl2xxf3_i387): Rename from fyl2x_xf3.
+	(fyl2x_extend<mode>xf3_i387): New insn pattern.
+	(log<mode>2): Rename from logsf2 and logdf2 and macroize insn
+	insn patterns using X87MODEF12 mode macro.  Extend operand 1
+	to XFmode. Use SSE_FLOAT_MODE_P to disable patterns for SSE math.
+	(log10<mode>2): Ditto.
+	(log2<mode>2): Ditto.
+	(log1p<mode>2): Ditto.
+	(logb<mode>2): Ditto.
+	(fyl2xp1xf3_i387): Rename from fyl2xp1_xf3.
+	(fyl2xp1_extend<mode>xf3_i387): New insn pattern.
+	(*fxtractxf3_i387): Rename from *fxtractxf3.
+	(fxtract_extend<mode>xf3_i387): New insn pattern.
+	(ilogbsi2): Use match_dup 3, not match_operand:XF 3.
+
+	* config/i386/i386.c (ix86_emit_i387_log1p): Use gen_fyl2xp1xf3_i387()
+	and gen_fyl2xxf3_i387().
+
 2007-01-14  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* loop-unswitch.c (unswitch_loop): Do not call fix_loop_placement.
