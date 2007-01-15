@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- valarray class.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -847,7 +847,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        else                   // cshift right
 	 {
 	   if (size_t(-__n) > _M_size)
-	     __n = -(-__n % _M_size);
+	     __n = -(size_t(-__n) % _M_size);
 
 	   std::__valarray_copy_construct(_M_data + _M_size + __n,
 					  _M_data + _M_size, __tmp_M_data);

@@ -1,3 +1,7 @@
+2007-01-15  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/std/valarray (valarray<>::cshift): Fix typo.
+
 2007-01-14  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_algobase.h (fill_n(char*, _Size,
