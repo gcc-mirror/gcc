@@ -1,3 +1,11 @@
+2007-01-15  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-dce.c (DCE_TODOs): New.
+	(propagate_necessity): Return if something changed.
+	(eliminate_unnecessary_stmts): Likewise.
+	(perform_tree_ssa_dce): Return TODO flags when needed.
+	(pass_dce, pass_dce_loop, pass_cd_dce): Remove TODO flags.
+
 2007-01-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (fyl2xxf3_i387): Rename from fyl2x_xf3.
