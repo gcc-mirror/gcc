@@ -1,3 +1,7 @@
+2007-01-15  Dale Johannesen  <dalej@apple.com>
+
+	* gcc.dg/tree-ssa/loop-3.c:  Disable with -fpic or -fPIC.
+
 2007-01-15  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* gfortran.dg/string_0xfe_0xff_1.f90:  Use char instead
