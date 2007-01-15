@@ -43,7 +43,7 @@
 @end ifset
 
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+@c 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
 @c IMPORTANT: whenever you modify this file, run `install.texi2html' to
@@ -430,6 +430,17 @@ Useful when submitting patches for the GCC source code.
 
 Necessary when applying patches, created with @command{diff}, to one's
 own sources.
+
+@item ecj1
+@itemx gjavah
+
+If you wish to modify @file{.java} files in libjava, you will need to
+configure with @option{--enable-java-maintainer-mode}, and you will need
+to have executables named @command{ecj1} and @command{gjavah} in your path.
+The @command{ecj1} executable should run the Eclipse Java compiler via
+the GCC-specific entry point.  You can download a suitable jar from
+@uref{ftp://sourceware.org/pub/java/}, or by running the script
+@command{contrib/download_ecj}.
 
 @end table
 
@@ -1101,14 +1112,6 @@ particularly useful if you intend to use several versions of GCC in
 parallel.  This is currently supported by @samp{libgfortran},
 @samp{libjava}, @samp{libmudflap}, @samp{libstdc++}, and @samp{libobjc}.
 
-@item --with-java-home=@var{dirname}
-This @samp{libjava} option overrides the default value of the
-@samp{java.home} system property.  It is also used to set
-@samp{sun.boot.class.path} to @file{@var{dirname}/lib/rt.jar}.  By
-default @samp{java.home} is set to @file{@var{prefix}} and
-@samp{sun.boot.class.path} to
-@file{@var{datadir}/java/libgcj-@var{version}.jar}.
-
 @item --enable-languages=@var{lang1},@var{lang2},@dots{}
 Specify that only a particular subset of compilers and
 their runtime libraries should be built.  For a list of valid values for
@@ -1420,6 +1423,40 @@ The following options apply to building @samp{libgcj}.
 @subsubheading General Options
 
 @table @code
+@item --enable-java-maintainer-mode
+By default the @samp{libjava} build will not attempt to compile the
+@file{.java} source files to @file{.class}.  Instead, it will use the
+@file{.class} files from the source tree.  If you use this option you
+must have executables named @command{ecj1} and @command{gjavah} in your path
+for use by the build.  You must use this option if you intend to
+modify any @file{.java} files in @file{libjava}.
+
+@item --with-java-home=@var{dirname}
+This @samp{libjava} option overrides the default value of the
+@samp{java.home} system property.  It is also used to set
+@samp{sun.boot.class.path} to @file{@var{dirname}/lib/rt.jar}.  By
+default @samp{java.home} is set to @file{@var{prefix}} and
+@samp{sun.boot.class.path} to
+@file{@var{datadir}/java/libgcj-@var{version}.jar}.
+
+@item --with-ecj-jar=@var{filename}
+This option can be used to specify the location of an external jar
+file containing the Eclipse Java compiler.  A specially modified
+version of this compiler is used by @command{gcj} to parse
+@file{.java} source files.  If this option is given, the
+@samp{libjava} build will create and install an @file{ecj1} executable
+which uses this jar file at runtime.
+
+If this option is not given, but an @file{ecj.jar} file is found in
+the topmost source tree at configure time, then the @samp{libgcj}
+build will create and install @file{ecj1}, and will also install the
+discovered @file{ecj.jar} into a suitable place in the install tree.
+
+If @file{ecj1} is not installed, then the user will have to supply one
+on his path in order for @command{gcj} to properly parse @file{.java}
+source files.  A suitable jar is available from
+@uref{ftp://sourceware.org/pub/java/}.
+
 @item --disable-getenv-properties
 Don't set system properties from @env{GCJ_PROPERTIES}.
 
@@ -1983,11 +2020,6 @@ as part of libgcj testing by placing the Mauve tree within the libjava
 testsuite at @file{libjava/testsuite/libjava.mauve/mauve}, or by
 specifying the location of that tree when invoking @samp{make}, as in
 @samp{make MAUVEDIR=~/mauve check}.
-
-@uref{http://sources.redhat.com/mauve/jacks.html,,Jacks}
-is a free testsuite that tests Java compiler front ends.  This suite
-can be run as part of libgcj testing by placing the Jacks tree within
-the libjava testsuite at @file{libjava/testsuite/libjava.jacks/jacks}.
 
 @section How to interpret test results
 

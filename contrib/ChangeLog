@@ -1,3 +1,7 @@
+2007-01-15  Tom Tromey  <tromey@redhat.com>
+
+	* download_ecj: New file.
+
 2006-09-27  Matthew Sachs  <msachs@apple.com>
 
 	* compareSumTests3: POD syntax fix.

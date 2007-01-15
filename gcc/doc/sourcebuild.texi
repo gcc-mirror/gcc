@@ -1,4 +1,4 @@
-@c Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+@c Copyright (C) 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1288,13 +1288,7 @@ failures for a test run against the list of expected failures in
 Update this file when adding new failing tests to Mauve, or when fixing
 bugs in libgcj that had caused Mauve test failures.
 
-The @uref{http://sources.redhat.com/mauve/jacks.html,,
-Jacks} project provides a testsuite for Java compilers that can be used
-to test changes that affect the GCJ front end.  This testsuite is run as
-part of Java testing by placing the Jacks tree within the libjava
-testsuite sources at @file{libjava/testsuite/libjava.jacks/jacks}.
-
-We encourage developers to contribute test cases to Mauve and Jacks.
+We encourage developers to contribute test cases to Mauve.
 
 @node gcov Testing
 @subsection Support for testing @command{gcov}

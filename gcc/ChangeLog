@@ -1,3 +1,12 @@
+2007-01-15  Tom Tromey  <tromey@redhat.com>
+
+	* doc/sourcebuild.texi (libgcj Tests): Don't mention jacks.
+	* doc/install.texi (Testing): Don't mention jacks.
+	(Configuration): Document --enable-java-maintainer-mode.  Move
+	--with-java-home to libgcj-specific section.  Document
+	--with-ecj-jar.
+	(Prerequisites): Mention --enable-java-maintainer-mode, ecj1.
+
 2007-01-15  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-dce.c (DCE_TODOs): New.
