@@ -1,5 +1,10 @@
 2007-01-15  Gary Benson  <gbenson@redhat.com>
 
+	* java/nio/MappedByteBuffer.java: Removed.
+	* sources.am, Makefile.in: Rebuilt.
+
+2007-01-15  Gary Benson  <gbenson@redhat.com>
+
 	* java/net/URLClassLoader.java: Removed.
 	* gnu/java/net/loader/Load_gcjlib.java: New file.
 	* gnu/gcj/runtime/BootClassLoader.java: Ensure core
