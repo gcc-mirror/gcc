@@ -4893,7 +4893,7 @@ classpath/java/nio/InvalidMarkException.java \
 classpath/java/nio/LongBuffer.java \
 classpath/java/nio/LongBufferImpl.java \
 classpath/java/nio/LongViewBufferImpl.java \
-java/nio/MappedByteBuffer.java \
+classpath/java/nio/MappedByteBuffer.java \
 java/nio/MappedByteBufferImpl.java \
 classpath/java/nio/ReadOnlyBufferException.java \
 classpath/java/nio/ShortBuffer.java \
