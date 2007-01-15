@@ -1,5 +1,5 @@
 /* Software floating-point emulation. Common operations.
-   Copyright (C) 1997,1998,1999,2006 Free Software Foundation, Inc.
+   Copyright (C) 1997,1998,1999,2006,2007 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz),
@@ -99,10 +99,10 @@ do {							\
   else							\
     {							\
       X##_e = _FP_EXPMAX_##fs - 1;			\
-      FP_SET_EXCEPTION(FP_EX_OVERFLOW);			\
-      FP_SET_EXCEPTION(FP_EX_INEXACT);			\
       _FP_FRAC_SET_##wc(X, _FP_MAXFRAC_##wc);		\
     }							\
+    FP_SET_EXCEPTION(FP_EX_INEXACT);			\
+    FP_SET_EXCEPTION(FP_EX_OVERFLOW);			\
 } while (0)
 
 /* Check for a semi-raw value being a signaling NaN and raise the
@@ -1252,6 +1252,9 @@ do {									     \
 	      _FP_FRAC_SRL_##swc(S, (_FP_WFRACBITS_##sfs		     \
 				     - _FP_WFRACBITS_##dfs));		     \
 	      _FP_FRAC_COPY_##dwc##_##swc(D, S);			     \
+	      /* Semi-raw NaN must have all workbits cleared.  */	     \
+	      _FP_FRAC_LOW_##dwc(D)					     \
+		&= ~(_FP_W_TYPE) ((1 << _FP_WORKBITS) - 1);		     \
 	      _FP_FRAC_HIGH_##dfs(D) |= _FP_QNANBIT_SH_##dfs;		     \
 	    }								     \
 	}								     \

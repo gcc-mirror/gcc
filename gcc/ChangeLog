@@ -1,3 +1,8 @@
+2007-01-15  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config/soft-fp/op-common.h, config/soft-fp/op-4.h: Update from
+	glibc CVS.
+
 2007-01-15  Tom Tromey  <tromey@redhat.com>
 
 	* doc/sourcebuild.texi (libgcj Tests): Don't mention jacks.
