@@ -1,3 +1,11 @@
+2007-01-15  Gary Benson  <gbenson@redhat.com>
+
+	* java/net/URLClassLoader.java: Removed.
+	* gnu/java/net/loader/Load_gcjlib.java: New file.
+	* gnu/gcj/runtime/BootClassLoader.java: Ensure core
+	URL handler is present in static executables.
+	* sources.am, Makefile.in: Rebuilt.
+
 2007-01-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.am (libgcj_la_LDFLAGS): Add

@@ -1338,6 +1338,7 @@ classpath/gnu/java/net/loader/FileResource.java \
 classpath/gnu/java/net/loader/FileURLLoader.java \
 classpath/gnu/java/net/loader/JarURLLoader.java \
 classpath/gnu/java/net/loader/JarURLResource.java \
+gnu/java/net/loader/Load_gcjlib.java \
 classpath/gnu/java/net/loader/RemoteResource.java \
 classpath/gnu/java/net/loader/RemoteURLLoader.java \
 classpath/gnu/java/net/loader/Resource.java \
@@ -4846,7 +4847,7 @@ classpath/java/net/SocketTimeoutException.java \
 classpath/java/net/URI.java \
 classpath/java/net/URISyntaxException.java \
 classpath/java/net/URL.java \
-java/net/URLClassLoader.java \
+classpath/java/net/URLClassLoader.java \
 classpath/java/net/URLConnection.java \
 classpath/java/net/URLDecoder.java \
 classpath/java/net/URLEncoder.java \

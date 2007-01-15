@@ -11,14 +11,26 @@
 
 extern "Java"
 {
+  namespace gnu
+  {
+    namespace java
+    {
+      namespace net
+      {
+        namespace loader
+        {
+            class Resource;
+            class URLStreamHandlerCache;
+        }
+      }
+    }
+  }
   namespace java
   {
     namespace net
     {
         class URL;
         class URLClassLoader;
-        class URLClassLoader$Resource;
-        class URLStreamHandler;
         class URLStreamHandlerFactory;
     }
     namespace security
@@ -52,12 +64,9 @@ public: // actually protected
 public:
   virtual ::java::lang::String * toString();
 private:
-  ::java::net::URLClassLoader$Resource * findURLResource(::java::lang::String *);
+  ::gnu::java::net::loader::Resource * findURLResource(::java::lang::String *);
 public:
   virtual ::java::net::URL * findResource(::java::lang::String *);
-public: // actually package-private
-  virtual ::java::net::URLStreamHandler * getURLStreamHandler(::java::lang::String *);
-public:
   virtual ::java::util::Enumeration * findResources(::java::lang::String *);
 public: // actually protected
   virtual ::java::security::PermissionCollection * getPermissions(::java::security::CodeSource *);
@@ -68,8 +77,8 @@ public:
 public: // actually package-private
   static ::java::lang::Class * access$0(::java::net::URLClassLoader *, ::java::lang::String *, JArray< jbyte > *, jint, jint, ::java::security::CodeSource *);
 private:
-  static ::java::util::HashMap * urlloaders;
-  static ::java::util::HashMap * factoryCache;
+  static ::gnu::java::net::loader::URLStreamHandlerCache * factoryCache;
+  static ::java::lang::String * URL_LOADER_PREFIX;
   ::java::util::Vector * __attribute__((aligned(__alignof__( ::java::security::SecureClassLoader)))) urls;
   ::java::util::Vector * urlinfos;
   ::java::net::URLStreamHandlerFactory * factory;
