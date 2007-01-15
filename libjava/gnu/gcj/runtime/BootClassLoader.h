@@ -37,6 +37,9 @@ public:
   ::java::lang::Class * bootLoadClass(::java::lang::String *);
   ::java::net::URL * bootGetResource(::java::lang::String *);
   ::java::util::Enumeration * bootGetResources(::java::lang::String *);
+public: // actually package-private
+  static ::java::lang::Class * coreHandler;
+public:
   static ::java::lang::Class class$;
 };
 

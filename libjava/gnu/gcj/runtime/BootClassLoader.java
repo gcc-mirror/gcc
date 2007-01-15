@@ -1,4 +1,4 @@
-/* Copyright (C) 2005  Free Software Foundation
+/* Copyright (C) 2005, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -8,6 +8,7 @@ details.  */
 
 package gnu.gcj.runtime;
 
+import gnu.java.net.protocol.core.Handler;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
@@ -21,6 +22,11 @@ import java.util.Enumeration;
  */
 public final class BootClassLoader extends HelperClassLoader
 {
+  // This forces the core URL handler to be included in statically
+  // linked executables.  The line that adds core:/ to the search
+  // path fails otherwise.
+  static Class coreHandler = gnu.java.net.protocol.core.Handler.class;
+
   BootClassLoader(String libdir)
   {
     // The BootClassLoader is the top of the delegation chain. It does not
