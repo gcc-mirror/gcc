@@ -1,3 +1,9 @@
+2007-01-15  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	* gfortran.dg/string_0xfe_0xff_1.f90:  Use char instead
+	of achar for 0xff to avoid the "Extended ASCII not
+	implemented" error message.
+
 2007-01-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/28172
