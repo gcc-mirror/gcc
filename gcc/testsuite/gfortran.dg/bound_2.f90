@@ -194,7 +194,7 @@ contains
   subroutine foo (x,n)
     integer :: x(7,n,2,*), n
 
-    !if (ubound(x,1) /= 7 .or. ubound(x,2) /= 4 .or. ubound(x,3) /= 2) call abort
+    if (ubound(x,1) /= 7 .or. ubound(x,2) /= 4 .or. ubound(x,3) /= 2) call abort
   end subroutine foo
 
   subroutine jackal (b, c)
