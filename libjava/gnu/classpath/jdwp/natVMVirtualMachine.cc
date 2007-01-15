@@ -1,6 +1,6 @@
 // natVMVirtualMachine.cc - native support for VMVirtualMachine
 
-/* Copyright (C) 2006 Free Software Foundation
+/* Copyright (C) 2006, 2007 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -17,7 +17,7 @@ details. */
 #include <java/lang/ClassLoader.h>
 #include <java/lang/Integer.h>
 #include <java/lang/String.h>
-#include <java/lang/StringBuffer.h>
+#include <java/lang/StringBuilder.h>
 #include <java/lang/Thread.h>
 #include <java/nio/ByteBuffer.h>
 #include <java/util/ArrayList.h>
@@ -75,13 +75,12 @@ gnu::classpath::jdwp::VMVirtualMachine ::suspendThread (Thread *thread)
       jvmtiError err = _jdwp_jvmtiEnv->SuspendThread (thread);
       if (err != JVMTI_ERROR_NONE)
 	{
+	  using namespace gnu::gcj::runtime;
 	  using namespace gnu::classpath::jdwp::exception;
 	  char *reason;
 	  _jdwp_jvmtiEnv->GetErrorName (err, &reason);
-	  ::java::lang::String *txt
-	      = JvNewStringLatin1 ("could not suspend thread: ");
-	  ::java::lang::StringBuffer *msg
-	      = new ::java::lang::StringBuffer (txt);
+	  String *txt = JvNewStringLatin1 ("could not suspend thread: ");
+	  StringBuilder *msg = new StringBuilder (txt);
 	  msg->append (JvNewStringLatin1 (reason));
 	  _jdwp_jvmtiEnv->Deallocate ((unsigned char *) reason);
 	  throw new JdwpInternalErrorException (msg->toString ());
@@ -126,13 +125,12 @@ gnu::classpath::jdwp::VMVirtualMachine::resumeThread (Thread *thread)
       jvmtiError err = _jdwp_jvmtiEnv->ResumeThread (thread);
       if (err != JVMTI_ERROR_NONE)
 	{
+	  using namespace gnu::gcj::runtime;
 	  using namespace gnu::classpath::jdwp::exception;
 	  char *reason;
 	  _jdwp_jvmtiEnv->GetErrorName (err, &reason);
-	  ::java::lang::String *txt 
-	      = JvNewStringLatin1 ("could not resume thread: ");
-	  ::java::lang::StringBuffer *msg
-	      = new ::java::lang::StringBuffer (txt);
+	  String *txt = JvNewStringLatin1 ("could not resume thread: ");
+	  StringBuilder *msg = new StringBuilder (txt);
 	  msg->append (JvNewStringLatin1 (reason));
 	  _jdwp_jvmtiEnv->Deallocate ((unsigned char *) reason);
 	  throw new JdwpInternalErrorException (msg->toString ());
