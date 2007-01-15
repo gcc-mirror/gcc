@@ -1,3 +1,8 @@
+2007-01-15  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config/soft-fp/op-common.h, config/soft-fp/op-4.h: Update from
+	glibc CVS.
+
 2007-01-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa-linux.h (ASM_OUTPUT_INTERNAL_LABEL): Undefine.
