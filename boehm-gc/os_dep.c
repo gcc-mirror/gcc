@@ -3371,7 +3371,7 @@ GC_bool is_ptrfree;
       1. Apple's mach/xnu documentation
       2. Timothy J. Wood's "Mach Exception Handlers 101" post to the
          omnigroup's macosx-dev list. 
-         www.omnigroup.com/mailman/archive/macosx-dev/2000-June/002030.html
+         www.omnigroup.com/mailman/archive/macosx-dev/2000-June/014178.html
       3. macosx-nat.c from Apple's GDB source code.
 */
    
@@ -3806,7 +3806,7 @@ catch_exception_raise(
 #     if CPP_WORDSZ == 32
 	thread_state_flavor_t flavor = x86_EXCEPTION_STATE32;
 	mach_msg_type_number_t exc_state_count = x86_EXCEPTION_STATE32_COUNT;
-	x86_exception_state_t exc_state;
+	x86_exception_state32_t exc_state;
 #     else
 	thread_state_flavor_t flavor = x86_EXCEPTION_STATE64;
 	mach_msg_type_number_t exc_state_count = x86_EXCEPTION_STATE64_COUNT;
