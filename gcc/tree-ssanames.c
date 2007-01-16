@@ -329,6 +329,11 @@ release_dead_ssa_names (void)
       n++;
     }
   FREE_SSANAMES (cfun) = NULL;
+
+  /* Cgraph edges has been invalidated and point to dead statement.  We need to
+     remove them now and will rebuild it before next IPA pass.  */
+  cgraph_node_remove_callees (cgraph_node (current_function_decl));
+
   if (dump_file)
     fprintf (dump_file, "Released %i names, %.2f%%\n", n, n * 100.0 / num_ssa_names);
   return 0;
