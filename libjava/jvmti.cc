@@ -28,7 +28,9 @@ details.  */
 #include <java/lang/Class.h>
 #include <java/lang/ClassLoader.h>
 #include <java/lang/Object.h>
+#include <java/lang/OutOfMemoryError.h>
 #include <java/lang/Thread.h>
+#include <java/lang/ThreadGroup.h>
 #include <java/lang/Throwable.h>
 #include <java/lang/VMClassLoader.h>
 #include <java/lang/reflect/Field.h>
@@ -193,6 +195,51 @@ _Jv_JVMTI_InterruptThread (MAYBE_UNUSED jvmtiEnv *env, jthread thread)
   THREAD_CHECK_VALID (real_thread);
   THREAD_CHECK_IS_ALIVE (real_thread);
   real_thread->interrupt();
+  return JVMTI_ERROR_NONE;
+}
+
+jvmtiError
+_Jv_JVMTI_GetAllThreads(MAYBE_UNUSED jvmtiEnv *env, jint *thread_cnt,
+                        jthread **threads)
+{
+  REQUIRE_PHASE (env, JVMTI_PHASE_LIVE);
+  NULL_CHECK (thread_cnt);
+  NULL_CHECK (threads);
+   
+  using namespace java::lang;
+  Thread *thr = Thread::currentThread ();
+   
+  ThreadGroup *root_grp = ThreadGroup::root;
+  jint estimate = root_grp->activeCount ();
+
+  JArray<Thread *> *thr_arr;
+
+  // Allocate some extra space since threads can be created between calls
+  try
+    { 
+      thr_arr
+			  = reinterpret_cast<JArray<Thread *> *> (JvNewObjectArray 
+			                                           ((estimate * 2),
+                                                 &Thread::class$, NULL));
+    }
+  catch (java::lang::OutOfMemoryError *err)
+    {
+      return JVMTI_ERROR_OUT_OF_MEMORY;
+    }
+    
+  *thread_cnt = root_grp->enumerate (thr_arr);
+   
+  jvmtiError jerr = env->Allocate ((jlong) ((*thread_cnt) * sizeof (jthread)),
+                                   (unsigned char **) threads);
+ 
+  if (jerr != JVMTI_ERROR_NONE)
+    return jerr;
+   
+  // Transfer the threads to the result array
+  jthread *tmp_arr = reinterpret_cast<jthread *> (elements (thr_arr));
+ 
+  memcpy ((*threads), tmp_arr, (*thread_cnt));
+   
   return JVMTI_ERROR_NONE;
 }
 
@@ -1362,7 +1409,7 @@ struct _Jv_jvmtiEnv _Jv_JVMTI_Interface =
   RESERVED,			// reserved1
   _Jv_JVMTI_SetEventNotificationMode, // SetEventNotificationMode
   RESERVED,			// reserved3
-  UNIMPLEMENTED,		// GetAllThreads
+  _Jv_JVMTI_GetAllThreads,		// GetAllThreads
   _Jv_JVMTI_SuspendThread,	// SuspendThread
   _Jv_JVMTI_ResumeThread,	// ResumeThread
   UNIMPLEMENTED,		// StopThread
