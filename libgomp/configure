@@ -308,7 +308,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar multi_basedir toolexecdir toolexeclibdir CC ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CFLAGS AR ac_ct_AR RANLIB ac_ct_RANLIB PERL LN_S LIBTOOL enable_shared enable_static MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT FC FCFLAGS LDFLAGS ac_ct_FC libtool_VERSION CPP CPPFLAGS EGREP SECTION_LDFLAGS OPT_LDFLAGS LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE LIBGOMP_BUILD_VERSIONED_SHLIB_FALSE config_path XCFLAGS XLDFLAGS link_gomp USE_FORTRAN_TRUE USE_FORTRAN_FALSE OMP_LOCK_SIZE OMP_LOCK_ALIGN OMP_NEST_LOCK_SIZE OMP_NEST_LOCK_ALIGN OMP_LOCK_KIND OMP_NEST_LOCK_KIND LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS GENINSRC_TRUE GENINSRC_FALSE build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar multi_basedir toolexecdir toolexeclibdir CC ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CFLAGS AR ac_ct_AR RANLIB ac_ct_RANLIB PERL LN_S LIBTOOL enable_shared enable_static MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT FC FCFLAGS LDFLAGS ac_ct_FC libtool_VERSION CPP CPPFLAGS EGREP SECTION_LDFLAGS OPT_LDFLAGS LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE LIBGOMP_BUILD_VERSIONED_SHLIB_FALSE config_path XCFLAGS XLDFLAGS link_gomp USE_FORTRAN_TRUE USE_FORTRAN_FALSE OMP_LOCK_SIZE OMP_LOCK_ALIGN OMP_NEST_LOCK_SIZE OMP_NEST_LOCK_ALIGN OMP_LOCK_KIND OMP_NEST_LOCK_KIND LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -856,6 +856,10 @@ Optional Features:
                           in a compiler-specific directory [default=no]
   --enable-linux-futex    Use the Linux futex system call
                           [default=default]
+  --enable-generated-files-in-srcdir
+                          put copies of generated files in source dir intended
+                          for creating source tarballs for users without
+                          texinfo bison or flex. [default=no]
   --enable-multilib       build many library versions (default)
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
@@ -1381,6 +1385,42 @@ fi;
 echo "$as_me:$LINENO: result: $enable_linux_futex" >&5
 echo "${ECHO_T}$enable_linux_futex" >&6
 
+# We would like our source tree to be readonly. However when releases or
+# pre-releases are generated, the flex/bison generated files as well as the
+# various formats of manuals need to be included along with the rest of the
+# sources.  Therefore we have --enable-generated-files-in-srcdir to do
+# just that.
+echo "$as_me:$LINENO: checking for --enable-generated-files-in-srcdir" >&5
+echo $ECHO_N "checking for --enable-generated-files-in-srcdir... $ECHO_C" >&6
+ # Check whether --enable-generated-files-in-srcdir or --disable-generated-files-in-srcdir was given.
+if test "${enable_generated_files_in_srcdir+set}" = set; then
+  enableval="$enable_generated_files_in_srcdir"
+
+      case "$enableval" in
+       yes|no) ;;
+       *) { { echo "$as_me:$LINENO: error: Unknown argument to enable/disable generated-files-in-srcdir" >&5
+echo "$as_me: error: Unknown argument to enable/disable generated-files-in-srcdir" >&2;}
+   { (exit 1); exit 1; }; } ;;
+                          esac
+
+else
+  enable_generated_files_in_srcdir=no
+fi;
+
+echo "$as_me:$LINENO: result: $enable_generated_files_in_srcdir" >&5
+echo "${ECHO_T}$enable_generated_files_in_srcdir" >&6
+
+
+if test "$enable_generated_files_in_srcdir" = yes; then
+  GENINSRC_TRUE=
+  GENINSRC_FALSE='#'
+else
+  GENINSRC_TRUE='#'
+  GENINSRC_FALSE=
+fi
+
+
+
 # -------
 # -------
 
@@ -1516,7 +1556,6 @@ target_alias=${target_alias-$host_alias}
 #              we can do about that; they come from AC_INIT).
 #  foreign:  we don't follow the normal rules for GNU packages (no COPYING
 #            file in the top srcdir, etc, etc), so stop complaining.
-#  no-dependencies:  turns off auto dependency generation (just for now)
 #  -Wall:  turns on all automake warnings...
 #  -Wno-portability:  ...except this one, since GNU make is required.
 #  -Wno-override: ... and this one, since we do want this in testsuite.
@@ -4234,7 +4273,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4237 "configure"' > conftest.$ac_ext
+  echo '#line 4276 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -4644,7 +4683,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:4647:" \
+echo "$as_me:4686:" \
      "checking for Fortran compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -11100,6 +11139,13 @@ LIBOBJS=$ac_libobjs
 LTLIBOBJS=$ac_ltlibobjs
 
 
+if test -z "${GENINSRC_TRUE}" && test -z "${GENINSRC_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"GENINSRC\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"GENINSRC\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
 if test -z "${AMDEP_TRUE}" && test -z "${AMDEP_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"AMDEP\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
@@ -11704,6 +11750,8 @@ s,@ECHO_C@,$ECHO_C,;t t
 s,@ECHO_N@,$ECHO_N,;t t
 s,@ECHO_T@,$ECHO_T,;t t
 s,@LIBS@,$LIBS,;t t
+s,@GENINSRC_TRUE@,$GENINSRC_TRUE,;t t
+s,@GENINSRC_FALSE@,$GENINSRC_FALSE,;t t
 s,@build@,$build,;t t
 s,@build_cpu@,$build_cpu,;t t
 s,@build_vendor@,$build_vendor,;t t
