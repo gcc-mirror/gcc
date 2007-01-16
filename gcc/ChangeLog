@@ -1,5 +1,13 @@
 2007-01-15  Eric Christopher  <echristo@apple.com>
 
+	* ifcvt.c: Include vec.h, vecprim.h.
+	(check_cond_move_block): New argument regs.
+	Reorganize. Add registers used to regs.
+	(cond_move_process_if_block): Use regs set above as
+	loop bounds.
+
+2007-01-15  Eric Christopher  <echristo@apple.com>
+
 	* config/darwin.h: Update copyright.
 	(TARGET_OPTION_TRANSLATE_TABLE): Add umbrella.
 	(LINK_COMMAND_SPEC): Add -u.
