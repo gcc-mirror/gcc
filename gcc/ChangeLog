@@ -1,3 +1,29 @@
+2007-01-16  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/darwin-ldouble.c: Build file for SOFT_FLOAT.
+	(strong_alias): Define.
+	(__gcc_qmul): Provide non-FMA for soft-float.
+	(__gcc_qdiv): Same.
+	(__gcc_qneg): New.
+	(__gcc_qeq): New.
+	(__gcc_qle): New.
+	(__gcc_qge): New.
+	(__gcc_qunord): New.
+	(__gcc_stoq): New.
+	(__gcc_dtoq): New.
+	(__gcc_qtos): New.
+	(__gcc_qtod): New.
+	(__gcc_qtoi): New.
+	(__gcc_qtou): New.
+	(__gcc_itoq): New.
+	(__gcc_utoq): New.
+	(fmsub): New.
+	* config/rs6000/rs6000.c (rs6000_init_libfuncs): Initialize
+	soft-float functions.
+	* config/rs6000/libgcc-ppc-glibc.ver: Version soft-float symbols.
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Do not warn
+	about long double soft float.
+
 2007-01-16  Dorit Nuzman  <dorit@il.ibm.com>
             Tehila Meyzels  <tehila@il.ibm.com>
 
