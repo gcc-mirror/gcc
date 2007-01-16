@@ -1,3 +1,10 @@
+2007-01-15  Eric Christopher  <echristo@apple.com>
+
+	* config/darwin.h: Update copyright.
+	(TARGET_OPTION_TRANSLATE_TABLE): Add umbrella.
+	(LINK_COMMAND_SPEC): Add -u.
+	(LINK_SPEC): Fix umbrella for above.
+
 2007-01-15  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config/soft-fp/op-common.h, config/soft-fp/op-4.h: Update from
@@ -52,10 +59,10 @@
 	* param.h (MIN_VECT_LOOP_BOUND): New.
 	* params.def (MIN_VECT_LOOP_BOUND): New.
 	* tree-vectorizer.c (slpeel_tree_peel_loop_to_edge): Takes another
-	argument - minimum threshold for number of iterations. 
+	argument - minimum threshold for number of iterations.
 	* tree-vectorizer.h (slpeel_tree_peel_loop_to_edge): Add another
 	argument to declaration.
-	* tree-vect-analyze.c (vect_analyze_operations): Check value of 
+	* tree-vect-analyze.c (vect_analyze_operations): Check value of
 	MIN_VECT_LOOP_BOUND.
 	* tree-vect-transform.c (vect_do_peeling_for_loop_bound): Call
 	slpeel_tree_peel_loop_to_edge with additional argument.
@@ -128,7 +135,7 @@
 2007-01-12  Olga Golovanevsky  <olga@il.ibm.com>
 
 	* builtins.def : Add BUILT_IN_FREE.
-	
+
 2007-01-12  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/30443
@@ -645,10 +652,10 @@
 2007-01-10  Razya Ladelsky  <razya@il.ibm.com>
 
 	* function.c (get_last_funcdef_no): New function.
-	* function.h (get_last_funcdef_no): Declare. 
+	* function.h (get_last_funcdef_no): Declare.
 	* tree-inline.c (initialize_cfun): Add initialization.
 	(tree_function_versioning): Cleanup.
-	
+
 2007-01-10  Jan Hubicka  <jh@suse.cz>
 
 	* tree-inline.c (setup_one_parameter): Do not propagate into abnormal
@@ -735,7 +742,7 @@
 	(fold_sign_changed_comparison): Likewise.
 	(fold_unary): Likewise.
 	(fold_negate_const): Likewise.
-	(fold_abs_const): Likewise. 
+	(fold_abs_const): Likewise.
 	(fold_not_const): Likewise.
 	* c-common.c (shorten_compare): Use force_fit_type_double.
 	* convert.c (convert_to_pointer): Likewise.
@@ -907,9 +914,9 @@
 	* config/score/t-score-elf (MULTILIB_OPTIONS): Change.
 	* config/score/predicates.md (const_uimm5, sr0_operand, const_simm12,
 	const_simm15, const_pow2, const_npow2): Added.
-	* config/score/misc.md (insv, extv, extzv, movmemsi, 
+	* config/score/misc.md (insv, extv, extzv, movmemsi,
 	move_lbu_a/b, mov_lhu_a/b etc): Added and fix some bug.
-	* config/score/score.c (score_address_cost, score_select_cc_mode): 
+	* config/score/score.c (score_address_cost, score_select_cc_mode):
 	Added.
 	Change CONST_OK_FOR_LETTER_P/EXTRA_CONSTRAINT define.
 	Update score_rtx_costs for MACRO TARGET_RTX_COSTS.
