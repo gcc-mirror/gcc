@@ -1,5 +1,12 @@
 2007-01-16  Keith Seitz  <keiths@redhat.com>
 
+	* testsuite/libjava.jvmti/natevents.cc (FieldModificationCB): Use
+	%#llx instead of %d for new_value.
+	* testsuite/libjava.jvmti/events.out: Update expected output.
+	* testsuite/libjava.jvmti/events.jar: Regenerate.
+
+2007-01-16  Keith Seitz  <keiths@redhat.com>
+
 	* gnu/classpath/jdwp/natVMVirtualMachine.cc (DEFINE_CALLBACK):
 	New macro.
 	(ENABLE_EVENT): New macro.

@@ -200,7 +200,7 @@ FieldModificationCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread,
   printf (" field_klass=%#llx object=%#llx field=%#llx signature_type=%c",
 	  (unsigned long long) field_klass, (unsigned long long) object,
 	  (unsigned long long) field, signature_type);
-  printf (" new_value=%d\n", (int) new_value.i);
+  printf (" new_value=%#llx\n", new_value.l);
 }
 
 static void
