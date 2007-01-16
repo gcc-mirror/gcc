@@ -9,5 +9,5 @@ subroutine foo(a,i,j)
     a(j,2:4) = 1
   endwhere
 end subroutine
-! { dg-final { scan-tree-dump-times "malloc" 1 "original" } }
+! { dg-final { scan-tree-dump-times "temp" 3 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }

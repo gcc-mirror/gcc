@@ -1,3 +1,33 @@
+2007-01-16  Roger Sayle  <roger@eyesopen.com>
+
+	PR fortran/30404
+	* trans-stmt.c (forall_info): Remove pmask field.
+	(gfc_trans_forall_loop): Remove NVAR argument, instead assume that
+	NVAR covers all the interation variables in the current forall_info.
+	Add an extra OUTER parameter, which specified the loop header in
+	which to place mask index initializations.
+	(gfc_trans_nested_forall_loop): Remove NEST_FLAG argument.
+	Change the semantics of MASK_FLAG to only control the mask in the
+	innermost loop.
+	(compute_overall_iter_number): Optimize the trivial case of a
+	top-level loop having a constant number of iterations.  Update
+	call to gfc_trans_nested_forall_loop.  Calculate the number of
+	times the inner loop will be executed, not to size of the 
+	iteration space.
+	(allocate_temp_for_forall_nest_1): Reuse SIZE as BYTESIZE when
+	sizeof(type) == 1.  Tidy up.
+	(gfc_trans_assign_need_temp): Remove NEST_FLAG argument from calls
+	to gfc_trans_nested_forall_loop.
+	(gfc_trans_pointer_assign_need_temp): Likewise.
+	(gfc_trans_forall_1): Remove unused BYTESIZE, TMPVAR, SIZEVAR and
+	LENVAR local variables.  Split mask allocation into a separate
+	hunk/pass from mask population.  Use allocate_temp_for_forall_nest
+	to allocate the FORALL mask with the correct size.  Update calls
+	to gfc_trans_nested_forall_loop.
+	(gfc_evaluate_where_mask): Update call to
+	gfc_trans_nested_forall_loop.
+	(gfc_trans_where_2): Likewise.
+
 2007-01-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/28172
