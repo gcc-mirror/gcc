@@ -1,5 +1,11 @@
 2007-01-16  Jan Hubicka  <jh@suse.cz>
 
+	* tree-ssanames.c (release_dead_ssa_names): Instead of ggc_freeing
+	the names, just unlink the chain so we don't crash on dangling pointers
+	to dead SSA names.
+
+2007-01-16  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.h (cgraph_decide_inlining_incrementally): Kill.
 	* tree-pass.h: Reorder to make IPA passes appear toegher.
 	(pass_early_inline, pass_inline_parameters, pass_apply_inline): Declare.
