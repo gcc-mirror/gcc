@@ -665,7 +665,7 @@ vect_get_vec_def_for_operand (tree op, tree stmt, tree *scalar_def)
    vector stmt (each computing a vector of 'nunits' results, and together
    computing 'VF' results in each iteration).  This function is called when 
    vectorizing such a stmt (e.g. vectorizing S2 in the illustration below, in
-   which VF=16 and nuniti=4, so the number of copies required is 4):
+   which VF=16 and nunits=4, so the number of copies required is 4):
 
    scalar stmt:         vectorized into:        STMT_VINFO_RELATED_STMT
  
@@ -2171,6 +2171,10 @@ vectorizable_type_demotion (tree stmt, block_stmt_iterator *bsi,
                                                                                 
   ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_out;
   gcc_assert (ncopies >= 1);
+
+  if (! INTEGRAL_TYPE_P (scalar_type)
+      || !INTEGRAL_TYPE_P (TREE_TYPE (op0)))
+    return false;
                                                                                 
   /* Check the operands of the operation.  */
   if (!vect_is_simple_use (op0, loop_vinfo, &def_stmt, &def, &dt0))
@@ -2375,6 +2379,10 @@ vectorizable_type_promotion (tree stmt, block_stmt_iterator *bsi,
   vectype_out = get_vectype_for_scalar_type (TREE_TYPE (scalar_dest));
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
   if (nunits_out != nunits_in / 2) /* FORNOW */
+    return false;
+
+  if (! INTEGRAL_TYPE_P (TREE_TYPE (scalar_dest))
+      || !INTEGRAL_TYPE_P (TREE_TYPE (op0))) 
     return false;
 
   /* Check the operands of the operation.  */
@@ -2772,7 +2780,7 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
         S3:  &base + 1 = x1
         S4:  &base + 3 = x3
 
-     We create vectorized storess starting from base address (the access of the
+     We create vectorized stores starting from base address (the access of the
      first stmt in the chain (S2 in the above example), when the last store stmt
      of the chain (S4) is reached:
 
@@ -2811,8 +2819,7 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 	     as an input to vect_permute_store_chain(), and OPRNDS as an input
 	     to vect_get_vec_def_for_stmt_copy() for the next copy.
 	     If the store is not strided, GROUP_SIZE is 1, and DR_CHAIN and
-	     OPRNDS are of size 1.
-	  */
+	     OPRNDS are of size 1.  */
 	  next_stmt = first_stmt;	  
 	  for (i = 0; i < group_size; i++)
 	    {
@@ -2820,8 +2827,7 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 		 is the exact number of stmts in the chain. Therefore, NEXT_STMT
 		 can't be NULL_TREE.  In case that there is no interleaving, 
 		 GROUP_SIZE is 1, and only one iteration of the loop will be 
-		 executed.
-	      */
+		 executed.  */
 	      gcc_assert (next_stmt);
 	      op = GIMPLE_STMT_OPERAND (next_stmt, 1);
 	      vec_oprnd = vect_get_vec_def_for_operand (op, next_stmt, NULL);
@@ -2841,8 +2847,7 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 	     and OPRNDS as an input to vect_get_vec_def_for_stmt_copy() for the 
 	     next copy.
 	     If the store is not strided, GROUP_SIZE is 1, and DR_CHAIN and
-	     OPRNDS are of size 1.
-	  */
+	     OPRNDS are of size 1.  */
 	  for (i = 0; i < group_size; i++)
 	    {
 	      vec_oprnd = vect_get_vec_def_for_stmt_copy (dt, 
@@ -2907,7 +2912,7 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 	    }
 
 	  prev_stmt_info = vinfo_for_stmt (new_stmt);
-	  	  next_stmt = DR_GROUP_NEXT_DR (vinfo_for_stmt (next_stmt));
+	  next_stmt = DR_GROUP_NEXT_DR (vinfo_for_stmt (next_stmt));
 	  if (!next_stmt)
 	    break;
 	  /* Bump the vector pointer.  */

@@ -300,6 +300,21 @@ vinfo_for_stmt (tree stmt)
   return ann ? (stmt_vec_info) ann->common.aux : NULL;
 }
 
+static inline bool
+is_pattern_stmt_p (stmt_vec_info stmt_info)
+{
+  tree related_stmt;
+  stmt_vec_info related_stmt_info;
+
+  related_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
+  if (related_stmt
+      && (related_stmt_info = vinfo_for_stmt (related_stmt))
+      && STMT_VINFO_IN_PATTERN_P (related_stmt_info))
+    return true;
+
+  return false;
+}
+
 /*-----------------------------------------------------------------*/
 /* Info on data references alignment.                              */
 /*-----------------------------------------------------------------*/
