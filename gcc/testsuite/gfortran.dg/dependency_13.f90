@@ -9,5 +9,5 @@
      x(2:5) = -42.
    end where
    end
-! { dg-final { scan-tree-dump-times "malloc" 1 "original" } }
+! { dg-final { scan-tree-dump-times "temp" 3 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
