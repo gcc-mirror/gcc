@@ -339,7 +339,7 @@ FPTEST2            (fmod)
 BUILTIN_FPTEST0    (huge_val)
 FPTEST2            (hypot)
 FPTEST1T           (ilogb, int)
-BUILTIN_FPTEST0    (inf)
+BUILTIN_FPTEST0    (inf) /* { dg-warning "does not support infinity" "INF unsupported" { target vax-*-* c4x-*-* pdp11-*-* } } */
 FPTEST1            (j0)
 FPTEST1            (j1)
 FPTEST2ARG1        (jn, int)
