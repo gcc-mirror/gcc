@@ -146,6 +146,8 @@ dfp_compare_op (dfp_binary_func op, DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
     result = -1;
   else if (decNumberIsZero (&res))
     result = 0;
+  else if (decNumberIsNaN (&res))
+    result = -2;
   else
     result = 1;
 
@@ -302,7 +304,9 @@ DFP_NE (DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
 {
   int stat;
   stat = dfp_compare_op (decNumberCompare, arg_a, arg_b);
-  /* For NE return nonzero for true, zero for false.  */
+  /* For NE return zero for true, nonzero for false.  */
+  if (__builtin_expect (stat == -2, 0))  /* An operand is NaN.  */
+    return 1;
   return stat != 0;
 }
 #endif /* L_ne */
@@ -336,6 +340,8 @@ DFP_LE (DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
   int stat;
   stat = dfp_compare_op (decNumberCompare, arg_a, arg_b);
   /* For LE return 0 (<= 0) for true, 1 for false.  */
+  if (__builtin_expect (stat == -2, 0))  /* An operand is NaN.  */
+    return 1;
   return stat == 1;
 }
 #endif /* L_le */
@@ -347,6 +353,8 @@ DFP_GE (DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
   int stat;
   stat = dfp_compare_op (decNumberCompare, arg_a, arg_b);
   /* For GE return 1 (>=0) for true, -1 for false.  */
+  if (__builtin_expect (stat == -2, 0))  /* An operand is NaN.  */
+    return -1;
   return (stat != -1) ? 1 : -1;
 }
 #endif /* L_ge */

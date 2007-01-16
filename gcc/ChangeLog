@@ -1,3 +1,8 @@
+2007-01-16  Janis Johnson  <janis187@us.ibm.com>
+
+	* config/dfp-bit.c (dfp_compare_op): Return separate value for NaN.
+	(DFP_NE, DFP_LE, DFP_GE): Return false for NaN.
+
 2007-01-16  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/darwin-ldouble.c: Build file for SOFT_FLOAT.

@@ -1,3 +1,10 @@
+2007-01-16  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/dfp/compare-special.h: New file.
+	* gcc.dg/dfp/compare-special-32.c: New test.
+	* gcc.dg/dfp/compare-special-64.c: New test.
+	* gcc.dg/dfp/compare-special-128.c: New test.
+
 2007-01-16  Roger Sayle  <roger@eyesopen.com>
 	    Paul Thomas  <pault@gcc.gnu.org>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
