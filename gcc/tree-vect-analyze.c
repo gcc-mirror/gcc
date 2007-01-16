@@ -109,52 +109,67 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 
       for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
         {
-          tree stmt = bsi_stmt (si);
-          unsigned int nunits;
-          stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-          tree vectype;
+	  tree stmt = bsi_stmt (si);
+	  unsigned int nunits;
+	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+	  tree vectype;
 
-          if (vect_print_dump_info (REPORT_DETAILS))
-            {
-              fprintf (vect_dump, "==> examining statement: ");
-              print_generic_expr (vect_dump, stmt, TDF_SLIM);
-            }
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    {
+	      fprintf (vect_dump, "==> examining statement: ");
+	      print_generic_expr (vect_dump, stmt, TDF_SLIM);
+	    }
 
-          gcc_assert (stmt_info);
-          /* skip stmts which do not need to be vectorized.  */
-          if (!STMT_VINFO_RELEVANT_P (stmt_info)
+	  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
+	    continue;
+
+	  gcc_assert (stmt_info);
+
+	  /* skip stmts which do not need to be vectorized.  */
+	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
 	      && !STMT_VINFO_LIVE_P (stmt_info))
-            {
-              if (vect_print_dump_info (REPORT_DETAILS))
-                fprintf (vect_dump, "skip.");
-              continue;
-            }
+	    {
+	      if (vect_print_dump_info (REPORT_DETAILS))
+	        fprintf (vect_dump, "skip.");
+	      continue;
+	    }
 
-          if (!GIMPLE_STMT_P (stmt)
+	  if (!GIMPLE_STMT_P (stmt)
 	      && VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (stmt))))
-            {
-              if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
-                {
-                  fprintf (vect_dump, "not vectorized: vector stmt in loop:");
-                  print_generic_expr (vect_dump, stmt, TDF_SLIM);
-                }
-              return false;
-            }
+	    {
+	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+	        {
+	          fprintf (vect_dump, "not vectorized: vector stmt in loop:");
+	          print_generic_expr (vect_dump, stmt, TDF_SLIM);
+	        }
+	      return false;
+	    }
 
 	  if (STMT_VINFO_VECTYPE (stmt_info))
 	    {
+	      /* The only case when a vectype had been already set is for stmts 
+	         that contain a dataref, or for "pattern-stmts" (stmts generated
+		 by the vectorizer to represent/replace a certain idiom).  */
+	      gcc_assert (STMT_VINFO_DATA_REF (stmt_info) 
+			  || is_pattern_stmt_p (stmt_info));
 	      vectype = STMT_VINFO_VECTYPE (stmt_info);
-	      scalar_type = TREE_TYPE (vectype);
 	    }
 	  else
 	    {
-	      if (STMT_VINFO_DATA_REF (stmt_info))
-		scalar_type = 
-			TREE_TYPE (DR_REF (STMT_VINFO_DATA_REF (stmt_info)));
-	      else if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
-		scalar_type = TREE_TYPE (GIMPLE_STMT_OPERAND (stmt, 0));
-	      else
-		scalar_type = TREE_TYPE (stmt);
+	      gcc_assert (! STMT_VINFO_DATA_REF (stmt_info)
+			  && !is_pattern_stmt_p (stmt_info));
+
+	      /* We set the vectype according to the type of the result (lhs).
+		 For stmts whose result-type is different than the type of the
+		 arguments (e.g. demotion, promotion), vectype will be reset 
+		 appropriately (later).  Note that we have to visit the smallest 
+		 datatype in this function, because that determines the VF.  
+		 If the samallest datatype in the loop is present only as the 
+		 rhs of a promotion operation - we'd miss it here.
+		 However, in such a case, that a variable of this datatype
+		 does not appear in the lhs anywhere in the loop, it shouldn't
+		 affect the vectorization factor.   */
+	      scalar_type = TREE_TYPE (GIMPLE_STMT_OPERAND (stmt, 0));
 
 	      if (vect_print_dump_info (REPORT_DETAILS))
 		{
@@ -176,17 +191,17 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	      STMT_VINFO_VECTYPE (stmt_info) = vectype;
             }
 
-          if (vect_print_dump_info (REPORT_DETAILS))
-            {
-              fprintf (vect_dump, "vectype: ");
-              print_generic_expr (vect_dump, vectype, TDF_SLIM);
-            }
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    {
+	      fprintf (vect_dump, "vectype: ");
+	      print_generic_expr (vect_dump, vectype, TDF_SLIM);
+	    }
 
-          nunits = TYPE_VECTOR_SUBPARTS (vectype);
-          if (vect_print_dump_info (REPORT_DETAILS))
-            fprintf (vect_dump, "nunits = %d", nunits);
+	  nunits = TYPE_VECTOR_SUBPARTS (vectype);
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    fprintf (vect_dump, "nunits = %d", nunits);
 
-          if (!vectorization_factor
+	  if (!vectorization_factor
 	      || (nunits > vectorization_factor))
 	    vectorization_factor = nunits;
 

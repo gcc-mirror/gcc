@@ -1,3 +1,16 @@
+2007-01-16  Dorit Nuzman  <dorit@il.ibm.com>
+            Tehila Meyzels  <tehila@il.ibm.com>
+
+	* tree-vectorizer.h (is_pattern_stmt_p): New.
+	* tree-vect-analyze.c (vect_determine_vectorization_factor): Fix
+	formatting (tabs instead of spaces). Cleanup and clarify setting
+	of STMT_VINFO_VECTYPE. Call is_pattern_stmt_p.
+	* tree-vect-transform.c (vect_get_vec_def_for_operand): Fix typo.
+	(vectorizable_type_demotion): Check that types are integral.
+	(vectorizable_type_promotion): Likewise.
+	(vectorizable_store): Fix typo.  Eliminate new-line at end of
+	comments.
+
 2007-01-16  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssanames.c (release_dead_ssa_names): Remove invalidated
