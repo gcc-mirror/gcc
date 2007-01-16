@@ -1,6 +1,6 @@
 // The template and inlines for the numeric_limits classes. -*- C++ -*- 
 
-// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2005 
+// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -137,7 +137,8 @@
   (__glibcxx_signed (T) ? (T)1 << __glibcxx_digits (T) : (T)0)
 
 #define __glibcxx_max(T) \
-  (__glibcxx_signed (T) ? ((T)1 << __glibcxx_digits (T)) - 1 : ~(T)0)
+  (__glibcxx_signed (T) ? \
+   (((((T)1 << (__glibcxx_digits (T) - 1)) - 1) << 1) + 1) : ~(T)0)
 
 #define __glibcxx_digits(T) \
   (sizeof(T) * __CHAR_BIT__ - __glibcxx_signed (T))

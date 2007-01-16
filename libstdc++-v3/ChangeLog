@@ -1,3 +1,9 @@
+2007-01-15  Ian Lance Taylor  <iant@google.com>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/type_traits.h: Fix __glibcxx_max macro.
+	* include/std/limits: Likewise.
+
 2007-01-15  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/std/valarray (valarray<>::cshift): Fix typo.
