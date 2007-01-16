@@ -1,3 +1,9 @@
+2007-01-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR testsuite/12325
+	* gcc.dg/torture/builtin-attr-1.c: Handle warnings from
+	targets that don't support Inf.
+
 2007-01-15  Dale Johannesen  <dalej@apple.com>
 
 	* gcc.dg/tree-ssa/loop-3.c:  Disable with -fpic or -fPIC.
