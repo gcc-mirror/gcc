@@ -437,10 +437,11 @@ init_optimization_passes (void)
   struct tree_opt_pass **p;
 
 #define NEXT_PASS(PASS)  (p = next_pass_1 (p, &PASS))
+
   /* Interprocedural optimization passes.  */
   p = &all_ipa_passes;
   NEXT_PASS (pass_ipa_function_and_variable_visibility);
-  NEXT_PASS (pass_early_ipa_inline);
+  NEXT_PASS (pass_ipa_early_inline);
   NEXT_PASS (pass_early_local_passes);
   NEXT_PASS (pass_ipa_increase_alignment);
   NEXT_PASS (pass_ipa_cp);
@@ -449,6 +450,12 @@ init_optimization_passes (void)
   NEXT_PASS (pass_ipa_pure_const); 
   NEXT_PASS (pass_ipa_type_escape);
   NEXT_PASS (pass_ipa_pta);
+  *p = NULL;
+
+  p = &pass_ipa_early_inline.sub;
+  NEXT_PASS (pass_early_inline);
+  NEXT_PASS (pass_inline_parameters);
+  NEXT_PASS (pass_rebuild_cgraph_edges);
   *p = NULL;
 
   /* All passes needed to lower the function into shape optimizers can
@@ -464,6 +471,7 @@ init_optimization_passes (void)
   NEXT_PASS (pass_lower_vector);
   NEXT_PASS (pass_warn_function_return);
   NEXT_PASS (pass_build_cgraph_edges);
+  NEXT_PASS (pass_inline_parameters);
   *p = NULL;
 
   p = &pass_early_local_passes.sub;
@@ -473,6 +481,7 @@ init_optimization_passes (void)
   NEXT_PASS (pass_expand_omp);
   NEXT_PASS (pass_all_early_optimizations);
   NEXT_PASS (pass_rebuild_cgraph_edges);
+  NEXT_PASS (pass_inline_parameters);
   *p = NULL;
 
   p = &pass_all_early_optimizations.sub;
@@ -480,6 +489,8 @@ init_optimization_passes (void)
   NEXT_PASS (pass_reset_cc_flags);
   NEXT_PASS (pass_build_ssa);
   NEXT_PASS (pass_early_warn_uninitialized);
+  NEXT_PASS (pass_rebuild_cgraph_edges);
+  NEXT_PASS (pass_early_inline);
   NEXT_PASS (pass_cleanup_cfg);
   NEXT_PASS (pass_rename_ssa_copies);
   NEXT_PASS (pass_ccp);
@@ -494,7 +505,7 @@ init_optimization_passes (void)
   *p = NULL;
 
   p = &all_passes;
-  NEXT_PASS (pass_fixup_cfg);
+  NEXT_PASS (pass_apply_inline);
   NEXT_PASS (pass_all_optimizations);
   NEXT_PASS (pass_warn_function_noreturn);
   NEXT_PASS (pass_free_datastructures);
@@ -749,6 +760,52 @@ do_per_function (void (*callback) (void *data), void *data)
     }
 }
 
+/* Because inlining might remove no-longer reachable nodes, we need to
+   keep the array visible to garbage collector to avoid reading collected
+   out nodes.  */
+static int nnodes;
+static GTY ((length ("nnodes"))) struct cgraph_node **order;
+
+/* If we are in IPA mode (i.e., current_function_decl is NULL), call
+   function CALLBACK for every function in the call graph.  Otherwise,
+   call CALLBACK on the current function.  */ 
+
+static void
+do_per_function_toporder (void (*callback) (void *data), void *data)
+{
+  int i;
+
+  if (current_function_decl)
+    callback (data);
+  else
+    {
+      gcc_assert (!order);
+      order = ggc_alloc (sizeof (*order) * cgraph_n_nodes);
+      nnodes = cgraph_postorder (order);
+      for (i = nnodes - 1; i >= 0; i--)
+	{
+	  struct cgraph_node *node = order[i];
+
+	  /* Allow possibly removed nodes to be garbage collected.  */
+	  order[i] = NULL;
+	  if (node->analyzed && (node->needed || node->reachable))
+	    {
+	      push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+	      current_function_decl = node->decl;
+	      callback (data);
+	      free_dominance_info (CDI_DOMINATORS);
+	      free_dominance_info (CDI_POST_DOMINATORS);
+	      current_function_decl = NULL;
+	      pop_cfun ();
+	      ggc_collect ();
+	    }
+	}
+    }
+  ggc_free (order);
+  order = NULL;
+  nnodes = 0;
+}
+
 /* Perform all TODO actions that ought to be done on each function.  */
 
 static void
@@ -903,6 +960,9 @@ execute_one_pass (struct tree_opt_pass *pass)
   if (pass->gate && !pass->gate ())
     return false;
 
+  if (!quiet_flag && !cfun)
+    fprintf (stderr, " <%s>", pass->name ? pass->name : "");
+
   if (pass->todo_flags_start & TODO_set_props)
     cfun->curr_properties = pass->properties_required;
 
@@ -1012,16 +1072,13 @@ execute_ipa_pass_list (struct tree_opt_pass *pass)
     {
       gcc_assert (!current_function_decl);
       gcc_assert (!cfun);
-      if (!quiet_flag)
-	{
-          fprintf (stderr, " <%s>", pass->name ? pass->name : "");
-	  fflush (stderr);
-	}
       if (execute_one_pass (pass) && pass->sub)
-	do_per_function ((void (*)(void *))execute_pass_list, pass->sub);
+	do_per_function_toporder ((void (*)(void *))execute_pass_list,
+				  pass->sub);
       if (!current_function_decl)
 	cgraph_process_new_functions ();
       pass = pass->next;
     }
   while (pass);
 }
+#include "gt-passes.h"

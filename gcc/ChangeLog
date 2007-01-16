@@ -1,3 +1,43 @@
+2007-01-16  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (cgraph_decide_inlining_incrementally): Kill.
+	* tree-pass.h: Reorder to make IPA passes appear toegher.
+	(pass_early_inline, pass_inline_parameters, pass_apply_inline): Declare.
+	* cgraphunit.c (cgraph_finalize_function): Do not compute inling
+	parameters, do not call early inliner.
+	* ipa-inline.c: Update comments.  Include tree-flow.h
+	(cgraph_decide_inlining): Do not compute inlining parameters.
+	(cgraph_decide_inlining_incrementally): Return TODOs; assume to
+	be called with function context set up.
+	(pass_ipa_inline): Remove unreachable functions before pass.
+	(cgraph_early_inlining): Simplify assuming to be called from the
+	PM as local pass.
+	(pass_early_inline): New pass.
+	(cgraph_gate_ipa_early_inlining): New gate.
+	(pass_ipa_early_inline): Turn into simple wrapper.
+	(compute_inline_parameters): New function.
+	(gate_inline_passes): New gate.
+	(pass_inline_parameters): New pass.
+	(apply_inline): Move here from tree-optimize.c
+	(pass_apply_inline): New pass.
+	* ipa.c (cgraph_remove_unreachable_nodes): Verify cgraph after
+	transforming.
+	* tree-inline.c (optimize_inline_calls): Return TODOs rather than
+	doing them by hand.
+	(tree_function_versioning): Do not allocate dummy struct function.
+	* tree-inline.h (optimize_inline_calls): Update prototype.
+	* tree-optimize.c (execute_fixup_cfg): Export.
+	(pass_fixup_cfg): Remove
+	(tree_rest_of_compilation): Do not apply inlines.
+	* tree-flow.h (execute_fixup_cfg): Declare.
+	* Makefile.in (gt-passes.c): New.
+	* passes.c: Include gt-passes.h
+	(init_optimization_passes): New passes.
+	(nnodes, order): New static vars.
+	(do_per_function_toporder): New function.
+	(execute_one_pass): Dump current pass here.
+	(execute_ipa_pass_list): Don't dump current pass here.
+
 2007-01-16  Janis Johnson  <janis187@us.ibm.com>
 
 	* config/dfp-bit.c (dfp_compare_op): Return separate value for NaN.

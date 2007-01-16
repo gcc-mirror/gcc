@@ -455,10 +455,7 @@ cgraph_finalize_function (tree decl, bool nested)
   /* If not unit at a time, then we need to create the call graph
      now, so that called functions can be queued and emitted now.  */
   if (!flag_unit_at_a_time)
-    {
-      cgraph_analyze_function (node);
-      cgraph_decide_inlining_incrementally (node, false);
-    }
+    cgraph_analyze_function (node);
 
   if (decide_is_function_needed (node, decl))
     cgraph_mark_needed_node (node);

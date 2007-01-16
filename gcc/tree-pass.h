@@ -310,13 +310,12 @@ extern struct tree_opt_pass pass_reset_cc_flags;
 /* IPA Passes */
 extern struct tree_opt_pass pass_ipa_cp;
 extern struct tree_opt_pass pass_ipa_inline;
-extern struct tree_opt_pass pass_early_ipa_inline;
+extern struct tree_opt_pass pass_ipa_early_inline;
 extern struct tree_opt_pass pass_ipa_reference;
 extern struct tree_opt_pass pass_ipa_pure_const;
 extern struct tree_opt_pass pass_ipa_type_escape;
 extern struct tree_opt_pass pass_ipa_pta;
 extern struct tree_opt_pass pass_early_local_passes;
-extern struct tree_opt_pass pass_all_early_optimizations;
 extern struct tree_opt_pass pass_ipa_increase_alignment;
 extern struct tree_opt_pass pass_ipa_function_and_variable_visibility;
 
@@ -399,6 +398,10 @@ extern struct tree_opt_pass pass_set_nothrow_function_flags;
 extern struct tree_opt_pass pass_final;
 extern struct tree_opt_pass pass_rtl_seqabstr;
 extern struct tree_opt_pass pass_release_ssa_names;
+extern struct tree_opt_pass pass_early_inline;
+extern struct tree_opt_pass pass_inline_parameters;
+extern struct tree_opt_pass pass_apply_inline;
+extern struct tree_opt_pass pass_all_early_optimizations;
 
 /* The root of the compilation pass tree, once constructed.  */
 extern struct tree_opt_pass *all_passes, *all_ipa_passes, *all_lowering_passes;

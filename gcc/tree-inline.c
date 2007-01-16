@@ -2613,7 +2613,7 @@ fold_marked_statements (int first, struct pointer_set_t *statements)
 
 /* Expand calls to inline functions in the body of FN.  */
 
-void
+unsigned int
 optimize_inline_calls (tree fn)
 {
   copy_body_data id;
@@ -2624,7 +2624,7 @@ optimize_inline_calls (tree fn)
      occurred -- and we might crash if we try to inline invalid
      code.  */
   if (errorcount || sorrycount)
-    return;
+    return 0;
 
   /* Clear out ID.  */
   memset (&id, 0, sizeof (id));
@@ -2679,25 +2679,22 @@ optimize_inline_calls (tree fn)
   if (ENTRY_BLOCK_PTR->count)
     counts_to_freqs ();
 
+  /* We are not going to maintain the cgraph edges up to date.
+     Kill it so it won't confuse us.  */
+  cgraph_node_remove_callees (id.dst_node);
+
   fold_marked_statements (last, id.statements_to_fold);
   pointer_set_destroy (id.statements_to_fold);
-  if (gimple_in_ssa_p (cfun))
-    {
-      /* We make no attempts to keep dominance info up-to-date.  */
-      free_dominance_info (CDI_DOMINATORS);
-      free_dominance_info (CDI_POST_DOMINATORS);
-      delete_unreachable_blocks ();
-      update_ssa (TODO_update_ssa);
-      fold_cond_expr_cond ();
-      if (need_ssa_update_p ())
-        update_ssa (TODO_update_ssa);
-    }
-  else
-    fold_cond_expr_cond ();
+  fold_cond_expr_cond ();
+  /* We make no attempts to keep dominance info up-to-date.  */
+  free_dominance_info (CDI_DOMINATORS);
+  free_dominance_info (CDI_POST_DOMINATORS);
   /* It would be nice to check SSA/CFG/statement consistency here, but it is
      not possible yet - the IPA passes might make various functions to not
      throw and they don't care to proactively update local EH info.  This is
      done later in fixup_cfg pass that also execute the verification.  */
+  return (TODO_update_ssa | TODO_cleanup_cfg
+	  | (gimple_in_ssa_p (cfun) ? TODO_remove_unused_locals : 0));
 }
 
 /* FN is a function that has a complete body, and CLONE is a function whose
@@ -3194,6 +3191,7 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
   struct ipa_replace_map *replace_info;
   basic_block old_entry_block;
   tree t_step;
+  tree old_current_function_decl = current_function_decl;
 
   gcc_assert (TREE_CODE (old_decl) == FUNCTION_DECL
 	      && TREE_CODE (new_decl) == FUNCTION_DECL);
@@ -3201,10 +3199,6 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
 
   old_version_node = cgraph_node (old_decl);
   new_version_node = cgraph_node (new_decl);
-
-  allocate_struct_function (new_decl);
-  /* Cfun points to the new allocated function struct at this point.  */
-  cfun->function_end_locus = DECL_SOURCE_LOCATION (new_decl);
 
   DECL_ARTIFICIAL (new_decl) = 1;
   DECL_ABSTRACT_ORIGIN (new_decl) = DECL_ORIGIN (old_decl);
@@ -3322,7 +3316,9 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
   pop_cfun ();
-  current_function_decl = NULL;
+  current_function_decl = old_current_function_decl;
+  gcc_assert (!current_function_decl
+	      || DECL_STRUCT_FUNCTION (current_function_decl) == cfun);
   return;
 }
 
