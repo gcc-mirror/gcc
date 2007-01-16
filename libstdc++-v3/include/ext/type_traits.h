@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -161,7 +161,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   (__glibcxx_signed(_Tp) ? (_Tp)1 << __glibcxx_digits(_Tp) : (_Tp)0)
 
 #define __glibcxx_max(_Tp) \
-  (__glibcxx_signed(_Tp) ? ((_Tp)1 << __glibcxx_digits(_Tp)) - 1 : ~(_Tp)0)
+  (__glibcxx_signed(_Tp) ? \
+   (((((_Tp)1 << (__glibcxx_digits(_Tp) - 1)) - 1) << 1) + 1) : ~(_Tp)0)
 
   template<typename _Value>
     struct __numeric_traits_integer
@@ -196,5 +197,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     { };
 
 _GLIBCXX_END_NAMESPACE
+
+#undef __glibcxx_signed
+#undef __glibcxx_min
+#undef __glibcxx_max
+#undef __glibcxx_digits
 
 #endif 
