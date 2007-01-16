@@ -61,7 +61,64 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
       cgraph_decide_inlining implements heuristics taking whole callgraph
       into account, while cgraph_decide_inlining_incrementally considers
-      only one function at a time and is used in non-unit-at-a-time mode.  */
+      only one function at a time and is used in non-unit-at-a-time mode. 
+
+   The inliner itself is split into several passes:
+
+   pass_inline_parameters
+
+     This pass computes local properties of functions that are used by inliner:
+     estimated function body size, whether function is inlinable at all and
+     stack frame consumption.
+
+     Before executing any of inliner passes, this local pass has to be applied
+     to each function in the callgraph (ie run as subpass of some earlier
+     IPA pass).  The results are made out of date by any optimization applied
+     on the function body.
+
+   pass_early_inlining
+
+     Simple local inlining pass inlining callees into current function.  This
+     pass makes no global whole compilation unit analysis and this when allowed
+     to do inlining expanding code size it might result in unbounded growth of
+     whole unit.
+
+     This is the main inlining pass in non-unit-at-a-time.
+
+     With unit-at-a-time the pass is run during conversion into SSA form.
+     Only functions already converted into SSA form are inlined, so the
+     conversion must happen in topological order on the callgraph (that is
+     maintained by pass manager).  The functions after inlining are early
+     optimized so the early inliner sees unoptimized function itself, but
+     all considered callees are already optimized allowing it to unfold
+     abstraction penalty on C++ effectivly and cheaply.
+
+   pass_ipa_early_inlining
+
+     With profiling, the early inlining is also neccesary to reduce
+     instrumentation costs on program with high abstraction penalty (doing
+     many redundant calls).  This can't happen in parallel with early
+     optimization and profile instrumentation, because we would end up
+     re-instrumenting already instrumented function bodies we brought in via
+     inlining.
+
+     To avoid this, this pass is executed as IPA pass before profiling.  It is
+     simple wrapper to pass_early_inlining and ensures first inlining.
+
+   pass_ipa_inline
+
+     This is the main pass implementing simple greedy algorithm to do inlining
+     of small functions that results in overall growth of compilation unit and
+     inlining of functions called once.  The pass compute just so called inline
+     plan (representation of inlining to be done in callgraph) and unlike early
+     inlining it is not performing the inlining itself.
+
+   pass_apply_inline
+
+     This pass performs actual inlining according to pass_ipa_inline on given
+     function.  Possible the function body before inlining is saved when it is
+     needed for further inlining later.
+ */
 
 #include "config.h"
 #include "system.h"
@@ -81,6 +138,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "hashtab.h"
 #include "coverage.h"
 #include "ggc.h"
+#include "tree-flow.h"
 
 /* Statistics we collect about inlining algorithm.  */
 static int ncalls_inlined;
@@ -931,13 +989,6 @@ cgraph_decide_inlining (void)
       {
 	struct cgraph_edge *e;
 
-	/* At the moment, no IPA passes change function bodies before inlining.
-	   Save some time by not recomputing function body sizes if early inlining
-	   already did so.  */
-	if (!flag_early_inlining)
-	  node->local.self_insns = node->global.insns
-	     = estimate_num_insns (node->decl);
-
 	initial_insns += node->local.self_insns;
 	gcc_assert (node->local.self_insns == node->global.insns);
 	for (e = node->callees; e; e = e->next_callee)
@@ -1088,17 +1139,24 @@ cgraph_decide_inlining (void)
 /* Decide on the inlining.  We do so in the topological order to avoid
    expenses on updating data structures.  */
 
-bool
+static unsigned int
 cgraph_decide_inlining_incrementally (struct cgraph_node *node, bool early)
 {
   struct cgraph_edge *e;
   bool inlined = false;
   const char *failed_reason;
+  unsigned int todo = 0;
+
+#ifdef ENABLE_CHECKING
+  verify_cgraph_node (node);
+#endif
 
   /* First of all look for always inline functions.  */
   for (e = node->callees; e; e = e->next_callee)
     if (e->callee->local.disregard_inline_limits
 	&& e->inline_failed
+	&& (gimple_in_ssa_p (DECL_STRUCT_FUNCTION (node->decl))
+	    == gimple_in_ssa_p (DECL_STRUCT_FUNCTION (e->callee->decl)))
         && !cgraph_recursive_inlining_p (node, e->callee, &e->inline_failed)
 	/* ??? It is possible that renaming variable removed the function body
 	   in duplicate_decls. See gcc.c-torture/compile/20011119-2.c  */
@@ -1111,6 +1169,13 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node, bool early)
 	    fprintf (dump_file, " into %s\n", cgraph_node_name (node));
 	  }
 	cgraph_mark_inline (e);
+	/* In order to fully inline alway_inline functions at -O0, we need to
+	   recurse here, since the inlined functions might not be processed by
+	   incremental inlining at all yet.  */
+	
+	if (!flag_unit_at_a_time)
+          cgraph_decide_inlining_incrementally (e->callee, early);
+	
 	inlined = true;
       }
 
@@ -1121,6 +1186,8 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node, bool early)
 	  && e->inline_failed
 	  && !e->callee->local.disregard_inline_limits
 	  && !cgraph_recursive_inlining_p (node, e->callee, &e->inline_failed)
+	  && (gimple_in_ssa_p (DECL_STRUCT_FUNCTION (node->decl))
+	      == gimple_in_ssa_p (DECL_STRUCT_FUNCTION (e->callee->decl)))
 	  && (!early
 	      || (cgraph_estimate_size_after_inlining (1, e->caller, e->callee)
 	          <= e->caller->global.insns))
@@ -1142,19 +1209,13 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node, bool early)
 	  else if (!early)
 	    e->inline_failed = failed_reason;
 	}
-  if (early && inlined)
+  if (early && inlined && !node->global.inlined_to)
     {
       timevar_push (TV_INTEGRATION);
-      push_cfun (DECL_STRUCT_FUNCTION (node->decl));
-      tree_register_cfg_hooks ();
-      current_function_decl = node->decl;
-      optimize_inline_calls (current_function_decl);
-      node->local.self_insns = node->global.insns;
-      current_function_decl = NULL;
-      pop_cfun ();
+      todo = optimize_inline_calls (current_function_decl);
       timevar_pop (TV_INTEGRATION);
     }
-  return inlined;
+  return todo;
 }
 
 /* When inlining shall be performed.  */
@@ -1176,7 +1237,7 @@ struct tree_opt_pass pass_ipa_inline =
   0,	                                /* properties_required */
   PROP_cfg,				/* properties_provided */
   0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
+  TODO_remove_functions,		/* todo_flags_finish */
   TODO_dump_cgraph | TODO_dump_func
   | TODO_remove_functions,		/* todo_flags_finish */
   0					/* letter */
@@ -1194,44 +1255,11 @@ static GTY ((length ("nnodes"))) struct cgraph_node **order;
 static unsigned int
 cgraph_early_inlining (void)
 {
-  struct cgraph_node *node;
-  int i;
+  struct cgraph_node *node = cgraph_node (current_function_decl);
 
   if (sorrycount || errorcount)
     return 0;
-#ifdef ENABLE_CHECKING
-  for (node = cgraph_nodes; node; node = node->next)
-    gcc_assert (!node->aux);
-#endif
-
-  order = ggc_alloc (sizeof (*order) * cgraph_n_nodes);
-  nnodes = cgraph_postorder (order);
-  for (i = nnodes - 1; i >= 0; i--)
-    {
-      node = order[i];
-      if (node->analyzed && (node->needed || node->reachable))
-        node->local.self_insns = node->global.insns
-	  = estimate_num_insns (node->decl);
-    }
-  for (i = nnodes - 1; i >= 0; i--)
-    {
-      node = order[i];
-      if (node->analyzed && node->local.inlinable
-	  && (node->needed || node->reachable)
-	  && node->callers)
-	{
-	  if (cgraph_decide_inlining_incrementally (node, true))
-	    ggc_collect ();
-	}
-    }
-#ifdef ENABLE_CHECKING
-  for (node = cgraph_nodes; node; node = node->next)
-    gcc_assert (!node->global.inlined_to);
-#endif
-  ggc_free (order);
-  order = NULL;
-  nnodes = 0;
-  return 0;
+  return cgraph_decide_inlining_incrementally (node, flag_unit_at_a_time);
 }
 
 /* When inlining shall be performed.  */
@@ -1241,7 +1269,7 @@ cgraph_gate_early_inlining (void)
   return flag_inline_trees && flag_early_inlining;
 }
 
-struct tree_opt_pass pass_early_ipa_inline = 
+struct tree_opt_pass pass_early_inline = 
 {
   "einline",	 			/* name */
   cgraph_gate_early_inlining,		/* gate */
@@ -1254,8 +1282,137 @@ struct tree_opt_pass pass_early_ipa_inline =
   PROP_cfg,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_cgraph | TODO_dump_func
-  | TODO_remove_functions,		/* todo_flags_finish */
+  TODO_dump_func,    			/* todo_flags_finish */
+  0					/* letter */
+};
+
+/* When inlining shall be performed.  */
+static bool
+cgraph_gate_ipa_early_inlining (void)
+{
+  return (flag_inline_trees && flag_early_inlining
+	  && (flag_branch_probabilities || flag_test_coverage
+	      || profile_arc_flag));
+}
+
+/* IPA pass wrapper for early inlining pass.  We need to run early inlining
+   before tree profiling so we have stand alone IPA pass for doing so.  */
+struct tree_opt_pass pass_ipa_early_inline = 
+{
+  "einline_ipa",			/* name */
+  cgraph_gate_ipa_early_inlining,	/* gate */
+  NULL,					/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_INLINE_HEURISTICS,			/* tv_id */
+  0,	                                /* properties_required */
+  PROP_cfg,				/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_cgraph, 		        /* todo_flags_finish */
+  0					/* letter */
+};
+
+/* Compute parameters of functions used by inliner.  */
+static unsigned int
+compute_inline_parameters (void)
+{
+  struct cgraph_node *node = cgraph_node (current_function_decl);
+
+  gcc_assert (!node->global.inlined_to);
+  node->local.estimated_self_stack_size = estimated_stack_frame_size ();
+  node->global.estimated_stack_size = node->local.estimated_self_stack_size;
+  node->global.stack_frame_offset = 0;
+  node->local.inlinable = tree_inlinable_function_p (current_function_decl);
+  node->local.self_insns = estimate_num_insns (current_function_decl);
+  if (node->local.inlinable)
+    node->local.disregard_inline_limits
+      = lang_hooks.tree_inlining.disregard_inline_limits (current_function_decl);
+  if (flag_really_no_inline && !node->local.disregard_inline_limits)
+    node->local.inlinable = 0;
+  /* Inlining characteristics are maintained by the cgraph_mark_inline.  */
+  node->global.insns = node->local.self_insns;
+  return 0;
+}
+
+/* When inlining shall be performed.  */
+static bool
+gate_inline_passes (void)
+{
+  return flag_inline_trees;
+}
+
+struct tree_opt_pass pass_inline_parameters = 
+{
+  NULL,	 				/* name */
+  gate_inline_passes,			/* gate */
+  compute_inline_parameters,		/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_INLINE_HEURISTICS,			/* tv_id */
+  0,	                                /* properties_required */
+  PROP_cfg,				/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0,					/* todo_flags_finish */
+  0					/* letter */
+};
+
+/* Apply inline plan to the function.  */
+static unsigned int
+apply_inline (void)
+{
+  unsigned int todo = 0;
+  struct cgraph_edge *e;
+  struct cgraph_node *node = cgraph_node (current_function_decl);
+
+  /* Even when not optimizing, ensure that always_inline functions get inlined.
+   */
+  if (!optimize)
+   cgraph_decide_inlining_incrementally (node, false);
+
+  /* We might need the body of this function so that we can expand
+     it inline somewhere else.  */
+  if (cgraph_preserve_function_body_p (current_function_decl))
+    save_inline_function_body (node);
+
+  for (e = node->callees; e; e = e->next_callee)
+    if (!e->inline_failed || warn_inline)
+      break;
+  if (e)
+    {
+      timevar_push (TV_INTEGRATION);
+      todo = optimize_inline_calls (current_function_decl);
+      timevar_pop (TV_INTEGRATION);
+    }
+  /* In non-unit-at-a-time we must mark all referenced functions as needed.  */
+  if (!flag_unit_at_a_time)
+    {
+      struct cgraph_edge *e;
+      for (e = node->callees; e; e = e->next_callee)
+	if (e->callee->analyzed)
+          cgraph_mark_needed_node (e->callee);
+    }
+  return todo | execute_fixup_cfg ();
+}
+
+struct tree_opt_pass pass_apply_inline = 
+{
+  "apply_inline",			/* name */
+  NULL,					/* gate */
+  apply_inline,				/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_INLINE_HEURISTICS,			/* tv_id */
+  0,	                                /* properties_required */
+  PROP_cfg,				/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func | TODO_verify_flow
+  | TODO_verify_stmts,			/* todo_flags_finish */
   0					/* letter */
 };
 

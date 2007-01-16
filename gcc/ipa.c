@@ -206,6 +206,9 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
     node->aux = NULL;
   if (file)
     fprintf (file, "\nReclaimed %i insns", insns);
+#ifdef ENABLE_CHECKING
+  verify_cgraph ();
+#endif
   return changed;
 }
 

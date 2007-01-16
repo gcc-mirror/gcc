@@ -395,7 +395,6 @@ varpool_next_static_initializer (struct varpool_node *node)
         (node) = varpool_next_static_initializer (node))
 
 /* In ipa-inline.c  */
-bool cgraph_decide_inlining_incrementally (struct cgraph_node *, bool);
 void cgraph_clone_inlined_nodes (struct cgraph_edge *, bool, bool);
 void cgraph_mark_inline_edge (struct cgraph_edge *, bool);
 bool cgraph_default_inline_p (struct cgraph_node *, const char **);

@@ -98,7 +98,7 @@ typedef struct copy_body_data
 extern tree copy_body_r (tree *, int *, void *);
 extern void insert_decl_map (copy_body_data *, tree, tree);
 
-void optimize_inline_calls (tree);
+unsigned int optimize_inline_calls (tree);
 bool tree_inlinable_function_p (tree);
 tree copy_tree_r (tree *, int *, void *);
 void clone_body (tree, tree, void *);
