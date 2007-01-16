@@ -325,7 +325,12 @@ release_dead_ssa_names (void)
   for (t = FREE_SSANAMES (cfun); t; t = next)
     {
       next = TREE_CHAIN (t);
-      ggc_free (t);
+      /* Dangling pointers might make GGC to still see dead SSA names, so it is
+ 	 important to unlink the list and avoid GGC from seeing all subsequent
+	 SSA names.  In longer run we want to have all dangling pointers here
+	 removed (since they usually go trhough dead statements that consume
+	 considerable amounts of memory).  */
+      TREE_CHAIN (t) = NULL_TREE;
       n++;
     }
   FREE_SSANAMES (cfun) = NULL;
