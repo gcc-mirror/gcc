@@ -2,6 +2,8 @@
 
 AUTOMAKE_OPTIONS = no-dependencies foreign
 
+ACLOCAL_AMFLAGS = -I ../.. -I ../../config
+
 INCLUDES = $(GCINCS)
 
 if INSTALL_LTDL

@@ -18,6 +18,9 @@ AC_ARG_ENABLE(java-maintainer-mode,
 AM_CONDITIONAL(JAVA_MAINTAINER_MODE, test "$enable_java_maintainer_mode" = yes)
 dnl END GCJ LOCAL
 
+# Find the rest of the source tree framework.
+AM_ENABLE_MULTILIB(, ../..)
+
 dnl -----------------------------------------------------------
 dnl Fold all IA-32 CPU architectures into "x86"
 dnl -----------------------------------------------------------

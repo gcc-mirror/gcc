@@ -30,6 +30,8 @@ AC_CONFIG_SRCDIR([ltdl.c])
 ## GCJ LOCAL: gcc tree uses maintainer mode.
 AM_MAINTAINER_MODE
 
+AM_ENABLE_MULTILIB(, ../..)
+
 ## ------------------------------- ##
 ## Libltdl specific configuration. ##
 ## ------------------------------- ##
