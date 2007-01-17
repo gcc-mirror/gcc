@@ -1111,14 +1111,14 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu)
 			# FIXME: -m64 for i[34567]86-*-* should be allowed just
 			# like -m32 for x86_64-*-*.
 			case X"${with_cpu}" in
-			Xgeneric|Xnocona|Xx86-64|Xk8|Xopteron|Xathlon64|Xathlon-fx)
+			Xgeneric|Xcore2|Xnocona|Xx86-64|Xk8|Xopteron|Xathlon64|Xathlon-fx)
 				;;
 			X)
 				with_cpu=generic
 				;;
 			*)
 				echo "Unsupported CPU used in --with-cpu=$with_cpu, supported values:" 1>&2
-				echo "generic nocona x86-64 k8 opteron athlon64 athlon-fx" 1>&2
+				echo "generic core2 nocona x86-64 k8 opteron athlon64 athlon-fx" 1>&2
 				exit 1
 				;;
 			esac
@@ -1240,14 +1240,14 @@ i[34567]86-*-solaris2*)
 		# FIXME: -m64 for i[34567]86-*-* should be allowed just
 		# like -m32 for x86_64-*-*.
 		case X"${with_cpu}" in
-		Xgeneric|Xnocona|Xx86-64|Xk8|Xopteron|Xathlon64|Xathlon-fx)
+		Xgeneric|Xcore2|Xnocona|Xx86-64|Xk8|Xopteron|Xathlon64|Xathlon-fx)
 			;;
 		X)
 			with_cpu=generic
 			;;
 		*)
 			echo "Unsupported CPU used in --with-cpu=$with_cpu, supported values:" 1>&2
-			echo "generic nocona x86-64 k8 opteron athlon64 athlon-fx" 1>&2
+			echo "generic core2 nocona x86-64 k8 opteron athlon64 athlon-fx" 1>&2
 			exit 1
 			;;
 		esac
@@ -2580,6 +2580,9 @@ if test x$with_cpu = x ; then
         nocona-*)
           with_cpu=nocona
           ;;
+	core2-*)
+	  with_cpu=core2
+	  ;;
         pentium_m-*)
           with_cpu=pentium-m
           ;;
@@ -2599,6 +2602,9 @@ if test x$with_cpu = x ; then
         nocona-*)
           with_cpu=nocona
           ;;
+	core2-*)
+	  with_cpu=core2
+	  ;;
         *)
           with_cpu=generic
           ;;
@@ -2853,7 +2859,7 @@ case "${target}" in
 				esac
 				# OK
 				;;
-			"" | k8 | opteron | athlon64 | athlon-fx | nocona | generic)
+			"" | k8 | opteron | athlon64 | athlon-fx | nocona | core2 | generic)
 				# OK
 				;;
 			*)
