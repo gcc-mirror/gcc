@@ -1,3 +1,8 @@
+2007-01-17  Andrew Haley  <aph@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ecjx_LDFLAGS): Pass -fbootclasspath.
+
 2007-01-17  Keith Seitz  <keiths@redhat.com>
 
 	* java/lang/natThread.cc (finish_): Add JVMTI ThreadEnd notification.

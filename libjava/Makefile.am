@@ -673,7 +673,7 @@ if ENABLE_SHARED
 ecjx_LDFLAGS = $(ECJX_BASE_FLAGS) -Djava.class.path=$(ECJ_JAR)
 else !ENABLE_SHARED
 ## Use ecj.jar at compile time.
-ecjx_LDFLAGS = $(ECJX_BASE_FLAGS) $(ECJ_BUILD_JAR)
+ecjx_LDFLAGS = $(ECJX_BASE_FLAGS) $(ECJ_BUILD_JAR) -fbootclasspath=$(BOOTCLASSPATH)
 endif !ENABLE_SHARED
 
 ecjx_LDADD = -L$(here)/.libs libgcj.la
