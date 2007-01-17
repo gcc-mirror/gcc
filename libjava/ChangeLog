@@ -1,3 +1,8 @@
+2007-01-17  Marco Trudel  <mtrudel@gmx.ch>
+
+	* jvmti.cc (_Jv_JVMTI_GetAllThreads): Now static.  Use JNICALL.
+	Fixed indentation.  Removed unused variable.
+
 2007-01-16  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natThread.cc (finalize_native): Remove cast.
