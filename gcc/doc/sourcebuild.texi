@@ -1,4 +1,4 @@
-@c Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+@c Copyright (C) 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1290,7 +1290,7 @@ Runtime tests are executed via @samp{make check} in the
 tree.  Additional runtime tests can be checked into this testsuite.
 
 Regression testing of the core packages in libgcj is also covered by the
-Mauve testsuite.  The @uref{http://sources.redhat.com/mauve/,,Mauve Project}
+Mauve testsuite.  The @uref{http://sourceware.org/mauve/,,Mauve Project}
 develops tests for the Java Class Libraries.  These tests are run as part
 of libgcj testing by placing the Mauve tree within the libjava testsuite
 sources at @file{libjava/testsuite/libjava.mauve/mauve}, or by specifying
@@ -1303,7 +1303,7 @@ failures for a test run against the list of expected failures in
 Update this file when adding new failing tests to Mauve, or when fixing
 bugs in libgcj that had caused Mauve test failures.
 
-The @uref{http://sources.redhat.com/mauve/jacks.html,,
+The @uref{http://sourceware.org/mauve/jacks.html,,
 Jacks} project provides a testsuite for Java compilers that can be used
 to test changes that affect the GCJ front end.  This testsuite is run as
 part of Java testing by placing the Jacks tree within the libjava
