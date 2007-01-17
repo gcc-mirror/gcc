@@ -2,7 +2,8 @@
    - prototype declarations for operand predicates (tm-preds.h)
    - function definitions of operand predicates, if defined new-style
      (insn-preds.c)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1336,7 +1337,8 @@ write_insn_preds_c (void)
   if (constraint_max_namelen > 0)
     {
       write_lookup_constraint ();
-      write_regclass_for_constraint ();
+      if (have_register_constraints)
+	write_regclass_for_constraint ();
       write_constraint_satisfied_p ();
       
       if (constraint_max_namelen > 1)
