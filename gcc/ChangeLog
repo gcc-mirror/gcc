@@ -1,3 +1,27 @@
+2007-01-17  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr.h (AVR_HAVE_LPMX): New macro.
+	(AVR_ENHANCED): Rename to ...
+	(AVR_HAVE_MUL): ... new.
+	(avr_enhanced_p): Rename to ...
+	(avr_have_mul_p): ... new.
+	(TARGET_CPU_CPP_BUILTINS): Use 'avr_have_mul_p' instead of 
+	'avr_enhanced_p' for "__AVR_ENHANCED__". Define "__AVR_HAVE_MUL__".
+	* config/avr/avr.c (avr_enhanced_p): Rename to ...
+	(avr_have_mul_p): ... new.
+	(base_arch_s): Rename 'enhanced' to 'have_mul'.
+	(avr_override_options): Use 'avr_have_mul_p' and 'have_mul' instead of
+	'avr_enhanced_p' and 'enhanced'.
+	(ashlhi3_out, ashrhi3_out, lshrhi3_out, avr_rtx_costs): Use 
+	AVR_HAVE_MUL instead of AVR_ENHANCED.
+	* avr.md (*tablejump_enh): Use AVR_HAVE_LPMX instead of AVR_ENHANCED.
+	(mulqi3, *mulqi3_enh, *mulqi3_call, mulqihi3, umulqihi3, mulhi3, 
+	*mulhi3_enh, *mulhi3_call, mulsi3, *mulsi3_call): Use AVR_HAVE_MUL 
+	instead of AVR_ENHANCED.
+	(*tablejump_enh): Use AVR_HAVE_LPMX instead of AVR_ENHANCED.
+	* libgcc.S: Use __AVR_HAVE_MUL__ instead of __AVR_ENHANCED__.
+	(__tablejump__): Use __AVR_HAVE_LPMX__ instead of __AVR_ENHANCED__.
+
 2007-01-17  Ian Lance Taylor  <iant@google.com>
 
 	* vec.h (VEC_reserve_exact): Define.
