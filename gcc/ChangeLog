@@ -1,3 +1,7 @@
+2007-01-17  Eric Christopher  <echristo@apple.com>
+
+	* config.gcc: Support core2 processor.
+
 2007-01-16  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssanames.c (release_dead_ssa_names): Instead of ggc_freeing
