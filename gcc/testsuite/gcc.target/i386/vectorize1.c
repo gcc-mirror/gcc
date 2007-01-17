@@ -16,3 +16,4 @@ int set_names (void)
 }
 
 /* { dg-final { scan-tree-dump "vect_cst" "vect" } } */
+/* { dg-final { cleanup-tree-dump "vect" } } */
