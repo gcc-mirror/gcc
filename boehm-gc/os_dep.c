@@ -3405,6 +3405,15 @@ extern kern_return_t exception_raise_state_identity(
 
 #define MAX_EXCEPTION_PORTS 16
 
+#if defined (HAS_PPC_THREAD_STATE___R0) ||	\
+    defined (HAS_PPC_THREAD_STATE64___R0) ||	\
+    defined (HAS_X86_THREAD_STATE32___EAX) ||	\
+    defined (HAS_X86_THREAD_STATE64___RAX)
+#  define THREAD_FLD(x) __ ## x
+#else
+#  define THREAD_FLD(x) x
+#endif
+
 static struct {
     mach_msg_type_number_t count;
     exception_mask_t      masks[MAX_EXCEPTION_PORTS];
@@ -3846,7 +3855,7 @@ catch_exception_raise(
 #if defined(POWERPC)
     addr = (char*) exc_state.dar;
 #elif defined (I386) || defined (X86_64)
-    addr = (char*) exc_state.faultvaddr;
+    addr = (char*) exc_state. THREAD_FLD(faultvaddr);
 #else
 #   error FIXME for non POWERPC/I386
 #endif
