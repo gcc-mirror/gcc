@@ -1,6 +1,6 @@
 // jvmti.cc - JVMTI implementation
 
-/* Copyright (C) 2006 Free Software Foundation
+/* Copyright (C) 2006, 2007 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -198,7 +198,7 @@ _Jv_JVMTI_InterruptThread (MAYBE_UNUSED jvmtiEnv *env, jthread thread)
   return JVMTI_ERROR_NONE;
 }
 
-jvmtiError
+static jvmtiError JNICALL
 _Jv_JVMTI_GetAllThreads(MAYBE_UNUSED jvmtiEnv *env, jint *thread_cnt,
                         jthread **threads)
 {
@@ -207,7 +207,6 @@ _Jv_JVMTI_GetAllThreads(MAYBE_UNUSED jvmtiEnv *env, jint *thread_cnt,
   NULL_CHECK (threads);
    
   using namespace java::lang;
-  Thread *thr = Thread::currentThread ();
    
   ThreadGroup *root_grp = ThreadGroup::root;
   jint estimate = root_grp->activeCount ();
@@ -217,10 +216,9 @@ _Jv_JVMTI_GetAllThreads(MAYBE_UNUSED jvmtiEnv *env, jint *thread_cnt,
   // Allocate some extra space since threads can be created between calls
   try
     { 
-      thr_arr
-			  = reinterpret_cast<JArray<Thread *> *> (JvNewObjectArray 
-			                                           ((estimate * 2),
-                                                 &Thread::class$, NULL));
+      thr_arr = reinterpret_cast<JArray<Thread *> *> (JvNewObjectArray 
+						      ((estimate * 2),
+						       &Thread::class$, NULL));
     }
   catch (java::lang::OutOfMemoryError *err)
     {
