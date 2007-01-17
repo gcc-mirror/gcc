@@ -329,7 +329,7 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc jvmti.cc exception.cc \
 	java/net/natVMNetworkInterface.cc \
 	java/net/natVMURLConnection.cc \
 	java/nio/channels/natVMChannels.cc \
-	java/nio/natDirectByteBufferImpl.cc \
+	java/nio/natVMDirectByteBufferImpl.cc \
 	java/security/natVMAccessController.cc \
 	java/security/natVMAccessControlState.cc \
 	java/text/natCollator.cc java/util/natVMTimeZone.cc \
@@ -392,7 +392,7 @@ am__objects_2 = gnu/classpath/jdwp/natVMFrame.lo \
 	java/net/natVMNetworkInterface.lo \
 	java/net/natVMURLConnection.lo \
 	java/nio/channels/natVMChannels.lo \
-	java/nio/natDirectByteBufferImpl.lo \
+	java/nio/natVMDirectByteBufferImpl.lo \
 	java/security/natVMAccessController.lo \
 	java/security/natVMAccessControlState.lo \
 	java/text/natCollator.lo java/util/natVMTimeZone.lo \
@@ -7955,7 +7955,7 @@ java/net/natVMInetAddress.cc \
 java/net/natVMNetworkInterface.cc \
 java/net/natVMURLConnection.cc \
 java/nio/channels/natVMChannels.cc \
-java/nio/natDirectByteBufferImpl.cc \
+java/nio/natVMDirectByteBufferImpl.cc \
 java/security/natVMAccessController.cc \
 java/security/natVMAccessControlState.cc \
 java/text/natCollator.cc \
@@ -8513,7 +8513,7 @@ java/nio/$(am__dirstamp):
 java/nio/$(DEPDIR)/$(am__dirstamp):
 	@$(mkdir_p) java/nio/$(DEPDIR)
 	@: > java/nio/$(DEPDIR)/$(am__dirstamp)
-java/nio/natDirectByteBufferImpl.lo: java/nio/$(am__dirstamp) \
+java/nio/natVMDirectByteBufferImpl.lo: java/nio/$(am__dirstamp) \
 	java/nio/$(DEPDIR)/$(am__dirstamp)
 java/security/$(am__dirstamp):
 	@$(mkdir_p) java/security
@@ -8924,8 +8924,8 @@ mostlyclean-compile:
 	-rm -f java/net/natVMURLConnection.lo
 	-rm -f java/nio/channels/natVMChannels.$(OBJEXT)
 	-rm -f java/nio/channels/natVMChannels.lo
-	-rm -f java/nio/natDirectByteBufferImpl.$(OBJEXT)
-	-rm -f java/nio/natDirectByteBufferImpl.lo
+	-rm -f java/nio/natVMDirectByteBufferImpl.$(OBJEXT)
+	-rm -f java/nio/natVMDirectByteBufferImpl.lo
 	-rm -f java/security/natVMAccessControlState.$(OBJEXT)
 	-rm -f java/security/natVMAccessControlState.lo
 	-rm -f java/security/natVMAccessController.$(OBJEXT)
@@ -9063,7 +9063,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@java/net/$(DEPDIR)/natVMInetAddress.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/net/$(DEPDIR)/natVMNetworkInterface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/net/$(DEPDIR)/natVMURLConnection.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@java/nio/$(DEPDIR)/natDirectByteBufferImpl.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@java/nio/$(DEPDIR)/natVMDirectByteBufferImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/nio/channels/$(DEPDIR)/natVMChannels.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/security/$(DEPDIR)/natVMAccessControlState.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/security/$(DEPDIR)/natVMAccessController.Plo@am__quote@
