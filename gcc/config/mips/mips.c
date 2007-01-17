@@ -303,11 +303,7 @@ static void mips_set_tune (const struct mips_cpu_info *);
 static bool mips_handle_option (size_t, const char *, int);
 static struct machine_function *mips_init_machine_status (void);
 static void print_operand_reloc (FILE *, rtx, const char **);
-#if TARGET_IRIX
-static void irix_output_external_libcall (rtx);
-#endif
 static void mips_file_start (void);
-static void mips_file_end (void);
 static bool mips_rewrite_small_data_p (rtx);
 static int mips_small_data_pattern_1 (rtx *, void *);
 static int mips_rewrite_small_data_1 (rtx *, void *);
@@ -551,19 +547,6 @@ int sdb_label_count = 0;
 
 /* Next label # for each statement for Silicon Graphics IRIS systems.  */
 int sym_lineno = 0;
-
-/* Linked list of all externals that are to be emitted when optimizing
-   for the global pointer if they haven't been declared by the end of
-   the program with an appropriate .comm or initialization.  */
-
-struct extern_list GTY (())
-{
-  struct extern_list *next;	/* next external */
-  const char *name;		/* name of the external */
-  int size;			/* size in bytes */
-};
-
-static GTY (()) struct extern_list *extern_head = 0;
 
 /* Name of the file containing the current function.  */
 const char *current_function_file = "";
@@ -1144,9 +1127,7 @@ static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
 #define TARGET_MACHINE_DEPENDENT_REORG mips_reorg
 
 #undef TARGET_ASM_FILE_START
-#undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_START mips_file_start
-#define TARGET_ASM_FILE_END mips_file_end
 #undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 
@@ -5786,48 +5767,38 @@ print_operand_address (FILE *file, rtx x)
    the -G limit but declared by the user to be in a section other
    than .sbss or .sdata.  */
 
-int
-mips_output_external (FILE *file ATTRIBUTE_UNUSED, tree decl, const char *name)
+void
+mips_output_external (FILE *file, tree decl, const char *name)
 {
-  register struct extern_list *p;
+  default_elf_asm_output_external (file, decl, name);
 
-  if (!TARGET_EXPLICIT_RELOCS && mips_in_small_data_p (decl))
+  /* We output the name if and only if TREE_SYMBOL_REFERENCED is
+     set in order to avoid putting out names that are never really
+     used. */
+  if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
     {
-      p = (struct extern_list *) ggc_alloc (sizeof (struct extern_list));
-      p->next = extern_head;
-      p->name = name;
-      p->size = int_size_in_bytes (TREE_TYPE (decl));
-      extern_head = p;
-    }
-
-  if (TARGET_IRIX && mips_abi == ABI_32 && TREE_CODE (decl) == FUNCTION_DECL)
-    {
-      p = (struct extern_list *) ggc_alloc (sizeof (struct extern_list));
-      p->next = extern_head;
-      p->name = name;
-      p->size = -1;
-      extern_head = p;
-    }
-
-  return 0;
-}
-
-#if TARGET_IRIX
-static void
-irix_output_external_libcall (rtx fun)
-{
-  register struct extern_list *p;
-
-  if (mips_abi == ABI_32)
-    {
-      p = (struct extern_list *) ggc_alloc (sizeof (struct extern_list));
-      p->next = extern_head;
-      p->name = XSTR (fun, 0);
-      p->size = -1;
-      extern_head = p;
+      if (!TARGET_EXPLICIT_RELOCS && mips_in_small_data_p (decl))
+	{
+	  fputs ("\t.extern\t", file);
+	  assemble_name (file, name);
+	  fprintf (file, ", " HOST_WIDE_INT_PRINT_DEC "\n",
+		   int_size_in_bytes (TREE_TYPE (decl)));
+	}
+      else if (TARGET_IRIX
+	       && mips_abi == ABI_32
+	       && TREE_CODE (decl) == FUNCTION_DECL)
+	{
+	  /* In IRIX 5 or IRIX 6 for the O32 ABI, we must output a
+	     `.global name .text' directive for every used but
+	     undefined function.  If we don't, the linker may perform
+	     an optimization (skipping over the insns that set $gp)
+	     when it is unsafe.  */
+	  fputs ("\t.globl ", file);
+	  assemble_name (file, name);
+	  fputs (" .text\n", file);
+	}
     }
 }
-#endif
 
 /* Emit a new filename to a stream.  If we are smuggling stabs, try to
    put out a MIPS ECOFF file and a stab.  */
@@ -5989,50 +5960,6 @@ mips_output_aligned_bss (FILE *stream, tree decl, const char *name,
 }
 #endif
 
-/* Implement TARGET_ASM_FILE_END.  When using assembler macros, emit
-   .externs for any small-data variables that turned out to be external.  */
-
-static void
-mips_file_end (void)
-{
-  tree name_tree;
-  struct extern_list *p;
-
-  if (extern_head)
-    {
-      fputs ("\n", asm_out_file);
-
-      for (p = extern_head; p != 0; p = p->next)
-	{
-	  name_tree = get_identifier (p->name);
-
-	  /* Positively ensure only one .extern for any given symbol.  */
-	  if (!TREE_ASM_WRITTEN (name_tree)
-	      && TREE_SYMBOL_REFERENCED (name_tree))
-	    {
-	      TREE_ASM_WRITTEN (name_tree) = 1;
-	      /* In IRIX 5 or IRIX 6 for the O32 ABI, we must output a
-		 `.global name .text' directive for every used but
-		 undefined function.  If we don't, the linker may perform
-		 an optimization (skipping over the insns that set $gp)
-		 when it is unsafe.  */
-	      if (TARGET_IRIX && mips_abi == ABI_32 && p->size == -1)
-		{
-		  fputs ("\t.globl ", asm_out_file);
-		  assemble_name (asm_out_file, p->name);
-		  fputs (" .text\n", asm_out_file);
-		}
-	      else
-		{
-		  fputs ("\t.extern\t", asm_out_file);
-		  assemble_name (asm_out_file, p->name);
-		  fprintf (asm_out_file, ", %d\n", p->size);
-		}
-	    }
-	}
-    }
-}
-
 /* Implement ASM_OUTPUT_ALIGNED_DECL_COMMON.  This is usually the same as the
    elfos.h version, but we also need to handle -muninit-const-in-rodata.  */
 
