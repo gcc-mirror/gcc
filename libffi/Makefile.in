@@ -69,7 +69,9 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	$(top_srcdir)/configure ChangeLog
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../libtool.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
+	$(top_srcdir)/../config/lead-dot.m4 \
+	$(top_srcdir)/../config/multi.m4 $(top_srcdir)/../libtool.m4 \
 	$(top_srcdir)/acinclude.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
@@ -346,7 +348,7 @@ target_vendor = @target_vendor@
 toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 AUTOMAKE_OPTIONS = foreign subdir-objects
-ACLOCAL_AMFLAGS = -I ..
+ACLOCAL_AMFLAGS = -I .. -I ../config
 SUBDIRS = include testsuite
 EXTRA_DIST = LICENSE ChangeLog.v1 \
 	src/alpha/ffi.c src/alpha/osf.S src/alpha/ffitarget.h \
@@ -1059,7 +1061,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/.. $(distdir)/include $(distdir)/src/alpha $(distdir)/src/arm $(distdir)/src/cris $(distdir)/src/frv $(distdir)/src/m32r $(distdir)/src/m68k $(distdir)/src/mips $(distdir)/src/pa $(distdir)/src/powerpc $(distdir)/src/s390 $(distdir)/src/sh $(distdir)/src/sh64 $(distdir)/src/sparc $(distdir)/src/x86
+	$(mkdir_p) $(distdir)/.. $(distdir)/../config $(distdir)/include $(distdir)/src/alpha $(distdir)/src/arm $(distdir)/src/cris $(distdir)/src/frv $(distdir)/src/m32r $(distdir)/src/m68k $(distdir)/src/mips $(distdir)/src/pa $(distdir)/src/powerpc $(distdir)/src/s390 $(distdir)/src/sh $(distdir)/src/sh64 $(distdir)/src/sparc $(distdir)/src/x86
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \

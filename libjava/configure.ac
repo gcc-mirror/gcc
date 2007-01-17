@@ -15,27 +15,8 @@ AC_ARG_WITH(target-subdir,
 # We may get other options which we don't document:
 # --with-target-subdir, --with-multisrctop, --with-multisubdir
 
-# When building with srcdir == objdir, links to the source files will
-# be created in directories within the target_subdir.  We have to
-# adjust toplevel_srcdir accordingly, so that configure finds
-# install-sh and other auxiliary files that live in the top-level
-# source directory.
-if test "${srcdir}" = "."; then
-  if test -z "${with_target_subdir}"; then
-    toprel=".."
-  else
-    if test "${with_target_subdir}" != "."; then
-      toprel="${with_multisrctop}../.."
-    else
-      toprel="${with_multisrctop}.."
-    fi
-  fi
-else
-  toprel=".."
-fi
-
-libgcj_basedir=$srcdir/$toprel/./libjava
-AC_SUBST(libgcj_basedir)
+# Find the rest of the source tree framework.
+AM_ENABLE_MULTILIB(, ..)
 
 AC_CANONICAL_SYSTEM
 _GCC_TOPLEV_NONCANONICAL_BUILD
@@ -73,16 +54,6 @@ AC_ARG_ENABLE(version-specific-runtime-libs,
      esac],
     [version_specific_libs=no]
 )
-
-# Default to --enable-multilib
-AC_ARG_ENABLE(multilib,
-  AS_HELP_STRING([--enable-multilib],
-                 [build many library versions (default)]),
-[case "${enableval}" in
-  yes) multilib=yes ;;
-  no)  multilib=no ;;
-  *)   AC_MSG_ERROR(bad value ${enableval} for multilib option) ;;
- esac], [multilib=yes])dnl
 
 AC_ARG_ENABLE(plugin,
   AS_HELP_STRING([--enable-plugin],
@@ -984,7 +955,7 @@ AC_SUBST(HASH_SYNC_SPEC)
 AM_CONDITIONAL(USING_GCC, test "$GCC" = yes)
 
 # We're in the tree with gcc, and need to include some of its headers.
-GCC_UNWIND_INCLUDE='-I$(libgcj_basedir)/../gcc'
+GCC_UNWIND_INCLUDE='-I$(multi_basedir)/./libjava/../gcc'
 
 if test "x${with_newlib}" = "xyes"; then
    # We are being configured with a cross compiler.  AC_REPLACE_FUNCS
@@ -1024,7 +995,7 @@ else
        AC_CHECK_LIB(dld, dladdr, [
        AC_DEFINE(HAVE_DLADDR, 1, [Define if you have dladdr()])])])
 
-   if test x"$build" = x"$host"; then
+   if test x"$cross_compiling" = x"no"; then
      AC_CHECK_FILES(/proc/self/exe, [
        AC_DEFINE(HAVE_PROC_SELF_EXE, 1, [Define if you have /proc/self/exe])])
    else
@@ -1604,7 +1575,7 @@ AC_CONFIG_COMMANDS([default],
 case " $CONFIG_FILES " in
  *" Makefile "*)
    LD="${ORIGINAL_LD_FOR_MULTILIBS}"
-   ac_file=Makefile . ${libgcj_basedir}/../config-ml.in
+   ac_file=Makefile . ${multi_basedir}/./libjava/../config-ml.in
    ;;
 esac
 for ac_multi_file in $CONFIG_FILES; do
@@ -1620,7 +1591,7 @@ target=${target}
 with_multisubdir=${with_multisubdir}
 ac_configure_args="${multilib_arg} ${ac_configure_args}"
 CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
-libgcj_basedir=${libgcj_basedir}
+multi_basedir=${multi_basedir}
 CC="${CC}"
 CXX="${CXX}"
 ORIGINAL_LD_FOR_MULTILIBS="${ORIGINAL_LD_FOR_MULTILIBS}"

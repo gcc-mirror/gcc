@@ -875,6 +875,7 @@ AC_SUBST([am__untar])
 
 m4_include([../../config/depstand.m4])
 m4_include([../../config/lead-dot.m4])
+m4_include([../../config/multi.m4])
 m4_include([../../config/no-executables.m4])
 m4_include([../../libtool.m4])
 m4_include([m4/acattribute.m4])

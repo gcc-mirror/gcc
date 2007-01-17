@@ -42,6 +42,7 @@ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/../../config/lead-dot.m4 \
+	$(top_srcdir)/../../config/multi.m4 \
 	$(top_srcdir)/../../config/no-executables.m4 \
 	$(top_srcdir)/../../libtool.m4 $(top_srcdir)/m4/acattribute.m4 \
 	$(top_srcdir)/m4/accross.m4 $(top_srcdir)/m4/acinclude.m4 \
@@ -337,6 +338,7 @@ libexecdir = @libexecdir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
+multi_basedir = @multi_basedir@
 nativeexeclibdir = @nativeexeclibdir@
 oldincludedir = @oldincludedir@
 prefix = @prefix@
