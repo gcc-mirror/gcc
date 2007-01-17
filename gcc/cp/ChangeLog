@@ -1,3 +1,8 @@
+2007-01-17  Ian Lance Taylor  <iant@google.com>
+
+	* class.c (add_method): Call VEC_reserve_exact rather than passing
+	a negative size to VEC_reserve.
+
 2007-01-11  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/29573
