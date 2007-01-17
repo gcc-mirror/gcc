@@ -51,6 +51,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/lib-ld.m4 \
 	$(top_srcdir)/../config/lib-link.m4 \
 	$(top_srcdir)/../config/lib-prefix.m4 \
+	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../config/tls.m4 \
 	$(top_srcdir)/../config/unwind_ipinfo.m4 \
@@ -276,12 +277,12 @@ infodir = @infodir@
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
-libgcj_basedir = @libgcj_basedir@
 libstdcxx_incdir = @libstdcxx_incdir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 mkinstalldirs = @mkinstalldirs@
+multi_basedir = @multi_basedir@
 oldincludedir = @oldincludedir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@

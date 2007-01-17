@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os build_libsubdir build_subdir host_subdir target_subdir libgcj_basedir host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical LN_S mkinstalldirs CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LDFLAGS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE AS ac_ct_AS LD ac_ct_LD AR ac_ct_AR RANLIB ac_ct_RANLIB JAR ZIP UNZIP BASH_JAR_TRUE BASH_JAR_FALSE MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBGCJ_CFLAGS LIBGCJ_CXXFLAGS LIBGCJ_JAVAFLAGS LIBGCJ_LD_SYMBOLIC LIBGCJDEBUG TOOLKIT XLIB_AWT_TRUE XLIB_AWT_FALSE GCJH INCLTDL LIBLTDL DIRLTDL LIBTOOL CXXCPP CPPFLAGS GCJ GCJFLAGS GCJDEPMODE am__fastdepGCJ_TRUE am__fastdepGCJ_FALSE subdirs TESTSUBDIR_TRUE TESTSUBDIR_FALSE JAVA_HOME_SET_TRUE JAVA_HOME_SET_FALSE JAVA_HOME INTERPRETER LIBFFI LIBFFIINCS PLATFORM_INNER_NAT_HDRS CPP EGREP USING_WIN32_PLATFORM_TRUE USING_WIN32_PLATFORM_FALSE USING_POSIX_PLATFORM_TRUE USING_POSIX_PLATFORM_FALSE USING_DARWIN_CRT_TRUE USING_DARWIN_CRT_FALSE SYSTEMSPEC LIBGCJTESTSPEC ZLIBSPEC ZLIBTESTSPEC X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS extra_ldflags_libjava GCLIBS GCINCS GCDEPS GCSPEC JC1GCSPEC GCTESTSPEC USING_BOEHMGC_TRUE USING_BOEHMGC_FALSE USING_NOGC_TRUE USING_NOGC_FALSE THREADLIBS THREADINCS THREADDEPS THREADSPEC THREADSTARTFILESPEC THREADLDFLAGS THREADCXXFLAGS USING_POSIX_THREADS_TRUE USING_POSIX_THREADS_FALSE USING_WIN32_THREADS_TRUE USING_WIN32_THREADS_FALSE USING_NO_THREADS_TRUE USING_NO_THREADS_FALSE USE_LIBGCJ_BC_TRUE USE_LIBGCJ_BC_FALSE LIBGCJ_SPEC HASH_SYNC_SPEC USING_GCC_TRUE USING_GCC_FALSE LIBICONV LTLIBICONV PKG_CONFIG GTK_CFLAGS GTK_LIBS GLIB_CFLAGS GLIB_LIBS LIBART_CFLAGS LIBART_LIBS CLASSPATH_SEPARATOR ac_ct_GCJ ZLIBS SYS_ZLIBS ZINCS DIVIDESPEC CHECKREFSPEC EXCEPTIONSPEC BACKTRACESPEC IEEESPEC NATIVE_TRUE NATIVE_FALSE NEEDS_DATA_START_TRUE NEEDS_DATA_START_FALSE GCC_UNWIND_INCLUDE toolexecdir toolexecmainlibdir toolexeclibdir dbexecdir GCJVERSION gxx_include_dir libstdcxx_incdir ALLOCA PERL SYSDEP_SOURCES LD_START_STATIC_SPEC LD_FINISH_STATIC_SPEC here LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os build_libsubdir build_subdir host_subdir target_subdir multi_basedir host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical LN_S mkinstalldirs CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LDFLAGS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE AS ac_ct_AS LD ac_ct_LD AR ac_ct_AR RANLIB ac_ct_RANLIB JAR ZIP UNZIP BASH_JAR_TRUE BASH_JAR_FALSE MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBGCJ_CFLAGS LIBGCJ_CXXFLAGS LIBGCJ_JAVAFLAGS LIBGCJ_LD_SYMBOLIC LIBGCJDEBUG TOOLKIT XLIB_AWT_TRUE XLIB_AWT_FALSE GCJH INCLTDL LIBLTDL DIRLTDL LIBTOOL CXXCPP CPPFLAGS GCJ GCJFLAGS GCJDEPMODE am__fastdepGCJ_TRUE am__fastdepGCJ_FALSE subdirs TESTSUBDIR_TRUE TESTSUBDIR_FALSE JAVA_HOME_SET_TRUE JAVA_HOME_SET_FALSE JAVA_HOME INTERPRETER LIBFFI LIBFFIINCS PLATFORM_INNER_NAT_HDRS CPP EGREP USING_WIN32_PLATFORM_TRUE USING_WIN32_PLATFORM_FALSE USING_POSIX_PLATFORM_TRUE USING_POSIX_PLATFORM_FALSE USING_DARWIN_CRT_TRUE USING_DARWIN_CRT_FALSE SYSTEMSPEC LIBGCJTESTSPEC ZLIBSPEC ZLIBTESTSPEC X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS extra_ldflags_libjava GCLIBS GCINCS GCDEPS GCSPEC JC1GCSPEC GCTESTSPEC USING_BOEHMGC_TRUE USING_BOEHMGC_FALSE USING_NOGC_TRUE USING_NOGC_FALSE THREADLIBS THREADINCS THREADDEPS THREADSPEC THREADSTARTFILESPEC THREADLDFLAGS THREADCXXFLAGS USING_POSIX_THREADS_TRUE USING_POSIX_THREADS_FALSE USING_WIN32_THREADS_TRUE USING_WIN32_THREADS_FALSE USING_NO_THREADS_TRUE USING_NO_THREADS_FALSE USE_LIBGCJ_BC_TRUE USE_LIBGCJ_BC_FALSE LIBGCJ_SPEC HASH_SYNC_SPEC USING_GCC_TRUE USING_GCC_FALSE LIBICONV LTLIBICONV PKG_CONFIG GTK_CFLAGS GTK_LIBS GLIB_CFLAGS GLIB_LIBS LIBART_CFLAGS LIBART_LIBS CLASSPATH_SEPARATOR ac_ct_GCJ ZLIBS SYS_ZLIBS ZINCS DIVIDESPEC CHECKREFSPEC EXCEPTIONSPEC BACKTRACESPEC IEEESPEC NATIVE_TRUE NATIVE_FALSE NEEDS_DATA_START_TRUE NEEDS_DATA_START_FALSE GCC_UNWIND_INCLUDE toolexecdir toolexecmainlibdir toolexeclibdir dbexecdir GCJVERSION gxx_include_dir libstdcxx_incdir ALLOCA PERL SYSDEP_SOURCES LD_START_STATIC_SPEC LD_FINISH_STATIC_SPEC here LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -849,10 +849,10 @@ if test -n "$ac_init_help"; then
 Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --enable-multilib       build many library versions (default)
   --enable-version-specific-runtime-libs
                           specify that runtime libraries should be installed
                           in a compiler-specific directory
-  --enable-multilib       build many library versions (default)
   --enable-plugin         build gcjwebplugin web browser plugin
   --enable-gconf-peer     compile GConf native peers for util.preferences
   --disable-dependency-tracking  speeds up one-time build
@@ -1477,26 +1477,45 @@ fi;
 # We may get other options which we don't document:
 # --with-target-subdir, --with-multisrctop, --with-multisubdir
 
-# When building with srcdir == objdir, links to the source files will
-# be created in directories within the target_subdir.  We have to
-# adjust toplevel_srcdir accordingly, so that configure finds
-# install-sh and other auxiliary files that live in the top-level
-# source directory.
-if test "${srcdir}" = "."; then
-  if test -z "${with_target_subdir}"; then
-    toprel=".."
+# Find the rest of the source tree framework.
+# Default to --enable-multilib
+# Check whether --enable-multilib or --disable-multilib was given.
+if test "${enable_multilib+set}" = set; then
+  enableval="$enable_multilib"
+  case "$enableval" in
+  yes) multilib=yes ;;
+  no)  multilib=no ;;
+  *)   { { echo "$as_me:$LINENO: error: bad value $enableval for multilib option" >&5
+echo "$as_me: error: bad value $enableval for multilib option" >&2;}
+   { (exit 1); exit 1; }; } ;;
+ esac
+else
+  multilib=yes
+fi;
+
+# We may get other options which we leave undocumented:
+# --with-target-subdir, --with-multisrctop, --with-multisubdir
+# See config-ml.in if you want the gory details.
+
+if test "$srcdir" = "."; then
+  if test "$with_target_subdir" != "."; then
+    multi_basedir="$srcdir/$with_multisrctop../.."
   else
-    if test "${with_target_subdir}" != "."; then
-      toprel="${with_multisrctop}../.."
-    else
-      toprel="${with_multisrctop}.."
-    fi
+    multi_basedir="$srcdir/$with_multisrctop.."
   fi
 else
-  toprel=".."
+  multi_basedir="$srcdir/.."
 fi
 
-libgcj_basedir=$srcdir/$toprel/./libjava
+
+# Even if the default multilib is not a cross compilation,
+# it may be that some of the other multilibs are.
+if test $cross_compiling = no && test $multilib = yes \
+   && test "x${with_multisubdir}" != x ; then
+   cross_compiling=maybe
+fi
+
+          ac_config_commands="$ac_config_commands default-1"
 
 
 echo "$as_me:$LINENO: checking host system type" >&5
@@ -1613,20 +1632,6 @@ else
 
 fi;
 
-# Default to --enable-multilib
-# Check whether --enable-multilib or --disable-multilib was given.
-if test "${enable_multilib+set}" = set; then
-  enableval="$enable_multilib"
-  case "${enableval}" in
-  yes) multilib=yes ;;
-  no)  multilib=no ;;
-  *)   { { echo "$as_me:$LINENO: error: bad value ${enableval} for multilib option" >&5
-echo "$as_me: error: bad value ${enableval} for multilib option" >&2;}
-   { (exit 1); exit 1; }; } ;;
- esac
-else
-  multilib=yes
-fi;
 # Check whether --enable-plugin or --disable-plugin was given.
 if test "${enable_plugin+set}" = set; then
   enableval="$enable_plugin"
@@ -5875,7 +5880,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 5878 "configure"' > conftest.$ac_ext
+  echo '#line 5883 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -6878,7 +6883,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   :
 else
   cat > conftest.$ac_ext << EOF
-#line 6881 "configure"
+#line 6886 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -7633,7 +7638,7 @@ ac_x_header_dirs='
 /usr/openwin/share/include'
 
 if test "$ac_x_includes" = no; then
-  # Guess where to find include files, by looking for Intrinsic.h.
+  # Guess where to find include files, by looking for Xlib.h.
   # First, try using that file with no special directory specified.
   cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
@@ -7641,7 +7646,7 @@ _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-#include <X11/Intrinsic.h>
+#include <X11/Xlib.h>
 _ACEOF
 if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
   (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
@@ -7668,7 +7673,7 @@ else
 sed 's/^/| /' conftest.$ac_ext >&5
 
   for ac_dir in $ac_x_header_dirs; do
-  if test -r "$ac_dir/X11/Intrinsic.h"; then
+  if test -r "$ac_dir/X11/Xlib.h"; then
     ac_x_includes=$ac_dir
     break
   fi
@@ -7694,11 +7699,11 @@ _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-#include <X11/Intrinsic.h>
+#include <X11/Xlib.h>
 int
 main ()
 {
-XtMalloc (0)
+XrmInitialize ()
   ;
   return 0;
 }
@@ -9310,7 +9315,7 @@ fi
 
 
 # We're in the tree with gcc, and need to include some of its headers.
-GCC_UNWIND_INCLUDE='-I$(libgcj_basedir)/../gcc'
+GCC_UNWIND_INCLUDE='-I$(multi_basedir)/./libjava/../gcc'
 
 if test "x${with_newlib}" = "xyes"; then
    # We are being configured with a cross compiler.  AC_REPLACE_FUNCS
@@ -10179,7 +10184,7 @@ fi
 fi
 
 
-   if test x"$build" = x"$host"; then
+   if test x"$cross_compiling" = x"no"; then
      echo "$as_me:$LINENO: checking for /proc/self/exe" >&5
 echo $ECHO_N "checking for /proc/self/exe... $ECHO_C" >&6
 if test "${ac_cv_file__proc_self_exe+set}" = set; then
@@ -17483,6 +17488,17 @@ cat >>$CONFIG_STATUS <<_ACEOF
 # INIT-COMMANDS section.
 #
 
+
+srcdir="$srcdir"
+host="$host"
+target="$target"
+with_multisubdir="$with_multisubdir"
+with_multisrctop="$with_multisrctop"
+with_target_subdir="$with_target_subdir"
+ac_configure_args="${multilib_arg} ${ac_configure_args}"
+multi_basedir="$multi_basedir"
+CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
+CC="$CC"
 AMDEP_TRUE="$AMDEP_TRUE" ac_aux_dir="$ac_aux_dir"
 srcdir=${srcdir}
 host=${host}
@@ -17490,7 +17506,7 @@ target=${target}
 with_multisubdir=${with_multisubdir}
 ac_configure_args="${multilib_arg} ${ac_configure_args}"
 CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
-libgcj_basedir=${libgcj_basedir}
+multi_basedir=${multi_basedir}
 CC="${CC}"
 CXX="${CXX}"
 ORIGINAL_LD_FOR_MULTILIBS="${ORIGINAL_LD_FOR_MULTILIBS}"
@@ -17531,6 +17547,7 @@ do
   "sysdep/descriptor.h" ) CONFIG_LINKS="$CONFIG_LINKS sysdep/descriptor.h:$descriptor_h" ;;
   "include/java-signal.h" ) CONFIG_LINKS="$CONFIG_LINKS include/java-signal.h:$SIGNAL_HANDLER" ;;
   "include/java-signal-aux.h" ) CONFIG_LINKS="$CONFIG_LINKS include/java-signal-aux.h:$SIGNAL_HANDLER_AUX" ;;
+  "default-1" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
   "depfiles" ) CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
   "default" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default" ;;
   "include/config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS include/config.h" ;;
@@ -17629,7 +17646,7 @@ s,@build_libsubdir@,$build_libsubdir,;t t
 s,@build_subdir@,$build_subdir,;t t
 s,@host_subdir@,$host_subdir,;t t
 s,@target_subdir@,$target_subdir,;t t
-s,@libgcj_basedir@,$libgcj_basedir,;t t
+s,@multi_basedir@,$multi_basedir,;t t
 s,@host@,$host,;t t
 s,@host_cpu@,$host_cpu,;t t
 s,@host_vendor@,$host_vendor,;t t
@@ -18554,6 +18571,14 @@ esac
   { echo "$as_me:$LINENO: executing $ac_dest commands" >&5
 echo "$as_me: executing $ac_dest commands" >&6;}
   case $ac_dest in
+    default-1 )
+# Only add multilib support code if we just rebuilt the top-level
+# Makefile.
+case " $CONFIG_FILES " in
+ *" Makefile "*)
+   ac_file=Makefile . ${multi_basedir}/config-ml.in
+   ;;
+esac ;;
     depfiles ) test x"$AMDEP_TRUE" != x"" || for mf in $CONFIG_FILES; do
   # Strip MF so we end up with the name of the file.
   mf=`echo "$mf" | sed -e 's/:.*$//'`
@@ -18643,7 +18668,7 @@ done
 case " $CONFIG_FILES " in
  *" Makefile "*)
    LD="${ORIGINAL_LD_FOR_MULTILIBS}"
-   ac_file=Makefile . ${libgcj_basedir}/../config-ml.in
+   ac_file=Makefile . ${multi_basedir}/./libjava/../config-ml.in
    ;;
 esac
 for ac_multi_file in $CONFIG_FILES; do

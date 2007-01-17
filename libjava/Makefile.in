@@ -81,6 +81,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/lib-ld.m4 \
 	$(top_srcdir)/../config/lib-link.m4 \
 	$(top_srcdir)/../config/lib-prefix.m4 \
+	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../config/tls.m4 \
 	$(top_srcdir)/../config/unwind_ipinfo.m4 \
@@ -665,12 +666,12 @@ infodir = @infodir@
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
-libgcj_basedir = @libgcj_basedir@
 libstdcxx_incdir = @libstdcxx_incdir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 mkinstalldirs = @mkinstalldirs@
+multi_basedir = @multi_basedir@
 oldincludedir = @oldincludedir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
@@ -8990,7 +8991,8 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(SCRIPTS) $(DATA)
+all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(SCRIPTS) all-multi \
+		$(DATA)
 installdirs: installdirs-recursive
 installdirs-am:
 	for dir in "$(DESTDIR)$(dbexecdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(dbexecdir)" "$(DESTDIR)$(jardir)" "$(DESTDIR)$(toolexecmainlibdir)"; do \
@@ -9077,13 +9079,13 @@ maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
 @USE_LIBGCJ_BC_FALSE@install-exec-hook:
-clean: clean-recursive
+clean: clean-multi clean-recursive
 
 clean-am: clean-binPROGRAMS clean-dbexecLTLIBRARIES clean-generic \
 	clean-libtool clean-noinstPROGRAMS \
 	clean-toolexeclibLTLIBRARIES mostlyclean-am
 
-distclean: distclean-recursive
+distclean: distclean-multi distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf ./$(DEPDIR) classpath/tools/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/classpath/jdwp/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/security/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR)
 	-rm -f Makefile
@@ -9103,7 +9105,7 @@ info-am:
 install-data-am: install-data-local install-jarDATA
 
 install-exec-am: install-binPROGRAMS install-binSCRIPTS \
-	install-dbexecDATA install-dbexecLTLIBRARIES \
+	install-dbexecDATA install-dbexecLTLIBRARIES install-multi \
 	install-toolexeclibLTLIBRARIES install-toolexecmainlibDATA
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
@@ -9114,14 +9116,14 @@ install-man:
 
 installcheck-am:
 
-maintainer-clean: maintainer-clean-recursive
+maintainer-clean: maintainer-clean-multi maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
 	-rm -rf ./$(DEPDIR) classpath/tools/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/classpath/jdwp/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/security/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
-mostlyclean: mostlyclean-recursive
+mostlyclean: mostlyclean-multi mostlyclean-recursive
 
 mostlyclean-am: mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool mostlyclean-local
@@ -9141,31 +9143,32 @@ uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
 
 uninstall-info: uninstall-info-recursive
 
-.PHONY: $(RECURSIVE_TARGETS) CTAGS GTAGS all all-am am--refresh check \
-	check-am clean clean-binPROGRAMS clean-dbexecLTLIBRARIES \
-	clean-generic clean-libtool clean-noinstPROGRAMS \
-	clean-recursive clean-toolexeclibLTLIBRARIES ctags \
-	ctags-recursive dist dist-all dist-bzip2 dist-gzip dist-shar \
-	dist-tarZ dist-zip distcheck distclean distclean-compile \
-	distclean-generic distclean-libtool distclean-local \
+.PHONY: $(RECURSIVE_TARGETS) CTAGS GTAGS all all-am all-multi \
+	am--refresh check check-am clean clean-binPROGRAMS \
+	clean-dbexecLTLIBRARIES clean-generic clean-libtool \
+	clean-multi clean-noinstPROGRAMS clean-recursive \
+	clean-toolexeclibLTLIBRARIES ctags ctags-recursive dist \
+	dist-all dist-bzip2 dist-gzip dist-shar dist-tarZ dist-zip \
+	distcheck distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-local distclean-multi \
 	distclean-recursive distclean-tags distcleancheck distdir \
 	distuninstallcheck dvi dvi-am html html-am info info-am \
 	install install-am install-binPROGRAMS install-binSCRIPTS \
 	install-data install-data-am install-data-local \
 	install-dbexecDATA install-dbexecLTLIBRARIES install-exec \
 	install-exec-am install-exec-hook install-info install-info-am \
-	install-jarDATA install-man install-strip \
+	install-jarDATA install-man install-multi install-strip \
 	install-toolexeclibLTLIBRARIES install-toolexecmainlibDATA \
 	installcheck installcheck-am installdirs installdirs-am \
 	maintainer-clean maintainer-clean-generic \
-	maintainer-clean-recursive mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool mostlyclean-local \
-	mostlyclean-recursive pdf pdf-am ps ps-am tags tags-recursive \
-	uninstall uninstall-am uninstall-binPROGRAMS \
-	uninstall-binSCRIPTS uninstall-dbexecDATA \
-	uninstall-dbexecLTLIBRARIES uninstall-info-am \
-	uninstall-jarDATA uninstall-toolexeclibLTLIBRARIES \
-	uninstall-toolexecmainlibDATA
+	maintainer-clean-multi maintainer-clean-recursive mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	mostlyclean-local mostlyclean-multi mostlyclean-recursive pdf \
+	pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
+	uninstall-binPROGRAMS uninstall-binSCRIPTS \
+	uninstall-dbexecDATA uninstall-dbexecLTLIBRARIES \
+	uninstall-info-am uninstall-jarDATA \
+	uninstall-toolexeclibLTLIBRARIES uninstall-toolexecmainlibDATA
 
 
 $(db_name): gcj-dbtool$(EXEEXT)

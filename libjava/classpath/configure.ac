@@ -11,6 +11,9 @@ AC_CONFIG_SRCDIR(java/lang/System.java)
 
 AC_CANONICAL_TARGET
 
+# Find the rest of the source tree framework.
+AM_ENABLE_MULTILIB(, ../..)
+
 dnl -----------------------------------------------------------
 dnl Fold all IA-32 CPU architectures into "x86"
 dnl -----------------------------------------------------------

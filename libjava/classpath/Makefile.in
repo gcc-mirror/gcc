@@ -41,14 +41,14 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(top_srcdir)/gnu/classpath/Configuration.java.in \
 	$(top_srcdir)/gnu/java/security/Configuration.java.in \
 	$(top_srcdir)/resource/META-INF/services/java.util.prefs.PreferencesFactory.in \
-	AUTHORS COPYING ChangeLog INSTALL NEWS TODO compile \
-	config.guess config.sub depcomp install-sh ltcf-c.sh \
-	ltcf-cxx.sh ltcf-gcj.sh ltconfig ltmain.sh missing \
-	mkinstalldirs
+	AUTHORS COPYING ChangeLog INSTALL NEWS TODO config.guess \
+	config.sub depcomp install-sh ltcf-c.sh ltcf-cxx.sh \
+	ltcf-gcj.sh ltconfig ltmain.sh missing mkinstalldirs
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/../../config/lead-dot.m4 \
+	$(top_srcdir)/../../config/multi.m4 \
 	$(top_srcdir)/../../libtool.m4 $(top_srcdir)/m4/acattribute.m4 \
 	$(top_srcdir)/m4/accross.m4 $(top_srcdir)/m4/acinclude.m4 \
 	$(top_srcdir)/m4/ax_create_stdint_h.m4 \
@@ -66,6 +66,12 @@ CONFIG_CLEAN_FILES = gnu/classpath/Configuration.java \
 	resource/META-INF/services/java.util.prefs.PreferencesFactory
 SOURCES =
 DIST_SOURCES =
+MULTISRCTOP = 
+MULTIBUILDTOP = 
+MULTIDIRS = 
+MULTISUBDIR = 
+MULTIDO = true
+MULTICLEAN = true
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-exec-recursive install-info-recursive \
@@ -296,6 +302,7 @@ libexecdir = @libexecdir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
+multi_basedir = @multi_basedir@
 nativeexeclibdir = @nativeexeclibdir@
 oldincludedir = @oldincludedir@
 prefix = @prefix@
@@ -371,6 +378,23 @@ clean-libtool:
 
 distclean-libtool:
 	-rm -f libtool
+
+# GNU Make needs to see an explicit $(MAKE) variable in the command it
+# runs to enable its job server during parallel builds.  Hence the
+# comments below.
+all-multi:
+	$(MULTIDO) $(AM_MAKEFLAGS) DO=all multi-do # $(MAKE)
+install-multi:
+	$(MULTIDO) $(AM_MAKEFLAGS) DO=install multi-do # $(MAKE)
+
+mostlyclean-multi:
+	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=mostlyclean multi-clean # $(MAKE)
+clean-multi:
+	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=clean multi-clean # $(MAKE)
+distclean-multi:
+	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=distclean multi-clean # $(MAKE)
+maintainer-clean-multi:
+	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean # $(MAKE)
 uninstall-info-am:
 
 # This directory's subdirectories are mostly independent; you can cd
@@ -652,7 +676,7 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-recursive
-all-am: Makefile
+all-am: Makefile all-multi
 installdirs: installdirs-recursive
 installdirs-am:
 install: install-recursive
@@ -679,11 +703,11 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-clean: clean-recursive
+clean: clean-multi clean-recursive
 
 clean-am: clean-generic clean-libtool mostlyclean-am
 
-distclean: distclean-recursive
+distclean: distclean-multi distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -f Makefile
 distclean-am: clean-am distclean-generic distclean-libtool \
@@ -701,7 +725,7 @@ info-am:
 
 install-data-am:
 
-install-exec-am:
+install-exec-am: install-multi
 
 install-info: install-info-recursive
 
@@ -709,13 +733,13 @@ install-man:
 
 installcheck-am:
 
-maintainer-clean: maintainer-clean-recursive
+maintainer-clean: maintainer-clean-multi maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
-mostlyclean: mostlyclean-recursive
+mostlyclean: mostlyclean-multi mostlyclean-recursive
 
 mostlyclean-am: mostlyclean-generic mostlyclean-libtool
 
@@ -731,20 +755,22 @@ uninstall-am: uninstall-info-am
 
 uninstall-info: uninstall-info-recursive
 
-.PHONY: $(RECURSIVE_TARGETS) CTAGS GTAGS all all-am am--refresh check \
-	check-am clean clean-generic clean-libtool clean-recursive \
-	ctags ctags-recursive dist dist-all dist-bzip2 dist-gzip \
-	dist-hook dist-shar dist-tarZ dist-zip distcheck distclean \
-	distclean-generic distclean-libtool distclean-recursive \
+.PHONY: $(RECURSIVE_TARGETS) CTAGS GTAGS all all-am all-multi \
+	am--refresh check check-am clean clean-generic clean-libtool \
+	clean-multi clean-recursive ctags ctags-recursive dist \
+	dist-all dist-bzip2 dist-gzip dist-hook dist-shar dist-tarZ \
+	dist-zip distcheck distclean distclean-generic \
+	distclean-libtool distclean-multi distclean-recursive \
 	distclean-tags distcleancheck distdir distuninstallcheck dvi \
 	dvi-am html html-am info info-am install install-am \
 	install-data install-data-am install-exec install-exec-am \
-	install-info install-info-am install-man install-strip \
-	installcheck installcheck-am installdirs installdirs-am \
-	maintainer-clean maintainer-clean-generic \
-	maintainer-clean-recursive mostlyclean mostlyclean-generic \
-	mostlyclean-libtool mostlyclean-recursive pdf pdf-am ps ps-am \
-	tags tags-recursive uninstall uninstall-am uninstall-info-am
+	install-info install-info-am install-man install-multi \
+	install-strip installcheck installcheck-am installdirs \
+	installdirs-am maintainer-clean maintainer-clean-generic \
+	maintainer-clean-multi maintainer-clean-recursive mostlyclean \
+	mostlyclean-generic mostlyclean-libtool mostlyclean-multi \
+	mostlyclean-recursive pdf pdf-am ps ps-am tags tags-recursive \
+	uninstall uninstall-am uninstall-info-am
 
 
 native: lib
