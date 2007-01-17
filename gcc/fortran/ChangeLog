@@ -1,3 +1,12 @@
+2007-01-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30476
+	* module.c (load_generic_interfaces): Make the marking of the
+	symbol as ambiguous conditional on the module names being
+	different.
+	(write_generic): Ensure that the generic interface has a
+	non-NULL module field.
+
 2007-01-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Paul Thomas  <pault@gcc.gnu.org>
 

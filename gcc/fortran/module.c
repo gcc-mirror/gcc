@@ -3023,9 +3023,11 @@ load_generic_interfaces (void)
 	      gfc_symtree *st;
 	      p = p ? p : name;
 	      st = gfc_find_symtree (gfc_current_ns->sym_root, p);
-	      st->ambiguous = sym->attr.generic ? 0 : 1;
+	      if (!sym->attr.generic
+		    && sym->module != NULL
+		    && strcmp(module, sym->module) != 0)
+		st->ambiguous = 1;
 	    }
-
 	  if (i == 1)
 	    {
 	      mio_interface_rest (&sym->generic);
@@ -3675,6 +3677,9 @@ write_generic (gfc_symbol * sym)
   if (sym->generic == NULL
       || !gfc_check_access (sym->attr.access, sym->ns->default_access))
     return;
+
+  if (sym->module == NULL)
+    sym->module = gfc_get_string (module_name);
 
   mio_symbol_interface (&sym->name, &sym->module, &sym->generic);
 }
