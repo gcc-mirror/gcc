@@ -1,3 +1,32 @@
+2007-01-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/27107
+	* runtime/environ.c: Don't include io/io.h.
+	* runtime/string.c: Don't include io/io.h.
+	(compare0): Add cast to avoid warning.
+	* runtime/error.c: Don't include io/io.h.
+	(st_printf): Move to io/unix.c.
+	* intrinsics/flush.c: Delete, contents moved to io/intrinsics.c.
+	* intrinsics/fget.c: Likewise.
+	* intrinsics/ftell.c: Likewise.
+	* intrinsics/tty.c: Likewise.
+	* libgfortran.h (DEFAULT_RECL, notification_std,
+	get_unformatted_convert, IOPARM_*, st_parameter_common, unit_convert,
+	DEFAULT_TEMPDIR): New declarations.
+	* io/io.h (DEFAULT_RECL, notification_std, get_unformatted_convert,
+	IOPARM_*, st_parameter_common, unit_convert, DEFAULT_TEMPDIR):
+	Move to libgfortran.h.
+	* io/unix.c: Add io/unix.h content.
+	(st_printf): New function.
+	* io/intrinsics.c: New file.
+	* io/unix.h: Remove, contents moved into unix.c.
+	* libtool-version: Update library version to 3.0.0.
+	* configure.ac: Update library version to 0.3.
+	* Makefile.am (intrinsics/fget.c, intrinsics/flush.c,
+	intrinsics/ftell.c, intrinsics/tty.c, libgfortran.h): Remove targets.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2007-01-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/30435
