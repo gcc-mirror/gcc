@@ -871,7 +871,7 @@ java/net/natVMInetAddress.cc \
 java/net/natVMNetworkInterface.cc \
 java/net/natVMURLConnection.cc \
 java/nio/channels/natVMChannels.cc \
-java/nio/natDirectByteBufferImpl.cc \
+java/nio/natVMDirectByteBufferImpl.cc \
 java/security/natVMAccessController.cc \
 java/security/natVMAccessControlState.cc \
 java/text/natCollator.cc \
