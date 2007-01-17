@@ -1,3 +1,10 @@
+2007-01-16  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natThread.cc (finalize_native): Remove cast.
+	(_Jv_GetCurrentJNIEnv): Likewise.
+	* include/jvm.h (struct natThread) <jni_env>: Declare as
+	_Jv_JNIEnv*.
+
 2007-01-16  Keith Seitz  <keiths@redhat.com>
 
 	* testsuite/libjava.jvmti/natevents.cc (FieldModificationCB): Use
