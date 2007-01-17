@@ -1,5 +1,5 @@
 /* PathOptionGroup.java - handle classpath-setting options
- Copyright (C) 2006 Free Software Foundation, Inc.
+ Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
 
@@ -88,6 +88,11 @@ public class PathOptionGroup
   public PathOptionGroup()
   {
     super("Class path options");
+
+    // Use the VM's built-in boot class path by default.
+    String boot = System.getProperty("sun.boot.class.path");
+    if (boot != null)
+      setPath(bootclasspath, boot);
 
     add(new Option("classpath", "Set the class path", "PATH")
     {
