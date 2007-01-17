@@ -27,6 +27,8 @@ details.  */
 #include <java/lang/NullPointerException.h>
 
 #include <jni.h>
+#include <jvmti.h>
+#include "jvmti-int.h"
 
 #ifdef ENABLE_JVMPI
 #include <jvmpi.h>
@@ -215,6 +217,9 @@ java::lang::Thread::finish_ ()
   nt->park_helper.deactivate ();
   group->removeThread (this);
 
+  if (JVMTI_REQUESTED_EVENT (ThreadEnd))
+    _Jv_JVMTI_PostEvent (JVMTI_EVENT_THREAD_END, this, nt->jni_env);
+
 #ifdef ENABLE_JVMPI  
   if (_Jv_JVMPI_Notify_THREAD_END)
     {
@@ -253,6 +258,12 @@ java::lang::Thread::finish_ ()
 static void
 _Jv_NotifyThreadStart (java::lang::Thread* thread)
 {
+  if (JVMTI_REQUESTED_EVENT (ThreadStart))
+    {
+      natThread *nt = reinterpret_cast<natThread *> (thread->data);
+      _Jv_JVMTI_PostEvent (JVMTI_EVENT_THREAD_START, thread, nt->jni_env);
+    }
+
 #ifdef ENABLE_JVMPI
       if (_Jv_JVMPI_Notify_THREAD_START)
 	{
