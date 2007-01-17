@@ -42,16 +42,15 @@ target_alias=${target_alias-$host_alias}
 
 # Sets up automake.  Must come after AC_CANONICAL_SYSTEM.  Each of the
 # following is magically included in AUTOMAKE_OPTIONS in each Makefile.am.
-#  1.8.2:  minimum required version
+#  1.9.6:  minimum required version
 #  no-define:  PACKAGE and VERSION will not be #define'd in config.h (a bunch
 #              of other PACKAGE_* variables will, however, and there's nothing
 #              we can do about that; they come from AC_INIT).
 #  foreign:  we don't follow the normal rules for GNU packages (no COPYING
 #            file in the top srcdir, etc, etc), so stop complaining.
-#  no-dependencies:  turns off auto dependency generation (just for now)
 #  -Wall:  turns on all automake warnings...
 #  -Wno-portability:  ...except this one, since GNU make is required.
-AM_INIT_AUTOMAKE([1.8.2 no-define foreign no-dependencies -Wall -Wno-portability])
+AM_INIT_AUTOMAKE([1.9.6 no-define foreign -Wall -Wno-portability])
 
 AM_MAINTAINER_MODE
 AM_ENABLE_MULTILIB(, ..)
