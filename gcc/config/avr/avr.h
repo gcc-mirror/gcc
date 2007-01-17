@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for ATMEL AVR at90s8515, ATmega103/103L, ATmega603/603L microcontrollers.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
@@ -37,8 +37,10 @@ Boston, MA 02110-1301, USA.  */
 	builtin_define ("__AVR_HAVE_LPMX__");	\
       if (avr_asm_only_p)			\
 	builtin_define ("__AVR_ASM_ONLY__");	\
-      if (avr_enhanced_p)			\
+      if (avr_have_mul_p)			\
 	builtin_define ("__AVR_ENHANCED__");	\
+      if (avr_have_mul_p)			\
+	builtin_define ("__AVR_HAVE_MUL__");	\
       if (avr_mega_p)				\
 	builtin_define ("__AVR_MEGA__");	\
       if (TARGET_NO_INTERRUPTS)			\
@@ -49,7 +51,7 @@ Boston, MA 02110-1301, USA.  */
 extern const char *avr_base_arch_macro;
 extern const char *avr_extra_arch_macro;
 extern int avr_mega_p;
-extern int avr_enhanced_p;
+extern int avr_have_mul_p;
 extern int avr_asm_only_p;
 extern int avr_have_movw_lpmx_p;
 #ifndef IN_LIBGCC2
@@ -57,8 +59,9 @@ extern GTY(()) section *progmem_section;
 #endif
 
 #define AVR_MEGA (avr_mega_p && !TARGET_SHORT_CALLS)
-#define AVR_ENHANCED (avr_enhanced_p)
+#define AVR_HAVE_MUL (avr_have_mul_p)
 #define AVR_HAVE_MOVW (avr_have_movw_lpmx_p)
+#define AVR_HAVE_LPMX (avr_have_movw_lpmx_p)
 
 #define TARGET_VERSION fprintf (stderr, " (GNU assembler syntax)");
 

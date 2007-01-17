@@ -707,7 +707,7 @@
 		 (match_operand:QI 2 "register_operand" "")))]
   ""
   "{
-  if (!AVR_ENHANCED)
+  if (!AVR_HAVE_MUL)
     {
       emit_insn (gen_mulqi3_call (operands[0], operands[1], operands[2]));
       DONE;
@@ -718,7 +718,7 @@
   [(set (match_operand:QI 0 "register_operand" "=r")
 	(mult:QI (match_operand:QI 1 "register_operand" "r")
 		 (match_operand:QI 2 "register_operand" "r")))]
-  "AVR_ENHANCED"
+  "AVR_HAVE_MUL"
   "mul %1,%2
 	mov %0,r0
 	clr r1"
@@ -737,7 +737,7 @@
 (define_insn "*mulqi3_call"
   [(set (reg:QI 24) (mult:QI (reg:QI 24) (reg:QI 22)))
    (clobber (reg:QI 22))]
-  "!AVR_ENHANCED"
+  "!AVR_HAVE_MUL"
   "%~call __mulqi3"
   [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
@@ -746,7 +746,7 @@
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(mult:HI (sign_extend:HI (match_operand:QI 1 "register_operand" "d"))
 		 (sign_extend:HI (match_operand:QI 2 "register_operand" "d"))))]
-  "AVR_ENHANCED"
+  "AVR_HAVE_MUL"
   "muls %1,%2
 	movw %0,r0
 	clr r1"
@@ -757,7 +757,7 @@
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(mult:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))
 		 (zero_extend:HI (match_operand:QI 2 "register_operand" "r"))))]
-  "AVR_ENHANCED"
+  "AVR_HAVE_MUL"
   "mul %1,%2
 	movw %0,r0
 	clr r1"
@@ -771,7 +771,7 @@
   ""
   "
 {
-  if (!AVR_ENHANCED)
+  if (!AVR_HAVE_MUL)
     {
       emit_insn (gen_mulhi3_call (operands[0], operands[1], operands[2]));
       DONE;
@@ -782,7 +782,7 @@
   [(set (match_operand:HI 0 "register_operand" "=&r")
 	(mult:HI (match_operand:HI 1 "register_operand" "r")
 		 (match_operand:HI 2 "register_operand" "r")))]
-  "AVR_ENHANCED"
+  "AVR_HAVE_MUL"
   "mul %A1,%A2
 	movw %0,r0
 	mul %A1,%B2
@@ -807,7 +807,7 @@
   [(set (reg:HI 24) (mult:HI (reg:HI 24) (reg:HI 22)))
    (clobber (reg:HI 22))
    (clobber (reg:QI 21))]
-  "!AVR_ENHANCED"
+  "!AVR_HAVE_MUL"
   "%~call __mulhi3"
   [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
@@ -821,14 +821,14 @@
 	      (clobber (reg:HI 26))
 	      (clobber (reg:HI 30))])
    (set (match_operand:SI 0 "register_operand" "") (reg:SI 22))]
-  "AVR_ENHANCED"
+  "AVR_HAVE_MUL"
   "")
 
 (define_insn "*mulsi3_call"
   [(set (reg:SI 22) (mult:SI (reg:SI 22) (reg:SI 18)))
    (clobber (reg:HI 26))
    (clobber (reg:HI 30))]
-  "AVR_ENHANCED"
+  "AVR_HAVE_MUL"
   "%~call __mulsi3"
   [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
@@ -2220,7 +2220,7 @@
 			UNSPEC_INDEX_JMP))
    (use (label_ref (match_operand 1 "" "")))
    (clobber (match_dup 0))]
-  "AVR_MEGA && AVR_ENHANCED"
+  "AVR_MEGA && AVR_HAVE_LPMX"
   "lsl r30
 	rol r31
 	lpm __tmp_reg__,Z+

@@ -120,8 +120,8 @@ section *progmem_section;
 /* More than 8K of program memory: use "call" and "jmp".  */
 int avr_mega_p = 0;
 
-/* Enhanced core: use "movw", "mul", ...  */
-int avr_enhanced_p = 0;
+/* Core have 'MUL*' instructions.  */
+int avr_have_mul_p = 0;
 
 /* Assembler only.  */
 int avr_asm_only_p = 0;
@@ -131,7 +131,7 @@ int avr_have_movw_lpmx_p = 0;
 
 struct base_arch_s {
   int asm_only;
-  int enhanced;
+  int have_mul;
   int mega;
   int have_movw_lpmx;
   const char *const macro;
@@ -324,7 +324,7 @@ avr_override_options (void)
 
   base = &avr_arch_types[t->arch];
   avr_asm_only_p = base->asm_only;
-  avr_enhanced_p = base->enhanced;
+  avr_have_mul_p = base->have_mul;
   avr_mega_p = base->mega;
   avr_have_movw_lpmx_p = base->have_movw_lpmx;
   avr_base_arch_macro = base->macro;
@@ -3170,7 +3170,7 @@ ashlhi3_out (rtx insn, rtx operands[], int *len)
 		      AS1 (lsl,%B0)     CR_TAB
 		      AS2 (andi,%B0,0xe0));
 	    }
-	  if (AVR_ENHANCED && scratch)
+	  if (AVR_HAVE_MUL && scratch)
 	    {
 	      *len = 5;
 	      return (AS2 (ldi,%3,0x20) CR_TAB
@@ -3191,7 +3191,7 @@ ashlhi3_out (rtx insn, rtx operands[], int *len)
 		      AS2 (ldi,%3,0xe0) CR_TAB
 		      AS2 (and,%B0,%3));
 	    }
-	  if (AVR_ENHANCED)
+	  if (AVR_HAVE_MUL)
 	    {
 	      *len = 6;
 	      return ("set"            CR_TAB
@@ -3211,7 +3211,7 @@ ashlhi3_out (rtx insn, rtx operands[], int *len)
 		  AS1 (lsl,%B0));
 
 	case 14:
-	  if (AVR_ENHANCED && ldi_ok)
+	  if (AVR_HAVE_MUL && ldi_ok)
 	    {
 	      *len = 5;
 	      return (AS2 (ldi,%B0,0x40) CR_TAB
@@ -3220,7 +3220,7 @@ ashlhi3_out (rtx insn, rtx operands[], int *len)
 		      AS1 (clr,%A0)      CR_TAB
 		      AS1 (clr,__zero_reg__));
 	    }
-	  if (AVR_ENHANCED && scratch)
+	  if (AVR_HAVE_MUL && scratch)
 	    {
 	      *len = 5;
 	      return (AS2 (ldi,%3,0x40) CR_TAB
@@ -3500,7 +3500,7 @@ ashrhi3_out (rtx insn, rtx operands[], int *len)
 		  AS1 (asr,%A0));
 
 	case 11:
-	  if (AVR_ENHANCED && ldi_ok)
+	  if (AVR_HAVE_MUL && ldi_ok)
 	    {
 	      *len = 5;
 	      return (AS2 (ldi,%A0,0x20) CR_TAB
@@ -3520,7 +3520,7 @@ ashrhi3_out (rtx insn, rtx operands[], int *len)
 		  AS1 (asr,%A0));
 
 	case 12:
-	  if (AVR_ENHANCED && ldi_ok)
+	  if (AVR_HAVE_MUL && ldi_ok)
 	    {
 	      *len = 5;
 	      return (AS2 (ldi,%A0,0x10) CR_TAB
@@ -3541,7 +3541,7 @@ ashrhi3_out (rtx insn, rtx operands[], int *len)
 		  AS1 (asr,%A0));
 
 	case 13:
-	  if (AVR_ENHANCED && ldi_ok)
+	  if (AVR_HAVE_MUL && ldi_ok)
 	    {
 	      *len = 5;
 	      return (AS2 (ldi,%A0,0x08) CR_TAB
@@ -3947,7 +3947,7 @@ lshrhi3_out (rtx insn, rtx operands[], int *len)
 		      AS1 (lsr,%A0)     CR_TAB
 		      AS2 (andi,%A0,0x07));
 	    }
-	  if (AVR_ENHANCED && scratch)
+	  if (AVR_HAVE_MUL && scratch)
 	    {
 	      *len = 5;
 	      return (AS2 (ldi,%3,0x08) CR_TAB
@@ -3968,7 +3968,7 @@ lshrhi3_out (rtx insn, rtx operands[], int *len)
 		      AS2 (ldi,%3,0x07) CR_TAB
 		      AS2 (and,%A0,%3));
 	    }
-	  if (AVR_ENHANCED)
+	  if (AVR_HAVE_MUL)
 	    {
 	      *len = 6;
 	      return ("set"            CR_TAB
@@ -3988,7 +3988,7 @@ lshrhi3_out (rtx insn, rtx operands[], int *len)
 		  AS1 (lsr,%A0));
 
 	case 14:
-	  if (AVR_ENHANCED && ldi_ok)
+	  if (AVR_HAVE_MUL && ldi_ok)
 	    {
 	      *len = 5;
 	      return (AS2 (ldi,%A0,0x04) CR_TAB
@@ -3997,7 +3997,7 @@ lshrhi3_out (rtx insn, rtx operands[], int *len)
 		      AS1 (clr,%B0)      CR_TAB
 		      AS1 (clr,__zero_reg__));
 	    }
-	  if (AVR_ENHANCED && scratch)
+	  if (AVR_HAVE_MUL && scratch)
 	    {
 	      *len = 5;
 	      return (AS2 (ldi,%3,0x04) CR_TAB
@@ -4983,7 +4983,7 @@ avr_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total)
       switch (mode)
 	{
 	case QImode:
-	  if (AVR_ENHANCED)
+	  if (AVR_HAVE_MUL)
 	    *total = COSTS_N_INSNS (optimize_size ? 3 : 4);
 	  else if (optimize_size)
 	    *total = COSTS_N_INSNS (AVR_MEGA ? 2 : 1);
@@ -4991,7 +4991,7 @@ avr_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total)
 	    return false;
 
 	case HImode:
-	  if (AVR_ENHANCED)
+	  if (AVR_HAVE_MUL)
 	    *total = COSTS_N_INSNS (optimize_size ? 7 : 10);
 	  else if (optimize_size)
 	    *total = COSTS_N_INSNS (AVR_MEGA ? 2 : 1);
