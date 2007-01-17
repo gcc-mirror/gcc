@@ -1,3 +1,7 @@
+2007-01-17  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-type-escape.c (look_for_casts): Revamp using handled_component_p.
+
 2007-01-17  Eric Christopher  <echristo@apple.com>
 
 	* config.gcc: Support core2 processor.
