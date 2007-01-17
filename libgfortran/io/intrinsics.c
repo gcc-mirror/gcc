@@ -1,6 +1,6 @@
-/* Implementation of the FGET, FGETC, FPUT and FPUTC intrinsics.
-   Copyright (C) 2005 Free Software Foundation, Inc.
-   Contributed by François-Xavier Coudert <coudert@clipper.ens.fr>
+/* Implementation of the FGET, FGETC, FPUT, FPUTC, FLUSH 
+   FTELL, TTYNAM and ISATTY intrinsics.
+   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -31,9 +31,13 @@ Boston, MA 02110-1301, USA.  */
 #include "config.h"
 #include "libgfortran.h"
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 #include <string.h>
 
-#include "../io/io.h"
+#include "io.h"
 
 static const int five = 5;
 static const int six = 6;
@@ -175,3 +179,189 @@ FPUT_SUB(2)
 FPUT_SUB(4)
 FPUT_SUB(8)
 
+
+/* SUBROUTINE FLUSH(UNIT)
+   INTEGER, INTENT(IN), OPTIONAL :: UNIT  */
+
+extern void flush_i4 (GFC_INTEGER_4 *);
+export_proto(flush_i4);
+
+void
+flush_i4 (GFC_INTEGER_4 *unit)
+{
+  gfc_unit *us;
+
+  /* flush all streams */
+  if (unit == NULL)
+    flush_all_units ();
+  else
+    {
+      us = find_unit (*unit);
+      if (us != NULL)
+	{
+	  flush (us->s);
+	  unlock_unit (us);
+	}
+    }
+}
+
+
+extern void flush_i8 (GFC_INTEGER_8 *);
+export_proto(flush_i8);
+
+void
+flush_i8 (GFC_INTEGER_8 *unit)
+{
+  gfc_unit *us;
+
+  /* flush all streams */
+  if (unit == NULL)
+    flush_all_units ();
+  else
+    {
+      us = find_unit (*unit);
+      if (us != NULL)
+	{
+	  flush (us->s);
+	  unlock_unit (us);
+	}
+    }
+}
+
+
+/* FTELL intrinsic */
+
+extern size_t PREFIX(ftell) (int *);
+export_proto_np(PREFIX(ftell));
+
+size_t
+PREFIX(ftell) (int * unit)
+{
+  gfc_unit * u = find_unit (*unit);
+  size_t ret;
+  if (u == NULL)
+    return ((size_t) -1);
+  ret = (size_t) stream_offset (u->s);
+  unlock_unit (u);
+  return ret;
+}
+
+#define FTELL_SUB(kind) \
+  extern void ftell_i ## kind ## _sub (int *, GFC_INTEGER_ ## kind *); \
+  export_proto(ftell_i ## kind ## _sub); \
+  void \
+  ftell_i ## kind ## _sub (int * unit, GFC_INTEGER_ ## kind * offset) \
+  { \
+    gfc_unit * u = find_unit (*unit); \
+    if (u == NULL) \
+      *offset = -1; \
+    else \
+      { \
+	*offset = stream_offset (u->s); \
+	unlock_unit (u); \
+      } \
+  }
+
+FTELL_SUB(1)
+FTELL_SUB(2)
+FTELL_SUB(4)
+FTELL_SUB(8)
+
+
+
+/* LOGICAL FUNCTION ISATTY(UNIT)
+   INTEGER, INTENT(IN) :: UNIT */
+
+extern GFC_LOGICAL_4 isatty_l4 (int *);
+export_proto(isatty_l4);
+
+GFC_LOGICAL_4
+isatty_l4 (int *unit)
+{
+  gfc_unit *u;
+  GFC_LOGICAL_4 ret = 0;
+
+  u = find_unit (*unit);
+  if (u != NULL)
+    {
+      ret = (GFC_LOGICAL_4) stream_isatty (u->s);
+      unlock_unit (u);
+    }
+  return ret;
+}
+
+
+extern GFC_LOGICAL_8 isatty_l8 (int *);
+export_proto(isatty_l8);
+
+GFC_LOGICAL_8
+isatty_l8 (int *unit)
+{
+  gfc_unit *u;
+  GFC_LOGICAL_8 ret = 0;
+
+  u = find_unit (*unit);
+  if (u != NULL)
+    {
+      ret = (GFC_LOGICAL_8) stream_isatty (u->s);
+      unlock_unit (u);
+    }
+  return ret;
+}
+
+
+/* SUBROUTINE TTYNAM(UNIT,NAME)
+   INTEGER,SCALAR,INTENT(IN) :: UNIT
+   CHARACTER,SCALAR,INTENT(OUT) :: NAME */
+
+extern void ttynam_sub (int *, char *, gfc_charlen_type);
+export_proto(ttynam_sub);
+
+void
+ttynam_sub (int *unit, char * name, gfc_charlen_type name_len)
+{
+  gfc_unit *u;
+  char * n;
+  int i;
+
+  memset (name, ' ', name_len);
+  u = find_unit (*unit);
+  if (u != NULL)
+    {
+      n = stream_ttyname (u->s);
+      if (n != NULL)
+	{
+	  i = 0;
+	  while (*n && i < name_len)
+	    name[i++] = *(n++);
+	}
+      unlock_unit (u);
+    }
+}
+
+
+extern void ttynam (char **, gfc_charlen_type *, int);
+export_proto(ttynam);
+
+void
+ttynam (char ** name, gfc_charlen_type * name_len, int unit)
+{
+  gfc_unit *u;
+
+  u = find_unit (unit);
+  if (u != NULL)
+    {
+      *name = stream_ttyname (u->s);
+      if (*name != NULL)
+	{
+	  *name_len = strlen (*name);
+	  *name = strdup (*name);
+	  unlock_unit (u);
+	  return;
+	}
+      unlock_unit (u);
+    }
+
+  *name_len = 0;
+  *name = NULL;
+}

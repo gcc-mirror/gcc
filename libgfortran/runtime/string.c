@@ -31,7 +31,6 @@ Boston, MA 02110-1301, USA.  */
 #include <string.h>
 
 #include "libgfortran.h"
-#include "../io/io.h"
 
 /* Compare a C-style string with a fortran style string in a case-insensitive
    manner.  Used for decoding string options to various statements.  Returns
@@ -44,7 +43,7 @@ compare0 (const char *s1, int s1_len, const char *s2)
 
   /* Strip trailing blanks from the Fortran string.  */
   len = fstrlen (s1, s1_len);
-  if(len != strlen(s2)) return 0; /* don't match */
+  if (len != (int) strlen(s2)) return 0; /* don't match */
   return strncasecmp (s1, s2, len) == 0;
 }
 

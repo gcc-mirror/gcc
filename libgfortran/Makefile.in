@@ -167,21 +167,20 @@ am__objects_30 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
 	$(am__objects_26) $(am__objects_27) $(am__objects_28) \
 	$(am__objects_29)
 am__objects_31 = close.lo file_pos.lo format.lo inquire.lo \
-	list_read.lo lock.lo open.lo read.lo size_from_kind.lo \
-	transfer.lo unit.lo unix.lo write.lo
+	intrinsics.lo list_read.lo lock.lo open.lo read.lo \
+	size_from_kind.lo transfer.lo unit.lo unix.lo write.lo
 am__objects_32 = associated.lo abort.lo access.lo args.lo \
 	c99_functions.lo chdir.lo chmod.lo clock.lo cpu_time.lo \
 	cshift0.lo ctime.lo date_and_time.lo env.lo eoshift0.lo \
-	eoshift2.lo etime.lo exit.lo fget.lo flush.lo fnum.lo ftell.lo \
-	gerror.lo getcwd.lo getlog.lo getXid.lo hostnm.lo kill.lo \
-	ierrno.lo ishftc.lo link.lo malloc.lo mvbits.lo move_alloc.lo \
-	pack_generic.lo perror.lo signal.lo size.lo sleep.lo \
-	spread_generic.lo string_intrinsics.lo system.lo rand.lo \
-	random.lo rename.lo reshape_generic.lo reshape_packed.lo \
-	selected_int_kind.lo selected_real_kind.lo stat.lo symlnk.lo \
-	system_clock.lo time.lo transpose_generic.lo tty.lo umask.lo \
-	unlink.lo unpack_generic.lo in_pack_generic.lo \
-	in_unpack_generic.lo
+	eoshift2.lo etime.lo exit.lo fnum.lo gerror.lo getcwd.lo \
+	getlog.lo getXid.lo hostnm.lo kill.lo ierrno.lo ishftc.lo \
+	link.lo malloc.lo mvbits.lo move_alloc.lo pack_generic.lo \
+	perror.lo signal.lo size.lo sleep.lo spread_generic.lo \
+	string_intrinsics.lo system.lo rand.lo random.lo rename.lo \
+	reshape_generic.lo reshape_packed.lo selected_int_kind.lo \
+	selected_real_kind.lo stat.lo symlnk.lo system_clock.lo \
+	time.lo transpose_generic.lo umask.lo unlink.lo \
+	unpack_generic.lo in_pack_generic.lo in_unpack_generic.lo
 am__objects_33 =
 am__objects_34 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_abs_i4.lo _abs_i8.lo _abs_i16.lo _abs_r4.lo _abs_r8.lo \
@@ -384,6 +383,7 @@ io/close.c \
 io/file_pos.c \
 io/format.c \
 io/inquire.c \
+io/intrinsics.c \
 io/list_read.c \
 io/lock.c \
 io/open.c \
@@ -415,10 +415,7 @@ intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
 intrinsics/etime.c \
 intrinsics/exit.c \
-intrinsics/fget.c \
-intrinsics/flush.c \
 intrinsics/fnum.c \
-intrinsics/ftell.c \
 intrinsics/gerror.c \
 intrinsics/getcwd.c \
 intrinsics/getlog.c \
@@ -451,7 +448,6 @@ intrinsics/symlnk.c \
 intrinsics/system_clock.c \
 intrinsics/time.c \
 intrinsics/transpose_generic.c \
-intrinsics/tty.c \
 intrinsics/umask.c \
 intrinsics/unlink.c \
 intrinsics/unpack_generic.c \
@@ -468,8 +464,7 @@ runtime/memory.c \
 runtime/pause.c \
 runtime/stop.c \
 runtime/string.c \
-runtime/select.c \
-libgfortran.h
+runtime/select.c
 
 i_all_c = \
 generated/all_l4.c \
@@ -2317,6 +2312,9 @@ format.lo: io/format.c
 inquire.lo: io/inquire.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o inquire.lo `test -f 'io/inquire.c' || echo '$(srcdir)/'`io/inquire.c
 
+intrinsics.lo: io/intrinsics.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o intrinsics.lo `test -f 'io/intrinsics.c' || echo '$(srcdir)/'`io/intrinsics.c
+
 list_read.lo: io/list_read.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o list_read.lo `test -f 'io/list_read.c' || echo '$(srcdir)/'`io/list_read.c
 
@@ -2395,17 +2393,8 @@ etime.lo: intrinsics/etime.c
 exit.lo: intrinsics/exit.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o exit.lo `test -f 'intrinsics/exit.c' || echo '$(srcdir)/'`intrinsics/exit.c
 
-fget.lo: intrinsics/fget.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fget.lo `test -f 'intrinsics/fget.c' || echo '$(srcdir)/'`intrinsics/fget.c
-
-flush.lo: intrinsics/flush.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o flush.lo `test -f 'intrinsics/flush.c' || echo '$(srcdir)/'`intrinsics/flush.c
-
 fnum.lo: intrinsics/fnum.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fnum.lo `test -f 'intrinsics/fnum.c' || echo '$(srcdir)/'`intrinsics/fnum.c
-
-ftell.lo: intrinsics/ftell.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ftell.lo `test -f 'intrinsics/ftell.c' || echo '$(srcdir)/'`intrinsics/ftell.c
 
 gerror.lo: intrinsics/gerror.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gerror.lo `test -f 'intrinsics/gerror.c' || echo '$(srcdir)/'`intrinsics/gerror.c
@@ -2496,9 +2485,6 @@ time.lo: intrinsics/time.c
 
 transpose_generic.lo: intrinsics/transpose_generic.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transpose_generic.lo `test -f 'intrinsics/transpose_generic.c' || echo '$(srcdir)/'`intrinsics/transpose_generic.c
-
-tty.lo: intrinsics/tty.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tty.lo `test -f 'intrinsics/tty.c' || echo '$(srcdir)/'`intrinsics/tty.c
 
 umask.lo: intrinsics/umask.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o umask.lo `test -f 'intrinsics/umask.c' || echo '$(srcdir)/'`intrinsics/umask.c

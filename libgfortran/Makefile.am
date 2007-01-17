@@ -25,6 +25,7 @@ io/close.c \
 io/file_pos.c \
 io/format.c \
 io/inquire.c \
+io/intrinsics.c \
 io/list_read.c \
 io/lock.c \
 io/open.c \
@@ -56,10 +57,7 @@ intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
 intrinsics/etime.c \
 intrinsics/exit.c \
-intrinsics/fget.c \
-intrinsics/flush.c \
 intrinsics/fnum.c \
-intrinsics/ftell.c \
 intrinsics/gerror.c \
 intrinsics/getcwd.c \
 intrinsics/getlog.c \
@@ -92,7 +90,6 @@ intrinsics/symlnk.c \
 intrinsics/system_clock.c \
 intrinsics/time.c \
 intrinsics/transpose_generic.c \
-intrinsics/tty.c \
 intrinsics/umask.c \
 intrinsics/unlink.c \
 intrinsics/unpack_generic.c \
@@ -109,8 +106,7 @@ runtime/memory.c \
 runtime/pause.c \
 runtime/stop.c \
 runtime/string.c \
-runtime/select.c \
-libgfortran.h
+runtime/select.c
 
 i_all_c= \
 generated/all_l4.c \

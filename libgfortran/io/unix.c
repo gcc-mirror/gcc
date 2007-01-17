@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -36,6 +36,7 @@ Boston, MA 02110-1301, USA.  */
 
 #include <unistd.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <assert.h>
@@ -45,7 +46,6 @@ Boston, MA 02110-1301, USA.  */
 
 #include "libgfortran.h"
 #include "io.h"
-#include "unix.h"
 
 #ifndef SSIZE_MAX
 #define SSIZE_MAX SHRT_MAX
@@ -80,6 +80,42 @@ Boston, MA 02110-1301, USA.  */
 #ifndef S_IWOTH
 #define S_IWOTH 0
 #endif
+
+
+/* Unix stream I/O module */
+
+#define BUFFER_SIZE 8192
+
+typedef struct
+{
+  stream st;
+
+  int fd;
+  gfc_offset buffer_offset;	/* File offset of the start of the buffer */
+  gfc_offset physical_offset;	/* Current physical file offset */
+  gfc_offset logical_offset;	/* Current logical file offset */
+  gfc_offset dirty_offset;	/* Start of modified bytes in buffer */
+  gfc_offset file_length;	/* Length of the file, -1 if not seekable. */
+
+  char *buffer;
+  int len;			/* Physical length of the current buffer */
+  int active;			/* Length of valid bytes in the buffer */
+
+  int prot;
+  int ndirty;			/* Dirty bytes starting at dirty_offset */
+
+  int special_file;		/* =1 if the fd refers to a special file */
+
+  unsigned unbuffered:1;
+
+  char small_buffer[BUFFER_SIZE];
+
+}
+unix_stream;
+
+extern stream *init_error_stream (unix_stream *);
+internal_proto(init_error_stream);
+
 
 /* This implementation of stream I/O is based on the paper:
  *
@@ -1344,6 +1380,103 @@ init_error_stream (unix_stream *error)
   error->buffer = error->small_buffer;
 
   return (stream *) error;
+}
+
+/* st_printf()-- simple printf() function for streams that handles the
+ * formats %d, %s and %c.  This function handles printing of error
+ * messages that originate within the library itself, not from a user
+ * program. */
+
+int
+st_printf (const char *format, ...)
+{
+  int count, total;
+  va_list arg;
+  char *p;
+  const char *q;
+  stream *s;
+  char itoa_buf[GFC_ITOA_BUF_SIZE];
+  unix_stream err_stream;
+
+  total = 0;
+  s = init_error_stream (&err_stream);
+  va_start (arg, format);
+
+  for (;;)
+    {
+      count = 0;
+
+      while (format[count] != '%' && format[count] != '\0')
+	count++;
+
+      if (count != 0)
+	{
+	  p = salloc_w (s, &count);
+	  memmove (p, format, count);
+	  sfree (s);
+	}
+
+      total += count;
+      format += count;
+      if (*format++ == '\0')
+	break;
+
+      switch (*format)
+	{
+	case 'c':
+	  count = 1;
+
+	  p = salloc_w (s, &count);
+	  *p = (char) va_arg (arg, int);
+
+	  sfree (s);
+	  break;
+
+	case 'd':
+	  q = gfc_itoa (va_arg (arg, int), itoa_buf, sizeof (itoa_buf));
+	  count = strlen (q);
+
+	  p = salloc_w (s, &count);
+	  memmove (p, q, count);
+	  sfree (s);
+	  break;
+
+	case 'x':
+	  q = xtoa (va_arg (arg, unsigned), itoa_buf, sizeof (itoa_buf));
+	  count = strlen (q);
+
+	  p = salloc_w (s, &count);
+	  memmove (p, q, count);
+	  sfree (s);
+	  break;
+
+	case 's':
+	  q = va_arg (arg, char *);
+	  count = strlen (q);
+
+	  p = salloc_w (s, &count);
+	  memmove (p, q, count);
+	  sfree (s);
+	  break;
+
+	case '\0':
+	  return total;
+
+	default:
+	  count = 2;
+	  p = salloc_w (s, &count);
+	  p[0] = format[-1];
+	  p[1] = format[0];
+	  sfree (s);
+	  break;
+	}
+
+      total += count;
+      format++;
+    }
+
+  va_end (arg);
+  return total;
 }
 
 

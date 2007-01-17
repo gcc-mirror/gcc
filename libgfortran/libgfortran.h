@@ -67,6 +67,7 @@ typedef off_t gfc_offset;
 #define __attribute__(x)
 #endif
 
+
 /* For a library, a standard prefix is a requirement in order to partition
    the namespace.  IPREFIX is for symbols intended to be internal to the
    library.  */
@@ -469,13 +470,68 @@ iexport_data_proto(filename);
 #define gfc_alloca(x)  __builtin_alloca(x)
 
 
+/* Various I/O stuff also used in other parts of the library.  */
+
+#define DEFAULT_TEMPDIR "/tmp"
+
+/* The default value of record length for preconnected units is defined
+   here. This value can be overriden by an environment variable.
+   Default value is 1 Gb.  */
+#define DEFAULT_RECL 1073741824
+
+typedef enum
+{ CONVERT_NONE=-1, CONVERT_NATIVE, CONVERT_SWAP, CONVERT_BIG, CONVERT_LITTLE }
+unit_convert;
+
+#define CHARACTER2(name) \
+              gfc_charlen_type name ## _len; \
+              char * name
+
+typedef struct st_parameter_common
+{
+  GFC_INTEGER_4 flags;
+  GFC_INTEGER_4 unit;
+  const char *filename;
+  GFC_INTEGER_4 line;
+  CHARACTER2 (iomsg);
+  GFC_INTEGER_4 *iostat;
+}
+st_parameter_common;
+
+#undef CHARACTER2
+
+#define IOPARM_LIBRETURN_MASK           (3 << 0)
+#define IOPARM_LIBRETURN_OK             (0 << 0)
+#define IOPARM_LIBRETURN_ERROR          (1 << 0)
+#define IOPARM_LIBRETURN_END            (2 << 0)
+#define IOPARM_LIBRETURN_EOR            (3 << 0)
+#define IOPARM_ERR                      (1 << 2)
+#define IOPARM_END                      (1 << 3)
+#define IOPARM_EOR                      (1 << 4)
+#define IOPARM_HAS_IOSTAT               (1 << 5)
+#define IOPARM_HAS_IOMSG                (1 << 6)
+
+#define IOPARM_COMMON_MASK              ((1 << 7) - 1)
+
+#define IOPARM_OPEN_HAS_RECL_IN         (1 << 7)
+#define IOPARM_OPEN_HAS_FILE            (1 << 8)
+#define IOPARM_OPEN_HAS_STATUS          (1 << 9)
+#define IOPARM_OPEN_HAS_ACCESS          (1 << 10)
+#define IOPARM_OPEN_HAS_FORM            (1 << 11)
+#define IOPARM_OPEN_HAS_BLANK           (1 << 12)
+#define IOPARM_OPEN_HAS_POSITION        (1 << 13)
+#define IOPARM_OPEN_HAS_ACTION          (1 << 14)
+#define IOPARM_OPEN_HAS_DELIM           (1 << 15)
+#define IOPARM_OPEN_HAS_PAD             (1 << 16)
+#define IOPARM_OPEN_HAS_CONVERT         (1 << 17)
+
+
 /* main.c */
 
 extern void stupid_function_name_for_static_linking (void);
 internal_proto(stupid_function_name_for_static_linking);
 
-struct st_parameter_common;
-extern void library_start (struct st_parameter_common *);
+extern void library_start (st_parameter_common *);
 internal_proto(library_start);
 
 #define library_end()
@@ -502,13 +558,13 @@ internal_proto(xtoa);
 extern void os_error (const char *) __attribute__ ((noreturn));
 internal_proto(os_error);
 
-extern void show_locus (struct st_parameter_common *);
+extern void show_locus (st_parameter_common *);
 internal_proto(show_locus);
 
 extern void runtime_error (const char *) __attribute__ ((noreturn));
 iexport_proto(runtime_error);
 
-extern void internal_error (struct st_parameter_common *, const char *)
+extern void internal_error (st_parameter_common *, const char *)
   __attribute__ ((noreturn));
 internal_proto(internal_error);
 
@@ -518,10 +574,6 @@ internal_proto(get_oserror);
 extern void sys_exit (int) __attribute__ ((noreturn));
 internal_proto(sys_exit);
 
-extern int st_printf (const char *, ...)
-  __attribute__ ((format (printf, 1, 2)));
-internal_proto(st_printf);
-
 extern void st_sprintf (char *, const char *, ...)
   __attribute__ ((format (printf, 2, 3)));
 internal_proto(st_sprintf);
@@ -529,11 +581,14 @@ internal_proto(st_sprintf);
 extern const char *translate_error (int);
 internal_proto(translate_error);
 
-extern void generate_error (struct st_parameter_common *, int, const char *);
+extern void generate_error (st_parameter_common *, int, const char *);
 internal_proto(generate_error);
 
-extern try notify_std (struct st_parameter_common *, int, const char *);
+extern try notify_std (st_parameter_common *, int, const char *);
 internal_proto(notify_std);
+
+extern notification notification_std(int);
+internal_proto(notification_std);
 
 /* fpu.c */
 
@@ -565,9 +620,12 @@ internal_proto(init_variables);
 extern void show_variables (void);
 internal_proto(show_variables);
 
+unit_convert get_unformatted_convert (int);
+internal_proto(get_unformatted_convert);
+
 /* string.c */
 
-extern int find_option (struct st_parameter_common *, const char *, int,
+extern int find_option (st_parameter_common *, const char *, int,
 			const st_option *, const char *);
 internal_proto(find_option);
 
@@ -590,6 +648,10 @@ internal_proto(close_units);
 
 extern int unit_to_fd (int);
 internal_proto(unit_to_fd);
+
+extern int st_printf (const char *, ...)
+  __attribute__ ((format (printf, 1, 2)));
+internal_proto(st_printf);
 
 /* stop.c */
 

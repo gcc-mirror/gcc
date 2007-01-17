@@ -34,8 +34,6 @@ Boston, MA 02110-1301, USA.  */
 #include <ctype.h>
 
 #include "libgfortran.h"
-#include "../io/io.h"
-
 
 /* Environment scanner.  Examine the environment for controlling minor
  * aspects of the program's execution.  Our philosophy here that the
