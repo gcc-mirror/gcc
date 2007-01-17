@@ -1275,7 +1275,7 @@ Runtime tests are executed via @samp{make check} in the
 tree.  Additional runtime tests can be checked into this testsuite.
 
 Regression testing of the core packages in libgcj is also covered by the
-Mauve testsuite.  The @uref{http://sources.redhat.com/mauve/,,Mauve Project}
+Mauve testsuite.  The @uref{http://sourceware.org/mauve/,,Mauve Project}
 develops tests for the Java Class Libraries.  These tests are run as part
 of libgcj testing by placing the Mauve tree within the libjava testsuite
 sources at @file{libjava/testsuite/libjava.mauve/mauve}, or by specifying
