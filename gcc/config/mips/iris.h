@@ -61,10 +61,6 @@ Boston, MA 02110-1301, USA.  */
 #undef ASM_FINISH_DECLARE_OBJECT
 #define ASM_FINISH_DECLARE_OBJECT mips_finish_declare_object
 
-/* Also do this for libcalls.  */
-#undef TARGET_ASM_EXTERNAL_LIBCALL
-#define TARGET_ASM_EXTERNAL_LIBCALL irix_output_external_libcall
-
 /* The linker needs a space after "-o".  */
 #define SWITCHES_NEED_SPACES "o"
 

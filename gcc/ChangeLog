@@ -1,3 +1,15 @@
+2007-01-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/mips/mips-protos.h (mips_output_external): Make it
+	return void.
+	* config/mips/iris.h (TARGET_ASM_EXTERNAL_LIBCALL): Removed.
+	* config/mips/mips.c (irix_output_external_libcall): Likewise.
+	(extern_list): Likewise.
+	(extern_head): Likewise.
+	(TARGET_ASM_FILE_END): Likewise.
+	(mips_file_end): Likewise.
+	(mips_output_external): Rewritten.
+
 2007-01-18  Ben Elliston  <bje@au.ibm.com>
 
 	* genpreds.c (write_insn_preds_c): Only write out the function
