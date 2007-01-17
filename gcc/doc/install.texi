@@ -43,7 +43,7 @@
 @end ifset
 
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+@c 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
 @c Include everything if we're not making html
@@ -1870,14 +1870,14 @@ The Java runtime tests can be executed via @samp{make check}
 in the @file{@var{target}/libjava/testsuite} directory in
 the build tree.
 
-The @uref{http://sources.redhat.com/mauve/,,Mauve Project} provides
+The @uref{http://sourceware.org/mauve/,,Mauve Project} provides
 a suite of tests for the Java Class Libraries.  This suite can be run
 as part of libgcj testing by placing the Mauve tree within the libjava
 testsuite at @file{libjava/testsuite/libjava.mauve/mauve}, or by
 specifying the location of that tree when invoking @samp{make}, as in
 @samp{make MAUVEDIR=~/mauve check}.
 
-@uref{http://sources.redhat.com/mauve/jacks.html,,Jacks}
+@uref{http://sourceware.org/mauve/jacks.html,,Jacks}
 is a free testsuite that tests Java compiler front ends.  This suite
 can be run as part of libgcj testing by placing the Jacks tree within
 the libjava testsuite at @file{libjava/testsuite/libjava.jacks/jacks}.
@@ -2155,7 +2155,7 @@ SGI---@uref{http://freeware.sgi.com/,,SGI Freeware}.
 Microsoft Windows:
 @itemize
 @item
-The @uref{http://sources.redhat.com/cygwin/,,Cygwin} project;
+The @uref{http://sourceware.org/cygwin/,,Cygwin} project;
 @item
 The @uref{http://www.mingw.org/,,MinGW} project.
 @end itemize
@@ -3633,7 +3633,7 @@ The stock GNU binutils 2.15 release is broken on this platform because of a
 single bug.  It has been fixed on the 2.15 branch in the CVS repository.
 You can obtain a working version by checking out the binutils-2_15-branch
 from the CVS repository or applying the patch
-@uref{http://sources.redhat.com/ml/binutils-cvs/2004-09/msg00036.html} to the
+@uref{http://sourceware.org/ml/binutils-cvs/2004-09/msg00036.html} to the
 release.
 
 We recommend using GNU binutils 2.16 or later in conjunction with GCC 4.x,
@@ -4022,7 +4022,7 @@ modern targets.
 
 For some systems, old versions of GNU binutils may also be useful,
 and are available from @file{pub/binutils/old-releases} on
-@uref{http://sources.redhat.com/mirrors.html,,sources.redhat.com mirror sites}.
+@uref{http://sourceware.org/mirrors.html,,sourceware.org mirror sites}.
 
 Some of the information on specific systems above relates to
 such older systems, but much of the information

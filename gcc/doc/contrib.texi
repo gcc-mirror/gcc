@@ -1,5 +1,5 @@
 @c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,
-@c 2001,2002,2003,2004,2005,2006 Free Software Foundation, Inc.
+@c 2001,2002,2003,2004,2005,2006,2007 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -547,7 +547,7 @@ improvements, and string clean up and testsuites.
 
 @item
 All of the Mauve project
-@uref{http://sources.redhat.com/cgi-bin/cvsweb.cgi/~checkout~/mauve/THANKS?rev=1.2&cvsroot=mauve&only_with_tag=HEAD,,contributors},
+@uref{http://sourceware.org/cgi-bin/cvsweb.cgi/~checkout~/mauve/THANKS?rev=1.2&cvsroot=mauve&only_with_tag=HEAD,,contributors},
 for Java test code.
 
 @item
