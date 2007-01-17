@@ -7624,19 +7624,6 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 
-if test -n "${with_cross_host}"; then
-
-cat >>confdefs.h <<\_ACEOF
-#define NO_SIGSET 1
-_ACEOF
-
-
-cat >>confdefs.h <<\_ACEOF
-#define NO_DEBUGGING 1
-_ACEOF
-
-fi
-
 # Check whether --enable-gc-debug or --disable-gc-debug was given.
 if test "${enable_gc_debug+set}" = set; then
   enableval="$enable_gc_debug"

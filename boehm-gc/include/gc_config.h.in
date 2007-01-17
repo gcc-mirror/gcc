@@ -117,9 +117,6 @@
 /* Enable GC_PRINT_BACK_HEIGHT environment variable */
 #undef MAKE_BACK_GRAPH
 
-/* removes GC_dump */
-#undef NO_DEBUGGING
-
 /* cause some or all of the heap to not have execute permission */
 #undef NO_EXECUTE_PERMISSION
 
@@ -128,9 +125,6 @@
 
 /* does not disable signals */
 #undef NO_SIGNALS
-
-/* use empty GC_disable_signals and GC_enable_signals */
-#undef NO_SIGSET
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT

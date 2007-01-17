@@ -1,3 +1,10 @@
+2007-01-17  David Daney  <ddaney@avtrex.com>
+
+	* configure.ac: Don't define NO_SIGSET and NO_DEBUGGING while
+	cross-compiling.
+	* configure: Regenerated.
+	* include/gc_config.h.in: Regenerated.
+
 2007-01-17  Mike Stump  <mrs@apple.com>
 
 	* os_dep.c: Fix i686-apple-darwin9 builds.
