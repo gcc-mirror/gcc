@@ -920,26 +920,21 @@ look_for_casts (tree lhs __attribute__((unused)), tree t)
       tree castfromvar = TREE_OPERAND (t, 0);
       check_cast (TREE_TYPE (t), castfromvar);
     }
-  else if (TREE_CODE (t) == COMPONENT_REF
-	   || TREE_CODE (t) == INDIRECT_REF
-	   || TREE_CODE (t) == BIT_FIELD_REF)
-    {
-      tree base = get_base_address (t);
-      while (t != base)
-	{
-	  t = TREE_OPERAND (t, 0);
-	  if (TREE_CODE (t) == VIEW_CONVERT_EXPR)
-	    {
-	      /* This may be some part of a component ref.
-		 IE it may be a.b.VIEW_CONVERT_EXPR<weird_type>(c).d, AFAIK.
-		 castfromref will give you a.b.c, not a. */
-	      tree castfromref = TREE_OPERAND (t, 0);
-	      check_cast (TREE_TYPE (t), castfromref);
-	    }
-	  else if (TREE_CODE (t) == COMPONENT_REF)
-	    get_canon_type (TREE_TYPE (TREE_OPERAND (t, 1)), false, false);
-	}
-    } 
+  else
+    while (handled_component_p (t))
+      {
+	t = TREE_OPERAND (t, 0);
+	if (TREE_CODE (t) == VIEW_CONVERT_EXPR)
+	  {
+	    /* This may be some part of a component ref.
+	       IE it may be a.b.VIEW_CONVERT_EXPR<weird_type>(c).d, AFAIK.
+	       castfromref will give you a.b.c, not a. */
+	    tree castfromref = TREE_OPERAND (t, 0);
+	    check_cast (TREE_TYPE (t), castfromref);
+	  }
+	else if (TREE_CODE (t) == COMPONENT_REF)
+	  get_canon_type (TREE_TYPE (TREE_OPERAND (t, 1)), false, false);
+      }
 } 
 
 /* Check to see if T is a read or address of operation on a static var
