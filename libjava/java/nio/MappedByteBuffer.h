@@ -36,8 +36,9 @@ public:
   virtual ::java::nio::MappedByteBuffer * load();
 public: // actually package-private
   virtual void unmapImpl();
-public:
+public: // actually protected
   virtual void finalize();
+public:
   static ::java::lang::Class class$;
 };
 
