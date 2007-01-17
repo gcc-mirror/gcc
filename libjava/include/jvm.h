@@ -1,6 +1,6 @@
 // jvm.h - Header file for private implementation information. -*- c++ -*-
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -762,7 +762,7 @@ struct natThread
   _Jv_Thread_t *thread;
 
   // Each thread has its own JNI object.
-  void *jni_env;
+  _Jv_JNIEnv *jni_env;
 };
 
 #endif /* __JAVA_JVM_H__ */
