@@ -488,14 +488,6 @@ AC_DEFINE(JAVA_FINALIZATION,1,[make it somewhat safer to finalize objects out of
 AC_DEFINE(GC_GCJ_SUPPORT,1,[include support for gcj])
 AC_DEFINE(ATOMIC_UNCOLLECTABLE,1,[include code for GC_malloc_atomic_uncollectable])
 
-dnl This is something of a hack.  When cross-compiling we turn off
-dnl some functionality. These is only correct when targetting an
-dnl embedded system.  FIXME.
-if test -n "${with_cross_host}"; then
-   AC_DEFINE(NO_SIGSET,1,[use empty GC_disable_signals and GC_enable_signals])
-   AC_DEFINE(NO_DEBUGGING,1,[removes GC_dump])
-fi
-
 AC_ARG_ENABLE(gc-debug,
 [  --enable-gc-debug	include full support for pointer backtracing etc.],
 [ if test "$enable_gc_debug" = "yes"; then
