@@ -1,3 +1,7 @@
+2007-01-18  Roger Sayle  <roger@eyesopen.com>
+
+	* gfortran.dg/array_memcpy_4.f90: New test case.
+
 2007-01-18  Josh Conner  <jconner@apple.com>
 
 	PR target/30485

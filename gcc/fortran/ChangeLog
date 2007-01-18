@@ -1,5 +1,10 @@
 2007-01-18  Roger Sayle  <roger@eyesopen.com>
 
+	* trans-expr.c (copyable_array_p): Consider user derived types without
+	allocatable components to be copyable.
+
+2007-01-18  Roger Sayle  <roger@eyesopen.com>
+
 	* trans-stmt.c (compute_overall_iter_number): Enhance to precompute
 	the number of interations in unconditional FORALL nests with constant
 	bounds.

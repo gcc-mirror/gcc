@@ -3815,6 +3815,12 @@ copyable_array_p (gfc_expr * expr)
     case BT_LOGICAL:
       return true;
 
+    case BT_CHARACTER:
+      return false;
+
+    case BT_DERIVED:
+      return !expr->ts.derived->attr.alloc_comp;
+
     default:
       break;
     }
