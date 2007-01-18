@@ -22,6 +22,12 @@ the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
 
+/* The old uClinux ABI used 80-byte "long double"s for ColdFire too.  */
+#undef LONG_DOUBLE_TYPE_SIZE
+#define LONG_DOUBLE_TYPE_SIZE 80
+#undef LIBGCC2_LONG_DOUBLE_TYPE_SIZE
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 80
+
 /* Undo the definition of STARTFILE_SPEC from m68kelf.h so we'll
    pick the default from gcc.c (just link crt0.o from multilib dir).  */
 #undef	STARTFILE_SPEC
