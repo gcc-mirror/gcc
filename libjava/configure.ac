@@ -478,8 +478,8 @@ ECJ_JAR=
 AC_ARG_WITH(ecj-jar,
 	AS_HELP_STRING([--with-ecj-jar=FILE], [use preinstalled ecj jar]),
 	[ECJ_JAR=$withval],
-	[if test -f $libgcj_basedir/../ecj.jar; then
-	   ECJ_BUILD_JAR=$libgcj_basedir/../ecj.jar
+	[if test -f $multi_basedir/ecj.jar; then
+	   ECJ_BUILD_JAR=$multi_basedir/ecj.jar
 	   ECJ_JAR='$(jardir)/ecj.jar'
 	   install_ecj_jar=yes
 	 fi])

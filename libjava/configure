@@ -6928,8 +6928,8 @@ if test "${with_ecj_jar+set}" = set; then
   withval="$with_ecj_jar"
   ECJ_JAR=$withval
 else
-  if test -f $libgcj_basedir/../ecj.jar; then
-	   ECJ_BUILD_JAR=$libgcj_basedir/../ecj.jar
+  if test -f $multi_basedir/ecj.jar; then
+	   ECJ_BUILD_JAR=$multi_basedir/ecj.jar
 	   ECJ_JAR='$(jardir)/ecj.jar'
 	   install_ecj_jar=yes
 	 fi

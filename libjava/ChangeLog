@@ -1,3 +1,8 @@
+2007-01-18  Tom Tromey  <tromey@redhat.com>
+
+	* configure: Rebuilt.
+	* configure.ac: Use multi_basedir instead of libgcj_basedir.
+
 2007-01-18  Gary Benson  <gbenson@redhat.com>
 
 	* gnu/java/nio/natVMPipeEcos.cc:
