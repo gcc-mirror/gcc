@@ -1,3 +1,10 @@
+2007-01-18  Richard Sandiford  <richard@codesourcery.com>
+
+	* doc/install.texi: Document m68k-uclinuxoldabi.
+	* config.gcc (m68k-*-uclinuxoldabi): New configuration.
+	* config/m68k/uclinux-oldabi.h: New file, copied from
+	config/m68k/uclinux.h.
+
 2007-01-18  Kaz Kojima  <kkojima@rr.iij4u.or.jp>
 
 	* config/m32r/m32r-protos.h (m32r_expand_epilogue): Declare it.
