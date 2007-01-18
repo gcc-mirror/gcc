@@ -1,5 +1,14 @@
 2007-01-18  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/m68k/m68k.md (movsf_cf_hard): Use fsmove instead of
+	f%$smove and f%$move.
+	(movdf_cf_hard): Use fdmove for cases 0 and 3 and fmove for case 1.
+	(extendsfdf2_cf): Use fdmove instead of f%&move.
+	(truncdfsf2_cf): Use fsmove instead of f%$smove.
+	(add<mode>3_cf, sub<mode>3_cf): Use <FP:prec> instead of <FP:round>.
+
+2007-01-18  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/m68k/m68k.md (movdf_cf_hard): Use output_move_double for
 	GPR<-GPR moves.
 
