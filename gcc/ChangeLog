@@ -1,3 +1,8 @@
+2007-01-18  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/darwin-ldouble.c: Only build _SOFT_FLOAT if
+	configured for long double 128.
+
 2007-01-18  Mike Stump  <mrs@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_vector_compare): Fix build
