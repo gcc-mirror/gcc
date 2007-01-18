@@ -1,3 +1,21 @@
+2007-01-18  Kaz Kojima  <kkojima@rr.iij4u.or.jp>
+
+	* config/m32r/m32r-protos.h (m32r_expand_epilogue): Declare it.
+	* config/m32r/m32r.c (m32r_setup_incoming_varargs): Use gen_frame_mem.
+	(m32r_compute_frame_size): Use unsigned for regno.
+	(m32r_reload_lr): Use gen_frame_mem.
+	(pop): New.
+	(m32r_output_function_epilogue): Don't output the function epilogue
+	textually here.
+	(m32r_expand_epilogue): New.
+	(direct_return): Return false if the function has the interrupt
+	attribute.
+	(m32r_hard_regno_rename_ok): Remove code for the textual epilogue.
+	* config/m32r/m32r.md (epilogue): New expander.
+	(return_lr, return_rte): New insns.
+	(return): Make it expander.
+	(return_normal): New expander.
+
 2007-01-18  Josh Conner  <jconner@apple.com>
 
 	PR target/30485
