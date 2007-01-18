@@ -512,6 +512,12 @@ override_options (void)
 	      : (m68k_cpu_flags & FL_COLDFIRE) != 0 ? FPUTYPE_COLDFIRE
 	      : FPUTYPE_68881);
 
+  if (TARGET_COLDFIRE_FPU)
+    {
+      REAL_MODE_FORMAT (SFmode) = &coldfire_single_format;
+      REAL_MODE_FORMAT (DFmode) = &coldfire_double_format;
+    }
+
   /* Sanity check to ensure that msep-data and mid-sahred-library are not
    * both specified together.  Doing so simply doesn't make sense.
    */
