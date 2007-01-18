@@ -1,3 +1,89 @@
+2007-01-18  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-structalias.c: Update comments.
+	(ptabitmap_obstack): Removed.
+	(pta_obstack): New.
+	(oldpta_obstack): Ditto.
+	(stats): Add a few members.
+	(struct variable_info): Remove node, complex, address_taken, and
+	indirect_target members. Add oldsolution member.
+	(new_var_info): Do not initialize removed members.
+	(constraint_expr_type): Remove INCLUDES.
+	(constraint_graph): Add size, implicit_preds, rep,
+	indirect_cycles, eq_rep, label, direct_nodes, and complex members.
+	(FIRST_REF_NODE): New macro.
+	(LAST_REF_NODE): Ditto.
+	(FIRST_ADDR_NODE): Ditto.
+	(find): New function.
+	(unite): Ditto.
+	(dump_constraint): Do not handle INCLUDES.
+	(insert_into_complex): Do not insert duplicate constraints.
+	(condense_varmap_nodes): Renamed and rewritten into ...
+	(merge_node_constraints): This. Also fix bug in handling of
+	offseted copy constraints.
+	(clear_edges_for_node): No longer need to deal with preds at all,
+	or removing associated preds/succs. 
+	(merge_graph_nodes): Deal with indirect_cycles.
+	Don't deal with predecessors.
+	(add_implicit_graph_edge): New function.
+	(add_pred_graph_edge): Ditto.
+	(add_graph_edge): Don't deal with predecessors.
+	(build_constraint_graph): Removed.
+	(build_pred_graph): New function.
+	(build_succ_graph): Ditto.
+	(struct scc_info): Removed in_component. Added roots, dfs, and
+	node_mapping. Remove visited_index, unification_queue.
+	(scc_visit): Deal with union-find we do now.
+	Deal with cycles with REF nodes.
+	(collapse_nodes): Renamed and rewritten to ...
+	(unify_nodes): This.
+	(process_unification_queue): Removed.
+	(topo_visit): Cleanup
+	(do_da_constraint): Use find.
+	(do_sd_constraint): Ditto.
+	(do_ds_constraint): Ditto.
+	(do_complex_constraint): Ditto.
+	(init_scc_info): Update for removed and added members.
+	(find_and_collapse_graph_cycles): Renamed and rewritten into ...
+	(find_indirect_cycles): This.
+	(equivalence_class): New variable.
+	(label_visit): New function.
+	(perform_variable_substitution): Rewritten.
+	(free_var_substitution_info): New function.
+	(find_equivalent_node): Ditto.
+	(move_complex_constraints): Ditto.
+	(eliminate_indirect_cycles): Ditto.
+	(solve_graph): Only propagate changed bits.
+	Use indirect cycle elimination.
+	Use find.
+	(tree_id_t): Rename to tree_vi_t, delete id member, add vi member.
+	(tree_id_eq): Renamed to ...
+	(tree_vi_eq): This. Update for member change
+	(insert_id_for_tree): Renamed and rewritten to ...
+	(insert_vi_for_tree): This.
+	(lookup_id_for_tree): Renamed and rewritten to ...
+	(lookup_vi_for_tree): This.
+	(get_id_for_tree): Renamed and rewritten to ...
+	(get_vi_for_tree): Ditto.
+	(get_constraint_exp_from_ssa_var): Update to use get_vi_for_tree.
+	(process_constraint): Don't handle INCLUDES.
+	Remove special ADDRESSOF case.
+	(find_func_aliases): Rewrite to use vi functions instead of id
+	ones.
+	(create_function_info_for): Ditto.
+	(create_variable_info_for): Ditto.
+	(intra_create_variable_infos): Ditto.
+	(merge_smts_into): Ditto.
+	(find_what_p_points_to): Ditto.
+	(init_base_vars): Ditto.
+	(init_alias_vars): Ditto.
+	(remove_preds_and_fake_succs): New function.
+	(dump_sa_points_to_info): Dump new stats.
+	(dump_solution_for_var): Use find.
+	(set_used_smts): Fix formatting.
+	(compute_points_to_sets): Updated for new functions.
+	(ipa_pta_execute): Ditto.
+
 2007-01-18  Kazu Hirata  <kazu@codesourcery.com>
 	    Richard Sandiford  <richard@codesourcery.com>
 
