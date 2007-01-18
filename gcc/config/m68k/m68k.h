@@ -741,14 +741,33 @@ __transfer_from_trampoline ()					\
 
 /* Macros to check register numbers against specific register classes.  */
 
-#define REGNO_OK_FOR_INDEX_P(REGNO) \
-((REGNO) < 16 || (unsigned) reg_renumber[REGNO] < 16)
-#define REGNO_OK_FOR_BASE_P(REGNO) \
-(((REGNO) ^ 010) < 8 || (unsigned) (reg_renumber[REGNO] ^ 010) < 8)
-#define REGNO_OK_FOR_DATA_P(REGNO) \
-((REGNO) < 8 || (unsigned) reg_renumber[REGNO] < 8)
-#define REGNO_OK_FOR_FP_P(REGNO) \
-(((REGNO) ^ 020) < 8 || (unsigned) (reg_renumber[REGNO] ^ 020) < 8)
+/* True for data registers, D0 through D7.  */
+#define DATA_REGNO_P(REGNO) ((unsigned int) (REGNO) < 8)
+
+/* True for address registers, A0 through A7.  */
+#define ADDRESS_REGNO_P(REGNO) (((unsigned int) (REGNO) - 8) < 8)
+
+/* True for integer registers, D0 through D7 and A0 through A7.  */
+#define INT_REGNO_P(REGNO) ((unsigned int) (REGNO) < 16)
+
+/* True for floating point registers, FP0 through FP7.  */
+#define FP_REGNO_P(REGNO) (((unsigned int) (REGNO) - 16) < 8)
+
+#define REGNO_OK_FOR_INDEX_P(REGNO)			\
+  (INT_REGNO_P (REGNO)					\
+   || INT_REGNO_P (reg_renumber[REGNO]))
+
+#define REGNO_OK_FOR_BASE_P(REGNO)			\
+  (ADDRESS_REGNO_P (REGNO)				\
+   || ADDRESS_REGNO_P (reg_renumber[REGNO]))
+
+#define REGNO_OK_FOR_DATA_P(REGNO)			\
+  (DATA_REGNO_P (REGNO)					\
+   || DATA_REGNO_P (reg_renumber[REGNO]))
+
+#define REGNO_OK_FOR_FP_P(REGNO)			\
+  (FP_REGNO_P (REGNO)					\
+   || FP_REGNO_P (reg_renumber[REGNO]))
 
 /* Now macros that check whether X is a register and also,
    strictly, whether it is in a specified class.
@@ -793,10 +812,11 @@ __transfer_from_trampoline ()					\
 
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
-#define REG_OK_FOR_INDEX_P(X) ((REGNO (X) ^ 020) >= 8)
+#define REG_OK_FOR_INDEX_P(X) !FP_REGNO_P (REGNO (X))
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
-#define REG_OK_FOR_BASE_P(X) ((REGNO (X) & ~027) != 0)
+#define REG_OK_FOR_BASE_P(X) \
+  (!DATA_REGNO_P (REGNO (X)) && !FP_REGNO_P (REGNO (X)))
 
 #else
 
@@ -1077,7 +1097,7 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
 /* Describe how we implement __builtin_eh_return.  */
 #define EH_RETURN_DATA_REGNO(N) \
   ((N) < 2 ? (N) : INVALID_REGNUM)
-#define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, 8)
+#define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, A0_REG)
 #define EH_RETURN_HANDLER_RTX					    \
   gen_rtx_MEM (Pmode,						    \
 	       gen_rtx_PLUS (Pmode, arg_pointer_rtx,		    \
