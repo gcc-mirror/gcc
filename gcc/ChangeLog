@@ -1,3 +1,13 @@
+2007-01-18  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/m68k/m68k-protos.h (use_return_insn): Rename to...
+	(m68k_use_return_insn): ...this.
+	* config/m68k/m68k.h (USE_RETURN_INSN): Delete.
+	* config/m68k/m68k.c (use_return_insn): Rename to...
+	(m68k_use_return_insn): ...this.
+	* config/m68k/m68k.md (return): Use m68k_use_return_insn instead
+	of USE_RETURN_INSN.
+
 2007-01-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/m68k/fpgnulib.c (__truncdfsf2): Implement round to
