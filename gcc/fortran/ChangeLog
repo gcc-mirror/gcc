@@ -1,3 +1,13 @@
+2007-01-18  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	Backport from trunk
+	PR libfortran/30415
+	* iresolve.c (gfc_resolve_maxloc):  If the rank
+	of the return array is nonzero and we process an
+	integer array smaller than default kind, coerce
+	the array to default integer.
+	* iresolve.c (gfc_resolve_minloc):  Likewise.
+
 2007-01-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/30476

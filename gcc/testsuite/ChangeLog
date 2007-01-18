@@ -1,3 +1,9 @@
+2007-01-18  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	Backport from trunk
+	PR libfortran/30415
+	* minmaxloc_integer_kinds_1.f90:  New test.
+
 2007-01-17  Eric Christopher  <echristo@apple.com>
 
 	Backport from mainline:
