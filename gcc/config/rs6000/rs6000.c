@@ -11899,10 +11899,11 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
 	  {
 	    enum rtx_code rev_code;
 	    enum insn_code nor_code;
+	    rtx eq_rtx;
 
 	    rev_code = reverse_condition_maybe_unordered (rcode);
-	    rtx eq_rtx = rs6000_emit_vector_compare (rev_code, op0, op1,
-						     dest_mode);
+	    eq_rtx = rs6000_emit_vector_compare (rev_code, op0, op1,
+						 dest_mode);
 
 	    nor_code = one_cmpl_optab->handlers[(int)dest_mode].insn_code;
 	    gcc_assert (nor_code != CODE_FOR_nothing);
