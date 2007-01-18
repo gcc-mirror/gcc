@@ -1,3 +1,10 @@
+2007-01-18  Richard Sandiford  <richard@codesourcery.com>
+
+	* config.gcc (m68k-*-uclinux*): Base the port on the common
+	and m68k GNU/Linux files rather than on the generic ELF ones.
+	* config/m68k/uclinux.h (TARGET_VERSION): Override.
+	(TARGET_OS_CPP_BUILTINS): Use LINUX_TARGET_OS_CPP_BUILTINS.
+
 2007-01-18  Julian Brown  <julian@codesourcery.com>
 	    Richard Sandiford  <richard@codesourcery.com>
 

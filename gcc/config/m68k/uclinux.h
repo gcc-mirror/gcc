@@ -21,6 +21,8 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
+#undef TARGET_VERSION
+#define TARGET_VERSION fprintf (stderr, " (68k uClinux)");
 
 /* Undo the definition of STARTFILE_SPEC from m68kelf.h so we'll
    pick the default from gcc.c (just link crt0.o from multilib dir).  */
@@ -45,21 +47,14 @@ Boston, MA 02110-1301, USA.  */
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC ""
  
-/* Bring in standard linux defines */
 #undef TARGET_OS_CPP_BUILTINS
-#define TARGET_OS_CPP_BUILTINS()		\
-  do						\
-    {						\
-	builtin_define_std ("mc68000");		\
-	builtin_define ("__uClinux__");		\
-	builtin_define_std ("linux");		\
-	builtin_define_std ("unix");		\
-	builtin_define ("__gnu_linux__");	\
-	builtin_assert ("system=linux");	\
-	builtin_assert ("system=unix");		\
-	builtin_assert ("system=posix");	\
-	if (TARGET_ID_SHARED_LIBRARY)		\
-	  builtin_define ("__ID_SHARED_LIBRARY__"); \
-    }						\
+#define TARGET_OS_CPP_BUILTINS()				\
+  do								\
+    {								\
+      LINUX_TARGET_OS_CPP_BUILTINS ();				\
+      builtin_define ("__uClinux__");				\
+      if (TARGET_ID_SHARED_LIBRARY)				\
+	builtin_define ("__ID_SHARED_LIBRARY__");		\
+    }								\
   while (0)
 
