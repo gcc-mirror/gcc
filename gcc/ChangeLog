@@ -1,3 +1,16 @@
+2007-01-18  Dirk Mueller  <dmueller@suse.de>
+·           Richard Guenther <rguenther@suse.de>
+
+·       PR diagnostic/8268
+·       * doc/invoke.texi (Warray-bounds): Document -Warray-bounds.
+·       * common.opt (Warray-bounds): Add new warning option.
+·       * c-opts.c (c_common_handle_option): Define -Warray-bounds
+·       if -Wall is given.
+	* Makefile.in: make tree-vrp.o depend on toplev.h
+·       * tree-vrp.c (vrp_finalize): Call check_array_refs if -Warray-bounds
+·       is enabled.
+·       (check_array_refs, check_array_bounds, check_array_ref): New.
+
 18-01-2007  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-ccp.c (ccp_finalize): Return if something changed.

@@ -32,6 +32,7 @@ Boston, MA 02110-1301, USA.  */
 #include "tree-dump.h"
 #include "timevar.h"
 #include "diagnostic.h"
+#include "toplev.h"
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "tree-ssa-propagate.h"
@@ -3478,6 +3479,154 @@ insert_range_assertions (void)
   BITMAP_FREE (need_assert_for);
 }
 
+/* Checks one ARRAY_REF in REF, located at LOCUS. Ignores flexible arrays
+   and "struct" hacks. If VRP can determine that the
+   array subscript is a contant, check if it is outside valid
+   range. If the array subscript is a RANGE, warn if it is
+   non-overlapping with valid range.
+   IGNORE_OFF_BY_ONE is true if the ARRAY_REF is inside a ADDR_EXPR.  */
+
+static void
+check_array_ref (tree ref, location_t* locus, bool ignore_off_by_one)
+{
+  value_range_t* vr = NULL;
+  tree low_sub, up_sub;
+  tree low_bound, up_bound = array_ref_up_bound (ref);
+
+  low_sub = up_sub = TREE_OPERAND (ref, 1);
+
+  if (!up_bound || !locus || TREE_NO_WARNING (ref)
+      || TREE_CODE (up_bound) != INTEGER_CST
+      /* Can not check flexible arrays.  */
+      || (TYPE_SIZE (TREE_TYPE (ref)) == NULL_TREE
+          && TYPE_DOMAIN (TREE_TYPE (ref)) != NULL_TREE
+          && TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (ref))) == NULL_TREE)
+      /* Accesses after the end of arrays of size 0 (gcc
+         extension) and 1 are likely intentional ("struct
+         hack").  */
+      || compare_tree_int (up_bound, 1) <= 0)
+    return;
+
+  low_bound = array_ref_low_bound (ref);
+
+  if (TREE_CODE (low_sub) == SSA_NAME)
+    {
+      vr = get_value_range (low_sub);
+      if (vr->type == VR_RANGE || vr->type == VR_ANTI_RANGE)
+        {
+          low_sub = vr->type == VR_RANGE ? vr->max : vr->min;
+          up_sub = vr->type == VR_RANGE ? vr->min : vr->max;
+        }
+    }
+
+  if (vr && vr->type == VR_ANTI_RANGE)
+    {
+      if (TREE_CODE (up_sub) == INTEGER_CST
+          && tree_int_cst_lt (up_bound, up_sub)
+          && TREE_CODE (low_sub) == INTEGER_CST
+          && tree_int_cst_lt (low_sub, low_bound))
+        {
+          warning (OPT_Warray_bounds,
+                   "%Harray subscript is outside array bounds", locus);
+          TREE_NO_WARNING (ref) = 1;
+        }
+    }
+  else if (TREE_CODE (up_sub) == INTEGER_CST
+           && tree_int_cst_lt (up_bound, up_sub)
+           && !tree_int_cst_equal (up_bound, up_sub)
+           && (!ignore_off_by_one
+               || !tree_int_cst_equal (int_const_binop (PLUS_EXPR,
+                                                        up_bound,
+                                                        integer_one_node,
+                                                        0),
+                                       up_sub)))
+    {
+      warning (OPT_Warray_bounds, "%Harray subscript is above array bounds",
+               locus);
+      TREE_NO_WARNING (ref) = 1;
+    }
+  else if (TREE_CODE (low_sub) == INTEGER_CST
+           && tree_int_cst_lt (low_sub, low_bound))
+    {
+      warning (OPT_Warray_bounds, "%Harray subscript is below array bounds",
+               locus);
+      TREE_NO_WARNING (ref) = 1;
+    }
+}
+
+/* walk_tree() callback that checks if *TP is
+   an ARRAY_REF inside an ADDR_EXPR (in which an array
+   subscript one outside the valid range is allowed). Call
+   check_array_ref for each ARRAY_REF found. The location is 
+   passed in DATA.  */
+
+static tree
+check_array_bounds (tree *tp, int *walk_subtree, void *data)
+{
+  tree t = *tp;
+  location_t *location = EXPR_LOCUS ((tree) data);
+
+  *walk_subtree = TRUE;
+
+  if (TREE_CODE (t) == ARRAY_REF)
+    check_array_ref (t, location, false /*ignore_off_by_one*/);
+  else if (TREE_CODE (t) == ADDR_EXPR)
+    {
+       t = TREE_OPERAND (t, 0);
+
+       /* Don't warn on statements like
+          ssa_name = 500 + &array[-200] which are sometimes
+          produced by various optimizing passes.  */
+       if (TREE_CODE ((tree)data) == GIMPLE_MODIFY_STMT
+           && BINARY_CLASS_P (GIMPLE_STMT_OPERAND ((tree)data, 1)))
+         {
+           *walk_subtree = FALSE;
+           return NULL_TREE;
+         }
+       while (handled_component_p (t))
+         {
+           if (TREE_CODE (t) == ARRAY_REF)
+             check_array_ref (t, location, true /*ignore_off_by_one*/);
+           t = TREE_OPERAND (t, 0);
+         }
+       *walk_subtree = FALSE;
+    }
+
+  return NULL_TREE;
+}
+
+/* Walk over all statements of all reachable BBs and call check_array_bounds
+   on them.  */
+
+static void
+check_all_array_refs (void)
+{
+  basic_block bb;
+  block_stmt_iterator si;
+
+  FOR_EACH_BB (bb)
+    {
+      /* Skip bb's that are clearly unreachable.  */
+      if (single_pred_p (bb))
+      {
+	basic_block pred_bb = EDGE_PRED (bb, 0)->src;
+	tree ls = NULL_TREE;
+
+	if (!bsi_end_p (bsi_last (pred_bb)))
+	  ls = bsi_stmt (bsi_last (pred_bb));
+
+	if (ls && TREE_CODE (ls) == COND_EXPR
+	    && ((COND_EXPR_COND (ls) == boolean_false_node
+		 && (EDGE_PRED (bb, 0)->flags & EDGE_TRUE_VALUE))
+		|| (COND_EXPR_COND (ls) == boolean_true_node
+		    && (EDGE_PRED (bb, 0)->flags & EDGE_FALSE_VALUE))))
+	  continue;
+      }
+      for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
+	walk_tree (bsi_stmt_ptr (si), check_array_bounds,
+		   bsi_stmt (si), NULL);
+    }
+}
 
 /* Convert range assertion expressions into the implied copies and
    copy propagate away the copies.  Doing the trivial copy propagation
@@ -4796,6 +4945,9 @@ vrp_finalize (void)
     }
 
   substitute_and_fold (single_val_range, true);
+
+  if (warn_array_bounds)
+      check_all_array_refs();
 
   /* We must identify jump threading opportunities before we release
      the datastructures built by VRP.  */
