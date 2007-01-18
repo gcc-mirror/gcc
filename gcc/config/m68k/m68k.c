@@ -1754,7 +1754,7 @@ const_method (rtx constant)
 
   /* The ColdFire doesn't have byte or word operations.  */
   /* FIXME: This may not be useful for the m68060 either.  */
-  if (!TARGET_COLDFIRE) 
+  if (!TARGET_COLDFIRE)
     {
       /* if -256 < N < 256 but N is not in range for a moveq
 	 N^ff will be, so use moveq #N^ff, dreg; not.b dreg.  */
