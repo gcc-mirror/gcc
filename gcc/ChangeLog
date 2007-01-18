@@ -1,17 +1,44 @@
+2007-01-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* reg-stack.c (subst_stack_regs_pat) [UNSPEC_SINCOS_COS,
+	UNSPEC_XTRACT_FRACT]: Use generic code for instructions that
+	operate on the top of stack.
+	[UNSPEC_SINCOS_SIN, UNSPEC_XTRACT_EXP, UNSPEC_TAN]: Rewrite
+	register handling of instructions that output to the second
+	stack slot.
+	[UNSPEC_TAN_ONE, UNSPEC_TAN_TAN]: Remove.
+	(move_for_stack_reg): Special-case check for dead destination
+	stack slot for constant load of 1.0 inside UNSPEC_TAN.
+
+	* config/i386/i386.md (UNSPEC_TAN): New constant.
+	(UNSPEC_TAN_ONE, UNSPEC_TAN_TAN): Remove.
+	(fptanxf4_i387, fptan_extend<mode>xf4_i387): New patterns
+	to correctly model move of constant 1.0 to top stack slot.
+	(*tandf3_1, *tansf3_1, *tanxf3_1): Remove insn patterns.
+	(unnamed peephole2 pattern): Remove corresponding peephole2
+	pattern that optimizes tan insn and loading of constant 1.0.
+	(tanxf2): Use fptanxf4_i387.
+	(tan<mode>2): Rename from tansf2 and tandf2 and macroize insn
+	patterns using X87MODEF12 mode macro.  Use fptan_extend<mode>xf4_i387
+	and truncate result to requested mode.  Use SSE_FLOAT_MODE_P to
+	disable patterns for SSE math.
+	(sincos<mode>3): Use truncxf<mode>2_i387_noop for truncation.
+	(fyl2x_extend<mode>xf3_i387): Use X87MODEF12 for operand 1.
+
 2007-01-18  Dirk Mueller  <dmueller@suse.de>
-·           Richard Guenther <rguenther@suse.de>
+	    Richard Guenther <rguenther@suse.de>
 
-·       PR diagnostic/8268
-·       * doc/invoke.texi (Warray-bounds): Document -Warray-bounds.
-·       * common.opt (Warray-bounds): Add new warning option.
-·       * c-opts.c (c_common_handle_option): Define -Warray-bounds
-·       if -Wall is given.
+	PR diagnostic/8268
+	* doc/invoke.texi (Warray-bounds): Document -Warray-bounds.
+	* common.opt (Warray-bounds): Add new warning option.
+	* c-opts.c (c_common_handle_option): Define -Warray-bounds
+	if -Wall is given.
 	* Makefile.in: make tree-vrp.o depend on toplev.h
-·       * tree-vrp.c (vrp_finalize): Call check_array_refs if -Warray-bounds
-·       is enabled.
-·       (check_array_refs, check_array_bounds, check_array_ref): New.
+	* tree-vrp.c (vrp_finalize): Call check_array_refs if -Warray-bounds
+	is enabled.
+	(check_array_refs, check_array_bounds, check_array_ref): New.
 
-18-01-2007  Jan Hubicka  <jh@suse.cz>
+2007-01-18  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-ccp.c (ccp_finalize): Return if something changed.
 	(execute_ssa_ccp): Return flags conditionally.
@@ -19,7 +46,7 @@
 	changed.
 	* tree-ssa-propagate.h (substitute_and_fold): Update prototype.
 
-18-01-2007  Steven Bosscher  <steven@gcc.gnu.org>
+2007-01-18  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cfgcleanup.c (cleanup_cfg): Detect cfglayout mode and set
 	the CLEANUP_CFGLAYOUT flag when in cfglayout mode.
@@ -256,7 +283,7 @@
 	* config/i386/i386.md (fyl2xxf3_i387): Rename from fyl2x_xf3.
 	(fyl2x_extend<mode>xf3_i387): New insn pattern.
 	(log<mode>2): Rename from logsf2 and logdf2 and macroize insn
-	insn patterns using X87MODEF12 mode macro.  Extend operand 1
+	patterns using X87MODEF12 mode macro.  Extend operand 1
 	to XFmode. Use SSE_FLOAT_MODE_P to disable patterns for SSE math.
 	(log10<mode>2): Ditto.
 	(log2<mode>2): Ditto.
@@ -267,7 +294,6 @@
 	(*fxtractxf3_i387): Rename from *fxtractxf3.
 	(fxtract_extend<mode>xf3_i387): New insn pattern.
 	(ilogbsi2): Use match_dup 3, not match_operand:XF 3.
-
 	* config/i386/i386.c (ix86_emit_i387_log1p): Use gen_fyl2xp1xf3_i387()
 	and gen_fyl2xxf3_i387().
 
