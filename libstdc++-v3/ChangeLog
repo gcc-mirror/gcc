@@ -1,3 +1,20 @@
+2007-01-18  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.h (basic_string<>::_S_compare): Add.
+	(compare(const basic_string&)): Use it.
+	* include/bits/basic_string.tcc (compare(size_type, size_type,
+	const basic_string&), compare(size_type, size_type,
+	const basic_string&, size_type, size_type), compare(const _CharT*),
+	compare(size_type, size_type, const _CharT*), compare(size_type,
+	size_type, const _CharT*, size_type)): Likewise.
+	* include/ext/vstring_util.h (__vstring_utility<>::_S_compare): Add.
+	* include/ext/vstring.h (compare(const __versa_string&)): Use it.
+	* include/ext/vstring.tcc (compare(size_type, size_type,
+	const __versa_string&), compare(size_type, size_type,
+	const __versa_string&, size_type, size_type), compare(const _CharT*),
+	compare(size_type, size_type, const _CharT*), compare(size_type,
+	size_type, const _CharT*, size_type)): Likewise.
+
 2007-01-15  Ian Lance Taylor  <iant@google.com>
 	    Paolo Carlini  <pcarlini@suse.de>
 
