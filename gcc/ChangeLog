@@ -1,5 +1,10 @@
 2007-01-18  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/m68k/m68k.md (movdf_cf_hard): Use output_move_double for
+	GPR<-GPR moves.
+
+2007-01-18  Richard Sandiford  <richard@codesourcery.com>
+
 	* real.h (real_format): Add a canonical_nan_lsbs_set field.
 	(coldfire_single_format): Declare.
 	(coldfire_double_format): Likewise.
