@@ -7682,12 +7682,14 @@ test -d gnu/java/net || mkdir gnu/java/net
           ac_config_links="$ac_config_links gnu/java/net/natPlainDatagramSocketImpl.cc:gnu/java/net/natPlainDatagramSocketImpl${PLATFORMNET}.cc"
 
 
-# Likewise for natPipeImpl.cc and natSelectorImpl.cc.
+# Likewise for natVMPipe.cc and natVMSelector.cc.
 test -d gnu/java/nio || mkdir gnu/java/nio
-          ac_config_links="$ac_config_links gnu/java/nio/natPipeImpl.cc:gnu/java/nio/natPipeImpl${PLATFORM}.cc"
+          ac_config_links="$ac_config_links gnu/java/nio/natVMPipe.cc:gnu/java/nio/natVMPipe${PLATFORM}.cc"
 
-          ac_config_links="$ac_config_links gnu/java/nio/natSelectorImpl.cc:gnu/java/nio/natSelectorImpl${PLATFORM}.cc"
+          ac_config_links="$ac_config_links gnu/java/nio/natVMSelector.cc:gnu/java/nio/natVMSelector${PLATFORM}.cc"
 
+
+# Likewise for natFileChannelImpl.cc
 test -d gnu/java/nio/channels || mkdir gnu/java/nio/channels
           ac_config_links="$ac_config_links gnu/java/nio/channels/natFileChannelImpl.cc:gnu/java/nio/channels/natFileChannel${FILE-${PLATFORM}}.cc"
 
@@ -17846,8 +17848,8 @@ do
   "java/net/natVMNetworkInterface.cc" ) CONFIG_LINKS="$CONFIG_LINKS java/net/natVMNetworkInterface.cc:java/net/natVMNetworkInterface${PLATFORMNET}.cc" ;;
   "gnu/java/net/natPlainSocketImpl.cc" ) CONFIG_LINKS="$CONFIG_LINKS gnu/java/net/natPlainSocketImpl.cc:gnu/java/net/natPlainSocketImpl${PLATFORMNET}.cc" ;;
   "gnu/java/net/natPlainDatagramSocketImpl.cc" ) CONFIG_LINKS="$CONFIG_LINKS gnu/java/net/natPlainDatagramSocketImpl.cc:gnu/java/net/natPlainDatagramSocketImpl${PLATFORMNET}.cc" ;;
-  "gnu/java/nio/natPipeImpl.cc" ) CONFIG_LINKS="$CONFIG_LINKS gnu/java/nio/natPipeImpl.cc:gnu/java/nio/natPipeImpl${PLATFORM}.cc" ;;
-  "gnu/java/nio/natSelectorImpl.cc" ) CONFIG_LINKS="$CONFIG_LINKS gnu/java/nio/natSelectorImpl.cc:gnu/java/nio/natSelectorImpl${PLATFORM}.cc" ;;
+  "gnu/java/nio/natVMPipe.cc" ) CONFIG_LINKS="$CONFIG_LINKS gnu/java/nio/natVMPipe.cc:gnu/java/nio/natVMPipe${PLATFORM}.cc" ;;
+  "gnu/java/nio/natVMSelector.cc" ) CONFIG_LINKS="$CONFIG_LINKS gnu/java/nio/natVMSelector.cc:gnu/java/nio/natVMSelector${PLATFORM}.cc" ;;
   "gnu/java/nio/channels/natFileChannelImpl.cc" ) CONFIG_LINKS="$CONFIG_LINKS gnu/java/nio/channels/natFileChannelImpl.cc:gnu/java/nio/channels/natFileChannel${FILE-${PLATFORM}}.cc" ;;
   "include/java-gc.h" ) CONFIG_LINKS="$CONFIG_LINKS include/java-gc.h:include/$GCHDR" ;;
   "include/java-threads.h" ) CONFIG_LINKS="$CONFIG_LINKS include/java-threads.h:include/$THREADH" ;;

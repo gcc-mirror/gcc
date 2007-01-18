@@ -724,10 +724,12 @@ test -d gnu/java/net || mkdir gnu/java/net
 AC_CONFIG_LINKS(gnu/java/net/natPlainSocketImpl.cc:gnu/java/net/natPlainSocketImpl${PLATFORMNET}.cc)
 AC_CONFIG_LINKS(gnu/java/net/natPlainDatagramSocketImpl.cc:gnu/java/net/natPlainDatagramSocketImpl${PLATFORMNET}.cc)
 
-# Likewise for natPipeImpl.cc and natSelectorImpl.cc.
+# Likewise for natVMPipe.cc and natVMSelector.cc.
 test -d gnu/java/nio || mkdir gnu/java/nio
-AC_CONFIG_LINKS(gnu/java/nio/natPipeImpl.cc:gnu/java/nio/natPipeImpl${PLATFORM}.cc)
-AC_CONFIG_LINKS(gnu/java/nio/natSelectorImpl.cc:gnu/java/nio/natSelectorImpl${PLATFORM}.cc)
+AC_CONFIG_LINKS(gnu/java/nio/natVMPipe.cc:gnu/java/nio/natVMPipe${PLATFORM}.cc)
+AC_CONFIG_LINKS(gnu/java/nio/natVMSelector.cc:gnu/java/nio/natVMSelector${PLATFORM}.cc)
+
+# Likewise for natFileChannelImpl.cc
 test -d gnu/java/nio/channels || mkdir gnu/java/nio/channels
 AC_CONFIG_LINKS(gnu/java/nio/channels/natFileChannelImpl.cc:gnu/java/nio/channels/natFileChannel${FILE-${PLATFORM}}.cc)
 

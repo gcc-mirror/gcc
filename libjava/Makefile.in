@@ -106,7 +106,7 @@ CONFIG_CLEAN_FILES = libgcj.pc libgcj.spec libgcj-test.spec \
 	java/net/natVMInetAddress.cc java/net/natVMNetworkInterface.cc \
 	gnu/java/net/natPlainSocketImpl.cc \
 	gnu/java/net/natPlainDatagramSocketImpl.cc \
-	gnu/java/nio/natPipeImpl.cc gnu/java/nio/natSelectorImpl.cc \
+	gnu/java/nio/natVMPipe.cc gnu/java/nio/natVMSelector.cc \
 	gnu/java/nio/channels/natFileChannelImpl.cc sysdep/locks.h \
 	sysdep/backtrace.h sysdep/descriptor.h
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -307,16 +307,16 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc jvmti.cc exception.cc \
 	gnu/java/net/natPlainDatagramSocketImpl.cc \
 	gnu/java/net/natPlainSocketImpl.cc \
 	gnu/java/net/protocol/core/natCoreInputStream.cc \
-	gnu/java/nio/natPipeImpl.cc gnu/java/nio/natSelectorImpl.cc \
+	gnu/java/nio/natVMPipe.cc gnu/java/nio/natVMSelector.cc \
 	gnu/java/nio/natNIOServerSocket.cc \
 	gnu/java/nio/natVMChannel.cc \
 	gnu/java/nio/channels/natFileChannelImpl.cc java/io/natFile.cc \
-	java/io/natObjectInputStream.cc \
+	java/io/natVMObjectInputStream.cc \
 	java/io/natVMObjectStreamClass.cc \
 	java/lang/management/natVMManagementFactory.cc \
 	java/lang/natCharacter.cc java/lang/natClass.cc \
 	java/lang/natClassLoader.cc java/lang/natConcreteProcess.cc \
-	java/lang/natDouble.cc java/lang/natFloat.cc \
+	java/lang/natVMDouble.cc java/lang/natVMFloat.cc \
 	java/lang/natMath.cc java/lang/natObject.cc \
 	java/lang/natRuntime.cc java/lang/natString.cc \
 	java/lang/natStringBuffer.cc java/lang/natStringBuilder.cc \
@@ -370,16 +370,16 @@ am__objects_2 = gnu/classpath/jdwp/natVMFrame.lo \
 	gnu/java/net/natPlainDatagramSocketImpl.lo \
 	gnu/java/net/natPlainSocketImpl.lo \
 	gnu/java/net/protocol/core/natCoreInputStream.lo \
-	gnu/java/nio/natPipeImpl.lo gnu/java/nio/natSelectorImpl.lo \
+	gnu/java/nio/natVMPipe.lo gnu/java/nio/natVMSelector.lo \
 	gnu/java/nio/natNIOServerSocket.lo \
 	gnu/java/nio/natVMChannel.lo \
 	gnu/java/nio/channels/natFileChannelImpl.lo java/io/natFile.lo \
-	java/io/natObjectInputStream.lo \
+	java/io/natVMObjectInputStream.lo \
 	java/io/natVMObjectStreamClass.lo \
 	java/lang/management/natVMManagementFactory.lo \
 	java/lang/natCharacter.lo java/lang/natClass.lo \
 	java/lang/natClassLoader.lo java/lang/natConcreteProcess.lo \
-	java/lang/natDouble.lo java/lang/natFloat.lo \
+	java/lang/natVMDouble.lo java/lang/natVMFloat.lo \
 	java/lang/natMath.lo java/lang/natObject.lo \
 	java/lang/natRuntime.lo java/lang/natString.lo \
 	java/lang/natStringBuffer.lo java/lang/natStringBuilder.lo \
@@ -7920,21 +7920,21 @@ gnu/java/lang/management/natVMThreadMXBeanImpl.cc \
 gnu/java/net/natPlainDatagramSocketImpl.cc \
 gnu/java/net/natPlainSocketImpl.cc \
 gnu/java/net/protocol/core/natCoreInputStream.cc \
-gnu/java/nio/natPipeImpl.cc \
-gnu/java/nio/natSelectorImpl.cc \
+gnu/java/nio/natVMPipe.cc \
+gnu/java/nio/natVMSelector.cc \
 gnu/java/nio/natNIOServerSocket.cc \
 gnu/java/nio/natVMChannel.cc \
 gnu/java/nio/channels/natFileChannelImpl.cc \
 java/io/natFile.cc \
-java/io/natObjectInputStream.cc \
+java/io/natVMObjectInputStream.cc \
 java/io/natVMObjectStreamClass.cc \
 java/lang/management/natVMManagementFactory.cc \
 java/lang/natCharacter.cc \
 java/lang/natClass.cc \
 java/lang/natClassLoader.cc \
 java/lang/natConcreteProcess.cc \
-java/lang/natDouble.cc \
-java/lang/natFloat.cc \
+java/lang/natVMDouble.cc \
+java/lang/natVMFloat.cc \
 java/lang/natMath.cc \
 java/lang/natObject.cc \
 java/lang/natRuntime.cc	\
@@ -8385,9 +8385,9 @@ gnu/java/nio/$(am__dirstamp):
 gnu/java/nio/$(DEPDIR)/$(am__dirstamp):
 	@$(mkdir_p) gnu/java/nio/$(DEPDIR)
 	@: > gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
-gnu/java/nio/natPipeImpl.lo: gnu/java/nio/$(am__dirstamp) \
+gnu/java/nio/natVMPipe.lo: gnu/java/nio/$(am__dirstamp) \
 	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
-gnu/java/nio/natSelectorImpl.lo: gnu/java/nio/$(am__dirstamp) \
+gnu/java/nio/natVMSelector.lo: gnu/java/nio/$(am__dirstamp) \
 	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
 gnu/java/nio/natNIOServerSocket.lo: gnu/java/nio/$(am__dirstamp) \
 	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
@@ -8410,7 +8410,7 @@ java/io/$(DEPDIR)/$(am__dirstamp):
 	@: > java/io/$(DEPDIR)/$(am__dirstamp)
 java/io/natFile.lo: java/io/$(am__dirstamp) \
 	java/io/$(DEPDIR)/$(am__dirstamp)
-java/io/natObjectInputStream.lo: java/io/$(am__dirstamp) \
+java/io/natVMObjectInputStream.lo: java/io/$(am__dirstamp) \
 	java/io/$(DEPDIR)/$(am__dirstamp)
 java/io/natVMObjectStreamClass.lo: java/io/$(am__dirstamp) \
 	java/io/$(DEPDIR)/$(am__dirstamp)
@@ -8437,9 +8437,9 @@ java/lang/natClassLoader.lo: java/lang/$(am__dirstamp) \
 	java/lang/$(DEPDIR)/$(am__dirstamp)
 java/lang/natConcreteProcess.lo: java/lang/$(am__dirstamp) \
 	java/lang/$(DEPDIR)/$(am__dirstamp)
-java/lang/natDouble.lo: java/lang/$(am__dirstamp) \
+java/lang/natVMDouble.lo: java/lang/$(am__dirstamp) \
 	java/lang/$(DEPDIR)/$(am__dirstamp)
-java/lang/natFloat.lo: java/lang/$(am__dirstamp) \
+java/lang/natVMFloat.lo: java/lang/$(am__dirstamp) \
 	java/lang/$(DEPDIR)/$(am__dirstamp)
 java/lang/natMath.lo: java/lang/$(am__dirstamp) \
 	java/lang/$(DEPDIR)/$(am__dirstamp)
@@ -8855,16 +8855,16 @@ mostlyclean-compile:
 	-rm -f gnu/java/nio/channels/natFileChannelImpl.lo
 	-rm -f gnu/java/nio/natNIOServerSocket.$(OBJEXT)
 	-rm -f gnu/java/nio/natNIOServerSocket.lo
-	-rm -f gnu/java/nio/natPipeImpl.$(OBJEXT)
-	-rm -f gnu/java/nio/natPipeImpl.lo
-	-rm -f gnu/java/nio/natSelectorImpl.$(OBJEXT)
-	-rm -f gnu/java/nio/natSelectorImpl.lo
 	-rm -f gnu/java/nio/natVMChannel.$(OBJEXT)
 	-rm -f gnu/java/nio/natVMChannel.lo
+	-rm -f gnu/java/nio/natVMPipe.$(OBJEXT)
+	-rm -f gnu/java/nio/natVMPipe.lo
+	-rm -f gnu/java/nio/natVMSelector.$(OBJEXT)
+	-rm -f gnu/java/nio/natVMSelector.lo
 	-rm -f java/io/natFile.$(OBJEXT)
 	-rm -f java/io/natFile.lo
-	-rm -f java/io/natObjectInputStream.$(OBJEXT)
-	-rm -f java/io/natObjectInputStream.lo
+	-rm -f java/io/natVMObjectInputStream.$(OBJEXT)
+	-rm -f java/io/natVMObjectInputStream.lo
 	-rm -f java/io/natVMObjectStreamClass.$(OBJEXT)
 	-rm -f java/io/natVMObjectStreamClass.lo
 	-rm -f java/lang/Object.$(OBJEXT)
@@ -8879,10 +8879,6 @@ mostlyclean-compile:
 	-rm -f java/lang/natClassLoader.lo
 	-rm -f java/lang/natConcreteProcess.$(OBJEXT)
 	-rm -f java/lang/natConcreteProcess.lo
-	-rm -f java/lang/natDouble.$(OBJEXT)
-	-rm -f java/lang/natDouble.lo
-	-rm -f java/lang/natFloat.$(OBJEXT)
-	-rm -f java/lang/natFloat.lo
 	-rm -f java/lang/natMath.$(OBJEXT)
 	-rm -f java/lang/natMath.lo
 	-rm -f java/lang/natObject.$(OBJEXT)
@@ -8903,6 +8899,10 @@ mostlyclean-compile:
 	-rm -f java/lang/natThreadLocal.lo
 	-rm -f java/lang/natVMClassLoader.$(OBJEXT)
 	-rm -f java/lang/natVMClassLoader.lo
+	-rm -f java/lang/natVMDouble.$(OBJEXT)
+	-rm -f java/lang/natVMDouble.lo
+	-rm -f java/lang/natVMFloat.$(OBJEXT)
+	-rm -f java/lang/natVMFloat.lo
 	-rm -f java/lang/natVMThrowable.$(OBJEXT)
 	-rm -f java/lang/natVMThrowable.lo
 	-rm -f java/lang/ref/natReference.$(OBJEXT)
@@ -9029,20 +9029,18 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/$(DEPDIR)/natPlainSocketImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/core/$(DEPDIR)/natCoreInputStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/natNIOServerSocket.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/natPipeImpl.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/natSelectorImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/natVMChannel.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/natVMPipe.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/natVMSelector.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/channels/$(DEPDIR)/natFileChannelImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/natFile.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/natObjectInputStream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/natVMObjectInputStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/natVMObjectStreamClass.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/Object.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natCharacter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natClass.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natClassLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natConcreteProcess.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natDouble.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natFloat.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natMath.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natObject.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natRuntime.Plo@am__quote@
@@ -9053,6 +9051,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natThread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natThreadLocal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natVMClassLoader.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natVMDouble.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natVMFloat.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natVMThrowable.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/management/$(DEPDIR)/natVMManagementFactory.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/ref/$(DEPDIR)/natReference.Plo@am__quote@
