@@ -1,6 +1,17 @@
 2007-01-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config.gcc (m68k-*-aout*, m68k-*-coff*, m68020-*-elf*, m68k-*-elf*)
+	(m68k-*-uclinuxoldabi, m68k-*-uclinux*, m68k-*-rtems*): Add t-floatlib
+	to $tmake_file.
+	* config/m68k/t-floatlib: New file, extracting common code from...
+	* config/m68k/t-m68kbare, config/m68k/t-m68kelf,
+	* config/m68k/t-uclinux: Here.
+	* config/m68k/fpgnulib.c: Do not compile extendeed precision
+	routines on ColdFire targets.
+
+2007-01-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config.gcc (m68k-*-aout*, m68k-*-coff*, m68020-*-elf*, m68k-*-elf*)
 	(m68010-*-netbsdelf*, m68k*-*-netbsdelf*, m68k*-*-openbsd*)
 	(m68k-*-uclinuxoldabi, m68k-*-uclinux*, m68k-*-linux*)
 	(m68k-*-rtems*): Use tm_file rather than m68k/m68k.h and
