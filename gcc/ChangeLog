@@ -1,3 +1,9 @@
+2007-01-18  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/m68k/m68k.c (m68k_use_return_insn): Update comments
+	before function.  Extend register save check to include all
+	registers, not just integer ones.
+
 2007-01-18  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/m68k/m68k-protos.h (use_return_insn): Rename to...
