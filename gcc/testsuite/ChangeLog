@@ -1,3 +1,7 @@
+2007-01-18  Hui-May Chang  <hm.chang@apple.com>
+
+	* gcc.c-torture/compile/pr27528.c: Add -fno-pic option.
+
 2007-01-18  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	Backport from trunk
