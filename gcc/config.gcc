@@ -1480,32 +1480,32 @@ m68hc12-*-*|m6812-*-*)
 m68k-*-aout*)
 	default_m68k_cpu=68020
 	tmake_file=m68k/t-m68kbare
-	tm_file="m68k/m68k.h m68k/m68k-none.h m68k/m68kemb.h m68k/m68k-aout.h libgloss.h"
+	tm_file="${tm_file} m68k/m68k-none.h m68k/m68kemb.h m68k/m68k-aout.h libgloss.h"
 	;;
 m68k-*-coff*)
 	default_m68k_cpu=68020
 	tmake_file=m68k/t-m68kbare
-	tm_defines="${tm_defines} MOTOROLA USE_GAS"
-	tm_file="m68k/m68k.h m68k/m68k-none.h m68k/m68kemb.h dbxcoff.h m68k/coff.h dbx.h"
+	tm_defines="${tm_defines} MOTOROLA=1 USE_GAS"
+	tm_file="${tm_file} m68k/m68k-none.h m68k/m68kemb.h dbxcoff.h m68k/coff.h dbx.h"
 	use_fixproto=yes
 	;;
 m68020-*-elf* | m68k-*-elf*)
 	default_m68k_cpu=68020
-	tm_file="m68k/m68k.h m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/m68kemb.h m68k/m68020-elf.h"
-	tm_defines="${tm_defines} MOTOROLA USE_GAS"
+	tm_file="${tm_file} m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/m68kemb.h m68k/m68020-elf.h"
+	tm_defines="${tm_defines} MOTOROLA=1 USE_GAS"
 	tmake_file=m68k/t-m68kelf
 	extra_parts="crtbegin.o crtend.o"
 	;;
 m68010-*-netbsdelf* | m68k*-*-netbsdelf*)
 	default_m68k_cpu=68020
 	tm_file="${tm_file} dbxelf.h elfos.h netbsd.h netbsd-elf.h m68k/netbsd-elf.h"
-	tm_defines="${tm_defines} MOTOROLA USE_GAS"
+	tm_defines="${tm_defines} MOTOROLA=1 USE_GAS"
 	;;
 m68k*-*-openbsd*)
 	default_m68k_cpu=68020
 	# needed to unconfuse gdb
 	tm_defines="${tm_defines} OBSD_OLD_GAS"
-	tm_file="m68k/m68k.h openbsd.h m68k/openbsd.h"
+	tm_file="${tm_file} openbsd.h m68k/openbsd.h"
 	tmake_file="t-libc-ok t-openbsd m68k/t-openbsd"
 	# we need collect2 until our bug is fixed...
 	use_collect2=yes
@@ -1514,8 +1514,8 @@ m68k-*-uclinuxoldabi*)		# Motorola m68k/ColdFire running uClinux
 				# with uClibc, using the original
 				# m68k-elf-based ABI
 	default_m68k_cpu=68020
-	tm_file="m68k/m68k.h m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/uclinux-oldabi.h"
- 	tm_defines="${tm_defines} MOTOROLA USE_GAS"
+	tm_file="${tm_file} m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/uclinux-oldabi.h"
+ 	tm_defines="${tm_defines} MOTOROLA=1 USE_GAS"
 	tmake_file=m68k/t-uclinux
 	use_fixproto=no
 	;;
@@ -1523,8 +1523,8 @@ m68k-*-uclinux*)		# Motorola m68k/ColdFire running uClinux
 				# with uClibc, using the new GNU/Linux-style
 				# ABI.
 	default_m68k_cpu=68020
-	tm_file="m68k/m68k.h dbxelf.h elfos.h svr4.h linux.h flat.h m68k/linux.h m68k/uclinux.h"
- 	tm_defines="${tm_defines} MOTOROLA USE_GAS UCLIBC_DEFAULT=1"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h flat.h m68k/linux.h m68k/uclinux.h"
+ 	tm_defines="${tm_defines} MOTOROLA=1 USE_GAS UCLIBC_DEFAULT=1"
 	extra_options="${extra_options} linux.opt"
 	tmake_file=m68k/t-uclinux
 	use_fixproto=no
@@ -1533,9 +1533,9 @@ m68k-*-linux*)		# Motorola m68k's running GNU/Linux
 				# with ELF format using glibc 2
 				# aka the GNU/Linux C library 6.
 	default_m68k_cpu=68020
-	tm_file="m68k/m68k.h dbxelf.h elfos.h svr4.h linux.h m68k/linux.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h m68k/linux.h"
 	extra_options="${extra_options} m68k/ieee.opt"
-	tm_defines="${tm_defines} MOTOROLA USE_GAS"
+	tm_defines="${tm_defines} MOTOROLA=1 USE_GAS"
 	# if not configured with --enable-sjlj-exceptions, bump the
 	# libgcc version number
 	if test x$sjlj != x1; then
@@ -1545,8 +1545,8 @@ m68k-*-linux*)		# Motorola m68k's running GNU/Linux
 m68k-*-rtems*)
 	default_m68k_cpu=68020
 	tmake_file="m68k/t-m68kbare m68k/t-crtstuff t-rtems m68k/t-rtems"
-	tm_file="m68k/m68k.h m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/m68kemb.h m68k/m68020-elf.h m68k/rtemself.h rtems.h"
-	tm_defines="${tm_defines} MOTOROLA USE_GAS"
+	tm_file="${tm_file} m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/m68kemb.h m68k/m68020-elf.h m68k/rtemself.h rtems.h"
+	tm_defines="${tm_defines} MOTOROLA=1 USE_GAS"
 	extra_parts="crtbegin.o crtend.o"
 	;;
 mcore-*-elf)

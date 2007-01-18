@@ -23,13 +23,11 @@ Boston, MA 02110-1301, USA.  */
    if-statements and ?: on it.  This way we have compile-time error checking
    for both the MOTOROLA and MIT code paths.  We do rely on the host compiler
    to optimize away all constant tests.  */
-#ifdef MOTOROLA
-# undef MOTOROLA
-# define MOTOROLA 1  /* Use the Motorola assembly syntax.  */
+#if MOTOROLA  /* Use the Motorola assembly syntax.  */
 # define TARGET_VERSION fprintf (stderr, " (68k, Motorola syntax)")
 #else
-# define TARGET_VERSION fprintf (stderr, " (68k, MIT syntax)")
 # define MOTOROLA 0  /* Use the MIT assembly syntax.  */
+# define TARGET_VERSION fprintf (stderr, " (68k, MIT syntax)")
 #endif
 
 /* Handle --with-cpu default option from configure script.  */
