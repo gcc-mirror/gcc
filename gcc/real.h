@@ -155,6 +155,7 @@ struct real_format
   bool has_denorm;
   bool has_signed_zero;
   bool qnan_msb_set;
+  bool canonical_nan_lsbs_set;
 };
 
 
@@ -255,8 +256,10 @@ extern unsigned int real_hash (const REAL_VALUE_TYPE *);
 /* Target formats defined in real.c.  */
 extern const struct real_format ieee_single_format;
 extern const struct real_format mips_single_format;
+extern const struct real_format coldfire_single_format;
 extern const struct real_format ieee_double_format;
 extern const struct real_format mips_double_format;
+extern const struct real_format coldfire_double_format;
 extern const struct real_format ieee_extended_motorola_format;
 extern const struct real_format ieee_extended_intel_96_format;
 extern const struct real_format ieee_extended_intel_96_round_53_format;
