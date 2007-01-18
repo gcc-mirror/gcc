@@ -1,4 +1,20 @@
 2007-01-18  Kazu Hirata  <kazu@codesourcery.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+
+	* doc/tm.texi (TARGET_FUNCTION_VALUE): Expand documentation of
+	parallels.
+	* calls.c (expand_call): If the return value is a PARALLEL,
+	extract its first member.
+	* config/m68k/linux.h (FUNCTION_EXTRA_EPILOGUE): Remove.
+	* config/m68k/m68k.c (m68k_output_function_epilogue): Don't
+	use FUNCTION_EXTRA_EPILOGUE.
+	(m68k_function_value): Return a PARALLEL if the return value
+	is of a pointer type.
+	* config/m68k/netbsd-elf.h (current_function_returns_pointer)
+	(FUNCTION_EXTRA_EPILOGUE): Remove.
+	* config/m68k/m68k.md (D0_REG): New constant.
+
+2007-01-18  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/m68k/m68k.c (m68k_output_function_epilogue): Don't
 	output a NOP for empty epilogues.

@@ -1057,10 +1057,6 @@ m68k_output_function_epilogue (FILE *stream,
   if (insn && GET_CODE (insn) == BARRIER)
     return;
 
-#ifdef FUNCTION_EXTRA_EPILOGUE
-  FUNCTION_EXTRA_EPILOGUE (stream, size);
-#endif
-
   fsize = current_frame.size;
 
   /* FIXME: leaf_function_p below is too strong.
@@ -3894,9 +3890,26 @@ m68k_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
     break;
   }
 
-  /* If the function returns a pointer, push that into %a0 */
-  if (POINTER_TYPE_P (valtype))
-    return gen_rtx_REG (mode, 8);
+  /* If the function returns a pointer, push that into %a0.  */
+  if (func && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (func))))
+    /* For compatibility with the large body of existing code which
+       does not always properly declare external functions returning
+       pointer types, the m68k/SVR4 convention is to copy the value
+       returned for pointer functions from a0 to d0 in the function
+       epilogue, so that callers that have neglected to properly
+       declare the callee can still find the correct return value in
+       d0.  */
+    return gen_rtx_PARALLEL
+      (mode,
+       gen_rtvec (2,
+		  gen_rtx_EXPR_LIST (VOIDmode,
+				     gen_rtx_REG (mode, A0_REG),
+				     const0_rtx),
+		  gen_rtx_EXPR_LIST (VOIDmode,
+				     gen_rtx_REG (mode, D0_REG),
+				     const0_rtx)));
+  else if (POINTER_TYPE_P (valtype))
+    return gen_rtx_REG (mode, A0_REG);
   else
-    return gen_rtx_REG (mode, 0);
+    return gen_rtx_REG (mode, D0_REG);
 }

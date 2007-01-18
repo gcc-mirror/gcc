@@ -179,20 +179,6 @@ Boston, MA 02110-1301, USA.  */
 #define FUNCTION_VALUE(VALTYPE, FUNC)					\
   m68k_function_value (VALTYPE, FUNC)
 
-/* For compatibility with the large body of existing code which does
-   not always properly declare external functions returning pointer
-   types, the m68k/SVR4 convention is to copy the value returned for
-   pointer functions from a0 to d0 in the function epilogue, so that
-   callers that have neglected to properly declare the callee can
-   still find the correct return value.  */
-
-#define FUNCTION_EXTRA_EPILOGUE(FILE, SIZE)				\
-do {									\
-  if (current_function_returns_pointer					\
-      && ! find_equiv_reg (0, get_last_insn (), 0, 0, 0, 8, Pmode))	\
-    asm_fprintf (FILE, "\tmove.l %Ra0,%Rd0\n");				\
-} while (0);
-
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.
    For m68k/SVR4 look for integer values in d0, pointer values in d0
