@@ -1,3 +1,8 @@
+2007-01-18  Michael Meissner  <michael.meissner@amd.com>
+
+	* i386.c (ix86_compute_frame_layout): Make fprintf's in #if 0 code
+	type correct.
+
 2007-01-18  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-operands.c (vop_free_bucket_size): Never return value
