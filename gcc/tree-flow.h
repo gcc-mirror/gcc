@@ -678,7 +678,7 @@ extern basic_block move_sese_region_to_fn (struct function *, basic_block,
 
 /* In tree-cfgcleanup.c  */
 extern bool cleanup_tree_cfg (void);
-extern void cleanup_tree_cfg_loop (void);
+extern bool cleanup_tree_cfg_loop (void);
 
 /* In tree-pretty-print.c.  */
 extern void dump_generic_bb (FILE *, basic_block, int, int);

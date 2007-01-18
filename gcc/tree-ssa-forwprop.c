@@ -1041,7 +1041,7 @@ tree_ssa_forward_propagate_single_use_vars (void)
     }
 
   if (cfg_changed)
-    cleanup_tree_cfg ();
+    todoflags |= TODO_cleanup_cfg;
   return todoflags;
 }
 

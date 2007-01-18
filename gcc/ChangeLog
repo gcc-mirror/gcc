@@ -1,3 +1,20 @@
+2007-01-18  Jan Hubicka  <jh@suse.cz>
+
+	* tree-vrp.c (finalize_jump_threads): Do not call cleanup_cfg by hand.
+	* tree-tailcall (add_virtual_phis): Likewise.
+	(optimize_tail_call): Return TODOs.
+	(execute_tail_calls): Return TODOs.
+	* tree-ssa-ccp (execute_fold_all_builtins): Do cleanup_cfg via TODO.
+	* tree-cfgcleanup.c (cleanup_tree_cfg_loop): Return if something
+	changed.
+	* tree-ssa-forwprop.c (tree_ssa_forward_propagate_single_use_value):
+	Cleanup cfg using TODO.
+	* tree-flow.h (cleanup_tree_cfg_loop): Update prototype.
+	* passes.c (execute_function_todo): When cleanup did something, remove
+	unused locals.
+	* tree-cfg.c (pass_build_cfg): Add cleanup_cfg TODO.
+	(make_edges): Don't cleanup_cfg.
+
 2007-01-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* reg-stack.c (subst_stack_regs_pat) [UNSPEC_SINCOS_COS,

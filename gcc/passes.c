@@ -818,14 +818,19 @@ execute_function_todo (void *data)
   if (!flags)
     return;
   
-  /* Always cleanup the CFG before trying to update SSA .  */
+  /* Always cleanup the CFG before trying to update SSA.  */
   if (flags & TODO_cleanup_cfg)
     {
-      if (current_loops)
-	cleanup_tree_cfg_loop ();
-      else
-	cleanup_tree_cfg ();
+      bool cleanup;
 
+      if (current_loops)
+	cleanup = cleanup_tree_cfg_loop ();
+      else
+	cleanup = cleanup_tree_cfg ();
+
+      if (cleanup && (cfun->curr_properties & PROP_ssa))
+	flags |= TODO_remove_unused_locals;
+	
       /* When cleanup_tree_cfg merges consecutive blocks, it may
 	 perform some simplistic propagation when removing single
 	 valued PHI nodes.  This propagation may, in turn, cause the

@@ -4894,13 +4894,9 @@ finalize_jump_threads (void)
   cfg_altered = thread_through_all_blocks ();
 
   /* If we threaded jumps, then we need to recompute the dominance
-     information, to safely do that we must clean up the CFG first.  */
+     information.  */
   if (cfg_altered)
-    {
-      free_dominance_info (CDI_DOMINATORS);
-      cleanup_tree_cfg ();
-      calculate_dominance_info (CDI_DOMINATORS);
-    }
+    free_dominance_info (CDI_DOMINATORS);
   VEC_free (tree, heap, stack);
 }
 
