@@ -1,3 +1,7 @@
+2007-01-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* trans-stmt.c (compute_overall_iter_number): Fix a typo.
+
 2007-01-18  Roger Sayle  <roger@eyesopen.com>
 
 	* trans-expr.c (copyable_array_p): Consider user derived types without

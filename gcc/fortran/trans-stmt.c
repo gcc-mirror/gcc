@@ -2057,7 +2057,7 @@ compute_overall_iter_number (forall_info *nested_forall_info, tree inner_size,
 	       forall_tmp;
 	       forall_tmp = forall_tmp->next_nest)
 	    tmp = fold_build2 (MULT_EXPR, gfc_array_index_type,
-			       tmp, forall->size);
+			       tmp, forall_tmp->size);
 	  return tmp;
 	}
     }
