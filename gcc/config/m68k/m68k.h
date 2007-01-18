@@ -648,12 +648,6 @@ extern enum reg_class regno_reg_class[];
 
 #define EXIT_IGNORE_STACK 1
 
-/* Determine if the epilogue should be output as RTL.
-   You should override this if you define FUNCTION_EXTRA_EPILOGUE.
-
-   XXX This macro is m68k-specific and only used in m68k.md.  */
-#define USE_RETURN_INSN use_return_insn ()
-
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.
 

@@ -1022,7 +1022,7 @@ m68k_output_function_prologue (FILE *stream,
 /* Return true if this function's epilogue can be output as RTL.  */
 
 bool
-use_return_insn (void)
+m68k_use_return_insn (void)
 {
   if (!reload_completed || frame_pointer_needed || get_frame_size () != 0)
     return false;
