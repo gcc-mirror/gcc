@@ -1,3 +1,8 @@
+2007-01-18  Mike Stump  <mrs@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_vector_compare): Fix build
+	error.
+
 2007-01-18  Michael Meissner  <michael.meissner@amd.com>
 
 	* i386.c (ix86_compute_frame_layout): Make fprintf's in #if 0 code
