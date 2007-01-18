@@ -4107,7 +4107,12 @@ place regardless of mode.)  The value of the expression is usually a
 @code{reg} RTX for the hard register where the return value is stored.
 The value can also be a @code{parallel} RTX, if the return value is in
 multiple places.  See @code{FUNCTION_ARG} for an explanation of the
-@code{parallel} form.
+@code{parallel} form.   Note that the callee will populate every
+location specified in the @code{parallel}, but if the first element of
+the @code{parallel} contains the whole return value, callers will use
+that element as the canonical location and ignore the others.  The m68k
+port uses this type of @code{parallel} to return pointers in both
+@samp{%a0} (the canonical location) and @samp{%d0}.
 
 If @code{TARGET_PROMOTE_FUNCTION_RETURN} returns true, you must apply
 the same promotion rules specified in @code{PROMOTE_MODE} if
