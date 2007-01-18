@@ -1090,9 +1090,34 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
 
 /* Select a format to encode pointers in exception handling data.  CODE
    is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
-   true if the symbol may be affected by dynamic relocations.  */
+   true if the symbol may be affected by dynamic relocations.
+
+   TARGET_ID_SHARED_LIBRARY and TARGET_SEP_DATA are designed to support
+   a read-only text segment without imposing a fixed gap between the
+   text and data segments.  As a result, the text segment cannot refer
+   to anything in the data segment, even in PC-relative form.  Because
+   .eh_frame refers to both code and data, it follows that .eh_frame
+   must be in the data segment itself, and that the offset between
+   .eh_frame and code will not be a link-time constant.
+
+   In theory, we could create a read-only .eh_frame by using DW_EH_PE_pcrel
+   | DW_EH_PE_indirect for all code references.  However, gcc currently
+   handles indirect references using a per-TU constant pool.  This means
+   that if a function and its eh_frame are removed by the linker, the
+   eh_frame's indirect references to the removed function will not be
+   removed, leading to an unresolved symbol error.
+
+   It isn't clear that any -msep-data or -mid-shared-library target
+   would benefit from a read-only .eh_frame anyway.  In particular,
+   no known target that supports these options has a feature like
+   PT_GNU_RELRO.  Without any such feature to motivate them, indirect
+   references would be unnecessary bloat, so we simply use an absolute
+   pointer for code and global references.  We still use pc-relative
+   references to data, as this avoids a relocation.  */
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL)			   \
   (flag_pic								   \
+   && !((TARGET_ID_SHARED_LIBRARY || TARGET_SEP_DATA)			   \
+	&& ((GLOBAL) || (CODE)))					   \
    ? ((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4 \
    : DW_EH_PE_absptr)
 

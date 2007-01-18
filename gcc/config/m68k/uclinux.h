@@ -24,29 +24,27 @@ Boston, MA 02110-1301, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (68k uClinux)");
 
-/* Undo the definition of STARTFILE_SPEC from m68kelf.h so we'll
-   pick the default from gcc.c (just link crt0.o from multilib dir).  */
-#undef	STARTFILE_SPEC
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC \
+"%{mshared-library-id=0|!mshared-library-id=*: crt1.o%s ;: Scrt1.o%s} \
+ crti.o%s crtbegin.o%s"
+
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC "crtend.o%s crtn.o%s"
 
 /* Override the default LIB_SPEC from gcc.c.  We don't currently support
    profiling, or libg.a.  */
 #undef LIB_SPEC
-#define LIB_SPEC "\
-%{mid-shared-library:-R libc.gdb%s -elf2flt -shared-lib-id 0} -lc \
-"
+#define LIB_SPEC \
+"%{mid-shared-library:%{!static-libc:-R libc.gdb%s}} -lc"
 
-/* we don't want a .eh_frame section.  */
-#define EH_FRAME_IN_DATA_SECTION
+/* Default to using -elf2flt with no options.  */
+#undef LINK_SPEC
+#define LINK_SPEC \
+"%{!elf2flt*:-elf2flt} \
+ %{mid-shared-library: \
+   %{mshared-library-id=*:-shared-lib-id %*;:-shared-lib-id 0}}"
 
-/* ??? Quick hack to get constructors working.  Make this look more like a
-   COFF target, so the existing dejagnu/libgloss support works.  A better
-   solution would be to make the necessary dejagnu and libgloss changes so
-   that we can use normal the ELF constructor mechanism.  */
-#undef INIT_SECTION_ASM_OP
-#undef FINI_SECTION_ASM_OP
-#undef ENDFILE_SPEC
-#define ENDFILE_SPEC ""
- 
 #undef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()				\
   do								\
@@ -54,7 +52,16 @@ Boston, MA 02110-1301, USA.  */
       LINUX_TARGET_OS_CPP_BUILTINS ();				\
       builtin_define ("__uClinux__");				\
       if (TARGET_ID_SHARED_LIBRARY)				\
-	builtin_define ("__ID_SHARED_LIBRARY__");		\
+	{							\
+	  builtin_define ("__ID_SHARED_LIBRARY__");		\
+	  /* Shared libraries and executables do not share	\
+	     typeinfo names.  */				\
+	  builtin_define ("__GXX_MERGED_TYPEINFO_NAMES=0");	\
+	  builtin_define ("__GXX_TYPEINFO_EQUALITY_INLINE=0");	\
+	}							\
     }								\
   while (0)
 
+/* -msep-data is the default PIC mode on this target.  */
+#define DRIVER_SELF_SPECS \
+  "%{fpie|fPIE|fpic|fPIC:%{!msep-data:%{!mid-shared-library: -msep-data}}}"

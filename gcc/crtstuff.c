@@ -86,7 +86,9 @@ call_ ## FUNC (void)					\
 }
 #endif
 
-#if defined(OBJECT_FORMAT_ELF) && defined(HAVE_LD_EH_FRAME_HDR) \
+#if defined(OBJECT_FORMAT_ELF) \
+    && !defined(OBJECT_FORMAT_FLAT) \
+    && defined(HAVE_LD_EH_FRAME_HDR) \
     && !defined(inhibit_libc) && !defined(CRTSTUFFT_O) \
     && defined(__GLIBC__) && __GLIBC__ >= 2
 #include <link.h>

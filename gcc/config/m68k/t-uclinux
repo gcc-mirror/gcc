@@ -1,3 +1,6 @@
+# crti and crtn are provided by uClibc.
+EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o
+
 LIB1ASMSRC = m68k/lb1sf68.asm
 LIB1ASMFUNCS = _mulsi3 _udivsi3 _divsi3 _umodsi3 _modsi3 \
    _double _float _floatex \
@@ -19,6 +22,3 @@ MULTILIB_EXCEPTIONS = m68000/msep-data* m68000/mid-shared-library* msep-data* mi
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
-
-# We don't use crtbegin.o and crtend.o
-EXTRA_MULTILIB_PARTS=

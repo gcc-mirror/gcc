@@ -120,11 +120,21 @@ Boston, MA 02110-1301, USA.  */
 	/* Common for -mid-shared-libary and -msep-data */
 
 	.macro PICCALL addr
+#if defined (__mcoldfire__) && !defined (__mcfisab__)
+	lea	\addr-.-8,a0
+	jsr	pc@(a0)
+#else
 	bsr	\addr
+#endif
 	.endm
 
 	.macro PICJUMP addr
+#if defined (__mcoldfire__) && !defined (__mcfisab__)
+	lea	\addr-.-8,a0
+	jmp	pc@(a0)
+#else
 	bra	\addr
+#endif
 	.endm
 
 # if defined(__ID_SHARED_LIBRARY__)
