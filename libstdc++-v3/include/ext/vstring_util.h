@@ -1,6 +1,6 @@
 // Versatile string utility -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,6 +55,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       typedef _Traits					    traits_type;      
       typedef typename _Traits::char_type		    value_type;
       typedef typename _CharT_alloc_type::size_type	    size_type;
+      typedef typename _CharT_alloc_type::difference_type   difference_type;      
       typedef typename _CharT_alloc_type::pointer	    pointer;
       typedef typename _CharT_alloc_type::const_pointer	    const_pointer;
 
@@ -169,6 +170,19 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       static void
       _S_copy_chars(_CharT* __p, const _CharT* __k1, const _CharT* __k2)
       { _S_copy(__p, __k1, __k2 - __k1); }
+
+      static int
+      _S_compare(size_type __n1, size_type __n2)
+      {
+	const difference_type __d = difference_type(__n1 - __n2);
+
+	if (__d > std::numeric_limits<int>::max())
+	  return std::numeric_limits<int>::max();
+	else if (__d < std::numeric_limits<int>::min())
+	  return std::numeric_limits<int>::min();
+	else
+	  return int(__d);	
+      }
     };
 
 _GLIBCXX_END_NAMESPACE
