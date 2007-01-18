@@ -259,7 +259,17 @@ Boston, MA 02110-1301, USA.  */
 
 /* target machine storage layout */
 
-#define LONG_DOUBLE_TYPE_SIZE 80
+/* "long double" is the same as "double" on ColdFire targets.  */
+
+#define LONG_DOUBLE_TYPE_SIZE (TARGET_COLDFIRE ? 64 : 80)
+
+/* We need to know the size of long double at compile-time in libgcc2.  */
+
+#ifdef __mcoldfire__
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
+#else
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 80
+#endif
 
 /* Set the value of FLT_EVAL_METHOD in float.h.  When using 68040 fp
    instructions, we get proper intermediate rounding, otherwise we
