@@ -277,6 +277,8 @@ __truncdfsf2 (double a1)
   register long mant;
   register union float_long fl;
   register union double_long dl1;
+  int sticky;
+  int shift;
 
   dl1.d = a1;
 
@@ -288,29 +290,45 @@ __truncdfsf2 (double a1)
 
   exp = EXPD (dl1) - EXCESSD + EXCESS;
 
+  sticky = dl1.l.lower & ((1 << 22) - 1);
+  mant = MANTD (dl1);
   /* shift double mantissa 6 bits so we can round */
-  mant = MANTD (dl1) >> 6;
+  sticky |= mant & ((1 << 6) - 1);
+  mant >>= 6;
 
   /* Check for underflow and denormals.  */
   if (exp <= 0)
     {
       if (exp < -24)
-	mant = 0;
+	{
+	  sticky |= mant;
+	  mant = 0;
+	}
       else
-	mant >>= 1 - exp;
+	{
+	  sticky |= mant & ((1 << (1 - exp)) - 1);
+	  mant >>= 1 - exp;
+	}
       exp = 0;
     }
   
-  /* now round and shift down */
-  mant += 1;
-  mant >>= 1;
-
-  /* did the round overflow? */
-  if (mant & 0xFF000000L)
+  /* now round */
+  shift = 1;
+  if ((mant & 1) && (sticky || (mant & 2)))
     {
-      mant >>= 1;
-      exp++;
+      int rounding = exp ? 2 : 1;
+
+      mant += 1;
+
+      /* did the round overflow? */
+      if (mant >= (HIDDEN << rounding))
+	{
+	  exp++;
+	  shift = rounding;
+	}
     }
+  /* shift down */
+  mant >>= shift;
 
   mant &= ~HIDDEN;
 
