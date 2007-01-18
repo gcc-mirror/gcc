@@ -36,7 +36,66 @@ Boston, MA 02110-1301, USA.  */
 #include <float.h>
 #include <errno.h>
 
+#ifdef HAVE_SIGNAL_H
+#include <signal.h>
+#endif
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
+#endif
+
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+
 #include "libgfortran.h"
+
+#ifdef __MINGW32__
+#define HAVE_GETPID 1
+#include <process.h>
+#endif
+
+
+/* sys_exit()-- Terminate the program with an exit code.  */
+
+void
+sys_exit (int code)
+{
+  /* Dump core if requested.  */
+  if (code != 0
+      && (options.dump_core == 1
+	 || (options.dump_core == -1 && compile_options.dump_core == 1)))
+    {
+#if defined(HAVE_GETRLIMIT) && defined(RLIMIT_CORE)
+      /* Warn if a core file cannot be produced because
+	 of core size limit.  */
+
+      struct rlimit core_limit;
+
+      if (getrlimit (RLIMIT_CORE, &core_limit) == 0 && core_limit.rlim_cur == 0)
+	st_printf ("** Warning: a core dump was requested, but the core size"
+		   "limit\n**          is currently zero.\n\n");
+#endif
+      
+      
+#if defined(HAVE_KILL) && defined(HAVE_GETPID) && defined(SIGQUIT)
+      kill (getpid (), SIGQUIT);
+#else
+      st_printf ("Core dump not possible, sorry.");
+#endif
+    }
+
+  exit (code);
+}
+
 
 /* Error conditions.  The tricky part here is printing a message when
  * it is the I/O subsystem that is severely wounded.  Our goal is to

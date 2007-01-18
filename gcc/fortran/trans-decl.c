@@ -2375,7 +2375,8 @@ gfc_build_builtin_function_decls (void)
   gfor_fndecl_set_std =
     gfc_build_library_function_decl (get_identifier (PREFIX("set_std")),
 				    void_type_node,
-				    3,
+				    4,
+				    gfc_int4_type_node,
 				    gfc_int4_type_node,
 				    gfc_int4_type_node,
 				    gfc_int4_type_node);
@@ -3143,6 +3144,10 @@ gfc_generate_function_code (gfc_namespace * ns)
       arglist = gfc_chainon_list (arglist,
 				  build_int_cst (gfc_int4_type_node,
 						 pedantic));
+      arglist = gfc_chainon_list (arglist,
+				  build_int_cst (gfc_int4_type_node,
+						 gfc_option.flag_dump_core));
+
       tmp = build_function_call_expr (gfor_fndecl_set_std, arglist);
       gfc_add_expr_to_block (&body, tmp);
     }

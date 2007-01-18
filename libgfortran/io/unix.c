@@ -363,15 +363,6 @@ get_oserror (void)
 }
 
 
-/* sys_exit()-- Terminate the program with an exit code */
-
-void
-sys_exit (int code)
-{
-  exit (code);
-}
-
-
 /*********************************************************************
     File descriptor stream functions
 *********************************************************************/

@@ -1656,6 +1656,7 @@ typedef struct
   int flag_f2c;
   int flag_automatic;
   int flag_backslash;
+  int flag_dump_core;
   int flag_external_blas;
   int blas_matmul_limit;
   int flag_cray_pointer;

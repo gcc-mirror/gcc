@@ -137,6 +137,10 @@ fdollar-ok
 Fortran
 Allow dollar signs in entity names
 
+fdump-core
+Fortran
+Dump a core file when a runtime error occurs
+
 fdump-parse-tree
 Fortran
 Display the code tree after parsing

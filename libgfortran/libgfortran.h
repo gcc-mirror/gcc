@@ -355,6 +355,7 @@ typedef struct
   int fpu_round, fpu_precision, fpe;
 
   int sighup, sigint;
+  int dump_core;
 }
 options_t;
 
@@ -370,6 +371,7 @@ typedef struct
   int allow_std;
   int pedantic;
   int convert;
+  int dump_core;
   size_t record_marker;
   int max_subrecord_length;
 }
@@ -549,6 +551,9 @@ internal_proto(get_args);
 #define GFC_OTOA_BUF_SIZE (sizeof (GFC_INTEGER_LARGEST) * 3 + 1)
 #define GFC_BTOA_BUF_SIZE (sizeof (GFC_INTEGER_LARGEST) * 8 + 1)
 
+extern void sys_exit (int) __attribute__ ((noreturn));
+internal_proto(sys_exit);
+
 extern const char *gfc_itoa (GFC_INTEGER_LARGEST, char *, size_t);
 internal_proto(gfc_itoa);
 
@@ -570,9 +575,6 @@ internal_proto(internal_error);
 
 extern const char *get_oserror (void);
 internal_proto(get_oserror);
-
-extern void sys_exit (int) __attribute__ ((noreturn));
-internal_proto(sys_exit);
 
 extern void st_sprintf (char *, const char *, ...)
   __attribute__ ((format (printf, 2, 3)));
