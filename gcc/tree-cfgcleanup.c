@@ -574,7 +574,7 @@ cleanup_tree_cfg (void)
 
 /* Cleanup cfg and repair loop structures.  */
 
-void
+bool
 cleanup_tree_cfg_loop (void)
 {
   bool changed = cleanup_tree_cfg ();
@@ -597,6 +597,7 @@ cleanup_tree_cfg_loop (void)
 #endif
       scev_reset ();
     }
+  return changed;
 }
 
 /* Merge the PHI nodes at BB into those at BB's sole successor.  */

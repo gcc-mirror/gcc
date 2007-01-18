@@ -2630,9 +2630,7 @@ execute_fold_all_builtins (void)
     }
 
   /* Delete unreachable blocks.  */
-  if (cfg_changed)
-    cleanup_tree_cfg ();
-  return 0;
+  return cfg_changed ? TODO_cleanup_cfg : 0;
 }
 
 

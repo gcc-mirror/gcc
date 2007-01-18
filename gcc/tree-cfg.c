@@ -237,7 +237,7 @@ struct tree_opt_pass pass_build_cfg =
   PROP_cfg,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_verify_stmts,			/* todo_flags_finish */
+  TODO_verify_stmts | TODO_cleanup_cfg,	/* todo_flags_finish */
   0					/* letter */
 };
 
@@ -579,9 +579,6 @@ make_edges (void)
 
   /* Fold COND_EXPR_COND of each COND_EXPR.  */
   fold_cond_expr_cond ();
-
-  /* Clean up the graph and warn for unreachable code.  */
-  cleanup_tree_cfg ();
 }
 
 
