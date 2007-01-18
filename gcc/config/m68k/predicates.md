@@ -159,6 +159,17 @@
     }
 })
 
+;; A constant that can be used the address in a call insn.
+(define_predicate "const_call_operand"
+  (ior (match_operand 0 "const_int_operand")
+       (and (match_test "m68k_symbolic_call != NULL")
+	    (match_operand 0 "symbolic_operand"))))
+
+;; An operand that can be used as the address in a call insn.
+(define_predicate "call_operand"
+  (ior (match_operand 0 "const_call_operand")
+       (match_operand 0 "register_operand")))
+
 ;; TODO: Add a comment here.
 
 (define_predicate "post_inc_operand"

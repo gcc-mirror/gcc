@@ -1,3 +1,31 @@
+2007-01-18  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/m68k/m68k-protos.h (m68k_output_pic_call): Delete.
+	(output_call, m68k_legitimize_call_address): Declare.
+	* config/m68k/m68k.h (EXTRA_CONSTRAINT): Remove unnecessary
+	parenthesees.  Add support for a 'W' constraint.
+	(LEGITIMATE_PIC_OPERAND_P): Remove SYMBOL_REF_FLAG handling.
+	(PRINT_OPERAND_PUNCT_VALID_P): Remove comment about 'o'.
+	(m68k_symbolic_call, m68k_symbolic_jump): Declare.
+	* config/m68k/m68k.c (m68k_symbolic_call, m68k_symbolic_jump): New
+	variables.
+	(override_options): Initialize them.  Do not set flag_no_function_cse
+	for TARGET_ID_SHARED_LIBRARY.
+	(m68k_output_pic_call): Delete.
+	(m68k_legitimize_call_address): New function.
+	(print_operand): Remove the %o prefix.  Handle the %p prefix.
+	(output_call): New function.
+	(m68k_output_mi_thunk): Use m68k_symbolic_jump.  Always load the
+	target address from the GOT if symbolic jumps are not allowed.
+	* config/m68k/m68k.md (call, general_operand): Do not set
+	SYMBOL_REF_FLAG.  Use m68k_legitimize_call_address instead.
+	Merge separate flag_pic and !flag_pic define_insns into...
+	(*call, *call_value): ...these new patterns.  Match the address
+	rather than the containing MEM and require it to be a call_operand.
+	Use output_call to generate the asm template.
+	* config/m68k/predicates.md (const_call_operand): New predicate.
+	(call_operand): Likewise.
+
 2007-01-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/m68k/m68k.h (REGISTER_MOVE_COST): Simplify definition.
