@@ -1,3 +1,7 @@
+2007-01-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc.dg/m68k-pic-1.c: New.
+
 2007-01-18  Roger Sayle  <roger@eyesopen.com>
 
 	* gfortran.dg/array_memcpy_4.f90: New test case.
