@@ -1,3 +1,9 @@
+2007-01-18  Josh Conner  <jconner@apple.com>
+
+	PR target/30485
+	* config/rs6000/rs6000.c (rs6000_emit_vector_compare): Add
+	support for UNLE, UNLT, UNGE, and UNGT.
+
 2007-01-18  Jan Hubicka  <jh@suse.cz>
 
 	* tree-vrp.c (finalize_jump_threads): Do not call cleanup_cfg by hand.
