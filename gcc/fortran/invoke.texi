@@ -121,7 +121,7 @@ by type.  Explanations are in the following sections.
 -ffixed-line-length-@var{n}  -ffixed-line-length-none @gol
 -ffree-line-length-@var{n}  -ffree-line-length-none @gol
 -fdefault-double-8  -fdefault-integer-8  -fdefault-real-8 @gol
--fcray-pointer  -fopenmp  -frange-check }
+-fcray-pointer  -fopenmp  -frange-check -fno-backslash }
 
 @item Error and Warning Options
 @xref{Error and Warning Options,,Options to Request or Suppress Errors
@@ -134,7 +134,8 @@ and Warnings}.
 
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
-@gccoptlist{-fdump-parse-tree  -ffpe-trap=@var{list}}
+@gccoptlist{-fdump-parse-tree  -ffpe-trap=@var{list}
+-fdump-core}
 
 @item Directory Options
 @xref{Directory Options,,Options for Directory Search}.
@@ -559,6 +560,15 @@ zero), @samp{overflow} (overflow in a floating point operation),
 @samp{underflow} (underflow in a floating point operation),
 @samp{precision} (loss of precision during operation) and @samp{denormal}
 (operation produced a denormal value).
+
+@cindex -fdump-core option
+@cindex options, -fdump-core
+@item -fdump-core
+@cindex core
+Request that a core-dump file is written to disk when a runtime error
+is encountered on systems that support core dumps. This option is
+only effective for the compilation of the Fortran main program.
+
 @end table
 
 @xref{Debugging Options,,Options for Debugging Your Program or GCC,

@@ -537,6 +537,11 @@ static variable variable_table[] = {
   {"GFORTRAN_CONVERT_UNIT", 0, 0, init_unformatted, show_string,
    "Set format for unformatted files", 0},
 
+  /* Behaviour when encoutering a runtime error.  */
+  {"GFORTRAN_ERROR_DUMPCORE", -1, &options.dump_core,
+    init_boolean, show_boolean,
+    "Dump a core file (if possible) on runtime error", -1},
+
   {NULL, 0, NULL, NULL, NULL, NULL, 0}
 };
 

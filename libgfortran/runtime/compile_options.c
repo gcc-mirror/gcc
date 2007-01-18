@@ -37,17 +37,19 @@ compile_options_t compile_options;
 
 
 /* Prototypes */
-extern void set_std (GFC_INTEGER_4, GFC_INTEGER_4, GFC_INTEGER_4);
+extern void set_std (GFC_INTEGER_4, GFC_INTEGER_4, GFC_INTEGER_4,
+		     GFC_INTEGER_4);
 export_proto(set_std);
 
 
 void
 set_std (GFC_INTEGER_4 warn_std, GFC_INTEGER_4 allow_std,
-	 GFC_INTEGER_4 pedantic)
+	 GFC_INTEGER_4 pedantic, GFC_INTEGER_4 dump_core)
 {
   compile_options.pedantic = pedantic;
   compile_options.warn_std = warn_std;
   compile_options.allow_std = allow_std;
+  compile_options.dump_core = dump_core;
 }
 
 
@@ -61,6 +63,7 @@ init_compile_options (void)
   compile_options.allow_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
     | GFC_STD_F2003 | GFC_STD_F95 | GFC_STD_F77 | GFC_STD_GNU | GFC_STD_LEGACY;
   compile_options.pedantic = 0;
+  compile_options.dump_core = 0;
 }
 
 /* Function called by the front-end to tell us the
