@@ -2220,6 +2220,12 @@ cleanup_cfg (int mode)
 {
   bool changed = false;
 
+  /* Set the cfglayout mode flag here.  We could update all the callers
+     but that is just inconvenient, especially given that we eventually
+     want to have cfglayout mode as the default.  */
+  if (current_ir_type () == IR_RTL_CFGLAYOUT)
+    mode |= CLEANUP_CFGLAYOUT;
+
   timevar_push (TV_CLEANUP_CFG);
   if (delete_unreachable_blocks ())
     {

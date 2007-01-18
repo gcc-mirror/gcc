@@ -1,3 +1,17 @@
+18-01-2007  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cfgcleanup.c (cleanup_cfg): Detect cfglayout mode and set
+	the CLEANUP_CFGLAYOUT flag when in cfglayout mode.
+
+	* Makefile.c (GTFILES): Add cfglayout.h.
+	* gengtype.c (open_base_files): Likewise.
+	* cfglayout.c (cfg_layout_function_footer,
+	cfg_layout_function_header) Reindent to make gengtype happy.
+	* cfglayout.h (cfg_layout_function_footer,
+	cfg_layout_function_header): Add GTY(()) marker.
+
+	* ifcvt.c (noce_try_sign_mask): Make sure INSN_B is non-null.
+
 2007-01-18  Ben Elliston  <bje@au.ibm.com>
 
 	* genautomata.c (write_automata): Include xstrerror output in the
