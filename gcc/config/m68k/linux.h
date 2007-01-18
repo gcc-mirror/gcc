@@ -58,34 +58,8 @@ Boston, MA 02110-1301, USA.  */
 
 #define ASM_COMMENT_START "|"
 
-#undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
-
-#undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
-
-#undef WCHAR_TYPE
-#define WCHAR_TYPE "long int"
-
-#undef WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE BITS_PER_WORD
-
 /* Target OS builtins.  */
-#define TARGET_OS_CPP_BUILTINS()		\
-  do						\
-    {						\
-	LINUX_TARGET_OS_CPP_BUILTINS();		\
-	builtin_define_std ("mc68000");		\
-	builtin_define_std ("mc68020");		\
-   }						\
-  while (0)
-
-#define TARGET_OBJFMT_CPP_BUILTINS()		\
-  do						\
-    {						\
-	builtin_define ("__ELF__");		\
-    }						\
-  while (0)
+#define TARGET_OS_CPP_BUILTINS() LINUX_TARGET_OS_CPP_BUILTINS()
 
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
@@ -174,12 +148,6 @@ Boston, MA 02110-1301, USA.  */
   else									\
     fprintf (FILE, "\tjbsr _mcount\n");					\
 }
-
-/* How to renumber registers for dbx and gdb.
-   On the Sun-3, the floating point registers have numbers
-   18 to 25, not 16 to 23 as they do in the compiler.  */
-
-#define DBX_REGISTER_NUMBER(REGNO) ((REGNO) < 16 ? (REGNO) : (REGNO) + 2)
 
 /* Do not break .stabs pseudos into continuations.  */
 

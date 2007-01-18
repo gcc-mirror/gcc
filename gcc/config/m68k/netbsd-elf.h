@@ -134,12 +134,6 @@ while (0)
 #define USER_LABEL_PREFIX ""
 
 
-/* The prefix for immediate operands.  */
-
-#undef IMMEDIATE_PREFIX
-#define IMMEDIATE_PREFIX "#"
-
-
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START "|"
 
@@ -327,12 +321,6 @@ while (0)
 
 #undef BIGGEST_ALIGNMENT
 #define BIGGEST_ALIGNMENT 64
-
-
-/* For m68k SVR4, structures are returned using the reentrant
-   technique.  */
-
-#undef PCC_STATIC_STRUCT_RETURN
 
 
 /* The svr4 ABI for the m68k says that records and unions are returned

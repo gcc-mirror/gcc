@@ -28,7 +28,7 @@ Boston, MA 02110-1301, USA.  */
 #define SWBEG_ASM_OP "\t.swbeg\t"
 #endif
 
-/* Here are four prefixes that are used by asm_fprintf to
+/* Here are three prefixes that are used by asm_fprintf to
    facilitate customization for alternate assembler syntaxes.
    Machines with no likelihood of an alternate syntax need not
    define these and need not use asm_fprintf.  */
@@ -50,17 +50,6 @@ Boston, MA 02110-1301, USA.  */
 
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX ""
-
-/* The prefix for immediate operands.  */
-
-#undef  IMMEDIATE_PREFIX
-#define IMMEDIATE_PREFIX "#"
-
-/* In the machine description we can't use %R, because it will not be seen
-   by ASM_FPRINTF.  (Isn't that a design bug?).  */
-
-#undef REGISTER_PREFIX_MD
-#define REGISTER_PREFIX_MD "%%"
 
 /* config/m68k.md has an explicit reference to the program counter,
    prefix this by the register prefix.  */
@@ -88,39 +77,6 @@ do {								\
     fprintf ((FILE), "%s%u\n", ALIGN_ASM_OP, 1 << (LOG));	\
 } while (0)
 
-/* Use proper assembler syntax for these macros.  */
-#undef ASM_OUTPUT_REG_PUSH
-#define ASM_OUTPUT_REG_PUSH(FILE,REGNO)  \
-  asm_fprintf (FILE, "\t%Omove.l %s,-(%Rsp)\n", reg_names[REGNO])
-
-#undef ASM_OUTPUT_REG_POP
-#define ASM_OUTPUT_REG_POP(FILE,REGNO)  \
-  asm_fprintf (FILE, "\t%Omove.l (%Rsp)+,%s\n", reg_names[REGNO])
-
-/*  Override the definition of NO_DOLLAR_IN_LABEL in svr4.h, for special
-    g++ assembler names.  When this is defined, g++ uses embedded '.'
-    characters and some m68k assemblers have problems with this.  The
-    chances are much greater that any particular assembler will permit
-    embedded '$' characters.  */
-
-#undef NO_DOLLAR_IN_LABEL
-
-/* Define PCC_STATIC_STRUCT_RETURN if the convention on the target machine
-   is to use the nonreentrant technique for returning structure and union
-   values, as commonly implemented by the AT&T Portable C Compiler (PCC).
-   When defined, the gcc option -fpcc-struct-return can be used to cause
-   this form to be generated.  When undefined, the option does nothing.
-   For m68k SVR4, the convention is to use a reentrant technique compatible
-   with the gcc default, so override the definition of this macro in m68k.h */
-
-#undef PCC_STATIC_STRUCT_RETURN
-
-/* Local common symbols are declared to the assembler with ".lcomm" rather
-   than ".bss", so override the definition in svr4.h */
-
-#undef BSS_ASM_OP
-#define BSS_ASM_OP	"\t.lcomm\t"
-
 /* Register in which address to store a structure value is passed to a
    function.  The default in m68k.h is a1.  For m68k/SVR4 it is a0.  */
 
@@ -137,16 +93,6 @@ do {								\
 #undef DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
 
-/* The ASM_OUTPUT_SKIP macro is first defined in m68k.h, using ".skip".
-   It is then overridden by m68k/sgs.h to use ".space", and again by svr4.h
-   to use ".zero".  The m68k/SVR4 assembler uses ".space", so repeat the
-   definition from m68k/sgs.h here.  Note that ASM_NO_SKIP_IN_TEXT is
-   defined in m68k/sgs.h, so we don't have to repeat it here.  */
-
-#undef ASM_OUTPUT_SKIP
-#define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "%s%u\n", SPACE_ASM_OP, (int)(SIZE))
-
 #if 0
 /* SVR4 m68k assembler is bitching on the `comm i,1,1' which askes for 
    1 byte alignment. Don't generate alignment for COMMON seems to be
@@ -155,39 +101,6 @@ do {								\
 /* Same problem with this one.  */
 #undef ASM_OUTPUT_ALIGNED_LOCAL
 #endif
-
-/* The `string' directive on m68k svr4 does not handle string with
-   escape char (i.e., `\') right. Use normal way to output ASCII bytes
-   seems to be safer.  */
-#undef ASM_OUTPUT_ASCII
-#define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
-do {								\
-  register int sp = 0, ch;					\
-  fputs (integer_asm_op (1, TRUE), (FILE));			\
-  do {								\
-    ch = (PTR)[sp];						\
-    if (ch > ' ' && ! (ch & 0x80) && ch != '\\')		\
-      {								\
-	fprintf ((FILE), "'%c", ch);				\
-      }								\
-    else							\
-      {								\
-	fprintf ((FILE), "0x%x", ch);				\
-      }								\
-    if (++sp < (LEN))						\
-      {								\
-	if ((sp % 10) == 0)					\
-	  {							\
-	    fprintf ((FILE), "\n%s", integer_asm_op (1, TRUE));	\
-	  }							\
-	else							\
-	  {							\
-	    putc (',', (FILE));					\
-	  }							\
-      }								\
-  } while (sp < (LEN));						\
-  putc ('\n', (FILE));						\
-} while (0)
 
 #undef ASM_OUTPUT_COMMON
 #undef ASM_OUTPUT_LOCAL
