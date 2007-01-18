@@ -2034,9 +2034,33 @@ compute_overall_iter_number (forall_info *nested_forall_info, tree inner_size,
   tree tmp, number;
   stmtblock_t body;
 
-  /* Optimize the case for an outer-most loop with constant bounds.  */
-  if (INTEGER_CST_P (inner_size) && !nested_forall_info)
-    return inner_size;
+  /* Optimize the case of unconditional FORALL nests with constant bounds.  */
+  if (INTEGER_CST_P (inner_size))
+    {
+      bool all_const_p = true;
+      forall_info *forall_tmp;
+
+      /* First check whether all the bounds are constant.  */
+      for (forall_tmp = nested_forall_info;
+	   forall_tmp;
+	   forall_tmp = forall_tmp->next_nest)
+	if (forall_tmp->mask || !INTEGER_CST_P (forall_tmp->size))
+	  {
+	    all_const_p = false;
+	    break;
+	  }
+
+      if (all_const_p)
+	{
+	  tree tmp = inner_size;
+	  for (forall_tmp = nested_forall_info;
+	       forall_tmp;
+	       forall_tmp = forall_tmp->next_nest)
+	    tmp = fold_build2 (MULT_EXPR, gfc_array_index_type,
+			       tmp, forall->size);
+	  return tmp;
+	}
+    }
   
   /* TODO: optimizing the computing process.  */
   number = gfc_create_var (gfc_array_index_type, "num");
