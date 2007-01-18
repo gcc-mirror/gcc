@@ -21,12 +21,3 @@ Boston, MA 02110-1301, USA.  */
 #undef ASM_SPEC
 #define ASM_SPEC "%(asm_cpu_spec) %{fPIC:--pcrel} %{fpic:--pcrel} \
  %{msep-data:--pcrel} %{mid-shared-library:--pcrel}"
-
-/* cc1/cc1plus always receives all the -m flags. If the specs strings above 
-   are consistent with the flags in m68k.opt, there should be no need for
-   any further cc1/cc1plus specs.  */
-
-#undef CC1_SPEC
-#define CC1_SPEC ""
-
-#define CPP_SUBTARGET_SPEC ""

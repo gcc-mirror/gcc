@@ -73,6 +73,10 @@ Boston, MA 02110-1301, USA.  */
 
 /* Stack & calling: aggregate returns.  */
 
+/* ??? This is traditional, but quite possibly wrong.  It appears to
+   disagree with gdb.  */
+#define PCC_STATIC_STRUCT_RETURN 1
+
 /* Don't default to pcc-struct-return, because gcc is the only compiler, and
    we want to retain compatibility with older gcc versions.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0

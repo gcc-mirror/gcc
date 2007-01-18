@@ -625,8 +625,6 @@ extern enum reg_class regno_reg_class[];
    XXX This macro is m68k specific and used only for m68kemb.h.  */
 #define NEEDS_UNTYPED_CALL 0
 
-#define PCC_STATIC_STRUCT_RETURN
-
 /* On the m68k, all arguments are usually pushed on the stack.  */
 #define FUNCTION_ARG_REGNO_P(N) 0
 
@@ -1127,10 +1125,17 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, "*%s%s%ld", LOCAL_LABEL_PREFIX, PREFIX, (long)(NUM))
 
-#define ASM_OUTPUT_REG_PUSH(FILE,REGNO)  \
-  asm_fprintf (FILE, "\tmovel %s,%Rsp@-\n", reg_names[REGNO])
-#define ASM_OUTPUT_REG_POP(FILE,REGNO)  \
-  asm_fprintf (FILE, "\tmovel %Rsp@+,%s\n", reg_names[REGNO])
+#define ASM_OUTPUT_REG_PUSH(FILE,REGNO)			\
+  asm_fprintf (FILE, (MOTOROLA				\
+		      ? "\tmove.l %s,-(%Rsp)\n"		\
+		      : "\tmovel %s,%Rsp@-\n"),		\
+	       reg_names[REGNO])
+
+#define ASM_OUTPUT_REG_POP(FILE,REGNO)			\
+  asm_fprintf (FILE, (MOTOROLA				\
+		      ? "\tmove.l (%Rsp)+,%s\n"		\
+		      : "\tmovel %Rsp@+,%s\n"),		\
+	       reg_names[REGNO])
 
 /* The m68k does not use absolute case-vectors, but we must define this macro
    anyway.  */

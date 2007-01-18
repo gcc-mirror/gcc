@@ -1,4 +1,25 @@
 2007-01-18  Richard Sandiford  <richard@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/m68k/m68k.h (PCC_STATIC_STRUCT_RETURN): Delete.
+	(ASM_OUTPUT_REG_PUSH, ASM_OUTPUT_REG_POP): Add MOTOROLA cases.
+	* config/m68k/coff.h (REGISTER_PREFIX_MD): Delete.
+	* config/m68k/m68020-elf.h (LIB_SPEC): Delete.
+	* config/m68k/m68k-none.h (CC1_SPEC, CPP_SUBTARGET_SPEC): Delete.
+	* config/m68k/m68kelf.h (IMMEDIATE_PREFIX, REGISTER_PREFIX_MD)
+	(ASM_OUTPUT_REG_PUSH, ASM_OUTPUT_REG_POP): Delete.
+	(NO_DOLLAR_IN_LABEL, PCC_STATIC_STRUCT_RETURN): Don't undefine.
+	(BSS_ASM_OP, ASM_OUTPUT_SKIP, ASM_OUTPUT_ASCII): Delete.
+	* config/m68k/m68kemb.h (PCC_STATIC_STRUCT_RETURN): Don't undefine.
+	* config/m68k/linux.h (SIZE_TYPE, PTRDIFF_TYPE, WCHAR_TYPE)
+	(WCHAR_TYPE_SIZE, TARGET_OBJFMT_CPP_BUILTINS): Delete.
+	(TARGET_OS_CPP_BUILTINS): Don't define mc68000 and mc68020 here.
+	(DBX_REGISTER_NUMBER): Delete.
+	* config/m68k/netbsd-elf.h (IMMEDIATE_PREFIX): Delete.
+	(PCC_STATIC_STRUCT_RETURN): Don't undefine.
+	* config/m68k/openbsd.h (PCC_STATIC_STRUCT_RETURN): Define.
+
+2007-01-18  Richard Sandiford  <richard@codesourcery.com>
 
 	* config.gcc (m68k-*-uclinux*): Add flat.h to $tm_file.
 	* config/flat.h: New file.
