@@ -1,3 +1,8 @@
+2007-01-18  Ben Elliston  <bje@au.ibm.com>
+
+	* genautomata.c (write_automata): Include xstrerror output in the
+	error message if writing the DFA description file fails.
+
 2007-01-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/mips/mips-protos.h (mips_output_external): Make it

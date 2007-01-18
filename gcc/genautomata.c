@@ -9234,8 +9234,8 @@ write_automata (void)
     {
       fflush (output_description_file);
       if (ferror (stdout) != 0)
-	fatal ("Error in writing DFA description file %s",
-               output_description_file_name);
+	fatal ("Error in writing DFA description file %s: %s",
+               output_description_file_name, xstrerror (errno));
       fclose (output_description_file);
     }
   finish_automaton_decl_table ();
