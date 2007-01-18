@@ -1,0 +1,13 @@
+LIB1ASMSRC = m68k/lb1sf68.asm
+LIB1ASMFUNCS = _mulsi3 _udivsi3 _divsi3 _umodsi3 _modsi3 \
+   _double _float _floatex \
+   _eqdf2 _nedf2 _gtdf2 _gedf2 _ltdf2 _ledf2 \
+   _eqsf2 _nesf2 _gtsf2 _gesf2 _ltsf2 _lesf2
+
+LIB2FUNCS_EXTRA = fpgnulib.c xfgnulib.c
+
+fpgnulib.c: $(srcdir)/config/m68k/fpgnulib.c
+	cp $(srcdir)/config/m68k/fpgnulib.c fpgnulib.c
+xfgnulib.c: $(srcdir)/config/m68k/fpgnulib.c
+	echo '#define EXTFLOAT' > xfgnulib.c
+	cat $(srcdir)/config/m68k/fpgnulib.c >> xfgnulib.c
