@@ -5399,18 +5399,22 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   frame->to_allocate -= frame->red_zone_size;
   frame->stack_pointer_offset -= frame->red_zone_size;
 #if 0
-  fprintf (stderr, "nregs: %i\n", frame->nregs);
-  fprintf (stderr, "size: %i\n", size);
-  fprintf (stderr, "alignment1: %i\n", stack_alignment_needed);
-  fprintf (stderr, "padding1: %i\n", frame->padding1);
-  fprintf (stderr, "va_arg: %i\n", frame->va_arg_size);
-  fprintf (stderr, "padding2: %i\n", frame->padding2);
-  fprintf (stderr, "to_allocate: %i\n", frame->to_allocate);
-  fprintf (stderr, "red_zone_size: %i\n", frame->red_zone_size);
-  fprintf (stderr, "frame_pointer_offset: %i\n", frame->frame_pointer_offset);
-  fprintf (stderr, "hard_frame_pointer_offset: %i\n",
-	   frame->hard_frame_pointer_offset);
-  fprintf (stderr, "stack_pointer_offset: %i\n", frame->stack_pointer_offset);
+  fprintf (stderr, "\n");
+  fprintf (stderr, "nregs: %ld\n", (long)frame->nregs);
+  fprintf (stderr, "size: %ld\n", (long)size);
+  fprintf (stderr, "alignment1: %ld\n", (long)stack_alignment_needed);
+  fprintf (stderr, "padding1: %ld\n", (long)frame->padding1);
+  fprintf (stderr, "va_arg: %ld\n", (long)frame->va_arg_size);
+  fprintf (stderr, "padding2: %ld\n", (long)frame->padding2);
+  fprintf (stderr, "to_allocate: %ld\n", (long)frame->to_allocate);
+  fprintf (stderr, "red_zone_size: %ld\n", (long)frame->red_zone_size);
+  fprintf (stderr, "frame_pointer_offset: %ld\n", (long)frame->frame_pointer_offset);
+  fprintf (stderr, "hard_frame_pointer_offset: %ld\n",
+	   (long)frame->hard_frame_pointer_offset);
+  fprintf (stderr, "stack_pointer_offset: %ld\n", (long)frame->stack_pointer_offset);
+  fprintf (stderr, "current_function_is_leaf: %ld\n", (long)current_function_is_leaf);
+  fprintf (stderr, "current_function_calls_alloca: %ld\n", (long)current_function_calls_alloca);
+  fprintf (stderr, "x86_current_function_calls_tls_descriptor: %ld\n", (long)ix86_current_function_calls_tls_descriptor);
 #endif
 }
 
