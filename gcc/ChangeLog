@@ -1,3 +1,8 @@
+2007-01-18  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/m68k/m68k.c (m68k_output_function_epilogue): Don't
+	output a NOP for empty epilogues.
+
 2007-01-18  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/m68k/m68k.c (m68k_use_return_insn): Update comments
