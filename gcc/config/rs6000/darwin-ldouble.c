@@ -219,7 +219,7 @@ __gcc_qdiv (double a, double b, double c, double d)
   return z.ldval;
 }
 
-#ifdef _SOFT_FLOAT
+#if defined (_SOFT_FLOAT) && defined (__LONG_DOUBLE_128__)
 
 long double __gcc_qneg (double, double);
 int __gcc_qeq (double, double, double, double);
