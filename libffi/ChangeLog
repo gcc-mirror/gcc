@@ -1,3 +1,10 @@
+2007-01-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.am (all-recursive, install-recursive,
+	mostlyclean-recursive, clean-recursive, distclean-recursive,
+	maintainer-clean-recursive): Add missing targets.
+	* Makefile.in: Rebuilt.
+
 2006-12-14  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* configure.ac: Add TARGET for x86_64-*-darwin*.

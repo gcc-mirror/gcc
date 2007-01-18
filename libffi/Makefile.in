@@ -1344,6 +1344,14 @@ uninstall-info: uninstall-info-recursive
 # No install-html support
 .PHONY: install-html
 install-html:
+
+# Multilib support.  Automake should provide these on its own.
+all-recursive: all-multi
+install-recursive: install-multi
+mostlyclean-recursive: mostlyclean-multi
+clean-recursive: clean-multi
+distclean-recursive: distclean-multi
+maintainer-clean-recursive: maintainer-clean-multi
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
