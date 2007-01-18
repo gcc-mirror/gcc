@@ -665,15 +665,18 @@ ccp_initialize (void)
 
 
 /* Do final substitution of propagated values, cleanup the flowgraph and
-   free allocated storage.  */
+   free allocated storage.  
 
-static void
+   Return TRUE when something was optimized.  */
+
+static bool
 ccp_finalize (void)
 {
   /* Perform substitutions based on the known constant values.  */
-  substitute_and_fold (const_val, false);
+  bool something_changed = substitute_and_fold (const_val, false);
 
   free (const_val);
+  return something_changed;;
 }
 
 
@@ -1397,21 +1400,24 @@ ccp_visit_stmt (tree stmt, edge *taken_edge_p, tree *output_p)
 
 /* Main entry point for SSA Conditional Constant Propagation.  */
 
-static void
+static unsigned int
 execute_ssa_ccp (bool store_ccp)
 {
   do_store_ccp = store_ccp;
   ccp_initialize ();
   ssa_propagate (ccp_visit_stmt, ccp_visit_phi_node);
-  ccp_finalize ();
+  if (ccp_finalize ())
+    return (TODO_cleanup_cfg | TODO_update_ssa | TODO_update_smt_usage
+	    | TODO_remove_unused_locals);
+  else
+    return 0;
 }
 
 
 static unsigned int
 do_ssa_ccp (void)
 {
-  execute_ssa_ccp (false);
-  return 0;
+  return execute_ssa_ccp (false);
 }
 
 
@@ -1435,13 +1441,8 @@ struct tree_opt_pass pass_ccp =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_cleanup_cfg
-    | TODO_dump_func
-    | TODO_update_ssa
-    | TODO_ggc_collect
-    | TODO_verify_ssa
-    | TODO_verify_stmts
-    | TODO_update_smt_usage,		/* todo_flags_finish */
+  TODO_dump_func | TODO_verify_ssa
+  | TODO_verify_stmts | TODO_ggc_collect,/* todo_flags_finish */
   0					/* letter */
 };
 
@@ -1450,8 +1451,7 @@ static unsigned int
 do_ssa_store_ccp (void)
 {
   /* If STORE-CCP is not enabled, we just run regular CCP.  */
-  execute_ssa_ccp (flag_tree_store_ccp != 0);
-  return 0;
+  return execute_ssa_ccp (flag_tree_store_ccp != 0);
 }
 
 static bool
@@ -1477,13 +1477,8 @@ struct tree_opt_pass pass_store_ccp =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func
-    | TODO_update_ssa
-    | TODO_ggc_collect
-    | TODO_verify_ssa
-    | TODO_cleanup_cfg
-    | TODO_verify_stmts
-    | TODO_update_smt_usage,		/* todo_flags_finish */
+  TODO_dump_func | TODO_verify_ssa
+  | TODO_verify_stmts | TODO_ggc_collect,/* todo_flags_finish */
   0					/* letter */
 };
 

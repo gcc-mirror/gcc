@@ -120,6 +120,6 @@ bool stmt_makes_single_load (tree);
 bool stmt_makes_single_store (tree);
 prop_value_t *get_value_loaded_by (tree, prop_value_t *);
 bool replace_uses_in (tree, bool *, prop_value_t *);
-void substitute_and_fold (prop_value_t *, bool);
+bool substitute_and_fold (prop_value_t *, bool);
 
 #endif /* _TREE_SSA_PROPAGATE_H  */

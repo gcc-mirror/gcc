@@ -1,3 +1,11 @@
+18-01-2007  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-ccp.c (ccp_finalize): Return if something changed.
+	(execute_ssa_ccp): Return flags conditionally.
+	* tree-ssa-propagate.c (substitue_and_fold): Return if something was
+	changed.
+	* tree-ssa-propagate.h (substitute_and_fold): Update prototype.
+
 18-01-2007  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cfgcleanup.c (cleanup_cfg): Detect cfglayout mode and set
