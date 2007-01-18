@@ -577,13 +577,11 @@ extern enum reg_class regno_reg_class[];
 
 /* Moves between fp regs and other regs are two insns.  */
 #define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)	\
-  (((CLASS1) == FP_REGS && (CLASS2) != FP_REGS)	        \
-    || ((CLASS2) == FP_REGS && (CLASS1) != FP_REGS)	\
-    ? 4 : 2)
+  ((((CLASS1) == FP_REGS) != ((CLASS2) == FP_REGS)) ? 4 : 2)
 
 /* Stack layout; function entry, exit and calling.  */
 
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 #define FRAME_GROWS_DOWNWARD 1
 #define STARTING_FRAME_OFFSET 0
 
@@ -608,14 +606,14 @@ extern enum reg_class regno_reg_class[];
 	    == void_type_node)))				\
    ? (SIZE) : 0)
 
-/* On the m68k the return value is always in D0.  */
+/* On the m68k the return value defaults to D0.  */
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
   gen_rtx_REG (TYPE_MODE (VALTYPE), 0)
 
-/* On the m68k the return value is always in D0.  */
+/* On the m68k the return value defaults to D0.  */
 #define LIBCALL_VALUE(MODE)  gen_rtx_REG (MODE, 0)
 
-/* On the m68k, D0 is the only register used.  */
+/* On the m68k, D0 is usually the only register used.  */
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == 0)
 
 /* Define this to be true when FUNCTION_VALUE_REGNO_P is true for

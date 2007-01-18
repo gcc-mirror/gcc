@@ -82,7 +82,7 @@ Boston, MA 02110-1301, USA.  */
 
 #define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
 
-#undef	LINK_SPEC
+#undef LINK_SPEC
 #define LINK_SPEC "-m m68kelf %{shared} \
   %{!shared: \
     %{!static: \
