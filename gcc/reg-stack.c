@@ -1059,6 +1059,8 @@ move_for_stack_reg (rtx insn, stack regstack, rtx pat)
     }
   else
     {
+      rtx pat = PATTERN (insn);
+
       gcc_assert (STACK_REG_P (dest));
 
       /* Load from MEM, or possibly integer REG or constant, into the
@@ -1066,8 +1068,16 @@ move_for_stack_reg (rtx insn, stack regstack, rtx pat)
 	 stack. The stack mapping is changed to reflect that DEST is
 	 now at top of stack.  */
 
-      /* The destination ought to be dead.  */
-      gcc_assert (get_hard_regnum (regstack, dest) < FIRST_STACK_REG);
+      /* The destination ought to be dead.  However, there is a
+	 special case with i387 UNSPEC_TAN, where destination is live
+	 (an argument to fptan) but inherent load of 1.0 is modelled
+	 as a load from a constant.  */
+      if (! (GET_CODE (pat) == PARALLEL
+	     && XVECLEN (pat, 0) == 2
+	     && GET_CODE (XVECEXP (pat, 0, 1)) == SET
+	     && GET_CODE (SET_SRC (XVECEXP (pat, 0, 1))) == UNSPEC
+	     && XINT (SET_SRC (XVECEXP (pat, 0, 1)), 1) == UNSPEC_TAN))
+	gcc_assert (get_hard_regnum (regstack, dest) < FIRST_STACK_REG);
 
       gcc_assert (regstack->top < REG_STACK_SIZE);
 
@@ -1629,19 +1639,54 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 	      case UNSPEC_FRNDINT_TRUNC:
 	      case UNSPEC_FRNDINT_MASK_PM:
 
-		/* These insns only operate on the top of the stack.  */
+		/* Above insns operate on the top of the stack.  */
+
+	      case UNSPEC_SINCOS_COS:
+	      case UNSPEC_XTRACT_FRACT:
+
+		/* Above insns operate on the top two stack slots,
+		   first part of one input, double output insn.  */
 
 		src1 = get_true_reg (&XVECEXP (pat_src, 0, 0));
 
 		emit_swap_insn (insn, regstack, *src1);
 
-		/* Input should never die, it is
-		   replaced with output.  */
+		/* Input should never die, it is replaced with output.  */
 		src1_note = find_regno_note (insn, REG_DEAD, REGNO (*src1));
 		gcc_assert (!src1_note);
 
 		if (STACK_REG_P (*dest))
 		  replace_reg (dest, FIRST_STACK_REG);
+
+		replace_reg (src1, FIRST_STACK_REG);
+		break;
+
+	      case UNSPEC_SINCOS_SIN:
+	      case UNSPEC_XTRACT_EXP:
+
+		/* These insns operate on the top two stack slots,
+		   second part of one input, double output insn.  */
+
+		regstack->top++;
+		/* FALLTHRU */
+
+	      case UNSPEC_TAN:
+
+		/* For UNSPEC_TAN, regstack->top is already increased
+		   by inherent load of constant 1.0.  */
+
+		/* Output value is generated in the second stack slot.
+		   Move current value from second slot to the top.  */
+		regstack->reg[regstack->top]
+		  = regstack->reg[regstack->top - 1];
+
+		gcc_assert (STACK_REG_P (*dest));
+
+		regstack->reg[regstack->top - 1] = REGNO (*dest);
+		SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
+		replace_reg (dest, FIRST_STACK_REG + 1);
+
+		src1 = get_true_reg (&XVECEXP (pat_src, 0, 0));
 
 		replace_reg (src1, FIRST_STACK_REG);
 		break;
@@ -1742,62 +1787,6 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 
 		replace_reg (src1, FIRST_STACK_REG);
 		replace_reg (src2, FIRST_STACK_REG + 1);
-		break;
-
-	      case UNSPEC_SINCOS_COS:
-	      case UNSPEC_TAN_ONE:
-	      case UNSPEC_XTRACT_FRACT:
-		/* These insns operate on the top two stack slots,
-		   first part of one input, double output insn.  */
-
-		src1 = get_true_reg (&XVECEXP (pat_src, 0, 0));
-
-		emit_swap_insn (insn, regstack, *src1);
-
-		/* Input should never die, it is
-		   replaced with output.  */
-		src1_note = find_regno_note (insn, REG_DEAD, REGNO (*src1));
-		gcc_assert (!src1_note);
-
-		/* Push the result back onto stack. Empty stack slot
-		   will be filled in second part of insn.  */
-		if (STACK_REG_P (*dest))
-		  {
-		    regstack->reg[regstack->top + 1] = REGNO (*dest);
-		    SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
-		    replace_reg (dest, FIRST_STACK_REG);
-		  }
-
-		replace_reg (src1, FIRST_STACK_REG);
-		break;
-
-	      case UNSPEC_SINCOS_SIN:
-	      case UNSPEC_TAN_TAN:
-	      case UNSPEC_XTRACT_EXP:
-		/* These insns operate on the top two stack slots,
-		   second part of one input, double output insn.  */
-
-		src1 = get_true_reg (&XVECEXP (pat_src, 0, 0));
-
-		emit_swap_insn (insn, regstack, *src1);
-
-		/* Input should never die, it is
-		   replaced with output.  */
-		src1_note = find_regno_note (insn, REG_DEAD, REGNO (*src1));
-		gcc_assert (!src1_note);
-
-		/* Push the result back onto stack. Fill empty slot from
-		   first part of insn and fix top of stack pointer.  */
-		if (STACK_REG_P (*dest))
-		  {
-		    regstack->reg[regstack->top] = REGNO (*dest);
-		    SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
-		    replace_reg (dest, FIRST_STACK_REG + 1);
-
-		    regstack->top++;
-		  }
-
-		replace_reg (src1, FIRST_STACK_REG);
 		break;
 
 	      case UNSPEC_SAHF:
