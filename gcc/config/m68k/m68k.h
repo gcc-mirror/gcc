@@ -513,32 +513,35 @@ extern enum reg_class regno_reg_class[];
 /* `Q' means address register indirect addressing mode.
    `S' is for operands that satisfy 'm' when -mpcrel is in effect.
    `T' is for operands that satisfy 's' when -mpcrel is not in effect.
-   `U' is for register offset addressing.  */
+   `U' is for register offset addressing.
+   `W' is for const_call_operands.  */
 #define EXTRA_CONSTRAINT(OP,CODE)			\
-  (((CODE) == 'S')					\
+  ((CODE) == 'S'					\
    ? (TARGET_PCREL					\
       && GET_CODE (OP) == MEM				\
       && (GET_CODE (XEXP (OP, 0)) == SYMBOL_REF		\
 	  || GET_CODE (XEXP (OP, 0)) == LABEL_REF	\
 	  || GET_CODE (XEXP (OP, 0)) == CONST))		\
    : 							\
-  (((CODE) == 'T')					\
+   (CODE) == 'T'					\
    ? ( !TARGET_PCREL 					\
       && (GET_CODE (OP) == SYMBOL_REF			\
 	  || GET_CODE (OP) == LABEL_REF			\
 	  || GET_CODE (OP) == CONST))			\
    :							\
-  (((CODE) == 'Q')					\
+   (CODE) == 'Q'					\
    ? (GET_CODE (OP) == MEM 				\
       && GET_CODE (XEXP (OP, 0)) == REG)		\
    :							\
-  (((CODE) == 'U')					\
+   (CODE) == 'U'					\
    ? (GET_CODE (OP) == MEM 				\
       && GET_CODE (XEXP (OP, 0)) == PLUS		\
       && GET_CODE (XEXP (XEXP (OP, 0), 0)) == REG	\
       && GET_CODE (XEXP (XEXP (OP, 0), 1)) == CONST_INT) \
    :							\
-   0))))
+   (CODE) == 'W'					\
+   ? const_call_operand (OP, VOIDmode)			\
+   : 0)
 
 /* On the m68k, use a data reg if possible when the
    value is a constant in the range where moveq could be used
@@ -803,7 +806,6 @@ __transfer_from_trampoline ()					\
 
 #define LEGITIMATE_PIC_OPERAND_P(X)	\
   (! symbolic_operand (X, VOIDmode)				\
-   || (GET_CODE (X) == SYMBOL_REF && SYMBOL_REF_FLAG (X))	\
    || PCREL_GENERAL_OPERAND_OK)
 
 #ifndef REG_OK_STRICT
@@ -1232,8 +1234,6 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
    'b' for byte insn (no effect, on the Sun; this is for the ISI).
    'd' to force memory addressing to be absolute, not relative.
    'f' for float insn (print a CONST_DOUBLE as a float rather than in hex)
-   'o' for operands to go directly to output_operand_address (bypassing
-       print_operand_address--used only for SYMBOL_REFs under TARGET_PCREL)
    'x' for float insn (print a CONST_DOUBLE as a float rather than in hex),
        or print pair of registers as rx:ry.  */
 
@@ -1292,3 +1292,5 @@ extern enum target_device m68k_cpu;
 extern enum uarch_type m68k_tune;
 extern enum fpu_type m68k_fpu;
 extern unsigned int m68k_cpu_flags;
+extern const char *m68k_symbolic_call;
+extern const char *m68k_symbolic_jump;

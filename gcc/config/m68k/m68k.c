@@ -327,6 +327,12 @@ enum fpu_type m68k_fpu;
 
 /* The set of FL_* flags that apply to the target processor.  */
 unsigned int m68k_cpu_flags;
+
+/* Asm templates for calling or jumping to an arbitrary symbolic address,
+   or NULL if such calls or jumps are not supported.  The address is held
+   in operand 0.  */
+const char *m68k_symbolic_call;
+const char *m68k_symbolic_jump;
 
 /* See whether TABLE has an entry with name NAME.  Return true and
    store the entry in *ENTRY if so, otherwise return false and
@@ -530,13 +536,42 @@ override_options (void)
   if (TARGET_PCREL && flag_pic == 0)
     flag_pic = 1;
 
-  /* Turn off function cse if we are doing PIC.  We always want function call
-     to be done as `bsr foo@PLTPC', so it will force the assembler to create
-     the PLT entry for `foo'. Doing function cse will cause the address of
-     `foo' to be loaded into a register, which is exactly what we want to
-     avoid when we are doing PIC on svr4 m68k.  */
-  if (flag_pic)
-    flag_no_function_cse = 1;
+  if (!flag_pic)
+    {
+#if MOTOROLA && !defined (USE_GAS)
+      m68k_symbolic_call = "jsr %a0";
+      m68k_symbolic_jump = "jmp %a0";
+#else
+      m68k_symbolic_call = "jbsr %a0";
+      m68k_symbolic_jump = "jra %a0";
+#endif
+    }
+  else if (TARGET_ID_SHARED_LIBRARY)
+    /* All addresses must be loaded from the GOT.  */
+    ;
+  else if (TARGET_68020 || TARGET_ISAB)
+    {
+      if (TARGET_PCREL)
+	{
+	  m68k_symbolic_call = "bsr.l %c0";
+	  m68k_symbolic_jump = "bra.l %c0";
+	}
+      else
+	{
+#if defined(USE_GAS)
+	  m68k_symbolic_call = "bsr.l %p0";
+	  m68k_symbolic_jump = "bra.l %p0";
+#else
+	  m68k_symbolic_call = "bsr %p0";
+	  m68k_symbolic_jump = "bra %p0";
+#endif
+	}
+      /* Turn off function cse if we are doing PIC.  We always want
+	 function call to be done as `bsr foo@PLTPC'.  */
+      /* ??? It's traditional to do this for -mpcrel too, but it isn't
+	 clear how intentional that is.  */
+      flag_no_function_cse = 1;
+    }
 
   SUBTARGET_OVERRIDE_OPTIONS;
 }
@@ -1332,33 +1367,16 @@ flags_in_68881 (void)
   return cc_status.flags & CC_IN_68881;
 }
 
-/* Output a BSR instruction suitable for PIC code.  */
-void
-m68k_output_pic_call (rtx dest)
+/* Convert X to a legitimate function call memory reference and return the
+   result.  */
+
+rtx
+m68k_legitimize_call_address (rtx x)
 {
-  const char *out;
-
-  if (!(GET_CODE (dest) == MEM && GET_CODE (XEXP (dest, 0)) == SYMBOL_REF))
-    out = "jsr %0";
-      /* We output a BSR instruction if we're building for a target that
-	 supports long branches.  Otherwise we generate one of two sequences:
-	 a shorter one that uses a GOT entry or a longer one that doesn't.
-	 We'll use the -Os command-line flag to decide which to generate.
-	 Both sequences take the same time to execute on the ColdFire.  */
-  else if (TARGET_PCREL)
-    out = "bsr.l %o0";
-  else if (TARGET_68020)
-#if defined(USE_GAS)
-    out = "bsr.l %0@PLTPC";
-#else
-    out = "bsr %0@PLTPC";
-#endif
-  else if (optimize_size || TARGET_ID_SHARED_LIBRARY)
-    out = "move.l %0@GOT(%%a5), %%a1\n\tjsr (%%a1)";
-  else
-    out = "lea %0-.-8,%%a1\n\tjsr 0(%%pc,%%a1)";
-
-  output_asm_insn (out, &dest);
+  gcc_assert (MEM_P (x));
+  if (call_operand (XEXP (x, 0), VOIDmode))
+    return x;
+  return replace_equiv_address (x, force_reg (Pmode, XEXP (x, 0)));
 }
 
 /* Output a dbCC; jCC sequence.  Note we do not handle the 
@@ -3083,12 +3101,10 @@ floating_exact_log2 (rtx x)
    'b' for byte insn (no effect, on the Sun; this is for the ISI).
    'd' to force memory addressing to be absolute, not relative.
    'f' for float insn (print a CONST_DOUBLE as a float rather than in hex)
-   'o' for operands to go directly to output_operand_address (bypassing
-       print_operand_address--used only for SYMBOL_REFs under TARGET_PCREL)
    'x' for float insn (print a CONST_DOUBLE as a float rather than in hex),
        or print pair of registers as rx:ry.
-
-   */
+   'p' print an address with @PLTPC attached, but only if the operand
+       is not locally-bound.  */
 
 void
 print_operand (FILE *file, rtx op, int letter)
@@ -3120,13 +3136,11 @@ print_operand (FILE *file, rtx op, int letter)
     }
   else if (letter == '/')
     asm_fprintf (file, "%R");
-  else if (letter == 'o')
+  else if (letter == 'p')
     {
-      /* This is only for direct addresses with TARGET_PCREL */
-      gcc_assert (GET_CODE (op) == MEM
-		  && GET_CODE (XEXP (op, 0)) == SYMBOL_REF
-		  && TARGET_PCREL);
-      output_addr_const (file, XEXP (op, 0));
+      output_addr_const (file, op);
+      if (!(GET_CODE (op) == SYMBOL_REF && SYMBOL_REF_LOCAL_P (op)))
+	fprintf (file, "@PLTPC");
     }
   else if (GET_CODE (op) == REG)
     {
@@ -3693,6 +3707,18 @@ output_xorsi3 (rtx *operands)
   return "eor%.l %2,%0";
 }
 
+/* Return the instruction that should be used for a call to address X,
+   which is known to be in operand 0.  */
+
+const char *
+output_call (rtx x)
+{
+  if (symbolic_operand (x, VOIDmode))
+    return m68k_symbolic_call;
+  else
+    return "jsr %a0";
+}
+
 #ifdef M68K_TARGET_COFF
 
 /* Output assembly to switch to section NAME with attribute FLAGS.  */
@@ -3759,43 +3785,13 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 
   xops[0] = DECL_RTL (function);
 
-  /* Logic taken from call patterns in m68k.md.  */
-  if (flag_pic)
-    {
-      if (TARGET_PCREL)
-	fmt = "bra.l %o0";
-      else if (flag_pic == 1 || TARGET_68020)
-	{
-	  if (MOTOROLA)
-	    {
-#if defined (USE_GAS)
-	      fmt = "bra.l %0@PLTPC";
-#else
-	      fmt = "bra %0@PLTPC";
-#endif
-	    }
-	  else /* !MOTOROLA */
-	    {
-#ifdef USE_GAS
-	      fmt = "bra.l %0";
-#else
-	      fmt = "jra %0,a1";
-#endif
-	    }
-	}
-      else if (optimize_size || TARGET_ID_SHARED_LIBRARY)
-        fmt = "move.l %0@GOT(%%a5), %%a1\n\tjmp (%%a1)";
-      else
-        fmt = "lea %0-.-8,%%a1\n\tjmp 0(%%pc,%%a1)";
-    }
-  else
-    {
-#if MOTOROLA && !defined (USE_GAS)
-      fmt = "jmp %0";
-#else
-      fmt = "jra %0";
-#endif
-    }
+  gcc_assert (MEM_P (xops[0])
+	      && symbolic_operand (XEXP (xops[0], 0), VOIDmode));
+  xops[0] = XEXP (xops[0], 0);
+
+  fmt = m68k_symbolic_jump;
+  if (m68k_symbolic_jump == NULL)
+    fmt = "move.l %%a1@GOT(%%a5), %%a1\n\tjmp (%%a1)";
 
   output_asm_insn (fmt, xops);
 }
