@@ -1,5 +1,7 @@
 /* Check that constant constraints like "i", "n" and "s" can be used in
    cases where the operand is an initializer constant.  */
+/* { dg-options "-fno-pic" } */
+
 int x[2] = { 1, 2 };
 
 #ifdef __OPTIMIZE__
