@@ -1,3 +1,12 @@
+2007-01-18  Marco Trudel  <mtrudel@gmx.ch>
+
+	* jni.cc (_Jv_JNI_FindClass): Initialize class.
+	* testsuite/libjava.jni/findclass2.jar: New file.
+	* testsuite/libjava.jni/findclass2.h: New file.
+	* testsuite/libjava.jni/findclass2.java: New file
+	* testsuite/libjava.jni/findclass2.c: New file.
+	* testsuite/libjava.jni/findclass2.out: New file.
+
 2007-01-18  Tom Tromey  <tromey@redhat.com>
 
 	* configure: Rebuilt.
