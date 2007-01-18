@@ -1,5 +1,37 @@
 2007-01-18  Richard Sandiford  <richard@codesourcery.com>
 
+	* config.gcc (m68k-*-uclinux*): Add flat.h to $tm_file.
+	* config/flat.h: New file.
+	* crtstuff.c (USE_PT_GNU_EH_FRAME): Don't define if
+	OBJECT_FORMAT_FLAT.
+	* config/m68k/m68k.h (ASM_PREFERRED_EH_DATA_FORMAT): Do not use
+	indirect references for -msep-data or -mid-shared-library.
+	Do not use PC-relative code addresses either.
+	* config/m68k/m68k.c (override_options): Restrict -fPIC error
+	to -mpcrel.
+	* config/m68k/uclinux.h (STARTFILE_SPEC): Define.  Use Scrt1.o
+	for shared libraries and crt1.o for executables.  Use crti.o and
+	crtbegin.o.
+	(ENDFILE_SPEC): Use crtend.o and crtn.o.
+	(LIB_SPEC): Suppress -Rlibc.gdb if -static-libc is given.
+	Do not add -elf2flt or -shared-lib-id options here.
+	(LINK_SPEC): Define.  Pass -elf2flt if no -elf2flt option is given.
+	Pass -shared-lib-id if -mid-shared-library, taking the library
+	identifier from -mshared-library-id if given, otherwise
+	defaulting to 0.
+	(EH_FRAME_IN_DATA_SECTION): Do not undefine.
+	(INIT_SECTION_ASM_OP, FINI_SECTION_ASM_OP): Likewise.
+	(TARGET_OS_CPP_BUILTINS): Define __GXX_MERGED_TYPEINFO_NAMES=0
+	and __GXX_TYPEINFO_EQUALITY_INLINE=0 if -mid-shared-library.
+	(DRIVER_SELF_SPECS): Map unadorned PIC options to -msep-data.
+	* config/m68k/t-uclinux (EXTRA_MULTILIB_PARTS): Add crtbegin.o
+	and crtend.o.
+	* config/m68k/lb1sf68.asm (PICCALL): Use an lea and pc-relative
+	jump sequence for ISA A and ISA A+.
+	(PICJUMP): Likewise.
+
+2007-01-18  Richard Sandiford  <richard@codesourcery.com>
+
 	* config.gcc (m68k-*-uclinux*): Base the port on the common
 	and m68k GNU/Linux files rather than on the generic ELF ones.
 	* config/m68k/uclinux.h (TARGET_VERSION): Override.

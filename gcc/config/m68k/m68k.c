@@ -519,10 +519,10 @@ override_options (void)
   if (TARGET_SEP_DATA || TARGET_ID_SHARED_LIBRARY)
     flag_pic = 2;
 
-  /* -fPIC uses 32-bit pc-relative displacements, which don't exist
-     until the 68020.  */
-  if (!TARGET_68020 && !TARGET_COLDFIRE && (flag_pic == 2))
-    error ("-fPIC is not currently supported on the 68000 or 68010");
+  /* -mpcrel -fPIC uses 32-bit pc-relative displacements.  Raise an
+     error if the target does not support them.  */
+  if (TARGET_PCREL && !TARGET_68020 && flag_pic == 2)
+    error ("-mpcrel -fPIC is not currently supported on selected cpu");
 
   /* ??? A historic way of turning on pic, or is this intended to
      be an embedded thing that doesn't have the same name binding
