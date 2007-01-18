@@ -61,6 +61,10 @@ Walways-true
 Common Var(warn_always_true)
 Warn about comparisons that always evaluate to true
 
+Warray-bounds
+Common Var(warn_array_bounds)
+Warn if an array is accessed out of bounds
+
 Wattributes
 Common Var(warn_attributes) Init(1)
 Warn about inappropriate attribute usage

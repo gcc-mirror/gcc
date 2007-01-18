@@ -1,3 +1,12 @@
+2007-01-18  Dirk Mueller  <dmueller@suse.de>
+·           Richard Guenther <rguenther@suse.de>
+
+·       PR diagnostic/8268
+·       * gcc.dg/Warray-bounds.c: New testcase.
+	* gcc.dg/Warray-bounds-2.c: New testcase.
+	* g++.dg/warn/Warray-bounds.C: New testcase.
+	* g++.dg/warn/Warray-bounds-2.C: New testcase.
+
 2007-01-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/30476

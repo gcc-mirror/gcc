@@ -222,8 +222,8 @@ Objective-C and Objective-C++ Dialects}.
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @gccoptlist{-fsyntax-only  -pedantic  -pedantic-errors @gol
--w  -Wextra  -Wall  -Waggregate-return -Walways-true -Wno-attributes @gol
--Wc++-compat -Wcast-align  -Wcast-qual  -Wchar-subscripts @gol
+-w  -Wextra  -Wall  -Waggregate-return -Walways-true -Warray-bounds @gol
+-Wno-attributes -Wc++-compat -Wcast-align  -Wcast-qual  -Wchar-subscripts @gol
 -Wclobbered  -Wcomment @gol
 -Wconversion  -Wno-deprecated-declarations @gol
 -Wdisabled-optimization  -Wno-div-by-zero  @gol
@@ -2841,6 +2841,13 @@ It warns about code which might break the strict aliasing rules that the
 compiler is using for optimization.  This warning catches more cases than
 @option{-Wstrict-aliasing}, but it will also give a warning for some ambiguous
 cases that are safe.
+
+@item -Warray-bounds
+@opindex Wno-array-bounds
+@opindex Warray-bounds
+This option is only active when @option{-ftree-vrp} is active
+(default for -O2 and above). It warns about subscripts to arrays
+that are always out of bounds. This warning is enabled by @option{-Wall}.
 
 @item -Wall
 @opindex Wall
