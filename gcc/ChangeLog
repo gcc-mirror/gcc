@@ -1,3 +1,13 @@
+2007-01-18  Kazu Hirata  <kazu@codesourcery.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+
+	* config/m68k/m68k.h (DATA_REGNO_P, ADDRESS_REGNO_P, INT_REGNO_P)
+	(FP_REGNO_P): New macros.
+	(REGNO_OK_FOR_INDEX_P, REGNO_OK_FOR_BASE_P, REGNO_OK_FOR_DATA_P)
+	(REGNO_OK_FOR_FP_P, REG_OK_FOR_INDEX_P, REG_OK_FOR_BASE_P): Use them.
+	(EH_RETURN_STACKADJ_RTX): Use A0_REG.
+	* config/m68k/m68k.c (m68k_regno_mode_ok): Use the new REGNO macros.
+
 2007-01-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config.gcc (m68k-*-aout*, m68k-*-coff*, m68020-*-elf*, m68k-*-elf*)

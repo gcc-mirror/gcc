@@ -3832,13 +3832,13 @@ m68k_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
 bool
 m68k_regno_mode_ok (int regno, enum machine_mode mode)
 {
-  if (regno < 8)
+  if (DATA_REGNO_P (regno))
     {
       /* Data Registers, can hold aggregate if fits in.  */
       if (regno + GET_MODE_SIZE (mode) / 4 <= 8)
 	return true;
     }
-  else if (regno < 16)
+  else if (ADDRESS_REGNO_P (regno))
     {
       /* Address Registers, can't hold bytes, can hold aggregate if
 	 fits in.  */
@@ -3847,7 +3847,7 @@ m68k_regno_mode_ok (int regno, enum machine_mode mode)
       if (regno + GET_MODE_SIZE (mode) / 4 <= 16)
 	return true;
     }
-  else if (regno < 24)
+  else if (FP_REGNO_P (regno))
     {
       /* FPU registers, hold float or complex float of long double or
 	 smaller.  */
