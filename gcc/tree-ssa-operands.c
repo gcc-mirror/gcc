@@ -305,15 +305,17 @@ vop_free_bucket_size (int bucket)
 static inline int 
 vop_free_bucket_index (int num)
 {
-  gcc_assert (num > 0);
+  gcc_assert (num > 0 && NUM_VOP_FREE_BUCKETS > 16);
 
   /* Sizes 1 through 16 use buckets 0-15.  */
   if (num <= 16)
     return num - 1;
-  /* Buckets 16 - 45  represent 17 through 256 in 8 unit chunks.  */
-  if (num < 256)
-    return 14 + (num - 1) / 8;
-  return -1;
+  /* Buckets 16 - NUM_VOP_FREE_BUCKETS represent 8 unit chunks.  */
+  num = 14 + (num - 1) / 8;
+  if (num >= NUM_VOP_FREE_BUCKETS)
+    return -1;
+  else
+    return num;
 }
 
 
