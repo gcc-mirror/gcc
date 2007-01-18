@@ -40,7 +40,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "vecprim.h"
 
 /* Holds the interesting trailing notes for the function.  */
-rtx cfg_layout_function_footer, cfg_layout_function_header;
+rtx cfg_layout_function_footer;
+rtx cfg_layout_function_header;
 
 static rtx skip_insns_after_block (basic_block);
 static void record_effective_endpoints (void);
