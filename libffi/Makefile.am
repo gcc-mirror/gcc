@@ -166,3 +166,10 @@ AM_CCASFLAGS = $(AM_CPPFLAGS)
 .PHONY: install-html
 install-html:
 
+# Multilib support.  Automake should provide these on its own.
+all-recursive: all-multi
+install-recursive: install-multi
+mostlyclean-recursive: mostlyclean-multi
+clean-recursive: clean-multi
+distclean-recursive: distclean-multi
+maintainer-clean-recursive: maintainer-clean-multi
