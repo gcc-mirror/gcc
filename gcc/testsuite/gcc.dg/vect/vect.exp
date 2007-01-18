@@ -150,6 +150,12 @@ lappend DEFAULT_VECTCFLAGS "-funswitch-loops"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/unswitch-loops-*.\[cS\]]]  \
 	"" $DEFAULT_VECTCFLAGS
 
+# -fno-trapping-math tests
+set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
+lappend DEFAULT_VECTCFLAGS "-fno-trapping-math"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-trapping-math-*.\[cS\]]]  \
+	"" $DEFAULT_VECTCFLAGS
+
 # With -Os
 lappend DEFAULT_VECTCFLAGS "-Os"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/Os-vect-*.\[cS\]]]  \
