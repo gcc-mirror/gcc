@@ -1,3 +1,12 @@
+2007-01-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config.gcc (m68k-*-aout*, m68k-*-coff*, m68020-*-elf*, m68k-*-elf*)
+	(m68010-*-netbsdelf*, m68k*-*-netbsdelf*, m68k*-*-openbsd*)
+	(m68k-*-uclinuxoldabi, m68k-*-uclinux*, m68k-*-linux*)
+	(m68k-*-rtems*): Use tm_file rather than m68k/m68k.h and
+	explicitly set MOTOROLA to 1.
+	* config/m68k/m68k.h (MOTOROLA): Simplify definition accordingly.
+
 2007-01-18  Richard Sandiford  <richard@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 
