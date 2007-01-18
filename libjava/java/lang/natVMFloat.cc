@@ -1,6 +1,6 @@
-// natFloat.cc - Implementation of java.lang.VMFloat native methods.
+// natVMFloat.cc - Implementation of java.lang.VMFloat native methods.
 
-/* Copyright (C) 1998, 1999, 2001, 2006  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001, 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 

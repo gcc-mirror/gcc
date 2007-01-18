@@ -1,3 +1,26 @@
+2007-01-18  Gary Benson  <gbenson@redhat.com>
+
+	* gnu/java/nio/natVMPipeEcos.cc:
+	Renamed from gnu/java/nio/natPipeImplEcos.cc.
+	* gnu/java/nio/natVMPipePosix.cc:
+	Renamed from gnu/java/nio/natPipeImplPosix.cc.
+	* gnu/java/nio/natVMPipeWin32.cc:
+	Renamed from gnu/java/nio/natPipeImplWin32.cc.
+	* gnu/java/nio/natVMSelectorEcos.cc:
+	Renamed from gnu/java/nio/natSelectorImplEcos.cc.
+	* gnu/java/nio/natVMSelectorPosix.cc:
+	Renamed from gnu/java/nio/natSelectorImplPosix.cc.
+	* gnu/java/nio/natVMSelectorWin32.cc:
+	Renamed from gnu/java/nio/natSelectorImplWin32.cc.
+	* java/io/natVMObjectInputStream.cc:
+	Renamed from java/io/natObjectInputStream.cc.
+	* java/lang/natVMDouble.cc:
+	Renamed from java/lang/natDouble.cc.
+	* java/lang/natVMFloat.cc:
+	Renamed from java/lang/natFloat.cc.	
+	* Makefile.am, configure.ac: Reflect the above.
+	* Makefile.in, configure: Rebuilt.
+
 2007-01-17  Andrew Haley  <aph@redhat.com>
 
 	* Makefile.in: Rebuilt.

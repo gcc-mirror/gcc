@@ -1,6 +1,6 @@
-// natPipeImplEcos.cc
+// natVMPipeImplEcos.cc
 
-/* Copyright (C) 2003, 2004  Free Software Foundation
+/* Copyright (C) 2003, 2004, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
