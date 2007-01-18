@@ -2429,6 +2429,8 @@ information are.
 @item
 @uref{#m68k-hp-hpux,,m68k-hp-hpux}
 @item
+@uref{#m68k-uclinux,,m68k-uclinux}
+@item
 @uref{#mips-x-x,,mips-*-*}
 @item
 @uref{#mips-sgi-irix5,,mips-sgi-irix5}
@@ -3429,6 +3431,9 @@ This @var{target} can either be a @option{-mcpu} argument or one of the
 following values: @samp{m68000}, @samp{m68010}, @samp{m68020}, @samp{m68030},
 @samp{m68040}, @samp{m68060}, @samp{m68020-40} and @samp{m68020-60}.
 
+@html
+<hr />
+@end html
 @heading @anchor{m68k-hp-hpux}m68k-hp-hpux
 HP 9000 series 300 or 400 running HP-UX@.  HP-UX version 8.0 has a bug in
 the assembler that prevents compilation of GCC@.  This
@@ -3478,6 +3483,17 @@ to look like:
 @smallexample
 #!/bin/ksh
 @end smallexample
+
+@html
+<hr />
+@end html
+@heading @anchor{m68k-x-uclinux}m68k-*-uclinux
+GCC 4.3 changed the uClinux configuration so that it uses the
+@samp{m68k-linux-gnu} ABI rather than the @samp{m68k-elf} ABI.
+It also added improved support for C++ and flat shared libraries,
+both of which were ABI changes.  However, you can still use the
+original ABI by configuring for @samp{m68k-uclinuxoldabi} or
+@samp{m68k-@var{vendor}-uclinuxoldabi}.
 
 @html
 <hr />

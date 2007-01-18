@@ -1510,7 +1510,18 @@ m68k*-*-openbsd*)
 	# we need collect2 until our bug is fixed...
 	use_collect2=yes
 	;;
-m68k-*-uclinux*)		# Motorola m68k/ColdFire running uClinux with uClibc
+m68k-*-uclinuxoldabi*)		# Motorola m68k/ColdFire running uClinux
+				# with uClibc, using the original
+				# m68k-elf-based ABI
+	default_m68k_cpu=68020
+	tm_file="m68k/m68k.h m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/uclinux-oldabi.h"
+ 	tm_defines="${tm_defines} MOTOROLA USE_GAS"
+	tmake_file=m68k/t-uclinux
+	use_fixproto=no
+	;;
+m68k-*-uclinux*)		# Motorola m68k/ColdFire running uClinux
+				# with uClibc, using the new GNU/Linux-style
+				# ABI.
 	default_m68k_cpu=68020
 	tm_file="m68k/m68k.h m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/uclinux.h"
  	tm_defines="${tm_defines} MOTOROLA USE_GAS"
