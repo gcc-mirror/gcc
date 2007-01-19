@@ -62,7 +62,7 @@ gnu::classpath::jdwp::VMVirtualMachine::initialize ()
 }
 
 void
-gnu::classpath::jdwp::VMVirtualMachine ::suspendThread (Thread *thread)
+gnu::classpath::jdwp::VMVirtualMachine::suspendThread (Thread *thread)
 {
   jint value;
   Integer *count;
@@ -213,7 +213,7 @@ gnu::classpath::jdwp::VMVirtualMachine::registerEvent (EventRequest *request)
 
     case EventRequest::EVENT_VM_INIT:
       break;
-      
+
     case EventRequest::EVENT_VM_DEATH:
       break;
     }
@@ -244,7 +244,7 @@ gnu::classpath::jdwp::VMVirtualMachine::unregisterEvent (EventRequest *request)
 
     case EventRequest::EVENT_THREAD_END:
       break;
-	
+
     case EventRequest::EVENT_CLASS_PREPARE:
       break;
 
@@ -268,14 +268,14 @@ gnu::classpath::jdwp::VMVirtualMachine::unregisterEvent (EventRequest *request)
 
     case EventRequest::EVENT_VM_INIT:
       break;
-      
+
     case EventRequest::EVENT_VM_DEATH:
       break;
     }
 }
 
 void
-gnu::classpath::jdwp::VMVirtualMachine::clearEvents (jbyte kind)
+gnu::classpath::jdwp::VMVirtualMachine::clearEvents (MAYBE_UNUSED jbyte kind)
 {
 }
 
@@ -292,69 +292,75 @@ gnu::classpath::jdwp::VMVirtualMachine::getAllLoadedClasses (void)
 }
 
 jint
-gnu::classpath::jdwp::VMVirtualMachine::getClassStatus (jclass klass)
+gnu::classpath::jdwp::VMVirtualMachine::
+getClassStatus (MAYBE_UNUSED jclass klass)
 {
   return 0;
 }
 
 JArray<gnu::classpath::jdwp::VMMethod *> *
-gnu::classpath::jdwp::VMVirtualMachine::getAllClassMethods (jclass klass)
+gnu::classpath::jdwp::VMVirtualMachine::
+getAllClassMethods (MAYBE_UNUSED jclass klass)
 {
   return NULL;
 }
 
 gnu::classpath::jdwp::VMMethod *
-gnu::classpath::jdwp::VMVirtualMachine::getClassMethod (jclass klass, jlong id)
+gnu::classpath::jdwp::VMVirtualMachine::
+getClassMethod (MAYBE_UNUSED jclass klass, MAYBE_UNUSED jlong id)
 {
   return NULL;
 }
 
 java::util::ArrayList *
-gnu::classpath::jdwp::VMVirtualMachine::getFrames (Thread *thread,
-						   jint start,
-						   jint length)
+gnu::classpath::jdwp::VMVirtualMachine::getFrames (MAYBE_UNUSED Thread *thread,
+						   MAYBE_UNUSED jint start,
+						   MAYBE_UNUSED jint length)
 {
   return NULL;
 }
 
 gnu::classpath::jdwp::VMFrame *
-gnu::classpath::jdwp::VMVirtualMachine::getFrame (Thread *thread,
-						  ::java::nio::ByteBuffer *bb)
+gnu::classpath::jdwp::VMVirtualMachine::
+getFrame (MAYBE_UNUSED Thread *thread, MAYBE_UNUSED::java::nio::ByteBuffer *bb)
 {
   return NULL;
 }
 
 jint
-gnu::classpath::jdwp::VMVirtualMachine::getFrameCount (Thread *thread)
+gnu::classpath::jdwp::VMVirtualMachine::
+getFrameCount (MAYBE_UNUSED Thread *thread)
 {
   return 0;
 }
 
 jint
-gnu::classpath::jdwp::VMVirtualMachine::getThreadStatus (Thread *thread)
+gnu::classpath::jdwp::VMVirtualMachine::
+getThreadStatus (MAYBE_UNUSED Thread *thread)
 {
   return 0;
 }
 
 java::util::ArrayList *
-gnu::classpath::jdwp::VMVirtualMachine::getLoadRequests (ClassLoader *cl)
+gnu::classpath::jdwp::VMVirtualMachine::
+getLoadRequests (MAYBE_UNUSED ClassLoader *cl)
 {
   return NULL;
 }
 
 MethodResult *
-gnu::classpath::jdwp::VMVirtualMachine::executeMethod (jobject obj,
-						       Thread *thread,
-						       jclass clazz,
-						       reflect::Method *method,
-						       jobjectArray values,
-						       jboolean nonVirtual)
+gnu::classpath::jdwp::VMVirtualMachine::
+executeMethod (MAYBE_UNUSED jobject obj, MAYBE_UNUSED Thread *thread,
+	       MAYBE_UNUSED jclass clazz, MAYBE_UNUSED reflect::Method *method,
+	       MAYBE_UNUSED jobjectArray values,
+	       MAYBE_UNUSED jboolean nonVirtual)
 {
   return NULL;
 }
 
 jstring
-gnu::classpath::jdwp::VMVirtualMachine::getSourceFile (jclass clazz)
+gnu::classpath::jdwp::VMVirtualMachine::
+getSourceFile (MAYBE_UNUSED jclass clazz)
 {
   return NULL;
 }
