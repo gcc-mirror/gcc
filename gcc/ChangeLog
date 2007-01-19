@@ -1,3 +1,8 @@
+2007-01-19  Steve Ellcey  <sje@cup.hp.com>
+
+	* system.h (ASM_MAKE_LABEL_LINKONCE): Poison.
+	* varasm.c (globalize_decl): Remove ASM_MAKE_LABEL_LINKONCE ifdef.
+
 2007-01-19  Tomas Bily  <tbily@suse.cz>
 
         * cgraphunit.c (cgraph_finalize_function): Updating of pid
