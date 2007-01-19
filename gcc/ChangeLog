@@ -1,3 +1,18 @@
+2007-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*fpatanxf3_i387, fpatan_extend<mode>xf3_i387):
+	New insn patterns.
+	(atan2sf3_1, atan2df3_1, atan2xf3_1): Remove insn patterns.
+	(atan2xf3): Directly generate RTL pattern.
+	(atan2<mode>3): Rename from atan2sf3 and atan2df3 and macroize insn
+	patterns using X87MODEF12 mode macro.  Use fpatan_extend<mode>xf3_i387
+	and truncate result to requested mode.  Use SSE_FLOAT_MODE_P to
+	disable patterns for SSE math.
+	(atan<mode>2): Rename from atansf2 and atandf2 and macroize insn
+	patterns using X87MODEF12 mode macro.  Use fpatan_extend<mode>xf3_i387
+	and truncate result to requested mode.  Use SSE_FLOAT_MODE_P to
+	disable patterns for SSE math.
+
 2007-01-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	* libgcc-std.ver: Fix typo in %inherit for GCC_4.3.0.
