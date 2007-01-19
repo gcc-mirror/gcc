@@ -1,3 +1,10 @@
+2007-01-19  Tomas Bily  <tbily@suse.cz>
+
+	gcc.dg/tree-prof/indir-call-prof.c: New.
+	g++.dg/dg.exp: Add tree-prof subdirectory.
+	g++.dg/tree-prof/indir-call-prof.C: New.
+	g++.dg/tree-prof/tree-prof.exp: New.
+
 2007-01-19  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/17947
