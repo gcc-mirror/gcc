@@ -1,3 +1,50 @@
+2007-01-19  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* intrinsic.texi: general whitespace cleanup.
+	(menu): Added TIME8, removed UNMASK.
+	(AINT): Clarified argument requirement.
+	(ANINT): Clarified argument requirement.
+	(CEILING): Clarified argument requirement.
+	(CHAR): Clarified argument requirement.
+	(CMPLX): Clarified argument requirement.
+	(DCMPLX): Clarified argument requirement.
+	(FGET): Line rewrapping.
+	(FLOOR): Clarified argument requirement.
+	(GMTIME): Added documentation.
+	(IAND): Added cross-reference.
+	(IBCLR): Added cross-reference.
+	(IBSET): Added cross-reference.
+	(IEOR): Added cross-reference.
+	(INT): Collapsed examples, clarified argument requirement.
+	(IOR): Added cross-references.
+	(LEN_TRIM): Corrected result kind.
+	(LINK): Added cross-reference.
+	(LLT): Removed "documentation pending".
+	(LOGICAL): Added documentation.
+	(LSHIFT): Added documentation.
+	(LTIME): Added documentation.
+	(MATMUL): Added documentation.
+	(MAX): Added documentation.
+	(MAXLOC): Added documentation.
+	(MAXVAL): Added documentation.
+	(MERGE): Added documentation.
+	(MIN): Added documentation.
+	(MINLOC): Added documentation.
+	(MINVAL): Added documentation.
+	(MVBITS): Moved to correct place, added documentation.
+	(NOT): Added documentation.
+	(PERROR): Added documentation.
+	(RAN): Moved to correct place, added documentation.
+	(REAL): Clarified argument requirement.
+	(RENAME): Added documentation.
+	(RSHIFT): Clarified argument requirement.
+	(SIGN): Corrected table specification.
+	(SYMLNK): Added documentation.
+	(SYSTEM): Added documentation.
+	(TIME): Added documentation.
+	(TIME8): Added section and documentation.
+	(UNMASK): Removed erroneous section.
+
 2007-01-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* trans-stmt.c (compute_overall_iter_number): Fix a typo.
