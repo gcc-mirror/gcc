@@ -1,3 +1,7 @@
+2007-01-19  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc.c-torture/execute/nestfunc-7.c: New.
+
 2007-01-18  Hui-May Chang  <hm.chang@apple.com>
 
 	* gcc.c-torture/compile/pr27528.c: Add -fno-pic option.

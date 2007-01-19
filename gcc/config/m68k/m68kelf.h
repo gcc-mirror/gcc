@@ -83,6 +83,14 @@ do {								\
 #undef M68K_STRUCT_VALUE_REGNUM
 #define M68K_STRUCT_VALUE_REGNUM 8
 
+/* The static chain regnum defaults to a0, but we use that for
+   structure return, so have to use a1 for the static chain.  */
+
+#undef STATIC_CHAIN_REGNUM
+#define STATIC_CHAIN_REGNUM 9
+#undef M68K_STATIC_CHAIN_REG_NAME
+#define M68K_STATIC_CHAIN_REG_NAME REGISTER_PREFIX "a1"
+
 #define ASM_COMMENT_START "|"
 
 /* Define how the m68k registers should be numbered for Dwarf output.

@@ -233,6 +233,8 @@ while (0)
 
 #undef STATIC_CHAIN_REGNUM
 #define STATIC_CHAIN_REGNUM 9
+#undef M68K_STATIC_CHAIN_REG_NAME
+#define M68K_STATIC_CHAIN_REG_NAME REGISTER_PREFIX "a1"
 
 
 /* Now to renumber registers for dbx and gdb.

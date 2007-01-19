@@ -1,3 +1,13 @@
+2007-01-19  Nathan Sidwell  <nathan@codesourcery.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+
+	* config/m68k/m68k.h (M68K_STATIC_CHAIN_REG_NAME): New macro.
+	(INITIALIZE_TRAMPOLINE): Use STATIC_CHAIN_REGNUM.
+	(__transfer_from_trampoline): Use M68K_STATIC_CHAIN_REG_NAME.
+	* config/m68k/m68kelf.h (STATIC_CHAIN_REGNUM): Override.
+	(M68K_STATIC_CHAIN_REG_NAME): Likewise.
+	* config/m68k/netbsd-elf.h (M68K_STATIC_CHAIN_REG_NAME): Likewise.
+
 2007-01-19  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/m68k/m68k.md (adddi_dilshr32): Rename to...

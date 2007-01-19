@@ -432,6 +432,7 @@ Boston, MA 02110-1301, USA.  */
 #define ARG_POINTER_REGNUM 24
 
 #define STATIC_CHAIN_REGNUM 8
+#define M68K_STATIC_CHAIN_REG_NAME REGISTER_PREFIX "a0"
 
 /* Register in which address to store a structure value
    is passed to a function.  */
@@ -684,7 +685,8 @@ extern enum reg_class regno_reg_class[];
 	jmp FNADDR  */
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
-  emit_move_insn (gen_rtx_MEM (HImode, TRAMP), GEN_INT(0x207C));	\
+  emit_move_insn (gen_rtx_MEM (HImode, TRAMP),				\
+		  GEN_INT(0x207C + ((STATIC_CHAIN_REGNUM-8) << 9)));	\
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 2)), CXT); \
   emit_move_insn (gen_rtx_MEM (HImode, plus_constant (TRAMP, 6)),	\
 		  GEN_INT(0x4EF9));					\
@@ -707,7 +709,7 @@ extern enum reg_class regno_reg_class[];
 void								\
 __transfer_from_trampoline ()					\
 {								\
-  register char *a0 asm ("%a0");				\
+  register char *a0 asm (M68K_STATIC_CHAIN_REG_NAME);		\
   asm (GLOBAL_ASM_OP "___trampoline");				\
   asm ("___trampoline:");					\
   asm volatile ("move%.l %0,%@" : : "m" (a0[22]));		\
