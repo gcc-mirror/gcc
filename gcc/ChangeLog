@@ -1,5 +1,10 @@
 2007-01-19  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/m68k/m68k.h (EXTRA_CONSTRAINT): Stop the 'T' constraint
+	from accepting 's' constraints if flag_pic.
+
+2007-01-19  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/m68k/m68k.md (bordered, bunordered, buneq, bunge, bungt)
 	(bunle, bunlt, bltgt, bordered_rev, bunordered_rev, buneq_rev)
 	(bunge_rev, bungt_rev, bunle_rev, bunlt_rev, bltgt_rev): Change
