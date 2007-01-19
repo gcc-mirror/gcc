@@ -6111,7 +6111,7 @@ Transformational function
 			  @var{MATRIX_A} is of a numeric type;
 			  otherwise, an array of @code{LOGICAL(*)}
 			  type. The rank shall be one or two, and the
-			  first (or only) dimension of @var{MATRIX(B)}
+			  first (or only) dimension of @var{MATRIX_B}
 			  shall be equal to the last (or only)
 			  dimension of @var{MATRIX_A}.
 @end multitable
@@ -6147,7 +6147,7 @@ Elemental function
 @multitable @columnfractions .15 .80
 @item @var{A1}          @tab The type shall be @code{INTEGER(*)} or
                              @code{REAL(*)}.
-@item @var{A2, A3, ...} @tab An expression of the same type and kind
+@item @var{A2}, @var{A3}, ... @tab An expression of the same type and kind
                              as @var{A1}.  (As a GNU extension, 
 			     arguments of different kinds are
 			     permitted.)
@@ -6384,7 +6384,7 @@ Elemental function
 @multitable @columnfractions .15 .80
 @item @var{A1}          @tab The type shall be @code{INTEGER(*)} or
                              @code{REAL(*)}.
-@item @var{A2, A3, ...} @tab An expression of the same type and kind
+@item @var{A2}, @var{A3}, ... @tab An expression of the same type and kind
                              as @var{A1}.  (As a GNU extension, 
 			     arguments of different kinds are
 			     permitted.)
