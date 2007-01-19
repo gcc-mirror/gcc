@@ -1,3 +1,9 @@
+2007-01-19  Dirk Mueller  <dmueller@suse.de>
+
+	* config/i386.h (CONDITIONAL_REGISTER_USAGE): Store
+	result of PIC_OFFSET_TABLE_REGNUM in temporary variable to avoid
+	duplicate evaluation.
+
 2007-01-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (acos<mode>2): Rename from acossf2 and acosdf2.

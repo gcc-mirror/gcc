@@ -854,6 +854,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define CONDITIONAL_REGISTER_USAGE					\
 do {									\
     int i;								\
+    unsigned int j;							\
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)				\
       {									\
 	if (fixed_regs[i] > 1)						\
@@ -862,10 +863,11 @@ do {									\
 	  call_used_regs[i] = (call_used_regs[i]			\
 			       == (TARGET_64BIT ? 3 : 2));		\
       }									\
-    if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)			\
+    j = PIC_OFFSET_TABLE_REGNUM;					\
+    if (j != INVALID_REGNUM)			\
       {									\
-	fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;			\
-	call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;			\
+	fixed_regs[j] = 1;			\
+	call_used_regs[j] = 1;			\
       }									\
     if (! TARGET_MMX)							\
       {									\
