@@ -1,4 +1,4 @@
-@c Copyright (C) 2002, 2003, 2004
+@c Copyright (C) 2002, 2003, 2004, 2007
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -281,6 +281,16 @@ will be deleted.
 The routine @code{ggc_marked_p} can be used to determine if an element
 has been marked already; in fact, the usual case is to use
 @code{if_marked ("ggc_marked_p")}.
+
+@findex mark_hook
+@item mark_hook ("@var{hook-routine-name}")
+
+If provided for a structure or union type, the given
+@var{hook-routine-name} (between double-quotes) is the name of a
+routine called when the garbage collector has just marked the data as
+reachable. This routine should not change the data, or call any ggc
+routine. Its only argument is a pointer to the just marked (const)
+structure or union.
 
 @findex maybe_undef
 @item maybe_undef
