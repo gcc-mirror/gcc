@@ -1809,7 +1809,7 @@ perform_var_substitution (constraint_graph_t graph)
 
       if (graph->label[node] == 0 && TEST_BIT (graph->direct_nodes, node))
 	{
-	  if (dump_file && (dump_flags && TDF_DETAILS))
+	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file,
 		     "%s is a non-pointer variable, eliminating edges.\n",
 		     get_varinfo (node)->name);
