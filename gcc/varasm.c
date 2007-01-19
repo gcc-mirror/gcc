@@ -4775,9 +4775,6 @@ globalize_decl (tree decl)
 
       return;
     }
-#elif defined(ASM_MAKE_LABEL_LINKONCE)
-  if (DECL_ONE_ONLY (decl))
-    ASM_MAKE_LABEL_LINKONCE (asm_out_file, name);
 #endif
 
   targetm.asm_out.globalize_label (asm_out_file, name);
