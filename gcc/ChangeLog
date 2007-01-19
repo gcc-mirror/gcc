@@ -1,3 +1,19 @@
+2007-01-19  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/m68k/m68k-protos.h (valid_mov3q_const): Take a HOST_WIDE_INT
+	and return a bool.
+	(output_move_const_into_data_reg, output_move_simode_const): Delete.
+	* config/m68k/m68k.c (const_method, const_int_cost): Take a
+	HOST_WIDE_INT instead of an rtx.
+	(m68k_rtx_costs): Update call accordingly.
+	(output_move_const_into_data_reg): Likewise.  Fix formatting.
+	(valid_mov3q_const): Take a HOST_WIDE_INT instead of an rtx.
+	Return a bool.
+	(output_move_simode_const): Update calls after above changes.
+	Rework to use automatic variables and predicates like MEM_P.
+	* config/m68k/m68k.md (pushexthisi_const): Update call to
+	valid_mov3q_const.
+
 2007-01-19  Dirk Mueller  <dmueller@suse.de>
 
 	* tree-ssa-alias.c (perform_var_substitution): Fix typo
