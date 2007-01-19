@@ -347,6 +347,9 @@ do {									\
    runtime library.  */
 #define TARGET_C99_FUNCTIONS (OPTION_GLIBC)
 
+/* Whether we have sincos that follows the GNU extension.  */
+#define TARGET_HAS_SINCOS (OPTION_GLIBC)
+
 #define TARGET_POSIX_IO
 
 #undef LINK_GCC_C_SEQUENCE_SPEC

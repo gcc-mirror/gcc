@@ -1,3 +1,14 @@
+2007-01-19  Richard Guenther  <rguenther@suse.de>
+
+	* doc/tm.texi (TARGET_HAS_SINCOS): Document new target macro.
+	* defaults.h (TARGET_HAS_SINCOS): Default to off.
+	* config/linux.h (TARGET_HAS_SINCOS): Set to on if we have glibc.
+	* config/alpha/linux.h (TARGET_HAS_SINCOS): Likewise.
+	* config/sparc/linux.h (TARGET_HAS_SINCOS): Likewise.
+	* config/sparc/linux64.h (TARGET_HAS_SINCOS): Likewise.
+	* config/rs6000/linux.h (TARGET_HAS_SINCOS): Likewise.
+	* config/rs6000/linux64.h (TARGET_HAS_SINCOS): Likewise.
+
 2007-01-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*fpatanxf3_i387, fpatan_extend<mode>xf3_i387):

@@ -5061,6 +5061,18 @@ number of existing systems lacks support for these functions in the runtime so
 they needs this macro to be redefined to 0.
 @end defmac
 
+@cindex sincos math function, implicit usage
+@defmac TARGET_HAS_SINCOS
+When this macro is nonzero, GCC will implicitly optimize calls to @code{sin}
+and @code{cos} with the same argument to a call to @code{sincos}.  The
+default is zero.  The target has to provide the following functions:
+@smallexample
+void sincos(double x, double *sin, double *cos);
+void sincosf(float x, float *sin, float *cos);
+void sincosl(long double x, long double *sin, long double *cos);
+@end smallexample
+@end defmac
+
 @defmac NEXT_OBJC_RUNTIME
 Define this macro to generate code for Objective-C message sending using
 the calling convention of the NeXT system.  This calling convention
