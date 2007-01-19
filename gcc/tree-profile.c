@@ -45,14 +45,53 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "timevar.h"
 #include "value-prof.h"
 #include "ggc.h"
+#include "cgraph.h"
 
 static GTY(()) tree gcov_type_node;
 static GTY(()) tree tree_interval_profiler_fn;
 static GTY(()) tree tree_pow2_profiler_fn;
 static GTY(()) tree tree_one_value_profiler_fn;
+static GTY(()) tree tree_indirect_call_profiler_fn;
 
 
+static GTY(()) tree ic_void_ptr_var;
+static GTY(()) tree ic_gcov_type_ptr_var;
+static GTY(()) tree ptr_void;
+
 /* Do initialization work for the edge profiler.  */
+
+/* Add code:
+   static gcov*	__gcov_indirect_call_counters; // pointer to actual counter
+   static void*	__gcov_indirect_call_callee; // actual callie addres
+*/
+static void
+tree_init_ic_make_global_vars (void)
+{
+  tree  gcov_type_ptr;
+
+  ptr_void = build_pointer_type (void_type_node);
+  
+  ic_void_ptr_var 
+    = build_decl (VAR_DECL, 
+		  get_identifier ("__gcov_indirect_call_callee"), 
+		  ptr_void);
+  TREE_STATIC (ic_void_ptr_var) = 1;
+  TREE_PUBLIC (ic_void_ptr_var) = 0;
+  DECL_ARTIFICIAL (ic_void_ptr_var) = 1;
+  DECL_INITIAL (ic_void_ptr_var) = NULL;
+  assemble_variable (ic_void_ptr_var, 0, 0, 0);
+
+  gcov_type_ptr = build_pointer_type (get_gcov_type ());
+  ic_gcov_type_ptr_var 
+    = build_decl (VAR_DECL, 
+		  get_identifier ("__gcov_indirect_call_counters"), 
+		  gcov_type_ptr);
+  TREE_STATIC (ic_gcov_type_ptr_var) = 1;
+  TREE_PUBLIC (ic_gcov_type_ptr_var) = 0;
+  DECL_ARTIFICIAL (ic_gcov_type_ptr_var) = 1;
+  DECL_INITIAL (ic_gcov_type_ptr_var) = NULL;
+  assemble_variable (ic_gcov_type_ptr_var, 0, 0, 0);
+}
 
 static void
 tree_init_edge_profiler (void)
@@ -61,6 +100,7 @@ tree_init_edge_profiler (void)
   tree pow2_profiler_fn_type;
   tree one_value_profiler_fn_type;
   tree gcov_type_ptr;
+  tree ic_profiler_fn_type;
 
   if (!gcov_type_node)
     {
@@ -93,6 +133,18 @@ tree_init_edge_profiler (void)
       tree_one_value_profiler_fn
 	      = build_fn_decl ("__gcov_one_value_profiler",
 				     one_value_profiler_fn_type);
+
+      tree_init_ic_make_global_vars ();
+      
+      /* void (*) (gcov_type *, gcov_type, void *, void *)  */
+      ic_profiler_fn_type
+	       = build_function_type_list (void_type_node,
+					  gcov_type_ptr, gcov_type_node,
+					  ptr_void,
+					  ptr_void, NULL_TREE);
+      tree_indirect_call_profiler_fn
+	      = build_fn_decl ("__gcov_indirect_call_profiler",
+				     ic_profiler_fn_type);
     }
 }
 
@@ -201,6 +253,90 @@ tree_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned base)
   bsi_insert_before (&bsi, call, BSI_SAME_STMT);
 }
 
+
+/* Output instructions as GIMPLE trees for code to find the most
+   common called function in indirect call.  
+   VALUE is the call expression whose indirect callie is profiled.
+   TAG is the tag of the section for counters, BASE is offset of the
+   counter position.  */
+
+static void
+tree_gen_ic_profiler (histogram_value value, unsigned tag, unsigned base)
+{
+  tree tmp1, stmt1, stmt2, stmt3;
+  tree stmt = value->hvalue.stmt;
+  block_stmt_iterator bsi = bsi_for_stmt (stmt);
+  tree ref = tree_coverage_counter_ref (tag, base), ref_ptr;
+
+  ref_ptr = force_gimple_operand_bsi (&bsi,
+				      build_addr (ref, current_function_decl),
+				      true, NULL_TREE);
+
+  /* Insert code:
+    
+    __gcov_indirect_call_counters = get_relevant_counter_ptr (); 
+    __gcov_indirect_call_callee = (void *) indirect call argument;
+   */
+
+  tmp1 = create_tmp_var (ptr_void, "PROF");
+  stmt1 = build2 (GIMPLE_MODIFY_STMT, 
+		  build_pointer_type (get_gcov_type ()), 
+		  ic_gcov_type_ptr_var, ref_ptr);
+  stmt2 = build2 (GIMPLE_MODIFY_STMT, ptr_void, tmp1, 
+		  unshare_expr (value->hvalue.value));
+  stmt3 = build2 (GIMPLE_MODIFY_STMT, ptr_void, 
+		  ic_void_ptr_var, tmp1);
+
+  bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
+  bsi_insert_before (&bsi, stmt2, BSI_SAME_STMT);
+  bsi_insert_before (&bsi, stmt3, BSI_SAME_STMT);
+}
+
+
+/* Output instructions as GIMPLE trees for code to find the most
+   common called function in indirect call. Insert instructions at the
+   begining of every possible called function.
+  */
+
+static void
+tree_gen_ic_func_profiler (void)
+{
+  struct cgraph_node * c_node = cgraph_node (current_function_decl);
+  block_stmt_iterator bsi;
+  edge e;
+  basic_block bb;
+  edge_iterator ei;
+  tree stmt1;
+  tree args, tree_uid, cur_func;
+
+  if (flag_unit_at_a_time)
+    {
+      if (!c_node->needed)
+	return;
+    }
+  
+  tree_init_edge_profiler ();
+  
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
+    {
+      bb = split_edge (e);
+      bsi = bsi_start (bb);
+      cur_func = force_gimple_operand_bsi (&bsi,
+					   build_addr (current_function_decl, 
+						       current_function_decl),
+					   true, NULL_TREE);
+      tree_uid = build_int_cst (gcov_type_node, c_node->pid);
+      args = tree_cons (NULL_TREE, ic_gcov_type_ptr_var,
+			tree_cons (NULL_TREE, tree_uid,
+				   tree_cons (NULL_TREE, cur_func,
+					      tree_cons (NULL_TREE, 
+							 ic_void_ptr_var,
+							 NULL_TREE))));
+      stmt1 = build_function_call_expr (tree_indirect_call_profiler_fn, args);
+      bsi_insert_after (&bsi, stmt1, BSI_SAME_STMT);
+    }
+}
+
 /* Output instructions as GIMPLE trees for code to find the most common value 
    of a difference between two evaluations of an expression.
    VALUE is the expression whose value is profiled.  TAG is the tag of the
@@ -242,6 +378,11 @@ tree_profiling (void)
   if (cgraph_state == CGRAPH_STATE_FINISHED)
     return 0;
   branch_prob ();
+
+  if (! flag_branch_probabilities 
+      && flag_profile_values)
+    tree_gen_ic_func_profiler ();
+
   if (flag_branch_probabilities
       && flag_profile_values
       && flag_value_profile_transformations)
@@ -278,7 +419,8 @@ struct profile_hooks tree_profile_hooks =
   tree_gen_interval_profiler,   /* gen_interval_profiler */
   tree_gen_pow2_profiler,       /* gen_pow2_profiler */
   tree_gen_one_value_profiler,  /* gen_one_value_profiler */
-  tree_gen_const_delta_profiler /* gen_const_delta_profiler */
+  tree_gen_const_delta_profiler,/* gen_const_delta_profiler */
+  tree_gen_ic_profiler,		/* gen_ic_profiler */
 };
 
 #include "gt-tree-profile.h"

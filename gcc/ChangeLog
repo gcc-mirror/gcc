@@ -1,3 +1,44 @@
+2007-01-19  Tomas Bily  <tbily@suse.cz>
+
+        * cgraphunit.c (cgraph_finalize_function): Updating of pid
+        * tree-profile.c:
+        (tree_init_ic_make_global_vars): New function
+        (tree_init_edge_profiler): call of tree_init_ic_make_global_vars
+        (tree_gen_ic_profiler): New function
+        (tree_gen_ic_func_profiler): New function
+        (tree_profiling): Added calling of tree_gen_ic_func_profiler
+        (tree_profile_hooks): Added hook for indirec/virtual calls
+        * value-prof.c (tree_find_values_to_profile): New case for
+        indirect calls
+        (tree_values_to_profile): Call for determining indirect/virtual
+        counters
+        (tree_indirect_call_to_profile): New function
+        (tree_ic_transform): New function
+        (tree_ic): New function
+        (find_func_by_pid): New function
+        (init_pid_map): New function
+        (tree_value_profile_transformations): Added check for
+        indirect/virtual call transformation
+        * value-prof.h (enum hist_type): New counter type for
+        indirect/virtual calls
+        (profile_hooks): Added new hook for profiling indirect/virtual
+        calls
+        * profile.c (instrument_values): New case for indirect/virtual
+        call added
+        * gcov-io.h (GCOV_LAST_VALUE_COUNTER): Changed to 6
+        (GCOV_COUNTER_V_INDIR): New counter type
+        (GCOV_COUNTER_NAMES): New name of counter "indirect" added
+        (GCOV_MERGE_FUNCTIONS): New merge function for indirect/virtual
+        call added
+        * cgraph.c: Definition of cgraph_max_pid
+        (cgraph_create_node): Default init of pid attribute
+        * cgraph.h: Declaration of cgraph_max_pid
+        (struct cgraph_node): Added pid attribute
+        * libgcov.c (__gcov_indirect_call_profiler): New function
+	(__gcov_one_value_profiler_body): New function
+	(__gcov_one_value_profiler): Body was moved to
+	__gcov_one_value_profiler_body and calls it
+
 2007-01-19  Basile Starynkevitch  <basile@starynkevitch.net>
 
 	* doc/gty.texi (Options): Document the mark_hook option to

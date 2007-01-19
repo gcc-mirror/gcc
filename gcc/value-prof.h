@@ -29,8 +29,10 @@ enum hist_type
   HIST_TYPE_POW2,	/* Histogram of power of 2 values.  */
   HIST_TYPE_SINGLE_VALUE, /* Tries to identify the value that is (almost)
 			   always constant.  */
-  HIST_TYPE_CONST_DELTA	/* Tries to identify the (almost) always constant
+  HIST_TYPE_CONST_DELTA, /* Tries to identify the (almost) always constant
 			   difference between two evaluations of a value.  */
+  HIST_TYPE_INDIR_CALL   /* Tries to identify the function that is (almost) 
+			    called in indirect call */
 };
 
 #define COUNTER_FOR_HIST_TYPE(TYPE) ((int) (TYPE) + GCOV_FIRST_VALUE_COUNTER)
@@ -94,6 +96,9 @@ struct profile_hooks {
   /* Insert code to find the most common value of a difference between two
      evaluations of an expression.  */
   void (*gen_const_delta_profiler) (histogram_value, unsigned, unsigned);
+
+  /* Insert code to find the most common indirect call */
+  void (*gen_ic_profiler) (histogram_value, unsigned, unsigned);
 };
 
 histogram_value gimple_histogram_value (struct function *, tree);

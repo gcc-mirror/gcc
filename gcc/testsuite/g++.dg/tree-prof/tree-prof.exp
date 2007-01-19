@@ -1,0 +1,53 @@
+#   Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  
+
+# Test the functionality of programs compiled with profile-directed block
+# ordering using -fprofile-generate followed by -fbranch-use.
+
+load_lib target-supports.exp
+
+# Some targets don't support tree profiling.
+if { ![check_profiling_available ""] } {
+    return
+}
+
+# The procedures in profopt.exp need these parameters.
+set tool g++
+set prof_ext "gcda gcno"
+
+# Override the list defined in profopt.exp.
+set PROFOPT_OPTIONS [list {}]
+
+if $tracelevel then {
+    strace $tracelevel
+}
+
+# Load support procs.
+load_lib profopt.exp
+
+# These are globals used by profopt-execute.  The first is options
+# needed to generate profile data, the second is options to use the
+# profile data.
+set profile_option "-fprofile-generate"
+set feedback_option "-fprofile-use"
+
+foreach src [lsort [glob -nocomplain $srcdir/$subdir/*.C]] {
+    # If we're only testing specific files and this isn't one of them, skip it.
+    if ![runtest_file_p $runtests $src] then {
+        continue
+    }
+    profopt-execute $src
+}

@@ -109,6 +109,9 @@ int cgraph_n_nodes;
 /* Maximal uid used in cgraph nodes.  */
 int cgraph_max_uid;
 
+/* Maximal pid used for profiling */
+int cgraph_max_pid;
+
 /* Set when whole unit has been analyzed so we can access global info.  */
 bool cgraph_global_info_ready = false;
 
@@ -161,6 +164,7 @@ cgraph_create_node (void)
   node = GGC_CNEW (struct cgraph_node);
   node->next = cgraph_nodes;
   node->uid = cgraph_max_uid++;
+  node->pid = -1;
   node->order = cgraph_order++;
   if (cgraph_nodes)
     cgraph_nodes->previous = node;
@@ -655,7 +659,7 @@ void
 dump_cgraph_node (FILE *f, struct cgraph_node *node)
 {
   struct cgraph_edge *edge;
-  fprintf (f, "%s/%i:", cgraph_node_name (node), node->uid);
+  fprintf (f, "%s/%i(%i):", cgraph_node_name (node), node->uid, node->pid);
   if (node->global.inlined_to)
     fprintf (f, " (inline copy in %s/%i)",
 	     cgraph_node_name (node->global.inlined_to),

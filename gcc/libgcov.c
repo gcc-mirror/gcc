@@ -726,7 +726,6 @@ __gcov_pow2_profiler (gcov_type *counters, gcov_type value)
 }
 #endif
 
-#ifdef L_gcov_one_value_profiler
 /* Tries to determine the most common value among its inputs.  Checks if the
    value stored in COUNTERS[0] matches VALUE.  If this is the case, COUNTERS[1]
    is incremented.  If this is not the case and COUNTERS[1] is not zero,
@@ -737,8 +736,8 @@ __gcov_pow2_profiler (gcov_type *counters, gcov_type value)
 
    In any case, COUNTERS[2] is incremented.  */
 
-void
-__gcov_one_value_profiler (gcov_type *counters, gcov_type value)
+static inline void
+__gcov_one_value_profiler_body (gcov_type *counters, gcov_type value)
 {
   if (value == counters[0])
     counters[1]++;
@@ -750,6 +749,24 @@ __gcov_one_value_profiler (gcov_type *counters, gcov_type value)
   else
     counters[1]--;
   counters[2]++;
+}
+
+#ifdef L_gcov_one_value_profiler
+void
+__gcov_one_value_profiler (gcov_type *counters, gcov_type value)
+{
+  __gcov_one_value_profiler_body (counters, value);
+}
+#endif
+
+#ifdef L_gcov_indirect_call_profiler
+/* Tries to determine the most common value among its inputs. */
+void
+__gcov_indirect_call_profiler (gcov_type* counter, gcov_type value, 
+			       void* cur_func, void* callee_func)
+{
+  if (cur_func == callee_func)
+    __gcov_one_value_profiler_body (counter, value);
 }
 #endif
 

@@ -1638,6 +1638,7 @@ counts_to_freqs (void)
   count_max = MAX (true_count_max, 1);
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
     bb->frequency = (bb->count * BB_FREQ_MAX + count_max / 2) / count_max;
+
   return true_count_max;
 }
 

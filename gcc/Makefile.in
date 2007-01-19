@@ -1013,7 +1013,8 @@ LIB2FUNCS_ST = _eprintf __gcc_bcmp
 LIBGCOV = _gcov _gcov_merge_add _gcov_merge_single _gcov_merge_delta \
     _gcov_fork _gcov_execl _gcov_execlp _gcov_execle \
     _gcov_execv _gcov_execvp _gcov_execve \
-    _gcov_interval_profiler _gcov_pow2_profiler _gcov_one_value_profiler
+    _gcov_interval_profiler _gcov_pow2_profiler _gcov_one_value_profiler \
+    _gcov_indirect_call_profiler
 
 FPBIT_FUNCS = _pack_sf _unpack_sf _addsub_sf _mul_sf _div_sf \
     _fpcmp_parts_sf _compare_sf _eq_sf _ne_sf _gt_sf _ge_sf \
@@ -2355,7 +2356,7 @@ profile.o : profile.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
 tree-profile.o : tree-profile.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(RTL_H) $(TREE_H) $(FLAGS_H) output.h $(REGS_H) $(EXPR_H) \
    $(FUNCTION_H) toplev.h $(COVERAGE_H) $(TREE_H) value-prof.h $(TREE_DUMP_H) \
-   tree-pass.h $(TREE_FLOW_H) $(TIMEVAR_H) $(GGC_H) gt-tree-profile.h
+   tree-pass.h $(TREE_FLOW_H) $(TIMEVAR_H) $(GGC_H) gt-tree-profile.h $(CGRAPH_H)
 value-prof.o : value-prof.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h value-prof.h $(EXPR_H) output.h $(FLAGS_H) \
    $(RECOG_H) insn-config.h $(OPTABS_H) $(REGS_H) $(GGC_H) $(DIAGNOSTIC_H) \
