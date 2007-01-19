@@ -1,3 +1,8 @@
+2007-01-19  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/natVMVirtualMachine.cc: Mark unused parameters
+	in methods and reformat.
+
 2007-01-18  Keith Seitz  <keiths@redhat.com>
 
 	From Macro Trudel <mtrudel@gmx.ch>:
