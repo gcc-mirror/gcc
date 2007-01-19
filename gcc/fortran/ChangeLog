@@ -1,5 +1,11 @@
 2007-01-19  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* intrinsic.texi (MATMUL): Corrected a typo.
+	(MAX): Separated @var arguments.
+	(MIN): Separated @var arguments.
+
+2007-01-19  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* intrinsic.texi: general whitespace cleanup.
 	(menu): Added TIME8, removed UNMASK.
 	(AINT): Clarified argument requirement.
