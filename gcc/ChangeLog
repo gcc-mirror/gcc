@@ -1,5 +1,10 @@
 2007-01-19  Richard Guenther  <rguenther@suse.de>
 
+	* builtins.c (expand_builtin_cexpi): Fall back to expanding
+	via cexp in case sincos is not available.
+
+2007-01-19  Richard Guenther  <rguenther@suse.de>
+
 	* doc/tm.texi (TARGET_HAS_SINCOS): Document new target macro.
 	* defaults.h (TARGET_HAS_SINCOS): Default to off.
 	* config/linux.h (TARGET_HAS_SINCOS): Set to on if we have glibc.

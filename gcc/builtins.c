@@ -2240,8 +2240,8 @@ expand_builtin_cexpi (tree exp, rtx target, rtx subtarget)
   mode = TYPE_MODE (TREE_TYPE (arg));
 
   /* Try expanding via a sincos optab, fall back to emitting a libcall
-     to sincos.  We are sure we have sincos either way because cexpi
-     is only generated from sincos.  */
+     to sincos or cexp.  We are sure we have sincos or cexp because cexpi
+     is only generated from sincos, cexp or if we have either of them.  */
   if (sincos_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
     {
       op1 = gen_reg_rtx (mode);
@@ -2252,7 +2252,7 @@ expand_builtin_cexpi (tree exp, rtx target, rtx subtarget)
       /* Compute into op1 and op2.  */
       expand_twoval_unop (sincos_optab, op0, op2, op1, 0);
     }
-  else
+  else if (TARGET_HAS_SINCOS)
     {
       tree call, narglist, fn = NULL_TREE;
       tree top1, top2;
@@ -2264,7 +2264,6 @@ expand_builtin_cexpi (tree exp, rtx target, rtx subtarget)
 	fn = built_in_decls[BUILT_IN_SINCOS];
       else if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CEXPIL)
 	fn = built_in_decls[BUILT_IN_SINCOSL];
-      gcc_assert (fn);
  
       op1 = assign_temp (TREE_TYPE (arg), 0, 1, 1);
       op2 = assign_temp (TREE_TYPE (arg), 0, 1, 1);
@@ -2281,6 +2280,24 @@ expand_builtin_cexpi (tree exp, rtx target, rtx subtarget)
       call = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
       expand_normal (build3 (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
 			     call, narglist, NULL_TREE));
+    }
+  else
+    {
+      tree call, fn, narg;
+      tree ctype = build_complex_type (type);
+
+      /* We can expand via the C99 cexp function.  */
+      gcc_assert (TARGET_C99_FUNCTIONS);
+
+      fn = mathfn_built_in (ctype, BUILT_IN_CEXP);
+      narg = fold_build2 (COMPLEX_EXPR, ctype,
+			  build_real (type, dconst0), arg);
+
+      /* Make sure not to fold the cexp call again.  */
+      call = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
+      return expand_expr (build3 (CALL_EXPR, ctype, call,
+				  build_tree_list (NULL_TREE, narg),
+				  NULL_TREE), target, VOIDmode, 0);
     }
 
   /* Now build the proper return type.  */
