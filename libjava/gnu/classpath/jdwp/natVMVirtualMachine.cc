@@ -38,7 +38,7 @@ using namespace gnu::classpath::jdwp::event;
 using namespace gnu::classpath::jdwp::util;
 
 // Forward declarations
-static void jdwpVMInitCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread);
+static void JNICALL jdwpVMInitCB (jvmtiEnv *, JNIEnv *, jthread);
 
 #define DEFINE_CALLBACK(Cb,Event) Cb.Event = jdwp ## Event ## CB
 #define ENABLE_EVENT(Event,Thread)					\
@@ -359,7 +359,7 @@ gnu::classpath::jdwp::VMVirtualMachine::getSourceFile (jclass clazz)
   return NULL;
 }
 
-static void
+static void JNICALL
 jdwpVMInitCB (MAYBE_UNUSED jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
 	      jthread thread)
 {

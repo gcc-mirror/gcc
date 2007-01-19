@@ -1,3 +1,9 @@
+2007-01-18  Keith Seitz  <keiths@redhat.com>
+
+	From Macro Trudel <mtrudel@gmx.ch>:
+	* gnu/classpath/jdwp/natVMVirtualMachine.cc (jdwpVMInitCB):
+	Use JNICALL.
+
 2007-01-18  Marco Trudel  <mtrudel@gmx.ch>
 
 	* jni.cc (_Jv_JNI_FindClass): Initialize class.
