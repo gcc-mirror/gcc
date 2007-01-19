@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-funsafe-math-optimizations -ffinite-math-only -fdump-tree-gimple" } */
+/* { dg-options "-fno-signed-zeros -ffinite-math-only -fdump-tree-gimple" } */
 
 _Complex double test1 (double x) { return x + 1.i; }
 _Complex double test2 (double x) { return 1 + x * 1.i; }

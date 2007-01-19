@@ -1,3 +1,8 @@
+2007-01-19  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/pr30172-1.c: Specify the -fno-signed-zeros command line
+	option instead of -funsafe-math-optimizations.
+
 2007-01-19  Tomas Bily  <tbily@suse.cz>
 
 	gcc.dg/tree-prof/indir-call-prof.c: New.

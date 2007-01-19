@@ -1,3 +1,15 @@
+2007-01-19  Roger Sayle  <roger@eyesopen.com>
+
+	* common.opt (fsigned-zeros): New command line option.
+	* flags.h (HONOR_SIGNED_ZEROS): Control via flag_signed_zeros instead
+	of flag_unsafe_math_optimizations.
+	* opts.c (set_fast_math_flags): The -ffast-math command line option
+	implies -fno-signed-zeros.
+	(fast_math_flags_set_p): Likewise.
+
+	* doc/invoke.texi: Document new -fno-signed-zeros option, and update
+	the documentation of -ffast-math appropriately.  Wrap long lines.
+
 2007-01-19  Steve Ellcey  <sje@cup.hp.com>
 
 	* system.h (ASM_MAKE_LABEL_LINKONCE): Poison.
