@@ -1,3 +1,24 @@
+2007-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (acos<mode>2): Rename from acossf2 and acosdf2.
+	Macroize expander using X87MODEF12 mode macro.  Extend operand 1
+	to XFMode, use acosxf2 and truncate result to requested mode.
+	Use SSE_FLOAT_MODE_P to disable patterns for SSE math.
+	(asin<mode>2): Similarly, with asin expanders.
+	(*fscalexf4_i387): Rename from *fscalexf4.
+	(expNcorexf3): New expander.
+	(expxf2, exp10xf2, exp2xf2): Use expNcorexf3 expander.
+	(exp<mode>2): Rename from expsf2 and expdf2. Macroize expander using
+	X87MODEF12 mode macro.  Extend operand 1 to XFMode, use expxf2 and
+	truncate result to requested mode. Use SSE_FLOAT_MODE_P to disable
+	patterns for SSE math.
+	(exp10<mode>2): Similarly, with exp10 expanders.
+	(exp2<mode>2): Similarly, with exp2 expanders.
+	(expm1<mode>2): Similarly, with expm1 expanders.
+	(ldexp<mode>3): Similarly, with ldexp expanders.
+	(log<mode>2, log10<mode>2, log2<mode>2, log1p<mode>2, logb<mode>2):
+	Use gen_truncxf<mode>2_i387_noop to truncate result.
+
 2007-01-19  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/m68k/m68k.h (PREFERRED_STACK_BOUNDARY): Define to 32
