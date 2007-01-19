@@ -7482,7 +7482,7 @@ if test "${enable_werror+set}" = set; then
   enableval="$enable_werror"
   :
 else
-  if test -d gcc && test x"`cat $srcdir/gcc/DEV-PHASE`" = xexperimental; then
+  if test -d ${srcdir}/gcc && test x"`cat $srcdir/gcc/DEV-PHASE`" = xexperimental; then
   enable_werror=yes
 else
   enable_werror=no
