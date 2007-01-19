@@ -1,3 +1,10 @@
+2007-01-19  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/m68k/m68k.md (bordered, bunordered, buneq, bunge, bungt)
+	(bunle, bunlt, bltgt, bordered_rev, bunordered_rev, buneq_rev)
+	(bunge_rev, bungt_rev, bunle_rev, bunlt_rev, bltgt_rev): Change
+	condition from TARGET_68881 to TARGET_HARD_FLOAT.
+
 2007-01-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* longlong.h (count_leading_zeros, COUNT_LEADING_ZEROS_0): Add
