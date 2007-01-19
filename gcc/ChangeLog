@@ -1,3 +1,8 @@
+2007-01-18  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_unary) <VIEW_CONVERT_EXPR>: Optimize away a
+	VIEW_CONVERT_EXPR to the same type as it's operand.
+
 2007-01-18  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/darwin-ldouble.c: Only build _SOFT_FLOAT if
