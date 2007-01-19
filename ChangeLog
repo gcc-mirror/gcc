@@ -1,3 +1,7 @@
+2007-01-18  Mike Stump  <mrs@apple.com>
+
+	* configure.in: Re-enable -Werror for gcc builds.
+
 2007-01-11 Harsha Jagasia <harsha.jagasia@amd.com>
 
         * MAINTAINERS (Write After Approval): Add myself.
