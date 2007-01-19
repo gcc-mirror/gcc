@@ -526,7 +526,7 @@ extern enum reg_class regno_reg_class[];
 	  || GET_CODE (XEXP (OP, 0)) == CONST))		\
    : 							\
    (CODE) == 'T'					\
-   ? ( !TARGET_PCREL 					\
+   ? (!flag_pic						\
       && (GET_CODE (OP) == SYMBOL_REF			\
 	  || GET_CODE (OP) == LABEL_REF			\
 	  || GET_CODE (OP) == CONST))			\
