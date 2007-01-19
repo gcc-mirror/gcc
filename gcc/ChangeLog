@@ -1,5 +1,13 @@
 2007-01-19  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/m68k/m68k.md (adddi_dilshr32): Rename to...
+	(*adddi_dilshr32): ...this.  Fix formatting.  Remove commented-out
+	non-canonical pattern.  Restrict to !TARGET_COLDFIRE.
+	(*adddi_dilshr32_cf): New pattern.
+	(adddi3, subdi3): Remove first alternatives.
+
+2007-01-19  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/m68k/m68k.c (notice_update_cc): If an SFmode move is
 	implemented using move.l, do not use its cc result for floating-point
 	comparisons.
