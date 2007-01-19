@@ -285,6 +285,10 @@ extern int dot_symbols;
 #undef  TARGET_C99_FUNCTIONS
 #define TARGET_C99_FUNCTIONS (OPTION_GLIBC)
 
+/* Whether we have sincos that follows the GNU extension.  */
+#undef  TARGET_HAS_SINCOS
+#define TARGET_HAS_SINCOS (OPTION_GLIBC)
+
 #undef  TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()			\
   do							\
