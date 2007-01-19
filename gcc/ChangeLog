@@ -1,3 +1,10 @@
+2007-01-19  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (cgraph_decide_inlining_incrementally): Instead of 'early' argument
+	take inlining mode argument specifying whether to inline for size/speeed or all
+	functions; add support for flattening; improve dumpting.
+	(cgraph_early_inlining): Update call of decide_inlining_incrementally.
+
 2007-01-19  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/17947

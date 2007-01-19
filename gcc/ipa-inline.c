@@ -1136,11 +1136,17 @@ cgraph_decide_inlining (void)
   return 0;
 }
 
+enum inlining_mode {
+  INLINE_SIZE,
+  INLINE_SPEED,
+  INLINE_ALL
+};
+
 /* Decide on the inlining.  We do so in the topological order to avoid
    expenses on updating data structures.  */
 
 static unsigned int
-cgraph_decide_inlining_incrementally (struct cgraph_node *node, bool early)
+cgraph_decide_inlining_incrementally (struct cgraph_node *node, enum inlining_mode mode)
 {
   struct cgraph_edge *e;
   bool inlined = false;
@@ -1150,10 +1156,17 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node, bool early)
 #ifdef ENABLE_CHECKING
   verify_cgraph_node (node);
 #endif
+  if (lookup_attribute ("flatten", DECL_ATTRIBUTES (node->decl)) != NULL)
+    {
+      if (dump_file)
+	fprintf (dump_file, "  Flattening %s\n", cgraph_node_name (node));
+      mode = INLINE_ALL;
+    }
 
   /* First of all look for always inline functions.  */
   for (e = node->callees; e; e = e->next_callee)
-    if (e->callee->local.disregard_inline_limits
+    if ((e->callee->local.disregard_inline_limits
+	 || (mode == INLINE_ALL && e->callee->local.inlinable))
 	&& e->inline_failed
 	&& (gimple_in_ssa_p (DECL_STRUCT_FUNCTION (node->decl))
 	    == gimple_in_ssa_p (DECL_STRUCT_FUNCTION (e->callee->decl)))
@@ -1162,25 +1175,27 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node, bool early)
 	   in duplicate_decls. See gcc.c-torture/compile/20011119-2.c  */
 	&& (DECL_SAVED_TREE (e->callee->decl) || e->callee->inline_decl))
       {
-        if (dump_file && early)
+        if (dump_file)
 	  {
-	    fprintf (dump_file, "  Early inlining %s",
+	    fprintf (dump_file, "  Inlining always_inline %s",
 		     cgraph_node_name (e->callee));
 	    fprintf (dump_file, " into %s\n", cgraph_node_name (node));
 	  }
 	cgraph_mark_inline (e);
-	/* In order to fully inline alway_inline functions at -O0, we need to
+	/* In order to fully inline always_inline functions at -O0, we need to
 	   recurse here, since the inlined functions might not be processed by
-	   incremental inlining at all yet.  */
+	   incremental inlining at all yet.  
+
+	   Also flattening needs to be done recursively.  */
 	
-	if (!flag_unit_at_a_time)
-          cgraph_decide_inlining_incrementally (e->callee, early);
+        if (!flag_unit_at_a_time || mode == INLINE_ALL)
+          cgraph_decide_inlining_incrementally (e->callee, mode);
 	
 	inlined = true;
       }
 
   /* Now do the automatic inlining.  */
-  if (!flag_really_no_inline)
+  if (!flag_really_no_inline && mode != INLINE_ALL)
     for (e = node->callees; e; e = e->next_callee)
       if (e->callee->local.inlinable
 	  && e->inline_failed
@@ -1188,28 +1203,30 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node, bool early)
 	  && !cgraph_recursive_inlining_p (node, e->callee, &e->inline_failed)
 	  && (gimple_in_ssa_p (DECL_STRUCT_FUNCTION (node->decl))
 	      == gimple_in_ssa_p (DECL_STRUCT_FUNCTION (e->callee->decl)))
-	  && (!early
+	  && (mode != INLINE_SIZE
 	      || (cgraph_estimate_size_after_inlining (1, e->caller, e->callee)
 	          <= e->caller->global.insns))
 	  && cgraph_check_inline_limits (node, e->callee, &e->inline_failed,
-	    				 false)
+	    			         false)
 	  && (DECL_SAVED_TREE (e->callee->decl) || e->callee->inline_decl))
 	{
 	  if (cgraph_default_inline_p (e->callee, &failed_reason))
 	    {
-	      if (dump_file && early)
+	      if (dump_file)
 		{
-		  fprintf (dump_file, "  Early inlining %s",
+		  fprintf (dump_file, "  Inlining %s",
 			   cgraph_node_name (e->callee));
 		  fprintf (dump_file, " into %s\n", cgraph_node_name (node));
 		}
 	      cgraph_mark_inline (e);
 	      inlined = true;
+	      if (!flag_unit_at_a_time)
+		cgraph_decide_inlining_incrementally (e->callee, mode);
 	    }
-	  else if (!early)
+	  else if (!flag_unit_at_a_time)
 	    e->inline_failed = failed_reason;
 	}
-  if (early && inlined && !node->global.inlined_to)
+  if (flag_unit_at_a_time && inlined && !node->global.inlined_to)
     {
       timevar_push (TV_INTEGRATION);
       todo = optimize_inline_calls (current_function_decl);
@@ -1259,7 +1276,9 @@ cgraph_early_inlining (void)
 
   if (sorrycount || errorcount)
     return 0;
-  return cgraph_decide_inlining_incrementally (node, flag_unit_at_a_time);
+  return cgraph_decide_inlining_incrementally (node,
+					       flag_unit_at_a_time
+					       ? INLINE_SIZE : INLINE_SPEED);
 }
 
 /* When inlining shall be performed.  */
