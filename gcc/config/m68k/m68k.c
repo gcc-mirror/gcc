@@ -2834,12 +2834,18 @@ notice_update_cc (rtx exp, rtx insn)
 	  if (cc_status.value2 && modified_in_p (cc_status.value2, insn))
 	    cc_status.value2 = 0; 
 	}
+      /* fmoves to memory or data registers do not set the condition
+	 codes.  Normal moves _do_ set the condition codes, but not in
+	 a way that is appropriate for comparison with 0, because -0.0
+	 would be treated as a negative nonzero number.  Note that it
+	 isn't appropriate to conditionalize this restiction on
+	 HONOR_SIGNED_ZEROS because that macro merely indicates whether
+	 we care about the difference between -0.0 and +0.0.  */
       else if (!FP_REG_P (SET_DEST (exp))
 	       && SET_DEST (exp) != cc0_rtx
 	       && (FP_REG_P (SET_SRC (exp))
 		   || GET_CODE (SET_SRC (exp)) == FIX
-		   || GET_CODE (SET_SRC (exp)) == FLOAT_TRUNCATE
-		   || GET_CODE (SET_SRC (exp)) == FLOAT_EXTEND))
+		   || FLOAT_MODE_P (GET_MODE (SET_DEST (exp)))))
 	CC_STATUS_INIT; 
       /* A pair of move insns doesn't produce a useful overall cc.  */
       else if (!FP_REG_P (SET_DEST (exp))
