@@ -1,3 +1,13 @@
+2007-01-19  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* doc/gty.texi (Options): Document the mark_hook option to
+	GTY.
+	* gcc/gengtype.c (write_types_data, write_func_for_structure,
+	write_types, ggc_wtd, pch_wtd): Added skip_hooks to
+	write_types_data, ggc_wtd, pch_wtd for mark_hook.
+	(walk_type, write_func_for_structure): Generate the mark_hook if
+	needed.
+
 2007-01-19  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (cgraph_decide_inlining_incrementally): Instead of 'early' argument
