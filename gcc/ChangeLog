@@ -1,3 +1,8 @@
+2007-01-19  Dirk Mueller  <dmueller@suse.de>
+
+	* tree-ssa-alias.c (perform_var_substitution): Fix typo
+	in dump_flags test.
+
 2007-01-19  Richard Guenther  <rguenther@suse.de>
 
 	* builtins.c (expand_builtin_cexpi): Fall back to expanding
