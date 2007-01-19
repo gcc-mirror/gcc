@@ -1,5 +1,11 @@
 2007-01-19  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/m68k/m68k.c (notice_update_cc): If an SFmode move is
+	implemented using move.l, do not use its cc result for floating-point
+	comparisons.
+
+2007-01-19  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/m68k/m68k.h (EXTRA_CONSTRAINT): Stop the 'T' constraint
 	from accepting 's' constraints if flag_pic.
 
