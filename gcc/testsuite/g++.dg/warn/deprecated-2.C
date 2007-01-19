@@ -7,5 +7,5 @@ void func(void);
 void func(void) __attribute__((deprecated));
 
 void f(void) {
-  func(); /* { dg-warning "'func' is deprecated" } */
+  func(); /* { dg-warning "'void func\\(\\)' is deprecated" } */
 }

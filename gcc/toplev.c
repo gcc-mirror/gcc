@@ -901,9 +901,8 @@ warn_deprecated_use (tree node)
     {
       expanded_location xloc = expand_location (DECL_SOURCE_LOCATION (node));
       warning (OPT_Wdeprecated_declarations,
-	       "%qs is deprecated (declared at %s:%d)",
-	       IDENTIFIER_POINTER (DECL_NAME (node)),
-	       xloc.file, xloc.line);
+	       "%qD is deprecated (declared at %s:%d)",
+	       node, xloc.file, xloc.line);
     }
   else if (TYPE_P (node))
     {
