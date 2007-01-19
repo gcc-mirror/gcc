@@ -275,7 +275,7 @@ GCC_4.2.0 {
   _Unwind_GetIPInfo
 }
 
-%inherit GCC_4.3 GCC_4.2.0
+%inherit GCC_4.3.0 GCC_4.2.0
 GCC_4.3.0 {
   # byte swapping routines
   __bswapsi2

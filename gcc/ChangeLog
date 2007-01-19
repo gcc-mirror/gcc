@@ -1,3 +1,7 @@
+2007-01-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	* libgcc-std.ver: Fix typo in %inherit for GCC_4.3.0.
+
 2007-01-18  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_unary) <VIEW_CONVERT_EXPR>: Optimize away a
