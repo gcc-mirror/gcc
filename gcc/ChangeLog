@@ -1,4 +1,12 @@
 2007-01-19  Richard Sandiford  <richard@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* config/m68k/m68k.h (CONST_OK_FOR_LETTER_P): Add an 'R' case.
+	* config/m68k/m68k.md (*movsi_cfv4): Fold into...
+	(*movsi_cf): ...here.  Remove unnecessary 'R' from 'Rg'.
+	Add commentary.
+
+2007-01-19  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/m68k/m68k-protos.h (valid_mov3q_const): Take a HOST_WIDE_INT
 	and return a bool.
