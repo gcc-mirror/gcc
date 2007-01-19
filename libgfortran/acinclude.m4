@@ -1,6 +1,22 @@
 m4_include(../config/acx.m4)
 m4_include(../config/no-executables.m4)
 
+dnl Check that we have a working GNU Fortran compiler
+AC_DEFUN([LIBGFOR_WORKING_GFORTRAN], [
+AC_MSG_CHECKING([whether the GNU Fortran compiler is working])
+AC_LANG_PUSH([Fortran])
+AC_COMPILE_IFELSE([[
+      program foo
+      real, parameter :: bar = sin (12.34 / 2.5)
+      end program foo]],
+    [AC_MSG_RESULT([yes])],
+    [AC_MSG_RESULT([no])
+     AC_MSG_ERROR([GNU Fortran is not working; please report a bug in http://gcc.gnu.org/bugzilla, attaching $PWD/config.log])
+    ])
+AC_LANG_POP([Fortran])
+])
+
+
 dnl Check:
 dnl * If we have gettimeofday;
 dnl * If we have struct timezone for use in calling it;
