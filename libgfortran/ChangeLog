@@ -1,13 +1,23 @@
+2007-01-19  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/26893
+	* acinclude.m4 (LIBGFOR_WORKING_GFORTRAN): New check.
+	* configure.ac: Add call to LIBGFOR_WORKING_GFORTRAN.
+	* configure: Regenerate.
+	* config.h.in: Regenerate because it was forgottent in the last
+	commit.
+
 2007-01-18  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 	    Tobias Burnus  <burnus@net-b.de>
 
 	PR libfortran/29649
 	* runtime/environ.c (variable_table): New GFORTRAN_ERROR_DUMPCORE
-	  environment variable.
+	environment variable.
 	* runtime/compile_options.c (set_std): Add new argument.
-	* runtime/error.c (sys_exit): Move from io/unix.c. Add coredump functionality.
+	* runtime/error.c (sys_exit): Move from io/unix.c. Add coredump
+	functionality.
 	* libgfortran.h (options_t): New dump_core and backtrace members.
-	  (sys_exit): Move prototype.
+	(sys_exit): Move prototype.
 	* io/unix.c (sys_exit): Move to runtime/error.c.
 	* configure.ac: Add check for getrlimit.
 	* configure: Regenerate.
