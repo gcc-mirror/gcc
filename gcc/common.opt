@@ -845,6 +845,10 @@ fsignaling-nans
 Common Report Var(flag_signaling_nans)
 Disable optimizations observable by IEEE signaling NaNs
 
+fsigned-zeros
+Common Report Var(flag_signed_zeros) Init(1)
+Disable floating point optimizations that ignore the IEEE signedness of zero
+
 fsingle-precision-constant
 Common Report Var(flag_single_precision_constant)
 Convert floating point constants to single precision constants

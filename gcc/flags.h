@@ -281,7 +281,7 @@ extern const char *flag_random_seed;
 /* Like HONOR_NANS, but true if the given mode distinguishes between
    positive and negative zero, and the sign of zero is important.  */
 #define HONOR_SIGNED_ZEROS(MODE) \
-  (MODE_HAS_SIGNED_ZEROS (MODE) && !flag_unsafe_math_optimizations)
+  (MODE_HAS_SIGNED_ZEROS (MODE) && flag_signed_zeros)
 
 /* Like HONOR_NANS, but true if given mode supports sign-dependent rounding,
    and the rounding mode is important.  */

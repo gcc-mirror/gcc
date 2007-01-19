@@ -323,7 +323,8 @@ Objective-C and Objective-C++ Dialects}.
 -fno-default-inline  -fno-defer-pop -fmove-loop-invariants @gol
 -fno-function-cse  -fno-guess-branch-probability @gol
 -fno-inline  -fno-math-errno  -fno-peephole  -fno-peephole2 @gol
--funsafe-math-optimizations  -funsafe-loop-optimizations  -ffinite-math-only @gol
+-funsafe-math-optimizations  -funsafe-loop-optimizations @gol
+-ffinite-math-only  -fno-signed-zeros @gol
 -fno-toplevel-reorder -fno-trapping-math  -fno-zero-initialized-in-bss @gol
 -fomit-frame-pointer  -foptimize-register-move @gol
 -foptimize-sibling-calls  -fprefetch-loop-arrays @gol
@@ -5631,8 +5632,8 @@ them to store all pertinent intermediate computations into variables.
 @opindex ffast-math
 Sets @option{-fno-math-errno}, @option{-funsafe-math-optimizations}, @*
 @option{-fno-trapping-math}, @option{-ffinite-math-only},
-@option{-fno-rounding-math}, @option{-fno-signaling-nans}
-and @option{fcx-limited-range}.
+@option{-fno-rounding-math}, @option{-fno-signaling-nans},
+@option{-fno-signed-zeros} and @option{fcx-limited-range}.
 
 This option causes the preprocessor macro @code{__FAST_MATH__} to be defined.
 
@@ -5655,9 +5656,9 @@ math functions.
 
 The default is @option{-fmath-errno}.
 
-On Darwin systems, the math library never sets @code{errno}.  There is therefore
-no reason for the compiler to consider the possibility that it might,
-and @option{-fno-math-errno} is the default.
+On Darwin systems, the math library never sets @code{errno}.  There is
+therefore no reason for the compiler to consider the possibility that
+it might, and @option{-fno-math-errno} is the default.
 
 @item -funsafe-math-optimizations
 @opindex funsafe-math-optimizations
@@ -5684,6 +5685,16 @@ it can result in incorrect output for programs which depend on
 an exact implementation of IEEE or ISO rules/specifications.
 
 The default is @option{-fno-finite-math-only}.
+
+@item -fno-signed-zeros
+@opindex fno-signed-zeros
+Allow optimizations for floating point arithmetic that ignore the
+signedness of zero.  IEEE arithmetic specifies the behavior of
+distinct +0.0 and -0.0 values, which then prohibits simplification
+of expressions such as x+0.0 or 0.0*x (even with @option{-ffinte-math-only}).
+This option implies that the sign of a zero result isn't significant.
+
+The default is @option{-fsigned-zeros}.
 
 @item -fno-trapping-math
 @opindex fno-trapping-math
