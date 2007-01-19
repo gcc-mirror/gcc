@@ -1006,6 +1006,9 @@ __transfer_from_trampoline ()					\
 
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
+/* The ColdFire FF1 instruction returns 32 for zero. */
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 32, 1)
+
 #define STORE_FLAG_VALUE (-1)
 
 #define Pmode SImode

@@ -521,6 +521,11 @@ UDItype __umulsidi3 (USItype, USItype);
   __asm__ ("bfffo %1{%b2:%b2},%0"					\
 	   : "=d" ((USItype) (count))					\
 	   : "od" ((USItype) (x)), "n" (0))
+/* Some ColdFire architectures have a ff1 instruction supported via
+   __builtin_clz. */
+#elif defined (__mcfisaaplus__) || defined (__mcfisac__)
+#define count_leading_zeros(count,x) ((count) = __builtin_clz (x))
+#define COUNT_LEADING_ZEROS_0 32
 #endif
 #endif /* mc68000 */
 

@@ -1,3 +1,11 @@
+2007-01-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* longlong.h (count_leading_zeros, COUNT_LEADING_ZEROS_0): Add
+	ColdFire alternatives.
+	* config/m68k/m68k.h (CLZ_DEFINED_VALUE_AT_ZERO): New macro.
+	* config/m68k/m68k.md (clzsi2):  Define for ColdFire
+	architectures that support ff1 instruction.
+
 2007-01-19  Richard Sandiford  <richard@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 
