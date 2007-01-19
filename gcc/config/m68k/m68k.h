@@ -493,7 +493,8 @@ extern enum reg_class regno_reg_class[];
    `M' is for numbers that moveq+notb can't handle.
    'N' is for range 24 to 31, rotatert:SI 8 to 1 expressed as rotate.
    'O' is for 16 (for rotate using swap).
-   'P' is for range 8 to 15, rotatert:HI 8 to 1 expressed as rotate.  */
+   'P' is for range 8 to 15, rotatert:HI 8 to 1 expressed as rotate.
+   'R' is for numbers that mov3q can handle.  */
 #define CONST_OK_FOR_LETTER_P(VALUE, C) \
   ((C) == 'I' ? (VALUE) > 0 && (VALUE) <= 8 : \
    (C) == 'J' ? (VALUE) >= -0x8000 && (VALUE) <= 0x7FFF : \
@@ -502,7 +503,8 @@ extern enum reg_class regno_reg_class[];
    (C) == 'M' ? (VALUE) < -0x100 || (VALUE) >= 0x100 : \
    (C) == 'N' ? (VALUE) >= 24 && (VALUE) <= 31 : \
    (C) == 'O' ? (VALUE) == 16 : \
-   (C) == 'P' ? (VALUE) >= 8 && (VALUE) <= 15 : 0)
+   (C) == 'P' ? (VALUE) >= 8 && (VALUE) <= 15 : \
+   (C) == 'R' ? valid_mov3q_const (VALUE) : 0)
 
 /* "G" defines all of the floating constants that are *NOT* 68881
    constants.  This is so 68881 constants get reloaded and the
