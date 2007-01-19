@@ -1,3 +1,10 @@
+2007-01-19  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/17947
+	* g++.dg/warn/deprecated.C: Update warning output.
+	* g++.dg/warn/deprecated-2.C: Likewise.
+	* g++.dg/warn/deprecated-3.C: New.
+	
 2007-01-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.c-torture/execute/nestfunc-7.c: New.

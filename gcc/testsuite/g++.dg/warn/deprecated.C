@@ -50,13 +50,13 @@ int func1()
    int x __attribute__ ((deprecated));
    int y __attribute__ ((__deprecated__));
    int z;
-   int (*pf)() = f1;			/* { dg-warning "'f1' is deprecated" "" } */
+   int (*pf)() = f1;			/* { dg-warning "'INT1 f1\\(\\)' is deprecated" "" } */
 
    z = w + x + y + g1 + g2 + g3;	/* { dg-warning "'x' is deprecated" "" } */
    					/* { dg-warning "'y' is deprecated" "y" { target *-*-* } 55 } */
    					/* { dg-warning "'g2' is deprecated" "g2" { target *-*-* } 55 } */
    					/* { dg-warning "'g3' is deprecated" "g3" { target *-*-* } 55 } */
-   return f1(); 			/* { dg-warning "'f1' is deprecated" "f1" } */
+   return f1(); 			/* { dg-warning "'INT1 f1\\(\\)' is deprecated" "f1" } */
 }
 
 int func2(S1 *p)
@@ -64,14 +64,14 @@ int func2(S1 *p)
   S1 lp;
   
   if (p->field1)
-     return p->field2;			/* { dg-warning "'field2' is deprecated" "" } */
-  else if (lp.field4)			/* { dg-warning "'field4' is deprecated" "" } */
+     return p->field2;			/* { dg-warning "'S1::field2' is deprecated" "" } */
+  else if (lp.field4)			/* { dg-warning "'S1::field4' is deprecated" "" } */
      return p->field3;
   
   p->u1.field5 = g1 + p->field7;
-  p->u2.field9;				/* { dg-warning "'u2' is deprecated" "" } */
-  return p->u1.field6 + p->field8;	/* { dg-warning "'field6' is deprecated" "" } */
-  					/* { dg-warning "'field8' is deprecated" "field8" { target *-*-* } 73 } */
+  p->u2.field9;				/* { dg-warning "'S1::u2' is deprecated" "" } */
+  return p->u1.field6 + p->field8;	/* { dg-warning "'S1::<anonymous union>::field6' is deprecated" "" } */
+  					/* { dg-warning "'S1::field8' is deprecated" "field8" { target *-*-* } 73 } */
 }
 
 struct SS1 {
@@ -104,13 +104,13 @@ inline void T::member1(int) {}
 
 int T::member3(T *p)
 {
-  p->member1(1);			/* { dg-warning "'member1' is deprecated" "" } */
-  (*p).member1(2);			/* { dg-warning "'member1' is deprecated" "" } */
-  p->member2(1);			/* { dg-warning "'member2' is deprecated" "" } */
-  (*p).member2(2);			/* { dg-warning "'member2' is deprecated" "" } */
+  p->member1(1);			/* { dg-warning "'void T::member1\\(int\\)' is deprecated" "" } */
+  (*p).member1(2);			/* { dg-warning "'void T::member1\\(int\\)' is deprecated" "" } */
+  p->member2(1);			/* { dg-warning "'void T::member2\\(INT1\\)' is deprecated" "" } */
+  (*p).member2(2);			/* { dg-warning "'void T::member2\\(INT1\\)' is deprecated" "" } */
   p->member3(p);
   (*p).member3(p);
-  return f1(); 				/* { dg-warning "'f1' is deprecated" "" } */
+  return f1(); 				/* { dg-warning "'INT1 f1\\(\\)' is deprecated" "" } */
 }
 #endif
 
