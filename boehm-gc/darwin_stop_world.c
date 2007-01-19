@@ -20,19 +20,6 @@
 # define PPC_RED_ZONE_SIZE 320
 #endif
 
-/* Try to work out the right way to access thread state structure members.
-   The structure has changed its definition in different Darwin versions.  */
-/* This now defaults to the (older) names without __, thus hopefully    */
-/* not breaking any existing Makefile.direct builds.                    */
-#if defined (HAS_PPC_THREAD_STATE___R0) ||	\
-    defined (HAS_PPC_THREAD_STATE64___R0) ||	\
-    defined (HAS_X86_THREAD_STATE32___EAX) ||	\
-    defined (HAS_X86_THREAD_STATE64___RAX)
-#  define THREAD_FLD(x) __ ## x
-#else
-#  define THREAD_FLD(x) x
-#endif
-
 typedef struct StackFrame {
   unsigned long	savedSP;
   unsigned long	savedCR;
