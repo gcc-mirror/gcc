@@ -120,7 +120,6 @@ static tree m68k_handle_fndecl_attribute (tree *node, tree name,
 					  bool *no_add_attrs);
 static void m68k_compute_frame_layout (void);
 static bool m68k_save_reg (unsigned int regno, bool interrupt_handler);
-static int const_int_cost (rtx);
 static bool m68k_rtx_costs (rtx, int, int, int *);
 
 
@@ -1752,17 +1751,15 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
 
 typedef enum { MOVL, SWAP, NEGW, NOTW, NOTB, MOVQ, MVS, MVZ } CONST_METHOD;
 
-static CONST_METHOD const_method (rtx);
-
 #define USE_MOVQ(i)	((unsigned) ((i) + 128) <= 255)
 
+/* Return the type of move that should be used for integer I.  */
+
 static CONST_METHOD
-const_method (rtx constant)
+const_method (HOST_WIDE_INT i)
 {
-  int i;
   unsigned u;
 
-  i = INTVAL (constant);
   if (USE_MOVQ (i))
     return MOVQ;
 
@@ -1800,10 +1797,12 @@ const_method (rtx constant)
   return MOVL;
 }
 
+/* Return the cost of moving constant I into a data register.  */
+
 static int
-const_int_cost (rtx constant)
+const_int_cost (HOST_WIDE_INT i)
 {
-  switch (const_method (constant))
+  switch (const_method (i))
     {
     case MOVQ:
       /* Constants between -128 and 127 are cheap due to moveq.  */
@@ -1833,7 +1832,7 @@ m68k_rtx_costs (rtx x, int code, int outer_code, int *total)
       if (x == const0_rtx)
 	*total = 0;
       else
-        *total = const_int_cost (x);
+        *total = const_int_cost (INTVAL (x));
       return true;
 
     case CONST:
@@ -1958,13 +1957,16 @@ m68k_rtx_costs (rtx x, int code, int outer_code, int *total)
     }
 }
 
-const char *
+/* Return an instruction to move CONST_INT OPERANDS[1] into data regsiter
+   OPERANDS[0].  */
+
+static const char *
 output_move_const_into_data_reg (rtx *operands)
 {
-  int i;
+  HOST_WIDE_INT i;
 
   i = INTVAL (operands[1]);
-  switch (const_method (operands[1]))
+  switch (const_method (i))
     {
     case MVZ:
       return "mvzw %1,%0";
@@ -1991,63 +1993,55 @@ output_move_const_into_data_reg (rtx *operands)
 	return "moveq %1,%0\n\tswap %0";
       }
     case MOVL:
-	return "move%.l %1,%0";
+      return "move%.l %1,%0";
     default:
-	gcc_unreachable ();
+      gcc_unreachable ();
     }
 }
 
-/* Return 1 if 'constant' can be represented by
-   mov3q on a ColdFire V4 core.  */
-int
-valid_mov3q_const (rtx constant)
+/* Return true if I can be handled by ISA B's mov3q instruction.  */
+
+bool
+valid_mov3q_const (HOST_WIDE_INT i)
 {
-  int i;
-
-  if (TARGET_ISAB && GET_CODE (constant) == CONST_INT)
-    {
-      i = INTVAL (constant);
-      if (i == -1 || (i >= 1 && i <= 7))
-	return 1;
-    }
-  return 0;
+  return TARGET_ISAB && (i == -1 || IN_RANGE (i, 1, 7));
 }
 
+/* Return an instruction to move CONST_INT OPERANDS[1] into OPERANDS[0].
+   I is the value of OPERANDS[1].  */
 
-const char *
+static const char *
 output_move_simode_const (rtx *operands)
 {
-  if (operands[1] == const0_rtx
-      && (DATA_REG_P (operands[0])
-	  || GET_CODE (operands[0]) == MEM)
+  rtx dest;
+  HOST_WIDE_INT src;
+
+  dest = operands[0];
+  src = INTVAL (operands[1]);
+  if (src == 0
+      && (DATA_REG_P (dest) || MEM_P (dest))
       /* clr insns on 68000 read before writing.  */
       && ((TARGET_68010 || TARGET_COLDFIRE)
-	  || !(GET_CODE (operands[0]) == MEM
-	       && MEM_VOLATILE_P (operands[0]))))
+	  || !(MEM_P (dest) && MEM_VOLATILE_P (dest))))
     return "clr%.l %0";
-  else if ((GET_MODE (operands[0]) == SImode)
-           && valid_mov3q_const (operands[1]))
+  else if (GET_MODE (dest) == SImode && valid_mov3q_const (src))
     return "mov3q%.l %1,%0";
-  else if (operands[1] == const0_rtx
-	   && ADDRESS_REG_P (operands[0]))
+  else if (src == 0 && ADDRESS_REG_P (dest))
     return "sub%.l %0,%0";
-  else if (DATA_REG_P (operands[0]))
+  else if (DATA_REG_P (dest))
     return output_move_const_into_data_reg (operands);
-  else if (ADDRESS_REG_P (operands[0])
-	   && INTVAL (operands[1]) < 0x8000
-	   && INTVAL (operands[1]) >= -0x8000)
+  else if (ADDRESS_REG_P (dest) && IN_RANGE (src, -0x8000, 0x7fff))
     {
-      if (valid_mov3q_const (operands[1]))
+      if (valid_mov3q_const (src))
         return "mov3q%.l %1,%0";
       return "move%.w %1,%0";
     }
-  else if (GET_CODE (operands[0]) == MEM
-	   && GET_CODE (XEXP (operands[0], 0)) == PRE_DEC
-	   && REGNO (XEXP (XEXP (operands[0], 0), 0)) == STACK_POINTER_REGNUM
-	   && INTVAL (operands[1]) < 0x8000
-	   && INTVAL (operands[1]) >= -0x8000)
+  else if (MEM_P (dest)
+	   && GET_CODE (XEXP (dest, 0)) == PRE_DEC
+	   && REGNO (XEXP (XEXP (dest, 0), 0)) == STACK_POINTER_REGNUM
+	   && IN_RANGE (src, -0x8000, 0x7fff))
     {
-      if (valid_mov3q_const (operands[1]))
+      if (valid_mov3q_const (src))
         return "mov3q%.l %1,%-";
       return "pea %a1";
     }
