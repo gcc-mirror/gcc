@@ -1,3 +1,23 @@
+2007-01-19  Ian Lance Taylor  <iant@google.com>
+
+	* tree-ssa-operands.h (struct vuse_vec_d): Change num_vuse field
+	to unsigned.
+	(VUSE_VECT_ELEMENT) [ENABLE_CHECKING]: Use unsigned comparison.
+	(VUSE_ELEMENT_PTR) [ENABLE_CHECKING]: Likewise.
+	(SET_VUSE_VECT_ELEMENT) [ENABLE_CHECKING]: Likewise.
+	(SET_VUSE_ELEMENT_VAR) [ENABLE_CHECKING]: Likewise.
+	(SET_VUSE_ELEMENT_PTR) [ENABLE_CHECKING]: Likewise.
+	(realloc_vdef, realloc_vuse): Change second parameter to
+	unsigned.
+	(ssa_operand_iterator_d): Change vuse_index and mayuse_index
+	fields to unsigned.
+	* tree-ssa-operands.c (realloc_vop): Change num_elem parameter to
+	unsigned. Change x and lim locals to unsigned.
+	(realloc_vdef, realloc_vuse): Change num_elem parameter to
+	unsigned.
+	(finalize_ssa_vuse_ops): Change old_i local to unsigned.
+	(copy_virtual_operands): Change i and n locals to unsigned.
+
 2007-01-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR middle-end/29335

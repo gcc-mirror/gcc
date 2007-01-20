@@ -1,5 +1,5 @@
 /* SSA operands management for trees.
-   Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -671,9 +671,10 @@ add_vdef_op (tree stmt, tree op, int num, voptype_p last)
    is the head of the operand list it belongs to.  */
 
 static inline struct voptype_d *
-realloc_vop (struct voptype_d *ptr, int num_elem, struct voptype_d **root)
+realloc_vop (struct voptype_d *ptr, unsigned int num_elem,
+	     struct voptype_d **root)
 {
-  int x, lim;
+  unsigned int x, lim;
   tree stmt, val;
   struct voptype_d *ret, *tmp;
 
@@ -732,7 +733,7 @@ realloc_vop (struct voptype_d *ptr, int num_elem, struct voptype_d **root)
 /* Reallocate the PTR vdef so that it has NUM_ELEM use slots.  */
 
 struct voptype_d *
-realloc_vdef (struct voptype_d *ptr, int num_elem)
+realloc_vdef (struct voptype_d *ptr, unsigned int num_elem)
 {
   tree val, stmt;
   struct voptype_d *ret;
@@ -748,7 +749,7 @@ realloc_vdef (struct voptype_d *ptr, int num_elem)
 /* Reallocate the PTR vuse so that it has NUM_ELEM use slots.  */
 
 struct voptype_d *
-realloc_vuse (struct voptype_d *ptr, int num_elem)
+realloc_vuse (struct voptype_d *ptr, unsigned int num_elem)
 {
   tree stmt;
   struct voptype_d *ret;
@@ -982,8 +983,7 @@ finalize_ssa_vdefs (tree stmt)
 static inline void
 finalize_ssa_vuse_ops (tree stmt)
 {
-  unsigned new_i;
-  int old_i;
+  unsigned new_i, old_i;
   voptype_p old_ops, last;
   VEC(tree,heap) *new_ops;
   stmt_ann_t ann;
@@ -2412,7 +2412,7 @@ update_stmt_operands (tree stmt)
 void
 copy_virtual_operands (tree dest, tree src)
 {
-  int i, n;
+  unsigned int i, n;
   voptype_p src_vuses, dest_vuses;
   voptype_p src_vdefs, dest_vdefs;
   struct voptype_d vuse;

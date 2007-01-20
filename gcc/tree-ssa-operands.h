@@ -1,5 +1,5 @@
 /* SSA operand management for trees.
-   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -58,7 +58,7 @@ typedef struct vuse_element_d
 
 typedef struct vuse_vec_d
 {
-  int num_vuse;
+  unsigned int num_vuse;
   vuse_element_t uses[1];
 } vuse_vec_t;
 typedef struct vuse_vec_d *vuse_vec_p;
@@ -70,23 +70,23 @@ typedef struct vuse_vec_d *vuse_vec_p;
 
 #ifdef ENABLE_CHECKING
 #define VUSE_VECT_ELEMENT(V,X)						\
-    (gcc_assert ((X) >= 0 && (X) < VUSE_VECT_NUM_ELEM (V)),		\
+    (gcc_assert (((unsigned int) (X)) < VUSE_VECT_NUM_ELEM (V)),	\
      VUSE_VECT_ELEMENT_NC (V,X))
 
 #define VUSE_ELEMENT_PTR(V,X)						\
-    (gcc_assert ((X) >= 0 && (X) < VUSE_VECT_NUM_ELEM (V)),		\
+    (gcc_assert (((unsigned int) (X)) < VUSE_VECT_NUM_ELEM (V)),	\
      VUSE_ELEMENT_PTR_NC (V, X))
 
 #define SET_VUSE_VECT_ELEMENT(V,X,N)					\
-    (gcc_assert ((X) >= 0 && (X) < VUSE_VECT_NUM_ELEM (V)),		\
+    (gcc_assert (((unsigned int) (X)) < VUSE_VECT_NUM_ELEM (V)),	\
      VUSE_VECT_ELEMENT_NC (V,X) = (N))
 
 #define SET_VUSE_ELEMENT_VAR(V,X,N)					\
-    (gcc_assert ((X) >= 0 && (X) < VUSE_VECT_NUM_ELEM (V)),		\
+    (gcc_assert (((unsigned int) (X)) < VUSE_VECT_NUM_ELEM (V)),	\
      VUSE_VECT_ELEMENT_NC ((V),(X)).use_var = (N))
 
 #define SET_VUSE_ELEMENT_PTR(V,X,N)					\
-    (gcc_assert ((X) >= 0 && (X) < VUSE_VECT_NUM_ELEM (V)),		\
+    (gcc_assert (((unsigned int) (X)) < VUSE_VECT_NUM_ELEM (V)),	\
      VUSE_ELEMENT_PTR_NC (V, X) = (N))
 #else
 #define VUSE_VECT_ELEMENT(V,X) VUSE_VECT_ELEMENT_NC(V,X)
@@ -203,8 +203,8 @@ typedef struct stmt_operands_d *stmt_operands_p;
 #define PHI_ARG_INDEX_FROM_USE(USE)   phi_arg_index_from_use (USE)
 
 
-extern struct voptype_d *realloc_vdef (struct voptype_d *, int);
-extern struct voptype_d *realloc_vuse (struct voptype_d *, int);
+extern struct voptype_d *realloc_vdef (struct voptype_d *, unsigned int);
+extern struct voptype_d *realloc_vuse (struct voptype_d *, unsigned int);
 
 extern void init_ssa_operands (void);
 extern void fini_ssa_operands (void);
@@ -254,8 +254,8 @@ typedef struct ssa_operand_iterator_d
   int num_phi;
   tree phi_stmt;
   bool done;
-  int vuse_index;
-  int mayuse_index;
+  unsigned int vuse_index;
+  unsigned int mayuse_index;
 } ssa_op_iter;
 
 /* These flags are used to determine which operands are returned during 
