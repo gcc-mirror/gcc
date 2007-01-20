@@ -4176,7 +4176,9 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 		HOST_WIDE_INT d = INTVAL (op1);
 		unsigned HOST_WIDE_INT abs_d;
 
-		abs_d = d >= 0 ? d : - (unsigned HOST_WIDE_INT) d;
+		abs_d = (d >= 0
+			 ? (unsigned HOST_WIDE_INT) d
+			 : - (unsigned HOST_WIDE_INT) d);
 
 		/* n rem d = n rem -d */
 		if (rem_flag && d < 0)
