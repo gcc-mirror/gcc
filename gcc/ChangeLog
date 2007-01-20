@@ -1,5 +1,10 @@
 2007-01-19  Ian Lance Taylor  <iant@google.com>
 
+	* expmed.c (expand_divmod) [TRUNC_MOD_EXPR, TRUNC_DIV_EXPR]: Cast
+	constant to unsigned HOST_WIDE_INT before negating.
+
+2007-01-19  Ian Lance Taylor  <iant@google.com>
+
 	* tree-ssa-operands.h (struct vuse_vec_d): Change num_vuse field
 	to unsigned.
 	(VUSE_VECT_ELEMENT) [ENABLE_CHECKING]: Use unsigned comparison.
