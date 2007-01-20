@@ -1,3 +1,7 @@
+2007-01-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/torture/builtin-math-3.c: Test fdim.
+
 2007-01-19  Mike Stump  <mrs@apple.com>
 
 	* gcc.dg/darwin-ld-6.c: Remove, tests a linker flag that is going

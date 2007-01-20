@@ -294,6 +294,16 @@ int main (void)
   TESTIT2_R (atan2, -1.0, 0.0, -1.58, -1.57); /* atan2(-1,0) == -pi/2 */
   TESTIT2_R (atan2, 1.0, 0.0, 1.57, 1.58); /* atan2(1,0) == pi/2 */
 
+  TESTIT2 (fdim, 0.0, 0.0, 0.0); /* fdim(0,0) == 0 */
+  TESTIT2 (fdim, -0.0, 0.0, 0.0); /* fdim(-0,0) == 0 */
+  TESTIT2 (fdim, 0.0, -0.0, 0.0); /* fdim(0,-0) == 0 */
+  TESTIT2 (fdim, -0.0, -0.0, 0.0); /* fdim(-0,-0) == 0 */
+  TESTIT2 (fdim, 5.0, 5.0, 0.0); /* fdim(5,5) == 0 */
+  TESTIT2 (fdim, 5.0, 6.0, 0.0); /* fdim(5,6) == 0 */
+  TESTIT2 (fdim, 6.0, 5.0, 1.0); /* fdim(6,5) == 1 */
+  TESTIT2 (fdim, -5.0, -6.0, 1.0); /* fdim(-5,-6) == 1 */
+  TESTIT2 (fdim, -6.0, -5.0, 0.0); /* fdim(-6,-5) == 0 */
+
   TESTIT2 (fmin, 5.0, 6.0, 5.0); /* fmin(5,6) == 5 */
   TESTIT2 (fmin, 6.0, 5.0, 5.0); /* fmin(6,5) == 5 */
   TESTIT2 (fmin, -5.0, -6.0, -6.0); /* fmin(-5,-6) == -6 */
