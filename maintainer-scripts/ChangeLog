@@ -1,3 +1,7 @@
+2007-01-21  Tobias Burnus  <burnus@net-b.de>
+
+	* update_web_docs_svn: Build also libgomp documentation.
+
 2007-01-05  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* crontab: Spread snapshots more evenly throughout the week, and
