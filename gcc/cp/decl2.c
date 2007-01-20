@@ -2340,13 +2340,6 @@ start_objects (int method_type, int initp)
 
   body = begin_compound_stmt (BCS_FN_BODY);
 
-  /* We cannot allow these functions to be elided, even if they do not
-     have external linkage.  And, there's no point in deferring
-     compilation of these functions; they're all going to have to be
-     out anyhow.  */
-  DECL_INLINE (current_function_decl) = 0;
-  DECL_UNINLINABLE (current_function_decl) = 1;
-
   return body;
 }
 
@@ -2444,6 +2437,7 @@ start_static_storage_duration_function (unsigned count)
 			       type);
   TREE_PUBLIC (ssdf_decl) = 0;
   DECL_ARTIFICIAL (ssdf_decl) = 1;
+  DECL_INLINE (ssdf_decl) = 1;
 
   /* Put this function in the list of functions to be called from the
      static constructors and destructors.  */
@@ -2496,11 +2490,6 @@ start_static_storage_duration_function (unsigned count)
 
   /* Set up the scope of the outermost block in the function.  */
   body = begin_compound_stmt (BCS_FN_BODY);
-
-  /* This function must not be deferred because we are depending on
-     its compilation to tell us what is TREE_SYMBOL_REFERENCED.  */
-  DECL_INLINE (ssdf_decl) = 0;
-  DECL_UNINLINABLE (ssdf_decl) = 1;
 
   return body;
 }
