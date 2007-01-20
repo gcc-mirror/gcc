@@ -40,11 +40,11 @@
 #if defined (HAVE_GFC_REAL_10)
 #ifdef HAVE_ASINL
 
-elemental function specific__asin_r10 (parm)
+elemental function _gfortran_specific__asin_r10 (parm)
    real (kind=10), intent (in) :: parm
-   real (kind=10) :: specific__asin_r10
+   real (kind=10) :: _gfortran_specific__asin_r10
 
-   specific__asin_r10 = asin (parm)
+   _gfortran_specific__asin_r10 = asin (parm)
 end function
 
 #endif

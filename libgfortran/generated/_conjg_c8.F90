@@ -40,11 +40,11 @@
 #if defined (HAVE_GFC_COMPLEX_8)
 
 
-elemental function specific__conjg_8 (parm)
+elemental function _gfortran_specific__conjg_8 (parm)
    complex (kind=8), intent (in) :: parm
-   complex (kind=8) :: specific__conjg_8
+   complex (kind=8) :: _gfortran_specific__conjg_8
 
-   specific__conjg_8 = conjg (parm)
+   _gfortran_specific__conjg_8 = conjg (parm)
 end function
 
 

@@ -40,11 +40,11 @@
 #if defined (HAVE_GFC_REAL_8)
 #ifdef HAVE_FABS
 
-elemental function specific__abs_r8 (parm)
+elemental function _gfortran_specific__abs_r8 (parm)
    real (kind=8), intent (in) :: parm
-   real (kind=8) :: specific__abs_r8
+   real (kind=8) :: _gfortran_specific__abs_r8
 
-   specific__abs_r8 = abs (parm)
+   _gfortran_specific__abs_r8 = abs (parm)
 end function
 
 #endif

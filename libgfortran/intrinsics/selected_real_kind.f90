@@ -19,10 +19,10 @@
 !Boston, MA 02110-1301, USA.
 !
 
-function selected_real_kind (p, r)
+function _gfortran_selected_real_kind (p, r)
   implicit none
   integer, optional, intent (in) :: p, r
-  integer :: selected_real_kind
+  integer :: _gfortran_selected_real_kind
   integer :: i, p2, r2
   logical :: found_p, found_r
   ! Real kind_precision_range table
@@ -34,7 +34,7 @@ function selected_real_kind (p, r)
 
   include "selected_real_kind.inc"
 
-  selected_real_kind = 0
+  _gfortran_selected_real_kind = 0
   p2 = 0
   r2 = 0
   found_p = .false.
@@ -49,13 +49,13 @@ function selected_real_kind (p, r)
     if (p2 <= real_infos (i) % precision) found_p = .true.
     if (r2 <= real_infos (i) % range) found_r = .true.
     if (found_p .and. found_r) then
-      selected_real_kind = real_infos (i) % kind
+      _gfortran_selected_real_kind = real_infos (i) % kind
       return
     end if
   end do
 
-  if (.not. (found_p)) selected_real_kind = selected_real_kind - 1
-  if (.not. (found_r)) selected_real_kind = selected_real_kind - 2
+  if (.not. (found_p)) _gfortran_selected_real_kind = _gfortran_selected_real_kind - 1
+  if (.not. (found_r)) _gfortran_selected_real_kind = _gfortran_selected_real_kind - 2
 
   return
 end function

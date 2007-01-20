@@ -40,11 +40,11 @@
 #if defined (HAVE_GFC_REAL_8)
 #ifdef HAVE_LOG10
 
-elemental function specific__log10_r8 (parm)
+elemental function _gfortran_specific__log10_r8 (parm)
    real (kind=8), intent (in) :: parm
-   real (kind=8) :: specific__log10_r8
+   real (kind=8) :: _gfortran_specific__log10_r8
 
-   specific__log10_r8 = log10 (parm)
+   _gfortran_specific__log10_r8 = log10 (parm)
 end function
 
 #endif

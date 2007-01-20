@@ -40,11 +40,11 @@
 #if defined (HAVE_GFC_REAL_16)
 #ifdef HAVE_SQRTL
 
-elemental function specific__sqrt_r16 (parm)
+elemental function _gfortran_specific__sqrt_r16 (parm)
    real (kind=16), intent (in) :: parm
-   real (kind=16) :: specific__sqrt_r16
+   real (kind=16) :: _gfortran_specific__sqrt_r16
 
-   specific__sqrt_r16 = sqrt (parm)
+   _gfortran_specific__sqrt_r16 = sqrt (parm)
 end function
 
 #endif

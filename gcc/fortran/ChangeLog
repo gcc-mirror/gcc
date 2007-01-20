@@ -1,5 +1,20 @@
 2007-01-20  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	* gfortran.h (gfc_options_t): Add flag_allow_leading_underscore.
+	* lang.opt: Add -fallow-leading-underscore.
+	* match.c (gfc_match_name): Allow leading underscore in symbol
+	name if -fallow-leading-underscore is used.
+	* symbol.c (gfc_get_default_type): Add special case for symbol
+	names beginning with an underscore.
+	* trans-decl.c (gfc_get_extern_function_decl,
+	gfc_build_intrinsic_function_decls): Add _gfortran prefix to
+	library symbols selected_int_kind, selected_real_kind and 
+	all specifics.
+	* options.c (gfc_init_options, gfc_handle_option): Handle the
+	new -fallow-leading-underscore option.
+
+2007-01-20  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	PR fortran/30446
 	* options.c (gfc_handle_module_path_options): Path used in -J
 	option is now added to the module search path.

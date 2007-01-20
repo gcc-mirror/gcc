@@ -40,11 +40,11 @@
 #if defined (HAVE_GFC_REAL_4)
 #ifdef HAVE_SINHF
 
-elemental function specific__sinh_r4 (parm)
+elemental function _gfortran_specific__sinh_r4 (parm)
    real (kind=4), intent (in) :: parm
-   real (kind=4) :: specific__sinh_r4
+   real (kind=4) :: _gfortran_specific__sinh_r4
 
-   specific__sinh_r4 = sinh (parm)
+   _gfortran_specific__sinh_r4 = sinh (parm)
 end function
 
 #endif

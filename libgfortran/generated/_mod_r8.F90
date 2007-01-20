@@ -39,11 +39,11 @@
 
 
 
-elemental function specific__mod_r8 (p1, p2)
+elemental function _gfortran_specific__mod_r8 (p1, p2)
    real (kind=8), intent (in) :: p1, p2
-   real (kind=8) :: specific__mod_r8
+   real (kind=8) :: _gfortran_specific__mod_r8
 
-   specific__mod_r8 = mod (p1, p2)
+   _gfortran_specific__mod_r8 = mod (p1, p2)
 end function
 
 

@@ -22,10 +22,10 @@ divert
 dnl   NINT specifics
 foreach(`ikind', `(4, 8, 16)', `foreach(`rkind', `(4, 8, 10, 16)', `
 `#if defined (HAVE_GFC_REAL_'rkind`) && defined (HAVE_GFC_INTEGER_'ikind`)'
-elemental function specific__nint_`'ikind`_'rkind (parm)
+elemental function _gfortran_specific__nint_`'ikind`_'rkind (parm)
    real (kind=rkind) , intent (in) :: parm
-   integer (kind=ikind) :: specific__nint_`'ikind`_'rkind
-   specific__nint_`'ikind`_'rkind = nint (parm)
+   integer (kind=ikind) :: _gfortran_specific__nint_`'ikind`_'rkind
+   _gfortran_specific__nint_`'ikind`_'rkind = nint (parm)
 end function
 #endif
 ')')
@@ -33,10 +33,10 @@ end function
 dnl   CHAR specifics
 foreach(`ckind', `(1)', `foreach(`ikind', `(4, 8, 16)', `
 `#if defined (HAVE_GFC_INTEGER_'ikind`)'
-elemental function specific__char_`'ckind`_i'ikind (parm)
+elemental function _gfortran_specific__char_`'ckind`_i'ikind (parm)
    integer (kind=ikind) , intent (in) :: parm
-   character (kind=ckind,len=1) :: specific__char_`'ckind`_i'ikind
-   specific__char_`'ckind`_i'ikind` = char (parm, kind='ckind`)'
+   character (kind=ckind,len=1) :: _gfortran_specific__char_`'ckind`_i'ikind
+   _gfortran_specific__char_`'ckind`_i'ikind` = char (parm, kind='ckind`)'
 end function
 #endif
 ')')
@@ -44,10 +44,10 @@ end function
 dnl   LEN specifics
 foreach(`ckind', `(1)', `foreach(`ikind', `(4, 8, 16)', `
 `#if defined (HAVE_GFC_INTEGER_'ikind`)'
-elemental function specific__len_`'ckind`_i'ikind (parm)
+elemental function _gfortran_specific__len_`'ckind`_i'ikind (parm)
    character (kind=ckind,len=*) , intent (in) :: parm
-   integer (kind=ikind) :: specific__len_`'ckind`_i'ikind
-   specific__len_`'ckind`_i'ikind` = len (parm)'
+   integer (kind=ikind) :: _gfortran_specific__len_`'ckind`_i'ikind
+   _gfortran_specific__len_`'ckind`_i'ikind` = len (parm)'
 end function
 #endif
 ')')
@@ -55,10 +55,10 @@ end function
 dnl   INDEX specifics
 foreach(`ckind', `(1)', `foreach(`ikind', `(4, 8, 16)', `
 `#if defined (HAVE_GFC_INTEGER_'ikind`)'
-elemental function specific__index_`'ckind`_i'ikind (parm1, parm2)
+elemental function _gfortran_specific__index_`'ckind`_i'ikind (parm1, parm2)
    character (kind=ckind,len=*) , intent (in) :: parm1, parm2
-   integer (kind=ikind) :: specific__index_`'ckind`_i'ikind
-   specific__index_`'ckind`_i'ikind` = index (parm1, parm2)'
+   integer (kind=ikind) :: _gfortran_specific__index_`'ckind`_i'ikind
+   _gfortran_specific__index_`'ckind`_i'ikind` = index (parm1, parm2)'
 end function
 #endif
 ')')

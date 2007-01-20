@@ -40,11 +40,11 @@
 #if defined (HAVE_GFC_REAL_10)
 #ifdef HAVE_COSL
 
-elemental function specific__cos_r10 (parm)
+elemental function _gfortran_specific__cos_r10 (parm)
    real (kind=10), intent (in) :: parm
-   real (kind=10) :: specific__cos_r10
+   real (kind=10) :: _gfortran_specific__cos_r10
 
-   specific__cos_r10 = cos (parm)
+   _gfortran_specific__cos_r10 = cos (parm)
 end function
 
 #endif

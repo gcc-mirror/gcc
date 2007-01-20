@@ -40,11 +40,11 @@
 #if defined (HAVE_GFC_REAL_4)
 #ifdef HAVE_TANHF
 
-elemental function specific__tanh_r4 (parm)
+elemental function _gfortran_specific__tanh_r4 (parm)
    real (kind=4), intent (in) :: parm
-   real (kind=4) :: specific__tanh_r4
+   real (kind=4) :: _gfortran_specific__tanh_r4
 
-   specific__tanh_r4 = tanh (parm)
+   _gfortran_specific__tanh_r4 = tanh (parm)
 end function
 
 #endif

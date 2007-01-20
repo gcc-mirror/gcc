@@ -40,11 +40,11 @@
 #if defined (HAVE_GFC_COMPLEX_10)
 #ifdef HAVE_CSQRTL
 
-elemental function specific__sqrt_c10 (parm)
+elemental function _gfortran_specific__sqrt_c10 (parm)
    complex (kind=10), intent (in) :: parm
-   complex (kind=10) :: specific__sqrt_c10
+   complex (kind=10) :: _gfortran_specific__sqrt_c10
 
-   specific__sqrt_c10 = sqrt (parm)
+   _gfortran_specific__sqrt_c10 = sqrt (parm)
 end function
 
 #endif

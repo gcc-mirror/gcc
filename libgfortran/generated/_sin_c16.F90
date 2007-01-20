@@ -40,11 +40,11 @@
 #if defined (HAVE_GFC_COMPLEX_16)
 #ifdef HAVE_CSINL
 
-elemental function specific__sin_c16 (parm)
+elemental function _gfortran_specific__sin_c16 (parm)
    complex (kind=16), intent (in) :: parm
-   complex (kind=16) :: specific__sin_c16
+   complex (kind=16) :: _gfortran_specific__sin_c16
 
-   specific__sin_c16 = sin (parm)
+   _gfortran_specific__sin_c16 = sin (parm)
 end function
 
 #endif

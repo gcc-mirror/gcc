@@ -39,11 +39,11 @@
 
 
 
-elemental function specific__sign_i8 (p1, p2)
+elemental function _gfortran_specific__sign_i8 (p1, p2)
    integer (kind=8), intent (in) :: p1, p2
-   integer (kind=8) :: specific__sign_i8
+   integer (kind=8) :: _gfortran_specific__sign_i8
 
-   specific__sign_i8 = sign (p1, p2)
+   _gfortran_specific__sign_i8 = sign (p1, p2)
 end function
 
 

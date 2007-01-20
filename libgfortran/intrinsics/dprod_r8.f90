@@ -19,9 +19,9 @@
 !Boston, MA 02110-1301, USA.
 
 
-elemental function specific__dprod_r8 (p1, p2)
+elemental function _gfortran_specific__dprod_r8 (p1, p2)
    real (kind=4), intent (in) :: p1, p2
-   real (kind=8) :: specific__dprod_r8
+   real (kind=8) :: _gfortran_specific__dprod_r8
 
-   specific__dprod_r8 = dprod (p1, p2)
+   _gfortran_specific__dprod_r8 = dprod (p1, p2)
 end function

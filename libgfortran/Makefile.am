@@ -597,6 +597,10 @@ $(patsubst %.c,%.lo,$(notdir $(i_matmul_c))): AM_CFLAGS += -ftree-vectorize -fun
 # Logical matmul doesn't vectorize.
 $(patsubst %.c,%.lo,$(notdir $(i_matmull_c))): AM_CFLAGS += -funroll-loops
 
+# Add the -fallow-leading-underscore option when needed
+$(patsubst %.F90,%.lo,$(patsubst %.f90,%.lo,$(notdir $(gfor_specific_src)))): AM_FCFLAGS += -fallow-leading-underscore
+selected_real_kind.lo selected_int_kind.lo: AM_FCFLAGS += -fallow-leading-underscore
+
 BUILT_SOURCES=$(gfor_built_src) $(gfor_built_specific_src) \
     $(gfor_built_specific2_src) $(gfor_misc_specifics)
 libgfortran_la_SOURCES = $(gfor_src) $(gfor_built_src) $(gfor_io_src) \

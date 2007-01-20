@@ -84,6 +84,7 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.flag_preprocessed = 0;
   gfc_option.flag_automatic = 1;
   gfc_option.flag_backslash = 1;
+  gfc_option.flag_allow_leading_underscore = 0;
   gfc_option.flag_dump_core = 0;
   gfc_option.flag_external_blas = 0;
   gfc_option.blas_matmul_limit = 30;
@@ -450,6 +451,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_option.flag_automatic = value;
       break;
 
+    case OPT_fallow_leading_underscore:
+      gfc_option.flag_allow_leading_underscore = value;
+      break;
+      
     case OPT_fbackslash:
       gfc_option.flag_backslash = value;
       break;

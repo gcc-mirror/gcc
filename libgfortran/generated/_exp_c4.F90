@@ -40,11 +40,11 @@
 #if defined (HAVE_GFC_COMPLEX_4)
 #ifdef HAVE_CEXPF
 
-elemental function specific__exp_c4 (parm)
+elemental function _gfortran_specific__exp_c4 (parm)
    complex (kind=4), intent (in) :: parm
-   complex (kind=4) :: specific__exp_c4
+   complex (kind=4) :: _gfortran_specific__exp_c4
 
-   specific__exp_c4 = exp (parm)
+   _gfortran_specific__exp_c4 = exp (parm)
 end function
 
 #endif
