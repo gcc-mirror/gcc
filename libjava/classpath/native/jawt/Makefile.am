@@ -1,8 +1,4 @@
-## GCJ LOCAL: install this library in GCJ's versioned library
-## directory
-gcc_version := $(shell cat $(top_srcdir)/../../gcc/BASE-VER)
-gcjversionedlibdir = $(libdir)/gcj-$(gcc_version)
-gcjversionedlib_LTLIBRARIES = libjawt.la
+nativeexeclib_LTLIBRARIES = libjawt.la
 
 libjawt_la_SOURCES = jawt.c
 libjawt_la_LIBADD = $(top_builddir)/native/jni/gtk-peer/libgtkpeer.la
