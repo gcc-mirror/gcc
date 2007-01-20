@@ -1,3 +1,9 @@
+2007-01-20  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/30446
+	* options.c (gfc_handle_module_path_options): Path used in -J
+	option is now added to the module search path.
+
 2007-01-18  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	Backport from trunk

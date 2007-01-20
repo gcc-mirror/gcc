@@ -152,6 +152,10 @@ case "${host}" in
 esac
 AC_SUBST(extra_ldflags_libgfortran)
 
+# We need a working compiler at that point, otherwise give a clear
+# error message and bail out.
+LIBGFOR_WORKING_GFORTRAN
+
 AC_SYS_LARGEFILE
 AC_TYPE_OFF_T
 
