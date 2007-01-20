@@ -9469,6 +9469,13 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
 			     type, mpfr_atan2);
     break;
 
+    CASE_FLT_FN (BUILT_IN_FDIM):
+      if (validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_arg2 (TREE_VALUE (arglist),
+			     TREE_VALUE (TREE_CHAIN (arglist)),
+			     type, mpfr_dim);
+    break;
+
     CASE_FLT_FN (BUILT_IN_FMA):
       if (validate_arglist (arglist, REAL_TYPE, REAL_TYPE, REAL_TYPE, VOID_TYPE))
 	return do_mpfr_arg3 (TREE_VALUE (arglist),

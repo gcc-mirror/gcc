@@ -1,3 +1,8 @@
+2007-01-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/29335
+	* builtins.c (fold_builtin_1): Handle builtin fdim.
+
 2007-01-20  Jan Hubicka  <jh@suse.cz>
 
         * tree-ssa.c (init_tree_ssa): Do not call init_alias_heapvars.
