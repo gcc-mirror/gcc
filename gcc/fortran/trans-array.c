@@ -1467,8 +1467,8 @@ get_array_ctor_strlen (gfc_constructor * c, tree * len)
    elements, and if so returns the number of those elements, otherwise
    return zero.  Note, an empty or NULL array constructor returns zero.  */
 
-static unsigned HOST_WIDE_INT
-constant_array_constructor_p (gfc_constructor * c)
+unsigned HOST_WIDE_INT
+gfc_constant_array_constructor_p (gfc_constructor * c)
 {
   unsigned HOST_WIDE_INT nelem = 0;
 
@@ -1489,7 +1489,7 @@ constant_array_constructor_p (gfc_constructor * c)
    and the tree type of it's elements, TYPE, return a static constant
    variable that is compile-time initialized.  */
 
-static tree
+tree
 gfc_build_constant_array_constructor (gfc_expr * expr, tree type)
 {
   tree tmptype, list, init, tmp;
@@ -1633,7 +1633,7 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
       && INTEGER_CST_P (loop->from[0])
       && INTEGER_CST_P (loop->to[0]))
     {
-      unsigned HOST_WIDE_INT nelem = constant_array_constructor_p (c);
+      unsigned HOST_WIDE_INT nelem = gfc_constant_array_constructor_p (c);
       if (nelem > 0)
 	{
 	  tree diff = fold_build2 (MINUS_EXPR, gfc_array_index_type,

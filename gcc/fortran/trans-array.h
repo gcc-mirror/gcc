@@ -133,3 +133,7 @@ tree gfc_conv_descriptor_ubound (tree, tree);
 /* Add pre-loop scalarization code for intrinsic functions which require
    special handling.  */
 void gfc_add_intrinsic_ss_code (gfc_loopinfo *, gfc_ss *);
+
+/* Functions for constant array constructor processing.  */
+unsigned HOST_WIDE_INT gfc_constant_array_constructor_p (gfc_constructor *);
+tree gfc_build_constant_array_constructor (gfc_expr *, tree);

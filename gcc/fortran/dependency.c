@@ -1109,6 +1109,8 @@ gfc_full_array_ref_p (gfc_ref *ref)
     return true;
   if (ref->u.ar.type != AR_SECTION)
     return false;
+  if (ref->next)
+    return false;
 
   for (i = 0; i < ref->u.ar.dimen; i++)
     {
