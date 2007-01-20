@@ -617,6 +617,7 @@ adjust_return_value (basic_block bb, tree m, tree a)
 {
   tree ret_stmt = last_stmt (bb), ret_var, var, stmt, tmp;
   tree ret_type = TREE_TYPE (DECL_RESULT (current_function_decl));
+  tree *ret_op;
   block_stmt_iterator bsi = bsi_last (bb);
 
   gcc_assert (TREE_CODE (ret_stmt) == RETURN_EXPR);
@@ -627,13 +628,11 @@ adjust_return_value (basic_block bb, tree m, tree a)
 
   if (TREE_CODE (ret_var) == GIMPLE_MODIFY_STMT)
     {
-      ret_var->base.ann = (tree_ann_t) stmt_ann (ret_stmt);
-      bsi_replace (&bsi, ret_var, true);
-      SSA_NAME_DEF_STMT (GIMPLE_STMT_OPERAND (ret_var, 0)) = ret_var;
-      ret_var = GIMPLE_STMT_OPERAND (ret_var, 0);
-      ret_stmt = build1 (RETURN_EXPR, TREE_TYPE (ret_stmt), ret_var);
-      bsi_insert_after (&bsi, ret_stmt, BSI_NEW_STMT);
+      ret_op = &GIMPLE_STMT_OPERAND (ret_var, 1);
+      ret_var = *ret_op;
     }
+  else
+    ret_op = &TREE_OPERAND (ret_stmt, 0);
 
   if (m)
     {
@@ -663,7 +662,7 @@ adjust_return_value (basic_block bb, tree m, tree a)
       bsi_insert_before (&bsi, stmt, BSI_SAME_STMT);
     }
 
-  TREE_OPERAND (ret_stmt, 0) = var;
+  *ret_op = var;
   update_stmt (ret_stmt);
 }
 
