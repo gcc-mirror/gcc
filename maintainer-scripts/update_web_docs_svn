@@ -109,7 +109,7 @@ tar cf docs-sources.tar gcc
 # and fdl.texi.
 includedir=gcc/gcc/doc/include
 
-MANUALS="cpp cppinternals fastjar gcc gccint gcj g77 gfortran gnat_ug_unx gnat_ug_vms gnat_ug_vxw gnat_ug_wnt gnat_ugn_unw gnat-style gnat_rm libiberty porting"
+MANUALS="cpp cppinternals fastjar gcc gccint gcj g77 gfortran gnat_ug_unx gnat_ug_vms gnat_ug_vxw gnat_ug_wnt gnat_ugn_unw gnat-style gnat_rm libgomp libiberty porting"
 
 # Generate gnat_ugn_unw
 
