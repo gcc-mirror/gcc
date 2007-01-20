@@ -1,3 +1,7 @@
+2007-01-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (output_move_double): Change array size of xoperands to 4.
+
 2007-01-17  Eric Christopher  <echristo@apple.com>
 
 	Backport from mainline:
