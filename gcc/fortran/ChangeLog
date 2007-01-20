@@ -1,5 +1,11 @@
 2007-01-20  Roger Sayle  <roger@eyesopen.com>
 
+	* module.c (mio_array_ref): The dimen_type fields of an array ref
+	are an enumerated type and can't be read/written directly with a
+	call to mio_integer.  Instead loop over and cast each element.
+
+2007-01-20  Roger Sayle  <roger@eyesopen.com>
+
 	* dependency.c (gfc_full_array_ref_p): Check that ref->next is NULL,
 	i.e. that the ARRAY_REF doesn't mention components.
 	* trans-array.c (gfc_constant_array_constructor_p): Export external
