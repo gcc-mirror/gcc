@@ -1,3 +1,9 @@
+2007-01-20  Roger Sayle  <roger@eyesopen.com>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_sign): New branchless
+	implementation for the SIGN intrinsic with integral operands.
+	(gfc_conv_intrinsic_minmax): Fix whitespace.
+
 2007-01-20  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* gfortran.h (gfc_options_t): Add flag_allow_leading_underscore.
