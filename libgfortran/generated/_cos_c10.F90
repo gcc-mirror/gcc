@@ -40,11 +40,11 @@
 #if defined (HAVE_GFC_COMPLEX_10)
 #ifdef HAVE_CCOSL
 
-elemental function specific__cos_c10 (parm)
+elemental function _gfortran_specific__cos_c10 (parm)
    complex (kind=10), intent (in) :: parm
-   complex (kind=10) :: specific__cos_c10
+   complex (kind=10) :: _gfortran_specific__cos_c10
 
-   specific__cos_c10 = cos (parm)
+   _gfortran_specific__cos_c10 = cos (parm)
 end function
 
 #endif

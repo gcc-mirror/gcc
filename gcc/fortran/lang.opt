@@ -81,6 +81,10 @@ fall-intrinsics
 Fortran RejectNegative
 All intrinsics procedures are available regardless of selected standard
 
+fallow-leading-underscore
+Fortran Undocumented
+; For internal use only: allow the first character of symbol names to be an underscore
+
 fautomatic
 Fortran
 Do not treat local variables and COMMON blocks as if they were named in SAVE statements

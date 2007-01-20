@@ -41,7 +41,7 @@
 
 ! one argument functions
 #define REAL_HEAD(NAME) \
-elemental function f2c_specific__/**/NAME/**/_r4 (parm) result(res);
+elemental function _gfortran_f2c_specific__/**/NAME/**/_r4 (parm) result(res);
 
 #define REAL_BODY(NAME) \
   REAL, intent (in) :: parm; \
@@ -50,7 +50,7 @@ elemental function f2c_specific__/**/NAME/**/_r4 (parm) result(res);
 end function
 
 #define COMPLEX_HEAD(NAME) \
-subroutine f2c_specific__/**/NAME/**/_c4 (res, parm);
+subroutine _gfortran_f2c_specific__/**/NAME/**/_c4 (res, parm);
 
 #define COMPLEX_BODY(NAME) \
   COMPLEX, intent (in) :: parm; \
@@ -59,7 +59,7 @@ subroutine f2c_specific__/**/NAME/**/_c4 (res, parm);
 end subroutine
 
 #define DCOMPLEX_HEAD(NAME) \
-subroutine f2c_specific__/**/NAME/**/_c8 (res, parm);
+subroutine _gfortran_f2c_specific__/**/NAME/**/_c8 (res, parm);
 
 #define DCOMPLEX_BODY(NAME) \
   DOUBLE COMPLEX, intent (in) :: parm; \
@@ -71,7 +71,7 @@ REAL_HEAD(abs)
 REAL_BODY(abs)
 
 ! abs is special in that the result is real
-elemental function f2c_specific__abs_c4 (parm) result (res)
+elemental function _gfortran_f2c_specific__abs_c4 (parm) result (res)
   COMPLEX, intent(in) :: parm
   DOUBLE PRECISION :: res
   res = abs(parm)
@@ -79,16 +79,16 @@ end function
 
 
 ! aimag is special in that the result is real
-elemental function f2c_specific__aimag_c4 (parm)
+elemental function _gfortran_f2c_specific__aimag_c4 (parm)
   complex(kind=4), intent(in) :: parm
-  double precision :: f2c_specific__aimag_c4
-  f2c_specific__aimag_c4 = aimag(parm)
+  double precision :: _gfortran_f2c_specific__aimag_c4
+  _gfortran_f2c_specific__aimag_c4 = aimag(parm)
 end function
 
-elemental function f2c_specific__aimag_c8 (parm)
+elemental function _gfortran_f2c_specific__aimag_c8 (parm)
   complex(kind=8), intent(in) :: parm
-  double precision :: f2c_specific__aimag_c8
-  f2c_specific__aimag_c8 = aimag(parm)
+  double precision :: _gfortran_f2c_specific__aimag_c8
+  _gfortran_f2c_specific__aimag_c8 = aimag(parm)
 end function
 
 
@@ -168,7 +168,7 @@ REAL_BODY(anint)
 
 ! two argument functions
 #define REAL2_HEAD(NAME) \
-elemental function f2c_specific__/**/NAME/**/_r4 (p1, p2) result(res);
+elemental function _gfortran_f2c_specific__/**/NAME/**/_r4 (p1, p2) result(res);
 
 #define REAL2_BODY(NAME) \
   REAL, intent (in) :: p1, p2; \
@@ -189,12 +189,12 @@ REAL2_HEAD(mod)
 REAL2_BODY(mod)
 
 ! conjg is special-cased because it is not suffixed _c4 but _4
-subroutine f2c_specific__conjg_4 (res, parm)
+subroutine _gfortran_f2c_specific__conjg_4 (res, parm)
   COMPLEX, intent (in) :: parm
   COMPLEX, intent (out) :: res
   res = conjg (parm)
 end subroutine
-subroutine f2c_specific__conjg_8 (res, parm)
+subroutine _gfortran_f2c_specific__conjg_8 (res, parm)
   DOUBLE COMPLEX, intent (in) :: parm
   DOUBLE COMPLEX, intent (out) :: res
   res = conjg (parm)

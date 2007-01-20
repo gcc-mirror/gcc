@@ -40,11 +40,11 @@
 #if defined (HAVE_GFC_INTEGER_4)
 
 
-elemental function specific__abs_i4 (parm)
+elemental function _gfortran_specific__abs_i4 (parm)
    integer (kind=4), intent (in) :: parm
-   integer (kind=4) :: specific__abs_i4
+   integer (kind=4) :: _gfortran_specific__abs_i4
 
-   specific__abs_i4 = abs (parm)
+   _gfortran_specific__abs_i4 = abs (parm)
 end function
 
 

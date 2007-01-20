@@ -19,10 +19,10 @@
 !Boston, MA 02110-1301, USA.
 !
 
-function selected_int_kind (r)
+function _gfortran_selected_int_kind (r)
   implicit none
   integer, intent (in) :: r
-  integer :: selected_int_kind
+  integer :: _gfortran_selected_int_kind
   integer :: i
   ! Integer kind_range table
   type :: int_info
@@ -34,10 +34,10 @@ function selected_int_kind (r)
 
   do i = 1, c
     if (r <= int_infos (i) % range) then
-      selected_int_kind = int_infos (i) % kind
+      _gfortran_selected_int_kind = int_infos (i) % kind
       return
     end if
   end do
-  selected_int_kind = -1
+  _gfortran_selected_int_kind = -1
   return
 end function

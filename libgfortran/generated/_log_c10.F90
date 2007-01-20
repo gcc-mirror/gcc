@@ -40,11 +40,11 @@
 #if defined (HAVE_GFC_COMPLEX_10)
 #ifdef HAVE_CLOGL
 
-elemental function specific__log_c10 (parm)
+elemental function _gfortran_specific__log_c10 (parm)
    complex (kind=10), intent (in) :: parm
-   complex (kind=10) :: specific__log_c10
+   complex (kind=10) :: _gfortran_specific__log_c10
 
-   specific__log_c10 = log (parm)
+   _gfortran_specific__log_c10 = log (parm)
 end function
 
 #endif

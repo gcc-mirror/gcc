@@ -40,11 +40,11 @@
 #if defined (HAVE_GFC_REAL_10)
 #ifdef HAVE_EXPL
 
-elemental function specific__exp_r10 (parm)
+elemental function _gfortran_specific__exp_r10 (parm)
    real (kind=10), intent (in) :: parm
-   real (kind=10) :: specific__exp_r10
+   real (kind=10) :: _gfortran_specific__exp_r10
 
-   specific__exp_r10 = exp (parm)
+   _gfortran_specific__exp_r10 = exp (parm)
 end function
 
 #endif

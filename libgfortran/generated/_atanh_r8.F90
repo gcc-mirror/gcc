@@ -40,11 +40,11 @@
 #if defined (HAVE_GFC_REAL_8)
 #ifdef HAVE_ATANH
 
-elemental function specific__atanh_r8 (parm)
+elemental function _gfortran_specific__atanh_r8 (parm)
    real (kind=8), intent (in) :: parm
-   real (kind=8) :: specific__atanh_r8
+   real (kind=8) :: _gfortran_specific__atanh_r8
 
-   specific__atanh_r8 = atanh (parm)
+   _gfortran_specific__atanh_r8 = atanh (parm)
 end function
 
 #endif

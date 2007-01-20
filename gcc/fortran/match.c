@@ -392,7 +392,7 @@ gfc_match_name (char *buffer)
   gfc_gobble_whitespace ();
 
   c = gfc_next_char ();
-  if (!ISALPHA (c))
+  if (!(ISALPHA (c) || (c == '_' && gfc_option.flag_allow_leading_underscore)))
     {
       if (gfc_error_flag_test() == 0)
 	gfc_error ("Invalid character in name at %C");

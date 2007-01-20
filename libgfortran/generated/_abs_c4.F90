@@ -40,11 +40,11 @@
 #if defined (HAVE_GFC_COMPLEX_4)
 #ifdef HAVE_CABSF
 
-elemental function specific__abs_c4 (parm)
+elemental function _gfortran_specific__abs_c4 (parm)
    complex (kind=4), intent (in) :: parm
-   real (kind=4) :: specific__abs_c4
+   real (kind=4) :: _gfortran_specific__abs_c4
 
-   specific__abs_c4 = abs (parm)
+   _gfortran_specific__abs_c4 = abs (parm)
 end function
 
 #endif

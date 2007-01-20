@@ -40,11 +40,11 @@
 #if defined (HAVE_GFC_COMPLEX_10)
 
 
-elemental function specific__aimag_c10 (parm)
+elemental function _gfortran_specific__aimag_c10 (parm)
    complex (kind=10), intent (in) :: parm
-   real (kind=10) :: specific__aimag_c10
+   real (kind=10) :: _gfortran_specific__aimag_c10
 
-   specific__aimag_c10 = aimag (parm)
+   _gfortran_specific__aimag_c10 = aimag (parm)
 end function
 
 
