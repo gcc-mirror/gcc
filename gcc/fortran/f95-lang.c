@@ -852,10 +852,13 @@ gfc_init_builtin_functions (void)
   tree mfunc_cfloat[3];
   tree mfunc_cdouble[3];
   tree mfunc_clongdouble[3];
-  tree func_cfloat_float;
-  tree func_cdouble_double;
-  tree func_clongdouble_longdouble;
-  tree ftype;
+  tree func_cfloat_float, func_float_cfloat;
+  tree func_cdouble_double, func_double_cdouble;
+  tree func_clongdouble_longdouble, func_longdouble_clongdouble;
+  tree func_float_floatp_floatp;
+  tree func_double_doublep_doublep;
+  tree func_longdouble_longdoublep_longdoublep;
+  tree ftype, ptype;
   tree tmp;
   tree builtin_types[(int) BT_LAST + 1];
 
@@ -869,12 +872,43 @@ gfc_init_builtin_functions (void)
   tmp = tree_cons (NULL_TREE, complex_float_type_node, void_list_node);
   func_cfloat_float = build_function_type (float_type_node, tmp);
 
+  tmp = tree_cons (NULL_TREE, float_type_node, void_list_node);
+  func_float_cfloat = build_function_type (complex_float_type_node, tmp);
+
   tmp = tree_cons (NULL_TREE, complex_double_type_node, void_list_node);
   func_cdouble_double = build_function_type (double_type_node, tmp);
+
+  tmp = tree_cons (NULL_TREE, double_type_node, void_list_node);
+  func_double_cdouble = build_function_type (complex_double_type_node, tmp);
 
   tmp = tree_cons (NULL_TREE, complex_long_double_type_node, void_list_node);
   func_clongdouble_longdouble =
     build_function_type (long_double_type_node, tmp);
+
+  tmp = tree_cons (NULL_TREE, long_double_type_node, void_list_node);
+  func_longdouble_clongdouble =
+    build_function_type (complex_long_double_type_node, tmp);
+
+  ptype = build_pointer_type (float_type_node);
+  tmp = tree_cons (NULL_TREE, float_type_node,
+		   tree_cons (NULL_TREE, ptype,
+		   	      build_tree_list (NULL_TREE, ptype)));
+  func_float_floatp_floatp =
+    build_function_type (void_type_node, tmp);
+
+  ptype = build_pointer_type (double_type_node);
+  tmp = tree_cons (NULL_TREE, double_type_node,
+		   tree_cons (NULL_TREE, ptype,
+		   	      build_tree_list (NULL_TREE, ptype)));
+  func_double_doublep_doublep =
+    build_function_type (void_type_node, tmp);
+
+  ptype = build_pointer_type (long_double_type_node);
+  tmp = tree_cons (NULL_TREE, long_double_type_node,
+		   tree_cons (NULL_TREE, ptype,
+		   	      build_tree_list (NULL_TREE, ptype)));
+  func_longdouble_longdoublep_longdoublep =
+    build_function_type (void_type_node, tmp);
 
 #include "mathbuiltins.def"
 
@@ -922,6 +956,33 @@ gfc_init_builtin_functions (void)
 		      BUILT_IN_POW, "pow", true);
   gfc_define_builtin ("__builtin_powf", mfunc_float[1], 
 		      BUILT_IN_POWF, "powf", true);
+
+  if (TARGET_C99_FUNCTIONS)
+    {
+      gfc_define_builtin ("__builtin_cbrtl", mfunc_longdouble[0],
+			  BUILT_IN_CBRTL, "cbrtl", true);
+      gfc_define_builtin ("__builtin_cbrt", mfunc_double[0],
+			  BUILT_IN_CBRT, "cbrt", true);
+      gfc_define_builtin ("__builtin_cbrtf", mfunc_float[0],
+			  BUILT_IN_CBRTF, "cbrtf", true);
+      gfc_define_builtin ("__builtin_cexpil", func_longdouble_clongdouble, 
+		          BUILT_IN_CEXPIL, "cexpil", true);
+      gfc_define_builtin ("__builtin_cexpi", func_double_cdouble,
+		          BUILT_IN_CEXPI, "cexpi", true);
+      gfc_define_builtin ("__builtin_cexpif", func_float_cfloat,
+		          BUILT_IN_CEXPIF, "cexpif", true);
+    }
+
+  if (TARGET_HAS_SINCOS)
+    {
+      gfc_define_builtin ("__builtin_sincosl",
+			  func_longdouble_longdoublep_longdoublep,
+		          BUILT_IN_SINCOSL, "sincosl", false);
+      gfc_define_builtin ("__builtin_sincos", func_double_doublep_doublep,
+		          BUILT_IN_SINCOS, "sincos", false);
+      gfc_define_builtin ("__builtin_sincosf", func_float_floatp_floatp,
+		          BUILT_IN_SINCOSF, "sincosf", false);
+    }
 
   /* Other builtin functions we use.  */
 

@@ -1,3 +1,10 @@
+2007-01-20  Richard Guenther  <rguenther@suse.de>
+
+	PR fortran/30223
+	* f95-lang.c (gfc_init_builtin_functions): Provide cbrt and
+	cexpi builtins if we have TARGET_C99_FUNCTIONS.  Provide
+	sincos builtins if the target has sincos.
+
 2007-01-19  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* intrinsic.texi (MATMUL): Corrected a typo.
