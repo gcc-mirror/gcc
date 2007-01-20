@@ -4692,6 +4692,7 @@ compute_points_to_sets (struct alias_info *ai)
   timevar_push (TV_TREE_PTA);
 
   init_alias_vars ();
+  init_alias_heapvars ();
 
   intra_create_variable_infos ();
 
@@ -4934,14 +4935,16 @@ struct tree_opt_pass pass_ipa_pta =
 void
 init_alias_heapvars (void)
 {
-  heapvar_for_stmt = htab_create_ggc (11, tree_map_hash, tree_map_eq,
-				      NULL);
+  if (!heapvar_for_stmt)
+    heapvar_for_stmt = htab_create_ggc (11, tree_map_hash, tree_map_eq,
+					NULL);
 }
 
 void
 delete_alias_heapvars (void)
 {
   htab_delete (heapvar_for_stmt);
+  heapvar_for_stmt = NULL;
 }
 
 

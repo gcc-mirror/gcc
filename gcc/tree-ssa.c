@@ -778,7 +778,6 @@ init_tree_ssa (void)
 					       var_ann_eq, NULL);
   cfun->gimple_df->call_clobbered_vars = BITMAP_GGC_ALLOC ();
   cfun->gimple_df->addressable_vars = BITMAP_GGC_ALLOC ();
-  init_alias_heapvars ();
   init_ssanames ();
   init_phinodes ();
 }
