@@ -1,5 +1,5 @@
 /* Build executable statement trees.
-   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006
+   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -37,7 +37,6 @@ gfc_code new_st;
 void
 gfc_clear_new_st (void)
 {
-
   memset (&new_st, '\0', sizeof (new_st));
   new_st.op = EXEC_NOP;
 }
@@ -60,9 +59,8 @@ gfc_get_code (void)
    its tail, returning a pointer to the new tail.  */
 
 gfc_code *
-gfc_append_code (gfc_code * tail, gfc_code * new)
+gfc_append_code (gfc_code *tail, gfc_code *new)
 {
-
   if (tail != NULL)
     {
       while (tail->next != NULL)
@@ -81,9 +79,8 @@ gfc_append_code (gfc_code * tail, gfc_code * new)
 /* Free a single code structure, but not the actual structure itself.  */
 
 void
-gfc_free_statement (gfc_code * p)
+gfc_free_statement (gfc_code *p)
 {
-
   if (p->expr)
     gfc_free_expr (p->expr);
   if (p->expr2)
@@ -157,7 +154,7 @@ gfc_free_statement (gfc_code * p)
 
     case EXEC_DT_END:
       /* The ext.dt member is a duplicate pointer and doesn't need to
-         be freed.  */
+	 be freed.  */
       break;
 
     case EXEC_FORALL:
@@ -200,7 +197,7 @@ gfc_free_statement (gfc_code * p)
 /* Free a code statement and all other code structures linked to it.  */
 
 void
-gfc_free_statements (gfc_code * p)
+gfc_free_statements (gfc_code *p)
 {
   gfc_code *q;
 

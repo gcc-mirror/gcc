@@ -1,3 +1,9 @@
+2007-01-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* openmp.c, matchexp.c, module.c, scanner.c, resolve.c, st.c,
+	parse.c, primary.c, options.c, misc.c, simplify.c:  Next installment
+	in the massive whitespace patch.
+
 2007-01-20  Roger Sayle  <roger@eyesopen.com>
 
 	* module.c (mio_array_ref): The dimen_type fields of an array ref
