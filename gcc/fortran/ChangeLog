@@ -1,5 +1,24 @@
 2007-01-20  Roger Sayle  <roger@eyesopen.com>
 
+	* dependency.c (gfc_full_array_ref_p): Check that ref->next is NULL,
+	i.e. that the ARRAY_REF doesn't mention components.
+	* trans-array.c (gfc_constant_array_constructor_p): Export external
+	function renamed from constant_array_constructor_p.
+	(gfc_build_constant_array_constructor): Export.
+	(gfc_trans_array_constructor): Update call to the renamed function
+	constant_array_constructor_p.
+	* trans-array.h (gfc_constant_array_constructor_p): Prototype here.
+	(gfc_build_constant_array_constructor): Likewise.
+	* trans-expr.c (gfc_build_memcpy_call): New helper function split
+	out from gfc_trans_array_copy.
+	(gfc_trans_array_copy): Use gfc_build_memcpy_call.
+	(gfc_trans_array_constructor_copy): New function to optimize
+	assigning an entire array from a constant array constructor.
+	(gfc_trans_assignment): Call gfc_trans_array_constructor_copy
+	when appropriate.
+
+2007-01-20  Roger Sayle  <roger@eyesopen.com>
+
 	* trans-intrinsic.c (gfc_conv_intrinsic_sign): New branchless
 	implementation for the SIGN intrinsic with integral operands.
 	(gfc_conv_intrinsic_minmax): Fix whitespace.

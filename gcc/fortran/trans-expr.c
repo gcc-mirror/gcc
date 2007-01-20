@@ -3579,6 +3579,37 @@ gfc_trans_zero_assign (gfc_expr * expr)
   return fold_convert (void_type_node, tmp);
 }
 
+
+/* Helper for gfc_trans_array_copy and gfc_trans_array_constructor_copy
+   that constructs the call to __builtin_memcpy.  */
+
+static tree
+gfc_build_memcpy_call (tree dst, tree src, tree len)
+{
+  tree tmp, args;
+
+  /* Convert arguments to the correct types.  */
+  if (!POINTER_TYPE_P (TREE_TYPE (dst)))
+    dst = gfc_build_addr_expr (pvoid_type_node, dst);
+  else
+    dst = fold_convert (pvoid_type_node, dst);
+
+  if (!POINTER_TYPE_P (TREE_TYPE (src)))
+    src = gfc_build_addr_expr (pvoid_type_node, src);
+  else
+    src = fold_convert (pvoid_type_node, src);
+
+  len = fold_convert (size_type_node, len);
+
+  /* Construct call to __builtin_memcpy.  */
+  args = build_tree_list (NULL_TREE, len);
+  args = tree_cons (NULL_TREE, src, args);
+  args = tree_cons (NULL_TREE, dst, args);
+  tmp = build_function_call_expr (built_in_decls[BUILT_IN_MEMCPY], args);
+  return fold_convert (void_type_node, tmp);
+}
+
+
 /* Try to efficiently translate dst(:) = src(:).  Return NULL if this
    can't be done.  EXPR1 is the destination/lhs and EXPR2 is the
    source/rhs, both are gfc_full_array_ref_p which have been checked for
@@ -3589,7 +3620,6 @@ gfc_trans_array_copy (gfc_expr * expr1, gfc_expr * expr2)
 {
   tree dst, dlen, dtype;
   tree src, slen, stype;
-  tree tmp, args;
 
   dst = gfc_get_symbol_decl (expr1->symtree->n.sym);
   src = gfc_get_symbol_decl (expr2->symtree->n.sym);
@@ -3622,25 +3652,53 @@ gfc_trans_array_copy (gfc_expr * expr1, gfc_expr * expr2)
   if (!tree_int_cst_equal (slen, dlen))
     return NULL_TREE;
 
-  /* Convert arguments to the correct types.  */
-  if (!POINTER_TYPE_P (TREE_TYPE (dst)))
-    dst = gfc_build_addr_expr (pvoid_type_node, dst);
-  else
-    dst = fold_convert (pvoid_type_node, dst);
+  return gfc_build_memcpy_call (dst, src, dlen);
+}
 
-  if (!POINTER_TYPE_P (TREE_TYPE (src)))
-    src = gfc_build_addr_expr (pvoid_type_node, src);
-  else
-    src = fold_convert (pvoid_type_node, src);
 
-  dlen = fold_convert (size_type_node, dlen);
+/* Try to efficiently translate array(:) = (/ ... /).  Return NULL if
+   this can't be done.  EXPR1 is the destination/lhs for which
+   gfc_full_array_ref_p is true, and EXPR2 is the source/rhs.  */
 
-  /* Construct call to __builtin_memcpy.  */
-  args = build_tree_list (NULL_TREE, dlen);
-  args = tree_cons (NULL_TREE, src, args);
-  args = tree_cons (NULL_TREE, dst, args);
-  tmp = build_function_call_expr (built_in_decls[BUILT_IN_MEMCPY], args);
-  return fold_convert (void_type_node, tmp);
+static tree
+gfc_trans_array_constructor_copy (gfc_expr * expr1, gfc_expr * expr2)
+{
+  unsigned HOST_WIDE_INT nelem;
+  tree dst, dtype;
+  tree src, stype;
+  tree len;
+
+  nelem = gfc_constant_array_constructor_p (expr2->value.constructor);
+  if (nelem == 0)
+    return NULL_TREE;
+
+  dst = gfc_get_symbol_decl (expr1->symtree->n.sym);
+  dtype = TREE_TYPE (dst);
+  if (POINTER_TYPE_P (dtype))
+    dtype = TREE_TYPE (dtype);
+  if (!GFC_ARRAY_TYPE_P (dtype))
+    return NULL_TREE;
+
+  /* Determine the lengths of the array.  */
+  len = GFC_TYPE_ARRAY_SIZE (dtype);
+  if (!len || TREE_CODE (len) != INTEGER_CST)
+    return NULL_TREE;
+
+  /* Confirm that the constructor is the same size.  */
+  if (compare_tree_int (len, nelem) != 0)
+    return NULL_TREE;
+
+  len = fold_build2 (MULT_EXPR, gfc_array_index_type, len,
+		     TYPE_SIZE_UNIT (gfc_get_element_type (dtype)));
+
+  stype = gfc_typenode_for_spec (&expr2->ts);
+  src = gfc_build_constant_array_constructor (expr2, stype);
+
+  stype = TREE_TYPE (src);
+  if (POINTER_TYPE_P (stype))
+    stype = TREE_TYPE (stype);
+
+  return gfc_build_memcpy_call (dst, src, len);
 }
 
 
@@ -3868,6 +3926,18 @@ gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2, bool init_flag)
       tmp = gfc_trans_array_copy (expr1, expr2);
       if (tmp)
         return tmp;
+    }
+
+  /* Special case initializing an array from a constant array constructor.  */
+  if (expr1->expr_type == EXPR_VARIABLE
+      && copyable_array_p (expr1)
+      && gfc_full_array_ref_p (expr1->ref)
+      && expr2->expr_type == EXPR_ARRAY
+      && gfc_compare_types (&expr1->ts, &expr2->ts))
+    {
+      tmp = gfc_trans_array_constructor_copy (expr1, expr2);
+      if (tmp)
+	return tmp;
     }
 
   /* Fallback to the scalarizer to generate explicit loops.  */
