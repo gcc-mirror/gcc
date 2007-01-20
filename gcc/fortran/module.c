@@ -1913,8 +1913,25 @@ mio_array_ref (gfc_array_ref * ar)
       gfc_internal_error ("mio_array_ref(): Unknown array ref");
     }
 
-  for (i = 0; i < ar->dimen; i++)
-    mio_integer ((int *) &ar->dimen_type[i]);
+  /* Unfortunately, ar->dimen_type is an anonymous enumerated type so
+     we can't call mio_integer directly.  Instead loop over each element
+     and cast it to/from an integer.  */
+  if (iomode == IO_OUTPUT)
+    {
+      for (i = 0; i < ar->dimen; i++)
+	{
+	  int tmp = (int)ar->dimen_type[i];
+	  write_atom (ATOM_INTEGER, &tmp);
+	}
+    }
+  else
+    {
+      for (i = 0; i < ar->dimen; i++)
+	{
+	  require_atom (ATOM_INTEGER);
+	  ar->dimen_type[i] = atom_int;
+	}
+    }
 
   if (iomode == IO_INPUT)
     {
