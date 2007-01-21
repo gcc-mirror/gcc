@@ -1,10 +1,14 @@
+2007-01-21  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* runtime/error.c: Include sys/time.h before sys/resource.h.
+
 2007-01-21  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/30525
 	* intrinsics/string_intrinsics.c(compare_string):  Make
 	sure that comparisons are done unsigned.
 
-2006-12-09  Tobias Burnus  <burnus@net-b.de>
+2007-01-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR libfortran/30015
 	* intrinsics/date_and_time.c (date_and_time): Fix case where time
