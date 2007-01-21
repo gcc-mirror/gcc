@@ -187,6 +187,11 @@ proc objc_target_compile { source dest type options } {
 	lappend options "additional_flags=${objc_link_flags}"
 	append ld_library_path ":${libobjc_dir}"
     }
+    if { $type == "precompiled_header" } {
+	# If we generating a precompiled header, we have say this is an
+	# objective-C header
+	set source [concat "-x objective-c-header" $source]
+    }
     lappend options "compiler=$OBJC_UNDER_TEST"
 
     set_ld_library_path_env_vars
