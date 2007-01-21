@@ -1,6 +1,6 @@
 // Bits and pieces used in algorithms -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -64,6 +64,7 @@
 
 #include <bits/c++config.h>
 #include <cstring>
+#include <cwchar>
 #include <climits>
 #include <cstdlib>
 #include <cstddef>
@@ -540,6 +541,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 								   __result);
     }
 
+
   template<bool>
     struct __fill
     {
@@ -567,6 +569,68 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
     };
 
+  template<typename _ForwardIterator, typename _Tp>
+    inline void
+    __fill_aux(_ForwardIterator __first, _ForwardIterator __last,
+	       const _Tp& __value)
+    {
+      const bool __scalar = __is_scalar<_Tp>::__value;
+      std::__fill<__scalar>::fill(__first, __last, __value);
+    }
+
+  // Specialization: for char types we can use memset (wmemset).
+  inline void
+  __fill_aux(unsigned char* __first, unsigned char* __last,
+	     const unsigned char& __c)
+  {
+    const unsigned char __tmp = __c;
+    std::memset(__first, __tmp, __last - __first);
+  }
+
+  inline void
+  __fill_aux(signed char* __first, signed char* __last,
+	     const signed char& __c)
+  {
+    const signed char __tmp = __c;
+    std::memset(__first, static_cast<unsigned char>(__tmp), __last - __first);
+  }
+
+  inline void
+  __fill_aux(char* __first, char* __last, const char& __c)
+  {
+    const char __tmp = __c;
+    std::memset(__first, static_cast<unsigned char>(__tmp), __last - __first);
+  }
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  inline void
+  __fill_aux(wchar_t* __first, wchar_t* __last, const wchar_t& __c)
+  {
+    const wchar_t __tmp = __c;
+    std::wmemset(__first, __tmp, __last - __first);
+  }
+#endif
+
+  template<bool>
+    struct __fill_normal
+    {
+      template<typename _ForwardIterator, typename _Tp>
+        static void
+        __fill_n(_ForwardIterator __first, _ForwardIterator __last,
+		 const _Tp& __value)
+        { std::__fill_aux(__first, __last, __value); }
+    };
+
+  template<>
+    struct __fill_normal<true>
+    {
+      template<typename _ForwardIterator, typename _Tp>
+        static void
+        __fill_n(_ForwardIterator __first, _ForwardIterator __last,
+		 const _Tp& __value)
+        { std::__fill_aux(__first.base(), __last.base(), __value); }
+    };
+
   /**
    *  @brief Fills the range [first,last) with copies of value.
    *  @param  first  A forward iterator.
@@ -574,12 +638,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @param  value  A reference-to-const of arbitrary type.
    *  @return   Nothing.
    *
-   *  This function fills a range with copies of the same value.  For one-byte
-   *  types filling contiguous areas of memory, this becomes an inline call to
-   *  @c memset.
+   *  This function fills a range with copies of the same value.  For char
+   *  types filling contiguous areas of memory, this becomes an inline call
+   *  to @c memset or @c wmemset.
   */
   template<typename _ForwardIterator, typename _Tp>
-    void
+    inline void
     fill(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __value)
     {
       // concept requirements
@@ -587,34 +651,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 				  _ForwardIterator>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      const bool __scalar = __is_scalar<_Tp>::__value;
-      std::__fill<__scalar>::fill(__first, __last, __value);
+      const bool __fi = __is_normal_iterator<_ForwardIterator>::__value;
+      std::__fill_normal<__fi>::__fill_n(__first, __last, __value);
     }
 
-  // Specialization: for one-byte types we can use memset.
-  inline void
-  fill(unsigned char* __first, unsigned char* __last, const unsigned char& __c)
-  {
-    __glibcxx_requires_valid_range(__first, __last);
-    const unsigned char __tmp = __c;
-    std::memset(__first, __tmp, __last - __first);
-  }
-
-  inline void
-  fill(signed char* __first, signed char* __last, const signed char& __c)
-  {
-    __glibcxx_requires_valid_range(__first, __last);
-    const signed char __tmp = __c;
-    std::memset(__first, static_cast<unsigned char>(__tmp), __last - __first);
-  }
-
-  inline void
-  fill(char* __first, char* __last, const char& __c)
-  {
-    __glibcxx_requires_valid_range(__first, __last);
-    const char __tmp = __c;
-    std::memset(__first, static_cast<unsigned char>(__tmp), __last - __first);
-  }
 
   template<bool>
     struct __fill_n
@@ -643,6 +683,66 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
     };
 
+  template<typename _OutputIterator, typename _Size, typename _Tp>
+    inline _OutputIterator
+    __fill_n_aux(_OutputIterator __first, _Size __n, const _Tp& __value)
+    {
+      const bool __scalar = __is_scalar<_Tp>::__value;
+      return std::__fill_n<__scalar>::fill_n(__first, __n, __value);
+    }
+
+  template<typename _Size>
+    inline unsigned char*
+    __fill_n_aux(unsigned char* __first, _Size __n, const unsigned char& __c)
+    {
+      std::__fill_aux(__first, __first + __n, __c);
+      return __first + __n;
+    }
+
+  template<typename _Size>
+    inline signed char*
+    __fill_n_aux(signed char* __first, _Size __n, const signed char& __c)
+    {
+      std::__fill_aux(__first, __first + __n, __c);
+      return __first + __n;
+    }
+
+  template<typename _Size>
+    inline char*
+    __fill_n_aux(char* __first, _Size __n, const char& __c)
+    {
+      std::__fill_aux(__first, __first + __n, __c);
+      return __first + __n;
+    }
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  template<typename _Size>
+    inline wchar_t*
+    __fill_n_aux(wchar_t* __first, _Size __n, const wchar_t& __c)
+    {
+      std::__fill_aux(__first, __first + __n, __c);
+      return __first + __n;
+    }
+#endif
+
+  template<bool>
+    struct __fill_n_normal
+    {
+      template<typename _OI, typename _Size, typename _Tp>
+        static _OI
+        __fill_n_n(_OI __first, _Size __n, const _Tp& __value)
+        { return std::__fill_n_aux(__first, __n, __value); }
+    };
+
+  template<>
+    struct __fill_n_normal<true>
+    {
+      template<typename _OI, typename _Size, typename _Tp>
+        static _OI
+        __fill_n_n(_OI __first, _Size __n, const _Tp& __value)
+        { return _OI(std::__fill_n_aux(__first.base(), __n, __value)); }
+    };
+
   /**
    *  @brief Fills the range [first,first+n) with copies of value.
    *  @param  first  An output iterator.
@@ -650,43 +750,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @param  value  A reference-to-const of arbitrary type.
    *  @return   The iterator at first+n.
    *
-   *  This function fills a range with copies of the same value.  For one-byte
-   *  types filling contiguous areas of memory, this becomes an inline call to
-   *  @c memset.
+   *  This function fills a range with copies of the same value.  For char
+   *  types filling contiguous areas of memory, this becomes an inline call
+   *  to @c memset or @ wmemset.
   */
   template<typename _OutputIterator, typename _Size, typename _Tp>
-    _OutputIterator
+    inline _OutputIterator
     fill_n(_OutputIterator __first, _Size __n, const _Tp& __value)
     {
       // concept requirements
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator, _Tp>)
 
-      const bool __scalar = __is_scalar<_Tp>::__value;
-      return std::__fill_n<__scalar>::fill_n(__first, __n, __value);
-    }
-
-  template<typename _Size>
-    inline unsigned char*
-    fill_n(unsigned char* __first, _Size __n, const unsigned char& __c)
-    {
-      std::fill(__first, __first + __n, __c);
-      return __first + __n;
-    }
-
-  template<typename _Size>
-    inline signed char*
-    fill_n(signed char* __first, _Size __n, const signed char& __c)
-    {
-      std::fill(__first, __first + __n, __c);
-      return __first + __n;
-    }
-
-  template<typename _Size>
-    inline char*
-    fill_n(char* __first, _Size __n, const char& __c)
-    {
-      std::fill(__first, __first + __n, __c);
-      return __first + __n;
+      const bool __oi = __is_normal_iterator<_OutputIterator>::__value;
+      return std::__fill_n_normal<__oi>::__fill_n_n(__first, __n, __value);
     }
 
   /**
