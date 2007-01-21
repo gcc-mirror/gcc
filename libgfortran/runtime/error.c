@@ -48,12 +48,14 @@ Boston, MA 02110-1301, USA.  */
 #include <stdlib.h>
 #endif
 
-#ifdef HAVE_SYS_RESOURCE_H
-#include <sys/resource.h>
-#endif
-
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
+#endif
+
+/* <sys/time.h> has to be included before <sys/resource.h> to work
+   around PR 30518; otherwise, MacOS 10.3.9 headers are just broken.  */
+#ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
 #endif
 
 #include "libgfortran.h"
