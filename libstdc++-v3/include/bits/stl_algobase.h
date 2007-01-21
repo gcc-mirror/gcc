@@ -1,6 +1,6 @@
 // Bits and pieces used in algorithms -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -166,9 +166,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	__are_same<_ValueType2 &, _ReferenceType2>::__value>::
 	iter_swap(__a, __b);
     }
-
-#undef min
-#undef max
 
   /**
    *  @brief This does what you think it does.

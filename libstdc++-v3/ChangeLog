@@ -1,3 +1,10 @@
+2007-01-21  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/29989
+	* include/bits/c++config: #undef min and max.
+	* include/bits/stl_algobase.h: Remove min and max #undefs.
+	* testsuite/18_support/numeric_limits/29989.cc: New.
+
 2007-01-15  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/std/std_valarray.h (valarray<>::cshift): Fix typo.
