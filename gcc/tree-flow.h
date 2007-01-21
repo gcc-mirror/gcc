@@ -381,14 +381,14 @@ struct stmt_ann_d GTY(())
   /* Set of variables that have had their address taken in the statement.  */
   bitmap addresses_taken;
 
-  /* Nonzero if the statement references memory (at least one of its
-     expressions contains a non-register operand).  */
-  unsigned references_memory : 1;
-
   /* Unique identifier for this statement.  These ID's are to be created
      by each pass on an as-needed basis in any order convenient for the
      pass which needs statement UIDs.  */
   unsigned int uid;
+
+  /* Nonzero if the statement references memory (at least one of its
+     expressions contains a non-register operand).  */
+  unsigned references_memory : 1;
 
   /* Nonzero if the statement has been modified (meaning that the operands
      need to be scanned again).  */

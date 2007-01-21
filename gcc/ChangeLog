@@ -1,3 +1,8 @@
+2007-01-20  Jan Hubicka  <jh@suse.cz>
+
+	* tree-flow.h (struct stmt_ann_d): Move references_memory to proper
+	place within annotation.
+
 2007-01-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (output_move_double): Change array size of xoperands to 4.
