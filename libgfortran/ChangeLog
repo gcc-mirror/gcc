@@ -1,3 +1,9 @@
+2007-01-21  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/30525
+	* intrinsics/string_intrinsics.c(compare_string):  Make
+	sure that comparisons are done unsigned.
+
 2006-12-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR libfortran/30015

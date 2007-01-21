@@ -83,7 +83,7 @@ compare_string (GFC_INTEGER_4 len1, const char * s1,
 		GFC_INTEGER_4 len2, const char * s2)
 {
   int res;
-  const char *s;
+  const unsigned char *s;
   int len;
 
   res = memcmp (s1, s2, (len1 < len2) ? len1 : len2);
@@ -96,13 +96,13 @@ compare_string (GFC_INTEGER_4 len1, const char * s1,
   if (len1 < len2)
     {
       len = len2 - len1;
-      s = &s2[len1];
+      s = (unsigned char *) &s2[len1];
       res = -1;
     }
   else
     {
       len = len1 - len2;
-      s = &s1[len2];
+      s = (unsigned char *) &s1[len2];
       res = 1;
     }
 
