@@ -1,3 +1,16 @@
+2007-01-21  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (inlining_mode): Comment, move up.
+	(cgraph_decide_inlining_incrementally): Do not perform inlining itself; fix
+	handling of flattening of self recursive functions.
+	(cgraph_find_cycles): Remove.
+	(cgraph_flatten_node): Remove.
+	(cgraph_decide_inlining): Use incremental inliner to handle flattening.
+	(try_inline): New function.
+	(cgraph_early_inlining): Update call of cgraph_decide_inlining_incrementally.
+	Apply inlining here.
+	(apply_inline): Update call of cgraph_decide_inlining_incrementally.
+
 2007-01-21  Dirk Mueller  <dmueller@suse.de>
 
 	PR bootstrap/30511
