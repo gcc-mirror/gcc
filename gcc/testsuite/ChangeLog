@@ -1,3 +1,7 @@
+2007-01-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/compile/20070121.c: New test.
+
 2007-01-21  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/30525
