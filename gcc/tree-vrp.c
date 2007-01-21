@@ -3564,7 +3564,8 @@ static tree
 check_array_bounds (tree *tp, int *walk_subtree, void *data)
 {
   tree t = *tp;
-  location_t *location = EXPR_LOCUS ((tree) data);
+  tree stmt = (tree)data;
+  location_t *location = EXPR_LOCUS (stmt);
 
   *walk_subtree = TRUE;
 
@@ -3572,18 +3573,34 @@ check_array_bounds (tree *tp, int *walk_subtree, void *data)
     check_array_ref (t, location, false /*ignore_off_by_one*/);
   else if (TREE_CODE (t) == ADDR_EXPR)
     {
+       use_operand_p op;
+       tree use_stmt;
        t = TREE_OPERAND (t, 0);
 
        /* Don't warn on statements like
-          ssa_name = 500 + &array[-200] which are sometimes
-          produced by various optimizing passes.  */
-       if (TREE_CODE ((tree)data) == GIMPLE_MODIFY_STMT
-           && BINARY_CLASS_P (GIMPLE_STMT_OPERAND ((tree)data, 1)))
-         {
-           *walk_subtree = FALSE;
-           return NULL_TREE;
-         }
-       while (handled_component_p (t))
+
+          ssa_name = 500 + &array[-200]
+
+          or
+
+          ssa_name = &array[-200]
+          other_name = ssa_name + 300;
+
+          which are sometimes
+          produced by other optimizing passes.  */
+
+       if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+           && BINARY_CLASS_P (GIMPLE_STMT_OPERAND (stmt, 1)))
+         *walk_subtree = FALSE;
+
+       if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+           && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == SSA_NAME
+           && single_imm_use (GIMPLE_STMT_OPERAND (stmt, 0), &op, &use_stmt)
+           && TREE_CODE (use_stmt) == GIMPLE_MODIFY_STMT
+           && BINARY_CLASS_P (GIMPLE_STMT_OPERAND (use_stmt, 1)))
+         *walk_subtree = FALSE;
+
+       while (*walk_subtree && handled_component_p (t))
          {
            if (TREE_CODE (t) == ARRAY_REF)
              check_array_ref (t, location, true /*ignore_off_by_one*/);

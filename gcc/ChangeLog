@@ -1,3 +1,10 @@
+2007-01-21  Dirk Mueller  <dmueller@suse.de>
+
+	PR bootstrap/30511
+	* tree-vrp.c (check_array_bounds): do not warn
+	about ADDR_EXPR's of ARRAY_REF's which are immediately
+	used in binary expressions.
+
 2007-01-21  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vectorizer.h (struct _stmt_vec_info): Add new field 
