@@ -11545,8 +11545,8 @@ install-exec-hook: install-toolexeclibLTLIBRARIES install-libexecsubPROGRAMS
 @USE_LIBGCJ_BC_TRUE@	rm $(DESTDIR)$(toolexeclibdir)/libgcj_bc.so.1; \
 @USE_LIBGCJ_BC_TRUE@	$(LN_S) libgcj_bc.so.1.0.0 $(DESTDIR)$(toolexeclibdir)/libgcj_bc.so.1; \
 @USE_LIBGCJ_BC_TRUE@	rm $(DESTDIR)$(toolexeclibdir)/libgcj_bc.la;
-@BUILD_ECJ1_TRUE@@NATIVE_TRUE@	mv $(DESTDIR)$(libexecsubdir)/ecjx$(EXEEXT) $(DESTDIR)$(libexecsubdir)/ecj1$(host_exeext)
-@BUILD_ECJ1_TRUE@@NATIVE_FALSE@	mv $(DESTDIR)$(libexecsubdir)/$(target_noncanonical)-ecjx$(EXEEXT) $(DESTDIR)$(libexecsubdir)/ecj1$(host_exeext)
+@BUILD_ECJ1_TRUE@@NATIVE_TRUE@	mv $(DESTDIR)$(libexecsubdir)/`echo ecjx | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` $(DESTDIR)$(libexecsubdir)/ecj1$(host_exeext)
+@BUILD_ECJ1_TRUE@@NATIVE_FALSE@	mv $(DESTDIR)$(libexecsubdir)/$(target_noncanonical)-`echo ecjx | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` $(DESTDIR)$(libexecsubdir)/ecj1$(host_exeext)
 
 install-data-local:
 	$(PRE_INSTALL)
