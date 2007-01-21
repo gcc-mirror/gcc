@@ -1,3 +1,7 @@
+2007-01-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/compile/20070121.c: New test.
+
 2007-01-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR testsuite/12325
