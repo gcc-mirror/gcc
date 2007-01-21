@@ -1,3 +1,11 @@
+2007-01-20  Andrew Pinski  <pinskia@gmail.com>
+
+	PR objc/30479
+	* objc-act.c (hash_interface): Use IDENTIFIER_HASH_VALUE instead
+	of htab_hash_pointer.
+	(lookup_interface): Likewise.
+	(add_class): Likewise.
+
 2007-01-02  Douglas Gregor  <doug.gregor@gmail.com>
 	
 	* objc-act.c (objc_build_volatilized_type): Keep track of
