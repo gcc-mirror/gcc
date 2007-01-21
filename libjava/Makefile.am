@@ -447,10 +447,10 @@ if USE_LIBGCJ_BC
 endif
 if BUILD_ECJ1
 if NATIVE
-	mv $(DESTDIR)$(libexecsubdir)/ecjx$(EXEEXT) $(DESTDIR)$(libexecsubdir)/ecj1$(host_exeext)
+	mv $(DESTDIR)$(libexecsubdir)/`echo ecjx | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` $(DESTDIR)$(libexecsubdir)/ecj1$(host_exeext)
 else !NATIVE
 ## Undo the prepending of the target prefix
-	mv $(DESTDIR)$(libexecsubdir)/$(target_noncanonical)-ecjx$(EXEEXT) $(DESTDIR)$(libexecsubdir)/ecj1$(host_exeext)
+	mv $(DESTDIR)$(libexecsubdir)/$(target_noncanonical)-`echo ecjx | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` $(DESTDIR)$(libexecsubdir)/ecj1$(host_exeext)
 endif !NATIVE
 endif BUILD_ECJ1
 
