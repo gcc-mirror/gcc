@@ -3876,7 +3876,8 @@ Dump after block reordering, to @file{@var{file}.148r.bbro}.
 @itemx -fdump-rtl-combine
 @opindex dc
 @opindex fdump-rtl-combine
-Dump after instruction combination, to the file @file{@var{file}.129r.combine}.
+Dump after the RTL instruction combination pass, to the file
+@file{@var{file}.129r.combine}.
 
 @item -dC
 @itemx -fdump-rtl-ce1
@@ -3961,7 +3962,8 @@ Dump after the first jump optimization, to @file{@var{file}.112r.jump}.
 @itemx -fdump-rtl-stack
 @opindex dk
 @opindex fdump-rtl-stack
-Dump after conversion from registers to stack, to @file{@var{file}.152r.stack}.
+Dump after conversion from GCC's "flat register file" registers to the
+x87's stack-like registers, to @file{@var{file}.152r.stack}.
 
 @item -dl
 @itemx -fdump-rtl-lreg
@@ -5690,8 +5692,8 @@ The default is @option{-fno-finite-math-only}.
 @opindex fno-signed-zeros
 Allow optimizations for floating point arithmetic that ignore the
 signedness of zero.  IEEE arithmetic specifies the behavior of
-distinct +0.0 and -0.0 values, which then prohibits simplification
-of expressions such as x+0.0 or 0.0*x (even with @option{-ffinte-math-only}).
+distinct +0.0 and @minus{}0.0 values, which then prohibits simplification
+of expressions such as x+0.0 or 0.0*x (even with @option{-ffinite-math-only}).
 This option implies that the sign of a zero result isn't significant.
 
 The default is @option{-fsigned-zeros}.
@@ -11098,8 +11100,9 @@ to use an assembler that supports relocation operators.
 @itemx -mno-check-zero-division
 @opindex mcheck-zero-division
 @opindex mno-check-zero-division
-Trap (do not trap) on integer division by zero.  The default is
-@option{-mcheck-zero-division}.
+Trap (do not trap) on integer division by zero.
+
+The default is @option{-mcheck-zero-division}.
 
 @item -mdivide-traps
 @itemx -mdivide-breaks
@@ -11709,12 +11712,12 @@ those options will run best on that processor, and may not run at all on
 others.
 
 The @option{-mcpu} options automatically enable or disable the
-following options: @option{-maltivec}, @option{-mfprnd},
-@option{-mhard-float}, @option{-mmfcrf}, @option{-mmultiple},
-@option{-mnew-mnemonics}, @option{-mpopcntb}, @option{-mpower},
-@option{-mpower2}, @option{-mpowerpc64}, @option{-mpowerpc-gpopt},
-@option{-mpowerpc-gfxopt}, @option{-mstring}, @option{-mmulhw},
-@option{-mdlmzb}, @option{-mmfpgpr}.
+following options:
+
+@gccoptlist{-maltivec  -mfprnd  -mhard-float  -mmfcrf  -mmultiple @gol
+-mnew-mnemonics  -mpopcntb  -mpower  -mpower2  -mpowerpc64 @gol
+-mpowerpc-gpopt  -mpowerpc-gfxopt  -mstring  -mmulhw  -mdlmzb  -mmfpgpr}
+
 The particular options set for any particular CPU will vary between
 compiler versions, depending on what setting seems to produce optimal
 code for that CPU; it doesn't necessarily reflect the actual hardware's
@@ -12786,11 +12789,11 @@ definition says that ptabs and ptrel trap when the target anded with 3 is 3.
 This has the unintentional effect of making it unsafe to schedule ptabs /
 ptrel before a branch, or hoist it out of a loop.  For example,
 __do_global_ctors, a part of libgcc that runs constructors at program
-startup, calls functions in a list which is delimited by -1.  With the
--mpt-fixed option, the ptabs will be done before testing against -1.
+startup, calls functions in a list which is delimited by @minus{}1.  With the
+-mpt-fixed option, the ptabs will be done before testing against @minus{}1.
 That means that all the constructors will be run a bit quicker, but when
 the loop comes to the end of the list, the program crashes because ptabs
-loads -1 into a target register.  Since this option is unsafe for any
+loads @minus{}1 into a target register.  Since this option is unsafe for any
 hardware implementing the current architecture specification, the default
 is -mno-pt-fixed.  Unless the user specifies a specific cost with
 @option{-mgettrcost}, -mno-pt-fixed also implies @option{-mgettrcost=100};
@@ -14305,9 +14308,9 @@ which options are safe to change and which are not; the safest choice
 is to use exactly the same options when generating and using the
 precompiled header.  The following are known to be safe:
 
-@gccoptlist{-fmessage-length= -fpreprocessed
--fsched-interblock -fsched-spec -fsched-spec-load -fsched-spec-load-dangerous
--fsched-verbose=<number> -fschedule-insns -fvisibility=
+@gccoptlist{-fmessage-length=  -fpreprocessed  -fsched-interblock @gol
+-fsched-spec  -fsched-spec-load  -fsched-spec-load-dangerous @gol
+-fsched-verbose=<number>  -fschedule-insns  -fvisibility= @gol
 -pedantic-errors}
 
 @end itemize
