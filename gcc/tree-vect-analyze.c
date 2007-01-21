@@ -57,7 +57,7 @@ static bool vect_determine_vectorization_factor (loop_vec_info);
 static bool exist_non_indexing_operands_for_use_p (tree, tree);
 static tree vect_get_loop_niters (struct loop *, tree *);
 static bool vect_analyze_data_ref_dependence
-  (struct data_dependence_relation *, loop_vec_info, bool);
+  (struct data_dependence_relation *, loop_vec_info);
 static bool vect_compute_data_ref_alignment (struct data_reference *); 
 static bool vect_analyze_data_ref_access (struct data_reference *);
 static bool vect_can_advance_ivs_p (loop_vec_info);
@@ -877,8 +877,7 @@ vect_check_interleaving (struct data_reference *dra,
       
 static bool
 vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
-                                  loop_vec_info loop_vinfo,
-				  bool check_interleaving)
+                                  loop_vec_info loop_vinfo)
 {
   unsigned int i;
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -895,8 +894,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
     {
       /* Independent data accesses.  */
-      if (check_interleaving)
-	vect_check_interleaving (dra, drb);
+      vect_check_interleaving (dra, drb);
       return false;
     }
 
@@ -951,7 +949,18 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	      fprintf (vect_dump, " and ");
 	      print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
 	    }
-	  continue;
+
+          /* For interleaving, mark that there is a read-write dependency if
+             necessary. We check before that one of the data-refs is store.  */ 
+          if (DR_IS_READ (dra))
+            DR_GROUP_READ_WRITE_DEPENDENCE (stmtinfo_a) = true;
+	  else
+            {
+              if (DR_IS_READ (drb))
+                DR_GROUP_READ_WRITE_DEPENDENCE (stmtinfo_b) = true;
+	    }
+	  
+          continue;
 	}
 
       if (abs (dist) >= vectorization_factor)
@@ -979,36 +988,6 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 }
 
 
-/* Function vect_check_dependences.
-
-    Return TRUE if there is a store-store or load-store dependence between
-    data-refs in DDR, otherwise return FALSE.  */
-
-static bool
-vect_check_dependences (struct data_dependence_relation *ddr)
-{
-  struct data_reference *dra = DDR_A (ddr);
-  struct data_reference *drb = DDR_B (ddr);
-
-  if (DDR_ARE_DEPENDENT (ddr) == chrec_known || dra == drb)
-    /* Independent or same data accesses.  */
-    return false;
-
-  if (DR_IS_READ (dra) == DR_IS_READ (drb) && DR_IS_READ (dra))
-    /* Two loads.  */
-    return false;
-
-  if (vect_print_dump_info (REPORT_DR_DETAILS))
-    {
-      fprintf (vect_dump, "possible store or store/load dependence between ");
-      print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
-      fprintf (vect_dump, " and ");
-      print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
-    }
-  return true;
-}
-
-
 /* Function vect_analyze_data_ref_dependences.
           
    Examine all the data references in the loop, and make sure there do not
@@ -1020,24 +999,12 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo)
   unsigned int i;
   VEC (ddr_p, heap) *ddrs = LOOP_VINFO_DDRS (loop_vinfo);
   struct data_dependence_relation *ddr;
-  bool check_interleaving = true;
 
   if (vect_print_dump_info (REPORT_DETAILS)) 
     fprintf (vect_dump, "=== vect_analyze_dependences ===");
      
-  /* We allow interleaving only if there are no store-store and load-store
-      dependencies in the loop.  */
   for (i = 0; VEC_iterate (ddr_p, ddrs, i, ddr); i++)
-    {
-      if (vect_check_dependences (ddr))
-	{
-	  check_interleaving = false;
-	  break;
-	}
-    }
-
-  for (i = 0; VEC_iterate (ddr_p, ddrs, i, ddr); i++)
-    if (vect_analyze_data_ref_dependence (ddr, loop_vinfo, check_interleaving))
+    if (vect_analyze_data_ref_dependence (ddr, loop_vinfo))
       return false;
 
   return true;
@@ -1778,9 +1745,25 @@ vect_analyze_data_ref_access (struct data_reference *dr)
 				     DR_INIT (STMT_VINFO_DATA_REF (
 						      vinfo_for_stmt (next)))))
 	    {
-	      /* For load use the same data-ref load. (We check in
-		 vect_check_dependences() that there are no two stores to the
-		 same location).  */
+              if (!DR_IS_READ (data_ref))
+                { 
+                  if (vect_print_dump_info (REPORT_DETAILS))
+                    fprintf (vect_dump, "Two store stmts share the same dr.");
+                  return false; 
+                }
+
+              /* Check that there is no load-store dependecies for this loads 
+                 to prevent a case of load-store-load to the same location.  */
+              if (DR_GROUP_READ_WRITE_DEPENDENCE (vinfo_for_stmt (next))
+                  || DR_GROUP_READ_WRITE_DEPENDENCE (vinfo_for_stmt (prev)))
+                {
+                  if (vect_print_dump_info (REPORT_DETAILS))
+                    fprintf (vect_dump, 
+                             "READ_WRITE dependence in interleaving.");
+                  return false;
+                }
+
+	      /* For load use the same data-ref load.  */
 	      DR_GROUP_SAME_DR_STMT (vinfo_for_stmt (next)) = prev;
 
 	      prev = next;

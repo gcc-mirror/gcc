@@ -1,3 +1,19 @@
+2007-01-21  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vectorizer.h (struct _stmt_vec_info): Add new field 
+	read_write_dep and macros for its access.
+	* tree-vectorizer.c (new_stmt_vec_info): Initialize the new field.
+	* tree-vect-analyze.c (vect_analyze_data_ref_dependence): Remove 
+	argument, call vect_check_interleaving for every independent pair of
+	data-refs. Mark loads that access the same memory location as a store
+	in the loop.
+	(vect_check_dependences): Remove.
+	(vect_analyze_data_ref_dependences): Remove  vect_check_dependences 
+	call, fix the call to vect_analyze_data_ref_dependence.
+	(vect_analyze_data_ref_access): For statements that access the same 
+	data-ref, check that they are not stores; for loads, check that there
+	is no store that access the same location.
+
 2007-01-20  Roger Sayle  <roger@eyesopen.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 
