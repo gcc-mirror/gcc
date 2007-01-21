@@ -1,5 +1,6 @@
 /* Intrinsic translation
-   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -1128,7 +1129,7 @@ gfc_conv_intrinsic_dim (gfc_se * se, gfc_expr * expr)
 /* SIGN(A, B) is absolute value of A times sign of B.
    The real value versions use library functions to ensure the correct
    handling of negative zero.  Integer case implemented as:
-   SIGN(A, B) = ((a >= 0) .xor. (b >= 0)) ? a : -a
+   SIGN(A, B) = { tmp = (A ^ B) >> C; (A + tmp) ^ tmp }
   */
 
 static void
@@ -1138,10 +1139,6 @@ gfc_conv_intrinsic_sign (gfc_se * se, gfc_expr * expr)
   tree arg;
   tree arg2;
   tree type;
-  tree zero;
-  tree testa;
-  tree testb;
-
 
   arg = gfc_conv_intrinsic_function_args (se, expr);
   if (expr->ts.type == BT_REAL)
@@ -1165,16 +1162,27 @@ gfc_conv_intrinsic_sign (gfc_se * se, gfc_expr * expr)
       return;
     }
 
+  /* Having excluded floating point types, we know we are now dealing
+     with signed integer types.  */
   arg2 = TREE_VALUE (TREE_CHAIN (arg));
   arg = TREE_VALUE (arg);
   type = TREE_TYPE (arg);
-  zero = gfc_build_const (type, integer_zero_node);
 
-  testa = fold_build2 (GE_EXPR, boolean_type_node, arg, zero);
-  testb = fold_build2 (GE_EXPR, boolean_type_node, arg2, zero);
-  tmp = fold_build2 (TRUTH_XOR_EXPR, boolean_type_node, testa, testb);
-  se->expr = fold_build3 (COND_EXPR, type, tmp,
-			  build1 (NEGATE_EXPR, type, arg), arg);
+  /* Arg is used multiple times below.  */
+  arg = gfc_evaluate_now (arg, &se->pre);
+
+  /* Construct (A ^ B) >> 31, which generates a bit mask of all zeros if
+     the signs of A and B are the same, and of all ones if they differ.  */
+  tmp = fold_build2 (BIT_XOR_EXPR, type, arg, arg2);
+  tmp = fold_build2 (RSHIFT_EXPR, type, tmp,
+		     build_int_cst (type, TYPE_PRECISION (type) - 1));
+  tmp = gfc_evaluate_now (tmp, &se->pre);
+
+  /* Construct (A + tmp) ^ tmp, which is A if tmp is zero, and -A if tmp]
+     is all ones (i.e. -1).  */
+  se->expr = fold_build2 (BIT_XOR_EXPR, type,
+			  fold_build2 (PLUS_EXPR, type, arg, tmp),
+			  tmp);
 }
 
 
@@ -1383,7 +1391,7 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, int op)
     limit = convert (type, limit);
   /* Only evaluate the argument once.  */
   if (TREE_CODE (limit) != VAR_DECL && !TREE_CONSTANT (limit))
-    limit = gfc_evaluate_now(limit, &se->pre);
+    limit = gfc_evaluate_now (limit, &se->pre);
 
   mvar = gfc_create_var (type, "M");
   elsecase = build2_v (MODIFY_EXPR, mvar, limit);
@@ -1395,7 +1403,7 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, int op)
 
       /* Only evaluate the argument once.  */
       if (TREE_CODE (val) != VAR_DECL && !TREE_CONSTANT (val))
-        val = gfc_evaluate_now(val, &se->pre);
+        val = gfc_evaluate_now (val, &se->pre);
 
       thencase = build2_v (MODIFY_EXPR, mvar, convert (type, val));
 
