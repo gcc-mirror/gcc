@@ -350,7 +350,7 @@ F77 and later, has overloads that are GNU extensions
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = ABS(X)}
+@code{RESULT = ABS(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -406,7 +406,7 @@ GNU extension
 Inquiry function
 
 @item @emph{Syntax}:
-@code{I = ACCESS(NAME, MODE)}
+@code{RESULT = ACCESS(NAME, MODE)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -461,7 +461,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{C = ACHAR(I)}
+@code{RESULT = ACHAR(I)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -500,7 +500,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = ACOS(X)}
+@code{RESULT = ACOS(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -550,7 +550,7 @@ GNU extension
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = ACOSH(X)}
+@code{RESULT = ACOSH(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -593,7 +593,7 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{STR = ADJUSTL(STR)}
+@code{RESULT = ADJUSTL(STR)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -634,7 +634,7 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{STR = ADJUSTR(STR)}
+@code{RESULT = ADJUSTR(STR)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -680,7 +680,7 @@ F77 and later, has overloads that are GNU extensions
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = AIMAG(Z)}
+@code{RESULT = AIMAG(Z)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -730,7 +730,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = AINT(X [, KIND])} 
+@code{RESULT = AINT(X [, KIND])} 
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -836,7 +836,7 @@ F95 and later
 transformational function
 
 @item @emph{Syntax}:
-@code{L = ALL(MASK [, DIM])}
+@code{RESULT = ALL(MASK [, DIM])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -901,7 +901,7 @@ F95 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{L = ALLOCATED(X)}
+@code{RESULT = ALLOCATED(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -991,8 +991,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = ANINT(X)}
-@code{X = ANINT(X, KIND)}
+@code{RESULT = ANINT(X [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1047,8 +1046,7 @@ F95 and later
 transformational function
 
 @item @emph{Syntax}:
-@code{L = ANY(MASK)} 
-@code{L = ANY(MASK, DIM)}
+@code{RESULT = ANY(MASK [, DIM])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1114,7 +1112,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = ASIN(X)}
+@code{RESULT = ASIN(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1164,7 +1162,7 @@ GNU extension
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = ASINH(X)}
+@code{RESULT = ASINH(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1206,8 +1204,7 @@ F95 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{L = ASSOCIATED(PTR)} 
-@code{L = ASSOCIATED(PTR [, TGT])}
+@code{RESULT = ASSOCIATED(PTR [, TGT])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1282,7 +1279,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = ATAN(X)}
+@code{RESULT = ATAN(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1331,7 +1328,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = ATAN2(Y,X)}
+@code{RESULT = ATAN2(Y,X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1383,7 +1380,7 @@ GNU extension
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = ATANH(X)}
+@code{RESULT = ATANH(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1428,7 +1425,7 @@ GNU extension
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = BESJ0(X)}
+@code{RESULT = BESJ0(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1474,7 +1471,7 @@ GNU extension
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = BESJ1(X)}
+@code{RESULT = BESJ1(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1520,7 +1517,7 @@ GNU extension
 Elemental function
 
 @item @emph{Syntax}:
-@code{Y = BESJN(N, X)}
+@code{RESULT = BESJN(N, X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1567,7 +1564,7 @@ GNU extension
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = BESY0(X)}
+@code{RESULT = BESY0(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1612,7 +1609,7 @@ GNU extension
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = BESY1(X)}
+@code{RESULT = BESY1(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1657,7 +1654,7 @@ GNU extension
 Elemental function
 
 @item @emph{Syntax}:
-@code{Y = BESYN(N, X)}
+@code{RESULT = BESYN(N, X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1704,7 +1701,7 @@ F95 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{I = BIT_SIZE(I)}
+@code{RESULT = BIT_SIZE(I)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1744,7 +1741,7 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{I = BTEST(I,POS)}
+@code{RESULT = BTEST(I, POS)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1787,7 +1784,7 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{I = CEILING(X [, KIND])}
+@code{RESULT = CEILING(X [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1833,7 +1830,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{C = CHAR(I [, KIND])}
+@code{RESULT = CHAR(I [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1878,7 +1875,7 @@ GNU extension
 Non-elemental subroutine
 
 @item @emph{Syntax}:
-@code{CALL chdir(PATH[,STATUS])}
+@code{CALL CHDIR(PATH [, STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1994,7 +1991,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{C = CMPLX(X [, Y [, KIND]])}
+@code{RESULT = CMPLX(X [, Y [, KIND]])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -2042,7 +2039,7 @@ F2003
 Inquiry function
 
 @item @emph{Syntax}:
-@code{I = COMMAND_ARGUMENT_COUNT()}
+@code{RESULT = COMMAND_ARGUMENT_COUNT()}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -2132,7 +2129,7 @@ F77 and later, has overloads that are GNU extensions
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = COS(X)}
+@code{RESULT = COS(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -2225,7 +2222,7 @@ Inverse function: @ref{ACOSH}
 
 @table @asis
 @item @emph{Description}:
-@code{COUNT(MASK[,DIM])} counts the number of @code{.TRUE.} elements of
+@code{COUNT(MASK [, DIM])} counts the number of @code{.TRUE.} elements of
 @var{MASK} along the dimension of @var{DIM}.  If @var{DIM} is omitted it is
 taken to be @code{1}.  @var{DIM} is a scaler of type @code{INTEGER} in the
 range of @math{1 /leq DIM /leq n)} where @math{n} is the rank of @var{MASK}.
@@ -2237,7 +2234,7 @@ F95 and later
 transformational function
 
 @item @emph{Syntax}:
-@code{I = COUNT(MASK[,DIM])}
+@code{RESULT = COUNT(MASK [, DIM])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -2295,7 +2292,7 @@ F95 and later
 Subroutine
 
 @item @emph{Syntax}:
-@code{CPU_TIME(X)}
+@code{CALL CPU_TIME(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -2326,7 +2323,7 @@ end program test_cpu_time
 
 @table @asis
 @item @emph{Description}:
-@code{CSHIFT(ARRAY, SHIFT[,DIM])} performs a circular shift on elements of
+@code{CSHIFT(ARRAY, SHIFT [, DIM])} performs a circular shift on elements of
 @var{ARRAY} along the dimension of @var{DIM}.  If @var{DIM} is omitted it is
 taken to be @code{1}.  @var{DIM} is a scaler of type @code{INTEGER} in the
 range of @math{1 /leq DIM /leq n)} where @math{n} is the rank of @var{ARRAY}.
@@ -2342,7 +2339,7 @@ F95 and later
 transformational function
 
 @item @emph{Syntax}:
-@code{A = CSHIFT(A, SHIFT[,DIM])}
+@code{RESULT = CSHIFT(A, SHIFT [, DIM])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -2517,7 +2514,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = DBLE(X)}
+@code{RESULT = DBLE(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -2563,8 +2560,7 @@ GNU extension
 Elemental function
 
 @item @emph{Syntax}:
-@code{C = DCMPLX(X)}
-@code{C = DCMPLX(X,Y)}
+@code{RESULT = DCMPLX(X [, Y])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -2610,7 +2606,7 @@ GNU extension
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = DFLOAT(X)}
+@code{RESULT = DFLOAT(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -2652,7 +2648,7 @@ F95 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{C = DIGITS(X)}
+@code{RESULT = DIGITS(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -2696,7 +2692,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = DIM(X,Y)}
+@code{RESULT = DIM(X, Y)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -2750,7 +2746,7 @@ F95 and later
 transformational function
 
 @item @emph{Syntax}:
-@code{S = DOT_PRODUCT(X,Y)}
+@code{RESULT = DOT_PRODUCT(X, Y)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -2796,7 +2792,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{D = DPROD(X,Y)}
+@code{RESULT = DPROD(X, Y)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -2838,7 +2834,7 @@ GNU extension
 Elemental function
 
 @item @emph{Syntax}:
-@code{D = DREAL(Z)}
+@code{RESULT = DREAL(Z)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -2974,7 +2970,7 @@ F95 and later
 transformational function
 
 @item @emph{Syntax}:
-@code{A = EOSHIFT(A, SHIFT[,BOUNDARY, DIM])}
+@code{RESULT = EOSHIFT(A, SHIFT [, BOUNDARY, DIM])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -3022,7 +3018,7 @@ F95 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{C = EPSILON(X)}
+@code{RESULT = EPSILON(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -3061,7 +3057,7 @@ GNU Extension
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = ERF(X)}
+@code{RESULT = ERF(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -3105,7 +3101,7 @@ GNU extension
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = ERFC(X)}
+@code{RESULT = ERFC(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -3272,7 +3268,7 @@ F77 and later, has overloads that are GNU extensions
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = EXP(X)}
+@code{RESULT = EXP(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -3320,7 +3316,7 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{I = EXPONENT(X)}
+@code{RESULT = EXPONENT(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -3415,7 +3411,7 @@ GNU extension
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = FLOAT(I)}
+@code{RESULT = FLOAT(I)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -3423,7 +3419,7 @@ Elemental function
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type default @code{REAL}
+The return value is of type default @code{REAL}.
 
 @item @emph{Example}:
 @smallexample
@@ -3463,7 +3459,7 @@ GNU extension
 Non-elemental subroutine
 
 @item @emph{Syntax}:
-@code{CALL FGET(C[,STATUS])}
+@code{CALL FGET(C [, STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -3519,7 +3515,7 @@ GNU extension
 Non-elemental subroutine
 
 @item @emph{Syntax}:
-@code{CALL FGETC(UNIT,C[,STATUS])}
+@code{CALL FGETC(UNIT, C [, STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -3567,7 +3563,7 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{I = FLOOR(X [, KIND])}
+@code{RESULT = FLOOR(X [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -3646,7 +3642,7 @@ GNU extension
 non-elemental function
 
 @item @emph{Syntax}:
-@code{I = FNUM(UNIT)}
+@code{RESULT = FNUM(UNIT)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -3694,7 +3690,7 @@ GNU extension
 Non-elemental subroutine
 
 @item @emph{Syntax}:
-@code{CALL FPUT(C[,STATUS])}
+@code{CALL FPUT(C [, STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -3744,7 +3740,7 @@ GNU extension
 Non-elemental subroutine
 
 @item @emph{Syntax}:
-@code{CALL FPUTC(UNIT,C[,STATUS])}
+@code{CALL FPUTC(UNIT, C [, STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -3876,7 +3872,7 @@ GNU extension
 Non-elemental subroutine
 
 @item @emph{Syntax}:
-@code{CALL fstat(UNIT,BUFF[,STATUS])}
+@code{CALL FSTAT(UNIT, BUFF [, STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -3994,7 +3990,7 @@ GNU extension
 Subroutine
 
 @item @emph{Syntax}:
-@code{CALL GETARG(N,ARG)}
+@code{CALL GETARG(N, ARG)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -4091,7 +4087,7 @@ F2003
 Subroutine
 
 @item @emph{Syntax}:
-@code{CALL GET_COMMAND_ARGUMENT(N,ARG)}
+@code{CALL GET_COMMAND_ARGUMENT(N, ARG)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -4146,7 +4142,7 @@ GNU extension
 Non-elemental subroutine.
 
 @item @emph{Syntax}:
-@code{CALL GETCWD(CWD[,STATUS])}
+@code{CALL GETCWD(CWD [, STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -4191,7 +4187,7 @@ GNU extension
 Subroutine
 
 @item @emph{Syntax}:
-@code{CALL GETENV(ENVVAR,VALUE)}
+@code{CALL GETENV(ENVVAR, VALUE)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -4235,7 +4231,7 @@ F2003
 Subroutine
 
 @item @emph{Syntax}:
-@code{CALL GET_ENVIRONMENT_VARIABLE(ENVVAR,VALUE)}
+@code{CALL GET_ENVIRONMENT_VARIABLE(ENVVAR, VALUE)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -4276,7 +4272,7 @@ GNU extension
 function
 
 @item @emph{Syntax}:
-@code{I = GETGID()}
+@code{RESULT = GETGID()}
 
 @item @emph{Return value}:
 The return value of @code{GETGID} is an @code{INTEGER} of the default
@@ -4350,7 +4346,7 @@ GNU extension
 function
 
 @item @emph{Syntax}:
-@code{I = GETPID()}
+@code{RESULT = GETPID()}
 
 @item @emph{Return value}:
 The return value of @code{GETPID} is an @code{INTEGER} of the default
@@ -4388,7 +4384,7 @@ GNU extension
 function
 
 @item @emph{Syntax}:
-@code{GETUID()}
+@code{RESULT = GETUID()}
 
 @item @emph{Return value}:
 The return value of @code{GETUID} is an @code{INTEGER} of the default
@@ -4514,7 +4510,7 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{Y = HUGE(X)}
+@code{RESULT = HUGE(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -4553,7 +4549,7 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{I = IACHAR(C)}
+@code{RESULT = IACHAR(C)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -4647,7 +4643,7 @@ GNU extension
 Non-elemental Function
 
 @item @emph{Syntax}:
-@code{I = IARGC()}
+@code{RESULT = IARGC()}
 
 @item @emph{Arguments}:
 None.
@@ -4797,7 +4793,7 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{I = ICHAR(C)}
+@code{RESULT = ICHAR(C)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -4933,7 +4929,7 @@ GNU extension
 Elemental function
 
 @item @emph{Syntax}:
-@code{I = IERRNO()}
+@code{RESULT = IERRNO()}
 
 @item @emph{Arguments}:
 None.
@@ -4967,7 +4963,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{I = INDEX(STRING, SUBSTRING [, BACK])}
+@code{RESULT = INDEX(STRING, SUBSTRING [, BACK])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -5006,7 +5002,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@item @code{X = INT(X [, KIND))}
+@item @code{RESULT = INT(X [, KIND))}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -5114,7 +5110,7 @@ GNU extension
 non-elemental function
 
 @item @emph{Syntax}:
-@code{I = IRAND(FLAG)}
+@code{RESULT = IRAND(FLAG)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -5358,7 +5354,7 @@ F95 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{I = LBOUND(ARRAY [, DIM])}
+@code{RESULT = LBOUND(ARRAY [, DIM])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -5430,7 +5426,7 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{L = LEN_TRIM(STRING)}
+@code{RESULT = LEN_TRIM(STRING)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -5475,7 +5471,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{L = LGE(STRING_A, STRING_B)}
+@code{RESULT = LGE(STRING_A, STRING_B)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -5521,7 +5517,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{L = LGT(STRING_A, STRING_B)}
+@code{RESULT = LGT(STRING_A, STRING_B)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -5603,7 +5599,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{L = LLE(STRING_A, STRING_B)}
+@code{RESULT = LLE(STRING_A, STRING_B)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -5649,7 +5645,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{L = LLT(STRING_A, STRING_B)}
+@code{RESULT = LLT(STRING_A, STRING_B)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -5684,7 +5680,7 @@ GNU extension
 Elemental function
 
 @item @emph{Syntax}:
-@code{L = LNBLNK(STRING)}
+@code{RESULT = LNBLNK(STRING)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -5717,7 +5713,7 @@ GNU extension
 Inquiry function
 
 @item @emph{Syntax}:
-@code{I = LOC(X)}
+@code{RESULT = LOC(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -5763,7 +5759,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = LOG(X)}
+@code{RESULT = LOG(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -5816,7 +5812,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = LOG10(X)}
+@code{RESULT = LOG10(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -5944,7 +5940,7 @@ GNU extension
 Non-elemental subroutine
 
 @item @emph{Syntax}:
-@code{CALL LSTAT(FILE,BUFF[,STATUS])}
+@code{CALL LSTAT(FILE, BUFF [, STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -6192,7 +6188,7 @@ F95 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{I = MAXEXPONENT(X)}
+@code{RESULT = MAXEXPONENT(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -6315,13 +6311,11 @@ Transformational function
 @end multitable
 
 @item @emph{Return value}:
-If @var{DIM} is absent, the result is a rank-one array with a length
-equal to the rank of @var{ARRAY}.  If @var{DIM} is present, the result
-is an array with a rank one less than the rank of @var{ARRAY}, and a
-size corresponding to the size of @var{ARRAY} with the @var{DIM}
-dimension removed.  If @var{DIM} is present and @var{ARRAY} has a rank
-of one, the result is a scalar.  In all cases, the result is of the same
-type and kind as @var{ARRAY}.
+If @var{DIM} is absent, or if @var{ARRAY} has a rank of one, the result
+is a scalar.  If @var{DIM} is present, the result is an array with a
+rank one less than the rank of @var{ARRAY}, and a size corresponding to
+the size of @var{ARRAY} with the @var{DIM} dimension removed.  In all
+cases, the result is of the same type and kind as @var{ARRAY}.
 
 @item @emph{See also}:
 @ref{MAX}, @ref{MAXLOC}
@@ -6378,7 +6372,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = MIN(A1, A2 [, A3 [, ...]])}
+@code{RESULT = MIN(A1, A2 [, A3, ...])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -6426,7 +6420,7 @@ F95 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{I = MINEXPONENT(X)}
+@code{RESULT = MINEXPONENT(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -6541,13 +6535,11 @@ Transformational function
 @end multitable
 
 @item @emph{Return value}:
-If @var{DIM} is absent, the result is a rank-one array with a length
-equal to the rank of @var{ARRAY}.  If @var{DIM} is present, the result
-is an array with a rank one less than the rank of @var{ARRAY}, and a
-size corresponding to the size of @var{ARRAY} with the @var{DIM}
-dimension removed.  If @var{DIM} is present and @var{ARRAY} has a rank
-of one, the result is a scalar.  In all cases, the result is of the same
-type and kind as @var{ARRAY}.
+If @var{DIM} is absent, or if @var{ARRAY} has a rank of one, the result
+is a scalar.  If @var{DIM} is present, the result is an array with a
+rank one less than the rank of @var{ARRAY}, and a size corresponding to
+the size of @var{ARRAY} with the @var{DIM} dimension removed.  In all
+cases, the result is of the same type and kind as @var{ARRAY}.
 
 @item @emph{See also}:
 @ref{MIN}, @ref{MINLOC}
@@ -6575,7 +6567,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = MOD(A,P)}
+@code{RESULT = MOD(A, P)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -6634,7 +6626,7 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = MODULO(A,P)}
+@code{RESULT = MODULO(A, P)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -6780,7 +6772,7 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{Y = NEAREST(X, S)}
+@code{RESULT = NEAREST(X, S)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -6825,7 +6817,7 @@ F2003 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{C = NEW_LINE(C)}
+@code{RESULT = NEW_LINE(C)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -6865,7 +6857,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = NINT(X)}
+@code{RESULT = NINT(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -7085,7 +7077,7 @@ F95 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{I = PRECISION(X)}
+@code{RESULT = PRECISION(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -7176,7 +7168,7 @@ F95 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{R = RADIX(X)}
+@code{RESULT = RADIX(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -7242,7 +7234,7 @@ GNU extension
 Non-elemental function
 
 @item @emph{Syntax}:
-@code{X = RAND(FLAG)}
+@code{RESULT = RAND(FLAG)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -7337,7 +7329,7 @@ F95 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{I = RANGE(X)}
+@code{RESULT = RANGE(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -7374,9 +7366,8 @@ Elemental function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .30 .80
-@item @code{X = REAL(X)}
-@item @code{X = REAL(X, KIND)}
-@item @code{X = REALPART(Z)}
+@item @code{RESULT = REAL(X [, KIND])}
+@item @code{RESULT = REALPART(Z)}
 @end multitable
 
 @item @emph{Arguments}:
@@ -7523,7 +7514,7 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{Y = RRSPACING(X)}
+@code{RESULT = RRSPACING(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -7596,7 +7587,7 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{Y = SCALE(X, I)}
+@code{RESULT = SCALE(X, I)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -7665,7 +7656,7 @@ GNU extension
 function
 
 @item @emph{Syntax}:
-@code{T = SECNDS (X)}
+@code{RESULT = SECNDS (X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -7712,9 +7703,7 @@ F95 and later
 Transformational function
 
 @item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{J = SELECTED_INT_KIND(I)}
-@end multitable
+@code{RESULT = SELECTED_INT_KIND(I)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -7758,9 +7747,7 @@ F95 and later
 Transformational function
 
 @item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{I = SELECTED_REAL_KIND(P,R)}
-@end multitable
+@code{RESULT = SELECTED_REAL_KIND(P, R)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -7821,7 +7808,7 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{Y = SET_EXPONENT(X, I)}
+@code{RESULT = SET_EXPONENT(X, I)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -7891,7 +7878,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = SIGN(A,B)}
+@code{RESULT = SIGN(A, B)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -7951,8 +7938,7 @@ subroutine, non-elemental function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
-@item @code{CALL SIGNAL(NUMBER, HANDLER)}
-@item @code{CALL SIGNAL(NUMBER, HANDLER, STATUS)}
+@item @code{CALL SIGNAL(NUMBER, HANDLER [, STATUS])}
 @item @code{STATUS = SIGNAL(NUMBER, HANDLER)}
 @end multitable
 
@@ -8004,7 +7990,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = SIN(X)}
+@code{RESULT = SIN(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -8055,7 +8041,7 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = SINH(X)}
+@code{RESULT = SINH(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -8127,7 +8113,7 @@ GNU extension
 function
 
 @item @emph{Syntax}:
-@code{X = SNGL(A)}
+@code{RESULT = SNGL(A)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -8213,7 +8199,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = SQRT(X)}
+@code{RESULT = SQRT(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -8512,7 +8498,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{X = TAN(X)}
+@code{RESULT = TAN(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -8688,7 +8674,7 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{Y = TINY(X)}
+@code{RESULT = TINY(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -8791,7 +8777,7 @@ F95 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{I = UBOUND(ARRAY [, DIM])}
+@code{RESULT = UBOUND(ARRAY [, DIM])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -8819,10 +8805,11 @@ the relevant dimension.
 @cindex @code{UMASK} intrinsic
 @cindex file system operations
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+Sets the file creation mask to @var{MASK} and returns the old value in
+argument @var{OLD} if it is supplied. See @code{umask(2)}.
+
 @item @emph{Standard}:
 GNU extension
 
@@ -8830,11 +8817,15 @@ GNU extension
 Subroutine
 
 @item @emph{Syntax}:
+@code{CALL UMASK(MASK [, OLD])}
+
 @item @emph{Arguments}:
-@item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
-@item @emph{See also}:
+@multitable @columnfractions .15 .80
+@item @var{MASK} @tab Shall be a scalar of type @code{INTEGER(*)}.
+@item @var{MASK} @tab (Optional) Shall be a scalar of type
+                      @code{INTEGER(*)}.
+@end multitable
+
 @end table
 
 
