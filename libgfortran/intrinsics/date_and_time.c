@@ -126,8 +126,6 @@ Boston, MA 02110-1301, USA.  */
 
    TODO :
    - Check year boundaries.
-   - There is no STDC/POSIX way to get VALUES(8).  A GNUish way may
-     be to use ftime.
 */
 #define DATE_LEN 8
 #define TIME_LEN 10   
@@ -154,7 +152,25 @@ date_and_time (char *__date, char *__time, char *__zone,
   struct tm local_time;
   struct tm UTC_time;
 
+#if HAVE_GETTIMEOFDAY
+  {
+    struct timeval tp;
+
+    if (!gettimeofday (&tp, NULL))
+      {
+         lt = tp.tv_sec;
+         values[7] = tp.tv_usec / 1000;
+      }
+    else
+      {
+         lt = time (NULL);
+         values[7] = 0;
+      }
+  }
+#else
   lt = time (NULL);
+  values[7] = 0;
+#endif /* HAVE_GETTIMEOFDAY */
 
   if (lt != (time_t) -1)
     {
@@ -171,31 +187,6 @@ date_and_time (char *__date, char *__time, char *__zone,
       values[4] = local_time.tm_hour;
       values[5] = local_time.tm_min;
       values[6] = local_time.tm_sec;
-      values[7] = 0;
-
-#if HAVE_GETTIMEOFDAY
-      {
-	struct timeval tp;
-#  if GETTIMEOFDAY_ONE_ARGUMENT
-	if (!gettimeofday (&tp))
-#  else
-#    if HAVE_STRUCT_TIMEZONE
-	struct timezone tzp;
-
-      /* Some systems such as HP-UX, do have struct timezone, but
-	 gettimeofday takes void* as the 2nd arg.  However, the
-	 effect of passing anything other than a null pointer is
-	 unspecified on HP-UX.  Configure checks if gettimeofday
-	 actually fails with a non-NULL arg and pretends that
-	 struct timezone is missing if it does fail.  */
-	if (!gettimeofday (&tp, &tzp))
-#    else
-	if (!gettimeofday (&tp, (void *) 0))
-#    endif /* HAVE_STRUCT_TIMEZONE  */
-#  endif /* GETTIMEOFDAY_ONE_ARGUMENT  */
-	values[7] = tp.tv_usec / 1000;
-      }
-#endif /* HAVE_GETTIMEOFDAY */
 
 #if HAVE_SNPRINTF
       if (__date)

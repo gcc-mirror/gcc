@@ -1,3 +1,14 @@
+2006-12-09  Tobias Burnus  <burnus@net-b.de>
+
+	PR libfortran/30015
+	* intrinsics/date_and_time.c (date_and_time): Fix case where time
+	  can go backwards.
+	* configure.ac: Remove AC_TRY_RUN test for timezone in
+	  gettimeofday.
+	* acinclude.m4: Ditto.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 2007-01-20  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* m4/misc_specifics.m4: Add _gfortran prefix to specific names.

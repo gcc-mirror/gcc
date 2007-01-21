@@ -160,6 +160,7 @@ AC_TYPE_OFF_T
 
 # check header files
 AC_STDC_HEADERS
+AC_HEADER_TIME
 AC_HAVE_HEADERS(stdlib.h stdio.h string.h stddef.h math.h unistd.h signal.h)
 AC_CHECK_HEADERS(time.h sys/params.h sys/time.h sys/times.h sys/resource.h)
 AC_CHECK_HEADERS(sys/types.h sys/stat.h sys/wait.h floatingpoint.h ieeefp.h)
@@ -175,7 +176,7 @@ AC_CHECK_MEMBERS([struct stat.st_rdev])
 AC_CHECK_FUNCS(getrusage times mkstemp strtof strtold snprintf ftruncate chsize)
 AC_CHECK_FUNCS(chdir strerror getlogin gethostname kill link symlink perror)
 AC_CHECK_FUNCS(sleep time ttyname signal alarm ctime clock access fork execl)
-AC_CHECK_FUNCS(wait setmode getrlimit)
+AC_CHECK_FUNCS(wait setmode getrlimit gettimeofday)
 
 # Check for types
 AC_CHECK_TYPES([intptr_t])
@@ -376,11 +377,6 @@ AC_CHECK_FUNC([fp_enable],[have_fp_enable=yes AC_DEFINE([HAVE_FP_ENABLE],[1],[fp
 AC_MSG_NOTICE([FPU dependent file will be ${fpu_host}.h])
 FPU_HOST_HEADER=config/${fpu_host}.h
 AC_SUBST(FPU_HOST_HEADER)
-
-# The standard autoconf HAVE_STRUCT_TIMEZONE doesn't actually check
-# for struct timezone, as you might think.  We also need to check how
-# to call gettimeofday if we have it.
-LIBGFOR_GETTIMEOFDAY
 
 # Attempt to assert that the target is of common type in case we don't
 # have C99 integer types at all.
