@@ -1,3 +1,7 @@
+2007-01-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/compile/20070121.c: New test.
+
 2007-01-21  Roger Sayle  <roger@eyesopen.com>
 	    Brooks Moses  <brooks.moses@codesourcery.com>
 	    Francois-Xavier Coudert  <coudert@clipper.ens.fr>
