@@ -1,3 +1,87 @@
+2007-01-20  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	Merge documentation from mainline:
+        
+	* gfortran.texi: Update copyright to include 2007, change
+	@code-type macros to appropriate variants (@command, @option,
+	etc.)
+	(title page): Removed erroneous '*'.
+ 	(Introduction): Lower "Part I: Introduction" to a chapter,
+	renumber Parts II and III to Parts I and II.
+ 	(GNU Fortran and GCC): Rewrite
+	(GFORTRAN_DEFAULT_RECL): Added units to description.
+ 	(Extensions): Miscellaneous minor rewriting and copyediting.
+ 	(BOZ-literal constants): Renamed from Hexadecimal constants.
+ 	(Hollerith constants support): Added explanation and 
+ 	suggestions for standard-conforming modern equivalents.
+
+	* intrinsic.texi: General whitespace cleanup, edited all
+	"Syntax" examples to a consistent form, update copyright
+	to include 2007, change @findex entries to @cindex entries.
+	(menu): Added TIME8, removed UNMASK.
+ 	(Introduction): Rename to "Introduction to Intrinsics" to
+	avoid conflict with the new chapter, rewrite first paragraph.
+	(AINT): Clarified argument requirement.
+	(ANINT): Clarified argument requirement.
+	(CEILING): Clarified argument requirement.
+	(CHAR): Clarified argument requirement.
+	(CMPLX): Clarified argument requirement.
+	(DCMPLX): Clarified argument requirement.
+	(FGET): Line rewrapping.
+	(FLOOR): Clarified argument requirement.
+	(GMTIME): Added documentation.
+	(IAND): Added cross-reference.
+	(IBCLR): Add documentation.
+	(IBITS): Add documentation.
+	(IBSET): Add documentation.
+	(IEOR): Add documentation.
+	(IERRNO): Add documentation.
+	(INDEX): Add documentation.
+	(INT): Collapsed examples, clarified argument requirement.
+	(IOR): Add documentation.
+	(ISHFT): Add documentation.
+	(ISHFTC): Add documentation.
+	(KILL): Add documentation.
+	(LEN_TRIM): Add documentation.
+	(LGE): Add documentation.
+	(LGT): Add documentation.
+	(LINK): Add documentation.
+	(LLE): Add documentation.
+	(LLT): Add documentation.
+	(LNBLNK): Add documentation.
+	(LOGICAL): Added documentation.
+	(LSHIFT): Added documentation.
+	(LTIME): Added documentation.
+	(MATMUL): Added documentation.
+	(MAX): Added documentation.
+	(MAXLOC): Added documentation.
+	(MAXVAL): Added documentation.
+	(MERGE): Added documentation.
+	(MIN): Added documentation.
+	(MINLOC): Added documentation.
+	(MINVAL): Added documentation.
+	(MVBITS): Moved to correct place, added documentation.
+	(NOT): Added documentation.
+	(PERROR): Added documentation.
+	(RAN): Moved to correct place, added documentation.
+	(REAL): Clarified argument requirement.
+	(RENAME): Added documentation.
+	(RSHIFT): Clarified argument requirement.
+	(SIGN): Corrected table specification.
+	(SYMLNK): Added documentation.
+	(SYSTEM): Added documentation.
+	(TIME): Added documentation.
+	(TIME8): Added section and documentation.
+	(UBOUND): Add documentation.
+	(UMASK): Added documentation.
+	(UNLINK): Add documentation.
+	(UNMASK): Removed erroneous section.
+
+	* invoke.texi: Update copyrights to include 2007, 
+ 	standardize and improve index entries, change @code-type
+	macros to appropriate variants (@command, @option, etc.).
+ 	(OpenMP): Added index entry.
+
 2007-01-20  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/30446
