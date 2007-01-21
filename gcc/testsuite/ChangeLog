@@ -1,3 +1,8 @@
+2007-01-21  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/30525
+	* gfortran.dg/char_comparison_1.f:  New test.
+
 2007-01-21  Ira Rosen  <irar@il.ibm.com> 
 
 	* gcc.dg/vect/vect-strided-same-dr.c: New test. 
