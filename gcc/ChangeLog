@@ -1,3 +1,22 @@
+2007-01-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/29329
+	* combine.c (replaced_rhs_insn): Rename to i2mod.
+	(replaced_rhs_value): Rename to i2mod_new_rhs.
+	(i2mod_old_rhs): New global variable.
+	(combine_instructions): Adjust for above change.  Save a copy of
+	the old RHS into i2mod_old_rhs when the contents of a REG_EQUAL
+	note are substituted in the second instruction.
+	(distribute_notes) <REG_DEAD>: Adjust for above change.  Do not
+	ditch the note if it pertains to the second eliminated register
+	and this register is mentioned in i2mod_old_rhs.
+
+	Revert:
+	2006-09-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* combine.c (distribute_notes) <REG_DEAD>: Do not consider SETs past
+	the insn to which the note was originally attached.
+
 2007-01-21  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (inlining_mode): Comment, move up.
