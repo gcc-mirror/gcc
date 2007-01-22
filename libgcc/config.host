@@ -192,6 +192,7 @@ alpha*-*-unicosmk*)
 	;;
 alpha*-*-linux*)
 	tmake_file="${tmake_file} alpha/t-crtfm"
+	extra_parts="$extra_parts crtfastmath.o"
 	;;
 alpha*-*-gnu*)
 	;;
