@@ -573,6 +573,7 @@ init_optimization_passes (void)
   NEXT_PASS (pass_store_ccp);
   NEXT_PASS (pass_store_copy_prop);
   NEXT_PASS (pass_fold_builtins);
+  NEXT_PASS (pass_cse_sincos);
   /* FIXME: May alias should a TODO but for 4.0.0,
      we add may_alias right after fold builtins
      which can create arbitrary GIMPLE.  */

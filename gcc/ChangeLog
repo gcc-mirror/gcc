@@ -1,3 +1,16 @@
+2007-01-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/30038
+	* tree-ssa-math-opts.c (maybe_record_sincos): New static helper
+	function.
+	(execute_cse_sincos_1): Likewise.
+	(execute_cse_sincos): Likewise.
+	(gate_cse_sincos): Likewise.
+	(pass_cse_sincos): New pass CSEing sin() and cos() calls using
+	the cexpi() canonicalization of sincos().
+	* tree-pass.h (pass_cse_sincos): Declare.
+	* passes.c (init_optimization_passes): New pass pas_cse_sincos.
+
 2007-01-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/29329

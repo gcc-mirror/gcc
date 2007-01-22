@@ -440,13 +440,11 @@ execute_cse_reciprocals_1 (block_stmt_iterator *def_bsi, tree def)
   occ_head = NULL;
 }
 
-
 static bool
 gate_cse_reciprocals (void)
 {
   return optimize && !optimize_size && flag_unsafe_math_optimizations;
 }
-
 
 /* Go through all the floating-point SSA_NAMEs, and call
    execute_cse_reciprocals_1 on each of them.  */
@@ -490,6 +488,7 @@ execute_cse_reciprocals (void)
       for (bsi = bsi_after_labels (bb); !bsi_end_p (bsi); bsi_next (&bsi))
         {
 	  tree stmt = bsi_stmt (bsi);
+
 	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
 	      && (def = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_DEF)) != NULL
 	      && FLOAT_TYPE_P (TREE_TYPE (def))
@@ -509,6 +508,211 @@ struct tree_opt_pass pass_cse_reciprocals =
   "recip",				/* name */
   gate_cse_reciprocals,			/* gate */
   execute_cse_reciprocals,		/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  0,					/* tv_id */
+  PROP_ssa,				/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func | TODO_update_ssa | TODO_verify_ssa
+    | TODO_verify_stmts,                /* todo_flags_finish */
+  0				        /* letter */
+};
+
+/* Records an occurance at statement USE_STMT in the vector of trees
+   STMTS if it is dominated by *TOP_BB or dominates it or this basic block
+   is not yet initialized.  Returns true if the occurance was pushed on
+   the vector.  Adjusts *TOP_BB to be the basic block dominating all
+   statements in the vector.  */
+
+static bool
+maybe_record_sincos (VEC(tree, heap) **stmts,
+		     basic_block *top_bb, tree use_stmt)
+{
+  basic_block use_bb = bb_for_stmt (use_stmt);
+  if (*top_bb
+      && (*top_bb == use_bb
+	  || dominated_by_p (CDI_DOMINATORS, use_bb, *top_bb)))
+    VEC_safe_push (tree, heap, *stmts, use_stmt);
+  else if (!*top_bb
+	   || dominated_by_p (CDI_DOMINATORS, *top_bb, use_bb))
+    {
+      VEC_safe_push (tree, heap, *stmts, use_stmt);
+      *top_bb = use_bb;
+    }
+  else
+    return false;
+
+  return true;
+}
+
+/* Look for sin, cos and cexpi calls with the same argument NAME and
+   create a single call to cexpi CSEing the result in this case.
+   We first walk over all immediate uses of the argument collecting
+   statements that we can CSE in a vector and in a second pass replace
+   the statement rhs with a REALPART or IMAGPART expression on the
+   result of the cexpi call we insert before the use statement that
+   dominates all other candidates.  */
+
+static void
+execute_cse_sincos_1 (tree name)
+{
+  block_stmt_iterator bsi;
+  imm_use_iterator use_iter;
+  tree def_stmt, use_stmt, fndecl, res, call, stmt, type;
+  int seen_cos = 0, seen_sin = 0, seen_cexpi = 0;
+  VEC(tree, heap) *stmts = NULL;
+  basic_block top_bb = NULL;
+  int i;
+
+  type = TREE_TYPE (name);
+  FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, name)
+    {
+      if (TREE_CODE (use_stmt) != GIMPLE_MODIFY_STMT
+	  || TREE_CODE (GIMPLE_STMT_OPERAND (use_stmt, 1)) != CALL_EXPR
+	  || !(fndecl = get_callee_fndecl (GIMPLE_STMT_OPERAND (use_stmt, 1)))
+	  || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+	continue;
+
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	CASE_FLT_FN (BUILT_IN_COS):
+	  seen_cos |= maybe_record_sincos (&stmts, &top_bb, use_stmt) ? 1 : 0;
+	  break;
+
+	CASE_FLT_FN (BUILT_IN_SIN):
+	  seen_sin |= maybe_record_sincos (&stmts, &top_bb, use_stmt) ? 1 : 0;
+	  break;
+
+	CASE_FLT_FN (BUILT_IN_CEXPI):
+	  seen_cexpi |= maybe_record_sincos (&stmts, &top_bb, use_stmt) ? 1 : 0;
+	  break;
+
+	default:;
+	}
+    }
+
+  if (seen_cos + seen_sin + seen_cexpi <= 1)
+    {
+      VEC_free(tree, heap, stmts);
+      return;
+    }
+
+  /* Simply insert cexpi at the beginning of top_bb but not earlier than
+     the name def statement.  */
+  fndecl = mathfn_built_in (type, BUILT_IN_CEXPI);
+  if (!fndecl)
+    return;
+  res = make_rename_temp (TREE_TYPE (TREE_TYPE (fndecl)), "sincostmp");
+  call = build_function_call_expr (fndecl, build_tree_list (NULL_TREE, name));
+  stmt = build2 (GIMPLE_MODIFY_STMT, NULL_TREE, res, call);
+  def_stmt = SSA_NAME_DEF_STMT (name);
+  if (bb_for_stmt (def_stmt) == top_bb
+      && TREE_CODE (def_stmt) == GIMPLE_MODIFY_STMT)
+    {
+      bsi = bsi_for_stmt (def_stmt);
+      bsi_insert_after (&bsi, stmt, BSI_SAME_STMT);
+    }
+  else
+    {
+      bsi = bsi_after_labels (top_bb);
+      bsi_insert_before (&bsi, stmt, BSI_SAME_STMT);
+    }
+  update_stmt (stmt);
+
+  /* And adjust the recorded old call sites.  */
+  for (i = 0; VEC_iterate(tree, stmts, i, use_stmt); ++i)
+    {
+      fndecl = get_callee_fndecl (GIMPLE_STMT_OPERAND (use_stmt, 1));
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	CASE_FLT_FN (BUILT_IN_COS):
+	  GIMPLE_STMT_OPERAND (use_stmt, 1) = fold_build1 (REALPART_EXPR,
+							   type, res);
+	  break;
+
+	CASE_FLT_FN (BUILT_IN_SIN):
+	  GIMPLE_STMT_OPERAND (use_stmt, 1) = fold_build1 (IMAGPART_EXPR,
+							   type, res);
+	  break;
+
+	CASE_FLT_FN (BUILT_IN_CEXPI):
+	  GIMPLE_STMT_OPERAND (use_stmt, 1) = res;
+	  break;
+
+	default:;
+	  gcc_unreachable ();
+	}
+
+	update_stmt (use_stmt);
+    }
+
+  VEC_free(tree, heap, stmts);
+}
+
+/* Go through all calls to sin, cos and cexpi and call execute_cse_sincos_1
+   on the SSA_NAME argument of each of them.  */
+
+static unsigned int
+execute_cse_sincos (void)
+{
+  basic_block bb;
+
+  calculate_dominance_info (CDI_DOMINATORS);
+
+  FOR_EACH_BB (bb)
+    {
+      block_stmt_iterator bsi;
+
+      for (bsi = bsi_after_labels (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+        {
+	  tree stmt = bsi_stmt (bsi);
+	  tree fndecl;
+
+	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	      && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == CALL_EXPR
+	      && (fndecl = get_callee_fndecl (GIMPLE_STMT_OPERAND (stmt, 1)))
+	      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+	    {
+	      tree arg;
+
+	      switch (DECL_FUNCTION_CODE (fndecl))
+		{
+		CASE_FLT_FN (BUILT_IN_COS):
+		CASE_FLT_FN (BUILT_IN_SIN):
+		CASE_FLT_FN (BUILT_IN_CEXPI):
+		  arg = GIMPLE_STMT_OPERAND (stmt, 1);
+		  arg = TREE_VALUE (TREE_OPERAND (arg, 1));
+		  if (TREE_CODE (arg) == SSA_NAME)
+		    execute_cse_sincos_1 (arg);
+		  break;
+
+		default:;
+		}
+	    }
+	}
+    }
+
+  free_dominance_info (CDI_DOMINATORS);
+  return 0;
+}
+
+static bool
+gate_cse_sincos (void)
+{
+  /* Make sure we have either sincos or cexp.  */
+  return (TARGET_HAS_SINCOS
+	  || TARGET_C99_FUNCTIONS)
+	 && optimize;
+}
+
+struct tree_opt_pass pass_cse_sincos =
+{
+  "sincos",				/* name */
+  gate_cse_sincos,			/* gate */
+  execute_cse_sincos,			/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
