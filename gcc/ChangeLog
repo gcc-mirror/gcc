@@ -1,3 +1,8 @@
+2007-01-22  Jan Hubicka  <jh@suse.cz>
+
+	* passes.c (init_optimization_passes): Do not rerun
+	pass_early_warn_uninitialized.
+
 2007-01-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/30038
@@ -33,14 +38,14 @@
 2007-01-21  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (inlining_mode): Comment, move up.
-	(cgraph_decide_inlining_incrementally): Do not perform inlining itself; fix
-	handling of flattening of self recursive functions.
+	(cgraph_decide_inlining_incrementally): Do not perform inlining itself;
+	fix handling of flattening of self recursive functions.
 	(cgraph_find_cycles): Remove.
 	(cgraph_flatten_node): Remove.
 	(cgraph_decide_inlining): Use incremental inliner to handle flattening.
 	(try_inline): New function.
-	(cgraph_early_inlining): Update call of cgraph_decide_inlining_incrementally.
-	Apply inlining here.
+	(cgraph_early_inlining): Update call of
+	cgraph_decide_inlining_incrementally.  Apply inlining here.
 	(apply_inline): Update call of cgraph_decide_inlining_incrementally.
 
 2007-01-21  Dirk Mueller  <dmueller@suse.de>
@@ -197,9 +202,10 @@
 
 2007-01-19  Jan Hubicka  <jh@suse.cz>
 
-	* ipa-inline.c (cgraph_decide_inlining_incrementally): Instead of 'early' argument
-	take inlining mode argument specifying whether to inline for size/speeed or all
-	functions; add support for flattening; improve dumpting.
+	* ipa-inline.c (cgraph_decide_inlining_incrementally): Instead of
+	'early' argument take inlining mode argument specifying whether to
+	inline for size/speeed or all functions; add support for flattening;
+	improve dumpting.
 	(cgraph_early_inlining): Update call of decide_inlining_incrementally.
 
 2007-01-19  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
