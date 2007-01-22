@@ -101,7 +101,8 @@ proc gcj_jni_test_one {file} {
 
   # The base name.  We use it for several purposes.
   set main [file rootname [file tail $file]]
-  if {! [runtest_file_p $runtests $main]} {
+  if {! [runtest_file_p $runtests $main]
+      || $main == "pr29812" || $main == "pr29812_injar"} {
     # Simply skip it.
     return 1
   }
@@ -235,6 +236,33 @@ proc gcj_jni_invocation_compile_c_to_binary {file {options {}}} {
   return 1
 }
 
+proc gcj_jni_get_cxxflags_invocation {} {
+  # Darwin needs -liconv linked, otherwise we get some unresolved.
+  # If you're building the compiler with --prefix set to a place
+  # where it's not yet installed, then the linker won't be able to
+  # find the libgcc used by libffi.dylib.  We could pass the
+  # -dylib_file option, but that's complicated, and it's much easier
+  # to just make the linker find libgcc using -L options.
+  # Similar logic applies to libgcj.
+  if { [istarget "*-*-darwin*"] } {
+      set cxxflags "-L../.libs -shared-libgcc -ljvm -lgcj -liconv"
+  } else {
+      global LIBJAVA
+      if [info exists LIBJAVA] {
+	  set libjava $LIBJAVA;
+      } else {
+	  set libjava [libjava_find_lib libjava gcj]
+      }
+      set cxxflags "$libjava -ljvm"
+  }
+
+  if { [istarget "*-*-solaris*"] } {
+    lappend cxxflags "-lsocket"
+  }
+
+  return $cxxflags
+}
+
 # Do all the work for a single invocation API test.  Return 0 on
 # failure.
 proc gcj_jni_invocation_test_one {file} {
@@ -259,29 +287,8 @@ proc gcj_jni_invocation_test_one {file} {
 #   pass "bytecompile $file"
 
   set cfile [file rootname $file].c
-  # Darwin needs -liconv linked, otherwise we get some unresolved.
-  # If you're building the compiler with --prefix set to a place
-  # where it's not yet installed, then the linker won't be able to
-  # find the libgcc used by libffi.dylib.  We could pass the
-  # -dylib_file option, but that's complicated, and it's much easier
-  # to just make the linker find libgcc using -L options.
-  # Similar logic applies to libgcj.
-  if { [istarget "*-*-darwin*"] } {
-      set cxxflags "-L../.libs -shared-libgcc -ljvm -lgcj -liconv"
-  } else {
-      global LIBJAVA
-      if [info exists LIBJAVA] {
-	  set libjava $LIBJAVA;
-      } else {
-	  set libjava [libjava_find_lib libjava gcj]
-      }
-      set cxxflags "$libjava -ljvm"
-  }
 
-  if { [istarget "*-*-solaris*"] } {
-    lappend cxxflags "-lsocket"
-  }
-
+  set cxxflags [gcj_jni_get_cxxflags_invocation]
   if {! [gcj_jni_invocation_compile_c_to_binary $cfile $cxxflags]} {
     # FIXME
     return 0
@@ -309,6 +316,40 @@ proc gcj_jni_invocation_test_one {file} {
   return 1
 }
 
+proc gcj_jni_pr29812 {} {
+  global srcdir subdir
+  global INTERPRETER runtests
+
+  # Set up a global we need.
+  libjava_arguments
+
+  set b ${srcdir}/${subdir}
+
+  if {! [runtest_file_p $runtests pr29812]} {
+    # Simply skip it.
+    return 1
+  }
+
+  if {! [gcj_jni_compile_c_to_so $b/pr29812.c ""]} {
+    return 0
+  }
+  if {! [gcj_jni_compile_c_to_so $b/pr29812_injar.c ""]} {
+    return 0
+  }
+
+  set gij [libjava_find_gij]
+  if {$INTERPRETER == "yes" && $gij != ""} {
+    if {! [libjava_invoke pr29812 "gij test" opts $gij \
+	     "" $b/pr29812.out "" \
+	     -classpath $b/pr29812.jar pr29812 $b/pr29812_injar.jar]} {
+      return 0
+    }
+  }
+
+  # When we succeed we remove all our clutter.
+  eval gcj_cleanup [glob -nocomplain -- *pr29812*]
+}
+
 # Run the JNI tests.
 proc gcj_jni_run {} {
   global srcdir subdir
@@ -328,6 +369,8 @@ proc gcj_jni_run {} {
     foreach x $srcfiles {
       gcj_jni_invocation_test_one $x
     }
+
+    gcj_jni_pr29812
   } else {
     verbose "JNI tests not run in cross-compilation environment"
   }

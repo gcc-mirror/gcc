@@ -1,5 +1,40 @@
 2007-01-22  Tom Tromey  <tromey@redhat.com>
 
+	PR java/29812:
+	* testsuite/libjava.jni/pr29812.java: New file.
+	* testsuite/libjava.jni/pr29812_injar.java: New file.
+	* testsuite/libjava.jni/pr29812_injar.jar: New file.
+	* testsuite/libjava.jni/pr29812.out: New file.
+	* testsuite/libjava.jni/pr29812_injar.c: New file.
+	* testsuite/libjava.jni/pr29812_injar.h: New file.
+	* testsuite/libjava.jni/pr29812.jar: New file.
+	* testsuite/libjava.jni/pr29812.c: New file.
+	* testsuite/libjava.jni/pr29812.h: New file.
+	* testsuite/libjava.jni/jni.exp (gcj_jni_get_cxxflags_invocation):
+	New proc.
+	(gcj_jni_invocation_test_one): Use it.
+	(gcj_jni_pr29812): New proc.
+	(gcj_jni_run): Use it.
+	* java/lang/natRuntime.cc (_load): Push a new system frame before
+	calling JNI_OnLoad.
+	* include/jvm.h (_Jv_JNI_PopSystemFrame): Declare.
+	(_Jv_GetJNIEnvNewFrameWithLoader): Likewise.
+	* jni.cc (struct _Jv_JNI_LocalFrame) <marker>: Now unsigned char.
+	<allocated_p>: Now bool.
+	<loader>: New field.
+	(_Jv_JNI_EnsureLocalCapacity): Updated.
+	(_Jv_JNI_NewLocalRef): Likewise.
+	(_Jv_JNI_NewLocalRef): Likewise.
+	(_Jv_JNI_PopLocalFrame): Likewise.
+	(_Jv_JNI_FindClass): Likewise.
+	(_Jv_GetJNIEnvNewFrame): Likewise.
+	(_Jv_JNI_AttachCurrentThread): Likewise.
+	(_Jv_GetJNIEnvNewFrameWithLoader): New function.
+	(_Jv_GetJNIEnvNewFrame): Use it.
+	* include/jni_md.h (_CLASSPATH_JNIENV_CONTENTS): Removed 'klass'.
+
+2007-01-22  Tom Tromey  <tromey@redhat.com>
+
 	* libtool-version: Bump current to 9.
 
 2007-01-22  Andrew Haley  <aph@redhat.com>

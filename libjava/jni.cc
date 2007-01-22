@@ -85,15 +85,17 @@ extern struct JNIInvokeInterface _Jv_JNI_InvokeFunctions;
 // This structure is used to keep track of local references.
 struct _Jv_JNI_LocalFrame
 {
-  // This is true if this frame object represents a pushed frame (eg
-  // from PushLocalFrame).
-  int marker;
+  // This is one of the MARK_ constants.
+  unsigned char marker;
 
   // Flag to indicate some locals were allocated.
-  int allocated_p;
+  bool allocated_p;
 
   // Number of elements in frame.
   int size;
+
+  // The class loader of the JNI method that allocated this frame.
+  ::java::lang::ClassLoader *loader;
 
   // Next frame in chain.
   _Jv_JNI_LocalFrame *next;
@@ -311,8 +313,9 @@ _Jv_JNI_EnsureLocalCapacity (JNIEnv *env, jint size)
 
   frame->marker = MARK_NONE;
   frame->size = size;
-  frame->allocated_p = 0;
+  frame->allocated_p = false;
   memset (&frame->vec[0], 0, size * sizeof (jobject));
+  frame->loader = env->locals->loader;
   frame->next = env->locals;
   env->locals = frame;
 
@@ -350,7 +353,7 @@ _Jv_JNI_NewLocalRef (JNIEnv *env, jobject obj)
 	      set = true;
 	      done = true;
 	      frame->vec[i] = obj;
-	      frame->allocated_p = 1;
+	      frame->allocated_p = true;
 	      break;
 	    }
 	}
@@ -368,7 +371,7 @@ _Jv_JNI_NewLocalRef (JNIEnv *env, jobject obj)
       _Jv_JNI_EnsureLocalCapacity (env, 16);
       // We know the first element of the new frame will be ok.
       env->locals->vec[0] = obj;
-      env->locals->allocated_p = 1;
+      env->locals->allocated_p = true;
     }
 
   mark_for_gc (obj, local_ref_table);
@@ -397,7 +400,7 @@ _Jv_JNI_PopLocalFrame (JNIEnv *env, jobject result, int stop)
 	{
 	  if (rf->allocated_p)
 	    memset (&rf->vec[0], 0, rf->size * sizeof (jobject));
-	  rf->allocated_p = 0;
+	  rf->allocated_p = false;
 	  rf = NULL;
 	  break;
 	}
@@ -541,8 +544,8 @@ _Jv_JNI_FindClass (JNIEnv *env, const char *name)
       jstring n = JvNewStringUTF (s);
 
       java::lang::ClassLoader *loader = NULL;
-      if (env->klass != NULL)
-	loader = env->klass->getClassLoaderInternal ();
+      if (env->locals->loader != NULL)
+	loader = env->locals->loader;
 
       if (loader == NULL)
 	{
@@ -2087,18 +2090,14 @@ mangled_name (jclass klass, _Jv_Utf8Const *func_name,
   buf[here] = '\0';
 }
 
-// Return the current thread's JNIEnv; if one does not exist, create
-// it.  Also create a new system frame for use.  This is `extern "C"'
-// because the compiler calls it.
-extern "C" JNIEnv *
-_Jv_GetJNIEnvNewFrame (jclass klass)
+JNIEnv *
+_Jv_GetJNIEnvNewFrameWithLoader (::java::lang::ClassLoader *loader)
 {
   JNIEnv *env = _Jv_GetCurrentJNIEnv ();
   if (__builtin_expect (env == NULL, false))
     {
       env = (JNIEnv *) _Jv_MallocUnchecked (sizeof (JNIEnv));
       env->p = &_Jv_JNIFunctions;
-      env->klass = klass;
       env->locals = NULL;
       // We set env->ex below.
 
@@ -2107,11 +2106,12 @@ _Jv_GetJNIEnvNewFrame (jclass klass)
 	_Jv_MallocUnchecked (sizeof (_Jv_JNI_LocalFrame)
 			     + (FRAME_SIZE
 				* sizeof (jobject)));
-      
+
       env->bottom_locals->marker = MARK_SYSTEM;
       env->bottom_locals->size = FRAME_SIZE;
       env->bottom_locals->next = NULL;
-      env->bottom_locals->allocated_p = 0;
+      env->bottom_locals->allocated_p = false;
+      // We set the klass field below.
       memset (&env->bottom_locals->vec[0], 0, 
 	      env->bottom_locals->size * sizeof (jobject));
 
@@ -2123,23 +2123,25 @@ _Jv_GetJNIEnvNewFrame (jclass klass)
   // built, above.
 
   if (__builtin_expect (env->locals == NULL, true))
-    env->locals = env->bottom_locals;
-
+    {
+      env->locals = env->bottom_locals;
+      env->locals->loader = loader;
+    }
   else
     {
       // Alternatively, we might be re-entering JNI, in which case we can't
       // reuse the bottom_locals frame, because it is already underneath
       // us. So we need to make a new one.
-
       _Jv_JNI_LocalFrame *frame
 	= (_Jv_JNI_LocalFrame *) _Jv_MallocUnchecked (sizeof (_Jv_JNI_LocalFrame)
 						      + (FRAME_SIZE
 							 * sizeof (jobject)));
-      
+
       frame->marker = MARK_SYSTEM;
       frame->size = FRAME_SIZE;
-      frame->allocated_p = 0;
+      frame->allocated_p = false;
       frame->next = env->locals;
+      frame->loader = loader;
 
       memset (&frame->vec[0], 0, 
 	      frame->size * sizeof (jobject));
@@ -2150,6 +2152,15 @@ _Jv_GetJNIEnvNewFrame (jclass klass)
   env->ex = NULL;
 
   return env;
+}
+
+// Return the current thread's JNIEnv; if one does not exist, create
+// it.  Also create a new system frame for use.  This is `extern "C"'
+// because the compiler calls it.
+extern "C" JNIEnv *
+_Jv_GetJNIEnvNewFrame (jclass klass)
+{
+  return _Jv_GetJNIEnvNewFrameWithLoader (klass->getClassLoaderInternal());
 }
 
 // Destroy the env's reusable resources. This is called from the thread
@@ -2392,7 +2403,6 @@ _Jv_JNI_AttachCurrentThread (JavaVM *, jstring name, void **penv,
     return JNI_ERR;
   env->p = &_Jv_JNIFunctions;
   env->ex = NULL;
-  env->klass = NULL;
   env->bottom_locals
     = (_Jv_JNI_LocalFrame *) _Jv_MallocUnchecked (sizeof (_Jv_JNI_LocalFrame)
 						  + (FRAME_SIZE
@@ -2404,9 +2414,10 @@ _Jv_JNI_AttachCurrentThread (JavaVM *, jstring name, void **penv,
       return JNI_ERR;
     }
 
-  env->locals->allocated_p = 0;
+  env->locals->allocated_p = false;
   env->locals->marker = MARK_SYSTEM;
   env->locals->size = FRAME_SIZE;
+  env->locals->loader = NULL;
   env->locals->next = NULL;
 
   for (int i = 0; i < env->locals->size; ++i)
