@@ -207,7 +207,14 @@ java::lang::Runtime::_load (jstring path, jboolean do_search)
 	  // FIXME: what?
 	  return;
 	}
+
+      // Push a new frame so that JNI_OnLoad will get the right class
+      // loader if it calls FindClass.
+      ::java::lang::ClassLoader *loader
+	  = _Jv_StackTrace::GetFirstNonSystemClassLoader();
+      JNIEnv *env = _Jv_GetJNIEnvNewFrameWithLoader (loader);
       jint vers = ((jint (JNICALL *) (JavaVM *, void *)) onload) (vm, NULL);
+      _Jv_JNI_PopSystemFrame (env);
       if (vers != JNI_VERSION_1_1 && vers != JNI_VERSION_1_2
 	  && vers != JNI_VERSION_1_4)
 	{

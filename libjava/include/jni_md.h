@@ -1,5 +1,5 @@
 /* jni_md.h
-   Copyright (C) 2001, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2005, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,9 +57,6 @@ typedef struct _Jv_JavaVM JavaVM;
 #define _CLASSPATH_JNIENV_CONTENTS					\
   /* The current exception.  */						\
   jthrowable ex;							\
-									\
-  /* The class of the current native method.  */			\
-  jclass klass;								\
 									\
   /* The chain of local frames.  */					\
   struct _Jv_JNI_LocalFrame *locals;					\
