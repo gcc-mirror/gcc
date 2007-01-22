@@ -1,3 +1,8 @@
+2007-01-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/30038
+	* gcc.dg/builtins-62.c: New testcase.
+
 2007-01-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20070121.c: New test.
