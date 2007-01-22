@@ -1,3 +1,7 @@
+2007-01-22  Andrew Haley  <aph@redhat.com>
+
+	* sysdep/alpha/locks.h (write_barrier): New.
+
 2007-01-21  Matthias Klose  <doko@debian.org>
 
 	* Makefile.am (install-exec-hook): Use transformed name.
