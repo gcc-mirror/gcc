@@ -1,3 +1,8 @@
+2007-01-21  Andrew Pinski  <pinskia@gmail.com>
+
+	PR target/30519
+	* config.host (alpha*-*-linux*): Set extra_parts.
+
 2007-01-09  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/t-linux: New.
