@@ -1,3 +1,10 @@
+2007-01-21  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* intrinsic.texi (ACHAR): Added cross-references.
+	(CHAR): Put cross-references in alphabetical order.
+	(IACHAR): Added cross-references.
+	(ICHAR): Added cross-references.
+
 2007-01-21  Roger Sayle  <roger@eyesopen.com>
 
 	* trans-intrinsic.c (gfc_conv_intrinsic_sign): New branchless

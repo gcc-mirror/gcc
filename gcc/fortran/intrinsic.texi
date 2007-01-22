@@ -479,6 +479,10 @@ program test_achar
   c = achar(32)
 end program test_achar
 @end smallexample
+
+@item @emph{See also}:
+@ref{CHAR}, @ref{IACHAR}, @ref{ICHAR}
+
 @end table
 
 
@@ -1854,7 +1858,7 @@ end program test_char
 @end smallexample
 
 @item @emph{See also}:
-@ref{ACHAR}, @ref{ICHAR}, @ref{IACHAR}
+@ref{ACHAR}, @ref{IACHAR}, @ref{ICHAR}
 
 @end table
 
@@ -4569,7 +4573,7 @@ end program test_iachar
 @end smallexample
 
 @item @emph{See also}:
-@ref{CHAR},@ref{ICHAR}
+@ref{ACHAR}, @ref{CHAR}, @ref{ICHAR}
 
 @end table
 
@@ -4830,7 +4834,13 @@ program read_val
   print *, value
 end program read_val
 @end smallexample
+
+@item @emph{See also}:
+@ref{ACHAR}, @ref{CHAR}, @ref{IACHAR}
+
 @end table
+
+
 
 @node IDATE
 @section @code{IDATE} --- Get current local time subroutine (day/month/year) 
