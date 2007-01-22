@@ -310,8 +310,8 @@ Boston, MA 02110-1301, USA.  */
 
 /* For the m68k, we give the data registers numbers 0-7,
    the address registers numbers 010-017 (8-15),
-   and the 68881 floating point registers numbers 020-027 (16-24).
-   We also have a fake `arg-pointer' register 030 (25) used for
+   and the 68881 floating point registers numbers 020-027 (16-23).
+   We also have a fake `arg-pointer' register 030 (24) used for
    register elimination.  */
 #define FIRST_PSEUDO_REGISTER 25
 
