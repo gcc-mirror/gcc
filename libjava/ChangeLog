@@ -1,3 +1,24 @@
+2007-01-22  Tom Tromey  <tromey@redhat.com>
+
+	PR java/29812:
+	* java/lang/natRuntime.cc (_load): Push a new system frame before
+	calling JNI_OnLoad.
+	* include/jvm.h (_Jv_JNI_PopSystemFrame): Declare.
+	(_Jv_GetJNIEnvNewFrameWithLoader): Likewise.
+	* jni.cc (struct _Jv_JNI_LocalFrame) <marker>: Now unsigned char.
+	<allocated_p>: Now bool.
+	<loader>: New field.
+	(_Jv_JNI_EnsureLocalCapacity): Updated.
+	(_Jv_JNI_NewLocalRef): Likewise.
+	(_Jv_JNI_NewLocalRef): Likewise.
+	(_Jv_JNI_PopLocalFrame): Likewise.
+	(_Jv_JNI_FindClass): Likewise.
+	(_Jv_GetJNIEnvNewFrame): Likewise.
+	(_Jv_JNI_AttachCurrentThread): Likewise.
+	(_Jv_GetJNIEnvNewFrameWithLoader): New function.
+	(_Jv_GetJNIEnvNewFrame): Use it.
+	* include/jni_md.h (_CLASSPATH_JNIENV_CONTENTS): Removed 'klass'.
+
 2007-01-16  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* configure.ac: Use multi.m4 from aclocal rather than custom

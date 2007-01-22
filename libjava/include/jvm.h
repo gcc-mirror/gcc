@@ -567,8 +567,8 @@ void _Jv_SetCurrentJNIEnv (_Jv_JNIEnv *);
 /* Free a JNIEnv. */
 void _Jv_FreeJNIEnv (_Jv_JNIEnv *);
 
-/* Free a JNIEnv. */
-void _Jv_FreeJNIEnv (_Jv_JNIEnv *);
+extern "C" void _Jv_JNI_PopSystemFrame (_Jv_JNIEnv *);
+_Jv_JNIEnv *_Jv_GetJNIEnvNewFrameWithLoader (::java::lang::ClassLoader *);
 
 struct _Jv_JavaVM;
 _Jv_JavaVM *_Jv_GetJavaVM (); 
