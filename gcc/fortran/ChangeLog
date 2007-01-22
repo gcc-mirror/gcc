@@ -1,3 +1,10 @@
+2007-01-21  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* intrinsic.texi (ACHAR): Added cross-references.
+	(CHAR): Put cross-references in alphabetical order.
+	(IACHAR): Added cross-references.
+	(ICHAR): Added cross-references.
+
 2007-01-20  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* intrinsic.texi: Edited all "Syntax" examples to a consistent form.
