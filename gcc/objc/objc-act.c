@@ -3288,7 +3288,7 @@ static hashval_t
 hash_interface (const void *p)
 {
   const struct interface_tuple *d = p;
-  return htab_hash_pointer (d->id);
+  return IDENTIFIER_HASH_VALUE (d->id);
 }
 
 static int
@@ -3317,7 +3317,7 @@ lookup_interface (tree ident)
       {
 	slot = (struct interface_tuple **)
 	  htab_find_slot_with_hash (interface_htab, ident,
-				    htab_hash_pointer (ident),
+				    IDENTIFIER_HASH_VALUE (ident),
 				    NO_INSERT);
 	if (slot && *slot)
 	  i = (*slot)->class_name;
@@ -6982,7 +6982,7 @@ add_class (tree class_name, tree name)
     interface_htab = htab_create_ggc (31, hash_interface, eq_interface, NULL);
   slot = (struct interface_tuple **)
     htab_find_slot_with_hash (interface_htab, name,
-			      htab_hash_pointer (name),
+			      IDENTIFIER_HASH_VALUE (name),
 			      INSERT);
   if (!*slot)
     {

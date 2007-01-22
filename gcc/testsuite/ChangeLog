@@ -1,3 +1,14 @@
+2007-01-21 Andrew Pinski  <pinskia@gmail.com>
+
+	PR objc/30479
+	* objc.dg/pch: New directory.
+	* objc.dg/pch/pch.exp: New file.
+	* objc.dg/pch/interface-1.m: New test.
+	* objc.dg/pch/interface-1.hs: New include file.
+	* lib/objc.exp (objc_target_compile): Add
+	"-x objective-c-header" in front of the sources if this is
+	a precompiled header being compiled.
+
 2007-01-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20070121.c: New test.
