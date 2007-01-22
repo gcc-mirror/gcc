@@ -1,3 +1,7 @@
+2007-01-22  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.h: Fix comment.
+
 2007-01-22  Jan Hubicka  <jh@suse.cz>
 
 	* passes.c (init_optimization_passes): Do not rerun
