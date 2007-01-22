@@ -50,4 +50,12 @@ compare_and_swap_release(volatile obj_addr_t *addr,
   return compare_and_swap(addr, old, new_val);
 }
 
+// Ensure that prior stores to memory are completed with respect to other
+// processors.
+inline static void
+write_barrier()
+{
+  __asm__ __volatile__("wmb" : : : "memory");
+}
+
 #endif
