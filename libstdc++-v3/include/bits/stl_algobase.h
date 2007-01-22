@@ -580,35 +580,21 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // Specialization: for char types we can use memset (wmemset).
   inline void
-  __fill_aux(unsigned char* __first, unsigned char* __last,
-	     const unsigned char& __c)
-  {
-    const unsigned char __tmp = __c;
-    std::memset(__first, __tmp, __last - __first);
-  }
+  __fill_aux(unsigned char* __first, unsigned char* __last, unsigned char __c)
+  { std::memset(__first, __c, __last - __first); }
 
   inline void
-  __fill_aux(signed char* __first, signed char* __last,
-	     const signed char& __c)
-  {
-    const signed char __tmp = __c;
-    std::memset(__first, static_cast<unsigned char>(__tmp), __last - __first);
-  }
+  __fill_aux(signed char* __first, signed char* __last, signed char __c)
+  { std::memset(__first, static_cast<unsigned char>(__c), __last - __first); }
 
   inline void
-  __fill_aux(char* __first, char* __last, const char& __c)
-  {
-    const char __tmp = __c;
-    std::memset(__first, static_cast<unsigned char>(__tmp), __last - __first);
-  }
+  __fill_aux(char* __first, char* __last, char __c)
+  { std::memset(__first, static_cast<unsigned char>(__c), __last - __first); }
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   inline void
-  __fill_aux(wchar_t* __first, wchar_t* __last, const wchar_t& __c)
-  {
-    const wchar_t __tmp = __c;
-    std::wmemset(__first, __tmp, __last - __first);
-  }
+  __fill_aux(wchar_t* __first, wchar_t* __last, wchar_t __c)
+  { std::wmemset(__first, __c, __last - __first); }
 #endif
 
   template<bool>
@@ -693,7 +679,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _Size>
     inline unsigned char*
-    __fill_n_aux(unsigned char* __first, _Size __n, const unsigned char& __c)
+    __fill_n_aux(unsigned char* __first, _Size __n, unsigned char __c)
     {
       std::__fill_aux(__first, __first + __n, __c);
       return __first + __n;
@@ -701,7 +687,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _Size>
     inline signed char*
-    __fill_n_aux(signed char* __first, _Size __n, const signed char& __c)
+    __fill_n_aux(signed char* __first, _Size __n, signed char __c)
     {
       std::__fill_aux(__first, __first + __n, __c);
       return __first + __n;
@@ -709,7 +695,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _Size>
     inline char*
-    __fill_n_aux(char* __first, _Size __n, const char& __c)
+    __fill_n_aux(char* __first, _Size __n, char __c)
     {
       std::__fill_aux(__first, __first + __n, __c);
       return __first + __n;
@@ -718,7 +704,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<typename _Size>
     inline wchar_t*
-    __fill_n_aux(wchar_t* __first, _Size __n, const wchar_t& __c)
+    __fill_n_aux(wchar_t* __first, _Size __n, wchar_t __c)
     {
       std::__fill_aux(__first, __first + __n, __c);
       return __first + __n;

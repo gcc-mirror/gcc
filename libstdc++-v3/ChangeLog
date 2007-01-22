@@ -1,3 +1,12 @@
+2007-01-22  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algobase.h (__fill_aux(unsigned char*,
+	unsigned char*, const unsigned char&), __fill_aux(signed char*,
+	signed char*, const signed char&), __fill_aux(char*, char*,
+	const char&), __fill_aux(wchar_t*, wchar_t*, const wchar_t&)):
+	Take the character by value.
+	(__fill_n_aux): Likewise.
+
 2007-01-21  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/30449 (fill, fill_n)
