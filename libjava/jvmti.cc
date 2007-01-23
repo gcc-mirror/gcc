@@ -420,6 +420,36 @@ _Jv_JVMTI_Deallocate (MAYBE_UNUSED jvmtiEnv *env, unsigned char *mem)
 }
 
 static jvmtiError JNICALL
+_Jv_JVMTI_GetClassStatus (MAYBE_UNUSED jvmtiEnv *env, jclass klass,
+			  jint *status_ptr)
+{
+  REQUIRE_PHASE (env, JVMTI_PHASE_START | JVMTI_PHASE_LIVE);
+  NULL_CHECK (status_ptr);
+  if (klass == NULL)
+    return JVMTI_ERROR_INVALID_CLASS;
+
+  if (klass->isArray ())
+    *status_ptr = JVMTI_CLASS_STATUS_ARRAY;
+  else if (klass->isPrimitive ())
+    *status_ptr  = JVMTI_CLASS_STATUS_PRIMITIVE;
+  else
+    {
+      jbyte state = _Jv_GetClassState (klass);
+      *status_ptr = 0;
+      if (state >= JV_STATE_LINKED)
+	(*status_ptr) |= JVMTI_CLASS_STATUS_VERIFIED;
+      if (state >= JV_STATE_PREPARED)
+	(*status_ptr) |= JVMTI_CLASS_STATUS_PREPARED;
+      if (state == JV_STATE_ERROR || state == JV_STATE_PHANTOM)
+	(*status_ptr) |= JVMTI_CLASS_STATUS_ERROR;
+      else if (state == JV_STATE_DONE)
+	(*status_ptr) |= JVMTI_CLASS_STATUS_INITIALIZED;
+    }
+
+  return JVMTI_ERROR_NONE;
+}
+
+static jvmtiError JNICALL
 _Jv_JVMTI_GetClassModifiers (MAYBE_UNUSED jvmtiEnv *env, jclass klass,
 			     jint *mods)
 {
@@ -1452,7 +1482,7 @@ struct _Jv_jvmtiEnv _Jv_JVMTI_Interface =
   _Jv_JVMTI_Allocate,		// Allocate
   _Jv_JVMTI_Deallocate,		// Deallocate
   UNIMPLEMENTED,		// GetClassSignature
-  UNIMPLEMENTED,		// GetClassStatus
+  _Jv_JVMTI_GetClassStatus,	// GetClassStatus
   UNIMPLEMENTED,		// GetSourceFileName
   _Jv_JVMTI_GetClassModifiers,	// GetClassModifiers
   _Jv_JVMTI_GetClassMethods,	// GetClassMethods
