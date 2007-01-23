@@ -30,6 +30,7 @@ details. */
 #include <gnu/classpath/jdwp/VMVirtualMachine.h>
 #include <gnu/classpath/jdwp/event/EventRequest.h>
 #include <gnu/classpath/jdwp/event/VmInitEvent.h>
+#include <gnu/classpath/jdwp/exception/InvalidMethodException.h>
 #include <gnu/classpath/jdwp/exception/JdwpInternalErrorException.h>
 #include <gnu/classpath/jdwp/util/MethodResult.h>
 
@@ -307,9 +308,14 @@ getAllClassMethods (MAYBE_UNUSED jclass klass)
 
 gnu::classpath::jdwp::VMMethod *
 gnu::classpath::jdwp::VMVirtualMachine::
-getClassMethod (MAYBE_UNUSED jclass klass, MAYBE_UNUSED jlong id)
+getClassMethod (jclass klass, jlong id)
 {
-  return NULL;
+  jmethodID method = reinterpret_cast<jmethodID> (id);
+  _Jv_MethodBase *bmeth = _Jv_FindInterpreterMethod (klass, method);
+  if (bmeth != NULL)
+    return new gnu::classpath::jdwp::VMMethod (klass, id);
+
+  throw new gnu::classpath::jdwp::exception::InvalidMethodException (id);
 }
 
 java::util::ArrayList *
