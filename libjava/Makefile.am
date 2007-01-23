@@ -678,6 +678,9 @@ endif !ENABLE_SHARED
 
 ecjx_LDADD = -L$(here)/.libs libgcj.la
 ecjx_DEPENDENCIES = libgcj.la libgcj.spec
+if USE_LIBGCJ_BC
+ecjx_DEPENDENCIES += libgcj_bc.la
+endif
 
 else !NATIVE
 
