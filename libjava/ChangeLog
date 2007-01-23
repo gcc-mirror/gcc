@@ -1,3 +1,10 @@
+2007-01-22  Keith  Seitz  <keiths@redhat.com>
+
+	* java/lang/Class.h (_Jv_GetClassStatus): Declare.
+	* java/lang/natClass.cc (_Jv_GetClassStatus): New function.
+	* jvmti.cc (_Jv_JVMTI_GetClassStatus): New function.
+	(_Jv_JVMTI_Interface): Define GetClassStatus.
+
 2007-01-22  Tom Tromey  <tromey@redhat.com>
 
 	* configure: Rebuilt.
