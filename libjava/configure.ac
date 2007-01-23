@@ -344,7 +344,7 @@ case "${which_gcj}" in
          GCC_UNWIND_INCLUDE=
          GCJ="${target_noncanonical}-gcj"
       else
-         GCJ="$built_gcc_dir/gcj -B$built_gcc_dir/"
+         GCJ="${target_noncanonical}-gcj -B`${PWDCMD-pwd}`/"
       fi
       GCJH="$built_gcc_dir/gcjh"
    ;;
