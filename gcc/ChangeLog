@@ -1,3 +1,10 @@
+2007-01-23  Ian Lance Taylor  <iant@google.com>
+
+	* Makefile.in (OBJS-common): Reformat, alphabetize, but put
+	insn-*.o first.
+	(OBJS-archive): Reformat, alphabetize.
+	(OBJS): Change out_object_file to OBJS-md.
+
 2007-01-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md: Use REG_P, MEM_P, CONST_INT_P, LABEL_P,

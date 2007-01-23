@@ -933,61 +933,247 @@ C_AND_OBJC_OBJS = attribs.o c-errors.o c-lex.o c-pragma.o c-decl.o c-typeck.o \
 C_OBJS = c-lang.o stub-objc.o $(C_AND_OBJC_OBJS)
 
 # Language-independent object files.
+# We put the insn-*.o files first so that a parallel make will build
+# them sooner, because they are large and otherwise tend to be the
+# last objects to finish building.
 OBJS-common = \
- double-int.o tree-chrec.o tree-scalar-evolution.o tree-data-ref.o	   \
- tree-cfg.o tree-dfa.o tree-eh.o tree-ssa.o tree-optimize.o tree-gimple.o  \
- gimplify.o tree-pretty-print.o tree-into-ssa.o tree-ssa-ter.o		   \
- tree-outof-ssa.o tree-ssa-ccp.o tree-vn.o tree-ssa-uncprop.o		   \
- tree-ssa-dce.o  tree-ssa-copy.o tree-nrv.o tree-ssa-copyrename.o	   \
- tree-ssa-pre.o tree-ssa-live.o tree-ssa-operands.o tree-ssa-alias.o       \
- tree-ssa-phiopt.o tree-ssa-forwprop.o tree-nested.o tree-ssa-dse.o	   \
- tree-ssa-dom.o domwalk.o tree-tailcall.o gimple-low.o tree-iterator.o	   \
- omp-low.o tree-phinodes.o tree-ssanames.o tree-sra.o tree-complex.o	   \
- tree-vect-generic.o tree-ssa-loop.o tree-ssa-loop-niter.o		   \
- tree-ssa-loop-manip.o tree-ssa-threadupdate.o tree-ssa-threadedge.o	   \
- tree-vectorizer.o tree-vect-analyze.o tree-vect-transform.o		   \
- tree-vect-patterns.o tree-ssa-loop-prefetch.o tree-ssa-coalesce.o	   \
- tree-ssa-loop-ivcanon.o tree-ssa-propagate.o tree-ssa-address.o	   \
- tree-ssa-math-opts.o tree-affine.o					   \
- tree-ssa-loop-ivopts.o tree-if-conv.o tree-ssa-loop-unswitch.o		   \
- alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	  	   \
- cfg.o cfganal.o cfgbuild.o cfgcleanup.o cfglayout.o cfgloop.o		   \
- cfgloopanal.o cfgloopmanip.o loop-init.o loop-unswitch.o loop-unroll.o	   \
- cfgrtl.o combine.o convert.o coverage.o cse.o cselib.o 		   \
- dbxout.o ddg.o tree-ssa-loop-ch.o loop-invariant.o tree-ssa-loop-im.o	   \
- debug.o df-core.o df-problems.o df-scan.o dfp.o diagnostic.o dojump.o     \
- dominance.o loop-doloop.o	   					   \
- dwarf2asm.o dwarf2out.o emit-rtl.o except.o explow.o loop-iv.o		   \
- expmed.o expr.o final.o flow.o fold-const.o function.o fwprop.o gcse.o	   \
- genrtl.o ggc-common.o global.o graph.o gtype-desc.o			   \
- haifa-sched.o hooks.o ifcvt.o insn-attrtab.o insn-emit.o insn-modes.o	   \
- insn-extract.o insn-opinit.o insn-output.o insn-peep.o insn-recog.o	   \
- integrate.o intl.o jump.o  langhooks.o lcm.o lists.o local-alloc.o  	   \
- mode-switching.o modulo-sched.o optabs.o options.o opts.o opts-common.o \
- params.o postreload.o postreload-gcse.o predict.o			   \
- insn-preds.o insn-automata.o pointer-set.o 			   	   \
- print-rtl.o print-tree.o profile.o value-prof.o var-tracking.o		   \
- real.o recog.o reg-stack.o regclass.o regmove.o regrename.o		   \
- reload.o reload1.o reorg.o resource.o rtl.o rtlanal.o rtl-error.o	   \
- sbitmap.o sched-deps.o sched-ebb.o sched-rgn.o sched-vis.o sdbout.o	   \
- see.o simplify-rtx.o sreal.o stmt.o stor-layout.o stringpool.o		   \
- struct-equiv.o targhooks.o timevar.o toplev.o tracer.o tree.o tree-dump.o \
- varasm.o varray.o vec.o version.o vmsdbgout.o xcoffout.o alloc-pool.o	   \
- et-forest.o cfghooks.o bt-load.o pretty-print.o $(GGC) web.o passes.o	   \
- tree-profile.o rtlhooks.o cfgexpand.o lambda-mat.o    			   \
- lambda-trans.o	lambda-code.o tree-loop-linear.o tree-ssa-sink.o 	   \
- tree-vrp.o tree-stdarg.o tree-cfgcleanup.o tree-ssa-reassoc.o		   \
- tree-ssa-structalias.o tree-object-size.o 				   \
- rtl-factoring.o
+	insn-attrtab.o \
+	insn-automata.o \
+	insn-emit.o \
+	insn-extract.o \
+	insn-modes.o \
+	insn-opinit.o \
+	insn-output.o \
+	insn-peep.o \
+	insn-preds.o \
+	insn-recog.o \
+	$(GGC) \
+	alias.o \
+	alloc-pool.o \
+	bb-reorder.o \
+	bitmap.o \
+	bt-load.o \
+	builtins.o \
+	caller-save.o \
+	calls.o \
+	cfg.o \
+	cfganal.o \
+	cfgbuild.o \
+	cfgcleanup.o \
+	cfgexpand.o \
+	cfghooks.o \
+	cfglayout.o \
+	cfgloop.o \
+	cfgloopanal.o \
+	cfgloopmanip.o \
+	cfgrtl.o \
+	combine.o \
+	convert.o \
+	coverage.o \
+	cse.o \
+	cselib.o \
+	dbxout.o \
+	ddg.o \
+	debug.o \
+	df-core.o \
+	df-problems.o \
+	df-scan.o \
+	dfp.o \
+	diagnostic.o \
+	dojump.o \
+	dominance.o \
+	domwalk.o \
+	double-int.o \
+	dwarf2asm.o \
+	dwarf2out.o \
+	emit-rtl.o \
+	et-forest.o \
+	except.o \
+	explow.o \
+	expmed.o \
+	expr.o \
+	final.o \
+	flow.o \
+	fold-const.o \
+	function.o \
+	fwprop.o \
+	gcse.o \
+	genrtl.o \
+	ggc-common.o \
+	gimple-low.o \
+	gimplify.o \
+	global.o \
+	graph.o \
+	gtype-desc.o \
+	haifa-sched.o \
+	hooks.o \
+	ifcvt.o \
+	integrate.o \
+	intl.o \
+	jump.o \
+	lambda-code.o \
+	lambda-mat.o \
+	lambda-trans.o \
+	langhooks.o \
+	lcm.o \
+	lists.o \
+	local-alloc.o \
+	loop-doloop.o \
+	loop-init.o \
+	loop-invariant.o \
+	loop-iv.o \
+	loop-unroll.o \
+	loop-unswitch.o \
+	mode-switching.o \
+	modulo-sched.o \
+	omp-low.o \
+	optabs.o \
+	options.o \
+	opts-common.o \
+	opts.o \
+	params.o \
+	passes.o \
+	pointer-set.o \
+	postreload-gcse.o \
+	postreload.o \
+	predict.o \
+	pretty-print.o \
+	print-rtl.o \
+	print-tree.o \
+	profile.o \
+	real.o \
+	recog.o \
+	reg-stack.o \
+	regclass.o \
+	regmove.o \
+	regrename.o \
+	reload.o \
+	reload1.o \
+	reorg.o \
+	resource.o \
+	rtl-error.o \
+	rtl-factoring.o \
+	rtl.o \
+	rtlanal.o \
+	rtlhooks.o \
+	sbitmap.o \
+	sched-deps.o \
+	sched-ebb.o \
+	sched-rgn.o \
+	sched-vis.o \
+	sdbout.o \
+	see.o \
+	simplify-rtx.o \
+	sreal.o \
+	stmt.o \
+	stor-layout.o \
+	stringpool.o \
+	struct-equiv.o \
+	targhooks.o \
+	timevar.o \
+	toplev.o \
+	tracer.o \
+	tree-affine.o \
+	tree-cfg.o \
+	tree-cfgcleanup.o \
+	tree-chrec.o \
+	tree-complex.o \
+	tree-data-ref.o \
+	tree-dfa.o \
+	tree-dump.o \
+	tree-eh.o \
+	tree-gimple.o \
+	tree-if-conv.o \
+	tree-into-ssa.o \
+	tree-iterator.o \
+	tree-loop-linear.o \
+	tree-nested.o \
+	tree-nrv.o \
+	tree-object-size.o \
+	tree-optimize.o \
+	tree-outof-ssa.o \
+	tree-phinodes.o \
+	tree-pretty-print.o \
+	tree-profile.o \
+	tree-scalar-evolution.o \
+	tree-sra.o \
+	tree-ssa-address.o \
+	tree-ssa-alias.o \
+	tree-ssa-ccp.o \
+	tree-ssa-coalesce.o \
+	tree-ssa-copy.o \
+	tree-ssa-copyrename.o \
+	tree-ssa-dce.o \
+	tree-ssa-dom.o \
+	tree-ssa-dse.o \
+	tree-ssa-forwprop.o \
+	tree-ssa-live.o \
+	tree-ssa-loop-ch.o \
+	tree-ssa-loop-im.o \
+	tree-ssa-loop-ivcanon.o \
+	tree-ssa-loop-ivopts.o \
+	tree-ssa-loop-manip.o \
+	tree-ssa-loop-niter.o \
+	tree-ssa-loop-prefetch.o \
+	tree-ssa-loop-unswitch.o \
+	tree-ssa-loop.o \
+	tree-ssa-math-opts.o \
+	tree-ssa-operands.o \
+	tree-ssa-phiopt.o \
+	tree-ssa-pre.o \
+	tree-ssa-propagate.o \
+	tree-ssa-reassoc.o \
+	tree-ssa-sink.o \
+	tree-ssa-structalias.o \
+	tree-ssa-ter.o \
+	tree-ssa-threadedge.o \
+	tree-ssa-threadupdate.o \
+	tree-ssa-uncprop.o \
+	tree-ssa.o \
+	tree-ssanames.o \
+	tree-stdarg.o \
+	tree-tailcall.o \
+	tree-vect-analyze.o \
+	tree-vect-generic.o \
+	tree-vect-patterns.o \
+	tree-vect-transform.o \
+	tree-vectorizer.o \
+	tree-vn.o \
+	tree-vrp.o \
+	tree.o \
+	value-prof.o \
+	var-tracking.o \
+	varasm.o \
+	varray.o \
+	vec.o \
+	version.o \
+	vmsdbgout.o \
+	web.o \
+	xcoffout.o
 
-
+# Target object files.
 OBJS-md = $(out_object_file)
-OBJS-archive = $(EXTRA_OBJS) $(host_hook_obj) tree-inline.o		   \
-  cgraph.o cgraphunit.o cgraphbuild.o tree-nomudflap.o ipa.o ipa-inline.o  \
-  ipa-utils.o ipa-reference.o ipa-pure-const.o ipa-type-escape.o           \
-  ipa-prop.o ipa-cp.o varpool.o
 
-OBJS = $(OBJS-common) $(out_object_file) $(OBJS-archive)
+# Language independent object files which are not used by all languages.
+OBJS-archive = \
+	$(EXTRA_OBJS) \
+	$(host_hook_obj) \
+	cgraph.o \
+	cgraphbuild.o \
+	cgraphunit.o \
+	ipa-cp.o \
+	ipa-inline.o \
+	ipa-prop.o \
+	ipa-pure-const.o \
+	ipa-reference.o \
+	ipa-type-escape.o \
+	ipa-utils.o \
+	ipa.o \
+	tree-inline.o \
+	tree-nomudflap.o \
+	varpool.o
+
+OBJS = $(OBJS-common) $(OBJS-md) $(OBJS-archive)
 
 OBJS-onestep = libbackend.o $(OBJS-archive)
 
