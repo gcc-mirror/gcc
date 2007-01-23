@@ -1,3 +1,18 @@
+2007-01-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28172
+	* gfortran.dg/altreturn_4.f90: New test.
+
+	PR fortran/29389
+	* gfortran.dg/stfunc_4.f90: New test.
+
+	PR fortran/29712
+	* gfortran.dg/bound_2.f90: Reinstate commented out line.
+	* gfortran.dg/initialization_1.f90: Change warning.
+
+	PR fortran/30283
+	* gfortran.dg/specification_type_resolution_2.f90: New test.
+
 2007-01-22  Andrew Pinski  <pinskia@gmail.com>
 
 	PR fortran/29951

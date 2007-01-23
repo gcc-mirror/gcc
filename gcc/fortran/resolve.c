@@ -1501,6 +1501,11 @@ pure_function (gfc_expr * e, const char **name)
 {
   int pure;
 
+  if (e->symtree != NULL
+        && e->symtree->n.sym != NULL
+        && e->symtree->n.sym->attr.proc == PROC_ST_FUNCTION)
+    return 1;
+
   if (e->value.function.esym)
     {
       pure = gfc_pure (e->value.function.esym);
@@ -1654,9 +1659,15 @@ resolve_function (gfc_expr * expr)
 
       for (arg = expr->value.function.actual; arg; arg = arg->next)
 	{
-	  if (inquiry && arg->next != NULL && arg->next->expr
-		&& arg->next->expr->expr_type != EXPR_CONSTANT)
-	    break;
+	  if (inquiry && arg->next != NULL && arg->next->expr)
+	    {
+	      if (arg->next->expr->expr_type != EXPR_CONSTANT)
+		break;
+
+	      if ((int)mpz_get_si (arg->next->expr->value.integer)
+			< arg->expr->rank)
+		break;
+	    }
 
 	  if (arg->expr != NULL
 		&& arg->expr->rank > 0
@@ -1723,6 +1734,17 @@ resolve_function (gfc_expr * expr)
   if (t == SUCCESS)
     find_noncopying_intrinsics (expr->value.function.esym,
 				expr->value.function.actual);
+
+  /* Make sure that the expression has a typespec that works.  */
+  if (expr->ts.type == BT_UNKNOWN)
+    {
+      if (expr->symtree->n.sym->result
+	    && expr->symtree->n.sym->result->ts.type != BT_UNKNOWN)
+	expr->ts = expr->symtree->n.sym->result->ts;
+      else
+	expr->ts = expr->symtree->n.sym->result->ts;
+    }
+
   return t;
 }
 

@@ -1,3 +1,22 @@
+2007-01-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28172
+	* trans-stmt.c (gfc_trans_call): If it does not have one, get
+	a backend_decl for an alternate return.
+
+	PR fortran/29389
+	* resolve.c (pure_function): Statement functions are pure. Note
+	that this will have to recurse to comply fully with F95.
+
+	PR fortran/29712
+	* resolve.c (resolve_function): Only a reference to the final
+	dimension of an assumed size array is an error in an inquiry
+	function.
+
+	PR fortran/30283
+	* resolve.c (resolve_function): Make sure that the function
+	expression has a type.
+
 2007-01-22 Andrew Pinski  <pinskia@gmail.com>
 
 	PR fortran/29951

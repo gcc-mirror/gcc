@@ -348,6 +348,8 @@ gfc_trans_call (gfc_code * code, bool dependency_check)
 	  gcc_assert(select_code->op == EXEC_SELECT);
 	  sym = select_code->expr->symtree->n.sym;
 	  se.expr = convert (gfc_typenode_for_spec (&sym->ts), se.expr);
+	  if (sym->backend_decl == NULL)
+	    sym->backend_decl = gfc_get_symbol_decl (sym);
 	  gfc_add_modify_expr (&se.pre, sym->backend_decl, se.expr);
 	}
       else
