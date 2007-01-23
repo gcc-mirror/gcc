@@ -1,3 +1,14 @@
+2007-01-22 Andrew Pinski  <pinskia@gmail.com>
+
+	PR fortran/29951
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Change to
+	call memcpy instead of creating a VIEW_CONVERT_EXRP.
+
+	PR fortran/29410
+	* trans-intrinsic.c (gfc_conv_intrinsic_array_transfer):
+	Change over to create VIEW_CONVERT_EXPR instead of using an
+	ADDR_EXPR, a cast and then an indirect reference.
+
 2007-01-21  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* intrinsic.texi (ACHAR): Added cross-references.

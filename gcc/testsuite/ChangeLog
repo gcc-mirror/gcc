@@ -1,5 +1,12 @@
-2007-01-20  Andrew Pinski  <pinskia@gmail.com>
+2007-01-22  Andrew Pinski  <pinskia@gmail.com>
 
+	PR fortran/29951
+	* gfortran.fortran-torture/execute/transfer2.f90: New test.
+
+	PR Fortran/29410
+	* gfortran.fortran-torture/execute/transfer1.f90: New test.
+
+2007-01-21  Andrew Pinski  <pinskia@gmail.com>
 	PR objc/30479
 	* objc.dg/pch: New directory.
 	* objc.dg/pch/pch.exp: New file.
