@@ -1,3 +1,9 @@
+2007-01-23  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/30560
+	* ada/acats/run_acats: Do not call gnatmake or gnatchop
+	with full path.
+
 2007-01-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/30038

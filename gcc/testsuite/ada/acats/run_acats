@@ -40,7 +40,7 @@ echo '#!/bin/sh' > host_gnatchop
 echo PATH=`dirname $host_gnatchop`:'$PATH' >> host_gnatchop
 echo unset ADA_INCLUDE_PATH ADA_OBJECTS_PATH GCC_EXEC_PREFIX >> host_gnatchop
 echo export PATH >> host_gnatchop
-echo exec $host_gnatchop '"$@"' >> host_gnatchop
+echo exec gnatchop '"$@"' >> host_gnatchop
 
 chmod +x host_gnatchop
 
@@ -48,7 +48,7 @@ echo '#!/bin/sh' > host_gnatmake
 echo PATH=`dirname $host_gnatmake`:'$PATH' >> host_gnatmake
 echo unset ADA_INCLUDE_PATH ADA_OBJECTS_PATH GCC_EXEC_PREFIX >> host_gnatmake
 echo export PATH >> host_gnatmake
-echo exec $host_gnatmake '"$@"' >> host_gnatmake
+echo exec gnatmake '"$@"' >> host_gnatmake
 
 chmod +x host_gnatmake
 
