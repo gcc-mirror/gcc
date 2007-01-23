@@ -1,3 +1,9 @@
+2007-01-23  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/27492
+	* decl.c (duplicate_decls): Don't reset DECL_INVALID_OVERRIDER_P for
+	function decls.
+
 2007-01-23  Ian Lance Taylor  <iant@google.com>
 
 	* typeck.c (convert_for_assignment): Only warn about a = b = c

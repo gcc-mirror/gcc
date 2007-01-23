@@ -1,3 +1,8 @@
+2007-01-23  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/27492
+	* g++.dg/inherit/covariant15.C: New test.
+
 2007-01-23  Ian Lance Taylor  <iant@google.com>
 
 	* g++.dg/warn/Wparentheses-24.C: New test.
