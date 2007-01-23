@@ -1504,7 +1504,10 @@ pure_function (gfc_expr * e, const char **name)
   if (e->symtree != NULL
         && e->symtree->n.sym != NULL
         && e->symtree->n.sym->attr.proc == PROC_ST_FUNCTION)
-    return 1;
+    {
+      *name = e->symtree->n.sym->name;
+      return 1;
+    }
 
   if (e->value.function.esym)
     {

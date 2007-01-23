@@ -1,5 +1,11 @@
 2007-01-23  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/30549
+	* resolve.c (pure_function): Add return of name for state-
+	ment functions..
+
+2007-01-23  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/28172
 	* trans-stmt.c (gfc_trans_call): If it does not have one, get
 	a backend_decl for an alternate return.
