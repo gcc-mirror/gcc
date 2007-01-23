@@ -1,3 +1,12 @@
+2007-01-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md: Use REG_P, MEM_P, CONST_INT_P, LABEL_P,
+	JUMP_P and CALL_P predicates where applicable.
+	* config/i386/i386.c: Ditto.
+	* config/i386/i386.md: Ditto.
+	* config/i386/mmx.md: Ditto.
+	* config/i386/predicates.md: Ditto.
+
 2007-01-22  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.h: Fix comment.
@@ -42,8 +51,8 @@
 2007-01-21  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (inlining_mode): Comment, move up.
-	(cgraph_decide_inlining_incrementally): Do not perform inlining itself;
-	fix handling of flattening of self recursive functions.
+	(cgraph_decide_inlining_incrementally): Do not perform inlining
+	itself; fix handling of flattening of self recursive functions.
 	(cgraph_find_cycles): Remove.
 	(cgraph_flatten_node): Remove.
 	(cgraph_decide_inlining): Use incremental inliner to handle flattening.
