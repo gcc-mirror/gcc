@@ -1,3 +1,92 @@
+2007-01-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Define
+	_SOFT_DOUBLE if doubles use software floating-point.
+	* config/rs6000/libgcc-ppc-glibc.ver: Export additional long
+	double functions if _SOFT_DOUBLE, not _SOFT_FLOAT.
+	* config/rs6000/darwin-ldouble.c: Also compile functions for
+	hard-float without FPRs.  Use fmsub function for all __NO_FPRS__
+	cases.  Compile extra functions if _SOFT_DOUBLE, not _SOFT_FLOAT.
+	* config/rs6000/linuxspe.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Remove
+	commented-out long double override.
+	(CPP_LONGDOUBLE_DEFAULT_SPEC): Likewise.
+	* config/rs6000/eabispe.h: Likewise.
+	* config/rs6000/rs6000.c (rs6000_override_options): Don't override
+	long double for non-SPE.
+	(rs6000_handle_option): Likewise.
+	(invalid_e500_subreg): Disallow more subregs involding DImode,
+	DFmode, TImode or TFmode.
+	(rs6000_legitimate_offset_address_p): Check TFmode offsets for
+	E500 double.
+	(legitimate_lo_sum_address_p): Also check for TFmode for E500
+	double.
+	(rs6000_legitimize_address): Also handle TFmode for E500 double.
+	(rs6000_legitimize_reload_address): Also handle TFmode for E500
+	double.
+	(rs6000_legitimate_address): Also check for TFmode for E500
+	double.
+	(rs6000_emit_move): Use DFmode subregs of TFmode for E500 double.
+	(spe_build_register_parallel): Handle TFmode and TCmode.
+	(rs6000_spe_function_arg): Handle TFmode and TCmode for E500
+	double.
+	(function_arg): Handle TFmode and TCmode for E500 double.
+	(rs6000_init_libfuncs): Initialize extra libfuncs for soft double
+	in general.
+	(print_operand): Handle TFmode and TImode for %y.
+	(rs6000_generate_compare): Handle TFmode comparisons for E500
+	double.
+	(spe_func_has_64bit_regs_p): Check for TFmode for E500 double.
+	(rs6000_function_value): Handle TFmode and TCmode for E500 double.
+	(rs6000_libcall_value): Handle TFmode and TCmode for E500 double.
+	* config/rs6000/rs6000.h (CANNOT_CHANGE_MODE_CLASS): Check for
+	TFmode for E500 double.
+	* config/rs6000/rs6000.md (FP): Allow TF for E500 double.
+	(floatsidf2): Enable for E500 double.
+	(movtf_softfloat): Use rs6000_nonimmediate_operand.
+	(extenddftf2): Change to extenddftf2_fprs.
+	(extenddftf2): Call gen_spe_extenddftf2 or gen_extenddftf2_fprs
+	depending on TARGET_E500_DOUBLE.
+	(extendsftf2): Enable for E500 double.
+	(trunctfdf2): Enable for E500 double.
+	(trunctfsf2): Change to trunctfsf2_fprs.
+	(trunctfsf2): Call gen_spe_trunctfsf2 or gen_trunctfsf2_fprs
+	depending on TARGET_E500_DOUBLE.
+	(floatsitf2): Enable for E500 double.
+	(fix_trunctfsi2): Change to fix_trunctfsi2_fprs.
+	(fix_trunctfsi2): Call gen_spe_fix_trunctfsi2 or
+	gen_fix_trunctfsi2_fprs depending on TARGET_E500_DOUBLE.
+	(negtf2): Change to negtf2_internal.
+	(negtf2): New expander.
+	(abstf2): Enable for E500 double.  Call gen_spe_abstf2_tst,
+	gen_spe_abstf2_cmp or gen_abstf2_internal depending on
+	TARGET_E500_DOUBLE and flag_unsafe_math_optimizations.
+	(movdi_internal32): Use rs6000_nonimmediate_operand.
+	(unnamed splitter): Likewise.
+	* config/rs6000/spe.md (CMPTFEQ_GPR, TSTTFEQ_GPR, CMPTFGT_GPR,
+	TSTTFGT_GPR, CMPTFLT_GPR, TSTTFLT_GPR): New unspecs.
+	(SPE64TF, DITI): New mode macros.
+	(frob_df_di): Change to frob_<SPE64:mode>_<DITI:mode>; allow more
+	modes.
+	(frob_tf_ti): New.
+	(frob_<mode>_di_2): New.
+	(frob_tf_di_8_2): New.
+	(frob_di_df): Change to frob_di_<mode>; allow more modes.
+	(frob_ti_tf): New.
+	(frob_di_df_2): Change to frob_<DITI:mode>_<SPE64:mode>_2; allow
+	more modes.
+	(frob_ti_<mode>_8_2): New.
+	(frob_ti_tf_2): New.
+	(mov_si<mode>_e500_subreg0, mov_si<mode>_e500_subreg0_2,
+	mov_si<mode>_e500_subreg4, mov_si<mode>_e500_subreg4_2): Allow
+	TFmode.
+	(mov_sitf_e500_subreg8, mov_sitf_e500_subreg8_2,
+	mov_sitf_e500_subreg12, mov_sitf_e500_subreg12_2): New.
+	(spe_trunctfdf2_internal1, spe_trunctfsf2, spe_extenddftf2,
+	spe_fix_trunctfsi2, spe_fix_trunctfsi2_internal,
+	spe_negtf2_internal, spe_abstf2_cmp, spe_abstf2_tst): New.
+	(cmptfeq_gpr, tsttfeq_gpr, cmptfgt_gpr, tsttfgt_gpr, cmptflt_gpr,
+	tsttflt_gp): New.
+
 2007-01-23  Ian Lance Taylor  <iant@google.com>
 
 	* Makefile.in (OBJS-common): Reformat, alphabetize, but put

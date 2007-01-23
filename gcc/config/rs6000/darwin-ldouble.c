@@ -1,5 +1,5 @@
 /* 128-bit long double support routines for Darwin.
-   Copyright (C) 1993, 2003, 2004, 2005, 2006
+   Copyright (C) 1993, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -49,8 +49,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
    This code currently assumes big-endian.  */
 
-#if ((!defined (__NO_FPRS__) || defined (_SOFT_FLOAT)) \
-     && !defined (__LITTLE_ENDIAN__) \
+#if (!defined (__LITTLE_ENDIAN__) \
      && (defined (__MACH__) || defined (__powerpc__) || defined (_AIX)))
 
 #define fabs(x) __builtin_fabs(x)
@@ -145,7 +144,7 @@ __gcc_qsub (double a, double b, double c, double d)
   return __gcc_qadd (a, b, -c, -d);
 }
 
-#ifdef _SOFT_FLOAT
+#ifdef __NO_FPRS__
 static double fmsub (double, double, double);
 #endif
 
@@ -164,7 +163,7 @@ __gcc_qmul (double a, double b, double c, double d)
   /* Sum terms of two highest orders. */
   
   /* Use fused multiply-add to get low part of a * c.  */
-#ifndef _SOFT_FLOAT
+#ifndef __NO_FPRS__
   asm ("fmsub %0,%1,%2,%3" : "=f"(tau) : "f"(a), "f"(c), "f"(t));
 #else
   tau = fmsub (a, c, t);
@@ -201,7 +200,7 @@ __gcc_qdiv (double a, double b, double c, double d)
 			   numerically necessary.  */
   
   /* Use fused multiply-add to get low part of c * t.	 */
-#ifndef _SOFT_FLOAT
+#ifndef __NO_FPRS__
   asm ("fmsub %0,%1,%2,%3" : "=f"(sigma) : "f"(c), "f"(t), "f"(s));
 #else
   sigma = fmsub (c, t, s);
@@ -219,7 +218,7 @@ __gcc_qdiv (double a, double b, double c, double d)
   return z.ldval;
 }
 
-#if defined (_SOFT_FLOAT) && defined (__LONG_DOUBLE_128__)
+#if defined (_SOFT_DOUBLE) && defined (__LONG_DOUBLE_128__)
 
 long double __gcc_qneg (double, double);
 int __gcc_qeq (double, double, double, double);
@@ -361,6 +360,10 @@ __gcc_utoq (unsigned int a)
 {
   return __gcc_dtoq ((double) a);
 }
+
+#endif
+
+#ifdef __NO_FPRS__
 
 #include "config/soft-fp/soft-fp.h"
 #include "config/soft-fp/double.h"

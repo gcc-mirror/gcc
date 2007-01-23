@@ -1,3 +1,7 @@
+2007-01-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/t-ldbl128: Always use -mlong-double-128.
+
 2007-01-21  Andrew Pinski  <pinskia@gmail.com>
 
 	PR target/30519

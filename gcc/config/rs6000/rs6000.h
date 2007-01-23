@@ -1160,6 +1160,7 @@ enum reg_class
       && reg_classes_intersect_p (FLOAT_REGS, CLASS))			\
    : (((TARGET_E500_DOUBLE						\
 	&& ((((TO) == DFmode) + ((FROM) == DFmode)) == 1		\
+	    || (((TO) == TFmode) + ((FROM) == TFmode)) == 1		\
 	    || (((TO) == DImode) + ((FROM) == DImode)) == 1))		\
        || (TARGET_SPE							\
 	   && (SPE_VECTOR_MODE (FROM) + SPE_VECTOR_MODE (TO)) == 1))	\
