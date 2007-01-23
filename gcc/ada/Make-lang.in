@@ -54,7 +54,6 @@ ALL_ADA_CFLAGS = $(X_ADA_CFLAGS) $(T_ADA_CFLAGS) $(ADA_CFLAGS)
 ADA_INCLUDES = -I- -I. -Iada -I$(srcdir)/ada
 ADA_INCLUDE_DIR = $(libsubdir)/adainclude
 ADA_RTL_OBJ_DIR = $(libsubdir)/adalib
-GNATBIND = $(STAGE_PREFIX)gnatbind
 ADA_FLAGS_TO_PASS = \
 	"ADA_FOR_BUILD=$(ADA_FOR_BUILD)"	\
 	"ADA_INCLUDE_DIR=$(ADA_INCLUDE_DIR)"	\
@@ -384,7 +383,7 @@ ada.tags: force
 ada/doctools/xgnatugn$(build_exeext): ada/xgnatugn.adb
 	-$(MKDIR) ada/doctools
 	$(CP) $^ ada/doctools
-	cd ada/doctools && gnatmake -q xgnatugn
+	cd ada/doctools && $(GNATMAKE) -q xgnatugn
 
 # Note that gnat_ugn_unw.texi does not depend on xgnatugn 
 # being built so we can distribute a pregenerated gnat_ugn_unw.info
@@ -864,7 +863,7 @@ gnatboot2: force
 				CFLAGS="$(BOOT_CFLAGS)" \
 	        		ADAFLAGS="$(BOOT_ADAFLAGS)"\
 				LDFLAGS="$(BOOT_LDFLAGS)" \
-				STAGE_PREFIX=../stage1/
+				GNATBIND="../stage1/gnatbind"
 	$(MAKE) gnatboot3 BOOT_CFLAGS="$(BOOT_CFLAGS)" \
 			    BOOT_ADAFLAGS="$(BOOT_ADAFLAGS)" \
 			    LDFLAGS="$(BOOT_LDFLAGS)"
@@ -875,7 +874,7 @@ gnatboot3:
 				CFLAGS="$(BOOT_CFLAGS)" \
 	        		ADAFLAGS="$(BOOT_ADAFLAGS)"\
 				LDFLAGS="$(BOOT_LDFLAGS)" \
-				STAGE_PREFIX=../stage2/
+				GNATBIND="../stage2/gnatbind"
 
 gnatstage1: force
 	-$(MKDIR) stage1
@@ -915,27 +914,27 @@ ada/b_gnatb.o : ada/b_gnatb.c
 ada/treeprs.ads : ada/treeprs.adt ada/sinfo.ads ada/xtreeprs.adb
 	-$(MKDIR) ada/bldtools/treeprs
 	$(CP) $^ ada/bldtools/treeprs
-	(cd ada/bldtools/treeprs; gnatmake -q xtreeprs ; ./xtreeprs ../../treeprs.ads )
+	(cd ada/bldtools/treeprs; $(GNATMAKE) -q xtreeprs ; ./xtreeprs ../../treeprs.ads )
 
 ada/einfo.h : ada/einfo.ads ada/einfo.adb ada/xeinfo.adb
 	-$(MKDIR) ada/bldtools/einfo
 	$(CP) $^ ada/bldtools/einfo
-	(cd ada/bldtools/einfo; gnatmake -q xeinfo ; ./xeinfo ../../einfo.h )
+	(cd ada/bldtools/einfo; $(GNATMAKE) -q xeinfo ; ./xeinfo ../../einfo.h )
 
 ada/sinfo.h : ada/sinfo.ads ada/xsinfo.adb
 	-$(MKDIR) ada/bldtools/sinfo
 	$(CP) $^ ada/bldtools/sinfo
-	(cd ada/bldtools/sinfo; gnatmake -q xsinfo ; ./xsinfo ../../sinfo.h )
+	(cd ada/bldtools/sinfo; $(GNATMAKE) -q xsinfo ; ./xsinfo ../../sinfo.h )
 
 ada/nmake.adb : ada/sinfo.ads ada/nmake.adt ada/xnmake.adb
 	-$(MKDIR) ada/bldtools/nmake_b
 	$(CP) $^ ada/bldtools/nmake_b
-	(cd ada/bldtools/nmake_b; gnatmake -q xnmake ; ./xnmake -b ../../nmake.adb )
+	(cd ada/bldtools/nmake_b; $(GNATMAKE) -q xnmake ; ./xnmake -b ../../nmake.adb )
 
 ada/nmake.ads :  ada/sinfo.ads ada/nmake.adt ada/xnmake.adb ada/nmake.adb
 	-$(MKDIR) ada/bldtools/nmake_s
 	$(CP) $^ ada/bldtools/nmake_s
-	(cd ada/bldtools/nmake_s; gnatmake -q xnmake ; ./xnmake -s ../../nmake.ads )
+	(cd ada/bldtools/nmake_s; $(GNATMAKE) -q xnmake ; ./xnmake -s ../../nmake.ads )
 
 update-sources : ada/treeprs.ads ada/einfo.h ada/sinfo.h ada/nmake.adb \
 	ada/nmake.ads

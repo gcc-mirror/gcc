@@ -1,3 +1,12 @@
+2007-01-23  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/30541
+	* Make-lang.in: Replace invocations of gnatmake with $(GNATMAKE).
+	(gnatboot2): Pass staged GNATMAKE instead of STAGE_PREFIX.
+	(gnatboot3): Likewise.
+	(GNATBIND): Do not define.
+	* Makefile.in (GNATBIND): Do not define.
+
 2007-01-08  Richard Guenther  <rguenther@suse.de>
 
 	* cuintp.c (build_cst_from_int): Use built_int_cst_type.

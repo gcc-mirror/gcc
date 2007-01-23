@@ -237,6 +237,8 @@ flags_to_pass = { flag= LIBCXXFLAGS ; };
 flags_to_pass = { flag= STAGE1_CFLAGS ; };
 flags_to_pass = { flag= STAGE1_CHECKING ; };
 flags_to_pass = { flag= STAGE1_LANGUAGES ; };
+flags_to_pass = { flag= GNATBIND ; };
+flags_to_pass = { flag= GNATMAKE ; };
 
 // Target tools
 flags_to_pass = { flag= AR_FOR_TARGET ; };
