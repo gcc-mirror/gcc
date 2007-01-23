@@ -1,3 +1,7 @@
+2007-01-23  Marco Trudel  <mtrudel@gmx.ch>
+
+	* java/util/Arrays.java (binarySearch): Change comparison order.
+
 2006-08-02  Sven de Marothy  <sven@physto.se>
 
 	* gnu/java/awt/peer/gtk/GtkChoicePeer.java
