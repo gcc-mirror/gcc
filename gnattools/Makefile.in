@@ -38,7 +38,6 @@ TRACE=no
 ADA_FOR_BUILD=
 ADA_FOR_TARGET=
 LDFLAGS=
-STAGE_PREFIX=
 PWD_COMMAND = $${PWDCMD-pwd}
 
 # The tedious process of getting CFLAGS right.

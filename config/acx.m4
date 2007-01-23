@@ -330,11 +330,12 @@ ac_c_preproc_warn_flag=yes])# AC_PROG_CPP_WERROR
 # understands Ada.  We use the user's CC setting, already found.
 #
 # Sets the shell variable have_gnat to yes or no as appropriate, and
-# substitutes GNATBIND.
+# substitutes GNATBIND and GNATMAKE.
 AC_DEFUN([ACX_PROG_GNAT],
 [AC_REQUIRE([AC_CHECK_TOOL_PREFIX])
 AC_REQUIRE([AC_PROG_CC])
 AC_CHECK_TOOL(GNATBIND, gnatbind, no)
+AC_CHECK_TOOL(GNATMAKE, gnatmake, no)
 AC_CACHE_CHECK([whether compiler driver understands Ada],
 		 acx_cv_cc_gcc_supports_ada,
 [cat >conftest.adb <<EOF
@@ -355,7 +356,7 @@ if test x"$errors" = x && test -f conftest.$ac_objext; then
 fi
 rm -f conftest.*])
 
-if test x$GNATBIND != xno && test x$acx_cv_cc_gcc_supports_ada != xno; then
+if test x$GNATBIND != xno && test x$GNATMAKE != xno && test x$acx_cv_cc_gcc_supports_ada != xno; then
   have_gnat=yes
 else
   have_gnat=no

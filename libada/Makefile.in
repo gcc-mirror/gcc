@@ -35,7 +35,6 @@ GNATLIBFLAGS= -W -Wall -gnatpg
 THREAD_KIND=native
 TRACE=no
 LDFLAGS=
-STAGE_PREFIX=
 
 # The tedious process of getting CFLAGS right.
 CFLAGS=-g
@@ -74,7 +73,6 @@ FLAGS_TO_PASS = \
         "exeext=$(exeext)" \
         "objext=$(objext)" \
         "prefix=$(prefix)" \
-        "STAGE_PREFIX=$(STAGE_PREFIX)" \
 	"CC=$(host_cc_for_libada)" \
 	"GCC_FOR_TARGET=$(CC)" \
         "CFLAGS=$(CFLAGS) $(WARN_CFLAGS)"

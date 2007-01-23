@@ -115,7 +115,6 @@ INSTALL_DATA_DATE = cp -p
 MAKEINFO = makeinfo
 TEXI2DVI = texi2dvi
 TEXI2PDF = texi2pdf
-GNATBIND = $(STAGE_PREFIX)gnatbind
 GNATBIND_FLAGS = -static -x
 ADA_CFLAGS =
 ADAFLAGS = -W -Wall -gnatpg -gnata

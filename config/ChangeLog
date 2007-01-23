@@ -1,3 +1,8 @@
+2007-01-23  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/30541
+	* config/acx.m4 (ACX_PROG_GNAT): Check for gnatmake.
+
 2007-01-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* ld-symbolic.m4: New.
