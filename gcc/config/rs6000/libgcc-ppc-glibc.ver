@@ -31,7 +31,7 @@ GCC_4.2.0 {
   __gcc_qmul
   __gcc_qdiv
 
-%ifdef _SOFT_FLOAT
+%ifdef _SOFT_DOUBLE
   __gcc_qneg
   __gcc_qeq
   __gcc_qne
