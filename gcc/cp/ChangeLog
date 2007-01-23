@@ -1,3 +1,8 @@
+2007-01-23  Ian Lance Taylor  <iant@google.com>
+
+	* typeck.c (convert_for_assignment): Only warn about a = b = c
+	when converting to bool.
+
 2007-01-23  Roger Sayle  <roger@eyesopen.com>
 
 	* call.c (null_ptr_cst_p): Replace use of TREE_CONSTANT_OVERFLOW with

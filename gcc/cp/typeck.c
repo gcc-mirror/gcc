@@ -6380,11 +6380,13 @@ convert_for_assignment (tree type, tree rhs,
 		 errtype);
     }
 
-  /* If -Wparentheses, warn about a = b = c when a has type bool.  */
+  /* If -Wparentheses, warn about a = b = c when a has type bool and b
+     does not.  */
   if (warn_parentheses
       && type == boolean_type_node
       && TREE_CODE (rhs) == MODIFY_EXPR
-      && !TREE_NO_WARNING (rhs))
+      && !TREE_NO_WARNING (rhs)
+      && TREE_TYPE (rhs) != boolean_type_node)
     {
       warning (OPT_Wparentheses,
 	       "suggest parentheses around assignment used as truth value");

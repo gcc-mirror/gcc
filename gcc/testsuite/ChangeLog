@@ -1,3 +1,7 @@
+2007-01-23  Ian Lance Taylor  <iant@google.com>
+
+	* g++.dg/warn/Wparentheses-24.C: New test.
+
 2007-01-23  Richard Guenther  <rguenther@suse.de>
 
 	PR testsuite/30560
