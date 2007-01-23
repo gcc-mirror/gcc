@@ -1,3 +1,10 @@
+2007-01-23  Roger Sayle  <roger@eyesopen.com>
+
+	* call.c (null_ptr_cst_p): Replace use of TREE_CONSTANT_OVERFLOW with
+	TREE_OVERFLOW.
+	* typeck.c (ignore_overflows): Remove the remaining uses of
+	TREE_CONSTANT_OVERFLOW.
+
 2007-01-20  Jan Hubicka  <jh@suse.cz>
 
 	* decl2.c (start_objects, start_static_storage_duration_function):
