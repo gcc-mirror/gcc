@@ -1,5 +1,5 @@
 /* Arrays.java -- Utility class with methods to operate on arrays
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -370,10 +370,13 @@ public class Arrays
     while (low <= hi)
       {
         mid = (low + hi) >>> 1;
-        final int d = Collections.compare(key, a[mid], c);
+	// NOTE: Please keep the order of a[mid] and key.  Although
+	// not required by the specs, the RI has it in this order as
+	// well, and real programs (erroneously) depend on it.
+        final int d = Collections.compare(a[mid], key, c);
         if (d == 0)
           return mid;
-        else if (d < 0)
+        else if (d > 0)
           hi = mid - 1;
         else
           // This gets the insertion point right on the last loop
