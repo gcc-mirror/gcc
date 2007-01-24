@@ -1,3 +1,8 @@
+2007-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/30494
+	* testsuite/libgomp.c/pr30494.c: New test.
+
 2007-01-15  Tom Tromey  <tromey@redhat.com>
 
 	* configure: Rebuilt.
