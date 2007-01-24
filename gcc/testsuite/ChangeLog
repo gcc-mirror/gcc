@@ -1,3 +1,8 @@
+2007-01-24  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.target/ia64/versionid-1.c: New test.
+	* gcc.target/ia64/versionid-2.c: New test.
+
 2007-01-24  Richard Guenther  <rguenther@suse.de>
 
 	PR testsuite/30181
