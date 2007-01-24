@@ -1,3 +1,14 @@
+2007-01-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/30532
+	* scanner.c (load_line): Remove check fot ctrl-z and don't gobble.
+	
+2007-01-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30481
+	* match.c (gfc_match_namelist): Add check for assumed size character
+	in namelist and provide error if found.
+
 2007-01-21  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* intrinsic.texi (ACHAR): Added cross-references.
