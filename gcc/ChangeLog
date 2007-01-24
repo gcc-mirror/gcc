@@ -1,3 +1,11 @@
+2007-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/30421
+	* omp-low.c (lower_omp_for_lastprivate): Add dlist argument.
+	If lower_lastprivate_clauses emits some statements, append them
+	to dlist rather than body_p and to body_p append an initializer.
+	(lower_omp_for): Adjust caller.
+
 2007-01-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/29329
