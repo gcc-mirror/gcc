@@ -301,9 +301,39 @@ getClassStatus (MAYBE_UNUSED jclass klass)
 
 JArray<gnu::classpath::jdwp::VMMethod *> *
 gnu::classpath::jdwp::VMVirtualMachine::
-getAllClassMethods (MAYBE_UNUSED jclass klass)
+getAllClassMethods (jclass klass)
 {
-  return NULL;
+  jint count;
+  jmethodID *methods;
+  jvmtiError err = _jdwp_jvmtiEnv->GetClassMethods (klass, &count, &methods);
+  if (err != JVMTI_ERROR_NONE)
+    {
+      char *error;
+      jstring msg;
+      if (_jdwp_jvmtiEnv->GetErrorName (err, &error) != JVMTI_ERROR_NONE)
+	{
+	  msg = JvNewStringLatin1 (error);
+	  _jdwp_jvmtiEnv->Deallocate ((unsigned char *) error);
+	}
+      else
+	msg = JvNewStringLatin1 ("out of memory");
+
+      using namespace gnu::classpath::jdwp::exception;
+      throw new JdwpInternalErrorException (msg);
+    }
+
+  JArray<VMMethod *> *result
+    = (JArray<VMMethod *> *) JvNewObjectArray (count,
+					       &VMMethod::class$, NULL);
+  VMMethod **rmeth = elements (result);
+  for (int i = 0; i < count; ++i)
+    {
+      jlong id = reinterpret_cast<jlong> (methods[i]);
+      rmeth[i] = getClassMethod (klass, id);
+    }
+
+  _jdwp_jvmtiEnv->Deallocate ((unsigned char *) methods);
+  return result;
 }
 
 gnu::classpath::jdwp::VMMethod *
