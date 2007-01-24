@@ -1,3 +1,14 @@
+2007-01-24  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* unwind-dw2-fde.c (get_cie_encoding): Replaced _Unwind_Word with 
+	_uleb128_t and _Unwind_SWord with _sleb128_t.
+	* unwind-dw2.c (extract_cie_info, execute_stack_op, execute_cfa_program,
+	uw_frame_state_for, uw_update_context_1): Likewise.
+	* unwind-c.c (parse_lsda_header, PERSONALITY_FUNCTION): Likewise.
+	* unwind-pe.h (read_uleb128, read_sleb128,
+	read_encoded_value_with_base): Likewise.
+	* unwind-generic.h: Define _sleb128_t and _uleb128_t types.
+
 2007-01-24  Richard Guenther  <rguenther@suse.de>
 
 	* builtins.c (expand_builtin_cexpi): Get the fndecl
