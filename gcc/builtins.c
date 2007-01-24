@@ -2283,13 +2283,18 @@ expand_builtin_cexpi (tree exp, rtx target, rtx subtarget)
     }
   else
     {
-      tree call, fn, narg;
+      tree call, fn = NULL_TREE, narg;
       tree ctype = build_complex_type (type);
 
       /* We can expand via the C99 cexp function.  */
       gcc_assert (TARGET_C99_FUNCTIONS);
 
-      fn = mathfn_built_in (ctype, BUILT_IN_CEXP);
+      if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CEXPIF)
+	fn = built_in_decls[BUILT_IN_CEXPF];
+      else if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CEXPI)
+	fn = built_in_decls[BUILT_IN_CEXP];
+      else if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CEXPIL)
+	fn = built_in_decls[BUILT_IN_CEXPL];
       narg = fold_build2 (COMPLEX_EXPR, ctype,
 			  build_real (type, dconst0), arg);
 

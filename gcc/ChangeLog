@@ -1,3 +1,8 @@
+2007-01-24  Richard Guenther  <rguenther@suse.de>
+
+	* builtins.c (expand_builtin_cexpi): Get the fndecl
+	for cexp in the correct way.
+
 2007-01-24  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-dce.c (eliminate_unnecesary_stmts): Remove dead LHS of calls.
