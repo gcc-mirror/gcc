@@ -1,3 +1,8 @@
+2007-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/30421
+	* gcc.dg/gomp/pr30421.c: New test.
+
 2007-01-24  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.target/ia64/versionid-1.c: New test.
