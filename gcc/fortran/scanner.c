@@ -1064,13 +1064,6 @@ load_line (FILE *input, char **pbuf, int *pbuflen)
       if (c == '\0')
 	continue;
 
-      if (c == '\032')
-	{
-	  /* Ctrl-Z ends the file.  */
-	  while (fgetc (input) != EOF);
-	  break;
-	}
-
       /* Check for illegal use of ampersand. See F95 Standard 3.3.1.3.  */
       if (c == '&')
 	seen_ampersand = 1;
