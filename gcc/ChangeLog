@@ -1,3 +1,20 @@
+2007-01-24  Steve Ellcey  <sje@cup.hp.com>
+
+	* target.h (globalize_decl_name): New.
+	* target-def.h (TARGET_ASM_GLOBALIZE_DECL_NAME): New.
+	* output.h (default_globalize_decl_name): New.
+	* varasm.c (asm_output_bss): Use globalize_decl_name instead of
+	globalize_label.
+        (globalize_decl): Ditto.
+	(default_globalize_decl_name): New.
+	* config/ia64/ia64.c (ia64_globalize_decl_name): New.
+	(ia64_handle_version_id_attribute): New.
+	(TARGET_ASM_GLOBALIZE_DECL_NAME): New.
+	(ia64_asm_output_external): Use globalize_decl_name instead
+	of globalize_label.
+	* doc/extend.texi (version_id): New pragma.
+	* doc/tm.texi (ARGET_ASM_GLOBALIZE_DECL_NAME): New target hook.
+
 2007-01-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* unwind-dw2-fde.c (get_cie_encoding): Replaced _Unwind_Word with 
