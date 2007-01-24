@@ -134,10 +134,18 @@ opendir_in_zip (const char *zipfile, int is_system)
     {
       jcf_dependency_add_file (zipfile, is_system);
       if (read (fd, magic, 4) != 4 || GET_u4 (magic) != (JCF_u4)ZIPMAGIC)
-	return NULL;
+	{
+	  free (zipf);
+	  close (fd);
+	  return NULL;
+	}
       lseek (fd, 0L, SEEK_SET);
       if (read_zip_archive (zipf) != 0)
-	return NULL;
+	{
+	  free (zipf);
+	  close (fd);
+	  return NULL;
+	}
     }
 
   SeenZipFiles = zipf;  
