@@ -489,7 +489,8 @@ asm_output_bss (FILE *file, tree decl ATTRIBUTE_UNUSED,
 		unsigned HOST_WIDE_INT size ATTRIBUTE_UNUSED,
 		unsigned HOST_WIDE_INT rounded)
 {
-  targetm.asm_out.globalize_label (file, name);
+  gcc_assert (strcmp (XSTR (XEXP (DECL_RTL (decl), 0), 0), name) == 0);
+  targetm.asm_out.globalize_decl_name (file, decl);
   switch_to_section (bss_section);
 #ifdef ASM_DECLARE_OBJECT_NAME
   last_assemble_variable_decl = decl;
@@ -4739,11 +4740,11 @@ weak_finish (void)
 static void
 globalize_decl (tree decl)
 {
-  const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
 
 #if defined (ASM_WEAKEN_LABEL) || defined (ASM_WEAKEN_DECL)
   if (DECL_WEAK (decl))
     {
+      const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
       tree *p, t;
 
 #ifdef ASM_WEAKEN_DECL
@@ -4777,7 +4778,7 @@ globalize_decl (tree decl)
     }
 #endif
 
-  targetm.asm_out.globalize_label (asm_out_file, name);
+  targetm.asm_out.globalize_decl_name (asm_out_file, decl);
 }
 
 /* We have to be able to tell cgraph about the needed-ness of the target
@@ -5912,6 +5913,14 @@ default_globalize_label (FILE * stream, const char *name)
   putc ('\n', stream);
 }
 #endif /* GLOBAL_ASM_OP */
+
+/* Default function to output code that will globalize a declaration.  */
+void
+default_globalize_decl_name (FILE * stream, tree decl)
+{
+  const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  targetm.asm_out.globalize_label (stream, name);
+}
 
 /* Default function to output a label for unwind information.  The
    default is to do nothing.  A target that needs nonlocal labels for

@@ -64,6 +64,10 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #define TARGET_ASM_GLOBALIZE_LABEL default_globalize_label
 #endif
 
+#ifndef TARGET_ASM_GLOBALIZE_DECL_NAME
+#define TARGET_ASM_GLOBALIZE_DECL_NAME default_globalize_decl_name
+#endif
+
 #ifndef TARGET_ASM_EMIT_UNWIND_LABEL
 #define TARGET_ASM_EMIT_UNWIND_LABEL default_emit_unwind_label
 #endif
@@ -253,6 +257,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 			TARGET_ASM_UNALIGNED_INT_OP,		\
 			TARGET_ASM_INTEGER,			\
 			TARGET_ASM_GLOBALIZE_LABEL,		\
+			TARGET_ASM_GLOBALIZE_DECL_NAME,		\
                         TARGET_ASM_EMIT_UNWIND_LABEL,           \
 			TARGET_ASM_EMIT_EXCEPT_TABLE_LABEL,	\
 			TARGET_UNWIND_EMIT,			\

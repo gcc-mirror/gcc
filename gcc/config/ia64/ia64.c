@@ -242,6 +242,7 @@ static void bundling (FILE *, int, rtx, rtx);
 static void ia64_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				  HOST_WIDE_INT, tree);
 static void ia64_file_start (void);
+static void ia64_globalize_decl_name (FILE *, tree);
 
 static section *ia64_select_rtx_section (enum machine_mode, rtx,
 					 unsigned HOST_WIDE_INT);
@@ -265,6 +266,7 @@ static void ia64_vms_init_libfuncs (void)
      ATTRIBUTE_UNUSED;
 
 static tree ia64_handle_model_attribute (tree *, tree, tree, int, bool *);
+static tree ia64_handle_version_id_attribute (tree *, tree, tree, int, bool *);
 static void ia64_encode_section_info (tree, rtx, int);
 static rtx ia64_struct_value_rtx (tree, int);
 static tree ia64_gimplify_va_arg (tree, tree, tree *, tree *);
@@ -282,6 +284,8 @@ static const struct attribute_spec ia64_attribute_table[] =
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
   { "syscall_linkage", 0, 0, false, true,  true,  NULL },
   { "model",	       1, 1, true, false, false, ia64_handle_model_attribute },
+  { "version_id",      1, 1, true, false, false,
+    ia64_handle_version_id_attribute },
   { NULL,	       0, 0, false, false, false, NULL }
 };
 
@@ -390,6 +394,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START ia64_file_start
+
+#undef TARGET_ASM_GLOBALIZE_DECL_NAME
+#define TARGET_ASM_GLOBALIZE_DECL_NAME ia64_globalize_decl_name
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS ia64_rtx_costs
@@ -2224,6 +2231,24 @@ emit_safe_across_calls (void)
     }
   if (out_state)
     fputc ('\n', asm_out_file);
+}
+
+/* Globalize a declaration.  */
+
+static void
+ia64_globalize_decl_name (FILE * stream, tree decl)
+{
+  const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  tree version_attr = lookup_attribute ("version_id", DECL_ATTRIBUTES (decl));
+  if (version_attr)
+    {
+      tree v = TREE_VALUE (TREE_VALUE (version_attr));
+      const char *p = TREE_STRING_POINTER (v);
+      fprintf (stream, "\t.alias %s#, \"%s{%s}\"\n", name, name, p);
+    }
+  targetm.asm_out.globalize_label (stream, name);
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "function");
 }
 
 /* Helper function for ia64_compute_frame_size: find an appropriate general
@@ -9189,10 +9214,7 @@ ia64_asm_output_external (FILE *file, tree decl, const char *name)
 	 need something for external functions.  */
       if ((TARGET_HPUX_LD || !TARGET_GNU_AS)
 	  && TREE_CODE (decl) == FUNCTION_DECL)
-	{
-	  ASM_OUTPUT_TYPE_DIRECTIVE (file, name, "function");
-	  (*targetm.asm_out.globalize_label) (file, name);
-	}
+	  (*targetm.asm_out.globalize_decl_name) (file, decl);
       else if (need_visibility && !TARGET_GNU_AS)
 	(*targetm.asm_out.globalize_label) (file, name);
     }
@@ -9776,6 +9798,29 @@ ia64_optimization_options (int level ATTRIBUTE_UNUSED,
   set_param_value ("simultaneous-prefetches", 6);
   set_param_value ("l1-cache-line-size", 32);
 
+}
+
+/* HP-UX version_id attribute.
+   For object foo, if the version_id is set to 1234 put out an alias
+   of '.alias foo "foo{1234}"  We can't use "foo{1234}" in anything
+   other than an alias statement because it is an illegal symbol name.  */
+
+static tree
+ia64_handle_version_id_attribute (tree *node ATTRIBUTE_UNUSED,
+                                 tree name ATTRIBUTE_UNUSED,
+                                 tree args,
+                                 int flags ATTRIBUTE_UNUSED,
+                                 bool *no_add_attrs)
+{
+  tree arg = TREE_VALUE (args);
+
+  if (TREE_CODE (arg) != STRING_CST)
+    {
+      error("version attribute is not a string");
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+  return NULL_TREE;
 }
 
 #include "gt-ia64.h"
