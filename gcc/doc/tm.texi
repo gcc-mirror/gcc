@@ -7198,6 +7198,14 @@ The default implementation relies on a proper definition of
 @code{GLOBAL_ASM_OP}.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_ASM_GLOBALIZE_DECL_NAME (FILE *@var{stream}, tree @var{decl})
+This target hook is a function to output to the stdio stream
+@var{stream} some commands that will make the name associated with @var{decl}
+global; that is, available for reference from other files.
+
+The default implementation uses the TARGET_ASM_GLOBALIZE_LABEL target hook.
+@end deftypefn
+
 @defmac ASM_WEAKEN_LABEL (@var{stream}, @var{name})
 A C statement (sans semicolon) to output to the stdio stream
 @var{stream} some commands that will make the label @var{name} weak;

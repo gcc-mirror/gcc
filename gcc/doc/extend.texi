@@ -2366,6 +2366,19 @@ for the function even if it appears that the function is not referenced.
 This is useful, for example, when the function is referenced only in
 inline assembly.
 
+@item version_id
+@cindex @code{version_id} attribute on IA64 HP-UX
+This attribute, attached to a global variable or function, renames a
+symbol to contain a version string, thus allowing for function level
+versioning.  HP-UX system header files may use version level functioning
+for some system calls.
+
+@smallexample
+extern int foo () __attribute__((version_id ("20040821")));
+@end smallexample
+
+Calls to @var{foo} will be mapped to calls to @var{foo@{20040821@}}.
+
 @item visibility ("@var{visibility_type}")
 @cindex @code{visibility} attribute
 This attribute affects the linkage of the declaration to which it is attached.
