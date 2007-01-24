@@ -1,5 +1,9 @@
 2007-01-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/30494
+	* gimplify.c (omp_add_variable): Don't call omp_notice_variable
+	on TYPE_SIZE_UNIT for GOVD_LOCAL VLAs.
+
 	PR middle-end/30421
 	* omp-low.c (lower_omp_for_lastprivate): Add dlist argument.
 	If lower_lastprivate_clauses emits some statements, append them
