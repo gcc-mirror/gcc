@@ -32,6 +32,9 @@ details.  */
 #include <java/lang/ThreadGroup.h>
 #endif
 
+#include <jvmti.h>
+#include "jvmti-int.h"
+
 #ifndef DISABLE_GETENV_PROPERTIES
 #include <ctype.h>
 #include <java-props.h>
@@ -66,8 +69,6 @@ details.  */
 #include <execution.h>
 #include <gnu/classpath/jdwp/Jdwp.h>
 #include <gnu/classpath/jdwp/VMVirtualMachine.h>
-#include <gnu/classpath/jdwp/event/VmDeathEvent.h>
-#include <gnu/classpath/jdwp/event/VmInitEvent.h>
 #include <gnu/java/lang/MainThread.h>
 
 #ifdef USE_LTDL
@@ -1583,10 +1584,9 @@ _Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
 	  jdwp->join ();
 	}
 
-      // Send VmInit
-      gnu::classpath::jdwp::event::VmInitEvent *event;
-      event = new gnu::classpath::jdwp::event::VmInitEvent (main_thread);
-      gnu::classpath::jdwp::Jdwp::notify (event);
+      // Send VMInit
+      if (JVMTI_REQUESTED_EVENT (VMInit))
+	_Jv_JVMTI_PostEvent (JVMTI_EVENT_VM_INIT, main_thread);
     }
   catch (java::lang::Throwable *t)
     {
@@ -1601,12 +1601,12 @@ _Jv_RunMain (JvVMInitArgs *vm_args, jclass klass, const char *name, int argc,
 
   _Jv_ThreadRun (main_thread);
 
-  // Notify debugger of VM's death
-  if (gnu::classpath::jdwp::Jdwp::isDebugging)
+  // Send VMDeath
+  if (JVMTI_REQUESTED_EVENT (VMDeath))
     {
-      using namespace gnu::classpath::jdwp;
-      event::VmDeathEvent *event = new event::VmDeathEvent ();
-      Jdwp::notify (event);
+      java::lang::Thread *thread = java::lang::Thread::currentThread ();
+      JNIEnv *jni_env = _Jv_GetCurrentJNIEnv ();
+      _Jv_JVMTI_PostEvent (JVMTI_EVENT_VM_DEATH, thread, jni_env);
     }
 
   // If we got here then something went wrong, as MainThread is not

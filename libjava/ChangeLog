@@ -1,5 +1,10 @@
 2007-01-24  Keith Seitz  <keiths@redhat.com>
 
+	* prims.cc (_Jv_RunMain): Send JVMTI event notifications
+	for VM_INIT and VM_DEATH instead of the JDWP notifications.
+
+2007-01-24  Keith Seitz  <keiths@redhat.com>
+
 	* gnu/classpath/jdwp/natVMVirtualMachine.cc
 	(getAllClassMethods): Implement.
 
