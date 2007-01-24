@@ -1601,7 +1601,7 @@ omp_reduction_init (tree clause, tree type)
 
 static void
 lower_rec_input_clauses (tree clauses, tree *ilist, tree *dlist,
-			  omp_context *ctx)
+			 omp_context *ctx)
 {
   tree_stmt_iterator diter;
   tree c, dtor, copyin_seq, x, args, ptr;
@@ -3986,13 +3986,14 @@ lower_omp_critical (tree *stmt_p, omp_context *ctx)
 /* A subroutine of lower_omp_for.  Generate code to emit the predicate
    for a lastprivate clause.  Given a loop control predicate of (V
    cond N2), we gate the clause on (!(V cond N2)).  The lowered form
-   is appended to *BODY_P.  */
+   is appended to *DLIST, iterator initialization is appended to
+   *BODY_P.  */
 
 static void
 lower_omp_for_lastprivate (struct omp_for_data *fd, tree *body_p,
-			   struct omp_context *ctx)
+			   tree *dlist, struct omp_context *ctx)
 {
-  tree clauses, cond;
+  tree clauses, cond, stmts, vinit, t;
   enum tree_code cond_code;
   
   cond_code = fd->cond_code;
@@ -4010,7 +4011,24 @@ lower_omp_for_lastprivate (struct omp_for_data *fd, tree *body_p,
   cond = build2 (cond_code, boolean_type_node, fd->v, fd->n2);
 
   clauses = OMP_FOR_CLAUSES (fd->for_stmt);
-  lower_lastprivate_clauses (clauses, cond, body_p, ctx);
+  stmts = NULL;
+  lower_lastprivate_clauses (clauses, cond, &stmts, ctx);
+  if (stmts != NULL)
+    {
+      append_to_statement_list (stmts, dlist);
+
+      /* Optimize: v = 0; is usually cheaper than v = some_other_constant.  */
+      vinit = fd->n1;
+      if (cond_code == EQ_EXPR
+	  && host_integerp (fd->n2, 0)
+	  && ! integer_zerop (fd->n2))
+	vinit = build_int_cst (TREE_TYPE (fd->v), 0);
+
+      /* Initialize the iterator variable, so that threads that don't execute
+	 any iterations don't execute the lastprivate clauses by accident.  */
+      t = build2 (GIMPLE_MODIFY_STMT, void_type_node, fd->v, vinit);
+      gimplify_and_add (t, body_p);
+    }
 }
 
 
@@ -4066,6 +4084,8 @@ lower_omp_for (tree *stmt_p, omp_context *ctx)
   /* Once lowered, extract the bounds and clauses.  */
   extract_omp_for_data (stmt, &fd);
 
+  lower_omp_for_lastprivate (&fd, body_p, &dlist, ctx);
+
   append_to_statement_list (stmt, body_p);
 
   append_to_statement_list (OMP_FOR_BODY (stmt), body_p);
@@ -4074,7 +4094,6 @@ lower_omp_for (tree *stmt_p, omp_context *ctx)
   append_to_statement_list (t, body_p);
 
   /* After the loop, add exit clauses.  */
-  lower_omp_for_lastprivate (&fd, &dlist, ctx);
   lower_reduction_clauses (OMP_FOR_CLAUSES (stmt), body_p, ctx);
   append_to_statement_list (dlist, body_p);
 
