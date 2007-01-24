@@ -1,16 +1,25 @@
-/* { dg-do compile } */
-/* { dg-options "-fdump-tree-gimple" } */
+/* { dg-do link } */
+/* { dg-options "-std=c99 -ffinite-math-only" } */
 
-double foo (double x)
+#include "builtins-config.h"
+
+extern void link_error (void);
+
+extern double floor (double);
+extern double trunc (double);
+extern double fabs (double);
+
+void test (double x)
 {
-  return __builtin_floor (__builtin_fabs (x));
+#ifdef HAVE_C99_RUNTIME
+  if (floor (fabs (x)) != trunc (fabs (x)))
+    link_error ();
+#endif
+  if (__builtin_lfloor (fabs (x)) != (long)fabs (x))
+    link_error ();
 }
 
-long bar (double x)
+int main (void)
 {
-  return __builtin_lfloor (__builtin_fabs (x));
+  return 0;
 }
-
-/* { dg-final { scan-tree-dump-not "lfloor" "gimple" } } */
-/* { dg-final { scan-tree-dump "trunc" "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

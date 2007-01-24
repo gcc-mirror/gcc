@@ -1,3 +1,9 @@
+2007-01-24  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/30181
+	* gcc.dg/builtins-57.c: Change to a link-time testcase
+	to support non-C99 targets.
+
 2007-01-24  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/pr23382.c: Avoid DCE from eliminating dead variable.
