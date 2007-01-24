@@ -17,22 +17,29 @@ details.  */
 #include <gnu/classpath/VMStackWalker.h>
 #include <gnu/gcj/RawData.h>
 #include <java/lang/ClassLoader.h>
+#include <java/lang/Class.h>
 
 JArray<jclass> *
 gnu::classpath::VMStackWalker::getClassContext(void)
 {
-  return _Jv_StackTrace::GetStackWalkerStack ();
+  _Jv_InitClass (&::gnu::classpath::VMStackWalker::class$);
+  JArray<jclass> *result = _Jv_StackTrace::GetStackWalkerStack ();
+  // Prevent GetStackWalkerStack() from being sibcalled.
+  __asm__ __volatile__ ("" : : "g" (result));
+  return result;
 }
 
 jclass
 gnu::classpath::VMStackWalker::getCallingClass(void)
 {
+  _Jv_InitClass (&::gnu::classpath::VMStackWalker::class$);
   return _Jv_StackTrace::GetStackWalkerCallingClass ();
 }
 
 jclass
 gnu::classpath::VMStackWalker::getCallingClass(::gnu::gcj::RawData *pc)
 {
+  _Jv_InitClass (&::gnu::classpath::VMStackWalker::class$);
   void *f = _Unwind_FindEnclosingFunction (pc);
 
   // FIXME: it might well be a good idea to cache pc values here in
@@ -57,12 +64,14 @@ gnu::classpath::VMStackWalker::getCallingClass(::gnu::gcj::RawData *pc)
 ::java::lang::ClassLoader *
 gnu::classpath::VMStackWalker::getClassLoader(::java::lang::Class *c)
 {
+  _Jv_InitClass (&::gnu::classpath::VMStackWalker::class$);
   return c->getClassLoaderInternal ();
 }
 
 ::java::lang::ClassLoader *
 gnu::classpath::VMStackWalker::getCallingClassLoader(void)
 {
+  _Jv_InitClass (&::gnu::classpath::VMStackWalker::class$);
   return
     _Jv_StackTrace::GetStackWalkerCallingClass ()->getClassLoaderInternal ();
 }
@@ -70,11 +79,13 @@ gnu::classpath::VMStackWalker::getCallingClassLoader(void)
 ::java::lang::ClassLoader *
 gnu::classpath::VMStackWalker::getCallingClassLoader(::gnu::gcj::RawData *pc)
 {
+  _Jv_InitClass (&::gnu::classpath::VMStackWalker::class$);
   return getCallingClass (pc)->getClassLoaderInternal ();
 }
 
 ::java::lang::ClassLoader *
 gnu::classpath::VMStackWalker::firstNonNullClassLoader(void)
 {
+  _Jv_InitClass (&::gnu::classpath::VMStackWalker::class$);
   return _Jv_StackTrace::GetStackWalkerFirstNonNullLoader ();
 }
