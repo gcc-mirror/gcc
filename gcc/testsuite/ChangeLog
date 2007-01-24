@@ -1,3 +1,8 @@
+2007-01-23  Andrew Pinski  <pinskia@gmail.com>
+
+	PR objc/27438
+	* objc.dg/const-str-12.m: New test.
+
 2007-01-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/28172

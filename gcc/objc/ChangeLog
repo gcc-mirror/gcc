@@ -1,3 +1,9 @@
+2007-01-23  Andrew Pinski  <pinskia@gmail.com>
+
+	PR objc/27438
+	* objc-act.c (objc_add_static_instance): Mark the decl as
+	TREE_USED.
+
 2007-01-20  Andrew Pinski  <pinskia@gmail.com>
 
 	PR objc/30479

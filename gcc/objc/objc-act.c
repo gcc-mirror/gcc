@@ -1997,6 +1997,7 @@ objc_add_static_instance (tree constructor, tree class_decl)
   DECL_COMMON (decl) = 1;
   TREE_STATIC (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
+  TREE_USED (decl) = 1;
   DECL_INITIAL (decl) = constructor;
 
   /* We may be writing something else just now.
