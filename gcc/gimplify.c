@@ -4602,6 +4602,31 @@ omp_is_private (struct gimplify_omp_ctx *ctx, tree decl)
     return !is_global_var (decl);
 }
 
+/* Return true if DECL is private within a parallel region
+   that binds to the current construct's context or in parallel
+   region's REDUCTION clause.  */
+
+static bool
+omp_check_private (struct gimplify_omp_ctx *ctx, tree decl)
+{
+  splay_tree_node n;
+
+  do
+    {
+      ctx = ctx->outer_context;
+      if (ctx == NULL)
+	return !(is_global_var (decl)
+		 /* References might be private, but might be shared too.  */
+		 || lang_hooks.decls.omp_privatize_by_reference (decl));
+
+      n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
+      if (n != NULL)
+	return (n->value & GOVD_SHARED) == 0;
+    }
+  while (!ctx->is_parallel);
+  return false;
+}
+
 /* Scan the OpenMP clauses in *LIST_P, installing mappings into a new
    and previous omp contexts.  */
 
@@ -4620,6 +4645,7 @@ gimplify_scan_omp_clauses (tree *list_p, tree *pre_p, bool in_parallel,
       enum gimplify_status gs;
       bool remove = false;
       bool notice_outer = true;
+      const char *check_non_private = NULL;
       unsigned int flags;
       tree decl;
 
@@ -4634,12 +4660,15 @@ gimplify_scan_omp_clauses (tree *list_p, tree *pre_p, bool in_parallel,
 	  goto do_add;
 	case OMP_CLAUSE_FIRSTPRIVATE:
 	  flags = GOVD_FIRSTPRIVATE | GOVD_EXPLICIT;
+	  check_non_private = "firstprivate";
 	  goto do_add;
 	case OMP_CLAUSE_LASTPRIVATE:
 	  flags = GOVD_LASTPRIVATE | GOVD_SEEN | GOVD_EXPLICIT;
+	  check_non_private = "lastprivate";
 	  goto do_add;
 	case OMP_CLAUSE_REDUCTION:
 	  flags = GOVD_REDUCTION | GOVD_SEEN | GOVD_EXPLICIT;
+	  check_non_private = "reduction";
 	  goto do_add;
 
 	do_add:
@@ -4689,6 +4718,14 @@ gimplify_scan_omp_clauses (tree *list_p, tree *pre_p, bool in_parallel,
 	do_notice:
 	  if (outer_ctx)
 	    omp_notice_variable (outer_ctx, decl, true);
+	  if (check_non_private
+	      && !in_parallel
+	      && omp_check_private (ctx, decl))
+	    {
+	      error ("%s variable %qs is private in outer context",
+		     check_non_private, IDENTIFIER_POINTER (DECL_NAME (decl)));
+	      remove = true;
+	    }
 	  break;
 
 	case OMP_CLAUSE_IF:
