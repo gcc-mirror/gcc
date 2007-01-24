@@ -1018,8 +1018,6 @@ const int x86_use_bt = m_ATHLON_K8;
 const int x86_cmpxchg = ~m_386;
 /* Compare and exchange 8 bytes was added for pentium.  */
 const int x86_cmpxchg8b = ~(m_386 | m_486);
-/* Compare and exchange 16 bytes was added for nocona.  */
-const int x86_cmpxchg16b = m_NOCONA;
 /* Exchange and add was added for 80486.  */
 const int x86_xadd = ~m_386;
 /* Byteswap was added for 80486.  */
@@ -1242,6 +1240,9 @@ enum processor_type ix86_arch;
 
 /* true if sse prefetch instruction is not NOOP.  */
 int x86_prefetch_sse;
+
+/* true if cmpxchg16b is supported.  */
+int x86_cmpxchg16b;
 
 /* ix86_regparm_string as a number */
 static int ix86_regparm;
@@ -1678,7 +1679,8 @@ override_options (void)
 	  PTA_3DNOW = 32,
 	  PTA_3DNOW_A = 64,
 	  PTA_64BIT = 128,
-	  PTA_SSSE3 = 256
+	  PTA_SSSE3 = 256,
+	  PTA_CX16 = 512
 	} flags;
     }
   const processor_alias_table[] =
@@ -1705,10 +1707,10 @@ override_options (void)
       {"prescott", PROCESSOR_NOCONA, PTA_SSE | PTA_SSE2 | PTA_SSE3
 				        | PTA_MMX | PTA_PREFETCH_SSE},
       {"nocona", PROCESSOR_NOCONA, PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_64BIT
-				        | PTA_MMX | PTA_PREFETCH_SSE},
+					| PTA_MMX | PTA_PREFETCH_SSE | PTA_CX16},
       {"core2", PROCESSOR_CORE2, PTA_SSE | PTA_SSE2 | PTA_SSE3
                                         | PTA_64BIT | PTA_MMX
-                                        | PTA_PREFETCH_SSE},
+					| PTA_PREFETCH_SSE | PTA_CX16},
       {"geode", PROCESSOR_GEODE, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
 				   | PTA_3DNOW_A},
       {"k6", PROCESSOR_K6, PTA_MMX},
@@ -1915,6 +1917,8 @@ override_options (void)
 	  target_flags |= MASK_SSSE3;
 	if (processor_alias_table[i].flags & PTA_PREFETCH_SSE)
 	  x86_prefetch_sse = true;
+	if (processor_alias_table[i].flags & PTA_CX16)
+	  x86_cmpxchg16b = true;
 	if (TARGET_64BIT && !(processor_alias_table[i].flags & PTA_64BIT))
 	  error ("CPU you selected does not support x86-64 "
 		 "instruction set");
