@@ -469,7 +469,7 @@ PERSONALITY_FUNCTION (int version,
     }
   else
     {
-      _Unwind_Word cs_lp, cs_action;
+      _uleb128_t cs_lp, cs_action;
       do
 	{
 	  p = read_uleb128 (p, &cs_lp);
