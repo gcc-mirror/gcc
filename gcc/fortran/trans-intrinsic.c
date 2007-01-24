@@ -1,5 +1,6 @@
 /* Intrinsic translation
-   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -1161,6 +1162,9 @@ gfc_conv_intrinsic_sign (gfc_se * se, gfc_expr * expr)
   arg = TREE_VALUE (arg);
   type = TREE_TYPE (arg);
   zero = gfc_build_const (type, integer_zero_node);
+
+  /* Arg is used multiple times below.  */
+  arg = gfc_evaluate_now (arg, &se->pre);
 
   testa = fold_build2 (GE_EXPR, boolean_type_node, arg, zero);
   testb = fold_build2 (GE_EXPR, boolean_type_node, arg2, zero);
