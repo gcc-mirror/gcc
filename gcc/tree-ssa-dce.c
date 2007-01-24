@@ -688,7 +688,32 @@ eliminate_unnecessary_stmts (void)
 	    {
 	      tree call = get_call_expr_in (t);
 	      if (call)
-		notice_special_calls (call);
+		{
+		  tree name;
+
+		  /* When LHS of var = call (); is dead, simplify it into
+		     call (); saving one operand.  */
+		  if (TREE_CODE (t) == GIMPLE_MODIFY_STMT
+		      && (TREE_CODE ((name = GIMPLE_STMT_OPERAND (t, 0)))
+			  == SSA_NAME)
+		      && !TEST_BIT (processed, SSA_NAME_VERSION (name)))
+		    {
+		      something_changed = true;
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			{
+			  fprintf (dump_file, "Deleting LHS of call: ");
+			  print_generic_stmt (dump_file, t, TDF_SLIM);
+			  fprintf (dump_file, "\n");
+			}
+		      push_stmt_changes (bsi_stmt_ptr (i));
+		      TREE_BLOCK (call) = TREE_BLOCK (t);
+		      bsi_replace (&i, call, false);
+		      maybe_clean_or_replace_eh_stmt (t, call);
+		      mark_symbols_for_renaming (call);
+		      pop_stmt_changes (bsi_stmt_ptr (i));
+		    }
+		  notice_special_calls (call);
+		}
 	      bsi_next (&i);
 	    }
 	}

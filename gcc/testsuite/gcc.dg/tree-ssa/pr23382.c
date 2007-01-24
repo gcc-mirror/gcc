@@ -8,9 +8,10 @@ struct a
 
 void *malloc(__SIZE_TYPE__ size) __attribute__((malloc));
 
-void f(void)
+int f(void)
 {
    struct a *a = malloc(sizeof(struct a));
+   return a.length;
 }
 /* { dg-final { scan-tree-dump-times "VDEF <HEAP" 1 "alias1"} } */
 /* { dg-final { scan-tree-dump-times "VDEF <HEAP" 1 "alias2"} } */
