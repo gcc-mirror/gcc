@@ -1,3 +1,14 @@
+2007-01-24  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (initial_insns, max_insns): Delete.
+	(compute_max_insns): New function.
+	(cgraph_decide_inlining_of_small_function): Use it; take minimal amount
+	of insns as base for code growth.
+	(cgraph_decide_inlining): Make initial_insns local; do not compute
+	max_insns.
+	* params.def (PARAM_INLINE_UNIT_GROWTH): Set to 60.
+	* doc/invoke.texi (inline-unit-growth): Update docs.
+
 2007-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.h (x86_cmpxchg16b): Remove const.
