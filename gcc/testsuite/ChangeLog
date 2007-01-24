@@ -1,3 +1,7 @@
+2007-01-24  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/pr23382.c: Avoid DCE from eliminating dead variable.
+
 2007-01-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* gcc.c-torture/compile/sizeof-macros-1.c: New testcase.
