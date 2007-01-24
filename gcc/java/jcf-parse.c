@@ -975,7 +975,7 @@ handle_signature_attribute (int member_index, JCF *jcf,
   else if (current_field)						\
     FIELD_SYNTHETIC (current_field) = 1;				\
   else									\
-    CLASS_SYNTHETIC (current_class) = 1;				\
+    TYPE_SYNTHETIC (current_class) = 1;					\
 }
 
 #define HANDLE_GCJCOMPILED_ATTRIBUTE()		\
