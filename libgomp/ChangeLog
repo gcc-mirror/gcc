@@ -1,3 +1,8 @@
+2007-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/30494
+	* testsuite/libgomp.c/pr30494.c: New test.
+
 2006-12-18  Daniel Franke  <franke.daniel@gmail.com>
 
 	Backport from mainline:
