@@ -266,8 +266,8 @@ get_cie_encoding (const struct dwarf_cie *cie)
 {
   const unsigned char *aug, *p;
   _Unwind_Ptr dummy;
-  _Unwind_Word utmp;
-  _Unwind_Sword stmp;
+  _uleb128_t utmp;
+  _sleb128_t stmp;
 
   aug = cie->augmentation;
   if (aug[0] != 'z')

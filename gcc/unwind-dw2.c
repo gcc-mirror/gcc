@@ -349,7 +349,8 @@ extract_cie_info (const struct dwarf_cie *cie, struct _Unwind_Context *context,
   const unsigned char *aug = cie->augmentation;
   const unsigned char *p = aug + strlen ((const char *)aug) + 1;
   const unsigned char *ret = NULL;
-  _Unwind_Word utmp;
+  _uleb128_t utmp;
+  _sleb128_t stmp;
 
   /* g++ v2 "eh" has pointer immediately following augmentation string,
      so it must be handled first.  */
@@ -362,12 +363,17 @@ extract_cie_info (const struct dwarf_cie *cie, struct _Unwind_Context *context,
 
   /* Immediately following the augmentation are the code and
      data alignment and return address column.  */
-  p = read_uleb128 (p, &fs->code_align);
-  p = read_sleb128 (p, &fs->data_align);
+  p = read_uleb128 (p, &utmp);
+  fs->code_align = (_Unwind_Word)utmp;
+  p = read_sleb128 (p, &stmp);
+  fs->data_align = (_Unwind_Sword)stmp;
   if (cie->version == 1)
     fs->retaddr_column = *p++;
   else
-    p = read_uleb128 (p, &fs->retaddr_column);
+    {
+      p = read_uleb128 (p, &utmp);
+      fs->retaddr_column = (_Unwind_Word)utmp;
+    }
   fs->lsda_encoding = DW_EH_PE_omit;
 
   /* If the augmentation starts with 'z', then a uleb128 immediately
@@ -442,8 +448,9 @@ execute_stack_op (const unsigned char *op_ptr, const unsigned char *op_end,
   while (op_ptr < op_end)
     {
       enum dwarf_location_atom op = *op_ptr++;
-      _Unwind_Word result, reg, utmp;
-      _Unwind_Sword offset, stmp;
+      _Unwind_Word result;
+      _uleb128_t reg, utmp;
+      _sleb128_t offset, stmp;
 
       switch (op)
 	{
@@ -520,11 +527,12 @@ execute_stack_op (const unsigned char *op_ptr, const unsigned char *op_end,
 	  op_ptr += 8;
 	  break;
 	case DW_OP_constu:
-	  op_ptr = read_uleb128 (op_ptr, &result);
+	  op_ptr = read_uleb128 (op_ptr, &utmp);
+	  result = (_Unwind_Word)utmp;
 	  break;
 	case DW_OP_consts:
 	  op_ptr = read_sleb128 (op_ptr, &stmp);
-	  result = stmp;
+	  result = (_Unwind_Sword)stmp;
 	  break;
 
 	case DW_OP_reg0:
@@ -604,7 +612,7 @@ execute_stack_op (const unsigned char *op_ptr, const unsigned char *op_end,
 	case DW_OP_bregx:
 	  op_ptr = read_uleb128 (op_ptr, &reg);
 	  op_ptr = read_sleb128 (op_ptr, &offset);
-	  result = _Unwind_GetGR (context, reg) + offset;
+	  result = _Unwind_GetGR (context, reg) + (_Unwind_Word)offset;
 	  break;
 
 	case DW_OP_dup:
@@ -698,7 +706,7 @@ execute_stack_op (const unsigned char *op_ptr, const unsigned char *op_end,
 	      break;
 	    case DW_OP_plus_uconst:
 	      op_ptr = read_uleb128 (op_ptr, &utmp);
-	      result += utmp;
+	      result += (_Unwind_Word)utmp;
 	      break;
 
 	    default:
@@ -857,8 +865,8 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	 && fs->pc < context->ra + _Unwind_IsSignalFrame (context))
     {
       unsigned char insn = *insn_ptr++;
-      _Unwind_Word reg, utmp;
-      _Unwind_Sword offset, stmp;
+      _uleb128_t reg, utmp;
+      _sleb128_t offset, stmp;
 
       if ((insn & 0xc0) == DW_CFA_advance_loc)
 	fs->pc += (insn & 0x3f) * fs->code_align;
@@ -928,11 +936,12 @@ execute_cfa_program (const unsigned char *insn_ptr,
 
 	case DW_CFA_register:
 	  {
-	    _Unwind_Word reg2;
+	    _uleb128_t reg2;
 	    insn_ptr = read_uleb128 (insn_ptr, &reg);
 	    insn_ptr = read_uleb128 (insn_ptr, &reg2);
 	    fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how = REG_SAVED_REG;
-	    fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].loc.reg = reg2;
+	    fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].loc.reg =
+	      (_Unwind_Word)reg2;
 	  }
 	  break;
 
@@ -962,14 +971,16 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  break;
 
 	case DW_CFA_def_cfa:
-	  insn_ptr = read_uleb128 (insn_ptr, &fs->regs.cfa_reg);
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
-	  fs->regs.cfa_offset = utmp;
+	  fs->regs.cfa_reg = (_Unwind_Word)utmp;
+	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
+	  fs->regs.cfa_offset = (_Unwind_Word)utmp;
 	  fs->regs.cfa_how = CFA_REG_OFFSET;
 	  break;
 
 	case DW_CFA_def_cfa_register:
-	  insn_ptr = read_uleb128 (insn_ptr, &fs->regs.cfa_reg);
+	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
+	  fs->regs.cfa_reg = (_Unwind_Word)utmp;
 	  fs->regs.cfa_how = CFA_REG_OFFSET;
 	  break;
 
@@ -1005,14 +1016,17 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  break;
 
 	case DW_CFA_def_cfa_sf:
-	  insn_ptr = read_uleb128 (insn_ptr, &fs->regs.cfa_reg);
-	  insn_ptr = read_sleb128 (insn_ptr, &fs->regs.cfa_offset);
+	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
+	  fs->regs.cfa_reg = (_Unwind_Word)utmp;
+	  insn_ptr = read_sleb128 (insn_ptr, &stmp);
+	  fs->regs.cfa_offset = (_Unwind_Sword)stmp;
 	  fs->regs.cfa_how = CFA_REG_OFFSET;
 	  fs->regs.cfa_offset *= fs->data_align;
 	  break;
 
 	case DW_CFA_def_cfa_offset_sf:
-	  insn_ptr = read_sleb128 (insn_ptr, &fs->regs.cfa_offset);
+	  insn_ptr = read_sleb128 (insn_ptr, &stmp);
+	  fs->regs.cfa_offset = (_Unwind_Sword)stmp;
 	  fs->regs.cfa_offset *= fs->data_align;
 	  /* cfa_how deliberately not set.  */
 	  break;
@@ -1054,7 +1068,8 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  break;
 
 	case DW_CFA_GNU_args_size:
-	  insn_ptr = read_uleb128 (insn_ptr, &context->args_size);
+	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
+	  context->args_size = (_Unwind_Word)utmp;
 	  break;
 
 	case DW_CFA_GNU_negative_offset_extended:
@@ -1125,7 +1140,7 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
   insn = NULL;
   if (fs->saw_z)
     {
-      _Unwind_Word i;
+      _uleb128_t i;
       aug = read_uleb128 (aug, &i);
       insn = aug + i;
     }
@@ -1268,7 +1283,7 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
     case CFA_EXP:
       {
 	const unsigned char *exp = fs->regs.cfa_exp;
-	_Unwind_Word len;
+	_uleb128_t len;
 
 	exp = read_uleb128 (exp, &len);
 	cfa = (void *) (_Unwind_Ptr)
@@ -1307,7 +1322,7 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
       case REG_SAVED_EXP:
 	{
 	  const unsigned char *exp = fs->regs.reg[i].loc.exp;
-	  _Unwind_Word len;
+	  _uleb128_t len;
 	  _Unwind_Ptr val;
 
 	  exp = read_uleb128 (exp, &len);
@@ -1326,7 +1341,7 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
       case REG_SAVED_VAL_EXP:
 	{
 	  const unsigned char *exp = fs->regs.reg[i].loc.exp;
-	  _Unwind_Word len;
+	  _uleb128_t len;
 	  _Unwind_Ptr val;
 
 	  exp = read_uleb128 (exp, &len);

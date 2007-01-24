@@ -130,17 +130,17 @@ base_of_encoded_value (unsigned char encoding, struct _Unwind_Context *context)
    pointers should not be leb128 encoded on that target.  */
 
 static const unsigned char *
-read_uleb128 (const unsigned char *p, _Unwind_Word *val)
+read_uleb128 (const unsigned char *p, _uleb128_t *val)
 {
   unsigned int shift = 0;
   unsigned char byte;
-  _Unwind_Word result;
+  _uleb128_t result;
 
   result = 0;
   do
     {
       byte = *p++;
-      result |= ((_Unwind_Word)byte & 0x7f) << shift;
+      result |= ((_uleb128_t)byte & 0x7f) << shift;
       shift += 7;
     }
   while (byte & 0x80);
@@ -152,26 +152,26 @@ read_uleb128 (const unsigned char *p, _Unwind_Word *val)
 /* Similar, but read a signed leb128 value.  */
 
 static const unsigned char *
-read_sleb128 (const unsigned char *p, _Unwind_Sword *val)
+read_sleb128 (const unsigned char *p, _sleb128_t *val)
 {
   unsigned int shift = 0;
   unsigned char byte;
-  _Unwind_Word result;
+  _uleb128_t result;
 
   result = 0;
   do
     {
       byte = *p++;
-      result |= ((_Unwind_Word)byte & 0x7f) << shift;
+      result |= ((_uleb128_t)byte & 0x7f) << shift;
       shift += 7;
     }
   while (byte & 0x80);
 
   /* Sign-extend a negative value.  */
   if (shift < 8 * sizeof(result) && (byte & 0x40) != 0)
-    result |= -(((_Unwind_Word)1L) << shift);
+    result |= -(((_uleb128_t)1L) << shift);
 
-  *val = (_Unwind_Sword) result;
+  *val = (_sleb128_t) result;
   return p;
 }
 
@@ -215,7 +215,7 @@ read_encoded_value_with_base (unsigned char encoding, _Unwind_Ptr base,
 
 	case DW_EH_PE_uleb128:
 	  {
-	    _Unwind_Word tmp;
+	    _uleb128_t tmp;
 	    p = read_uleb128 (p, &tmp);
 	    result = (_Unwind_Internal_Ptr) tmp;
 	  }
@@ -223,7 +223,7 @@ read_encoded_value_with_base (unsigned char encoding, _Unwind_Ptr base,
 
 	case DW_EH_PE_sleb128:
 	  {
-	    _Unwind_Sword tmp;
+	    _sleb128_t tmp;
 	    p = read_sleb128 (p, &tmp);
 	    result = (_Unwind_Internal_Ptr) tmp;
 	  }

@@ -56,7 +56,7 @@ static const unsigned char *
 parse_lsda_header (_Unwind_Context *context, const unsigned char *p,
 		   lsda_header_info *info)
 {
-  _Unwind_Word tmp;
+  _uleb128_t tmp;
   unsigned char lpstart_encoding;
 
   info->Start = (context ? _Unwind_GetRegionStart (context) : 0);
@@ -92,7 +92,7 @@ parse_lsda_header (_Unwind_Context *context, const unsigned char *p,
 // Return an element from a type table.
 
 static const std::type_info*
-get_ttype_entry(lsda_header_info* info, _Unwind_Word i)
+get_ttype_entry(lsda_header_info* info, _uleb128_t i)
 {
   _Unwind_Ptr ptr;
 
@@ -112,15 +112,15 @@ typedef _Unwind_Control_Block _throw_typet;
 
 static bool
 check_exception_spec(lsda_header_info* info, _throw_typet* throw_type,
-		     void* thrown_ptr, _Unwind_Sword filter_value)
+		     void* thrown_ptr, _sleb128_t filter_value)
 {
-  const _Unwind_Word* e = ((const _Unwind_Word*) info->TType)
+  const _uleb128_t* e = ((const _uleb128_t*) info->TType)
 			  - filter_value - 1;
 
   while (1)
     {
       const std::type_info* catch_type;
-      _Unwind_Word tmp;
+      _uleb128_t tmp;
 
       tmp = *e;
       
@@ -210,7 +210,7 @@ typedef const std::type_info _throw_typet;
 // Return an element from a type table.
 
 static const std::type_info *
-get_ttype_entry (lsda_header_info *info, _Unwind_Word i)
+get_ttype_entry (lsda_header_info *info, _uleb128_t i)
 {
   _Unwind_Ptr ptr;
 
@@ -253,14 +253,14 @@ get_adjusted_ptr (const std::type_info *catch_type,
 
 static bool
 check_exception_spec(lsda_header_info* info, _throw_typet* throw_type,
-		      void* thrown_ptr, _Unwind_Sword filter_value)
+		      void* thrown_ptr, _sleb128_t filter_value)
 {
   const unsigned char *e = info->TType - filter_value - 1;
 
   while (1)
     {
       const std::type_info *catch_type;
-      _Unwind_Word tmp;
+      _uleb128_t tmp;
 
       e = read_uleb128 (e, &tmp);
 
@@ -329,7 +329,7 @@ static bool
 empty_exception_spec (lsda_header_info *info, _Unwind_Sword filter_value)
 {
   const unsigned char *e = info->TType - filter_value - 1;
-  _Unwind_Word tmp;
+  _uleb128_t tmp;
 
   e = read_uleb128 (e, &tmp);
   return tmp == 0;
@@ -489,7 +489,7 @@ PERSONALITY_FUNCTION (int version,
   while (p < info.action_table)
     {
       _Unwind_Ptr cs_start, cs_len, cs_lp;
-      _Unwind_Word cs_action;
+      _uleb128_t cs_action;
 
       // Note that all call-site encodings are "absolute" displacements.
       p = read_encoded_value (0, info.call_site_encoding, p, &cs_start);
@@ -535,7 +535,7 @@ PERSONALITY_FUNCTION (int version,
     {
       // Otherwise we have a catch handler or exception specification.
 
-      _Unwind_Sword ar_filter, ar_disp;
+      _sleb128_t ar_filter, ar_disp;
       const std::type_info* catch_type;
       _throw_typet* throw_type;
       bool saw_cleanup = false;

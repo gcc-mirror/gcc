@@ -230,6 +230,35 @@ extern _Unwind_Ptr _Unwind_GetTextRelBase (struct _Unwind_Context *);
    contains it.  */
 extern void * _Unwind_FindEnclosingFunction (void *pc);
 
+#ifndef __SIZEOF_LONG__
+  #error "__SIZEOF_LONG__ macro not defined"
+#endif
+
+#ifndef __SIZEOF_POINTER__
+  #error "__SIZEOF_POINTER__ macro not defined"
+#endif
+
+
+/* leb128 type numbers have a potentially unlimited size.
+   The target of the following definitions of _sleb128_t and _uleb128_t
+   is to have efficient data types large enough to hold the leb128 type
+   numbers used in the unwind code.
+   Mostly these types will simply be defined to long and unsigned long
+   except when a unsigned long data type on the target machine is not
+   capable of storing a pointer.  */
+
+#if __SIZEOF_LONG__ < __SIZEOF_POINTER__
+#ifdef HAVE_LONG_LONG
+  typedef long long _sleb128_t;
+  typedef unsigned long long _uleb128_t;
+#else
+  #error "long long data type is needed to define _sleb128_t"
+#endif
+#else
+  typedef long _sleb128_t;
+  typedef unsigned long _uleb128_t;
+#endif
+
 #ifdef __cplusplus
 }
 #endif

@@ -128,7 +128,7 @@ static const unsigned char *
 parse_lsda_header (_Unwind_Context *context, const unsigned char *p,
 		   lsda_header_info *info)
 {
-  _Unwind_Word tmp;
+  _uleb128_t tmp;
   unsigned char lpstart_encoding;
 
   info->Start = (context ? _Unwind_GetRegionStart (context) : 0);
@@ -251,7 +251,7 @@ PERSONALITY_FUNCTION (int version,
     return _URC_CONTINUE_UNWIND;
   else
     {
-      _Unwind_Word cs_lp, cs_action;
+      _uleb128_t cs_lp, cs_action;
       do
 	{
 	  p = read_uleb128 (p, &cs_lp);
@@ -271,7 +271,7 @@ PERSONALITY_FUNCTION (int version,
   while (p < info.action_table)
     {
       _Unwind_Ptr cs_start, cs_len, cs_lp;
-      _Unwind_Word cs_action;
+      _uleb128_t cs_action;
 
       // Note that all call-site encodings are "absolute" displacements.
       p = read_encoded_value (0, info.call_site_encoding, p, &cs_start);
@@ -317,7 +317,7 @@ PERSONALITY_FUNCTION (int version,
   else
     {
       // Otherwise we have a catch handler.
-      _Unwind_Sword ar_filter, ar_disp;
+      _sleb128_t ar_filter, ar_disp;
 
       while (1)
 	{

@@ -1,3 +1,8 @@
+2007-01-24  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* exception.cc (parse_lsda_header, PERSONALITY_FUNCTION): Replaced
+	_Unwind_Word with _uleb128_t and _Unwind_SWord with _sleb128_t.
+
 2007-01-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libgcj/30550
