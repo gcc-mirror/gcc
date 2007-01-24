@@ -169,9 +169,7 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *, enum inlining_mode,
 /* Statistics we collect about inlining algorithm.  */
 static int ncalls_inlined;
 static int nfunctions_inlined;
-static int initial_insns;
 static int overall_insns;
-static int max_insns;
 static gcov_type max_count;
 
 /* Estimate size of the function after inlining WHAT into TO.  */
@@ -753,6 +751,19 @@ cgraph_set_inline_failed (struct cgraph_node *node, const char *reason)
       e->inline_failed = reason;
 }
 
+/* Given whole compilation unit esitmate of INSNS, compute how large we can
+   allow the unit to grow.  */
+static int
+compute_max_insns (int insns)
+{
+  int max_insns = insns;
+  if (max_insns < PARAM_VALUE (PARAM_LARGE_UNIT_INSNS))
+    max_insns = PARAM_VALUE (PARAM_LARGE_UNIT_INSNS);
+
+  return max_insns = ((HOST_WIDEST_INT) max_insns
+	              * (100 + PARAM_VALUE (PARAM_INLINE_UNIT_GROWTH)) / 100);
+}
+
 /* We use greedy algorithm for inlining of small functions:
    All inline candidates are put into prioritized heap based on estimated
    growth of the overall number of instructions and then update the estimates.
@@ -768,6 +779,7 @@ cgraph_decide_inlining_of_small_functions (void)
   const char *failed_reason;
   fibheap_t heap = fibheap_new ();
   bitmap updated_nodes = BITMAP_ALLOC (NULL);
+  int min_insns, max_insns;
 
   if (dump_file)
     fprintf (dump_file, "\nDeciding on smaller functions:\n");
@@ -796,6 +808,10 @@ cgraph_decide_inlining_of_small_functions (void)
 	    edge->aux = fibheap_insert (heap, cgraph_edge_badness (edge), edge);
 	  }
     }
+
+  max_insns = compute_max_insns (overall_insns);
+  min_insns = overall_insns;
+
   while (overall_insns <= max_insns && (edge = fibheap_extract_min (heap)))
     {
       int old_insns = overall_insns;
@@ -923,6 +939,14 @@ cgraph_decide_inlining_of_small_functions (void)
 		   edge->caller->global.insns,
 		   overall_insns - old_insns);
 	}
+      if (min_insns > overall_insns)
+	{
+	  min_insns = overall_insns;
+	  max_insns = compute_max_insns (min_insns);
+
+	  if (dump_file)
+	    fprintf (dump_file, "New minimal insns reached: %i\n", min_insns);
+	}
     }
   while ((edge = fibheap_extract_min (heap)) != NULL)
     {
@@ -949,6 +973,7 @@ cgraph_decide_inlining (void)
     XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
   int old_insns = 0;
   int i;
+  int initial_insns;
 
   max_count = 0;
   for (node = cgraph_nodes; node; node = node->next)
@@ -964,13 +989,6 @@ cgraph_decide_inlining (void)
       }
   overall_insns = initial_insns;
   gcc_assert (!max_count || (profile_info && flag_branch_probabilities));
-
-  max_insns = overall_insns;
-  if (max_insns < PARAM_VALUE (PARAM_LARGE_UNIT_INSNS))
-    max_insns = PARAM_VALUE (PARAM_LARGE_UNIT_INSNS);
-
-  max_insns = ((HOST_WIDEST_INT) max_insns
-	       * (100 + PARAM_VALUE (PARAM_INLINE_UNIT_GROWTH)) / 100);
 
   nnodes = cgraph_postorder (order);
 
@@ -996,12 +1014,10 @@ cgraph_decide_inlining (void)
       /* Handle nodes to be flattened, but don't update overall unit size.  */
       if (lookup_attribute ("flatten", DECL_ATTRIBUTES (node->decl)) != NULL)
         {
-	  int old_overall_insns = overall_insns;
   	  if (dump_file)
     	    fprintf (dump_file,
 	     	     "Flattening %s\n", cgraph_node_name (node));
 	  cgraph_decide_inlining_incrementally (node, INLINE_ALL, 0);
-	  overall_insns = old_overall_insns;
         }
 
       if (!node->local.disregard_inline_limits)
