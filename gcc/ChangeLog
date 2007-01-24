@@ -1,5 +1,11 @@
 2007-01-24  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.h (x86_cmpxchg16b): Remove const.
+	(TARGET_CMPXCHG16B): Define to x86_cmpxchg16b.
+	* config/i386/i386.c (x86_cmpxchg16b): Remove const.
+	(override_options): Add PTA_CX16 flag.  Set x86_cmpxchg16b
+	for CPUs that have PTA_CX16 set.
+
 	PR middle-end/27416
 	* gimplify.c (omp_check_private): New function.
 	(gimplify_scan_omp_clauses): Use it for
