@@ -1,3 +1,8 @@
+2007-01-24  Richard Sandiford  <richard@codesourcery.com>
+
+	* reload1.c (emit_reload_insns): Pass the reload register
+	for a non-spill output reload through forget_old_reloads_1.
+
 2007-01-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Define
