@@ -1,3 +1,9 @@
+2007-01-23  Andrew Pinski  <pinskia@gmail.com>
+
+	PR java/30454
+	* jcf-io.c (opendir_in_zip): Close the file
+	and free zipf before returning after an error.
+
 2007-01-16  Tom Tromey  <tromey@redhat.com>
 
 	* java-tree.def: Added copyright header.
