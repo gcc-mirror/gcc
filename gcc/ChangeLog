@@ -1,5 +1,10 @@
 2007-01-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/27416
+	* gimplify.c (omp_check_private): New function.
+	(gimplify_scan_omp_clauses): Use it for
+	firstprivate/lastprivate/reduction.
+
 	PR middle-end/30494
 	* gimplify.c (omp_add_variable): Don't call omp_notice_variable
 	on TYPE_SIZE_UNIT for GOVD_LOCAL VLAs.
