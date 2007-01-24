@@ -58,6 +58,7 @@ static void builtin_define_with_hex_fp_value (const char *, tree,
 static void builtin_define_stdint_macros (void);
 static void builtin_define_type_max (const char *, tree, int);
 static void builtin_define_type_precision (const char *, tree);
+static void builtin_define_type_sizeof (const char *, tree);
 static void builtin_define_float_constants (const char *, 
 					    const char *,
 					    const char *,
@@ -69,6 +70,14 @@ static void
 builtin_define_type_precision (const char *name, tree type)
 {
   builtin_define_with_int_value (name, TYPE_PRECISION (type));
+}
+
+/* Define NAME with value TYPE size_unit.  */
+static void
+builtin_define_type_sizeof (const char *name, tree type)
+{
+  builtin_define_with_int_value (name,
+				 tree_low_cst (TYPE_SIZE_UNIT (type), 1));
 }
 
 /* Define the float.h constants for TYPE using NAME_PREFIX, FP_SUFFIX,
@@ -548,6 +557,24 @@ c_cpp_builtins (cpp_reader *pfile)
 
   if (flag_openmp)
     cpp_define (pfile, "_OPENMP=200505");
+
+  builtin_define_type_sizeof ("__SIZEOF_INT__", integer_type_node);
+  builtin_define_type_sizeof ("__SIZEOF_LONG__", long_integer_type_node);
+  builtin_define_type_sizeof ("__SIZEOF_LONG_LONG__",
+			      long_long_integer_type_node);
+  builtin_define_type_sizeof ("__SIZEOF_SHORT__", short_integer_type_node);
+  builtin_define_type_sizeof ("__SIZEOF_FLOAT__", float_type_node);
+  builtin_define_type_sizeof ("__SIZEOF_DOUBLE__", double_type_node);
+  builtin_define_type_sizeof ("__SIZEOF_LONG_DOUBLE__", long_double_type_node);
+  builtin_define_type_sizeof ("__SIZEOF_SIZE_T__", size_type_node);
+  builtin_define_type_sizeof ("__SIZEOF_WCHAR_T__", wchar_type_node);
+  builtin_define_type_sizeof ("__SIZEOF_WINT_T__", wint_type_node);
+  builtin_define_type_sizeof ("__SIZEOF_PTRDIFF_T__",
+			      unsigned_ptrdiff_type_node);
+  /* ptr_type_node can't be used here since ptr_mode is only set when
+     toplev calls backend_init which is not done with -E switch.  */
+  builtin_define_with_int_value ("__SIZEOF_POINTER__",
+				 POINTER_SIZE / BITS_PER_UNIT);
 
   /* A straightforward target hook doesn't work, because of problems
      linking that hook's body when part of non-C front ends.  */

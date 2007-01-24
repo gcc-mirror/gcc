@@ -2079,6 +2079,23 @@ respectively.  They exist to make the standard header given numerical limits
 work correctly.  You should not use these macros directly; instead, include
 the appropriate headers.
 
+@item __SIZEOF_INT__
+@itemx __SIZEOF_LONG__
+@itemx __SIZEOF_LONG_LONG__
+@itemx __SIZEOF_SHORT__
+@itemx __SIZEOF_POINTER__
+@itemx __SIZEOF_FLOAT__
+@itemx __SIZEOF_DOUBLE__
+@itemx __SIZEOF_LONG_DOUBLE__
+@itemx __SIZEOF_SIZE_T__
+@itemx __SIZEOF_WCHAR_T__
+@itemx __SIZEOF_WINT_T__
+@itemx __SIZEOF_PTRDIFF_T__
+Defined to the number of bytes of the C standard data types: @code{int},
+@code{long}, @code{long long}, @code{short}, @code{void *}, @code{float},
+@code{double}, @code{long double}, @code{size_t}, @code{wchar_t}, @code{wint_t}
+and @code{ptrdiff_t}.
+
 @item __DEPRECATED
 This macro is defined, with value 1, when compiling a C++ source file
 with warnings about deprecated constructs enabled.  These warnings are
