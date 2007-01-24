@@ -1,3 +1,8 @@
+2007-01-24  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* libsupc++/eh_personality.cc  (PERSONALITY_FUNCTION): Replace
+	_Unwind_Word with _uleb128_t in the SJLJ context.
+
 2007-01-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/29722 continued
