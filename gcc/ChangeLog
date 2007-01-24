@@ -1,3 +1,13 @@
+2007-01-24  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* c-cppbuiltin.c (builtin_define_type_sizeof): New function.
+	(c_cpp_builtins): New builtin macros: __SIZEOF_INT__, __SIZEOF_LONG__,
+	__SIZEOF_LONG_LONG__, __SIZEOF_SHORT__, __SIZEOF_POINTER__,
+	__SIZEOF_FLOAT__, __SIZEOF_DOUBLE__, __SIZEOF_LONG_DOUBLE__,
+	__SIZEOF_SIZE_T__, __SIZEOF_WCHAR_T__, __SIZEOF_WINT_T__ and
+	__SIZEOF_PTRDIFF_T__.
+	* doc/cpp.texi: Documentation for the new builtin macros added.
+
 2007-01-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (tanxf2, tan<mode>2, atan<mode>2, log<mode>2,
