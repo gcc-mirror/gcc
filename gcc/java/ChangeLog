@@ -1,3 +1,12 @@
+2007-01-24  Andrew Haley  <aph@redhat.com>
+
+	* jcf-parse.c (HANDLE_SYNTHETIC_ATTRIBUTE): current_class is a
+	type node, not a decl, so use TYPE_SYNTHETIC not CLASS_SYNTHETIC.
+
+2007-01-22  Andrew Haley  <aph@redhat.com>
+
+	* builtins.c (VMSupportsCS8_builtin): New function.
+
 2007-01-23  Andrew Pinski  <pinskia@gmail.com>
 
 	PR java/30454

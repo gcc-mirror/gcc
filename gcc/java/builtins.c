@@ -54,7 +54,7 @@ static tree compareAndSwapLong_builtin (tree, tree);
 static tree compareAndSwapObject_builtin (tree, tree);
 static tree putVolatile_builtin (tree, tree);
 static tree getVolatile_builtin (tree, tree);
-
+static tree VMSupportsCS8_builtin (tree, tree);
 
 
 /* Functions of this type are used to inline a given call.  Such a
@@ -121,6 +121,8 @@ static GTY(()) struct builtin_record java_builtins[] =
   { { "sun.misc.Unsafe" }, { "getIntVolatile" }, getVolatile_builtin, 0},
   { { "sun.misc.Unsafe" }, { "getLongVolatile" }, getVolatile_builtin, 0},
   { { "sun.misc.Unsafe" }, { "getLong" }, getVolatile_builtin, 0},
+  { { "java.util.concurrent.atomic.AtomicLong" }, { "VMSupportsCS8" }, 
+    VMSupportsCS8_builtin, 0},
   { { NULL }, { NULL }, NULL, END_BUILTINS }
 };
 
@@ -432,7 +434,20 @@ getVolatile_builtin (tree method_return_type ATTRIBUTE_UNUSED,
   
   return stmt;
 }
-  
+
+static tree
+VMSupportsCS8_builtin (tree method_return_type, 
+		       tree method_arguments ATTRIBUTE_UNUSED)
+{
+  enum machine_mode mode = TYPE_MODE (long_type_node);
+  gcc_assert (method_return_type == boolean_type_node);
+  if (sync_compare_and_swap_cc[mode] != CODE_FOR_nothing 
+      || sync_compare_and_swap[mode] != CODE_FOR_nothing)
+    return boolean_true_node;
+  else
+    return boolean_false_node;
+}  
+
 
 
 #define BUILTIN_NOTHROW 1
