@@ -1,9 +1,9 @@
-2007-01-19  Andreas Tobler  <a.tobler@schweiz.org>
+2007-01-24  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* os_dep.c (defined(MPROTECT_VDB) && defined(DARWIN)): Moved recently
 	added defines to include/private/gc_priv.h
-	* darwin_stop_world.c: Removed the above defines.
 	(catch_exception_raise): Added THREAD_FLD in exc_state for POWERPC too.
+	* darwin_stop_world.c: Removed the above defines.
 	* include/private/gc_priv.h: Moved definitions from darwin_stop_world.c
 	and os_dep.c to here. Fixed THREAD definition fixes for ppc64.
 
