@@ -1,6 +1,6 @@
 // Deque implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -143,7 +143,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 	{
 	  const difference_type __n = __last - __first;
 	  const difference_type __elems_before = __first - begin();
-	  if (static_cast<size_type>(__elems_before) < (size() - __n) / 2)
+	  if (static_cast<size_type>(__elems_before) <= (size() - __n) / 2)
 	    {
 	      if (__first != begin())
 		std::copy_backward(begin(), __first, __last);
