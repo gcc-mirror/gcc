@@ -1,3 +1,9 @@
+2007-01-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (tanxf2, tan<mode>2, atan<mode>2, log<mode>2,
+	log10<mode>2, log2<mode>2, expxf2, exp10xf2, exp2xf2): Use op2
+	instead of operands[2] to avoid access past the end of array.
+
 2007-01-24  Richard Sandiford  <richard@codesourcery.com>
 
 	* reload1.c (emit_reload_insns): Pass the reload register
