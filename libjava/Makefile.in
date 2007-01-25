@@ -626,7 +626,6 @@ LIBGCJ_LD_SYMBOLIC_FUNCTIONS = @LIBGCJ_LD_SYMBOLIC_FUNCTIONS@
 LIBGCJ_SPEC = @LIBGCJ_SPEC@
 LIBICONV = @LIBICONV@
 LIBLTDL = @LIBLTDL@
-LIBMAGIC = @LIBMAGIC@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
@@ -887,7 +886,7 @@ libgcj_la_LIBADD = \
 	$(all_packages_source_files:.list=.lo) \
 	$(bc_objects) \
 	$(propertyo_files) \
-	$(LIBMAGIC) $(LIBFFI) $(ZLIBS) $(GCLIBS)
+	$(LIBFFI) $(ZLIBS) $(GCLIBS)
 
 libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
 	java/lang/Object.lo \

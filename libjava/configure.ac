@@ -1209,12 +1209,6 @@ else
       AC_CHECK_LIB(z, deflate, ZLIBSPEC=-lz, ZLIBSPEC=)
    fi
 
-   LIBMAGIC=
-   AC_CHECK_LIB(magic, magic_open, [
-      AC_DEFINE([HAVE_MAGIC_OPEN], 1, [Define if you have magic_open().])
-      LIBMAGIC="-lmagic"])
-   AC_SUBST(LIBMAGIC)
-
    # Test for Gtk stuff, if asked for.
    if test "$use_gtk_awt" = yes; then
       PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.4)
