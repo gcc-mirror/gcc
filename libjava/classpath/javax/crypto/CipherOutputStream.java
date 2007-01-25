@@ -50,54 +50,20 @@ import java.io.OutputStream;
  */
 public class CipherOutputStream extends FilterOutputStream
 {
-
-  // Fields.
-  // ------------------------------------------------------------------------
-
   /** The underlying cipher. */
   private Cipher cipher;
 
-  private byte[][] inBuffer;
-
-  private int inLength;
-
-  private byte[] outBuffer;
-
-  private static final int FIRST_TIME  = 0;
-  private static final int SECOND_TIME = 1;
-  private static final int SEASONED    = 2;
-  private int state;
-
-  /** True if the cipher is a stream cipher (blockSize == 1) */
-  private boolean isStream;
-
-  // Constructors.
-  // ------------------------------------------------------------------------
-
   /**
-   * Create a new cipher output stream. The cipher argument must have
-   * already been initialized.
+   * Create a new cipher output stream. The cipher argument must have already
+   * been initialized.
    *
-   * @param out    The sink for transformed data.
+   * @param out The sink for transformed data.
    * @param cipher The cipher to transform data with.
    */
   public CipherOutputStream(OutputStream out, Cipher cipher)
   {
     super(out);
-    if (cipher != null)
-      {
-        this.cipher = cipher;
-        if (!(isStream = cipher.getBlockSize() == 1))
-          {
-            inBuffer = new byte[2][];
-            inBuffer[0] = new byte[cipher.getBlockSize()];
-            inBuffer[1] = new byte[cipher.getBlockSize()];
-            inLength = 0;
-            state = FIRST_TIME;
-          }
-      }
-    else
-      this.cipher = new NullCipher();
+    this.cipher = (cipher != null) ? cipher : new NullCipher();
   }
 
   /**
@@ -110,52 +76,36 @@ public class CipherOutputStream extends FilterOutputStream
     super(out);
   }
 
-  // Instance methods.
-  // ------------------------------------------------------------------------
-
   /**
    * Close this output stream, and the sink output stream.
+   * <p>
+   * This method will first invoke the {@link Cipher#doFinal()} method of the
+   * underlying {@link Cipher}, and writes the output of that method to the
+   * sink output stream.
    *
-   * <p>This method will first invoke the {@link Cipher#doFinal()}
-   * method of the underlying {@link Cipher}, and writes the output of
-   * that method to the sink output stream.
-   *
-   * @throws java.io.IOException If an I/O error occurs, or if an error
-   *         is caused by finalizing the transformation.
+   * @throws IOException If an I/O error occurs, or if an error is caused by
+   *           finalizing the transformation.
    */
   public void close() throws IOException
   {
     try
       {
-        int len;
-        if (state != FIRST_TIME)
-          {
-            len = cipher.update(inBuffer[0], 0, inBuffer[0].length, outBuffer);
-            out.write(outBuffer, 0, len);
-          }
-        len = cipher.doFinal(inBuffer[0], 0, inLength, outBuffer);
-        out.write(outBuffer, 0, len);
+        out.write(cipher.doFinal());
+        out.flush();
+        out.close();
       }
-    catch (javax.crypto.IllegalBlockSizeException ibse)
+    catch (Exception cause)
       {
-        throw new IOException(ibse.toString());
+        IOException ioex = new IOException(String.valueOf(cause));
+        ioex.initCause(cause);
+        throw ioex;
       }
-    catch (javax.crypto.BadPaddingException bpe)
-      {
-        throw new IOException(bpe.toString());
-      }
-    catch (ShortBufferException sbe)
-      {
-        throw new IOException(sbe.toString());
-      }
-    out.flush();
-    out.close();
   }
 
   /**
    * Flush any pending output.
    *
-   * @throws java.io.IOException If an I/O error occurs.
+   * @throws IOException If an I/O error occurs.
    */
   public void flush() throws IOException
   {
@@ -166,38 +116,20 @@ public class CipherOutputStream extends FilterOutputStream
    * Write a single byte to the output stream.
    *
    * @param b The next byte.
-   * @throws java.io.IOException If an I/O error occurs, or if the
-   *         underlying cipher is not in the correct state to transform
-   *         data.
+   * @throws IOException If an I/O error occurs, or if the underlying cipher is
+   *           not in the correct state to transform data.
    */
   public void write(int b) throws IOException
   {
-    if (isStream)
-      {
-        byte[] buf = new byte[] { (byte) b };
-        try
-          {
-            cipher.update(buf, 0, 1, buf, 0);
-          }
-        catch (ShortBufferException sbe)
-          {
-            throw new IOException(sbe.toString());
-          }
-        out.write(buf);
-        return;
-      }
-    inBuffer[1][inLength++] = (byte) b;
-    if (inLength == inBuffer[1].length)
-      process();
+    write(new byte[] { (byte) b }, 0, 1);
   }
 
   /**
    * Write a byte array to the output stream.
    *
    * @param buf The next bytes.
-   * @throws java.io.IOException If an I/O error occurs, or if the
-   *         underlying cipher is not in the correct state to transform
-   *         data.
+   * @throws IOException If an I/O error occurs, or if the underlying cipher is
+   *           not in the correct state to transform data.
    */
   public void write(byte[] buf) throws IOException
   {
@@ -210,59 +142,11 @@ public class CipherOutputStream extends FilterOutputStream
    * @param buf The next bytes.
    * @param off The offset in the byte array to start.
    * @param len The number of bytes to write.
-   * @throws java.io.IOException If an I/O error occurs, or if the
-   *         underlying cipher is not in the correct state to transform
-   *         data.
+   * @throws IOException If an I/O error occurs, or if the underlying cipher is
+   *           not in the correct state to transform data.
    */
   public void write(byte[] buf, int off, int len) throws IOException
   {
-    if (isStream)
-      {
-        out.write(cipher.update(buf, off, len));
-        return;
-      }
-    int count = 0;
-    while (count < len)
-      {
-        int l = Math.min(inBuffer[1].length - inLength, len - count);
-        System.arraycopy(buf, off+count, inBuffer[1], inLength, l);
-        count += l;
-        inLength += l;
-        if (inLength == inBuffer[1].length)
-          process();
-      }
-  }
-
-  // Own method.
-  // -------------------------------------------------------------------------
-
-  private void process() throws IOException
-  {
-    if (state == SECOND_TIME)
-      {
-        state = SEASONED;
-      }
-    else
-      {
-        byte[] temp = inBuffer[0];
-        inBuffer[0] = inBuffer[1];
-        inBuffer[1] = temp;
-      }
-    if (state == FIRST_TIME)
-      {
-        inLength = 0;
-        state = SECOND_TIME;
-        return;
-      }
-    try
-      {
-        cipher.update(inBuffer[0], 0, inBuffer[0].length, outBuffer);
-      }
-    catch (ShortBufferException sbe)
-      {
-        throw new IOException(sbe.toString());
-      }
-    out.write(outBuffer);
-    inLength = 0;
+    out.write(cipher.update(buf, off, len));
   }
 }
