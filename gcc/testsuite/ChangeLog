@@ -1,3 +1,10 @@
+2007-01-24  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.target/powerpc/darwin-ehreturn-1.c: New.
+	* g++.dg/eh/simd-2.C: Also run on Darwin.
+	* g++.dg/eh/simd-3.C: New.
+	* g++.dg/eh/simd-4.C: New.
+
 2007-01-25  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-prof/tree-prof.exp: Define _PROFILE_GENERATE
@@ -6,7 +13,7 @@
 
 2007-01-25  Razya Ladelsky  <razya@il.ibm.com>
 
-        * gcc.dg/ipa/ipa-1.c: Update scan tree dump.
+	* gcc.dg/ipa/ipa-1.c: Update scan tree dump.
 	* gcc.dg/ipa/ipa-2.c: Update scan tree dump.
 	* gcc.dg/ipa/ipa-3.c: Update scan tree dump.
 	* gcc.dg/ipa/ipa-4.c: Update scan tree dump.

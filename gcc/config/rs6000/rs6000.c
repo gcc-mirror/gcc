@@ -13020,6 +13020,13 @@ first_altivec_reg_to_save (void)
   if (! TARGET_ALTIVEC_ABI)
     return LAST_ALTIVEC_REGNO + 1;
 
+  /* On Darwin, the unwind routines are compiled without
+     TARGET_ALTIVEC, and use save_world to save/restore the 
+     altivec registers when necessary.  */
+  if (DEFAULT_ABI == ABI_DARWIN && current_function_calls_eh_return
+      && ! TARGET_ALTIVEC)
+    return FIRST_ALTIVEC_REGNO + 20;
+
   /* Find lowest numbered live register.  */
   for (i = FIRST_ALTIVEC_REGNO + 20; i <= LAST_ALTIVEC_REGNO; ++i)
     if (regs_ever_live[i])
@@ -13036,6 +13043,13 @@ static unsigned int
 compute_vrsave_mask (void)
 {
   unsigned int i, mask = 0;
+
+  /* On Darwin, the unwind routines are compiled without
+     TARGET_ALTIVEC, and use save_world to save/restore the 
+     call-saved altivec registers when necessary.  */
+  if (DEFAULT_ABI == ABI_DARWIN && current_function_calls_eh_return
+      && ! TARGET_ALTIVEC)
+    mask |= 0xFFF;
 
   /* First, find out if we use _any_ altivec registers.  */
   for (i = FIRST_ALTIVEC_REGNO; i <= LAST_ALTIVEC_REGNO; ++i)
@@ -13381,7 +13395,7 @@ rs6000_stack_info (void)
 	  /* Align stack so vector save area is on a quadword boundary.  */
 	  if (info_ptr->altivec_size != 0)
 	    info_ptr->altivec_padding_size
-	      = 16 - (-info_ptr->vrsave_save_offset % 16);
+	      = (-info_ptr->vrsave_save_offset) % 16;
 	  else
 	    info_ptr->altivec_padding_size = 0;
 
@@ -14529,7 +14543,8 @@ rs6000_emit_prologue (void)
 			|| cfun->machine->ra_need_lr);
 
   /* For V.4, update stack before we do any saving and set back pointer.  */
-  if (info->push_p
+  if (! WORLD_SAVE_P (info)
+      && info->push_p
       && (DEFAULT_ABI == ABI_V4
 	  || current_function_calls_eh_return))
     {
@@ -14554,11 +14569,13 @@ rs6000_emit_prologue (void)
       int i, j, sz;
       rtx treg;
       rtvec p;
+      rtx reg0;
 
       /* save_world expects lr in r0. */
+      reg0 = gen_rtx_REG (Pmode, 0);
       if (info->lr_save_p)
 	{
-	  insn = emit_move_insn (gen_rtx_REG (Pmode, 0),
+	  insn = emit_move_insn (reg0,
 				 gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
@@ -14575,7 +14592,7 @@ rs6000_emit_prologue (void)
 		  && (!current_function_calls_eh_return
 		       || info->ehrd_offset == -432)
 		  && info->vrsave_save_offset == -224
-		  && info->altivec_save_offset == (-224 -16 -192));
+		  && info->altivec_save_offset == -416);
 
       treg = gen_rtx_REG (SImode, 11);
       emit_move_insn (treg, GEN_INT (-info->total_size));
@@ -14584,7 +14601,7 @@ rs6000_emit_prologue (void)
 	 in R11.  It also clobbers R12, so beware!  */
 
       /* Preserve CR2 for save_world prologues */
-      sz = 6;
+      sz = 5;
       sz += 32 - info->first_gp_reg_save;
       sz += 64 - info->first_fp_reg_save;
       sz += LAST_ALTIVEC_REGNO - info->first_altivec_reg_save + 1;
@@ -14639,29 +14656,26 @@ rs6000_emit_prologue (void)
 
 	RTVEC_ELT (p, j++) = gen_rtx_SET (VOIDmode, mem, reg);
       }
-      /* Prevent any attempt to delete the setting of r0 and treg!  */
-      RTVEC_ELT (p, j++) = gen_rtx_USE (VOIDmode, gen_rtx_REG (Pmode, 0));
-      RTVEC_ELT (p, j++) = gen_rtx_USE (VOIDmode, treg);
-      RTVEC_ELT (p, j++) = gen_rtx_CLOBBER (VOIDmode, sp_reg_rtx);
+      /* Explain about use of R0.  */
+      if (info->lr_save_p)
+	{
+	  rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
+				   GEN_INT (info->lr_save_offset
+					    + sp_offset));
+	  rtx mem = gen_frame_mem (reg_mode, addr);
+	  
+	  RTVEC_ELT (p, j++) = gen_rtx_SET (VOIDmode, mem, reg0);
+	}
+      /* Explain what happens to the stack pointer.  */
+      {
+	rtx newval = gen_rtx_PLUS (Pmode, sp_reg_rtx, treg);
+	RTVEC_ELT (p, j++) = gen_rtx_SET (VOIDmode, sp_reg_rtx, newval);
+      }
 
       insn = emit_insn (gen_rtx_PARALLEL (VOIDmode, p));
       rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
-			    NULL_RTX, NULL_RTX);
-
-      if (current_function_calls_eh_return)
-	{
-	  unsigned int i;
-	  for (i = 0; ; ++i)
-	    {
-	      unsigned int regno = EH_RETURN_DATA_REGNO (i);
-	      if (regno == INVALID_REGNUM)
-		break;
-	      emit_frame_save (frame_reg_rtx, frame_ptr_rtx, reg_mode, regno,
-			       info->ehrd_offset + sp_offset
-			       + reg_size * (int) i,
-			       info->total_size);
-	    }
-	}
+			    treg, GEN_INT (-info->total_size));
+      sp_offset = info->total_size;
     }
 
   /* Save AltiVec registers if needed.  */
@@ -14890,7 +14904,7 @@ rs6000_emit_prologue (void)
 
   /* ??? There's no need to emit actual instructions here, but it's the
      easiest way to get the frame unwind information emitted.  */
-  if (!WORLD_SAVE_P (info) && current_function_calls_eh_return)
+  if (current_function_calls_eh_return)
     {
       unsigned int i, regno;
 

@@ -4,6 +4,7 @@
 // { dg-options "-O -w" { target { { i?86-*-* x86_64-*-* } && ilp32 } } }
 // { dg-options "-O -w" { target powerpc*-*-* } }
 // { dg-options "-O -w -maltivec" { target { powerpc*-*-linux* && powerpc_altivec_ok } } }
+// { dg-options "-O -w -maltivec" { target { powerpc*-*-darwin* && powerpc_altivec_ok } } }
 // { dg-xfail-if "" { "powerpc-*-eabispe*" "powerpc-ibm-aix*" } { "*" } { "" } }
 // { dg-do run }
 
