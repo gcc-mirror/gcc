@@ -176,7 +176,7 @@ struct resword
 #define D_EXT		0x01	/* GCC extension */
 #define D_ASM		0x02	/* in C99, but has a switch to turn it off */
 #define D_OBJC		0x04	/* Objective C++ only */
-#define D_CPP0X         0x08    /* C++0x only */
+#define D_CXX0X         0x08    /* C++0x only */
 
 CONSTRAINT(ridbits_fit, RID_LAST_MODIFIER < sizeof(unsigned long) * CHAR_BIT);
 
@@ -260,7 +260,7 @@ static const struct resword reswords[] =
   { "signed",		RID_SIGNED,	0 },
   { "sizeof",		RID_SIZEOF,	0 },
   { "static",		RID_STATIC,	0 },
-  { "static_assert",    RID_STATIC_ASSERT, D_CPP0X },
+  { "static_assert",    RID_STATIC_ASSERT, D_CXX0X },
   { "static_cast",	RID_STATCAST,	0 },
   { "struct",		RID_STRUCT,	0 },
   { "switch",		RID_SWITCH,	0 },
@@ -317,7 +317,7 @@ init_reswords (void)
   int mask = ((flag_no_asm ? D_ASM : 0)
 	      | D_OBJC
 	      | (flag_no_gnu_keywords ? D_EXT : 0)
-              | (flag_cpp0x ? 0 : D_CPP0X));
+              | (flag_cpp0x ? 0 : D_CXX0X));
 
   ridpointers = GGC_CNEWVEC (tree, (int) RID_MAX);
   for (i = 0; i < ARRAY_SIZE (reswords); i++)
