@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2006, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2007, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1649,7 +1649,7 @@ build_simple_component_ref (tree record_variable, tree component,
      Note that we don't need to warn since this will be done on trying
      to declare the object.  */
   if (TREE_CODE (DECL_FIELD_OFFSET (field)) == INTEGER_CST
-      && TREE_CONSTANT_OVERFLOW (DECL_FIELD_OFFSET (field)))
+      && TREE_OVERFLOW (DECL_FIELD_OFFSET (field)))
     return NULL_TREE;
 
   /* It would be nice to call "fold" here, but that can lose a type
