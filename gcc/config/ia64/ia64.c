@@ -9146,6 +9146,19 @@ ia64_init_builtins (void)
 	       IA64_BUILTIN_FLUSHRS);
 
 #undef def_builtin
+
+  if (TARGET_HPUX)
+    {
+      if (built_in_decls [BUILT_IN_FINITE])
+	set_user_assembler_name (built_in_decls [BUILT_IN_FINITE],
+	  "_Isfinite");
+      if (built_in_decls [BUILT_IN_FINITEF])
+	set_user_assembler_name (built_in_decls [BUILT_IN_FINITEF],
+	  "_Isfinitef");
+      if (built_in_decls [BUILT_IN_FINITEL])
+	set_user_assembler_name (built_in_decls [BUILT_IN_FINITEL],
+	  "_Isfinitef128");
+    }
 }
 
 rtx
