@@ -1,3 +1,10 @@
+2007-01-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/30447
+	* builtins.c (fold_builtin_cabs): Use MPFR to evaluate a
+	constant argument to cabs and do it without checking for
+	-funsafe-math-optimizations.
+
 2007-01-24  Douglas Gregor  <dgregor@osl.iu.edu>
 
 	* c-common.h (RID_FIRST_CXX0X): New.

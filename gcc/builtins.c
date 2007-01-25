@@ -7021,7 +7021,7 @@ fold_fixed_mathfn (tree fndecl, tree arglist)
 static tree
 fold_builtin_cabs (tree arglist, tree type, tree fndecl)
 {
-  tree arg;
+  tree arg, res;
 
   if (!arglist || TREE_CHAIN (arglist))
     return NULL_TREE;
@@ -7031,27 +7031,12 @@ fold_builtin_cabs (tree arglist, tree type, tree fndecl)
       || TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) != REAL_TYPE)
     return NULL_TREE;
 
-  /* Evaluate cabs of a constant at compile-time.  */
-  if (flag_unsafe_math_optimizations
-      && TREE_CODE (arg) == COMPLEX_CST
-      && TREE_CODE (TREE_REALPART (arg)) == REAL_CST
-      && TREE_CODE (TREE_IMAGPART (arg)) == REAL_CST
-      && !TREE_OVERFLOW (TREE_REALPART (arg))
-      && !TREE_OVERFLOW (TREE_IMAGPART (arg)))
-    {
-      REAL_VALUE_TYPE r, i;
-
-      r = TREE_REAL_CST (TREE_REALPART (arg));
-      i = TREE_REAL_CST (TREE_IMAGPART (arg));
-
-      real_arithmetic (&r, MULT_EXPR, &r, &r);
-      real_arithmetic (&i, MULT_EXPR, &i, &i);
-      real_arithmetic (&r, PLUS_EXPR, &r, &i);
-      if (real_sqrt (&r, TYPE_MODE (type), &r)
-	  || ! flag_trapping_math)
-	return build_real (type, r);
-    }
-
+  /* Calculate the result when the argument is a constant.  */
+  if (TREE_CODE (arg) == COMPLEX_CST
+      && (res = do_mpfr_arg2 (TREE_REALPART (arg), TREE_IMAGPART (arg),
+			      type, mpfr_hypot)))
+    return res;
+  
   /* If either part is zero, cabs is fabs of the other.  */
   if (TREE_CODE (arg) == COMPLEX_EXPR
       && real_zerop (TREE_OPERAND (arg, 0)))
