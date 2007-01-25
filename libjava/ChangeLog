@@ -1,5 +1,10 @@
 2007-01-24  Keith Seitz  <keiths@redhat.com>
 
+	* link.cc (_Jv_Linker::wait_for_state): Add JVMTI
+	CLASS_PREPARE notification.
+
+2007-01-24  Keith Seitz  <keiths@redhat.com>
+
 	* interpret.cc: Include gnu/gcj/jvmti/Breakpoint.h,
 	gnu/gcj/jvmti/BreakpointManager.h, jvmti.h, and jvmti-int.h
 	* interpret-run.cc: Implement insn_breakpoint.
