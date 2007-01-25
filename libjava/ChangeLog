@@ -1,3 +1,13 @@
+2007-01-25  Andrew Haley  <aph@redhat.com>
+
+	* configure, Makefile.in, include/config.h.in: Rebuilt.
+	* Makefile.am (libgcj_la_LIBADD): Removed $(LIBMAGIC).
+	* configure.ac: Don't check for libmagic.
+	* java/net/natVMURLConnection.cc (p_magic_open, p_magic_load,
+	p_magic_close, p_magic_buffer): New globals.
+	(init): Look up 'magic' functions.
+	(guessContentTypeFromBuffer): Updated.
+
 2007-01-25  Keith Seitz  <keiths@redhat.com>
 
 	* jvmti.cc (_Jv_JVMTI_GetMethodName): New function.

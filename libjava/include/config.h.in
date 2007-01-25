@@ -187,9 +187,6 @@
 /* Define to 1 if you have the <magic.h> header file. */
 #undef HAVE_MAGIC_H
 
-/* Define if you have magic_open(). */
-#undef HAVE_MAGIC_OPEN
-
 /* Define to 1 if you have the `memcpy' function. */
 #undef HAVE_MEMCPY
 
