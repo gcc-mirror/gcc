@@ -9058,6 +9058,29 @@ fold_builtin_fmin_fmax (tree arglist, tree type, bool max)
   return NULL_TREE;
 }
 
+/* Fold a call to builtin carg(a+bi) -> atan2(b,a).  */
+
+static tree
+fold_builtin_carg(tree arglist, tree type)
+{
+  if (validate_arglist (arglist, COMPLEX_TYPE, VOID_TYPE))
+    {
+      tree atan2_fn = mathfn_built_in (type, BUILT_IN_ATAN2);
+      
+      if (atan2_fn)
+        {
+	  tree arg = builtin_save_expr (TREE_VALUE (arglist));
+	  tree r_arg = fold_build1 (REALPART_EXPR, type, arg);
+	  tree i_arg = fold_build1 (IMAGPART_EXPR, type, arg);
+	  tree newarglist = tree_cons (NULL_TREE, i_arg,
+				       build_tree_list (NULL_TREE, r_arg));
+	  return build_function_call_expr (atan2_fn, newarglist);
+	}
+    }
+  
+  return NULL_TREE;
+}
+
 /* Fold a call to __builtin_isnan(), __builtin_isinf, __builtin_finite.
    EXP is the CALL_EXPR for the call.  */
 
@@ -9338,6 +9361,9 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
 
     CASE_FLT_FN (BUILT_IN_CABS):
       return fold_builtin_cabs (arglist, type, fndecl);
+
+    CASE_FLT_FN (BUILT_IN_CARG):
+      return fold_builtin_carg (arglist, type);
 
     CASE_FLT_FN (BUILT_IN_SQRT):
       return fold_builtin_sqrt (arglist, type);
