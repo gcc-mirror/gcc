@@ -1,5 +1,5 @@
 /* jvmti-int.h -- Internal JVMTI definitions
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -82,4 +82,7 @@ namespace JVMTI
    For speed, this function should only be called after 
    JVMTI_REQUESTED_EVENT is checked. */
 extern void _Jv_JVMTI_PostEvent (jvmtiEvent type, jthread event_thread,				 ...);
+// Returns the jvmtiEnv used by the JDWP backend
+extern jvmtiEnv *_Jv_GetJDWP_JVMTIEnv (void);
+
 #endif /* __GCJ_JVMTI_INT_H__ */

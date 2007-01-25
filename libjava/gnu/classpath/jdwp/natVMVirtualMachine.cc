@@ -48,6 +48,12 @@ static void JNICALL jdwpVMInitCB (jvmtiEnv *, JNIEnv *, jthread);
 // JVMTI environment
 static jvmtiEnv *_jdwp_jvmtiEnv;
 
+jvmtiEnv *
+_Jv_GetJDWP_JVMTIEnv (void)
+{
+  return _jdwp_jvmtiEnv;
+}
+
 void
 gnu::classpath::jdwp::VMVirtualMachine::initialize ()
 {
