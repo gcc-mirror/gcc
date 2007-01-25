@@ -1,3 +1,9 @@
+2007-01-24  Kyle Galloway  <kgallowa@redhat.com>
+
+    * libjava/testsuite/libjava.jvmti/jvmti-interp.exp: New file.
+    * libjava/testsuite/libjava.jvmti/interp: New folder.
+    * libjava/testsuite/lib/libjava.exp (exec_gij): New Method.
+        
 2007-01-24  Keith Seitz  <keiths@redhat.com>
 
 	* link.cc (_Jv_Linker::wait_for_state): Add JVMTI
