@@ -568,6 +568,48 @@ _Jv_JVMTI_IsFieldSynthetic (MAYBE_UNUSED jvmtiEnv *env, jclass klass,
 }
 
 static jvmtiError JNICALL
+_Jv_JVMTI_GetMethodName (MAYBE_UNUSED jvmtiEnv *env, jmethodID method,
+			 char **name_ptr, char **signature_ptr,
+			 char **generic_ptr)
+{
+  REQUIRE_PHASE (env, JVMTI_PHASE_START | JVMTI_PHASE_LIVE);
+
+  if (method == NULL)
+    return JVMTI_ERROR_INVALID_METHODID;
+
+  if (name_ptr != NULL)
+    {
+      int len = static_cast<int> (method->name->len ());
+      *name_ptr = (char *) _Jv_MallocUnchecked (len + 1);
+      if (*name_ptr == NULL)
+	return JVMTI_ERROR_OUT_OF_MEMORY;
+      strncpy (*name_ptr, method->name->chars (), len);
+      (*name_ptr)[len] = '\0';
+    }
+
+  if (signature_ptr != NULL)
+    {
+      int len = static_cast<int> (method->signature->len ());
+      *signature_ptr = (char *) _Jv_MallocUnchecked (len + 1);
+      if (*signature_ptr == NULL)
+	{
+	  if (name_ptr != NULL)
+	    _Jv_Free (*name_ptr);
+	  return JVMTI_ERROR_OUT_OF_MEMORY;
+	}
+      strncpy (*signature_ptr, method->signature->chars (), len);
+      (*signature_ptr)[len] = '\0';
+    }
+
+  if (generic_ptr != NULL)
+    {
+      *generic_ptr = NULL;
+    }
+
+  return JVMTI_ERROR_NONE;
+}
+
+static jvmtiError JNICALL
 _Jv_JVMTI_GetMethodModifiers (MAYBE_UNUSED jvmtiEnv *env, jmethodID method,
 			      jint *result)
 {
@@ -1497,7 +1539,7 @@ struct _Jv_jvmtiEnv _Jv_JVMTI_Interface =
   UNIMPLEMENTED,		// GetFieldDeclaringClass
   _Jv_JVMTI_GetFieldModifiers,	// GetFieldModifiers
   _Jv_JVMTI_IsFieldSynthetic,	// IsFieldSynthetic
-  UNIMPLEMENTED,		// GetMethodName
+  _Jv_JVMTI_GetMethodName,	// GetMethodName
   _Jv_JVMTI_GetMethodDeclaringClass,  // GetMethodDeclaringClass
   _Jv_JVMTI_GetMethodModifiers,	// GetMethodModifers
   RESERVED,			// reserved67
