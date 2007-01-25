@@ -1,6 +1,6 @@
 // interpret-run.cc - Code to interpret bytecode
 
-/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -2466,7 +2466,32 @@ details.  */
 
     insn_breakpoint:
       {
-	// nothing just yet
+	JvAssert (JVMTI_REQUESTED_EVENT (Breakpoint));
+
+	// Send JVMTI notification
+	using namespace ::java::lang;
+	jmethodID method = meth->self;
+	jlocation location = meth->insn_index (pc - 1);
+	Thread *thread = Thread::currentThread ();
+	JNIEnv *jni_env = _Jv_GetCurrentJNIEnv ();
+
+	_Jv_JVMTI_PostEvent (JVMTI_EVENT_BREAKPOINT, thread, jni_env,
+			     method, location);
+
+	// Continue execution
+	using namespace gnu::gcj::jvmti;
+	Breakpoint *bp
+	  = BreakpointManager::getBreakpoint (reinterpret_cast<jlong> (method),
+					      location);
+	JvAssert (bp != NULL);
+
+	pc_t opc = reinterpret_cast<pc_t> (bp->getInsn ());
+
+#ifdef DIRECT_THREADED
+	goto *(opc->insn);
+#else
+	goto *(insn_target[*opc]);
+#endif
       }
     }
   catch (java::lang::Throwable *ex)

@@ -1,6 +1,6 @@
 // interpret.cc - Code for the interpreter
 
-/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -37,7 +37,12 @@ details.  */
 #include <execution.h>
 #include <java/lang/reflect/Modifier.h>
 
+#include <jvmti.h>
+#include "jvmti-int.h"
+
 #include <gnu/classpath/jdwp/Jdwp.h>
+#include <gnu/gcj/jvmti/Breakpoint.h>
+#include <gnu/gcj/jvmti/BreakpointManager.h>
 
 #ifdef INTERPRETER
 
