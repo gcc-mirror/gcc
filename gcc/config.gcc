@@ -1410,7 +1410,7 @@ ia64*-*-hpux*)
 	tmake_file="ia64/t-ia64 ia64/t-hpux"
 	target_cpu_default="MASK_GNU_AS"
 	case x$enable_threads in
-	xyes | xposix )
+	x | xyes | xposix )
 		thread_file=posix
 		;;
 	esac

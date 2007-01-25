@@ -1,5 +1,9 @@
 2007-01-25  Steve Ellcey  <sje@cup.hp.com>
 
+	* config.gcc (ia64*-*-hpux*): Make posix threads the default.
+
+2007-01-25  Steve Ellcey  <sje@cup.hp.com>
+
 	PR other/30182
 	* config/pa/pa.c (pa_init_builtins): Set asm names for finite routines.
 	* config/ia64/ia64.c (ia64_init_builtins):  Ditto.
