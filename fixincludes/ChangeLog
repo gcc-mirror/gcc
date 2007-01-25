@@ -1,3 +1,10 @@
+2007-01-25  Daniel Franke <franke.daniel@gmail.com>
+
+	PR target/30272
+	* inclhack.def(broken_cabs): Also remove definition of cabsl.
+	* fixincl.x: Regenerate.
+	* tests/base/math.h: Update.
+
 2007-01-05  Bruce Korb <bkorb@gnu.org>, 
             Daniel Franke <franke.daniel@gmail.com>
 
