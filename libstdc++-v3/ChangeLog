@@ -1,3 +1,8 @@
+2007-01-25  Nathan Myers  <ncm@cantrip.org>
+
+	* include/bits/streambuf_iterator.h (istreambuf_iterator<>::equal):
+	Simplify.
+
 2007-01-24   Steve LoBasso <slobasso@yahoo.com>
 	     Paolo Carlini  <pcarlini@suse.de>
 
