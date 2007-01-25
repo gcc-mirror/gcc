@@ -1,3 +1,13 @@
+2007-01-25  Razya Ladelsky  <razya@il.ibm.com>
+
+        * gcc.dg/ipa/ipa-1.c: Update scan tree dump.
+	* gcc.dg/ipa/ipa-2.c: Update scan tree dump.
+	* gcc.dg/ipa/ipa-3.c: Update scan tree dump.
+	* gcc.dg/ipa/ipa-4.c: Update scan tree dump.
+	* gcc.dg/ipa/ipa-5.c: Update scan tree dump.
+	* gcc.dg/ipa/ipa-6.c: Update scan tree dump.
+	* gcc.dg/ipa/ipa-7.c: New testcase.
+
 2007-01-24  Douglas Gregor  <dgregor@osl.iu.edu>
 
 	* g++.dg/cpp0x/warn_cxx0x.C: New.

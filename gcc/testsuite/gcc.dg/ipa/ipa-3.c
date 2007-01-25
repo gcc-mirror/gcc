@@ -25,5 +25,5 @@ int main ()
 
 
 /* { dg-final { scan-ipa-dump-times "versioned function" 2 "cp"  } } */
-/* { dg-final { scan-ipa-dump-times "propagating const" 3 "cp"  } } */
+/* { dg-final { scan-ipa-dump-times "replacing param with const" 3 "cp"  } } */
 /* { dg-final { cleanup-ipa-dump "cp" } } */

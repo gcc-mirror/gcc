@@ -3,15 +3,19 @@
 /* { dg-skip-if "PR 25442" { "*-*-*" } { "-fpic" "-fPIC" } { "" } } */
 
 #include <stdio.h>
+void send_addr (int *);
 int g (int b, int c)
 {
   printf ("%d %d\n", b, c);
 }
 int f (int a)
 {
-  /* a is modified.  */
-  if (a++ > 0)
+  if (a > 0)
     g (a, 3);
+  else
+    g (a, 5); 	
+   
+  send_addr (&a);
 }
 int main ()
 {
@@ -20,6 +24,8 @@ int main ()
 }
 
 
-/* { dg-final { scan-ipa-dump-times "versioned function" 2 "cp"  } } */
-/* { dg-final { scan-ipa-dump-times "replacing param with const" 2 "cp"  } } */
+/* { dg-final { scan-ipa-dump-times "versioned function" 1 "cp"  } } */
+/* { dg-final { scan-ipa-dump-times "propagating const" 1 "cp"  } } */
 /* { dg-final { cleanup-ipa-dump "cp" } } */
+
+
