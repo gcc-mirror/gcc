@@ -1,6 +1,6 @@
 // natVMMethod.cc -- native support for VMMethod
 
-/* Copyright (C) 2006 Free Software Foundation
+/* Copyright (C) 2006, 2007 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -11,28 +11,46 @@ details.  */
 #include <config.h>
 #include <gcj/cni.h>
 #include <java-interp.h>
+#include <jvmti.h>
+#include "jvmti-int.h"
 
 #include <gnu/classpath/jdwp/VMMethod.h>
 #include <gnu/classpath/jdwp/exception/JdwpInternalErrorException.h>
 #include <gnu/classpath/jdwp/util/LineTable.h>
 #include <gnu/classpath/jdwp/util/VariableTable.h>
 
-java::lang::String*
+jstring
 gnu::classpath::jdwp::VMMethod::getName ()
 {
-  return NULL;
+  jvmtiEnv *env = _Jv_GetJDWP_JVMTIEnv ();
+  jmethodID method = reinterpret_cast<jmethodID> (_methodId);
+  char *name;
+  env->GetMethodName (method, &name, NULL, NULL);
+  jstring string = JvNewStringUTF (name);
+  env->Deallocate (reinterpret_cast<unsigned char *> (name));
+  return string;
 }
 
-java::lang::String*
+jstring
 gnu::classpath::jdwp::VMMethod::getSignature ()
 {
-  return NULL;
+  jvmtiEnv *env = _Jv_GetJDWP_JVMTIEnv ();
+  jmethodID method = reinterpret_cast<jmethodID> (_methodId);
+  char *signature;
+  env->GetMethodName (method, NULL, &signature, NULL);
+  jstring string = JvNewStringUTF (signature);
+  env->Deallocate (reinterpret_cast<unsigned char *> (signature));
+  return string;
 }
 
 jint
 gnu::classpath::jdwp::VMMethod::getModifiers ()
 {
-  return 0;
+  jvmtiEnv *env = _Jv_GetJDWP_JVMTIEnv ();
+  jmethodID method = reinterpret_cast<jmethodID> (_methodId);
+  jint flags;
+  env->GetMethodModifiers (method, &flags);
+  return flags;
 }
 
 gnu::classpath::jdwp::util::LineTable *

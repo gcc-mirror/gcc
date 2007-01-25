@@ -1,3 +1,12 @@
+2007-01-25  Keith Seitz  <keiths@redhat.com>
+
+	* include/jvmti-int.h (_Jv_GetJDWP_JVMTIEnv): Declare.
+	* gnu/classpath/jdwp/natVMVirtualMachine.cc
+	(_Jv_GetJDWP_JVMTIEnv): New function.
+	* gnu/classpath/jdwp/natVMMethod.cc (getName): Implement.
+	(getSignature): Implement.
+	(getModifiers): Implement.
+
 2007-01-25  Andrew Haley  <aph@redhat.com>
 
 	* configure, Makefile.in, include/config.h.in: Rebuilt.
