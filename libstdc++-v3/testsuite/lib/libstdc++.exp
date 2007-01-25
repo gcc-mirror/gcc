@@ -1,6 +1,6 @@
 # libstdc++ "tool init file" for DejaGNU
 
-# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 # Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -359,6 +359,7 @@ proc v3_target_compile_as_c { source dest type options } {
     global wrap_flags
     global includes
     global flags_file
+    global blddir
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
         lappend options "libs=${gluefile}"
@@ -383,7 +384,13 @@ proc v3_target_compile_as_c { source dest type options } {
 	set includesbase "${comp_base_dir}/include/c++/${version}"
 	set includestarget "${includesbase}/${machine}"
 	set cc_final [concat $cc_final "-I$includesbase -I$includestarget"]
+
+        set libsup "${comp_base_dir}/lib"
+    } else {
+        set libsup "${blddir}/libsupc++/.libs"
     }
+
+    set cc_final [concat $cc_final "-L$libsup"]
 
     lappend options "compiler=$cc_final"
     lappend options "timeout=600"

@@ -1,3 +1,11 @@
+2007-01-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/29722 continued
+	* testsuite/lib/libstdc++.exp (v3_target_compile_as_c): Add
+	libsupc++ library directory.
+	* testsuite/abi/cxx_runtime_only_linkage.cc: Remove hard-coded
+	path specification.
+
 2007-01-21  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/29989
