@@ -1,3 +1,7 @@
+2007-01-24  Douglas Gregor  <dgregor@osl.iu.edu>
+
+	* g++.dg/cpp0x/warn_cxx0x.C: New.
+
 2007-01-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/builtins-20.c: Test builtin carg.
