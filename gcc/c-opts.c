@@ -417,6 +417,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 	  /* C++-specific warnings.  */
 	  warn_reorder = value;
 	  warn_nontemplate_friend = value;
+          warn_cxx0x_compat = value;
           if (value > 0)
             warn_write_strings = true;
 	}

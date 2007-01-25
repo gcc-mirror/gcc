@@ -132,6 +132,9 @@ Wc++-compat
 C Var(warn_cxx_compat)
 Warn about C constructs that are not in the common subset of C and C++
 
+Wc++0x-compat
+C++ ObjC++ Var(warn_cxx0x_compat)
+Warn about C++ constructs whose meaning differs between ISO C++ 1998 and ISO C++ 200x
 
 Wcast-qual
 C ObjC C++ ObjC++ Var(warn_cast_qual)
