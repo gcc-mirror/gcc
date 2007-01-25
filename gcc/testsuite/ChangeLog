@@ -1,3 +1,11 @@
+2007-01-25  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR fortran/30437
+	* gcc.dg/Wall.c: New.
+	* gcc.dg/Wno-all.c: New.
+	* gfortran.dg/Wall.f90: New.
+	* gfortran.dg/Wno-all.f90: New.
+	
 2007-01-24  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.target/powerpc/darwin-ehreturn-1.c: New.
