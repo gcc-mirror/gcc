@@ -1,3 +1,7 @@
+2007-01-24  Geoffrey Keating  <geoffk@apple.com>
+
+	* unwind-dw2.c (execute_stack_op): Handle DW_OP_swap.
+
 2007-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/27416

@@ -628,6 +628,16 @@ execute_stack_op (const unsigned char *op_ptr, const unsigned char *op_end,
 	  result = stack[stack_elt - 2];
 	  break;
 
+	case DW_OP_swap:
+	  {
+	    _Unwind_Word t;
+	    gcc_assert (stack_elt >= 2);
+	    t = stack[stack_elt - 1];
+	    stack[stack_elt - 1] = stack[stack_elt - 2];
+	    stack[stack_elt - 2] = t;
+	    goto no_push;
+	  }
+
 	case DW_OP_rot:
 	  {
 	    _Unwind_Word t1, t2, t3;
