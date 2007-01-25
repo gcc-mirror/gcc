@@ -494,6 +494,50 @@ proc gcj_invoke {program expectFile ld_library_additions} {
   }
 }
 
+proc exec_gij {jarfile expectFile ld_library_additions} {
+  global env
+  global libjava_ld_library_path
+  global ld_library_path
+
+  set ld_library_path "$libjava_ld_library_path"
+  if {[llength $ld_library_additions] > 0} {
+  append ld_library_path :[join $ld_library_additions :]
+  }
+	
+  set_ld_library_path_env_vars
+  if [info exists env(LD_LIBRARY_PATH)] {
+    verbose "LD_LIBRARY_PATH=$env(LD_LIBRARY_PATH)"
+  }
+  
+  set gij [libjava_find_gij]
+  set classname [file rootname [file tail $jarfile]]
+	
+  set result [libjava_load $gij "-cp $jarfile" "$classname"]
+  set status [lindex $result 0]
+  set output [lindex $result 1]
+
+  restore_ld_library_path_env_vars
+
+  if {$status != "pass"} {
+    verbose "got $output"
+    fail "$classname run"
+    untested "$classname output"
+    return 0
+  }
+
+  set id [open $expectFile r]
+  set expected [read $id]
+  close $id
+
+  if [! [string compare $output $expected]] {
+    pass "$classname output"
+    return 1
+  } else {
+	fail "$classname output"
+	return 0
+  }
+}
+
 # Invoke a program and check its output.  EXECUTABLE is the program;
 # ARGS are the arguments to the program.  Returns 1 if tests passed
 # (or things were left untested), 0 otherwise.
