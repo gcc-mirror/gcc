@@ -52,13 +52,24 @@ AC_ARG_ENABLE(shared,
 ], [enable_shared=yes])
 AC_SUBST(enable_shared)
 
+AC_MSG_CHECKING([for --enable-version-specific-runtime-libs])
+AC_ARG_ENABLE(version-specific-runtime-libs,
+[  --enable-version-specific-runtime-libs    Specify that runtime libraries should be installed in a compiler-specific directory ],
+[case "$enableval" in
+ yes) version_specific_libs=yes ;;
+ no)  version_specific_libs=no ;;
+ *)   AC_MSG_ERROR([Unknown argument to enable/disable version-specific libs]);;
+ esac],
+[version_specific_libs=no])
+AC_MSG_RESULT($version_specific_libs)
+
 AC_ARG_WITH(slibdir,
 [  --with-slibdir=DIR      shared libraries in DIR [LIBDIR]],
 slibdir="$with_slibdir",
-if test "${enable_version_specific_runtime_libs+set}" = set; then
+if test "${version_specific_libs}" = yes; then
   slibdir='$(libsubdir)'
-elif test "$host" != "$target"; then
-  slibdir='$(build_tooldir)/lib'
+elif test -n "$with_cross_host" && test x"$with_cross_host" != x"no"; then
+  slibdir='$(exec_prefix)/$(host_noncanonical)/lib'
 else
   slibdir='$(libdir)'
 fi)
