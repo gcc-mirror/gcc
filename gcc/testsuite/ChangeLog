@@ -1,3 +1,17 @@
+2007-01-25  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2006-08-14  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/28703
+	* gcc.c-torture/execute/pr28651.c: Do not use argc
+	to avoid optimization, instead forbid inlining.
+
+	2006-08-11  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/28651
+	* gcc.c-torture/execute/pr28651.c: New testcase.
+
 2007-01-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR testsuite/12325
