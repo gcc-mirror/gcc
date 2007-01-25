@@ -1,3 +1,12 @@
+2007-01-24  Douglas Gregor  <dgregor@osl.iu.edu>
+
+	* lex.c (D_CPP0X): Rename.
+	(D_CXX0X): To this.
+	(reswords): D_CPP0X -> D_CXX0X.
+	(init_reswords): Ditto.
+	* parser.c (cp_lexer_get_preprocessor_token): Warn about the use
+	of C++0x keywords as identifiers.
+
 2007-01-23  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/27492
