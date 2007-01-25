@@ -16,29 +16,35 @@ extern double cos (double);
 extern double sin (double);
 extern double tan (double);
 extern double fabs (double);
+extern double atan2 (double, double);
 extern double copysign (double, double);
 extern double fmin (double, double);
 extern double fmax (double, double);
 extern double hypot (double, double);
 extern double pure (double) __attribute__ ((__pure__));
+extern double carg (__complex__ double);
 extern float cosf (float);
 extern float sinf (float);
 extern float tanf (float);
 extern float fabsf (float);
+extern float atan2f (float, float);
 extern float copysignf (float, float);
 extern float fminf (float, float);
 extern float fmaxf (float, float);
 extern float hypotf (float, float);
 extern float puref (float) __attribute__ ((__pure__));
+extern float cargf (__complex__ float);
 extern long double cosl (long double);
 extern long double sinl (long double);
 extern long double tanl (long double);
 extern long double fabsl (long double);
+extern long double atan2l (long double, long double);
 extern long double copysignl (long double, long double);
 extern long double fminl (long double, long double);
 extern long double fmaxl (long double, long double);
 extern long double hypotl (long double, long double);
 extern long double purel (long double) __attribute__ ((__pure__));
+extern long double cargl (__complex__ long double);
 
 extern void link_error(void);
 
@@ -184,6 +190,12 @@ void test2(double x, double y)
     link_error ();
   
   if (fmax (x,fmin(y,x)) != x)
+    link_error ();
+}
+
+void test3(__complex__ double z)
+{
+  if (carg(z) != atan2(__imag__ z, __real__ z))
     link_error ();
 }
 
@@ -334,6 +346,11 @@ void test2f(float x, float y)
     link_error ();
 }
 
+void test3f(__complex__ float z)
+{
+  if (cargf(z) != atan2f(__imag__ z, __real__ z))
+    link_error ();
+}
 
 void test1l(long double x)
 {
@@ -479,6 +496,12 @@ void test2l(long double x, long double y)
     link_error ();
   
   if (fmaxl (x,fminl(y,x)) != x)
+    link_error ();
+}
+
+void test3l(__complex__ long double z)
+{
+  if (cargl(z) != atan2l(__imag__ z, __real__ z))
     link_error ();
 }
 
