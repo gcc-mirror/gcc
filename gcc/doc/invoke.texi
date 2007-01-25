@@ -223,8 +223,8 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @gccoptlist{-fsyntax-only  -pedantic  -pedantic-errors @gol
 -w  -Wextra  -Wall  -Waggregate-return -Walways-true -Warray-bounds @gol
--Wno-attributes -Wc++-compat -Wcast-align  -Wcast-qual  -Wchar-subscripts @gol
--Wclobbered  -Wcomment @gol
+-Wno-attributes -Wc++-compat -Wc++0x-compat -Wcast-align  -Wcast-qual  @gol
+-Wchar-subscripts -Wclobbered  -Wcomment @gol
 -Wconversion  -Wno-deprecated-declarations @gol
 -Wdisabled-optimization  -Wno-div-by-zero  @gol
 -Wempty-body  -Wno-endif-labels @gol
@@ -3148,6 +3148,11 @@ For example, warn if @code{int malloc()} is cast to @code{anything *}.
 Warn about ISO C constructs that are outside of the common subset of
 ISO C and ISO C++, e.g.@: request for implicit conversion from
 @code{void *} to a pointer to non-@code{void} type.
+
+@item -Wc++0x-compat @r{(C++ and Objective-C++ only)}
+Warn about C++ constructs whose meaning differs between ISO C++ 1998 and
+ISO C++ 200x, e.g., identifiers in ISO C++ 1998 that will become keywords 
+in ISO C++ 200x.  This warning is enabled by @option{-Wall}.
 
 @item -Wcast-qual
 @opindex Wcast-qual

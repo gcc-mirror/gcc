@@ -1,3 +1,12 @@
+2007-01-24  Douglas Gregor  <dgregor@osl.iu.edu>
+
+	* c-common.h (RID_FIRST_CXX0X): New.
+	(RID_LAST_CXX0X): New.
+	* c-opts.c (c_common_handle_option): -Wc++0x-compat is triggered
+	by -Wall.
+	* c.opt (Wc++0x-compat): New.
+	* doc/invoke.texi (-Wc++0x-compat): Document.
+
 2007-01-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (fold_builtin_carg): New.
