@@ -1,3 +1,9 @@
+2007-01-25  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* configure.ac: Add --enable-version-specific-runtime-libs.
+	Correct $slibdir default.
+	* configure: Regenerated.
+
 2007-01-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/t-ldbl128: Always use -mlong-double-128.
