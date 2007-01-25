@@ -1,3 +1,18 @@
+2007-01-25  Razya Ladelsky  <razya@il.ibm.com>
+
+        * ipa-cp.c (ipcp_insert_stage, ipcp_driver): Support for SSA. 
+          (ipcp_driver): Change to static definition. 
+	  Add dumping of the ifunctions.
+          (constant_val_insert): Remove unused parameter. Support for SSA.
+          (ipcp_propagate_const): Support for SSA.
+          (ipcp_profile_bb_print): Print only analyzed nodes.
+          (ipcp_replace_map_create): Remove support for Fortran constant 
+	  for now.
+          * ipa-prop.c (ipa_method_modify_stmt, 
+	  ipa_callsite_compute_param): Support for SSA.
+          * ipa-prop.h (ipcp_driver): Remove declaration.
+          (IS_VALID_TREE_MAP_INDEX): Add define.
+ 
 2007-01-24  Geoffrey Keating  <geoffk@apple.com>
 
 	* unwind-dw2.c (execute_stack_op): Handle DW_OP_swap.
