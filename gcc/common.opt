@@ -197,6 +197,10 @@ Wvolatile-register-var
 Common Var(warn_register_var)
 Warn when a register variable is declared volatile
 
+Wcoverage-mismatch
+Common RejectNegative Var(warn_coverage_mismatch)
+Warn instead of error in case profiles in -fprofile-use do not match
+
 aux-info
 Common Separate
 -aux-info <file>	Emit declaration information into <file>

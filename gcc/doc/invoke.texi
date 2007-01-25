@@ -225,7 +225,7 @@ Objective-C and Objective-C++ Dialects}.
 -w  -Wextra  -Wall  -Waggregate-return -Walways-true -Warray-bounds @gol
 -Wno-attributes -Wc++-compat -Wc++0x-compat -Wcast-align  -Wcast-qual  @gol
 -Wchar-subscripts -Wclobbered  -Wcomment @gol
--Wconversion  -Wno-deprecated-declarations @gol
+-Wconversion -Wcoverage-mismatch -Wno-deprecated-declarations @gol
 -Wdisabled-optimization  -Wno-div-by-zero  @gol
 -Wempty-body  -Wno-endif-labels @gol
 -Werror  -Werror-* -Werror-implicit-function-declaration @gol
@@ -2281,6 +2281,20 @@ This option instructs the diagnostic machinery to add text to each
 diagnostic emitted, which indicates which command line option directly
 controls that diagnostic, when such an option is known to the
 diagnostic machinery.
+
+@item -Wcoverage-mismatch
+@opindex Wcoverage-mismatch
+Warn if feedback profiles do not match when using the
+@option{-fprofile-use} option.
+If a source file was changed between @option{-fprofile-gen} and
+@option{-fprofile-use}, the files with the profile feedback can fail
+to match the source file and GCC can not use the profile feedback
+information.  By default, GCC emits an error message in this case.
+The option @option{-Wcoverage-mismatch} emits a warning instead of an
+error.  GCC does not use appropriate feedback profiles, so using this
+option can result in poorly optimized code.  This option is useful
+only in the case of very minor changes such as bugfixes to an
+existing code-base.
 
 @end table
 
@@ -5613,6 +5627,10 @@ generally profitable only with profile feedback available.
 The following options are enabled: @code{-fbranch-probabilities}, @code{-fvpt},
 @code{-funroll-loops}, @code{-fpeel-loops}, @code{-ftracer}
 
+By default, GCC emits an error message if the feedback profiles do not
+match the source code.  This error can be turned into a warning by using
+@option{-Wcoverage-mismatch}.  Note this may result in poorly optimized
+code.
 @end table
 
 The following options control compiler behavior regarding floating

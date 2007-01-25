@@ -1,3 +1,9 @@
+2007-01-25  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-prof/tree-prof.exp: Define _PROFILE_GENERATE
+	and _PROFILE_USE.
+	* gcc.dg/tree-prof/wcoverage-mismatch.c: New testcase.
+
 2007-01-25  Razya Ladelsky  <razya@il.ibm.com>
 
         * gcc.dg/ipa/ipa-1.c: Update scan tree dump.
