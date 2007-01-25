@@ -1,5 +1,11 @@
 2007-01-24  Keith Seitz  <keiths@redhat.com>
 
+	* interpret.cc: Include gnu/gcj/jvmti/Breakpoint.h,
+	gnu/gcj/jvmti/BreakpointManager.h, jvmti.h, and jvmti-int.h
+	* interpret-run.cc: Implement insn_breakpoint.
+
+2007-01-24  Keith Seitz  <keiths@redhat.com>
+
 	* prims.cc (_Jv_RunMain): Send JVMTI event notifications
 	for VM_INIT and VM_DEATH instead of the JDWP notifications.
 
