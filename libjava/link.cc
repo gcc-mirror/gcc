@@ -33,6 +33,8 @@ details.  */
 #include <limits.h>
 #include <java-cpool.h>
 #include <execution.h>
+#include <jvmti.h>
+#include "jvmti-int.h"
 #include <java/lang/Class.h>
 #include <java/lang/String.h>
 #include <java/lang/StringBuffer.h>
@@ -1941,33 +1943,35 @@ _Jv_Linker::wait_for_state (jclass klass, int state)
   if (klass->state >= state)
     return;
 
-  JvSynchronize sync (klass);
-
-  // This is similar to the strategy for class initialization.  If we
-  // already hold the lock, just leave.
   java::lang::Thread *self = java::lang::Thread::currentThread();
-  while (klass->state <= state
-	 && klass->thread 
-	 && klass->thread != self)
-    klass->wait ();
 
-  java::lang::Thread *save = klass->thread;
-  klass->thread = self;
+  {
+    JvSynchronize sync (klass);
 
-  // Allocate memory for static fields and constants.
-  if (GC_base (klass) && klass->fields && ! GC_base (klass->fields))
-    {
-      jsize count = klass->field_count;
-      if (count)
-	{
-	  _Jv_Field* fields 
-	    = (_Jv_Field*) _Jv_AllocRawObj (count * sizeof (_Jv_Field));
-	  memcpy ((void*)fields,
-		  (void*)klass->fields,
-		  count * sizeof (_Jv_Field));
-	  klass->fields = fields;
-	}
-    }
+    // This is similar to the strategy for class initialization.  If we
+    // already hold the lock, just leave.
+    while (klass->state <= state
+	   && klass->thread 
+	   && klass->thread != self)
+      klass->wait ();
+
+    java::lang::Thread *save = klass->thread;
+    klass->thread = self;
+
+    // Allocate memory for static fields and constants.
+    if (GC_base (klass) && klass->fields && ! GC_base (klass->fields))
+      {
+	jsize count = klass->field_count;
+	if (count)
+	  {
+	    _Jv_Field* fields 
+	      = (_Jv_Field*) _Jv_AllocRawObj (count * sizeof (_Jv_Field));
+	    memcpy ((void*)fields,
+		    (void*)klass->fields,
+		    count * sizeof (_Jv_Field));
+	    klass->fields = fields;
+	  }
+      }
       
   // Print some debugging info if requested.  Interpreted classes are
   // handled in defineclass, so we only need to handle the two
@@ -1981,49 +1985,59 @@ _Jv_Linker::wait_for_state (jclass klass, int state)
       ++gcj::loadedClasses;
     }
 
-  try
+    try
+      {
+	if (state >= JV_STATE_LOADING && klass->state < JV_STATE_LOADING)
+	  {
+	    ensure_supers_installed (klass);
+	    klass->set_state(JV_STATE_LOADING);
+	  }
+
+	if (state >= JV_STATE_LOADED && klass->state < JV_STATE_LOADED)
+	  {
+	    ensure_method_table_complete (klass);
+	    klass->set_state(JV_STATE_LOADED);
+	  }
+
+	if (state >= JV_STATE_PREPARED && klass->state < JV_STATE_PREPARED)
+	  {
+	    ensure_fields_laid_out (klass);
+	    make_vtable (klass);
+	    layout_interface_methods (klass);
+	    prepare_constant_time_tables (klass);
+	    klass->set_state(JV_STATE_PREPARED);
+	  }
+
+	if (state >= JV_STATE_LINKED && klass->state < JV_STATE_LINKED)
+	  {
+	    if (gcj::verifyClasses)
+	      verify_class (klass);
+
+	    ensure_class_linked (klass);
+	    link_exception_table (klass);
+	    link_symbol_table (klass);
+	    klass->set_state(JV_STATE_LINKED);
+	  }
+      }
+    catch (java::lang::Throwable *exc)
+      {
+	klass->thread = save;
+	klass->set_state(JV_STATE_ERROR);
+	throw exc;
+      }
+
+    klass->thread = save;
+
+    if (klass->state == JV_STATE_ERROR)
+      throw new java::lang::LinkageError;
+  }
+
+  if (__builtin_expect (klass->state == JV_STATE_LINKED, false)
+      && state >= JV_STATE_LINKED
+      && JVMTI_REQUESTED_EVENT (ClassPrepare))
     {
-      if (state >= JV_STATE_LOADING && klass->state < JV_STATE_LOADING)
-	{
-	  ensure_supers_installed (klass);
-	  klass->set_state(JV_STATE_LOADING);
-	}
-
-      if (state >= JV_STATE_LOADED && klass->state < JV_STATE_LOADED)
-	{
-	  ensure_method_table_complete (klass);
-	  klass->set_state(JV_STATE_LOADED);
-	}
-
-      if (state >= JV_STATE_PREPARED && klass->state < JV_STATE_PREPARED)
-	{
-	  ensure_fields_laid_out (klass);
-	  make_vtable (klass);
-	  layout_interface_methods (klass);
-	  prepare_constant_time_tables (klass);
-	  klass->set_state(JV_STATE_PREPARED);
-	}
-
-      if (state >= JV_STATE_LINKED && klass->state < JV_STATE_LINKED)
-	{
-	  if (gcj::verifyClasses)
-	    verify_class (klass);
-
-	  ensure_class_linked (klass);
-	  link_exception_table (klass);
-	  link_symbol_table (klass);
-	  klass->set_state(JV_STATE_LINKED);
-	}
+      JNIEnv *jni_env = _Jv_GetCurrentJNIEnv ();
+      _Jv_JVMTI_PostEvent (JVMTI_EVENT_CLASS_PREPARE, self, jni_env,
+			   klass);
     }
-  catch (java::lang::Throwable *exc)
-    {
-      klass->thread = save;
-      klass->set_state(JV_STATE_ERROR);
-      throw exc;
-    }
-
-  klass->thread = save;
-
-  if (klass->state == JV_STATE_ERROR)
-    throw new java::lang::LinkageError;
 }
