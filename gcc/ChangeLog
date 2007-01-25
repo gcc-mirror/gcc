@@ -1,5 +1,7 @@
 2007-01-24  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-inline.c (cgraph_decide_inlining): Initialize initial_insns.
+
 	* ipa-inline.c (initial_insns, max_insns): Delete.
 	(compute_max_insns): New function.
 	(cgraph_decide_inlining_of_small_function): Use it; take minimal amount
