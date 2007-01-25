@@ -1,3 +1,10 @@
+2007-01-25  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR fortran/30437
+	* lang.opt (Wall): Remove RejectNegative.
+	* options.c (gfc_handle_option): Wall can be disabled.
+	(set_Wall): Add a parameter for disabling Wall.
+	
 2007-01-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/30532
