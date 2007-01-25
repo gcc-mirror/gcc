@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2006, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2007, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -2714,7 +2714,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	   of the subtype, but that causes problems with subtypes whose usage
 	   will raise Constraint_Error and with biased representation, so
 	   we don't.  */
-	gcc_assert (!TREE_CONSTANT_OVERFLOW (gnu_result));
+	gcc_assert (!TREE_OVERFLOW (gnu_result));
       }
       break;
 
@@ -2741,7 +2741,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	  gnu_result_type = get_unpadded_type (Etype (gnat_node));
 	  gnu_result = UI_To_gnu (Corresponding_Integer_Value (gnat_node),
 				  gnu_result_type);
-	  gcc_assert (!TREE_CONSTANT_OVERFLOW (gnu_result));
+	  gcc_assert (!TREE_OVERFLOW (gnu_result));
 	}
 
       /* We should never see a Vax_Float type literal, since the front end
@@ -3440,11 +3440,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	    tree gnu_old_lhs = gnu_lhs;
 	    gnu_lhs = convert (gnu_type, gnu_lhs);
 	    if (TREE_CODE (gnu_lhs) == INTEGER_CST && ignore_lhs_overflow)
-	      {
-		TREE_OVERFLOW (gnu_lhs) = TREE_OVERFLOW (gnu_old_lhs);
-		TREE_CONSTANT_OVERFLOW (gnu_lhs)
-		  = TREE_CONSTANT_OVERFLOW (gnu_old_lhs);
-	      }
+	      TREE_OVERFLOW (gnu_lhs) = TREE_OVERFLOW (gnu_old_lhs);
 	    gnu_rhs = convert (gnu_type, gnu_rhs);
 	  }
 
@@ -4343,7 +4339,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
   /* If the result is a constant that overflows, raise constraint error.  */
   else if (TREE_CODE (gnu_result) == INTEGER_CST
-      && TREE_CONSTANT_OVERFLOW (gnu_result))
+      && TREE_OVERFLOW (gnu_result))
     {
       post_error ("Constraint_Error will be raised at run-time?", gnat_node);
 

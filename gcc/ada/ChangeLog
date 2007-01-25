@@ -1,3 +1,12 @@
+2007-01-24  Roger Sayle  <roger@eyesopen.com>
+
+	* decl.c (gnat_to_gnu_entity): Use TREE_OVERFLOW instead of
+	TREE_CONSTANT_OVERFLOW.
+	(allocatable_size_p, annotate_value): Likewise.
+	* trans.c (gnat_to_gnu): Likewise.
+	* utils.c (unchecked_convert): Likewise.
+	* utils2.c (build_simple_component_ref): Likewise.
+
 2007-01-23  Richard Guenther  <rguenther@suse.de>
 
 	PR bootstrap/30541

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2006, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2007, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -3680,7 +3680,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
      when it is false, we can rely on the fact that such conversions are
      erroneous anyway.  */
   if (TREE_CODE (expr) == INTEGER_CST)
-    TREE_OVERFLOW (expr) = TREE_CONSTANT_OVERFLOW (expr) = 0;
+    TREE_OVERFLOW (expr) = 0;
 
   /* If the sizes of the types differ and this is an VIEW_CONVERT_EXPR,
      show no longer constant.  */
