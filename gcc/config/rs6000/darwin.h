@@ -91,11 +91,19 @@ do {									\
       target_flags |= MASK_POWERPC64;					\
       warning (0, "-m64 requires PowerPC64 architecture, enabling");	\
     }									\
-  if (flag_mkernel)                                                     \
+  if (flag_mkernel)							\
     {									\
       rs6000_default_long_calls = 1;					\
       target_flags |= MASK_SOFT_FLOAT;					\
     }									\
+									\
+  /* Make -m64 imply -maltivec.  Darwin's 64-bit ABI includes		\
+     Altivec.  */							\
+  if (!flag_mkernel && !flag_apple_kext					\
+      && TARGET_64BIT							\
+      && ! (target_flags_explicit & MASK_ALTIVEC))			\
+    target_flags |= MASK_ALTIVEC;					\
+									\
   /* Unless the user (not the configurer) has explicitly overridden	\
      it with -mcpu=G3 or -mno-altivec, then 10.5+ targets default to	\
      G4 unless targetting the kernel.  */				\
