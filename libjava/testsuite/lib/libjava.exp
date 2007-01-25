@@ -511,8 +511,10 @@ proc exec_gij {jarfile expectFile ld_library_additions} {
   
   set gij [libjava_find_gij]
   set classname [file rootname [file tail $jarfile]]
+  
+  puts "LD_LIBRARY_PATH=. $gij -cp $jarfile $classname"
 	
-  set result [libjava_load $gij "-cp $jarfile" "$classname"]
+  set result [libjava_load $gij "-cp $jarfile $classname"]
   set status [lindex $result 0]
   set output [lindex $result 1]
 
@@ -529,12 +531,12 @@ proc exec_gij {jarfile expectFile ld_library_additions} {
   set expected [read $id]
   close $id
 
-  if [! [string compare $output $expected]] {
+  if {! [string compare $output $expected]} {
     pass "$classname output"
     return 1
   } else {
-	fail "$classname output"
-	return 0
+    fail "$classname output"
+    return 0
   }
 }
 
