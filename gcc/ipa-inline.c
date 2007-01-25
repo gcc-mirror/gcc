@@ -973,7 +973,7 @@ cgraph_decide_inlining (void)
     XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
   int old_insns = 0;
   int i;
-  int initial_insns;
+  int initial_insns = 0;
 
   max_count = 0;
   for (node = cgraph_nodes; node; node = node->next)
