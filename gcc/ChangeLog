@@ -1,3 +1,10 @@
+2007-01-25  Richard Guenther  <rguenther@suse.de>
+
+	* doc/invoke.texi (-Wcoverage-mismatch): Document.
+	* common.opt (-Wcoverage-mismatch): New warning option.
+	* coverage.c (get_coverage_counts): Ignore coverage mismatch
+	if -Wcoverage-mismatch is given.
+
 2007-01-25  Razya Ladelsky  <razya@il.ibm.com>
 
         * ipa-cp.c (ipcp_insert_stage, ipcp_driver): Support for SSA. 
