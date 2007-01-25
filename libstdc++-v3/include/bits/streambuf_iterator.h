@@ -157,11 +157,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /// Return true both iterators are end or both are not end.
       bool
       equal(const istreambuf_iterator& __b) const
-      {
-	const bool __thiseof = _M_at_eof();
-	const bool __beof = __b._M_at_eof();
-	return ((__thiseof && __beof) || (!__thiseof && !__beof));
-      }
+      { return _M_at_eof() == __b._M_at_eof(); }
 
     private:
       int_type
