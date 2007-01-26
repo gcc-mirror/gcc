@@ -1,3 +1,9 @@
+2007-01-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_powerpc_altivec): New.
+	(check_effective_target_vect_cmdline_needed): Use it.
+
 2007-01-26  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/backslash_3.f: New test.
