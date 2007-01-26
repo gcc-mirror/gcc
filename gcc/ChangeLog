@@ -1,3 +1,8 @@
+2007-01-25  DJ Delorie  <dj@redhat.com>
+
+	* reload1.c (choose_reload_regs): Check for invalid subregs before
+	computing their locations, not after.
+
 2007-01-25  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 25127
