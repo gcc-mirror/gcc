@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2002, 2005, 2006  Free Software Foundation
+/* Copyright (C) 1999, 2002, 2005, 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -151,12 +151,6 @@ public class Convert
 
     try
       {
-	BytesToUnicode inDecoder
-	  = inEncodingName == null ? BytesToUnicode.getDefaultDecoder()
-	  : BytesToUnicode.getDecoder(inEncodingName);
-	UnicodeToBytes outEncoder
-	  = outEncodingName == null ? UnicodeToBytes.getDefaultEncoder()
-	  : UnicodeToBytes.getEncoder(outEncodingName);
 	InputStream inStream = inName.equals("-") ? System.in
 	  : new FileInputStream(inName);
 	OutputStream outStream;
@@ -165,9 +159,13 @@ public class Convert
 	else
 	  outStream = new FileOutputStream(outName);
 	InputStreamReader in
-	  = new InputStreamReader(inStream, inEncodingName);
+	  = (inEncodingName == null
+	     ? new InputStreamReader(inStream)
+	     : new InputStreamReader(inStream, inEncodingName));
 	OutputStreamWriter out
-	  = new OutputStreamWriter(outStream, outEncodingName);
+	  = (outEncodingName == null
+	     ? new OutputStreamWriter(outStream)
+	     : new OutputStreamWriter(outStream, outEncodingName));
 	char[] buffer = new char[2048];
 	for (;;)
 	  {

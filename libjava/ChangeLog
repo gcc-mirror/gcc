@@ -1,3 +1,9 @@
+2007-01-25  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/29594:
+	* gnu/gcj/convert/Convert.java (main): Correctly handle missing
+	input or output encodings.  Removed unused local variables.
+
 2007-01-25  Keith Seitz  <keiths@redhat.com>
 
 	* include/jvmti-int.h (_Jv_GetJDWP_JVMTIEnv): Declare.
