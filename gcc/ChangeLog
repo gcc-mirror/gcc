@@ -1,3 +1,10 @@
+2007-01-26  Steve Ellcey  <sje@cup.hp.com>
+
+	PR other/30182
+	* config/pa/pa.h (TARGET_HPUX_11): New.
+	* config/pa/pa-hpux11.h (TARGET_HPUX_11): New.
+	* config/pa/pa.c (pa_init_builtins): Use TARGET_HPUX_11.
+
 2007-01-26  Daniel Berlin  <dberlin@dberlin.org>
 	Richard Guenther  <rguenther@suse.de>
 

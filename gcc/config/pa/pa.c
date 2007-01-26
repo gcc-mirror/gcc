@@ -512,7 +512,7 @@ pa_init_builtins (void)
   implicit_built_in_decls[(int) BUILT_IN_FPUTC_UNLOCKED]
     = implicit_built_in_decls[(int) BUILT_IN_PUTC_UNLOCKED];
 #endif
-#if TARGET_HPUX
+#if TARGET_HPUX_11
   if (built_in_decls [BUILT_IN_FINITE])
     set_user_assembler_name (built_in_decls [BUILT_IN_FINITE], "_Isfinite");
   if (built_in_decls [BUILT_IN_FINITEF])
