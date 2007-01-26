@@ -1,3 +1,7 @@
+2007-01-26  Tobias Burnus  <burnus@net-b.de>
+
+	* testsuite/libgomp.fortran/fortran.exp: Support .f03 extension.
+
 2007-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/30494

@@ -90,7 +90,7 @@ proc check_effective_target_lp64_or_vect_no_align { } {
 dg-init
 
 # Main loop.
-gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95} ]] $DEFAULT_VECTCFLAGS
+gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03} ]] $DEFAULT_VECTCFLAGS
 
 # Clean up.
 set dg-do-what-default ${save-dg-do-what-default}

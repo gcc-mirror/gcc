@@ -1,3 +1,11 @@
+2007-01-26  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/gomp/gomp.exp: Support .f03 extension.
+	* gfortran.dg/vect/vect.exp: Ditto.
+	* gfortran.dg/dg.exp: Ditto.
+	* gfortran.fortran-torture/execute/execute.exp: Ditto.
+	* gfortran.fortran-torture/compile/compile.exp: Ditto.
+
 2007-01-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/builtins-20.c: Add more cases.

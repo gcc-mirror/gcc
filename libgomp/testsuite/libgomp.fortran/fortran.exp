@@ -10,7 +10,7 @@ dg-init
 if [file exists "${blddir}/${lang_test_file}"] {
 
     # Gather a list of all tests.
-    set tests [lsort [find $srcdir/$subdir *.\[fF\]{,90,95}]]
+    set tests [lsort [find $srcdir/$subdir *.\[fF\]{,90,95,03}]]
 
     # Main loop.
     gfortran-dg-runtest $tests ""

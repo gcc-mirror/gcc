@@ -30,7 +30,7 @@ dg-init
 
 # Main loop.
 gfortran-dg-runtest [lsort \
-       [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95} ] ] $DEFAULT_FFLAGS
+       [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03} ] ] $DEFAULT_FFLAGS
 
 gfortran-dg-runtest [lsort \
        [glob -nocomplain $srcdir/$subdir/g77/*.\[fF\] ] ] $DEFAULT_FFLAGS
