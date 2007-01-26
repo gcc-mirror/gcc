@@ -190,6 +190,29 @@ enum data_dependence_direction {
   dir_independent
 };
 
+/* The description of the grid of iterations that overlap.  At most
+   two loops are considered at the same time just now, hence at most
+   two functions are needed.  For each of the functions, we store
+   the vector of coefficients, f[0] + x * f[1] + y * f[2] + ...,
+   where x, y, ... are variables.  */
+
+#define MAX_DIM 2
+
+/* Special values of N.  */
+#define NO_DEPENDENCE 0
+#define NOT_KNOWN (MAX_DIM + 1)
+#define CF_NONTRIVIAL_P(CF) ((CF)->n != NO_DEPENDENCE && (CF)->n != NOT_KNOWN)
+#define CF_NOT_KNOWN_P(CF) ((CF)->n == NOT_KNOWN)
+#define CF_NO_DEPENDENCE_P(CF) ((CF)->n == NO_DEPENDENCE)
+
+typedef VEC (tree, heap) *affine_fn;
+
+typedef struct
+{
+  unsigned n;
+  affine_fn fns[MAX_DIM];
+} conflict_function;
+
 /* What is a subscript?  Given two array accesses a subscript is the
    tuple composed of the access functions for a given dimension.
    Example: Given A[f1][f2][f3] and B[g1][g2][g3], there are three
@@ -201,8 +224,8 @@ struct subscript
 {
   /* A description of the iterations for which the elements are
      accessed twice.  */
-  tree conflicting_iterations_in_a;
-  tree conflicting_iterations_in_b;
+  conflict_function *conflicting_iterations_in_a;
+  conflict_function *conflicting_iterations_in_b;
   
   /* This field stores the information about the iteration domain
      validity of the dependence relation.  */
