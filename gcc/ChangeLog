@@ -1,3 +1,11 @@
+2007-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* genattrtab.c (struct attr_value_list, insn_code_values): Move to
+	file scope from optimize_attrs.
+	(simplify_test_exp): If insn_code_values is not NULL, use it to speed
+	up search.
+	(optimize_attrs): Clear insn_code_values after freeing it.
+
 2007-01-26  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* tree-ssa-address.c (create_mem_ref): Remove ", bsi" from
