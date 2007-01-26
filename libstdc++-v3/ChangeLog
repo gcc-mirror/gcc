@@ -1,3 +1,13 @@
+2007-01-26  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Revert.
+      	2006-12-11  Benjamin Kosnik  <bkoz@redhat.com>
+	PR libstdc++/28125
+	* acinclude.m4 (GLIBCXX_CHECK_ICONV_SUPPORT): Remove link test, ie
+	AC_CHECK_LIB for libiconv. Instead, use bits of AM_ICONV.
+        * configure: Regenerate.
+        * scripts/testsuite_flags.in (cxxflags): Add LIBICONV bits.
+
 2007-01-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/29722 continued
