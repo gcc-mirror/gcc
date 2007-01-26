@@ -1,3 +1,16 @@
+2007-01-26  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/29516
+	* tree-ssa-address.c (tree_mem_ref_addr, add_to_parts,
+	most_expensive_mult_to_index, addr_to_parts,
+	create_mem_ref, maybe_fold_tmr): Make the type of
+	fields of TARGET_MEM_REF sizetype.
+	(move_fixed_address_to_symbol, move_pointer_to_base,
+	aff_combination_remove_elt): New functions.
+	* tree.def (TARGET_MEM_REF): Add comment on types of
+	the operands.
+	* gcc.dg/tree-ssa/loop-20.c: New test.
+
 2007-01-25  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 25127
