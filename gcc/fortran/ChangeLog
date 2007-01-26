@@ -1,3 +1,9 @@
+2007-01-26  Tobias Burnus  <burnus@net-b.de>
+
+	* lang-specs.h: Add support for .f03 and .F03 extensions.
+	* gfortran.texi: Document .f03 extension.
+	* options.c (form_from_filename): Recognize .f03.
+
 2007-01-25  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR fortran/30437

@@ -12,7 +12,7 @@ dg-init
 
 # Main loop.
 gfortran-dg-runtest [lsort \
-       [find $srcdir/$subdir *.\[fF\]{,90,95} ] ] " -fopenmp"
+       [find $srcdir/$subdir *.\[fF\]{,90,95,03} ] ] " -fopenmp"
 
 # All done.
 dg-finish

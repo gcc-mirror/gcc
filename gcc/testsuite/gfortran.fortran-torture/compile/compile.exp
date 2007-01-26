@@ -53,3 +53,9 @@ foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.f95]] {
     fortran-torture $testcase
 }
 
+foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.f03]] {
+    if ![runtest_file_p $runtests $testcase] then {
+	continue
+    }
+    fortran-torture $testcase
+}
