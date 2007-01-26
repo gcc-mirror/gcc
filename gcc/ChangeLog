@@ -1,3 +1,23 @@
+2007-01-25  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 25127
+	* config/rs6000/rs6000.c (first_altivec_reg_to_save): On Darwin,
+	save Altivec registers in an eh_return function.
+	(compute_vrsave_mask): Likewise.
+	(rs6000_stack_info): Correct AIX/Darwin stack alignment computation
+	for saving Altivec registers.
+	(rs6000_emit_prologue): Don't allocate stack twice in
+	eh_return function.  Correct expected value of altivec_save_offset
+	when using save_world.  Describe save of R0 to stack when using
+	save_world.  Describe stack pointer adjustment when using
+	save_world.  Remove duplicated eh_return parameter register saving.
+	Update sp_offset variable after save_world.
+	* config/rs6000/t-darwin (LIB2FUNCS_STATIC_EXTRA): Remove
+	darwin-world.asm.
+	(LIB2FUNCS_EXTRA): Add darwin-world.asm.
+	* config/rs6000/darwin.h (SUBTARGET_OVERRIDE_OPTIONS): -m64
+	implies Altivec.
+
 2007-01-24  Geoffrey Keating  <geoffk@apple.com>
 
 	* unwind-dw2.c (execute_stack_op): Handle DW_OP_swap.

@@ -1,3 +1,10 @@
+2007-01-24  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.target/powerpc/darwin-ehreturn-1.c: New.
+	* g++.dg/eh/simd-2.C: Also run on Darwin.
+	* g++.dg/eh/simd-3.C: New.
+	* g++.dg/eh/simd-4.C: New.
+
 2007-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/27416
