@@ -394,19 +394,6 @@ omitted_headers = java/lang/ClassLoader.h java/lang/Thread.h \
 	java/lang/reflect/Field.h java/lang/reflect/Method.h \
 	java/lang/reflect/Proxy.h gnu/gcj/runtime/ExtensionClassLoader.h
 
-generic_header_files = $(ordinary_header_files) $(xlib_nat_headers)
-
-MYGCJH = gjavah
-
-$(generic_header_files): gcjh.stamp
-
-gcjh.stamp: classpath/lib/compile-classes
-if JAVA_MAINTAINER_MODE
-	$(MYGCJH) --cni --all $(srcdir)/classpath/lib \
-	    --cmdfile=$(srcdir)/headers.txt -d $(srcdir) --force
-endif
-	echo > gcjh.stamp
-
 inner_nat_headers = java/io/ObjectOutputStream$$PutField.h \
 	java/io/ObjectInputStream$$GetField.h \
 	java/nio/DirectByteBufferImpl$$ReadWrite.h \
@@ -418,6 +405,20 @@ inner_nat_headers = java/io/ObjectOutputStream$$PutField.h \
 	gnu/java/net/PlainSocketImpl$$SocketOutputStream.h \
 	gnu/java/nio/PipeImpl$$SinkChannelImpl.h \
 	gnu/java/nio/PipeImpl$$SourceChannelImpl.h
+
+generic_header_files = $(ordinary_header_files) $(inner_nat_headers) \
+	$(xlib_nat_headers)
+
+MYGCJH = gjavah
+
+$(generic_header_files): gcjh.stamp
+
+gcjh.stamp: classpath/lib/compile-classes
+if JAVA_MAINTAINER_MODE
+	$(MYGCJH) --cni --all $(srcdir)/classpath/lib \
+	    --cmdfile=$(srcdir)/headers.txt -d $(srcdir) --force
+endif
+	echo > gcjh.stamp
 
 nat_headers = $(ordinary_header_files) $(inner_nat_headers)
 nat_headers_install = $(ordinary_header_files)

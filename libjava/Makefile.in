@@ -7736,8 +7736,6 @@ omitted_headers = java/lang/ClassLoader.h java/lang/Thread.h \
 	java/lang/reflect/Field.h java/lang/reflect/Method.h \
 	java/lang/reflect/Proxy.h gnu/gcj/runtime/ExtensionClassLoader.h
 
-generic_header_files = $(ordinary_header_files) $(xlib_nat_headers)
-MYGCJH = gjavah
 inner_nat_headers = java/io/ObjectOutputStream$$PutField.h \
 	java/io/ObjectInputStream$$GetField.h \
 	java/nio/DirectByteBufferImpl$$ReadWrite.h \
@@ -7750,6 +7748,10 @@ inner_nat_headers = java/io/ObjectOutputStream$$PutField.h \
 	gnu/java/nio/PipeImpl$$SinkChannelImpl.h \
 	gnu/java/nio/PipeImpl$$SourceChannelImpl.h
 
+generic_header_files = $(ordinary_header_files) $(inner_nat_headers) \
+	$(xlib_nat_headers)
+
+MYGCJH = gjavah
 nat_headers = $(ordinary_header_files) $(inner_nat_headers)
 nat_headers_install = $(ordinary_header_files)
 xlib_nat_headers = $(gnu_awt_xlib_header_files) $(gnu_gcj_xlib_header_files)
