@@ -1,3 +1,26 @@
+2007-01-26  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-data-ref.c (dump_subscript): Use dump_conflict_function.
+	(compute_subscript_distance, initialize_data_dependence_relation,
+	finalize_ddr_dependent, analyze_ziv_subscript,
+	analyze_siv_subscript_cst_affine,
+	compute_overlap_steps_for_affine_univar,
+	compute_overlap_steps_for_affine_1_2, analyze_subscript_affine_affine,
+	analyze_siv_subscript, analyze_miv_subscript,
+	analyze_overlapping_iterations, subscript_dependence_tester_1,
+	compute_self_dependence, free_dependence_relation): Work
+	with affine_fn instead of chrecs.
+	(dump_affine_function, dump_conflict_function, affine_function_equal_p,
+	common_affine_function, affine_function_base,
+	affine_function_constant_p, affine_fn_op, affine_fn_plus,
+	affine_fn_minus, affine_fn_free, conflict_fn_not_known,
+	conflict_fn_no_dependence, free_conflict_function, free_subscripts,
+	conflict_fn, affine_fn_cst, affine_fn_univar): New functions.
+	(all_chrecs_equal_p): Removed.
+	* tree-data-ref.h (affine_fn, conflict_function): New types.
+	(struct subscript): Change type of conflicting_iterations_in_a
+	and conflicting_iterations_in_b.
+
 2007-01-26  Steve Ellcey  <sje@cup.hp.com>
 
 	PR other/30182
