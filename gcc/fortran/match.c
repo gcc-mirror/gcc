@@ -2591,12 +2591,19 @@ gfc_match_namelist (void)
 	      && gfc_add_in_namelist (&sym->attr, sym->name, NULL) == FAILURE)
 	    goto error;
 
-	  /* Use gfc_error_check here, rather than goto error, so that this
+	  /* Use gfc_error_check here, rather than goto error, so that
 	     these are the only errors for the next two lines.  */
 	  if (sym->as && sym->as->type == AS_ASSUMED_SIZE)
 	    {
 	      gfc_error ("Assumed size array '%s' in namelist '%s'at "
 		         "%C is not allowed.", sym->name, group_name->name);
+	      gfc_error_check ();
+	    }
+
+	  if (sym->ts.type == BT_CHARACTER && sym->ts.cl->length == NULL)
+	    {
+	      gfc_error ("Assumed character length '%s' in namelist '%s' at "
+			 "%C is not allowed", sym->name, group_name->name);
 	      gfc_error_check ();
 	    }
 
