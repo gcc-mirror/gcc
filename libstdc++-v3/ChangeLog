@@ -1,3 +1,9 @@
+2007-01-26  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/30586
+	* config/cpu/ia64/atomic_word.h: Just include <bits/cxxabi_tweaks.h>.
+	* testsuite/abi/30586.cc: New.
+
 2007-01-25  Nathan Myers  <ncm@cantrip.org>
 
 	* include/bits/streambuf_iterator.h (istreambuf_iterator<>::equal):
