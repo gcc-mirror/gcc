@@ -24,7 +24,7 @@ private:
   ::java::util::concurrent::locks::ReentrantLock * __attribute__((aligned(__alignof__( ::java::lang::Object)))) runLock;
   ::java::lang::Runnable * firstTask;
 public: // actually package-private
-  volatile jlong completedTasks;
+  jlong volatile completedTasks;
   ::java::lang::Thread * thread;
   ::java::util::concurrent::ThreadPoolExecutor * this$0;
 public:

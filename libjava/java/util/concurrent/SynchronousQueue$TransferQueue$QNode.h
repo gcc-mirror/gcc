@@ -18,9 +18,9 @@ public: // actually package-private
   void tryCancel(::java::lang::Object *);
   jboolean isCancelled();
   jboolean isOffList();
-  volatile ::java::util::concurrent::SynchronousQueue$TransferQueue$QNode * __attribute__((aligned(__alignof__( ::java::lang::Object)))) next;
-  volatile ::java::lang::Object * item;
-  volatile ::java::lang::Thread * waiter;
+  ::java::util::concurrent::SynchronousQueue$TransferQueue$QNode * volatile __attribute__((aligned(__alignof__( ::java::lang::Object)))) next;
+  ::java::lang::Object * volatile item;
+  ::java::lang::Thread * volatile waiter;
   jboolean isData;
   static ::java::util::concurrent::atomic::AtomicReferenceFieldUpdater * nextUpdater;
   static ::java::util::concurrent::atomic::AtomicReferenceFieldUpdater * itemUpdater;

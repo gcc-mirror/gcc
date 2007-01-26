@@ -74,7 +74,7 @@ public:
   virtual ::java::lang::ThreadGroup * getThreadGroup();
 public: // actually package-private
   virtual void checkPackageList(::java::lang::String *, ::java::lang::String *, ::java::lang::String *);
-  static volatile ::java::lang::SecurityManager * current;
+  static ::java::lang::SecurityManager * volatile current;
 public: // actually protected
   jboolean __attribute__((aligned(__alignof__( ::java::lang::Object)))) inCheck;
 public:

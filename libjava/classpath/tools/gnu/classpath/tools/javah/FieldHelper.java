@@ -1,5 +1,5 @@
 /* FieldHelper.java - field helper methods for CNI
- Copyright (C) 2006 Free Software Foundation, Inc.
+ Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
 
@@ -52,12 +52,12 @@ public class FieldHelper
     out.print("  ");
     if (Modifier.isStatic(field.access))
       out.print("static ");
-    if (Modifier.isVolatile(field.access))
-      out.print("volatile ");
     if ((field.value instanceof Integer) || (field.value instanceof Long))
       out.print("const ");
     out.print(Type.getType(field.desc));
     out.print(" ");
+    if (Modifier.isVolatile(field.access))
+      out.print("volatile ");
     boolean result = false;
     if (superType != null && ! Modifier.isStatic(field.access))
       {

@@ -36,7 +36,7 @@ public: // actually package-private
   virtual void exit();
 private:
   ::gnu::java::rmi::server::UnicastConnection * __attribute__((aligned(__alignof__( ::java::lang::Thread)))) conn;
-  volatile jboolean exiting;
+  jboolean volatile exiting;
 public:
   static ::java::lang::Class class$;
 };
