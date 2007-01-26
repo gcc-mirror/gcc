@@ -84,6 +84,11 @@ extern int flag_pa_unix;
 #define TARGET_HPUX_10_10 0
 #endif
 
+/* HP-UX 11.* features (11.00, 11.11, 11.23, etc.)  */
+#ifndef TARGET_HPUX_11
+#define TARGET_HPUX_11 0
+#endif
+
 /* HP-UX 11i multibyte and UNIX 98 extensions.  */
 #ifndef TARGET_HPUX_11_11
 #define TARGET_HPUX_11_11 0

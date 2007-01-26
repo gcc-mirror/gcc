@@ -191,3 +191,6 @@ Boston, MA 02110-1301, USA.  */
    with secondary definition (weak) symbols.  */
 #undef TARGET_SOM_SDEF
 #define TARGET_SOM_SDEF 1
+
+#undef TARGET_HPUX_11
+#define TARGET_HPUX_11 1
