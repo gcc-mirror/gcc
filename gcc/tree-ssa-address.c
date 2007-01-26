@@ -653,7 +653,7 @@ create_mem_ref (block_stmt_iterator *bsi, tree type, aff_tree *addr)
 			true, NULL_TREE);
 	}
       else
-	parts.base = parts.offset, bsi;
+	parts.base = parts.offset;
 
       parts.offset = NULL_TREE;
 
