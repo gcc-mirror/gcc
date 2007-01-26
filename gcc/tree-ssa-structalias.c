@@ -2051,9 +2051,10 @@ solve_graph (constraint_graph_t graph)
 	  if (find (i) != i)
 	    continue;
 
-	  eliminate_indirect_cycles (i);
-
-	  gcc_assert (find (i) == i);
+	  /* In certain indirect cycle cases, we may merge this
+	     variable to another.  */
+	  if (eliminate_indirect_cycles (i) && find(i) != i)
+	    continue;
 
 	  /* If the node has changed, we need to process the
 	     complex constraints and outgoing edges again.  */
