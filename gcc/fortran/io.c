@@ -137,10 +137,51 @@ next_char (int in_string)
       c = gfc_next_char_literal (in_string);
       if (c == '\n')
 	c = '\0';
-
-      if (mode == MODE_COPY)
-	*format_string++ = c;
     }
+
+  if (gfc_option.flag_backslash && c == '\\')
+    {
+      locus old_locus = gfc_current_locus;
+
+      switch (gfc_next_char_literal (1))
+	{
+	case 'a':
+	  c = '\a';
+	  break;
+	case 'b':
+	  c = '\b';
+	  break;
+	case 't':
+	  c = '\t';
+	  break;
+	case 'f':
+	  c = '\f';
+	  break;
+	case 'n':
+	  c = '\n';
+	  break;
+	case 'r':
+	  c = '\r';
+	  break;
+	case 'v':
+	  c = '\v';
+	  break;
+	case '\\':
+	  c = '\\';
+	  break;
+
+	default:
+	  /* Unknown backslash codes are simply not expanded.  */
+	  gfc_current_locus = old_locus;
+	  break;
+	}
+
+      if (!(gfc_option.allow_std & GFC_STD_GNU) && !inhibit_warnings)
+	gfc_warning ("Extension: backslash character at %C");
+    }
+
+  if (mode == MODE_COPY)
+    *format_string++ = c;
 
   c = TOUPPER (c);
   return c;
