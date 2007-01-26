@@ -1,6 +1,6 @@
 // Low-level type for atomic operations -*- C++ -*-
 
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,7 +30,7 @@
 #ifndef _GLIBCXX_ATOMIC_WORD_H
 #define _GLIBCXX_ATOMIC_WORD_H	1
 
-#include <cxxabi.h>
+#include <bits/cxxabi_tweaks.h>
 
 typedef int _Atomic_word;
 
