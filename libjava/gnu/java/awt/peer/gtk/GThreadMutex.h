@@ -32,7 +32,7 @@ class gnu::java::awt::peer::gtk::GThreadMutex : public ::java::lang::Object
 
 public: // actually package-private
   GThreadMutex();
-  volatile jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) potentialLockers;
+  jint volatile __attribute__((aligned(__alignof__( ::java::lang::Object)))) potentialLockers;
   ::java::lang::Object * lockForPotentialLockers;
 public:
   static ::java::lang::Class class$;

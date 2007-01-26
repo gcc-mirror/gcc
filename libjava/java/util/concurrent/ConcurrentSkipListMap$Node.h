@@ -23,8 +23,8 @@ public: // actually package-private
   ::java::lang::Object * getValidValue();
   ::java::util::AbstractMap$SimpleImmutableEntry * createSnapshot();
   ::java::lang::Object * __attribute__((aligned(__alignof__( ::java::lang::Object)))) key;
-  volatile ::java::lang::Object * value;
-  volatile ::java::util::concurrent::ConcurrentSkipListMap$Node * next;
+  ::java::lang::Object * volatile value;
+  ::java::util::concurrent::ConcurrentSkipListMap$Node * volatile next;
   static ::java::util::concurrent::atomic::AtomicReferenceFieldUpdater * nextUpdater;
   static ::java::util::concurrent::atomic::AtomicReferenceFieldUpdater * valueUpdater;
 public:

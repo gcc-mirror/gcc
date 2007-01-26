@@ -35,7 +35,7 @@ private:
   static const jlong serialVersionUID = 4654671469794556979LL;
   static ::sun::misc::Unsafe * unsafe;
   static jlong valueOffset;
-  volatile jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) value;
+  jint volatile __attribute__((aligned(__alignof__( ::java::lang::Object)))) value;
 public:
   static ::java::lang::Class class$;
 };
