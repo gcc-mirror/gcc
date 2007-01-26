@@ -846,10 +846,18 @@ int
 m32c_cannot_change_mode_class (enum machine_mode from,
 			       enum machine_mode to, int rclass)
 {
+  int rn;
 #if DEBUG0
   fprintf (stderr, "cannot change from %s to %s in %s\n",
 	   mode_name[from], mode_name[to], class_names[rclass]);
 #endif
+
+  /* If the larger mode isn't allowed in any of these registers, we
+     can't allow the change.  */
+  for (rn = 0; rn < FIRST_PSEUDO_REGISTER; rn++)
+    if (class_contents[rclass][0] & (1 << rn))
+      if (! m32c_hard_regno_ok (rn, to))
+	return 1;
 
   if (to == QImode)
     return (class_contents[rclass][0] & 0x1ffa);
