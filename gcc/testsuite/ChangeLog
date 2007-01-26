@@ -1,3 +1,13 @@
+2007-01-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/30532
+	* gfortran.dg/ctrl-z.f90:  New test.
+	
+2007-01-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/30481
+	* gfortran.dg/namelist_assumed_char.f90:  New test.
+
 2007-01-24  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.target/powerpc/darwin-ehreturn-1.c: New.
