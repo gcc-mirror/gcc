@@ -21,6 +21,16 @@ extern void link_error(int);
     link_error(__LINE__); \
   } while (0)
 
+/* Test that FUNC(-ARG) == FUNC(ARG), where ARG has a complex type.  */
+#define TESTIT_EVEN_C(FUNC) do { \
+  if (__builtin_##FUNC##f(-cxf) != __builtin_##FUNC##f(cxf)) \
+    link_error(__LINE__); \
+  if (__builtin_##FUNC(-cx) != __builtin_##FUNC(cx)) \
+    link_error(__LINE__); \
+  if (__builtin_##FUNC##l(-cxl) != __builtin_##FUNC##l(cxl)) \
+    link_error(__LINE__); \
+  } while (0)
+
 /* Test that FUNC(-VAR) == FUNC(VAR), where VAR has an int type.  */
 #define TESTIT_EVEN_I(FUNC,VAR) do { \
   if (__builtin_##FUNC(-VAR) != __builtin_##FUNC(VAR)) \
@@ -37,12 +47,27 @@ extern void link_error(int);
     link_error(__LINE__); \
   } while (0)
 
+/* Test that -FUNC(ARG) == FUNC(-ARG), where ARG has a complex type.  */
+#define TESTIT_ODD_C(FUNC) do { \
+  if (-__builtin_##FUNC##f(-cxf) != __builtin_##FUNC##f(cxf)) \
+    link_error(__LINE__); \
+  if (-__builtin_##FUNC(-cx) != __builtin_##FUNC(cx)) \
+    link_error(__LINE__); \
+  if (-__builtin_##FUNC##l(-cxl) != __builtin_##FUNC##l(cxl)) \
+    link_error(__LINE__); \
+  } while (0)
+
 void foo (float xf, double x, long double xl,
+	  __complex__ float cxf, __complex__ double cx, __complex__ long double cxl,
 	  int i, long l, long long ll, __INTMAX_TYPE__ im)
 {
   TESTIT_EVEN(cos);
   TESTIT_EVEN(cosh);
   TESTIT_EVEN(fabs);
+
+  TESTIT_EVEN_C(ccos);
+  TESTIT_EVEN_C(ccosh);
+  TESTIT_EVEN_C(cabs);
 
   TESTIT_EVEN_I(abs, i);
   TESTIT_EVEN_I(imaxabs, im);
@@ -67,10 +92,20 @@ void foo (float xf, double x, long double xl,
   TESTIT_ODD(tan);
   TESTIT_ODD(tanh);
   TESTIT_ODD(trunc);
+
+  TESTIT_ODD_C(casin);
+  TESTIT_ODD_C(casinh);
+  TESTIT_ODD_C(catan);
+  TESTIT_ODD_C(catanh);
+  TESTIT_ODD_C(cproj);
+  TESTIT_ODD_C(csin);
+  TESTIT_ODD_C(csinh);
+  TESTIT_ODD_C(ctan);
+  TESTIT_ODD_C(ctanh);
 }
 
 int main()
 {
-  foo (1,1,1,1,1,1,1);
+  foo (1,1,1,1,1,1,1,1,1,1);
   return 0;
 }

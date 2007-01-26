@@ -1,3 +1,11 @@
+2007-01-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (fold_builtin_1): Treat ccos and ccosh as 'even'
+	functions.
+
+	* fold-const.c (negate_mathfn_p): Treat casin, casinh, catan,
+	catanh, cproj, csin, csinh, ctan and ctanh as 'odd' functions.
+
 2007-01-25  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c.c (m32c_cannot_change_mode_class): We don't

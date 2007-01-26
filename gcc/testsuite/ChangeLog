@@ -1,3 +1,8 @@
+2007-01-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/builtins-20.c: Add more cases.
+	* gcc.dg/torture/builtin-symmetric-1.c: Likewise.
+
 2007-01-25  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR fortran/30437

@@ -9344,6 +9344,18 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
 					TREE_VALUE (arglist)));
       break;
 
+    CASE_FLT_FN (BUILT_IN_CCOS):
+    CASE_FLT_FN (BUILT_IN_CCOSH):
+      /* These functions are "even", i.e. f(x) == f(-x).  */
+      if (validate_arglist (arglist, COMPLEX_TYPE, VOID_TYPE))
+        {
+	  tree narg = fold_strip_sign_ops (TREE_VALUE (arglist));
+	  if (narg)
+	    return build_function_call_expr (fndecl,
+					     build_tree_list (NULL_TREE, narg));
+	}
+      break;
+
     CASE_FLT_FN (BUILT_IN_CABS):
       return fold_builtin_cabs (arglist, type, fndecl);
 
