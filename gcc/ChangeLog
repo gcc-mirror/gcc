@@ -1,5 +1,8 @@
 2007-01-25  DJ Delorie  <dj@redhat.com>
 
+	* config/m32c/m32c.c (m32c_cannot_change_mode_class): We don't
+	allow changes to modes which don't fit in those registers.
+
 	* reload1.c (choose_reload_regs): Check for invalid subregs before
 	computing their locations, not after.
 
