@@ -322,6 +322,7 @@ RUNTEST = "`if [ -f $(top_srcdir)/../dejagnu/runtest ] ; then \
 	    else echo runtest; fi` $(AM_RUNTESTFLAGS)"
 
 AM_RUNTESTFLAGS = INTERPRETER=$(INTERPRETER)
+MYGCJH = gjavah
 all: all-am
 
 .SUFFIXES:
@@ -520,6 +521,65 @@ uninstall-am: uninstall-info-am
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	uninstall uninstall-am uninstall-info-am
 
+
+.PHONY: compile-tests
+
+check-am: compile-tests
+
+compile-tests:
+@JAVA_MAINTAINER_MODE_TRUE@	for test in `cd $(srcdir) > /dev/null; \
+@JAVA_MAINTAINER_MODE_TRUE@		     find libjava.cni libjava.jni libjava.jvmti libjava.lang \
+@JAVA_MAINTAINER_MODE_TRUE@			  libjava.loader libjava.verify -name \*.java`; do \
+@JAVA_MAINTAINER_MODE_TRUE@	  testjar=$(srcdir)/`echo $$test | sed -e 's/\.java$$/\.jar/'`; \
+@JAVA_MAINTAINER_MODE_TRUE@	  testdep=; \
+@JAVA_MAINTAINER_MODE_TRUE@	  genheader=; \
+@JAVA_MAINTAINER_MODE_TRUE@	  case "$$test" in \
+@JAVA_MAINTAINER_MODE_TRUE@	    libjava.loader/dummy.java) \
+@JAVA_MAINTAINER_MODE_TRUE@	      testjar=$(srcdir)/libjava.loader/dummy.class;; \
+@JAVA_MAINTAINER_MODE_TRUE@	    libjava.loader/MyLoader.java) \
+@JAVA_MAINTAINER_MODE_TRUE@	      continue;; \
+@JAVA_MAINTAINER_MODE_TRUE@	    libjava.loader/*.java) \
+@JAVA_MAINTAINER_MODE_TRUE@	      testdep="libjava.loader/MyLoader.java";; \
+@JAVA_MAINTAINER_MODE_TRUE@	    libjava.jni/register2.java) \
+@JAVA_MAINTAINER_MODE_TRUE@	      ;; \
+@JAVA_MAINTAINER_MODE_TRUE@	    libjava.jni/*.java) \
+@JAVA_MAINTAINER_MODE_TRUE@	      genheader=-jni;; \
+@JAVA_MAINTAINER_MODE_TRUE@	    libjava.jvmti/*.java|libjava.cni/*.java) \
+@JAVA_MAINTAINER_MODE_TRUE@	      genheader=-cni;; \
+@JAVA_MAINTAINER_MODE_TRUE@	  esac; \
+@JAVA_MAINTAINER_MODE_TRUE@	  if test -f $$testjar; then \
+@JAVA_MAINTAINER_MODE_TRUE@	    if ! test $(srcdir)/$$test -nt $$testjar; then \
+@JAVA_MAINTAINER_MODE_TRUE@	      test -z "$$testdep" && continue; \
+@JAVA_MAINTAINER_MODE_TRUE@	      test $(srcdir)/$$testdep -nt $$testjar || continue; \
+@JAVA_MAINTAINER_MODE_TRUE@	    fi; \
+@JAVA_MAINTAINER_MODE_TRUE@	  fi; \
+@JAVA_MAINTAINER_MODE_TRUE@	  echo Compiling $$test; \
+@JAVA_MAINTAINER_MODE_TRUE@	  testtmpdir=`echo $$test | sed -e 's,/,_,g'`T; \
+@JAVA_MAINTAINER_MODE_TRUE@	  rm -rf $$testtmpdir; $(mkdir_p) $$testtmpdir; \
+@JAVA_MAINTAINER_MODE_TRUE@	  if test -n "$$testdep"; then \
+@JAVA_MAINTAINER_MODE_TRUE@	    $(GCJ) -C -g -w --encoding=UTF-8 -bootclasspath \
+@JAVA_MAINTAINER_MODE_TRUE@	      $(top_builddir)/libgcj-$(gcc_version).jar::$testtmpdir \
+@JAVA_MAINTAINER_MODE_TRUE@	      -d $$testtmpdir $(srcdir)/$$testdep || exit; \
+@JAVA_MAINTAINER_MODE_TRUE@	  fi; \
+@JAVA_MAINTAINER_MODE_TRUE@	  $(GCJ) -C -g -w --encoding=UTF-8 -bootclasspath \
+@JAVA_MAINTAINER_MODE_TRUE@	    $(top_builddir)/libgcj-$(gcc_version).jar:$$testtmpdir \
+@JAVA_MAINTAINER_MODE_TRUE@	    -d $$testtmpdir $(srcdir)/$$test || exit; \
+@JAVA_MAINTAINER_MODE_TRUE@	  case "$$test" in \
+@JAVA_MAINTAINER_MODE_TRUE@	    libjava.loader/dummy.java) \
+@JAVA_MAINTAINER_MODE_TRUE@	      cp $$testtmpdir/dummy.class $$testjar;; \
+@JAVA_MAINTAINER_MODE_TRUE@	    *) \
+@JAVA_MAINTAINER_MODE_TRUE@	      $(JAR) cf $$testjar \
+@JAVA_MAINTAINER_MODE_TRUE@		`ls $$testtmpdir/*.class \
+@JAVA_MAINTAINER_MODE_TRUE@		 | sed -e 's,^,-C ,;s,/\([^/]*\.class\)$$, \1,'` || exit ;; \
+@JAVA_MAINTAINER_MODE_TRUE@	  esac; \
+@JAVA_MAINTAINER_MODE_TRUE@	  if test -n "$$genheader"; then \
+@JAVA_MAINTAINER_MODE_TRUE@	    $(MYGCJH) $$genheader $$testtmpdir/*.class \
+@JAVA_MAINTAINER_MODE_TRUE@	      -bootclasspath $(top_builddir)/libgcj-$(gcc_version).jar \
+@JAVA_MAINTAINER_MODE_TRUE@	      -d $$testtmpdir/ || exit; \
+@JAVA_MAINTAINER_MODE_TRUE@	    mv $$testtmpdir/*.h $(srcdir)/`dirname $$test`/ 2>/dev/null; \
+@JAVA_MAINTAINER_MODE_TRUE@	  fi; \
+@JAVA_MAINTAINER_MODE_TRUE@	  rm -rf $$testtmpdir; \
+@JAVA_MAINTAINER_MODE_TRUE@	done
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

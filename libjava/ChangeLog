@@ -1,3 +1,12 @@
+2007-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (generic_header_files): Add $(inner_nat_headers).
+	* testsuite/Makefile.am (check-dejaGNU): Depend on compile-tests.
+	(MYGCJH): New variable.
+	(compile-tests): New goal.
+	* Makefile.in: Rebuilt.
+	* testsuite/Makefile.in: Rebuilt.
+
 2007-01-26  Tom Tromey  <tromey@redhat.com>
 
 	* Updated headers.
