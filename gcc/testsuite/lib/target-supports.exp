@@ -1242,7 +1242,8 @@ proc check_effective_target_vect_cmdline_needed { } {
 	     || (([istarget x86_64-*-*] || [istarget i?86-*-*])
 		 && [check_effective_target_lp64])
 	     || ([istarget powerpc*-*-*]
-		 && [check_effective_target_powerpc_spe])} {
+		 && ([check_effective_target_powerpc_spe]
+		     || [check_effective_target_powerpc_altivec]))} {
 	   set et_vect_cmdline_needed_saved 0
 	}
     }
@@ -1369,6 +1370,22 @@ proc check_effective_target_powerpc_spe { } {
 	return [check_no_compiler_messages powerpc_spe object {
 	    #ifndef __SPE__
 	    #error not SPE
+	    #else
+	    int dummy;
+	    #endif
+	}]
+    } else {
+	return 0
+    }
+}
+
+# Return 1 if this is a PowerPC target with Altivec enabled.
+
+proc check_effective_target_powerpc_altivec { } {
+    if { [istarget powerpc*-*-*] } {
+	return [check_no_compiler_messages powerpc_altivec object {
+	    #ifndef __ALTIVEC__
+	    #error not Altivec
 	    #else
 	    int dummy;
 	    #endif
