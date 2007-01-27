@@ -1,6 +1,7 @@
 2007-01-26  Steven Bosscher  <stevenb.gcc@gmail.com>
 	    Steven G. Kargl <kargl@gcc.gnu.org>
 
+	PR fortran/30278
 	* fortran/io.c (next_char): Deal with backslash escaped characters.
 	Issue warnings in non -std=gnu cases.
 	* fortran/primary.c (next_string_char): Issue warnings in non
