@@ -823,7 +823,7 @@ here; FIXME: document the others.
 @node Test Idioms
 @subsection Idioms Used in Testsuite Code
 
-In general C testcases have a trailing @file{-@var{n}.c}, starting
+In general, C testcases have a trailing @file{-@var{n}.c}, starting
 with @file{-1.c}, in case other testcases with similar names are added
 later.  If the test is a test of some well-defined feature, it should
 have a name referring to that feature such as
