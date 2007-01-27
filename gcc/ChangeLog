@@ -1,3 +1,9 @@
+2007-01-27  Jan Hubicka  <jh@suse.cz>
+
+	* tree-sra.c (sra_walk_function): Don't rely on aliases being build.
+	(pass_sra): Do not require alias information.
+	* passes.c (init_optimization_passes): Add SRA
+
 2007-01-27  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* tracer.c (rest_of_handle_tracer): We already cleaned

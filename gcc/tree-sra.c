@@ -973,8 +973,9 @@ sra_walk_function (const struct sra_walk_fns *fns)
 
 	/* If the statement has no virtual operands, then it doesn't
 	   make any structure references that we care about.  */
-	if (ZERO_SSA_OPERANDS (stmt, (SSA_OP_VIRTUAL_DEFS | SSA_OP_VUSE)))
-	  continue;
+	if (gimple_aliases_computed_p (cfun)
+	    && ZERO_SSA_OPERANDS (stmt, (SSA_OP_VIRTUAL_DEFS | SSA_OP_VUSE)))
+	      continue;
 
 	switch (TREE_CODE (stmt))
 	  {
@@ -989,7 +990,9 @@ sra_walk_function (const struct sra_walk_fns *fns)
 	       as a USE of the variable on the RHS of this assignment.  */
 
 	    t = TREE_OPERAND (stmt, 0);
-	    if (TREE_CODE (t) == GIMPLE_MODIFY_STMT)
+	    if (t == NULL_TREE)
+	      ;
+	    else if (TREE_CODE (t) == GIMPLE_MODIFY_STMT)
 	      sra_walk_expr (&GIMPLE_STMT_OPERAND (t, 1), &si, false, fns);
 	    else
 	      sra_walk_expr (&TREE_OPERAND (stmt, 0), &si, false, fns);
@@ -2374,7 +2377,7 @@ struct tree_opt_pass pass_sra =
   NULL,					/* next */
   0,					/* static_pass_number */
   TV_TREE_SRA,				/* tv_id */
-  PROP_cfg | PROP_ssa | PROP_alias,	/* properties_required */
+  PROP_cfg | PROP_ssa,			/* properties_required */
   0,					/* properties_provided */
   0,				        /* properties_destroyed */
   0,					/* todo_flags_start */
