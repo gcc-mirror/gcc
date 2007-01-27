@@ -1,3 +1,12 @@
+2007-01-27  Andreas Tobler  <a.tobler@schweiz.org>
+
+	PR libgcj/30513
+	* configure.host: Add forgottten sysdep_dir to sparc. Add a flag to
+	libgcj_flags to undefine 'sun' at compile time.
+	* sysdep/sparc/locks.h (read_barrier): New functions for 32 and 64 bit
+	Sparc.
+	(write_barrier): Likewise.
+
 2007-01-27  Keith Seitz  <keiths@redhat.com>
 
 	* gnu/classpath/jdwp/natVMVirtualMachine.cc
@@ -61,7 +70,7 @@
     * libjava/testsuite/libjava.jvmti/jvmti-interp.exp: New file.
     * libjava/testsuite/libjava.jvmti/interp: New folder.
     * libjava/testsuite/lib/libjava.exp (exec_gij): New Method.
-        
+
 2007-01-24  Keith Seitz  <keiths@redhat.com>
 
 	* link.cc (_Jv_Linker::wait_for_state): Add JVMTI
