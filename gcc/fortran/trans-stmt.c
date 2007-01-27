@@ -57,8 +57,7 @@ typedef struct forall_info
   tree maskindex;
   int nvar;
   tree size;
-  struct forall_info  *outer;
-  struct forall_info  *next_nest;
+  struct forall_info  *prev_nest;
 }
 forall_info;
 
@@ -1653,8 +1652,6 @@ gfc_trans_nested_forall_loop (forall_info * nested_forall_info, tree body,
   gfc_start_block (&header);
 
   forall_tmp = nested_forall_info;
-  while (forall_tmp->next_nest != NULL)
-    forall_tmp = forall_tmp->next_nest;
   while (forall_tmp != NULL)
     {
       /* Generate body with masks' control.  */
@@ -1671,7 +1668,7 @@ gfc_trans_nested_forall_loop (forall_info * nested_forall_info, tree body,
             }
         }
       body = gfc_trans_forall_loop (forall_tmp, body, mask_flag, &header);
-      forall_tmp = forall_tmp->outer;
+      forall_tmp = forall_tmp->prev_nest;
       mask_flag = 1;
     }
 
@@ -2043,7 +2040,7 @@ compute_overall_iter_number (forall_info *nested_forall_info, tree inner_size,
       /* First check whether all the bounds are constant.  */
       for (forall_tmp = nested_forall_info;
 	   forall_tmp;
-	   forall_tmp = forall_tmp->next_nest)
+	   forall_tmp = forall_tmp->prev_nest)
 	if (forall_tmp->mask || !INTEGER_CST_P (forall_tmp->size))
 	  {
 	    all_const_p = false;
@@ -2055,7 +2052,7 @@ compute_overall_iter_number (forall_info *nested_forall_info, tree inner_size,
 	  tree tmp = inner_size;
 	  for (forall_tmp = nested_forall_info;
 	       forall_tmp;
-	       forall_tmp = forall_tmp->next_nest)
+	       forall_tmp = forall_tmp->prev_nest)
 	    tmp = fold_build2 (MULT_EXPR, gfc_array_index_type,
 			       tmp, forall_tmp->size);
 	  return tmp;
@@ -2584,16 +2581,8 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
     }
 
   /* Link the current forall level to nested_forall_info.  */
-  if (nested_forall_info)
-    {
-      forall_info *forall_tmp = nested_forall_info;
-      while (forall_tmp->next_nest != NULL)
-        forall_tmp = forall_tmp->next_nest;
-      info->outer = forall_tmp;
-      forall_tmp->next_nest = info;
-    }
-  else
-    nested_forall_info = info;
+  info->prev_nest = nested_forall_info;
+  nested_forall_info = info;
 
   /* Copy the mask into a temporary variable if required.
      For now we assume a mask temporary is needed.  */
@@ -2712,6 +2701,9 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
   gfc_free (step);
   gfc_free (varexpr);
   gfc_free (saved_vars);
+
+  /* Free the space for this forall_info.  */
+  gfc_free (info);
 
   if (pmask)
     {
