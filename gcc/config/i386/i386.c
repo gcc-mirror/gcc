@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on IA-32.
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -9384,6 +9384,43 @@ ix86_expand_push (enum machine_mode mode, rtx x)
   emit_move_insn (tmp, x);
 }
 
+/* Helper function of ix86_fixup_binary_operands to canonicalize
+   operand order.  Returns true if the operands should be swapped.  */
+   
+static bool
+ix86_swap_binary_operands_p (enum rtx_code code, enum machine_mode mode,
+			     rtx operands[])
+{
+  rtx dst = operands[0];
+  rtx src1 = operands[1];
+  rtx src2 = operands[2];
+
+  /* If the operation is not commutative, we can't do anything.  */
+  if (GET_RTX_CLASS (code) != RTX_COMM_ARITH)
+    return false;
+
+  /* Highest priority is that src1 should match dst.  */
+  if (rtx_equal_p (dst, src1))
+    return false;
+  if (rtx_equal_p (dst, src2))
+    return true;
+
+  /* Next highest priority is that immediate constants come second.  */
+  if (immediate_operand (src2, mode))
+    return false;
+  if (immediate_operand (src1, mode))
+    return true;
+
+  /* Lowest priority is that memory references should come second.  */
+  if (MEM_P (src2))
+    return false;
+  if (MEM_P (src1))
+    return true;
+
+  return false;
+}
+
+
 /* Fix up OPERANDS to satisfy ix86_binary_operator_ok.  Return the
    destination to use for the operation.  If different from the true
    destination in operands[0], a copy operation will be required.  */
@@ -9392,55 +9429,46 @@ rtx
 ix86_fixup_binary_operands (enum rtx_code code, enum machine_mode mode,
 			    rtx operands[])
 {
-  int matching_memory;
-  rtx src1, src2, dst;
+  rtx dst = operands[0];
+  rtx src1 = operands[1];
+  rtx src2 = operands[2];
 
-  dst = operands[0];
-  src1 = operands[1];
-  src2 = operands[2];
-
-  /* Recognize <var1> = <value> <op> <var1> for commutative operators */
-  if (GET_RTX_CLASS (code) == RTX_COMM_ARITH
-      && (rtx_equal_p (dst, src2)
-	  || immediate_operand (src1, mode)))
+  /* Canonicalize operand order.  */
+  if (ix86_swap_binary_operands_p (code, mode, operands))
     {
       rtx temp = src1;
       src1 = src2;
       src2 = temp;
     }
 
-  /* If the destination is memory, and we do not have matching source
-     operands, do things in registers.  */
-  matching_memory = 0;
-  if (MEM_P (dst))
-    {
-      if (rtx_equal_p (dst, src1))
-	matching_memory = 1;
-      else if (GET_RTX_CLASS (code) == RTX_COMM_ARITH
-	       && rtx_equal_p (dst, src2))
-	matching_memory = 2;
-      else
-	dst = gen_reg_rtx (mode);
-    }
-
   /* Both source operands cannot be in memory.  */
   if (MEM_P (src1) && MEM_P (src2))
     {
-      if (matching_memory != 2)
-	src2 = force_reg (mode, src2);
+      /* Optimization: Only read from memory once.  */
+      if (rtx_equal_p (src1, src2))
+	{
+	  src2 = force_reg (mode, src2);
+	  src1 = src2;
+	}
       else
-	src1 = force_reg (mode, src1);
+	src2 = force_reg (mode, src2);
     }
 
-  /* If the operation is not commutable, source 1 cannot be a constant
-     or non-matching memory.  */
-  if ((CONSTANT_P (src1)
-       || (!matching_memory && MEM_P (src1)))
-      && GET_RTX_CLASS (code) != RTX_COMM_ARITH)
+  /* If the destination is memory, and we do not have matching source
+     operands, do things in registers.  */
+  if (MEM_P (dst) && !rtx_equal_p (dst, src1))
+    dst = gen_reg_rtx (mode);
+
+  /* Source 1 cannot be a constant.  */
+  if (CONSTANT_P (src1))
     src1 = force_reg (mode, src1);
 
-  src1 = operands[1] = src1;
-  src2 = operands[2] = src2;
+  /* Source 1 cannot be a non-matching memory.  */
+  if (MEM_P (src1) && !rtx_equal_p (dst, src1))
+    src1 = force_reg (mode, src1);
+
+  operands[1] = src1;
+  operands[2] = src2;
   return dst;
 }
 
@@ -9494,28 +9522,37 @@ ix86_expand_binary_operator (enum rtx_code code, enum machine_mode mode,
    appropriate constraints.  */
 
 int
-ix86_binary_operator_ok (enum rtx_code code,
-			 enum machine_mode mode ATTRIBUTE_UNUSED,
+ix86_binary_operator_ok (enum rtx_code code, enum machine_mode mode,
 			 rtx operands[3])
 {
+  rtx dst = operands[0];
+  rtx src1 = operands[1];
+  rtx src2 = operands[2];
+
   /* Both source operands cannot be in memory.  */
-  if (MEM_P (operands[1]) && MEM_P (operands[2]))
+  if (MEM_P (src1) && MEM_P (src2))
     return 0;
-  /* If the operation is not commutable, source 1 cannot be a constant.  */
-  if (CONSTANT_P (operands[1]) && GET_RTX_CLASS (code) != RTX_COMM_ARITH)
-    return 0;
+
+  /* Canonicalize operand order for commutative operators.  */
+  if (ix86_swap_binary_operands_p (code, mode, operands))
+    {
+      rtx temp = src1;
+      src1 = src2;
+      src2 = temp;
+    }
+
   /* If the destination is memory, we must have a matching source operand.  */
-  if (MEM_P (operands[0])
-      && ! (rtx_equal_p (operands[0], operands[1])
-	    || (GET_RTX_CLASS (code) == RTX_COMM_ARITH
-		&& rtx_equal_p (operands[0], operands[2]))))
+  if (MEM_P (dst) && !rtx_equal_p (dst, src1))
+      return 0;
+
+  /* Source 1 cannot be a constant.  */
+  if (CONSTANT_P (src1))
     return 0;
-  /* If the operation is not commutable and the source 1 is memory, we must
-     have a matching destination.  */
-  if (MEM_P (operands[1])
-      && GET_RTX_CLASS (code) != RTX_COMM_ARITH
-      && ! rtx_equal_p (operands[0], operands[1]))
+
+  /* Source 1 cannot be a non-matching memory.  */
+  if (MEM_P (src1) && !rtx_equal_p (dst, src1))
     return 0;
+
   return 1;
 }
 
