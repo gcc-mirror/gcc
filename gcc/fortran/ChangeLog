@@ -1,3 +1,18 @@
+2007-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30407
+	* trans-expr.c (gfc_conv_operator_assign): New function.
+	* trans.h : Add prototype for gfc_conv_operator_assign.
+	* trans-stmt.c (gfc_trans_where_assign): Add a gfc_symbol for
+	a potential operator assignment subroutine.  If it is non-NULL
+	call gfc_conv_operator_assign instead of the first assignment.
+	( gfc_trans_where_2): In the case of an operator assignment,
+	extract the argument expressions from the code for the
+	subroutine call and pass the symbol to gfc_trans_where_assign.
+	resolve.c (resolve_where, gfc_resolve_where_code_in_forall,
+	gfc_resolve_forall_body): Resolve the subroutine call for
+	operator assignments.
+
 2007-01-26  Steven Bosscher  <stevenb.gcc@gmail.com>
 	    Steven G. Kargl <kargl@gcc.gnu.org>
 

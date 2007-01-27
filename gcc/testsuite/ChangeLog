@@ -1,3 +1,10 @@
+2007-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30407
+	* gfortran.dg/where_operator_assign_1.f90: New test.
+	* gfortran.dg/where_operator_assign_2.f90: New test.
+	* gfortran.dg/where_operator_assign_3.f90: New test.
+
 2007-01-26  Joseph Myers  <joseph@codesourcery.com>
 
 	* lib/target-supports.exp
