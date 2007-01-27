@@ -1,3 +1,11 @@
+2007-01-27  Steven Bosscher  <stevenb.gcc@gmail.com>
+            Steven G. Kargl <kargl@gcc.gnu.org>
+
+	PR fortran/30278
+	* fortran/io.c (next_char): Deal with backslash escaped characters.
+	Issue warnings in non -std=gnu cases.
+	* fortran/primary.c (next_string_char): Issue warnings in non
+
 2007-01-24  Roger Sayle  <roger@eyesopen.com>
 
 	* trans-intrinsic.c (gfc_conv_intrinsic_sign): Call gfc_evaluate_now
