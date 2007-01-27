@@ -1290,7 +1290,7 @@ As a GNU extension, GCC allows initialization of objects with static storage
 duration by compound literals (which is not possible in ISO C99, because
 the initializer is not a constant).
 It is handled as if the object was initialized only with the bracket
-enclosed list if compound literal's and object types match.
+enclosed list if the types of the compound literal and the object match.
 The initializer list of the compound literal must be constant.
 If the object being initialized has array type of unknown size, the size is
 determined by compound literal size.
@@ -10123,7 +10123,7 @@ macros are defined.
 @cindex pragma, diagnostic
 
 Modifies the disposition of a diagnostic.  Note that not all
-diagnostics are modifyiable; at the moment only warnings (normally
+diagnostics are modifiable; at the moment only warnings (normally
 controlled by @samp{-W...}) can be controlled, and not all of them.
 Use @option{-fdiagnostics-show-option} to determine which diagnostics
 are controllable and which option controls them.
@@ -11151,7 +11151,7 @@ and are now removed from G++.
 The implicit typename extension has been deprecated and is now
 removed from G++.
 
-The use of default arguments in function pointers, function typedefs and
+The use of default arguments in function pointers, function typedefs
 and other places where they are not permitted by the standard is
 deprecated and will be removed from a future version of G++.
 

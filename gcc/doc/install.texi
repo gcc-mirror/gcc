@@ -909,7 +909,7 @@ tools can not generate or interpret stabs.
 @item --disable-multilib
 Specify that multiple target
 libraries to support different target variants, calling
-conventions, etc should not be built.  The default is to build a
+conventions, etc.@: should not be built.  The default is to build a
 predefined set of them.
 
 Some targets provide finer-grained control over which multilibs are built
