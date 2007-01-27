@@ -393,7 +393,6 @@ rest_of_handle_tracer (void)
   if (dump_file)
     dump_flow_info (dump_file, dump_flags);
   tracer (0);
-  cleanup_cfg (CLEANUP_EXPENSIVE);
   reg_scan (get_insns (), max_reg_num ());
   return 0;
 }

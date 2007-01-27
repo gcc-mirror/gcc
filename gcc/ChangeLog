@@ -1,3 +1,18 @@
+2007-01-27  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tracer.c (rest_of_handle_tracer): We already cleaned
+	up the CFG in tracer() so don't do it here again.
+	* cfgcleanup.c (rest_of_handle_jump2): Don't repeat
+	cleanup_cfg here, either.  And don't call renumber_insns.
+
+	* cfgrtl.c (rtl_verify_flow_info_1): Don't verify that BB_END
+	and BB_HEAD are in the insn stream here.  Instead make sure
+	that BB_INSN is valid on all insns.  Also, do check here that
+	there are no pending branch predictions...
+	(rtl_verify_flow_info): ...instead of doing it here.  Checks
+	for BB_END and BB_HEAD moved from rtl_verify_flow_info_1 to
+	here.
+
 2007-01-26  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.c (ix86_swap_binary_operands_p): New helper

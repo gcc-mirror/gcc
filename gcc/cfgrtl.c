@@ -1676,13 +1676,14 @@ get_last_bb_insn (basic_block bb)
 
    Currently it does following checks:
 
-   - test head/end pointers
    - overlapping of basic blocks
+   - insns with wrong BLOCK_FOR_INSN pointers
    - headers of basic blocks (the NOTE_INSN_BASIC_BLOCK note)
    - tails of basic blocks (ensure that boundary is necessary)
    - scans body of the basic block for JUMP_INSN, CODE_LABEL
      and NOTE_INSN_BASIC_BLOCK
    - verify that no fall_thru edge crosses hot/cold partition boundaries
+   - verify that there are no pending RTL branch predictions
 
    In future it can be extended check a lot of other stuff as well
    (reachability of basic blocks, life information, etc. etc.).  */
@@ -1690,24 +1691,14 @@ get_last_bb_insn (basic_block bb)
 static int
 rtl_verify_flow_info_1 (void)
 {
-  const int max_uid = get_max_uid ();
-  rtx last_head = get_last_insn ();
-  basic_block *bb_info;
   rtx x;
   int err = 0;
   basic_block bb;
 
-  bb_info = XCNEWVEC (basic_block, max_uid);
-
+  /* Check the general integrity of the basic blocks.  */
   FOR_EACH_BB_REVERSE (bb)
     {
-      rtx head = BB_HEAD (bb);
-      rtx end = BB_END (bb);
-
-      /* Verify the end of the basic block is in the INSN chain.  */
-      for (x = last_head; x != NULL_RTX; x = PREV_INSN (x))
-	if (x == end)
-	  break;
+      rtx insn;
 
       if (!(bb->flags & BB_RTL))
 	{
@@ -1715,40 +1706,21 @@ rtl_verify_flow_info_1 (void)
 	  err = 1;
 	}
 
-      if (!x)
+      FOR_BB_INSNS (bb, insn)
+	if (BLOCK_FOR_INSN (insn) != bb)
+	  {
+	    error ("insn %d basic block pointer is %d, should be %d",
+		   INSN_UID (insn),
+		   BLOCK_FOR_INSN (insn) ? BLOCK_FOR_INSN (insn)->index : 0,
+		   bb->index);
+	    err = 1;
+	  }
+
+      if (bb->predictions)
 	{
-	  error ("end insn %d for block %d not found in the insn stream",
-		 INSN_UID (end), bb->index);
+	  error ("bb prediction set for block %d, but it is not used in RTL land", bb->index);
 	  err = 1;
 	}
-
-      /* Work backwards from the end to the head of the basic block
-	 to verify the head is in the RTL chain.  */
-      for (; x != NULL_RTX; x = PREV_INSN (x))
-	{
-	  /* While walking over the insn chain, verify insns appear
-	     in only one basic block and initialize the BB_INFO array
-	     used by other passes.  */
-	  if (bb_info[INSN_UID (x)] != NULL)
-	    {
-	      error ("insn %d is in multiple basic blocks (%d and %d)",
-		     INSN_UID (x), bb->index, bb_info[INSN_UID (x)]->index);
-	      err = 1;
-	    }
-
-	  bb_info[INSN_UID (x)] = bb;
-
-	  if (x == head)
-	    break;
-	}
-      if (!x)
-	{
-	  error ("head insn %d for block %d not found in the insn stream",
-		 INSN_UID (head), bb->index);
-	  err = 1;
-	}
-
-      last_head = x;
     }
 
   /* Now check the basic blocks (boundaries etc.) */
@@ -1916,7 +1888,6 @@ rtl_verify_flow_info_1 (void)
     }
 
   /* Clean up.  */
-  free (bb_info);
   return err;
 }
 
@@ -1925,30 +1896,72 @@ rtl_verify_flow_info_1 (void)
 
    Currently it does following checks:
    - all checks of rtl_verify_flow_info_1
+   - test head/end pointers
    - check that all insns are in the basic blocks
      (except the switch handling code, barriers and notes)
    - check that all returns are followed by barriers
    - check that all fallthru edge points to the adjacent blocks.  */
+
 static int
 rtl_verify_flow_info (void)
 {
   basic_block bb;
   int err = rtl_verify_flow_info_1 ();
   rtx x;
+  rtx last_head = get_last_insn ();
+  basic_block *bb_info;
   int num_bb_notes;
   const rtx rtx_first = get_insns ();
   basic_block last_bb_seen = ENTRY_BLOCK_PTR, curr_bb = NULL;
+  const int max_uid = get_max_uid ();
+
+  bb_info = XCNEWVEC (basic_block, max_uid);
 
   FOR_EACH_BB_REVERSE (bb)
     {
       edge e;
       edge_iterator ei;
+      rtx head = BB_HEAD (bb);
+      rtx end = BB_END (bb);
 
-      if (bb->predictions)
+      /* Verify the end of the basic block is in the INSN chain.  */
+      for (x = last_head; x != NULL_RTX; x = PREV_INSN (x))
+	if (x == end)
+	  break;
+
+      if (!x)
 	{
-	  error ("bb prediction set for block %i, but it is not used in RTL land", bb->index);
+	  error ("end insn %d for block %d not found in the insn stream",
+		 INSN_UID (end), bb->index);
 	  err = 1;
 	}
+
+      /* Work backwards from the end to the head of the basic block
+	 to verify the head is in the RTL chain.  */
+      for (; x != NULL_RTX; x = PREV_INSN (x))
+	{
+	  /* While walking over the insn chain, verify insns appear
+	     in only one basic block.  */
+	  if (bb_info[INSN_UID (x)] != NULL)
+	    {
+	      error ("insn %d is in multiple basic blocks (%d and %d)",
+		     INSN_UID (x), bb->index, bb_info[INSN_UID (x)]->index);
+	      err = 1;
+	    }
+
+	  bb_info[INSN_UID (x)] = bb;
+
+	  if (x == head)
+	    break;
+	}
+      if (!x)
+	{
+	  error ("head insn %d for block %d not found in the insn stream",
+		 INSN_UID (head), bb->index);
+	  err = 1;
+	}
+
+      last_head = x;
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	if (e->flags & EDGE_FALLTHRU)
@@ -1993,6 +2006,8 @@ rtl_verify_flow_info (void)
 		}
 	}
     }
+
+  free (bb_info);
 
   num_bb_notes = 0;
   last_bb_seen = ENTRY_BLOCK_PTR;
