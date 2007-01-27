@@ -159,6 +159,10 @@ case "${host}" in
 	enable_hash_synchronization_default=yes
 	;;
   sparc*-*)
+	sysdeps_dir=sparc
+	# On Solaris we have defined 'sun' which later conflicts with 
+	# namespace usage. So to work this away we use the below undefine.
+	libgcj_flags="${libgcj_flags} -Usun"
 	libgcj_interpreter=yes
         ;;
   ia64-*)
