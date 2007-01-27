@@ -1,3 +1,8 @@
+2007-01-27  Paolo Bonzini  <bonzini@gnu.org>
+
+	* depstand.m4 (ZW_CREATE_DEPDIR): Use mkinstalldirs to make
+	directory.
+
 2007-01-23  Richard Guenther  <rguenther@suse.de>
 
 	PR bootstrap/30541

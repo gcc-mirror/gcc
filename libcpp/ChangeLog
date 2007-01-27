@@ -1,3 +1,7 @@
+2007-01-27  Tom Tromey  <tromey@redhat.com>
+
+	* configure: Rebuilt.
+
 2007-01-12  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/28227:

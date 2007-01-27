@@ -8801,7 +8801,7 @@ cat >>$CONFIG_STATUS <<_ACEOF
 # INIT-COMMANDS section.
 #
 
-DEPDIR=$DEPDIR
+ac_aux_dir=$ac_aux_dir DEPDIR=$DEPDIR
 
 _ACEOF
 
@@ -9535,7 +9535,7 @@ esac
   { echo "$as_me:$LINENO: executing $ac_dest commands" >&5
 echo "$as_me: executing $ac_dest commands" >&6;}
   case $ac_dest in
-    depdir ) mkdir $DEPDIR ;;
+    depdir ) $SHELL $ac_aux_dir/mkinstalldirs $DEPDIR ;;
   esac
 done
 _ACEOF

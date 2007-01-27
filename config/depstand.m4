@@ -1,6 +1,6 @@
 ##                                                          -*- Autoconf -*-
 
-# Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
+# Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
 # Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
@@ -132,5 +132,6 @@ AC_SUBST([DEPDIR], ["${am__leading_dot}deps"])dnl
 # As AM_SET_DEPDIR, but also create the directory at config.status time.
 AC_DEFUN([ZW_CREATE_DEPDIR],
 [AC_REQUIRE([AM_SET_DEPDIR])dnl
-AC_CONFIG_COMMANDS([depdir], [mkdir $DEPDIR], [DEPDIR=$DEPDIR])
+AC_CONFIG_COMMANDS([depdir], [$SHELL $ac_aux_dir/mkinstalldirs $DEPDIR],
+			     [ac_aux_dir=$ac_aux_dir DEPDIR=$DEPDIR])
 ])
