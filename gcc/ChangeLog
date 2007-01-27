@@ -1,3 +1,10 @@
+2007-01-26  Roger Sayle  <roger@eyesopen.com>
+
+	* config/i386/i386.c (ix86_swap_binary_operands_p): New helper
+	function to simplify/factorize operand order canonicalization.
+	(ix86_fixup_binary_operands): Reorganize using the above function.
+	(ix86_binary_operator_ok): Likewise.
+
 2007-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* genattrtab.c (struct attr_value_list, insn_code_values): Move to
