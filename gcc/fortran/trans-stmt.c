@@ -2878,7 +2878,8 @@ gfc_evaluate_where_mask (gfc_expr * me, forall_info * nested_forall_info,
 static tree
 gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2,
 			tree mask, bool invert,
-                        tree count1, tree count2)
+                        tree count1, tree count2,
+			gfc_symbol *sym)
 {
   gfc_se lse;
   gfc_se rse;
@@ -2992,8 +2993,12 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2,
     maskexpr = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (maskexpr), maskexpr);
 
   /* Use the scalar assignment as is.  */
-  tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
-				 loop.temp_ss != NULL, false);
+  if (sym == NULL)
+    tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
+				   loop.temp_ss != NULL, false);
+  else
+    tmp = gfc_conv_operator_assign (&lse, &rse, sym);
+
   tmp = build3_v (COND_EXPR, maskexpr, tmp, build_empty_stmt ());
 
   gfc_add_expr_to_block (&body, tmp);
@@ -3102,6 +3107,7 @@ gfc_trans_where_2 (gfc_code * code, tree mask, bool invert,
   tree ppmask = NULL_TREE;
   tree cmask = NULL_TREE;
   tree pmask = NULL_TREE;
+  gfc_actual_arglist *arg;
 
   /* the WHERE statement or the WHERE construct statement.  */
   cblock = code->block;
@@ -3213,13 +3219,29 @@ gfc_trans_where_2 (gfc_code * code, tree mask, bool invert,
           switch (cnext->op)
             {
             /* WHERE assignment statement.  */
+	    case EXEC_ASSIGN_CALL:
+
+	      arg = cnext->ext.actual;
+	      expr1 = expr2 = NULL;
+	      for (; arg; arg = arg->next)
+		{
+		  if (!arg->expr)
+		    continue;
+		  if (expr1 == NULL)
+		    expr1 = arg->expr;
+		  else
+		    expr2 = arg->expr;
+		}
+	      goto evaluate;
+
             case EXEC_ASSIGN:
               expr1 = cnext->expr;
               expr2 = cnext->expr2;
+    evaluate:
               if (nested_forall_info != NULL)
                 {
                   need_temp = gfc_check_dependency (expr1, expr2, 0);
-                  if (need_temp)
+                  if (need_temp && cnext->op != EXEC_ASSIGN_CALL)
                     gfc_trans_assign_need_temp (expr1, expr2,
 						cmask, invert,
                                                 nested_forall_info, block);
@@ -3233,7 +3255,8 @@ gfc_trans_where_2 (gfc_code * code, tree mask, bool invert,
 
                       tmp = gfc_trans_where_assign (expr1, expr2,
 						    cmask, invert,
-						    count1, count2);
+						    count1, count2,
+						    cnext->resolved_sym);
 
                       tmp = gfc_trans_nested_forall_loop (nested_forall_info,
                                                           tmp, 1);
@@ -3250,7 +3273,8 @@ gfc_trans_where_2 (gfc_code * code, tree mask, bool invert,
 
                   tmp = gfc_trans_where_assign (expr1, expr2,
 						cmask, invert,
-						count1, count2);
+						count1, count2,
+						cnext->resolved_sym);
                   gfc_add_expr_to_block (block, tmp);
 
                 }

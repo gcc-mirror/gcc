@@ -1249,6 +1249,48 @@ gfc_conv_function_val (gfc_se * se, gfc_symbol * sym)
 }
 
 
+/* Translate the call for an elemental subroutine call used in an operator
+   assignment.  This is a simplified version of gfc_conv_function_call.  */
+
+tree
+gfc_conv_operator_assign (gfc_se *lse, gfc_se *rse, gfc_symbol *sym)
+{
+  tree args;
+  tree tmp;
+  gfc_se se;
+  stmtblock_t block;
+
+  /* Only elemental subroutines with two arguments.  */
+  gcc_assert (sym->attr.elemental && sym->attr.subroutine);
+  gcc_assert (sym->formal->next->next == NULL);
+
+  gfc_init_block (&block);
+
+  gfc_add_block_to_block (&block, &lse->pre);
+  gfc_add_block_to_block (&block, &rse->pre);
+
+  /* Build the argument list for the call, including hidden string lengths.  */
+  args = gfc_chainon_list (NULL_TREE, build_fold_addr_expr (lse->expr));
+  args = gfc_chainon_list (args, build_fold_addr_expr (rse->expr));
+  if (lse->string_length != NULL_TREE)
+    args = gfc_chainon_list (args, lse->string_length);
+  if (rse->string_length != NULL_TREE)
+    args = gfc_chainon_list (args, rse->string_length);    
+
+  /* Build the function call.  */
+  gfc_init_se (&se, NULL);
+  gfc_conv_function_val (&se, sym);
+  tmp = TREE_TYPE (TREE_TYPE (TREE_TYPE (se.expr)));
+  tmp = build3 (CALL_EXPR, tmp, se.expr, args, NULL_TREE);
+  gfc_add_expr_to_block (&block, tmp);
+
+  gfc_add_block_to_block (&block, &lse->post);
+  gfc_add_block_to_block (&block, &rse->post);
+
+  return gfc_finish_block (&block);
+}
+
+
 /* Initialize MAPPING.  */
 
 void
