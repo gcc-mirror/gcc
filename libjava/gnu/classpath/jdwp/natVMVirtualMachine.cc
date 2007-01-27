@@ -28,7 +28,11 @@ details. */
 #include <gnu/classpath/jdwp/VMFrame.h>
 #include <gnu/classpath/jdwp/VMMethod.h>
 #include <gnu/classpath/jdwp/VMVirtualMachine.h>
+#include <gnu/classpath/jdwp/event/ClassPrepareEvent.h>
 #include <gnu/classpath/jdwp/event/EventRequest.h>
+#include <gnu/classpath/jdwp/event/ThreadEndEvent.h>
+#include <gnu/classpath/jdwp/event/ThreadStartEvent.h>
+#include <gnu/classpath/jdwp/event/VmDeathEvent.h>
 #include <gnu/classpath/jdwp/event/VmInitEvent.h>
 #include <gnu/classpath/jdwp/exception/InvalidMethodException.h>
 #include <gnu/classpath/jdwp/exception/JdwpInternalErrorException.h>
@@ -39,7 +43,12 @@ using namespace gnu::classpath::jdwp::event;
 using namespace gnu::classpath::jdwp::util;
 
 // Forward declarations
+static void JNICALL jdwpClassPrepareCB (jvmtiEnv *, JNIEnv *, jthread, jclass);
+static void JNICALL jdwpThreadEndCB (jvmtiEnv *, JNIEnv *, jthread);
+static void JNICALL jdwpThreadStartCB (jvmtiEnv *, JNIEnv *, jthread);
+static void JNICALL jdwpVMDeathCB (jvmtiEnv *, JNIEnv *);
 static void JNICALL jdwpVMInitCB (jvmtiEnv *, JNIEnv *, jthread);
+static void throw_jvmti_error (jvmtiError);
 
 #define DEFINE_CALLBACK(Cb,Event) Cb.Event = jdwp ## Event ## CB
 #define ENABLE_EVENT(Event,Thread)					\
@@ -313,20 +322,7 @@ getAllClassMethods (jclass klass)
   jmethodID *methods;
   jvmtiError err = _jdwp_jvmtiEnv->GetClassMethods (klass, &count, &methods);
   if (err != JVMTI_ERROR_NONE)
-    {
-      char *error;
-      jstring msg;
-      if (_jdwp_jvmtiEnv->GetErrorName (err, &error) != JVMTI_ERROR_NONE)
-	{
-	  msg = JvNewStringLatin1 (error);
-	  _jdwp_jvmtiEnv->Deallocate ((unsigned char *) error);
-	}
-      else
-	msg = JvNewStringLatin1 ("out of memory");
-
-      using namespace gnu::classpath::jdwp::exception;
-      throw new JdwpInternalErrorException (msg);
-    }
+    throw_jvmti_error (err);
 
   JArray<VMMethod *> *result
     = (JArray<VMMethod *> *) JvNewObjectArray (count,
@@ -407,10 +403,98 @@ getSourceFile (MAYBE_UNUSED jclass clazz)
   return NULL;
 }
 
+static void
+throw_jvmti_error (jvmtiError err)
+{
+  char *error;
+  jstring msg;
+  if (_jdwp_jvmtiEnv->GetErrorName (err, &error) == JVMTI_ERROR_NONE)
+    {
+      msg = JvNewStringLatin1 (error);
+      _jdwp_jvmtiEnv->Deallocate ((unsigned char *) error);
+    }
+  else
+    msg = JvNewStringLatin1 ("out of memory");
+
+  using namespace gnu::classpath::jdwp::exception;
+  throw new JdwpInternalErrorException (msg);
+}
+
+static void JNICALL
+jdwpClassPrepareCB (jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
+		    jthread thread, jclass klass)
+{
+  using namespace gnu::classpath::jdwp;
+
+  Thread *t = reinterpret_cast<Thread *> (thread);
+  jint flags = 0;
+  jvmtiError err = env->GetClassStatus (klass, &flags);
+  if (err != JVMTI_ERROR_NONE)
+    throw_jvmti_error (err);
+
+  using namespace gnu::classpath::jdwp::event;
+  jint status = 0;
+  if (flags & JVMTI_CLASS_STATUS_VERIFIED)
+    status |= ClassPrepareEvent::STATUS_VERIFIED;
+  if (flags & JVMTI_CLASS_STATUS_PREPARED)
+    status |= ClassPrepareEvent::STATUS_PREPARED;
+  if (flags & JVMTI_CLASS_STATUS_ERROR)
+    status |= ClassPrepareEvent::STATUS_ERROR;
+  if (flags & JVMTI_CLASS_STATUS_INITIALIZED)
+    status |= ClassPrepareEvent::STATUS_INITIALIZED;
+
+  event::ClassPrepareEvent *event
+    = new event::ClassPrepareEvent (t, klass, status);
+  Jdwp::notify (event);
+}
+
+static void JNICALL
+jdwpThreadEndCB (MAYBE_UNUSED jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
+		 jthread thread)
+{
+  using namespace gnu::classpath::jdwp::event;
+
+  Thread *t = reinterpret_cast<Thread *> (thread);
+  ThreadEndEvent *e = new ThreadEndEvent (t);
+  gnu::classpath::jdwp::Jdwp::notify (e);
+}
+
+static void JNICALL
+jdwpThreadStartCB (MAYBE_UNUSED jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
+		   jthread thread)
+{
+  using namespace gnu::classpath::jdwp::event;
+
+  Thread *t = reinterpret_cast<Thread *> (thread);
+  ThreadStartEvent *e = new ThreadStartEvent (t);
+  gnu::classpath::jdwp::Jdwp::notify (e);
+}
+
+static void JNICALL
+jdwpVMDeathCB (MAYBE_UNUSED jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env)
+{
+  using namespace gnu::classpath::jdwp::event;
+  gnu::classpath::jdwp::Jdwp::notify (new VmDeathEvent ());
+}
+
 static void JNICALL
 jdwpVMInitCB (MAYBE_UNUSED jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
 	      jthread thread)
 {
+  // The VM is now initialized, add our callbacks
+  jvmtiEventCallbacks callbacks;
+  DEFINE_CALLBACK (callbacks, ClassPrepare);
+  DEFINE_CALLBACK (callbacks, ThreadEnd);
+  DEFINE_CALLBACK (callbacks, ThreadStart);
+  DEFINE_CALLBACK (callbacks, VMDeath);
+  _jdwp_jvmtiEnv->SetEventCallbacks (&callbacks, sizeof (callbacks));
+
+  // Enable callbacks
+  ENABLE_EVENT (CLASS_PREPARE, NULL);
+  ENABLE_EVENT (THREAD_END, NULL);
+  ENABLE_EVENT (THREAD_START, NULL);
+  ENABLE_EVENT (VM_DEATH, NULL);
+
   // Send JDWP VMInit
   using namespace gnu::classpath::jdwp::event;
   Thread *init_thread = reinterpret_cast<Thread *> (thread);
