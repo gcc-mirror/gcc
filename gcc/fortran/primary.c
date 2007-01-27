@@ -766,6 +766,9 @@ next_string_char (char delimiter)
 	  gfc_current_locus = old_locus;
 	  break;
 	}
+
+      if (!(gfc_option.allow_std & GFC_STD_GNU) && !inhibit_warnings)
+	gfc_warning ("Extension: backslash character at %C");
     }
 
   if (c != delimiter)
