@@ -1,5 +1,6 @@
 2007-01-26  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/30278
 	* gfortran.dg/backslash_3.f: New test.
 
 2007-01-26  Joseph Myers  <joseph@codesourcery.com>
