@@ -1,3 +1,15 @@
+2007-01-27  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/natVMVirtualMachine.cc
+	(getAllClassMethods): Move error handling to ...
+	(throw_jvmti_error): ... here.
+	(jdwpClassPrepareCB): New function.
+	(jdwpThreadEndCB): New function.
+	(jdwpThreadStartCB): New function.
+	(jdwpVMDeathCB): New function.
+	(jdwpVMInitCB): Define and enable callbacks for
+	ClassPrepare, ThreadEnd, ThreadStart, and VMDeath.
+
 2007-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.am (generic_header_files): Add $(inner_nat_headers).
