@@ -1,3 +1,18 @@
+2007-01-27  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	Backport:
+	2006-11-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29106
+	* g++.dg/init/self1.C: New test.
+	* g++.dg/other/fold1.C: Adjust error markers.
+	* g++.dg/init/member1.C: Likewise.
+
+	2006-08-27  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/28284
+	* g++.dg/template/pr28284.C: New test.
+
 2006-11-18 Lee Millward <lee.millward@codesourcery.com>
 
 	PR c++/29022

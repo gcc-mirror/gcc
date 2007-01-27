@@ -1608,8 +1608,11 @@ constant_value_1 (tree decl, bool integral_p)
 	  mark_used (decl);
 	  init = DECL_INITIAL (decl);
 	}
+      /* If INIT is ERROR_MARK_NODE, that may mean that we are
+	 presently processing the initializer, so we conservatively
+	 treat this situation as meaning that DECL is uninitialized.  */
       if (init == error_mark_node)
-	return error_mark_node;
+	break;
       if (!init
 	  || !TREE_TYPE (init)
 	  || (integral_p

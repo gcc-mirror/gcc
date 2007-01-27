@@ -1,3 +1,19 @@
+2007-01-27  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	Backport:
+	2006-11-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29106
+	* init.c (constant_value_1): Treat a DECL_INITIAL of
+	error_mark_node as meaning that the variable is uninitialized,
+	rather than erroneously initialized.
+
+	2006-08-27  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/28284
+	* pt.c (fold_non_dependent_expr): Make sure expr is not dereferenced if it
+	is NULL.
+
 2007-01-25  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
