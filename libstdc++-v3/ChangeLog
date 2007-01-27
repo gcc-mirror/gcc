@@ -1,3 +1,10 @@
+2007-01-27   Steve LoBasso <slobasso@yahoo.com>
+	     Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/deque.tcc (deque<>::erase(iterator, iterator)):
+	Fix condition.
+	* testsuite/23_containers/deque/modifiers/erase/3.cc: New.
+
 2007-01-26  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/30586
