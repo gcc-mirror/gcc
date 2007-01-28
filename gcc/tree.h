@@ -4454,7 +4454,6 @@ extern void build_common_builtin_nodes (void);
 extern tree build_nonstandard_integer_type (unsigned HOST_WIDE_INT, int);
 extern tree build_range_type (tree, tree, tree);
 extern HOST_WIDE_INT int_cst_value (tree);
-extern tree tree_fold_gcd (tree, tree);
 extern tree build_addr (tree, tree);
 
 extern bool fields_compatible_p (tree, tree);

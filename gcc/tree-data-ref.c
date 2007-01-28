@@ -561,11 +561,11 @@ base_addr_differ_p (struct data_reference *dra,
 /* Returns true iff A divides B.  */
 
 static inline bool 
-tree_fold_divides_p (tree a, 
-		     tree b)
+tree_fold_divides_p (tree a, tree b)
 {
-  /* Determines whether (A == gcd (A, B)).  */
-  return tree_int_cst_equal (a, tree_fold_gcd (a, b));
+  gcc_assert (TREE_CODE (a) == INTEGER_CST);
+  gcc_assert (TREE_CODE (b) == INTEGER_CST);
+  return integer_zerop (int_const_binop (TRUNC_MOD_EXPR, b, a, 0));
 }
 
 /* Returns true iff A divides B.  */
