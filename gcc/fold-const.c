@@ -1815,13 +1815,23 @@ size_binop (enum tree_code code, tree arg0, tree arg1)
   if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
     {
       /* And some specific cases even faster than that.  */
-      if (code == PLUS_EXPR && integer_zerop (arg0))
-	return arg1;
-      else if ((code == MINUS_EXPR || code == PLUS_EXPR)
-	       && integer_zerop (arg1))
-	return arg0;
-      else if (code == MULT_EXPR && integer_onep (arg0))
-	return arg1;
+      if (code == PLUS_EXPR)
+	{
+	  if (integer_zerop (arg0) && !TREE_OVERFLOW (arg0))
+	    return arg1;
+	  if (integer_zerop (arg1) && !TREE_OVERFLOW (arg1))
+	    return arg0;
+	}
+      else if (code == MINUS_EXPR)
+	{
+	  if (integer_zerop (arg1) && !TREE_OVERFLOW (arg1))
+	    return arg0;
+	}
+      else if (code == MULT_EXPR)
+	{
+	  if (integer_onep (arg0) && !TREE_OVERFLOW (arg0))
+	    return arg1;
+	}
 
       /* Handle general case of two integer constants.  */
       return int_const_binop (code, arg0, arg1, 0);
@@ -13505,10 +13515,36 @@ round_up (tree value, int divisor)
     {
       tree t;
 
-      t = build_int_cst (TREE_TYPE (value), divisor - 1);
-      value = size_binop (PLUS_EXPR, value, t);
-      t = build_int_cst (TREE_TYPE (value), -divisor);
-      value = size_binop (BIT_AND_EXPR, value, t);
+      if (TREE_CODE (value) == INTEGER_CST)
+	{
+	  unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (value);
+	  HOST_WIDE_INT high;
+
+	  if ((low & (divisor - 1)) == 0)
+	    return value;
+
+	  high = TREE_INT_CST_HIGH (value);
+	  low &= ~(divisor - 1);
+	  low += divisor;
+	  if (low == 0)
+	    high++;
+
+	  t = build_int_cst_wide_type (TREE_TYPE (value), low, high);
+	  if ((TREE_OVERFLOW (value) || integer_zerop (t))
+	      && !TREE_OVERFLOW (t))
+	    {
+	      t = copy_node (t);
+	      TREE_OVERFLOW (t) = 1;
+	    }
+	  return t;
+	}
+      else
+	{
+	  t = build_int_cst (TREE_TYPE (value), divisor - 1);
+	  value = size_binop (PLUS_EXPR, value, t);
+	  t = build_int_cst (TREE_TYPE (value), -divisor);
+	  value = size_binop (BIT_AND_EXPR, value, t);
+	}
     }
   else
     {

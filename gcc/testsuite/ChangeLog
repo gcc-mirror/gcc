@@ -1,5 +1,9 @@
 2007-01-27  Roger Sayle  <roger@eyesopen.com>
 
+	* gcc-dg/large-size-array-3.c: New test case.
+
+2007-01-27  Roger Sayle  <roger@eyesopen.com>
+
 	* gfortran.dg/forall_7.f90: New test case.
 
 2007-01-27  Paul Thomas  <pault@gcc.gnu.org>

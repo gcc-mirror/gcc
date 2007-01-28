@@ -1,3 +1,11 @@
+2007-01-27  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (size_binop): In the fast-paths for X+0, 0+X, X-0 and
+	1*X check that the constant hasn't overflowed, to preserve the
+	TREE_OVERFLOW bit.
+	(round_up): Provide an efficient implementation when rouding-up an
+	INTEGER_CST to a power-of-two.
+
 2007-01-28  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/sourcebuild.texi: Add comma for clarity.
