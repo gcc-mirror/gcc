@@ -12527,8 +12527,8 @@ multiple_of_p (tree type, tree top, tree bottom)
 	      && (tree_int_cst_sgn (top) < 0
 		  || tree_int_cst_sgn (bottom) < 0)))
 	return 0;
-      return integer_zerop (const_binop (TRUNC_MOD_EXPR,
-					 top, bottom, 0));
+      return integer_zerop (int_const_binop (TRUNC_MOD_EXPR,
+					     top, bottom, 0));
 
     default:
       return 0;

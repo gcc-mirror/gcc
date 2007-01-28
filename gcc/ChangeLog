@@ -1,5 +1,16 @@
 2007-01-27  Roger Sayle  <roger@eyesopen.com>
 
+	* tree.c (tree_fold_gcd): Delete.
+	* tree.h (tree_fold_gcd): Remove prototype.
+	* tree-data-ref.c (tree_fold_divides_p): Don't use tree_fold_gcd to
+	test whether one constant integer is a multiple of another.  Instead
+	call int_const_binop with TRUNC_MOD_EXPR and test for a zero result.
+	* fold-const.c (multiple_of_p):  We've determined both TOP and
+	BOTTOM are integer constants so we can call int_const_binop directly
+	instead of the more generic const_binop.
+
+2007-01-27  Roger Sayle  <roger@eyesopen.com>
+
 	* fold-const.c (size_binop): In the fast-paths for X+0, 0+X, X-0 and
 	1*X check that the constant hasn't overflowed, to preserve the
 	TREE_OVERFLOW bit.
