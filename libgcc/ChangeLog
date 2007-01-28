@@ -1,3 +1,9 @@
+2007-01-28  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	PR bootstrap/30469
+	* Makefile.in (CFLAGS): Forcibly remove -fprofile-generate and
+	-fprofile-use.
+
 2007-01-25  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* configure.ac: Add --enable-version-specific-runtime-libs.
