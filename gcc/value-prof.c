@@ -1449,7 +1449,7 @@ stringop_block_profile (tree stmt, unsigned int *expected_align,
     }
   histogram = gimple_histogram_value_of_type (cfun, stmt, HIST_TYPE_IOR);
   if (!histogram)
-    *expected_size = -1;
+    *expected_align = 0;
   else
     {
       gcov_type count;

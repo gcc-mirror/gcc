@@ -3700,7 +3700,8 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode,
 			       builtin_memset_gen_str, val_rtx, dest_align, 0);
 	    }
 	  else if (!set_storage_via_setmem (dest_mem, len_rtx, val_rtx,
-					    dest_align, -1, 0))
+					    dest_align, expected_align,
+					    expected_size))
 	    goto do_libcall;
 
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
