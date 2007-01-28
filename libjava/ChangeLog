@@ -1,3 +1,9 @@
+2007-01-28  Michele Sandri  <gpointorama@gmail.com>
+
+	* gnu/java/nio/channels/natFileChannelWin32.cc
+	(lock): Implemented.
+	(unlock): Implemented.
+
 2007-01-24  Marco Trudel  <mtrudel@gmx.ch>
 
 	* java/security/Security.java
