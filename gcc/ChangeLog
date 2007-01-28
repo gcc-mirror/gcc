@@ -1,3 +1,8 @@
+2007-01-28  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-data-ref.c (conflict_fn): Assert that the number of affine
+	relations in the conflict function is valid.
+
 2007-01-27  Ian Lance Taylor  <iant@google.com>
 
 	* common.opt: Add fstrict-overflow.
