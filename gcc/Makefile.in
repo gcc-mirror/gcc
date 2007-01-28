@@ -2434,7 +2434,7 @@ ipa-prop.o : ipa-prop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h  \
    langhooks.h $(GGC_H) $(TARGET_H) $(CGRAPH_H) ipa-prop.h \
    $(TREE_FLOW_H) $(TM_H) tree-pass.h $(FLAGS_H) $(TREE_H)
 ipa-cp.o : ipa-cp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h  \
-   langhooks.h $(TARGET_H) $(CGRAPH_H) ipa-prop.h  \
+   langhooks.h $(TARGET_H) $(CGRAPH_H) ipa-prop.h tree-inline.h tree-dump.h \
    $(TREE_FLOW_H) $(TM_H) tree-pass.h $(FLAGS_H) $(TREE_H) $(DIAGNOSTIC_H)
 ipa-inline.o : ipa-inline.c gt-ipa-inline.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) $(FLAGS_H) $(CGRAPH_H) intl.h \
