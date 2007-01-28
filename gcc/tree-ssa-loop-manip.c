@@ -37,6 +37,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "cfglayout.h"
 #include "tree-scalar-evolution.h"
 #include "params.h"
+#include "tree-inline.h"
 
 /* Creates an induction variable with value BASE + STEP * iteration in LOOP.
    It is expected that neither BASE nor STEP are shared with other expressions
@@ -640,7 +641,7 @@ can_unroll_loop_p (struct loop *loop, unsigned factor,
     return false;
 
   /* The final loop should be small enough.  */
-  if (tree_num_loop_insns (loop) * factor
+  if (tree_num_loop_insns (loop, &eni_size_weights) * factor
       > (unsigned) PARAM_VALUE (PARAM_MAX_UNROLLED_INSNS))
     return false;
 

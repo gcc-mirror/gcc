@@ -87,7 +87,7 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
       if (get_call_expr_in (last))
 	return false;
 
-      *limit -= estimate_num_insns (last);
+      *limit -= estimate_num_insns (last, &eni_size_weights);
       if (*limit < 0)
 	return false;
     }

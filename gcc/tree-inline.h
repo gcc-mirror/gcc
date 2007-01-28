@@ -93,6 +93,37 @@ typedef struct copy_body_data
   struct pointer_set_t *statements_to_fold;
 } copy_body_data;
 
+/* Weights of constructions for estimate_num_insns.  */
+
+typedef struct eni_weights_d
+{
+  /* Cost per call.  */
+  unsigned call_cost;
+
+  /* Cost of "expensive" div and mod operations.  */
+  unsigned div_mod_cost;
+
+  /* Cost of switch statement.  */
+  unsigned switch_cost;
+
+  /* Cost for omp construct.  */
+  unsigned omp_cost;
+} eni_weights;
+
+/* Weights that estimate_num_insns uses for heuristics in inlining.  */
+
+extern eni_weights eni_inlining_weights;
+
+/* Weights that estimate_num_insns uses to estimate the size of the
+   produced code.  */
+
+extern eni_weights eni_size_weights;
+
+/* Weights that estimate_num_insns uses to estimate the time necessary
+   to execute the produced code.  */
+
+extern eni_weights eni_time_weights;
+
 /* Function prototypes.  */
 
 extern tree copy_body_r (tree *, int *, void *);
@@ -106,7 +137,7 @@ void save_body (tree, tree *, tree *);
 int estimate_move_cost (tree type);
 void push_cfun (struct function *new_cfun);
 void pop_cfun (void);
-int estimate_num_insns (tree expr);
+int estimate_num_insns (tree expr, eni_weights *);
 bool tree_versionable_function_p (tree);
 void tree_function_versioning (tree, tree, varray_type, bool);
 

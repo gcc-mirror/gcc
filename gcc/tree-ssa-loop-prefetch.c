@@ -45,6 +45,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "params.h"
 #include "langhooks.h"
+#include "tree-inline.h"
 
 /* This pass inserts prefetch instructions to optimize cache usage during
    accesses to arrays in loops.  It processes loops sequentially and:
@@ -954,7 +955,7 @@ loop_prefetch_arrays (struct loop *loop)
 
   /* FIXME: We should use not size of the loop, but the average number of
      instructions executed per iteration of the loop.  */
-  ninsns = tree_num_loop_insns (loop);
+  ninsns = tree_num_loop_insns (loop, &eni_time_weights);
   ahead = (PREFETCH_LATENCY + ninsns - 1) / ninsns;
   unroll_factor = determine_unroll_factor (loop, refs, ninsns, &desc);
   if (dump_file && (dump_flags & TDF_DETAILS))
