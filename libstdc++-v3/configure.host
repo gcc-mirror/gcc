@@ -119,8 +119,17 @@ esac
 # Set specific CPU overrides for atomic_word_dir. Most can just use generic.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${host_cpu}" in
+  alpha*)
+    atomic_word_dir=cpu/alpha
+    ;;
   cris*)
     atomic_word_dir=cpu/cris
+    ;;
+  ia64)
+    atomic_word_dir=cpu/ia64
+    ;;
+  powerpc* | rs6000)
+    atomic_word_dir=cpu/powerpc
     ;;
   sparc* | ultrasparc)
     atomic_word_dir=cpu/sparc
