@@ -1,3 +1,7 @@
+2007-01-28  David Edelsohn  <edelsohn@gnu.org>
+
+        * MAINTAINERS (spu port): Add myself.
+
 2007-01-23  Richard Guenther  <rguenther@suse.de>
 
 	PR bootstrap/30541
@@ -2611,7 +2615,7 @@
 	of libf2c.
 	* configure, Makefile.in: Regenerate.
 
-2004-05-13  Tobias SchlÃƒÂƒÃ‚Â¼ter  <tobi@gcc.gnu.org>
+2004-05-13  Tobias SchlÃÂÃÂ¼ter  <tobi@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
 
