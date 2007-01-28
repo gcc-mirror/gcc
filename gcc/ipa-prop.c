@@ -244,15 +244,17 @@ static void
 ipa_method_modify_stmt (struct cgraph_node *mt, tree stmt)
 {
   int i, j;
+  tree parm_decl;
 
   switch (TREE_CODE (stmt))
     {
     case GIMPLE_MODIFY_STMT:
-      if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == PARM_DECL)
+	  if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == PARM_DECL)
 	{
-	  i = ipa_method_tree_map (mt, GIMPLE_STMT_OPERAND (stmt, 0));
+	  parm_decl = GIMPLE_STMT_OPERAND (stmt, 0);
+	  i = ipa_method_tree_map (mt, parm_decl);
 	  if (i >= 0)
-            ipa_method_modify_set (mt, i, true);
+	    ipa_method_modify_set (mt, i, true);
 	}
       break;
     case ASM_EXPR:
@@ -292,11 +294,15 @@ ipa_method_compute_modify (struct cgraph_node *mt)
   block_stmt_iterator bsi;
   tree stmt, parm_tree;
 
+  if (ipa_method_formal_count (mt) == 0)
+    return;
+
   ipa_method_modify_init (mt);
   decl = mt->decl;
   count = ipa_method_formal_count (mt);
   /* ??? Handle pending sizes case. Set all parameters 
      of the method to be modified.  */
+
   if (DECL_UNINLINABLE (decl))
     {
       for (j = 0; j < count; j++)
@@ -307,7 +313,8 @@ ipa_method_compute_modify (struct cgraph_node *mt)
   for (j = 0; j < count; j++)
     {
       parm_tree = ipa_method_get_tree (mt, j);
-      if (TREE_ADDRESSABLE (parm_tree))
+      if (!is_gimple_reg (parm_tree) 
+	  && TREE_ADDRESSABLE (parm_tree))
 	ipa_method_modify_set (mt, j, true);
     }
   body = DECL_SAVED_TREE (decl);
@@ -378,7 +385,8 @@ ipa_callsite_param_set_info_type_formal (struct cgraph_edge *cs, int i,
 /* Set int-valued INFO_TYPE1 as 'info_type' field of 
    jump function (ipa_jump_func struct) of argument I of callsite CS.  */
 static inline void
-ipa_callsite_param_set_info_type (struct cgraph_edge *cs, int i, tree info_type1)
+ipa_callsite_param_set_info_type (struct cgraph_edge *cs, int i,
+				  tree info_type1)
 {
   ipa_callsite_param (cs, i)->info_type.value = info_type1;
 }
@@ -435,6 +443,8 @@ ipa_callsite_compute_param (struct cgraph_edge *cs)
   int arg_num;
   int i;
   struct cgraph_node *mt;
+  tree parm_decl;
+  struct function *curr_cfun;
 
   if (ipa_callsite_param_count (cs) == 0)
     return;
@@ -449,11 +459,25 @@ ipa_callsite_compute_param (struct cgraph_edge *cs)
       /* If the formal parameter was passed as argument, we store 
          FORMAL_IPATYPE and its index in the caller as the jump function 
          of this argument.  */
-      if (TREE_CODE (TREE_VALUE (arg)) == PARM_DECL)
+      if ((TREE_CODE (TREE_VALUE (arg)) == SSA_NAME
+	   && TREE_CODE (SSA_NAME_VAR (TREE_VALUE (arg))) == PARM_DECL)
+	  || TREE_CODE (TREE_VALUE (arg)) == PARM_DECL)
 	{
 	  mt = ipa_callsite_caller (cs);
-	  i = ipa_method_tree_map (mt, TREE_VALUE (arg));
-	  if (i < 0 || ipa_method_is_modified (mt, i))
+	  parm_decl =
+	    TREE_CODE (TREE_VALUE (arg)) ==
+	    PARM_DECL ? TREE_VALUE (arg) : SSA_NAME_VAR (TREE_VALUE (arg));
+          
+	  i = ipa_method_tree_map (mt, parm_decl);
+	  if (TREE_CODE (TREE_VALUE (arg)) == SSA_NAME 
+	      && IS_VALID_TREE_MAP_INDEX (i)) 
+	    {
+              curr_cfun = DECL_STRUCT_FUNCTION (mt->decl);
+	      if (!gimple_default_def (curr_cfun, parm_decl) 
+	          || gimple_default_def (curr_cfun, parm_decl) != TREE_VALUE (arg))
+		    ipa_method_modify_set (mt, i, true); 
+            }
+	  if (!IS_VALID_TREE_MAP_INDEX (i) || ipa_method_is_modified (mt, i))
 	    ipa_callsite_param_set_type (cs, arg_num, UNKNOWN_IPATYPE);
 	  else
 	    {
