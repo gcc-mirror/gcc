@@ -1,3 +1,12 @@
+2007-01-28  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/sourcebuild.texi: Add comma for clarity.
+	* doc/extend.texi: Fix some typos.
+	* doc/passes.texi: Likewise.
+	* doc/cppinternals.texi: Likewise.
+	* doc/c-tree.texi: Likewise.
+	* doc/tree-ssa.texi: Likewise.
+
 2007-01-26  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/29516
