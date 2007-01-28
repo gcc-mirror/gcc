@@ -4704,6 +4704,13 @@ respectively, a low or moderate degree of temporal locality.
 Targets that do not support write prefetches or locality hints can ignore
 the values of operands 1 and 2.
 
+@cindex @code{blockage} instruction pattern
+@item @samp{blockage}
+
+This pattern defines a pseudo insn that prevents the instruction
+scheduler from moving instructions across the boundary defined by the
+blockage insn.  Normally an UNSPEC_VOLATILE pattern.
+
 @cindex @code{memory_barrier} instruction pattern
 @item @samp{memory_barrier}
 
