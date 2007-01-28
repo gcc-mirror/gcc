@@ -6,6 +6,7 @@
 	* doc/cppinternals.texi: Likewise.
 	* doc/c-tree.texi: Likewise.
 	* doc/tree-ssa.texi: Likewise.
+	* doc/install.texi: Likewise.
 
 2007-01-27  Jan Hubicka  <jh@suse.cz>
 
