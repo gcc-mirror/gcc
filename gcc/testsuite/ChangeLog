@@ -1,3 +1,9 @@
+2007-01-28  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/30389
+	* gfortran.dg/achar_2.f90:  New test.
+	* gfortran.dg/achar_3.f90:  New test.
+
 2007-01-27  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/strict-overflow-1.c: New test.
