@@ -329,16 +329,21 @@ typedef HOST_WIDEST_INT gcov_type;
 				      consecutive values of expression.  */
 
 #define GCOV_COUNTER_V_INDIR	5  /* The most common indirect address */
-#define GCOV_LAST_VALUE_COUNTER 5  /* The last of counters used for value
+#define GCOV_COUNTER_AVERAGE	6  /* The most common difference between
+				      consecutive values of expression.  */
+#define GCOV_COUNTER_IOR	7  /* The most common difference between
+				      consecutive values of expression.  */
+#define GCOV_LAST_VALUE_COUNTER 7  /* The last of counters used for value
 				      profiling.  */
-#define GCOV_COUNTERS		6
+#define GCOV_COUNTERS		8
 
 /* Number of counters used for value profiling.  */
 #define GCOV_N_VALUE_COUNTERS \
   (GCOV_LAST_VALUE_COUNTER - GCOV_FIRST_VALUE_COUNTER + 1)
   
   /* A list of human readable names of the counters */
-#define GCOV_COUNTER_NAMES	{"arcs", "interval", "pow2", "single", "delta", "indirect_call"}
+#define GCOV_COUNTER_NAMES	{"arcs", "interval", "pow2", "single", \
+				 "delta","indirect_call", "average", "ior"}
   
   /* Names of merge functions for counters.  */
 #define GCOV_MERGE_FUNCTIONS	{"__gcov_merge_add",	\
@@ -346,7 +351,9 @@ typedef HOST_WIDEST_INT gcov_type;
 				 "__gcov_merge_add",	\
 				 "__gcov_merge_single",	\
 				 "__gcov_merge_delta",  \
-				 "__gcov_merge_single" }
+				 "__gcov_merge_single", \
+				 "__gcov_merge_add",	\
+				 "__gcov_merge_ior"}
   
 /* Convert a counter index to a tag.  */
 #define GCOV_TAG_FOR_COUNTER(COUNT)				\

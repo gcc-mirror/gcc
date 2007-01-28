@@ -614,6 +614,18 @@ __gcov_merge_add (gcov_type *counters, unsigned n_counters)
 }
 #endif /* L_gcov_merge_add */
 
+#ifdef L_gcov_merge_ior
+/* The profile merging function that just adds the counters.  It is given
+   an array COUNTERS of N_COUNTERS old counters and it reads the same number
+   of counters from the gcov file.  */
+void
+__gcov_merge_ior (gcov_type *counters, unsigned n_counters)
+{
+  for (; n_counters; counters++, n_counters--)
+    *counters |= gcov_read_counter ();
+}
+#endif
+
 #ifdef L_gcov_merge_single
 /* The profile merging function for choosing the most common value.
    It is given an array COUNTERS of N_COUNTERS old counters and it
@@ -767,6 +779,30 @@ __gcov_indirect_call_profiler (gcov_type* counter, gcov_type value,
 {
   if (cur_func == callee_func)
     __gcov_one_value_profiler_body (counter, value);
+}
+#endif
+
+
+#ifdef L_gcov_average_profiler
+/* Increase corresponding COUNTER by VALUE.  FIXME: Perhaps we want
+   to saturate up.  */
+
+void
+__gcov_average_profiler (gcov_type *counters, gcov_type value)
+{
+  counters[0] += value;
+  counters[1] ++;
+}
+#endif
+
+#ifdef L_gcov_ior_profiler
+/* Increase corresponding COUNTER by VALUE.  FIXME: Perhaps we want
+   to saturate up.  */
+
+void
+__gcov_ior_profiler (gcov_type *counters, gcov_type value)
+{
+  *counters |= value;
 }
 #endif
 
