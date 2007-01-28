@@ -1,6 +1,7 @@
 // istream classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+// 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -121,7 +122,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	{
 	  if (numeric_limits<short>::min() <= __l
 	      && __l <= numeric_limits<short>::max())
-	    __n = __l;
+	    __n = short(__l);
 	  else
 	    this->setstate(ios_base::failbit);
 	}
@@ -141,7 +142,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	{
 	  if (numeric_limits<int>::min() <= __l
 	      && __l <= numeric_limits<int>::max())
-	    __n = __l;
+	    __n = int(__l);
 	  else
 	    this->setstate(ios_base::failbit);
 	}
