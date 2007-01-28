@@ -111,10 +111,10 @@ create_canonical_iv (struct loop *loop, edge exit, tree niter)
   update_stmt (cond);
 }
 
-/* Computes an estimated number of insns in LOOP.  */
+/* Computes an estimated number of insns in LOOP, weighted by WEIGHTS.  */
 
 unsigned
-tree_num_loop_insns (struct loop *loop)
+tree_num_loop_insns (struct loop *loop, eni_weights *weights)
 {
   basic_block *body = get_loop_body (loop);
   block_stmt_iterator bsi;
@@ -122,7 +122,7 @@ tree_num_loop_insns (struct loop *loop)
 
   for (i = 0; i < loop->num_nodes; i++)
     for (bsi = bsi_start (body[i]); !bsi_end_p (bsi); bsi_next (&bsi))
-      size += estimate_num_insns (bsi_stmt (bsi));
+      size += estimate_num_insns (bsi_stmt (bsi), weights);
   free (body);
 
   return size;
@@ -182,7 +182,7 @@ try_unroll_loop_completely (struct loop *loop,
       if (ul == UL_SINGLE_ITER)
 	return false;
 
-      ninsns = tree_num_loop_insns (loop);
+      ninsns = tree_num_loop_insns (loop, &eni_size_weights);
 
       if (n_unroll * ninsns
 	  > (unsigned) PARAM_VALUE (PARAM_MAX_COMPLETELY_PEELED_INSNS))

@@ -36,6 +36,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "domwalk.h"
 #include "params.h"
 #include "tree-pass.h"
+#include "tree-inline.h"
 
 /* This file implements the loop unswitching, i.e. transformation of loops like
 
@@ -191,7 +192,7 @@ tree_unswitch_single_loop (struct loop *loop, int num)
     }
 
   /* The loop should not be too large, to limit code growth.  */
-  if (tree_num_loop_insns (loop)
+  if (tree_num_loop_insns (loop, &eni_size_weights)
       > (unsigned) PARAM_VALUE (PARAM_MAX_UNSWITCH_INSNS))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))

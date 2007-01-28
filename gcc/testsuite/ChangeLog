@@ -1,3 +1,7 @@
+2007-01-28  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/loop-23.c: New test.
+
 2007-01-28  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/30389

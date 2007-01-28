@@ -1949,6 +1949,7 @@ backend_init (void)
   init_regs ();
   init_fake_stack_mems ();
   init_alias_once ();
+  init_inline_once ();
   init_reload ();
   init_varasm_once ();
 

@@ -1379,7 +1379,8 @@ compute_inline_parameters (void)
   node->global.estimated_stack_size = node->local.estimated_self_stack_size;
   node->global.stack_frame_offset = 0;
   node->local.inlinable = tree_inlinable_function_p (current_function_decl);
-  node->local.self_insns = estimate_num_insns (current_function_decl);
+  node->local.self_insns = estimate_num_insns (current_function_decl,
+					       &eni_inlining_weights);
   if (node->local.inlinable)
     node->local.disregard_inline_limits
       = lang_hooks.tree_inlining.disregard_inline_limits (current_function_decl);

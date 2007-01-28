@@ -1,5 +1,41 @@
 2007-01-28  Zdenek Dvorak <dvorakz@suse.cz>
 
+	* tree-ssa-loop-unswitch.c: Include tree-inline.h.
+	(tree_unswitch_single_loop): Pass eni_size_weights to
+	tree_num_loop_insns.
+	* tree-ssa-loop-manip.c: Include tree-inline.h.
+	(can_unroll_loop_p): Pass eni_size_weights to
+	tree_num_loop_insns.
+	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p):
+	Pass eni_size_weights to estimate_num_insns.
+	* tree.h (init_inline_once): Export.
+	* toplev.c (backend_init): Call init_inline_once.
+	* cgraphunit.c (cgraph_process_new_functions,
+	cgraph_analyze_function): Pass eni_inlining_weights to
+	estimate_num_insns.
+	* ipa-inline.c (compute_inline_parameters): Ditto.
+	* tree-ssa-loop-ivcanon.c (tree_num_loop_insns): Pass weights
+	to estimate_num_insns.
+	(try_unroll_loop_completely): Pass eni_size_weights to
+	tree_num_loop_insns.
+	* tree-eh.c (decide_copy_try_finally): Pass eni_size_weights
+	ot estimate_num_insns.
+	* tree-ssa-loop-prefetch.c: Include tree-inline.h.
+	(loop_prefetch_arrays): Pass eni_time_weights to tree_num_loop_insns.
+	* tree-inline.c (eni_inlining_weights, eni_size_weights,
+	eni_time_weights): New variables.
+	(init_inline_once): Initialize them.
+	(struct eni_data): Mew.
+	(estimate_num_insns_1, estimate_num_insns): Use weights.
+	* tree-inline.h (struct eni_weights_d): New.
+	(eni_inlining_weights, eni_size_weights, eni_time_weights): Declare.
+	(estimate_num_insns): Declaration changed.
+	* cfgloop.h (tree_num_loop_insns): Declaration changed.
+	* Makefile.in (tree-ssa-loop-unswitch.o, tree-ssa-loop-prefetch.o,
+	tree-ssa-loop-manip.o): Add TREE_INLINE_H dependency.
+
+2007-01-28  Zdenek Dvorak <dvorakz@suse.cz>
+
 	* tree-data-ref.c (conflict_fn): Assert that the number of affine
 	relations in the conflict function is valid.
 
