@@ -902,6 +902,10 @@ fstrict-aliasing
 Common Report Var(flag_strict_aliasing)
 Assume strict aliasing rules apply
 
+fstrict-overflow
+Common Report Var(flag_strict_overflow)
+Treat signed overflow as undefined
+
 fsyntax-only
 Common Report Var(flag_syntax_only)
 Check for syntax errors, then stop

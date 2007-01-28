@@ -2,7 +2,7 @@
    Origin: Kaveh R. Ghazi <ghazi@caip.rutgers.edu> 5/13/2001.  */
 
 /* { dg-do compile } */
-/* { dg-options "-Wsign-compare" } */
+/* { dg-options "-Wsign-compare -fstrict-overflow" } */
 
 extern void bar(void);
 
@@ -21,7 +21,8 @@ int foo(int x, int y, unsigned u)
   if ((x ? 10 : (bar(),bar(),bar(),bar(),x==y)) < u)
     return x;
 
-  /* Test an ABS_EXPR, which is by definition non-negative.  */
+  /* Test an ABS_EXPR, which is by definition non-negative when
+     -fstrict-overflow is used.  */
   if (u < __builtin_abs(x))
     return x;
   if (__builtin_abs(x) < u)

@@ -1,3 +1,31 @@
+2007-01-27  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/strict-overflow-1.c: New test.
+	* gcc.dg/no-strict-overflow-1.c: New test.
+	* gcc.dg/strict-overflow-2.c: New test.
+	* gcc.dg/no-strict-overflow-2.c: New test.
+	* gcc.dg/strict-overflow-3.c: New test.
+	* gcc.dg/no-strict-overflow-3.c: New test.
+	* gcc.dg/strict-overflow-4.c: New test.
+	* gcc.dg/no-strict-overflow-4.c: New test.
+	* gcc.dg/fold-mod-1.c: Add -fstrict-overflow option.
+	* gcc.dg/pr15784-1.c: Likewise.
+	* gcc.dg/pr20922-1.c: Likewise.
+	* gcc.dg/pr20922-3.c: Likewise.
+	* gcc.dg/pr20922-4.c: Likewise.
+	* gcc.dg/pr20922-6.c: Likewise.
+	* gcc.dg/compare-4.c: Likewise.
+	* gcc.dg/torture/pr26898-1.c: Likewise.
+	* gcc.dg/tree-ssa/divide-1.c: Likewise.
+	* gcc.dg/tree-ssa/divide-2.c: Likewise.
+	* gcc.dg/tree-ssa/divide-3.c: Likewise.
+	* gcc.dg/tree-ssa/divide-4.c: Likewise.
+	* gcc.dg/tree-ssa/pr14490-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr14490-3.c: Likewise.
+	* gcc.dg/tree-ssa/pr21082.c: Likewise.
+	* gcc.dg/tree-ssa/pr26899.c: Likewise.
+	* g++.dg/tree-ssa/pr21082.C: Likewise.
+
 2007-01-27  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc-dg/large-size-array-3.c: New test case.

@@ -1,3 +1,47 @@
+2007-01-27  Ian Lance Taylor  <iant@google.com>
+
+	* common.opt: Add fstrict-overflow.
+	* opts.c (decode_options): Set flag_strict_overflow if -O2.
+	* flags.h (TYPE_OVERFLOW_WRAPS): Define.
+	(TYPE_OVERFLOW_UNDEFINED): Define.
+	(TYPE_OVERFLOW_TRAPS): Define.  This replaces TYPE_TRAP_SIGNED.
+	Replace all uses.
+	* tree.h (TYPE_TRAP_SIGNED): Don't define.
+	* fold-const.c (negate_expr_p): Use TYPE_OVERFLOW_UNDEFINED.
+	(fold_negate_expr): Likewise.
+	(make_range): Likewise.
+	(extract_muldiv_1): Likewise.
+	(maybe_canonicalize_comparison): Likewise.
+	(fold_comparison): Likewise.
+	(fold_binary): Likewise.
+	(tree_expr_nonnegative_p): Likewise.
+	(tree_expr_nonzero_p): Likewise.
+	* tree-vrp.c (compare_values): Likewise.
+	(extract_range_from_binary_expr): Likewise.
+	(extract_range_from_unary_expr): Likewise.
+	* tree-ssa-loop-niter.c (infer_loop_bounds_from_signedness):
+	Likewise.
+	(nowrap_type_p): Likewise.
+	* tree-scalar-evolution.c (simple_iv): Likewise.
+	* fold-const.c (negate_expr_p): Use TYPE_OVERFLOW_WRAPS.
+	(build_range_check): Likewise.
+	(extract_muldiv_1): Likewise.
+	(fold_comparison): Likewise.
+	* tree-vrp.c (vrp_int_const_binop): Likewise.
+	(extract_range_from_unary_expr): Likewise.
+	* convert.c (convert_to_integer): Likewise.
+	* fold-const.c (fold_negate_expr): Use TYPE_OVERFLOW_TRAPS.
+	(fold_comparison): Likewise.
+	(fold_binary): Likewise.
+	* optabs.c (optab_for_tree_code): Likewise.
+	* tree-vectorizer.c (vect_is_simple_reduction): Likewise.
+	* simplify-rtx.c (simplify_const_relational_operation): Check
+	flag_strict_overflow and flag_trapv.
+	(simplify_const_relational_operation): Likewise.
+	* doc/invoke.texi (Option Summary): Mention -fstrict-overflow.
+	(Optimize Options): Add -fstrict-overflow to -O2 list.  Document
+	-fstrict-overflow.
+
 2007-01-27  Roger Sayle  <roger@eyesopen.com>
 
 	* tree.c (tree_fold_gcd): Delete.

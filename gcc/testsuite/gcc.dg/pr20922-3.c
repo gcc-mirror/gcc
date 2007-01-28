@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-ffast-math -fno-wrapv -fdump-tree-gimple" } */
+/* { dg-options "-ffast-math -fno-wrapv -fstrict-overflow -fdump-tree-gimple" } */
 int f(int i)
 {
   return (i - 2) <= i;

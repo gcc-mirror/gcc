@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fdump-tree-gimple" } */
+/* { dg-options "-fstrict-overflow -fdump-tree-gimple" } */
 /* Test for folding abs(x) where appropriate.  */
 #define abs(x) x > 0 ? x : -x
 extern double fabs (double);
