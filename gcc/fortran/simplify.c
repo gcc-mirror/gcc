@@ -64,31 +64,6 @@ gfc_expr gfc_bad_expr;
    everything is reasonably straight-forward.  The Standard, chapter 13
    is the best comment you'll find for this file anyway.  */
 
-/* Static table for converting non-ascii character sets to ascii.
-   The xascii_table[] is the inverse table.  */
-
-static int ascii_table[256] = {
-  '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
-  '\b', '\t', '\n', '\v', '\0', '\r', '\0', '\0',
-  '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
-  '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
-  ' ', '!', '"', '#', '$', '%', '&', '\'',
-  '(', ')', '*', '+', ',', '-', '.', '/',
-  '0', '1', '2', '3', '4', '5', '6', '7',
-  '8', '9', ':', ';', '<', '=', '>', '?',
-  '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
-  'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
-  'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
-  'X', 'Y', 'Z', '[', '\\', ']', '^', '_',
-  '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
-  'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-  'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
-  'x', 'y', 'z', '{', '|', '}', '~', '\?'
-};
-
-static int xascii_table[256];
-
-
 /* Range checks an expression node.  If all goes well, returns the
    node, otherwise returns &gfc_bad_expr and frees the node.  */
 
@@ -266,24 +241,27 @@ gfc_simplify_abs (gfc_expr *e)
   return result;
 }
 
+/* We use the processor's collating sequence, because all
+   sytems that gfortran currently works on are ASCII.  */
 
 gfc_expr *
 gfc_simplify_achar (gfc_expr *e)
 {
   gfc_expr *result;
-  int index;
+  int c;
+  const char *ch;
 
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  /* We cannot assume that the native character set is ASCII in this
-     function.  */
-  if (gfc_extract_int (e, &index) != NULL || index < 0 || index > 127)
-    {
-      gfc_error ("Extended ASCII not implemented: argument of ACHAR at %L "
-		 "must be between 0 and 127", &e->where);
-      return &gfc_bad_expr;
-    }
+  ch = gfc_extract_int (e, &c);
+
+  if (ch != NULL)
+    gfc_internal_error ("gfc_simplify_achar: %s", ch);
+
+  if (gfc_option.warn_surprising && (c < 0 || c > 127))
+    gfc_warning ("Argument of ACHAR function at %L outside of range [0,127]",
+		 &e->where);
 
   result = gfc_constant_result (BT_CHARACTER, gfc_default_character_kind,
 				&e->where);
@@ -291,7 +269,7 @@ gfc_simplify_achar (gfc_expr *e)
   result->value.character.string = gfc_getmem (2);
 
   result->value.character.length = 1;
-  result->value.character.string[0] = ascii_table[index];
+  result->value.character.string[0] = c;
   result->value.character.string[1] = '\0';	/* For debugger */
   return result;
 }
@@ -700,6 +678,7 @@ gfc_simplify_char (gfc_expr *e, gfc_expr *k)
 {
   gfc_expr *result;
   int c, kind;
+  const char *ch;
 
   kind = get_kind (BT_CHARACTER, k, "CHAR", gfc_default_character_kind);
   if (kind == -1)
@@ -708,11 +687,14 @@ gfc_simplify_char (gfc_expr *e, gfc_expr *k)
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  if (gfc_extract_int (e, &c) != NULL || c < 0 || c > UCHAR_MAX)
-    {
-      gfc_error ("Bad character in CHAR function at %L", &e->where);
-      return &gfc_bad_expr;
-    }
+  ch = gfc_extract_int (e, &c);
+
+  if (ch != NULL)
+    gfc_internal_error ("gfc_simplify_char: %s", ch);
+
+  if (c < 0 || c > UCHAR_MAX)
+    gfc_error ("Argument of CHAR function at %L outside of range [0,255]",
+	       &e->where);
 
   result = gfc_constant_result (BT_CHARACTER, kind, &e->where);
 
@@ -1212,6 +1194,8 @@ gfc_simplify_huge (gfc_expr *e)
   return result;
 }
 
+/* We use the processor's collating sequence, because all
+   sytems that gfortran currently works on are ASCII.  */
 
 gfc_expr *
 gfc_simplify_iachar (gfc_expr *e)
@@ -1228,7 +1212,11 @@ gfc_simplify_iachar (gfc_expr *e)
       return &gfc_bad_expr;
     }
 
-  index = xascii_table[(int) e->value.character.string[0] & 0xFF];
+  index = (unsigned char) e->value.character.string[0];
+
+  if (gfc_option.warn_surprising && index > 127)
+    gfc_warning ("Argument of IACHAR function at %L outside of range 0..127",
+		 &e->where);
 
   result = gfc_int_expr (index);
   result->where = e->where;
@@ -1409,11 +1397,7 @@ gfc_simplify_ichar (gfc_expr *e)
   index = (unsigned char) e->value.character.string[0];
 
   if (index < 0 || index > UCHAR_MAX)
-    {
-      gfc_error ("Argument of ICHAR at %L out of range of this processor",
-		 &e->where);
-      return &gfc_bad_expr;
-    }
+    gfc_internal_error("Argument of ICHAR at %L out of range", &e->where);
 
   result = gfc_int_expr (index);
   result->where = e->where;
@@ -2126,8 +2110,7 @@ gfc_simplify_lge (gfc_expr *a, gfc_expr *b)
   if (a->expr_type != EXPR_CONSTANT || b->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  return gfc_logical_expr (gfc_compare_string (a, b, xascii_table) >= 0,
-			   &a->where);
+  return gfc_logical_expr (gfc_compare_string (a, b) >= 0, &a->where);
 }
 
 
@@ -2137,7 +2120,7 @@ gfc_simplify_lgt (gfc_expr *a, gfc_expr *b)
   if (a->expr_type != EXPR_CONSTANT || b->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  return gfc_logical_expr (gfc_compare_string (a, b, xascii_table) > 0,
+  return gfc_logical_expr (gfc_compare_string (a, b) > 0,
 			   &a->where);
 }
 
@@ -2148,8 +2131,7 @@ gfc_simplify_lle (gfc_expr *a, gfc_expr *b)
   if (a->expr_type != EXPR_CONSTANT || b->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  return gfc_logical_expr (gfc_compare_string (a, b, xascii_table) <= 0,
-			   &a->where);
+  return gfc_logical_expr (gfc_compare_string (a, b) <= 0, &a->where);
 }
 
 
@@ -2159,8 +2141,7 @@ gfc_simplify_llt (gfc_expr *a, gfc_expr *b)
   if (a->expr_type != EXPR_CONSTANT || b->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  return gfc_logical_expr (gfc_compare_string (a, b, xascii_table) < 0,
-			   &a->where);
+  return gfc_logical_expr (gfc_compare_string (a, b) < 0, &a->where);
 }
 
 
@@ -4082,28 +4063,4 @@ gfc_convert_constant (gfc_expr *e, bt type, int kind)
     }
 
   return result;
-}
-
-
-/****************** Helper functions ***********************/
-
-/* Given a collating table, create the inverse table.  */
-
-static void
-invert_table (const int *table, int *xtable)
-{
-  int i;
-
-  for (i = 0; i < 256; i++)
-    xtable[i] = 0;
-
-  for (i = 0; i < 256; i++)
-    xtable[table[i]] = i;
-}
-
-
-void
-gfc_simplify_init_1 (void)
-{
-  invert_table (ascii_table, xascii_table);
 }
