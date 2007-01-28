@@ -2127,7 +2127,7 @@ pointer or reference type.
 
 @item FIX_TRUNC_EXPR
 These nodes represent conversion of a floating-point value to an
-integer.  The single operand will have a floating-point type, while the
+integer.  The single operand will have a floating-point type, while
 the complete expression will have an integral (or boolean) type.  The
 operand is rounded towards zero.
 

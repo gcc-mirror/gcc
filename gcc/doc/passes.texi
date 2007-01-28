@@ -204,7 +204,7 @@ by @code{pass_mudflap_1}.
 
 @item Lower control flow
 
-This pass flattens @code{if} statements (@code{COND_EXPR}) and
+This pass flattens @code{if} statements (@code{COND_EXPR})
 and moves lexical bindings (@code{BIND_EXPR}) out of line.  After
 this pass, all @code{if} statements will have exactly two @code{goto}
 statements in its @code{then} and @code{else} arms.  Lexical binding
@@ -313,7 +313,7 @@ This pass performs a flow sensitive SSA-based points-to analysis.
 The resulting may-alias, must-alias, and escape analysis information
 is used to promote variables from in-memory addressable objects to
 non-aliased variables that can be renamed into SSA form.  We also
-update the @code{VDEF}/@code{VUSE} memory tags for non-renamable
+update the @code{VDEF}/@code{VUSE} memory tags for non-renameable
 aggregates so that we get fewer false kills.  The pass is located
 in @file{tree-ssa-alias.c} and is described by @code{pass_may_alias}.
 

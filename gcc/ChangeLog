@@ -1,3 +1,13 @@
+2007-01-28  Ralf Wildenhalf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/sourcebuild.texi: Add comma for clarity.
+	* doc/extend.texi: Fix some typos.
+	* doc/passes.texi: Likewise.
+	* doc/cppinternals.texi: Likewise.
+	* doc/c-tree.texi: Likewise.
+	* doc/tree-ssa.texi: Likewise.
+	* doc/install.texi: Likewise.
+
 2007-01-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/29329

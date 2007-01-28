@@ -869,7 +869,7 @@ incorrect assumptions about them.
 Operands are updated as soon as the statement is finished via a call
 to @code{update_stmt}.  If statement elements are changed via
 @code{SET_USE} or @code{SET_DEF}, then no further action is required
-(ie, those macros take care of updating the statement).  If changes
+(i.e., those macros take care of updating the statement).  If changes
 are made by manipulating the statement's tree directly, then a call
 must be made to @code{update_stmt} when complete.  Calling one of the
 @code{bsi_insert} routines or @code{bsi_replace} performs an implicit
@@ -1098,9 +1098,9 @@ to change each use of @code{ssa_var} to @code{ssa_var2}:
     SET_USE (imm_use_p, ssa_var_2);
 @end smallexample
 
-There are 2 iterators which can be used. @code{FOR_EACH_IMM_USE_FAST} is used 
-when the immediate uses are not changed, ie. you are looking at the uses, but 
-not setting them.  
+There are 2 iterators which can be used. @code{FOR_EACH_IMM_USE_FAST} is
+used when the immediate uses are not changed, i.e., you are looking at the
+uses, but not setting them.  
 
 If they do get changed, then care must be taken that things are not changed 
 under the iterators, so use the @code{FOR_EACH_IMM_USE_SAFE} iterator.  It 
