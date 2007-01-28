@@ -1,3 +1,8 @@
+2007-01-28  Andrew Pinski  <pinskia@gmail.com>
+
+	PR C++/28988
+	* g++.dg/expr/dtor4.C: New test.
+
 2007-01-28  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* gcc.dg/tree-ssa/loop-23.c: New test.
