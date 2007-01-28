@@ -725,7 +725,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	  long __l = -1;
           __beg = _M_extract_int(__beg, __end, __io, __err, __l);
 	  if (__l == 0 || __l == 1)
-	    __v = __l;
+	    __v = bool(__l);
 	  else
             __err |= ios_base::failbit;
         }
@@ -764,9 +764,9 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 		__testeof = true;
             }
 	  if (__testf && __n == __lc->_M_falsename_size)
-	    __v = 0;
+	    __v = false;
 	  else if (__testt && __n == __lc->_M_truename_size)
-	    __v = 1;
+	    __v = true;
 	  else
 	    __err |= ios_base::failbit;
 
@@ -994,7 +994,9 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	const ios_base::fmtflags __basefield = __flags & ios_base::basefield;
 	const bool __dec = (__basefield != ios_base::oct
 			    && __basefield != ios_base::hex);
-	const __unsigned_type __u = (__v > 0 || !__dec) ? __v : -__v;
+	const __unsigned_type __u = ((__v > 0 || !__dec)
+				     ? __unsigned_type(__v)
+				     : -__unsigned_type(__v));
  	int __len = __int_to_char(__cs + __ilen, __u, __lit, __flags, __dec);
 	__cs += __ilen - __len;
 
