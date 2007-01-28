@@ -1,4 +1,4 @@
-/* { dg-options "-fdump-tree-gimple" } */
+/* { dg-options "-fstrict-overflow -fdump-tree-gimple" } */
 
 int foo (int i, int j)
 {

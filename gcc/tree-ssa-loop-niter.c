@@ -1,5 +1,5 @@
 /* Functions to determine/estimate number of iterations of a loop.
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    
 This file is part of GCC.
    
@@ -1874,7 +1874,7 @@ infer_loop_bounds_from_signedness (struct loop *loop, tree stmt)
 {
   tree def, base, step, scev, type, low, high;
 
-  if (flag_wrapv || TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
+  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return;
 
   def = GIMPLE_STMT_OPERAND (stmt, 0);
@@ -1884,7 +1884,7 @@ infer_loop_bounds_from_signedness (struct loop *loop, tree stmt)
 
   type = TREE_TYPE (def);
   if (!INTEGRAL_TYPE_P (type)
-      || TYPE_UNSIGNED (type))
+      || !TYPE_OVERFLOW_UNDEFINED (type))
     return;
 
   scev = instantiate_parameters (loop, analyze_scalar_evolution (loop, def));
@@ -2094,9 +2094,8 @@ n_of_executions_at_most (tree stmt,
 bool
 nowrap_type_p (tree type)
 {
-  if (!flag_wrapv
-      && INTEGRAL_TYPE_P (type)
-      && !TYPE_UNSIGNED (type))
+  if (INTEGRAL_TYPE_P (type)
+      && TYPE_OVERFLOW_UNDEFINED (type))
     return true;
 
   if (POINTER_TYPE_P (type))

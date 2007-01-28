@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>.
 
 This file is part of GCC.
@@ -570,8 +570,7 @@ compare_values (tree val1, tree val2)
 	return 0;
 
       /* If overflow is defined we cannot simplify more.  */
-      if (TYPE_UNSIGNED (TREE_TYPE (val1))
-	  || flag_wrapv)
+      if (!TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (val1)))
 	return -2;
 
       if (code1 == SSA_NAME)
@@ -1215,8 +1214,7 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2)
 
   /* If we are not using wrapping arithmetic, operate symbolically
      on -INF and +INF.  */
-  if (TYPE_UNSIGNED (TREE_TYPE (val1))
-      || flag_wrapv)
+  if (TYPE_OVERFLOW_WRAPS (TREE_TYPE (val1)))
     {
       int checkz = compare_values (res, val1);
       bool overflow = false;
@@ -1503,7 +1501,7 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
 	 point.  */
       if (code == MULT_EXPR
 	  && vr0.type == VR_ANTI_RANGE
-	  && (flag_wrapv || TYPE_UNSIGNED (TREE_TYPE (op0))))
+	  && !TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (op0)))
 	{
 	  set_value_range_to_varying (vr);
 	  return;
@@ -1799,11 +1797,12 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
 	    ? TYPE_MIN_VALUE (TREE_TYPE (expr))
 	    : fold_unary_to_constant (code, TREE_TYPE (expr), vr0.max);
 
-      max = vr0.min == TYPE_MIN_VALUE (TREE_TYPE (expr))
-	    ? (vr0.type == VR_ANTI_RANGE || flag_wrapv
-	       ? TYPE_MIN_VALUE (TREE_TYPE (expr))
-	       : TYPE_MAX_VALUE (TREE_TYPE (expr)))
-	    : fold_unary_to_constant (code, TREE_TYPE (expr), vr0.min);
+      max = (vr0.min == TYPE_MIN_VALUE (TREE_TYPE (expr))
+	     ? ((vr0.type == VR_ANTI_RANGE
+		 || TYPE_OVERFLOW_WRAPS (TREE_TYPE (expr)))
+		? TYPE_MIN_VALUE (TREE_TYPE (expr))
+		: TYPE_MAX_VALUE (TREE_TYPE (expr)))
+	     : fold_unary_to_constant (code, TREE_TYPE (expr), vr0.min));
 
     }
   else if (code == NEGATE_EXPR
@@ -1828,7 +1827,7 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
     {
       /* -TYPE_MIN_VALUE = TYPE_MIN_VALUE with flag_wrapv so we can't get a
          useful range.  */
-      if (flag_wrapv
+      if (!TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (expr))
 	  && ((vr0.type == VR_RANGE
 	       && vr0.min == TYPE_MIN_VALUE (TREE_TYPE (expr)))
 	      || (vr0.type == VR_ANTI_RANGE
@@ -1865,7 +1864,8 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
 	         or ~[-INF + 1, min (abs(MIN), abs(MAX))] when
 		 flag_wrapv is set and the original anti-range doesn't include
 	         TYPE_MIN_VALUE, remember -TYPE_MIN_VALUE = TYPE_MIN_VALUE.  */
-	      min = (flag_wrapv && vr0.min != type_min_value
+	      min = ((TYPE_OVERFLOW_WRAPS (TREE_TYPE (expr))
+		      && vr0.min != type_min_value)
 		     ? int_const_binop (PLUS_EXPR,
 					type_min_value,
 					integer_one_node, 0)

@@ -1,4 +1,5 @@
 /* { dg-do link } */
+/* { dg-options "-fstrict-overflow" } */
 
 void link_error();
 

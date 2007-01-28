@@ -1,5 +1,5 @@
 /* Lower vector operations to scalar operations.
-   Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
    
@@ -301,14 +301,14 @@ expand_vector_operation (block_stmt_iterator *bsi, tree type, tree compute_type,
       {
       case PLUS_EXPR:
       case MINUS_EXPR:
-        if (!TYPE_TRAP_SIGNED (type))
+        if (!TYPE_OVERFLOW_TRAPS (type))
           return expand_vector_addition (bsi, do_binop, do_plus_minus, type,
 		      		         TREE_OPERAND (rhs, 0),
 					 TREE_OPERAND (rhs, 1), code);
 	break;
 
       case NEGATE_EXPR:
-        if (!TYPE_TRAP_SIGNED (type))
+        if (!TYPE_OVERFLOW_TRAPS (type))
           return expand_vector_addition (bsi, do_unop, do_negate, type,
 		      		         TREE_OPERAND (rhs, 0),
 					 NULL_TREE, code);

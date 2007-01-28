@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-optimized" } */
+/* { dg-options "-O1 -fstrict-overflow -fdump-tree-optimized" } */
 
 int f(int a)
 {
