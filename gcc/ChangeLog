@@ -1,5 +1,10 @@
 2007-01-28  Jan Hubicka  <jh@suse.cz>
 
+	* builtins.c (expand_builtin_memset): Fix typo in my last patch.
+	* value-prof.c (stringop_block_profile): Likewise.
+
+2007-01-28  Jan Hubicka  <jh@suse.cz>
+
 	* expr.c (emit_block_move_via_movmem, emit_block_move_via_libcall): Add
 	variant handling histograms; add wrapper.
 	(clear_storage_via_libcall): Export.
