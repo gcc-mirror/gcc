@@ -1,3 +1,7 @@
+2007-01-28  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/large-size-array-3.c: Correct test case (portability).
+
 2007-01-28  Andrew Pinski  <pinskia@gmail.com>
 
 	PR C++/28988
