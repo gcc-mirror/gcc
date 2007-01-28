@@ -195,6 +195,10 @@ INCLUDES = -I. -I$(@D) -I$(gcc_objdir) \
 	   -I$(srcdir) -I$(srcdir)/$(@D) -I$(srcdir)/../gcc \
 	   -I$(srcdir)/../include $(DECNUMINC)
 
+# Forcibly remove any profiling-related flags.  There is no point
+# in supporting profiled bootstrap in this library.
+override CFLAGS := $(filter-out -fprofile-generate -fprofile-use,$(CFLAGS))
+
 # CFLAGS first is not perfect; normally setting CFLAGS should override any
 # options in LIBGCC2_CFLAGS.  But LIBGCC2_CFLAGS may contain -g0, and CFLAGS
 # will usually contain -g, so for the moment CFLAGS goes first.  We must
