@@ -1,3 +1,9 @@
+2007-01-28  Andrew Pinski  <pinskia@gmail.com>
+
+	PR C++/28988
+	* semantics.c (finish_pseudo_destructor_expr): Check the
+	destrutor name by calling check_dtor_name.
+
 2007-01-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28999
