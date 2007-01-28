@@ -1,3 +1,7 @@
+2007-01-28  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-prof/val-prof-6.c: New test.
+
 2007-01-28  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/large-size-array-3.c: Correct test case (portability).

@@ -1,3 +1,44 @@
+2007-01-28  Jan Hubicka  <jh@suse.cz>
+
+	* expr.c (emit_block_move_via_movmem, emit_block_move_via_libcall): Add
+	variant handling histograms; add wrapper.
+	(clear_storage_via_libcall): Export.
+	(emit_block_move_hints): Break out from ...; add histograms.
+	(emit_block_move): ... this one.
+	(clear_storage_hints): Break out from ...; add histograms.
+	(clear_storage): ... this one.
+	(set_storage_via_memset): Handle histogram.
+	* expr.h (emit_block_move_via_libcall, emit_block_move_hints): Declare.
+	(clear_storage_hints, clear_storage_via_libcall): Declare.
+	(set_storage_via_setmem): Update prototype.
+	* doc/md.texi (movmem, setmem): Document new arguments.
+
+	* value-prof.c (dump_histogram_value, tree_find_values_to_profile): Add
+	new histograms.
+	(stringop_block_profile): New global function.
+	(tree_stringops_values_to_profile): Profile block size and alignment.
+	* value-prof.h (enum hist_type): add HIST_TYPE_AVERAGE and
+	HIST_TYPE_IOR.
+	(struct profile_hooks): Add gen_average_profiler and gen_ior_profiler.
+	(stringop_block_profile): Declare.
+	* builtins.c: Include value-prof.h.
+	(expand_builtin_memcpy, expand_builtin_memset): Pass block profile.
+	* gcov-ui.h (GCOV_COUNTER_NAMES): Add new counter.
+	(GCOV_COUNTER_AVERAGE, GCOV_COUNTER_IOR): New constants.
+	(GCOV_COUNTERS, GCOV_LAST_VALUE_COUNTER): Update.
+	* profile.c (instrument_values): Add new counters.
+	* cfgexpand.c (expand_gimple_basic_block): Propagate histograms to
+	calls.
+	* tree-profile.c (tree_average_profiler_fn, tree_ior_profiler_fn): New.
+	(tree_init_edge_profiler): Build new profilers.
+	(tree_gen_average_profiler, tree_gen_ior_profiler): New.
+	(pass_tree_profile): Add dump.
+	(tree_profile_hooks): Update.
+	* Makefile.in (LIBGCOV): Add new constants.
+	* libgcov.c (__gcov_merge_ior, __gcov_average_profiler,
+	__gcov_ior_profiler): New.
+	* i386.md (movmem/setmem expanders): Add new optional arguments.
+
 2007-01-28  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/md.texi (Standard Pattern Names): Document blockage pattern.

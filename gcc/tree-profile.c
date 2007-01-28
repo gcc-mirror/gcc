@@ -52,6 +52,8 @@ static GTY(()) tree tree_interval_profiler_fn;
 static GTY(()) tree tree_pow2_profiler_fn;
 static GTY(()) tree tree_one_value_profiler_fn;
 static GTY(()) tree tree_indirect_call_profiler_fn;
+static GTY(()) tree tree_average_profiler_fn;
+static GTY(()) tree tree_ior_profiler_fn;
 
 
 static GTY(()) tree ic_void_ptr_var;
@@ -101,6 +103,7 @@ tree_init_edge_profiler (void)
   tree one_value_profiler_fn_type;
   tree gcov_type_ptr;
   tree ic_profiler_fn_type;
+  tree average_profiler_fn_type;
 
   if (!gcov_type_node)
     {
@@ -145,6 +148,16 @@ tree_init_edge_profiler (void)
       tree_indirect_call_profiler_fn
 	      = build_fn_decl ("__gcov_indirect_call_profiler",
 				     ic_profiler_fn_type);
+      /* void (*) (gcov_type *, gcov_type)  */
+      average_profiler_fn_type
+	      = build_function_type_list (void_type_node,
+					  gcov_type_ptr, gcov_type_node, NULL_TREE);
+      tree_average_profiler_fn
+	      = build_fn_decl ("__gcov_average_profiler",
+				     average_profiler_fn_type);
+      tree_ior_profiler_fn
+	      = build_fn_decl ("__gcov_ior_profiler",
+				     average_profiler_fn_type);
     }
 }
 
@@ -354,6 +367,48 @@ tree_gen_const_delta_profiler (histogram_value value ATTRIBUTE_UNUSED,
   gcc_unreachable ();
 }
 
+/* Output instructions as GIMPLE trees to increment the average histogram 
+   counter.  VALUE is the expression whose value is profiled.  TAG is the 
+   tag of the section for counters, BASE is offset of the counter position.  */
+
+static void
+tree_gen_average_profiler (histogram_value value, unsigned tag, unsigned base)
+{
+  tree stmt = value->hvalue.stmt;
+  block_stmt_iterator bsi = bsi_for_stmt (stmt);
+  tree ref = tree_coverage_counter_ref (tag, base), ref_ptr;
+  tree args, call, val;
+  
+  ref_ptr = force_gimple_operand_bsi (&bsi,
+				      build_addr (ref, current_function_decl),
+				      true, NULL_TREE);
+  val = prepare_instrumented_value (&bsi, value);
+  args = tree_cons (NULL_TREE, ref_ptr, tree_cons (NULL_TREE, val, NULL_TREE));
+  call = build_function_call_expr (tree_average_profiler_fn, args);
+  bsi_insert_before (&bsi, call, BSI_SAME_STMT);
+}
+
+/* Output instructions as GIMPLE trees to increment the ior histogram 
+   counter.  VALUE is the expression whose value is profiled.  TAG is the 
+   tag of the section for counters, BASE is offset of the counter position.  */
+
+static void
+tree_gen_ior_profiler (histogram_value value, unsigned tag, unsigned base)
+{
+  tree stmt = value->hvalue.stmt;
+  block_stmt_iterator bsi = bsi_for_stmt (stmt);
+  tree ref = tree_coverage_counter_ref (tag, base), ref_ptr;
+  tree args, call, val;
+  
+  ref_ptr = force_gimple_operand_bsi (&bsi,
+				      build_addr (ref, current_function_decl),
+				      true, NULL_TREE);
+  val = prepare_instrumented_value (&bsi, value);
+  args = tree_cons (NULL_TREE, ref_ptr, tree_cons (NULL_TREE, val, NULL_TREE));
+  call = build_function_call_expr (tree_ior_profiler_fn, args);
+  bsi_insert_before (&bsi, call, BSI_SAME_STMT);
+}
+
 /* Return 1 if tree-based profiling is in effect, else 0.
    If it is, set up hooks for tree-based profiling.
    Gate for pass_tree_profile.  */
@@ -408,19 +463,21 @@ struct tree_opt_pass pass_tree_profile =
   PROP_gimple_leh | PROP_cfg,		/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_verify_stmts,			/* todo_flags_finish */
+  TODO_verify_stmts | TODO_dump_func,	/* todo_flags_finish */
   0					/* letter */
 };
 
 struct profile_hooks tree_profile_hooks =
 {
-  tree_init_edge_profiler,      /* init_edge_profiler */
-  tree_gen_edge_profiler,	/* gen_edge_profiler */
-  tree_gen_interval_profiler,   /* gen_interval_profiler */
-  tree_gen_pow2_profiler,       /* gen_pow2_profiler */
-  tree_gen_one_value_profiler,  /* gen_one_value_profiler */
-  tree_gen_const_delta_profiler,/* gen_const_delta_profiler */
-  tree_gen_ic_profiler,		/* gen_ic_profiler */
+  tree_init_edge_profiler,       /* init_edge_profiler */
+  tree_gen_edge_profiler,	 /* gen_edge_profiler */
+  tree_gen_interval_profiler,    /* gen_interval_profiler */
+  tree_gen_pow2_profiler,        /* gen_pow2_profiler */
+  tree_gen_one_value_profiler,   /* gen_one_value_profiler */
+  tree_gen_const_delta_profiler, /* gen_const_delta_profiler */
+  tree_gen_ic_profiler,		 /* gen_ic_profiler */
+  tree_gen_average_profiler,     /* gen_average_profiler */
+  tree_gen_ior_profiler          /* gen_ior_profiler */
 };
 
 #include "gt-tree-profile.h"

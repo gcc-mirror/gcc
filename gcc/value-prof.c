@@ -248,6 +248,28 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
       fprintf (dump_file, ".\n");
       break;
 
+    case HIST_TYPE_AVERAGE:
+      fprintf (dump_file, "Average value ");
+      if (hist->hvalue.counters)
+	{
+	   fprintf (dump_file, "sum:"HOST_WIDEST_INT_PRINT_DEC
+		    " times:"HOST_WIDEST_INT_PRINT_DEC,
+		    (HOST_WIDEST_INT) hist->hvalue.counters[0],
+		    (HOST_WIDEST_INT) hist->hvalue.counters[1]);
+	}
+      fprintf (dump_file, ".\n");
+      break;
+
+    case HIST_TYPE_IOR:
+      fprintf (dump_file, "IOR value ");
+      if (hist->hvalue.counters)
+	{
+	   fprintf (dump_file, "ior:"HOST_WIDEST_INT_PRINT_DEC,
+		    (HOST_WIDEST_INT) hist->hvalue.counters[0]);
+	}
+      fprintf (dump_file, ".\n");
+      break;
+
     case HIST_TYPE_CONST_DELTA:
       fprintf (dump_file, "Constant delta ");
       if (hist->hvalue.counters)
@@ -1404,6 +1426,45 @@ tree_stringops_transform (block_stmt_iterator *bsi)
   return true;
 }
 
+void
+stringop_block_profile (tree stmt, unsigned int *expected_align,
+			HOST_WIDE_INT *expected_size)
+{
+  histogram_value histogram;
+  histogram = gimple_histogram_value_of_type (cfun, stmt, HIST_TYPE_AVERAGE);
+  if (!histogram)
+    *expected_size = -1;
+  else
+    {
+      gcov_type size;
+      size = ((histogram->hvalue.counters[0]
+	      + histogram->hvalue.counters[0] / 2)
+	       / histogram->hvalue.counters[0]);
+      /* Even if we can hold bigger value in SIZE, INT_MAX
+	 is safe "infinity" for code generation strategies.  */
+      if (size > INT_MAX)
+	size = INT_MAX;
+      *expected_size = size;
+      gimple_remove_histogram_value (cfun, stmt, histogram);
+    }
+  histogram = gimple_histogram_value_of_type (cfun, stmt, HIST_TYPE_IOR);
+  if (!histogram)
+    *expected_size = -1;
+  else
+    {
+      gcov_type count;
+      int alignment;
+
+      count = histogram->hvalue.counters[0];
+      alignment = 1;
+      while (!(count & alignment)
+	     && (alignment * 2 * BITS_PER_UNIT))
+	alignment <<= 1;
+      *expected_align = alignment * BITS_PER_UNIT;
+      gimple_remove_histogram_value (cfun, stmt, histogram);
+    }
+}
+
 struct value_prof_hooks {
   /* Find list of values for which we want to measure histograms.  */
   void (*find_values_to_profile) (histogram_values *);
@@ -1513,6 +1574,7 @@ tree_stringops_values_to_profile (tree stmt, histogram_values *values)
   tree fndecl;
   tree arglist;
   tree blck_size;
+  tree dest;
   enum built_in_function fcode;
 
   if (!call)
@@ -1526,15 +1588,25 @@ tree_stringops_values_to_profile (tree stmt, histogram_values *values)
   if (!interesting_stringop_to_profile_p (fndecl, arglist))
     return;
 
+  dest = TREE_VALUE (arglist);
   if (fcode == BUILT_IN_BZERO)
     blck_size = TREE_VALUE (TREE_CHAIN (arglist));
   else
     blck_size = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
 
   if (TREE_CODE (blck_size) != INTEGER_CST)
+    {
+      VEC_safe_push (histogram_value, heap, *values,
+		     gimple_alloc_histogram_value (cfun, HIST_TYPE_SINGLE_VALUE,
+						   stmt, blck_size));
+      VEC_safe_push (histogram_value, heap, *values,
+		     gimple_alloc_histogram_value (cfun, HIST_TYPE_AVERAGE,
+						   stmt, blck_size));
+    }
+  if (TREE_CODE (blck_size) != INTEGER_CST)
     VEC_safe_push (histogram_value, heap, *values,
-		   gimple_alloc_histogram_value (cfun, HIST_TYPE_SINGLE_VALUE,
-						 stmt, blck_size));
+		   gimple_alloc_histogram_value (cfun, HIST_TYPE_IOR,
+						 stmt, dest));
 }
 
 /* Find values inside STMT for that we want to measure histograms and adds
@@ -1586,6 +1658,14 @@ tree_find_values_to_profile (histogram_values *values)
 
  	case HIST_TYPE_INDIR_CALL:
  	  hist->n_counters = 3;
+	  break;
+
+	case HIST_TYPE_AVERAGE:
+	  hist->n_counters = 3;
+	  break;
+
+	case HIST_TYPE_IOR:
+	  hist->n_counters = 3;
 	  break;
 
 	default:

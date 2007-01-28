@@ -49,6 +49,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "basic-block.h"
 #include "tree-mudflap.h"
 #include "tree-flow.h"
+#include "value-prof.h"
 
 #ifndef PAD_VARARGS_DOWN
 #define PAD_VARARGS_DOWN BYTES_BIG_ENDIAN
@@ -3099,6 +3100,8 @@ expand_builtin_memcpy (tree exp, rtx target, enum machine_mode mode)
       rtx dest_mem, src_mem, dest_addr, len_rtx;
       tree result = fold_builtin_memory_op (arglist, TREE_TYPE (TREE_TYPE (fndecl)),
 					    false, /*endp=*/0);
+      HOST_WIDE_INT expected_size = -1;
+      unsigned int expected_align = 0;
 
       if (result)
 	{
@@ -3119,7 +3122,10 @@ expand_builtin_memcpy (tree exp, rtx target, enum machine_mode mode)
 	 operation in-line.  */
       if (src_align == 0)
 	return 0;
-
+ 
+      stringop_block_profile (exp, &expected_align, &expected_size);
+      if (expected_align < dest_align)
+	expected_align = dest_align;
       dest_mem = get_memory_rtx (dest, len);
       set_mem_align (dest_mem, dest_align);
       len_rtx = expand_normal (len);
@@ -3146,9 +3152,10 @@ expand_builtin_memcpy (tree exp, rtx target, enum machine_mode mode)
       set_mem_align (src_mem, src_align);
 
       /* Copy word part most expediently.  */
-      dest_addr = emit_block_move (dest_mem, src_mem, len_rtx,
-				   CALL_EXPR_TAILCALL (exp)
-				   ? BLOCK_OP_TAILCALL : BLOCK_OP_NORMAL);
+      dest_addr = emit_block_move_hints (dest_mem, src_mem, len_rtx,
+				         CALL_EXPR_TAILCALL (exp)
+				         ? BLOCK_OP_TAILCALL : BLOCK_OP_NORMAL,
+					 expected_align, expected_size);
 
       if (dest_addr == 0)
 	{
@@ -3640,6 +3647,8 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode,
       char c;
       unsigned int dest_align;
       rtx dest_mem, dest_addr, len_rtx;
+      HOST_WIDE_INT expected_size = -1;
+      unsigned int expected_align = 0;
 
       dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
 
@@ -3647,6 +3656,10 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode,
 	 operation in-line.  */
       if (dest_align == 0)
 	return 0;
+
+      stringop_block_profile (orig_exp, &expected_align, &expected_size);
+      if (expected_align < dest_align)
+	expected_align = dest_align;
 
       /* If the LEN parameter is zero, return DEST.  */
       if (integer_zerop (len))
@@ -3687,7 +3700,7 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode,
 			       builtin_memset_gen_str, val_rtx, dest_align, 0);
 	    }
 	  else if (!set_storage_via_setmem (dest_mem, len_rtx, val_rtx,
-					    dest_align))
+					    dest_align, -1, 0))
 	    goto do_libcall;
 
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
@@ -3707,7 +3720,8 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode,
 	    store_by_pieces (dest_mem, tree_low_cst (len, 1),
 			     builtin_memset_read_str, &c, dest_align, 0);
 	  else if (!set_storage_via_setmem (dest_mem, len_rtx, GEN_INT (c),
-					    dest_align))
+					    dest_align, expected_align,
+					    expected_size))
 	    goto do_libcall;
 
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
@@ -3716,9 +3730,10 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode,
 	}
 
       set_mem_align (dest_mem, dest_align);
-      dest_addr = clear_storage (dest_mem, len_rtx,
-				 CALL_EXPR_TAILCALL (orig_exp)
-				 ? BLOCK_OP_TAILCALL : BLOCK_OP_NORMAL);
+      dest_addr = clear_storage_hints (dest_mem, len_rtx,
+				       CALL_EXPR_TAILCALL (orig_exp)
+				       ? BLOCK_OP_TAILCALL : BLOCK_OP_NORMAL,
+				       expected_align, expected_size);
 
       if (dest_addr == 0)
 	{
