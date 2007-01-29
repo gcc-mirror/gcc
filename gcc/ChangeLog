@@ -1,3 +1,7 @@
+2007-01-27  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr.h (TARGET_CPU_CPP_BUILTINS): Define __AVR_HAVE_MUL__.
+
 2007-01-29  Mike Stump  <mrs@apple.com>
 
 	* doc/gccint.texi (Top): Rename Loop Representation to Loop
