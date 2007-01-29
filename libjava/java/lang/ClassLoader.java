@@ -404,6 +404,14 @@ public abstract class ClassLoader
   protected synchronized Class loadClass(String name, boolean resolve)
     throws ClassNotFoundException
   {
+    SecurityManager sm = SecurityManager.current;
+    if (sm != null)
+      {
+	int lastDot = name.lastIndexOf('.');
+	if (lastDot != -1)
+	  sm.checkPackageAccess(name.substring(0, lastDot));
+      }
+
     // Arrays are handled specially.
     Class c;
     if (name.length() > 0 && name.charAt(0) == '[')
