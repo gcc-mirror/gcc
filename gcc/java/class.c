@@ -731,6 +731,10 @@ add_method_1 (tree this_class, int access_flags, tree name, tree function_type)
       METHOD_NATIVE (fndecl) = 1;
       DECL_EXTERNAL (fndecl) = 1;
     }
+  else
+    /* FNDECL is external unless we are compiling it into this object
+       file.  */
+    DECL_EXTERNAL (fndecl) = CLASS_FROM_CURRENTLY_COMPILED_P (this_class) == 0;
   if (access_flags & ACC_STATIC) 
     METHOD_STATIC (fndecl) = DECL_INLINE (fndecl) = 1;
   if (access_flags & ACC_FINAL) 

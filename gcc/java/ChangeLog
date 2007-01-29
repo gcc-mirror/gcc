@@ -1,3 +1,8 @@
+2007-01-29  Andrew Haley  <aph@redhat.com>
+
+	* class.c (add_method_1): Mark fndecl as external unless we are
+	compiling it into this object file.
+
 2007-01-24  Andrew Haley  <aph@redhat.com>
 
 	* jcf-parse.c (HANDLE_SYNTHETIC_ATTRIBUTE): current_class is a
