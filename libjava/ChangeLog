@@ -1,3 +1,21 @@
+2007-01-29  Keith Seitz  <keiths@redhat.com>
+
+	* include/jvmti_md.h (_CLASSPATH_VM_JVMTI_TYPES_DEFINED):
+	Define.
+	[__GCJ_JNI_IMPL__]: Define our own JVMTI types when building
+	gcj. All jvmti object types now are defined to be their
+	corresponding java classes.
+	* jvmti.cc (_Jv_JVMTI_SuspendThread): Remove casting from
+	jthread to Thread*.
+	(_Jv_JVMTI_ResumeThread): Likewise.
+	(_Jv_JVMTI_InterruptThread): Likewise.
+	(_Jv_JVMTI_SetEventNotificationMode): Likewise.
+	* gnu/classpath/jdwp/natVMVirtualMachine.cc
+	(jdwpClassPrepareCB): Likewise.
+	(jdwpThreadEndCB): Likewise.
+	(jdwpThreadStartCB): Likewise.
+	(jdwpVMInitCB): Likewise.
+ 
 2007-01-28  Michele Sandri  <gpointorama@gmail.com>
 
 	* gnu/java/nio/channels/natFileChannelWin32.cc

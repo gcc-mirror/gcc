@@ -426,7 +426,6 @@ jdwpClassPrepareCB (jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
 {
   using namespace gnu::classpath::jdwp;
 
-  Thread *t = reinterpret_cast<Thread *> (thread);
   jint flags = 0;
   jvmtiError err = env->GetClassStatus (klass, &flags);
   if (err != JVMTI_ERROR_NONE)
@@ -444,7 +443,7 @@ jdwpClassPrepareCB (jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
     status |= ClassPrepareEvent::STATUS_INITIALIZED;
 
   event::ClassPrepareEvent *event
-    = new event::ClassPrepareEvent (t, klass, status);
+    = new event::ClassPrepareEvent (thread, klass, status);
   Jdwp::notify (event);
 }
 
@@ -454,8 +453,7 @@ jdwpThreadEndCB (MAYBE_UNUSED jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
 {
   using namespace gnu::classpath::jdwp::event;
 
-  Thread *t = reinterpret_cast<Thread *> (thread);
-  ThreadEndEvent *e = new ThreadEndEvent (t);
+  ThreadEndEvent *e = new ThreadEndEvent (thread);
   gnu::classpath::jdwp::Jdwp::notify (e);
 }
 
@@ -465,8 +463,7 @@ jdwpThreadStartCB (MAYBE_UNUSED jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
 {
   using namespace gnu::classpath::jdwp::event;
 
-  Thread *t = reinterpret_cast<Thread *> (thread);
-  ThreadStartEvent *e = new ThreadStartEvent (t);
+  ThreadStartEvent *e = new ThreadStartEvent (thread);
   gnu::classpath::jdwp::Jdwp::notify (e);
 }
 
@@ -497,6 +494,5 @@ jdwpVMInitCB (MAYBE_UNUSED jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
 
   // Send JDWP VMInit
   using namespace gnu::classpath::jdwp::event;
-  Thread *init_thread = reinterpret_cast<Thread *> (thread);
-  gnu::classpath::jdwp::Jdwp::notify (new VmInitEvent (init_thread));
+  gnu::classpath::jdwp::Jdwp::notify (new VmInitEvent (thread));
 }
