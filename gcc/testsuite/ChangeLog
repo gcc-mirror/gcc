@@ -1,3 +1,8 @@
+2007-01-29  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/28266
+	* g++.dg/parse/defarg12.C: New test.
+
 2007-01-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/30554
