@@ -9883,6 +9883,8 @@ uninstall-info: uninstall-info-recursive
 	uninstall-toolexecmainlibDATA
 
 
+interpret.lo:  AM_CXXFLAGS += -fwrapv
+
 $(db_name): gcj-dbtool$(EXEEXT)
 	@rm -f $(db_name)
 	./gcj-dbtool -n $(db_name) || touch $(db_name)

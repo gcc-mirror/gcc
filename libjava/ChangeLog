@@ -1,3 +1,9 @@
+2007-01-29  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (interpret.lo): New target.  Add -fwrap to
+	AM_CXXFLAGS.
+
 2007-01-29  Keith Seitz  <keiths@redhat.com>
 
 	* include/jvmti_md.h (_CLASSPATH_VM_JVMTI_TYPES_DEFINED):
