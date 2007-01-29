@@ -1,3 +1,9 @@
+2007-01-29  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_uninitialized.h (uninitialized_copy(const char*,
+	const char*, char*), uninitialized_copy(const wchar_t*, const wchar_t*,
+	wchar_t*)): Remove, just forward to std::copy.
+
 2007-01-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/enc_filebuf.h: Resurrect, update.
