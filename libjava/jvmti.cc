@@ -155,12 +155,10 @@ _Jv_JVMTI_SuspendThread (MAYBE_UNUSED jvmtiEnv *env, jthread thread)
   using namespace java::lang;
 
   THREAD_DEFAULT_TO_CURRENT (thread);
- 
-  Thread *t = reinterpret_cast<Thread *> (thread);
-  THREAD_CHECK_VALID (t);
-  THREAD_CHECK_IS_ALIVE (t);
+  THREAD_CHECK_VALID (thread);
+  THREAD_CHECK_IS_ALIVE (thread);
 
-  _Jv_Thread_t *data = _Jv_ThreadGetData (t);
+  _Jv_Thread_t *data = _Jv_ThreadGetData (thread);
   _Jv_SuspendThread (data);
   return JVMTI_ERROR_NONE;
 }
@@ -171,12 +169,10 @@ _Jv_JVMTI_ResumeThread (MAYBE_UNUSED jvmtiEnv *env, jthread thread)
   using namespace java::lang;
 
   THREAD_DEFAULT_TO_CURRENT (thread);
+  THREAD_CHECK_VALID (thread);
+  THREAD_CHECK_IS_ALIVE (thread);
 
-  Thread *t = reinterpret_cast<Thread *> (thread);
-  THREAD_CHECK_VALID (t);
-  THREAD_CHECK_IS_ALIVE (t);
-
-  _Jv_Thread_t *data = _Jv_ThreadGetData (t);
+  _Jv_Thread_t *data = _Jv_ThreadGetData (thread);
   _Jv_ResumeThread (data);
   return JVMTI_ERROR_NONE;
 }
@@ -191,10 +187,9 @@ _Jv_JVMTI_InterruptThread (MAYBE_UNUSED jvmtiEnv *env, jthread thread)
   if (thread == NULL)
     return JVMTI_ERROR_INVALID_THREAD;
 
-  Thread *real_thread = reinterpret_cast<Thread *> (thread);
-  THREAD_CHECK_VALID (real_thread);
-  THREAD_CHECK_IS_ALIVE (real_thread);
-  real_thread->interrupt();
+  THREAD_CHECK_VALID (thread);
+  THREAD_CHECK_IS_ALIVE (thread);
+  thread->interrupt();
   return JVMTI_ERROR_NONE;
 }
 
@@ -1172,10 +1167,8 @@ _Jv_JVMTI_SetEventNotificationMode (jvmtiEnv *env, jvmtiEventMode mode,
 
   if (event_thread != NULL)
     {
-      using namespace java::lang;
-      Thread *t = reinterpret_cast<Thread *> (event_thread);
-      THREAD_CHECK_VALID (t);
-      THREAD_CHECK_IS_ALIVE (t);
+      THREAD_CHECK_VALID (event_thread);
+      THREAD_CHECK_IS_ALIVE (event_thread);
     }
 
   bool enabled;

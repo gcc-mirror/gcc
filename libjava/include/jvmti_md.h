@@ -1,5 +1,5 @@
 /* jvmti_md.h
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -52,6 +52,14 @@ executable file might be covered by the GNU General Public License. */
   /* Array of notification modes for callbacks. */			\
   /* One for each callback.                     */			\
   bool enabled[EVENT_SLOTS];
+
+/* Redefine the standard JVMTI types to something a little more
+   precise than "jobject". */
+#define _CLASSPATH_VM_JVMTI_TYPES_DEFINED
+typedef java::lang::Thread *jthread;
+typedef java::lang::ThreadGroup *jthreadGroup;
+typedef jlong jlocation;
+typedef struct _Jv_rawMonitorID *jrawMonitorID;
 
 #endif /* __GCJ_JNI_IMPL__ */
 
