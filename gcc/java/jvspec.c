@@ -305,7 +305,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 	  else if (argv[i][1] == 'O')
 	    saw_O = 1;
 	  else if ((argv[i][2] == '\0'
-		    && strchr ("bBVDUoeTuIYmLiA", argv[i][1]) != NULL)
+		    && strchr ("bBVDUoeTuIYmLiAI", argv[i][1]) != NULL)
 		   || strcmp (argv[i], "-Tdata") == 0
 		   || strcmp (argv[i], "-MT") == 0
 		   || strcmp (argv[i], "-MF") == 0)
@@ -518,7 +518,17 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 
       if (argv[i][1] == 'I')
 	{
-	  jcf_path_include_arg (&argv[i][2]);
+	  const char *arg;
+	  if (argv[i][2] == '\0')
+	    {
+	      gcc_assert (i + 1 < argc && (args[i + 1] & PARAM_ARG) != 0);
+	      arg = argv[i + 1];
+	      /* Drop the argument.  */
+	      ++i;
+	    }
+	  else
+	    arg = &argv[i][2];
+	  jcf_path_include_arg (arg);
 	  --j;
 	  continue;
 	}
