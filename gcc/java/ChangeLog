@@ -1,3 +1,7 @@
+2007-01-30  Ben Elliston  <bje@au.ibm.com>
+
+	* jvspec.c (lang_specific_driver): Remove unused classpath_args.
+
 2007-01-29  Tom Tromey  <tromey@redhat.com>
 
 	PR java/30607:

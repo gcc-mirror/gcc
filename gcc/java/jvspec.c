@@ -214,10 +214,6 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
   /* The number of libraries added in.  */
   int added_libraries;
 
-  /* The total number of arguments having to do with classpath
-     setting.  */
-  int classpath_args = 0;
-
   /* The total number of arguments with the new stuff.  */
   int num_args = 1;
 
