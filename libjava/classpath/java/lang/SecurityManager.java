@@ -167,6 +167,18 @@ public class SecurityManager
    */
   public SecurityManager()
   {
+    /* "When there is security manager installed, the security manager
+       need to check the package access. However, if the security
+       manager itself uses any unloaded class, it will trigger the
+       classloading, which causes infinite loop. There is no easy
+       legal solution. The workaround will be that security manager
+       can not depend on any unloaded class. In the constructor of
+       security manager, it must transitively load all classes it
+       refers to."  Sun bug #4242924.  */
+
+    // Load and initialize java.security.Security
+    java.security.Security.getProvider((String)null);
+
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
       sm.checkPermission(new RuntimePermission("createSecurityManager"));
