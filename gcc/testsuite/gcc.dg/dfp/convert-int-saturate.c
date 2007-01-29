@@ -4,7 +4,8 @@
    C99 6.3.1.4(1a) New.
    Test integer saturation.  */
 
-#include <decfloat.h>
+#define __STDC_WANT_DEC_FP__ 1
+#include <float.h>
 #include <limits.h>
 
 extern void abort (void);

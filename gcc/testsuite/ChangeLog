@@ -1,3 +1,10 @@
+2007-01-29  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/dfp/dec-eval-method.c: Replace decfloat.h with float.h.
+	* gcc.dg/dfp/decfloat-constants.c: Ditto.
+	* gcc.dg/dfp/convert-dfp.c: Ditto.
+	* gcc.dg/dfp/convert-int-saturate.c: Ditto.
+
 2007-01-29  Josh Conner  <jconner@apple.com>
 
 	* gcc.target/powerpc/altivec-24.c: New test.
