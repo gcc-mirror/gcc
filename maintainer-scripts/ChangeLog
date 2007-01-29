@@ -1,3 +1,7 @@
+2007-01-29  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* crontab: No longer build snapshots for 4.0.x.
+
 2007-01-21  Tobias Burnus  <burnus@net-b.de>
 
 	* update_web_docs_svn: Build also libgomp documentation.
