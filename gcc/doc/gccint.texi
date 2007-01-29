@@ -111,7 +111,7 @@ Additional tutorial information is linked to from
 * RTL::             The intermediate representation that most passes work on.
 * Control Flow::    Maintaining and manipulating the control flow graph.
 * Tree SSA::        Analysis and optimization of the tree representation.
-* Loop Representation:: Analysis and representation of loops
+* Loop Analysis and Representation:: Analysis and representation of loops
 * Machine Desc::    How to write machine description instruction patterns.
 * Target Macros::   How to write the machine description C macros and functions.
 * Host Config::     Writing the @file{xm-@var{machine}.h} file.

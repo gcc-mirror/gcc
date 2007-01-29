@@ -7,7 +7,7 @@
 @c Loop Representation
 @c ---------------------------------------------------------------------
 
-@node Loop Representation
+@node Loop Analysis and Representation
 @chapter Analysis and Representation of Loops
 
 GCC provides extensive infrastructure for work with natural loops, i.e.,
