@@ -50,6 +50,7 @@ details.  */
 #include <java/lang/NullPointerException.h>
 #include <java/lang/RuntimePermission.h>
 #include <java/lang/System.h>
+#include <java/lang/SecurityException.h>
 #include <java/lang/SecurityManager.h>
 #include <java/lang/StringBuffer.h>
 #include <java/lang/VMClassLoader.h>
@@ -690,6 +691,10 @@ java::lang::Class::initializeClass (void)
 	  {
 	    _Jv_Linker::wait_for_state(this, JV_STATE_LINKED);
 	  }
+	catch (java::lang::SecurityException *x)
+	  {
+	    throw x;
+	  }
 	catch (java::lang::Throwable *x)
 	  {
 	    // Turn into a NoClassDefFoundError.
@@ -727,6 +732,10 @@ java::lang::Class::initializeClass (void)
 	{
 	  _Jv_InitClass (superclass);
 	}
+      catch (java::lang::SecurityException *x)
+	{
+	  throw x;
+	}
       catch (java::lang::Throwable *except)
 	{
 	  // Caught an exception.
@@ -744,6 +753,10 @@ java::lang::Class::initializeClass (void)
 					     void_signature);
       if (meth)
 	((void (*) (void)) meth->ncode) ();
+    }
+  catch (java::lang::SecurityException *x)
+    {
+      throw x;
     }
   catch (java::lang::Throwable *except)
     {
