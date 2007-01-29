@@ -490,6 +490,7 @@ ext_headers = \
 	${ext_srcdir}/codecvt_specializations.h \
 	${ext_srcdir}/concurrence.h \
 	${ext_srcdir}/debug_allocator.h \
+	${ext_srcdir}/enc_filebuf.h \
 	${ext_srcdir}/stdio_filebuf.h \
 	${ext_srcdir}/stdio_sync_filebuf.h \
 	${ext_srcdir}/functional \
@@ -956,6 +957,7 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	    -e 's/PACKAGE/_GLIBCXX_PACKAGE/g' \
 	    -e 's/VERSION/_GLIBCXX_VERSION/g' \
 	    -e 's/WORDS_/_GLIBCXX_WORDS_/g' \
+	    -e 's/ICONV_CONST/_GLIBCXX_ICONV_CONST/g' \
 	    -e '/[ 	]_GLIBCXX_LONG_DOUBLE_COMPAT[ 	]/d' \
 	    < ${CONFIG_HEADER} >> $@ ;\
 	echo "" >> $@ ;\

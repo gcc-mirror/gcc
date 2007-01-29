@@ -581,7 +581,11 @@ AC_SUBST([am__untar])
 ]) # _AM_PROG_TAR
 
 m4_include([../config/enable.m4])
+m4_include([../config/iconv.m4])
 m4_include([../config/lead-dot.m4])
+m4_include([../config/lib-ld.m4])
+m4_include([../config/lib-link.m4])
+m4_include([../config/lib-prefix.m4])
 m4_include([../config/multi.m4])
 m4_include([../config/no-executables.m4])
 m4_include([../config/unwind_ipinfo.m4])

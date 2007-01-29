@@ -86,6 +86,7 @@ AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
+AM_ICONV
 
 # Possibly disable most of the library.
 ## TODO: Consider skipping unncessary tests altogether in this case, rather
@@ -140,7 +141,6 @@ if $GLIBCXX_IS_NATIVE; then
   GLIBCXX_CHECK_MATH_SUPPORT
   GLIBCXX_CHECK_BUILTIN_MATH_SUPPORT
   GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
-  GLIBCXX_CHECK_ICONV_SUPPORT
   GLIBCXX_CHECK_STDLIB_SUPPORT
 
   # For showmanyc_helper().

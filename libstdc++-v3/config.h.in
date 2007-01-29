@@ -130,14 +130,8 @@
 /* Define to 1 if you have the `hypotl' function. */
 #undef HAVE_HYPOTL
 
-/* Define to 1 if you have the `iconv' function. */
+/* Define if you have the iconv() function. */
 #undef HAVE_ICONV
-
-/* Define to 1 if you have the `iconv_close' function. */
-#undef HAVE_ICONV_CLOSE
-
-/* Define to 1 if you have the `iconv_open' function. */
-#undef HAVE_ICONV_OPEN
 
 /* Define to 1 if you have the <ieeefp.h> header file. */
 #undef HAVE_IEEEFP_H
@@ -240,9 +234,6 @@
 
 /* Define to 1 if you have the <nan.h> header file. */
 #undef HAVE_NAN_H
-
-/* Define to 1 if you have the `nl_langinfo' function. */
-#undef HAVE_NL_LANGINFO
 
 /* Define if poll is available in <poll.h>. */
 #undef HAVE_POLL
@@ -634,6 +625,9 @@
 /* Define to 1 if you have the `__signbitl' function. */
 #undef HAVE___SIGNBITL
 
+/* Define as const if the declaration of iconv() needs const. */
+#undef ICONV_CONST
+
 /* Name of package */
 #undef PACKAGE
 
@@ -734,9 +728,6 @@
 /* Define if C99 types in <stdint.h> should be imported in <tr1/cstdint> in
    namespace std::tr1. */
 #undef _GLIBCXX_USE_C99_STDINT_TR1
-
-/* Define if iconv and related functions exist and are usable. */
-#undef _GLIBCXX_USE_ICONV
 
 /* Define if LFS support is available. */
 #undef _GLIBCXX_USE_LFS
