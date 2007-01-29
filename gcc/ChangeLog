@@ -1,3 +1,8 @@
+2007-01-29  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* tree-optimize.c (update_inlined_to_pointers): Delete unused
+	function.
+
 2007-01-29  Janis Johnson  <janis187@us.ibm.com>
 
 	* Makefile.in (USER_H): Remove decfloat.h.
