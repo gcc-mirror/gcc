@@ -1,3 +1,7 @@
+2007-01-29  Janis Johnson  <janis187@us.ibm.com>
+
+	* Makefile.in (dec-filenames): Add decExcept.
+
 2007-01-28  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	PR bootstrap/30469
