@@ -217,7 +217,7 @@ details.  */
     INSN_LABEL(invokespecial),
     INSN_LABEL(invokestatic),
     INSN_LABEL(invokeinterface),
-    INSN_LABEL (breakpoint),
+    INSN_LABEL(breakpoint),
     INSN_LABEL(new),
     INSN_LABEL(newarray),
     INSN_LABEL(anewarray),
