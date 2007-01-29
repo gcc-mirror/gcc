@@ -1,3 +1,10 @@
+2007-01-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30554
+	* module.c (read_module): If a symbol is excluded by an ONLY
+	clause, check to see if there is a symtree already loaded. If
+	so, attach the symtree to the pointer_info.
+
 2007-01-28  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/30389
