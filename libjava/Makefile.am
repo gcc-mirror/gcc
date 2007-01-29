@@ -189,6 +189,9 @@ libgcj_la_SOURCES = prims.cc jni.cc jvmti.cc exception.cc stacktrace.cc \
 	link.cc defineclass.cc interpret.cc verify.cc \
 	$(nat_source_files)
 
+## We need to compile at least the interpreter this way.
+interpret.lo:  AM_CXXFLAGS += -fwrapv
+
 if USING_BOEHMGC
 libgcj_la_SOURCES += boehm.cc
 endif
