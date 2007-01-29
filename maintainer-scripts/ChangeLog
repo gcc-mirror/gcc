@@ -1,3 +1,7 @@
+2007-01-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* gcc_release: Don't attempt to build diffs or tarballs for g77.
+
 2006-03-09  Release Manager
 
 	* GCC 4.0.3 released.
