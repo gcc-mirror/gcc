@@ -1,3 +1,9 @@
+2007-01-29  Daniel Berlin  <dberlin@dberlin.org>
+
+	PR tree-optimization/30630
+	* tree-ssa-structalias.c (do_complex_constraint): Mark correct
+	variable as changed.
+
 2007-01-29  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/28266

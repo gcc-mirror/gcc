@@ -1538,9 +1538,9 @@ do_complex_constraint (constraint_graph_t graph, constraint_t c, bitmap delta)
       if (flag)
 	{
 	  get_varinfo (t)->solution = tmp;
-	  if (!TEST_BIT (changed, c->lhs.var))
+	  if (!TEST_BIT (changed, t))
 	    {
-	      SET_BIT (changed, c->lhs.var);
+	      SET_BIT (changed, t);
 	      changed_count++;
 	    }
 	}
@@ -2065,6 +2065,7 @@ solve_graph (constraint_graph_t graph)
 	      bitmap solution;
 	      VEC(constraint_t,heap) *complex = graph->complex[i];
 	      bool solution_empty;
+
 	      RESET_BIT (changed, i);
 	      changed_count--;
 
