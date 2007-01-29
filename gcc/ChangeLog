@@ -1,3 +1,9 @@
+2007-01-29  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/28266
+	* gimplify.c (gimplify_target_expr): Make sure that the TARGET_EXPR is
+	expanded only once even if an error occurs.
+
 2007-01-29  Ben Elliston  <bje@au.ibm.com>
 
 	* gcov-io.h (__gcov_indirect_call_profiler): Declare.
