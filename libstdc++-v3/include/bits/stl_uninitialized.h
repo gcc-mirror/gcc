@@ -1,6 +1,6 @@
 // Raw memory manipulators -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -62,8 +62,6 @@
 #ifndef _STL_UNINITIALIZED_H
 #define _STL_UNINITIALIZED_H 1
 
-#include <cstring>
-
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // uninitialized_copy
@@ -113,21 +111,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return std::__uninitialized_copy_aux(__first, __last, __result,
 					   _Is_POD());
     }
-
-  inline char*
-  uninitialized_copy(const char* __first, const char* __last, char* __result)
-  {
-    std::memmove(__result, __first, __last - __first);
-    return __result + (__last - __first);
-  }
-
-  inline wchar_t*
-  uninitialized_copy(const wchar_t* __first, const wchar_t* __last,
-		     wchar_t* __result)
-  {
-    std::memmove(__result, __first, sizeof(wchar_t) * (__last - __first));
-    return __result + (__last - __first);
-  }
 
   // Valid if copy construction is equivalent to assignment, and if the
   // destructor is trivial.
