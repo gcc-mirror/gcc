@@ -1,5 +1,12 @@
 2007-01-29  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/dfp/dfp-except.h: New file.
+	* gcc.dg/dfp/fe-check.h: New file.
+	* gcc.dg/dfp/fe-binop.c: New test.
+	* gcc.dg/dfp/fe-convert-1.c: New test.
+	* gcc.dg/dfp/fe-convert-2.c: New test.
+	* gcc.dg/dfp/fe-convert-3.c: New test.
+
 	* gcc.dg/dfp/dec-eval-method.c: Replace decfloat.h with float.h.
 	* gcc.dg/dfp/decfloat-constants.c: Ditto.
 	* gcc.dg/dfp/convert-dfp.c: Ditto.

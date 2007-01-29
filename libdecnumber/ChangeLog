@@ -1,3 +1,8 @@
+2007-01-29  Janis Johnson  <janis187@us.ibm.com>
+
+	* decExcept.c: New.
+	* decExcept.h: New.
+
 2006-11-29  Janis Johnson  <janis187@us.ibm.com>
 
 	* decRound.c: Move declarations to new file, update comments.

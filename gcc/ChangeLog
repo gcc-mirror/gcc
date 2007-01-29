@@ -1,3 +1,8 @@
+2007-01-29  Janis Johnson  <janis187@us.ibm.com>
+
+	* config/dfp-bit.c: Add parameterized support for fp exceptions.
+	* config/dfp-bit.h: Ditto.
+
 007-01-29  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* c-decl.c (pop_scope): Replace warnings with call to

@@ -464,7 +464,7 @@ endif
 
 dec-filenames =
 ifneq ($(D32PBIT)$(D64PBIT)$(D128PBIT),)
-dec-filenames += decContext decNumber decRound decLibrary decUtility
+dec-filenames += decContext decNumber decExcept decRound decLibrary decUtility
 endif
 
 ifneq ($(D32PBIT),)

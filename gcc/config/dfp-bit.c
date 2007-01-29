@@ -88,6 +88,19 @@ dfp_unary_op (dfp_unary_func op, DFP_C_TYPE arg)
   /* Perform the operation.  */
   op (&res, &arg1, &context);
 
+  if (DFP_EXCEPTIONS_ENABLED && context.status != 0)
+    {
+      /* decNumber exception flags we care about here.  */
+      int ieee_flags;
+      int dec_flags = DEC_IEEE_854_Division_by_zero | DEC_IEEE_854_Inexact
+		      | DEC_IEEE_854_Invalid_operation | DEC_IEEE_854_Overflow
+		      | DEC_IEEE_854_Underflow;
+      dec_flags &= context.status;
+      ieee_flags = DFP_IEEE_FLAGS (dec_flags);
+      if (ieee_flags != 0)
+        DFP_HANDLE_EXCEPTIONS (ieee_flags);
+    }
+
   TO_ENCODED (&encoded_result, &res, &context);
   IEEE_TO_HOST (encoded_result, &result);
   return result;
@@ -114,6 +127,19 @@ dfp_binary_op (dfp_binary_func op, DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
 
   /* Perform the operation.  */
   op (&res, &arg1, &arg2, &context);
+
+  if (DFP_EXCEPTIONS_ENABLED && context.status != 0)
+    {
+      /* decNumber exception flags we care about here.  */
+      int ieee_flags;
+      int dec_flags = DEC_IEEE_854_Division_by_zero | DEC_IEEE_854_Inexact
+		      | DEC_IEEE_854_Invalid_operation | DEC_IEEE_854_Overflow
+		      | DEC_IEEE_854_Underflow;
+      dec_flags &= context.status;
+      ieee_flags = DFP_IEEE_FLAGS (dec_flags);
+      if (ieee_flags != 0)
+        DFP_HANDLE_EXCEPTIONS (ieee_flags);
+    }
 
   TO_ENCODED (&encoded_result, &res, &context);
   IEEE_TO_HOST (encoded_result, &result);
@@ -379,6 +405,17 @@ DFP_TO_DFP (DFP_C_TYPE f_from)
   TO_INTERNAL (&s_from, &d);
   TO_ENCODED_TO (&s_to, &d, &context);
 
+  if (DFP_EXCEPTIONS_ENABLED && context.status != 0)
+    {
+      /* decNumber exception flags we care about here.  */
+      int ieee_flags;
+      int dec_flags = DEC_IEEE_854_Inexact | DEC_IEEE_854_Invalid_operation;
+      dec_flags &= context.status;
+      ieee_flags = DFP_IEEE_FLAGS (dec_flags);
+      if (ieee_flags != 0)
+        DFP_HANDLE_EXCEPTIONS (ieee_flags);
+    }
+
   IEEE_TO_HOST_TO (s_to, &f_to);
   return f_to;
 }
@@ -393,6 +430,9 @@ DFP_TO_INT (DFP_C_TYPE x)
 {
   /* decNumber's decimal* types have the same format as C's _Decimal*
      types, but they have different calling conventions.  */
+
+  /* TODO: Decimal float to integer conversions should raise FE_INVALID
+     if the result value does not fit into the result type.  */
 
   IEEE_TYPE s;
   char buf[BUFMAX];
@@ -444,6 +484,19 @@ INT_TO_DFP (INT_TYPE i)
   /* Convert from the floating point string to a decimal* type.  */
   FROM_STRING (&s, buf, &context);
   IEEE_TO_HOST (s, &f);
+
+  if (DFP_EXCEPTIONS_ENABLED && context.status != 0)
+    {
+      /* decNumber exception flags we care about here.  */
+      int ieee_flags;
+      int dec_flags = DEC_IEEE_854_Inexact | DEC_IEEE_854_Invalid_operation
+		      | DEC_IEEE_854_Overflow;
+      dec_flags &= context.status;
+      ieee_flags = DFP_IEEE_FLAGS (dec_flags);
+      if (ieee_flags != 0)
+        DFP_HANDLE_EXCEPTIONS (ieee_flags);
+    }
+
   return f;
 }
 #endif
@@ -492,6 +545,19 @@ BFP_TO_DFP (BFP_TYPE x)
   /* Convert from the floating point string to a decimal* type.  */
   FROM_STRING (&s, buf, &context);
   IEEE_TO_HOST (s, &f);
+
+  if (DFP_EXCEPTIONS_ENABLED && context.status != 0)
+    {
+      /* decNumber exception flags we care about here.  */
+      int ieee_flags;
+      int dec_flags = DEC_IEEE_854_Inexact | DEC_IEEE_854_Invalid_operation
+		      | DEC_IEEE_854_Overflow | DEC_IEEE_854_Underflow;
+      dec_flags &= context.status;
+      ieee_flags = DFP_IEEE_FLAGS (dec_flags);
+      if (ieee_flags != 0)
+        DFP_HANDLE_EXCEPTIONS (ieee_flags);
+    }
+
   return f;
 }
 #endif

@@ -32,6 +32,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #include <fenv.h>
 #include <decRound.h>
+#include <decExcept.h>
 #include "tconfig.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -118,6 +119,27 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #ifndef DFP_INIT_ROUNDMODE
 #define DFP_INIT_ROUNDMODE(A) A = DEC_ROUND_HALF_EVEN
+#endif
+
+#ifdef DFP_EXCEPTIONS_ENABLED
+/* Return IEEE exception flags based on decNumber status flags.  */
+#define DFP_IEEE_FLAGS(DEC_FLAGS) __extension__			\
+({int _fe_flags = 0;						\
+  if ((dec_flags & DEC_IEEE_854_Division_by_zero) != 0)		\
+    _fe_flags |= FE_DIVBYZERO;					\
+  if ((dec_flags & DEC_IEEE_854_Inexact) != 0)			\
+    _fe_flags |= FE_INEXACT;					\
+  if ((dec_flags & DEC_IEEE_854_Invalid_operation) != 0)	\
+    _fe_flags |= FE_INVALID;					\
+  if ((dec_flags & DEC_IEEE_854_Overflow) != 0)			\
+    _fe_flags |= FE_OVERFLOW;					\
+  if ((dec_flags & DEC_IEEE_854_Underflow) != 0)		\
+    _fe_flags |= FE_UNDERFLOW;					\
+  _fe_flags; })
+#else
+#define DFP_EXCEPTIONS_ENABLED 0
+#define DFP_IEEE_FLAGS(A) 0
+#define DFP_HANDLE_EXCEPTIONS(A) do {} while (0)
 #endif
 
 /* Conversions between different decimal float types use WIDTH_TO to
