@@ -1,3 +1,41 @@
+2007-01-28  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree.h (struct tree_memory_tag): Add aliases member.
+	(MTAG_ALIASES): New macro.
+	* tree-ssa-alias.c (alias_bitmap_obstack): New variable.
+	(add_may_alias): Remove pointer-set. Update for may_aliases being
+	a bitmap. 
+	(mark_aliases_call_clobbered): Update for may_aliases being a
+	bitmap.
+	(compute_tag_properties): Ditto.
+	(create_partition_for): Ditto.
+	(compute_memory_partitions): Ditto.
+	(dump_may_aliases_for): Ditto.
+	(is_aliased_with): Ditto.
+	(add_may_alias_for_new_tag): Ditto.
+	(rewrite_alias_set_for): Rewrite for may_aliases being a bitmap.
+	(compute_is_aliased): New function.
+	(compute_may_aliases): Call compute_is_aliased).
+	(init_alias_info): Initialize alias_bitmap_obstack.
+	(union_alias_set_into): New function.
+	(compute_flow_sensitive_aliasing): Use union_aliases_into.
+	(have_common_aliases_p): Rewrite to take two bitmaps and use
+	intersection.
+	(compute_flow_insensitive_aliasing): Stop using pointer-sets.
+	Update for bitmaps.
+	(finalize_ref_all_pointers): Update for add_may_alias changes.
+	(new_type_alias): Ditto.
+	* tree-flow-inline.h (may_aliases): Return a bitmap.
+	* tree-dfa.c (dump_variable): Check for MTAG_P'ness.
+	* tree-ssa.c (verify_flow_insensitive_alias_info): Update for
+	may_aliases being a bitmap.
+	* tree-flow.h (struct var_ann_d): Remove may_aliases member.
+	may_aliases now returns a bitmap.
+	* tree-ssa-structalias.c (merge_smts_into): Update for may_aliases
+	being a bitmap.
+	* tree-ssa-operands.c (add_virtual_operand): Update for
+	may_aliases being a bitmap.
+	
 2007-01-29  Daniel Berlin  <dberlin@dberlin.org>
 
 	PR tree-optimization/30630

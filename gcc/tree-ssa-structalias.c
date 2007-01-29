@@ -4326,7 +4326,7 @@ merge_smts_into (tree p, varinfo_t vi)
   unsigned int i;
   bitmap_iterator bi;
   tree smt;
-  VEC(tree, gc) *aliases;
+  bitmap aliases;
   tree var = p;
 
   if (TREE_CODE (p) == SSA_NAME)
@@ -4350,15 +4350,9 @@ merge_smts_into (tree p, varinfo_t vi)
 	    bitmap_set_bit (vi->finished_solution, i);
 	}
 
-      aliases = var_ann (smt)->may_aliases;
+      aliases = MTAG_ALIASES (smt);
       if (aliases)
-	{
-	  size_t k;
-	  tree al;
-	  for (k = 0; VEC_iterate (tree, aliases, k, al); k++)
-	    bitmap_set_bit (vi->finished_solution,
-			    DECL_UID (al));
-	}
+        bitmap_ior_into (vi->finished_solution, aliases);
     }
 }
 

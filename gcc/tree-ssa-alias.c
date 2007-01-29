@@ -90,6 +90,7 @@ struct alias_stats_d
 
 /* Local variables.  */
 static struct alias_stats_d alias_stats;
+static bitmap_obstack alias_bitmap_obstack;
 
 /* Local functions.  */
 static void compute_flow_insensitive_aliasing (struct alias_info *);
@@ -99,7 +100,7 @@ static bool may_alias_p (tree, HOST_WIDE_INT, tree, HOST_WIDE_INT, bool);
 static tree create_memory_tag (tree type, bool is_type_tag);
 static tree get_smt_for (tree, struct alias_info *);
 static tree get_nmt_for (tree);
-static void add_may_alias (tree, tree, struct pointer_set_t *);
+static void add_may_alias (tree, tree);
 static struct alias_info *init_alias_info (void);
 static void delete_alias_info (struct alias_info *);
 static void compute_flow_sensitive_aliasing (struct alias_info *);
@@ -194,19 +195,21 @@ static void
 mark_aliases_call_clobbered (tree tag, VEC (tree, heap) **worklist,
 			     VEC (int, heap) **worklist2)
 {
+  bitmap aliases;
+  bitmap_iterator bi;
   unsigned int i;
-  VEC (tree, gc) *ma;
   tree entry;
   var_ann_t ta = var_ann (tag);
 
   if (!MTAG_P (tag))
     return;
-  ma = may_aliases (tag);
-  if (!ma)
+  aliases = may_aliases (tag);
+  if (!aliases)
     return;
 
-  for (i = 0; VEC_iterate (tree, ma, i, entry); i++)
+  EXECUTE_IF_SET_IN_BITMAP (aliases, 0, i, bi)
     {
+      entry = referenced_var (i);
       if (!unmodifiable_var_p (entry))
 	{
 	  add_to_worklist (entry, worklist, worklist2, ta->escape_mask);
@@ -264,7 +267,8 @@ compute_tag_properties (void)
       changed = false;      
       for (k = 0; VEC_iterate (tree, taglist, k, tag); k++)
 	{
-	  VEC (tree, gc) *ma;
+	  bitmap ma;
+	  bitmap_iterator bi;
 	  unsigned int i;
 	  tree entry;
 	  bool tagcc = is_call_clobbered (tag);
@@ -277,8 +281,9 @@ compute_tag_properties (void)
 	  if (!ma)
 	    continue;
 
-	  for (i = 0; VEC_iterate (tree, ma, i, entry); i++)
+	  EXECUTE_IF_SET_IN_BITMAP (ma, 0, i, bi)
 	    {
+	      entry = referenced_var (i);
 	      /* Call clobbered entries cause the tag to be marked
 		 call clobbered.  */
 	      if (!tagcc && is_call_clobbered (entry))
@@ -508,8 +513,9 @@ sort_mp_info (VEC(mp_info_t,heap) *list)
 static void
 create_partition_for (mp_info_t mp_p)
 {
+  bitmap_iterator bi;
   tree mpt, sym;
-  VEC(tree,gc) *aliases;
+  bitmap aliases;
   unsigned i;
 
   if (mp_p->num_vops <= (long) MAX_ALIASED_VOPS)
@@ -556,11 +562,12 @@ create_partition_for (mp_info_t mp_p)
   else
     {
       aliases = may_aliases (mp_p->var);
-      gcc_assert (VEC_length (tree, aliases) > 1);
+      gcc_assert (!bitmap_empty_p (aliases));
 
       mpt = NULL_TREE;
-      for (i = 0; VEC_iterate (tree, aliases, i, sym); i++)
+      EXECUTE_IF_SET_IN_BITMAP (aliases, 0, i, bi)
 	{
+	  sym = referenced_var (i);
 	  /* Only set the memory partition for aliased symbol SYM if
 	     SYM does not belong to another partition.  */
 	  if (memory_partition (sym) == NULL_TREE)
@@ -614,11 +621,10 @@ rewrite_alias_set_for (tree tag, bitmap new_aliases)
   else
     {
       /* Create a new alias set for TAG with the new partitions.  */
-      var_ann_t ann;
 
-      ann = var_ann (tag);
-      for (i = 0; VEC_iterate (tree, ann->may_aliases, i, sym); i++)
+      EXECUTE_IF_SET_IN_BITMAP (MTAG_ALIASES (tag), 0, i, bi)
 	{
+	  sym = referenced_var (i);
 	  mpt = memory_partition (sym);
 	  if (mpt)
 	    bitmap_set_bit (new_aliases, DECL_UID (mpt));
@@ -627,9 +633,7 @@ rewrite_alias_set_for (tree tag, bitmap new_aliases)
 	}
 
       /* Rebuild the may-alias array for TAG.  */
-      VEC_free (tree, gc, ann->may_aliases);
-      EXECUTE_IF_SET_IN_BITMAP (new_aliases, 0, i, bi)
-	VEC_safe_push (tree, gc, ann->may_aliases, referenced_var (i));
+      bitmap_copy (MTAG_ALIASES (tag), new_aliases);
     }
 }
 
@@ -691,7 +695,10 @@ compute_memory_partitions (void)
       /* Each reference to VAR will produce as many VOPs as elements
 	 exist in its alias set.  */
       mp.var = var;
-      mp.num_vops = VEC_length (tree, may_aliases (var));
+      if (!may_aliases (var))
+	mp.num_vops = 0;
+      else
+	mp.num_vops = bitmap_count_bits (may_aliases (var));
 
       /* No point grouping singleton alias sets.  */
       if (mp.num_vops <= 1)
@@ -767,6 +774,43 @@ done:
   VEC_free (mp_info_t, heap, mp_info);
 
   timevar_pop (TV_MEMORY_PARTITIONING);
+}
+
+/* This function computes the value of the is_aliased bit for
+   variables.  is_aliased is true for any variable that is in an
+   alias bitmap.  */
+
+static void
+compute_is_aliased (void)
+{
+  referenced_var_iterator rvi;
+  tree tag;
+  bitmap aliased_vars = BITMAP_ALLOC (NULL);
+  bitmap_iterator bi;
+  unsigned int i;
+  
+  /* Add is_aliased for all vars pointed to by the symbol tags.  */
+  FOR_EACH_REFERENCED_VAR (tag, rvi)
+    {
+      bitmap aliases;
+      if (TREE_CODE (tag) != SYMBOL_MEMORY_TAG
+	  && TREE_CODE (tag) != NAME_MEMORY_TAG)
+	continue;
+      aliases = MTAG_ALIASES (tag);
+      if (!aliases)
+	continue;
+      
+      bitmap_ior_into (aliased_vars, aliases);	  
+    }
+  
+  EXECUTE_IF_SET_IN_BITMAP (aliased_vars, 0, i, bi)
+    {
+      tree var = referenced_var (i);
+      
+      var_ann (var)->is_aliased = true;
+    }
+  
+  BITMAP_FREE (aliased_vars);
 }
 
 
@@ -937,6 +981,9 @@ compute_may_aliases (void)
       dump_alias_info (dump_file);
     }
 
+  /* Set up is_aliased flags. */
+  compute_is_aliased ();
+  
   /* Deallocate memory used by aliasing data structures.  */
   delete_alias_info (ai);
 
@@ -1112,7 +1159,9 @@ init_alias_info (void)
   if (gimple_aliases_computed_p (cfun))
     {
       unsigned i;
-  
+      
+      bitmap_obstack_release (&alias_bitmap_obstack);
+      
       /* Similarly, clear the set of addressable variables.  In this
 	 case, we can just clear the set because addressability is
 	 only computed here.  */
@@ -1124,7 +1173,9 @@ init_alias_info (void)
 	  var_ann_t ann = var_ann (var);
 	  
 	  ann->is_aliased = 0;
-	  ann->may_aliases = NULL;
+
+	  if (MTAG_P (var))
+	    MTAG_ALIASES (var) = NULL;
 
 	  /* Since we are about to re-discover call-clobbered
 	     variables, clear the call-clobbered flag.  Variables that
@@ -1180,6 +1231,7 @@ init_alias_info (void)
 
   /* Next time, we will need to reset alias information.  */
   cfun->gimple_df->aliases_computed_p = true;
+  bitmap_obstack_initialize (&alias_bitmap_obstack);
 
   return ai;
 }
@@ -1331,6 +1383,21 @@ create_name_tags (void)
   VEC_free (tree, heap, with_ptvars);
 }
 
+/* Union the alias set SET into the may-aliases for TAG */
+
+static void
+union_alias_set_into (tree tag, bitmap set)
+{
+  bitmap ma = MTAG_ALIASES (tag);
+  
+  if (bitmap_empty_p (set))
+    return;
+  
+  if (!ma)
+    ma = MTAG_ALIASES (tag) = BITMAP_ALLOC (&alias_bitmap_obstack);
+  bitmap_ior_into (ma, set);
+}
+
 
 /* For every pointer P_i in AI->PROCESSED_PTRS, create may-alias sets for
    the name memory tag (NMT) associated with P_i.  If P_i escapes, then its
@@ -1358,45 +1425,49 @@ compute_flow_sensitive_aliasing (struct alias_info *ai)
 
   for (i = 0; VEC_iterate (tree, ai->processed_ptrs, i, ptr); i++)
     {
-      unsigned j;
       struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
       tree tag = symbol_mem_tag (SSA_NAME_VAR (ptr));
-      bitmap_iterator bi;
 
       /* Set up aliasing information for PTR's name memory tag (if it has
 	 one).  Note that only pointers that have been dereferenced will
 	 have a name memory tag.  */
       if (pi->name_mem_tag && pi->pt_vars)
-	EXECUTE_IF_SET_IN_BITMAP (pi->pt_vars, 0, j, bi)
-	  {
-	    add_may_alias (pi->name_mem_tag, referenced_var (j), NULL);
-	    if (j != DECL_UID (tag))
-	      add_may_alias (tag, referenced_var (j), NULL);
-	  }
+	{
+	  if (!bitmap_empty_p (pi->pt_vars))
+	    {
+	      union_alias_set_into (pi->name_mem_tag, pi->pt_vars);
+	      union_alias_set_into (tag, pi->pt_vars);
+	      bitmap_clear_bit (MTAG_ALIASES (tag), DECL_UID (tag));
+	    
+	      /* It may be the case that this the tag uid was the only
+		 bit we had set in the aliases list, and in this case,
+		 we don't want to keep an empty bitmap, as this
+		 asserts in tree-ssa-operands.c .  */
+	      if (bitmap_empty_p (MTAG_ALIASES (tag)))
+		BITMAP_FREE (MTAG_ALIASES (tag));
+	    }
+	}
     }
 }
 
 
-/* Return TRUE if at least one symbol in TAG's alias set is also
-   present in SET1.  */
+/* Return TRUE if at least one symbol in TAG2's alias set is also
+   present in TAG1's alias set.  */
 
 static bool
-have_common_aliases_p (struct pointer_set_t *set1, tree tag2)
+have_common_aliases_p (bitmap tag1aliases, bitmap tag2aliases)
 {
-  unsigned i;
-  VEC(tree,gc) *aliases2;
 
-  if (set1 == NULL)
+  /* This is the old behavior of have_common_aliases_p, which is to
+     return false if both sets are empty, or one set is and the other
+     isn't.  */
+     if ((tag1aliases == NULL && tag2aliases != NULL)
+      || (tag2aliases == NULL && tag1aliases != NULL)
+      || (tag1aliases == NULL && tag2aliases == NULL))
     return false;
 
-  aliases2 = may_aliases (tag2);
-  for (i = 0; i < VEC_length (tree, aliases2); i++)
-    if (pointer_set_contains (set1, VEC_index (tree, aliases2, i)))
-      return true;
-
-  return false;
+  return bitmap_intersect_p (tag1aliases, tag2aliases);
 }
-
 
 /* Compute type-based alias sets.  Traverse all the pointers and
    addressable variables found in setup_pointers_and_addressables.
@@ -1412,20 +1483,11 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 {
   size_t i;
 
-  /* Initialize pointer sets to keep track of duplicates in alias
-     sets.  */
-  for (i = 0; i < ai->num_pointers; i++)
-    {
-      tree tag = symbol_mem_tag (ai->pointers[i]->var);
-      var_ann (tag)->common.aux = NULL;
-    }
-
   /* For every pointer P, determine which addressable variables may alias
      with P's symbol memory tag.  */
   for (i = 0; i < ai->num_pointers; i++)
     {
       size_t j;
-      struct pointer_set_t *already_added;
       struct alias_map_d *p_map = ai->pointers[i];
       tree tag = symbol_mem_tag (p_map->var);
       tree var;
@@ -1433,13 +1495,6 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
       /* Call-clobbering information is not finalized yet at this point.  */
       if (PTR_IS_REF_ALL (p_map->var))
 	continue;
-
-      /* Retrieve or create the set of symbols that have already been
-	 added to TAG's alias set.  */
-      if (var_ann (tag)->common.aux == NULL)
-	var_ann (tag)->common.aux = (void *) pointer_set_create ();
-
-      already_added = (struct pointer_set_t *) var_ann (tag)->common.aux;
 
       for (j = 0; j < ai->num_addressable_vars; j++)
 	{
@@ -1470,7 +1525,7 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 			  || get_subvars_for_var (var) == NULL);
 
 	      /* Add VAR to TAG's may-aliases set.  */
-	      add_may_alias (tag, var, already_added);
+	      add_may_alias (tag, var);
 	    }
 	}
     }
@@ -1498,20 +1553,18 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
   for (i = 0; i < ai->num_pointers; i++)
     {
       size_t j;
-      struct pointer_set_t *set1;
       struct alias_map_d *p_map1 = ai->pointers[i];
       tree tag1 = symbol_mem_tag (p_map1->var);
+      bitmap may_aliases1 = MTAG_ALIASES (tag1);
 
       if (PTR_IS_REF_ALL (p_map1->var))
 	continue;
-
-      set1 = (struct pointer_set_t *) var_ann (tag1)->common.aux;
 
       for (j = i + 1; j < ai->num_pointers; j++)
 	{
 	  struct alias_map_d *p_map2 = ai->pointers[j];
 	  tree tag2 = symbol_mem_tag (p_map2->var);
-	  VEC(tree,gc) *may_aliases2 = may_aliases (tag2);
+	  bitmap may_aliases2 = may_aliases (tag2);
 
 	  if (PTR_IS_REF_ALL (p_map2->var))
 	    continue;
@@ -1522,37 +1575,21 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 
 	  /* The two pointers may alias each other.  If they already have
 	     symbols in common, do nothing.  */
-	  if (have_common_aliases_p (set1, tag2))
+	  if (have_common_aliases_p (may_aliases1, may_aliases2))
 	    continue;
 
-	  if (set1 == NULL)
+	  if (may_aliases2 && !bitmap_empty_p (may_aliases2))
 	    {
-	      set1 = pointer_set_create ();
-	      var_ann (tag1)->common.aux = (void *) set1;
-	    }
-
-	  if (VEC_length (tree, may_aliases2) > 0)
-	    {
-	      unsigned k;
-	      tree sym;
-
-	      /* Add all the aliases for TAG2 into TAG1's alias set.  */
-	      for (k = 0; VEC_iterate (tree, may_aliases2, k, sym); k++)
-		add_may_alias (tag1, sym, set1);
+	      union_alias_set_into (tag1, may_aliases2);
 	    }
 	  else
 	    {
 	      /* Since TAG2 does not have any aliases of its own, add
 		 TAG2 itself to the alias set of TAG1.  */
-	      add_may_alias (tag1, tag2, set1);
+	      add_may_alias (tag1, tag2);
 	    }
 	}
 
-      if (set1)
-	{
-	  pointer_set_destroy (set1);
-	  var_ann (tag1)->common.aux = NULL;
-	}
     }
 }
 
@@ -1570,14 +1607,13 @@ static void
 finalize_ref_all_pointers (struct alias_info *ai)
 {
   size_t i;
-  struct pointer_set_t *already_added = pointer_set_create ();
 
   /* First add the real call-clobbered variables.  */
   for (i = 0; i < ai->num_addressable_vars; i++)
     {
       tree var = ai->addressable_vars[i]->var;
       if (is_call_clobbered (var))
-	add_may_alias (ai->ref_all_symbol_mem_tag, var, already_added);
+	add_may_alias (ai->ref_all_symbol_mem_tag, var);
     }
 
   /* Then add the call-clobbered pointer memory tags.  See
@@ -1589,10 +1625,9 @@ finalize_ref_all_pointers (struct alias_info *ai)
 	continue;
       tag = symbol_mem_tag (ptr);
       if (is_call_clobbered (tag))
-	add_may_alias (ai->ref_all_symbol_mem_tag, tag, already_added);
+	add_may_alias (ai->ref_all_symbol_mem_tag, tag);
     }
 
-  pointer_set_destroy (already_added);
 }
 
 
@@ -1960,15 +1995,11 @@ may_alias_p (tree ptr, HOST_WIDE_INT mem_alias_set,
 }
 
 
-/* Add ALIAS to the set of variables that may alias VAR.  If
-   ALREADY_ADDED is given, it is used to avoid adding the same alias
-   more than once to VAR's alias set.  */
+/* Add ALIAS to the set of variables that may alias VAR.  */
 
 static void
-add_may_alias (tree var, tree alias, struct pointer_set_t *already_added)
+add_may_alias (tree var, tree alias)
 {
-  var_ann_t v_ann = get_var_ann (var);
-  var_ann_t a_ann = get_var_ann (alias);
 
   /* Don't allow self-referential aliases.  */
   gcc_assert (var != alias);
@@ -1984,15 +2015,10 @@ add_may_alias (tree var, tree alias, struct pointer_set_t *already_added)
   gcc_assert (TREE_CODE (var) == SYMBOL_MEMORY_TAG
               || TREE_CODE (var) == NAME_MEMORY_TAG);
 
-  if (v_ann->may_aliases == NULL)
-    v_ann->may_aliases = VEC_alloc (tree, gc, 2);
-
-  /* Avoid adding duplicates.  */
-  if (already_added && pointer_set_insert (already_added, alias))
-    return;
-
-  VEC_safe_push (tree, gc, v_ann->may_aliases, alias);
-  a_ann->is_aliased = 1;
+  if (MTAG_ALIASES (var) == NULL)
+    MTAG_ALIASES (var) = BITMAP_ALLOC (&alias_bitmap_obstack);
+  
+  bitmap_set_bit (MTAG_ALIASES (var), DECL_UID (alias));
 }
 
 
@@ -2506,19 +2532,19 @@ debug_points_to_info (void)
 void
 dump_may_aliases_for (FILE *file, tree var)
 {
-  VEC(tree, gc) *aliases;
+  bitmap aliases;
   
-  if (TREE_CODE (var) == SSA_NAME)
-    var = SSA_NAME_VAR (var);
-
-  aliases = var_ann (var)->may_aliases;
+  aliases = MTAG_ALIASES (var);
   if (aliases)
     {
-      size_t i;
+      bitmap_iterator bi;
+      unsigned int i;
       tree al;
+
       fprintf (file, "{ ");
-      for (i = 0; VEC_iterate (tree, aliases, i, al); i++)
+      EXECUTE_IF_SET_IN_BITMAP (aliases, 0, i, bi)
 	{
+	  al = referenced_var (i);
 	  print_generic_expr (file, al, dump_flags);
 	  fprintf (file, " ");
 	}
@@ -2574,36 +2600,32 @@ may_be_aliased (tree var)
 }
 
 
-/* Given two symbols return TRUE if one is in the alias set of the other.  */
+/* Given two symbols return TRUE if one is in the alias set of the
+   other.  */
 
 bool
 is_aliased_with (tree tag, tree sym)
 {
-  size_t i;
-  VEC(tree,gc) *aliases;
-  tree al;
+  bitmap aliases;
 
-  if (var_ann (sym)->is_aliased)
+  if (MTAG_P (tag))
     {
-      aliases = var_ann (tag)->may_aliases;
+      aliases = MTAG_ALIASES (tag);
 
       if (aliases == NULL)
 	return false;
 
-      for (i = 0; VEC_iterate (tree, aliases, i, al); i++)
-	if (al == sym)
-	  return true;
+      return bitmap_bit_p (aliases, DECL_UID (sym));      
     }
   else
     {
-      aliases = var_ann (sym)->may_aliases;
+      gcc_assert (MTAG_P (sym));
+      aliases = MTAG_ALIASES (sym);
 
       if (aliases == NULL)
 	return false;
 
-      for (i = 0; VEC_iterate (tree, aliases, i, al); i++)
-	if (al == tag)
-	  return true;
+      return bitmap_bit_p (aliases, DECL_UID (tag));
     }
 
   return false;
@@ -2619,37 +2641,27 @@ is_aliased_with (tree tag, tree sym)
 static tree
 add_may_alias_for_new_tag (tree tag, tree var)
 {
-  VEC(tree,gc) *aliases;
-  struct pointer_set_t *already_added;
-  unsigned i;
-  tree al;
-
-  aliases = may_aliases (var);
+  bitmap aliases = NULL;
+  
+  if (MTAG_P (var))
+    aliases = may_aliases (var);
 
   /* Case 1: |aliases| == 1  */
-  if (VEC_length (tree, aliases) == 1)
+  if (aliases && bitmap_count_bits (aliases) == 1)
     {
-      tree ali = VEC_index (tree, aliases, 0);
+      tree ali = referenced_var (bitmap_first_set_bit (aliases));
       if (TREE_CODE (ali) == SYMBOL_MEMORY_TAG)
         return ali;
     }
 
-  already_added = pointer_set_create ();
-  for (i = 0; VEC_iterate (tree, may_aliases (tag), i, al); i++)
-    pointer_set_insert (already_added, al);
-
   /* Case 2: |aliases| == 0  */
   if (aliases == NULL)
-    add_may_alias (tag, var, already_added);
+    add_may_alias (tag, var);
   else
     {
       /* Case 3: |aliases| > 1  */
-      for (i = 0; VEC_iterate (tree, aliases, i, al); i++)
-        add_may_alias (tag, al, already_added);
+      union_alias_set_into (tag, aliases);
     }
-
-  pointer_set_destroy (already_added);
-
   return tag;
 }
 
@@ -2736,7 +2748,7 @@ new_type_alias (tree ptr, tree var, tree expr)
 		  /* Can happen only if 'Case 1' of add_may_alias_for_new_tag
 		     took place.  Since more than one svar was found, we add 
 		     'ali' as one of the may_aliases of the new tag.  */ 
-		  add_may_alias (tag, ali, NULL);
+		  add_may_alias (tag, ali);
 		  ali = tag;
 		}
 	    }
