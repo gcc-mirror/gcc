@@ -3394,15 +3394,22 @@ read_module (void)
 	  /* Get the jth local name for this symbol.  */
 	  p = find_use_name_n (name, &j);
 
-	  /* Skip symtree nodes not in an ONLY clause.  */
+	  /* Skip symtree nodes not in an ONLY clause, unless there
+	     is an existing symtree loaded from another USE
+	     statement.  */
 	  if (p == NULL)
-	    continue;
+	    {
+	      st = gfc_find_symtree (gfc_current_ns->sym_root, name);
+	      if (st != NULL)
+		info->u.rsym.symtree = st;
+	      continue;
+	    }
 
-	  /* Check for ambiguous symbols.  */
 	  st = gfc_find_symtree (gfc_current_ns->sym_root, p);
 
 	  if (st != NULL)
 	    {
+	      /* Check for ambiguous symbols.  */
 	      if (st->n.sym != info->u.rsym.sym)
 		st->ambiguous = 1;
 	      info->u.rsym.symtree = st;
