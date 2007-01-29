@@ -2339,6 +2339,10 @@ _Jv_JNIMethod::call (ffi_cif *, void *ret, ffi_raw *args, void *__this)
 
   // Copy over passed-in arguments.
   memcpy (&real_args[offset], args, _this->args_raw_size);
+  
+  // Add a frame to the composite (interpreted + JNI) call stack
+  java::lang::Thread *thread = java::lang::Thread::currentThread();
+  _Jv_NativeFrame nat_frame (_this, thread);
 
   // The actual call to the JNI function.
 #if FFI_NATIVE_RAW_API

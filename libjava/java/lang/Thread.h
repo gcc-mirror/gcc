@@ -144,7 +144,8 @@ public: // actually package-private
   static const jbyte THREAD_PARK_DEAD = 3;
   ::java::lang::Object * accessControlState;
   ::gnu::gcj::RawData * interp_frame;
-  jint volatile state;
+  ::gnu::gcj::RawData * frame;
+  volatile jint state;
   ::gnu::gcj::RawDataManaged * data;
 public:
   static ::java::lang::Class class$;

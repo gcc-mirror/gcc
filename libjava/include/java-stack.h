@@ -41,13 +41,6 @@ extern "Java"
   }
 }
 
-enum _Jv_FrameType
-{
-  frame_native,
-  frame_interpreter,
-  frame_proxy
-};
-
 #ifdef INTERPRETER
 struct _Jv_InterpFrameInfo
 {

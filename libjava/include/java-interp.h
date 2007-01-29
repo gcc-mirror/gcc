@@ -205,11 +205,11 @@ class _Jv_InterpMethod : public _Jv_MethodBase
   // number info is unavailable.
   int get_source_line(pc_t mpc);
 
+   public:
+
   // Convenience function for indexing bytecode PC/insn slots in
   // line tables for JDWP
   jlong insn_index (pc_t pc);
-  
-   public:
    
   /* Get the line table for this method.
    * start  is the lowest index in the method
@@ -315,35 +315,86 @@ public:
   }
 };
 
-// The interpreted call stack, represented by a linked list of frames.
-struct _Jv_InterpFrame
+enum _Jv_FrameType
 {
+  frame_native,
+  frame_interpreter,
+  frame_proxy
+};
+
+//  The composite call stack as represented by a linked list of frames
+class _Jv_Frame
+{
+public:
+  java::lang::Thread *thread;
+
   union
   {
+    _Jv_MethodBase *self;
     void *meth;
-    _Jv_InterpMethod *self;
     _Jv_Method *proxyMethod;
   };
-  java::lang::Thread *thread;
-  _Jv_InterpFrame *next;
+  
+  //The full list of frames, JNI and interpreted
+  _Jv_Frame *next;
+  _Jv_FrameType frame_type;
+  
+  _Jv_Frame (_Jv_MethodBase *s, java::lang::Thread *thr, _Jv_FrameType type)
+  {
+    self = s;
+    frame_type = type;
+    next = (_Jv_Frame *) thr->frame;
+    thr->frame = (gnu::gcj::RawData *) this;
+    thread = thr;
+  }
+
+  ~_Jv_Frame ()
+  {
+    thread->frame = (gnu::gcj::RawData *) next;
+  }
+};
+
+// An interpreted frame in the call stack
+class _Jv_InterpFrame : public _Jv_Frame
+{
+public:
+  
+  // Keep the purely interpreted list around so as not to break backtraces
+  _Jv_InterpFrame *next_interp;
+  
   union
   {
     pc_t pc;
     jclass proxyClass;
   };
-  
-  _Jv_InterpFrame (void *meth, java::lang::Thread *thr, jclass proxyClass = NULL)
+
+  //Debug info for local variables.
+  _Jv_word *locals;
+  char *locals_type;
+
+  _Jv_InterpFrame (void *meth, java::lang::Thread *thr, jclass proxyCls = NULL)
+  : _Jv_Frame (reinterpret_cast<_Jv_MethodBase *> (meth), thr,
+	             frame_interpreter)
   {
-    this->meth = meth;
-    thread = thr;
-    next = (_Jv_InterpFrame *) thr->interp_frame;
+    next_interp = (_Jv_InterpFrame *) thr->interp_frame;
+    proxyClass = proxyCls;
     thr->interp_frame = (gnu::gcj::RawData *) this;
-    this->proxyClass = proxyClass;
   }
 
   ~_Jv_InterpFrame ()
   {
-    thread->interp_frame = (gnu::gcj::RawData *) next;
+    thread->interp_frame = (gnu::gcj::RawData *) next_interp;
+  }
+};
+
+// A native frame in the call stack really just a placeholder
+class _Jv_NativeFrame : public _Jv_Frame
+{
+public:
+
+  _Jv_NativeFrame (_Jv_JNIMethod *s, java::lang::Thread *thr)
+  : _Jv_Frame (s, thr, frame_native)
+  {
   }
 };
 
