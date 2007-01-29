@@ -1441,7 +1441,7 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 		     tree full_ref, HOST_WIDE_INT offset,
 		     HOST_WIDE_INT size, bool for_clobber)
 {
-  VEC(tree,gc) *aliases;
+  bitmap aliases = NULL;
   tree sym;
   var_ann_t v_ann;
   
@@ -1479,7 +1479,8 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
   if (flags & opf_no_vops)
     return;
   
-  aliases = v_ann->may_aliases;
+  if (MTAG_P (var))
+    aliases = MTAG_ALIASES (var);
   if (aliases == NULL)
     {
       if (s_ann && !gimple_aliases_computed_p (cfun))
@@ -1492,19 +1493,20 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
     }
   else
     {
-      unsigned i;
+      bitmap_iterator bi;
+      unsigned int i;
       tree al;
       
       /* The variable is aliased.  Add its aliases to the virtual
 	 operands.  */
-      gcc_assert (VEC_length (tree, aliases) != 0);
+      gcc_assert (!bitmap_empty_p (aliases));
       
       if (flags & opf_def)
 	{
 	  bool none_added = true;
-
-	  for (i = 0; VEC_iterate (tree, aliases, i, al); i++)
+	  EXECUTE_IF_SET_IN_BITMAP (aliases, 0, i, bi)
 	    {
+	      al = referenced_var (i);
 	      if (!access_can_touch_variable (full_ref, al, offset, size))
 		continue;
 	      
@@ -1534,14 +1536,15 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
       else
 	{
 	  bool none_added = true;
-	  for (i = 0; VEC_iterate (tree, aliases, i, al); i++)
+	  EXECUTE_IF_SET_IN_BITMAP (aliases, 0, i, bi)
 	    {
+	      al = referenced_var (i);
 	      if (!access_can_touch_variable (full_ref, al, offset, size))
 		continue;
 	      none_added = false;
 	      append_vuse (al);
 	    }
-
+	  
 	  /* Similarly, append a virtual uses for VAR itself, when
 	     it is an alias tag.  */
 	  if (v_ann->is_aliased || none_added)

@@ -303,13 +303,12 @@ bb_for_stmt (tree t)
   return ann ? ann->bb : NULL;
 }
 
-/* Return the may_aliases varray for variable VAR, or NULL if it has
+/* Return the may_aliases bitmap for variable VAR, or NULL if it has
    no may aliases.  */
-static inline VEC(tree, gc) *
+static inline bitmap
 may_aliases (tree var)
 {
-  var_ann_t ann = var_ann (var);
-  return ann ? ann->may_aliases : NULL;
+  return MTAG_ALIASES (var);
 }
 
 /* Return the line number for EXPR, or return -1 if we have no line
