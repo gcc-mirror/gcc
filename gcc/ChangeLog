@@ -1,3 +1,11 @@
+2007-01-29  Josh Conner  <jconner@apple.com>
+
+        PR middle-end/29683
+        * calls.c (compute_argument_addresses): Set stack and stack_slot
+        for partial args, too.
+        (store_one_arg): Use locate.size.constant for the size when
+        generating a save_area.
+
 2007-01-28  Ralf Wildenhalf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/sourcebuild.texi: Add comma for clarity.
