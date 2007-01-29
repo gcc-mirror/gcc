@@ -1,3 +1,12 @@
+2007-01-28  Roger Sayle  <roger@eyesopen.com>
+	    Paul Thomas  <pault@gcc.gnu.org>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/30404
+	* gfortran.dg/forall_6.f90: New test case.
+	* gfortran.dg/dependency_8.f90: Update test to find "temp" array.
+	* gfortran.dg/dependency_13.f90: Likewise.
+
 2007-01-28  Andrew Pinski  <pinskia@gmail.com>
 
 	PR C++/28988
