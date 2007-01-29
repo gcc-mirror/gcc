@@ -1,3 +1,10 @@
+2007-01-29  Ben Elliston  <bje@au.ibm.com>
+
+	* gcov-io.h (__gcov_indirect_call_profiler): Declare.
+	(__gcov_average_profiler): Likewise.
+	(__gcov_ior_profiler): Likewise.
+	(__gcov_merge_ior): Likewise.
+
 2007-01-28  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.c (expand_builtin_memset): Fix typo in my last patch.
