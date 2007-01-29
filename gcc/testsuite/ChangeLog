@@ -1,3 +1,7 @@
+2007-01-29  Josh Conner  <jconner@apple.com>
+
+	* gcc.target/powerpc/altivec-24.c: New test.
+
 2007-01-29  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/28266
