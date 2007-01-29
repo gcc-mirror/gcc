@@ -1355,9 +1355,13 @@ compute_argument_addresses (struct arg_data *args, rtx argblock, int num_actuals
 	  rtx slot_offset = ARGS_SIZE_RTX (args[i].locate.slot_offset);
 	  rtx addr;
 	  unsigned int align, boundary;
+	  unsigned int units_on_stack = 0;
+	  enum machine_mode partial_mode = VOIDmode;
 
 	  /* Skip this parm if it will not be passed on the stack.  */
-	  if (! args[i].pass_on_stack && args[i].reg != 0)
+	  if (! args[i].pass_on_stack
+	      && args[i].reg != 0
+	      && args[i].partial == 0)
 	    continue;
 
 	  if (GET_CODE (offset) == CONST_INT)
@@ -1366,9 +1370,23 @@ compute_argument_addresses (struct arg_data *args, rtx argblock, int num_actuals
 	    addr = gen_rtx_PLUS (Pmode, arg_reg, offset);
 
 	  addr = plus_constant (addr, arg_offset);
-	  args[i].stack = gen_rtx_MEM (args[i].mode, addr);
-	  set_mem_attributes (args[i].stack,
-			      TREE_TYPE (args[i].tree_value), 1);
+
+	  if (args[i].partial != 0)
+	    {
+	      /* Only part of the parameter is being passed on the stack.
+		 Generate a simple memory reference of the correct size.  */
+	      units_on_stack = args[i].locate.size.constant;
+	      partial_mode = mode_for_size (units_on_stack * BITS_PER_UNIT,
+					    MODE_INT, 1);
+	      args[i].stack = gen_rtx_MEM (partial_mode, addr);
+	      set_mem_size (args[i].stack, GEN_INT (units_on_stack));
+	    }
+	  else
+	    {
+	      args[i].stack = gen_rtx_MEM (args[i].mode, addr);
+	      set_mem_attributes (args[i].stack,
+				  TREE_TYPE (args[i].tree_value), 1);
+	    }
 	  align = BITS_PER_UNIT;
 	  boundary = args[i].locate.boundary;
 	  if (args[i].locate.where_pad != downward)
@@ -1386,9 +1404,20 @@ compute_argument_addresses (struct arg_data *args, rtx argblock, int num_actuals
 	    addr = gen_rtx_PLUS (Pmode, arg_reg, slot_offset);
 
 	  addr = plus_constant (addr, arg_offset);
-	  args[i].stack_slot = gen_rtx_MEM (args[i].mode, addr);
-	  set_mem_attributes (args[i].stack_slot,
-			      TREE_TYPE (args[i].tree_value), 1);
+
+	  if (args[i].partial != 0)
+	    {
+	      /* Only part of the parameter is being passed on the stack.
+		 Generate a simple memory reference of the correct size.  */
+	      args[i].stack_slot = gen_rtx_MEM (partial_mode, addr);
+	      set_mem_size (args[i].stack_slot, GEN_INT (units_on_stack));
+	    }
+	  else
+	    {
+	      args[i].stack_slot = gen_rtx_MEM (args[i].mode, addr);
+	      set_mem_attributes (args[i].stack_slot,
+				  TREE_TYPE (args[i].tree_value), 1);
+	    }
 	  set_mem_align (args[i].stack_slot, args[i].locate.boundary);
 
 	  /* Function incoming arguments may overlap with sibling call
@@ -4057,7 +4086,7 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 		  arg->save_area = assign_temp (nt, 0, 1, 1);
 		  preserve_temp_slots (arg->save_area);
 		  emit_block_move (validize_mem (arg->save_area), stack_area,
-				   expr_size (arg->tree_value),
+				   GEN_INT (arg->locate.size.constant),
 				   BLOCK_OP_CALL_PARM);
 		}
 	      else
