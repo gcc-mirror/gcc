@@ -365,8 +365,8 @@ pop_label (tree label, tree old_value)
 	  /* Avoid crashing later.  */
 	  define_label (location, DECL_NAME (label));
 	}
-      else if (!TREE_USED (label))
-	warning (OPT_Wunused_label, "label %q+D defined but not used", label);
+      else 
+	warn_for_unused_label (label);
     }
 
   SET_IDENTIFIER_LABEL_VALUE (DECL_NAME (label), old_value);

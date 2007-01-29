@@ -1,3 +1,8 @@
+2007-01-29  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* decl.c (pop_label): Replace warning with call to
+	warn_for_unused_label.
+
 2007-01-28  Andrew Pinski  <pinskia@gmail.com>
 
 	PR C++/28988
