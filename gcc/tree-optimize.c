@@ -436,24 +436,6 @@ tree_lowering_passes (tree fn)
   bitmap_obstack_release (NULL);
   pop_cfun ();
 }
-
-/* Update recursively all inlined_to pointers of functions
-   inlined into NODE to INLINED_TO.  */
-static void
-update_inlined_to_pointers (struct cgraph_node *node,
-			    struct cgraph_node *inlined_to)
-{
-  struct cgraph_edge *e;
-  for (e = node->callees; e; e = e->next_callee)
-    {
-      if (e->callee->global.inlined_to)
-	{
-	  e->callee->global.inlined_to = inlined_to;
-	  update_inlined_to_pointers (e->callee, inlined_to);
-	}
-    }
-}
-
 
 /* For functions-as-trees languages, this performs all optimization and
    compilation for FNDECL.  */
