@@ -6758,5 +6758,18 @@ warn_about_parentheses (enum tree_code code, enum tree_code code_left,
 	     "have their mathematical meaning");
 }
 
+/* If LABEL (a LABEL_DECL) has not been used, issue a warning.  */
+
+void
+warn_for_unused_label (tree label)
+{
+  if (!TREE_USED (label))
+    {
+      if (DECL_INITIAL (label))
+	warning (OPT_Wunused_label, "label %q+D defined but not used", label);
+      else
+        warning (OPT_Wunused_label, "label %q+D declared but not defined", label);
+    }
+}
 
 #include "gt-c-common.h"
