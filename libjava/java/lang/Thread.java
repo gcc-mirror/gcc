@@ -182,6 +182,9 @@ public class Thread implements Runnable
   
   // This describes the top-most interpreter frame for this thread.
   RawData interp_frame;
+  
+  // This describes the top most frame in the composite (interp + JNI) stack
+  RawData frame;
 
   // Current state.
   volatile int state;

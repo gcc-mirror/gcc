@@ -1,3 +1,26 @@
+2007-01-29  Kyle Galloway  <kgallowa@redhat.com>
+
+	* include/java-interp.h:  Added _Jv_Frame class and its two
+	subclasses _Jv_InterpFrame and _Jv_NativeFrame.  Also moved
+	_Jv_FrameType from java-stack.h.
+	* include/java-stack.h: Removed _Jv_FrameType.
+	* java/lang/Thread.java: Added frame member to hold new
+	composite frame stack.
+	* java/lang/Thread.h: Regenerated.
+	* java/lang/Thread.class: Rebuilt.
+	* jni.cc (_Jv_JNIMethod::call): Push a frame onto the stack when
+	calling a JNI method.
+	* jvmti.cc (_Jv_JVMTI_GetStackTrace): New Method.
+	(_Jv_JVMTI_GetFrameCount): New method.
+	* stacktrace.cc (UnwindTraceFn): Modified to use new _Jv_Frame
+	classes.
+	* testsuite/libjava.jvmti/interp/getstacktrace.jar: New test.
+	* testsuite/libjava.jvmti/interp/natgetstacktrace.cc: New test.
+	* testsuite/libjava.jvmti/interp/getstacktrace.h: New test.
+	* testsuite/libjava.jvmti/interp/getstacktrace.jar: New test.
+	* testsuite/libjava.jvmti/interp/getstacktrace.out: Output file
+	for test. 
+
 2007-01-29  Tom Tromey  <tromey@redhat.com>
 
 	* interpret.cc (run_debug): Remove comment.

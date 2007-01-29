@@ -131,9 +131,11 @@ _Jv_StackTrace::UnwindTraceFn (struct _Unwind_Context *context, void *state_ptr)
   if (func_addr == UNWRAP_FUNCTION_DESCRIPTOR (interp_run))
     {
       state->frames[pos].type = frame_interpreter;
-      state->frames[pos].interp.meth = state->interp_frame->self;
+      _Jv_Frame *frame = static_cast<_Jv_Frame *> (state->interp_frame);
+      state->frames[pos].interp.meth 
+        = static_cast<_Jv_InterpMethod *> (frame->self);
       state->frames[pos].interp.pc = state->interp_frame->pc;
-      state->interp_frame = state->interp_frame->next;
+      state->interp_frame = state->interp_frame->next_interp;
     }
   else 
 #endif
@@ -143,7 +145,7 @@ _Jv_StackTrace::UnwindTraceFn (struct _Unwind_Context *context, void *state_ptr)
       state->frames[pos].type = frame_proxy;
       state->frames[pos].proxyClass = state->interp_frame->proxyClass;
       state->frames[pos].proxyMethod = state->interp_frame->proxyMethod;
-      state->interp_frame = state->interp_frame->next;
+      state->interp_frame = state->interp_frame->next_interp;
     }
   else 
     {

@@ -237,6 +237,34 @@ _Jv_JVMTI_GetAllThreads(MAYBE_UNUSED jvmtiEnv *env, jint *thread_cnt,
 }
 
 static jvmtiError JNICALL
+_Jv_JVMTI_GetFrameCount (MAYBE_UNUSED jvmtiEnv *env, jthread thread,
+                         jint* frame_count)
+{
+  REQUIRE_PHASE (env, JVMTI_PHASE_LIVE);
+  
+  NULL_CHECK (frame_count);
+	
+  using namespace java::lang;
+  
+  THREAD_DEFAULT_TO_CURRENT (thread);
+  
+  Thread *thr = reinterpret_cast<Thread *> (thread);
+  THREAD_CHECK_VALID (thr);
+  THREAD_CHECK_IS_ALIVE (thr);
+   
+  _Jv_Frame *frame = reinterpret_cast<_Jv_Frame *> (thr->frame);
+  (*frame_count) = 0;
+  
+  while (frame != NULL)
+    {
+      (*frame_count)++;
+      frame = frame->next;
+    }
+  
+  return JVMTI_ERROR_NONE;
+}
+
+static jvmtiError JNICALL
 _Jv_JVMTI_CreateRawMonitor (MAYBE_UNUSED jvmtiEnv *env, const char *name,
 			    jrawMonitorID *result)
 {
@@ -744,6 +772,82 @@ _Jv_JVMTI_GetClassLoaderClasses (MAYBE_UNUSED jvmtiEnv *env,
 
   *result_ptr = result;
 
+  return JVMTI_ERROR_NONE;
+}
+
+static jvmtiError JNICALL
+_Jv_JVMTI_GetStackTrace (MAYBE_UNUSED jvmtiEnv *env, jthread thread,
+                         jint start_depth, jint max_frames,
+                         jvmtiFrameInfo *frames, jint *frame_count)
+{
+  REQUIRE_PHASE (env, JVMTI_PHASE_LIVE);
+
+  ILLEGAL_ARGUMENT (max_frames < 0);
+  
+  NULL_CHECK (frames);
+  NULL_CHECK (frame_count);
+	
+  using namespace java::lang;
+  
+  THREAD_DEFAULT_TO_CURRENT (thread);
+  
+  Thread *thr = reinterpret_cast<Thread *> (thread);
+  THREAD_CHECK_VALID (thr);
+  THREAD_CHECK_IS_ALIVE (thr);
+    
+  jvmtiError jerr = env->GetFrameCount (thread, frame_count);
+  if (jerr != JVMTI_ERROR_NONE)
+    return jerr;
+  
+  // start_depth can be either a positive number, indicating the depth of the
+  // stack at which to begin the trace, or a negative number indicating the
+  // number of frames at the bottom of the stack to exclude.  These checks
+  // ensure that it is a valid value in either case
+  
+  ILLEGAL_ARGUMENT (start_depth >= (*frame_count));
+  ILLEGAL_ARGUMENT (start_depth < (-(*frame_count)));
+  
+  _Jv_Frame *frame = reinterpret_cast<_Jv_Frame *> (thr->frame);
+
+  // If start_depth is negative use this to determine at what depth to start
+  // the trace by adding it to the length of the call stack.  This allows the
+  // use of the same frame "discarding" mechanism as for a positive start_depth
+  if (start_depth < 0)
+    start_depth = *frame_count + start_depth;
+  
+  // If start_depth > 0 "remove" start_depth frames from the beginning
+  // of the stack before beginning the trace by moving along the frame list.
+  while (start_depth > 0)
+    {
+      frame = frame->next;
+      start_depth--;
+      (*frame_count)--;
+    }
+  
+  // Now check to see if the array supplied by the agent is large enough to
+  // hold frame_count frames, after adjustment for start_depth.
+  if ((*frame_count) > max_frames)
+    (*frame_count) = max_frames;
+  
+  for (int i = 0; i < (*frame_count); i++)
+    {
+      frames[i].method = frame->self->get_method ();
+      
+      // Set the location in the frame, native frames have location = -1
+      if (frame->frame_type == frame_interpreter)
+        {
+          _Jv_InterpMethod *imeth 
+            = static_cast<_Jv_InterpMethod *> (frame->self);
+          _Jv_InterpFrame *interp_frame 
+            = static_cast<_Jv_InterpFrame *> (frame);
+          frames[i].location = imeth->insn_index (interp_frame->pc);
+        }
+      else
+        frames[i].location = -1;
+        
+      frame = frame->next;
+    }
+    
   return JVMTI_ERROR_NONE;
 }
 
@@ -1484,7 +1588,7 @@ struct _Jv_jvmtiEnv _Jv_JVMTI_Interface =
   UNIMPLEMENTED,		// GetTopThreadGroups
   UNIMPLEMENTED,		// GetThreadGroupInfo
   UNIMPLEMENTED,		// GetThreadGroupChildren
-  UNIMPLEMENTED,		// GetFrameCount
+  _Jv_JVMTI_GetFrameCount,		// GetFrameCount
   UNIMPLEMENTED,		// GetThreadState
   RESERVED,			// reserved18
   UNIMPLEMENTED,		// GetFrameLocation
@@ -1572,7 +1676,7 @@ struct _Jv_jvmtiEnv _Jv_JVMTI_Interface =
   UNIMPLEMENTED,		// GetThreadListStackTraces
   UNIMPLEMENTED,		// GetThreadLocalStorage
   UNIMPLEMENTED,		// SetThreadLocalStorage
-  UNIMPLEMENTED,		// GetStackTrace
+  _Jv_JVMTI_GetStackTrace,		// GetStackTrace
   RESERVED,			// reserved105
   UNIMPLEMENTED,		// GetTag
   UNIMPLEMENTED,		// SetTag
