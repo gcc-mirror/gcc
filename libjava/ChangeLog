@@ -1,5 +1,26 @@
 2007-01-29  Tom Tromey  <tromey@redhat.com>
 
+	* interpret.cc (run_debug): Remove comment.
+	(STOREA): Reformat.
+	(STOREI): Likewise.
+	(STOREF): Likewise.
+	(STOREL): Likewise.
+	(STORED): Likewise.
+	(POKEI): Likewise.
+	(run_normal_debug): Likewise.
+	(run_synch_object_debug): Likewise.
+	(run_class_debug): Likewise.
+	(run_synch_class_debug): Likewise.
+	(get1s): Likewise.
+	(get1u): Likewise.
+	(get2u): Likewise.
+	(get4): Likewise.
+	(NULLARRAYCHECK): Likewise.
+	(ARRAYBOUNDSCHECK): Likewise.
+	* interpret-run.cc (insn_target) <breakpoint>: Tidy.
+
+2007-01-29  Tom Tromey  <tromey@redhat.com>
+
 	* configure, Makefile.in: Rebuilt.
 	* Makefile.am (bin_SCRIPTS): Never install scripts/jar.
 	* configure.ac (BASH_JAR): Removed conditional.
