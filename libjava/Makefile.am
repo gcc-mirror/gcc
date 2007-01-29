@@ -95,10 +95,6 @@ endif
 ## Compilers and compilation flags.
 ##
 
-if BASH_JAR
-bin_SCRIPTS += scripts/jar
-endif
-
 ## The compiler with whatever flags we want for both -c and -C
 ## compiles.
 GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated

@@ -1,5 +1,12 @@
 2007-01-29  Tom Tromey  <tromey@redhat.com>
 
+	* configure, Makefile.in: Rebuilt.
+	* Makefile.am (bin_SCRIPTS): Never install scripts/jar.
+	* configure.ac (BASH_JAR): Removed conditional.
+	(JAR): Prefer the jar found by AC_CHECK_PROGS.
+
+2007-01-29  Tom Tromey  <tromey@redhat.com>
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (interpret.lo): New target.  Add -fwrap to
 	AM_CXXFLAGS.
