@@ -1,3 +1,9 @@
+2007-01-29  Simon Baldwin <simonb@google.com>
+
+	* demangle.h: New cplus_demangle_print_callback,
+	cplus_demangle_v3_callback, and java_demangle_v3_callback function
+	prototypes, and demangle_callbackref type definition.
+
 2006-12-06  Nick Clifton  <nickc@redhat.com>
 
 	* ansidecl.h (ATTRIBUTE_PACKED): Define.

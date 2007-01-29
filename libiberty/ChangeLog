@@ -1,3 +1,41 @@
+2007-01-29  Simon Baldwin <simonb@google.com>
+
+	* cp-demangle.h (cplus_demangle_operators): External definition
+	suppressed if not building for libstdc++.
+	* cp-demangle.c (__gcclibcxx_demangle_callback): Augmented interface
+	to demangling, provides a malloc-less version of __cxa_demangle.
+	(cplus_demangle_print_callback): Public callback version of
+	cplus_demangle_print.
+	(struct d_growable_string): New growable string structure.
+	(d_growable_string_init): New function, provides support for
+	growable strings separate from print info.
+	(d_growable_string_resize): Likewise.
+	(d_growable_string_append_buffer): Likewise.
+	(d_growable_string_callback_adapter):): Likewise.
+	(d_print_init): New print info initialization function.
+	(d_print_error): Macro replace by inline function.
+	(d_print_saw_error): Likewise.
+	(d_append_char): Likewise.
+	(d_append_buffer): Likewise.
+	(d_append_string): New inline function, replaces the
+	d_append_string_constant macro.
+	(d_flush_buffer): New function, flushes buffer to callback.
+	(d_demangle_callback, is_ctor_or_dtor): Malloc-based fallback
+	for unsupported dynamic arrays replaced by alloca().
+	(d_demangle): Return string length estimating removed.
+	(d_dump): Moved error case handling from call site into function.
+	(d_print_resize): Function removed.
+	(d_print_append_char): Likewise.
+	(d_print_append_buffer): Likewise.
+	(d_print_error): Likewise.
+	(d_print_comp): Added special case handling for Java arrays.
+	(java_demangle_v3): Removed string post-processing for Java arrays,
+	now replaced by special case handling in d_print_comp.
+	(cplus_demangle_v3_callback): Augmented interface to demangling,
+	provides a malloc-less version of cplus_demangle_v3.
+	(java_demangle_v3_callback): Augmented interface to demangling,
+	provides a malloc-less version of java_demangle_v3.
+
 2007-01-12  Ben Elliston  <bje@au.ibm.com>
 
 	* pex-unix.c (writeerr): Cast write result to void.
