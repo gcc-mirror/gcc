@@ -315,7 +315,7 @@ to wchar_t and wcsrtombs for conversions between wchar_t and char.
 <p>
 Neither of these two required specializations deals with Unicode
 characters. As such, libstdc++-v3 implements a partial specialization
-of the codecvt class with and iconv wrapper class, __enc_traits as the
+of the codecvt class with and iconv wrapper class, encoding_state as the
 third template parameter.
 </p>
 
@@ -331,19 +331,19 @@ constructible.
 </p>
 
 <p>
-As such, the type __enc_traits is defined as a non-templatized, POD
+As such, the type encoding_state is defined as a non-templatized, POD
 type to be used as the third type of a codecvt instantiation. This
 type is just a wrapper class for iconv, and provides an easy interface
 to iconv functionality.
 </p>
 
 <p>
-There are two constructors for __enc_traits:
+There are two constructors for encoding_state:
 </p>
 
 <p>
 <code> 
-__enc_traits() : __in_desc(0), __out_desc(0)
+encoding_state() : __in_desc(0), __out_desc(0)
 </code>
 </p>
 <p>
@@ -354,7 +354,7 @@ nl_langinfo(CODESET).
 
 <p>
 <code> 
-__enc_traits(const char* __int, const char* __ext)
+encoding_state(const char* __int, const char* __ext)
 </code>
 </p>
 <p>
@@ -382,7 +382,7 @@ _M_init()
 </p>
 <p>
 Strangely enough, this member function attempts to open conversion
-descriptors for a given __enc_traits object. If the conversion
+descriptors for a given encoding_state object. If the conversion
 descriptors are not valid, the conversion descriptors returned will
 not be valid and the resulting calls to the codecvt conversion
 functions will return error.
@@ -395,7 +395,7 @@ _M_good()
 </code>
 </p>
 <p>
-Provides a way to see if the given __enc_traits object has been
+Provides a way to see if the given encoding_state object has been
 properly initialized. If the string literals describing the desired
 internal and external encoding are not valid, initialization will
 fail, and this will return false. If the internal and external
@@ -406,7 +406,7 @@ ready to convert and will return true.
 
 <p>
 <code> 
-__enc_traits(const __enc_traits&amp;)
+encoding_state(const encoding_state&amp;)
 </code>
 </p>
 <p>
@@ -419,7 +419,7 @@ themselves.
 <p>
 Definitions for all the required codecvt member functions are provided
 for this specialization, and usage of codecvt&lt;internal character type,
-external character type, __enc_traits&gt; is consistent with other
+external character type, encoding_state&gt; is consistent with other
 codecvt usage.
 </p>
 
@@ -436,8 +436,8 @@ codecvt usage.
   typedef unsigned short                        unicode_t;
   typedef unicode_t                             int_type;
   typedef char                                  ext_type;
-  typedef __enc_traits                          enc_type;
-  typedef codecvt&lt;int_type, ext_type, enc_type&gt; unicode_codecvt;
+  typedef encoding_state                          state_type;
+  typedef codecvt&lt;int_type, ext_type, state_type&gt; unicode_codecvt;
 
   const ext_type*       e_lit = "black pearl jasmine tea";
   int                   size = strlen(e_lit);

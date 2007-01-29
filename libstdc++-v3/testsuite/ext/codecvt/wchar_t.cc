@@ -1,6 +1,9 @@
+// { dg-require-iconv "UCS-2BE" }
+// { dg-require-iconv "UCS-4BE" }
+
 // 2000-08-23 Benjamin Kosnik <bkoz@cygnus.com>
 
-// Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation
+// Copyright (C) 2000, 2001, 2002, 2003, 2007 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,84 +25,18 @@
 
 #include <locale>
 #include <testsuite_hooks.h>
+#include <ext/codecvt_specializations.h>
 
-#ifdef _GLIBCXX_USE___ENC_TRAITS
-
-// Need some char_traits specializations for this to work.
-typedef unsigned short			unicode_t;
-
-namespace std
-{
-  template<>
-    struct char_traits<unicode_t>
-    {
-      typedef unicode_t 	char_type;
-      // Unsigned as wint_t is unsigned.
-      typedef unsigned long  	int_type;
-      typedef streampos 	pos_type;
-      typedef streamoff 	off_type;
-      typedef mbstate_t 	state_type;
-      
-      static void 
-      assign(char_type& __c1, const char_type& __c2);
-
-      static bool 
-      eq(const char_type& __c1, const char_type& __c2);
-
-      static bool 
-      lt(const char_type& __c1, const char_type& __c2);
-
-      static int 
-      compare(const char_type* __s1, const char_type* __s2, size_t __n)
-      { return memcmp(__s1, __s2, __n); }
-
-      static size_t
-      length(const char_type* __s);
-
-      static const char_type* 
-      find(const char_type* __s, size_t __n, const char_type& __a);
-
-      static char_type* 
-      move(char_type* __s1, const char_type* __s2, size_t __n);
-
-      static char_type* 
-      copy(char_type* __s1, const char_type* __s2, size_t __n)
-      {  return static_cast<char_type*>(memcpy(__s1, __s2, __n)); }
-
-      static char_type* 
-      assign(char_type* __s, size_t __n, char_type __a);
-
-      static char_type 
-      to_char_type(const int_type& __c);
-
-      static int_type 
-      to_int_type(const char_type& __c);
-
-      static bool 
-      eq_int_type(const int_type& __c1, const int_type& __c2);
-
-      static int_type 
-      eof(); 
-
-      static int_type 
-      not_eof(const int_type& __c);
-    };
-}
-
-void
-initialize_state(std::__enc_traits& state)
-{ state._M_init(); }
-
-// Partial specialization using __enc_traits.
-// codecvt<unicode_t, wchar_t, __enc_traits>
+// Partial specialization using encoding_state.
+// codecvt<unicode_t, wchar_t, encoding_state>
 void test01()
 {
   using namespace std;
   typedef codecvt_base::result			result;
-  typedef unicode_t				int_type;
+  typedef unsigned short       			int_type;
   typedef wchar_t				ext_type;
-  typedef __enc_traits				enc_type;
-  typedef codecvt<int_type, ext_type, enc_type>	unicode_codecvt;
+  typedef __gnu_cxx::encoding_state	       		state_type;
+  typedef codecvt<int_type, ext_type, state_type>	unicode_codecvt;
   typedef char_traits<int_type>			int_traits;
   typedef char_traits<ext_type>			ext_traits;
 
@@ -138,12 +75,11 @@ void test01()
   locale 		loc(locale::classic(), new unicode_codecvt);
   // sanity check the constructed locale has the specialized facet.
   VERIFY( has_facet<unicode_codecvt>(loc) );
-  const unicode_codecvt&	cvt = use_facet<unicode_codecvt>(loc); 
+  const unicode_codecvt& cvt = use_facet<unicode_codecvt>(loc); 
 
   // in
   //  unicode_codecvt::state_type state01("UCS-2BE", "UCS-4BE", 0xfeff, 0);
   unicode_codecvt::state_type state01("UCS-2BE", "UCS-4BE", 0, 0);
-  initialize_state(state01);
   result r1 = cvt.in(state01, e_lit, e_lit + size, efrom_next, 
 		     i_arr, i_arr + size + 1, ito_next);
   VERIFY( r1 == codecvt_base::ok );
@@ -153,7 +89,6 @@ void test01()
 
   // out
   unicode_codecvt::state_type state02("UCS-2BE", "UCS-4BE", 0, 0);
-  initialize_state(state02);  
   result r2 = cvt.out(state02, i_lit, i_lit + size, ifrom_next, 
 		       e_arr, e_arr + size, eto_next);   
   VERIFY( r2 == codecvt_base::ok ); // XXX?
@@ -164,7 +99,6 @@ void test01()
   // unshift
   ext_traits::copy(e_arr, e_lit, size);
   unicode_codecvt::state_type state03("UCS-2BE", "UCS-4BE", 0, 0);
-  initialize_state(state03);
   result r3 = cvt.unshift(state03, e_arr, e_arr + size, eto_next);
   VERIFY( r3 == codecvt_base::noconv );
   VERIFY( !ext_traits::compare(e_arr, e_lit, size) ); 
@@ -176,7 +110,6 @@ void test01()
   VERIFY( !cvt.always_noconv() );
 
   unicode_codecvt::state_type state04("UCS-2BE", "UCS-4BE", 0, 0);
-  initialize_state(state04);
   int j = cvt.length(state03, e_lit, e_lit + size, 5);
   VERIFY( j == 5 );
 
@@ -186,13 +119,10 @@ void test01()
   delete [] e_arr;
   delete [] i_arr;
 }
-#endif // _GLIBCXX_USE___ENC_TRAITS
 
 int main ()
 {
-#ifdef _GLIBCXX_USE___ENC_TRAITS
   test01();
-#endif 
   return 0;
 }
 

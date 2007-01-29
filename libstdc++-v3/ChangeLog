@@ -1,3 +1,46 @@
+2007-01-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/enc_filebuf.h: Resurrect, update.
+	* include/ext/codecvt_specializations.h: Remove
+        _GLIBCXX_USE_ICONV, _GLIBCXX_USE_ENCODING_STATE.
+	* include/bits/localefwd.h: Remove declaration for __enc_traits.
+	* docs/html/22_locale/codecvt.html: Change __enc_traits to
+	encoding_state.
+	* scripts/testsuite_flags.in: Remove ICONV.
+
+	* configure.ac: Remove GLIBCXX_CHECK_ICONV_SUPPORT.
+	* acinclude.m4 (GLIBCXX_CHECK_ICONV_SUPPORT): Remove.
+	* crossconfig.m4: Remove use of GLIBCXX_CHECK_ICONV_SUPPORT.
+	* config.h.in: Remove HAVE_ICONV_CLOSE, HAVE_ICONV_OPEN,
+	HAVE_NL_LANGINFO, _GLIBCXX_USE_ICONV.
+	* include/Makefile.am: Uglify ICONV_CONST.
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.
+	* Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* libmath/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+	* testsuite/ext/enc_filebuf/wchar_t/13189.cc: Use
+	dg-require-iconv, fix up for encoding_state changes.
+	* testsuite/ext/enc_filebuf/char/13189.cc: Same.
+	* testsuite/ext/enc_filebuf/char/13598.cc: Same.
+	* testsuite/22_locale/codecvt/unicode: Move...
+	* testsuite/22_locale/codecvt/unicode/char.cc: Move...
+	* testsuite/22_locale/codecvt/unicode/1.cc: Move...
+	* testsuite/22_locale/codecvt/unicode/wchar_t.cc: Move...
+	* testsuite/ext/codecvt: New.
+	* testsuite/ext/codecvt/char-1.cc: ...here. Also, use dg-require-iconv.
+	* testsuite/ext/codecvt/char-2.cc: ...here. Same.
+	* testsuite/ext/codecvt/1.cc: ...here. Same.
+	* testsuite/ext/codecvt/wchar_t.cc: ...here. Same.
+	* testsuite/22_locale/locale/cons/unicode: Delete directory.
+	* testsuite/22_locale/locale/cons/unicode/1.cc: Move...
+	* testsuite/22_locale/locale/cons/unicode.cc: ...here.
+
 2007-01-28  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (num_get<>::do_get(iter_type,
