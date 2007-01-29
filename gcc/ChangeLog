@@ -3133,7 +3133,7 @@
 
 2007-01-02  Douglas Gregor  <doug.gregor@gmail.com>
 
-	* c-common.c(c_common_nodes_and_builtins): Since variants of
+	* c-common.c (c_common_nodes_and_builtins): Since variants of
 	void_type_node get built before it is given a name, we need to
 	give those variants the name, too.
 	(complete_array_type): We need to work with the canonical main
