@@ -1,3 +1,17 @@
+2007-01-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* builtins.c (expand_builtin_int_interclass_roundingfn): New function
+	to handle optabs that operate on floating point input argument and
+	output to integer output.
+	(expand_builtin_mathfn) [BUILT_IN_ILOGB]: Move from here ...
+	(expand_builtin_interclass_mathfn) [BUILT_IN_ILOGB]: ... to here.
+	(expand_builtin): Expand BUILT_IN_ILOGB{,F,L} using
+	expand_builtin_interclass_mathfn ().
+	* config/i386/i386.md (fxtractxf3_i387): Rename from *fxtractxf3_i387.
+	(ilogbsi2): Remove.
+	(ilogbxf2, ilogb<mode>2): New expanders to implement ilogb, ilogbf and
+	ilogbl built-in functions as x87 intrinsics.
+
 2007-01-30  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/27657
