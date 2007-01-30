@@ -1,3 +1,8 @@
+2001-01-30  Roger Sayle  <roger@eyesopen.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/large-size-array-3.c: Correct typo.
+
 2007-01-30  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/27657
