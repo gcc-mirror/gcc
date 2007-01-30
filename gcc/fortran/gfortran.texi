@@ -367,8 +367,8 @@ the relevant compiler front-end program (e.g., @command{f951} for
 Fortran) for each file in the source code, and then calls the assembler
 and linker as appropriate to produce the compiled output. In a copy of
 GCC which has been compiled with Fortran language support enabled,
-@command{gcc} will recognize files with @file{.f}, @file{.f90}, and
-@file{.f95} extensions as Fortran source code, and compile it
+@command{gcc} will recognize files with @file{.f}, @file{.f90}, @file{.f95},
+and @file{.f03} extensions as Fortran source code, and compile it
 accordingly.  A @command{gfortran} driver program is also provided,
 which is identical to @command{gcc} except that it automatically links
 the Fortran runtime libraries into the compiled program.

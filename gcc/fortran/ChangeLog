@@ -1,3 +1,10 @@
+2007-01-30  Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline.
+	* lang-specs.h: Add support for .f03 and .F03 extensions.
+	* gfortran.texi: Document .f03 extension.
+	* options.c (form_from_filename): Recognize .f03.
+
 2007-01-29  Roger Sayle  <roger@eyesopen.com>
 
 	Backport from mainline.

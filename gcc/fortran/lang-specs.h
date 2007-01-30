@@ -18,6 +18,7 @@ This file is licensed under the GPL.  */
       -fpreprocessed %{!nostdinc:-I finclude%s} %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
 {".F90", "@f95-cpp-input", 0, 0, 0},
 {".F95", "@f95-cpp-input", 0, 0, 0},
+{".F03", "@f95-cpp-input", 0, 0, 0},
 {"@f95-cpp-input",
   "cc1 -E -lang-fortran -traditional-cpp -D_LANGUAGE_FORTRAN %(cpp_options) \
       %{E|M|MM:%(cpp_debug_options)}\
@@ -26,6 +27,7 @@ This file is licensed under the GPL.  */
       -fpreprocessed %{!nostdinc:-I finclude%s} %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
 {".f90", "@f95", 0, 0, 0},
 {".f95", "@f95", 0, 0, 0},
+{".f03", "@f95", 0, 0, 0},
 {"@f95", "%{!E:f951 %i %(cc1_options) %{J*} %{I*}\
          %{!nostdinc:-I finclude%s} %{!fsyntax-only:%(invoke_as)}}", 0, 0, 0},
 {".f",   "@f77", 0, 0, 0},

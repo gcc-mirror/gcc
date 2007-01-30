@@ -1,3 +1,10 @@
+2007-01-30  Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline.
+	2007-01-26  Tobias Burnus  <burnus@net-b.de>
+
+	* testsuite/libgomp.fortran/fortran.exp: Support .f03 extension.
+
 2007-01-25  Daniel Franke <franke.daniel@gmail.com>
 
 	Backport from mainline:
