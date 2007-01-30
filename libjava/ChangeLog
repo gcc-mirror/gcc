@@ -1,3 +1,9 @@
+2007-01-29  Kaloian Doganov  <kaloian@doganov.org>
+
+	PR libgcj/30600:
+	* gnu/gcj/convert/BytesToCharsetAdaptor.java (read): Fix call to
+	'limit'.
+
 2007-01-29  Kyle Galloway  <kgallowa@redhat.com>
 
 	* include/java-interp.h:  Added _Jv_Frame class and its two
