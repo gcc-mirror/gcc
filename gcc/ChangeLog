@@ -1,3 +1,8 @@
+2007-01-30  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/24745
+	* doc/invoke.texi (Wpointer-arith): Document warning.
+	
 2007-01-30  Janis Johnson
 
 	* doc/extend.texi (Decimal Floating Types): Remove decfloat.h from

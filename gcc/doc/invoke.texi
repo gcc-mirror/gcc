@@ -3153,7 +3153,8 @@ such assumptions.
 Warn about anything that depends on the ``size of'' a function type or
 of @code{void}.  GNU C assigns these types a size of 1, for
 convenience in calculations with @code{void *} pointers and pointers
-to functions.
+to functions.  In C++, warn also when an arithmetic operation involves
+@code{NULL}.  This warning is also enabled by @option{-pedantic}.
 
 @item -Wbad-function-cast @r{(C only)}
 @opindex Wbad-function-cast

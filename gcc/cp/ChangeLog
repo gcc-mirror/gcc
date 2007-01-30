@@ -1,3 +1,11 @@
+2007-01-30  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/24745
+	* typeck.c (build_binary_op): Fix logic for warning. Move warning
+	to -Wpointer-arith.
+	* call.c (convert_like_real): Don't warn when converting to
+	boolean type.
+	
 2007-01-29  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* decl.c (pop_label): Replace warning with call to

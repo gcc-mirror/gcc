@@ -4250,7 +4250,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       tree t = non_reference (totype);
 
       /* Issue warnings about peculiar, but valid, uses of NULL.  */
-      if (ARITHMETIC_TYPE_P (t) && expr == null_node)
+      if (expr == null_node && TREE_CODE (t) != BOOLEAN_TYPE && ARITHMETIC_TYPE_P (t))
 	{
 	  if (fn)
 	    warning (OPT_Wconversion, "passing NULL to non-pointer argument %P of %qD",
