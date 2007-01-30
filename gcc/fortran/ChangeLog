@@ -1,3 +1,10 @@
+2007-01-30  Steve Ellcey  <sje@cup.hp.com>
+
+	PR fortran/30432
+	* trans-types.c (gfc_get_function_type):  Do not add void_type_node
+	to empty arg list.
+	* trans-decl.c (create_function_arglist): Change assert.
+
 2007-01-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/30554
