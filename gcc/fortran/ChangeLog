@@ -1,3 +1,17 @@
+2007-01-29  Roger Sayle  <roger@eyesopen.com>
+
+	Backport from mainline.
+	* trans-stmt.c (forall_info): Replace the next_nest and outer
+	fields that previously implemented a doubly-linked list with a
+	single prev_nest field (singly-linked list).
+	(gfc_trans_nested_forall_loop): The nested_forall_info argument
+	now denotes the innermost FORALL in the loop nest.
+	(gfc_trans_forall_1): Link/cons the new "info" to the head of the
+	nested_forall_info linked list.  Free the current "info" when done.
+
+	* dependency.c (gfc_full_array_ref_p): Check that ref->next is NULL,
+	i.e. that the ARRAY_REF doesn't mention components.
+
 2007-01-28  Roger Sayle  <roger@eyesopen.com>
 
 	PR fortran/30404

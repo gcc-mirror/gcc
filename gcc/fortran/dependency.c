@@ -1,5 +1,6 @@
 /* Dependency analysis
-   Copyright (C) 2000, 2001, 2002, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2005, 2006, 2007
+   Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of GCC.
@@ -1122,6 +1123,8 @@ gfc_full_array_ref_p (gfc_ref *ref)
   if (ref->u.ar.type == AR_FULL)
     return true;
   if (ref->u.ar.type != AR_SECTION)
+    return false;
+  if (ref->next)
     return false;
 
   for (i = 0; i < ref->u.ar.dimen; i++)
