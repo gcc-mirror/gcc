@@ -1,8 +1,5 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Does gettimeofday take a single argument */
-#undef GETTIMEOFDAY_ONE_ARGUMENT
-
 /* Define to 0 if the target shouldn't use #pragma weak */
 #undef GTHREAD_USE_WEAK
 
@@ -641,9 +638,6 @@
 
 /* Define to 1 if you have the `times' function. */
 #undef HAVE_TIMES
-
-/* Do we have struct timezone */
-#undef HAVE_TIMEZONE
 
 /* Define to 1 if you have the <time.h> header file. */
 #undef HAVE_TIME_H
