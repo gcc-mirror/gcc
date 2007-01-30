@@ -855,10 +855,6 @@ is incomplete:
 Translation time data type (TTDT) is not supported.
 
 @item
-Characteristics of decimal floating types are defined in header file
-@file{decfloat.h} rather than @file{float.h}.
-
-@item
 When the value of a decimal floating type cannot be represented in the
 integer type to which it is being converted, the result is undefined
 rather than the result value specified by the draft technical report.
