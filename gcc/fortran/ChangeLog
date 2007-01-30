@@ -1,3 +1,8 @@
+2007-01-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* invoke.texi (Code Gen Options): Fix abbreviation typo.
+	* intrinsic.texi (ACCESS, LSHIFT, RSHIFT): Fix typos.
+
 2007-01-30  Steve Ellcey  <sje@cup.hp.com>
 
 	PR fortran/30432
