@@ -747,7 +747,7 @@ required native methods.
 gcjh [@option{-stubs}] [@option{-jni}]
     [@option{-force}] [@option{-old}] [@option{-trace}] [@option{-J} @var{option}]
     [@option{-add} @var{text}] [@option{-append} @var{text}] [@option{-friend} @var{text}]
-    [@option{-preprend} @var{text}]
+    [@option{-prepend} @var{text}]
     [@option{--classpath}=@var{path}] [@option{--CLASSPATH}=@var{path}]
     [@option{--bootclasspath}=@var{path}]
     [@option{-I}@var{dir}@dots{}] [@option{-d} @var{dir}@dots{}]
@@ -861,7 +861,7 @@ files.  Running it is equivalent to running @code{gcjh -jni}.
 gjnih [@option{-stubs}] [@option{-jni}]
     [@option{-force}] [@option{-old}] [@option{-trace}] [@option{-J} @var{option}]
     [@option{-add} @var{text}] [@option{-append} @var{text}] [@option{-friend} @var{text}]
-    [@option{-preprend} @var{text}]
+    [@option{-prepend} @var{text}]
     [@option{--classpath}=@var{path}] [@option{--CLASSPATH}=@var{path}]
     [@option{--bootclasspath}=@var{path}]
     [@option{-I}@var{dir}@dots{}] [@option{-d} @var{dir}@dots{}]
@@ -1962,7 +1962,7 @@ JvNewBooleanArray
 @noindent The following function definition is the template for all such functions:
 
 @deftypefun jbooleanArray JvNewBooleanArray (jint @var{length})
-Create's an array @var{length} indices long.
+Creates an array @var{length} indices long.
 @end deftypefun
 
 @deftypefun jsize JvGetArrayLength (jarray @var{array})
