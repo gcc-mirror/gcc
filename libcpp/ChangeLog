@@ -1,3 +1,11 @@
+2007-01-30  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/29966:
+	* macro.c (lex_expansion_token): Save and restore cpp_reader's
+	cur_token.
+	(_cpp_create_definition): Don't restore cur_token here.
+	* lex.c (_cpp_lex_token): Added assertion.
+
 2007-01-27  Tom Tromey  <tromey@redhat.com>
 
 	* configure: Rebuilt.

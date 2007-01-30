@@ -766,6 +766,11 @@ _cpp_lex_token (cpp_reader *pfile)
 	  pfile->cur_run = next_tokenrun (pfile->cur_run);
 	  pfile->cur_token = pfile->cur_run->base;
 	}
+      /* We assume that the current token is somewhere in the current
+	 run.  */
+      if (pfile->cur_token < pfile->cur_run->base
+	  || pfile->cur_token >= pfile->cur_run->limit)
+	abort ();
 
       if (pfile->lookaheads)
 	{
