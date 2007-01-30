@@ -178,6 +178,9 @@ gfc_open_included_file (const char *name, const bool include_cwd)
   gfc_directorylist *p;
   FILE *f;
 
+  if (IS_ABSOLUTE_PATH (name))
+    return gfc_open_file (name);
+
   if (include_cwd)
     {
       f = gfc_open_file (name);

@@ -1,4 +1,10 @@
 2007-01-30  Tobias Burnus  <burnus@net-b.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/30276
+	* scanner.c (gfc_open_included_file): Support absolute pathnames.
+
+2007-01-30  Tobias Burnus  <burnus@net-b.de>
 
 	Backport from mainline.
 	* lang-specs.h: Add support for .f03 and .F03 extensions.
