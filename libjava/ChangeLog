@@ -1,3 +1,8 @@
+2007-01-30  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* testsuite/libjava.jvmti/natevents.cc (FieldModificationCB): Use a
+	cast to print it right.
+
 2007-01-29  Kaloian Doganov  <kaloian@doganov.org>
 
 	PR libgcj/30600:
