@@ -1,3 +1,9 @@
+2007-01-30  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/30313
+	* passes.c (execute_one_pass): Reset in_gimple_form to not
+	confuse non-unit-at-a-time mode.
+
 2007-01-29  Roger Sayle  <roger@eyesopen.com>
 	    Richard Guenther  <rguenther@suse.de>
 
