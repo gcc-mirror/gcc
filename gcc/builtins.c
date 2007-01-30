@@ -95,6 +95,7 @@ static void expand_errno_check (tree, rtx);
 static rtx expand_builtin_mathfn (tree, rtx, rtx);
 static rtx expand_builtin_mathfn_2 (tree, rtx, rtx);
 static rtx expand_builtin_mathfn_3 (tree, rtx, rtx);
+static rtx expand_builtin_interclass_mathfn (tree, rtx, rtx);
 static rtx expand_builtin_sincos (tree);
 static rtx expand_builtin_cexpi (tree, rtx, rtx);
 static rtx expand_builtin_int_roundingfn (tree, rtx, rtx);
@@ -1814,8 +1815,6 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
       errno_set = true; builtin_optab = expm1_optab; break;
     CASE_FLT_FN (BUILT_IN_LOGB):
       errno_set = true; builtin_optab = logb_optab; break;
-    CASE_FLT_FN (BUILT_IN_ILOGB):
-      errno_set = true; builtin_optab = ilogb_optab; break;
     CASE_FLT_FN (BUILT_IN_LOG):
       errno_set = true; builtin_optab = log_optab; break;
     CASE_FLT_FN (BUILT_IN_LOG10):
@@ -2163,6 +2162,86 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
 	 (without outputting the insns) and call to the library function
 	 with the stabilized argument list.  */
       end_sequence ();
+    }
+
+  target = expand_call (exp, target, target == const0_rtx);
+
+  return target;
+}
+
+/* Expand a call to one of the builtin math functions that operate on
+   floating point argument and output an integer result (ilogb, isinf,
+   isnan, etc).
+   Return 0 if a normal call should be emitted rather than expanding the
+   function in-line.  EXP is the expression that is a call to the builtin
+   function; if convenient, the result should be placed in TARGET.
+   SUBTARGET may be used as the target for computing one of EXP's operands.  */
+
+static rtx
+expand_builtin_interclass_mathfn (tree exp, rtx target, rtx subtarget)
+{
+  optab builtin_optab;
+  enum insn_code icode;
+  rtx op0;
+  tree fndecl = get_callee_fndecl (exp);
+  tree arglist = TREE_OPERAND (exp, 1);
+  enum machine_mode mode;
+  bool errno_set = false;
+  tree arg, narg;
+
+  if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    return 0;
+
+  arg = TREE_VALUE (arglist);
+
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    CASE_FLT_FN (BUILT_IN_ILOGB):
+      errno_set = true; builtin_optab = ilogb_optab; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  /* There's no easy way to detect the case we need to set EDOM.  */
+  if (flag_errno_math && errno_set)
+    return NULL_RTX;
+
+  /* Optab mode depends on the mode of the input argument.  */
+  mode = TYPE_MODE (TREE_TYPE (arg));
+
+  icode = builtin_optab->handlers[(int) mode].insn_code;
+ 
+  /* Before working hard, check whether the instruction is available.  */
+  if (icode != CODE_FOR_nothing)
+    {
+      /* Make a suitable register to place result in.  */
+      if (!target
+	  || GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp)))
+         target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
+
+      gcc_assert (insn_data[icode].operand[0].predicate
+		  (target, GET_MODE (target)));
+
+      /* Wrap the computation of the argument in a SAVE_EXPR, as we may
+	 need to expand the argument again.  This way, we will not perform
+	 side-effects more the once.  */
+      narg = builtin_save_expr (arg);
+      if (narg != arg)
+	{
+	  arg = narg;
+	  arglist = build_tree_list (NULL_TREE, arg);
+	  exp = build_function_call_expr (fndecl, arglist);
+	}
+
+      op0 = expand_expr (arg, subtarget, VOIDmode, 0);
+
+      if (mode != GET_MODE (op0))
+	op0 = convert_to_mode (mode, op0, 0);
+
+      /* Compute into TARGET.
+	 Set TARGET to wherever the result comes back.  */
+      emit_unop_insn (icode, target, op0, UNKNOWN);
+      return target;
     }
 
   target = expand_call (exp, target, target == const0_rtx);
@@ -5817,7 +5896,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     CASE_FLT_FN (BUILT_IN_EXP2):
     CASE_FLT_FN (BUILT_IN_EXPM1):
     CASE_FLT_FN (BUILT_IN_LOGB):
-    CASE_FLT_FN (BUILT_IN_ILOGB):
     CASE_FLT_FN (BUILT_IN_LOG):
     CASE_FLT_FN (BUILT_IN_LOG10):
     CASE_FLT_FN (BUILT_IN_LOG2):
@@ -5838,6 +5916,14 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     CASE_FLT_FN (BUILT_IN_NEARBYINT):
     CASE_FLT_FN (BUILT_IN_RINT):
       target = expand_builtin_mathfn (exp, target, subtarget);
+      if (target)
+	return target;
+      break;
+
+    CASE_FLT_FN (BUILT_IN_ILOGB):
+      if (! flag_unsafe_math_optimizations)
+	break;
+      target = expand_builtin_interclass_mathfn (exp, target, subtarget);
       if (target)
 	return target;
       break;
