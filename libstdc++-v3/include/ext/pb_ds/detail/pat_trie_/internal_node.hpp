@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -65,9 +65,6 @@ namespace pb_ds
 
 #define PB_DS_LEAF_C_DEC \
     pat_trie_leaf<Type_Traits, E_Access_Traits, Metadata, Allocator>
-
-#define PB_DS_STATIC_ASSERT(UNIQUE, E) \
-    typedef static_assert_dumclass<sizeof(static_assert<(bool)(E)>)> UNIQUE##static_assert_type
 
     template<typename Type_Traits,
 	     typename E_Access_Traits,
@@ -601,7 +598,6 @@ namespace pb_ds
 #undef PB_DS_CLASS_C_DEC
 #undef PB_DS_BASE_C_DEC
 #undef PB_DS_LEAF_C_DEC
-#undef PB_DS_STATIC_ASSERT
 
   } // namespace detail
 } // namespace pb_ds

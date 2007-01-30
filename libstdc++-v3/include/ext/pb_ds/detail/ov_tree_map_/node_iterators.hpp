@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -55,12 +55,8 @@ namespace pb_ds
 {
   namespace detail
   {
-#define PB_DS_STATIC_ASSERT(UNIQUE, E)					\
-    typedef								\
-    static_assert_dumclass<sizeof(static_assert<(bool)(E)>)> \
-    UNIQUE##static_assert_type
 
-#define PB_DS_OV_TREE_CONST_NODE_ITERATOR_C_DEC			\
+#define PB_DS_OV_TREE_CONST_NODE_ITERATOR_C_DEC	\
     ov_tree_node_const_it_<Value_Type, Metadata_Type, Allocator>
 
     // Const node reference.
@@ -205,7 +201,7 @@ namespace pb_ds
       const_metadata_pointer m_p_metadata;
     };
 
-#define PB_DS_OV_TREE_NODE_ITERATOR_C_DEC			\
+#define PB_DS_OV_TREE_NODE_ITERATOR_C_DEC \
     ov_tree_node_it_<Value_Type, Metadata_Type, Allocator>
 
     // Node reference.
@@ -251,7 +247,7 @@ namespace pb_ds
 
     public:
       inline
-      ov_tree_node_it_(const_pointer p_nd = NULL,  const_pointer p_begin_nd = NULL,  const_pointer p_end_nd = NULL,  const_metadata_pointer p_metadata = NULL) : base_type(                p_nd,  p_begin_nd,  p_end_nd,  p_metadata)
+      ov_tree_node_it_(const_pointer p_nd = NULL,  const_pointer p_begin_nd = NULL,  const_pointer p_end_nd = NULL,  const_metadata_pointer p_metadata = NULL) : base_type(p_nd,  p_begin_nd,  p_end_nd,  p_metadata)
       { }
 
       // Access.
@@ -295,7 +291,6 @@ namespace pb_ds
 
 #undef PB_DS_OV_TREE_NODE_ITERATOR_C_DEC
 #undef PB_DS_OV_TREE_CONST_NODE_ITERATOR_C_DEC
-#undef PB_DS_STATIC_ASSERT
 
 } // namespace detail
 } // namespace pb_ds

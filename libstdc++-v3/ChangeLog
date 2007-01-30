@@ -1,3 +1,29 @@
+2007-01-30  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/30571
+	* include/ext/pb_ds/detail/type_utils.hpp: Use C++0x
+	static_assert if available, if not, centralize PB_DS_STATIC_ASSERT
+	definition here.
+	* include/ext/pb_ds/detail/resize_policy/
+	cc_hash_max_collision_check_resize_trigger_imp.hpp: Remove
+	PB_DS_STATIC_ASSERT definition.
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_load_check_resize_trigger_imp.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_standard_resize_policy_imp.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/cc_ht_map_.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/pat_trie_.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/internal_node.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/gp_ht_map_.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/node_iterators.hpp: Same.
+	* include/ext/pb_ds/trie_policy.hpp: Same.
+	* testsuite/util/performance/assoc/timing/
+	tree_order_statistics_test.hpp: Same.
+	* testsuite/ext/pb_ds/example/hash_resize_neg.cc: Adjust line numbers.
+	* testsuite/17_intro/headers_c++_c++0x_compat.cc: New.
+	
+	* include/precompiled/extc++.h: Update to current list of ext files.
+
 2007-01-29  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_uninitialized.h (uninitialized_copy(const char*,

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -110,10 +110,6 @@ namespace pb_ds
 #define PB_DS_V2S(X) Mapped_Data()
 #define PB_DS_EP2VP(X)& ((X)->m_value.first)
 #endif 
-
-#define PB_DS_STATIC_ASSERT(UNIQUE, E)	\
-    typedef static_assert_dumclass<sizeof(static_assert<(bool)(E)>)> \
-    UNIQUE##static_assert_type
 
     /**
      * class description = PATRICIA trie implementation.">
@@ -520,7 +516,6 @@ namespace pb_ds
 #undef PB_DS_V2F
 #undef PB_DS_EP2VP
 #undef PB_DS_V2S
-#undef PB_DS_STATIC_ASSERT
 
   } // namespace detail
 } // namespace pb_ds
