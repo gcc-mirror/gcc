@@ -1,5 +1,10 @@
 2007-01-30  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/27657
+	* g++.dg/debug/pr27657.C: New testcase.
+
+2007-01-30  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/30313
 	* gcc.dg/torture/pr30313.c: New testcase.
 

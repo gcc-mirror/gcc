@@ -1,5 +1,11 @@
 2007-01-30  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/27657
+	* dwarf2out.c (reference_to_unused): Query varpool if the
+	variable was output.
+
+2007-01-30  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/30313
 	* passes.c (execute_one_pass): Reset in_gimple_form to not
 	confuse non-unit-at-a-time mode.
