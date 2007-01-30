@@ -1,6 +1,7 @@
 /* Part of CPP library.  (Macro and #define handling.)
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005,
+   2006 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -1398,10 +1399,12 @@ alloc_expansion_token (cpp_reader *pfile, cpp_macro *macro)
 static cpp_token *
 lex_expansion_token (cpp_reader *pfile, cpp_macro *macro)
 {
-  cpp_token *token;
+  cpp_token *token, *saved_cur_token;
 
+  saved_cur_token = pfile->cur_token;
   pfile->cur_token = alloc_expansion_token (pfile, macro);
   token = _cpp_lex_direct (pfile);
+  pfile->cur_token = saved_cur_token;
 
   /* Is this a parameter?  */
   if (token->type == CPP_NAME
@@ -1590,18 +1593,12 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
     ok = _cpp_create_trad_definition (pfile, macro);
   else
     {
-      cpp_token *saved_cur_token = pfile->cur_token;
-
       ok = create_iso_definition (pfile, macro);
 
-      /* Restore lexer position because of games lex_expansion_token()
-	 plays lexing the macro.  We set the type for SEEN_EOL() in
-	 directives.c.
+      /* We set the type for SEEN_EOL() in directives.c.
 
 	 Longer term we should lex the whole line before coming here,
 	 and just copy the expansion.  */
-      saved_cur_token[-1].type = pfile->cur_token[-1].type;
-      pfile->cur_token = saved_cur_token;
 
       /* Stop the lexer accepting __VA_ARGS__.  */
       pfile->state.va_args_ok = 0;
