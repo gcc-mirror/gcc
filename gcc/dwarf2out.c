@@ -10045,8 +10045,14 @@ reference_to_unused (tree * tp, int * walk_subtrees,
   if (DECL_P (*tp) && ! TREE_PUBLIC (*tp) && ! TREE_USED (*tp)
       && ! TREE_ASM_WRITTEN (*tp))
     return *tp;
-  else
-    return NULL_TREE;
+  else if (DECL_P (*tp) && TREE_CODE (*tp) != FUNCTION_DECL)
+    {
+      struct varpool_node *node = varpool_node (*tp);
+      if (!node->needed)
+	return *tp;
+    }
+
+  return NULL_TREE;
 }
 
 /* Generate an RTL constant from a decl initializer INIT with decl type TYPE,
