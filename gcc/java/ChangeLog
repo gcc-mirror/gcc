@@ -1,3 +1,8 @@
+2007-01-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* gcj.texi (Invoking gcjh, Invoking gjnih, Arrays): Fix some
+	typos.
+
 2007-01-30  Ben Elliston  <bje@au.ibm.com>
 
 	* jvspec.c (lang_specific_driver): Remove unused classpath_args.
