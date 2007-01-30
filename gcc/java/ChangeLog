@@ -1,3 +1,7 @@
+2007-01-30  Tom Tromey  <tromey@redhat.com>
+
+	* gcj.texi (Strings): Fix documentation for JvNewString.
+
 2007-01-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* gcj.texi (Invoking gcjh, Invoking gjnih, Arrays): Fix some
