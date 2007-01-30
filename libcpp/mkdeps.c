@@ -1,5 +1,5 @@
 /* Dependency generator for Makefile fragments.
-   Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2003, 2007 Free Software Foundation, Inc.
    Contributed by Zack Weinberg, Mar 2000
 
 This program is free software; you can redistribute it and/or modify it
@@ -141,7 +141,13 @@ apply_vpath (struct deps *d, const char *t)
 
   /* Remove leading ./ in any case.  */
   while (t[0] == '.' && IS_DIR_SEPARATOR (t[1]))
-    t += 2;
+    {
+      t += 2;
+      /* If we removed a leading ./, then also remove any /s after the
+	 first.  */
+      while (IS_DIR_SEPARATOR (t[0]))
+	++t;
+    }
 
   return t;
 }

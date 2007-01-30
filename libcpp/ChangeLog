@@ -1,5 +1,11 @@
 2007-01-30  Tom Tromey  <tromey@redhat.com>
 
+	PR preprocessor/30468:
+	* mkdeps.c (apply_vpath): Strip successive '/'s if we stripped
+	'./'.
+
+2007-01-30  Tom Tromey  <tromey@redhat.com>
+
 	PR preprocessor/29966:
 	* macro.c (lex_expansion_token): Save and restore cpp_reader's
 	cur_token.
