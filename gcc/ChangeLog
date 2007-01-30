@@ -1,3 +1,9 @@
+2007-01-30  Dirk Mueller  <dmueller@suse.de>
+
+	PR c++/30601
+	* doc/invoke.texi (-Wreturn-type): Update description to
+	match new behavior. 
+
 2007-01-30  Richard Sandiford  <richard@codesourcery.com>
 
 	* cfgrtl.c (try_redirect_by_replacing_jump): Check only_sets_cc0_p.
