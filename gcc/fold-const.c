@@ -13514,33 +13514,33 @@ round_up (tree value, int divisor)
   /* If divisor is a power of two, simplify this to bit manipulation.  */
   if (divisor == (divisor & -divisor))
     {
-      tree t;
-
       if (TREE_CODE (value) == INTEGER_CST)
 	{
 	  unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (value);
-	  HOST_WIDE_INT high;
+	  unsigned HOST_WIDE_INT high;
+	  bool overflow_p;
 
 	  if ((low & (divisor - 1)) == 0)
 	    return value;
 
+	  overflow_p = TREE_OVERFLOW (value);
 	  high = TREE_INT_CST_HIGH (value);
 	  low &= ~(divisor - 1);
 	  low += divisor;
 	  if (low == 0)
-	    high++;
-
-	  t = build_int_cst_wide_type (TREE_TYPE (value), low, high);
-	  if ((TREE_OVERFLOW (value) || integer_zerop (t))
-	      && !TREE_OVERFLOW (t))
 	    {
-	      t = copy_node (t);
-	      TREE_OVERFLOW (t) = 1;
+	      high++;
+	      if (high == 0)
+		overflow_p = true;
 	    }
-	  return t;
+
+	  return force_fit_type_double (TREE_TYPE (value), low, high,
+					-1, overflow_p);
 	}
       else
 	{
+	  tree t;
+
 	  t = build_int_cst (TREE_TYPE (value), divisor - 1);
 	  value = size_binop (PLUS_EXPR, value, t);
 	  t = build_int_cst (TREE_TYPE (value), -divisor);

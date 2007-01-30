@@ -1,9 +1,16 @@
+2007-01-29  Roger Sayle  <roger@eyesopen.com>
+	    Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (round_up): Make HIGH an unsigned HOST_WIDE_INT to
+	avoid undefined behaviour on overflow.  Use force_fit_type_double
+	to construct the constant with the specified TREE_OVERFLOW.
+
 2007-01-29  Janis Johnson  <janis187@us.ibm.com>
 
 	* config/dfp-bit.c: Add parameterized support for fp exceptions.
 	* config/dfp-bit.h: Ditto.
 
-007-01-29  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+2007-01-29  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* c-decl.c (pop_scope): Replace warnings with call to
 	warn_for_unused_label.
