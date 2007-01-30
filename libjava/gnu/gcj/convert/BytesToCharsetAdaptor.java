@@ -1,4 +1,4 @@
-/* Copyright (C) 2005  Free Software Foundation
+/* Copyright (C) 2005, 2007  Free Software Foundation
 
 This file is part of libgcj.
 
@@ -71,7 +71,7 @@ public class BytesToCharsetAdaptor extends BytesToUnicode
   {
     if (inBuf == null || ! inBuf.hasArray() || inBuf.array() != inbuffer)
       inBuf = ByteBuffer.wrap(inbuffer);
-    inBuf.limit(inpos + inlength);
+    inBuf.limit(inlength);
     inBuf.position(inpos);
 
     CharBuffer outBuf = CharBuffer.wrap(outbuffer, outpos, count);
