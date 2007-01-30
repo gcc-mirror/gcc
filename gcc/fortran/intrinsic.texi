@@ -421,7 +421,7 @@ and @code{"x"} (executable), or @code{" "} to check for existence.
 
 @item @emph{Return value}:
 Returns a scalar @code{INTEGER}, which is @code{0} if the file is
-accessable in the given mode; otherwise or if an invalid argument
+accessible in the given mode; otherwise or if an invalid argument
 has been given for @code{MODE} the value @code{1} is returned.
 
 @item @emph{Example}:
@@ -5903,7 +5903,7 @@ bits shifted left by @var{SHIFT} places.  If the absolute value of
 Bits shifted out from the left end are lost; zeros are shifted in from
 the opposite end.
 
-This function has been superceded by the @code{ISHFT} intrinsic, which
+This function has been superseded by the @code{ISHFT} intrinsic, which
 is standard in Fortran 95 and later.
 
 @item @emph{Standard}:
@@ -7553,7 +7553,7 @@ bits shifted right by @var{SHIFT} places.  If the absolute value of
 Bits shifted out from the left end are lost; zeros are shifted in from
 the opposite end.
 
-This function has been superceded by the @code{ISHFT} intrinsic, which
+This function has been superseded by the @code{ISHFT} intrinsic, which
 is standard in Fortran 95 and later.
 
 @item @emph{Standard}:
