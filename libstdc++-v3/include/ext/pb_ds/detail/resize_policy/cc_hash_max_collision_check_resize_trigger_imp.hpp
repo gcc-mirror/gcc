@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,9 +43,6 @@
  * @file cc_hash_max_collision_check_resize_trigger_imp.hpp
  * Contains a resize trigger implementation.
  */
-
-#define PB_DS_STATIC_ASSERT(UNIQUE, E) \
-  typedef detail::static_assert_dumclass<sizeof(detail::static_assert<(bool)(E)>)> UNIQUE##static_assert_type
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
@@ -218,4 +215,3 @@ set_load(float load)
   calc_resize_needed();
 }
 
-#undef PB_DS_STATIC_ASSERT

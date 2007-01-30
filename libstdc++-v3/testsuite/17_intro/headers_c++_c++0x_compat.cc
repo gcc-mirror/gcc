@@ -1,6 +1,7 @@
-// C++ includes used for precompiling extensions -*- C++ -*-
+// { dg-do compile }
+// { dg-options "-Wc++0x-compat -Werror" }
 
-// Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,12 +28,87 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file extc++.h
- *  This is an implementation file for a precompiled header.
- */
+// Make sure all the includes can be compiled with -Wc++0x-compat
+// libstdc++/30571
 
-#include <bits/stdtr1c++.h>
+// C
+#include <cassert>
+#include <cctype>
+#include <cerrno>
+#include <cfloat>
+#include <ciso646>
+#include <climits>
+#include <clocale>
+#include <cmath>
+#include <csetjmp>
+#include <csignal>
+#include <cstdarg>
+#include <cstddef>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
 
+// C++
+#include <algorithm>
+#include <bitset>
+#include <complex>
+#include <deque>
+#include <exception>
+#include <fstream>
+#include <functional>
+#include <iomanip>
+#include <ios>
+#include <iosfwd>
+#include <iostream>
+#include <istream>
+#include <iterator>
+#include <limits>
+#include <list>
+#include <locale>
+#include <map>
+#include <memory>
+#include <new>
+#include <numeric>
+#include <ostream>
+#include <queue>
+#include <set>
+#include <sstream>
+#include <stack>
+#include <stdexcept>
+#include <streambuf>
+#include <string>
+#include <typeinfo>
+#include <utility>
+#include <valarray>
+#include <vector>
+
+// TR1
+#include <tr1/array>
+#include <tr1/cctype>
+#include <tr1/cfenv>
+#include <tr1/cfloat>
+#include <tr1/cinttypes>
+#include <tr1/climits>
+#include <tr1/cmath>
+#include <tr1/complex>
+#include <tr1/cstdarg>
+#include <tr1/cstdbool>
+#include <tr1/cstdint>
+#include <tr1/cstdio>
+#include <tr1/cstdlib>
+#include <tr1/ctgmath>
+#include <tr1/ctime>
+#include <tr1/cwchar>
+#include <tr1/cwctype>
+#include <tr1/functional>
+#include <tr1/random>
+#include <tr1/tuple>
+#include <tr1/unordered_map>
+#include <tr1/unordered_set>
+#include <tr1/utility>
+
+// Extensions
 #include <ext/algorithm>
 #include <ext/array_allocator.h>
 #include <ext/atomicity.h>

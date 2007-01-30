@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -136,22 +136,30 @@ namespace pb_ds
 	};
     };
 
-
+    // Use C++0x's static_assert if possible.
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#define PB_DS_STATIC_ASSERT(UNIQUE, E)  static_assert(E, #UNIQUE)
+#else
     template<bool>
-    struct static_assert;
+    struct __static_assert;
 
     template<>
-    struct static_assert<true>
+    struct __static_assert<true>
     { };
 
     template<int>
-    struct static_assert_dumclass
+    struct __static_assert_dumclass
     {
       enum
 	{
 	  v = 1
 	};
     };
+
+#define PB_DS_STATIC_ASSERT(UNIQUE, E)  \
+    typedef pb_ds::detail::__static_assert_dumclass<sizeof(pb_ds::detail::__static_assert<bool(E)>)> UNIQUE##__static_assert_type
+
+#endif
 
     template<typename Type>
     struct type_to_type

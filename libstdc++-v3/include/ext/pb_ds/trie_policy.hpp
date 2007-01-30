@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -60,9 +60,6 @@ namespace pb_ds
 	   typename Allocator>
   struct null_trie_node_update
   { };
-
-#define PB_DS_STATIC_ASSERT(UNIQUE, E)					\
-  typedef detail::static_assert_dumclass<sizeof(detail::static_assert<bool(E)>)> UNIQUE##_static_assert_type
 
 #define PB_DS_CLASS_T_DEC						\
   template<typename String, typename String::value_type Min_E_Val, typename String::value_type Max_E_Val, bool Reverse, typename Allocator>
@@ -358,7 +355,6 @@ namespace pb_ds
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
 #undef PB_DS_BASE_C_DEC
-#undef PB_DS_STATIC_ASSERT
 
 } // namespace pb_ds
 
