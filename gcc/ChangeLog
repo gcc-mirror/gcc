@@ -1,3 +1,7 @@
+2007-01-30  Richard Sandiford  <richard@codesourcery.com>
+
+	* cfgrtl.c (try_redirect_by_replacing_jump): Check only_sets_cc0_p.
+
 2007-01-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* builtins.c (expand_builtin_int_interclass_roundingfn): New function

@@ -728,7 +728,8 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
      the cc0 setter too.  */
   kill_from = insn;
 #ifdef HAVE_cc0
-  if (reg_mentioned_p (cc0_rtx, PATTERN (insn)))
+  if (reg_mentioned_p (cc0_rtx, PATTERN (insn))
+      && only_sets_cc0_p (PREV_INSN (insn)))
     kill_from = PREV_INSN (insn);
 #endif
 
