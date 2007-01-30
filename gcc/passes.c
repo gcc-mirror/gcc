@@ -906,6 +906,9 @@ execute_one_pass (struct tree_opt_pass *pass)
   if (pass->properties_destroyed & PROP_smt_usage)
     updating_used_alone = false;
 
+  /* Reset in_gimple_form to not break non-unit-at-a-time mode.  */
+  in_gimple_form = false;
+
   return true;
 }
 

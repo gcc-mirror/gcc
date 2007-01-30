@@ -1,3 +1,9 @@
+2007-01-30  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/30313
+	* passes.c (execute_one_pass): Reset in_gimple_form to not
+	confuse non-unit-at-a-time mode.
+
 2007-01-27  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.h (TARGET_CPU_CPP_BUILTINS): Define __AVR_HAVE_MUL__.
