@@ -9,7 +9,7 @@
 /* We need to declare sys_siglist, because even if the system provides
    it we can't assume that it is declared in <signal.h> (for example,
    SunOS provides sys_siglist, but it does not declare it in any
-   header file).  fHowever, we can't declare sys_siglist portably,
+   header file).  However, we can't declare sys_siglist portably,
    because on some systems it is declared with const and on some
    systems it is declared without const.  If we were using autoconf,
    we could work out the right declaration.  Until, then we just
@@ -536,7 +536,7 @@ strtosigno (const char *name)
 
 /*
 
-@deftypefn Supplemental void psignal (unsigned @var{signo}, char *@var{message})
+@deftypefn Supplemental void psignal (int @var{signo}, char *@var{message})
 
 Print @var{message} to the standard error, followed by a colon,
 followed by the description of the signal specified by @var{signo},
@@ -549,7 +549,7 @@ followed by a newline.
 #ifndef HAVE_PSIGNAL
 
 void
-psignal (unsigned signo, char *message)
+psignal (int signo, char *message)
 {
   if (signal_names == NULL)
     {
