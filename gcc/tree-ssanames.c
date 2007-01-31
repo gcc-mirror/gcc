@@ -318,7 +318,7 @@ release_dead_ssa_names (void)
   referenced_var_iterator rvi;
 
   /* Current defs point to various dead SSA names that in turn points to dead
-     statements so bunch of dead memory is holded from releasing.  */
+     statements so bunch of dead memory is held from releasing.  */
   FOR_EACH_REFERENCED_VAR (t, rvi)
     set_current_def (t, NULL);
   /* Now release the freelist.  */
@@ -328,7 +328,7 @@ release_dead_ssa_names (void)
       /* Dangling pointers might make GGC to still see dead SSA names, so it is
  	 important to unlink the list and avoid GGC from seeing all subsequent
 	 SSA names.  In longer run we want to have all dangling pointers here
-	 removed (since they usually go trhough dead statements that consume
+	 removed (since they usually go through dead statements that consume
 	 considerable amounts of memory).  */
       TREE_CHAIN (t) = NULL_TREE;
       n++;

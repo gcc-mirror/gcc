@@ -521,9 +521,9 @@ struct tree_opt_pass pass_cse_reciprocals =
   0				        /* letter */
 };
 
-/* Records an occurance at statement USE_STMT in the vector of trees
+/* Records an occurrence at statement USE_STMT in the vector of trees
    STMTS if it is dominated by *TOP_BB or dominates it or this basic block
-   is not yet initialized.  Returns true if the occurance was pushed on
+   is not yet initialized.  Returns true if the occurrence was pushed on
    the vector.  Adjusts *TOP_BB to be the basic block dominating all
    statements in the vector.  */
 

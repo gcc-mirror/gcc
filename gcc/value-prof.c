@@ -63,7 +63,7 @@ static struct value_prof_hooks *value_prof_hooks;
 
    3) Indirect/virtual call specialization. If we can determine most
       common function callee in indirect/virtual call. We can use this
-      information to improve code effectivity (espetialy info for
+      information to improve code effectiveness (especially info for
       inliner).
 
    Every such optimization should add its requirements for profiled values to

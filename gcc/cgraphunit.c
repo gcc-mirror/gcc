@@ -783,7 +783,7 @@ process_function_and_variable_attributes (struct cgraph_node *first,
 /* Process CGRAPH_NODES_NEEDED queue, analyze each function (and transitively
    each reachable functions) and build cgraph.
    The function can be called multiple times after inserting new nodes
-   into beggining of queue.  Just the new part of queue is re-scanned then.  */
+   into beginning of queue.  Just the new part of queue is re-scanned then.  */
 
 static void
 cgraph_analyze_functions (void)
