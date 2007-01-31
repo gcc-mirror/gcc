@@ -2577,6 +2577,9 @@ if test x$with_cpu = x ; then
         athlon_tbird-*|athlon-*)
           with_cpu=athlon
           ;;
+	geode-*)
+	  with_cpu=geode
+	  ;;
         pentium2-*)
           with_cpu=pentium2
           ;;
@@ -2861,7 +2864,7 @@ case "${target}" in
 			| i586 | pentium | pentium-mmx | winchip-c6 | winchip2 \
 			| c3 | c3-2 | i686 | pentiumpro | pentium2 | pentium3 \
 			| pentium4 | k6 | k6-2 | k6-3 | athlon | athlon-tbird \
-			| athlon-4 | athlon-xp | athlon-mp \
+			| athlon-4 | athlon-xp | athlon-mp | geode \
 			| prescott | pentium-m | pentium4m | pentium3m)
 				case "${target}" in
 				  x86_64-*-*)
