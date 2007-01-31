@@ -1676,6 +1676,7 @@ mathfn_built_in (tree type, enum built_in_function fn)
       CASE_MATHFN (BUILT_IN_HYPOT)
       CASE_MATHFN (BUILT_IN_ILOGB)
       CASE_MATHFN (BUILT_IN_INF)
+      CASE_MATHFN (BUILT_IN_ISINF)
       CASE_MATHFN (BUILT_IN_J0)
       CASE_MATHFN (BUILT_IN_J1)
       CASE_MATHFN (BUILT_IN_JN)
@@ -2198,6 +2199,8 @@ expand_builtin_interclass_mathfn (tree exp, rtx target, rtx subtarget)
     {
     CASE_FLT_FN (BUILT_IN_ILOGB):
       errno_set = true; builtin_optab = ilogb_optab; break;
+    CASE_FLT_FN (BUILT_IN_ISINF):
+      builtin_optab = isinf_optab; break;
     default:
       gcc_unreachable ();
     }
@@ -5923,6 +5926,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     CASE_FLT_FN (BUILT_IN_ILOGB):
       if (! flag_unsafe_math_optimizations)
 	break;
+    CASE_FLT_FN (BUILT_IN_ISINF):
       target = expand_builtin_interclass_mathfn (exp, target, subtarget);
       if (target)
 	return target;

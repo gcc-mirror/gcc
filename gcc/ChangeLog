@@ -1,3 +1,21 @@
+2007-01-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	* optabs.h (enum optab_index): Add new OTI_isinf.
+	(isinf_optab): Define corresponding macro.
+	* optabs.c (init_optabs): Initialize isinf_optab.
+	* genopinit.c (optabs): Implement isinf_optab using isinf?f2
+	patterns.
+	* builtins.c (mathfn_built_in): Handle BUILT_IN_ISINF{,F,L}.
+	(expand_builtin_interclass_mathfn): Expand BUILT_IN_ISINF{,F,L}
+	using isinf_optab.
+	(expand_builtin): Expand BUILT_IN_ISINF{,F,L} using
+	expand_builtin_interclass_mathfn.
+	* reg_stack.c (subst_stack_regs_pat): Handle UNSPEC_FXAM.
+	* config/i386/i386.md (UNSPEC_FXAM): New constant.
+	(fxam<mode>2_i387): New insn pattern.
+	(isinf<mode>2) New expander to implement isinf, isinff and isinfl
+	built-in functions as x87 inline asm.
+
 2007-01-31  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gcc/config/arm/unwind-arm.h (_sleb128_t, _uleb128_t): New.
