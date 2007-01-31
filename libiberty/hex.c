@@ -50,7 +50,7 @@ or zero if it is not.  Note that the value you pass will be cast to
 @deftypefn Extension {unsigned int} hex_value (int @var{c})
 
 Returns the numeric equivalent of the given character when interpreted
-as a hexidecimal digit.  The result is undefined if you pass an
+as a hexadecimal digit.  The result is undefined if you pass an
 invalid hex digit.  Note that the value you pass will be cast to
 @code{unsigned char} within the macro.
 
