@@ -1,3 +1,8 @@
+2007-01-31  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.tpl (LDFLAGS): Substitute it.
+	* Makefile.in: Regenerate.
+
 2007-01-30 Andrey Belevantsev <abel@ispras.ru>
 
         * MAINTAINERS (Write After Approval): Add myself.
