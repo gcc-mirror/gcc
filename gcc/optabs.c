@@ -5378,6 +5378,8 @@ init_optabs (void)
   atan_optab = init_optab (UNKNOWN);
   copysign_optab = init_optab (UNKNOWN);
 
+  isinf_optab = init_optab (UNKNOWN);
+
   strlen_optab = init_optab (UNKNOWN);
   cbranch_optab = init_optab (UNKNOWN);
   cmov_optab = init_optab (UNKNOWN);

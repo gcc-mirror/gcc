@@ -204,6 +204,9 @@ enum optab_index
   /* Copy sign */
   OTI_copysign,
 
+  /* Test for infinite value */
+  OTI_isinf,
+
   /* Compare insn; two operands.  */
   OTI_cmp,
   /* Used only for libcalls for unsigned comparisons.  */
@@ -369,6 +372,8 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define tan_optab (optab_table[OTI_tan])
 #define atan_optab (optab_table[OTI_atan])
 #define copysign_optab (optab_table[OTI_copysign])
+
+#define isinf_optab (optab_table[OTI_isinf])
 
 #define cmp_optab (optab_table[OTI_cmp])
 #define ucmp_optab (optab_table[OTI_ucmp])
