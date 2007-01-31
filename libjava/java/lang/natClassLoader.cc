@@ -208,6 +208,12 @@ _Jv_CheckABIVersion (unsigned long value)
       // C++ ABI
       if (version == GCJ_CXX_ABI_VERSION)
 	return;
+
+      // If we've loaded a library that uses the C++ ABI, and this
+      // library is an incompatible version, then we're dead.  There's
+      // no point throwing an exception: that will crash.
+      JvFail ("gcj linkage error.\n"
+	      "Incorrect library ABI version detected.  Aborting.\n");
     }
 
   throw new ::java::lang::ClassFormatError
