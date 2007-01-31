@@ -1,3 +1,8 @@
+2007-01-30  Roger Sayle  <roger@eyesopen.com>
+
+	* error.c (dump_type_suffix): Avoid use of cp_build_binary_op when
+	calculating the size of an array (to avoid recursive errors).
+
 2007-01-30  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/24745
