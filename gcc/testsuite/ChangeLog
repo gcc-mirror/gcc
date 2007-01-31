@@ -1,3 +1,7 @@
+2007-01-31  Dirk Mueller  <dmueller@suse.de>
+
+	gcc.dg/Wparentheses-2.c: Update and add new tests.
+
 2007-01-31  Ira Rosen  <irar@il.ibm.com> 
 
 	* gcc.dg/vect/vect-37.c: Restore the original behaivior - xfail to
