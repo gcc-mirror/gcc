@@ -59,6 +59,8 @@ struct pex_obj
   char *next_input_name;
   /* Whether next_input_name was allocated using malloc.  */
   int next_input_name_allocated;
+  /* If not -1, stderr pipe from the last process.  */
+  int stderr_pipe;
   /* Number of child processes.  */
   int count;
   /* PIDs of child processes; array allocated using malloc.  */
@@ -73,6 +75,8 @@ struct pex_obj
   FILE *input_file;
   /* FILE created by pex_read_output.  */
   FILE *read_output;
+  /* FILE created by pex_read_err.  */
+  FILE *read_err;
   /* Number of temporary files to remove.  */
   int remove_count;
   /* List of temporary files to remove; array allocated using malloc

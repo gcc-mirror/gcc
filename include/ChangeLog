@@ -1,3 +1,9 @@
+2007-01-31  Vladimir Prus  <vladimir@codesourcery.com>
+	
+	* libiberty.h (PEX_STDERR_TO_PIPE): New define.
+	(PEX_BINARY_ERROR): New define.
+	(pex_read_err): New function.
+
 2007-01-29  Simon Baldwin <simonb@google.com>
 
 	* demangle.h: New cplus_demangle_print_callback,

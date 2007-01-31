@@ -1,3 +1,17 @@
+2007-01-31  Vladimir Prus  <vladimir@codesourcery.com>
+
+	* pex-common.h (struct pex_obj): New fields
+	stderr_pipe and read_err.	
+	* pex-common.c (pex_init_common): Initialize
+	stderr_pipe.
+	(pex_run_in_environment): Add error checking
+	for PEX_STDERR_TO_PIPE.  Create a pipe
+	for stderr if necessary.
+	(pex_read_err): New.
+	(pex_free): Close read_err.
+	* pexecute.txh: Document changes.
+	* functions.texi: Regenerated.
+
 2007-01-31  Ben Elliston  <bje@au.ibm.com>
 
 	* strsignal.c (psignal): Change type of signo to int.

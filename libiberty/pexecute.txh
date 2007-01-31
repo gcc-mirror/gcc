@@ -67,14 +67,23 @@ Send the program's standard error to standard output, if possible.
 
 @vindex PEX_BINARY_INPUT
 @vindex PEX_BINARY_OUTPUT
+@vindex PEX_BINARY_ERROR
 @item PEX_BINARY_INPUT
 @itemx PEX_BINARY_OUTPUT
-The standard input (output) of the program should be read (written) in
+@itemx PEX_BINARY_ERROR
+The standard input (output or error) of the program should be read (written) in
 binary mode rather than text mode.  These flags are ignored on systems
 which do not distinguish binary mode and text mode, such as Unix.  For
 proper behavior these flags should match appropriately---a call to
 @code{pex_run} using @code{PEX_BINARY_OUTPUT} should be followed by a
 call using @code{PEX_BINARY_INPUT}.
+
+@vindex PEX_STDERR_TO_PIPE
+@item PEX_STDERR_TO_PIPE
+Send the program's standard error to a pipe, if possible.  This flag
+cannot be specified together with @code{PEX_STDERR_TO_STDOUT}.  This
+flag can be specified only on the last program in pipeline.
+
 @end table
 
 @var{executable} is the program to execute.  @var{argv} is the set of
@@ -215,6 +224,19 @@ opened in binary mode.  Don't call @code{fclose} on the returned file;
 it will be closed by @code{pex_free}.
 
 @end deftypefn
+
+@deftypefn Extension {FILE *} pex_read_err (struct pex_obj *@var{obj}, int @var{binary})
+
+Returns a @code{FILE} pointer which may be used to read the standard
+error of the last program in the pipeline.  When this is used,
+@code{PEX_LAST} should not be used in a call to @code{pex_run}.  After
+this is called, @code{pex_run} may no longer be called with the same
+@var{obj}.  @var{binary} should be non-zero if the file should be
+opened in binary mode.  Don't call @code{fclose} on the returned file;
+it will be closed by @code{pex_free}.
+
+@end deftypefn
+
 
 @deftypefn Extension int pex_get_status (struct pex_obj *@var{obj}, int @var{count}, int *@var{vector})
 
