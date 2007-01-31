@@ -1,5 +1,5 @@
 /* Main.java - jar program main()
- Copyright (C) 2006 Free Software Foundation, Inc.
+ Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
 
@@ -45,7 +45,9 @@ import gnu.classpath.tools.getopt.OptionException;
 import gnu.classpath.tools.getopt.OptionGroup;
 import gnu.classpath.tools.getopt.Parser;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -232,9 +234,32 @@ public class Main
         changedDirectory = argument;
       }
     });
+    grp.add(new Option('@', Messages.getString("Main.Stdin"))
+    {
+      public void parsed(String argument) throws OptionException
+      {
+	readNamesFromStdin = true;
+      }
+    });
     p.add(grp);
 
     return p;
+  }
+
+  private void readNames()
+  {
+    String line;
+    try
+      {
+	BufferedReader br
+	  = new BufferedReader(new InputStreamReader(System.in));
+	while ((line = br.readLine()) != null)
+	  entries.add(new Entry(new File(line)));
+      }
+    catch (IOException _)
+      {
+	// Ignore.
+      }
   }
 
   private void run(String[] args)
@@ -245,6 +270,8 @@ public class Main
     if (args.length > 0 && args[0].charAt(0) != '-')
       args[0] = '-' + args[0];
     p.parse(args, new HandleFile());
+    if (readNamesFromStdin)
+      readNames();
     Action t = (Action) operationMode.newInstance();
     t.run(this);
   }
