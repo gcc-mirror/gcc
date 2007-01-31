@@ -1,3 +1,8 @@
+2007-01-31  Keith Seitz  <keiths@redhat.com>
+
+	* testsuite/libjava.jvmti/getmethodname.h: New file.
+	* testsuite/libjava.jvmti/getmethodname.jar: New file.
+
 2007-01-31  Andrew Haley  <aph@redhat.com>
 
 	* prims.cc (_Jv_Abort): fflush (stderr).
