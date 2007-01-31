@@ -308,7 +308,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS GENINSRC_TRUE GENINSRC_FALSE build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar multi_basedir toolexecdir toolexeclibdir CC ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CFLAGS AR ac_ct_AR RANLIB ac_ct_RANLIB PERL LN_S LIBTOOL enable_shared enable_static MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT FC FCFLAGS LDFLAGS ac_ct_FC libtool_VERSION CPP CPPFLAGS EGREP SECTION_LDFLAGS OPT_LDFLAGS LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE LIBGOMP_BUILD_VERSIONED_SHLIB_FALSE config_path XCFLAGS XLDFLAGS link_gomp USE_FORTRAN_TRUE USE_FORTRAN_FALSE OMP_LOCK_SIZE OMP_LOCK_ALIGN OMP_NEST_LOCK_SIZE OMP_NEST_LOCK_ALIGN OMP_LOCK_KIND OMP_NEST_LOCK_KIND LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS GENINSRC_TRUE GENINSRC_FALSE build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar multi_basedir toolexecdir toolexeclibdir CC ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CFLAGS AR ac_ct_AR RANLIB ac_ct_RANLIB PERL BUILD_INFO_TRUE BUILD_INFO_FALSE LN_S LIBTOOL enable_shared enable_static MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT FC FCFLAGS LDFLAGS ac_ct_FC libtool_VERSION CPP CPPFLAGS EGREP SECTION_LDFLAGS OPT_LDFLAGS LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE LIBGOMP_BUILD_VERSIONED_SHLIB_FALSE config_path XCFLAGS XLDFLAGS link_gomp USE_FORTRAN_TRUE USE_FORTRAN_FALSE OMP_LOCK_SIZE OMP_LOCK_ALIGN OMP_NEST_LOCK_SIZE OMP_NEST_LOCK_ALIGN OMP_LOCK_KIND OMP_NEST_LOCK_KIND LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -718,13 +718,13 @@ echo X"$0" |
   	  /^X\(\/\).*/{ s//\1/; q; }
   	  s/.*/./; q'`
   srcdir=$ac_confdir
-  if test ! -r $srcdir/$ac_unique_file; then
+  if test ! -r "$srcdir/$ac_unique_file"; then
     srcdir=..
   fi
 else
   ac_srcdir_defaulted=no
 fi
-if test ! -r $srcdir/$ac_unique_file; then
+if test ! -r "$srcdir/$ac_unique_file"; then
   if test "$ac_srcdir_defaulted" = yes; then
     { echo "$as_me: error: cannot find sources ($ac_unique_file) in $ac_confdir or .." >&2
    { (exit 1); exit 1; }; }
@@ -733,7 +733,7 @@ if test ! -r $srcdir/$ac_unique_file; then
    { (exit 1); exit 1; }; }
   fi
 fi
-(cd $srcdir && test -r ./$ac_unique_file) 2>/dev/null ||
+(cd $srcdir && test -r "./$ac_unique_file") 2>/dev/null ||
   { echo "$as_me: error: sources are in $srcdir, but \`cd $srcdir' does not work" >&2
    { (exit 1); exit 1; }; }
 srcdir=`echo "$srcdir" | sed 's%\([^\\/]\)[\\/]*$%\1%'`
@@ -3476,6 +3476,79 @@ test -z "$INSTALL_SCRIPT" && INSTALL_SCRIPT='${INSTALL}'
 test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 
 
+# See if makeinfo has been installed and is modern enough
+# that we can use it.
+
+  # Extract the first word of "makeinfo", so it can be a program name with args.
+set dummy makeinfo; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_MAKEINFO+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$MAKEINFO"; then
+  ac_cv_prog_MAKEINFO="$MAKEINFO" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_MAKEINFO="makeinfo"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+MAKEINFO=$ac_cv_prog_MAKEINFO
+if test -n "$MAKEINFO"; then
+  echo "$as_me:$LINENO: result: $MAKEINFO" >&5
+echo "${ECHO_T}$MAKEINFO" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  if test -n "$MAKEINFO"; then
+    # Found it, now check the version.
+    echo "$as_me:$LINENO: checking for modern makeinfo" >&5
+echo $ECHO_N "checking for modern makeinfo... $ECHO_C" >&6
+if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_prog_version=`eval $MAKEINFO --version 2>&1 |
+                                     sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
+
+                    case $ac_prog_version in
+                      '')  gcc_cv_prog_makeinfo_modern=no;;
+                      4.[4-9]*)  gcc_cv_prog_makeinfo_modern=yes;;
+                      *)   gcc_cv_prog_makeinfo_modern=no;;
+                    esac
+
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_prog_makeinfo_modern" >&5
+echo "${ECHO_T}$gcc_cv_prog_makeinfo_modern" >&6
+  else
+    gcc_cv_prog_makeinfo_modern=no
+  fi
+
+
+
+if test $gcc_cv_prog_makeinfo_modern = "yes"; then
+  BUILD_INFO_TRUE=
+  BUILD_INFO_FALSE='#'
+else
+  BUILD_INFO_TRUE='#'
+  BUILD_INFO_FALSE=
+fi
+
+
+
 # Configure libtool
 # Check whether --enable-shared or --disable-shared was given.
 if test "${enable_shared+set}" = set; then
@@ -4273,7 +4346,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4276 "configure"' > conftest.$ac_ext
+  echo '#line 4349 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -4683,7 +4756,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:4686:" \
+echo "$as_me:4759:" \
      "checking for Fortran compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -11160,6 +11233,13 @@ echo "$as_me: error: conditional \"am__fastdepCC\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
+if test -z "${BUILD_INFO_TRUE}" && test -z "${BUILD_INFO_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"BUILD_INFO\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"BUILD_INFO\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
 if test -z "${MAINTAINER_MODE_TRUE}" && test -z "${MAINTAINER_MODE_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"MAINTAINER_MODE\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
@@ -11808,6 +11888,8 @@ s,@ac_ct_AR@,$ac_ct_AR,;t t
 s,@RANLIB@,$RANLIB,;t t
 s,@ac_ct_RANLIB@,$ac_ct_RANLIB,;t t
 s,@PERL@,$PERL,;t t
+s,@BUILD_INFO_TRUE@,$BUILD_INFO_TRUE,;t t
+s,@BUILD_INFO_FALSE@,$BUILD_INFO_FALSE,;t t
 s,@LN_S@,$LN_S,;t t
 s,@LIBTOOL@,$LIBTOOL,;t t
 s,@enable_shared@,$enable_shared,;t t
