@@ -1,3 +1,8 @@
+2007-01-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/29335
+	* builtins.c (fold_builtin_sqrt): Use MPFR for constant args.
+
 2007-01-31  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* cfgloop.h: Include vec-prim.h.

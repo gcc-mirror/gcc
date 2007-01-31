@@ -145,6 +145,11 @@ void bar()
   fool (__builtin_fmal (__LDBL_MAX__, __LDBL_MAX__, 0.0L));
   fool (__builtin_fmal (__LDBL_MAX__, 1.0L, __LDBL_MAX__));
   fool (__builtin_fmal (__LDBL_MIN__, __LDBL_MIN__, 0.0L));
+
+  /* The sqrt arg must be [0 ... Inf] inclusive.  */
+  TESTIT (sqrt, -0.5);
+  TESTIT (sqrt, -0.0);
+  TESTIT (sqrt, 0.0);
 }
 
 /* { dg-final { scan-tree-dump-times "exp2 " 9 "original" } } */
@@ -183,4 +188,7 @@ void bar()
 /* { dg-final { scan-tree-dump-times "fma " 3 "original" } } */
 /* { dg-final { scan-tree-dump-times "fmaf" 3 "original" } } */
 /* { dg-final { scan-tree-dump-times "fmal" 3 "original" } } */
+/* { dg-final { scan-tree-dump-times "sqrt " 1 "original" } } */
+/* { dg-final { scan-tree-dump-times "sqrtf" 1 "original" } } */
+/* { dg-final { scan-tree-dump-times "sqrtl" 1 "original" } } */
 /* { dg-final { cleanup-tree-dump "original" } } */
