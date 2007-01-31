@@ -242,7 +242,7 @@ gfc_simplify_abs (gfc_expr *e)
 }
 
 /* We use the processor's collating sequence, because all
-   sytems that gfortran currently works on are ASCII.  */
+   systems that gfortran currently works on are ASCII.  */
 
 gfc_expr *
 gfc_simplify_achar (gfc_expr *e)
@@ -1195,7 +1195,7 @@ gfc_simplify_huge (gfc_expr *e)
 }
 
 /* We use the processor's collating sequence, because all
-   sytems that gfortran currently works on are ASCII.  */
+   systems that gfortran currently works on are ASCII.  */
 
 gfc_expr *
 gfc_simplify_iachar (gfc_expr *e)

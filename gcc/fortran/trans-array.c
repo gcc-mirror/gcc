@@ -1516,7 +1516,7 @@ gfc_build_constant_array_constructor (gfc_expr * expr, tree type)
       nelem++;
     }
 
-  /* Next detemine the tree type for the array.  We use the gfortran
+  /* Next determine the tree type for the array.  We use the gfortran
      front-end's gfc_get_nodesc_array_type in order to create a suitable
      GFC_ARRAY_TYPE_P that may be used by the scalarizer.  */
 
