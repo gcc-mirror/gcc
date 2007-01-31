@@ -1,3 +1,8 @@
+2007-01-31  Andrew Haley  <aph@redhat.com>
+
+	* prims.cc (_Jv_Abort): fflush (stderr).
+	* java/lang/natClassLoader.cc (_Jv_CheckABIVersion): Abort.
+
 2007-01-31  Tom Tromey  <tromey@redhat.com>
 
 	* configure, Makefile.in: Rebuilt.
