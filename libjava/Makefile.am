@@ -333,8 +333,7 @@ libgcj-$(gcc_version).jar: classpath/lib/compile-classes
 ## Note that this now omits the property files.
 ## It doesn't matter since we don't use the jar at runtime.
 	here=`pwd`; cd $(srcdir)/classpath/lib; \
-	find gnu java javax org sun -name '*.class' -print | \
-	fgrep -v .svn | \
+	find gnu java javax org sun -name .svn -prune -o -name '*.class' -print | \
 	$(JAR) -cfM@ $$here/libgcj-$(gcc_version).jar
 
 libgcj-tools-$(gcc_version).jar: classpath/tools/tools.zip

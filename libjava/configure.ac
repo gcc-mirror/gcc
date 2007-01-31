@@ -117,6 +117,18 @@ AC_PROG_AWK
 AC_CHECK_PROGS([JAR], [jar fastjar gjar], no)
 AC_PATH_PROG([ZIP], [zip], no)
 AC_PATH_PROG([UNZIP], [unzip], unzip)
+
+# We need a jar that supports -@.  This is a GNU extension.
+if test "$JAR" != no; then
+   rm -f config-test.jar
+   echo $srcdir/configure.ac | $JAR -cf@ config-test.jar
+   if test -f config-test.jar; then
+     rm -f config-test.jar
+   else
+     JAR=no
+   fi
+fi
+
 # Prefer the jar we found, but fall back to our jar script.
 if test "$JAR" = no; then
   if test "$ZIP" = no; then
