@@ -1243,9 +1243,6 @@ enum reg_class
 
 #define ANY_QI_REG_P(X) (TARGET_64BIT ? GENERAL_REG_P(X) : QI_REG_P (X))
 
-#define NON_QI_REG_P(X) \
-  (REG_P (X) && IN_RANGE (REGNO (X), 4, FIRST_PSEUDO_REGISTER - 1))
-
 #define REX_INT_REGNO_P(N) \
   IN_RANGE ((N), FIRST_REX_INT_REG, LAST_REX_INT_REG)
 #define REX_INT_REG_P(X) (REG_P (X) && REX_INT_REGNO_P (REGNO (X)))

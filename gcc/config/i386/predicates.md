@@ -52,15 +52,6 @@
   return ANY_QI_REG_P (op);
 })
 
-;; Return true if op is a NON_Q_REGS class register.
-(define_predicate "non_q_regs_operand"
-  (match_operand 0 "register_operand")
-{
-  if (GET_CODE (op) == SUBREG)
-    op = SUBREG_REG (op);
-  return NON_QI_REG_P (op);
-})
-
 ;; Match an SI or HImode register for a zero_extract.
 (define_special_predicate "ext_register_operand"
   (match_operand 0 "register_operand")
