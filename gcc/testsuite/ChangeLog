@@ -1,5 +1,10 @@
 2007-01-31  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/27588
+	* gfortran.dg/char_bounds_check_fail_1.f90: Add test.
+
+2007-01-31  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/30520
 	* gfortran.dg/volatile8.f90: New argument conformance test.
 	* gfortran.dg/volatile9.f90: New scope test.
