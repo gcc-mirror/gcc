@@ -99,6 +99,8 @@ chrec_fold_plus_poly_poly (enum tree_code code,
 			   tree poly1)
 {
   tree left, right;
+  struct loop *loop0 = get_chrec_loop (poly0);
+  struct loop *loop1 = get_chrec_loop (poly1);
 
   gcc_assert (poly0);
   gcc_assert (poly1);
@@ -111,7 +113,7 @@ chrec_fold_plus_poly_poly (enum tree_code code,
     {a, +, b}_1 + {c, +, d}_2  ->  {{a, +, b}_1 + c, +, d}_2,
     {a, +, b}_2 + {c, +, d}_1  ->  {{c, +, d}_1 + a, +, b}_2,
     {a, +, b}_x + {c, +, d}_x  ->  {a+c, +, b+d}_x.  */
-  if (CHREC_VARIABLE (poly0) < CHREC_VARIABLE (poly1))
+  if (flow_loop_nested_p (loop0, loop1))
     {
       if (code == PLUS_EXPR)
 	return build_polynomial_chrec 
@@ -128,7 +130,7 @@ chrec_fold_plus_poly_poly (enum tree_code code,
 				: build_int_cst_type (type, -1)));
     }
   
-  if (CHREC_VARIABLE (poly0) > CHREC_VARIABLE (poly1))
+  if (flow_loop_nested_p (loop1, loop0))
     {
       if (code == PLUS_EXPR)
 	return build_polynomial_chrec 
@@ -141,7 +143,11 @@ chrec_fold_plus_poly_poly (enum tree_code code,
 	   chrec_fold_minus (type, CHREC_LEFT (poly0), poly1),
 	   CHREC_RIGHT (poly0));
     }
-  
+ 
+  /* This function should never be called for chrecs of loops that
+     do not belong to the same loop nest.  */
+  gcc_assert (loop0 == loop1);
+
   if (code == PLUS_EXPR)
     {
       left = chrec_fold_plus 
@@ -175,6 +181,8 @@ chrec_fold_multiply_poly_poly (tree type,
 {
   tree t0, t1, t2;
   int var;
+  struct loop *loop0 = get_chrec_loop (poly0);
+  struct loop *loop1 = get_chrec_loop (poly1);
 
   gcc_assert (poly0);
   gcc_assert (poly1);
@@ -186,20 +194,22 @@ chrec_fold_multiply_poly_poly (tree type,
   /* {a, +, b}_1 * {c, +, d}_2  ->  {c*{a, +, b}_1, +, d}_2,
      {a, +, b}_2 * {c, +, d}_1  ->  {a*{c, +, d}_1, +, b}_2,
      {a, +, b}_x * {c, +, d}_x  ->  {a*c, +, a*d + b*c + b*d, +, 2*b*d}_x.  */
-  if (CHREC_VARIABLE (poly0) < CHREC_VARIABLE (poly1))
+  if (flow_loop_nested_p (loop0, loop1))
     /* poly0 is a constant wrt. poly1.  */
     return build_polynomial_chrec 
       (CHREC_VARIABLE (poly1), 
        chrec_fold_multiply (type, CHREC_LEFT (poly1), poly0),
        CHREC_RIGHT (poly1));
   
-  if (CHREC_VARIABLE (poly1) < CHREC_VARIABLE (poly0))
+  if (flow_loop_nested_p (loop1, loop0))
     /* poly1 is a constant wrt. poly0.  */
     return build_polynomial_chrec 
       (CHREC_VARIABLE (poly0), 
        chrec_fold_multiply (type, CHREC_LEFT (poly0), poly1),
        CHREC_RIGHT (poly0));
-  
+ 
+  gcc_assert (loop0 == loop1);
+
   /* poly0 and poly1 are two polynomials in the same variable,
      {a, +, b}_x * {c, +, d}_x  ->  {a*c, +, a*d + b*c + b*d, +, 2*b*d}_x.  */
       
@@ -492,9 +502,10 @@ chrec_evaluate (unsigned var, tree chrec, tree n, unsigned int k)
 {
   tree arg0, arg1, binomial_n_k;
   tree type = TREE_TYPE (chrec);
+  struct loop *var_loop = get_loop (var);
 
   while (TREE_CODE (chrec) == POLYNOMIAL_CHREC
-	 && CHREC_VARIABLE (chrec) > var)
+	 && flow_loop_nested_p (var_loop, get_chrec_loop (chrec)))
     chrec = CHREC_LEFT (chrec);
 
   if (TREE_CODE (chrec) == POLYNOMIAL_CHREC
@@ -631,26 +642,32 @@ tree
 hide_evolution_in_other_loops_than_loop (tree chrec, 
 					 unsigned loop_num)
 {
+  struct loop *loop = get_loop (loop_num), *chloop;
   if (automatically_generated_chrec_p (chrec))
     return chrec;
   
   switch (TREE_CODE (chrec))
     {
     case POLYNOMIAL_CHREC:
-      if (CHREC_VARIABLE (chrec) == loop_num)
+      chloop = get_chrec_loop (chrec);
+
+      if (chloop == loop)
 	return build_polynomial_chrec 
 	  (loop_num, 
 	   hide_evolution_in_other_loops_than_loop (CHREC_LEFT (chrec), 
 						    loop_num), 
 	   CHREC_RIGHT (chrec));
       
-      else if (CHREC_VARIABLE (chrec) < loop_num)
+      else if (flow_loop_nested_p (chloop, loop))
 	/* There is no evolution in this loop.  */
 	return initial_condition (chrec);
       
       else
-	return hide_evolution_in_other_loops_than_loop (CHREC_LEFT (chrec), 
-							loop_num);
+	{
+	  gcc_assert (flow_loop_nested_p (loop, chloop));
+	  return hide_evolution_in_other_loops_than_loop (CHREC_LEFT (chrec), 
+							  loop_num);
+	}
       
     default:
       return chrec;
@@ -666,6 +683,7 @@ chrec_component_in_loop_num (tree chrec,
 			     bool right)
 {
   tree component;
+  struct loop *loop = get_loop (loop_num), *chloop;
 
   if (automatically_generated_chrec_p (chrec))
     return chrec;
@@ -673,7 +691,9 @@ chrec_component_in_loop_num (tree chrec,
   switch (TREE_CODE (chrec))
     {
     case POLYNOMIAL_CHREC:
-      if (CHREC_VARIABLE (chrec) == loop_num)
+      chloop = get_chrec_loop (chrec);
+
+      if (chloop == loop)
 	{
 	  if (right)
 	    component = CHREC_RIGHT (chrec);
@@ -693,14 +713,17 @@ chrec_component_in_loop_num (tree chrec,
 	       component);
 	}
       
-      else if (CHREC_VARIABLE (chrec) < loop_num)
+      else if (flow_loop_nested_p (chloop, loop))
 	/* There is no evolution part in this loop.  */
 	return NULL_TREE;
       
       else
-	return chrec_component_in_loop_num (CHREC_LEFT (chrec), 
-					    loop_num, 
-					    right);
+	{
+	  gcc_assert (flow_loop_nested_p (loop, chloop));
+	  return chrec_component_in_loop_num (CHREC_LEFT (chrec), 
+					      loop_num, 
+					      right);
+	}
       
      default:
       if (right)
@@ -742,10 +765,12 @@ reset_evolution_in_loop (unsigned loop_num,
 			 tree chrec, 
 			 tree new_evol)
 {
+  struct loop *loop = get_loop (loop_num);
+
   gcc_assert (chrec_type (chrec) == chrec_type (new_evol));
 
   if (TREE_CODE (chrec) == POLYNOMIAL_CHREC
-      && CHREC_VARIABLE (chrec) > loop_num)
+      && flow_loop_nested_p (loop, get_chrec_loop (chrec)))
     {
       tree left = reset_evolution_in_loop (loop_num, CHREC_LEFT (chrec),
 					   new_evol);

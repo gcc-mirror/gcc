@@ -88,7 +88,7 @@ tree_ssa_unswitch_loops (void)
   bool changed = false;
 
   /* Go through inner loops (only original ones).  */
-  FOR_EACH_LOOP (li, loop, LI_ONLY_OLD | LI_ONLY_INNERMOST)
+  FOR_EACH_LOOP (li, loop, LI_ONLY_INNERMOST)
     {
       changed |= tree_unswitch_single_loop (loop, 0);
     }
