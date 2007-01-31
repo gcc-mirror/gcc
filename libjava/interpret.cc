@@ -1297,34 +1297,34 @@ _Jv_InterpMethod::ncode ()
     {
       if (staticp)
         {
-        if (::gnu::classpath::jdwp::Jdwp::isDebugging)
-		  fun = (ffi_closure_fun)&_Jv_InterpMethod::run_synch_class_debug;
-		else
-		  fun = (ffi_closure_fun)&_Jv_InterpMethod::run_synch_class;
+	  if (JVMTI::enabled)
+	    fun = (ffi_closure_fun)&_Jv_InterpMethod::run_synch_class_debug;
+	  else
+	    fun = (ffi_closure_fun)&_Jv_InterpMethod::run_synch_class;
         }
       else
         {
-	      if (::gnu::classpath::jdwp::Jdwp::isDebugging)
-		    fun = (ffi_closure_fun)&_Jv_InterpMethod::run_synch_object_debug;
-		  else
-		  	fun = (ffi_closure_fun)&_Jv_InterpMethod::run_synch_object;
-        } 
+	  if (JVMTI::enabled)
+	    fun = (ffi_closure_fun)&_Jv_InterpMethod::run_synch_object_debug;
+	  else
+	    fun = (ffi_closure_fun)&_Jv_InterpMethod::run_synch_object;
+        }
     }
   else
     {
       if (staticp)
         {
-	      if (::gnu::classpath::jdwp::Jdwp::isDebugging)
-		    fun = (ffi_closure_fun)&_Jv_InterpMethod::run_class_debug;
-		  else
-		    fun = (ffi_closure_fun)&_Jv_InterpMethod::run_class;
+	  if (JVMTI::enabled)
+	    fun = (ffi_closure_fun)&_Jv_InterpMethod::run_class_debug;
+	  else
+	    fun = (ffi_closure_fun)&_Jv_InterpMethod::run_class;
         }
       else
         {
-	      if (::gnu::classpath::jdwp::Jdwp::isDebugging)
-		    fun = (ffi_closure_fun)&_Jv_InterpMethod::run_normal_debug;
-		  else
-		    fun = (ffi_closure_fun)&_Jv_InterpMethod::run_normal;
+	  if (JVMTI::enabled)
+	    fun = (ffi_closure_fun)&_Jv_InterpMethod::run_normal_debug;
+	  else
+	    fun = (ffi_closure_fun)&_Jv_InterpMethod::run_normal;
         }
     }
 
@@ -1680,7 +1680,12 @@ void
 _Jv_CompileMethod (_Jv_InterpMethod* method)
 {
   if (method->prepared == NULL)
-    _Jv_InterpMethod::run (NULL, NULL, method);
+    {
+      if (JVMTI::enabled)
+	_Jv_InterpMethod::run_debug (NULL, NULL, method);
+      else
+      _Jv_InterpMethod::run (NULL, NULL, method);
+    }
 }
 #endif // DIRECT_THREADED
 
