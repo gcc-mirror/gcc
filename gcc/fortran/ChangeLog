@@ -1,3 +1,7 @@
+2007-01-31  Kazu Hirata  <kazu@codesourcery.com>
+
+	* simplify.c, trans-array.c: Fix comment typos.
+
 2007-01-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* invoke.texi (Code Gen Options): Fix abbreviation typo.
