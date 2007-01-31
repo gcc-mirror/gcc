@@ -1,5 +1,5 @@
 /* Header file for the ARM EABI unwinder
-   Copyright (C) 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007  Free Software Foundation, Inc.
    Contributed by Paul Brook
 
    This file is free software; you can redistribute it and/or modify it
@@ -263,6 +263,13 @@ extern "C" {
      landing pad uses the same instruction set as the call site.  */
 #define _Unwind_SetIP(context, val) \
   _Unwind_SetGR (context, 15, val | (_Unwind_GetGR (context, 15) & 1))
+
+/* leb128 type numbers have a potentially unlimited size.
+   The target of the following definitions of _sleb128_t and _uleb128_t
+   is to have efficient data types large enough to hold the leb128 type
+   numbers used in the unwind code.  */
+typedef long _sleb128_t;
+typedef unsigned long _uleb128_t;
 
 #ifdef __cplusplus
 }   /* extern "C" */

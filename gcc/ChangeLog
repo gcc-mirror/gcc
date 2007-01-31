@@ -1,3 +1,7 @@
+2007-01-31  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcc/config/arm/unwind-arm.h (_sleb128_t, _uleb128_t): New.
+
 2007-01-30  Eric Christopher  <echristo@apple.com>
 
 	* config.gcc: Add geode.
