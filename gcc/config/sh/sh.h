@@ -1738,8 +1738,6 @@ extern enum reg_class reg_class_from_letter[];
       && (GET_CODE (X) == LABEL_REF || PIC_DIRECT_ADDR_P (X)))		\
    ? TARGET_REGS							\
    : SECONDARY_INOUT_RELOAD_CLASS((CLASS),(MODE),(X), NO_REGS))
-#else
-#define HAVE_SECONDARY_RELOADS
 #endif
 
 /* Return the maximum number of consecutive registers
