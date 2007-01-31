@@ -4198,6 +4198,18 @@ else
 echo "${ECHO_T}no" >&6
 fi
 
+
+# We need a jar that supports -@.  This is a GNU extension.
+if test "$JAR" != no; then
+   rm -f config-test.jar
+   echo $srcdir/configure.ac | $JAR -cf@ config-test.jar
+   if test -f config-test.jar; then
+     rm -f config-test.jar
+   else
+     JAR=no
+   fi
+fi
+
 # Prefer the jar we found, but fall back to our jar script.
 if test "$JAR" = no; then
   if test "$ZIP" = no; then
@@ -6012,7 +6024,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 6015 "configure"' > conftest.$ac_ext
+  echo '#line 6027 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -7054,7 +7066,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   :
 else
   cat > conftest.$ac_ext << EOF
-#line 7057 "configure"
+#line 7069 "configure"
 struct S { ~S(); };
 void bar();
 void foo()

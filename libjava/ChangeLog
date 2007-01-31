@@ -1,5 +1,11 @@
 2007-01-31  Tom Tromey  <tromey@redhat.com>
 
+	* configure, Makefile.in: Rebuilt.
+	* configure.ac (JAR): Check for -@ feature.
+	* Makefile.am (libgcj-$(gcc_version).jar): Use find -prune.
+
+2007-01-31  Tom Tromey  <tromey@redhat.com>
+
 	PR libgcj/30606:
 	* configure, include/config.h.in: Rebuilt.
 	* configure.ac: Check for magic_t in magic.h.
