@@ -1,3 +1,10 @@
+2007-01-31  Kazu Hirata  <kazu@codesourcery.com>
+
+	* cgraphunit.c, config/arm/arm.c, config/m68k/m68k.c,
+	ipa-inline.c, tree-profile.c, tree-ssa-live.c,
+	tree-ssa-math-opts.c, tree-ssanames.c, tree-vect-analyze.c,
+	value-prof.c: Fix comment typos.
+
 2007-01-30  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/24745

@@ -504,7 +504,7 @@ remove_unused_locals (void)
 
   /* Remove unused variables from REFERENCED_VARs.  As an special exception
      keep the variables that are believed to be aliased.  Those can't be
-     easilly removed from the alias sets and and operand caches.
+     easily removed from the alias sets and and operand caches.
      They will be removed shortly after next may_alias pass is performed.  */
   FOR_EACH_REFERENCED_VAR (t, rvi)
     if (!is_global_var (t)

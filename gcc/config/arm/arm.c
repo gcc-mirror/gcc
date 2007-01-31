@@ -7710,7 +7710,7 @@ get_jump_table_size (rtx insn)
       switch (modesize)
 	{
 	case 1:
-	  /* Round up size of TBB table to a haflword boundary.  */
+	  /* Round up size  of TBB table to a halfword boundary.  */
 	  size = (size + 1) & ~(HOST_WIDE_INT)1;
 	  break;
 	case 2:

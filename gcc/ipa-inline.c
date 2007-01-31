@@ -91,11 +91,11 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
      maintained by pass manager).  The functions after inlining are early
      optimized so the early inliner sees unoptimized function itself, but
      all considered callees are already optimized allowing it to unfold
-     abstraction penalty on C++ effectivly and cheaply.
+     abstraction penalty on C++ effectively and cheaply.
 
    pass_ipa_early_inlining
 
-     With profiling, the early inlining is also neccesary to reduce
+     With profiling, the early inlining is also necessary to reduce
      instrumentation costs on program with high abstraction penalty (doing
      many redundant calls).  This can't happen in parallel with early
      optimization and profile instrumentation, because we would end up
@@ -751,7 +751,7 @@ cgraph_set_inline_failed (struct cgraph_node *node, const char *reason)
       e->inline_failed = reason;
 }
 
-/* Given whole compilation unit esitmate of INSNS, compute how large we can
+/* Given whole compilation unit estimate of INSNS, compute how large we can
    allow the unit to grow.  */
 static int
 compute_max_insns (int insns)
@@ -1043,7 +1043,7 @@ cgraph_decide_inlining (void)
 		     e->caller->global.insns);
 	}
       /* Inlining self recursive function might introduce new calls to
-	 thsemselves we didn't see in the loop above.  Fill in the proper
+	 themselves we didn't see in the loop above.  Fill in the proper
 	 reason why inline failed.  */
       for (e = node->callers; e; e = e->next_caller)
 	if (e->inline_failed)
@@ -1126,7 +1126,7 @@ cgraph_decide_inlining (void)
    recursive inlining, but as an special case, we want to try harder inline
    ALWAYS_INLINE functions: consider callgraph a->b->c->b, with a being
    flatten, b being always inline.  Flattening 'a' will collapse
-   a->b->c before hitting cycle.  To accomondate always inline, we however
+   a->b->c before hitting cycle.  To accommodate always inline, we however
    need to inline a->b->c->b.
 
    So after hitting cycle first time, we switch into ALWAYS_INLINE mode and
@@ -1145,7 +1145,7 @@ try_inline (struct cgraph_edge *e, enum inlining_mode mode, int depth)
 	 mode yet.  and the function in question is always_inline.  */
       if (always_inline && mode != INLINE_ALWAYS_INLINE)
 	mode = INLINE_ALWAYS_INLINE;
-      /* Otheriwse it is time to give up.  */
+      /* Otherwise it is time to give up.  */
       else
 	{
 	  if (dump_file)

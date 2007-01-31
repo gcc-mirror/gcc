@@ -164,7 +164,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 		 arguments (e.g. demotion, promotion), vectype will be reset 
 		 appropriately (later).  Note that we have to visit the smallest 
 		 datatype in this function, because that determines the VF.  
-		 If the samallest datatype in the loop is present only as the 
+		 If the smallest datatype in the loop is present only as the 
 		 rhs of a promotion operation - we'd miss it here.
 		 However, in such a case, that a variable of this datatype
 		 does not appear in the lhs anywhere in the loop, it shouldn't
@@ -1752,7 +1752,7 @@ vect_analyze_data_ref_access (struct data_reference *dr)
                   return false; 
                 }
 
-              /* Check that there is no load-store dependecies for this loads 
+              /* Check that there is no load-store dependencies for this loads 
                  to prevent a case of load-store-load to the same location.  */
               if (DR_GROUP_READ_WRITE_DEPENDENCE (vinfo_for_stmt (next))
                   || DR_GROUP_READ_WRITE_DEPENDENCE (vinfo_for_stmt (prev)))

@@ -1957,7 +1957,7 @@ m68k_rtx_costs (rtx x, int code, int outer_code, int *total)
     }
 }
 
-/* Return an instruction to move CONST_INT OPERANDS[1] into data regsiter
+/* Return an instruction to move CONST_INT OPERANDS[1] into data register
    OPERANDS[0].  */
 
 static const char *
@@ -2838,7 +2838,7 @@ notice_update_cc (rtx exp, rtx insn)
 	 codes.  Normal moves _do_ set the condition codes, but not in
 	 a way that is appropriate for comparison with 0, because -0.0
 	 would be treated as a negative nonzero number.  Note that it
-	 isn't appropriate to conditionalize this restiction on
+	 isn't appropriate to conditionalize this restriction on
 	 HONOR_SIGNED_ZEROS because that macro merely indicates whether
 	 we care about the difference between -0.0 and +0.0.  */
       else if (!FP_REG_P (SET_DEST (exp))

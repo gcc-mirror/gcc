@@ -64,7 +64,7 @@ static GTY(()) tree ptr_void;
 
 /* Add code:
    static gcov*	__gcov_indirect_call_counters; // pointer to actual counter
-   static void*	__gcov_indirect_call_callee; // actual callie addres
+   static void*	__gcov_indirect_call_callee; // actual callee address
 */
 static void
 tree_init_ic_make_global_vars (void)
@@ -269,7 +269,7 @@ tree_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned base)
 
 /* Output instructions as GIMPLE trees for code to find the most
    common called function in indirect call.  
-   VALUE is the call expression whose indirect callie is profiled.
+   VALUE is the call expression whose indirect callee is profiled.
    TAG is the tag of the section for counters, BASE is offset of the
    counter position.  */
 
@@ -308,7 +308,7 @@ tree_gen_ic_profiler (histogram_value value, unsigned tag, unsigned base)
 
 /* Output instructions as GIMPLE trees for code to find the most
    common called function in indirect call. Insert instructions at the
-   begining of every possible called function.
+   beginning of every possible called function.
   */
 
 static void
