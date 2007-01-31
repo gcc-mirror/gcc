@@ -1,3 +1,8 @@
+2007-01-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/torture/builtin-math-2.c: Add sqrt cases.
+	* gcc.dg/torture/builtin-math-3.c: Likewise.
+
 2007-01-31  Dirk Mueller  <dmueller@suse.de>
 
 	gcc.dg/Wparentheses-2.c: Update and add new tests.

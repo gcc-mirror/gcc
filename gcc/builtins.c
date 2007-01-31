@@ -7200,22 +7200,15 @@ fold_builtin_sqrt (tree arglist, tree type)
 
   enum built_in_function fcode;
   tree arg = TREE_VALUE (arglist);
-
+  tree res;
+  
   if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
     return NULL_TREE;
 
-  /* Optimize sqrt of constant value.  */
-  if (TREE_CODE (arg) == REAL_CST
-      && !TREE_OVERFLOW (arg))
-    {
-      REAL_VALUE_TYPE r, x;
-
-      x = TREE_REAL_CST (arg);
-      if (real_sqrt (&r, TYPE_MODE (type), &x)
-	  || (!flag_trapping_math && !flag_errno_math))
-	return build_real (type, r);
-    }
-
+  /* Calculate the result when the argument is a constant.  */
+  if ((res = do_mpfr_arg1 (arg, type, mpfr_sqrt, &dconst0, NULL, true)))
+    return res;
+  
   /* Optimize sqrt(expN(x)) = expN(x*0.5).  */
   fcode = builtin_mathfn_code (arg);
   if (flag_unsafe_math_optimizations && BUILTIN_EXPONENT_P (fcode))

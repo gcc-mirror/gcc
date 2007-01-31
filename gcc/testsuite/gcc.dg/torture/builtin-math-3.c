@@ -363,5 +363,12 @@ int main (void)
   if (__builtin_fmal(0.5L,__LDBL_MIN__, __LDBL_MIN__) != __LDBL_MIN__*1.5L)
     link_error (__LINE__);
 
+  TESTIT (sqrt, -0.0, -0.0); /* sqrt(-0) == -0 */
+  TESTIT (sqrt, 0.0, 0.0); /* sqrt(0) == 0 */
+  TESTIT (sqrt, 1.0, 1.0); /* sqrt(1) == 1 */
+  TESTIT (sqrt, 4.0, 2.0); /* sqrt(4) == 2 */
+  TESTIT_R (sqrt, 1.5, 1.22, 1.23); /* sqrt(1.5) == 1.224... */
+  TESTIT_R (sqrt, 2.0, 1.41, 1.42); /* sqrt(2) == 1.414... */
+
   return 0;
 }
