@@ -1,3 +1,7 @@
+2007-01-30  Eric Christopher  <echristo@apple.com>
+
+	* config.gcc: Add geode.
+
 2007-01-31  Kazu Hirata  <kazu@codesourcery.com>
 
 	* cgraphunit.c, config/arm/arm.c, config/m68k/m68k.c,
@@ -9,7 +13,7 @@
 
 	PR c++/24745
 	* doc/invoke.texi (Wpointer-arith): Document warning.
-	
+
 2007-01-30  Janis Johnson
 
 	* doc/extend.texi (Decimal Floating Types): Remove decfloat.h from
@@ -19,7 +23,7 @@
 
 	PR c++/30601
 	* doc/invoke.texi (-Wreturn-type): Update description to
-	match new behavior. 
+	match new behavior.
 
 2007-01-30  Richard Sandiford  <richard@codesourcery.com>
 
@@ -94,7 +98,7 @@
 	(MTAG_ALIASES): New macro.
 	* tree-ssa-alias.c (alias_bitmap_obstack): New variable.
 	(add_may_alias): Remove pointer-set. Update for may_aliases being
-	a bitmap. 
+	a bitmap.
 	(mark_aliases_call_clobbered): Update for may_aliases being a
 	bitmap.
 	(compute_tag_properties): Ditto.
@@ -125,7 +129,7 @@
 	being a bitmap.
 	* tree-ssa-operands.c (add_virtual_operand): Update for
 	may_aliases being a bitmap.
-	
+
 2007-01-29  Daniel Berlin  <dberlin@dberlin.org>
 
 	PR tree-optimization/30630
@@ -441,15 +445,15 @@
 
 2007-01-25  Razya Ladelsky  <razya@il.ibm.com>
 
-	* ipa-cp.c (ipcp_insert_stage, ipcp_driver): Support for SSA. 
-	(ipcp_driver): Change to static definition. 
+	* ipa-cp.c (ipcp_insert_stage, ipcp_driver): Support for SSA.
+	(ipcp_driver): Change to static definition.
 	Add dumping of the ifunctions.
 	(constant_val_insert): Remove unused parameter. Support for SSA.
 	(ipcp_propagate_const): Support for SSA.
 	(ipcp_profile_bb_print): Print only analyzed nodes.
-	(ipcp_replace_map_create): Remove support for Fortran constant 
+	(ipcp_replace_map_create): Remove support for Fortran constant
 	for now.
-	* ipa-prop.c (ipa_method_modify_stmt, 
+	* ipa-prop.c (ipa_method_modify_stmt,
 	ipa_callsite_compute_param): Support for SSA.
 	* ipa-prop.h (ipcp_driver): Remove declaration.
 	(IS_VALID_TREE_MAP_INDEX): Add define.
@@ -534,7 +538,7 @@
 
 2007-01-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* unwind-dw2-fde.c (get_cie_encoding): Replaced _Unwind_Word with 
+	* unwind-dw2-fde.c (get_cie_encoding): Replaced _Unwind_Word with
 	_uleb128_t and _Unwind_SWord with _sleb128_t.
 	* unwind-dw2.c (extract_cie_info, execute_stack_op, execute_cfa_program,
 	uw_frame_state_for, uw_update_context_1): Likewise.
@@ -741,17 +745,17 @@
 
 2007-01-21  Ira Rosen  <irar@il.ibm.com>
 
-	* tree-vectorizer.h (struct _stmt_vec_info): Add new field 
+	* tree-vectorizer.h (struct _stmt_vec_info): Add new field
 	read_write_dep and macros for its access.
 	* tree-vectorizer.c (new_stmt_vec_info): Initialize the new field.
-	* tree-vect-analyze.c (vect_analyze_data_ref_dependence): Remove 
+	* tree-vect-analyze.c (vect_analyze_data_ref_dependence): Remove
 	argument, call vect_check_interleaving for every independent pair of
 	data-refs. Mark loads that access the same memory location as a store
 	in the loop.
 	(vect_check_dependences): Remove.
-	(vect_analyze_data_ref_dependences): Remove  vect_check_dependences 
+	(vect_analyze_data_ref_dependences): Remove  vect_check_dependences
 	call, fix the call to vect_analyze_data_ref_dependence.
-	(vect_analyze_data_ref_access): For statements that access the same 
+	(vect_analyze_data_ref_access): For statements that access the same
 	data-ref, check that they are not stores; for loads, check that there
 	is no store that access the same location.
 
@@ -876,7 +880,7 @@
 	__gcov_one_value_profiler_body and calls it
 
 2007-01-19  Basile Starynkevitch  <basile@starynkevitch.net>
-	
+
 	* doc/gty.texi (Options): Document the mark_hook option to GTY.
         * gengtype.c (write_types_data, write_func_for_structure,
         write_types, ggc_wtd, pch_wtd): Add skip_hooks to
@@ -897,7 +901,7 @@
 	PR c++/17947
 	* toplev.c (warn_deprecated_use): Use %qD instead of %qs to print
 	the name of the declared identifier.
-		
+
 2007-01-19  Dirk Mueller  <dmueller@suse.de>
 
 	* config/i386.h (CONDITIONAL_REGISTER_USAGE): Store
@@ -1087,7 +1091,7 @@
 	(merge_node_constraints): This. Also fix bug in handling of
 	offseted copy constraints.
 	(clear_edges_for_node): No longer need to deal with preds at all,
-	or removing associated preds/succs. 
+	or removing associated preds/succs.
 	(merge_graph_nodes): Deal with indirect_cycles.
 	Don't deal with predecessors.
 	(add_implicit_graph_edge): New function.
@@ -1535,18 +1539,18 @@
 	(AVR_HAVE_MUL): ... new.
 	(avr_enhanced_p): Rename to ...
 	(avr_have_mul_p): ... new.
-	(TARGET_CPU_CPP_BUILTINS): Use 'avr_have_mul_p' instead of 
+	(TARGET_CPU_CPP_BUILTINS): Use 'avr_have_mul_p' instead of
 	'avr_enhanced_p' for "__AVR_ENHANCED__". Define "__AVR_HAVE_MUL__".
 	* config/avr/avr.c (avr_enhanced_p): Rename to ...
 	(avr_have_mul_p): ... new.
 	(base_arch_s): Rename 'enhanced' to 'have_mul'.
 	(avr_override_options): Use 'avr_have_mul_p' and 'have_mul' instead of
 	'avr_enhanced_p' and 'enhanced'.
-	(ashlhi3_out, ashrhi3_out, lshrhi3_out, avr_rtx_costs): Use 
+	(ashlhi3_out, ashrhi3_out, lshrhi3_out, avr_rtx_costs): Use
 	AVR_HAVE_MUL instead of AVR_ENHANCED.
 	* avr.md (*tablejump_enh): Use AVR_HAVE_LPMX instead of AVR_ENHANCED.
-	(mulqi3, *mulqi3_enh, *mulqi3_call, mulqihi3, umulqihi3, mulhi3, 
-	*mulhi3_enh, *mulhi3_call, mulsi3, *mulsi3_call): Use AVR_HAVE_MUL 
+	(mulqi3, *mulqi3_enh, *mulqi3_call, mulqihi3, umulqihi3, mulhi3,
+	*mulhi3_enh, *mulhi3_call, mulsi3, *mulsi3_call): Use AVR_HAVE_MUL
 	instead of AVR_ENHANCED.
 	(*tablejump_enh): Use AVR_HAVE_LPMX instead of AVR_ENHANCED.
 	* libgcc.S: Use __AVR_HAVE_MUL__ instead of __AVR_ENHANCED__.
