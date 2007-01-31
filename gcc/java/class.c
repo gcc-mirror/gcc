@@ -1671,7 +1671,7 @@ make_class_data (tree type)
   /* gcj sorts fields so that static fields come first, followed by
      instance fields.  Unfortunately, by the time this takes place we
      have already generated the reflection_data for this class, and
-     that data contians indexes into the fields.  So, we generate a
+     that data contains indexes into the fields.  So, we generate a
      permutation that maps each original field index to its final
      position.  Then we pass this permutation to
      rewrite_reflection_indexes(), which fixes up the reflection
