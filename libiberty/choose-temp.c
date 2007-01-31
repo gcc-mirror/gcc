@@ -46,7 +46,7 @@ find one.  The current directory is chosen if all else fails so the
 program is exited if a temporary directory can't be found (@code{mktemp}
 fails).  The buffer for the result is obtained with @code{xmalloc}.
 
-This function is provided for backwards compatability only.  Its use is
+This function is provided for backwards compatibility only.  Its use is
 not recommended.
 
 @end deftypefn
