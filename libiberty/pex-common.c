@@ -62,6 +62,7 @@ pex_init_common (int flags, const char *pname, const char *tempbase,
   obj->next_input = STDIN_FILE_NO;
   obj->next_input_name = NULL;
   obj->next_input_name_allocated = 0;
+  obj->stderr_pipe = -1;
   obj->count = 0;
   obj->children = NULL;
   obj->status = NULL;
@@ -69,6 +70,7 @@ pex_init_common (int flags, const char *pname, const char *tempbase,
   obj->number_waited = 0;
   obj->input_file = NULL;
   obj->read_output = NULL;
+  obj->read_err = NULL;
   obj->remove_count = 0;
   obj->remove = NULL;
   obj->funcs = funcs;
@@ -282,14 +284,43 @@ pex_run_in_environment (struct pex_obj *obj, int flags, const char *executable,
 
   /* Set ERRDES.  */
 
+  if (errname != NULL && (flags & PEX_STDERR_TO_PIPE) != 0)
+    {
+      *err = 0;
+      errmsg = "both ERRNAME and PEX_STDERR_TO_PIPE specified.";
+      goto error_exit;
+    }
+
+  if (obj->stderr_pipe != -1)
+    {
+      *err = 0;
+      errmsg = "PEX_STDERR_TO_PIPE used in the middle of pipeline";
+      goto error_exit;
+    }
+
   if (errname == NULL)
-    errdes = STDERR_FILE_NO;
+    {
+      if (flags & PEX_STDERR_TO_PIPE)
+	{
+	  if (obj->funcs->pipe (obj, p, (flags & PEX_BINARY_ERROR) != 0) < 0)
+	    {
+	      *err = errno;
+	      errmsg = "pipe";
+	      goto error_exit;
+	    }
+	  
+	  errdes = p[WRITE_PORT];
+	  obj->stderr_pipe = p[READ_PORT];	  
+	}
+      else
+	{
+	  errdes = STDERR_FILE_NO;
+	}
+    }
   else
     {
-      /* We assume that stderr is in text mode--it certainly shouldn't
-	 be controlled by PEX_BINARY_OUTPUT.  If necessary, we can add
-	 a PEX_BINARY_STDERR flag.  */
-      errdes = obj->funcs->open_write (obj, errname, 0);
+      errdes = obj->funcs->open_write (obj, errname, 
+				       (flags & PEX_BINARY_ERROR) != 0);
       if (errdes < 0)
 	{
 	  *err = errno;
@@ -465,6 +496,18 @@ pex_read_output (struct pex_obj *obj, int binary)
   return obj->read_output;
 }
 
+FILE *
+pex_read_err (struct pex_obj *obj, int binary)
+{
+  int o;
+  
+  o = obj->stderr_pipe;
+  if (o < 0 || o == STDIN_FILE_NO)
+    return NULL;
+  obj->read_err = obj->funcs->fdopenr (obj, o, binary);
+  return obj->read_err;    
+}
+
 /* Get the exit status and, if requested, the resource time for all
    the child processes.  Return 0 on failure, 1 on success.  */
 
@@ -578,6 +621,8 @@ pex_free (struct pex_obj *obj)
     free (obj->time);
   if (obj->read_output != NULL)
     fclose (obj->read_output);
+  if (obj->read_err != NULL)
+    fclose (obj->read_err);
 
   if (obj->remove_count > 0)
     {
