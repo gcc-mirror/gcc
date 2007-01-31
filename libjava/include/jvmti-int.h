@@ -37,6 +37,10 @@ executable file might be covered by the GNU General Public License. */
    False means no JVMTI environment requested that event type. */
 namespace JVMTI
 {
+  // Is JVMTI enabled? (i.e., any jvmtiEnv created?)
+  extern bool enabled;
+
+  // Event notifications
   extern bool VMInit;
   extern bool VMDeath;
   extern bool ThreadStart;

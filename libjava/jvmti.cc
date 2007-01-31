@@ -44,6 +44,10 @@ static void check_enabled_event (jvmtiEvent);
 
 namespace JVMTI
 {
+  // Is JVMTI enabled? (i.e., any jvmtiEnv created?)
+  bool enabled;
+
+  // Event notifications
   bool VMInit = false;
   bool VMDeath = false;
   bool ThreadStart = false;
@@ -1754,6 +1758,10 @@ _Jv_GetJVMTIEnv (void)
       }
   }
 
+  /* Mark JVMTI active. This is used to force the interpreter
+     to use either debugging or non-debugging code. Once JVMTI
+     has been enabled, the non-debug interpreter cannot be used. */
+  JVMTI::enabled = true;
   return env;
 }
 

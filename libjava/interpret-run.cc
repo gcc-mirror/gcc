@@ -248,7 +248,27 @@ details.  */
 
 #ifdef DIRECT_THREADED
 
+#ifdef DEBUG
+#undef NEXT_INSN
+#define NEXT_INSN							\
+  do									\
+    {									\
+      if (JVMTI_REQUESTED_EVENT (SingleStep))				\
+	{								\
+	  JNIEnv *env = _Jv_GetCurrentJNIEnv ();			\
+	  jmethodID method = meth->self;				\
+	  jlocation loc = meth->insn_index (pc);			\
+	  _Jv_JVMTI_PostEvent (JVMTI_EVENT_SINGLE_STEP, thread,		\
+			       env, method, loc);			\
+	}								\
+      goto *((pc++)->insn);						\
+    }									\
+  while (0)
+#else
+#undef NEXT_INSN
 #define NEXT_INSN goto *((pc++)->insn)
+#endif
+
 #define INTVAL() ((pc++)->int_val)
 #define AVAL() ((pc++)->datum)
 
@@ -281,7 +301,22 @@ details.  */
 
 #else
 
+#ifdef DEBUG
+#define NEXT_INSN							\
+  do									\
+    {									\
+      if (JVMTI_REQUESTED_EVENT (SingleStep))				\
+	{								\
+	  JNIEnv *env = _Jv_GetCurrentJNIEnv ();			\
+	  jmethodID method = meth->self;				\
+	  jlocation loc = meth->insn_index (pc);			\
+	  _Jv_JVMTI_PostEvent (JVMTI_EVENT_SINGLE_STEP, thread,		\
+			       env, method, loc);			\
+	}								\
+      goto *(insn_target[*pc++])
+#else
 #define NEXT_INSN goto *(insn_target[*pc++])
+#endif
 
 #define GET1S() get1s (pc++)
 #define GET2S() (pc += 2, get2s (pc- 2))
