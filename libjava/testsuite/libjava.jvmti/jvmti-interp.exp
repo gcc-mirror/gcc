@@ -112,9 +112,16 @@ proc gij_jvmti_test_one {file} {
           # directory of it to the cxxflaglist.
           lappend cxxflaglist "-L$cxxldlibflags"
       }
-	
-      lappend cxxflaglist "-lstdc++"
-
+      # If you're building the compiler with --prefix set to a place
+      # where it's not yet installed, then the linker won't be able to
+      # find the libgcc used by libgcj.dylib/libstdc++.dylib. We could pass
+      # the -dylib_file option, but that's complicated, and it's much easier
+      # to just make the linker find libgcc using -L options.
+      if { [istarget "*-*-darwin*"] } {
+	  lappend cxxflaglist "-shared-libgcc -lstdc++"
+      } else {
+	  lappend cxxflaglist "-lstdc++"
+      }
       set cxxflags [join $cxxflaglist]
   }
 

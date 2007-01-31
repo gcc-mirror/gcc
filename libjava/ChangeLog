@@ -1,3 +1,8 @@
+2007-01-31  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* testsuite/libjava.jvmti/jvmti-interp.exp (gij_jvmti_test_one): Add
+	-shared-libgcc to the cxxflaglist for Darwin.
+
 2007-01-31  Tom Tromey  <tromey@redhat.com>
 
 	* scripts.am, Makefile.in: Rebuilt.
