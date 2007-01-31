@@ -13,7 +13,7 @@ details.  */
 #include <java/lang/UnsupportedOperationException.h>
 #include <stdio.h>
 
-#if defined (HAVE_MAGIC_H) && defined (USE_LTDL)
+#if defined (HAVE_MAGIC_T) && defined (HAVE_MAGIC_H) && defined (USE_LTDL)
 
 #include <magic.h>
 #include <ltdl.h>
@@ -26,12 +26,12 @@ static void (*p_magic_close)(magic_t cookie);
 static const char * (*p_magic_buffer) (magic_t cookie, const void *buffer,
 				       size_t length);
 
-#endif /* HAVE_MAGIC_H && defined (USE_LTDL) */
+#endif /* HAVE_MAGIC_T && HAVE_MAGIC_H && defined (USE_LTDL) */
 
 void
 java::net::VMURLConnection::init ()
 {
-#if defined (HAVE_MAGIC_H) && defined (USE_LTDL)
+#if defined (HAVE_MAGIC_T) && defined (HAVE_MAGIC_H) && defined (USE_LTDL)
   lt_dlhandle handle = lt_dlopenext ("libmagic.so");
   if (!handle)
     return;
@@ -57,14 +57,14 @@ java::net::VMURLConnection::init ()
       p_magic_close (cookie);
       cookie = (magic_t) NULL;
     }
-#endif /* HAVE_MAGIC_H  && defined (USE_LTDL) */
+#endif /* HAVE_MAGIC_T && HAVE_MAGIC_H  && defined (USE_LTDL) */
 }
 
 ::java::lang::String *
 java::net::VMURLConnection::guessContentTypeFromBuffer (jbyteArray bytes,
 							jint valid)
 {
-#if defined (HAVE_MAGIC_H) && defined (USE_LTDL)
+#if defined (HAVE_MAGIC_T) && defined (HAVE_MAGIC_H) && defined (USE_LTDL)
   const char *result;
 
   if (cookie == (magic_t) NULL)
@@ -77,5 +77,5 @@ java::net::VMURLConnection::guessContentTypeFromBuffer (jbyteArray bytes,
   return _Jv_NewStringUTF (result);
 #else
   return NULL;
-#endif /* HAVE_MAGIC_H  && defined (USE_LTDL) */
+#endif /* HAVE_MAGIC_T && HAVE_MAGIC_H  && defined (USE_LTDL) */
 }

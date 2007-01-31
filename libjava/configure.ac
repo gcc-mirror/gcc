@@ -1383,6 +1383,11 @@ AC_CHECK_HEADERS(inttypes.h, [
 AC_HEADER_SYS_WAIT
 
 AC_CHECK_TYPE([ssize_t], [int])
+AC_CHECK_TYPE([magic_t], [
+    AC_DEFINE(HAVE_MAGIC_T, 1, [Define if magic.h declares magic_t])], [], [
+#ifdef HAVE_MAGIC_H
+#include <magic.h>
+#endif])
 
 AC_MSG_CHECKING([for in_addr_t])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
