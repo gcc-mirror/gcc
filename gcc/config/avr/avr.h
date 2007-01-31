@@ -923,4 +923,6 @@ mmcu=*:-mmcu=%*}"
 
 #define DWARF2_DEBUGGING_INFO 1
 
+#define DWARF2_ADDR_SIZE 4
+
 #define OBJECT_FORMAT_ELF
