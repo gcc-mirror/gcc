@@ -1,3 +1,10 @@
+2007-01-31  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	Backport from trunk
+	PR fortran/30452
+	* scanner.c(next_char):  Cast next character to unsigned
+	to avoid confusion with error return codes.
+
 2007-01-30  Tobias Burnus  <burnus@net-b.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 
