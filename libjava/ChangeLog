@@ -1,3 +1,10 @@
+2007-01-31  Tom Tromey  <tromey@redhat.com>
+
+	* scripts.am, Makefile.in: Rebuilt.
+	* scripts/makemake.tcl (gnu/javax/swing/text/html/parser): Build
+	as 'ordinary'.
+	(emit_ordinary_rule): New proc.
+
 2007-01-31  Keith Seitz  <keiths@redhat.com>
 
 	* testsuite/libjava.jvmti/getmethodname.h: New file.

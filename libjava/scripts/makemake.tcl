@@ -65,6 +65,14 @@ set package_map(org/omg) bc
 set package_map(gnu/CORBA) bc
 set package_map(gnu/javax/rmi) bc
 
+# parser/HTML_401F.class is really big, and there have been complaints
+# about this package requiring too much memory to build.  So, we
+# compile it as separate objects.  But, we're careful to compile the
+# sub-packages as packages.
+set package_map(gnu/javax/swing/text/html/parser) ordinary
+set package_map(gnu/javax/swing/text/html/parser/models) package
+set package_map(gnu/javax/swing/text/html/parser/support) package
+
 # More special cases.  These end up in their own library.
 # Note that if we BC-compile AWT we must update these as well.
 set package_map(gnu/gcj/xlib) package
@@ -297,6 +305,32 @@ proc emit_package_rule {package} {
   }
 }
 
+# Emit a rule to build a package full of 'ordinary' files, that is,
+# one .o for each .java.
+proc emit_ordinary_rule {package} {
+  global name_map package_files
+
+  foreach file $name_map($package) {
+    # Strip off the '.java'.
+    set root [file rootname $file]
+
+    # Look for all included .class files.  Assumes that we don't have
+    # multiple top-level classes in a .java file.
+    set lname $root.list
+    set dname $root.deps
+
+    puts "$lname: classpath/$file"
+    puts "\t@\$(mkinstalldirs) \$(dir \$@)"
+    puts "\techo \$(srcdir)/classpath/lib/${root}*.class> $lname"
+    puts ""
+    puts "-include $dname"
+    puts ""
+    puts ""
+
+    lappend package_files $lname
+  }
+}
+
 # Emit a package-like rule for a platform-specific Process
 # implementation.
 proc emit_process_package_rule {platform} {
@@ -419,7 +453,7 @@ foreach package [lsort [array names package_map]] {
   if {$package_map($package) == "bc"} {
     emit_bc_rule $package
   } elseif {$package_map($package) == "ordinary"} {
-    # Nothing in particular to do here.
+    emit_ordinary_rule $package
   } elseif {$package_map($package) == "package"} {
     emit_package_rule $package
   } else {
