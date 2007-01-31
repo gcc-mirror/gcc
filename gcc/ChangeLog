@@ -1,3 +1,26 @@
+2007-01-31  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* cfgloop.h: Include vec-prim.h.
+	(enum li_flags): Remove LI_ONLY_OLD.
+	(loop_iterator): Changed.
+	(fel_next, fel_init): Iterate over loop tree.
+	(FOR_EACH_LOOP_BREAK): New macro.
+	* loop-unswitch.c (unswitch_loops): Do not pass LI_ONLY_OLD to
+	FOR_EACH_LOOP.
+	* tree-ssa-loop-unswitch.c (tree_ssa_unswitch_loops): Ditto.
+	* modulo-sched.c (sms_schedule): Ditto.
+	* tree-vectorizer.c (vectorize_loops): Ditto.
+	* doc/loop.texi: Update information on loop numbering and behavior of
+	FOR_EACH_LOOP wrto new loops.
+	* tree-scalar-evolution.c (compute_overall_effect_of_inner_loop,
+	add_to_evolution_1): Test nestedness of loops instead of comparing
+	their numbers.
+	* tree-chrec.c (chrec_fold_plus_poly_poly,
+	chrec_fold_multiply_poly_poly, chrec_evaluate,
+	hide_evolution_in_other_loops_than_loop, chrec_component_in_loop_num,
+	reset_evolution_in_loop): Ditto.
+	* Makefile.in (CFGLOOP_H): Add vecprim.h dependency.
+
 2007-01-31  Dirk Mueller  <dmueller@suse.de>
 
 	* c-common.c (warn_about_parentheses): Separate warning about

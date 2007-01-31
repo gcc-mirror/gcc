@@ -1028,7 +1028,7 @@ sms_schedule (void)
   df = NULL;
 
   /* We don't want to perform SMS on new loops - created by versioning.  */
-  FOR_EACH_LOOP (li, loop, LI_ONLY_OLD)
+  FOR_EACH_LOOP (li, loop, 0)
     {
       rtx head, tail;
       rtx count_reg, count_init;

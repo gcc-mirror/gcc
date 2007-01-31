@@ -2175,7 +2175,7 @@ vectorize_loops (void)
      than all previously defined loops. This fact allows us to run 
      only over initial loops skipping newly generated ones.  */
   vect_loops_num = number_of_loops ();
-  FOR_EACH_LOOP (li, loop, LI_ONLY_OLD)
+  FOR_EACH_LOOP (li, loop, 0)
     {
       loop_vec_info loop_vinfo;
 

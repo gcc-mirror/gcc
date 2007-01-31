@@ -143,7 +143,7 @@ unswitch_loops (void)
 
   /* Go through inner loops (only original ones).  */
 
-  FOR_EACH_LOOP (li, loop, LI_ONLY_OLD | LI_ONLY_INNERMOST)
+  FOR_EACH_LOOP (li, loop, LI_ONLY_INNERMOST)
     {
       unswitch_single_loop (loop, NULL_RTX, 0);
 #ifdef ENABLE_CHECKING

@@ -25,6 +25,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "basic-block.h"
 /* For rtx_code.  */
 #include "rtl.h"
+#include "vecprim.h"
 
 /* Structure to hold decision about unrolling/peeling.  */
 enum lpt_dec
@@ -425,84 +426,127 @@ number_of_loops (void)
 
 enum li_flags
 {
-  LI_INCLUDE_ROOT = 1,	/* Include the fake root of the loop tree.  */
-  LI_FROM_INNERMOST = 2,/* Iterate over the loops in the reverse order,
-			   starting from innermost ones.  */
-  LI_ONLY_INNERMOST = 4,/* Iterate only over innermost loops.  */
-  LI_ONLY_OLD = 8	/* Do not traverse the loops created during the
-			   traversal (this is the default behavior with
-			   LI_FROM_INNERMOST).  */
+  LI_INCLUDE_ROOT = 1,		/* Include the fake root of the loop tree.  */
+  LI_FROM_INNERMOST = 2,	/* Iterate over the loops in the reverse order,
+				   starting from innermost ones.  */
+  LI_ONLY_INNERMOST = 4		/* Iterate only over innermost loops.  */
 };
 
 /* The iterator for loops.  */
 
 typedef struct
 {
-  int idx;		/* Index of the actual loop.  */
-  int end;		/* Only loops before end should be traversed.  */
+  /* The list of loops to visit.  */
+  VEC(int,heap) *to_visit;
+
+  /* The index of the actual loop.  */
+  unsigned idx;
 } loop_iterator;
 
 static inline void
-fel_next (loop_iterator *li, loop_p *loop, unsigned flags)
+fel_next (loop_iterator *li, loop_p *loop)
 {
-  if (flags & LI_FROM_INNERMOST)
+  int anum;
+
+  while (VEC_iterate (int, li->to_visit, li->idx, anum))
     {
-      li->idx--;
-      for (; li->idx > li->end; li->idx--)
-	{
-	  *loop = VEC_index (loop_p, current_loops->larray, li->idx);
-	  if (*loop
-	      && (!(flags & LI_ONLY_INNERMOST)
-		  || (*loop)->inner == NULL))
-	    return;
-	}
-    }
-  else
-    {
-      if (!(flags & LI_ONLY_OLD))
-	li->end = number_of_loops ();
       li->idx++;
-      for (; li->idx < li->end; li->idx++)
-	{
-	  *loop = VEC_index (loop_p, current_loops->larray, li->idx);
-	  if (*loop
-	      && (!(flags & LI_ONLY_INNERMOST)
-		  || (*loop)->inner == NULL))
-	    return;
-	}
+      *loop = get_loop (anum);
+      if (*loop)
+	return;
     }
 
+  VEC_free (int, heap, li->to_visit);
   *loop = NULL;
 }
 
 static inline void
 fel_init (loop_iterator *li, loop_p *loop, unsigned flags)
 {
+  struct loop *aloop;
+  unsigned i;
+  int mn;
+
+  li->idx = 0;
   if (!current_loops)
     {
-      li->idx = 0;
-      li->end = 0;
+      li->to_visit = NULL;
       *loop = NULL;
       return;
     }
 
-  if (flags & LI_FROM_INNERMOST)
+  li->to_visit = VEC_alloc (int, heap, number_of_loops ());
+  mn = (flags & LI_INCLUDE_ROOT) ? 0 : 1;
+
+  if (flags & LI_ONLY_INNERMOST)
     {
-      li->idx = number_of_loops ();
-      li->end = (flags & LI_INCLUDE_ROOT) ? -1 : 0;
+      for (i = 0; VEC_iterate (loop_p, current_loops->larray, i, aloop); i++)
+	if (aloop != NULL
+	    && aloop->inner == NULL
+	    && aloop->num >= mn)
+	  VEC_quick_push (int, li->to_visit, aloop->num);
+    }
+  else if (flags & LI_FROM_INNERMOST)
+    {
+      /* Push the loops to LI->TO_VISIT in postorder.  */
+      for (aloop = current_loops->tree_root;
+	   aloop->inner != NULL;
+	   aloop = aloop->inner)
+	continue;
+
+      while (1)
+	{
+	  if (aloop->num >= mn)
+	    VEC_quick_push (int, li->to_visit, aloop->num);
+
+	  if (aloop->next)
+	    {
+	      for (aloop = aloop->next;
+		   aloop->inner != NULL;
+		   aloop = aloop->inner)
+		continue;
+	    }
+	  else if (!aloop->outer)
+	    break;
+	  else
+	    aloop = aloop->outer;
+	}
     }
   else
     {
-      li->idx = (flags & LI_INCLUDE_ROOT) ? -1 : 0;
-      li->end = number_of_loops ();
+      /* Push the loops to LI->TO_VISIT in preorder.  */
+      aloop = current_loops->tree_root;
+      while (1)
+	{
+	  if (aloop->num >= mn)
+	    VEC_quick_push (int, li->to_visit, aloop->num);
+
+	  if (aloop->inner != NULL)
+	    aloop = aloop->inner;
+	  else
+	    {
+	      while (aloop != NULL && aloop->next == NULL)
+		aloop = aloop->outer;
+	      if (aloop == NULL)
+		break;
+	      aloop = aloop->next;
+	    }
+	}
     }
-  fel_next (li, loop, flags);
+
+  fel_next (li, loop);
 }
 
 #define FOR_EACH_LOOP(LI, LOOP, FLAGS) \
   for (fel_init (&(LI), &(LOOP), FLAGS); \
        (LOOP); \
-       fel_next (&(LI), &(LOOP), FLAGS))
+       fel_next (&(LI), &(LOOP)))
+
+#define FOR_EACH_LOOP_BREAK(LI) \
+  { \
+    VEC_free (int, heap, (LI)->to_visit); \
+    break; \
+  }
 
 /* The properties of the target.  */
 
