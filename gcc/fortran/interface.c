@@ -1417,6 +1417,54 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  return 0;
 	}
 
+      /* C1232 (R1221) For an actual argument which is an array section or
+	 an assumed-shape array, the dummy argument shall be an assumed-
+	 shape array, if the dummy argument has the VOLATILE attribute.  */
+
+      if (f->sym->attr.volatile_
+	  && a->expr->symtree->n.sym->as
+	  && a->expr->symtree->n.sym->as->type == AS_ASSUMED_SHAPE
+	  && !(f->sym->as && f->sym->as->type == AS_ASSUMED_SHAPE))
+	{
+	  if (where)
+	    gfc_error ("Assumed-shape actual argument at %L is "
+		       "incompatible with the non-assumed-shape "
+		       "dummy argument '%s' due to VOLATILE attribute",
+		       &a->expr->where,f->sym->name);
+	  return 0;
+	}
+
+      if (f->sym->attr.volatile_
+	  && a->expr->ref && a->expr->ref->u.ar.type == AR_SECTION
+	  && !(f->sym->as && f->sym->as->type == AS_ASSUMED_SHAPE))
+	{
+	  if (where)
+	    gfc_error ("Array-section actual argument at %L is "
+		       "incompatible with the non-assumed-shape "
+		       "dummy argument '%s' due to VOLATILE attribute",
+		       &a->expr->where,f->sym->name);
+	  return 0;
+	}
+
+      /* C1233 (R1221) For an actual argument which is a pointer array, the
+	 dummy argument shall be an assumed-shape or pointer array, if the
+	 dummy argument has the VOLATILE attribute.  */
+
+      if (f->sym->attr.volatile_
+	  && a->expr->symtree->n.sym->attr.pointer
+	  && a->expr->symtree->n.sym->as
+	  && !(f->sym->as
+	       && (f->sym->as->type == AS_ASSUMED_SHAPE
+		   || f->sym->attr.pointer)))
+	{
+	  if (where)
+	    gfc_error ("Pointer-array actual argument at %L requires "
+		       "an assumed-shape or pointer-array dummy "
+		       "argument '%s' due to VOLATILE attribute",
+		       &a->expr->where,f->sym->name);
+	  return 0;
+	}
+
     match:
       if (a == actual)
 	na = i;

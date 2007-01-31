@@ -4221,7 +4221,9 @@ gfc_match_volatile (void)
 
   for(;;)
     {
-      m = gfc_match_symbol (&sym, 0);
+      /* VOLATILE is special because it can be added to host-associated 
+	 symbols locally.  */
+      m = gfc_match_symbol (&sym, 1);
       switch (m)
 	{
 	case MATCH_YES:
