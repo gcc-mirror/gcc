@@ -491,3 +491,31 @@ else
   fi
 fi
 AC_SUBST($2)])
+
+
+dnl Locate a program and check that its version is acceptable.
+dnl ACX_PROG_CHECK_VER(var, name, version-switch,
+dnl                    version-extract-regexp, version-glob)
+AC_DEFUN([ACX_CHECK_PROG_VER],[
+  AC_CHECK_PROG([$1], [$2], [$2])
+  if test -n "[$]$1"; then
+    # Found it, now check the version.
+    AC_CACHE_CHECK([for modern $2],
+                   [gcc_cv_prog_$2_modern],
+                   [ac_prog_version=`eval [$]$1 $3 2>&1 |
+                                     sed -n 's/^.*patsubst([[$4]],/,\/).*$/\1/p'`
+
+                    [case $ac_prog_version in
+                      '')  gcc_cv_prog_$2_modern=no;;
+                      $5)  gcc_cv_prog_$2_modern=yes;;
+                      *)   gcc_cv_prog_$2_modern=no;;
+                    esac]
+
+                    if test $gcc_cv_prog_$2_modern = no; then
+                      $1="${CONFIG_SHELL-/bin/sh} $ac_aux_dir/missing $2"
+                    fi
+                   ])
+  else
+    gcc_cv_prog_$2_modern=no
+  fi
+])

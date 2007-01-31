@@ -1,3 +1,9 @@
+2007-01-31  Daniel Franke <franke.daniel@gmail.com>
+
+	PR libgomp/30546
+	* acx.m4 (ACX_PROG_CHECK_VER): Locate a program and check that its
+	version is acceptable.
+
 2007-01-27  Paolo Bonzini  <bonzini@gnu.org>
 
 	* depstand.m4 (ZW_CREATE_DEPDIR): Use mkinstalldirs to make
