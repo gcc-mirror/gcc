@@ -1,3 +1,9 @@
+2007-01-31  Dirk Mueller  <dmueller@suse.de>
+
+	* c-common.c (warn_about_parentheses): Separate warning about
+	un-parenthized sequence of comparison operators from the one
+	which is supposed to warn about x <= y <= z.
+
 2007-01-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	* optabs.h (enum optab_index): Add new OTI_isinf.

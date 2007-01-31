@@ -6750,12 +6750,23 @@ warn_about_parentheses (enum tree_code code, enum tree_code code_left,
 		 "suggest parentheses around comparison in operand of &");
     }
 
-  /* Similarly, check for cases like 1<=i<=10 that are probably errors.  */
-  if (TREE_CODE_CLASS (code) == tcc_comparison
-      && (TREE_CODE_CLASS (code_left) == tcc_comparison
-	  || TREE_CODE_CLASS (code_right) == tcc_comparison))
-    warning (OPT_Wparentheses, "comparisons like X<=Y<=Z do not "
-	     "have their mathematical meaning");
+  if (code == EQ_EXPR || code == NE_EXPR)
+    {
+      if (TREE_CODE_CLASS (code_left) == tcc_comparison
+          || TREE_CODE_CLASS (code_right) == tcc_comparison)
+	warning (OPT_Wparentheses,
+		 "suggest parentheses around comparison in operand of %s",
+                 code == EQ_EXPR ? "==" : "!=");
+    }
+  else if (TREE_CODE_CLASS (code) == tcc_comparison)
+    {
+      if ((TREE_CODE_CLASS (code_left) == tcc_comparison
+	   && code_left != NE_EXPR && code_left != EQ_EXPR)
+	  || (TREE_CODE_CLASS (code_right) == tcc_comparison
+	      && code_right != NE_EXPR && code_right != EQ_EXPR))
+	warning (OPT_Wparentheses, "comparisons like X<=Y<=Z do not "
+		 "have their mathematical meaning");
+    }
 }
 
 /* If LABEL (a LABEL_DECL) has not been used, issue a warning.  */
