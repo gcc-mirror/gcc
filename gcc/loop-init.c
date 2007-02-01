@@ -42,14 +42,7 @@ loop_optimizer_init (unsigned flags)
 {
   edge e;
   edge_iterator ei;
-  static bool first_time = true;
   struct loops *loops;
-
-  if (first_time)
-    {
-      first_time = false;
-      init_set_costs ();
-    }
 
   gcc_assert (!current_loops);
   loops = XCNEW (struct loops);
