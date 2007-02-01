@@ -1,5 +1,5 @@
 /* Charset.java -- 
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2007  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -61,14 +61,15 @@ import java.util.TreeMap;
 /**
  * @author Jesse Rosenstock
  * @since 1.4
+ * @status updated to 1.5
  */
-public abstract class Charset implements Comparable
+public abstract class Charset implements Comparable<Charset>
 {
   private CharsetEncoder cachedEncoder;
   private CharsetDecoder cachedDecoder;
  
   /**
-   * Charset providers.
+   * Extra Charset providers.
    */
   private static CharsetProvider[] providers;
   
@@ -174,7 +175,7 @@ public abstract class Charset implements Comparable
    * Returns the Charset instance for the charset of the given name.
    * 
    * @param charsetName
-   * @return
+   * @return the Charset instance for the indicated charset
    * @throws UnsupportedCharsetException if this VM does not support
    * the charset of the given name.
    * @throws IllegalCharsetNameException if the given charset name is
@@ -221,19 +222,20 @@ public abstract class Charset implements Comparable
     return cs;
   }
 
-  public static SortedMap availableCharsets()
+  public static SortedMap<String, Charset> availableCharsets()
   {
-    TreeMap charsets = new TreeMap(String.CASE_INSENSITIVE_ORDER);
-    for (Iterator i = provider().charsets(); i.hasNext(); )
+    TreeMap<String, Charset> charsets
+      = new TreeMap(String.CASE_INSENSITIVE_ORDER);
+    for (Iterator<Charset> i = provider().charsets(); i.hasNext(); )
       {
-	Charset cs = (Charset) i.next();
+	Charset cs = i.next();
 	charsets.put(cs.name(), cs);
       }
 
     CharsetProvider[] providers = providers2();
     for (int j = 0; j < providers.length; j++)
       {
-        for (Iterator i = providers[j].charsets(); i.hasNext(); )
+        for (Iterator<Charset> i = providers[j].charsets(); i.hasNext(); )
           {
             Charset cs = (Charset) i.next();
             charsets.put(cs.name(), cs);
@@ -295,14 +297,14 @@ public abstract class Charset implements Comparable
     return canonicalName;
   }
 
-  public final Set aliases ()
+  public final Set<String> aliases ()
   {
     if (aliases == null)
-      return Collections.EMPTY_SET;
+      return Collections.<String>emptySet();
 
     // should we cache the aliasSet instead?
     int n = aliases.length;
-    HashSet aliasSet = new HashSet (n);
+    HashSet<String> aliasSet = new HashSet<String> (n);
     for (int i = 0; i < n; ++i)
         aliasSet.add (aliases[i]);
     return Collections.unmodifiableSet (aliasSet);
@@ -387,9 +389,9 @@ public abstract class Charset implements Comparable
       }
   }
 
-  public final int compareTo (Object ob)
+  public final int compareTo (Charset other)
   {
-    return canonicalName.compareToIgnoreCase (((Charset) ob).canonicalName);
+    return canonicalName.compareToIgnoreCase (other.canonicalName);
   }
 
   public final int hashCode ()

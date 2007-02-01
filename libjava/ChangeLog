@@ -1,3 +1,27 @@
+2007-02-01  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/Calendar.java: Implement Comparable<Calendar>.  Update
+	comments.
+	(clear): Call complete.
+	(setTimeZone): Call computeTime, computeFields.
+	(compareTo): New method.
+	* java/nio/charset/Charset.java: Implement Comparable<Charset>.
+	(availableCharsets): Genericized.
+	(aliases): Likewise.
+	(compareTo): Changed argument type.
+	* java/lang/ClassLoader.java (loadClass): Genericized.
+	(findClass): Likewise.
+	(defineClass): Likewise.
+	(resolveClass): Likewise.
+	(findSystemClass): Likewise.
+	(setSigners): Likewise.
+	(findLoadedClass): Likewise.
+	(getResources): Likewise.
+	(findResources): Likewise.
+	(getSystemResources): Likewise.
+	(checkInitialized): New method.
+	* java/lang/Class.java (getCanonicalName): New method.
+
 2007-01-31  Keith Seitz  <keiths@redhat.com>
 
 	* include/jvmti-int.h (JVMTI): Declare member "enabled".
