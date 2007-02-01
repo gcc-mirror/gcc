@@ -1,3 +1,7 @@
+2007-01-31  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* libgomp.texi: Fix spacing after abbreviations.
+
 2007-01-31  Daniel Franke <franke.daniel@gmail.com>
 
 	PR libgomp/30546
