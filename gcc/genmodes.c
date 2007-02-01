@@ -1,5 +1,5 @@
 /* Generate the machine mode enumeration and associated tables.
-   Copyright (C) 2003, 2004
+   Copyright (C) 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1260,7 +1260,7 @@ emit_min_insn_modes_c (void)
 
 /* Master control.  */
 int
-main(int argc, char **argv)
+main (int argc, char **argv)
 {
   bool gen_header = false, gen_min = false;
   progname = argv[0];

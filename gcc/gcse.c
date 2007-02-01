@@ -1,7 +1,7 @@
 /* Global common subexpression elimination/Partial redundancy elimination
    and global constant/copy propagation for GNU compiler.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
-   Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+   2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3731,7 +3731,7 @@ bypass_conditional_jumps (void)
   /* If we bypassed any register setting insns, we inserted a
      copy on the redirected edge.  These need to be committed.  */
   if (changed)
-    commit_edge_insertions();
+    commit_edge_insertions ();
 
   return changed;
 }
@@ -5127,7 +5127,7 @@ print_ldst_list (FILE * file)
 
   fprintf (file, "LDST list: \n");
 
-  for (ptr = first_ls_expr(); ptr != NULL; ptr = next_ls_expr (ptr))
+  for (ptr = first_ls_expr (); ptr != NULL; ptr = next_ls_expr (ptr))
     {
       fprintf (file, "  Pattern (%3d): ", ptr->index);
 

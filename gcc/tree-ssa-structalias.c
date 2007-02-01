@@ -1,5 +1,5 @@
 /* Tree based points-to analysis
-   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
 This file is part of GCC.
@@ -288,7 +288,7 @@ static VEC(varinfo_t,heap) *varmap;
 static inline varinfo_t
 get_varinfo (unsigned int n)
 {
-  return VEC_index(varinfo_t, varmap, n);
+  return VEC_index (varinfo_t, varmap, n);
 }
 
 /* Return the varmap element N, following the collapsed_to link.  */
@@ -296,7 +296,7 @@ get_varinfo (unsigned int n)
 static inline varinfo_t
 get_varinfo_fc (unsigned int n)
 {
-  varinfo_t v = VEC_index(varinfo_t, varmap, n);
+  varinfo_t v = VEC_index (varinfo_t, varmap, n);
 
   if (v->collapsed_to)
     return v->collapsed_to;
@@ -1124,7 +1124,7 @@ scc_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
       {
 	unsigned int t = find (w);
 	unsigned int nnode = find (n);
-	gcc_assert(nnode == n);
+	gcc_assert (nnode == n);
 
 	if (si->dfs[t] < si->dfs[nnode])
 	  si->dfs[n] = si->dfs[t];
@@ -1465,7 +1465,7 @@ do_ds_constraint (constraint_t c, bitmap delta)
   EXECUTE_IF_SET_IN_BITMAP (delta, 0, j, bi)
     {
       unsigned HOST_WIDE_INT loff = c->lhs.offset;
-      if (type_safe (j, &loff) && !(get_varinfo(j)->is_special_var))
+      if (type_safe (j, &loff) && !(get_varinfo (j)->is_special_var))
 	{
 	  varinfo_t v;
 	  unsigned int t;
@@ -1527,7 +1527,7 @@ do_complex_constraint (constraint_graph_t graph, constraint_t c, bitmap delta)
       bool flag = false;
       unsigned int t;
 
-      gcc_assert(c->rhs.type == SCALAR && c->lhs.type == SCALAR);
+      gcc_assert (c->rhs.type == SCALAR && c->lhs.type == SCALAR);
       t = find (c->rhs.var);
       solution = get_varinfo (t)->solution;
       t = find (c->lhs.var);
@@ -1692,7 +1692,7 @@ label_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
       {
 	unsigned int t = si->node_mapping[w];
 	unsigned int nnode = si->node_mapping[n];
-	gcc_assert(nnode == n);
+	gcc_assert (nnode == n);
 
 	if (si->dfs[t] < si->dfs[nnode])
 	  si->dfs[n] = si->dfs[t];
@@ -1797,7 +1797,7 @@ perform_var_substitution (constraint_graph_t graph)
 	fprintf (dump_file,
 		 "Equivalence class for %s node id %d:%s is %d\n",
 		 direct_node ? "Direct node" : "Indirect node", i,
-		 get_varinfo(i)->name,
+		 get_varinfo (i)->name,
 		 graph->label[si->node_mapping[i]]);
       }
 
@@ -2053,7 +2053,7 @@ solve_graph (constraint_graph_t graph)
 
 	  /* In certain indirect cycle cases, we may merge this
 	     variable to another.  */
-	  if (eliminate_indirect_cycles (i) && find(i) != i)
+	  if (eliminate_indirect_cycles (i) && find (i) != i)
 	    continue;
 
 	  /* If the node has changed, we need to process the

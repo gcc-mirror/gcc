@@ -1,3 +1,32 @@
+2007-02-01  Roger Sayle  <roger@eyesopen.com>
+
+	* alias.c (init_alias_analysis): Correct whitespace.
+	* bb-reorder.c (fix_edges_for_rarely_executed_code,
+	partition_hot_cold_basic_blocks): Likewise.
+	* builtins.c (expand_builtin_printf, expand_builtin_fprintf,
+	expand_builtin_sprintf, fold_builtin_carg, fold_builtin_sprintf,
+	maybe_emit_sprintf_chk_warning, fold_builtin_sprintf_chk,
+	fold_builtin_snprintf_chk, fold_builtin_printf,
+	fold_builtin_fprintf, do_mpfr_ckconv, do_mpfr_arg1, do_mpfr_arg2,
+	do_mpfr_arg3, do_mpfr_sincos): Likewise.
+	* cfgcleanup.c (cleanup_cfg): Likewise.
+	* cfgexpand.c (tree_expand_cfg): Likewise.
+	* fold-const.c (fold_binary) <RDIV_EXPR>: Likewise.
+	* function.c (get_next_funcdef_no): Likewise.
+	* gengtype.c (main): Likewise.
+	* genmodes.c (main): Likewise.
+	* gcse.c (bypass_conditional_jumps, print_ldst_list): Likewise.
+	* haifa-sched.c (schedule_block, extend_h_i_d): Likewise.
+	* ifcvt.c (noce_emit_move_insn): Likewise.
+	* modulo-sched.c (generate_prolog_epilog, sms_schedule_by_order):
+	Likewise.
+	* stor-layout.c (get_best_mode): Likewise.
+	* tree-ssa-loop-niter.c (get_val_for): Likewise.
+	* tree-ssa-structalias.c (get_varinfo, get_varinfo_fc,
+	scc_visit, do_ds_constraint, do_complex_constraint, label_visit,
+	perform_var_substitution, solve_graph): Likewise.
+	* tree-vrp.c (vrp_finalize): Likewise.
+
 2007-02-01  Ian Lance Taylor  <iant@google.com>
 
 	* lower-subreg.c (simplify_gen_subreg_concatn): If we ask for the

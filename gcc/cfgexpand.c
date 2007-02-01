@@ -1,5 +1,5 @@
 /* A pass for lowering trees to RTL.
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1829,7 +1829,7 @@ tree_expand_cfg (void)
 
   compact_blocks ();
 #ifdef ENABLE_CHECKING
-  verify_flow_info();
+  verify_flow_info ();
 #endif
 
   /* There's no need to defer outputting this function any more; we

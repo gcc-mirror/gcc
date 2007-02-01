@@ -1,6 +1,7 @@
 /* Control flow optimization code for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2234,7 +2235,7 @@ cleanup_cfg (int mode)
 	 now to introduce more opportunities for try_optimize_cfg.  */
       if (!(mode & (CLEANUP_NO_INSN_DEL | CLEANUP_UPDATE_LIFE))
 	  && !reload_completed)
-	delete_trivially_dead_insns (get_insns(), max_reg_num ());
+	delete_trivially_dead_insns (get_insns (), max_reg_num ());
     }
 
   compact_blocks ();
@@ -2259,7 +2260,7 @@ cleanup_cfg (int mode)
 	       && (mode & CLEANUP_EXPENSIVE)
 	       && !reload_completed)
 	{
-	  if (!delete_trivially_dead_insns (get_insns(), max_reg_num ()))
+	  if (!delete_trivially_dead_insns (get_insns (), max_reg_num ()))
 	    break;
 	}
       else
