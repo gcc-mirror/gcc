@@ -1,6 +1,7 @@
 // Implementation file for the -*- C++ -*- dynamic memory management header.
 
-// Copyright (C) 1996, 1997, 1998, 2000, 2001, 2002
+// Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+// 2005, 2006, 2007
 // Free Software Foundation
 //
 // This file is part of GCC.
@@ -45,3 +46,9 @@ std::set_new_handler (new_handler handler) throw()
 }
 
 std::bad_alloc::~bad_alloc() throw() { }
+
+const char* 
+std::bad_alloc::what() const throw()
+{
+  return "std::bad_alloc";
+}

@@ -1,5 +1,6 @@
 // -*- C++ -*- std::exception implementation.
-// Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002 
+// Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
+// 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation
 //
 // This file is part of GCC.
@@ -39,5 +40,14 @@ std::bad_exception::~bad_exception() throw() { }
 const char* 
 std::exception::what() const throw()
 {
-  return typeid (*this).name ();
+  // NB: Another elegant option would be returning typeid(*this).name()
+  // and not overriding what() in bad_exception, bad_alloc, etc.  In
+  // that case, however, mangled names would be returned, PR 14493.
+  return "std::exception";
+}
+
+const char* 
+std::bad_exception::what() const throw()
+{
+  return "std::bad_exception";
 }
