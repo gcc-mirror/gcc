@@ -1,3 +1,7 @@
+2007-01-30  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++.dg/eh/simd-4.C (main): Also catch SIGSEGV.
+
 2007-01-30  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	Backport from trunk

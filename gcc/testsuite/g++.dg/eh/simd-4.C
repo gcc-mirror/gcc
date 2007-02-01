@@ -56,6 +56,8 @@ int main(void)
   v v1 = vt;
   if (signal (SIGBUS, thrower) == SIG_ERR)
     abort ();
+  if (signal (SIGSEGV, thrower) == SIG_ERR)
+    abort ();
   try {
     *(volatile int *)0 = 0;
     abort ();
