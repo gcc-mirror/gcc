@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -188,7 +188,6 @@ check_version(symbol& test, bool added)
       known_versions.push_back("GLIBCXX_3.4.7");
       known_versions.push_back("GLIBCXX_3.4.8");
       known_versions.push_back("GLIBCXX_3.4.9");
-      known_versions.push_back("GLIBCXX_3.4.10");
       known_versions.push_back("GLIBCXX_LDBL_3.4");
       known_versions.push_back("GLIBCXX_LDBL_3.4.7");
       known_versions.push_back("CXXABI_1.3");

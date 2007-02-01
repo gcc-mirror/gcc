@@ -1,6 +1,7 @@
 ## Linker script for GNU versioning (GNU ld 2.13.91+ only.)
 ##
-## Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+## Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+## Free Software Foundation, Inc.
 ##
 ## This file is part of the GNU ISO C++ Library.  This library is free
 ## software; you can redistribute it and/or modify it under the
@@ -26,7 +27,7 @@ GLIBCXX_3.4 {
     extern "C++"
     {
       std::[A-Za]*;
-      std::ba[a-r]*;
+#     std::ba[a-r]*;
       std::basic_[a-e]*;
       std::basic_f[a-r]*;
 #     std::basic_fstream;
@@ -475,6 +476,13 @@ GLIBCXX_3.4 {
     _ZTSN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EEE;
     _ZTSN9__gnu_cxx13stdio_filebufI[cw]St11char_traitsI[cw]EEE;
 
+    # std::bad_alloc::~bad_alloc, std::bad_cast::~bad_cast,
+    # std::bad_typeid::~bad_typeid, std::bad_exception::~bad_exception
+    _ZNSt9bad_allocD*;
+    _ZNSt8bad_castD*;
+    _ZNSt10bad_typeidD*;
+    _ZNSt13bad_exceptionD*;
+
     # function-scope static objects requires a guard variable.
     _ZGVNSt[^1]*;
     _ZGVNSt1[^7]*;
@@ -689,16 +697,17 @@ GLIBCXX_3.4.9 {
     _ZNSo9_M_insertEPKc[il];
     _ZNSt13basic_ostreamIwSt11char_traitsIwEE9_M_insertEPKw[il];
 
-} GLIBCXX_3.4.8;
-
-GLIBCXX_3.4.10 {
-
     _ZN11__gnu_debug19_Safe_sequence_base12_M_get_mutexEv;
     _ZN11__gnu_debug19_Safe_iterator_base16_M_attach_singleEPNS_19_Safe_sequence_baseEb;
     _ZN11__gnu_debug19_Safe_iterator_base16_M_detach_singleEv;
     _ZN11__gnu_debug19_Safe_iterator_base12_M_get_mutexEv;
 
-} GLIBCXX_3.4.9;
+    _ZNKSt9bad_alloc4whatEv;
+    _ZNKSt8bad_cast4whatEv;
+    _ZNKSt10bad_typeid4whatEv;
+    _ZNKSt13bad_exception4whatEv;
+
+} GLIBCXX_3.4.8;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {

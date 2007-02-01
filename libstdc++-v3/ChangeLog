@@ -1,3 +1,20 @@
+2007-02-01  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/14493
+	* libsupc++/typeinfo (bad_cast::what, bad_typeid::what): Declare.
+	* libsupc++/tinfo.cc: Define.	
+	* libsupc++/exception (bad_exception::what): Declare.
+	* libsupc++/eh_exception.cc: Define.
+	(exception::what): Adjust, don't use typeid.
+	* libsupc++/new (bad_alloc::what): Declare.
+	* libsupc++/new_handler.cc: Define.
+	* config/abi/pre/gnu.ver: Export the new methods @3.4.9; adjust
+	existing 3.4.10 exports to 3.4.9.
+	* configure.ac: Adjust to 6.0.9.
+	* configure: Regenerate.
+	* testsuite/util/testsuite_abi.cc: Update.
+	* testsuite/18_support/14493.cc: New.
+
 2007-02-01  Ben Elliston  <bje@au.ibm.com>
 
 	* libsupc++/eh_alloc.cc (__cxa_free_exception): Don't refer to the

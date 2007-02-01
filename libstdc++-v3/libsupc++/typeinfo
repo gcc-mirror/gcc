@@ -1,5 +1,6 @@
 // RTTI support for -*- C++ -*-
-// Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001, 2002
+// Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
+// 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation
 //
 // This file is part of GCC.
@@ -171,6 +172,8 @@ namespace std
     // This declaration is not useless:
     // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
     virtual ~bad_cast() throw();
+    // See comment in eh_exception.cc.
+    virtual const char* what() const throw();
   };
   
   /** If you use a NULL pointer in a @c typeid expression, this is thrown.  */
@@ -181,6 +184,8 @@ namespace std
     // This declaration is not useless:
     // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
     virtual ~bad_typeid() throw();
+    // See comment in eh_exception.cc.
+    virtual const char* what() const throw();
   };
 } // namespace std
 
