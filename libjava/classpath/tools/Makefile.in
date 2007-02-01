@@ -73,8 +73,7 @@ CONFIG_HEADER = $(top_builddir)/include/config.h
 CONFIG_CLEAN_FILES = gappletviewer gjarsigner gkeytool gjar \
 	gnative2ascii gserialver grmiregistry gtnameserv gorbd grmid \
 	grmic gjavah
-am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" \
-	"$(DESTDIR)$(TOOLSdir)"
+am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 am__gappletviewer_SOURCES_DIST = toolwrapper.c
@@ -134,7 +133,7 @@ am__gtnameserv_SOURCES_DIST = toolwrapper.c
 gtnameserv_OBJECTS = $(am_gtnameserv_OBJECTS)
 gtnameserv_LDADD = $(LDADD)
 binSCRIPT_INSTALL = $(INSTALL_SCRIPT)
-SCRIPTS = $(bin_SCRIPTS)
+SCRIPTS = $(bin_SCRIPTS) $(noinst_SCRIPTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/include
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -158,14 +157,7 @@ DIST_SOURCES = $(am__gappletviewer_SOURCES_DIST) \
 	$(am__grmic_SOURCES_DIST) $(am__grmid_SOURCES_DIST) \
 	$(am__grmiregistry_SOURCES_DIST) \
 	$(am__gserialver_SOURCES_DIST) $(am__gtnameserv_SOURCES_DIST)
-am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
-am__vpath_adj = case $$p in \
-    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
-    *) f=$$p;; \
-  esac;
-am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-TOOLSDATA_INSTALL = $(INSTALL_DATA)
-DATA = $(TOOLS_DATA)
+DATA = $(noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -403,10 +395,6 @@ GLIBJ_CLASSPATH = $(srcdir)/asm
 
 # Setup the compiler to use the GNU Classpath library we just build
 @FOUND_GCJ_TRUE@JCOMPILER = $(GCJ) -C -encoding UTF-8 -bootclasspath $(GLIBJ_BOOTCLASSPATH) -classpath $(GLIBJ_CLASSPATH):.
-@CREATE_WRAPPERS_FALSE@bin_SCRIPTS = gappletviewer gjarsigner gkeytool \
-@CREATE_WRAPPERS_FALSE@	gjar gnative2ascii gserialver gjavah grmiregistry \
-@CREATE_WRAPPERS_FALSE@	gtnameserv gorbd grmid grmic
-
 @CREATE_WRAPPERS_TRUE@bin_SCRIPTS = 
 @CREATE_WRAPPERS_TRUE@AM_CPPFLAGS = -Wall \
 @CREATE_WRAPPERS_TRUE@	-I$(top_srcdir)/include \
@@ -473,6 +461,10 @@ GLIBJ_CLASSPATH = $(srcdir)/asm
 @CREATE_WRAPPERS_TRUE@	-DTOOLPACKAGE="\"rmic\"" \
 @CREATE_WRAPPERS_TRUE@	-DTOOLNAME="\"grmic\""
 
+@CREATE_WRAPPERS_FALSE@noinst_SCRIPTS = gappletviewer gjarsigner gkeytool \
+@CREATE_WRAPPERS_FALSE@	gjar gnative2ascii gserialver gjavah grmiregistry \
+@CREATE_WRAPPERS_FALSE@	gtnameserv gorbd grmid grmic
+
 EXTRA_DIST = toolwrapper.c gappletviewer.in gjarsigner.in gkeytool.in \
 	gjar.in gnative2ascii.in gserialver.in gjavah.in grmiregistry.in \
 	gtnameserv.in gorbd.in grmid.in grmic.in
@@ -505,7 +497,8 @@ RMIC_TEMPLATES = $(srcdir)/gnu/classpath/tools/rmic/templates/*.jav
 ALL_TOOLS_FILES = $(TOOLS_JAVA_FILES) $(RMIC_TEMPLATES)
 
 # Some architecture independent data to be installed.
-TOOLS_DATA = $(TOOLS_ZIP)
+# GCJ LOCAL: do not install this.
+noinst_DATA = $(TOOLS_ZIP)
 
 # Where we want these data files installed.
 TOOLSdir = $(pkgdatadir)
@@ -884,23 +877,6 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
-install-TOOLSDATA: $(TOOLS_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(TOOLSdir)" || $(mkdir_p) "$(DESTDIR)$(TOOLSdir)"
-	@list='$(TOOLS_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(am__strip_dir) \
-	  echo " $(TOOLSDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(TOOLSdir)/$$f'"; \
-	  $(TOOLSDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(TOOLSdir)/$$f"; \
-	done
-
-uninstall-TOOLSDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(TOOLS_DATA)'; for p in $$list; do \
-	  f=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(TOOLSdir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(TOOLSdir)/$$f"; \
-	done
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -985,7 +961,7 @@ check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(PROGRAMS) $(SCRIPTS) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(TOOLSdir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -1035,7 +1011,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-TOOLSDATA
+install-data-am:
 
 install-exec-am: install-binPROGRAMS install-binSCRIPTS
 
@@ -1063,22 +1039,21 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-TOOLSDATA uninstall-binPROGRAMS \
-	uninstall-binSCRIPTS uninstall-info-am
+uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
+	uninstall-info-am
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-binPROGRAMS \
 	clean-generic clean-libtool clean-local ctags dist-hook \
 	distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-TOOLSDATA install-am \
-	install-binPROGRAMS install-binSCRIPTS install-data \
-	install-data-am install-exec install-exec-am install-info \
-	install-info-am install-man install-strip installcheck \
-	installcheck-am installcheck-binPROGRAMS \
-	installcheck-binSCRIPTS installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-TOOLSDATA uninstall-am \
+	html-am info info-am install install-am install-binPROGRAMS \
+	install-binSCRIPTS install-data install-data-am install-exec \
+	install-exec-am install-info install-info-am install-man \
+	install-strip installcheck installcheck-am \
+	installcheck-binPROGRAMS installcheck-binSCRIPTS installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags uninstall uninstall-am \
 	uninstall-binPROGRAMS uninstall-binSCRIPTS uninstall-info-am
 
 @FOUND_ECJ_FALSE@@FOUND_GCJ_FALSE@error dunno how to setup the JCOMPILER and compile
