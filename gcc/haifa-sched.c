@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -2202,7 +2202,7 @@ schedule_block (basic_block *target_bb, int rgn_n_insns1)
 		 there's nothing better to do (ready list is empty) but
 		 there are still vacant dispatch slots in the current cycle.  */
 	      if (sched_verbose >= 6)
-		fprintf(sched_dump,";;\t\tSecond chance\n");
+		fprintf (sched_dump,";;\t\tSecond chance\n");
 	      memcpy (temp_state, curr_state, dfa_state_size);
 	      if (early_queue_to_ready (temp_state, &ready))
 		ready_sort (&ready);
@@ -3027,7 +3027,7 @@ extend_h_i_d (void)
 {
   /* We use LUID 0 for the fake insn (UID 0) which holds dependencies for
      pseudos which do not cross calls.  */
-  int new_max_uid = get_max_uid() + 1;  
+  int new_max_uid = get_max_uid () + 1;  
 
   h_i_d = xrecalloc (h_i_d, new_max_uid, old_max_uid, sizeof (*h_i_d));
   old_max_uid = new_max_uid;

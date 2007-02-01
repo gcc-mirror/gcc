@@ -1,5 +1,6 @@
 /* Process source files and output type information.
-   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3046,7 +3047,7 @@ write_roots (pair_p variables)
 
 extern int main (int argc, char **argv);
 int
-main(int ARG_UNUSED (argc), char ** ARG_UNUSED (argv))
+main (int ARG_UNUSED (argc), char ** ARG_UNUSED (argv))
 {
   unsigned i;
   static struct fileloc pos = { __FILE__, __LINE__ };

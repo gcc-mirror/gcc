@@ -2162,7 +2162,7 @@ get_best_mode (int bitsize, int bitpos, unsigned int align,
     return VOIDmode;
 
   if ((SLOW_BYTE_ACCESS && ! volatilep)
-      || (volatilep && !targetm.narrow_volatile_bitfield()))
+      || (volatilep && !targetm.narrow_volatile_bitfield ()))
     {
       enum machine_mode wide_mode = VOIDmode, tmode;
 

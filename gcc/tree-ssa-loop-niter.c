@@ -1311,7 +1311,7 @@ get_val_for (tree x, tree base)
     }
 
   /* Should never reach here.  */
-  gcc_unreachable();
+  gcc_unreachable ();
 }
 
 /* Tries to count the number of iterations of LOOP till it exits by EXIT

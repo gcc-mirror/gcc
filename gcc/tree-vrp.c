@@ -4960,7 +4960,7 @@ vrp_finalize (void)
   substitute_and_fold (single_val_range, true);
 
   if (warn_array_bounds)
-      check_all_array_refs();
+      check_all_array_refs ();
 
   /* We must identify jump threading opportunities before we release
      the datastructures built by VRP.  */

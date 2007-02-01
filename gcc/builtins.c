@@ -5108,7 +5108,7 @@ expand_builtin_printf (tree exp, rtx target, enum machine_mode mode,
   if (fmt_str == NULL)
     return 0;
 
-  if (!init_target_chars())
+  if (!init_target_chars ())
     return 0;
 
   /* If the format specifier was "%s\n", call __builtin_puts(arg).  */
@@ -5224,7 +5224,7 @@ expand_builtin_fprintf (tree exp, rtx target, enum machine_mode mode,
   if (fmt_str == NULL)
     return 0;
 
-  if (!init_target_chars())
+  if (!init_target_chars ())
     return 0;
 
   /* If the format specifier was "%s", call __builtin_fputs(arg,fp).  */
@@ -5316,7 +5316,7 @@ expand_builtin_sprintf (tree arglist, rtx target, enum machine_mode mode)
   if (fmt_str == NULL)
     return 0;
 
-  if (!init_target_chars())
+  if (!init_target_chars ())
     return 0;
 
   /* If the format doesn't contain % args or %%, use strcpy.  */
@@ -9145,7 +9145,7 @@ fold_builtin_fmin_fmax (tree arglist, tree type, bool max)
 /* Fold a call to builtin carg(a+bi) -> atan2(b,a).  */
 
 static tree
-fold_builtin_carg(tree arglist, tree type)
+fold_builtin_carg (tree arglist, tree type)
 {
   if (validate_arglist (arglist, COMPLEX_TYPE, VOID_TYPE))
     {
@@ -10562,7 +10562,7 @@ fold_builtin_sprintf (tree arglist, int ignored)
   call = NULL_TREE;
   retval = NULL_TREE;
 
-  if (!init_target_chars())
+  if (!init_target_chars ())
     return 0;
 
   /* If the format doesn't contain % args or %%, use strcpy.  */
@@ -10901,7 +10901,7 @@ maybe_emit_sprintf_chk_warning (tree exp, enum built_in_function fcode)
   if (fmt_str == NULL)
     return;
 
-  if (!init_target_chars())
+  if (!init_target_chars ())
     return;
 
   /* If the format doesn't contain % args or %%, we know its size.  */
@@ -11363,7 +11363,7 @@ fold_builtin_sprintf_chk (tree arglist, enum built_in_function fcode)
 
   len = NULL_TREE;
 
-  if (!init_target_chars())
+  if (!init_target_chars ())
     return 0;
 
   /* Check whether the format is a literal string constant.  */
@@ -11488,7 +11488,7 @@ fold_builtin_snprintf_chk (tree arglist, tree maxlen,
 	return 0;
     }
 
-  if (!init_target_chars())
+  if (!init_target_chars ())
     return 0;
 
   /* Only convert __{,v}snprintf_chk to {,v}snprintf if flag is 0
@@ -11572,7 +11572,7 @@ fold_builtin_printf (tree fndecl, tree arglist, bool ignore,
       fn_puts = implicit_built_in_decls[BUILT_IN_PUTS];
     }
 
-  if (!init_target_chars())
+  if (!init_target_chars ())
     return 0;
 
   if (strcmp (fmt_str, target_percent_s) == 0 || strchr (fmt_str, target_percent) == NULL)
@@ -11733,7 +11733,7 @@ fold_builtin_fprintf (tree fndecl, tree arglist, bool ignore,
       fn_fputs = implicit_built_in_decls[BUILT_IN_FPUTS];
     }
 
-  if (!init_target_chars())
+  if (!init_target_chars ())
     return 0;
 
   /* If the format doesn't contain % args or %%, use strcpy.  */
@@ -11841,12 +11841,12 @@ init_target_chars (void)
    entering this function.  Return NULL_TREE if any checks fail.  */
 
 static tree
-do_mpfr_ckconv(mpfr_srcptr m, tree type, int inexact)
+do_mpfr_ckconv (mpfr_srcptr m, tree type, int inexact)
 {
   /* Proceed iff we get a normal number, i.e. not NaN or Inf and no
      overflow/underflow occurred.  If -frounding-math, proceed iff the
      result of calling FUNC was exact.  */
-  if (mpfr_number_p (m) && !mpfr_overflow_p() && !mpfr_underflow_p()
+  if (mpfr_number_p (m) && !mpfr_overflow_p () && !mpfr_underflow_p ()
       && (!flag_rounding_math || !inexact))
     {
       REAL_VALUE_TYPE rr;
@@ -11905,7 +11905,7 @@ do_mpfr_arg1 (tree arg, tree type, int (*func)(mpfr_ptr, mpfr_srcptr, mp_rnd_t),
 
 	  mpfr_init2 (m, prec);
 	  mpfr_from_real (m, ra);
-	  mpfr_clear_flags();
+	  mpfr_clear_flags ();
 	  inexact = func (m, m, GMP_RNDN);
 	  result = do_mpfr_ckconv (m, type, inexact);
 	  mpfr_clear (m);
@@ -11949,7 +11949,7 @@ do_mpfr_arg2 (tree arg1, tree arg2, tree type,
 	  mpfr_inits2 (prec, m1, m2, NULL);
 	  mpfr_from_real (m1, ra1);
 	  mpfr_from_real (m2, ra2);
-	  mpfr_clear_flags();
+	  mpfr_clear_flags ();
 	  inexact = func (m1, m1, m2, GMP_RNDN);
 	  result = do_mpfr_ckconv (m1, type, inexact);
 	  mpfr_clears (m1, m2, NULL);
@@ -11998,7 +11998,7 @@ do_mpfr_arg3 (tree arg1, tree arg2, tree arg3, tree type,
 	  mpfr_from_real (m1, ra1);
 	  mpfr_from_real (m2, ra2);
 	  mpfr_from_real (m3, ra3);
-	  mpfr_clear_flags();
+	  mpfr_clear_flags ();
 	  inexact = func (m1, m1, m2, m3, GMP_RNDN);
 	  result = do_mpfr_ckconv (m1, type, inexact);
 	  mpfr_clears (m1, m2, m3, NULL);
@@ -12040,7 +12040,7 @@ do_mpfr_sincos (tree arg, tree arg_sinp, tree arg_cosp)
 
 	  mpfr_inits2 (prec, m, ms, mc, NULL);
 	  mpfr_from_real (m, ra);
-	  mpfr_clear_flags();
+	  mpfr_clear_flags ();
 	  inexact = mpfr_sin_cos (ms, mc, m, GMP_RNDN);
 	  result_s = do_mpfr_ckconv (ms, type, inexact);
 	  result_c = do_mpfr_ckconv (mc, type, inexact);

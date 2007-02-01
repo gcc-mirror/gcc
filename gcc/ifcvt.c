@@ -1,5 +1,5 @@
 /* If-conversion support.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -722,7 +722,7 @@ noce_emit_move_insn (rtx x, rtx y)
 	     ? emit_move_insn (x, y)
 	     : emit_insn (gen_rtx_SET (VOIDmode, x, y));
       seq = get_insns ();
-      end_sequence();
+      end_sequence ();
 
       if (recog_memoized (insn) <= 0)
 	{

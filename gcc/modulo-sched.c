@@ -1,5 +1,5 @@
 /* Swing Modulo Scheduling implementation.
-   Copyright (C) 2004, 2005, 2006
+   Copyright (C) 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Contributed by Ayal Zaks and Mustafa Hagog <zaks,mustafa@il.ibm.com>
 
@@ -744,7 +744,7 @@ generate_prolog_epilog (partial_schedule_ptr ps, struct loop * loop, rtx count_r
 
   /* Put the prolog on the entry edge.  */
   e = loop_preheader_edge (loop);
-  split_edge_and_insert (e, get_insns());
+  split_edge_and_insert (e, get_insns ());
 
   end_sequence ();
 
@@ -757,7 +757,7 @@ generate_prolog_epilog (partial_schedule_ptr ps, struct loop * loop, rtx count_r
   /* Put the epilogue on the exit edge.  */
   gcc_assert (single_exit (loop));
   e = single_exit (loop);
-  split_edge_and_insert (e, get_insns());
+  split_edge_and_insert (e, get_insns ());
   end_sequence ();
 }
 
@@ -1469,7 +1469,7 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
       bool unscheduled_nodes = false;
 
       if (dump_file)
-	fprintf(dump_file, "Starting with ii=%d\n", ii);
+	fprintf (dump_file, "Starting with ii=%d\n", ii);
       if (try_again_with_larger_ii)
 	{
 	  try_again_with_larger_ii = false;
@@ -1521,8 +1521,9 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
 	    }
 	  /* 2. Try scheduling u in window.  */
 	  if (dump_file)
-	    fprintf(dump_file, "Trying to schedule node %d in (%d .. %d) step %d\n",
-		    u, start, end, step);
+	    fprintf (dump_file,
+		     "Trying to schedule node %d in (%d .. %d) step %d\n",
+		     u, start, end, step);
 
           /* use must_follow & must_precede bitmaps to determine order
 	     of nodes within the cycle.  */
@@ -1556,7 +1557,7 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
 		    SET_BIT (sched_nodes, u);
 		    success = 1;
 		    if (dump_file)
-		      fprintf(dump_file, "Schedule in %d\n", c);
+		      fprintf (dump_file, "Schedule in %d\n", c);
 		    break;
 		  }
 	      }

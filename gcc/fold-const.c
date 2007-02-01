@@ -10232,8 +10232,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      tree arg10 = TREE_VALUE (TREE_OPERAND (arg1, 1));
 	      tree arg11 = TREE_VALUE (TREE_CHAIN (TREE_OPERAND (arg1, 1)));
 	      tree neg11 = fold_convert (type, negate_expr (arg11));
-	      tree arglist = tree_cons(NULL_TREE, arg10,
-				       build_tree_list (NULL_TREE, neg11));
+	      tree arglist = tree_cons (NULL_TREE, arg10,
+					build_tree_list (NULL_TREE, neg11));
 	      arg1 = build_function_call_expr (powfn, arglist);
 	      return fold_build2 (MULT_EXPR, type, arg0, arg1);
 	    }
