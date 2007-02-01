@@ -372,6 +372,8 @@ static rtx
 simplify_gen_subreg_concatn (enum machine_mode outermode, rtx op,
 			     enum machine_mode innermode, unsigned int byte)
 {
+  rtx ret;
+
   /* We have to handle generating a SUBREG of a SUBREG of a CONCATN.
      If OP is a SUBREG of a CONCATN, then it must be a simple mode
      change with the same size and offset 0, or it must extract a
@@ -405,9 +407,24 @@ simplify_gen_subreg_concatn (enum machine_mode outermode, rtx op,
       gcc_assert (op != NULL_RTX);
       gcc_assert (innermode == GET_MODE (op));
     }
+
   if (GET_CODE (op) == CONCATN)
     return simplify_subreg_concatn (outermode, op, byte);
-  return simplify_gen_subreg (outermode, op, innermode, byte);
+
+  ret = simplify_gen_subreg (outermode, op, innermode, byte);
+
+  /* If we see an insn like (set (reg:DI) (subreg:DI (reg:SI) 0)) then
+     resolve_simple_move will ask for the high part of the paradoxical
+     subreg, which does not have a value.  Just return a zero.  */
+  if (ret == NULL_RTX
+      && GET_CODE (op) == SUBREG
+      && SUBREG_BYTE (op) == 0
+      && (GET_MODE_SIZE (innermode)
+	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (op)))))
+    return CONST0_RTX (outermode);
+
+  gcc_assert (ret != NULL_RTX);
+  return ret;
 }
 
 /* Return whether we should resolve X into the registers into which it
