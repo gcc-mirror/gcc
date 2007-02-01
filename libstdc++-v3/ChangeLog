@@ -1,3 +1,39 @@
+2007-02-01  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/14493
+	* libsupc++/typeinfo (bad_cast::what, bad_typeid::what): Declare.
+	* libsupc++/tinfo.cc: Define.	
+	* libsupc++/exception (bad_exception::what): Declare.
+	* libsupc++/eh_exception.cc: Define.
+	(exception::what): Adjust, don't use typeid.
+	* libsupc++/new (bad_alloc::what): Declare.
+	* libsupc++/new_handler.cc: Define.
+	* config/abi/pre/gnu.ver: Export the new methods @3.4.9.
+	* testsuite/18_support/14493.cc: New.
+
+2007-02-01  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/29496
+	* include/debug/safe_base.h (_Safe_sequence_base::_M_get_mutex,
+	_Safe_iterator_base::_M_get_mutex, _M_attach_single, _M_detach_single):
+	New.
+	* src/debug.cc: Define the latter.
+	(_Safe_sequence_base::_M_detach_all, _M_detach_singular,
+	_M_revalidate_singular, _M_swap): Use the mutex.
+	(_Safe_iterator_base::_M_attach, _M_detach): Adjust, forward to the
+	*_single version.
+	* include/debug/safe_iterator.h (_Safe_iterator<>::_M_attach_single,
+	_M_invalidate_single): New.
+ 	* include/debug/safe_iterator.tcc: Define.
+	(_Safe_iterator<>::_M_invalidate): Adjust, forward to
+	_M_invalidate_single.
+	* include/debug/safe_sequence.h (_Safe_sequence<>::_M_invalidate_if,
+	_M_transfer_iter): Use the mutex, adjust, forward to the *_single
+	versions of _M_invalidate and _M_attach.
+	* config/abi/pre/gnu.ver (_Safe_sequence_base::_M_get_mutex,
+	_Safe_iterator_base::_M_get_mutex, _M_attach_single, _M_detach_single):
+	Add @GLIBCXX_3.4.9; adjust.
+
 2007-01-27   Steve LoBasso <slobasso@yahoo.com>
 	     Paolo Carlini  <pcarlini@suse.de>
 
