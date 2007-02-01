@@ -1,5 +1,5 @@
 /* java.lang.reflect.Array - manipulate arrays by reflection
-   Copyright (C) 1998, 1999, 2001, 2003, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2003, 2005, 2007  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -104,7 +104,7 @@ public final class Array
    * @throws NegativeArraySizeException when length is less than 0
    * @throws OutOfMemoryError if memory allocation fails
    */
-  public static native Object newInstance(Class componentType, int length);
+  public static native Object newInstance(Class<?> componentType, int length);
 
   /**
    * Creates a new multi-dimensioned array.  The new array has the same
@@ -130,7 +130,7 @@ public final class Array
    *         than 0
    * @throws OutOfMemoryError if memory allocation fails
    */
-  public static native Object newInstance(Class elementType, int[] dimensions);
+  public static native Object newInstance(Class<?> elementType, int[] dimensions);
 
   /**
    * Gets the array length.

@@ -1,6 +1,6 @@
 // Method.java - Represent method of class or interface.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2006  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -68,7 +68,7 @@ public final class Method
    * is a non-inherited member.
    * @return the class that declared this member
    */
-  public Class getDeclaringClass()
+  public Class<?> getDeclaringClass()
   {
     return declaringClass;
   }
