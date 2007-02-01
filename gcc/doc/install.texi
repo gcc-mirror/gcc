@@ -3106,7 +3106,7 @@ This port still is undergoing significant development.
 @end html
 @heading @anchor{x-x-linux-gnu}*-*-linux-gnu
 
-Versions of libstdc++-v3 starting with 3.2.1 require bugfixes present
+Versions of libstdc++-v3 starting with 3.2.1 require bug fixes present
 in glibc 2.2.5 and later.  More information is available in the
 libstdc++-v3 documentation.
 
