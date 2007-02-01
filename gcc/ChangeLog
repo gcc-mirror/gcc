@@ -1,3 +1,10 @@
+2007-02-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/c-tree.texi (Expression trees): Improve markup.
+	* doc/tm.texi (Register Classes, Addressing Modes)
+	(Floating Point): Fix spacing after abbreviations.  Fix some
+	typos.
+
 2007-02-01  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/invoke.texi: Replace "bugfix" with "bug fix" throughout.

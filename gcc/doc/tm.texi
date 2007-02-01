@@ -2386,8 +2386,9 @@ that expression may examine the mode of the memory reference in
 @var{mode}.  You should define this macro if the mode of the memory
 reference affects whether a register may be used as a base register.  If
 you define this macro, the compiler will use it instead of
-@code{REGNO_OK_FOR_BASE_P}.  The mode may be @code{VOIDmode} for addresses
-that appear outside a @code{MEM}, i.e. as an @code{address_operand}.
+@code{REGNO_OK_FOR_BASE_P}.  The mode may be @code{VOIDmode} for
+addresses that appear outside a @code{MEM}, i.e., as an
+@code{address_operand}.
 
 @end defmac
 
@@ -2404,14 +2405,15 @@ Use of this macro is deprecated; please use the more general
 @end defmac
 
 @defmac REGNO_MODE_CODE_OK_FOR_BASE_P (@var{num}, @var{mode}, @var{outer_code}, @var{index_code})
-A C expression that is just like @code{REGNO_MODE_OK_FOR_BASE_P}, except that
-that expression may examine the context in which the register appears in the
-memory reference.  @var{outer_code} is the code of the immediately enclosing
-expression (@code{MEM} if at the top level of the address, @code{ADDRESS} for
-something that occurs in an @code{address_operand}).  @var{index_code} is the
-code of the corresponding index expression if @var{outer_code} is @code{PLUS};
+A C expression that is just like @code{REGNO_MODE_OK_FOR_BASE_P}, except
+that that expression may examine the context in which the register
+appears in the memory reference.  @var{outer_code} is the code of the
+immediately enclosing expression (@code{MEM} if at the top level of the
+address, @code{ADDRESS} for something that occurs in an
+@code{address_operand}).  @var{index_code} is the code of the
+corresponding index expression if @var{outer_code} is @code{PLUS};
 @code{SCRATCH} otherwise.  The mode may be @code{VOIDmode} for addresses
-that appear outside a @code{MEM}, i.e. as an @code{address_operand}.
+that appear outside a @code{MEM}, i.e., as an @code{address_operand}.
 @end defmac
 
 @defmac REGNO_OK_FOR_INDEX_P (@var{num})
@@ -5267,7 +5269,7 @@ the address has become legitimate.
 
 @findex copy_rtx
 If you want to change only a part of @var{x}, one standard way of doing
-this is to use @code{copy_rtx}.  Note, however, that is unshares only a
+this is to use @code{copy_rtx}.  Note, however, that it unshares only a
 single level of rtl.  Thus, if the part to be changed is not at the
 top level, you'll need to replace first the top level.
 It is not necessary for this macro to come up with a legitimate
@@ -5333,7 +5335,7 @@ address @var{addr} as an argument returns a mask @var{m} that can be
 used to extract from two vectors the relevant data that resides in
 @var{addr} in case @var{addr} is not properly aligned.
 
-The autovectrizer, when vectorizing a load operation from an address
+The autovectorizer, when vectorizing a load operation from an address
 @var{addr} that may be unaligned, will generate two vector loads from
 the two aligned addresses around @var{addr}. It then generates a
 @code{REALIGN_LOAD} operation to extract the relevant data from the
@@ -8786,7 +8788,7 @@ Returns the absolute value of @var{x}.
 @deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_TRUNCATE (REAL_VALUE_TYPE @var{mode}, enum machine_mode @var{x})
 Truncates the floating point value @var{x} to fit in @var{mode}.  The
 return value is still a full-size @code{REAL_VALUE_TYPE}, but it has an
-appropriate bit pattern to be output asa floating constant whose
+appropriate bit pattern to be output as a floating constant whose
 precision accords with mode @var{mode}.
 @end deftypefn
 
