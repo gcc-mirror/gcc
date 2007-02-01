@@ -1,3 +1,8 @@
+2007-02-01  Ben Elliston  <bje@au.ibm.com>
+
+	* libsupc++/eh_alloc.cc (__cxa_free_exception): Don't refer to the
+	emergency_buffer using `&array[0][0]' notation, use `array'.
+
 2007-01-30  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/30571
