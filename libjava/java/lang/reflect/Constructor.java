@@ -1,5 +1,5 @@
 /* java.lang.reflect.Constructor - reflection of Java constructors
-   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006
+   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -155,11 +155,11 @@ public final class Constructor<T> extends AccessibleObject
    *
    * @return a list of the types of the constructor's parameters
    */
-  public Class[] getParameterTypes ()
+  public Class<?>[] getParameterTypes ()
   {
     if (parameter_types == null)
       getType ();
-    return (Class[]) parameter_types.clone();
+    return (Class<?>[]) parameter_types.clone();
   }
 
   /**
@@ -169,11 +169,11 @@ public final class Constructor<T> extends AccessibleObject
    *
    * @return a list of the types in the constructor's throws clause
    */
-  public Class[] getExceptionTypes ()
+  public Class<?>[] getExceptionTypes ()
   {
     if (exception_types == null)
       getType();
-    return (Class[]) exception_types.clone();
+    return (Class<?>[]) exception_types.clone();
   }
 
   /**
@@ -305,7 +305,7 @@ public final class Constructor<T> extends AccessibleObject
    * @throws ExceptionInInitializerError if construction triggered class
    *         initialization, which then failed
    */
-  public native Object newInstance (Object[] args)
+  public native T newInstance (Object... args)
     throws InstantiationException, IllegalAccessException,
     IllegalArgumentException, InvocationTargetException;
 

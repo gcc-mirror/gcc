@@ -1,5 +1,5 @@
 /* CharsetProvider.java -- charset service provider interface
-   Copyright (C) 2002, 2006 Free Software Foundation
+   Copyright (C) 2002, 2006, 2007 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -83,7 +83,7 @@ public abstract class CharsetProvider
    * @return the iterator
    * @see Charset#availableCharsets()
    */
-  public abstract Iterator charsets();
+  public abstract Iterator<Charset> charsets();
 
   /**
    * Returns the named charset, by canonical name or alias.

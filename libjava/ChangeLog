@@ -1,5 +1,25 @@
 2007-02-01  Tom Tromey  <tromey@redhat.com>
 
+	* java/util/logging/LogManager.java (loggers): Genericized.
+	(addLogger): Merged.
+	(findAncestor): Likewise.
+	(getLogger): Likewise.
+	(getLoggerNames): Genericized.
+	(reset): Merged.
+	(getLevelProperty): Likewise.
+	* java/lang/reflect/Method.java (getDeclaringClass): Genericized.
+	* java/lang/reflect/Constructor.java (getParameterTypes):
+	Genericized.
+	(getExceptionTypes): Likewise.
+	(newInstance): Likewise.
+	* java/lang/reflect/Array.java (newInstance): Genericized.
+	* java/lang/Object.java (getClass): Genericized.
+	* java/nio/charset/spi/CharsetProvider.java (charsets):
+	Genericized.
+	* java/text/Collator.java: Implement Comparable<Object>.
+
+2007-02-01  Tom Tromey  <tromey@redhat.com>
+
 	* java/util/Calendar.java: Implement Comparable<Calendar>.  Update
 	comments.
 	(clear): Call complete.
