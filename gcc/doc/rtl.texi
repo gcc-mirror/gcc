@@ -1774,6 +1774,19 @@ is always @code{Pmode}.  If there are any @code{addressof}
 expressions left in the function after CSE, @var{reg} is forced into the
 stack and the @code{addressof} expression is replaced with a @code{plus}
 expression for the address of its stack slot.
+
+@findex concat
+@item (concat@var{m} @var{rtx} @var{rtx})
+This RTX represents the concatenation of two other RTXs.  This is used
+for complex values.  It should only appear in the RTL attached to
+declarations and during RTL generation.  It should not appear in the
+ordinary insn chain.
+
+@findex concatn
+@item (concatn@var{m} [@var{rtx} ...])
+This RTX represents the concatenation of all the @var{rtx} to make a
+single value.  Like @code{concat}, this should only appear in
+declarations, and not in the insn chain.
 @end table
 
 @node Arithmetic

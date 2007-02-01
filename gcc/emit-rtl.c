@@ -1,6 +1,6 @@
 /* Emit RTL for the GCC expander.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -812,13 +812,12 @@ gen_reg_rtx (enum machine_mode mode)
   return val;
 }
 
-/* Generate a register with same attributes as REG, but offsetted by OFFSET.
+/* Update NEW with the same attributes as REG, but offsetted by OFFSET.
    Do the big endian correction if needed.  */
 
-rtx
-gen_rtx_REG_offset (rtx reg, enum machine_mode mode, unsigned int regno, int offset)
+static void
+update_reg_offset (rtx new, rtx reg, int offset)
 {
-  rtx new = gen_rtx_REG (mode, regno);
   tree decl;
   HOST_WIDE_INT var_size;
 
@@ -860,7 +859,7 @@ gen_rtx_REG_offset (rtx reg, enum machine_mode mode, unsigned int regno, int off
   if ((BYTES_BIG_ENDIAN || WORDS_BIG_ENDIAN)
       && decl != NULL
       && offset > 0
-      && GET_MODE_SIZE (GET_MODE (reg)) > GET_MODE_SIZE (mode)
+      && GET_MODE_SIZE (GET_MODE (reg)) > GET_MODE_SIZE (GET_MODE (new))
       && ((var_size = int_size_in_bytes (TREE_TYPE (decl))) > 0
 	  && var_size < GET_MODE_SIZE (GET_MODE (reg))))
     {
@@ -904,6 +903,30 @@ gen_rtx_REG_offset (rtx reg, enum machine_mode mode, unsigned int regno, int off
 
   REG_ATTRS (new) = get_reg_attrs (REG_EXPR (reg),
 				   REG_OFFSET (reg) + offset);
+}
+
+/* Generate a register with same attributes as REG, but offsetted by
+   OFFSET.  */
+
+rtx
+gen_rtx_REG_offset (rtx reg, enum machine_mode mode, unsigned int regno,
+		    int offset)
+{
+  rtx new = gen_rtx_REG (mode, regno);
+
+  update_reg_offset (new, reg, offset);
+  return new;
+}
+
+/* Generate a new pseudo-register with the same attributes as REG, but
+   offsetted by OFFSET.  */
+
+rtx
+gen_reg_rtx_offset (rtx reg, enum machine_mode mode, int offset)
+{
+  rtx new = gen_reg_rtx (mode);
+
+  update_reg_offset (new, reg, offset);
   return new;
 }
 

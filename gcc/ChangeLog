@@ -1,3 +1,35 @@
+2007-01-31  Richard Henderson  <rth@redhat.com>
+	    Ian Lance Taylor  <iant@google.com>
+
+	* lower-subreg.c: New file.
+	* rtl.def (CONCATN): Define.
+	* passes.c (init_optimization_passes): Add pass_lower_subreg and
+	pass_lower_subreg2.
+	* emit-rtl.c (update_reg_offset): New static function, broken out
+	of gen_rtx_REG_offset.
+	(gen_rtx_REG_offset): Call update_reg_offset.
+	(gen_reg_rtx_offset): New function.
+	* regclass.c: Revert patch of 2006-03-05, restoring
+	reg_scan_update.
+	(clear_reg_info_regno): New function.
+	* dwarf2out.c (concatn_loc_descriptor): New static function.
+	(loc_descriptor): Handle CONCATN.
+	* common.opt (fsplit_wide_types): New option.
+	* opts.c (decode_options): Set flag_split_wide_types when
+	optimizing.
+	* timevar.def (TV_LOWER_SUBREG): Define.
+	* rtl.h (gen_reg_rtx_offset): Declare.
+	(reg_scan_update): Declare.
+	* regs.h (clear_reg_info_regno): Declare.
+	* tree-pass.h (pass_lower_subreg): Declare.
+	(pass_lower_subreg2): Declare.
+	* doc/invoke.texi (Option Summary): List -fno-split-wide-types.
+	(Optimize Options): Add -fsplit-wide-types to -O1 list.  Document
+	-fsplit-wide-types.
+	* doc/rtl.texi (Regs and Memory): Document concat and concatn.
+	* Makefile.in (OBJS-common): Add lower-subreg.o.
+	(lower-subreg.o): New target.
+
 2007-01-31  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/sh/sh.h (HAVE_SECONDARY_RELOADS): Remove.

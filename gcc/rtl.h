@@ -1,6 +1,7 @@
 /* Register Transfer Language (RTL) definitions for GCC
    Copyright (C) 1987, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1471,6 +1472,7 @@ extern int rtx_equal_p (rtx, rtx);
 extern rtvec gen_rtvec_v (int, rtx *);
 extern rtx gen_reg_rtx (enum machine_mode);
 extern rtx gen_rtx_REG_offset (rtx, enum machine_mode, unsigned int, int);
+extern rtx gen_reg_rtx_offset (rtx, enum machine_mode, int);
 extern rtx gen_label_rtx (void);
 extern rtx gen_lowpart_common (enum machine_mode, rtx);
 
@@ -2162,6 +2164,7 @@ extern void init_reg_sets (void);
 extern void regclass_init (void);
 extern void regclass (rtx, int);
 extern void reg_scan (rtx, unsigned int);
+extern void reg_scan_update (rtx, rtx, unsigned int);
 extern void fix_register (const char *, int, int);
 extern void init_subregs_of_mode (void);
 extern void record_subregs_of_mode (rtx);
