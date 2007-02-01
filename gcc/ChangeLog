@@ -1,3 +1,8 @@
+2007-02-01  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* toplev.c (lang_dependent_init): Call init_set_costs.
+	* loop-init.c (loop_optimizer_init): Do not call init_set_costs.
+
 2007-02-01  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/30656
