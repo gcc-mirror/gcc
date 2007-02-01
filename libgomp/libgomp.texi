@@ -396,7 +396,7 @@ adjustment of team sizes and @code{false} disables it.
 @section @code{omp_set_nested} -- Enable/disable nested parallel regions
 @table @asis
 @item @emph{Description}:
-Enable or disable nested parallel regions, i. e. whether team members
+Enable or disable nested parallel regions, i.e., whether team members
 are allowed to create new teams. The function takes the language-specific 
 equivalent of @code{true} and @code{false}, where @code{true} enables 
 dynamic adjustment of team sizes and @code{false} disables it.
@@ -741,7 +741,7 @@ in the unlocked state and its nesting count must equal zero.
 @section @code{omp_get_wtick} -- Get timer precision
 @table @asis
 @item @emph{Description}:
-Gets the timer precision, i. e. the number of seconds between two 
+Gets the timer precision, i.e., the number of seconds between two 
 successive clock ticks.
 
 @item @emph{C/C++}:
@@ -839,7 +839,7 @@ disabled by default.
 @cindex Implementation specific setting
 @table @asis
 @item @emph{Description}:
-Enable or disable nested parallel regions, i. e. whether team members
+Enable or disable nested parallel regions, i.e., whether team members
 are allowed to create new teams. The value of this environment variable 
 shall be @code{TRUE} or @code{FALSE}. If undefined, nested parallel 
 regions are disabled by default.
@@ -1139,7 +1139,7 @@ The @var{FN} argument is the subfunction to be run in parallel.
 
 The @var{DATA} argument is a pointer to a structure used to 
 communicate data in and out of the subfunction, as discussed
-above wrt FIRSTPRIVATE et al.
+above with respect to FIRSTPRIVATE et al.
 
 The @var{NUM_THREADS} argument is 1 if an IF clause is present
 and false, or the value of the NUM_THREADS clause, if
