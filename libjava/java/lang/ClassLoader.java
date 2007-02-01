@@ -736,7 +736,7 @@ public abstract class ClassLoader
    * @since 1.2
    * @specnote this was <code>final</code> prior to 1.5
    */
-  public final Enumeration<URL> getResources(String name) throws IOException
+  public Enumeration<URL> getResources(String name) throws IOException
   {
     Enumeration<URL> parentResources;
     if (parent == null)
