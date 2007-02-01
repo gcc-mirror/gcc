@@ -1,5 +1,5 @@
 /* ClassLoader.java -- responsible for loading classes into the VM
-   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -118,7 +118,6 @@ import java.lang.annotation.Annotation;
  * @author Eric Blake (ebb9@email.byu.edu)
  * @see Class
  * @since 1.0
- * @status still missing 1.4 functionality
  */
 public abstract class ClassLoader
 {
@@ -373,7 +372,7 @@ public abstract class ClassLoader
    * @return the loaded class
    * @throws ClassNotFoundException if the class cannot be found
    */
-  public Class loadClass(String name) throws ClassNotFoundException
+  public Class<?> loadClass(String name) throws ClassNotFoundException
   {
     return loadClass(name, false);
   }
@@ -401,7 +400,7 @@ public abstract class ClassLoader
    * @return the loaded class
    * @throws ClassNotFoundException if the class cannot be found
    */
-  protected synchronized Class loadClass(String name, boolean resolve)
+  protected synchronized Class<?> loadClass(String name, boolean resolve)
     throws ClassNotFoundException
   {
     SecurityManager sm = SecurityManager.current;
@@ -490,7 +489,7 @@ public abstract class ClassLoader
    * @throws ClassNotFoundException when the class can not be found
    * @since 1.2
    */
-  protected Class findClass(String name) throws ClassNotFoundException
+  protected Class<?> findClass(String name) throws ClassNotFoundException
   {
     throw new ClassNotFoundException(name);
   }
@@ -508,7 +507,7 @@ public abstract class ClassLoader
    *         offset + len exceeds data
    * @deprecated use {@link #defineClass(String, byte[], int, int)} instead
    */
-  protected final Class defineClass(byte[] data, int offset, int len)
+  protected final Class<?> defineClass(byte[] data, int offset, int len)
     throws ClassFormatError
   {
     return defineClass(null, data, offset, len);
@@ -533,8 +532,8 @@ public abstract class ClassLoader
    * @throws SecurityException if name starts with "java."
    * @since 1.1
    */
-  protected final Class defineClass(String name, byte[] data, int offset,
-                                    int len) throws ClassFormatError
+  protected final Class<?> defineClass(String name, byte[] data, int offset,
+				       int len) throws ClassFormatError
   {
     return defineClass(name, data, offset, len, null);
   }
@@ -562,15 +561,14 @@ public abstract class ClassLoader
    *         do not match up
    * @since 1.2
    */
-  protected final synchronized Class defineClass(String name, byte[] data,
-						 int offset, int len,
-						 ProtectionDomain domain)
+  protected final synchronized Class<?> defineClass(String name, byte[] data,
+						    int offset, int len,
+						    ProtectionDomain domain)
     throws ClassFormatError
   {
+    checkInitialized();
     if (domain == null)
       domain = defaultProtectionDomain;
-    if (! initialized)
-      throw new SecurityException("attempt to define class from uninitialized class loader");
     
     Class retval = VMClassLoader.defineClass(this, name, data,
 					     offset, len, domain);
@@ -615,8 +613,9 @@ public abstract class ClassLoader
    * @throws NullPointerException if c is null
    * @throws LinkageError if linking fails
    */
-  protected final void resolveClass(Class c)
+  protected final void resolveClass(Class<?> c)
   {
+    checkInitialized();
     VMClassLoader.resolveClass(c);
   }
 
@@ -629,9 +628,10 @@ public abstract class ClassLoader
    * @return the found class
    * @throws ClassNotFoundException if the class cannot be found
    */
-  protected final Class findSystemClass(String name)
+  protected final Class<?> findSystemClass(String name)
     throws ClassNotFoundException
   {
+    checkInitialized();
     return Class.forName(name, false, systemClassLoader);
   }
 
@@ -666,8 +666,9 @@ public abstract class ClassLoader
    * @param signers the signers to set
    * @since 1.1
    */
-  protected final void setSigners(Class c, Object[] signers)
+  protected final void setSigners(Class<?> c, Object[] signers)
   {
+    checkInitialized();
     c.setSigners(signers);
   }
 
@@ -678,8 +679,9 @@ public abstract class ClassLoader
    * @return the found Class, or null if it is not found
    * @since 1.1
    */
-  protected final synchronized Class findLoadedClass(String name)
+  protected final synchronized Class<?> findLoadedClass(String name)
   {
+    checkInitialized();
     // NOTE: If the VM is keeping its own cache, it may make sense to have
     // this method be native.
     return (Class) loadedClasses.get(name);
@@ -732,15 +734,16 @@ public abstract class ClassLoader
    * @return an enumaration of all resources found
    * @throws IOException if I/O errors occur in the process
    * @since 1.2
+   * @specnote this was <code>final</code> prior to 1.5
    */
-  public final Enumeration getResources(String name) throws IOException
+  public final Enumeration<URL> getResources(String name) throws IOException
   {
-    Enumeration parentResources;
+    Enumeration<URL> parentResources;
     if (parent == null)
       parentResources = VMClassLoader.getResources(name);
     else
       parentResources = parent.getResources(name);
-    return new DoubleEnumeration(parentResources, findResources(name));
+    return new DoubleEnumeration<URL>(parentResources, findResources(name));
   }
 
   /**
@@ -760,9 +763,9 @@ public abstract class ClassLoader
    * @throws IOException if I/O errors occur in the process
    * @since 1.2
    */
-  protected Enumeration findResources(String name) throws IOException
+  protected Enumeration<URL> findResources(String name) throws IOException
   {
-    return EmptyEnumeration.getInstance();
+    return (Enumeration<URL>) EmptyEnumeration.getInstance();
   }
 
   /**
@@ -807,7 +810,8 @@ public abstract class ClassLoader
    * @throws IOException if I/O errors occur in the process
    * @since 1.2
    */
-  public static Enumeration getSystemResources(String name) throws IOException
+  public static Enumeration<URL> getSystemResources(String name)
+    throws IOException
   {
     return systemClassLoader.getResources(name);
   }
@@ -939,7 +943,7 @@ public abstract class ClassLoader
       throw new IllegalArgumentException("Package " + name
                                          + " already defined");
     Package p = new Package(name, specTitle, specVendor, specVersion,
-                            implTitle, implVendor, implVersion, sealed);
+                            implTitle, implVendor, implVersion, sealed, this);
     synchronized (definedPackages)
       {
         definedPackages.put(name, p);
@@ -1114,5 +1118,17 @@ public abstract class ClassLoader
 	loader = loader.parent;
       }
     return false;
+  }
+
+  /**
+   * Before doing anything "dangerous" please call this method to make sure
+   * this class loader instance was properly constructed (and not obtained
+   * by exploiting the finalizer attack)
+   * @see #initialized
+   */
+  private void checkInitialized()
+  {
+    if (! initialized)
+      throw new SecurityException("attempt to use uninitialized class loader");
   }
 }
