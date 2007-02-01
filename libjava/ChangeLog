@@ -1,3 +1,16 @@
+2007-01-31  Keith Seitz  <keiths@redhat.com>
+
+	* include/jvmti-int.h (JVMTI): Declare member "enabled".
+	* jvmti.cc (JVMTI): Add member "enabled".
+	(_Jv_GetJVMTIEnv): Mark JVMTI enabled.
+	* interpret.cc (_Jv_InterpMethod::ncode): Use JVMTI::enabled
+	instead of gnu::classpath::jdwp::Jdwp::isDebugging.
+	(_Jv_CompileMethod): If JVMTI is enabled, use run_debug
+	instead of run to compile the method.
+
+	* interpret-run.cc [DEBUG] (NEXT_INSN): Add JVMTI single step
+	notification.
+
 2007-01-31  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* testsuite/libjava.jvmti/jvmti-interp.exp (gij_jvmti_test_one): Add
