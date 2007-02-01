@@ -1109,7 +1109,7 @@ fold_negate_expr (tree t)
       
     case INTEGER_CST:
       tem = fold_negate_const (t, type);
-      if (!TREE_OVERFLOW (tem)
+      if (TREE_OVERFLOW (tem) == TREE_OVERFLOW (t)
 	  || !TYPE_OVERFLOW_TRAPS (type))
 	return tem;
       break;
