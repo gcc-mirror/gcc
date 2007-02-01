@@ -1449,6 +1449,8 @@ jcf_parse (JCF* jcf)
 {
   int i, code;
 
+  bitmap_clear (field_offsets);
+
   if (jcf_parse_preamble (jcf) != 0)
     fatal_error ("not a valid Java .class file");
   code = jcf_parse_constant_pool (jcf);
