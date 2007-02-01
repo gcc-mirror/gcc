@@ -2293,7 +2293,7 @@ information.  By default, GCC emits an error message in this case.
 The option @option{-Wcoverage-mismatch} emits a warning instead of an
 error.  GCC does not use appropriate feedback profiles, so using this
 option can result in poorly optimized code.  This option is useful
-only in the case of very minor changes such as bugfixes to an
+only in the case of very minor changes such as bug fixes to an
 existing code-base.
 
 @end table
