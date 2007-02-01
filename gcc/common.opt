@@ -1,6 +1,6 @@
 ; Options for the language- and target-independent parts of the compiler.
 
-; Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+; Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -860,6 +860,10 @@ Convert floating point constants to single precision constants
 fsplit-ivs-in-unroller
 Common Report Var(flag_split_ivs_in_unroller) Init(1)
 Split lifetimes of induction variables when loops are unrolled
+
+fsplit-wide-types
+Common Report Var(flag_split_wide_types)
+Split wide types into independent registers
 
 fvariable-expansion-in-unroller
 Common Report Var(flag_variable_expansion_in_unroller)

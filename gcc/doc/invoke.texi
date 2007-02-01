@@ -340,7 +340,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsched2-use-superblocks @gol
 -fsched2-use-traces -fsee -freschedule-modulo-scheduled-loops @gol
 -fsection-anchors  -fsignaling-nans  -fsingle-precision-constant @gol
--fstack-protector  -fstack-protector-all @gol
+-fno-split-wide-types -fstack-protector  -fstack-protector-all @gol
 -fstrict-aliasing  -fstrict-overflow  -ftracer  -fthread-jumps @gol
 -funroll-all-loops  -funroll-loops  -fpeel-loops @gol
 -fsplit-ivs-in-unroller -funswitch-loops @gol
@@ -4600,6 +4600,7 @@ compilation time.
 -fcprop-registers @gol
 -fif-conversion @gol
 -fif-conversion2 @gol
+-fsplit-wide-types @gol
 -ftree-ccp @gol
 -ftree-dce @gol
 -ftree-dominator-opts @gol
@@ -4937,6 +4938,16 @@ second branch or a point immediately following it, depending on whether
 the condition is known to be true or false.
 
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+
+@item -fsplit-wide-types
+@opindex -fsplit-wide-types
+When using a type that occupies multiple registers, such as @code{long
+long} on a 32-bit system, split the registers apart and allocate them
+independently.  This normally generates better code for those types,
+but may make debugging more difficult.
+
+Enabled at levels @option{-O}, @option{-O2}, @option{-O3},
+@option{-Os}.
 
 @item -fcse-follow-jumps
 @opindex fcse-follow-jumps

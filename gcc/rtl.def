@@ -2,7 +2,7 @@
    Register Transfer Expressions (rtx's) that make up the
    Register Transfer Language (rtl) used in the Back End of the GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1994, 1995, 1997, 1998, 1999, 2000, 2004,
-   2005, 2006
+   2005, 2006, 2007
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -387,6 +387,12 @@ DEF_RTL_EXPR(STRICT_LOW_PART, "strict_low_part", "e", RTX_EXTRA)
    This is used for complex values.  Normally it appears only
    in DECL_RTLs and during RTL generation, but not in the insn chain.  */
 DEF_RTL_EXPR(CONCAT, "concat", "ee", RTX_OBJ)
+
+/* (CONCATN [a1 a2 ... an]) represents the virtual concatenation of
+   all An to make a value.  This is an extension of CONCAT to larger
+   number of components.  Like CONCAT, it should not appear in the
+   insn chain.  Every element of the CONCATN is the same size.  */
+DEF_RTL_EXPR(CONCATN, "concatn", "E", RTX_OBJ)
 
 /* A memory location; operand is the address.  The second operand is the
    alias set to which this MEM belongs.  We use `0' instead of `w' for this

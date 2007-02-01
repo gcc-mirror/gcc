@@ -1,6 +1,7 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -663,6 +664,7 @@ init_optimization_passes (void)
   NEXT_PASS (pass_unshare_all_rtl);
   NEXT_PASS (pass_instantiate_virtual_regs);
   NEXT_PASS (pass_jump2);
+  NEXT_PASS (pass_lower_subreg);
   NEXT_PASS (pass_cse);
   NEXT_PASS (pass_rtl_fwprop);
   NEXT_PASS (pass_gcse);
@@ -682,6 +684,7 @@ init_optimization_passes (void)
   NEXT_PASS (pass_partition_blocks);
   NEXT_PASS (pass_regmove);
   NEXT_PASS (pass_split_all_insns);
+  NEXT_PASS (pass_lower_subreg2);
   NEXT_PASS (pass_mode_switching);
   NEXT_PASS (pass_see);
   NEXT_PASS (pass_recompute_reg_usage);

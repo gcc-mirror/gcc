@@ -1,6 +1,6 @@
 /* This file contains the definitions for timing variables used to
    measure run-time performance of the compiler.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Contributed by Alex Samuel <samuel@codesourcery.com>
 
@@ -128,6 +128,7 @@ DEFTIMEVAR (TV_OVERLOAD              , "overload resolution")
 DEFTIMEVAR (TV_TEMPLATE_INSTANTIATION, "template instantiation")
 DEFTIMEVAR (TV_EXPAND		     , "expand")
 DEFTIMEVAR (TV_VARCONST              , "varconst")
+DEFTIMEVAR (TV_LOWER_SUBREG	     , "lower subreg")
 DEFTIMEVAR (TV_JUMP                  , "jump")
 DEFTIMEVAR (TV_FWPROP                , "forward prop")
 DEFTIMEVAR (TV_CSE                   , "CSE")

@@ -1,5 +1,5 @@
 /* Definitions for describing one tree-ssa optimization pass.
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>
 
 This file is part of GCC.
@@ -337,6 +337,7 @@ extern struct tree_opt_pass pass_instantiate_virtual_regs;
 extern struct tree_opt_pass pass_rtl_fwprop;
 extern struct tree_opt_pass pass_rtl_fwprop_addr;
 extern struct tree_opt_pass pass_jump2;
+extern struct tree_opt_pass pass_lower_subreg;
 extern struct tree_opt_pass pass_cse;
 extern struct tree_opt_pass pass_gcse;
 extern struct tree_opt_pass pass_jump_bypass;
@@ -360,6 +361,7 @@ extern struct tree_opt_pass pass_if_after_combine;
 extern struct tree_opt_pass pass_partition_blocks;
 extern struct tree_opt_pass pass_regmove;
 extern struct tree_opt_pass pass_split_all_insns;
+extern struct tree_opt_pass pass_lower_subreg2;
 extern struct tree_opt_pass pass_mode_switching;
 extern struct tree_opt_pass pass_see;
 extern struct tree_opt_pass pass_recompute_reg_usage;

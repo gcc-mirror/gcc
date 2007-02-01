@@ -445,6 +445,7 @@ decode_options (unsigned int argc, const char **argv)
       flag_if_conversion2 = 1;
       flag_ipa_pure_const = 1;
       flag_ipa_reference = 1;
+      flag_split_wide_types = 1;
       flag_tree_ccp = 1;
       flag_tree_dce = 1;
       flag_tree_dom = 1;
