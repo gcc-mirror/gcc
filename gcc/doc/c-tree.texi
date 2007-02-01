@@ -2272,11 +2272,11 @@ type.
 
 @item TRUTH_ANDIF_EXPR
 @itemx TRUTH_ORIF_EXPR
-These nodes represent logical and and logical or, respectively.  These
-operators are not strict; i.e., the second operand is evaluated only if
-the value of the expression is not determined by evaluation of the first
-operand.  The type of the operands and that of the result are always of
-@code{BOOLEAN_TYPE} or @code{INTEGER_TYPE}.
+These nodes represent logical ``and'' and logical ``or'', respectively.
+These operators are not strict; i.e., the second operand is evaluated
+only if the value of the expression is not determined by evaluation of
+the first operand.  The type of the operands and that of the result are
+always of @code{BOOLEAN_TYPE} or @code{INTEGER_TYPE}.
 
 @item TRUTH_AND_EXPR
 @itemx TRUTH_OR_EXPR
