@@ -89,7 +89,8 @@ grmic_CFLAGS = \
 	-DTOOLNAME="\"grmic\""
 
 else
-bin_SCRIPTS = gappletviewer gjarsigner gkeytool \
+## GCJ LOCAL: do not install these.
+noinst_SCRIPTS = gappletviewer gjarsigner gkeytool \
 	gjar gnative2ascii gserialver gjavah grmiregistry \
 	gtnameserv gorbd grmid grmic
 bin_PROGRAMS =
@@ -124,7 +125,8 @@ RMIC_TEMPLATES = $(srcdir)/gnu/classpath/tools/rmic/templates/*.jav
 ALL_TOOLS_FILES = $(TOOLS_JAVA_FILES) $(RMIC_TEMPLATES)
 
 # Some architecture independent data to be installed.
-TOOLS_DATA = $(TOOLS_ZIP)
+# GCJ LOCAL: do not install this.
+noinst_DATA = $(TOOLS_ZIP)
 
 # Where we want these data files installed.
 TOOLSdir = $(pkgdatadir)
