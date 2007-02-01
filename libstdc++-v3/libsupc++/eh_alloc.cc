@@ -143,12 +143,13 @@ __cxxabiv1::__cxa_allocate_exception(std::size_t thrown_size) throw()
 extern "C" void
 __cxxabiv1::__cxa_free_exception(void *vptr) throw()
 {
+  char *base = (char *) emergency_buffer;
   char *ptr = (char *) vptr;
-  if (ptr >= &emergency_buffer[0][0]
-      && ptr < &emergency_buffer[0][0] + sizeof (emergency_buffer))
+  if (ptr >= base
+      && ptr < base + sizeof (emergency_buffer))
     {
       const unsigned int which
-	= (unsigned)(ptr - &emergency_buffer[0][0]) / EMERGENCY_OBJ_SIZE;
+	= (unsigned) (ptr - base) / EMERGENCY_OBJ_SIZE;
 
       __gnu_cxx::__scoped_lock sentry(emergency_mutex);
       emergency_used &= ~((bitmask_type)1 << which);
