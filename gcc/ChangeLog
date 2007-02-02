@@ -1,3 +1,7 @@
+2007-02-01  Guy Martin  <gmsoft@gentoo.org>
+
+	* pa.md (tp_load): Correct mfctl instruction syntax.
+
 2007-02-01  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_stack_info): Correct
