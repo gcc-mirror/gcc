@@ -37,8 +37,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _BASIC_FILE_STDIO_H
-#define _BASIC_FILE_STDIO_H 1
+#ifndef _GLIBCXX_BASIC_FILE_STDIO_H
+#define _GLIBCXX_BASIC_FILE_STDIO_H 1
 
 #pragma GCC system_header
 

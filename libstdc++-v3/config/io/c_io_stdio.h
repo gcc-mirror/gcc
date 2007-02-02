@@ -35,8 +35,8 @@
 
 // c_io_stdio.h - Defines for using "C" stdio.h
 
-#ifndef _C_IO_STDIO_H
-#define _C_IO_STDIO_H 1
+#ifndef _GLIBCXX_CXX_IO_H
+#define _GLIBCXX_CXX_IO_H 1
 
 #include <cstdio>
 #include <cstddef>

@@ -28,10 +28,10 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _BITS_ATOMICITY_H
-#define _BITS_ATOMICITY_H	1
-
 #ifdef __SH4A__
+
+#ifndef _GLIBCXX_ATOMICITY_H
+#define _GLIBCXX_ATOMICITY_H	1
 
 typedef int _Atomic_word;
 
@@ -70,6 +70,8 @@ __atomic_add (volatile _Atomic_word* __mem, int __val)
       : "r0");
 }
 
+#endif
+
 #else /* !__SH4A__ */
 
 /* This is generic/atomicity.h */
@@ -103,5 +105,3 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 _GLIBCXX_END_NAMESPACE
 
 #endif /* !__SH4A__ */
-
-#endif /* atomicity.h */
