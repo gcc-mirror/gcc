@@ -1129,10 +1129,12 @@ extern void layout_class (tree);
 extern int get_interface_method_index (tree, tree);
 extern tree layout_class_method (tree, tree, tree, tree);
 extern void layout_class_methods (tree);
+extern void cache_this_class_ref (tree);
 extern tree build_class_ref (tree);
 extern tree build_dtable_decl (tree);
 extern tree build_internal_class_name (tree);
 extern tree build_constants_constructor (void);
+extern tree build_constant_data_ref (bool);
 extern tree build_ref_from_constant_pool (int);
 extern tree build_utf8_ref (tree);
 extern tree ident_subst (const char *, int, const char *, int, int,

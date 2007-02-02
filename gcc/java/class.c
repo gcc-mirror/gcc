@@ -110,6 +110,10 @@ static GTY(()) tree class_roots[4];
 
 static GTY(()) VEC(tree,gc) *registered_class;
 
+/* A tree that returns the address of the class$ of the class
+   currently being compiled.  */
+static GTY(()) tree this_classdollar;
+
 /* Return the node that most closely represents the class whose name
    is IDENT.  Start the search from NODE (followed by its siblings).
    Return NULL if an appropriate node does not exist.  */
@@ -1004,6 +1008,45 @@ build_classdollar_field (tree type)
   return decl;
 }
 
+/* Create a local variable that holds the the current class$.  */
+
+void
+cache_this_class_ref (tree fndecl)
+{
+  if (optimize)
+    {
+      tree classdollar_field;
+      if (flag_indirect_classes)
+	classdollar_field = build_classdollar_field (output_class);
+      else
+	classdollar_field = build_static_class_ref (output_class);
+
+      this_classdollar = build_decl (VAR_DECL, NULL_TREE, 
+				     TREE_TYPE (classdollar_field));
+      
+      java_add_local_var (this_classdollar);
+      java_add_stmt (build2 (MODIFY_EXPR, TREE_TYPE (this_classdollar), 
+			     this_classdollar, classdollar_field));
+    }
+  else
+    this_classdollar = build_classdollar_field (output_class);
+
+  /* Prepend class initialization for static methods reachable from
+     other classes.  */
+  if (METHOD_STATIC (fndecl)
+      && (! METHOD_PRIVATE (fndecl)
+          || INNER_CLASS_P (DECL_CONTEXT (fndecl)))
+      && ! DECL_CLINIT_P (fndecl)
+      && ! CLASS_INTERFACE (TYPE_NAME (DECL_CONTEXT (fndecl))))
+    {
+      tree init = build3 (CALL_EXPR, void_type_node,
+			  build_address_of (soft_initclass_node),
+			  build_tree_list (NULL_TREE, this_classdollar),
+			  NULL_TREE);
+      java_add_stmt (init);
+    }
+}
+
 /* Build a reference to the class TYPE.
    Also handles primitive types and array types. */
 
@@ -1023,7 +1066,7 @@ build_class_ref (tree type)
 	return build_indirect_class_ref (type);
 
       if (type == output_class && flag_indirect_classes)
-	return build_classdollar_field (type);
+	return this_classdollar;
       
       if (TREE_CODE (type) == RECORD_TYPE)
 	return build_static_class_ref (type);
@@ -2443,7 +2486,7 @@ layout_class_methods (tree this_class)
 
   if (TYPE_NVIRTUALS (this_class))
     return;
-
+  
   super_class = CLASSTYPE_SUPER (this_class);
 
   if (super_class)

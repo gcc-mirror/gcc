@@ -83,6 +83,7 @@ static tree build_java_throw_out_of_bounds_exception (tree);
 static tree build_java_check_indexed_type (tree, tree); 
 static unsigned char peek_opcode_at_pc (struct JCF *, int, int);
 static void promote_arguments (void);
+static void cache_cpool_data_ref (void);
 
 static GTY(()) tree operand_type[59];
 
@@ -3151,6 +3152,8 @@ expand_byte_code (JCF *jcf, tree method)
     return;
 
   promote_arguments ();
+  cache_this_class_ref (method);
+  cache_cpool_data_ref ();
 
   /* Translate bytecodes.  */
   linenumber_pointer = linenumber_table;
@@ -3223,7 +3226,7 @@ expand_byte_code (JCF *jcf, tree method)
       PC = process_jvm_instruction (PC, byte_ops, length);
       maybe_poplevels (PC);
     } /* for */
-  
+
   if (dead_code_index != -1)
     {
       /* We've just reached the end of a region of dead code.  */
@@ -3788,6 +3791,29 @@ promote_arguments (void)
 	}
       if (TYPE_IS_WIDE (arg_type))
 	i++;
+    }
+}
+
+/* Create a local variable that points to the constant pool.  */
+
+static void
+cache_cpool_data_ref (void)
+{
+  if (optimize)
+    {
+      tree cpool;
+      tree d = build_constant_data_ref (flag_indirect_classes);
+      tree cpool_ptr = build_decl (VAR_DECL, NULL_TREE, 
+				   build_pointer_type (TREE_TYPE (d)));
+      java_add_local_var (cpool_ptr);
+      TREE_INVARIANT (cpool_ptr) = 1;
+      TREE_CONSTANT (cpool_ptr) = 1;
+
+      java_add_stmt (build2 (MODIFY_EXPR, TREE_TYPE (cpool_ptr), 
+			     cpool_ptr, build_address_of (d)));
+      cpool = build1 (INDIRECT_REF, TREE_TYPE (d), cpool_ptr);
+      TREE_THIS_NOTRAP (cpool) = 1;
+      TYPE_CPOOL_DATA_REF (output_class) = cpool;
     }
 }
 

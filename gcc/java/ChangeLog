@@ -1,3 +1,18 @@
+2007-02-02  Andrew Haley  <aph@redhat.com>
+
+	* expr.c (expand_byte_code): Call cache_this_class_ref() and
+	cache_cpool_data_ref().
+	Set TYPE_CPOOL_DATA_REF.
+	(cache_cpool_data_ref): New function.
+	* constants.c (build_ref_from_constant_pool): Remove special-case
+	code for flag_indirect_classes.
+	(build_constant_data_ref): Move special-case code for
+	flag_indirect_classes here from build_ref_from_constant_pool.
+	* decl.c (finish_method): Move class initialization from here to
+	cache_this_class_ref.
+	* class.c (cache_this_class_ref): New function.
+	(build_class_ref): Use this_classdollar for the ouput class.
+
 2007-02-02  David Daney  <ddaney@avtrex.com>
 
 	* class.c (is_compiled_class): Move check to avoid reloading
