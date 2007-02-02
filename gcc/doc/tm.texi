@@ -6112,14 +6112,13 @@ correspondingly processor cycle on which the previous insn has been
 issued and the current processor cycle.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_SCHED_IS_COSTLY_DEPENDENCE (rtx @var{insn1}, rtx @var{insn2}, rtx @var{dep_link}, int @var{dep_cost}, int @var{distance})
+@deftypefn {Target Hook} bool TARGET_SCHED_IS_COSTLY_DEPENDENCE (struct dep_def *@var{_dep}, int @var{cost}, int @var{distance})
 This hook is used to define which dependences are considered costly by
 the target, so costly that it is not advisable to schedule the insns that
 are involved in the dependence too close to one another.  The parameters
-to this hook are as follows:  The second parameter @var{insn2} is dependent
-upon the first parameter @var{insn1}.  The dependence between @var{insn1}
-and @var{insn2} is represented by the third parameter @var{dep_link}.  The
-fourth parameter @var{cost} is the cost of the dependence, and the fifth
+to this hook are as follows:  The first parameter @var{_dep} is the dependence
+being evaluated.  The second parameter @var{cost} is the cost of the
+dependence, and the third
 parameter @var{distance} is the distance in cycles between the two insns.
 The hook returns @code{true} if considering the distance between the two
 insns the dependence between them is considered costly by the target,
@@ -6132,14 +6131,6 @@ that will be formed, and (c) correctly emulating the grouping can be very
 important.  In such targets one may want to allow issuing dependent insns
 closer to one another---i.e., closer than the dependence distance;  however,
 not in cases of "costly dependences", which this hooks allows to define.
-@end deftypefn
-
-@deftypefn {Target Hook} int TARGET_SCHED_ADJUST_COST_2 (rtx @var{insn}, int @var{dep_type}, rtx @var{dep_insn}, int @var{cost})
-This hook is a modified version of @samp{TARGET_SCHED_ADJUST_COST}.  Instead
-of passing dependence as a second parameter, it passes a type of that
-dependence.  This is useful to calculate cost of dependence between insns
-not having the corresponding link.  If @samp{TARGET_SCHED_ADJUST_COST_2} is
-defined it is used instead of @samp{TARGET_SCHED_ADJUST_COST}.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_SCHED_H_I_D_EXTENDED (void)

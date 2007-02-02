@@ -44,6 +44,365 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "cselib.h"
 #include "df.h"
 
+#ifdef ENABLE_CHECKING
+#define CHECK (true)
+#else
+#define CHECK (false)
+#endif
+
+/* Return the major type present in the DS.  */
+enum reg_note
+ds_to_dk (ds_t ds)
+{
+  if (ds & DEP_TRUE)
+    return REG_DEP_TRUE;
+
+  if (ds & DEP_OUTPUT)
+    return REG_DEP_OUTPUT;
+
+  gcc_assert (ds & DEP_ANTI);
+
+  return REG_DEP_ANTI;
+}
+
+/* Return equivalent dep_status.  */
+ds_t
+dk_to_ds (enum reg_note dk)
+{
+  switch (dk)
+    {
+    case REG_DEP_TRUE:
+      return DEP_TRUE;
+
+    case REG_DEP_OUTPUT:
+      return DEP_OUTPUT;
+
+    default:
+      gcc_assert (dk == REG_DEP_ANTI);
+      return DEP_ANTI;
+    }
+}
+
+/* Functions to operate with dependence information container - dep_t.  */
+
+/* Init DEP with the arguments.  */
+static void
+init_dep_1 (dep_t dep, rtx pro, rtx con, enum reg_note kind, ds_t ds)
+{
+  DEP_PRO (dep) = pro;
+  DEP_CON (dep) = con;
+  DEP_KIND (dep) = kind;
+  DEP_STATUS (dep) = ds;
+}
+
+/* Init DEP with the arguments.
+   While most of the scheduler (including targets) only need the major type
+   of the dependency, it is convinient to hide full dep_status from them.  */
+void
+init_dep (dep_t dep, rtx pro, rtx con, enum reg_note kind)
+{
+  ds_t ds;
+
+  if ((current_sched_info->flags & USE_DEPS_LIST) != 0)
+    ds = dk_to_ds (kind);
+  else
+    ds = -1;
+
+  init_dep_1 (dep, pro, con, kind, ds);
+}
+
+/* Make a copy of FROM in TO.  */
+static void
+copy_dep (dep_t to, dep_t from)
+{
+  memcpy (to, from, sizeof (*to));
+}
+
+/* Functions to operate with a single link from the dependencies lists -
+   dep_link_t.  */
+
+/* Return true if dep_link L is consistent.  */
+static bool
+dep_link_consistent_p (dep_link_t l)
+{
+  dep_link_t next = DEP_LINK_NEXT (l);
+
+  return (next == NULL
+	  || &DEP_LINK_NEXT (l) == DEP_LINK_PREV_NEXTP (next));
+}
+
+/* Attach L to appear after link X whose &DEP_LINK_NEXT (X) is given by
+   PREV_NEXT_P.  */
+static void
+attach_dep_link (dep_link_t l, dep_link_t *prev_nextp)
+{
+  dep_link_t next = *prev_nextp;
+
+  gcc_assert (DEP_LINK_PREV_NEXTP (l) == NULL
+	      && DEP_LINK_NEXT (l) == NULL);
+
+  /* Init node being inserted.  */
+  DEP_LINK_PREV_NEXTP (l) = prev_nextp;
+  DEP_LINK_NEXT (l) = next;
+
+  /* Fix next node.  */
+  if (next != NULL)
+    {
+      gcc_assert (DEP_LINK_PREV_NEXTP (next) == prev_nextp);
+
+      DEP_LINK_PREV_NEXTP (next) = &DEP_LINK_NEXT (l);
+    }
+
+  /* Fix prev node.  */
+  *prev_nextp = l;
+}
+
+/* Add dep_link LINK to deps_list L.  */
+static void
+add_to_deps_list (dep_link_t link, deps_list_t l)
+{
+  attach_dep_link (link, &DEPS_LIST_FIRST (l));
+}
+
+/* Detach dep_link L from the list.  */
+static void
+detach_dep_link (dep_link_t l)
+{
+  dep_link_t *prev_nextp = DEP_LINK_PREV_NEXTP (l);
+  dep_link_t next = DEP_LINK_NEXT (l);
+
+  *prev_nextp = next;
+
+  if (next != NULL)
+    DEP_LINK_PREV_NEXTP (next) = prev_nextp;
+
+  /* Though this is property is not used anywhere but in the assert in
+     attach_dep_link (), this can prevent latent errors.  */
+  DEP_LINK_PREV_NEXTP (l) = NULL;
+  DEP_LINK_NEXT (l) = NULL;
+}
+
+/* Move LINK from whatever list it is now to L.  */
+void
+move_dep_link (dep_link_t link, deps_list_t l)
+{
+  detach_dep_link (link);
+  add_to_deps_list (link, l);
+}
+
+/* Check L's and its successors' consistency.
+   This is, potentially, an expensive check, hence it should be guarded by
+   ENABLE_CHECKING at all times.  */
+static bool
+dep_links_consistent_p (dep_link_t l)
+{
+  while (l != NULL)
+    {
+      if (dep_link_consistent_p (l))
+	l = DEP_LINK_NEXT (l);
+      else
+	return false;
+    }
+
+  return true;
+}
+
+/* Dump dep_nodes starting from l.  */
+static void
+dump_dep_links (FILE *dump, dep_link_t l)
+{
+  while (l != NULL)
+    {
+      dep_t d = DEP_LINK_DEP (l);
+
+      fprintf (dump, "%d%c>%d ", INSN_UID (DEP_PRO (d)),
+	       dep_link_consistent_p (l) ? '-' : '!', INSN_UID (DEP_CON (d)));
+
+      l = DEP_LINK_NEXT (l);
+    }
+
+  fprintf (dump, "\n");
+}
+
+/* Dump dep_nodes starting from L to stderr.  */
+void
+debug_dep_links (dep_link_t l)
+{
+  dump_dep_links (stderr, l);
+}
+
+/* Obstack to allocate dep_nodes and deps_lists on.  */
+static struct obstack deps_obstack;
+
+/* Obstack to hold forward dependencies lists (deps_list_t).  */
+static struct obstack *dl_obstack = &deps_obstack;
+
+/* Obstack to hold all dependency nodes (dep_node_t).  */
+static struct obstack *dn_obstack = &deps_obstack;
+
+/* Functions to operate with dependences lists - deps_list_t.  */
+
+/* Allocate deps_list.
+
+   If ON_OBSTACK_P is true, allocate the list on the obstack.  This is done for
+   INSN_FORW_DEPS lists because they should live till the end of scheduling.
+
+   INSN_BACK_DEPS and INSN_RESOLVED_BACK_DEPS lists are allocated on the free
+   store and are being freed in haifa-sched.c: schedule_insn ().  */
+static deps_list_t
+alloc_deps_list (bool on_obstack_p)
+{
+  if (on_obstack_p)
+    return obstack_alloc (dl_obstack, sizeof (struct _deps_list));
+  else
+    return xmalloc (sizeof (struct _deps_list));
+}
+
+/* Initialize deps_list L.  */
+static void
+init_deps_list (deps_list_t l)
+{
+  DEPS_LIST_FIRST (l) = NULL;
+}
+
+/* Create (allocate and init) deps_list.
+   The meaning of ON_OBSTACK_P is the same as in alloc_deps_list ().  */
+deps_list_t
+create_deps_list (bool on_obstack_p)
+{
+  deps_list_t l = alloc_deps_list (on_obstack_p);
+
+  init_deps_list (l);
+  return l;
+}
+
+/* Free dep_data_nodes that present in L.  */
+static void
+clear_deps_list (deps_list_t l)
+{
+  /* All dep_nodes are allocated on the dn_obstack.  They'll be freed with
+     the obstack.  */
+
+  DEPS_LIST_FIRST (l) = NULL;
+}
+
+/* Free deps_list L.  */
+void
+free_deps_list (deps_list_t l)
+{
+  gcc_assert (deps_list_empty_p (l));
+  free (l);
+}
+
+/* Delete (clear and free) deps_list L.  */
+void
+delete_deps_list (deps_list_t l)
+{
+  clear_deps_list (l);
+  free_deps_list (l);
+}
+
+/* Return true if L is empty.  */
+bool
+deps_list_empty_p (deps_list_t l)
+{
+  return DEPS_LIST_FIRST (l) == NULL;
+}
+
+/* Check L's consistency.
+   This is, potentially, an expensive check, hence it should be guarded by
+   ENABLE_CHECKING at all times.  */
+static bool
+deps_list_consistent_p (deps_list_t l)
+{
+  dep_link_t first = DEPS_LIST_FIRST (l);
+
+  return (first == NULL
+	  || (&DEPS_LIST_FIRST (l) == DEP_LINK_PREV_NEXTP (first)
+	      && dep_links_consistent_p (first)));
+}
+
+/* Dump L to F.  */
+static void
+dump_deps_list (FILE *f, deps_list_t l)
+{
+  dump_dep_links (f, DEPS_LIST_FIRST (l));
+}
+
+/* Dump L to STDERR.  */
+void
+debug_deps_list (deps_list_t l)
+{
+  dump_deps_list (stderr, l);
+}
+
+/* Add a dependency described by DEP to the list L.
+   L should be either INSN_BACK_DEPS or INSN_RESOLVED_BACK_DEPS.  */
+void
+add_back_dep_to_deps_list (deps_list_t l, dep_t dep_from)
+{
+  dep_node_t n = (dep_node_t) obstack_alloc (dn_obstack,
+					     sizeof (*n));
+  dep_t dep_to = DEP_NODE_DEP (n);
+  dep_link_t back = DEP_NODE_BACK (n);
+  dep_link_t forw = DEP_NODE_FORW (n);
+
+  copy_dep (dep_to, dep_from);
+
+  DEP_LINK_NODE (back) = n;
+  DEP_LINK_NODE (forw) = n;
+
+  /* There is no particular need to initialize these four fields except to make
+     assert in attach_dep_link () happy.  */
+  DEP_LINK_NEXT (back) = NULL;
+  DEP_LINK_PREV_NEXTP (back) = NULL;
+  DEP_LINK_NEXT (forw) = NULL;
+  DEP_LINK_PREV_NEXTP (forw) = NULL;
+
+  add_to_deps_list (back, l);
+}
+
+/* Find the dep_link with producer PRO in deps_list L.  */
+dep_link_t
+find_link_by_pro_in_deps_list (deps_list_t l, rtx pro)
+{
+  dep_link_t link;
+
+  FOR_EACH_DEP_LINK (link, l)
+    if (DEP_LINK_PRO (link) == pro)
+      return link;
+
+  return NULL;
+}
+
+/* Find the dep_link with consumer CON in deps_list L.  */
+dep_link_t
+find_link_by_con_in_deps_list (deps_list_t l, rtx con)
+{
+  dep_link_t link;
+
+  FOR_EACH_DEP_LINK (link, l)
+    if (DEP_LINK_CON (link) == con)
+      return link;
+
+  return NULL;
+}
+
+/* Make a copy of FROM in TO with substituting consumer with CON.
+   TO and FROM should be RESOLVED_BACK_DEPS lists.  */
+void
+copy_deps_list_change_con (deps_list_t to, deps_list_t from, rtx con)
+{
+  dep_link_t l;
+
+  gcc_assert (deps_list_empty_p (to));
+
+  FOR_EACH_DEP_LINK (l, from)
+    {
+      add_back_dep_to_deps_list (to, DEP_LINK_DEP (l));
+      DEP_LINK_CON (DEPS_LIST_FIRST (to)) = con;
+    }
+}
 
 static regset reg_pending_sets;
 static regset reg_pending_clobbers;
@@ -103,14 +462,14 @@ static rtx sched_get_condition (rtx);
 static int conditions_mutex_p (rtx, rtx);
 
 static enum DEPS_ADJUST_RESULT maybe_add_or_update_back_dep_1 (rtx, rtx, 
-			       enum reg_note, ds_t, rtx, rtx, rtx **);
+			       enum reg_note, ds_t, rtx, rtx, dep_link_t **);
 static enum DEPS_ADJUST_RESULT add_or_update_back_dep_1 (rtx, rtx, 
-                               enum reg_note, ds_t, rtx, rtx, rtx **);
+                               enum reg_note, ds_t, rtx, rtx, dep_link_t **);
 static void add_back_dep (rtx, rtx, enum reg_note, ds_t);
 
-static void adjust_add_sorted_back_dep (rtx, rtx, rtx *);
-static void adjust_back_add_forw_dep (rtx, rtx *);
-static void delete_forw_dep (rtx, rtx);
+static void adjust_add_sorted_back_dep (rtx, dep_link_t, dep_link_t *);
+static void adjust_back_add_forw_dep (rtx, dep_link_t *);
+static void delete_forw_dep (dep_link_t);
 static dw_t estimate_dep_weak (rtx, rtx);
 #ifdef INSN_SCHEDULING
 #ifdef ENABLE_CHECKING
@@ -225,13 +584,13 @@ sched_insns_conditions_mutex_p (rtx insn1, rtx insn2)
   return false;
 }
 
-/* Add ELEM wrapped in an INSN_LIST with reg note kind DEP_TYPE to the
-   LOG_LINKS of INSN, if it is not already there.  DEP_TYPE indicates the
+/* Add ELEM wrapped in an dep_link with reg note kind DEP_TYPE to the
+   INSN_BACK_DEPS (INSN), if it is not already there.  DEP_TYPE indicates the
    type of dependence that this link represents.  DS, if nonzero,
    indicates speculations, through which this dependence can be overcome.
    MEM1 and MEM2, if non-null, corresponds to memory locations in case of
    data speculation.  The function returns a value indicating if an old entry
-   has been changed or a new entry has been added to insn's LOG_LINK.
+   has been changed or a new entry has been added to insn's backward deps.
    In case of changed entry CHANGED_LINKPP sets to its address.
    See also the definition of enum DEPS_ADJUST_RESULT in sched-int.h.  
    Actual manipulation of dependence data structures is performed in 
@@ -240,7 +599,7 @@ sched_insns_conditions_mutex_p (rtx insn1, rtx insn2)
 static enum DEPS_ADJUST_RESULT
 maybe_add_or_update_back_dep_1 (rtx insn, rtx elem, enum reg_note dep_type,
 				ds_t ds, rtx mem1, rtx mem2,
-				rtx **changed_linkpp)
+				dep_link_t **changed_linkpp)
 {
   gcc_assert (INSN_P (insn) && INSN_P (elem));
 
@@ -267,7 +626,7 @@ static enum DEPS_ADJUST_RESULT
 add_or_update_back_dep_1 (rtx insn, rtx elem, enum reg_note dep_type, 
 			  ds_t ds ATTRIBUTE_UNUSED,
 			  rtx mem1 ATTRIBUTE_UNUSED, rtx mem2 ATTRIBUTE_UNUSED,
-			  rtx **changed_linkpp ATTRIBUTE_UNUSED)
+			  dep_link_t **changed_linkpp ATTRIBUTE_UNUSED)
 {
   bool maybe_present_p = true, present_p = false;
 
@@ -359,15 +718,17 @@ add_or_update_back_dep_1 (rtx insn, rtx elem, enum reg_note dep_type,
   /* Check that we don't already have this dependence.  */
   if (maybe_present_p)
     {
-      rtx *linkp;
+      dep_link_t *linkp;
 
-      for (linkp = &LOG_LINKS (insn); *linkp; linkp = &XEXP (*linkp, 1))
+      for (linkp = &DEPS_LIST_FIRST (INSN_BACK_DEPS (insn));
+	   *linkp != NULL;
+	   linkp = &DEP_LINK_NEXT (*linkp))
         {
-          rtx link = *linkp;
+          dep_t link = DEP_LINK_DEP (*linkp);
 
 	  gcc_assert (true_dependency_cache == 0 || present_p);
 	  
-          if (XEXP (link, 0) == elem)
+          if (DEP_PRO (link) == elem)
             {
               enum DEPS_ADJUST_RESULT changed_p = DEP_PRESENT;
 
@@ -412,7 +773,7 @@ add_or_update_back_dep_1 (rtx insn, rtx elem, enum reg_note dep_type,
               if (true_dependency_cache != NULL
 		  && !(current_sched_info->flags & USE_DEPS_LIST))
 		{
-		  enum reg_note kind = REG_NOTE_KIND (link);
+		  enum reg_note kind = DEP_KIND (link);
 
 		  switch (kind)
 		    {
@@ -440,9 +801,9 @@ add_or_update_back_dep_1 (rtx insn, rtx elem, enum reg_note dep_type,
               /* If this is a more restrictive type of dependence than the
 		 existing one, then change the existing dependence to this
 		 type.  */
-              if ((int) dep_type < (int) REG_NOTE_KIND (link))
+              if ((int) dep_type < (int) DEP_KIND (link))
                 {
-                  PUT_REG_NOTE_KIND (link, dep_type);
+		  DEP_KIND (link) = dep_type;
                   changed_p = DEP_CHANGED;
                 }
 
@@ -453,13 +814,13 @@ add_or_update_back_dep_1 (rtx insn, rtx elem, enum reg_note dep_type,
                 {
                   if (!(current_sched_info->flags & USE_DEPS_LIST))
                     {
-                      if (REG_NOTE_KIND (link) == REG_DEP_TRUE)
+                      if (DEP_KIND (link) == REG_DEP_TRUE)
                         bitmap_set_bit (&true_dependency_cache
 					[INSN_LUID (insn)], INSN_LUID (elem));
-                      else if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT)
+                      else if (DEP_KIND (link) == REG_DEP_OUTPUT)
                         bitmap_set_bit (&output_dependency_cache
 					[INSN_LUID (insn)], INSN_LUID (elem));
-                      else if (REG_NOTE_KIND (link) == REG_DEP_ANTI)
+                      else if (DEP_KIND (link) == REG_DEP_ANTI)
                         bitmap_set_bit (&anti_dependency_cache
 					[INSN_LUID (insn)], INSN_LUID (elem));
                     }
@@ -511,16 +872,17 @@ add_or_update_back_dep_1 (rtx insn, rtx elem, enum reg_note dep_type,
 static void
 add_back_dep (rtx insn, rtx elem, enum reg_note dep_type, ds_t ds)
 {
+  struct _dep _dep, *dep = &_dep;
+
   gcc_assert (INSN_P (insn) && INSN_P (elem) && insn != elem);
 
   if (current_sched_info->flags & USE_DEPS_LIST)
-    LOG_LINKS (insn) = alloc_DEPS_LIST (elem, LOG_LINKS (insn), ds);
+    init_dep_1 (dep, elem, insn, dep_type, ds);
   else
-    LOG_LINKS (insn) = alloc_INSN_LIST (elem, LOG_LINKS (insn));
-  
-  /* Insn dependency, not data dependency.  */
-  PUT_REG_NOTE_KIND (LOG_LINKS (insn), dep_type);
-    
+    init_dep_1 (dep, elem, insn, dep_type, -1);
+
+  add_back_dep_to_deps_list (INSN_BACK_DEPS (insn), dep);
+
 #ifdef INSN_SCHEDULING
 #ifdef ENABLE_CHECKING
   check_dep_status (dep_type, ds, false);
@@ -612,12 +974,7 @@ delete_all_dependences (rtx insn)
     }
 #endif
 
-  if (!(current_sched_info->flags & USE_DEPS_LIST))
-    /* In this case LOG_LINKS are formed from the DEPS_LISTs,
-       not the INSN_LISTs.  */
-    free_INSN_LIST_list (&LOG_LINKS (insn));  
-  else
-    free_DEPS_LIST_list (&LOG_LINKS (insn));
+  clear_deps_list (INSN_BACK_DEPS (insn));  
 }
 
 /* All insns in a scheduling group except the first should only have
@@ -629,20 +986,25 @@ delete_all_dependences (rtx insn)
 static void
 fixup_sched_groups (rtx insn)
 {
-  rtx link, prev_nonnote;
+  dep_link_t link;
+  rtx prev_nonnote;
 
-  for (link = LOG_LINKS (insn); link ; link = XEXP (link, 1))
+  FOR_EACH_DEP_LINK (link, INSN_BACK_DEPS (insn))
     {
       rtx i = insn;
+      dep_t dep = DEP_LINK_DEP (link);
+      rtx pro = DEP_PRO (dep);
+
       do
 	{
 	  i = prev_nonnote_insn (i);
 
-	  if (XEXP (link, 0) == i)
+	  if (pro == i)
 	    goto next_link;
 	} while (SCHED_GROUP_P (i));
-      if (! sched_insns_conditions_mutex_p (i, XEXP (link, 0)))
-	add_dependence (i, XEXP (link, 0), REG_NOTE_KIND (link));
+
+      if (! sched_insns_conditions_mutex_p (i, pro))
+	add_dependence (i, pro, DEP_KIND (dep));
     next_link:;
     }
 
@@ -1450,8 +1812,8 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn)
     fixup_sched_groups (insn);
 }
 
-/* Analyze every insn between HEAD and TAIL inclusive, creating LOG_LINKS
-   for every dependency.  */
+/* Analyze every insn between HEAD and TAIL inclusive, creating backward
+   dependencies for each insn.  */
 
 void
 sched_analyze (struct deps *deps, rtx head, rtx tail)
@@ -1474,11 +1836,22 @@ sched_analyze (struct deps *deps, rtx head, rtx tail)
     {
       rtx link, end_seq, r0, set;
 
-      if (NONJUMP_INSN_P (insn) || JUMP_P (insn))
+      if (INSN_P (insn))
 	{
 	  /* Clear out the stale LOG_LINKS from flow.  */
 	  free_INSN_LIST_list (&LOG_LINKS (insn));
 
+	  /* These two lists will be freed in schedule_insn ().  */
+	  INSN_BACK_DEPS (insn) = create_deps_list (false);
+	  INSN_RESOLVED_BACK_DEPS (insn) = create_deps_list (false);
+
+	  /* This one should be allocated on the obstack because it should live
+	     till the scheduling ends.  */
+	  INSN_FORW_DEPS (insn) = create_deps_list (true);
+	}
+
+      if (NONJUMP_INSN_P (insn) || JUMP_P (insn))
+	{
 	  /* Make each JUMP_INSN a scheduling barrier for memory
              references.  */
 	  if (JUMP_P (insn))
@@ -1497,9 +1870,6 @@ sched_analyze (struct deps *deps, rtx head, rtx tail)
 	  int i;
 
 	  CANT_MOVE (insn) = 1;
-
-	  /* Clear out the stale LOG_LINKS from flow.  */
-	  free_INSN_LIST_list (&LOG_LINKS (insn));
 
 	  if (find_reg_note (insn, REG_SETJMP, NULL))
 	    {
@@ -1625,11 +1995,11 @@ sched_analyze (struct deps *deps, rtx head, rtx tail)
    given DEP_TYPE.  The forward dependence should be not exist before.  */
 
 void
-add_forw_dep (rtx to, rtx link)
+add_forw_dep (dep_link_t link)
 {
-  rtx new_link, from;
-
-  from = XEXP (link, 0);
+  dep_t dep = DEP_LINK_DEP (link);
+  rtx to = DEP_CON (dep);
+  rtx from = DEP_PRO (dep);
 
 #ifdef ENABLE_CHECKING
   /* If add_dependence is working properly there should never
@@ -1647,24 +2017,20 @@ add_forw_dep (rtx to, rtx link)
       bitmap_set_bit (&forward_dependency_cache[INSN_LUID (from)],
 		      INSN_LUID (to));
     }
-  else
-    gcc_assert (!find_insn_list (to, INSN_DEPEND (from)));
+
+  gcc_assert (find_link_by_con_in_deps_list (INSN_FORW_DEPS (from), to)
+	      == NULL);
 #endif
 
-  if (!(current_sched_info->flags & USE_DEPS_LIST))
-    new_link = alloc_INSN_LIST (to, INSN_DEPEND (from));
-  else
-    new_link = alloc_DEPS_LIST (to, INSN_DEPEND (from), DEP_STATUS (link));
+  add_to_deps_list (DEP_NODE_FORW (DEP_LINK_NODE (link)),
+		    INSN_FORW_DEPS (from));
 
-  PUT_REG_NOTE_KIND (new_link, REG_NOTE_KIND (link));
-
-  INSN_DEPEND (from) = new_link;
   INSN_DEP_COUNT (to) += 1;
 }
 
 /* Examine insns in the range [ HEAD, TAIL ] and Use the backward
-   dependences from LOG_LINKS to build forward dependences in
-   INSN_DEPEND.  */
+   dependences from INSN_BACK_DEPS list to build forward dependences in
+   INSN_FORW_DEPS.  */
 
 void
 compute_forward_dependences (rtx head, rtx tail)
@@ -1675,26 +2041,41 @@ compute_forward_dependences (rtx head, rtx tail)
   next_tail = NEXT_INSN (tail);
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
     {
-      rtx link;
+      dep_link_t link;
       
       if (! INSN_P (insn))
 	continue;
       
       if (current_sched_info->flags & DO_SPECULATION)
         {
-          rtx new = 0, link, next;
+	  /* We will add links, preserving order, from INSN_BACK_DEPS to
+	     NEW.  */
+          dep_link_t new = NULL;
 
-          for (link = LOG_LINKS (insn); link; link = next)
+	  link = DEPS_LIST_FIRST (INSN_BACK_DEPS (insn));
+
+	  while (link != NULL)
             {
-              next = XEXP (link, 1);
+	      dep_link_t next = DEP_LINK_NEXT (link);
+
+	      detach_dep_link (link);
               adjust_add_sorted_back_dep (insn, link, &new);
+
+	      link = next;
             }
 
-          LOG_LINKS (insn) = new;
+	  /* Attach NEW to be the list of backward dependencies.  */
+	  if (new != NULL)
+	    {
+	      DEP_LINK_PREV_NEXTP (new)
+		= &DEPS_LIST_FIRST (INSN_BACK_DEPS (insn));
+
+	      DEPS_LIST_FIRST (INSN_BACK_DEPS (insn)) = new;
+	    }
         }
 
-      for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
-        add_forw_dep (insn, link);
+      FOR_EACH_DEP_LINK (link, INSN_BACK_DEPS (insn))
+        add_forw_dep (link);
     }
 }
 
@@ -1775,6 +2156,16 @@ init_dependency_caches (int luid)
       cache_size = 0;
       extend_dependency_caches (luid, true);
     }
+
+  /* Lifetime of this obstack is whole function scheduling (not single region
+     scheduling) because some dependencies can be manually generated for
+     outside regions.  See dont_calc_deps in sched-{rgn, ebb}.c .
+
+     Possible solution would be to have two obstacks:
+     * the big one for regular dependencies with region scheduling lifetime,
+     * and the small one for manually generated dependencies with function
+     scheduling lifetime.  */
+  gcc_obstack_init (&deps_obstack);
 }
 
 /* Create or extend (depending on CREATE_P) dependency caches to
@@ -1820,6 +2211,8 @@ extend_dependency_caches (int n, bool create_p)
 void
 free_dependency_caches (void)
 {
+  obstack_free (&deps_obstack, NULL);
+
   if (true_dependency_cache)
     {
       int i;
@@ -1878,63 +2271,67 @@ finish_deps_global (void)
 /* Insert LINK into the dependence chain pointed to by LINKP and 
    maintain the sort order.  */
 static void
-adjust_add_sorted_back_dep (rtx insn, rtx link, rtx *linkp)
+adjust_add_sorted_back_dep (rtx insn, dep_link_t link, dep_link_t *linkp)
 {
   gcc_assert (current_sched_info->flags & DO_SPECULATION);
   
   /* If the insn cannot move speculatively, but the link is speculative,   
      make it hard dependence.  */
   if (HAS_INTERNAL_DEP (insn)
-      && (DEP_STATUS (link) & SPECULATIVE))
+      && (DEP_LINK_STATUS (link) & SPECULATIVE))
     {      
-      DEP_STATUS (link) &= ~SPECULATIVE;
+      DEP_LINK_STATUS (link) &= ~SPECULATIVE;
       
       if (true_dependency_cache)
         bitmap_clear_bit (&spec_dependency_cache[INSN_LUID (insn)],
-			  INSN_LUID (XEXP (link, 0)));
+			  INSN_LUID (DEP_LINK_PRO (link)));
     }
 
-  /* Non-speculative links go at the head of LOG_LINKS, followed by
+  /* Non-speculative links go at the head of deps_list, followed by
      speculative links.  */
-  if (DEP_STATUS (link) & SPECULATIVE)
-    while (*linkp && !(DEP_STATUS (*linkp) & SPECULATIVE))
-      linkp = &XEXP (*linkp, 1);
+  if (DEP_LINK_STATUS (link) & SPECULATIVE)
+    while (*linkp && !(DEP_LINK_STATUS (*linkp) & SPECULATIVE))
+      linkp = &DEP_LINK_NEXT (*linkp);
 
-  XEXP (link, 1) = *linkp;
-  *linkp = link;
+  attach_dep_link (link, linkp);
+
+  if (CHECK)
+    gcc_assert (deps_list_consistent_p (INSN_BACK_DEPS (insn)));
 }
 
 /* Move the dependence pointed to by LINKP to the back dependencies  
-   of INSN, and also add this dependence to the forward ones.  All LOG_LINKS,
+   of INSN, and also add this dependence to the forward ones.  All dep_links,
    except one pointed to by LINKP, must be sorted.  */
 static void
-adjust_back_add_forw_dep (rtx insn, rtx *linkp)
+adjust_back_add_forw_dep (rtx insn, dep_link_t *linkp)
 {
-  rtx link;
+  dep_link_t link;
 
   gcc_assert (current_sched_info->flags & DO_SPECULATION);
 
   link = *linkp;
-  *linkp = XEXP (*linkp, 1);  
+  detach_dep_link (link);
 
-  adjust_add_sorted_back_dep (insn, link, &LOG_LINKS (insn));
-  add_forw_dep (insn, link);
+  adjust_add_sorted_back_dep (insn, link,
+			      &DEPS_LIST_FIRST (INSN_BACK_DEPS (insn)));
+  add_forw_dep (link);
 }
 
-/* Remove forward dependence ELEM from the DEPS_LIST of INSN.  */
+/* Remove forward dependence described by L.  */
 static void
-delete_forw_dep (rtx insn, rtx elem)
+delete_forw_dep (dep_link_t l)
 {
   gcc_assert (current_sched_info->flags & DO_SPECULATION);
 
 #ifdef ENABLE_CHECKING
   if (true_dependency_cache)
-    bitmap_clear_bit (&forward_dependency_cache[INSN_LUID (elem)],
-		      INSN_LUID (insn));
+    bitmap_clear_bit (&forward_dependency_cache[INSN_LUID (DEP_LINK_PRO (l))],
+		      INSN_LUID (DEP_LINK_CON (l)));
 #endif
 
-  remove_free_DEPS_LIST_elem (insn, &INSN_DEPEND (elem));    
-  INSN_DEP_COUNT (insn)--;
+  detach_dep_link (l);
+
+  INSN_DEP_COUNT (DEP_LINK_CON (l))--;
 }
 
 /* Estimate the weakness of dependence between MEM1 and MEM2.  */
@@ -2001,16 +2398,16 @@ add_or_update_back_forw_dep (rtx insn, rtx elem, enum reg_note dep_type,
 			     ds_t ds)
 {
   enum DEPS_ADJUST_RESULT res;
-  rtx *linkp;
+  dep_link_t *linkp;
 
   res = add_or_update_back_dep_1 (insn, elem, dep_type, ds, 0, 0, &linkp);
 
   if (res == DEP_CHANGED || res == DEP_CREATED)
     {
       if (res == DEP_CHANGED)
-	delete_forw_dep (insn, elem);
+	delete_forw_dep (DEP_NODE_FORW (DEP_LINK_NODE (*linkp)));
       else if (res == DEP_CREATED)
-	linkp = &LOG_LINKS (insn);
+	linkp = &DEPS_LIST_FIRST (INSN_BACK_DEPS (insn));
 
       adjust_back_add_forw_dep (insn, linkp);
     }
@@ -2021,30 +2418,35 @@ add_or_update_back_forw_dep (rtx insn, rtx elem, enum reg_note dep_type,
 void
 add_back_forw_dep (rtx insn, rtx elem, enum reg_note dep_type, ds_t ds)
 {
-  add_back_dep (insn, elem, dep_type, ds);  
-  adjust_back_add_forw_dep (insn, &LOG_LINKS (insn));    
+  add_back_dep (insn, elem, dep_type, ds);
+  adjust_back_add_forw_dep (insn, &DEPS_LIST_FIRST (INSN_BACK_DEPS (insn)));
+
+  if (CHECK)
+    gcc_assert (deps_list_consistent_p (INSN_BACK_DEPS (insn)));
 }
 
-/* Remove both backward and forward dependencies between INSN and ELEM.  */
+/* Remove a dependency refered by L.  */
 void
-delete_back_forw_dep (rtx insn, rtx elem)
+delete_back_forw_dep (dep_link_t l)
 {
+  dep_node_t n = DEP_LINK_NODE (l);
+
   gcc_assert (current_sched_info->flags & DO_SPECULATION);
 
   if (true_dependency_cache != NULL)
     {
-      bitmap_clear_bit (&true_dependency_cache[INSN_LUID (insn)],
-			INSN_LUID (elem));
-      bitmap_clear_bit (&anti_dependency_cache[INSN_LUID (insn)],
-			INSN_LUID (elem));
-      bitmap_clear_bit (&output_dependency_cache[INSN_LUID (insn)],
-			INSN_LUID (elem));
-      bitmap_clear_bit (&spec_dependency_cache[INSN_LUID (insn)],
-			INSN_LUID (elem));
+      dep_t dep = DEP_NODE_DEP (n);
+      int elem_luid = INSN_LUID (DEP_PRO (dep));
+      int insn_luid = INSN_LUID (DEP_CON (dep));
+
+      bitmap_clear_bit (&true_dependency_cache[insn_luid], elem_luid);
+      bitmap_clear_bit (&anti_dependency_cache[insn_luid], elem_luid);
+      bitmap_clear_bit (&output_dependency_cache[insn_luid], elem_luid);
+      bitmap_clear_bit (&spec_dependency_cache[insn_luid], elem_luid);
     }
 
-  remove_free_DEPS_LIST_elem (elem, &LOG_LINKS (insn));
-  delete_forw_dep (insn, elem);
+  delete_forw_dep (DEP_NODE_FORW (n));
+  detach_dep_link (DEP_NODE_BACK (n));
 }
 
 /* Return weakness of speculative type TYPE in the dep_status DS.  */

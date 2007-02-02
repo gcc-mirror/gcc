@@ -3271,13 +3271,7 @@ This list is originally set up by the flow analysis pass; it is a null
 pointer until then.  Flow only adds links for those data dependencies
 which can be used for instruction combination.  For each insn, the flow
 analysis pass adds a link to insns which store into registers values
-that are used for the first time in this insn.  The instruction
-scheduling pass adds extra links so that every dependence will be
-represented.  Links represent data dependencies, antidependencies and
-output dependencies; the machine mode of the link distinguishes these
-three types: antidependencies have mode @code{REG_DEP_ANTI}, output
-dependencies have mode @code{REG_DEP_OUTPUT}, and data dependencies have
-mode @code{VOIDmode}.
+that are used for the first time in this insn.
 
 The @code{REG_NOTES} field of an insn is a chain similar to the
 @code{LOG_LINKS} field but it includes @code{expr_list} expressions in
@@ -3500,13 +3494,18 @@ they simply have mode @code{VOIDmode}, and are printed without any
 descriptive text.
 
 @table @code
-@findex REG_DEP_ANTI
-@item REG_DEP_ANTI
-This indicates an anti dependence (a write after read dependence).
+@findex REG_DEP_TRUE
+@item REG_DEP_TRUE
+This indicates a true dependence (a read after write dependence).
 
 @findex REG_DEP_OUTPUT
 @item REG_DEP_OUTPUT
 This indicates an output dependence (a write after write dependence).
+
+@findex REG_DEP_ANTI
+@item REG_DEP_ANTI
+This indicates an anti dependence (a write after read dependence).
+
 @end table
 
 These notes describe information gathered from gcov profile data.  They

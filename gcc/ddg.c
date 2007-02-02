@@ -53,7 +53,7 @@ enum edge_flag {NOT_IN_SCC = 0, IN_SCC};
 static void add_backarc_to_ddg (ddg_ptr, ddg_edge_ptr);
 static void add_backarc_to_scc (ddg_scc_ptr, ddg_edge_ptr);
 static void add_scc_to_ddg (ddg_all_sccs_ptr, ddg_scc_ptr);
-static void create_ddg_dependence (ddg_ptr, ddg_node_ptr, ddg_node_ptr, rtx);
+static void create_ddg_dependence (ddg_ptr, ddg_node_ptr, ddg_node_ptr, dep_t);
 static void create_ddg_dep_no_link (ddg_ptr, ddg_node_ptr, ddg_node_ptr,
  				    dep_type, dep_data_type, int);
 static ddg_edge_ptr create_ddg_edge (ddg_node_ptr, ddg_node_ptr, dep_type,
@@ -148,7 +148,7 @@ mem_access_insn_p (rtx insn)
    a ddg_edge and adds it to the given DDG.  */
 static void
 create_ddg_dependence (ddg_ptr g, ddg_node_ptr src_node,
-		       ddg_node_ptr dest_node, rtx link)
+		       ddg_node_ptr dest_node, dep_t link)
 {
   ddg_edge_ptr e;
   int latency, distance = 0;
@@ -166,11 +166,11 @@ create_ddg_dependence (ddg_ptr g, ddg_node_ptr src_node,
   gcc_assert (link);
 
   /* Note: REG_DEP_ANTI applies to MEM ANTI_DEP as well!!  */
-  if (REG_NOTE_KIND (link) == REG_DEP_ANTI)
+  if (DEP_KIND (link) == REG_DEP_ANTI)
     t = ANTI_DEP;
-  else if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT)
+  else if (DEP_KIND (link) == REG_DEP_OUTPUT)
     t = OUTPUT_DEP;
-  latency = insn_cost (src_node->insn, link, dest_node->insn);
+  latency = dep_cost (link);
 
   e = create_ddg_edge (src_node, dest_node, t, dt, latency, distance);
 
@@ -200,15 +200,23 @@ create_ddg_dep_no_link (ddg_ptr g, ddg_node_ptr from, ddg_node_ptr to,
 {
   ddg_edge_ptr e;
   int l;
-  rtx link = alloc_INSN_LIST (to->insn, NULL_RTX);
+  enum reg_note dep_kind;
+  struct _dep _dep, *dep = &_dep;
 
   if (d_t == ANTI_DEP)
-    PUT_REG_NOTE_KIND (link, REG_DEP_ANTI);
+    dep_kind = REG_DEP_ANTI;
   else if (d_t == OUTPUT_DEP)
-    PUT_REG_NOTE_KIND (link, REG_DEP_OUTPUT);
+    dep_kind = REG_DEP_OUTPUT;
+  else
+    {
+      gcc_assert (d_t == TRUE_DEP);
 
-  l = insn_cost (from->insn, link, to->insn);
-  free_INSN_LIST_node (link);
+      dep_kind = REG_DEP_TRUE;
+    }
+
+  init_dep (dep, from->insn, to->insn, dep_kind);
+
+  l = dep_cost (dep);
 
   e = create_ddg_edge (from, to, d_t, d_dt, l, distance);
   if (distance > 0)
@@ -375,7 +383,8 @@ build_intra_loop_deps (ddg_ptr g)
   int i;
   /* Hold the dependency analysis state during dependency calculations.  */
   struct deps tmp_deps;
-  rtx head, tail, link;
+  rtx head, tail;
+  dep_link_t link;
 
   /* Build the dependence information, using the sched_analyze function.  */
   init_deps_global ();
@@ -394,16 +403,16 @@ build_intra_loop_deps (ddg_ptr g)
       if (! INSN_P (dest_node->insn))
 	continue;
 
-      for (link = LOG_LINKS (dest_node->insn); link; link = XEXP (link, 1))
+      FOR_EACH_DEP_LINK (link, INSN_BACK_DEPS (dest_node->insn))
 	{
-	  ddg_node_ptr src_node = get_node_of_insn (g, XEXP (link, 0));
+	  dep_t dep = DEP_LINK_DEP (link);
+	  ddg_node_ptr src_node = get_node_of_insn (g, DEP_PRO (dep));
 
 	  if (!src_node)
 	    continue;
 
-      	  add_forw_dep (dest_node->insn, link);
-	  create_ddg_dependence (g, src_node, dest_node,
-				 INSN_DEPEND (src_node->insn));
+      	  add_forw_dep (link);
+	  create_ddg_dependence (g, src_node, dest_node, dep);
 	}
 
       /* If this insn modifies memory, add an edge to all insns that access

@@ -2260,7 +2260,7 @@ spu_sched_adjust_cost (rtx insn, rtx link ATTRIBUTE_UNUSED,
      jump_insn.  We adjust here so higher cost insns will get scheduled
      earlier. */
   if (GET_CODE (insn) == JUMP_INSN && REG_NOTE_KIND (link) == REG_DEP_ANTI)
-    return INSN_COST (dep_insn) - 3;
+    return insn_cost (dep_insn) - 3;
   return cost;
 }
 

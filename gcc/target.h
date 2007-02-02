@@ -84,6 +84,8 @@ typedef struct secondary_reload_info
   int t_icode; /* Actually an enum insn_code - see above.  */
 } secondary_reload_info;
 
+/* This is defined in sched-int.h .  */
+struct _dep;
 
 struct gcc_target
 {
@@ -241,7 +243,7 @@ struct gcc_target
     /* Given the current cost, COST, of an insn, INSN, calculate and
        return a new cost based on its relationship to DEP_INSN through
        the dependence LINK.  The default is to make no adjustment.  */
-    int (* adjust_cost) (rtx insn, rtx link, rtx def_insn, int cost);
+    int (* adjust_cost) (rtx insn, rtx link, rtx dep_insn, int cost);
 
     /* Adjust the priority of an insn as you see fit.  Returns the new
        priority.  */
@@ -324,22 +326,16 @@ struct gcc_target
        cycle.  */
     int (* dfa_new_cycle) (FILE *, int, rtx, int, int, int *);
 
-    /* The following member value is a pointer to a function called
-       by the insn scheduler.  It should return true if there exists a
-       dependence which is considered costly by the target, between
-       the insn passed as the first parameter, and the insn passed as
-       the second parameter.  The third parameter is the INSN_DEPEND
-       link that represents the dependence between the two insns.  The
-       fourth argument is the cost of the dependence as estimated by
+    /* The following member value is a pointer to a function called by the
+       insn scheduler.  It should return true if there exists a dependence
+       which is considered costly by the target, between the insn
+       DEP_PRO (&_DEP), and the insn DEP_CON (&_DEP).  The first parameter is
+       the dep that represents the dependence between the two insns.  The
+       second argument is the cost of the dependence as estimated by
        the scheduler.  The last argument is the distance in cycles
        between the already scheduled insn (first parameter) and the
        the second insn (second parameter).  */
-    bool (* is_costly_dependence) (rtx, rtx, rtx, int, int);
-
-    /* Given the current cost, COST, of an insn, INSN, calculate and
-       return a new cost based on its relationship to DEP_INSN through the
-       dependence of type DEP_TYPE.  The default is to make no adjustment.  */
-    int (* adjust_cost_2) (rtx insn, int, rtx def_insn, int cost);
+    bool (* is_costly_dependence) (struct _dep *_dep, int, int);
 
     /* The following member value is a pointer to a function called
        by the insn scheduler. This hook is called to notify the backend
