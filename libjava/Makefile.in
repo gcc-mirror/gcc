@@ -53,15 +53,17 @@ target_triplet = @target@
 @NATIVE_TRUE@	grmid$(EXEEXT) gserialver$(EXEEXT) \
 @NATIVE_TRUE@	gtnameserv$(EXEEXT)
 @BUILD_ECJ1_TRUE@libexecsub_PROGRAMS = ecjx$(EXEEXT)
-@USING_GCC_TRUE@am__append_5 = $(WARNINGS)
-@USING_BOEHMGC_TRUE@am__append_6 = boehm.cc
-@USING_NOGC_TRUE@am__append_7 = nogc.cc
-@USING_POSIX_PLATFORM_TRUE@am__append_8 = posix.cc
-@USING_WIN32_PLATFORM_TRUE@am__append_9 = win32.cc
-@USING_DARWIN_CRT_TRUE@am__append_10 = darwin.cc
-@USING_POSIX_THREADS_TRUE@am__append_11 = posix-threads.cc
-@USING_WIN32_THREADS_TRUE@am__append_12 = win32-threads.cc
-@USING_NO_THREADS_TRUE@am__append_13 = no-threads.cc
+@ANONVERSCRIPT_TRUE@am__append_5 = -Wl,--version-script=$(srcdir)/libgcj.ver
+@USING_GCC_TRUE@am__append_6 = $(WARNINGS)
+@USING_BOEHMGC_TRUE@am__append_7 = boehm.cc
+@USING_NOGC_TRUE@am__append_8 = nogc.cc
+@USING_POSIX_PLATFORM_TRUE@am__append_9 = posix.cc
+@USING_WIN32_PLATFORM_TRUE@am__append_10 = win32.cc
+@USING_DARWIN_CRT_TRUE@am__append_11 = darwin.cc
+@USING_POSIX_THREADS_TRUE@am__append_12 = posix-threads.cc
+@USING_WIN32_THREADS_TRUE@am__append_13 = win32-threads.cc
+@USING_NO_THREADS_TRUE@am__append_14 = no-threads.cc
+@ANONVERSCRIPT_TRUE@am__append_15 = $(srcdir)/libgcj.ver
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	$(srcdir)/../config.guess $(srcdir)/../config.sub \
 	$(srcdir)/../depcomp $(srcdir)/../install-sh \
@@ -73,8 +75,8 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	$(top_srcdir)/scripts/jar.in COPYING ChangeLog NEWS THANKS
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@noinst_PROGRAMS =  \
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	gen-from-JIS$(EXEEXT)
-@NATIVE_TRUE@@USE_LIBGCJ_BC_TRUE@am__append_14 = libgcj_bc.la
-@XLIB_AWT_TRUE@am__append_15 = $(xlib_nat_headers)
+@NATIVE_TRUE@@USE_LIBGCJ_BC_TRUE@am__append_16 = libgcj_bc.la
+@XLIB_AWT_TRUE@am__append_17 = $(xlib_nat_headers)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -545,6 +547,8 @@ ALLOCA = @ALLOCA@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
+ANONVERSCRIPT_FALSE = @ANONVERSCRIPT_FALSE@
+ANONVERSCRIPT_TRUE = @ANONVERSCRIPT_TRUE@
 AR = @AR@
 AS = @AS@
 AUTOCONF = @AUTOCONF@
@@ -738,7 +742,7 @@ build_vendor = @build_vendor@
 datadir = @datadir@
 dbexecdir = @dbexecdir@
 exec_prefix = @exec_prefix@
-extra_ldflags_libjava = @extra_ldflags_libjava@
+extra_ldflags_libjava = @extra_ldflags_libjava@ $(am__append_5)
 gxx_include_dir = @gxx_include_dir@
 here = @here@
 host = @host@
@@ -849,7 +853,7 @@ AM_GCJFLAGS = \
 	--encoding=UTF-8 \
 	-Wno-deprecated -fbootstrap-classes
 
-AM_CFLAGS = @LIBGCJ_CFLAGS@ $(am__append_5)
+AM_CFLAGS = @LIBGCJ_CFLAGS@ $(am__append_6)
 PEDANTIC_CFLAGS = -ansi -pedantic -Wall -Wno-long-long
 JCFLAGS = -g
 JC1FLAGS = @LIBGCJ_JAVAFLAGS@ $(GCJFLAGS)
@@ -870,9 +874,9 @@ libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
 
 libgcj_la_SOURCES = prims.cc jni.cc jvmti.cc exception.cc \
 	stacktrace.cc link.cc defineclass.cc interpret.cc verify.cc \
-	$(nat_source_files) $(am__append_6) $(am__append_7) \
-	$(am__append_8) $(am__append_9) $(am__append_10) \
-	$(am__append_11) $(am__append_12) $(am__append_13)
+	$(nat_source_files) $(am__append_7) $(am__append_8) \
+	$(am__append_9) $(am__append_10) $(am__append_11) \
+	$(am__append_12) $(am__append_13) $(am__append_14)
 nat_files = $(nat_source_files:.cc=.lo)
 xlib_nat_files = $(xlib_nat_source_files:.cc=.lo)
 
@@ -893,13 +897,10 @@ libgcj_la_LIBADD = \
 	$(propertyo_files) \
 	$(LIBFFI) $(ZLIBS) $(GCLIBS)
 
-libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
-	java/lang/Object.lo \
-	java/lang/Class.lo \
-	java/process-$(PLATFORM).lo \
-	$(all_packages_source_files:.list=.lo) \
-	$(LIBLTDL) $(libgcj_la_LIBADD)
-
+libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar java/lang/Object.lo \
+	java/lang/Class.lo java/process-$(PLATFORM).lo \
+	$(all_packages_source_files:.list=.lo) $(LIBLTDL) \
+	$(libgcj_la_LIBADD) $(am__append_15)
 libgcj_la_LINK = $(LIBLINK)
 EXTRA_libgcj_la_SOURCES = java/lang/Object.java
 libgcj_tools_la_SOURCES = classpath/tools/tools.zip
@@ -7836,7 +7837,7 @@ ECJX_BASE_FLAGS = -findirect-dispatch \
 @NATIVE_TRUE@ecjx_LDADD = -L$(here)/.libs libgcj.la
 @NATIVE_FALSE@ecjx_DEPENDENCIES = 
 @NATIVE_TRUE@ecjx_DEPENDENCIES = libgcj.la libgcj.spec \
-@NATIVE_TRUE@	$(am__append_14)
+@NATIVE_TRUE@	$(am__append_16)
 gappletviewer_SOURCES = 
 gappletviewer_LDFLAGS = --main=gnu.classpath.tools.appletviewer.Main \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
@@ -8027,7 +8028,7 @@ gnu/gcj/xlib/natXImage.cc \
 gnu/gcj/xlib/natXUnmapEvent.cc
 
 sourcesdir = $(jardir)
-headers_to_make = $(nat_headers) $(am__append_15)
+headers_to_make = $(nat_headers) $(am__append_17)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and

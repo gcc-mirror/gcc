@@ -1553,6 +1553,19 @@ GCC_CHECK_TLS
 # For _Unwind_GetIPInfo.
 GCC_CHECK_UNWIND_GETIPINFO
 
+# See if linker supports anonymous version scripts.
+AC_CACHE_CHECK([whether ld supports anonymous version scripts],
+  [libjava_cv_anon_version_script],
+  [save_CFLAGS="$CFLAGS"; save_LDFLAGS="$LDFLAGS"
+   libjava_cv_anon_version_script=no
+   CFLAGS="$CFLAGS -fPIC"; LDFLAGS="$LDFLAGS -shared -Wl,--version-script,conftest.map"
+   echo '{ global: globalsymb*; local: *; };' > conftest.map
+   AC_TRY_LINK(void globalsymbol (void) {} void localsymbol (void) {},,
+	       [libjava_cv_anon_version_script=yes], [])
+   CFLAGS="$save_CFLAGS"; LDFLAGS="$save_LDFLAGS"
+  ])
+AM_CONDITIONAL(ANONVERSCRIPT, test "$libjava_cv_anon_version_script" = yes)
+
 # Check if linker supports static linking on a per library basis
 LD_START_STATIC_SPEC=
 LD_FINISH_STATIC_SPEC=
