@@ -302,6 +302,9 @@ gfc_build_array_ref (tree base, tree offset)
   if (DECL_P (base))
     TREE_ADDRESSABLE (base) = 1;
 
+  /* Strip NON_LVALUE_EXPR nodes.  */
+  STRIP_TYPE_NOPS (offset);
+
   return build4 (ARRAY_REF, type, base, offset, NULL_TREE, NULL_TREE);
 }
 
