@@ -6786,13 +6786,19 @@ ia64_speculate_insn (rtx insn, ds_t ts, rtx *new_pat)
   if (GET_CODE (pat) == COND_EXEC)
     pat = COND_EXEC_CODE (pat);
 
+  /* This should be a SET ...  */
   if (GET_CODE (pat) != SET)
     return -1;
+
   reg = SET_DEST (pat);
-  if (!REG_P (reg))
+  /* ... to the general/fp register ...  */
+  if (!REG_P (reg) || !(GR_REGNO_P (REGNO (reg)) || FP_REGNO_P (REGNO (reg))))
     return -1;
 
-  mem = SET_SRC (pat);  
+  /* ... from the mem ...  */
+  mem = SET_SRC (pat);
+
+  /* ... that can, possibly, be a zero_extend ...  */
   if (GET_CODE (mem) == ZERO_EXTEND)
     {
       mem = XEXP (mem, 0);
@@ -6801,6 +6807,7 @@ ia64_speculate_insn (rtx insn, ds_t ts, rtx *new_pat)
   else
     extend_p = false;
 
+  /* ... or a speculative load.  */
   if (GET_CODE (mem) == UNSPEC)
     {
       int code;
@@ -6817,8 +6824,12 @@ ia64_speculate_insn (rtx insn, ds_t ts, rtx *new_pat)
       mem = XVECEXP (mem, 0, 0);
       gcc_assert (MEM_P (mem));
     }
+
+  /* Source should be a mem ...  */
   if (!MEM_P (mem))
     return -1;
+
+  /* ... addressed by a register.  */
   mem_reg = XEXP (mem, 0);
   if (!REG_P (mem_reg))
     return -1;
@@ -6835,6 +6846,7 @@ ia64_speculate_insn (rtx insn, ds_t ts, rtx *new_pat)
 
   extract_insn_cached (insn);
   gcc_assert (reg == recog_data.operand[0] && mem == recog_data.operand[1]);
+
   *new_pat = ia64_gen_spec_insn (insn, ts, mode_no, gen_p != 0, extend_p);
 
   return gen_p;
