@@ -2059,7 +2059,6 @@ extern void add_insn_before (rtx, rtx);
 extern void add_insn_after (rtx, rtx);
 extern void remove_insn (rtx);
 extern rtx emit (rtx);
-extern void renumber_insns (void);
 extern rtx delete_insn (rtx);
 extern rtx entry_of_function (void);
 extern void emit_insn_at_entry (rtx);

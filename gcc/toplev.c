@@ -333,11 +333,6 @@ int flag_dump_rtl_in_asm = 0;
    the support provided depends on the backend.  */
 rtx stack_limit_rtx;
 
-/* If one, renumber instruction UIDs to reduce the number of
-   unused UIDs if there are a lot of instructions.  If greater than
-   one, unconditionally renumber instruction UIDs.  */
-int flag_renumber_insns = 1;
-
 /* Nonzero if we should track variables.  When
    flag_var_tracking == AUTODETECT_VALUE it will be set according
    to optimize, debug_info_level and debug_hooks in process_options ().  */

@@ -187,11 +187,6 @@ extern int flag_debug_asm;
 extern int flag_next_runtime;
 
 extern int flag_dump_rtl_in_asm;
-
-/* If one, renumber instruction UIDs to reduce the number of
-   unused UIDs if there are a lot of instructions.  If greater than
-   one, unconditionally renumber instruction UIDs.  */
-extern int flag_renumber_insns;
 
 /* Other basic status info about current function.  */
 
