@@ -1,6 +1,7 @@
 2007-02-02  Kyle Galloway  <kgallowa@redhat.com>
 
-   * gnu/classpath/jdwp/natVMVirtualMachine.cc (getFrameCount): Implment. 
+	* gnu/classpath/jdwp/natVMVirtualMachine.cc (getFrameCount):
+	Implment.
 
 2007-02-02  Jakub Jelinek  <jakub@redhat.com>
 
@@ -242,6 +243,13 @@
 	(compile-tests): New goal.
 	* Makefile.in: Rebuilt.
 	* testsuite/Makefile.in: Rebuilt.
+
+2007-01-26  Andrew Haley  <aph@redhat.com>
+
+        * java/lang/natClass.cc (initializeClass): Re-throw
+        SecurityExceptions.
+        * java/lang/natVMClassLoader.cc (loadClass): checkPackageAccess.
+        * java/lang/ClassLoader.java: (loadClass): Likewise.
 
 2007-01-26  Tom Tromey  <tromey@redhat.com>
 
