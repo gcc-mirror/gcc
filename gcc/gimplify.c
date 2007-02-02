@@ -4235,7 +4235,11 @@ gimplify_target_expr (tree *expr_p, tree *pre_p, tree *post_p)
 			       fb_none);
 	}
       if (ret == GS_ERROR)
-	return GS_ERROR;
+	{
+	  /* PR c++/28266 Make sure this is expanded only once. */
+	  TARGET_EXPR_INITIAL (targ) = NULL_TREE;
+	  return GS_ERROR;
+	}
       append_to_statement_list (init, pre_p);
 
       /* If needed, push the cleanup for the temp.  */
