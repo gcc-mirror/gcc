@@ -1,3 +1,14 @@
+2007-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (libjava_cv_anon_version_script): New test.
+	(ANONVERSCRIPT): New AM_CONDITIONAL.
+	* configure: Rebuilt.
+	* Makefile.am (extra_ldflags_libjava): Link with -Wl,--version-script
+	if ANONVERSCRIPT.
+	* Makefile.in: Rebuilt.
+	(libgcj_la_DEPENDENCIES): Depend on libgcj.ver.
+	* libgcj.ver: New file.
+
 2007-02-01  David Daney  <ddaney@avtrex.com>
 
 	* scripts/makemake.tcl: Replace gnu/xml build with build of all

@@ -101,6 +101,10 @@ GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated
 
 extra_ldflags_libjava = @extra_ldflags_libjava@
 
+if ANONVERSCRIPT
+extra_ldflags_libjava += -Wl,--version-script=$(srcdir)/libgcj.ver
+endif
+
 GCJLINK = $(LIBTOOL) --tag=GCJ --mode=link $(GCJ) -L$(here) $(JC1FLAGS) \
           $(LDFLAGS) -o $@
 GCJ_FOR_ECJX = @GCJ_FOR_ECJX@
@@ -246,6 +250,9 @@ libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
 	java/process-$(PLATFORM).lo \
 	$(all_packages_source_files:.list=.lo) \
 	$(LIBLTDL) $(libgcj_la_LIBADD)
+if ANONVERSCRIPT
+libgcj_la_DEPENDENCIES += $(srcdir)/libgcj.ver
+endif
 libgcj_la_LINK = $(LIBLINK)
 
 ## A hack to make sure the various gcj-related macros, like
