@@ -39,8 +39,8 @@
 
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
-#ifndef _C_LOCALE_H
-#define _C_LOCALE_H 1
+#ifndef _GLIBCXX_CXX_LOCALE_H
+#define _GLIBCXX_CXX_LOCALE_H 1
 
 #pragma GCC system_header
 

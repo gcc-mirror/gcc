@@ -32,8 +32,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CXX_ALLOCATOR_H
-#define _CXX_ALLOCATOR_H 1
+#ifndef _GLIBCXX_CXX_ALLOCATOR_H
+#define _GLIBCXX_CXX_ALLOCATOR_H 1
 
 // Define bitmap_allocator as the base class to std::allocator.
 #include <ext/bitmap_allocator.h>
