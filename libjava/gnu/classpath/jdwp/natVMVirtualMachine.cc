@@ -367,9 +367,16 @@ getFrame (MAYBE_UNUSED Thread *thread, MAYBE_UNUSED::java::nio::ByteBuffer *bb)
 
 jint
 gnu::classpath::jdwp::VMVirtualMachine::
-getFrameCount (MAYBE_UNUSED Thread *thread)
+getFrameCount (Thread *thread)
 {
-  return 0;
+  jint frame_count;
+  
+  jvmtiError jerr = _jdwp_jvmtiEnv->GetFrameCount (thread, &frame_count);
+  
+  if (jerr != JVMTI_ERROR_NONE)
+    throw_jvmti_error (jerr);
+  
+  return frame_count;
 }
 
 jint
