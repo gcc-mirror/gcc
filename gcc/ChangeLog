@@ -1,3 +1,187 @@
+2007-02-02  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
+	* sched-int.h (ds_to_dk, dk_to_ds): Declare functions.
+	
+	(struct _dep): New type.
+	(dep_t): New typedef.
+	(DEP_PRO, DEP_CON, DEP_KIND): New access macros.
+	(DEP_STATUS): New access macro.  The macro with the same name was
+	renamed to DEP_LINK_STATUS.
+	(dep_init): Declare function
+
+	(struct _dep_link): New type.
+	(dep_link_t): New typedef.
+	(DEP_LINK_NODE, DEP_LINK_NEXT, DEP_LINK_PREV_NEXTP): New access macros.
+	(DEP_LINK_DEP, DEP_LINK_PRO, DEP_LINK_CON, DEP_LINK_KIND): New macros.
+	(DEP_LINK_STATUS): New macro.
+	(debug_dep_links): New debug function.
+
+	(struct _deps_list): New type.
+	(deps_list_t): New typedef.
+	(DEPS_LIST_FIRST): New access macro.
+	(FOR_EACH_DEP_LINK): New cycle macro.
+	(create_deps_list, free_deps_list, delete_deps_list): Declare
+	functions.
+	(deps_list_empty_p, debug_deps_list, add_back_dep_to_deps_list): Ditto.
+	(find_link_by_pro_in_deps_list, find_link_by_con_in_deps_list): Ditto.
+	(copy_deps_list_change_con): Ditto.
+
+	(move_dep_link): Declare function.
+
+	(struct _dep_node): New type.
+	(dep_node_t): New typedef.
+	(DEP_NODE_BACK, DEP_NODE_DEP, DEP_NODE_FORW): New access macros.
+
+	(struct haifa_insn_data.back_deps): New field to hold backward
+	dependencies of the insn.
+	(struct haifa_insn_data.depend): Rename to forw_deps.  Change its type
+	to deps_list_t.
+	(struct haifa_insn_data.resolved_deps): Rename to resolved_back_deps.
+	Change its type	to deps_list_t.
+	(INSN_BACK_DEPS): New access macro to use instead of LOG_LINKS.
+	(INSN_DEPEND): Rename to INSN_FORW_DEPS.
+	(RESOLVED_DEPS): Rename to INSN_RESOLVED_BACK_DEPS.
+
+	(INSN_COST): Move to haifa-sched.c.  Use insn_cost () instead.
+	
+	(DEP_STATUS): Rename to DEP_LINK_STATUS.  Fix typo in the comment.
+
+	(add_forw_dep, delete_back_forw_dep, insn_cost): Update declaration and
+	all callers.
+	(dep_cost): Declare.
+	
+	* sched-deps.c (CHECK): New macro to (en/dis)able sanity checks.
+	(ds_to_dk, dk_to_ds): New functions.
+	
+	(init_dep_1): New static function.
+	(init_dep): New function.
+	(copy_dep): New static function.
+	
+	(dep_link_consistent_p, attach_dep_link, add_to_deps_list): New static
+	functions.
+	(detach_dep_link): New static function.
+	(move_dep_link): New function.
+	
+	(dep_links_consistent_p, dump_dep_links): New static functions.
+	(debug_dep_links): New debugging function.
+	
+	(deps_obstack, dl_obstack, dn_obstack): New static variables.
+	
+	(alloc_deps_list, init_deps_list): New static functions.
+	(create_deps_list): New function.
+	(clear_deps_list): New static function.
+	(free_deps_list, delete_deps_list, deps_list_empty_p): New functions.
+	(deps_list_consistent_p, dump_deps_list): New static functions.
+	(debug_deps_list): New function.
+	(add_back_dep_to_deps_list, find_link_by_pro_in_deps_list): New
+	functions.
+	(find_link_by_con_in_deps_list, copy_deps_list_change_con): Ditto.
+
+	(maybe_add_or_update_back_dep_1, add_or_update_back_dep_1): Update to
+	use new scheduler dependencies lists.
+	(add_back_dep, delete_all_dependences, fixup_sched_groups): Ditto.
+	(sched_analyze): Ditto.  Initialize dependencies lists.
+	(add_forw_dep, compute_forward_dependences): Update to use new
+	scheduler dependencies lists.
+	
+	(init_dependency_caches): Init deps_obstack.
+	(free_dependency_caches): Free deps_obstack.
+	
+	(adjust_add_sorted_back_dep, adjust_back_add_forw_dep): Update to use
+	new scheduler dependencies lists.
+	(delete_forw_dep, add_or_update_back_forw_dep): Ditto.
+	(add_back_forw_dep, delete_back_forw_dep): Ditto.
+
+	* sched-rgn.c (set_spec_fed, find_conditional_protection, is_pfree):
+	Update to use new scheduler dependencies lists.
+	(is_conditionally_protected, is_prisky, add_branch_dependences): Ditto.
+	(debug_dependencies): Ditto.
+	(schedule_region): Update comments.
+	
+	* sched-ebb.c (earliest_block_with_similiar_load): Update to use new
+	scheduler dependencies lists.
+	(schedule_ebb): Update comments.
+	
+	* rtl.def (DEPS_LIST): Remove.
+	
+	* lists.c (unused_deps_list): Remove.
+	(free_list): Update assertions.
+	
+	(alloc_DEPS_LIST, free_DEPS_LIST_list, free_DEPS_LIST_node): Remove.
+	(remove_free_DEPS_LIST_elem, copy_DEPS_LIST_list): Ditto.
+
+	* rtl.h (free_DEPS_LIST_list, alloc_DEPS_LIST): Remove declarations.
+	(remove_free_DEPS_LIST_elem, copy_DEPS_LIST_list): Ditto.
+	
+	* haifa-sched.c (comments): Update.
+	(insn_cost1): Remove.  Inline the code into insn_cost ().
+	(insn_cost): Update to use new scheduler dependencies lists.  Move
+	processing of the dependency cost to dep_cost ().
+	(dep_cost): New function.  Use it instead of insn_cost () when
+	evaluating cost of the dependency.  Use compatible interface to
+	interact with the target.
+	(priority): Update to use new scheduler dependencies lists.
+	(rank_for_schedule): Ditto.  Optimize heuristic that prefers the insn
+	with greater number of insns that depend on the insn.
+	(schedule_insn): Update to use new scheduler dependencies lists.  Add
+	code to free backward dependencies lists.  Inline and optimize code
+	from resolve_dep () - see PR28071.
+	(ok_for_early_queue_removal): Update to use new scheduler dependencies
+	lists.  Update call to targetm.sched.is_costly_dependence hook.
+	
+	(fix_inter_tick, try_ready, fix_tick_ready): Update to use new
+	scheduler dependencies lists.
+	
+	(resolve_dep): Remove.  Move the logic to schedule_insn ().
+	(init_h_i_d): Initialize dependencies lists.
+	
+	(process_insn_depend_be_in_spec): Rename to
+	process_insn_forw_deps_be_in_spec.  Update to use new scheduler
+	dependencies lists.
+	(add_to_speculative_block, create_check_block_twin, fix_recovery_deps):
+	Update to use new scheduler dependencies lists.
+	(clear_priorities, calc_priorities, add_jump_dependencies): Ditto.
+	
+	* ddg.c (create_ddg_dependence, create_ddg_dep_no_link): Update to use
+	new scheduler dependencies lists.
+	(build_intra_loop_deps): Ditto.
+	
+	* target.h (struct _dep): Declare to use in
+	gcc_target.sched.is_costly_dependence.
+	(struct gcc_target.sched.adjust_cost): Fix typo.
+	(struct gcc_target.sched.is_costly_dependence): Change signature to use
+	single dep_t parameter instead of an equivalent triad.
+	(struct gcc_target.sched.adjust_cost_2): Remove.
+
+	* target-def.h (TARGET_SCHED_ADJUST_COST_2): Remove.
+
+	* reg-notes.def (DEP_TRUE, DEP_OUTPUT, DEP_ANTI): Update comments.
+
+	* doc/tm.texi (TARGET_SCHED_IS_COSTLY_DEPENDENCE): Update
+	documentation.
+	(TARGET_SCHED_ADJUST_COST_2): Remove documentation.
+
+	* doc/rtl.texi (LOG_LINKS): Remove part about instruction scheduler.
+	(REG_DEP_TRUE): Document.
+	
+	* config/ia64/ia64.c (ia64_adjust_cost_2): Rename to ia64_adjust_cost.
+	Change signature to correspond to the targetm.sched.adjust_cost hook.  
+	Update use in TARGET_SCHED_ADJUST_COST_2.
+	(TARGET_SCHED_ADJUST_COST_2): Rename to TARGET_SCHED_ADJUST_COST.
+	(ia64_dependencies_evaluation_hook, ia64_dfa_new_cycle): Update to use
+	new scheduler dependencies lists.
+	(ia64_gen_check): Ditto.
+
+	* config/mips/mips.c (vr4130_swap_insns_p): Update to use new scheduler
+	dependencies lists.
+	
+	* config/rs6000/rs6000.c (rs6000_is_costly_dependence): Change
+	signature to correspond to the targetm.sched.is_costly_dependence hook.
+	(is_costly_group): Update to use new scheduler dependencies lists.
+
+	* config/spu/spu.c (spu_sched_adjust_cost): Use insn_cost () function
+	instead of INSN_COST () macro.
+
 2007-02-01  Ian Lance Taylor  <iant@google.com>
 
 	* lower-subreg.c (resolve_clobber): Handle a subreg of a concatn.

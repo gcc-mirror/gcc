@@ -300,28 +300,24 @@ static struct sched_info ebb_sched_info =
 static basic_block
 earliest_block_with_similiar_load (basic_block last_block, rtx load_insn)
 {
-  rtx back_link;
+  dep_link_t back_link;
   basic_block bb, earliest_block = NULL;
 
-  for (back_link = LOG_LINKS (load_insn);
-       back_link;
-       back_link = XEXP (back_link, 1))
+  FOR_EACH_DEP_LINK (back_link, INSN_BACK_DEPS (load_insn))
     {
-      rtx insn1 = XEXP (back_link, 0);
+      rtx insn1 = DEP_LINK_PRO (back_link);
 
-      if (GET_MODE (back_link) == VOIDmode)
+      if (DEP_LINK_KIND (back_link) == REG_DEP_TRUE)
 	{
 	  /* Found a DEF-USE dependence (insn1, load_insn).  */
-	  rtx fore_link;
+	  dep_link_t fore_link;
 
-	  for (fore_link = INSN_DEPEND (insn1);
-	       fore_link;
-	       fore_link = XEXP (fore_link, 1))
+	  FOR_EACH_DEP_LINK (fore_link, INSN_FORW_DEPS (insn1))
 	    {
-	      rtx insn2 = XEXP (fore_link, 0);
+	      rtx insn2 = DEP_LINK_CON (fore_link);
 	      basic_block insn2_block = BLOCK_FOR_INSN (insn2);
 
-	      if (GET_MODE (fore_link) == VOIDmode)
+	      if (DEP_LINK_KIND (fore_link) == REG_DEP_TRUE)
 		{
 		  if (earliest_block != NULL
 		      && earliest_block->index < insn2_block->index)
@@ -404,7 +400,7 @@ add_deps_for_risky_insns (rtx head, rtx tail)
 						  REG_DEP_ANTI, DEP_ANTI);
 
 		    if (res == DEP_CREATED)
-		      add_forw_dep (insn, LOG_LINKS (insn));
+		      add_forw_dep (DEPS_LIST_FIRST (INSN_BACK_DEPS (insn)));
 		    else
 		      gcc_assert (res != DEP_CHANGED);
 		  }
@@ -451,12 +447,12 @@ schedule_ebb (rtx head, rtx tail)
     {
       init_deps_global ();
 
-      /* Compute LOG_LINKS.  */
+      /* Compute backward dependencies.  */
       init_deps (&tmp_deps);
       sched_analyze (&tmp_deps, head, tail);
       free_deps (&tmp_deps);
 
-      /* Compute INSN_DEPEND.  */
+      /* Compute forward dependencies.  */
       compute_forward_dependences (head, tail);
 
       add_deps_for_risky_insns (head, tail);

@@ -26,10 +26,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 /* Shorthand.  */
 #define REG_NOTE(NAME) DEF_REG_NOTE (REG_##NAME)
 
-/* REG_DEP_TRUE is used in LOG_LINKS to represent a read-after-write
-   dependency (i.e. a true data dependency).  This is here, not
-   grouped with REG_DEP_ANTI and REG_DEP_OUTPUT, because some passes
-   use a literal 0 for it.  */
+/* REG_DEP_TRUE is used in scheduler dependencies lists to represent a
+   read-after-write dependency (i.e. a true data dependency).  This is
+   here, not grouped with REG_DEP_ANTI and REG_DEP_OUTPUT, because some
+   passes use a literal 0 for it.  */
 REG_NOTE (DEP_TRUE)
 
 /* The value in REG dies in this insn (i.e., it is not needed past
@@ -97,8 +97,9 @@ REG_NOTE (CC_USER)
    This note is an INSN_LIST.  */
 REG_NOTE (LABEL)
 
-/* REG_DEP_ANTI and REG_DEP_OUTPUT are used in LOG_LINKS to represent
-   write-after-read and write-after-write dependencies respectively.  */
+/* REG_DEP_OUTPUT and REG_DEP_ANTI are used in scheduler dependencies lists
+   to represent write-after-write and write-after-read dependencies
+   respectively.  */
 REG_NOTE (DEP_OUTPUT)
 REG_NOTE (DEP_ANTI)
 

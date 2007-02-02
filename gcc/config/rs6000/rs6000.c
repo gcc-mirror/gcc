@@ -699,7 +699,7 @@ static bool set_to_load_agen (rtx,rtx);
 static bool adjacent_mem_locations (rtx,rtx); 
 static int rs6000_adjust_priority (rtx, int);
 static int rs6000_issue_rate (void);
-static bool rs6000_is_costly_dependence (rtx, rtx, rtx, int, int);
+static bool rs6000_is_costly_dependence (dep_t, int, int);
 static rtx get_next_active_insn (rtx, rtx);
 static bool insn_terminates_group_p (rtx , enum group_termination);
 static bool insn_must_be_first_in_group (rtx);
@@ -17544,9 +17544,11 @@ get_store_dest (rtx pat)
    costly by the given target.  */
 
 static bool
-rs6000_is_costly_dependence (rtx insn, rtx next, rtx link, int cost,
-			     int distance)
+rs6000_is_costly_dependence (dep_t dep, int cost, int distance)
 {
+  rtx insn;
+  rtx next;
+
   /* If the flag is not enabled - no dependence is considered costly;
      allow all dependent insns in the same group.
      This is the most aggressive option.  */
@@ -17559,6 +17561,9 @@ rs6000_is_costly_dependence (rtx insn, rtx next, rtx link, int cost,
   if (rs6000_sched_costly_dep == all_deps_costly)
     return true;
 
+  insn = DEP_PRO (dep);
+  next = DEP_CON (dep);
+
   if (rs6000_sched_costly_dep == store_to_load_dep_costly
       && is_load_insn (next)
       && is_store_insn (insn))
@@ -17568,7 +17573,7 @@ rs6000_is_costly_dependence (rtx insn, rtx next, rtx link, int cost,
   if (rs6000_sched_costly_dep == true_store_to_load_dep_costly
       && is_load_insn (next)
       && is_store_insn (insn)
-      && (!link || (int) REG_NOTE_KIND (link) == 0))
+      && DEP_KIND (dep) == REG_DEP_TRUE)
      /* Prevent load after store in the same group if it is a true
 	dependence.  */
      return true;
@@ -18040,24 +18045,24 @@ static bool
 is_costly_group (rtx *group_insns, rtx next_insn)
 {
   int i;
-  rtx link;
-  int cost;
   int issue_rate = rs6000_issue_rate ();
 
   for (i = 0; i < issue_rate; i++)
     {
+      dep_link_t link;
       rtx insn = group_insns[i];
+
       if (!insn)
 	continue;
-      for (link = INSN_DEPEND (insn); link != 0; link = XEXP (link, 1))
+
+      FOR_EACH_DEP_LINK (link, INSN_FORW_DEPS (insn))
 	{
-	  rtx next = XEXP (link, 0);
-	  if (next == next_insn)
-	    {
-	      cost = insn_cost (insn, link, next_insn);
-	      if (rs6000_is_costly_dependence (insn, next_insn, link, cost, 0))
-		return true;
-	    }
+	  dep_t dep = DEP_LINK_DEP (link);
+	  rtx next = DEP_CON (dep);
+
+	  if (next == next_insn
+	      && rs6000_is_costly_dependence (dep, dep_cost (dep), 0))
+	    return true;
 	}
     }
 
