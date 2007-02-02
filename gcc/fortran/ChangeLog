@@ -1,5 +1,12 @@
 2007-02-01  Roger Sayle  <roger@eyesopen.com>
 
+	* trans-array.c (gfc_conv_expr_descriptor): We don't need to use
+	a temporary array to pass a constant non-character array constructor.
+	Generalize the descriptor generation code to handle scalarizer
+	"info" without an array reference.
+
+2007-02-01  Roger Sayle  <roger@eyesopen.com>
+
 	* dependency.c (gfc_check_dependency) <EXPR_ARRAY>: Implement
 	dependency checking for array constructors.
 
