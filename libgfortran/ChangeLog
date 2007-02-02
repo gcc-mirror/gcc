@@ -1,3 +1,10 @@
+2007-02-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30284
+	PR fortran/30626
+	* io/transfer.c (init_loop_spec, next_array_record): Change to
+	lbound rather than unity base.
+
 2007-01-21  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* runtime/error.c: Include sys/time.h before sys/resource.h.

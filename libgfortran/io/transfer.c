@@ -2013,7 +2013,7 @@ init_loop_spec (gfc_array_char *desc, array_loop_spec *ls)
   index = 1;
   for (i=0; i<rank; i++)
     {
-      ls[i].idx = 1;
+      ls[i].idx = desc->dim[i].lbound;
       ls[i].start = desc->dim[i].lbound;
       ls[i].end = desc->dim[i].ubound;
       ls[i].step = desc->dim[i].stride;
@@ -2050,8 +2050,9 @@ next_array_record (st_parameter_dt *dtp, array_loop_spec *ls)
           else
             carry = 0;
         }
-      index = index + (ls[i].idx - 1) * ls[i].step;
+      index = index + (ls[i].idx - ls[i].start) * ls[i].step;
     }
+
   return index;
 }
 
