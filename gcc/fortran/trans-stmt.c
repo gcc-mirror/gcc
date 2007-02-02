@@ -2022,51 +2022,48 @@ compute_inner_temp_size (gfc_expr *expr1, gfc_expr *expr2,
 }
 
 
-/* Calculate the overall iterator number of the nested forall construct.  */
+/* Calculate the overall iterator number of the nested forall construct.
+   This routine actually calculates the number of times the body of the
+   nested forall specified by NESTED_FORALL_INFO is executed and multiplies
+   that by the expression INNER_SIZE.  The BLOCK argument specifies the
+   block in which to calculate the result, and the optional INNER_SIZE_BODY
+   argument contains any statements that need to executed (inside the loop)
+   to initialize or calculate INNER_SIZE.  */
 
 static tree
 compute_overall_iter_number (forall_info *nested_forall_info, tree inner_size,
 			     stmtblock_t *inner_size_body, stmtblock_t *block)
 {
+  forall_info *forall_tmp = nested_forall_info;
   tree tmp, number;
   stmtblock_t body;
 
-  /* Optimize the case of unconditional FORALL nests with constant bounds.  */
+  /* We can eliminate the innermost unconditional loops with constant
+     array bounds.  */
   if (INTEGER_CST_P (inner_size))
     {
-      bool all_const_p = true;
-      forall_info *forall_tmp;
-
-      /* First check whether all the bounds are constant.  */
-      for (forall_tmp = nested_forall_info;
-	   forall_tmp;
-	   forall_tmp = forall_tmp->prev_nest)
-	if (forall_tmp->mask || !INTEGER_CST_P (forall_tmp->size))
-	  {
-	    all_const_p = false;
-	    break;
-	  }
-
-      if (all_const_p)
+      while (forall_tmp
+	     && !forall_tmp->mask 
+	     && INTEGER_CST_P (forall_tmp->size))
 	{
-	  tree tmp = inner_size;
-	  for (forall_tmp = nested_forall_info;
-	       forall_tmp;
-	       forall_tmp = forall_tmp->prev_nest)
-	    tmp = fold_build2 (MULT_EXPR, gfc_array_index_type,
-			       tmp, forall_tmp->size);
-	  return tmp;
+	  inner_size = fold_build2 (MULT_EXPR, gfc_array_index_type,
+				    inner_size, forall_tmp->size);
+	  forall_tmp = forall_tmp->prev_nest;
 	}
+
+      /* If there are no loops left, we have our constant result.  */
+      if (!forall_tmp)
+	return inner_size;
     }
-  
-  /* TODO: optimizing the computing process.  */
+
+  /* Otherwise, create a temporary variable to compute the result.  */
   number = gfc_create_var (gfc_array_index_type, "num");
   gfc_add_modify_expr (block, number, gfc_index_zero_node);
 
   gfc_start_block (&body);
   if (inner_size_body)
     gfc_add_block_to_block (&body, inner_size_body);
-  if (nested_forall_info)
+  if (forall_tmp)
     tmp = build2 (PLUS_EXPR, gfc_array_index_type, number,
 		  inner_size);
   else
@@ -2075,8 +2072,8 @@ compute_overall_iter_number (forall_info *nested_forall_info, tree inner_size,
   tmp = gfc_finish_block (&body);
 
   /* Generate loops.  */
-  if (nested_forall_info != NULL)
-    tmp = gfc_trans_nested_forall_loop (nested_forall_info, tmp, 1);
+  if (forall_tmp != NULL)
+    tmp = gfc_trans_nested_forall_loop (forall_tmp, tmp, 1);
 
   gfc_add_expr_to_block (block, tmp);
 
