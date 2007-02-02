@@ -1,3 +1,7 @@
+2007-02-02  Ian Lance Taylor  <iant@google.com>
+
+	* expmed.c (expand_divmod): Add comment.
+
 2007-02-02  Kazu Hirata  <kazu@codesourcery.com>
 
 	* emit-rtl.c (renumber_insns): Remove.

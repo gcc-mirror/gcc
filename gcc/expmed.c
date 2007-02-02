@@ -4176,6 +4176,9 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 		HOST_WIDE_INT d = INTVAL (op1);
 		unsigned HOST_WIDE_INT abs_d;
 
+		/* Since d might be INT_MIN, we have to cast to
+		   unsigned HOST_WIDE_INT before negating to avoid
+		   undefined signed overflow.  */
 		abs_d = (d >= 0
 			 ? (unsigned HOST_WIDE_INT) d
 			 : - (unsigned HOST_WIDE_INT) d);
