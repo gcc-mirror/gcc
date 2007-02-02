@@ -1,5 +1,10 @@
 2007-02-01  Roger Sayle  <roger@eyesopen.com>
 
+	* dependency.c (gfc_check_dependency) <EXPR_ARRAY>: Implement
+	dependency checking for array constructors.
+
+2007-02-01  Roger Sayle  <roger@eyesopen.com>
+
 	* trans-stmt.c (compute_overall_iter_number): Document function
 	arguments.  Generalize "unconditional forall nest with constant
 	bounds" optimization to eliminate unconditional inner loops with
