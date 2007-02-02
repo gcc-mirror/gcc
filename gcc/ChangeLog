@@ -1,3 +1,14 @@
+2007-02-02  Paolo Bonzini  <bonzini@gnu.org>
+
+	* pointer-set.c (insert_aux): Only return insertion slot.
+	(pointer_set_insert): Adjust.
+	(pointer_set_traverse, struct pointer_map_t, pointer_map_create,
+	pointer_map_destroy, pointer_map_insert, pointer_map_contains,
+	pointer_map_traverse): New.
+	* pointer-set.h (pointer_set_traverse, struct pointer_map_t,
+	pointer_map_create,  pointer_map_destroy, pointer_map_insert,
+	pointer_map_contains, pointer_map_traverse): Declare.
+
 2007-02-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/30473
