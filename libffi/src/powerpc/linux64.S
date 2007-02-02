@@ -47,8 +47,8 @@ ffi_call_LINUX64:
 	std	%r0, 16(%r1)
 
 	mr	%r28, %r1	/* our AP.  */
-	stdux	%r1, %r1, %r4
 .LCFI0:
+	stdux	%r1, %r1, %r4
 	mr	%r31, %r5	/* flags, */
 	mr	%r30, %r6	/* rvalue, */
 	mr	%r29, %r7	/* function address.  */
@@ -100,6 +100,10 @@ ffi_call_LINUX64:
 	/* Make the call.  */
 	bctrl
 
+	/* This must follow the call immediately, the unwinder
+	   uses this to find out if r2 has been saved or not.  */
+	ld	%r2, 40(%r1)
+
 	/* Now, deal with the return value.  */
 	mtcrf	0x01, %r31
 	bt-	30, .Ldone_return_value
@@ -109,7 +113,6 @@ ffi_call_LINUX64:
 
 .Ldone_return_value:
 	/* Restore the registers we used and return.  */
-	ld	%r2, 40(%r1)
 	mr	%r1, %r28
 	ld	%r0, 16(%r28)
 	ld	%r28, -32(%r1)
