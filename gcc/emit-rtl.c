@@ -2806,33 +2806,6 @@ get_max_uid (void)
 {
   return cur_insn_uid;
 }
-
-/* Renumber instructions so that no instruction UIDs are wasted.  */
-
-void
-renumber_insns (void)
-{
-  rtx insn;
-
-  /* If we're not supposed to renumber instructions, don't.  */
-  if (!flag_renumber_insns)
-    return;
-
-  /* If there aren't that many instructions, then it's not really
-     worth renumbering them.  */
-  if (flag_renumber_insns == 1 && get_max_uid () < 25000)
-    return;
-
-  cur_insn_uid = 1;
-
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    {
-      if (dump_file)
-	fprintf (dump_file, "Renumbering insn %d to %d\n",
-		 INSN_UID (insn), cur_insn_uid);
-      INSN_UID (insn) = cur_insn_uid++;
-    }
-}
 
 /* Return the next insn.  If it is a SEQUENCE, return the first insn
    of the sequence.  */
