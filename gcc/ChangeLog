@@ -1,3 +1,10 @@
+2007-02-02  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
+	PR target/29682
+	* config/ia64/ia64.c (ia64_speculate_insn): Restrict to memory loads to
+	general or fp registers.  Add comments.
+	* config/ia64/ia64.md (reg_pred_prefix): Add comment.
+
 2007-02-02  Paolo Bonzini  <bonzini@gnu.org>
 
 	* pointer-set.c (insert_aux): Only return insertion slot.
