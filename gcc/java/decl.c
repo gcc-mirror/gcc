@@ -1876,22 +1876,6 @@ finish_method (tree fndecl)
 		    build2 (TRY_FINALLY_EXPR, void_type_node, *tp, exit));
     }
 
-  /* Prepend class initialization for static methods reachable from
-     other classes.  */
-  if (METHOD_STATIC (fndecl)
-      && (! METHOD_PRIVATE (fndecl)
-          || INNER_CLASS_P (DECL_CONTEXT (fndecl)))
-      && ! DECL_CLINIT_P (fndecl)
-      && ! CLASS_INTERFACE (TYPE_NAME (DECL_CONTEXT (fndecl))))
-    {
-      tree clas = DECL_CONTEXT (fndecl);
-      tree init = build3 (CALL_EXPR, void_type_node,
-			  build_address_of (soft_initclass_node),
-			  build_tree_list (NULL_TREE, build_class_ref (clas)),
-			  NULL_TREE);
-      *tp = build2 (COMPOUND_EXPR, TREE_TYPE (*tp), init, *tp);
-    }
-
   /* Convert function tree to GENERIC prior to inlining.  */
   java_genericize (fndecl);
 
