@@ -1682,9 +1682,9 @@ gfc_apply_interface_mapping (gfc_interface_mapping * mapping,
    an actual argument derived type array is copied and then returned
    after the function call.
    TODO Get rid of this kludge, when array descriptors are capable of
-   handling aliased arrays.  */
+   handling arrays with a bigger stride in bytes than size.  */
 
-static void
+void
 gfc_conv_aliased_arg (gfc_se * parmse, gfc_expr * expr,
 		      int g77, sym_intent intent)
 {
@@ -1733,7 +1733,7 @@ gfc_conv_aliased_arg (gfc_se * parmse, gfc_expr * expr,
     {
       gfc_ref *char_ref = expr->ref;
 
-      for (; expr->ts.cl == NULL && char_ref; char_ref = char_ref->next)
+      for (; char_ref; char_ref = char_ref->next)
 	if (char_ref->type == REF_SUBSTRING)
 	  {
 	    gfc_se tmp_se;
@@ -1928,7 +1928,7 @@ gfc_conv_aliased_arg (gfc_se * parmse, gfc_expr * expr,
 /* Is true if an array reference is followed by a component or substring
    reference.  */
 
-static bool
+bool
 is_aliased_array (gfc_expr * e)
 {
   gfc_ref * ref;
