@@ -449,7 +449,9 @@ do {									\
 #include <stdbool.h>
 #endif
 
+#ifndef __LP64__
 #define MD_UNWIND_SUPPORT "config/rs6000/darwin-unwind.h"
+#endif
 
 #define HAS_MD_FALLBACK_FRAME_STATE_FOR 1
 
