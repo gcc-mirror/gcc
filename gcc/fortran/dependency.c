@@ -599,9 +599,10 @@ gfc_are_equivalenced_arrays (gfc_expr *e1, gfc_expr *e2)
 int
 gfc_check_dependency (gfc_expr *expr1, gfc_expr *expr2, bool identical)
 {
+  gfc_actual_arglist *actual;
+  gfc_constructor *c;
   gfc_ref *ref;
   int n;
-  gfc_actual_arglist *actual;
 
   gcc_assert (expr1->expr_type == EXPR_VARIABLE);
 
@@ -685,8 +686,19 @@ gfc_check_dependency (gfc_expr *expr1, gfc_expr *expr2, bool identical)
       return 0;
 
     case EXPR_ARRAY:
-      /* Probably ok in the majority of (constant) cases.  */
-      return 1;
+      /* Loop through the array constructor's elements.  */
+      for (c = expr2->value.constructor; c; c = c->next)
+	{
+	  /* If this is an iterator, assume the worst.  */
+	  if (c->iterator)
+	    return 1;
+	  /* Avoid recursion in the common case.  */
+	  if (c->expr->expr_type == EXPR_CONSTANT)
+	    continue;
+	  if (gfc_check_dependency (expr1, c->expr, 1))
+	    return 1;
+	}
+      return 0;
 
     default:
       return 1;
