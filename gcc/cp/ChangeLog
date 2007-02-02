@@ -1,3 +1,11 @@
+2007-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/30536
+	* decl.c (grokdeclarator): If __thread is used together with
+	a storage class other than extern and static, clear thread_p
+	after issuing diagnostics and fall through to checking the
+	storage class.
+
 2007-01-30  Roger Sayle  <roger@eyesopen.com>
 
 	* error.c (dump_type_suffix): Avoid use of cp_build_binary_op when
