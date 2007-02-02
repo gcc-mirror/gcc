@@ -273,9 +273,12 @@ am__DEPENDENCIES_1 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 am__DEPENDENCIES_2 = gnu-CORBA.lo gnu-java-awt-dnd-peer-gtk.lo \
 	gnu-java-awt-peer-gtk.lo gnu-java-awt-peer-swing.lo \
 	gnu-java-beans.lo gnu-java-util-prefs-gconf.lo \
-	gnu-javax-rmi.lo gnu-javax-sound-midi.lo gnu-xml.lo \
-	javax-imageio.lo javax-rmi.lo javax-xml.lo org-omg.lo \
-	org-relaxng.lo org-w3c.lo org-xml.lo
+	gnu-javax-rmi.lo gnu-javax-sound-midi.lo gnu-xml-aelfred2.lo \
+	gnu-xml-dom.lo gnu-xml-libxmlj.lo gnu-xml-pipeline.lo \
+	gnu-xml-stream.lo gnu-xml-transform.lo gnu-xml-util.lo \
+	gnu-xml-validation.lo gnu-xml-xpath.lo javax-imageio.lo \
+	javax-rmi.lo javax-xml.lo org-omg.lo org-relaxng.lo org-w3c.lo \
+	org-xml.lo
 am__DEPENDENCIES_3 = $(patsubst classpath/resource/%,%,$(addsuffix \
 	.lo,$(property_files)))
 am__DEPENDENCIES_4 =
@@ -3241,11 +3244,13 @@ gnu_javax_swing_tree_source_files = \
 classpath/gnu/javax/swing/tree/GnuPath.java
 
 gnu_javax_swing_tree_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_swing_tree_source_files)))
-gnu_xml_source_files = \
+gnu_xml_aelfred2_source_files = \
 classpath/gnu/xml/aelfred2/JAXPFactory.java \
 classpath/gnu/xml/aelfred2/SAXDriver.java \
 classpath/gnu/xml/aelfred2/XmlParser.java \
-classpath/gnu/xml/aelfred2/XmlReader.java \
+classpath/gnu/xml/aelfred2/XmlReader.java
+
+gnu_xml_dom_source_files = \
 classpath/gnu/xml/dom/Consumer.java \
 classpath/gnu/xml/dom/DTDAttributeTypeInfo.java \
 classpath/gnu/xml/dom/DTDElementTypeInfo.java \
@@ -3347,7 +3352,9 @@ classpath/gnu/xml/dom/ls/DomLSSerializer.java \
 classpath/gnu/xml/dom/ls/FilteredSAXEventSink.java \
 classpath/gnu/xml/dom/ls/ReaderInputStream.java \
 classpath/gnu/xml/dom/ls/SAXEventSink.java \
-classpath/gnu/xml/dom/ls/WriterOutputStream.java \
+classpath/gnu/xml/dom/ls/WriterOutputStream.java
+
+gnu_xml_libxmlj_source_files = \
 classpath/gnu/xml/libxmlj/dom/GnomeAttr.java \
 classpath/gnu/xml/libxmlj/dom/GnomeCDATASection.java \
 classpath/gnu/xml/libxmlj/dom/GnomeCharacterData.java \
@@ -3388,7 +3395,9 @@ classpath/gnu/xml/libxmlj/util/EmptyNodeList.java \
 classpath/gnu/xml/libxmlj/util/NamedInputStream.java \
 classpath/gnu/xml/libxmlj/util/StandaloneDocumentType.java \
 classpath/gnu/xml/libxmlj/util/StandaloneLocator.java \
-classpath/gnu/xml/libxmlj/util/XMLJ.java \
+classpath/gnu/xml/libxmlj/util/XMLJ.java
+
+gnu_xml_pipeline_source_files = \
 classpath/gnu/xml/pipeline/CallFilter.java \
 classpath/gnu/xml/pipeline/DomConsumer.java \
 classpath/gnu/xml/pipeline/EventConsumer.java \
@@ -3401,7 +3410,9 @@ classpath/gnu/xml/pipeline/TextConsumer.java \
 classpath/gnu/xml/pipeline/ValidationConsumer.java \
 classpath/gnu/xml/pipeline/WellFormednessFilter.java \
 classpath/gnu/xml/pipeline/XIncludeFilter.java \
-classpath/gnu/xml/pipeline/XsltFilter.java \
+classpath/gnu/xml/pipeline/XsltFilter.java
+
+gnu_xml_stream_source_files = \
 classpath/gnu/xml/stream/AttributeImpl.java \
 classpath/gnu/xml/stream/BufferedReader.java \
 classpath/gnu/xml/stream/CRLFReader.java \
@@ -3431,7 +3442,9 @@ classpath/gnu/xml/stream/XMLEventWriterImpl.java \
 classpath/gnu/xml/stream/XMLInputFactoryImpl.java \
 classpath/gnu/xml/stream/XMLOutputFactoryImpl.java \
 classpath/gnu/xml/stream/XMLParser.java \
-classpath/gnu/xml/stream/XMLStreamWriterImpl.java \
+classpath/gnu/xml/stream/XMLStreamWriterImpl.java
+
+gnu_xml_transform_source_files = \
 classpath/gnu/xml/transform/AbstractNumberNode.java \
 classpath/gnu/xml/transform/ApplyImportsNode.java \
 classpath/gnu/xml/transform/ApplyTemplatesNode.java \
@@ -3485,14 +3498,18 @@ classpath/gnu/xml/transform/ValueOfNode.java \
 classpath/gnu/xml/transform/WhenNode.java \
 classpath/gnu/xml/transform/WithParam.java \
 classpath/gnu/xml/transform/XSLComparator.java \
-classpath/gnu/xml/transform/XSLURIResolver.java \
+classpath/gnu/xml/transform/XSLURIResolver.java
+
+gnu_xml_util_source_files = \
 classpath/gnu/xml/util/DoParse.java \
 classpath/gnu/xml/util/DomParser.java \
 classpath/gnu/xml/util/Resolver.java \
 classpath/gnu/xml/util/SAXNullTransformerFactory.java \
 classpath/gnu/xml/util/XCat.java \
 classpath/gnu/xml/util/XHTMLWriter.java \
-classpath/gnu/xml/util/XMLWriter.java \
+classpath/gnu/xml/util/XMLWriter.java
+
+gnu_xml_validation_source_files = \
 classpath/gnu/xml/validation/datatype/Annotation.java \
 classpath/gnu/xml/validation/datatype/AnySimpleType.java \
 classpath/gnu/xml/validation/datatype/AnyType.java \
@@ -3602,7 +3619,9 @@ classpath/gnu/xml/validation/xmlschema/XMLSchemaSchemaFactory.java \
 classpath/gnu/xml/validation/xmlschema/XMLSchemaTypeInfo.java \
 classpath/gnu/xml/validation/xmlschema/XMLSchemaTypeInfoProvider.java \
 classpath/gnu/xml/validation/xmlschema/XMLSchemaValidator.java \
-classpath/gnu/xml/validation/xmlschema/XMLSchemaValidatorHandler.java \
+classpath/gnu/xml/validation/xmlschema/XMLSchemaValidatorHandler.java
+
+gnu_xml_xpath_source_files = \
 classpath/gnu/xml/xpath/AndExpr.java \
 classpath/gnu/xml/xpath/ArithmeticExpr.java \
 classpath/gnu/xml/xpath/BooleanFunction.java \
@@ -7691,7 +7710,15 @@ bc_objects = \
   gnu-java-util-prefs-gconf.lo \
   gnu-javax-rmi.lo \
   gnu-javax-sound-midi.lo \
-  gnu-xml.lo \
+  gnu-xml-aelfred2.lo \
+  gnu-xml-dom.lo \
+  gnu-xml-libxmlj.lo \
+  gnu-xml-pipeline.lo \
+  gnu-xml-stream.lo \
+  gnu-xml-transform.lo \
+  gnu-xml-util.lo \
+  gnu-xml-validation.lo \
+  gnu-xml-xpath.lo \
   javax-imageio.lo \
   javax-rmi.lo \
   javax-xml.lo \
@@ -10869,10 +10896,50 @@ gnu/javax/swing/tree.list: $(gnu_javax_swing_tree_source_files)
 
 -include gnu/javax/swing/tree.deps
 
-gnu-xml.lo: $(gnu_xml_source_files)
-	@find $(srcdir)/classpath/lib/gnu/xml -name '*.class' > gnu-xml.list
-	$(LTGCJCOMPILE) -fjni -findirect-dispatch -fno-indirect-classes -c -o gnu-xml.lo @gnu-xml.list
-	@rm -f gnu-xml.list
+gnu-xml-aelfred2.lo: $(gnu_xml_aelfred2_source_files)
+	@find $(srcdir)/classpath/lib/gnu/xml/aelfred2 -name '*.class' > gnu-xml-aelfred2.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -fno-indirect-classes -c -o gnu-xml-aelfred2.lo @gnu-xml-aelfred2.list
+	@rm -f gnu-xml-aelfred2.list
+
+gnu-xml-dom.lo: $(gnu_xml_dom_source_files)
+	@find $(srcdir)/classpath/lib/gnu/xml/dom -name '*.class' > gnu-xml-dom.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -fno-indirect-classes -c -o gnu-xml-dom.lo @gnu-xml-dom.list
+	@rm -f gnu-xml-dom.list
+
+gnu-xml-libxmlj.lo: $(gnu_xml_libxmlj_source_files)
+	@find $(srcdir)/classpath/lib/gnu/xml/libxmlj -name '*.class' > gnu-xml-libxmlj.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -fno-indirect-classes -c -o gnu-xml-libxmlj.lo @gnu-xml-libxmlj.list
+	@rm -f gnu-xml-libxmlj.list
+
+gnu-xml-pipeline.lo: $(gnu_xml_pipeline_source_files)
+	@find $(srcdir)/classpath/lib/gnu/xml/pipeline -name '*.class' > gnu-xml-pipeline.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -fno-indirect-classes -c -o gnu-xml-pipeline.lo @gnu-xml-pipeline.list
+	@rm -f gnu-xml-pipeline.list
+
+gnu-xml-stream.lo: $(gnu_xml_stream_source_files)
+	@find $(srcdir)/classpath/lib/gnu/xml/stream -name '*.class' > gnu-xml-stream.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -fno-indirect-classes -c -o gnu-xml-stream.lo @gnu-xml-stream.list
+	@rm -f gnu-xml-stream.list
+
+gnu-xml-transform.lo: $(gnu_xml_transform_source_files)
+	@find $(srcdir)/classpath/lib/gnu/xml/transform -name '*.class' > gnu-xml-transform.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -fno-indirect-classes -c -o gnu-xml-transform.lo @gnu-xml-transform.list
+	@rm -f gnu-xml-transform.list
+
+gnu-xml-util.lo: $(gnu_xml_util_source_files)
+	@find $(srcdir)/classpath/lib/gnu/xml/util -name '*.class' > gnu-xml-util.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -fno-indirect-classes -c -o gnu-xml-util.lo @gnu-xml-util.list
+	@rm -f gnu-xml-util.list
+
+gnu-xml-validation.lo: $(gnu_xml_validation_source_files)
+	@find $(srcdir)/classpath/lib/gnu/xml/validation -name '*.class' > gnu-xml-validation.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -fno-indirect-classes -c -o gnu-xml-validation.lo @gnu-xml-validation.list
+	@rm -f gnu-xml-validation.list
+
+gnu-xml-xpath.lo: $(gnu_xml_xpath_source_files)
+	@find $(srcdir)/classpath/lib/gnu/xml/xpath -name '*.class' > gnu-xml-xpath.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -fno-indirect-classes -c -o gnu-xml-xpath.lo @gnu-xml-xpath.list
+	@rm -f gnu-xml-xpath.list
 
 java/applet.list: $(java_applet_source_files)
 	@$(mkinstalldirs) $(dir $@)

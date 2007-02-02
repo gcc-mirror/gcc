@@ -1,3 +1,10 @@
+2007-02-01  David Daney  <ddaney@avtrex.com>
+
+	* scripts/makemake.tcl: Replace gnu/xml build with build of all
+	its subpackages.
+	* sources.am: Regenerate.
+	* Makefile.in: Regenerate.
+
 2007-02-01  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/ClassLoader.java (getResources): No longer final.
