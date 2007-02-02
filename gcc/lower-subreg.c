@@ -807,19 +807,20 @@ resolve_clobber (rtx pat, rtx insn)
   unsigned int words, i;
 
   reg = XEXP (pat, 0);
-  if (!resolve_reg_p (reg))
+  if (!resolve_reg_p (reg) && !resolve_subreg_p (reg))
     return false;
 
   orig_mode = GET_MODE (reg);
   words = GET_MODE_SIZE (orig_mode);
   words = (words + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
-  XEXP (pat, 0) = simplify_subreg_concatn (word_mode, reg, 0);
+  XEXP (pat, 0) = simplify_gen_subreg_concatn (word_mode, reg, orig_mode, 0);
   for (i = words - 1; i > 0; --i)
     {
       rtx x;
 
-      x = simplify_subreg_concatn (word_mode, reg, i * UNITS_PER_WORD);
+      x = simplify_gen_subreg_concatn (word_mode, reg, orig_mode,
+				       i * UNITS_PER_WORD);
       x = gen_rtx_CLOBBER (VOIDmode, x);
       emit_insn_after (x, insn);
     }
