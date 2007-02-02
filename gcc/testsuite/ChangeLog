@@ -12447,6 +12447,10 @@
 	PR c++/21983
 	* g++.dg/warn/pr21983.C: New test.
 
+2005-09-22  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* gcc.dg/20050922-1.c: Testcase added.
+
 2005-09-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23993
