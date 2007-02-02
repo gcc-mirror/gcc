@@ -13127,10 +13127,11 @@ rs6000_stack_info (void)
 	  info_ptr->vrsave_save_offset
 	    = info_ptr->gp_save_offset - info_ptr->vrsave_size;
 
-	  /* Align stack so vector save area is on a quadword boundary.  */
+	  /* Align stack so vector save area is on a quadword boundary.  
+	     The padding goes above the vectors.  */
 	  if (info_ptr->altivec_size != 0)
 	    info_ptr->altivec_padding_size
-	      = (-info_ptr->vrsave_save_offset) % 16;
+	      = info_ptr->vrsave_save_offset & 0xF;
 	  else
 	    info_ptr->altivec_padding_size = 0;
 
@@ -13138,6 +13139,8 @@ rs6000_stack_info (void)
 	    = info_ptr->vrsave_save_offset
 	    - info_ptr->altivec_padding_size
 	    - info_ptr->altivec_size;
+	  gcc_assert (info_ptr->altivec_size == 0
+		      || info_ptr->altivec_save_offset % 16 == 0);
 
 	  /* Adjust for AltiVec case.  */
 	  info_ptr->ehrd_offset = info_ptr->altivec_save_offset - ehrd_size;
