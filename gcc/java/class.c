@@ -2134,10 +2134,6 @@ is_compiled_class (tree class)
     return 1;
   if (TYPE_ARRAY_P (class))
     return 0;
-  /* We have to check this explicitly to avoid trying to load a class
-     that we're currently parsing.  */
-  if (class == current_class)
-    return 2;
 
   seen_in_zip = (TYPE_JCF (class) && JCF_SEEN_IN_ZIP (TYPE_JCF (class)));
   if (CLASS_FROM_CURRENTLY_COMPILED_P (class))
@@ -2147,7 +2143,7 @@ is_compiled_class (tree class)
 	 been loaded already. Load it if necessary. This prevent
 	 build_class_ref () from crashing. */
 
-      if (seen_in_zip && !CLASS_LOADED_P (class))
+      if (seen_in_zip && !CLASS_LOADED_P (class) && (class != current_class))
         load_class (class, 1);
 
       /* We return 2 for class seen in ZIP and class from files
@@ -2161,7 +2157,7 @@ is_compiled_class (tree class)
 	{
 	  if (CLASS_FROM_SOURCE_P (class))
 	    safe_layout_class (class);
-	  else
+	  else if (class != current_class)
 	    load_class (class, 1);
 	}
       return 1;
@@ -2510,10 +2506,12 @@ layout_class_method (tree this_class, tree super_class,
   tree method_name = DECL_NAME (method_decl);
 
   TREE_PUBLIC (method_decl) = 1;
+
   /* Considered external unless it is being compiled into this object
-     file.  */
-  DECL_EXTERNAL (method_decl) = ((is_compiled_class (this_class) != 2)
-				 || METHOD_NATIVE (method_decl));
+     file, or it was already flagged as external.  */
+  if (!DECL_EXTERNAL (method_decl))
+    DECL_EXTERNAL (method_decl) = ((is_compiled_class (this_class) != 2)
+                                   || METHOD_NATIVE (method_decl));
 
   if (ID_INIT_P (method_name))
     {
