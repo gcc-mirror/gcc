@@ -1,5 +1,9 @@
 2007-02-01  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/rs6000.c (rs6000_stack_info): Correct
+	altivec_padding_size calculation on AIX.  Improve comment, add
+	assert to verify that it's right.
+
 	* config/rs6000/darwin.h (MD_UNWIND_SUPPORT): Don't define for
 	64-bit.
 
