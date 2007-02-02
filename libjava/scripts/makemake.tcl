@@ -45,7 +45,15 @@ set package_map(gnu/javax/swing/plaf/gtk) ignore
 
 set package_map(gnu/java/awt/peer/swing) bc
 
-set package_map(gnu/xml) bc
+set package_map(gnu/xml/aelfred2) bc
+set package_map(gnu/xml/dom) bc
+set package_map(gnu/xml/libxmlj) bc
+set package_map(gnu/xml/pipeline) bc
+set package_map(gnu/xml/stream) bc
+set package_map(gnu/xml/transform) bc
+set package_map(gnu/xml/util) bc
+set package_map(gnu/xml/validation) bc
+set package_map(gnu/xml/xpath) bc
 set package_map(javax/imageio) bc
 set package_map(javax/xml) bc
 set package_map(gnu/java/beans) bc
