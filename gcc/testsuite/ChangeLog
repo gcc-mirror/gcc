@@ -1,3 +1,9 @@
+2007-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/30473
+	* gcc.dg/pr30473.c: New test.
+	* gcc.c-torture/execute/20070201-1.c: New test.
+
 2007-01-30  Geoffrey Keating  <geoffk@apple.com>
 
 	* g++.dg/eh/simd-4.C (main): Also catch SIGSEGV.
