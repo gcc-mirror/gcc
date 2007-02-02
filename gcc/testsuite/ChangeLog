@@ -1,5 +1,8 @@
 2007-02-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/30536
+	* g++.dg/tls/diag-5.C: New test.
+
 	PR middle-end/30473
 	* gcc.dg/pr30473.c: New test.
 	* gcc.c-torture/execute/20070201-1.c: New test.
