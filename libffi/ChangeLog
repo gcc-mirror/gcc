@@ -1,3 +1,8 @@
+2007-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* src/powerpc/linux64.S (ffi_call_LINUX64): Move restore of r2
+	immediately after bctrl instruction.
+
 2007-01-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.am (all-recursive, install-recursive,
