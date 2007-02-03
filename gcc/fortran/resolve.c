@@ -1315,7 +1315,7 @@ generic:
 
   /* Last ditch attempt.  See if the reference is to an intrinsic
      that possesses a matching interface.  14.1.2.4  */
-  if (!gfc_intrinsic_name (sym->name, 0))
+  if (sym && !gfc_intrinsic_name (sym->name, 0))
     {
       gfc_error ("There is no specific function for the generic '%s' at %L",
 		 expr->symtree->n.sym->name, &expr->where);
