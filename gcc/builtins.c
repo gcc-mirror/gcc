@@ -7158,13 +7158,12 @@ fold_builtin_cabs (tree arglist, tree type, tree fndecl)
       if (flag_unsafe_math_optimizations
 	  && operand_equal_p (real, imag, OEP_PURE_SAME))
         {
-	  REAL_VALUE_TYPE sqrt2;
-
-	  real_sqrt (&sqrt2, TYPE_MODE (type), &dconst2);
+	  const REAL_VALUE_TYPE sqrt2_trunc
+	    = real_value_truncate (TYPE_MODE (type), dconstsqrt2);
 	  STRIP_NOPS (real);
 	  return fold_build2 (MULT_EXPR, type,
 			      fold_build1 (ABS_EXPR, type, real),
-			      build_real (type, sqrt2));
+			      build_real (type, sqrt2_trunc));
 	}
     }
 
@@ -8059,12 +8058,11 @@ fold_builtin_hypot (tree fndecl, tree arglist, tree type)
   if (flag_unsafe_math_optimizations
       && operand_equal_p (arg0, arg1, OEP_PURE_SAME))
     {
-      REAL_VALUE_TYPE sqrt2;
-
-      real_sqrt (&sqrt2, TYPE_MODE (type), &dconst2);
+      const REAL_VALUE_TYPE sqrt2_trunc
+	= real_value_truncate (TYPE_MODE (type), dconstsqrt2);
       return fold_build2 (MULT_EXPR, type,
 			  fold_build1 (ABS_EXPR, type, arg0),
-			  build_real (type, sqrt2));
+			  build_real (type, sqrt2_trunc));
     }
 
   return NULL_TREE;

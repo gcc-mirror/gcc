@@ -1,3 +1,13 @@
+2007-02-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* emit-rtl.c (dconstpi): Delete.
+	(dconstsqrt2): New.
+	(init_emit_once): Delete dconstpi and init dconstsqrt2.
+	* real.h (dconstpi): Delete.
+	(dconstsqrt2): New.
+	* builtins.c (fold_builtin_cabs): Use dconstsqrt2.
+	(fold_builtin_hypot): Likewise.
+
 2007-02-03  Tom Tromey  <tromey@redhat.com>
 
 	PR driver/30246

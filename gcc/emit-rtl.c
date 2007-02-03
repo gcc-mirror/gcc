@@ -105,7 +105,7 @@ REAL_VALUE_TYPE dconstm1;
 REAL_VALUE_TYPE dconstm2;
 REAL_VALUE_TYPE dconsthalf;
 REAL_VALUE_TYPE dconstthird;
-REAL_VALUE_TYPE dconstpi;
+REAL_VALUE_TYPE dconstsqrt2;
 REAL_VALUE_TYPE dconste;
 
 /* All references to the following fixed hard registers go through
@@ -5154,8 +5154,8 @@ init_emit_once (int line_numbers)
 
   /* Initialize mathematical constants for constant folding builtins.
      These constants need to be given to at least 160 bits precision.  */
-  real_from_string (&dconstpi,
-    "3.1415926535897932384626433832795028841971693993751058209749445923078");
+  real_from_string (&dconstsqrt2,
+    "1.4142135623730950488016887242096980785696718753769480731766797379907");
   real_from_string (&dconste,
     "2.7182818284590452353602874713526624977572470936999595749669676277241");
 
