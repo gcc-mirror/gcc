@@ -1,3 +1,9 @@
+2007-02-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/30174
+	* varasm.c (notice_global_symbol): Treat global objects as weak when
+	flag_shlib is true.
+
 2007-02-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* emit-rtl.c (dconstpi): Delete.

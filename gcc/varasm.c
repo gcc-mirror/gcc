@@ -1323,7 +1323,7 @@ notice_global_symbol (tree decl)
 
   /* We win when global object is found, but it is useful to know about weak
      symbol as well so we can produce nicer unique names.  */
-  if (DECL_WEAK (decl) || DECL_ONE_ONLY (decl))
+  if (DECL_WEAK (decl) || DECL_ONE_ONLY (decl) || flag_shlib)
     type = &weak_global_object_name;
 
   if (!*type)
