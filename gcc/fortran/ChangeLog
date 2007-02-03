@@ -1,3 +1,15 @@
+2007-02-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30514
+	* array.c (match_array_element_spec): If the length of an array is
+	negative, adjust the upper limit to make it zero length.
+
+	PR fortran/30660
+	* resolve.c (pure_function, resolve_function): Initialize name to
+	null to clear up build warnings.
+	(resolve_fl_variable): Look at components explicitly to check for
+	default initializer, rather than using gfc_default_initializer.
+
 2007-02-02  Steven G. Kargl <kargl@gcc.gnu.org>
 
 	PR fortran/30683
