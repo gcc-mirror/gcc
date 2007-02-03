@@ -1,3 +1,11 @@
+2007-02-02  Mike Stump  <mrs@apple.com>
+
+	* config.gcc (*-*-darwin*): Backport darwin9.h bits.
+	* config/darwin9.h: Add.
+	* config/rs6000/rs6000.c (DARWIN_GENERATE_ISLANDS): Add.
+	(output_call): Use DARWIN_GENERATE_ISLANDS to decide when to
+	generate a branch island.
+
 2007-02-02  Hui-May Chang  <hm.chang@apple.com>
 
 	Revert for x86 darwin:
