@@ -1,3 +1,7 @@
+2007-02-03  Kazu Hirata  <kazu@codesourcery.com>
+
+	* misc.c, utils2.c: Fix comment typos.
+
 2007-01-24  Roger Sayle  <roger@eyesopen.com>
 
 	* decl.c (gnat_to_gnu_entity): Use TREE_OVERFLOW instead of
