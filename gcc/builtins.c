@@ -7143,13 +7143,30 @@ fold_builtin_cabs (tree arglist, tree type, tree fndecl)
 			      type, mpfr_hypot)))
     return res;
   
-  /* If either part is zero, cabs is fabs of the other.  */
-  if (TREE_CODE (arg) == COMPLEX_EXPR
-      && real_zerop (TREE_OPERAND (arg, 0)))
-    return fold_build1 (ABS_EXPR, type, TREE_OPERAND (arg, 1));
-  if (TREE_CODE (arg) == COMPLEX_EXPR
-      && real_zerop (TREE_OPERAND (arg, 1)))
-    return fold_build1 (ABS_EXPR, type, TREE_OPERAND (arg, 0));
+  if (TREE_CODE (arg) == COMPLEX_EXPR)
+    {
+      tree real = TREE_OPERAND (arg, 0);
+      tree imag = TREE_OPERAND (arg, 1);
+      
+      /* If either part is zero, cabs is fabs of the other.  */
+      if (real_zerop (real))
+	return fold_build1 (ABS_EXPR, type, imag);
+      if (real_zerop (imag))
+	return fold_build1 (ABS_EXPR, type, real);
+
+      /* cabs(x+xi) -> fabs(x)*sqrt(2).  */
+      if (flag_unsafe_math_optimizations
+	  && operand_equal_p (real, imag, OEP_PURE_SAME))
+        {
+	  REAL_VALUE_TYPE sqrt2;
+
+	  real_sqrt (&sqrt2, TYPE_MODE (type), &dconst2);
+	  STRIP_NOPS (real);
+	  return fold_build2 (MULT_EXPR, type,
+			      fold_build1 (ABS_EXPR, type, real),
+			      build_real (type, sqrt2));
+	}
+    }
 
   /* Optimize cabs(-z) and cabs(conj(z)) as cabs(z).  */
   if (TREE_CODE (arg) == NEGATE_EXPR
