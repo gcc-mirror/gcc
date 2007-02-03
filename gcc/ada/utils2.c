@@ -1526,7 +1526,7 @@ gnat_build_constructor (tree type, tree list)
 
       /* Propagate an NULL_EXPR from the size of the type.  We won't ever
 	 be executing the code we generate here in that case, but handle it
-	 specially to avoid the cmpiler blowing up.  */
+	 specially to avoid the compiler blowing up.  */
       if (TREE_CODE (type) == RECORD_TYPE
 	  && (0 != (result
 		    = contains_null_expr (DECL_SIZE (TREE_PURPOSE (elmt))))))

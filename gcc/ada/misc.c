@@ -776,7 +776,7 @@ gnat_type_max_size (tree gnu_type)
     {
       tree max_adasize = max_size (TYPE_ADA_SIZE (gnu_type), true);
 
-      /* If we have succeded in finding a constant, round it up to the
+      /* If we have succeeded in finding a constant, round it up to the
 	 type's alignment and return the result in byte units.  */
 
       if (host_integerp (max_adasize, 1))
