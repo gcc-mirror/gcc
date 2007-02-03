@@ -1,3 +1,15 @@
+2007-02-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30514
+	* gfortran.dg/zero_sized_2.f90: New test.
+
+	PR fortran/30660
+	* gfortran.dg/alloc_comp_basics_4.f90: New test.
+
+	PR fortran/29820
+	* gfortran.dg/actual_array_interface_1.f90: Copy source to empty
+	file.
+
 2007-02-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/30683
