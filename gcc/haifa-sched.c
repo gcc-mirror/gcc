@@ -684,7 +684,7 @@ dep_cost (dep_t link)
 	  rtx dep_cost_rtx_link = alloc_INSN_LIST (NULL_RTX, NULL_RTX);
 
 	  /* Make it self-cycled, so that if some tries to walk over this
-	     incomplete list he/she will be cought in an endless loop.  */
+	     incomplete list he/she will be caught in an endless loop.  */
 	  XEXP (dep_cost_rtx_link, 1) = dep_cost_rtx_link;
 
 	  /* Targets use only REG_NOTE_KIND of the link.  */

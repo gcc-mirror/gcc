@@ -8988,7 +8988,7 @@ string_constant (tree arg, tree *ptr_offset)
 	      && TREE_CODE (array) != VAR_DECL)
 	    return 0;
 
-	  /* Check if the array has a non-zero lower bound.  */
+	  /* Check if the array has a nonzero lower bound.  */
 	  lower_bound = array_ref_low_bound (TREE_OPERAND (arg, 0));
 	  if (!integer_zerop (lower_bound))
 	    {

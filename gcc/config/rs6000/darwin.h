@@ -401,7 +401,7 @@ do {									\
    macro in the Apple version of GCC, except that version supports
    'mac68k' alignment, and that version uses the computed alignment
    always for the first field of a structure.  The first-field
-   behaviour is dealt with by
+   behavior is dealt with by
    darwin_rs6000_special_round_type_align.  */
 #define ADJUST_FIELD_ALIGN(FIELD, COMPUTED)	\
   (TARGET_ALIGN_NATURAL ? (COMPUTED)		\

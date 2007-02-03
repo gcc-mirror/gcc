@@ -64,7 +64,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 /* Set this to 1 if you want the standard ISO C99 semantics of 'inline'
    when you specify -std=c99 or -std=gnu99, and to 0 if you want
-   behaviour compatible with the nonstandard semantics implemented by
+   behavior compatible with the nonstandard semantics implemented by
    GCC 2.95 through 4.2.  */
 #define WANT_C99_INLINE_SEMANTICS 1
 

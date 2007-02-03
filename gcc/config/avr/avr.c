@@ -5527,7 +5527,7 @@ avr_ret_register (void)
   return 24;
 }
 
-/* Ceate an RTX representing the place where a
+/* Create an RTX representing the place where a
    library function returns a value of mode MODE.  */
 
 rtx

@@ -4771,7 +4771,7 @@ label:
 
 ; N.B. This should agree with LOAD_EXTEND_OP and movqi.
 ; Because we use zero extension, we can't provide signed QImode compares
-; using a simple compare or conditional banch insn.
+; using a simple compare or conditional branch insn.
 (define_insn "truncdiqi2"
   [(set (match_operand:QI 0 "general_movdst_operand" "=r,m")
 	(truncate:QI (match_operand:DI 1 "register_operand" "r,r")))]

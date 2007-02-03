@@ -55,7 +55,7 @@
 (define_insn_reservation "FP7" 7 (eq_attr "type" "fp7")
     "pipe0, fp, nothing*5")
 
-;; The behaviour of the double precision is that both pipes stall
+;; The behavior of the double precision is that both pipes stall
 ;; for 6 cycles and the the rest of the operation pipelines for
 ;; 7 cycles.  The simplest way to model this is to simply ignore
 ;; the 6 cyle stall.

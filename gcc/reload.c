@@ -1717,7 +1717,7 @@ combine_reloads (void)
     return;
 
   /* If there is a reload for part of the address of this operand, we would
-     need to chnage it to RELOAD_FOR_OTHER_ADDRESS.  But that would extend
+     need to change it to RELOAD_FOR_OTHER_ADDRESS.  But that would extend
      its life to the point where doing this combine would not lower the
      number of spill registers needed.  */
   for (i = 0; i < n_reloads; i++)

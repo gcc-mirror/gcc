@@ -462,7 +462,7 @@ override_options (void)
      implementing architecture ARCH.  -mcpu=CPU should override -march
      and should generate code that runs on processor CPU, making free
      use of any instructions that CPU understands.  -mtune=UARCH applies
-     on top of -mcpu or -march and optimises the code for UARCH.  It does
+     on top of -mcpu or -march and optimizes the code for UARCH.  It does
      not change the target architecture.  */
   if (m68k_cpu_entry)
     {
