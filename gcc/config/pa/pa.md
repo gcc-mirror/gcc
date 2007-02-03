@@ -5349,6 +5349,59 @@
   [(set_attr "type" "binary")
    (set_attr "length" "4")])
 
+(define_expand "addvdi3"
+  [(parallel [(set (match_operand:DI 0 "register_operand" "")
+		   (plus:DI (match_operand:DI 1 "reg_or_0_operand" "")
+			    (match_operand:DI 2 "arith11_operand" "")))
+	      (trap_if (ne (plus:TI (sign_extend:TI (match_dup 1))
+				    (sign_extend:TI (match_dup 2)))
+			   (sign_extend:TI (plus:DI (match_dup 1)
+						    (match_dup 2))))
+		       (const_int 0))])]
+  ""
+  "")
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(plus:DI (match_operand:DI 1 "reg_or_0_operand" "%rM,rM")
+		 (match_operand:DI 2 "arith11_operand" "r,I")))
+   (trap_if (ne (plus:TI (sign_extend:TI (match_dup 1))
+			 (sign_extend:TI (match_dup 2)))
+		(sign_extend:TI (plus:DI (match_dup 1)
+					 (match_dup 2))))
+	    (const_int 0))]
+  "TARGET_64BIT"
+  "@
+  add,tsv,* %2,%1,%0
+  addi,tsv,* %2,%1,%0"
+  [(set_attr "type" "binary,binary")
+   (set_attr "length" "4,4")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(plus:DI (match_operand:DI 1 "reg_or_0_operand" "%rM")
+		 (match_operand:DI 2 "arith11_operand" "rI")))
+   (trap_if (ne (plus:TI (sign_extend:TI (match_dup 1))
+			 (sign_extend:TI (match_dup 2)))
+		(sign_extend:TI (plus:DI (match_dup 1)
+					 (match_dup 2))))
+	    (const_int 0))]
+  "!TARGET_64BIT"
+  "*
+{
+  if (GET_CODE (operands[2]) == CONST_INT)
+    {
+      if (INTVAL (operands[2]) >= 0)
+	return \"addi %2,%R1,%R0\;{addco|add,c,tsv} %1,%%r0,%0\";
+      else
+	return \"addi %2,%R1,%R0\;{subbo|sub,b,tsv} %1,%%r0,%0\";
+    }
+  else
+    return \"add %R2,%R1,%R0\;{addco|add,c,tsv} %2,%1,%0\";
+}"
+  [(set_attr "type" "binary")
+   (set_attr "length" "8")])
+
 ;; define_splits to optimize cases of adding a constant integer
 ;; to a register when the constant does not fit in 14 bits.  */
 (define_split
@@ -5426,26 +5479,33 @@
    (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4,4")])
 
+(define_insn "addvsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(plus:SI (match_operand:SI 1 "reg_or_0_operand" "%rM,rM")
+		 (match_operand:SI 2 "arith11_operand" "r,I")))
+   (trap_if (ne (plus:DI (sign_extend:DI (match_dup 1))
+			 (sign_extend:DI (match_dup 2)))
+		(sign_extend:DI (plus:SI (match_dup 1)
+					 (match_dup 2))))
+	    (const_int 0))]
+  ""
+  "@
+  {addo|add,tsv} %2,%1,%0
+  {addio|addi,tsv} %2,%1,%0"
+  [(set_attr "type" "binary,binary")
+   (set_attr "length" "4,4")])
+
 (define_expand "subdi3"
   [(set (match_operand:DI 0 "register_operand" "")
-	(minus:DI (match_operand:DI 1 "register_operand" "")
-		  (match_operand:DI 2 "register_operand" "")))]
+	(minus:DI (match_operand:DI 1 "arith11_operand" "")
+		  (match_operand:DI 2 "reg_or_0_operand" "")))]
   ""
   "")
 
 (define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(minus:DI (match_operand:DI 1 "register_operand" "r")
-		  (match_operand:DI 2 "register_operand" "r")))]
-  "!TARGET_64BIT"
-  "sub %R1,%R2,%R0\;{subb|sub,b} %1,%2,%0"
-  [(set_attr "type" "binary")
-  (set_attr "length" "8")])
-
-(define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r,!q")
 	(minus:DI (match_operand:DI 1 "arith11_operand" "r,I,!U")
-		  (match_operand:DI 2 "register_operand" "r,r,!r")))]
+		  (match_operand:DI 2 "reg_or_0_operand" "rM,rM,!rM")))]
   "TARGET_64BIT"
   "@
    sub %1,%2,%0
@@ -5453,6 +5513,91 @@
    mtsarcm %2"
   [(set_attr "type" "binary,binary,move")
   (set_attr "length" "4,4,4")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r,&r")
+	(minus:DI (match_operand:DI 1 "arith11_operand" "r,I")
+		  (match_operand:DI 2 "reg_or_0_operand" "rM,rM")))]
+  "!TARGET_64BIT"
+  "*
+{
+  if (GET_CODE (operands[1]) == CONST_INT)
+    {
+      if (INTVAL (operands[1]) >= 0)
+	return \"subi %1,%R2,%R0\;{subb|sub,b} %%r0,%2,%0\";
+      else
+	return \"ldi -1,%0\;subi %1,%R2,%R0\;{subb|sub,b} %0,%2,%0\";
+    }
+  else
+    return \"sub %R1,%R2,%R0\;{subb|sub,b} %1,%2,%0\";
+}"
+  [(set_attr "type" "binary")
+   (set (attr "length")
+	(if_then_else (eq_attr "alternative" "0")
+	  (const_int 8)
+	  (if_then_else (ge (symbol_ref "INTVAL (operands[1])")
+			    (const_int 0))
+	    (const_int 8)
+	    (const_int 12))))])
+
+(define_expand "subvdi3"
+  [(parallel [(set (match_operand:DI 0 "register_operand" "")
+		   (minus:DI (match_operand:DI 1 "arith11_operand" "")
+			     (match_operand:DI 2 "reg_or_0_operand" "")))
+	      (trap_if (ne (minus:TI (sign_extend:TI (match_dup 1))
+				     (sign_extend:TI (match_dup 2)))
+			   (sign_extend:TI (minus:DI (match_dup 1)
+						     (match_dup 2))))
+		       (const_int 0))])]
+  ""
+  "")
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(minus:DI (match_operand:DI 1 "arith11_operand" "r,I")
+		  (match_operand:DI 2 "reg_or_0_operand" "rM,rM")))
+   (trap_if (ne (minus:TI (sign_extend:TI (match_dup 1))
+			  (sign_extend:TI (match_dup 2)))
+		(sign_extend:TI (minus:DI (match_dup 1)
+					  (match_dup 2))))
+	    (const_int 0))]
+  "TARGET_64BIT"
+  "@
+  {subo|sub,tsv} %1,%2,%0
+  {subio|subi,tsv} %1,%2,%0"
+  [(set_attr "type" "binary,binary")
+   (set_attr "length" "4,4")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r,&r")
+	(minus:DI (match_operand:DI 1 "arith11_operand" "r,I")
+		  (match_operand:DI 2 "reg_or_0_operand" "rM,rM")))
+   (trap_if (ne (minus:TI (sign_extend:TI (match_dup 1))
+			  (sign_extend:TI (match_dup 2)))
+		(sign_extend:TI (minus:DI (match_dup 1)
+					  (match_dup 2))))
+	    (const_int 0))]
+  "!TARGET_64BIT"
+  "*
+{
+  if (GET_CODE (operands[1]) == CONST_INT)
+    {
+      if (INTVAL (operands[1]) >= 0)
+	return \"subi %1,%R2,%R0\;{subbo|sub,b,tsv} %%r0,%2,%0\";
+      else
+	return \"ldi -1,%0\;subi %1,%R2,%R0\;{subbo|sub,b,tsv} %0,%2,%0\";
+    }
+  else
+    return \"sub %R1,%R2,%R0\;{subbo|sub,b,tsv} %1,%2,%0\";
+}"
+  [(set_attr "type" "binary,binary")
+   (set (attr "length")
+	(if_then_else (eq_attr "alternative" "0")
+	  (const_int 8)
+	  (if_then_else (ge (symbol_ref "INTVAL (operands[1])")
+			    (const_int 0))
+	    (const_int 8)
+	    (const_int 12))))])
 
 (define_expand "subsi3"
   [(set (match_operand:SI 0 "register_operand" "")
@@ -5483,6 +5628,22 @@
    mtsarcm %2"
   [(set_attr "type" "binary,binary,move")
    (set_attr "length" "4,4,4")])
+
+(define_insn "subvsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(minus:SI (match_operand:SI 1 "arith11_operand" "rM,I")
+		  (match_operand:SI 2 "reg_or_0_operand" "rM,rM")))
+   (trap_if (ne (minus:DI (sign_extend:DI (match_dup 1))
+			  (sign_extend:DI (match_dup 2)))
+		(sign_extend:DI (minus:SI (match_dup 1)
+					  (match_dup 2))))
+	    (const_int 0))]
+  ""
+  "@
+  {subo|sub,tsv} %1,%2,%0
+  {subio|subi,tsv} %1,%2,%0"
+  [(set_attr "type" "binary,binary")
+   (set_attr "length" "4,4")])
 
 ;; Clobbering a "register_operand" instead of a match_scratch
 ;; in operand3 of millicode calls avoids spilling %r1 and
@@ -6031,11 +6192,53 @@
   [(set_attr "type" "unary")
    (set_attr "length" "4")])
 
+(define_expand "negvdi2"
+  [(parallel [(set (match_operand:DI 0 "register_operand" "")
+		   (neg:DI (match_operand:DI 1 "register_operand" "")))
+	      (trap_if (ne (neg:TI (sign_extend:TI (match_dup 1)))
+				   (sign_extend:TI (neg:DI (match_dup 1))))
+		       (const_int 0))])]
+  ""
+  "")
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(neg:DI (match_operand:DI 1 "register_operand" "r")))
+   (trap_if (ne (neg:TI (sign_extend:TI (match_dup 1)))
+		(sign_extend:TI (neg:DI (match_dup 1))))
+	    (const_int 0))]
+  "!TARGET_64BIT"
+  "sub %%r0,%R1,%R0\;{subbo|sub,b,tsv} %%r0,%1,%0"
+  [(set_attr "type" "unary")
+   (set_attr "length" "8")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(neg:DI (match_operand:DI 1 "register_operand" "r")))
+   (trap_if (ne (neg:TI (sign_extend:TI (match_dup 1)))
+		(sign_extend:TI (neg:DI (match_dup 1))))
+	    (const_int 0))]
+  "TARGET_64BIT"
+  "sub,tsv %%r0,%1,%0"
+  [(set_attr "type" "unary")
+   (set_attr "length" "4")])
+
 (define_insn "negsi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(neg:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
   "sub %%r0,%1,%0"
+  [(set_attr "type" "unary")
+   (set_attr "length" "4")])
+
+(define_insn "negvsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (neg:SI (match_operand:SI 1 "register_operand" "r")))
+   (trap_if (ne (neg:DI (sign_extend:DI (match_dup 1)))
+		(sign_extend:DI (neg:SI (match_dup 1))))
+	    (const_int 0))]
+   ""
+   "{subo|sub,tsv} %%r0,%1,%0"
   [(set_attr "type" "unary")
    (set_attr "length" "4")])
 
