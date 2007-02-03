@@ -1,3 +1,10 @@
+2007-02-02  Mike Stump  <mrs@apple.com>
+
+	* config/darwin9.h (DARWIN_LINKER_GENERATES_ISLANDS): Add.
+	* config/rs6000/rs6000.c (DARWIN_GENERATE_ISLANDS): Add.
+	(output_call): Use DARWIN_GENERATE_ISLANDS to decide when to
+	generate a branch island.
+
 2007-02-02  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (smalloffset_mem_p): Use BASE_REG_P.
