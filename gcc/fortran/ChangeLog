@@ -1,3 +1,8 @@
+2007-02-02  Steven G. Kargl <kargl@gcc.gnu.org>
+
+	PR fortran/30683
+	* resolve.c (resolve_generic_f): Check for non-NULL sym.
+
 2007-02-02  Roger Sayle  <roger@eyesopen.com>
 
 	* trans.c (gfc_build_array_ref): Use STRIP_TYPE_NOPS to eliminate
