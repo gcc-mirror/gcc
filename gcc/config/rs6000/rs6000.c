@@ -797,7 +797,6 @@ static int rs6000_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 static const char *invalid_arg_for_unprototyped_fn (tree, tree, tree);
 #if TARGET_MACHO
 static void macho_branch_islands (void);
-static void add_compiler_branch_island (tree, tree, int);
 static int no_previous_def (tree function_name);
 static tree get_prev_label (tree function_name);
 static void rs6000_darwin_file_start (void);
@@ -19076,6 +19075,14 @@ get_prev_label (tree function_name)
   return 0;
 }
 
+#ifndef DARWIN_LINKER_GENERATES_ISLANDS
+#define DARWIN_LINKER_GENERATES_ISLANDS 0
+#endif
+
+/* KEXTs still need branch islands.  */
+#define DARWIN_GENERATE_ISLANDS (!DARWIN_LINKER_GENERATES_ISLANDS \
+				 || flag_mkernel || flag_apple_kext)
+
 /* INSN is either a function call or a millicode call.  It may have an
    unconditional jump in its delay slot.
 
@@ -19086,7 +19093,8 @@ output_call (rtx insn, rtx *operands, int dest_operand_number,
 	     int cookie_operand_number)
 {
   static char buf[256];
-  if (GET_CODE (operands[dest_operand_number]) == SYMBOL_REF
+  if (DARWIN_GENERATE_ISLANDS
+      && GET_CODE (operands[dest_operand_number]) == SYMBOL_REF
       && (INTVAL (operands[cookie_operand_number]) & CALL_LONG))
     {
       tree labelname;
