@@ -8923,7 +8923,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 
 	  /* Fold __complex__ ( x, 0 ) + __complex__ ( 0, y )
 	     to __complex__ ( x, y ).  This is not the same for SNaNs or
-	     if singed zeros are involved.  */
+	     if signed zeros are involved.  */
 	  if (!HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0)))
               && !HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg0)))
 	      && COMPLEX_FLOAT_TYPE_P (TREE_TYPE (arg0)))
@@ -9231,6 +9231,43 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       else if (fold_real_zero_addition_p (TREE_TYPE (arg1), arg0, 0))
 	return negate_expr (fold_convert (type, arg1));
 
+      /* Fold __complex__ ( x, 0 ) - __complex__ ( 0, y ) to
+	 __complex__ ( x, -y ).  This is not the same for SNaNs or if
+	 signed zeros are involved.  */
+      if (!HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0)))
+	  && !HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg0)))
+	  && COMPLEX_FLOAT_TYPE_P (TREE_TYPE (arg0)))
+        {
+	  tree rtype = TREE_TYPE (TREE_TYPE (arg0));
+	  tree arg0r = fold_unary (REALPART_EXPR, rtype, arg0);
+	  tree arg0i = fold_unary (IMAGPART_EXPR, rtype, arg0);
+	  bool arg0rz = false, arg0iz = false;
+	  if ((arg0r && (arg0rz = real_zerop (arg0r)))
+	      || (arg0i && (arg0iz = real_zerop (arg0i))))
+	    {
+	      tree arg1r = fold_unary (REALPART_EXPR, rtype, arg1);
+	      tree arg1i = fold_unary (IMAGPART_EXPR, rtype, arg1);
+	      if (arg0rz && arg1i && real_zerop (arg1i))
+	        {
+		  tree rp = fold_build1 (NEGATE_EXPR, rtype,
+					 arg1r ? arg1r
+					 : build1 (REALPART_EXPR, rtype, arg1));
+		  tree ip = arg0i ? arg0i
+		    : build1 (IMAGPART_EXPR, rtype, arg0);
+		  return fold_build2 (COMPLEX_EXPR, type, rp, ip);
+		}
+	      else if (arg0iz && arg1r && real_zerop (arg1r))
+	        {
+		  tree rp = arg0r ? arg0r
+		    : build1 (REALPART_EXPR, rtype, arg0);
+		  tree ip = fold_build1 (NEGATE_EXPR, rtype,
+					 arg1i ? arg1i
+					 : build1 (IMAGPART_EXPR, rtype, arg1));
+		  return fold_build2 (COMPLEX_EXPR, type, rp, ip);
+		}
+	    }
+	}
+
       /* Fold &x - &x.  This can happen from &x.foo - &x.
 	 This is unsafe for certain floats even in non-IEEE formats.
 	 In IEEE, it is unsafe because it does wrong for NaNs.
@@ -9410,7 +9447,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	    }
 
 	  /* Fold z * +-I to __complex__ (-+__imag z, +-__real z).
-	     This is not the same for NaNs or if singed zeros are
+	     This is not the same for NaNs or if signed zeros are
 	     involved.  */
 	  if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg0)))
               && !HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg0)))
