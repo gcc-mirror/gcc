@@ -1,3 +1,19 @@
+2007-02-02  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (smalloffset_mem_p): Use BASE_REG_P.
+	(xtensa_legitimate_address_p): New.
+	(xtensa_legitimize_address): New.
+	(xtensa_output_addr_const_extra): New.
+	* config/xtensa/xtensa.h (REG_OK_STRICT_FLAG): Define.
+	(BASE_REG_P): New.
+	(REG_OK_FOR_BASE_P): Use BASE_REG_P.
+	(GO_IF_LEGITIMATE_ADDRESS): Move code to xtensa_legitimate_address_p.
+	(LEGITIMIZE_ADDRESS): Move code to xtensa_legitimize_address.
+	(OUTPUT_ADDR_CONST_EXTRA): Move code to xtensa_output_addr_const_extra.
+	* config/xtensa/xtensa-protos.h (xtensa_legitimate_address_p): New.
+	(xtensa_legitimize_address): New.
+	(xtensa_output_addr_const_extra): New.
+
 2007-02-02  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.c (ia64_print_operand): Fix compare strings.

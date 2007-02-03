@@ -1,5 +1,6 @@
 /* Definitions of Tensilica's Xtensa target machine for GNU compiler.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -825,39 +826,27 @@ typedef struct xtensa_args
 /* Addressing modes, and classification of registers for them.  */
 
 /* C expressions which are nonzero if register number NUM is suitable
-   for use as a base or index register in operand addresses.  It may
-   be either a suitable hard register or a pseudo register that has
-   been allocated such a hard register. The difference between an
-   index register and a base register is that the index register may
-   be scaled.  */
+   for use as a base or index register in operand addresses.  */
 
+#define REGNO_OK_FOR_INDEX_P(NUM) 0
 #define REGNO_OK_FOR_BASE_P(NUM) \
   (GP_REG_P (NUM) || GP_REG_P ((unsigned) reg_renumber[NUM]))
 
-#define REGNO_OK_FOR_INDEX_P(NUM) 0
-
 /* C expressions that are nonzero if X (assumed to be a `reg' RTX) is
-   valid for use as a base or index register.  For hard registers, it
-   should always accept those which the hardware permits and reject
-   the others.  Whether the macro accepts or rejects pseudo registers
-   must be controlled by `REG_OK_STRICT'.  This usually requires two
-   variant definitions, of which `REG_OK_STRICT' controls the one
-   actually used. The difference between an index register and a base
-   register is that the index register may be scaled.  */
+   valid for use as a base or index register.  */
 
 #ifdef REG_OK_STRICT
+#define REG_OK_STRICT_FLAG 1
+#else
+#define REG_OK_STRICT_FLAG 0
+#endif
+
+#define BASE_REG_P(X, STRICT)						\
+  ((!(STRICT) && REGNO (X) >= FIRST_PSEUDO_REGISTER)			\
+   || REGNO_OK_FOR_BASE_P (REGNO (X)))
 
 #define REG_OK_FOR_INDEX_P(X) 0
-#define REG_OK_FOR_BASE_P(X) \
-  REGNO_OK_FOR_BASE_P (REGNO (X))
-
-#else /* !REG_OK_STRICT */
-
-#define REG_OK_FOR_INDEX_P(X) 0
-#define REG_OK_FOR_BASE_P(X) \
-  ((REGNO (X) >= FIRST_PSEUDO_REGISTER) || (GP_REG_P (REGNO (X))))
-
-#endif /* !REG_OK_STRICT */
+#define REG_OK_FOR_BASE_P(X) BASE_REG_P (X, REG_OK_STRICT_FLAG)
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 #define MAX_REGS_PER_ADDRESS 1
@@ -865,52 +854,8 @@ typedef struct xtensa_args
 /* Identify valid Xtensa addresses.  */
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, ADDR, LABEL)			\
   do {									\
-    rtx xinsn = (ADDR);							\
-									\
-    /* allow constant pool addresses */					\
-    if ((MODE) != BLKmode && GET_MODE_SIZE (MODE) >= UNITS_PER_WORD	\
-	&& !TARGET_CONST16 && constantpool_address_p (xinsn))		\
+    if (xtensa_legitimate_address_p (MODE, ADDR, REG_OK_STRICT_FLAG))	\
       goto LABEL;							\
-									\
-    while (GET_CODE (xinsn) == SUBREG)					\
-      xinsn = SUBREG_REG (xinsn);					\
-									\
-    /* allow base registers */						\
-    if (GET_CODE (xinsn) == REG && REG_OK_FOR_BASE_P (xinsn))		\
-      goto LABEL;							\
-									\
-    /* check for "register + offset" addressing */			\
-    if (GET_CODE (xinsn) == PLUS)					\
-      {									\
-	rtx xplus0 = XEXP (xinsn, 0);					\
-	rtx xplus1 = XEXP (xinsn, 1);					\
-	enum rtx_code code0;						\
-	enum rtx_code code1;						\
-									\
-	while (GET_CODE (xplus0) == SUBREG)				\
-	  xplus0 = SUBREG_REG (xplus0);					\
-	code0 = GET_CODE (xplus0);					\
-									\
-	while (GET_CODE (xplus1) == SUBREG)				\
-	  xplus1 = SUBREG_REG (xplus1);					\
-	code1 = GET_CODE (xplus1);					\
-									\
-	/* swap operands if necessary so the register is first */	\
-	if (code0 != REG && code1 == REG)				\
-	  {								\
-	    xplus0 = XEXP (xinsn, 1);					\
-	    xplus1 = XEXP (xinsn, 0);					\
-	    code0 = GET_CODE (xplus0);					\
-	    code1 = GET_CODE (xplus1);					\
-	  }								\
-									\
-	if (code0 == REG && REG_OK_FOR_BASE_P (xplus0)			\
-	    && code1 == CONST_INT					\
-	    && xtensa_mem_offset (INTVAL (xplus1), (MODE)))		\
-	  {								\
-	    goto LABEL;							\
-	  }								\
-      }									\
   } while (0)
 
 /* A C expression that is 1 if the RTX X is a constant which is a
@@ -934,36 +879,13 @@ typedef struct xtensa_args
    && GET_CODE (X) != LABEL_REF						\
    && GET_CODE (X) != CONST)
 
-/* Tell GCC how to use ADDMI to generate addresses.  */
 #define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)				\
   do {									\
-    rtx xinsn = (X);							\
-    if (GET_CODE (xinsn) == PLUS)					\
-      { 								\
-	rtx plus0 = XEXP (xinsn, 0);					\
-	rtx plus1 = XEXP (xinsn, 1);					\
-									\
-	if (GET_CODE (plus0) != REG && GET_CODE (plus1) == REG)		\
-	  {								\
-	    plus0 = XEXP (xinsn, 1);					\
-	    plus1 = XEXP (xinsn, 0);					\
-	  }								\
-									\
-	if (GET_CODE (plus0) == REG					\
-	    && GET_CODE (plus1) == CONST_INT				\
-	    && !xtensa_mem_offset (INTVAL (plus1), MODE)		\
-	    && !xtensa_simm8 (INTVAL (plus1))				\
-	    && xtensa_mem_offset (INTVAL (plus1) & 0xff, MODE)		\
-	    && xtensa_simm8x256 (INTVAL (plus1) & ~0xff))		\
-	  {								\
-	    rtx temp = gen_reg_rtx (Pmode);				\
-	    emit_insn (gen_rtx_SET (Pmode, temp,			\
-				gen_rtx_PLUS (Pmode, plus0,		\
-					 GEN_INT (INTVAL (plus1) & ~0xff)))); \
-	    (X) = gen_rtx_PLUS (Pmode, temp,				\
-			   GEN_INT (INTVAL (plus1) & 0xff));		\
-	    goto WIN;							\
-	  }								\
+    rtx new_x = xtensa_legitimize_address (X, OLDX, MODE);		\
+    if (new_x)								\
+      {									\
+	X = new_x;							\
+	goto WIN;							\
       }									\
   } while (0)
 
@@ -1066,20 +988,7 @@ typedef struct xtensa_args
    constants.  Used for PIC-specific UNSPECs.  */
 #define OUTPUT_ADDR_CONST_EXTRA(STREAM, X, FAIL)			\
   do {									\
-    if (flag_pic && GET_CODE (X) == UNSPEC && XVECLEN ((X), 0) == 1)	\
-      {									\
-	switch (XINT ((X), 1))						\
-	  {								\
-	  case UNSPEC_PLT:						\
-	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
-	    fputs ("@PLT", (STREAM));					\
-	    break;							\
-	  default:							\
-	    goto FAIL;							\
-	  }								\
-	break;								\
-      }									\
-    else								\
+    if (xtensa_output_addr_const_extra (STREAM, X) == FALSE)		\
       goto FAIL;							\
   } while (0)
 
