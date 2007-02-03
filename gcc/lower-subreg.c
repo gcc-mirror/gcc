@@ -66,6 +66,31 @@ static bitmap non_decomposable_context;
    copy from reg M to reg N.  */
 static VEC(bitmap,heap) *reg_copy_graph;
 
+/* Return whether X is a simple object which we can take a word_mode
+   subreg of.  */
+
+static bool
+simple_move_operand (rtx x)
+{
+  if (GET_CODE (x) == SUBREG)
+    x = SUBREG_REG (x);
+
+  if (!OBJECT_P (x))
+    return false;
+
+  if (GET_CODE (x) == LABEL_REF
+      || GET_CODE (x) == SYMBOL_REF
+      || GET_CODE (x) == HIGH)
+    return false;
+
+  if (MEM_P (x)
+      && (MEM_VOLATILE_P (x)
+	  || mode_dependent_address_p (XEXP (x, 0))))
+    return false;
+
+  return true;
+}
+
 /* If INSN is a single set between two objects, return the single set.
    Such an insn can always be decomposed.  INSN should have been
    passed to recog and extract_insn before this is called.  */
@@ -87,25 +112,16 @@ simple_move (rtx insn)
   x = SET_DEST (set);
   if (x != recog_data.operand[0] && x != recog_data.operand[1])
     return NULL_RTX;
-  if (GET_CODE (x) == SUBREG)
-    x = SUBREG_REG (x);
-  if (!OBJECT_P (x))
-    return NULL_RTX;
-  if (MEM_P (x)
-      && (MEM_VOLATILE_P (x)
-	  || mode_dependent_address_p (XEXP (x, 0))))
+  if (!simple_move_operand (x))
     return NULL_RTX;
 
   x = SET_SRC (set);
   if (x != recog_data.operand[0] && x != recog_data.operand[1])
     return NULL_RTX;
-  if (GET_CODE (x) == SUBREG)
-    x = SUBREG_REG (x);
-  if (!OBJECT_P (x) && GET_CODE (x) != ASM_OPERANDS)
-    return NULL_RTX;
-  if (MEM_P (x)
-      && (MEM_VOLATILE_P (x)
-	  || mode_dependent_address_p (XEXP (x, 0))))
+  /* For the src we can handle ASM_OPERANDS, and it is beneficial for
+     things like x86 rdtsc which returns a DImode value.  */
+  if (GET_CODE (x) != ASM_OPERANDS
+      && !simple_move_operand (x))
     return NULL_RTX;
 
   /* We try to decompose in integer modes, to avoid generating
@@ -259,7 +275,7 @@ find_decomposable_subregs (rtx *px, void *data)
 	  return -1;
 	}
     }
-  else if (GET_CODE (x) == REG)
+  else if (REG_P (x))
     {
       unsigned int regno;
 
@@ -298,6 +314,16 @@ find_decomposable_subregs (rtx *px, void *data)
 	      gcc_unreachable ();
 	    }
 	}
+    }
+  else if (MEM_P (x))
+    {
+      enum classify_move_insn cmi_mem = NOT_SIMPLE_MOVE;
+
+      /* Any registers used in a MEM do not participate in a
+	 SIMPLE_MOVE or SIMPLE_PSEUDO_REG_MOVE.  Do our own recursion
+	 here, and return -1 to block the parent's recursion.  */
+      for_each_rtx (&XEXP (x, 0), find_decomposable_subregs, &cmi_mem);
+      return -1;
     }
 
   return 0;
@@ -585,22 +611,23 @@ resolve_reg_notes (rtx insn)
     }
 }
 
-/* Return whether X can not be decomposed into subwords.  */
+/* Return whether X can be decomposed into subwords.  */
 
 static bool
-cannot_decompose_p (rtx x)
+can_decompose_p (rtx x)
 {
   if (REG_P (x))
     {
       unsigned int regno = REGNO (x);
 
       if (HARD_REGISTER_NUM_P (regno))
-	return !validate_subreg (word_mode, GET_MODE (x), x, UNITS_PER_WORD);
+	return (validate_subreg (word_mode, GET_MODE (x), x, UNITS_PER_WORD)
+		&& HARD_REGNO_MODE_OK (regno, word_mode));
       else
-	return bitmap_bit_p (non_decomposable_context, regno);
+	return !bitmap_bit_p (non_decomposable_context, regno);
     }
 
-  return false;
+  return true;
 }
 
 /* Decompose the registers used in a simple move SET within INSN.  If
@@ -681,7 +708,7 @@ resolve_simple_move (rtx set, rtx insn)
   /* If SRC is a register which we can't decompose, or has side
      effects, we need to move via a temporary register.  */
 
-  if (cannot_decompose_p (src)
+  if (!can_decompose_p (src)
       || side_effects_p (src)
       || GET_CODE (src) == ASM_OPERANDS)
     {
@@ -701,7 +728,7 @@ resolve_simple_move (rtx set, rtx insn)
 
   dest_mode = orig_mode;
   pushing = push_operand (dest, dest_mode);
-  if (cannot_decompose_p (dest)
+  if (!can_decompose_p (dest)
       || (side_effects_p (dest) && !pushing)
       || (!SCALAR_INT_MODE_P (dest_mode)
 	  && !resolve_reg_p (dest)

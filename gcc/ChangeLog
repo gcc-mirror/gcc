@@ -1,3 +1,14 @@
+2007-02-03  Ian Lance Taylor  <iant@google.com>
+
+	* lower-subreg.c (simple_move_operand): New static function,
+	broken out of simple_move.  Reject LABEL_REF, SYMBOL_REF, and HIGH
+	operands.
+	(simple_move): Call simple_move_operand.
+	(find_decomposable_subregs): Add special handling of MEMs.
+	(can_decompose_p): Rename from cannot_decompose_p.  Reverse
+	meaning of return value.  If we see a hard register, test whether
+	it can store a word_mode value.  Change all callers.
+
 2007-02-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.md (addvdi3, addvsi3, subvdi3, subvsi3, negvdi2, negvsi2): New
