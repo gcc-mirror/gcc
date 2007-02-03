@@ -1,3 +1,9 @@
+2007-02-03  Roger Sayle  <roger@eyesopen.com>
+
+	* simplify-rtx.c (simplify_relational_operation_1): Implement some
+	canonicalization transformations that attempt to simplify integer
+	constant comparisons to become comparisons against zero.
+
 2007-02-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (fold_builtin_cabs): Fold cabs(x+xi) into
