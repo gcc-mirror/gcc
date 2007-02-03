@@ -1434,12 +1434,17 @@ stringop_block_profile (tree stmt, unsigned int *expected_align,
   histogram = gimple_histogram_value_of_type (cfun, stmt, HIST_TYPE_AVERAGE);
   if (!histogram)
     *expected_size = -1;
+  else if (!histogram->hvalue.counters[1])
+    {
+      *expected_size = -1;
+      gimple_remove_histogram_value (cfun, stmt, histogram);
+    }
   else
     {
       gcov_type size;
       size = ((histogram->hvalue.counters[0]
-	      + histogram->hvalue.counters[0] / 2)
-	       / histogram->hvalue.counters[0]);
+	      + histogram->hvalue.counters[1] / 2)
+	       / histogram->hvalue.counters[1]);
       /* Even if we can hold bigger value in SIZE, INT_MAX
 	 is safe "infinity" for code generation strategies.  */
       if (size > INT_MAX)
@@ -1450,6 +1455,11 @@ stringop_block_profile (tree stmt, unsigned int *expected_align,
   histogram = gimple_histogram_value_of_type (cfun, stmt, HIST_TYPE_IOR);
   if (!histogram)
     *expected_align = 0;
+  else if (!histogram->hvalue.counters[0])
+    {
+      gimple_remove_histogram_value (cfun, stmt, histogram);
+      *expected_align = 0;
+    }
   else
     {
       gcov_type count;
@@ -1661,11 +1671,11 @@ tree_find_values_to_profile (histogram_values *values)
 	  break;
 
 	case HIST_TYPE_AVERAGE:
-	  hist->n_counters = 3;
+	  hist->n_counters = 2;
 	  break;
 
 	case HIST_TYPE_IOR:
-	  hist->n_counters = 3;
+	  hist->n_counters = 1;
 	  break;
 
 	default:

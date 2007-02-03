@@ -329,10 +329,10 @@ typedef HOST_WIDEST_INT gcov_type;
 				      consecutive values of expression.  */
 
 #define GCOV_COUNTER_V_INDIR	5  /* The most common indirect address */
-#define GCOV_COUNTER_AVERAGE	6  /* The most common difference between
-				      consecutive values of expression.  */
-#define GCOV_COUNTER_IOR	7  /* The most common difference between
-				      consecutive values of expression.  */
+#define GCOV_COUNTER_AVERAGE	6  /* Compute average value passed to the
+				      counter.  */
+#define GCOV_COUNTER_IOR	7  /* IOR of the all values passed to
+				      counter.  */
 #define GCOV_LAST_VALUE_COUNTER 7  /* The last of counters used for value
 				      profiling.  */
 #define GCOV_COUNTERS		8
