@@ -1,3 +1,9 @@
+2007-02-03  Tom Tromey  <tromey@redhat.com>
+
+	PR driver/30246
+	* gcc.c (cpp_unique_options): Any of -ggdb3, -gstabs3,
+	-gcoff3, -gxcoff3, -gvms3 implies -dD.
+
 2007-02-03  Kazu Hirata  <kazu@codesourcery.com>
 
 	* c-decl.c, config/avr/avr.c, config/avr/avr.h,
