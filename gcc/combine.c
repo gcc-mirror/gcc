@@ -2003,7 +2003,9 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	    offset = -1;
 	}
 
-      if (offset >= 0)
+      if (offset >= 0
+	  && (GET_MODE_BITSIZE (GET_MODE (SET_DEST (temp)))
+	      <= HOST_BITS_PER_WIDE_INT * 2))
 	{
 	  HOST_WIDE_INT mhi, ohi, ihi;
 	  HOST_WIDE_INT mlo, olo, ilo;
