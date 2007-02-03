@@ -2223,7 +2223,7 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
 }
 
 /* Estimate number of instructions that will be created by expanding EXPR.
-   WEIGHTS contains weigths attributed to various constructs.  */
+   WEIGHTS contains weights attributed to various constructs.  */
 
 int
 estimate_num_insns (tree expr, eni_weights *weights)

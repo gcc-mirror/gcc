@@ -142,8 +142,8 @@ void copy_deps_list_change_con (deps_list_t, deps_list_t, rtx);
 
 void move_dep_link (dep_link_t, deps_list_t);
 
-/* Suppose we have a depedence Y between insn pro1 and con1, where pro1 has
-   additional dependants con0 and con2, and con1 is dependant on additional
+/* Suppose we have a dependence Y between insn pro1 and con1, where pro1 has
+   additional dependents con0 and con2, and con1 is dependent on additional
    insns pro0 and pro1:
 
    .con0      pro0

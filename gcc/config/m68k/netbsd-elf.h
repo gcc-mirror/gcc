@@ -69,7 +69,7 @@ Boston, MA 02110-1301, USA.  */
 
 
 /* Provide an ASM_SPEC appropriate for NetBSD m68k ELF targets.  We need
-   to passn PIC code generation options.  */
+   to pass PIC code generation options.  */
 
 #undef ASM_SPEC
 #define ASM_SPEC "%(asm_cpu_spec) %{fpic|fpie:-k} %{fPIC|fPIE:-k -K}"

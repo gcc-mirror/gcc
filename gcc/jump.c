@@ -1639,7 +1639,7 @@ redirect_jump_2 (rtx jump, rtx olabel, rtx nlabel, int delete_unused,
 {
   rtx note;
 
-  /* negative DELETE_UNUSED used to be used to signalize behaviour on
+  /* Negative DELETE_UNUSED used to be used to signalize behavior on
      moving FUNCTION_END note.  Just sanity check that no user still worry
      about this.  */
   gcc_assert (delete_unused >= 0);

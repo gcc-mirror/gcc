@@ -441,7 +441,7 @@ extern int current_first_parm_offset;
    For the pdp11, this is nonzero to account for the return address.
 	1 - return address
 	2 - frame pointer (always saved, even when not used!!!!)
-		-- chnage some day !!!:q!
+		-- change some day !!!:q!
 
 */
 #define FIRST_PARM_OFFSET(FNDECL) 4

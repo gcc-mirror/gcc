@@ -1,3 +1,16 @@
+2007-02-03  Kazu Hirata  <kazu@codesourcery.com>
+
+	* c-decl.c, config/avr/avr.c, config/avr/avr.h,
+	config/m68k/m68k.c, config/m68k/netbsd-elf.h,
+	config/mn10300/mn10300.c, config/pdp11/pdp11.h,
+	config/rs6000/cell.md, config/rs6000/darwin.h,
+	config/sh/sh.md, config/sh/sh4-300.md, config/spu/spu.c,
+	config/spu/spu.md, cselib.c, expr.c, haifa-sched.c, hwint.h,
+	jump.c, reload.c, sched-deps.c, sched-int.h, tree-inline.c,
+	tree-profile.c, tree-ssa-live.h, tree-vrp.c: Fix comment
+	typos.  Follow spelling conventions.
+	* doc/invoke.texi: Follow spelling conventions.
+
 2007-02-03  Roger Sayle  <roger@eyesopen.com>
 
 	* simplify-rtx.c (simplify_relational_operation_1): Implement some

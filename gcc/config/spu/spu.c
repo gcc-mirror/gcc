@@ -2792,7 +2792,7 @@ spu_handle_vector_attribute (tree * node, tree name,
   return NULL_TREE;
 }
 
-/* Return non-zero if FUNC is a naked function.  */
+/* Return nonzero if FUNC is a naked function.  */
 static int
 spu_naked_function_p (tree func)
 {

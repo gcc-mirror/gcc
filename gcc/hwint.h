@@ -128,7 +128,7 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
    efficiently in hardware.  (That is, the widest integer type that fits
    in a hardware register.)  Normally this is "long" but on some hosts it
    should be "long long" or "__int64".  This is no convenient way to
-   autodect this, so such systems must set a flag in config.host; see there
+   autodetect this, so such systems must set a flag in config.host; see there
    for details.  */
 
 #ifdef USE_LONG_LONG_FOR_WIDEST_FAST_INT

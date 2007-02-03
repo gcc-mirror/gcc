@@ -46,7 +46,7 @@ Boston, MA 02110-1301, USA.  */
    change. (ie, it is truly a view since it doesn't change anything)
 
    The final component of the data structure is the basevar map.  This provides
-   a list of all the different base variables which occue in a partition view,
+   a list of all the different base variables which occur in a partition view,
    and a unique index for each one. Routines are provided to quickly produce
    the base variable of a partition.
 

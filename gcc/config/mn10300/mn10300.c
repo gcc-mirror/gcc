@@ -546,7 +546,7 @@ fp_regs_to_save (void)
 /* Print a set of registers in the format required by "movm" and "ret".
    Register K is saved if bit K of MASK is set.  The data and address
    registers can be stored individually, but the extended registers cannot.
-   We assume that the mask alread takes that into account.  For instance,
+   We assume that the mask already takes that into account.  For instance,
    bits 14 to 17 must have the same value.  */
 
 void

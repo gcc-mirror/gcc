@@ -97,7 +97,7 @@ init_dep_1 (dep_t dep, rtx pro, rtx con, enum reg_note kind, ds_t ds)
 
 /* Init DEP with the arguments.
    While most of the scheduler (including targets) only need the major type
-   of the dependency, it is convinient to hide full dep_status from them.  */
+   of the dependency, it is convenient to hide full dep_status from them.  */
 void
 init_dep (dep_t dep, rtx pro, rtx con, enum reg_note kind)
 {
@@ -2425,7 +2425,7 @@ add_back_forw_dep (rtx insn, rtx elem, enum reg_note dep_type, ds_t ds)
     gcc_assert (deps_list_consistent_p (INSN_BACK_DEPS (insn)));
 }
 
-/* Remove a dependency refered by L.  */
+/* Remove a dependency referred to by L.  */
 void
 delete_back_forw_dep (dep_link_t l)
 {

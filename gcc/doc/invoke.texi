@@ -1658,7 +1658,7 @@ when used within the DSO@.  Enabling this option can have a dramatic effect
 on load and link times of a DSO as it massively reduces the size of the
 dynamic export table when the library makes heavy use of templates.
 
-The behaviour of this switch is not quite the same as marking the
+The behavior of this switch is not quite the same as marking the
 methods as hidden directly, because it does not affect static variables
 local to the function or cause the compiler to deduce that
 the function is defined in only one shared object.

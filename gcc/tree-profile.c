@@ -64,7 +64,7 @@ static GTY(()) tree ptr_void;
 
 /* Add code:
    static gcov*	__gcov_indirect_call_counters; // pointer to actual counter
-   static void*	__gcov_indirect_call_callee; // actual callee address
+   static void*	__gcov_indirect_call_callee; // actual callee addres
 */
 static void
 tree_init_ic_make_global_vars (void)

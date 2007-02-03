@@ -25,7 +25,7 @@
 ;; This file simulate PPU processor unit backend of pipeline, maualP24. 
 ;; manual P27, stall and flush points
 ;; IU, XU, VSU, dispatcher decodes and dispatch 2 insns per cycle in program
-;;  order, the grouped adress are aligned by 8
+;;  order, the grouped address are aligned by 8
 ;; This file only simulate one thread situation
 ;; XU executes all fixed point insns(3 units, a simple alu, a complex unit,
 ;;   and load/store unit)

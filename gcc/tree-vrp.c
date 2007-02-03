@@ -3481,7 +3481,7 @@ insert_range_assertions (void)
 
 /* Checks one ARRAY_REF in REF, located at LOCUS. Ignores flexible arrays
    and "struct" hacks. If VRP can determine that the
-   array subscript is a contant, check if it is outside valid
+   array subscript is a constant, check if it is outside valid
    range. If the array subscript is a RANGE, warn if it is
    non-overlapping with valid range.
    IGNORE_OFF_BY_ONE is true if the ARRAY_REF is inside a ADDR_EXPR.  */
