@@ -764,7 +764,7 @@ union lang_tree_node
 #define FIELD_LOCAL_ALIAS(DECL) DECL_LANG_FLAG_6 (VAR_OR_FIELD_CHECK (DECL))
 
 /* True when DECL, which aliases an outer context local variable is
-   used by the inner classe */
+   used by the inner classes.  */
 #define FIELD_LOCAL_ALIAS_USED(DECL) DECL_LANG_FLAG_7 (VAR_OR_FIELD_CHECK (DECL))
 
 /* True when DECL is a this$<n> field. Note that

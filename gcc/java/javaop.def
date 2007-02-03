@@ -88,7 +88,7 @@ TEST: Compares an integer (popped from the stack) against zero.
 	If the test (in OPERAND_VALUE) is true, goto a relative
 	offset given by the next two bytes.
 
-COND:  Compares two values (popped from the stack) againt each other.
+COND:  Compares two values (popped from the stack) against each other.
 	If the test (in OPERAND_VALUE) is true, goto a relative
 	offset given by the next two bytes.
 
