@@ -793,10 +793,13 @@ sra_walk_expr (tree *expr_p, block_stmt_iterator *bsi, bool is_output,
 	/* A bit field reference to a specific vector is scalarized but for
 	   ones for inputs need to be marked as used on the left hand size so
 	   when we scalarize it, we can mark that variable as non renamable.  */
-	if (is_output && TREE_CODE (TREE_TYPE (TREE_OPERAND (inner, 0))) == VECTOR_TYPE)
+	if (is_output
+	    && TREE_CODE (TREE_TYPE (TREE_OPERAND (inner, 0))) == VECTOR_TYPE)
 	  {
-	    struct sra_elt *elt = maybe_lookup_element_for_expr (TREE_OPERAND (inner, 0));
-	    elt->is_vector_lhs = true;
+	    struct sra_elt *elt
+	      = maybe_lookup_element_for_expr (TREE_OPERAND (inner, 0));
+	    if (elt)
+	      elt->is_vector_lhs = true;
 	  }
 	/* A bit field reference (access to *multiple* fields simultaneously)
 	   is not currently scalarized.  Consider this an access to the
