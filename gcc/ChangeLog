@@ -1,3 +1,12 @@
+2007-02-04  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (try_inline): Improve debug output; work on already
+	inline edges too.
+	(cgraph_decide_inlining_incrementally): Indent; improve debug output;
+	call try_inline for already inlined edges too when flattening; 
+	inline also functions that make callee growth but overall unit size
+	reduce.
+
 2007-02-04  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/m32c/bitops.md, config/m32c/jump.md,

@@ -1144,7 +1144,16 @@ try_inline (struct cgraph_edge *e, enum inlining_mode mode, int depth)
       /* It is first time we see it and we are not in ALWAY_INLINE only
 	 mode yet.  and the function in question is always_inline.  */
       if (always_inline && mode != INLINE_ALWAYS_INLINE)
-	mode = INLINE_ALWAYS_INLINE;
+	{
+	  if (dump_file)
+	    {
+	      indent_to (dump_file, depth);
+	      fprintf (dump_file,
+		       "Hit cycle in %s, switching to always inline only.\n",
+		       cgraph_node_name (callee));
+	    }
+	  mode = INLINE_ALWAYS_INLINE;
+	}
       /* Otherwise it is time to give up.  */
       else
 	{
@@ -1170,7 +1179,8 @@ try_inline (struct cgraph_edge *e, enum inlining_mode mode, int depth)
 	       cgraph_node_name (e->callee),
 	       cgraph_node_name (e->caller));
     }
-  cgraph_mark_inline (e);
+  if (e->inline_failed)
+    cgraph_mark_inline (e);
 
   /* In order to fully inline always_inline functions at -O0, we need to
      recurse here, since the inlined functions might not be processed by
@@ -1189,7 +1199,8 @@ try_inline (struct cgraph_edge *e, enum inlining_mode mode, int depth)
    DEPTH is depth of recursion, used only for debug output.  */
 
 static bool
-cgraph_decide_inlining_incrementally (struct cgraph_node *node, enum inlining_mode mode,
+cgraph_decide_inlining_incrementally (struct cgraph_node *node,
+				      enum inlining_mode mode,
 				      int depth)
 {
   struct cgraph_edge *e;
@@ -1207,7 +1218,10 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node, enum inlining_mo
       && lookup_attribute ("flatten", DECL_ATTRIBUTES (node->decl)) != NULL)
     {
       if (dump_file)
-	fprintf (dump_file, " Flattening %s\n", cgraph_node_name (node));
+	{
+	  indent_to (dump_file, depth);
+	  fprintf (dump_file, "Flattening %s\n", cgraph_node_name (node));
+	}
       mode = INLINE_ALL;
     }
 
@@ -1216,49 +1230,130 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node, enum inlining_mo
   /* First of all look for always inline functions.  */
   for (e = node->callees; e; e = e->next_callee)
     {
-      if (dump_file && e->callee->local.inlinable
-	  && (gimple_in_ssa_p (DECL_STRUCT_FUNCTION (node->decl))
-	      != gimple_in_ssa_p (DECL_STRUCT_FUNCTION (e->callee->decl))))
+      if (!e->callee->local.disregard_inline_limits
+	  && (mode != INLINE_ALL || !e->callee->local.inlinable))
+	continue;
+      /* When the edge is already inlined, we just need to recurse into
+	 it in order to fully flatten the leaves.  */
+      if (!e->inline_failed && mode == INLINE_ALL)
 	{
-	  fprintf (dump_file, "  Ignoring %s: SSA form not computed yet.\n",
+          inlined |= try_inline (e, mode, depth);
+	  continue;
+	}
+      if (dump_file)
+	{
+	  indent_to (dump_file, depth);
+	  fprintf (dump_file,
+		   "Considering to always inline inline candidate %s.\n",
 		   cgraph_node_name (e->callee));
 	}
-      if ((e->callee->local.disregard_inline_limits
-	   || (mode == INLINE_ALL && e->callee->local.inlinable))
-	  && e->inline_failed
-	  && (gimple_in_ssa_p (DECL_STRUCT_FUNCTION (node->decl))
-	      == gimple_in_ssa_p (DECL_STRUCT_FUNCTION (e->callee->decl)))
-	  && !cgraph_recursive_inlining_p (node, e->callee, &e->inline_failed)
-	  /* ??? It is possible that renaming variable removed the function body
-	     in duplicate_decls. See gcc.c-torture/compile/20011119-2.c  */
-	  && (DECL_SAVED_TREE (e->callee->decl) || e->callee->inline_decl))
+      if (cgraph_recursive_inlining_p (node, e->callee, &e->inline_failed))
 	{
-	  inlined |= try_inline (e, mode, depth);
+	  if (dump_file)
+	    {
+	      indent_to (dump_file, depth);
+	      fprintf (dump_file, "Not inlining: recursive call.\n");
+	    }
+	  continue;
 	}
+      if (gimple_in_ssa_p (DECL_STRUCT_FUNCTION (node->decl))
+	  != gimple_in_ssa_p (DECL_STRUCT_FUNCTION (e->callee->decl)))
+	{
+	  if (dump_file)
+	    {
+	      indent_to (dump_file, depth);
+	      fprintf (dump_file, "Not inlining: SSA form does not match.\n");
+	    }
+	  continue;
+	}
+      if (!DECL_SAVED_TREE (e->callee->decl) && !e->callee->inline_decl)
+	{
+	  if (dump_file)
+	    {
+	      indent_to (dump_file, depth);
+	      fprintf (dump_file,
+		       "Not inlining: Function body no longer available.\n");
+	    }
+	  continue;
+	}
+      inlined |= try_inline (e, mode, depth);
     }
 
   /* Now do the automatic inlining.  */
   if (!flag_really_no_inline && mode != INLINE_ALL
       && mode != INLINE_ALWAYS_INLINE)
     for (e = node->callees; e; e = e->next_callee)
-      if (e->callee->local.inlinable
-	  && e->inline_failed
-	  && !e->callee->local.disregard_inline_limits
-	  && !cgraph_recursive_inlining_p (node, e->callee, &e->inline_failed)
-	  && (gimple_in_ssa_p (DECL_STRUCT_FUNCTION (node->decl))
-	      == gimple_in_ssa_p (DECL_STRUCT_FUNCTION (e->callee->decl)))
-	  && (mode != INLINE_SIZE
-	      || (cgraph_estimate_size_after_inlining (1, e->caller, e->callee)
-	          <= e->caller->global.insns))
-	  && cgraph_check_inline_limits (node, e->callee, &e->inline_failed,
-	    			         false)
-	  && (DECL_SAVED_TREE (e->callee->decl) || e->callee->inline_decl))
-	{
-	  if (cgraph_default_inline_p (e->callee, &failed_reason))
-	    inlined |= try_inline (e, mode, depth);
-	  else if (!flag_unit_at_a_time)
-	    e->inline_failed = failed_reason;
-	}
+      {
+	if (!e->callee->local.inlinable
+	    || !e->inline_failed
+	    || e->callee->local.disregard_inline_limits)
+	  continue;
+	if (dump_file)
+	  fprintf (dump_file, "Considering inline candidate %s.\n",
+		   cgraph_node_name (e->callee));
+	if (cgraph_recursive_inlining_p (node, e->callee, &e->inline_failed))
+	  {
+	    if (dump_file)
+	      {
+		indent_to (dump_file, depth);
+		fprintf (dump_file, "Not inlining: recursive call.\n");
+	      }
+	    continue;
+	  }
+	if (gimple_in_ssa_p (DECL_STRUCT_FUNCTION (node->decl))
+	    != gimple_in_ssa_p (DECL_STRUCT_FUNCTION (e->callee->decl)))
+	  {
+	    if (dump_file)
+	      {
+		indent_to (dump_file, depth);
+		fprintf (dump_file, "Not inlining: SSA form does not match.\n");
+	      }
+	    continue;
+	  }
+	/* When the function body would grow and inlining the function won't
+	   elliminate the need for offline copy of the function, don't inline.
+	 */
+	if (mode == INLINE_SIZE
+	    && (cgraph_estimate_size_after_inlining (1, e->caller, e->callee)
+		> e->caller->global.insns)
+	    && cgraph_estimate_growth (e->callee) > 0)
+	  {
+	    if (dump_file)
+	      {
+		indent_to (dump_file, depth);
+		fprintf (dump_file,
+			 "Not inlining: code size would grow by %i insns.\n",
+			 cgraph_estimate_size_after_inlining (1, e->caller,
+							      e->callee)
+			 - e->caller->global.insns);
+	      }
+	    continue;
+	  }
+	if (!cgraph_check_inline_limits (node, e->callee, &e->inline_failed,
+				        false))
+	  {
+	    if (dump_file)
+	      {
+		indent_to (dump_file, depth);
+		fprintf (dump_file, "Not inlining: %s.\n", e->inline_failed);
+	      }
+	    continue;
+	  }
+	if (!DECL_SAVED_TREE (e->callee->decl) && !e->callee->inline_decl)
+	  {
+	    if (dump_file)
+	      {
+		indent_to (dump_file, depth);
+		fprintf (dump_file,
+			 "Not inlining: Function body no longer available.\n");
+	      }
+	    continue;
+	  }
+	if (cgraph_default_inline_p (e->callee, &failed_reason))
+	  inlined |= try_inline (e, mode, depth);
+	else if (!flag_unit_at_a_time)
+	  e->inline_failed = failed_reason;
+      }
   node->aux = (void *)(size_t) old_mode;
   return inlined;
 }
