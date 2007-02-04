@@ -3,7 +3,7 @@
    1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
-   64 bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
+   64-bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
    Brendan Eich (brendan@microunity.com).
 
 This file is part of GCC.
@@ -83,7 +83,7 @@ struct mips_rtx_cost_data
 
 /* Which ABI to use.  ABI_32 (original 32, or o32), ABI_N32 (n32),
    ABI_64 (n64) are all defined by SGI.  ABI_O64 is o32 extended
-   to work on a 64 bit machine.  */
+   to work on a 64-bit machine.  */
 
 #define ABI_32  0
 #define ABI_N32 1
@@ -96,7 +96,7 @@ struct mips_rtx_cost_data
 struct mips_cpu_info {
   /* The 'canonical' name of the processor as far as GCC is concerned.
      It's typically a manufacturer's prefix followed by a numerical
-     designation.  It should be lower case.  */
+     designation.  It should be lowercase.  */
   const char *name;
 
   /* The internal processor number that most closely matches this
@@ -566,7 +566,7 @@ extern const struct mips_rtx_cost_data *mips_cost;
    ABI for which this is true.  */
 #define ABI_HAS_64BIT_SYMBOLS	(mips_abi == ABI_64 && !TARGET_SYM32)
 
-/* ISA has instructions for managing 64 bit fp and gp regs (e.g. mips3).  */
+/* ISA has instructions for managing 64-bit fp and gp regs (e.g. mips3).  */
 #define ISA_HAS_64BIT_REGS	(ISA_MIPS3				\
 				 || ISA_MIPS4				\
 				 || ISA_MIPS64)
@@ -704,7 +704,7 @@ extern const struct mips_rtx_cost_data *mips_cost;
 #define ISA_HAS_EXT_INS		(ISA_MIPS32R2				\
 				 && !TARGET_MIPS16)
 
-/* ISA has instructions for accessing top part of 64 bit fp regs */
+/* ISA has instructions for accessing top part of 64-bit fp regs.  */
 #define ISA_HAS_MXHC1		(TARGET_FLOAT64 && ISA_MIPS32R2)
 
 /* True if the result of a load is not available to the next instruction.
@@ -1123,7 +1123,7 @@ extern const struct mips_rtx_cost_data *mips_cost;
    on the full register even if a narrower mode is specified.  */
 #define WORD_REGISTER_OPERATIONS
 
-/* When in 64 bit mode, move insns will sign extend SImode and CCmode
+/* When in 64-bit mode, move insns will sign extend SImode and CCmode
    moves.  All other references are zero extended.  */
 #define LOAD_EXTEND_OP(MODE) \
   (TARGET_64BIT && ((MODE) == SImode || (MODE) == CCmode) \
@@ -1893,8 +1893,8 @@ typedef struct mips_args {
 
   /* On the mips16, we need to keep track of which floating point
      arguments were passed in general registers, but would have been
-     passed in the FP regs if this were a 32 bit function, so that we
-     can move them to the FP regs if we wind up calling a 32 bit
+     passed in the FP regs if this were a 32-bit function, so that we
+     can move them to the FP regs if we wind up calling a 32-bit
      function.  We record this information in fp_code, encoded in base
      four.  A zero digit means no floating point argument, a one digit
      means an SFmode argument, and a two digit means a DFmode argument,

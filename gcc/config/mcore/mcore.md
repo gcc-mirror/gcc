@@ -2657,7 +2657,7 @@
 {
   if (INTVAL (operands[2]) == 8 && INTVAL (operands[3]) % 8 == 0)
     {
-       /* 8 bit field, aligned properly, use the xtrb[0123]+sext sequence.  */
+       /* 8-bit field, aligned properly, use the xtrb[0123]+sext sequence.  */
        /* not DONE, not FAIL, but let the RTL get generated....  */
     }
   else if (TARGET_W_FIELD)
@@ -2694,7 +2694,7 @@
 {
   if (INTVAL (operands[2]) == 8 && INTVAL (operands[3]) % 8 == 0)
     {
-       /* 8 bit field, aligned properly, use the xtrb[0123] sequence.  */
+       /* 8-bit field, aligned properly, use the xtrb[0123] sequence.  */
        /* Let the template generate some RTL....  */
     }
   else if (CONST_OK_FOR_K ((1 << INTVAL (operands[2])) - 1))

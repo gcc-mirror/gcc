@@ -253,7 +253,7 @@
     }
 })
 
-;; Return true if OP is a signed 8 bit immediate value.
+;; Return true if OP is a signed 8-bit immediate value.
 
 (define_predicate "int8_operand"
   (match_code "const_int")
@@ -263,7 +263,7 @@
   return INT8_P (INTVAL (op));
 })
 
-;; Return true if OP is an unsigned 16 bit immediate value.
+;; Return true if OP is an unsigned 16-bit immediate value.
 
 (define_predicate "uint16_operand"
   (match_code "const_int")
@@ -273,7 +273,7 @@
   return UINT16_P (INTVAL (op));
 })
 
-;; Return true if OP is a register or signed 16 bit value.
+;; Return true if OP is a register or signed 16-bit value.
 
 (define_predicate "reg_or_int16_operand"
   (match_code "reg,subreg,const_int")
@@ -285,7 +285,7 @@
   return INT16_P (INTVAL (op));
 })
 
-;; Return true if OP is a register or an unsigned 16 bit value.
+;; Return true if OP is a register or an unsigned 16-bit value.
 
 (define_predicate "reg_or_uint16_operand"
   (match_code "reg,subreg,const_int")
@@ -297,7 +297,7 @@
   return UINT16_P (INTVAL (op));
 })
 
-;; Return true if OP is a register or signed 16 bit value for
+;; Return true if OP is a register or signed 16-bit value for
 ;; compares.
 
 (define_predicate "reg_or_cmp_int16_operand"
@@ -330,7 +330,7 @@
   return (value != 0) && (UINT16_P (value) || CMP_INT16_P (-value));
 })
 
-;; Return true if OP is a signed 16 bit immediate value useful in
+;; Return true if OP is a signed 16-bit immediate value useful in
 ;; comparisons.
 
 (define_predicate "cmp_int16_operand"

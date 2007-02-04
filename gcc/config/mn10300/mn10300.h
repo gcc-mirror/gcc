@@ -90,7 +90,7 @@ extern enum processor_type mn10300_processor;
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY		32
 
-/* The stack goes in 32 bit lumps.  */
+/* The stack goes in 32-bit lumps.  */
 #define STACK_BOUNDARY 		32
 
 /* Allocation boundary (in *bits*) for the code of a function.

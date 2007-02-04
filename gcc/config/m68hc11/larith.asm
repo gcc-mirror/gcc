@@ -804,7 +804,7 @@ AB_neg:
 #else
 #ifdef NO_TMP
 	;
-	; 16 bit multiplication without temp memory location.
+	; 16-bit multiplication without temp memory location.
 	; (smaller but slower)
 	;
 	pshx			; (4)

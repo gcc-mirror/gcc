@@ -1231,7 +1231,7 @@ static struct
    calls something else (because we don't know what *that* function
    might do), but try to be a bit smarter if the handler is a leaf
    function.  We always save $a0, though, because we use that in the
-   epilog to copy $fb to $sp.  */
+   epilogue to copy $fb to $sp.  */
 static int
 need_to_save (int regno)
 {
@@ -1557,7 +1557,7 @@ m32c_function_arg_regno_p (int r)
 }
 
 /* HImode and PSImode are the two "native" modes as far as GCC is
-   concerned, but the chips also support a 32 bit mode which is used
+   concerned, but the chips also support a 32-bit mode which is used
    for some opcodes in R8C/M16C and for reset vectors and such.  */
 #undef TARGET_VALID_POINTER_MODE
 #define TARGET_VALID_POINTER_MODE m32c_valid_pointer_mode
@@ -1717,8 +1717,8 @@ m32c_initialize_trampoline (rtx tramp, rtx function, rtx chainval)
       emit_move_insn (A0 (HImode, 0), GEN_INT (0xc475 - 0x10000));
       emit_move_insn (A0 (HImode, 2), chainval);
       emit_move_insn (A0 (QImode, 4), GEN_INT (0xfc - 0x100));
-      /* We use 16 bit addresses here, but store the zero to turn it
-	 into a 24 bit offset.  */
+      /* We use 16-bit addresses here, but store the zero to turn it
+	 into a 24-bit offset.  */
       emit_move_insn (A0 (HImode, 5), function);
       emit_move_insn (A0 (QImode, 7), GEN_INT (0x00));
     }
@@ -1745,7 +1745,7 @@ m32c_init_libfuncs (void)
   if (TARGET_A24)
     {
       /* We do this because the M32C has an HImode operand, but the
-	 M16C has an 8 bit operand.  Since gcc looks at the match data
+	 M16C has an 8-bit operand.  Since gcc looks at the match data
 	 and not the expanded rtl, we have to reset the array so that
 	 the right modes are found. */
       setcc_gen_code[EQ] = CODE_FOR_seq_24;
@@ -1905,12 +1905,12 @@ m32c_reg_ok_for_base_p (rtx x, int strict)
 }
 
 /* We have three choices for choosing fb->aN offsets.  If we choose -128,
-   we need one MOVA -128[fb],aN opcode and 16 bit aN displacements,
+   we need one MOVA -128[fb],aN opcode and 16-bit aN displacements,
    like this:
        EB 4B FF    mova    -128[$fb],$a0
        D8 0C FF FF mov.w:Q #0,-1[$a0]
 
-   Alternately, we subtract the frame size, and hopefully use 8 bit aN
+   Alternately, we subtract the frame size, and hopefully use 8-bit aN
    displacements:
        7B F4       stc $fb,$a0
        77 54 00 01 sub #256,$a0
@@ -1922,7 +1922,7 @@ m32c_reg_ok_for_base_p (rtx x, int strict)
 
    We have to subtract *something* so that we have a PLUS rtx to mark
    that we've done this reload.  The -128 offset will never result in
-   an 8 bit aN offset, and the payoff for the second case is five
+   an 8-bit aN offset, and the payoff for the second case is five
    loads *if* those loads are within 256 bytes of the other end of the
    frame, so the third case seems best.  Note that we subtract the
    zero, but detect that in the addhi3 pattern.  */

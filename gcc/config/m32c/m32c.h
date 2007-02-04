@@ -29,9 +29,9 @@
 #define STARTFILE_SPEC "crt0.o%s crtbegin.o%s"
 
 /* There are four CPU series we support, but they basically break down
-   into two families - the R8C/M16C families, with 16 bit address
-   registers and one set of opcodes, and the M32CM/M32C group, with 24
-   bit address registers and a different set of opcodes.  The
+   into two families - the R8C/M16C families, with 16-bit address
+   registers and one set of opcodes, and the M32CM/M32C group, with
+   24-bit address registers and a different set of opcodes.  The
    assembler doesn't care except for which opcode set is needed; the
    big difference is in the memory maps, which we cover in
    LIB_SPEC.  */
@@ -139,7 +139,7 @@ machine_function;
    GCC expects us to have a "native" format, so we pick the one that
    matches "int".  Pointers are 16 bits for R8C/M16C (when TARGET_A16
    is true) and 24 bits for M32CM/M32C (when TARGET_A24 is true), but
-   24 bit pointers are stored in 32 bit words.  */
+   24-bit pointers are stored in 32-bit words.  */
 #define BITS_PER_UNIT 8
 #define UNITS_PER_WORD 2
 #define POINTER_SIZE (TARGET_A16 ? 16 : 32)
@@ -150,7 +150,7 @@ machine_function;
 #define STACK_BOUNDARY (TARGET_A16 ? 8 : 16)
 
 /* We do this because we care more about space than about speed.  For
-   the chips with 16 bit busses, we could set these to 16 if
+   the chips with 16-bit busses, we could set these to 16 if
    desired.  */
 #define FUNCTION_BOUNDARY 8
 #define BIGGEST_ALIGNMENT 8
@@ -180,9 +180,9 @@ machine_function;
 
 /* Register layout:
 
-        [r0h][r0l]  $r0  (16 bits, or two 8 bit halves)
+        [r0h][r0l]  $r0  (16 bits, or two 8-bit halves)
         [--------]  $r2  (16 bits)
-        [r1h][r1l]  $r1  (16 bits, or two 8 bit halves)
+        [r1h][r1l]  $r1  (16 bits, or two 8-bit halves)
         [--------]  $r3  (16 bits)
    [---][--------]  $a0  (might be 24 bits)
    [---][--------]  $a1  (might be 24 bits)
@@ -665,7 +665,7 @@ typedef struct m32c_cumulative_args
 
 #define STORE_FLAG_VALUE 1
 
-/* 16 or 24 bit pointers */
+/* 16- or 24-bit pointers */
 #define Pmode (TARGET_A16 ? HImode : PSImode)
 #define FUNCTION_MODE QImode
 

@@ -27,7 +27,7 @@
        (match_operand:HI 0 "register_operand" "Rhi"))]
   "TARGET_A16"
 ;  "jmpi.a\t%0"
-  ; no 16 bit jmpi in r8c
+  ; no 16-bit jmpi in r8c
   "push.b #0 | push.w\t%0 | rts"
   [(set_attr "flags" "x")]
   )
@@ -61,7 +61,7 @@
   [(set_attr "flags" "n")]
 )
 
-; No 16 bit indirect calls on r8c/m16c.  */
+; No 16-bit indirect calls on r8c/m16c.  */
 (define_insn "call"
   [(call (match_operand:QI 0 "memory_operand" "Si,SaSb,?Rmm")
 	 (match_operand 1 "" ""))

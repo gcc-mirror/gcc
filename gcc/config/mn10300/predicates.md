@@ -28,7 +28,7 @@
 
 ;; Return 1 if X is a CONST_INT that is only 8 bits wide.  This is
 ;; used for the btst insn which may examine memory or a register (the
-;; memory variant only allows an unsigned 8 bit integer).
+;; memory variant only allows an unsigned 8-bit integer).
 
 (define_predicate "const_8bit_operand"
   (match_code "const_int")
