@@ -1,3 +1,9 @@
+2007-02-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/30007
+	* libgfortran.h: Do not prefix symbol name with
+	__USER_LABEL_PREFIX__ when used in __attribute__((__alias__(...))).
+
 2007-02-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/30284
