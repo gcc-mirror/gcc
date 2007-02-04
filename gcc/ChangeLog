@@ -21,12 +21,11 @@
 	* passes.c (init_optimization_passes): Reindent.
 
 2007-02-04  Jan Hubicka  <jh@suse.cz>
-	    Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Eric Botcazou  <ebotcazou@adacore.com>
 
-	* tree-optimize.c (has_abnormal_outgoing_edge_p): Move to tree-inline.
+	* tree-optimize.c (has_abnormal_outgoing_edge_p): Move to...
 	(execute_fixup_cfg): Break out the abnormal goto code.
-	* tree-inline.c (has_abnormal_outgoing_edge_p): Move here from
-	tree-optimize.c.
+	* tree-inline.c (has_abnormal_outgoing_edge_p): ...here.
 	(make_nonlocal_label_edges): Move here from execute_fixup_cfg.
 	(optimize_inline_calls): Call make_nonlocal_label_edges.
 
