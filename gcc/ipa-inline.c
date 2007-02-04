@@ -204,6 +204,7 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate, bool update_o
 	 In that case just go ahead and re-use it.  */
       if (!e->callee->callers->next_caller
 	  && !e->callee->needed
+	  && !cgraph_new_nodes
 	  && flag_unit_at_a_time)
 	{
 	  gcc_assert (!e->callee->global.inlined_to);
