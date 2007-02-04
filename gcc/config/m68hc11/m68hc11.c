@@ -382,9 +382,9 @@ create_regs_rtx (void)
 }
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-    - 8 bit values are stored anywhere (except the SP register).
-    - 16 bit values can be stored in any register whose mode is 16
-    - 32 bit values can be stored in D, X registers or in a soft register
+    - 8-bit values are stored anywhere (except the SP register).
+    - 16-bit values can be stored in any register whose mode is 16
+    - 32-bit values can be stored in D, X registers or in a soft register
       (except the last one because we need 2 soft registers)
     - Values whose size is > 32 bit are not stored in real hard
       registers.  They may be stored in soft registers if there are

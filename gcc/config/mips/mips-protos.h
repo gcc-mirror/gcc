@@ -3,7 +3,7 @@
    1999, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
-   64 bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
+   64-bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
    Brendan Eich (brendan@microunity.com).
 
 This file is part of GCC.

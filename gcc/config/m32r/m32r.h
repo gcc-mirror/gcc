@@ -704,14 +704,14 @@ extern enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
    This macro defines what the ranges are.
    C is the letter, and VALUE is a constant value.
    Return 1 if VALUE is in the range specified by C.  */
-/* 'I' is used for 8 bit signed immediates.
-   'J' is used for 16 bit signed immediates.
-   'K' is used for 16 bit unsigned immediates.
-   'L' is used for 16 bit immediates left shifted by 16 (sign ???).
-   'M' is used for 24 bit unsigned immediates.
-   'N' is used for any 32 bit non-symbolic value.
-   'O' is used for 5 bit unsigned immediates (shift count).
-   'P' is used for 16 bit signed immediates for compares
+/* 'I' is used for 8-bit signed immediates.
+   'J' is used for 16-bit signed immediates.
+   'K' is used for 16-bit unsigned immediates.
+   'L' is used for 16-bit immediates left shifted by 16 (sign ???).
+   'M' is used for 24-bit unsigned immediates.
+   'N' is used for any 32-bit non-symbolic value.
+   'O' is used for 5-bit unsigned immediates (shift count).
+   'P' is used for 16-bit signed immediates for compares
        (values in the range -32767 to +32768).  */
 
 /* Return true if a value is inside a range.  */
@@ -1135,7 +1135,7 @@ L2:     .word STATIC
 
 /* Nonzero if the constant value X is a legitimate general operand.
    We don't allow (plus symbol large-constant) as the relocations can't
-   describe it.  INTVAL > 32767 handles both 16 bit and 24 bit relocations.
+   describe it.  INTVAL > 32767 handles both 16-bit and 24-bit relocations.
    We allow all CONST_DOUBLE's as the md file patterns will force the
    constant to memory if they can't handle them.  */
 
@@ -1580,7 +1580,7 @@ extern char m32r_punct_chars[256];
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
-/* ??? The M32R doesn't have full 32 bit pointers, but making this PSImode has
+/* ??? The M32R doesn't have full 32-bit pointers, but making this PSImode has
    its own problems (you have to add extendpsisi2 and truncsipsi2).
    Try to avoid it.  */
 #define Pmode SImode

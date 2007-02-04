@@ -215,7 +215,7 @@ m32r_init (void)
    indexed by hard register number, and one indexed by mode.  */
 
 /* The purpose of m32r_mode_class is to shrink the range of modes so that
-   they all fit (as bit numbers) in a 32 bit word (again).  Each real mode is
+   they all fit (as bit numbers) in a 32-bit word (again).  Each real mode is
    mapped into one m32r_mode_class mode.  */
 
 enum m32r_mode_class
@@ -515,7 +515,7 @@ small_data_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   return 0;
 }
 
-/* Return 1 if OP is a symbol that can use 24 bit addressing.  */
+/* Return 1 if OP is a symbol that can use 24-bit addressing.  */
 
 int
 addr24_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
@@ -550,7 +550,7 @@ addr24_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   return 0;
 }
 
-/* Return 1 if OP is a symbol that needs 32 bit addressing.  */
+/* Return 1 if OP is a symbol that needs 32-bit addressing.  */
 
 int
 addr32_operand (rtx op, enum machine_mode mode)
@@ -602,7 +602,7 @@ easy_di_const (rtx op)
   split_double (op, &high_rtx, &low_rtx);
   high = INTVAL (high_rtx);
   low = INTVAL (low_rtx);
-  /* Pick constants loadable with 2 16 bit `ldi' insns.  */
+  /* Pick constants loadable with 2 16-bit `ldi' insns.  */
   if (high >= -128 && high <= 127
       && low >= -128 && low <= 127)
     return 1;
@@ -1852,7 +1852,7 @@ m32r_print_operand (FILE * file, rtx x, int code)
 	 Bottom halves.  For symbols output arguments to a seth/add3 pair to
 	 set Top and Bottom halves.  The difference exists because for
 	 constants seth/or3 is more readable but for symbols we need to use
-	 the same scheme as `ld' and `st' insns (16 bit addend is signed).  */
+	 the same scheme as `ld' and `st' insns (16-bit addend is signed).  */
       switch (GET_CODE (x))
 	{
 	case CONST_INT :
@@ -2181,7 +2181,7 @@ static void
 block_move_call (rtx dest_reg, rtx src_reg, rtx bytes_rtx)
 {
   /* We want to pass the size as Pmode, which will normally be SImode
-     but will be DImode if we are using 64 bit longs and pointers.  */
+     but will be DImode if we are using 64-bit longs and pointers.  */
   if (GET_MODE (bytes_rtx) != VOIDmode
       && GET_MODE (bytes_rtx) != Pmode)
     bytes_rtx = convert_to_mode (Pmode, bytes_rtx, 1);

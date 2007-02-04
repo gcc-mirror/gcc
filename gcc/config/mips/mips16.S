@@ -38,7 +38,7 @@ Boston, MA 02110-1301, USA.  */
    values using the soft-float calling convention, but do the actual
    operation using the hard floating point instructions.  */
 
-/* This file contains 32 bit assembly code.  */
+/* This file contains 32-bit assembly code.  */
 	.set nomips16
 
 /* Start a function.  */
@@ -185,8 +185,8 @@ STARTFN (__mips16_fix_truncsfsi)
 /* The double precision operations.  We need to use different code
    based on the preprocessor symbol __mips64, because the way in which
    double precision values will change.  Without __mips64, the value
-   is passed in two 32 bit registers.  With __mips64, the value is
-   passed in a single 64 bit register.  */
+   is passed in two 32-bit registers.  With __mips64, the value is
+   passed in a single 64-bit register.  */
 
 /* Load the first double precision operand.  */
 
@@ -425,7 +425,7 @@ STARTFN (__mips16_ret_df)
 #endif
 #endif /* !__mips_single_float */
 
-/* These functions are used by 16 bit code when calling via a function
+/* These functions are used by 16-bit code when calling via a function
    pointer.  They must copy the floating point arguments from the gp
    regs into the fp regs.  The function to call will be in $2.  The
    exact set of floating point arguments to copy is encoded in the
@@ -511,7 +511,7 @@ STARTFN (__mips16_call_stub_10)
    to use it to hold the return address.
 
    Note that we do not know whether the function we are calling is 16
-   bit or 32 bit.  However, it does not matter, because 16 bit
+   bit or 32 bit.  However, it does not matter, because 16-bit
    functions always return floating point values in both the gp and
    the fp regs.  It would be possible to check whether the function
    being called is 16 bits, in which case the copy is unnecessary;

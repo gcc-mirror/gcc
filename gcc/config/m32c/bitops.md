@@ -31,7 +31,7 @@
 ; On the M32C, "address" for bit instructions is a regular address,
 ; and the bit number is stored in a separate field.  Thus, we can let
 ; gcc do more interesting things.  However, the M32C cannot set all
-; the bits in a 16 bit register, which the R8C/M16C can do.
+; the bits in a 16-bit register, which the R8C/M16C can do.
 
 ; However, it all means that we end up with two sets of patterns, one
 ; for each chip.

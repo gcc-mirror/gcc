@@ -1,3 +1,17 @@
+2007-02-04  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/m32c/bitops.md, config/m32c/jump.md,
+	config/m32c/m32c.c, config/m32c/m32c.h, config/m32r/m32r.c,
+	config/m32r/m32r.h, config/m32r/m32r.md,
+	config/m32r/predicates.md, config/m68hc11/larith.asm,
+	config/m68hc11/m68hc11.c, config/m68hc11/m68hc11.h,
+	config/m68k/m68k.h, config/mcore/mcore.md, config/mips/4k.md,
+	config/mips/mips-protos.h, config/mips/mips.c,
+	config/mips/mips.h, config/mips/mips.md, config/mips/mips16.S,
+	config/mn10300/mn10300.h, config/mn10300/predicates.md,
+	config/mt/mt.c, config/mt/mt.h, config/mt/mt.md: Follow
+	spelling conventions.
+
 2007-02-03  Douglas Gregor  <doug.gregor@gmail.com>
 
        * c-opts.c (c_common_post_options): If C++0x mode is enabled, don't

@@ -409,9 +409,9 @@ SOFT_REG_FIRST+28, SOFT_REG_FIRST+29,SOFT_REG_FIRST+30,SOFT_REG_FIRST+31
    ((GET_MODE_SIZE (MODE) + HARD_REG_SIZE - 1) / HARD_REG_SIZE))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-    - 8 bit values are stored anywhere (except the SP register).
-    - 16 bit values can be stored in any register whose mode is 16
-    - 32 bit values can be stored in D, X registers or in a soft register
+    - 8-bit values are stored anywhere (except the SP register).
+    - 16-bit values can be stored in any register whose mode is 16
+    - 32-bit values can be stored in D, X registers or in a soft register
       (except the last one because we need 2 soft registers)
     - Values whose size is > 32 bit are not stored in real hard
       registers.  They may be stored in soft registers if there are
@@ -461,7 +461,7 @@ enum reg_class
   D_REGS,			/* 16-bit data register */
   X_REGS,			/* 16-bit X register */
   Y_REGS,			/* 16-bit Y register */
-  SP_REGS,			/* 16 bit stack pointer */
+  SP_REGS,			/* 16-bit stack pointer */
   DA_REGS,			/* 8-bit A reg.  */
   DB_REGS,			/* 8-bit B reg.  */
   Z_REGS,			/* 16-bit fake Z register */
@@ -489,7 +489,7 @@ enum reg_class
   D_OR_SP_OR_S_REGS,		/* 16-bit soft register or D or SP register */
   A_OR_S_REGS,			/* 16-bit soft register or X, Y registers */
   D_OR_A_OR_S_REGS,		/* 16-bit soft register or D, X, Y registers */
-  TMP_REGS,			/* 16 bit fake scratch register */
+  TMP_REGS,			/* 16-bit fake scratch register */
   D_OR_A_OR_TMP_REGS,		/* General scratch register */
   G_REGS,			/* 16-bit general register
                                    (H_REGS + soft registers) */

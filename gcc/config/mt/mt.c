@@ -701,7 +701,7 @@ mt_legitimate_address_p (enum machine_mode mode, rtx xinsn, int strict)
 }
 
 /* Return truth value of whether OP can be used as an operands where a
-   register or 16 bit unsigned integer is needed.  */
+   register or 16-bit unsigned integer is needed.  */
 
 int
 uns_arith_operand (rtx op, enum machine_mode mode)
@@ -713,7 +713,7 @@ uns_arith_operand (rtx op, enum machine_mode mode)
 }
 
 /* Return truth value of whether OP can be used as an operands where a
-   16 bit integer is needed.  */
+   16-bit integer is needed.  */
 
 int
 arith_operand (rtx op, enum machine_mode mode)
