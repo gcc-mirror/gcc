@@ -854,10 +854,10 @@ output_move_single (rtx * operands)
 	{
 	  HOST_WIDE_INT value = INTVAL (src);
 
-	  if (CONST_OK_FOR_J (value))		/* Signed 5 bit immediate.  */
+	  if (CONST_OK_FOR_J (value))		/* Signed 5-bit immediate.  */
 	    return "mov %1,%0";
 
-	  else if (CONST_OK_FOR_K (value))	/* Signed 16 bit immediate.  */
+	  else if (CONST_OK_FOR_K (value))	/* Signed 16-bit immediate.  */
 	    return "movea lo(%1),%.,%0";
 
 	  else if (CONST_OK_FOR_L (value))	/* Upper 16 bits were set.  */
@@ -876,10 +876,10 @@ output_move_single (rtx * operands)
 
 	  const_double_split (src, &high, &low);
 
-	  if (CONST_OK_FOR_J (high))		/* Signed 5 bit immediate.  */
+	  if (CONST_OK_FOR_J (high))		/* Signed 5-bit immediate.  */
 	    return "mov %F1,%0";
 
-	  else if (CONST_OK_FOR_K (high))	/* Signed 16 bit immediate.  */
+	  else if (CONST_OK_FOR_K (high))	/* Signed 16-bit immediate.  */
 	    return "movea lo(%F1),%.,%0";
 
 	  else if (CONST_OK_FOR_L (high))	/* Upper 16 bits were set.  */
@@ -1921,7 +1921,7 @@ Saved %d bytes via epilogue function (%d vs. %d) in function %s\n",
 	}
     }
 
-  /* If no epilog save function is available, restore the registers the
+  /* If no epilogue save function is available, restore the registers the
      old fashioned way (one by one).  */
   if (!restore_all)
     {

@@ -12,6 +12,9 @@
 	config/mt/mt.c, config/mt/mt.h, config/mt/mt.md: Follow
 	spelling conventions.
 
+	* config/v850/v850.c, config/v850/v850.h, config/v850/v850.md:
+	Follow spelling conventions.
+
 2007-02-03  Douglas Gregor  <doug.gregor@gmail.com>
 
        * c-opts.c (c_common_post_options): If C++0x mode is enabled, don't

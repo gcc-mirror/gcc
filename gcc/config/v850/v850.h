@@ -179,7 +179,7 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY		32
 
-/* The stack goes in 32 bit lumps.  */
+/* The stack goes in 32-bit lumps.  */
 #define STACK_BOUNDARY 		32
 
 /* Allocation boundary (in *bits*) for the code of a function.
@@ -387,19 +387,19 @@ enum reg_class
 #define INT_8_BITS(VALUE) ((unsigned) (VALUE) + 0x80 < 0x100)
 /* zero */
 #define CONST_OK_FOR_I(VALUE) ((VALUE) == 0)
-/* 5 bit signed immediate */
+/* 5-bit signed immediate */
 #define CONST_OK_FOR_J(VALUE) ((unsigned) (VALUE) + 0x10 < 0x20)
-/* 16 bit signed immediate */
+/* 16-bit signed immediate */
 #define CONST_OK_FOR_K(VALUE) ((unsigned) (VALUE) + 0x8000 < 0x10000)
 /* valid constant for movhi instruction.  */
 #define CONST_OK_FOR_L(VALUE) \
   (((unsigned) ((int) (VALUE) >> 16) + 0x8000 < 0x10000) \
    && CONST_OK_FOR_I ((VALUE & 0xffff)))
-/* 16 bit unsigned immediate */
+/* 16-bit unsigned immediate */
 #define CONST_OK_FOR_M(VALUE) ((unsigned)(VALUE) < 0x10000)
-/* 5 bit unsigned immediate in shift instructions */
+/* 5-bit unsigned immediate in shift instructions */
 #define CONST_OK_FOR_N(VALUE) ((unsigned) (VALUE) <= 31)
-/* 9 bit signed immediate for word multiply instruction.  */
+/* 9-bit signed immediate for word multiply instruction.  */
 #define CONST_OK_FOR_O(VALUE) ((unsigned) (VALUE) + 0x100 < 0x200)
 
 #define CONST_OK_FOR_P(VALUE) 0
