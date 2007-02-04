@@ -1,3 +1,8 @@
+2007-02-03  Douglas Gregor  <doug.gregor@gmail.com>
+
+       * c-opts.c (c_common_post_options): If C++0x mode is enabled, don't
+       warn about C++0x compatibility.
+	
 2007-02-04  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/h8300/h8300.c, config/h8300/h8300.h,

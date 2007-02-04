@@ -1082,6 +1082,11 @@ c_common_post_options (const char **pfilename)
   if (flag_isoc99)
     flag_complex_method = 2;
 
+  /* If we're allowing C++0x constructs, don't warn about C++0x
+     compatibility problems.  */
+  if (flag_cpp0x)
+    warn_cxx0x_compat = 0;
+
   if (flag_preprocess_only)
     {
       /* Open the output now.  We must do so even if flag_no_output is
