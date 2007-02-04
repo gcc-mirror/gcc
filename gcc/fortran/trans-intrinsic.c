@@ -3357,18 +3357,32 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
   tree ncopies;
   tree var;
   tree type;
+  tree cond;
 
   args = gfc_conv_intrinsic_function_args (se, expr);
   len = TREE_VALUE (args);
   tmp = gfc_advance_chain (args, 2);
   ncopies = TREE_VALUE (tmp);
+
+  /* Check that ncopies is not negative.  */
+  ncopies = gfc_evaluate_now (ncopies, &se->pre);
+  cond = fold_build2 (LT_EXPR, boolean_type_node, ncopies,
+		      build_int_cst (TREE_TYPE (ncopies), 0));
+  gfc_trans_runtime_check (cond,
+			   "Argument NCOPIES of REPEAT intrinsic is negative",
+			   &se->pre, &expr->where);
+
+  /* Compute the destination length.  */
   len = fold_build2 (MULT_EXPR, gfc_int4_type_node, len, ncopies);
   type = gfc_get_character_type (expr->ts.kind, expr->ts.cl);
   var = gfc_conv_string_tmp (se, build_pointer_type (type), len);
 
+  /* Create the argument list and generate the function call.  */
   arglist = NULL_TREE;
   arglist = gfc_chainon_list (arglist, var);
-  arglist = chainon (arglist, args);
+  arglist = gfc_chainon_list (arglist, TREE_VALUE (args));
+  arglist = gfc_chainon_list (arglist, TREE_VALUE (TREE_CHAIN (args)));
+  arglist = gfc_chainon_list (arglist, ncopies);
   tmp = build_function_call_expr (gfor_fndecl_string_repeat, arglist);
   gfc_add_expr_to_block (&se->pre, tmp);
 

@@ -362,14 +362,8 @@ string_repeat (char * dest, GFC_INTEGER_4 slen,
 {
   int i;
 
-  /* See if ncopies is valid.  */
-  if (ncopies < 0)
-    {
-      /* The error is already reported.  */
-      runtime_error ("Augument NCOPIES is negative.");
-    }
-
-  /* Copy characters.  */
+  /* We don't need to check that ncopies is non-negative here, because
+     the front-end already generates code for that check.  */
   for (i = 0; i < ncopies; i++) 
     {
       memmove (dest + (i * slen), src, slen);
