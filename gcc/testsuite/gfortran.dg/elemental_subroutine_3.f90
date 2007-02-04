@@ -28,7 +28,7 @@ program test
    implicit none
    type(mytype) :: y(6), x(6) = (/mytype(1),mytype(20),mytype(300),&
                                   mytype(4000),mytype(50000),&
-				  mytype(1000000)/)
+                                  mytype(1000000)/)
    type(mytype) :: z(2, 3)
 ! The original case - dependency between lhs and rhs. 
    x = x((/2,3,1,4,5,6/))
