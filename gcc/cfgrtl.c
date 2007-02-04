@@ -2977,6 +2977,38 @@ insert_insn_end_bb_new (rtx pat, basic_block bb)
   return new_insn;
 }
 
+/* Returns true if it is possible to remove edge E by redirecting
+   it to the destination of the other edge from E->src.  */
+
+static bool
+rtl_can_remove_branch_p (edge e)
+{
+  basic_block src = e->src;
+  basic_block target = EDGE_SUCC (src, EDGE_SUCC (src, 0) == e)->dest;
+  rtx insn = BB_END (src), set;
+
+  /* The conditions are taken from try_redirect_by_replacing_jump.  */
+  if (target == EXIT_BLOCK_PTR)
+    return false;
+
+  if (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
+    return false;
+
+  if (find_reg_note (insn, REG_CROSSING_JUMP, NULL_RTX)
+      || BB_PARTITION (src) != BB_PARTITION (target))
+    return false;
+
+  if (!onlyjump_p (insn)
+      || tablejump_p (insn, NULL, NULL))
+    return false;
+
+  set = single_set (insn);
+  if (!set || side_effects_p (set))
+    return false;
+
+  return true;
+}
+
 /* Implementation of CFG manipulation for linearized RTL.  */
 struct cfg_hooks rtl_cfg_hooks = {
   "rtl",
@@ -2985,6 +3017,7 @@ struct cfg_hooks rtl_cfg_hooks = {
   rtl_create_basic_block,
   rtl_redirect_edge_and_branch,
   rtl_redirect_edge_and_branch_force,
+  rtl_can_remove_branch_p,
   rtl_delete_block,
   rtl_split_block,
   rtl_move_block_after,
@@ -3028,6 +3061,7 @@ struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
   cfg_layout_create_basic_block,
   cfg_layout_redirect_edge_and_branch,
   cfg_layout_redirect_edge_and_branch_force,
+  rtl_can_remove_branch_p,
   cfg_layout_delete_block,
   cfg_layout_split_block,
   rtl_move_block_after,

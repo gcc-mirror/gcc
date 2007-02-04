@@ -35,7 +35,6 @@ static void duplicate_subloops (struct loop *, struct loop *);
 static void copy_loops_to (struct loop **, int,
 			   struct loop *);
 static void loop_redirect_edge (edge, basic_block);
-static bool loop_delete_branch_edge (edge, int);
 static void remove_bbs (basic_block *, int);
 static bool rpe_enum_p (basic_block, void *);
 static int find_path (edge, basic_block **);
@@ -283,10 +282,10 @@ remove_path (edge e)
   basic_block *rem_bbs, *bord_bbs, *dom_bbs, from, bb;
   int i, nrem, n_bord_bbs, n_dom_bbs, nreml;
   sbitmap seen;
-  bool deleted, irred_invalidated = false;
+  bool irred_invalidated = false;
   struct loop **deleted_loop;
 
-  if (!loop_delete_branch_edge (e, 0))
+  if (!can_remove_branch_p (e))
     return false;
 
   /* Keep track of whether we need to update information about irreducible
@@ -341,8 +340,7 @@ remove_path (edge e)
 
   /* Remove the path.  */
   from = e->src;
-  deleted = loop_delete_branch_edge (e, 1);
-  gcc_assert (deleted);
+  remove_branch (e);
   dom_bbs = XCNEWVEC (basic_block, n_basic_blocks);
 
   /* Cancel loops contained in the path.  */
@@ -696,45 +694,6 @@ loop_redirect_edge (edge e, basic_block dest)
     return;
 
   redirect_edge_and_branch_force (e, dest);
-}
-
-/* Deletes edge E from a branch if possible.  Unless REALLY_DELETE is set,
-   just test whether it is possible to remove the edge.  */
-static bool
-loop_delete_branch_edge (edge e, int really_delete)
-{
-  basic_block src = e->src;
-  basic_block newdest;
-  int irr;
-  edge snd;
-
-  gcc_assert (EDGE_COUNT (src->succs) > 1);
-
-  /* Cannot handle more than two exit edges.  */
-  if (EDGE_COUNT (src->succs) > 2)
-    return false;
-  /* And it must be just a simple branch.  */
-  if (!any_condjump_p (BB_END (src)))
-    return false;
-
-  snd = e == EDGE_SUCC (src, 0) ? EDGE_SUCC (src, 1) : EDGE_SUCC (src, 0);
-  newdest = snd->dest;
-  if (newdest == EXIT_BLOCK_PTR)
-    return false;
-
-  /* Hopefully the above conditions should suffice.  */
-  if (!really_delete)
-    return true;
-
-  /* Redirecting behaves wrongly wrto this flag.  */
-  irr = snd->flags & EDGE_IRREDUCIBLE_LOOP;
-
-  if (!redirect_edge_and_branch (e, newdest))
-    return false;
-  single_succ_edge (src)->flags &= ~EDGE_IRREDUCIBLE_LOOP;
-  single_succ_edge (src)->flags |= irr;
-
-  return true;
 }
 
 /* Check whether LOOP's body can be duplicated.  */

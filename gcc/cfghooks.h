@@ -47,6 +47,10 @@ struct cfg_hooks
      not be abnormal.  */
   basic_block (*redirect_edge_and_branch_force) (edge, basic_block);
 
+  /* Returns true if it is possible to remove the edge by redirecting it
+     to the destination of the other edge going from its source.  */
+  bool (*can_remove_branch_p) (edge);
+
   /* Remove statements corresponding to a given basic block.  */
   void (*delete_basic_block) (basic_block);
 
@@ -138,6 +142,8 @@ extern void verify_flow_info (void);
 extern void dump_bb (basic_block, FILE *, int);
 extern edge redirect_edge_and_branch (edge, basic_block);
 extern basic_block redirect_edge_and_branch_force (edge, basic_block);
+extern bool can_remove_branch_p (edge);
+extern void remove_branch (edge);
 extern edge split_block (basic_block, void *);
 extern edge split_block_after_labels (basic_block);
 extern bool move_block_after (basic_block, basic_block);
