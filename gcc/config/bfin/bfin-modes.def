@@ -19,7 +19,7 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston,
    MA 02110-1301, USA.  */
 
-/* PDImode for the 40 bit accumulators.  */
+/* PDImode for the 40-bit accumulators.  */
 PARTIAL_INT_MODE (DI);
 
 /* Two of those - covering both accumulators for vector multiplications.  */
