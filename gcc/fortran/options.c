@@ -289,7 +289,10 @@ gfc_post_options (const char **pfilename)
     gfc_option.flag_max_stack_var_size = 0;
   
   if (pedantic)
-    gfc_option.warn_ampersand = 1;
+    { 
+      gfc_option.warn_ampersand = 1;
+      gfc_option.warn_tabs = 0;
+    }
 
   if (gfc_option.flag_all_intrinsics)
     gfc_option.warn_nonstd_intrinsics = 0;
@@ -618,6 +621,7 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_option.max_continue_free = 255;
       gfc_option.max_identifier_length = 63;
       gfc_option.warn_ampersand = 1;
+      gfc_option.warn_tabs = 0;
       break;
 
     case OPT_std_gnu:

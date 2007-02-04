@@ -1,3 +1,12 @@
+2007-02-04  Steven G. Kargl <kargl@gcc.gnu.org>
+
+	* gfortran.dg/spread_shape_1.f90: Remove tabs.
+	* gfortran.dg/derived_init_2.f90: Ditto.
+	* gfortran.dg/elemental_subroutine_3.f90: Ditto.
+	* gfortran.dg/array_initializer_1.f90: Ditto.
+	* gfortran.dg/do_2.f90: Ditto.
+	* gfortran.dg/proc_assign_1.f90: Ditto.
+
 2007-02-04  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/30636

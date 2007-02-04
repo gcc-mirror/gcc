@@ -16,7 +16,7 @@ module subs
 contains
     subroutine foo(fb)
         use dt
-	type(drv), intent(out) :: fb
+        type(drv), intent(out) :: fb
         call sub (fb)
     end subroutine foo
 
