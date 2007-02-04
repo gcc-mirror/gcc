@@ -1,3 +1,9 @@
+2007-02-04  Jan Hubicka  <jh@suse.cz>
+
+	* tree-sra.c (sra_walk_expr): Add linebreaks. BITFIELD_REFs into
+	vectors might cause maybe_lookup_element_for_expr to be called
+	on non-sra-candidate.
+
 2007-02-04  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/bfin/bfin-modes.def, config/bfin/bfin.c,
