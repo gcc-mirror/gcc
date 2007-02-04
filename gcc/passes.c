@@ -427,7 +427,6 @@ next_pass_1 (struct tree_opt_pass **list, struct tree_opt_pass *pass)
        cgraph_expand_all_functions ()
            for each node N in the cgraph
 	       cgraph_expand_function (N)
-	           cgraph_lower_function (N)	-> Now a NOP.
 		   lang_hooks.callgraph.expand_function (DECL (N))
 		   	tree_rest_of_compilation (DECL (N))  -> all_passes
 */
@@ -439,28 +438,10 @@ init_optimization_passes (void)
 
 #define NEXT_PASS(PASS)  (p = next_pass_1 (p, &PASS))
 
-  /* Interprocedural optimization passes.  */
-  p = &all_ipa_passes;
-  NEXT_PASS (pass_ipa_function_and_variable_visibility);
-  NEXT_PASS (pass_ipa_early_inline);
-  NEXT_PASS (pass_early_local_passes);
-  NEXT_PASS (pass_ipa_increase_alignment);
-  NEXT_PASS (pass_ipa_cp);
-  NEXT_PASS (pass_ipa_inline);
-  NEXT_PASS (pass_ipa_reference);
-  NEXT_PASS (pass_ipa_pure_const); 
-  NEXT_PASS (pass_ipa_type_escape);
-  NEXT_PASS (pass_ipa_pta);
-  *p = NULL;
-
-  p = &pass_ipa_early_inline.sub;
-  NEXT_PASS (pass_early_inline);
-  NEXT_PASS (pass_inline_parameters);
-  NEXT_PASS (pass_rebuild_cgraph_edges);
-  *p = NULL;
-
-  /* All passes needed to lower the function into shape optimizers can
-     operate on.  */
+ /* All passes needed to lower the function into shape optimizers can
+    operate on.  These passes are always run first on the function, but
+    backend might produce already lowered functions that are not processed
+    by these passes.  */
   p = &all_lowering_passes;
   NEXT_PASS (pass_remove_useless_stmts);
   NEXT_PASS (pass_mudflap_1);
@@ -475,253 +456,276 @@ init_optimization_passes (void)
   NEXT_PASS (pass_inline_parameters);
   *p = NULL;
 
-  p = &pass_early_local_passes.sub;
-  NEXT_PASS (pass_tree_profile);
-  NEXT_PASS (pass_cleanup_cfg);
-  NEXT_PASS (pass_init_datastructures);
-  NEXT_PASS (pass_expand_omp);
-  NEXT_PASS (pass_all_early_optimizations);
-  NEXT_PASS (pass_rebuild_cgraph_edges);
-  NEXT_PASS (pass_inline_parameters);
+  /* Interprocedural optimization passes. 
+     All these passes are ignored in -fno-unit-at-a-time
+     except for subpases of early_local_pases.  */
+  p = &all_ipa_passes;
+  NEXT_PASS (pass_ipa_function_and_variable_visibility);
+  NEXT_PASS (pass_ipa_early_inline);
+    {
+      struct tree_opt_pass **p = &pass_ipa_early_inline.sub;
+      NEXT_PASS (pass_early_inline);
+      NEXT_PASS (pass_inline_parameters);
+      NEXT_PASS (pass_rebuild_cgraph_edges);
+    }
+  NEXT_PASS (pass_early_local_passes);
+    {
+      struct tree_opt_pass **p = &pass_early_local_passes.sub;
+      NEXT_PASS (pass_tree_profile);
+      NEXT_PASS (pass_cleanup_cfg);
+      NEXT_PASS (pass_init_datastructures);
+      NEXT_PASS (pass_expand_omp);
+      NEXT_PASS (pass_all_early_optimizations);
+	{
+	  struct tree_opt_pass **p = &pass_all_early_optimizations.sub;
+	  NEXT_PASS (pass_referenced_vars);
+	  NEXT_PASS (pass_reset_cc_flags);
+	  NEXT_PASS (pass_build_ssa);
+	  NEXT_PASS (pass_early_warn_uninitialized);
+	  NEXT_PASS (pass_rebuild_cgraph_edges);
+	  NEXT_PASS (pass_early_inline);
+	  NEXT_PASS (pass_cleanup_cfg);
+	  NEXT_PASS (pass_rename_ssa_copies);
+	  NEXT_PASS (pass_ccp);
+	  NEXT_PASS (pass_forwprop);
+	  NEXT_PASS (pass_sra);
+	  NEXT_PASS (pass_copy_prop);
+	  NEXT_PASS (pass_merge_phi);
+	  NEXT_PASS (pass_dce);
+	  NEXT_PASS (pass_tail_recursion);
+	  NEXT_PASS (pass_release_ssa_names);
+	}
+      NEXT_PASS (pass_rebuild_cgraph_edges);
+      NEXT_PASS (pass_inline_parameters);
+    }
+  NEXT_PASS (pass_ipa_increase_alignment);
+  NEXT_PASS (pass_ipa_cp);
+  NEXT_PASS (pass_ipa_inline);
+  NEXT_PASS (pass_ipa_reference);
+  NEXT_PASS (pass_ipa_pure_const); 
+  NEXT_PASS (pass_ipa_type_escape);
+  NEXT_PASS (pass_ipa_pta);
   *p = NULL;
 
-  p = &pass_all_early_optimizations.sub;
-  NEXT_PASS (pass_referenced_vars);
-  NEXT_PASS (pass_reset_cc_flags);
-  NEXT_PASS (pass_build_ssa);
-  NEXT_PASS (pass_early_warn_uninitialized);
-  NEXT_PASS (pass_rebuild_cgraph_edges);
-  NEXT_PASS (pass_early_inline);
-  NEXT_PASS (pass_cleanup_cfg);
-  NEXT_PASS (pass_rename_ssa_copies);
-  NEXT_PASS (pass_ccp);
-  
-  NEXT_PASS (pass_forwprop);
-  NEXT_PASS (pass_sra);
-  NEXT_PASS (pass_copy_prop);
-  NEXT_PASS (pass_merge_phi);
-  NEXT_PASS (pass_dce);
-  NEXT_PASS (pass_tail_recursion);
-  NEXT_PASS (pass_release_ssa_names);
-
-  *p = NULL;
-
+  /* These passes are run after IPA passes on every function that is being output
+     to the assemlber file.  */
   p = &all_passes;
   NEXT_PASS (pass_apply_inline);
   NEXT_PASS (pass_all_optimizations);
+    {
+      struct tree_opt_pass **p = &pass_all_optimizations.sub;
+      NEXT_PASS (pass_create_structure_vars);
+      NEXT_PASS (pass_may_alias);
+      NEXT_PASS (pass_return_slot);
+      NEXT_PASS (pass_rename_ssa_copies);
+
+      /* Initial scalar cleanups.  */
+      NEXT_PASS (pass_ccp);
+      NEXT_PASS (pass_fre);
+      NEXT_PASS (pass_dce);
+      NEXT_PASS (pass_forwprop);
+      NEXT_PASS (pass_copy_prop);
+      NEXT_PASS (pass_merge_phi);
+      NEXT_PASS (pass_vrp);
+      NEXT_PASS (pass_dce);
+      NEXT_PASS (pass_dominator);
+
+      /* The only const/copy propagation opportunities left after
+	 DOM should be due to degenerate PHI nodes.  So rather than
+	 run the full propagators, run a specialized pass which
+	 only examines PHIs to discover const/copy propagation
+	 opportunities.  */
+      NEXT_PASS (pass_phi_only_cprop);
+
+      NEXT_PASS (pass_phiopt);
+      NEXT_PASS (pass_may_alias);
+      NEXT_PASS (pass_tail_recursion);
+      NEXT_PASS (pass_profile);
+      NEXT_PASS (pass_ch);
+      NEXT_PASS (pass_stdarg);
+      NEXT_PASS (pass_lower_complex);
+      NEXT_PASS (pass_sra);
+      /* FIXME: SRA may generate arbitrary gimple code, exposing new
+	 aliased and call-clobbered variables.  As mentioned below,
+	 pass_may_alias should be a TODO item.  */
+      NEXT_PASS (pass_may_alias);
+      NEXT_PASS (pass_rename_ssa_copies);
+      NEXT_PASS (pass_dominator);
+
+      /* The only const/copy propagation opportunities left after
+	 DOM should be due to degenerate PHI nodes.  So rather than
+	 run the full propagators, run a specialized pass which
+	 only examines PHIs to discover const/copy propagation
+	 opportunities.  */
+      NEXT_PASS (pass_phi_only_cprop);
+
+      NEXT_PASS (pass_reassoc);
+      NEXT_PASS (pass_dce);
+      NEXT_PASS (pass_dse);
+      NEXT_PASS (pass_may_alias);
+      NEXT_PASS (pass_forwprop);
+      NEXT_PASS (pass_phiopt);
+      NEXT_PASS (pass_object_sizes);
+      NEXT_PASS (pass_store_ccp);
+      NEXT_PASS (pass_store_copy_prop);
+      NEXT_PASS (pass_fold_builtins);
+      NEXT_PASS (pass_cse_sincos);
+      /* FIXME: May alias should a TODO but for 4.0.0,
+	 we add may_alias right after fold builtins
+	 which can create arbitrary GIMPLE.  */
+      NEXT_PASS (pass_may_alias);
+      NEXT_PASS (pass_split_crit_edges);
+      NEXT_PASS (pass_pre);
+      NEXT_PASS (pass_may_alias);
+      NEXT_PASS (pass_sink_code);
+      NEXT_PASS (pass_tree_loop);
+	{
+	  struct tree_opt_pass **p = &pass_tree_loop.sub;
+	  NEXT_PASS (pass_tree_loop_init);
+	  NEXT_PASS (pass_copy_prop);
+	  NEXT_PASS (pass_lim);
+	  NEXT_PASS (pass_tree_unswitch);
+	  NEXT_PASS (pass_scev_cprop);
+	  NEXT_PASS (pass_empty_loop);
+	  NEXT_PASS (pass_record_bounds);
+	  NEXT_PASS (pass_linear_transform);
+	  NEXT_PASS (pass_iv_canon);
+	  NEXT_PASS (pass_if_conversion);
+	  NEXT_PASS (pass_vectorize);
+	    {
+	      struct tree_opt_pass **p = &pass_vectorize.sub;
+	      NEXT_PASS (pass_lower_vector_ssa);
+	      NEXT_PASS (pass_dce_loop);
+	    }
+	  /* NEXT_PASS (pass_may_alias) cannot be done again because the
+	     vectorizer creates alias relations that are not supported by
+	     pass_may_alias.  */
+	  NEXT_PASS (pass_complete_unroll);
+	  NEXT_PASS (pass_loop_prefetch);
+	  NEXT_PASS (pass_iv_optimize);
+	  NEXT_PASS (pass_tree_loop_done);
+	}
+      NEXT_PASS (pass_cse_reciprocals);
+      NEXT_PASS (pass_reassoc);
+      NEXT_PASS (pass_vrp);
+      NEXT_PASS (pass_dominator);
+
+      /* The only const/copy propagation opportunities left after
+	 DOM should be due to degenerate PHI nodes.  So rather than
+	 run the full propagators, run a specialized pass which
+	 only examines PHIs to discover const/copy propagation
+	 opportunities.  */
+      NEXT_PASS (pass_phi_only_cprop);
+
+      NEXT_PASS (pass_cd_dce);
+
+      /* FIXME: If DCE is not run before checking for uninitialized uses,
+	 we may get false warnings (e.g., testsuite/gcc.dg/uninit-5.c).
+	 However, this also causes us to misdiagnose cases that should be
+	 real warnings (e.g., testsuite/gcc.dg/pr18501.c).
+	 
+	 To fix the false positives in uninit-5.c, we would have to
+	 account for the predicates protecting the set and the use of each
+	 variable.  Using a representation like Gated Single Assignment
+	 may help.  */
+      NEXT_PASS (pass_late_warn_uninitialized);
+      NEXT_PASS (pass_dse);
+      NEXT_PASS (pass_forwprop);
+      NEXT_PASS (pass_phiopt);
+      NEXT_PASS (pass_tail_calls);
+      NEXT_PASS (pass_rename_ssa_copies);
+      NEXT_PASS (pass_uncprop);
+      NEXT_PASS (pass_del_ssa);
+      NEXT_PASS (pass_nrv);
+      NEXT_PASS (pass_mark_used_blocks);
+      NEXT_PASS (pass_cleanup_cfg_post_optimizing);
+    }
   NEXT_PASS (pass_warn_function_noreturn);
   NEXT_PASS (pass_free_datastructures);
   NEXT_PASS (pass_mudflap_2);
   NEXT_PASS (pass_free_cfg_annotations);
   NEXT_PASS (pass_expand);
   NEXT_PASS (pass_rest_of_compilation);
+    {
+      struct tree_opt_pass **p = &pass_rest_of_compilation.sub;
+      NEXT_PASS (pass_init_function);
+      NEXT_PASS (pass_jump);
+      NEXT_PASS (pass_insn_locators_initialize);
+      NEXT_PASS (pass_rtl_eh);
+      NEXT_PASS (pass_initial_value_sets);
+      NEXT_PASS (pass_unshare_all_rtl);
+      NEXT_PASS (pass_instantiate_virtual_regs);
+      NEXT_PASS (pass_jump2);
+      NEXT_PASS (pass_lower_subreg);
+      NEXT_PASS (pass_cse);
+      NEXT_PASS (pass_rtl_fwprop);
+      NEXT_PASS (pass_gcse);
+      NEXT_PASS (pass_jump_bypass);
+      NEXT_PASS (pass_rtl_ifcvt);
+      NEXT_PASS (pass_tracer);
+      /* Perform loop optimizations.  It might be better to do them a bit
+	 sooner, but we want the profile feedback to work more
+	 efficiently.  */
+      NEXT_PASS (pass_loop2);
+	{
+	  struct tree_opt_pass **p = &pass_loop2.sub;
+	  NEXT_PASS (pass_rtl_loop_init);
+	  NEXT_PASS (pass_rtl_move_loop_invariants);
+	  NEXT_PASS (pass_rtl_unswitch);
+	  NEXT_PASS (pass_rtl_unroll_and_peel_loops);
+	  NEXT_PASS (pass_rtl_doloop);
+	  NEXT_PASS (pass_rtl_loop_done);
+	  *p = NULL;
+	}
+      NEXT_PASS (pass_web);
+      NEXT_PASS (pass_cse2);
+      NEXT_PASS (pass_rtl_fwprop_addr);
+      NEXT_PASS (pass_life);
+      NEXT_PASS (pass_combine);
+      NEXT_PASS (pass_if_after_combine);
+      NEXT_PASS (pass_partition_blocks);
+      NEXT_PASS (pass_regmove);
+      NEXT_PASS (pass_split_all_insns);
+      NEXT_PASS (pass_lower_subreg2);
+      NEXT_PASS (pass_mode_switching);
+      NEXT_PASS (pass_see);
+      NEXT_PASS (pass_recompute_reg_usage);
+      NEXT_PASS (pass_sms);
+      NEXT_PASS (pass_sched);
+      NEXT_PASS (pass_local_alloc);
+      NEXT_PASS (pass_global_alloc);
+      NEXT_PASS (pass_postreload);
+	{
+	  struct tree_opt_pass **p = &pass_postreload.sub;
+	  NEXT_PASS (pass_postreload_cse);
+	  NEXT_PASS (pass_gcse2);
+	  NEXT_PASS (pass_flow2);
+	  NEXT_PASS (pass_rtl_seqabstr);
+	  NEXT_PASS (pass_stack_adjustments);
+	  NEXT_PASS (pass_peephole2);
+	  NEXT_PASS (pass_if_after_reload);
+	  NEXT_PASS (pass_regrename);
+	  NEXT_PASS (pass_reorder_blocks);
+	  NEXT_PASS (pass_branch_target_load_optimize);
+	  NEXT_PASS (pass_leaf_regs);
+	  NEXT_PASS (pass_sched2);
+	  NEXT_PASS (pass_split_before_regstack);
+	  NEXT_PASS (pass_stack_regs);
+	  NEXT_PASS (pass_compute_alignments);
+	  NEXT_PASS (pass_duplicate_computed_gotos);
+	  NEXT_PASS (pass_variable_tracking);
+	  NEXT_PASS (pass_free_cfg);
+	  NEXT_PASS (pass_machine_reorg);
+	  NEXT_PASS (pass_cleanup_barriers);
+	  NEXT_PASS (pass_delay_slots);
+	  NEXT_PASS (pass_split_for_shorten_branches);
+	  NEXT_PASS (pass_convert_to_eh_region_ranges);
+	  NEXT_PASS (pass_shorten_branches);
+	  NEXT_PASS (pass_set_nothrow_function_flags);
+	  NEXT_PASS (pass_final);
+	}
+    }
   NEXT_PASS (pass_clean_state);
-  *p = NULL;
-
-  p = &pass_all_optimizations.sub;
-  NEXT_PASS (pass_create_structure_vars);
-  NEXT_PASS (pass_may_alias);
-  NEXT_PASS (pass_return_slot);
-  NEXT_PASS (pass_rename_ssa_copies);
-
-  /* Initial scalar cleanups.  */
-  NEXT_PASS (pass_ccp);
-  NEXT_PASS (pass_fre);
-  NEXT_PASS (pass_dce);
-  NEXT_PASS (pass_forwprop);
-  NEXT_PASS (pass_copy_prop);
-  NEXT_PASS (pass_merge_phi);
-  NEXT_PASS (pass_vrp);
-  NEXT_PASS (pass_dce);
-  NEXT_PASS (pass_dominator);
-
-  /* The only const/copy propagation opportunities left after
-     DOM should be due to degenerate PHI nodes.  So rather than
-     run the full propagators, run a specialized pass which
-     only examines PHIs to discover const/copy propagation
-     opportunities.  */
-  NEXT_PASS (pass_phi_only_cprop);
-
-  NEXT_PASS (pass_phiopt);
-  NEXT_PASS (pass_may_alias);
-  NEXT_PASS (pass_tail_recursion);
-  NEXT_PASS (pass_profile);
-  NEXT_PASS (pass_ch);
-  NEXT_PASS (pass_stdarg);
-  NEXT_PASS (pass_lower_complex);
-  NEXT_PASS (pass_sra);
-  /* FIXME: SRA may generate arbitrary gimple code, exposing new
-     aliased and call-clobbered variables.  As mentioned below,
-     pass_may_alias should be a TODO item.  */
-  NEXT_PASS (pass_may_alias);
-  NEXT_PASS (pass_rename_ssa_copies);
-  NEXT_PASS (pass_dominator);
-
-  /* The only const/copy propagation opportunities left after
-     DOM should be due to degenerate PHI nodes.  So rather than
-     run the full propagators, run a specialized pass which
-     only examines PHIs to discover const/copy propagation
-     opportunities.  */
-  NEXT_PASS (pass_phi_only_cprop);
-
-  NEXT_PASS (pass_reassoc);
-  NEXT_PASS (pass_dce);
-  NEXT_PASS (pass_dse);
-  NEXT_PASS (pass_may_alias);
-  NEXT_PASS (pass_forwprop);
-  NEXT_PASS (pass_phiopt);
-  NEXT_PASS (pass_object_sizes);
-  NEXT_PASS (pass_store_ccp);
-  NEXT_PASS (pass_store_copy_prop);
-  NEXT_PASS (pass_fold_builtins);
-  NEXT_PASS (pass_cse_sincos);
-  /* FIXME: May alias should a TODO but for 4.0.0,
-     we add may_alias right after fold builtins
-     which can create arbitrary GIMPLE.  */
-  NEXT_PASS (pass_may_alias);
-  NEXT_PASS (pass_split_crit_edges);
-  NEXT_PASS (pass_pre);
-  NEXT_PASS (pass_may_alias);
-  NEXT_PASS (pass_sink_code);
-  NEXT_PASS (pass_tree_loop);
-  NEXT_PASS (pass_cse_reciprocals);
-  NEXT_PASS (pass_reassoc);
-  NEXT_PASS (pass_vrp);
-  NEXT_PASS (pass_dominator);
-
-  /* The only const/copy propagation opportunities left after
-     DOM should be due to degenerate PHI nodes.  So rather than
-     run the full propagators, run a specialized pass which
-     only examines PHIs to discover const/copy propagation
-     opportunities.  */
-  NEXT_PASS (pass_phi_only_cprop);
-
-  NEXT_PASS (pass_cd_dce);
-
-  /* FIXME: If DCE is not run before checking for uninitialized uses,
-     we may get false warnings (e.g., testsuite/gcc.dg/uninit-5.c).
-     However, this also causes us to misdiagnose cases that should be
-     real warnings (e.g., testsuite/gcc.dg/pr18501.c).
-     
-     To fix the false positives in uninit-5.c, we would have to
-     account for the predicates protecting the set and the use of each
-     variable.  Using a representation like Gated Single Assignment
-     may help.  */
-  NEXT_PASS (pass_late_warn_uninitialized);
-  NEXT_PASS (pass_dse);
-  NEXT_PASS (pass_forwprop);
-  NEXT_PASS (pass_phiopt);
-  NEXT_PASS (pass_tail_calls);
-  NEXT_PASS (pass_rename_ssa_copies);
-  NEXT_PASS (pass_uncprop);
-  NEXT_PASS (pass_del_ssa);
-  NEXT_PASS (pass_nrv);
-  NEXT_PASS (pass_mark_used_blocks);
-  NEXT_PASS (pass_cleanup_cfg_post_optimizing);
-  *p = NULL;
-
-  p = &pass_tree_loop.sub;
-  NEXT_PASS (pass_tree_loop_init);
-  NEXT_PASS (pass_copy_prop);
-  NEXT_PASS (pass_lim);
-  NEXT_PASS (pass_tree_unswitch);
-  NEXT_PASS (pass_scev_cprop);
-  NEXT_PASS (pass_empty_loop);
-  NEXT_PASS (pass_record_bounds);
-  NEXT_PASS (pass_linear_transform);
-  NEXT_PASS (pass_iv_canon);
-  NEXT_PASS (pass_if_conversion);
-  NEXT_PASS (pass_vectorize);
-  /* NEXT_PASS (pass_may_alias) cannot be done again because the
-     vectorizer creates alias relations that are not supported by
-     pass_may_alias.  */
-  NEXT_PASS (pass_complete_unroll);
-  NEXT_PASS (pass_loop_prefetch);
-  NEXT_PASS (pass_iv_optimize);
-  NEXT_PASS (pass_tree_loop_done);
-  *p = NULL;
-
-  p = &pass_vectorize.sub;
-  NEXT_PASS (pass_lower_vector_ssa);
-  NEXT_PASS (pass_dce_loop);
-  *p = NULL;
-
-  p = &pass_loop2.sub;
-  NEXT_PASS (pass_rtl_loop_init);
-  NEXT_PASS (pass_rtl_move_loop_invariants);
-  NEXT_PASS (pass_rtl_unswitch);
-  NEXT_PASS (pass_rtl_unroll_and_peel_loops);
-  NEXT_PASS (pass_rtl_doloop);
-  NEXT_PASS (pass_rtl_loop_done);
-  *p = NULL;
-  
-  p = &pass_rest_of_compilation.sub;
-  NEXT_PASS (pass_init_function);
-  NEXT_PASS (pass_jump);
-  NEXT_PASS (pass_insn_locators_initialize);
-  NEXT_PASS (pass_rtl_eh);
-  NEXT_PASS (pass_initial_value_sets);
-  NEXT_PASS (pass_unshare_all_rtl);
-  NEXT_PASS (pass_instantiate_virtual_regs);
-  NEXT_PASS (pass_jump2);
-  NEXT_PASS (pass_lower_subreg);
-  NEXT_PASS (pass_cse);
-  NEXT_PASS (pass_rtl_fwprop);
-  NEXT_PASS (pass_gcse);
-  NEXT_PASS (pass_jump_bypass);
-  NEXT_PASS (pass_rtl_ifcvt);
-  NEXT_PASS (pass_tracer);
-  /* Perform loop optimizations.  It might be better to do them a bit
-     sooner, but we want the profile feedback to work more
-     efficiently.  */
-  NEXT_PASS (pass_loop2);
-  NEXT_PASS (pass_web);
-  NEXT_PASS (pass_cse2);
-  NEXT_PASS (pass_rtl_fwprop_addr);
-  NEXT_PASS (pass_life);
-  NEXT_PASS (pass_combine);
-  NEXT_PASS (pass_if_after_combine);
-  NEXT_PASS (pass_partition_blocks);
-  NEXT_PASS (pass_regmove);
-  NEXT_PASS (pass_split_all_insns);
-  NEXT_PASS (pass_lower_subreg2);
-  NEXT_PASS (pass_mode_switching);
-  NEXT_PASS (pass_see);
-  NEXT_PASS (pass_recompute_reg_usage);
-  NEXT_PASS (pass_sms);
-  NEXT_PASS (pass_sched);
-  NEXT_PASS (pass_local_alloc);
-  NEXT_PASS (pass_global_alloc);
-  NEXT_PASS (pass_postreload);
-  *p = NULL;
-
-  p = &pass_postreload.sub;
-  NEXT_PASS (pass_postreload_cse);
-  NEXT_PASS (pass_gcse2);
-  NEXT_PASS (pass_flow2);
-  NEXT_PASS (pass_rtl_seqabstr);
-  NEXT_PASS (pass_stack_adjustments);
-  NEXT_PASS (pass_peephole2);
-  NEXT_PASS (pass_if_after_reload);
-  NEXT_PASS (pass_regrename);
-  NEXT_PASS (pass_reorder_blocks);
-  NEXT_PASS (pass_branch_target_load_optimize);
-  NEXT_PASS (pass_leaf_regs);
-  NEXT_PASS (pass_sched2);
-  NEXT_PASS (pass_split_before_regstack);
-  NEXT_PASS (pass_stack_regs);
-  NEXT_PASS (pass_compute_alignments);
-  NEXT_PASS (pass_duplicate_computed_gotos);
-  NEXT_PASS (pass_variable_tracking);
-  NEXT_PASS (pass_free_cfg);
-  NEXT_PASS (pass_machine_reorg);
-  NEXT_PASS (pass_cleanup_barriers);
-  NEXT_PASS (pass_delay_slots);
-  NEXT_PASS (pass_split_for_shorten_branches);
-  NEXT_PASS (pass_convert_to_eh_region_ranges);
-  NEXT_PASS (pass_shorten_branches);
-  NEXT_PASS (pass_set_nothrow_function_flags);
-  NEXT_PASS (pass_final);
   *p = NULL;
 
 #undef NEXT_PASS
