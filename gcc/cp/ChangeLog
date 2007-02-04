@@ -1,3 +1,8 @@
+2007-02-03  Douglas Gregor  <doug.gregor@gmail.com>
+
+       * parser.c (cp_lexer_get_preprocessor_token): Attach the C++0x
+       keyword warning to -Wc++0x-compat.
+	
 2007-02-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* decl.c (grokdeclarator): Update documentation.
