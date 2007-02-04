@@ -1321,20 +1321,20 @@ h8300_rtx_costs (rtx x, int code, int outer_code, int *total)
        If this operand isn't a register, fall back to 'R' handling.
    'Z' print int & 7.
    'c' print the opcode corresponding to rtl
-   'e' first word of 32 bit value - if reg, then least reg. if mem
+   'e' first word of 32-bit value - if reg, then least reg. if mem
        then least. if const then most sig word
-   'f' second word of 32 bit value - if reg, then biggest reg. if mem
+   'f' second word of 32-bit value - if reg, then biggest reg. if mem
        then +2. if const then least sig word
    'j' print operand as condition code.
    'k' print operand as reverse condition code.
    'm' convert an integer operand to a size suffix (.b, .w or .l)
    'o' print an integer without a leading '#'
-   's' print as low byte of 16 bit value
-   't' print as high byte of 16 bit value
-   'w' print as low byte of 32 bit value
-   'x' print as 2nd byte of 32 bit value
-   'y' print as 3rd byte of 32 bit value
-   'z' print as msb of 32 bit value
+   's' print as low byte of 16-bit value
+   't' print as high byte of 16-bit value
+   'w' print as low byte of 32-bit value
+   'x' print as 2nd byte of 32-bit value
+   'y' print as 3rd byte of 32-bit value
+   'z' print as msb of 32-bit value
 */
 
 /* Return assembly language string which identifies a comparison type.  */
@@ -1760,7 +1760,7 @@ print_operand_address (FILE *file, rtx addr)
 
     case CONST_INT:
       {
-	/* Since the H8/300 only has 16 bit pointers, negative values are also
+	/* Since the H8/300 only has 16-bit pointers, negative values are also
 	   those >= 32768.  This happens for example with pointer minus a
 	   constant.  We don't want to turn (char *p - 2) into
 	   (char *p + 65534) because loop unrolling can build upon this

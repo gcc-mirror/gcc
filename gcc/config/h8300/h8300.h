@@ -195,13 +195,13 @@ extern const char * const *h8_reg_names;
 #define FUNCTION_BOUNDARY 16
 
 /* Alignment of field after `int : 0' in a structure.  */
-/* One can argue this should be 32 for -mint32, but since 32 bit ints only
-   need 16 bit alignment, this is left as is so that -mint32 doesn't change
+/* One can argue this should be 32 for -mint32, but since 32-bit ints only
+   need 16-bit alignment, this is left as is so that -mint32 doesn't change
    structure layouts.  */
 #define EMPTY_FIELD_BOUNDARY 16
 
 /* No data type wants to be aligned rounder than this.
-   32 bit values are aligned as such on the H8/300H and H8S for speed.  */
+   32-bit values are aligned as such on the H8/300H and H8S for speed.  */
 #define BIGGEST_ALIGNMENT \
 (((TARGET_H8300H || TARGET_H8300S) && ! TARGET_ALIGN_300) ? 32 : 16)
 
