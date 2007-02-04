@@ -318,6 +318,48 @@ redirect_edge_and_branch (edge e, basic_block dest)
   return ret;
 }
 
+/* Returns true if it is possible to remove the edge E by redirecting it
+   to the destination of the other edge going from its source.  */
+
+bool
+can_remove_branch_p (edge e)
+{
+  if (!cfg_hooks->can_remove_branch_p)
+    internal_error ("%s does not support can_remove_branch_p",
+		    cfg_hooks->name);
+
+  if (EDGE_COUNT (e->src->succs) != 2)
+    return false;
+
+  return cfg_hooks->can_remove_branch_p (e);
+}
+
+/* Removes E, by redirecting it to the destination of the other edge going
+   from its source.  Can_remove_branch_p must be true for E, hence this
+   operation cannot fail.  */
+
+void
+remove_branch (edge e)
+{
+  edge other;
+  basic_block src = e->src;
+  int irr;
+
+  gcc_assert (EDGE_COUNT (e->src->succs) == 2);
+
+  other = EDGE_SUCC (src, EDGE_SUCC (src, 0) == e);
+  irr = other->flags & EDGE_IRREDUCIBLE_LOOP;
+
+  if (current_loops != NULL)
+    rescan_loop_exit (e, false, true);
+
+  e = redirect_edge_and_branch (e, other->dest);
+  gcc_assert (e != NULL);
+
+  e->flags &= ~EDGE_IRREDUCIBLE_LOOP;
+  e->flags |= irr;
+}
+
 /* Redirect the edge E to basic block DEST even if it requires creating
    of a new basic block; then it returns the newly created basic block.
    Aborts when redirection is impossible.  */

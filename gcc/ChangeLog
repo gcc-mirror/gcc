@@ -1,3 +1,19 @@
+2007-02-04  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* cfgloopmanip.c (loop_delete_branch_edge): Removed.
+	(remove_path): Use can_remove_branch_p and remove_branch instead
+	of loop_delete_branch_edge.
+	* tree-ssa-loop-manip.c (scale_dominated_blocks_in_loop): New function.
+	(tree_transform_and_unroll_loop): Remove dead branches immediately.
+	Update profile using scale_dominated_blocks_in_loop.
+	* cfghooks.c (can_remove_branch_p, remove_branch): New functions.
+	* cfghooks.h (struct cfg_hooks): Add can_remove_branch_p.
+	(can_remove_branch_p, remove_branch): Declare.
+	* tree-cfg.c (tree_can_remove_branch_p): New function.
+	(tree_cfg_hooks): Add tree_can_remove_branch_p.
+	* cfgrtl.c (rtl_can_remove_branch_p): New function.
+	(rtl_cfg_hooks, cfg_layout_rtl_cfg_hook): Add rtl_can_remove_branch_p.
+
 2007-02-05  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/30696

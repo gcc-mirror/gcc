@@ -4219,6 +4219,17 @@ tree_redirect_edge_and_branch (edge e, basic_block dest)
   return e;
 }
 
+/* Returns true if it is possible to remove edge E by redirecting
+   it to the destination of the other edge from E->src.  */
+
+static bool
+tree_can_remove_branch_p (edge e)
+{
+  if (e->flags & EDGE_ABNORMAL)
+    return false;
+
+  return true;
+}
 
 /* Simple wrapper, as we can always redirect fallthru edges.  */
 
@@ -5614,6 +5625,7 @@ struct cfg_hooks tree_cfg_hooks = {
   create_bb,			/* create_basic_block  */
   tree_redirect_edge_and_branch,/* redirect_edge_and_branch  */
   tree_redirect_edge_and_branch_force,/* redirect_edge_and_branch_force  */
+  tree_can_remove_branch_p,	/* can_remove_branch_p  */
   remove_bb,			/* delete_basic_block  */
   tree_split_block,		/* split_block  */
   tree_move_block_after,	/* move_block_after  */
