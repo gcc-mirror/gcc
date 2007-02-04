@@ -1,3 +1,9 @@
+2007-02-05  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/30696
+	* ipa-inline.c (cgraph_clone_inlined_nodes): When there are unanalyzed
+	nodes in cgraph, don't remove offline copy of the function.
+
 2007-02-04  Jan Hubicka  <jh@suse.cz>
 
 	* tree-sra.c (sra_walk_expr): Add linebreaks. BITFIELD_REFs into
