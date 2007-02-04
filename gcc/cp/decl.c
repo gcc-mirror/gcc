@@ -6873,8 +6873,8 @@ check_var_type (tree identifier, tree type)
    the name and type of the object declared and construct a DECL node
    for it.
 
-   DECLSPECS is a chain of tree_list nodes whose value fields
-    are the storage classes and type specifiers.
+   DECLSPECS points to the representation of declaration-specifier
+   sequence that precedes declarator.
 
    DECL_CONTEXT says which syntactic context this declaration is in:
      NORMAL for most contexts.  Make a VAR_DECL or FUNCTION_DECL or TYPE_DECL.
