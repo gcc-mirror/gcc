@@ -6642,6 +6642,7 @@ try_move_mult_to_index (enum tree_code code, tree addr, tree op1)
   tree ref = TREE_OPERAND (addr, 0), pref;
   tree ret, pos;
   tree itype;
+  bool mdim = false;
 
   /* Canonicalize op1 into a possibly non-constant delta
      and an INTEGER_CST s.  */
@@ -6681,6 +6682,10 @@ try_move_mult_to_index (enum tree_code code, tree addr, tree op1)
     {
       if (TREE_CODE (ref) == ARRAY_REF)
 	{
+	  /* Remember if this was a multi-dimensional array.  */
+	  if (TREE_CODE (TREE_OPERAND (ref, 0)) == ARRAY_REF)
+	    mdim = true;
+
 	  itype = TYPE_DOMAIN (TREE_TYPE (TREE_OPERAND (ref, 0)));
 	  if (! itype)
 	    continue;
@@ -6703,8 +6708,32 @@ try_move_mult_to_index (enum tree_code code, tree addr, tree op1)
 	      delta = tmp;
 	    }
 
+	  /* Only fold here if we can verify we do not overflow one
+	     dimension of a multi-dimensional array.  */
+	  if (mdim)
+	    {
+	      tree tmp;
+
+	      if (TREE_CODE (TREE_OPERAND (ref, 1)) != INTEGER_CST
+		  || !INTEGRAL_TYPE_P (itype)
+		  || !TYPE_MAX_VALUE (itype)
+		  || TREE_CODE (TYPE_MAX_VALUE (itype)) != INTEGER_CST)
+		continue;
+
+	      tmp = fold_binary (code, itype,
+				 fold_convert (itype,
+					       TREE_OPERAND (ref, 1)),
+				 fold_convert (itype, delta));
+	      if (!tmp
+		  || TREE_CODE (tmp) != INTEGER_CST
+		  || tree_int_cst_lt (TYPE_MAX_VALUE (itype), tmp))
+		continue;
+	    }
+
 	  break;
 	}
+      else
+	mdim = false;
 
       if (!handled_component_p (ref))
 	return NULL_TREE;
