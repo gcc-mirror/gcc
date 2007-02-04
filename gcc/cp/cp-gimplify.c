@@ -472,7 +472,7 @@ cp_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p)
       break;
 
     case THROW_EXPR:
-      /* FIXME communicate throw type to backend, probably by moving
+      /* FIXME communicate throw type to back end, probably by moving
 	 THROW_EXPR into ../tree.def.  */
       *expr_p = TREE_OPERAND (*expr_p, 0);
       ret = GS_OK;

@@ -432,7 +432,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
       DECL_RESULT (thunk_fndecl)
 	= build_decl (RESULT_DECL, 0, integer_type_node);
       fnname = XSTR (XEXP (DECL_RTL (thunk_fndecl), 0), 0);
-      /* The back-end expects DECL_INITIAL to contain a BLOCK, so we
+      /* The back end expects DECL_INITIAL to contain a BLOCK, so we
 	 create one.  */
       fn_block = make_node (BLOCK);
       BLOCK_VARS (fn_block) = a;

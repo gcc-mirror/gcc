@@ -14609,7 +14609,7 @@ cp_parser_function_try_block (cp_parser* parser)
   /* Look for the `try' keyword.  */
   if (!cp_parser_require_keyword (parser, RID_TRY, "`try'"))
     return false;
-  /* Let the rest of the front-end know where we are.  */
+  /* Let the rest of the front end know where we are.  */
   try_block = begin_function_try_block (&compound_stmt);
   /* Parse the function-body.  */
   ctor_initializer_p
@@ -17418,7 +17418,7 @@ cp_parser_objc_identifier_list (cp_parser* parser)
    objc-alias-declaration:
      @compatibility_alias identifier identifier ;
 
-   This function registers the alias mapping with the Objective-C front-end.
+   This function registers the alias mapping with the Objective-C front end.
    It returns nothing.  */
 
 static void
@@ -17439,7 +17439,7 @@ cp_parser_objc_alias_declaration (cp_parser* parser)
      @class objc-identifier-list ;
 
    The function registers the forward declarations with the Objective-C
-   front-end.  It returns nothing.  */
+   front end.  It returns nothing.  */
 
 static void
 cp_parser_objc_class_declaration (cp_parser* parser)

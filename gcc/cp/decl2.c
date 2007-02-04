@@ -1394,7 +1394,7 @@ import_export_class (tree ctype)
   if (MULTIPLE_SYMBOL_SPACES && import_export == -1)
     import_export = 0;
 
-  /* Allow backends the chance to overrule the decision.  */
+  /* Allow back ends the chance to overrule the decision.  */
   if (targetm.cxx.import_export_class)
     import_export = targetm.cxx.import_export_class (ctype, import_export);
 
@@ -1446,7 +1446,7 @@ decl_needed_p (tree decl)
      emitted; they may be referred to from other object files.  */
   if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl))
     return true;
-  /* If this entity was used, let the back-end see it; it will decide
+  /* If this entity was used, let the back end see it; it will decide
      whether or not to emit it into the object file.  */
   if (TREE_USED (decl)
       || (DECL_ASSEMBLER_NAME_SET_P (decl)
@@ -2922,7 +2922,7 @@ generate_ctor_and_dtor_functions_for_priority (splay_tree_node n, void * data)
 }
 
 /* Called via LANGHOOK_CALLGRAPH_ANALYZE_EXPR.  It is supposed to mark
-   decls referenced from frontend specific constructs; it will be called
+   decls referenced from front-end specific constructs; it will be called
    only for language-specific tree nodes.
 
    Here we must deal with member pointers.  */
@@ -3135,7 +3135,7 @@ cp_write_global_declarations (void)
 	     through the loop.  That's because we need to know which
 	     vtables have been referenced, and TREE_SYMBOL_REFERENCED
 	     isn't computed until a function is finished, and written
-	     out.  That's a deficiency in the back-end.  When this is
+	     out.  That's a deficiency in the back end.  When this is
 	     fixed, these initialization functions could all become
 	     inline, with resulting performance improvements.  */
 	  tree ssdf_body;
@@ -3210,7 +3210,7 @@ cp_write_global_declarations (void)
 	  if (!DECL_SAVED_TREE (decl))
 	    continue;
 
-	  /* We lie to the back-end, pretending that some functions
+	  /* We lie to the back end, pretending that some functions
 	     are not defined when they really are.  This keeps these
 	     functions from being put out unnecessarily.  But, we must
 	     stop lying when the functions are referenced, or if they

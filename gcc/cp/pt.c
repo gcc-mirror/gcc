@@ -1608,7 +1608,7 @@ determine_specialization (tree template_id,
 	 This extension can only serve to make invalid programs valid,
 	 so it's safe.  And, there is strong anecdotal evidence that
 	 the committee intended the partial ordering rules to apply;
-	 the EDG front-end has that behavior, and John Spicer claims
+	 the EDG front end has that behavior, and John Spicer claims
 	 that the committee simply forgot to delete the wording in
 	 [temp.expl.spec].  */
       tree tmpl = most_specialized_instantiation (templates);

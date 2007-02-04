@@ -713,7 +713,7 @@ poplevel (int keep, int reverse, int functionbody)
 
   /* There may be OVERLOADs (wrapped in TREE_LISTs) on the BLOCK_VARs
      list if a `using' declaration put them there.  The debugging
-     back-ends won't understand OVERLOAD, so we remove them here.
+     back ends won't understand OVERLOAD, so we remove them here.
      Because the BLOCK_VARS are (temporarily) shared with
      CURRENT_BINDING_LEVEL->NAMES we must do this fixup after we have
      popped all the bindings.  */
@@ -3044,7 +3044,7 @@ record_builtin_java_type (const char* name, int size)
   return type;
 }
 
-/* Push a type into the namespace so that the back-ends ignore it.  */
+/* Push a type into the namespace so that the back ends ignore it.  */
 
 static void
 record_unknown_type (tree type, const char* name)
@@ -3955,7 +3955,7 @@ start_decl (const cp_declarator *declarator,
   if (tem == error_mark_node)
     return error_mark_node;
 
-  /* Tell the back-end to use or not use .common as appropriate.  If we say
+  /* Tell the back end to use or not use .common as appropriate.  If we say
      -fconserve-space, we want this to save .data space, at the expense of
      wrong semantics.  If we say -fno-conserve-space, we want this to
      produce errors about redefs; to do this we force variables into the
@@ -5582,7 +5582,7 @@ register_dtor_fn (tree decl)
 
   /* Now, recompute the cleanup.  It may contain SAVE_EXPRs that refer
      to the original function, rather than the anonymous one.  That
-     will make the back-end think that nested functions are in use,
+     will make the back end think that nested functions are in use,
      which causes confusion.  */
 
   push_deferring_access_checks (dk_no_check);
@@ -6440,7 +6440,7 @@ build_ptrmemfunc_type (tree type)
   t = make_aggr_type (RECORD_TYPE);
   xref_basetypes (t, NULL_TREE);
 
-  /* Let the front-end know this is a pointer to member function...  */
+  /* Let the front end know this is a pointer to member function...  */
   TYPE_PTRMEMFUNC_FLAG (t) = 1;
   /* ... and not really an aggregate.  */
   SET_IS_AGGR_TYPE (t, 0);
@@ -6454,7 +6454,7 @@ build_ptrmemfunc_type (tree type)
 
   finish_builtin_struct (t, "__ptrmemfunc_type", fields, ptr_type_node);
 
-  /* Zap out the name so that the back-end will give us the debugging
+  /* Zap out the name so that the back end will give us the debugging
      information for this anonymous RECORD_TYPE.  */
   TYPE_NAME (t) = NULL_TREE;
 
@@ -10766,7 +10766,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	DECL_EXTERNAL (decl1) = 0;
       DECL_INTERFACE_KNOWN (decl1) = 1;
       /* If this function is in an interface implemented in this file,
-	 make sure that the backend knows to emit this function
+	 make sure that the back end knows to emit this function
 	 here.  */
       if (!DECL_EXTERNAL (decl1))
 	mark_needed (decl1);
