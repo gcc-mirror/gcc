@@ -1003,6 +1003,7 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		  if (forward_propagate_addr_expr (stmt, &some))
 		    {
 		      release_defs (stmt);
+		      todoflags |= TODO_remove_unused_locals;
 		      bsi_remove (&bsi, true);
 		    }
 		  else

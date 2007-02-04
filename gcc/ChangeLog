@@ -1,5 +1,14 @@
 2007-02-04  Jan Hubicka  <jh@suse.cz>
 
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Return
+	true when something was changed.
+	(rename_ssa_copies): When something was changed, do
+	TODO_remove_unused_locals.
+	* tree-ssa-forwprop.c (tree_ssa_forward_propagate_single_use_value):
+	add TODO_remove_unused_locals when instruction was removed.
+
+2007-02-04  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-inline.c (try_inline): Improve debug output; work on already
 	inline edges too.
 	(cgraph_decide_inlining_incrementally): Indent; improve debug output;
