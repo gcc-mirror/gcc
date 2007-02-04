@@ -17,6 +17,6 @@ double bar(int i)
 	return *(&b[0].x + i*2); // b[i].x
 }
 
-/* { dg-final { scan-tree-dump "a\\\[.*i.*\\\]\\\[0\\\]" "optimized" } } */
+/* { dg-final { scan-tree-dump "a\\\[.*i.*\\\]\\\[0\\\]" "optimized" { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump "b\\\[.*i.*\\\].x" "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
