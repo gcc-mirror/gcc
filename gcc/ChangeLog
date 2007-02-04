@@ -1,3 +1,12 @@
+2007-02-04  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2007-01-30  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/27657
+	* dwarf2out.c (reference_to_unused): Query varpool if the
+	variable was output.
+
 2007-02-02  Mike Stump  <mrs@apple.com>
 
 	* config.gcc (*-*-darwin*): Backport darwin9.h bits.

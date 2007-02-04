@@ -1,3 +1,11 @@
+2007-02-04  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2007-01-30  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/27657
+	* g++.dg/debug/pr27657.C: New testcase.
+
 2007-02-03  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/30683
