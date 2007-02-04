@@ -126,10 +126,10 @@ typedef off_t gfc_offset;
 # define export_proto(x)	sym_rename(x, PREFIX(x))
 # define export_proto_np(x)	extern char swallow_semicolon
 # define iexport_proto(x)	internal_proto(x)
-# define iexport(x)		iexport1(x, __USER_LABEL_PREFIX__, IPREFIX(x))
-# define iexport1(x,p,y)	iexport2(x,p,y)
-# define iexport2(x,p,y) \
-	extern __typeof(x) PREFIX(x) __attribute__((__alias__(#p #y)))
+# define iexport(x)		iexport1(x, IPREFIX(x))
+# define iexport1(x,y)		iexport2(x,y)
+# define iexport2(x,y) \
+	extern __typeof(x) PREFIX(x) __attribute__((__alias__(#y)))
 /* ??? We're not currently building a dll, and it's wrong to add dllexport
    to objects going into a static library archive.  */
 #elif 0 && defined(HAVE_ATTRIBUTE_DLLEXPORT)
