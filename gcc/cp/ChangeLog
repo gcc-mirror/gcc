@@ -1,3 +1,7 @@
+2007-02-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* decl.c (grokdeclarator): Use OPT_Wreturn_type instead of 0.
+
 2007-02-04  Kazu Hirata  <kazu@codesourcery.com>
 
 	* class.c, cp-tree.h, decl.c, decl2.c, g++spec.c, init.c,
