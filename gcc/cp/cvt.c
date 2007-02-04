@@ -994,7 +994,7 @@ convert_to_void (tree expr, const char *implicit)
 
    Most of this routine is from build_reinterpret_cast.
 
-   The backend cannot call cp_convert (what was convert) because
+   The back end cannot call cp_convert (what was convert) because
    conversions to/from basetypes may involve memory references
    (vbases) and adding or subtracting small values (multiple
    inheritance), but it calls convert from the constant folding code

@@ -345,7 +345,7 @@ struct tree_overload GTY(())
    requested.  */
 #define BASELINK_OPTYPE(NODE) \
   (TREE_CHAIN (BASELINK_CHECK (NODE)))
-/* Non-zero if this baselink was from a qualified lookup.  */
+/* Nonzero if this baselink was from a qualified lookup.  */
 #define BASELINK_QUALIFIED_P(NODE) \
   TREE_LANG_FLAG_0 (BASELINK_CHECK (NODE))
 
@@ -2109,7 +2109,7 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 
 /* If non-NULL for a VAR_DECL, FUNCTION_DECL, TYPE_DECL or
    TEMPLATE_DECL, the entity is either a template specialization (if
-   DECL_USE_TEMPLATE is non-zero) or the abstract instance of the
+   DECL_USE_TEMPLATE is nonzero) or the abstract instance of the
    template itself.
 
    In either case, DECL_TEMPLATE_INFO is a TREE_LIST, whose
@@ -2868,7 +2868,7 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 /* Returns nonzero if NODE is a primary template.  */
 #define PRIMARY_TEMPLATE_P(NODE) (DECL_PRIMARY_TEMPLATE (NODE) == (NODE))
 
-/* Non-zero iff NODE is a specialization of a template.  The value
+/* Nonzero iff NODE is a specialization of a template.  The value
    indicates the type of specializations:
 
      1=implicit instantiation
@@ -2892,7 +2892,7 @@ extern void decl_shadowed_for_var_insert (tree, tree);
     
    both O<int>::f and O<int>::I will be marked as instantiations.
 
-   If DECL_USE_TEMPLATE is non-zero, then DECL_TEMPLATE_INFO will also
+   If DECL_USE_TEMPLATE is nonzero, then DECL_TEMPLATE_INFO will also
    be non-NULL.  */
 #define DECL_USE_TEMPLATE(NODE) (DECL_LANG_SPECIFIC (NODE)->decl_flags.use_template)
 
@@ -4573,7 +4573,7 @@ extern void cp_genericize			(tree);
 
 /* -- end of C++ */
 
-/* In order for the format checking to accept the C++ frontend
+/* In order for the format checking to accept the C++ front end
    diagnostic framework extensions, you must include this file before
    toplev.h, not after.  We override the definition of GCC_DIAG_STYLE
    in c-common.h.  */

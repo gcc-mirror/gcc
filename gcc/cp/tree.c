@@ -973,7 +973,7 @@ build_qualified_name (tree type, tree scope, tree name, bool template_p)
   return t;
 }
 
-/* Returns non-zero if X is an expression for a (possibly overloaded)
+/* Returns nonzero if X is an expression for a (possibly overloaded)
    function.  If "f" is a function or function template, "f", "c->f",
    "c.f", "C::f", and "f<int>" will all be considered possibly
    overloaded functions.  Returns 2 if the function is actually

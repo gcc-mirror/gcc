@@ -1836,7 +1836,7 @@ build_class_member_access_expr (tree object, tree member,
 
   /* Transform `(a, b).x' into `(*(a, &b)).x', `(a ? b : c).x' into
      `(*(a ?  &b : &c)).x', and so on.  A COND_EXPR is only an lvalue
-     in the frontend; only _DECLs and _REFs are lvalues in the backend.  */
+     in the front end; only _DECLs and _REFs are lvalues in the back end.  */
   {
     tree temp = unary_complex_lvalue (ADDR_EXPR, object);
     if (temp)
@@ -5337,7 +5337,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 		 "target type",
 		 intype, type);
 
-      /* We need to strip nops here, because the frontend likes to
+      /* We need to strip nops here, because the front end likes to
 	 create (int *)&a for array-to-pointer decay, instead of &a[0].  */
       STRIP_NOPS (sexpr);
       strict_aliasing_warning (intype, type, sexpr);

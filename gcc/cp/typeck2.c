@@ -838,7 +838,7 @@ process_init_constructor_array (tree type, tree init)
 	if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (type)))
 	  {
 	    /* If this type needs constructors run for default-initialization,
-	      we can't rely on the backend to do it for us, so build up
+	      we can't rely on the back end to do it for us, so build up
 	      TARGET_EXPRs.  If the type in question is a class, just build
 	      one up; if it's an array, recurse.  */
 	    if (IS_AGGR_TYPE (TREE_TYPE (type)))
@@ -925,7 +925,7 @@ process_init_constructor_record (tree type, tree init)
       else if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (field)))
 	{
 	  /* If this type needs constructors run for
-	     default-initialization, we can't rely on the backend to do it
+	     default-initialization, we can't rely on the back end to do it
 	     for us, so build up TARGET_EXPRs.  If the type in question is
 	     a class, just build one up; if it's an array, recurse.  */
 	  if (IS_AGGR_TYPE (TREE_TYPE (field)))

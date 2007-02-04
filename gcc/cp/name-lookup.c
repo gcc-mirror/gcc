@@ -771,7 +771,7 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 
       check_template_shadow (x);
 
-      /* If this is a function conjured up by the backend, massage it
+      /* If this is a function conjured up by the back end, massage it
 	 so it looks friendly.  */
       if (DECL_NON_THUNK_FUNCTION_P (x) && ! DECL_LANG_SPECIFIC (x))
 	{

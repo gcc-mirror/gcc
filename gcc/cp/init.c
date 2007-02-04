@@ -863,7 +863,7 @@ construct_virtual_base (tree vbase, tree arguments)
      confuses the sjlj exception-handling code.  Therefore, we do not
      create a single conditional block, but one for each
      initialization.  (That way the cleanup regions always begin
-     in the outer block.)  We trust the back-end to figure out
+     in the outer block.)  We trust the back end to figure out
      that the FLAG will not change across initializations, and
      avoid doing multiple tests.  */
   flag = TREE_CHAIN (DECL_ARGUMENTS (current_function_decl));
@@ -1522,7 +1522,7 @@ integral_constant_value (tree decl)
 }
 
 /* A more relaxed version of integral_constant_value, used by the
-   common C/C++ code and by the C++ front-end for optimization
+   common C/C++ code and by the C++ front end for optimization
    purposes.  */
 
 tree
@@ -2478,7 +2478,7 @@ build_vec_init (tree base, tree maxindex, tree init,
      When copying from array to another, when the array elements have
      only trivial copy constructors, we should use __builtin_memcpy
      rather than generating a loop.  That way, we could take advantage
-     of whatever cleverness the back-end has for dealing with copies
+     of whatever cleverness the back end has for dealing with copies
      of blocks of memory.  */
 
   is_global = begin_init_stmts (&stmt_expr, &compound_stmt);
