@@ -96,7 +96,7 @@
   (and (match_code "reg")
        (match_test "REGNO (op) == REG_LB0 || REGNO (op) == REG_LB1")))
 
-;; Return nonzero if OP is a register or a 7 bit signed constant.
+;; Return nonzero if OP is a register or a 7-bit signed constant.
 (define_predicate "reg_or_7bit_operand"
   (ior (match_operand 0 "register_operand")
        (and (match_code "const_int")
@@ -119,7 +119,7 @@
   (ior (match_operand 0 "nondp_register_operand")
        (match_operand 0 "memory_operand")))
 
-;; Return nonzero if OP is a register or, when negated, a 7 bit signed
+;; Return nonzero if OP is a register or, when negated, a 7-bit signed
 ;; constant.
 (define_predicate "reg_or_neg7bit_operand"
   (ior (match_operand 0 "register_operand")
@@ -180,7 +180,7 @@
 ;; The following two are used to compute the addrtype attribute.  They return
 ;; true if passed a memory address usable for a 16-bit load or store using a
 ;; P or I register, respectively.  If neither matches, we know we have a
-;; 32 bit instruction.
+;; 32-bit instruction.
 (define_predicate "mem_p_address_operand"
   (match_code "mem")
 {

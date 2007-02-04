@@ -576,7 +576,7 @@ add_to_reg (rtx reg, HOST_WIDE_INT value, int frame)
     return;
 
   /* Choose whether to use a sequence using a temporary register, or
-     a sequence with multiple adds.  We can add a signed 7 bit value
+     a sequence with multiple adds.  We can add a signed 7-bit value
      in one instruction.  */
   if (value > 120 || value < -120)
     {
@@ -1080,7 +1080,7 @@ bfin_delegitimize_address (rtx orig_x)
 
 /* This predicate is used to compute the length of a load/store insn.
    OP is a MEM rtx, we return nonzero if its addressing mode requires a
-   32 bit instruction.  */
+   32-bit instruction.  */
 
 int
 effective_address_32bit_p (rtx op, enum machine_mode mode) 
@@ -1102,7 +1102,7 @@ effective_address_32bit_p (rtx op, enum machine_mode mode)
 
   offset = INTVAL (XEXP (op, 1));
 
-  /* All byte loads use a 16 bit offset.  */
+  /* All byte loads use a 16-bit offset.  */
   if (GET_MODE_SIZE (mode) == 1)
     return 1;
 
@@ -1889,7 +1889,7 @@ hard_regno_mode_ok (int regno, enum machine_mode mode)
   if (mode == PDImode || mode == V2PDImode)
     return regno == REG_A0 || regno == REG_A1;
 
-  /* Allow all normal 32 bit regs, except REG_M3, in case regclass ever comes
+  /* Allow all normal 32-bit regs, except REG_M3, in case regclass ever comes
      up with a bad register class (such as ALL_REGS) for DImode.  */
   if (mode == DImode)
     return regno < REG_M3;
@@ -2243,7 +2243,7 @@ bfin_gen_compare (rtx cmp, enum machine_mode mode ATTRIBUTE_UNUSED)
 }
 
 /* Return nonzero iff C has exactly one bit set if it is interpreted
-   as a 32 bit constant.  */
+   as a 32-bit constant.  */
 
 int
 log2constp (unsigned HOST_WIDE_INT c)
@@ -3977,7 +3977,7 @@ bfin_reorg (void)
       schedule_insns ();
       timevar_pop (TV_SCHED2);
 
-      /* Examine the schedule and insert nops as necessary for 64 bit parallel
+      /* Examine the schedule and insert nops as necessary for 64-bit parallel
 	 instructions.  */
       bfin_gen_bundles ();
     }
