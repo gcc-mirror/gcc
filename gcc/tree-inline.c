@@ -2676,6 +2676,75 @@ fold_marked_statements (int first, struct pointer_set_t *statements)
       }
 }
 
+/* Return true if BB has at least one abnormal outgoing edge.  */
+
+static inline bool
+has_abnormal_outgoing_edge_p (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    if (e->flags & EDGE_ABNORMAL)
+      return true;
+
+  return false;
+}
+
+/* When a block from the inlined function contains a call with side-effects
+   in the middle gets inlined in a function with non-locals labels, the call
+   becomes a potential non-local goto so we need to add appropriate edge.  */
+
+static void
+make_nonlocal_label_edges (void)
+{
+  block_stmt_iterator bsi;
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	{
+	  tree stmt = bsi_stmt (bsi);
+	  if (tree_can_make_abnormal_goto (stmt))
+	    {
+	      if (stmt == bsi_stmt (bsi_last (bb)))
+		{
+		  if (!has_abnormal_outgoing_edge_p (bb))
+		    make_abnormal_goto_edges (bb, true);
+		}
+	      else
+		{
+		  edge e = split_block (bb, stmt);
+		  bb = e->src;
+		  make_abnormal_goto_edges (bb, true);
+		}
+	      break;
+	    }
+
+	  /* Update PHIs on nonlocal goto receivers we (possibly)
+	     just created new edges into.  */
+	  if (TREE_CODE (stmt) == LABEL_EXPR
+	      && gimple_in_ssa_p (cfun))
+	    {
+	      tree target = LABEL_EXPR_LABEL (stmt);
+	      if (DECL_NONLOCAL (target))
+		{
+		  tree phi;
+
+		  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+		    {
+		      gcc_assert (SSA_NAME_OCCURS_IN_ABNORMAL_PHI
+				  (PHI_RESULT (phi)));
+		      mark_sym_for_renaming
+			(SSA_NAME_VAR (PHI_RESULT (phi)));
+		    }
+		}
+	    }
+	}
+    }
+}
+
 /* Expand calls to inline functions in the body of FN.  */
 
 unsigned int
@@ -2751,6 +2820,8 @@ optimize_inline_calls (tree fn)
   fold_marked_statements (last, id.statements_to_fold);
   pointer_set_destroy (id.statements_to_fold);
   fold_cond_expr_cond ();
+  if (current_function_has_nonlocal_label)
+    make_nonlocal_label_edges ();
   /* We make no attempts to keep dominance info up-to-date.  */
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
