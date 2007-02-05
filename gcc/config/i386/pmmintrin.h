@@ -1,4 +1,4 @@
-/* Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+/* Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -30,7 +30,11 @@
 #ifndef _PMMINTRIN_H_INCLUDED
 #define _PMMINTRIN_H_INCLUDED
 
-#ifdef __SSE3__
+#ifndef __SSE3__
+# error "SSE3 instruction set not enabled"
+#else
+
+/* We need definitions from the SSE2 and SSE header files*/
 #include <xmmintrin.h>
 #include <emmintrin.h>
 

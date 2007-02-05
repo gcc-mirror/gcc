@@ -7269,6 +7269,23 @@ v4si __builtin_ia32_pabsd128 (v4si)
 v8hi __builtin_ia32_pabsw128 (v8hi)
 @end smallexample
 
+The following built-in functions are available when @option{-msse4a} is used.
+
+@smallexample
+void             _mm_stream_sd (double*,__m128d);
+Generates the @code{movntsd} machine instruction.
+void             _mm_stream_ss (float*,__m128);
+Generates the @code{movntss} machine instruction.
+__m128i          _mm_extract_si64 (__m128i, __m128i);
+Generates the @code{extrq} machine instruction with only SSE register operands.
+__m128i          _mm_extracti_si64 (__m128i, int, int);
+Generates the @code{extrq} machine instruction with SSE register and immediate operands.
+__m128i          _mm_insert_si64 (__m128i, __m128i);
+Generates the @code{insertq} machine instruction with only SSE register operands.
+__m128i          _mm_inserti_si64 (__m128i, __m128i, int, int);
+Generates the @code{insertq} machine instruction with SSE register and immediate operands.
+@end smallexample
+
 The following built-in functions are available when @option{-m3dnow} is used.
 All of them generate the machine instruction that is part of the name.
 
