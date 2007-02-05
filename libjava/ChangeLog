@@ -1,3 +1,10 @@
+2007-02-05  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/natVMVirtualMachine.cc
+	(registerEvent): Implement EVENT_BREAKPOINT.
+	(unregisterEvent): Likewise.
+	(get_request_location): New function.
+
 2007-02-05  Matthias Klose  <doko@debian.org>
 
 	testsuite/Makefile.am (compile-tests): Fix typo.
