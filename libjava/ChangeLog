@@ -1,5 +1,16 @@
 2007-02-05  Keith Seitz  <keiths@redhat.com>
 
+	* jvmti.cc (_envListLock): Change type to
+	ReentrantReadWriteLock.
+	(_Jv_JVMTI_DisposeEnvironment): Switch to read/write
+	lock.
+	(check_enabled_event): Likewise.
+	(_Jv_GetJVMTIEnv): Likewise.
+	(_Jv_JVMTI_Init): Likewise.
+	(_Jv_JVMTI_PostEvent): Likewise. 
+
+2007-02-05  Keith Seitz  <keiths@redhat.com>
+
 	* gnu/classpath/jdwp/natVMVirtualMachine.cc
 	(registerEvent): Implement EVENT_BREAKPOINT.
 	(unregisterEvent): Likewise.
