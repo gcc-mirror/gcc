@@ -3867,41 +3867,28 @@ finish_omp_for (location_t locus, tree decl, tree init, tree cond,
 void
 finish_omp_atomic (enum tree_code code, tree lhs, tree rhs)
 {
-  tree orig_lhs;
-  tree orig_rhs;
-  bool dependent_p;
   tree stmt;
 
-  orig_lhs = lhs;
-  orig_rhs = rhs;
-  dependent_p = false;
-  stmt = NULL_TREE;
-
-  /* Even in a template, we can detect invalid uses of the atomic
-     pragma if neither LHS nor RHS is type-dependent.  */
-  if (processing_template_decl)
+  if (processing_template_decl
+      && (type_dependent_expression_p (lhs) 
+	  || type_dependent_expression_p (rhs)))
+    stmt = build2 (OMP_ATOMIC, void_type_node, integer_zero_node,
+		   build2 (code, void_type_node, lhs, rhs));
+  else
     {
-      dependent_p = (type_dependent_expression_p (lhs) 
-		     || type_dependent_expression_p (rhs));
-      if (!dependent_p)
+      /* Even in a template, we can detect invalid uses of the atomic
+         pragma if neither LHS nor RHS is type-dependent.  */
+      if (processing_template_decl)
 	{
 	  lhs = build_non_dependent_expr (lhs);
 	  rhs = build_non_dependent_expr (rhs);
 	}
-    }
-  if (!dependent_p)
-    {
+
       stmt = c_finish_omp_atomic (code, lhs, rhs);
-      if (stmt == error_mark_node)
-	return;
     }
-  if (processing_template_decl)
-    {
-      stmt = build2 (OMP_ATOMIC, void_type_node, orig_lhs, orig_rhs);
-      OMP_ATOMIC_DEPENDENT_P (stmt) = 1;
-      OMP_ATOMIC_CODE (stmt) = code;
-    }
-  add_stmt (stmt);
+    
+  if (stmt != error_mark_node)
+    add_stmt (stmt);
 }
 
 void

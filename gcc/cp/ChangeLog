@@ -1,3 +1,13 @@
+2007-02-05  Paolo Bonzini  <bonzini@gnu.org>
+
+	* cp-tree.h (OMP_ATOMIC_CODE): Delete.
+	(OMP_ATOMIC_DEPENDENT_P): Rewrite.
+	* pt.c (tsubst_expr): Adjust for new format of dependent OMP_ATOMIC
+	expressions.
+	* semantics.c (finish_omp_atomic): Store a whole expression node
+	in operand 1, and integer_zero_node in operand 0, for dependent
+	OMP_ATOMIC.  Rewrite to make flow easier to understand.
+
 2007-02-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* decl.c (grokdeclarator): Use OPT_Wreturn_type instead of 0.
