@@ -13398,6 +13398,10 @@ cp_parser_class_specifier (cp_parser* parser)
      class-key attributes nested-name-specifier [opt] template-id
        base-clause [opt]
 
+   Upon return BASES is initialized to the list of base classes (or
+   NULL, if there are none) in the same form returned by
+   cp_parser_base_clause.
+
    Returns the TYPE of the indicated class.  Sets
    *NESTED_NAME_SPECIFIER_P to TRUE iff one of the productions
    involving a nested-name-specifier was used, and FALSE otherwise.
@@ -13431,6 +13435,8 @@ cp_parser_class_head (cp_parser* parser,
   /* Assume no template parameter lists will be used in defining the
      type.  */
   num_templates = 0;
+
+  *bases = NULL_TREE;
 
   /* Look for the class-key.  */
   class_key = cp_parser_class_key (parser);
@@ -13722,7 +13728,6 @@ cp_parser_class_head (cp_parser* parser,
        struct A::C : B {};
 
      is valid.  */
-  *bases = NULL_TREE;
 
   /* Get the list of base-classes, if there is one.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
