@@ -1,5 +1,6 @@
 2007-02-05  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR target/30665
 	* config/cris/cris.md ("*andsi_movu", "*andsi_clear", "*andhi_movu")
 	("*andhi_clear", andu (casesi+45)): For size-changed operand where
 	memory is allowed, require !side_effects_p, not just !MEM_VOLATILE_P.
