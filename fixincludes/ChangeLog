@@ -1,3 +1,7 @@
+2007-02-04  Mike Stump  <mrs@apple.com>
+
+	* mkheaders.in: Allow optional isysroot parameter.
+
 2006-11-02  Steve Ellcey  <sje@cup.hp.com>
 
 	* inclhack.def (hpux11_extern_sendfile): New.
