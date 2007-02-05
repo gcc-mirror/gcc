@@ -1,5 +1,10 @@
 2007-02-05  Richard Sandiford  <richard@codesourcery.com>
 
+	* dwarf2out.c (dwarf2out_frame_debug_expr): Record the register
+	saves in a PARALLEL before the register assignments.
+
+2007-02-05  Richard Sandiford  <richard@codesourcery.com>
+
 	* doc/tm.texi (DWARF_ALT_FRAME_RETURN_COLUMN): Do not require
 	DWARF_FRAME_RETURN_COLUMN to be a general register.
 	* dwarf2out.c (init_return_column_size): New function, split from...
