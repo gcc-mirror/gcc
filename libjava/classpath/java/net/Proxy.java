@@ -1,5 +1,5 @@
 /* Proxy.java -- Represends a proxy for a network connection
-   Copyright (C) 2006  Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -112,7 +112,8 @@ public class Proxy
     Proxy tmp = (Proxy) obj;
 
     return (type.equals(tmp.type)
-	    && address.equals(tmp.address));
+	    && (address == null ? tmp.address == null
+		: address.equals(tmp.address)));
   }
 
   /**
@@ -122,7 +123,7 @@ public class Proxy
    */
   public final int hashCode()
   {
-    return type.hashCode() ^ address.hashCode();
+    return type.hashCode() ^ (address == null ? 0 : address.hashCode());
   }
 
   /**
@@ -132,6 +133,7 @@ public class Proxy
    */
   public String toString()
   {
-    return type.toString() + ":" + address.toString();
+    return type.toString() + (address == null ? ""
+			      : (":" + address.toString()));
   }
 }
