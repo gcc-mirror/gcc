@@ -1355,7 +1355,7 @@ static bool ix86_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				    tree, bool);
 static void ix86_init_builtins (void);
 static rtx ix86_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
-static tree ix86_builtin_vectorized_function (enum built_in_function, tree);
+static tree ix86_builtin_vectorized_function (enum built_in_function, tree, tree);
 static const char *ix86_mangle_fundamental_type (tree);
 static tree ix86_stack_protect_fail (void);
 static rtx ix86_internal_arg_pointer (void);
@@ -17661,27 +17661,39 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
    if it is not available.  */
 
 static tree
-ix86_builtin_vectorized_function (enum built_in_function fn, tree type)
+ix86_builtin_vectorized_function (enum built_in_function fn, tree type_out,
+				  tree type_in)
 {
-  enum machine_mode el_mode;
-  int n;
+  enum machine_mode in_mode, out_mode;
+  int in_n, out_n;
 
-  if (TREE_CODE (type) != VECTOR_TYPE)
+  if (TREE_CODE (type_out) != VECTOR_TYPE
+      || TREE_CODE (type_in) != VECTOR_TYPE)
     return NULL_TREE;
 
-  el_mode = TYPE_MODE (TREE_TYPE (type));
-  n = TYPE_VECTOR_SUBPARTS (type);
+  out_mode = TYPE_MODE (TREE_TYPE (type_out));
+  out_n = TYPE_VECTOR_SUBPARTS (type_out);
+  in_mode = TYPE_MODE (TREE_TYPE (type_in));
+  in_n = TYPE_VECTOR_SUBPARTS (type_in);
 
   switch (fn)
     {
     case BUILT_IN_SQRT:
-      if (el_mode == DFmode && n == 2)
+      if (out_mode == DFmode && out_n == 2
+	  && in_mode == DFmode && in_n == 2)
 	return ix86_builtins[IX86_BUILTIN_SQRTPD];
       return NULL_TREE;
 
     case BUILT_IN_SQRTF:
-      if (el_mode == SFmode && n == 4)
+      if (out_mode == SFmode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
 	return ix86_builtins[IX86_BUILTIN_SQRTPS];
+      return NULL_TREE;
+
+    case BUILT_IN_LRINTF:
+      if (out_mode == SImode && out_n == 4
+	  && in_mode == SFmode && in_n == 4)
+	return ix86_builtins[IX86_BUILTIN_CVTPS2DQ];
       return NULL_TREE;
 
     default:

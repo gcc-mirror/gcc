@@ -488,7 +488,7 @@ vect_recog_pow_pattern (tree last_stmt, tree *type_in, tree *type_out)
       if (*type_in)
 	{
 	  newfn = build_function_call_expr (newfn, newarglist);
-	  if (vectorizable_function (newfn, *type_in))
+	  if (vectorizable_function (newfn, *type_in, *type_in) != NULL_TREE)
 	    return newfn;
 	}
     }
