@@ -1092,7 +1092,15 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
 /* We must not use the DBX register numbers for the DWARF 2 CFA column
    numbers because that maps to numbers beyond FIRST_PSEUDO_REGISTER.
    Instead use the identity mapping.  */
-#define DWARF_FRAME_REGNUM(REG) REG
+#define DWARF_FRAME_REGNUM(REG) \
+  (INT_REGNO_P (REG) || FP_REGNO_P (REG) ? (REG) : INVALID_REGNUM)
+
+/* The return column was originally 24, but gcc used 25 for a while too.
+   Define both registers 24 and 25 as Pmode ones and use 24 in our own
+   unwind information.  */
+#define DWARF_FRAME_REGISTERS 25
+#define DWARF_FRAME_RETURN_COLUMN 24
+#define DWARF_ALT_FRAME_RETURN_COLUMN 25
 
 /* Before the prologue, the top of the frame is at 4(%sp).  */
 #define INCOMING_FRAME_SP_OFFSET 4

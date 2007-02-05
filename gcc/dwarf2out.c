@@ -443,6 +443,17 @@ stripattributes (const char *s)
   return stripped;
 }
 
+/* MEM is a memory reference for the register size table, each element of
+   which has mode MODE.  Initialize column C as a return address column.  */
+
+static void
+init_return_column_size (enum machine_mode mode, rtx mem, unsigned int c)
+{
+  HOST_WIDE_INT offset = c * GET_MODE_SIZE (mode);
+  HOST_WIDE_INT size = GET_MODE_SIZE (Pmode);
+  emit_move_insn (adjust_address (mem, mode, offset), GEN_INT (size));
+}
+
 /* Generate code to initialize the register size table.  */
 
 void
@@ -481,21 +492,12 @@ expand_builtin_init_dwarf_reg_sizes (tree address)
 	}
     }
 
-#ifdef DWARF_ALT_FRAME_RETURN_COLUMN
-  gcc_assert (wrote_return_column);
-  i = DWARF_ALT_FRAME_RETURN_COLUMN;
-  wrote_return_column = false;
-#else
-  i = DWARF_FRAME_RETURN_COLUMN;
-#endif
+  if (!wrote_return_column)
+    init_return_column_size (mode, mem, DWARF_FRAME_RETURN_COLUMN);
 
-  if (! wrote_return_column)
-    {
-      enum machine_mode save_mode = Pmode;
-      HOST_WIDE_INT offset = i * GET_MODE_SIZE (mode);
-      HOST_WIDE_INT size = GET_MODE_SIZE (save_mode);
-      emit_move_insn (adjust_address (mem, mode, offset), GEN_INT (size));
-    }
+#ifdef DWARF_ALT_FRAME_RETURN_COLUMN
+  init_return_column_size (mode, mem, DWARF_ALT_FRAME_RETURN_COLUMN);
+#endif
 }
 
 /* Convert a DWARF call frame info. operation to its string name */

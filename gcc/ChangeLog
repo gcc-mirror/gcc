@@ -1,3 +1,16 @@
+2007-02-05  Richard Sandiford  <richard@codesourcery.com>
+
+	* doc/tm.texi (DWARF_ALT_FRAME_RETURN_COLUMN): Do not require
+	DWARF_FRAME_RETURN_COLUMN to be a general register.
+	* dwarf2out.c (init_return_column_size): New function, split from...
+	(expand_builtin_init_dwarf_reg_sizes): ...here.  Allow both
+	DWARF_FRAME_RETURN_COLUMN and DWARF_ALT_FRAME_RETURN_COLUMN
+	to be nongeneral registers.
+	* config/m68k/m68k.h (DWARF_FRAME_REGNUM): Only map FP and
+	integer registers.
+	(DWARF_FRAME_REGISTERS, DWARF_FRAME_RETURN_COLUMN): Define.
+	(DWARF_ALT_FRAME_RETURN_COLUMN): Define.
+
 2007-02-04  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* cfgcleanup.c (try_optimize_cfg): Avoid removing ENTRY_BLOCK_PTR.
