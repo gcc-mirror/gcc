@@ -1,3 +1,10 @@
+2007-02-05  Roman Zippel <zippel@linux-m68k.org>
+
+	* boehm-gc/include/private/gcconfig.h: use LINUX_STACKBOTTOM so
+	it works with Linux 2.6, reactivate MPROTECT_VDB
+	* boehm-gc/pthread_stop_world.c: save all register
+	on signal entry
+
 2007-01-24  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* os_dep.c (defined(MPROTECT_VDB) && defined(DARWIN)): Moved recently

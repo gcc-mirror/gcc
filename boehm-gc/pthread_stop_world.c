@@ -124,7 +124,7 @@ sem_t GC_suspend_ack_sem;
 
 void GC_suspend_handler_inner(ptr_t sig_arg);
 
-#if defined(IA64) || defined(HP_PA)
+#if defined(IA64) || defined(HP_PA) || defined(M68K)
 extern void GC_with_callee_saves_pushed();
 
 void GC_suspend_handler(int sig)
