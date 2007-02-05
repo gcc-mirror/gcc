@@ -1,3 +1,8 @@
+2007-02-05  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/m68k/m68k.md (pushdi-1, pushdi, movsi+1): Don't use
+	the 'y' constraint.
+
 2007-02-05  Richard Sandiford  <richard@codesourcery.com>
 
 	* dwarf2out.c (dwarf2out_frame_debug_expr): Record the register
