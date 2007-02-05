@@ -1,5 +1,5 @@
 ;; GCC machine description for CRIS cpu cores.
-;; Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+;; Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
 ;; Free Software Foundation, Inc.
 ;; Contributed by Axis Communications.
 
@@ -2229,7 +2229,7 @@
 	(and:SI (match_operand:SI 1 "nonimmediate_operand" "%r,Q,To")
 		(match_operand:SI 2 "const_int_operand" "n,n,n")))]
   "(INTVAL (operands[2]) == 255 || INTVAL (operands[2]) == 65535)
-   && (GET_CODE (operands[1]) != MEM || ! MEM_VOLATILE_P (operands[1]))"
+   && !side_effects_p (operands[1])"
   "movu.%z2 %1,%0"
   [(set_attr "slottable" "yes,yes,no")])
 
@@ -2238,7 +2238,7 @@
 	(and:SI (match_operand:SI 1 "nonimmediate_operand" "%0,0,0,0,0,0")
 		(match_operand:SI 2 "const_int_operand" "P,n,P,n,P,n")))]
   "(INTVAL (operands[2]) == -65536 || INTVAL (operands[2]) == -256)
-   && (GET_CODE (operands[0]) != MEM || ! MEM_VOLATILE_P (operands[0]))"
+   && !side_effects_p (operands[0])"
   "@
    cLear.b %0
    cLear.w %0
@@ -2317,7 +2317,7 @@
   [(set (match_operand:HI 0 "register_operand" "=r,r,r")
 	(and:HI (match_operand:HI 1 "nonimmediate_operand" "r,Q,To")
 		(const_int 255)))]
-  "GET_CODE (operands[1]) != MEM || ! MEM_VOLATILE_P (operands[1])"
+  "!side_effects_p (operands[1])"
   "mOvu.b %1,%0"
   [(set_attr "slottable" "yes,yes,no")])
 
@@ -2325,7 +2325,7 @@
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,Q,To")
 	(and:HI (match_operand:HI 1 "nonimmediate_operand" "0,0,0")
 		(const_int -256)))]
-  "GET_CODE (operands[0]) != MEM || ! MEM_VOLATILE_P (operands[0])"
+  "!side_effects_p (operands[0])"
   "cLear.b %0"
   [(set_attr "slottable" "yes,yes,no")
    (set_attr "cc" "none")])
@@ -4043,8 +4043,8 @@
    ;; don't do this for a mem-volatile access.
   "REGNO (operands[2]) == REGNO (operands[0])
    && INTVAL (operands[3]) <= 65535 && INTVAL (operands[3]) >= 0
-   && ! CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'I')
-   && (GET_CODE (operands[1]) != MEM || ! MEM_VOLATILE_P (operands[1]))"
+   && !CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'I')
+   && !side_effects_p (operands[1])"
   ;; FIXME: CC0 valid except for M (i.e. CC_NOT_NEGATIVE).
   [(set (match_dup 0) (match_dup 4))
    (set (match_dup 5) (match_dup 6))]
