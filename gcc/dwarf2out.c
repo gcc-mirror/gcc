@@ -1524,13 +1524,31 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
     {
       int par_index;
       int limit = XVECLEN (expr, 0);
+      rtx elem;
+
+      /* PARALLELs have strict read-modify-write semantics, so we
+	 ought to evaluate every rvalue before changing any lvalue.
+	 It's cumbersome to do that in general, but there's an
+	 easy approximation that is enough for all current users:
+	 handle register saves before register assignments.  */
+      if (GET_CODE (expr) == PARALLEL)
+	for (par_index = 0; par_index < limit; par_index++)
+	  {
+	    elem = XVECEXP (expr, 0, par_index);
+	    if (GET_CODE (elem) == SET
+		&& MEM_P (SET_DEST (elem))
+		&& (RTX_FRAME_RELATED_P (elem) || par_index == 0))
+	      dwarf2out_frame_debug_expr (elem, label);
+	  }
 
       for (par_index = 0; par_index < limit; par_index++)
-	if (GET_CODE (XVECEXP (expr, 0, par_index)) == SET
-	    && (RTX_FRAME_RELATED_P (XVECEXP (expr, 0, par_index))
-		|| par_index == 0))
-	  dwarf2out_frame_debug_expr (XVECEXP (expr, 0, par_index), label);
-
+	{
+	  elem = XVECEXP (expr, 0, par_index);
+	  if (GET_CODE (elem) == SET
+	      && (!MEM_P (SET_DEST (elem)) || GET_CODE (expr) == SEQUENCE)
+	      && (RTX_FRAME_RELATED_P (elem) || par_index == 0))
+	    dwarf2out_frame_debug_expr (elem, label);
+	}
       return;
     }
 
