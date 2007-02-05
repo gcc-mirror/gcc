@@ -7769,9 +7769,13 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	      {
 	      CASE_FLT_FN (BUILT_IN_CEXPI):
 	        fn = mathfn_built_in (type, BUILT_IN_COS);
-	        return build_function_call_expr (fn, TREE_OPERAND (arg0, 1));
+		if (fn)
+	          return build_function_call_expr (fn,
+						   TREE_OPERAND (arg0, 1));
+		break;
 
-	      default:;
+	      default:
+		break;
 	      }
 	}
       return NULL_TREE;
@@ -7808,9 +7812,13 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	      {
 	      CASE_FLT_FN (BUILT_IN_CEXPI):
 	        fn = mathfn_built_in (type, BUILT_IN_SIN);
-	        return build_function_call_expr (fn, TREE_OPERAND (arg0, 1));
+		if (fn)
+		  return build_function_call_expr (fn,
+						   TREE_OPERAND (arg0, 1));
+		break;
 
-	      default:;
+	      default:
+		break;
 	      }
 	}
       return NULL_TREE;

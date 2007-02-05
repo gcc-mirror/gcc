@@ -1,5 +1,14 @@
 2007-02-05  Roger Sayle  <roger@eyesopen.com>
 
+	* fold-const.c (fold_unary) <REAL_PART>: Test for availability of
+	BUILT_IN_COS before simplifying REAL_PART(CEXPI)) to COS.
+	<IMAG_PART>: Likewise, check for availability of BUILT_IN_SIN.
+	* builtins.c (fold_builtin_sincos): Check for TARGET_C99_FUNCTIONS
+	before canonicalizing sincos to cexpi.
+	(fold_builtin_cexp): Likewise, for canonicalizing cexp to cexpi.
+
+2007-02-05  Roger Sayle  <roger@eyesopen.com>
+
 	* config/alpha/alpha.c (alpha_add_builtins): New Helper function.
 	Set TREE_READONLY and TREE_NOTHROW directly, not via attributes.
 	(alpha_init_builtins): Use alpha_add_builtins to process tables.
