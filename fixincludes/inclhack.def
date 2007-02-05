@@ -1369,9 +1369,9 @@ fix = {
     hackname  = glibc_c99_inline_4;
     files     = sys/sysmacros.h, '*/sys/sysmacros.h';
     bypass    = "__STDC_VERSION__";
-    select    = ' extern ';
+    select    = '(^| )extern ';
     c_fix     = format;
-    c_fix_arg = "\n#if __STDC_VERSION__ < 19901L\nextern\n#endif\n";
+    c_fix_arg = "\n#if __STDC_VERSION__ < 199901L\nextern\n#endif\n";
     test_text = <<-EOT
 	__extension__ extern __inline unsigned int
 	__extension__ __extern_inline unsigned int
