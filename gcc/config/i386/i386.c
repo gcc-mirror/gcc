@@ -604,6 +604,80 @@ struct processor_costs k8_cost = {
    {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}}
 };
 
+struct processor_costs amdfam10_cost = {
+  COSTS_N_INSNS (1),                    /* cost of an add instruction */
+  COSTS_N_INSNS (2),                    /* cost of a lea instruction */
+  COSTS_N_INSNS (1),                    /* variable shift costs */
+  COSTS_N_INSNS (1),                    /* constant shift costs */
+  {COSTS_N_INSNS (3),                   /* cost of starting multiply for QI */
+   COSTS_N_INSNS (4),                   /*                               HI */
+   COSTS_N_INSNS (3),                   /*                               SI */
+   COSTS_N_INSNS (4),                   /*                               DI */
+   COSTS_N_INSNS (5)},                  /*                               other */
+  0,                                    /* cost of multiply per each bit set */
+  {COSTS_N_INSNS (19),                  /* cost of a divide/mod for QI */
+   COSTS_N_INSNS (35),                  /*                          HI */
+   COSTS_N_INSNS (51),                  /*                          SI */
+   COSTS_N_INSNS (83),                  /*                          DI */
+   COSTS_N_INSNS (83)},                 /*                          other */
+  COSTS_N_INSNS (1),			/* cost of movsx */
+  COSTS_N_INSNS (1),			/* cost of movzx */
+  8,					/* "large" insn */
+  9,					/* MOVE_RATIO */
+  4,					/* cost for loading QImode using movzbl */
+  {3, 4, 3},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2).  */
+  {3, 4, 3},				/* cost of storing integer registers */
+  4,					/* cost of reg,reg fld/fst */
+  {4, 4, 12},				/* cost of loading fp registers
+		   			   in SFmode, DFmode and XFmode */
+  {6, 6, 8},				/* cost of storing fp registers
+ 		   			   in SFmode, DFmode and XFmode */
+  2,					/* cost of moving MMX register */
+  {3, 3},				/* cost of loading MMX registers
+					   in SImode and DImode */
+  {4, 4},				/* cost of storing MMX registers
+					   in SImode and DImode */
+  2,					/* cost of moving SSE register */
+  {4, 4, 3},				/* cost of loading SSE registers
+					   in SImode, DImode and TImode */
+  {4, 4, 5},				/* cost of storing SSE registers
+					   in SImode, DImode and TImode */
+  3,					/* MMX or SSE register to integer */
+  					/* On K8
+  					    MOVD reg64, xmmreg 	Double	FSTORE 4
+					    MOVD reg32, xmmreg 	Double	FSTORE 4
+					   On AMDFAM10
+					    MOVD reg64, xmmreg 	Double	FADD 3
+                                                                1/1  1/1
+					    MOVD reg32, xmmreg 	Double	FADD 3
+                                                                1/1  1/1 */
+  64,					/* size of prefetch block */
+  /* New AMD processors never drop prefetches; if they cannot be performed
+     immediately, they are queued.  We set number of simultaneous prefetches
+     to a large constant to reflect this (it probably is not a good idea not
+     to limit number of prefetches at all, as their execution also takes some
+     time).  */
+  100,					/* number of parallel prefetches */
+  5,					/* Branch cost */
+  COSTS_N_INSNS (4),			/* cost of FADD and FSUB insns.  */
+  COSTS_N_INSNS (4),			/* cost of FMUL instruction.  */
+  COSTS_N_INSNS (19),			/* cost of FDIV instruction.  */
+  COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
+  COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
+  COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
+
+  /* AMDFAM10 has optimized REP instruction for medium sized blocks, but for
+     very small blocks it is better to use loop. For large blocks, libcall can
+     do nontemporary accesses and beat inline considerably.  */
+  {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
+   {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  {{libcall, {{8, loop}, {24, unrolled_loop},
+	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
+   {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}}
+};
+
 static const
 struct processor_costs pentium4_cost = {
   COSTS_N_INSNS (1),			/* cost of an add instruction */
@@ -917,11 +991,13 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_PENT4  (1<<PROCESSOR_PENTIUM4)
 #define m_K8  (1<<PROCESSOR_K8)
 #define m_ATHLON_K8  (m_K8 | m_ATHLON)
+#define m_AMDFAM10  (1<<PROCESSOR_AMDFAM10)
 #define m_NOCONA  (1<<PROCESSOR_NOCONA)
 #define m_CORE2  (1<<PROCESSOR_CORE2)
 #define m_GENERIC32 (1<<PROCESSOR_GENERIC32)
 #define m_GENERIC64 (1<<PROCESSOR_GENERIC64)
 #define m_GENERIC (m_GENERIC32 | m_GENERIC64)
+#define m_ATHLON_K8_AMDFAM10  (m_K8 | m_ATHLON | m_AMDFAM10)
 
 /* Generic instruction choice should be common subset of supported CPUs
    (PPro/PENT4/NOCONA/CORE2/Athlon/K8).  */
@@ -929,22 +1005,30 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 /* Leave is not affecting Nocona SPEC2000 results negatively, so enabling for
    Generic64 seems like good code size tradeoff.  We can't enable it for 32bit
    generic because it is not working well with PPro base chips.  */
-const int x86_use_leave = m_386 | m_K6_GEODE | m_ATHLON_K8 | m_CORE2 | m_GENERIC64;
-const int x86_push_memory = m_386 | m_K6_GEODE | m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC;
+const int x86_use_leave = m_386 | m_K6_GEODE | m_ATHLON_K8_AMDFAM10 | m_CORE2
+                          | m_GENERIC64;
+const int x86_push_memory = m_386 | m_K6_GEODE | m_ATHLON_K8_AMDFAM10 | m_PENT4
+                            | m_NOCONA | m_CORE2 | m_GENERIC;
 const int x86_zero_extend_with_and = m_486 | m_PENT;
-const int x86_movx = m_ATHLON_K8 | m_PPRO | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC | m_GEODE /* m_386 | m_K6 */;
+/* Enable to zero extend integer registers to avoid partial dependencies */
+const int x86_movx = m_ATHLON_K8_AMDFAM10 | m_PPRO | m_PENT4 | m_NOCONA
+                     | m_CORE2 | m_GENERIC | m_GEODE /* m_386 | m_K6 */;
 const int x86_double_with_add = ~m_386;
 const int x86_use_bit_test = m_386;
-const int x86_unroll_strlen = m_486 | m_PENT | m_PPRO | m_ATHLON_K8 | m_K6 | m_CORE2 | m_GENERIC;
-const int x86_cmove = m_PPRO | m_GEODE | m_ATHLON_K8 | m_PENT4 | m_NOCONA;
-const int x86_3dnow_a = m_ATHLON_K8;
-const int x86_deep_branch = m_PPRO | m_K6_GEODE | m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC;
+const int x86_unroll_strlen = m_486 | m_PENT | m_PPRO | m_ATHLON_K8_AMDFAM10
+                              | m_K6 | m_CORE2 | m_GENERIC;
+const int x86_cmove = m_PPRO | m_GEODE | m_ATHLON_K8_AMDFAM10 | m_PENT4
+                      | m_NOCONA;
+const int x86_3dnow_a = m_ATHLON_K8_AMDFAM10;
+const int x86_deep_branch = m_PPRO | m_K6_GEODE | m_ATHLON_K8_AMDFAM10
+                            | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC;
 /* Branch hints were put in P4 based on simulation result. But
    after P4 was made, no performance benefit was observed with
    branch hints. It also increases the code size. As the result,
    icc never generates branch hints.  */
 const int x86_branch_hints = 0;
-const int x86_use_sahf = m_PPRO | m_K6_GEODE | m_PENT4 | m_NOCONA | m_GENERIC32; /*m_GENERIC | m_ATHLON_K8 ? */
+const int x86_use_sahf = m_PPRO | m_K6_GEODE | m_PENT4 | m_NOCONA | m_GENERIC32;
+                         /*m_GENERIC | m_ATHLON_K8 ? */
 /* We probably ought to watch for partial register stalls on Generic32
    compilation setting as well.  However in current implementation the
    partial register stalls are not eliminated very well - they can
@@ -956,13 +1040,16 @@ const int x86_use_sahf = m_PPRO | m_K6_GEODE | m_PENT4 | m_NOCONA | m_GENERIC32;
 const int x86_partial_reg_stall = m_PPRO;
 const int x86_partial_flag_reg_stall =  m_CORE2 | m_GENERIC;
 const int x86_use_himode_fiop = m_386 | m_486 | m_K6_GEODE;
-const int x86_use_simode_fiop = ~(m_PPRO | m_ATHLON_K8 | m_PENT | m_CORE2 | m_GENERIC);
+const int x86_use_simode_fiop = ~(m_PPRO | m_ATHLON_K8_AMDFAM10 | m_PENT
+                                  | m_CORE2 | m_GENERIC);
 const int x86_use_mov0 = m_K6;
 const int x86_use_cltd = ~(m_PENT | m_K6 | m_CORE2 | m_GENERIC);
 const int x86_read_modify_write = ~m_PENT;
 const int x86_read_modify = ~(m_PENT | m_PPRO);
 const int x86_split_long_moves = m_PPRO;
-const int x86_promote_QImode = m_K6_GEODE | m_PENT | m_386 | m_486 | m_ATHLON_K8 | m_CORE2 | m_GENERIC; /* m_PENT4 ? */
+const int x86_promote_QImode = m_K6_GEODE | m_PENT | m_386 | m_486
+                               | m_ATHLON_K8_AMDFAM10 | m_CORE2 | m_GENERIC;
+                               /* m_PENT4 ? */
 const int x86_fast_prefix = ~(m_PENT | m_486 | m_386);
 const int x86_single_stringop = m_386 | m_PENT4 | m_NOCONA;
 const int x86_qimode_math = ~(0);
@@ -972,18 +1059,37 @@ const int x86_promote_qi_regs = 0;
    if our scheme for avoiding partial stalls was more effective.  */
 const int x86_himode_math = ~(m_PPRO);
 const int x86_promote_hi_regs = m_PPRO;
-const int x86_sub_esp_4 = m_ATHLON_K8 | m_PPRO | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC;
-const int x86_sub_esp_8 = m_ATHLON_K8 | m_PPRO | m_386 | m_486 | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC;
-const int x86_add_esp_4 = m_ATHLON_K8 | m_K6_GEODE | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC;
-const int x86_add_esp_8 = m_ATHLON_K8 | m_PPRO | m_K6_GEODE | m_386 | m_486 | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC;
-const int x86_integer_DFmode_moves = ~(m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_PPRO | m_CORE2 | m_GENERIC | m_GEODE);
-const int x86_partial_reg_dependency = m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC;
-const int x86_memory_mismatch_stall = m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC;
-const int x86_accumulate_outgoing_args = m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_PPRO | m_CORE2 | m_GENERIC;
+/* Enable if add/sub rsp is preferred over 1 or 2 push/pop */
+const int x86_sub_esp_4 = m_ATHLON_K8_AMDFAM10 | m_PPRO | m_PENT4 | m_NOCONA
+                          | m_CORE2 | m_GENERIC;
+const int x86_sub_esp_8 = m_ATHLON_K8_AMDFAM10 | m_PPRO | m_386 | m_486
+                          | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC;
+const int x86_add_esp_4 = m_ATHLON_K8_AMDFAM10 | m_K6_GEODE | m_PENT4 | m_NOCONA
+                          | m_CORE2 | m_GENERIC;
+const int x86_add_esp_8 = m_ATHLON_K8_AMDFAM10 | m_PPRO | m_K6_GEODE | m_386
+                          | m_486 | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC;
+/* Enable if integer moves are preferred for DFmode copies */
+const int x86_integer_DFmode_moves = ~(m_ATHLON_K8_AMDFAM10 | m_PENT4 | m_NOCONA
+                                       | m_PPRO | m_CORE2 | m_GENERIC | m_GEODE);
+const int x86_partial_reg_dependency = m_ATHLON_K8_AMDFAM10 | m_PENT4 | m_NOCONA
+                                       | m_CORE2 | m_GENERIC;
+const int x86_memory_mismatch_stall = m_ATHLON_K8_AMDFAM10 | m_PENT4 | m_NOCONA 
+                                      | m_CORE2 | m_GENERIC;
+/* If ACCUMULATE_OUTGOING_ARGS is enabled, the maximum amount of space required
+   for outgoing arguments will be computed and placed into the variable
+   `current_function_outgoing_args_size'. No space will be pushed onto the stack
+   for each call; instead, the function prologue should increase the stack frame
+   size by this amount. Setting both PUSH_ARGS and ACCUMULATE_OUTGOING_ARGS is
+   not proper. */
+const int x86_accumulate_outgoing_args = m_ATHLON_K8_AMDFAM10 | m_PENT4
+                                         | m_NOCONA | m_PPRO | m_CORE2
+                                         | m_GENERIC;
 const int x86_prologue_using_move = m_ATHLON_K8 | m_PPRO | m_CORE2 | m_GENERIC;
 const int x86_epilogue_using_move = m_ATHLON_K8 | m_PPRO | m_CORE2 | m_GENERIC;
 const int x86_shift1 = ~m_486;
-const int x86_arch_always_fancy_math_387 = m_PENT | m_PPRO | m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC;
+const int x86_arch_always_fancy_math_387 = m_PENT | m_PPRO
+                                           | m_ATHLON_K8_AMDFAM10 | m_PENT4 
+                                           | m_NOCONA | m_CORE2 | m_GENERIC;
 /* In Generic model we have an conflict here in between PPro/Pentium4 based chips
    that thread 128bit SSE registers as single units versus K8 based chips that
    divide SSE registers to two 64bit halves.
@@ -993,27 +1099,81 @@ const int x86_arch_always_fancy_math_387 = m_PENT | m_PPRO | m_ATHLON_K8 | m_PEN
    this option on P4 brings over 20% SPECfp regression, while enabling it on
    K8 brings roughly 2.4% regression that can be partly masked by careful scheduling
    of moves.  */
-const int x86_sse_partial_reg_dependency = m_PENT4 | m_NOCONA | m_PPRO | m_CORE2 | m_GENERIC;
+const int x86_sse_partial_reg_dependency = m_PENT4 | m_NOCONA | m_PPRO | m_CORE2
+                                           | m_GENERIC | m_AMDFAM10;
 /* Set for machines where the type and dependencies are resolved on SSE
    register parts instead of whole registers, so we may maintain just
    lower part of scalar values in proper format leaving the upper part
    undefined.  */
 const int x86_sse_split_regs = m_ATHLON_K8;
-const int x86_sse_typeless_stores = m_ATHLON_K8;
+/* Code generation for scalar reg-reg moves of single and double precision data:
+     if (x86_sse_partial_reg_dependency == true | x86_sse_split_regs == true)
+       movaps reg, reg
+     else
+       movss reg, reg
+     if (x86_sse_partial_reg_dependency == true)
+       movapd reg, reg
+     else
+       movsd reg, reg
+
+   Code generation for scalar loads of double precision data:
+     if (x86_sse_split_regs == true)
+       movlpd mem, reg      (gas syntax)
+     else
+       movsd mem, reg
+ 
+   Code generation for unaligned packed loads of single precision data
+   (x86_sse_unaligned_move_optimal overrides x86_sse_partial_reg_dependency):
+     if (x86_sse_unaligned_move_optimal)
+       movups mem, reg
+
+     if (x86_sse_partial_reg_dependency == true)
+       {
+         xorps  reg, reg
+         movlps mem, reg
+         movhps mem+8, reg
+       }
+     else
+       {
+         movlps mem, reg
+         movhps mem+8, reg
+       }
+
+   Code generation for unaligned packed loads of double precision data
+   (x86_sse_unaligned_move_optimal overrides x86_sse_split_regs):
+     if (x86_sse_unaligned_move_optimal)
+       movupd mem, reg
+
+     if (x86_sse_split_regs == true)
+       {
+         movlpd mem, reg
+         movhpd mem+8, reg
+       }
+     else
+       {
+         movsd  mem, reg
+         movhpd mem+8, reg
+       }
+ */
+const int x86_sse_unaligned_move_optimal = m_AMDFAM10;
+const int x86_sse_typeless_stores = m_ATHLON_K8_AMDFAM10;
 const int x86_sse_load0_by_pxor = m_PPRO | m_PENT4 | m_NOCONA;
-const int x86_use_ffreep = m_ATHLON_K8;
+const int x86_use_ffreep = m_ATHLON_K8_AMDFAM10;
 const int x86_use_incdec = ~(m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC);
 
 /* ??? Allowing interunit moves makes it all too easy for the compiler to put
    integer data in xmm registers.  Which results in pretty abysmal code.  */
 const int x86_inter_unit_moves = 0 /* ~(m_ATHLON_K8) */;
 
-const int x86_ext_80387_constants = m_K6_GEODE | m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_PPRO | m_CORE2 | m_GENERIC;
+const int x86_ext_80387_constants = m_K6_GEODE | m_ATHLON_K8 | m_PENT4
+                                    | m_NOCONA | m_PPRO | m_CORE2 | m_GENERIC;
 /* Some CPU cores are not able to predict more than 4 branch instructions in
    the 16 byte window.  */
-const int x86_four_jump_limit = m_PPRO | m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC;
-const int x86_schedule = m_PPRO | m_ATHLON_K8 | m_K6_GEODE | m_PENT | m_CORE2 | m_GENERIC;
-const int x86_use_bt = m_ATHLON_K8;
+const int x86_four_jump_limit = m_PPRO | m_ATHLON_K8_AMDFAM10 | m_PENT4
+                                | m_NOCONA | m_CORE2 | m_GENERIC;
+const int x86_schedule = m_PPRO | m_ATHLON_K8_AMDFAM10 | m_K6_GEODE | m_PENT
+                         | m_CORE2 | m_GENERIC;
+const int x86_use_bt = m_ATHLON_K8_AMDFAM10;
 /* Compare and exchange was added for 80486.  */
 const int x86_cmpxchg = ~m_386;
 /* Compare and exchange 8 bytes was added for pentium.  */
@@ -1022,7 +1182,7 @@ const int x86_cmpxchg8b = ~(m_386 | m_486);
 const int x86_xadd = ~m_386;
 /* Byteswap was added for 80486.  */
 const int x86_bswap = ~m_386;
-const int x86_pad_returns = m_ATHLON_K8 | m_CORE2 | m_GENERIC;
+const int x86_pad_returns = m_ATHLON_K8_AMDFAM10 | m_CORE2 | m_GENERIC;
 
 static enum stringop_alg stringop_alg = no_stringop;
 
@@ -1600,16 +1760,24 @@ ix86_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED, int value)
     case OPT_msse:
       if (!value)
 	{
-	  target_flags &= ~(MASK_SSE2 | MASK_SSE3);
-	  target_flags_explicit |= MASK_SSE2 | MASK_SSE3;
+	  target_flags &= ~(MASK_SSE2 | MASK_SSE3 | MASK_SSE4A);
+	  target_flags_explicit |= MASK_SSE2 | MASK_SSE3 | MASK_SSE4A;
 	}
       return true;
 
     case OPT_msse2:
       if (!value)
 	{
-	  target_flags &= ~MASK_SSE3;
-	  target_flags_explicit |= MASK_SSE3;
+	  target_flags &= ~(MASK_SSE3 | MASK_SSE4A);
+	  target_flags_explicit |= MASK_SSE3 | MASK_SSE4A;
+	}
+      return true;
+
+    case OPT_msse3:
+      if (!value)
+	{
+	  target_flags &= ~MASK_SSE4A;
+	  target_flags_explicit |= MASK_SSE4A;
 	}
       return true;
 
@@ -1661,7 +1829,8 @@ override_options (void)
       {&nocona_cost, 0, 0, 0, 0, 0, 0, 0},
       {&core2_cost, 0, 0, 16, 7, 16, 7, 16},
       {&generic32_cost, 0, 0, 16, 7, 16, 7, 16},
-      {&generic64_cost, 0, 0, 16, 7, 16, 7, 16}
+      {&generic64_cost, 0, 0, 16, 7, 16, 7, 16},
+      {&amdfam10_cost, 0, 0, 32, 7, 32, 7, 32}
     };
 
   static const char * const cpu_names[] = TARGET_CPU_DEFAULT_NAMES;
@@ -1680,7 +1849,10 @@ override_options (void)
 	  PTA_3DNOW_A = 64,
 	  PTA_64BIT = 128,
 	  PTA_SSSE3 = 256,
-	  PTA_CX16 = 512
+	  PTA_CX16 = 512,
+	  PTA_POPCNT = 1024,
+	  PTA_ABM = 2048,
+ 	  PTA_SSE4A = 4096
 	} flags;
     }
   const processor_alias_table[] =
@@ -1736,6 +1908,10 @@ override_options (void)
 				      | PTA_3DNOW_A | PTA_SSE | PTA_SSE2},
       {"athlon-fx", PROCESSOR_K8, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW | PTA_64BIT
 				      | PTA_3DNOW_A | PTA_SSE | PTA_SSE2},
+      {"amdfam10", PROCESSOR_AMDFAM10, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
+                                       | PTA_64BIT | PTA_3DNOW_A | PTA_SSE
+                                       | PTA_SSE2 | PTA_SSE3 | PTA_POPCNT
+                                       | PTA_ABM | PTA_SSE4A | PTA_CX16},
       {"generic32", PROCESSOR_GENERIC32, 0 /* flags are only used for -march switch.  */ },
       {"generic64", PROCESSOR_GENERIC64, PTA_64BIT /* flags are only used for -march switch.  */ },
     };
@@ -1919,6 +2095,15 @@ override_options (void)
 	  x86_prefetch_sse = true;
 	if (processor_alias_table[i].flags & PTA_CX16)
 	  x86_cmpxchg16b = true;
+	if (processor_alias_table[i].flags & PTA_POPCNT
+	    && !(target_flags_explicit & MASK_POPCNT))
+	  target_flags |= MASK_POPCNT;
+	if (processor_alias_table[i].flags & PTA_ABM
+	    && !(target_flags_explicit & MASK_ABM))
+	  target_flags |= MASK_ABM;
+	if (processor_alias_table[i].flags & PTA_SSE4A
+	    && !(target_flags_explicit & MASK_SSE4A))
+	  target_flags |= MASK_SSE4A;
 	if (TARGET_64BIT && !(processor_alias_table[i].flags & PTA_64BIT))
 	  error ("CPU you selected does not support x86-64 "
 		 "instruction set");
@@ -2097,6 +2282,10 @@ override_options (void)
   if (TARGET_SSSE3)
     target_flags |= MASK_SSE3;
 
+  /* Turn on SSE3 builtins for -msse4a.  */
+  if (TARGET_SSE4A)
+    target_flags |= MASK_SSE3;
+
   /* Turn on SSE2 builtins for -msse3.  */
   if (TARGET_SSE3)
     target_flags |= MASK_SSE2;
@@ -2115,6 +2304,10 @@ override_options (void)
   /* Turn on MMX builtins for 3Dnow.  */
   if (TARGET_3DNOW)
     target_flags |= MASK_MMX;
+
+  /* Turn on POPCNT builtins for -mabm.  */
+  if (TARGET_ABM)
+    target_flags |= MASK_POPCNT;
 
   if (TARGET_64BIT)
     {
@@ -9308,8 +9501,16 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	}
 
       if (TARGET_SSE2 && mode == V2DFmode)
-	{
-	  rtx zero;
+        {
+          rtx zero;
+
+          if (TARGET_SSE_UNALIGNED_MOVE_OPTIMAL)
+            {
+              op0 = gen_lowpart (V2DFmode, op0);
+              op1 = gen_lowpart (V2DFmode, op1);
+              emit_insn (gen_sse2_movupd (op0, op1));
+              return;
+            }
 
 	  /* When SSE registers are split into halves, we can avoid
 	     writing to the top half twice.  */
@@ -9337,7 +9538,15 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	  emit_insn (gen_sse2_loadhpd (op0, op0, m));
 	}
       else
-	{
+        {
+          if (TARGET_SSE_UNALIGNED_MOVE_OPTIMAL)
+            {
+              op0 = gen_lowpart (V4SFmode, op0);
+              op1 = gen_lowpart (V4SFmode, op1);
+              emit_insn (gen_sse_movups (op0, op1));
+              return;
+            }
+
 	  if (TARGET_SSE_PARTIAL_REG_DEPENDENCY)
 	    emit_move_insn (op0, CONST0_RTX (mode));
 	  else
@@ -14699,6 +14908,7 @@ ix86_issue_rate (void)
     case PROCESSOR_PENTIUM4:
     case PROCESSOR_ATHLON:
     case PROCESSOR_K8:
+    case PROCESSOR_AMDFAM10:
     case PROCESSOR_NOCONA:
     case PROCESSOR_GENERIC32:
     case PROCESSOR_GENERIC64:
@@ -14897,6 +15107,7 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 
     case PROCESSOR_ATHLON:
     case PROCESSOR_K8:
+    case PROCESSOR_AMDFAM10:
     case PROCESSOR_GENERIC32:
     case PROCESSOR_GENERIC64:
       memory = get_attr_memory (insn);
@@ -15608,6 +15819,14 @@ enum ix86_builtins
   IX86_BUILTIN_PABSB128,
   IX86_BUILTIN_PABSW128,
   IX86_BUILTIN_PABSD128,
+
+  /* AMDFAM10 - SSE4A New Instructions.  */
+  IX86_BUILTIN_MOVNTSD,
+  IX86_BUILTIN_MOVNTSS,
+  IX86_BUILTIN_EXTRQI,
+  IX86_BUILTIN_EXTRQ,
+  IX86_BUILTIN_INSERTQI,
+  IX86_BUILTIN_INSERTQ,
 
   IX86_BUILTIN_VEC_INIT_V2SI,
   IX86_BUILTIN_VEC_INIT_V4HI,
@@ -16366,6 +16585,18 @@ ix86_init_mmx_sse_builtins (void)
     = build_function_type_list (void_type_node,
 			        pchar_type_node, V16QI_type_node, NULL_TREE);
 
+  tree v2di_ftype_v2di_unsigned_unsigned
+    = build_function_type_list (V2DI_type_node, V2DI_type_node,
+                                unsigned_type_node, unsigned_type_node,
+                                NULL_TREE);
+  tree v2di_ftype_v2di_v2di_unsigned_unsigned
+    = build_function_type_list (V2DI_type_node, V2DI_type_node, V2DI_type_node,
+                                unsigned_type_node, unsigned_type_node,
+                                NULL_TREE);
+  tree v2di_ftype_v2di_v16qi
+    = build_function_type_list (V2DI_type_node, V2DI_type_node, V16QI_type_node,
+                                NULL_TREE);
+
   tree float80_type;
   tree float128_type;
   tree ftype;
@@ -16701,6 +16932,20 @@ ix86_init_mmx_sse_builtins (void)
 	       v2di_ftype_v2di_v2di_int, IX86_BUILTIN_PALIGNR128);
   def_builtin (MASK_SSSE3, "__builtin_ia32_palignr", di_ftype_di_di_int,
 	       IX86_BUILTIN_PALIGNR);
+
+  /* AMDFAM10 SSE4A New built-ins  */
+  def_builtin (MASK_SSE4A, "__builtin_ia32_movntsd", 
+               void_ftype_pdouble_v2df, IX86_BUILTIN_MOVNTSD);
+  def_builtin (MASK_SSE4A, "__builtin_ia32_movntss", 
+               void_ftype_pfloat_v4sf, IX86_BUILTIN_MOVNTSS);
+  def_builtin (MASK_SSE4A, "__builtin_ia32_extrqi", 
+               v2di_ftype_v2di_unsigned_unsigned, IX86_BUILTIN_EXTRQI);
+  def_builtin (MASK_SSE4A, "__builtin_ia32_extrq",
+               v2di_ftype_v2di_v16qi,  IX86_BUILTIN_EXTRQ);
+  def_builtin (MASK_SSE4A, "__builtin_ia32_insertqi",
+               v2di_ftype_v2di_v2di_unsigned_unsigned, IX86_BUILTIN_INSERTQI);
+  def_builtin (MASK_SSE4A, "__builtin_ia32_insertq",
+               v2di_ftype_v2di_v2di, IX86_BUILTIN_INSERTQ);
 
   /* Access to the vec_init patterns.  */
   ftype = build_function_type_list (V2SI_type_node, integer_type_node,
@@ -17190,9 +17435,9 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   enum insn_code icode;
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);
-  tree arg0, arg1, arg2;
-  rtx op0, op1, op2, pat;
-  enum machine_mode tmode, mode0, mode1, mode2, mode3;
+  tree arg0, arg1, arg2, arg3;
+  rtx op0, op1, op2, op3, pat;
+  enum machine_mode tmode, mode0, mode1, mode2, mode3, mode4;
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
 
   switch (fcode)
@@ -17607,6 +17852,114 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 			     op0, op1, op2);
       if (! pat)
 	return 0;
+      emit_insn (pat);
+      return target;
+
+    case IX86_BUILTIN_MOVNTSD:
+      return ix86_expand_store_builtin (CODE_FOR_sse4a_vmmovntv2df, arglist);
+
+    case IX86_BUILTIN_MOVNTSS:
+      return ix86_expand_store_builtin (CODE_FOR_sse4a_vmmovntv4sf, arglist);
+
+    case IX86_BUILTIN_INSERTQ:
+    case IX86_BUILTIN_EXTRQ:
+      icode = (fcode == IX86_BUILTIN_EXTRQ
+               ? CODE_FOR_sse4a_extrq
+               : CODE_FOR_sse4a_insertq);
+      arg0 = TREE_VALUE (arglist);
+      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+      tmode = insn_data[icode].operand[0].mode;
+      mode1 = insn_data[icode].operand[1].mode;
+      mode2 = insn_data[icode].operand[2].mode;
+      if (! (*insn_data[icode].operand[1].predicate) (op0, mode1))
+        op0 = copy_to_mode_reg (mode1, op0);
+      if (! (*insn_data[icode].operand[2].predicate) (op1, mode2))
+        op1 = copy_to_mode_reg (mode2, op1);
+      if (optimize || target == 0
+          || GET_MODE (target) != tmode
+          || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+        target = gen_reg_rtx (tmode);
+      pat = GEN_FCN (icode) (target, op0, op1);
+      if (! pat)
+        return NULL_RTX;
+      emit_insn (pat);
+      return target;
+
+    case IX86_BUILTIN_EXTRQI:
+      icode = CODE_FOR_sse4a_extrqi;
+      arg0 = TREE_VALUE (arglist);
+      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+      op2 = expand_normal (arg2);
+      tmode = insn_data[icode].operand[0].mode;
+      mode1 = insn_data[icode].operand[1].mode;
+      mode2 = insn_data[icode].operand[2].mode;
+      mode3 = insn_data[icode].operand[3].mode;
+      if (! (*insn_data[icode].operand[1].predicate) (op0, mode1))
+        op0 = copy_to_mode_reg (mode1, op0);
+      if (! (*insn_data[icode].operand[2].predicate) (op1, mode2))
+        {
+          error ("index mask must be an immediate");
+          return gen_reg_rtx (tmode);
+        }
+      if (! (*insn_data[icode].operand[3].predicate) (op2, mode3))
+        {
+          error ("length mask must be an immediate");
+          return gen_reg_rtx (tmode);
+        }
+      if (optimize || target == 0
+          || GET_MODE (target) != tmode
+          || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+        target = gen_reg_rtx (tmode);
+      pat = GEN_FCN (icode) (target, op0, op1, op2);
+      if (! pat)
+        return NULL_RTX;
+      emit_insn (pat);
+      return target;
+
+    case IX86_BUILTIN_INSERTQI:
+      icode = CODE_FOR_sse4a_insertqi;
+      arg0 = TREE_VALUE (arglist);
+      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+      arg3 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (arglist))));
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+      op2 = expand_normal (arg2);
+      op3 = expand_normal (arg3);
+      tmode = insn_data[icode].operand[0].mode;
+      mode1 = insn_data[icode].operand[1].mode;
+      mode2 = insn_data[icode].operand[2].mode;
+      mode3 = insn_data[icode].operand[3].mode;
+      mode4 = insn_data[icode].operand[4].mode;
+
+      if (! (*insn_data[icode].operand[1].predicate) (op0, mode1))
+        op0 = copy_to_mode_reg (mode1, op0);
+
+      if (! (*insn_data[icode].operand[2].predicate) (op1, mode2))
+        op1 = copy_to_mode_reg (mode2, op1);
+
+      if (! (*insn_data[icode].operand[3].predicate) (op2, mode3))
+        {
+          error ("index mask must be an immediate");
+          return gen_reg_rtx (tmode);
+        }
+      if (! (*insn_data[icode].operand[4].predicate) (op3, mode4))
+        {
+          error ("length mask must be an immediate");
+          return gen_reg_rtx (tmode);
+        }
+      if (optimize || target == 0
+          || GET_MODE (target) != tmode
+          || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+        target = gen_reg_rtx (tmode);
+      pat = GEN_FCN (icode) (target, op0, op1, op2, op3);
+      if (! pat)
+        return NULL_RTX;
       emit_insn (pat);
       return target;
 

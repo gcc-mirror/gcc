@@ -1,3 +1,12 @@
+2007-02-05      Dwarakanath Rajagopal <dwarak.rajagopal@amd.com>
+
+        * gcc.dg/i386-cpuid.h: Test whether SSE4A is supported
+        for running tests.
+        * gcc.target/i386/sse4a-extract.c: New test.
+        * gcc.target/i386/sse4a-insert.c: New test.
+        * gcc.target/i386/sse4a-montsd.c: New test.
+        * gcc.target/i386/sse4a-montss.c: New test.
+
 2007-02-05  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.target/i386/vectorize3.c: New testcase.
