@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on the DEC Alpha.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
+   2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -6506,55 +6506,62 @@ static GTY(()) tree alpha_v8qi_s;
 static GTY(()) tree alpha_v4hi_u;
 static GTY(()) tree alpha_v4hi_s;
 
+/* Helper function of alpha_init_builtins.  Add the COUNT built-in
+   functions pointed to by P, with function type FTYPE.  */
+
+static void
+alpha_add_builtins (const struct alpha_builtin_def *p, size_t count,
+		    tree ftype)
+{
+  tree decl;
+  size_t i;
+
+  for (i = 0; i < count; ++i, ++p)
+    if ((target_flags & p->target_mask) == p->target_mask)
+      {
+	decl = add_builtin_function (p->name, ftype, p->code, BUILT_IN_MD,
+				     NULL, NULL);
+	if (p->is_const)
+	  TREE_READONLY (decl) = 1;
+	TREE_NOTHROW (decl) = 1;
+      }
+}
+
+
 static void
 alpha_init_builtins (void)
 {
-  const struct alpha_builtin_def *p;
   tree dimode_integer_type_node;
-  tree ftype, attrs[2];
-  size_t i;
+  tree ftype, decl;
 
   dimode_integer_type_node = lang_hooks.types.type_for_mode (DImode, 0);
 
-  attrs[0] = tree_cons (get_identifier ("nothrow"), NULL, NULL);
-  attrs[1] = tree_cons (get_identifier ("const"), NULL, attrs[0]);
-
   ftype = build_function_type (dimode_integer_type_node, void_list_node);
-
-  p = zero_arg_builtins;
-  for (i = 0; i < ARRAY_SIZE (zero_arg_builtins); ++i, ++p)
-    if ((target_flags & p->target_mask) == p->target_mask)
-      add_builtin_function (p->name, ftype, p->code, BUILT_IN_MD,
-			    NULL, attrs[p->is_const]);
+  alpha_add_builtins (zero_arg_builtins, ARRAY_SIZE (zero_arg_builtins),
+		      ftype);
 
   ftype = build_function_type_list (dimode_integer_type_node,
 				    dimode_integer_type_node, NULL_TREE);
-
-  p = one_arg_builtins;
-  for (i = 0; i < ARRAY_SIZE (one_arg_builtins); ++i, ++p)
-    if ((target_flags & p->target_mask) == p->target_mask)
-      add_builtin_function (p->name, ftype, p->code, BUILT_IN_MD,
-			    NULL, attrs[p->is_const]);
+  alpha_add_builtins (one_arg_builtins, ARRAY_SIZE (one_arg_builtins),
+		      ftype);
 
   ftype = build_function_type_list (dimode_integer_type_node,
 				    dimode_integer_type_node,
 				    dimode_integer_type_node, NULL_TREE);
-
-  p = two_arg_builtins;
-  for (i = 0; i < ARRAY_SIZE (two_arg_builtins); ++i, ++p)
-    if ((target_flags & p->target_mask) == p->target_mask)
-      add_builtin_function (p->name, ftype, p->code, BUILT_IN_MD,
-			    NULL, attrs[p->is_const]);
+  alpha_add_builtins (two_arg_builtins, ARRAY_SIZE (two_arg_builtins),
+		      ftype);
 
   ftype = build_function_type (ptr_type_node, void_list_node);
-  add_builtin_function ("__builtin_thread_pointer", ftype,
-			ALPHA_BUILTIN_THREAD_POINTER, BUILT_IN_MD,
-			NULL, attrs[0]);
+  decl = add_builtin_function ("__builtin_thread_pointer", ftype,
+			       ALPHA_BUILTIN_THREAD_POINTER, BUILT_IN_MD,
+			       NULL, NULL);
+  TREE_NOTHROW (decl) = 1;
 
   ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
-  add_builtin_function ("__builtin_set_thread_pointer", ftype,
-			ALPHA_BUILTIN_SET_THREAD_POINTER, BUILT_IN_MD,
-			NULL, attrs[0]);
+  decl = add_builtin_function ("__builtin_set_thread_pointer", ftype,
+			       ALPHA_BUILTIN_SET_THREAD_POINTER, BUILT_IN_MD,
+			       NULL, NULL);
+  TREE_NOTHROW (decl) = 1;
 
   alpha_v8qi_u = build_vector_type (unsigned_intQI_type_node, 8);
   alpha_v8qi_s = build_vector_type (intQI_type_node, 8);

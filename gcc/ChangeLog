@@ -1,5 +1,11 @@
 2007-02-05  Roger Sayle  <roger@eyesopen.com>
 
+	* config/alpha/alpha.c (alpha_add_builtins): New Helper function.
+	Set TREE_READONLY and TREE_NOTHROW directly, not via attributes.
+	(alpha_init_builtins): Use alpha_add_builtins to process tables.
+
+2007-02-05  Roger Sayle  <roger@eyesopen.com>
+
 	* mips-tfile.c (initialize_init_file): Correct endianness test.
 
 2007-02-05  Kazu Hirata  <kazu@codesourcery.com>
