@@ -1,3 +1,11 @@
+2007-02-05  Steve Ellcey  <sje@cup.hp.com>
+
+	Backport from trunk
+	PR fortran/30432
+	* trans-types.c (gfc_get_function_type):  Do not add void_type_node
+	to empty arg list.
+	* trans-decl.c (create_function_arglist): Change assert.
+
 2007-02-02  Steven G. Kargl <kargl@gcc.gnu.org>
 
 	PR fortran/30683
