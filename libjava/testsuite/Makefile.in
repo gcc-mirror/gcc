@@ -556,7 +556,7 @@ compile-tests:
 @JAVA_MAINTAINER_MODE_TRUE@	  rm -rf $$testtmpdir; $(mkdir_p) $$testtmpdir; \
 @JAVA_MAINTAINER_MODE_TRUE@	  if test -n "$$testdep"; then \
 @JAVA_MAINTAINER_MODE_TRUE@	    $(GCJ) -C -g -w --encoding=UTF-8 -bootclasspath \
-@JAVA_MAINTAINER_MODE_TRUE@	      $(top_builddir)/libgcj-$(gcc_version).jar::$testtmpdir \
+@JAVA_MAINTAINER_MODE_TRUE@	      $(top_builddir)/libgcj-$(gcc_version).jar::$$testtmpdir \
 @JAVA_MAINTAINER_MODE_TRUE@	      -d $$testtmpdir $(srcdir)/$$testdep || exit; \
 @JAVA_MAINTAINER_MODE_TRUE@	  fi; \
 @JAVA_MAINTAINER_MODE_TRUE@	  $(GCJ) -C -g -w --encoding=UTF-8 -bootclasspath \

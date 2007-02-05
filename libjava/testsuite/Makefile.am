@@ -59,7 +59,7 @@ if JAVA_MAINTAINER_MODE
 	  rm -rf $$testtmpdir; $(mkdir_p) $$testtmpdir; \
 	  if test -n "$$testdep"; then \
 	    $(GCJ) -C -g -w --encoding=UTF-8 -bootclasspath \
-	      $(top_builddir)/libgcj-$(gcc_version).jar::$testtmpdir \
+	      $(top_builddir)/libgcj-$(gcc_version).jar::$$testtmpdir \
 	      -d $$testtmpdir $(srcdir)/$$testdep || exit; \
 	  fi; \
 	  $(GCJ) -C -g -w --encoding=UTF-8 -bootclasspath \
