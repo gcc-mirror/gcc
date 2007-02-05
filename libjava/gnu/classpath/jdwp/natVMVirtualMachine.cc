@@ -10,6 +10,7 @@ details. */
 
 #include <config.h>
 #include <gcj/cni.h>
+#include <java-assert.h>
 #include <jvm.h>
 #include <jvmti.h>
 
@@ -21,6 +22,7 @@ details. */
 #include <java/lang/Thread.h>
 #include <java/nio/ByteBuffer.h>
 #include <java/util/ArrayList.h>
+#include <java/util/Collection.h>
 #include <java/util/Hashtable.h>
 #include <java/util/Iterator.h>
 
@@ -29,20 +31,28 @@ details. */
 #include <gnu/classpath/jdwp/VMMethod.h>
 #include <gnu/classpath/jdwp/VMVirtualMachine.h>
 #include <gnu/classpath/jdwp/event/ClassPrepareEvent.h>
+#include <gnu/classpath/jdwp/event/EventManager.h>
 #include <gnu/classpath/jdwp/event/EventRequest.h>
 #include <gnu/classpath/jdwp/event/ThreadEndEvent.h>
 #include <gnu/classpath/jdwp/event/ThreadStartEvent.h>
 #include <gnu/classpath/jdwp/event/VmDeathEvent.h>
 #include <gnu/classpath/jdwp/event/VmInitEvent.h>
+#include <gnu/classpath/jdwp/event/filters/IEventFilter.h>
+#include <gnu/classpath/jdwp/event/filters/LocationOnlyFilter.h>
+#include <gnu/classpath/jdwp/exception/InvalidLocationException.h>
 #include <gnu/classpath/jdwp/exception/InvalidMethodException.h>
 #include <gnu/classpath/jdwp/exception/JdwpInternalErrorException.h>
+#include <gnu/classpath/jdwp/util/Location.h>
 #include <gnu/classpath/jdwp/util/MethodResult.h>
+#include <gnu/gcj/jvmti/Breakpoint.h>
+#include <gnu/gcj/jvmti/BreakpointManager.h>
 
 using namespace java::lang;
 using namespace gnu::classpath::jdwp::event;
 using namespace gnu::classpath::jdwp::util;
 
 // Forward declarations
+static Location *get_request_location (EventRequest *);
 static void JNICALL jdwpClassPrepareCB (jvmtiEnv *, JNIEnv *, jthread, jclass);
 static void JNICALL jdwpThreadEndCB (jvmtiEnv *, JNIEnv *, jthread);
 static void JNICALL jdwpThreadStartCB (jvmtiEnv *, JNIEnv *, jthread);
@@ -189,7 +199,29 @@ gnu::classpath::jdwp::VMVirtualMachine::registerEvent (EventRequest *request)
       break;
 
     case EventRequest::EVENT_BREAKPOINT:
-      break;
+      {
+	using namespace ::gnu::gcj::jvmti;
+	Location *loc = get_request_location (request);
+	if (loc == NULL)
+	  {
+	    using namespace gnu::classpath::jdwp::exception;
+	    throw new InvalidLocationException ();
+	  }
+
+	jlong method = loc->getMethod ()->getId ();
+	jlocation index = loc->getIndex ();
+	Breakpoint  *bp = BreakpointManager::getBreakpoint (method, index);
+	if (bp == NULL)
+	  {
+	    // Breakpoint not in interpreter yet
+	    bp = BreakpointManager::newBreakpoint (method, index);
+	  }
+	else
+	  {
+	    // Ignore the duplicate
+	  }
+      }
+     break;
 
     case EventRequest::EVENT_FRAME_POP:
       break;
@@ -244,6 +276,46 @@ gnu::classpath::jdwp::VMVirtualMachine::unregisterEvent (EventRequest *request)
       break;
 
     case EventRequest::EVENT_BREAKPOINT:
+      {
+	using namespace gnu::gcj::jvmti;
+	::java::util::Collection *breakpoints;
+	EventManager *em = EventManager::getDefault ();
+	breakpoints = em->getRequests (EventRequest::EVENT_BREAKPOINT);
+
+	// Check for duplicates
+	int matches = 0;
+	Location *the_location = get_request_location (request);
+
+	// This should not be possible: we REQUIRE a Location
+	// to install a breakpoint
+	JvAssert (the_location != NULL);
+
+	::java::util::Iterator *iter = breakpoints->iterator ();
+	while (iter->hasNext ())
+	  {
+	    EventRequest *er
+	      = reinterpret_cast<EventRequest *> (iter->next ());
+	    Location *loc = get_request_location (er);
+	    JvAssert (loc != NULL);
+	    if (loc->equals (the_location) && ++matches == 2)
+	      {
+		// Short-circuit: already more than one breakpoint
+		return;
+	      }
+	  }
+
+	if (matches == 0)
+	  {
+	    using namespace gnu::classpath::jdwp::exception;
+	    jstring msg
+	      = JvNewStringLatin1 ("attempt to remove unknown breakpoint");
+	    throw new JdwpInternalErrorException (msg);
+	  }
+
+	jlong methodId = the_location->getMethod ()->getId ();
+	BreakpointManager::deleteBreakpoint (methodId,
+					     the_location->getIndex ());
+      }
       break;
 
     case EventRequest::EVENT_FRAME_POP:
@@ -408,6 +480,27 @@ gnu::classpath::jdwp::VMVirtualMachine::
 getSourceFile (MAYBE_UNUSED jclass clazz)
 {
   return NULL;
+}
+
+static Location *
+get_request_location (EventRequest *request)
+{
+  Location *loc = NULL;
+  ::java::util::Collection *filters = request->getFilters ();
+  ::java::util::Iterator *iter = filters->iterator ();
+  while (iter->hasNext ())
+    {
+      using namespace gnu::classpath::jdwp::event::filters;
+      IEventFilter *filter = (IEventFilter *) iter->next ();
+      if (filter->getClass () == &LocationOnlyFilter::class$)
+	{
+	  LocationOnlyFilter *lof
+	    = reinterpret_cast<LocationOnlyFilter *> (filter);
+	  loc = lof->getLocation ();
+	}
+    }
+
+  return loc;
 }
 
 static void
