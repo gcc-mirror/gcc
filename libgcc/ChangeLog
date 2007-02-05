@@ -1,3 +1,10 @@
+2007-02-05  Roger Sayle  <roger@eyesopen.com>
+	    Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* Makefile.in <LIBUNWIND>: Make libgcc_s.so depend on libunwind.so.
+	(libgcc_s.so): Append -B./ to CFLAGS for $(SHLIB_LINK).
+	(libunwind.so): Likewise for $(SHLIBUNWIND_LINK).
+
 2007-01-29  Janis Johnson  <janis187@us.ibm.com>
 
 	* Makefile.in (dec-filenames): Add decExcept.
