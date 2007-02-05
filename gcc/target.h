@@ -395,7 +395,7 @@ struct gcc_target
 
     /* Returns a code for builtin that realizes vectorized version of
        function, or NULL_TREE if not available.  */
-    tree (* builtin_vectorized_function) (unsigned, tree);
+    tree (* builtin_vectorized_function) (unsigned, tree, tree);
 
     /* Target builtin that implements vector widening multiplication.
        builtin_mul_widen_eve computes the element-by-element products 

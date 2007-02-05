@@ -1,3 +1,23 @@
+2007-02-05  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vectorizable_function): Add argument type
+	argument, change return type.
+	* tree-vect-patterns.c (vect_recog_pow_pattern): Adjust caller.
+	* tree-vect-transform.c (vectorizable_function): Handle extra
+	argument, return vectorized function decl.
+	(build_vectorized_function_call): Remove.
+	(vectorizable_call): Handle calls with result and argument types
+	differing.  Handle loop vectorization factor correctly.
+	* targhooks.c (default_builtin_vectorized_function): Adjust for
+	extra argument.
+	* targhooks.h (default_builtin_vectorized_function): Likewise.
+	* target.h (builtin_vectorized_function): Add argument type
+        argument.
+	* config/i386/i386.c (ix86_builtin_vectorized_function): Handle
+	extra argument, allow vectorizing of lrintf.
+	* doc/tm.texi (TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION): Adjust
+	documentation of target hook.
+
 2007-02-05  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/30665
