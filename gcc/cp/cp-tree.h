@@ -3040,13 +3040,9 @@ extern void decl_shadowed_for_var_insert (tree, tree);
   (TREE_LANG_FLAG_0 (SCOPE_REF_CHECK (NODE)))
 
 /* True for an OMP_ATOMIC that has dependent parameters.  These are stored
-   as bare LHS/RHS, and not as ADDR/RHS, as in the generic statement.  */
+   as an expr in operand 1, and integer_zero_node in operand 0.  */
 #define OMP_ATOMIC_DEPENDENT_P(NODE) \
-  (TREE_LANG_FLAG_0 (OMP_ATOMIC_CHECK (NODE)))
-
-/* Used to store the operation code when OMP_ATOMIC_DEPENDENT_P is set.  */
-#define OMP_ATOMIC_CODE(NODE) \
-  (OMP_ATOMIC_CHECK (NODE)->exp.complexity)
+  (TREE_CODE (TREE_OPERAND (OMP_ATOMIC_CHECK (NODE), 0)) == INTEGER_CST)
 
 /* Used while gimplifying continue statements bound to OMP_FOR nodes.  */
 #define OMP_FOR_GIMPLIFYING_P(NODE) \
