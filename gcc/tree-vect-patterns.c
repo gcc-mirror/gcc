@@ -386,7 +386,8 @@ vect_recog_widen_mult_pattern (tree last_stmt,
 
   /* Check target support  */
   vectype = get_vectype_for_scalar_type (half_type0);
-  if (!supportable_widening_operation (WIDEN_MULT_EXPR, last_stmt, vectype,
+  if (!vectype
+      || !supportable_widening_operation (WIDEN_MULT_EXPR, last_stmt, vectype,
                                        &dummy, &dummy, &dummy_code,
                                        &dummy_code))
     return NULL;
@@ -647,6 +648,9 @@ vect_pattern_recog_1 (
 
       /* Check target support  */
       pattern_vectype = get_vectype_for_scalar_type (type_in);
+      if (!pattern_vectype)
+        return;
+
       optab = optab_for_tree_code (TREE_CODE (pattern_expr), pattern_vectype);
       vec_mode = TYPE_MODE (pattern_vectype);
       if (!optab
