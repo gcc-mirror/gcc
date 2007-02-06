@@ -1,8 +1,9 @@
 2007-02-06  Benjamin Kosnik  <bkoz@redhat.com>
             Marco Trudel  <mtrudel@gmx.ch>
 
-	* include/precompiled/extc++.h: Don't precompile include files
-	that assume iconv support is present.
+	* include/precompiled/extc++.h: Guard include files that assume
+	iconv support is present from precompilation via
+	_GLIBCXX_HAVE_ICONV.
 
 2007-02-05  Paolo Carlini  <pcarlini@suse.de>
 
