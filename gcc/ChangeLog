@@ -1,3 +1,8 @@
+2007-02-05  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/darwin-tramp.asm (__trampoline_setup): Call
+	__enable_execute_stack on completion.
+
 2007-02-05	Harsha Jagasia	<harsha.jagasia@amd.com>
 
 	* config/i386/athlon.md (athlon_fldxf_k8, athlon_fld_k8,
