@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
@@ -106,6 +106,8 @@ extern bool rs6000_offsettable_memref_p (rtx);
 extern rtx rs6000_return_addr (int, rtx);
 extern void rs6000_output_symbol_ref (FILE*, rtx);
 extern HOST_WIDE_INT rs6000_initial_elimination_offset (int, int);
+extern void rs6000_emit_popcount (rtx, rtx);
+extern void rs6000_emit_parity (rtx, rtx);
 
 extern rtx rs6000_machopic_legitimize_pic_address (rtx, enum machine_mode,
 						   rtx);

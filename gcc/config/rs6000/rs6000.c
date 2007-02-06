@@ -20239,6 +20239,102 @@ rs6000_emit_swdivdf (rtx res, rtx n, rtx d)
 					gen_rtx_MULT (DFmode, v0, y3), u0)));
 }
 
+
+/* Emit popcount intrinsic on TARGET_POPCNTB targets.  DST is the
+   target, and SRC is the argument operand.  */
+
+void
+rs6000_emit_popcount (rtx dst, rtx src)
+{
+  enum machine_mode mode = GET_MODE (dst);
+  rtx tmp1, tmp2;
+
+  tmp1 = gen_reg_rtx (mode);
+
+  if (mode == SImode)
+    {
+      emit_insn (gen_popcntbsi2 (tmp1, src));
+      tmp2 = expand_mult (SImode, tmp1, GEN_INT (0x01010101),
+			   NULL_RTX, 0);
+      tmp2 = force_reg (SImode, tmp2);
+      emit_insn (gen_lshrsi3 (dst, tmp2, GEN_INT (24)));
+    }
+  else
+    {
+      emit_insn (gen_popcntbdi2 (tmp1, src));
+      tmp2 = expand_mult (DImode, tmp1,
+			  GEN_INT ((HOST_WIDE_INT)
+				   0x01010101 << 32 | 0x01010101),
+			  NULL_RTX, 0);
+      tmp2 = force_reg (DImode, tmp2);
+      emit_insn (gen_lshrdi3 (dst, tmp2, GEN_INT (56)));
+    }
+}
+
+
+/* Emit parity intrinsic on TARGET_POPCNTB targets.  DST is the
+   target, and SRC is the argument operand.  */
+
+void
+rs6000_emit_parity (rtx dst, rtx src)
+{
+  enum machine_mode mode = GET_MODE (dst);
+  rtx tmp;
+
+  tmp = gen_reg_rtx (mode);
+  if (mode == SImode)
+    {
+      /* Is mult+shift >= shift+xor+shift+xor?  */
+      if (rs6000_cost->mulsi_const >= COSTS_N_INSNS (3))
+	{
+	  rtx tmp1, tmp2, tmp3, tmp4;
+
+	  tmp1 = gen_reg_rtx (SImode);
+	  emit_insn (gen_popcntbsi2 (tmp1, src));
+
+	  tmp2 = gen_reg_rtx (SImode);
+	  emit_insn (gen_lshrsi3 (tmp2, tmp1, GEN_INT (16)));
+	  tmp3 = gen_reg_rtx (SImode);
+	  emit_insn (gen_xorsi3 (tmp3, tmp1, tmp2));
+
+	  tmp4 = gen_reg_rtx (SImode);
+	  emit_insn (gen_lshrsi3 (tmp4, tmp3, GEN_INT (8)));
+	  emit_insn (gen_xorsi3 (tmp, tmp3, tmp4));
+	}
+      else
+	rs6000_emit_popcount (tmp, src);
+      emit_insn (gen_andsi3 (dst, tmp, const1_rtx));
+    }
+  else
+    {
+      /* Is mult+shift >= shift+xor+shift+xor+shift+xor?  */
+      if (rs6000_cost->muldi >= COSTS_N_INSNS (5))
+	{
+	  rtx tmp1, tmp2, tmp3, tmp4, tmp5, tmp6;
+
+	  tmp1 = gen_reg_rtx (DImode);
+	  emit_insn (gen_popcntbdi2 (tmp1, src));
+
+	  tmp2 = gen_reg_rtx (DImode);
+	  emit_insn (gen_lshrdi3 (tmp2, tmp1, GEN_INT (32)));
+	  tmp3 = gen_reg_rtx (DImode);
+	  emit_insn (gen_xordi3 (tmp3, tmp1, tmp2));
+
+	  tmp4 = gen_reg_rtx (DImode);
+	  emit_insn (gen_lshrdi3 (tmp4, tmp3, GEN_INT (16)));
+	  tmp5 = gen_reg_rtx (DImode);
+	  emit_insn (gen_xordi3 (tmp5, tmp3, tmp4));
+
+	  tmp6 = gen_reg_rtx (DImode);
+	  emit_insn (gen_lshrdi3 (tmp6, tmp5, GEN_INT (8)));
+	  emit_insn (gen_xordi3 (tmp, tmp5, tmp6));
+	}
+      else
+        rs6000_emit_popcount (tmp, src);
+      emit_insn (gen_anddi3 (dst, tmp, const1_rtx));
+    }
+}
+
 /* Return an RTX representing where to find the function value of a
    function returning MODE.  */
 static rtx
