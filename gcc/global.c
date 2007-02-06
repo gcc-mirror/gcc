@@ -326,35 +326,38 @@ static void make_accurate_live_analysis (void);
 
 
 
-/* Perform allocation of pseudo-registers not allocated by local_alloc.
+/* Look through the list of eliminable registers.  Add registers
+   clobbered by asm statements to LIVE_REGS.  Set ELIM_SET to the set of
+   registers which may be eliminated.  Set NO_GLOBAL_SET to the set of
+   registers which may not be used across blocks.
 
-   Return value is nonzero if reload failed
-   and we must not do any more for this function.  */
+   ASM_CLOBBERED is the set of registers clobbered by some asm statement.
 
-static int
-global_alloc (void)
+   This will normally be called with LIVE_REGS as the global variable
+   regs_ever_live, ELIM_SET as the file static variable
+   eliminable_regset, and NO_GLOBAL_SET as the file static variable
+   NO_GLOBAL_ALLOC_REGS.  */
+
+static void
+compute_regsets (char asm_clobbered[FIRST_PSEUDO_REGISTER],
+                 char live_regs[FIRST_PSEUDO_REGISTER],
+                 HARD_REG_SET *elim_set, 
+                 HARD_REG_SET *no_global_set)
 {
-  int retval;
 #ifdef ELIMINABLE_REGS
   static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
 #endif
+  size_t i;
   int need_fp
     = (! flag_omit_frame_pointer
        || (current_function_calls_alloca && EXIT_IGNORE_STACK)
        || FRAME_POINTER_REQUIRED);
 
-  size_t i;
-  rtx x;
-
-  make_accurate_live_analysis ();
-
-  max_allocno = 0;
-
   /* A machine may have certain hard registers that
      are safe to use only within a basic block.  */
 
-  CLEAR_HARD_REG_SET (no_global_alloc_regs);
-  CLEAR_HARD_REG_SET (eliminable_regset);
+  CLEAR_HARD_REG_SET (*no_global_set);
+  CLEAR_HARD_REG_SET (*elim_set);
 
   /* Build the regset of all eliminable registers and show we can't use those
      that we already know won't be eliminated.  */
@@ -365,45 +368,63 @@ global_alloc (void)
 	= (! CAN_ELIMINATE (eliminables[i].from, eliminables[i].to)
 	   || (eliminables[i].to == STACK_POINTER_REGNUM && need_fp));
 
-      if (!regs_asm_clobbered[eliminables[i].from])
+      if (!asm_clobbered[eliminables[i].from])
 	{
-	  SET_HARD_REG_BIT (eliminable_regset, eliminables[i].from);
+	  SET_HARD_REG_BIT (*elim_set, eliminables[i].from);
 
 	  if (cannot_elim)
-	    SET_HARD_REG_BIT (no_global_alloc_regs, eliminables[i].from);
+	    SET_HARD_REG_BIT (*no_global_set, eliminables[i].from);
 	}
       else if (cannot_elim)
 	error ("%s cannot be used in asm here",
 	       reg_names[eliminables[i].from]);
       else
-	regs_ever_live[eliminables[i].from] = 1;
+	live_regs[eliminables[i].from] = 1;
     }
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-  if (!regs_asm_clobbered[HARD_FRAME_POINTER_REGNUM])
+  if (!asm_clobbered[HARD_FRAME_POINTER_REGNUM])
     {
-      SET_HARD_REG_BIT (eliminable_regset, HARD_FRAME_POINTER_REGNUM);
+      SET_HARD_REG_BIT (*elim_set, HARD_FRAME_POINTER_REGNUM);
       if (need_fp)
-	SET_HARD_REG_BIT (no_global_alloc_regs, HARD_FRAME_POINTER_REGNUM);
+	SET_HARD_REG_BIT (*no_global_set, HARD_FRAME_POINTER_REGNUM);
     }
   else if (need_fp)
     error ("%s cannot be used in asm here",
 	   reg_names[HARD_FRAME_POINTER_REGNUM]);
   else
-    regs_ever_live[HARD_FRAME_POINTER_REGNUM] = 1;
+    live_regs[HARD_FRAME_POINTER_REGNUM] = 1;
 #endif
 
 #else
-  if (!regs_asm_clobbered[FRAME_POINTER_REGNUM])
+  if (!asm_clobbered[FRAME_POINTER_REGNUM])
     {
-      SET_HARD_REG_BIT (eliminable_regset, FRAME_POINTER_REGNUM);
+      SET_HARD_REG_BIT (*elim_set, FRAME_POINTER_REGNUM);
       if (need_fp)
-	SET_HARD_REG_BIT (no_global_alloc_regs, FRAME_POINTER_REGNUM);
+	SET_HARD_REG_BIT (*no_global_set, FRAME_POINTER_REGNUM);
     }
   else if (need_fp)
     error ("%s cannot be used in asm here", reg_names[FRAME_POINTER_REGNUM]);
   else
-    regs_ever_live[FRAME_POINTER_REGNUM] = 1;
+    live_regs[FRAME_POINTER_REGNUM] = 1;
 #endif
+}
+
+/* Perform allocation of pseudo-registers not allocated by local_alloc.
+
+   Return value is nonzero if reload failed
+   and we must not do any more for this function.  */
+
+static int
+global_alloc (void)
+{
+  int retval;
+  size_t i;
+  rtx x;
+
+  make_accurate_live_analysis ();
+
+  compute_regsets (regs_asm_clobbered, regs_ever_live,
+                   &eliminable_regset, &no_global_alloc_regs);
 
   /* Track which registers have already been used.  Start with registers
      explicitly in the rtl, then registers allocated by local register
@@ -460,6 +481,7 @@ global_alloc (void)
 	reg_may_share[r2] = r1;
     }
 
+  max_allocno = 0;
   for (i = FIRST_PSEUDO_REGISTER; i < (size_t) max_regno; i++)
     /* Note that reg_live_length[i] < 0 indicates a "constant" reg
        that we are supposed to refrain from putting in a hard reg.
@@ -2516,6 +2538,8 @@ rest_of_handle_global_alloc (void)
     failure = global_alloc ();
   else
     {
+      compute_regsets (regs_asm_clobbered, regs_ever_live,
+                       &eliminable_regset, &no_global_alloc_regs);
       build_insn_chain (get_insns ());
       failure = reload (get_insns (), 0);
     }

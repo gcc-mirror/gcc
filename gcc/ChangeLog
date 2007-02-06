@@ -1,3 +1,12 @@
+2007-02-06  Seongbae Park <seongbae.park@gmail.com>
+
+	PR inline-asm/28686
+	* global.c (compute_regsets): New function.
+	(global_alloc): Refactored ELIMINABLE_REGSET
+	and NO_GLOBAL_ALLOC_REGS computation out.
+	(rest_of_handle_global_alloc): Call compute_regsets()
+	for non-optimizing case.
+
 2007-02-06  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/constraints.md (Y2): Rename from Y.
