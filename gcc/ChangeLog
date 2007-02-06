@@ -1,3 +1,9 @@
+2007-02-06  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vect-patterns.c (vect_recog_widen_mult_pattern): Check that 
+	vectype is not NULL.
+	(vect_pattern_recog_1): Likewise.
+
 2007-02-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fold-const.c (negate_expr_p): Handle CONJ_EXPR.
