@@ -1,3 +1,24 @@
+2007-02-06  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/constraints.md (Y2): Rename from Y.
+	(Yi): New constraint.
+	* config/i386/i386.md (movsi_1, movdi_2, pushdf_nointeger,
+	pushdf_integer, movdf_nointeger, movdf_integer, zero_extendsidi2_32,
+	zero_extendsidi2_rex64, truncxfdf2_mixed): Change Y constraints to Y2.
+	(extendsfdf2_mixed, extendsfdf2_sse, truncdfsf_fast_mixed,
+	truncdfsf_fast_sse, truncdfsf_mixed, fix_truncdfdi_sse,
+	fix_truncdfsi_sse, floatsidf2_mixed, floatsidf2_sse,
+	floatdidf2_mixed, floatdidf2_sse, absnegdf2_mixed, 
+	absnegdf2_sse, sse_setccdf, fop_df_comm_mixed, fop_df_comm_sse,
+	fop_df_1_mixed, fop_df_1_sse): Change Y constraints to x.
+	* config/i386/mmx.md (mov<MMXMODEI>_internal_rex64,
+	mov<MMXMODEI>_internal, movv2sf_internal_rex64, movv2sf_internal,
+	vec_extractv2si_1): Change Y constraints to Y2.
+	* config/i386/sse.md (vec_setv4sf_0, vec_concatv2df, vec_dupv4si,
+	vec_dupv2di, sse2_concatv2si, vec_concatv4si_1, vec_concatv2di):
+	Change Y constraints to Y2.
+	(sse2_loadld): Change Y constraints to x.
+
 2007-02-06  Roger Sayle  <roger@eyesopen.com>
 
 	* config/rs6000/rs6000.md (popcount<mode>2): Rewrite.

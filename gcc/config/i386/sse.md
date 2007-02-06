@@ -1327,7 +1327,7 @@
 })
 
 (define_insn "*vec_setv4sf_0"
-  [(set (match_operand:V4SF 0 "nonimmediate_operand"  "=x,x,Y ,m")
+  [(set (match_operand:V4SF 0 "nonimmediate_operand"  "=x,x,Y2,m")
 	(vec_merge:V4SF
 	  (vec_duplicate:V4SF
 	    (match_operand:SF 2 "general_operand"     " x,m,*r,x*rfF"))
@@ -2445,10 +2445,10 @@
    (set_attr "mode" "DF")])
 
 (define_insn "*vec_concatv2df"
-  [(set (match_operand:V2DF 0 "register_operand"     "=Y,Y,Y,x,x")
+  [(set (match_operand:V2DF 0 "register_operand"     "=Y2,Y2,Y2,x,x")
 	(vec_concat:V2DF
-	  (match_operand:DF 1 "nonimmediate_operand" " 0,0,m,0,0")
-	  (match_operand:DF 2 "vector_move_operand"  " Y,m,C,x,m")))]
+	  (match_operand:DF 1 "nonimmediate_operand" " 0 ,0 ,m ,0,0")
+	  (match_operand:DF 2 "vector_move_operand"  " Y2,m ,C ,x,m")))]
   "TARGET_SSE"
   "@
    unpcklpd\t{%2, %0|%0, %2}
@@ -3961,11 +3961,11 @@
   "operands[2] = CONST0_RTX (V4SImode);")
 
 (define_insn "sse2_loadld"
-  [(set (match_operand:V4SI 0 "register_operand"       "=Y,x,x")
+  [(set (match_operand:V4SI 0 "register_operand"       "=Y2,x,x")
 	(vec_merge:V4SI
 	  (vec_duplicate:V4SI
-	    (match_operand:SI 2 "nonimmediate_operand" "mr,m,x"))
-	  (match_operand:V4SI 1 "reg_or_0_operand"     " C,C,0")
+	    (match_operand:SI 2 "nonimmediate_operand" "mr ,m,x"))
+	  (match_operand:V4SI 1 "reg_or_0_operand"     " C ,C,0")
 	  (const_int 1)))]
   "TARGET_SSE"
   "@
@@ -4048,9 +4048,9 @@
    (set_attr "mode" "V2SF,V4SF,V2SF")])
 
 (define_insn "*vec_dupv4si"
-  [(set (match_operand:V4SI 0 "register_operand" "=Y,x")
+  [(set (match_operand:V4SI 0 "register_operand" "=Y2,x")
 	(vec_duplicate:V4SI
-	  (match_operand:SI 1 "register_operand" " Y,0")))]
+	  (match_operand:SI 1 "register_operand" " Y2,0")))]
   "TARGET_SSE"
   "@
    pshufd\t{$0, %1, %0|%0, %1, 0}
@@ -4059,9 +4059,9 @@
    (set_attr "mode" "TI,V4SF")])
 
 (define_insn "*vec_dupv2di"
-  [(set (match_operand:V2DI 0 "register_operand" "=Y,x")
+  [(set (match_operand:V2DI 0 "register_operand" "=Y2,x")
 	(vec_duplicate:V2DI
-	  (match_operand:DI 1 "register_operand" " 0,0")))]
+	  (match_operand:DI 1 "register_operand" " 0 ,0")))]
   "TARGET_SSE"
   "@
    punpcklqdq\t%0, %0
@@ -4073,10 +4073,10 @@
 ;; nonimmediate_operand for operand 2 and *not* allowing memory for the SSE
 ;; alternatives pretty much forces the MMX alternative to be chosen.
 (define_insn "*sse2_concatv2si"
-  [(set (match_operand:V2SI 0 "register_operand"     "=Y, Y,*y,*y")
+  [(set (match_operand:V2SI 0 "register_operand"     "=Y2, Y2,*y,*y")
 	(vec_concat:V2SI
-	  (match_operand:SI 1 "nonimmediate_operand" " 0,rm, 0,rm")
-	  (match_operand:SI 2 "reg_or_0_operand"     " Y, C,*y, C")))]
+	  (match_operand:SI 1 "nonimmediate_operand" " 0 ,rm , 0,rm")
+	  (match_operand:SI 2 "reg_or_0_operand"     " Y2,C  ,*y, C")))]
   "TARGET_SSE2"
   "@
    punpckldq\t{%2, %0|%0, %2}
@@ -4101,10 +4101,10 @@
    (set_attr "mode" "V4SF,V4SF,DI,DI")])
 
 (define_insn "*vec_concatv4si_1"
-  [(set (match_operand:V4SI 0 "register_operand"       "=Y,x,x")
+  [(set (match_operand:V4SI 0 "register_operand"       "=Y2,x,x")
 	(vec_concat:V4SI
-	  (match_operand:V2SI 1 "register_operand"     " 0,0,0")
-	  (match_operand:V2SI 2 "nonimmediate_operand" " Y,x,m")))]
+	  (match_operand:V2SI 1 "register_operand"     " 0 ,0,0")
+	  (match_operand:V2SI 2 "nonimmediate_operand" " Y2,x,m")))]
   "TARGET_SSE"
   "@
    punpcklqdq\t{%2, %0|%0, %2}
@@ -4114,10 +4114,10 @@
    (set_attr "mode" "TI,V4SF,V2SF")])
 
 (define_insn "*vec_concatv2di"
-  [(set (match_operand:V2DI 0 "register_operand"     "=Y,?Y,Y,x,x,x")
+  [(set (match_operand:V2DI 0 "register_operand"     "=Y2,?Y2,Y2,x,x,x")
 	(vec_concat:V2DI
-	  (match_operand:DI 1 "nonimmediate_operand" " m,*y,0,0,0,m")
-	  (match_operand:DI 2 "vector_move_operand"  " C, C,Y,x,m,0")))]
+	  (match_operand:DI 1 "nonimmediate_operand" "  m,*y ,0 ,0,0,m")
+	  (match_operand:DI 2 "vector_move_operand"  "  C,  C,Y2,x,m,0")))]
   "TARGET_SSE"
   "@
    movq\t{%1, %0|%0, %1}
