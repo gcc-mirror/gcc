@@ -80,7 +80,8 @@ simple_move_operand (rtx x)
 
   if (GET_CODE (x) == LABEL_REF
       || GET_CODE (x) == SYMBOL_REF
-      || GET_CODE (x) == HIGH)
+      || GET_CODE (x) == HIGH
+      || GET_CODE (x) == CONST)
     return false;
 
   if (MEM_P (x)
@@ -832,6 +833,7 @@ resolve_clobber (rtx pat, rtx insn)
   rtx reg;
   enum machine_mode orig_mode;
   unsigned int words, i;
+  int ret;
 
   reg = XEXP (pat, 0);
   if (!resolve_reg_p (reg) && !resolve_subreg_p (reg))
@@ -841,7 +843,12 @@ resolve_clobber (rtx pat, rtx insn)
   words = GET_MODE_SIZE (orig_mode);
   words = (words + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
-  XEXP (pat, 0) = simplify_gen_subreg_concatn (word_mode, reg, orig_mode, 0);
+  ret = validate_change (NULL_RTX, &XEXP (pat, 0),
+			 simplify_gen_subreg_concatn (word_mode, reg,
+						      orig_mode, 0),
+			 0);
+  gcc_assert (ret != 0);
+
   for (i = words - 1; i > 0; --i)
     {
       rtx x;
