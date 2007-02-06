@@ -280,7 +280,7 @@ struct tree_opt_pass pass_iv_canon =
 static bool
 gate_scev_const_prop (void)
 {
-  return true;
+  return flag_tree_scev_cprop;
 }
 
 struct tree_opt_pass pass_scev_cprop =

@@ -7,18 +7,17 @@
 
 int main1 ()
 {
-  int i;
+  int i,j;
   int ia[N];
 
   /* Induction.  */
-  for ( i = 0; i < N; i++) {
-    ia[i] = i;
+  for (j=0,i=N;  j<N,i>0;  i--,j++) {
+    ia[j] = i;
   }
 
   /* check results:  */
-  for (i = 0; i < N; i++)
-    {
-      if (ia[i] != i)
+  for (j=0,i=N;  j<N,i>0;  i--,j++) {
+      if (ia[j] != i)
         abort ();
     }
 
