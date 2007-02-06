@@ -279,7 +279,7 @@ tree_ssa_dominator_optimize (void)
   /* We need to know which edges exit loops so that we can
      aggressively thread through loop headers to an exit
      edge.  */
-  loop_optimizer_init (0);
+  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
   if (current_loops)
     {
       mark_loop_exit_edges ();

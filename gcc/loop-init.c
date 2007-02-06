@@ -40,21 +40,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 void
 loop_optimizer_init (unsigned flags)
 {
-  edge e;
-  edge_iterator ei;
   struct loops *loops;
 
   gcc_assert (!current_loops);
   loops = XCNEW (struct loops);
-
-  /* Avoid annoying special cases of edges going to exit
-     block.  */
-
-  for (ei = ei_start (EXIT_BLOCK_PTR->preds); (e = ei_safe_edge (ei)); )
-    if ((e->flags & EDGE_FALLTHRU) && !single_succ_p (e->src))
-      split_edge (e);
-    else
-      ei_next (&ei);
 
   /* Find the loops.  */
 
@@ -68,6 +57,19 @@ loop_optimizer_init (unsigned flags)
       loop_optimizer_finalize ();
       return;
     }
+
+  if (flags & LOOPS_MAY_HAVE_MULTIPLE_LATCHES)
+    {
+      /* If the loops may have multiple latches, we cannot canonicalize
+	 them further (and most of the loop manipulation functions will
+	 not work).  However, we avoid modifying cfg, which some
+	 passes may want.  */
+      gcc_assert ((flags & ~(LOOPS_MAY_HAVE_MULTIPLE_LATCHES
+			     | LOOPS_HAVE_RECORDED_EXITS)) == 0);
+      current_loops->state = LOOPS_MAY_HAVE_MULTIPLE_LATCHES;
+    }
+  else
+    disambiguate_loops_with_multiple_latches ();
 
   /* Create pre-headers.  */
   if (flags & LOOPS_HAVE_PREHEADERS)
