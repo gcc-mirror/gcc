@@ -159,20 +159,13 @@ GCC_HEADER_STDINT(gstdint.h)
 # Check to see if -pthread or -lpthread is needed.  Prefer the former.
 # In case the pthread.h system header is not found, this test will fail.
 XPCFLAGS=""
-
-# Darwin doesn't need the -pthread option since threads are in libSystem
+CFLAGS="$CFLAGS -pthread"
 AC_LINK_IFELSE(
  [AC_LANG_PROGRAM(
   [#include <pthread.h>
    void *g(void *d) { return NULL; }],
   [pthread_t t; pthread_create(&t,NULL,g,NULL);])],
- [case $host in
-   *-darwin*)
-     ;;
-   default)
-     XPCFLAGS=" -Wc,-pthread"
-     ;;
-     esac],
+ [XPCFLAGS=" -Wc,-pthread"],
  [CFLAGS="$save_CFLAGS" LIBS="-lpthread $LIBS"
   AC_LINK_IFELSE(
    [AC_LANG_PROGRAM(

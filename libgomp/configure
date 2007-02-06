@@ -8392,8 +8392,7 @@ fi
 # Check to see if -pthread or -lpthread is needed.  Prefer the former.
 # In case the pthread.h system header is not found, this test will fail.
 XPCFLAGS=""
-
-# Darwin doesn't need the -pthread option since threads are in libSystem
+CFLAGS="$CFLAGS -pthread"
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -8432,13 +8431,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  case $host in
-   *-darwin*)
-     ;;
-   default)
-     XPCFLAGS=" -Wc,-pthread"
-     ;;
-     esac
+  XPCFLAGS=" -Wc,-pthread"
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
