@@ -1,3 +1,11 @@
+2007-02-06  J"orn Rennecke  <joern.rennecke@arc.com>
+	    Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/29746
+	* config/sh/sh.c (expand_cbranchdi4): Use scratch register
+	properly.
+	(sh_initialize_trampoline): Add parentheses to avoid a warning.
+
 2007-02-06  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* doc/loop.texi: Document possibility not to perform disambiguation
