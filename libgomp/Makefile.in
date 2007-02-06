@@ -48,7 +48,8 @@ DIST_COMMON = $(am__configure_deps) $(srcdir)/../config.guess \
 	$(top_srcdir)/configure ChangeLog
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
@@ -146,6 +147,8 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BUILD_INFO_FALSE = @BUILD_INFO_FALSE@
+BUILD_INFO_TRUE = @BUILD_INFO_TRUE@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -296,7 +299,11 @@ info_TEXINFOS = libgomp.texi
 
 # AM_CONDITIONAL on configure option --generated-files-in-srcdir
 @GENINSRC_TRUE@STAMP_GENINSRC = stamp-geninsrc
-CLEANFILES = stamp-geninsrc libgomp.info
+@BUILD_INFO_FALSE@STAMP_BUILD_INFO = 
+
+# AM_CONDITIONAL on configure check ACX_CHECK_PROG_VER([MAKEINFO])
+@BUILD_INFO_TRUE@STAMP_BUILD_INFO = stamp-build-info
+CLEANFILES = $(STAMP_GENINSRC) $(STAMP_BUILD_INFO) libgomp.info
 MAINTAINERCLEANFILES = $(srcdir)/libgomp.info
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
@@ -466,24 +473,6 @@ distclean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=distclean multi-clean # $(MAKE)
 maintainer-clean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean # $(MAKE)
-
-libgomp.info: libgomp.texi 
-	restore=: && backupdir="$(am__leading_dot)am$$$$" && \
-	rm -rf $$backupdir && mkdir $$backupdir && \
-	if ($(MAKEINFO) --version) >/dev/null 2>&1; then \
-	  for f in $@ $@-[0-9] $@-[0-9][0-9] $(@:.info=).i[0-9] $(@:.info=).i[0-9][0-9]; do \
-	    if test -f $$f; then mv $$f $$backupdir; restore=mv; else :; fi; \
-	  done; \
-	else :; fi && \
-	if $(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) \
-	 -o $@ `test -f 'libgomp.texi' || echo '$(srcdir)/'`libgomp.texi; \
-	then \
-	  rc=0; \
-	else \
-	  rc=$$?; \
-	  $$restore $$backupdir/* `echo "./$@" | sed 's|[^/]*$$||'`; \
-	fi; \
-	rm -rf $$backupdir; exit $$rc
 
 libgomp.dvi: libgomp.texi  
 	TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
@@ -1063,8 +1052,14 @@ install-html:
 all-local: $(STAMP_GENINSRC)
 
 stamp-geninsrc: libgomp.info
-	-cp -p $(top_builddir)/libgomp.info $(srcdir)/libgomp.info
-	touch $@
+	cp -p $(top_builddir)/libgomp.info $(srcdir)/libgomp.info
+	@touch $@
+
+libgomp.info: $(STAMP_BUILD_INFO)
+
+stamp-build-info: libgomp.texi
+	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) -o libgomp.info $(srcdir)/libgomp.texi
+	@touch $@
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

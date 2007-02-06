@@ -1,6 +1,20 @@
 2007-02-07  Daniel Franke  <franke.daniel@gmail.com>
 
 	Backport from mainline:
+	2007-01-31  Daniel Franke <franke.daniel@gmail.com>
+
+	PR libgomp/30546
+	* configure.ac: Add check for makeinfo
+	* Makefile.am: Redefined target libgomp.info, build libgomp.info only
+	if an appropiate version of makeinfo is found.
+	* aclocal.m4: Regenerated.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+
+2007-02-07  Daniel Franke  <franke.daniel@gmail.com>
+
+	Backport from mainline:
 	2007-01-31  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* libgomp.texi: Fix spacing after abbreviations.

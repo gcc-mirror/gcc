@@ -74,11 +74,26 @@ else
 STAMP_GENINSRC =
 endif
 
+# AM_CONDITIONAL on configure check ACX_CHECK_PROG_VER([MAKEINFO])
+if BUILD_INFO
+STAMP_BUILD_INFO = stamp-build-info
+else
+STAMP_BUILD_INFO =
+endif
+
+
 all-local: $(STAMP_GENINSRC)
 
 stamp-geninsrc: libgomp.info
-	-cp -p $(top_builddir)/libgomp.info $(srcdir)/libgomp.info
-	touch $@
+	cp -p $(top_builddir)/libgomp.info $(srcdir)/libgomp.info
+	@touch $@
 
-CLEANFILES = stamp-geninsrc libgomp.info
+libgomp.info: $(STAMP_BUILD_INFO)
+
+stamp-build-info: libgomp.texi
+	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) -o libgomp.info $(srcdir)/libgomp.texi
+	@touch $@
+
+
+CLEANFILES = $(STAMP_GENINSRC) $(STAMP_BUILD_INFO) libgomp.info
 MAINTAINERCLEANFILES = $(srcdir)/libgomp.info
