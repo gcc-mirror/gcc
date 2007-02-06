@@ -1032,9 +1032,8 @@ fix = {
     files    = "architecture/i386/math.h";
     select   = "^extern[ \t]+double[ \t]+cabs";
 
-    c_fix     = format;
-    c_fix_arg = "";
-    c_fix_arg = "^extern[ \t]+double[ \t]+cabs[ \t]*\\([^\\)]*\\);";
+    sed       = "s/^extern[ \t]*double[ \t]*cabs[ \t]*\([^\\\)]*\);//";
+    sed       = "s/^extern[ \t]*long[ \t]*double[ \t]*cabsl[ \t]*\([^\\\)]*\);//";
 
     test_text = "#ifdef __STDC__\n"
                 "extern     double   cabs(struct dbl_hypot);\n"
@@ -1044,7 +1043,8 @@ fix = {
                 "extern double cabs ( _Complex z );\n"
                 "extern double cabs(); /* This is a comment\n"
                 "                         and it ends here. */\n"
-		"extern double	cabs(struct __cabs_s);";
+                "extern double	cabs(struct __cabs_s);\n"
+                "extern long double cabsl( struct __cabsl_s );";
 };
 
 /*
