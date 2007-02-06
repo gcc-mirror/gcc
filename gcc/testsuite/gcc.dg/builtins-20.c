@@ -260,6 +260,18 @@ void test3(__complex__ double x, __complex__ double y, int i)
 
   if (ccos(i ? x : ctan(y/x)) != ccos(i ? -x : -ctan(-y/x)))
     link_error();
+
+  if (~x != -~-x)
+    link_error();
+
+  if (ccos(~x) != ccos(-~-x))
+    link_error();
+
+  if (ctan(~(x-y)) != -ctan(~(y-x)))
+    link_error();
+
+  if (ctan(~(x/y)) != -ctan(~(x/-y)))
+    link_error();
 }
 
 void test1f(float x)
@@ -467,6 +479,18 @@ void test3f(__complex__ float x, __complex__ float y, int i)
 
   if (ccosf(i ? x : ctanf(y/x)) != ccosf(i ? -x : -ctanf(-y/x)))
     link_error();
+
+  if (~x != -~-x)
+    link_error();
+
+  if (ccosf(~x) != ccosf(-~-x))
+    link_error();
+
+  if (ctanf(~(x-y)) != -ctanf(~(y-x)))
+    link_error();
+
+  if (ctanf(~(x/y)) != -ctanf(~(x/-y)))
+    link_error();
 }
 
 void test1l(long double x)
@@ -673,6 +697,18 @@ void test3l(__complex__ long double x, __complex__ long double y, int i)
     link_error();
 
   if (ccosl(i ? x : ctanl(y/x)) != ccosl(i ? -x : -ctanl(-y/x)))
+    link_error();
+
+  if (~x != -~-x)
+    link_error();
+
+  if (ccosl(~x) != ccosl(-~-x))
+    link_error();
+
+  if (ctanl(~(x-y)) != -ctanl(~(y-x)))
+    link_error();
+
+  if (ctanl(~(x/y)) != -ctanl(~(x/-y)))
     link_error();
 }
 
