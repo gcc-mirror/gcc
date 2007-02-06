@@ -1,3 +1,10 @@
+2007-02-06  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Make-lang.in (ada/decl.o): Add gt-ada-decl.h dependency.
+	* decl.c: Include gt-ada-decl.h.
+	(annotate_value_cache): New.
+	(annotate_value): Use it instead of TREE_COMPLEXITY.
+
 2007-02-03  Kazu Hirata  <kazu@codesourcery.com>
 
 	* misc.c, utils2.c: Fix comment typos.

@@ -1498,7 +1498,6 @@ struct tree_constructor GTY(())
 
 /* In ordinary expression nodes.  */
 #define TREE_OPERAND(NODE, I) TREE_OPERAND_CHECK (NODE, I)
-#define TREE_COMPLEXITY(NODE) (EXPR_CHECK (NODE)->exp.complexity)
 
 /* In gimple statements.  */
 #define GIMPLE_STMT_OPERAND(NODE, I) GIMPLE_STMT_OPERAND_CHECK (NODE, I)
@@ -1724,7 +1723,6 @@ struct tree_exp GTY(())
 {
   struct tree_common common;
   source_locus locus;
-  int complexity;
   tree block;
   tree GTY ((special ("tree_exp"),
 	     desc ("TREE_CODE ((tree) &%0)")))
@@ -4718,6 +4716,7 @@ extern tree get_base_address (tree t);
 /* In tree-vectorizer.c.  */
 extern void vect_set_verbosity_level (const char *);
 
+/* In tree.c.  */
 struct tree_map GTY(())
 {
   unsigned int hash;
@@ -4728,6 +4727,16 @@ struct tree_map GTY(())
 extern unsigned int tree_map_hash (const void *);
 extern int tree_map_marked_p (const void *);
 extern int tree_map_eq (const void *, const void *);
+
+struct tree_int_map GTY(())
+{
+  tree from;
+  unsigned int to;
+};
+
+extern unsigned int tree_int_map_hash (const void *);
+extern int tree_int_map_eq (const void *, const void *);
+extern int tree_int_map_marked_p (const void *);
 
 /* In tree-ssa-address.c.  */
 extern tree tree_mem_ref_addr (tree, tree);

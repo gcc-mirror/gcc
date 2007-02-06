@@ -1073,7 +1073,7 @@ ada/decl.o : ada/decl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(FLAGS_H) toplev.h convert.h $(TARGET_H) ada/ada.h ada/types.h ada/atree.h \
    ada/nlists.h ada/elists.h ada/uintp.h ada/sinfo.h ada/einfo.h ada/snames.h \
    ada/namet.h ada/stringt.h ada/repinfo.h ada/fe.h $(ADA_TREE_H) ada/gigi.h \
-   $(EXPR_H)
+   $(EXPR_H) gt-ada-decl.h
 
 ada/misc.o : ada/misc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(RTL_H) $(EXPR_H) insn-codes.h insn-flags.h insn-config.h recog.h \
