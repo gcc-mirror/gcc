@@ -62,10 +62,11 @@ public:
   virtual ::java::nio::ByteBuffer * encode(::java::nio::CharBuffer *);
   virtual ::java::nio::ByteBuffer * encode(::java::lang::String *);
   virtual ::java::nio::CharBuffer * decode(::java::nio::ByteBuffer *);
-  virtual jint compareTo(::java::lang::Object *);
+  virtual jint target$compareTo(::java::nio::charset::Charset *);
   virtual jint hashCode();
   virtual jboolean equals(::java::lang::Object *);
   virtual ::java::lang::String * toString();
+  virtual jint compareTo(::java::lang::Object *);
 private:
   ::java::nio::charset::CharsetEncoder * __attribute__((aligned(__alignof__( ::java::lang::Object)))) cachedEncoder;
   ::java::nio::charset::CharsetDecoder * cachedDecoder;

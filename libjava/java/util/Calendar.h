@@ -66,12 +66,14 @@ public:
   virtual jint getLeastMaximum(jint) = 0;
   virtual jint getActualMinimum(jint);
   virtual jint getActualMaximum(jint);
+  virtual jint target$compareTo(::java::util::Calendar *);
   virtual ::java::lang::Object * clone();
   virtual ::java::lang::String * toString();
 private:
   void writeObject(::java::io::ObjectOutputStream *);
   void readObject(::java::io::ObjectInputStream *);
 public:
+  virtual jint compareTo(::java::lang::Object *);
   static const jint ERA = 0;
   static const jint YEAR = 1;
   static const jint MONTH = 2;
