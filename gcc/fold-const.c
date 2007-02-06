@@ -1015,6 +1015,9 @@ negate_expr_p (tree t)
       return negate_expr_p (TREE_OPERAND (t, 0))
 	     && negate_expr_p (TREE_OPERAND (t, 1));
 
+    case CONJ_EXPR:
+      return negate_expr_p (TREE_OPERAND (t, 0));
+
     case PLUS_EXPR:
       if (HONOR_SIGN_DEPENDENT_ROUNDING (TYPE_MODE (type))
 	  || HONOR_SIGNED_ZEROS (TYPE_MODE (type)))
@@ -1145,6 +1148,12 @@ fold_negate_expr (tree t)
 			    fold_negate_expr (TREE_OPERAND (t, 1)));
       break;
       
+    case CONJ_EXPR:
+      if (negate_expr_p (t))
+	return fold_build1 (CONJ_EXPR, type,
+			    fold_negate_expr (TREE_OPERAND (t, 0)));
+      break;
+
     case NEGATE_EXPR:
       return TREE_OPERAND (t, 0);
 
