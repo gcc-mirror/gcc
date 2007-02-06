@@ -96,10 +96,12 @@ Lcache:
 	addi	r3,r3,4
 	bdnz	Lcache
 
-	/* Finally synchronize things & return */
+	/* Ensure cache-flushing has finished.  */
 	sync
 	isync
-	blr
+
+	/* Make stack writeable.  */
+	b	___enable_execute_stack
 
 Labort:
 #ifdef __DYNAMIC__
