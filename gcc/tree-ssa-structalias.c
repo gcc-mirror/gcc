@@ -2138,67 +2138,31 @@ solve_graph (constraint_graph_t graph)
 }
 
 /* Map from trees to variable infos.  */
-static htab_t vi_for_tree;
+static struct pointer_map_t *vi_for_tree;
 
-typedef struct tree_vi
-{
-  tree t;
-  varinfo_t vi;
-} *tree_vi_t;
 
-/* Hash a tree id structure.  */
-
-static hashval_t
-tree_vi_hash (const void *p)
-{
-  const tree_vi_t ta = (tree_vi_t) p;
-  return htab_hash_pointer (ta->t);
-}
-
-/* Return true if the tree in P1 and the tree in P2 are the same.  */
-
-static int
-tree_vi_eq (const void *p1, const void *p2)
-{
-  const tree_vi_t ta1 = (tree_vi_t) p1;
-  const tree_vi_t ta2 = (tree_vi_t) p2;
-  return ta1->t == ta2->t;
-}
-
-/* Insert ID as the variable id for tree T in the hashtable.  */
+/* Insert ID as the variable id for tree T in the vi_for_tree map.  */
 
 static void
 insert_vi_for_tree (tree t, varinfo_t vi)
 {
-  void **slot;
-  struct tree_vi finder;
-  tree_vi_t new_pair;
-
-  finder.t = t;
-  slot = htab_find_slot (vi_for_tree, &finder, INSERT);
+  void **slot = pointer_map_insert (vi_for_tree, t);
+  gcc_assert (vi);
   gcc_assert (*slot == NULL);
-  new_pair = XNEW (struct tree_vi);
-  new_pair->t = t;
-  new_pair->vi = vi;
-  *slot = (void *)new_pair;
+  *slot = vi;
 }
 
 /* Find the variable info for tree T in VI_FOR_TREE.  If T does not
-   exist in the hash table, return false, otherwise, return true and
-   set *VI to the varinfo we found.  */
+   exist in the map, return NULL, otherwise, return the varinfo we found.  */
 
-static bool
-lookup_vi_for_tree (tree t, varinfo_t *vi)
+static varinfo_t
+lookup_vi_for_tree (tree t)
 {
-  tree_vi_t pair;
-  struct tree_vi finder;
+  void **slot = pointer_map_contains (vi_for_tree, t);
+  if (slot == NULL)
+    return NULL;
 
-  finder.t = t;
-  pair = htab_find (vi_for_tree,  &finder);
-  if (pair == NULL)
-    return false;
-  *vi = pair->vi;
-  return true;
+  return (varinfo_t) *slot;
 }
 
 /* Return a printable name for DECL  */
@@ -2235,21 +2199,17 @@ alias_get_name (tree decl)
   return res;
 }
 
-/* Find the variable id for tree T in the hashtable.
-   If T doesn't exist in the hash table, create an entry for it.  */
+/* Find the variable id for tree T in the map.
+   If T doesn't exist in the map, create an entry for it and return it.  */
 
 static varinfo_t
 get_vi_for_tree (tree t)
 {
-  tree_vi_t pair;
-  struct tree_vi finder;
-
-  finder.t = t;
-  pair = htab_find (vi_for_tree,  &finder);
-  if (pair == NULL)
+  void **slot = pointer_map_contains (vi_for_tree, t);
+  if (slot == NULL)
     return get_varinfo (create_variable_info_for (t, alias_get_name (t)));
 
-  return pair->vi;
+  return (varinfo_t) *slot;
 }
 
 /* Get a constraint expression from an SSA_VAR_P node.  */
@@ -4383,9 +4343,9 @@ find_what_p_points_to (tree p)
       && SSA_NAME_IS_DEFAULT_DEF (p))
     lookup_p = SSA_NAME_VAR (p);
 
-  if (lookup_vi_for_tree (lookup_p, &vi))
+  vi = lookup_vi_for_tree (lookup_p);
+  if (vi)
     {
-
       if (vi->is_artificial_var)
 	return false;
 
@@ -4633,7 +4593,7 @@ init_alias_vars (void)
 					  sizeof (struct variable_info), 30);
   constraints = VEC_alloc (constraint_t, heap, 8);
   varmap = VEC_alloc (varinfo_t, heap, 8);
-  vi_for_tree = htab_create (10, tree_vi_hash, tree_vi_eq, free);
+  vi_for_tree = pointer_map_create ();
 
   memset (&stats, 0, sizeof (stats));
 
@@ -4774,7 +4734,7 @@ delete_points_to_sets (void)
     fprintf (dump_file, "Points to sets created:%d\n",
 	     stats.points_to_sets_created);
 
-  htab_delete (vi_for_tree);
+  pointer_map_destroy (vi_for_tree);
   bitmap_obstack_release (&pta_obstack);
   VEC_free (constraint_t, heap, constraints);
 

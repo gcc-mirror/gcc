@@ -34,6 +34,7 @@
 #include "cgraph.h"
 #include "expr.h"
 #include "langhooks.h"
+#include "pointer-set.h"
 #include "ggc.h"
 
 
@@ -77,20 +78,14 @@
    been written as independent functions without change.  */
 
 
-struct var_map_elt GTY(())
-{
-  tree old;
-  tree new;
-};
-
-struct nesting_info GTY ((chain_next ("%h.next")))
+struct nesting_info
 {
   struct nesting_info *outer;
   struct nesting_info *inner;
   struct nesting_info *next;
   
-  htab_t GTY ((param_is (struct var_map_elt))) field_map;
-  htab_t GTY ((param_is (struct var_map_elt))) var_map;
+  struct pointer_map_t *field_map;
+  struct pointer_map_t *var_map;
   bitmap suppress_expansion;
 
   tree context;
@@ -108,22 +103,9 @@ struct nesting_info GTY ((chain_next ("%h.next")))
 };
 
 
-/* Hashing and equality functions for nesting_info->var_map.  */
+/* Obstack used for the bitmaps in the struct above.  */
+static struct bitmap_obstack nesting_info_bitmap_obstack;
 
-static hashval_t
-var_map_hash (const void *x)
-{
-  const struct var_map_elt *a = (const struct var_map_elt *) x;
-  return htab_hash_pointer (a->old);
-}
-
-static int
-var_map_eq (const void *x, const void *y)
-{
-  const struct var_map_elt *a = (const struct var_map_elt *) x;
-  const struct var_map_elt *b = (const struct var_map_elt *) y;
-  return a->old == b->old;
-}
 
 /* We're working in so many different function contexts simultaneously,
    that create_tmp_var is dangerous.  Prevent mishap.  */
@@ -268,22 +250,18 @@ static tree
 lookup_field_for_decl (struct nesting_info *info, tree decl,
 		       enum insert_option insert)
 {
-  struct var_map_elt *elt, dummy;
   void **slot;
-  tree field;
 
-  dummy.old = decl;
-  slot = htab_find_slot (info->field_map, &dummy, insert);
-  if (!slot)
+  if (insert == NO_INSERT)
     {
-      gcc_assert (insert != INSERT);
-      return NULL;
+      slot = pointer_map_contains (info->field_map, decl);
+      return slot ? *slot : NULL;
     }
-  elt = (struct var_map_elt *) *slot;
 
-  if (!elt && insert == INSERT)
+  slot = pointer_map_insert (info->field_map, decl);
+  if (!*slot)
     {
-      field = make_node (FIELD_DECL);
+      tree field = make_node (FIELD_DECL);
       DECL_NAME (field) = DECL_NAME (decl);
 
       if (use_pointer_in_frame (decl))
@@ -304,19 +282,13 @@ lookup_field_for_decl (struct nesting_info *info, tree decl,
 	}
 
       insert_field_into_struct (get_frame_type (info), field);
-  
-      elt = GGC_NEW (struct var_map_elt);
-      elt->old = decl;
-      elt->new = field;
-      *slot = elt;
+      *slot = field;
 
       if (TREE_CODE (decl) == PARM_DECL)
 	info->any_parm_remapped = true;
     }
-  else
-    field = elt ? elt->new : NULL;
 
-  return field;
+  return *slot;
 }
 
 /* Build or return the variable that holds the static chain within
@@ -469,39 +441,29 @@ static tree
 lookup_tramp_for_decl (struct nesting_info *info, tree decl,
 		       enum insert_option insert)
 {
-  struct var_map_elt *elt, dummy;
   void **slot;
-  tree field;
 
-  dummy.old = decl;
-  slot = htab_find_slot (info->var_map, &dummy, insert);
-  if (!slot)
+  if (insert == NO_INSERT)
     {
-      gcc_assert (insert != INSERT);
-      return NULL;
+      slot = pointer_map_contains (info->var_map, decl);
+      return slot ? *slot : NULL;
     }
-  elt = (struct var_map_elt *) *slot;
 
-  if (!elt && insert == INSERT)
+  slot = pointer_map_insert (info->var_map, decl);
+  if (!*slot)
     {
-      field = make_node (FIELD_DECL);
+      tree field = make_node (FIELD_DECL);
       DECL_NAME (field) = DECL_NAME (decl);
       TREE_TYPE (field) = get_trampoline_type ();
       TREE_ADDRESSABLE (field) = 1;
 
       insert_field_into_struct (get_frame_type (info), field);
-
-      elt = GGC_NEW (struct var_map_elt);
-      elt->old = decl;
-      elt->new = field;
-      *slot = elt;
+      *slot = field;
 
       info->any_tramp_created = true;
     }
-  else
-    field = elt ? elt->new : NULL;
 
-  return field;
+  return *slot;
 } 
 
 /* Build or return the field within the non-local frame state that holds
@@ -767,10 +729,10 @@ check_for_nested_with_variably_modified (tree fndecl, tree orig_fndecl)
 static struct nesting_info *
 create_nesting_tree (struct cgraph_node *cgn)
 {
-  struct nesting_info *info = GGC_CNEW (struct nesting_info);
-  info->field_map = htab_create_ggc (7, var_map_hash, var_map_eq, ggc_free);
-  info->var_map = htab_create_ggc (7, var_map_hash, var_map_eq, ggc_free);
-  info->suppress_expansion = BITMAP_GGC_ALLOC ();
+  struct nesting_info *info = XCNEW (struct nesting_info);
+  info->field_map = pointer_map_create ();
+  info->var_map = pointer_map_create ();
+  info->suppress_expansion = BITMAP_ALLOC (&nesting_info_bitmap_obstack);
   info->context = cgn->decl;
 
   for (cgn = cgn->nested; cgn ; cgn = cgn->next_nested)
@@ -865,18 +827,15 @@ get_frame_field (struct nesting_info *info, tree target_context,
 static tree
 get_nonlocal_debug_decl (struct nesting_info *info, tree decl)
 {
-  struct var_map_elt *elt, dummy;
   tree target_context;
   struct nesting_info *i;
   tree x, field, new_decl;
   void **slot;
 
-  dummy.old = decl;
-  slot = htab_find_slot (info->var_map, &dummy, INSERT);
-  elt = *slot;
+  slot = pointer_map_insert (info->var_map, decl);
 
-  if (elt)
-    return elt->new;
+  if (*slot)
+    return *slot;
 
   target_context = decl_function_context (decl);
 
@@ -920,11 +879,7 @@ get_nonlocal_debug_decl (struct nesting_info *info, tree decl)
   SET_DECL_VALUE_EXPR (new_decl, x);
   DECL_HAS_VALUE_EXPR_P (new_decl) = 1;
 
-  elt = ggc_alloc (sizeof (*elt));
-  elt->old = decl;
-  elt->new = new_decl;
-  *slot = elt;
-
+  *slot = new_decl;
   TREE_CHAIN (new_decl) = info->debug_var_chain;
   info->debug_var_chain = new_decl;
 
@@ -1198,16 +1153,12 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 static tree
 get_local_debug_decl (struct nesting_info *info, tree decl, tree field)
 {
-  struct var_map_elt *elt, dummy;
   tree x, new_decl;
   void **slot;
 
-  dummy.old = decl;
-  slot = htab_find_slot (info->var_map, &dummy, INSERT);
-  elt = *slot;
-
-  if (elt)
-    return elt->new;
+  slot = pointer_map_insert (info->var_map, decl);
+  if (*slot)
+    return *slot;
 
   /* Make sure frame_decl gets created.  */
   (void) get_frame_type (info);
@@ -1227,11 +1178,7 @@ get_local_debug_decl (struct nesting_info *info, tree decl, tree field)
 
   SET_DECL_VALUE_EXPR (new_decl, x);
   DECL_HAS_VALUE_EXPR_P (new_decl) = 1;
-
-  elt = ggc_alloc (sizeof (*elt));
-  elt->old = decl;
-  elt->new = new_decl;
-  *slot = elt;
+  *slot = new_decl;
 
   TREE_CHAIN (new_decl) = info->debug_var_chain;
   info->debug_var_chain = new_decl;
@@ -1491,7 +1438,6 @@ convert_nl_goto_reference (tree *tp, int *walk_subtrees, void *data)
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
   struct nesting_info *info = wi->info, *i;
   tree t = *tp, label, new_label, target_context, x, arg, field;
-  struct var_map_elt *elt, dummy;
   void **slot;
 
   *walk_subtrees = 0;
@@ -1514,21 +1460,15 @@ convert_nl_goto_reference (tree *tp, int *walk_subtrees, void *data)
      (hairy target-specific) non-local goto receiver code to be generated
      when we expand rtl.  Enter this association into var_map so that we
      can insert the new label into the IL during a second pass.  */
-  dummy.old = label;
-  slot = htab_find_slot (i->var_map, &dummy, INSERT);
-  elt = (struct var_map_elt *) *slot;
-  if (elt == NULL)
+  slot = pointer_map_insert (i->var_map, label);
+  if (*slot == NULL)
     {
       new_label = create_artificial_label ();
       DECL_NONLOCAL (new_label) = 1;
-
-      elt = GGC_NEW (struct var_map_elt); 
-      elt->old = label;
-      elt->new = new_label;
-      *slot = elt;
+      *slot = new_label;
     }
   else
-    new_label = elt->new;
+    new_label = *slot;
   
   /* Build: __builtin_nl_goto(new_label, &chain->nl_goto_field).  */
   field = get_nl_goto_field (i);
@@ -1559,19 +1499,17 @@ convert_nl_goto_receiver (tree *tp, int *walk_subtrees, void *data)
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
   struct nesting_info *info = wi->info;
   tree t = *tp, label, new_label, x;
-  struct var_map_elt *elt, dummy;
   tree_stmt_iterator tmp_tsi;
+  void **slot;
 
   *walk_subtrees = 0;
   if (TREE_CODE (t) != LABEL_EXPR)
     return NULL_TREE;
   label = LABEL_EXPR_LABEL (t);
 
-  dummy.old = label;
-  elt = (struct var_map_elt *) htab_find (info->var_map, &dummy);
-  if (!elt)
+  slot = pointer_map_contains (info->var_map, label);
+  if (!slot)
     return NULL_TREE;
-  new_label = elt->new;
 
   /* If there's any possibility that the previous statement falls through,
      then we must branch around the new non-local label.  */
@@ -1582,6 +1520,8 @@ convert_nl_goto_receiver (tree *tp, int *walk_subtrees, void *data)
       x = build1 (GOTO_EXPR, void_type_node, label);
       tsi_link_before (&wi->tsi, x, TSI_SAME_STMT);
     }
+
+  new_label = (tree) *slot;
   x = build1 (LABEL_EXPR, void_type_node, new_label);
   tsi_link_before (&wi->tsi, x, TSI_SAME_STMT);
 
@@ -1953,15 +1893,14 @@ free_nesting_tree (struct nesting_info *root)
     {
       if (root->inner)
 	free_nesting_tree (root->inner);
-      htab_delete (root->var_map);
+      pointer_map_destroy (root->var_map);
+      pointer_map_destroy (root->field_map);
       next = root->next;
-      ggc_free (root);
+      free (root);
       root = next;
     }
   while (root);
 }
-
-static GTY(()) struct nesting_info *root;
 
 /* Main entry point for this pass.  Process FNDECL and all of its nested
    subroutines and turn them into something less tightly bound.  */
@@ -1970,12 +1909,14 @@ void
 lower_nested_functions (tree fndecl)
 {
   struct cgraph_node *cgn;
+  struct nesting_info *root;
 
   /* If there are no nested functions, there's nothing to do.  */
   cgn = cgraph_node (fndecl);
   if (!cgn->nested)
     return;
 
+  bitmap_obstack_initialize (&nesting_info_bitmap_obstack);
   root = create_nesting_tree (cgn);
   walk_all_functions (convert_nonlocal_reference, root);
   walk_all_functions (convert_local_reference, root);
@@ -1985,7 +1926,7 @@ lower_nested_functions (tree fndecl)
   finalize_nesting_tree (root);
   unnest_nesting_tree (root);
   free_nesting_tree (root);
-  root = NULL;
+  bitmap_obstack_release (&nesting_info_bitmap_obstack);
 }
 
 #include "gt-tree-nested.h"

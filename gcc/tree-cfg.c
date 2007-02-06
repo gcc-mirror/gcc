@@ -44,7 +44,6 @@ Boston, MA 02110-1301, USA.  */
 #include "except.h"
 #include "cfgloop.h"
 #include "cfglayout.h"
-#include "hashtab.h"
 #include "tree-ssa-propagate.h"
 #include "value-prof.h"
 #include "pointer-set.h"
@@ -70,19 +69,7 @@ static const int initial_cfg_capacity = 20;
    more persistent.  The key is getting notification of changes to
    the CFG (particularly edge removal, creation and redirection).  */
 
-struct edge_to_cases_elt
-{
-  /* The edge itself.  Necessary for hashing and equality tests.  */
-  edge e;
-
-  /* The case labels associated with this edge.  We link these up via
-     their TREE_CHAIN field, then we wipe out the TREE_CHAIN fields
-     when we destroy the hash table.  This prevents problems when copying
-     SWITCH_EXPRs.  */
-  tree case_labels;
-};
-
-static htab_t edge_to_cases;
+static struct pointer_map_t *edge_to_cases;
 
 /* CFG statistics.  */
 struct cfg_stats_d
@@ -619,28 +606,6 @@ make_cond_expr_edges (basic_block bb)
     }
 }
 
-/* Hashing routine for EDGE_TO_CASES.  */
-
-static hashval_t
-edge_to_cases_hash (const void *p)
-{
-  edge e = ((struct edge_to_cases_elt *)p)->e;
-
-  /* Hash on the edge itself (which is a pointer).  */
-  return htab_hash_pointer (e);
-}
-
-/* Equality routine for EDGE_TO_CASES, edges are unique, so testing
-   for equality is just a pointer comparison.  */
-
-static int
-edge_to_cases_eq (const void *p1, const void *p2)
-{
-  edge e1 = ((struct edge_to_cases_elt *)p1)->e;
-  edge e2 = ((struct edge_to_cases_elt *)p2)->e;
-
-  return e1 == e2;
-}
 
 /* Called for each element in the hash table (P) as we delete the
    edge to cases hash table.
@@ -649,18 +614,20 @@ edge_to_cases_eq (const void *p1, const void *p2)
    SWITCH_EXPRs and structure sharing rules, then free the hash table
    element.  */
 
-static void
-edge_to_cases_cleanup (void *p)
+static bool
+edge_to_cases_cleanup (void *key ATTRIBUTE_UNUSED, void **value,
+		       void *data ATTRIBUTE_UNUSED)
 {
-  struct edge_to_cases_elt *elt = (struct edge_to_cases_elt *) p;
   tree t, next;
 
-  for (t = elt->case_labels; t; t = next)
+  for (t = (tree) *value; t; t = next)
     {
       next = TREE_CHAIN (t);
       TREE_CHAIN (t) = NULL;
     }
-  free (p);
+
+  *value = NULL;
+  return false;
 }
 
 /* Start recording information mapping edges to case labels.  */
@@ -669,11 +636,7 @@ void
 start_recording_case_labels (void)
 {
   gcc_assert (edge_to_cases == NULL);
-
-  edge_to_cases = htab_create (37,
-			       edge_to_cases_hash,
-			       edge_to_cases_eq,
-			       edge_to_cases_cleanup);
+  edge_to_cases = pointer_map_create ();
 }
 
 /* Return nonzero if we are recording information for case labels.  */
@@ -689,44 +652,9 @@ recording_case_labels_p (void)
 void
 end_recording_case_labels (void)
 {
-  htab_delete (edge_to_cases);
+  pointer_map_traverse (edge_to_cases, edge_to_cases_cleanup, NULL);
+  pointer_map_destroy (edge_to_cases);
   edge_to_cases = NULL;
-}
-
-/* Record that CASE_LABEL (a CASE_LABEL_EXPR) references edge E.  */
-
-static void
-record_switch_edge (edge e, tree case_label)
-{
-  struct edge_to_cases_elt *elt;
-  void **slot;
-
-  /* Build a hash table element so we can see if E is already
-     in the table.  */
-  elt = XNEW (struct edge_to_cases_elt);
-  elt->e = e;
-  elt->case_labels = case_label;
-
-  slot = htab_find_slot (edge_to_cases, elt, INSERT);
-
-  if (*slot == NULL)
-    {
-      /* E was not in the hash table.  Install E into the hash table.  */
-      *slot = (void *)elt;
-    }
-  else
-    {
-      /* E was already in the hash table.  Free ELT as we do not need it
-	 anymore.  */
-      free (elt);
-
-      /* Get the entry stored in the hash table.  */
-      elt = (struct edge_to_cases_elt *) *slot;
-
-      /* Add it to the chain of CASE_LABEL_EXPRs referencing E.  */
-      TREE_CHAIN (case_label) = elt->case_labels;
-      elt->case_labels = case_label;
-    }
 }
 
 /* If we are inside a {start,end}_recording_cases block, then return
@@ -737,7 +665,6 @@ record_switch_edge (edge e, tree case_label)
 static tree
 get_cases_for_edge (edge e, tree t)
 {
-  struct edge_to_cases_elt elt, *elt_p;
   void **slot;
   size_t i, n;
   tree vec;
@@ -747,16 +674,9 @@ get_cases_for_edge (edge e, tree t)
   if (!recording_case_labels_p ())
     return NULL;
 
-restart:
-  elt.e = e;
-  elt.case_labels = NULL;
-  slot = htab_find_slot (edge_to_cases, &elt, NO_INSERT);
-
+  slot = pointer_map_contains (edge_to_cases, e);
   if (slot)
-    {
-      elt_p = (struct edge_to_cases_elt *)*slot;
-      return elt_p->case_labels;
-    }
+    return (tree) *slot;
 
   /* If we did not find E in the hash table, then this must be the first
      time we have been queried for information about E & T.  Add all the
@@ -766,11 +686,19 @@ restart:
   n = TREE_VEC_LENGTH (vec);
   for (i = 0; i < n; i++)
     {
-      tree lab = CASE_LABEL (TREE_VEC_ELT (vec, i));
+      tree elt = TREE_VEC_ELT (vec, i);
+      tree lab = CASE_LABEL (elt);
       basic_block label_bb = label_to_block (lab);
-      record_switch_edge (find_edge (e->src, label_bb), TREE_VEC_ELT (vec, i));
+      edge this_edge = find_edge (e->src, label_bb);
+
+      /* Add it to the chain of CASE_LABEL_EXPRs referencing E, or create
+	 a new chain.  */
+      slot = pointer_map_insert (edge_to_cases, this_edge);
+      TREE_CHAIN (elt) = (tree) *slot;
+      *slot = elt;
     }
-  goto restart;
+
+  return (tree) *pointer_map_contains (edge_to_cases, e);
 }
 
 /* Create the edges for a SWITCH_EXPR starting at block BB.

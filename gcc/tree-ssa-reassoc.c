@@ -38,6 +38,7 @@ Boston, MA 02110-1301, USA.  */
 #include "alloc-pool.h"
 #include "vec.h"
 #include "langhooks.h"
+#include "pointer-set.h"
 
 /*  This is a simple global reassociation pass.  It is, in part, based
     on the LLVM pass of the same name (They do some things more/less
@@ -179,68 +180,38 @@ static alloc_pool operand_entry_pool;
 /* Starting rank number for a given basic block, so that we can rank
    operations using unmovable instructions in that BB based on the bb
    depth.  */
-static unsigned int *bb_rank;
+static long *bb_rank;
 
 /* Operand->rank hashtable.  */
-static htab_t operand_rank;
+static struct pointer_map_t *operand_rank;
 
 
 /* Look up the operand rank structure for expression E.  */
 
-static operand_entry_t
+static inline long
 find_operand_rank (tree e)
 {
-  void **slot;
-  struct operand_entry vrd;
-
-  vrd.op = e;
-  slot = htab_find_slot (operand_rank, &vrd, NO_INSERT);
-  if (!slot)
-    return NULL;
-  return ((operand_entry_t) *slot);
+  void **slot = pointer_map_contains (operand_rank, e);
+  return slot ? (long) *slot : -1;
 }
 
 /* Insert {E,RANK} into the operand rank hashtable.  */
 
-static void
-insert_operand_rank (tree e, unsigned int rank)
+static inline void
+insert_operand_rank (tree e, long rank)
 {
   void **slot;
-  operand_entry_t new_pair = pool_alloc (operand_entry_pool);
-
-  new_pair->op = e;
-  new_pair->rank = rank;
-  slot = htab_find_slot (operand_rank, new_pair, INSERT);
-  gcc_assert (*slot == NULL);
-  *slot = new_pair;
-}
-
-/* Return the hash value for a operand rank structure  */
-
-static hashval_t
-operand_entry_hash (const void *p)
-{
-  const operand_entry_t vr = (operand_entry_t) p;
-  return iterative_hash_expr (vr->op, 0);
-}
-
-/* Return true if two operand rank structures are equal.  */
-
-static int
-operand_entry_eq (const void *p1, const void *p2)
-{
-  const operand_entry_t vr1 = (operand_entry_t) p1;
-  const operand_entry_t vr2 = (operand_entry_t) p2;
-  return vr1->op == vr2->op;
+  gcc_assert (rank > 0);
+  slot = pointer_map_insert (operand_rank, e);
+  gcc_assert (!*slot);
+  *slot = (void *) rank;
 }
 
 /* Given an expression E, return the rank of the expression.  */
 
-static unsigned int
+static long
 get_rank (tree e)
 {
-  operand_entry_t vr;
-
   /* Constants have rank 0.  */
   if (is_gimple_min_invariant (e))
     return 0;
@@ -260,12 +231,12 @@ get_rank (tree e)
     {
       tree stmt;
       tree rhs;
-      unsigned int rank, maxrank;
+      long rank, maxrank;
       int i;
 
       if (TREE_CODE (SSA_NAME_VAR (e)) == PARM_DECL
 	  && SSA_NAME_IS_DEFAULT_DEF (e))
-	return find_operand_rank (e)->rank;
+	return find_operand_rank (e);
 
       stmt = SSA_NAME_DEF_STMT (e);
       if (bb_for_stmt (stmt) == NULL)
@@ -276,9 +247,9 @@ get_rank (tree e)
 	return bb_rank[bb_for_stmt (stmt)->index];
 
       /* If we already have a rank for this expression, use that.  */
-      vr = find_operand_rank (e);
-      if (vr)
-	return vr->rank;
+      rank = find_operand_rank (e);
+      if (rank != -1)
+	return rank;
 
       /* Otherwise, find the maximum rank for the operands, or the bb
 	 rank, whichever is less.   */
@@ -301,7 +272,7 @@ get_rank (tree e)
 	{
 	  fprintf (dump_file, "Rank for ");
 	  print_generic_expr (dump_file, e, 0);
-	  fprintf (dump_file, " is %d\n", (rank + 1));
+	  fprintf (dump_file, " is %ld\n", (rank + 1));
 	}
 
       /* Note the rank in the hashtable so we don't recompute it.  */
@@ -1417,7 +1388,7 @@ static void
 init_reassoc (void)
 {
   int i;
-  unsigned int rank = 2;
+  long rank = 2;
   tree param;
   int *bbs = XNEWVEC (int, last_basic_block + 1);
 
@@ -1429,10 +1400,8 @@ init_reassoc (void)
   /* Reverse RPO (Reverse Post Order) will give us something where
      deeper loops come later.  */
   pre_and_rev_post_order_compute (NULL, bbs, false);
-  bb_rank = XCNEWVEC (unsigned int, last_basic_block + 1);
-  
-  operand_rank = htab_create (511, operand_entry_hash,
-			      operand_entry_eq, 0);
+  bb_rank = XCNEWVEC (long, last_basic_block + 1);
+  operand_rank = pointer_map_create ();
 
   /* Give each argument a distinct rank.   */
   for (param = DECL_ARGUMENTS (current_function_decl);
@@ -1483,8 +1452,8 @@ fini_reassoc (void)
       fprintf (dump_file, "Statements rewritten: %d\n",
 	       reassociate_stats.rewritten);
     }
-  htab_delete (operand_rank);
 
+  pointer_map_destroy (operand_rank);
   free_alloc_pool (operand_entry_pool);
   free (bb_rank);
   VEC_free (tree, heap, broken_up_subtracts);
