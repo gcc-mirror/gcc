@@ -1488,6 +1488,7 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
   int num_branches;
   int prob, rev_prob;
   int msw_taken_prob = -1, msw_skip_prob = -1, lsw_taken_prob = -1;
+  rtx scratch = operands[4];
 
   comparison = prepare_cbranch_operands (operands, DImode, comparison);
   op1h = gen_highpart_mode (SImode, DImode, operands[1]);
@@ -1539,7 +1540,7 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
 	  return true;
 	}
       msw_taken = NE;
-      lsw_taken_prob = prob;
+      msw_taken_prob = prob;
       lsw_taken = NE;
       lsw_taken_prob = 0;
       break;
@@ -1611,6 +1612,13 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
   operands[1] = op1h;
   operands[2] = op2h;
   operands[4] = NULL_RTX;
+  if (reload_completed
+      && ! arith_reg_or_0_operand (op2h, SImode) && true_regnum (op1h)
+      && (msw_taken != CODE_FOR_nothing || msw_skip != CODE_FOR_nothing))
+    {
+      emit_move_insn (scratch, operands[2]);
+      operands[2] = scratch;
+    }
   if (msw_taken != CODE_FOR_nothing)
     expand_cbranchsi4 (operands, msw_taken, msw_taken_prob);
   if (msw_skip != CODE_FOR_nothing)
@@ -1624,7 +1632,12 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
   operands[1] = op1l;
   operands[2] = op2l;
   if (lsw_taken != CODE_FOR_nothing)
-    expand_cbranchsi4 (operands, lsw_taken, lsw_taken_prob);
+    {
+      if (reload_completed
+	  && ! arith_reg_or_0_operand (op2l, SImode) && true_regnum (op1l))
+	operands[4] = scratch;
+      expand_cbranchsi4 (operands, lsw_taken, lsw_taken_prob);
+    }
   if (msw_skip != CODE_FOR_nothing)
     emit_label (skip_label);
   return true;
@@ -9600,7 +9613,7 @@ sh_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
   if (TARGET_HARVARD)
     {
       if (!TARGET_INLINE_IC_INVALIDATE
-	  || !(TARGET_SH4A_ARCH || TARGET_SH4_300) && TARGET_USERMODE)
+	  || (!(TARGET_SH4A_ARCH || TARGET_SH4_300) && TARGET_USERMODE))
 	emit_library_call (function_symbol (NULL, "__ic_invalidate",
 					    FUNCTION_ORDINARY),
 			   0, VOIDmode, 1, tramp, SImode);
