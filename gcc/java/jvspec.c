@@ -512,7 +512,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 	  arglist[j] = "-xnone";
 	}
 
-      if (argv[i][1] == 'I')
+      if (argv[i][0] == '-' && argv[i][1] == 'I')
 	{
 	  const char *arg;
 	  if (argv[i][2] == '\0')
