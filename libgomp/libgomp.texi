@@ -175,6 +175,11 @@ This function returns @code{true} if enabled, @code{false} otherwise.
 Here, @code{true} and @code{false} represent their language-specific 
 counterparts.
 
+The dynamic team setting may be initialized at startup by the 
+@code{OMP_DYNAMIC} environment variable or at runtime using 
+@code{omp_set_dynamic}. If undefined, dynamic adjustment is 
+disabled by default.
+
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{int omp_get_dynamic();}
@@ -186,7 +191,7 @@ counterparts.
 @end multitable
 
 @item @emph{See also}:
-@ref{omp_set_dynamic}
+@ref{omp_set_dynamic}, @ref{OMP_DYNAMIC}
 
 @item @emph{Reference}:
 @uref{http://www.openmp.org/, OpenMP specifications v2.5}, section 3.2.8.
@@ -228,6 +233,11 @@ This function returns @code{true} if nested parallel regions are
 enabled, @code{false} otherwise. Here, @code{true} and @code{false} 
 represent their language-specific counterparts.
 
+Nested parallel regions may be initialized at startup by the 
+@code{OMP_NESTED} environment variable or at runtime using 
+@code{omp_set_nested}. If undefined, nested parallel regions are
+disabled by default.
+
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{int omp_get_nested();}
@@ -239,7 +249,7 @@ represent their language-specific counterparts.
 @end multitable
 
 @item @emph{See also}:
-@ref{omp_set_nested}
+@ref{omp_set_nested}, @ref{OMP_NESTED}
 
 @item @emph{Reference}:
 @uref{http://www.openmp.org/, OpenMP specifications v2.5}, section 3.2.10.
@@ -275,6 +285,13 @@ Returns the number of processors online.
 @item @emph{Description}:
 The number of threads in the current team. In a sequential section of 
 the program @code{omp_get_num_threads} returns 1.
+
+The default team size may be initialized at startup by the 
+@code{OMP_NUM_THREADS} environment variable. At runtime, the size 
+of the current team may be set either by the @code{NUM_THREADS}
+clause or by @code{omp_set_num_threads}. If none of the above were 
+used to define a specific value and @code{OMP_DYNAMIC} is disabled,
+one thread per CPU online is used.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -379,7 +396,7 @@ adjustment of team sizes and @code{false} disables it.
 @section @code{omp_set_nested} -- Enable/disable nested parallel regions
 @table @asis
 @item @emph{Description}:
-Enable or disable nested parallel regions, i. e. whether team members
+Enable or disable nested parallel regions, i.e., whether team members
 are allowed to create new teams. The function takes the language-specific 
 equivalent of @code{true} and @code{false}, where @code{true} enables 
 dynamic adjustment of team sizes and @code{false} disables it.
@@ -724,7 +741,7 @@ in the unlocked state and its nesting count must equal zero.
 @section @code{omp_get_wtick} -- Get timer precision
 @table @asis
 @item @emph{Description}:
-Gets the timer precision, i. e. the number of seconds between two 
+Gets the timer precision, i.e., the number of seconds between two 
 successive clock ticks.
 
 @item @emph{C/C++}:
@@ -799,6 +816,7 @@ extensions.
 @node OMP_DYNAMIC
 @section @env{OMP_DYNAMIC} -- Dynamic adjustment of threads
 @cindex Environment Variable
+@cindex Implementation specific setting
 @table @asis
 @item @emph{Description}:
 Enable or disable the dynamic adjustment of the number of threads 
@@ -818,9 +836,10 @@ disabled by default.
 @node OMP_NESTED
 @section @env{OMP_NESTED} -- Nested parallel regions
 @cindex Environment Variable
+@cindex Implementation specific setting
 @table @asis
 @item @emph{Description}:
-Enable or disable nested parallel regions, i. e. whether team members
+Enable or disable nested parallel regions, i.e., whether team members
 are allowed to create new teams. The value of this environment variable 
 shall be @code{TRUE} or @code{FALSE}. If undefined, nested parallel 
 regions are disabled by default.
@@ -837,11 +856,12 @@ regions are disabled by default.
 @node OMP_NUM_THREADS
 @section @env{OMP_NUM_THREADS} -- Specifies the number of threads to use
 @cindex Environment Variable
+@cindex Implementation specific setting
 @table @asis
 @item @emph{Description}:
-Specifies the number of threads to use in parallel regions. If undefined
-one thread per CPU online is used. The value of this variable shall be 
-positive integer. 
+Specifies the default number of threads to use in parallel regions. The 
+value of this variable shall be positive integer. If undefined one thread 
+per CPU online is used.
 
 @item @emph{See also}:
 @ref{omp_set_num_threads}
@@ -855,6 +875,7 @@ positive integer.
 @node OMP_SCHEDULE
 @section @env{OMP_SCHEDULE} -- How threads are scheduled
 @cindex Environment Variable
+@cindex Implementation specific setting
 @table @asis
 @item @emph{Description}:
 Allows to specify @code{schedule type} and @code{chunk size}. 
@@ -889,6 +910,7 @@ GCC Patches Mailinglist}
 @node GOMP_STACKSIZE
 @section @env{GOMP_STACKSIZE} -- Set default thread stack size
 @cindex Environment Variable
+@cindex Implementation specific setting
 @table @asis
 @item @emph{Description}:
 Set the default thread stack size in kilobytes. This is in opposition 
@@ -1117,7 +1139,7 @@ The @var{FN} argument is the subfunction to be run in parallel.
 
 The @var{DATA} argument is a pointer to a structure used to 
 communicate data in and out of the subfunction, as discussed
-above wrt FIRSTPRIVATE et al.
+above with respect to FIRSTPRIVATE et al.
 
 The @var{NUM_THREADS} argument is 1 if an IF clause is present
 and false, or the value of the NUM_THREADS clause, if
