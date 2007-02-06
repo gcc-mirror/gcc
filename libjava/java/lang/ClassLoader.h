@@ -82,6 +82,9 @@ public:
   virtual void clearAssertionStatus();
 public: // actually package-private
   virtual jboolean isAncestorOf(::java::lang::ClassLoader *);
+private:
+  void checkInitialized();
+public: // actually package-private
   ::java::util::HashMap * __attribute__((aligned(__alignof__( ::java::lang::Object)))) loadedClasses;
   ::java::util::HashMap * definedPackages;
 private:
