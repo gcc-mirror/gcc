@@ -11,7 +11,8 @@ eabi.S: $(srcdir)/config/rs6000/eabi.asm
 tramp.S: $(srcdir)/config/rs6000/tramp.asm
 	cat $(srcdir)/config/rs6000/tramp.asm > tramp.S
 
-ifneq (,$findstring gnu,$(target))
+ifneq (,$(findstring gnu,$(target)))
+ifeq (,$(findstring spe,$(target)))
 TARGET_LIBGCC2_CFLAGS += -specs=ldblspecs
 
 SHLIB_MAPFILES += $(srcdir)/config/rs6000/libgcc-ppc-glibc.ver
@@ -21,6 +22,7 @@ mklibgcc: ldblspecs
 
 ldblspecs: specs
 	sed -e '/cc1_options/{ n; s/$$/ %{!msoft-float:-mlong-double-128}/; }' < specs > $@
+endif
 endif
 
 # Switch synonyms
