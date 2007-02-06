@@ -38,11 +38,9 @@ static void loop_redirect_edge (edge, basic_block);
 static void remove_bbs (basic_block *, int);
 static bool rpe_enum_p (basic_block, void *);
 static int find_path (edge, basic_block **);
-static bool alp_enum_p (basic_block, void *);
 static void fix_loop_placements (struct loop *, bool *);
 static bool fix_bb_placement (basic_block);
 static void fix_bb_placements (basic_block, bool *);
-static void place_new_loop (struct loop *);
 static basic_block create_preheader (struct loop *, int);
 static void unloop (struct loop *, bool *);
 
@@ -395,39 +393,54 @@ remove_path (edge e)
   return true;
 }
 
-/* Predicate for enumeration in add_loop.  */
-static bool
-alp_enum_p (basic_block bb, void *alp_header)
+/* Creates place for a new LOOP in loops structure.  */
+
+static void
+place_new_loop (struct loop *loop)
 {
-  return bb != (basic_block) alp_header;
+  loop->num = number_of_loops ();
+  VEC_safe_push (loop_p, heap, current_loops->larray, loop);
 }
 
 /* Given LOOP structure with filled header and latch, find the body of the
    corresponding loop and add it to loops tree.  Insert the LOOP as a son of
    outer.  */
 
-static void
+void
 add_loop (struct loop *loop, struct loop *outer)
 {
   basic_block *bbs;
   int i, n;
+  struct loop *subloop;
 
   /* Add it to loop structure.  */
   place_new_loop (loop);
   flow_loop_tree_node_add (outer, loop);
 
   /* Find its nodes.  */
-  bbs = XCNEWVEC (basic_block, n_basic_blocks);
-  n = dfs_enumerate_from (loop->latch, 1, alp_enum_p,
-			  bbs, n_basic_blocks, loop->header);
+  bbs = XNEWVEC (basic_block, n_basic_blocks);
+  n = get_loop_body_with_size (loop, bbs, n_basic_blocks);
 
   for (i = 0; i < n; i++)
     {
-      remove_bb_from_loops (bbs[i]);
-      add_bb_to_loop (bbs[i], loop);
+      if (bbs[i]->loop_father == outer)
+	{
+	  remove_bb_from_loops (bbs[i]);
+	  add_bb_to_loop (bbs[i], loop);
+	  continue;
+	}
+
+      loop->num_nodes++;
+
+      /* If we find a direct subloop of OUTER, move it to LOOP.  */
+      subloop = bbs[i]->loop_father;
+      if (subloop->outer == outer
+	  && subloop->header == bbs[i])
+	{
+	  flow_loop_tree_node_remove (subloop);
+	  flow_loop_tree_node_add (loop, subloop);
+	}
     }
-  remove_bb_from_loops (loop->header);
-  add_bb_to_loop (loop->header, loop);
 
   free (bbs);
 }
@@ -629,14 +642,6 @@ fix_loop_placements (struct loop *loop, bool *irred_invalidated)
 			 irred_invalidated);
       loop = outer;
     }
-}
-
-/* Creates place for a new LOOP in loops structure.  */
-static void
-place_new_loop (struct loop *loop)
-{
-  loop->num = number_of_loops ();
-  VEC_safe_push (loop_p, heap, current_loops->larray, loop);
 }
 
 /* Copies copy of LOOP as subloop of TARGET loop, placing newly
@@ -1115,12 +1120,15 @@ create_preheader (struct loop *loop, int flags)
   gcc_assert (nentry);
   if (nentry == 1)
     {
-      /* Get an edge that is different from the one from loop->latch
-	 to loop->header.  */
-      e = EDGE_PRED (loop->header,
-		     EDGE_PRED (loop->header, 0)->src == loop->latch);
+      e = loop_preheader_edge (loop);
 
-      if (!(flags & CP_SIMPLE_PREHEADERS) || single_succ_p (e->src))
+      if (/* We do not allow entry block to be the loop preheader, since we
+	     cannot emit code there.  */
+	  e->src != ENTRY_BLOCK_PTR
+	  /* If we want simple preheaders, also force the preheader to have
+	     just a single successor.  */
+	  && !((flags & CP_SIMPLE_PREHEADERS)
+	       && !single_succ_p (e->src)))
 	return NULL;
     }
 

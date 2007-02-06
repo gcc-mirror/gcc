@@ -1,3 +1,41 @@
+2007-02-06  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* doc/loop.texi: Document possibility not to perform disambiguation
+	of loops with multiple latches.
+	* cfgloopmanip.c (alp_enum_p): Removed.
+	(add_loop): Handle subloops.  Use get_loop_body_with_size.
+	(create_preheader): Do not allow ENTRY_BLOCK_PTR to be preheader.
+	* cfghooks.c (redirect_edge_and_branch_force): Set dominator for
+	the new forwarder block.
+	(make_forwarder_block): Only call new_bb_cbk if it is not NULL.
+	Handle the case latch is NULL.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Avoid cfg modifications
+	when marking loop exits.
+	* ifcvt.c (if_convert): Ditto.  Mark loop exits even if cfg cannot
+	be modified.
+	* loop-init.c (loop_optimizer_init): Do not modify cfg.  Call
+	disambiguate_loops_with_multiple_latches.
+	* tree-cfgcleanup.c (cleanup_tree_cfg_loop): Calculate dominators
+	before fix_loop_structure.
+	* cfgloop.c: Include pointer-set.h and output.h.
+	(canonicalize_loop_headers, HEADER_BLOCK, LATCH_EDGE,
+	update_latch_info, mfb_keep_just, mfb_keep_nonlatch): Removed.
+	(get_loop_latch_edges, find_subloop_latch_edge_by_profile,
+	find_subloop_latch_edge_by_ivs, find_subloop_latch_edge,
+	mfb_redirect_edges_in_set, form_subloop, merge_latch_edges,
+	disambiguate_multiple_latches, get_loop_body_with_size,
+	disambiguate_loops_with_multiple_latches): New functions.
+	(flow_loop_dump): Dump multiple latch edges.
+	(flow_loop_nodes_find): Handle loops with multiple latches.
+	(flow_loops_find): Ditto. Do not call canonicalize_loop_headers.
+	(glb_enum_p): Modified.
+	(get_loop_body): Use get_loop_body_with_size.
+	* cfgloop.h (LOOPS_HAVE_RECORDED_EXITS): New flag.
+	(AVOID_CFG_MODIFICATIONS): New constant.
+	(disambiguate_loops_with_multiple_latches, add_loop,
+	get_loop_body_with_size): Declare.
+	* Makefile.in (cfgloop.o): Add pointer-set.h and output.h.
+
 2007-02-06  Seongbae Park <seongbae.park@gmail.com>
 
 	PR inline-asm/28686

@@ -168,11 +168,13 @@ enum
   LOOPS_HAVE_PREHEADERS = 1,
   LOOPS_HAVE_SIMPLE_LATCHES = 2,
   LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS = 4,
-  LOOPS_HAVE_RECORDED_EXITS = 8
+  LOOPS_HAVE_RECORDED_EXITS = 8,
+  LOOPS_MAY_HAVE_MULTIPLE_LATCHES = 16
 };
 
 #define LOOPS_NORMAL (LOOPS_HAVE_PREHEADERS | LOOPS_HAVE_SIMPLE_LATCHES \
 		      | LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)
+#define AVOID_CFG_MODIFICATIONS (LOOPS_MAY_HAVE_MULTIPLE_LATCHES)
 
 typedef struct loop *loop_p;
 DEF_VEC_P (loop_p);
@@ -198,6 +200,7 @@ struct loops
 
 /* Loop recognition.  */
 extern int flow_loops_find (struct loops *);
+extern void disambiguate_loops_with_multiple_latches (void);
 extern void flow_loops_free (struct loops *);
 extern void flow_loops_dump (FILE *,
 			     void (*)(const struct loop *, FILE *, int), int);
@@ -215,6 +218,7 @@ void rescan_loop_exit (edge, bool, bool);
 /* Loop data structure manipulation/querying.  */
 extern void flow_loop_tree_node_add (struct loop *, struct loop *);
 extern void flow_loop_tree_node_remove (struct loop *);
+extern void add_loop (struct loop *, struct loop *);
 extern bool flow_loop_nested_p	(const struct loop *, const struct loop *);
 extern bool flow_bb_inside_loop_p (const struct loop *, const basic_block);
 extern struct loop * find_common_loop (struct loop *, struct loop *);
@@ -229,6 +233,8 @@ extern void mark_loop_exit_edges (void);
 
 /* Loops & cfg manipulation.  */
 extern basic_block *get_loop_body (const struct loop *);
+extern unsigned get_loop_body_with_size (const struct loop *, basic_block *,
+					 unsigned);
 extern basic_block *get_loop_body_in_dom_order (const struct loop *);
 extern basic_block *get_loop_body_in_bfs_order (const struct loop *);
 extern VEC (edge, heap) *get_loop_exit_edges (const struct loop *);

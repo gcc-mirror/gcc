@@ -582,8 +582,8 @@ cleanup_tree_cfg_loop (void)
   if (changed)
     {
       bitmap changed_bbs = BITMAP_ALLOC (NULL);
-      fix_loop_structure (changed_bbs);
       calculate_dominance_info (CDI_DOMINATORS);
+      fix_loop_structure (changed_bbs);
 
       /* This usually does nothing.  But sometimes parts of cfg that originally
 	 were inside a loop get out of it due to edge removal (since they

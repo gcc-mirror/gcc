@@ -48,11 +48,17 @@ a single header, or if there is a branching in the middle of the loop.
 The representation of loops in GCC however allows only loops with a
 single latch.  During loop analysis, headers of such loops are split and
 forwarder blocks are created in order to disambiguate their structures.
-A heuristic based on profile information is used to determine whether
-the latches correspond to sub-loops or to control flow in a single loop.
-This means that the analysis sometimes changes the CFG, and if you run
-it in the middle of an optimization pass, you must be able to deal with
-the new blocks.
+Heuristic based on profile information and structure of the induction
+variables in the loops is used to determine whether the latches
+correspond to sub-loops or to control flow in a single loop.  This means
+that the analysis sometimes changes the CFG, and if you run it in the
+middle of an optimization pass, you must be able to deal with the new
+blocks.  You may avoid CFG changes by passing
+@code{LOOPS_MAY_HAVE_MULTIPLE_LATCHES} flag to the loop discovery,
+note however that most other loop manipulation functions will not work
+correctly for loops with multiple latch edges (the functions that only
+query membership of blocks to loops and subloop relationships, or
+enumerate and test loop exits, can be expected to work).
 
 Body of the loop is the set of blocks that are dominated by its header,
 and reachable from its latch against the direction of edges in CFG.  The
@@ -96,6 +102,13 @@ bitmask.  These flags specify what other properties of the loop
 structures should be calculated/enforced and preserved later:
 
 @itemize
+@item @code{LOOPS_MAY_HAVE_MULTIPLE_LATCHES}: If this flag is set, no
+changes to CFG will be performed in the loop analysis, in particular,
+loops with multiple latch edges will not be disambiguated.  If a loop
+has multiple latches, its latch block is set to NULL.  Most of
+the loop manipulation functions will not work for loops in this shape.
+No other flags that require CFG changes can be passed to
+loop_optimizer_init.
 @item @code{LOOPS_HAVE_PREHEADERS}: Forwarder blocks are created in such
 a way that each loop has only one entry edge, and additionally, the
 source block of this entry edge has only one successor.  This creates a
