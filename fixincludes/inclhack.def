@@ -1375,6 +1375,7 @@ fix = {
     test_text = <<-EOT
 	__extension__ extern __inline unsigned int
 	__extension__ __extern_inline unsigned int
+	extern __inline unsigned int
 	EOT;
 };
 
