@@ -1,3 +1,16 @@
+2007-02-06  Paolo Bonzini  <bonzini@gnu.org>
+
+        * tree.c (tree_int_map_hash, tree_int_map_eq, tree_int_map_marked_p):
+        Remove prototypes and make them non-static.
+        (struct tree_int_map): Remove.
+        * tree.h (struct tree_int_map): Move here, turning TO into an
+        unsigned int.
+        (tree_int_map_hash, tree_int_map_eq, tree_int_map_marked_p): Declare.
+
+        * tree.h (TREE_COMPLEXITY): Remove.
+        (struct tree_exp): Remove complexity field.
+        * tree.c (build1_stat): Don't set it.
+
 2007-02-06  Dorit Nuzman  <dorit@il.ibm.com>
 	    Victor Kaplansky  <victork@il.ibm.com>
 

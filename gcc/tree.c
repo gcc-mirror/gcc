@@ -150,14 +150,6 @@ static GTY ((if_marked ("tree_int_map_marked_p"), param_is (struct tree_int_map)
 static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map)))
   htab_t restrict_base_for_decl;
 
-struct tree_int_map GTY(())
-{
-  tree from;
-  unsigned short to;
-};
-static unsigned int tree_int_map_hash (const void *);
-static int tree_int_map_eq (const void *, const void *);
-static int tree_int_map_marked_p (const void *);
 static void set_type_quals (tree, int);
 static int type_hash_eq (const void *, const void *);
 static hashval_t type_hash_hash (const void *);
@@ -2931,7 +2923,6 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
 #else
   SET_EXPR_LOCUS (t, NULL);
 #endif
-  TREE_COMPLEXITY (t) = 0;
   TREE_OPERAND (t, 0) = node;
   TREE_BLOCK (t) = NULL_TREE;
   if (node && !TYPE_P (node))
@@ -4184,7 +4175,7 @@ tree_map_marked_p (const void *p)
 
 /* Return true if the trees in the tree_int_map *'s VA and VB are equal.  */
 
-static int
+int
 tree_int_map_eq (const void *va, const void *vb)
 {
   const struct tree_int_map  *a = va, *b = vb;
@@ -4193,7 +4184,7 @@ tree_int_map_eq (const void *va, const void *vb)
 
 /* Hash a from tree in the tree_int_map * ITEM.  */
 
-static unsigned int
+unsigned int
 tree_int_map_hash (const void *item)
 {
   return htab_hash_pointer (((const struct tree_int_map *)item)->from);
@@ -4203,7 +4194,7 @@ tree_int_map_hash (const void *item)
    purposes.  We simply return true if the from tree_int_map *P's from tree is marked, so that this
    structure goes away when the from tree goes away.  */
 
-static int
+int
 tree_int_map_marked_p (const void *p)
 {
   tree from = ((struct tree_int_map *) p)->from;
