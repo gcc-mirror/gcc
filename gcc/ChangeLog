@@ -1,3 +1,74 @@
+2006-02-06  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.in (tree-ssa-loop-ivopts.o): Add pointer-set.h dependency.
+	(tree-ssa-reassoc.o): Add pointer-set.h dependency.
+	(tree-cfg.o): Remove hashtab.h dependency.
+
+	* tree-ssa-loop-ivopts.c: Include pointer-set.h.
+	(struct ivopts_data): Change niters to pointer_map_t.
+	(struct nfe_cache_elt, nfe_hash, nfe_eq): Delete.
+	(niter_for_exit): Create pointer_map on demand.  Change for
+	pointer_map API.
+	(tree_ssa_iv_optimize_init): Initialize data->niters to NULL.
+	(free_loop_data): Destroy data->niters if created and reset field.
+	(tree_ssa_iv_optimize_finalize): Don't delete data->niters here.
+	(tree_ssa_iv_optimize_loop): Check for presence of stale data.
+
+	* tree-ssa-reassoc.c: Include pointer-set.h.
+	(bb_rank): Change to long *.
+	(operand_rank): Change to pointer_map_t.
+	(find_operand_rank): Return long, -1 if not found.  Declare as inline.
+	(insert_operand_rank): Accept long.
+	(operand_entry_hash, operand_entry_eq): Remove.
+	(get_rank): Return long.  Adjust for changes above.
+	(init_reassoc): Change rank type to long.  Adjust creation of bb_rank
+	and operand_rank.
+	(fini_reassoc): Delete operand_rank with pointer_map_destroy.
+
+	* tree-ssa-structalias.c (vi_for_tree): Change to pointer_map.
+	(struct tree_vi, tree_vi_t, tree_vi_hash, tree_vi_eq): Delete.
+	(insert_vi_for_tree): Rewrite for pointer_map API.  Assert argument
+	is not NULL.
+	(lookup_vi_for_tree): Rewrite for pointer_map API.  Return varinfo_t
+	directly since it cannot be NULL.
+	(get_vi_for_tree): Rewrite for pointer_map API.
+	(find_what_p_points_to): Adjust for change to lookup_vi_for_tree.
+	(init_alias_vars): Create vi_for_tree as pointer_map.
+	(delete_points_to_sets): Delete vi_for_tree using pointer_map_destroy.
+
+	* tree-cfg.c: Don't include hashtab.h.
+	(edge_to_cases): Declare as pointer_map.
+	(struct edge_to_cases_elt, edge_to_cases_hash, edge_to_cases_eq):
+	Delete.
+	(edge_to_cases_cleanup): Rewrite as pointer_map_traverse callback.
+	(start_recording_case_labels): Create edge_to_cases as pointer_map.
+	(end_recoding_case_labels): Cleanup edge_to_cases manually before
+	destroying it.
+	(record_switch_edge): Delete.
+	(get_cases_for_edge): Adjust for pointer_map API, inline
+	record_switch_edge (rewritten for new API), remove goto.
+
+2006-02-06  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.in (tree-nested.o): Add pointer-set.h dependency.
+	* tree-nested.c: Include pointer-set.h.
+	(var_map_elt, var_map_eq, var_map_hash): Delete.
+	(struct nesting_info): Remove GTY marker.  Change the two htab_t's
+	to pointer_map_t's.
+	(nesting_info_bitmap_obstack): New.
+	(lookup_field_for_decl): Adjust for pointer_map API.
+	(lookup_tramp_for_decl): Adjust for pointer_map API.
+	(get_nonlocal_debug_decl): Adjust for pointer_map API.
+	(get_local_debug_decl): Adjust for pointer_map API.
+	(convert_nl_goto_reference): Adjust for pointer_map API.
+	(convert_nl_goto_receiver): Adjust for pointer_map API.
+	(create_nesting_tree): Create outside GGC space.  Create bitmap on
+	the new obstack.  Create field_map and var_map as pointer_maps.
+	(free_nesting_tree): Adjust for changes to create_nesting_tree.
+	(root): Delete.	
+	(lower_nested_functions): Move root here, no need to NULL it.
+	Initialize and release the obstack.
+
 2007-02-06  Paolo Bonzini  <bonzini@gnu.org>
 
         * tree.c (tree_int_map_hash, tree_int_map_eq, tree_int_map_marked_p):
