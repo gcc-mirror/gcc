@@ -162,6 +162,8 @@ while(<$inf>) {
 	} elsif ($ended =~ /^(?:itemize|enumerate|[fv]?table)$/) {
 	    $_ = "\n=back\n";
 	    $ic = pop @icstack;
+	} elsif ($ended eq "multitable") {
+	    $_ = "\n=back\n";
 	} else {
 	    die "unknown command \@end $ended at line $.\n";
 	}
@@ -278,6 +280,12 @@ while(<$inf>) {
 	$endw = "enumerate";
     };
 
+    /^\@multitable\s.*/ and do {
+	push @endwstack, $endw;
+	$endw = "multitable";
+	$_ = "\n=over 4\n";
+    };
+
     /^\@([fv]?table)\s+(\@[a-z]+)/ and do {
 	push @endwstack, $endw;
 	push @icstack, $ic;
@@ -295,6 +303,16 @@ while(<$inf>) {
 	$endw = $1;
 	$shift = "\t";
 	$_ = "";	# need a paragraph break
+    };
+
+    /^\@item\s+(.*\S)\s*$/ and $endw eq "multitable" and do {
+	@columns = ();
+	for $column (split (/\s*\@tab\s*/, $1)) {
+	    # @strong{...} is used a @headitem work-alike
+	    $column =~ s/^\@strong{(.*)}$/$1/;
+	    push @columns, $column;
+	}
+	$_ = "\n=item ".join (" : ", @columns)."\n";
     };
 
     /^\@itemx?\s*(.+)?$/ and do {
