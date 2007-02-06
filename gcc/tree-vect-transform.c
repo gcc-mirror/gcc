@@ -462,7 +462,7 @@ vect_create_destination_var (tree scalar_dest, tree vectype)
   new_name = get_name (scalar_dest);
   if (!new_name)
     new_name = "var_";
-  vec_dest = vect_get_new_vect_var (type, vect_simple_var, new_name);
+  vec_dest = vect_get_new_vect_var (type, kind, new_name);
   add_referenced_var (vec_dest);
 
   return vec_dest;
@@ -507,6 +507,189 @@ vect_init_vector (tree stmt, tree vector_var, tree vector_type)
 
   vec_oprnd = GIMPLE_STMT_OPERAND (init_stmt, 0);
   return vec_oprnd;
+}
+
+
+/* Function get_initial_def_for_induction
+
+   Input:
+   STMT - a stmt that performs an induction operation in the loop.
+   IV_PHI - the initial value of the induction variable
+
+   Output:
+   Return a vector variable, initialized with the first VF values of
+   the induction variable. E.g., for an iv with IV_PHI='X' and
+   evolution S, for a vector of 4 units, we want to return: 
+   [X, X + S, X + 2*S, X + 3*S].  */
+
+static tree
+get_initial_def_for_induction (tree stmt, tree iv_phi)
+{
+  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  tree scalar_type = TREE_TYPE (iv_phi);
+  tree vectype = get_vectype_for_scalar_type (scalar_type);
+  int nunits = GET_MODE_NUNITS (TYPE_MODE (vectype));
+  edge pe = loop_preheader_edge (loop);
+  basic_block new_bb;
+  block_stmt_iterator bsi;
+  tree vec, vec_init, vec_step, t;
+  tree access_fn;
+  tree new_var;
+  tree new_name;
+  tree init_stmt;
+  tree induction_phi, induc_def, new_stmt, vec_def, vec_dest;
+  tree init_expr, step_expr;
+  int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  int i;
+  bool ok;
+  int ncopies = vf / nunits;
+  tree expr;
+  stmt_vec_info phi_info = vinfo_for_stmt (iv_phi);
+
+  gcc_assert (phi_info);
+
+  if (STMT_VINFO_VEC_STMT (phi_info))
+    {
+      induction_phi = STMT_VINFO_VEC_STMT (phi_info);
+      gcc_assert (TREE_CODE (induction_phi) == PHI_NODE);
+
+      if (vect_print_dump_info (REPORT_DETAILS))
+	{
+	  fprintf (vect_dump, "induction already vectorized:");
+	  print_generic_expr (vect_dump, iv_phi, TDF_SLIM);
+	  fprintf (vect_dump, "\n");
+	  print_generic_expr (vect_dump, induction_phi, TDF_SLIM);
+	}
+
+      return PHI_RESULT (induction_phi);
+    }
+
+  gcc_assert (ncopies >= 1);
+ 
+  access_fn = analyze_scalar_evolution (loop, PHI_RESULT (iv_phi));
+  gcc_assert (access_fn);
+  ok = vect_is_simple_iv_evolution (loop->num, access_fn, &init_expr, &step_expr);
+  gcc_assert (ok);
+
+  /* Create the vector that holds the initial_value of the induction.  */
+  new_name = init_expr;
+  t = NULL_TREE;
+  t = tree_cons (NULL_TREE, init_expr, t);
+  for (i = 1; i < nunits; i++)
+    {
+      /* Create: new_name = new_name + step_expr  */
+      new_var = vect_get_new_vect_var (scalar_type, vect_scalar_var, "var_");
+      add_referenced_var (new_var);
+      init_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, new_var,
+                          fold_build2 (PLUS_EXPR, scalar_type, new_name, step_expr));
+      new_name = make_ssa_name (new_var, init_stmt);
+      GIMPLE_STMT_OPERAND (init_stmt, 0) = new_name;
+
+      new_bb = bsi_insert_on_edge_immediate (pe, init_stmt);
+      gcc_assert (!new_bb);
+
+      if (vect_print_dump_info (REPORT_DETAILS))
+        {
+          fprintf (vect_dump, "created new init_stmt: ");
+          print_generic_expr (vect_dump, init_stmt, TDF_SLIM);
+        }
+      t = tree_cons (NULL_TREE, new_name, t);
+    }
+  vec = build_constructor_from_list (vectype, nreverse (t));
+  vec_init = vect_init_vector (stmt, vec, vectype);
+
+
+  /* Create the vector that holds the step of the induction.  */
+  expr = build_int_cst (scalar_type, vf);
+  new_name = fold_build2 (MULT_EXPR, scalar_type, expr, step_expr);
+  t = NULL_TREE;
+  for (i = 0; i < nunits; i++)
+    t = tree_cons (NULL_TREE, unshare_expr (new_name), t);
+  vec = build_constructor_from_list (vectype, t);
+  vec_step = vect_init_vector (stmt, vec, vectype);
+
+
+  /* Create the following def-use cycle:
+     loop prolog:
+         vec_init = [X, X+S, X+2*S, X+3*S]
+	 vec_step = [VF*S, VF*S, VF*S, VF*S]
+     loop:
+         vec_iv = PHI <vec_init, vec_loop>
+         ...
+         STMT
+         ...
+         vec_loop = vec_iv + vec_step;  */
+
+  /* Create the induction-phi that defines the induction-operand.  */
+  vec_dest = vect_get_new_vect_var (vectype, vect_simple_var, "vec_iv_");
+  add_referenced_var (vec_dest);
+  induction_phi = create_phi_node (vec_dest, loop->header);
+  set_stmt_info (get_stmt_ann (induction_phi),
+                 new_stmt_vec_info (induction_phi, loop_vinfo));
+  induc_def = PHI_RESULT (induction_phi);
+
+  /* Create the iv update inside the loop  */
+  new_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, NULL_TREE,
+                     build2 (PLUS_EXPR, vectype, induc_def, vec_step));
+  vec_def = make_ssa_name (vec_dest, new_stmt);
+  GIMPLE_STMT_OPERAND (new_stmt, 0) = vec_def;
+  bsi = bsi_for_stmt (stmt);
+  vect_finish_stmt_generation (stmt, new_stmt, &bsi);
+
+  /* Set the arguments of the phi node:  */
+  add_phi_arg (induction_phi, vec_init, loop_preheader_edge (loop));
+  add_phi_arg (induction_phi, vec_def, loop_latch_edge (loop));
+
+
+  /* In case the vectorization factor (VF) is bigger than the number
+     of elements that we can fit in a vectype (nunits), we have to generate
+     more than one vector stmt - i.e - we need to "unroll" the
+     vector stmt by a factor VF/nunits.  For more details see documentation
+     in vectorizable_operation.  */
+  
+  if (ncopies > 1)
+    {
+      stmt_vec_info prev_stmt_vinfo;
+
+      /* Create the vector that holds the step of the induction.  */
+      expr = build_int_cst (scalar_type, nunits);
+      new_name = fold_build2 (MULT_EXPR, scalar_type, expr, step_expr);
+      t = NULL_TREE;
+      for (i = 0; i < nunits; i++)
+	t = tree_cons (NULL_TREE, unshare_expr (new_name), t);
+      vec = build_constructor_from_list (vectype, t);
+      vec_step = vect_init_vector (stmt, vec, vectype);
+
+      vec_def = induc_def;
+      prev_stmt_vinfo = vinfo_for_stmt (induction_phi);
+      for (i = 1; i < ncopies; i++)
+	{
+	  /* vec_i = vec_prev + vec_{step*nunits}  */
+			 
+	  new_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, NULL_TREE,
+			build2 (PLUS_EXPR, vectype, vec_def, vec_step));
+	  vec_def = make_ssa_name (vec_dest, new_stmt);
+	  GIMPLE_STMT_OPERAND (new_stmt, 0) = vec_def;
+	  bsi = bsi_for_stmt (stmt);
+	  vect_finish_stmt_generation (stmt, new_stmt, &bsi);
+
+	  STMT_VINFO_RELATED_STMT (prev_stmt_vinfo) = new_stmt;
+	  prev_stmt_vinfo = vinfo_for_stmt (new_stmt); 
+	}
+    }
+
+  if (vect_print_dump_info (REPORT_DETAILS))
+    {
+      fprintf (vect_dump, "transform induction: created def-use cycle:");
+      print_generic_expr (vect_dump, induction_phi, TDF_SLIM);
+      fprintf (vect_dump, "\n");
+      print_generic_expr (vect_dump, SSA_NAME_DEF_STMT (vec_def), TDF_SLIM);
+    }
+
+  STMT_VINFO_VEC_STMT (phi_info) = induction_phi;
+  return induc_def;
 }
 
 
@@ -634,9 +817,10 @@ vect_get_vec_def_for_operand (tree op, tree stmt, tree *scalar_def)
     /* Case 5: operand is defined by loop-header phi - induction.  */
     case vect_induction_def:
       {
-        if (vect_print_dump_info (REPORT_DETAILS))
-          fprintf (vect_dump, "induction - unsupported.");
-        internal_error ("no support for induction"); /* FORNOW */
+	gcc_assert (TREE_CODE (def_stmt) == PHI_NODE);
+
+	/* Get the def before the loop  */
+	return get_initial_def_for_induction (stmt, def_stmt);
       }
 
     default:
@@ -707,14 +891,14 @@ vect_get_vec_def_for_stmt_copy (enum vect_def_type dt, tree vec_oprnd)
   tree vec_stmt_for_operand;
   stmt_vec_info def_stmt_info;
 
-  if (dt == vect_invariant_def || dt == vect_constant_def)
-    {
-      /* Do nothing; can reuse same def.  */ ;
-      return vec_oprnd;
-    }
+  /* Do nothing; can reuse same def.  */
+  if (dt == vect_invariant_def || dt == vect_constant_def )
+    return vec_oprnd;
 
   vec_stmt_for_operand = SSA_NAME_DEF_STMT (vec_oprnd);
   def_stmt_info = vinfo_for_stmt (vec_stmt_for_operand);
+  if (dt == vect_induction_def)
+    gcc_assert (TREE_CODE (vec_stmt_for_operand) == PHI_NODE);  
   gcc_assert (def_stmt_info);
   vec_stmt_for_operand = STMT_VINFO_RELATED_STMT (def_stmt_info);
   gcc_assert (vec_stmt_for_operand);
@@ -1386,8 +1570,11 @@ vectorizable_reduction (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
       op = TREE_OPERAND (operation, i);
       is_simple_use = vect_is_simple_use (op, loop_vinfo, &def_stmt, &def, &dt);
       gcc_assert (is_simple_use);
-      gcc_assert (dt == vect_loop_def || dt == vect_invariant_def ||
-                  dt == vect_constant_def);
+      if (dt != vect_loop_def
+	  && dt != vect_invariant_def
+	  && dt != vect_constant_def
+	  && dt != vect_induction_def)
+	return false;
     }
 
   op = TREE_OPERAND (operation, i);
@@ -2260,9 +2447,8 @@ vectorizable_type_demotion (tree stmt, block_stmt_iterator *bsi,
       /* Handle uses.  */
       if (j == 0)
 	{
-	  enum vect_def_type dt = vect_unknown_def_type; /* Dummy */
 	  vec_oprnd0 = vect_get_vec_def_for_operand (op0, stmt, NULL);
-	  vec_oprnd1 = vect_get_vec_def_for_stmt_copy (dt, vec_oprnd0);
+	  vec_oprnd1 = vect_get_vec_def_for_stmt_copy (dt0, vec_oprnd0);
 	}
       else
 	{

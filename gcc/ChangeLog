@@ -1,3 +1,29 @@
+2007-02-06  Dorit Nuzman  <dorit@il.ibm.com>
+	    Victor Kaplansky  <victork@il.ibm.com>
+
+	* tree-vectorizer.c (vect_is_simple_use): Support induction.
+	(vect_is_simple_reduction): Support reduction with induction as
+	one of the operands.
+	(vect_is_simple_iv_evolution): Fix formatting.
+	* tree-vect-analyze.c (vect_mark_stmts_to_be_vectorized): Fix 
+	formatting.  Don't mark induction phis for vectorization.
+	(vect_analyze_scalar_cycles): Analyze all inductions, then reductions.
+	* tree-vect-transform.c (get_initial_def_for_induction): New function.
+	(vect_get_vec_def_for_operand): Support induction.
+	(vect_get_vec_def_for_stmt_copy): Fix formatting and add check for
+	induction case.
+	(vectorizable_reduction): Support reduction with induction as one of 
+	the operands. 
+	(vectorizable_type_demotion): Use def-type of stmt argument rather
+	than dummy def-type.
+
+	* tree-ssa-loop.c (gate_scev_const_prop): Return the value of
+	flag_tree_scev_cprop.
+	* common.opt (tree-scev-cprop): New flag.
+
+	* tree-vect-transform.c (vect_create_destination_var): Use 'kind' in
+	call to vect_get_new_vect_var.
+
 2007-02-06  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vect-patterns.c (vect_recog_widen_mult_pattern): Check that 

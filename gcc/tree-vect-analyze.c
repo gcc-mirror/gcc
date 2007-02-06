@@ -509,58 +509,69 @@ vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
   tree phi;
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block bb = loop->header;
-  tree dummy;
+  tree dumy;
+  VEC(tree,heap) *worklist = VEC_alloc (tree, heap, 64);
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_analyze_scalar_cycles ===");
 
+  /* First - identify all inductions.  */
   for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
     {
       tree access_fn = NULL;
       tree def = PHI_RESULT (phi);
       stmt_vec_info stmt_vinfo = vinfo_for_stmt (phi);
-      tree reduc_stmt;
 
       if (vect_print_dump_info (REPORT_DETAILS))
 	{
-          fprintf (vect_dump, "Analyze phi: ");
-          print_generic_expr (vect_dump, phi, TDF_SLIM);
+	  fprintf (vect_dump, "Analyze phi: ");
+	  print_generic_expr (vect_dump, phi, TDF_SLIM);
 	}
 
       /* Skip virtual phi's. The data dependences that are associated with
          virtual defs/uses (i.e., memory accesses) are analyzed elsewhere.  */
-
       if (!is_gimple_reg (SSA_NAME_VAR (def)))
-	{
-	  if (vect_print_dump_info (REPORT_DETAILS))
-	    fprintf (vect_dump, "virtual phi. skip.");
-	  continue;
-	}
+	continue;
 
       STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_unknown_def_type;
 
       /* Analyze the evolution function.  */
-
       access_fn = analyze_scalar_evolution (loop, def);
-
-      if (!access_fn)
-	continue;
-
-      if (vect_print_dump_info (REPORT_DETAILS))
-        {
-           fprintf (vect_dump, "Access function of PHI: ");
-           print_generic_expr (vect_dump, access_fn, TDF_SLIM);
-        }
-
-      if (vect_is_simple_iv_evolution (loop->num, access_fn, &dummy, &dummy))
+      if (access_fn && vect_print_dump_info (REPORT_DETAILS))
 	{
-	  if (vect_print_dump_info (REPORT_DETAILS))
-	    fprintf (vect_dump, "Detected induction.");
-	  STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_induction_def;
-          continue;
+	  fprintf (vect_dump, "Access function of PHI: ");
+	  print_generic_expr (vect_dump, access_fn, TDF_SLIM);
 	}
 
-      /* TODO: handle invariant phis  */
+      if (!access_fn
+	  || !vect_is_simple_iv_evolution (loop->num, access_fn, &dumy, &dumy)) 
+	{
+	  VEC_safe_push (tree, heap, worklist, phi);	  
+	  continue;
+	}
+
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "Detected induction.");
+      STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_induction_def;
+    }
+
+
+  /* Second - identify all reductions.  */
+  while (VEC_length (tree, worklist) > 0)
+    {
+      tree phi = VEC_pop (tree, worklist);
+      tree def = PHI_RESULT (phi);
+      stmt_vec_info stmt_vinfo = vinfo_for_stmt (phi);
+      tree reduc_stmt;
+
+      if (vect_print_dump_info (REPORT_DETAILS))
+        { 
+          fprintf (vect_dump, "Analyze phi: ");
+          print_generic_expr (vect_dump, phi, TDF_SLIM);
+        }
+
+      gcc_assert (is_gimple_reg (SSA_NAME_VAR (def)));
+      gcc_assert (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_unknown_def_type);
 
       reduc_stmt = vect_is_simple_reduction (loop, phi);
       if (reduc_stmt)
@@ -574,9 +585,9 @@ vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
       else
         if (vect_print_dump_info (REPORT_DETAILS))
           fprintf (vect_dump, "Unknown def-use cycle pattern.");
-
     }
 
+  VEC_free (tree, heap, worklist);
   return;
 }
 
@@ -1908,7 +1919,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
   tree scalar_type;
 
   if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "=== vect_analyze_data_refs ===");
+    fprintf (vect_dump, "=== vect_analyze_data_refs ===\n");
 
   compute_data_dependences_for_loop (loop, true,
                                      &LOOP_VINFO_DATAREFS (loop_vinfo),
@@ -1933,7 +1944,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
       /* Update DR field in stmt_vec_info struct.  */
       stmt = DR_STMT (dr);
       stmt_info = vinfo_for_stmt (stmt);
-  
+
       if (STMT_VINFO_DATA_REF (stmt_info))
         {
           if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
@@ -2249,14 +2260,21 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 
       /* case 2.2:  */
       if (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def)
-        {
-          gcc_assert (relevant == vect_unused_in_loop && live_p);
-          relevant = vect_used_by_reduction;
-          live_p = false;
-        }
+	{
+	  gcc_assert (relevant == vect_unused_in_loop && live_p);
+	  relevant = vect_used_by_reduction;
+	  live_p = false;
+	}
 
+      i = 0;
       FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
 	{
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    {
+	      fprintf (vect_dump, "worklist: examine use %d: ", i++);
+	      print_generic_expr (vect_dump, use, TDF_SLIM);
+	    }
+
 	  /* case 1: we are only interested in uses that need to be vectorized. 
 	     Uses that are used for address computation are not considered 
 	     relevant.
@@ -2265,30 +2283,27 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	    continue;
 
 	  if (!vect_is_simple_use (use, loop_vinfo, &def_stmt, &def, &dt))
-            {
-              if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
-                fprintf (vect_dump, "not vectorized: unsupported use in stmt.");
+	    {
+	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+		fprintf (vect_dump, "not vectorized: unsupported use in stmt.");
 	      VEC_free (tree, heap, worklist);
-              return false;
+	      return false;
             }
 
 	  if (!def_stmt || IS_EMPTY_STMT (def_stmt))
 	    continue;
 
-          if (vect_print_dump_info (REPORT_DETAILS))
-            {
-              fprintf (vect_dump, "worklist: examine use %d: ", i);
-              print_generic_expr (vect_dump, use, TDF_SLIM);
-            }
-
 	  bb = bb_for_stmt (def_stmt);
-          if (!flow_bb_inside_loop_p (loop, bb))
-            continue;
+	  if (!flow_bb_inside_loop_p (loop, bb))
+	    continue;
 
 	  /* case 2.1: the reduction-use does not mark the defining-phi
 	     as relevant.  */
 	  if (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def
 	      && TREE_CODE (def_stmt) == PHI_NODE)
+	    continue;
+
+	  if (dt == vect_induction_def && TREE_CODE (def_stmt) == PHI_NODE)
 	    continue;
 
 	  vect_mark_relevant (&worklist, def_stmt, relevant, live_p);

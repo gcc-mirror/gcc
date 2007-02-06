@@ -51,6 +51,8 @@ int main (void)
 /* Once the dot-product pattern is detected, we expect
    that loop to be vectorized on vect_udot_hi targets (targets that support 
    dot-product of unsigned shorts) and targets that support widening multiplication.  */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail *-*-* } } } */ 
+/* The induction loop in main is vectorized.  */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { xfail *-*-* } } } */ 
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */ 
 
 /* { dg-final { cleanup-tree-dump "vect" } } */

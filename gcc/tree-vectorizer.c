@@ -1745,13 +1745,6 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
       return false;
     }
 
-  if (*dt == vect_induction_def)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "induction not supported.");
-      return false;
-    }
-
   return true;
 }
 
@@ -2050,7 +2043,7 @@ vect_is_simple_reduction (struct loop *loop, tree phi)
    */
   def1 = SSA_NAME_DEF_STMT (op1);
   def2 = SSA_NAME_DEF_STMT (op2);
-  if (!def1 || !def2)
+  if (!def1 || !def2 || IS_EMPTY_STMT (def1) || IS_EMPTY_STMT (def2))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         {
@@ -2060,9 +2053,15 @@ vect_is_simple_reduction (struct loop *loop, tree phi)
       return NULL_TREE;
     }
 
-  if (TREE_CODE (def1) == GIMPLE_MODIFY_STMT
+
+  /* Check that one def is the reduction def, defined by PHI,
+     the other def is either defined in the loop by a GIMPLE_MODIFY_STMT,
+     or it's an induction (defined by some phi node).  */
+
+  if (def2 == phi
       && flow_bb_inside_loop_p (loop, bb_for_stmt (def1))
-      && def2 == phi)
+      && (TREE_CODE (def1) == GIMPLE_MODIFY_STMT 
+	  || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def1)) == vect_induction_def))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         {
@@ -2071,9 +2070,10 @@ vect_is_simple_reduction (struct loop *loop, tree phi)
         }
       return def_stmt;
     }
-  else if (TREE_CODE (def2) == GIMPLE_MODIFY_STMT
-      && flow_bb_inside_loop_p (loop, bb_for_stmt (def2))
-      && def1 == phi)
+  else if (def1 == phi
+	   && flow_bb_inside_loop_p (loop, bb_for_stmt (def2))
+	   && (TREE_CODE (def2) == GIMPLE_MODIFY_STMT 
+	       || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2)) == vect_induction_def))
     {
       /* Swap operands (just for simplicity - so that the rest of the code
 	 can assume that the reduction variable is always the last (second)
@@ -2110,7 +2110,6 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
 {
   tree init_expr;
   tree step_expr;
-  
   tree evolution_part = evolution_part_in_loop_num (access_fn, loop_nb);
 
   /* When there is no evolution in this loop, the evolution function
@@ -2124,8 +2123,7 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
     return false;
   
   step_expr = evolution_part;
-  init_expr = unshare_expr (initial_condition_in_loop_num (access_fn,
-                                                           loop_nb));
+  init_expr = unshare_expr (initial_condition_in_loop_num (access_fn, loop_nb));
 
   if (vect_print_dump_info (REPORT_DETAILS))
     {
@@ -2139,7 +2137,7 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
   *step = step_expr;
 
   if (TREE_CODE (step_expr) != INTEGER_CST)
-    {
+    { 
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "step unknown.");
       return false;
