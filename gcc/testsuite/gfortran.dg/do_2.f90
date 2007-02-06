@@ -36,8 +36,8 @@ dok: DO 115 k=1,3
                        do
                        enddo
                    enddo
-	       enddo dokkk
-	  enddo dokk
+               enddo dokkk
+          enddo dokk
 115  enddo dok 
 ! Correct non-block do constructs
   do 117 l=1,3
