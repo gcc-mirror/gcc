@@ -1,3 +1,8 @@
+2007-02-06  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/27302
+	* gcc.dg/torture/pr27302-2.c: New testcase.
+
 2007-02-06  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* gcc.dg/vect/vect.exp: Add support for -fno-tree-scev-cprop tests.
