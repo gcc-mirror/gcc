@@ -1,3 +1,8 @@
+2007-02-05  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/30189
+	* gcc.dg/pr30189.c: New test.
+
 2007-02-04  Steven G. Kargl <kargl@gcc.gnu.org>
 
 	PR fortran/30605
