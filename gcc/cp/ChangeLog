@@ -1,3 +1,11 @@
+2007-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/30703
+	* cp-gimplify.c (cp_genericize_r): Don't dereference invisiref
+	parameters and result decls in omp clauses.
+	(cxx_omp_privatize_by_reference): Pass also invisiref PARM_DECLs
+	by reference.
+
 2007-02-05  Dirk Mueller  <dmueller@suse.de>
 
 	PR bootstrap/30510
