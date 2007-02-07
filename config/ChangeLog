@@ -1,3 +1,9 @@
+2007-02-07  Bruno Haible  <bruno@clisp.org>
+
+	PR libgomp/28468
+	* config/tls.m4 (GCC_CHECK_TLS): Also check whether the libc supports
+	TLS via __thread.
+
 2007-01-31  Daniel Franke <franke.daniel@gmail.com>
 
 	PR libgomp/30546

@@ -1,5 +1,8 @@
 2007-02-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR libgomp/28486
+	* configure: Regenerate.
+
 	PR c++/30703
 	* testsuite/libgomp.c++/pr30703.C: New test.
 
