@@ -2091,3 +2091,22 @@ proc check_effective_target_stdint_types { } {
 	uint8_t e; uint16_t f; uint32_t g; uint64_t h;
     }]
 }
+
+# Return 1 if programs are intended to be run on a simulator
+# (i.e. slowly) rather than hardware (i.e. fast).
+
+proc check_effective_target_simulator { } {
+
+    # All "src/sim" simulators set this one.
+    if [board_info target exists is_simulator] {
+	return [board_info target is_simulator]
+    }
+
+    # The "sid" simulators don't set that one, but at least they set
+    # this one.
+    if [board_info target exists slow_simulator] {
+	return [board_info target slow_simulator]
+    }
+
+    return 0
+}
