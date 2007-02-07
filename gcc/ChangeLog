@@ -1,5 +1,9 @@
 2007-02-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/30703
+	* gimplify.c (gimplify_scan_omp_clauses): Remove special casing
+	of INDIRECT_REF <RESULT_DECL>.
+
 	* config/i386/i386.c (override_options): Set PTA_SSSE3 for core2.
 
 2007-02-06  J"orn Rennecke  <joern.rennecke@arc.com>
