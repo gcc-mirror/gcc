@@ -1,3 +1,9 @@
+2007-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/30703
+	* gimplify.c (gimplify_scan_omp_clauses): Remove special casing
+	of INDIRECT_REF <RESULT_DECL>.
+
 2007-02-06  Rask Ingemann Lamberisen  <rask@sygehus.dk>
 
 	PR 30370 

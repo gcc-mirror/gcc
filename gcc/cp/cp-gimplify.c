@@ -672,6 +672,25 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	   && is_invisiref_parm (TREE_OPERAND (stmt, 0)))
     /* Don't dereference an invisiref RESULT_DECL inside a RETURN_EXPR.  */
     *walk_subtrees = 0;
+  else if (TREE_CODE (stmt) == OMP_CLAUSE)
+    switch (OMP_CLAUSE_CODE (stmt))
+      {
+      case OMP_CLAUSE_PRIVATE:
+      case OMP_CLAUSE_SHARED:
+      case OMP_CLAUSE_FIRSTPRIVATE:
+      case OMP_CLAUSE_LASTPRIVATE:
+      case OMP_CLAUSE_COPYIN:
+      case OMP_CLAUSE_COPYPRIVATE:
+	/* Don't dereference an invisiref in OpenMP clauses.  */
+	if (is_invisiref_parm (OMP_CLAUSE_DECL (stmt)))
+	  *walk_subtrees = 0;
+	break;
+      case OMP_CLAUSE_REDUCTION:
+	gcc_assert (!is_invisiref_parm (OMP_CLAUSE_DECL (stmt)));
+	break;
+      default:
+	break;
+      }
   else if (IS_TYPE_OR_DECL_P (stmt))
     *walk_subtrees = 0;
 
@@ -911,5 +930,5 @@ cxx_omp_clause_dtor (tree clause, tree decl)
 bool
 cxx_omp_privatize_by_reference (tree decl)
 {
-  return TREE_CODE (decl) == RESULT_DECL && DECL_BY_REFERENCE (decl);
+  return is_invisiref_parm (decl);
 }
