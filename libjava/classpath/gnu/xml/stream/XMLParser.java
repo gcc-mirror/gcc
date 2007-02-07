@@ -1592,7 +1592,6 @@ public class XMLParser
    * @param href the (absolute or relative) URL to resolve
    */
   public static String absolutize(String base, String href)
-    throws MalformedURLException
   {
     if (href == null)
       return null;
@@ -1622,7 +1621,60 @@ public class XMLParser
         if (!base.endsWith("/"))
           base += "/";
       }
-    return new URL(new URL(base), href).toString();
+    // We can't use java.net.URL here to do the parsing, as it searches for
+    // a protocol handler. A protocol handler may not be registered for the
+    // URL scheme here. Do it manually.
+    // 
+    // Set aside scheme and host portion of base URL
+    String basePrefix = null;
+    ci = base.indexOf(':');
+    if (ci > 1 && isURLScheme(base.substring(0, ci)))
+      {
+          if (base.length() > (ci + 3)  &&
+              base.charAt(ci + 1) == '/' &&
+              base.charAt(ci + 2) == '/')
+            {
+              int si = base.indexOf('/', ci + 3);
+              if (si == -1)
+                base = null;
+              else
+                {
+                  basePrefix = base.substring(0, si);
+                  base = base.substring(si);
+                }
+            }
+          else
+            base = null;
+      }
+    if (base == null) // unknown or malformed base URL, use href
+      return href;
+    if (href.startsWith("/")) // absolute href pathname
+      return (basePrefix == null) ? href : basePrefix + href;
+    // relative href pathname
+    if (!base.endsWith("/"))
+      {
+        int lsi = base.lastIndexOf('/');
+        if (lsi == -1)
+          base = "/";
+        else
+          base = base.substring(0, lsi + 1);
+      }
+    while (href.startsWith("../") || href.startsWith("./"))
+      {
+        if (href.startsWith("../"))
+          {
+            // strip last path component from base
+            int lsi = base.lastIndexOf('/', base.length() - 2);
+            if (lsi > -1)
+              base = base.substring(0, lsi + 1);
+            href = href.substring(3); // strip ../ prefix
+          }
+        else
+          {
+            href = href.substring(2); // strip ./ prefix
+          }
+      }
+    return (basePrefix == null) ? base + href : basePrefix + base + href;
   }
 
   /**

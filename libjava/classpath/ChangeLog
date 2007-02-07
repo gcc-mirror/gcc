@@ -1,3 +1,18 @@
+2007-02-07  Chris Burdess  <dog@gnu.org>
+
+	Fixes PR 30718.
+	* gnu/xml/dom/ls/SAXEventSink.java: Add public accessor/mutators.
+	* gnu/xml/transform/XSLURIResolver.java: Add support for custom
+	  SAXSources without a backing URL or stream.
+
+	Fixes PR 27710.
+	* gnu/xml/dom/DomDocumentBuilderFactory.java: Fall back to synchronous
+	  LSParser if implementation does not support asynchronous.
+	* gnu/xml/stream/XMLParser.java,
+	  gnu/xml/stream/XIncludeFilter.java: Use custom code instead of
+	  java.net.URL to resolve to an an absolute URI, to avoid nonexistent
+	  protocol handler problems.
+
 2007-02-06  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/30707:

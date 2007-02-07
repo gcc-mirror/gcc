@@ -111,9 +111,14 @@ public class SAXEventSink
     interrupted = true;
   }
 
-  protected Document getDocument()
+  public Document getDocument()
   {
     return doc;
+  }
+
+  public void setReader(XMLReader reader)
+  {
+    this.reader = reader;
   }
 
   // -- ContentHandler2 --
