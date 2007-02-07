@@ -1047,6 +1047,15 @@ cache_this_class_ref (tree fndecl)
     }
 }
 
+/* Remove the reference to the local variable that holds the current
+   class$.  */
+
+void
+uncache_this_class_ref (tree fndecl ATTRIBUTE_UNUSED)
+{
+  this_classdollar = build_classdollar_field (output_class);
+}
+
 /* Build a reference to the class TYPE.
    Also handles primitive types and array types. */
 
