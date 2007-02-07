@@ -43,6 +43,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.DOMConfiguration;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -84,8 +85,38 @@ public class DomDocumentBuilderFactory
   public DocumentBuilder newDocumentBuilder()
     throws ParserConfigurationException
   {
-    LSParser parser = ls.createLSParser(DOMImplementationLS.MODE_ASYNCHRONOUS,
-                                        "http://www.w3.org/TR/REC-xml");
+    LSParser parser = null;
+    try
+      {
+        parser = ls.createLSParser(DOMImplementationLS.MODE_ASYNCHRONOUS,
+                                   "http://www.w3.org/TR/REC-xml");
+      }
+    catch (DOMException e)
+      {
+        if (e.code == DOMException.NOT_SUPPORTED_ERR)
+          {
+            // Fall back to synchronous parser
+            try
+              {
+                parser = ls.createLSParser(DOMImplementationLS.MODE_SYNCHRONOUS,
+                                           "http://www.w3.org/TR/REC-xml");
+              }
+            catch (DOMException e2)
+              {
+                ParserConfigurationException pce =
+                    new ParserConfigurationException();
+                pce.initCause(e2);
+                throw pce;
+              }
+          }
+        else
+          {
+            ParserConfigurationException pce =
+                new ParserConfigurationException();
+            pce.initCause(e);
+            throw pce;
+          }
+      }
     DOMConfiguration config = parser.getDomConfig();
     setParameter(config, "namespaces",
                  isNamespaceAware() ? Boolean.TRUE : Boolean.FALSE);

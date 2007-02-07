@@ -46,6 +46,17 @@ extern "Java"
       }
     }
   }
+  namespace org
+  {
+    namespace xml
+    {
+      namespace sax
+      {
+          class InputSource;
+          class XMLReader;
+      }
+    }
+  }
 }
 
 class gnu::xml::transform::XSLURIResolver : public ::java::lang::Object
@@ -62,6 +73,7 @@ public: // actually package-private
   virtual ::javax::xml::transform::dom::DOMSource * resolveDOM(::javax::xml::transform::Source *, ::java::lang::String *, ::java::lang::String *);
   virtual ::java::net::URL * resolveURL(::java::lang::String *, ::java::lang::String *, ::java::lang::String *);
   virtual ::javax::xml::parsers::DocumentBuilder * getDocumentBuilder();
+  virtual ::javax::xml::transform::dom::DOMSource * parse(::org::xml::sax::InputSource *, ::org::xml::sax::XMLReader *);
   ::java::util::Map * __attribute__((aligned(__alignof__( ::java::lang::Object)))) lastModifiedCache;
   ::java::util::Map * nodeCache;
   ::javax::xml::parsers::DocumentBuilder * builder;

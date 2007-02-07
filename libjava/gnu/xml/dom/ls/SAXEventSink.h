@@ -57,9 +57,9 @@ public:
   SAXEventSink();
 public: // actually package-private
   virtual void interrupt();
-public: // actually protected
-  virtual ::org::w3c::dom::Document * getDocument();
 public:
+  virtual ::org::w3c::dom::Document * getDocument();
+  virtual void setReader(::org::xml::sax::XMLReader *);
   virtual void setDocumentLocator(::org::xml::sax::Locator *);
   virtual void startDocument();
   virtual void endDocument();
