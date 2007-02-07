@@ -346,8 +346,8 @@ compute_regsets (char asm_clobbered[FIRST_PSEUDO_REGISTER],
 {
 #ifdef ELIMINABLE_REGS
   static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
-#endif
   size_t i;
+#endif
   int need_fp
     = (! flag_omit_frame_pointer
        || (current_function_calls_alloca && EXIT_IGNORE_STACK)
