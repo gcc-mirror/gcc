@@ -2799,6 +2799,21 @@ build_jni_stub (tree method)
 		 build1 (RETURN_EXPR, res_type, res_var));
   TREE_SIDE_EFFECTS (body) = 1;
   
+  /* Prepend class initialization for static methods reachable from
+     other classes.  */
+  if (METHOD_STATIC (method)
+      && (! METHOD_PRIVATE (method)
+          || INNER_CLASS_P (DECL_CONTEXT (method))))
+    {
+      tree init = build3 (CALL_EXPR, void_type_node,
+			  build_address_of (soft_initclass_node),
+			  build_tree_list (NULL_TREE, 
+					   klass),
+			  NULL_TREE);
+      body = build2 (COMPOUND_EXPR, void_type_node, init, body);
+      TREE_SIDE_EFFECTS (body) = 1;
+    }
+
   bind = build3 (BIND_EXPR, void_type_node, BLOCK_VARS (block), 
 		 body, block);
   return bind;
@@ -3226,6 +3241,8 @@ expand_byte_code (JCF *jcf, tree method)
       PC = process_jvm_instruction (PC, byte_ops, length);
       maybe_poplevels (PC);
     } /* for */
+
+  uncache_this_class_ref (method);
 
   if (dead_code_index != -1)
     {

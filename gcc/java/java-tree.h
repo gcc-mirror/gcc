@@ -1130,6 +1130,7 @@ extern int get_interface_method_index (tree, tree);
 extern tree layout_class_method (tree, tree, tree, tree);
 extern void layout_class_methods (tree);
 extern void cache_this_class_ref (tree);
+extern void uncache_this_class_ref (tree);
 extern tree build_class_ref (tree);
 extern tree build_dtable_decl (tree);
 extern tree build_internal_class_name (tree);
