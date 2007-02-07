@@ -1880,7 +1880,7 @@ override_options (void)
 				        | PTA_MMX | PTA_PREFETCH_SSE},
       {"nocona", PROCESSOR_NOCONA, PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_64BIT
 					| PTA_MMX | PTA_PREFETCH_SSE | PTA_CX16},
-      {"core2", PROCESSOR_CORE2, PTA_SSE | PTA_SSE2 | PTA_SSE3
+      {"core2", PROCESSOR_CORE2, PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_SSSE3
                                         | PTA_64BIT | PTA_MMX
 					| PTA_PREFETCH_SSE | PTA_CX16},
       {"geode", PROCESSOR_GEODE, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
