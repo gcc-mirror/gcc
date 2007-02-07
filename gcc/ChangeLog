@@ -1,3 +1,8 @@
+2007-02-07  Roger Sayle  <roger@eyesopen.com>
+
+	* global.c (compute_regsets): Move declatation of "i" inside of
+	#ifdef ELIMINABLE_REGS to avoid unused variable bootstrap failure.
+
 2007-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/30703
