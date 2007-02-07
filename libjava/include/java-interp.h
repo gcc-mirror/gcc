@@ -219,6 +219,11 @@ class _Jv_InterpMethod : public _Jv_MethodBase
    */
   void get_line_table (jlong& start, jlong& end, jintArray& line_numbers,
 		       jlongArray& code_indices);
+  
+  int get_max_locals ()
+  {
+    return static_cast<int> (max_locals);
+  }
 
   /* Installs a break instruction at the given code index. Returns
      the pc_t of the breakpoint or NULL if index is invalid. */

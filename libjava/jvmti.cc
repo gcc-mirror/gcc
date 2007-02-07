@@ -155,6 +155,18 @@ ReentrantReadWriteLock *_envListLock = NULL;
     }						\
   while (0)
 
+#define CHECK_FOR_NATIVE_METHOD(AjmethodID)	\
+  do					\
+    {					\
+      jboolean is_native;		\
+      jvmtiError jerr = env->IsMethodNative (AjmethodID, &is_native);	\
+      if (jerr != JVMTI_ERROR_NONE)					\
+        return jerr;							\
+      if (is_native)							\
+        return JVMTI_ERROR_NATIVE_METHOD;			        \
+    }									\
+  while (0)
+
 static jvmtiError JNICALL
 _Jv_JVMTI_SuspendThread (MAYBE_UNUSED jvmtiEnv *env, jthread thread)
 {
@@ -726,6 +738,31 @@ _Jv_JVMTI_IsMethodSynthetic (MAYBE_UNUSED jvmtiEnv *env, jmethodID method,
 
   *result = ((method->accflags & java::lang::reflect::Modifier::SYNTHETIC)
 	     != 0);
+  return JVMTI_ERROR_NONE;
+}
+
+static jvmtiError JNICALL
+_Jv_JVMTI_GetMaxLocals (MAYBE_UNUSED jvmtiEnv *env, jmethodID method,
+                        jint *max_locals)
+{
+  REQUIRE_PHASE (env, JVMTI_PHASE_START | JVMTI_PHASE_LIVE);
+  NULL_CHECK (max_locals);
+  
+  CHECK_FOR_NATIVE_METHOD (method);
+  
+  jclass klass;
+  jvmtiError jerr = env->GetMethodDeclaringClass (method, &klass);
+  if (jerr != JVMTI_ERROR_NONE)
+    return jerr;
+
+  _Jv_InterpMethod *imeth = reinterpret_cast<_Jv_InterpMethod *> 
+                              (_Jv_FindInterpreterMethod (klass, method));
+    
+  if (imeth == NULL)
+    return JVMTI_ERROR_INVALID_METHODID;
+  
+  *max_locals = imeth->get_max_locals ();
+  
   return JVMTI_ERROR_NONE;
 }
 
@@ -1656,7 +1693,7 @@ struct _Jv_jvmtiEnv _Jv_JVMTI_Interface =
   _Jv_JVMTI_GetMethodDeclaringClass,  // GetMethodDeclaringClass
   _Jv_JVMTI_GetMethodModifiers,	// GetMethodModifers
   RESERVED,			// reserved67
-  UNIMPLEMENTED,		// GetMaxLocals
+  _Jv_JVMTI_GetMaxLocals,		// GetMaxLocals
   UNIMPLEMENTED,		// GetArgumentsSize
   _Jv_JVMTI_GetLineNumberTable,	// GetLineNumberTable
   UNIMPLEMENTED,		// GetMethodLocation
