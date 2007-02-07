@@ -48,13 +48,21 @@
 #include <regression/rand/assoc/rand_regression_test.hpp>
 #include <regression/assoc/common_type.hpp>
 
+// This can take long on simulators, timing out the test.
+// { dg-options "-DPB_DS_REGRESSION -DITERATIONS=5" { target simulator } }
+#ifndef ITERATIONS
+#define ITERATIONS 5000
+#endif
+#ifndef KEYS
+#define KEYS 10000
+#endif
 int
 main(int argc, char* a_p_argv[])
 {
   using namespace pb_ds::test;
   typedef tree_map_tl_t map_tl_t;
 
-  return rand_regression_test(5000, 10000,
+  return rand_regression_test(ITERATIONS, KEYS,
 			      "tree_data_map_rand_regression_test",
 			      map_tl_t());
 }

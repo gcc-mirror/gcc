@@ -48,11 +48,19 @@
 #include <regression/rand/priority_queue/rand_regression_test.hpp>
 #include <regression/priority_queue/common_type.hpp>
 
+// This can take long on simulators, timing out the test.
+// { dg-options "-DPB_DS_REGRESSION -DITERATIONS=5" { target simulator } }
+#ifndef ITERATIONS
+#define ITERATIONS 5000
+#endif
+#ifndef KEYS
+#define KEYS 10000
+#endif
 int
 main(int argc, char* a_p_argv[])
 {
   using namespace pb_ds::test;
-  return rand_regression_test(5000, 10000,
+  return rand_regression_test(ITERATIONS, KEYS,
 			      "tree_no_data_map_rand_regression_test", 
 			      pq_tl_t());
 }
