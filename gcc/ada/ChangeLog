@@ -1,3 +1,9 @@
+2007-02-07  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* raise-gcc.c (get_region_description_for, get_call_site_action_for,
+	get_action_description_for): Replaced _Unwind_Word with _uleb128_t 
+	and _Unwind_SWord with _sleb128_t.
+
 2007-02-06  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Make-lang.in (ada/decl.o): Add gt-ada-decl.h dependency.
