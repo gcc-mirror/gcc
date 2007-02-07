@@ -38,8 +38,14 @@ using namespace std;
 
 typedef int test_type;
 
+// This can take extremely long on simulators, timing out the test.
+// { dg-options "-DITERATIONS=10" { target simulator } }
+#ifndef ITERATIONS
+#define ITERATIONS 10000
+#endif
+
 // The number of iterations to be performed.
-int iterations = 10000;
+int iterations = ITERATIONS;
 
 // The number of values to insert in the container, 32 will cause 5
 // (re)allocations to be performed (sizes 4, 8, 16, 32 and 64)

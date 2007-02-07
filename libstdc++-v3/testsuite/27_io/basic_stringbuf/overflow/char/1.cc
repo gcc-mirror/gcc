@@ -50,8 +50,14 @@ test01(unsigned iter)
     }
 }
 
+// This can take long on simulators, timing out the test.
+// { dg-options "-DITERATIONS=10000" { target simulator } }
+#ifndef ITERATIONS
+#define ITERATIONS 10000000
+#endif
+
 int main()
 {
-  test01(10000000);
+  test01(ITERATIONS);
   return 0;
 }
