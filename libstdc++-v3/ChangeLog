@@ -1,5 +1,6 @@
 2007-02-07  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR testsuite/28870
 	* testsuite/27_io/basic_stringbuf/overflow/char/1.cc: Use only
 	10000 iterations for simulator targets.
 	* testsuite/ext/pb_ds/regression/tree_data_map_rand.cc: Use only 5
