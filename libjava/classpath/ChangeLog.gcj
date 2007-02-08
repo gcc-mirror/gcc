@@ -1,3 +1,9 @@
+2007-02-08  Gary Benson  <gbenson@redhat.com>
+
+	* javax/management/MBeanServerFactory.java
+	(servers): Initialize.
+	(createMBeanServer): Don't initialize servers.
+
 2007-01-31  Tom Tromey  <tromey@redhat.com>
 
 	* tools/Makefile.in: Rebuilt.

@@ -1,5 +1,5 @@
 /* MBeanServerFactory.java -- Manages server instances.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -89,7 +89,7 @@ public class MBeanServerFactory
   /**
    * The map of registered servers (identifiers to servers).
    */
-  private static Map servers;
+  private static Map servers = new HashMap();
 
   /**
    * Private constructor to prevent instance creation.
@@ -158,8 +158,6 @@ public class MBeanServerFactory
     if (sm != null)
       sm.checkPermission(new MBeanServerPermission("createMBeanServer"));
     MBeanServer server = createServer(domain);
-    if (servers == null)
-      servers = new HashMap();
     try
       {
 	ObjectName dn = new
