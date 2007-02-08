@@ -1,5 +1,12 @@
 2007-02-07  Roger Sayle  <roger@eyesopen.com>
 
+	* config/rs6000/rs6000.md (ctz<mode>2, ffs<mode>2, popcount<mode>2,
+	parity<mode>2, smulsi3_highpart, abstf2_internal, allocate_stack,
+	tablejumpdi, movsi_to_cr_one): Remove constraints from
+	define_expand's match_operands.
+
+2007-02-07  Roger Sayle  <roger@eyesopen.com>
+
 	* global.c (compute_regsets): Move declatation of "i" inside of
 	#ifdef ELIMINABLE_REGS to avoid unused variable bootstrap failure.
 
