@@ -136,6 +136,11 @@ simple_move (rtx insn)
 	  == BLKmode))
     return NULL_RTX;
 
+  /* Reject PARTIAL_INT modes.  They are used for processor specific
+     purposes and it's probably best not to tamper with them.  */
+  if (GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
+    return NULL_RTX;
+
   return set;
 }
 
