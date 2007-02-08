@@ -215,6 +215,12 @@ void test2(double x, double y)
 
   if (ccos(tan(x)+sin(x-y)*1i) != ccos(-tan(-x)-sin(y-x)*1i))
     link_error ();
+
+  if (-5+x*1i != -~(5+x*1i))
+    link_error ();
+
+  if (tan(x)+tan(y)*1i != -~(tan(-x)+tan(y)*1i))
+    link_error ();
 }
 
 void test3(__complex__ double x, __complex__ double y, int i)
@@ -434,6 +440,12 @@ void test2f(float x, float y)
 
   if (ccosf(tanf(x)+sinf(x-y)*1i) != ccosf(-tanf(-x)-sinf(y-x)*1i))
     link_error ();
+
+  if (-5+x*1i != -~(5+x*1i))
+    link_error ();
+
+  if (tanf(x)+tanf(y)*1i != -~(tanf(-x)+tanf(y)*1i))
+    link_error ();
 }
 
 void test3f(__complex__ float x, __complex__ float y, int i)
@@ -652,6 +664,12 @@ void test2l(long double x, long double y)
     link_error ();
 
   if (ccosl(tanl(x)+sinl(x-y)*1i) != ccosl(-tanl(-x)-sinl(y-x)*1i))
+    link_error ();
+
+  if (-5+x*1i != -~(5+x*1i))
+    link_error ();
+
+  if (tanl(x)+tanl(y)*1i != -~(tanl(-x)+tanl(y)*1i))
     link_error ();
 }
 
