@@ -1,4 +1,28 @@
-2007-02-07  Kyle Galloway  <kgallowa@redhat.com>
+2007-02-08  Kyle Galloway  <kgallowa@redhat.com>
+
+    * classpath/gnu/classpath/jdwp/processor/
+    StackFrameCommandSet.java (executeGetValues): Pass jlong instead
+    of ByteBuffer.
+    (executeSetValues): Ditto.
+    (executeThisObject): Ditto.
+    * classpath/gnu/classpath/jdwp/processor/
+    StackFrameCommandSet.class: Rebuilt.
+    * classpath/lib/gnu/classpath/jdwp/VMVirtualMachine.class:
+    Rebuilt.
+    * classpath/lib/gnu/classpath/jdwp/VMFrame.class: Rebuilt.
+    * classpath/lib/gnu/classpath/jdwp/exception/
+    InvalidFrameException.java: New file.
+    * gnu/classpath/jdwp/VMFrame.java: Added field for thread of
+    frame.
+    (Constructor): New method.
+    * gnu/classpath/jdwp/VMFrame.h: Regenerated.
+    * gnu/classpath/jdwp/VMVirtualMachine.java
+    (getFrame): Changed ByteBuffer to jlong.
+    * gnu/classpath/jdwp/natVMVirtualMachine.cc
+    (getFrame): Implement.
+    * gnu/classpath/jdwp/VMVirtualMachine.h: Regenerated.
+
+2007-02-08  Kyle Galloway  <kgallowa@redhat.com>
 
     * include/java-interp.h (_Jv_InterpFrame): obj_ptr field added
     to hold "this" pointer for frame.
