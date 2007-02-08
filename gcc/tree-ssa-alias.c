@@ -776,43 +776,6 @@ done:
   timevar_pop (TV_MEMORY_PARTITIONING);
 }
 
-/* This function computes the value of the is_aliased bit for
-   variables.  is_aliased is true for any variable that is in an
-   alias bitmap.  */
-
-static void
-compute_is_aliased (void)
-{
-  referenced_var_iterator rvi;
-  tree tag;
-  bitmap aliased_vars = BITMAP_ALLOC (NULL);
-  bitmap_iterator bi;
-  unsigned int i;
-  
-  /* Add is_aliased for all vars pointed to by the symbol tags.  */
-  FOR_EACH_REFERENCED_VAR (tag, rvi)
-    {
-      bitmap aliases;
-      if (TREE_CODE (tag) != SYMBOL_MEMORY_TAG
-	  && TREE_CODE (tag) != NAME_MEMORY_TAG)
-	continue;
-      aliases = MTAG_ALIASES (tag);
-      if (!aliases)
-	continue;
-      
-      bitmap_ior_into (aliased_vars, aliases);	  
-    }
-  
-  EXECUTE_IF_SET_IN_BITMAP (aliased_vars, 0, i, bi)
-    {
-      tree var = referenced_var (i);
-      
-      var_ann (var)->is_aliased = true;
-    }
-  
-  BITMAP_FREE (aliased_vars);
-}
-
 
 /* Compute may-alias information for every variable referenced in function
    FNDECL.
@@ -980,9 +943,6 @@ compute_may_aliases (void)
       dump_points_to_info (dump_file);
       dump_alias_info (dump_file);
     }
-
-  /* Set up is_aliased flags. */
-  compute_is_aliased ();
   
   /* Deallocate memory used by aliasing data structures.  */
   delete_alias_info (ai);
@@ -1170,10 +1130,6 @@ init_alias_info (void)
       /* Clear flow-insensitive alias information from each symbol.  */
       FOR_EACH_REFERENCED_VAR (var, rvi)
 	{
-	  var_ann_t ann = var_ann (var);
-	  
-	  ann->is_aliased = 0;
-
 	  if (MTAG_P (var))
 	    MTAG_ALIASES (var) = NULL;
 

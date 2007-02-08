@@ -375,7 +375,6 @@ static void
 verify_flow_insensitive_alias_info (void)
 {
   tree var;
-  bitmap visited = BITMAP_ALLOC (NULL);
   referenced_var_iterator rvi;
 
   FOR_EACH_REFERENCED_VAR (var, rvi)
@@ -393,7 +392,6 @@ verify_flow_insensitive_alias_info (void)
       EXECUTE_IF_SET_IN_BITMAP (aliases, 0, j, bi)
 	{
 	  alias = referenced_var (j);
-	  bitmap_set_bit (visited, j);
 
 	  if (TREE_CODE (alias) != MEMORY_PARTITION_TAG
 	      && !may_be_aliased (alias))
@@ -405,23 +403,6 @@ verify_flow_insensitive_alias_info (void)
 	}
     }
 
-  FOR_EACH_REFERENCED_VAR (var, rvi)
-    {
-      var_ann_t ann;
-      ann = var_ann (var);
-
-      if (!MTAG_P (var)
-	  && ann->is_aliased
-	  && memory_partition (var) == NULL_TREE
-	  && !bitmap_bit_p (visited, DECL_UID (var)))
-	{
-	  error ("addressable variable that is aliased but is not in any "
-	         "alias set");
-	  goto err;
-	}
-    }
-
-  BITMAP_FREE (visited);
   return;
 
 err:

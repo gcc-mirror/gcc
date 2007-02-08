@@ -337,9 +337,6 @@ dump_variable (FILE *file, tree var)
       print_generic_expr (file, ann->symbol_mem_tag, dump_flags);
     }
 
-  if (ann && ann->is_aliased)
-    fprintf (file, ", is aliased");
-
   if (TREE_ADDRESSABLE (var))
     fprintf (file, ", is addressable");
   
