@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -1242,7 +1242,9 @@ do {									\
 } while (0)
 
 /* For backward source compatibility.  */
-#include <emmintrin.h>
+#ifdef __SSE2__
+# include <emmintrin.h>
+#endif
 
 #endif /* __SSE__ */
 #endif /* _XMMINTRIN_H_INCLUDED */

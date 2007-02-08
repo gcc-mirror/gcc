@@ -1,3 +1,16 @@
+2007-02-08  Harsha Jagasia  <harsha.jagasia@amd.com>
+
+	* config/i386/xmmintrin.h: Make inclusion of emmintrin.h
+	conditional to __SSE2__.
+	(Entries below should have been added to first ChangeLog
+	entry for amdfam10 dated 2007-02-05)
+	* config/i386/emmintrin.h: Generate #error if __SSE2__ is not
+	defined.
+	* config/i386/pmmintrin.h: Generate #error if __SSE3__ is not
+	defined.
+	* config/i386/tmmintrin.h: Generate #error if __SSSE3__ is not
+	defined.
+
 2007-02-08  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c-protos.h (m32c_illegal_subreg_p): New.
