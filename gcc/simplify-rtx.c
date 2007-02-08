@@ -790,11 +790,54 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
       break;
 
     case POPCOUNT:
+      switch (GET_CODE (op))
+	{
+	case BSWAP:
+	case ZERO_EXTEND:
+	  /* (popcount (zero_extend <X>)) = (popcount <X>) */
+	  return simplify_gen_unary (POPCOUNT, mode, XEXP (op, 0),
+				     GET_MODE (XEXP (op, 0)));
+
+	case ROTATE:
+	case ROTATERT:
+	  /* Rotations don't affect popcount.  */
+	  if (!side_effects_p (XEXP (op, 1)))
+	    return simplify_gen_unary (POPCOUNT, mode, XEXP (op, 0),
+				       GET_MODE (XEXP (op, 0)));
+	  break;
+
+	default:
+	  break;
+	}
+      break;
+
     case PARITY:
-      /* (pop* (zero_extend <X>)) = (pop* <X>) */
-      if (GET_CODE (op) == ZERO_EXTEND)
-	return simplify_gen_unary (code, mode, XEXP (op, 0),
-				   GET_MODE (XEXP (op, 0)));
+      switch (GET_CODE (op))
+	{
+	case NOT:
+	case BSWAP:
+	case ZERO_EXTEND:
+	case SIGN_EXTEND:
+	  return simplify_gen_unary (PARITY, mode, XEXP (op, 0),
+				     GET_MODE (XEXP (op, 0)));
+
+	case ROTATE:
+	case ROTATERT:
+	  /* Rotations don't affect parity.  */
+	  if (!side_effects_p (XEXP (op, 1)))
+	    return simplify_gen_unary (PARITY, mode, XEXP (op, 0),
+				       GET_MODE (XEXP (op, 0)));
+	  break;
+
+	default:
+	  break;
+	}
+      break;
+
+    case BSWAP:
+      /* (bswap (bswap x)) -> x.  */
+      if (GET_CODE (op) == BSWAP)
+	return XEXP (op, 0);
       break;
 
     case FLOAT:
@@ -1047,7 +1090,19 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	case BSWAP:
-	  return 0;
+	  {
+	    unsigned int s;
+
+	    val = 0;
+	    for (s = 0; s < width; s += 8)
+	      {
+		unsigned int d = width - s - 8;
+		unsigned HOST_WIDE_INT byte;
+		byte = (arg0 >> s) & 0xff;
+		val |= byte << d;
+	      }
+	  }
+	  break;
 
 	case TRUNCATE:
 	  val = arg0;
@@ -1193,6 +1248,30 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  while (h1)
 	    lv++, h1 &= h1 - 1;
 	  lv &= 1;
+	  break;
+
+	case BSWAP:
+	  {
+	    unsigned int s;
+
+	    hv = 0;
+	    lv = 0;
+	    for (s = 0; s < width; s += 8)
+	      {
+		unsigned int d = width - s - 8;
+		unsigned HOST_WIDE_INT byte;
+
+		if (s < HOST_BITS_PER_WIDE_INT)
+		  byte = (l1 >> s) & 0xff;
+		else
+		  byte = (h1 >> (s - HOST_BITS_PER_WIDE_INT)) & 0xff;
+
+		if (d < HOST_BITS_PER_WIDE_INT)
+		  lv |= byte << d;
+		else
+		  hv |= byte << (d - HOST_BITS_PER_WIDE_INT);
+	      }
+	  }
 	  break;
 
 	case TRUNCATE:

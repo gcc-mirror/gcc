@@ -1,3 +1,13 @@
+2007-02-08  Roger Sayle  <roger@eyesopen.com>
+
+	* simplify-rtx.c (simplify_unary_operation_1) <POPCOUNT>: We can
+	strip zero_extend, bswap and rotates from POCOUNT's argument.
+	<PARITY>: Likewise, we can strip not, bswap, sign_extend,
+	zero_extend and rotates from PARITY's argument.
+	<BSWAP>: A byte-swap followed by a byte-swap is an identity.
+	(simplify_const_unary_operation) <BSWAP>: Evaluate the byte-swap
+	of an integer constant at compile-time.
+
 2007-02-08  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 30562
