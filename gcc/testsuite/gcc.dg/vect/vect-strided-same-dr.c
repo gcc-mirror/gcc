@@ -33,7 +33,7 @@ main1 (s * __restrict__  pIn, s* __restrict__ pOut)
       pOut++;
       pIn++;
     }
-  
+
   /* check results:  */
   for (i = 0; i < N/2; i++)
     {
@@ -55,8 +55,8 @@ int main (void)
 {
   short i;
 
-  for (i = 0; i < N*2; i++)
-    { 
+  for (i = 0; i < N; i++)
+    {
       buffer1[i].a = i;
       buffer1[i].b = i + 8;
       buffer2[i].a = i * 3;
@@ -64,7 +64,7 @@ int main (void)
       if (buffer1[i].a == 500)
          abort();
     }
-  
+
   check_vect ();
 
   main1 (buffer1, buffer2);
@@ -74,4 +74,3 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  { target { vect_interleave && vect_extract_even_odd } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
-  
