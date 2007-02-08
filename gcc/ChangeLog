@@ -1,3 +1,11 @@
+2007-02-08  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c-protos.h (m32c_illegal_subreg_p): New.
+	* config/m32c/m32c.c (legal_subregs): New.
+	(m32c_illegal_subreg_p): New.
+	* config/m32c/predicates.md (m32c_any_operand): Use it to reject
+	unsupported subregs of hard regs.
+
 2007-02-08  Jan Hubicka  <jh@suse.cz>
 
 	* tree-cfg.c (bsi_replace): Shortcut when replacing the statement with

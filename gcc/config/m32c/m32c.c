@@ -2749,6 +2749,81 @@ m32c_insert_attributes (tree node ATTRIBUTE_UNUSED,
 
 /* Predicates */
 
+/* This is a list of legal subregs of hard regs.  */
+static struct {
+  enum machine_mode outer_mode_size;
+  enum machine_mode inner_mode_size;
+  unsigned int regno;
+  int byte_mask;
+  int legal_when;
+} legal_subregs[] = {
+  {1, 2, R0_REGNO, 0x03, 1}, /* r0h r0l */
+  {1, 2, R1_REGNO, 0x03, 1}, /* r1h r1l */
+  {1, 2, A0_REGNO, 0x01, 1},
+  {1, 2, A1_REGNO, 0x01, 1},
+
+  {1, 4, A0_REGNO, 0x01, 1},
+  {1, 4, A1_REGNO, 0x01, 1},
+
+  {2, 4, R0_REGNO, 0x05, 1}, /* r2 r0 */
+  {2, 4, R1_REGNO, 0x05, 1}, /* r3 r1 */
+  {2, 4, A0_REGNO, 0x05, 16}, /* a1 a0 */
+  {2, 4, A0_REGNO, 0x01, 24}, /* a1 a0 */
+  {2, 4, A1_REGNO, 0x01, 24}, /* a1 a0 */
+
+  {4, 8, R0_REGNO, 0x55, 1}, /* r3 r1 r2 r0 */
+};
+
+/* Returns TRUE if OP is a subreg of a hard reg which we don't
+   support.  */
+bool
+m32c_illegal_subreg_p (rtx op)
+{
+  rtx orig_op = op;
+  int offset;
+  unsigned int i;
+  int src_mode, dest_mode;
+
+  if (GET_CODE (op) != SUBREG)
+    return false;
+
+  dest_mode = GET_MODE (op);
+  offset = SUBREG_BYTE (op);
+  op = SUBREG_REG (op);
+  src_mode = GET_MODE (op);
+
+  if (GET_MODE_SIZE (dest_mode) == GET_MODE_SIZE (src_mode))
+    return false;
+  if (GET_CODE (op) != REG)
+    return false;
+  if (REGNO (op) >= MEM0_REGNO)
+    return false;
+
+  offset = (1 << offset);
+
+  for (i = 0; i < sizeof(legal_subregs)/sizeof(legal_subregs[0]); i ++)
+    if (legal_subregs[i].outer_mode_size == GET_MODE_SIZE (dest_mode)
+	&& legal_subregs[i].regno == REGNO (op)
+	&& legal_subregs[i].inner_mode_size == GET_MODE_SIZE (src_mode)
+	&& legal_subregs[i].byte_mask & offset)
+      {
+	switch (legal_subregs[i].legal_when)
+	  {
+	  case 1:
+	    return false;
+	  case 16:
+	    if (TARGET_A16)
+	      return false;
+	    break;
+	  case 24:
+	    if (TARGET_A24)
+	      return false;
+	    break;
+	  }
+      }
+  return true;
+}
+
 /* Returns TRUE if we support a move between the first two operands.
    At the moment, we just want to discourage mem to mem moves until
    after reload, because reload has a hard time with our limited
