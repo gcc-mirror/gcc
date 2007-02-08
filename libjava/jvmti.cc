@@ -271,14 +271,7 @@ _Jv_JVMTI_GetFrameCount (MAYBE_UNUSED jvmtiEnv *env, jthread thread,
   THREAD_CHECK_IS_ALIVE (thr);
    
   _Jv_Frame *frame = reinterpret_cast<_Jv_Frame *> (thr->frame);
-  (*frame_count) = 0;
-  
-  while (frame != NULL)
-    {
-      (*frame_count)++;
-      frame = frame->next;
-    }
-  
+  (*frame_count) = frame->depth ();
   return JVMTI_ERROR_NONE;
 }
 
