@@ -211,7 +211,7 @@ LSYM(Lend_fde):
 # if defined(__thumb2__)
 	pop\cond	{\regs, pc}
 # else
-	ldm\cond\dirn	sp!, {\regs, lr}
+	ldm\cond\dirn	sp!, {\regs, pc}
 # endif
 	.endif
 #endif
