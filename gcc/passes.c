@@ -507,8 +507,8 @@ init_optimization_passes (void)
   NEXT_PASS (pass_ipa_pta);
   *p = NULL;
 
-  /* These passes are run after IPA passes on every function that is being output
-     to the assemlber file.  */
+  /* These passes are run after IPA passes on every function that is being
+     output to the assembler file.  */
   p = &all_passes;
   NEXT_PASS (pass_apply_inline);
   NEXT_PASS (pass_all_optimizations);
