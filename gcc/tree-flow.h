@@ -228,9 +228,6 @@ struct var_ann_d GTY(())
   /* Used when building base variable structures in a var_map.  */
   unsigned base_var_processed : 1;
 
-  /* Nonzero if this variable is in the alias set of another variable.  */
-  unsigned is_aliased : 1;
-
   /* Nonzero if this variable was used after SSA optimizations were
      applied.  We set this when translating out of SSA form.  */
   unsigned used : 1;

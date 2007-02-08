@@ -4663,6 +4663,7 @@ compute_points_to_sets (struct alias_info *ai)
 	  if (is_gimple_reg (PHI_RESULT (phi)))
 	    {
 	      find_func_aliases (phi);
+
 	      /* Update various related attributes like escaped
 		 addresses, pointer dereferences for loads and stores.
 		 This is used when creating name tags and alias

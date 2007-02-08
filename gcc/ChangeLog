@@ -1,3 +1,19 @@
+2007-02-08  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 30562
+	* tree-flow.h (struct var_ann_d): Remove field 'is_used'.
+	Update all users.
+	* tree-ssa-alias.c (compute_is_aliased): Remove.  Update all
+	users.
+	(init_alias_info):
+	* tree-ssa-live.c (remove_unused_locals): Do not remove
+	TREE_ADDRESSABLE variables.
+	* tree-ssa-structalias.c (compute_points_to_sets): Tidy.
+	* tree-ssa-operands.c (add_virtual_operand): Remove argument
+	FOR_CLOBBER.  Update all users.
+	If VAR has an associated alias set, add a virtual operand for
+	it if no alias is found to conflict with the memory reference.
+
 2007-02-07  Jan Hubicka  <jh@suse.cz>
 	    Robert Kidd <rkidd@crhc.uiuc.edu>
 
