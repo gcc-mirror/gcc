@@ -354,7 +354,7 @@ visit_hist (void **slot, void *data)
       debug_generic_stmt (hist->hvalue.stmt);
       error_found = true;
     }
-  return 0;
+  return 1;
 }
 
 /* Verify sanity of the histograms.  */
@@ -406,7 +406,7 @@ free_hist (void **slot, void *data ATTRIBUTE_UNUSED)
   memset (hist, 0xab, sizeof (*hist));
 #endif
   free (hist);
-  return 0;
+  return 1;
 }
 
 void
