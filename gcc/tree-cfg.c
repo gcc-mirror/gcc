@@ -2840,6 +2840,8 @@ bsi_replace (const block_stmt_iterator *bsi, tree stmt, bool update_eh_info)
   int eh_region;
   tree orig_stmt = bsi_stmt (*bsi);
 
+  if (stmt == orig_stmt)
+    return;
   SET_EXPR_LOCUS (stmt, EXPR_LOCUS (orig_stmt));
   set_bb_for_stmt (stmt, bsi->bb);
 
@@ -2852,11 +2854,11 @@ bsi_replace (const block_stmt_iterator *bsi, tree stmt, bool update_eh_info)
 	{
 	  remove_stmt_from_eh_region (orig_stmt);
 	  add_stmt_to_eh_region (stmt, eh_region);
-	  gimple_duplicate_stmt_histograms (cfun, stmt, cfun, orig_stmt);
-          gimple_remove_stmt_histograms (cfun, orig_stmt);
 	}
     }
 
+  gimple_duplicate_stmt_histograms (cfun, stmt, cfun, orig_stmt);
+  gimple_remove_stmt_histograms (cfun, orig_stmt);
   delink_stmt_imm_use (orig_stmt);
   *bsi_stmt_ptr (*bsi) = stmt;
   mark_stmt_modified (stmt);

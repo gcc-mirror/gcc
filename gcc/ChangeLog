@@ -1,3 +1,8 @@
+2007-02-08  Jan Hubicka  <jh@suse.cz>
+
+	* tree-cfg.c (bsi_replace): Shortcut when replacing the statement with
+	the same one; always update histograms.
+
 2007-02-08  Diego Novillo  <dnovillo@redhat.com>
 
 	* passes.c (init_optimization_passes): Tidy comment.
