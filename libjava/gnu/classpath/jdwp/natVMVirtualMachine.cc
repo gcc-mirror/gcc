@@ -14,6 +14,8 @@ details. */
 #include <jvm.h>
 #include <jvmti.h>
 
+#include <java-interp.h>
+
 #include <java/lang/Class.h>
 #include <java/lang/ClassLoader.h>
 #include <java/lang/Integer.h>
@@ -21,6 +23,7 @@ details. */
 #include <java/lang/StringBuilder.h>
 #include <java/lang/Thread.h>
 #include <java/nio/ByteBuffer.h>
+#include <java/nio/ByteBufferImpl.h>
 #include <java/util/ArrayList.h>
 #include <java/util/Collection.h>
 #include <java/util/Hashtable.h>
@@ -39,6 +42,7 @@ details. */
 #include <gnu/classpath/jdwp/event/VmInitEvent.h>
 #include <gnu/classpath/jdwp/event/filters/IEventFilter.h>
 #include <gnu/classpath/jdwp/event/filters/LocationOnlyFilter.h>
+#include <gnu/classpath/jdwp/exception/InvalidFrameException.h>
 #include <gnu/classpath/jdwp/exception/InvalidLocationException.h>
 #include <gnu/classpath/jdwp/exception/InvalidMethodException.h>
 #include <gnu/classpath/jdwp/exception/JdwpInternalErrorException.h>
@@ -432,9 +436,50 @@ gnu::classpath::jdwp::VMVirtualMachine::getFrames (MAYBE_UNUSED Thread *thread,
 
 gnu::classpath::jdwp::VMFrame *
 gnu::classpath::jdwp::VMVirtualMachine::
-getFrame (MAYBE_UNUSED Thread *thread, MAYBE_UNUSED::java::nio::ByteBuffer *bb)
+getFrame (Thread *thread, jlong frameID)
 {
-  return NULL;
+  using namespace gnu::classpath::jdwp::exception;
+  
+  _Jv_Frame *vm_frame = (_Jv_Frame *) thread->frame;
+  jint depth = 0;
+  _Jv_Frame *frame = reinterpret_cast<_Jv_Frame *> (frameID); 
+  
+  // We need to find the stack depth of the frame, so search through the call
+  // stack to find it.  This also checks for a valid frameID.
+  while (vm_frame != frame)
+    {
+      vm_frame = vm_frame->next;
+      depth++;
+      if (vm_frame == NULL)
+        throw new InvalidFrameException (frameID);
+    }
+  
+  Location *loc = NULL;
+  jvmtiFrameInfo info;
+  jvmtiError jerr;
+  jint num_frames;
+  jclass klass;
+  
+  // Get the info for the frame of interest
+  jerr = _jdwp_jvmtiEnv->GetStackTrace (thread, depth, 1, &info, &num_frames);
+   
+  if (jerr != JVMTI_ERROR_NONE)
+    throw_jvmti_error (jerr);
+  
+  jerr = _jdwp_jvmtiEnv->GetMethodDeclaringClass (info.method, &klass);
+      
+  if (jerr != JVMTI_ERROR_NONE)
+    throw_jvmti_error (jerr);
+
+  VMMethod *meth 
+    = getClassMethod (klass, reinterpret_cast<jlong> (info.method));
+  
+  if (info.location == -1)
+    loc = new Location (meth, 0);
+  else
+    loc = new Location (meth, info.location);
+  
+  return new VMFrame (thread, reinterpret_cast<jlong> (vm_frame), loc); 
 }
 
 jint

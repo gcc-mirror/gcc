@@ -1,7 +1,7 @@
 /* VMVirtualMachine.java -- A reference implementation of a JDWP virtual
    machine
 
-   Copyright (C) 2005, 2006 Free Software Foundation
+   Copyright (C) 2005, 2006, 2007 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -243,7 +243,7 @@ public class VMVirtualMachine
    * @param  bb      buffer containing the frame's ID
    * @return the desired frame
    */
-  public static native VMFrame getFrame (Thread thread, ByteBuffer bb)
+  public static native VMFrame getFrame (Thread thread, long frameID)
     throws JdwpException;
 
   /**

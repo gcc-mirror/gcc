@@ -1,5 +1,5 @@
 /* VMFrame.java -- Reference implementation of VM hooks for JDWP Frame access.
-   Copyright (C) 2005, 2006 Free Software Foundation
+   Copyright (C) 2005, 2006, 2007 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -54,7 +54,10 @@ public class VMFrame
    */
   public static final int SIZE = 8;
 
-  // The object this frame resides in
+  // The thread this frame resides in
+  private Thread thread;
+   
+  //The object of this frame
   private Object obj;
   
   // The current location of this frame
@@ -62,6 +65,20 @@ public class VMFrame
   
   // id of this frame
   private long id;
+  
+  /**
+   * Create a new VMFrame object.
+   * 
+   * @param thr a Thread, the thread this frame is in
+   * @param frame_id a long, the jframeID of this frame
+   * @param frame_loc a Location, the location of this frame
+   */
+  public VMFrame(Thread thr, long frame_id, Location frame_loc)
+  {
+    thread = thr;
+    id = frame_id;
+    loc = frame_loc;
+  }
   
   /**
    * Gets the current location of the frame.
@@ -84,6 +101,14 @@ public class VMFrame
    * @param value The value to assign the variable to
    */
   public native void setValue(int slot, Object value);
+  
+  /**
+   * Get the thread this frame is in.
+   */
+  public Thread getThread()
+  {
+    return thread;
+  }
 
   /**
    * Get the object which is represented by 'this' in the context of the frame,
