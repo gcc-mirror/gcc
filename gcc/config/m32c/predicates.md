@@ -27,7 +27,11 @@
 
 (define_predicate "m32c_any_operand"
   (ior (match_operand 0 "general_operand")
-       (match_operand 1 "memory_operand")))
+       (match_operand 1 "memory_operand"))
+  {
+    return ! m32c_illegal_subreg_p (op);
+  }
+)
 
 ; Likewise for nonimmediate_operand.
 
