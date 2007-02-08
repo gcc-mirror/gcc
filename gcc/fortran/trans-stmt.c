@@ -2458,6 +2458,13 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
   gfc_saved_var *saved_vars;
   iter_info *this_forall;
   forall_info *info;
+  bool need_mask;
+
+  /* Do nothing if the mask is false.  */
+  if (code->expr
+      && code->expr->expr_type == EXPR_CONSTANT
+      && !code->expr->value.logical)
+    return build_empty_stmt ();
 
   n = 0;
   /* Count the FORALL index number.  */
@@ -2557,8 +2564,20 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
   info->nvar = nvar;
   info->size = size;
 
-  /* First we need to allocate the mask.  */
   if (code->expr)
+    {
+      /* If the mask is .true., consider the FORALL unconditional.  */
+      if (code->expr->expr_type == EXPR_CONSTANT
+	  && code->expr->value.logical)
+	need_mask = false;
+      else
+	need_mask = true;
+    }
+  else
+    need_mask = false;
+
+  /* First we need to allocate the mask.  */
+  if (need_mask)
     {
       /* As the mask array can be very big, prefer compact boolean types.  */
       tree mask_type = gfc_get_logical_type (gfc_logical_kinds[0].kind);
@@ -2583,7 +2602,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
 
   /* Copy the mask into a temporary variable if required.
      For now we assume a mask temporary is needed.  */
-  if (code->expr)
+  if (need_mask)
     {
       /* As the mask array can be very big, prefer compact boolean types.  */
       tree mask_type = gfc_get_logical_type (gfc_logical_kinds[0].kind);

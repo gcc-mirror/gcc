@@ -1,3 +1,8 @@
+2007-02-08  Roger Sayle  <roger@eyesopen.com>
+
+	* trans-stmt.c (gfc_trans_forall_1): Optimize the cases where the
+	mask expression is a compile-time constant (".true." or ".false.").
+
 2007-02-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/30611
