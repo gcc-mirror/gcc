@@ -1,3 +1,10 @@
+2007-02-07  Kyle Galloway  <kgallowa@redhat.com>
+
+    * include/java-interp.h (_Jv_InterpFrame): obj_ptr field added
+    to hold "this" pointer for frame.
+    (_Jv_InterpFrame::get_this_ptr): New method.
+    * interpret-run.cc: Copy the "this" pointer into obj_ptr.
+
 2007-02-07  Keith Seitz  <keiths@redhat.com>
 
 	* include/java-interp.h (_Jv_Frame::depth):
