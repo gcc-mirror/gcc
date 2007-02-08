@@ -349,6 +349,15 @@ details.  */
   */
   memcpy ((void*) locals, (void*) args, meth->args_raw_size);
 
+#ifdef DEBUG
+  // Get the object pointer for this method, after checking that it is
+  // non-static.
+  _Jv_Method *method = meth->get_method ();
+   
+  if ((method->accflags & java::lang::reflect::Modifier::STATIC) == 0)
+    frame_desc.obj_ptr = locals[0].o;
+#endif
+
   _Jv_word *pool_data = meth->defining_class->constants.data;
 
   /* These three are temporaries for common code used by several

@@ -387,6 +387,9 @@ public:
   _Jv_word *locals;
   char *locals_type;
 
+  // Object pointer for this frame ("this")
+  jobject obj_ptr;
+
   _Jv_InterpFrame (void *meth, java::lang::Thread *thr, jclass proxyCls = NULL)
   : _Jv_Frame (reinterpret_cast<_Jv_MethodBase *> (meth), thr,
 	             frame_interpreter)
@@ -394,12 +397,18 @@ public:
     next_interp = (_Jv_InterpFrame *) thr->interp_frame;
     proxyClass = proxyCls;
     thr->interp_frame = (gnu::gcj::RawData *) this;
+    obj_ptr = NULL;
   }
 
   ~_Jv_InterpFrame ()
   {
     thread->interp_frame = (gnu::gcj::RawData *) next_interp;
   }
+
+  jobject get_this_ptr ()
+  {
+    return obj_ptr;
+  } 
 };
 
 // A native frame in the call stack really just a placeholder
