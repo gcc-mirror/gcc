@@ -20,6 +20,8 @@
 
 // 22.2.2.1.1  num_get members
 
+// { dg-do run { xfail lax_strtofp } }
+
 #include <locale>
 #include <sstream>
 #include <testsuite_hooks.h>

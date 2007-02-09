@@ -27,7 +27,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-// { dg-do compile }
+// { dg-do compile { xfail uclibc } }
+// { dg-excess-errors "" { target uclibc } }
 
 #include <cmath>
 

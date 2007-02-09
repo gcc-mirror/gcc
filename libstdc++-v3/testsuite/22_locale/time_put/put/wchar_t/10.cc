@@ -20,6 +20,8 @@
 
 // 22.2.5.3.1 time_put members
 
+// { dg-do run { xfail dummy_wcsftime } }
+
 #include <locale>
 #include <sstream>
 #include <testsuite_hooks.h>

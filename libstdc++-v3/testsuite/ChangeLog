@@ -1,0 +1,18 @@
+2007-02-09  Richard Sandiford  <richard@codesourcery.com>
+
+	* 22_locale/time_put/put/wchar_t/1.cc: XFAIL if dummy_wcsftime.
+	* 22_locale/time_put/put/wchar_t/5.cc: Likewise.
+	* 22_locale/time_put/put/wchar_t/9.cc: Likewise.
+	* 22_locale/time_put/put/wchar_t/10.cc: Likewise.
+	* 22_locale/num_get/get/wchar_t/2.cc: XFAIL if lax_strtofp.
+	* 22_locale/num_get/get/char/2.cc: Likewise.
+	* 27_io/basic_istream/extractors_arithmetic/wchar_t/12.cc: Likewise.
+	* 27_io/basic_istream/extractors_arithmetic/wchar_t/09.cc: Likewise.
+	* 27_io/basic_istream/extractors_arithmetic/char/12.cc: Likewise.
+	* 27_io/basic_istream/extractors_arithmetic/char/09.cc: Likewise.
+	* 27_io/basic_ostream/inserters_arithmetic/wchar_t/6.cc: Likewise.
+	* 27_io/basic_ostream/inserters_arithmetic/char/6.cc: Likewise.
+	* 26_numerics/cmath/c99_classification_macros_c++.cc: XFAIL
+	for uClibc.
+	* 26_numerics/cmath/c99_classification_macros_c.cc: Likewise.
+

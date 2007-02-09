@@ -19,6 +19,8 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
+// { dg-do run { xfail lax_strtofp } }
+
 #include <cmath> // for abs
 #include <cfloat> // for DBL_EPSILON
 #include <sstream>
