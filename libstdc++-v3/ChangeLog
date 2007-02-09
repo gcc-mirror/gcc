@@ -1,3 +1,28 @@
+2007-02-09  Richard Sandiford  <richard@codesourcery.com>
+
+	* testsuite/22_locale/time_put/put/wchar_t/1.cc: XFAIL if
+	dummy_wcsftime.
+	* testsuite/22_locale/time_put/put/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/9.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/10.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/2.cc: XFAIL if lax_strtofp.
+	* testsuite/22_locale/num_get/get/char/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/12.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/09.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/12.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/09.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/6.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/6.cc:
+	Likewise.
+	* testsuite/26_numerics/cmath/c99_classification_macros_c++.cc: XFAIL
+	for uClibc.
+	* testsuite/26_numerics/cmath/c99_classification_macros_c.cc: Likewise.
+
 2007-02-09  Paolo Carlini  <pcarlini@suse.de>
 
 	* scripts/testsuite_flags.in: Add back @LIBICONV@ to SECTIONLDFLAGS.
