@@ -8043,6 +8043,40 @@ fold_comparison (enum tree_code code, tree type, tree op0, tree op1)
 
       lhs = fold_build2 (lhs_add ? PLUS_EXPR : MINUS_EXPR,
 			 TREE_TYPE (arg1), const2, const1);
+
+      /* If the constant operation overflowed this can be
+	 simplified as a comparison against INT_MAX/INT_MIN.  */
+      if (TREE_CODE (lhs) == INTEGER_CST
+	  && TREE_OVERFLOW (lhs))
+	{
+	  int const1_sgn = tree_int_cst_sgn (const1);
+	  enum tree_code code2 = code;
+
+	  /* Get the sign of the constant on the lhs if the
+	     operation were VARIABLE + CONST1.  */
+	  if (TREE_CODE (arg0) == MINUS_EXPR)
+	    const1_sgn = -const1_sgn;
+
+	  /* The sign of the constant determines if we overflowed
+	     INT_MAX (const1_sgn == -1) or INT_MIN (const1_sgn == 1).
+	     Canonicalize to the INT_MIN overflow by swapping the comparison
+	     if necessary.  */
+	  if (const1_sgn == -1)
+	    code2 = swap_tree_comparison (code);
+
+	  /* We now can look at the canonicalized case
+	       VARIABLE + 1  CODE2  INT_MIN
+	     and decide on the result.  */
+	  if (code2 == LT_EXPR
+	      || code2 == LE_EXPR
+	      || code2 == EQ_EXPR)
+	    return omit_one_operand (type, boolean_false_node, variable);
+	  else if (code2 == NE_EXPR
+		   || code2 == GE_EXPR
+		   || code2 == GT_EXPR)
+	    return omit_one_operand (type, boolean_true_node, variable);
+	}
+
       if (TREE_CODE (lhs) == TREE_CODE (arg1)
 	  && (TREE_CODE (lhs) != INTEGER_CST
 	      || !TREE_OVERFLOW (lhs)))

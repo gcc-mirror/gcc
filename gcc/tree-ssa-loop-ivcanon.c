@@ -480,6 +480,9 @@ remove_empty_loop (struct loop *loop)
   unsigned n_before, freq_in, freq_h;
   gcov_type exit_count = exit->count;
 
+  if (dump_file)
+    fprintf (dump_file, "Removing empty loop %d\n", loop->num);
+
   non_exit = EDGE_SUCC (exit->src, 0);
   if (non_exit == exit)
     non_exit = EDGE_SUCC (exit->src, 1);
