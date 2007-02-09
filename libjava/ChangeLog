@@ -26,34 +26,34 @@
 
 2007-02-08  Kyle Galloway  <kgallowa@redhat.com>
 
-    * classpath/gnu/classpath/jdwp/processor/
-    StackFrameCommandSet.java (executeGetValues): Pass jlong instead
-    of ByteBuffer.
-    (executeSetValues): Ditto.
-    (executeThisObject): Ditto.
-    * classpath/gnu/classpath/jdwp/processor/
-    StackFrameCommandSet.class: Rebuilt.
-    * classpath/lib/gnu/classpath/jdwp/VMVirtualMachine.class:
-    Rebuilt.
-    * classpath/lib/gnu/classpath/jdwp/VMFrame.class: Rebuilt.
-    * classpath/lib/gnu/classpath/jdwp/exception/
-    InvalidFrameException.java: New file.
-    * gnu/classpath/jdwp/VMFrame.java: Added field for thread of
-    frame.
-    (Constructor): New method.
-    * gnu/classpath/jdwp/VMFrame.h: Regenerated.
-    * gnu/classpath/jdwp/VMVirtualMachine.java
-    (getFrame): Changed ByteBuffer to jlong.
-    * gnu/classpath/jdwp/natVMVirtualMachine.cc
-    (getFrame): Implement.
-    * gnu/classpath/jdwp/VMVirtualMachine.h: Regenerated.
+	* classpath/gnu/classpath/jdwp/processor/
+	StackFrameCommandSet.java (executeGetValues): Pass jlong instead
+	of ByteBuffer.
+	(executeSetValues): Ditto.
+	(executeThisObject): Ditto.
+	* classpath/gnu/classpath/jdwp/processor/
+	StackFrameCommandSet.class: Rebuilt.
+	* classpath/lib/gnu/classpath/jdwp/VMVirtualMachine.class:
+	Rebuilt.
+	* classpath/lib/gnu/classpath/jdwp/VMFrame.class: Rebuilt.
+	* classpath/lib/gnu/classpath/jdwp/exception/
+	InvalidFrameException.java: New file.
+	* gnu/classpath/jdwp/VMFrame.java: Added field for thread of
+	frame.
+	(Constructor): New method.
+	* gnu/classpath/jdwp/VMFrame.h: Regenerated.
+	* gnu/classpath/jdwp/VMVirtualMachine.java
+	(getFrame): Changed ByteBuffer to jlong.
+	* gnu/classpath/jdwp/natVMVirtualMachine.cc
+	(getFrame): Implement.
+	* gnu/classpath/jdwp/VMVirtualMachine.h: Regenerated.
 
 2007-02-08  Kyle Galloway  <kgallowa@redhat.com>
 
-    * include/java-interp.h (_Jv_InterpFrame): obj_ptr field added
-    to hold "this" pointer for frame.
-    (_Jv_InterpFrame::get_this_ptr): New method.
-    * interpret-run.cc: Copy the "this" pointer into obj_ptr.
+	* include/java-interp.h (_Jv_InterpFrame): obj_ptr field added
+	to hold "this" pointer for frame.
+	(_Jv_InterpFrame::get_this_ptr): New method.
+	* interpret-run.cc: Copy the "this" pointer into obj_ptr.
 
 2007-02-07  Keith Seitz  <keiths@redhat.com>
 
@@ -63,10 +63,10 @@
 
 2007-02-07  Kyle Galloway  <kgallowa@redhat.com>
 
-    * jvmti.cc (CHECK_FOR_NATIVE_METHOD): New macro.
-    (_Jv_JVMTI_GetMaxLocals): New method.
-    * include/java-interp.h
-    (_Jv_InterpMethod::get_max_locals): New method.
+	* jvmti.cc (CHECK_FOR_NATIVE_METHOD): New macro.
+	(_Jv_JVMTI_GetMaxLocals): New method.
+	* include/java-interp.h
+	(_Jv_InterpMethod::get_max_locals): New method.
 
 2007-02-01 Marco Trudel <mtrudel@gmx.ch>
 
@@ -362,10 +362,10 @@
 
 2007-01-26  Andrew Haley  <aph@redhat.com>
 
-        * java/lang/natClass.cc (initializeClass): Re-throw
-        SecurityExceptions.
-        * java/lang/natVMClassLoader.cc (loadClass): checkPackageAccess.
-        * java/lang/ClassLoader.java: (loadClass): Likewise.
+	* java/lang/natClass.cc (initializeClass): Re-throw
+	SecurityExceptions.
+	* java/lang/natVMClassLoader.cc (loadClass): checkPackageAccess.
+	* java/lang/ClassLoader.java: (loadClass): Likewise.
 
 2007-01-26  Tom Tromey  <tromey@redhat.com>
 
@@ -406,9 +406,9 @@
 
 2007-01-24  Kyle Galloway  <kgallowa@redhat.com>
 
-    * libjava/testsuite/libjava.jvmti/jvmti-interp.exp: New file.
-    * libjava/testsuite/libjava.jvmti/interp: New folder.
-    * libjava/testsuite/lib/libjava.exp (exec_gij): New Method.
+	* libjava/testsuite/libjava.jvmti/jvmti-interp.exp: New file.
+	* libjava/testsuite/libjava.jvmti/interp: New folder.
+	* libjava/testsuite/lib/libjava.exp (exec_gij): New Method.
 
 2007-01-24  Keith Seitz  <keiths@redhat.com>
 
