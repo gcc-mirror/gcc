@@ -27,8 +27,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-// { dg-do compile { xfail *-*-linux* *-*-darwin* } }
-// { dg-excess-errors "" { target *-*-linux* *-*-darwin* } }
+// { dg-do compile { xfail { { *-*-linux* *-*-darwin* } || uclibc } } }
+// { dg-excess-errors "" { target { { *-*-linux* *-*-darwin* } || uclibc } } }
 
 #include <math.h>
 

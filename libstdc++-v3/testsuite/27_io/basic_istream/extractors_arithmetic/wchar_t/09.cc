@@ -18,6 +18,8 @@
 
 // 27.6.1.2.2 arithmetic extractors
 
+// { dg-do run { xfail lax_strtofp } }
+
 #include <istream>
 #include <sstream>
 #include <locale>

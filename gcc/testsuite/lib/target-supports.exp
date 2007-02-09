@@ -2045,6 +2045,24 @@ proc check_effective_target_uclibc {} {
     }]
 }
 
+# Return 1 if
+#   (a) an error of a few ULP is expected in string to floating-point
+#       conversion functions; and
+#   (b) overflow is not always detected correctly by those functions.
+
+proc check_effective_target_lax_strtofp {} {
+    # By default, assume that all uClibc targets suffer from this.
+    return [check_effective_target_uclibc]
+}
+
+# Return 1 if this is a target for which wcsftime is a dummy
+# function that always returns 0.
+
+proc check_effective_target_dummy_wcsftime {} {
+    # By default, assume that all uClibc targets suffer from this.
+    return [check_effective_target_uclibc]
+}
+
 # Return 1 if the target matches the effective target 'arg', 0 otherwise.
 # This can be used with any check_* proc that takes no argument and
 # returns only 1 or 0.  It could be used with check_* procs that take
