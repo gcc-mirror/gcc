@@ -199,7 +199,7 @@ DEFPARAM(PARAM_LARGE_UNIT_INSNS,
 DEFPARAM(PARAM_INLINE_UNIT_GROWTH,
 	 "inline-unit-growth",
 	 "how much can given compilation unit grow because of the inlining (in percent)",
-	 60, 0, 0)
+	 30, 0, 0)
 DEFPARAM(PARAM_INLINE_CALL_COST,
 	 "inline-call-cost",
 	 "expense of call operation relative to ordinary arithmetic operations",

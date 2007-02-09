@@ -1,5 +1,8 @@
 2007-02-09  Jan Hubicka  <jh@suse.cz>
 
+	* params.def (PARAM_INLINE_UNIT_GROWTH): Set to 30.
+	* doc/invoke.texi (inline-unit-growth): Update default value.
+
 	* Makefile.in (passes.o, ipa-inline.o): Add dependencies.
 	* cgraphbuild.c (build_cgraph_edges): Compute frequencies.
 	(rebuild_cgraph_edges): Likewise.
