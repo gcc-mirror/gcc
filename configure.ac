@@ -2096,7 +2096,8 @@ baseargs=
 keep_next=no
 skip_next=no
 eval "set -- $ac_configure_args"
-for ac_arg; do
+for ac_arg
+do
   if test X"$skip_next" = X"yes"; then
     skip_next=no
     continue
