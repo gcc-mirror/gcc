@@ -1,3 +1,18 @@
+2007-02-09  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/VMVirtualMachine.java
+	(_stepping_threads): New member.
+	* classpath/lib/gnu/classpath/jdwp/VMVirtualMachine.class:
+	Regenerated.
+	* gnu/classpath/jdwp/VMVirtualMachine.h:
+	Regenerated.
+	* gnu/claspath/jdwp/natVMVirtualMachine.cc
+	(get_request_step_filter): New function.
+	(DISABLE_EVENT): New macro.
+	(initialize): Initialize _stepping_threads.
+	(registerEvent): Implement EVENT_SINGLE_STEP.
+	(unregisterEvent): Likewise.
+
 2007-02-08  Keith Seitz  <keiths@redhat.com>
 
 	* sources.am: Regenerate.

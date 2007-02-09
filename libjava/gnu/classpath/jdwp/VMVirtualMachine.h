@@ -59,6 +59,8 @@ public:
   static void clearEvents (jbyte);
 private:
   static ::java::util::Hashtable *_jdwp_suspend_counts;
+public: // actually package-private
+  static ::java::util::Hashtable * _stepping_threads;
 public:
 
   static ::java::lang::Class class$;

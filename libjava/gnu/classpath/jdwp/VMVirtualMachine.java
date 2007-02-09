@@ -61,6 +61,9 @@ public class VMVirtualMachine
   // Thread suspension table. Maps Thread to suspend count (Integer)
   private static Hashtable _jdwp_suspend_counts;
 
+  // List of stepping threads: maps Thread -> stepping info
+  static Hashtable _stepping_threads;
+  
   public static native void initialize ();
 
   /**
