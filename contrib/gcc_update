@@ -119,7 +119,7 @@ libgomp/configure: libgomp/configure.ac libgomp/aclocal.m4
 libgomp/config.h.in: libgomp/configure.ac libgomp/aclocal.m4
 # Top level
 Makefile.in: Makefile.tpl Makefile.def
-configure: configure.in config/acx.m4
+configure: configure.ac config/acx.m4
 EOF
 }
 
