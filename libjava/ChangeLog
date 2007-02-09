@@ -2,6 +2,9 @@
 
 	* sources.am: Regenerate.
 	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* gcj/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
 
 	* classpath/lib/javax/management/MBeanServerFactory.class:
 	Regenerate.
