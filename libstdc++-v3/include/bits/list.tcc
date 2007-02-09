@@ -1,6 +1,6 @@
 // List implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -176,14 +176,25 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
     {
       iterator __first = begin();
       iterator __last = end();
+      iterator __extra = __last;
       while (__first != __last)
 	{
 	  iterator __next = __first;
 	  ++__next;
 	  if (*__first == __value)
-	    _M_erase(__first);
+	    {
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	      // 526. Is it undefined if a function in the standard changes
+	      // in parameters?
+	      if (&*__first != &__value)
+		_M_erase(__first);
+	      else
+		__extra = __first;
+	    }
 	  __first = __next;
 	}
+      if (__extra != __last)
+	_M_erase(__extra);
     }
 
   template<typename _Tp, typename _Alloc>

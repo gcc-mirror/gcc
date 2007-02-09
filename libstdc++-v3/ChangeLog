@@ -1,3 +1,10 @@
+2007-02-08  Howard Hinnant  <hhinnant@apple.com>
+
+	PR libstdc++/17012
+	* include/bits/list.tcc (list<>::remove): Take care of
+	&*__first == &__value.
+	* docs/html/ext/howto.html: Add an entry for DR 526.
+
 2007-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/28468
