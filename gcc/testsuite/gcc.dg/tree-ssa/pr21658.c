@@ -18,4 +18,4 @@ f (void)
 }
 
 /* { dg-final { scan-tree-dump-times "Folded statement: if " 1 "ccp1"} } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */
+/* { dg-final { cleanup-tree-dump "ccp\[1-2\]" } } */

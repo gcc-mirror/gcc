@@ -28,4 +28,4 @@ send_spaceship_info (void)
   lsend_packet_spaceship_info (&info);
 }
 
-
+/* { dg-final { cleanup-tree-dump "vect" } } */

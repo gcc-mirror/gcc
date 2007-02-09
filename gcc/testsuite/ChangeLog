@@ -1,3 +1,23 @@
+2007-02-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/pr26570.c: Clean up coverage files.
+	* gcc.dg/pr30172-1.c: Clean up gimple tree dump.
+	* gcc.dg/lower-subreg-1.c: Clean up subreg rtl dump file.
+	* gcc.dg/tree-ssa/tailrecursion-1.c: Clean up all tailr dump files.
+	* gcc.dg/tree-ssa/tailrecursion-2.c: Ditto.
+	* gcc.dg/tree-ssa/tailrecursion-3.c: Ditto.
+	* gcc.dg/tree-ssa/tailrecursion-4.c: Ditto.
+	* gcc.dg/tree-ssa/pr21658.c: Clean up all ccp dump files.
+	* gcc.dg/tree-ssa/pr21829.c: Clean up all phicprop dump files.
+	* gcc.dg/tree-ssa/pr15349.c: Clean up all mergephi dump files.
+	* gcc.dg/tree-ssa/pr25501.c: Ditto.
+	* gcc.dg/fold-compare-2.c: Clean up vrp dump files.
+	* gcc.dg/vect/vect-recip.c: Clean up vect dump file.
+	* gcc.dg/vect/pr28952.c: Ditto.
+	* gcc.dg/vect/pr27151.c: Ditto.
+	* gcc.dg/gomp/macro-3.c: Clean up omplower dump file.
+	* g++.dg/gomp/macro-3.C: Ditto.
+
 2007-02-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/vect/vect-strided-same-dr.c (main): Fix terminate condition

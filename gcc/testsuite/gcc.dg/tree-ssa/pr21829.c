@@ -17,5 +17,5 @@ int test(int v)
 }
 
 /* { dg-final { scan-tree-dump-times "Original statement:.*% 2\[ \t\n]*Updated statement.*=1" 0 "phicprop3" } } */
-/* { dg-final { cleanup-tree-dump "phicprop3" } } */
+/* { dg-final { cleanup-tree-dump "phicprop\[1-3\]" } } */
 

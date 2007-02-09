@@ -23,3 +23,4 @@ foo (void)
 }
 
 /* { dg-final { scan-tree-dump-times "#pragma omp parallel" 4 "omplower" } } */
+/* { dg-final { cleanup-tree-dump "omplower" } } */

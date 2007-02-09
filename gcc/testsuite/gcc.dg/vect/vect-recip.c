@@ -16,3 +16,5 @@ void f(float *__restrict__ qa, float *__restrict__ qb,
     qcm[i] = qc[i]/a;
   }
 }
+
+/* { dg-final { cleanup-tree-dump "vect" } } */

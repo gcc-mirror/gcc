@@ -23,4 +23,4 @@ foo (int a, int b)
 }
 
 /* { dg-final { scan-tree-dump-times "PHI" 1 "mergephi2"} } */
-/* { dg-final { cleanup-tree-dump "mergephi2" } } */
+/* { dg-final { cleanup-tree-dump "mergephi\[1-2\]" } } */
