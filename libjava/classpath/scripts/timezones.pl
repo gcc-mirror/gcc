@@ -213,6 +213,10 @@ foreach $file (@TIMEZONEFILES) {
 #    print STDERR "$file\n";
     open INPUT, "$TIMEZONEDIR/$file" or die "Can't open $TIMEZONEDIR/$file";
     my $in_time_zone = 0;
+    # As Zone can reference even Rule which is defined after the
+    # current line, parse the file in 2 passes.
+
+    # First pass, parse just Rule lines:
     while (<INPUT>) {
 	$_ = $1 if /^([^\#]*)\#/;
 	next if /^\s*$/;
@@ -236,6 +240,35 @@ foreach $file (@TIMEZONEFILES) {
 			$rules{"$rulename"}[2] = parseOffset($entries[8]);
 		    }
 		}
+	    } elsif ($entries[0] eq "Zone") {
+		$in_time_zone = 1;
+		shift @entries;
+		shift @entries;
+	    } elsif (!(($entries[0] eq "Remove") || ($entries[0] eq "Link"))) {
+		die "Unknown command: $_";
+	    }
+	}
+	if ($in_time_zone) {
+	    die "early end of Zone: $_" if ($entries[0] =~ /^[A-Za-z]+/);
+	    if (@entries <= 3) {
+		$in_time_zone = 0;
+	    }
+	}
+    }
+    close INPUT;
+    open INPUT, "$TIMEZONEDIR/$file" or die "Can't open $TIMEZONEDIR/$file";
+    $in_time_zone = 0;
+
+    # Second pass, parse all but Rule lines.
+    while (<INPUT>) {
+	$_ = $1 if /^([^\#]*)\#/;
+	next if /^\s*$/;
+	my @entries = split;
+#	$, = ","; print "'$_' -> [",@entries,"]\n";
+	if (!$in_time_zone) {
+	    if ($entries[0] eq "Rule") {
+		# Do nothing, this was already handled in the
+		# first pass.
 	    } elsif ($entries[0] eq "Zone") {
 		$in_time_zone = 1;
 		shift @entries;
@@ -295,7 +328,7 @@ foreach $file (@TIMEZONEFILES) {
 			my $savings = $rule->[2];
 			my $endrule = parseRule($rawoffset, $savings, 
 						$rule->[0]);
-			my $startrule = parseRule($rawoffset, $savings, 
+			my $startrule = parseRule($rawoffset, 0, 
 						  $rule->[1]);
 			$rule = [ $endrule, $startrule, $savings ];
 #			print "start",@{$rule->[1]}, "end", @{$rule->[0]}, 
