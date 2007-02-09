@@ -1,3 +1,9 @@
+2007-02-09  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	PR bootstrap/30748
+	* configure.ac: Correct syntax for Solaris ksh.
+	* configure: Regenerated.
+
 2007-02-09  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac: Sync with src.
