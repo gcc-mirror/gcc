@@ -1,3 +1,9 @@
+2007-02-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR target/29487
+	* decl.c (finish_function): Use DECL_REPLACEABLE.
+	* tree.c (cp_cannot_inline_tree_fn): Likewise.
+
 2007-01-28  Andrew Pinski  <pinskia@gmail.com>
 
 	PR C++/28988

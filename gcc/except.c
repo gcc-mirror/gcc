@@ -2701,7 +2701,10 @@ set_nothrow_function_flags (void)
 {
   rtx insn;
 
-  if (!targetm.binds_local_p (current_function_decl))
+  /* If we don't know that this implementation of the function will
+     actually be used, then we must not set TREE_NOTHROW, since
+     callers must not assume that this function does not throw.  */
+  if (DECL_REPLACEABLE_P (current_function_decl))
     return;
 
   TREE_NOTHROW (current_function_decl) = 1;
