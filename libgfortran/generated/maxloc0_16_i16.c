@@ -103,7 +103,7 @@ maxloc0_16_i16 (gfc_array_i16 * const restrict retarray,
 
   GFC_INTEGER_16 maxval;
 
-  maxval = -GFC_INTEGER_16_HUGE;
+  maxval = (-GFC_INTEGER_16_HUGE-1);
 
   while (base)
     {
@@ -227,7 +227,7 @@ mmaxloc0_16_i16 (gfc_array_i16 * const restrict retarray,
 
   GFC_INTEGER_16 maxval;
 
-  maxval = -GFC_INTEGER_16_HUGE;
+  maxval = (-GFC_INTEGER_16_HUGE-1);
 
   while (base)
     {

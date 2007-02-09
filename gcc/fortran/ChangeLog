@@ -1,3 +1,9 @@
+2007-02-09  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/30512
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc,
+	  gfc_conv_intrinsic_minmaxval): Use HUGE-1 for most negative integer.
+
 2007-02-09  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/30720
