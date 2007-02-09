@@ -1,5 +1,12 @@
 2007-02-09  Richard Sandiford  <richard@codesourcery.com>
 
+	* gcc.c-torture/execute/builtins/memops-asm-lib.c: Do the copy or
+	set before checking whether it was allowed.
+	* gcc.c-torture/execute/builtins/lib/memset.c: Do the memset
+	before checking inside_main.
+
+2007-02-09  Richard Sandiford  <richard@codesourcery.com>
+
 	* gcc.dg/compat/struct-layout-1.h (v16sf): Define to v4sf on
 	uClinux targets.
 	(u16sf): Likewise u4sf.

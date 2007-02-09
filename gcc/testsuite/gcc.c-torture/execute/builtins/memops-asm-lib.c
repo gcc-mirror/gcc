@@ -51,27 +51,29 @@ my_bzero (void *d, size_t n)
 void *
 memcpy (void *d, const void *s, size_t n)
 {
+  void *result = my_memcpy (d, s, n);
   TEST_ABORT;
-  return my_memcpy (d, s, n);
+  return result;
 }
 
 void
 bcopy (const void *s, void *d, size_t n)
 {
-  TEST_ABORT;
   my_bcopy (s, d, n);
+  TEST_ABORT;
 }
 
 void *
 memset (void *d, int c, size_t n)
 {
+  void *result = my_memset (d, c, n);
   TEST_ABORT;
-  return my_memset (d, c, n);
+  return result;
 }
 
 void
 bzero (void *d, size_t n)
 {
-  TEST_ABORT;
   my_bzero (d, n);
+  TEST_ABORT;
 }
