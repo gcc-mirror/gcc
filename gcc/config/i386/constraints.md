@@ -86,6 +86,7 @@
 ;; We use the Y prefix to denote any number of conditional register sets:
 ;;  2	SSE2 enabled
 ;;  i	SSE2 inter-unit moves enabled
+;;  m	MMX inter-unit moves enabled
 
 (define_register_constraint "Y2" "TARGET_SSE2 ? SSE_REGS : NO_REGS"
  "@internal Any SSE register, when SSE2 is enabled.")
@@ -93,6 +94,10 @@
 (define_register_constraint "Yi"
  "TARGET_SSE2 && TARGET_INTER_UNIT_MOVES ? SSE_REGS : NO_REGS"
  "@internal Any SSE register, when SSE2 and inter-unit moves are enabled.")
+
+(define_register_constraint "Ym"
+ "TARGET_MMX && TARGET_INTER_UNIT_MOVES ? MMX_REGS : NO_REGS"
+ "@internal Any MMX register, when inter-unit moves are enabled.")
 
 ;; Integer constant constraints.
 (define_constraint "I"

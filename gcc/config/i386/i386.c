@@ -1161,9 +1161,7 @@ const int x86_sse_load0_by_pxor = m_PPRO | m_PENT4 | m_NOCONA;
 const int x86_use_ffreep = m_ATHLON_K8_AMDFAM10;
 const int x86_use_incdec = ~(m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC);
 
-/* ??? Allowing interunit moves makes it all too easy for the compiler to put
-   integer data in xmm registers.  Which results in pretty abysmal code.  */
-const int x86_inter_unit_moves = 0 /* ~(m_ATHLON_K8) */;
+const int x86_inter_unit_moves = ~(m_ATHLON_K8_AMDFAM10 | m_GENERIC);
 
 const int x86_ext_80387_constants = m_K6_GEODE | m_ATHLON_K8 | m_PENT4
                                     | m_NOCONA | m_PPRO | m_CORE2 | m_GENERIC;
@@ -18301,17 +18299,11 @@ ix86_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
 
       /* If the target says that inter-unit moves are more expensive
 	 than moving through memory, then don't generate them.  */
-      if (!TARGET_INTER_UNIT_MOVES && !optimize_size)
+      if (!TARGET_INTER_UNIT_MOVES)
 	return true;
 
       /* Between SSE and general, we have moves no larger than word size.  */
       if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
-	return true;
-
-      /* ??? For the cost of one register reformat penalty, we could use
-	 the same instructions to move SFmode and DFmode data, but the
-	 relevant move patterns don't support those alternatives.  */
-      if (mode == SFmode || mode == DFmode)
 	return true;
     }
 

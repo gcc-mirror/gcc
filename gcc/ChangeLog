@@ -1,3 +1,21 @@
+2007-02-09  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/constraints.md (Ym): New constraint.
+	* config/i386/i386.md (movsi_1): Change Y2 to Yi constraints.
+	(movdi_1_rex64): Split sse and xmm general register moves from
+	memory move alternatives.  Use conditional register constraints.
+	(movsf_1, movdf_integer): Likewise.
+	(zero_extendsidi2_32, zero_extendsidi2_rex64): Likewise.
+	(movdf_integer_rex64): New.
+	(pushsf_rex64): Fix output constraints.
+	* config/i386/sse.md (sse2_loadld): Split rm alternative, use Yi.
+	(sse2_stored): Likewise.
+	(sse2_storeq_rex64): New.
+	* config/i386/i386.c (x86_inter_unit_moves): Enable for not
+	amd and not generic.
+	(ix86_secondary_memory_needed): Don't bypass TARGET_INTER_UNIT_MOVES
+	for optimize_size.  Remove SF/DFmode hack.
+
 2007-02-09  Dwarakanath Rajagopal <dwarak.rajagopal@amd.com>
 
         * config/i386/driver-i386.c: Turn on -mtune=native for AMDFAM10.

@@ -3961,26 +3961,25 @@
   "operands[2] = CONST0_RTX (V4SImode);")
 
 (define_insn "sse2_loadld"
-  [(set (match_operand:V4SI 0 "register_operand"       "=Y2,x,x")
+  [(set (match_operand:V4SI 0 "register_operand"       "=Y2,Yi,x,x")
 	(vec_merge:V4SI
 	  (vec_duplicate:V4SI
-	    (match_operand:SI 2 "nonimmediate_operand" "mr ,m,x"))
-	  (match_operand:V4SI 1 "reg_or_0_operand"     " C ,C,0")
+	    (match_operand:SI 2 "nonimmediate_operand" "m  ,r ,m,x"))
+	  (match_operand:V4SI 1 "reg_or_0_operand"     "C  ,C ,C,0")
 	  (const_int 1)))]
   "TARGET_SSE"
   "@
    movd\t{%2, %0|%0, %2}
+   movd\t{%2, %0|%0, %2}
    movss\t{%2, %0|%0, %2}
    movss\t{%2, %0|%0, %2}"
   [(set_attr "type" "ssemov")
-   (set_attr "mode" "TI,V4SF,SF")])
+   (set_attr "mode" "TI,TI,V4SF,SF")])
 
-;; ??? The hardware supports more, but TARGET_INTER_UNIT_MOVES must
-;; be taken into account, and movdi isn't fully populated even without.
 (define_insn_and_split "sse2_stored"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=mx")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=mx,r")
 	(vec_select:SI
-	  (match_operand:V4SI 1 "register_operand" "x")
+	  (match_operand:V4SI 1 "register_operand" "x,Yi")
 	  (parallel [(const_int 0)])))]
   "TARGET_SSE"
   "#"
@@ -3998,8 +3997,14 @@
   "TARGET_SSE"
   "")
 
-;; ??? The hardware supports more, but TARGET_INTER_UNIT_MOVES must
-;; be taken into account, and movdi isn't fully populated even without.
+(define_insn "*sse2_storeq_rex64"
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=mx,r")
+	(vec_select:DI
+	  (match_operand:V2DI 1 "register_operand" "x,Yi")
+	  (parallel [(const_int 0)])))]
+  "TARGET_64BIT && TARGET_SSE"
+  "#")
+
 (define_insn "*sse2_storeq"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=mx")
 	(vec_select:DI
