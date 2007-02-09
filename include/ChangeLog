@@ -1,3 +1,7 @@
+2007-02-09  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* libiberty.h (pex_write_input): Remove prototype.
+
 2007-01-31  Vladimir Prus  <vladimir@codesourcery.com>
 	
 	* libiberty.h (PEX_STDERR_TO_PIPE): New define.
