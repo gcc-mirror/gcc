@@ -674,7 +674,8 @@ public class ObjectName
    */
   public static String quote(String string)
   {
-    StringBuilder builder = new StringBuilder('"');
+    StringBuilder builder = new StringBuilder();
+    builder.append('"');
     for (int a = 0; a < string.length(); ++a)
       {
 	char s = string.charAt(a);
