@@ -1,3 +1,10 @@
+2007-02-08  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.c (m32c_unpend_compare): Add default to silence
+	warnings.
+	(legal_subregs): Use unsigned char, make const.
+	(m32c_illegal_subreg_p): Use ARRAY_SIZE.  Delete unused variables.
+
 2007-02-08  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/lib1funcs.asm (RETLDM): Pop directly into PC when no

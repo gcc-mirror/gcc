@@ -2750,28 +2750,28 @@ m32c_insert_attributes (tree node ATTRIBUTE_UNUSED,
 /* Predicates */
 
 /* This is a list of legal subregs of hard regs.  */
-static struct {
-  enum machine_mode outer_mode_size;
-  enum machine_mode inner_mode_size;
+static const struct {
+  unsigned char outer_mode_size;
+  unsigned char inner_mode_size;
+  unsigned char byte_mask;
+  unsigned char legal_when;
   unsigned int regno;
-  int byte_mask;
-  int legal_when;
 } legal_subregs[] = {
-  {1, 2, R0_REGNO, 0x03, 1}, /* r0h r0l */
-  {1, 2, R1_REGNO, 0x03, 1}, /* r1h r1l */
-  {1, 2, A0_REGNO, 0x01, 1},
-  {1, 2, A1_REGNO, 0x01, 1},
+  {1, 2, 0x03, 1, R0_REGNO}, /* r0h r0l */
+  {1, 2, 0x03, 1, R1_REGNO}, /* r1h r1l */
+  {1, 2, 0x01, 1, A0_REGNO},
+  {1, 2, 0x01, 1, A1_REGNO},
 
-  {1, 4, A0_REGNO, 0x01, 1},
-  {1, 4, A1_REGNO, 0x01, 1},
+  {1, 4, 0x01, 1, A0_REGNO},
+  {1, 4, 0x01, 1, A1_REGNO},
 
-  {2, 4, R0_REGNO, 0x05, 1}, /* r2 r0 */
-  {2, 4, R1_REGNO, 0x05, 1}, /* r3 r1 */
-  {2, 4, A0_REGNO, 0x05, 16}, /* a1 a0 */
-  {2, 4, A0_REGNO, 0x01, 24}, /* a1 a0 */
-  {2, 4, A1_REGNO, 0x01, 24}, /* a1 a0 */
+  {2, 4, 0x05, 1, R0_REGNO}, /* r2 r0 */
+  {2, 4, 0x05, 1, R1_REGNO}, /* r3 r1 */
+  {2, 4, 0x05, 16, A0_REGNO}, /* a1 a0 */
+  {2, 4, 0x01, 24, A0_REGNO}, /* a1 a0 */
+  {2, 4, 0x01, 24, A1_REGNO}, /* a1 a0 */
 
-  {4, 8, R0_REGNO, 0x55, 1}, /* r3 r1 r2 r0 */
+  {4, 8, 0x55, 1, R0_REGNO}, /* r3 r1 r2 r0 */
 };
 
 /* Returns TRUE if OP is a subreg of a hard reg which we don't
@@ -2779,7 +2779,6 @@ static struct {
 bool
 m32c_illegal_subreg_p (rtx op)
 {
-  rtx orig_op = op;
   int offset;
   unsigned int i;
   int src_mode, dest_mode;
@@ -2801,7 +2800,7 @@ m32c_illegal_subreg_p (rtx op)
 
   offset = (1 << offset);
 
-  for (i = 0; i < sizeof(legal_subregs)/sizeof(legal_subregs[0]); i ++)
+  for (i = 0; i < ARRAY_SIZE (legal_subregs); i ++)
     if (legal_subregs[i].outer_mode_size == GET_MODE_SIZE (dest_mode)
 	&& legal_subregs[i].regno == REGNO (op)
 	&& legal_subregs[i].inner_mode_size == GET_MODE_SIZE (src_mode)
@@ -3584,6 +3583,8 @@ m32c_unpend_compare (void)
       emit_insn (gen_cmphi_op (compare_op0, compare_op1));
     case PSImode:
       emit_insn (gen_cmppsi_op (compare_op0, compare_op1));
+    default:
+      /* Just to silence the "missing case" warnings.  */ ;
     }
 }
 
