@@ -191,7 +191,9 @@ AC_ARG_ENABLE([dssi],
                 no) COMPILE_DSSI=no ;;
                 *) COMPILE_DSSI=yes ;;
               esac],
-              [AC_CHECK_HEADERS([dssi.h],COMPILE_DSSI=yes,COMPILE_DSSI=no)])
+              [COMPILE_DSSI=no
+	       AC_CHECK_HEADERS([dssi.h], [
+	         AC_CHECK_HEADERS([jack/jack.h],COMPILE_DSSI=yes)])])
 AM_CONDITIONAL(CREATE_DSSI_LIBRARIES, test "x${COMPILE_DSSI}" = xyes)
 
 dnl -----------------------------------------------------------
