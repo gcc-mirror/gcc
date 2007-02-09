@@ -300,7 +300,7 @@ if test -z "$ac_cv_path_$1" ; then
     ac_cv_path_$1=[$]$1
   fi
 fi
-if test -z "$ac_cv_path_$1" ; then
+if test -z "$ac_cv_path_$1" && test -n "$gcc_cv_tool_dirs"; then
   AC_PATH_PROG([$1], [$2], [], [$gcc_cv_tool_dirs])
 fi
 if test -z "$ac_cv_path_$1" ; then
