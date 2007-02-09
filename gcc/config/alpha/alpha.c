@@ -4518,6 +4518,8 @@ emit_insxl (enum machine_mode mode, rtx op1, rtx op2)
       else
 	fn = gen_inswl_le;
     }
+  /* The insbl and inswl patterns require a register operand.  */
+  op1 = force_reg (mode, op1);
   emit_insn (fn (ret, op1, op2));
 
   return ret;
