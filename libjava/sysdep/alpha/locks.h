@@ -50,6 +50,14 @@ compare_and_swap_release(volatile obj_addr_t *addr,
   return compare_and_swap(addr, old, new_val);
 }
 
+// Ensure that subsequent instructions do not execute on stale
+// data that was loaded from memory before the barrier.
+inline static void
+read_barrier()
+{
+  __asm__ __volatile__("mb" : : : "memory");
+}
+
 // Ensure that prior stores to memory are completed with respect to other
 // processors.
 inline static void
