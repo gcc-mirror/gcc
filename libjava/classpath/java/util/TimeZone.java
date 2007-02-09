@@ -977,7 +977,14 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
 	if (index < idLength)
 	  index--;
 
-	{ // convert the dst string to a millis number
+	if (index == prevIndex && (c == ',' || c == ';'))
+	  {
+	    // Missing dst offset defaults to one hour ahead of standard
+	    // time.  
+	    dstOffs = stdOffs + 60 * 60 * 1000;
+	  }
+	else
+	  { // convert the dst string to a millis number
 	    String offset = sysTimeZoneId.substring(prevIndex, index);
 	    prevIndex = index;
 
@@ -991,7 +998,7 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
 
 	    // TZ timezone offsets are positive when WEST of the meridian.
 	    dstOffs = -dstOffs;
-	}
+	  }
 
 	// Done yet? (Format: std offset dst offset)
 	// FIXME: We don't support DST without a rule given. Should we?
