@@ -1,3 +1,33 @@
+2007-02-09  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (passes.o, ipa-inline.o): Add dependencies.
+	* cgraphbuild.c (build_cgraph_edges): Compute frequencies.
+	(rebuild_cgraph_edges): Likewise.
+	* cgraph.c (cgraph_set_call_stmt): Add new argument frequency.
+	(dump_cgraph_node): Dump frequencies.
+	(cgraph_clone_edge): Add frequency scales.
+	(cgraph_clone_node): Add freuqnecy.
+	* cgraph.h (cgraph_edge): Add freuqnecy argument.
+	(CGRAPH_FREQ_BASE, CGRAPH_FREQ_MAX): New constants.
+	(cgraph_create_edge, cgraph_clone_edge, cgraph_clone_node): Update.
+	* tree-pass.h (TODO_rebuild_frequencies): New constant.
+	* cgraphunit.c (verify_cgraph_node): Verify frequencies.
+	(cgraph_copy_node_for_versioning): Update call of cgraph_clone_edge.
+	(save_inline_function_body): Likewise.
+	* ipa-inline.c: inluce rtl.h
+	(cgraph_clone_inlined_nods): Update call of cgraph_clone_node.
+	(cgraph_edge_badness): Use frequencies.
+	(cgraph_decide_recursive_inlining): Update clonning.
+	(cgraph_decide_inlining_of_small_function): Dump frequency.
+	* predict.c (estimate_bb_frequencies): Export.
+	* predict.h (estimate_bb_frequencies): Declare.
+	* tree-inline.c (copy_bb): Watch overflows.
+	(expand_call_inline): Update call of cgraph_create_edge.
+	(optimize_inline_calls): Use TODO flags to update frequnecies.
+	* passes.h: Include predict.h
+	(init_optimization_passes): Move profile ahead.
+	(execute_function_todo): Handle TODO_rebuild_frequencies.
+
 2007-02-09  Roger Sayle  <roger@eyesopen.com>
 
 	* config/alpha/alpha.c (emit_insxl): Force the first operand of

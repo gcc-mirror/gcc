@@ -519,6 +519,16 @@ verify_cgraph_node (struct cgraph_node *node)
 	  error ("caller edge count is negative");
 	  error_found = true;
 	}
+      if (e->frequency < 0)
+	{
+	  error ("caller edge frequency is negative");
+	  error_found = true;
+	}
+      if (e->frequency > CGRAPH_FREQ_MAX)
+	{
+	  error ("caller edge frequency is too large");
+	  error_found = true;
+	}
       if (!e->inline_failed)
 	{
 	  if (node->global.inlined_to
@@ -1412,7 +1422,8 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
       also cloned.  */
    for (e = old_version->callees;e; e=e->next_callee)
      {
-       new_e = cgraph_clone_edge (e, new_version, e->call_stmt, 0, e->loop_nest, true);
+       new_e = cgraph_clone_edge (e, new_version, e->call_stmt, 0, e->frequency,
+				  e->loop_nest, true);
        new_e->count = e->count;
      }
    /* Fix recursive calls.
@@ -1511,7 +1522,8 @@ save_inline_function_body (struct cgraph_node *node)
     {
       struct cgraph_edge *e;
 
-      first_clone = cgraph_clone_node (node, node->count, 0, false);
+      first_clone = cgraph_clone_node (node, node->count, 0, CGRAPH_FREQ_BASE,
+				       false);
       first_clone->needed = 0;
       first_clone->reachable = 1;
       /* Recursively clone all bodies.  */

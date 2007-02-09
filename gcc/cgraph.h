@@ -201,9 +201,16 @@ struct cgraph_edge GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_call
   const char *inline_failed;
   /* Expected number of executions: calculated in profile.c.  */
   gcov_type count;
+  /* Expected frequency of executions within the function. 
+     When set to CGRAPH_FREQ_BASE, the edge is expected to be called once
+     per function call.  The range is 0 to CGRAPH_FREQ_MAX.  */
+  int frequency;
   /* Depth of loop nest, 1 means no loop nest.  */
   int loop_nest;
 };
+
+#define CGRAPH_FREQ_BASE 1000
+#define CGRAPH_FREQ_MAX 100000
 
 typedef struct cgraph_edge *cgraph_edge_p;
 
@@ -290,7 +297,7 @@ void cgraph_release_function_body (struct cgraph_node *);
 void cgraph_node_remove_callees (struct cgraph_node *node);
 struct cgraph_edge *cgraph_create_edge (struct cgraph_node *,
 					struct cgraph_node *,
-					tree, gcov_type, int);
+					tree, gcov_type, int, int);
 struct cgraph_node *cgraph_node (tree);
 struct cgraph_node *cgraph_node_for_asm (tree asmname);
 struct cgraph_edge *cgraph_edge (struct cgraph_node *, tree);
@@ -301,8 +308,8 @@ struct cgraph_rtl_info *cgraph_rtl_info (tree);
 const char * cgraph_node_name (struct cgraph_node *);
 struct cgraph_edge * cgraph_clone_edge (struct cgraph_edge *,
 					struct cgraph_node *,
-					tree, gcov_type, int, bool);
-struct cgraph_node * cgraph_clone_node (struct cgraph_node *, gcov_type,
+					tree, gcov_type, int, int, bool);
+struct cgraph_node * cgraph_clone_node (struct cgraph_node *, gcov_type, int,
 					int, bool);
 
 void cgraph_redirect_edge_callee (struct cgraph_edge *, struct cgraph_node *);
