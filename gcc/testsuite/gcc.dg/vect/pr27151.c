@@ -12,3 +12,5 @@ void vis_clear_data ()
       vs_data[i] = (vis_type == 1);
     }
 }
+
+/* { dg-final { cleanup-tree-dump "vect" } } */

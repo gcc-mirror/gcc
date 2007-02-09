@@ -5,4 +5,4 @@
 long long test (long long a, long long b) { return a | b; }
 
 /* { dg-final { scan-rtl-dump "Splitting reg" "subreg" } } */
-/* { dg-final { cleanup-tree-dump "subreg" } } */
+/* { dg-final { cleanup-rtl-dump "subreg" } } */
