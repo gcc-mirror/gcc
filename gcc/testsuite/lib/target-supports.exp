@@ -2034,6 +2034,17 @@ proc check_effective_target_coldfire_fpu { } {
     }]
 }
 
+# Return true if this is a uClibc target.
+
+proc check_effective_target_uclibc {} {
+    return [check_no_compiler_messages uclibc object {
+	#include <features.h>
+	#if !defined (__UCLIBC__)
+	#error FOO
+	#endif
+    }]
+}
+
 # Return 1 if the target matches the effective target 'arg', 0 otherwise.
 # This can be used with any check_* proc that takes no argument and
 # returns only 1 or 0.  It could be used with check_* procs that take
