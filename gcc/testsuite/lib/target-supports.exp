@@ -2024,6 +2024,16 @@ proc check_effective_target_sync_char_short { } {
     return $et_sync_char_short_saved
 }
 
+# Return 1 if the target uses a ColdFire FPU.
+
+proc check_effective_target_coldfire_fpu { } {
+    return [check_no_compiler_messages coldfire_fpu assembly {
+	#ifndef __mcffpu__
+	#error FOO
+	#endif
+    }]
+}
+
 # Return 1 if the target matches the effective target 'arg', 0 otherwise.
 # This can be used with any check_* proc that takes no argument and
 # returns only 1 or 0.  It could be used with check_* procs that take
