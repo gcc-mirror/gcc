@@ -1,0 +1,97 @@
+# multilibs  -*- mode:Makefile -*-
+
+# An awk command to extract lines from the m68k-devices.def file that
+# match $1 and then print the string defined by $2.  Leading and
+# trailing whitespace is removed.  $1 & $2 can make use of
+# CPU -- the cpu identifier (has leading 'm'/'mcf')
+# FLAGS -- the cpu capability flags
+# CPU_NAME -- the cpu name (has no leading m/mcf)
+# MLIB -- the multilib cpu name (no leading m/mcf)
+# This is intended to be used as $(call M68K_AWK,predicate,string)
+M68K_AWK = $(strip $(shell $(AWK) 'BEGIN { FS="[ \t]*[,()][ \t]*"; ORS=" " }; \
+	/^M68K_DEVICE/ { CPU=$$3; FLAGS=$$8; \
+	CPU_NAME=substr($$2,2,length($$2)-2); \
+	MLIB=substr($$5,2,length($$5)-2); \
+	if ($1) print $2 }' $(srcdir)/config/m68k/m68k-devices.def))
+
+# Add a multilib for each distinct architecture.  M68K_MLIB_CPU, if defined,
+# adds additional restrictions.
+M68K_MLIB_CPUS := $(call M68K_AWK,\
+	(CPU_NAME == MLIB) $(M68K_MLIB_CPU), \
+	"m"MLIB)
+
+# Make the default cpu the default multilib.
+M68K_MLIB_DEFAULT := $(call M68K_AWK, CPU == "$(target_cpu_default)", MLIB)
+
+ifeq ($(filter m$(M68K_MLIB_DEFAULT),$(M68K_MLIB_CPUS)),)
+$(error Error default cpu '$(target_cpu_default)' is not in multilib set '$(M68K_MLIB_CPUS)')
+endif
+
+# Sed arguments that convert mcpu=* arguments into canonical forms.
+# We want to use the legacy m68* options instead of the new -mcpu=68*
+# options when compiling multilibs because the former are recognised
+# by older binutils.
+CANONICALIZE_OPTIONS = -e 's|mcpu=68|m68|g' -e 's|mcpu=cpu32|mcpu32|g'
+
+MULTILIB_DIRNAMES := $(filter-out m$(M68K_MLIB_DEFAULT),$(M68K_MLIB_CPUS))
+MULTILIB_OPTIONS := $(shell echo $(MULTILIB_DIRNAMES:m%=mcpu=%) \
+		      | sed -e 's| |/|g' $(CANONICALIZE_OPTIONS))
+
+# Add subtarget specific options & dirs.
+MULTILIB_DIRNAMES += $(M68K_MLIB_DIRNAMES)
+MULTILIB_OPTIONS += $(M68K_MLIB_OPTIONS)
+
+MULTILIB_MATCHES :=
+
+ifneq ($(M68K_ARCH),cf)
+# Map the new-style options to the legacy m68k ones.
+MULTILIB_MATCHES += m68000=mcpu?68000 m68000=march?68000 m68000=mc68000 \
+		    m68000=m68302 \
+		    m68020=mcpu?68020 m68020=march?68020 m68020=mc68020 \
+		    m68030=mcpu?68030 m68030=march?68030 \
+		    m68040=mcpu?68040 m68040=march?68040 \
+		    m68060=mcpu?68060 m68060=march?68060 \
+		    mcpu32=mcpu?cpu32 mcpu32=march?cpu32 mcpu32=m68332
+endif
+
+ifneq ($(M68K_ARCH),m68k)
+# Map the legacy ColdFire options to the new ones.
+MULTILIB_MATCHES += mcpu?5206=m5200 mcpu?5206e=m5206e mcpu?5208=m528x \
+		    mcpu?5307=m5300 mcpu?5307=m5307 \
+		    mcpu?5407=m5400 mcpu?5407=m5407 \
+		    mcpu?5475=mcfv4e
+# Map -march=* options to the representative -mcpu=* option.
+MULTILIB_MATCHES += mcpu?5206e=march?isaa mcpu?5208=march?isaaplus \
+		    mcpu?5407=march?isab
+endif
+
+# Match non-representative -mcpu options to their representative option.
+MULTILIB_MATCHES += \
+  $(call M68K_AWK, \
+	 (CPU_NAME != MLIB) $(M68K_MLIB_CPU), \
+	 (match(MLIB, "^68") || MLIB == "cpu32" \
+	  ? "m"MLIB"=mcpu?"CPU_NAME \
+	  : "mcpu?"MLIB"=mcpu?"CPU_NAME))
+
+MULTILIB_EXCEPTIONS :=
+
+ifeq ($(firstword $(M68K_MLIB_OPTIONS)),msoft-float)
+# Exclude soft-float multilibs for targets that default to soft-float anyway.
+MULTILIB_EXCEPTIONS += $(call M68K_AWK,\
+	(CPU_NAME == MLIB) $(M68K_MLIB_CPU) \
+	 && (((CPU ~ "^mcf") && !match(FLAGS, "FL_CF_FPU")) \
+	     || CPU == "cpu32" \
+	     || CPU == "m68000"), \
+	 "mcpu="MLIB"/msoft-float*")
+endif
+
+# Remove the default CPU from the explicit exceptions.
+MULTILIB_EXCEPTIONS := \
+	$(patsubst mcpu=$(M68K_MLIB_DEFAULT)/%,%,$(MULTILIB_EXCEPTIONS))
+
+# Convert all options to canonical form.
+MULTILIB_EXCEPTIONS := $(shell echo $(MULTILIB_EXCEPTIONS) | \
+			 sed $(CANONICALIZE_OPTIONS))
+
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib

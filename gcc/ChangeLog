@@ -1,3 +1,36 @@
+2007-02-09  Nathan Sidwell  <nathan@codesourcery.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+
+	* config.gcc (m68010-*-netbsdelf*, m68k*-*-netbsdelf*)
+	(m68k*-*-openbsd*, m68k-*-linux*): Set default_cf_cpu.
+	(m68k-*-aout*, m68k-*-coff*, m68k-*-uclinux*, m68k-*-rtems*): Add
+	m68k/t-mlib to tmake_file.
+	(m68020-*-elf*, m68k-*-elf*): Likewise.  Add t-m68kbare as well.
+	(m68k*-*-*): Use --with-arch to pick a default for --with-cpu.
+	(m680[012]0-*-*, m68k*-*-*): Add support for --with-arch.
+	Allow it to be cf or m68k.  Set m68k_arch_family.  If that
+	variable is not empty, add t-$m68k_arch_family to tmake_file.
+	Add t-mlibs to tmake_file.
+	* doc/install.texi: Document --with-arch=m68k and --with-arch=cf.
+	* config/m68k/t-cf: New file.
+	* config/m68k/t-m68k: Likewise.
+	* config/m68k/t-mlibs: Likewise.
+	* config/m68k/t-m68kbare (MULTILIB_OPTIONS, MULTILIB_DIRNAMES)
+	(MULTILIB_MATCHES, MULTILIB_EXCEPTIONS): Delete.
+	(M68K_MLIB_DIRNAMES, M68K_MLIB_OPTIONS): Define.
+	* config/m68k/t-m68kelf (MULTILIB_OPTIONS, MULTILIB_DIRNAMES)
+	(MULTILIB_MATCHES, MULTILIB_EXCEPTIONS, LIBGCC, INSTALL_LIBGCC):
+	Delete.
+	* config/m68k/t-openbsd (MULTILIB_OPTIONS, LIBGCC): Delete.
+	(INSTALL_LIBGCC): Delete.
+	(M68K_MLIB_DIRNAMES, M68K_MLIB_OPTIONS): Define.
+	* config/m68k/t-rtems (MULTILIB_OPTIONS, MULTILIB_DIRNAMES)
+	(MULTILIB_MATCHES, MULTILIB_EXCEPTIONS): Delete.
+	(M68K_MLIB_CPU): Define.
+	* config/m68k/t-uclinux (MULTILIB_OPTIONS, MULTILIB_DIRNAMES)
+	(MULTILIB_MATCHES, MULTILIB_EXCEPTIONS): Delete.
+	(M68K_MLIB_CPU, M68K_MLIB_OPTIONS, M68K_MLIB_DIRNAMES): Define.
+
 2007-02-09  Zdenek Dvorak  <dvorakz@suse.cz>
 	Richard Guenther  <rguenther@suse.de>
 

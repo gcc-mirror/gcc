@@ -1,10 +1,9 @@
 # crti and crtn are provided by uClibc.
 EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o
 
-MULTILIB_OPTIONS = m68000/m5200/m5206e/m528x/m5307/m5407/mcpu32 msep-data/mid-shared-library
-MULTILIB_DIRNAMES =
-MULTILIB_MATCHES = m68000=mc68000 m68000=m68302 mcpu32=m68332 m5206e=m5272
-MULTILIB_EXCEPTIONS = m68000/msep-data* m68000/mid-shared-library* msep-data* mid-shared-library*
+# Only include multilibs for the 68020 and for CPUs without an MMU.
+M68K_MLIB_CPU += && (MLIB == "68020" || !match(FLAGS, "FL_MMU"))
 
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib
+# Add multilibs for execute-in-place and shared-library code.
+M68K_MLIB_OPTIONS += msep-data/mid-shared-library
+M68K_MLIB_DIRNAMES += msep-data mid-shared-library

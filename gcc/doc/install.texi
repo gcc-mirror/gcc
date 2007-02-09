@@ -3426,9 +3426,24 @@ applications.  There are no standard Unix configurations.
 <hr />
 @end html
 @heading @anchor{m68k-x-x}m68k-*-*
-You can specify a default target using @option{--with-cpu=@var{target}}.
-This @var{target} can either be a @option{-mcpu} argument or one of the
-following values: @samp{m68000}, @samp{m68010}, @samp{m68020}, @samp{m68030},
+By default, @samp{m68k-*-aout}, @samp{m68k-*-coff*},
+@samp{m68k-*-elf*}, @samp{m68k-*-rtems} and @samp{m68k-*-uclinux}
+build libraries for both M680x0 and ColdFire processors.  If you only
+need the M680x0 libraries, you can omit the ColdFire ones by passing
+@option{--with-arch=m68k} to @command{configure}.  Alternatively, you
+can omit the M680x0 libraries by passing @option{--with-arch=cf} to
+@command{configure}.  These targets default to 5206 code when
+configured with @option{--with-arch=cf} and 68020 code otherwise.
+
+The @samp{m68k-*-linux-gnu}, @samp{m68k-*-netbsd} and
+@samp{m68k-*-openbsd} targets also support the @option{--with-arch}
+option.  They will generate ColdFire CFV4e code when configured with
+@option{--with-arch=cf} and 68020 code otherwise.
+
+You can override the default processors listed above by configuring
+with @option{--with-cpu=@var{target}}.  This @var{target} can either
+be a @option{-mcpu} argument or one of the following values:
+@samp{m68000}, @samp{m68010}, @samp{m68020}, @samp{m68030},
 @samp{m68040}, @samp{m68060}, @samp{m68020-40} and @samp{m68020-60}.
 
 @html
