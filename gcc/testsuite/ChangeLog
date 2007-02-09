@@ -1,5 +1,10 @@
 2007-02-09  Richard Sandiford  <richard@codesourcery.com>
 
+	* gcc.c-torture/execute/builtins/lib/chk.c: Include <sys/types.h>.
+	(vsnprintf): Don't define for uClibc targets.
+
+2007-02-09  Richard Sandiford  <richard@codesourcery.com>
+
 	* gcc.c-torture/execute/builtins/memops-asm-lib.c: Do the copy or
 	set before checking whether it was allowed.
 	* gcc.c-torture/execute/builtins/lib/memset.c: Do the memset
