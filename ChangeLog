@@ -1,5 +1,9 @@
 2007-02-09  Paolo Bonzini  <bonzini@gnu.org>
 
+	* Makefile.in: Regenerate.
+
+2007-02-09  Paolo Bonzini  <bonzini@gnu.org>
+
 	* config.sub: Sync with src.
 
 2007-02-09  Daniel Jacobowitz  <dan@codesourcery.com>
