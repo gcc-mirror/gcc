@@ -777,8 +777,13 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale, int count_scal
   copy_basic_block = create_basic_block (NULL, (void *) 0,
                                          (basic_block) bb->prev_bb->aux);
   copy_basic_block->count = bb->count * count_scale / REG_BR_PROB_BASE;
-  copy_basic_block->frequency = (bb->frequency
+
+  /* We are going to rebuild frequencies from scratch.  These values have just
+     small importance to drive canonicalize_loop_headers.  */
+  copy_basic_block->frequency = ((gcov_type)bb->frequency
 				     * frequency_scale / REG_BR_PROB_BASE);
+  if (copy_basic_block->frequency > BB_FREQ_MAX)
+    copy_basic_block->frequency = BB_FREQ_MAX;
   copy_bsi = bsi_start (copy_basic_block);
 
   for (bsi = bsi_start (bb);
@@ -839,7 +844,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale, int count_scal
 		      edge = cgraph_edge (id->src_node, orig_stmt);
 		      if (edge)
 			cgraph_clone_edge (edge, id->dst_node, stmt,
-					   REG_BR_PROB_BASE, 1, true);
+					   REG_BR_PROB_BASE, 1, edge->frequency, true);
 		      break;
 
 		    case CB_CGE_MOVE_CLONES:
@@ -2400,8 +2405,14 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
          (incorrect node sharing is most common reason for missing edges.  */
       gcc_assert (dest->needed || !flag_unit_at_a_time);
       cgraph_create_edge (id->dst_node, dest, stmt,
-			  bb->count, bb->loop_depth)->inline_failed
+			  bb->count, CGRAPH_FREQ_BASE,
+			  bb->loop_depth)->inline_failed
 	= N_("originally indirect function call not considered for inlining");
+      if (dump_file)
+	{
+	   fprintf (dump_file, "Created new direct edge to %s",
+		    cgraph_node_name (dest));
+	}
       goto egress;
     }
 
@@ -2808,10 +2819,6 @@ optimize_inline_calls (tree fn)
 	gcc_assert (e->inline_failed);
     }
 #endif
-  /* We need to rescale frequencies again to peak at REG_BR_PROB_BASE
-     as inlining loops might increase the maximum.  */
-  if (ENTRY_BLOCK_PTR->count)
-    counts_to_freqs ();
 
   /* We are not going to maintain the cgraph edges up to date.
      Kill it so it won't confuse us.  */
@@ -2830,7 +2837,8 @@ optimize_inline_calls (tree fn)
      throw and they don't care to proactively update local EH info.  This is
      done later in fixup_cfg pass that also execute the verification.  */
   return (TODO_update_ssa | TODO_cleanup_cfg
-	  | (gimple_in_ssa_p (cfun) ? TODO_remove_unused_locals : 0));
+	  | (gimple_in_ssa_p (cfun) ? TODO_remove_unused_locals : 0)
+	  | (profile_status != PROFILE_ABSENT ? TODO_rebuild_frequencies : 0));
 }
 
 /* FN is a function that has a complete body, and CLONE is a function whose
