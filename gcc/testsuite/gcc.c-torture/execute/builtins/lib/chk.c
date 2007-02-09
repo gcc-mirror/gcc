@@ -1,4 +1,5 @@
 #include <stdarg.h>
+#include <sys/types.h>
 
 extern void abort (void);
 
@@ -448,6 +449,8 @@ snprintf (char *str, __SIZE_TYPE__ len, const char *fmt, ...)
   return ret;
 }
 
+/* uClibc's vsprintf calls vsnprintf.  */
+#ifndef __UCLIBC__
 int
 vsnprintf (char *str, __SIZE_TYPE__ len, const char *fmt, va_list ap)
 {
@@ -470,3 +473,4 @@ vsnprintf (char *str, __SIZE_TYPE__ len, const char *fmt, va_list ap)
     }
   return ret;
 }
+#endif
