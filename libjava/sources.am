@@ -332,6 +332,7 @@ classpath/gnu/classpath/jdwp/exception/InvalidClassLoaderException.java \
 classpath/gnu/classpath/jdwp/exception/InvalidCountException.java \
 classpath/gnu/classpath/jdwp/exception/InvalidEventTypeException.java \
 classpath/gnu/classpath/jdwp/exception/InvalidFieldException.java \
+classpath/gnu/classpath/jdwp/exception/InvalidFrameException.java \
 classpath/gnu/classpath/jdwp/exception/InvalidLocationException.java \
 classpath/gnu/classpath/jdwp/exception/InvalidMethodException.java \
 classpath/gnu/classpath/jdwp/exception/InvalidObjectException.java \

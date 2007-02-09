@@ -1,3 +1,11 @@
+2007-02-08  Keith Seitz  <keiths@redhat.com>
+
+	* sources.am: Regenerate.
+	* Makefile.in: Regenerate.
+
+	* classpath/lib/javax/management/MBeanServerFactory.class:
+	Regenerate.
+
 2007-02-08  Kyle Galloway  <kgallowa@redhat.com>
 
     * classpath/gnu/classpath/jdwp/processor/
