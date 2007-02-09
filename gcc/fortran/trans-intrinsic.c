@@ -1984,10 +1984,17 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
       gcc_unreachable ();
     }
 
-  /* Most negative(+HUGE) for maxval, most negative (-HUGE) for minval.  */
+  /* We start with the most negative possible value for MAXLOC, and the most
+     positive possible value for MINLOC. The most negative possible value is
+     -HUGE for BT_REAL and (-HUGE - 1) for BT_INTEGER; the most positive
+     possible value is HUGE in both cases. */
   if (op == GT_EXPR)
     tmp = fold_build1 (NEGATE_EXPR, TREE_TYPE (tmp), tmp);
   gfc_add_modify_expr (&se->pre, limit, tmp);
+
+  if (op == GT_EXPR && expr->ts.type == BT_INTEGER)
+    tmp = build2 (MINUS_EXPR, TREE_TYPE (tmp), tmp,
+		  build_int_cst (type, 1));
 
   /* Initialize the scalarizer.  */
   gfc_init_loopinfo (&loop);
@@ -2143,9 +2150,17 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, int op)
       gcc_unreachable ();
     }
 
-  /* Most negative(-HUGE) for maxval, most positive (-HUGE) for minval.  */
+  /* We start with the most negative possible value for MAXVAL, and the most
+     positive possible value for MINVAL. The most negative possible value is
+     -HUGE for BT_REAL and (-HUGE - 1) for BT_INTEGER; the most positive
+     possible value is HUGE in both cases. */
   if (op == GT_EXPR)
     tmp = fold_build1 (NEGATE_EXPR, TREE_TYPE (tmp), tmp);
+
+  if (op == GT_EXPR && expr->ts.type == BT_INTEGER)
+    tmp = build2 (MINUS_EXPR, TREE_TYPE (tmp), tmp,
+		  build_int_cst (type, 1));
+
   gfc_add_modify_expr (&se->pre, limit, tmp);
 
   /* Walk the arguments.  */
