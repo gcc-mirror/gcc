@@ -583,7 +583,7 @@ tree
 gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 			     gfc_loopinfo * loop, gfc_ss_info * info,
 			     tree eltype, bool dynamic, bool dealloc,
-			     bool callee_alloc, bool function)
+			     bool callee_alloc)
 {
   tree type;
   tree desc;
@@ -592,11 +592,6 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
   tree nelem;
   tree cond;
   tree or_expr;
-  tree thencase;
-  tree elsecase;
-  tree var;
-  stmtblock_t thenblock;
-  stmtblock_t elseblock;
   int n;
   int dim;
 
@@ -678,19 +673,16 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
       tmp = fold_build2 (PLUS_EXPR, gfc_array_index_type,
 			 loop->to[n], gfc_index_one_node);
 
-      if (function)
-	{
-	  /* Check whether the size for this dimension is negative.  */
-	  cond = fold_build2 (LE_EXPR, boolean_type_node, tmp,
+      /* Check whether the size for this dimension is negative.  */
+      cond = fold_build2 (LE_EXPR, boolean_type_node, tmp,
 			  gfc_index_zero_node);
+      cond = gfc_evaluate_now (cond, pre);
 
-	  cond = gfc_evaluate_now (cond, pre);
+      if (n == 0)
+	or_expr = cond;
+      else
+	or_expr = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, or_expr, cond);
 
-	  if (n == 0)
-	    or_expr = cond;
-	  else
-	    or_expr = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, or_expr, cond);
-	}
       size = fold_build2 (MULT_EXPR, gfc_array_index_type, size, tmp);
       size = gfc_evaluate_now (size, pre);
     }
@@ -699,33 +691,10 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 
   if (size && !callee_alloc)
     {
-      if (function)
-	{
-	  /* If we know at compile-time whether any dimension size is
-	     negative, we can avoid a conditional and pass the true size
-	     to gfc_trans_allocate_array_storage, which can then decide
-	     whether to allocate this on the heap or on the stack.  */
-	  if (integer_zerop (or_expr))
-	    ;
-	  else if (integer_onep (or_expr))
-	    size = gfc_index_zero_node;
-	  else
-	    {
-	      var = gfc_create_var (TREE_TYPE (size), "size");
-	      gfc_start_block (&thenblock);
-	      gfc_add_modify_expr (&thenblock, var, gfc_index_zero_node);
-	      thencase = gfc_finish_block (&thenblock);
-
-	      gfc_start_block (&elseblock);
-	      gfc_add_modify_expr (&elseblock, var, size);
-	      elsecase = gfc_finish_block (&elseblock);
-	  
-	      tmp = gfc_evaluate_now (or_expr, pre);
-	      tmp = build3_v (COND_EXPR, tmp, thencase, elsecase);
-	      gfc_add_expr_to_block (pre, tmp);
-	      size = var;
-	    }
-	}
+      /* If or_expr is true, then the extent in at least one
+	 dimension is zero and the size is set to zero.  */
+      size = fold_build3 (COND_EXPR, gfc_array_index_type,
+			  or_expr, gfc_index_zero_node, size);
 
       nelem = size;
       size = fold_build2 (MULT_EXPR, gfc_array_index_type, size,
@@ -1647,7 +1616,7 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
     }
 
   gfc_trans_create_temp_array (&loop->pre, &loop->post, loop, &ss->data.info,
-			       type, dynamic, true, false, false);
+			       type, dynamic, true, false);
 
   desc = ss->data.info.descriptor;
   offset = gfc_index_zero_node;
@@ -3241,7 +3210,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
       loop->temp_ss->data.info.dimen = n;
       gfc_trans_create_temp_array (&loop->pre, &loop->post, loop,
 				   &loop->temp_ss->data.info, tmp, false, true,
-				   false, false);
+				   false);
     }
 
   for (n = 0; n < loop->temp_dim; n++)

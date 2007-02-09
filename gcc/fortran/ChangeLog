@@ -1,3 +1,15 @@
+2007-02-09  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/30720
+	* trans-array.c (gfc_trans_create_temp_array): Remove use of the
+	function argument. Always generate code for negative extent.
+	Simplify said code.
+	* trans-array.h (gfc_trans_create_temp_array): Change prototype.
+	* trans-expr.c (gfc_conv_function_call): Remove use of last argument
+	of gfc_trans_create_temp_array.
+	* trans-intrinsic.c (gfc_conv_intrinsic_array_transfer): Likewise.
+	* trans-stmt.c (gfc_conv_elemental_dependencies): Likewise.
+
 2007-02-08  Roger Sayle  <roger@eyesopen.com>
 
 	* trans-stmt.c (gfc_trans_forall_1): Optimize the cases where the

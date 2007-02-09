@@ -2975,10 +2975,12 @@ gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
   se->loop->to[n] = upper;
 
   /* Build a destination descriptor, using the pointer, source, as the
-     data field.  This is already allocated so set callee_alloc.  */
+     data field.  This is already allocated so set callee_alloc.
+     FIXME callee_alloc is not set!  */
+ 
   tmp = gfc_typenode_for_spec (&expr->ts);
   gfc_trans_create_temp_array (&se->pre, &se->post, se->loop,
-			       info, tmp, false, true, false, false);
+			       info, tmp, false, true, false);
 
   /* Use memcpy to do the transfer.  */
   tmp = gfc_conv_descriptor_data_get (info->descriptor);
