@@ -1,5 +1,10 @@
 2007-02-09  Paolo Bonzini  <bonzini@gnu.org>
 
+	* configure.ac: Sync with src.
+	* configure: Regenerate.
+
+2007-02-09  Paolo Bonzini  <bonzini@gnu.org>
+
 	* Makefile.in: Regenerate.
 
 2007-02-09  Paolo Bonzini  <bonzini@gnu.org>

@@ -1744,6 +1744,9 @@ extra_nmflags_for_target=
 extra_ranlibflags_for_target=
 target_makefile_frag=/dev/null
 case "${target}" in
+  mep*-*-*)
+    target_makefile_frag="config/mt-mep"
+    ;;
   spu-*-*)
     target_makefile_frag="config/mt-spu"
     ;;
@@ -2321,6 +2324,9 @@ case "${target}" in
       # This is for libnosys.a
       FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/$(TARGET_SUBDIR)/libgloss/libnosys'
     fi
+    ;;
+  mep*)
+    FLAGS_FOR_TARGET="$FLAGS_FOR_TARGET -mlibrary"
     ;;
 esac
 

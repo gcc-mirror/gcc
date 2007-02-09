@@ -4654,6 +4654,9 @@ extra_nmflags_for_target=
 extra_ranlibflags_for_target=
 target_makefile_frag=/dev/null
 case "${target}" in
+  mep*-*-*)
+    target_makefile_frag="config/mt-mep"
+    ;;
   spu-*-*)
     target_makefile_frag="config/mt-spu"
     ;;
@@ -5240,6 +5243,9 @@ case "${target}" in
       # This is for libnosys.a
       FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/$(TARGET_SUBDIR)/libgloss/libnosys'
     fi
+    ;;
+  mep*)
+    FLAGS_FOR_TARGET="$FLAGS_FOR_TARGET -mlibrary"
     ;;
 esac
 
@@ -7245,7 +7251,7 @@ echo "${ECHO_T}no" >&6
     ac_cv_path_AR_FOR_TARGET=$AR_FOR_TARGET
   fi
 fi
-if test -z "$ac_cv_path_AR_FOR_TARGET" ; then
+if test -z "$ac_cv_path_AR_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
   # Extract the first word of "ar", so it can be a program name with args.
 set dummy ar; ac_word=$2
 echo "$as_me:$LINENO: checking for $ac_word" >&5
@@ -7418,7 +7424,7 @@ echo "${ECHO_T}no" >&6
     ac_cv_path_AS_FOR_TARGET=$AS_FOR_TARGET
   fi
 fi
-if test -z "$ac_cv_path_AS_FOR_TARGET" ; then
+if test -z "$ac_cv_path_AS_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
   # Extract the first word of "as", so it can be a program name with args.
 set dummy as; ac_word=$2
 echo "$as_me:$LINENO: checking for $ac_word" >&5
@@ -7591,7 +7597,7 @@ echo "${ECHO_T}no" >&6
     ac_cv_path_DLLTOOL_FOR_TARGET=$DLLTOOL_FOR_TARGET
   fi
 fi
-if test -z "$ac_cv_path_DLLTOOL_FOR_TARGET" ; then
+if test -z "$ac_cv_path_DLLTOOL_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
   # Extract the first word of "dlltool", so it can be a program name with args.
 set dummy dlltool; ac_word=$2
 echo "$as_me:$LINENO: checking for $ac_word" >&5
@@ -7764,7 +7770,7 @@ echo "${ECHO_T}no" >&6
     ac_cv_path_LD_FOR_TARGET=$LD_FOR_TARGET
   fi
 fi
-if test -z "$ac_cv_path_LD_FOR_TARGET" ; then
+if test -z "$ac_cv_path_LD_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
   # Extract the first word of "ld", so it can be a program name with args.
 set dummy ld; ac_word=$2
 echo "$as_me:$LINENO: checking for $ac_word" >&5
@@ -7937,7 +7943,7 @@ echo "${ECHO_T}no" >&6
     ac_cv_path_LIPO_FOR_TARGET=$LIPO_FOR_TARGET
   fi
 fi
-if test -z "$ac_cv_path_LIPO_FOR_TARGET" ; then
+if test -z "$ac_cv_path_LIPO_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
   # Extract the first word of "lipo", so it can be a program name with args.
 set dummy lipo; ac_word=$2
 echo "$as_me:$LINENO: checking for $ac_word" >&5
@@ -8110,7 +8116,7 @@ echo "${ECHO_T}no" >&6
     ac_cv_path_NM_FOR_TARGET=$NM_FOR_TARGET
   fi
 fi
-if test -z "$ac_cv_path_NM_FOR_TARGET" ; then
+if test -z "$ac_cv_path_NM_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
   # Extract the first word of "nm", so it can be a program name with args.
 set dummy nm; ac_word=$2
 echo "$as_me:$LINENO: checking for $ac_word" >&5
@@ -8283,7 +8289,7 @@ echo "${ECHO_T}no" >&6
     ac_cv_path_OBJDUMP_FOR_TARGET=$OBJDUMP_FOR_TARGET
   fi
 fi
-if test -z "$ac_cv_path_OBJDUMP_FOR_TARGET" ; then
+if test -z "$ac_cv_path_OBJDUMP_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
   # Extract the first word of "objdump", so it can be a program name with args.
 set dummy objdump; ac_word=$2
 echo "$as_me:$LINENO: checking for $ac_word" >&5
@@ -8456,7 +8462,7 @@ echo "${ECHO_T}no" >&6
     ac_cv_path_RANLIB_FOR_TARGET=$RANLIB_FOR_TARGET
   fi
 fi
-if test -z "$ac_cv_path_RANLIB_FOR_TARGET" ; then
+if test -z "$ac_cv_path_RANLIB_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
   # Extract the first word of "ranlib", so it can be a program name with args.
 set dummy ranlib; ac_word=$2
 echo "$as_me:$LINENO: checking for $ac_word" >&5
@@ -8629,7 +8635,7 @@ echo "${ECHO_T}no" >&6
     ac_cv_path_STRIP_FOR_TARGET=$STRIP_FOR_TARGET
   fi
 fi
-if test -z "$ac_cv_path_STRIP_FOR_TARGET" ; then
+if test -z "$ac_cv_path_STRIP_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
   # Extract the first word of "strip", so it can be a program name with args.
 set dummy strip; ac_word=$2
 echo "$as_me:$LINENO: checking for $ac_word" >&5
@@ -8802,7 +8808,7 @@ echo "${ECHO_T}no" >&6
     ac_cv_path_WINDRES_FOR_TARGET=$WINDRES_FOR_TARGET
   fi
 fi
-if test -z "$ac_cv_path_WINDRES_FOR_TARGET" ; then
+if test -z "$ac_cv_path_WINDRES_FOR_TARGET" && test -n "$gcc_cv_tool_dirs"; then
   # Extract the first word of "windres", so it can be a program name with args.
 set dummy windres; ac_word=$2
 echo "$as_me:$LINENO: checking for $ac_word" >&5
