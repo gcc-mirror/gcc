@@ -103,6 +103,7 @@ BEGIN {
 configflags == "" {
     configflags = $0 " ";
     sub(/^# /, "", configflags);
+    sub(/^s,@TOPLEVEL_CONFIGURE_ARGUMENTS@,/, "", configflags);
     srcdir = configflags;
     sub(/\/configure .*/, "", srcdir);
     printf "LAST_UPDATED: ";
@@ -110,6 +111,7 @@ configflags == "" {
     print "";
 
     sub(/^[^ ]*\/configure */, " ", configflags);
+    sub(/,;t t $/, " ", configflags);
     sub(/ --with-gcc-version-trigger=[^ ]* /, " ", configflags);
     sub(/ --norecursion /, " ", configflags);
     sub(/ $/, "", configflags);
