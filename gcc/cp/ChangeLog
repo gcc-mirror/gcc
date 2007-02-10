@@ -1,3 +1,7 @@
+2007-02-10  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* parser.c (cp_parser_primary_expression): Reformat overly long lines.
+
 2007-02-10  Richard Henderson  <rth@redhat.com>, Jakub Jelinek  <jakub@redhat.com>
 
 	* decl.c (grokvardecl): Don't error if !have_tls.
