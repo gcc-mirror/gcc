@@ -469,12 +469,6 @@ gfc_match_omp_threadprivate (void)
   if (m != MATCH_YES)
     return m;
 
-  if (!targetm.have_tls)
-    {
-      sorry ("threadprivate variables not supported in this target");
-      goto cleanup;
-    }
-
   for (;;)
     {
       m = gfc_match_symbol (&sym, 0);

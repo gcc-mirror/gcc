@@ -384,7 +384,7 @@ proc check_effective_target_pcc_bitfield_type_matters { } {
     }]
 }
 
-# Return 1 if thread local storage (TLS) is supported, 0 otherwise.
+# Return 1 if *native* thread local storage (TLS) is supported, 0 otherwise.
 #
 # This won't change for different subtargets so cache the result.
 
@@ -406,11 +406,19 @@ proc check_effective_target_tls {} {
 	close $f
 
 	# Test for thread-local data supported by the platform.
-	set comp_output \
-	    [${tool}_target_compile $src $asm assembly ""]
+	set comp_output [${tool}_target_compile $src $asm assembly ""]
 	file delete $src
 	if { [string match "*not supported*" $comp_output] } {
 	    set et_tls_saved 0
+	} else {
+	    set fd [open $asm r]
+	    set text [read $fd]
+	    close $fd
+	    if { [string match "*emutls*" $text]} {
+		set et_tls_saved 0
+	    } else {
+		set et_tls_saved 1
+	    }
 	}
 	remove-build-file $asm
     }

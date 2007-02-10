@@ -7783,9 +7783,6 @@ c_parser_omp_threadprivate (c_parser *parser)
   c_parser_consume_pragma (parser);
   vars = c_parser_omp_var_list_parens (parser, 0, NULL);
 
-  if (!targetm.have_tls)
-    sorry ("threadprivate variables not supported in this target");
-
   /* Mark every variable in VARS to be assigned thread local storage.  */
   for (t = vars; t; t = TREE_CHAIN (t))
     {

@@ -19312,9 +19312,6 @@ cp_parser_omp_threadprivate (cp_parser *parser, cp_token *pragma_tok)
   vars = cp_parser_omp_var_list (parser, 0, NULL);
   cp_parser_require_pragma_eol (parser, pragma_tok);
 
-  if (!targetm.have_tls)
-    sorry ("threadprivate variables not supported in this target");
-
   finish_omp_threadprivate (vars);
 }
 

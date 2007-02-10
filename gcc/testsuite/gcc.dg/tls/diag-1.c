@@ -1,5 +1,4 @@
 /* Valid __thread specifiers.  */
-/* { dg-require-effective-target tls } */
 
 __thread int g1;
 extern __thread int g2;
