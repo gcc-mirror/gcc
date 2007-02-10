@@ -5150,7 +5150,7 @@ case "${which_gcj}" in
       else
          GCJ="${target_noncanonical}-gcj -B`${PWDCMD-pwd}`/"
       fi
-      GCJH="$built_gcc_dir/gcjh"
+      GCJH='$(target_noncanonical)-gcjh'
    ;;
    path)
       GCJ="gcj -B`${PWDCMD-pwd}`/"
@@ -7819,7 +7819,7 @@ ac_x_header_dirs='
 /usr/openwin/share/include'
 
 if test "$ac_x_includes" = no; then
-  # Guess where to find include files, by looking for Xlib.h.
+  # Guess where to find include files, by looking for Intrinsic.h.
   # First, try using that file with no special directory specified.
   cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
@@ -7827,7 +7827,7 @@ _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-#include <X11/Xlib.h>
+#include <X11/Intrinsic.h>
 _ACEOF
 if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
   (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
@@ -7854,7 +7854,7 @@ else
 sed 's/^/| /' conftest.$ac_ext >&5
 
   for ac_dir in $ac_x_header_dirs; do
-  if test -r "$ac_dir/X11/Xlib.h"; then
+  if test -r "$ac_dir/X11/Intrinsic.h"; then
     ac_x_includes=$ac_dir
     break
   fi
@@ -7868,7 +7868,7 @@ if test "$ac_x_libraries" = no; then
   # See if we find them without any special options.
   # Don't add to $LIBS permanently.
   ac_save_LIBS=$LIBS
-  LIBS="-lX11 $LIBS"
+  LIBS="-lXt $LIBS"
   if test x$gcc_no_link = xyes; then
   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
 echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
@@ -7880,11 +7880,11 @@ _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-#include <X11/Xlib.h>
+#include <X11/Intrinsic.h>
 int
 main ()
 {
-XrmInitialize ()
+XtMalloc (0)
   ;
   return 0;
 }
@@ -16870,7 +16870,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-                      chktls_save_LDFLAGS="$LDFLAGS"
+                      save_LDFLAGS="$LDFLAGS"
       LDFLAGS="-static $LDFLAGS"
       if test x$gcc_no_link = xyes; then
   { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
@@ -16942,134 +16942,7 @@ have_tls=yes
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
-      LDFLAGS="$chktls_save_LDFLAGS"
-      if test $have_tls = yes; then
-						chktls_save_CFLAGS="$CFLAGS"
-	thread_CFLAGS=failed
-	for flag in '' '-pthread' '-lpthread'; do
-	  CFLAGS="$flag $chktls_save_CFLAGS"
-	  if test x$gcc_no_link = xyes; then
-  { { echo "$as_me:$LINENO: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&5
-echo "$as_me: error: Link tests are not allowed after GCC_NO_EXECUTABLES." >&2;}
-   { (exit 1); exit 1; }; }
-fi
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <pthread.h>
-		void *g(void *d) { return NULL; }
-int
-main ()
-{
-pthread_t t; pthread_create(&t,NULL,g,NULL);
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  thread_CFLAGS="$flag"
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-fi
-rm -f conftest.err conftest.$ac_objext \
-      conftest$ac_exeext conftest.$ac_ext
-	  if test "X$thread_CFLAGS" != Xfailed; then
-	    break
-	  fi
-	done
-	CFLAGS="$chktls_save_CFLAGS"
-	if test "X$thread_CFLAGS" != Xfailed; then
-	  CFLAGS="$thread_CFLAGS $chktls_save_CFLAGS"
-	  if test "$cross_compiling" = yes; then
-  { { echo "$as_me:$LINENO: error: cannot run test program while cross compiling
-See \`config.log' for more details." >&5
-echo "$as_me: error: cannot run test program while cross compiling
-See \`config.log' for more details." >&2;}
-   { (exit 1); exit 1; }; }
-else
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <pthread.h>
-		__thread int a;
-		static int *a_in_other_thread;
-		static void *
-		thread_func (void *arg)
-		{
-		  a_in_other_thread = &a;
-		  return (void *)0;
-		}
-int
-main ()
-{
-pthread_t thread;
-		void *thread_retval;
-		int *a_in_main_thread;
-		if (pthread_create (&thread, (pthread_attr_t *)0,
-				    thread_func, (void *)0))
-		  return 0;
-		a_in_main_thread = &a;
-		if (pthread_join (thread, &thread_retval))
-		  return 0;
-		return (a_in_other_thread == a_in_main_thread);
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  have_tls=yes
-else
-  echo "$as_me: program exited with status $ac_status" >&5
-echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-( exit $ac_status )
-have_tls=no
-fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
-fi
-	  CFLAGS="$chktls_save_CFLAGS"
-	fi
-      fi
+      LDFLAGS="$save_LDFLAGS"
 else
   echo "$as_me: program exited with status $ac_status" >&5
 echo "$as_me: failed program was:" >&5
