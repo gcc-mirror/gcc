@@ -1,3 +1,12 @@
+2007-02-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/30634
+	* pa.md (movdf): For 64-bit target, fail if operand 1 is a non-zero
+	CONST_DOUBLE and operand 0 is a hard register.
+	(movdi): For 64-bit target, remove code to force CONST_DOUBLE to
+	memory.  Fail if operand 1 is a non-zero CONST_INT and operand 0
+	is a hard floating-point register.
+
 2007-02-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR target/29487
