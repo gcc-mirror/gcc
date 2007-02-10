@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1" } */
+/* { dg-options "-O2 -fdump-tree-profile" } */
 
 int foo(void);
 void bla(void);
@@ -118,11 +118,11 @@ void test5 (void)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Disambiguating loop" 5 "vrp1" } } */
-/* { dg-final { scan-tree-dump-times "Found latch edge" 5 "vrp1" } } */
-/* { dg-final { scan-tree-dump-times "Merged latch edges" 2 "vrp1" } } */
-/* { dg-final { scan-tree-dump-times "4 loops found" 2 "vrp1" } } */
-/* { dg-final { scan-tree-dump-times "3 loops found" 2 "vrp1" } } */
-/* { dg-final { scan-tree-dump-times "2 loops found" 1 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "Disambiguating loop" 5 "profile" } } */
+/* { dg-final { scan-tree-dump-times "Found latch edge" 5 "profile" } } */
+/* { dg-final { scan-tree-dump-times "Merged latch edges" 2 "profile" } } */
+/* { dg-final { scan-tree-dump-times "4 loops found" 2 "profile" } } */
+/* { dg-final { scan-tree-dump-times "3 loops found" 2 "profile" } } */
+/* { dg-final { scan-tree-dump-times "2 loops found" 1 "profile" } } */
 
-/* { dg-final { cleanup-tree-dump "vrp1" } } */
+/* { dg-final { cleanup-tree-dump "profile" } } */

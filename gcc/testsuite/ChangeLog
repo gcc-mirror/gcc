@@ -1,3 +1,7 @@
+2007-02-10  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/loop-25.c: Verify the result in the profile pass.
+
 2006-02-09  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* gfortran.dg/secnds.f: Replace time tolerance with a
