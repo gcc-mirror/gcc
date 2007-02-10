@@ -1,3 +1,10 @@
+2007-02-10  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* genautomata.c (longest_path_length): Delete unused function.
+	(struct state): Delete unused longest_path_length.
+	(UNDEFINED_LONGEST_PATH_LENGTH): Delete unused macro.
+	(get_free_state): Delete unused.
+	
 2007-02-09  Jan Hubicka  <jh@suse.cz>
 
 	* params.def (PARAM_INLINE_UNIT_GROWTH): Set to 30.
