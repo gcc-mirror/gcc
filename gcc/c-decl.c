@@ -4927,14 +4927,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	  }
 
 	if (threadp)
-	  {
-	    if (targetm.have_tls)
-	      DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
-	    else
-	      /* A mere warning is sure to result in improper semantics
-		 at runtime.  Don't bother to allow this to compile.  */
-	      error ("thread-local storage not supported for this target");
-	  }
+	  DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
       }
 
     if (storage_class == csc_extern

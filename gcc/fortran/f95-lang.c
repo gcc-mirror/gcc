@@ -1136,6 +1136,14 @@ gfc_init_builtin_functions (void)
 		      BUILT_IN_TRAP, NULL, false);
   TREE_THIS_VOLATILE (built_in_decls[BUILT_IN_TRAP]) = 1;
 
+  gfc_define_builtin ("__emutls_get_address",
+		      builtin_types[BT_FN_PTR_PTR], BUILT_IN_EMUTLS_GET_ADDRESS,
+		      "__emutls_get_address", true);
+  gfc_define_builtin ("__emutls_register_common",
+		      builtin_types[BT_FN_VOID_PTR_WORD_WORD_PTR],
+		      BUILT_IN_EMUTLS_REGISTER_COMMON,
+		      "__emutls_register_common", false);
+
   build_common_builtin_nodes ();
   targetm.init_builtins ();
 }

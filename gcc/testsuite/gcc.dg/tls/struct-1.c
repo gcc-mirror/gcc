@@ -2,7 +2,6 @@
    to allow addends for @dtpoff relocs or not.  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fpic" } */
-/* { dg-require-effective-target tls } */
 
 struct S {
   int s0, s1, s2, s3;

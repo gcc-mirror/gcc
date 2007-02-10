@@ -1,3 +1,40 @@
+2007-02-10  Richard Henderson  <rth@redhat.com>, Jakub Jelinek  <jakub@redhat.com>, Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in (libgcc-support, libgcc.mvars): Add emutls.c.
+	* builtin-types.def (BT_WORD): Make unsigned.
+	(BT_FN_VOID_PTR_WORD_WORD_PTR): New.
+	* builtins.def (BUILT_IN_EMUTLS_GET_ADDRESS): New.
+	(BUILT_IN_EMUTLS_REGISTER_COMMON): New.
+	* c-decl.c (grokdeclarator): Don't error if !have_tls.
+	* c-parser.c (c_parser_omp_threadprivate): Likewise.
+	* dwarf2out.c (loc_descriptor_from_tree_1): Don't do anything for
+	emulated tls.
+	* expr.c (emutls_var_address): New.
+	(expand_expr_real_1): Expand emulated tls.
+	(expand_expr_addr_expr_1): Likewise.
+	* libgcc-std.ver: Add __emutls_get_address, __emutls_register_common.
+	* output.h (emutls_finish): Declare.
+	* toplev.c (compile_file): Call it.
+	* tree-ssa-address.c (gen_addr_rtx): Check for const-ness of the
+	address before wrapping in CONST.
+	* varasm.c (emutls_htab, emutls_object_type): New.
+	(EMUTLS_VAR_PREFIX, EMUTLS_TMPL_PREFIX): New.
+	(get_emutls_object_name, get_emutls_object_type): New.
+	(get_emutls_init_templ_addr, emutls_decl): New.
+	(emutls_common_1, emutls_finish): New.
+	(assemble_variable): When emulating tls, swap decls; generate
+	constructor for the emutls objects.
+	(do_assemble_alias): When emulating tls, swap decl and target name.
+	(default_encode_section_info): Don't add SYMBOL_FLAG_TLS_SHIFT
+	for emulated tls.
+	* varpool.c (decide_is_variable_needed): Look at force_output.
+	Recurse for emulated tls.
+	(cgraph_varpool_remove_unreferenced_decls): Remove checks redundant
+	with decide_is_variable_needed.
+	* emutls.c: New file.
+	* config/sparc/sol2.h (ASM_DECLARE_OBJECT_NAME): Only emit
+	tls_object for real tls.
+
 2007-02-10  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR rtl-optimization/29599

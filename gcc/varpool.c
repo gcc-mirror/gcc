@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -218,7 +218,7 @@ bool
 decide_is_variable_needed (struct varpool_node *node, tree decl)
 {
   /* If the user told us it is used, then it must be so.  */
-  if (node->externally_visible)
+  if (node->externally_visible || node->force_output)
     return true;
   if (!flag_unit_at_a_time
       && lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
@@ -241,6 +241,17 @@ decide_is_variable_needed (struct varpool_node *node, tree decl)
   if (TREE_PUBLIC (decl) && !flag_whole_program && !DECL_COMDAT (decl)
       && !DECL_EXTERNAL (decl))
     return true;
+
+  /* When emulating tls, we actually see references to the control
+     variable, rather than the user-level variable.  */
+  if (!targetm.have_tls
+      && TREE_CODE (decl) == VAR_DECL
+      && DECL_THREAD_LOCAL_P (decl))
+    {
+      tree control = emutls_decl (decl);
+      if (decide_is_variable_needed (varpool_node (control), control))
+	return true;
+    }
 
   /* When not reordering top level variables, we have to assume that
      we are going to keep everything.  */
@@ -374,10 +385,7 @@ varpool_remove_unreferenced_decls (void)
       node->needed = 0;
 
       if (node->finalized
-	  && ((DECL_ASSEMBLER_NAME_SET_P (decl)
-	       && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
-	      || node->force_output
-	      || decide_is_variable_needed (node, decl)
+	  && (decide_is_variable_needed (node, decl)
 	      /* ??? Cgraph does not yet rule the world with an iron hand,
 		 and does not control the emission of debug information.
 		 After a variable has its DECL_RTL set, we must assume that

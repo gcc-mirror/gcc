@@ -1,7 +1,6 @@
 /* PR 18910 */
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-require-effective-target tls } */
 
 static __thread void *foo [2];
 void

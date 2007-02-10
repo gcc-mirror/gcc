@@ -280,4 +280,6 @@ GCC_4.3.0 {
   # byte swapping routines
   __bswapsi2
   __bswapdi2
+  __emutls_get_address
+  __emutls_register_common
 }

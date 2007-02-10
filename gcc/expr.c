@@ -6421,6 +6421,19 @@ highest_pow2_factor_for_target (tree target, tree exp)
   return MAX (factor, target_align);
 }
 
+/* Return &VAR expression for emulated thread local VAR.  */
+
+static tree
+emutls_var_address (tree var)
+{
+  tree emuvar = emutls_decl (var);
+  tree fn = built_in_decls [BUILT_IN_EMUTLS_GET_ADDRESS];
+  tree arg = build_fold_addr_expr_with_type (emuvar, ptr_type_node);
+  tree arglist = build_tree_list (NULL_TREE, arg);
+  tree call = build_function_call_expr (fn, arglist);
+  return fold_convert (build_pointer_type (TREE_TYPE (var)), call);
+}
+
 /* Expands variable VAR.  */
 
 void
@@ -6548,6 +6561,18 @@ expand_expr_addr_expr_1 (tree exp, rtx target, enum machine_mode tmode,
       bitpos = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (exp)));
       inner = TREE_OPERAND (exp, 0);
       break;
+
+    case VAR_DECL:
+      /* TLS emulation hook - replace __thread VAR's &VAR with
+	 __emutls_get_address (&_emutls.VAR).  */
+      if (! targetm.have_tls
+	  && TREE_CODE (exp) == VAR_DECL
+	  && DECL_THREAD_LOCAL_P (exp))
+	{
+	  exp = emutls_var_address (exp);
+	  return expand_expr (exp, target, tmode, modifier);
+	}
+      /* Fall through.  */
 
     default:
       /* If the object is a DECL, then expand it for its rtl.  Don't bypass
@@ -6923,6 +6948,16 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  && COMPLETE_OR_UNBOUND_ARRAY_TYPE_P (TREE_TYPE (exp))
 	  && (TREE_STATIC (exp) || DECL_EXTERNAL (exp)))
 	layout_decl (exp, 0);
+
+      /* TLS emulation hook - replace __thread vars with
+	 *__emutls_get_address (&_emutls.var).  */
+      if (! targetm.have_tls
+	  && TREE_CODE (exp) == VAR_DECL
+	  && DECL_THREAD_LOCAL_P (exp))
+	{
+	  exp = build_fold_indirect_ref (emutls_var_address (exp));
+	  return expand_expr_real_1 (exp, target, tmode, modifier, NULL);
+	}
 
       /* ... fall through ...  */
 

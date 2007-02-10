@@ -1,5 +1,5 @@
 /* Memory address lowering and addressing mode selection.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
    
 This file is part of GCC.
    
@@ -135,10 +135,15 @@ gen_addr_rtx (rtx symbol, rtx base, rtx index, rtx step, rtx offset,
       act_elem = symbol;
       if (offset)
 	{
-	  act_elem = gen_rtx_CONST (Pmode,
-				    gen_rtx_PLUS (Pmode, act_elem, offset));
+	  act_elem = gen_rtx_PLUS (Pmode, act_elem, offset);
+
 	  if (offset_p)
-	    *offset_p = &XEXP (XEXP (act_elem, 0), 1);
+	    *offset_p = &XEXP (act_elem, 1);
+
+	  if (GET_CODE (symbol) == SYMBOL_REF
+	      || GET_CODE (symbol) == LABEL_REF
+	      || GET_CODE (symbol) == CONST)
+	    act_elem = gen_rtx_CONST (Pmode, act_elem);
 	}
 
       if (*addr)
