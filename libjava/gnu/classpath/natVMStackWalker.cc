@@ -1,6 +1,6 @@
 // natVMStackWalker.cc
 
-/* Copyright (C) 2006  Free Software Foundation
+/* Copyright (C) 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -18,6 +18,32 @@ details.  */
 #include <gnu/gcj/RawData.h>
 #include <java/lang/ClassLoader.h>
 #include <java/lang/Class.h>
+
+// Return the class of the method that contains PC.
+// This is a macro not a function, since defining it as one would
+// introduce an extra frame on the stack.  */
+#define GET_CALLING_CLASS(PC)						\
+({									\
+  void *f = _Unwind_FindEnclosingFunction (PC);				\
+									\
+  /* FIXME: it might well be a good idea to cache pc values here in	\
+     order to avoid repeated invocations of				\
+     _Unwind_FindEnclosingFunction, which is quite expensive.  On the	\
+     other hand, which not simply write a caching version of		\
+     _Unwind_FindEnclosingFunction itself?  That would probably be	\
+     worthwhile.  */							\
+									\
+  _Jv_StackTrace::UpdateNCodeMap ();					\
+  jclass klass = (jclass) _Jv_StackTrace::ncodeMap->get ((jobject) f);	\
+									\
+  /* If the caller is a compiled frame and the caller of the caller is	\
+     an interpreted frame then klass will be null and we need to	\
+     unwind the stack.  */						\
+  if (!klass)								\
+    klass = _Jv_StackTrace::GetStackWalkerCallingClass ();		\
+									\
+  klass;								\
+ })
 
 JArray<jclass> *
 gnu::classpath::VMStackWalker::getClassContext(void)
@@ -40,25 +66,7 @@ jclass
 gnu::classpath::VMStackWalker::getCallingClass(::gnu::gcj::RawData *pc)
 {
   _Jv_InitClass (&::gnu::classpath::VMStackWalker::class$);
-  void *f = _Unwind_FindEnclosingFunction (pc);
-
-  // FIXME: it might well be a good idea to cache pc values here in
-  // order to avoid repeated invocations of
-  // _Unwind_FindEnclosingFunction, which is quite expensive.  On the
-  // other hand, which not simply write a caching version of
-  // _Unwind_FindEnclosingFunction itself?  That would probably be
-  // worthwhile.
-
-  _Jv_StackTrace::UpdateNCodeMap ();
-  jclass klass = (jclass) _Jv_StackTrace::ncodeMap->get ((jobject) f);
-
-  // If the caller is a compiled frame and the caller of the caller
-  // is an interpreted frame then klass will be null and we need to
-  // unwind the stack.
-  if (klass == NULL)
-    klass = _Jv_StackTrace::GetStackWalkerCallingClass ();
-
-  return klass;
+  return GET_CALLING_CLASS(pc);
 }
 
 ::java::lang::ClassLoader *
@@ -80,7 +88,7 @@ gnu::classpath::VMStackWalker::getCallingClassLoader(void)
 gnu::classpath::VMStackWalker::getCallingClassLoader(::gnu::gcj::RawData *pc)
 {
   _Jv_InitClass (&::gnu::classpath::VMStackWalker::class$);
-  return getCallingClass (pc)->getClassLoaderInternal ();
+  return GET_CALLING_CLASS(pc)->getClassLoaderInternal ();
 }
 
 ::java::lang::ClassLoader *
