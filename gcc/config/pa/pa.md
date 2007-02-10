@@ -4098,8 +4098,18 @@
   ""
   "
 {
-  if (GET_CODE (operands[1]) == CONST_DOUBLE && TARGET_64BIT)
-    operands[1] = force_const_mem (DFmode, operands[1]);
+  if (TARGET_64BIT
+      && GET_CODE (operands[1]) == CONST_DOUBLE
+      && operands[1] != CONST0_RTX (DFmode))
+    {
+      /* We rely on reload to legitimize the insn generated after
+	 we force the CONST_DOUBLE to memory.  This doesn't happen
+	 if OPERANDS[0] is a hard register.  */
+      if (REG_P (operands[0]) && HARD_REGISTER_P (operands[0]))
+	FAIL;
+
+      operands[1] = force_const_mem (DFmode, operands[1]);
+    }
 
   if (emit_move_sequence (operands, DFmode, 0))
     DONE;
@@ -4358,8 +4368,17 @@
   ""
   "
 {
-  if (GET_CODE (operands[1]) == CONST_DOUBLE && TARGET_64BIT)
-    operands[1] = force_const_mem (DImode, operands[1]);
+  /* Except for zero, we don't support loading a CONST_INT directly
+     to a hard floating-point register since a scratch register is
+     needed for the operation.  While the operation could be handled
+     before no_new_pseudos is true, the simplest solution is to fail.  */
+  if (TARGET_64BIT
+      && GET_CODE (operands[1]) == CONST_INT
+      && operands[1] != CONST0_RTX (DImode)
+      && REG_P (operands[0])
+      && HARD_REGISTER_P (operands[0])
+      && REGNO (operands[0]) >= 32)
+    FAIL;
 
   if (emit_move_sequence (operands, DImode, 0))
     DONE;
