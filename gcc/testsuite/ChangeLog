@@ -1,3 +1,9 @@
+2006-02-09  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* gfortran.dg/secnds.f: Replace time tolerance with a
+	before-and-after bracket.
+	* gfortran.dg/secnds-1.f: Likewise.
+
 2007-02-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/30512
