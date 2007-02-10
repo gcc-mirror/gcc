@@ -4541,88 +4541,88 @@ fpu-target.h: $(srcdir)/$(FPU_HOST_HEADER)
 	cp $(srcdir)/$(FPU_HOST_HEADER) $@
 
 @MAINTAINER_MODE_TRUE@$(i_all_c): m4/all.m4 $(I_M4_DEPS1)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 all.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 all.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_any_c): m4/any.m4 $(I_M4_DEPS1)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 any.m4> $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 any.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_count_c): m4/count.m4 $(I_M4_DEPS1)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 count.m4> $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 count.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_maxloc0_c): m4/maxloc0.m4 $(I_M4_DEPS0)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 maxloc0.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 maxloc0.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_maxloc1_c): m4/maxloc1.m4 $(I_M4_DEPS1)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 maxloc1.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 maxloc1.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_maxval_c): m4/maxval.m4 $(I_M4_DEPS1)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 maxval.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 maxval.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_minloc0_c): m4/minloc0.m4 $(I_M4_DEPS0)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 minloc0.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 minloc0.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_minloc1_c): m4/minloc1.m4 $(I_M4_DEPS1)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 minloc1.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 minloc1.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_minval_c): m4/minval.m4 $(I_M4_DEPS1)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 minval.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 minval.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_product_c): m4/product.m4 $(I_M4_DEPS1)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 product.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 product.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_sum_c): m4/sum.m4 $(I_M4_DEPS1)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 sum.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 sum.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_matmul_c): m4/matmul.m4 $(I_M4_DEPS)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 matmul.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 matmul.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_matmull_c): m4/matmull.m4 $(I_M4_DEPS)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 matmull.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 matmull.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_transpose_c): m4/transpose.m4 $(I_M4_DEPS)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 transpose.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 transpose.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_shape_c): m4/shape.m4 $(I_M4_DEPS)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 shape.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 shape.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_reshape_c): m4/reshape.m4 $(I_M4_DEPS)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 reshape.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 reshape.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_eoshift1_c): m4/eoshift1.m4 $(I_M4_DEPS)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 eoshift1.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 eoshift1.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_eoshift3_c): m4/eoshift3.m4 $(I_M4_DEPS)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 eoshift3.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 eoshift3.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_cshift1_c): m4/cshift1.m4 $(I_M4_DEPS)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 cshift1.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 cshift1.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(in_pack_c): m4/in_pack.m4 $(I_M4_DEPS)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 in_pack.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 in_pack.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(in_unpack_c): m4/in_unpack.m4 $(I_M4_DEPS)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 in_unpack.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 in_unpack.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_exponent_c): m4/exponent.m4 m4/mtype.m4
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 exponent.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 exponent.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_rrspacing_c): m4/rrspacing.m4 m4/mtype.m4
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 rrspacing.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 rrspacing.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_spacing_c): m4/spacing.m4 m4/mtype.m4
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 spacing.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 spacing.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_fraction_c): m4/fraction.m4 m4/mtype.m4
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 fraction.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 fraction.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_nearest_c): m4/nearest.m4 m4/mtype.m4
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 nearest.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 nearest.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_set_exponent_c): m4/set_exponent.m4 m4/mtype.m4
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 set_exponent.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 set_exponent.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_pow_c): m4/pow.m4 $(I_M4_DEPS)
-@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 pow.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 pow.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(gfor_built_specific_src): m4/specific.m4 m4/head.m4
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 specific.m4 > $(srcdir)/$@
