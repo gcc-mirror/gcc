@@ -2063,13 +2063,9 @@ cp_cannot_inline_tree_fn (tree* fnp)
       && lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) == NULL)
     return 1;
 
-  /* Don't auto-inline anything that might not be bound within
-     this unit of translation.
-     Exclude comdat functions from this rule.  While they can be bound
-     to the other unit, they all must be the same.  This is especially
-     important so templates can inline.  */
-  if (!DECL_DECLARED_INLINE_P (fn) && !(*targetm.binds_local_p) (fn)
-      && !DECL_COMDAT (fn))
+  /* Don't auto-inline functions that might be replaced at link-time
+     with an alternative definition.  */ 
+  if (!DECL_DECLARED_INLINE_P (fn) && DECL_REPLACEABLE_P (fn))
     {
       DECL_UNINLINABLE (fn) = 1;
       return 1;
