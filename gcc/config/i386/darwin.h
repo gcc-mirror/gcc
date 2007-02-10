@@ -66,6 +66,9 @@ Boston, MA 02110-1301, USA.  */
 #undef FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN
 #define FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN (0)
 
+#undef TARGET_KEEPS_VECTOR_ALIGNED_STACK
+#define TARGET_KEEPS_VECTOR_ALIGNED_STACK 1
+
 /* We want -fPIC by default, unless we're using -static to compile for
    the kernel or some such.  */
 

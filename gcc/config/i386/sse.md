@@ -87,6 +87,47 @@
 	  (const_string "V4SF")
 	  (const_string "TI")))])
 
+;; Move a DI from a 32-bit register pair (e.g. %edx:%eax) to an xmm.
+;; We'd rather avoid this entirely; if the 32-bit reg pair was loaded
+;; from memory, we'd prefer to load the memory directly into the %xmm
+;; register.  To facilitate this happy circumstance, this pattern won't
+;; split until after register allocation.  If the 64-bit value didn't
+;; come from memory, this is the best we can do.  This is much better
+;; than storing %edx:%eax into a stack temporary and loading an %xmm
+;; from there.
+
+(define_insn_and_split "movdi_to_sse"
+  [(parallel
+    [(set (match_operand:V4SI 0 "register_operand" "=?x,x")
+	  (subreg:V4SI (match_operand:DI 1 "nonimmediate_operand" "r,m") 0))
+     (clobber (match_scratch:V4SI 2 "=&x,X"))])]
+  "!TARGET_64BIT && TARGET_SSE2 && TARGET_INTER_UNIT_MOVES"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  switch (which_alternative)
+    {
+    case 0:
+      /* The DImode arrived in a pair of integral registers (e.g. %edx:%eax).
+	 Assemble the 64-bit DImode value in an xmm register.  */
+      emit_insn (gen_sse2_loadld (operands[0], CONST0_RTX (V4SImode),
+      				  gen_rtx_SUBREG (SImode, operands[1], 0)));
+      emit_insn (gen_sse2_loadld (operands[2], CONST0_RTX (V4SImode),
+				  gen_rtx_SUBREG (SImode, operands[1], 4)));
+      emit_insn (gen_sse2_punpckldq (operands[0], operands[0], operands[2]));
+      break;
+
+    case 1:
+      emit_insn (gen_vec_concatv2di (operands[0], operands[1], const0_rtx));
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+  DONE;
+})
+
 (define_expand "movv4sf"
   [(set (match_operand:V4SF 0 "nonimmediate_operand" "")
 	(match_operand:V4SF 1 "nonimmediate_operand" ""))]
@@ -4118,7 +4159,7 @@
   [(set_attr "type" "sselog,ssemov,ssemov")
    (set_attr "mode" "TI,V4SF,V2SF")])
 
-(define_insn "*vec_concatv2di"
+(define_insn "vec_concatv2di"
   [(set (match_operand:V2DI 0 "register_operand"     "=Y2,?Y2,Y2,x,x,x")
 	(vec_concat:V2DI
 	  (match_operand:DI 1 "nonimmediate_operand" "  m,*y ,0 ,0,0,m")

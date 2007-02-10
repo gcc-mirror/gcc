@@ -1,3 +1,25 @@
+2007-02-09  Stuart Hastings  <stuart@apple.com>
+	Richard Henderson  <rth@redhat.com>
+
+	* gcc/config/i386/i386.h (TARGET_KEEPS_VECTOR_ALIGNED_STACK): New.
+	* gcc/config/i386/darwin.h: (TARGET_KEEPS_VECTOR_ALIGNED_STACK): New.
+	* gcc/config/i386/i386.md (fixuns_trunc<mode>si2, fixuns_truncsfhi2,
+	fixuns_truncdfhi2): New.
+	(fix_truncsfdi_sse): Call ix86_expand_convert_sign_didf_sse.
+	(floatunsdidf2): Call ix86_expand_convert_uns_didf_sse.
+	(floatunssisf2): Add call to ix86_expand_convert_uns_sisf_sse.
+	(floatunssidf2): Allow nonimmediate source.
+	* gcc/config/i386/sse.md (movdi_to_sse): New.  (vec_concatv2di): Drop '*'.
+	* gcc/config/i386/i386-protos.h (ix86_expand_convert_uns_si_sse,
+	ix86_expand_convert_uns_didf_sse, ix86_expand_convert_uns_sidf_sse,
+	ix86_expand_convert_uns_sisf_sse, ix86_expand_convert_sign_didf_sse): New.
+	* gcc/config/i386/i386.c (ix86_expand_convert_uns_si_sse,
+	ix86_expand_convert_uns_didf_sse, ix86_expand_convert_uns_sidf_sse,
+	ix86_expand_convert_uns_sisf_sse, ix86_expand_convert_sign_didf_sse,
+	ix86_build_const_vector, ix86_expand_vector_init_one_nonzero): New.
+	(ix86_build_signbit_mask): Fix decl of v, refactor to call ix86_build_const_vector.
+	(x86_emit_floatuns): Rewrite.
+
 2007-02-10  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* genautomata.c (longest_path_length): Delete unused function.
