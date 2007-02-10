@@ -711,16 +711,7 @@ struct state
   /* The following member is used to evaluate min issue delay of insn
      for a state.  */
   int min_insn_issue_delay;
-  /* The following member is used to evaluate max issue rate of the
-     processor.  The value of the member is maximal length of the path
-     from given state no containing arcs marked by special insn `cycle
-     advancing'.  */
-  int longest_path_length;
 };
-
-/* The following macro is an initial value of member
-   `longest_path_length' of a state.  */
-#define UNDEFINED_LONGEST_PATH_LENGTH -1
 
 /* Automaton arc.  */
 struct arc
@@ -3622,7 +3613,6 @@ get_free_state (int with_reservs, automaton_t automaton)
       result->it_was_placed_in_stack_for_NDFA_forming = 0;
       result->it_was_placed_in_stack_for_DFA_forming = 0;
       result->component_states = NULL;
-      result->longest_path_length = UNDEFINED_LONGEST_PATH_LENGTH;
     }
   else
     {
@@ -3633,7 +3623,6 @@ get_free_state (int with_reservs, automaton_t automaton)
       result->automaton = automaton;
       result->first_out_arc = NULL;
       result->unique_num = curr_unique_state_num;
-      result->longest_path_length = UNDEFINED_LONGEST_PATH_LENGTH;
       curr_unique_state_num++;
     }
   if (with_reservs)
@@ -6677,48 +6666,6 @@ output_range_type (FILE *f, long int min_range_value,
     fprintf (f, "short");
   else
     fprintf (f, "int");
-}
-
-/* The following macro value is used as value of member
-   `longest_path_length' of state when we are processing path and the
-   state on the path.  */
-
-#define ON_THE_PATH -2
-
-/* The following recursive function searches for the length of the
-   longest path starting from STATE which does not contain cycles and
-   `cycle advance' arcs.  */
-
-static int
-longest_path_length (state_t state)
-{
-  arc_t arc;
-  int length, result;
-
-  if (state->longest_path_length != UNDEFINED_LONGEST_PATH_LENGTH)
-    {
-      /* We don't expect the path cycle here.  Our graph may contain
-      	 only cycles with one state on the path not containing `cycle
-      	 advance' arcs -- see comment below.  */
-      gcc_assert (state->longest_path_length != ON_THE_PATH);
-      
-      /* We already visited the state.  */
-      return state->longest_path_length;
-    }
-
-  result = 0;
-  for (arc = first_out_arc (state); arc != NULL; arc = next_out_arc (arc))
-    /* Ignore cycles containing one state and `cycle advance' arcs.  */
-    if (arc->to_state != state
-	&& (arc->insn->insn_reserv_decl
-	    != DECL_INSN_RESERV (advance_cycle_insn_decl)))
-    {
-      length = longest_path_length (arc->to_state);
-      if (length > result)
-	result = length;
-    }
-  state->longest_path_length = result + 1;
-  return result;
 }
 
 /* The function outputs all initialization values of VECT.  */
