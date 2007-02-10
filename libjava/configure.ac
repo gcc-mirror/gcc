@@ -358,7 +358,7 @@ case "${which_gcj}" in
       else
          GCJ="${target_noncanonical}-gcj -B`${PWDCMD-pwd}`/"
       fi
-      GCJH="$built_gcc_dir/gcjh"
+      GCJH='$(target_noncanonical)-gcjh'
    ;;
    path)
       GCJ="gcj -B`${PWDCMD-pwd}`/"
