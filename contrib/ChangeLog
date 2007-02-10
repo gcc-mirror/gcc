@@ -1,3 +1,8 @@
+2007-02-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	* test_summary (configflags): Adjust for changes in the
+	config.status format due to update to autoconf 2.59.
+
 2007-02-09  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* gcc_update: Update for configure.in -> configure.ac.
