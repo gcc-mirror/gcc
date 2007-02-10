@@ -3272,9 +3272,11 @@ cp_parser_primary_expression (cp_parser *parser,
 
       /* Anything else is an error.  */
     default:
-      /* ...unless we have an Objective-C++ message or string literal, that is.  */
+      /* ...unless we have an Objective-C++ message or string literal,
+         that is.  */
       if (c_dialect_objc ()
-	  && (token->type == CPP_OPEN_SQUARE || token->type == CPP_OBJC_STRING))
+	  && (token->type == CPP_OPEN_SQUARE
+              || token->type == CPP_OBJC_STRING))
 	return cp_parser_objc_expression (parser);
 
       cp_parser_error (parser, "expected primary-expression");
