@@ -1518,6 +1518,9 @@ static const char *ix86_mangle_fundamental_type (tree);
 static tree ix86_stack_protect_fail (void);
 static rtx ix86_internal_arg_pointer (void);
 static void ix86_dwarf_handle_frame_unspec (const char *, rtx, int);
+static rtx ix86_build_const_vector (enum machine_mode, bool, rtx);
+static bool ix86_expand_vector_init_one_nonzero (bool, enum machine_mode,
+						 rtx, rtx, int);
 
 /* This function is only used on Solaris.  */
 static void i386_solaris_elf_named_section (const char *, unsigned int, tree)
@@ -9858,6 +9861,233 @@ ix86_unary_operator_ok (enum rtx_code code ATTRIBUTE_UNUSED,
   return TRUE;
 }
 
+/* Convert an SF or DFmode value in an SSE register into an unsigned SImode.
+   When -fpmath=387, this is done with an x87 st(0)_FP->signed-int-64
+   conversion, and ignoring the upper 32 bits of the result.  On x86_64,
+   there is an equivalent SSE %xmm->signed-int-64 conversion.
+
+   On x86_32, we don't have the instruction, nor the 64-bit destination
+   register it requires.  Do the conversion inline in the SSE registers.
+   Requires SSE2.  For x86_32, -mfpmath=sse, !optimize_size only.  */
+
+void
+ix86_expand_convert_uns_si_sse (rtx target, rtx input)
+{
+  REAL_VALUE_TYPE TWO31r;
+  enum machine_mode mode, vecmode;
+  rtx two31, value, large, sign, result_vec, zero_or_two31, x;
+
+  mode = GET_MODE (input);
+  vecmode = mode == SFmode ? V4SFmode : V2DFmode;
+
+  real_ldexp (&TWO31r, &dconst1, 31);
+  two31 = const_double_from_real_value (TWO31r, mode);
+  two31 = ix86_build_const_vector (mode, true, two31);
+  two31 = force_reg (vecmode, two31);
+
+  value = gen_reg_rtx (vecmode);
+  ix86_expand_vector_init_one_nonzero (false, vecmode, value, input, 0);
+
+  large = gen_reg_rtx (vecmode);
+  x = gen_rtx_fmt_ee (LE, vecmode, two31, value);
+  emit_insn (gen_rtx_SET (VOIDmode, large, x));
+
+  zero_or_two31 = gen_reg_rtx (vecmode);
+  x = gen_rtx_AND (vecmode, large, two31);
+  emit_insn (gen_rtx_SET (VOIDmode, zero_or_two31, x));
+
+  x = gen_rtx_MINUS (vecmode, value, zero_or_two31);
+  emit_insn (gen_rtx_SET (VOIDmode, value, x));
+
+  result_vec = gen_reg_rtx (V4SImode);
+  if (mode == SFmode)
+    x = gen_sse2_cvttps2dq (result_vec, value);
+  else
+    x = gen_sse2_cvttpd2dq (result_vec, value);
+  emit_insn (x);
+
+  sign = gen_reg_rtx (V4SImode);
+  emit_insn (gen_ashlv4si3 (sign, gen_lowpart (V4SImode, large),
+			    GEN_INT (31)));
+
+  emit_insn (gen_xorv4si3 (result_vec, result_vec, sign));
+
+  ix86_expand_vector_extract (false, target, result_vec, 0);
+}
+
+/* Convert an unsigned DImode value into a DFmode, using only SSE.
+   Expects the 64-bit DImode to be supplied in a pair of integral
+   registers.  Requires SSE2; will use SSE3 if available.  For x86_32,
+   -mfpmath=sse, !optimize_size only.  */
+
+void
+ix86_expand_convert_uns_didf_sse (rtx target, rtx input)
+{
+  REAL_VALUE_TYPE bias_lo_rvt, bias_hi_rvt;
+  rtx int_xmm, fp_xmm;
+  rtx biases, exponents;
+  rtx x;
+
+  int_xmm = gen_reg_rtx (V4SImode);
+  if (TARGET_INTER_UNIT_MOVES)
+    emit_insn (gen_movdi_to_sse (int_xmm, input));
+  else if (TARGET_SSE_SPLIT_REGS)
+    {
+      emit_insn (gen_rtx_CLOBBER (VOIDmode, int_xmm));
+      emit_move_insn (gen_lowpart (DImode, int_xmm), input);
+    }
+  else
+    {
+      x = gen_reg_rtx (V2DImode);
+      ix86_expand_vector_init_one_nonzero (false, V2DImode, x, input, 0);
+      emit_move_insn (int_xmm, gen_lowpart (V4SImode, x));
+    }
+
+  x = gen_rtx_CONST_VECTOR (V4SImode,
+			    gen_rtvec (4, GEN_INT (0x43300000UL),
+				       GEN_INT (0x45300000UL),
+				       const0_rtx, const0_rtx));
+  exponents = validize_mem (force_const_mem (V4SImode, x));
+
+  /* int_xmm = {0x45300000UL, fp_xmm/hi, 0x43300000, fp_xmm/lo } */
+  emit_insn (gen_sse2_punpckldq (int_xmm, int_xmm, exponents));
+
+  /* Concatenating (juxtaposing) (0x43300000UL ## fp_value_low_xmm)
+     yields a valid DF value equal to (0x1.0p52 + double(fp_value_lo_xmm)).
+     Similarly (0x45300000UL ## fp_value_hi_xmm) yields
+     (0x1.0p84 + double(fp_value_hi_xmm)).
+     Note these exponents differ by 32.  */
+
+  fp_xmm = copy_to_mode_reg (V2DFmode, gen_lowpart (V2DFmode, int_xmm));
+
+  /* Subtract off those 0x1.0p52 and 0x1.0p84 biases, to produce values
+     in [0,2**32-1] and [0]+[2**32,2**64-1] respectively.  */
+  real_ldexp (&bias_lo_rvt, &dconst1, 52);
+  real_ldexp (&bias_hi_rvt, &dconst1, 84);
+  biases = const_double_from_real_value (bias_lo_rvt, DFmode);
+  x = const_double_from_real_value (bias_hi_rvt, DFmode);
+  biases = gen_rtx_CONST_VECTOR (V2DFmode, gen_rtvec (2, biases, x));
+  biases = validize_mem (force_const_mem (V2DFmode, biases));
+  emit_insn (gen_subv2df3 (fp_xmm, fp_xmm, biases));
+
+  /* Add the upper and lower DFmode values together.  */
+  if (TARGET_SSE3)
+    emit_insn (gen_sse3_haddv2df3 (fp_xmm, fp_xmm, fp_xmm));
+  else
+    {
+      x = copy_to_mode_reg (V2DFmode, fp_xmm);
+      emit_insn (gen_sse2_unpckhpd (fp_xmm, fp_xmm, fp_xmm));
+      emit_insn (gen_addv2df3 (fp_xmm, fp_xmm, x));
+    }
+
+  ix86_expand_vector_extract (false, target, fp_xmm, 0);
+}
+
+/* Convert an unsigned SImode value into a DFmode.  Only currently used
+   for SSE, but applicable anywhere.  */
+
+void
+ix86_expand_convert_uns_sidf_sse (rtx target, rtx input)
+{
+  REAL_VALUE_TYPE TWO31r;
+  rtx x, fp;
+
+  x = expand_simple_binop (SImode, PLUS, input, GEN_INT (-2147483647 - 1),
+			   NULL, 1, OPTAB_DIRECT);
+
+  fp = gen_reg_rtx (DFmode);
+  emit_insn (gen_floatsidf2 (fp, x));
+
+  real_ldexp (&TWO31r, &dconst1, 31);
+  x = const_double_from_real_value (TWO31r, DFmode);
+
+  x = expand_simple_binop (DFmode, PLUS, fp, x, target, 0, OPTAB_DIRECT);
+  if (x != target)
+    emit_move_insn (target, x);
+}
+
+/* Convert a signed DImode value into a DFmode.  Only used for SSE in
+   32-bit mode; otherwise we have a direct convert instruction.  */
+
+void
+ix86_expand_convert_sign_didf_sse (rtx target, rtx input)
+{
+  REAL_VALUE_TYPE TWO32r;
+  rtx fp_lo, fp_hi, x;
+  
+  fp_lo = gen_reg_rtx (DFmode);
+  fp_hi = gen_reg_rtx (DFmode);
+
+  emit_insn (gen_floatsidf2 (fp_hi, gen_highpart (SImode, input)));
+
+  real_ldexp (&TWO32r, &dconst1, 32);
+  x = const_double_from_real_value (TWO32r, DFmode);
+  fp_hi = expand_simple_binop (DFmode, MULT, fp_hi, x, fp_hi, 0, OPTAB_DIRECT);
+
+  ix86_expand_convert_uns_sidf_sse (fp_lo, gen_lowpart (SImode, input));
+
+  x = expand_simple_binop (DFmode, PLUS, fp_hi, fp_lo, target,
+			   0, OPTAB_DIRECT);
+  if (x != target)
+    emit_move_insn (target, x);
+}
+
+/* Convert an unsigned SImode value into a SFmode, using only SSE.
+   For x86_32, -mfpmath=sse, !optimize_size only.  */
+void
+ix86_expand_convert_uns_sisf_sse (rtx target, rtx input)
+{
+  REAL_VALUE_TYPE ONE16r;
+  rtx fp_hi, fp_lo, int_hi, int_lo, x;
+
+  real_ldexp (&ONE16r, &dconst1, 16);
+  x = const_double_from_real_value (ONE16r, SFmode);
+  int_lo = expand_simple_binop (SImode, AND, input, GEN_INT(0xffff),
+				      NULL, 0, OPTAB_DIRECT);
+  int_hi = expand_simple_binop (SImode, LSHIFTRT, input, GEN_INT(16),
+				      NULL, 0, OPTAB_DIRECT);
+  fp_hi = gen_reg_rtx (SFmode);
+  fp_lo = gen_reg_rtx (SFmode);
+  emit_insn (gen_floatsisf2 (fp_hi, int_hi));
+  emit_insn (gen_floatsisf2 (fp_lo, int_lo));
+  fp_hi = expand_simple_binop (SFmode, MULT, fp_hi, x, fp_hi,
+			       0, OPTAB_DIRECT);
+  fp_hi = expand_simple_binop (SFmode, PLUS, fp_hi, fp_lo, target,
+			       0, OPTAB_DIRECT);
+  if (!rtx_equal_p (target, fp_hi))
+    emit_move_insn (target, fp_hi);
+}
+
+/* A subroutine of ix86_build_signbit_mask_vector.  If VECT is true,
+   then replicate the value for all elements of the vector
+   register.  */
+
+static rtx
+ix86_build_const_vector (enum machine_mode mode, bool vect, rtx value)
+{
+  rtvec v;
+  switch (mode)
+    {
+    case SFmode:
+      if (vect)
+	v = gen_rtvec (4, value, value, value, value);
+      else
+	v = gen_rtvec (4, value, CONST0_RTX (SFmode),
+		       CONST0_RTX (SFmode), CONST0_RTX (SFmode));
+      return gen_rtx_CONST_VECTOR (V4SFmode, v);
+
+    case DFmode:
+      if (vect)
+	v = gen_rtvec (2, value, value);
+      else
+	v = gen_rtvec (2, value, CONST0_RTX (DFmode));
+      return gen_rtx_CONST_VECTOR (V2DFmode, v);
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* A subroutine of ix86_expand_fp_absneg_operator and copysign expanders.
    Create a mask for the sign bit in MODE for an SSE register.  If VECT is
    true, then replicate the mask for all elements of the vector register.
@@ -9869,7 +10099,7 @@ ix86_build_signbit_mask (enum machine_mode mode, bool vect, bool invert)
   enum machine_mode vec_mode;
   HOST_WIDE_INT hi, lo;
   int shift = 63;
-  rtvec v;
+  rtx v;
   rtx mask;
 
   /* Find the sign bit, sign extended to 2*HWI.  */
@@ -9887,25 +10117,9 @@ ix86_build_signbit_mask (enum machine_mode mode, bool vect, bool invert)
   mask = immed_double_const (lo, hi, mode == SFmode ? SImode : DImode);
   mask = gen_lowpart (mode, mask);
 
-  if (mode == SFmode)
-    {
-      if (vect)
-	v = gen_rtvec (4, mask, mask, mask, mask);
-      else
-	v = gen_rtvec (4, mask, CONST0_RTX (SFmode),
-		       CONST0_RTX (SFmode), CONST0_RTX (SFmode));
-      vec_mode = V4SFmode;
-    }
-  else
-    {
-      if (vect)
-	v = gen_rtvec (2, mask, mask);
-      else
-	v = gen_rtvec (2, mask, CONST0_RTX (DFmode));
-      vec_mode = V2DFmode;
-    }
-
-  return force_reg (vec_mode, gen_rtx_CONST_VECTOR (vec_mode, v));
+  v = ix86_build_const_vector (mode, vect, mask);
+  vec_mode = (mode == SFmode) ? V4SFmode : V2DFmode;
+  return force_reg (vec_mode, v);
 }
 
 /* Generate code for floating point ABS or NEG.  */
@@ -19573,21 +19787,25 @@ x86_emit_floatuns (rtx operands[2])
   mode = GET_MODE (out);
   neglab = gen_label_rtx ();
   donelab = gen_label_rtx ();
-  i1 = gen_reg_rtx (Pmode);
   f0 = gen_reg_rtx (mode);
 
-  emit_cmp_and_jump_insns (in, const0_rtx, LT, const0_rtx, Pmode, 0, neglab);
+  emit_cmp_and_jump_insns (in, const0_rtx, LT, const0_rtx, inmode, 0, neglab);
 
-  emit_insn (gen_rtx_SET (VOIDmode, out, gen_rtx_FLOAT (mode, in)));
+  expand_float (out, in, 0);
+
   emit_jump_insn (gen_jump (donelab));
   emit_barrier ();
 
   emit_label (neglab);
 
-  i0 = expand_simple_binop (Pmode, LSHIFTRT, in, const1_rtx, NULL, 1, OPTAB_DIRECT);
-  i1 = expand_simple_binop (Pmode, AND, in, const1_rtx, NULL, 1, OPTAB_DIRECT);
-  i0 = expand_simple_binop (Pmode, IOR, i0, i1, i0, 1, OPTAB_DIRECT);
+  i0 = expand_simple_binop (inmode, LSHIFTRT, in, const1_rtx, NULL,
+			    1, OPTAB_DIRECT);
+  i1 = expand_simple_binop (inmode, AND, in, const1_rtx, NULL,
+			    1, OPTAB_DIRECT);
+  i0 = expand_simple_binop (inmode, IOR, i0, i1, i0, 1, OPTAB_DIRECT);
+
   expand_float (f0, i0, 0);
+
   emit_insn (gen_rtx_SET (VOIDmode, out, gen_rtx_PLUS (mode, f0, f0)));
 
   emit_label (donelab);

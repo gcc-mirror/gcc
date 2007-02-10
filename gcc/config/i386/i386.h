@@ -658,6 +658,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN \
   (ix86_preferred_stack_boundary > STACK_BOUNDARY && !TARGET_64BIT)
 
+/* Target OS keeps a vector-aligned (128-bit, 16-byte) stack.  This is
+   mandatory for the 64-bit ABI, and may or may not be true for other
+   operating systems.  */
+#define TARGET_KEEPS_VECTOR_ALIGNED_STACK TARGET_64BIT
+
 /* Minimum allocation boundary for the code of a function.  */
 #define FUNCTION_BOUNDARY 8
 
