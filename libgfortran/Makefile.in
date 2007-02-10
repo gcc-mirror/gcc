@@ -4631,7 +4631,7 @@ fpu-target.h: $(srcdir)/$(FPU_HOST_HEADER)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 specific2.m4 > $(srcdir)/$@
 
 @MAINTAINER_MODE_TRUE@$(gfor_misc_specifics): m4/misc_specifics.m4 m4/head.m4
-@MAINTAINER_MODE_TRUE@	m4 -Dfile=$@ -I$(srcdir)/m4 misc_specifics.m4 > $(srcdir)/$@
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 misc_specifics.m4 > $(srcdir)/$@
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

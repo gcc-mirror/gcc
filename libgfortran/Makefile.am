@@ -723,7 +723,7 @@ $(gfor_built_specific2_src): m4/specific2.m4 m4/head.m4
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 specific2.m4 > $(srcdir)/$@
 
 $(gfor_misc_specifics): m4/misc_specifics.m4 m4/head.m4
-	m4 -Dfile=$@ -I$(srcdir)/m4 misc_specifics.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 misc_specifics.m4 > $(srcdir)/$@
 ## end of maintainer mode only rules
 endif
 
