@@ -454,12 +454,9 @@ if USE_LIBGCJ_BC
 	rm $(DESTDIR)$(toolexeclibdir)/libgcj_bc.la;
 endif
 if BUILD_ECJ1
-if NATIVE
+## Undo any prepending of the target prefix and transform
+## to the actual host's executable suffix.
 	mv $(DESTDIR)$(libexecsubdir)/`echo ecjx | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` $(DESTDIR)$(libexecsubdir)/ecj1$(host_exeext)
-else !NATIVE
-## Undo the prepending of the target prefix
-	mv $(DESTDIR)$(libexecsubdir)/$(target_noncanonical)-`echo ecjx | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` $(DESTDIR)$(libexecsubdir)/ecj1$(host_exeext)
-endif !NATIVE
 endif BUILD_ECJ1
 
 ## Install the headers.  It is fairly ugly that we have to do this by
