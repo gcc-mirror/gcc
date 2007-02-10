@@ -1,3 +1,9 @@
+2007-02-10  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR rtl-optimization/29599
+	* reload1.c (eliminate_regs_in_insn): Take the destination
+	mode into account when computing the offset.
+
 2007-02-09  Stuart Hastings  <stuart@apple.com>
 	Richard Henderson  <rth@redhat.com>
 
