@@ -496,7 +496,7 @@ cgraph_edge_badness (struct cgraph_edge *edge)
 
   /* When profiling is available, base priorities -(#calls / growth).
      So we optimize for overall number of "executed" inlined calls.  */
-  if (max_count)
+  else if (max_count)
     badness = ((int)((double)edge->count * INT_MIN / max_count)) / growth;
 
   /* When function local profile is available, base priorities on
