@@ -59,6 +59,8 @@ extern bool default_narrow_bitfield (void);
 
 extern tree default_builtin_vectorized_function (enum built_in_function, tree, tree);
 
+extern tree default_builtin_vectorized_conversion (enum tree_code, tree);
+
 /* These are here, and not in hooks.[ch], because not all users of
    hooks.h include tm.h, and thus we don't have CUMULATIVE_ARGS.  */
 

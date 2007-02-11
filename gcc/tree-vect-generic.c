@@ -405,7 +405,10 @@ expand_vector_operations_1 (block_stmt_iterator *bsi)
       && TREE_CODE_CLASS (code) != tcc_binary)
     return;
 
-  if (code == NOP_EXPR || code == VIEW_CONVERT_EXPR)
+  if (code == NOP_EXPR 
+      || code == FLOAT_EXPR
+      || code == FIX_TRUNC_EXPR
+      || code == VIEW_CONVERT_EXPR)
     return;
   
   gcc_assert (code != CONVERT_EXPR);

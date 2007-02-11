@@ -1,3 +1,13 @@
+2007-02-11  Tehila Meyzels <tehila@il.ibm.com>
+	    Dorit Nuzman  <dorit@il.ibm.com>
+
+	* gcc.dg/vect/vect-intfloat-conversion.c-1:  New test.
+	* gcc.dg/vect/vect-intfloat-conversion.c-2:  New test.
+	* gcc.dg/vect/vect-93.c: Another loop gets vectorized  on powerpc.
+	* gcc.dg/vect/vect-113.c: Likewise.
+
+	* gcc.dg/vect/vect-iv-11.c: A loop gets vectorized.
+
 2007-02-10  Richard Henderson  <rth@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_tls): Redefine

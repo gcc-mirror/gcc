@@ -11,7 +11,7 @@ main1 (void)
   int i;
   float a[N];
 
-  /* Induction.  */
+  /* Induction and type conversion.  */
   for ( i = 0; i < N; i++) 
   {
     a[i] = i;
@@ -32,5 +32,5 @@ int main (void)
   return main1 ();
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 0 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target powerpc*-*-* } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

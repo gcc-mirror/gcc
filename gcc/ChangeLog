@@ -1,3 +1,26 @@
+2007-02-11  Tehila Meyzels  <tehila@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
+	    Dorit Nuzman  <dorit@il.ibm.com>
+
+	* doc/tm.texi (TARGET_VECTORIZE_BUILTIN_CONVERSION): New target hook.
+	* targhooks.c (default_builtin_vectorized_conversion): New.
+	* targhooks.h (default_builtin_vectorized_function): New declaration.
+	* target.h (struct vectorize): Add builtin_conversion field.
+	* tree-vectorizer.h (type_conversion_vec_info_type): New enum
+	stmt_vec_info_type value.
+	(vectorizable_conversion): New declaration.
+	* tree-vect-analyze.c (vect_analyze_operations): Add
+	vectorizable_conversion call.
+	* target-def.h (TARGET_VECTORIZE_BUILTIN_CONVERSION): New.
+	* tree-vect-transform.c (vectorizable_conversion): New function.
+	(vect_transform_stmt): Add case for type_conversion_vec_info_type.
+	* tree-vect-generic.c (expand_vector_operations_1): Consider correct
+	mode.
+	* config/rs6000/rs6000.c (rs6000_builtin_conversion): New.
+	(TARGET_VECTORIZE_BUILTIN_CONVERSION): Defined.
+	(rs6000_expand_builtin): Add handling a case of ALTIVEC_BUILTIN_VCFUX or
+	ALTIVEC_BUILTIN_VCFSX.
+
 2007-02-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/30634
