@@ -1,3 +1,14 @@
+2007-02-11  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/30478
+	* decl.c (add_init_expr_to_sym): Remove ENUM specific code.
+	(variable_decl): Likewise.  Rewrap comment.
+	(match_attr_spec): Remove ENUM specific code.
+	(gfc_match_enum): Fix typo in error message.
+	(enumerator_decl): New function.
+	(gfc_match_enumerator_def): Use enumerator_decl instead of
+	variable_decl.  Adapt code accordingly.
+
 2007-02-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/30554
