@@ -3056,37 +3056,6 @@ compares_alternatives_p (rtx exp)
   return 0;
 }
 
-/* Returns nonzero is INNER is contained in EXP.  */
-
-static int
-contained_in_p (rtx inner, rtx exp)
-{
-  int i, j;
-  const char *fmt;
-
-  if (rtx_equal_p (inner, exp))
-    return 1;
-
-  for (i = 0, fmt = GET_RTX_FORMAT (GET_CODE (exp));
-       i < GET_RTX_LENGTH (GET_CODE (exp)); i++)
-    switch (*fmt++)
-      {
-      case 'e':
-      case 'u':
-	if (contained_in_p (inner, XEXP (exp, i)))
-	  return 1;
-	break;
-
-      case 'E':
-	for (j = 0; j < XVECLEN (exp, i); j++)
-	  if (contained_in_p (inner, XVECEXP (exp, i, j)))
-	    return 1;
-	break;
-      }
-
-  return 0;
-}
-
 /* Process DEFINE_PEEPHOLE, DEFINE_INSN, and DEFINE_ASM_ATTRIBUTES.  */
 
 static void
@@ -3910,51 +3879,6 @@ write_attr_case (struct attr_desc *attr, struct attr_value *av,
       printf ("break;\n");
     }
   printf ("\n");
-}
-
-/* Search for uses of non-const attributes and write code to cache them.  */
-
-static int
-write_expr_attr_cache (rtx p, struct attr_desc *attr)
-{
-  const char *fmt;
-  int i, ie, j, je;
-
-  if (GET_CODE (p) == EQ_ATTR)
-    {
-      if (XSTR (p, 0) != attr->name)
-	return 0;
-
-      if (!attr->is_numeric)
-	printf ("  enum attr_%s ", attr->name);
-      else
-	printf ("  int ");
-
-      printf ("attr_%s = get_attr_%s (insn);\n", attr->name, attr->name);
-      return 1;
-    }
-
-  fmt = GET_RTX_FORMAT (GET_CODE (p));
-  ie = GET_RTX_LENGTH (GET_CODE (p));
-  for (i = 0; i < ie; i++)
-    {
-      switch (*fmt++)
-	{
-	case 'e':
-	  if (write_expr_attr_cache (XEXP (p, i), attr))
-	    return 1;
-	  break;
-
-	case 'E':
-	  je = XVECLEN (p, i);
-	  for (j = 0; j < je; ++j)
-	    if (write_expr_attr_cache (XVECEXP (p, i, j), attr))
-	      return 1;
-	  break;
-	}
-    }
-
-  return 0;
 }
 
 /* Utilities to write in various forms.  */
