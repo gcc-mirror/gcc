@@ -176,14 +176,14 @@
 	PR debug/30189
 	* gcc.dg/pr30189.c: New test.
 
-2007-02-05      Dwarakanath Rajagopal <dwarak.rajagopal@amd.com>
+2007-02-05  Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
 
-        * gcc.dg/i386-cpuid.h: Test whether SSE4A is supported
-        for running tests.
-        * gcc.target/i386/sse4a-extract.c: New test.
-        * gcc.target/i386/sse4a-insert.c: New test.
-        * gcc.target/i386/sse4a-montsd.c: New test.
-        * gcc.target/i386/sse4a-montss.c: New test.
+	* gcc.dg/i386-cpuid.h: Test whether SSE4A is supported
+	for running tests.
+	* gcc.target/i386/sse4a-extract.c: New test.
+	* gcc.target/i386/sse4a-insert.c: New test.
+	* gcc.target/i386/sse4a-montsd.c: New test.
+	* gcc.target/i386/sse4a-montss.c: New test.
 
 2007-02-05  Richard Guenther  <rguenther@suse.de>
 
@@ -1784,7 +1784,7 @@
 	* gcc.target/i386/stack-prot-kernel.c: Skip for x86_64-*-darwin.
 
 2006-12-03  Richard Henderson  <rth@redhat.com>
-            Andrew Pinski  <pinskia@gmail.com>
+	    Andrew Pinski  <pinskia@gmail.com>
 
 	PR C++/14329
 	* g++.dg/warn/unit-1.C: New test.
@@ -1976,7 +1976,7 @@
 	fail to link due to relocation overflows on spu-*-*.
 
 2006-11-27  Michael Matz  <matz@suse.de>
-            Andreas Krebbel  <krebbel1@de.ibm.com>
+	    Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR target/29319
 	* gcc.dg/20061127-1.c: New testcase.
@@ -2787,7 +2787,7 @@
 	* gfortran.dg/pr29067.f: New test.
 
 2006-10-31  Joseph Myers  <joseph@codesourcery.com>
-            Richard Sandiford  <richard@codesourcery.com>
+	    Richard Sandiford  <richard@codesourcery.com>
 
 	* lib/target-supports.exp (get_compiler_messages): Append options
 	as a single list element.
@@ -3106,9 +3106,9 @@
 
 2006-10-20  Lee Millward  <lee.millward@codesourcery.com>
 
-        PR c++/28053
-        * g++.dg/parse/bitfield1.C: Adjust error markers.
-        * g++.dg/parse/bitfield2.C: New test.
+	PR c++/28053
+	* g++.dg/parse/bitfield1.C: Adjust error markers.
+	* g++.dg/parse/bitfield2.C: New test.
 
 2006-10-20  Adam Nemet  <anemet@caviumnetworks.com>
 
