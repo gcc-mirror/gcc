@@ -1514,6 +1514,7 @@ static bool ix86_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 static void ix86_init_builtins (void);
 static rtx ix86_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static tree ix86_builtin_vectorized_function (enum built_in_function, tree, tree);
+static tree ix86_builtin_conversion (enum tree_code, tree);
 static const char *ix86_mangle_fundamental_type (tree);
 static tree ix86_stack_protect_fail (void);
 static rtx ix86_internal_arg_pointer (void);
@@ -1581,8 +1582,11 @@ static section *x86_64_elf_select_section (tree decl, int reloc,
 #define TARGET_INIT_BUILTINS ix86_init_builtins
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN ix86_expand_builtin
+
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION ix86_builtin_vectorized_function
+#undef TARGET_VECTORIZE_BUILTIN_CONVERSION
+#define TARGET_VECTORIZE_BUILTIN_CONVERSION ix86_builtin_conversion
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE ix86_output_function_epilogue
@@ -18266,6 +18270,40 @@ ix86_builtin_vectorized_function (enum built_in_function fn, tree type_out,
     }
 
   return NULL_TREE;
+}
+
+/* Returns a decl of a function that implements conversion of the
+   input vector of type TYPE, or NULL_TREE if it is not available.  */
+
+static tree
+ix86_builtin_conversion (enum tree_code code, tree type)
+{
+  if (TREE_CODE (type) != VECTOR_TYPE)
+    return NULL_TREE;
+  
+  switch (code)
+    {
+    case FLOAT_EXPR:
+      switch (TYPE_MODE (type))
+	{
+	case V4SImode:
+	  return ix86_builtins[IX86_BUILTIN_CVTDQ2PS];
+	default:
+	  return NULL_TREE;
+	}
+
+    case FIX_TRUNC_EXPR:
+      switch (TYPE_MODE (type))
+	{
+	case V4SFmode:
+	  return ix86_builtins[IX86_BUILTIN_CVTTPS2DQ];
+	default:
+	  return NULL_TREE;
+	}
+    default:
+      return NULL_TREE;
+
+    }
 }
 
 /* Store OPERAND to the memory after reload is completed.  This means

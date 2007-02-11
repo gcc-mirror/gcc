@@ -67,15 +67,15 @@ int main (void)
 
 /* 2 loops vectorized in main1, 2 loops vectorized in main:
    the first loop in main requires vectorization of conversions,
-   the second loop in main requires vectorization of misaliged load:  */
+   the second loop in main requires vectorization of misaliged load.  */
 
 /* main && main1 together: */
-/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 2 "vect" { target powerpc*-*-* } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 2 "vect" { target powerpc*-*-* i?86-*-* x86_64-*-* } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { target vect_no_align } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 3 "vect" { xfail vect_no_align } } } */
 
 /* in main1: */
-/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { target {! powerpc*-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { target !powerpc*-*-* !i?86-*-* !x86_64-*-* } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { target vect_no_align } } } */
 
 /* in main: */
