@@ -2800,20 +2800,14 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 		continue;
 
 	      if (SET_DEST (set) == regno_reg_rtx [regnoi])
-		REG_NOTES (sinsn)
-		  = gen_rtx_EXPR_LIST (REG_EQUIV, stacki,
-				       REG_NOTES (sinsn));
+		set_unique_reg_note (sinsn, REG_EQUIV, stacki);
 	      else if (SET_DEST (set) == regno_reg_rtx [regnor])
-		REG_NOTES (sinsn)
-		  = gen_rtx_EXPR_LIST (REG_EQUIV, stackr,
-				       REG_NOTES (sinsn));
+		set_unique_reg_note (sinsn, REG_EQUIV, stackr);
 	    }
 	}
       else if ((set = single_set (linsn)) != 0
 	       && SET_DEST (set) == parmreg)
-	REG_NOTES (linsn)
-	  = gen_rtx_EXPR_LIST (REG_EQUIV,
-			       data->stack_parm, REG_NOTES (linsn));
+	set_unique_reg_note (linsn, REG_EQUIV, data->stack_parm);
     }
 
   /* For pointer data type, suggest pointer register.  */

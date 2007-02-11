@@ -2546,10 +2546,12 @@ init_alias_analysis (void)
 		  rtx src = SET_SRC (set);
 		  rtx t;
 
-		  if (REG_NOTES (insn) != 0
-		      && (((note = find_reg_note (insn, REG_EQUAL, 0)) != 0
-			   && REG_N_SETS (regno) == 1)
-			  || (note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) != 0)
+		  note = find_reg_equal_equiv_note (insn);
+		  if (note && REG_NOTE_KIND (note) == REG_EQUAL
+		      && REG_N_SETS (regno) != 1)
+		    note = NULL_RTX;
+
+		  if (note != NULL_RTX
 		      && GET_CODE (XEXP (note, 0)) != EXPR_LIST
 		      && ! rtx_varies_p (XEXP (note, 0), 1)
 		      && ! reg_overlap_mentioned_p (SET_DEST (set),

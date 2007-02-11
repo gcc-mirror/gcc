@@ -2612,7 +2612,8 @@ see_merge_one_use_extension (void **slot, void *b)
 	/* Replacement failed.  Remove the note.  */
 	remove_note (ref_copy, note);
       else
-	XEXP (note, 0) = simplified_note;
+	set_unique_reg_note (ref_copy, REG_NOTE_KIND (note),
+			     simplified_note);
     }
 
   if (!see_want_to_be_merged_with_extension (ref, use_se, USE_EXTENSION))

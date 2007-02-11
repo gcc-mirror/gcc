@@ -2668,7 +2668,8 @@ try_replace_reg (rtx from, rtx to, rtx insn)
   /* If there is already a REG_EQUAL note, update the expression in it
      with our replacement.  */
   if (note != 0 && REG_NOTE_KIND (note) == REG_EQUAL)
-    XEXP (note, 0) = simplify_replace_rtx (XEXP (note, 0), from, to);
+    set_unique_reg_note (insn, REG_EQUAL,
+			 simplify_replace_rtx (XEXP (note, 0), from, to));
 
   if (!success && set && reg_mentioned_p (from, SET_SRC (set)))
     {

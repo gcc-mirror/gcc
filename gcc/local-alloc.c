@@ -930,8 +930,13 @@ update_equiv_regs (void)
 
 	  /* If this register is known to be equal to a constant, record that
 	     it is always equivalent to the constant.  */
-	  if (note && ! rtx_varies_p (XEXP (note, 0), 0))
-	    PUT_MODE (note, (enum machine_mode) REG_EQUIV);
+	  if (REG_N_SETS (regno) == 1
+	      && note && ! rtx_varies_p (XEXP (note, 0), 0))
+	    {
+	      rtx note_value = XEXP (note, 0);
+	      remove_note (insn, note);
+	      set_unique_reg_note (insn, REG_EQUIV, note_value);
+	    }
 
 	  /* If this insn introduces a "constant" register, decrease the priority
 	     of that register.  Record this insn if the register is only used once
@@ -953,9 +958,7 @@ update_equiv_regs (void)
 	  if (note == 0 && REG_BASIC_BLOCK (regno) >= 0
 	      && MEM_P (SET_SRC (set))
 	      && validate_equiv_mem (insn, dest, SET_SRC (set)))
-	    REG_NOTES (insn) = note = gen_rtx_EXPR_LIST (REG_EQUIV,
-			    				 copy_rtx (SET_SRC (set)),
-							 REG_NOTES (insn));
+	    note = set_unique_reg_note (insn, REG_EQUIV, copy_rtx (SET_SRC (set)));
 
 	  if (note)
 	    {
@@ -1061,9 +1064,8 @@ update_equiv_regs (void)
 	  if (validate_equiv_mem (init_insn, src, dest)
 	      && ! memref_used_between_p (dest, init_insn, insn))
 	    {
-	      REG_NOTES (init_insn)
-		= gen_rtx_EXPR_LIST (REG_EQUIV, copy_rtx (dest),
-				     REG_NOTES (init_insn));
+	      set_unique_reg_note (init_insn, REG_EQUIV, copy_rtx (dest));
+
 	      /* This insn makes the equivalence, not the one initializing
 		 the register.  */
 	      reg_equiv_init[regno]
