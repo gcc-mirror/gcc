@@ -1,3 +1,17 @@
+2007-02-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30554
+	* gfortran.dg/used_dummy_types_6.f90: Add the "privatized"
+	versions of the modules.
+
+	PR fortran/30617
+	* gfortran.dg/intrinsic_actual_2.f90: Make this legal fortran
+	by getting rid of recursive I/O and providing functions with
+	results.
+
+	PR fortran/30319
+	* gfortran.dg/char_array_constructor_2.f90
+
 2007-02-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/26988
