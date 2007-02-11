@@ -1,3 +1,8 @@
+2007-02-11  Daniel Franke  <franke.daniel@gmail.com>
+
+	* intrinsic.texi (HOSTNM): Fix typographical error in syntax.
+	(SLEEP): Added section and documentation.
+
 2007-02-11  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/30478
