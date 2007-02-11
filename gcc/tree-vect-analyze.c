@@ -315,6 +315,7 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 
 	      ok = (vectorizable_type_promotion (stmt, NULL, NULL)
 		    || vectorizable_type_demotion (stmt, NULL, NULL)
+		    || vectorizable_conversion (stmt, NULL, NULL)
 		    || vectorizable_operation (stmt, NULL, NULL)
 		    || vectorizable_assignment (stmt, NULL, NULL)
 		    || vectorizable_load (stmt, NULL, NULL)

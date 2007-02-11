@@ -716,6 +716,7 @@ static int rs6000_use_sched_lookahead_guard (rtx);
 static tree rs6000_builtin_mask_for_load (void);
 static tree rs6000_builtin_mul_widen_even (tree);
 static tree rs6000_builtin_mul_widen_odd (tree);
+static tree rs6000_builtin_conversion (enum tree_code, tree);
 
 static void def_builtin (int, const char *, tree, int);
 static void rs6000_init_builtins (void);
@@ -981,6 +982,8 @@ static const char alt_reg_names[][8] =
 #define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN rs6000_builtin_mul_widen_even
 #undef TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD
 #define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD rs6000_builtin_mul_widen_odd
+#undef TARGET_VECTORIZE_BUILTIN_CONVERSION
+#define TARGET_VECTORIZE_BUILTIN_CONVERSION rs6000_builtin_conversion
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS rs6000_init_builtins
@@ -1675,6 +1678,30 @@ rs6000_builtin_mask_for_load (void)
     return altivec_builtin_mask_for_load;
   else
     return 0;
+}
+
+/* Implement targetm.vectorize.builtin_conversion.  */
+static tree
+rs6000_builtin_conversion (enum tree_code code, tree type)
+{
+  if (!TARGET_ALTIVEC)
+    return NULL_TREE;
+  
+  switch (code)
+    {
+    case FLOAT_EXPR:
+      switch (TYPE_MODE (type))
+	{
+	case V4SImode:
+	  return TYPE_UNSIGNED (type) ? 
+	    rs6000_builtin_decls[ALTIVEC_BUILTIN_VCFUX] :
+	    rs6000_builtin_decls[ALTIVEC_BUILTIN_VCFSX];
+	default:
+	  return NULL_TREE;
+	}
+    default:
+      return NULL_TREE;
+    }
 }
 
 /* Implement targetm.vectorize.builtin_mul_widen_even.  */
@@ -8151,6 +8178,21 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
       return target;
     }
+  
+  if (fcode == ALTIVEC_BUILTIN_VCFUX
+      || fcode == ALTIVEC_BUILTIN_VCFSX)
+    {
+      if (!TREE_CHAIN (arglist)) 
+	{
+	  tree t, arg0;
+	  t = NULL_TREE;
+	  t = tree_cons (NULL_TREE, integer_zero_node, t);
+	  arg0 = TREE_VALUE (arglist);
+	  t = tree_cons (NULL_TREE, arg0, t);
+	  arglist = t;
+	  TREE_OPERAND (exp, 1) = t;
+	}
+    }   
 
   if (TARGET_ALTIVEC)
     {

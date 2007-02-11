@@ -1951,6 +1951,157 @@ vectorizable_call (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 }
 
 
+/* Function vectorizable_conversion.
+
+Check if STMT performs a conversion operation, that can be vectorized. 
+If VEC_STMT is also passed, vectorize the STMT: create a vectorized 
+stmt to replace it, put it in VEC_STMT, and insert it at BSI.
+Return FALSE if not a vectorizable STMT, TRUE otherwise.  */
+
+bool
+vectorizable_conversion (tree stmt, block_stmt_iterator * bsi,
+				   tree * vec_stmt)
+{
+  tree vec_dest;
+  tree scalar_dest;
+  tree operation;
+  tree op0;
+  tree vec_oprnd0 = NULL_TREE;
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  enum tree_code code;
+  tree new_temp;
+  tree def, def_stmt;
+  enum vect_def_type dt0;
+  tree new_stmt;
+  int nunits_in;
+  int nunits_out;
+  int ncopies, j;
+  tree vectype_out, vectype_in;
+  tree rhs_type, lhs_type;
+  tree builtin_decl, params;
+  stmt_vec_info prev_stmt_info;
+
+  /* Is STMT a vectorizable conversion?   */
+
+  if (!STMT_VINFO_RELEVANT_P (stmt_info))
+    return false;
+
+  gcc_assert (STMT_VINFO_DEF_TYPE (stmt_info) == vect_loop_def);
+
+  if (STMT_VINFO_LIVE_P (stmt_info))
+    {
+      /* FORNOW: not yet supported.  */
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "value used after loop.");
+      return false;
+    }
+
+  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
+    return false;
+
+  if (TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) != SSA_NAME)
+    return false;
+
+  operation = GIMPLE_STMT_OPERAND (stmt, 1);
+  code = TREE_CODE (operation);
+  if (code != FIX_TRUNC_EXPR && code != FLOAT_EXPR)
+    return false;
+
+  /* Check types of lhs and rhs */
+  op0 = TREE_OPERAND (operation, 0);
+  rhs_type = TREE_TYPE (op0);
+  vectype_in = get_vectype_for_scalar_type (rhs_type);
+  nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
+
+  scalar_dest = GIMPLE_STMT_OPERAND (stmt, 0);
+  lhs_type = TREE_TYPE (scalar_dest);
+  vectype_out = get_vectype_for_scalar_type (lhs_type);
+  gcc_assert (STMT_VINFO_VECTYPE (stmt_info) == vectype_out);
+  nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
+
+  /* FORNOW: need to extend to support short<->float conversions as well.  */
+  if (nunits_out != nunits_in)
+    return false;
+
+  /* Bail out if the types are both integral or non-integral */
+  if ((INTEGRAL_TYPE_P (rhs_type) && INTEGRAL_TYPE_P (lhs_type))
+      || (!INTEGRAL_TYPE_P (rhs_type) && !INTEGRAL_TYPE_P (lhs_type)))
+    return false;
+
+  /* Sanity check: make sure that at least one copy of the vectorized stmt
+     needs to be generated.  */
+  ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_in;
+  gcc_assert (ncopies >= 1);
+
+  if (!vect_is_simple_use (op0, loop_vinfo, &def_stmt, &def, &dt0))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "use not simple.");
+      return false;
+    }
+
+  /* Supportable by target?  */
+  if (!targetm.vectorize.builtin_conversion (code, vectype_in))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "op not supported by target.");
+      return false;
+    }
+
+  if (!vec_stmt)		/* transformation not required.  */
+    {
+      STMT_VINFO_TYPE (stmt_info) = type_conversion_vec_info_type;
+      return true;
+    }
+
+    /** Transform.  **/
+
+  if (vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump, "transform conversion.");
+
+  /* Handle def.  */
+  vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
+
+  prev_stmt_info = NULL;
+  for (j = 0; j < ncopies; j++)
+    {
+      tree sym;
+      ssa_op_iter iter;
+
+      if (j == 0)
+	vec_oprnd0 = vect_get_vec_def_for_operand (op0, stmt, NULL);
+      else
+	vec_oprnd0 = vect_get_vec_def_for_stmt_copy (dt0, vec_oprnd0);
+      params = build_tree_list (NULL_TREE, vec_oprnd0);
+
+      builtin_decl =
+	targetm.vectorize.builtin_conversion (code, vectype_in);
+      new_stmt = build_function_call_expr (builtin_decl, params);
+
+      /* Arguments are ready. create the new vector stmt.  */
+      new_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, vec_dest,
+			 new_stmt);
+      new_temp = make_ssa_name (vec_dest, new_stmt);
+      GIMPLE_STMT_OPERAND (new_stmt, 0) = new_temp;
+      vect_finish_stmt_generation (stmt, new_stmt, bsi);
+      FOR_EACH_SSA_TREE_OPERAND (sym, new_stmt, iter, SSA_OP_ALL_VIRTUALS)
+        {
+          if (TREE_CODE (sym) == SSA_NAME)
+            sym = SSA_NAME_VAR (sym);
+          mark_sym_for_renaming (sym);
+        }
+
+      if (j == 0)
+	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+      else
+	STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+      prev_stmt_info = vinfo_for_stmt (new_stmt);
+    }
+  return true;
+}
+
+
 /* Function vectorizable_assignment.
 
    Check if STMT performs an assignment (copy) that can be vectorized. 
@@ -4095,6 +4246,11 @@ vect_transform_stmt (tree stmt, block_stmt_iterator *bsi, bool *strided_store)
                                                                                 
       case type_promotion_vec_info_type:
 	done = vectorizable_type_promotion (stmt, bsi, &vec_stmt);
+	gcc_assert (done);
+	break;
+
+      case type_conversion_vec_info_type:
+	done = vectorizable_conversion (stmt, bsi, &vec_stmt);
 	gcc_assert (done);
 	break;
 
