@@ -4153,7 +4153,6 @@ static void output_ranges (void);
 static void output_line_info (void);
 static void output_file_names (void);
 static dw_die_ref base_type_die (tree);
-static tree root_type (tree);
 static int is_base_type (tree);
 static bool is_subrange_type (tree);
 static dw_die_ref subrange_type_die (tree, dw_die_ref);
@@ -8301,35 +8300,6 @@ base_type_die (tree type)
   add_AT_unsigned (base_type_result, DW_AT_encoding, encoding);
 
   return base_type_result;
-}
-
-/* Given a pointer to an arbitrary ..._TYPE tree node, return a pointer to
-   the Dwarf "root" type for the given input type.  The Dwarf "root" type of
-   a given type is generally the same as the given type, except that if the
-   given type is a pointer or reference type, then the root type of the given
-   type is the root type of the "basis" type for the pointer or reference
-   type.  (This definition of the "root" type is recursive.) Also, the root
-   type of a `const' qualified type or a `volatile' qualified type is the
-   root type of the given type without the qualifiers.  */
-
-static tree
-root_type (tree type)
-{
-  if (TREE_CODE (type) == ERROR_MARK)
-    return error_mark_node;
-
-  switch (TREE_CODE (type))
-    {
-    case ERROR_MARK:
-      return error_mark_node;
-
-    case POINTER_TYPE:
-    case REFERENCE_TYPE:
-      return type_main_variant (root_type (TREE_TYPE (type)));
-
-    default:
-      return type_main_variant (type);
-    }
 }
 
 /* Given a pointer to an arbitrary ..._TYPE tree node, return nonzero if the
