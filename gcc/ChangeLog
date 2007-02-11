@@ -7,7 +7,9 @@
 	memory.  Fail if operand 1 is a non-zero CONST_INT and operand 0
 	is a hard floating-point register.
 
-2007-02-10  Richard Henderson  <rth@redhat.com>, Jakub Jelinek  <jakub@redhat.com>, Alexandre Oliva  <aoliva@redhat.com>
+2007-02-10  Richard Henderson  <rth@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in (libgcc-support, libgcc.mvars): Add emutls.c.
 	* builtin-types.def (BT_WORD): Make unsigned.
@@ -51,7 +53,7 @@
 	mode into account when computing the offset.
 
 2007-02-09  Stuart Hastings  <stuart@apple.com>
-	Richard Henderson  <rth@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
 
 	* gcc/config/i386/i386.h (TARGET_KEEPS_VECTOR_ALIGNED_STACK): New.
 	* gcc/config/i386/darwin.h: (TARGET_KEEPS_VECTOR_ALIGNED_STACK): New.
@@ -61,15 +63,18 @@
 	(floatunsdidf2): Call ix86_expand_convert_uns_didf_sse.
 	(floatunssisf2): Add call to ix86_expand_convert_uns_sisf_sse.
 	(floatunssidf2): Allow nonimmediate source.
-	* gcc/config/i386/sse.md (movdi_to_sse): New.  (vec_concatv2di): Drop '*'.
+	* gcc/config/i386/sse.md (movdi_to_sse): New.
+	(vec_concatv2di): Drop '*'.
 	* gcc/config/i386/i386-protos.h (ix86_expand_convert_uns_si_sse,
 	ix86_expand_convert_uns_didf_sse, ix86_expand_convert_uns_sidf_sse,
-	ix86_expand_convert_uns_sisf_sse, ix86_expand_convert_sign_didf_sse): New.
+	ix86_expand_convert_uns_sisf_sse, ix86_expand_convert_sign_didf_sse):
+	New.
 	* gcc/config/i386/i386.c (ix86_expand_convert_uns_si_sse,
 	ix86_expand_convert_uns_didf_sse, ix86_expand_convert_uns_sidf_sse,
 	ix86_expand_convert_uns_sisf_sse, ix86_expand_convert_sign_didf_sse,
 	ix86_build_const_vector, ix86_expand_vector_init_one_nonzero): New.
-	(ix86_build_signbit_mask): Fix decl of v, refactor to call ix86_build_const_vector.
+	(ix86_build_signbit_mask): Fix decl of v, refactor to call
+	ix86_build_const_vector.
 	(x86_emit_floatuns): Rewrite.
 
 2007-02-10  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
@@ -139,10 +144,10 @@
 	(ix86_secondary_memory_needed): Don't bypass TARGET_INTER_UNIT_MOVES
 	for optimize_size.  Remove SF/DFmode hack.
 
-2007-02-09  Dwarakanath Rajagopal <dwarak.rajagopal@amd.com>
+2007-02-09  Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
 
-        * config/i386/driver-i386.c: Turn on -mtune=native for AMDFAM10.
-        (bit_SSE4a): New.
+	* config/i386/driver-i386.c: Turn on -mtune=native for AMDFAM10.
+	(bit_SSE4a): New.
 
 2007-02-09  Nathan Sidwell  <nathan@codesourcery.com>
 	    Richard Sandiford  <richard@codesourcery.com>
@@ -178,7 +183,7 @@
 	(M68K_MLIB_CPU, M68K_MLIB_OPTIONS, M68K_MLIB_DIRNAMES): Define.
 
 2007-02-09  Zdenek Dvorak  <dvorakz@suse.cz>
-	Richard Guenther  <rguenther@suse.de>
+	    Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/23361
 	* fold-const.c (fold_comparison): Handle obfuscated comparisons
@@ -454,16 +459,16 @@
 
 2007-02-06  Paolo Bonzini  <bonzini@gnu.org>
 
-        * tree.c (tree_int_map_hash, tree_int_map_eq, tree_int_map_marked_p):
-        Remove prototypes and make them non-static.
-        (struct tree_int_map): Remove.
-        * tree.h (struct tree_int_map): Move here, turning TO into an
-        unsigned int.
-        (tree_int_map_hash, tree_int_map_eq, tree_int_map_marked_p): Declare.
+	* tree.c (tree_int_map_hash, tree_int_map_eq, tree_int_map_marked_p):
+	Remove prototypes and make them non-static.
+	(struct tree_int_map): Remove.
+	* tree.h (struct tree_int_map): Move here, turning TO into an
+	unsigned int.
+	(tree_int_map_hash, tree_int_map_eq, tree_int_map_marked_p): Declare.
 
-        * tree.h (TREE_COMPLEXITY): Remove.
-        (struct tree_exp): Remove complexity field.
-        * tree.c (build1_stat): Don't set it.
+	* tree.h (TREE_COMPLEXITY): Remove.
+	(struct tree_exp): Remove complexity field.
+	* tree.c (build1_stat): Don't set it.
 
 2007-02-06  Dorit Nuzman  <dorit@il.ibm.com>
 	    Victor Kaplansky  <victork@il.ibm.com>
@@ -513,7 +518,7 @@
 	* config/rs6000/darwin-tramp.asm (__trampoline_setup): Call
 	__enable_execute_stack on completion.
 
-2007-02-05	Harsha Jagasia	<harsha.jagasia@amd.com>
+2007-02-05  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	* config/i386/athlon.md (athlon_fldxf_k8, athlon_fld_k8,
 	athlon_fstxf_k8, athlon_fst_k8, athlon_fist, athlon_fmov,
@@ -524,7 +529,7 @@
 	athlon_fcmov_load_k8, athlon_fcmov_k8, athlon_fcomi_load_k8,
 	athlon_fcomi, athlon_fcom_load_k8, athlon_fcom): Added amdfam10.
 
-2007-02-05	Harsha Jagasia	<harsha.jagasia@amd.com>
+2007-02-05  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	* config/i386/i386.md (x86_sahf_1, cmpfp_i_mixed, cmpfp_i_sse,
 	cmpfp_i_i387, cmpfp_iu_mixed, cmpfp_iu_sse, cmpfp_iu_387,
@@ -551,7 +556,7 @@
 	(athlon_idirect_loadmov, athlon_idirect_movstore): Added
 	amdfam10.
 
-2007-02-05	Harsha Jagasia	<harsha.jagasia@amd.com>
+2007-02-05  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	* config/i386/athlon.md (athlon_call_amdfam10,
 	athlon_pop_amdfam10, athlon_lea_amdfam10): New
@@ -560,13 +565,13 @@
 	athlon_imul_k8_DI, athlon_imul_mem_k8, athlon_imul_mem_k8_DI,
 	athlon_idiv, athlon_idiv_mem, athlon_str): Added amdfam10.
 
-2007-02-05	Harsha Jagasia	<harsha.jagasia@amd.com>
+2007-02-05  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	* config/i386/athlon.md (athlon_sseld_amdfam10,
 	athlon_mmxld_amdfam10, athlon_ssest_amdfam10,
 	athlon_mmxssest_short_amdfam10): New define_insn_reservation.
 
-2007-02-05	Harsha Jagasia	<harsha.jagasia@amd.com>
+2007-02-05  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	* config/i386/athlon.md (athlon_sseins_amdfam10): New
 	define_insn_reservation.
@@ -575,7 +580,7 @@
 	* config/i386/sse.md: Set type attribute to sseins for insertq
 	and insertqi.
 
-2007-02-05	Harsha Jagasia	<harsha.jagasia@amd.com>
+2007-02-05  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	* config/i386/athlon.md (sselog_load_amdfam10, sselog_amdfam10,
 	ssecmpvector_load_amdfam10, ssecmpvector_amdfam10,
@@ -584,7 +589,7 @@
 	define_insn_reservation.
 	(ssecmp_load_k8, ssecmp, sseadd_load_k8, seadd): Added amdfam10.
 
-2007-02-05	Harsha Jagasia	<harsha.jagasia@amd.com>
+2007-02-05  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	* config/i386/athlon.md (cvtss2sd_load_amdfam10,
 	cvtss2sd_amdfam10, cvtps2pd_load_amdfam10, cvtps2pd_amdfam10,
@@ -600,7 +605,7 @@
 	cvtpd2dq, cvttpd2dq, cvtsd2ss, cvtss2sd,
 	cvtpd2ps, cvtps2pd): Added amdfam10_decode attribute.
 
-2007-02-05	Harsha Jagasia	<harsha.jagasia@amd.com>
+2007-02-05  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	* config/i386/athlon.md (athlon_ssedivvector_amdfam10,
 	athlon_ssedivvector_load_amdfam10, athlon_ssemulvector_amdfam10,
@@ -608,7 +613,7 @@
 	(athlon_ssediv, athlon_ssediv_load_k8, athlon_ssemul,
 	athlon_ssemul_load_k8): Added amdfam10.
 
-2007-02-05	Harsha Jagasia	<harsha.jagasia@amd.com>
+2007-02-05  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	* config/i386/i386.h (TARGET_SSE_UNALIGNED_MOVE_OPTIMAL): New macro.
 	(x86_sse_unaligned_move_optimal): New variable.
@@ -618,7 +623,7 @@
 	(ix86_expand_vector_move_misalign): Add code to generate movupd/movups
 	for unaligned vector SSE double/single precision loads for AMDFAM10.
 
-2007-02-05	Harsha Jagasia	<harsha.jagasia@amd.com>
+2007-02-05  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	* config/i386/i386.h (TARGET_AMDFAM10): New macro.
 	(TARGET_CPU_CPP_BUILTINS): Add code for amdfam10.
@@ -650,7 +655,7 @@
 	(ix86_issue_rate): Add PROCESSOR_AMDFAM10.
 	(ix86_adjust_cost): Add code for amdfam10.
 
-2007-02-05	Harsha Jagasia	<harsha.jagasia@amd.com>
+2007-02-05  Harsha Jagasia  <harsha.jagasia@amd.com>
 	
 	* config/i386/i386.opt: Add new Advanced Bit Manipulation (-mabm)
 	instruction set feature flag. Add new (-mpopcnt) flag for popcnt 
@@ -685,7 +690,7 @@
 	extra argument.
 	* targhooks.h (default_builtin_vectorized_function): Likewise.
 	* target.h (builtin_vectorized_function): Add argument type
-        argument.
+	argument.
 	* config/i386/i386.c (ix86_builtin_vectorized_function): Handle
 	extra argument, allow vectorizing of lrintf.
 	* doc/tm.texi (TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION): Adjust
@@ -1200,9 +1205,9 @@
 	* config/rs6000/darwin.h (MD_UNWIND_SUPPORT): Don't define for
 	64-bit.
 
-2007-2-01   Seongbae Park <seongbae.park@gmail.com>
+2007-2-01  Seongbae Park  <seongbae.park@gmail.com>
 
-        PR inline-asm/28686
+	PR inline-asm/28686
 	* global.c (global_alloc): Add mising initialization of
 	ELIMINABLE_REGSET.
 
@@ -1377,7 +1382,7 @@
 	PR c++/24745
 	* doc/invoke.texi (Wpointer-arith): Document warning.
 
-2007-01-30  Janis Johnson
+2007-01-30  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/extend.texi (Decimal Floating Types): Remove decfloat.h from
 	the list of discrepancies from the draft TR.
@@ -1889,7 +1894,7 @@
 	* output.h (default_globalize_decl_name): New.
 	* varasm.c (asm_output_bss): Use globalize_decl_name instead of
 	globalize_label.
-        (globalize_decl): Ditto.
+	(globalize_decl): Ditto.
 	(default_globalize_decl_name): New.
 	* config/ia64/ia64.c (ia64_globalize_decl_name): New.
 	(ia64_handle_version_id_attribute): New.
@@ -2178,11 +2183,11 @@
 
 2007-01-20  Jan Hubicka  <jh@suse.cz>
 
-        * tree-ssa.c (init_tree_ssa): Do not call init_alias_heapvars.
-        * tree-ssa-structalias.c (compute_points_to_sets): Do call
-        init_alias_heapvars.
-        (init_alias_heapvars): Initialize only when not already initialized.
-        (delete_alias_heapvars): Set heapvar_for_stmt to NULL.
+	* tree-ssa.c (init_tree_ssa): Do not call init_alias_heapvars.
+	* tree-ssa-structalias.c (compute_points_to_sets): Do call
+	init_alias_heapvars.
+	(init_alias_heapvars): Initialize only when not already initialized.
+	(delete_alias_heapvars): Set heapvar_for_stmt to NULL.
 
 2007-01-19  Roger Sayle  <roger@eyesopen.com>
 
@@ -2203,41 +2208,41 @@
 
 2007-01-19  Tomas Bily  <tbily@suse.cz>
 
-        * cgraphunit.c (cgraph_finalize_function): Updating of pid
-        * tree-profile.c:
-        (tree_init_ic_make_global_vars): New function
-        (tree_init_edge_profiler): call of tree_init_ic_make_global_vars
-        (tree_gen_ic_profiler): New function
-        (tree_gen_ic_func_profiler): New function
-        (tree_profiling): Added calling of tree_gen_ic_func_profiler
-        (tree_profile_hooks): Added hook for indirec/virtual calls
-        * value-prof.c (tree_find_values_to_profile): New case for
-        indirect calls
-        (tree_values_to_profile): Call for determining indirect/virtual
-        counters
-        (tree_indirect_call_to_profile): New function
-        (tree_ic_transform): New function
-        (tree_ic): New function
-        (find_func_by_pid): New function
-        (init_pid_map): New function
-        (tree_value_profile_transformations): Added check for
-        indirect/virtual call transformation
-        * value-prof.h (enum hist_type): New counter type for
-        indirect/virtual calls
-        (profile_hooks): Added new hook for profiling indirect/virtual
-        calls
-        * profile.c (instrument_values): New case for indirect/virtual
-        call added
-        * gcov-io.h (GCOV_LAST_VALUE_COUNTER): Changed to 6
-        (GCOV_COUNTER_V_INDIR): New counter type
-        (GCOV_COUNTER_NAMES): New name of counter "indirect" added
-        (GCOV_MERGE_FUNCTIONS): New merge function for indirect/virtual
-        call added
-        * cgraph.c: Definition of cgraph_max_pid
-        (cgraph_create_node): Default init of pid attribute
-        * cgraph.h: Declaration of cgraph_max_pid
-        (struct cgraph_node): Added pid attribute
-        * libgcov.c (__gcov_indirect_call_profiler): New function
+	* cgraphunit.c (cgraph_finalize_function): Updating of pid
+	* tree-profile.c:
+	(tree_init_ic_make_global_vars): New function
+	(tree_init_edge_profiler): call of tree_init_ic_make_global_vars
+	(tree_gen_ic_profiler): New function
+	(tree_gen_ic_func_profiler): New function
+	(tree_profiling): Added calling of tree_gen_ic_func_profiler
+	(tree_profile_hooks): Added hook for indirec/virtual calls
+	* value-prof.c (tree_find_values_to_profile): New case for
+	indirect calls
+	(tree_values_to_profile): Call for determining indirect/virtual
+	counters
+	(tree_indirect_call_to_profile): New function
+	(tree_ic_transform): New function
+	(tree_ic): New function
+	(find_func_by_pid): New function
+	(init_pid_map): New function
+	(tree_value_profile_transformations): Added check for
+	indirect/virtual call transformation
+	* value-prof.h (enum hist_type): New counter type for
+	indirect/virtual calls
+	(profile_hooks): Added new hook for profiling indirect/virtual
+	calls
+	* profile.c (instrument_values): New case for indirect/virtual
+	call added
+	* gcov-io.h (GCOV_LAST_VALUE_COUNTER): Changed to 6
+	(GCOV_COUNTER_V_INDIR): New counter type
+	(GCOV_COUNTER_NAMES): New name of counter "indirect" added
+	(GCOV_MERGE_FUNCTIONS): New merge function for indirect/virtual
+	call added
+	* cgraph.c: Definition of cgraph_max_pid
+	(cgraph_create_node): Default init of pid attribute
+	* cgraph.h: Declaration of cgraph_max_pid
+	(struct cgraph_node): Added pid attribute
+	* libgcov.c (__gcov_indirect_call_profiler): New function
 	(__gcov_one_value_profiler_body): New function
 	(__gcov_one_value_profiler): Body was moved to
 	__gcov_one_value_profiler_body and calls it
@@ -2245,11 +2250,11 @@
 2007-01-19  Basile Starynkevitch  <basile@starynkevitch.net>
 
 	* doc/gty.texi (Options): Document the mark_hook option to GTY.
-        * gengtype.c (write_types_data, write_func_for_structure,
-        write_types, ggc_wtd, pch_wtd): Add skip_hooks to
-        write_types_data, ggc_wtd, pch_wtd for processing mark_hook.
-        (walk_type, write_func_for_structure): Generate the mark_hook if
-        needed.
+	* gengtype.c (write_types_data, write_func_for_structure,
+	write_types, ggc_wtd, pch_wtd): Add skip_hooks to
+	write_types_data, ggc_wtd, pch_wtd for processing mark_hook.
+	(walk_type, write_func_for_structure): Generate the mark_hook if
+	needed.
 
 2007-01-19  Jan Hubicka  <jh@suse.cz>
 
@@ -3029,7 +3034,7 @@
 	about long double soft float.
 
 2007-01-16  Dorit Nuzman  <dorit@il.ibm.com>
-            Tehila Meyzels  <tehila@il.ibm.com>
+	    Tehila Meyzels  <tehila@il.ibm.com>
 
 	* tree-vectorizer.h (is_pattern_stmt_p): New.
 	* tree-vect-analyze.c (vect_determine_vectorization_factor): Fix
