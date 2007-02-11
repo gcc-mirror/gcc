@@ -1436,33 +1436,6 @@ determine_specialization (tree template_id,
 	  tree decl_arg_types;
 	  tree fn_arg_types;
 
-	  /* DECL might be a specialization of FN.  */
-
-	  /* Adjust the type of DECL in case FN is a static member.  */
-	  decl_arg_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
-	  if (DECL_STATIC_FUNCTION_P (fn)
-	      && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
-	    decl_arg_types = TREE_CHAIN (decl_arg_types);
-
-	  /* Check that the number of function parameters matches.
-	     For example,
-	       template <class T> void f(int i = 0);
-	       template <> void f<int>();
-	     The specialization f<int> is invalid but is not caught
-	     by get_bindings below.  */
-
-	  fn_arg_types = TYPE_ARG_TYPES (TREE_TYPE (fn));
-	  if (list_length (fn_arg_types) != list_length (decl_arg_types))
-	    continue;
-
-	  /* For a non-static member function, we need to make sure that
-	     the const qualification is the same. This can be done by
-	     checking the 'this' in the argument list.  */
-	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
-	      && !same_type_p (TREE_VALUE (fn_arg_types),
-			       TREE_VALUE (decl_arg_types)))
-	    continue;
-
 	  /* In case of explicit specialization, we need to check if
 	     the number of template headers appearing in the specialization
 	     is correct. This is usually done in check_explicit_specialization,
@@ -1501,14 +1474,44 @@ determine_specialization (tree template_id,
 				      (current_template_parms))))
 	    continue;
 
+	  /* DECL might be a specialization of FN.  */
+	  decl_arg_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
+	  fn_arg_types = TYPE_ARG_TYPES (TREE_TYPE (fn));
+
+	  /* For a non-static member function, we need to make sure
+	     that the const qualification is the same.  Since
+	     get_bindings does not try to merge the "this" parameter,
+	     we must do the comparison explicitly.  */
+	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+	      && !same_type_p (TREE_VALUE (fn_arg_types),
+			       TREE_VALUE (decl_arg_types)))
+	    continue;
+
+	  /* Skip the "this" parameter and, for constructors of
+	     classes with virtual bases, the VTT parameter.  A
+	     full specialization of a constructor will have a VTT
+	     parameter, but a template never will.  */ 
+	  decl_arg_types 
+	    = skip_artificial_parms_for (decl, decl_arg_types);
+	  fn_arg_types 
+	    = skip_artificial_parms_for (fn, fn_arg_types);
+
+	  /* Check that the number of function parameters matches.
+	     For example,
+	       template <class T> void f(int i = 0);
+	       template <> void f<int>();
+	     The specialization f<int> is invalid but is not caught
+	     by get_bindings below.  */
+	  if (list_length (fn_arg_types) != list_length (decl_arg_types))
+	    continue;
+
 	  /* Function templates cannot be specializations; there are
 	     no partial specializations of functions.  Therefore, if
 	     the type of DECL does not match FN, there is no
 	     match.  */
 	  if (tsk == tsk_template)
 	    {
-	      if (compparms (TYPE_ARG_TYPES (TREE_TYPE (fn)),
-			     decl_arg_types))
+	      if (compparms (fn_arg_types, decl_arg_types))
 		candidates = tree_cons (NULL_TREE, fn, candidates);
 	      continue;
 	    }
@@ -9843,10 +9846,8 @@ fn_type_unification (tree fn,
 	TREE_VEC_ELT (targs, i) = TREE_VEC_ELT (converted_args, i);
     }
 
-  parms = TYPE_ARG_TYPES (fntype);
   /* Never do unification on the 'this' parameter.  */
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
-    parms = TREE_CHAIN (parms);
+  parms = skip_artificial_parms_for (fn, TYPE_ARG_TYPES (fntype));
 
   if (return_type)
     {
@@ -11394,10 +11395,9 @@ get_bindings (tree fn, tree decl, tree explicit_args, bool check_rettype)
 	return NULL_TREE;
     }
 
-  decl_arg_types = TYPE_ARG_TYPES (decl_type);
   /* Never do unification on the 'this' parameter.  */
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
-    decl_arg_types = TREE_CHAIN (decl_arg_types);
+  decl_arg_types = skip_artificial_parms_for (decl, 
+					      TYPE_ARG_TYPES (decl_type));
 
   if (fn_type_unification (fn, explicit_args, targs,
 			   decl_arg_types,
