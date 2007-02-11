@@ -880,7 +880,7 @@ esac
     else
       echo "$as_me: WARNING: no configuration information is in $ac_dir" >&2
     fi
-    cd "$ac_popdir"
+    cd $ac_popdir
   done
 fi
 
@@ -1455,21 +1455,51 @@ test -n "$target_alias" &&
 # These demand that AC_CANONICAL_SYSTEM be called beforehand.
 
 ####
-# NCN_CHECK_TARGET_TOOL(variable, prog-to-check-for,[value-if-not-found],[path])
-# Like AC_CHECK_TOOL, but tries a prefix of the target, not the host.
-# Code is pretty much lifted from autoconf2.53.
-
-
-
-####
-# NCN_STRICT_CHECK_TOOL(variable, prog-to-check-for,[value-if-not-found],[path])
-# Like AC_CHECK_TOOL, but requires the prefix if build!=host.
-
+# NCN_STRICT_CHECK_TOOLS(variable, progs-to-check-for,[value-if-not-found],[path])
+# Like plain AC_CHECK_TOOLS, but require prefix if build!=host.
 
 
 ####
-# NCN_STRICT_CHECK_TARGET_TOOL(variable, prog-to-check-for,[value-if-not-found],[path])
-# Like NCN_CHECK_TARGET_TOOL, but requires the prefix if build!=target.
+# NCN_STRICT_CHECK_TARGET_TOOLS(variable, progs-to-check-for,[value-if-not-found],[path])
+# Like CVS Autoconf AC_CHECK_TARGET_TOOLS, but require prefix if build!=target.
+
+
+
+# Backported from Autoconf 2.5x; can go away when and if
+# we switch.  Put the OS path separator in $PATH_SEPARATOR.
+
+
+
+
+# ACX_HAVE_GCC_FOR_TARGET
+# Check if the variable GCC_FOR_TARGET really points to a GCC binary.
+
+
+# ACX_CHECK_INSTALLED_TARGET_TOOL(VAR, PROG)
+# Searching for installed target binutils.  We need to take extra care,
+# else we may find the wrong assembler, linker, etc., and lose.
+#
+# First try --with-build-time-tools, if specified.
+#
+# For build != host, we ask the installed GCC for the name of the tool it
+# uses, and accept it if it is an absolute path.  This is because the
+# only good choice for a compiler is the same GCC version that is being
+# installed (or we couldn't make target libraries), and we assume that
+# on the host system we'll have not only the same GCC version, but also
+# the same binutils version.
+#
+# For build == host, search the same directories that the installed
+# compiler will search.  We used to do this for the assembler, linker,
+# and nm only; for simplicity of configuration, however, we extend this
+# criterion to tools (such as ar and ranlib) that are never invoked by
+# the compiler, to avoid mismatches.
+#
+# Also note we have to check MD_EXEC_PREFIX before checking the user's path
+# if build == target.  This makes the most sense only when bootstrapping,
+# but we also do so when build != host.  In this case, we hope that the
+# build and host systems will have similar contents of MD_EXEC_PREFIX.
+#
+# If we do not find a suitable binary, then try the user's path.
 
 
 ###
@@ -1489,7 +1519,11 @@ test -n "$target_alias" &&
 # understands Ada.  We use the user's CC setting, already found.
 #
 # Sets the shell variable have_gnat to yes or no as appropriate, and
-# substitutes GNATBIND.
+# substitutes GNATBIND and GNATMAKE.
+
+
+
+
 
 
 
@@ -1575,24 +1609,23 @@ case "${target}" in
     TOOLS_TARGET_PAIRS="mlib-tgt.adb<mlib-tgt-solaris.adb"
     ;;
   *86-*-linux* \
-  | powerpc*-*-linux*)
+  | powerpc*-*-linux* \
+  | *ia64-*-linux* \
+  | alpha*-*-linux* \
+  | sparc*-*-linux* \
+  | hppa*-*-linux* \
+  | *x86_64-*-linux*)
     TOOLS_TARGET_PAIRS="\
     mlib-tgt.adb<mlib-tgt-linux.adb \
-    indepsw.adb<indepsw-linux.adb"
+    indepsw.adb<indepsw-gnu.adb"
     ;;
-  *ia64-*-linux* \
-  | alpha*-*-linux )
-    TOOLS_TARGET_PAIRS="\
-    mlib-tgt.adb<mlib-tgt-linux.adb \
-    indepsw.adb<indepsw-linux.adb"
-    ;;
-  *x86_64-*-linux* \
-  | s390*-*-linux*)
+  s390*-*-linux*)
     TOOLS_TARGET_PAIRS="mlib-tgt.adb<mlib-tgt-linux.adb"
     ;;
   *86-*-freebsd*)
     TOOLS_TARGET_PAIRS="\
-    mlib-tgt.adb<mlib-tgt-linux.adb"
+    mlib-tgt.adb<mlib-tgt-linux.adb \
+    indepsw.adb<indepsw-gnu.adb"
     ;;
   mips-sgi-irix*)
     TOOLS_TARGET_PAIRS="mlib-tgt.adb<mlib-tgt-irix.adb"
@@ -1614,7 +1647,8 @@ case "${target}" in
   | alpha*-hp-vms* | alpha*-hp-openvms* | alpha*-hp-vms*)
     TOOLS_TARGET_PAIRS="\
     mlib-tgt.adb<mlib-tgt-vms-alpha.adb \
-    symbols.adb<symbols-vms-alpha.adb"
+    symbols.adb<symbols-vms.adb \
+    symbols-processing.adb<symbols-processing-vms-alpha.adb"
 
     EXTRA_GNATTOOLS='../../gnatlbr$(exeext) ../../gnatsym$(exeext)'
     ;;
@@ -1622,7 +1656,8 @@ case "${target}" in
   | ia64*-hp-vms* | ia64*-hp-openvms* | ia64*-hp-vms*)
     TOOLS_TARGET_PAIRS="\
     mlib-tgt.adb<mlib-tgt-vms-ia64.adb \
-    symbols.adb<symbols-vms-ia64.adb"
+    symbols.adb<symbols-vms.adb \
+    symbols-processing.adb<symbols-processing-vms-ia64.adb"
 
     EXTRA_GNATTOOLS='../../gnatlbr$(exeext) ../../gnatsym$(exeext)'
     ;;
@@ -1636,7 +1671,9 @@ case "${target}" in
     TOOLS_TARGET_PAIRS="mlib-tgt.adb<mlib-tgt-darwin.adb"
     ;;
   *-*-lynxos)
-    TOOLS_TARGET_PAIRS="mlib-tgt.adb<mlib-tgt-lynxos.adb"
+    TOOLS_TARGET_PAIRS="\
+    mlib-tgt.adb<mlib-tgt-lynxos.adb \
+    indepsw.adb<indepsw-gnu.adb"
     ;;
 esac
 
@@ -2469,6 +2506,11 @@ esac
   *) ac_INSTALL=$ac_top_builddir$INSTALL ;;
   esac
 
+  if test x"$ac_file" != x-; then
+    { echo "$as_me:$LINENO: creating $ac_file" >&5
+echo "$as_me: creating $ac_file" >&6;}
+    rm -f "$ac_file"
+  fi
   # Let's still pretend it is `configure' which instantiates (i.e., don't
   # use $as_me), people would be surprised to read:
   #    /* config.h.  Generated by config.status.  */
@@ -2507,12 +2549,6 @@ echo "$as_me: error: cannot find input file: $f" >&2;}
 	 fi;;
       esac
     done` || { (exit 1); exit 1; }
-
-  if test x"$ac_file" != x-; then
-    { echo "$as_me:$LINENO: creating $ac_file" >&5
-echo "$as_me: creating $ac_file" >&6;}
-    rm -f "$ac_file"
-  fi
 _ACEOF
 cat >>$CONFIG_STATUS <<_ACEOF
   sed "$ac_vpsub

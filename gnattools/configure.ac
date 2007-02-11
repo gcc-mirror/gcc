@@ -92,24 +92,23 @@ case "${target}" in
     TOOLS_TARGET_PAIRS="mlib-tgt.adb<mlib-tgt-solaris.adb"
     ;;
   *86-*-linux* \
-  | powerpc*-*-linux*)
+  | powerpc*-*-linux* \
+  | *ia64-*-linux* \
+  | alpha*-*-linux* \
+  | sparc*-*-linux* \
+  | hppa*-*-linux* \
+  | *x86_64-*-linux*)
     TOOLS_TARGET_PAIRS="\
     mlib-tgt.adb<mlib-tgt-linux.adb \
-    indepsw.adb<indepsw-linux.adb"
+    indepsw.adb<indepsw-gnu.adb"
     ;;
-  *ia64-*-linux* \
-  | alpha*-*-linux )
-    TOOLS_TARGET_PAIRS="\
-    mlib-tgt.adb<mlib-tgt-linux.adb \
-    indepsw.adb<indepsw-linux.adb"
-    ;;
-  *x86_64-*-linux* \
-  | s390*-*-linux*)
+  s390*-*-linux*)
     TOOLS_TARGET_PAIRS="mlib-tgt.adb<mlib-tgt-linux.adb"
     ;;
   *86-*-freebsd*)
     TOOLS_TARGET_PAIRS="\
-    mlib-tgt.adb<mlib-tgt-linux.adb"
+    mlib-tgt.adb<mlib-tgt-linux.adb \
+    indepsw.adb<indepsw-gnu.adb"
     ;;
   mips-sgi-irix*)
     TOOLS_TARGET_PAIRS="mlib-tgt.adb<mlib-tgt-irix.adb"
@@ -131,7 +130,8 @@ case "${target}" in
   | alpha*-hp-vms* | alpha*-hp-openvms* | alpha*-hp-vms*)
     TOOLS_TARGET_PAIRS="\
     mlib-tgt.adb<mlib-tgt-vms-alpha.adb \
-    symbols.adb<symbols-vms-alpha.adb"
+    symbols.adb<symbols-vms.adb \
+    symbols-processing.adb<symbols-processing-vms-alpha.adb"
 
     EXTRA_GNATTOOLS='../../gnatlbr$(exeext) ../../gnatsym$(exeext)'
     ;;
@@ -139,7 +139,8 @@ case "${target}" in
   | ia64*-hp-vms* | ia64*-hp-openvms* | ia64*-hp-vms*)
     TOOLS_TARGET_PAIRS="\
     mlib-tgt.adb<mlib-tgt-vms-ia64.adb \
-    symbols.adb<symbols-vms-ia64.adb"
+    symbols.adb<symbols-vms.adb \
+    symbols-processing.adb<symbols-processing-vms-ia64.adb"
 
     EXTRA_GNATTOOLS='../../gnatlbr$(exeext) ../../gnatsym$(exeext)'
     ;;
@@ -153,7 +154,9 @@ case "${target}" in
     TOOLS_TARGET_PAIRS="mlib-tgt.adb<mlib-tgt-darwin.adb"
     ;;
   *-*-lynxos)
-    TOOLS_TARGET_PAIRS="mlib-tgt.adb<mlib-tgt-lynxos.adb"
+    TOOLS_TARGET_PAIRS="\
+    mlib-tgt.adb<mlib-tgt-lynxos.adb \
+    indepsw.adb<indepsw-gnu.adb"
     ;;
 esac
 
