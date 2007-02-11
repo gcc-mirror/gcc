@@ -1,3 +1,8 @@
+2007-02-11  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* genattrtab.c (contained_in_p): Delete unused function.
+	(write_expr_attr_cache): Likewise.
+
 2007-02-11  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (cgraph_edge_badness): Add "else" missing in the
