@@ -225,6 +225,7 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 * @code{SIN}:           SIN,       Sine function
 * @code{SINH}:          SINH,      Hyperbolic sine function
 * @code{SIZE}:          SIZE,      Function to determine the size of an array
+* @code{SLEEP}:         SLEEP,     Sleep for the specified number of seconds
 * @code{SNGL}:          SNGL,      Convert double precision real to default real
 * @code{SPACING}:       SPACING,   Smallest distance between two numbers of a given type
 * @code{SPREAD}:        SPREAD,    Add a dimension to an array 
@@ -4477,7 +4478,7 @@ Subroutine, function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
-@item @code{CALL HOSTNM(NAME, STATUS)}
+@item @code{CALL HOSTNM(NAME[, STATUS])}
 @item @code{STATUS = HOSTNM(NAME)}
 @end multitable
 
@@ -8101,6 +8102,38 @@ Inquiry function
 @item @emph{Return value}:
 @item @emph{Example}:
 @item @emph{See also}:
+@end table
+
+
+
+@node SLEEP
+@section @code{SLEEP} --- Sleep for the specified number of seconds
+@cindex @code{SLEEP} intrinsic
+
+@table @asis
+@item @emph{Description}:
+Calling this subroutine causes the process to pause for @var{SECONDS} seconds.
+
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@code{CALL SLEEP(SECONDS)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{SECONDS} @tab The type shall be of default @code{INTEGER}.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program test_sleep
+  call sleep(5)
+end
+@end smallexample
 @end table
 
 
