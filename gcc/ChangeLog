@@ -1,3 +1,18 @@
+2007-02-11  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* fwprop.c (try_fwprop_subst): Use set_unique_reg_note
+	to add the REG_EQ* note.
+	* see.c (see_merge_one_use_extension): Likewise.
+	* local-alloc.c (update_equiv_regs): Likewise.  Also don't
+	turn REG_EQUAL notes into REG_EQUIV notes if the target
+	register may have more than one set.
+	* function.c (assign_parm_setup_reg): Use set_unique_reg_note.
+	* gcse.c (try_replace_reg): Likewise.
+	* alias.c (init_alias_analysis): Use find_reg_equal_equiv_note.
+	* calls.c (fixup_tail_calls): Likewise.  Abort if there is
+	more than one REG_EQUIV note.
+	* reload1.c (gen_reload): Use set_unique_reg_note.
+
 2007-02-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (TARGET_VECTORIZE_BUILTIN_CONVERSION): Define.

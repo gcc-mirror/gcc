@@ -691,9 +691,10 @@ try_fwprop_subst (struct df_ref *use, rtx *loc, rtx new, rtx def_insn, bool set_
 	  if (dump_file)
 	    fprintf (dump_file, " Setting REG_EQUAL note\n");
 
-	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, copy_rtx (new),
-						REG_NOTES (insn));
+	  set_unique_reg_note (insn, REG_EQUAL, copy_rtx (new));
 
+	  /* ??? Is this still necessary if we add the note through
+	     set_unique_reg_note?  */
           if (!CONSTANT_P (new))
 	    update_df (insn, loc, DF_INSN_USES (df, def_insn),
 		       type, DF_REF_IN_NOTE);
