@@ -1,3 +1,12 @@
+2007-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR 23566
+	* scripts/timezones.pl: Parse each file in 2 passes, in one parse
+	just Rule lines, in the other everything else.  Pass 0 instead of
+	$savings as second argument to parseRule when parsing the start
+	rule.
+	* java/util/TimeZone.java (timezones): Regenerate from tzdata2007a.
+
 2006-07-04  Peter O'Gorman  <peter@pogma.com>
 
 	* ltconfig: chmod 644 before ranlib during install.
