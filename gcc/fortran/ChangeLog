@@ -1,3 +1,9 @@
+2007-02-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30554
+	* module.c (read_module): Set pointer_info to referenced if the
+	symbol has no namespace.
+
 2007-02-12  Nick Clifton  <nickc@redhat.com>
 
 	* lang.opt:  Add Warning attribute to warning options.
