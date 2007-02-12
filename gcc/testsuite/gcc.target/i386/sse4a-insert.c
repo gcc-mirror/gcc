@@ -32,7 +32,7 @@ sse4a_test_insert (long long in1, long long in2)
   __m128i v1,v2;
   long long index_length, pad;
   LI v_out;
-  index_length = 0x0000000000000810;
+  index_length = 0x0000000000000810LL;
   pad = 0x0;
   v1 = _mm_set_epi64x (pad, in1);
   v2 = _mm_set_epi64x (index_length, in2); 
@@ -62,29 +62,29 @@ static chk (long long i1, long long i2)
 
 long long vals_in1[5] =
   {
-    0x1234567887654321,
-    0x1456782093002490,
-    0x2340909123990390,
-    0x9595959599595999,
-    0x9099038798000029
+    0x1234567887654321LL,
+    0x1456782093002490LL,
+    0x2340909123990390LL,
+    0x9595959599595999LL,
+    0x9099038798000029LL
   };
 
 long long vals_in2[5] =
   {
-    0x9ABCDEF00FEDCBA9,
-    0x234567097289672A,
-    0x45476453097BD342,
-    0x23569012AE586FF0,
-    0x432567ABCDEF765D
+    0x9ABCDEF00FEDCBA9LL,
+    0x234567097289672ALL,
+    0x45476453097BD342LL,
+    0x23569012AE586FF0LL,
+    0x432567ABCDEF765DLL
   };
 
 long long vals_out[5] =
   {
-    0x1234567887CBA921,
-    0x1456782093672A90,
-    0x2340909123D34290,
-    0x95959595996FF099,
-    0x9099038798765D29
+    0x1234567887CBA921LL,
+    0x1456782093672A90LL,
+    0x2340909123D34290LL,
+    0x95959595996FF099LL,
+    0x9099038798765D29LL
   };
 
 static void
