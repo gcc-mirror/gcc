@@ -1,4 +1,4 @@
-/* Copyright (C) 2003, 2004, 2005, 2006  Free Software Foundation
+/* Copyright (C) 2003, 2004, 2005, 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -364,7 +364,7 @@ gnu::java::net::PlainSocketImpl$SocketOutputStream::write(jbyteArray b, jint off
   if (offset < 0 || len < 0 || offset + len > JvGetArrayLength (b))
     throw new ::java::lang::ArrayIndexOutOfBoundsException;
 
-  write_helper (this$0->native_fd, elements (b) + offset * sizeof (jbyte), len);
+  write_helper (this$0->native_fd, elements (b) + offset, len);
 }
 
 static void
@@ -435,8 +435,7 @@ gnu::java::net::PlainSocketImpl$SocketInputStream::read(jbyteArray buffer,
   if (offset < 0 || count < 0 || offset + count > bsize)
     throw new ::java::lang::ArrayIndexOutOfBoundsException;
 
-  return read_helper (this$0,
-		      elements (buffer) + offset * sizeof (jbyte), count);
+  return read_helper (this$0, elements (buffer) + offset, count);
 }
 
 static jint

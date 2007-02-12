@@ -4905,7 +4905,7 @@ classpath/java/net/ConnectException.java \
 classpath/java/net/ContentHandler.java \
 classpath/java/net/ContentHandlerFactory.java \
 classpath/java/net/DatagramPacket.java \
-java/net/DatagramSocket.java \
+classpath/java/net/DatagramSocket.java \
 classpath/java/net/DatagramSocketImpl.java \
 classpath/java/net/DatagramSocketImplFactory.java \
 classpath/java/net/FileNameMap.java \
@@ -4928,7 +4928,7 @@ classpath/java/net/Proxy.java \
 classpath/java/net/ProxySelector.java \
 classpath/java/net/ResolverCache.java \
 classpath/java/net/ServerSocket.java \
-java/net/Socket.java \
+classpath/java/net/Socket.java \
 classpath/java/net/SocketAddress.java \
 classpath/java/net/SocketException.java \
 classpath/java/net/SocketImpl.java \
