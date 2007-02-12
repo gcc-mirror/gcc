@@ -32,7 +32,7 @@ sse4a_test_extrq (long long in)
   __m128i v1, v2;
   long long index_length, pad;
   LI v_out;
-  index_length = 0x0000000000000810; 
+  index_length = 0x0000000000000810LL; 
   pad = 0x0;
   v1 = _mm_set_epi64x (pad, in);
   v2 = _mm_set_epi64x (pad, index_length); 
@@ -61,20 +61,20 @@ static chk (long long i1, long long i2)
 
 long long vals_in[5] =
   {
-    0x1234567887654321,
-    0x1456782093002490,
-    0x2340909123990390,
-    0x9595959599595999,
-    0x9099038798000029
+    0x1234567887654321LL,
+    0x1456782093002490LL,
+    0x2340909123990390LL,
+    0x9595959599595999LL,
+    0x9099038798000029LL
   };
 
 long long vals_out[5] =
   {
-    0x0000000000006543,
-    0x0000000000000024,
-    0x0000000000009903,
-    0x0000000000005959,
-    0x0000000000000000
+    0x0000000000006543LL,
+    0x0000000000000024LL,
+    0x0000000000009903LL,
+    0x0000000000005959LL,
+    0x0000000000000000LL
   };
 
 static void
