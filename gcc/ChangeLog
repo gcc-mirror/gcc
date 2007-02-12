@@ -1,3 +1,15 @@
+2007-02-12  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR middle-end/7651
+	* doc/invoke.texi (Wunused-value): Update description.
+	(Wextra): Delete item.
+	* opts.c (set_Wextra): Don't use the value of Wextra to set the
+	value of Wunused-value.
+	* c-typeck.c (c_process_expr_stmt): Don't check extra_warnings.
+	(c_finish_stmt_expr): Don't check extra_warnings.
+	(emit_side_effect_warnings): The caller is responsible to check
+	warn_unused_value.
+	
 2007-02-11  Roger Sayle  <roger@eyesopen.com>
 	    Matt Thomas  <matt@3am-software.com>
 
