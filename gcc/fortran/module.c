@@ -3339,7 +3339,7 @@ read_module (void)
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_intrinsic_op i;
   int ambiguous, j, nuse, symbol;
-  pointer_info *info;
+  pointer_info *info, *q;
   gfc_use_rename *u;
   gfc_symtree *st;
   gfc_symbol *sym;
@@ -3389,6 +3389,16 @@ read_module (void)
 
       info->u.rsym.state = USED;
       info->u.rsym.sym = sym;
+
+      /* Some symbols do not have a namespace (eg. formal arguments),
+	 so the automatic "unique symtree" mechanism must be suppressed
+	 by marking them as referenced.  */
+      q = get_integer (info->u.rsym.ns);
+      if (q->u.pointer == NULL)
+	{
+	  info->u.rsym.referenced = 1;
+	  continue;
+	}
 
       /* If possible recycle the symtree that references the symbol.
 	 If a symtree is not found and the module does not import one,

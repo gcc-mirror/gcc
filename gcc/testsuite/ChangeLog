@@ -1,9 +1,7 @@
-2007-02-12  Simon Martin  <simartin@users.sourceforge.net>
+2007-02-13  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR c++/14622
-	* g++.dg/template/instantiate9.C: New test.
-	* g++.old-deja/g++.pt/instantiate12.C: Fixed type mismatches in explicit
-	instantiations.
+	PR fortran/30554
+	* gfortran.dg/used_dummy_types_7.f90: New test..
 
 2007-02-12  Uros Bizjak  <ubizjak@gmail.com>
 
