@@ -56,6 +56,6 @@ int main ()
 // const-ness should allow the compiler to elide references to the
 // actual variables.
 template const bool X<int>::cflag;
-template const bool X<int>::flag;
+template bool X<int>::flag;
 template const bool X<float>::cflag;
-template const bool X<float>::flag;
+template bool X<float>::flag;

@@ -11728,6 +11728,13 @@ do_decl_instantiation (tree decl, tree storage)
 	  error ("no matching template for %qD found", decl);
 	  return;
 	}
+      if (!same_type_p (TREE_TYPE (result), TREE_TYPE (decl)))
+	{
+	  error ("type %qT for explicit instantiation %qD does not match "
+		 "declared type %qT", TREE_TYPE (result), decl,
+		 TREE_TYPE (decl));
+	  return;
+	}
     }
   else if (TREE_CODE (decl) != FUNCTION_DECL)
     {
