@@ -1,5 +1,5 @@
 ;; Predicate definitions for DEC Alpha.
-;; Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+;; Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -54,16 +54,14 @@
 ;; Return 1 if the operand is a valid second operand to an add insn.
 (define_predicate "add_operand"
   (if_then_else (match_code "const_int")
-    (match_test "CONST_OK_FOR_LETTER_P (INTVAL (op), 'K')
-		 || CONST_OK_FOR_LETTER_P (INTVAL (op), 'L')")
+    (match_test "satisfies_constraint_K (op) || satisfies_constraint_L (op)")
     (match_operand 0 "register_operand")))
 
 ;; Return 1 if the operand is a valid second operand to a
 ;; sign-extending add insn.
 (define_predicate "sext_add_operand"
   (if_then_else (match_code "const_int")
-    (match_test "CONST_OK_FOR_LETTER_P (INTVAL (op), 'I')
-		 || CONST_OK_FOR_LETTER_P (INTVAL (op), 'O')")
+    (match_test "satisfies_constraint_I (op) || satisfies_constraint_O (op)")
     (match_operand 0 "register_operand")))
 
 ;; Return 1 if the operand is a non-symbolic constant operand that
@@ -572,8 +570,7 @@
 (define_predicate "addition_operation"
   (and (match_code "plus")
        (match_test "register_operand (XEXP (op, 0), mode)
-		    && GET_CODE (XEXP (op, 1)) == CONST_INT
-		    && CONST_OK_FOR_LETTER_P (INTVAL (XEXP (op, 1)), 'K')")))
+		    && satisfies_constraint_K (XEXP (op, 1))")))
 
 ;; For TARGET_EXPLICIT_RELOCS, we don't obfuscate a SYMBOL_REF to a
 ;; small symbolic operand until after reload.  At which point we need

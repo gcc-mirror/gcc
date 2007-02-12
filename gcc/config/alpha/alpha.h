@@ -600,63 +600,6 @@ enum reg_class {
 #define INDEX_REG_CLASS NO_REGS
 #define BASE_REG_CLASS GENERAL_REGS
 
-/* Get reg_class from a letter such as appears in the machine description.  */
-
-#define REG_CLASS_FROM_LETTER(C)	\
- ((C) == 'a' ? R24_REG			\
-  : (C) == 'b' ? R25_REG		\
-  : (C) == 'c' ? R27_REG		\
-  : (C) == 'f' ? FLOAT_REGS		\
-  : (C) == 'v' ? R0_REG			\
-  : NO_REGS)
-
-/* Define this macro to change register usage conditional on target flags.  */
-/* #define CONDITIONAL_REGISTER_USAGE  */
-
-/* The letters I, J, K, L, M, N, O, and P in a register constraint string
-   can be used to stand for particular ranges of immediate operands.
-   This macro defines what the ranges are.
-   C is the letter, and VALUE is a constant value.
-   Return 1 if VALUE is in the range specified by C.
-
-   For Alpha:
-   `I' is used for the range of constants most insns can contain.
-   `J' is the constant zero.
-   `K' is used for the constant in an LDA insn.
-   `L' is used for the constant in a LDAH insn.
-   `M' is used for the constants that can be AND'ed with using a ZAP insn.
-   `N' is used for complemented 8-bit constants.
-   `O' is used for negated 8-bit constants.
-   `P' is used for the constants 1, 2 and 3.  */
-
-#define CONST_OK_FOR_LETTER_P   alpha_const_ok_for_letter_p
-
-/* Similar, but for floating or large integer constants, and defining letters
-   G and H.   Here VALUE is the CONST_DOUBLE rtx itself.
-
-   For Alpha, `G' is the floating-point constant zero.  `H' is a CONST_DOUBLE
-   that is the operand of a ZAP insn.  */
-
-#define CONST_DOUBLE_OK_FOR_LETTER_P  alpha_const_double_ok_for_letter_p
-
-/* Optional extra constraints for this machine.
-
-   For the Alpha, `Q' means that this is a memory operand but not a
-   reference to an unaligned location.
-
-   `R' is a SYMBOL_REF that has SYMBOL_REF_FLAG set or is the current
-   function.
-
-   'S' is a 6-bit constant (valid for a shift insn).
-
-   'T' is a HIGH.
-
-   'U' is a symbolic operand.
-
-   'W' is a vector zero.  */
-
-#define EXTRA_CONSTRAINT  alpha_extra_constraint
-
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
    In general this is just CLASS; but on some machines

@@ -1,6 +1,6 @@
 ;; Machine description for DEC Alpha for GNU C compiler
 ;; Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-;; 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+;; 2000, 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
 ;; Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 ;;
 ;; This file is part of GCC.
@@ -178,9 +178,10 @@
 (include "ev6.md")
 
 
-;; Include predicate definitions
+;; Operand and operator predicates and constraints
 
 (include "predicates.md")
+(include "constraints.md")
 
 
 ;; First define the arithmetic insns.  Note that the 32-bit forms also
@@ -489,10 +490,11 @@
   HOST_WIDE_INT val = INTVAL (operands[2]);
   HOST_WIDE_INT low = (val & 0xffff) - 2 * (val & 0x8000);
   HOST_WIDE_INT rest = val - low;
+  rtx rest_rtx = GEN_INT (rest);
 
   operands[4] = GEN_INT (low);
-  if (CONST_OK_FOR_LETTER_P (rest, 'L'))
-    operands[3] = GEN_INT (rest);
+  if (satisfies_constraint_L (rest_rtx))
+    operands[3] = rest_rtx;
   else if (! no_new_pseudos)
     {
       operands[3] = gen_reg_rtx (DImode);
