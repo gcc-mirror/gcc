@@ -1,3 +1,9 @@
+2007-02-13  Dirk Mueller  <dmueller@suse.de>
+
+	* friend.c (do_friend): Annotate warning about friend
+	declarations in templates with OPT_Wnon_template_friend.
+	Convert informal message from warning() to inform().
+
 2007-02-12  Simon Martin  <simartin@users.sourceforge.net>
 	    Mark Mitchell  <mark@codesourcery.com>
 
