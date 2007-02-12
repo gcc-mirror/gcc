@@ -83,14 +83,11 @@ enum symbol_visibility default_visibility = VISIBILITY_DEFAULT;
 
 /* Disable unit-at-a-time for frontends that might be still broken in this
    respect.  */
-  
+
 bool no_unit_at_a_time_default;
 
 /* Global visibility options.  */
 struct visibility_flags visibility_options;
-
-/* Columns of --help display.  */
-static unsigned int columns = 80;
 
 /* What to print when a switch has no documentation.  */
 static const char undocumented_msg[] = N_("This switch lacks documentation");
@@ -115,12 +112,6 @@ static char *write_langs (unsigned int lang_mask);
 static void complain_wrong_lang (const char *, const struct cl_option *,
 				 unsigned int lang_mask);
 static void handle_options (unsigned int, const char **, unsigned int);
-static void wrap_help (const char *help, const char *item, unsigned int);
-static void print_target_help (void);
-static void print_help (void);
-static void print_param_help (void);
-static void print_filtered_help (unsigned int);
-static unsigned int print_switch (const char *text, unsigned int indent);
 static void set_debug_level (enum debug_info_type type, int extended,
 			     const char *arg);
 
@@ -320,7 +311,7 @@ handle_option (const char **argv, unsigned int lang_mask)
 	*(const char **) option->flag_var = arg;
 	break;
       }
-  
+
   if (option->flags & lang_mask)
     if (lang_hooks.handle_option (opt_index, arg, value) == 0)
       result = 0;
@@ -601,7 +592,7 @@ decode_options (unsigned int argc, const char **argv)
 
   if (flag_exceptions && flag_reorder_blocks_and_partition)
     {
-      inform 
+      inform
 	    ("-freorder-blocks-and-partition does not work with exceptions");
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
@@ -626,11 +617,298 @@ decode_options (unsigned int argc, const char **argv)
       && (!targetm.have_named_sections
 	  || (flag_unwind_tables && targetm.unwind_tables_default)))
     {
-      inform 
+      inform
        ("-freorder-blocks-and-partition does not work on this architecture");
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }
+}
+
+#define LEFT_COLUMN	27
+
+/* Output ITEM, of length ITEM_WIDTH, in the left column,
+   followed by word-wrapped HELP in a second column.  */
+static void
+wrap_help (const char *help,
+	   const char *item,
+	   unsigned int item_width,
+	   unsigned int columns)
+{
+  unsigned int col_width = LEFT_COLUMN;
+  unsigned int remaining, room, len;
+
+  remaining = strlen (help);
+
+  do
+    {
+      room = columns - 3 - MAX (col_width, item_width);
+      if (room > columns)
+	room = 0;
+      len = remaining;
+
+      if (room < len)
+	{
+	  unsigned int i;
+
+	  for (i = 0; help[i]; i++)
+	    {
+	      if (i >= room && len != remaining)
+		break;
+	      if (help[i] == ' ')
+		len = i;
+	      else if ((help[i] == '-' || help[i] == '/')
+		       && help[i + 1] != ' '
+		       && i > 0 && ISALPHA (help[i - 1]))
+		len = i + 1;
+	    }
+	}
+
+      printf( "  %-*.*s %.*s\n", col_width, item_width, item, len, help);
+      item_width = 0;
+      while (help[len] == ' ')
+	len++;
+      help += len;
+      remaining -= len;
+    }
+  while (remaining);
+}
+
+/* Print help for a specific front-end, etc.  */
+static void
+print_filtered_help (unsigned int include_flags,
+		     unsigned int exclude_flags,
+		     unsigned int any_flags,
+		     unsigned int columns)
+{
+  unsigned int i;
+  const char *help;
+  static char *printed = NULL;
+  bool found = false;
+  bool displayed = false;
+
+  if (include_flags == CL_PARAMS)
+    {
+      for (i = 0; i < LAST_PARAM; i++)
+	{
+	  const char *param = compiler_params[i].option;
+
+	  help = compiler_params[i].help;
+	  if (help == NULL || *help == '\0')
+	    {
+	      if (exclude_flags & CL_UNDOCUMENTED)
+		continue;
+	      help = undocumented_msg;
+	    }
+
+	  /* Get the translation.  */
+	  help = _(help);
+
+	  wrap_help (help, param, strlen (param), columns);
+	}
+      putchar ('\n');
+      return;
+    }
+
+  if (!printed)
+    printed = xcalloc (1, cl_options_count);
+
+  for (i = 0; i < cl_options_count; i++)
+    {
+      static char new_help[128];
+      const struct cl_option *option = cl_options + i;
+      unsigned int len;
+      const char *opt;
+      const char *tab;
+
+      if (include_flags == 0
+	  || ((option->flags & include_flags) != include_flags))
+	{
+	  if ((option->flags & any_flags) == 0)
+	    continue;
+	}
+
+      /* Skip unwanted switches.  */
+      if ((option->flags & exclude_flags) != 0)
+	continue;
+
+      found = true;
+      /* Skip switches that have already been printed.  */
+      if (printed[i])
+	continue;
+
+      printed[i] = true;
+
+      help = option->help;
+      if (help == NULL)
+	{
+	  if (exclude_flags & CL_UNDOCUMENTED)
+	    continue;
+	  help = undocumented_msg;
+	}
+
+      /* Get the translation.  */
+      help = _(help);
+
+      /* Find the gap between the name of the
+	 option and its descriptive text.  */
+      tab = strchr (help, '\t');
+      if (tab)
+	{
+	  len = tab - help;
+	  opt = help;
+	  help = tab + 1;
+	}
+      else
+	{
+	  opt = option->opt_text;
+	  len = strlen (opt);
+	}
+
+      /* With the -Q option enabled we change the descriptive text associated
+	 with an option to be an indication of its current setting.  */
+      if (!quiet_flag)
+	{
+	  if (len < (LEFT_COLUMN + 2))
+	    strcpy (new_help, "\t\t");
+	  else
+	    strcpy (new_help, "\t");
+
+	  if (option->flag_var != NULL)
+	    {
+	      if (option->flags & CL_JOINED)
+		{
+		  if (option->var_type == CLVC_STRING)
+		    {
+		      if (* (const char **) option->flag_var != NULL)
+			snprintf (new_help + strlen (new_help),
+				  sizeof (new_help) - strlen (new_help),
+				  * (const char **) option->flag_var);
+		    }
+		  else
+		    sprintf (new_help + strlen (new_help),
+			     "%#x", * (int *) option->flag_var);
+		}
+	      else
+		strcat (new_help, option_enabled (i)
+			? _("[enabled]") : _("[disabled]"));
+	    }
+
+	  help = new_help;
+	}
+
+      wrap_help (help, opt, len, columns);
+      displayed = true;
+    }
+
+  if (! found)
+    printf (_(" No options with the desired characteristics were found\n"));
+  else if (! displayed)
+    printf (_(" All options with the desired characteristics have already been displayed\n"));
+
+  putchar ('\n');
+}
+
+/* Display help for a specified type of option.
+   The options must have ALL of the INCLUDE_FLAGS set
+   ANY of the flags in the ANY_FLAGS set
+   and NONE of the EXCLUDE_FLAGS set.  */
+static void
+print_specific_help (unsigned int include_flags,
+		     unsigned int exclude_flags,
+		     unsigned int any_flags)
+{
+  unsigned int all_langs_mask = (1U << cl_lang_count) - 1;
+  const char * description = NULL;
+  const char * descrip_extra = "";
+  size_t i;
+  unsigned int flag;
+  static unsigned int columns = 0;
+
+  /* Sanity check: Make sure that we do not have more
+     languages than we have bits available to enumerate them.  */
+  gcc_assert ((1U << cl_lang_count) < CL_MIN_OPTION_CLASS);
+
+  /* If we have not done so already, obtain
+     the desired maximum width of the output.  */
+  if (columns == 0)
+    {
+      const char *p;
+
+      GET_ENVIRONMENT (p, "COLUMNS");
+      if (p != NULL)
+	{
+	  int value = atoi (p);
+
+	  if (value > 0)
+	    columns = value;
+	}
+
+      if (columns == 0)
+	/* Use a reasonable default.  */
+	columns = 80;
+    }
+
+  /* Decide upon the title for the options that we are going to display.  */
+  for (i = 0, flag = 1; flag <= CL_MAX_OPTION_CLASS; flag <<= 1, i ++)
+    {
+      switch (flag & include_flags)
+	{
+	case 0:
+	  break;
+
+	case CL_TARGET:
+	  description = _("The following options are target specific");
+	  break;
+	case CL_WARNING:
+	  description = _("The following options control compiler warning messages");
+	  break;
+	case CL_OPTIMIZATION:
+	  description = _("The following options control optimizations");
+	  break;
+	case CL_COMMON:
+	  description = _("The following options are language-independent");
+	  break;
+	case CL_PARAMS:
+	  description = _("The --param option recognizes the following as parameters");
+	  break;
+	default:
+	  if (i >= cl_lang_count)
+	    break;
+	  if ((exclude_flags & ((1U << cl_lang_count) - 1)) != 0)
+	    {
+	      description = _("The following options are specific to the language ");
+	      descrip_extra = lang_names [i];
+	    }
+	  else
+	    description = _("The following options are supported by, amoung others, the language ");
+	  break;
+	}
+    }
+
+  if (description == NULL)
+    {
+      if (any_flags == 0)
+	{
+	  if (include_flags == CL_UNDOCUMENTED)
+	    description = _("The following options are not documented");
+	  else
+	    {
+	      internal_error ("unrecognized include_flags 0x%x passed to print_specific_help",
+			      include_flags);
+	      return;
+	    }
+	}
+      else
+	{
+	  if (any_flags & all_langs_mask)
+	    description = _("The following options are language-related");
+	  else
+	    description = _("The following options are language-independent");
+	}
+    }
+
+  printf ("%s%s:\n", description, descrip_extra);
+  print_filtered_help (include_flags, exclude_flags, any_flags, columns);
 }
 
 /* Handle target- and language-independent options.  Return zero to
@@ -646,19 +924,123 @@ common_handle_option (size_t scode, const char *arg, int value,
 
   switch (code)
     {
-    case OPT__help:
-      print_help ();
-      exit_after_options = true;
-      break;
-
     case OPT__param:
       handle_param (arg);
       break;
 
+    case OPT_fhelp:
+    case OPT__help:
+      {
+	unsigned int all_langs_mask = (1U << cl_lang_count) - 1;
+	unsigned int undoc_mask;
+	unsigned int i;
+
+	undoc_mask = extra_warnings ? 0 : CL_UNDOCUMENTED;
+	/* First display any single language specific options.  */
+	for (i = 0; i < cl_lang_count; i++)
+	  print_specific_help
+	    (1U << i, (all_langs_mask & (~ (1U << i))) | undoc_mask, 0);
+	/* Next display any multi language specific options.  */
+	print_specific_help (0, undoc_mask, all_langs_mask);
+	/* Then display any remaining, non-language options.  */
+	for (i = CL_MIN_OPTION_CLASS; i <= CL_MAX_OPTION_CLASS; i <<= 1)
+	  print_specific_help (i, undoc_mask, 0);
+	exit_after_options = true;
+	break;
+      }
+
+    case OPT_ftarget_help:
     case OPT__target_help:
-      print_target_help ();
+      print_specific_help (CL_TARGET, CL_UNDOCUMENTED, 0);
       exit_after_options = true;
       break;
+
+    case OPT_fhelp_:
+    case OPT__help_:
+      {
+	const char * a = arg;
+	unsigned int include_flags = 0;
+	/* Note - by default we include undocumented options when listing
+	   specific classes.  If you only want to see documented options
+	   then add ",^undocumented" to the --help= option.  e.g.:
+
+	   --help=target,^undocumented  */
+	unsigned int exclude_flags = 0;
+
+	/* Walk along the argument string, parsing each word in turn.
+	   The format is:
+	   arg = [^]{word}[,{arg}]
+	   word = {optimizers|target|warnings|undocumented|params}  */
+	while (* a != 0)
+	  {
+	    static struct
+	    {
+	      const char * string;
+	      unsigned int flag;
+	    }
+	    specifics[] =
+	    {
+	      { "optimizers", CL_OPTIMIZATION },
+	      { "target", CL_TARGET },
+	      { "warnings", CL_WARNING },
+	      { "undocumented", CL_UNDOCUMENTED },
+	      { "params", CL_PARAMS },
+	      { "joined", CL_JOINED },
+	      { "separate", CL_SEPARATE },
+	      { NULL, 0 }
+	    };
+	    unsigned int * pflags;
+	    char * comma;
+	    unsigned int len;
+	    unsigned int i;
+
+	    if (* a == '^')
+	      {
+		++ a;
+		pflags = & exclude_flags;
+	      }
+	    else
+	      pflags = & include_flags;
+
+	    comma = strchr (a, ',');
+	    if (comma == NULL)
+	      len = strlen (a);
+	    else
+	      len = comma - a;
+
+	    for (i = 0; specifics[i].string != NULL; i++)
+	      if (strncasecmp (a, specifics[i].string, len) == 0)
+		{
+		  * pflags |= specifics[i].flag;
+		  break;
+		}
+
+	    if (specifics[i].string == NULL)
+	      {
+		/* Check to see if the string matches a language name.  */
+		for (i = 0; i < cl_lang_count; i++)
+		  if (strncasecmp (a, lang_names[i], len) == 0)
+		    {
+		      * pflags |= 1U << i;
+		      break;
+		    }
+
+		if (i == cl_lang_count)
+		  fnotice (stderr,
+			   "warning: unrecognized argument to --help= switch: %.*s\n",
+			   len, a);
+	      }
+
+	    if (comma == NULL)
+	      break;
+	    a = comma + 1;
+	  }
+
+	if (include_flags)
+	  print_specific_help (include_flags, exclude_flags, 0);
+	exit_after_options = true;
+	break;
+      }
 
     case OPT__version:
       print_version (stderr, "");
@@ -684,6 +1066,7 @@ common_handle_option (size_t scode, const char *arg, int value,
       {
 	char *new_option;
 	int option_index;
+
 	new_option = XNEWVEC (char, strlen (arg) + 2);
 	new_option[0] = 'W';
 	strcpy (new_option+1, arg);
@@ -819,7 +1202,7 @@ common_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_fpack_struct_:
       if (value <= 0 || (value & (value - 1)) || value > 16)
-	error("structure alignment must be a small power of two, not %d", value);
+	error ("structure alignment must be a small power of two, not %d", value);
       else
 	{
 	  initial_max_fld_align = value;
@@ -1153,238 +1536,6 @@ set_debug_level (enum debug_info_type type, int extended, const char *arg)
     }
 }
 
-/* Display help for target options.  */
-static void
-print_target_help (void)
-{
-  unsigned int i;
-  static bool displayed = false;
-
-  /* Avoid double printing for --help --target-help.  */
-  if (displayed)
-    return;
-
-  displayed = true;
-  for (i = 0; i < cl_options_count; i++)
-    if ((cl_options[i].flags & (CL_TARGET | CL_UNDOCUMENTED)) == CL_TARGET)
-      {
-	printf (_("\nTarget specific options:\n"));
-	print_filtered_help (CL_TARGET);
-	break;
-      }
-}
-
-/* Output --help text.  */
-static void
-print_help (void)
-{
-  size_t i;
-  const char *p;
-
-  GET_ENVIRONMENT (p, "COLUMNS");
-  if (p)
-    {
-      int value = atoi (p);
-      if (value > 0)
-	columns = value;
-    }
-
-  puts (_("The following options are language-independent:\n"));
-
-  print_filtered_help (CL_COMMON);
-  print_param_help ();
-
-  for (i = 0; lang_names[i]; i++)
-    {
-      printf (_("The %s front end recognizes the following options:\n\n"),
-	      lang_names[i]);
-      print_filtered_help (1U << i);
-    }
-  print_target_help ();
-}
-
-/* Print the help for --param.  */
-static void
-print_param_help (void)
-{
-  size_t i;
-
-  puts (_("The --param option recognizes the following as parameters:\n"));
-
-  for (i = 0; i < LAST_PARAM; i++)
-    {
-      const char *help = compiler_params[i].help;
-      const char *param = compiler_params[i].option;
-
-      if (help == NULL || *help == '\0')
-	help = undocumented_msg;
-
-      /* Get the translation.  */
-      help = _(help);
-
-      wrap_help (help, param, strlen (param));
-    }
-
-  putchar ('\n');
-}
-
-/* Print help for a specific front-end, etc.  */
-static void
-print_filtered_help (unsigned int flag)
-{
-  unsigned int i, len, filter, indent = 0;
-  bool duplicates = false;
-  const char *help, *opt, *tab;
-  static char *printed;
-
-  if (flag == CL_COMMON || flag == CL_TARGET)
-    {
-      filter = flag;
-      if (!printed)
-	printed = xmalloc (cl_options_count);
-      memset (printed, 0, cl_options_count);
-    }
-  else
-    {
-      /* Don't print COMMON options twice.  */
-      filter = flag | CL_COMMON;
-
-      for (i = 0; i < cl_options_count; i++)
-	{
-	  if ((cl_options[i].flags & filter) != flag)
-	    continue;
-
-	  /* Skip help for internal switches.  */
-	  if (cl_options[i].flags & CL_UNDOCUMENTED)
-	    continue;
-
-	  /* Skip switches that have already been printed, mark them to be
-	     listed later.  */
-	  if (printed[i])
-	    {
-	      duplicates = true;
-	      indent = print_switch (cl_options[i].opt_text, indent);
-	    }
-	}
-
-      if (duplicates)
-	{
-	  putchar ('\n');
-	  putchar ('\n');
-	}
-    }
-
-  for (i = 0; i < cl_options_count; i++)
-    {
-      if ((cl_options[i].flags & filter) != flag)
-	continue;
-
-      /* Skip help for internal switches.  */
-      if (cl_options[i].flags & CL_UNDOCUMENTED)
-	continue;
-
-      /* Skip switches that have already been printed.  */
-      if (printed[i])
-	continue;
-
-      printed[i] = true;
-
-      help = cl_options[i].help;
-      if (!help)
-	help = undocumented_msg;
-
-      /* Get the translation.  */
-      help = _(help);
-
-      tab = strchr (help, '\t');
-      if (tab)
-	{
-	  len = tab - help;
-	  opt = help;
-	  help = tab + 1;
-	}
-      else
-	{
-	  opt = cl_options[i].opt_text;
-	  len = strlen (opt);
-	}
-
-      wrap_help (help, opt, len);
-    }
-
-  putchar ('\n');
-}
-
-/* Output ITEM, of length ITEM_WIDTH, in the left column, followed by
-   word-wrapped HELP in a second column.  */
-static unsigned int
-print_switch (const char *text, unsigned int indent)
-{
-  unsigned int len = strlen (text) + 1; /* trailing comma */
-
-  if (indent)
-    {
-      putchar (',');
-      if (indent + len > columns)
-	{
-	  putchar ('\n');
-	  putchar (' ');
-	  indent = 1;
-	}
-    }
-  else
-    putchar (' ');
-
-  putchar (' ');
-  fputs (text, stdout);
-
-  return indent + len + 1;
-}
-
-/* Output ITEM, of length ITEM_WIDTH, in the left column, followed by
-   word-wrapped HELP in a second column.  */
-static void
-wrap_help (const char *help, const char *item, unsigned int item_width)
-{
-  unsigned int col_width = 27;
-  unsigned int remaining, room, len;
-
-  remaining = strlen (help);
-
-  do
-    {
-      room = columns - 3 - MAX (col_width, item_width);
-      if (room > columns)
-	room = 0;
-      len = remaining;
-
-      if (room < len)
-	{
-	  unsigned int i;
-
-	  for (i = 0; help[i]; i++)
-	    {
-	      if (i >= room && len != remaining)
-		break;
-	      if (help[i] == ' ')
-		len = i;
-	      else if ((help[i] == '-' || help[i] == '/')
-		       && help[i + 1] != ' '
-		       && i > 0 && ISALPHA (help[i - 1]))
-		len = i + 1;
-	    }
-	}
-
-      printf( "  %-*.*s %.*s\n", col_width, item_width, item, len, help);
-      item_width = 0;
-      while (help[len] == ' ')
-	len++;
-      help += len;
-      remaining -= len;
-    }
-  while (remaining);
-}
-
 /* Return 1 if OPTION is enabled, 0 if it is disabled, or -1 if it isn't
    a simple on-off switch.  */
 
@@ -1392,6 +1543,7 @@ int
 option_enabled (int opt_idx)
 {
   const struct cl_option *option = &(cl_options[opt_idx]);
+
   if (option->flag_var)
     switch (option->var_type)
       {

@@ -1,5 +1,5 @@
 ; Options for the Fortran 95 front end.
-; Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+; Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -38,43 +38,43 @@ Fortran
 ; Documented in C
 
 Waliasing
-Fortran
+Fortran Warning
 Warn about possible aliasing of dummy arguments
 
 Wampersand
-Fortran
+Fortran Warning
 Warn about missing ampersand in continued character constants
 
 Wcharacter-truncation
-Fortran
+Fortran Warning
 Warn about truncated character expressions
 
 Wconversion
-Fortran
+Fortran Warning
 Warn about implicit conversion
 
 Wimplicit-interface
-Fortran
+Fortran Warning
 Warn about calls with implicit interface
 
 Wline-truncation
-Fortran
+Fortran Warning
 Warn about truncated source lines
 
 Wnonstd-intrinsics
-Fortran
+Fortran Warning
 Warn about usage of non-standard intrinsics
 
 Wsurprising
-Fortran
+Fortran Warning
 Warn about \"suspicious\" constructs
 
 Wtabs
-Fortran
+Fortran Warning
 Permit nonconforming uses of the tab character
 
 Wunderflow
-Fortran
+Fortran Warning
 Warn about underflow of numerical constant expressions
 
 fall-intrinsics

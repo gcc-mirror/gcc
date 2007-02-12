@@ -1,3 +1,43 @@
+2007-02-12  Nick Clifton  <nickc@redhat.com>
+
+	* doc/invoke.texi (Overall Options): Document --help=.
+	* gcc.c (target_help_flag): Rename to print_subprocess_flag.
+	(cc1_options): Pass --help= on to cc1.
+	(display_help): Add description of --help=.
+	(process_command): Add code to handle --help=.  Allow translated
+	--help and --target-help switches to be passed on to compiler
+	sub-process.
+	(main): Remove unused if statement.
+	* opts.c (columns): Remove.
+	(LEFT_COLUMN): Define.
+	(wrap_help): Add columns argument.
+	(print_filtered_help): Change parameters to be an include bitmask,
+	an exclude bitmask, an any bitmask and the column width.  Move the
+	code to display the params list here.  Add code to display the
+	status of options rather than their descriptions if the quiet flag
+	is not active.
+	(print_specific_help): Change parameters to be an include bitmask,
+	an exclude bitmask and an any bitmask.  Move code to look up the
+	column width here.  Decide upon the title for an options listing.
+	(common_handle_options): Add code to handle --help=.  Adapt code
+	for --help and --target-help to use the revised form of the
+	print_specific_help function.
+	(print_help): Delete.
+	(print_param_help): Delete.
+	(print_switch): Delete.
+	* opts.h (cl_lang_count): Add prototype.
+	(CL_PARAMS, CL_WARNING, CL_OPTIMIZATION, CL_MIN_OPTION_CLASS,
+	CL_MAX_OPTION_CLASS): New defines.
+	* optc-gen.awk: Add construction of cl_lang_count.
+	* c.opt: Add Warning attribute to warning options and Optimization
+	attribute to optimization options.
+	* common.opt: Likewise.
+	Add --help=.
+	Add -fhelp and -ftarget-help as aliases for the transformed --help
+	and --target-help options.
+	* opt-functions.awk: Add code to handle Warning and Optimization
+	attributes.
+
 2007-02-12  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/constraints.md: New file.
