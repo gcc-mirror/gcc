@@ -9626,6 +9626,24 @@ simple_decl_align_in_bits (tree decl)
   return (TREE_CODE (decl) != ERROR_MARK) ? DECL_ALIGN (decl) : BITS_PER_WORD;
 }
 
+/* Return the result of rounding T up to ALIGN.  */
+
+static inline HOST_WIDE_INT
+round_up_to_align (HOST_WIDE_INT t, unsigned int align)
+{
+  /* We must be careful if T is negative because HOST_WIDE_INT can be
+     either "above" or "below" unsigned int as per the C promotion
+     rules, depending on the host, thus making the signedness of the
+     direct multiplication and division unpredictable.  */
+  unsigned HOST_WIDE_INT u = (unsigned HOST_WIDE_INT) t;
+
+  u += align - 1;
+  u /= align;
+  u *= align;
+
+  return (HOST_WIDE_INT) u;
+}
+
 /* Given a pointer to a FIELD_DECL, compute and return the byte offset of the
    lowest addressed byte of the "containing object" for the given FIELD_DECL,
    or return 0 if we are unable to determine what that offset is, either
@@ -9725,9 +9743,8 @@ field_byte_offset (tree decl)
   object_offset_in_bits = deepest_bitpos - type_size_in_bits;
 
   /* Round up to type_align by default.  This works best for bitfields.  */
-  object_offset_in_bits += type_align_in_bits - 1;
-  object_offset_in_bits /= type_align_in_bits;
-  object_offset_in_bits *= type_align_in_bits;
+  object_offset_in_bits
+    = round_up_to_align (object_offset_in_bits, type_align_in_bits);
 
   if (object_offset_in_bits > bitpos_int)
     {
@@ -9735,9 +9752,8 @@ field_byte_offset (tree decl)
       object_offset_in_bits = deepest_bitpos - type_size_in_bits;
 
       /* Round up to decl_align instead.  */
-      object_offset_in_bits += decl_align_in_bits - 1;
-      object_offset_in_bits /= decl_align_in_bits;
-      object_offset_in_bits *= decl_align_in_bits;
+      object_offset_in_bits
+	= round_up_to_align (object_offset_in_bits, decl_align_in_bits);
     }
 
   return object_offset_in_bits / BITS_PER_UNIT;
