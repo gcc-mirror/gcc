@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.1.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2006-05-24 16:19-0700\n"
-"PO-Revision-Date: 2006-11-18 12:48+0100\n"
+"PO-Revision-Date: 2006-12-13 22:05+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -21935,12 +21935,12 @@ msgstr "stackstorlek får inte vara större än 64 k"
 #: config/s390/s390.c:1417
 #, gcc-internal-format
 msgid "-mstack-guard implies use of -mstack-size"
-msgstr ""
+msgstr "-mstack-guard implicerar användning av -mstack-size"
 
 #: config/s390/s390.c:6568
 #, gcc-internal-format
 msgid "total size of local variables exceeds architecture limit"
-msgstr ""
+msgstr "totala storleken på lokala variabler överskrider arkitekturens gräns"
 
 #: config/s390/s390.c:7155
 #, gcc-internal-format
@@ -21955,7 +21955,7 @@ msgstr " byte"
 #: config/s390/s390.c:7159
 #, gcc-internal-format
 msgid "%qs uses dynamic stack allocation"
-msgstr ""
+msgstr "%qs använder dynamisk stackallokering"
 
 #: config/sh/sh.c:6483
 #, gcc-internal-format
@@ -21970,7 +21970,7 @@ msgstr "attributet %qs är bara tillämpbart på avbrottsfunktioner"
 #: config/sh/sh.c:7574
 #, gcc-internal-format
 msgid "attribute interrupt_handler is not compatible with -m5-compact"
-msgstr ""
+msgstr "attributet interrupt_handler är inte kompatibelt -m5-compact"
 
 #. The argument must be a constant string.
 #: config/sh/sh.c:7596
@@ -21987,7 +21987,7 @@ msgstr "attributargument %qs är inte en heltalskonstant"
 #: config/sh/sh.c:9673
 #, gcc-internal-format
 msgid "r0 needs to be available as a call-clobbered register"
-msgstr ""
+msgstr "r0 behöver vara tillgängligt som ett anropsöverskrivet register"
 
 #: config/sh/sh.c:9694
 #, gcc-internal-format
@@ -22014,6 +22014,8 @@ msgstr "inline-funktionen %q+D är deklarerad som dllimport; attributet ignoreras
 msgid "failure in redeclaration of %q+D: dllimport'd symbol lacks external linkage"
 msgstr "fel i omdeklaration av %q+D: dllimport:erad symbol har inte extern länkklass"
 
+# De båda %s blir delar av en mening.
+# Felrapporterat: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29897
 #: config/sh/symbian.c:326
 #, gcc-internal-format
 msgid "%s %q+D %s after being referenced with dllimport linkage"
@@ -22048,7 +22050,7 @@ msgstr "profilering är fortfarande experimentellt för denna målarkitektur"
 #: config/sh/sh.h:676
 #, gcc-internal-format
 msgid "ignoring -fschedule-insns because of exception handling bug"
-msgstr ""
+msgstr "ignorerar -fschedule-insns på grund av ett fel i undantagshanteringen"
 
 #: config/sparc/sparc.c:643
 #, gcc-internal-format
@@ -22078,12 +22080,12 @@ msgstr "konstant aritmetisk operand utanför sitt intervall"
 #: config/stormy16/stormy16.c:1108
 #, gcc-internal-format
 msgid "local variable memory requirements exceed capacity"
-msgstr ""
+msgstr "behovet av minne för lokala variabler överskrider kapaciteten"
 
 #: config/stormy16/stormy16.c:1274
 #, gcc-internal-format
 msgid "function_profiler support"
-msgstr ""
+msgstr "stöd frö function_profiler"
 
 #: config/stormy16/stormy16.c:1363
 #, gcc-internal-format
@@ -22108,12 +22110,12 @@ msgstr "attributet __BELOW100__ är inte tillåtet med lagringsklassen auto"
 #: config/v850/v850-c.c:67
 #, gcc-internal-format
 msgid "#pragma GHS endXXXX found without previous startXXX"
-msgstr ""
+msgstr "#pragma GHS endXXXX funnet utan föregående startXXX"
 
 #: config/v850/v850-c.c:70
 #, gcc-internal-format
 msgid "#pragma GHS endXXX does not match previous startXXX"
-msgstr ""
+msgstr "#pragma GHS endXXX stämmer inte med föregående startXXX"
 
 #: config/v850/v850-c.c:96
 #, gcc-internal-format
@@ -22178,7 +22180,7 @@ msgstr "skräp vid slutet av #pragma ghs endzda"
 #: config/v850/v850.c:172
 #, gcc-internal-format
 msgid "value passed to %<-m%s%> is too large"
-msgstr ""
+msgstr "värde skickat till %<-m%s%> är för stort"
 
 #: config/v850/v850.c:2147
 #, gcc-internal-format
@@ -22198,7 +22200,7 @@ msgstr "felaktig JR-konstruktion: %d"
 #: config/v850/v850.c:2306 config/v850/v850.c:2415
 #, gcc-internal-format
 msgid "bad amount of stack space removal: %d"
-msgstr ""
+msgstr "felaktig mängd att ta bort från stacken: %d"
 
 #: config/v850/v850.c:2395
 #, gcc-internal-format
@@ -22213,7 +22215,7 @@ msgstr "felaktig DISPOSE-konstruktion: %d"
 #: config/v850/v850.c:2713
 #, gcc-internal-format
 msgid "too much stack space to dispose of: %d"
-msgstr ""
+msgstr "för mycket stackutrymme att göra av med: %d"
 
 # Förmodligen en felstavning i orginalet, men tills jag vet säkert
 # behåller jag den
@@ -22225,12 +22227,12 @@ msgstr "felaktig PREPEARE-konstruktion: %d"
 #: config/v850/v850.c:2834
 #, gcc-internal-format
 msgid "too much stack space to prepare: %d"
-msgstr ""
+msgstr "för mycket stackutrymme att förbereda: %d"
 
 #: config/xtensa/xtensa.c:1505
 #, gcc-internal-format
 msgid "boolean registers required for the floating-point option"
-msgstr ""
+msgstr "booleska register krävs för flyttalsalternativet"
 
 #: config/xtensa/xtensa.c:1551
 #, gcc-internal-format
@@ -22255,7 +22257,7 @@ msgstr "argument saknas till \"-%s\""
 #: ada/misc.c:303
 #, gcc-internal-format
 msgid "%<-gnat%> misspelled as %<-gant%>"
-msgstr ""
+msgstr "%<-gnat%> felstavat som %<-gant%>"
 
 #: cp/call.c:286
 #, gcc-internal-format
@@ -22280,12 +22282,12 @@ msgstr "%s %D(%T) <inbyggd>"
 #: cp/call.c:2402
 #, gcc-internal-format
 msgid "%s %T <conversion>"
-msgstr ""
+msgstr "%s %T <konvertering>"
 
 #: cp/call.c:2404
 #, gcc-internal-format
 msgid "%s %+#D <near match>"
-msgstr ""
+msgstr "%s %+#D <nära träff>"
 
 #: cp/call.c:2406 cp/pt.c:1327
 #, gcc-internal-format
@@ -22300,7 +22302,7 @@ msgstr "konvertering från %qT till %qT är tvetydig"
 #: cp/call.c:2779 cp/call.c:2797 cp/call.c:2855
 #, gcc-internal-format
 msgid "no matching function for call to %<%D(%A)%>"
-msgstr ""
+msgstr "ingen funktion som stämmer för anrop av %<%D(%A)%>"
 
 #: cp/call.c:2800 cp/call.c:2858
 #, gcc-internal-format
@@ -22312,43 +22314,55 @@ msgstr "anrop av överlastad %<%D(%A)%> är tvetydigt"
 #: cp/call.c:2926
 #, gcc-internal-format
 msgid "pointer-to-member function %E cannot be called without an object; consider using .* or ->*"
-msgstr ""
+msgstr "pekar-på-medlem-funktion %E kan inte anropas utan ett objekt, överväg att använda .* eller ->*"
 
 #: cp/call.c:3000
 #, gcc-internal-format
 msgid "no match for call to %<(%T) (%A)%>"
-msgstr ""
+msgstr "inge träf för anrop till %<(%T) (%A)%>"
 
 #: cp/call.c:3009
 #, gcc-internal-format
 msgid "call of %<(%T) (%A)%> is ambiguous"
 msgstr "anrop av %<(%T) (%A)%> är tvetydigt"
 
+# Första "%s" blir några ord som beskriver ett problem.
+# Felrapporterat: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29917
 #: cp/call.c:3047
 #, gcc-internal-format
 msgid "%s for ternary %<operator?:%> in %<%E ? %E : %E%>"
 msgstr ""
 
+# Första "%s" blir några ord som beskriver ett problem.
+# Felrapporterat: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29917
 #: cp/call.c:3053
 #, gcc-internal-format
 msgid "%s for %<operator%s%> in %<%E%s%>"
 msgstr ""
 
+# Första "%s" blir några ord som beskriver ett problem.
+# Felrapporterat: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29917
 #: cp/call.c:3057
 #, gcc-internal-format
 msgid "%s for %<operator[]%> in %<%E[%E]%>"
 msgstr ""
 
+# Första "%s" blir några ord som beskriver ett problem.
+# Felrapporterat: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29917
 #: cp/call.c:3062
 #, gcc-internal-format
 msgid "%s for %qs in %<%s %E%>"
 msgstr ""
 
+# Första "%s" blir några ord som beskriver ett problem.
+# Felrapporterat: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29917
 #: cp/call.c:3067
 #, gcc-internal-format
 msgid "%s for %<operator%s%> in %<%E %s %E%>"
 msgstr ""
 
+# Första "%s" blir några ord som beskriver ett problem.
+# Felrapporterat: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29917
 #: cp/call.c:3070
 #, gcc-internal-format
 msgid "%s for %<operator%s%> in %<%s%E%>"
@@ -22362,7 +22376,7 @@ msgstr "ISO C++ förbjuder uteslutande av mittersta termen i ett ?: uttryck"
 #: cp/call.c:3239
 #, gcc-internal-format
 msgid "%qE has type %<void%> and is not a throw-expression"
-msgstr ""
+msgstr "%qE har typen %<void%> och är inte ett kastuttryck"
 
 #: cp/call.c:3278 cp/call.c:3488
 #, gcc-internal-format
@@ -22382,7 +22396,7 @@ msgstr "uppräknings- och inte uppräkningstyp i villkorligt uttryck"
 #: cp/call.c:3743
 #, gcc-internal-format
 msgid "no %<%D(int)%> declared for postfix %qs, trying prefix operator instead"
-msgstr ""
+msgstr "ingen %<%D(int)%> deklarerad för postfix %qs, försöker med prefixoperator istället"
 
 #: cp/call.c:3816
 #, gcc-internal-format
@@ -22392,7 +22406,7 @@ msgstr "jämföreslse mellan %q#T och %q#T"
 #: cp/call.c:4075
 #, gcc-internal-format
 msgid "no suitable %<operator %s%> for %qT"
-msgstr ""
+msgstr "ingen passande %<operator %s%> för %qT"
 
 #: cp/call.c:4092
 #, gcc-internal-format
@@ -22407,12 +22421,12 @@ msgstr "%q+#D är skyddad"
 #: cp/call.c:4096
 #, gcc-internal-format
 msgid "%q+#D is inaccessible"
-msgstr ""
+msgstr "%q+#D är oåtkomlig"
 
 #: cp/call.c:4097
 #, gcc-internal-format
 msgid "within this context"
-msgstr ""
+msgstr "i denna kontext"
 
 #: cp/call.c:4186 cp/cvt.c:264
 #, gcc-internal-format
@@ -22462,13 +22476,13 @@ msgstr "det går inte att binda rvalue %qE till %qT"
 #: cp/call.c:4473
 #, gcc-internal-format
 msgid "cannot pass objects of non-POD type %q#T through %<...%>; call will abort at runtime"
-msgstr ""
+msgstr "det går inte att skicka objekt av icke-POD-typ %q#T via %<...%>, anropet kommer avbryta vid körning"
 
 #. Undefined behavior [expr.call] 5.2.2/7.
 #: cp/call.c:4499
 #, gcc-internal-format
 msgid "cannot receive objects of non-POD type %q#T through %<...%>; call will abort at runtime"
-msgstr ""
+msgstr "det går inte att ta emot objekt av icke-POD-typ %q#T via %<...%>, anropet kommer avbryta vid körning"
 
 #: cp/call.c:4542
 #, gcc-internal-format
@@ -22488,7 +22502,7 @@ msgstr "att skicka %qT som %<this%>-argument till %q#D kastar kvalificerare"
 #: cp/call.c:4777
 #, gcc-internal-format
 msgid "%qT is not an accessible base of %qT"
-msgstr ""
+msgstr "%qT är inte en åtkomlig bas till %qT"
 
 #: cp/call.c:5027
 #, gcc-internal-format
@@ -22503,7 +22517,7 @@ msgstr "anrop av icke-funktion %qD"
 #: cp/call.c:5386
 #, gcc-internal-format
 msgid "no matching function for call to %<%T::%s(%A)%#V%>"
-msgstr ""
+msgstr "ingen matchande funktion för anrop av %<%T::%s(%A)%#V%>"
 
 #: cp/call.c:5404
 #, gcc-internal-format
@@ -22528,7 +22542,7 @@ msgstr "  i anrop till %qD"
 #: cp/call.c:6092
 #, gcc-internal-format
 msgid "choosing %qD over %qD"
-msgstr ""
+msgstr "väljer %qD framför %qD"
 
 #: cp/call.c:6093
 #, gcc-internal-format
@@ -22538,12 +22552,12 @@ msgstr "  för konvertering från %qT till %qT"
 #: cp/call.c:6095
 #, gcc-internal-format
 msgid "  because conversion sequence for the argument is better"
-msgstr ""
+msgstr "  för att konverteringssekvensen för argumentet är bättre"
 
 #: cp/call.c:6209
 #, gcc-internal-format
 msgid "ISO C++ says that these are ambiguous, even though the worst conversion for the first is better than the worst conversion for the second:"
-msgstr ""
+msgstr "ISO C++ säger att dessa är tvetydiga, trots att den sämsta konverteringen för den första är bättre än den sämsta konverteringen för den andra:"
 
 #: cp/call.c:6353
 #, gcc-internal-format
@@ -22553,12 +22567,12 @@ msgstr "kunde inte konvertera %qE till %qT"
 #: cp/call.c:6478
 #, gcc-internal-format
 msgid "invalid initialization of non-const reference of type %qT from a temporary of type %qT"
-msgstr ""
+msgstr "ogiltig initiering av icke-konstant referens av typ %qT från en temporär av typ %qT"
 
 #: cp/call.c:6482
 #, gcc-internal-format
 msgid "invalid initialization of reference of type %qT from expression of type %qT"
-msgstr ""
+msgstr "ogiltig initiering av referens av typ %qT från uttryck av typ %qT"
 
 #: cp/class.c:281
 #, gcc-internal-format
@@ -22598,12 +22612,12 @@ msgstr "med %q+#D"
 #: cp/class.c:1124
 #, gcc-internal-format
 msgid "conflicting access specifications for method %q+D, ignored"
-msgstr ""
+msgstr "åtkomstspecifikationer i konflikt för metod %q+D, ignoreras"
 
 #: cp/class.c:1127
 #, gcc-internal-format
 msgid "conflicting access specifications for field %qE, ignored"
-msgstr ""
+msgstr "åtkomstspecifikationer i konflikt för fält %qE, ignoreras"
 
 #: cp/class.c:1188 cp/class.c:1196
 #, gcc-internal-format
@@ -22613,12 +22627,12 @@ msgstr "%q+D ogiltig i %q#T"
 #: cp/class.c:1189
 #, gcc-internal-format
 msgid "  because of local method %q+#D with same name"
-msgstr ""
+msgstr "  på grund av lokal metod %q+#D med samma namn"
 
 #: cp/class.c:1197
 #, gcc-internal-format
 msgid "  because of local member %q+#D with same name"
-msgstr ""
+msgstr "  på grund av lokal medlem %q+#D med samma namn"
 
 #: cp/class.c:1239
 #, gcc-internal-format
@@ -22628,28 +22642,28 @@ msgstr "basklass %q#T har en icke-virtuell destruerare"
 #: cp/class.c:1553
 #, gcc-internal-format
 msgid "all member functions in class %qT are private"
-msgstr ""
+msgstr "alla medlemmsfunktioner i klass %qT är privata"
 
 #: cp/class.c:1564
 #, gcc-internal-format
 msgid "%q#T only defines a private destructor and has no friends"
-msgstr ""
+msgstr "%q#T definierar bara en privat destruerare och har inga vänner"
 
 #: cp/class.c:1607
 #, gcc-internal-format
 msgid "%q#T only defines private constructors and has no friends"
-msgstr ""
+msgstr "%q#T definierar bara privata konstruerare och har inga vänner"
 
 #: cp/class.c:2000
 #, gcc-internal-format
 msgid "no unique final overrider for %qD in %qT"
-msgstr ""
+msgstr "ingen unik slutlig ersättare för %qD i %qT"
 
 #. Here we know it is a hider, and no overrider exists.
 #: cp/class.c:2419
 #, gcc-internal-format
 msgid "%q+D was hidden"
-msgstr ""
+msgstr "%q+D var dold"
 
 #: cp/class.c:2420
 #, gcc-internal-format
@@ -22724,7 +22738,7 @@ msgstr "flera fält i unionen %qT initierade"
 #: cp/class.c:2826
 #, gcc-internal-format
 msgid "ignoring packed attribute on unpacked non-POD field %q+#D"
-msgstr ""
+msgstr "igorerar attributet packed på opackat icke-POD-fält %q+#D"
 
 #: cp/class.c:2886
 #, gcc-internal-format
@@ -22739,7 +22753,7 @@ msgstr "%q+D får inte ha referenstyp %qT eftersom den är en medlen av en union"
 #: cp/class.c:2900
 #, gcc-internal-format
 msgid "field %q+D in local class cannot be static"
-msgstr ""
+msgstr "fält %q+D i lokal klass kan inte vara statiskt"
 
 #: cp/class.c:2906
 #, gcc-internal-format
@@ -22754,17 +22768,17 @@ msgstr "fält %q+D ogiltigt deklarerad metodtyp"
 #: cp/class.c:2944
 #, gcc-internal-format
 msgid "non-static reference %q+#D in class without a constructor"
-msgstr ""
+msgstr "icke-statisk referens %q+#D i klass utan en konstruerare"
 
 #: cp/class.c:2991
 #, gcc-internal-format
 msgid "non-static const member %q+#D in class without a constructor"
-msgstr ""
+msgstr "icke-statisk const-medlem %q+#D i klass utan en konstruerare"
 
 #: cp/class.c:3006
 #, gcc-internal-format
 msgid "field %q+#D with same name as class"
-msgstr ""
+msgstr "fält %q+#D med samma namn som en klass"
 
 #: cp/class.c:3039
 #, gcc-internal-format
@@ -22774,27 +22788,27 @@ msgstr "%q#T har pekardatamedlemmar"
 #: cp/class.c:3043
 #, gcc-internal-format
 msgid "  but does not override %<%T(const %T&)%>"
-msgstr ""
+msgstr "  men ersätter inte %<%T(const %T&)%>"
 
 #: cp/class.c:3045
 #, gcc-internal-format
 msgid "  or %<operator=(const %T&)%>"
-msgstr ""
+msgstr "  eller %<operator=(const %T&)%>"
 
 #: cp/class.c:3048
 #, gcc-internal-format
 msgid "  but does not override %<operator=(const %T&)%>"
-msgstr ""
+msgstr "  men ersätter inte %<operator=(const %T&)%>"
 
 #: cp/class.c:3504
 #, gcc-internal-format
 msgid "offset of empty base %qT may not be ABI-compliant and maychange in a future version of GCC"
-msgstr ""
+msgstr "förskjutning av tom bas %qT följer kanske inte ABI:et och kan ändras i en framtida version av GCC"
 
 #: cp/class.c:3616
 #, gcc-internal-format
 msgid "class %qT will be considered nearly empty in a future version of GCC"
-msgstr ""
+msgstr "klass %qT kommer betraktas som nästan tom i en framtida version av GCC"
 
 #: cp/class.c:3698
 #, gcc-internal-format
@@ -22804,44 +22818,44 @@ msgstr "initierare angiven för icke-virtuell metod %q+D"
 #: cp/class.c:4360
 #, gcc-internal-format
 msgid "offset of virtual base %qT is not ABI-compliant and may change in a future version of GCC"
-msgstr ""
+msgstr "förskutning av virtuell bas %qT följer inte ABI:et och kan ändras i en framtida version av GCC"
 
 #: cp/class.c:4459
 #, gcc-internal-format
 msgid "direct base %qT inaccessible in %qT due to ambiguity"
-msgstr ""
+msgstr "direkt bas %qT är oåtkomlig i %qT på grund av tvetydighet"
 
 #: cp/class.c:4471
 #, gcc-internal-format
 msgid "virtual base %qT inaccessible in %qT due to ambiguity"
-msgstr ""
+msgstr "virtuell bas %qT är oåtkomlig i %qT på grund av tvetydighet"
 
 #: cp/class.c:4648
 #, gcc-internal-format
 msgid "size assigned to %qT may not be ABI-compliant and may change in a future version of GCC"
-msgstr ""
+msgstr "storlek tilldelad till %qT följer kanske inte ABI:et och kan ändras i en framtida version av GCC"
 
 #. Versions of G++ before G++ 3.4 did not reset the
 #. DECL_MODE.
 #: cp/class.c:4687
 #, gcc-internal-format
 msgid "the offset of %qD may not be ABI-compliant and may change in a future version of GCC"
-msgstr ""
+msgstr "förskjutningen för %qD följer kanske inte ABI:et och kan ändras i en framtida version av GCC"
 
 #: cp/class.c:4715
 #, gcc-internal-format
 msgid "offset of %q+D is not ABI-compliant and may change in a future version of GCC"
-msgstr ""
+msgstr "förskjutningen av %q+D följer inte ABI:et och kan ändras i en framtida version av GCC"
 
 #: cp/class.c:4724
 #, gcc-internal-format
 msgid "%q+D contains empty classes which may cause base classes to be placed at different locations in a future version of GCC"
-msgstr ""
+msgstr "%q+D innehåller tomma klasser som kan få grundklasser att läggas på annan plats i en framtida version av GCC"
 
 #: cp/class.c:4783
 #, gcc-internal-format
 msgid "layout of classes derived from empty class %qT may change in a future version of GCC"
-msgstr ""
+msgstr "utplaceringen av klasser härledda från en tom klass %qT kan ändras i en framtida version av GCC"
 
 #: cp/class.c:4929 cp/parser.c:13263
 #, gcc-internal-format
@@ -22856,7 +22870,7 @@ msgstr "%q#T har virtuella funktioner men icketrivial destruerare"
 #: cp/class.c:5181
 #, gcc-internal-format
 msgid "trying to finish struct, but kicked out due to previous parse errors"
-msgstr ""
+msgstr "försökte avsluta post, men hoppade ut på grund av tidigare parsningsfel"
 
 #: cp/class.c:5628
 #, gcc-internal-format
@@ -22886,7 +22900,7 @@ msgstr "antar pekare till medlem %qD"
 #: cp/class.c:5893
 #, gcc-internal-format
 msgid "(a pointer to member can only be formed with %<&%E%>)"
-msgstr ""
+msgstr "(en pekare på medlem kan bara skapas med %<&%E%>)"
 
 #: cp/class.c:5938 cp/class.c:5969 cp/class.c:6121 cp/class.c:6128
 #, gcc-internal-format
@@ -22956,7 +22970,7 @@ msgstr "konvertering från %qT till %qT kastar kvalificerare"
 #: cp/cvt.c:517 cp/typeck.c:4977
 #, gcc-internal-format
 msgid "casting %qT to %qT does not dereference pointer"
-msgstr ""
+msgstr "typkonvertering av %qT till %qT derefererar inte pekare"
 
 #: cp/cvt.c:544
 #, gcc-internal-format
@@ -22971,12 +22985,12 @@ msgstr "konvertering från %q#T till %q#T"
 #: cp/cvt.c:692 cp/cvt.c:712
 #, gcc-internal-format
 msgid "%q#T used where a %qT was expected"
-msgstr ""
+msgstr "%q#T använt där %qT förväntades"
 
 #: cp/cvt.c:727
 #, gcc-internal-format
 msgid "%q#T used where a floating point value was expected"
-msgstr ""
+msgstr "%q#T använt där ett flyttalsvärde förväntades"
 
 #: cp/cvt.c:774
 #, gcc-internal-format
@@ -22991,17 +23005,17 @@ msgstr "pseudodestruerare anropas inte"
 #: cp/cvt.c:867
 #, gcc-internal-format
 msgid "object of incomplete type %qT will not be accessed in %s"
-msgstr ""
+msgstr "objekt med ofullständig typ %qT kommer inte användas i %s"
 
 #: cp/cvt.c:870
 #, gcc-internal-format
 msgid "object of type %qT will not be accessed in %s"
-msgstr ""
+msgstr "objekt med typ %qT kommer inte användas i %s"
 
 #: cp/cvt.c:886
 #, gcc-internal-format
 msgid "object %qE of incomplete type %qT will not be accessed in %s"
-msgstr ""
+msgstr "objekt %qE med ofullständig typ %qT kommer inte användas i %s"
 
 #. [over.over] enumerates the places where we can take the address
 #. of an overloaded function, and this is not one of them.
@@ -23014,7 +23028,7 @@ msgstr "%s kan inte lösa upp adress till överlastad funktion"
 #: cp/cvt.c:908
 #, gcc-internal-format
 msgid "%s is a reference, not call, to function %qE"
-msgstr ""
+msgstr "%s är en referens, inte ett anrop, till funktion %qE"
 
 #: cp/cvt.c:922
 #, gcc-internal-format
@@ -23024,7 +23038,7 @@ msgstr "%s har ingen effekt"
 #: cp/cvt.c:954
 #, gcc-internal-format
 msgid "value computed is not used"
-msgstr ""
+msgstr "beräknat värde används inte"
 
 #: cp/cvt.c:1062
 #, gcc-internal-format
@@ -23039,7 +23053,7 @@ msgstr "tvetydig standartypkonvertering från %qT"
 #: cp/cvt.c:1137
 #, gcc-internal-format
 msgid "  candidate conversions include %qD and %qD"
-msgstr ""
+msgstr "  kandidater till konvertering är %qD och %qD"
 
 #: cp/decl.c:999
 #, gcc-internal-format
@@ -23272,7 +23286,7 @@ msgstr "  passerar initiering av %q+#D"
 #: cp/decl.c:2239 cp/decl.c:2353
 #, gcc-internal-format
 msgid "  enters scope of non-POD %q+#D"
-msgstr ""
+msgstr "  går in i räckvid för icke-POD %q+#D"
 
 #: cp/decl.c:2258 cp/decl.c:2357
 #, gcc-internal-format
@@ -23308,7 +23322,7 @@ msgstr "  hoppar över initiering av %q+#D"
 #: cp/decl.c:2385
 #, gcc-internal-format
 msgid "label named wchar_t"
-msgstr ""
+msgstr "etikett med namet wchar_t"
 
 #: cp/decl.c:2388
 #, gcc-internal-format
@@ -23323,7 +23337,7 @@ msgstr "%qD använd utan mallparametrar"
 #: cp/decl.c:2661 cp/decl.c:2752
 #, gcc-internal-format
 msgid "no class template named %q#T in %q#T"
-msgstr ""
+msgstr "ingen klassmall med namnet %q#T i %q#T"
 
 #: cp/decl.c:2682 cp/decl.c:2692 cp/decl.c:2712
 #, gcc-internal-format
@@ -23378,7 +23392,7 @@ msgstr "typnamn saknas i typedef-deklaration"
 #: cp/decl.c:3531
 #, gcc-internal-format
 msgid "ISO C++ prohibits anonymous structs"
-msgstr ""
+msgstr "ISO C++ förbjuder anonyma poster"
 
 #: cp/decl.c:3538
 #, gcc-internal-format
@@ -23413,7 +23427,7 @@ msgstr "attribut ignoreras i deklaration av %q+#T"
 #: cp/decl.c:3585
 #, gcc-internal-format
 msgid "attribute for %q+#T must follow the %qs keyword"
-msgstr ""
+msgstr "attribut för %q#T måste komma efter nyckelordet %qs"
 
 #: cp/decl.c:3705
 #, gcc-internal-format
@@ -23438,7 +23452,7 @@ msgstr "ISO C++ tillåter inte %<%T::%D%> att definieras som %<%T::%D%>"
 #: cp/decl.c:3762
 #, gcc-internal-format
 msgid "template header not allowed in member definition of explicitly specialized class"
-msgstr ""
+msgstr "mallhuvud inte tillåtet i medlemsdefinition av explicit specialiserad klass"
 
 #: cp/decl.c:3771
 #, gcc-internal-format
@@ -23511,12 +23525,12 @@ msgstr "lagringsstorlek på %qD är inte konstant"
 #: cp/decl.c:4125
 #, gcc-internal-format
 msgid "sorry: semantics of inline function static data %q+#D are wrong (you'll wind up with multiple copies)"
-msgstr ""
+msgstr "tyvärr: semantiken för inline-funktioners statiska data %q+#D är felaktig (du kommer få flera kopior)"
 
 #: cp/decl.c:4128
 #, gcc-internal-format
 msgid "%J  you can work around this by removing the initializer"
-msgstr ""
+msgstr "%J  du kan gå runt detta genom att ta bort initieraren"
 
 #: cp/decl.c:4155
 #, gcc-internal-format
@@ -23526,7 +23540,7 @@ msgstr "oinitierade const %qD"
 #: cp/decl.c:4230
 #, gcc-internal-format
 msgid "name %qD used in a GNU-style designated initializer for an array"
-msgstr ""
+msgstr "namnet %qD använt i en designerad initierare i GNU-stil för en vektor"
 
 #: cp/decl.c:4276
 #, gcc-internal-format
@@ -23536,7 +23550,7 @@ msgstr "ogiltig typ %qT som initierare för en vektor med typ %qT"
 #: cp/decl.c:4318
 #, gcc-internal-format
 msgid "initializer for %qT must be brace-enclosed"
-msgstr ""
+msgstr "initierare för %qT måste vara inom klamrar"
 
 #: cp/decl.c:4333
 #, gcc-internal-format
@@ -23576,7 +23590,7 @@ msgstr "%qD har en ofullständig typ"
 #: cp/decl.c:4615
 #, gcc-internal-format
 msgid "%qD must be initialized by constructor, not by %<{...}%>"
-msgstr ""
+msgstr "%qD måste initieras med en konstruerare, inte med %<{...}%>"
 
 #: cp/decl.c:4651
 #, gcc-internal-format
@@ -23611,12 +23625,12 @@ msgstr "skuggar tidigare typdeklaration av %q#D"
 #: cp/decl.c:4972
 #, gcc-internal-format
 msgid "%qD cannot be thread-local because it has non-POD type %qT"
-msgstr ""
+msgstr "%qD kan inte vara trådlokal för den har icke-POD-typ %qT"
 
 #: cp/decl.c:4997
 #, gcc-internal-format
 msgid "%qD is thread-local and so cannot be dynamically initialized"
-msgstr ""
+msgstr "%qD är trådlokal och kan därför inte initieras dynamiskt"
 
 #: cp/decl.c:5015
 #, gcc-internal-format
@@ -23646,7 +23660,7 @@ msgstr "%qD deklarerad som en %<inline%> %s"
 #: cp/decl.c:5632
 #, gcc-internal-format
 msgid "%<const%> and %<volatile%> function specifiers on %qD invalid in %s declaration"
-msgstr ""
+msgstr "%<const%>- och %<volatile%>-funktionsspecificerare på %qD är ogiltiga i %s-deklaration"
 
 #: cp/decl.c:5636
 #, gcc-internal-format
@@ -23677,12 +23691,12 @@ msgstr "ogiltig användning av mall-id %qD i deklaration av primär mall"
 #: cp/decl.c:5776
 #, gcc-internal-format
 msgid "default arguments are not allowed in declaration of friend template specialization %qD"
-msgstr ""
+msgstr "standardargument är inte tillåtna i deklaration av vänmallspecialisering %qD"
 
 #: cp/decl.c:5784
 #, gcc-internal-format
 msgid "%<inline%> is not allowed in declaration of friend template specialization %qD"
-msgstr ""
+msgstr "%<inline%> är inte tillåtet i deklaration av vänmallspecialisering %qD"
 
 #: cp/decl.c:5827
 #, gcc-internal-format
@@ -23707,12 +23721,12 @@ msgstr "%<::main%> måste returnera %<int%>"
 #: cp/decl.c:5869
 #, gcc-internal-format
 msgid "non-local function %q#D uses anonymous type"
-msgstr ""
+msgstr "ickelokal funktion %q#D använder anonym typ"
 
 #: cp/decl.c:5872 cp/decl.c:6142
 #, gcc-internal-format
 msgid "%q+#D does not refer to the unqualified type, so it is not used for linkage"
-msgstr ""
+msgstr "%+#D refererar inte till den okvalificerade typen, så den används int för länkklass"
 
 #: cp/decl.c:5878
 #, gcc-internal-format
@@ -23743,7 +23757,7 @@ msgstr "ingen medlemsfunktion %q#D deklarerad i klassen %qT"
 #: cp/decl.c:6139
 #, gcc-internal-format
 msgid "non-local variable %q#D uses anonymous type"
-msgstr ""
+msgstr "icke-lokal variabel %q#D använder anonym typ"
 
 #: cp/decl.c:6148
 #, gcc-internal-format
@@ -23833,12 +23847,12 @@ msgstr "skapar %s"
 #: cp/decl.c:6489
 #, gcc-internal-format
 msgid "declaration of %qD as multidimensional array must have bounds for all dimensions except the first"
-msgstr ""
+msgstr "deklaration av %qD som flerdimensionell vektor måste ha gränser för alla dimensioner utom den första"
 
 #: cp/decl.c:6493
 #, gcc-internal-format
 msgid "multidimensional array must have bounds for all dimensions except the first"
-msgstr ""
+msgstr "flerdimensionell vektor måste ha gränser för alla dimensioner utom den första"
 
 #: cp/decl.c:6528
 #, gcc-internal-format
@@ -23848,7 +23862,7 @@ msgstr "en returtypsspecifikation för konstruerare är ogiltig"
 #: cp/decl.c:6538
 #, gcc-internal-format
 msgid "return type specification for destructor invalid"
-msgstr ""
+msgstr "specifikation av returtyp för destruerare är ogiltigt"
 
 #: cp/decl.c:6551
 #, gcc-internal-format
@@ -23893,7 +23907,7 @@ msgstr "deklaration av %qD som icke-medlem"
 #: cp/decl.c:6790
 #, gcc-internal-format
 msgid "declarator-id missing; using reserved word %qD"
-msgstr ""
+msgstr "deklarerar-id saknas, använder reserverat ord %qD"
 
 #: cp/decl.c:6874
 #, gcc-internal-format
@@ -23948,7 +23962,7 @@ msgstr "complex ogiltig för %qs"
 #: cp/decl.c:7075
 #, gcc-internal-format
 msgid "qualifiers are not allowed on declaration of %<operator %T%>"
-msgstr ""
+msgstr "kvalificerare är inte tillåtna på deklaration av %<operator %T%>"
 
 #: cp/decl.c:7087 cp/typeck.c:6633
 #, gcc-internal-format
@@ -23958,7 +23972,7 @@ msgstr "kvalificerare %qV tillagta till funktionstyp %qT ignorerade"
 #: cp/decl.c:7110
 #, gcc-internal-format
 msgid "member %qD cannot be declared both virtual and static"
-msgstr ""
+msgstr "medlem %qD kan inte deklareras både virtual och static"
 
 #: cp/decl.c:7118
 #, gcc-internal-format
@@ -24079,12 +24093,12 @@ msgstr "mall-id %qD använd som en deklarerare"
 #: cp/decl.c:7576
 #, gcc-internal-format
 msgid "member functions are implicitly friends of their class"
-msgstr ""
+msgstr "medlemsfunktioner är implicit vänner till sin klass"
 
 #: cp/decl.c:7578
 #, gcc-internal-format
 msgid "extra qualification %<%T::%> on member %qs"
-msgstr ""
+msgstr "extra kvalifikation %<%T::%> på medlem %qs"
 
 #: cp/decl.c:7589
 #, gcc-internal-format
@@ -24099,24 +24113,24 @@ msgstr "det går inte att deklarera medlemsfunktion %<%T::%s%> inuti %<%T%>"
 #: cp/decl.c:7617
 #, gcc-internal-format
 msgid "cannot declare member %<%T::%s%> within %qT"
-msgstr ""
+msgstr "det går inte att deklarera medlem %<%T::%s%> inuti %qT"
 
 #: cp/decl.c:7657
 #, gcc-internal-format
 msgid "data member may not have variably modified type %qT"
-msgstr ""
+msgstr "datamedlem får inte ha variabelt modifierad typ %qT"
 
 #: cp/decl.c:7659
 #, gcc-internal-format
 msgid "parameter may not have variably modified type %qT"
-msgstr ""
+msgstr "parameter får inte ha variabelt modifierad typ %qT"
 
 #. [dcl.fct.spec] The explicit specifier shall only be used in
 #. declarations of constructors within a class definition.
 #: cp/decl.c:7667
 #, gcc-internal-format
 msgid "only declarations of constructors can be %<explicit%>"
-msgstr ""
+msgstr "endast deklarationer av konstruerare kan vara %<explicit%>"
 
 #: cp/decl.c:7675
 #, gcc-internal-format
@@ -24146,12 +24160,12 @@ msgstr "const %qs kan inte deklareras %<mutable%>"
 #: cp/decl.c:7716
 #, gcc-internal-format
 msgid "%Jtypedef name may not be a nested-name-specifier"
-msgstr ""
+msgstr "%Jtypedef-namn får inte vara en nästad-namnspecificerare"
 
 #: cp/decl.c:7732
 #, gcc-internal-format
 msgid "ISO C++ forbids nested type %qD with same name as enclosing class"
-msgstr ""
+msgstr "ISO C++ förbjuder nästad typ %qD med samma namn som en omgivande klass"
 
 # %s blir "static member" eller "free".
 # Felrapporterat: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=28704
@@ -24178,17 +24192,17 @@ msgstr "mallparametrar kan inte vara vänner"
 #: cp/decl.c:7872
 #, gcc-internal-format
 msgid "friend declaration requires class-key, i.e. %<friend class %T::%D%>"
-msgstr ""
+msgstr "vändeklaration kräver klassnyckel, d.v.s. %<friend class %T::%D%>"
 
 #: cp/decl.c:7876
 #, gcc-internal-format
 msgid "friend declaration requires class-key, i.e. %<friend %#T%>"
-msgstr ""
+msgstr "vändeklaration kräver klassnyckel, d.v.s. %<friend %#T%>"
 
 #: cp/decl.c:7889
 #, gcc-internal-format
 msgid "trying to make class %qT a friend of global scope"
-msgstr ""
+msgstr "försöker göra klassen %qT en vän med global räckvidd"
 
 #: cp/decl.c:7900
 #, gcc-internal-format
@@ -24214,7 +24228,7 @@ msgstr "ogiltigt användning av %<::%>"
 #: cp/decl.c:8004
 #, gcc-internal-format
 msgid "can't make %qD into a method -- not in a class"
-msgstr ""
+msgstr "kan inte göra %qD till en metod -- är inte i en klass"
 
 #: cp/decl.c:8013
 #, gcc-internal-format
@@ -24276,7 +24290,7 @@ msgstr "ISO C++ förbjuder initiering av medlem %qD"
 #: cp/decl.c:8200
 #, gcc-internal-format
 msgid "making %qD static"
-msgstr ""
+msgstr "gör %qD statisk"
 
 #: cp/decl.c:8269
 #, gcc-internal-format
@@ -24296,12 +24310,12 @@ msgstr "lagringsklassen %<__thread%> är ogiltig för funktionen %qs"
 #: cp/decl.c:8284
 #, gcc-internal-format
 msgid "%<static%> specified invalid for function %qs declared out of global scope"
-msgstr ""
+msgstr "specificerare %<static%> är ogiltigt för funktion %qs deklarerad utanför global räckvidd"
 
 #: cp/decl.c:8287
 #, gcc-internal-format
 msgid "%<inline%> specifier invalid for function %qs declared out of global scope"
-msgstr ""
+msgstr "specificerare %<inline%> är ogiltig för funktionen %qs deklarerad utanför global räckvidd"
 
 #: cp/decl.c:8295
 #, gcc-internal-format
@@ -24322,7 +24336,7 @@ msgstr "kan inte deklarera en statisk funktion i en annan funktion"
 #: cp/decl.c:8362
 #, gcc-internal-format
 msgid "%<static%> may not be used when defining (as opposed to declaring) a static data member"
-msgstr ""
+msgstr "%<static%> får inte användas vid defintion (till skillnad mod deklaration) av statisk datamedlem"
 
 #: cp/decl.c:8369
 #, gcc-internal-format
@@ -24357,7 +24371,7 @@ msgstr "parameter %qD ogiltigt deklarerad metodtyp"
 #: cp/decl.c:8624
 #, gcc-internal-format
 msgid "parameter %qD includes %s to array of unknown bound %qT"
-msgstr ""
+msgstr "parameter %qD inkluderar %s till vektor %qT med okänd gräns"
 
 #. [class.copy]
 #.
@@ -24377,7 +24391,7 @@ msgstr ""
 #: cp/decl.c:8787
 #, gcc-internal-format
 msgid "invalid constructor; you probably meant %<%T (const %T&)%>"
-msgstr ""
+msgstr "ogiltig konstruerare, du menade förmodligen %<%T (const %T&)%>"
 
 #: cp/decl.c:8908
 #, gcc-internal-format
@@ -24402,18 +24416,18 @@ msgstr "%qD måste vara antingen en medlemsfunktion som inte är statisk eller fun
 #: cp/decl.c:8963
 #, gcc-internal-format
 msgid "%qD must have an argument of class or enumerated type"
-msgstr ""
+msgstr "%qD måste ha ett argument med klass- eller uppräkningstyp"
 
 #: cp/decl.c:9004
 #, gcc-internal-format
 msgid "conversion to %s%s will never use a type conversion operator"
-msgstr ""
+msgstr "konvertering till %s%s kommer aldrig använda en typkonverteringsoperator"
 
 #. 13.4.0.3
 #: cp/decl.c:9012
 #, gcc-internal-format
 msgid "ISO C++ prohibits overloading operator ?:"
-msgstr ""
+msgstr "ISO C++ förhindrar överlastning av operatorn ?:"
 
 #: cp/decl.c:9015
 #, gcc-internal-format
@@ -24443,17 +24457,17 @@ msgstr "%qD måste ta antingen ett eller två argument"
 #: cp/decl.c:9098
 #, gcc-internal-format
 msgid "prefix %qD should return %qT"
-msgstr ""
+msgstr "prefix %qD skall returnera %qT"
 
 #: cp/decl.c:9104
 #, gcc-internal-format
 msgid "postfix %qD should return %qT"
-msgstr ""
+msgstr "postfix %qD skall returnera %qT"
 
 #: cp/decl.c:9113
 #, gcc-internal-format
 msgid "%qD must take %<void%>"
-msgstr ""
+msgstr "%qD måste ta %<void%>"
 
 #: cp/decl.c:9115 cp/decl.c:9123
 #, gcc-internal-format
@@ -24473,7 +24487,7 @@ msgstr "användardefinierad %qD beräknar alltid båda argumenten"
 #: cp/decl.c:9147
 #, gcc-internal-format
 msgid "%qD should return by value"
-msgstr ""
+msgstr "%qD skall returnera som värde"
 
 #: cp/decl.c:9159 cp/decl.c:9162
 #, gcc-internal-format
@@ -24498,7 +24512,7 @@ msgstr "%q+D har en tidigare deklaration här"
 #: cp/decl.c:9243
 #, gcc-internal-format
 msgid "%qT referred to as %qs"
-msgstr ""
+msgstr "%qT refererad till som %qs"
 
 #: cp/decl.c:9244 cp/decl.c:9251
 #, gcc-internal-format
@@ -24508,7 +24522,7 @@ msgstr "%q+T har en tidigare deklaration här"
 #: cp/decl.c:9250
 #, gcc-internal-format
 msgid "%qT referred to as enum"
-msgstr ""
+msgstr "%qT refererad till som enum"
 
 #. If a class template appears as elaborated type specifier
 #. without a template header such as:
@@ -24525,7 +24539,7 @@ msgstr "mallargument krävs för %<%s %T%>"
 #: cp/decl.c:9313 cp/name-lookup.c:2627
 #, gcc-internal-format
 msgid "%qD has the same name as the class in which it is declared"
-msgstr ""
+msgstr "%qD har samma namn som klassen den är deklarerad i"
 
 #: cp/decl.c:9451
 #, gcc-internal-format
@@ -24545,7 +24559,7 @@ msgstr "härledd unionen %qT ogiltig"
 #: cp/decl.c:9582
 #, gcc-internal-format
 msgid "Java class %qT cannot have multiple bases"
-msgstr ""
+msgstr "Javaklass %qT kan inte ha flera baser"
 
 #: cp/decl.c:9590
 #, gcc-internal-format
@@ -24560,7 +24574,7 @@ msgstr "bastyp %qT är ingen post- eller klasstyp"
 #: cp/decl.c:9642
 #, gcc-internal-format
 msgid "recursive type %qT undefined"
-msgstr ""
+msgstr "rekursiv typ %qT odefinierad"
 
 #: cp/decl.c:9644
 #, gcc-internal-format
@@ -24584,7 +24598,7 @@ msgstr "%Jtidigare defintion här"
 #: cp/decl.c:9854
 #, gcc-internal-format
 msgid "no integral type can represent all of the enumerator values for %qT"
-msgstr ""
+msgstr "ingen heltalstyp kan representera alla uppräkningsvärdena i %qT"
 
 #: cp/decl.c:9965
 #, gcc-internal-format
@@ -24604,7 +24618,7 @@ msgstr "returtypen %q#T är ofullständig"
 #: cp/decl.c:10178 cp/typeck.c:6380
 #, gcc-internal-format
 msgid "%<operator=%> should return a reference to %<*this%>"
-msgstr ""
+msgstr "%<operator=%> skall returnera en referens till %<*this%>"
 
 #: cp/decl.c:10544
 #, gcc-internal-format
@@ -24649,12 +24663,12 @@ msgstr "raderar vektor %q#D"
 #: cp/decl2.c:421
 #, gcc-internal-format
 msgid "type %q#T argument given to %<delete%>, expected pointer"
-msgstr ""
+msgstr "%<delete%> får argument av typ %q#T, pekare förväntades"
 
 #: cp/decl2.c:433
 #, gcc-internal-format
 msgid "cannot delete a function.  Only pointer-to-objects are valid arguments to %<delete%>"
-msgstr ""
+msgstr "det går inte att radera en funktion.  Endast pekare till objekt är giltiga argument till %<delete%>"
 
 #: cp/decl2.c:441
 #, gcc-internal-format
@@ -24682,7 +24696,7 @@ msgstr "malldeklaration av %q#D"
 #: cp/decl2.c:545
 #, gcc-internal-format
 msgid "Java method %qD has non-Java return type %qT"
-msgstr ""
+msgstr "Javametod %qD har returtyp %qT som inte är en Javatyp"
 
 #: cp/decl2.c:561
 #, gcc-internal-format
@@ -24697,12 +24711,12 @@ msgstr "prototypen för %q#D matchar inte någon i klass %qT"
 #: cp/decl2.c:763
 #, gcc-internal-format
 msgid "local class %q#T shall not have static data member %q#D"
-msgstr ""
+msgstr "lokal klass %q#T skall inte ha statisk datamedlem %q#D"
 
 #: cp/decl2.c:771
 #, gcc-internal-format
 msgid "initializer invalid for static member with constructor"
-msgstr ""
+msgstr "initierare är ogiltig för statisk medlem med konstruerare"
 
 #: cp/decl2.c:774
 #, gcc-internal-format
@@ -24712,12 +24726,12 @@ msgstr "(en initiering utanför klassen krävs)"
 #: cp/decl2.c:842
 #, gcc-internal-format
 msgid "member %qD conflicts with virtual function table field name"
-msgstr ""
+msgstr "medlem %qD står i konflikt med fältnamn i tabell över virtuella funktioner"
 
 #: cp/decl2.c:861
 #, gcc-internal-format
 msgid "applying attributes to template parameters is not implemented"
-msgstr ""
+msgstr "applikation av attribut på mallparametrar är inte implementerat"
 
 #: cp/decl2.c:871
 #, gcc-internal-format
@@ -24737,7 +24751,7 @@ msgstr "fältinitierare är ej konstant"
 #: cp/decl2.c:942
 #, gcc-internal-format
 msgid "%<asm%> specifiers are not permitted on non-static data members"
-msgstr ""
+msgstr "%<asm%>-specificerare är inte tillåtna på icke-statiska datamedlemmar"
 
 #: cp/decl2.c:990
 #, gcc-internal-format
@@ -24767,7 +24781,7 @@ msgstr "anonym post som inte är inuti en namngiven typ"
 #: cp/decl2.c:1142
 #, gcc-internal-format
 msgid "namespace-scope anonymous aggregates must be static"
-msgstr ""
+msgstr "anonyma aggregat med namnrymdsräckvidd måste vara statiska"
 
 #: cp/decl2.c:1149
 #, gcc-internal-format
@@ -24808,23 +24822,23 @@ msgstr "standardargumentet saknas för parameter %P till %q+#D"
 #: cp/except.c:267
 #, gcc-internal-format
 msgid "type %qT is disallowed in Java %<throw%> or %<catch%>"
-msgstr ""
+msgstr "typ %qT är otillåten i Javas %<throw%> eller %<catch%>"
 
 #: cp/except.c:278
 #, gcc-internal-format
 msgid "call to Java %<catch%> or %<throw%> with %<jthrowable%> undefined"
-msgstr ""
+msgstr "anrop av Java-%<catch%> eller -%<throw%> med %<jthrowable%> är odefinierat"
 
 #. Thrown object must be a Throwable.
 #: cp/except.c:285
 #, gcc-internal-format
 msgid "type %qT is not derived from %<java::lang::Throwable%>"
-msgstr ""
+msgstr "typ %qT är inte härledd från %<java::lang::Throwable%>"
 
 #: cp/except.c:348
 #, gcc-internal-format
 msgid "mixing C++ and Java catches in a single translation unit"
-msgstr ""
+msgstr "blandning av C++- och Java-catch i en och samma översättningsenhet"
 
 #: cp/except.c:608
 #, gcc-internal-format
@@ -24844,22 +24858,22 @@ msgstr "  i kastat uttryck"
 #: cp/except.c:846
 #, gcc-internal-format
 msgid "expression %qE of abstract class type %qT cannot be used in throw-expression"
-msgstr ""
+msgstr "uttrycket %qE med abstrakt klasstyp %qT kan inte användas i throw-uttryck"
 
 #: cp/except.c:931
 #, gcc-internal-format
 msgid "%Hexception of type %qT will be caught"
-msgstr ""
+msgstr "%Hundantag av typ %qT kommer att fångas"
 
 #: cp/except.c:933
 #, gcc-internal-format
 msgid "%H   by earlier handler for %qT"
-msgstr ""
+msgstr "%H   av tidigare hanterare för %qT"
 
 #: cp/except.c:963
 #, gcc-internal-format
 msgid "%H%<...%> handler must be the last handler for its try block"
-msgstr ""
+msgstr "%H%<...%>-hanterare måste vara den sista hanteraren i sitt try-block"
 
 #: cp/friend.c:152
 #, gcc-internal-format
@@ -24886,7 +24900,7 @@ msgstr "partiell specialisering %qT deklarerad %<friend%>"
 #: cp/friend.c:252
 #, gcc-internal-format
 msgid "class %qT is implicitly friends with itself"
-msgstr ""
+msgstr "klass %qT är implicit vän med sig själv"
 
 #: cp/friend.c:310
 #, gcc-internal-format
@@ -24938,7 +24952,7 @@ msgstr "vändeklaration %q#D deklarerar en icke-mall-funktion"
 #: cp/friend.c:557
 #, gcc-internal-format
 msgid "(if this is not what you intended, make sure the function template has already been declared and add <> after the function name here) -Wno-non-template-friend disables this warning"
-msgstr ""
+msgstr "(om detta inte är vad du avsåg, se till att funktionsmallen redan har deklarerats och lägg till <> efter funktionsnamnet här) -Wno-non-template-friend avaktiverar denna varning"
 
 #: cp/init.c:327
 #, gcc-internal-format
@@ -24948,7 +24962,7 @@ msgstr "%J%qD skall initieras i medlemsinitieringslistan"
 #: cp/init.c:375
 #, gcc-internal-format
 msgid "%Jdefault-initialization of %q#D, which has reference type"
-msgstr ""
+msgstr "%Jstandardinitiering av %q#D, som har referenstyp"
 
 #: cp/init.c:381
 #, gcc-internal-format
@@ -24958,7 +24972,7 @@ msgstr "%Joinitierad referensmedlem %qD"
 #: cp/init.c:384
 #, gcc-internal-format
 msgid "%Juninitialized member %qD with %<const%> type %qT"
-msgstr ""
+msgstr "%Joinitierad medlem %qD med %<const%>-typ %qT"
 
 #: cp/init.c:527
 #, gcc-internal-format
@@ -25003,12 +25017,12 @@ msgstr "%Jinitiering av flera medlemmar av %qT"
 #: cp/init.c:684
 #, gcc-internal-format
 msgid "%Jbase class %q#T should be explicitly initialized in the copy constructor"
-msgstr ""
+msgstr "%Jbasklass %q#T skulle varit explicit initierad i kopieringskonstrueraren"
 
 #: cp/init.c:908 cp/init.c:927
 #, gcc-internal-format
 msgid "class %qT does not have any field named %qD"
-msgstr ""
+msgstr "klass %qT har inget fält med namnet %qD"
 
 #: cp/init.c:914
 #, gcc-internal-format
@@ -25023,17 +25037,17 @@ msgstr "%q#D är en icke-statisk datamedlem av %qT"
 #: cp/init.c:960
 #, gcc-internal-format
 msgid "unnamed initializer for %qT, which has no base classes"
-msgstr ""
+msgstr "namnlös initierare för %qT, som inte har några basklasser"
 
 #: cp/init.c:968
 #, gcc-internal-format
 msgid "unnamed initializer for %qT, which uses multiple inheritance"
-msgstr ""
+msgstr "namnlös initierare för %qT som använder multipelt arv"
 
 #: cp/init.c:1014
 #, gcc-internal-format
 msgid "%qD is both a direct base and an indirect virtual base"
-msgstr ""
+msgstr "%qD är både en direkt bas och en indirekt virtuell bas"
 
 #: cp/init.c:1022
 #, gcc-internal-format
@@ -25093,7 +25107,7 @@ msgstr "storlek i vektor-new måste ha heltalstyp"
 #: cp/init.c:1690
 #, gcc-internal-format
 msgid "zero size array reserves no space"
-msgstr ""
+msgstr "vektor med storlek noll reserverar inget utrymme"
 
 #: cp/init.c:1698
 #, gcc-internal-format
@@ -25108,7 +25122,7 @@ msgstr "new kan inte användas på en funktionstyp"
 #: cp/init.c:1736
 #, gcc-internal-format
 msgid "call to Java constructor, while %<jclass%> undefined"
-msgstr ""
+msgstr "anrop till Javakonstruerare med %<jclass%> odefinierad"
 
 #: cp/init.c:1752
 #, gcc-internal-format
@@ -25128,7 +25142,7 @@ msgstr "oinitierad const i %<new%> av %q#T"
 #: cp/init.c:1924
 #, gcc-internal-format
 msgid "call to Java constructor with %qs undefined"
-msgstr ""
+msgstr "anrop av Javakonstruerare med %qs odefinierad"
 
 #: cp/init.c:1964
 #, gcc-internal-format
@@ -25148,32 +25162,32 @@ msgstr "ISO C++ förbjuder tilldelning i vektor-new"
 #: cp/init.c:2597
 #, gcc-internal-format
 msgid "initializer ends prematurely"
-msgstr ""
+msgstr "initierare tar slut i förtid"
 
 #: cp/init.c:2652
 #, gcc-internal-format
 msgid "cannot initialize multi-dimensional array with initializer"
-msgstr ""
+msgstr "det går inte att initiera en flerdimensionell vektor med initierare"
 
 #: cp/init.c:2813
 #, gcc-internal-format
 msgid "possible problem detected in invocation of delete operator:"
-msgstr ""
+msgstr "möjligt problem upptäckt vid anrop av delete-operatorn:"
 
 #: cp/init.c:2816
 #, gcc-internal-format
 msgid "neither the destructor nor the class-specific operator delete will be called, even if they are declared when the class is defined."
-msgstr ""
+msgstr "varken destrueraren eller den klasspecifika operatorn delete kommer anropas, även om de är deklarerade när klassen definieras."
 
 #: cp/init.c:2837
 #, gcc-internal-format
 msgid "unknown array size in delete"
-msgstr ""
+msgstr "okänd vektorstorlek i delete"
 
 #: cp/init.c:3070
 #, gcc-internal-format
 msgid "type to vector delete is neither pointer or array type"
-msgstr ""
+msgstr "typ till vektor-delete är varken pekar- eller vektortyp"
 
 #: cp/lex.c:468
 #, gcc-internal-format
@@ -25193,7 +25207,7 @@ msgstr "#pragma vtable stödjs inte längre"
 #: cp/lex.c:562
 #, gcc-internal-format
 msgid "#pragma implementation for %qs appears after file is included"
-msgstr ""
+msgstr "#pragma implementation för %qs förekommer efter att filen inkluderats"
 
 #: cp/lex.c:587
 #, gcc-internal-format
@@ -25223,57 +25237,57 @@ msgstr "%qD deklarerades inte i detta definitionsområde"
 #: cp/lex.c:642
 #, gcc-internal-format
 msgid "there are no arguments to %qD that depend on a template parameter, so a declaration of %qD must be available"
-msgstr ""
+msgstr "det finns inga argument till %qD som beror på en mallparameter, så en deklaration av %qD måste finnas tillgänglig"
 
 #: cp/lex.c:651
 #, gcc-internal-format
 msgid "(if you use %<-fpermissive%>, G++ will accept your code, but allowing the use of an undeclared name is deprecated)"
-msgstr ""
+msgstr "(om du använder %<-fpermissive%>, kommer G++ acceptera din kod, men det avrådes från att tillåta användning av ett odeklarerat namn)"
 
 #: cp/mangle.c:2139
 #, gcc-internal-format
 msgid "call_expr cannot be mangled due to a defect in the C++ ABI"
-msgstr ""
+msgstr "call_expr kan inte manglas på grund av en defekt i C++-ABI:et"
 
 #: cp/mangle.c:2147
 #, gcc-internal-format
 msgid "zero-operand casts cannot be mangled due to a defect in the C++ ABI"
-msgstr ""
+msgstr "typkonverteringar med noll operander kan inte manglas på grund av en defekt i C++-ABI:et"
 
 #: cp/mangle.c:2197
 #, gcc-internal-format
 msgid "omitted middle operand to %<?:%> operand cannot be mangled"
-msgstr ""
+msgstr "utelämnad mittenoperand till %<?:%> kan inte manlgas"
 
 #: cp/mangle.c:2507
 #, gcc-internal-format
 msgid "the mangled name of %qD will change in a future version of GCC"
-msgstr ""
+msgstr "det manglade namnet för %qD kommer ändras i en framtida version av GCC"
 
 #: cp/method.c:457
 #, gcc-internal-format
 msgid "generic thunk code fails for method %q#D which uses %<...%>"
-msgstr ""
+msgstr "generell dunkkod misslyckas för metod %q#D som använder %<...%>"
 
 #: cp/method.c:693
 #, gcc-internal-format
 msgid "non-static const member %q#D, can't use default assignment operator"
-msgstr ""
+msgstr "ickestatisk const-medlem %q#D, det går inte att använda standardtilldelningsoperatorn"
 
 #: cp/method.c:699
 #, gcc-internal-format
 msgid "non-static reference member %q#D, can't use default assignment operator"
-msgstr ""
+msgstr "ickestatisk referensmedlem %q#D, det går inte att använda standardtilldelningsoperatorn"
 
 #: cp/method.c:811
 #, gcc-internal-format
 msgid "%Hsynthesized method %qD first required here "
-msgstr ""
+msgstr "%Hsyntetiserad metod %qD krävs första gången här"
 
 #: cp/method.c:1140
 #, gcc-internal-format
 msgid "vtable layout for class %qT may not be ABI-compliantand may change in a future version of GCC due to implicit virtual destructor"
-msgstr ""
+msgstr "vtable-utplacering för klass %qT följer kanske inte ABI:et och kan ändras i en framtida version av GCC på grund av implicit virtuell destruerare"
 
 #: cp/name-lookup.c:697
 #, gcc-internal-format
@@ -25341,32 +25355,32 @@ msgstr "deklaration av %qD skuggar en global deklaration"
 #: cp/name-lookup.c:1114
 #, gcc-internal-format
 msgid "name lookup of %qD changed"
-msgstr ""
+msgstr "namuppslagning av %qD ändrades"
 
 #: cp/name-lookup.c:1115
 #, gcc-internal-format
 msgid "  matches this %q+D under ISO standard rules"
-msgstr ""
+msgstr "  stämmer med denna %qD under ISO:s standardregler"
 
 #: cp/name-lookup.c:1117
 #, gcc-internal-format
 msgid "  matches this %q+D under old rules"
-msgstr ""
+msgstr "  stämmer med denna %q+D under gamla regler"
 
 #: cp/name-lookup.c:1135 cp/name-lookup.c:1143
 #, gcc-internal-format
 msgid "name lookup of %qD changed for new ISO %<for%> scoping"
-msgstr ""
+msgstr "namnuppslagning av %qD ändrad för ny räckvidd i %<for%> enligt ISO"
 
 #: cp/name-lookup.c:1137
 #, gcc-internal-format
 msgid "  cannot use obsolete binding at %q+D because it has a destructor"
-msgstr ""
+msgstr "  det går inte att använda föråldrad bindning vid %q+D för att den har en desturerare"
 
 #: cp/name-lookup.c:1145
 #, gcc-internal-format
 msgid "  using obsolete binding at %q+D"
-msgstr ""
+msgstr "  använder föråldrad bindning vid %q+D"
 
 #: cp/name-lookup.c:1198
 #, gcc-internal-format
@@ -25378,10 +25392,11 @@ msgstr "%s %s(%E) %p %d\n"
 msgid "%s %s %p %d\n"
 msgstr "%s %s %p %d\n"
 
+# Detta är en exakt kopia från koden.  Skall nog knappast översättas.
 #: cp/name-lookup.c:1327
 #, gcc-internal-format
 msgid "XXX is_class_level != (current_scope == class_scope)\n"
-msgstr ""
+msgstr "XXX is_class_level != (current_scope == class_scope)\n"
 
 #: cp/name-lookup.c:1885
 #, gcc-internal-format
@@ -25415,7 +25430,7 @@ msgstr "%qT är inte en namnrymd"
 #: cp/name-lookup.c:2010
 #, gcc-internal-format
 msgid "a using-declaration cannot specify a template-id.  Try %<using %D%>"
-msgstr ""
+msgstr "en using-deklaration kan inte ange ett mall-id.  Försök med %<using %D%>"
 
 #: cp/name-lookup.c:2017
 #, gcc-internal-format
@@ -25435,12 +25450,12 @@ msgstr "%qD är redan deklarerad i detta definitionsområde"
 #: cp/name-lookup.c:2151
 #, gcc-internal-format
 msgid "using declaration %qD introduced ambiguous type %qT"
-msgstr ""
+msgstr "using-deklaration %qD introducerar tvetydig typ %qT"
 
 #: cp/name-lookup.c:2743
 #, gcc-internal-format
 msgid "using-declaration for non-member at class scope"
-msgstr ""
+msgstr "using-deklaration för icke-medlem vid klassräckvidd"
 
 #: cp/name-lookup.c:2750
 #, gcc-internal-format
@@ -25475,7 +25490,7 @@ msgstr "explicit-kvalifikation i deklaration av %qD"
 #: cp/name-lookup.c:2925
 #, gcc-internal-format
 msgid "%qD should have been declared inside %qD"
-msgstr ""
+msgstr "%qD borde ha deklarerats inuti %qD"
 
 #: cp/name-lookup.c:2987
 #, gcc-internal-format
@@ -25485,7 +25500,7 @@ msgstr "namnrymdsalias %qD inte tillåtet här, antar %qD"
 #: cp/name-lookup.c:3294
 #, gcc-internal-format
 msgid "strong using only meaningful at namespace scope"
-msgstr ""
+msgstr "strong using är endast meningsfullt vid namnrymdsräckvidd"
 
 #: cp/name-lookup.c:3301
 #, gcc-internal-format
@@ -25495,7 +25510,7 @@ msgstr "attributdirektivet %qD ignorerat"
 #: cp/name-lookup.c:3451
 #, gcc-internal-format
 msgid "%qD denotes an ambiguous type"
-msgstr ""
+msgstr "%qD anger en tvetydig typ"
 
 #: cp/name-lookup.c:3452
 #, gcc-internal-format
@@ -25537,17 +25552,17 @@ msgstr "  står i konflikt med %q+D"
 #: cp/name-lookup.c:5090
 #, gcc-internal-format
 msgid "XXX entering pop_everything ()\n"
-msgstr ""
+msgstr "XXX går in i pop_everything ()\n"
 
 #: cp/name-lookup.c:5099
 #, gcc-internal-format
 msgid "XXX leaving pop_everything ()\n"
-msgstr ""
+msgstr "XXX lämnar pop_everything ()\n"
 
 #: cp/parser.c:1875
 #, gcc-internal-format
 msgid "minimum/maximum operators are deprecated"
-msgstr ""
+msgstr "minimum-/maximumoperatorer undanbedes"
 
 #: cp/parser.c:1895
 #, gcc-internal-format
@@ -25582,12 +25597,12 @@ msgstr "%qD har inte deklarerats"
 #: cp/parser.c:1939
 #, gcc-internal-format
 msgid "%<%D::%D%> %s"
-msgstr ""
+msgstr "%<%D::%D%> %s"
 
 #: cp/parser.c:1941
 #, gcc-internal-format
 msgid "%<::%D%> %s"
-msgstr ""
+msgstr "%<::%D%> %s"
 
 #: cp/parser.c:1943
 #, gcc-internal-format
@@ -25638,12 +25653,12 @@ msgstr "%qE är inte namnet på en typ"
 #: cp/parser.c:2110
 #, gcc-internal-format
 msgid "(perhaps %<typename %T::%E%> was intended)"
-msgstr ""
+msgstr "(kanske %<typename %T::%E%> avsågs)"
 
 #: cp/parser.c:2125
 #, gcc-internal-format
 msgid "%qE in namespace %qE does not name a type"
-msgstr ""
+msgstr "%qE i namnrymden %qE är inte namnet på en typ"
 
 #: cp/parser.c:2128
 #, gcc-internal-format
@@ -25658,7 +25673,7 @@ msgstr "ISO C++ förbjuder klammergrupper inuti uttryck"
 #: cp/parser.c:2857
 #, gcc-internal-format
 msgid "statement-expressions are allowed only inside functions"
-msgstr ""
+msgstr "satsuttryck är endast tillåtna inuti funktioner"
 
 #: cp/parser.c:2908
 #, gcc-internal-format
@@ -25703,17 +25718,17 @@ msgstr "%qE har inte klasstyp"
 #: cp/parser.c:5021
 #, gcc-internal-format
 msgid "array bound forbidden after parenthesized type-id"
-msgstr ""
+msgstr "vektorgräns är förbjuden efter typ-id i parenteser"
 
 #: cp/parser.c:5022
 #, gcc-internal-format
 msgid "try removing the parentheses around the type-id"
-msgstr ""
+msgstr "försök ta bort parenteserna runt typ-id:t"
 
 #: cp/parser.c:5224
 #, gcc-internal-format
 msgid "expression in new-declarator must have integral or enumeration type"
-msgstr ""
+msgstr "uttryck i new-deklarerare måste ha heltals- eller uppräkningstyp"
 
 #: cp/parser.c:5413
 #, gcc-internal-format
@@ -25733,12 +25748,12 @@ msgstr "ISO C++ förbjuder beräknade goto"
 #: cp/parser.c:6871
 #, gcc-internal-format
 msgid "extra %<;%>"
-msgstr ""
+msgstr "extra %<;%>"
 
 #: cp/parser.c:7205
 #, gcc-internal-format
 msgid "mixing declarations and function-definitions is forbidden"
-msgstr ""
+msgstr "att blanda deklarationer och funktionsdefinitioner är förbjudet"
 
 #: cp/parser.c:7514
 #, gcc-internal-format
@@ -25763,12 +25778,12 @@ msgstr "bara konstruerare tar basinitierare"
 #: cp/parser.c:7907
 #, gcc-internal-format
 msgid "anachronistic old-style base class initializer"
-msgstr ""
+msgstr "anakronistisk gammaldags basklassinitierare"
 
 #: cp/parser.c:7951
 #, gcc-internal-format
 msgid "keyword %<typename%> not allowed in this context (a qualified member initializer is implicitly a type)"
-msgstr ""
+msgstr "nyckelordet %<typename%> är inte tillåtet i detta sammanhang (en kvalificerat medlemsinitierare är implicit en typ)"
 
 #. Warn that we do not support `export'.
 #: cp/parser.c:8317
@@ -25786,12 +25801,12 @@ msgstr "%<<::%> kan inte inleda en argumentlista till en mall"
 #: cp/parser.c:8695
 #, gcc-internal-format
 msgid "%<<:%> is an alternate spelling for %<[%>. Insert whitespace between %<<%> and %<::%>"
-msgstr ""
+msgstr "%<<:%> är en alternativ stavning av %<[%>.  Lägg in mellanrum mellan %<<%> och %<::%>"
 
 #: cp/parser.c:8702
 #, gcc-internal-format
 msgid "(if you use -fpermissive G++ will accept your code)"
-msgstr ""
+msgstr "(om du använder --fpermissive kommer G++ acceptera din kod)"
 
 #: cp/parser.c:8766
 #, gcc-internal-format
@@ -25807,7 +25822,7 @@ msgstr "icke-mall %qD använd som mall"
 #: cp/parser.c:8880
 #, gcc-internal-format
 msgid "use %<%T::template %D%> to indicate that it is a template"
-msgstr ""
+msgstr "använd %<%T::template %D%> för att indikera att det är en mall"
 
 #: cp/parser.c:9393
 #, gcc-internal-format
@@ -25822,7 +25837,7 @@ msgstr "malldeklaration av %qs"
 #: cp/parser.c:9973
 #, gcc-internal-format
 msgid "using %<typename%> outside of template"
-msgstr ""
+msgstr "användning av %<typename%> utanför mall"
 
 #: cp/parser.c:10170
 #, gcc-internal-format
@@ -25845,7 +25860,7 @@ msgstr "ett mall-id får inte förekomma i en using-deklaration"
 #: cp/parser.c:10901
 #, gcc-internal-format
 msgid "an asm-specification is not allowed on a function-definition"
-msgstr ""
+msgstr "en asm-specifikation är inte tillåten på en funktionsdefinition"
 
 #: cp/parser.c:10903
 #, gcc-internal-format
@@ -25875,7 +25890,7 @@ msgstr "ogiltig användning av konstruerare som en mall"
 #: cp/parser.c:11527
 #, gcc-internal-format
 msgid "use %<%T::%D%> instead of %<%T::%D%> to name the constructor in a qualified name"
-msgstr ""
+msgstr "använd %<%T::%D%> istället för %<%T::%D%> för att namnge konstrueraren i ett kvalificerat namn"
 
 #: cp/parser.c:11761
 #, gcc-internal-format
@@ -25910,7 +25925,7 @@ msgstr "deklaration av %qD i %qD som inte innesluter %qD"
 #: cp/parser.c:13160
 #, gcc-internal-format
 msgid "extra qualification ignored"
-msgstr ""
+msgstr "extra kvalificerare ignorerad"
 
 #: cp/parser.c:13171
 #, gcc-internal-format
@@ -25925,12 +25940,12 @@ msgstr "föregående definition av %q+#T"
 #: cp/parser.c:13495
 #, gcc-internal-format
 msgid "%Hextra %<;%>"
-msgstr ""
+msgstr "%Hextra %<;%>"
 
 #: cp/parser.c:13513
 #, gcc-internal-format
 msgid "a class-key must be used when declaring a friend"
-msgstr ""
+msgstr "en klassnyckel måste användas när en vän deklareras"
 
 #: cp/parser.c:13527
 #, gcc-internal-format
@@ -25945,12 +25960,12 @@ msgstr "pure-specificerare på funktionsdefinition"
 #: cp/parser.c:13978
 #, gcc-internal-format
 msgid "keyword %<typename%> not allowed outside of templates"
-msgstr ""
+msgstr "nyckelordet %<typename%> är inte tillåtet utanför mallar"
 
 #: cp/parser.c:13980
 #, gcc-internal-format
 msgid "keyword %<typename%> not allowed in this context (the base class is implicitly a type)"
-msgstr ""
+msgstr "nyckelordet %<typename%> är inte tillåtet i detta sammanhang (basklassen är implicit en typ)"
 
 #: cp/parser.c:14255
 #, gcc-internal-format
@@ -25991,17 +26006,17 @@ msgstr "mall med C-länkning"
 #: cp/parser.c:15715
 #, gcc-internal-format
 msgid "%H%<>>%> should be %<> >%> within a nested template argument list"
-msgstr ""
+msgstr "%H%<>>%> skulle vara %<> >%> inuti en nästad mallargumentlista"
 
 #: cp/parser.c:15730
 #, gcc-internal-format
 msgid "spurious %<>>%>, use %<>%> to terminate a template argument list"
-msgstr ""
+msgstr "vilsekommet %<>>%>, använd %<>%> för att avsluta en mallargumentlista"
 
 #: cp/parser.c:16290
 #, gcc-internal-format
 msgid "%qs tag used in naming %q#T"
-msgstr ""
+msgstr "%qs-tagg använd vid namngivning av %q#T"
 
 #: cp/parser.c:16311
 #, gcc-internal-format
@@ -26011,37 +26026,37 @@ msgstr "%qD omdeklarerad med annan åtkomst"
 #: cp/parser.c:16328
 #, gcc-internal-format
 msgid "%<template%> (as a disambiguator) is only allowed within templates"
-msgstr ""
+msgstr "%<template%> (för att lösa upp tvetydighet) är endast tillåtet inuti mallar"
 
 #: cp/parser.c:16565 cp/parser.c:17488 cp/parser.c:17619
 #, gcc-internal-format
 msgid "misplaced %<@%D%> Objective-C++ construct"
-msgstr ""
+msgstr "felplacerad Objective-C++-konstruktion %<@%D%>"
 
 #: cp/parser.c:16706
 #, gcc-internal-format
 msgid "%<@encode%> must specify a type as an argument"
-msgstr ""
+msgstr "%<@encode%> måste ange en typ som ett argument"
 
 #: cp/parser.c:17021
 #, gcc-internal-format
 msgid "invalid Objective-C++ selector name"
-msgstr ""
+msgstr "ogiltigt Objective-C++-selekterarnamn"
 
 #: cp/parser.c:17352
 #, gcc-internal-format
 msgid "identifier expected after %<@protocol%>"
-msgstr ""
+msgstr "identifierare förväntades efter %<@protocol%>"
 
 #: cp/parser.c:17642
 #, gcc-internal-format
 msgid "inter-module optimizations not implemented for C++"
-msgstr ""
+msgstr "intermoduloptimeringar inte implementerade för C++"
 
 #: cp/pt.c:239
 #, gcc-internal-format
 msgid "data member %qD cannot be a member template"
-msgstr ""
+msgstr "datamedlem %qD kan inte vara en medlemsmall"
 
 #: cp/pt.c:251
 #, gcc-internal-format
@@ -26056,7 +26071,7 @@ msgstr "explicit specialisering som inte är i namnrymdsområde %qD"
 #: cp/pt.c:584
 #, gcc-internal-format
 msgid "enclosing class templates are not explicitly specialized"
-msgstr ""
+msgstr "inneslutande klassmallar är inte explicit specialiserade"
 
 #: cp/pt.c:668
 #, gcc-internal-format
@@ -26081,7 +26096,7 @@ msgstr "specialisering av %qT efter instantiering"
 #: cp/pt.c:758
 #, gcc-internal-format
 msgid "specializing %q#T in different namespace"
-msgstr ""
+msgstr "specialiserar %q#T i en annan namnrymd"
 
 #: cp/pt.c:773
 #, gcc-internal-format
@@ -26106,7 +26121,7 @@ msgstr "%qD är inte en funktionsmall"
 #: cp/pt.c:1577
 #, gcc-internal-format
 msgid "template-id %qD for %q+D does not match any template declaration"
-msgstr ""
+msgstr "mall-id %qD för %q+D stämmer inte med någon malldeklaration"
 
 #: cp/pt.c:1585
 #, gcc-internal-format
@@ -26123,12 +26138,12 @@ msgstr "mall-id %qD i deklaration av primär mall"
 #: cp/pt.c:1829
 #, gcc-internal-format
 msgid "template parameter list used in explicit instantiation"
-msgstr ""
+msgstr "mallparameterlista använd i explicit instatiering"
 
 #: cp/pt.c:1835
 #, gcc-internal-format
 msgid "definition provided for explicit instantiation"
-msgstr ""
+msgstr "definition given för explicit instantiering"
 
 #: cp/pt.c:1843
 #, gcc-internal-format
@@ -26148,12 +26163,12 @@ msgstr "explicit specialisering av %qD måste inledas av %<template <>%>"
 #: cp/pt.c:1867
 #, gcc-internal-format
 msgid "function template partial specialization %qD is not allowed"
-msgstr ""
+msgstr "partiell specialisering av funktionsmall %qD är inte tillåten"
 
 #: cp/pt.c:1899
 #, gcc-internal-format
 msgid "default argument specified in explicit specialization"
-msgstr ""
+msgstr "standardargument angivet i explicit specialisering"
 
 #: cp/pt.c:1928
 #, gcc-internal-format
@@ -26171,7 +26186,7 @@ msgstr "%qD är inte en mallfunktion"
 #: cp/pt.c:1990
 #, gcc-internal-format
 msgid "specialization of implicitly-declared special member function"
-msgstr ""
+msgstr "specialisering av implicit deklarerad specialmedlemsfunktion"
 
 #: cp/pt.c:2034
 #, gcc-internal-format
@@ -26191,7 +26206,7 @@ msgstr " skuggar mallparameter %q+#D"
 #: cp/pt.c:2662
 #, gcc-internal-format
 msgid "template parameters not used in partial specialization:"
-msgstr ""
+msgstr "mallparameter används inte i partiell specialisering:"
 
 #: cp/pt.c:2666
 #, gcc-internal-format
@@ -26206,12 +26221,12 @@ msgstr "partiell specialisering %qT specialicerar inte något mallargument"
 #: cp/pt.c:2702
 #, gcc-internal-format
 msgid "template argument %qE involves template parameter(s)"
-msgstr ""
+msgstr "mallargument %qE berör mallparametrar"
 
 #: cp/pt.c:2746
 #, gcc-internal-format
 msgid "type %qT of template argument %qE depends on template parameter(s)"
-msgstr ""
+msgstr "typ %qT för mallargument %qE beror på mallparametrar"
 
 #: cp/pt.c:2833
 #, gcc-internal-format
@@ -26318,12 +26333,12 @@ msgstr "%J  ursprunglig definition fanns här"
 #: cp/pt.c:3409
 #, gcc-internal-format
 msgid "%qE is not a valid template argument for type %qT because function %qD has not external linkage"
-msgstr ""
+msgstr "%qE är inte ett giltigt mallargument för typ %qT eftersom funktionen %qD inte har extern länkklass"
 
 #: cp/pt.c:3450
 #, gcc-internal-format
 msgid "%qE is not a valid template argument for type %qT because string literals can never be used in this context"
-msgstr ""
+msgstr "%qE är inte ett giltigt mallargument för typ %qT eftersom stränkonstanter aldrig kan användas i detta sammanhang"
 
 #: cp/pt.c:3527
 #, gcc-internal-format
@@ -26338,7 +26353,7 @@ msgstr "%qE är inte ett giltigt mallargument till typ %qT eftersom det inte är e
 #: cp/pt.c:3597
 #, gcc-internal-format
 msgid "%qE is not a valid template argument for type %qT because of conflicts in cv-qualification"
-msgstr ""
+msgstr "%qE är inte ett giltigt mallargument för typ %qT eftersom det står i konflikt med cv-kvalificeringar"
 
 #: cp/pt.c:3604
 #, gcc-internal-format
@@ -26348,7 +26363,7 @@ msgstr "%qE är inte ett giltigt mallargument för typen %qT eftersom inte är ett 
 #: cp/pt.c:3617
 #, gcc-internal-format
 msgid "%qE is not a valid template argument for type %qT because object %qD has not external linkage"
-msgstr ""
+msgstr "%qE är inte ett giltigt mallargument för typ %qT eftersom objekt %qD inte har extern länkklass"
 
 #: cp/pt.c:3657
 #, gcc-internal-format
@@ -26358,7 +26373,7 @@ msgstr "%qE är inte ett giltigt mallargument för typen %qT eftersom det är en pe
 #: cp/pt.c:3659
 #, gcc-internal-format
 msgid "try using %qE instead"
-msgstr ""
+msgstr "försök att använda %qE istället"
 
 #: cp/pt.c:3694
 #, gcc-internal-format
@@ -26368,12 +26383,12 @@ msgstr "%qE är inte ett giltigt mallargument för typen %qT eftersom det är av ty
 #: cp/pt.c:3697
 #, gcc-internal-format
 msgid "standard conversions are not allowed in this context"
-msgstr ""
+msgstr "standardkonverteringar är inte tillåtna i denna kontext"
 
 #: cp/pt.c:3866
 #, gcc-internal-format
 msgid "to refer to a type member of a template parameter, use %<typename %E%>"
-msgstr ""
+msgstr "för att referera till en typmedlem av en mallparameter, använd %<typename %E%>"
 
 #: cp/pt.c:3881 cp/pt.c:3900 cp/pt.c:3940
 #, gcc-internal-format
@@ -26443,7 +26458,7 @@ msgstr "för malldeklaration %q+D"
 #: cp/pt.c:5066
 #, gcc-internal-format
 msgid "template instantiation depth exceeds maximum of %d (use -ftemplate-depth-NN to increase the maximum) instantiating %qD"
-msgstr ""
+msgstr "mallinstantieringsdjupet överskrider maxvärdet på %d (använd -ftemplate-depth-NN för att öka maxvärdet) vid instantiering av %qD"
 
 #: cp/pt.c:6621
 #, gcc-internal-format
@@ -26513,7 +26528,7 @@ msgstr "skapar vektor av %qT"
 #: cp/pt.c:7426
 #, gcc-internal-format
 msgid "creating array of %qT, which is an abstract class type"
-msgstr ""
+msgstr "skapar vektor av %qT, som är en abstrakt klasstyp"
 
 #: cp/pt.c:7470
 #, gcc-internal-format
@@ -26528,7 +26543,7 @@ msgstr "%T slås upp till %qT som inte är en uppräkningstyp"
 #: cp/pt.c:7508
 #, gcc-internal-format
 msgid "%qT resolves to %qT, which is is not a class type"
-msgstr ""
+msgstr "%qT löses upp till %qT, som inte är en klasstyp"
 
 #: cp/pt.c:7570
 #, gcc-internal-format
@@ -26538,12 +26553,12 @@ msgstr "användning av %qs i mall"
 #: cp/pt.c:7702
 #, gcc-internal-format
 msgid "dependent-name %qE is parsed as a non-type, but instantiation yields a type"
-msgstr ""
+msgstr "namnet %qE i den beroende tolkas som något annat än en typ, men instantiering ger en typ"
 
 #: cp/pt.c:7704
 #, gcc-internal-format
 msgid "say %<typename %E%> if a type is meant"
-msgstr ""
+msgstr "säg %<typename %E%> om en typ avses"
 
 #: cp/pt.c:7827
 #, gcc-internal-format
@@ -26563,12 +26578,12 @@ msgstr "%qD är inte en klass eller namnrymd"
 #: cp/pt.c:9085
 #, gcc-internal-format
 msgid "%qT is/uses anonymous type"
-msgstr ""
+msgstr "%qT är/använder en anonym typ"
 
 #: cp/pt.c:9087
 #, gcc-internal-format
 msgid "%qT uses local type %qT"
-msgstr ""
+msgstr "%qT använder lokal typ %qT"
 
 #: cp/pt.c:9096
 #, gcc-internal-format
@@ -26583,7 +26598,7 @@ msgstr "heltalsuttryck %qE är inte konstant"
 #: cp/pt.c:9112
 #, gcc-internal-format
 msgid "  trying to instantiate %qD"
-msgstr ""
+msgstr "  försöker instantiera %qD"
 
 #: cp/pt.c:11103
 #, gcc-internal-format
@@ -26603,7 +26618,7 @@ msgstr "explicit instantieringar av icke-mall %q#D"
 #: cp/pt.c:11145 cp/pt.c:11195
 #, gcc-internal-format
 msgid "no matching template for %qD found"
-msgstr ""
+msgstr "det finns ingen matchande mall för %qD"
 
 #: cp/pt.c:11151
 #, gcc-internal-format
@@ -26618,7 +26633,7 @@ msgstr "dubblerad explicit instantiering av %q#D"
 #: cp/pt.c:11209
 #, gcc-internal-format
 msgid "ISO C++ forbids the use of %<extern%> on explicit instantiations"
-msgstr ""
+msgstr "ISO C++ förbjuder användning av %<extern%> vid explicita instantieringar"
 
 #: cp/pt.c:11214 cp/pt.c:11307
 #, gcc-internal-format
@@ -26638,7 +26653,7 @@ msgstr "explicit instantiering av %q#T före definitionen av mallen"
 #: cp/pt.c:11296
 #, gcc-internal-format
 msgid "ISO C++ forbids the use of %qE on explicit instantiations"
-msgstr ""
+msgstr "ISO C++ förbjuder använding av %qE vid explicita instantieringar"
 
 #: cp/pt.c:11341
 #, gcc-internal-format
@@ -26653,7 +26668,7 @@ msgstr "explicit instantiering av %qD men ingen definition tillgänglig"
 #: cp/pt.c:11901
 #, gcc-internal-format
 msgid "template instantiation depth exceeds maximum of %d instantiating %q+D, possibly from virtual table generation (use -ftemplate-depth-NN to increase the maximum)"
-msgstr ""
+msgstr "mallinstantieringsdjupet överskrider maxvärdet på %d vid instantiering av %qD, möjligen från generering av virtuell tabell (använd -ftemplate-depth-NN för att öka maxvärdet)"
 
 #: cp/pt.c:12174
 #, gcc-internal-format
@@ -26668,7 +26683,7 @@ msgstr "-frepo måste användas tillsammans med -c"
 #: cp/repo.c:201
 #, gcc-internal-format
 msgid "mysterious repository information in %s"
-msgstr ""
+msgstr "mystisk förrådsinformation i %s"
 
 #: cp/repo.c:215
 #, gcc-internal-format
@@ -26688,12 +26703,12 @@ msgstr "måste ha#include <typeinfo> för användande av typeid"
 #: cp/rtti.c:348
 #, gcc-internal-format
 msgid "cannot create type information for type %qT because its size is variable"
-msgstr ""
+msgstr "det går inte att skapa typinformation för typen %qT eftersom dess storlek är variabel"
 
 #: cp/rtti.c:598 cp/rtti.c:612
 #, gcc-internal-format
 msgid "dynamic_cast of %q#D to %q#T can never succeed"
-msgstr ""
+msgstr "dynamic_cast av %q#D till %q#T kan aldrig lyckas"
 
 #: cp/rtti.c:691
 #, gcc-internal-format
@@ -26703,12 +26718,12 @@ msgstr "kan inte dynamic_cast %qE (av typ %q#T) till typ %q#T (%s)"
 #: cp/search.c:257
 #, gcc-internal-format
 msgid "%qT is an ambiguous base of %qT"
-msgstr ""
+msgstr "%qT är en tvetydig bas till %qT"
 
 #: cp/search.c:275
 #, gcc-internal-format
 msgid "%qT is an inaccessible base of %qT"
-msgstr ""
+msgstr "%qT är en oåtkomlig bas till %qT"
 
 #: cp/search.c:1847
 #, gcc-internal-format
@@ -26718,7 +26733,7 @@ msgstr "undanbedd kovariant returtyp för %q+#D"
 #: cp/search.c:1849 cp/search.c:1864 cp/search.c:1869
 #, gcc-internal-format
 msgid "  overriding %q+#D"
-msgstr ""
+msgstr "  åsidosätter %q+#D"
 
 #: cp/search.c:1863
 #, gcc-internal-format
@@ -26738,7 +26753,7 @@ msgstr "friare throw-specificerare för %q+#F"
 #: cp/search.c:1879
 #, gcc-internal-format
 msgid "  overriding %q+#F"
-msgstr ""
+msgstr "  åsidosätter %q+#F"
 
 #. A static member function cannot match an inherited
 #. virtual member function.
@@ -26770,7 +26785,7 @@ msgstr "ogiltig användning av icke-statisk datamedlem %q+D"
 #: cp/semantics.c:1370 cp/semantics.c:1409
 #, gcc-internal-format
 msgid "from this location"
-msgstr ""
+msgstr "härifrån"
 
 #: cp/semantics.c:1408
 #, gcc-internal-format
@@ -26810,7 +26825,7 @@ msgstr "%qE har inte typen %qT"
 #: cp/semantics.c:2080
 #, gcc-internal-format
 msgid "template type parameters must use the keyword %<class%> or %<typename%>"
-msgstr ""
+msgstr "malltypparametrar nåste använda nyckelordet %<class%> eller %<typename%>"
 
 #: cp/semantics.c:2124
 #, gcc-internal-format
@@ -26850,7 +26865,7 @@ msgstr "basklass %qT har cv-kvalificerare"
 #: cp/semantics.c:2393
 #, gcc-internal-format
 msgid "incomplete type %qT used in nested name specifier"
-msgstr ""
+msgstr "ofullständig typ %qT använd i nästad namnspecificerare"
 
 #: cp/semantics.c:2396
 #, gcc-internal-format
@@ -26870,12 +26885,12 @@ msgstr "%qD är inte en medlem av %qD"
 #: cp/semantics.c:2517
 #, gcc-internal-format
 msgid "use of %<auto%> variable from containing function"
-msgstr ""
+msgstr "användning av %<auto%>-variabel från inneslutande funktion"
 
 #: cp/semantics.c:2518
 #, gcc-internal-format
 msgid "use of parameter from containing function"
-msgstr ""
+msgstr "användning av parameter från inneslutande funktion"
 
 #: cp/semantics.c:2519
 #, gcc-internal-format
@@ -26885,7 +26900,7 @@ msgstr "  %q+#D deklarerades här"
 #: cp/semantics.c:2557
 #, gcc-internal-format
 msgid "template parameter %qD of type %qT is not allowed in an integral constant expression because it is not of integral or enumeration type"
-msgstr ""
+msgstr "mallparameter %qD av typ %qT är inte tillåten i ett konstant heltalsuttryck eftersom den inte är av heltals- eller uppräkningstyp"
 
 #: cp/semantics.c:2723
 #, gcc-internal-format
@@ -26906,7 +26921,7 @@ msgstr "användning av klassmall %qT som uttryck"
 #: cp/semantics.c:2742
 #, gcc-internal-format
 msgid "request for member %qD is ambiguous in multiple inheritance lattice"
-msgstr ""
+msgstr "begäran av medlem %qD är tvetydig i gitter av multipelt arv"
 
 #: cp/semantics.c:2854
 #, gcc-internal-format
@@ -26931,7 +26946,7 @@ msgstr "attributet %qE kan bara användas på klassdefinitioner"
 #: cp/tree.c:1818
 #, gcc-internal-format
 msgid "%qE is obsolete; g++ vtables are now COM-compatible by default"
-msgstr ""
+msgstr "%qE är föråldrad, g++-vtabeller är nu COM-kompatibla som standard"
 
 #: cp/tree.c:1842
 #, gcc-internal-format
@@ -26941,7 +26956,7 @@ msgstr "begärd init_priority är inte en heltalskonstant"
 #: cp/tree.c:1863
 #, gcc-internal-format
 msgid "can only use %qE attribute on file-scope definitions of objects of class type"
-msgstr ""
+msgstr "det går bara att använda attributet %qE på definitioner av objekt- eller klasstyp med filräckvidd"
 
 #: cp/tree.c:1871
 #, gcc-internal-format
@@ -26951,7 +26966,7 @@ msgstr "begärd init_priority är utanför sitt intervall"
 #: cp/tree.c:1881
 #, gcc-internal-format
 msgid "requested init_priority is reserved for internal use"
-msgstr ""
+msgstr "begärt init_priority är reserverad för internt bruk"
 
 #: cp/tree.c:1892
 #, gcc-internal-format
@@ -26961,7 +26976,7 @@ msgstr "attributet %qE stöds inte på denna plattform"
 #: cp/typeck.c:435 cp/typeck.c:449 cp/typeck.c:549
 #, gcc-internal-format
 msgid "%s between distinct pointer types %qT and %qT lacks a cast"
-msgstr ""
+msgstr "%s mellan olika pekartyper %qT och %qT saknar en typkonvertering"
 
 # %s blir olika engelska strängar
 # Felrapporterat: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29017
@@ -26973,7 +26988,7 @@ msgstr "ISO C++ förbjuder jämförelse mellan pekare och heltal"
 #: cp/typeck.c:569
 #, gcc-internal-format
 msgid "%s between distinct pointer-to-member types %qT and %qT lacks a cast"
-msgstr ""
+msgstr "%s mellan olika pekare-på-medlem-typer %qT och %qT saknar en typkonvertering"
 
 #: cp/typeck.c:1258
 #, gcc-internal-format
@@ -27003,7 +27018,7 @@ msgstr "undanbedd konvertering från strängkonstant till %qT'"
 #: cp/typeck.c:1613 cp/typeck.c:1961
 #, gcc-internal-format
 msgid "request for member %qD in %qE, which is of non-class type %qT"
-msgstr ""
+msgstr "begäran av medlem %qD i %qE, som är av icke-klasstyp %qT"
 
 #: cp/typeck.c:1640
 #, gcc-internal-format
@@ -27013,12 +27028,12 @@ msgstr "ogiltig användning av icke-statisk datamedlem %qE"
 #: cp/typeck.c:1692 cp/typeck.c:1720
 #, gcc-internal-format
 msgid "invalid access to non-static data member %qD of NULL object"
-msgstr ""
+msgstr "ogiltig åtkomst av ickestatisk datamedlem %qD från NULL-objekt"
 
 #: cp/typeck.c:1695 cp/typeck.c:1722
 #, gcc-internal-format
 msgid "(perhaps the %<offsetof%> macro was used incorrectly)"
-msgstr ""
+msgstr "(kanske makrot %<offsetof%> användes felaktigt)"
 
 #: cp/typeck.c:1833
 #, gcc-internal-format
@@ -27028,7 +27043,7 @@ msgstr "kvalificerad typ %qT matchar inte destruerarnamnet ~%qT"
 #: cp/typeck.c:1839
 #, gcc-internal-format
 msgid "the type being destroyed is %qT, but the destructor refers to %qT"
-msgstr ""
+msgstr "typen som destrueras är %qT, men destrueraren refererar till %qT"
 
 #: cp/typeck.c:1999
 #, gcc-internal-format
@@ -27070,7 +27085,7 @@ msgstr "ogiltigt typargument"
 #: cp/typeck.c:2222
 #, gcc-internal-format
 msgid "subscript missing in array reference"
-msgstr ""
+msgstr "index saknas i vektorreferens"
 
 #: cp/typeck.c:2304
 #, gcc-internal-format
@@ -27095,7 +27110,7 @@ msgstr "ISO C++ förbjuder anrop av %<::main%> inifrån program"
 #: cp/typeck.c:2537
 #, gcc-internal-format
 msgid "must use %<.*%> or %<->*%> to call pointer-to-member function in %<%E (...)%>"
-msgstr ""
+msgstr "man måste använda %<.*%> eller %<->*%> för att anropa en pekare-till-medlems-funktion i %<%E (...)%>"
 
 #: cp/typeck.c:2551
 #, gcc-internal-format
@@ -27110,7 +27125,7 @@ msgstr "för många argument till %s %+#D"
 #: cp/typeck.c:2632 cp/typeck.c:2734
 #, gcc-internal-format
 msgid "at this point in file"
-msgstr ""
+msgstr "på den här platsen i filen"
 
 #: cp/typeck.c:2635
 #, gcc-internal-format
@@ -27145,22 +27160,22 @@ msgstr "antar typkonvertering till %qT från överlastad funktion"
 #: cp/typeck.c:2963
 #, gcc-internal-format
 msgid "division by zero in %<%E / 0%>"
-msgstr ""
+msgstr "division med noll i %<%E / 0%>"
 
 #: cp/typeck.c:2965
 #, gcc-internal-format
 msgid "division by zero in %<%E / 0.%>"
-msgstr ""
+msgstr "division med noll i %<%E / 0.%>"
 
 #: cp/typeck.c:3000
 #, gcc-internal-format
 msgid "division by zero in %<%E %% 0%>"
-msgstr ""
+msgstr "division med noll i %<%E %% 0%>"
 
 #: cp/typeck.c:3002
 #, gcc-internal-format
 msgid "division by zero in %<%E %% 0.%>"
-msgstr ""
+msgstr "division med noll i %<%E %% 0.%>"
 
 # %s blir "left" eller "right".
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29033
@@ -27184,7 +27199,7 @@ msgstr "ISO C++ förbjuder jämförelse mellan pekare och heltal"
 #: cp/typeck.c:3239
 #, gcc-internal-format
 msgid "unordered comparison on non-floating point argument"
-msgstr ""
+msgstr "oordnad jämförelse av argument som inte är flyttal"
 
 #: cp/typeck.c:3277
 #, gcc-internal-format
@@ -27238,7 +27253,7 @@ msgstr "ogiltig använding av %qE för att skapa en pekare-till-medlem-funktion"
 #: cp/typeck.c:3693
 #, gcc-internal-format
 msgid "  a qualified-id is required"
-msgstr ""
+msgstr "  ett kvalificerat id krävs"
 
 #: cp/typeck.c:3698
 #, gcc-internal-format
@@ -27274,7 +27289,7 @@ msgstr "ISO C++ förbjuder tilldelning av fält"
 #: cp/typeck.c:4007
 #, gcc-internal-format
 msgid "cast to non-reference type used as lvalue"
-msgstr ""
+msgstr "typkonvertering till typ som inte är referens använd som lvärde"
 
 #: cp/typeck.c:4042
 #, gcc-internal-format
@@ -27351,7 +27366,7 @@ msgstr "konvertering från %qT till %qT förlorar precision"
 #: cp/typeck.c:5051
 #, gcc-internal-format
 msgid "cast from %qT to %qT increases required alignment of target type"
-msgstr ""
+msgstr "typkonvertering från %qT till %qT ökar kravet på justering för måltypen"
 
 #. Only issue a warning, as we have always supported this
 #. where possible, and it is necessary in some cases.  DR 195
@@ -27370,12 +27385,12 @@ msgstr "ogiltig konvertering från typ %qT till typ %qT"
 #: cp/typeck.c:5137
 #, gcc-internal-format
 msgid "invalid use of const_cast with type %qT, which is not a pointer, reference, nor a pointer-to-data-member type"
-msgstr ""
+msgstr "ogiltig användning av const_cast med typ %qT, som inte är en pekare, referens, eller pekare-till-datamedlem-typ"
 
 #: cp/typeck.c:5146
 #, gcc-internal-format
 msgid "invalid use of const_cast with type %qT, which is a pointer or reference to a function type"
-msgstr ""
+msgstr "ogiltig användning av const_cast med typ %qT, som är en pekare eller referens till en funktionstyp"
 
 #: cp/typeck.c:5168
 #, gcc-internal-format
@@ -27400,7 +27415,7 @@ msgstr "ogiltig konvertering till funktionstyp %qT"
 #: cp/typeck.c:5516
 #, gcc-internal-format
 msgid "  in evaluation of %<%Q(%#T, %#T)%>"
-msgstr ""
+msgstr "  i beräkningen av %<%Q(%#T, %#T)%>"
 
 #: cp/typeck.c:5585
 #, gcc-internal-format
@@ -27465,7 +27480,7 @@ msgstr "returnerar referens till en temporär"
 #: cp/typeck.c:6219
 #, gcc-internal-format
 msgid "reference to non-lvalue returned"
-msgstr ""
+msgstr "referens till annat än lvärde returnerad"
 
 #: cp/typeck.c:6231
 #, gcc-internal-format
@@ -27487,7 +27502,7 @@ msgstr "returnerar ett värde från en destruktor"
 #: cp/typeck.c:6276
 #, gcc-internal-format
 msgid "cannot return from a handler of a function-try-block of a constructor"
-msgstr ""
+msgstr "det går inte att returnerar från en hanterare i ett funktions-try-block eller en konstruerare"
 
 #. You can't return a value from a constructor.
 #: cp/typeck.c:6279
@@ -27508,7 +27523,7 @@ msgstr "return-sats med värde i funktion som returnerar \"void\""
 #: cp/typeck.c:6354
 #, gcc-internal-format
 msgid "%<operator new%> must not return NULL unless it is declared %<throw()%> (or -fcheck-new is in effect)"
-msgstr ""
+msgstr "%<operator new%> får inte returnera NULL om den inte är deklarerad %<throw()%> (eller -fcheck-new är aktivt)"
 
 #: cp/typeck2.c:54
 #, gcc-internal-format
@@ -27559,7 +27574,7 @@ msgstr "det går inte att allokera ett objekt av abstrakt typ %qT"
 #: cp/typeck2.c:322
 #, gcc-internal-format
 msgid "%J  because the following virtual functions are pure within %qT:"
-msgstr ""
+msgstr "%J  för följande virtuella funktioner är rena inuti %qT:"
 
 #: cp/typeck2.c:326
 #, gcc-internal-format
@@ -27574,12 +27589,12 @@ msgstr "%J  eftersom typen %qT har rent virtuella funktioner"
 #: cp/typeck2.c:588
 #, gcc-internal-format
 msgid "constructor syntax used, but no constructor declared for type %qT"
-msgstr ""
+msgstr "konstruerarsyntax använd, men ingen konstruerare är deklarerad för typ %qT"
 
 #: cp/typeck2.c:602
 #, gcc-internal-format
 msgid "cannot initialize arrays using this syntax"
-msgstr ""
+msgstr "det går inte att initiera vektorer med denna syntax"
 
 #: cp/typeck2.c:678
 #, gcc-internal-format
@@ -27589,7 +27604,7 @@ msgstr "int-vektor initierad från icke-vid sträng"
 #: cp/typeck2.c:717
 #, gcc-internal-format
 msgid "cannot initialize aggregate of type %qT with a compound literal"
-msgstr ""
+msgstr "det går inte att initiera aggregat med typ %qT med en sammansatt literal"
 
 #: cp/typeck2.c:791 cp/typeck2.c:911
 #, gcc-internal-format
@@ -27634,7 +27649,7 @@ msgstr "unionen %qT utan namngivna medlemmar kan inte initieras"
 #: cp/typeck2.c:1167
 #, gcc-internal-format
 msgid "circular pointer delegation detected"
-msgstr ""
+msgstr "cirkulär pekardelegering detekterad"
 
 #: cp/typeck2.c:1180
 #, gcc-internal-format
@@ -27644,7 +27659,7 @@ msgstr "basoperanden till %<->%> har icke-pekartyp %qT"
 #: cp/typeck2.c:1204
 #, gcc-internal-format
 msgid "result of %<operator->()%> yields non-pointer result"
-msgstr ""
+msgstr "resultatet av %<operator->()%> ger annat än pekare"
 
 #: cp/typeck2.c:1206
 #, gcc-internal-format
@@ -27659,12 +27674,12 @@ msgstr "%qE kan inte användas som en medlemspekare eftersom den är av typen %qT"
 #: cp/typeck2.c:1239
 #, gcc-internal-format
 msgid "cannot apply member pointer %qE to %qE, which is of non-aggregate type %qT"
-msgstr ""
+msgstr "det går inte att applicera medlemspekare %qE på %qE, som inte är av typ %qT som inte är ett aggregat"
 
 #: cp/typeck2.c:1261
 #, gcc-internal-format
 msgid "pointer to member type %qT incompatible with object type %qT"
-msgstr ""
+msgstr "pekare-på-medlemstyp %qT är inkompatibel med objekttyp %qT"
 
 #: cp/typeck2.c:1484
 #, gcc-internal-format
@@ -27679,7 +27694,7 @@ msgstr "anrop till funktion som kastar ofullständig typ %q#T"
 #: fortran/f95-lang.c:266
 #, gcc-internal-format
 msgid "Unexpected type in truthvalue_conversion"
-msgstr ""
+msgstr "Oväntad typ i truthvalue_conversion"
 
 #: fortran/f95-lang.c:319
 #, gcc-internal-format
@@ -27709,27 +27724,27 @@ msgstr "adress till registervariabeln %qs efterfrågad"
 #: fortran/trans-array.c:3136
 #, gcc-internal-format
 msgid "Possible frontend bug: array constructor not expanded"
-msgstr ""
+msgstr "Möjligt fel i framänden: vektorkonstruerare är inte expanderad"
 
 #: fortran/trans-array.c:4271
 #, gcc-internal-format
 msgid "Possible frontend bug: Deferred array size without pointer or allocatable attribute."
-msgstr ""
+msgstr "Möjligt fel i framänden: Fördröjd vektorstorlek utan pekare eller attributet allocatable"
 
 #: fortran/trans-array.c:4722
 #, gcc-internal-format
 msgid "bad expression type during walk (%d)"
-msgstr ""
+msgstr "felaktig uttryckstyp under genomlöpning (%d)"
 
 #: fortran/trans-const.c:334
 #, gcc-internal-format
 msgid "gfc_conv_constant_to_tree(): invalid type: %s"
-msgstr ""
+msgstr "gfc_conv_constant_to_tree(): ogiltig typ: %s"
 
 #: fortran/trans-decl.c:901
 #, gcc-internal-format
 msgid "intrinsic variable which isn't a procedure"
-msgstr ""
+msgstr "inbyggd variabel som inte är en procedur"
 
 #: fortran/trans-decl.c:2291
 #, gcc-internal-format
@@ -27740,12 +27755,12 @@ msgstr "Funktionen returnerar inte ett värde"
 #: fortran/trans-decl.c:2401
 #, gcc-internal-format
 msgid "module symbol %s in wrong namespace"
-msgstr ""
+msgstr "modulsymbol %s i fel namnrymd"
 
 #: fortran/trans-decl.c:2420
 #, gcc-internal-format
 msgid "backend decl for module variable %s already exists"
-msgstr ""
+msgstr "bakändedeklaration för modulvariabel %s finns redan"
 
 #: fortran/trans-decl.c:2502
 #, gcc-internal-format
@@ -27775,32 +27790,32 @@ msgstr "Inbyggd funktion %s(%d) känns inte igen"
 #: fortran/trans-io.c:1738
 #, gcc-internal-format
 msgid "Bad IO basetype (%d)"
-msgstr ""
+msgstr "Felaktig IO-bastyp (%d)"
 
 #: fortran/trans-types.c:213
 #, gcc-internal-format
 msgid "integer kind=8 not available for -fdefault-integer-8 option"
-msgstr ""
+msgstr "heltalssort=8 inte tillgänglig för flagga -fdefault-integer-8"
 
 #: fortran/trans-types.c:225
 #, gcc-internal-format
 msgid "real kind=8 not available for -fdefault-real-8 option"
-msgstr ""
+msgstr "reell sort=8 inte tillgänglig för flagga -fdefault-real-8"
 
 #: fortran/trans-types.c:238
 #, gcc-internal-format
 msgid "Use of -fdefault-double-8 requires -fdefault-real-8"
-msgstr ""
+msgstr "Användning av -fdefault-double-8 kräver -fdefault-real-8"
 
 #: fortran/trans-types.c:950
 #, gcc-internal-format
 msgid "Array element size too big"
-msgstr ""
+msgstr "Vektorelemenstorlek är för stor"
 
 #: fortran/trans.c:625
 #, gcc-internal-format
 msgid "gfc_trans_code(): Bad statement code"
-msgstr ""
+msgstr "gfc_trans_code(): Felaktig satskod"
 
 #. I changed this from sorry(...) because it should not return.
 #. TODO: Remove gfc_todo_error before releasing version 1.0.
@@ -27812,7 +27827,7 @@ msgstr "gfc_todo: Inte implementerat: "
 #: java/check-init.c:248
 #, gcc-internal-format
 msgid "Can't reassign a value to the final variable %qs"
-msgstr ""
+msgstr "Det går inte att tilldela om ett värde till den slutliga variabeln %qs"
 
 #: java/check-init.c:518 java/check-init.c:531
 #, gcc-internal-format
@@ -27822,7 +27837,7 @@ msgstr "variabeln %qD är kanske inte initierad"
 #: java/check-init.c:948
 #, gcc-internal-format
 msgid "internal error in check-init: tree code not implemented: %s"
-msgstr ""
+msgstr "internt fel i check-init: trädkod inte implementerad: %s"
 
 #: java/check-init.c:1021
 #, gcc-internal-format
@@ -27832,12 +27847,12 @@ msgstr "%Jslutligt fält %qD får inte ha initierats"
 #: java/class.c:766
 #, gcc-internal-format
 msgid "bad method signature"
-msgstr ""
+msgstr "felaktig metodsignatur"
 
 #: java/class.c:811
 #, gcc-internal-format
 msgid "misplaced ConstantValue attribute (not in any field)"
-msgstr ""
+msgstr "felplacerat attribut ConstantValue (inte i något fält)"
 
 #: java/class.c:814
 #, gcc-internal-format
@@ -27847,12 +27862,12 @@ msgstr "dubblerade ConstantValue-attribut för fält \"%s\""
 #: java/class.c:825
 #, gcc-internal-format
 msgid "ConstantValue attribute of field '%s' has wrong type"
-msgstr ""
+msgstr "attributet ConstantValue på fältet \"%s\" har fel typ"
 
 #: java/class.c:1453
 #, gcc-internal-format
 msgid "%Jabstract method in non-abstract class"
-msgstr ""
+msgstr "%Jabstrakt metod i icke-abstrakt klass"
 
 #: java/class.c:2389
 #, gcc-internal-format
@@ -27877,37 +27892,37 @@ msgstr "deklaration av %qs skuggar en symbol från parameterlistan"
 #: java/decl.c:1833
 #, gcc-internal-format
 msgid "In %+D: overlapped variable and exception ranges at %d"
-msgstr ""
+msgstr "I %+D: överlappande variabel- och undantagsintervall vid %d"
 
 #: java/decl.c:1896
 #, gcc-internal-format
 msgid "bad type in parameter debug info"
-msgstr ""
+msgstr "felaktig typ i felsökningsinformation om parameter"
 
 #: java/decl.c:1905
 #, gcc-internal-format
 msgid "bad PC range for debug info for local %q+D"
-msgstr ""
+msgstr "felaktigt PC-intervall för felsökningsinformation för lokal %q+D"
 
 #: java/expr.c:373
 #, gcc-internal-format
 msgid "need to insert runtime check for %s"
-msgstr ""
+msgstr "behöver lägga in en körtidskontroll för %s"
 
 #: java/expr.c:502 java/expr.c:549
 #, gcc-internal-format
 msgid "assert: %s is assign compatible with %s"
-msgstr ""
+msgstr "försäkran: %s är tilldelningskompatibel med %s"
 
 #: java/expr.c:669
 #, gcc-internal-format
 msgid "stack underflow - dup* operation"
-msgstr ""
+msgstr "underspill i stack - dup*-operation"
 
 #: java/expr.c:1655
 #, gcc-internal-format
 msgid "reference %qs is ambiguous: appears in interface %qs and interface %qs"
-msgstr ""
+msgstr "referens %qs är tvetydig: förekommer i gränssnitt %qs och gränssnitt %qs"
 
 #: java/expr.c:1683
 #, gcc-internal-format
@@ -27927,27 +27942,27 @@ msgstr "kunde inte hitta klassen \"%s\""
 #: java/expr.c:2335
 #, gcc-internal-format
 msgid "class '%s' has no method named '%s' matching signature '%s'"
-msgstr ""
+msgstr "klass \"%s\" har ingen metod med namnet \"%s\" som stämmer emd signaturen \"%s\""
 
 #: java/expr.c:2366
 #, gcc-internal-format
 msgid "invokestatic on non static method"
-msgstr ""
+msgstr "invokestatic på metod som inte är statisk"
 
 #: java/expr.c:2371
 #, gcc-internal-format
 msgid "invokestatic on abstract method"
-msgstr ""
+msgstr "invokestatic på abstrakt metod"
 
 #: java/expr.c:2379
 #, gcc-internal-format
 msgid "invoke[non-static] on static method"
-msgstr ""
+msgstr "invoke[non-static] på statisk metod"
 
 #: java/expr.c:2705
 #, gcc-internal-format
 msgid "missing field '%s' in '%s'"
-msgstr ""
+msgstr "fält \"%s\" saknas i \"%s\""
 
 #: java/expr.c:2712
 #, gcc-internal-format
@@ -27957,17 +27972,17 @@ msgstr "signaturen stämmer inte för fält \"%s\" i \"%s\""
 #: java/expr.c:2735
 #, gcc-internal-format
 msgid "assignment to final field %q+D not in field's class"
-msgstr ""
+msgstr "tilldelning till slutligt fält %q+D som inte är i fältets klass"
 
 #: java/expr.c:2740
 #, gcc-internal-format
 msgid "assignment to final static field %q+D not in class initializer"
-msgstr ""
+msgstr "tilldelning till slutligt statiskt fält %q+D som inte är i klassinitierare"
 
 #: java/expr.c:2749
 #, gcc-internal-format
 msgid "assignment to final field %q+D not in constructor"
-msgstr ""
+msgstr "tilldelning till slutligt fält %q+D som inte är i konstruerare"
 
 #: java/expr.c:2939
 #, gcc-internal-format
@@ -27977,12 +27992,12 @@ msgstr "ogiltigt PC i radnummertabell"
 #: java/expr.c:2987
 #, gcc-internal-format
 msgid "unreachable bytecode from %d to before %d"
-msgstr ""
+msgstr "onåbar bytekod från %d till före %d"
 
 #: java/expr.c:3029
 #, gcc-internal-format
 msgid "unreachable bytecode from %d to the end of the method"
-msgstr ""
+msgstr "onåbar bytekod från %d till slutet av metoden"
 
 #. duplicate code from LOAD macro
 #: java/expr.c:3329
@@ -27993,7 +28008,7 @@ msgstr "okänd vid underinstruktion"
 #: java/gjavah.c:718
 #, gcc-internal-format
 msgid "static field has same name as method"
-msgstr ""
+msgstr "statiskt fält har samma namn som en metod"
 
 #: java/gjavah.c:1266
 #, gcc-internal-format
@@ -28008,7 +28023,7 @@ msgstr "tolkningsfel när %s lästes"
 #: java/gjavah.c:1499 java/gjavah.c:1601 java/gjavah.c:1676
 #, gcc-internal-format
 msgid "unparseable signature: '%s'"
-msgstr ""
+msgstr "otolkbar signatur: \"%s\""
 
 #: java/gjavah.c:2066
 #, gcc-internal-format
@@ -28028,7 +28043,7 @@ msgstr "fel i konstantpoolpost nummer %d"
 #: java/gjavah.c:2223
 #, gcc-internal-format
 msgid "class is of array type\n"
-msgstr ""
+msgstr "klass är av vektortyp\n"
 
 #: java/gjavah.c:2231
 #, gcc-internal-format
@@ -28053,12 +28068,12 @@ msgstr "det går inte att ange både -o och -MD"
 #: java/gjavah.c:2587
 #, gcc-internal-format
 msgid "%s: no such class"
-msgstr ""
+msgstr "%s: ingen sådan klass"
 
 #: java/jcf-io.c:550
 #, gcc-internal-format
 msgid "source file for class %qs is newer than its matching class file.  Source file %qs used instead"
-msgstr ""
+msgstr "källfil för klass %qs är nyaren än dess motsvarande klassfil.  Källfil %qs används istället"
 
 #: java/jcf-parse.c:372
 #, gcc-internal-format
@@ -28068,7 +28083,7 @@ msgstr "felaktig strängkonstant"
 #: java/jcf-parse.c:390
 #, gcc-internal-format
 msgid "bad value constant type %d, index %d"
-msgstr ""
+msgstr "felaktig värdekonstanttyp %d, index %d"
 
 #: java/jcf-parse.c:582
 #, gcc-internal-format
@@ -28094,7 +28109,7 @@ msgstr "inte en giltig Java-.class-fil."
 #: java/jcf-parse.c:771
 #, gcc-internal-format
 msgid "reading class %s for the second time from %s"
-msgstr ""
+msgstr "läser klass %s för andra gången från %s"
 
 #: java/jcf-parse.c:789
 #, gcc-internal-format
@@ -28114,12 +28129,12 @@ msgstr "fel vid tolkning av slutliga attribut"
 #: java/jcf-parse.c:812
 #, gcc-internal-format
 msgid "the %<java.lang.Object%> that was found in %qs didn't have the special zero-length %<gnu.gcj.gcj-compiled%> attribute.  This generally means that your classpath is incorrectly set.  Use %<info gcj \"Input Options\"%> to see the info page describing how to set the classpath"
-msgstr ""
+msgstr "%<java.lang.Object%> som fanns i %qs har inte det speciella nollängdsattributet %<gnu.gcj.gcj-compiled%>.  Detta betyder allmänt att din classpath är felaktigt inställd.  Använd %<info gcj \"Input Options\"%> för att se info-sidan som beskriver hur man ställer in classpath"
 
 #: java/jcf-parse.c:846
 #, gcc-internal-format
 msgid "%Hduplicate class will only be compiled once"
-msgstr ""
+msgstr "%Hdubblerad klass kommer endast att kompileras en gång"
 
 #: java/jcf-parse.c:900
 #, gcc-internal-format
@@ -28139,7 +28154,7 @@ msgstr "kan inte stänga indatafilen %s: %m"
 #: java/jcf-parse.c:1264
 #, gcc-internal-format
 msgid "bad zip/jar file %s"
-msgstr ""
+msgstr "felaktig zip/jar-fil %s"
 
 #: java/jcf-parse.c:1485
 #, gcc-internal-format
@@ -28149,7 +28164,7 @@ msgstr "fel när %s lästes från zip-fil"
 #: java/jcf-write.c:2668
 #, gcc-internal-format
 msgid "internal error in generate_bytecode_insn - tree code not implemented: %s"
-msgstr ""
+msgstr "internt fel i generate_bytecode_insn - trädkod inte implementerad: %s"
 
 #: java/jcf-write.c:3042
 #, gcc-internal-format
@@ -28174,7 +28189,7 @@ msgstr "kan inte skapa %s: %m"
 #: java/jv-scan.c:194
 #, gcc-internal-format
 msgid "only one of '--print-main', '--list-class', and '--complexity' allowed"
-msgstr ""
+msgstr "endast en av '--print-main', '--list-class' och '--complexity' är tillåten"
 
 #: java/jv-scan.c:197
 #, gcc-internal-format
@@ -28189,17 +28204,17 @@ msgstr "filen finns inte \"%s\""
 #: java/jvspec.c:436
 #, gcc-internal-format
 msgid "warning: already-compiled .class files ignored with -C"
-msgstr ""
+msgstr "varning: redan kompilerade .class-filer ignoreras med -C"
 
 #: java/lang.c:626
 #, gcc-internal-format
 msgid "can't do dependency tracking with input from stdin"
-msgstr ""
+msgstr "det går inte att spåra beroenden med indata från standard in"
 
 #: java/lang.c:642
 #, gcc-internal-format
 msgid "couldn't determine target name for dependency tracking"
-msgstr ""
+msgstr "det gick inte att avgöra målnamn för att spåra beroenden"
 
 #: java/lex.c:260
 #, gcc-internal-format
@@ -28210,6 +28225,10 @@ msgid ""
 "to use a particular encoding for your input file, try the\n"
 "%<--encoding=UTF-8%> option"
 msgstr ""
+"okänd kodning: %qs\n"
+"Detta kan betyda att din lokals kodning inte stöds av ditt systems\n"
+"implementation av iconv(3).  Om du inte försöker använda en speciell\n"
+"kodning för din indatafil, försök med flaggan %<--encoding=UTF-8%>"
 
 #: java/lex.c:631
 #, gcc-internal-format
@@ -28229,22 +28248,22 @@ msgstr "skräp vid slutet av signatursträng"
 #: java/verify-glue.c:387
 #, gcc-internal-format
 msgid "verification failed: %s"
-msgstr ""
+msgstr "verifiering misslyckades: %s"
 
 #: java/verify-glue.c:389
 #, gcc-internal-format
 msgid "verification failed at PC=%d: %s"
-msgstr ""
+msgstr "verifiering misslyckades vid PC=%d: %s"
 
 #: java/verify-glue.c:473
 #, gcc-internal-format
 msgid "bad pc in exception_table"
-msgstr ""
+msgstr "felaktig pc i exception_table"
 
 #: java/parse.h:129
 #, gcc-internal-format
 msgid "%s method can't be abstract"
-msgstr ""
+msgstr "metoden %s kan inte vara abstrakt"
 
 #: java/parse.h:133
 #, gcc-internal-format
@@ -28260,12 +28279,12 @@ msgstr "Inkompatibel typ %qs.  Det går inte att konvertera %qs till boolesk"
 #: java/parse.h:361
 #, gcc-internal-format
 msgid "Incompatible type for %qs. Can't convert %qs to numeric type"
-msgstr ""
+msgstr "Inkompatibel typ på %qs.  Det går inte att konvertera %qs till en numerisk typ"
 
 #: java/parse.h:369
 #, gcc-internal-format
 msgid "Incompatible type for %qs. Explicit cast needed to convert %qs to integral"
-msgstr ""
+msgstr "Inkompatibel typ på %qs.  Explicit typkonvertering behövs för att konvertara %qs till heltal"
 
 #: java/parse.h:374
 #, gcc-internal-format
@@ -28295,7 +28314,7 @@ msgstr "metoddefinition som inte är i @implementation-kontext"
 #: objc/objc-act.c:1174
 #, gcc-internal-format
 msgid "comparison of distinct Objective-C types lacks a cast"
-msgstr ""
+msgstr "jämförelse av skilda Objective-C-typer saknar en konvertering"
 
 #: objc/objc-act.c:1178
 #, gcc-internal-format
@@ -28325,7 +28344,7 @@ msgstr "statiskt allokerade instans av Objective-C-klass %qs"
 #: objc/objc-act.c:1416
 #, gcc-internal-format
 msgid "protocol %qs has circular dependency"
-msgstr ""
+msgstr "protokollet %qs har cirkulärt beroende"
 
 #: objc/objc-act.c:1438 objc/objc-act.c:6571
 #, gcc-internal-format
@@ -28341,7 +28360,7 @@ msgstr "kan inte hitta gränssnittsdeklaration för %qs"
 #: objc/objc-act.c:1909
 #, gcc-internal-format
 msgid "interface %qs does not have valid constant string layout"
-msgstr ""
+msgstr "gränssnitt %qs har inte giltig konstantsträngslayout"
 
 #: objc/objc-act.c:1914
 #, gcc-internal-format
@@ -28351,7 +28370,7 @@ msgstr "kan inte hitta referenstagg klass %qs"
 #: objc/objc-act.c:2539
 #, gcc-internal-format
 msgid "%Hcreating selector for nonexistent method %qE"
-msgstr ""
+msgstr "%Hskapar selektor för icke existerande metod %qE"
 
 #: objc/objc-act.c:2741
 #, gcc-internal-format
@@ -28362,7 +28381,7 @@ msgstr "%qs är inte ett Objective-C-klassnamn eller alias"
 #: objc/objc-act.c:7748 objc/objc-act.c:7778
 #, gcc-internal-format
 msgid "Objective-C declarations may only appear in global scope"
-msgstr ""
+msgstr "Objective-C-deklarationer får bara förekomma på global nivå"
 
 #: objc/objc-act.c:2872
 #, gcc-internal-format
@@ -28382,12 +28401,12 @@ msgstr "%qs omdeklarerad som en annan sorts symbol"
 #: objc/objc-act.c:3192
 #, gcc-internal-format
 msgid "strong-cast assignment has been intercepted"
-msgstr ""
+msgstr "strong-cast-tilldelning har uppfångats"
 
 #: objc/objc-act.c:3234
 #, gcc-internal-format
 msgid "strong-cast may possibly be needed"
-msgstr ""
+msgstr "strong-cast kan möjligen behövas"
 
 #: objc/objc-act.c:3244
 #, gcc-internal-format
@@ -28397,42 +28416,42 @@ msgstr "tilldelning av instansvariabel har uppfångats"
 #: objc/objc-act.c:3263
 #, gcc-internal-format
 msgid "pointer arithmetic for garbage-collected objects not allowed"
-msgstr ""
+msgstr "pekararitmetik för skräpsamlade objekt är inte tillåten"
 
 #: objc/objc-act.c:3269
 #, gcc-internal-format
 msgid "global/static variable assignment has been intercepted"
-msgstr ""
+msgstr "tilldelning av global/statisk variabel har uppfångats"
 
 #: objc/objc-act.c:3452
 #, gcc-internal-format
 msgid "use %<-fobjc-exceptions%> to enable Objective-C exception syntax"
-msgstr ""
+msgstr "använd %<-fobjc-exceptions%> för att aktivera Objective-C undantagssyntax"
 
 #: objc/objc-act.c:3794
 #, gcc-internal-format
 msgid "@catch parameter is not a known Objective-C class type"
-msgstr ""
+msgstr "@catch-parameter är inte en känd Objective-C-klasstyp"
 
 #: objc/objc-act.c:3810
 #, gcc-internal-format
 msgid "exception of type %<%T%> will be caught"
-msgstr ""
+msgstr "undantag av typ %<%T%> kommer att fångas"
 
 #: objc/objc-act.c:3812
 #, gcc-internal-format
 msgid "%H   by earlier handler for %<%T%>"
-msgstr ""
+msgstr "%H   av tidigare hanterare för %<%T%>"
 
 #: objc/objc-act.c:3865
 #, gcc-internal-format
 msgid "%<@try%> without %<@catch%> or %<@finally%>"
-msgstr ""
+msgstr "%<@try%> utan %<@catch%> eller %<@finally%>"
 
 #: objc/objc-act.c:3913
 #, gcc-internal-format
 msgid "%<@throw%> (rethrow) used outside of a @catch block"
-msgstr ""
+msgstr "%<@throw%> (rethrow) använd utanför ett @catch-block"
 
 #: objc/objc-act.c:4311
 #, gcc-internal-format
@@ -28447,12 +28466,12 @@ msgstr "%J%s %qs"
 #: objc/objc-act.c:4967 objc/objc-act.c:4986
 #, gcc-internal-format
 msgid "inconsistent instance variable specification"
-msgstr ""
+msgstr "inkonsistent specifikation av instansvariabel"
 
 #: objc/objc-act.c:5843
 #, gcc-internal-format
 msgid "can not use an object as parameter to a method"
-msgstr ""
+msgstr "det går inte att använda ett objekt som parameter till en metod"
 
 # Första %s blir "methods" eller "selectors".
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29200
@@ -28469,7 +28488,7 @@ msgstr "ingen superklass deklarerad i @interface för %qs"
 #: objc/objc-act.c:6333
 #, gcc-internal-format
 msgid "found %<-%s%> instead of %<+%s%> in protocol(s)"
-msgstr ""
+msgstr "hittade %<-%s%> istället för %<+%s%> i protokoll"
 
 #: objc/objc-act.c:6392
 #, gcc-internal-format
@@ -28489,27 +28508,27 @@ msgstr "%qs svarar kanske inte på %<%c%s%>"
 #: objc/objc-act.c:6429
 #, gcc-internal-format
 msgid "no %<%c%s%> method found"
-msgstr ""
+msgstr "ingen metod %<%c%s%> funnen"
 
 #: objc/objc-act.c:6435
 #, gcc-internal-format
 msgid "(Messages without a matching method signature"
-msgstr ""
+msgstr "(Meddelanden utan en matchande metodsignatur"
 
 #: objc/objc-act.c:6436
 #, gcc-internal-format
 msgid "will be assumed to return %<id%> and accept"
-msgstr ""
+msgstr "kommer antas returnera %<id%> och acceptera"
 
 #: objc/objc-act.c:6437
 #, gcc-internal-format
 msgid "%<...%> as arguments.)"
-msgstr ""
+msgstr "%<...%> som argument.)"
 
 #: objc/objc-act.c:6670
 #, gcc-internal-format
 msgid "undeclared selector %qs"
-msgstr ""
+msgstr "odeklarerad selektor %qs"
 
 #. Historically, a class method that produced objects (factory
 #. method) would assign `self' to the instance that it
@@ -28548,7 +28567,7 @@ msgstr "instansvariabeln %qs har okänd storlek"
 #: objc/objc-act.c:7068
 #, gcc-internal-format
 msgid "type %qs has no default constructor to call"
-msgstr ""
+msgstr "typ %qs har ingen standardkonstruerare att anropa"
 
 #: objc/objc-act.c:7074
 #, gcc-internal-format
@@ -28570,17 +28589,17 @@ msgstr "ogiltig aggregattyp %qs angiven för instansvariabel %qs"
 #: objc/objc-act.c:7097
 #, gcc-internal-format
 msgid "type %qs has a user-defined constructor"
-msgstr ""
+msgstr "typ %qs har en användardefinierad konstruerare"
 
 #: objc/objc-act.c:7099
 #, gcc-internal-format
 msgid "type %qs has a user-defined destructor"
-msgstr ""
+msgstr "typ %qs har en användardefinierad destruerare"
 
 #: objc/objc-act.c:7103
 #, gcc-internal-format
 msgid "C++ constructors and destructors will not be invoked for Objective-C fields"
-msgstr ""
+msgstr "C++-konstruerare och -destruerare kommer inte att anropas för Objective-C-fält"
 
 #: objc/objc-act.c:7212
 #, gcc-internal-format
@@ -28620,7 +28639,7 @@ msgstr "%s %qs implementerar inte helt protokollet %qs"
 #: objc/objc-act.c:7453 objc/objc-act.c:9121
 #, gcc-internal-format
 msgid "%<@end%> missing in implementation context"
-msgstr ""
+msgstr "%<@end%> saknas i implementationskontext"
 
 #: objc/objc-act.c:7472
 #, gcc-internal-format
@@ -28656,7 +28675,7 @@ msgstr "dubblerad deklaration av protokoll %qs"
 #: objc/objc-act.c:8364
 #, gcc-internal-format
 msgid "%J%s %<%c%s%>"
-msgstr ""
+msgstr "%J%s %<%c%s%>"
 
 #: objc/objc-act.c:8694
 #, gcc-internal-format
@@ -28671,7 +28690,7 @@ msgstr "[super ...] måste stå i metodkontext"
 #: objc/objc-act.c:8783
 #, gcc-internal-format
 msgid "method possibly missing a [super dealloc] call"
-msgstr ""
+msgstr "metod saknar kanske ett [super dealloc]-anrop"
 
 #: objc/objc-act.c:9411
 #, gcc-internal-format
