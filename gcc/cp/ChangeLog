@@ -1,3 +1,9 @@
+2007-02-12  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR middle-end/7651
+	* cp-gimplify.c (gimplify_expr_stmt): Don't check extra_warnings.
+	Check warn_unused_value just once.
+
 2007-02-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/26988

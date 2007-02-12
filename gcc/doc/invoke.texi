@@ -2730,10 +2730,14 @@ To suppress this warning use the @samp{unused} attribute
 
 @item -Wunused-value
 @opindex Wunused-value
-Warn whenever a statement computes a result that is explicitly not used.
-This warning is enabled by @option{-Wall}.
+Warn whenever a statement computes a result that is explicitly not
+used. To suppress this warning cast the unused expression to
+@samp{void}. This includes an expression-statement or the left-hand
+side of a comma expression that contains no side effects. For example,
+an expression such as @samp{x[i,j]} will cause a warning, while
+@samp{x[(void)i,j]} will not.
 
-To suppress this warning cast the expression to @samp{void}.
+This warning is enabled by @option{-Wall}.
 
 @item -Wunused
 @opindex Wunused
@@ -2907,13 +2911,6 @@ foo (a)
 @}
 @end group
 @end smallexample
-
-@item
-An expression-statement or the left-hand side of a comma expression
-contains no side effects.
-To suppress the warning, cast the unused expression to void.
-For example, an expression such as @samp{x[i,j]} will cause a warning,
-but @samp{x[(void)i,j]} will not.
 
 @item
 An unsigned value is compared against zero with @samp{<} or @samp{>=}.

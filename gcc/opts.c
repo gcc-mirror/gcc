@@ -1042,7 +1042,6 @@ static void
 set_Wextra (int setting)
 {
   extra_warnings = setting;
-  warn_unused_value = setting;
   warn_unused_parameter = (setting && maybe_warn_unused_parameter);
 
   /* We save the value of warn_uninitialized, since if they put

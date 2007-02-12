@@ -363,16 +363,16 @@ gimplify_expr_stmt (tree *stmt_p)
      In this case we will not want to emit the gimplified statement.
      However, we may still want to emit a warning, so we do that before
      gimplification.  */
-  if (stmt && (extra_warnings || warn_unused_value))
+  if (stmt && warn_unused_value)
     {
       if (!TREE_SIDE_EFFECTS (stmt))
 	{
 	  if (!IS_EMPTY_STMT (stmt)
 	      && !VOID_TYPE_P (TREE_TYPE (stmt))
 	      && !TREE_NO_WARNING (stmt))
-	    warning (OPT_Wextra, "statement with no effect");
+	    warning (OPT_Wunused_value, "statement with no effect");
 	}
-      else if (warn_unused_value)
+      else
 	warn_if_unused_value (stmt, input_location);
     }
 

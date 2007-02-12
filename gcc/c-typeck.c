@@ -7353,10 +7353,10 @@ emit_side_effect_warnings (tree expr)
   else if (!TREE_SIDE_EFFECTS (expr))
     {
       if (!VOID_TYPE_P (TREE_TYPE (expr)) && !TREE_NO_WARNING (expr))
-	warning (0, "%Hstatement with no effect",
+	warning (OPT_Wunused_value, "%Hstatement with no effect",
 		 EXPR_HAS_LOCATION (expr) ? EXPR_LOCUS (expr) : &input_location);
     }
-  else if (warn_unused_value)
+  else
     warn_if_unused_value (expr, input_location);
 }
 
@@ -7381,7 +7381,7 @@ c_process_expr_stmt (tree expr)
      Warnings for statement expressions will be emitted later, once we figure
      out which is the result.  */
   if (!STATEMENT_LIST_STMT_EXPR (cur_stmt_list)
-      && (extra_warnings || warn_unused_value))
+      && warn_unused_value)
     emit_side_effect_warnings (expr);
 
   /* If the expression is not of a type to which we cannot assign a line
@@ -7497,7 +7497,7 @@ c_finish_stmt_expr (tree body)
 
       /* If we're supposed to generate side effects warnings, process
 	 all of the statements except the last.  */
-      if (extra_warnings || warn_unused_value)
+      if (warn_unused_value)
 	{
 	  for (i = tsi_start (last); !tsi_one_before_end_p (i); tsi_next (&i))
 	    emit_side_effect_warnings (tsi_stmt (i));
