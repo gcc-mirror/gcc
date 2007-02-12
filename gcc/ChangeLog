@@ -1,4 +1,9 @@
 2007-02-11  Roger Sayle  <roger@eyesopen.com>
+	    Matt Thomas  <matt@3am-software.com>
+
+	* simplify-rtx.c (simplify_relational_operation_1): Correct typo.
+
+2007-02-11  Roger Sayle  <roger@eyesopen.com>
 
 	* simplify-rtx.c (simplify_relational_operation_1): Optimize
 	comparisons of POPCOUNT against zero.
