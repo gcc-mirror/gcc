@@ -1,3 +1,8 @@
+2007-02-10  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/30478
+	* gfortran.dg/enum_4.f90: Update expected error message.
+
 2007-02-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/26988
