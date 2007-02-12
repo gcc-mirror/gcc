@@ -1437,6 +1437,60 @@
   "TARGET_CIX"
   "ctpop %1,%0"
   [(set_attr "type" "mvi")])
+
+(define_expand "bswapsi2"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(bswap:SI (match_operand:SI 1 "register_operand" "")))]
+  "!optimize_size"
+{
+  rtx t0, t1;
+
+  t0 = gen_reg_rtx (DImode);
+  t1 = gen_reg_rtx (DImode);
+
+  emit_insn (gen_insxh (t0, gen_lowpart (DImode, operands[1]),
+			GEN_INT (32), GEN_INT (WORDS_BIG_ENDIAN ? 0 : 7)));
+  emit_insn (gen_inswl_const (t1, gen_lowpart (HImode, operands[1]),
+			      GEN_INT (24)));
+  emit_insn (gen_iordi3 (t1, t0, t1));
+  emit_insn (gen_lshrdi3 (t0, t1, GEN_INT (16)));
+  emit_insn (gen_anddi3 (t1, t1, alpha_expand_zap_mask (0x5)));
+  emit_insn (gen_anddi3 (t0, t0, alpha_expand_zap_mask (0xa)));
+  emit_insn (gen_addsi3 (operands[0], gen_lowpart (SImode, t0),
+			 gen_lowpart (SImode, t1)));
+  DONE;
+})
+
+(define_expand "bswapdi2"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(bswap:DI (match_operand:DI 1 "register_operand" "")))]
+  "!optimize_size"
+{
+  rtx t0, t1;
+
+  t0 = gen_reg_rtx (DImode);
+  t1 = gen_reg_rtx (DImode);
+
+  /* This method of shifting and masking is not specific to Alpha, but
+     is only profitable on Alpha because of our handy byte zap insn.  */
+
+  emit_insn (gen_lshrdi3 (t0, operands[1], GEN_INT (32)));
+  emit_insn (gen_ashldi3 (t1, operands[1], GEN_INT (32)));
+  emit_insn (gen_iordi3 (t1, t0, t1));
+
+  emit_insn (gen_lshrdi3 (t0, t1, GEN_INT (16)));
+  emit_insn (gen_ashldi3 (t1, t1, GEN_INT (16)));
+  emit_insn (gen_anddi3 (t0, t0, alpha_expand_zap_mask (0xcc)));
+  emit_insn (gen_anddi3 (t1, t1, alpha_expand_zap_mask (0x33)));
+  emit_insn (gen_iordi3 (t1, t0, t1));
+
+  emit_insn (gen_lshrdi3 (t0, t1, GEN_INT (8)));
+  emit_insn (gen_ashldi3 (t1, t1, GEN_INT (8)));
+  emit_insn (gen_anddi3 (t0, t0, alpha_expand_zap_mask (0xaa)));
+  emit_insn (gen_anddi3 (t1, t1, alpha_expand_zap_mask (0x55)));
+  emit_insn (gen_iordi3 (operands[0], t0, t1));
+  DONE;
+})
 
 ;; Next come the shifts and the various extract and insert operations.
 
@@ -2008,7 +2062,7 @@
   "insbl %1,%s2,%0"
   [(set_attr "type" "shift")])
 
-(define_insn "*inswl_const"
+(define_insn "inswl_const"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI (zero_extend:DI (match_operand:HI 1 "register_operand" "r"))
 		   (match_operand:DI 2 "mul8_operand" "I")))]
