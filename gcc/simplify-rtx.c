@@ -3802,6 +3802,27 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
 				    simplify_gen_binary (XOR, cmp_mode,
 							 XEXP (op0, 1), op1));
 
+  if (op0code == POPCOUNT && op1 == const0_rtx)
+    switch (code)
+      {
+      case EQ:
+      case LE:
+      case LEU:
+	/* (eq (popcount x) (const_int 0)) -> (eq x (const_int 0)).  */
+	return simplify_gen_relational (EQ, mode, GET_MODE (XEXP (op0, 0)),
+					XEXP (op0, 0), const0_rtx);
+
+      case NE:
+      case GT:
+      case GTU:
+	/* (ne (popcount x) (const_int 0)) -> (ne x (const_int 0)).  */
+	return simplify_gen_relational (EQ, mode, GET_MODE (XEXP (op0, 0)),
+					XEXP (op0, 0), const0_rtx);
+
+      default:
+	break;
+      }
+
   return NULL_RTX;
 }
 
@@ -4067,6 +4088,10 @@ simplify_const_relational_operation (enum rtx_code code,
 	      if (GET_CODE (tem) == ABS)
 		return const0_rtx;
 	    }
+
+	  /* Optimize popcount (x) < 0.  */
+	  if (GET_CODE (trueop0) == POPCOUNT && trueop1 == const0_rtx)
+	    return const_true_rtx;
 	  break;
 
 	case GE:
@@ -4081,6 +4106,10 @@ simplify_const_relational_operation (enum rtx_code code,
 	      if (GET_CODE (tem) == ABS)
 		return const_true_rtx;
 	    }
+
+	  /* Optimize popcount (x) >= 0.  */
+	  if (GET_CODE (trueop0) == POPCOUNT && trueop1 == const0_rtx)
+	    return const_true_rtx;
 	  break;
 
 	case UNGE:
