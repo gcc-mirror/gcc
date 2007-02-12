@@ -1,5 +1,5 @@
 /* PlainSocketImpl.java -- Default socket implementation
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -109,6 +109,9 @@ public final class PlainSocketImpl extends SocketImpl
   
   // localAddress cache
   InetAddress localAddress;
+
+  // Local address as an InetSocketAddress.
+  InetSocketAddress localSocketAddress;
 
   /**
    * A cached copy of the in stream for reading from the socket.
@@ -324,6 +327,24 @@ public final class PlainSocketImpl extends SocketImpl
   protected native void close() throws IOException;
 
   protected native void sendUrgentData(int data) throws IOException;
+
+  public synchronized InetSocketAddress getLocalAddress()
+  {
+    if (localSocketAddress == null)
+      {
+	try
+	  {
+	    localSocketAddress
+	      = new InetSocketAddress ((InetAddress) getOption(SocketOptions.SO_BINDADDR),
+				       localport);
+	  }
+	catch (SocketException _)
+	  {
+	    return null;
+	  }
+      }
+    return localSocketAddress;
+  }
 
   /**
    * Returns an InputStream object for reading from this socket.  This will
