@@ -1,3 +1,19 @@
+2007-02-12  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/constraints.md: New file.
+	* config/alpha/alpha.c: Include tm-constrs.h.
+	(alpha_const_ok_for_letter_p, alpha_const_double_ok_for_letter_p,
+	alpha_extra_constraint): Remove.
+	(alpha_emit_conditional_branch): Use satisfies_constraint_*.
+	* config/alpha/alpha-protos.h: Update.
+	* config/alpha/alpha.h (REG_CLASS_FROM_LETTER): Remove.
+	(CONST_OK_FOR_LETTER_P, CONST_DOUBLE_OK_FOR_LETTER_P): Remove.
+	(EXTRA_CONSTRAINT): Remove.
+	* config/alpha/alpha.md: Include constraints.md.
+	(adddi splitter): Use satisfies_constraint_*.
+	* config/alpha/predicates.md (add_operand): Likewise.
+	(sext_add_operand, addition_operation): Likewise.
+
 2007-02-12  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/29145

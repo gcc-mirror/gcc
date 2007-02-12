@@ -1,5 +1,5 @@
 /* Prototypes for alpha.c functions used in the md file & elsewhere.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -34,10 +34,6 @@ extern int alpha_using_fp (void);
 extern void alpha_expand_prologue (void);
 extern void alpha_expand_epilogue (void);
 extern void alpha_output_filename (FILE *, const char *);
-
-extern bool alpha_const_ok_for_letter_p (HOST_WIDE_INT, int);
-extern bool alpha_const_double_ok_for_letter_p (rtx, int);
-extern bool alpha_extra_constraint (rtx, int);
 
 extern rtx alpha_tablejump_addr_vec (rtx);
 extern rtx alpha_tablejump_best_label (rtx);
