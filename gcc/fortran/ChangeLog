@@ -1,5 +1,11 @@
-2007-02-12  Paul Thomas  <pault@gcc.gnu.org>
+2007-02-12  Daniel Franke  <franke.daniel@gmail.com>
 
+	Backport from trunk:
+	2007-02-11  Daniel Franke  <franke.daniel@gmail.com>
+	* intrinsic.texi (HOSTNM): Fix typographical error in syntax.
+	(SLEEP): Added section and documentation.
+
+2007-02-12  Paul Thomas  <pault@gcc.gnu.org>
 	PR fortran/30284
 	PR fortran/30626
 	* trans-expr.c (gfc_conv_aliased_arg): Remove static attribute
