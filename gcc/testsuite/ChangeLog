@@ -1,3 +1,19 @@
+2007-02-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30284
+	* gfortran.dg/arrayio_11.f90: New test.
+
+	PR fortran/30626
+	* gfortran.dg/arrayio_12.f90: New test.
+
+	PR fortran/30407
+	* gfortran.dg/where_operator_assign_1.f90: New test.
+	* gfortran.dg/where_operator_assign_2.f90: New test.
+	* gfortran.dg/where_operator_assign_3.f90: New test.
+
+	PR fortran/30514
+	* gfortran.dg/zero_sized_2.f90: New test.
+
 2007-02-10  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/30478

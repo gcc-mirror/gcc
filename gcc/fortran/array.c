@@ -319,6 +319,15 @@ match_array_element_spec (gfc_array_spec * as)
   if (m == MATCH_NO)
     return AS_ASSUMED_SHAPE;
 
+  /* If the size is negative in this dimension, set it to zero.  */
+  if ((*lower)->expr_type == EXPR_CONSTANT
+      && (*upper)->expr_type == EXPR_CONSTANT
+      && mpz_cmp ((*upper)->value.integer, (*lower)->value.integer) < 0)
+    {
+      gfc_free_expr (*upper);
+      *upper = gfc_copy_expr (*lower);
+      mpz_sub_ui ((*upper)->value.integer, (*upper)->value.integer, 1);
+    }
   return AS_EXPLICIT;
 }
 

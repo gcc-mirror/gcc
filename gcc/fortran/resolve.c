@@ -4559,6 +4559,10 @@ resolve_where (gfc_code *code, gfc_expr *mask)
                           "inconsistent shape", &cnext->expr->where);
               break;
 
+	    case EXEC_ASSIGN_CALL:
+	      resolve_call (cnext);
+	      break;
+
             /* WHERE or WHERE construct is part of a where-body-construct */
             case EXEC_WHERE:
               resolve_where (cnext, e);
@@ -4795,6 +4799,10 @@ gfc_resolve_forall_body (gfc_code *code, int nvar, gfc_expr **var_expr)
         case EXEC_POINTER_ASSIGN:
           gfc_resolve_assign_in_forall (c, nvar, var_expr);
           break;
+
+	case EXEC_ASSIGN_CALL:
+	  resolve_call (c);
+	  break;
 
         /* Because the gfc_resolve_blocks() will handle the nested FORALL,
            there is no need to handle it here.  */

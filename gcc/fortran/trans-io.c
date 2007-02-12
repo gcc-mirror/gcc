@@ -585,7 +585,8 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
    for an internal unit.  */
 
 static unsigned int
-set_internal_unit (stmtblock_t * block, tree var, gfc_expr * e)
+set_internal_unit (stmtblock_t * block, stmtblock_t * post_block,
+		   tree var, gfc_expr * e)
 {
   gfc_se se;
   tree io;
@@ -623,10 +624,23 @@ set_internal_unit (stmtblock_t * block, tree var, gfc_expr * e)
     {
       se.ss = gfc_walk_expr (e);
 
-      /* Return the data pointer and rank from the descriptor.  */
-      gfc_conv_expr_descriptor (&se, e, se.ss);
-      tmp = gfc_conv_descriptor_data_get (se.expr);
-      se.expr = gfc_build_addr_expr (pchar_type_node, se.expr);
+      if (is_aliased_array (e))
+	{
+	  /* Use a temporary for components of arrays of derived types
+	     or substring array references.  */
+	  gfc_conv_aliased_arg (&se, e, 0,
+		last_dt == READ ? INTENT_IN : INTENT_OUT);
+	  tmp = build_fold_indirect_ref (se.expr);
+	  se.expr = gfc_build_addr_expr (pchar_type_node, tmp);
+	  tmp = gfc_conv_descriptor_data_get (tmp);
+	}
+      else
+	{
+	  /* Return the data pointer and rank from the descriptor.  */
+	  gfc_conv_expr_descriptor (&se, e, se.ss);
+	  tmp = gfc_conv_descriptor_data_get (se.expr);
+	  se.expr = gfc_build_addr_expr (pchar_type_node, se.expr);
+	}
     }
   else
     gcc_unreachable ();
@@ -634,10 +648,12 @@ set_internal_unit (stmtblock_t * block, tree var, gfc_expr * e)
   /* The cast is needed for character substrings and the descriptor
      data.  */
   gfc_add_modify_expr (&se.pre, io, fold_convert (TREE_TYPE (io), tmp));
-  gfc_add_modify_expr (&se.pre, len, se.string_length);
+  gfc_add_modify_expr (&se.pre, len,
+		       fold_convert (TREE_TYPE (len), se.string_length));
   gfc_add_modify_expr (&se.pre, desc, se.expr);
 
   gfc_add_block_to_block (block, &se.pre);
+  gfc_add_block_to_block (post_block, &se.post);
   return mask;
 }
 
@@ -1370,7 +1386,7 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
 static tree
 build_dt (tree function, gfc_code * code)
 {
-  stmtblock_t block, post_block, post_end_block;
+  stmtblock_t block, post_block, post_end_block, post_iu_block;
   gfc_dt *dt;
   tree tmp, var;
   gfc_expr *nmlname;
@@ -1380,6 +1396,7 @@ build_dt (tree function, gfc_code * code)
   gfc_start_block (&block);
   gfc_init_block (&post_block);
   gfc_init_block (&post_end_block);
+  gfc_init_block (&post_iu_block);
 
   var = gfc_create_var (st_parameter[IOPARM_ptype_dt].type, "dt_parm");
 
@@ -1410,7 +1427,8 @@ build_dt (tree function, gfc_code * code)
     {
       if (dt->io_unit->ts.type == BT_CHARACTER)
 	{
-	  mask |= set_internal_unit (&block, var, dt->io_unit);
+	  mask |= set_internal_unit (&block, &post_iu_block,
+				     var, dt->io_unit);
 	  set_parameter_const (&block, var, IOPARM_common_unit, 0);
 	}
       else
@@ -1500,6 +1518,8 @@ build_dt (tree function, gfc_code * code)
   dt_post_end_block = &post_end_block;
 
   gfc_add_expr_to_block (&block, gfc_trans_code (code->block->next));
+
+  gfc_add_block_to_block (&block, &post_iu_block);
 
   dt_parm = NULL;
   dt_post_end_block = NULL;

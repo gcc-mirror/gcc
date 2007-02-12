@@ -303,8 +303,15 @@ void gfc_conv_intrinsic_function (gfc_se *, gfc_expr *);
 /* Does an intrinsic map directly to an external library call.  */
 int gfc_is_intrinsic_libcall (gfc_expr *);
 
+/* Used to call the elemental subroutines used in operator assignments.  */
+tree gfc_conv_operator_assign (gfc_se *, gfc_se *, gfc_symbol *);
+
 /* Also used to CALL subroutines.  */
 int gfc_conv_function_call (gfc_se *, gfc_symbol *, gfc_actual_arglist *);
+
+void gfc_conv_aliased_arg (gfc_se *, gfc_expr *, int, sym_intent);
+bool is_aliased_array (gfc_expr *);
+
 /* gfc_trans_* shouldn't call push/poplevel, use gfc_push/pop_scope */
 
 /* Generate code for a scalar assignment.  */
