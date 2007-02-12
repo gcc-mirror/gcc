@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -64,17 +64,30 @@ struct cl_option_state {
 extern const struct cl_option cl_options[];
 extern const unsigned int cl_options_count;
 extern const char *const lang_names[];
+extern const unsigned int cl_lang_count;
 extern bool no_unit_at_a_time_default;
 
-#define CL_DISABLED		(1 << 21) /* Disabled in this configuration.  */
-#define CL_TARGET		(1 << 22) /* Target-specific option.  */
-#define CL_REPORT		(1 << 23) /* Report argument with -fverbose-asm  */
-#define CL_JOINED		(1 << 24) /* If takes joined argument.  */
-#define CL_SEPARATE		(1 << 25) /* If takes a separate argument.  */
-#define CL_REJECT_NEGATIVE	(1 << 26) /* Reject no- form.  */
-#define CL_MISSING_OK		(1 << 27) /* Missing argument OK (joined).  */
-#define CL_UINTEGER		(1 << 28) /* Argument is an integer >=0.  */
-#define CL_COMMON		(1 << 29) /* Language-independent.  */
+#define CL_PARAMS               (1 << 18) /* Fake entry.  Used to display --param info with --help.  */
+#define CL_WARNING		(1 << 19) /* Enables an (optional) warning message.  */
+#define CL_OPTIMIZATION		(1 << 20) /* Enables an (optional) optimization.  */
+#define CL_TARGET		(1 << 21) /* Target-specific option.  */
+#define CL_COMMON		(1 << 22) /* Language-independent.  */
+
+#define CL_MIN_OPTION_CLASS	CL_PARAMS
+#define CL_MAX_OPTION_CLASS	CL_COMMON
+
+/* From here on the bits describe attributes of the options.
+   Before this point the bits have described the class of the option.
+   This distinction is important because --help will not list options
+   which only have these higher bits set.  */
+
+#define CL_DISABLED		(1 << 23) /* Disabled in this configuration.  */
+#define CL_REPORT		(1 << 24) /* Report argument with -fverbose-asm  */
+#define CL_JOINED		(1 << 25) /* If takes joined argument.  */
+#define CL_SEPARATE		(1 << 26) /* If takes a separate argument.  */
+#define CL_REJECT_NEGATIVE	(1 << 27) /* Reject no- form.  */
+#define CL_MISSING_OK		(1 << 28) /* Missing argument OK (joined).  */
+#define CL_UINTEGER		(1 << 29) /* Argument is an integer >=0.  */
 #define CL_UNDOCUMENTED		(1 << 30) /* Do not output with --help.  */
 
 /* Input file names.  */

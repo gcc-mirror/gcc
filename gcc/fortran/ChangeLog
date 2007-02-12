@@ -1,3 +1,7 @@
+2007-02-12  Nick Clifton  <nickc@redhat.com>
+
+	* lang.opt:  Add Warning attribute to warning options.
+
 2007-02-11  Daniel Franke  <franke.daniel@gmail.com>
 
 	* intrinsic.texi (HOSTNM): Fix typographical error in syntax.

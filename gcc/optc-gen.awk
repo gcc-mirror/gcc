@@ -1,4 +1,4 @@
-#  Copyright (C) 2003,2004 Free Software Foundation, Inc.
+#  Copyright (C) 2003, 2004, 2007 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -119,6 +119,7 @@ for (i = 0; i < n_langs; i++) {
 
 print "  0\n};\n"
 print "const unsigned int cl_options_count = N_OPTS;\n"
+print "const unsigned int cl_lang_count = " n_langs ";\n"
 
 print "const struct cl_option cl_options[] =\n{"
 

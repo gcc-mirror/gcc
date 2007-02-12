@@ -1,4 +1,4 @@
-#  Copyright (C) 2003,2004 Free Software Foundation, Inc.
+#  Copyright (C) 2003, 2004, 2007 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -77,6 +77,8 @@ function switch_flags (flags)
 	  test_flag("RejectNegative", flags, " | CL_REJECT_NEGATIVE") \
 	  test_flag("UInteger", flags, " | CL_UINTEGER") \
 	  test_flag("Undocumented", flags,  " | CL_UNDOCUMENTED") \
+	  test_flag("Warning", flags,  " | CL_WARNING") \
+	  test_flag("Optimization", flags,  " | CL_OPTIMIZATION") \
 	  test_flag("Report", flags, " | CL_REPORT")
 	sub( "^0 \\| ", "", result )
 	return result
