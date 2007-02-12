@@ -1,5 +1,11 @@
 2007-02-12  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* tree.h (DECL_IGNORED_P): Document further effect for FUNCTION_DECL.
+	* cgraphunit.c (cgraph_expand_function): If DECL_IGNORED_P is set on
+	the function, temporarily point the debug interface to the null one.
+
+2007-02-12  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* dwarf2out.c (round_up_to_align): New static function.
 	(field_byte_offset): Use it to round the offset.
 
