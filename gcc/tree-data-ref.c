@@ -490,6 +490,7 @@ base_addr_differ_p (struct data_reference *dra,
   tree addr_a = DR_BASE_ADDRESS (dra);
   tree addr_b = DR_BASE_ADDRESS (drb);
   tree type_a, type_b;
+  tree decl_a, decl_b;
   bool aliased;
 
   if (!addr_a || !addr_b)
@@ -547,14 +548,25 @@ base_addr_differ_p (struct data_reference *dra,
     }
   
   /* An instruction writing through a restricted pointer is "independent" of any 
-     instruction reading or writing through a different pointer, in the same 
-     block/scope.  */
-  else if ((TYPE_RESTRICT (type_a) && !DR_IS_READ (dra))
-      || (TYPE_RESTRICT (type_b) && !DR_IS_READ (drb)))
+     instruction reading or writing through a different restricted pointer, 
+     in the same block/scope.  */
+  else if (TYPE_RESTRICT (type_a)
+	   &&  TYPE_RESTRICT (type_b) 
+	   && (!DR_IS_READ (drb) || !DR_IS_READ (dra))
+	   && TREE_CODE (DR_BASE_ADDRESS (dra)) == SSA_NAME
+	   && (decl_a = SSA_NAME_VAR (DR_BASE_ADDRESS (dra)))
+	   && TREE_CODE (decl_a) == PARM_DECL
+	   && TREE_CODE (DECL_CONTEXT (decl_a)) == FUNCTION_DECL
+	   && TREE_CODE (DR_BASE_ADDRESS (drb)) == SSA_NAME
+	   && (decl_b = SSA_NAME_VAR (DR_BASE_ADDRESS (drb)))
+	   && TREE_CODE (decl_b) == PARM_DECL
+	   && TREE_CODE (DECL_CONTEXT (decl_b)) == FUNCTION_DECL
+	   && DECL_CONTEXT (decl_a) == DECL_CONTEXT (decl_b)) 
     {
       *differ_p = true;
       return true;
     }
+
   return false;
 }
 
