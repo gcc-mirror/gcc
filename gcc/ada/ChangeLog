@@ -1,7 +1,7 @@
 2007-02-07  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* raise-gcc.c (get_region_description_for, get_call_site_action_for,
-	get_action_description_for): Replaced _Unwind_Word with _uleb128_t 
+	get_action_description_for): Replace _Unwind_Word with _uleb128_t 
 	and _Unwind_SWord with _sleb128_t.
 
 2007-02-06  Paolo Bonzini  <bonzini@gnu.org>
@@ -71,9 +71,9 @@
 
 2006-11-05  Arnaud Charlet  <charlet@adacore.com>
 
+	PR ada/29707
 	* s-osinte-linux-alpha.ads, s-osinte-linux-hppa.ads
 	(To_Target_Priority): New function.
-	Fix PR ada/29707
 
 2006-10-31  Robert Dewar  <dewar@adacore.com>
 
@@ -2620,6 +2620,7 @@
 	* fe.h: Remove redundant declarations.
 
 2006-10-23 Rafael Avila de Espindola  <rafael.espindola@gmail.com>
+
 	* utils.c (builtin_function): Rename to gnat_builtin_function.
 	Move common code to add_builtin_function.
 	* misc.c (LANG_HOOKS_BUILTIN_FUNCTION): Define as
@@ -2771,7 +2772,7 @@
 
 2006-02-20 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
 
-	* Make-lang.in (Ada): Remove
+	* Make-lang.in (Ada): Remove.
 	(.PHONY): Remove Ada
 
 2006-02-17  Ed Schonberg  <schonberg@adacore.com>
@@ -2786,7 +2787,6 @@
 2006-02-17  Eric Botcazou  <botcazou@adacore.com>
 
 	PR ada/26315
-
 	* utils2.c (find_common_type): If both input types are BLKmode and
 	have the same constant size, keep using the first one.
 
@@ -3176,9 +3176,8 @@
 	with small changes.
 
 	PR ada/26096
-	(gnat_to_gnu_entity) <E_Variable>: Do not initialize the
-	aligning variable with the expression being built, only its inner
-	field.
+	(gnat_to_gnu_entity) <E_Variable>: Do not initialize the aligning
+	variable with the expression being built, only its inner field.
 
 	* trans.c (Handled_Sequence_Of_Statements_to_gnu): Remove call to
 	emit_sequence_entry_statements.
@@ -3218,9 +3217,8 @@
 	unions.
 
 	PR ada/18659
-	(update_pointer_to): Update variants of pointer types to
-	unconstrained arrays by attaching the list of fields of the main
-	variant.
+	(update_pointer_to): Update variants of pointer types to unconstrained
+	arrays by attaching the list of fields of the main variant.
 
 2006-02-13  Arnaud Charlet  <charlet@adacore.com>
 	    Robert Dewar  <dewar@adacore.com>
@@ -3450,8 +3448,7 @@
 	0, since the lower bound of the actual string may be greater than one.
 
 	PR ada/20753
-
-	(Put): Fix condition to raise Layout_Error when invalid
+	* a-tifiio.adb (Put): Fix condition to raise Layout_Error when invalid
 	layout is requested.
 
 2006-02-13  Vincent Celier  <celier@adacore.com>
@@ -3844,7 +3841,6 @@
 	convertible anonymous access types.
 
 	PR ada/25885
-
 	(Set_Literal_String_Subtype): If the lower bound is not static, wrap
 	the literal in an unchecked conversion, because GCC 4.x needs a static
 	value for a string bound.
