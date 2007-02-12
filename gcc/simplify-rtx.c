@@ -3816,7 +3816,7 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
       case GT:
       case GTU:
 	/* (ne (popcount x) (const_int 0)) -> (ne x (const_int 0)).  */
-	return simplify_gen_relational (EQ, mode, GET_MODE (XEXP (op0, 0)),
+	return simplify_gen_relational (NE, mode, GET_MODE (XEXP (op0, 0)),
 					XEXP (op0, 0), const0_rtx);
 
       default:
