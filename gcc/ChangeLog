@@ -1,3 +1,9 @@
+2007-02-11  Roger Sayle  <roger@eyesopen.com>
+
+	* simplify-rtx.c (simplify_relational_operation_1): Optimize
+	comparisons of POPCOUNT against zero.
+	(simplify_const_relational_operation): Likewise.
+
 2007-02-11  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* doc/invoke.texi (Wextra): Delete outdated paragraph.
