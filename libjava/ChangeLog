@@ -1,3 +1,8 @@
+2007-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* java/util/VMTimeZone.java: Rewrite to handle both the old
+	'TZif\0' format and the new one.
+	
 2007-02-10  Andrew Haley  <aph@redhat.com>
 
 	PR java/30742
