@@ -1,3 +1,12 @@
+2007-02-12  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/29145
+	* gcc.dg/vect/vect-74.c: Xfail the test - cannot be vectorized until
+	alias analysis is improved to take better advantage of restrict
+	qualified pointers.
+	* gcc.dg/vect/vect-80.c: Likewise.
+	* gcc.dg/vect/pr29145.c: New.
+
 2007-02-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/sse4a-extract.c: Add "LL" to 64bit constants.
