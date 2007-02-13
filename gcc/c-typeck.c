@@ -6935,8 +6935,10 @@ c_finish_return (tree retval)
   else if (valtype == 0 || TREE_CODE (valtype) == VOID_TYPE)
     {
       current_function_returns_null = 1;
-      if (pedantic || TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)
+      if (TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)
 	pedwarn ("%<return%> with a value, in function returning void");
+      else if (pedantic)
+	pedwarn ("ISO C forbids %<return%> with expression, in function returning void");
     }
   else
     {

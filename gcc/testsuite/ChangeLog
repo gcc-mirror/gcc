@@ -1,3 +1,9 @@
+2007-02-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c/29521
+	* gcc.dg/c90-return-1.c: Update output.
+	* gcc.dg/c99-return-1.c: Likewise.
+	
 2007-02-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/30554
