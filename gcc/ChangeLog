@@ -1,3 +1,7 @@
+2007-02-12  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* alias.c (find_symbolic_term): Delete unused function.
+	
 2007-02-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (paritydi2, paritysi2): New expanders.
