@@ -501,7 +501,7 @@ resolve_subreg_use (rtx *px, void *data)
 	 that the note must be removed.  */
       if (!x)
 	{
-	  gcc_assert(!insn);
+	  gcc_assert (!insn);
 	  return 1;
 	}
 
@@ -709,6 +709,23 @@ resolve_simple_move (rtx set, rtx insn)
     {
       end_sequence ();
       return insn;
+    }
+
+  /* It's possible for the code to use a subreg of a decomposed
+     register while forming an address.  We need to handle that before
+     passing the address to emit_move_insn.  We pass NULL_RTX as the
+     insn parameter to resolve_subreg_use because we can not validate
+     the insn yet.  */
+  if (MEM_P (src) || MEM_P (dest))
+    {
+      int acg;
+
+      if (MEM_P (src))
+	for_each_rtx (&XEXP (src, 0), resolve_subreg_use, NULL_RTX);
+      if (MEM_P (dest))
+	for_each_rtx (&XEXP (dest, 0), resolve_subreg_use, NULL_RTX);
+      acg = apply_change_group ();
+      gcc_assert (acg);
     }
 
   /* If SRC is a register which we can't decompose, or has side

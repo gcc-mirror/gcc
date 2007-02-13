@@ -1,3 +1,9 @@
+2007-02-13  Ian Lance Taylor  <iant@google.com>
+
+	PR middle-end/30751
+	* lower-subreg.c (resolve_simple_move): Decompose subregs in
+	addresses.
+
 2007-02-13  Stuart Hastings  <stuart@apple.com>
 
 	* gcc/config/i386/i386.md (fixuns_truncdfhi2): Require SSE2.
