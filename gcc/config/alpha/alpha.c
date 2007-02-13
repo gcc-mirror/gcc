@@ -5860,11 +5860,15 @@ va_list_skip_additions (tree lhs)
 	      ? ap.__offset + cst - 48 : ap.__offset + cst) + cst2).
    If the former, indicate that GPR registers are needed,
    if the latter, indicate that FPR registers are needed.
+
+   Also look for LHS = (*ptr).field, where ptr is one of the forms
+   listed above.
+
    On alpha, cfun->va_list_gpr_size is used as size of the needed
-   regs and cfun->va_list_fpr_size is a bitmask, bit 0 set if
-   GPR registers are needed and bit 1 set if FPR registers are needed.
-   Return true if va_list references should not be scanned for the current
-   statement.  */
+   regs and cfun->va_list_fpr_size is a bitmask, bit 0 set if GPR
+   registers are needed and bit 1 set if FPR registers are needed.
+   Return true if va_list references should not be scanned for the
+   current statement.  */
 
 static bool
 alpha_stdarg_optimize_hook (struct stdarg_info *si, tree lhs, tree rhs)
@@ -5872,6 +5876,8 @@ alpha_stdarg_optimize_hook (struct stdarg_info *si, tree lhs, tree rhs)
   tree base, offset, arg1, arg2;
   int offset_arg = 1;
 
+  while (handled_component_p (rhs))
+    rhs = TREE_OPERAND (rhs, 0);
   if (TREE_CODE (rhs) != INDIRECT_REF
       || TREE_CODE (TREE_OPERAND (rhs, 0)) != SSA_NAME)
     return false;
