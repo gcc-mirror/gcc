@@ -1030,49 +1030,31 @@ if test -z "${CC}" && test "${build}" = "${host}" ; then
 fi
 
 if test "${build}" != "${host}" ; then
-  # If we are doing a Canadian Cross, in which the host and build systems
-  # are not the same, we set reasonable default values for the tools.
-
-  CC=${CC-${host_noncanonical}-gcc}
-  CFLAGS=${CFLAGS-"-g -O2"}
-  CXX=${CXX-${host_noncanonical}-c++}
-  CXXFLAGS=${CXXFLAGS-"-g -O2"}
   CC_FOR_BUILD=${CC_FOR_BUILD-gcc}
-
 else
-  # Set reasonable default values for some tools even if not Canadian.
-  # Of course, these are different reasonable default values, originally
-  # specified directly in the Makefile.
-  # We don't export, so that autoconf can do its job.
-  # Note that all these settings are above the fragment inclusion point
-  # in Makefile.in, so can still be overridden by fragments.
-  # This is all going to change when we autoconfiscate...
-
   CC_FOR_BUILD="\$(CC)"
-  AC_PROG_CC
+fi
 
-  # We must set the default linker to the linker used by gcc for the correct
-  # operation of libtool.  If LD is not defined and we are using gcc, try to
-  # set the LD default to the ld used by gcc.
-  if test -z "$LD"; then
-    if test "$GCC" = yes; then
-      case $build in
-      *-*-mingw*)
-	gcc_prog_ld=`$CC -print-prog-name=ld 2>&1 | tr -d '\015'` ;;
-      *)
-	gcc_prog_ld=`$CC -print-prog-name=ld 2>&1` ;;
-      esac
-      case $gcc_prog_ld in
-      # Accept absolute paths.
-      [[\\/]* | [A-Za-z]:[\\/]*)]
-        LD="$gcc_prog_ld" ;;
-      esac
-    fi
+AC_PROG_CC
+AC_PROG_CXX
+
+# We must set the default linker to the linker used by gcc for the correct
+# operation of libtool.  If LD is not defined and we are using gcc, try to
+# set the LD default to the ld used by gcc.
+if test -z "$LD"; then
+  if test "$GCC" = yes; then
+    case $build in
+    *-*-mingw*)
+      gcc_prog_ld=`$CC -print-prog-name=ld 2>&1 | tr -d '\015'` ;;
+    *)
+      gcc_prog_ld=`$CC -print-prog-name=ld 2>&1` ;;
+    esac
+    case $gcc_prog_ld in
+    # Accept absolute paths.
+    [[\\/]* | [A-Za-z]:[\\/]*)]
+      LD="$gcc_prog_ld" ;;
+    esac
   fi
-
-  CXX=${CXX-"c++"}
-  CFLAGS=${CFLAGS-"-g"}
-  CXXFLAGS=${CXXFLAGS-"-g -O2"}
 fi
 
 ACX_PROG_GNAT
@@ -1578,6 +1560,9 @@ case "$host" in
     enable_gdbtk=no ;;
 esac
 
+# To find our prefix, in gcc_cv_tool_prefix.
+ACX_TOOL_DIRS
+
 copy_dirs=
 
 AC_ARG_WITH([build-sysroot], 
@@ -1597,10 +1582,7 @@ if test x"${with_headers}" != x && test x"${with_headers}" != xno ; then
     exit 1
   fi
   if test x"${with_headers}" != xyes ; then
-    case "${exec_prefixoption}" in
-    "") x=${prefix} ;;
-    *) x=${exec_prefix} ;;
-    esac
+    x=${gcc_cv_tool_prefix}
     copy_dirs="${copy_dirs} ${with_headers} $x/${target_noncanonical}/sys-include"
   fi
 fi
@@ -1616,10 +1598,7 @@ if test x"${with_libs}" != x && test x"${with_libs}" != xno ; then
   if test x"${with_libs}" != xyes ; then
     # Copy the libraries in reverse order, so that files in the first named
     # library override files in subsequent libraries.
-    case "${exec_prefixoption}" in
-    "") x=${prefix} ;;
-    *) x=${exec_prefix} ;;
-    esac
+    x=${gcc_cv_tool_prefix}
     for l in ${with_libs}; do
       copy_dirs="$l $x/${target_noncanonical}/lib ${copy_dirs}"
     done
