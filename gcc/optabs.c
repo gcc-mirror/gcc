@@ -2401,6 +2401,73 @@ widen_clz (enum machine_mode mode, rtx op0, rtx target)
   return 0;
 }
 
+/* Try calculating
+	(bswap:narrow x)
+   as
+	(lshiftrt:wide (bswap:wide x) ((width wide) - (width narrow))).  */
+static rtx
+widen_bswap (enum machine_mode mode, rtx op0, rtx target)
+{
+  enum mode_class class = GET_MODE_CLASS (mode);
+  enum machine_mode wider_mode;
+  rtx x, last;
+
+  if (!CLASS_HAS_WIDER_MODES_P (class))
+    return NULL_RTX;
+
+  for (wider_mode = GET_MODE_WIDER_MODE (mode);
+       wider_mode != VOIDmode;
+       wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+    if (bswap_optab->handlers[wider_mode].insn_code != CODE_FOR_nothing)
+      goto found;
+  return NULL_RTX;
+
+ found:
+  last = get_last_insn ();
+
+  x = widen_operand (op0, wider_mode, mode, true, true);
+  x = expand_unop (wider_mode, bswap_optab, x, NULL_RTX, true);
+
+  if (x != 0)
+    x = expand_shift (RSHIFT_EXPR, wider_mode, x,
+		      size_int (GET_MODE_BITSIZE (wider_mode)
+			        - GET_MODE_BITSIZE (mode)),
+		      NULL_RTX, true);
+
+  if (x != 0)
+    {
+      if (target == 0)
+	target = gen_reg_rtx (mode);
+      emit_move_insn (target, gen_lowpart (mode, x));
+    }
+  else
+    delete_insns_since (last);
+
+  return target;
+}
+
+/* Try calculating bswap as two bswaps of two word-sized operands.  */
+
+static rtx
+expand_doubleword_bswap (enum machine_mode mode, rtx op, rtx target)
+{
+  rtx t0, t1;
+
+  t1 = expand_unop (word_mode, bswap_optab,
+		    operand_subword_force (op, 0, mode), NULL_RTX, true);
+  t0 = expand_unop (word_mode, bswap_optab,
+		    operand_subword_force (op, 1, mode), NULL_RTX, true);
+
+  if (target == 0)
+    target = gen_reg_rtx (mode);
+  if (REG_P (target))
+    emit_insn (gen_rtx_CLOBBER (VOIDmode, target));
+  emit_move_insn (operand_subword (target, 0, 1, mode), t0);
+  emit_move_insn (operand_subword (target, 1, 1, mode), t1);
+
+  return target;
+}
+
 /* Try calculating (parity x) as (and (popcount x) 1), where
    popcount can also be done in a wider mode.  */
 static rtx
@@ -2639,9 +2706,23 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
 	goto try_libcall;
     }
 
-  /* We can't widen a bswap.  */
+  /* Widening (or narrowing) bswap needs special treatment.  */
   if (unoptab == bswap_optab)
-    goto try_libcall;
+    {
+      temp = widen_bswap (mode, op0, target);
+      if (temp)
+	return temp;
+
+      if (GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
+	  && unoptab->handlers[word_mode].insn_code != CODE_FOR_nothing)
+	{
+	  temp = expand_doubleword_bswap (mode, op0, target);
+	  if (temp)
+	    return temp;
+	}
+
+      goto try_libcall;
+    }
 
   if (CLASS_HAS_WIDER_MODES_P (class))
     for (wider_mode = GET_MODE_WIDER_MODE (mode);
