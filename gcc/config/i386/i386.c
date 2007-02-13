@@ -1519,7 +1519,6 @@ static const char *ix86_mangle_fundamental_type (tree);
 static tree ix86_stack_protect_fail (void);
 static rtx ix86_internal_arg_pointer (void);
 static void ix86_dwarf_handle_frame_unspec (const char *, rtx, int);
-static rtx ix86_build_const_vector (enum machine_mode, bool, rtx);
 static bool ix86_expand_vector_init_one_nonzero (bool, enum machine_mode,
 						 rtx, rtx, int);
 
@@ -9865,58 +9864,64 @@ ix86_unary_operator_ok (enum rtx_code code ATTRIBUTE_UNUSED,
   return TRUE;
 }
 
-/* Convert an SF or DFmode value in an SSE register into an unsigned SImode.
-   When -fpmath=387, this is done with an x87 st(0)_FP->signed-int-64
-   conversion, and ignoring the upper 32 bits of the result.  On x86_64,
-   there is an equivalent SSE %xmm->signed-int-64 conversion.
-
-   On x86_32, we don't have the instruction, nor the 64-bit destination
-   register it requires.  Do the conversion inline in the SSE registers.
-   Requires SSE2.  For x86_32, -mfpmath=sse, !optimize_size only.  */
+/* Post-reload splitter for converting an SF or DFmode value in an
+   SSE register into an unsigned SImode.  */
 
 void
-ix86_expand_convert_uns_si_sse (rtx target, rtx input)
+ix86_split_convert_uns_si_sse (rtx operands[])
 {
-  REAL_VALUE_TYPE TWO31r;
-  enum machine_mode mode, vecmode;
-  rtx two31, value, large, sign, result_vec, zero_or_two31, x;
+  enum machine_mode vecmode;
+  rtx value, large, zero_or_two31, input, two31, x;
 
-  mode = GET_MODE (input);
-  vecmode = mode == SFmode ? V4SFmode : V2DFmode;
+  large = operands[1];
+  zero_or_two31 = operands[2];
+  input = operands[3];
+  two31 = operands[4];
+  vecmode = GET_MODE (large);
+  value = gen_rtx_REG (vecmode, REGNO (operands[0]));
 
-  real_ldexp (&TWO31r, &dconst1, 31);
-  two31 = const_double_from_real_value (TWO31r, mode);
-  two31 = ix86_build_const_vector (mode, true, two31);
-  two31 = force_reg (vecmode, two31);
+  /* Load up the value into the low element.  We must ensure that the other
+     elements are valid floats -- zero is the easiest such value.  */
+  if (MEM_P (input))
+    {
+      if (vecmode == V4SFmode)
+	emit_insn (gen_vec_setv4sf_0 (value, CONST0_RTX (V4SFmode), input));
+      else
+	emit_insn (gen_sse2_loadlpd (value, CONST0_RTX (V2DFmode), input));
+    }
+  else
+    {
+      input = gen_rtx_REG (vecmode, REGNO (input));
+      emit_move_insn (value, CONST0_RTX (vecmode));
+      if (vecmode == V4SFmode)
+	emit_insn (gen_sse_movss (value, value, input));
+      else
+	emit_insn (gen_sse2_movsd (value, value, input));
+    }
 
-  value = gen_reg_rtx (vecmode);
-  ix86_expand_vector_init_one_nonzero (false, vecmode, value, input, 0);
+  emit_move_insn (large, two31);
+  emit_move_insn (zero_or_two31, MEM_P (two31) ? large : two31);
 
-  large = gen_reg_rtx (vecmode);
-  x = gen_rtx_fmt_ee (LE, vecmode, two31, value);
+  x = gen_rtx_fmt_ee (LE, vecmode, large, value);
   emit_insn (gen_rtx_SET (VOIDmode, large, x));
 
-  zero_or_two31 = gen_reg_rtx (vecmode);
-  x = gen_rtx_AND (vecmode, large, two31);
+  x = gen_rtx_AND (vecmode, zero_or_two31, large);
   emit_insn (gen_rtx_SET (VOIDmode, zero_or_two31, x));
 
   x = gen_rtx_MINUS (vecmode, value, zero_or_two31);
   emit_insn (gen_rtx_SET (VOIDmode, value, x));
 
-  result_vec = gen_reg_rtx (V4SImode);
-  if (mode == SFmode)
-    x = gen_sse2_cvttps2dq (result_vec, value);
+  large = gen_rtx_REG (V4SImode, REGNO (large));
+  emit_insn (gen_ashlv4si3 (large, large, GEN_INT (31)));
+
+  x = gen_rtx_REG (V4SImode, REGNO (value));
+  if (vecmode == V4SFmode)
+    emit_insn (gen_sse2_cvttps2dq (x, value));
   else
-    x = gen_sse2_cvttpd2dq (result_vec, value);
-  emit_insn (x);
+    emit_insn (gen_sse2_cvttpd2dq (x, value));
+  value = x;
 
-  sign = gen_reg_rtx (V4SImode);
-  emit_insn (gen_ashlv4si3 (sign, gen_lowpart (V4SImode, large),
-			    GEN_INT (31)));
-
-  emit_insn (gen_xorv4si3 (result_vec, result_vec, sign));
-
-  ix86_expand_vector_extract (false, target, result_vec, 0);
+  emit_insn (gen_xorv4si3 (value, value, large));
 }
 
 /* Convert an unsigned DImode value into a DFmode, using only SSE.
@@ -10066,7 +10071,7 @@ ix86_expand_convert_uns_sisf_sse (rtx target, rtx input)
    then replicate the value for all elements of the vector
    register.  */
 
-static rtx
+rtx
 ix86_build_const_vector (enum machine_mode mode, bool vect, rtx value)
 {
   rtvec v;
