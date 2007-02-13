@@ -4086,7 +4086,15 @@ simplify_const_relational_operation (enum rtx_code code,
 	      tem = GET_CODE (trueop0) == FLOAT_EXTEND ? XEXP (trueop0, 0)
 						       : trueop0;
 	      if (GET_CODE (tem) == ABS)
-		return const0_rtx;
+		{
+		  if (INTEGRAL_MODE_P (mode)
+		      && (issue_strict_overflow_warning
+			  (WARN_STRICT_OVERFLOW_CONDITIONAL)))
+		    warning (OPT_Wstrict_overflow,
+			     ("assuming signed overflow does not occur when "
+			      "assuming abs (x) < 0 is false"));
+		  return const0_rtx;
+		}
 	    }
 
 	  /* Optimize popcount (x) < 0.  */
@@ -4104,7 +4112,15 @@ simplify_const_relational_operation (enum rtx_code code,
 	      tem = GET_CODE (trueop0) == FLOAT_EXTEND ? XEXP (trueop0, 0)
 						       : trueop0;
 	      if (GET_CODE (tem) == ABS)
-		return const_true_rtx;
+		{
+		  if (INTEGRAL_MODE_P (mode)
+		      && (issue_strict_overflow_warning
+			  (WARN_STRICT_OVERFLOW_CONDITIONAL)))
+		    warning (OPT_Wstrict_overflow,
+			     ("assuming signed overflow does not occur when "
+			      "assuming abs (x) >= 0 is true"));
+		  return const_true_rtx;
+		}
 	    }
 
 	  /* Optimize popcount (x) >= 0.  */

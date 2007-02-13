@@ -1,5 +1,5 @@
 /* SSA Jump Threading
-   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Jeff Law  <law@redhat.com>
 
 This file is part of GCC.
@@ -425,12 +425,17 @@ simplify_control_stmt_condition (edge e,
 
       /* We absolutely do not care about any type conversions
          we only care about a zero/nonzero value.  */
+      fold_defer_overflow_warnings ();
+
       cached_lhs = fold (COND_EXPR_COND (dummy_cond));
       while (TREE_CODE (cached_lhs) == NOP_EXPR
 	     || TREE_CODE (cached_lhs) == CONVERT_EXPR
 	     || TREE_CODE (cached_lhs) == NON_LVALUE_EXPR)
 	cached_lhs = TREE_OPERAND (cached_lhs, 0);
-	    
+
+      fold_undefer_overflow_warnings (is_gimple_min_invariant (cached_lhs),
+				      stmt, WARN_STRICT_OVERFLOW_CONDITIONAL);
+
       /* If we have not simplified the condition down to an invariant,
 	 then use the pass specific callback to simplify the condition.  */
       if (! is_gimple_min_invariant (cached_lhs))

@@ -952,6 +952,17 @@ execute_todo (unsigned int flags)
     }
 }
 
+/* Verify invariants that should hold between passes.  This is a place
+   to put simple sanity checks.  */
+
+static void
+verify_interpass_invariants (void)
+{
+#ifdef ENABLE_CHECKING
+  gcc_assert (!fold_deferring_overflow_warnings_p ());
+#endif
+}
+
 /* Clear the last verified flag.  */
 
 static void
@@ -1063,6 +1074,7 @@ execute_one_pass (struct tree_opt_pass *pass)
 
   /* Run post-pass cleanup and verification.  */
   execute_todo (todo_after | pass->todo_flags_finish);
+  verify_interpass_invariants ();
 
   if (!current_function_decl)
     cgraph_process_new_functions ();

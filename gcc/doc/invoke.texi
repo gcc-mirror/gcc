@@ -248,6 +248,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
 -Wsign-compare  -Wstack-protector @gol
 -Wstrict-aliasing -Wstrict-aliasing=2 @gol
+-Wstrict-overflow -Wstrict-overflow=@var{n} @gol
 -Wstring-literal-comparison @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum @gol
 -Wsystem-headers  -Wtrigraphs  -Wundef  -Wuninitialized @gol
@@ -2971,6 +2972,56 @@ It warns about code which might break the strict aliasing rules that the
 compiler is using for optimization.  This warning catches more cases than
 @option{-Wstrict-aliasing}, but it will also give a warning for some ambiguous
 cases that are safe.
+
+@item -Wstrict-overflow
+@item -Wstrict-overflow=@var{n}
+@opindex -Wstrict-overflow
+This option is only active when @option{-fstrict-overflow} is active.
+It warns about cases where the compiler optimizes based on the
+assumption that signed overflow does not occur.  Note that it does not
+warn about all cases where the code might overflow: it only warns
+about cases where the compiler implements some optimization.  Thus
+this warning depends on the optimization level.
+
+An optimization which assumes that signed overflow does not occur is
+perfectly safe if the values of the variables involved are such that
+overflow never does, in fact, occur.  Therefore this warning can
+easily give a false positive: a warning about code which is not
+actually a problem.  To help focus on important issues, several
+warning levels are defined.
+
+@table @option
+@item -Wstrict-overflow=1
+Warn about cases which are both questionable and easy to avoid.  For
+example: @code{x + 1 > x}; with @option{-fstrict-overflow}, the
+compiler will simplify this to @code{1}.  @option{-Wstrict-overflow}
+(with no level) is the same as @option{-Wstrict-overflow=1}.  This
+level of @option{-Wstrict-overflow} is enabled by @option{-Wall};
+higher levels are not, and must be explicitly requested.
+
+@item -Wstrict-overflow=2
+Also warn about other cases where a comparison is simplified to a
+constant.  For example: @code{abs (x) >= 0}.  This can only be
+simplified when @option{-fstrict-overflow} is in effect, because
+@code{abs (INT_MIN)} overflows to @code{INT_MIN}, which is less than
+zero.
+
+@item -Wstrict-overflow=3
+Also warn about other cases where a comparison is simplified.  For
+example: @code{x + 1 > 1} will be simplified to @code{x > 0}.
+
+@item -Wstrict-overflow=4
+Also warn about other simplifications not covered by the above cases.
+For example: @code{(x * 10) / 5} will be simplified to @code{x * 2}.
+
+@item -Wstrict-overflow=5
+Also warn about cases where the compiler reduces the magnitude of a
+constant involved in a comparison.  For example: @code{x + 2 > y} will
+be simplified to @code{x + 1 >= y}.  This is reported only at the
+highest warning level because this simplification applies to many
+comparisons, so this warning level will give a very large number of
+false positives.
+@end table
 
 @item -Warray-bounds
 @opindex Wno-array-bounds

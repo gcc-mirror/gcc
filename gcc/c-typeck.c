@@ -3270,6 +3270,8 @@ build_conditional_expr (tree ifexp, tree op1, tree op2)
 
 	  if (unsigned_op1 ^ unsigned_op2)
 	    {
+	      bool ovf;
+
 	      /* Do not warn if the result type is signed, since the
 		 signed type will only be chosen if it can represent
 		 all the values of the unsigned type.  */
@@ -3278,8 +3280,10 @@ build_conditional_expr (tree ifexp, tree op1, tree op2)
 	      /* Do not warn if the signed quantity is an unsuffixed
 		 integer literal (or some static constant expression
 		 involving such literals) and it is non-negative.  */
-	      else if ((unsigned_op2 && tree_expr_nonnegative_p (op1))
-		       || (unsigned_op1 && tree_expr_nonnegative_p (op2)))
+	      else if ((unsigned_op2
+			&& tree_expr_nonnegative_warnv_p (op1, &ovf))
+		       || (unsigned_op1
+			   && tree_expr_nonnegative_warnv_p (op2, &ovf)))
 		/* OK */;
 	      else
 		warning (0, "signed and unsigned type in conditional expression");
@@ -8303,6 +8307,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	      else
 		{
 		  tree sop, uop;
+		  bool ovf;
 
 		  if (op0_signed)
 		    sop = xop0, uop = xop1;
@@ -8314,7 +8319,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 		     constant expression involving such literals or a
 		     conditional expression involving such literals)
 		     and it is non-negative.  */
-		  if (tree_expr_nonnegative_p (sop))
+		  if (tree_expr_nonnegative_warnv_p (sop, &ovf))
 		    /* OK */;
 		  /* Do not warn if the comparison is an equality operation,
 		     the unsigned quantity is an integral constant, and it
