@@ -1,3 +1,13 @@
+2007-02-12  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.md (fixuns_trunc<SSEMODEF>si_1): New insn.
+	(fixuns_trunc<SSEMODEF>si2): Use it.
+	* config/i386/sse.md (vec_setv4sf_0): Export.
+	* config/i386/i386.c (ix86_build_const_vector): Export.
+	(ix86_split_convert_uns_si_sse): Rename from
+	ix86_expand_convert_uns_si_sse and rewrite as a splitter.
+	* config/i386/i386-protos.h: Update.
+
 2007-02-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c/29521

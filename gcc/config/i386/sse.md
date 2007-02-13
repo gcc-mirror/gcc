@@ -1367,7 +1367,7 @@
   DONE;
 })
 
-(define_insn "*vec_setv4sf_0"
+(define_insn "vec_setv4sf_0"
   [(set (match_operand:V4SF 0 "nonimmediate_operand"  "=x,x,Y2,m")
 	(vec_merge:V4SF
 	  (vec_duplicate:V4SF
