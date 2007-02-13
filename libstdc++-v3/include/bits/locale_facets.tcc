@@ -746,16 +746,20 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	      const char_type __c = *__beg;
 
 	      if (__testf)
-		if (__n < __lc->_M_falsename_size)
-		  __testf = __c == __lc->_M_falsename[__n];
-		else
-		  break;
+	        {
+		  if (__n < __lc->_M_falsename_size)
+		    __testf = __c == __lc->_M_falsename[__n];
+		  else
+		    break;
+		}
 
 	      if (__testt)
-		if (__n < __lc->_M_truename_size)
-		  __testt = __c == __lc->_M_truename[__n];
-		else
-		  break;
+	        {
+		  if (__n < __lc->_M_truename_size)
+		    __testt = __c == __lc->_M_truename[__n];
+		  else
+		    break;
+		}
 
 	      if (!__testf && !__testt)
 		break;
