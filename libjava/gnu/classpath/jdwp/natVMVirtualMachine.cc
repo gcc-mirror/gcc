@@ -15,8 +15,6 @@ details. */
 #include <jvm.h>
 #include <jvmti.h>
 
-#include <java-interp.h>
-
 #include <java/lang/Class.h>
 #include <java/lang/ClassLoader.h>
 #include <java/lang/Integer.h>
@@ -34,6 +32,7 @@ details. */
 #include <gnu/classpath/jdwp/VMFrame.h>
 #include <gnu/classpath/jdwp/VMMethod.h>
 #include <gnu/classpath/jdwp/VMVirtualMachine.h>
+#include <gnu/classpath/jdwp/event/BreakpointEvent.h>
 #include <gnu/classpath/jdwp/event/ClassPrepareEvent.h>
 #include <gnu/classpath/jdwp/event/EventManager.h>
 #include <gnu/classpath/jdwp/event/EventRequest.h>
@@ -71,6 +70,8 @@ struct step_info
 static Location *get_request_location (EventRequest *);
 static gnu::classpath::jdwp::event::filters::StepFilter *
 get_request_step_filter (EventRequest *);
+static void JNICALL jdwpBreakpointCB (jvmtiEnv *, JNIEnv *, jthread,
+				      jmethodID, jlocation);
 static void JNICALL jdwpClassPrepareCB (jvmtiEnv *, JNIEnv *, jthread, jclass);
 static void JNICALL jdwpThreadEndCB (jvmtiEnv *, JNIEnv *, jthread);
 static void JNICALL jdwpThreadStartCB (jvmtiEnv *, JNIEnv *, jthread);
@@ -644,6 +645,29 @@ throw_jvmti_error (jvmtiError err)
 }
 
 static void JNICALL
+jdwpBreakpointCB (jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
+		  jthread thread, jmethodID method, jlocation location)
+{
+  jclass klass;
+  jvmtiError err;
+  err = env->GetMethodDeclaringClass (method, &klass);
+  JvAssert (err == JVMTI_ERROR_NONE);
+
+  using namespace gnu::classpath::jdwp;
+
+  jlong methodId = reinterpret_cast<jlong> (method);
+  VMMethod *meth = VMVirtualMachine::getClassMethod (klass, methodId);
+  Location *loc = new Location (meth, location);
+  JvAssert (thread->frame.frame_type == frame_interpreter);
+  _Jv_InterpFrame *iframe
+    = reinterpret_cast<_Jv_InterpFrame *> (thread->interp_frame);
+  jobject instance = iframe->get_this_ptr ();
+  event::BreakpointEvent *event
+    = new event::BreakpointEvent (thread, loc, instance);
+  Jdwp::notify (event);
+}
+
+static void JNICALL
 jdwpClassPrepareCB (jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
 		    jthread thread, jclass klass)
 {
@@ -703,6 +727,7 @@ jdwpVMInitCB (MAYBE_UNUSED jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
 {
   // The VM is now initialized, add our callbacks
   jvmtiEventCallbacks callbacks;
+  DEFINE_CALLBACK (callbacks, Breakpoint);
   DEFINE_CALLBACK (callbacks, ClassPrepare);
   DEFINE_CALLBACK (callbacks, ThreadEnd);
   DEFINE_CALLBACK (callbacks, ThreadStart);
@@ -710,6 +735,7 @@ jdwpVMInitCB (MAYBE_UNUSED jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
   _jdwp_jvmtiEnv->SetEventCallbacks (&callbacks, sizeof (callbacks));
 
   // Enable callbacks
+  ENABLE_EVENT (BREAKPOINT, NULL);
   ENABLE_EVENT (CLASS_PREPARE, NULL);
   ENABLE_EVENT (THREAD_END, NULL);
   ENABLE_EVENT (THREAD_START, NULL);
