@@ -1,6 +1,7 @@
 // Heap implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2004, 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -100,14 +101,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   template<typename _RandomAccessIterator>
-    bool
+    inline bool
     __is_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
     { return std::__is_heap(__first, std::distance(__first, __last)); }
 
   template<typename _RandomAccessIterator, typename _StrictWeakOrdering>
-    bool
+    inline bool
     __is_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
-	    _StrictWeakOrdering __comp)
+	      _StrictWeakOrdering __comp)
     { return std::__is_heap(__first, __comp, std::distance(__first, __last)); }
 
   // Heap-manipulation functions: push_heap, pop_heap, make_heap, sort_heap.
@@ -150,7 +151,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    _RandomAccessIterator>)
       __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
       __glibcxx_requires_valid_range(__first, __last);
-      //      __glibcxx_requires_heap(__first, __last - 1);
+      __glibcxx_requires_heap(__first, __last - 1);
 
       std::__push_heap(__first, _DistanceType((__last - __first) - 1),
 		       _DistanceType(0), _ValueType(*(__last - 1)));
@@ -210,17 +211,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		  _Distance __len, _Tp __value)
     {
       const _Distance __topIndex = __holeIndex;
-      _Distance __secondChild = 2 * __holeIndex + 2;
-      while (__secondChild < __len)
+      _Distance __secondChild = __holeIndex;
+      while (__secondChild < (__len - 1) / 2)
 	{
+	  __secondChild = 2 * (__secondChild + 1);
 	  if (*(__first + __secondChild) < *(__first + (__secondChild - 1)))
 	    __secondChild--;
 	  *(__first + __holeIndex) = *(__first + __secondChild);
 	  __holeIndex = __secondChild;
-	  __secondChild = 2 * (__secondChild + 1);
 	}
-      if (__secondChild == __len)
+      if ((__len & 1) == 0 && __secondChild == (__len - 2) / 2)
 	{
+	  __secondChild = 2 * (__secondChild + 1);
 	  *(__first + __holeIndex) = *(__first + (__secondChild - 1));
 	  __holeIndex = __secondChild - 1;
 	}
@@ -273,18 +275,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		  _Distance __len, _Tp __value, _Compare __comp)
     {
       const _Distance __topIndex = __holeIndex;
-      _Distance __secondChild = 2 * __holeIndex + 2;
-      while (__secondChild < __len)
+      _Distance __secondChild = __holeIndex;
+      while (__secondChild < (__len - 1) / 2)
 	{
+	  __secondChild = 2 * (__secondChild + 1);
 	  if (__comp(*(__first + __secondChild),
 		     *(__first + (__secondChild - 1))))
 	    __secondChild--;
 	  *(__first + __holeIndex) = *(__first + __secondChild);
 	  __holeIndex = __secondChild;
-	  __secondChild = 2 * (__secondChild + 1);
 	}
-      if (__secondChild == __len)
+      if ((__len & 1) == 0 && __secondChild == (__len - 2) / 2)
 	{
+	  __secondChild = 2 * (__secondChild + 1);
 	  *(__first + __holeIndex) = *(__first + (__secondChild - 1));
 	  __holeIndex = __secondChild - 1;
 	}
@@ -319,14 +322,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     pop_heap(_RandomAccessIterator __first,
 	     _RandomAccessIterator __last, _Compare __comp)
     {
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
+
       // concept requirements
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
       __glibcxx_requires_valid_range(__first, __last);
       __glibcxx_requires_heap_pred(__first, __last, __comp);
 
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type
-	_ValueType;
       std::__pop_heap(__first, __last - 1, __last - 1,
 		      _ValueType(*(__last - 1)), __comp);
     }
@@ -380,7 +384,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  Comparisons are made using comp.
   */
   template<typename _RandomAccessIterator, typename _Compare>
-    inline void
+    void
     make_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
 	      _Compare __comp)
     {
@@ -427,7 +431,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_RandomAccessIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
-      //      __glibcxx_requires_heap(__first, __last);
+      __glibcxx_requires_heap(__first, __last);
 
       while (__last - __first > 1)
 	std::pop_heap(__first, _RandomAccessIterator(__last--));

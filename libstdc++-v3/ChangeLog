@@ -1,3 +1,21 @@
+2007-02-12  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/21172
+	* include/bits/stl_heap.h (__adjust_heap(_RandomAccessIterator,
+	_Distance, _Distance, _Tp), __adjust_heap(_RandomAccessIterator,
+	_Distance, _Distance, _Tp, _Compare)): Avoid potential integer
+	overflow.
+
+	* include/bits/stl_heap.h (__is_heap(_RandomAccessIterator,
+	_RandomAccessIterator), __is_heap(_RandomAccessIterator,
+	_RandomAccessIterator, _StrictWeakOrdering): Mark inline.
+	(make_heap(_RandomAccessIterator, _RandomAccessIterator,
+	_Compare)): Do not mark inline.
+
+	* include/bits/stl_heap.h (push_heap(_RandomAccessIterator,
+	_RandomAccessIterator), sort_heap(_RandomAccessIterator,
+	_RandomAccessIterator)): Uncomment __glibcxx_requires_heap.
+
 2007-02-09  Richard Sandiford  <richard@codesourcery.com>
 
 	* testsuite/22_locale/time_put/put/wchar_t/1.cc: XFAIL if
