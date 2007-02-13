@@ -1,3 +1,8 @@
+2007-02-13  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* src/s390/ffi.c (ffi_prep_args, ffi_prep_cif_machdep,
+	ffi_closure_helper_SYSV): Add long double handling.
+
 2007-02-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* src/powerpc/linux64.S (ffi_call_LINUX64): Move restore of r2
