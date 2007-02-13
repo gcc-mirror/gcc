@@ -1,3 +1,8 @@
+2007-02-13  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/execute/ieee/pr29302-1.c: Moved from...
+	* gcc.c-torture/execute/pr29302-1.c: ... here.
+
 2007-02-13  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c/29521
