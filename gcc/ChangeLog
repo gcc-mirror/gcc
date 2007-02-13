@@ -1,3 +1,7 @@
+2007-02-13  Stuart Hastings  <stuart@apple.com>
+
+	* gcc/config/i386/i386.md (fixuns_truncdfhi2): Require SSE2.
+
 2007-02-13  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_stdarg_optimize_hook): Strip
