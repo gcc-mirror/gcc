@@ -1,3 +1,10 @@
+2007-02-12  Keith Seitz  <keiths@redhat.com>
+
+	* jvmti.cc (_Jv_JVMTI_GetStackTrace): Remove cast
+	from jthread to Thread *; it is no longer needed.
+	(_Jv_JVMTI_GetFrameCount): Likewise.
+	Fix small formatting typo.
+
 2007-02-12  Tom Tromey  <tromey@redhat.com>
 
 	* sources.am, Makefile.in: Rebuilt.

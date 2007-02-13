@@ -256,7 +256,7 @@ _Jv_JVMTI_GetAllThreads(MAYBE_UNUSED jvmtiEnv *env, jint *thread_cnt,
 
 static jvmtiError JNICALL
 _Jv_JVMTI_GetFrameCount (MAYBE_UNUSED jvmtiEnv *env, jthread thread,
-                         jint* frame_count)
+                         jint *frame_count)
 {
   REQUIRE_PHASE (env, JVMTI_PHASE_LIVE);
   
@@ -265,12 +265,10 @@ _Jv_JVMTI_GetFrameCount (MAYBE_UNUSED jvmtiEnv *env, jthread thread,
   using namespace java::lang;
   
   THREAD_DEFAULT_TO_CURRENT (thread);
-  
-  Thread *thr = reinterpret_cast<Thread *> (thread);
-  THREAD_CHECK_VALID (thr);
-  THREAD_CHECK_IS_ALIVE (thr);
+  THREAD_CHECK_VALID (thread);
+  THREAD_CHECK_IS_ALIVE (thread);
    
-  _Jv_Frame *frame = reinterpret_cast<_Jv_Frame *> (thr->frame);
+  _Jv_Frame *frame = reinterpret_cast<_Jv_Frame *> (thread->frame);
   (*frame_count) = frame->depth ();
   return JVMTI_ERROR_NONE;
 }
@@ -826,10 +824,8 @@ _Jv_JVMTI_GetStackTrace (MAYBE_UNUSED jvmtiEnv *env, jthread thread,
   using namespace java::lang;
   
   THREAD_DEFAULT_TO_CURRENT (thread);
-  
-  Thread *thr = reinterpret_cast<Thread *> (thread);
-  THREAD_CHECK_VALID (thr);
-  THREAD_CHECK_IS_ALIVE (thr);
+  THREAD_CHECK_VALID (thread);
+  THREAD_CHECK_IS_ALIVE (thread);
     
   jvmtiError jerr = env->GetFrameCount (thread, frame_count);
   if (jerr != JVMTI_ERROR_NONE)
@@ -843,7 +839,7 @@ _Jv_JVMTI_GetStackTrace (MAYBE_UNUSED jvmtiEnv *env, jthread thread,
   ILLEGAL_ARGUMENT (start_depth >= (*frame_count));
   ILLEGAL_ARGUMENT (start_depth < (-(*frame_count)));
   
-  _Jv_Frame *frame = reinterpret_cast<_Jv_Frame *> (thr->frame);
+  _Jv_Frame *frame = reinterpret_cast<_Jv_Frame *> (thread->frame);
 
   // If start_depth is negative use this to determine at what depth to start
   // the trace by adding it to the length of the call stack.  This allows the
