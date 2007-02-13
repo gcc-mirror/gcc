@@ -207,6 +207,12 @@ ffi_prep_args (unsigned char *stack, extended_cif *ecif)
       void *arg = *p_argv;
       int type = (*ptr)->type;
 
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
+      /* 16-byte long double is passed like a struct.  */
+      if (type == FFI_TYPE_LONGDOUBLE)
+	type = FFI_TYPE_STRUCT;
+#endif
+
       /* Check how a structure type is passed.  */
       if (type == FFI_TYPE_STRUCT)
 	{
@@ -364,6 +370,12 @@ ffi_prep_cif_machdep(ffi_cif *cif)
 	cif->flags = FFI390_RET_DOUBLE;
 	break;
 
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
+      case FFI_TYPE_LONGDOUBLE:
+	cif->flags = FFI390_RET_STRUCT;
+	n_gpr++;
+	break;
+#endif
       /* Integer values are returned in gpr 2 (and gpr 3
 	 for 64-bit values on 31-bit machines).  */
       case FFI_TYPE_UINT64:
@@ -399,6 +411,12 @@ ffi_prep_cif_machdep(ffi_cif *cif)
        i--, ptr++)
     {
       int type = (*ptr)->type;
+
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
+      /* 16-byte long double is passed like a struct.  */
+      if (type == FFI_TYPE_LONGDOUBLE)
+	type = FFI_TYPE_STRUCT;
+#endif
 
       /* Check how a structure type is passed.  */
       if (type == FFI_TYPE_STRUCT)
@@ -562,6 +580,12 @@ ffi_closure_helper_SYSV (ffi_closure *closure,
       int deref_struct_pointer = 0;
       int type = (*ptr)->type;
 
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
+      /* 16-byte long double is passed like a struct.  */
+      if (type == FFI_TYPE_LONGDOUBLE)
+	type = FFI_TYPE_STRUCT;
+#endif
+
       /* Check how a structure type is passed.  */
       if (type == FFI_TYPE_STRUCT)
 	{
@@ -662,6 +686,9 @@ ffi_closure_helper_SYSV (ffi_closure *closure,
       /* Void is easy, and so is struct.  */
       case FFI_TYPE_VOID:
       case FFI_TYPE_STRUCT:
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
+      case FFI_TYPE_LONGDOUBLE:
+#endif
 	break;
 
       /* Floating point values are returned in fpr 0.  */
