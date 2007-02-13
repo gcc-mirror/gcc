@@ -1,3 +1,8 @@
+2007-02-13  Andrew Haley  <aph@redhat.com>
+
+	* testsuite/libjava.lang/Divide_2.out
+	* testsuite/libjava.lang/Divide_2.java: New test.
+
 2007-02-12  Keith Seitz  <keiths@redhat.com>
 
 	* jvmti.cc (_Jv_JVMTI_GetStackTrace): Remove cast
