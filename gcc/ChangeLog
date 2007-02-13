@@ -1,3 +1,14 @@
+2007-02-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (cmpdi_ccno_1_rex64, *cmpsi_ccno_1,
+	*cmphi_ccno_1, *cmpqi_ccno_1, *movsi_xor, *movstricthi_xor,
+	*movstrictqi_xor, *movdi_xor_rex64, *ashldi3_1_rex64,
+	*ashldi3_cmp_rex64, *ashldi3_cconly_rex64, ashlsi3, *ashlsi3_1_zext,
+	*ashlsi3_cmp, *ashlsi3_cconly, *ashlsi3_cmp_zext, *ashlhi3_1_lea,
+	*ashlhi3_1, *ashlhi3_cmp, *ashlhi3_cconly, *ashlqi3_1_lea,
+	*ashlqi3_1, *ashlqi3_cmp, *ashlqi3_cconly): Remove equivalent
+	assembler dialect choice from asm templates.
+
 2007-02-12  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.md (fixuns_trunc<SSEMODEF>si_1): New insn.
