@@ -158,8 +158,8 @@ libgcj="target-libffi \
 # these libraries are built for the target environment, and are built after
 # the host libraries and the host tools (which may be a cross compiler)
 #
-target_libraries="target-libiberty \
-		target-libgcc \
+target_libraries="target-libgcc \
+		target-libiberty \
 		target-libgloss \
 		target-newlib \
 		target-libstdc++-v3 \

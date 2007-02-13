@@ -1,4 +1,9 @@
 2007-02-13  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* configure.ac (target_libraries): Move libgcc before libiberty.
+	* configure: Regenerated.
+
+2007-02-13  Daniel Jacobowitz  <dan@codesourcery.com>
 	    Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/30753
