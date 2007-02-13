@@ -2543,7 +2543,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 tree
 pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
 {
-  tree size_exp;
+  tree size_exp, ret;
 
   /* The result is a pointer of the same type that is being added.  */
 
@@ -2569,6 +2569,12 @@ pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
     }
   else
     size_exp = size_in_bytes (TREE_TYPE (result_type));
+
+  /* We are manipulating pointer values, so we don't need to warn
+     about relying on undefined signed overflow.  We disable the
+     warning here because we use integer types so fold won't know that
+     they are really pointers.  */
+  fold_defer_overflow_warnings ();
 
   /* If what we are about to multiply by the size of the elements
      contains a constant term, apply distributive law
@@ -2618,7 +2624,11 @@ pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
 				    convert (TREE_TYPE (intop), size_exp), 1));
 
   /* Create the sum or difference.  */
-  return fold_build2 (resultcode, result_type, ptrop, intop);
+  ret = fold_build2 (resultcode, result_type, ptrop, intop);
+
+  fold_undefer_and_ignore_overflow_warnings ();
+
+  return ret;
 }
 
 /* Return whether EXPR is a declaration whose address can never be

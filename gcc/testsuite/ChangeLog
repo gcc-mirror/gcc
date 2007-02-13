@@ -1,3 +1,16 @@
+2007-02-13  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/Wstrict-overflow-1.c: New test.
+	* gcc.dg/Wstrict-overflow-2.c: New test.
+	* gcc.dg/Wstrict-overflow-3.c: New test.
+	* gcc.dg/Wstrict-overflow-4.c: New test.
+	* gcc.dg/Wstrict-overflow-5.c: New test.
+	* gcc.dg/Wstrict-overflow-6.c: New test.
+	* gcc.dg/Wstrict-overflow-7.c: New test.
+	* gcc.dg/Wstrict-overflow-8.c: New test.
+	* gcc.dg/Wstrict-overflow-9.c: New test.
+	* gcc.dg/Wstrict-overflow-10.c: New test.
+
 2007-02-13  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.target/ia64/builtin-bswap-2.c: New test case.

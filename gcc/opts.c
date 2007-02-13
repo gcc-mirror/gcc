@@ -61,6 +61,10 @@ HOST_WIDE_INT larger_than_size;
    strict-aliasing safe.  */
 int warn_strict_aliasing;
 
+/* Nonzero means warn about optimizations which rely on undefined
+   signed overflow.  */
+int warn_strict_overflow;
+
 /* Hack for cooperation between set_Wunused and set_Wextra.  */
 static bool maybe_warn_unused_parameter;
 
@@ -1102,6 +1106,11 @@ common_handle_option (size_t scode, const char *arg, int value,
     case OPT_Wstrict_aliasing:
     case OPT_Wstrict_aliasing_:
       warn_strict_aliasing = value;
+      break;
+
+    case OPT_Wstrict_overflow:
+    case OPT_Wstrict_overflow_:
+      warn_strict_overflow = value;
       break;
 
     case OPT_Wunused:

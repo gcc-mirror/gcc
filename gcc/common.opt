@@ -158,6 +158,14 @@ Wstrict-aliasing=
 Common Joined UInteger Warning
 Warn about code which might break strict aliasing rules
 
+Wstrict-overflow
+Common
+Warn about optimizations that assume that signed overflow is undefined
+
+Wstrict-overflow=
+Common Joined UInteger
+Warn about optimizations that assume that signed overflow is undefined
+
 Wstring-literal-comparison
 Common Var(warn_string_literal_comparison) Warning
 Warn about comparisons to constant string literals
