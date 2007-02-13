@@ -1,3 +1,8 @@
+2007-02-13  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* doc/invoke.texi, doc/standards.texi: Refer to
+	gcc-4.2/c99status.html.
+
 2007-02-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/30634
