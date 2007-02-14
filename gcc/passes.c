@@ -848,6 +848,9 @@ execute_one_pass (struct tree_opt_pass *pass)
       dump_file = NULL;
     }
 
+  /* Reset in_gimple_form to not break non-unit-at-a-time mode.  */
+  in_gimple_form = false;
+
   return true;
 }
 

@@ -1,3 +1,11 @@
+2007-02-14  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2007-01-30  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/30313
+	* gcc.dg/torture/pr30313.c: New testcase.
+
 2007-02-13  Release Manager
 
 	* GCC 4.1.2 released.
