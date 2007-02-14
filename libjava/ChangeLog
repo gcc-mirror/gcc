@@ -1,3 +1,7 @@
+2007-02-13  Release Manager
+
+	* GCC 4.1.2 released.
+
 2006-07-13  Anthony Green  <green@redhat.com>
 
 	* java/io/natFilePosix.cc (performSetLastModified): Return true on
