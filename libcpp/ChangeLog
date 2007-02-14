@@ -1,3 +1,7 @@
+2007-02-13  Release Manager
+
+	* GCC 4.1.2 released.
+
 2006-12-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/29612
