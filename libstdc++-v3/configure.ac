@@ -86,7 +86,6 @@ AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
-AM_ICONV
 
 # Possibly disable most of the library.
 ## TODO: Consider skipping unncessary tests altogether in this case, rather
@@ -182,6 +181,9 @@ if $GLIBCXX_IS_NATIVE; then
 
   AC_FUNC_MMAP
 
+  # For iconv support.
+  AM_ICONV
+
 else
 
   # This lets us hard-code the functionality we know we'll have in the cross
@@ -251,6 +253,8 @@ else
 
     AC_DEFINE(HAVE_S_ISREG)
     AC_DEFINE(HAVE_S_IFREG)
+
+    AC_DEFINE(HAVE_ICONV)
   else
     GLIBCXX_CROSSCONFIG
   fi
