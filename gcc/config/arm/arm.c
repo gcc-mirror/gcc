@@ -1145,11 +1145,6 @@ arm_override_options (void)
       && (TARGET_DEFAULT & MASK_APCS_FRAME))
     warning (0, "-g with -mno-apcs-frame may not give sensible debugging");
 
-  /* If stack checking is disabled, we can use r10 as the PIC register,
-     which keeps r9 available.  */
-  if (flag_pic && TARGET_SINGLE_PIC_BASE)
-    arm_pic_register = TARGET_APCS_STACK ? 9 : 10;
-
   if (TARGET_APCS_FLOAT)
     warning (0, "passing floating point arguments in fp regs not yet supported");
 
@@ -1342,6 +1337,11 @@ arm_override_options (void)
 	warning (0, "structure size boundary can only be set to %s",
 		 ARM_DOUBLEWORD_ALIGN ? "8, 32 or 64": "8 or 32");
     }
+
+  /* If stack checking is disabled, we can use r10 as the PIC register,
+     which keeps r9 available.  The EABI specifies r9 as the PIC register.  */
+  if (flag_pic && TARGET_SINGLE_PIC_BASE)
+    arm_pic_register = (TARGET_APCS_STACK || TARGET_AAPCS_BASED) ? 9 : 10;
 
   if (arm_pic_register_string != NULL)
     {

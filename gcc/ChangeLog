@@ -1,3 +1,19 @@
+2007-02-13  Paul Brook  <paul@codesourcery.com>
+
+	* config.gcc: Add arm*-*-uclinux-*eabi.
+	* config/arm/uclinux-elf.h (TARGET_OS_CPP_BUILTINS): Define.
+	(SUBTARGET_EXTRA_LINK_SPEC): Define.
+	(STARTFILE_SPEC, ENDFILE_SPEC): Remove broken -shared handling.
+	(LINK_GCC_C_SEQUENCE_SPEC): Undef.
+	(LINK_SPEC): Define.
+	(LIB_SPEC): Define.
+	* config/arm/arm.c (arm_override_options): Use r9 as EABI PIC
+	register.
+	* config/arm/uclinux-eabi.h: New file.
+	* config/arm/linux-eabi.h (WCHAR_TYPE): Remove.
+	* config/arm/linux-gas.h (WCHAR_TYPE): Use unsigned long on AAPCS
+	based targets.
+
 2007-02-13  Ian Lance Taylor  <iant@google.com>
 
 	* common.opt: Add Wstrict-overflow and Wstrict-overflow=.
