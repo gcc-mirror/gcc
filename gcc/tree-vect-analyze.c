@@ -97,8 +97,12 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
   int nbbs = loop->num_nodes;
   block_stmt_iterator si;
   unsigned int vectorization_factor = 0;
-  int i;
   tree scalar_type;
+  tree phi;
+  tree vectype;
+  unsigned int nunits;
+  stmt_vec_info stmt_info;
+  int i;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_determine_vectorization_factor ===");
@@ -107,12 +111,67 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
     {
       basic_block bb = bbs[i];
 
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+	{
+	  stmt_info = vinfo_for_stmt (phi);
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    {
+	      fprintf (vect_dump, "==> examining phi: ");
+	      print_generic_expr (vect_dump, phi, TDF_SLIM);
+	    }
+
+	  gcc_assert (stmt_info);
+
+	  /* Two cases of "relevant" phis: those that define an 
+	     induction that is used in the loop, and those that
+	     define a reduction.  */
+	  if ((STMT_VINFO_RELEVANT (stmt_info) == vect_used_in_loop
+	       && STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def)
+	      || (STMT_VINFO_RELEVANT (stmt_info) == vect_used_by_reduction
+		  && STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def))
+            {
+	      gcc_assert (!STMT_VINFO_VECTYPE (stmt_info));
+              scalar_type = TREE_TYPE (PHI_RESULT (phi));
+
+	      if (vect_print_dump_info (REPORT_DETAILS))
+		{
+		  fprintf (vect_dump, "get vectype for scalar type:  ");
+		  print_generic_expr (vect_dump, scalar_type, TDF_SLIM);
+		}
+
+	      vectype = get_vectype_for_scalar_type (scalar_type);
+	      if (!vectype)
+		{
+		  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+		    {
+		      fprintf (vect_dump,
+		               "not vectorized: unsupported data-type ");
+		      print_generic_expr (vect_dump, scalar_type, TDF_SLIM);
+		    }
+		  return false;
+		}
+	      STMT_VINFO_VECTYPE (stmt_info) = vectype;
+
+	      if (vect_print_dump_info (REPORT_DETAILS))
+		{
+		  fprintf (vect_dump, "vectype: ");
+		  print_generic_expr (vect_dump, vectype, TDF_SLIM);
+		}
+
+	      nunits = TYPE_VECTOR_SUBPARTS (vectype);
+	      if (vect_print_dump_info (REPORT_DETAILS))
+		fprintf (vect_dump, "nunits = %d", nunits);
+
+	      if (!vectorization_factor
+		  || (nunits > vectorization_factor))
+		vectorization_factor = nunits;
+	    }
+	}
+
       for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
         {
 	  tree stmt = bsi_stmt (si);
-	  unsigned int nunits;
-	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-	  tree vectype;
+	  stmt_info = vinfo_for_stmt (stmt);
 
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    {
@@ -269,10 +328,11 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 	    return false;
 	  }
 
-	  if (STMT_VINFO_RELEVANT_P (stmt_info))
+	  if (STMT_VINFO_RELEVANT (stmt_info) == vect_used_in_loop
+	      && STMT_VINFO_DEF_TYPE (stmt_info) != vect_induction_def)
 	    {
 	      /* Most likely a reduction-like computation that is used
-	         in the loop.  */
+		 in the loop.  */
 	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
 	        fprintf (vect_dump, "not vectorized: unsupported pattern.");
  	     return false;
@@ -2235,17 +2295,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 
 	 (case 2)
            If STMT has been identified as defining a reduction variable, then
-	   we have two cases:
-	   (case 2.1)
-	     The last use of STMT is the reduction-variable, which is defined
-	     by a loop-header-phi. We don't want to mark the phi as live or
-	     relevant (because it does not need to be vectorized, it is handled
-             as part of the vectorization of the reduction), so in this case we
-	     skip the call to vect_mark_relevant.
-	   (case 2.2)
-	     The rest of the uses of STMT are defined in the loop body. For
-             the def_stmt of these uses we want to set liveness/relevance
-             as follows:
+           we want to set liveness/relevance as follows:
                STMT_VINFO_LIVE_P (DEF_STMT_info) <-- false
                STMT_VINFO_RELEVANT (DEF_STMT_info) <-- vect_used_by_reduction
              because even though STMT is classified as live (since it defines a
@@ -2297,16 +2347,6 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	  bb = bb_for_stmt (def_stmt);
 	  if (!flow_bb_inside_loop_p (loop, bb))
 	    continue;
-
-	  /* case 2.1: the reduction-use does not mark the defining-phi
-	     as relevant.  */
-	  if (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def
-	      && TREE_CODE (def_stmt) == PHI_NODE)
-	    continue;
-
-	  if (dt == vect_induction_def && TREE_CODE (def_stmt) == PHI_NODE)
-	    continue;
-
 	  vect_mark_relevant (&worklist, def_stmt, relevant, live_p);
 	}
     }				/* while worklist */
