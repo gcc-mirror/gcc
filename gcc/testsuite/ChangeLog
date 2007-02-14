@@ -1,3 +1,8 @@
+2007-02-14  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* gcc.dg/tree-prof/update-tailcall.c: Use -fdump-tree-tailc
+	instead of -fdump-tree-tailcall.
+
 2007-02-14  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* gfortran.dg/interface_10.f90: Fix comment typo.

@@ -1,3 +1,9 @@
+2007-02-14  Roger Sayle  <roger@eyesopen.com>
+	    Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-dump.c (dump_switch_p_1): Require exact match of the option
+	name.
+
 2007-02-14  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* passes.c (next_pass_1): Clear the next field of the copied
