@@ -390,6 +390,7 @@ next_pass_1 (struct tree_opt_pass **list, struct tree_opt_pass *pass)
 
       new = xmalloc (sizeof (*new));
       memcpy (new, pass, sizeof (*new));
+      new->next = NULL;
 
       /* Indicate to register_dump_files that this pass has duplicates,
          and so it should rename the dump file.  The first instance will
