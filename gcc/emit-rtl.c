@@ -1481,12 +1481,15 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
   alias = get_alias_set (t);
 
   MEM_VOLATILE_P (ref) |= TYPE_VOLATILE (type);
-  MEM_IN_STRUCT_P (ref) = AGGREGATE_TYPE_P (type);
+  MEM_IN_STRUCT_P (ref)
+    = AGGREGATE_TYPE_P (type) || TREE_CODE (type) == COMPLEX_TYPE;
   MEM_POINTER (ref) = POINTER_TYPE_P (type);
 
   /* If we are making an object of this type, or if this is a DECL, we know
      that it is a scalar if the type is not an aggregate.  */
-  if ((objectp || DECL_P (t)) && ! AGGREGATE_TYPE_P (type))
+  if ((objectp || DECL_P (t))
+      && ! AGGREGATE_TYPE_P (type)
+      && TREE_CODE (type) != COMPLEX_TYPE)
     MEM_SCALAR_P (ref) = 1;
 
   /* We can set the alignment from the type if we are making an object,
