@@ -1,3 +1,11 @@
+2007-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/30536
+	* decl.c (grokdeclarator): If __thread is used together with
+	a storage class other than extern and static, clear thread_p
+	after issuing diagnostics and fall through to checking the
+	storage class.
+
 2007-02-13  Release Manager
 
 	* GCC 4.1.2 released.
