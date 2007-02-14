@@ -142,6 +142,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "recog.h"
 #include "sched-int.h"
 #include "target.h"
+#include "params.h"
 
 #ifdef INSN_SCHEDULING
 
@@ -1379,9 +1380,22 @@ queue_to_ready (struct ready_list *ready)
 	fprintf (sched_dump, ";;\t\tQ-->Ready: insn %s: ",
 		 (*current_sched_info->print_insn) (insn, 0));
 
-      ready_add (ready, insn);
-      if (sched_verbose >= 2)
-	fprintf (sched_dump, "moving to ready without stalls\n");
+      /* If the ready list is full, delay the insn for 1 cycle.
+	 See the comment in schedule_block for the rationale.  */
+      if (!reload_completed
+	  && ready->n_ready > MAX_SCHED_READY_INSNS
+	  && !SCHED_GROUP_P (insn))
+	{
+	  if (sched_verbose >= 2)
+	    fprintf (sched_dump, "requeued because ready full\n");
+	  queue_insn (insn, 1);
+	}
+      else
+	{
+	  ready_add (ready, insn);
+	  if (sched_verbose >= 2)
+	    fprintf (sched_dump, "moving to ready without stalls\n");
+        }
     }
   insn_queue[q_ptr] = 0;
 
@@ -1902,6 +1916,31 @@ schedule_block (int b, int rgn_n_insns)
   insn_queue = alloca ((max_insn_queue_index + 1) * sizeof (rtx));
   memset (insn_queue, 0, (max_insn_queue_index + 1) * sizeof (rtx));
   last_clock_var = -1;
+
+  /* The algorithm is O(n^2) in the number of ready insns at any given
+     time in the worst case.  Before reload we are more likely to have
+     big lists so truncate them to a reasonable size.  */
+  if (!reload_completed && ready.n_ready > MAX_SCHED_READY_INSNS)
+    {
+      ready_sort (&ready);
+
+      /* Find first free-standing insn past MAX_SCHED_READY_INSNS.  */
+      for (i = MAX_SCHED_READY_INSNS; i < ready.n_ready; i++)
+	if (!SCHED_GROUP_P (ready_element (&ready, i)))
+	  break;
+
+      if (sched_verbose >= 2)
+	{
+	  fprintf (sched_dump,
+		   ";;\t\tReady list on entry: %d insns\n", ready.n_ready);
+	  fprintf (sched_dump,
+		   ";;\t\t before reload => truncated to %d insns\n", i);
+	}
+
+      /* Delay all insns past it for 1 cycle.  */
+      while (i < ready.n_ready)
+	queue_insn (ready_remove (&ready, i), 1);
+    }
 
   /* Start just before the beginning of time.  */
   clock_var = -1;
