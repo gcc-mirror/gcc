@@ -1,4 +1,8 @@
-2007-12-14  Dorit Nuzman  <dorit@il.ibm.com>
+2007-02-14  Richard Guenther  <rguenther@suse.de>
+
+	* flags.h (issue_strict_overflow_warning): Convert to a macro.
+
+2007-02-14  Dorit Nuzman  <dorit@il.ibm.com>
 
 	 PR tree-optimization/30771
 	* tree-vect-analyze.c (vect_determine_vectorization_factor): Traverse

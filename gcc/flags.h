@@ -335,11 +335,6 @@ enum warn_strict_overflow_code
 };
 
 /* Whether to emit an overflow warning whose code is C.  */
-
-static inline bool
-issue_strict_overflow_warning (enum warn_strict_overflow_code c)
-{
-  return warn_strict_overflow >= (int) c;
-}
+#define issue_strict_overflow_warning(c) (warn_strict_overflow >= (int) (c))
 
 #endif /* ! GCC_FLAGS_H */
