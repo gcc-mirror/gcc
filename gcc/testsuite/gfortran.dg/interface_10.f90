@@ -9,7 +9,7 @@ module class_fld
      integer                 :: size(2)
   end type fld
   !
-  !  This interface is renaming the SIZE intrinsic procedure,  
+  !  This interface is extending the SIZE intrinsic procedure,  
   !  which led to a segmentation fault when trying to resolve
   !  the intrinsic symbol name.
   !
