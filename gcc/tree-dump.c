@@ -1004,6 +1004,9 @@ dump_switch_p_1 (const char *arg, struct dump_file_info *dfi, bool doglob)
   if (!option_value)
     return 0;
 
+  if (*option_value && *option_value != '-')
+    return 0;
+
   ptr = option_value;
   flags = 0;
 

@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-tailcall -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdump-tree-tailc -fdump-tree-optimized" } */
 __attribute__ ((noinline))
 int factorial(int x)
 {
