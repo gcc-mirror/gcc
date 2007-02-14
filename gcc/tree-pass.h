@@ -241,6 +241,7 @@ extern struct tree_opt_pass pass_early_tree_profile;
 extern struct tree_opt_pass pass_cleanup_cfg;
 extern struct tree_opt_pass pass_referenced_vars;
 extern struct tree_opt_pass pass_sra;
+extern struct tree_opt_pass pass_sra_early;
 extern struct tree_opt_pass pass_tail_recursion;
 extern struct tree_opt_pass pass_tail_calls;
 extern struct tree_opt_pass pass_tree_loop;

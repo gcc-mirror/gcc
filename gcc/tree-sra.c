@@ -75,6 +75,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 */
 
 
+/* True if this is the "early" pass, before inlining.  */
+static bool early_sra;
+
 /* The set of todo flags to return from tree_sra.  */
 static unsigned int todoflags;
 
@@ -341,6 +344,17 @@ decl_can_be_decomposed_p (tree var)
 	}
       return false;
     }
+
+  /* HACK: if we decompose a va_list_type_node before inlining, then we'll
+     confuse tree-stdarg.c, and we won't be able to figure out which and
+     how many arguments are accessed.  This really should be improved in
+     tree-stdarg.c, as the decomposition is truely a win.  This could also
+     be fixed if the stdarg pass ran early, but this can't be done until
+     we've aliasing information early too.  See PR 30791.  */
+  if (early_sra
+      && TYPE_MAIN_VARIANT (TREE_TYPE (var))
+	 == TYPE_MAIN_VARIANT (va_list_type_node))
+    return false;
 
   return true;
 }
@@ -2365,11 +2379,43 @@ tree_sra (void)
   return todoflags;
 }
 
+static unsigned int
+tree_sra_early (void)
+{
+  unsigned int ret;
+
+  early_sra = true;
+  ret = tree_sra ();
+  early_sra = false;
+
+  return ret;
+}
+
 static bool
 gate_sra (void)
 {
   return flag_tree_sra != 0;
 }
+
+struct tree_opt_pass pass_sra_early =
+{
+  "esra",				/* name */
+  gate_sra,				/* gate */
+  tree_sra_early,			/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_TREE_SRA,				/* tv_id */
+  PROP_cfg | PROP_ssa,			/* properties_required */
+  0,					/* properties_provided */
+  0,				        /* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func
+  | TODO_update_ssa
+  | TODO_ggc_collect
+  | TODO_verify_ssa,			/* todo_flags_finish */
+  0					/* letter */
+};
 
 struct tree_opt_pass pass_sra =
 {
