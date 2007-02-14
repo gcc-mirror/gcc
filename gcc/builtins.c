@@ -9935,6 +9935,7 @@ fold_builtin_sprintf (tree arglist, int ignored)
   /* Get the destination string and the format specifier.  */
   dest = TREE_VALUE (arglist);
   fmt = TREE_VALUE (TREE_CHAIN (arglist));
+  arglist = TREE_CHAIN (TREE_CHAIN (arglist));
 
   /* Check whether the format is a literal string constant.  */
   fmt_str = c_getstr (fmt);
@@ -9955,6 +9956,10 @@ fold_builtin_sprintf (tree arglist, int ignored)
       if (!fn)
 	return NULL_TREE;
 
+      /* Don't optimize sprintf (buf, "abc", ptr++).  */
+      if (arglist)
+	return NULL_TREE;
+
       /* Convert sprintf (str, fmt) into strcpy (str, fmt) when
 	 'format' is known to contain no % formats.  */
       arglist = build_tree_list (NULL_TREE, fmt);
@@ -9973,8 +9978,12 @@ fold_builtin_sprintf (tree arglist, int ignored)
       if (!fn)
 	return NULL_TREE;
 
+      /* Don't crash on sprintf (str1, "%s").  */
+      if (!arglist)
+	return NULL_TREE;
+
       /* Convert sprintf (str1, "%s", str2) into strcpy (str1, str2).  */
-      orig = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+      orig = TREE_VALUE (arglist);
       arglist = build_tree_list (NULL_TREE, orig);
       arglist = tree_cons (NULL_TREE, dest, arglist);
       if (!ignored)

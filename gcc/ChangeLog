@@ -1,3 +1,9 @@
+2007-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/30473
+	* builtins.c (fold_builtin_sprintf): Do not attempt to optimize
+	sprintf (str, "%s").  Do not optimize sprintf (str, "nopercent", p++).
+
 2007-02-14  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
