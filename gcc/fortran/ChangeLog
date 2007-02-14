@@ -1,3 +1,7 @@
+2007-02-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* misc.c (gfc_typename): Fix potential buffer overflow.
+
 2007-02-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/30554

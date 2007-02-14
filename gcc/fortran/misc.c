@@ -152,7 +152,8 @@ gfc_basic_typename (bt type)
 const char *
 gfc_typename (gfc_typespec *ts)
 {
-  static char buffer1[60], buffer2[60]; /* FIXME:  Buffer overflow.  */
+  static char buffer1[GFC_MAX_SYMBOL_LEN + 7];  /* 7 for "TYPE()" + '\0'.  */
+  static char buffer2[GFC_MAX_SYMBOL_LEN + 7];
   static int flag = 0;
   char *buffer;
 
