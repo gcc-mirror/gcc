@@ -763,7 +763,8 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
   if (type != 0)
     {
       MEM_VOLATILE_P (slot) = TYPE_VOLATILE (type);
-      MEM_SET_IN_STRUCT_P (slot, AGGREGATE_TYPE_P (type));
+      MEM_SET_IN_STRUCT_P (slot, (AGGREGATE_TYPE_P (type)
+				  || TREE_CODE (type) == COMPLEX_TYPE));
     }
   MEM_NOTRAP_P (slot) = 1;
 
