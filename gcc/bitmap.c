@@ -797,6 +797,8 @@ bitmap_and (bitmap dst, bitmap a, bitmap b)
 	  b_elt = b_elt->next;
 	}
     }
+  /* Ensure that dst->current is valid.  */
+  dst->current = dst->first;
   bitmap_elt_clear_from (dst, dst_elt);
   gcc_assert (!dst->current == !dst->first);
   if (dst->current)
@@ -910,6 +912,8 @@ bitmap_and_compl (bitmap dst, bitmap a, bitmap b)
 	  b_elt = b_elt->next;
 	}
     }
+  /* Ensure that dst->current is valid.  */
+  dst->current = dst->first;
   bitmap_elt_clear_from (dst, dst_elt);
   gcc_assert (!dst->current == !dst->first);
   if (dst->current)
@@ -1396,6 +1400,8 @@ bitmap_xor (bitmap dst, bitmap a, bitmap b)
 	  dst_elt = dst_elt->next;
 	}
     }
+  /* Ensure that dst->current is valid.  */
+  dst->current = dst->first;
   bitmap_elt_clear_from (dst, dst_elt);
   gcc_assert (!dst->current == !dst->first);
   if (dst->current)

@@ -1,3 +1,8 @@
+2007-02-13  Seongbae Park <seongbae.park@gmail.com>
+
+       * bitmap.c (bitmap_and, bitmap_and_compl, bitmap_xor):
+       Ensure dst->current is valid.
+
 2007-02-13  Paul Brook  <paul@codesourcery.com>
 
 	* config.gcc: Add arm*-*-uclinux-*eabi.
