@@ -1,3 +1,9 @@
+2007-02-14  Nick Clifton  <nickc@redhat.com>
+
+	* builtin-types.def (DEF_FUNCTION_TYPE_x): Do not imply that at
+	most 3 arguments are supported.
+	(DEF_FUNCTION_TYPE_VAR_5): Fix typo in its description.
+
 2007-02-13  Seongbae Park <seongbae.park@gmail.com>
 
        * bitmap.c (bitmap_and, bitmap_and_compl, bitmap_xor):
