@@ -1657,19 +1657,27 @@ public class Server
     MBeanRegistration register = null;
     if (obj instanceof MBeanRegistration)
       register = (MBeanRegistration) obj;
-    if (name == null)
+    if (name == null && register == null)
       {
-	if (register == null)
-	  {
-	    RuntimeException e =
-	      new IllegalArgumentException("The name was null and " +
-					   "the bean does not implement " +
-					   "MBeanRegistration.");
-	    throw new RuntimeOperationsException(e);
-	  }
+	RuntimeException e =
+	  new IllegalArgumentException("The name was null and " +
+				       "the bean does not implement " +
+				       "MBeanRegistration.");
+	throw new RuntimeOperationsException(e);
+      }
+    if (register != null)
+      {
 	try
 	  {
-	    name = register.preRegister(this, null);
+	    name = register.preRegister(this, name);
+	    if (name == null)
+	      {
+		RuntimeException e =
+		  new NullPointerException("The name returned by " +
+					   "MBeanRegistration.preRegister() " +
+					   "was null");
+		throw e;
+	      }
 	    if (sm != null)
 	      sm.checkPermission(new MBeanPermission(className, null, name,
 						     "registerMBean"));
