@@ -528,6 +528,8 @@ constantpool_address_p (rtx addr)
 int
 constantpool_mem_p (rtx op)
 {
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
   if (GET_CODE (op) == MEM)
     return constantpool_address_p (XEXP (op, 0));
   return FALSE;
