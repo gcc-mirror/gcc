@@ -1,3 +1,8 @@
+2007-02-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/28943
+	* g++.dg/warn/pr28943.C: New.
+
 2007-02-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* gfortran.fortran-torture/execute/math.f90: Fix typo.
