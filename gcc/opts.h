@@ -104,4 +104,6 @@ extern void decode_options (unsigned int argc, const char **argv);
 extern int option_enabled (int opt_idx);
 extern bool get_option_state (int, struct cl_option_state *);
 
+extern void enable_warning_as_error (const char *arg, int value,
+				     unsigned int lang_mask);
 #endif

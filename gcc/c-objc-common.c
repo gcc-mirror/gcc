@@ -135,16 +135,6 @@ c_objc_common_init (void)
      want an enhanced ObjC implementation.  */
   diagnostic_format_decoder (global_dc) = &c_tree_printer;
 
-  /* If still unspecified, make it match -std=c99
-     (allowing for -pedantic-errors).  */
-  if (mesg_implicit_function_declaration < 0)
-    {
-      if (flag_isoc99)
-	mesg_implicit_function_declaration = flag_pedantic_errors ? 2 : 1;
-      else
-	mesg_implicit_function_declaration = 0;
-    }
-
   return true;
 }
 

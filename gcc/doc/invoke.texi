@@ -229,7 +229,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wconversion -Wcoverage-mismatch -Wno-deprecated-declarations @gol
 -Wdisabled-optimization  -Wno-div-by-zero  @gol
 -Wempty-body  -Wno-endif-labels @gol
--Werror  -Werror-* -Werror-implicit-function-declaration @gol
+-Werror  -Werror=* @gol
 -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-extra-args -Wformat-nonliteral @gol
 -Wformat-security  -Wformat-y2k @gol
@@ -2626,13 +2626,13 @@ Warn when a declaration does not specify a type.
 This warning is enabled by @option{-Wall}.
 
 @item -Wimplicit-function-declaration
-@itemx -Werror-implicit-function-declaration
 @opindex Wimplicit-function-declaration
-@opindex Werror-implicit-function-declaration
-Give a warning (or error) whenever a function is used before being
-declared.  The form @option{-Wno-error-implicit-function-declaration}
-is not supported.
-This warning is enabled by @option{-Wall} (as a warning, not an error).
+@opindex Wno-implicit-function-declaration
+Give a warning whenever a function is used before being declared. In
+C99 mode (@option{-std=c99} or @option{-std=gnu99}), this warning is
+enabled by default and it is made into an error by
+@option{-pedantic-errors}. This warning is also enabled by
+@option{-Wall}.
 
 @item -Wimplicit
 @opindex Wimplicit

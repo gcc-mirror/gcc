@@ -1067,31 +1067,7 @@ common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_Werror_:
-      {
-	char *new_option;
-	int option_index;
-
-	new_option = XNEWVEC (char, strlen (arg) + 2);
-	new_option[0] = 'W';
-	strcpy (new_option+1, arg);
-	option_index = find_opt (new_option, lang_mask);
-	if (option_index == N_OPTS)
-	  {
-	    error ("-Werror-%s: No option -%s", arg, new_option);
-	  }
-	else
-	  {
-	    int kind = value ? DK_ERROR : DK_WARNING;
-	    diagnostic_classify_diagnostic (global_dc, option_index, kind);
-
-	    /* -Werror=foo implies -Wfoo.  */
-	    if (cl_options[option_index].var_type == CLVC_BOOLEAN
-		&& cl_options[option_index].flag_var
-		&& kind == DK_ERROR)
-	      *(int *) cl_options[option_index].flag_var = 1;
-	    free (new_option);
-	  }
-      }
+      enable_warning_as_error (arg, value, lang_mask);
       break;
 
     case OPT_Wextra:
@@ -1606,4 +1582,35 @@ get_option_state (int option, struct cl_option_state *state)
       break;
     }
   return true;
+}
+
+/* Enable a warning option as an error.  This is used by -Werror= and
+   also by legacy Werror-implicit-function-declaration.  */
+
+void
+enable_warning_as_error (const char *arg, int value, unsigned int lang_mask)
+{
+  char *new_option;
+  int option_index;
+
+  new_option = XNEWVEC (char, strlen (arg) + 2);
+  new_option[0] = 'W';
+  strcpy (new_option + 1, arg);
+  option_index = find_opt (new_option, lang_mask);
+  if (option_index == N_OPTS)
+    {
+      error ("-Werror=%s: No option -%s", arg, new_option);
+    }
+  else
+    {
+      int kind = value ? DK_ERROR : DK_WARNING;
+      diagnostic_classify_diagnostic (global_dc, option_index, kind);
+      
+      /* -Werror=foo implies -Wfoo.  */
+      if (cl_options[option_index].var_type == CLVC_BOOLEAN
+	  && cl_options[option_index].flag_var
+	  && kind == DK_ERROR)
+	*(int *) cl_options[option_index].flag_var = 1;
+    }
+  free (new_option);
 }

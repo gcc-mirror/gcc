@@ -1,3 +1,27 @@
+2007-02-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c/26494
+	* doc/invoke.texi (Warning Options): Remove
+	-Werror-implicit-function-declaration.
+	(Wimplicit-function-declaration): Update description.
+	* opts.c (common_handle_option): Move handling of -Werror=* to...
+	(enable_warning_as_error): ...here.
+	* opts.h (enable_warning_as_error): Declare.
+	* c-decl.c (implicit_decl_warning): Unless
+	-Wno-implicit-function-declaration is given, emit a pedwarn if
+	-std=c99 or emit a warning if -Wimplicit-function-declaration.
+	* c.opt (Wimplicit-function-declaration): Replace
+	mesg_implicit_function_declaration with
+	warn_implicit_function_declaration.
+	* c-opts.c (c_common_handle_option):
+	-Werror-implicit-function-declaration is exactly equal as
+	-Werror=implicit-function-declaration.
+	(set_Wimplicit): Replace mesg_implicit_function_declaration with
+	warn_implicit_function_declaration.
+	(c_common_post_options): -Wimplict-function-declaration is enabled
+	by default by -std=c99, otherwise is disabled by default.
+	* c-objc-common.c (c_objc_common_init): Remove flawed logic.
+
 2007-02-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (gimplify_modify_expr): During gimplification, attach a
