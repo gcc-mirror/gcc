@@ -1,3 +1,8 @@
+2007-02-14  Gary Benson  <gbenson@redhat.com>
+
+	* javax/management/ObjectName.java
+	(toString): Return this item's canonical name.
+
 2007-02-12  Tom Tromey  <tromey@redhat.com>
 
 	* java/util/Collections.java (UnmodifiableMap.toArray): Imported
