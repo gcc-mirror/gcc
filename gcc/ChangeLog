@@ -1,3 +1,8 @@
+2007-02-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* jump.c: Remove prototypes for delete_computation and
+	delete_prior_computation.
+
 2007-02-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* jump.c (get_label_after): Delete.

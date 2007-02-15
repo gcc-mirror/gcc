@@ -68,11 +68,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 static void init_label_info (rtx);
 static void mark_all_labels (rtx);
-static void delete_computation (rtx);
 static void redirect_exp_1 (rtx *, rtx, rtx, rtx);
 static int invert_exp_1 (rtx, rtx);
 static int returnjump_p_1 (rtx *, void *);
-static void delete_prior_computation (rtx, rtx);
 
 /* Alternate entry into the jump optimizer.  This entry point only rebuilds
    the JUMP_LABEL field in jumping insns and REG_LABEL notes in non-jumping
