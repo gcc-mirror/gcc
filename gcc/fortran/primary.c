@@ -1039,7 +1039,10 @@ match_logical_constant (gfc_expr ** result)
     kind = gfc_default_logical_kind;
 
   if (gfc_validate_kind (BT_LOGICAL, kind, true) < 0)
-    gfc_error ("Bad kind for logical constant at %C");
+    {
+      gfc_error ("Bad kind for logical constant at %C");
+      return MATCH_ERROR;
+    }
 
   e = gfc_get_expr ();
 
