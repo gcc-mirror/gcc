@@ -42,6 +42,7 @@ set package_map(.) package
 # These are ignored in Classpath.
 set package_map(gnu/test) ignore
 set package_map(gnu/javax/swing/plaf/gtk) ignore
+set package_map(gnu/gcj/tools/gc_analyze) ignore
 
 set package_map(gnu/java/awt/peer/swing) bc
 

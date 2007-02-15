@@ -232,6 +232,9 @@
 /* Define if you have /proc/self/exe */
 #undef HAVE_PROC_SELF_EXE
 
+/* Define if you have /proc/self/maps */
+#undef HAVE_PROC_SELF_MAPS
+
 /* Define if using POSIX threads that have the mutexattr functions. */
 #undef HAVE_PTHREAD_MUTEXATTR_INIT
 
@@ -374,6 +377,9 @@
 
 /* Define to 1 if you have the file `AC_File'. */
 #undef HAVE__PROC_SELF_EXE
+
+/* Define to 1 if you have the file `AC_File'. */
+#undef HAVE__PROC_SELF_MAPS
 
 /* Define as const if the declaration of iconv() needs const. */
 #undef ICONV_CONST

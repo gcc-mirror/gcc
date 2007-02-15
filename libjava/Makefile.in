@@ -51,7 +51,7 @@ target_triplet = @target@
 @NATIVE_TRUE@	gjar$(EXEEXT) gjavah$(EXEEXT) \
 @NATIVE_TRUE@	gnative2ascii$(EXEEXT) gorbd$(EXEEXT) \
 @NATIVE_TRUE@	grmid$(EXEEXT) gserialver$(EXEEXT) \
-@NATIVE_TRUE@	gtnameserv$(EXEEXT)
+@NATIVE_TRUE@	gtnameserv$(EXEEXT) gc-analyze$(EXEEXT)
 @BUILD_ECJ1_TRUE@libexecsub_PROGRAMS = ecjx$(EXEEXT)
 @ANONVERSCRIPT_TRUE@am__append_5 = -Wl,--version-script=$(srcdir)/libgcj.ver
 @USING_GCC_TRUE@am__append_6 = $(WARNINGS)
@@ -305,7 +305,7 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc jvmti.cc exception.cc \
 	gnu/gcj/runtime/natSharedLibLoader.cc \
 	gnu/gcj/runtime/natSystemClassLoader.cc \
 	gnu/gcj/runtime/natStringBuffer.cc gnu/gcj/util/natDebug.cc \
-	gnu/java/lang/natMainThread.cc \
+	gnu/gcj/util/natGCInfo.cc gnu/java/lang/natMainThread.cc \
 	gnu/java/lang/management/natVMClassLoadingMXBeanImpl.cc \
 	gnu/java/lang/management/natVMCompilationMXBeanImpl.cc \
 	gnu/java/lang/management/natVMGarbageCollectorMXBeanImpl.cc \
@@ -368,7 +368,7 @@ am__objects_2 = gnu/classpath/jdwp/natVMFrame.lo \
 	gnu/gcj/runtime/natSharedLibLoader.lo \
 	gnu/gcj/runtime/natSystemClassLoader.lo \
 	gnu/gcj/runtime/natStringBuffer.lo gnu/gcj/util/natDebug.lo \
-	gnu/java/lang/natMainThread.lo \
+	gnu/gcj/util/natGCInfo.lo gnu/java/lang/natMainThread.lo \
 	gnu/java/lang/management/natVMClassLoadingMXBeanImpl.lo \
 	gnu/java/lang/management/natVMCompilationMXBeanImpl.lo \
 	gnu/java/lang/management/natVMGarbageCollectorMXBeanImpl.lo \
@@ -438,6 +438,8 @@ am_ecjx_OBJECTS =
 ecjx_OBJECTS = $(am_ecjx_OBJECTS)
 am_gappletviewer_OBJECTS =
 gappletviewer_OBJECTS = $(am_gappletviewer_OBJECTS)
+am_gc_analyze_OBJECTS =
+gc_analyze_OBJECTS = $(am_gc_analyze_OBJECTS)
 am_gcj_dbtool_OBJECTS = gnu/gcj/tools/gcj_dbtool/natMain.$(OBJEXT)
 gcj_dbtool_OBJECTS = $(am_gcj_dbtool_OBJECTS)
 am__gen_from_JIS_SOURCES_DIST = gnu/gcj/convert/gen-from-JIS.c \
@@ -501,23 +503,23 @@ SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) $(libgcj_tools_la_SOURCES) \
 	$(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) \
 	$(libgcj_bc_la_SOURCES) $(libgij_la_SOURCES) \
 	$(libjvm_la_SOURCES) $(ecjx_SOURCES) $(gappletviewer_SOURCES) \
-	$(gcj_dbtool_SOURCES) $(gen_from_JIS_SOURCES) $(gij_SOURCES) \
-	$(gjar_SOURCES) $(gjarsigner_SOURCES) $(gjavah_SOURCES) \
-	$(gkeytool_SOURCES) $(gnative2ascii_SOURCES) $(gorbd_SOURCES) \
-	$(grmic_SOURCES) $(grmid_SOURCES) $(grmiregistry_SOURCES) \
-	$(gserialver_SOURCES) $(gtnameserv_SOURCES) \
-	$(jv_convert_SOURCES)
+	$(gc_analyze_SOURCES) $(gcj_dbtool_SOURCES) \
+	$(gen_from_JIS_SOURCES) $(gij_SOURCES) $(gjar_SOURCES) \
+	$(gjarsigner_SOURCES) $(gjavah_SOURCES) $(gkeytool_SOURCES) \
+	$(gnative2ascii_SOURCES) $(gorbd_SOURCES) $(grmic_SOURCES) \
+	$(grmid_SOURCES) $(grmiregistry_SOURCES) $(gserialver_SOURCES) \
+	$(gtnameserv_SOURCES) $(jv_convert_SOURCES)
 DIST_SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) \
 	$(libgcj_tools_la_SOURCES) $(am__libgcj_la_SOURCES_DIST) \
 	$(EXTRA_libgcj_la_SOURCES) $(libgcj_bc_la_SOURCES) \
 	$(libgij_la_SOURCES) $(libjvm_la_SOURCES) $(ecjx_SOURCES) \
-	$(gappletviewer_SOURCES) $(gcj_dbtool_SOURCES) \
-	$(am__gen_from_JIS_SOURCES_DIST) $(gij_SOURCES) \
-	$(gjar_SOURCES) $(gjarsigner_SOURCES) $(gjavah_SOURCES) \
-	$(gkeytool_SOURCES) $(gnative2ascii_SOURCES) $(gorbd_SOURCES) \
-	$(grmic_SOURCES) $(grmid_SOURCES) $(grmiregistry_SOURCES) \
-	$(gserialver_SOURCES) $(gtnameserv_SOURCES) \
-	$(jv_convert_SOURCES)
+	$(gappletviewer_SOURCES) $(gc_analyze_SOURCES) \
+	$(gcj_dbtool_SOURCES) $(am__gen_from_JIS_SOURCES_DIST) \
+	$(gij_SOURCES) $(gjar_SOURCES) $(gjarsigner_SOURCES) \
+	$(gjavah_SOURCES) $(gkeytool_SOURCES) $(gnative2ascii_SOURCES) \
+	$(gorbd_SOURCES) $(grmic_SOURCES) $(grmid_SOURCES) \
+	$(grmiregistry_SOURCES) $(gserialver_SOURCES) \
+	$(gtnameserv_SOURCES) $(jv_convert_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-exec-recursive install-info-recursive \
@@ -1344,7 +1346,9 @@ gnu/gcj/tools/gcj_dbtool/Main.java
 
 gnu_gcj_tools_gcj_dbtool_header_files = $(patsubst %.java,%.h,$(gnu_gcj_tools_gcj_dbtool_source_files))
 gnu_gcj_util_source_files = \
-gnu/gcj/util/Debug.java
+gnu/gcj/util/Debug.java \
+gnu/gcj/util/GCInfo.java \
+gnu/gcj/util/UtilPermission.java
 
 gnu_gcj_util_header_files = $(patsubst %.java,%.h,$(gnu_gcj_util_source_files))
 gnu_gcj_xlib_source_files = \
@@ -7818,6 +7822,13 @@ gcj_dbtool_LDFLAGS = --main=gnu.gcj.tools.gcj_dbtool.Main \
 gcj_dbtool_LINK = $(GCJLINK)
 gcj_dbtool_LDADD = gnu/gcj/tools/gcj_dbtool.lo -L$(here)/.libs libgcj.la
 gcj_dbtool_DEPENDENCIES = gnu/gcj/tools/gcj_dbtool.lo libgcj.la libgcj.spec
+gc_analyze_SOURCES = 
+gc_analyze_LDFLAGS = --main=gnu.gcj.tools.gc_analyze.MemoryAnalyze \
+        -rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
+
+gc_analyze_LINK = $(GCJLINK)
+gc_analyze_LDADD = -L$(here)/.libs libgcj-tools.la libgcj.la
+gc_analyze_DEPENDENCIES = libgcj-tools.la libgcj.la libgcj.spec
 gij_SOURCES = 
 gij_LDFLAGS = -rpath $(libdir)/gcj-$(gcc_version) -rpath $(toolexeclibdir) \
 	-shared-libgcc $(THREADLDFLAGS)
@@ -7947,6 +7958,7 @@ gnu/gcj/runtime/natSharedLibLoader.cc \
 gnu/gcj/runtime/natSystemClassLoader.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
 gnu/gcj/util/natDebug.cc \
+gnu/gcj/util/natGCInfo.cc \
 gnu/java/lang/natMainThread.cc \
 gnu/java/lang/management/natVMClassLoadingMXBeanImpl.cc \
 gnu/java/lang/management/natVMCompilationMXBeanImpl.cc \
@@ -8360,6 +8372,8 @@ gnu/gcj/util/$(DEPDIR)/$(am__dirstamp):
 	@: > gnu/gcj/util/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/util/natDebug.lo: gnu/gcj/util/$(am__dirstamp) \
 	gnu/gcj/util/$(DEPDIR)/$(am__dirstamp)
+gnu/gcj/util/natGCInfo.lo: gnu/gcj/util/$(am__dirstamp) \
+	gnu/gcj/util/$(DEPDIR)/$(am__dirstamp)
 gnu/java/lang/$(am__dirstamp):
 	@$(mkdir_p) gnu/java/lang
 	@: > gnu/java/lang/$(am__dirstamp)
@@ -8694,6 +8708,9 @@ ecjx$(EXEEXT): $(ecjx_OBJECTS) $(ecjx_DEPENDENCIES)
 gappletviewer$(EXEEXT): $(gappletviewer_OBJECTS) $(gappletviewer_DEPENDENCIES) 
 	@rm -f gappletviewer$(EXEEXT)
 	$(gappletviewer_LINK) $(gappletviewer_LDFLAGS) $(gappletviewer_OBJECTS) $(gappletviewer_LDADD) $(LIBS)
+gc-analyze$(EXEEXT): $(gc_analyze_OBJECTS) $(gc_analyze_DEPENDENCIES) 
+	@rm -f gc-analyze$(EXEEXT)
+	$(gc_analyze_LINK) $(gc_analyze_LDFLAGS) $(gc_analyze_OBJECTS) $(gc_analyze_LDADD) $(LIBS)
 gnu/gcj/tools/gcj_dbtool/$(am__dirstamp):
 	@$(mkdir_p) gnu/gcj/tools/gcj_dbtool
 	@: > gnu/gcj/tools/gcj_dbtool/$(am__dirstamp)
@@ -8826,6 +8843,8 @@ mostlyclean-compile:
 	-rm -f gnu/gcj/tools/gcj_dbtool/natMain.$(OBJEXT)
 	-rm -f gnu/gcj/util/natDebug.$(OBJEXT)
 	-rm -f gnu/gcj/util/natDebug.lo
+	-rm -f gnu/gcj/util/natGCInfo.$(OBJEXT)
+	-rm -f gnu/gcj/util/natGCInfo.lo
 	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.$(OBJEXT)
 	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.lo
 	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natColormap.$(OBJEXT)
@@ -9035,6 +9054,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natSystemClassLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/tools/gcj_dbtool/$(DEPDIR)/natMain.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/util/$(DEPDIR)/natDebug.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/util/$(DEPDIR)/natGCInfo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natClip.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natColormap.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natDisplay.Plo@am__quote@

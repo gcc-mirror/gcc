@@ -555,7 +555,9 @@ gnu/gcj/tools/gcj_dbtool.list: $(gnu_gcj_tools_gcj_dbtool_source_files)
 
 
 gnu_gcj_util_source_files = \
-gnu/gcj/util/Debug.java
+gnu/gcj/util/Debug.java \
+gnu/gcj/util/GCInfo.java \
+gnu/gcj/util/UtilPermission.java
 
 gnu_gcj_util_header_files = $(patsubst %.java,%.h,$(gnu_gcj_util_source_files))
 

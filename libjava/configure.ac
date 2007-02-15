@@ -295,6 +295,12 @@ if test "$use_x_awt" != yes; then
    echo gnu/java/awt/peer/x >> standard.omit
 fi
 
+# Tools that need to be compiled against classpath's tools classes
+for package in gnu/gcj/tools/gc_analyze ; do
+    echo $package >> standard.omit
+    echo $package >> vm-tools-packages
+done
+
 if test -z "${with_multisubdir}"; then
    builddotdot=.
 else
@@ -1012,10 +1018,14 @@ else
    if test x"$cross_compiling" = x"no"; then
      AC_CHECK_FILES(/proc/self/exe, [
        AC_DEFINE(HAVE_PROC_SELF_EXE, 1, [Define if you have /proc/self/exe])])
+     AC_CHECK_FILES(/proc/self/maps, [
+       AC_DEFINE(HAVE_PROC_SELF_MAPS, 1,
+         [Define if you have /proc/self/maps])])
    else
      case $host in
      *-linux*)
        AC_DEFINE(HAVE_PROC_SELF_EXE, 1, [Define if you have /proc/self/exe])
+       AC_DEFINE(HAVE_PROC_SELF_MAPS, 1, [Define if you have /proc/self/maps])
        ;;
      esac
    fi

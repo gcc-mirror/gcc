@@ -1,3 +1,59 @@
+2007-02-15  Johannes Schmidt  <jschmidt@avtrex.com>
+	David Daney  <ddaney@avtrex.com>
+
+	* configure.ac: Create vm-tools-packages file.  Add 
+	gnu/gcj/tools/gc_analyze to standard.omit and vm-tools-packages.
+	Check for /proc/self/maps.
+	* Makefile.am (bin_PROGRAMS): Added gc-analyze.
+	(gc_analyze_SOURCES): New.
+	(gc_analyze_LDFLAGS): New.
+	(gc_analyze_LINK): New.
+	(gc_analyze_LDADD): New.
+	(gc_analyze_DEPENDENCIES): New.
+	(nat_source_files): Add gnu/gcj/util/natGCInfo.cc.
+	* Makefile.in: Regenerated.
+	* configure: Regenerated.
+	* include/config.h.in: Regenerated.
+	* sources.am: Regenerated.
+	* scripts/makemake.tcl: Don't include gc-analyze classes in libgcj.
+	* gnu/gcj/tools/gc_analyze/SymbolLookup.java: New.
+	* gnu/gcj/tools/gc_analyze/ObjectMap.java: New.
+	* gnu/gcj/tools/gc_analyze/MemoryMap.java: New.
+	* gnu/gcj/tools/gc_analyze/SymbolTable.java: New.
+	* gnu/gcj/tools/gc_analyze/BlockMap.java: New.
+	* gnu/gcj/tools/gc_analyze/BytePtr.java: New.
+	* gnu/gcj/tools/gc_analyze/ItemList.java: New.
+	* gnu/gcj/tools/gc_analyze/ToolPrefix.java: New.
+	* gnu/gcj/tools/gc_analyze/MemoryAnalyze.java: New.
+	* gnu/gcj/util/GCInfo.java: New.
+	* gnu/gcj/util/GCInfo.h: New.
+	* gnu/gcj/util/natGCInfo.cc: New.
+	* gnu/gcj/util/UtilPermission.java: New.
+	* gnu/gcj/util/UtilPermission.h: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/SymbolTable.class: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/ObjectMap$ObjectItem.class: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/MemoryMap$RangeComparator.class: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/BlockMap$PtrMarks.class: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/MemoryMap$Range.class: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/BlockMap.class: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/BytePtr.class: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/MemoryAnalyze$SubstringComparator.class: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/ItemList.class: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/ToolPrefix.class: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/MemoryAnalyze.class: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/MemoryAnalyze$1$Info.class: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/MemoryAnalyze$1.class: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/MemoryAnalyze$2.class: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/MemoryAnalyze$3.class: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/MemoryAnalyze$4.class: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/MemoryAnalyze$OptionParser.class: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/BlockMap$SizeKind.class: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/SymbolLookup.class: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/ObjectMap.class: New.
+	* classpath/tools/gnu/gcj/tools/gc_analyze/MemoryMap.class: New.
+	* classpath/lib/gnu/gcj/util/GCInfo.class: New.
+	* classpath/lib/gnu/gcj/util/UtilPermission.class: New.
+
 2007-02-15  David Daney  <ddaney@avtrex.com>
 
 	* gnu/java/net/PlainSocketImpl.h: Regenerate.
