@@ -565,16 +565,15 @@ public class ObjectName
   /**
    * Returns the properties in a {@link java.util.Hashtable}.  The table
    * contains each of the properties as keys mapped to their value.  The
-   * returned table may be unmodifiable.  If the case that the table is
-   * modifiable, changes made to it will not be reflected in the object
-   * name.
+   * returned table is not unmodifiable, but changes made to it will not
+   * be reflected in the object name.
    *
    * @return a {@link java.util.Hashtable}, containing each of the object
    *         name's properties.
    */
   public Hashtable getKeyPropertyList()
   {
-    return (Hashtable) Collections.unmodifiableMap(new Hashtable(properties));
+    return new Hashtable(properties);
   }
 
   /**
