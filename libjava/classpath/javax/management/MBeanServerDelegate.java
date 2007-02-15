@@ -69,7 +69,7 @@ public class MBeanServerDelegate
   /**
    * The listeners registered with the delegate.
    */
-  private List listeners;
+  private final List listeners = new ArrayList();
 
   /**
    * The sequence identifier used by the delegate.
@@ -120,8 +120,6 @@ public class MBeanServerDelegate
   {
     if (listener == null)
       throw new IllegalArgumentException("A null listener was supplied.");
-    if (listeners == null)
-      listeners = new ArrayList();
     listeners.add(new ListenerData(listener, filter, passback));
   }
 
