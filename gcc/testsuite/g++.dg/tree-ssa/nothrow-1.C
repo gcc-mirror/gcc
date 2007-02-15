@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fdump-tree-cfg" } */
+/* { dg-skip-if "" { "*-*-*" } { "-fpic" "-fPIC" } { "" } } */
 double a;
 void t()
 {
