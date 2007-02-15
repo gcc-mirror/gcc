@@ -24,7 +24,7 @@ program testmath
    real(kind=8) q, two8, half8
    complex(kind=4) cr
    complex(kind=8) cq
-   external dotest, dotest2
+   external dotest, dotestc
 
    two4 = 2.0
    two8 = 2.0_8
