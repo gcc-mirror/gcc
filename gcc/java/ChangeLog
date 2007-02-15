@@ -1,3 +1,12 @@
+2007-02-15  David Daney  <ddaney@avtrex.com>
+
+	* Make-lang.in (JAVA_MANFILES): Add doc/gc-analyze.1.
+	(java.maintainer-clean):Add gc-analyze.1.
+	(.INTERMEDIATE): Add gc-analyze.pod.
+	(gc-analyze.pod): New rule.
+	(java.install-man): Install gc-analyze.1
+	* gcj.texi: Add new section for the gc-analyze program.
+
 2007-02-07  Andrew Haley  <aph@redhat.com>
 
 	* class.c (uncache_this_class_ref): New.

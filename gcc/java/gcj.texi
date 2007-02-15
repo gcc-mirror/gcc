@@ -17,7 +17,7 @@
 @c the word ``Java'.
 
 @c When this manual is copyrighted.
-@set copyrights-gcj 2001, 2002, 2003, 2004, 2005
+@set copyrights-gcj 2001, 2002, 2003, 2004, 2005, 2006, 2007
 
 @c Versions
 @set which-gcj GCC-@value{version-GCC}
@@ -79,6 +79,8 @@ man page gfdl(7).
                             Generate stubs for Remote Method Invocation.
 * grmiregistry: (gcj)Invoking grmiregistry.
                             The remote object registry.
+* gc-analyze: (gcj)Invoking gc-analyze.
+                            Analyze Garbage Collector (GC) memory dumps.
 @end direntry
 @end format
 
@@ -125,6 +127,7 @@ files and object files, and it can read both Java source code and
 * Invoking jv-convert:: Converting from one encoding to another
 * Invoking grmic::      Generate stubs for Remote Method Invocation.
 * Invoking grmiregistry:: The remote object registry.
+* Invoking gc-analyze:: Analyze Garbage Collector (GC) memory dumps.
 * About CNI::           Description of the Compiled Native Interface
 * System properties::   Modifying runtime behavior of the libgcj library
 * Resources::		Where to look for more information
@@ -1411,6 +1414,89 @@ Print version information, then exit.
 
 @c man end
 
+
+@node Invoking gc-analyze
+@chapter Invoking gc-analyze
+
+@c man title gc-analyze Analyze Garbage Collector (GC) memory dumps
+
+@c man begin SYNOPSIS gc-analyze
+@command{gc-analyze} [@option{OPTION}] @dots{} [@var{file}]
+@ignore
+  [@option{-v}]
+  [@option{--verbose}]
+  [@option{-p} @var{tool-prefix}]
+  [@option{-d} @var{directory}]
+  [@option{--version}]
+  [@option{--help}]
+@end ignore
+@c man end
+
+@c man begin DESCRIPTION gc-analyze
+
+@command{gc-analyze} prints an analysis of a GC memory dump to
+standard out.
+
+The memory dumps may be created by calling
+@code{gnu.gcj.util.GCInfo.enumerate(String namePrefix)} from java
+code.  A memory dump will be created on an out of memory condition if
+@code{gnu.gcj.util.GCInfo.setOOMDump(String namePrefix)} is called
+before the out of memory occurs.
+
+Running this program will create two files: @file{TestDump001} and
+@file{TestDump001.bytes}.
+
+@example
+import gnu.gcj.util.*;
+import java.util.*;
+
+public class GCDumpTest
+@{
+    static public void main(String args[])
+    @{
+        ArrayList<String> l = new ArrayList<String>(1000);
+        
+        for (int i = 1; i < 1500; i++) @{
+            l.add("This is string #" + i);
+        @}
+        GCInfo.enumerate("TestDump");
+    @}
+@}
+@end example
+
+The memory dump may then be displayed by running:
+
+@example
+gc-analyze -v TestDump001
+@end example
+
+@c FIXME: Add real information here.
+@c This really isn't much more than the --help output.
+
+@c man end
+
+@c man begin OPTIONS gc-analyze
+
+@table @gcctabopt
+@item --verbose
+@itemx -v
+Verbose output.
+
+@item -p @var{tool-prefix}
+Prefix added to the names of the @command{nm} and @command{readelf} commands.
+
+@item -d @var{directory}
+Directory that contains the executable and shared libraries used when
+the dump was generated.
+
+@item --help
+Print a help message, then exit.
+
+@item --version
+Print version information, then exit.
+@end table
+
+@c man end
 
 @node About CNI
 @chapter About CNI

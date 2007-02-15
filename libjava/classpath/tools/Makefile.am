@@ -155,12 +155,19 @@ $(TOOLS_ZIP): $(TOOLS_JAVA_FILES)
 ##	mkdir classes asm
 	find $(srcdir)/external/asm -name '*.java' -print > asm.lst
 	find $(srcdir)/gnu/classpath/tools -name '*.java' -print > classes.lst
-	cat classes.lst asm.lst > all-classes.lst
+	if [ -f $(top_builddir)/../vm-tools-packages ]; then \
+	    for pkg in `cat $(top_builddir)/../vm-tools-packages`; do \
+	      $(FIND) $(top_srcdir)/../$$pkg -follow -name '*.java' -print >> vm-tools.lst; \
+	    done \
+	else \
+	    echo -n > vm-tools.lst; \
+	fi
+	cat classes.lst asm.lst vm-tools.lst > all-classes.lst
 if JAVA_MAINTAINER_MODE
 ## Compile ASM separately as it is latin-1 encoded.
 	AC=`echo $(JCOMPILER) | sed -e 's/UTF-8/ISO-8859-1/g'`; \
 	  $$AC -g -w -d $(srcdir)/asm @asm.lst
-	$(JCOMPILER) -g -w -d $(srcdir)/classes @classes.lst
+	$(JCOMPILER) -g -w -d $(srcdir)/classes @classes.lst @vm-tools.lst
 ## Copy over tools resource files.
 	@list=`cd $(top_srcdir)/resource && find gnu/classpath/tools -name \*.properties -print`; \
 	for p in $$list; do \

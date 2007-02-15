@@ -1,3 +1,8 @@
+2007-02-15  David Daney  <ddaney@avtrex.com>
+
+	* tools/Makefile.am (TOOLS_ZIP): Add classes from vm-tools-packages.
+	* tools/Makefile.in: Regenerated.
+
 2007-02-15  Gary Benson  <gbenson@redhat.com>
 
 	* javax/management/AttributeList.java: Updated.

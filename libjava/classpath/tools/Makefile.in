@@ -1079,10 +1079,17 @@ dist-hook:
 $(TOOLS_ZIP): $(TOOLS_JAVA_FILES)
 	find $(srcdir)/external/asm -name '*.java' -print > asm.lst
 	find $(srcdir)/gnu/classpath/tools -name '*.java' -print > classes.lst
-	cat classes.lst asm.lst > all-classes.lst
+	if [ -f $(top_builddir)/../vm-tools-packages ]; then \
+	    for pkg in `cat $(top_builddir)/../vm-tools-packages`; do \
+	      $(FIND) $(top_srcdir)/../$$pkg -follow -name '*.java' -print >> vm-tools.lst; \
+	    done \
+	else \
+	    echo -n > vm-tools.lst; \
+	fi
+	cat classes.lst asm.lst vm-tools.lst > all-classes.lst
 @JAVA_MAINTAINER_MODE_TRUE@	AC=`echo $(JCOMPILER) | sed -e 's/UTF-8/ISO-8859-1/g'`; \
 @JAVA_MAINTAINER_MODE_TRUE@	  $$AC -g -w -d $(srcdir)/asm @asm.lst
-@JAVA_MAINTAINER_MODE_TRUE@	$(JCOMPILER) -g -w -d $(srcdir)/classes @classes.lst
+@JAVA_MAINTAINER_MODE_TRUE@	$(JCOMPILER) -g -w -d $(srcdir)/classes @classes.lst @vm-tools.lst
 @JAVA_MAINTAINER_MODE_TRUE@	@list=`cd $(top_srcdir)/resource && find gnu/classpath/tools -name \*.properties -print`; \
 @JAVA_MAINTAINER_MODE_TRUE@	for p in $$list; do \
 @JAVA_MAINTAINER_MODE_TRUE@	  dirname=classes/`dirname $$p`; \
