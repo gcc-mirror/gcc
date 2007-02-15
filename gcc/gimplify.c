@@ -3654,6 +3654,19 @@ gimplify_modify_expr (tree *expr_p, tree *pre_p, tree *post_p, bool want_value)
       *to_p = make_ssa_name (*to_p, *expr_p);
     }
 
+  /* Try to alleviate the effects of the gimplification creating artificial
+     temporaries (see for example is_gimple_reg_rhs) on the debug info.  */
+  if (!gimplify_ctxp->into_ssa
+      && DECL_P (*from_p) && DECL_IGNORED_P (*from_p)
+      && DECL_P (*to_p) && !DECL_IGNORED_P (*to_p))
+    {
+      if (!DECL_NAME (*from_p) && DECL_NAME (*to_p))
+	DECL_NAME (*from_p)
+	  = create_tmp_var_name (IDENTIFIER_POINTER (DECL_NAME (*to_p)));
+      DECL_DEBUG_EXPR_IS_FROM (*from_p) = 1;
+      SET_DECL_DEBUG_EXPR (*from_p, *to_p);
+    }
+
   if (want_value)
     {
       tree_to_gimple_tuple (expr_p);
