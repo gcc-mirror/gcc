@@ -91,7 +91,6 @@ public:
 public: // actually package-private
   static ::java::net::SocketImplFactory * factory;
   ::java::net::SocketImpl * __attribute__((aligned(__alignof__( ::java::lang::Object)))) impl;
-  jboolean implCreated;
   jboolean bound;
 private:
   jboolean inputShutdown;
