@@ -60,7 +60,8 @@ static tree VMSupportsCS8_builtin (tree, tree);
 /* Functions of this type are used to inline a given call.  Such a
    function should either return an expression, if the call is to be
    inlined, or NULL_TREE if a real call should be emitted.  Arguments
-   are method return type and arguments to call.  */
+   are method return type and the original CALL_EXPR containing the
+   arguments to the call.  */
 typedef tree builtin_creator_function (tree, tree);
 
 /* Hold a char*, before initialization, or a tree, after
@@ -130,50 +131,73 @@ static GTY(()) struct builtin_record java_builtins[] =
 /* Internal functions which implement various builtin conversions.  */
 
 static tree
-max_builtin (tree method_return_type, tree method_arguments)
+max_builtin (tree method_return_type, tree orig_call)
 {
   /* MAX_EXPR does not handle -0.0 in the Java style.  */
   if (TREE_CODE (method_return_type) == REAL_TYPE)
     return NULL_TREE;
   return fold_build2 (MAX_EXPR, method_return_type,
-		      TREE_VALUE (method_arguments),
-		      TREE_VALUE (TREE_CHAIN (method_arguments)));
+		      CALL_EXPR_ARG (orig_call, 0),
+		      CALL_EXPR_ARG (orig_call, 1));
 }
 
 static tree
-min_builtin (tree method_return_type, tree method_arguments)
+min_builtin (tree method_return_type, tree orig_call)
 {
   /* MIN_EXPR does not handle -0.0 in the Java style.  */
   if (TREE_CODE (method_return_type) == REAL_TYPE)
     return NULL_TREE;
   return fold_build2 (MIN_EXPR, method_return_type,
-		      TREE_VALUE (method_arguments),
-		      TREE_VALUE (TREE_CHAIN (method_arguments)));
+		      CALL_EXPR_ARG (orig_call, 0),
+		      CALL_EXPR_ARG (orig_call, 1));
 }
 
 static tree
-abs_builtin (tree method_return_type, tree method_arguments)
+abs_builtin (tree method_return_type, tree orig_call)
 {
   return fold_build1 (ABS_EXPR, method_return_type,
-		      TREE_VALUE (method_arguments));
+		      CALL_EXPR_ARG (orig_call, 0));
 }
 
-/* Mostly copied from ../builtins.c.  */
+/* Construct a new call to FN using the arguments from ORIG_CALL.  */
+
 static tree
-java_build_function_call_expr (tree fn, tree arglist)
+java_build_function_call_expr (tree fn, tree orig_call)
 {
-  tree call_expr;
-
-  call_expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
-  return fold_build3 (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-		      call_expr, arglist, NULL_TREE);
+  int nargs = call_expr_nargs (orig_call);
+  switch (nargs)
+    {
+      /* Although we could handle the 0-3 argument cases using the general
+	 logic in the default case, splitting them out permits folding to
+	 be performed without constructing a temporary CALL_EXPR.  */
+    case 0:
+      return build_call_expr (fn, 0);
+    case 1:
+      return build_call_expr (fn, 1, CALL_EXPR_ARG (orig_call, 0));
+    case 2:
+      return build_call_expr (fn, 2,
+			      CALL_EXPR_ARG (orig_call, 0),
+			      CALL_EXPR_ARG (orig_call, 1));
+    case 3:
+      return build_call_expr (fn, 3,
+			      CALL_EXPR_ARG (orig_call, 0),
+			      CALL_EXPR_ARG (orig_call, 1),
+			      CALL_EXPR_ARG (orig_call, 2));
+    default:
+      {
+	tree fntype = TREE_TYPE (fn);
+	fn = build1 (ADDR_EXPR, build_pointer_type (fntype), fn);
+	return fold (build_call_array (TREE_TYPE (fntype),
+				       fn, nargs, CALL_EXPR_ARGP (orig_call)));
+      }
+    }
 }
 
 static tree
-convert_real (tree method_return_type, tree method_arguments)
+convert_real (tree method_return_type, tree orig_call)
 {
   return build1 (VIEW_CONVERT_EXPR, method_return_type,
-		 TREE_VALUE (method_arguments));
+		 CALL_EXPR_ARG (orig_call, 0));
 }
 
 
@@ -191,75 +215,50 @@ convert_real (tree method_return_type, tree method_arguments)
 */
 
 
-/* Macros to unmarshal arguments from a TREE_LIST into a few
+/* Macros to unmarshal arguments from a CALL_EXPR into a few
    variables.  We also convert the offset arg from a long to an
    integer that is the same size as a pointer.  */
 
-#define UNMARSHAL3(METHOD_ARGUMENTS)					\
+#define UNMARSHAL3(METHOD_CALL)					\
 tree this_arg, obj_arg, offset_arg;					\
 do									\
 {									\
-  tree chain = METHOD_ARGUMENTS;					\
-  this_arg = TREE_VALUE (chain);					\
-  chain = TREE_CHAIN (chain);						\
-  obj_arg = TREE_VALUE (chain);						\
-  chain = TREE_CHAIN (chain);						\
+  tree orig_method_call = METHOD_CALL;					\
+  this_arg = CALL_EXPR_ARG (orig_method_call, 0);			\
+  obj_arg = CALL_EXPR_ARG (orig_method_call, 1);			\
   offset_arg = fold_convert (java_type_for_size (POINTER_SIZE, 0),	\
-			     TREE_VALUE (chain));			\
+			     CALL_EXPR_ARG (orig_method_call, 2));	\
 }									\
 while (0)
 
-#define UNMARSHAL4(METHOD_ARGUMENTS)					\
+#define UNMARSHAL4(METHOD_CALL)					\
 tree value_type, this_arg, obj_arg, offset_arg, value_arg;		\
 do									\
 {									\
-  tree chain = METHOD_ARGUMENTS;					\
-  this_arg = TREE_VALUE (chain);					\
-  chain = TREE_CHAIN (chain);						\
-  obj_arg = TREE_VALUE (chain);						\
-  chain = TREE_CHAIN (chain);						\
+  tree orig_method_call = METHOD_CALL;					\
+  this_arg = CALL_EXPR_ARG (orig_method_call, 0);			\
+  obj_arg = CALL_EXPR_ARG (orig_method_call, 1);			\
   offset_arg = fold_convert (java_type_for_size (POINTER_SIZE, 0),	\
-			     TREE_VALUE (chain));			\
-  chain = TREE_CHAIN (chain);						\
-  value_arg = TREE_VALUE (chain);					\
+			     CALL_EXPR_ARG (orig_method_call, 2));	\
+  value_arg = CALL_EXPR_ARG (orig_method_call, 3);			\
   value_type = TREE_TYPE (value_arg);					\
 }									\
 while (0)
 
-#define UNMARSHAL5(METHOD_ARGUMENTS)					\
+#define UNMARSHAL5(METHOD_CALL)					\
 tree value_type, this_arg, obj_arg, offset_arg, expected_arg, value_arg; \
 do									\
 {									\
-  tree chain = METHOD_ARGUMENTS;					\
-  this_arg = TREE_VALUE (chain);					\
-  chain = TREE_CHAIN (chain);						\
-  obj_arg = TREE_VALUE (chain);						\
-  chain = TREE_CHAIN (chain);						\
+  tree orig_method_call = METHOD_CALL;					\
+  this_arg = CALL_EXPR_ARG (orig_method_call, 0);			\
+  obj_arg = CALL_EXPR_ARG (orig_method_call, 1);			\
   offset_arg = fold_convert (java_type_for_size (POINTER_SIZE, 0),	\
-			     TREE_VALUE (chain));			\
-  chain = TREE_CHAIN (chain);						\
-  expected_arg = TREE_VALUE (chain);					\
-  chain = TREE_CHAIN (chain);						\
-  value_arg = TREE_VALUE (chain);					\
+			     CALL_EXPR_ARG (orig_method_call, 2));	\
+  expected_arg = CALL_EXPR_ARG (orig_method_call, 3);			\
+  value_arg = CALL_EXPR_ARG (orig_method_call, 4);			\
   value_type = TREE_TYPE (value_arg);					\
 }									\
 while (0)
-
-/* Construct an arglist from a call.  */
-
-static tree
-build_arglist_for_builtin (tree arg, ...)
-{
-  va_list ap;
-  tree nextarg;
-  tree newarglist = build_tree_list (NULL_TREE, arg);
-
-  va_start(ap, arg);
-  while ((nextarg = va_arg(ap, tree)))
-    newarglist = tree_cons (NULL_TREE, nextarg, newarglist);
-
-  return nreverse (newarglist);
-}
 
 /* Add an address to an offset, forming a sum.  */
 
@@ -286,10 +285,10 @@ build_check_this (tree stmt, tree this_arg)
 
 static tree
 putObject_builtin (tree method_return_type ATTRIBUTE_UNUSED, 
-		   tree method_arguments)
+		   tree orig_call)
 {
   tree addr, stmt;
-  UNMARSHAL4 (method_arguments);
+  UNMARSHAL4 (orig_call);
 
   addr = build_addr_sum (value_type, obj_arg, offset_arg);
   stmt = fold_build2 (MODIFY_EXPR, value_type,
@@ -302,22 +301,18 @@ putObject_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 
 static tree
 compareAndSwapInt_builtin (tree method_return_type ATTRIBUTE_UNUSED,
-			   tree method_arguments)
+			   tree orig_call)
 {
   enum machine_mode mode = TYPE_MODE (int_type_node);
   if (sync_compare_and_swap_cc[mode] != CODE_FOR_nothing 
       || sync_compare_and_swap[mode] != CODE_FOR_nothing)
     {
-      tree newarglist, addr, stmt;
-      UNMARSHAL5 (method_arguments);
+      tree addr, stmt;
+      UNMARSHAL5 (orig_call);
 
       addr = build_addr_sum (int_type_node, obj_arg, offset_arg);
-
-      newarglist 
-	= build_arglist_for_builtin (addr, expected_arg, value_arg, NULL_TREE);
-      stmt = (build_function_call_expr
-	      (built_in_decls[BUILT_IN_BOOL_COMPARE_AND_SWAP_4],
-	       newarglist));
+      stmt = build_call_expr (built_in_decls[BUILT_IN_BOOL_COMPARE_AND_SWAP_4],
+			      3, addr, expected_arg, value_arg);
 
       return build_check_this (stmt, this_arg);
     }
@@ -326,22 +321,18 @@ compareAndSwapInt_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 
 static tree
 compareAndSwapLong_builtin (tree method_return_type ATTRIBUTE_UNUSED,
-			    tree method_arguments)
+			    tree orig_call)
 {
   enum machine_mode mode = TYPE_MODE (long_type_node);
   if (sync_compare_and_swap_cc[mode] != CODE_FOR_nothing 
       || sync_compare_and_swap[mode] != CODE_FOR_nothing)
     {
-      tree newarglist, addr, stmt;
-      UNMARSHAL5 (method_arguments);
+      tree addr, stmt;
+      UNMARSHAL5 (orig_call);
 
       addr = build_addr_sum (long_type_node, obj_arg, offset_arg);
-
-      newarglist 
-	= build_arglist_for_builtin (addr, expected_arg, value_arg, NULL_TREE);
-      stmt = (build_function_call_expr
-	      (built_in_decls[BUILT_IN_BOOL_COMPARE_AND_SWAP_8],
-	       newarglist));
+      stmt = build_call_expr (built_in_decls[BUILT_IN_BOOL_COMPARE_AND_SWAP_8],
+			      3, addr, expected_arg, value_arg);
 
       return build_check_this (stmt, this_arg);
     }
@@ -349,27 +340,23 @@ compareAndSwapLong_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 }
 static tree
 compareAndSwapObject_builtin (tree method_return_type ATTRIBUTE_UNUSED, 
-			      tree method_arguments)
+			      tree orig_call)
 {
   enum machine_mode mode = TYPE_MODE (ptr_type_node);
   if (sync_compare_and_swap_cc[mode] != CODE_FOR_nothing 
       || sync_compare_and_swap[mode] != CODE_FOR_nothing)
   {
-    tree newarglist, addr, stmt;
+    tree addr, stmt;
     int builtin;
 
-    UNMARSHAL5 (method_arguments);
+    UNMARSHAL5 (orig_call);
     builtin = (POINTER_SIZE == 32 
 	       ? BUILT_IN_BOOL_COMPARE_AND_SWAP_4 
 	       : BUILT_IN_BOOL_COMPARE_AND_SWAP_8);
 
     addr = build_addr_sum (value_type, obj_arg, offset_arg);
-
-    newarglist 
-      = build_arglist_for_builtin (addr, expected_arg, value_arg, NULL_TREE);
-    stmt = (build_function_call_expr
-	    (built_in_decls[builtin],
-	     newarglist));
+    stmt = build_call_expr (built_in_decls[builtin],
+			    3, addr, expected_arg, value_arg);
 
     return build_check_this (stmt, this_arg);
   }
@@ -378,20 +365,17 @@ compareAndSwapObject_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 
 static tree
 putVolatile_builtin (tree method_return_type ATTRIBUTE_UNUSED, 
-		     tree method_arguments)
+		     tree orig_call)
 {
-  tree newarglist, addr, stmt, modify_stmt;
-  UNMARSHAL4 (method_arguments);
+  tree addr, stmt, modify_stmt;
+  UNMARSHAL4 (orig_call);
   
   addr = build_addr_sum (value_type, obj_arg, offset_arg);
   addr 
     = fold_convert (build_pointer_type (build_type_variant (value_type, 0, 1)),
 		    addr);
   
-  newarglist = NULL_TREE;
-  stmt = (build_function_call_expr
-	  (built_in_decls[BUILT_IN_SYNCHRONIZE],
-	   newarglist));
+  stmt = build_call_expr (built_in_decls[BUILT_IN_SYNCHRONIZE], 0);
   modify_stmt = fold_build2 (MODIFY_EXPR, value_type,
 			     build_java_indirect_ref (value_type, addr,
 						      flag_check_references),
@@ -404,20 +388,17 @@ putVolatile_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 
 static tree
 getVolatile_builtin (tree method_return_type ATTRIBUTE_UNUSED, 
-		     tree method_arguments)
+		     tree orig_call)
 {
-  tree newarglist, addr, stmt, modify_stmt, tmp;
-  UNMARSHAL3 (method_arguments);
+  tree addr, stmt, modify_stmt, tmp;
+  UNMARSHAL3 (orig_call);
   
   addr = build_addr_sum (method_return_type, obj_arg, offset_arg);
   addr 
     = fold_convert (build_pointer_type (build_type_variant 
 					(method_return_type, 0, 1)), addr);
   
-  newarglist = NULL_TREE;
-  stmt = (build_function_call_expr
-	  (built_in_decls[BUILT_IN_SYNCHRONIZE],
-	   newarglist));
+  stmt = build_call_expr (built_in_decls[BUILT_IN_SYNCHRONIZE], 0);
   
   tmp = build_decl (VAR_DECL, NULL, method_return_type);
   DECL_IGNORED_P (tmp) = 1;
@@ -437,7 +418,7 @@ getVolatile_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 
 static tree
 VMSupportsCS8_builtin (tree method_return_type, 
-		       tree method_arguments ATTRIBUTE_UNUSED)
+		       tree orig_call ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode = TYPE_MODE (long_type_node);
   gcc_assert (method_return_type == boolean_type_node);
@@ -596,7 +577,6 @@ check_for_builtin (tree method, tree call)
   if (optimize && TREE_CODE (call) == CALL_EXPR)
     {
       int i;
-      tree method_arguments = TREE_OPERAND (call, 1);
       tree method_class = DECL_NAME (TYPE_NAME (DECL_CONTEXT (method)));
       tree method_name = DECL_NAME (method);
       tree method_return_type = TREE_TYPE (TREE_TYPE (method));
@@ -611,8 +591,7 @@ check_for_builtin (tree method, tree call)
 	      if (java_builtins[i].creator != NULL)
 		{
 		  tree result
-		    = (*java_builtins[i].creator) (method_return_type,
-						   method_arguments);
+		    = (*java_builtins[i].creator) (method_return_type, call);
 		  return result == NULL_TREE ? call : result;
 		}
 
@@ -623,7 +602,7 @@ check_for_builtin (tree method, tree call)
 	      fn = built_in_decls[java_builtins[i].builtin_code];
 	      if (fn == NULL_TREE)
 		return call;
-	      return java_build_function_call_expr (fn, method_arguments);
+	      return java_build_function_call_expr (fn, call);
 	    }
 	}
     }

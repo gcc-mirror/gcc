@@ -434,7 +434,7 @@ vect_recog_pow_pattern (tree last_stmt, tree *type_in, tree *type_out)
 {
   tree expr;
   tree type;
-  tree fn, arglist, base, exp;
+  tree fn, base, exp;
 
   if (TREE_CODE (last_stmt) != GIMPLE_MODIFY_STMT)
     return NULL;
@@ -446,15 +446,14 @@ vect_recog_pow_pattern (tree last_stmt, tree *type_in, tree *type_out)
     return NULL_TREE;
 
   fn = get_callee_fndecl (expr);
-  arglist = TREE_OPERAND (expr, 1);
   switch (DECL_FUNCTION_CODE (fn))
     {
     case BUILT_IN_POWIF:
     case BUILT_IN_POWI:
     case BUILT_IN_POWF:
     case BUILT_IN_POW:
-      base = TREE_VALUE (arglist);
-      exp = TREE_VALUE (TREE_CHAIN (arglist));
+      base = CALL_EXPR_ARG (expr, 0);
+      exp = CALL_EXPR_ARG (expr, 1);
       if (TREE_CODE (exp) != REAL_CST
 	  && TREE_CODE (exp) != INTEGER_CST)
         return NULL_TREE;
@@ -484,11 +483,10 @@ vect_recog_pow_pattern (tree last_stmt, tree *type_in, tree *type_out)
       && REAL_VALUES_EQUAL (TREE_REAL_CST (exp), dconsthalf))
     {
       tree newfn = mathfn_built_in (TREE_TYPE (base), BUILT_IN_SQRT);
-      tree newarglist = build_tree_list (NULL_TREE, base);
       *type_in = get_vectype_for_scalar_type (TREE_TYPE (base));
       if (*type_in)
 	{
-	  newfn = build_function_call_expr (newfn, newarglist);
+	  newfn = build_call_expr (newfn, 1, base);
 	  if (vectorizable_function (newfn, *type_in, *type_in) != NULL_TREE)
 	    return newfn;
 	}

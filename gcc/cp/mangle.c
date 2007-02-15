@@ -2206,7 +2206,7 @@ write_expression (tree expr)
 	  break;
 
 	default:
-	  for (i = 0; i < TREE_CODE_LENGTH (code); ++i)
+	  for (i = 0; i < TREE_OPERAND_LENGTH (expr); ++i)
 	    {
 	      tree operand = TREE_OPERAND (expr, i);
 	      /* As a GNU extension, the middle operand of a

@@ -2867,9 +2867,9 @@ expand_builtin_unwind_init (void)
 }
 
 rtx
-expand_builtin_eh_return_data_regno (tree arglist)
+expand_builtin_eh_return_data_regno (tree exp)
 {
-  tree which = TREE_VALUE (arglist);
+  tree which = CALL_EXPR_ARG (exp, 0);
   unsigned HOST_WIDE_INT iwhich;
 
   if (TREE_CODE (which) != INTEGER_CST)

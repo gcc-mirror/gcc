@@ -867,7 +867,10 @@ static void
 sra_walk_call_expr (tree expr, block_stmt_iterator *bsi,
 		    const struct sra_walk_fns *fns)
 {
-  sra_walk_tree_list (TREE_OPERAND (expr, 1), bsi, false, fns);
+  int i;
+  int nargs = call_expr_nargs (expr);
+  for (i = 0; i < nargs; i++)
+    sra_walk_expr (&CALL_EXPR_ARG (expr, i), bsi, false, fns);
 }
 
 /* Walk the inputs and outputs of an ASM_EXPR looking for scalarizable

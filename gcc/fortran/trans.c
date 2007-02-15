@@ -318,7 +318,7 @@ gfc_trans_runtime_check (tree cond, const char * msgid, stmtblock_t * pblock,
   stmtblock_t block;
   tree body;
   tree tmp;
-  tree args;
+  tree arg;
   char * message;
   int line;
 
@@ -342,11 +342,10 @@ gfc_trans_runtime_check (tree cond, const char * msgid, stmtblock_t * pblock,
     asprintf (&message, "%s (in file '%s', around line %d)", _(msgid),
 	      gfc_source_file, input_line + 1);
 
-  tmp = gfc_build_addr_expr (pchar_type_node, gfc_build_cstring_const(message));
+  arg = gfc_build_addr_expr (pchar_type_node, gfc_build_cstring_const(message));
   gfc_free(message);
-  args = gfc_chainon_list (NULL_TREE, tmp);
 
-  tmp = build_function_call_expr (gfor_fndecl_runtime_error, args);
+  tmp = build_call_expr (gfor_fndecl_runtime_error, 1, arg);
   gfc_add_expr_to_block (&block, tmp);
 
   body = gfc_finish_block (&block);
@@ -359,9 +358,8 @@ gfc_trans_runtime_check (tree cond, const char * msgid, stmtblock_t * pblock,
     {
       /* Tell the compiler that this isn't likely.  */
       cond = fold_convert (long_integer_type_node, cond);
-      tmp = gfc_chainon_list (NULL_TREE, cond);
-      tmp = gfc_chainon_list (tmp, build_int_cst (long_integer_type_node, 0));
-      cond = build_function_call_expr (built_in_decls[BUILT_IN_EXPECT], tmp);
+      tmp = build_int_cst (long_integer_type_node, 0);
+      cond = build_call_expr (built_in_decls[BUILT_IN_EXPECT], 2, cond, tmp);
       cond = fold_convert (boolean_type_node, cond);
 
       tmp = build3_v (COND_EXPR, cond, body, build_empty_stmt ());

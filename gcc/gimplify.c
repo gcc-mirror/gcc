@@ -1040,14 +1040,13 @@ build_stack_save_restore (tree *save, tree *restore)
   tree save_call, tmp_var;
 
   save_call =
-      build_function_call_expr (implicit_built_in_decls[BUILT_IN_STACK_SAVE],
-				NULL_TREE);
+    build_call_expr (implicit_built_in_decls[BUILT_IN_STACK_SAVE], 0);
   tmp_var = create_tmp_var (ptr_type_node, "saved_stack");
 
   *save = build2 (GIMPLE_MODIFY_STMT, ptr_type_node, tmp_var, save_call);
   *restore =
-    build_function_call_expr (implicit_built_in_decls[BUILT_IN_STACK_RESTORE],
-			      tree_cons (NULL_TREE, tmp_var, NULL_TREE));
+    build_call_expr (implicit_built_in_decls[BUILT_IN_STACK_RESTORE],
+		     1, tmp_var);
 }
 
 /* Gimplify a BIND_EXPR.  Just voidify and recurse.  */
@@ -1233,7 +1232,7 @@ gimplify_decl_expr (tree *stmt_p)
 	  /* This is a variable-sized decl.  Simplify its size and mark it
 	     for deferred expansion.  Note that mudflap depends on the format
 	     of the emitted code: see mx_register_decls().  */
-	  tree t, args, addr, ptr_type;
+	  tree t, addr, ptr_type;
 
 	  gimplify_one_sizepos (&DECL_SIZE (decl), stmt_p);
 	  gimplify_one_sizepos (&DECL_SIZE_UNIT (decl), stmt_p);
@@ -1250,9 +1249,8 @@ gimplify_decl_expr (tree *stmt_p)
 	  SET_DECL_VALUE_EXPR (decl, t);
 	  DECL_HAS_VALUE_EXPR_P (decl) = 1;
 
-	  args = tree_cons (NULL, DECL_SIZE_UNIT (decl), NULL);
 	  t = built_in_decls[BUILT_IN_ALLOCA];
-	  t = build_function_call_expr (t, args);
+	  t = build_call_expr (t, 1, DECL_SIZE_UNIT (decl));
 	  t = fold_convert (ptr_type, t);
 	  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, addr, t);
 
@@ -2031,8 +2029,8 @@ static enum gimplify_status
 gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
 {
   tree decl;
-  tree arglist;
   enum gimplify_status ret;
+  int i, nargs;
 
   gcc_assert (TREE_CODE (*expr_p) == CALL_EXPR);
 
@@ -2056,8 +2054,7 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
   decl = get_callee_fndecl (*expr_p);
   if (decl && DECL_BUILT_IN (decl))
     {
-      tree arglist = TREE_OPERAND (*expr_p, 1);
-      tree new = fold_builtin (decl, arglist, !want_value);
+      tree new = fold_call_expr (*expr_p, !want_value);
 
       if (new && new != *expr_p)
 	{
@@ -2071,62 +2068,56 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
       if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
 	  && DECL_FUNCTION_CODE (decl) == BUILT_IN_VA_START)
         {
-	  if (!arglist || !TREE_CHAIN (arglist))
+	  if (call_expr_nargs (*expr_p) < 2)
 	    {
 	      error ("too few arguments to function %<va_start%>");
 	      *expr_p = build_empty_stmt ();
 	      return GS_OK;
 	    }
 	  
-	  if (fold_builtin_next_arg (TREE_CHAIN (arglist)))
+	  if (fold_builtin_next_arg (*expr_p, true))
 	    {
 	      *expr_p = build_empty_stmt ();
 	      return GS_OK;
 	    }
 	  /* Avoid gimplifying the second argument to va_start, which needs
 	     to be the plain PARM_DECL.  */
-	  return gimplify_arg (&TREE_VALUE (TREE_OPERAND (*expr_p, 1)), pre_p);
+	  return gimplify_arg (&CALL_EXPR_ARG (*expr_p, 0), pre_p);
 	}
     }
 
   /* There is a sequence point before the call, so any side effects in
      the calling expression must occur before the actual call.  Force
      gimplify_expr to use an internal post queue.  */
-  ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, NULL,
+  ret = gimplify_expr (&CALL_EXPR_FN (*expr_p), pre_p, NULL,
 		       is_gimple_call_addr, fb_rvalue);
 
-  if (PUSH_ARGS_REVERSED)
-    TREE_OPERAND (*expr_p, 1) = nreverse (TREE_OPERAND (*expr_p, 1));
-  for (arglist = TREE_OPERAND (*expr_p, 1); arglist;
-       arglist = TREE_CHAIN (arglist))
+  nargs = call_expr_nargs (*expr_p);
+
+  for (i = (PUSH_ARGS_REVERSED ? nargs - 1 : 0);
+       PUSH_ARGS_REVERSED ? i >= 0 : i < nargs;
+       PUSH_ARGS_REVERSED ? i-- : i++)
     {
       enum gimplify_status t;
 
-      t = gimplify_arg (&TREE_VALUE (arglist), pre_p);
+      t = gimplify_arg (&CALL_EXPR_ARG (*expr_p, i), pre_p);
 
       if (t == GS_ERROR)
 	ret = GS_ERROR;
     }
-  if (PUSH_ARGS_REVERSED)
-    TREE_OPERAND (*expr_p, 1) = nreverse (TREE_OPERAND (*expr_p, 1));
 
   /* Try this again in case gimplification exposed something.  */
   if (ret != GS_ERROR)
     {
-      decl = get_callee_fndecl (*expr_p);
-      if (decl && DECL_BUILT_IN (decl))
-	{
-	  tree arglist = TREE_OPERAND (*expr_p, 1);
-	  tree new = fold_builtin (decl, arglist, !want_value);
+      tree new = fold_call_expr (*expr_p, !want_value);
 
-	  if (new && new != *expr_p)
-	    {
-	      /* There was a transformation of this call which computes the
-		 same value, but in a more efficient way.  Return and try
-		 again.  */
-	      *expr_p = new;
-	      return GS_OK;
-	    }
+      if (new && new != *expr_p)
+	{
+	  /* There was a transformation of this call which computes the
+	     same value, but in a more efficient way.  Return and try
+	     again.  */
+	  *expr_p = new;
+	  return GS_OK;
 	}
     }
 
@@ -2561,20 +2552,16 @@ gimplify_cond_expr (tree *expr_p, tree *pre_p, fallback_t fallback)
 static enum gimplify_status
 gimplify_modify_expr_to_memcpy (tree *expr_p, tree size, bool want_value)
 {
-  tree args, t, to, to_ptr, from;
+  tree t, to, to_ptr, from, from_ptr;
 
   to = GENERIC_TREE_OPERAND (*expr_p, 0);
   from = GENERIC_TREE_OPERAND (*expr_p, 1);
 
-  args = tree_cons (NULL, size, NULL);
-
-  t = build_fold_addr_expr (from);
-  args = tree_cons (NULL, t, args);
+  from_ptr = build_fold_addr_expr (from);
 
   to_ptr = build_fold_addr_expr (to);
-  args = tree_cons (NULL, to_ptr, args);
   t = implicit_built_in_decls[BUILT_IN_MEMCPY];
-  t = build_function_call_expr (t, args);
+  t = build_call_expr (t, 3, to_ptr, from_ptr, size);
 
   if (want_value)
     {
@@ -2593,18 +2580,13 @@ gimplify_modify_expr_to_memcpy (tree *expr_p, tree size, bool want_value)
 static enum gimplify_status
 gimplify_modify_expr_to_memset (tree *expr_p, tree size, bool want_value)
 {
-  tree args, t, to, to_ptr;
+  tree t, to, to_ptr;
 
   to = GENERIC_TREE_OPERAND (*expr_p, 0);
 
-  args = tree_cons (NULL, size, NULL);
-
-  args = tree_cons (NULL, integer_zero_node, args);
-
   to_ptr = build_fold_addr_expr (to);
-  args = tree_cons (NULL, to_ptr, args);
   t = implicit_built_in_decls[BUILT_IN_MEMSET];
-  t = build_function_call_expr (t, args);
+  t = build_call_expr (t, 3, to_ptr, integer_zero_node, size);
 
   if (want_value)
     {
@@ -3687,18 +3669,15 @@ gimplify_variable_sized_compare (tree *expr_p)
 {
   tree op0 = TREE_OPERAND (*expr_p, 0);
   tree op1 = TREE_OPERAND (*expr_p, 1);
-  tree args, t, dest;
+  tree t, arg, dest, src;
 
-  t = TYPE_SIZE_UNIT (TREE_TYPE (op0));
-  t = unshare_expr (t);
-  t = SUBSTITUTE_PLACEHOLDER_IN_EXPR (t, op0);
-  args = tree_cons (NULL, t, NULL);
-  t = build_fold_addr_expr (op1);
-  args = tree_cons (NULL, t, args);
+  arg = TYPE_SIZE_UNIT (TREE_TYPE (op0));
+  arg = unshare_expr (arg);
+  arg = SUBSTITUTE_PLACEHOLDER_IN_EXPR (arg, op0);
+  src = build_fold_addr_expr (op1);
   dest = build_fold_addr_expr (op0);
-  args = tree_cons (NULL, dest, args);
   t = implicit_built_in_decls[BUILT_IN_MEMCMP];
-  t = build_function_call_expr (t, args);
+  t = build_call_expr (t, 3, dest, src, arg);
   *expr_p
     = build2 (TREE_CODE (*expr_p), TREE_TYPE (*expr_p), t, integer_zero_node);
 
@@ -5122,7 +5101,7 @@ static enum gimplify_status
 gimplify_omp_atomic_fetch_op (tree *expr_p, tree addr, tree rhs, int index)
 {
   enum built_in_function base;
-  tree decl, args, itype;
+  tree decl, itype;
   enum insn_code *optab;
 
   /* Check for one of the supported fetch-op operations.  */
@@ -5167,9 +5146,7 @@ gimplify_omp_atomic_fetch_op (tree *expr_p, tree addr, tree rhs, int index)
   if (optab[TYPE_MODE (itype)] == CODE_FOR_nothing)
     return GS_UNHANDLED;
 
-  args = tree_cons (NULL, fold_convert (itype, rhs), NULL);
-  args = tree_cons (NULL, addr, args);
-  *expr_p = build_function_call_expr (decl, args);
+  *expr_p = build_call_expr (decl, 2, addr, fold_convert (itype, rhs));
   return GS_OK;
 }
 
@@ -5234,7 +5211,7 @@ gimplify_omp_atomic_pipeline (tree *expr_p, tree *pre_p, tree addr,
 			      tree rhs, int index)
 {
   tree oldval, oldival, oldival2, newval, newival, label;
-  tree type, itype, cmpxchg, args, x, iaddr;
+  tree type, itype, cmpxchg, x, iaddr;
 
   cmpxchg = built_in_decls[BUILT_IN_VAL_COMPARE_AND_SWAP_N + index + 1];
   type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (addr)));
@@ -5295,10 +5272,8 @@ gimplify_omp_atomic_pipeline (tree *expr_p, tree *pre_p, tree addr,
 	      fold_convert (itype, oldival));
   gimplify_and_add (x, pre_p);
 
-  args = tree_cons (NULL, fold_convert (itype, newival), NULL);
-  args = tree_cons (NULL, fold_convert (itype, oldival), args);
-  args = tree_cons (NULL, iaddr, args);
-  x = build_function_call_expr (cmpxchg, args);
+  x = build_call_expr (cmpxchg, 3, iaddr, fold_convert (itype, oldival),
+		       fold_convert (itype, newival));
   if (oldval == oldival)
     x = fold_convert (type, x);
   x = build2 (GIMPLE_MODIFY_STMT, void_type_node, oldival, x);
@@ -5342,7 +5317,7 @@ gimplify_omp_atomic_mutex (tree *expr_p, tree *pre_p, tree addr, tree rhs)
   tree t;
 
   t = built_in_decls[BUILT_IN_GOMP_ATOMIC_START];
-  t = build_function_call_expr (t, NULL);
+  t = build_call_expr (t, 0);
   gimplify_and_add (t, pre_p);
 
   t = build_fold_indirect_ref (addr);
@@ -5350,7 +5325,7 @@ gimplify_omp_atomic_mutex (tree *expr_p, tree *pre_p, tree addr, tree rhs)
   gimplify_and_add (t, pre_p);
   
   t = built_in_decls[BUILT_IN_GOMP_ATOMIC_END];
-  t = build_function_call_expr (t, NULL);
+  t = build_call_expr (t, 0);
   gimplify_and_add (t, pre_p);
 
   *expr_p = NULL;
@@ -6458,13 +6433,13 @@ gimplify_function_tree (tree fndecl)
       x = DECL_SAVED_TREE (fndecl);
       append_to_statement_list (x, &TREE_OPERAND (tf, 0));
       x = implicit_built_in_decls[BUILT_IN_PROFILE_FUNC_EXIT];
-      x = build_function_call_expr (x, NULL);
+      x = build_call_expr (x, 0);
       append_to_statement_list (x, &TREE_OPERAND (tf, 1));
 
       bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
       TREE_SIDE_EFFECTS (bind) = 1;
       x = implicit_built_in_decls[BUILT_IN_PROFILE_FUNC_ENTER];
-      x = build_function_call_expr (x, NULL);
+      x = build_call_expr (x, 0);
       append_to_statement_list (x, &BIND_EXPR_BODY (bind));
       append_to_statement_list (tf, &BIND_EXPR_BODY (bind));
 

@@ -4249,7 +4249,8 @@ get_references_in_stmt (tree stmt, VEC (data_ref_loc, heap) **references)
 {
   bool clobbers_memory = false;
   data_ref_loc *ref;
-  tree *op0, *op1, args, call;
+  tree *op0, *op1, arg, call;
+  call_expr_arg_iterator iter;
 
   *references = NULL;
 
@@ -4290,9 +4291,9 @@ get_references_in_stmt (tree stmt, VEC (data_ref_loc, heap) **references)
 
   if (call)
     {
-      for (args = TREE_OPERAND (call, 1); args; args = TREE_CHAIN (args))
+      FOR_EACH_CALL_EXPR_ARG (arg, iter, call)
 	{
-	  op0 = &TREE_VALUE (args);
+	  op0 = &arg;
 	  if (DECL_P (*op0)
 	      || REFERENCE_CLASS_P (*op0))
 	    {

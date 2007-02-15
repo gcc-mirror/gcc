@@ -74,10 +74,12 @@ DEFTREECODE (MEMBER_REF, "member_ref", tcc_reference, 2)
    operator converts to.  Operand is expression to be converted.  */
 DEFTREECODE (TYPE_EXPR, "type_expr", tcc_expression, 1)
 
-/* For AGGR_INIT_EXPR, operand 0 is function which performs initialization,
-   operand 1 is argument list to initialization function,
-   and operand 2 is the slot which was allocated for this expression.  */
-DEFTREECODE (AGGR_INIT_EXPR, "aggr_init_expr", tcc_expression, 3)
+/* AGGR_INIT_EXPRs have a variably-sized representation similar to
+   that of CALL_EXPRs.  Operand 0 is an INTEGER_CST node containing the
+   operand count, operand 1 is the function which performs initialization,
+   operand 2 is the slot which was allocated for this expression, and
+   the remaining operands are the arguments to the initialization function.  */
+DEFTREECODE (AGGR_INIT_EXPR, "aggr_init_expr", tcc_vl_exp, 3)
 
 /* A throw expression.  operand 0 is the expression, if there was one,
    else it is NULL_TREE.  */

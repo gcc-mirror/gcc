@@ -660,7 +660,7 @@ execute_optimize_stdarg (void)
 	    }
 
 	  si.va_start_count++;
-	  ap = TREE_VALUE (TREE_OPERAND (call, 1));
+	  ap = CALL_EXPR_ARG (call, 0);
 
 	  if (TREE_CODE (ap) != ADDR_EXPR)
 	    {

@@ -1039,10 +1039,8 @@ cache_this_class_ref (tree fndecl)
       && ! DECL_CLINIT_P (fndecl)
       && ! CLASS_INTERFACE (TYPE_NAME (DECL_CONTEXT (fndecl))))
     {
-      tree init = build3 (CALL_EXPR, void_type_node,
-			  build_address_of (soft_initclass_node),
-			  build_tree_list (NULL_TREE, this_classdollar),
-			  NULL_TREE);
+      tree init = build_call_expr (soft_initclass_node, 1,
+				   this_classdollar);
       java_add_stmt (init);
     }
 }
@@ -1177,20 +1175,16 @@ build_static_field_ref (tree fdecl)
 
       int cpool_index = alloc_constant_fieldref (output_class, fdecl);
       tree cache_entry = build_fieldref_cache_entry (cpool_index, fdecl);
-      tree test 
-	= build3 (CALL_EXPR, boolean_type_node, 
-		  build_address_of (built_in_decls[BUILT_IN_EXPECT]),
-		  tree_cons (NULL_TREE, build2 (EQ_EXPR, boolean_type_node,
-						cache_entry, null_pointer_node),
-			     build_tree_list (NULL_TREE, boolean_false_node)),
-		  NULL_TREE);
+      tree test
+        = build_call_expr (built_in_decls[BUILT_IN_EXPECT], 2,
+			   build2 (EQ_EXPR, boolean_type_node,
+				   cache_entry, null_pointer_node),
+			   boolean_false_node);
       tree cpool_index_cst = build_int_cst (NULL_TREE, cpool_index);
       tree init
-	= build3 (CALL_EXPR, ptr_type_node,
-		  build_address_of (soft_resolvepoolentry_node),
-		  tree_cons (NULL_TREE, build_class_ref (output_class),
-			     build_tree_list (NULL_TREE, cpool_index_cst)),
-		  NULL_TREE);
+	= build_call_expr (soft_resolvepoolentry_node, 2,
+			   build_class_ref (output_class),
+			   cpool_index_cst);
       init = build2 (MODIFY_EXPR, ptr_type_node, cache_entry, init);
       init = build3 (COND_EXPR, ptr_type_node, test, init, cache_entry);
       init = fold_convert (build_pointer_type (TREE_TYPE (fdecl)), init);
@@ -2693,8 +2687,7 @@ emit_indirect_register_classes (tree *list_p)
   TREE_PUBLIC (t) = 1;
   DECL_EXTERNAL (t) = 1;
   register_class_fn = t;
-  t = tree_cons (NULL, reg_class_list, NULL);
-  t = build_function_call_expr (register_class_fn, t);
+  t = build_call_expr (register_class_fn, 1, reg_class_list);
   append_to_statement_list (t, list_p);
 }
 
@@ -2759,8 +2752,7 @@ emit_register_classes (tree *list_p)
       for (i = 0; VEC_iterate (tree, registered_class, i, klass); ++i)
 	{
 	  t = build_fold_addr_expr (klass);
-	  t = tree_cons (NULL, t, NULL);
-	  t = build_function_call_expr (register_class_fn, t);
+	  t = build_call_expr (register_class_fn, 1, t);
 	  append_to_statement_list (t, list_p);
 	}
     }

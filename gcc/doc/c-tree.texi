@@ -2474,18 +2474,38 @@ argument does cause side-effects.
 
 @item CALL_EXPR
 These nodes are used to represent calls to functions, including
-non-static member functions.  The first operand is a pointer to the
+non-static member functions.  @code{CALL_EXPR}s are implemented as
+expression nodes with a variable number of operands.  Rather than using
+@code{TREE_OPERAND} to extract them, it is preferable to use the
+specialized accessor macros and functions that operate specifically on
+@code{CALL_EXPR} nodes.
+
+@code{CALL_EXPR_FN} returns a pointer to the
 function to call; it is always an expression whose type is a
-@code{POINTER_TYPE}.  The second argument is a @code{TREE_LIST}.  The
-arguments to the call appear left-to-right in the list.  The
-@code{TREE_VALUE} of each list node contains the expression
-corresponding to that argument.  (The value of @code{TREE_PURPOSE} for
-these nodes is unspecified, and should be ignored.)  For non-static
+@code{POINTER_TYPE}.
+
+The number of arguments to the call is returned by @code{call_expr_nargs},
+while the arguments themselves can be accessed with the @code{CALL_EXPR_ARG} 
+macro.  The arguments are zero-indexed and numbered left-to-right.  
+You can iterate over the arguments using @code{FOR_EACH_CALL_EXPR_ARG}, as in:
+
+@smallexample
+tree call, arg;
+call_expr_arg_iterator iter;
+FOR_EACH_CALL_EXPR_ARG (arg, iter, call)
+  /* arg is bound to successive arguments of call.  */
+  ...;
+@end smallexample
+
+For non-static
 member functions, there will be an operand corresponding to the
 @code{this} pointer.  There will always be expressions corresponding to
 all of the arguments, even if the function is declared with default
 arguments and some arguments are not explicitly provided at the call
 sites.
+
+@code{CALL_EXPR}s also have a @code{CALL_EXPR_STATIC_CHAIN} operand that
+is used to implement nested functions.  This operand is otherwise null.
 
 @item STMT_EXPR
 These nodes are used to represent GCC's statement-expression extension.
@@ -2613,15 +2633,14 @@ cleanups.
 An @code{AGGR_INIT_EXPR} represents the initialization as the return
 value of a function call, or as the result of a constructor.  An
 @code{AGGR_INIT_EXPR} will only appear as a full-expression, or as the
-second operand of a @code{TARGET_EXPR}.  The first operand to the
-@code{AGGR_INIT_EXPR} is the address of a function to call, just as in
-a @code{CALL_EXPR}.  The second operand are the arguments to pass that
-function, as a @code{TREE_LIST}, again in a manner similar to that of
-a @code{CALL_EXPR}.
+second operand of a @code{TARGET_EXPR}.  @code{AGGR_INIT_EXPR}s have
+a representation similar to that of @code{CALL_EXPR}s.  You can use
+the @code{AGGR_INIT_EXPR_FN} and @code{AGGR_INIT_EXPR_ARG} macros to access
+the function to call and the arguments to pass.
 
 If @code{AGGR_INIT_VIA_CTOR_P} holds of the @code{AGGR_INIT_EXPR}, then
-the initialization is via a constructor call.  The address of the third
-operand of the @code{AGGR_INIT_EXPR}, which is always a @code{VAR_DECL},
+the initialization is via a constructor call.  The address of the
+@code{AGGR_INIT_EXPR_SLOT} operand, which is always a @code{VAR_DECL},
 is taken, and this value replaces the first argument in the argument
 list.
 

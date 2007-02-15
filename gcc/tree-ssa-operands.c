@@ -1871,8 +1871,8 @@ add_call_read_ops (tree stmt, tree callee)
 static void
 get_call_expr_operands (tree stmt, tree expr)
 {
-  tree op;
   int call_flags = call_expr_flags (expr);
+  int i, nargs;
   stmt_ann_t ann = stmt_ann (stmt);
 
   ann->references_memory = true;
@@ -1894,12 +1894,12 @@ get_call_expr_operands (tree stmt, tree expr)
     }
 
   /* Find uses in the called function.  */
-  get_expr_operands (stmt, &TREE_OPERAND (expr, 0), opf_use);
+  get_expr_operands (stmt, &CALL_EXPR_FN (expr), opf_use);
+  nargs = call_expr_nargs (expr);
+  for (i = 0; i < nargs; i++)
+    get_expr_operands (stmt, &CALL_EXPR_ARG (expr, i), opf_use);
 
-  for (op = TREE_OPERAND (expr, 1); op; op = TREE_CHAIN (op))
-    get_expr_operands (stmt, &TREE_VALUE (op), opf_use);
-
-  get_expr_operands (stmt, &TREE_OPERAND (expr, 2), opf_use);
+  get_expr_operands (stmt, &CALL_EXPR_STATIC_CHAIN (expr), opf_use);
 }
 
 

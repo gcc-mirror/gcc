@@ -719,7 +719,7 @@ adjust_field_tree_exp (type_p t, options_p opt ATTRIBUTE_UNUSED)
 
   flds = create_field (NULL, t, "");
   flds->opt = create_option (nodot, "length",
-			     "TREE_CODE_LENGTH (TREE_CODE ((tree) &%0))");
+			     "TREE_OPERAND_LENGTH ((tree) &%0)");
   flds->opt = create_option (flds->opt, "default", "");
 
   return new_structure ("tree_exp_subunion", 1, &lexer_line, flds, nodot);
@@ -1746,16 +1746,27 @@ walk_type (type_p t, struct walk_type_data *d)
 	if (t->u.a.p->kind == TYPE_SCALAR)
 	  break;
 
+	/* When walking an array, compute the length and store it in a
+	   local variable before walking the array elements, instead of
+	   recomputing the length expression each time through the loop.
+	   This is necessary to handle tcc_vl_exp objects like CALL_EXPR,
+	   where the length is stored in the first array element,
+	   because otherwise that operand can get overwritten on the
+	   first iteration.  */
 	oprintf (d->of, "%*s{\n", d->indent, "");
 	d->indent += 2;
 	oprintf (d->of, "%*ssize_t i%d;\n", d->indent, "", loopcounter);
-	oprintf (d->of, "%*sfor (i%d = 0; i%d != (size_t)(", d->indent, "",
-		 loopcounter, loopcounter);
+	oprintf (d->of, "%*ssize_t l%d = (size_t)(",
+		 d->indent, "", loopcounter);
 	if (length)
 	  output_escaped_param (d, length, "length");
 	else
 	  oprintf (d->of, "%s", t->u.a.len);
-	oprintf (d->of, "); i%d++) {\n", loopcounter);
+	oprintf (d->of, ");\n");
+	
+	oprintf (d->of, "%*sfor (i%d = 0; i%d != l%d; i%d++) {\n",
+		 d->indent, "",
+		 loopcounter, loopcounter, loopcounter, loopcounter);
 	d->indent += 2;
 	d->val = newval = xasprintf ("%s[i%d]", oldval, loopcounter);
 	d->used_length = 1;

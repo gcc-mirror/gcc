@@ -1576,16 +1576,23 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
       /* We need to warn about conflicts among arguments and conflicts between
 	 args and the function address.  Side effects of the function address,
 	 however, are not ordered by the sequence point of the call.  */
-      tmp_before = tmp_nosp = tmp_list2 = tmp_list3 = 0;
-      verify_tree (TREE_OPERAND (x, 0), &tmp_before, &tmp_nosp, NULL_TREE);
-      if (TREE_OPERAND (x, 1))
-	verify_tree (TREE_OPERAND (x, 1), &tmp_list2, &tmp_list3, NULL_TREE);
-      merge_tlist (&tmp_list3, tmp_list2, 0);
-      add_tlist (&tmp_before, tmp_list3, NULL_TREE, 0);
-      add_tlist (&tmp_before, tmp_nosp, NULL_TREE, 0);
-      warn_for_collisions (tmp_before);
-      add_tlist (pbefore_sp, tmp_before, NULL_TREE, 0);
-      return;
+      {
+	call_expr_arg_iterator iter;
+	tree arg;
+	tmp_before = tmp_nosp = 0; 
+	verify_tree (CALL_EXPR_FN (x), &tmp_before, &tmp_nosp, NULL_TREE);
+	FOR_EACH_CALL_EXPR_ARG (arg, iter, x)
+	  {
+	    tmp_list2 = tmp_list3 = 0;
+	    verify_tree (arg, &tmp_list2, &tmp_list3, NULL_TREE);
+	    merge_tlist (&tmp_list3, tmp_list2, 0);
+	    add_tlist (&tmp_before, tmp_list3, NULL_TREE, 0);
+	  }
+	add_tlist (&tmp_before, tmp_nosp, NULL_TREE, 0);
+	warn_for_collisions (tmp_before);
+	add_tlist (pbefore_sp, tmp_before, NULL_TREE, 0);
+	return;
+      }
 
     case TREE_LIST:
       /* Scan all the list, e.g. indices of multi dimensional array.  */
@@ -1645,7 +1652,7 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
       else if (IS_EXPR_CODE_CLASS (cl))
 	{
 	  int lp;
-	  int max = TREE_CODE_LENGTH (TREE_CODE (x));
+	  int max = TREE_OPERAND_LENGTH (x);
 	  for (lp = 0; lp < max; lp++)
 	    {
 	      tmp_before = tmp_nosp = 0;
@@ -5940,7 +5947,7 @@ check_function_arguments_recurse (void (*callback)
 
   if (TREE_CODE (param) == CALL_EXPR)
     {
-      tree type = TREE_TYPE (TREE_TYPE (TREE_OPERAND (param, 0)));
+      tree type = TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (param)));
       tree attrs;
       bool found_format_arg = false;
 
@@ -5953,10 +5960,11 @@ check_function_arguments_recurse (void (*callback)
 	   attrs = TREE_CHAIN (attrs))
 	if (is_attribute_p ("format_arg", TREE_PURPOSE (attrs)))
 	  {
-	    tree inner_args;
+	    tree inner_arg;
 	    tree format_num_expr;
 	    int format_num;
 	    int i;
+	    call_expr_arg_iterator iter;
 
 	    /* Extract the argument number, which was previously checked
 	       to be valid.  */
@@ -5967,14 +5975,13 @@ check_function_arguments_recurse (void (*callback)
 
 	    format_num = TREE_INT_CST_LOW (format_num_expr);
 
-	    for (inner_args = TREE_OPERAND (param, 1), i = 1;
-		 inner_args != 0;
-		 inner_args = TREE_CHAIN (inner_args), i++)
+	    for (inner_arg = first_call_expr_arg (param, &iter), i = 1;
+		 inner_arg != 0;
+		 inner_arg = next_call_expr_arg (&iter), i++)
 	      if (i == format_num)
 		{
 		  check_function_arguments_recurse (callback, ctx,
-						    TREE_VALUE (inner_args),
-						    param_num);
+						    inner_arg, param_num);
 		  found_format_arg = true;
 		  break;
 		}
@@ -6191,7 +6198,7 @@ c_warn_unused_result (tree *top_p)
 	ftype = TREE_TYPE (fdecl);
       else
 	{
-	  ftype = TREE_TYPE (TREE_OPERAND (t, 0));
+	  ftype = TREE_TYPE (CALL_EXPR_FN (t));
 	  /* Look past pointer-to-function to the function type itself.  */
 	  ftype = TREE_TYPE (ftype);
 	}

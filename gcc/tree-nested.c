@@ -1437,7 +1437,7 @@ convert_nl_goto_reference (tree *tp, int *walk_subtrees, void *data)
 {
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
   struct nesting_info *info = wi->info, *i;
-  tree t = *tp, label, new_label, target_context, x, arg, field;
+  tree t = *tp, label, new_label, target_context, x, field;
   void **slot;
 
   *walk_subtrees = 0;
@@ -1475,11 +1475,8 @@ convert_nl_goto_reference (tree *tp, int *walk_subtrees, void *data)
   x = get_frame_field (info, target_context, field, &wi->tsi);
   x = build_addr (x, target_context);
   x = tsi_gimplify_val (info, x, &wi->tsi);
-  arg = tree_cons (NULL, x, NULL);
-  x = build_addr (new_label, target_context);
-  arg = tree_cons (NULL, x, arg);
-  x = implicit_built_in_decls[BUILT_IN_NONLOCAL_GOTO];
-  x = build_function_call_expr (x, arg);
+  x = build_call_expr (implicit_built_in_decls[BUILT_IN_NONLOCAL_GOTO], 2,
+		       build_addr (new_label, target_context), x);
 
   SET_EXPR_LOCUS (x, EXPR_LOCUS (tsi_stmt (wi->tsi)));
   *tsi_stmt_ptr (wi->tsi) = x;
@@ -1537,7 +1534,7 @@ convert_tramp_reference (tree *tp, int *walk_subtrees, void *data)
 {
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
   struct nesting_info *info = wi->info, *i;
-  tree t = *tp, decl, target_context, x, arg;
+  tree t = *tp, decl, target_context, x;
 
   *walk_subtrees = 0;
   switch (TREE_CODE (t))
@@ -1573,12 +1570,11 @@ convert_tramp_reference (tree *tp, int *walk_subtrees, void *data)
       x = get_frame_field (info, target_context, x, &wi->tsi);
       x = build_addr (x, target_context);
       x = tsi_gimplify_val (info, x, &wi->tsi);
-      arg = tree_cons (NULL, x, NULL);
 
       /* Do machine-specific ugliness.  Normally this will involve
 	 computing extra alignment, but it can really be anything.  */
-      x = implicit_built_in_decls[BUILT_IN_ADJUST_TRAMPOLINE];
-      x = build_function_call_expr (x, arg);
+      x = build_call_expr (implicit_built_in_decls[BUILT_IN_ADJUST_TRAMPOLINE],
+			   1, x);
       x = init_tmp_var (info, x, &wi->tsi);
 
       /* Cast back to the proper function type.  */
@@ -1591,7 +1587,12 @@ convert_tramp_reference (tree *tp, int *walk_subtrees, void *data)
     case CALL_EXPR:
       /* Only walk call arguments, lest we generate trampolines for
 	 direct calls.  */
-      walk_tree (&TREE_OPERAND (t, 1), convert_tramp_reference, wi, NULL);
+      {
+	int nargs = call_expr_nargs (t);
+	int i;
+	for (i = 0; i < nargs; i++)
+	  walk_tree (&CALL_EXPR_ARG (t, i), convert_tramp_reference, wi, NULL);
+      }
       break;
 
     default:
@@ -1626,7 +1627,7 @@ convert_call_expr (tree *tp, int *walk_subtrees, void *data)
       target_context = decl_function_context (decl);
       if (target_context && !DECL_NO_STATIC_CHAIN (decl))
 	{
-	  TREE_OPERAND (t, 2)
+	  CALL_EXPR_STATIC_CHAIN (t)
 	    = get_static_chain (info, target_context, &wi->tsi);
 	  info->static_chain_added
 	    |= (1 << (info->context != target_context));
@@ -1777,29 +1778,25 @@ finalize_nesting_tree_1 (struct nesting_info *root)
       struct nesting_info *i;
       for (i = root->inner; i ; i = i->next)
 	{
-	  tree arg, x, field;
+	  tree arg1, arg2, arg3, x, field;
 
 	  field = lookup_tramp_for_decl (root, i->context, NO_INSERT);
 	  if (!field)
 	    continue;
 
 	  if (DECL_NO_STATIC_CHAIN (i->context))
-	    x = null_pointer_node;
+	    arg3 = null_pointer_node;
 	  else
-	    x = build_addr (root->frame_decl, context);
-	  arg = tree_cons (NULL, x, NULL);
+	    arg3 = build_addr (root->frame_decl, context);
 
-	  x = build_addr (i->context, context);
-	  arg = tree_cons (NULL, x, arg);
+	  arg2 = build_addr (i->context, context);
 
 	  x = build3 (COMPONENT_REF, TREE_TYPE (field),
 		      root->frame_decl, field, NULL_TREE);
-	  x = build_addr (x, context);
-	  arg = tree_cons (NULL, x, arg);
+	  arg1 = build_addr (x, context);
 
 	  x = implicit_built_in_decls[BUILT_IN_INIT_TRAMPOLINE];
-	  x = build_function_call_expr (x, arg);
-
+	  x = build_call_expr (x, 3, arg1, arg2, arg3);
 	  append_to_statement_list (x, &stmt_list);
 	}
     }

@@ -342,10 +342,11 @@ outermost_invariant_loop_expr (tree expr, struct loop *loop)
   if (class != tcc_unary
       && class != tcc_binary
       && class != tcc_expression
+      && class != tcc_vl_exp
       && class != tcc_comparison)
     return NULL;
 
-  nops = TREE_CODE_LENGTH (TREE_CODE (expr));
+  nops = TREE_OPERAND_LENGTH (expr);
   for (i = 0; i < nops; i++)
     {
       aloop = outermost_invariant_loop_expr (TREE_OPERAND (expr, i), loop);
@@ -817,10 +818,11 @@ force_move_till_expr (tree expr, struct loop *orig_loop, struct loop *loop)
   if (class != tcc_unary
       && class != tcc_binary
       && class != tcc_expression
+      && class != tcc_vl_exp
       && class != tcc_comparison)
     return;
 
-  nops = TREE_CODE_LENGTH (TREE_CODE (expr));
+  nops = TREE_OPERAND_LENGTH (expr);
   for (i = 0; i < nops; i++)
     force_move_till_expr (TREE_OPERAND (expr, i), orig_loop, loop);
 }

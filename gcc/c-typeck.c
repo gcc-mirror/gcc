@@ -2330,17 +2330,17 @@ build_function_call (tree function, tree params)
 
   if (require_constant_value)
     {
-      result = fold_build3_initializer (CALL_EXPR, TREE_TYPE (fntype),
-					function, coerced_params, NULL_TREE);
-
+      result = fold_build_call_list_initializer (TREE_TYPE (fntype),
+						 function,
+						 coerced_params);
       if (TREE_CONSTANT (result)
 	  && (name == NULL_TREE
 	      || strncmp (IDENTIFIER_POINTER (name), "__builtin_", 10) != 0))
 	pedwarn_init ("initializer element is not constant");
     }
   else
-    result = fold_build3 (CALL_EXPR, TREE_TYPE (fntype),
-			  function, coerced_params, NULL_TREE);
+    result = fold_build_call_list (TREE_TYPE (fntype),
+				   function, coerced_params);
 
   if (VOID_TYPE_P (TREE_TYPE (result)))
     return result;

@@ -1,3 +1,90 @@
+2007-02-15  Sandra Loosemore  <sandra@codesourcery.com>
+	    Brooks Moses  <brooks.moses@codesourcery.com>
+	    Lee Millward  <lee.millward@codesourcery.com>
+
+	* cp-tree.def (AGGR_INIT_EXPR): Adjust documentation.
+	Change class to tcc_vl_exp.
+
+	* call.c (build_call): Use build_call_list instead 
+	of build3. 
+	(build_over_call): Likewise.
+	(build_new_method_call): Use build_min_non_dep_call_list 
+	instead of build_min_non_dep.
+
+	* error.c (dump_call_expr_args): New function.
+	(dump_aggr_init_expr_args): New function.
+	(dump_expr) <AGGR_INIT_EXPR, CALL_EXPR, INDIRECT_REF>: Use them. 
+	Update to use new CALL_EXPR and AGGR_INIT_EXPR accessor macros.
+
+	* cvt.c (convert_to_void): Use build_call_array instead
+	of build3; use new AGGR_INIT_EXPR accessor macros.
+
+	* mangle.c (write_expression): Use TREE_OPERAND_LENGTH
+	instead of TREE_CODE_LENGTH.
+
+	* dump.c (cp_dump_tree) <AGGR_INIT_EXPR>: Update to use new
+	AGGR_INIT_EXPR accessor macros.
+
+	* cp-gimplify.c (cp_gimplify_init_expr): Use 
+	AGGR_INIT_EXPR_SLOT to set the slot operand.
+
+	* cp-tree.h (AGGR_INIT_EXPR_FN): New macro.
+	(AGGR_INIT_EXPR_SLOT): New macro.
+	(AGGR_INIT_EXPR_ARG): New macro.
+	(aggr_init_expr_nargs): New macro.
+	(AGGR_INIT_EXPR_ARGP): New macro.
+	(aggr_init_expr_arg_iterator): New.
+	(init_aggr_init_expr_arg_iterator): New.
+	(next_aggr_init_expr_arg): New.
+	(first_aggr_init_expr_arg): New.
+	(more_aggr_init_expr_args_p): New.
+	(FOR_EACH_AGGR_INIT_EXPR_ARG): New.
+	(stabilize_aggr_init): New declaration.
+	(build_min_non_dep_call_list): Likewise.
+
+	* tree.c (process_aggr_init_operands): New function.
+	(build_aggr_init_array) New function.
+	(build_cplus_new): Update to use new CALL_EXPR and
+	AGGR_INIT_EXPR accessor macros. Replace use of build3 with
+	build_aggr_init_array.
+	(build_min_non_dep_call_list) New function.
+	(build_min_nt): Assert input code parameter is not a variable
+	length expression class.
+	(build_min, build_min_non_dep): Likewise.
+	(cp_tree_equal) <CALL_EXPR>: Iterate through the arguments
+	to check for equality instead of recursing. Handle tcc_vl_exp
+	tree code classes.
+	(stabilize_call): Update to only handle CALL_EXPRs, not 
+	AGGR_INIT_EXPRs; use new CALL_EXPR accessor macros.
+	(stabilize_aggr_init): New function.
+	(stabilize_init): Use it.
+
+	* cxx-pretty-print.c (pp_cxx_postfix_expression)
+	<AGGR_INIT_EXPR, CALL_EXPR>: Update to use new CALL_EXPR and
+	AGGR_INIT_EXPR accessor macros and argument iterators.
+	
+	* pt.c (tsubst_copy) <CALL_EXPR>: Replace build_nt with
+	build_vl_exp. Iterate through the operands, recursively 
+	processing each one.
+	(tsubst_copy_and_build) <CALL_EXPR>: Update to use new
+	CALL_EXPR accessor macros.
+	(value_dependent_expression_p) <default>: Handle tcc_vl_exp
+	tree code classes. Use TREE_OPERAND_LENGTH instead of 
+	TREE_CODE_LENGTH.
+
+	* semantics.c (finish_call_expr): Use build_nt_call_list
+	instead of build_nt.
+	(simplify_aggr_init_expr): Update to use new AGGR_INIT_EXPR 
+	accessor macros. Use build_call_array to construct the 
+	CALL_EXPR node instead of build3
+	
+	* decl2.c (build_offset_ref_call_from_tree): Use 
+	build_nt_call_list and build_min_non_dep_call_list instead
+	of build_min_nt and build_min_non_dep.
+
+	* parser.c (cp_parser_postfix_expression) <CPP_OPEN_PAREN>:
+	Use build_nt_call_list instead of build_min_nt.
+
 2007-02-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/28943

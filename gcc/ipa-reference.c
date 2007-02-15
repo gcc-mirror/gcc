@@ -436,18 +436,13 @@ static void
 check_call (ipa_reference_local_vars_info_t local, tree call_expr) 
 {
   int flags = call_expr_flags (call_expr);
-  tree operand_list = TREE_OPERAND (call_expr, 1);
   tree operand;
   tree callee_t = get_callee_fndecl (call_expr);
   enum availability avail = AVAIL_NOT_AVAILABLE;
+  call_expr_arg_iterator iter;
 
-  for (operand = operand_list;
-       operand != NULL_TREE;
-       operand = TREE_CHAIN (operand))
-    {
-      tree argument = TREE_VALUE (operand);
-      check_rhs_var (local, argument);
-    }
+  FOR_EACH_CALL_EXPR_ARG (operand, iter, call_expr)
+    check_rhs_var (local, operand);
 
   if (callee_t)
     {
@@ -534,7 +529,14 @@ scan_for_static_refs (tree *tp,
 	      case ADDR_EXPR:
 		check_rhs_var (local, rhs);
 		break;
-	      case CALL_EXPR: 
+	      default:
+		break;
+	      }
+	    break;
+	  case tcc_vl_exp:
+	    switch (TREE_CODE (rhs))
+	      {
+	      case CALL_EXPR:
 		check_call (local, rhs);
 		break;
 	      default:

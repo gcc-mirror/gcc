@@ -935,10 +935,12 @@ tree_ssa_useless_type_conversion (tree expr)
   if (TREE_CODE (expr) == NOP_EXPR || TREE_CODE (expr) == CONVERT_EXPR
       || TREE_CODE (expr) == VIEW_CONVERT_EXPR
       || TREE_CODE (expr) == NON_LVALUE_EXPR)
-    return tree_ssa_useless_type_conversion_1 (TREE_TYPE (expr),
-					       TREE_TYPE (TREE_OPERAND (expr,
-									0)));
-
+    /* FIXME: Use of GENERIC_TREE_TYPE here is a temporary measure to work
+       around known bugs with GIMPLE_MODIFY_STMTs appearing in places
+       they shouldn't.  See PR 30391.  */
+    return tree_ssa_useless_type_conversion_1
+      (TREE_TYPE (expr),
+       GENERIC_TREE_TYPE (TREE_OPERAND (expr, 0)));
 
   return false;
 }

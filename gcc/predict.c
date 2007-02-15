@@ -913,16 +913,14 @@ expr_expected_value (tree expr, bitmap visited)
       if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
 	  && DECL_FUNCTION_CODE (decl) == BUILT_IN_EXPECT)
 	{
-	  tree arglist = TREE_OPERAND (expr, 1);
 	  tree val;
 
-	  if (arglist == NULL_TREE
-	      || TREE_CHAIN (arglist) == NULL_TREE)
-	    return NULL; 
-	  val = TREE_VALUE (TREE_CHAIN (TREE_OPERAND (expr, 1)));
+	  if (call_expr_nargs (expr) != 2)
+	    return NULL;
+	  val = CALL_EXPR_ARG (expr, 0);
 	  if (TREE_CONSTANT (val))
 	    return val;
-	  return TREE_VALUE (TREE_CHAIN (TREE_OPERAND (expr, 1)));
+	  return CALL_EXPR_ARG (expr, 1);
 	}
     }
   if (BINARY_CLASS_P (expr) || COMPARISON_CLASS_P (expr))
@@ -965,17 +963,17 @@ strip_builtin_expect (void)
 	{
 	  tree stmt = bsi_stmt (bi);
 	  tree fndecl;
-	  tree arglist;
+	  tree call;
 
 	  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-	      && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == CALL_EXPR
-	      && (fndecl = get_callee_fndecl (GIMPLE_STMT_OPERAND (stmt, 1)))
+	      && (call = GIMPLE_STMT_OPERAND (stmt, 1))
+	      && TREE_CODE (call) == CALL_EXPR
+	      && (fndecl = get_callee_fndecl (call))
 	      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
 	      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_EXPECT
-	      && (arglist = TREE_OPERAND (GIMPLE_STMT_OPERAND (stmt, 1), 1))
-	      && TREE_CHAIN (arglist))
+	      && call_expr_nargs (call) == 2)
 	    {
-	      GIMPLE_STMT_OPERAND (stmt, 1) = TREE_VALUE (arglist);
+	      GIMPLE_STMT_OPERAND (stmt, 1) = CALL_EXPR_ARG (call, 0);
 	      update_stmt (stmt);
 	    }
 	}

@@ -6131,7 +6131,7 @@ receiver_is_class_object (tree receiver, int self, int super)
   /* The receiver is a function call that returns an id.  Check if
      it is a call to objc_getClass, if so, pick up the class name.  */
   if (TREE_CODE (receiver) == CALL_EXPR
-      && (exp = TREE_OPERAND (receiver, 0))
+      && (exp = CALL_EXPR_FN (receiver))
       && TREE_CODE (exp) == ADDR_EXPR
       && (exp = TREE_OPERAND (exp, 0))
       && TREE_CODE (exp) == FUNCTION_DECL
@@ -6141,9 +6141,7 @@ receiver_is_class_object (tree receiver, int self, int super)
       && TREE_TYPE (exp) == TREE_TYPE (objc_get_class_decl)
       && !strcmp (IDENTIFIER_POINTER (DECL_NAME (exp)), TAG_GETCLASS)
       /* We have a call to objc_get_class/objc_getClass!  */
-      && (arg = TREE_OPERAND (receiver, 1))
-      && TREE_CODE (arg) == TREE_LIST
-      && (arg = TREE_VALUE (arg)))
+      && (arg = CALL_EXPR_ARG (receiver, 0)))
     {
       STRIP_NOPS (arg);
       if (TREE_CODE (arg) == ADDR_EXPR
@@ -9517,7 +9515,7 @@ objc_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p)
 tree
 objc_get_callee_fndecl (tree call_expr)
 {
-  tree addr = TREE_OPERAND (call_expr, 0);
+  tree addr = CALL_EXPR_FN (call_expr);
   if (TREE_CODE (addr) != OBJ_TYPE_REF)
     return 0;
 

@@ -10336,8 +10336,10 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   const struct builtin_description *bdesc;
   const struct bdesc_map *m;
 
-  fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
-  arglist = TREE_OPERAND (exp, 1);
+  fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
+  /* FIXME: Rewrite this to use the CALL_EXPR directly instead of consing
+     up an arglist.  */
+  arglist = CALL_EXPR_ARGS (exp);
   fcode = DECL_FUNCTION_CODE (fndecl);
 
   bdesc = NULL;

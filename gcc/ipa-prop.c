@@ -419,15 +419,11 @@ void
 ipa_callsite_compute_count (struct cgraph_edge *cs)
 {
   tree call_tree;
-  tree arg;
   int arg_num;
 
   call_tree = get_call_expr_in (ipa_callsite_tree (cs));
   gcc_assert (TREE_CODE (call_tree) == CALL_EXPR);
-  arg = TREE_OPERAND (call_tree, 1);
-  arg_num = 0;
-  for (; arg != NULL_TREE; arg = TREE_CHAIN (arg))
-    arg_num++;
+  arg_num = call_expr_nargs (call_tree);
   ipa_callsite_param_count_set (cs, arg_num);
 }
 
@@ -445,38 +441,35 @@ ipa_callsite_compute_param (struct cgraph_edge *cs)
   struct cgraph_node *mt;
   tree parm_decl;
   struct function *curr_cfun;
+  call_expr_arg_iterator iter;
 
   if (ipa_callsite_param_count (cs) == 0)
     return;
   ipa_callsite_param_map_create (cs);
   call_tree = get_call_expr_in (ipa_callsite_tree (cs));
   gcc_assert (TREE_CODE (call_tree) == CALL_EXPR);
-  arg = TREE_OPERAND (call_tree, 1);
   arg_num = 0;
 
-  for (; arg != NULL_TREE; arg = TREE_CHAIN (arg))
+  FOR_EACH_CALL_EXPR_ARG (arg, iter, call_tree)
     {
       /* If the formal parameter was passed as argument, we store 
          FORMAL_IPATYPE and its index in the caller as the jump function 
          of this argument.  */
-      if ((TREE_CODE (TREE_VALUE (arg)) == SSA_NAME
-	   && TREE_CODE (SSA_NAME_VAR (TREE_VALUE (arg))) == PARM_DECL)
-	  || TREE_CODE (TREE_VALUE (arg)) == PARM_DECL)
+      if ((TREE_CODE (arg) == SSA_NAME
+	   && TREE_CODE (SSA_NAME_VAR (arg)) == PARM_DECL)
+	  || TREE_CODE (arg) == PARM_DECL)
 	{
 	  mt = ipa_callsite_caller (cs);
-	  parm_decl =
-	    TREE_CODE (TREE_VALUE (arg)) ==
-	    PARM_DECL ? TREE_VALUE (arg) : SSA_NAME_VAR (TREE_VALUE (arg));
+	  parm_decl = TREE_CODE (arg) == PARM_DECL ? arg : SSA_NAME_VAR (arg);
           
 	  i = ipa_method_tree_map (mt, parm_decl);
-	  if (TREE_CODE (TREE_VALUE (arg)) == SSA_NAME 
-	      && IS_VALID_TREE_MAP_INDEX (i)) 
+	  if (TREE_CODE (arg) == SSA_NAME && IS_VALID_TREE_MAP_INDEX (i)) 
 	    {
-              curr_cfun = DECL_STRUCT_FUNCTION (mt->decl);
+	      curr_cfun = DECL_STRUCT_FUNCTION (mt->decl);
 	      if (!gimple_default_def (curr_cfun, parm_decl) 
-	          || gimple_default_def (curr_cfun, parm_decl) != TREE_VALUE (arg))
+	          || gimple_default_def (curr_cfun, parm_decl) != arg)
 		    ipa_method_modify_set (mt, i, true); 
-            }
+	    }
 	  if (!IS_VALID_TREE_MAP_INDEX (i) || ipa_method_is_modified (mt, i))
 	    ipa_callsite_param_set_type (cs, arg_num, UNKNOWN_IPATYPE);
 	  else
@@ -488,22 +481,20 @@ ipa_callsite_compute_param (struct cgraph_edge *cs)
       /* If a constant value was passed as argument, 
          we store CONST_IPATYPE and its value as the jump function 
          of this argument.  */
-      else if (TREE_CODE (TREE_VALUE (arg)) == INTEGER_CST
-	       || TREE_CODE (TREE_VALUE (arg)) == REAL_CST)
+      else if (TREE_CODE (arg) == INTEGER_CST
+	       || TREE_CODE (arg) == REAL_CST)
 	{
 	  ipa_callsite_param_set_type (cs, arg_num, CONST_IPATYPE);
-	  ipa_callsite_param_set_info_type (cs, arg_num,
-					    TREE_VALUE (arg));
+	  ipa_callsite_param_set_info_type (cs, arg_num, arg);
 	}
       /* This is for the case of Fortran. If the address of a const_decl 
          was passed as argument then we store 
          CONST_IPATYPE_REF/CONST_IPATYPE_REF and the constant 
          value as the jump function corresponding to this argument.  */
-      else if (TREE_CODE (TREE_VALUE (arg)) == ADDR_EXPR
-	       && TREE_CODE (TREE_OPERAND (TREE_VALUE (arg), 0)) ==
-	       CONST_DECL)
+      else if (TREE_CODE (arg) == ADDR_EXPR
+	       && TREE_CODE (TREE_OPERAND (arg, 0)) == CONST_DECL)
 	{
-	  cst_decl = TREE_OPERAND (TREE_VALUE (arg), 0);
+	  cst_decl = TREE_OPERAND (arg, 0);
 	  if (TREE_CODE (DECL_INITIAL (cst_decl)) == INTEGER_CST
 	      || TREE_CODE (DECL_INITIAL (cst_decl)) == REAL_CST)
 	    {

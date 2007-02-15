@@ -1430,10 +1430,10 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 }
 
 /* Generate code to initialize the parameters of the function at the
-   top of the stack in ID from the ARGS (presented as a TREE_LIST).  */
+   top of the stack in ID from the CALL_EXPR EXP.  */
 
 static void
-initialize_inlined_parameters (copy_body_data *id, tree args, tree static_chain,
+initialize_inlined_parameters (copy_body_data *id, tree exp,
 			       tree fn, basic_block bb)
 {
   tree parms;
@@ -1441,14 +1441,16 @@ initialize_inlined_parameters (copy_body_data *id, tree args, tree static_chain,
   tree p;
   tree vars = NULL_TREE;
   int argnum = 0;
+  call_expr_arg_iterator iter;
+  tree static_chain = CALL_EXPR_STATIC_CHAIN (exp);
 
   /* Figure out what the parameters are.  */
   parms = DECL_ARGUMENTS (fn);
 
   /* Loop through the parameter declarations, replacing each with an
      equivalent VAR_DECL, appropriately initialized.  */
-  for (p = parms, a = args; p;
-       a = a ? TREE_CHAIN (a) : a, p = TREE_CHAIN (p))
+  for (p = parms, a = first_call_expr_arg (exp, &iter); p;
+       a = next_call_expr_arg (&iter), p = TREE_CHAIN (p))
     {
       tree value;
 
@@ -1456,7 +1458,7 @@ initialize_inlined_parameters (copy_body_data *id, tree args, tree static_chain,
 
       /* Find the initializer.  */
       value = lang_hooks.tree_inlining.convert_parm_for_inlining
-	      (p, a ? TREE_VALUE (a) : NULL_TREE, fn, argnum);
+	      (p, a, fn, argnum);
 
       setup_one_parameter (id, p, value, fn, bb, &vars);
     }
@@ -2172,7 +2174,6 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case CALL_EXPR:
       {
 	tree decl = get_callee_fndecl (x);
-	tree arg;
 
 	cost = d->weights->call_cost;
 	if (decl && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
@@ -2195,11 +2196,14 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
 	   that does use function declaration to figure out the arguments.  */
 	if (!decl)
 	  {
-	    for (arg = TREE_OPERAND (x, 1); arg; arg = TREE_CHAIN (arg))
-	      d->count += estimate_move_cost (TREE_TYPE (TREE_VALUE (arg)));
+	    tree a;
+	    call_expr_arg_iterator iter;
+	    FOR_EACH_CALL_EXPR_ARG (a, iter, x)
+	      d->count += estimate_move_cost (TREE_TYPE (a));
 	  }
 	else
 	  {
+	    tree arg;
 	    for (arg = DECL_ARGUMENTS (decl); arg; arg = TREE_CHAIN (arg))
 	      d->count += estimate_move_cost (TREE_TYPE (arg));
 	  }
@@ -2337,7 +2341,6 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
   tree use_retvar;
   tree fn;
   splay_tree st;
-  tree args;
   tree return_slot;
   tree modify_dest;
   location_t saved_location;
@@ -2495,15 +2498,12 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
   id->decl_map = splay_tree_new (splay_tree_compare_pointers,
 				 NULL, NULL);
 
-  /* Initialize the parameters.  */
-  args = TREE_OPERAND (t, 1);
-
   /* Record the function we are about to inline.  */
   id->src_fn = fn;
   id->src_node = cg_edge->callee;
   id->src_cfun = DECL_STRUCT_FUNCTION (fn);
 
-  initialize_inlined_parameters (id, args, TREE_OPERAND (t, 2), fn, bb);
+  initialize_inlined_parameters (id, t, fn, bb);
 
   if (DECL_INITIAL (fn))
     add_lexical_block (id->block, remap_blocks (DECL_INITIAL (fn), id));

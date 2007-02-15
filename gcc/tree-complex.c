@@ -885,12 +885,7 @@ expand_complex_libcall (block_stmt_iterator *bsi, tree ar, tree ai,
 {
   enum machine_mode mode;
   enum built_in_function bcode;
-  tree args, fn, stmt, type;
-
-  args = tree_cons (NULL, bi, NULL);
-  args = tree_cons (NULL, br, args);
-  args = tree_cons (NULL, ai, args);
-  args = tree_cons (NULL, ar, args);
+  tree fn, stmt, type;
 
   stmt = bsi_stmt (*bsi);
   type = TREE_TYPE (GIMPLE_STMT_OPERAND (stmt, 1));
@@ -905,8 +900,7 @@ expand_complex_libcall (block_stmt_iterator *bsi, tree ar, tree ai,
     gcc_unreachable ();
   fn = built_in_decls[bcode];
 
-  GIMPLE_STMT_OPERAND (stmt, 1)
-    = build3 (CALL_EXPR, type, build_fold_addr_expr (fn), args, NULL);
+  GIMPLE_STMT_OPERAND (stmt, 1) = build_call_expr (fn, 4, ar, ai, br, bi);
   update_stmt (stmt);
 
   if (gimple_in_ssa_p (cfun))

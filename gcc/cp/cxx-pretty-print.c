@@ -412,9 +412,11 @@ pp_cxx_postfix_expression (cxx_pretty_printer *pp, tree t)
     case AGGR_INIT_EXPR:
     case CALL_EXPR:
       {
-	tree fun = TREE_OPERAND (t, 0);
-	tree args = TREE_OPERAND (t, 1);
+	tree fun = (code == AGGR_INIT_EXPR ? AGGR_INIT_EXPR_FN (t)
+					   : CALL_EXPR_FN (t));
 	tree saved_scope = pp->enclosing_scope;
+	bool skipfirst = false;
+	tree arg;
 
 	if (TREE_CODE (fun) == ADDR_EXPR)
 	  fun = TREE_OPERAND (fun, 0);
@@ -427,9 +429,11 @@ pp_cxx_postfix_expression (cxx_pretty_printer *pp, tree t)
 	  ;
 	else if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fun))
 	  {
-	    tree object = code == AGGR_INIT_EXPR && AGGR_INIT_VIA_CTOR_P (t)
-	      ? TREE_OPERAND (t, 2)
-	      : TREE_VALUE (args);
+	    tree object = (code == AGGR_INIT_EXPR
+			   ? (AGGR_INIT_VIA_CTOR_P (t)
+			      ? AGGR_INIT_EXPR_SLOT (t)
+			      : AGGR_INIT_EXPR_ARG (t, 0))
+			   : CALL_EXPR_ARG (t, 0));
 
 	    while (TREE_CODE (object) == NOP_EXPR)
 	      object = TREE_OPERAND (object, 0);
@@ -447,18 +451,49 @@ pp_cxx_postfix_expression (cxx_pretty_printer *pp, tree t)
 		pp_cxx_postfix_expression (pp, object);
 		pp_cxx_arrow (pp);
 	      }
-	    args = TREE_CHAIN (args);
+	    skipfirst = true;
 	    pp->enclosing_scope = strip_pointer_operator (TREE_TYPE (object));
 	  }
 
 	pp_cxx_postfix_expression (pp, fun);
 	pp->enclosing_scope = saved_scope;
-	pp_cxx_call_argument_list (pp, args);
+	pp_cxx_left_paren (pp);
+	if (code == AGGR_INIT_EXPR)
+	  {
+	    aggr_init_expr_arg_iterator iter;
+	    FOR_EACH_AGGR_INIT_EXPR_ARG (arg, iter, t)
+	      {
+		if (skipfirst)
+		  skipfirst = false;
+		else
+		  {
+		    pp_cxx_expression (pp, arg);
+		    if (more_aggr_init_expr_args_p (&iter))
+		      pp_cxx_separate_with (pp, ',');
+		  }
+	      }
+	  }
+	else
+	  {
+	    call_expr_arg_iterator iter;
+	    FOR_EACH_CALL_EXPR_ARG (arg, iter, t)
+	      {
+		if (skipfirst)
+		  skipfirst = false;
+		else
+		  {
+		    pp_cxx_expression (pp, arg);
+		    if (more_call_expr_args_p (&iter))
+		      pp_cxx_separate_with (pp, ',');
+		  }
+	      }
+	  }
+	pp_cxx_right_paren (pp);
       }
       if (code == AGGR_INIT_EXPR && AGGR_INIT_VIA_CTOR_P (t))
 	{
 	  pp_cxx_separate_with (pp, ',');
-	  pp_cxx_postfix_expression (pp, TREE_OPERAND (t, 2));
+	  pp_cxx_postfix_expression (pp, AGGR_INIT_EXPR_SLOT (t));
 	}
       break;
 

@@ -2512,6 +2512,7 @@ get_constraint_for (tree t, VEC (ce_s, heap) **results)
   switch (TREE_CODE_CLASS (TREE_CODE (t)))
     {
     case tcc_expression:
+    case tcc_vl_exp:
       {
 	switch (TREE_CODE (t))
 	  {
@@ -3339,7 +3340,8 @@ find_func_aliases (tree origt)
     {
       tree lhsop;
       tree rhsop;
-      tree arglist;
+      tree arg;
+      call_expr_arg_iterator iter;
       varinfo_t fi;
       int i = 1;
       tree decl;
@@ -3364,17 +3366,15 @@ find_func_aliases (tree origt)
 	}
       else
 	{
-	  decl = TREE_OPERAND (rhsop, 0);
+	  decl = CALL_EXPR_FN (rhsop);
 	  fi = get_vi_for_tree (decl);
 	}
 
       /* Assign all the passed arguments to the appropriate incoming
 	 parameters of the function.  */
-      arglist = TREE_OPERAND (rhsop, 1);
 
-      for (;arglist; arglist = TREE_CHAIN (arglist))
-	{
-	  tree arg = TREE_VALUE (arglist);
+      FOR_EACH_CALL_EXPR_ARG (arg, iter, rhsop)
+ 	{
 	  struct constraint_expr lhs ;
 	  struct constraint_expr *rhsp;
 
@@ -3455,6 +3455,7 @@ find_func_aliases (tree origt)
 		  case tcc_constant:
 		  case tcc_exceptional:
 		  case tcc_expression:
+		  case tcc_vl_exp:
 		  case tcc_unary:
 		      {
 			unsigned int j;
@@ -3488,7 +3489,7 @@ find_func_aliases (tree origt)
 		     to process expressions other than simple operands
 		     (e.g. INDIRECT_REF, ADDR_EXPR, CALL_EXPR).  */
 		  default:
-		    for (i = 0; i < TREE_CODE_LENGTH (TREE_CODE (rhsop)); i++)
+		    for (i = 0; i < TREE_OPERAND_LENGTH (rhsop); i++)
 		      {
 			tree op = TREE_OPERAND (rhsop, i);
 			unsigned int j;

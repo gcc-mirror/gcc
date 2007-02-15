@@ -233,6 +233,7 @@ get_rank (tree e)
       tree rhs;
       long rank, maxrank;
       int i;
+      int n;
 
       if (TREE_CODE (SSA_NAME_VAR (e)) == PARM_DECL
 	  && SSA_NAME_IS_DEFAULT_DEF (e))
@@ -256,12 +257,13 @@ get_rank (tree e)
       rank = 0;
       maxrank = bb_rank[bb_for_stmt(stmt)->index];
       rhs = GIMPLE_STMT_OPERAND (stmt, 1);
-      if (TREE_CODE_LENGTH (TREE_CODE (rhs)) == 0)
+      n = TREE_OPERAND_LENGTH (rhs);
+      if (n == 0)
 	rank = MAX (rank, get_rank (rhs));
       else
 	{
 	  for (i = 0;
-	       i < TREE_CODE_LENGTH (TREE_CODE (rhs))
+	       i < n
 		 && TREE_OPERAND (rhs, i)
 		 && rank != maxrank;
 	       i++)
