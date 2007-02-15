@@ -7711,9 +7711,18 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	       necessarily be constant.  */
 	    if (mode == BLKmode)
 	      {
-		rtx new
-		  = assign_stack_temp_for_type
-		    (ext_mode, GET_MODE_BITSIZE (ext_mode), 0, type);
+		HOST_WIDE_INT size = GET_MODE_BITSIZE (ext_mode);
+		rtx new;
+
+		/* If the reference doesn't use the alias set of its type,
+		   we cannot create the temporary using that type.  */
+		if (component_uses_parent_alias_set (exp))
+		  {
+		    new = assign_stack_local (ext_mode, size, 0);
+		    set_mem_alias_set (new, get_alias_set (exp));
+		  }
+		else
+		  new = assign_stack_temp_for_type (ext_mode, size, 0, type);
 
 		emit_move_insn (new, op0);
 		op0 = copy_rtx (new);

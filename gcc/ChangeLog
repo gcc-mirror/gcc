@@ -1,3 +1,9 @@
+2007-02-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (expand_expr_real_1) <normal_inner_ref>: If a temporary
+	is made and the reference doesn't use the alias set of its type,
+	do not create the temporary using that type.
+
 2007-02-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	* jump.c: Remove prototypes for delete_computation and
