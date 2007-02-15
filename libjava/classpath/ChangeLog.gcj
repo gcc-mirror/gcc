@@ -1,5 +1,12 @@
 2007-02-15  Gary Benson  <gbenson@redhat.com>
 
+	* gnu/javax/management/Server.java
+	(registerMBean): Always register objects that implement the
+	MBeanRegistration interface, and check the name returned by
+	preRegister before using it.
+
+2007-02-15  Gary Benson  <gbenson@redhat.com>
+
 	* javax/management/ObjectName.java:
 	(getKeyPropertyList()): Remove cast and call
 	to UnmodifiableMap.
