@@ -1,5 +1,15 @@
 2007-02-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	PR c/26494
+	* gcc.dg/Wimplicit-function-declaration-c89.c: New.
+	* gcc.dg/Wimplicit-function-declaration-c89-default.c: New.
+	* gcc.dg/Wimplicit-function-declaration-c89-pedantic.c: New.
+	* gcc.dg/Wimplicit-function-declaration-c99.c: New.
+	* gcc.dg/Wimplicit-function-declaration-c99-pedantic.c: New.
+	* gcc.dg/Werror-implicit-function-declaration.c: New.
+
+2007-02-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	PR c++/28943
 	* g++.dg/warn/pr28943.C: New.
 

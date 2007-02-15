@@ -194,7 +194,7 @@ C ObjC C++ ObjC++
 
 Werror-implicit-function-declaration
 C ObjC RejectNegative Warning
-Make implicit function declarations an error
+This switch is deprecated; use -Werror=implicit-function-declaration instead
 
 Wfloat-equal
 C ObjC C++ ObjC++ Var(warn_float_equal) Warning
@@ -235,7 +235,7 @@ Wimplicit
 C ObjC C++ ObjC++ Warning
 
 Wimplicit-function-declaration
-C ObjC Var(mesg_implicit_function_declaration) Init(-1) Warning
+C ObjC Var(warn_implicit_function_declaration) Init(-1) Warning
 Warn about implicit function declarations
 
 Wimplicit-int
