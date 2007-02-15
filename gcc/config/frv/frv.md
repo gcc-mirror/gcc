@@ -2256,26 +2256,6 @@
   end_sequence ();
 }")
 
-(define_expand "reload_incc"
-  [(parallel [(set (match_operand:CC 2 "integer_register_operand" "=&d")
-		   (match_operand:CC 1 "memory_operand" "m"))
-	      (clobber (match_scratch:CC_CCR 3 ""))])
-   (parallel [(set (match_operand:CC 0 "icc_operand" "=t")
-		   (match_dup 2))
-	      (clobber (match_scratch:CC_CCR 4 ""))])]
-  ""
-  "")
-
-(define_expand "reload_outcc"
-  [(parallel [(set (match_operand:CC 2 "integer_register_operand" "=&d")
-		   (match_operand:CC 1 "icc_operand" "t"))
-	      (clobber (match_dup 3))])
-   (parallel [(set (match_operand:CC 0 "memory_operand" "=m")
-		   (match_dup 2))
-	      (clobber (match_scratch:CC_CCR 4 ""))])]
-  ""
-  "operands[3] = gen_rtx_REG (CC_CCRmode, ICR_TEMP);")
-
 ;; Reload CC_UNSmode for unsigned integer comparisons
 ;; Use define_expand so that cse/gcse/combine can't create movcc_uns insns
 
@@ -2343,26 +2323,6 @@
   end_sequence ();
 }")
 
-(define_expand "reload_incc_uns"
-  [(parallel [(set (match_operand:CC_UNS 2 "integer_register_operand" "=&d")
-		   (match_operand:CC_UNS 1 "memory_operand" "m"))
-	      (clobber (match_scratch:CC_CCR 3 ""))])
-   (parallel [(set (match_operand:CC_UNS 0 "icc_operand" "=t")
-		   (match_dup 2))
-	      (clobber (match_scratch:CC_CCR 4 ""))])]
-  ""
-  "")
-
-(define_expand "reload_outcc_uns"
-  [(parallel [(set (match_operand:CC_UNS 2 "integer_register_operand" "=&d")
-		   (match_operand:CC_UNS 1 "icc_operand" "t"))
-	      (clobber (match_dup 3))])
-   (parallel [(set (match_operand:CC_UNS 0 "memory_operand" "=m")
-		   (match_dup 2))
-	      (clobber (match_scratch:CC_CCR 4 ""))])]
-  ""
-  "operands[3] = gen_rtx_REG (CC_CCRmode, ICR_TEMP);")
-
 ;; Reload CC_NZmode.  This is mostly the same as the CCmode and CC_UNSmode
 ;; handling, but it uses different sequences for moving between GPRs and ICCs.
 
@@ -2422,26 +2382,6 @@
 			 (const_int 0))
 	      (set (match_dup 3) (const_int 0)))]
   "operands[3] = simplify_gen_subreg (SImode, operands[0], CC_NZmode, 0);")
-
-(define_expand "reload_incc_nz"
-  [(parallel [(set (match_operand:CC_NZ 2 "integer_register_operand" "=&d")
-		   (match_operand:CC_NZ 1 "memory_operand" "m"))
-	      (clobber (match_scratch:CC_CCR 3 ""))])
-   (parallel [(set (match_operand:CC_NZ 0 "icc_operand" "=t")
-		   (match_dup 2))
-	      (clobber (match_scratch:CC_CCR 4 ""))])]
-  ""
-  "")
-
-(define_expand "reload_outcc_nz"
-  [(parallel [(set (match_operand:CC_NZ 2 "integer_register_operand" "=&d")
-		   (match_operand:CC_NZ 1 "icc_operand" "t"))
-	      (clobber (match_dup 3))])
-   (parallel [(set (match_operand:CC_NZ 0 "memory_operand" "=m")
-		   (match_dup 2))
-	      (clobber (match_scratch:CC_CCR 4 ""))])]
-  ""
-  "operands[3] = gen_rtx_REG (CC_CCRmode, ICR_TEMP);")
 
 ;; Reload CC_FPmode for floating point comparisons
 ;; We use a define_expand here so that cse/gcse/combine can't accidentally
