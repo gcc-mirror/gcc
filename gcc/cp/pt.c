@@ -8350,12 +8350,15 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	 NULL_TREE, NULL_TREE);
 
     case CALL_EXPR:
-      return build_nt (code,
-		       tsubst_copy (TREE_OPERAND (t, 0), args,
-				    complain, in_decl),
-		       tsubst_copy (TREE_OPERAND (t, 1), args, complain,
-				    in_decl),
-		       NULL_TREE);
+      {
+	int n = VL_EXP_OPERAND_LENGTH (t);
+	tree result = build_vl_exp (CALL_EXPR, n);
+	int i;
+	for (i = 0; i < n; i++)
+	  TREE_OPERAND (t, i) = tsubst_copy (TREE_OPERAND (t, i), args,
+					     complain, in_decl);
+	return result;
+      }
 
     case COND_EXPR:
     case MODOP_EXPR:
@@ -9271,7 +9274,7 @@ tsubst_copy_and_build (tree t,
 	bool qualified_p;
 	bool koenig_p;
 
-	function = TREE_OPERAND (t, 0);
+	function = CALL_EXPR_FN (t);
 	/* When we parsed the expression,  we determined whether or
 	   not Koenig lookup should be performed.  */
 	koenig_p = KOENIG_LOOKUP_P (t);
@@ -9304,7 +9307,8 @@ tsubst_copy_and_build (tree t,
 	      qualified_p = true;
 	  }
 
-	call_args = RECUR (TREE_OPERAND (t, 1));
+	/* FIXME:  Rewrite this so as not to construct an arglist.  */
+	call_args = RECUR (CALL_EXPR_ARGS (t));
 
 	/* We do not perform argument-dependent lookup if normal
 	   lookup finds a non-function, in accordance with the
@@ -13064,9 +13068,10 @@ value_dependent_expression_p (tree expression)
 		      (TREE_OPERAND (expression, 1))));
 
 	case tcc_expression:
+	case tcc_vl_exp:
 	  {
 	    int i;
-	    for (i = 0; i < TREE_CODE_LENGTH (TREE_CODE (expression)); ++i)
+	    for (i = 0; i < TREE_OPERAND_LENGTH (expression); ++i)
 	      /* In some cases, some of the operands may be missing.
 		 (For example, in the case of PREDECREMENT_EXPR, the
 		 amount to increment by may be missing.)  That doesn't

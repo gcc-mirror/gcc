@@ -1,3 +1,68 @@
+2007-02-15  Sandra Loosemore  <sandra@codesourcery.com>
+	    Brooks Moses  <brooks.moses@codesourcery.com>
+	    Lee Millward  <lee.millward@codesourcery.com>
+
+	* trans-expr.c (gfc_conv_power_op): Use build_call_expr.
+	(gfc_conv_string_tmp): Likewise.
+	(gfc_conv_concat_op): Likewise.
+	(gfc_build_compare_string): Likewise.
+	(gfc_conv_function_call): Use build_call_list instead of build3.
+
+	* trans-array.c (gfc_trans_allocate_array_storage): Use
+	build_call_expr.
+	(gfc_grow_array): Likewise.
+	(gfc_trans_array_ctor_element): Likewise.
+	(gfc_trans_array_constructor_value): Likewise.
+	(gfc_array_allocate): Likewise.
+	(gfc_array_deallocate): Likewise.
+	(gfc_trans_auto_array_allocation): Likewise.
+	(gfc_trans_dummy_array_bias): Likewise.
+	(gfc_conv_array_parameter): Likewise.
+	(gfc_trans_dealloc_allocated): Likewise.
+	(gfc_duplicate_allocatable): Likewise.
+
+	* trans-openmp.c (gfc_trans_omp_barrier): Use build_call_expr.
+	(gfc_trans_omp_flush): Likewise.
+
+	* trans-stmt.c (gfc_conv_elementel_dependencies): Use build_call_expr.
+	(gfc_trans_pause): Likewise.
+	(gfc_trans_stop): Likewise.
+	(gfc_trans_character_select): Likewise.
+	(gfc_do_allocate): Likewise.
+	(gfc_trans_assign_need_temp): Likewise.
+	(gfc_trans_pointer_assign_need_temp): Likewise.
+	(gfc_trans_forall_1): Likewise.
+	(gfc_trans_where_2): Likewise.
+	(gfc_trans_allocate): Likewise.
+	(gfc_trans_deallocate): Likewise.
+
+	* trans.c (gfc_trans_runtime_check): Use build_call_expr.
+
+	* trans-io.c (gfc_trans_open): Use build_call_expr.
+	(gfc_trans_close): Likewise.
+	(build_filepos): Likewise.
+	(gfc_trans_inquire): Likewise.
+	(NML_FIRST_ARG): Delete.
+	(NML_ADD_ARG): Delete.
+	(transfer_namelist_element): Use build_call_expr.
+	(build_dt): Likewise.
+	(gfc_trans_dt_end): Likewise.
+	(transfer_expr): Likewise.
+	(transfer_array-desc): Likewise.
+
+	* trans-decl.c (gfc_generate_function_code): Use build_call_expr.
+	(gfc_generate_constructors): Likewise.
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_ctime): Use build_call_expr.
+	(gfc_conv_intrinsic_fdate): Likewise.
+	(gfc_conv_intrinsic_ttynam): Likewise.
+	(gfc_conv_intrinsic_array_transfer): Likewise.
+	(gfc_conv_associated): Likewise.
+	(gfc_conv_intrinsic_si_kind): Likewise.
+	(gfc_conv_intrinsic_trim): Likewise.
+	(gfc_conv_intrinsic_repeat: Likewise.
+	(gfc_conv_intrinsic_iargc): Likewise.
+
 2007-02-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/30779

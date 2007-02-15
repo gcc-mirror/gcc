@@ -1270,9 +1270,20 @@ pp_c_postfix_expression (c_pretty_printer *pp, tree e)
       break;
 
     case CALL_EXPR:
-      pp_postfix_expression (pp, TREE_OPERAND (e, 0));
-      pp_c_call_argument_list (pp, TREE_OPERAND (e, 1));
-      break;
+      {
+	call_expr_arg_iterator iter;
+	tree arg;
+	pp_postfix_expression (pp, CALL_EXPR_FN (e));
+	pp_c_left_paren (pp);
+	FOR_EACH_CALL_EXPR_ARG (arg, iter, e)
+	  {
+	    pp_expression (pp, arg);
+	    if (more_call_expr_args_p (&iter))
+	      pp_separate_with (pp, ',');
+	  }
+	pp_c_right_paren (pp);
+	break;
+      }
 
     case UNORDERED_EXPR:
       pp_c_identifier (pp, flag_isoc99
@@ -1419,7 +1430,8 @@ pp_c_constructor_elts (c_pretty_printer *pp, VEC(constructor_elt,gc) *v)
     }
 }
 
-/* Print out an expression-list in parens, as in a function call.  */
+/* Print out an expression-list in parens, as if it were the argument
+   list to a function.  */
 
 void
 pp_c_call_argument_list (c_pretty_printer *pp, tree t)

@@ -2331,6 +2331,85 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 #define AGGR_INIT_VIA_CTOR_P(NODE) \
   TREE_LANG_FLAG_0 (AGGR_INIT_EXPR_CHECK (NODE))
 
+/* AGGR_INIT_EXPR accessors.  These are equivalent to the CALL_EXPR
+   accessors, except for AGGR_INIT_EXPR_SLOT (which takes the place of
+   CALL_EXPR_STATIC_CHAIN).  */
+
+#define AGGR_INIT_EXPR_FN(NODE) TREE_OPERAND (AGGR_INIT_EXPR_CHECK (NODE), 1)
+#define AGGR_INIT_EXPR_SLOT(NODE) \
+  TREE_OPERAND (AGGR_INIT_EXPR_CHECK (NODE), 2)
+#define AGGR_INIT_EXPR_ARG(NODE, I) \
+  TREE_OPERAND (AGGR_INIT_EXPR_CHECK (NODE), (I) + 3)
+#define aggr_init_expr_nargs(NODE) (VL_EXP_OPERAND_LENGTH(NODE) - 3)
+
+/* AGGR_INIT_EXPR_ARGP returns a pointer to the argument vector for NODE.
+   We can't use &AGGR_INIT_EXPR_ARG (NODE, 0) because that will complain if
+   the argument count is zero when checking is enabled.  Instead, do
+   the pointer arithmetic to advance past the 3 fixed operands in a
+   AGGR_INIT_EXPR.  That produces a valid pointer to just past the end of
+   the operand array, even if it's not valid to dereference it.  */
+#define AGGR_INIT_EXPR_ARGP(NODE) \
+  (&(TREE_OPERAND (AGGR_INIT_EXPR_CHECK (NODE), 0)) + 3)
+
+/* Abstract iterators for AGGR_INIT_EXPRs.  */
+
+/* Structure containing iterator state.  */
+typedef struct aggr_init_expr_arg_iterator_d GTY (())
+{
+  tree t;	/* the aggr_init_expr */
+  int n;	/* argument count */
+  int i;	/* next argument index */
+} aggr_init_expr_arg_iterator;
+
+/* Initialize the abstract argument list iterator object ITER with the
+   arguments from AGGR_INIT_EXPR node EXP.  */
+static inline void
+init_aggr_init_expr_arg_iterator (tree exp,
+				       aggr_init_expr_arg_iterator *iter)
+{
+  iter->t = exp;
+  iter->n = aggr_init_expr_nargs (exp);
+  iter->i = 0;
+}
+
+/* Return the next argument from abstract argument list iterator object ITER,
+   and advance its state.  Return NULL_TREE if there are no more arguments.  */
+static inline tree
+next_aggr_init_expr_arg (aggr_init_expr_arg_iterator *iter)
+{
+  tree result;
+  if (iter->i >= iter->n)
+    return NULL_TREE;
+  result = AGGR_INIT_EXPR_ARG (iter->t, iter->i);
+  iter->i++;
+  return result;
+}
+
+/* Initialize the abstract argument list iterator object ITER, then advance
+   past and return the first argument.  Useful in for expressions, e.g.
+     for (arg = first_aggr_init_expr_arg (exp, &iter); arg;
+          arg = next_aggr_init_expr_arg (&iter))   */
+static inline tree
+first_aggr_init_expr_arg (tree exp, aggr_init_expr_arg_iterator *iter)
+{
+  init_aggr_init_expr_arg_iterator (exp, iter);
+  return next_aggr_init_expr_arg (iter);
+}
+
+/* Test whether there are more arguments in abstract argument list iterator
+   ITER, without changing its state.  */
+static inline bool
+more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
+{
+  return (iter->i < iter->n);
+}
+
+/* Iterate through each argument ARG of AGGR_INIT_EXPR CALL, using variable
+   ITER (of type aggr_init_expr_arg_iterator) to hold the iteration state.  */
+#define FOR_EACH_AGGR_INIT_EXPR_ARG(arg, iter, call)			\
+  for ((arg) = first_aggr_init_expr_arg ((call), &(iter)); (arg);	\
+       (arg) = next_aggr_init_expr_arg (&(iter)))
+
 /* The TYPE_MAIN_DECL for a class template type is a TYPE_DECL, not a
    TEMPLATE_DECL.  This macro determines whether or not a given class
    type is really a template type, as opposed to an instantiation or
@@ -4375,6 +4454,7 @@ extern void lang_check_failed			(const char *, int,
 						 const char *) ATTRIBUTE_NORETURN;
 extern tree stabilize_expr			(tree, tree *);
 extern void stabilize_call			(tree, tree *);
+extern void stabilize_aggr_init			(tree, tree *);
 extern bool stabilize_init			(tree, tree *);
 extern tree add_stmt_to_compound		(tree, tree);
 extern tree cxx_maybe_build_cleanup		(tree);
@@ -4390,6 +4470,7 @@ extern bool builtin_valid_in_constant_expr_p    (tree);
 extern tree build_min				(enum tree_code, tree, ...);
 extern tree build_min_nt			(enum tree_code, ...);
 extern tree build_min_non_dep			(enum tree_code, tree, ...);
+extern tree build_min_non_dep_call_list		(tree, tree, tree);
 extern tree build_cplus_new			(tree, tree);
 extern tree get_target_expr			(tree);
 extern tree build_cplus_array_type		(tree, tree);

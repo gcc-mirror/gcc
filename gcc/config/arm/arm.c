@@ -13341,11 +13341,11 @@ safe_vector_operand (rtx x, enum machine_mode mode)
 
 static rtx
 arm_expand_binop_builtin (enum insn_code icode,
-			  tree arglist, rtx target)
+			  tree exp, rtx target)
 {
   rtx pat;
-  tree arg0 = TREE_VALUE (arglist);
-  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  tree arg1 = CALL_EXPR_ARG (exp, 1);
   rtx op0 = expand_normal (arg0);
   rtx op1 = expand_normal (arg1);
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
@@ -13380,10 +13380,10 @@ arm_expand_binop_builtin (enum insn_code icode,
 
 static rtx
 arm_expand_unop_builtin (enum insn_code icode,
-			 tree arglist, rtx target, int do_load)
+			 tree exp, rtx target, int do_load)
 {
   rtx pat;
-  tree arg0 = TREE_VALUE (arglist);
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
   rtx op0 = expand_normal (arg0);
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
   enum machine_mode mode0 = insn_data[icode].operand[1].mode;
@@ -13425,8 +13425,7 @@ arm_expand_builtin (tree exp,
 {
   const struct builtin_description * d;
   enum insn_code    icode;
-  tree              fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
-  tree              arglist = TREE_OPERAND (exp, 1);
+  tree              fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   tree              arg0;
   tree              arg1;
   tree              arg2;
@@ -13455,8 +13454,8 @@ arm_expand_builtin (tree exp,
 	       : fcode == ARM_BUILTIN_TEXTRMUH ? CODE_FOR_iwmmxt_textrmuh
 	       : CODE_FOR_iwmmxt_textrmw);
 
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
       tmode = insn_data[icode].operand[0].mode;
@@ -13487,9 +13486,9 @@ arm_expand_builtin (tree exp,
       icode = (fcode == ARM_BUILTIN_TINSRB ? CODE_FOR_iwmmxt_tinsrb
 	       : fcode == ARM_BUILTIN_TINSRH ? CODE_FOR_iwmmxt_tinsrh
 	       : CODE_FOR_iwmmxt_tinsrw);
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      arg2 = CALL_EXPR_ARG (exp, 2);
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
       op2 = expand_normal (arg2);
@@ -13519,15 +13518,15 @@ arm_expand_builtin (tree exp,
       return target;
 
     case ARM_BUILTIN_SETWCX:
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
       op0 = force_reg (SImode, expand_normal (arg0));
       op1 = expand_normal (arg1);
       emit_insn (gen_iwmmxt_tmcr (op1, op0));
       return 0;
 
     case ARM_BUILTIN_GETWCX:
-      arg0 = TREE_VALUE (arglist);
+      arg0 = CALL_EXPR_ARG (exp, 0);
       op0 = expand_normal (arg0);
       target = gen_reg_rtx (SImode);
       emit_insn (gen_iwmmxt_tmrc (target, op0));
@@ -13535,8 +13534,8 @@ arm_expand_builtin (tree exp,
 
     case ARM_BUILTIN_WSHUFH:
       icode = CODE_FOR_iwmmxt_wshufh;
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
       tmode = insn_data[icode].operand[0].mode;
@@ -13562,13 +13561,13 @@ arm_expand_builtin (tree exp,
       return target;
 
     case ARM_BUILTIN_WSADB:
-      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wsadb, arglist, target);
+      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wsadb, exp, target);
     case ARM_BUILTIN_WSADH:
-      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wsadh, arglist, target);
+      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wsadh, exp, target);
     case ARM_BUILTIN_WSADBZ:
-      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wsadbz, arglist, target);
+      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wsadbz, exp, target);
     case ARM_BUILTIN_WSADHZ:
-      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wsadhz, arglist, target);
+      return arm_expand_binop_builtin (CODE_FOR_iwmmxt_wsadhz, exp, target);
 
       /* Several three-argument builtins.  */
     case ARM_BUILTIN_WMACS:
@@ -13589,9 +13588,9 @@ arm_expand_builtin (tree exp,
 	       : fcode == ARM_BUILTIN_TMIATB ? CODE_FOR_iwmmxt_tmiatb
 	       : fcode == ARM_BUILTIN_TMIATT ? CODE_FOR_iwmmxt_tmiatt
 	       : CODE_FOR_iwmmxt_walign);
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      arg2 = CALL_EXPR_ARG (exp, 2);
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
       op2 = expand_normal (arg2);
@@ -13630,11 +13629,11 @@ arm_expand_builtin (tree exp,
 
   for (i = 0, d = bdesc_2arg; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
     if (d->code == (const enum arm_builtins) fcode)
-      return arm_expand_binop_builtin (d->icode, arglist, target);
+      return arm_expand_binop_builtin (d->icode, exp, target);
 
   for (i = 0, d = bdesc_1arg; i < ARRAY_SIZE (bdesc_1arg); i++, d++)
     if (d->code == (const enum arm_builtins) fcode)
-      return arm_expand_unop_builtin (d->icode, arglist, target, 0);
+      return arm_expand_unop_builtin (d->icode, exp, target, 0);
 
   /* @@@ Should really do something sensible here.  */
   return NULL_RTX;

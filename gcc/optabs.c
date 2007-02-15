@@ -410,7 +410,7 @@ expand_widen_pattern_expr (tree exp, rtx op0, rtx op1, rtx wide_op, rtx target,
   rtx temp;
   rtx pat;
   rtx xop0, xop1, wxop;
-  int nops = TREE_CODE_LENGTH (TREE_CODE (exp));
+  int nops = TREE_OPERAND_LENGTH (exp);
 
   oprnd0 = TREE_OPERAND (exp, 0);
   tmode0 = TYPE_MODE (TREE_TYPE (oprnd0));

@@ -1143,7 +1143,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
   tree operation = GIMPLE_STMT_OPERAND (stmt, 1);
   int op_type;
   
-  op_type = TREE_CODE_LENGTH (TREE_CODE (operation));
+  op_type = TREE_OPERAND_LENGTH (operation);
   reduction_op = TREE_OPERAND (operation, op_type-1);
   vectype = get_vectype_for_scalar_type (TREE_TYPE (reduction_op));
   mode = TYPE_MODE (vectype);
@@ -1557,7 +1557,7 @@ vectorizable_reduction (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 
   operation = GIMPLE_STMT_OPERAND (stmt, 1);
   code = TREE_CODE (operation);
-  op_type = TREE_CODE_LENGTH (code);
+  op_type = TREE_OPERAND_LENGTH (operation);
   if (op_type != binary_op && op_type != ternary_op)
     return false;
   scalar_dest = GIMPLE_STMT_OPERAND (stmt, 0);
@@ -1803,13 +1803,14 @@ vectorizable_call (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   tree vec_dest;
   tree scalar_dest;
   tree operation;
-  tree args, type;
+  tree op, type;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt), prev_stmt_info;
   tree vectype_out, vectype_in;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   tree fndecl, rhs, new_temp, def, def_stmt, rhs_type, lhs_type;
   enum vect_def_type dt[2];
   int ncopies, j, nargs;
+  call_expr_arg_iterator iter;
 
   /* Is STMT a vectorizable call?   */
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
@@ -1824,15 +1825,15 @@ vectorizable_call (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 
   /* Process function arguments.  */
   rhs_type = NULL_TREE;
-  for (args = TREE_OPERAND (operation, 1), nargs = 0;
-       args; args = TREE_CHAIN (args), ++nargs)
+  nargs = 0;
+  FOR_EACH_CALL_EXPR_ARG (op, iter, operation)
     {
-      tree op = TREE_VALUE (args);
+      ++nargs;
 
       /* Bail out if the function has more than two arguments, we
 	 do not have interesting builtin functions to vectorize with
 	 more than two arguments.  */
-      if (nargs >= 2)
+      if (nargs > 2)
 	return false;
 
       /* We can only handle calls with arguments of the same type.  */
@@ -1911,11 +1912,13 @@ vectorizable_call (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
       int n;
 
       /* Build argument list for the vectorized call.  */
+      /* FIXME: Rewrite this so that it doesn't construct a temporary
+	  list.  */
       vargs = NULL_TREE;
-      for (args = TREE_OPERAND (operation, 1), n = 0;
-	   args; args = TREE_CHAIN (args), ++n)
+      n = -1;
+      FOR_EACH_CALL_EXPR_ARG (op, iter, operation)
 	{
-	  tree op = TREE_VALUE (args);
+	  ++n;
 
 	  if (j == 0)
 	    vec_oprnd[n] = vect_get_vec_def_for_operand (op, stmt, NULL);
@@ -1979,7 +1982,7 @@ vectorizable_conversion (tree stmt, block_stmt_iterator * bsi,
   int ncopies, j;
   tree vectype_out, vectype_in;
   tree rhs_type, lhs_type;
-  tree builtin_decl, params;
+  tree builtin_decl;
   stmt_vec_info prev_stmt_info;
 
   /* Is STMT a vectorizable conversion?   */
@@ -2073,11 +2076,10 @@ vectorizable_conversion (tree stmt, block_stmt_iterator * bsi,
 	vec_oprnd0 = vect_get_vec_def_for_operand (op0, stmt, NULL);
       else
 	vec_oprnd0 = vect_get_vec_def_for_stmt_copy (dt0, vec_oprnd0);
-      params = build_tree_list (NULL_TREE, vec_oprnd0);
 
       builtin_decl =
 	targetm.vectorize.builtin_conversion (code, vectype_in);
-      new_stmt = build_function_call_expr (builtin_decl, params);
+      new_stmt = build_call_expr (builtin_decl, 1, vec_oprnd0);
 
       /* Arguments are ready. create the new vector stmt.  */
       new_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, vec_dest,
@@ -2272,7 +2274,7 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   optab = optab_for_tree_code (code, vectype);
 
   /* Support only unary or binary operations.  */
-  op_type = TREE_CODE_LENGTH (code);
+  op_type = TREE_OPERAND_LENGTH (operation);
   if (op_type != unary_op && op_type != binary_op)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -2642,7 +2644,6 @@ vect_gen_widened_results_half (enum tree_code code, tree vectype, tree decl,
                                tree vec_dest, block_stmt_iterator *bsi,
 			       tree stmt)
 { 
-  tree vec_params;
   tree expr; 
   tree new_stmt; 
   tree new_temp; 
@@ -2653,10 +2654,10 @@ vect_gen_widened_results_half (enum tree_code code, tree vectype, tree decl,
   if (code == CALL_EXPR) 
     {  
       /* Target specific support  */ 
-      vec_params = build_tree_list (NULL_TREE, vec_oprnd0); 
-      if (op_type == binary_op) 
-        vec_params = tree_cons (NULL_TREE, vec_oprnd1, vec_params); 
-      expr = build_function_call_expr (decl, vec_params); 
+      if (op_type == binary_op)
+	expr = build_call_expr (decl, 2, vec_oprnd0, vec_oprnd1);
+      else
+	expr = build_call_expr (decl, 1, vec_oprnd0);
     } 
   else 
     { 
@@ -3378,10 +3379,9 @@ vect_setup_realignment (tree stmt, block_stmt_iterator *bsi,
   if (targetm.vectorize.builtin_mask_for_load)
     {
       tree builtin_decl;
-      tree params = build_tree_list (NULL_TREE, init_addr);
 
       builtin_decl = targetm.vectorize.builtin_mask_for_load ();
-      new_stmt = build_function_call_expr (builtin_decl, params);
+      new_stmt = build_call_expr (builtin_decl, 1, init_addr);
       vec_dest = vect_create_destination_var (scalar_dest, 
 					      TREE_TYPE (new_stmt));
       new_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, vec_dest,
@@ -4011,7 +4011,6 @@ vectorizable_live_operation (tree stmt,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   int i;
-  enum tree_code code;
   int op_type;
   tree op;
   tree def, def_stmt;
@@ -4027,9 +4026,7 @@ vectorizable_live_operation (tree stmt,
     return false;
 
   operation = GIMPLE_STMT_OPERAND (stmt, 1);
-  code = TREE_CODE (operation);
-
-  op_type = TREE_CODE_LENGTH (code);
+  op_type = TREE_OPERAND_LENGTH (operation);
 
   /* FORNOW: support only if all uses are invariant. This means
      that the scalar operations can remain in place, unvectorized.

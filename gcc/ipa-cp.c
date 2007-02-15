@@ -925,8 +925,8 @@ ipcp_update_callgraph (void)
 	    if (ipcp_redirect (cs))
 	      {
 		cgraph_redirect_edge_callee (cs, orig_callee);
-		TREE_OPERAND (TREE_OPERAND
-			      (get_call_expr_in (cs->call_stmt), 0), 0) =
+		TREE_OPERAND (CALL_EXPR_FN (get_call_expr_in (cs->call_stmt)),
+			      0) =
 		  orig_callee->decl;
 	      }
 	  }

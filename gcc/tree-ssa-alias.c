@@ -3080,11 +3080,13 @@ find_used_portions (tree *tp, int *walk_subtrees, void *lhs_p)
       break;
     case CALL_EXPR:
       {
-	tree *arg;
-	for (arg = &TREE_OPERAND (*tp, 1); *arg; arg = &TREE_CHAIN (*arg))
+	int i;
+	int nargs = call_expr_nargs (*tp);
+	for (i = 0; i < nargs; i++)
 	  {
-	    if (TREE_CODE (TREE_VALUE (*arg)) != ADDR_EXPR)
-              find_used_portions (&TREE_VALUE (*arg), walk_subtrees, NULL);
+	    tree *arg = &CALL_EXPR_ARG (*tp, i);
+	    if (TREE_CODE (*arg) != ADDR_EXPR)
+              find_used_portions (arg, walk_subtrees, NULL);
 	  }
 	*walk_subtrees = 0;
 	return NULL_TREE;

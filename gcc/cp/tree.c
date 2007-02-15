@@ -261,8 +261,55 @@ build_local_temp (tree type)
   return slot;
 }
 
-/* INIT is a CALL_EXPR which needs info about its target.
-   TYPE is the type that this initialization should appear to have.
+/* Set various status flags when building an AGGR_INIT_EXPR object T.  */
+
+static void
+process_aggr_init_operands (tree t)
+{
+  bool side_effects;
+
+  side_effects = TREE_SIDE_EFFECTS (t);
+  if (!side_effects)
+    {
+      int i, n;
+      n = TREE_OPERAND_LENGTH (t);
+      for (i = 1; i < n; i++)
+	{
+	  tree op = TREE_OPERAND (t, i);
+	  if (op && TREE_SIDE_EFFECTS (op))
+	    {
+	      side_effects = 1;
+	      break;
+	    }
+	}
+    }
+  TREE_SIDE_EFFECTS (t) = side_effects;
+}
+
+/* Build an AGGR_INIT_EXPR of class tcc_vl_exp with the indicated RETURN_TYPE,
+   FN, and SLOT.  NARGS is the number of call arguments which are specified
+   as a tree array ARGS.  */
+
+static tree
+build_aggr_init_array (tree return_type, tree fn, tree slot, int nargs,
+		       tree *args)
+{
+  tree t;
+  int i;
+
+  t = build_vl_exp (AGGR_INIT_EXPR, nargs + 3);
+  TREE_TYPE (t) = return_type;
+  AGGR_INIT_EXPR_FN (t) = fn;
+  AGGR_INIT_EXPR_SLOT (t) = slot;
+  for (i = 0; i < nargs; i++)
+    AGGR_INIT_EXPR_ARG (t, i) = args[i];
+  process_aggr_init_operands (t);
+  return t;
+}
+
+/* INIT is a CALL_EXPR or AGGR_INIT_EXPR which needs info about its
+   target.  TYPE is the type that this initialization should appear to
+   have.
 
    Build an encapsulation of the initialization to perform
    and return it so that it can be processed by language-independent
@@ -280,10 +327,13 @@ build_cplus_new (tree type, tree init)
      abstract class.  */
   abstract_virtuals_error (NULL_TREE, type);
 
-  if (TREE_CODE (init) != CALL_EXPR && TREE_CODE (init) != AGGR_INIT_EXPR)
+  if (TREE_CODE (init) == CALL_EXPR)
+    fn = CALL_EXPR_FN (init);
+  else if (TREE_CODE (init) == AGGR_INIT_EXPR)
+    fn = AGGR_INIT_EXPR_FN (init);
+  else
     return convert (type, init);
 
-  fn = TREE_OPERAND (init, 0);
   is_ctor = (TREE_CODE (fn) == ADDR_EXPR
 	     && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL
 	     && DECL_CONSTRUCTOR_P (TREE_OPERAND (fn, 0)));
@@ -303,8 +353,14 @@ build_cplus_new (tree type, tree init)
      type, don't mess with AGGR_INIT_EXPR.  */
   if (is_ctor || TREE_ADDRESSABLE (type))
     {
-      rval = build3 (AGGR_INIT_EXPR, void_type_node, fn,
-		     TREE_OPERAND (init, 1), slot);
+      if (TREE_CODE(init) == CALL_EXPR)
+	rval = build_aggr_init_array (void_type_node, fn, slot,
+				      call_expr_nargs (init),
+				      CALL_EXPR_ARGP (init));
+      else
+	rval = build_aggr_init_array (void_type_node, fn, slot,
+				      aggr_init_expr_nargs (init),
+				      AGGR_INIT_EXPR_ARGP (init));
       TREE_SIDE_EFFECTS (rval) = 1;
       AGGR_INIT_VIA_CTOR_P (rval) = is_ctor;
     }
@@ -1420,6 +1476,8 @@ build_min_nt (enum tree_code code, ...)
   int i;
   va_list p;
 
+  gcc_assert (TREE_CODE_CLASS (code) != tcc_vl_exp);
+
   va_start (p, code);
 
   t = make_node (code);
@@ -1435,6 +1493,7 @@ build_min_nt (enum tree_code code, ...)
   return t;
 }
 
+
 /* Similar to `build', but for template definitions.  */
 
 tree
@@ -1444,6 +1503,8 @@ build_min (enum tree_code code, tree tt, ...)
   int length;
   int i;
   va_list p;
+
+  gcc_assert (TREE_CODE_CLASS (code) != tcc_vl_exp);
 
   va_start (p, tt);
 
@@ -1475,6 +1536,8 @@ build_min_non_dep (enum tree_code code, tree non_dep, ...)
   int i;
   va_list p;
 
+  gcc_assert (TREE_CODE_CLASS (code) != tcc_vl_exp);
+
   va_start (p, non_dep);
 
   t = make_node (code);
@@ -1494,6 +1557,19 @@ build_min_non_dep (enum tree_code code, tree non_dep, ...)
     COMPOUND_EXPR_OVERLOADED (t) = 1;
 
   va_end (p);
+  return t;
+}
+
+/* Similar to `build_call_list', but for template definitions of non-dependent
+   expressions. NON_DEP is the non-dependent expression that has been
+   built.  */
+
+tree
+build_min_non_dep_call_list (tree non_dep, tree fn, tree arglist)
+{
+  tree t = build_nt_call_list (fn, arglist);
+  TREE_TYPE (t) = TREE_TYPE (non_dep);
+  TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (non_dep);
   return t;
 }
 
@@ -1615,9 +1691,20 @@ cp_tree_equal (tree t1, tree t2)
       return cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
 
     case CALL_EXPR:
-      if (!cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0)))
-	return false;
-      return cp_tree_equal (TREE_OPERAND (t1, 1), TREE_OPERAND (t2, 1));
+      {
+	tree arg1, arg2;
+	call_expr_arg_iterator iter1, iter2;
+	if (!cp_tree_equal (CALL_EXPR_FN (t1), CALL_EXPR_FN (t2)))
+	  return false;
+	for (arg1 = first_call_expr_arg (t1, &iter1),
+	       arg2 = first_call_expr_arg (t2, &iter2);
+	     arg1 && arg2;
+	     arg1 = next_call_expr_arg (&iter1),
+	       arg2 = next_call_expr_arg (&iter2))
+	  if (!cp_tree_equal (arg1, arg2))
+	    return false;
+	return (arg1 || arg2);
+      }
 
     case TARGET_EXPR:
       {
@@ -1747,12 +1834,18 @@ cp_tree_equal (tree t1, tree t2)
     case tcc_binary:
     case tcc_comparison:
     case tcc_expression:
+    case tcc_vl_exp:
     case tcc_reference:
     case tcc_statement:
       {
-	int i;
+	int i, n;
 
-	for (i = 0; i < TREE_CODE_LENGTH (code1); ++i)
+	n = TREE_OPERAND_LENGTH (t1);
+	if (TREE_CODE_CLASS (code1) == tcc_vl_exp
+	    && n != TREE_OPERAND_LENGTH (t2))
+	  return false;
+
+	for (i = 0; i < n; ++i)
 	  if (!cp_tree_equal (TREE_OPERAND (t1, i), TREE_OPERAND (t2, i)))
 	    return false;
 
@@ -2438,21 +2531,49 @@ void
 stabilize_call (tree call, tree *initp)
 {
   tree inits = NULL_TREE;
-  tree t;
+  int i;
+  int nargs = call_expr_nargs (call);
 
   if (call == error_mark_node)
     return;
 
-  gcc_assert (TREE_CODE (call) == CALL_EXPR
-	      || TREE_CODE (call) == AGGR_INIT_EXPR);
+  gcc_assert (TREE_CODE (call) == CALL_EXPR);
 
-  for (t = TREE_OPERAND (call, 1); t; t = TREE_CHAIN (t))
-    if (TREE_SIDE_EFFECTS (TREE_VALUE (t)))
-      {
-	tree init;
-	TREE_VALUE (t) = stabilize_expr (TREE_VALUE (t), &init);
-	inits = add_stmt_to_compound (inits, init);
-      }
+  for (i = 0; i < nargs; i++)
+    {
+      tree init;
+      CALL_EXPR_ARG (call, i) =
+	stabilize_expr (CALL_EXPR_ARG (call, i), &init);
+      inits = add_stmt_to_compound (inits, init);
+    }
+
+  *initp = inits;
+}
+
+/* Like stabilize_expr, but for an AGGR_INIT_EXPR whose arguments we want
+   to pre-evaluate.  CALL is modified in place to use the pre-evaluated
+   arguments, while, upon return, *INITP contains an expression to
+   compute the arguments.  */
+
+void
+stabilize_aggr_init (tree call, tree *initp)
+{
+  tree inits = NULL_TREE;
+  int i;
+  int nargs = aggr_init_expr_nargs (call);
+
+  if (call == error_mark_node)
+    return;
+
+  gcc_assert (TREE_CODE (call) == AGGR_INIT_EXPR);
+
+  for (i = 0; i < nargs; i++)
+    {
+      tree init;
+      AGGR_INIT_EXPR_ARG (call, i) =
+	stabilize_expr (AGGR_INIT_EXPR_ARG (call, i), &init);
+      inits = add_stmt_to_compound (inits, init);
+    }
 
   *initp = inits;
 }
@@ -2499,10 +2620,15 @@ stabilize_init (tree init, tree *initp)
   if (TREE_CODE (t) == COND_EXPR)
     return false;
 
-  if (TREE_CODE (t) == CALL_EXPR
-      || TREE_CODE (t) == AGGR_INIT_EXPR)
+  if (TREE_CODE (t) == CALL_EXPR)
     {
       stabilize_call (t, initp);
+      return true;
+    }
+
+  if (TREE_CODE (t) == AGGR_INIT_EXPR)
+    {
+      stabilize_aggr_init (t, initp);
       return true;
     }
 

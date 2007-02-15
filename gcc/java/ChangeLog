@@ -1,3 +1,70 @@
+2007-02-15  Sandra Loosemore  <sandra@codesourcery.com>
+	    Brooks Moses  <brooks.moses@codesourcery.com>
+	    Lee Millward  <lee.millward@codesourcery.com>
+
+	* java-tree.h (BUILD_MONITOR_ENTER): Use build_call_nary instead
+	of build3.
+	(BUILD_MONITOR_EXIT): Likewise.
+
+	* java-gimplify.c (java_gimplify_component_ref): Use build_call_expr.
+	(java_gimplify_modify_expr): Likewise.
+
+	* class.c (cache_this_class_ref): Use build_call_expr.
+	(build_static_field_ref): Likewise.
+	(emit_indirect_register_classes): Likewise.
+	(emit_register_classes): Likewise.
+
+	* resource.c (write_resource_constructor): Use build_call_expr.
+
+	* builtins.c (builtin_creator_function): Change interpretation of
+	the second parameter to be the whole CALL_EXPR instead of the arglist.
+	(max_builtin): Tweak parameter list.  Use new CALL_EXPR accessors.
+	(min_builtin): Likewise.
+	(abs_builtin): Likewise.
+	(java_build_function_call_expr): Likewise.
+	(convert_real): Likewise.
+	(UNMARSHAL3): Likewise.
+	(UNMARSHAL4): Likewise.
+	(UNMARSHAL5): Likewise.
+	(build_arglist_for_builtin): Delete.  Fix callers to use
+	build_call_expr instead.
+	(putObject_builtin): Tweak parameter list.  Use new CALL_EXPR
+	accessors.
+	(compareAndSwapInt_builtin): Likewise.
+	(compareAndSwapLong_builtin): Likewise.
+	(compareAndSwapObject_builtin): Likewise.
+	(putVolatile_builtin): Likewise.
+	(getVolatile_builtin): Likewise.
+	(VMSupportsCS8_builtin): Likewise.
+	(check_for_builtin): Pass entire CALL_EXPR to builtin expander
+	instead of arglist.
+
+	* expr.c (build_java_athrow): Use build_call_nary instead of build3.
+	(build_java_throw_out_of_bounds_exception): Likewise.
+	(java_check_reference): Likewise.
+	(build_java_arraystore_check): Likewise.
+	(build_newarray): Likewise.
+	(build_anewarray): Likewise.
+	(expand_java_multinewarray): Use build_call_list instead of build3.
+	(build_java_monitor): Use build_call_nary instead of build3.
+	(java_create_object): Likewise.
+	(expand_java_NEW): Likewise.
+	(build_instanceof): Likewise.
+	(expand_java_CHECKCAST): Likewise.
+	(build_java_soft_divmod): Likewise.
+	(build_java_binop): Likewise.
+	(build_field_ref): Likewise.
+	(build_class_init): Likewise.
+	(rewrite_arglist_getcaller): Use build_call_expr.
+	(build_invokeinterface):  Use build_call_nary instead of build3.
+	(expand_invoke): Use build_call_list instead of build3.
+	(build_jni_stub): Use build_call_nary, build_call_list, or
+	build_call_expr instead	of build3.
+	(expand_java_field_op): Use build_call_expr instead of build3.
+	(force_evaluation_order): Use new CALL_EXPR accessors.
+
+	* lang.c (java_get_callee_fndecl): Use new CALL_EXPR accessors.
+
 2007-02-15  David Daney  <ddaney@avtrex.com>
 
 	* Make-lang.in (JAVA_MANFILES): Add doc/gc-analyze.1.

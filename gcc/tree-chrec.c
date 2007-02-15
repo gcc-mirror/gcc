@@ -860,6 +860,8 @@ is_multivariate_chrec (tree chrec)
 bool 
 chrec_contains_symbols (tree chrec)
 {
+  int i, n;
+
   if (chrec == NULL_TREE)
     return false;
   
@@ -871,24 +873,12 @@ chrec_contains_symbols (tree chrec)
       || TREE_CODE (chrec) == RESULT_DECL
       || TREE_CODE (chrec) == FIELD_DECL)
     return true;
-  
-  switch (TREE_CODE_LENGTH (TREE_CODE (chrec)))
-    {
-    case 3:
-      if (chrec_contains_symbols (TREE_OPERAND (chrec, 2)))
-	return true;
-      
-    case 2:
-      if (chrec_contains_symbols (TREE_OPERAND (chrec, 1)))
-	return true;
-      
-    case 1:
-      if (chrec_contains_symbols (TREE_OPERAND (chrec, 0)))
-	return true;
-      
-    default:
-      return false;
-    }
+
+  n = TREE_OPERAND_LENGTH (chrec);
+  for (i = 0; i < n; i++)
+    if (chrec_contains_symbols (TREE_OPERAND (chrec, i)))
+      return true;
+  return false;
 }
 
 /* Determines whether the chrec contains undetermined coefficients.  */
@@ -896,28 +886,18 @@ chrec_contains_symbols (tree chrec)
 bool 
 chrec_contains_undetermined (tree chrec)
 {
+  int i, n;
+
   if (chrec == chrec_dont_know
       || chrec == chrec_not_analyzed_yet
       || chrec == NULL_TREE)
     return true;
-  
-  switch (TREE_CODE_LENGTH (TREE_CODE (chrec)))
-    {
-    case 3:
-      if (chrec_contains_undetermined (TREE_OPERAND (chrec, 2)))
-	return true;
-      
-    case 2:
-      if (chrec_contains_undetermined (TREE_OPERAND (chrec, 1)))
-	return true;
-      
-    case 1:
-      if (chrec_contains_undetermined (TREE_OPERAND (chrec, 0)))
-	return true;
-      
-    default:
-      return false;
-    }
+
+  n = TREE_OPERAND_LENGTH (chrec);
+  for (i = 0; i < n; i++)
+    if (chrec_contains_undetermined (TREE_OPERAND (chrec, i)))
+      return true;
+  return false;
 }
 
 /* Determines whether the tree EXPR contains chrecs, and increment
@@ -927,6 +907,8 @@ chrec_contains_undetermined (tree chrec)
 bool
 tree_contains_chrecs (tree expr, int *size)
 {
+  int i, n;
+
   if (expr == NULL_TREE)
     return false;
 
@@ -936,23 +918,11 @@ tree_contains_chrecs (tree expr, int *size)
   if (tree_is_chrec (expr))
     return true;
 
-  switch (TREE_CODE_LENGTH (TREE_CODE (expr)))
-    {
-    case 3:
-      if (tree_contains_chrecs (TREE_OPERAND (expr, 2), size))
-	return true;
-      
-    case 2:
-      if (tree_contains_chrecs (TREE_OPERAND (expr, 1), size))
-	return true;
-      
-    case 1:
-      if (tree_contains_chrecs (TREE_OPERAND (expr, 0), size))
-	return true;
-      
-    default:
-      return false;
-    }
+  n = TREE_OPERAND_LENGTH (expr);
+  for (i = 0; i < n; i++)
+    if (tree_contains_chrecs (TREE_OPERAND (expr, i), size))
+      return true;
+  return false;
 }
 
 /* Recursive helper function.  */
@@ -978,7 +948,7 @@ evolution_function_is_invariant_rec_p (tree chrec, int loopnum)
       return true;
     }
 
-  switch (TREE_CODE_LENGTH (TREE_CODE (chrec)))
+  switch (TREE_OPERAND_LENGTH (chrec))
     {
     case 2:
       if (!evolution_function_is_invariant_rec_p (TREE_OPERAND (chrec, 1),

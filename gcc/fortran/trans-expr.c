@@ -748,7 +748,6 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
   gfc_se lse;
   gfc_se rse;
   tree fndecl;
-  tree tmp;
 
   gfc_init_se (&lse, se);
   gfc_conv_expr_val (&lse, expr->value.op.op1);
@@ -887,9 +886,7 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
       break;
     }
 
-  tmp = gfc_chainon_list (NULL_TREE, lse.expr);
-  tmp = gfc_chainon_list (tmp, rse.expr);
-  se->expr = build_function_call_expr (fndecl, tmp);
+  se->expr = build_call_expr (fndecl, 2, lse.expr, rse.expr);
 }
 
 
@@ -900,7 +897,6 @@ gfc_conv_string_tmp (gfc_se * se, tree type, tree len)
 {
   tree var;
   tree tmp;
-  tree args;
 
   gcc_assert (TREE_TYPE (len) == gfc_charlen_type_node);
 
@@ -918,15 +914,13 @@ gfc_conv_string_tmp (gfc_se * se, tree type, tree len)
     {
       /* Allocate a temporary to hold the result.  */
       var = gfc_create_var (type, "pstr");
-      args = gfc_chainon_list (NULL_TREE, len);
-      tmp = build_function_call_expr (gfor_fndecl_internal_malloc, args);
+      tmp = build_call_expr (gfor_fndecl_internal_malloc, 1, len);
       tmp = convert (type, tmp);
       gfc_add_modify_expr (&se->pre, var, tmp);
 
       /* Free the temporary afterwards.  */
       tmp = convert (pvoid_type_node, var);
-      args = gfc_chainon_list (NULL_TREE, tmp);
-      tmp = build_function_call_expr (gfor_fndecl_internal_free, args);
+      tmp = build_call_expr (gfor_fndecl_internal_free, 1, tmp);
       gfc_add_expr_to_block (&se->post, tmp);
     }
 
@@ -945,7 +939,6 @@ gfc_conv_concat_op (gfc_se * se, gfc_expr * expr)
   tree len;
   tree type;
   tree var;
-  tree args;
   tree tmp;
 
   gcc_assert (expr->value.op.op1->ts.type == BT_CHARACTER
@@ -974,14 +967,10 @@ gfc_conv_concat_op (gfc_se * se, gfc_expr * expr)
   var = gfc_conv_string_tmp (se, type, len);
 
   /* Do the actual concatenation.  */
-  args = NULL_TREE;
-  args = gfc_chainon_list (args, len);
-  args = gfc_chainon_list (args, var);
-  args = gfc_chainon_list (args, lse.string_length);
-  args = gfc_chainon_list (args, lse.expr);
-  args = gfc_chainon_list (args, rse.string_length);
-  args = gfc_chainon_list (args, rse.expr);
-  tmp = build_function_call_expr (gfor_fndecl_concat_string, args);
+  tmp = build_call_expr (gfor_fndecl_concat_string, 6,
+			 len, var,
+			 lse.string_length, lse.expr,
+			 rse.string_length, rse.expr);
   gfc_add_expr_to_block (&se->pre, tmp);
 
   /* Add the cleanup for the operands.  */
@@ -1205,17 +1194,9 @@ gfc_build_compare_string (tree len1, tree str1, tree len2, tree str2)
       tmp = fold_build2 (MINUS_EXPR, type, sc1, sc2);
     }
    else
-    {
-      tmp = NULL_TREE;
-      tmp = gfc_chainon_list (tmp, len1);
-      tmp = gfc_chainon_list (tmp, str1);
-      tmp = gfc_chainon_list (tmp, len2);
-      tmp = gfc_chainon_list (tmp, str2);
-
-      /* Build a call for the comparison.  */
-      tmp = build_function_call_expr (gfor_fndecl_compare_string, tmp);
-    }
-
+     /* Build a call for the comparison.  */
+     tmp = build_call_expr (gfor_fndecl_compare_string, 4,
+			    len1, str1, len2, str2);
   return tmp;
 }
 
@@ -1281,7 +1262,7 @@ gfc_conv_operator_assign (gfc_se *lse, gfc_se *rse, gfc_symbol *sym)
   gfc_init_se (&se, NULL);
   gfc_conv_function_val (&se, sym);
   tmp = TREE_TYPE (TREE_TYPE (TREE_TYPE (se.expr)));
-  tmp = build3 (CALL_EXPR, tmp, se.expr, args, NULL_TREE);
+  tmp = build_call_list (tmp, se.expr, args);
   gfc_add_expr_to_block (&block, tmp);
 
   gfc_add_block_to_block (&block, &lse->post);
@@ -2407,8 +2388,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
     }
 
   fntype = TREE_TYPE (TREE_TYPE (se->expr));
-  se->expr = build3 (CALL_EXPR, TREE_TYPE (fntype), se->expr,
-		     arglist, NULL_TREE);
+  se->expr = build_call_list (TREE_TYPE (fntype), se->expr, arglist);
 
   /* If we have a pointer function, but we don't want a pointer, e.g.
      something like
@@ -2542,26 +2522,21 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
   
   /* Truncate string if source is too long.  */
   cond2 = fold_build2 (GE_EXPR, boolean_type_node, slen, dlen);
-  tmp2 = gfc_chainon_list (NULL_TREE, dest);
-  tmp2 = gfc_chainon_list (tmp2, src);
-  tmp2 = gfc_chainon_list (tmp2, dlen);
-  tmp2 = build_function_call_expr (built_in_decls[BUILT_IN_MEMMOVE], tmp2);
+  tmp2 = build_call_expr (built_in_decls[BUILT_IN_MEMMOVE],
+			  3, dest, src, dlen);
 
   /* Else copy and pad with spaces.  */
-  tmp3 = gfc_chainon_list (NULL_TREE, dest);
-  tmp3 = gfc_chainon_list (tmp3, src);
-  tmp3 = gfc_chainon_list (tmp3, slen);
-  tmp3 = build_function_call_expr (built_in_decls[BUILT_IN_MEMMOVE], tmp3);
+  tmp3 = build_call_expr (built_in_decls[BUILT_IN_MEMMOVE],
+			  3, dest, src, slen);
 
   tmp4 = fold_build2 (PLUS_EXPR, pchar_type_node, dest,
 		      fold_convert (pchar_type_node, slen));
-  tmp4 = gfc_chainon_list (NULL_TREE, tmp4);
-  tmp4 = gfc_chainon_list (tmp4, build_int_cst
-				   (gfc_get_int_type (gfc_c_int_kind),
-				    lang_hooks.to_target_charset (' ')));
-  tmp4 = gfc_chainon_list (tmp4, fold_build2 (MINUS_EXPR, TREE_TYPE(dlen),
-					      dlen, slen));
-  tmp4 = build_function_call_expr (built_in_decls[BUILT_IN_MEMSET], tmp4);
+  tmp4 = build_call_expr (built_in_decls[BUILT_IN_MEMSET], 3,
+			  tmp4, 
+			  build_int_cst (gfc_get_int_type (gfc_c_int_kind),
+					 lang_hooks.to_target_charset (' ')),
+			  fold_build2 (MINUS_EXPR, TREE_TYPE(dlen),
+				       dlen, slen));
 
   gfc_init_block (&tempblock);
   gfc_add_expr_to_block (&tempblock, tmp3);
@@ -3585,7 +3560,7 @@ static tree
 gfc_trans_zero_assign (gfc_expr * expr)
 {
   tree dest, len, type;
-  tree tmp, args;
+  tree tmp;
   gfc_symbol *sym;
 
   sym = expr->symtree->n.sym;
@@ -3613,10 +3588,8 @@ gfc_trans_zero_assign (gfc_expr * expr)
   len = fold_convert (size_type_node, len);
 
   /* Construct call to __builtin_memset.  */
-  args = build_tree_list (NULL_TREE, len);
-  args = tree_cons (NULL_TREE, integer_zero_node, args);
-  args = tree_cons (NULL_TREE, dest, args);
-  tmp = build_function_call_expr (built_in_decls[BUILT_IN_MEMSET], args);
+  tmp = build_call_expr (built_in_decls[BUILT_IN_MEMSET],
+			 3, dest, integer_zero_node, len);
   return fold_convert (void_type_node, tmp);
 }
 
@@ -3627,7 +3600,7 @@ gfc_trans_zero_assign (gfc_expr * expr)
 static tree
 gfc_build_memcpy_call (tree dst, tree src, tree len)
 {
-  tree tmp, args;
+  tree tmp;
 
   /* Convert arguments to the correct types.  */
   if (!POINTER_TYPE_P (TREE_TYPE (dst)))
@@ -3643,10 +3616,7 @@ gfc_build_memcpy_call (tree dst, tree src, tree len)
   len = fold_convert (size_type_node, len);
 
   /* Construct call to __builtin_memcpy.  */
-  args = build_tree_list (NULL_TREE, len);
-  args = tree_cons (NULL_TREE, src, args);
-  args = tree_cons (NULL_TREE, dst, args);
-  tmp = build_function_call_expr (built_in_decls[BUILT_IN_MEMCPY], args);
+  tmp = build_call_expr (built_in_decls[BUILT_IN_MEMCPY], 3, dst, src, len);
   return fold_convert (void_type_node, tmp);
 }
 

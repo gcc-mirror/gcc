@@ -374,7 +374,7 @@ propagate_through_phis (tree var, edge e)
 static void
 find_tail_calls (basic_block bb, struct tailcall **ret)
 {
-  tree ass_var, ret_var, stmt, func, param, args, call = NULL_TREE;
+  tree ass_var, ret_var, stmt, func, param, call = NULL_TREE;
   block_stmt_iterator bsi, absi;
   bool tail_recursion;
   struct tailcall *nw;
@@ -433,11 +433,13 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
   func = get_callee_fndecl (call);
   if (func == current_function_decl)
     {
-      for (param = DECL_ARGUMENTS (func), args = TREE_OPERAND (call, 1);
-	   param && args;
-	   param = TREE_CHAIN (param), args = TREE_CHAIN (args))
+      call_expr_arg_iterator iter;
+      tree arg;
+      for (param = DECL_ARGUMENTS (func),
+	     arg = first_call_expr_arg (call, &iter);
+	   param && arg;
+	   param = TREE_CHAIN (param), arg = next_call_expr_arg (&iter))
 	{
-	  tree arg = TREE_VALUE (args);
 	  if (param != arg)
 	    {
 	      /* Make sure there are no problems with copying.  The parameter
@@ -460,7 +462,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 		break;
 	    }
 	}
-      if (!args && !param)
+      if (!arg && !param)
 	tail_recursion = true;
     }
 
@@ -714,7 +716,9 @@ arg_needs_copy_p (tree param)
 static void
 eliminate_tail_call (struct tailcall *t)
 {
-  tree param, stmt, args, rslt, call;
+  tree param, stmt, rslt, call;
+  tree arg;
+  call_expr_arg_iterator iter;
   basic_block bb, first;
   edge e;
   tree phi;
@@ -769,17 +773,16 @@ eliminate_tail_call (struct tailcall *t)
   /* Add phi node entries for arguments.  The ordering of the phi nodes should
      be the same as the ordering of the arguments.  */
   for (param = DECL_ARGUMENTS (current_function_decl),
-       args = TREE_OPERAND (stmt, 1),
-       phi = phi_nodes (first);
+	 arg = first_call_expr_arg (stmt, &iter),
+	 phi = phi_nodes (first);
        param;
-       param = TREE_CHAIN (param),
-       args = TREE_CHAIN (args))
+       param = TREE_CHAIN (param), arg = next_call_expr_arg (&iter))
     {
       if (!arg_needs_copy_p (param))
 	continue;
       gcc_assert (param == SSA_NAME_VAR (PHI_RESULT (phi)));
 
-      add_phi_arg (phi, TREE_VALUE (args), e);
+      add_phi_arg (phi, arg, e);
       phi = PHI_CHAIN (phi);
     }
 

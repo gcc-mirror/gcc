@@ -134,10 +134,9 @@ lower_function_body (void)
       /* Build 'DISP_VAR = __builtin_setjmp_dispatcher (DISP_LABEL);'
 	 and insert.  */
       disp_var = create_tmp_var (ptr_type_node, "setjmpvar");
-      t = build_addr (disp_label, current_function_decl);
-      arg = tree_cons (NULL, t, NULL);
+      arg = build_addr (disp_label, current_function_decl);
       t = implicit_built_in_decls[BUILT_IN_SETJMP_DISPATCHER];
-      t = build_function_call_expr (t,arg);
+      t = build_call_expr (t, 1, arg);
       x = build2 (GIMPLE_MODIFY_STMT, void_type_node, disp_var, t);
 
       /* Build 'goto DISP_VAR;' and insert.  */
@@ -663,12 +662,9 @@ lower_builtin_setjmp (tree_stmt_iterator *tsi)
     dest = NULL_TREE;
 
   /* Build '__builtin_setjmp_setup (BUF, NEXT_LABEL)' and insert.  */
-  t = build_addr (next_label, current_function_decl);
-  arg = tree_cons (NULL, t, NULL);
-  t = TREE_VALUE (GENERIC_TREE_OPERAND (stmt, 1));
-  arg = tree_cons (NULL, t, arg);
+  arg = build_addr (next_label, current_function_decl);
   t = implicit_built_in_decls[BUILT_IN_SETJMP_SETUP];
-  t = build_function_call_expr (t, arg);
+  t = build_call_expr (t, 2, CALL_EXPR_ARG (stmt, 0), arg);
   SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
   tsi_link_before (tsi, t, TSI_SAME_STMT);
 
@@ -689,10 +685,9 @@ lower_builtin_setjmp (tree_stmt_iterator *tsi)
   tsi_link_before (tsi, t, TSI_SAME_STMT);
 
   /* Build '__builtin_setjmp_receiver (NEXT_LABEL)' and insert.  */
-  t = build_addr (next_label, current_function_decl);
-  arg = tree_cons (NULL, t, NULL);
+  arg = build_addr (next_label, current_function_decl);
   t = implicit_built_in_decls[BUILT_IN_SETJMP_RECEIVER];
-  t = build_function_call_expr (t, arg);
+  t = build_call_expr (t, 1, arg);
   SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
   tsi_link_before (tsi, t, TSI_SAME_STMT);
 

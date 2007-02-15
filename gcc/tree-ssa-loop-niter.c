@@ -655,7 +655,7 @@ simplify_replace_tree (tree expr, tree old, tree new)
   if (!EXPR_P (expr) && !GIMPLE_STMT_P (expr))
     return expr;
 
-  n = TREE_CODE_LENGTH (TREE_CODE (expr));
+  n = TREE_OPERAND_LENGTH (expr);
   for (i = 0; i < n; i++)
     {
       e = TREE_OPERAND (expr, i);
@@ -691,7 +691,7 @@ expand_simple_operations (tree expr)
   code = TREE_CODE (expr);
   if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code)))
     {
-      n = TREE_CODE_LENGTH (code);
+      n = TREE_OPERAND_LENGTH (expr);
       for (i = 0; i < n; i++)
 	{
 	  e = TREE_OPERAND (expr, i);
@@ -1882,11 +1882,12 @@ infer_loop_bounds_from_array (struct loop *loop, tree stmt)
   call = get_call_expr_in (stmt);
   if (call)
     {
-      tree args;
+      tree arg;
+      call_expr_arg_iterator iter;
 
-      for (args = TREE_OPERAND (call, 1); args; args = TREE_CHAIN (args))
-	if (REFERENCE_CLASS_P (TREE_VALUE (args)))
-	  infer_loop_bounds_from_ref (loop, stmt, TREE_VALUE (args));
+      FOR_EACH_CALL_EXPR_ARG (arg, iter, call)
+	if (REFERENCE_CLASS_P (arg))
+	  infer_loop_bounds_from_ref (loop, stmt, arg);
     }
 }
 

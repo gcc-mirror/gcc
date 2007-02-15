@@ -2695,7 +2695,7 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
     func = decl;
   else
     {
-      func = TREE_TYPE (TREE_OPERAND (exp, 0));
+      func = TREE_TYPE (CALL_EXPR_FN (exp));
       if (POINTER_TYPE_P (func))
         func = TREE_TYPE (func);
     }
@@ -2730,7 +2730,7 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
       tree type;
 
       /* We're looking at the CALL_EXPR, we need the type of the function.  */
-      type = TREE_OPERAND (exp, 0);		/* pointer expression */
+      type = CALL_EXPR_FN (exp);		/* pointer expression */
       type = TREE_TYPE (type);			/* pointer type */
       type = TREE_TYPE (type);			/* function type */
 
@@ -17254,11 +17254,11 @@ safe_vector_operand (rtx x, enum machine_mode mode)
 /* Subroutine of ix86_expand_builtin to take care of binop insns.  */
 
 static rtx
-ix86_expand_binop_builtin (enum insn_code icode, tree arglist, rtx target)
+ix86_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
 {
   rtx pat, xops[3];
-  tree arg0 = TREE_VALUE (arglist);
-  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  tree arg1 = CALL_EXPR_ARG (exp, 1);
   rtx op0 = expand_normal (arg0);
   rtx op1 = expand_normal (arg1);
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
@@ -17322,11 +17322,11 @@ ix86_expand_binop_builtin (enum insn_code icode, tree arglist, rtx target)
 /* Subroutine of ix86_expand_builtin to take care of stores.  */
 
 static rtx
-ix86_expand_store_builtin (enum insn_code icode, tree arglist)
+ix86_expand_store_builtin (enum insn_code icode, tree exp)
 {
   rtx pat;
-  tree arg0 = TREE_VALUE (arglist);
-  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  tree arg1 = CALL_EXPR_ARG (exp, 1);
   rtx op0 = expand_normal (arg0);
   rtx op1 = expand_normal (arg1);
   enum machine_mode mode0 = insn_data[icode].operand[0].mode;
@@ -17347,11 +17347,11 @@ ix86_expand_store_builtin (enum insn_code icode, tree arglist)
 /* Subroutine of ix86_expand_builtin to take care of unop insns.  */
 
 static rtx
-ix86_expand_unop_builtin (enum insn_code icode, tree arglist,
+ix86_expand_unop_builtin (enum insn_code icode, tree exp,
 			  rtx target, int do_load)
 {
   rtx pat;
-  tree arg0 = TREE_VALUE (arglist);
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
   rtx op0 = expand_normal (arg0);
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
   enum machine_mode mode0 = insn_data[icode].operand[1].mode;
@@ -17383,10 +17383,10 @@ ix86_expand_unop_builtin (enum insn_code icode, tree arglist,
    sqrtss, rsqrtss, rcpss.  */
 
 static rtx
-ix86_expand_unop1_builtin (enum insn_code icode, tree arglist, rtx target)
+ix86_expand_unop1_builtin (enum insn_code icode, tree exp, rtx target)
 {
   rtx pat;
-  tree arg0 = TREE_VALUE (arglist);
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
   rtx op1, op0 = expand_normal (arg0);
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
   enum machine_mode mode0 = insn_data[icode].operand[1].mode;
@@ -17417,12 +17417,12 @@ ix86_expand_unop1_builtin (enum insn_code icode, tree arglist, rtx target)
 /* Subroutine of ix86_expand_builtin to take care of comparison insns.  */
 
 static rtx
-ix86_expand_sse_compare (const struct builtin_description *d, tree arglist,
+ix86_expand_sse_compare (const struct builtin_description *d, tree exp,
 			 rtx target)
 {
   rtx pat;
-  tree arg0 = TREE_VALUE (arglist);
-  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  tree arg1 = CALL_EXPR_ARG (exp, 1);
   rtx op0 = expand_normal (arg0);
   rtx op1 = expand_normal (arg1);
   rtx op2;
@@ -17469,12 +17469,12 @@ ix86_expand_sse_compare (const struct builtin_description *d, tree arglist,
 /* Subroutine of ix86_expand_builtin to take care of comi insns.  */
 
 static rtx
-ix86_expand_sse_comi (const struct builtin_description *d, tree arglist,
+ix86_expand_sse_comi (const struct builtin_description *d, tree exp,
 		      rtx target)
 {
   rtx pat;
-  tree arg0 = TREE_VALUE (arglist);
-  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  tree arg1 = CALL_EXPR_ARG (exp, 1);
   rtx op0 = expand_normal (arg0);
   rtx op1 = expand_normal (arg1);
   rtx op2;
@@ -17549,7 +17549,7 @@ get_element_number (tree vec_type, tree arg)
    these sorts of instructions.  */
 
 static rtx
-ix86_expand_vec_init_builtin (tree type, tree arglist, rtx target)
+ix86_expand_vec_init_builtin (tree type, tree exp, rtx target)
 {
   enum machine_mode tmode = TYPE_MODE (type);
   enum machine_mode inner_mode = GET_MODE_INNER (tmode);
@@ -17557,14 +17557,13 @@ ix86_expand_vec_init_builtin (tree type, tree arglist, rtx target)
   rtvec v = rtvec_alloc (n_elt);
 
   gcc_assert (VECTOR_MODE_P (tmode));
+  gcc_assert (call_expr_nargs (exp) == n_elt);
 
-  for (i = 0; i < n_elt; ++i, arglist = TREE_CHAIN (arglist))
+  for (i = 0; i < n_elt; ++i)
     {
-      rtx x = expand_normal (TREE_VALUE (arglist));
+      rtx x = expand_normal (CALL_EXPR_ARG (exp, i));
       RTVEC_ELT (v, i) = gen_lowpart (inner_mode, x);
     }
-
-  gcc_assert (arglist == NULL);
 
   if (!target || !register_operand (target, tmode))
     target = gen_reg_rtx (tmode);
@@ -17578,15 +17577,15 @@ ix86_expand_vec_init_builtin (tree type, tree arglist, rtx target)
    had a language-level syntax for referencing vector elements.  */
 
 static rtx
-ix86_expand_vec_ext_builtin (tree arglist, rtx target)
+ix86_expand_vec_ext_builtin (tree exp, rtx target)
 {
   enum machine_mode tmode, mode0;
   tree arg0, arg1;
   int elt;
   rtx op0;
 
-  arg0 = TREE_VALUE (arglist);
-  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  arg0 = CALL_EXPR_ARG (exp, 0);
+  arg1 = CALL_EXPR_ARG (exp, 1);
 
   op0 = expand_normal (arg0);
   elt = get_element_number (TREE_TYPE (arg0), arg1);
@@ -17610,16 +17609,16 @@ ix86_expand_vec_ext_builtin (tree arglist, rtx target)
    a language-level syntax for referencing vector elements.  */
 
 static rtx
-ix86_expand_vec_set_builtin (tree arglist)
+ix86_expand_vec_set_builtin (tree exp)
 {
   enum machine_mode tmode, mode1;
   tree arg0, arg1, arg2;
   int elt;
   rtx op0, op1;
 
-  arg0 = TREE_VALUE (arglist);
-  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-  arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+  arg0 = CALL_EXPR_ARG (exp, 0);
+  arg1 = CALL_EXPR_ARG (exp, 1);
+  arg2 = CALL_EXPR_ARG (exp, 2);
 
   tmode = TYPE_MODE (TREE_TYPE (arg0));
   mode1 = TYPE_MODE (TREE_TYPE (TREE_TYPE (arg0)));
@@ -17654,8 +17653,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   const struct builtin_description *d;
   size_t i;
   enum insn_code icode;
-  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
-  tree arglist = TREE_OPERAND (exp, 1);
+  tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   tree arg0, arg1, arg2, arg3;
   rtx op0, op1, op2, op3, pat;
   enum machine_mode tmode, mode0, mode1, mode2, mode3, mode4;
@@ -17677,9 +17675,9 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	       ? CODE_FOR_mmx_maskmovq
 	       : CODE_FOR_sse2_maskmovdqu);
       /* Note the arg order is different from the operand order.  */
-      arg1 = TREE_VALUE (arglist);
-      arg2 = TREE_VALUE (TREE_CHAIN (arglist));
-      arg0 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+      arg1 = CALL_EXPR_ARG (exp, 0);
+      arg2 = CALL_EXPR_ARG (exp, 1);
+      arg0 = CALL_EXPR_ARG (exp, 2);
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
       op2 = expand_normal (arg2);
@@ -17703,17 +17701,17 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       return 0;
 
     case IX86_BUILTIN_SQRTSS:
-      return ix86_expand_unop1_builtin (CODE_FOR_sse_vmsqrtv4sf2, arglist, target);
+      return ix86_expand_unop1_builtin (CODE_FOR_sse_vmsqrtv4sf2, exp, target);
     case IX86_BUILTIN_RSQRTSS:
-      return ix86_expand_unop1_builtin (CODE_FOR_sse_vmrsqrtv4sf2, arglist, target);
+      return ix86_expand_unop1_builtin (CODE_FOR_sse_vmrsqrtv4sf2, exp, target);
     case IX86_BUILTIN_RCPSS:
-      return ix86_expand_unop1_builtin (CODE_FOR_sse_vmrcpv4sf2, arglist, target);
+      return ix86_expand_unop1_builtin (CODE_FOR_sse_vmrcpv4sf2, exp, target);
 
     case IX86_BUILTIN_LOADUPS:
-      return ix86_expand_unop_builtin (CODE_FOR_sse_movups, arglist, target, 1);
+      return ix86_expand_unop_builtin (CODE_FOR_sse_movups, exp, target, 1);
 
     case IX86_BUILTIN_STOREUPS:
-      return ix86_expand_store_builtin (CODE_FOR_sse_movups, arglist);
+      return ix86_expand_store_builtin (CODE_FOR_sse_movups, exp);
 
     case IX86_BUILTIN_LOADHPS:
     case IX86_BUILTIN_LOADLPS:
@@ -17723,8 +17721,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	       : fcode == IX86_BUILTIN_LOADLPS ? CODE_FOR_sse_loadlps
 	       : fcode == IX86_BUILTIN_LOADHPD ? CODE_FOR_sse2_loadhpd
 	       : CODE_FOR_sse2_loadlpd);
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
       tmode = insn_data[icode].operand[0].mode;
@@ -17747,8 +17745,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case IX86_BUILTIN_STORELPS:
       icode = (fcode == IX86_BUILTIN_STOREHPS ? CODE_FOR_sse_storehps
 	       : CODE_FOR_sse_storelps);
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
       mode0 = insn_data[icode].operand[0].mode;
@@ -17764,12 +17762,12 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       return const0_rtx;
 
     case IX86_BUILTIN_MOVNTPS:
-      return ix86_expand_store_builtin (CODE_FOR_sse_movntv4sf, arglist);
+      return ix86_expand_store_builtin (CODE_FOR_sse_movntv4sf, exp);
     case IX86_BUILTIN_MOVNTQ:
-      return ix86_expand_store_builtin (CODE_FOR_sse_movntdi, arglist);
+      return ix86_expand_store_builtin (CODE_FOR_sse_movntdi, exp);
 
     case IX86_BUILTIN_LDMXCSR:
-      op0 = expand_normal (TREE_VALUE (arglist));
+      op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
       target = assign_386_stack_local (SImode, SLOT_TEMP);
       emit_move_insn (target, op0);
       emit_insn (gen_sse_ldmxcsr (target));
@@ -17785,9 +17783,9 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       icode = (fcode == IX86_BUILTIN_SHUFPS
 	       ? CODE_FOR_sse_shufps
 	       : CODE_FOR_sse2_shufpd);
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      arg2 = CALL_EXPR_ARG (exp, 2);
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
       op2 = expand_normal (arg2);
@@ -17825,8 +17823,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	       : fcode == IX86_BUILTIN_PSHUFLW ? CODE_FOR_sse2_pshuflw
 	       : fcode == IX86_BUILTIN_PSHUFD ? CODE_FOR_sse2_pshufd
 	       : CODE_FOR_mmx_pshufw);
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
       tmode = insn_data[icode].operand[0].mode;
@@ -17855,8 +17853,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case IX86_BUILTIN_PSRLDQI128:
       icode = (  fcode == IX86_BUILTIN_PSLLDQI128 ? CODE_FOR_sse2_ashlti3
 	       : CODE_FOR_sse2_lshrti3);
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
       tmode = insn_data[icode].operand[0].mode;
@@ -17885,86 +17883,86 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       return NULL_RTX;
 
     case IX86_BUILTIN_PAVGUSB:
-      return ix86_expand_binop_builtin (CODE_FOR_mmx_uavgv8qi3, arglist, target);
+      return ix86_expand_binop_builtin (CODE_FOR_mmx_uavgv8qi3, exp, target);
 
     case IX86_BUILTIN_PF2ID:
-      return ix86_expand_unop_builtin (CODE_FOR_mmx_pf2id, arglist, target, 0);
+      return ix86_expand_unop_builtin (CODE_FOR_mmx_pf2id, exp, target, 0);
 
     case IX86_BUILTIN_PFACC:
-      return ix86_expand_binop_builtin (CODE_FOR_mmx_haddv2sf3, arglist, target);
+      return ix86_expand_binop_builtin (CODE_FOR_mmx_haddv2sf3, exp, target);
 
     case IX86_BUILTIN_PFADD:
-     return ix86_expand_binop_builtin (CODE_FOR_mmx_addv2sf3, arglist, target);
+     return ix86_expand_binop_builtin (CODE_FOR_mmx_addv2sf3, exp, target);
 
     case IX86_BUILTIN_PFCMPEQ:
-      return ix86_expand_binop_builtin (CODE_FOR_mmx_eqv2sf3, arglist, target);
+      return ix86_expand_binop_builtin (CODE_FOR_mmx_eqv2sf3, exp, target);
 
     case IX86_BUILTIN_PFCMPGE:
-      return ix86_expand_binop_builtin (CODE_FOR_mmx_gev2sf3, arglist, target);
+      return ix86_expand_binop_builtin (CODE_FOR_mmx_gev2sf3, exp, target);
 
     case IX86_BUILTIN_PFCMPGT:
-      return ix86_expand_binop_builtin (CODE_FOR_mmx_gtv2sf3, arglist, target);
+      return ix86_expand_binop_builtin (CODE_FOR_mmx_gtv2sf3, exp, target);
 
     case IX86_BUILTIN_PFMAX:
-      return ix86_expand_binop_builtin (CODE_FOR_mmx_smaxv2sf3, arglist, target);
+      return ix86_expand_binop_builtin (CODE_FOR_mmx_smaxv2sf3, exp, target);
 
     case IX86_BUILTIN_PFMIN:
-      return ix86_expand_binop_builtin (CODE_FOR_mmx_sminv2sf3, arglist, target);
+      return ix86_expand_binop_builtin (CODE_FOR_mmx_sminv2sf3, exp, target);
 
     case IX86_BUILTIN_PFMUL:
-      return ix86_expand_binop_builtin (CODE_FOR_mmx_mulv2sf3, arglist, target);
+      return ix86_expand_binop_builtin (CODE_FOR_mmx_mulv2sf3, exp, target);
 
     case IX86_BUILTIN_PFRCP:
-      return ix86_expand_unop_builtin (CODE_FOR_mmx_rcpv2sf2, arglist, target, 0);
+      return ix86_expand_unop_builtin (CODE_FOR_mmx_rcpv2sf2, exp, target, 0);
 
     case IX86_BUILTIN_PFRCPIT1:
-      return ix86_expand_binop_builtin (CODE_FOR_mmx_rcpit1v2sf3, arglist, target);
+      return ix86_expand_binop_builtin (CODE_FOR_mmx_rcpit1v2sf3, exp, target);
 
     case IX86_BUILTIN_PFRCPIT2:
-      return ix86_expand_binop_builtin (CODE_FOR_mmx_rcpit2v2sf3, arglist, target);
+      return ix86_expand_binop_builtin (CODE_FOR_mmx_rcpit2v2sf3, exp, target);
 
     case IX86_BUILTIN_PFRSQIT1:
-      return ix86_expand_binop_builtin (CODE_FOR_mmx_rsqit1v2sf3, arglist, target);
+      return ix86_expand_binop_builtin (CODE_FOR_mmx_rsqit1v2sf3, exp, target);
 
     case IX86_BUILTIN_PFRSQRT:
-      return ix86_expand_unop_builtin (CODE_FOR_mmx_rsqrtv2sf2, arglist, target, 0);
+      return ix86_expand_unop_builtin (CODE_FOR_mmx_rsqrtv2sf2, exp, target, 0);
 
     case IX86_BUILTIN_PFSUB:
-      return ix86_expand_binop_builtin (CODE_FOR_mmx_subv2sf3, arglist, target);
+      return ix86_expand_binop_builtin (CODE_FOR_mmx_subv2sf3, exp, target);
 
     case IX86_BUILTIN_PFSUBR:
-      return ix86_expand_binop_builtin (CODE_FOR_mmx_subrv2sf3, arglist, target);
+      return ix86_expand_binop_builtin (CODE_FOR_mmx_subrv2sf3, exp, target);
 
     case IX86_BUILTIN_PI2FD:
-      return ix86_expand_unop_builtin (CODE_FOR_mmx_floatv2si2, arglist, target, 0);
+      return ix86_expand_unop_builtin (CODE_FOR_mmx_floatv2si2, exp, target, 0);
 
     case IX86_BUILTIN_PMULHRW:
-      return ix86_expand_binop_builtin (CODE_FOR_mmx_pmulhrwv4hi3, arglist, target);
+      return ix86_expand_binop_builtin (CODE_FOR_mmx_pmulhrwv4hi3, exp, target);
 
     case IX86_BUILTIN_PF2IW:
-      return ix86_expand_unop_builtin (CODE_FOR_mmx_pf2iw, arglist, target, 0);
+      return ix86_expand_unop_builtin (CODE_FOR_mmx_pf2iw, exp, target, 0);
 
     case IX86_BUILTIN_PFNACC:
-      return ix86_expand_binop_builtin (CODE_FOR_mmx_hsubv2sf3, arglist, target);
+      return ix86_expand_binop_builtin (CODE_FOR_mmx_hsubv2sf3, exp, target);
 
     case IX86_BUILTIN_PFPNACC:
-      return ix86_expand_binop_builtin (CODE_FOR_mmx_addsubv2sf3, arglist, target);
+      return ix86_expand_binop_builtin (CODE_FOR_mmx_addsubv2sf3, exp, target);
 
     case IX86_BUILTIN_PI2FW:
-      return ix86_expand_unop_builtin (CODE_FOR_mmx_pi2fw, arglist, target, 0);
+      return ix86_expand_unop_builtin (CODE_FOR_mmx_pi2fw, exp, target, 0);
 
     case IX86_BUILTIN_PSWAPDSI:
-      return ix86_expand_unop_builtin (CODE_FOR_mmx_pswapdv2si2, arglist, target, 0);
+      return ix86_expand_unop_builtin (CODE_FOR_mmx_pswapdv2si2, exp, target, 0);
 
     case IX86_BUILTIN_PSWAPDSF:
-      return ix86_expand_unop_builtin (CODE_FOR_mmx_pswapdv2sf2, arglist, target, 0);
+      return ix86_expand_unop_builtin (CODE_FOR_mmx_pswapdv2sf2, exp, target, 0);
 
     case IX86_BUILTIN_SQRTSD:
-      return ix86_expand_unop1_builtin (CODE_FOR_sse2_vmsqrtv2df2, arglist, target);
+      return ix86_expand_unop1_builtin (CODE_FOR_sse2_vmsqrtv2df2, exp, target);
     case IX86_BUILTIN_LOADUPD:
-      return ix86_expand_unop_builtin (CODE_FOR_sse2_movupd, arglist, target, 1);
+      return ix86_expand_unop_builtin (CODE_FOR_sse2_movupd, exp, target, 1);
     case IX86_BUILTIN_STOREUPD:
-      return ix86_expand_store_builtin (CODE_FOR_sse2_movupd, arglist);
+      return ix86_expand_store_builtin (CODE_FOR_sse2_movupd, exp);
 
     case IX86_BUILTIN_MFENCE:
 	emit_insn (gen_sse2_mfence ());
@@ -17974,7 +17972,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	return 0;
 
     case IX86_BUILTIN_CLFLUSH:
-	arg0 = TREE_VALUE (arglist);
+	arg0 = CALL_EXPR_ARG (exp, 0);
 	op0 = expand_normal (arg0);
 	icode = CODE_FOR_sse2_clflush;
 	if (! (*insn_data[icode].operand[0].predicate) (op0, Pmode))
@@ -17984,21 +17982,21 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	return 0;
 
     case IX86_BUILTIN_MOVNTPD:
-      return ix86_expand_store_builtin (CODE_FOR_sse2_movntv2df, arglist);
+      return ix86_expand_store_builtin (CODE_FOR_sse2_movntv2df, exp);
     case IX86_BUILTIN_MOVNTDQ:
-      return ix86_expand_store_builtin (CODE_FOR_sse2_movntv2di, arglist);
+      return ix86_expand_store_builtin (CODE_FOR_sse2_movntv2di, exp);
     case IX86_BUILTIN_MOVNTI:
-      return ix86_expand_store_builtin (CODE_FOR_sse2_movntsi, arglist);
+      return ix86_expand_store_builtin (CODE_FOR_sse2_movntsi, exp);
 
     case IX86_BUILTIN_LOADDQU:
-      return ix86_expand_unop_builtin (CODE_FOR_sse2_movdqu, arglist, target, 1);
+      return ix86_expand_unop_builtin (CODE_FOR_sse2_movdqu, exp, target, 1);
     case IX86_BUILTIN_STOREDQU:
-      return ix86_expand_store_builtin (CODE_FOR_sse2_movdqu, arglist);
+      return ix86_expand_store_builtin (CODE_FOR_sse2_movdqu, exp);
 
     case IX86_BUILTIN_MONITOR:
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      arg2 = CALL_EXPR_ARG (exp, 2);
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
       op2 = expand_normal (arg2);
@@ -18015,8 +18013,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       return 0;
 
     case IX86_BUILTIN_MWAIT:
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
       if (!REG_P (op0))
@@ -18027,7 +18025,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       return 0;
 
     case IX86_BUILTIN_LDDQU:
-      return ix86_expand_unop_builtin (CODE_FOR_sse3_lddqu, arglist,
+      return ix86_expand_unop_builtin (CODE_FOR_sse3_lddqu, exp,
 				       target, 1);
 
     case IX86_BUILTIN_PALIGNR:
@@ -18042,9 +18040,9 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	  icode = CODE_FOR_ssse3_palignrti;
 	  mode = V2DImode;
 	}
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      arg2 = CALL_EXPR_ARG (exp, 2);
       op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
       op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
       op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
@@ -18077,18 +18075,18 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       return target;
 
     case IX86_BUILTIN_MOVNTSD:
-      return ix86_expand_store_builtin (CODE_FOR_sse4a_vmmovntv2df, arglist);
+      return ix86_expand_store_builtin (CODE_FOR_sse4a_vmmovntv2df, exp);
 
     case IX86_BUILTIN_MOVNTSS:
-      return ix86_expand_store_builtin (CODE_FOR_sse4a_vmmovntv4sf, arglist);
+      return ix86_expand_store_builtin (CODE_FOR_sse4a_vmmovntv4sf, exp);
 
     case IX86_BUILTIN_INSERTQ:
     case IX86_BUILTIN_EXTRQ:
       icode = (fcode == IX86_BUILTIN_EXTRQ
                ? CODE_FOR_sse4a_extrq
                : CODE_FOR_sse4a_insertq);
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
       tmode = insn_data[icode].operand[0].mode;
@@ -18110,9 +18108,9 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
     case IX86_BUILTIN_EXTRQI:
       icode = CODE_FOR_sse4a_extrqi;
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      arg2 = CALL_EXPR_ARG (exp, 2);
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
       op2 = expand_normal (arg2);
@@ -18144,10 +18142,10 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
     case IX86_BUILTIN_INSERTQI:
       icode = CODE_FOR_sse4a_insertqi;
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-      arg3 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (arglist))));
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      arg2 = CALL_EXPR_ARG (exp, 2);
+      arg3 = CALL_EXPR_ARG (exp, 3);
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
       op2 = expand_normal (arg2);
@@ -18187,7 +18185,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case IX86_BUILTIN_VEC_INIT_V2SI:
     case IX86_BUILTIN_VEC_INIT_V4HI:
     case IX86_BUILTIN_VEC_INIT_V8QI:
-      return ix86_expand_vec_init_builtin (TREE_TYPE (exp), arglist, target);
+      return ix86_expand_vec_init_builtin (TREE_TYPE (exp), exp, target);
 
     case IX86_BUILTIN_VEC_EXT_V2DF:
     case IX86_BUILTIN_VEC_EXT_V2DI:
@@ -18196,11 +18194,11 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case IX86_BUILTIN_VEC_EXT_V8HI:
     case IX86_BUILTIN_VEC_EXT_V2SI:
     case IX86_BUILTIN_VEC_EXT_V4HI:
-      return ix86_expand_vec_ext_builtin (arglist, target);
+      return ix86_expand_vec_ext_builtin (exp, target);
 
     case IX86_BUILTIN_VEC_SET_V8HI:
     case IX86_BUILTIN_VEC_SET_V4HI:
-      return ix86_expand_vec_set_builtin (arglist);
+      return ix86_expand_vec_set_builtin (exp);
 
     default:
       break;
@@ -18214,18 +18212,18 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	    || d->icode == CODE_FOR_sse_vmmaskcmpv4sf3
 	    || d->icode == CODE_FOR_sse2_maskcmpv2df3
 	    || d->icode == CODE_FOR_sse2_vmmaskcmpv2df3)
-	  return ix86_expand_sse_compare (d, arglist, target);
+	  return ix86_expand_sse_compare (d, exp, target);
 
-	return ix86_expand_binop_builtin (d->icode, arglist, target);
+	return ix86_expand_binop_builtin (d->icode, exp, target);
       }
 
   for (i = 0, d = bdesc_1arg; i < ARRAY_SIZE (bdesc_1arg); i++, d++)
     if (d->code == fcode)
-      return ix86_expand_unop_builtin (d->icode, arglist, target, 0);
+      return ix86_expand_unop_builtin (d->icode, exp, target, 0);
 
   for (i = 0, d = bdesc_comi; i < ARRAY_SIZE (bdesc_comi); i++, d++)
     if (d->code == fcode)
-      return ix86_expand_sse_comi (d, arglist, target);
+      return ix86_expand_sse_comi (d, exp, target);
 
   gcc_unreachable ();
 }

@@ -607,8 +607,19 @@ dequeue_and_dump (dump_info_p di)
       break;
 
     case CALL_EXPR:
-      dump_child ("fn", TREE_OPERAND (t, 0));
-      dump_child ("args", TREE_OPERAND (t, 1));
+      {
+	int i = 0;
+	tree arg;
+	call_expr_arg_iterator iter;
+	dump_child ("fn", CALL_EXPR_FN (t));
+	FOR_EACH_CALL_EXPR_ARG (arg, iter, t)
+	  {
+	    char buffer[32];
+	    sprintf (buffer, "%u", i);
+	    dump_child (buffer, arg);
+	    i++;
+	  }
+      }
       break;
 
     case CONSTRUCTOR:

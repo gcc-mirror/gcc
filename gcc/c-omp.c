@@ -76,7 +76,7 @@ c_finish_omp_barrier (void)
   tree x;
 
   x = built_in_decls[BUILT_IN_GOMP_BARRIER];
-  x = build_function_call_expr (x, NULL);
+  x = build_call_expr (x, 0);
   add_stmt (x);
 }
 
@@ -150,7 +150,7 @@ c_finish_omp_flush (void)
   tree x;
 
   x = built_in_decls[BUILT_IN_SYNCHRONIZE];
-  x = build_function_call_expr (x, NULL);
+  x = build_call_expr (x, 0);
   add_stmt (x);
 }
 

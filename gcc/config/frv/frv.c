@@ -9216,8 +9216,9 @@ frv_expand_builtin (tree exp,
                     enum machine_mode mode ATTRIBUTE_UNUSED,
                     int ignore ATTRIBUTE_UNUSED)
 {
-  tree arglist = TREE_OPERAND (exp, 1);
-  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  /* FIXME:  Pass the CALL_EXPR directly instead of consing up an arglist.  */
+  tree arglist = CALL_EXPR_ARGS (exp);
+  tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   unsigned fcode = (unsigned)DECL_FUNCTION_CODE (fndecl);
   unsigned i;
   struct builtin_description *d;

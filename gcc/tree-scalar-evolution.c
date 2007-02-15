@@ -357,6 +357,8 @@ find_var_scev_info (tree var)
 bool 
 chrec_contains_symbols_defined_in_loop (tree chrec, unsigned loop_nb)
 {
+  int i, n;
+
   if (chrec == NULL_TREE)
     return false;
 
@@ -386,26 +388,12 @@ chrec_contains_symbols_defined_in_loop (tree chrec, unsigned loop_nb)
       return false;
     }
 
-  switch (TREE_CODE_LENGTH (TREE_CODE (chrec)))
-    {
-    case 3:
-      if (chrec_contains_symbols_defined_in_loop (TREE_OPERAND (chrec, 2), 
-						  loop_nb))
-	return true;
-
-    case 2:
-      if (chrec_contains_symbols_defined_in_loop (TREE_OPERAND (chrec, 1), 
-						  loop_nb))
-	return true;
-
-    case 1:
-      if (chrec_contains_symbols_defined_in_loop (TREE_OPERAND (chrec, 0), 
-						  loop_nb))
-	return true;
-
-    default:
-      return false;
-    }
+  n = TREE_OPERAND_LENGTH (chrec);
+  for (i = 0; i < n; i++)
+    if (chrec_contains_symbols_defined_in_loop (TREE_OPERAND (chrec, i), 
+						loop_nb))
+      return true;
+  return false;
 }
 
 /* Return true when PHI is a loop-phi-node.  */
@@ -2317,6 +2305,7 @@ instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache
       break;
     }
 
+  gcc_assert (!VL_EXP_CLASS_P (chrec));
   switch (TREE_CODE_LENGTH (TREE_CODE (chrec)))
     {
     case 3:

@@ -949,8 +949,7 @@ create_coverage (void)
   /* Generate a call to __gcov_init(&gcov_info).  */
   body = NULL;
   t = build_fold_addr_expr (gcov_info);
-  t = tree_cons (NULL, t, NULL);
-  t = build_function_call_expr (gcov_init, t);
+  t = build_call_expr (gcov_init, 1, t);
   append_to_statement_list (t, &body);
 
   /* Generate a constructor to run it.  */

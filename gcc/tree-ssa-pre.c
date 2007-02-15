@@ -38,6 +38,7 @@ Boston, MA 02110-1301, USA.  */
 #include "tree-iterator.h"
 #include "real.h"
 #include "alloc-pool.h"
+#include "obstack.h"
 #include "tree-pass.h"
 #include "flags.h"
 #include "bitmap.h"
@@ -387,10 +388,14 @@ static alloc_pool binary_node_pool;
 static alloc_pool unary_node_pool;
 static alloc_pool reference_node_pool;
 static alloc_pool comparison_node_pool;
-static alloc_pool expression_node_pool;
-static alloc_pool list_node_pool;
 static alloc_pool modify_expr_node_pool;
 static bitmap_obstack grand_bitmap_obstack;
+
+/* We can't use allocation pools to hold temporary CALL_EXPR objects, since
+   they are not of fixed size.  Instead, use an obstack.  */
+
+static struct obstack temp_call_expr_obstack;
+
 
 /* To avoid adding 300 temporary variables when we only need one, we
    only create one temporary variable, on demand, and build ssa names
@@ -881,32 +886,12 @@ fully_constant_expression (tree t)
   return t;
 }
 
-/* Return a copy of a chain of nodes, chained through the TREE_CHAIN field.
-   For example, this can copy a list made of TREE_LIST nodes.
-   Allocates the nodes in list_node_pool*/
+/* Make a temporary copy of a CALL_EXPR object NODE.  */
 
 static tree
-pool_copy_list (tree list)
+temp_copy_call_expr (tree node)
 {
-  tree head;
-  tree prev, next;
-
-  if (list == 0)
-    return 0;
-  head = (tree) pool_alloc (list_node_pool);
-
-  memcpy (head, list, tree_size (list));
-  prev = head;
-
-  next = TREE_CHAIN (list);
-  while (next)
-    {
-      TREE_CHAIN (prev) = (tree) pool_alloc (list_node_pool);
-      memcpy (TREE_CHAIN (prev), next, tree_size (next));
-      prev = TREE_CHAIN (prev);
-      next = TREE_CHAIN (next);
-    }
-  return head;
+  return (tree) obstack_copy (&temp_call_expr_obstack, node, tree_size (node));
 }
 
 /* Translate the vuses in the VUSES vector backwards through phi nodes
@@ -1005,60 +990,52 @@ phi_translate (tree expr, bitmap_set_t set1, bitmap_set_t set2,
   switch (TREE_CODE_CLASS (TREE_CODE (expr)))
     {
     case tcc_expression:
+      return NULL;
+
+    case tcc_vl_exp:
       {
 	if (TREE_CODE (expr) != CALL_EXPR)
 	  return NULL;
 	else
 	  {
-	    tree oldop0 = TREE_OPERAND (expr, 0);
-	    tree oldval0 = oldop0;
-	    tree oldarglist = TREE_OPERAND (expr, 1);
-	    tree oldop2 = TREE_OPERAND (expr, 2);
-	    tree oldval2 = oldop2;
-	    tree newop0;
-	    tree newarglist;
-	    tree newop2 = NULL;
-	    tree oldwalker;
-	    tree newwalker;
-	    tree newexpr;
+	    tree oldfn = CALL_EXPR_FN (expr);
+	    tree oldsc = CALL_EXPR_STATIC_CHAIN (expr);
+	    tree newfn, newsc = NULL;
+	    tree newexpr = NULL_TREE;
 	    tree vh = get_value_handle (expr);
-	    bool listchanged = false;
 	    bool invariantarg = false;
+	    int i, nargs;
 	    VEC (tree, gc) *vuses = VALUE_HANDLE_VUSES (vh);
 	    VEC (tree, gc) *tvuses;
 
-	    /* Call expressions are kind of weird because they have an
-	       argument list.  We don't want to value number the list
-	       as one value number, because that doesn't make much
-	       sense, and just breaks the support functions we call,
-	       which expect TREE_OPERAND (call_expr, 2) to be a
-	       TREE_LIST. */
-	    oldval0 = find_leader_in_sets (oldop0, set1, set2);
-	    newop0 = phi_translate (oldval0, set1, set2, pred, phiblock);
-	    if (newop0 == NULL)
+	    newfn = phi_translate (find_leader_in_sets (oldfn, set1, set2),
+				   set1, set2, pred, phiblock);
+	    if (newfn == NULL)
 	      return NULL;
-	    if (oldop2)
+	    if (newfn != oldfn)
 	      {
-		oldop2 = find_leader_in_sets (oldop2, set1, set2);
-		newop2 = phi_translate (oldop2, set1, set2, pred, phiblock);
-		if (newop2 == NULL)
+		newexpr = temp_copy_call_expr (expr);
+		CALL_EXPR_FN (newexpr) = get_value_handle (newfn);
+	      }
+	    if (oldsc)
+	      {
+		newsc = phi_translate (find_leader_in_sets (oldsc, set1, set2),
+				       set1, set2, pred, phiblock);
+		if (newsc == NULL)
 		  return NULL;
+		if (newsc != oldsc)
+		  {
+		    if (!newexpr)
+		      newexpr = temp_copy_call_expr (expr);
+		    CALL_EXPR_STATIC_CHAIN (newexpr) = get_value_handle (newsc);
+		  }
 	      }
 
-	    /* phi translate the argument list piece by piece.
-
-	      We could actually build the list piece by piece here,
-	      but it's likely to not be worth the memory we will save,
-	      unless you have millions of call arguments.  */
-
-	    newarglist = pool_copy_list (oldarglist);
-	    for (oldwalker = oldarglist, newwalker = newarglist;
-		 oldwalker && newwalker;
-		 oldwalker = TREE_CHAIN (oldwalker),
-		   newwalker = TREE_CHAIN (newwalker))
+	    /* phi translate the argument list piece by piece.  */
+	    nargs = call_expr_nargs (expr);
+	    for (i = 0; i < nargs; i++)
 	      {
-
-		tree oldval = TREE_VALUE (oldwalker);
+		tree oldval = CALL_EXPR_ARG (expr, i);
 		tree newval;
 		if (oldval)
 		  {
@@ -1081,40 +1058,36 @@ phi_translate (tree expr, bitmap_set_t set1, bitmap_set_t set2,
 		      return NULL;
 		    if (newval != oldval)
 		      {
-			listchanged = true;
 			invariantarg |= is_gimple_min_invariant (newval);
-			TREE_VALUE (newwalker) = get_value_handle (newval);
+			if (!newexpr)
+			  newexpr = temp_copy_call_expr (expr);
+			CALL_EXPR_ARG (newexpr, i) = get_value_handle (newval);
 		      }
 		  }
 	      }
 
 	    /* In case of new invariant args we might try to fold the call
 	       again.  */
-	    if (invariantarg)
+	    if (invariantarg && !newsc)
 	      {
-		tree tmp = fold_ternary (CALL_EXPR, TREE_TYPE (expr),
-					 newop0, newarglist, newop2);
-		if (tmp)
+		tree tmp1 = build_call_array (TREE_TYPE (expr),
+					      newfn, call_expr_nargs (newexpr),
+					      CALL_EXPR_ARGP (newexpr));
+		tree tmp2 = fold (tmp1);
+		if (tmp2 != tmp1)
 		  {
-		    STRIP_TYPE_NOPS (tmp);
-		    if (is_gimple_min_invariant (tmp))
-		      return tmp;
+		    STRIP_TYPE_NOPS (tmp2);
+		    if (is_gimple_min_invariant (tmp2))
+		      return tmp2;
 		  }
 	      }
 
-	    if (listchanged)
-	      vn_lookup_or_add (newarglist, NULL);
-
 	    tvuses = translate_vuses_through_block (vuses, phiblock, pred);
+	    if (vuses != tvuses && ! newexpr)
+ 	      newexpr = temp_copy_call_expr (expr);
 
-	    if (listchanged || (newop0 != oldop0) || (oldop2 != newop2)
-		|| vuses != tvuses)
+ 	    if (newexpr)
 	      {
-		newexpr = (tree) pool_alloc (expression_node_pool);
-		memcpy (newexpr, expr, tree_size (expr));
-		TREE_OPERAND (newexpr, 0) = newop0 == oldop0 ? oldval0 : get_value_handle (newop0);
-		TREE_OPERAND (newexpr, 1) = listchanged ? newarglist : oldarglist;
-		TREE_OPERAND (newexpr, 2) = newop2 == oldop2 ? oldval2 : get_value_handle (newop2);
 		newexpr->base.ann = NULL;
 		vn_lookup_or_add_with_vuses (newexpr, tvuses);
 		expr = newexpr;
@@ -1498,22 +1471,25 @@ valid_in_sets (bitmap_set_t set1, bitmap_set_t set2, tree expr,
       }
 
     case tcc_expression:
+      return false;
+
+    case tcc_vl_exp:
       {
 	if (TREE_CODE (expr) == CALL_EXPR)
 	  {
-	    tree op0 = TREE_OPERAND (expr, 0);
-	    tree arglist = TREE_OPERAND (expr, 1);
-	    tree op2 = TREE_OPERAND (expr, 2);
+	    tree fn = CALL_EXPR_FN (expr);
+	    tree sc = CALL_EXPR_STATIC_CHAIN (expr);
+	    tree arg;
+	    call_expr_arg_iterator iter;
 
-	    /* Check the non-list operands first.  */
-	    if (!union_contains_value (set1, set2, op0)
-		|| (op2 && !union_contains_value (set1, set2, op2)))
+	    /* Check the non-argument operands first.  */
+	    if (!union_contains_value (set1, set2, fn)
+		|| (sc && !union_contains_value (set1, set2, sc)))
 	      return false;
 
 	    /* Now check the operands.  */
-	    for (; arglist; arglist = TREE_CHAIN (arglist))
+	    FOR_EACH_CALL_EXPR_ARG (arg, iter, expr)
 	      {
-		tree arg = TREE_VALUE (arglist);
 		if (!union_contains_value (set1, set2, arg))
 		  return false;
 	      }
@@ -2512,39 +2488,35 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
 
   switch (TREE_CODE_CLASS (TREE_CODE (expr)))
     {
-    case tcc_expression:
+    case tcc_vl_exp:
       {
-	tree op0, op2;
-	tree arglist;
-	tree genop0, genop2;
-	tree genarglist;
-	tree walker, genwalker;
+	tree fn, sc;
+	tree genfn;
+	int i, nargs;
+	tree *buffer;
 
 	gcc_assert (TREE_CODE (expr) == CALL_EXPR);
-	genop2 = NULL;
 
-	op0 = TREE_OPERAND (expr, 0);
-	arglist = TREE_OPERAND (expr, 1);
-	op2 = TREE_OPERAND (expr, 2);
+	fn = CALL_EXPR_FN (expr);
+	sc = CALL_EXPR_STATIC_CHAIN (expr);
 
-	genop0 = find_or_generate_expression (block, op0, stmts);
-	genarglist = copy_list (arglist);
-	for (walker = arglist, genwalker = genarglist;
-	     genwalker && walker;
-	     genwalker = TREE_CHAIN (genwalker), walker = TREE_CHAIN (walker))
+	genfn = find_or_generate_expression (block, fn, stmts);
+
+	nargs = call_expr_nargs (expr);
+	buffer = alloca (nargs * sizeof (tree));
+
+	for (i = 0; i < nargs; i++)
 	  {
-	    TREE_VALUE (genwalker)
-	      = find_or_generate_expression (block, TREE_VALUE (walker),
-					     stmts);
+	    tree arg = CALL_EXPR_ARG (expr, i);
+	    buffer[i] = find_or_generate_expression (block, arg, stmts);
 	  }
 
-	if (op2)
-	  genop2 = find_or_generate_expression (block, op2, stmts);
-	folded = fold_build3 (TREE_CODE (expr), TREE_TYPE (expr),
-			      genop0, genarglist, genop2);
+	folded = build_call_array (TREE_TYPE (expr), genfn, nargs, buffer);
+	if (sc)
+	  CALL_EXPR_STATIC_CHAIN (folded) =
+	    find_or_generate_expression (block, sc, stmts);
+	folded = fold (folded);
 	break;
-
-
       }
       break;
     case tcc_reference:
@@ -3236,6 +3208,7 @@ create_value_expr_from (tree expr, basic_block block, tree stmt)
 	      || TREE_CODE_CLASS (code) == tcc_comparison
 	      || TREE_CODE_CLASS (code) == tcc_reference
 	      || TREE_CODE_CLASS (code) == tcc_expression
+	      || TREE_CODE_CLASS (code) == tcc_vl_exp
 	      || TREE_CODE_CLASS (code) == tcc_exceptional
 	      || TREE_CODE_CLASS (code) == tcc_declaration);
 
@@ -3247,64 +3220,18 @@ create_value_expr_from (tree expr, basic_block block, tree stmt)
     pool = binary_node_pool;
   else if (TREE_CODE_CLASS (code) == tcc_comparison)
     pool = comparison_node_pool;
-  else if (TREE_CODE_CLASS (code) == tcc_exceptional)
-    {
-      gcc_assert (code == TREE_LIST);
-      pool = list_node_pool;
-    }
+  else
+    gcc_assert (code == CALL_EXPR);
+
+  if (code == CALL_EXPR)
+    vexpr = temp_copy_call_expr (expr);
   else
     {
-      gcc_assert (code == CALL_EXPR);
-      pool = expression_node_pool;
+      vexpr = (tree) pool_alloc (pool);
+      memcpy (vexpr, expr, tree_size (expr));
     }
 
-  vexpr = (tree) pool_alloc (pool);
-  memcpy (vexpr, expr, tree_size (expr));
-
-  /* This case is only for TREE_LIST's that appear as part of
-     CALL_EXPR's.  Anything else is a bug, but we can't easily verify
-     this, hence this comment.  TREE_LIST is not handled by the
-     general case below because they don't have a fixed length, or
-     operands, so you can't access purpose/value/chain through
-     TREE_OPERAND macros.  */
-
-  if (code == TREE_LIST)
-    {
-      tree op = NULL_TREE;
-      tree temp = NULL_TREE;
-      if (TREE_CHAIN (vexpr))
-	temp = create_value_expr_from (TREE_CHAIN (vexpr), block, stmt);
-      TREE_CHAIN (vexpr) = temp ? temp : TREE_CHAIN (vexpr);
-
-
-      /* Recursively value-numberize reference ops.  */
-      if (REFERENCE_CLASS_P (TREE_VALUE (vexpr)))
-	{
-	  tree tempop;
-	  op = TREE_VALUE (vexpr);
-	  tempop = create_value_expr_from (op, block, stmt);
-	  op = tempop ? tempop : op;
-
-	  TREE_VALUE (vexpr)  = vn_lookup_or_add (op, stmt);
-	}
-      else
-	{
-	  op = TREE_VALUE (vexpr);
-	  TREE_VALUE (vexpr) = vn_lookup_or_add (TREE_VALUE (vexpr), NULL);
-	}
-      /* This is the equivalent of inserting op into EXP_GEN like we
-	 do below */
-      if (!is_undefined_value (op))
-	bitmap_value_insert_into_set (EXP_GEN (block), op);
-
-      efi = find_existing_value_expr (vexpr, stmt);
-      if (efi)
-	return efi;
-      get_or_alloc_expression_id (vexpr);
-      return vexpr;
-    }
-
-  for (i = 0; i < TREE_CODE_LENGTH (code); i++)
+  for (i = 0; i < TREE_OPERAND_LENGTH (expr); i++)
     {
       tree val, op;
 
@@ -3318,20 +3245,6 @@ create_value_expr_from (tree expr, basic_block block, tree stmt)
 	  tree tempop = create_value_expr_from (op, block, stmt);
 	  op = tempop ? tempop : op;
 	  val = vn_lookup_or_add (op, stmt);
-	}
-      else if (TREE_CODE (op) == TREE_LIST)
-	{
-	  tree tempop;
-
-	  gcc_assert (TREE_CODE (expr) == CALL_EXPR);
-	  tempop = create_value_expr_from (op, block, stmt);
-
-	  op = tempop ? tempop : op;
-	  vn_lookup_or_add (op, NULL);
-	  /* Unlike everywhere else, we do *not* want to replace the
-	     TREE_LIST itself with a value number, because support
-	     functions we call will blow up.  */
-	  val = op;
 	}
       else
 	/* Create a value handle for OP and add it to VEXPR.  */
@@ -4100,15 +4013,12 @@ init_pre (bool do_fre)
 				       tree_code_size (NEGATE_EXPR), 30);
   reference_node_pool = create_alloc_pool ("Reference tree nodes",
 					   tree_code_size (ARRAY_REF), 30);
-  expression_node_pool = create_alloc_pool ("Expression tree nodes",
-					    tree_code_size (CALL_EXPR), 30);
-  list_node_pool = create_alloc_pool ("List tree nodes",
-				      tree_code_size (TREE_LIST), 30);
   comparison_node_pool = create_alloc_pool ("Comparison tree nodes",
 					    tree_code_size (EQ_EXPR), 30);
   modify_expr_node_pool = create_alloc_pool ("GIMPLE_MODIFY_STMT nodes",
 					     tree_code_size (GIMPLE_MODIFY_STMT),
-					     30);
+  					     30);
+  obstack_init (&temp_call_expr_obstack);
   modify_expr_template = NULL;
 
   FOR_ALL_BB (bb)
@@ -4140,8 +4050,6 @@ fini_pre (bool do_fre)
   free_alloc_pool (binary_node_pool);
   free_alloc_pool (reference_node_pool);
   free_alloc_pool (unary_node_pool);
-  free_alloc_pool (list_node_pool);
-  free_alloc_pool (expression_node_pool);
   free_alloc_pool (comparison_node_pool);
   free_alloc_pool (modify_expr_node_pool);
   htab_delete (phi_translate_table);

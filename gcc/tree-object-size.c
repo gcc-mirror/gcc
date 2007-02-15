@@ -228,49 +228,41 @@ addr_object_size (tree ptr, int object_size_type)
 static unsigned HOST_WIDE_INT
 alloc_object_size (tree call, int object_size_type)
 {
-  tree callee, arglist, a, bytes = NULL_TREE;
-  unsigned int arg_mask = 0;
+  tree callee, bytes = NULL_TREE;
 
   gcc_assert (TREE_CODE (call) == CALL_EXPR);
 
   callee = get_callee_fndecl (call);
-  arglist = TREE_OPERAND (call, 1);
   if (callee
       && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
     switch (DECL_FUNCTION_CODE (callee))
       {
       case BUILT_IN_MALLOC:
       case BUILT_IN_ALLOCA:
-	arg_mask = 1;
+	if (call_expr_nargs (call) == 1
+	    && TREE_CODE (CALL_EXPR_ARG (call, 0)) == INTEGER_CST)
+	  bytes = fold_convert (sizetype, CALL_EXPR_ARG (call, 0));
 	break;
       /*
       case BUILT_IN_REALLOC:
-	arg_mask = 2;
+	if (call_expr_nargs (call) == 2
+	    && TREE_CODE (CALL_EXPR_ARG (call, 1)) == INTEGER_CST)
+	  bytes = fold_convert (sizetype, CALL_EXPR_ARG (call, 1));
 	break;
 	*/
       case BUILT_IN_CALLOC:
-	arg_mask = 3;
+	if (call_expr_nargs (call) == 2
+	    && TREE_CODE (CALL_EXPR_ARG (call, 0)) == INTEGER_CST
+	    && TREE_CODE (CALL_EXPR_ARG (call, 1)) == INTEGER_CST)
+	  bytes = size_binop (MULT_EXPR,
+			      fold_convert (sizetype, CALL_EXPR_ARG (call, 0)),
+			      fold_convert (sizetype, CALL_EXPR_ARG (call, 1)));
 	break;
       default:
 	break;
       }
 
-  for (a = arglist; arg_mask && a; arg_mask >>= 1, a = TREE_CHAIN (a))
-    if (arg_mask & 1)
-      {
-	tree arg = TREE_VALUE (a);
-
-	if (TREE_CODE (arg) != INTEGER_CST)
-	  break;
-
-	if (! bytes)
-	  bytes = fold_convert (sizetype, arg);
-	else
-	  bytes = size_binop (MULT_EXPR, bytes,
-			      fold_convert (sizetype, arg));
-      }
-
-  if (! arg_mask && bytes && host_integerp (bytes, 1))
+  if (bytes && host_integerp (bytes, 1))
     return tree_low_cst (bytes, 1);
 
   return unknown[object_size_type];
@@ -285,7 +277,6 @@ static tree
 pass_through_call (tree call)
 {
   tree callee = get_callee_fndecl (call);
-  tree arglist = TREE_OPERAND (call, 1);
 
   if (callee
       && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
@@ -305,8 +296,8 @@ pass_through_call (tree call)
       case BUILT_IN_STRNCPY_CHK:
       case BUILT_IN_STRCAT_CHK:
       case BUILT_IN_STRNCAT_CHK:
-	if (arglist)
-	  return TREE_VALUE (arglist);
+	if (call_expr_nargs (call) >= 1)
+	  return CALL_EXPR_ARG (call, 0);
 	break;
       default:
 	break;
@@ -1043,17 +1034,13 @@ compute_object_sizes (void)
 	    continue;
 
 	  init_object_sizes ();
-	  result = fold_builtin (callee, TREE_OPERAND (call, 1), false);
+	  result = fold_call_expr (call, false);
 	  if (!result)
 	    {
-	      tree arglist = TREE_OPERAND (call, 1);
-
-	      if (arglist != NULL
-		  && POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (arglist)))
-		  && TREE_CHAIN (arglist) != NULL
-		  && TREE_CHAIN (TREE_CHAIN (arglist)) == NULL)
+	      if (call_expr_nargs (call) == 2
+		  && POINTER_TYPE_P (TREE_TYPE (CALL_EXPR_ARG (call, 0))))
 		{
-		  tree ost = TREE_VALUE (TREE_CHAIN (arglist));
+		  tree ost = CALL_EXPR_ARG (call, 1);
 
 		  if (host_integerp (ost, 1))
 		    {

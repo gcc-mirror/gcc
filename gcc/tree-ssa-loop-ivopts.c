@@ -1272,7 +1272,7 @@ expr_invariant_in_loop_p (struct loop *loop, tree expr)
   if (!EXPR_P (expr) && !GIMPLE_STMT_P (expr))
     return false;
 
-  len = TREE_CODE_LENGTH (TREE_CODE (expr));
+  len = TREE_OPERAND_LENGTH (expr);
   for (i = 0; i < len; i++)
     if (!expr_invariant_in_loop_p (loop, TREE_OPERAND (expr, i)))
       return false;

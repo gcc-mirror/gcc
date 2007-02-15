@@ -1073,7 +1073,7 @@ tree_ic (tree stmt, tree call, struct cgraph_node* direct_call,
   tmpv = create_tmp_var (optype, "PROF");
   tmp1 = create_tmp_var (optype, "PROF");
   stmt1 = build2 (GIMPLE_MODIFY_STMT, optype, tmpv, 
-		  unshare_expr (TREE_OPERAND (call, 0)));
+		  unshare_expr (CALL_EXPR_FN (call)));
   stmt2 = build2 (GIMPLE_MODIFY_STMT, optype, tmp1, 
 		  fold_convert (optype, build_addr (direct_call->decl, 
 						    current_function_decl)));
@@ -1089,8 +1089,8 @@ tree_ic (tree stmt, tree call, struct cgraph_node* direct_call,
   label1 = build1 (LABEL_EXPR, void_type_node, label_decl1);
   stmt1 = unshare_expr (stmt);
   new_call = get_call_expr_in (stmt1);
-  TREE_OPERAND (new_call, 0) = build_addr (direct_call->decl, 
-					   current_function_decl);
+  CALL_EXPR_FN (new_call) = build_addr (direct_call->decl, 
+					current_function_decl);
   bsi_insert_before (&bsi, label1, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   bb2end = stmt1;
@@ -1165,7 +1165,7 @@ tree_ic_transform (tree stmt)
   if (!call || TREE_CODE (call) != CALL_EXPR)
     return false;
 
-  callee = TREE_OPERAND (call, 0);
+  callee = CALL_EXPR_FN (call);
 
   if (TREE_CODE (callee) == ADDR_EXPR)
     return false;
@@ -1205,9 +1205,9 @@ tree_ic_transform (tree stmt)
   return true;
 }
 
-/* Return true if the stringop FNDECL with ARGLIST shall be profiled.  */
+/* Return true if the stringop CALL with FNDECL shall be profiled.  */
 static bool
-interesting_stringop_to_profile_p (tree fndecl, tree arglist)
+interesting_stringop_to_profile_p (tree fndecl, tree call)
 {
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
 
@@ -1219,18 +1219,18 @@ interesting_stringop_to_profile_p (tree fndecl, tree arglist)
     {
      case BUILT_IN_MEMCPY:
      case BUILT_IN_MEMPCPY:
-	return validate_arglist (arglist,
-				 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE,
-				 VOID_TYPE);
+       return validate_arglist (call,
+				POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE,
+				VOID_TYPE);
      case BUILT_IN_MEMSET:
-	return validate_arglist (arglist,
-				 POINTER_TYPE, INTEGER_TYPE, INTEGER_TYPE,
-				 VOID_TYPE);
+       return validate_arglist (call,
+				POINTER_TYPE, INTEGER_TYPE, INTEGER_TYPE,
+				VOID_TYPE);
      case BUILT_IN_BZERO:
-        return validate_arglist (arglist, POINTER_TYPE, INTEGER_TYPE,
-				 VOID_TYPE);
+       return validate_arglist (call, POINTER_TYPE, INTEGER_TYPE,
+				VOID_TYPE);
      default:
-	gcc_unreachable ();
+       gcc_unreachable ();
     }
 }
 
@@ -1256,8 +1256,7 @@ tree_stringop_fixed_value (tree stmt, tree value, int prob, gcov_type count,
   edge e12, e13, e23, e24, e34;
   block_stmt_iterator bsi;
   tree call = get_call_expr_in (stmt);
-  tree arglist = TREE_OPERAND (call, 1);
-  tree blck_size = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+  tree blck_size = CALL_EXPR_ARG (call, 2);
   tree optype = TREE_TYPE (blck_size);
   int region;
 
@@ -1295,8 +1294,7 @@ tree_stringop_fixed_value (tree stmt, tree value, int prob, gcov_type count,
   label1 = build1 (LABEL_EXPR, void_type_node, label_decl1);
   stmt1 = unshare_expr (stmt);
   call = get_call_expr_in (stmt1);
-  arglist = TREE_OPERAND (call, 1);
-  TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist))) = value;
+  CALL_EXPR_ARG (call, 2) = value;
   bsi_insert_before (&bsi, label1, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   region = lookup_stmt_eh_region (stmt);
@@ -1342,7 +1340,6 @@ tree_stringops_transform (block_stmt_iterator *bsi)
   tree stmt = bsi_stmt (*bsi);
   tree call = get_call_expr_in (stmt);
   tree fndecl;
-  tree arglist;
   tree blck_size;
   enum built_in_function fcode;
   histogram_value histogram;
@@ -1359,14 +1356,13 @@ tree_stringops_transform (block_stmt_iterator *bsi)
   if (!fndecl)
     return false;
   fcode = DECL_FUNCTION_CODE (fndecl);
-  arglist = TREE_OPERAND (call, 1);
-  if (!interesting_stringop_to_profile_p (fndecl, arglist))
+  if (!interesting_stringop_to_profile_p (fndecl, call))
     return false;
 
   if (fcode == BUILT_IN_BZERO)
-    blck_size = TREE_VALUE (TREE_CHAIN (arglist));
+    blck_size = CALL_EXPR_ARG (call, 1);
   else
-    blck_size = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+    blck_size = CALL_EXPR_ARG (call, 2);
   if (TREE_CODE (blck_size) == INTEGER_CST)
     return false;
 
@@ -1386,20 +1382,20 @@ tree_stringops_transform (block_stmt_iterator *bsi)
   if (check_counter (stmt, "value", all, bb_for_stmt (stmt)->count))
     return false;
   prob = (count * REG_BR_PROB_BASE + all / 2) / all;
-  dest = TREE_VALUE (arglist);
+  dest = CALL_EXPR_ARG (call, 0);
   dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
   switch (fcode)
     {
     case BUILT_IN_MEMCPY:
     case BUILT_IN_MEMPCPY:
-      src = TREE_VALUE (TREE_CHAIN (arglist));
+      src = CALL_EXPR_ARG (call, 1);
       src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
       if (!can_move_by_pieces (val, MIN (dest_align, src_align)))
 	return false;
       break;
     case BUILT_IN_MEMSET:
       if (!can_store_by_pieces (val, builtin_memset_read_str,
-				TREE_VALUE (TREE_CHAIN (arglist)),
+				CALL_EXPR_ARG (call, 1),
 				dest_align))
 	return false;
       break;
@@ -1561,7 +1557,7 @@ tree_indirect_call_to_profile (tree stmt, histogram_values *values)
   if (!call || TREE_CODE (call) != CALL_EXPR)
     return;
 
-  callee = TREE_OPERAND (call, 0);
+  callee = CALL_EXPR_FN (call);
   
   if (TREE_CODE (callee) == ADDR_EXPR)
     return;
@@ -1582,7 +1578,6 @@ tree_stringops_values_to_profile (tree stmt, histogram_values *values)
 {
   tree call = get_call_expr_in (stmt);
   tree fndecl;
-  tree arglist;
   tree blck_size;
   tree dest;
   enum built_in_function fcode;
@@ -1593,16 +1588,15 @@ tree_stringops_values_to_profile (tree stmt, histogram_values *values)
   if (!fndecl)
     return;
   fcode = DECL_FUNCTION_CODE (fndecl);
-  arglist = TREE_OPERAND (call, 1);
 
-  if (!interesting_stringop_to_profile_p (fndecl, arglist))
+  if (!interesting_stringop_to_profile_p (fndecl, call))
     return;
 
-  dest = TREE_VALUE (arglist);
+  dest = CALL_EXPR_ARG (call, 0);
   if (fcode == BUILT_IN_BZERO)
-    blck_size = TREE_VALUE (TREE_CHAIN (arglist));
+    blck_size = CALL_EXPR_ARG (call, 1);
   else
-    blck_size = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+    blck_size = CALL_EXPR_ARG (call, 2);
 
   if (TREE_CODE (blck_size) != INTEGER_CST)
     {

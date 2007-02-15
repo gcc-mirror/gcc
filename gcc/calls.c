@@ -553,11 +553,10 @@ bool
 alloca_call_p (tree exp)
 {
   if (TREE_CODE (exp) == CALL_EXPR
-      && TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
-      && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
-	  == FUNCTION_DECL)
-      && (special_function_p (TREE_OPERAND (TREE_OPERAND (exp, 0), 0),
-			      0) & ECF_MAY_BE_ALLOCA))
+      && TREE_CODE (CALL_EXPR_FN (exp)) == ADDR_EXPR
+      && (TREE_CODE (TREE_OPERAND (CALL_EXPR_FN (exp), 0)) == FUNCTION_DECL)
+      && (special_function_p (TREE_OPERAND (CALL_EXPR_FN (exp), 0), 0)
+	  & ECF_MAY_BE_ALLOCA))
     return true;
   return false;
 }
@@ -626,7 +625,7 @@ call_expr_flags (tree t)
     flags = flags_from_decl_or_type (decl);
   else
     {
-      t = TREE_TYPE (TREE_OPERAND (t, 0));
+      t = TREE_TYPE (CALL_EXPR_FN (t));
       if (t && TREE_CODE (t) == POINTER_TYPE)
 	flags = flags_from_decl_or_type (TREE_TYPE (t));
       else
@@ -1280,7 +1279,8 @@ precompute_arguments (int flags, int num_actuals, struct arg_data *args)
    compute and return the final value for MUST_PREALLOCATE.  */
 
 static int
-finalize_must_preallocate (int must_preallocate, int num_actuals, struct arg_data *args, struct args_size *args_size)
+finalize_must_preallocate (int must_preallocate, int num_actuals, 
+			   struct arg_data *args, struct args_size *args_size)
 {
   /* See if we have or want to preallocate stack space.
 
@@ -1809,7 +1809,7 @@ shift_return_value (enum machine_mode mode, bool left_p, rtx value)
   return true;
 }
 
-/* Generate all the code for a function call
+/* Generate all the code for a CALL_EXPR exp
    and return an rtx for its value.
    Store the value in TARGET (specified as an rtx) if convenient.
    If the value is stored in TARGET then TARGET is returned.
@@ -1822,7 +1822,8 @@ expand_call (tree exp, rtx target, int ignore)
   static int currently_expanding_call = 0;
 
   /* List of actual parameters.  */
-  tree actparms = TREE_OPERAND (exp, 1);
+  /* FIXME: rewrite this so that it doesn't cons up a TREE_LIST.  */
+  tree actparms = CALL_EXPR_ARGS (exp);
   /* RTX for the function to be called.  */
   rtx funexp;
   /* Sequence of insns to perform a normal "call".  */
@@ -1923,8 +1924,8 @@ expand_call (tree exp, rtx target, int ignore)
   int old_stack_pointer_delta = 0;
 
   rtx call_fusage;
-  tree p = TREE_OPERAND (exp, 0);
-  tree addr = TREE_OPERAND (exp, 0);
+  tree p = CALL_EXPR_FN (exp);
+  tree addr = CALL_EXPR_FN (exp);
   int i;
   /* The alignment of the stack, in bits.  */
   unsigned HOST_WIDE_INT preferred_stack_boundary;
@@ -2585,8 +2586,8 @@ expand_call (tree exp, rtx target, int ignore)
 	 once we have started filling any specific hard regs.  */
       precompute_register_parameters (num_actuals, args, &reg_parm_seen);
 
-      if (TREE_OPERAND (exp, 2))
-	static_chain_value = expand_normal (TREE_OPERAND (exp, 2));
+      if (CALL_EXPR_STATIC_CHAIN (exp))
+	static_chain_value = expand_normal (CALL_EXPR_STATIC_CHAIN (exp));
       else
 	static_chain_value = 0;
 

@@ -1,3 +1,639 @@
+2007-02-15  Sandra Loosemore  <sandra@codesourcery.com>
+	    Brooks Moses  <brooks.moses@codesourcery.com>
+	    Lee Millward  <lee.millward@codesourcery.com>
+
+	* tree.h (enum tree_code_class): Add tcc_vl_exp.
+	(VL_EXP_CLASS_P): New.
+	(TREE_OPERAND_CHECK): Use TREE_OPERAND_LENGTH instead of
+	TREE_CODE_LENGTH.
+	(TREE_OPERAND_CHECK_CODE): Likewise.
+	(GIMPLE_STMT_OPERAND_CHECK): Likewise.
+	(TREE_RTL_OPERAND_CHECK): Likewise.
+	(tree_operand_check_failed): Make second parameter the whole tree
+	instead of its code.  Fixed callers.
+	(VL_EXP_CHECK): New.
+	(TREE_OPERAND_LENGTH): New.
+	(VL_EXP_OPERAND_LENGTH): New.
+	(CALL_EXPR_FN): New.
+	(CALL_EXPR_STATIC_CHAIN): New.
+	(CALL_EXPR_ARGS): New.
+	(CALL_EXPR_ARG): New.
+	(call_expr_nargs): New.
+	(CALL_EXPR_ARGP): New.
+	(build_nt_call_list): Declare.
+	(build_vl_exp_stat): Declare.
+	(build_vl_exp): New.
+	(build_call_list): Declare.
+	(build_call_nary): Declare.
+	(build_call_valist): Declare.
+	(build_call_array): Declare.
+	(call_expr_arg): Declare.
+	(call_expr_argp): Declare.
+	(call_expr_arglist): Declare.
+	(fold_build_call_list): Declare.
+	(fold_build_call_list_initializer): Declare.
+	(fold_call_expr): Declare to replace fold_builtin.
+	(fold_builtin_fputs): Update to agree with modified definition.
+	(fold_builtin_strcpy): Likewise.
+	(fold_builtin_strncpy): Likewise.
+	(fold_builtin_memory_chk): Likewise.
+	(fold_builtin_stxcpy_chk): Likewise.
+	(fold_builtin_strncpy_chk): Likewise.
+	(fold_builtin_next_arg): Likewise.
+	(fold_build_call_expr): Declare.
+	(fold_builtin_call_list): Declare.
+	(fold_builtin_call_valist): Declare.
+	(build_call_expr): Declare.
+	(validate_arglist): Update to agree with modified definition.
+	(tree_operand_length): New.
+	(call_expr_arg_iterator): New.
+	(init_call_expr_arg_iterator): New.
+	(next_call_expr_arg): New.
+	(first_call_expr_arg): New.
+	(more_call_expr_args_p): New.
+	(FOR_EACH_CALL_EXPR_ARG): New.
+
+	* tree.c (tree_code_class_string): Add entries for tcc_vl_exp
+	and tcc_gimple_stmt.
+	(tree_code_size): Update documentation.  Use sizeof (tree) rather
+	than sizeof (char *).
+	(tree_size): Likewise.  Add case for tcc_vl_exp.
+	(tree_node_structure): Add case for tcc_vl_exp.
+	(contains_placeholder_p): Likewise.
+	(substitute_in_expr): Likewise.
+	(substitute_placeholder_in_expr): Likewise.
+	(stabilize_reference_1): Likewise.
+	(build3_stat): Remove logic for CALL_EXPRs.  Replace with assertion
+	to diagnose breakage of this interface for constructing CALL_EXPRs.
+	(build_nt): Add similar assertion here.
+	(build_nt_call_list): New.
+	(simple_cst_equal) <CALL_EXPR>: Rewrite to use new accessors.
+	(iterative_hash_expr): Use TREE_OPERAND_LENGTH instead of
+	TREE_CODE_LENGTH.
+	(get_callee_fndecl): Use new CALL_EXPR accessors.
+	(tree_operand_check_failed): Change parameters to pass entire node
+	instead of its code, so that we can call TREE_OPERAND_LENGTH on it.
+	(process_call_operands): New.
+	(build_vl_exp_stat): New.
+	(build_call_list): New.
+	(build_call_nary): New.
+	(build_call_valist): New.
+	(build_call_array): New.
+	(walk_tree): Use TREE_OPERAND_LENGTH instead of TREE_CODE_LENGTH.
+	(call_expr_arglist): New.
+
+	* tree.def (CALL_EXPR): Change representation of CALL_EXPRs to use
+	tcc_vl_exp instead of a fixed-size tcc_expression.
+
+	* doc/c-tree.texi (CALL_EXPR): Document new representation and
+	accessors for CALL_EXPRs.
+	(AGGR_INIT_EXPR): Likewise.
+
+2007-02-15  Sandra Loosemore  <sandra@codesourcery.com>
+	    Brooks Moses  <brooks.moses@codesourcery.com>
+	    Lee Millward  <lee.millward@codesourcery.com>
+
+	* builtins.c (c_strlen): Return NULL_TREE instead of 0.
+	(expand_builtin_nonlocal_goto): Change parameter to be entire
+	CALL_EXPR instead of an arglist.  Use new CALL_EXPR accessors.
+	(expand_builtin_prefetch): Likewise.
+	(expand_builtin_classify_type): Likewise.
+	(mathfn_built_in): Return NULL_TREE instead of 0.
+	(expand_errno_check): Use new CALL_EXPR accessors.
+	(expand_builtin_mathfn): Use new CALL_EXPR accessors and constructors.
+	Return NULL_RTX instead of 0.
+	(expand_builtin_mathfn_2): Likewise.
+	(expand_builtin_mathfn_3): Likewise.
+	(expand_builtin_interclass_mathfn): Likewise.
+	(expand_builtin_sincos): Likewise.
+	(expand_builtin_cexpi): Likewise.
+	(expand_builtin_int_roundingfn): Likewise.
+	(expand_builtin_int_roundingfn_2): Likewise.
+	(expand_builtin_pow): Likewise.
+	(expand_builtin_powi): Likewise.
+	(expand_builtin_strlen): Pass entire CALL_EXPR as parameter instead
+	of arglist, fixing callers appropriately.  Use new CALL_EXPR
+	accessors and constructors.  Return NULL_RTX instead of 0.
+	(expand_builtin_strstr): Likewise.
+	(expand_builtin_strchr): Likewise.
+	(expand_builtin_strrchr): Likewise.
+	(expand_builtin_strpbrk): Likewise.
+	(expand_builtin_memcpy): Likewise.
+	(expand_builtin_mempcpy): Likewise.
+	(expand_builtin_mempcpy_args): New.
+	(expand_builtin_memmove): Similarly to expand_builtin_mempcpy.
+	(expand_builtin_memmove_args): New.
+	(expand_builtin_bcopy): Similarly to expand_builtin_mempcpy.
+	(expand_movstr): Likewise.
+	(expand_builtin_strcpy): Likewise.
+	(expand_builtin_strcpy_args): New.
+	(expand_builtin_stpcpy): Similarly to expand_builtin_strcpy.
+	(expand_builtin_strncpy): Likewise.
+	(expand_builtin_memset): Likewise.
+	(expand_builtin_memset_args): New.
+	(expand_builtin_bzero): Similarly to expand_builtin_memset.
+	(expand_builtin_memcmp): Likewise.
+	(expand_builtin_strcmp): Likewise.
+	(expand_builtin_strncmp): Likewise.
+	(expand_builtin_strcat): Likewise.
+	(expand_builtin_strncat): Likewise.
+	(expand_builtin_strspn): Likewise.
+	(expand_builtin_strcspn): Likewise.
+	(expand_builtin_args_info): Likewise.
+	(expand_builtin_va_start): Likewise.
+	(gimplify_va_arg_expr): Likewise.
+	(expand_builtin_va_end): Likewise.
+	(expand_builtin_va_copy): Likewise.
+	(expand_builtin_frame_address): Likewise.
+	(expand_builtin_alloca): Likewise.
+	(expand_builtin_bswap): Likewise.
+	(expand_builtin_unop): Likewise.
+	(expand_builtin_fputs): Likewise.
+	(expand_builtin_expect): Likewise.
+	(expand_builtin_fabs): Likewise.
+	(expand_builtin_copysign): Likewise.
+	(expand_builtin_printf): Likewise.
+	(expand_builtin_fprintf): Likewise.
+	(expand_builtin_sprintf): Likewise.
+	(expand_builtin_init_trampoline): Likewise.
+	(expand_builtin_signbit): Likewise.
+	(expand_builtin_fork_or_exec): Likewise.
+	(expand_builtin_sync_operation): Likewise.
+	(expand_builtin_compare_and_swap): Likewise.
+	(expand_builtin_lock_test_and_set): Likewise.
+	(expand_builtin_lock_release): Likewise.
+	(expand_builtin): Likewise.
+	(builtin_mathfn_code): Likewise.
+
+	(fold_builtin_constant_p): Pass call arguments individually instead
+	of as an arglist, fixing callers appropriately.  Use new CALL_EXPR
+	accessors and constructors.  Return NULL_TREE instead of 0.
+	(fold_builtin_expect): Likewise.
+	(fold_builtin_classify_type): Likewise.
+	(fold_builtin_strlen): Likewise.
+	(fold_builtin_nan): Likewise.
+	(integer_valued_real_p): Likewise.
+	(fold_trunc_transparent_mathfn): Likewise.
+	(fold_fixed_mathfn): Likewise.
+	(fold_builtin_cabs): Likewise.
+	(fold_builtin_sqrt): Likewise.
+	(fold_builtin_cbrt): Likewise.
+	(fold_builtin_cos): Likewise.
+	(fold_builtin_cosh): Likewise.
+	(fold_builtin_tan): Likewise.
+	(fold_builtin_sincos): Likewise.
+	(fold_builtin_cexp): Likewise.
+	(fold_builtin_trunc): Likewise.
+	(fold_builtin_floor): Likewise.
+	(fold_builtin_ceil): Likewise.
+	(fold_builtin_round): Likewise.
+	(fold_builtin_int_roundingfn): Likewise.
+	(fold_builtin_bitop): Likewise.
+	(fold_builtin_bswap): Likewise.
+	(fold_builtin_logarithm): Likewise.
+	(fold_builtin_hypot): Likewise.
+	(fold_builtin_pow): Likewise.
+	(fold_builtin_powi): Likewise.
+	(fold_builtin_exponent): Likewise.
+	(fold_builtin_memset): Likewise.
+	(fold_builtin_bzero): Likewise.
+	(fold_builtin_memory_op): Likewise.
+	(fold_builtin_bcopy): Deleted; call site changed to invoke
+	fold_builtin_memory_op directly.
+	(fold_builtin_strcpy): Similarly as for fold_builtin_memory_op.
+	(fold_builtin_strncpy): Likewise.
+	(fold_builtin_memcmp): Likewise.
+	(fold_builtin_strcmp): Likewise.
+	(fold_builtin_strncmp): Likewise.
+	(fold_builtin_signbit): Likewise.
+	(fold_builtin_copysign): Likewise.
+	(fold_builtin_isascii): Likewise.
+	(fold_builtin_toascii): Likewise.
+	(fold_builtin_isdigit): Likewise.
+	(fold_builtin_fabs): Likewise.
+	(fold_builtin_abs): Likewise.
+	(fold_builtin_fmin_fmax): Likewise.
+	(fold_builtin_carg): Likewise.
+	(fold_builtin_classify): Likewise.
+	(fold_builtin_unordered_cmp): Likewise.
+
+	(fold_builtin_0, fold_builtin_2, fold_builtin_3, fold_builtin_4):
+	New functions split out from fold_builtin_1.
+	(fold_builtin_n): New.
+	(fold_builtin_varargs): New.
+	(fold_builtin): Deleted.  Most callers changed to use fold_call_expr
+	instead.
+	(fold_call_expr): New.
+	(build_function_call_expr): Rewrite to use new helper function.
+	(fold_builtin_call_list): New.
+	(build_call_expr): New.
+	(fold_builtin_call_valist): New.
+	(rewrite_call_expr): New.
+	(validate_arg): New.
+	(validate_arglist): Change parameter to be entire CALL_EXPR instead
+	of an arglist.  Change return type to bool.  Use new CALL_EXPR
+	accessors.
+
+	(fold_builtin_strstr):  Pass call arguments individually instead
+	of as an arglist, fixing callers appropriately.  Use new CALL_EXPR
+	accessors and constructors.  Return NULL_TREE instead of 0.
+	(fold_builtin_strchr): Likewise.
+	(fold_builtin_strrchr): Likewise.
+	(fold_builtin_strpbrk): Likewise.
+	(fold_builtin_strcat): Likewise.
+	(fold_builtin_strncat): Likewise.
+	(fold_builtin_strspn): Likewise.
+	(fold_builtin_strcspn): Likewise.
+	(fold_builtin_fputs): Likewise.
+	(fold_builtin_next_arg): Likewise.
+	(fold_builtin_sprintf): Likewise.
+
+	(expand_builtin_object_size): Use new CALL_EXPR accessors.  Use
+	NULL_RTX instead of 0.
+	(expand_builtin_memory_chk): Likewise.
+	(maybe_emit_chk_warning): Likewise.
+	(maybe_emit_sprintf_chk_warning): Likewise.
+
+	(fold_builtin_object_size): Pass call arguments individually instead
+	of as an arglist, fixing callers appropriately.  Use new CALL_EXPR
+	accessors and constructors.  Return NULL_TREE instead of 0.
+	(fold_builtin_memory_chk): Likewise.
+	(fold_builtin_stxcpy_chk): Likewise.
+	(fold_builtin_strncpy_chk): Likewise.
+	(fold_builtin_strcat_chk): Likewise.
+	(fold_builtin_strcat_chk): Likewise.
+	(fold_builtin_strncat_chk): Likewise.
+	(fold_builtin_sprintf_chk): Likewise.
+	(fold_builtin_snprintf_chk): Likewise.
+	(fold_builtin_printf): Likewise.
+	(fold_builtin_vprintf): Likewise.
+
+	* fold-const.c (negate_expr_p): Use new CALL_EXPR accessors and
+	constructors.
+	(operand_equal_p): Add separate tcc_vl_exp/CALL_EXPR case.
+	(make_range): Use TREE_OPERAND_LENGTH instead of TREE_CODE_LENGTH.
+	(extract_muldiv_1): Add VL_EXP_CLASS_P case.
+	(fold_mathfn_compare): Use new CALL_EXPR accessors and constructors.
+	(fold_unary): Likewise.
+	(fold_binary): Likewise.
+	(fold_ternary): Remove CALL_EXPR case, since they are no longer
+	ternary expressions.
+	(fold): Add logic for tcc_vl_exp.
+	(fold_checksum_tree):  Make it know about tcc_vl_exp.  Use
+	TREE_OPERAND_LENGTH instead of TREE_CODE_LENGTH.
+	(fold_build3_stat): Add assertion to flag broken interface for
+	constructing CALL_EXPRs.
+	(fold_build_call_list): New.
+	(fold_build_call_list_initializer): New.
+	(tree_expr_nonnegative_p): Use new CALL_EXPR accessors and
+	constructors.
+	(fold_strip_sign_ops): Likewise.
+
+2007-02-15  Sandra Loosemore  <sandra@codesourcery.com>
+	    Brooks Moses  <brooks.moses@codesourcery.com>
+	    Lee Millward  <lee.millward@codesourcery.com>
+
+	* tree-dump.c (dequeue_and_dump) <CALL_EXPR>: Use new CALL_EXPR
+	accessors and dump arguments explicitly.
+
+	* tree-pretty-print.c (do_niy): Use TREE_OPERAND_LENGTH instead of
+	TREE_CODE_LENGTH.
+	(dump_generic_node): Use new CALL_EXPR accessors and walk arguments
+	explicitly.
+	(print_call_name): Use new CALL_EXPR accessors.
+
+	* print-tree.c (print_node): Add case tcc_vl_exp.  Print
+	CALL_EXPR arguments explicitly instead of as a list.  Use
+	TREE_OPERAND_LENGTH instead of TREE_CODE_LENGTH.
+
+	* tree-vrp.c (stmt_interesting_for_vrp): Use new CALL_EXPR accessors.
+	(vrp_visit_stmt): Likewise.
+
+	* tree-ssa-loop-im.c (outermost_invariant_loop_expr):  Make it
+	know about tcc_vl_exp.  Use TREE_OPERAND_LENGTH instead of
+	TREE_CODE_LENGTH.
+	(force_move_till_expr): Likewise.
+
+	* targhooks.c (default_external_stack_protect_fail): Use
+	build_call_expr instead of build_function_call_expr.
+	(default_hidden_stack_protect_fail): Likewise.
+
+	* tree-complex.c (expand_complex_libcall): Use build_call_expr to
+	build the call.
+
+	* cgraphbuild.c (build_cgraph_edges): Use new CALL_EXPR accessors
+	and walk arguments explicitly.
+
+	* tree-ssa-loop-niter.c (simplify_replace_tree): Use
+	TREE_OPERAND_LENGTH instead of TREE_CODE_LENGTH.
+	(expand_simple_operations): Likewise.
+	(infer_loop_bounds_from_array): Use new CALL_EXPR accessors.
+
+	* gengtype.c (adjust_field_tree_exp): Use TREE_OPERAND_LENGTH instead
+	of TREE_CODE_LENGTH.
+	(walk_type): Tweak walking of arrays not to blow up on CALL_EXPRs.
+
+	* optabs.c (expand_widen_pattern-expr): Use TREE_OPERAND_LENGTH
+	instead of TREE_CODE_LENGTH.
+
+	* value_prof.c (tree_ic): Use new CALL_EXPR accessors.
+	(tree_ic_transform): Likewise.
+	(interesting_stringop_to_profile_p): Pass entire CALL_EXPR as
+	parameter instead of arglist.  Fix callers.
+	(tree_stringop_fixed_value): Use new CALL_EXPR accessors.
+	(tree_stringops_transform): Likewise.
+	(tree_indirect_call_to_profile): Likewise.
+	(tree_stringops_values_to_profile): Likewise.
+
+	* tree-tailcall.c (find_tail_calls): Use new CALL_EXPR iterator.
+	(eliminate_tail_call): Likewise.
+
+	* ipa-cp.c (ipcp_update_callgraph): Use new CALL_EXPR accessors.
+
+	* tree-scalar-evolution.c (chrec_contains_symbols_defined_in_loop):
+	Use TREE_OPERAND_LENGTH and generalize to handle any number of
+	operands.
+	(instantiate_parameters_1): Can't handle tcc_vl_exp here.
+
+	* omp-low.c (build_omp_barrier): Use build_call_expr.
+	(lower_rec_input_clauses): Likewise.
+	(lower_reduction_clauses): Likewise.
+	(expand_parallel_call): Likewise.
+	(maybe_catch_exception): Likewise.
+	(expand_omp_for_generic): Likewise.
+	(expand_omp_for_static_nochunk): Likewise.
+	(expand_omp_sections): Likewise.
+	(lower_omp_single_simple): Likewise.
+	(lower_omp_single_copy): Likewise.
+	(lower_omp_master): Likewise.
+	(lower_omp_ordered): Likewise.
+	(lower_omp_critical): Likewise.
+
+	* ipa-reference.c (check-call): Use new CALL_EXPR iterator.
+	(scan_for_static_refs): Create tcc_vl_exp case for CALL_EXPR.
+
+	* tree-gimple.c (is_gimple_call_addr): Fix doc.
+	(recalculate_side_effects): Use TREE_OPERAND_LENGTH instead of
+	TREE_CODE_LENGTH.  Add tcc_vl_exp case.
+
+	* tree-chrec.c (chrec_contains_symbols): Use TREE_OPERAND_LENGTH
+	and generalize to handle any number of operands.
+	(chrec_contains_undetermined): Likewise.
+	(tree_contains_chrecs): Likewise.
+	(evolution_function_is_invariant_rec_p): Use TREE_OPERAND_LENGTH.
+
+	* cgraphunit.c (update_call_expr): Use new CALL_EXPR accessors.
+
+	* tree-ssa-ccp.c (ccp_fold): Use new CALL_EXPR accessors.  Use
+	fold_call_expr instead of fold_builtin.
+	(ccp_fold_builtin): Likewise.  Update calls into builtins.c to
+	match declarations there.
+	(fold_stmt): Use new CALL_EXPR constructor and accessors.  Doc
+	updates.
+
+	* tree-ssa-loop-ivopts.c (expr_invariant_in_loop_p): Use
+	TREE_OPERAND_LENGTH instead of TREE_CODE_LENGTH.
+
+	* ipa-pure-const.c (check_call): Use new CALL_EXPR accessors.
+	(scan_function): Add case tcc_vl_exp for CALL_EXPR.
+
+	* tree-stdarg.c (execute_optimize_stdarg): Use new CALL_EXPR
+	accessors.
+
+	* tree-ssa-math-opts.c (execute_cse_sincos_1): Use build_call_expr.
+	(execute_cse_sincos): Use new CALL_EXPR accessors.
+
+	* tree-ssa-alias.c (find_used_portions): Use new CALL_EXPR iterator.
+
+	* gimple-low.c (lower_function_body): Use build_call_expr.
+	(lower_builtin_setjmp): Likewise.
+
+	* expr.c (emit_block_move_via_libcall): Use build_call_expr.
+	(set_storage_via_libcall): Likewise.
+	(safe_from_p): Add tcc_vl_exp case.  Use TREE_OPERAND_LENGTH
+	instead of TREE_CODE_LENGTH.
+	(expand_expr_real_1): Use new CALL_EXPR accessors.
+
+	* tree-browser.c (store_child_info): Use TREE_OPERAND_LENGTH and
+	generalize to handle any number of operands.
+	(TB_parent_eq): Likewise.
+
+	* predict.c (expr_expected_value): Use new CALL_EXPR accessors.
+	(strip_builtin_expect): Likewise.
+
+	* function.c (gimplify_parameters): Use build_call_expr.
+
+	* tree-vectorizer.c (vect_is_simple_reduction): Use TREE_OPERAND_LENGTH
+	instead of TREE_CODE_LENGTH.
+
+	* ipa-type-escape.c (check_call): Use new CALL_EXPR iterators.
+	(scan_for_refs): Add case tcc_vl_exp for CALL_EXPR.
+
+	* tree-data-ref.c (get_references_in_stmt): Use new CALL_EXPR
+	iterators.
+
+	* gimplify.c (build_stack_save_restore): Use build_call_expr.
+	(gimplify_decl_expr): Likewise.
+	(gimplify_call_expr): Use fold_call_expr instead of fold_builtin.
+	Use new CALL_EXPR iterators.
+	(gimplify_modify_expr_to_memcpy): Use build_call_expr.
+	(gimplify_modify_expr_to_memset): Likewise.
+	(gimplify_variable_sized_compare): Likewise.
+	(gimplify_omp_atomic_fetch_op): Likewise.
+	(gimplify_omp_atomic_pipeline): Likewise.
+	(gimplify_omp_atomic_mutex): Likewise.
+	(gimplify_function_tree): Likewise.
+
+	* calls.c (alloca_call_p): Use new CALL_EXPR accessors.
+	(call_expr_flags): Likewise.
+	(expand_call): Likewise.
+
+	* except.c (expand_builtin_eh_return_data_regno): Pass entire
+	CALL_EXPR as parameter instead of arglist.  Use new CALL_EXPR 
+        accessors.
+
+	* coverage.c (create_coverage): Use build_call_expr.
+
+	* tree-ssa-pre.c (expression_node_pool, list_node_pool): Delete.
+	(temp_call_expr_obstack): New.
+	(pool_copy_list): Delete.
+	(temp_copy_call_expr): New.
+	(phi_translate): Add case tcc_vl_exp for CALL_EXPR.  Use new
+	CALL_EXPR accessors.  Get rid of special goo for copying argument
+	lists and use temp_copy_call_expr instead.
+	(valid_in_sets): Add case tcc_vl_exp for CALL_EXPR.  Use new
+	CALL_EXPR accessors.
+	(create_expression_by_pieces): Likewise.  Use build_call_array
+	to construct the result instead of fold_build3.
+	(create_value_expr_from): Add tcc_vl_exp.  Delete special goo for
+	dealing with argument lists.
+	(init_pre): Remove references to expression_node_pool and
+	list_node_pool.  Init temp_call_expr_obstack instead.
+	(fini_pre): Remove references to expression_node_pool and
+	list_node_pool.
+
+	* tree-sra.c (sra_walk_call_expr): Use new CALL_EXPR accessors
+	and walk arguments explicitly instead of as a list.
+
+	* tree-mudflap.c (mf_build_check_statement_for): Use build_call_expr.
+	(mx_register_decls): Likewise.
+	(mudflap_register_call): Likewise.
+	(mudflap_finish_file): Likewise.
+
+	* ipa-prop.c (ipa_callsite_compute_count): Use new CALL_EXPR accessors.
+	(ipa_callsite_compute_param): Likewise.
+
+	* tree-vect-patterns.c (vect_recog_pow_pattern): Use new CALL_EXPR
+	accessors and constructor.
+
+	* tree-nested.c (convert_nl_goto_reference): Use new CALL_EXPR
+	accessors and constructor.
+	(convert_tramp_reference): Likewise. 
+	(convert_call_expr): Likewise.
+	(finalize_nesting_tree_1): Likewise.
+
+	* tree-ssa.c (tree_ssa_useless_type_conversion): Use new CALL_EXPR
+	accessors.
+
+	* tree-ssa-loop-prefetch.c (issue_prefetch_ref): Use build_call_expr.
+
+	* tree-inline.c (initialize_inlined_parameters): Pass entire
+	CALL_EXPR as parameter instead of arglist.  Use new CALL_EXPR
+	accessors.
+	(estimate_num_insns_1): Use new CALL_EXPR accessors.
+	(expand_call_inline): Tidy up call to initialize_inlined_parameters.
+
+	* tree-vect-transform.c (vect_create_epilog_for_reduction):  Use
+	TREE_OPERAND_LENGTH instead of TREE_CODE_LENGTH.
+	(vectorizable_reduction): Likewise.
+	(vectorizable_call): Use new CALL_EXPR iterators.
+	(vectorizable_conversion): Use build_call_expr.
+	(vectorizable_operation): Use TREE_OPERAND_LENGTH.
+	(vect_gen_widened_results_half): Use build_call_expr.
+	(vect_setup_realignment): Likewise.
+	(vectorizable_live_operation): Use TREE_OPERAND_LENGTH.
+
+	* tree-object-size.c (alloc_object_size): Use new CALL_EXPR accessors.
+	(pass_through_call): Likewise.
+	(compute_object_sizes): Likewise.  Use fold_call_expr instead of
+	fold_builtin.
+
+	* tree-profile.c (tree_gen_interval_profiler): Use build_call_expr.
+	(tree_gen_pow2_profiler): Likewise.
+	(tree_gen_one_value_profiler): Likewise.
+	(tree_gen_ic_func_profiler): Likewise.
+	(tree_gen_average_profiler): Likewise.
+	(tree_gen_ior_profiler): Likewise.
+
+	* tree-ssa-structalias.c (get_constraint_for): Add case tcc_vl_exp.
+	(find_func_aliases): Use new CALL_EXPR accessors.  Add case
+	tcc_vl_exp.  Use TREE_OPERAND_LENGTH instead of TREE_CODE_LENGTH.
+
+	* tree-ssa-reassoc.c (get_rank): Use TREE_OPERAND_LENGTH instead
+	of TREE_CODE_LENGTH.
+
+	* stmt.c (warn_if_unused_value): Use TREE_OPERAND_LENGTH instead
+	of TREE_CODE_LENGTH.
+
+	* convert.c (convert_to_real): Use new CALL_EXPR accessors and
+	constructor.
+	(convert_to_integer): Likewise.
+
+	* tree-ssa-operands.c (get_call_expr_operands): Use new CALL_EXPR
+	accessors.
+
+2007-02-15  Sandra Loosemore  <sandra@codesourcery.com>
+	    Brooks Moses  <brooks.moses@codesourcery.com>
+	    Lee Millward  <lee.millward@codesourcery.com>
+
+	* config/alpha/alpha.c (alpha_expand_builtin): Use new CALL_EXPR
+	accessors.
+	* config/frv/frv.c (frv_expand_builtin): Likewise.
+	* config/s390/s390.c (s390_expand_builtin): Likewise.
+
+	* config/sparc/sparc.c (sparc_gimplify_va_arg): Use build_call_expr.
+	(sparc_expand_builtin): Use new CALL_EXPR accessors.
+
+	* config/i386/i386.c (ix86_function_ok_for_sibcall): Likewise.
+	(ix86_expand_binop_builtin): Pass entire CALL_EXPR as parameter
+	instead of arglist.  Use new CALL_EXPR accessors on it.  Fix callers.
+	(ix86_expand_store_builtin): Likewise.
+	(ix86_expand_unop_builtin): Likewise.
+	(ix86_expand_unop1_builtin): Likewise.
+	(ix86_expand_sse_compare): Likewise.
+	(ix86_expand_sse_comi): Likewise.
+	(ix86_expand_vec_init_builtin): Likewise.
+	(ix86_expand_vec_ext_builtin): Likewise.
+	(ix86_expand_vec_set_builtin): Likewise.
+	(ix86_expand_builtin): Use new CALL_EXPR accessors.
+
+	* config/sh/sh.c (sh_expand_builtin): Use new CALL_EXPR accessors.
+	* config/c4x/c4x.c (c4x_expand_builtin): Likewise.
+
+	* config/iq2000/iq2000.c (expand_one_builtin): Pass entire CALL_EXPR
+	instead of arglist.  Use new CALL_EXPR accessors.  Fix callers.
+	(iq2000_expand_builtin): Use new CALL_EXPR accessors.
+
+	* config/rs6000/rs6000-c.c (altivec_build_resolved_builtin): Use
+	build_call_expr.
+	* config/rs6000/rs6000.c (rs6000_gimplify_va_arg): Likewise.
+	(rs6000_expand_unop_builtin): Pass entire CALL_EXPR instead of
+	arglist.  Use new CALL_EXPR accessors.  Fix callers.
+	(altivec_expand_abs_builtin): Likewise.
+	(rs6000_expand_binop_builtin): Likewise.
+	(altivec_expand_predicate_builtin): Likewise.
+	(altivec_expand_lv_builtin): Likewise.
+	(spe_expand_stv_builtin): Likewise.
+	(altivec_expand_stv_builtin): Likewise.
+	(rs6000_expand_ternop_builtin): Likewise.
+	(altivec_expand_ld_builtin): Use new CALL_EXPR accessors.
+	(altivec_expand_st_builtin): Likewise.
+	(altivec_expand_dst_builtin): Likewise.
+	(altivec_expand_vec_init_builtin): Pass entire CALL_EXPR instead of
+	arglist.  Use new CALL_EXPR accessors.  Fix callers.
+	(altivec_expand_vec_set_builtin): Likewise.
+	(altivec_expand_vec_ext_builtin): Likewise.
+	(altivec_expand_builtin): Use new CALL_EXPR accessors.
+	(spe_expand_builtin): Likewise.
+	(spe_expand_predicate_builtin): Pass entire CALL_EXPR instead of
+	arglist.  Use new CALL_EXPR accessors.  Fix callers.
+	(spe_expand_evsel_builtin): Likewise.
+	(rs6000_expand_builtin): Use new CALL_EXPR accessors.  VCFUX and
+	FCFSX cases must construct whole new CALL_EXPR, not just arglist.
+
+	* config/arm/arm.c (arm_expand_binop_builtin): Pass entire CALL_EXPR
+	instead of arglist.  Use new CALL_EXPR accessors.  Fix callers.
+	(arm_expand_unop_builtin): Likewise.
+	(arm_expand_builtin): Use new CALL_EXPR accessors.
+
+	* config/mips/mips.c (mips_expand_builtin):  Use new CALL_EXPR
+	accessors.
+
+	* config/bfin/bfin.c (bfin_expand_binop_builtin): Pass entire CALL_EXPR
+	instead of arglist.  Use new CALL_EXPR accessors.  Fix callers.
+	(bfin_expand_unop_builtin): Likewise.
+	(bfin_expand_builtin): Use new CALL_EXPR accessors.
+
+2007-02-15  Sandra Loosemore  <sandra@codesourcery.com>
+	    Brooks Moses  <brooks.moses@codesourcery.com>
+	    Lee Millward  <lee.millward@codesourcery.com>
+
+	* c-semantics.c (build_stmt): Add internal diagnostic check.
+
+	* c-pretty-print.c (pp_c_postfix_expression): Use new CALL_EXPR
+	accessors.  Print arguments explicitly instead of as a list.
+
+	* c-typeck.c (build_function_call): Use new CALL_EXPR constructors.
+
+	* c-omp.c (c_finish_omp_barrier): Use build_call_expr.
+	(c_finish_omp_flish): Likewise.
+
+	* c-common.c (verify_tree): Use new CALL_EXPR accessors.  Traverse
+	arguments explicitly instead of as a list.  Use TREE_OPERAND_LENGTH
+	instead of TREE_CODE_LENGTH.
+	(check_function_arguments_recurse): Use new CALL_EXPR accessors.
+	(c_warn_unused_result): Likewise.
+
 2007-02-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c/26494

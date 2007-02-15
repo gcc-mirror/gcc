@@ -989,7 +989,7 @@ java_get_callee_fndecl (tree call_expr)
 
   if (TREE_CODE (call_expr) != CALL_EXPR)
     return NULL;
-  method = TREE_OPERAND (call_expr, 0);
+  method = CALL_EXPR_FN (call_expr);
   STRIP_NOPS (method);
   if (TREE_CODE (method) != ARRAY_REF)
     return NULL;

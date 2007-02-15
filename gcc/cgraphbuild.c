@@ -131,6 +131,8 @@ build_cgraph_edges (void)
 
 	if (call && (decl = get_callee_fndecl (call)))
 	  {
+	    int i;
+	    int n = call_expr_nargs (call);
 	    int freq = (!bb->frequency && !entry_freq ? CGRAPH_FREQ_BASE
 			: bb->frequency * CGRAPH_FREQ_BASE / entry_freq);
 	    if (freq > CGRAPH_FREQ_MAX)
@@ -138,8 +140,9 @@ build_cgraph_edges (void)
 	    cgraph_create_edge (node, cgraph_node (decl), stmt,
 				bb->count, freq,
 				bb->loop_depth);
-	    walk_tree (&TREE_OPERAND (call, 1),
-		       record_reference, node, visited_nodes);
+	    for (i = 0; i < n; i++)
+	      walk_tree (&CALL_EXPR_ARG (call, i),
+			 record_reference, node, visited_nodes);
 	    if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
 	      walk_tree (&GIMPLE_STMT_OPERAND (stmt, 0),
 			 record_reference, node, visited_nodes);

@@ -212,10 +212,7 @@ java_gimplify_component_ref (tree *expr_p, tree *pre_p, tree *post_p)
     if (stat == GS_ERROR)
       return stat;
 
-    sync_expr 
-      = build3 (CALL_EXPR, void_type_node,
-		build_address_of (built_in_decls[BUILT_IN_SYNCHRONIZE]),
-		NULL_TREE, NULL_TREE);
+    sync_expr = build_call_expr (built_in_decls[BUILT_IN_SYNCHRONIZE], 0);
     TREE_SIDE_EFFECTS (sync_expr) = 1;
     *expr_p = build2 (COMPOUND_EXPR, TREE_TYPE (*expr_p),
 		      sync_expr, *expr_p);
@@ -255,10 +252,8 @@ java_gimplify_modify_expr (tree *modify_expr_p, tree *pre_p, tree *post_p)
       */
   
       enum gimplify_status stat;
-      tree sync_expr 
-	= build3 (CALL_EXPR, void_type_node,
-		  build_address_of (built_in_decls[BUILT_IN_SYNCHRONIZE]),
-		  NULL_TREE, NULL_TREE);
+      tree sync_expr =
+	build_call_expr (built_in_decls[BUILT_IN_SYNCHRONIZE], 0);
       TREE_SIDE_EFFECTS (sync_expr) = 1;
 
       stat = gimplify_expr (&rhs, pre_p, post_p,

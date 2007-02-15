@@ -661,6 +661,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
     case tcc_binary:
     case tcc_reference:
     case tcc_statement:
+    case tcc_vl_exp:
       if (TREE_CODE (node) == BIT_FIELD_REF && BIT_FIELD_REF_UNSIGNED (node))
 	fputs (" unsigned", file);
       if (TREE_CODE (node) == BIND_EXPR)
@@ -670,17 +671,34 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	  print_node (file, "block", TREE_OPERAND (node, 2), indent + 4);
 	  break;
 	}
-
-      len = TREE_CODE_LENGTH (TREE_CODE (node));
-
-      for (i = 0; i < len; i++)
+      if (TREE_CODE (node) == CALL_EXPR)
 	{
-	  char temp[10];
-
-	  sprintf (temp, "arg %d", i);
-	  print_node (file, temp, TREE_OPERAND (node, i), indent + 4);
+	  call_expr_arg_iterator iter;
+	  tree arg;
+	  print_node (file, "fn", CALL_EXPR_FN (node), indent + 4);
+	  print_node (file, "static_chain", CALL_EXPR_STATIC_CHAIN (node),
+		      indent + 4);
+	  i = 0;
+	  FOR_EACH_CALL_EXPR_ARG (arg, iter, node)
+	    {
+	      char temp[10];
+	      sprintf (temp, "arg %d", i);
+	      print_node (file, temp, arg, indent + 4);
+	      i++;
+	    }
 	}
+      else
+	{
+	  len = TREE_OPERAND_LENGTH (node);
 
+	  for (i = 0; i < len; i++)
+	    {
+	      char temp[10];
+	      
+	      sprintf (temp, "arg %d", i);
+	      print_node (file, temp, TREE_OPERAND (node, i), indent + 4);
+	    }
+	}
       print_node (file, "chain", TREE_CHAIN (node), indent + 4);
       break;
 
