@@ -33,6 +33,7 @@ public:
   virtual ::gnu::classpath::jdwp::util::Location * getLocation();
   virtual ::java::lang::Object * getValue(jint);
   virtual void setValue(jint, ::java::lang::Object *);
+  virtual ::java::lang::Thread * getThread();
   virtual ::java::lang::Object * getObject();
   virtual jlong getId();
   static const jint SIZE = 8;

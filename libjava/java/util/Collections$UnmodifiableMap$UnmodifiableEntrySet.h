@@ -18,7 +18,7 @@ public: // actually package-private
 public:
   ::java::util::Iterator * iterator();
   JArray< ::java::util::Map$Entry * > * target$toArray();
-  JArray< ::java::util::Map$Entry * > * toArray(JArray< ::java::util::Map$Entry * > *);
+  JArray< ::java::lang::Object * > * toArray(JArray< ::java::lang::Object * > *);
   JArray< ::java::lang::Object * > * toArray();
 private:
   static const jlong serialVersionUID = 7854390611657943733LL;
