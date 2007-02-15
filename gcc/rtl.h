@@ -1598,10 +1598,6 @@ extern unsigned int cleanup_barriers (void);
 /* In jump.c */
 extern bool squeeze_notes (rtx *, rtx *);
 extern rtx delete_related_insns (rtx);
-extern void delete_jump (rtx);
-extern rtx get_label_before (rtx);
-extern rtx get_label_after (rtx);
-extern rtx follow_jumps (rtx);
 
 /* In recog.c  */
 extern rtx *find_constant_term_loc (rtx *);
