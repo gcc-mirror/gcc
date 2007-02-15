@@ -1,3 +1,16 @@
+2007-02-15  Tobias Schlueter  <tobi@gcc.gnu.org>
+
+	PR fortran/30478
+	* decl.c (create_enum_history, gfc_free_enum_history): Formatting
+	fixes.
+	(add_init_expr_to_sym): Remove ENUM-specific code-path.
+	(variable_decl): Likewise.  Formatting fix.
+	(match_attr_spec): Remove ENUM-specific codepath.
+	(gfc_match_enum): Fix typo in error message.
+	(enumerator_decl): New.
+	(gfc_match_enumerator_def): Strip down to code necessary for
+	ENUMs, use enumerator_decl.
+
 2007-02-13  Release Manager
 
 	* GCC 4.1.2 released.
