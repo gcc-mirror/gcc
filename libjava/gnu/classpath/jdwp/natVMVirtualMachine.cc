@@ -486,11 +486,49 @@ getClassMethod (jclass klass, jlong id)
 }
 
 java::util::ArrayList *
-gnu::classpath::jdwp::VMVirtualMachine::getFrames (MAYBE_UNUSED Thread *thread,
-						   MAYBE_UNUSED jint start,
-						   MAYBE_UNUSED jint length)
+gnu::classpath::jdwp::VMVirtualMachine::getFrames (Thread *thread, jint start,
+                                                   jint length)
 {
-  return NULL;
+  jint frame_count = getFrameCount (thread);
+  ::java::util::ArrayList *frame_list;
+  
+  // Calculate the max number of frames to be returned.
+  jint num_frames = frame_count - start;
+  
+  // Check if num_frames is valid.
+  if (num_frames < 0)
+    num_frames = 0;
+  
+  // Check if there are more than length frames left after start.
+  // If length ios -1 return all remaining frames.
+  if (length != -1 && num_frames > length)
+    num_frames = length;
+     
+  frame_list = new ::java::util::ArrayList (num_frames);
+  
+  _Jv_Frame *vm_frame = reinterpret_cast<_Jv_Frame *> (thread->frame);
+  
+  // Take start frames off the top of the stack
+  while (vm_frame != NULL && start > 0)
+    {
+      start--;
+      vm_frame = vm_frame->next;
+    }
+  
+  // Use as a counter for the number of frames returned.
+  num_frames = 0;
+  
+  while (vm_frame != NULL && (num_frames < length || length == -1))
+    {  
+      jlong frameId = reinterpret_cast<jlong> (vm_frame);
+      
+      VMFrame *frame = getFrame (thread, frameId);
+      frame_list->add (frame);
+      vm_frame = vm_frame->next;
+      num_frames++;
+    }
+  
+  return frame_list;
 }
 
 gnu::classpath::jdwp::VMFrame *
