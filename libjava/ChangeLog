@@ -1,4 +1,22 @@
 2007-02-15  Kyle Galloway  <kgallowa@redhat.com>
+
+	* defineclass.cc (_Jv_ClassReader::read_one_code_attribute):
+    Added LocalVariableTable attribute handling.
+    (_Jv_ClassReader::pool_Utf8_to_char_arr): New method.
+    * jvmti.cc (_Jv_JVMTI_GetLocalVariableTable): New method.
+    * include/java-interp.h: Added local_var_table and
+    local_var_table_len fields to _Jv_InterpMethod.
+    (_Jv_InterpMethod::get_local_var_table): New method.
+    * testsuite/libjava.jvmti/interp/getlocalvartable.java: New
+    test.
+    * testsuite/libjava.jvmti/interp/getlocalvartable.jar: New test.
+    * testsuite/libjava.jvmti/interp/getlocalvartable.out: Output
+    for new test.
+    * testsuite/libjava.jvmti/interp/getlocalvartable.h: New test.
+    * testsuite/libjava.jvmti/interp/natgetlocalvartable.cc: New
+    test.
+
+2007-02-15  Kyle Galloway  <kgallowa@redhat.com>
  
    * gnu/classpath/jdwp/natVMVirtualMachine (getFrames): Implement.
 

@@ -704,6 +704,88 @@ _Jv_JVMTI_GetLineNumberTable (jvmtiEnv *env, jmethodID method,
 }
 
 static jvmtiError JNICALL
+_Jv_JVMTI_GetLocalVariableTable (MAYBE_UNUSED jvmtiEnv *env, jmethodID method,
+                                 jint *num_locals,
+                                 jvmtiLocalVariableEntry **locals)
+{
+  REQUIRE_PHASE (env, JVMTI_PHASE_LIVE);
+  NULL_CHECK (num_locals);
+  NULL_CHECK (locals);
+  
+  CHECK_FOR_NATIVE_METHOD(method);
+  
+  jclass klass;
+  jvmtiError jerr = env->GetMethodDeclaringClass (method, &klass);
+  if (jerr != JVMTI_ERROR_NONE)
+    return jerr;
+
+  _Jv_InterpMethod *imeth = reinterpret_cast<_Jv_InterpMethod *> 
+                              (_Jv_FindInterpreterMethod (klass, method));
+  
+  if (imeth == NULL)
+    return JVMTI_ERROR_INVALID_METHODID;
+  
+  jerr = env->GetMaxLocals (method, num_locals);
+  if (jerr != JVMTI_ERROR_NONE)
+    return jerr;
+  
+  jerr = env->Allocate (static_cast<jlong> 
+                          ((*num_locals) * sizeof (jvmtiLocalVariableEntry)),
+                        reinterpret_cast<unsigned char **> (locals));
+  
+  if (jerr != JVMTI_ERROR_NONE)
+    return jerr;
+  
+  //the slot in the methods local_var_table to get
+  int table_slot = 0;
+  char *name;
+  char *sig;
+  char *generic_sig;
+  
+  while (table_slot < *num_locals 
+         && imeth->get_local_var_table (&name, &sig, &generic_sig,
+                                 &((((*locals)[table_slot].start_location))),
+                                 &((*locals)[table_slot].length), 
+                                 &((*locals)[table_slot].slot),
+                                 table_slot) 
+            >= 0)
+    {
+      jerr = env->Allocate (static_cast<jlong> (strlen (name) + 1),
+                             reinterpret_cast<unsigned char **>
+                               (&(*locals)[table_slot].name));
+      if (jerr != JVMTI_ERROR_NONE)
+        return jerr;
+      strcpy ((*locals)[table_slot].name, name);
+
+      jerr = env->Allocate (static_cast<jlong> (strlen (name) + 1),
+                               reinterpret_cast<unsigned char **>
+                                 (&(*locals)[table_slot].signature));
+      if (jerr != JVMTI_ERROR_NONE)
+        return jerr;
+      strcpy ((*locals)[table_slot].signature, sig);
+  
+      jerr = env->Allocate (static_cast<jlong> (strlen (name) + 1),
+                               reinterpret_cast<unsigned char **>
+                               (&(*locals)[table_slot].generic_signature));
+      if (jerr != JVMTI_ERROR_NONE)
+        return jerr;
+      strcpy ((*locals)[table_slot].generic_signature, generic_sig);
+      
+      table_slot++;
+    }
+
+  if (table_slot == 0)
+    return JVMTI_ERROR_ABSENT_INFORMATION;
+  
+  // If there are double or long variables in the table, the the table will be
+  // smaller than the max number of slots, so correct for this here.
+  if ((table_slot) < *num_locals)
+    *num_locals = table_slot;
+  
+  return JVMTI_ERROR_NONE;
+}
+
+static jvmtiError JNICALL
 _Jv_JVMTI_IsMethodNative (MAYBE_UNUSED jvmtiEnv *env, jmethodID method,
 			  jboolean *result)
 {
@@ -733,8 +815,7 @@ _Jv_JVMTI_IsMethodSynthetic (MAYBE_UNUSED jvmtiEnv *env, jmethodID method,
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_GetMaxLocals (MAYBE_UNUSED jvmtiEnv *env, jmethodID method,
-                        jint *max_locals)
+_Jv_JVMTI_GetMaxLocals (jvmtiEnv *env, jmethodID method, jint *max_locals)
 {
   REQUIRE_PHASE (env, JVMTI_PHASE_START | JVMTI_PHASE_LIVE);
   NULL_CHECK (max_locals);
@@ -1686,7 +1767,7 @@ struct _Jv_jvmtiEnv _Jv_JVMTI_Interface =
   UNIMPLEMENTED,		// GetArgumentsSize
   _Jv_JVMTI_GetLineNumberTable,	// GetLineNumberTable
   UNIMPLEMENTED,		// GetMethodLocation
-  UNIMPLEMENTED,		// GetLocalVariableTable
+  _Jv_JVMTI_GetLocalVariableTable,		// GetLocalVariableTable
   RESERVED,			// reserved73
   RESERVED,			// reserved74
   UNIMPLEMENTED,		// GetBytecodes

@@ -137,6 +137,21 @@ struct  _Jv_LineTableEntry
   int line;
 };
 
+// This structure holds local variable information.
+// The pc value is the first pc where the variable must have a value and it
+// must continue to have a value until (start_pc + length).
+// The name is the variable name, and the descriptor contains type information.
+// The slot is the index in the local variable array of this method, long and
+// double occupy slot and slot+1.
+struct _Jv_LocalVarTableEntry
+{
+  int bytecode_start_pc;
+  int length;
+  char *name;
+  char *descriptor;
+  int slot;
+};
+
 class _Jv_InterpMethod : public _Jv_MethodBase
 {
   // Breakpoint instruction
@@ -157,6 +172,10 @@ class _Jv_InterpMethod : public _Jv_MethodBase
   // Length of the line_table - when this is zero then line_table is NULL.
   int line_table_len;  
   _Jv_LineTableEntry *line_table;
+  
+  // The local variable table length and the table itself
+  int local_var_table_len;
+  _Jv_LocalVarTableEntry *local_var_table;
 
   pc_t prepared;
   int number_insn_slots;
@@ -224,6 +243,20 @@ class _Jv_InterpMethod : public _Jv_MethodBase
   {
     return static_cast<int> (max_locals);
   }
+  
+  /* Get info for a local variable of this method.
+   * If there is no loca_var_table for this method it will return -1.
+   * table_slot  indicates which slot in the local_var_table to get, if there is
+   * no variable at this location it will return 0.
+   * Otherwise, it will return the number of table slots after the selected
+   * slot, indexed from 0.
+   * 
+   * Example: there are 5 slots in the table, you request slot 0 so it will
+   * return 4.
+   */
+  int get_local_var_table (char **name, char **sig, char **generic_sig,
+                           jlong *startloc, jint *length, jint *slot,
+                           int table_slot);
 
   /* Installs a break instruction at the given code index. Returns
      the pc_t of the breakpoint or NULL if index is invalid. */

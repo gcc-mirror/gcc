@@ -1414,6 +1414,30 @@ _Jv_InterpMethod::get_line_table (jlong& start, jlong& end,
 #endif // !DIRECT_THREADED
 }
 
+int 
+_Jv_InterpMethod::get_local_var_table (char **name, char **sig, 
+                                       char **generic_sig, jlong *startloc,
+                                       jint *length, jint *slot, 
+                                       int table_slot)
+{  	
+  if (local_var_table == NULL)
+    return -2;
+  if (table_slot >= local_var_table_len)
+    return -1;
+  else
+    {
+      *name = local_var_table[table_slot].name;
+      *sig = local_var_table[table_slot].descriptor;
+      *generic_sig = local_var_table[table_slot].descriptor;
+
+      *startloc = static_cast<jlong> 
+                    (local_var_table[table_slot].bytecode_start_pc);
+      *length = static_cast<jint> (local_var_table[table_slot].length);
+      *slot = static_cast<jint> (local_var_table[table_slot].slot);
+    }
+  return local_var_table_len - table_slot -1;
+}
+
 pc_t
 _Jv_InterpMethod::install_break (jlong index)
 {
