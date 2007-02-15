@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for ATMEL AVR at90s8515, ATmega103/103L, ATmega603/603L microcontrollers.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
@@ -868,5 +868,7 @@ extern int avr_case_values_threshold;
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 #define DWARF2_DEBUGGING_INFO 1
+
+#define DWARF2_ADDR_SIZE 4 
 
 #define OBJECT_FORMAT_ELF
