@@ -8407,7 +8407,10 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
 	      mod_type_die = lookup_type_die (qualified_type);
 	    }
 	  else if (is_const_type < TYPE_READONLY (dtype)
-		   || is_volatile_type < TYPE_VOLATILE (dtype))
+		   || is_volatile_type < TYPE_VOLATILE (dtype)
+		   || (is_const_type <= TYPE_READONLY (dtype)
+		       && is_volatile_type <= TYPE_VOLATILE (dtype)
+		       && DECL_ORIGINAL_TYPE (type_name) != type))
 	    /* cv-unqualified version of named type.  Just use the unnamed
 	       type to which it refers.  */
 	    mod_type_die
