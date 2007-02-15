@@ -1,3 +1,8 @@
+2007-02-15  Nick Clifton  <nickc@redhat.com>
+
+	* varasm.c (default_asm_output_anchor): Prepend * to . symbol in
+	order to prevent it from being munged by the target.
+
 2007-02-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md: Remove misleading comment.
