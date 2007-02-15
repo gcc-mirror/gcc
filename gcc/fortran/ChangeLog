@@ -1,3 +1,9 @@
+2007-02-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/30779
+	* scanner.c (gfc_next_char_literal): Add check for end of file after
+	call to advance_line.
+
 2007-02-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/30799
