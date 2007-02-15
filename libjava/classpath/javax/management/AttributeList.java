@@ -49,7 +49,7 @@ import java.util.ArrayList;
  * @since 1.5
  */
 public class AttributeList
-  extends ArrayList
+  extends ArrayList<Object>
 {
 
   /**

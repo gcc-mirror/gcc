@@ -1,5 +1,5 @@
 /* MBeanServerFactory.java -- Manages server instances.
-   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -89,7 +89,7 @@ public class MBeanServerFactory
   /**
    * The map of registered servers (identifiers to servers).
    */
-  private static Map servers = new HashMap();
+  private static final Map<Object,MBeanServer> servers = new HashMap();
 
   /**
    * Private constructor to prevent instance creation.
@@ -206,15 +206,15 @@ public class MBeanServerFactory
    *                           caller's permissions don't imply {@link
    *                           MBeanServerPermission(String)}("findMBeanServer")
    */
-  public static ArrayList findMBeanServer(String id)
+  public static ArrayList<MBeanServer> findMBeanServer(String id)
   {
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
       sm.checkPermission(new MBeanServerPermission("findMBeanServer"));
     if (id == null)
       return new ArrayList(servers.values());
-    ArrayList list = new ArrayList();
-    MBeanServer server = (MBeanServer) servers.get(id);
+    ArrayList<MBeanServer> list = new ArrayList<MBeanServer>();
+    MBeanServer server = servers.get(id);
     if (server != null)
       list.add(servers.get(id));
     return list;
@@ -334,7 +334,8 @@ public class MBeanServerFactory
 	    builder.getClass() != MBeanServerBuilder.class)
 	  builder = new MBeanServerBuilder();
       }
-    else if (!(builderClass.equals(builder.getClass().getName())))
+    else if (!(builder != null &&
+	       builderClass.equals(builder.getClass().getName())))
       {
 	ClassLoader cl = Thread.currentThread().getContextClassLoader();
 	if (cl == null)
@@ -394,10 +395,10 @@ public class MBeanServerFactory
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
       sm.checkPermission(new MBeanServerPermission("releaseMBeanServer"));
-    Iterator i = servers.values().iterator();
+    Iterator<MBeanServer> i = servers.values().iterator();
     while (i.hasNext())
       {
-	MBeanServer s = (MBeanServer) i.next();
+	MBeanServer s = i.next();
 	if (server == s)
 	  {
 	    i.remove();
