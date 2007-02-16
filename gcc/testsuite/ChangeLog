@@ -1,5 +1,11 @@
 2007-02-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
+	PR middle-end/30433
+	* gcc.c-torture/compile/pr30433.c: New testcase to check
+	that complex constants comparisions are foldded.
+
+2007-02-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
 	PR C++/30158
 	* g++.dg/ext/stmtexpr10.C: New testcase.
 
