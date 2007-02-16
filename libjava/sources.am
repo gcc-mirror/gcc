@@ -509,6 +509,7 @@ gnu/gcj/io.list: $(gnu_gcj_io_source_files)
 gnu_gcj_jvmti_source_files = \
 gnu/gcj/jvmti/Breakpoint.java \
 gnu/gcj/jvmti/BreakpointManager.java \
+gnu/gcj/jvmti/ExceptionEvent.java \
 gnu/gcj/jvmti/Location.java
 
 gnu_gcj_jvmti_header_files = $(patsubst %.java,%.h,$(gnu_gcj_jvmti_source_files))

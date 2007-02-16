@@ -2540,43 +2540,38 @@ details.  */
     }
   catch (java::lang::Throwable *ex)
     {
-#ifdef DIRECT_THREADED
-      void *logical_pc = (void *) ((insn_slot *) pc - 1);
-#else
-      int logical_pc = pc - 1 - meth->bytecode ();
+#ifdef DEBUG
+       // This needs to be done before the pc is changed.
+       jlong throw_loc = meth->insn_index (pc);
 #endif
-      _Jv_InterpException *exc = meth->exceptions ();
-      jclass exc_class = ex->getClass ();
-
-      for (int i = 0; i < meth->exc_count; i++)
-	{
-	  if (PCVAL (exc[i].start_pc) <= logical_pc
-	      && logical_pc < PCVAL (exc[i].end_pc))
-	    {
-#ifdef DIRECT_THREADED
-	      jclass handler = (jclass) exc[i].handler_type.p;
-#else
-	      jclass handler = NULL;
-	      if (exc[i].handler_type.i != 0)
-		handler = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
-							   exc[i].handler_type.i)).clazz;
-#endif /* DIRECT_THREADED */
-
-	      if (handler == NULL || handler->isAssignableFrom (exc_class))
-		{
-
-#ifdef DIRECT_THREADED
-		  pc = (insn_slot *) exc[i].handler_pc.p;
-#else
-		  pc = meth->bytecode () + exc[i].handler_pc.i;
-#endif /* DIRECT_THREADED */
-		  sp = stack;
-		  sp++->o = ex; // Push exception.
-		  NEXT_INSN;
-		}
-	    }
-	}
-
+      // Check if the exception is handled and, if so, set the pc to the start
+      // of the appropriate catch block.
+      if (meth->check_handler (&pc, meth, ex))
+        {
+          sp = stack;
+          sp++->o = ex; // Push exception.
+#ifdef DEBUG
+          if (JVMTI_REQUESTED_EVENT (Exception))
+            {
+              using namespace gnu::gcj::jvmti;
+              jlong throw_meth = reinterpret_cast<jlong> (meth->get_method ());
+              jlong catch_loc = meth->insn_index (pc);
+              ExceptionEvent::postExceptionEvent (thread, throw_meth,
+                                                  throw_loc, ex, throw_meth,
+                                                  catch_loc);
+            }
+#endif
+          NEXT_INSN;
+        }
+#ifdef DEBUG
+      if (JVMTI_REQUESTED_EVENT (Exception))
+        {
+          using namespace gnu::gcj::jvmti;
+          jlong throw_meth = reinterpret_cast<jlong> (meth->get_method ());
+          ExceptionEvent::postExceptionEvent (thread, throw_meth, throw_loc,
+                                              ex, NULL, NULL);
+        }
+#endif
       // No handler, so re-throw.
       throw ex;
     }

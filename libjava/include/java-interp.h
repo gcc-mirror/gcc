@@ -229,6 +229,11 @@ class _Jv_InterpMethod : public _Jv_MethodBase
   // Convenience function for indexing bytecode PC/insn slots in
   // line tables for JDWP
   jlong insn_index (pc_t pc);
+  
+  // Helper function used to check if there is a handler for an exception
+  // present at this code index
+  jboolean check_handler (pc_t *pc, _Jv_InterpMethod *meth,
+                     java::lang::Throwable *ex);
    
   /* Get the line table for this method.
    * start  is the lowest index in the method
