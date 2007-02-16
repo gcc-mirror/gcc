@@ -1631,7 +1631,12 @@ tree
 finish_stmt_expr_expr (tree expr, tree stmt_expr)
 {
   if (error_operand_p (expr))
-    return error_mark_node;
+    {
+      /* The type of the statement-expression is the type of the last
+         expression.  */
+      TREE_TYPE (stmt_expr) = error_mark_node;
+      return error_mark_node;
+    }
 
   /* If the last statement does not have "void" type, then the value
      of the last statement is the value of the entire expression.  */
