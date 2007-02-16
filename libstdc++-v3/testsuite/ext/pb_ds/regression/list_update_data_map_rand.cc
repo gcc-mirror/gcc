@@ -1,9 +1,4 @@
 // { dg-options "-DPB_DS_REGRESSION" }
-// { dg-bogus "In member function" "PR 30768, ICE" { xfail cris-*-* } 0 }
-// { dg-bogus "internal compiler error" "ICE" { xfail cris-*-* } 0 }
-// { dg-bogus "submit a full bug report" "ICE" { xfail cris-*-* } 0 }
-// { dg-bogus "preprocessed source" "ICE" { xfail cris-*-* } 0 }
-// { dg-bogus "bugs.html" "ICE" { xfail cris-*-* } 0 }
 // -*- C++ -*-
 
 // Copyright (C) 2005, 2006 Free Software Foundation, Inc.
