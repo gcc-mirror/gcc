@@ -1,3 +1,9 @@
+2007-02-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/30787
+	* loop.c (strength_reduce): Don't reduce giv that is not always
+	executed and where add_val or mult_val can trap.
+
 2007-02-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR other/27843
@@ -565,7 +571,7 @@
 2006-11-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/install.texi (sparc-sun-solaris2*): Update GMP/MPFR build
-	instructions.
+
 	(sparc64-sun-solaris2*): Likewise.
 
 2006-11-02  Zdenek Dvorak <dvorakz@suse.cz>
