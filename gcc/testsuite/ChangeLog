@@ -1,3 +1,8 @@
+2007-02-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/30512
+	* gfortran.dg/maxlocval_1.f90: New test.
+
 2007-02-16  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/30720
@@ -89,8 +94,6 @@
 	PR debug/30189
 	* gcc.dg/pr30189.c: New test.
 
-<<<<<<< .working
-=======
 2007-02-05      Dwarakanath Rajagopal <dwarak.rajagopal@amd.com>
 
         * gcc.dg/i386-cpuid.h: Test whether SSE4A is supported
@@ -114,7 +117,6 @@
 	PR fortran/30611
 	* gfortran.dg/repeat_1.f90: New test.
 
->>>>>>> .merge-right.r121773
 2007-02-04  Steven G. Kargl <kargl@gcc.gnu.org>
 
 	PR fortran/30605

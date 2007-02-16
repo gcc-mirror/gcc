@@ -1,3 +1,30 @@
+2007-02-03  Thomas Koenig  <Thomas.Koenig@online.de>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/30512
+	* m4/iparm.m4: Use HUGE-1 for most negative integer.
+	* generated/maxloc1_8_i4.c: Regenerate.
+	* generated/maxloc0_8_i8.c: Regenerate.
+	* generated/maxloc1_16_i4.c: Regenerate.
+	* generated/maxloc0_16_i8.c: Regenerate.
+	* generated/maxval_i4.c: Regenerate.
+	* generated/maxloc1_4_i8.c: Regenerate.
+	* generated/maxloc0_16_i16.c: Regenerate.
+	* generated/maxloc1_4_i16.c: Regenerate.
+	* generated/maxloc0_8_i16.c: Regenerate.
+	* generated/maxloc0_4_i4.c: Regenerate.
+	* generated/maxloc1_8_i8.c: Regenerate.
+	* generated/maxloc0_8_i4.c: Regenerate.
+	* generated/maxloc0_16_i4.c: Regenerate.
+	* generated/maxloc1_16_i8.c: Regenerate.
+	* generated/maxloc1_4_i4.c: Regenerate.
+	* generated/maxval_i8.c: Regenerate.
+	* generated/maxloc0_4_i16.c: Regenerate.
+	* generated/maxloc1_8_i16.c: Regenerate.
+	* generated/maxloc0_4_i8.c: Regenerate.
+	* generated/maxloc1_16_i16.c: Regenerate.
+	* generated/maxval_i16.c: Regenerate.
+
 2007-02-16  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/30611

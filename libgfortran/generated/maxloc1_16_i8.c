@@ -140,7 +140,7 @@ maxloc1_16_i8 (gfc_array_i16 * const restrict retarray,
       {
 
   GFC_INTEGER_8 maxval;
-  maxval = -GFC_INTEGER_8_HUGE;
+  maxval = (-GFC_INTEGER_8_HUGE-1);
   result = 0;
         if (len <= 0)
 	  *dest = 0;
@@ -315,7 +315,7 @@ mmaxloc1_16_i8 (gfc_array_i16 * const restrict retarray,
       {
 
   GFC_INTEGER_8 maxval;
-  maxval = -GFC_INTEGER_8_HUGE;
+  maxval = (-GFC_INTEGER_8_HUGE-1);
   result = 0;
         if (len <= 0)
 	  *dest = 0;
