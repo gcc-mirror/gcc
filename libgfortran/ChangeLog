@@ -1,3 +1,7 @@
+2007-02-16  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* runtime/memory.c (deallocate): Correct comment.
+
 2007-02-10  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* Makefile.am:  Use $(M4) instead of m4.
