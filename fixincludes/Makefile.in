@@ -184,7 +184,7 @@ install : all
 	  $(DESTDIR)$(itoolsdir)/fixincl@EXEEXT@
 	$(INSTALL_SCRIPT) mkheaders $(DESTDIR)$(itoolsdir)/mkheaders
 
-.PHONY: dvi info html install-html
+.PHONY: dvi pdf info html install-html
 
 dvi :
 pdf :
