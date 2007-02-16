@@ -3240,7 +3240,8 @@ gfc_generate_function_code (gfc_namespace * ns)
 
       if (result != NULL_TREE && sym->attr.function
 	    && sym->ts.type == BT_DERIVED
-	    && sym->ts.derived->attr.alloc_comp)
+	    && sym->ts.derived->attr.alloc_comp
+	    && !sym->attr.pointer)
 	{
 	  rank = sym->as ? sym->as->rank : 0;
 	  tmp2 = gfc_nullify_alloc_comp (sym->ts.derived, result, rank);
