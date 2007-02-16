@@ -1044,6 +1044,8 @@ const int x86_use_simode_fiop = ~(m_PPRO | m_ATHLON_K8_AMDFAM10 | m_PENT
                                   | m_CORE2 | m_GENERIC);
 const int x86_use_mov0 = m_K6;
 const int x86_use_cltd = ~(m_PENT | m_K6 | m_CORE2 | m_GENERIC);
+/* Use xchgb %rh,%rl instead of rolw/rorw $8,rx.  */
+const int x86_use_xchgb = m_PENT4;
 const int x86_read_modify_write = ~m_PENT;
 const int x86_read_modify = ~(m_PENT | m_PPRO);
 const int x86_split_long_moves = m_PPRO;

@@ -1,5 +1,16 @@
+2007-02-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (x86_use_xchgb): New.
+	(TARGET_USE_XCHGB): New macro.
+	* config/i386/i386.c (x86_use_xchgb): Set for PENT4.
+	* config/i386/i386.md (*rotlhi3_1 splitter, *rotrhi3_1 splitter):
+	Split after reload into bswaphi for shifts of 8.
+	(bswaphi_lowpart): Generate rolw insn for HImode byte swaps.
+	(*bswaphi_lowpart_1): Generate xchgb for Q registers for TARGET_XCHGB
+	or when optimizing for size.
+	
 2007-02-16  Richard Guenther  <rguenther@suse.de>
-	Christian Bruel  <christian.bruel@st.com>
+	    Christian Bruel  <christian.bruel@st.com>
 
 	* fold-const.c (tree_swap_operands_p): Treat SSA_NAMEs like
 	DECLs but prefer SSA_NAMEs over DECLs.
