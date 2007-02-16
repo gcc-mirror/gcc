@@ -1,3 +1,8 @@
+2007-02-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/30729
+	* gcc.dg/Wunused-value-2.c: New testcase.
+
 2007-02-15  Ian Lance Taylor  <iant@google.com>
 
 	* g++.dg/eh/subreg-1.C: New test.
