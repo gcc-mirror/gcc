@@ -1,3 +1,8 @@
+2007-02-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/30779
+	* gfortran.dg/error_recovery_3.f90: New test.
+
 2007-02-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/30512

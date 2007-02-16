@@ -660,6 +660,9 @@ restart:
 	skip_comment_line ();
       else
 	gfc_advance_line ();
+      
+      if (gfc_at_eof())
+	goto not_continuation;
 
       /* We've got a continuation line.  If we are on the very next line after
 	 the last continuation, increment the continuation line count and
