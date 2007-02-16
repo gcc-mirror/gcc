@@ -8665,6 +8665,15 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	target = expand_vec_cond_expr (exp, target);
 	return target;
 
+    case MODIFY_EXPR:
+      {
+	tree lhs = TREE_OPERAND (exp, 0);
+	tree rhs = TREE_OPERAND (exp, 1);
+	gcc_assert (ignore);
+	expand_assignment (lhs, rhs);
+	return const0_rtx;
+      }
+
     case GIMPLE_MODIFY_STMT:
       {
 	tree lhs = GIMPLE_STMT_OPERAND (exp, 0);
@@ -8700,7 +8709,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  }
 
 	expand_assignment (lhs, rhs);
-
 	return const0_rtx;
       }
 

@@ -1896,14 +1896,11 @@ expr_align (tree t)
       align1 = TYPE_ALIGN (TREE_TYPE (t));
       return MAX (align0, align1);
 
-    case MODIFY_EXPR:
-      /* FIXME tuples: It is unclear to me if this function, which
-         is only called from ADA, is called on gimple or non gimple
-         trees.  Let's assume it's from gimple trees unless we hit
-         this abort.  */
+    case GIMPLE_MODIFY_STMT:
+      /* We should never ask for the alignment of a gimple statement.  */
       gcc_unreachable ();
 
-    case SAVE_EXPR:         case COMPOUND_EXPR:       case GIMPLE_MODIFY_STMT:
+    case SAVE_EXPR:         case COMPOUND_EXPR:       case MODIFY_EXPR:
     case INIT_EXPR:         case TARGET_EXPR:         case WITH_CLEANUP_EXPR:
     case CLEANUP_POINT_EXPR:
       /* These don't change the alignment of an object.  */
@@ -3062,16 +3059,14 @@ build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
 
   gcc_assert (TREE_CODE_LENGTH (code) == 2);
 
-  if (code == MODIFY_EXPR && cfun && cfun->gimplified)
-    {
-      /* We should be talking GIMPLE_MODIFY_STMT by now.  */
-      gcc_unreachable ();
-    }
-
-  /* FIXME tuples: For now let's be lazy; later we must rewrite all
-     build2 calls to build2_gimple calls.  */
-  if (TREE_CODE_CLASS (code) == tcc_gimple_stmt)
-    return build2_gimple (code, arg0, arg1);
+#if 1
+  /* FIXME tuples: Statement's aren't expressions!  */
+  if (code == GIMPLE_MODIFY_STMT)
+    return build_gimple_modify_stmt_stat (arg0, arg1 PASS_MEM_STAT);
+#else
+  /* Must use build_gimple_modify_stmt to construct GIMPLE_MODIFY_STMTs.  */
+  gcc_assert (code != GIMPLE_MODIFY_STMT);
+#endif
 
   t = make_node_stat (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
@@ -3104,31 +3099,18 @@ build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
 }
 
 
-/* Similar as build2_stat, but for GIMPLE tuples.  For convenience's sake,
-   arguments and return type are trees.  */
+/* Build a GIMPLE_MODIFY_STMT node.  This tree code doesn't have a
+   type, so we can't use build2 (a.k.a. build2_stat).  */
 
 tree
-build2_gimple_stat (enum tree_code code, tree arg0, tree arg1 MEM_STAT_DECL)
+build_gimple_modify_stmt_stat (tree arg0, tree arg1 MEM_STAT_DECL)
 {
-  bool side_effects;
   tree t;
 
-  gcc_assert (TREE_CODE_LENGTH (code) == 2);
-
-  t = make_node_stat (code PASS_MEM_STAT);
-
-  side_effects = TREE_SIDE_EFFECTS (t);
-
+  t = make_node_stat (GIMPLE_MODIFY_STMT PASS_MEM_STAT);
   /* ?? We don't care about setting flags for tuples...  */
   GIMPLE_STMT_OPERAND (t, 0) = arg0;
   GIMPLE_STMT_OPERAND (t, 1) = arg1;
-
-  /* ...except perhaps side_effects and volatility.  ?? */
-  TREE_SIDE_EFFECTS (t) = side_effects;
-  TREE_THIS_VOLATILE (t) = (TREE_CODE_CLASS (code) == tcc_reference
-	             	    && arg0 && TREE_THIS_VOLATILE (arg0));
-
-
   return t;
 }
 

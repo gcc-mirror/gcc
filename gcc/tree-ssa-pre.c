@@ -1,5 +1,6 @@
 /* SSA-PRE for trees.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org> and Steven Bosscher
    <stevenb@suse.de>
 
@@ -2606,7 +2607,7 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
       || TREE_CODE (TREE_TYPE (expr)) == VECTOR_TYPE)
     DECL_GIMPLE_REG_P (temp) = 1;
 
-  newexpr = build2_gimple (GIMPLE_MODIFY_STMT, temp, newexpr);
+  newexpr = build_gimple_modify_stmt (temp, newexpr);
   name = make_ssa_name (temp, newexpr);
   GIMPLE_STMT_OPERAND (newexpr, 0) = name;
   NECESSARY (newexpr) = 0;
@@ -3385,7 +3386,7 @@ static tree
 poolify_modify_stmt (tree op1, tree op2)
 {
   if (modify_expr_template == NULL)
-    modify_expr_template = build2_gimple (GIMPLE_MODIFY_STMT, op1, op2);
+    modify_expr_template = build_gimple_modify_stmt (op1, op2);
 
   GIMPLE_STMT_OPERAND (modify_expr_template, 0) = op1;
   GIMPLE_STMT_OPERAND (modify_expr_template, 1) = op2;
@@ -3486,7 +3487,7 @@ realify_fake_stores (void)
       if (NECESSARY (stmt))
 	{
 	  block_stmt_iterator bsi;
-	  tree newstmt;
+	  tree newstmt, tmp;
 
 	  /* Mark the temp variable as referenced */
 	  add_referenced_var (SSA_NAME_VAR (GIMPLE_STMT_OPERAND (stmt, 0)));
@@ -3497,9 +3498,9 @@ realify_fake_stores (void)
 	     as a plain ssa name copy.  */
 	  bsi = bsi_for_stmt (stmt);
 	  bsi_prev (&bsi);
-	  newstmt = build2_gimple (GIMPLE_MODIFY_STMT,
-			           GIMPLE_STMT_OPERAND (stmt, 0),
-			    	   GIMPLE_STMT_OPERAND (bsi_stmt (bsi), 1));
+	  tmp = GIMPLE_STMT_OPERAND (bsi_stmt (bsi), 1);
+	  newstmt = build_gimple_modify_stmt (GIMPLE_STMT_OPERAND (stmt, 0),
+					      tmp);
 	  SSA_NAME_DEF_STMT (GIMPLE_STMT_OPERAND (newstmt, 0)) = newstmt;
 	  bsi_insert_before (&bsi, newstmt, BSI_SAME_STMT);
 	  bsi = bsi_for_stmt (stmt);

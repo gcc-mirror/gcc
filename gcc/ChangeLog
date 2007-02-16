@@ -1,3 +1,40 @@
+2007-02-15  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/30391
+	* tree.c (expr_align): Handle MODIFY_EXPR.  GIMPLE_MODIFY_STMT
+	should be unreachable.
+	(build2_stat): Allow construction of MODIFY_EXPR at any time.
+	For the time being redirect GIMPLE_MODIFY_STMT to the new
+	(renamed) build_gimple_modify_stmt_stat.
+	(build2_gimple_stat): Rename to...
+	(build_gimple_modify_stmt_stat): Now longer take a CODE argument.
+	Always build a GIMPLE_MODIFY_STMT node.
+	* tree.h (build2_gimple, build2_gimple_stat): Delete.
+	(build_gimple_modify_stmt, build_gimple_modify_stmt_stat): New
+	declarations.
+
+	* tree-cfg.c (factor_computed_gotos, tree_merge_blocks,
+	gimplify_val): Use build_gimple_modify_stmt instead of build2_gimple.
+	* tree-complex.c (set_component_ssa_name, expand_complex_move,
+	expand_complex_div_wide): Likewise.
+	* tree-ssa-dom.c (record_equivalences_from_stmt): Likewise.
+	* tree-ssa-loop-im.c (schedule_sm): Likewise.
+	* tree-ssa-loop-ivopts.c (rewrite_use_nonlinear_expr): Likewise.
+	* tree-ssa-loop-manip.c (create_iv): Likewise.
+	* tree-ssa-phiopt.c (conditional_replacement, minmax_replacement,
+	abs_replacement): Likewise.
+	* tree-ssa-pre.c (create_expression_by_pieces, poolify_modify_stmt,
+	realify_fake_stores): Likewise.
+
+	* builtins.c (std_expand_builtin_va_start): Build a MODIFY_EXPR
+	node rather than a GIMPLE_MODIFY_STMT node.
+	(std_gimpify_va_arg_expr, expand_builtin_va_copy,
+	fold_builtin_memset, fold_builtin_memory_op, do_mpfr_sincos):
+	Likewise.
+	(integer_valued_real_p): Handle MODIFY_EXPR, not GIMPLE_MODIFY_STMT.
+	* expr.c (expand_expr_real_1): Handle both MODIFY_EXPR and
+	GIMPLE_MODIFY_STMT.
+
 2007-02-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/30433

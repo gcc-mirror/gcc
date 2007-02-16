@@ -3684,8 +3684,6 @@ extern tree build1_stat (enum tree_code, tree, tree MEM_STAT_DECL);
 #define build1(c,t1,t2) build1_stat (c,t1,t2 MEM_STAT_INFO)
 extern tree build2_stat (enum tree_code, tree, tree, tree MEM_STAT_DECL);
 #define build2(c,t1,t2,t3) build2_stat (c,t1,t2,t3 MEM_STAT_INFO)
-extern tree build2_gimple_stat (enum tree_code, tree, tree MEM_STAT_DECL);
-#define build2_gimple(c,t1,t2) build2_gimple_stat (c,t1,t2 MEM_STAT_INFO)
 extern tree build3_stat (enum tree_code, tree, tree, tree, tree MEM_STAT_DECL);
 #define build3(c,t1,t2,t3,t4) build3_stat (c,t1,t2,t3,t4 MEM_STAT_INFO)
 extern tree build4_stat (enum tree_code, tree, tree, tree, tree,
@@ -3698,6 +3696,10 @@ extern tree build7_stat (enum tree_code, tree, tree, tree, tree, tree,
 			 tree, tree, tree MEM_STAT_DECL);
 #define build7(c,t1,t2,t3,t4,t5,t6,t7,t8) \
   build7_stat (c,t1,t2,t3,t4,t5,t6,t7,t8 MEM_STAT_INFO)
+
+extern tree build_gimple_modify_stmt_stat (tree, tree MEM_STAT_DECL);
+#define build_gimple_modify_stmt(t1,t2) \
+  build_gimple_modify_stmt_stat (t1,t2 MEM_STAT_INFO)
 
 extern tree build_int_cst (tree, HOST_WIDE_INT);
 extern tree build_int_cst_type (tree, HOST_WIDE_INT);

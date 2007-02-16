@@ -294,8 +294,8 @@ factor_computed_gotos (void)
 	    }
 
 	  /* Copy the original computed goto's destination into VAR.  */
-	  assignment = build2_gimple (GIMPLE_MODIFY_STMT,
-			              var, GOTO_DESTINATION (last));
+	  assignment = build_gimple_modify_stmt (var,
+						 GOTO_DESTINATION (last));
 	  bsi_insert_before (&bsi, assignment, BSI_SAME_STMT);
 
 	  /* And re-vector the computed goto to the new destination.  */
@@ -1260,7 +1260,7 @@ tree_merge_blocks (basic_block a, basic_block b)
 	     with ordering of phi nodes.  This is because A is the single
 	     predecessor of B, therefore results of the phi nodes cannot
 	     appear as arguments of the phi nodes.  */
-	  copy = build2_gimple (GIMPLE_MODIFY_STMT, def, use);
+	  copy = build_gimple_modify_stmt (def, use);
 	  bsi_insert_after (&bsi, copy, BSI_NEW_STMT);
 	  SSA_NAME_DEF_STMT (def) = copy;
           remove_phi_node (phi, NULL, false);
@@ -5646,7 +5646,7 @@ gimplify_val (block_stmt_iterator *bsi, tree type, tree exp)
     return exp;
 
   t = make_rename_temp (type, NULL);
-  new_stmt = build2_gimple (GIMPLE_MODIFY_STMT, t, exp);
+  new_stmt = build_gimple_modify_stmt (t, exp);
 
   orig_stmt = bsi_stmt (*bsi);
   SET_EXPR_LOCUS (new_stmt, EXPR_LOCUS (orig_stmt));
