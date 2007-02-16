@@ -1133,7 +1133,7 @@ freebsd1*)
   ;;
 
 freebsd*)
-  objformat=`test -x /usr/bin/objformat && /usr/bin/objformat || echo aout`
+  objformat=`test -x /usr/bin/objformat && /usr/bin/objformat || echo elf`
   version_type=freebsd-$objformat
   case $version_type in
     freebsd-elf*)
