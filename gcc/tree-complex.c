@@ -1,5 +1,5 @@
 /* Lower complex number operations to scalar operations.
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
    
@@ -532,7 +532,7 @@ set_component_ssa_name (tree ssa_name, bool imag_p, tree value)
   
   /* Do all the work to assign VALUE to COMP.  */
   value = force_gimple_operand (value, &list, false, NULL);
-  last = build2_gimple (GIMPLE_MODIFY_STMT, comp, value);
+  last = build_gimple_modify_stmt (comp, value);
   append_to_statement_list (last, &list);
 
   gcc_assert (SSA_NAME_DEF_STMT (comp) == NULL);
@@ -773,7 +773,7 @@ expand_complex_move (block_stmt_iterator *bsi, tree stmt, tree type,
       i = extract_component (bsi, rhs, 1, false);
 
       x = build1 (REALPART_EXPR, inner_type, unshare_expr (lhs));
-      x = build2_gimple (GIMPLE_MODIFY_STMT, x, r);
+      x = build_gimple_modify_stmt (x, r);
       bsi_insert_before (bsi, x, BSI_SAME_STMT);
 
       if (stmt == bsi_stmt (*bsi))
@@ -785,7 +785,7 @@ expand_complex_move (block_stmt_iterator *bsi, tree stmt, tree type,
       else
 	{
 	  x = build1 (IMAGPART_EXPR, inner_type, unshare_expr (lhs));
-	  x = build2_gimple (GIMPLE_MODIFY_STMT, x, i);
+	  x = build_gimple_modify_stmt (x, i);
 	  bsi_insert_before (bsi, x, BSI_SAME_STMT);
 
 	  stmt = bsi_stmt (*bsi);
@@ -1115,9 +1115,9 @@ expand_complex_div_wide (block_stmt_iterator *bsi, tree inner_type,
 
      if (bb_true)
        {
-	 t1 = build2_gimple (GIMPLE_MODIFY_STMT, rr, tr);
+	 t1 = build_gimple_modify_stmt (rr, tr);
 	 bsi_insert_before (bsi, t1, BSI_SAME_STMT);
-	 t1 = build2_gimple (GIMPLE_MODIFY_STMT, ri, ti);
+	 t1 = build_gimple_modify_stmt (ri, ti);
 	 bsi_insert_before (bsi, t1, BSI_SAME_STMT);
 	 bsi_remove (bsi, true);
        }
@@ -1154,9 +1154,9 @@ expand_complex_div_wide (block_stmt_iterator *bsi, tree inner_type,
 
      if (bb_false)
        {
-	 t1 = build2_gimple (GIMPLE_MODIFY_STMT, rr, tr);
+	 t1 = build_gimple_modify_stmt (rr, tr);
 	 bsi_insert_before (bsi, t1, BSI_SAME_STMT);
-	 t1 = build2_gimple (GIMPLE_MODIFY_STMT, ri, ti);
+	 t1 = build_gimple_modify_stmt (ri, ti);
 	 bsi_insert_before (bsi, t1, BSI_SAME_STMT);
 	 bsi_remove (bsi, true);
        }
