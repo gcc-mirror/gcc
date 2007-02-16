@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=nocona" } */
+/* { dg-options "-O2" } */
 /* { dg-final { scan-assembler-not "builtin_bswap" } } */
 
 long foo (long a)

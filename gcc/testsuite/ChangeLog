@@ -1,5 +1,12 @@
+2007-02-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/builtin-bswap-1.c: Remove -march=nocona.
+	* gcc.target/i386/builtin-bswap-3.c: Ditto.
+	* gcc.target/i386/xchg-1.c: New test.
+	* gcc.target/i386/xchg-2.c: New test. 
+
 2007-02-16  Richard Guenther  <rguenther@suse.de>
-	Christian Bruel  <christian.bruel@st.com>
+	    Christian Bruel  <christian.bruel@st.com>
 
 	* gcc.dg/strict-overflow-5.c: New testcase.
 

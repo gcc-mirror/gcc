@@ -185,8 +185,8 @@ extern const int x86_use_bit_test, x86_cmove, x86_deep_branch;
 extern const int x86_branch_hints, x86_unroll_strlen;
 extern const int x86_double_with_add, x86_partial_reg_stall, x86_movx;
 extern const int x86_use_himode_fiop, x86_use_simode_fiop;
-extern const int x86_use_mov0, x86_use_cltd, x86_read_modify_write;
-extern const int x86_read_modify, x86_split_long_moves;
+extern const int x86_use_mov0, x86_use_cltd, x86_use_xchgb;
+extern const int x86_read_modify_write, x86_read_modify, x86_split_long_moves;
 extern const int x86_promote_QImode, x86_single_stringop, x86_fast_prefix;
 extern const int x86_himode_math, x86_qimode_math, x86_promote_qi_regs;
 extern const int x86_promote_hi_regs, x86_integer_DFmode_moves;
@@ -228,6 +228,7 @@ extern int x86_prefetch_sse, x86_cmpxchg16b;
 #define TARGET_USE_SIMODE_FIOP (x86_use_simode_fiop & TUNEMASK)
 #define TARGET_USE_MOV0 (x86_use_mov0 & TUNEMASK)
 #define TARGET_USE_CLTD (x86_use_cltd & TUNEMASK)
+#define TARGET_USE_XCHGB (x86_use_xchgb & TUNEMASK)
 #define TARGET_SPLIT_LONG_MOVES (x86_split_long_moves & TUNEMASK)
 #define TARGET_READ_MODIFY_WRITE (x86_read_modify_write & TUNEMASK)
 #define TARGET_READ_MODIFY (x86_read_modify & TUNEMASK)
