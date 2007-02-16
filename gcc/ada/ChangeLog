@@ -1,3 +1,18 @@
+2007-02-16  Eric Botcazou  <ebotcazou@adacore.com>
+            Sandra Loosemore  <sandra@codesourcery.com>
+
+	* trans.c (call_to_gnu):  Use build_call_list instead of build3 to
+	build the call expression.
+	(gnat_stabilize_reference_1): Handle tcc_vl_exp.
+	* utils.c (max_size) <tcc_exceptional>: Delete.
+	<tcc_vl_exp>: New case.
+	<tcc_expression>: Delete CALL_EXPR subcase.
+	(build_global_cdtor): Use build_call_nary instead of build3.
+	* utils2.c (build_call_1_expr): Likewise.
+	(build_call_2_expr): Likewise.
+	(build_call_0_expr): Likewise.
+	(build_call_alloc_dealloc): Likewise.
+
 2007-02-07  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* raise-gcc.c (get_region_description_for, get_call_site_action_for,

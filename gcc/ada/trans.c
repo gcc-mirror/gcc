@@ -389,12 +389,12 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
      enclosing block, but we have no way of testing that right now.
 
      ??? We used to essentially set the TREE_ADDRESSABLE flag on the variable
-     here, but it can now be removed by the Tree aliasing machinery if the
-     address of the variable is never taken.  All we can do is to make the
-     variable volatile, which might incur the generation of temporaries just
-     to access the memory in some circumstances.  This can be avoided for
-     variables of non-constant size because they are automatically allocated
-     to memory.  There might be no way of allocating a proper temporary for
+     here, but it can now be removed by the Tree aliasing machinery if the
+     address of the variable is never taken.  All we can do is to make the
+     variable volatile, which might incur the generation of temporaries just
+     to access the memory in some circumstances.  This can be avoided for
+     variables of non-constant size because they are automatically allocated
+     to memory.  There might be no way of allocating a proper temporary for
      them in any case.  We only do this for SJLJ though.  */
   if (TREE_VALUE (gnu_except_ptr_stack)
       && TREE_CODE (gnu_result) == VAR_DECL
@@ -1992,9 +1992,9 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
       gnu_actual_list = tree_cons (NULL_TREE, gnu_actual, gnu_actual_list);
     }
 
-  gnu_subprog_call = build3 (CALL_EXPR, TREE_TYPE (gnu_subprog_type),
-			     gnu_subprog_addr, nreverse (gnu_actual_list),
-			     NULL_TREE);
+  gnu_subprog_call = build_call_list (TREE_TYPE (gnu_subprog_type),
+				      gnu_subprog_addr,
+				      nreverse (gnu_actual_list));
 
   /* If we return by passing a target, we emit the call and return the target
      as our result.  */
@@ -6132,6 +6132,7 @@ gnat_stabilize_reference_1 (tree e, bool force)
     case tcc_statement:
     case tcc_expression:
     case tcc_reference:
+    case tcc_vl_exp:
       /* If this is a COMPONENT_REF of a fat pointer, save the entire
 	 fat pointer.  This may be more efficient, but will also allow
 	 us to more easily find the match for the PLACEHOLDER_EXPR.  */
