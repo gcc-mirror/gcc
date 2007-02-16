@@ -269,7 +269,7 @@ allocate64_array (void *mem, GFC_INTEGER_8 size, GFC_INTEGER_4 * stat)
   runtime_error ("Attempting to allocate already allocated array.");
 }
 
-/* User-deallocate; pointer is NULLified. */
+/* User-deallocate; pointer is then NULLified by the front-end. */
 
 extern void deallocate (void *, GFC_INTEGER_4 *);
 export_proto(deallocate);
