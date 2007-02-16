@@ -42,7 +42,12 @@ final class PosixProcess extends Process
 
     ProcessManager()
     {
-      super("ProcessManager");
+      // Use package private Thread constructor to place us in the
+      // root ThreadGroup with no InheritableThreadLocal.  If the
+      // InheritableThreadLocals were allowed to initialize, they could
+      // cause a Runtime.exec() to be called causing infinite
+      // recursion.
+      super("ProcessManager", true);
       // Don't keep the (main) process from exiting on our account.
       this.setDaemon(true);
     }
