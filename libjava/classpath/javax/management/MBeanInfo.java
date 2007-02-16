@@ -160,34 +160,26 @@ public class MBeanInfo
   {
     className = name;
     description = desc;
+
     if (attribs == null)
       attributes = new MBeanAttributeInfo[0];
     else
-      {
-	attributes = new MBeanAttributeInfo[attribs.length];
-	System.arraycopy(attribs, 0, attributes, 0, attribs.length);
-      }
+      attributes = (MBeanAttributeInfo[]) attribs.clone();
+
     if (cons == null)
       constructors = new MBeanConstructorInfo[0];
     else
-      {
-	constructors = new MBeanConstructorInfo[cons.length];
-	System.arraycopy(cons, 0, constructors, 0, cons.length);
-      }
+      constructors = (MBeanConstructorInfo[]) cons.clone();
+
     if (ops == null)
       operations = new MBeanOperationInfo[0];
     else
-      {
-	operations = new MBeanOperationInfo[ops.length];
-	System.arraycopy(ops, 0, operations, 0, ops.length);
-      }
+      operations = (MBeanOperationInfo[]) ops.clone();
+
     if (notifs == null)
       notifications = new MBeanNotificationInfo[0];
     else
-      {
-	notifications = new MBeanNotificationInfo[notifs.length];
-	System.arraycopy(notifs, 0, notifications, 0, notifs.length);
-      }
+      notifications = (MBeanNotificationInfo[]) notifs.clone();
   }
 
   /**
