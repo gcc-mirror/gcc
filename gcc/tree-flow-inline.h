@@ -560,17 +560,6 @@ has_single_use (tree var)
 }
 
 
-/* If VAR has only a single immediate use, return true.  */
-static inline bool
-single_imm_use_p (tree var)
-{
-  ssa_use_operand_t *ptr;
-
-  ptr = &(SSA_NAME_IMM_USE_NODE (var));
-  return (ptr != ptr->next && ptr == ptr->next->next);
-}
-
-
 /* If VAR has only a single immediate use, return true, and set USE_P and STMT
    to the use pointer and stmt of occurrence.  */
 static inline bool
@@ -603,14 +592,6 @@ num_imm_uses (tree var)
      num++;
 
   return num;
-}
-
-/* Return true if VAR has no immediate uses.  */
-static inline bool
-zero_imm_uses_p (tree var)
-{
-  ssa_use_operand_t *ptr = &(SSA_NAME_IMM_USE_NODE (var));
-  return (ptr == ptr->next);
 }
 
 /* Return the tree pointer to by USE.  */ 

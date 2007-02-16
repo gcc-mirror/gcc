@@ -1208,7 +1208,7 @@ replace_uses_by (tree name, tree val)
 	}
     }
 
-  gcc_assert (zero_imm_uses_p (name));
+  gcc_assert (has_zero_uses (name));
 
   /* Also update the trees stored in loop structures.  */
   if (current_loops)
