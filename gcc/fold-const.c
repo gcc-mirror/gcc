@@ -8852,6 +8852,29 @@ fold_comparison (enum tree_code code, tree type, tree op0, tree op1)
 	}
     }
 
+  /* If this is a comparison of complex values and both sides
+     are COMPLEX_CST, do the comparision by parts to fold the
+     comparision.  */
+  if ((code == EQ_EXPR || code == NE_EXPR)
+      && TREE_CODE (TREE_TYPE (arg0)) == COMPLEX_TYPE
+      && TREE_CODE (arg0) == COMPLEX_CST
+      && TREE_CODE (arg1) == COMPLEX_CST)
+    {
+      tree real0, imag0, real1, imag1;
+      enum tree_code outercode;
+
+      real0 = TREE_REALPART (arg0);
+      imag0 = TREE_IMAGPART (arg0);
+      real1 = TREE_REALPART (arg1);
+      imag1 = TREE_IMAGPART (arg1);
+      outercode = code == EQ_EXPR ? TRUTH_ANDIF_EXPR : TRUTH_ORIF_EXPR;
+
+      return fold_build2 (outercode, type,
+			  fold_build2 (code, type, real0, real1),
+			  fold_build2 (code, type, imag0, imag1));
+    }
+
+
   /* Fold a comparison of the address of COMPONENT_REFs with the same
      type and component to a comparison of the address of the base
      object.  In short, &x->a OP &y->a to x OP y and
