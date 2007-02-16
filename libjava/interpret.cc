@@ -43,6 +43,7 @@ details.  */
 #include <gnu/classpath/jdwp/Jdwp.h>
 #include <gnu/gcj/jvmti/Breakpoint.h>
 #include <gnu/gcj/jvmti/BreakpointManager.h>
+#include <gnu/gcj/jvmti/ExceptionEvent.h>
 
 #ifdef INTERPRETER
 
@@ -1365,6 +1366,51 @@ _Jv_InterpMethod::insn_index (pc_t pc)
 
   return -1;
 }
+
+// Method to check if an exception is caught at some location in a method
+// (meth).  Returns true if this method (meth) contains a catch block for the
+// exception (ex). False otherwise.  If there is a catch block, it sets the pc
+// to the location of the beginning of the catch block.
+jboolean
+_Jv_InterpMethod::check_handler (pc_t *pc, _Jv_InterpMethod *meth,
+                                java::lang::Throwable *ex)
+{
+#ifdef DIRECT_THREADED
+  void *logical_pc = (void *) ((insn_slot *) (*pc) - 1);
+#else
+  int logical_pc = (*pc) - 1 - meth->bytecode ();
+#endif
+  _Jv_InterpException *exc = meth->exceptions ();
+  jclass exc_class = ex->getClass ();
+
+  for (int i = 0; i < meth->exc_count; i++)
+    {
+      if (PCVAL (exc[i].start_pc) <= logical_pc
+          && logical_pc < PCVAL (exc[i].end_pc))
+        {
+#ifdef DIRECT_THREADED
+              jclass handler = (jclass) exc[i].handler_type.p;
+#else
+              jclass handler = NULL;
+              if (exc[i].handler_type.i != 0)
+                    handler
+                      = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
+                                                                             ex$
+#endif /* DIRECT_THREADED */
+              if (handler == NULL || handler->isAssignableFrom (exc_class))
+                {
+#ifdef DIRECT_THREADED
+                  (*pc) = (insn_slot *) exc[i].handler_pc.p;
+#else
+                  (*pc) = meth->bytecode () + exc[i].handler_pc.i;
+#endif /* DIRECT_THREADED */
+                  return true;
+                }
+          }
+      }
+  return false;
+}
+
 
 void
 _Jv_InterpMethod::get_line_table (jlong& start, jlong& end,

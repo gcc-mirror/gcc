@@ -1,3 +1,20 @@
+2007-02-15  Kyle Galloway  <kgallowa@redhat.com>
+	
+	* interpret.cc (_Jv_InterpMethod::check_handler): New method.
+    * interpret-run.cc: Change the catch section to report exception
+    events and to use the new check_handler method.
+    * include/java-interp.h (_Jv_InterpMethod): Add check_handler.
+    * gnu/gcj/jvmti/ExceptionEvent.java: New file.
+    * gnu/gcj/jvmti/ExceptionEvent.h: New file.
+    * gnu/gcj/jvmti/natExceptionEvent.cc: New file.
+    * libjava/classpath/lib/gnu/gcj/jvmti/ExceptionEvent.class: New
+    file.
+    * sources.am: Added ExceptionEvent.java.
+    * Makefile.am: Added natExceptionEvent.cc
+    * Makefile.in: Regenerated.
+    * include/Makefile.in: Regenerated.
+    * gcj/Makefile.in: Regenerated.
+
 2007-02-15  Johannes Schmidt  <jschmidt@avtrex.com>
 	David Daney  <ddaney@avtrex.com>
 
