@@ -1134,7 +1134,7 @@ gfc_compare_expr (gfc_expr * op1, gfc_expr * op2)
       break;
 
     case BT_CHARACTER:
-      rc = gfc_compare_string (op1, op2, NULL);
+      rc = gfc_compare_string (op1, op2);
       break;
 
     case BT_LOGICAL:
@@ -1162,11 +1162,11 @@ compare_complex (gfc_expr * op1, gfc_expr * op2)
 
 
 /* Given two constant strings and the inverse collating sequence, compare the
-   strings.  We return -1 for a < b, 0 for a == b and 1 for a > b.  If the
-   xcoll_table is NULL, we use the processor's default collating sequence.  */
+   strings.  We return -1 for a < b, 0 for a == b and 1 for a > b. 
+   We use the processor's default collating sequence.  */
 
 int
-gfc_compare_string (gfc_expr * a, gfc_expr * b, const int * xcoll_table)
+gfc_compare_string (gfc_expr *a, gfc_expr *b)
 {
   int len, alen, blen, i, ac, bc;
 
@@ -1181,12 +1181,6 @@ gfc_compare_string (gfc_expr * a, gfc_expr * b, const int * xcoll_table)
          would lead to ac < 0 for string[i] > 127.  */
       ac = (unsigned char) ((i < alen) ? a->value.character.string[i] : ' ');
       bc = (unsigned char) ((i < blen) ? b->value.character.string[i] : ' ');
-
-      if (xcoll_table != NULL)
-	{
-	  ac = xcoll_table[ac];
-	  bc = xcoll_table[bc];
-	}
 
       if (ac < bc)
 	return -1;

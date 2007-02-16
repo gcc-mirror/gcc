@@ -1962,9 +1962,6 @@ gfc_intrinsic_sym *gfc_find_function (const char *);
 match gfc_intrinsic_func_interface (gfc_expr *, int);
 match gfc_intrinsic_sub_interface (gfc_code *, int);
 
-/* simplify.c */
-void gfc_simplify_init_1 (void);
-
 /* match.c -- FIXME */
 void gfc_free_iterator (gfc_iterator *, int);
 void gfc_free_forall_iterator (gfc_forall_iterator *);

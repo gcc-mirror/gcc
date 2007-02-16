@@ -256,7 +256,6 @@ gfc_init_1 (void)
   gfc_scanner_init_1 ();
   gfc_arith_init_1 ();
   gfc_intrinsic_init_1 ();
-  gfc_simplify_init_1 ();
 }
 
 

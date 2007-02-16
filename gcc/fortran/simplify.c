@@ -64,31 +64,6 @@ gfc_expr gfc_bad_expr;
    everything is reasonably straight-forward.  The Standard, chapter 13
    is the best comment you'll find for this file anyway.  */
 
-/* Static table for converting non-ascii character sets to ascii.
-   The xascii_table[] is the inverse table.  */
-
-static int ascii_table[256] = {
-  '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
-  '\b', '\t', '\n', '\v', '\0', '\r', '\0', '\0',
-  '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
-  '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
-  ' ', '!', '"', '#', '$', '%', '&', '\'',
-  '(', ')', '*', '+', ',', '-', '.', '/',
-  '0', '1', '2', '3', '4', '5', '6', '7',
-  '8', '9', ':', ';', '<', '=', '>', '?',
-  '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
-  'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
-  'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
-  'X', 'Y', 'Z', '[', '\\', ']', '^', '_',
-  '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
-  'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-  'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
-  'x', 'y', 'z', '{', '|', '}', '~', '\?'
-};
-
-static int xascii_table[256];
-
-
 /* Range checks an expression node.  If all goes well, returns the
    node, otherwise returns &gfc_bad_expr and frees the node.  */
 
@@ -154,20 +129,56 @@ get_kind (bt type, gfc_expr * k, const char *name, int default_kind)
 }
 
 
-/* Checks if X, which is assumed to represent a two's complement
-   integer of binary width BITSIZE, has the signbit set.  If so, makes 
-   X the corresponding negative number.  */
+/* Converts an mpz_t signed variable into an unsigned one, assuming
+   two's complement representations and a binary width of bitsize.
+   The conversion is a no-op unless x is negative; otherwise, it can
+   be accomplished by masking out the high bits.  */
 
 static void
-twos_complement (mpz_t x, int bitsize)
+convert_mpz_to_unsigned (mpz_t x, int bitsize)
 {
   mpz_t mask;
 
+  if (mpz_sgn (x) < 0)
+    {
+      /* Confirm that no bits above the signed range are unset.  */
+      gcc_assert (mpz_scan0 (x, bitsize-1) == ULONG_MAX);
+
+      mpz_init_set_ui (mask, 1);
+      mpz_mul_2exp (mask, mask, bitsize);
+      mpz_sub_ui (mask, mask, 1);
+
+      mpz_and (x, x, mask);
+
+      mpz_clear (mask);
+    }
+  else
+    {
+      /* Confirm that no bits above the signed range are set.  */
+      gcc_assert (mpz_scan1 (x, bitsize-1) == ULONG_MAX);
+    }
+}
+
+
+/* Converts an mpz_t unsigned variable into a signed one, assuming
+   two's complement representations and a binary width of bitsize.
+   If the bitsize-1 bit is set, this is taken as a sign bit and
+   the number is converted to the corresponding negative number.  */
+
+
+static void
+convert_mpz_to_signed (mpz_t x, int bitsize)
+{
+  mpz_t mask;
+
+  /* Confirm that no bits above the unsigned range are set.  */
+  gcc_assert (mpz_scan1 (x, bitsize) == ULONG_MAX);
+
   if (mpz_tstbit (x, bitsize - 1) == 1)
     {
-      mpz_init_set_ui(mask, 1);
-      mpz_mul_2exp(mask, mask, bitsize);
-      mpz_sub_ui(mask, mask, 1);
+      mpz_init_set_ui (mask, 1);
+      mpz_mul_2exp (mask, mask, bitsize);
+      mpz_sub_ui (mask, mask, 1);
 
       /* We negate the number by hand, zeroing the high bits, that is
         make it the corresponding positive number, and then have it
@@ -229,24 +240,27 @@ gfc_simplify_abs (gfc_expr * e)
   return result;
 }
 
+/* We use the processor's collating sequence, because all
+   sytems that gfortran currently works on are ASCII.  */
 
 gfc_expr *
 gfc_simplify_achar (gfc_expr * e)
 {
   gfc_expr *result;
-  int index;
+  int c;
+  const char *ch;
 
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  /* We cannot assume that the native character set is ASCII in this
-     function.  */
-  if (gfc_extract_int (e, &index) != NULL || index < 0 || index > 127)
-    {
-      gfc_error ("Extended ASCII not implemented: argument of ACHAR at %L "
-		 "must be between 0 and 127", &e->where);
-      return &gfc_bad_expr;
-    }
+  ch = gfc_extract_int (e, &c);
+
+  if (ch != NULL)
+    gfc_internal_error ("gfc_simplify_achar: %s", ch);
+
+  if (gfc_option.warn_surprising && (c < 0 || c > 127))
+    gfc_warning ("Argument of ACHAR function at %L outside of range [0,127]",
+		 &e->where);
 
   result = gfc_constant_result (BT_CHARACTER, gfc_default_character_kind,
 				&e->where);
@@ -254,7 +268,7 @@ gfc_simplify_achar (gfc_expr * e)
   result->value.character.string = gfc_getmem (2);
 
   result->value.character.length = 1;
-  result->value.character.string[0] = ascii_table[index];
+  result->value.character.string[0] = c;
   result->value.character.string[1] = '\0';	/* For debugger */
   return result;
 }
@@ -677,6 +691,7 @@ gfc_simplify_char (gfc_expr * e, gfc_expr * k)
 {
   gfc_expr *result;
   int c, kind;
+  const char *ch;
 
   kind = get_kind (BT_CHARACTER, k, "CHAR", gfc_default_character_kind);
   if (kind == -1)
@@ -685,11 +700,14 @@ gfc_simplify_char (gfc_expr * e, gfc_expr * k)
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  if (gfc_extract_int (e, &c) != NULL || c < 0 || c > UCHAR_MAX)
-    {
-      gfc_error ("Bad character in CHAR function at %L", &e->where);
-      return &gfc_bad_expr;
-    }
+  ch = gfc_extract_int (e, &c);
+
+  if (ch != NULL)
+    gfc_internal_error ("gfc_simplify_char: %s", ch);
+
+  if (c < 0 || c > UCHAR_MAX)
+    gfc_error ("Argument of CHAR function at %L outside of range [0,255]",
+	       &e->where);
 
   result = gfc_constant_result (BT_CHARACTER, kind, &e->where);
 
@@ -1213,6 +1231,8 @@ gfc_simplify_huge (gfc_expr * e)
   return result;
 }
 
+/* We use the processor's collating sequence, because all
+   sytems that gfortran currently works on are ASCII.  */
 
 gfc_expr *
 gfc_simplify_iachar (gfc_expr * e)
@@ -1229,7 +1249,11 @@ gfc_simplify_iachar (gfc_expr * e)
       return &gfc_bad_expr;
     }
 
-  index = xascii_table[(int) e->value.character.string[0] & 0xFF];
+  index = (unsigned char) e->value.character.string[0];
+
+  if (gfc_option.warn_surprising && index > 127)
+    gfc_warning ("Argument of IACHAR function at %L outside of range 0..127",
+		 &e->where);
 
   result = gfc_int_expr (index);
   result->where = e->where;
@@ -1280,7 +1304,14 @@ gfc_simplify_ibclr (gfc_expr * x, gfc_expr * y)
 
   result = gfc_copy_expr (x);
 
+  convert_mpz_to_unsigned (result->value.integer,
+			   gfc_integer_kinds[k].bit_size);
+
   mpz_clrbit (result->value.integer, pos);
+
+  convert_mpz_to_signed (result->value.integer,
+			 gfc_integer_kinds[k].bit_size);
+
   return range_check (result, "IBCLR");
 }
 
@@ -1316,9 +1347,8 @@ gfc_simplify_ibits (gfc_expr * x, gfc_expr * y, gfc_expr * z)
 
   if (pos + len > bitsize)
     {
-      gfc_error
-	("Sum of second and third arguments of IBITS exceeds bit size "
-	 "at %L", &y->where);
+      gfc_error ("Sum of second and third arguments of IBITS exceeds "
+		 "bit size at %L", &y->where);
       return &gfc_bad_expr;
     }
 
@@ -1380,9 +1410,13 @@ gfc_simplify_ibset (gfc_expr * x, gfc_expr * y)
 
   result = gfc_copy_expr (x);
 
+  convert_mpz_to_unsigned (result->value.integer,
+			   gfc_integer_kinds[k].bit_size);
+
   mpz_setbit (result->value.integer, pos);
 
-  twos_complement (result->value.integer, gfc_integer_kinds[k].bit_size);
+  convert_mpz_to_signed (result->value.integer,
+			 gfc_integer_kinds[k].bit_size);
 
   return range_check (result, "IBSET");
 }
@@ -1406,11 +1440,7 @@ gfc_simplify_ichar (gfc_expr * e)
   index = (unsigned char) e->value.character.string[0];
 
   if (index < 0 || index > UCHAR_MAX)
-    {
-      gfc_error ("Argument of ICHAR at %L out of range of this processor",
-		 &e->where);
-      return &gfc_bad_expr;
-    }
+    gfc_internal_error("Argument of ICHAR at %L out of range", &e->where);
 
   result = gfc_int_expr (index);
   result->where = e->where;
@@ -1813,7 +1843,7 @@ gfc_simplify_ishft (gfc_expr * e, gfc_expr * s)
 	}
     }
 
-  twos_complement (result->value.integer, isize);
+  convert_mpz_to_signed (result->value.integer, isize);
 
   gfc_free (bits);
   return result;
@@ -1824,7 +1854,7 @@ gfc_expr *
 gfc_simplify_ishftc (gfc_expr * e, gfc_expr * s, gfc_expr * sz)
 {
   gfc_expr *result;
-  int shift, ashift, isize, delta, k;
+  int shift, ashift, isize, ssize, delta, k;
   int i, *bits;
 
   if (e->expr_type != EXPR_CONSTANT || s->expr_type != EXPR_CONSTANT)
@@ -1837,45 +1867,60 @@ gfc_simplify_ishftc (gfc_expr * e, gfc_expr * s, gfc_expr * sz)
     }
 
   k = gfc_validate_kind (e->ts.type, e->ts.kind, false);
+  isize = gfc_integer_kinds[k].bit_size;
 
   if (sz != NULL)
     {
-      if (gfc_extract_int (sz, &isize) != NULL || isize < 0)
+      if (sz->expr_type != EXPR_CONSTANT)
+        return NULL;
+
+      if (gfc_extract_int (sz, &ssize) != NULL || ssize <= 0)
 	{
 	  gfc_error ("Invalid third argument of ISHFTC at %L", &sz->where);
 	  return &gfc_bad_expr;
 	}
+
+      if (ssize > isize)
+	{
+	  gfc_error ("Magnitude of third argument of ISHFTC exceeds "
+		     "BIT_SIZE of first argument at %L", &s->where);
+	  return &gfc_bad_expr;
+	}
     }
   else
-    isize = gfc_integer_kinds[k].bit_size;
+    ssize = isize;
 
   if (shift >= 0)
     ashift = shift;
   else
     ashift = -shift;
 
-  if (ashift > isize)
+  if (ashift > ssize)
     {
-      gfc_error
-	("Magnitude of second argument of ISHFTC exceeds third argument "
-	 "at %L", &s->where);
+      if (sz != NULL)
+	gfc_error ("Magnitude of second argument of ISHFTC exceeds "
+		   "third argument at %L", &s->where);
+      else
+	gfc_error ("Magnitude of second argument of ISHFTC exceeds "
+		   "BIT_SIZE of first argument at %L", &s->where);
       return &gfc_bad_expr;
     }
 
   result = gfc_constant_result (e->ts.type, e->ts.kind, &e->where);
 
+  mpz_set (result->value.integer, e->value.integer);
+
   if (shift == 0)
-    {
-      mpz_set (result->value.integer, e->value.integer);
-      return result;
-    }
+    return result;
 
-  bits = gfc_getmem (isize * sizeof (int));
+  convert_mpz_to_unsigned (result->value.integer, isize);
 
-  for (i = 0; i < isize; i++)
+  bits = gfc_getmem (ssize * sizeof (int));
+
+  for (i = 0; i < ssize; i++)
     bits[i] = mpz_tstbit (e->value.integer, i);
 
-  delta = isize - ashift;
+  delta = ssize - ashift;
 
   if (shift > 0)
     {
@@ -1887,7 +1932,7 @@ gfc_simplify_ishftc (gfc_expr * e, gfc_expr * s, gfc_expr * sz)
 	    mpz_setbit (result->value.integer, i + shift);
 	}
 
-      for (i = delta; i < isize; i++)
+      for (i = delta; i < ssize; i++)
 	{
 	  if (bits[i] == 0)
 	    mpz_clrbit (result->value.integer, i - delta);
@@ -1905,7 +1950,7 @@ gfc_simplify_ishftc (gfc_expr * e, gfc_expr * s, gfc_expr * sz)
 	    mpz_setbit (result->value.integer, i + delta);
 	}
 
-      for (i = ashift; i < isize; i++)
+      for (i = ashift; i < ssize; i++)
 	{
 	  if (bits[i] == 0)
 	    mpz_clrbit (result->value.integer, i + shift);
@@ -1914,7 +1959,7 @@ gfc_simplify_ishftc (gfc_expr * e, gfc_expr * s, gfc_expr * sz)
 	}
     }
 
-  twos_complement (result->value.integer, isize);
+  convert_mpz_to_signed (result->value.integer, isize);
 
   gfc_free (bits);
   return result;
@@ -2109,8 +2154,7 @@ gfc_simplify_lge (gfc_expr * a, gfc_expr * b)
   if (a->expr_type != EXPR_CONSTANT || b->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  return gfc_logical_expr (gfc_compare_string (a, b, xascii_table) >= 0,
-			   &a->where);
+  return gfc_logical_expr (gfc_compare_string (a, b) >= 0, &a->where);
 }
 
 
@@ -2121,7 +2165,7 @@ gfc_simplify_lgt (gfc_expr * a, gfc_expr * b)
   if (a->expr_type != EXPR_CONSTANT || b->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  return gfc_logical_expr (gfc_compare_string (a, b, xascii_table) > 0,
+  return gfc_logical_expr (gfc_compare_string (a, b) > 0,
 			   &a->where);
 }
 
@@ -2133,8 +2177,7 @@ gfc_simplify_lle (gfc_expr * a, gfc_expr * b)
   if (a->expr_type != EXPR_CONSTANT || b->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  return gfc_logical_expr (gfc_compare_string (a, b, xascii_table) <= 0,
-			   &a->where);
+  return gfc_logical_expr (gfc_compare_string (a, b) <= 0, &a->where);
 }
 
 
@@ -2145,8 +2188,7 @@ gfc_simplify_llt (gfc_expr * a, gfc_expr * b)
   if (a->expr_type != EXPR_CONSTANT || b->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  return gfc_logical_expr (gfc_compare_string (a, b, xascii_table) < 0,
-			   &a->where);
+  return gfc_logical_expr (gfc_compare_string (a, b) < 0, &a->where);
 }
 
 
@@ -2664,8 +2706,6 @@ gfc_expr *
 gfc_simplify_not (gfc_expr * e)
 {
   gfc_expr *result;
-  int i;
-  mpz_t mask;
 
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -2673,21 +2713,6 @@ gfc_simplify_not (gfc_expr * e)
   result = gfc_constant_result (e->ts.type, e->ts.kind, &e->where);
 
   mpz_com (result->value.integer, e->value.integer);
-
-  /* Because of how GMP handles numbers, the result must be ANDed with
-     a mask.  For radices <> 2, this will require change.  */
-
-  i = gfc_validate_kind (BT_INTEGER, e->ts.kind, false);
-
-  mpz_init (mask);
-  mpz_add (mask, gfc_integer_kinds[i].huge, gfc_integer_kinds[i].huge);
-  mpz_add_ui (mask, mask, 1);
-
-  mpz_and (result->value.integer, result->value.integer, mask);
-
-  twos_complement (result->value.integer, gfc_integer_kinds[i].bit_size);
-
-  mpz_clear (mask);
 
   return range_check (result, "NOT");
 }
@@ -4254,29 +4279,4 @@ gfc_convert_constant (gfc_expr * e, bt type, int kind)
     }
 
   return result;
-}
-
-
-/****************** Helper functions ***********************/
-
-/* Given a collating table, create the inverse table.  */
-
-static void
-invert_table (const int *table, int *xtable)
-{
-  int i;
-
-  for (i = 0; i < 256; i++)
-    xtable[i] = 0;
-
-  for (i = 0; i < 256; i++)
-    xtable[table[i]] = i;
-}
-
-
-void
-gfc_simplify_init_1 (void)
-{
-
-  invert_table (ascii_table, xascii_table);
 }

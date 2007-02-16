@@ -1,3 +1,65 @@
+2007-02-16  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/30720
+	* trans-array.c (gfc_trans_create_temp_array): Remove use of the
+	function argument. Always generate code for negative extent.
+	Simplify said code.
+	* trans-array.h (gfc_trans_create_temp_array): Change prototype.
+	* trans-expr.c (gfc_conv_function_call): Remove use of last argument
+	of gfc_trans_create_temp_array.
+	* trans-intrinsic.c (gfc_conv_intrinsic_array_transfer): Likewise.
+	* trans-stmt.c (gfc_conv_elemental_dependencies): Likewise.
+
+2007-02-16  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/30611
+	* trans-intrinsic.c (gfc_conv_intrinsic_repeat): Evaluate
+	arguments only once. Generate check that NCOPIES argument is not
+	negative.
+
+2007-02-16  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/30389
+	* gfortran.h:  Remove gfc_simplify_init_1.
+	* arith.h:  Remove third argument from gfc_compare_string.
+	* arith.c(gfc_compare_expression):  Remove third argument
+	from call to gfc_compare_string.
+	(gfc_compare_string):  Remove third argument xcoll_table.
+	Remove use of xcoll_table.
+	* misc.c(gfc_init_1):  Remove call to gfc_simplify_init_1.
+	* simplify.c(ascii_table):  Remove.
+	(xascii_table): Likewise.
+	(gfc_simplify_achar):  ICE if extract_int fails.  Remove use of
+	ascii_table.  Warn if -Wsurprising and value < 0 or > 127.
+	(gfc_simplify_char):  ICE if extract_int fails. Error if
+	value < 0 or value > 255.
+	(gfc_simplify_iachar):  Remove use of xascii_table.
+	Char values outside of 0..255 are an ICE.
+	(gfc_simplify_lge):  Remove use of xascii_table.
+	(gfc_simplify_lgt):  Likewise.
+	(gfc_simplify_lle):  Likewise.
+	(gfc_simplify_llt):  Likewise.
+	(invert_table):  Remove.
+	(gfc_simplify_init_1):  Remove.
+
+2007-02-16  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	PR 30381
+	PR 30420
+	* simplify.c (convert_mpz_to_unsigned): New function.
+	(convert_mpz_to_signed): New function, largely based on
+	twos_complement().
+	(twos_complement): Removed.
+	(gfc_simplify_ibclr): Add conversions to and from an
+	unsigned representation before bit-twiddling.
+	(gfc_simplify_ibset): Same.
+	(gfc_simplify_ishftc): Add checks for overly large
+	constant arguments, only check the third argument if
+	it's present, carry over high bits into	the result as
+	appropriate, and perform the final conversion back to
+	a signed representation using the correct sign bit.
+	(gfc_simplify_not): Removed unnecessary masking.
+
 2007-02-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/30799

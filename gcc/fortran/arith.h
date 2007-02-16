@@ -42,7 +42,7 @@ gfc_expr *gfc_constant_result (bt, int, locus *);
 arith gfc_range_check (gfc_expr *);
 
 int gfc_compare_expr (gfc_expr *, gfc_expr *);
-int gfc_compare_string (gfc_expr *, gfc_expr *, const int *);
+int gfc_compare_string (gfc_expr *, gfc_expr *);
 
 /* Constant folding for gfc_expr trees.  */
 gfc_expr *gfc_uplus (gfc_expr * op);
