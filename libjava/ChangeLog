@@ -1,3 +1,24 @@
+2007-02-16  David Daney  <ddaney@avtrex.com>
+
+	* java/lang/Thread.java (Thread(ThreadGroup, Runnable, String)): Pass
+	new parameter constructor.
+	(Thread(ThreadGroup, Runnable, String, long)): Same.
+	(Thread(String, boolean)): New constructor.
+	(Thread(Thread, ThreadGroup, Runnable, String): Add parameter
+	noInheritableThreadLocal, don't call
+	InheritableThreadLocal.newChildThread if set.
+	* java/lang/PosixProcess.java(ProcessManager()): Set
+	noInheritableThreadLocal in super.
+	* java/lang/natThread.cc (_Jv_AttachCurrentThread): Pass new
+	parameter to Thread constructor.
+	(_Jv_AttachCurrentThreadAsDaemon): Same.
+	* java/lang/Thread.h: Regenerate.
+	* classpath/lib/java/lang/Thread.class: Same.
+	* classpath/lib/java/lang/PosixProcess$EOFInputStream.class: Same.
+	* classpath/lib/java/lang/PosixProcess.class: Same.
+	* classpath/lib/java/lang/Thread$State.class: Same.
+	* classpath/lib/java/lang/PosixProcess$ProcessManager.class: Same.
+
 2007-02-16  Kyle Galloway  <kgallowa@redhat.com>
 
 	* interpret.cc: Add extra DEBUG_LOCALS_INSN calls for multi-slot

@@ -355,7 +355,7 @@ public class Thread implements Runnable
    */
   public Thread(ThreadGroup group, Runnable target, String name)
   {
-    this(currentThread(), group, target, name);
+    this(currentThread(), group, target, name, false);
   }
 
   /**
@@ -381,10 +381,26 @@ public class Thread implements Runnable
   public Thread(ThreadGroup group, Runnable target, String name, long size)
   {
     // Just ignore stackSize for now.
-    this(currentThread(), group, target, name);
+    this(currentThread(), group, target, name, false);
   }
 
-  private Thread (Thread current, ThreadGroup g, Runnable r, String n)
+  /**
+   * Allocate a new Thread object for threads used internally to the
+   * run time.  Runtime threads should not be members of an
+   * application ThreadGroup, nor should they execute arbitrary user
+   * code as part of the InheritableThreadLocal protocol.
+   *
+   * @param name the name for the Thread
+   * @param noInheritableThreadLocal if true, do not initialize
+   * InheritableThreadLocal variables for this thread.
+   * @throws IllegalThreadStateException if group is destroyed
+   */
+  Thread(String name, boolean noInheritableThreadLocal)
+  {
+    this(null, null, null, name, noInheritableThreadLocal);
+  }
+  
+  private Thread (Thread current, ThreadGroup g, Runnable r, String n, boolean noInheritableThreadLocal)
   {
     // Make sure the current thread may create a new thread.
     checkAccess();
@@ -424,7 +440,10 @@ public class Thread implements Runnable
 	int pri = current.getPriority();
 	priority = (gmax < pri ? gmax : pri);
 	contextClassLoader = current.contextClassLoader;
-	InheritableThreadLocal.newChildThread(this);
+        // InheritableThreadLocal allows arbitrary user code to be
+        // executed, only do this if our caller desires it.
+        if (!noInheritableThreadLocal)
+          InheritableThreadLocal.newChildThread(this);
       }
     else
       {

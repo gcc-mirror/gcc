@@ -53,8 +53,10 @@ public:
   Thread(::java::lang::Runnable *, ::java::lang::String *);
   Thread(::java::lang::ThreadGroup *, ::java::lang::Runnable *, ::java::lang::String *);
   Thread(::java::lang::ThreadGroup *, ::java::lang::Runnable *, ::java::lang::String *, jlong);
+public: // actually package-private
+  Thread(::java::lang::String *, jboolean);
 private:
-  Thread(::java::lang::Thread *, ::java::lang::ThreadGroup *, ::java::lang::Runnable *, ::java::lang::String *);
+  Thread(::java::lang::Thread *, ::java::lang::ThreadGroup *, ::java::lang::Runnable *, ::java::lang::String *, jboolean);
 public:
   static jint activeCount();
   virtual void checkAccess();

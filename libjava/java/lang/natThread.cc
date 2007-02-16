@@ -490,7 +490,7 @@ _Jv_AttachCurrentThread(jstring name, java::lang::ThreadGroup* group)
     return thread;
   if (name == NULL)
     name = java::lang::Thread::gen_name ();
-  thread = new java::lang::Thread (NULL, group, NULL, name);
+  thread = new java::lang::Thread (NULL, group, NULL, name, false);
   _Jv_AttachCurrentThread (thread);
   _Jv_NotifyThreadStart (thread);
   return thread;
@@ -504,7 +504,7 @@ _Jv_AttachCurrentThreadAsDaemon(jstring name, java::lang::ThreadGroup* group)
     return thread;
   if (name == NULL)
     name = java::lang::Thread::gen_name ();
-  thread = new java::lang::Thread (NULL, group, NULL, name);
+  thread = new java::lang::Thread (NULL, group, NULL, name, false);
   thread->setDaemon (true);
   _Jv_AttachCurrentThread (thread);
   _Jv_NotifyThreadStart (thread);
