@@ -1,4 +1,10 @@
 2007-02-16  Richard Guenther  <rguenther@suse.de>
+	Christian Bruel  <christian.bruel@st.com>
+
+	* fold-const.c (tree_swap_operands_p): Treat SSA_NAMEs like
+	DECLs but prefer SSA_NAMEs over DECLs.
+
+2007-02-16  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow-inline.h (single_imm_use_p): Remove.
 	(zero_imm_uses_p): Likewise.

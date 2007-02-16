@@ -6673,11 +6673,6 @@ tree_swap_operands_p (tree arg0, tree arg1, bool reorder)
       && (TREE_SIDE_EFFECTS (arg0) || TREE_SIDE_EFFECTS (arg1)))
     return 0;
 
-  if (DECL_P (arg1))
-    return 0;
-  if (DECL_P (arg0))
-    return 1;
-
   /* It is preferable to swap two SSA_NAME to ensure a canonical form
      for commutative and comparison operators.  Ensuring a canonical
      form allows the optimizers to find additional redundancies without
@@ -6685,6 +6680,18 @@ tree_swap_operands_p (tree arg0, tree arg1, bool reorder)
   if (TREE_CODE (arg0) == SSA_NAME
       && TREE_CODE (arg1) == SSA_NAME
       && SSA_NAME_VERSION (arg0) > SSA_NAME_VERSION (arg1))
+    return 1;
+
+  /* Put SSA_NAMEs last.  */
+  if (TREE_CODE (arg1) == SSA_NAME)
+    return 0;
+  if (TREE_CODE (arg0) == SSA_NAME)
+    return 1;
+
+  /* Put variables last.  */
+  if (DECL_P (arg1))
+    return 0;
+  if (DECL_P (arg0))
     return 1;
 
   return 0;
