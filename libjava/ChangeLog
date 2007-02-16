@@ -1,3 +1,17 @@
+2007-02-15  Andrew Haley  <aph@redhat.com>
+
+	* Makefile.am (nat_source_files): Remove
+	java/lang/management/natVMManagementFactory.cc.
+	* java/lang/Thread.java (getStackTrace): Use reflection to call
+	the ManagementFactory.
+	* java/lang/management/VMManagementFactory.java: Remove native
+	methods.
+	* java/lang/management/natVMManagementFactory.cc: Deleted.
+	* sources.am: Regnerate.
+	* scripts/makemake.tcl: Add new "bcheaders" type.
+	Move java/lang/management and gnu/classpath/management to "bc".
+	Move gnu/java/lang/management to "bcheaders".
+	
 2007-02-15  Kyle Galloway  <kgallowa@redhat.com>
 	
 	* interpret.cc (_Jv_InterpMethod::check_handler): New method.

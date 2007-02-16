@@ -22,6 +22,8 @@ proc verbose {text} {
 # * bc    objects in this package and all its sub-packages
 #         are to be compiled with the BC ABI.  It is an error
 #         for sub-packages to also appear in the map.
+# * bcheaders 
+#         as bc, but generate header files and compile with CNI.
 # * package
 #         objects in this package (and possibly sub-packages,
 #         if they do not appear in the map) will be compiled en masse
@@ -73,6 +75,10 @@ set package_map(javax/rmi) bc
 set package_map(org/omg) bc
 set package_map(gnu/CORBA) bc
 set package_map(gnu/javax/rmi) bc
+set package_map(gnu/java/lang/management) bcheaders
+set package_map(java/lang/management) bc
+set package_map(gnu/classpath/management) bc
+set package_map(gnu/javax/management) bc
 
 # parser/HTML_401F.class is really big, and there have been complaints
 # about this package requiring too much memory to build.  So, we
@@ -265,7 +271,11 @@ proc emit_bc_rule {package} {
     set omit "| grep -v $exclusion_map($package)"
   }
   puts  "\t@find \$(srcdir)/classpath/lib/$package -name '*.class'${omit} > $tname"
-  puts "\t\$(LTGCJCOMPILE) -fsource-filename=\$(here)/classpath/lib/classes -fjni -findirect-dispatch -fno-indirect-classes -c -o $loname @$tname"
+  puts -nonewline "\t\$(LTGCJCOMPILE) -fsource-filename=\$(here)/classpath/lib/classes "
+  if {$package_map($package) == "bc"} {
+    puts -nonewline "-fjni "
+  }
+  puts "-findirect-dispatch -fno-indirect-classes -c -o $loname @$tname"
   puts "\t@rm -f $tname"
   puts ""
 
@@ -460,6 +470,8 @@ foreach package [lsort [array names package_map]] {
   emit_source_var $package
 
   if {$package_map($package) == "bc"} {
+    emit_bc_rule $package
+  } elseif {$package_map($package) == "bcheaders"} {
     emit_bc_rule $package
   } elseif {$package_map($package) == "ordinary"} {
     emit_ordinary_rule $package

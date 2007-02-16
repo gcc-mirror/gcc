@@ -37,7 +37,7 @@ exception statement from your version. */
 
 package javax.management;
 
-import gnu.classpath.ListenerData;
+import gnu.javax.management.ListenerData;
 import gnu.classpath.SystemProperties;
 
 import java.net.InetAddress;

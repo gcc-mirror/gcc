@@ -223,7 +223,6 @@ gnu/awt/xlib.list: $(gnu_awt_xlib_source_files)
 
 gnu_classpath_source_files = \
 gnu/classpath/Configuration.java \
-classpath/gnu/classpath/ListenerData.java \
 classpath/gnu/classpath/NotImplementedException.java \
 classpath/gnu/classpath/Pointer.java \
 classpath/gnu/classpath/Pointer32.java \
@@ -1125,12 +1124,10 @@ gnu/java/lang/management/VMThreadMXBeanImpl.java
 
 gnu_java_lang_management_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_lang_management_source_files)))
 
-gnu/java/lang/management.list: $(gnu_java_lang_management_source_files)
-	@$(mkinstalldirs) $(dir $@)
-	echo $(srcdir)/classpath/lib/gnu/java/lang/management/*.class > gnu/java/lang/management.list
-
--include gnu/java/lang/management.deps
-
+gnu-java-lang-management.lo: $(gnu_java_lang_management_source_files)
+	@find $(srcdir)/classpath/lib/gnu/java/lang/management -name '*.class' > gnu-java-lang-management.list
+	$(LTGCJCOMPILE) -fsource-filename=$(here)/classpath/lib/classes -findirect-dispatch -fno-indirect-classes -c -o gnu-java-lang-management.lo @gnu-java-lang-management.list
+	@rm -f gnu-java-lang-management.list
 
 gnu_java_lang_reflect_source_files = \
 classpath/gnu/java/lang/reflect/ClassSignatureParser.java \
@@ -2879,16 +2876,13 @@ gnu/javax/imageio/png.list: $(gnu_javax_imageio_png_source_files)
 
 
 gnu_javax_management_source_files = \
+classpath/gnu/javax/management/ListenerData.java \
 classpath/gnu/javax/management/Server.java
 
-gnu_javax_management_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_management_source_files)))
-
-gnu/javax/management.list: $(gnu_javax_management_source_files)
-	@$(mkinstalldirs) $(dir $@)
-	echo $(srcdir)/classpath/lib/gnu/javax/management/*.class > gnu/javax/management.list
-
--include gnu/javax/management.deps
-
+gnu-javax-management.lo: $(gnu_javax_management_source_files)
+	@find $(srcdir)/classpath/lib/gnu/javax/management -name '*.class' > gnu-javax-management.list
+	$(LTGCJCOMPILE) -fsource-filename=$(here)/classpath/lib/classes -fjni -findirect-dispatch -fno-indirect-classes -c -o gnu-javax-management.lo @gnu-javax-management.list
+	@rm -f gnu-javax-management.list
 
 gnu_javax_naming_giop_source_files = \
 classpath/gnu/javax/naming/giop/ContextContinuation.java \
@@ -4828,14 +4822,10 @@ classpath/java/lang/management/ThreadInfo.java \
 classpath/java/lang/management/ThreadMXBean.java \
 java/lang/management/VMManagementFactory.java
 
-java_lang_management_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_lang_management_source_files)))
-
-java/lang/management.list: $(java_lang_management_source_files)
-	@$(mkinstalldirs) $(dir $@)
-	echo $(srcdir)/classpath/lib/java/lang/management/*.class > java/lang/management.list
-
--include java/lang/management.deps
-
+java-lang-management.lo: $(java_lang_management_source_files)
+	@find $(srcdir)/classpath/lib/java/lang/management -name '*.class' > java-lang-management.list
+	$(LTGCJCOMPILE) -fsource-filename=$(here)/classpath/lib/classes -fjni -findirect-dispatch -fno-indirect-classes -c -o java-lang-management.lo @java-lang-management.list
+	@rm -f java-lang-management.list
 
 java_lang_ref_source_files = \
 classpath/java/lang/ref/PhantomReference.java \
@@ -8464,7 +8454,6 @@ all_packages_source_files = \
   gnu/java/awt/print.list \
   gnu/java/io.list \
   gnu/java/lang.list \
-  gnu/java/lang/management.list \
   gnu/java/lang/reflect.list \
   gnu/java/locale.list \
   gnu/java/math.list \
@@ -8542,7 +8531,6 @@ all_packages_source_files = \
   gnu/javax/imageio/gif.list \
   gnu/javax/imageio/jpeg.list \
   gnu/javax/imageio/png.list \
-  gnu/javax/management.list \
   gnu/javax/naming/giop.list \
   gnu/javax/naming/ictxImpl/trans.list \
   gnu/javax/naming/jndi/url/corbaname.list \
@@ -8596,7 +8584,6 @@ all_packages_source_files = \
   java/lang.list \
   java/lang/annotation.list \
   java/lang/instrument.list \
-  java/lang/management.list \
   java/lang/ref.list \
   java/lang/reflect.list \
   java/math.list \
@@ -8795,7 +8782,6 @@ ordinary_header_files = \
   $(gnu_javax_imageio_gif_header_files) \
   $(gnu_javax_imageio_jpeg_header_files) \
   $(gnu_javax_imageio_png_header_files) \
-  $(gnu_javax_management_header_files) \
   $(gnu_javax_naming_giop_header_files) \
   $(gnu_javax_naming_ictxImpl_trans_header_files) \
   $(gnu_javax_naming_jndi_url_corbaname_header_files) \
@@ -8844,7 +8830,6 @@ ordinary_header_files = \
   $(java_lang_header_files) \
   $(java_lang_annotation_header_files) \
   $(java_lang_instrument_header_files) \
-  $(java_lang_management_header_files) \
   $(java_lang_ref_header_files) \
   $(java_lang_reflect_header_files) \
   $(java_math_header_files) \
@@ -8937,7 +8922,9 @@ bc_objects = \
   gnu-java-awt-peer-gtk.lo \
   gnu-java-awt-peer-swing.lo \
   gnu-java-beans.lo \
+  gnu-java-lang-management.lo \
   gnu-java-util-prefs-gconf.lo \
+  gnu-javax-management.lo \
   gnu-javax-rmi.lo \
   gnu-javax-sound-midi.lo \
   gnu-xml-aelfred2.lo \
@@ -8949,6 +8936,7 @@ bc_objects = \
   gnu-xml-util.lo \
   gnu-xml-validation.lo \
   gnu-xml-xpath.lo \
+  java-lang-management.lo \
   javax-imageio.lo \
   javax-rmi.lo \
   javax-xml.lo \
