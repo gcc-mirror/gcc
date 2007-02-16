@@ -521,6 +521,31 @@ resolve_subreg_use (rtx *px, void *data)
   return 0;
 }
 
+/* We are deleting INSN.  Move any EH_REGION notes to INSNS.  */
+
+static void
+move_eh_region_note (rtx insn, rtx insns)
+{
+  rtx note, p;
+
+  note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
+  if (note == NULL_RTX)
+    return;
+
+  gcc_assert (CALL_P (insn)
+	      || (flag_non_call_exceptions && may_trap_p (PATTERN (insn))));
+
+  for (p = insns; p != NULL_RTX; p = NEXT_INSN (p))
+    {
+      if (CALL_P (p)
+	  || (flag_non_call_exceptions
+	      && INSN_P (p)
+	      && may_trap_p (PATTERN (p))))
+	REG_NOTES (p) = gen_rtx_EXPR_LIST (REG_EH_REGION, XEXP (note, 0),
+					   REG_NOTES (p));
+    }
+}
+
 /* If there is a REG_LIBCALL note on OLD_START, move it to NEW_START,
    and link the corresponding REG_RETVAL note to NEW_START.  */
 
@@ -837,6 +862,8 @@ resolve_simple_move (rtx set, rtx insn)
   insns = get_insns ();
   end_sequence ();
 
+  move_eh_region_note (insn, insns);
+
   emit_insn_before (insns, insn);
 
   move_libcall_note (insn, insns);
@@ -1022,15 +1049,18 @@ decompose_multiword_subregs (bool update_life)
     {
       int hold_no_new_pseudos = no_new_pseudos;
       int max_regno = max_reg_num ();
-      sbitmap blocks;
+      sbitmap life_blocks;
+      sbitmap sub_blocks;
       bitmap_iterator iter;
       unsigned int regno;
 
       propagate_pseudo_copies ();
 
       no_new_pseudos = 0;
-      blocks = sbitmap_alloc (last_basic_block);
-      sbitmap_zero (blocks);
+      life_blocks = sbitmap_alloc (last_basic_block);
+      sbitmap_zero (life_blocks);
+      sub_blocks = sbitmap_alloc (last_basic_block);
+      sbitmap_zero (sub_blocks);
 
       EXECUTE_IF_SET_IN_BITMAP (decomposable_context, 0, regno, iter)
 	decompose_register (regno);
@@ -1073,6 +1103,7 @@ decompose_multiword_subregs (bool update_life)
 		  if (set)
 		    {
 		      rtx orig_insn = insn;
+		      bool cfi = control_flow_insn_p (insn);
 
 		      insn = resolve_simple_move (set, insn);
 		      if (insn != orig_insn)
@@ -1081,6 +1112,9 @@ decompose_multiword_subregs (bool update_life)
 
 			  recog_memoized (insn);
 			  extract_insn (insn);
+
+			  if (cfi)
+			    SET_BIT (sub_blocks, bb->index);
 			}
 		    }
 
@@ -1111,7 +1145,7 @@ decompose_multiword_subregs (bool update_life)
 
 	      if (changed)
 		{
-		  SET_BIT (blocks, bb->index);
+		  SET_BIT (life_blocks, bb->index);
 		  reg_scan_update (insn, next, max_regno);
 		}
 	    }
@@ -1120,10 +1154,14 @@ decompose_multiword_subregs (bool update_life)
       no_new_pseudos = hold_no_new_pseudos;
 
       if (update_life)
-	update_life_info (blocks, UPDATE_LIFE_GLOBAL_RM_NOTES,
+	update_life_info (life_blocks, UPDATE_LIFE_GLOBAL_RM_NOTES,
 			  PROP_DEATH_NOTES);
 
-      sbitmap_free (blocks);
+      if (sbitmap_first_set_bit (sub_blocks) >= 0)
+	find_many_sub_basic_blocks (sub_blocks);
+
+      sbitmap_free (life_blocks);
+      sbitmap_free (sub_blocks);
     }
 
   {
@@ -1181,7 +1219,8 @@ struct tree_opt_pass pass_lower_subreg =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_dump_func |
-  TODO_ggc_collect,                     /* todo_flags_finish */
+  TODO_ggc_collect |
+  TODO_verify_flow,                     /* todo_flags_finish */
   'u'                                   /* letter */
 };
 
@@ -1199,6 +1238,7 @@ struct tree_opt_pass pass_lower_subreg2 =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_dump_func |
-  TODO_ggc_collect,                     /* todo_flags_finish */
+  TODO_ggc_collect |
+  TODO_verify_flow,                     /* todo_flags_finish */
   'U'                                   /* letter */
 };
