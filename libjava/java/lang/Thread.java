@@ -50,6 +50,9 @@ import java.lang.management.ThreadMXBean;
 import java.util.HashMap;
 import java.util.Map;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
@@ -1291,9 +1294,43 @@ public class Thread implements Runnable
     SecurityManager sm = SecurityManager.current; // Be thread-safe.
     if (sm != null)
       sm.checkPermission(new RuntimePermission("getStackTrace"));
-    ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-    ThreadInfo info = bean.getThreadInfo(getId(), Integer.MAX_VALUE);
-    return info.getStackTrace();
-  }
 
+    // Calling java.lang.management via reflection means that
+    // javax.management be overridden in the endorsed directory.
+
+    // This is the equivalent code:
+    //
+    //     ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+    //     ThreadInfo info = bean.getThreadInfo(getId(), Integer.MAX_VALUE);
+    //     return info.getStackTrace();
+
+    try
+      {
+	try
+	  {
+	    Object bean 
+	      = (Class.forName("java.lang.management.ManagementFactory")
+		 .getDeclaredMethod("getThreadMXBean")
+		 .invoke(null));
+	    Object info = bean.getClass()
+	      .getDeclaredMethod("getThreadInfo", long.class, int.class)
+	      .invoke(bean, new Long(getId()), new Integer(Integer.MAX_VALUE));
+	    Object trace = info.getClass()
+	      .getDeclaredMethod("getStackTrace").invoke(info);
+	    return (StackTraceElement[])trace;
+	  }
+	catch (InvocationTargetException e)
+	  {
+	    throw (Exception)e.getTargetException();
+	  }
+      }
+    catch (UnsupportedOperationException e)
+      {
+	throw e;
+      }
+    catch (Exception e)
+      {
+	throw new UnsupportedOperationException(e);
+      }
+  }
 }

@@ -37,7 +37,7 @@ exception statement from your version. */
 
 package gnu.java.lang.management;
 
-import gnu.classpath.ListenerData;
+import gnu.javax.management.ListenerData;
 
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryNotificationInfo;

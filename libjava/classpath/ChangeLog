@@ -1,3 +1,12 @@
+2007-02-16  Andrew Haley  <aph@redhat.com>
+
+	* gnu/java/lang/management/MemoryMXBeanImpl.java,
+	javax/management/MBeanServerDelegate.java: Use
+	gnu.javax.management.ListenerData rather than
+	gnu.classpath.ListenerData.
+	* gnu/javax/management/ListenerData.java: Move here from
+	gnu/classpath/ListenerData.java.
+
 2007-02-14  Jakub Jelinek  <jakub@redhat.com>
 	Andrew Haley  <aph@redhat.com>
 
