@@ -27,6 +27,13 @@ details.  */
 
   _Jv_word locals[meth->max_locals];
 
+#ifdef DEBUG  
+  frame_desc.locals = locals;
+  char locals_type[meth->max_locals];
+  memset (locals_type, 'x', meth->max_locals);
+  frame_desc.locals_type = locals_type;
+#endif
+
 #define INSN_LABEL(op) &&insn_##op
 
   static const void *const insn_target[] = 

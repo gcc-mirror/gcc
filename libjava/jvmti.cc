@@ -211,6 +211,253 @@ _Jv_JVMTI_InterruptThread (MAYBE_UNUSED jvmtiEnv *env, jthread thread)
   return JVMTI_ERROR_NONE;
 }
 
+// This method performs the common tasks to get and set variables of all types.
+// It is called by the _Jv_JVMTI_Get/SetLocalInt/Object/.... methods.
+static jvmtiError
+getLocalFrame (jvmtiEnv *env, jthread thread, jint depth, jint slot, char type,
+               _Jv_InterpFrame **iframe)
+{
+  using namespace java::lang;
+   
+  REQUIRE_PHASE (env, JVMTI_PHASE_LIVE);
+   
+  ILLEGAL_ARGUMENT (depth < 0);
+  
+  THREAD_DEFAULT_TO_CURRENT (thread);
+  THREAD_CHECK_VALID (thread);
+  THREAD_CHECK_IS_ALIVE (thread);
+  
+  _Jv_Frame *frame = reinterpret_cast<_Jv_Frame *> (thread->frame);
+  
+  for (int i = 0; i < depth; i++)
+    {    
+      frame = frame->next;
+    
+      if (frame == NULL)
+        return JVMTI_ERROR_NO_MORE_FRAMES; 
+    }
+  
+  if (frame->frame_type == frame_native)
+    return JVMTI_ERROR_OPAQUE_FRAME;
+  
+  jint max_locals;
+  jvmtiError jerr = env->GetMaxLocals (reinterpret_cast<jmethodID> 
+                                         (frame->self->get_method ()),
+                                       &max_locals);
+  if (jerr != JVMTI_ERROR_NONE)
+    return jerr; 
+  
+  _Jv_InterpFrame *tmp_iframe = reinterpret_cast<_Jv_InterpFrame *> (frame);
+  
+  // The second slot taken up by a long type is marked as type 'x' meaning it
+  // is not valid for access since it holds only the 4 low bytes of the value.
+  if (tmp_iframe->locals_type[slot] == 'x')
+    return JVMTI_ERROR_INVALID_SLOT;
+  
+  if (tmp_iframe->locals_type[slot] != type)
+    return JVMTI_ERROR_TYPE_MISMATCH;
+  
+  // Check for invalid slots, if the type is a long type, we must check that
+  // the next slot is valid as well.
+  if (slot < 0 || slot >= max_locals 
+      || ((type == 'l' || type == 'd') && slot + 1 >= max_locals))
+    return JVMTI_ERROR_INVALID_SLOT;
+  
+  *iframe = tmp_iframe;
+  
+  return JVMTI_ERROR_NONE;
+}
+
+static jvmtiError JNICALL
+_Jv_JVMTI_GetLocalObject (jvmtiEnv *env, jthread thread, jint depth, jint slot,
+                          jobject *value)
+{
+  NULL_CHECK (value);
+
+  _Jv_InterpFrame *frame;
+  jvmtiError jerr = getLocalFrame (env, thread, depth, slot, 'o', &frame);
+  
+  if (jerr != JVMTI_ERROR_NONE)
+    return jerr;
+  
+  *value = frame->locals[slot].o;
+  
+  return JVMTI_ERROR_NONE;
+}
+
+static jvmtiError JNICALL
+_Jv_JVMTI_SetLocalObject (jvmtiEnv *env, jthread thread, jint depth, jint slot,
+                          jobject value)
+{
+  _Jv_InterpFrame *frame;
+  jvmtiError jerr = getLocalFrame (env, thread, depth, slot, 'o', &frame);
+  
+  if (jerr != JVMTI_ERROR_NONE)
+    return jerr;
+  
+  frame->locals[slot].o = value;
+
+  return JVMTI_ERROR_NONE;
+}
+
+static jvmtiError JNICALL
+_Jv_JVMTI_GetLocalInt (jvmtiEnv *env, jthread thread, jint depth, jint slot,
+                       jint *value)
+{
+  NULL_CHECK (value);
+  
+  _Jv_InterpFrame *frame;
+  jvmtiError jerr = getLocalFrame (env, thread, depth, slot, 'i', &frame);
+
+  if (jerr != JVMTI_ERROR_NONE)
+    return jerr;
+
+  *value = frame->locals[slot].i;
+
+  return JVMTI_ERROR_NONE;
+}
+
+static jvmtiError JNICALL
+_Jv_JVMTI_SetLocalInt (jvmtiEnv *env, jthread thread, jint depth, jint slot,
+                       jint value)
+{
+  _Jv_InterpFrame *frame;
+  jvmtiError jerr = getLocalFrame (env, thread, depth, slot, 'i', &frame);
+  
+  if (jerr != JVMTI_ERROR_NONE)
+    return jerr;
+  
+  frame->locals[slot].i = value;
+
+  return JVMTI_ERROR_NONE;
+}
+
+static jvmtiError JNICALL
+_Jv_JVMTI_GetLocalLong (jvmtiEnv *env, jthread thread, jint depth, jint slot,
+                        jlong *value)
+{
+  NULL_CHECK (value);
+
+  _Jv_InterpFrame *frame;
+  jvmtiError jerr = getLocalFrame (env, thread, depth, slot, 'l', &frame);
+  
+  if (jerr != JVMTI_ERROR_NONE)
+    return jerr;
+
+#if SIZEOF_VOID_P==8
+  *value = frame->locals[slot].l;
+#else
+  _Jv_word2 val;
+  val.ia[0] = frame->locals[slot].ia[0];
+  val.ia[1] = frame->locals[slot + 1].ia[0];
+  *value = val.l;
+#endif
+  
+  return JVMTI_ERROR_NONE;
+}
+
+static jvmtiError JNICALL
+_Jv_JVMTI_SetLocalLong (jvmtiEnv *env, jthread thread, jint depth, jint slot,
+                        jlong value)
+{
+  _Jv_InterpFrame *frame;
+  jvmtiError jerr = getLocalFrame (env, thread, depth, slot, 'l', &frame);
+  
+  if (jerr != JVMTI_ERROR_NONE)
+    return jerr;
+
+#if SIZEOF_VOID_P==8
+  frame->locals[slot].l = value;
+#else
+  _Jv_word2 val;
+	val.l = value;
+	frame->locals[slot].ia[0] = val.ia[0];
+	frame->locals[slot + 1].ia[0] = val.ia[1];
+#endif
+
+  return JVMTI_ERROR_NONE;
+}
+
+
+static jvmtiError JNICALL
+_Jv_JVMTI_GetLocalFloat (jvmtiEnv *env, jthread thread, jint depth, jint slot,
+                         jfloat *value)
+{
+  NULL_CHECK (value);
+
+  _Jv_InterpFrame *frame;
+  jvmtiError jerr = getLocalFrame (env, thread, depth, slot, 'f', &frame);
+  
+  if (jerr != JVMTI_ERROR_NONE)
+    return jerr;
+  
+  *value = frame->locals[slot].f;
+
+  return JVMTI_ERROR_NONE;
+}
+
+static jvmtiError JNICALL
+_Jv_JVMTI_SetLocalFloat (jvmtiEnv *env, jthread thread, jint depth, jint slot,
+                         jfloat value)
+{
+  _Jv_InterpFrame *frame;
+  jvmtiError jerr = getLocalFrame (env, thread, depth, slot, 'f', &frame);
+  
+  if (jerr != JVMTI_ERROR_NONE)
+    return jerr;
+  
+  frame->locals[slot].f = value;
+
+  return JVMTI_ERROR_NONE;
+}
+
+
+static jvmtiError JNICALL
+_Jv_JVMTI_GetLocalDouble (jvmtiEnv *env, jthread thread, jint depth, jint slot,
+                          jdouble *value)
+{
+  NULL_CHECK (value);
+
+  _Jv_InterpFrame *frame;
+  jvmtiError jerr = getLocalFrame (env, thread, depth, slot, 'd', &frame);
+  
+  if (jerr != JVMTI_ERROR_NONE)
+    return jerr;
+  
+#if SIZEOF_VOID_P==8
+  *value = frame->locals[slot].d;
+#else
+  _Jv_word2 val;
+  val.ia[0] = frame->locals[slot].ia[0];
+  val.ia[1] = frame->locals[slot + 1].ia[0];
+  *value = val.d;
+#endif
+
+  return JVMTI_ERROR_NONE;
+}
+
+static jvmtiError JNICALL
+_Jv_JVMTI_SetLocalDouble (jvmtiEnv *env, jthread thread, jint depth, jint slot,
+                          jdouble value)
+{
+  _Jv_InterpFrame *frame;
+  jvmtiError jerr = getLocalFrame (env, thread, depth, slot, 'd', &frame);
+  
+  if (jerr != JVMTI_ERROR_NONE)
+    return jerr;
+    
+#if SIZEOF_VOID_P==8
+  frame->locals[slot].d = value;
+#else
+  _Jv_word2 val;
+  val.d = value;
+  frame->locals[slot].ia[0] = val.ia[0];
+  frame->locals[slot + 1].ia[0] = val.ia[1]; 
+#endif
+
+  return JVMTI_ERROR_NONE;
+}
+
 static jvmtiError JNICALL
 _Jv_JVMTI_GetAllThreads(MAYBE_UNUSED jvmtiEnv *env, jint *thread_cnt,
                         jthread **threads)
@@ -1716,16 +1963,16 @@ struct _Jv_jvmtiEnv _Jv_JVMTI_Interface =
   RESERVED,			// reserved18
   UNIMPLEMENTED,		// GetFrameLocation
   UNIMPLEMENTED,		// NotifyPopFrame
-  UNIMPLEMENTED,		// GetLocalObject
-  UNIMPLEMENTED,		// GetLocalInt
-  UNIMPLEMENTED,		// GetLocalLong
-  UNIMPLEMENTED,		// GetLocalFloat
-  UNIMPLEMENTED,		// GetLocalDouble
-  UNIMPLEMENTED,		// SetLocalObject
-  UNIMPLEMENTED,		// SetLocalInt
-  UNIMPLEMENTED,		// SetLocalLong
-  UNIMPLEMENTED,		// SetLocalFloat
-  UNIMPLEMENTED,		// SetLocalDouble
+  _Jv_JVMTI_GetLocalObject,		// GetLocalObject
+  _Jv_JVMTI_GetLocalInt,		// GetLocalInt
+  _Jv_JVMTI_GetLocalLong,		// GetLocalLong
+  _Jv_JVMTI_GetLocalFloat,		// GetLocalFloat
+  _Jv_JVMTI_GetLocalDouble,		// GetLocalDouble
+  _Jv_JVMTI_SetLocalObject,		// SetLocalObject
+  _Jv_JVMTI_SetLocalInt,		// SetLocalInt
+  _Jv_JVMTI_SetLocalLong,		// SetLocalLong
+  _Jv_JVMTI_SetLocalFloat,		// SetLocalFloat
+  _Jv_JVMTI_SetLocalDouble,		// SetLocalDouble
   _Jv_JVMTI_CreateRawMonitor,	// CreateRawMonitor
   _Jv_JVMTI_DestroyRawMonitor,	// DestroyRawMonitor
   _Jv_JVMTI_RawMonitorEnter,	// RawMonitorEnter

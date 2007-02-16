@@ -172,47 +172,51 @@ convert (FROM val, TO min, TO max)
 # define LOADD(I)  LOADL(I)
 #endif
 
-#define STOREA(I)				\
-  do {						\
-    DEBUG_LOCALS_INSN (I, 'o');			\
-    locals[I].o = (--sp)->o;			\
+#define STOREA(I)               \
+  do {                          \
+    DEBUG_LOCALS_INSN (I, 'o'); \
+    locals[I].o = (--sp)->o;    \
   } while (0)
-#define STOREI(I)				\
-  do {						\
-    DEBUG_LOCALS_INSN (I, 'i');			\
-    locals[I].i = (--sp)->i;			\
+#define STOREI(I)               \
+  do {                          \
+    DEBUG_LOCALS_INSN (I, 'i'); \
+    locals[I].i = (--sp)->i;    \
   } while (0)
-#define STOREF(I)				\
-  do {						\
-    DEBUG_LOCALS_INSN (I, 'f');			\
-    locals[I].f = (--sp)->f;			\
+#define STOREF(I)               \
+  do {                          \
+    DEBUG_LOCALS_INSN (I, 'f'); \
+    locals[I].f = (--sp)->f;    \
   } while (0)
 #if SIZEOF_VOID_P == 8
-# define STOREL(I)				\
-  do {						\
-    DEBUG_LOCALS_INSN (I, 'l');			\
-    (sp -= 2, locals[I].l = sp->l);		\
+# define STOREL(I)                   \
+  do {                               \
+    DEBUG_LOCALS_INSN (I, 'l');      \
+    DEBUG_LOCALS_INSN (I + 1, 'x');  \
+    (sp -= 2, locals[I].l = sp->l);  \
   } while (0)
-# define STORED(I) 				\
-  do {						\
-    DEBUG_LOCALS_INSN (I, 'd');			\
-    (sp -= 2, locals[I].d = sp->d);		\
+# define STORED(I)                   \
+  do {                               \
+    DEBUG_LOCALS_INSN (I, 'd');      \
+    DEBUG_LOCALS_INSN (I + 1, 'x');  \
+    (sp -= 2, locals[I].d = sp->d);  \
   } while (0)
 
 #else
-# define STOREL(I)				\
-  do {						\
-    DEBUG_LOCALS_INSN (I, 'l');			\
-    jint __idx = (I);				\
-    locals[__idx+1].ia[0] = (--sp)->ia[0];	\
-    locals[__idx].ia[0] = (--sp)->ia[0]; 	\
+# define STOREL(I)                   \
+  do {                               \
+    DEBUG_LOCALS_INSN (I, 'l');      \
+    DEBUG_LOCALS_INSN (I + 1, 'x');  \
+    jint __idx = (I);                \
+    locals[__idx+1].ia[0] = (--sp)->ia[0];  \
+    locals[__idx].ia[0] = (--sp)->ia[0];    \
   } while (0)
-# define STORED(I)				\
-  do {						\
-    DEBUG_LOCALS_INSN(I, 'd');			\
-    jint __idx = (I);				\
-    locals[__idx+1].ia[0] = (--sp)->ia[0];	\
-    locals[__idx].ia[0] = (--sp)->ia[0]; 	\
+# define STORED(I)                   \
+  do {                               \
+    DEBUG_LOCALS_INSN (I, 'd');      \
+    DEBUG_LOCALS_INSN (I + 1, 'x');  \
+    jint __idx = (I);                \
+    locals[__idx+1].ia[0] = (--sp)->ia[0];  \
+    locals[__idx].ia[0] = (--sp)->ia[0];    \
   } while (0)
 #endif
 
@@ -929,7 +933,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 {
 #undef DEBUG
 #undef DEBUG_LOCALS_INSN
-#define DEBUG_LOCALS_INSN(s, t) do {} while(0)
+#define DEBUG_LOCALS_INSN(s, t) do {} while (0)
 
 #include "interpret-run.cc"
 }
@@ -939,7 +943,12 @@ _Jv_InterpMethod::run_debug (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 {
 #define DEBUG
 #undef DEBUG_LOCALS_INSN
-#define DEBUG_LOCALS_INSN(s, t) do {} while(0)
+#define DEBUG_LOCALS_INSN(s, t)  \
+  do    \
+    {   \
+      frame_desc.locals_type[s] = t;  \
+    }   \
+  while (0)
 
 #include "interpret-run.cc"
 }
