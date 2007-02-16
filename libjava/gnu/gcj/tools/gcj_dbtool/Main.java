@@ -429,7 +429,12 @@ public class Main
     StringBuffer hexBytes = new StringBuffer();
     int length = b.length;
     for (int i = 0; i < length; ++i)
-      hexBytes.append(Integer.toHexString(b[i] & 0xff));
+      {
+	int v = b[i] & 0xff;
+	if (v < 16)
+	  hexBytes.append('0');
+	hexBytes.append(Integer.toHexString(v));
+      }
     return hexBytes.toString();
   }
 
