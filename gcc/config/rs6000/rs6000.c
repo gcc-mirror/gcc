@@ -696,7 +696,7 @@ static bool is_load_insn (rtx);
 static rtx get_store_dest (rtx pat);
 static bool is_store_insn (rtx);
 static bool set_to_load_agen (rtx,rtx);
-static bool adjacent_mem_locations (rtx,rtx); 
+static bool adjacent_mem_locations (rtx,rtx);
 static int rs6000_adjust_priority (rtx, int);
 static int rs6000_issue_rate (void);
 static bool rs6000_is_costly_dependence (dep_t, int, int);
@@ -1639,7 +1639,7 @@ rs6000_override_options (const char *default_cpu)
 	rs6000_cost = &ppc630_cost;
 	break;
 
-      case PROCESSOR_CELL: 
+      case PROCESSOR_CELL:
 	rs6000_cost = &ppccell_cost;
 	break;
 
@@ -1686,14 +1686,14 @@ rs6000_builtin_conversion (enum tree_code code, tree type)
 {
   if (!TARGET_ALTIVEC)
     return NULL_TREE;
-  
+
   switch (code)
     {
     case FLOAT_EXPR:
       switch (TYPE_MODE (type))
 	{
 	case V4SImode:
-	  return TYPE_UNSIGNED (type) ? 
+	  return TYPE_UNSIGNED (type) ?
 	    rs6000_builtin_decls[ALTIVEC_BUILTIN_VCFUX] :
 	    rs6000_builtin_decls[ALTIVEC_BUILTIN_VCFSX];
 	default:
@@ -1714,7 +1714,7 @@ rs6000_builtin_mul_widen_even (tree type)
   switch (TYPE_MODE (type))
     {
     case V8HImode:
-      return TYPE_UNSIGNED (type) ? 
+      return TYPE_UNSIGNED (type) ?
             rs6000_builtin_decls[ALTIVEC_BUILTIN_VMULEUH] :
             rs6000_builtin_decls[ALTIVEC_BUILTIN_VMULESH];
 
@@ -7514,7 +7514,7 @@ altivec_expand_vec_init_builtin (tree type, tree exp, rtx target)
 
   gcc_assert (VECTOR_MODE_P (tmode));
   gcc_assert (n_elt == call_expr_nargs (exp));
-  
+
   for (i = 0; i < n_elt; ++i)
     {
       rtx x = expand_normal (CALL_EXPR_ARG (exp, i));
@@ -8176,7 +8176,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       if (call_expr_nargs (exp) == 1)
 	exp = build_call_nary (TREE_TYPE (exp), CALL_EXPR_FN (exp),
 			       2, CALL_EXPR_ARG (exp, 0), integer_zero_node);
-    }   
+    }
 
   if (TARGET_ALTIVEC)
     {
@@ -13046,7 +13046,7 @@ first_altivec_reg_to_save (void)
     return LAST_ALTIVEC_REGNO + 1;
 
   /* On Darwin, the unwind routines are compiled without
-     TARGET_ALTIVEC, and use save_world to save/restore the 
+     TARGET_ALTIVEC, and use save_world to save/restore the
      altivec registers when necessary.  */
   if (DEFAULT_ABI == ABI_DARWIN && current_function_calls_eh_return
       && ! TARGET_ALTIVEC)
@@ -13070,7 +13070,7 @@ compute_vrsave_mask (void)
   unsigned int i, mask = 0;
 
   /* On Darwin, the unwind routines are compiled without
-     TARGET_ALTIVEC, and use save_world to save/restore the 
+     TARGET_ALTIVEC, and use save_world to save/restore the
      call-saved altivec registers when necessary.  */
   if (DEFAULT_ABI == ABI_DARWIN && current_function_calls_eh_return
       && ! TARGET_ALTIVEC)
@@ -13417,7 +13417,7 @@ rs6000_stack_info (void)
 	  info_ptr->vrsave_save_offset
 	    = info_ptr->gp_save_offset - info_ptr->vrsave_size;
 
-	  /* Align stack so vector save area is on a quadword boundary.  
+	  /* Align stack so vector save area is on a quadword boundary.
 	     The padding goes above the vectors.  */
 	  if (info_ptr->altivec_size != 0)
 	    info_ptr->altivec_padding_size
@@ -14691,7 +14691,7 @@ rs6000_emit_prologue (void)
 				   GEN_INT (info->lr_save_offset
 					    + sp_offset));
 	  rtx mem = gen_frame_mem (reg_mode, addr);
-	  
+
 	  RTVEC_ELT (p, j++) = gen_rtx_SET (VOIDmode, mem, reg0);
 	}
       /* Explain what happens to the stack pointer.  */
@@ -16889,7 +16889,7 @@ rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
                  || rs6000_cpu_attr == CPU_CELL)
                 && recog_memoized (dep_insn)
                 && (INSN_CODE (dep_insn) >= 0))
-              
+
               switch (get_attr_type (dep_insn))
                 {
                 case TYPE_CMP:
@@ -17432,7 +17432,7 @@ rs6000_use_sched_lookahead_guard (rtx insn)
 
    if (insn == NULL_RTX || !INSN_P (insn))
      abort ();
-   
+
   if (!reload_completed
       || is_nonpipeline_insn (insn)
       || is_microcoded_insn (insn))
@@ -18389,7 +18389,7 @@ static void
 rs6000_sched_init (FILE *dump ATTRIBUTE_UNUSED,
 		     int sched_verbose ATTRIBUTE_UNUSED,
 		     int max_ready ATTRIBUTE_UNUSED)
-{   
+{
   last_scheduled_insn = NULL_RTX;
   load_store_pendulum = 0;
 }
