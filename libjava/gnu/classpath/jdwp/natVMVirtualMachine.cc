@@ -29,6 +29,8 @@ details. */
 #include <java/util/Iterator.h>
 
 #include <gnu/classpath/jdwp/Jdwp.h>
+#include <gnu/classpath/jdwp/JdwpConstants$StepDepth.h>
+#include <gnu/classpath/jdwp/JdwpConstants$StepSize.h>
 #include <gnu/classpath/jdwp/VMFrame.h>
 #include <gnu/classpath/jdwp/VMMethod.h>
 #include <gnu/classpath/jdwp/VMVirtualMachine.h>
@@ -36,6 +38,7 @@ details. */
 #include <gnu/classpath/jdwp/event/ClassPrepareEvent.h>
 #include <gnu/classpath/jdwp/event/EventManager.h>
 #include <gnu/classpath/jdwp/event/EventRequest.h>
+#include <gnu/classpath/jdwp/event/SingleStepEvent.h>
 #include <gnu/classpath/jdwp/event/ThreadEndEvent.h>
 #include <gnu/classpath/jdwp/event/ThreadStartEvent.h>
 #include <gnu/classpath/jdwp/event/VmDeathEvent.h>
@@ -67,12 +70,18 @@ struct step_info
 };
 
 // Forward declarations
+static jvmtiError get_linetable (jvmtiEnv *, jmethodID, jint *,
+				 jvmtiLineNumberEntry **);
 static Location *get_request_location (EventRequest *);
 static gnu::classpath::jdwp::event::filters::StepFilter *
 get_request_step_filter (EventRequest *);
+static void handle_single_step (jvmtiEnv *, struct step_info *, jthread,
+				jmethodID, jlocation);
 static void JNICALL jdwpBreakpointCB (jvmtiEnv *, JNIEnv *, jthread,
 				      jmethodID, jlocation);
 static void JNICALL jdwpClassPrepareCB (jvmtiEnv *, JNIEnv *, jthread, jclass);
+static void JNICALL jdwpSingleStepCB (jvmtiEnv *, JNIEnv *, jthread,
+				      jmethodID, jlocation);
 static void JNICALL jdwpThreadEndCB (jvmtiEnv *, JNIEnv *, jthread);
 static void JNICALL jdwpThreadStartCB (jvmtiEnv *, JNIEnv *, jthread);
 static void JNICALL jdwpVMDeathCB (jvmtiEnv *, JNIEnv *);
@@ -624,6 +633,38 @@ getSourceFile (MAYBE_UNUSED jclass clazz)
   return NULL;
 }
 
+// A simple caching function used while single-stepping
+static jvmtiError
+get_linetable (jvmtiEnv *env, jmethodID method, jint *count_ptr,
+	       jvmtiLineNumberEntry **table_ptr)
+{
+  static jint last_count = 0;
+  static jvmtiLineNumberEntry *last_table = NULL;
+  static jmethodID last_method = 0;
+
+  if (method == last_method)
+    {
+      *count_ptr = last_count;
+      *table_ptr = last_table;
+      return JVMTI_ERROR_NONE;
+    }
+
+  jvmtiError err;
+  jint count;
+  jvmtiLineNumberEntry *table;
+  err = env->GetLineNumberTable (method, &count, &table);
+  if (err != JVMTI_ERROR_NONE)
+    {
+      // Keep last table in cache
+      return err;
+    }
+
+  env->Deallocate ((unsigned char *) last_table);
+  last_table = *table_ptr = table;
+  last_count = *count_ptr = count;
+  return JVMTI_ERROR_NONE;
+}
+
 static gnu::classpath::jdwp::event::filters::StepFilter *
 get_request_step_filter (EventRequest *request)
 {
@@ -663,6 +704,71 @@ get_request_location (EventRequest *request)
     }
 
   return loc;
+}
+
+static void
+handle_single_step (jvmtiEnv *env, struct step_info *sinfo, jthread thread,
+		    jmethodID method, jlocation location)
+{
+  using namespace gnu::classpath::jdwp;
+
+  if (sinfo == NULL || sinfo->size == JdwpConstants$StepSize::MIN)
+    {
+      // Stop now
+      goto send_notification;
+    }
+  else
+    {
+      // Check if we're on a new source line
+      /* This is a little inefficient when we're stepping OVER,
+	 but this must be done when stepping INTO. */
+      jint count;
+      jvmtiLineNumberEntry *table;
+      if (get_linetable (env, method, &count, &table) == JVMTI_ERROR_NONE)
+	{
+	  jint i;
+	  for (i = 0; i < count; ++i)
+	    {
+	      if (table[i].start_location == location)
+		{
+		  // This is the start of a new line -- stop
+		  goto send_notification;
+		}
+	    }
+
+	  // Not at a new source line -- just keep stepping
+	  return;
+	}
+      else
+	{
+	  /* Something went wrong: either "absent information"
+	     or "out of memory" ("invalid method id" and "native
+	     method" aren't possible -- those are validated before
+	     single stepping is enabled).
+
+	     Do what gdb does: just keep going. */
+	  return;
+	}
+    }
+
+ send_notification:
+  jclass klass;
+  jvmtiError err = env->GetMethodDeclaringClass (method, &klass);
+  if (err != JVMTI_ERROR_NONE)
+    {
+      fprintf (stderr, "libgcj: internal error: could not find class for method while single stepping -- continuing\n");
+      return;
+    }
+
+  VMMethod *vmmethod = new VMMethod (klass, reinterpret_cast<jlong> (method));
+  Location *loc = new Location (vmmethod, location);
+  JvAssert (thread->frame.frame_type == frame_interpreter);
+  _Jv_InterpFrame *iframe
+    = reinterpret_cast<_Jv_InterpFrame *> (thread->interp_frame);  
+  jobject instance = iframe->get_this_ptr ();
+  event::SingleStepEvent *event
+    = new event::SingleStepEvent (thread, loc, instance);
+  Jdwp::notify (event);
 }
 
 static void
@@ -733,6 +839,73 @@ jdwpClassPrepareCB (jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
 }
 
 static void JNICALL
+jdwpSingleStepCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread,
+		  jmethodID method, jlocation location)
+{
+  jobject si =
+    gnu::classpath::jdwp::VMVirtualMachine::_stepping_threads->get (thread);
+  struct step_info *sinfo = reinterpret_cast<struct step_info *> (si);
+
+  if (sinfo == NULL)
+    {
+      // no step filter for this thread - simply report it
+      handle_single_step (env, NULL, thread, method, location);
+    }
+  else
+    {
+      // A step filter exists for this thread
+      using namespace gnu::classpath::jdwp;
+
+      _Jv_InterpFrame *frame
+	= reinterpret_cast<_Jv_InterpFrame *> (thread->interp_frame);
+
+      switch (sinfo->depth)
+	{
+	case JdwpConstants$StepDepth::INTO:
+	  /* This is the easy case. We ignore the method and
+	     simply stop at either the next insn, or the next source
+	     line. */
+	  handle_single_step (env, sinfo, thread, method, location);
+	  break;
+
+	case JdwpConstants$StepDepth::OVER:
+	  /* This is also a pretty easy case. We just make sure that
+	     the methods are the same and that we are at the same
+	     stack depth, but we should also stop on the next
+	     insn/line if the stack depth is LESS THAN it was when
+	     we started stepping. */
+	  if (method == sinfo->method)
+	    {
+	      // Still in the same method -- must be at same stack depth
+	      // to avoid confusion with recursive methods.
+	      if (frame->depth () == sinfo->stack_depth)
+		handle_single_step (env, sinfo, thread, method, location);
+	    }
+	  else if (frame->depth () < sinfo->stack_depth)
+	    {
+	      // The method in which we were stepping was popped off
+	      // the stack. We simply need to stop at the next insn/line.
+	      handle_single_step (env, sinfo, thread, method, location);
+	    }
+	  break;
+
+	case JdwpConstants$StepDepth::OUT:
+	  // All we need to do is check the stack depth
+	  if (sinfo->stack_depth > frame->depth ())
+	    handle_single_step (env, sinfo, thread, method, location);
+	  break;
+
+	default:
+	  /* This should not happen. The JDWP back-end should have
+	     validated the StepFilter. */
+	  fprintf (stderr,
+		   "libgcj: unknown step depth while single stepping\n");
+	  return;
+	}
+    }
+}
+
+static void JNICALL
 jdwpThreadEndCB (MAYBE_UNUSED jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
 		 jthread thread)
 {
@@ -767,6 +940,7 @@ jdwpVMInitCB (MAYBE_UNUSED jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
   jvmtiEventCallbacks callbacks;
   DEFINE_CALLBACK (callbacks, Breakpoint);
   DEFINE_CALLBACK (callbacks, ClassPrepare);
+  DEFINE_CALLBACK (callbacks, SingleStep);
   DEFINE_CALLBACK (callbacks, ThreadEnd);
   DEFINE_CALLBACK (callbacks, ThreadStart);
   DEFINE_CALLBACK (callbacks, VMDeath);
@@ -775,6 +949,7 @@ jdwpVMInitCB (MAYBE_UNUSED jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
   // Enable callbacks
   ENABLE_EVENT (BREAKPOINT, NULL);
   ENABLE_EVENT (CLASS_PREPARE, NULL);
+  // SingleStep is enabled only when needed
   ENABLE_EVENT (THREAD_END, NULL);
   ENABLE_EVENT (THREAD_START, NULL);
   ENABLE_EVENT (VM_DEATH, NULL);

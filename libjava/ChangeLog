@@ -1,3 +1,12 @@
+2007-02-16  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/natVMVirtualMachine.cc
+	(get_line_table): New function.
+	(handle_single_step): New function.
+	(jdwpSingleStepCB): New function.
+	(jdwpVMInitCB): Define a JVMTI single step
+	callback, but don't enable it until needed.
+
 2007-02-16  David Daney  <ddaney@avtrex.com>
 
 	* java/lang/Thread.java (Thread(ThreadGroup, Runnable, String)): Pass
