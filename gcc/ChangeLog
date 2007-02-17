@@ -1,5 +1,24 @@
 2007-02-16  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/darwin.h (LINK_SPEC): Always pass -macosx_version_min
+	to linker.
+	(DARWIN_EXTRA_SPECS): Add %(darwin_minversion).
+	* config/rs6000/darwin.h (SUBTARGET_OVERRIDE_OPTIONS): Just call
+	darwin_rs6000_override_options.
+	(C_COMMON_OVERRIDE_OPTIONS): Expect
+	darwin_macosx_version_min to be non-NULL always.
+	(TARGET_C99_FUNCTIONS): Likewise.
+	(CC1_SPEC): Always pass -mmacosx-version-min to cc1*.
+	(DARWIN_MINVERSION_SPEC): New.
+	* config/rs6000/rs6000.c (darwin_rs6000_override_options): New.
+	* config/i386/darwin.h (CC1_SPEC): Always pass -mmacosx-version-min
+	to cc1*.  
+	(DARWIN_MINVERSION_SPEC): New.
+	* config/darwin.opt (mmacosx-version-min): Initialize to non-NULL
+	value.
+	* config/darwin-c.c (darwin_cpp_builtins): Expect
+	darwin_macosx_version_min to be non-NULL always.
+
 	* config/rs6000/rs6000.c: Clean up trailing whitespace.
 
 2007-02-16  Uros Bizjak  <ubizjak@gmail.com>
