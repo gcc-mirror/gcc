@@ -1656,10 +1656,8 @@ generate_element_ref (struct sra_elt *elt)
 static tree
 sra_build_assignment (tree dst, tree src)
 {
-#ifdef ENABLE_CHECKING
-  gcc_assert (TYPE_MAIN_VARIANT (TREE_TYPE (dst))
-	      == TYPE_MAIN_VARIANT (TREE_TYPE (src)));
-#endif
+  /* We need TYPE_CANONICAL to compare the types of dst and src
+     efficiently, but that's only introduced in GCC 4.3.  */
   return build2 (MODIFY_EXPR, void_type_node, dst, src);
 }
 
