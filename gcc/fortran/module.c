@@ -3241,6 +3241,31 @@ read_cleanup (pointer_info * p)
 }
 
 
+/* Given a root symtree node and a symbol, try to find a symtree that
+   references the symbol that is not a unique name.  */
+
+static gfc_symtree *
+find_symtree_for_symbol (gfc_symtree *st, gfc_symbol *sym)
+{
+  gfc_symtree *s = NULL;
+
+  if (st == NULL)
+    return s;
+
+  s = find_symtree_for_symbol (st->right, sym);
+  if (s != NULL)
+    return s;
+  s = find_symtree_for_symbol (st->left, sym);
+  if (s != NULL)
+    return s;
+
+  if (st->n.sym == sym && !check_unique_name (st->name))
+    return st;
+
+  return s;
+}
+
+
 /* Read a module file.  */
 
 static void
@@ -3251,7 +3276,7 @@ read_module (void)
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_intrinsic_op i;
   int ambiguous, j, nuse, symbol;
-  pointer_info *info;
+  pointer_info *info, *q;
   gfc_use_rename *u;
   gfc_symtree *st;
   gfc_symbol *sym;
@@ -3301,8 +3326,27 @@ read_module (void)
 	continue;
 
       info->u.rsym.state = USED;
-      info->u.rsym.referenced = 1;
       info->u.rsym.sym = sym;
+
+      /* Some symbols do not have a namespace (eg. formal arguments),
+	 so the automatic "unique symtree" mechanism must be suppressed
+	 by marking them as referenced.  */
+      q = get_integer (info->u.rsym.ns);
+      if (q->u.pointer == NULL)
+	{
+	  info->u.rsym.referenced = 1;
+	  continue;
+	}
+
+      /* If possible recycle the symtree that references the symbol.
+	 If a symtree is not found and the module does not import one,
+	 a unique-name symtree is found by read_cleanup.  */
+      st = find_symtree_for_symbol (gfc_current_ns->sym_root, sym);
+      if (st != NULL)
+	{
+	  info->u.rsym.symtree = st;
+	  info->u.rsym.referenced = 1;
+	}
     }
 
   mio_rparen ();
@@ -3332,15 +3376,22 @@ read_module (void)
 	  /* Get the jth local name for this symbol.  */
 	  p = find_use_name_n (name, &j);
 
-	  /* Skip symtree nodes not in an ONLY clause.  */
+	  /* Skip symtree nodes not in an ONLY clause, unless there
+	     is an existing symtree loaded from another USE
+	     statement.  */
 	  if (p == NULL)
-	    continue;
+	    {
+	      st = gfc_find_symtree (gfc_current_ns->sym_root, name);
+	      if (st != NULL)
+		info->u.rsym.symtree = st;
+	      continue;
+	    }
 
-	  /* Check for ambiguous symbols.  */
 	  st = gfc_find_symtree (gfc_current_ns->sym_root, p);
 
 	  if (st != NULL)
 	    {
+	      /* Check for ambiguous symbols.  */
 	      if (st->n.sym != info->u.rsym.sym)
 		st->ambiguous = 1;
 	      info->u.rsym.symtree = st;

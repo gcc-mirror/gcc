@@ -1,3 +1,20 @@
+2007-02-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30554
+	* module.c (find_symtree_for_symbol): New function to return
+	a symtree that is not a "unique symtree" given a symbol.
+	(read_module): Do not automatically set pointer_info to
+	referenced, if the symbol has a namespace, because this
+	inhibits the generation of a unique symtree.  Recycle the
+	symtree if possible by calling find_symtree_for_symbol. If a
+	symbol is excluded by an ONLY clause, check to see if there is
+	a symtree already loaded. If so, attach the symtree to the
+	pointer_info.
+
+	PR fortran/30319
+	* decl.c (add_init_expr_to_sym): Make new charlen for an array
+	constructor initializer.
+
 2007-02-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/30779
