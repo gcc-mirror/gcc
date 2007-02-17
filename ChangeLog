@@ -1,3 +1,11 @@
+2007-02-17  Mark Mitchell  <mark@codesourcery.com>
+            Nathan Sidwell  <nathan@codesourcery.com>
+            Vladimir Prus  <vladimir@codesourcery.com
+            Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac (TOPLEVEL_CONFIGURE_ARGUMENTS): Fix quoting.
+	* configure: Regenerate.
+
 2007-02-14  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* ltconfig (freebsd*): Default to elf.
