@@ -297,8 +297,7 @@ extern GTY(()) int darwin_ms_struct;
    %{headerpad_max_install_names*} \
    %{Zimage_base*:-image_base %*} \
    %{Zinit*:-init %*} \
-   %{mmacosx-version-min=*:-macosx_version_min %*} \
-   %{!mmacosx-version-min=*:%{shared-libgcc:-macosx_version_min 10.3}} \
+   -macosx_version_min %(darwin_minversion) \
    %{nomultidefs} \
    %{Zmulti_module:-multi_module} %{Zsingle_module:-single_module} \
    %{Zmultiply_defined*:-multiply_defined %*} \
@@ -387,7 +386,8 @@ extern GTY(()) int darwin_ms_struct;
 
 #define DARWIN_EXTRA_SPECS     \
   { "darwin_crt1", DARWIN_CRT1_SPEC },                                 \
-  { "darwin_dylib1", DARWIN_DYLIB1_SPEC },
+  { "darwin_dylib1", DARWIN_DYLIB1_SPEC },			       \
+  { "darwin_minversion", DARWIN_MINVERSION_SPEC },
 
 #define DARWIN_DYLIB1_SPEC                                             \
   "%:version-compare(!> 10.5 mmacosx-version-min= -ldylib1.o)          \

@@ -74,6 +74,7 @@ Boston, MA 02110-1301, USA.  */
 
 #undef CC1_SPEC
 #define CC1_SPEC "%{!mkernel:%{!static:%{!mdynamic-no-pic:-fPIC}}} \
+  -mmacosx-version-min=%(darwin_minversion) \
   %{g: %{!fno-eliminate-unused-debug-symbols: -feliminate-unused-debug-symbols }}"
 
 #undef ASM_SPEC
@@ -81,6 +82,9 @@ Boston, MA 02110-1301, USA.  */
 
 #define DARWIN_ARCH_SPEC "%{m64:x86_64;:i386}"
 #define DARWIN_SUBARCH_SPEC DARWIN_ARCH_SPEC
+
+/* Determine a minimum version based on compiler options.  */
+#define DARWIN_MINVERSION_SPEC	"10.4"
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS                                   \

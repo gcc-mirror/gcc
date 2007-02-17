@@ -1169,6 +1169,61 @@ rs6000_init_hard_regno_mode_ok (void)
 	rs6000_hard_regno_mode_ok_p[m][r] = true;
 }
 
+#if TARGET_MACHO
+/* The Darwin version of SUBTARGET_OVERRIDE_OPTIONS.  */
+
+static void
+darwin_rs6000_override_options (void)
+{
+  /* The Darwin ABI always includes AltiVec, can't be (validly) turned
+     off.  */
+  rs6000_altivec_abi = 1;
+  TARGET_ALTIVEC_VRSAVE = 1;
+  if (DEFAULT_ABI == ABI_DARWIN)
+  {
+    if (MACHO_DYNAMIC_NO_PIC_P)
+      {
+        if (flag_pic)
+            warning (0, "-mdynamic-no-pic overrides -fpic or -fPIC");
+        flag_pic = 0;
+      }
+    else if (flag_pic == 1)
+      {
+        flag_pic = 2;
+      }
+  }
+  if (TARGET_64BIT && ! TARGET_POWERPC64)
+    {
+      target_flags |= MASK_POWERPC64;
+      warning (0, "-m64 requires PowerPC64 architecture, enabling");
+    }
+  if (flag_mkernel)
+    {
+      rs6000_default_long_calls = 1;
+      target_flags |= MASK_SOFT_FLOAT;
+    }
+
+  /* Make -m64 imply -maltivec.  Darwin's 64-bit ABI includes
+     Altivec.  */
+  if (!flag_mkernel && !flag_apple_kext
+      && TARGET_64BIT
+      && ! (target_flags_explicit & MASK_ALTIVEC))
+    target_flags |= MASK_ALTIVEC;
+
+  /* Unless the user (not the configurer) has explicitly overridden
+     it with -mcpu=G3 or -mno-altivec, then 10.5+ targets default to
+     G4 unless targetting the kernel.  */
+  if (!flag_mkernel
+      && !flag_apple_kext
+      && strverscmp (darwin_macosx_version_min, "10.5") >= 0
+      && ! (target_flags_explicit & MASK_ALTIVEC)
+      && ! rs6000_select[1].string)
+    {
+      target_flags |= MASK_ALTIVEC;
+    }
+}
+#endif
+
 /* If not otherwise specified by a target, make 'long double' equivalent to
    'double'.  */
 
