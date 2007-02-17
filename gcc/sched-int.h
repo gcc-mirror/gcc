@@ -834,7 +834,6 @@ extern void init_deps_global (void);
 extern void finish_deps_global (void);
 extern void add_forw_dep (dep_link_t);
 extern void compute_forward_dependences (rtx, rtx);
-extern rtx find_insn_list (rtx, rtx);
 extern void init_dependency_caches (int);
 extern void free_dependency_caches (void);
 extern void extend_dependency_caches (int, bool);
