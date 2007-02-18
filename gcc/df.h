@@ -562,7 +562,7 @@ struct df_urec_bb_info
 {
   /* Local sets to describe the basic blocks.  */
   bitmap earlyclobber;  /* The set of registers that are referenced
-			   with an an early clobber mode.  */
+			   with an early clobber mode.  */
   /* Kill and gen are defined as in the UR problem.  */
   bitmap kill;
   bitmap gen;

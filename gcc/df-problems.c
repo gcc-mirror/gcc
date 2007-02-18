@@ -1968,7 +1968,7 @@ df_ur_init (struct dataflow *dflow, bitmap all_blocks)
 }
 
 
-/* Or in the stack regs, hard regs and early clobber regs into the the
+/* Or in the stack regs, hard regs and early clobber regs into the
    ur_in sets of all of the blocks.  */
 
 static void
@@ -2550,7 +2550,7 @@ df_urec_init (struct dataflow *dflow, bitmap all_blocks)
 }
 
 
-/* Or in the stack regs, hard regs and early clobber regs into the the
+/* Or in the stack regs, hard regs and early clobber regs into the
    ur_in sets of all of the blocks.  */
 
 static void

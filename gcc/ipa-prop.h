@@ -29,7 +29,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 /* A jump function for a callsite represents the values passed as actual 
    arguments of the callsite. There are three main types of values :
    Formal - the caller's formal parameter is passed as an actual argument.
-   Constant - a constant is passed as a an actual argument.
+   Constant - a constant is passed as an actual argument.
    Unknown - neither of the above.
    Integer and real constants are represented as CONST_IPATYPE and Fortran 
    constants are represented as CONST_IPATYPE_REF.  */

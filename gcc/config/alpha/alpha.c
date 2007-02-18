@@ -4434,7 +4434,7 @@ emit_insxl (enum machine_mode mode, rtx op1, rtx op2)
   return ret;
 }
 
-/* Expand an an atomic fetch-and-operate pattern.  CODE is the binary operation
+/* Expand an atomic fetch-and-operate pattern.  CODE is the binary operation
    to perform.  MEM is the memory on which to operate.  VAL is the second 
    operand of the binary operator.  BEFORE and AFTER are optional locations to
    return the value of MEM either before of after the operation.  SCRATCH is

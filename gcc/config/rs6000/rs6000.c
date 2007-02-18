@@ -12705,7 +12705,7 @@ emit_store_conditional (enum machine_mode mode, rtx res, rtx mem, rtx val)
   emit_insn (fn (res, mem, val));
 }
 
-/* Expand an an atomic fetch-and-operate pattern.  CODE is the binary operation
+/* Expand an atomic fetch-and-operate pattern.  CODE is the binary operation
    to perform.  MEM is the memory on which to operate.  VAL is the second
    operand of the binary operator.  BEFORE and AFTER are optional locations to
    return the value of MEM either before of after the operation.  SCRATCH is

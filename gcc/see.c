@@ -3170,7 +3170,7 @@ see_store_reference_and_extension (rtx ref_insn, rtx se_insn,
 
    A definition is relevant if its root has
    ((entry_type == SIGN_EXTENDED_DEF) || (entry_type == ZERO_EXTENDED_DEF)) and
-   his source_mode is not narrower then the the roots source_mode.
+   his source_mode is not narrower then the roots source_mode.
 
    Return the number of relevant defs or negative number if something bad had
    happened and the optimization should be aborted.  */

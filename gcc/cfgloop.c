@@ -701,7 +701,7 @@ disambiguate_multiple_latches (struct loop *loop)
 {
   edge e;
 
-  /* We eliminate the mutiple latches by splitting the header to the forwarder
+  /* We eliminate the multiple latches by splitting the header to the forwarder
      block F and the rest R, and redirecting the edges.  There are two cases:
 
      1) If there is a latch edge E that corresponds to a subloop (we guess

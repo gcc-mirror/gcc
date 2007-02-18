@@ -1,3 +1,13 @@
+2007-02-18  Kazu Hirata  <kazu@codesourcery.com>
+
+	* cfgloop.c, config/alpha/alpha.c, config/bfin/bfin.c,
+	config/i386/athlon.md, config/ia64/ia64.md,
+	config/rs6000/rs6000.c, config/s390/s390.c, config/spu/spu.md,
+	df-problems.c, df.h, fold-const.c, ipa-cp.c, ipa-inline.c,
+	ipa-prop.h, see.c, struct-equiv.c, tree-inline.c,
+	tree-ssa-loop-niter.c, tree-vect-analyze.c,
+	tree-vect-transform.c: Fix comment typos.
+
 2007-02-17  Kazu Hirata  <kazu@codesourcery.com>
 
 	* sched-deps.c (find_insn_list): Remove.

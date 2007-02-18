@@ -344,7 +344,7 @@ note_local_live (struct equiv_info *info, rtx x, rtx y, int rvalue)
   return x_change;
 }
 
-/* Check if *XP is equivalent to Y.  Until an an unreconcilable difference is
+/* Check if *XP is equivalent to Y.  Until an unreconcilable difference is
    found, use in-group changes with validate_change on *XP to make register
    assignments agree.  It is the (not necessarily direct) callers
    responsibility to verify / confirm / cancel these changes, as appropriate.
@@ -570,7 +570,7 @@ rtx_equiv_p (rtx *xp, rtx y, int rvalue, struct equiv_info *info)
 	  return false;
 	x_dest1 = XEXP (x, 0);
 	/* validate_change might have changed the destination.  Put it back
-	   so that we can do a proper match for its role a an input.  */
+	   so that we can do a proper match for its role as an input.  */
 	XEXP (x, 0) = x_dest0;
 	if (!rtx_equiv_p (&XEXP (x, 0), XEXP (y, 0), 1, info))
 	  return false;

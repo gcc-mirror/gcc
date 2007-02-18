@@ -8860,8 +8860,8 @@ fold_comparison (enum tree_code code, tree type, tree op0, tree op1)
     }
 
   /* If this is a comparison of complex values and both sides
-     are COMPLEX_CST, do the comparision by parts to fold the
-     comparision.  */
+     are COMPLEX_CST, do the comparison by parts to fold the
+     comparison.  */
   if ((code == EQ_EXPR || code == NE_EXPR)
       && TREE_CODE (TREE_TYPE (arg0)) == COMPLEX_TYPE
       && TREE_CODE (arg0) == COMPLEX_CST

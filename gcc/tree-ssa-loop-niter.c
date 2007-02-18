@@ -1060,7 +1060,7 @@ number_of_iterations_exit (struct loop *loop, edge exit,
     return false;
 
   /* We don't want to see undefined signed overflow warnings while
-     computing the nmber of iterations.  */
+     computing the number of iterations.  */
   fold_defer_overflow_warnings ();
 
   iv0.base = expand_simple_operations (iv0.base);

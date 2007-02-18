@@ -2288,7 +2288,7 @@ init_inline_once (void)
   /* Estimating time for call is difficult, since we have no idea what the
      called function does.  In the current uses of eni_time_weights,
      underestimating the cost does less harm than overestimating it, so
-     we choose a rather small walue here.  */
+     we choose a rather small value here.  */
   eni_time_weights.call_cost = 10;
   eni_time_weights.div_mod_cost = 10;
   eni_time_weights.switch_cost = 4;
