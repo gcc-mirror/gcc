@@ -1,6 +1,6 @@
 // Internal policy header for TR1 unordered_set and unordered_map -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,6 +35,7 @@
 #define _TR1_HASHTABLE_POLICY_H 1
 
 #include <functional> // _Identity, _Select1st
+#include <algorithm> // lower_bound
 #include <tr1/utility>
 #include <ext/type_traits.h>
 

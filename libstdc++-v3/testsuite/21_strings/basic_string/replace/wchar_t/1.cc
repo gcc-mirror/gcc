@@ -1,6 +1,7 @@
 // 1999-06-10 bkoz
 
-// Copyright (C) 1994, 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
+// 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,6 +22,7 @@
 // 21.3.5.6 basic_string::replace
 
 #include <string>
+#include <algorithm> // for std::find
 #include <testsuite_hooks.h>
 
 bool test01(void)

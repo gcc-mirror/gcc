@@ -1,6 +1,6 @@
 // vector<bool> specialization -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -65,7 +65,7 @@
 _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 
   typedef unsigned long _Bit_type;
-  enum { _S_word_bit = int(CHAR_BIT * sizeof(_Bit_type)) };
+  enum { _S_word_bit = int(__CHAR_BIT__ * sizeof(_Bit_type)) };
 
   struct _Bit_reference
   {

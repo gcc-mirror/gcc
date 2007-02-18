@@ -1,6 +1,7 @@
 // std::codecvt implementation details, GNU version -*- C++ -*-
 
-// Copyright (C) 2002, 2003, 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,6 +35,8 @@
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
 #include <locale>
+#include <cstdlib>  // For MB_CUR_MAX
+#include <climits>  // For MB_LEN_MAX
 #include <bits/c++locale_internal.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)

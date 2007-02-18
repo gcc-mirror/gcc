@@ -3,7 +3,7 @@
 // Testing character type and state type with char_traits and codecvt
 // specializations for the C++ library testsuite.
 //
-// Copyright (C) 2003, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,6 +36,7 @@
 #include <climits>
 #include <string> // for char_traits
 #include <locale> // for codecvt
+#include <algorithm> // for transform
 #include <ext/pod_char_traits.h>
 
 namespace __gnu_test

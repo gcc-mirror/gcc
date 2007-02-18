@@ -1,3 +1,25 @@
+2007-02-18  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28080 (partial)
+	* include/bits/stl_algobase.h: Do not include <climits>, use
+	std::numeric_limits.
+	* include/bits/stl_bvector.h: Use __CHAR_BIT__.
+	* config/locale/gnu/codecvt_members.cc: Include <climits>.
+	* config/locale/generic/codecvt_members.cc: Likewise.
+	* include/std/string: Do not include <algorithm>; do not include
+	<memory>, include <bits/allocator.h> instead.
+	* include/ext/vstring_fwd.h: Likewise.
+	* include/ext/vstring_util.h: Do not include <algorithm>.
+	* include/tr1/hashtable_policy.h: Include <algorithm>.
+	* testsuite/21_strings/basic_string/replace/char/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/replace/wchar_t/1.cc: Likewise.
+	* testsuite/23_containers/bitset/cons/1.cc: Likewise.
+	* testsuite/util/testsuite_character.h: Likewise.
+
+	* config/locale/gnu/codecvt_members.cc: Also include <cstdlib>,
+	for MB_CUR_MAX.
+	* config/locale/generic/codecvt_members.cc: Likewise.
+
 2007-02-16  Paolo Carlini  <pcarlini@suse.de>
 
 	Revert.
