@@ -1,3 +1,7 @@
+2007-02-18  Kazu Hirata  <kazu@codesourcery.com>
+
+	* decl.c, tree.c: Fix comment typos.
+
 2007-02-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C++/30158

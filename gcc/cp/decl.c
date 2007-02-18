@@ -1065,7 +1065,7 @@ warn_extern_redeclared_static (tree newdecl, tree olddecl)
 
 /* NEW_DECL is a redeclaration of OLD_DECL; both are functions or
    function templates.  If their exception specifications do not
-   match, issue an a diagnostic.  */
+   match, issue a diagnostic.  */
 
 static void
 check_redeclaration_exception_specification (tree new_decl,
@@ -4729,7 +4729,7 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
 	  error ("elements of array %q#D have incomplete type", decl);
 	  return NULL_TREE;
 	}
-      /* It is not valid to initialize an a VLA.  */
+      /* It is not valid to initialize a VLA.  */
       if (init
 	  && ((COMPLETE_TYPE_P (type) && !TREE_CONSTANT (TYPE_SIZE (type)))
 	      || !TREE_CONSTANT (TYPE_SIZE (element_type))))
