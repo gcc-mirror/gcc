@@ -1062,10 +1062,11 @@ update_equiv_regs (void)
 	{
 	  rtx init_insn = XEXP (reg_equiv[regno].init_insns, 0);
 	  if (validate_equiv_mem (init_insn, src, dest)
-	      && ! memref_used_between_p (dest, init_insn, insn))
+	      && ! memref_used_between_p (dest, init_insn, insn)
+	      /* Attaching a REG_EQUIV note will fail if INIT_INSN has
+		 multiple sets.  */
+	      && set_unique_reg_note (init_insn, REG_EQUIV, copy_rtx (dest)))
 	    {
-	      set_unique_reg_note (init_insn, REG_EQUIV, copy_rtx (dest));
-
 	      /* This insn makes the equivalence, not the one initializing
 		 the register.  */
 	      reg_equiv_init[regno]
