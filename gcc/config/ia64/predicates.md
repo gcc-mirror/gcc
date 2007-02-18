@@ -424,38 +424,38 @@
        (and (match_code "const_int,const_double,const_vector")
 	    (match_test "op == CONST0_RTX (GET_MODE (op))"))))
 
-;; True if OP is a GR register operand, or a 5 bit immediate operand.
+;; True if OP is a GR register operand, or a 5-bit immediate operand.
 (define_predicate "gr_reg_or_5bit_operand"
   (ior (match_operand 0 "gr_register_operand")
        (and (match_code "const_int")
 	    (match_test "INTVAL (op) >= 0 && INTVAL (op) < 32"))))
 
-;; True if OP is a GR register operand, or a 6 bit immediate operand.
+;; True if OP is a GR register operand, or a 6-bit immediate operand.
 (define_predicate "gr_reg_or_6bit_operand"
   (ior (match_operand 0 "gr_register_operand")
        (and (match_code "const_int")
 	    (match_test "CONST_OK_FOR_M (INTVAL (op))"))))
 
-;; True if OP is a GR register operand, or an 8 bit immediate operand.
+;; True if OP is a GR register operand, or an 8-bit immediate operand.
 (define_predicate "gr_reg_or_8bit_operand"
   (ior (match_operand 0 "gr_register_operand")
        (and (match_code "const_int")
 	    (match_test "CONST_OK_FOR_K (INTVAL (op))"))))
 
-;; True if OP is a GR/FR register operand, or an 8 bit immediate operand.
+;; True if OP is a GR/FR register operand, or an 8-bit immediate operand.
 (define_predicate "grfr_reg_or_8bit_operand"
   (ior (match_operand 0 "grfr_register_operand")
        (and (match_code "const_int")
 	    (match_test "CONST_OK_FOR_K (INTVAL (op))"))))
 
-;; True if OP is a register operand, or an 8 bit adjusted immediate operand.
+;; True if OP is a register operand, or an 8-bit adjusted immediate operand.
 (define_predicate "gr_reg_or_8bit_adjusted_operand"
   (ior (match_operand 0 "gr_register_operand")
        (and (match_code "const_int")
 	    (match_test "CONST_OK_FOR_L (INTVAL (op))"))))
 
-;; True if OP is a register operand, or is valid for both an 8 bit
-;; immediate and an 8 bit adjusted immediate operand.  This is necessary
+;; True if OP is a register operand, or is valid for both an 8-bit
+;; immediate and an 8-bit adjusted immediate operand.  This is necessary
 ;; because when we emit a compare, we don't know what the condition will be,
 ;; so we need the union of the immediates accepted by GT and LT.
 (define_predicate "gr_reg_or_8bit_and_adjusted_operand"
@@ -464,34 +464,34 @@
 	    (match_test "CONST_OK_FOR_K (INTVAL (op))
                          && CONST_OK_FOR_L (INTVAL (op))"))))
 
-;; True if OP is a register operand, or a 14 bit immediate operand.
+;; True if OP is a register operand, or a 14-bit immediate operand.
 (define_predicate "gr_reg_or_14bit_operand"
   (ior (match_operand 0 "gr_register_operand")
        (and (match_code "const_int")
 	    (match_test "CONST_OK_FOR_I (INTVAL (op))"))))
 
-;;  True if OP is a register operand, or a 22 bit immediate operand.
+;;  True if OP is a register operand, or a 22-bit immediate operand.
 (define_predicate "gr_reg_or_22bit_operand"
   (ior (match_operand 0 "gr_register_operand")
        (and (match_code "const_int")
 	    (match_test "CONST_OK_FOR_J (INTVAL (op))"))))
 
-;; True if OP is a 7 bit immediate operand.
+;; True if OP is a 7-bit immediate operand.
 (define_predicate "dshift_count_operand"
   (and (match_code "const_int")
        (match_test "INTVAL (op) >= 0 && INTVAL (op) < 128")))
 
-;; True if OP is a 6 bit immediate operand.
+;; True if OP is a 6-bit immediate operand.
 (define_predicate "shift_count_operand"
   (and (match_code "const_int")
        (match_test "CONST_OK_FOR_M (INTVAL (op))")))
 
-;; True if OP-1 is a 6 bit immediate operand, used in extr instruction.
+;; True if OP-1 is a 6-bit immediate operand, used in extr instruction.
 (define_predicate "extr_len_operand"
   (and (match_code "const_int")
        (match_test "CONST_OK_FOR_M (INTVAL (op) - 1)")))
 
-;; True if OP is a 5 bit immediate operand.
+;; True if OP is a 5-bit immediate operand.
 (define_predicate "shift_32bit_count_operand"
    (and (match_code "const_int")
         (match_test "INTVAL (op) >= 0 && INTVAL (op) < 32")))

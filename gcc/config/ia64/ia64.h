@@ -175,7 +175,7 @@ extern enum processor_type ia64_tune;
 
    You need not define this macro if the `POINTER_SIZE' is equal to the width
    of `Pmode'.  */
-/* Need this for 32 bit pointers, see hpux.h for setting it.  */
+/* Need this for 32-bit pointers, see hpux.h for setting it.  */
 /* #define POINTERS_EXTEND_UNSIGNED */
 
 /* A macro to update MODE and UNSIGNEDP when an object whose type is TYPE and
@@ -206,7 +206,7 @@ while (0)
 #define FUNCTION_BOUNDARY 128
 
 /* Optional x86 80-bit float, quad-precision 128-bit float, and quad-word
-   128 bit integers all require 128 bit alignment.  */
+   128-bit integers all require 128-bit alignment.  */
 #define BIGGEST_ALIGNMENT 128
 
 /* If defined, a C expression to compute the alignment for a static variable.
@@ -910,19 +910,19 @@ enum reg_class
    letters (`I', `J', `K', .. 'P') that specify particular ranges of
    integer values.  */
 
-/* 14 bit signed immediate for arithmetic instructions.  */
+/* 14-bit signed immediate for arithmetic instructions.  */
 #define CONST_OK_FOR_I(VALUE) \
   ((unsigned HOST_WIDE_INT)(VALUE) + 0x2000 < 0x4000)
-/* 22 bit signed immediate for arith instructions with r0/r1/r2/r3 source.  */
+/* 22-bit signed immediate for arith instructions with r0/r1/r2/r3 source.  */
 #define CONST_OK_FOR_J(VALUE) \
   ((unsigned HOST_WIDE_INT)(VALUE) + 0x200000 < 0x400000)
-/* 8 bit signed immediate for logical instructions.  */
+/* 8-bit signed immediate for logical instructions.  */
 #define CONST_OK_FOR_K(VALUE) ((unsigned HOST_WIDE_INT)(VALUE) + 0x80 < 0x100)
-/* 8 bit adjusted signed immediate for compare pseudo-ops.  */
+/* 8-bit adjusted signed immediate for compare pseudo-ops.  */
 #define CONST_OK_FOR_L(VALUE) ((unsigned HOST_WIDE_INT)(VALUE) + 0x7F < 0x100)
-/* 6 bit unsigned immediate for shift counts.  */
+/* 6-bit unsigned immediate for shift counts.  */
 #define CONST_OK_FOR_M(VALUE) ((unsigned HOST_WIDE_INT)(VALUE) < 0x40)
-/* 9 bit signed immediate for load/store post-increments.  */
+/* 9-bit signed immediate for load/store post-increments.  */
 #define CONST_OK_FOR_N(VALUE) ((unsigned HOST_WIDE_INT)(VALUE) + 0x100 < 0x200)
 /* 0 for r0.  Used by Linux kernel, do not change.  */
 #define CONST_OK_FOR_O(VALUE) ((VALUE) == 0)

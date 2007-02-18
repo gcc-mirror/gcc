@@ -84,8 +84,8 @@ do {						\
 #define DBX_REGISTER_NUMBER(REGNO) \
   ia64_dbx_register_number(REGNO)
 
-/* Things that svr4.h defines to the wrong type, because it assumes 32 bit
-   ints and 32 bit longs.  */
+/* Things that svr4.h defines to the wrong type, because it assumes 32-bit
+   ints and 32-bit longs.  */
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "long unsigned int"
