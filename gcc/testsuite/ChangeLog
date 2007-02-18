@@ -1,5 +1,9 @@
 2007-02-18  Roger Sayle  <roger@eyesopen.com>
 
+	* gfortran.dg/array_constructor_15.f90: New test case.
+
+2007-02-18  Roger Sayle  <roger@eyesopen.com>
+
         * gfortran.dg/forall_10.f90: New test case.
 
 2007-02-18  Eric Botcazou  <ebotcazou@adacore.com>

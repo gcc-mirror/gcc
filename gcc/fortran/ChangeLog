@@ -1,4 +1,18 @@
 2007-02-18  Roger Sayle  <roger@eyesopen.com>
+
+	* trans-array.c (gfc_build_constant_array_constructor): When the
+	shape of the constructor is known, use that to construct the
+	gfc_array_spec.
+	(gfc_trans_constant_array_constructor): Initialize the "info"
+	information for all of the dimensions of the array constructor.
+	(constant_array_constructor_loop_size): New function.
+	(gfc_trans_array_constructor): Use it to determine whether a
+	loop is suitable for "constant array constructor" optimization.
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_anyall): Use fold_build2
+	instead of build2, to avoid conditions like "(a != b) != 0".
+
+2007-02-18  Roger Sayle  <roger@eyesopen.com>
 	    Paul Thomas <pault@gcc.gnu.org>
 
         PR fortran/30400
@@ -11,7 +25,7 @@
 
 	PR fortran/30793
 	* trans-decl.c (gfc_generate_function_code): Do not initialize
-	  pointers to derived components.
+	pointers to derived components.
 
 2007-02-15  Sandra Loosemore  <sandra@codesourcery.com>
 	    Brooks Moses  <brooks.moses@codesourcery.com>
