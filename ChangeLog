@@ -1,3 +1,9 @@
+2007-02-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.ac: Drop multiple occurrences of --enable-languages,
+	and fix its quoting.
+	* configure: Rebuilt.
+
 2007-02-17  Mark Mitchell  <mark@codesourcery.com>
             Nathan Sidwell  <nathan@codesourcery.com>
             Vladimir Prus  <vladimir@codesourcery.com

@@ -1407,7 +1407,7 @@ Supported languages are: ${potential_languages}])
   fi
 
   AC_SUBST(stage1_languages)
-  ac_configure_args=`echo " $ac_configure_args" | sed -e 's/ --enable-languages=[[^ ]]*//' -e 's/$/ --enable-languages='"$enable_languages"/ `
+  ac_configure_args=`echo " $ac_configure_args" | sed -e "s/ '--enable-languages=[[^ ]]*'//g" -e "s/$/ '--enable-languages="$enable_languages"'/" `
 fi
 
 # Handle --disable-<component> generically.
