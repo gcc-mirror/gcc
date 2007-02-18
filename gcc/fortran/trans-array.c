@@ -1453,7 +1453,7 @@ gfc_build_constant_array_constructor (gfc_expr * expr, tree type)
   gfc_constructor *c;
   gfc_array_spec as;
   gfc_se se;
-
+  int i;
 
   /* First traverse the constructor list, converting the constants
      to tree to build an initializer.  */
@@ -1478,10 +1478,21 @@ gfc_build_constant_array_constructor (gfc_expr * expr, tree type)
 
   memset (&as, 0, sizeof (gfc_array_spec));
 
-  as.rank = 1;
+  as.rank = expr->rank;
   as.type = AS_EXPLICIT;
-  as.lower[0] = gfc_int_expr (0);
-  as.upper[0] = gfc_int_expr (nelem - 1);
+  if (!expr->shape)
+    {
+      as.lower[0] = gfc_int_expr (0);
+      as.upper[0] = gfc_int_expr (nelem - 1);
+    }
+  else
+    for (i = 0; i < expr->rank; i++)
+      {
+	int tmp = (int) mpz_get_si (expr->shape[i]);
+	as.lower[i] = gfc_int_expr (0);
+	as.upper[i] = gfc_int_expr (tmp - 1);
+      }
+
   tmptype = gfc_get_nodesc_array_type (type, &as, 3);
 
   init = build_constructor_from_list (tmptype, nreverse (list));
@@ -1512,6 +1523,7 @@ gfc_trans_constant_array_constructor (gfc_loopinfo * loop,
 {
   gfc_ss_info *info;
   tree tmp;
+  int i;
 
   tmp = gfc_build_constant_array_constructor (ss->expr, type);
 
@@ -1522,14 +1534,52 @@ gfc_trans_constant_array_constructor (gfc_loopinfo * loop,
   info->offset = fold_build1 (NEGATE_EXPR, gfc_array_index_type,
 			      loop->from[0]);
 
-  info->delta[0] = gfc_index_zero_node;
-  info->start[0] = gfc_index_zero_node;
-  info->end[0] = gfc_index_zero_node;
-  info->stride[0] = gfc_index_one_node;
-  info->dim[0] = 0;
+  for (i = 0; i < info->dimen; i++)
+    {
+      info->delta[i] = gfc_index_zero_node;
+      info->start[i] = gfc_index_zero_node;
+      info->end[i] = gfc_index_zero_node;
+      info->stride[i] = gfc_index_one_node;
+      info->dim[i] = i;
+    }
 
   if (info->dimen > loop->temp_dim)
     loop->temp_dim = info->dimen;
+}
+
+/* Helper routine of gfc_trans_array_constructor to determine if the
+   bounds of the loop specified by LOOP are constant and simple enough
+   to use with gfc_trans_constant_array_constructor.  Returns the
+   the iteration count of the loop if suitable, and NULL_TREE otherwise.  */
+
+static tree
+constant_array_constructor_loop_size (gfc_loopinfo * loop)
+{
+  tree size = gfc_index_one_node;
+  tree tmp;
+  int i;
+
+  for (i = 0; i < loop->dimen; i++)
+    {
+      /* If the bounds aren't constant, return NULL_TREE.  */
+      if (!INTEGER_CST_P (loop->from[i]) || !INTEGER_CST_P (loop->to[i]))
+	return NULL_TREE;
+      if (!integer_zerop (loop->from[i]))
+	{
+	  /* Only allow non-zero "from" in one-dimensional arrays.  */
+	  if (loop->dimen != 1)
+	    return NULL_TREE;
+	  tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
+			     loop->to[i], loop->from[i]);
+	}
+      else
+	tmp = loop->to[i];
+      tmp = fold_build2 (PLUS_EXPR, gfc_array_index_type,
+			 tmp, gfc_index_one_node);
+      size = fold_build2 (MULT_EXPR, gfc_array_index_type, size, tmp);
+    }
+
+  return size;
 }
 
 
@@ -1584,17 +1634,13 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
     }
 
   /* Special case constant array constructors.  */
-  if (!dynamic
-      && loop->dimen == 1
-      && INTEGER_CST_P (loop->from[0])
-      && INTEGER_CST_P (loop->to[0]))
+  if (!dynamic)
     {
       unsigned HOST_WIDE_INT nelem = gfc_constant_array_constructor_p (c);
       if (nelem > 0)
 	{
-	  tree diff = fold_build2 (MINUS_EXPR, gfc_array_index_type,
-				   loop->to[0], loop->from[0]);
-	  if (compare_tree_int (diff, nelem - 1) == 0)
+	  tree size = constant_array_constructor_loop_size (loop);
+	  if (size && compare_tree_int (size, nelem) == 0)
 	    {
 	      gfc_trans_constant_array_constructor (loop, ss, type);
 	      return;

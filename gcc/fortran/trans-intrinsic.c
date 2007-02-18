@@ -1604,8 +1604,8 @@ gfc_conv_intrinsic_anyall (gfc_se * se, gfc_expr * expr, int op)
   gfc_conv_expr_val (&arrayse, actual->expr);
 
   gfc_add_block_to_block (&body, &arrayse.pre);
-  tmp = build2 (op, boolean_type_node, arrayse.expr,
-		build_int_cst (TREE_TYPE (arrayse.expr), 0));
+  tmp = fold_build2 (op, boolean_type_node, arrayse.expr,
+		     build_int_cst (TREE_TYPE (arrayse.expr), 0));
   tmp = build3_v (COND_EXPR, tmp, found, build_empty_stmt ());
   gfc_add_expr_to_block (&body, tmp);
   gfc_add_block_to_block (&body, &arrayse.post);
