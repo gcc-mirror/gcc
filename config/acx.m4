@@ -123,6 +123,20 @@ test -n "$target_alias" && ncn_target_tool_prefix=$target_alias-
 
 AC_DEFUN([NCN_STRICT_CHECK_TOOLS],
 [AC_REQUIRE([_NCN_TOOL_PREFIXES]) []dnl
+AC_ARG_VAR([$1], [$1 for the host])
+
+if test -n "[$]$1"; then
+  ac_cv_prog_$1=[$]$1
+elif test -n "$ac_cv_prog_$1"; then
+  $1=$ac_cv_prog_$1
+fi
+
+if test -n "$ac_cv_prog_$1"; then
+  for ncn_progname in $2; do
+    AC_CHECK_PROG([$1], [${ncn_progname}], [${ncn_progname}], , [$4])
+  done
+fi
+
 for ncn_progname in $2; do
   if test -n "$ncn_tool_prefix"; then
     AC_CHECK_PROG([$1], [${ncn_tool_prefix}${ncn_progname}], 
@@ -150,7 +164,21 @@ fi
 
 AC_DEFUN([NCN_STRICT_CHECK_TARGET_TOOLS],
 [AC_REQUIRE([_NCN_TOOL_PREFIXES]) []dnl
-if test -n "$with_build_time_tools"; then
+AC_ARG_VAR([$1], patsubst([$1], [_FOR_TARGET$], [])[ for the target])
+
+if test -n "[$]$1"; then
+  ac_cv_prog_$1=[$]$1
+elif test -n "$ac_cv_prog_$1"; then
+  $1=$ac_cv_prog_$1
+fi
+
+if test -n "$ac_cv_prog_$1"; then
+  for ncn_progname in $2; do
+    AC_CHECK_PROG([$1], [${ncn_progname}], [${ncn_progname}], , [$4])
+  done
+fi
+
+if test -z "$ac_cv_prog_$1" && test -n "$with_build_time_tools"; then
   for ncn_progname in $2; do
     AC_MSG_CHECKING([for ${ncn_progname} in $with_build_time_tools])
     if test -x $with_build_time_tools/${ncn_progname}; then
