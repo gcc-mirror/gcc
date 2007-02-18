@@ -3358,7 +3358,10 @@ gfc_free_forall_iterator (gfc_forall_iterator *iter)
 
 /* Match an iterator as part of a FORALL statement.  The format is:
 
-     <var> = <start>:<end>[:<stride>][, <scalar mask>]  */
+     <var> = <start>:<end>[:<stride>]
+
+   On MATCH_NO, the caller tests for the possibility that there is a
+   scalar mask expression.  */
 
 static match
 match_forall_iterator (gfc_forall_iterator **result)
@@ -3370,11 +3373,12 @@ match_forall_iterator (gfc_forall_iterator **result)
   where = gfc_current_locus;
   iter = gfc_getmem (sizeof (gfc_forall_iterator));
 
-  m = gfc_match_variable (&iter->var, 0);
+  m = gfc_match_expr (&iter->var);
   if (m != MATCH_YES)
     goto cleanup;
 
-  if (gfc_match_char ('=') != MATCH_YES)
+  if (gfc_match_char ('=') != MATCH_YES
+	|| iter->var->expr_type != EXPR_VARIABLE)
     {
       m = MATCH_NO;
       goto cleanup;
@@ -3415,12 +3419,6 @@ syntax:
   m = MATCH_ERROR;
 
 cleanup:
-  /* Make sure that potential internal function references in the
-     mask do not get messed up.  */
-  if (iter->var
-      && iter->var->expr_type == EXPR_VARIABLE
-      && iter->var->symtree->n.sym->refs == 1)
-    iter->var->symtree->n.sym->attr.flavor = FL_UNKNOWN;
 
   gfc_current_locus = where;
   gfc_free_forall_iterator (iter);
