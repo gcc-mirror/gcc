@@ -139,7 +139,7 @@ list_find(struct objc_list** list, void* elem)
 
 /* Free list (backwards recursive) */
 
-static void
+static inline void
 list_free(struct objc_list* list)
 {
   if(list)
