@@ -2231,6 +2231,36 @@ is_aliased_with (tree tag, tree sym)
 }
 
 
+/* Given two tags return TRUE if their may-alias sets intersect.  */
+
+bool 
+may_aliases_intersect (tree tag1, tree tag2)
+{ 
+  struct pointer_set_t *set1 = pointer_set_create ();
+  unsigned i;
+  VEC(tree,gc) *may_aliases1 = may_aliases (tag1); 
+  VEC(tree,gc) *may_aliases2 = may_aliases (tag2);
+  tree sym;
+    
+  /* Insert all the symbols from the first may-alias set into the
+     pointer-set.  */
+  for (i = 0; VEC_iterate (tree, may_aliases1, i, sym); i++)
+    pointer_set_insert (set1, sym);
+
+  /* Go through the second may-alias set and check if it contains symbols that
+     are common with the first set.  */
+  for (i = 0; VEC_iterate (tree, may_aliases2, i, sym); i++)
+    if (pointer_set_contains (set1, sym))
+      {
+       pointer_set_destroy (set1); 
+       return true;
+      }
+  
+  pointer_set_destroy (set1);
+  return false;
+}
+
+
 /* Add VAR to the list of may-aliases of PTR's type tag.  If PTR
    doesn't already have a type tag, create one.  */
 

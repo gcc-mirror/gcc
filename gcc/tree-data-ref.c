@@ -146,7 +146,12 @@ ptr_ptr_may_alias_p (tree ptr_a, tree ptr_b,
     tag_b = DR_MEMTAG (drb);
   if (!tag_b)
     return false;
-  *aliased = (tag_a == tag_b);
+  
+  if (tag_a == tag_b)
+    *aliased = true;
+  else
+    *aliased = may_aliases_intersect (tag_a, tag_b);
+
   return true;
 }
 
