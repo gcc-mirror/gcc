@@ -1,5 +1,9 @@
 2007-02-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/tail_call_p.ads, tail_call_p.adb, tail_call.adb: New test.
+
+2007-02-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* lib/gnat.exp (gnat_target_compile): Pass -f to the driver.
 
 2007-02-18 Ira Rosen  <irar@il.ibm.com>
