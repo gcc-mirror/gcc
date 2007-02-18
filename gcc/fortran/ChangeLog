@@ -1,3 +1,10 @@
+2007-02-18  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	PR fortran/30235
+	* interface.c (compare_actual_formal): check for
+	alternate returns when iterating over non-present
+	arguments.
+
 2007-02-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/30554

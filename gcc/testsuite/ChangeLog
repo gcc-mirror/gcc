@@ -1,3 +1,8 @@
+2007-02-18  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	PR fortran/30235
+	* gfortran.dg/altreturn_2.f90: new test.
+
 2007-02-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/tail_call_p.ads, tail_call_p.adb, tail_call.adb: New test.
