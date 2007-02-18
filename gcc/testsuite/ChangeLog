@@ -1,3 +1,7 @@
+2007-02-18  Roger Sayle  <roger@eyesopen.com>
+
+        * gfortran.dg/forall_10.f90: New test case.
+
 2007-02-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/tail_call_p.ads, tail_call_p.adb, tail_call.adb: New test.
