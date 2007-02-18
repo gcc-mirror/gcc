@@ -1481,10 +1481,14 @@ mem_overlaps_already_clobbered_arg_p (rtx addr, unsigned HOST_WIDE_INT size)
   if (addr == current_function_internal_arg_pointer)
     i = 0;
   else if (GET_CODE (addr) == PLUS
-	   && (XEXP (addr, 0)
-	       == current_function_internal_arg_pointer)
+	   && XEXP (addr, 0) == current_function_internal_arg_pointer
 	   && GET_CODE (XEXP (addr, 1)) == CONST_INT)
     i = INTVAL (XEXP (addr, 1));
+  /* Return true for arg pointer based indexed addressing.  */
+  else if (GET_CODE (addr) == PLUS
+	   && (XEXP (addr, 0) == current_function_internal_arg_pointer
+	       || XEXP (addr, 1) == current_function_internal_arg_pointer))
+    return true;
   else
     return false;
 

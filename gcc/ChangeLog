@@ -1,3 +1,8 @@
+2007-02-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* calls.c (mem_overlaps_already_clobbered_arg_p): Return true
+	for arg pointer based indexed addressing.
+
 2007-02-18  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/ia64/ia64.h, config/ia64/ia64.md,
