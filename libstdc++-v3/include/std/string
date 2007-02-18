@@ -1,6 +1,7 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+// 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -43,8 +44,8 @@
 
 #include <bits/c++config.h>
 #include <bits/stringfwd.h>
-#include <bits/char_traits.h>
-#include <memory> 	// For allocator.
+#include <bits/char_traits.h>  // NB: In turn includes stl_algobase.h
+#include <bits/allocator.h>
 #include <bits/cpp_type_traits.h>
 #include <iosfwd> 	// For operators >>, <<, and getline decls.
 #include <bits/stl_iterator.h>
@@ -52,7 +53,6 @@
 #include <bits/basic_string.h>
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE
-# include <algorithm> // for find_if
 # include <bits/basic_string.tcc> 
 #endif
 

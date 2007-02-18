@@ -65,13 +65,13 @@
 #include <bits/c++config.h>
 #include <cstring>
 #include <cwchar>
-#include <climits>
 #include <cstdlib>
 #include <cstddef>
 #include <iosfwd>
 #include <bits/stl_pair.h>
 #include <bits/cpp_type_traits.h>
 #include <ext/type_traits.h>
+#include <limits>
 #include <bits/stl_iterator_base_types.h>
 #include <bits/stl_iterator_base_funcs.h>
 #include <bits/stl_iterator.h>
@@ -318,8 +318,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // Helpers for streambuf iterators (either istream or ostream).
   template<typename _CharT>
-  typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, 
-				  ostreambuf_iterator<_CharT> >::__type
+    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, 
+				    ostreambuf_iterator<_CharT> >::__type
     __copy_aux(_CharT*, _CharT*, ostreambuf_iterator<_CharT>);
 
   template<typename _CharT>
@@ -328,7 +328,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     __copy_aux(const _CharT*, const _CharT*, ostreambuf_iterator<_CharT>);
 
   template<typename _CharT>
-  typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, _CharT*>::__type
+    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value,
+				    _CharT*>::__type
     __copy_aux(istreambuf_iterator<_CharT>, istreambuf_iterator<_CharT>,
 	       _CharT*);
 
@@ -979,17 +980,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     __glibcxx_requires_valid_range(__first1, __last1);
     __glibcxx_requires_valid_range(__first2, __last2);
 
-#if CHAR_MAX == SCHAR_MAX
-    return std::lexicographical_compare((const signed char*) __first1,
-					(const signed char*) __last1,
-					(const signed char*) __first2,
-					(const signed char*) __last2);
-#else /* CHAR_MAX == SCHAR_MAX */
-    return std::lexicographical_compare((const unsigned char*) __first1,
-					(const unsigned char*) __last1,
-					(const unsigned char*) __first2,
-					(const unsigned char*) __last2);
-#endif /* CHAR_MAX == SCHAR_MAX */
+    if (std::numeric_limits<char>::is_signed)
+      return std::lexicographical_compare((const signed char*) __first1,
+					  (const signed char*) __last1,
+					  (const signed char*) __first2,
+					  (const signed char*) __last2);
+    else
+      return std::lexicographical_compare((const unsigned char*) __first1,
+					  (const unsigned char*) __last1,
+					  (const unsigned char*) __first2,
+					  (const unsigned char*) __last2);
   }
 
 _GLIBCXX_END_NAMESPACE

@@ -43,7 +43,6 @@
 #include <bits/stl_function.h>  // For less
 #include <bits/functexcept.h>
 #include <locale>
-#include <algorithm> // For std::distance, srd::search.
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
