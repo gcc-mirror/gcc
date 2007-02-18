@@ -2722,6 +2722,38 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
   return 0;
 }
 
+/* Split one or more DImode RTL references into pairs of SImode
+   references.  The RTL can be REG, offsettable MEM, integer constant, or
+   CONST_DOUBLE.  "operands" is a pointer to an array of DImode RTL to
+   split and "num" is its length.  lo_half and hi_half are output arrays
+   that parallel "operands".  */
+
+void
+split_di (rtx operands[], int num, rtx lo_half[], rtx hi_half[])
+{
+  while (num--)
+    {
+      rtx op = operands[num];
+
+      /* simplify_subreg refuses to split volatile memory addresses,
+	 but we still have to handle it.  */
+      if (GET_CODE (op) == MEM)
+	{
+	  lo_half[num] = adjust_address (op, SImode, 4);
+	  hi_half[num] = adjust_address (op, SImode, 0);
+	}
+      else
+	{
+	  lo_half[num] = simplify_gen_subreg (SImode, op,
+					      GET_MODE (op) == VOIDmode
+					      ? DImode : GET_MODE (op), 4);
+	  hi_half[num] = simplify_gen_subreg (SImode, op,
+					      GET_MODE (op) == VOIDmode
+					      ? DImode : GET_MODE (op), 0);
+	}
+    }
+}
+
 /* Return a REG that occurs in ADDR with coefficient 1.
    ADDR can be effectively incremented by incrementing REG.  */
 

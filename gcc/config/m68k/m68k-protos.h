@@ -22,6 +22,9 @@ Boston, MA 02110-1301, USA.  */
 
 #ifdef RTX_CODE
 extern HOST_WIDE_INT m68k_initial_elimination_offset (int from, int to);
+
+extern void split_di (rtx[], int, rtx[], rtx[]);
+
 extern bool valid_mov3q_const (HOST_WIDE_INT);
 extern const char *output_move_simode (rtx *);
 extern const char *output_move_himode (rtx *);
