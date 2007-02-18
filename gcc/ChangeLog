@@ -1,3 +1,10 @@
+2007-02-18  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from mainline.
+	PR rtl-optimization/29599
+	* reload1.c (eliminate_regs_in_insn): Take the destination
+	mode into account when computing the offset.
+
 2007-02-18  Roger Sayle  <roger@eyesopen.com>
 
 	Backport from mainline.
