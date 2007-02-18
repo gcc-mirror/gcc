@@ -1,5 +1,11 @@
 2007-02-18  Roman Zippel <zippel@linux-m68k.org>
 
+	* config/m68k/m68k.md (extv,extzv,insv): disable dynamic
+	parameter for register bitfield operations, general predicates
+	cleanup
+
+2007-02-18  Roman Zippel <zippel@linux-m68k.org>
+
 	* config/m68k/linux.h (MD_UNWIND_SUPPORT): Define.
 	* config/m68k/linux-unwind.h: New file.
 
