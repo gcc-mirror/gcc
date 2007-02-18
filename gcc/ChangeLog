@@ -1,3 +1,8 @@
+2007-02-18  Roman Zippel <zippel@linux-m68k.org>
+
+	* config/m68k/linux.h (MD_UNWIND_SUPPORT): Define.
+	* config/m68k/linux-unwind.h: New file.
+
 2007-02-18  Kazu Hirata  <kazu@codesourcery.com>
 
 	* cfgloop.c, config/alpha/alpha.c, config/bfin/bfin.c,
