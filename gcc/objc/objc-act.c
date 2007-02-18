@@ -956,7 +956,7 @@ objc_volatilize_decl (tree decl)
 }
 
 /* Check if protocol PROTO is adopted (directly or indirectly) by class CLS
-   (including its categoreis and superclasses) or by object type TYP.
+   (including its categories and superclasses) or by object type TYP.
    Issue a warning if PROTO is not adopted anywhere and WARN is set.  */
 
 static bool
@@ -1659,7 +1659,7 @@ synth_module_prologue (void)
 		     build_int_cst (NULL_TREE, OFFS_MSGSEND_FAST),
 		     NULL_TREE);
 #else
-      /* No direct dispatch availible.  */
+      /* No direct dispatch available.  */
       umsg_fast_decl = umsg_decl;
 #endif
 
