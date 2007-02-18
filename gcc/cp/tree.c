@@ -1033,7 +1033,7 @@ build_qualified_name (tree type, tree scope, tree name, bool template_p)
    function.  If "f" is a function or function template, "f", "c->f",
    "c.f", "C::f", and "f<int>" will all be considered possibly
    overloaded functions.  Returns 2 if the function is actually
-   overloaded, i.e., if it is impossible to know the the type of the
+   overloaded, i.e., if it is impossible to know the type of the
    function without performing overload resolution.  */
  
 int
