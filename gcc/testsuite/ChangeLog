@@ -1,3 +1,7 @@
+2007-02-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lib/gnat.exp (gnat_target_compile): Pass -f to the driver.
+
 2007-02-18 Ira Rosen  <irar@il.ibm.com>
 
 	* gcc.dg/vect/vect-106-alias.c: New test.
