@@ -1,3 +1,14 @@
+2007-02-18  Roger Sayle  <roger@eyesopen.com>
+
+	Backport from mainline.
+	PR middle-end/24427
+	PR rtl-optimization/28173
+	* fold-const.c (fold_binary) <BIT_IOR_EXPR>: Transform (X&C1)|C2
+	into (X,C2) if C1 is a subset of the bits of C2.  Transform
+	(X&C1)|C2 into X|C2 if C1|C2 == ~0.  Canonicalize (X&C1)|C2 as
+	(X&(C1&~C2))|C2.
+	<BIT_AND_EXPR>: Canonicalize (X|C1)&C2 as (X&C2)|(C1&C2).
+
 2007-02-18 Ira Rosen  <irar@il.ibm.com>
 
 	* tree-ssa-alias.c (may_aliases_intersect): New function.
