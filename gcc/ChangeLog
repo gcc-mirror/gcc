@@ -1,3 +1,15 @@
+2007-02-18  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* calls.c (initialize_argument_information): Pass original EXP
+	and STRUCT_VALUE_ADDR_VALUE instead of a list of arguments.  Move
+	code to split complex arguments here, as part of initializing the
+	ARGS array.
+	(expand_call): Remove code that builds a list of arguments and
+	inserts implicit arguments into it.  Instead, just count how many
+	implicit arguments there will be so we can determine the size of
+	the ARGS array, and let initialize_argument_information do the work.
+	(split_complex_values): Delete unused function.
+
 2007-02-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-eh.c (tree_could_trap_p): Handle VIEW_CONVERT_EXPR.
