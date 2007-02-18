@@ -1883,6 +1883,7 @@ tree_could_trap_p (tree expr)
     case REALPART_EXPR:
     case IMAGPART_EXPR:
     case BIT_FIELD_REF:
+    case VIEW_CONVERT_EXPR:
     case WITH_SIZE_EXPR:
       expr = TREE_OPERAND (expr, 0);
       code = TREE_CODE (expr);
