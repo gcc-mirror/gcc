@@ -1,3 +1,7 @@
+2007-02-18  Kazu Hirata  <kazu@codesourcery.com>
+
+	* class.c: Fix a comment typo.
+
 2007-02-15  Sandra Loosemore  <sandra@codesourcery.com>
 	    Brooks Moses  <brooks.moses@codesourcery.com>
 	    Lee Millward  <lee.millward@codesourcery.com>

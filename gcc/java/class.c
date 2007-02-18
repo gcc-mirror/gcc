@@ -1008,7 +1008,7 @@ build_classdollar_field (tree type)
   return decl;
 }
 
-/* Create a local variable that holds the the current class$.  */
+/* Create a local variable that holds the current class$.  */
 
 void
 cache_this_class_ref (tree fndecl)
