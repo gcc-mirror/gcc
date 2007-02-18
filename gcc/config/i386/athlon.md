@@ -603,7 +603,7 @@
 			 "athlon-direct,athlon-fploadk8,athlon-fstore")
 ;; On AMDFAM10 all double, single and integer packed and scalar SSEx data
 ;; loads  generated are direct path, latency of 2 and do not use any FP
-;; executions units. No seperate entries for movlpx/movhpx loads, which
+;; executions units. No separate entries for movlpx/movhpx loads, which
 ;; are direct path, latency of 4 and use the FADD/FMUL FP execution units,
 ;; as they will not be generated.
 (define_insn_reservation "athlon_sseld_amdfam10" 2
@@ -637,7 +637,7 @@
 			 "athlon-direct,(athlon-fpsched+athlon-agu),(athlon-fstore+athlon-store)")
 ;; On AMDFAM10 all double, single and integer packed SSEx data stores
 ;; generated are all double path, latency of 2 and use the FSTORE FP
-;; execution unit. No entries seperate for movupx/movdqu, which are
+;; execution unit. No entries separate for movupx/movdqu, which are
 ;; vector path, latency of 3 and use the FSTORE*2 FP execution unit,
 ;; as they will not be generated.
 (define_insn_reservation "athlon_ssest_amdfam10" 2

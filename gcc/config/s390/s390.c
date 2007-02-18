@@ -4228,7 +4228,7 @@ s390_expand_cs_hqi (enum machine_mode mode, rtx target, rtx mem, rtx cmp, rtx ne
 }
 
 /* Expand an atomic operation CODE of mode MODE.  MEM is the memory location
-   and VAL the value to play with.  If AFTER is true then store the the value
+   and VAL the value to play with.  If AFTER is true then store the value
    MEM holds after the operation, if AFTER is false then store the value MEM
    holds before the operation.  If TARGET is zero then discard that value, else
    store it to TARGET.  */

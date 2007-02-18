@@ -65,7 +65,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    arguments
    of the callsite. There are three types of values :
    Formal - the caller's formal parameter is passed as an actual argument.
-   Constant - a constant is passed as a an actual argument.
+   Constant - a constant is passed as an actual argument.
    Unknown - neither of the above.
    
    In order to compute the jump functions, we need the modify information for 

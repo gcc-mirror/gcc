@@ -1438,7 +1438,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
         can make all data references satisfy vect_supportable_dr_alignment.
         If so, update data structures as needed and return true.  Note that
         at this time vect_supportable_dr_alignment is known to return false
-        for a a misaligned write.
+        for a misaligned write.
 
      B) If peeling wasn't possible and there is a data reference with an
         unknown misalignment that does not satisfy vect_supportable_dr_alignment
@@ -1812,7 +1812,7 @@ vect_analyze_data_ref_access (struct data_reference *dr)
 	{
 	  /* Skip same data-refs. In case that two or more stmts share data-ref
 	     (supported only for loads), we vectorize only the first stmt, and
-	     the rest get their vectorized loads from the the first one.  */
+	     the rest get their vectorized loads from the first one.  */
 	  if (!tree_int_cst_compare (DR_INIT (data_ref),
 				     DR_INIT (STMT_VINFO_DATA_REF (
 						      vinfo_for_stmt (next)))))

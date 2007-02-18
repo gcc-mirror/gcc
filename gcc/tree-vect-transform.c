@@ -1073,7 +1073,7 @@ get_initial_def_for_reduction (tree stmt, tree init_val, tree *scalar_def)
    REDUCTION_PHI is the phi-node that carries the reduction computation.
 
    This function:
-   1. Creates the reduction def-use cycle: sets the the arguments for 
+   1. Creates the reduction def-use cycle: sets the arguments for 
       REDUCTION_PHI:
       The loop-entry argument is the vectorized initial-value of the reduction.
       The loop-latch argument is VECT_DEF - the vector of partial sums.

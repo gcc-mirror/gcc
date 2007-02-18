@@ -1537,7 +1537,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
    For args passed entirely in registers or entirely in memory, zero.
 
    Refer VDSP C Compiler manual, our ABI.
-   First 3 words are in registers. So, if a an argument is larger
+   First 3 words are in registers. So, if an argument is larger
    than the registers available, it will span the register and
    stack.   */
 
