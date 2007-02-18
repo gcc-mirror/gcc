@@ -737,6 +737,110 @@ ac_env_CXXFLAGS_set=${CXXFLAGS+set}
 ac_env_CXXFLAGS_value=$CXXFLAGS
 ac_cv_env_CXXFLAGS_set=${CXXFLAGS+set}
 ac_cv_env_CXXFLAGS_value=$CXXFLAGS
+ac_env_AR_set=${AR+set}
+ac_env_AR_value=$AR
+ac_cv_env_AR_set=${AR+set}
+ac_cv_env_AR_value=$AR
+ac_env_AS_set=${AS+set}
+ac_env_AS_value=$AS
+ac_cv_env_AS_set=${AS+set}
+ac_cv_env_AS_value=$AS
+ac_env_DLLTOOL_set=${DLLTOOL+set}
+ac_env_DLLTOOL_value=$DLLTOOL
+ac_cv_env_DLLTOOL_set=${DLLTOOL+set}
+ac_cv_env_DLLTOOL_value=$DLLTOOL
+ac_env_LD_set=${LD+set}
+ac_env_LD_value=$LD
+ac_cv_env_LD_set=${LD+set}
+ac_cv_env_LD_value=$LD
+ac_env_LIPO_set=${LIPO+set}
+ac_env_LIPO_value=$LIPO
+ac_cv_env_LIPO_set=${LIPO+set}
+ac_cv_env_LIPO_value=$LIPO
+ac_env_NM_set=${NM+set}
+ac_env_NM_value=$NM
+ac_cv_env_NM_set=${NM+set}
+ac_cv_env_NM_value=$NM
+ac_env_RANLIB_set=${RANLIB+set}
+ac_env_RANLIB_value=$RANLIB
+ac_cv_env_RANLIB_set=${RANLIB+set}
+ac_cv_env_RANLIB_value=$RANLIB
+ac_env_STRIP_set=${STRIP+set}
+ac_env_STRIP_value=$STRIP
+ac_cv_env_STRIP_set=${STRIP+set}
+ac_cv_env_STRIP_value=$STRIP
+ac_env_WINDRES_set=${WINDRES+set}
+ac_env_WINDRES_value=$WINDRES
+ac_cv_env_WINDRES_set=${WINDRES+set}
+ac_cv_env_WINDRES_value=$WINDRES
+ac_env_OBJCOPY_set=${OBJCOPY+set}
+ac_env_OBJCOPY_value=$OBJCOPY
+ac_cv_env_OBJCOPY_set=${OBJCOPY+set}
+ac_cv_env_OBJCOPY_value=$OBJCOPY
+ac_env_OBJDUMP_set=${OBJDUMP+set}
+ac_env_OBJDUMP_value=$OBJDUMP
+ac_cv_env_OBJDUMP_set=${OBJDUMP+set}
+ac_cv_env_OBJDUMP_value=$OBJDUMP
+ac_env_CC_FOR_TARGET_set=${CC_FOR_TARGET+set}
+ac_env_CC_FOR_TARGET_value=$CC_FOR_TARGET
+ac_cv_env_CC_FOR_TARGET_set=${CC_FOR_TARGET+set}
+ac_cv_env_CC_FOR_TARGET_value=$CC_FOR_TARGET
+ac_env_CXX_FOR_TARGET_set=${CXX_FOR_TARGET+set}
+ac_env_CXX_FOR_TARGET_value=$CXX_FOR_TARGET
+ac_cv_env_CXX_FOR_TARGET_set=${CXX_FOR_TARGET+set}
+ac_cv_env_CXX_FOR_TARGET_value=$CXX_FOR_TARGET
+ac_env_GCC_FOR_TARGET_set=${GCC_FOR_TARGET+set}
+ac_env_GCC_FOR_TARGET_value=$GCC_FOR_TARGET
+ac_cv_env_GCC_FOR_TARGET_set=${GCC_FOR_TARGET+set}
+ac_cv_env_GCC_FOR_TARGET_value=$GCC_FOR_TARGET
+ac_env_GCJ_FOR_TARGET_set=${GCJ_FOR_TARGET+set}
+ac_env_GCJ_FOR_TARGET_value=$GCJ_FOR_TARGET
+ac_cv_env_GCJ_FOR_TARGET_set=${GCJ_FOR_TARGET+set}
+ac_cv_env_GCJ_FOR_TARGET_value=$GCJ_FOR_TARGET
+ac_env_GFORTRAN_FOR_TARGET_set=${GFORTRAN_FOR_TARGET+set}
+ac_env_GFORTRAN_FOR_TARGET_value=$GFORTRAN_FOR_TARGET
+ac_cv_env_GFORTRAN_FOR_TARGET_set=${GFORTRAN_FOR_TARGET+set}
+ac_cv_env_GFORTRAN_FOR_TARGET_value=$GFORTRAN_FOR_TARGET
+ac_env_AR_FOR_TARGET_set=${AR_FOR_TARGET+set}
+ac_env_AR_FOR_TARGET_value=$AR_FOR_TARGET
+ac_cv_env_AR_FOR_TARGET_set=${AR_FOR_TARGET+set}
+ac_cv_env_AR_FOR_TARGET_value=$AR_FOR_TARGET
+ac_env_AS_FOR_TARGET_set=${AS_FOR_TARGET+set}
+ac_env_AS_FOR_TARGET_value=$AS_FOR_TARGET
+ac_cv_env_AS_FOR_TARGET_set=${AS_FOR_TARGET+set}
+ac_cv_env_AS_FOR_TARGET_value=$AS_FOR_TARGET
+ac_env_DLLTOOL_FOR_TARGET_set=${DLLTOOL_FOR_TARGET+set}
+ac_env_DLLTOOL_FOR_TARGET_value=$DLLTOOL_FOR_TARGET
+ac_cv_env_DLLTOOL_FOR_TARGET_set=${DLLTOOL_FOR_TARGET+set}
+ac_cv_env_DLLTOOL_FOR_TARGET_value=$DLLTOOL_FOR_TARGET
+ac_env_LD_FOR_TARGET_set=${LD_FOR_TARGET+set}
+ac_env_LD_FOR_TARGET_value=$LD_FOR_TARGET
+ac_cv_env_LD_FOR_TARGET_set=${LD_FOR_TARGET+set}
+ac_cv_env_LD_FOR_TARGET_value=$LD_FOR_TARGET
+ac_env_LIPO_FOR_TARGET_set=${LIPO_FOR_TARGET+set}
+ac_env_LIPO_FOR_TARGET_value=$LIPO_FOR_TARGET
+ac_cv_env_LIPO_FOR_TARGET_set=${LIPO_FOR_TARGET+set}
+ac_cv_env_LIPO_FOR_TARGET_value=$LIPO_FOR_TARGET
+ac_env_NM_FOR_TARGET_set=${NM_FOR_TARGET+set}
+ac_env_NM_FOR_TARGET_value=$NM_FOR_TARGET
+ac_cv_env_NM_FOR_TARGET_set=${NM_FOR_TARGET+set}
+ac_cv_env_NM_FOR_TARGET_value=$NM_FOR_TARGET
+ac_env_OBJDUMP_FOR_TARGET_set=${OBJDUMP_FOR_TARGET+set}
+ac_env_OBJDUMP_FOR_TARGET_value=$OBJDUMP_FOR_TARGET
+ac_cv_env_OBJDUMP_FOR_TARGET_set=${OBJDUMP_FOR_TARGET+set}
+ac_cv_env_OBJDUMP_FOR_TARGET_value=$OBJDUMP_FOR_TARGET
+ac_env_RANLIB_FOR_TARGET_set=${RANLIB_FOR_TARGET+set}
+ac_env_RANLIB_FOR_TARGET_value=$RANLIB_FOR_TARGET
+ac_cv_env_RANLIB_FOR_TARGET_set=${RANLIB_FOR_TARGET+set}
+ac_cv_env_RANLIB_FOR_TARGET_value=$RANLIB_FOR_TARGET
+ac_env_STRIP_FOR_TARGET_set=${STRIP_FOR_TARGET+set}
+ac_env_STRIP_FOR_TARGET_value=$STRIP_FOR_TARGET
+ac_cv_env_STRIP_FOR_TARGET_set=${STRIP_FOR_TARGET+set}
+ac_cv_env_STRIP_FOR_TARGET_value=$STRIP_FOR_TARGET
+ac_env_WINDRES_FOR_TARGET_set=${WINDRES_FOR_TARGET+set}
+ac_env_WINDRES_FOR_TARGET_value=$WINDRES_FOR_TARGET
+ac_cv_env_WINDRES_FOR_TARGET_set=${WINDRES_FOR_TARGET+set}
+ac_cv_env_WINDRES_FOR_TARGET_value=$WINDRES_FOR_TARGET
 
 #
 # Report the --help message.
@@ -868,6 +972,47 @@ Some influential environment variables:
               headers in a nonstandard directory <include dir>
   CXX         C++ compiler command
   CXXFLAGS    C++ compiler flags
+  AR          AR for the host
+  AS          AS for the host
+  DLLTOOL     DLLTOOL for the host
+  LD          LD for the host
+  LIPO        LIPO for the host
+  NM          NM for the host
+  RANLIB      RANLIB for the host
+  STRIP       STRIP for the host
+  WINDRES     WINDRES for the host
+  OBJCOPY     OBJCOPY for the host
+  OBJDUMP     OBJDUMP for the host
+  CC_FOR_TARGET
+              CC for the target
+  CXX_FOR_TARGET
+              CXX for the target
+  GCC_FOR_TARGET
+              GCC for the target
+  GCJ_FOR_TARGET
+              GCJ for the target
+  GFORTRAN_FOR_TARGET
+              GFORTRAN for the target
+  AR_FOR_TARGET
+              AR for the target
+  AS_FOR_TARGET
+              AS for the target
+  DLLTOOL_FOR_TARGET
+              DLLTOOL for the target
+  LD_FOR_TARGET
+              LD for the target
+  LIPO_FOR_TARGET
+              LIPO for the target
+  NM_FOR_TARGET
+              NM for the target
+  OBJDUMP_FOR_TARGET
+              OBJDUMP for the target
+  RANLIB_FOR_TARGET
+              RANLIB for the target
+  STRIP_FOR_TARGET
+              STRIP for the target
+  WINDRES_FOR_TARGET
+              WINDRES for the target
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -6077,7 +6222,55 @@ test -n "$host_alias" && ncn_tool_prefix=$host_alias-
 ncn_target_tool_prefix=
 test -n "$target_alias" && ncn_target_tool_prefix=$target_alias-
 
- for ncn_progname in ar; do
+
+
+if test -n "$AR"; then
+  ac_cv_prog_AR=$AR
+elif test -n "$ac_cv_prog_AR"; then
+  AR=$ac_cv_prog_AR
+fi
+
+if test -n "$ac_cv_prog_AR"; then
+  for ncn_progname in ar; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_AR+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$AR"; then
+  ac_cv_prog_AR="$AR" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_AR="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+AR=$ac_cv_prog_AR
+if test -n "$AR"; then
+  echo "$as_me:$LINENO: result: $AR" >&5
+echo "${ECHO_T}$AR" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+for ncn_progname in ar; do
   if test -n "$ncn_tool_prefix"; then
     # Extract the first word of "${ncn_tool_prefix}${ncn_progname}", so it can be a program name with args.
 set dummy ${ncn_tool_prefix}${ncn_progname}; ac_word=$2
@@ -6164,7 +6357,55 @@ if test -z "$ac_cv_prog_AR" ; then
   fi
 fi
 
- for ncn_progname in as; do
+
+
+if test -n "$AS"; then
+  ac_cv_prog_AS=$AS
+elif test -n "$ac_cv_prog_AS"; then
+  AS=$ac_cv_prog_AS
+fi
+
+if test -n "$ac_cv_prog_AS"; then
+  for ncn_progname in as; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_AS+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$AS"; then
+  ac_cv_prog_AS="$AS" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_AS="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+AS=$ac_cv_prog_AS
+if test -n "$AS"; then
+  echo "$as_me:$LINENO: result: $AS" >&5
+echo "${ECHO_T}$AS" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+for ncn_progname in as; do
   if test -n "$ncn_tool_prefix"; then
     # Extract the first word of "${ncn_tool_prefix}${ncn_progname}", so it can be a program name with args.
 set dummy ${ncn_tool_prefix}${ncn_progname}; ac_word=$2
@@ -6251,7 +6492,55 @@ if test -z "$ac_cv_prog_AS" ; then
   fi
 fi
 
- for ncn_progname in dlltool; do
+
+
+if test -n "$DLLTOOL"; then
+  ac_cv_prog_DLLTOOL=$DLLTOOL
+elif test -n "$ac_cv_prog_DLLTOOL"; then
+  DLLTOOL=$ac_cv_prog_DLLTOOL
+fi
+
+if test -n "$ac_cv_prog_DLLTOOL"; then
+  for ncn_progname in dlltool; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_DLLTOOL+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$DLLTOOL"; then
+  ac_cv_prog_DLLTOOL="$DLLTOOL" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_DLLTOOL="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+DLLTOOL=$ac_cv_prog_DLLTOOL
+if test -n "$DLLTOOL"; then
+  echo "$as_me:$LINENO: result: $DLLTOOL" >&5
+echo "${ECHO_T}$DLLTOOL" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+for ncn_progname in dlltool; do
   if test -n "$ncn_tool_prefix"; then
     # Extract the first word of "${ncn_tool_prefix}${ncn_progname}", so it can be a program name with args.
 set dummy ${ncn_tool_prefix}${ncn_progname}; ac_word=$2
@@ -6338,7 +6627,55 @@ if test -z "$ac_cv_prog_DLLTOOL" ; then
   fi
 fi
 
- for ncn_progname in ld; do
+
+
+if test -n "$LD"; then
+  ac_cv_prog_LD=$LD
+elif test -n "$ac_cv_prog_LD"; then
+  LD=$ac_cv_prog_LD
+fi
+
+if test -n "$ac_cv_prog_LD"; then
+  for ncn_progname in ld; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_LD+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$LD"; then
+  ac_cv_prog_LD="$LD" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_LD="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+LD=$ac_cv_prog_LD
+if test -n "$LD"; then
+  echo "$as_me:$LINENO: result: $LD" >&5
+echo "${ECHO_T}$LD" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+for ncn_progname in ld; do
   if test -n "$ncn_tool_prefix"; then
     # Extract the first word of "${ncn_tool_prefix}${ncn_progname}", so it can be a program name with args.
 set dummy ${ncn_tool_prefix}${ncn_progname}; ac_word=$2
@@ -6425,7 +6762,55 @@ if test -z "$ac_cv_prog_LD" ; then
   fi
 fi
 
- for ncn_progname in lipo; do
+
+
+if test -n "$LIPO"; then
+  ac_cv_prog_LIPO=$LIPO
+elif test -n "$ac_cv_prog_LIPO"; then
+  LIPO=$ac_cv_prog_LIPO
+fi
+
+if test -n "$ac_cv_prog_LIPO"; then
+  for ncn_progname in lipo; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_LIPO+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$LIPO"; then
+  ac_cv_prog_LIPO="$LIPO" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_LIPO="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+LIPO=$ac_cv_prog_LIPO
+if test -n "$LIPO"; then
+  echo "$as_me:$LINENO: result: $LIPO" >&5
+echo "${ECHO_T}$LIPO" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+for ncn_progname in lipo; do
   if test -n "$ncn_tool_prefix"; then
     # Extract the first word of "${ncn_tool_prefix}${ncn_progname}", so it can be a program name with args.
 set dummy ${ncn_tool_prefix}${ncn_progname}; ac_word=$2
@@ -6512,7 +6897,55 @@ if test -z "$ac_cv_prog_LIPO" ; then
   fi
 fi
 
- for ncn_progname in nm; do
+
+
+if test -n "$NM"; then
+  ac_cv_prog_NM=$NM
+elif test -n "$ac_cv_prog_NM"; then
+  NM=$ac_cv_prog_NM
+fi
+
+if test -n "$ac_cv_prog_NM"; then
+  for ncn_progname in nm; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_NM+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$NM"; then
+  ac_cv_prog_NM="$NM" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_NM="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+NM=$ac_cv_prog_NM
+if test -n "$NM"; then
+  echo "$as_me:$LINENO: result: $NM" >&5
+echo "${ECHO_T}$NM" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+for ncn_progname in nm; do
   if test -n "$ncn_tool_prefix"; then
     # Extract the first word of "${ncn_tool_prefix}${ncn_progname}", so it can be a program name with args.
 set dummy ${ncn_tool_prefix}${ncn_progname}; ac_word=$2
@@ -6599,7 +7032,55 @@ if test -z "$ac_cv_prog_NM" ; then
   fi
 fi
 
- for ncn_progname in ranlib; do
+
+
+if test -n "$RANLIB"; then
+  ac_cv_prog_RANLIB=$RANLIB
+elif test -n "$ac_cv_prog_RANLIB"; then
+  RANLIB=$ac_cv_prog_RANLIB
+fi
+
+if test -n "$ac_cv_prog_RANLIB"; then
+  for ncn_progname in ranlib; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_RANLIB+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$RANLIB"; then
+  ac_cv_prog_RANLIB="$RANLIB" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_RANLIB="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+RANLIB=$ac_cv_prog_RANLIB
+if test -n "$RANLIB"; then
+  echo "$as_me:$LINENO: result: $RANLIB" >&5
+echo "${ECHO_T}$RANLIB" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+for ncn_progname in ranlib; do
   if test -n "$ncn_tool_prefix"; then
     # Extract the first word of "${ncn_tool_prefix}${ncn_progname}", so it can be a program name with args.
 set dummy ${ncn_tool_prefix}${ncn_progname}; ac_word=$2
@@ -6681,7 +7162,55 @@ if test -z "$ac_cv_prog_RANLIB" ; then
   RANLIB=":"
 fi
 
- for ncn_progname in strip; do
+
+
+if test -n "$STRIP"; then
+  ac_cv_prog_STRIP=$STRIP
+elif test -n "$ac_cv_prog_STRIP"; then
+  STRIP=$ac_cv_prog_STRIP
+fi
+
+if test -n "$ac_cv_prog_STRIP"; then
+  for ncn_progname in strip; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_STRIP+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$STRIP"; then
+  ac_cv_prog_STRIP="$STRIP" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_STRIP="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+STRIP=$ac_cv_prog_STRIP
+if test -n "$STRIP"; then
+  echo "$as_me:$LINENO: result: $STRIP" >&5
+echo "${ECHO_T}$STRIP" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+for ncn_progname in strip; do
   if test -n "$ncn_tool_prefix"; then
     # Extract the first word of "${ncn_tool_prefix}${ncn_progname}", so it can be a program name with args.
 set dummy ${ncn_tool_prefix}${ncn_progname}; ac_word=$2
@@ -6763,7 +7292,55 @@ if test -z "$ac_cv_prog_STRIP" ; then
   STRIP=":"
 fi
 
- for ncn_progname in windres; do
+
+
+if test -n "$WINDRES"; then
+  ac_cv_prog_WINDRES=$WINDRES
+elif test -n "$ac_cv_prog_WINDRES"; then
+  WINDRES=$ac_cv_prog_WINDRES
+fi
+
+if test -n "$ac_cv_prog_WINDRES"; then
+  for ncn_progname in windres; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_WINDRES+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$WINDRES"; then
+  ac_cv_prog_WINDRES="$WINDRES" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_WINDRES="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+WINDRES=$ac_cv_prog_WINDRES
+if test -n "$WINDRES"; then
+  echo "$as_me:$LINENO: result: $WINDRES" >&5
+echo "${ECHO_T}$WINDRES" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+for ncn_progname in windres; do
   if test -n "$ncn_tool_prefix"; then
     # Extract the first word of "${ncn_tool_prefix}${ncn_progname}", so it can be a program name with args.
 set dummy ${ncn_tool_prefix}${ncn_progname}; ac_word=$2
@@ -6850,7 +7427,55 @@ if test -z "$ac_cv_prog_WINDRES" ; then
   fi
 fi
 
- for ncn_progname in objcopy; do
+
+
+if test -n "$OBJCOPY"; then
+  ac_cv_prog_OBJCOPY=$OBJCOPY
+elif test -n "$ac_cv_prog_OBJCOPY"; then
+  OBJCOPY=$ac_cv_prog_OBJCOPY
+fi
+
+if test -n "$ac_cv_prog_OBJCOPY"; then
+  for ncn_progname in objcopy; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_OBJCOPY+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$OBJCOPY"; then
+  ac_cv_prog_OBJCOPY="$OBJCOPY" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_OBJCOPY="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+OBJCOPY=$ac_cv_prog_OBJCOPY
+if test -n "$OBJCOPY"; then
+  echo "$as_me:$LINENO: result: $OBJCOPY" >&5
+echo "${ECHO_T}$OBJCOPY" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+for ncn_progname in objcopy; do
   if test -n "$ncn_tool_prefix"; then
     # Extract the first word of "${ncn_tool_prefix}${ncn_progname}", so it can be a program name with args.
 set dummy ${ncn_tool_prefix}${ncn_progname}; ac_word=$2
@@ -6937,7 +7562,55 @@ if test -z "$ac_cv_prog_OBJCOPY" ; then
   fi
 fi
 
- for ncn_progname in objdump; do
+
+
+if test -n "$OBJDUMP"; then
+  ac_cv_prog_OBJDUMP=$OBJDUMP
+elif test -n "$ac_cv_prog_OBJDUMP"; then
+  OBJDUMP=$ac_cv_prog_OBJDUMP
+fi
+
+if test -n "$ac_cv_prog_OBJDUMP"; then
+  for ncn_progname in objdump; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_OBJDUMP+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$OBJDUMP"; then
+  ac_cv_prog_OBJDUMP="$OBJDUMP" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_OBJDUMP="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+OBJDUMP=$ac_cv_prog_OBJDUMP
+if test -n "$OBJDUMP"; then
+  echo "$as_me:$LINENO: result: $OBJDUMP" >&5
+echo "${ECHO_T}$OBJDUMP" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+for ncn_progname in objdump; do
   if test -n "$ncn_tool_prefix"; then
     # Extract the first word of "${ncn_tool_prefix}${ncn_progname}", so it can be a program name with args.
 set dummy ${ncn_tool_prefix}${ncn_progname}; ac_word=$2
@@ -7047,7 +7720,55 @@ else
   with_build_time_tools=
 fi;
 
- if test -n "$with_build_time_tools"; then
+
+
+if test -n "$CC_FOR_TARGET"; then
+  ac_cv_prog_CC_FOR_TARGET=$CC_FOR_TARGET
+elif test -n "$ac_cv_prog_CC_FOR_TARGET"; then
+  CC_FOR_TARGET=$ac_cv_prog_CC_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_CC_FOR_TARGET"; then
+  for ncn_progname in cc gcc; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_CC_FOR_TARGET+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$CC_FOR_TARGET"; then
+  ac_cv_prog_CC_FOR_TARGET="$CC_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_CC_FOR_TARGET="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+CC_FOR_TARGET=$ac_cv_prog_CC_FOR_TARGET
+if test -n "$CC_FOR_TARGET"; then
+  echo "$as_me:$LINENO: result: $CC_FOR_TARGET" >&5
+echo "${ECHO_T}$CC_FOR_TARGET" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+if test -z "$ac_cv_prog_CC_FOR_TARGET" && test -n "$with_build_time_tools"; then
   for ncn_progname in cc gcc; do
     echo "$as_me:$LINENO: checking for ${ncn_progname} in $with_build_time_tools" >&5
 echo $ECHO_N "checking for ${ncn_progname} in $with_build_time_tools... $ECHO_C" >&6
@@ -7152,7 +7873,55 @@ if test -z "$ac_cv_prog_CC_FOR_TARGET" ; then
   fi
 fi
 
- if test -n "$with_build_time_tools"; then
+
+
+if test -n "$CXX_FOR_TARGET"; then
+  ac_cv_prog_CXX_FOR_TARGET=$CXX_FOR_TARGET
+elif test -n "$ac_cv_prog_CXX_FOR_TARGET"; then
+  CXX_FOR_TARGET=$ac_cv_prog_CXX_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_CXX_FOR_TARGET"; then
+  for ncn_progname in c++ g++ cxx gxx; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_CXX_FOR_TARGET+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$CXX_FOR_TARGET"; then
+  ac_cv_prog_CXX_FOR_TARGET="$CXX_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_CXX_FOR_TARGET="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+CXX_FOR_TARGET=$ac_cv_prog_CXX_FOR_TARGET
+if test -n "$CXX_FOR_TARGET"; then
+  echo "$as_me:$LINENO: result: $CXX_FOR_TARGET" >&5
+echo "${ECHO_T}$CXX_FOR_TARGET" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+if test -z "$ac_cv_prog_CXX_FOR_TARGET" && test -n "$with_build_time_tools"; then
   for ncn_progname in c++ g++ cxx gxx; do
     echo "$as_me:$LINENO: checking for ${ncn_progname} in $with_build_time_tools" >&5
 echo $ECHO_N "checking for ${ncn_progname} in $with_build_time_tools... $ECHO_C" >&6
@@ -7257,7 +8026,55 @@ if test -z "$ac_cv_prog_CXX_FOR_TARGET" ; then
   fi
 fi
 
- if test -n "$with_build_time_tools"; then
+
+
+if test -n "$GCC_FOR_TARGET"; then
+  ac_cv_prog_GCC_FOR_TARGET=$GCC_FOR_TARGET
+elif test -n "$ac_cv_prog_GCC_FOR_TARGET"; then
+  GCC_FOR_TARGET=$ac_cv_prog_GCC_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_GCC_FOR_TARGET"; then
+  for ncn_progname in gcc; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_GCC_FOR_TARGET+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$GCC_FOR_TARGET"; then
+  ac_cv_prog_GCC_FOR_TARGET="$GCC_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_GCC_FOR_TARGET="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+GCC_FOR_TARGET=$ac_cv_prog_GCC_FOR_TARGET
+if test -n "$GCC_FOR_TARGET"; then
+  echo "$as_me:$LINENO: result: $GCC_FOR_TARGET" >&5
+echo "${ECHO_T}$GCC_FOR_TARGET" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+if test -z "$ac_cv_prog_GCC_FOR_TARGET" && test -n "$with_build_time_tools"; then
   for ncn_progname in gcc; do
     echo "$as_me:$LINENO: checking for ${ncn_progname} in $with_build_time_tools" >&5
 echo $ECHO_N "checking for ${ncn_progname} in $with_build_time_tools... $ECHO_C" >&6
@@ -7357,7 +8174,55 @@ if test -z "$ac_cv_prog_GCC_FOR_TARGET" ; then
   GCC_FOR_TARGET="${CC_FOR_TARGET}"
 fi
 
- if test -n "$with_build_time_tools"; then
+
+
+if test -n "$GCJ_FOR_TARGET"; then
+  ac_cv_prog_GCJ_FOR_TARGET=$GCJ_FOR_TARGET
+elif test -n "$ac_cv_prog_GCJ_FOR_TARGET"; then
+  GCJ_FOR_TARGET=$ac_cv_prog_GCJ_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_GCJ_FOR_TARGET"; then
+  for ncn_progname in gcj; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_GCJ_FOR_TARGET+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$GCJ_FOR_TARGET"; then
+  ac_cv_prog_GCJ_FOR_TARGET="$GCJ_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_GCJ_FOR_TARGET="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+GCJ_FOR_TARGET=$ac_cv_prog_GCJ_FOR_TARGET
+if test -n "$GCJ_FOR_TARGET"; then
+  echo "$as_me:$LINENO: result: $GCJ_FOR_TARGET" >&5
+echo "${ECHO_T}$GCJ_FOR_TARGET" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+if test -z "$ac_cv_prog_GCJ_FOR_TARGET" && test -n "$with_build_time_tools"; then
   for ncn_progname in gcj; do
     echo "$as_me:$LINENO: checking for ${ncn_progname} in $with_build_time_tools" >&5
 echo $ECHO_N "checking for ${ncn_progname} in $with_build_time_tools... $ECHO_C" >&6
@@ -7462,7 +8327,55 @@ if test -z "$ac_cv_prog_GCJ_FOR_TARGET" ; then
   fi
 fi
 
- if test -n "$with_build_time_tools"; then
+
+
+if test -n "$GFORTRAN_FOR_TARGET"; then
+  ac_cv_prog_GFORTRAN_FOR_TARGET=$GFORTRAN_FOR_TARGET
+elif test -n "$ac_cv_prog_GFORTRAN_FOR_TARGET"; then
+  GFORTRAN_FOR_TARGET=$ac_cv_prog_GFORTRAN_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_GFORTRAN_FOR_TARGET"; then
+  for ncn_progname in gfortran; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_GFORTRAN_FOR_TARGET+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$GFORTRAN_FOR_TARGET"; then
+  ac_cv_prog_GFORTRAN_FOR_TARGET="$GFORTRAN_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_GFORTRAN_FOR_TARGET="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+GFORTRAN_FOR_TARGET=$ac_cv_prog_GFORTRAN_FOR_TARGET
+if test -n "$GFORTRAN_FOR_TARGET"; then
+  echo "$as_me:$LINENO: result: $GFORTRAN_FOR_TARGET" >&5
+echo "${ECHO_T}$GFORTRAN_FOR_TARGET" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+if test -z "$ac_cv_prog_GFORTRAN_FOR_TARGET" && test -n "$with_build_time_tools"; then
   for ncn_progname in gfortran; do
     echo "$as_me:$LINENO: checking for ${ncn_progname} in $with_build_time_tools" >&5
 echo $ECHO_N "checking for ${ncn_progname} in $with_build_time_tools... $ECHO_C" >&6
@@ -7646,7 +8559,55 @@ fi
 
 fi
 if test -z "$ac_cv_path_AR_FOR_TARGET" ; then
-   if test -n "$with_build_time_tools"; then
+
+
+if test -n "$AR_FOR_TARGET"; then
+  ac_cv_prog_AR_FOR_TARGET=$AR_FOR_TARGET
+elif test -n "$ac_cv_prog_AR_FOR_TARGET"; then
+  AR_FOR_TARGET=$ac_cv_prog_AR_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_AR_FOR_TARGET"; then
+  for ncn_progname in ar; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_AR_FOR_TARGET+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$AR_FOR_TARGET"; then
+  ac_cv_prog_AR_FOR_TARGET="$AR_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_AR_FOR_TARGET="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+AR_FOR_TARGET=$ac_cv_prog_AR_FOR_TARGET
+if test -n "$AR_FOR_TARGET"; then
+  echo "$as_me:$LINENO: result: $AR_FOR_TARGET" >&5
+echo "${ECHO_T}$AR_FOR_TARGET" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+if test -z "$ac_cv_prog_AR_FOR_TARGET" && test -n "$with_build_time_tools"; then
   for ncn_progname in ar; do
     echo "$as_me:$LINENO: checking for ${ncn_progname} in $with_build_time_tools" >&5
 echo $ECHO_N "checking for ${ncn_progname} in $with_build_time_tools... $ECHO_C" >&6
@@ -7819,7 +8780,55 @@ fi
 
 fi
 if test -z "$ac_cv_path_AS_FOR_TARGET" ; then
-   if test -n "$with_build_time_tools"; then
+
+
+if test -n "$AS_FOR_TARGET"; then
+  ac_cv_prog_AS_FOR_TARGET=$AS_FOR_TARGET
+elif test -n "$ac_cv_prog_AS_FOR_TARGET"; then
+  AS_FOR_TARGET=$ac_cv_prog_AS_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_AS_FOR_TARGET"; then
+  for ncn_progname in as; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_AS_FOR_TARGET+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$AS_FOR_TARGET"; then
+  ac_cv_prog_AS_FOR_TARGET="$AS_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_AS_FOR_TARGET="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+AS_FOR_TARGET=$ac_cv_prog_AS_FOR_TARGET
+if test -n "$AS_FOR_TARGET"; then
+  echo "$as_me:$LINENO: result: $AS_FOR_TARGET" >&5
+echo "${ECHO_T}$AS_FOR_TARGET" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+if test -z "$ac_cv_prog_AS_FOR_TARGET" && test -n "$with_build_time_tools"; then
   for ncn_progname in as; do
     echo "$as_me:$LINENO: checking for ${ncn_progname} in $with_build_time_tools" >&5
 echo $ECHO_N "checking for ${ncn_progname} in $with_build_time_tools... $ECHO_C" >&6
@@ -7992,7 +9001,55 @@ fi
 
 fi
 if test -z "$ac_cv_path_DLLTOOL_FOR_TARGET" ; then
-   if test -n "$with_build_time_tools"; then
+
+
+if test -n "$DLLTOOL_FOR_TARGET"; then
+  ac_cv_prog_DLLTOOL_FOR_TARGET=$DLLTOOL_FOR_TARGET
+elif test -n "$ac_cv_prog_DLLTOOL_FOR_TARGET"; then
+  DLLTOOL_FOR_TARGET=$ac_cv_prog_DLLTOOL_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_DLLTOOL_FOR_TARGET"; then
+  for ncn_progname in dlltool; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_DLLTOOL_FOR_TARGET+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$DLLTOOL_FOR_TARGET"; then
+  ac_cv_prog_DLLTOOL_FOR_TARGET="$DLLTOOL_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_DLLTOOL_FOR_TARGET="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+DLLTOOL_FOR_TARGET=$ac_cv_prog_DLLTOOL_FOR_TARGET
+if test -n "$DLLTOOL_FOR_TARGET"; then
+  echo "$as_me:$LINENO: result: $DLLTOOL_FOR_TARGET" >&5
+echo "${ECHO_T}$DLLTOOL_FOR_TARGET" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+if test -z "$ac_cv_prog_DLLTOOL_FOR_TARGET" && test -n "$with_build_time_tools"; then
   for ncn_progname in dlltool; do
     echo "$as_me:$LINENO: checking for ${ncn_progname} in $with_build_time_tools" >&5
 echo $ECHO_N "checking for ${ncn_progname} in $with_build_time_tools... $ECHO_C" >&6
@@ -8165,7 +9222,55 @@ fi
 
 fi
 if test -z "$ac_cv_path_LD_FOR_TARGET" ; then
-   if test -n "$with_build_time_tools"; then
+
+
+if test -n "$LD_FOR_TARGET"; then
+  ac_cv_prog_LD_FOR_TARGET=$LD_FOR_TARGET
+elif test -n "$ac_cv_prog_LD_FOR_TARGET"; then
+  LD_FOR_TARGET=$ac_cv_prog_LD_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_LD_FOR_TARGET"; then
+  for ncn_progname in ld; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_LD_FOR_TARGET+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$LD_FOR_TARGET"; then
+  ac_cv_prog_LD_FOR_TARGET="$LD_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_LD_FOR_TARGET="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+LD_FOR_TARGET=$ac_cv_prog_LD_FOR_TARGET
+if test -n "$LD_FOR_TARGET"; then
+  echo "$as_me:$LINENO: result: $LD_FOR_TARGET" >&5
+echo "${ECHO_T}$LD_FOR_TARGET" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+if test -z "$ac_cv_prog_LD_FOR_TARGET" && test -n "$with_build_time_tools"; then
   for ncn_progname in ld; do
     echo "$as_me:$LINENO: checking for ${ncn_progname} in $with_build_time_tools" >&5
 echo $ECHO_N "checking for ${ncn_progname} in $with_build_time_tools... $ECHO_C" >&6
@@ -8338,7 +9443,55 @@ fi
 
 fi
 if test -z "$ac_cv_path_LIPO_FOR_TARGET" ; then
-   if test -n "$with_build_time_tools"; then
+
+
+if test -n "$LIPO_FOR_TARGET"; then
+  ac_cv_prog_LIPO_FOR_TARGET=$LIPO_FOR_TARGET
+elif test -n "$ac_cv_prog_LIPO_FOR_TARGET"; then
+  LIPO_FOR_TARGET=$ac_cv_prog_LIPO_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_LIPO_FOR_TARGET"; then
+  for ncn_progname in lipo; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_LIPO_FOR_TARGET+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$LIPO_FOR_TARGET"; then
+  ac_cv_prog_LIPO_FOR_TARGET="$LIPO_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_LIPO_FOR_TARGET="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+LIPO_FOR_TARGET=$ac_cv_prog_LIPO_FOR_TARGET
+if test -n "$LIPO_FOR_TARGET"; then
+  echo "$as_me:$LINENO: result: $LIPO_FOR_TARGET" >&5
+echo "${ECHO_T}$LIPO_FOR_TARGET" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+if test -z "$ac_cv_prog_LIPO_FOR_TARGET" && test -n "$with_build_time_tools"; then
   for ncn_progname in lipo; do
     echo "$as_me:$LINENO: checking for ${ncn_progname} in $with_build_time_tools" >&5
 echo $ECHO_N "checking for ${ncn_progname} in $with_build_time_tools... $ECHO_C" >&6
@@ -8511,7 +9664,55 @@ fi
 
 fi
 if test -z "$ac_cv_path_NM_FOR_TARGET" ; then
-   if test -n "$with_build_time_tools"; then
+
+
+if test -n "$NM_FOR_TARGET"; then
+  ac_cv_prog_NM_FOR_TARGET=$NM_FOR_TARGET
+elif test -n "$ac_cv_prog_NM_FOR_TARGET"; then
+  NM_FOR_TARGET=$ac_cv_prog_NM_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_NM_FOR_TARGET"; then
+  for ncn_progname in nm; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_NM_FOR_TARGET+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$NM_FOR_TARGET"; then
+  ac_cv_prog_NM_FOR_TARGET="$NM_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_NM_FOR_TARGET="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+NM_FOR_TARGET=$ac_cv_prog_NM_FOR_TARGET
+if test -n "$NM_FOR_TARGET"; then
+  echo "$as_me:$LINENO: result: $NM_FOR_TARGET" >&5
+echo "${ECHO_T}$NM_FOR_TARGET" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+if test -z "$ac_cv_prog_NM_FOR_TARGET" && test -n "$with_build_time_tools"; then
   for ncn_progname in nm; do
     echo "$as_me:$LINENO: checking for ${ncn_progname} in $with_build_time_tools" >&5
 echo $ECHO_N "checking for ${ncn_progname} in $with_build_time_tools... $ECHO_C" >&6
@@ -8684,7 +9885,55 @@ fi
 
 fi
 if test -z "$ac_cv_path_OBJDUMP_FOR_TARGET" ; then
-   if test -n "$with_build_time_tools"; then
+
+
+if test -n "$OBJDUMP_FOR_TARGET"; then
+  ac_cv_prog_OBJDUMP_FOR_TARGET=$OBJDUMP_FOR_TARGET
+elif test -n "$ac_cv_prog_OBJDUMP_FOR_TARGET"; then
+  OBJDUMP_FOR_TARGET=$ac_cv_prog_OBJDUMP_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_OBJDUMP_FOR_TARGET"; then
+  for ncn_progname in objdump; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_OBJDUMP_FOR_TARGET+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$OBJDUMP_FOR_TARGET"; then
+  ac_cv_prog_OBJDUMP_FOR_TARGET="$OBJDUMP_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_OBJDUMP_FOR_TARGET="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+OBJDUMP_FOR_TARGET=$ac_cv_prog_OBJDUMP_FOR_TARGET
+if test -n "$OBJDUMP_FOR_TARGET"; then
+  echo "$as_me:$LINENO: result: $OBJDUMP_FOR_TARGET" >&5
+echo "${ECHO_T}$OBJDUMP_FOR_TARGET" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+if test -z "$ac_cv_prog_OBJDUMP_FOR_TARGET" && test -n "$with_build_time_tools"; then
   for ncn_progname in objdump; do
     echo "$as_me:$LINENO: checking for ${ncn_progname} in $with_build_time_tools" >&5
 echo $ECHO_N "checking for ${ncn_progname} in $with_build_time_tools... $ECHO_C" >&6
@@ -8857,7 +10106,55 @@ fi
 
 fi
 if test -z "$ac_cv_path_RANLIB_FOR_TARGET" ; then
-   if test -n "$with_build_time_tools"; then
+
+
+if test -n "$RANLIB_FOR_TARGET"; then
+  ac_cv_prog_RANLIB_FOR_TARGET=$RANLIB_FOR_TARGET
+elif test -n "$ac_cv_prog_RANLIB_FOR_TARGET"; then
+  RANLIB_FOR_TARGET=$ac_cv_prog_RANLIB_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_RANLIB_FOR_TARGET"; then
+  for ncn_progname in ranlib; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_RANLIB_FOR_TARGET+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$RANLIB_FOR_TARGET"; then
+  ac_cv_prog_RANLIB_FOR_TARGET="$RANLIB_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_RANLIB_FOR_TARGET="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+RANLIB_FOR_TARGET=$ac_cv_prog_RANLIB_FOR_TARGET
+if test -n "$RANLIB_FOR_TARGET"; then
+  echo "$as_me:$LINENO: result: $RANLIB_FOR_TARGET" >&5
+echo "${ECHO_T}$RANLIB_FOR_TARGET" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+if test -z "$ac_cv_prog_RANLIB_FOR_TARGET" && test -n "$with_build_time_tools"; then
   for ncn_progname in ranlib; do
     echo "$as_me:$LINENO: checking for ${ncn_progname} in $with_build_time_tools" >&5
 echo $ECHO_N "checking for ${ncn_progname} in $with_build_time_tools... $ECHO_C" >&6
@@ -9030,7 +10327,55 @@ fi
 
 fi
 if test -z "$ac_cv_path_STRIP_FOR_TARGET" ; then
-   if test -n "$with_build_time_tools"; then
+
+
+if test -n "$STRIP_FOR_TARGET"; then
+  ac_cv_prog_STRIP_FOR_TARGET=$STRIP_FOR_TARGET
+elif test -n "$ac_cv_prog_STRIP_FOR_TARGET"; then
+  STRIP_FOR_TARGET=$ac_cv_prog_STRIP_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_STRIP_FOR_TARGET"; then
+  for ncn_progname in strip; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_STRIP_FOR_TARGET+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$STRIP_FOR_TARGET"; then
+  ac_cv_prog_STRIP_FOR_TARGET="$STRIP_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_STRIP_FOR_TARGET="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+STRIP_FOR_TARGET=$ac_cv_prog_STRIP_FOR_TARGET
+if test -n "$STRIP_FOR_TARGET"; then
+  echo "$as_me:$LINENO: result: $STRIP_FOR_TARGET" >&5
+echo "${ECHO_T}$STRIP_FOR_TARGET" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+if test -z "$ac_cv_prog_STRIP_FOR_TARGET" && test -n "$with_build_time_tools"; then
   for ncn_progname in strip; do
     echo "$as_me:$LINENO: checking for ${ncn_progname} in $with_build_time_tools" >&5
 echo $ECHO_N "checking for ${ncn_progname} in $with_build_time_tools... $ECHO_C" >&6
@@ -9203,7 +10548,55 @@ fi
 
 fi
 if test -z "$ac_cv_path_WINDRES_FOR_TARGET" ; then
-   if test -n "$with_build_time_tools"; then
+
+
+if test -n "$WINDRES_FOR_TARGET"; then
+  ac_cv_prog_WINDRES_FOR_TARGET=$WINDRES_FOR_TARGET
+elif test -n "$ac_cv_prog_WINDRES_FOR_TARGET"; then
+  WINDRES_FOR_TARGET=$ac_cv_prog_WINDRES_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_WINDRES_FOR_TARGET"; then
+  for ncn_progname in windres; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_WINDRES_FOR_TARGET+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$WINDRES_FOR_TARGET"; then
+  ac_cv_prog_WINDRES_FOR_TARGET="$WINDRES_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_WINDRES_FOR_TARGET="${ncn_progname}"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+fi
+fi
+WINDRES_FOR_TARGET=$ac_cv_prog_WINDRES_FOR_TARGET
+if test -n "$WINDRES_FOR_TARGET"; then
+  echo "$as_me:$LINENO: result: $WINDRES_FOR_TARGET" >&5
+echo "${ECHO_T}$WINDRES_FOR_TARGET" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  done
+fi
+
+if test -z "$ac_cv_prog_WINDRES_FOR_TARGET" && test -n "$with_build_time_tools"; then
   for ncn_progname in windres; do
     echo "$as_me:$LINENO: checking for ${ncn_progname} in $with_build_time_tools" >&5
 echo $ECHO_N "checking for ${ncn_progname} in $with_build_time_tools... $ECHO_C" >&6
