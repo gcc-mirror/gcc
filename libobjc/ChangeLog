@@ -1,3 +1,8 @@
+2007-02-18  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* objc/objc-list.h (list_free): Add keyword 'inline' to avoid
+	unused warning.
+	
 2006-10-31  Geoffrey Keating  <geoffk@apple.com>
 
 	* encoding.c (darwin_rs6000_special_round_type_align): New.
