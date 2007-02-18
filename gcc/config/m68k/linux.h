@@ -229,3 +229,5 @@ Boston, MA 02110-1301, USA.  */
 }
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
+
+#define MD_UNWIND_SUPPORT "config/m68k/linux-unwind.h"
