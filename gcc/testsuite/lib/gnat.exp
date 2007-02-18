@@ -129,7 +129,7 @@ proc gnat_target_compile { source dest type options } {
 
     setenv ADA_INCLUDE_PATH "${rootme}/ada/rts"
     set ld_library_path ".:${gnat_libgcc_s_path}"
-    lappend options "compiler=$GNAT_UNDER_TEST -q"
+    lappend options "compiler=$GNAT_UNDER_TEST -q -f"
     lappend options "incdir=${rootme}/ada/rts"
 
     if { [target_info needs_status_wrapper]!="" && [info exists gluefile] } {
