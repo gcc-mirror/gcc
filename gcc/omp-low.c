@@ -3,7 +3,7 @@
    marshalling to implement data sharing and copying clauses.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
-   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1675,7 +1675,7 @@ lower_rec_input_clauses (tree clauses, tree *ilist, tree *dlist,
 	      x = TYPE_SIZE_UNIT (TREE_TYPE (new_var));
 	      x = build_call_expr (built_in_decls[BUILT_IN_ALLOCA], 1, x);
 	      x = fold_convert (TREE_TYPE (ptr), x);
-	      x = build2 (GIMPLE_MODIFY_STMT, void_type_node, ptr, x);
+	      x = build_gimple_modify_stmt (ptr, x);
 	      gimplify_and_add (x, ilist);
 	    }
 	  else if (is_reference (var))
@@ -1709,7 +1709,7 @@ lower_rec_input_clauses (tree clauses, tree *ilist, tree *dlist,
 		  x = fold_convert (TREE_TYPE (new_var), x);
 		}
 
-	      x = build2 (GIMPLE_MODIFY_STMT, void_type_node, new_var, x);
+	      x = build_gimple_modify_stmt (new_var, x);
 	      gimplify_and_add (x, ilist);
 
 	      new_var = build_fold_indirect_ref (new_var);
@@ -1792,7 +1792,7 @@ lower_rec_input_clauses (tree clauses, tree *ilist, tree *dlist,
 		{
 		  x = omp_reduction_init (c, TREE_TYPE (new_var));
 		  gcc_assert (TREE_CODE (TREE_TYPE (new_var)) != ARRAY_TYPE);
-		  x = build2 (GIMPLE_MODIFY_STMT, void_type_node, new_var, x);
+		  x = build_gimple_modify_stmt (new_var, x);
 		  gimplify_and_add (x, ilist);
 		}
 	      break;
@@ -1956,7 +1956,7 @@ lower_reduction_clauses (tree clauses, tree *stmt_list, omp_context *ctx)
 	{
 	  x = build2 (code, TREE_TYPE (ref), ref, new_var);
 	  ref = build_outer_var_ref (var, ctx);
-	  x = build2 (GIMPLE_MODIFY_STMT, void_type_node, ref, x);
+	  x = build_gimple_modify_stmt (ref, x);
 	  append_to_statement_list (x, &sub_list);
 	}
     }
@@ -1993,7 +1993,7 @@ lower_copyprivate_clauses (tree clauses, tree *slist, tree *rlist,
       ref = build_sender_ref (var, ctx);
       x = (ctx->is_nested) ? lookup_decl_in_outer_ctx (var, ctx) : var;
       x = by_ref ? build_fold_addr_expr (x) : x;
-      x = build2 (GIMPLE_MODIFY_STMT, void_type_node, ref, x);
+      x = build_gimple_modify_stmt (ref, x);
       gimplify_and_add (x, slist);
 
       ref = build_receiver_ref (var, by_ref, ctx);
@@ -2074,14 +2074,14 @@ lower_send_clauses (tree clauses, tree *ilist, tree *olist, omp_context *ctx)
 	{
 	  ref = build_sender_ref (val, ctx);
 	  x = by_ref ? build_fold_addr_expr (var) : var;
-	  x = build2 (GIMPLE_MODIFY_STMT, void_type_node, ref, x);
+	  x = build_gimple_modify_stmt (ref, x);
 	  gimplify_and_add (x, ilist);
 	}
 
       if (do_out)
 	{
 	  ref = build_sender_ref (val, ctx);
-	  x = build2 (GIMPLE_MODIFY_STMT, void_type_node, var, ref);
+	  x = build_gimple_modify_stmt (var, ref);
 	  gimplify_and_add (x, olist);
 	}
     }
@@ -2118,17 +2118,17 @@ lower_send_shared_vars (tree *ilist, tree *olist, omp_context *ctx)
 	{
 	  x = build_sender_ref (ovar, ctx);
 	  var = build_fold_addr_expr (var);
-	  x = build2 (GIMPLE_MODIFY_STMT, void_type_node, x, var);
+	  x = build_gimple_modify_stmt (x, var);
 	  gimplify_and_add (x, ilist);
 	}
       else
 	{
 	  x = build_sender_ref (ovar, ctx);
-	  x = build2 (GIMPLE_MODIFY_STMT, void_type_node, x, var);
+	  x = build_gimple_modify_stmt (x, var);
 	  gimplify_and_add (x, ilist);
 
 	  x = build_sender_ref (ovar, ctx);
-	  x = build2 (GIMPLE_MODIFY_STMT, void_type_node, var, x);
+	  x = build_gimple_modify_stmt (var, x);
 	  gimplify_and_add (x, olist);
 	}
     }
@@ -2226,14 +2226,14 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
 	  si = bsi_start (then_bb);
 	  t = build1 (LABEL_EXPR, void_type_node, then_lab);
 	  bsi_insert_after (&si, t, BSI_CONTINUE_LINKING);
-	  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, tmp, val);
+	  t = build_gimple_modify_stmt (tmp, val);
 	  bsi_insert_after (&si, t, BSI_CONTINUE_LINKING);
 
 	  si = bsi_start (else_bb);
 	  t = build1 (LABEL_EXPR, void_type_node, else_lab);
 	  bsi_insert_after (&si, t, BSI_CONTINUE_LINKING);
-	  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, tmp, 
-	              build_int_cst (unsigned_type_node, 1));
+	  t = build_gimple_modify_stmt (tmp, 
+					build_int_cst (unsigned_type_node, 1));
 	  bsi_insert_after (&si, t, BSI_CONTINUE_LINKING);
 
 	  make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
@@ -2640,11 +2640,11 @@ expand_omp_for_generic (struct omp_region *region,
   /* Iteration setup for sequential loop goes in L0_BB.  */
   list = alloc_stmt_list ();
   t = fold_convert (type, istart0);
-  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, fd->v, t);
+  t = build_gimple_modify_stmt (fd->v, t);
   gimplify_and_add (t, &list);
 
   t = fold_convert (type, iend0);
-  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, iend, t);
+  t = build_gimple_modify_stmt (iend, t);
   gimplify_and_add (t, &list);
 
   si = bsi_start (l0_bb);
@@ -2666,7 +2666,7 @@ expand_omp_for_generic (struct omp_region *region,
   list = alloc_stmt_list ();
 
   t = build2 (PLUS_EXPR, type, fd->v, fd->step);
-  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, fd->v, t);
+  t = build_gimple_modify_stmt (fd->v, t);
   gimplify_and_add (t, &list);
   
   t = build2 (fd->cond_code, boolean_type_node, fd->v, iend);
@@ -2841,7 +2841,7 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   t = fold_convert (type, s0);
   t = build2 (MULT_EXPR, type, t, fd->step);
   t = build2 (PLUS_EXPR, type, t, fd->n1);
-  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, fd->v, t);
+  t = build_gimple_modify_stmt (fd->v, t);
   gimplify_and_add (t, &list);
 
   t = fold_convert (type, e0);
@@ -2856,7 +2856,7 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   list = alloc_stmt_list ();
 
   t = build2 (PLUS_EXPR, type, fd->v, fd->step);
-  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, fd->v, t);
+  t = build_gimple_modify_stmt (fd->v, t);
   gimplify_and_add (t, &list);
 
   t = build2 (fd->cond_code, boolean_type_node, fd->v, e);
@@ -3023,7 +3023,7 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
   t = fold_convert (type, s0);
   t = build2 (MULT_EXPR, type, t, fd->step);
   t = build2 (PLUS_EXPR, type, t, fd->n1);
-  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, fd->v, t);
+  t = build_gimple_modify_stmt (fd->v, t);
   gimplify_and_add (t, &list);
 
   t = fold_convert (type, e0);
@@ -3039,7 +3039,7 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
   list = alloc_stmt_list ();
 
   t = build2 (PLUS_EXPR, type, fd->v, fd->step);
-  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, fd->v, t);
+  t = build_gimple_modify_stmt (fd->v, t);
   gimplify_and_add (t, &list);
 
   t = build2 (fd->cond_code, boolean_type_node, fd->v, e);
@@ -3058,7 +3058,7 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
 
   t = build_int_cst (type, 1);
   t = build2 (PLUS_EXPR, type, trip, t);
-  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, trip, t);
+  t = build_gimple_modify_stmt (trip, t);
   gimplify_and_add (t, &list);
 
   si = bsi_start (trip_update_bb);
@@ -3206,7 +3206,7 @@ expand_omp_sections (struct omp_region *region)
       t = build_int_cst (unsigned_type_node, len);
       u = built_in_decls[BUILT_IN_GOMP_SECTIONS_START];
       t = build_call_expr (u, 1, t);
-      t = build2 (GIMPLE_MODIFY_STMT, void_type_node, v, t);
+      t = build_gimple_modify_stmt (v, t);
       bsi_insert_after (&si, t, BSI_SAME_STMT);
     }
   bsi_remove (&si, true);
@@ -3273,7 +3273,7 @@ expand_omp_sections (struct omp_region *region)
       gcc_assert (TREE_CODE (bsi_stmt (si)) == OMP_CONTINUE);
 
       t = build_call_expr (built_in_decls[BUILT_IN_GOMP_SECTIONS_NEXT], 0);
-      t = build2 (GIMPLE_MODIFY_STMT, void_type_node, v, t);
+      t = build_gimple_modify_stmt (v, t);
       bsi_insert_after (&si, t, BSI_SAME_STMT);
       bsi_remove (&si, true);
     }
@@ -3709,7 +3709,7 @@ lower_omp_single_copy (tree single_stmt, tree *pre_p, omp_context *ctx)
 
   t = build_call_expr (built_in_decls[BUILT_IN_GOMP_SINGLE_COPY_START], 0);
   t = fold_convert (ptr_type, t);
-  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, ctx->receiver_decl, t);
+  t = build_gimple_modify_stmt (ctx->receiver_decl, t);
   gimplify_and_add (t, pre_p);
 
   t = build2 (EQ_EXPR, boolean_type_node, ctx->receiver_decl,
@@ -3994,7 +3994,7 @@ lower_omp_for_lastprivate (struct omp_for_data *fd, tree *body_p,
 
       /* Initialize the iterator variable, so that threads that don't execute
 	 any iterations don't execute the lastprivate clauses by accident.  */
-      t = build2 (GIMPLE_MODIFY_STMT, void_type_node, fd->v, vinit);
+      t = build_gimple_modify_stmt (fd->v, vinit);
       gimplify_and_add (t, body_p);
     }
 }
@@ -4134,7 +4134,7 @@ lower_omp_parallel (tree *stmt_p, omp_context *ctx)
       t = build_fold_addr_expr (ctx->sender_decl);
       /* fixup_child_record_type might have changed receiver_decl's type.  */
       t = fold_convert (TREE_TYPE (ctx->receiver_decl), t);
-      t = build2 (GIMPLE_MODIFY_STMT, void_type_node, ctx->receiver_decl, t);
+      t = build_gimple_modify_stmt (ctx->receiver_decl, t);
       append_to_statement_list (t, &new_body);
     }
 
@@ -4186,7 +4186,7 @@ init_tmp_var (tree exp, tree_stmt_iterator *tsi)
 
   t = create_tmp_var (TREE_TYPE (exp), NULL);
   DECL_GIMPLE_REG_P (t) = 1;
-  stmt = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (t), t, exp);
+  stmt = build_gimple_modify_stmt (t, exp);
   SET_EXPR_LOCUS (stmt, EXPR_LOCUS (tsi_stmt (*tsi)));
   tsi_link_before (tsi, stmt, TSI_SAME_STMT);
 
@@ -4203,7 +4203,7 @@ save_tmp_var (tree exp, tree_stmt_iterator *tsi)
 
   t = create_tmp_var (TREE_TYPE (exp), NULL);
   DECL_GIMPLE_REG_P (t) = 1;
-  stmt = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (t), exp, t);
+  stmt = build_gimple_modify_stmt (exp, t);
   SET_EXPR_LOCUS (stmt, EXPR_LOCUS (tsi_stmt (*tsi)));
   tsi_link_after (tsi, stmt, TSI_SAME_STMT);
 

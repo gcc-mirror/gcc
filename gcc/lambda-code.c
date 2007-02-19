@@ -1,5 +1,5 @@
 /*  Loop transformation code generation
-    Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+    Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
     Contributed by Daniel Berlin <dberlin@dberlin.org>
 
     This file is part of GCC.
@@ -1540,8 +1540,8 @@ lbv_to_gcc_expression (lambda_body_vector lbv,
   add_referenced_var (resvar);
 
   /* Start at 0.  */
-  stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, resvar,
-      		 integer_zero_node);
+  stmt = build_gimple_modify_stmt (resvar,
+				   fold_convert (type, integer_zero_node));
   name = make_ssa_name (resvar, stmt);
   GIMPLE_STMT_OPERAND (stmt, 0) = name;
   tsi = tsi_last (stmts);
@@ -1556,8 +1556,9 @@ lbv_to_gcc_expression (lambda_body_vector lbv,
 	  
 	  /* newname = coefficient * induction_variable */
 	  coeffmult = build_int_cst (type, LBV_COEFFICIENTS (lbv)[i]);
-	  stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, resvar,
-			 fold_build2 (MULT_EXPR, type, iv, coeffmult));
+	  stmt = build_gimple_modify_stmt (resvar,
+					   fold_build2 (MULT_EXPR, type,
+							iv, coeffmult));
 
 	  newname = make_ssa_name (resvar, stmt);
 	  GIMPLE_STMT_OPERAND (stmt, 0) = newname;
@@ -1566,8 +1567,9 @@ lbv_to_gcc_expression (lambda_body_vector lbv,
 	  tsi_link_after (&tsi, stmt, TSI_CONTINUE_LINKING);
 
 	  /* name = name + newname */
-	  stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, resvar,
-			 build2 (PLUS_EXPR, type, name, newname));
+	  stmt = build_gimple_modify_stmt (resvar,
+					   build2 (PLUS_EXPR, type,
+						   name, newname));
 	  name = make_ssa_name (resvar, stmt);
 	  GIMPLE_STMT_OPERAND (stmt, 0) = name;
 	  fold_stmt (&stmt);
@@ -1581,8 +1583,9 @@ lbv_to_gcc_expression (lambda_body_vector lbv,
   if (LBV_DENOMINATOR (lbv) != 1)
     {
       tree denominator = build_int_cst (type, LBV_DENOMINATOR (lbv));
-      stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, resvar,
-		     build2 (CEIL_DIV_EXPR, type, name, denominator));
+      stmt = build_gimple_modify_stmt (resvar,
+				       build2 (CEIL_DIV_EXPR, type,
+					       name, denominator));
       name = make_ssa_name (resvar, stmt);
       GIMPLE_STMT_OPERAND (stmt, 0) = name;
       fold_stmt (&stmt);
@@ -1632,8 +1635,8 @@ lle_to_gcc_expression (lambda_linear_expression lle,
   for (; lle != NULL; lle = LLE_NEXT (lle))
     {
       /* Start at name = 0.  */
-      stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, resvar,
-	  	     integer_zero_node);
+      stmt = build_gimple_modify_stmt (resvar,
+				       fold_convert (type, integer_zero_node));
       name = make_ssa_name (resvar, stmt);
       GIMPLE_STMT_OPERAND (stmt, 0) = name;
       fold_stmt (&stmt);
@@ -1664,7 +1667,7 @@ lle_to_gcc_expression (lambda_linear_expression lle,
 		}
 
 	      /* newname = mult */
-	      stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, resvar, mult);
+	      stmt = build_gimple_modify_stmt (resvar, mult);
 	      newname = make_ssa_name (resvar, stmt);
 	      GIMPLE_STMT_OPERAND (stmt, 0) = newname;
 	      fold_stmt (&stmt);
@@ -1672,8 +1675,9 @@ lle_to_gcc_expression (lambda_linear_expression lle,
 	      tsi_link_after (&tsi, stmt, TSI_CONTINUE_LINKING);
 
 	      /* name = name + newname */
-	      stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, resvar,
-			     build2 (PLUS_EXPR, type, name, newname));
+	      stmt = build_gimple_modify_stmt (resvar,
+					       build2 (PLUS_EXPR, type,
+						       name, newname));
 	      name = make_ssa_name (resvar, stmt);
 	      GIMPLE_STMT_OPERAND (stmt, 0) = name;
 	      fold_stmt (&stmt);
@@ -1705,7 +1709,7 @@ lle_to_gcc_expression (lambda_linear_expression lle,
 		}
 
 	      /* newname = mult */
-	      stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, resvar, mult);
+	      stmt = build_gimple_modify_stmt (resvar, mult);
 	      newname = make_ssa_name (resvar, stmt);
 	      GIMPLE_STMT_OPERAND (stmt, 0) = newname;
 	      fold_stmt (&stmt);
@@ -1713,8 +1717,9 @@ lle_to_gcc_expression (lambda_linear_expression lle,
 	      tsi_link_after (&tsi, stmt, TSI_CONTINUE_LINKING);
 
 	      /* name = name + newname */
-	      stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, resvar,
-			     build2 (PLUS_EXPR, type, name, newname));
+	      stmt = build_gimple_modify_stmt (resvar,
+					       build2 (PLUS_EXPR, type,
+						       name, newname));
 	      name = make_ssa_name (resvar, stmt);
 	      GIMPLE_STMT_OPERAND (stmt, 0) = name;
 	      fold_stmt (&stmt);
@@ -1727,9 +1732,9 @@ lle_to_gcc_expression (lambda_linear_expression lle,
          name = name + constant.  */
       if (LLE_CONSTANT (lle) != 0)
 	{
-	  stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, resvar,
-			 build2 (PLUS_EXPR, type, name, 
-			         build_int_cst (type, LLE_CONSTANT (lle))));
+	  tree incr = build_int_cst (type, LLE_CONSTANT (lle));
+	  stmt = build_gimple_modify_stmt (resvar, build2 (PLUS_EXPR, type,
+							   name, incr));
 	  name = make_ssa_name (resvar, stmt);
 	  GIMPLE_STMT_OPERAND (stmt, 0) = name;
 	  fold_stmt (&stmt);
@@ -1741,9 +1746,9 @@ lle_to_gcc_expression (lambda_linear_expression lle,
          name = name + linear offset.  */
       if (LLE_CONSTANT (offset) != 0)
 	{
-	  stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, resvar,
-			 build2 (PLUS_EXPR, type, name, 
-			         build_int_cst (type, LLE_CONSTANT (offset))));
+	  tree incr = build_int_cst (type, LLE_CONSTANT (offset));
+	  stmt = build_gimple_modify_stmt (resvar, build2 (PLUS_EXPR, type,
+							   name, incr));
 	  name = make_ssa_name (resvar, stmt);
 	  GIMPLE_STMT_OPERAND (stmt, 0) = name;
 	  fold_stmt (&stmt);
@@ -1757,7 +1762,7 @@ lle_to_gcc_expression (lambda_linear_expression lle,
 	  stmt = build_int_cst (type, LLE_DENOMINATOR (lle));
 	  stmt = build2 (wrap == MAX_EXPR ? CEIL_DIV_EXPR : FLOOR_DIV_EXPR,
 			 type, name, stmt);
-	  stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, resvar, stmt);
+	  stmt = build_gimple_modify_stmt (resvar, stmt);
 
 	  /* name = {ceil, floor}(name/denominator) */
 	  name = make_ssa_name (resvar, stmt);
@@ -1777,8 +1782,7 @@ lle_to_gcc_expression (lambda_linear_expression lle,
     {
       tree op1 = VEC_index (tree, results, 0);
       tree op2 = VEC_index (tree, results, 1);
-      stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, resvar,
-		     build2 (wrap, type, op1, op2));
+      stmt = build_gimple_modify_stmt (resvar, build2 (wrap, type, op1, op2));
       name = make_ssa_name (resvar, stmt);
       GIMPLE_STMT_OPERAND (stmt, 0) = name;
       tsi = tsi_last (stmts);
@@ -1895,8 +1899,7 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 	 test,  and let redundancy elimination sort it out.  */
       inc_stmt = build2 (PLUS_EXPR, type, 
 			 ivvar, build_int_cst (type, LL_STEP (newloop)));
-      inc_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node,
-	  		 SSA_NAME_VAR (ivvar), inc_stmt);
+      inc_stmt = build_gimple_modify_stmt (SSA_NAME_VAR (ivvar), inc_stmt);
       ivvarinced = make_ssa_name (SSA_NAME_VAR (ivvar), inc_stmt);
       GIMPLE_STMT_OPERAND (inc_stmt, 0) = ivvarinced;
       bsi = bsi_for_stmt (exitcond);
@@ -2187,7 +2190,7 @@ replace_uses_equiv_to_x_with_y (struct loop *loop, tree stmt, tree x,
       var = create_tmp_var (TREE_TYPE (use), "perfecttmp");
       add_referenced_var (var);
       val = force_gimple_operand_bsi (firstbsi, val, false, NULL);
-      setstmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, var, val);
+      setstmt = build_gimple_modify_stmt (var, val);
       var = make_ssa_name (var, setstmt);
       GIMPLE_STMT_OPERAND (setstmt, 0) = var;
       bsi_insert_before (firstbsi, setstmt, BSI_SAME_STMT);
@@ -2535,8 +2538,7 @@ perfect_nestify (struct loop *loop,
   exit_condition = get_loop_exit_condition (newloop);
   uboundvar = create_tmp_var (integer_type_node, "uboundvar");
   add_referenced_var (uboundvar);
-  stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, uboundvar, 
-		 VEC_index (tree, ubounds, 0));
+  stmt = build_gimple_modify_stmt (uboundvar, VEC_index (tree, ubounds, 0));
   uboundvar = make_ssa_name (uboundvar, stmt);
   GIMPLE_STMT_OPERAND (stmt, 0) = uboundvar;
 

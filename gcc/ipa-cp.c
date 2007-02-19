@@ -1,5 +1,5 @@
 /* Interprocedural constant propagation
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Razya Ladelsky <RAZYA@il.ibm.com>
    
 This file is part of GCC.
@@ -445,7 +445,7 @@ constant_val_insert (tree parm1, tree val)
   tree init_stmt = NULL;
   edge e_step;
 
-  init_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, parm1, val);
+  init_stmt = build_gimple_modify_stmt (parm1, val);
 
   if (init_stmt)
     {
