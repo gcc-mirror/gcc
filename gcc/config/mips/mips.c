@@ -391,7 +391,7 @@ static int mips_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode mode,
 				   tree, bool);
 static bool mips_valid_pointer_mode (enum machine_mode);
 static bool mips_vector_mode_supported_p (enum machine_mode);
-static rtx mips_prepare_builtin_arg (enum insn_code, unsigned int, tree *);
+static rtx mips_prepare_builtin_arg (enum insn_code, unsigned int, tree, unsigned int);
 static rtx mips_prepare_builtin_target (enum insn_code, unsigned int, rtx);
 static rtx mips_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static void mips_init_builtins (void);
@@ -10279,18 +10279,17 @@ static const struct bdesc_map bdesc_arrays[] =
   { dsp_bdesc, ARRAY_SIZE (dsp_bdesc), PROCESSOR_MAX }
 };
 
-/* Take the head of argument list *ARGLIST and convert it into a form
-   suitable for input operand OP of instruction ICODE.  Return the value
-   and point *ARGLIST at the next element of the list.  */
+/* Take the argument ARGNUM of the arglist of EXP and convert it into a form
+   suitable for input operand OP of instruction ICODE.  Return the value.  */
 
 static rtx
 mips_prepare_builtin_arg (enum insn_code icode,
-			  unsigned int op, tree *arglist)
+			  unsigned int op, tree exp, unsigned int argnum)
 {
   rtx value;
   enum machine_mode mode;
 
-  value = expand_normal (TREE_VALUE (*arglist));
+  value = expand_normal (CALL_EXPR_ARG (exp, argnum));
   mode = insn_data[icode].operand[op].mode;
   if (!insn_data[icode].operand[op].predicate (value, mode))
     {
@@ -10303,7 +10302,6 @@ mips_prepare_builtin_arg (enum insn_code icode,
 	}
     }
 
-  *arglist = TREE_CHAIN (*arglist);
   return value;
 }
 
@@ -10331,15 +10329,12 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 {
   enum insn_code icode;
   enum mips_builtin_type type;
-  tree fndecl, arglist;
+  tree fndecl;
   unsigned int fcode;
   const struct builtin_description *bdesc;
   const struct bdesc_map *m;
 
   fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  /* FIXME: Rewrite this to use the CALL_EXPR directly instead of consing
-     up an arglist.  */
-  arglist = CALL_EXPR_ARGS (exp);
   fcode = DECL_FUNCTION_CODE (fndecl);
 
   bdesc = NULL;
@@ -10360,15 +10355,15 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   switch (type)
     {
     case MIPS_BUILTIN_DIRECT:
-      return mips_expand_builtin_direct (icode, target, arglist, true);
+      return mips_expand_builtin_direct (icode, target, exp, true);
 
     case MIPS_BUILTIN_DIRECT_NO_TARGET:
-      return mips_expand_builtin_direct (icode, target, arglist, false);
+      return mips_expand_builtin_direct (icode, target, exp, false);
 
     case MIPS_BUILTIN_MOVT:
     case MIPS_BUILTIN_MOVF:
       return mips_expand_builtin_movtf (type, icode, bdesc[fcode].cond,
-					target, arglist);
+					target, exp);
 
     case MIPS_BUILTIN_CMP_ANY:
     case MIPS_BUILTIN_CMP_ALL:
@@ -10376,7 +10371,7 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case MIPS_BUILTIN_CMP_LOWER:
     case MIPS_BUILTIN_CMP_SINGLE:
       return mips_expand_builtin_compare (type, icode, bdesc[fcode].cond,
-					  target, arglist);
+					  target, exp);
 
     case MIPS_BUILTIN_BPOSGE32:
       return mips_expand_builtin_bposge (type, target);
@@ -10621,16 +10616,17 @@ mips_init_builtins (void)
 }
 
 /* Expand a MIPS_BUILTIN_DIRECT function.  ICODE is the code of the
-   .md pattern and ARGLIST is the list of function arguments.  TARGET,
+   .md pattern and CALL is the function expr with arguments.  TARGET,
    if nonnull, suggests a good place to put the result.
    HAS_TARGET indicates the function must return something.  */
 
 static rtx
-mips_expand_builtin_direct (enum insn_code icode, rtx target, tree arglist,
+mips_expand_builtin_direct (enum insn_code icode, rtx target, tree exp,
 			    bool has_target)
 {
   rtx ops[MAX_RECOG_OPERANDS];
   int i = 0;
+  int j = 0;
 
   if (has_target)
     {
@@ -10639,10 +10635,10 @@ mips_expand_builtin_direct (enum insn_code icode, rtx target, tree arglist,
       i = 1;
     }
 
-  /* We need to test if arglist is not zero.  Some instructions have extra
+  /* We need to test if the arglist is not zero.  Some instructions have extra
      clobber registers.  */
-  for (; i < insn_data[icode].n_operands && arglist != 0; i++)
-    ops[i] = mips_prepare_builtin_arg (icode, i, &arglist);
+  for (; i < insn_data[icode].n_operands && i <= call_expr_nargs (exp); i++, j++)
+    ops[i] = mips_prepare_builtin_arg (icode, i, exp, j);
 
   switch (i)
     {
@@ -10665,7 +10661,7 @@ mips_expand_builtin_direct (enum insn_code icode, rtx target, tree arglist,
 }
 
 /* Expand a __builtin_mips_movt_*_ps() or __builtin_mips_movf_*_ps()
-   function (TYPE says which).  ARGLIST is the list of arguments to the
+   function (TYPE says which).  EXP is the tree for the function
    function, ICODE is the instruction that should be used to compare
    the first two arguments, and COND is the condition it should test.
    TARGET, if nonnull, suggests a good place to put the result.  */
@@ -10673,26 +10669,26 @@ mips_expand_builtin_direct (enum insn_code icode, rtx target, tree arglist,
 static rtx
 mips_expand_builtin_movtf (enum mips_builtin_type type,
 			   enum insn_code icode, enum mips_fp_condition cond,
-			   rtx target, tree arglist)
+			   rtx target, tree exp)
 {
   rtx cmp_result, op0, op1;
 
   cmp_result = mips_prepare_builtin_target (icode, 0, 0);
-  op0 = mips_prepare_builtin_arg (icode, 1, &arglist);
-  op1 = mips_prepare_builtin_arg (icode, 2, &arglist);
+  op0 = mips_prepare_builtin_arg (icode, 1, exp, 0);
+  op1 = mips_prepare_builtin_arg (icode, 2, exp, 1);
   emit_insn (GEN_FCN (icode) (cmp_result, op0, op1, GEN_INT (cond)));
 
   icode = CODE_FOR_mips_cond_move_tf_ps;
   target = mips_prepare_builtin_target (icode, 0, target);
   if (type == MIPS_BUILTIN_MOVT)
     {
-      op1 = mips_prepare_builtin_arg (icode, 2, &arglist);
-      op0 = mips_prepare_builtin_arg (icode, 1, &arglist);
+      op1 = mips_prepare_builtin_arg (icode, 2, exp, 2);
+      op0 = mips_prepare_builtin_arg (icode, 1, exp, 3);
     }
   else
     {
-      op0 = mips_prepare_builtin_arg (icode, 1, &arglist);
-      op1 = mips_prepare_builtin_arg (icode, 2, &arglist);
+      op0 = mips_prepare_builtin_arg (icode, 1, exp, 2);
+      op1 = mips_prepare_builtin_arg (icode, 2, exp, 3);
     }
   emit_insn (gen_mips_cond_move_tf_ps (target, op0, op1, cmp_result));
   return target;
@@ -10728,24 +10724,25 @@ mips_builtin_branch_and_move (rtx condition, rtx target,
 
 /* Expand a comparison builtin of type BUILTIN_TYPE.  ICODE is the code
    of the comparison instruction and COND is the condition it should test.
-   ARGLIST is the list of function arguments and TARGET, if nonnull,
+   EXP is the function call and arguments and TARGET, if nonnull,
    suggests a good place to put the boolean result.  */
 
 static rtx
 mips_expand_builtin_compare (enum mips_builtin_type builtin_type,
 			     enum insn_code icode, enum mips_fp_condition cond,
-			     rtx target, tree arglist)
+			     rtx target, tree exp)
 {
   rtx offset, condition, cmp_result, ops[MAX_RECOG_OPERANDS];
   int i;
+  int j = 0;
 
   if (target == 0 || GET_MODE (target) != SImode)
     target = gen_reg_rtx (SImode);
 
   /* Prepare the operands to the comparison.  */
   cmp_result = mips_prepare_builtin_target (icode, 0, 0);
-  for (i = 1; i < insn_data[icode].n_operands - 1; i++)
-    ops[i] = mips_prepare_builtin_arg (icode, i, &arglist);
+  for (i = 1; i < insn_data[icode].n_operands - 1; i++, j++)
+    ops[i] = mips_prepare_builtin_arg (icode, i, exp, j);
 
   switch (insn_data[icode].n_operands)
     {

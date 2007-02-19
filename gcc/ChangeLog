@@ -1,3 +1,12 @@
+2007-02-18  Eric Christopher  <echristo@gmail.com>
+
+	* mips.c (mips_prepare_builtin_arg): Add argnum parameter.
+	Remove use of arglist.
+	(mips_expand_builtin): Remove use of arglist, pass in expr.
+	(mips_expand_builtin_direct): Rewrite handling for arglist removal.
+	(mips_expand_builtin_movtf): Ditto.
+	(mips_expand_builtin_compare): Ditto.
+
 2007-02-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	* tree-sra.c (sra_build_assignment): Replace assertion
@@ -24,7 +33,7 @@
 	* gimplify.c (build_stack_save_restore, gimplify_return_expr,
 	gimplify_decl_expr,  gimplify_self_mod_expr, gimplify_cond_expr,
 	gimplify_init_ctor_eval_range, gimple_push_cleanup,
-	gimplify_omp_for, gimplify_omp_atomic_pipeline, 
+	gimplify_omp_for, gimplify_omp_atomic_pipeline,
 	gimplify_omp_atomic_mutex, gimplify_expr, gimplify_one_sizepos,
 	force_gimple_operand): Likewise.
 	* ipa-cp.c (constant_val_insert): Likewise.
@@ -153,7 +162,7 @@
 	(DARWIN_MINVERSION_SPEC): New.
 	* config/rs6000/rs6000.c (darwin_rs6000_override_options): New.
 	* config/i386/darwin.h (CC1_SPEC): Always pass -mmacosx-version-min
-	to cc1*.  
+	to cc1*.
 	(DARWIN_MINVERSION_SPEC): New.
 	* config/darwin.opt (mmacosx-version-min): Initialize to non-NULL
 	value.
@@ -172,7 +181,7 @@
 	(bswaphi_lowpart): Generate rolw insn for HImode byte swaps.
 	(*bswaphi_lowpart_1): Generate xchgb for Q registers for TARGET_XCHGB
 	or when optimizing for size.
-	
+
 2007-02-16  Richard Guenther  <rguenther@suse.de>
 	    Christian Bruel  <christian.bruel@st.com>
 
@@ -704,7 +713,7 @@
 	(expand_call): Likewise.
 
 	* except.c (expand_builtin_eh_return_data_regno): Pass entire
-	CALL_EXPR as parameter instead of arglist.  Use new CALL_EXPR 
+	CALL_EXPR as parameter instead of arglist.  Use new CALL_EXPR
         accessors.
 
 	* coverage.c (create_coverage): Use build_call_expr.
@@ -743,7 +752,7 @@
 
 	* tree-nested.c (convert_nl_goto_reference): Use new CALL_EXPR
 	accessors and constructor.
-	(convert_tramp_reference): Likewise. 
+	(convert_tramp_reference): Likewise.
 	(convert_call_expr): Likewise.
 	(finalize_nesting_tree_1): Likewise.
 
@@ -945,7 +954,7 @@
 2007-02-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* caller-save.c (save_call_clobbered_regs): Do not process sibcalls.
-	
+
 2007-02-15  Nick Clifton  <nickc@redhat.com>
 
 	* varasm.c (default_asm_output_anchor): Prepend * to . symbol in
@@ -1186,7 +1195,7 @@
 2007-02-12  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* alias.c (find_symbolic_term): Delete unused function.
-	
+
 2007-02-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (paritydi2, paritysi2): New expanders.
@@ -1292,7 +1301,7 @@
 	(c_finish_stmt_expr): Don't check extra_warnings.
 	(emit_side_effect_warnings): The caller is responsible to check
 	warn_unused_value.
-	
+
 2007-02-11  Roger Sayle  <roger@eyesopen.com>
 	    Matt Thomas  <matt@3am-software.com>
 
@@ -1307,11 +1316,11 @@
 2007-02-11  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* doc/invoke.texi (Wextra): Delete outdated paragraph.
-	
+
 2007-02-11  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* dwarf2out.c (root_type): Delete unused function.
-	
+
 2007-02-11  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* genattrtab.c (contained_in_p): Delete unused function.
@@ -1456,7 +1465,7 @@
 	(struct state): Delete unused longest_path_length.
 	(UNDEFINED_LONGEST_PATH_LENGTH): Delete unused macro.
 	(get_free_state): Delete unused.
-	
+
 2007-02-09  Jan Hubicka  <jh@suse.cz>
 
 	* params.def (PARAM_INLINE_UNIT_GROWTH): Set to 30.
@@ -1733,7 +1742,7 @@
 	(extendsfdf2_mixed, extendsfdf2_sse, truncdfsf_fast_mixed,
 	truncdfsf_fast_sse, truncdfsf_mixed, fix_truncdfdi_sse,
 	fix_truncdfsi_sse, floatsidf2_mixed, floatsidf2_sse,
-	floatdidf2_mixed, floatdidf2_sse, absnegdf2_mixed, 
+	floatdidf2_mixed, floatdidf2_sse, absnegdf2_mixed,
 	absnegdf2_sse, sse_setccdf, fop_df_comm_mixed, fop_df_comm_sse,
 	fop_df_1_mixed, fop_df_1_sse): Change Y constraints to x.
 	* config/i386/mmx.md (mov<MMXMODEI>_internal_rex64,
@@ -1826,7 +1835,7 @@
 	(create_nesting_tree): Create outside GGC space.  Create bitmap on
 	the new obstack.  Create field_map and var_map as pointer_maps.
 	(free_nesting_tree): Adjust for changes to create_nesting_tree.
-	(root): Delete.	
+	(root): Delete.
 	(lower_nested_functions): Move root here, no need to NULL it.
 	Initialize and release the obstack.
 
@@ -1850,15 +1859,15 @@
 	(vect_is_simple_reduction): Support reduction with induction as
 	one of the operands.
 	(vect_is_simple_iv_evolution): Fix formatting.
-	* tree-vect-analyze.c (vect_mark_stmts_to_be_vectorized): Fix 
+	* tree-vect-analyze.c (vect_mark_stmts_to_be_vectorized): Fix
 	formatting.  Don't mark induction phis for vectorization.
 	(vect_analyze_scalar_cycles): Analyze all inductions, then reductions.
 	* tree-vect-transform.c (get_initial_def_for_induction): New function.
 	(vect_get_vec_def_for_operand): Support induction.
 	(vect_get_vec_def_for_stmt_copy): Fix formatting and add check for
 	induction case.
-	(vectorizable_reduction): Support reduction with induction as one of 
-	the operands. 
+	(vectorizable_reduction): Support reduction with induction as one of
+	the operands.
 	(vectorizable_type_demotion): Use def-type of stmt argument rather
 	than dummy def-type.
 
@@ -1871,7 +1880,7 @@
 
 2007-02-06  Ira Rosen  <irar@il.ibm.com>
 
-	* tree-vect-patterns.c (vect_recog_widen_mult_pattern): Check that 
+	* tree-vect-patterns.c (vect_recog_widen_mult_pattern): Check that
 	vectype is not NULL.
 	(vect_pattern_recog_1): Likewise.
 
@@ -1920,7 +1929,7 @@
 	sqrtsf2_i387, sqrtdf2_mixed, sqrtdf2_sse, sqrtdf2_i387,
 	sqrtextendsfdf2_i387, sqrtxf2, sqrtextendsfxf2_i387,
 	sqrtextenddfxf2_i387): Added amdfam10_decode.
-	
+
 	* config/i386/athlon.md (athlon_idirect_amdfam10,
 	athlon_ivector_amdfam10, athlon_idirect_load_amdfam10,
 	athlon_ivector_load_amdfam10, athlon_idirect_both_amdfam10,
@@ -1969,7 +1978,7 @@
 	cvtsi2sd_load_amdfam10, cvtsi2ss_load_amdfam10,
 	cvtsi2sd_amdfam10, cvtsi2ss_amdfam10, cvtsd2ss_load_amdfam10,
 	cvtsd2ss_amdfam10, cvtpd2ps_load_amdfam10, cvtpd2ps_amdfam10,
-	cvtsX2si_load_amdfam10, cvtsX2si_amdfam10): New 
+	cvtsX2si_load_amdfam10, cvtsX2si_amdfam10): New
 	define_insn_reservation.
 
 	* config/i386/sse.md (cvtsi2ss, cvtsi2ssq, cvtss2si,
@@ -1990,8 +1999,8 @@
 
 	* config/i386/i386.h (TARGET_SSE_UNALIGNED_MOVE_OPTIMAL): New macro.
 	(x86_sse_unaligned_move_optimal): New variable.
-	
-	* config/i386/i386.c (x86_sse_unaligned_move_optimal): Enable for  
+
+	* config/i386/i386.c (x86_sse_unaligned_move_optimal): Enable for
 	m_AMDFAM10.
 	(ix86_expand_vector_move_misalign): Add code to generate movupd/movups
 	for unaligned vector SSE double/single precision loads for AMDFAM10.
@@ -2002,39 +2011,39 @@
 	(TARGET_CPU_CPP_BUILTINS): Add code for amdfam10.
 	Define TARGET_CPU_DEFAULT_amdfam10.
 	(TARGET_CPU_DEFAULT_NAMES): Add amdfam10.
-	(processor_type): Add PROCESSOR_AMDFAM10.	
-	
+	(processor_type): Add PROCESSOR_AMDFAM10.
+
 	* config/i386/i386.md: Add amdfam10 as a new cpu attribute to match
 	processor_type in config/i386/i386.h.
 	Enable imul peepholes for TARGET_AMDFAM10.
-	
+
 	* config.gcc: Add support for --with-cpu option for amdfam10.
-	
+
 	* config/i386/i386.c (amdfam10_cost): New variable.
 	(m_AMDFAM10): New macro.
 	(m_ATHLON_K8_AMDFAM10): New macro.
 	(x86_use_leave, x86_push_memory, x86_movx, x86_unroll_strlen,
 	x86_cmove, x86_3dnow_a, x86_deep_branch, x86_use_simode_fiop,
 	x86_promote_QImode, x86_integer_DFmode_moves,
-	x86_partial_reg_dependency, x86_memory_mismatch_stall, 
+	x86_partial_reg_dependency, x86_memory_mismatch_stall,
 	x86_accumulate_outgoing_args, x86_arch_always_fancy_math_387,
 	x86_sse_partial_reg_dependency, x86_sse_typeless_stores,
 	x86_use_ffreep, x86_use_incdec, x86_four_jump_limit,
 	x86_schedule, x86_use_bt, x86_cmpxchg16b, x86_pad_returns):
 	Enable/disable for amdfam10.
 	(override_options): Add amdfam10_cost to processor_target_table.
-	Set up PROCESSOR_AMDFAM10 for amdfam10 entry in 
+	Set up PROCESSOR_AMDFAM10 for amdfam10 entry in
 	processor_alias_table.
 	(ix86_issue_rate): Add PROCESSOR_AMDFAM10.
 	(ix86_adjust_cost): Add code for amdfam10.
 
 2007-02-05  Harsha Jagasia  <harsha.jagasia@amd.com>
-	
+
 	* config/i386/i386.opt: Add new Advanced Bit Manipulation (-mabm)
-	instruction set feature flag. Add new (-mpopcnt) flag for popcnt 
+	instruction set feature flag. Add new (-mpopcnt) flag for popcnt
 	instruction. Add new SSE4A (-msse4a) instruction set feature flag.
 	* config/i386/i386.h: Add builtin definition for SSE4A.
-	* config/i386/i386.md: Add support for ABM instructions 
+	* config/i386/i386.md: Add support for ABM instructions
 	(popcnt and lzcnt).
 	* config/i386/sse.md: Add support for SSE4A instructions
 	(movntss, movntsd, extrq, insertq).
@@ -2189,7 +2198,7 @@
 	* ipa-inline.c (try_inline): Improve debug output; work on already
 	inline edges too.
 	(cgraph_decide_inlining_incrementally): Indent; improve debug output;
-	call try_inline for already inlined edges too when flattening; 
+	call try_inline for already inlined edges too when flattening;
 	inline also functions that make callee growth but overall unit size
 	reduce.
 
@@ -2214,7 +2223,7 @@
 
        * c-opts.c (c_common_post_options): If C++0x mode is enabled, don't
        warn about C++0x compatibility.
-	
+
 2007-02-04  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/h8300/h8300.c, config/h8300/h8300.h,
@@ -2343,7 +2352,7 @@
 
 	Revert for x86 darwin:
 	2005-06-19  Uros Bizjak  <uros@kss-loka.si>
-	
+
 	* config/i386/i386.c (ix86_function_arg_regno_p): Put back the
 	code before the following patch under TARGET_MACHO.
 	(ix86_function_value_regno_p): Likewise.
@@ -2380,7 +2389,7 @@
 2007-02-02  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	* sched-int.h (ds_to_dk, dk_to_ds): Declare functions.
-	
+
 	(struct _dep): New type.
 	(dep_t): New typedef.
 	(DEP_PRO, DEP_CON, DEP_KIND): New access macros.
@@ -2422,30 +2431,30 @@
 	(RESOLVED_DEPS): Rename to INSN_RESOLVED_BACK_DEPS.
 
 	(INSN_COST): Move to haifa-sched.c.  Use insn_cost () instead.
-	
+
 	(DEP_STATUS): Rename to DEP_LINK_STATUS.  Fix typo in the comment.
 
 	(add_forw_dep, delete_back_forw_dep, insn_cost): Update declaration and
 	all callers.
 	(dep_cost): Declare.
-	
+
 	* sched-deps.c (CHECK): New macro to (en/dis)able sanity checks.
 	(ds_to_dk, dk_to_ds): New functions.
-	
+
 	(init_dep_1): New static function.
 	(init_dep): New function.
 	(copy_dep): New static function.
-	
+
 	(dep_link_consistent_p, attach_dep_link, add_to_deps_list): New static
 	functions.
 	(detach_dep_link): New static function.
 	(move_dep_link): New function.
-	
+
 	(dep_links_consistent_p, dump_dep_links): New static functions.
 	(debug_dep_links): New debugging function.
-	
+
 	(deps_obstack, dl_obstack, dn_obstack): New static variables.
-	
+
 	(alloc_deps_list, init_deps_list): New static functions.
 	(create_deps_list): New function.
 	(clear_deps_list): New static function.
@@ -2462,10 +2471,10 @@
 	(sched_analyze): Ditto.  Initialize dependencies lists.
 	(add_forw_dep, compute_forward_dependences): Update to use new
 	scheduler dependencies lists.
-	
+
 	(init_dependency_caches): Init deps_obstack.
 	(free_dependency_caches): Free deps_obstack.
-	
+
 	(adjust_add_sorted_back_dep, adjust_back_add_forw_dep): Update to use
 	new scheduler dependencies lists.
 	(delete_forw_dep, add_or_update_back_forw_dep): Ditto.
@@ -2476,22 +2485,22 @@
 	(is_conditionally_protected, is_prisky, add_branch_dependences): Ditto.
 	(debug_dependencies): Ditto.
 	(schedule_region): Update comments.
-	
+
 	* sched-ebb.c (earliest_block_with_similiar_load): Update to use new
 	scheduler dependencies lists.
 	(schedule_ebb): Update comments.
-	
+
 	* rtl.def (DEPS_LIST): Remove.
-	
+
 	* lists.c (unused_deps_list): Remove.
 	(free_list): Update assertions.
-	
+
 	(alloc_DEPS_LIST, free_DEPS_LIST_list, free_DEPS_LIST_node): Remove.
 	(remove_free_DEPS_LIST_elem, copy_DEPS_LIST_list): Ditto.
 
 	* rtl.h (free_DEPS_LIST_list, alloc_DEPS_LIST): Remove declarations.
 	(remove_free_DEPS_LIST_elem, copy_DEPS_LIST_list): Ditto.
-	
+
 	* haifa-sched.c (comments): Update.
 	(insn_cost1): Remove.  Inline the code into insn_cost ().
 	(insn_cost): Update to use new scheduler dependencies lists.  Move
@@ -2507,24 +2516,24 @@
 	from resolve_dep () - see PR28071.
 	(ok_for_early_queue_removal): Update to use new scheduler dependencies
 	lists.  Update call to targetm.sched.is_costly_dependence hook.
-	
+
 	(fix_inter_tick, try_ready, fix_tick_ready): Update to use new
 	scheduler dependencies lists.
-	
+
 	(resolve_dep): Remove.  Move the logic to schedule_insn ().
 	(init_h_i_d): Initialize dependencies lists.
-	
+
 	(process_insn_depend_be_in_spec): Rename to
 	process_insn_forw_deps_be_in_spec.  Update to use new scheduler
 	dependencies lists.
 	(add_to_speculative_block, create_check_block_twin, fix_recovery_deps):
 	Update to use new scheduler dependencies lists.
 	(clear_priorities, calc_priorities, add_jump_dependencies): Ditto.
-	
+
 	* ddg.c (create_ddg_dependence, create_ddg_dep_no_link): Update to use
 	new scheduler dependencies lists.
 	(build_intra_loop_deps): Ditto.
-	
+
 	* target.h (struct _dep): Declare to use in
 	gcc_target.sched.is_costly_dependence.
 	(struct gcc_target.sched.adjust_cost): Fix typo.
@@ -2542,9 +2551,9 @@
 
 	* doc/rtl.texi (LOG_LINKS): Remove part about instruction scheduler.
 	(REG_DEP_TRUE): Document.
-	
+
 	* config/ia64/ia64.c (ia64_adjust_cost_2): Rename to ia64_adjust_cost.
-	Change signature to correspond to the targetm.sched.adjust_cost hook.  
+	Change signature to correspond to the targetm.sched.adjust_cost hook.
 	Update use in TARGET_SCHED_ADJUST_COST_2.
 	(TARGET_SCHED_ADJUST_COST_2): Rename to TARGET_SCHED_ADJUST_COST.
 	(ia64_dependencies_evaluation_hook, ia64_dfa_new_cycle): Update to use
@@ -2553,7 +2562,7 @@
 
 	* config/mips/mips.c (vr4130_swap_insns_p): Update to use new scheduler
 	dependencies lists.
-	
+
 	* config/rs6000/rs6000.c (rs6000_is_costly_dependence): Change
 	signature to correspond to the targetm.sched.is_costly_dependence hook.
 	(is_costly_group): Update to use new scheduler dependencies lists.
