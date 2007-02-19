@@ -3360,7 +3360,7 @@ frv_legitimate_address_p (enum machine_mode mode,
       break;
 
     case CONST_INT:
-      /* 12 bit immediate */
+      /* 12-bit immediate */
       if (condexec_p)
 	ret = FALSE;
       else
@@ -3411,7 +3411,7 @@ frv_legitimate_address_p (enum machine_mode mode,
 	  break;
 
 	case CONST_INT:
-          /* 12 bit immediate */
+          /* 12-bit immediate */
 	  if (condexec_p)
 	    ret = FALSE;
 	  else
@@ -9483,7 +9483,7 @@ frv_rtx_costs (rtx x,
   switch (code)
     {
     case CONST_INT:
-      /* Make 12 bit integers really cheap.  */
+      /* Make 12-bit integers really cheap.  */
       if (IN_RANGE_P (INTVAL (x), -2048, 2047))
 	{
 	  *total = 0;
