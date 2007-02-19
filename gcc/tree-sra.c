@@ -1731,12 +1731,14 @@ generate_element_ref (struct sra_elt *elt)
 static tree
 sra_build_assignment (tree dst, tree src)
 {
-#if 0 /* ENABLE_CHECKING */
-  /* This test ought to pass, but it is unfortunately too strict for
-     now.  */
-  gcc_assert (TYPE_CANONICAL (TYPE_MAIN_VARIANT (TREE_TYPE (dst)))
-	      == TYPE_CANONICAL (TYPE_MAIN_VARIANT (TREE_TYPE (src))));
-#endif
+  /* It was hoped that we could perform some type sanity checking
+     here, but since front-ends can emit accesses of fields in types
+     different from their nominal types and copy structures containing
+     them as a whole, we'd have to handle such differences here.
+     Since such accesses under different types require compatibility
+     anyway, there's little point in making tests and/or adding
+     conversions to ensure the types of src and dst are the same.
+     So we just assume type differences at this point are ok.  */
   return build2 (GIMPLE_MODIFY_STMT, void_type_node, dst, src);
 }
 
