@@ -1,3 +1,9 @@
+2007-02-19  Richard Henderson  <rth@redhat.com>
+
+        PR debug/29558
+        * var-tracking.c (track_expr_p): Disallow AGGREGATE_TYPE_P
+        in memory.
+
 2007-02-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_call_saved_register_used,
