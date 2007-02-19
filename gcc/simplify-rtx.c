@@ -2072,6 +2072,33 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	  && (nonzero_bits (op0, mode) & ~INTVAL (op1)) == 0)
 	return op1;
  
+      /* Canonicalize (X & C1) | C2.  */
+      if (GET_CODE (op0) == AND
+	  && GET_CODE (trueop1) == CONST_INT
+	  && GET_CODE (XEXP (op0, 1)) == CONST_INT)
+	{
+	  HOST_WIDE_INT mask = GET_MODE_MASK (mode);
+	  HOST_WIDE_INT c1 = INTVAL (XEXP (op0, 1));
+	  HOST_WIDE_INT c2 = INTVAL (trueop1);
+
+	  /* If (C1&C2) == C1, then (X&C1)|C2 becomes X.  */
+	  if ((c1 & c2) == c1
+	      && !side_effects_p (XEXP (op0, 0)))
+	    return trueop1;
+
+	  /* If (C1|C2) == ~0 then (X&C1)|C2 becomes X|C2.  */
+	  if (((c1|c2) & mask) == mask)
+	    return simplify_gen_binary (IOR, mode, XEXP (op0, 0), op1);
+
+	  /* Minimize the number of bits set in C1, i.e. C1 := C1 & ~C2.  */
+	  if (((c1 & ~c2) & mask) != (c1 & mask))
+	    {
+	      tem = simplify_gen_binary (AND, mode, XEXP (op0, 0),
+					 gen_int_mode (c1 & ~c2, mode));
+	      return simplify_gen_binary (IOR, mode, tem, op1);
+	    }
+	}
+
       /* Convert (A & B) | A to A.  */
       if (GET_CODE (op0) == AND
 	  && (rtx_equal_p (XEXP (op0, 0), op1)
@@ -2310,6 +2337,18 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 				     gen_int_mode (INTVAL (trueop1),
 						   imode));
 	  return simplify_gen_unary (ZERO_EXTEND, mode, tem, imode);
+	}
+
+      /* Canonicalize (A | C1) & C2 as (A & C2) | (C1 & C2).  */
+      if (GET_CODE (op0) == IOR
+	  && GET_CODE (trueop1) == CONST_INT
+	  && GET_CODE (XEXP (op0, 1)) == CONST_INT)
+	{
+	  HOST_WIDE_INT tmp = INTVAL (trueop1) & INTVAL (XEXP (op0, 1));
+	  return simplify_gen_binary (IOR, mode,
+				      simplify_gen_binary (AND, mode,
+							   XEXP (op0, 0), op1),
+				      gen_int_mode (tmp, mode));
 	}
 
       /* Convert (A ^ B) & A to A & (~B) since the latter is often a single

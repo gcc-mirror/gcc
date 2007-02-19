@@ -1,3 +1,12 @@
+2007-02-18  Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/28173
+	* simplify-rtx.c (simplify_binary_operation_1) <IOR>:  Optimize
+	(X & C1) | C2 as C2 when (C1 & C2) == C1 and X has no side-effects.
+	Optimize (X & C1) | C2 as X | C2 when (C1 | C2) == ~0.
+	Canonicalize (X & C1) | C2 as (X & (C1 & ~C2)) | C2.
+	<AND>: Canonicalize (X | C1) & C2 as (X & C2) | (C1 & C2).
+
 2007-02-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (fold_builtin_load_exponent): New.
