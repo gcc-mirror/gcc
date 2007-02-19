@@ -2638,6 +2638,21 @@ gimplify_init_ctor_preeval_1 (tree *tp, int *walk_subtrees, void *xdata)
       && alias_sets_conflict_p (data->lhs_alias_set, get_alias_set (t)))
     return t;
 
+  /* If the constructor component is a call, determine if it can hide a
+     potential overlap with the lhs through an INDIRECT_REF like above.  */
+  if (TREE_CODE (t) == CALL_EXPR)
+    {
+      tree type, fntype = TREE_TYPE (TREE_TYPE (TREE_OPERAND (t, 0)));
+
+      for (type = TYPE_ARG_TYPES (fntype); type; type = TREE_CHAIN (type))
+	if (POINTER_TYPE_P (TREE_VALUE (type))
+	    && (!data->lhs_base_decl || TREE_ADDRESSABLE (data->lhs_base_decl))
+	    && alias_sets_conflict_p (data->lhs_alias_set,
+				      get_alias_set
+				        (TREE_TYPE (TREE_VALUE (type)))))
+	  return t;
+    }
+
   if (IS_TYPE_OR_DECL_P (t))
     *walk_subtrees = 0;
   return NULL;
