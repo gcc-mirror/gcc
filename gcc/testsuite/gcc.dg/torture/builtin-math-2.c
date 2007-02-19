@@ -1,4 +1,4 @@
-/* Copyright (C) 2006  Free Software Foundation.
+/* Copyright (C) 2006, 2007  Free Software Foundation.
 
    Test things that should block GCC from optimizing compile-time
    constants passed to a builtin transcendental function.
@@ -22,6 +22,18 @@ extern void fool (long double);
   foof (__builtin_##FUNC##f (ARG1##F, ARG2##F)); \
   foo (__builtin_##FUNC (ARG1, ARG2)); \
   fool (__builtin_##FUNC##l (ARG1##L, ARG2##L)); \
+} while (0)
+
+#define TESTIT2_I2ALL(FUNC, ARGF, MAXF, ARGD, MAXD, ARGLD, MAXLD) do { \
+  foof (__builtin_##FUNC##f (ARGF, MAXF)); \
+  foo (__builtin_##FUNC (ARGD, MAXD)); \
+  fool (__builtin_##FUNC##l (ARGLD, MAXLD)); \
+} while (0)
+
+#define TESTIT2_I2(FUNC, ARG1, ARG2) do { \
+  foof (__builtin_##FUNC##f (ARG1##F, ARG2)); \
+  foo (__builtin_##FUNC (ARG1, ARG2)); \
+  fool (__builtin_##FUNC##l (ARG1##L, ARG2)); \
 } while (0)
 
 void bar()
@@ -150,6 +162,52 @@ void bar()
   TESTIT (sqrt, -0.5);
   TESTIT (sqrt, -0.0);
   TESTIT (sqrt, 0.0);
+
+  /* Check for overflow/underflow.  */
+
+  /* These adjustments are too big.  */
+#define FLT_EXP_ADJ (2*(__FLT_MAX_EXP__-__FLT_MIN_EXP__)+1)
+#define DBL_EXP_ADJ (2*(__DBL_MAX_EXP__-__DBL_MIN_EXP__)+1)
+#define LDBL_EXP_ADJ (2*(__LDBL_MAX_EXP__-__LDBL_MIN_EXP__)+1)
+
+  TESTIT2_I2 (ldexp, 1.0, __INT_MAX__);
+  TESTIT2_I2 (ldexp, 1.0, -__INT_MAX__-1);
+  TESTIT2_I2 (ldexp, -1.0, __INT_MAX__);
+  TESTIT2_I2 (ldexp, -1.0, -__INT_MAX__-1);
+  TESTIT2_I2ALL (ldexp, __FLT_MIN__, FLT_EXP_ADJ, __DBL_MIN__,
+		 DBL_EXP_ADJ, __LDBL_MIN__, LDBL_EXP_ADJ);
+  TESTIT2_I2ALL (ldexp, __FLT_MAX__, -FLT_EXP_ADJ, __DBL_MAX__,
+		 -DBL_EXP_ADJ, __LDBL_MAX__, -LDBL_EXP_ADJ);
+  TESTIT2_I2ALL (ldexp, __FLT_MIN__, __FLT_MIN_EXP__, __DBL_MIN__,
+		 __DBL_MIN_EXP__, __LDBL_MIN__, __LDBL_MIN_EXP__);
+  TESTIT2_I2ALL (ldexp, __FLT_MAX__, __FLT_MAX_EXP__, __DBL_MAX__,
+		 __DBL_MAX_EXP__, __LDBL_MAX__, __LDBL_MAX_EXP__);
+
+  TESTIT2_I2 (scalbn, 1.0, __INT_MAX__);
+  TESTIT2_I2 (scalbn, 1.0, -__INT_MAX__-1);
+  TESTIT2_I2 (scalbn, -1.0, __INT_MAX__);
+  TESTIT2_I2 (scalbn, -1.0, -__INT_MAX__-1);
+  TESTIT2_I2ALL (scalbn, __FLT_MIN__, FLT_EXP_ADJ, __DBL_MIN__,
+		 DBL_EXP_ADJ, __LDBL_MIN__, LDBL_EXP_ADJ);
+  TESTIT2_I2ALL (scalbn, __FLT_MAX__, -FLT_EXP_ADJ, __DBL_MAX__,
+		 -DBL_EXP_ADJ, __LDBL_MAX__, -LDBL_EXP_ADJ);
+  TESTIT2_I2ALL (scalbn, __FLT_MIN__, __FLT_MIN_EXP__, __DBL_MIN__,
+		 __DBL_MIN_EXP__, __LDBL_MIN__, __LDBL_MIN_EXP__);
+  TESTIT2_I2ALL (scalbn, __FLT_MAX__, __FLT_MAX_EXP__, __DBL_MAX__,
+		 __DBL_MAX_EXP__, __LDBL_MAX__, __LDBL_MAX_EXP__);
+
+  TESTIT2_I2 (scalbln, 1.0, __LONG_MAX__);
+  TESTIT2_I2 (scalbln, 1.0, -__LONG_MAX__-1);
+  TESTIT2_I2 (scalbln, -1.0, __LONG_MAX__);
+  TESTIT2_I2 (scalbln, -1.0, -__LONG_MAX__-1);
+  TESTIT2_I2ALL (scalbln, __FLT_MIN__, FLT_EXP_ADJ, __DBL_MIN__,
+		 DBL_EXP_ADJ, __LDBL_MIN__, LDBL_EXP_ADJ);
+  TESTIT2_I2ALL (scalbln, __FLT_MAX__, -FLT_EXP_ADJ, __DBL_MAX__,
+		 -DBL_EXP_ADJ, __LDBL_MAX__, -LDBL_EXP_ADJ);
+  TESTIT2_I2ALL (scalbln, __FLT_MIN__, __FLT_MIN_EXP__, __DBL_MIN__,
+		 __DBL_MIN_EXP__, __LDBL_MIN__, __LDBL_MIN_EXP__);
+  TESTIT2_I2ALL (scalbln, __FLT_MAX__, __FLT_MAX_EXP__, __DBL_MAX__,
+		 __DBL_MAX_EXP__, __LDBL_MAX__, __LDBL_MAX_EXP__);
 }
 
 /* { dg-final { scan-tree-dump-times "exp2 " 9 "original" } } */
@@ -191,4 +249,13 @@ void bar()
 /* { dg-final { scan-tree-dump-times "sqrt " 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "sqrtf" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "sqrtl" 1 "original" } } */
+/* { dg-final { scan-tree-dump-times "ldexp " 8 "original" } } */
+/* { dg-final { scan-tree-dump-times "ldexpf" 8 "original" } } */
+/* { dg-final { scan-tree-dump-times "ldexpl" 8 "original" } } */
+/* { dg-final { scan-tree-dump-times "scalbn " 8 "original" } } */
+/* { dg-final { scan-tree-dump-times "scalbnf" 8 "original" } } */
+/* { dg-final { scan-tree-dump-times "scalbnl" 8 "original" } } */
+/* { dg-final { scan-tree-dump-times "scalbln " 8 "original" } } */
+/* { dg-final { scan-tree-dump-times "scalblnf" 8 "original" } } */
+/* { dg-final { scan-tree-dump-times "scalblnl" 8 "original" } } */
 /* { dg-final { cleanup-tree-dump "original" } } */
