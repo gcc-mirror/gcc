@@ -9000,6 +9000,67 @@ fold_builtin_carg (tree arg, tree type)
   return NULL_TREE;
 }
 
+/* Fold a call to builtin ldexp or scalbn/scalbln.  If LDEXP is true
+   then we can assume the base is two.  If it's false, then we have to
+   check the mode of the TYPE parameter in certain cases.  */
+
+static tree
+fold_builtin_load_exponent (tree arg0, tree arg1, tree type, bool ldexp)
+{
+  if (validate_arg (arg0, REAL_TYPE) && validate_arg (arg1, INTEGER_TYPE))
+    {
+      STRIP_NOPS (arg0);
+      STRIP_NOPS (arg1);
+
+      /* If arg0 is 0, Inf or NaN, or if arg1 is 0, then return arg0.  */
+      if (real_zerop (arg0) || integer_zerop (arg1)
+	  || (TREE_CODE (arg0) == REAL_CST
+	      && (real_isnan (&TREE_REAL_CST (arg0))
+		  || real_isinf (&TREE_REAL_CST (arg0)))))
+	return omit_one_operand (type, arg0, arg1);
+      
+      /* If both arguments are constant, then try to evaluate it.  */
+      if ((ldexp || REAL_MODE_FORMAT (TYPE_MODE (type))->b == 2)
+	  && TREE_CODE (arg0) == REAL_CST && !TREE_OVERFLOW (arg0)
+	  && host_integerp (arg1, 0))
+        {
+	  /* Bound the maximum adjustment to twice the range of the
+	     mode's valid exponents.  Use abs to ensure the range is
+	     positive as a sanity check.  */
+	  const long max_exp_adj = 2 * 
+	    labs (REAL_MODE_FORMAT (TYPE_MODE (type))->emax
+		 - REAL_MODE_FORMAT (TYPE_MODE (type))->emin);
+
+	  /* Get the user-requested adjustment.  */
+	  const HOST_WIDE_INT req_exp_adj = tree_low_cst (arg1, 0);
+	  
+	  /* The requested adjustment must be inside this range.  This
+	     is a preliminary cap to avoid things like overflow, we
+	     may still fail to compute the result for other reasons.  */
+	  if (-max_exp_adj < req_exp_adj && req_exp_adj < max_exp_adj)
+	    {
+	      REAL_VALUE_TYPE initial_result;
+	      
+	      real_ldexp (&initial_result, &TREE_REAL_CST (arg0), req_exp_adj);
+
+	      /* Ensure we didn't overflow.  */
+	      if (! real_isinf (&initial_result))
+	        {
+		  const REAL_VALUE_TYPE trunc_result
+		    = real_value_truncate (TYPE_MODE (type), initial_result);
+		  
+		  /* Only proceed if the target mode can hold the
+		     resulting value.  */
+		  if (REAL_VALUES_EQUAL (initial_result, trunc_result))
+		    return build_real (type, trunc_result);
+		}
+	    }
+	}
+    }
+
+  return NULL_TREE;
+}
+
 /* Fold a call to __builtin_isnan(), __builtin_isinf, __builtin_finite.
    ARG is the argument for the call.  */
 
@@ -9459,6 +9520,12 @@ fold_builtin_2 (tree fndecl, tree arg0, tree arg1, bool ignore)
 
     CASE_FLT_FN (BUILT_IN_HYPOT):
       return fold_builtin_hypot (fndecl, arg0, arg1, type);
+
+    CASE_FLT_FN (BUILT_IN_LDEXP):
+      return fold_builtin_load_exponent (arg0, arg1, type, /*ldexp=*/true);
+    CASE_FLT_FN (BUILT_IN_SCALBN):
+    CASE_FLT_FN (BUILT_IN_SCALBLN):
+      return fold_builtin_load_exponent (arg0, arg1, type, /*ldexp=*/false);
 
     case BUILT_IN_BZERO:
       return fold_builtin_bzero (arg0, arg1, ignore);
