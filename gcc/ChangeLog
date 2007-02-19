@@ -1,5 +1,10 @@
 2007-02-19  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* tree-cfg.c (dump_function_to_file): Be prepared for functions
+	without DECL_STRUCT_FUNCTION initialized.
+
+2007-02-19  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gimplify.c (gimplify_init_ctor_preeval_1): Detect potential overlap
 	due to calls to functions taking pointers as parameters.
 
