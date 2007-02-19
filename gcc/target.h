@@ -115,7 +115,7 @@ struct gcc_target
     /* Output code that will globalize a label.  */
     void (* globalize_label) (FILE *, const char *);
 
-    /* Output code that will globalise a declaration.  */
+    /* Output code that will globalize a declaration.  */
     void (* globalize_decl_name) (FILE *, tree);
 
     /* Output code that will emit a label for unwind info, if this
