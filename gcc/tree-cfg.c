@@ -4998,6 +4998,7 @@ void
 dump_function_to_file (tree fn, FILE *file, int flags)
 {
   tree arg, vars, var;
+  struct function *dsf;
   bool ignore_topmost_bind = false, any_var = false;
   basic_block bb;
   tree chain;
@@ -5015,8 +5016,10 @@ dump_function_to_file (tree fn, FILE *file, int flags)
     }
   fprintf (file, ")\n");
 
-  if (flags & TDF_DETAILS)
-    dump_eh_tree (file, DECL_STRUCT_FUNCTION (fn));
+  dsf = DECL_STRUCT_FUNCTION (fn);
+  if (dsf && (flags & TDF_DETAILS))
+    dump_eh_tree (file, dsf);
+
   if (flags & TDF_RAW)
     {
       dump_node (fn, TDF_SLIM | flags, file);
