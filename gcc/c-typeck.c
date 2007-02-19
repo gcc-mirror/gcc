@@ -2640,13 +2640,11 @@ parser_build_binary_op (enum tree_code code, struct c_expr arg1,
     {
       if ((code1 == STRING_CST && !integer_zerop (arg2.value))
 	  || (code2 == STRING_CST && !integer_zerop (arg1.value)))
-	warning (OPT_Wstring_literal_comparison,
-		 "comparison with string literal");
+	warning (OPT_Waddress, "comparison with string literal results in unspecified behaviour");
     }
   else if (TREE_CODE_CLASS (code) == tcc_comparison
 	   && (code1 == STRING_CST || code2 == STRING_CST))
-    warning (OPT_Wstring_literal_comparison,
-	     "comparison with string literal");
+    warning (OPT_Waddress, "comparison with string literal results in unspecified behaviour");
 
   if (TREE_OVERFLOW_P (result.value) 
       && !TREE_OVERFLOW_P (arg1.value) 
@@ -8025,7 +8023,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	{
 	  if (TREE_CODE (op0) == ADDR_EXPR
 	      && decl_with_nonnull_addr_p (TREE_OPERAND (op0, 0)))
-	    warning (OPT_Walways_true, "the address of %qD will never be NULL",
+	    warning (OPT_Waddress, "the address of %qD will never be NULL",
 		     TREE_OPERAND (op0, 0));
 	  result_type = type0;
 	}
@@ -8033,7 +8031,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	{
 	  if (TREE_CODE (op1) == ADDR_EXPR
 	      && decl_with_nonnull_addr_p (TREE_OPERAND (op1, 0)))
-	    warning (OPT_Walways_true, "the address of %qD will never be NULL",
+	    warning (OPT_Waddress, "the address of %qD will never be NULL",
 		     TREE_OPERAND (op1, 0));
 	  result_type = type1;
 	}

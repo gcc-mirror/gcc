@@ -3,7 +3,7 @@
 
 /* Make sure the pragma enables the error.  */
 
-#pragma GCC diagnostic error "-Walways-true"
+#pragma GCC diagnostic error "-Waddress"
 
 void __attribute__((dj)) bar() { }	/* { dg-warning "warning: .* attribute directive ignored" } */
 

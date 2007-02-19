@@ -74,10 +74,6 @@ Waggregate-return
 Common Var(warn_aggregate_return) Warning
 Warn about returning structures, unions or arrays
 
-Walways-true
-Common Var(warn_always_true) Warning
-Warn about comparisons that always evaluate to true
-
 Warray-bounds
 Common Var(warn_array_bounds)
 Warn if an array is accessed out of bounds
@@ -165,10 +161,6 @@ Warn about optimizations that assume that signed overflow is undefined
 Wstrict-overflow=
 Common Joined UInteger
 Warn about optimizations that assume that signed overflow is undefined
-
-Wstring-literal-comparison
-Common Var(warn_string_literal_comparison) Warning
-Warn about comparisons to constant string literals
 
 Wswitch
 Common Var(warn_switch) Warning

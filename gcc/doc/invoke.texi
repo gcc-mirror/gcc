@@ -223,7 +223,7 @@ Objective-C and Objective-C++ Dialects}.
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @gccoptlist{-fsyntax-only  -pedantic  -pedantic-errors @gol
--w  -Wextra  -Wall  -Waggregate-return -Walways-true -Warray-bounds @gol
+-w  -Wextra  -Wall  -Waddress  -Waggregate-return -Warray-bounds @gol
 -Wno-attributes -Wc++-compat -Wc++0x-compat -Wcast-align  -Wcast-qual  @gol
 -Wchar-subscripts -Wclobbered  -Wcomment @gol
 -Wconversion -Wcoverage-mismatch -Wno-deprecated-declarations @gol
@@ -249,7 +249,6 @@ Objective-C and Objective-C++ Dialects}.
 -Wsign-compare  -Wstack-protector @gol
 -Wstrict-aliasing -Wstrict-aliasing=2 @gol
 -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
--Wstring-literal-comparison @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum @gol
 -Wsystem-headers  -Wtrigraphs  -Wundef  -Wuninitialized @gol
 -Wunknown-pragmas  -Wno-pragmas -Wunreachable-code @gol
@@ -3381,17 +3380,26 @@ an incorrect result when the signed value is converted to unsigned.
 This warning is also enabled by @option{-Wextra}; to get the other warnings
 of @option{-Wextra} without this warning, use @samp{-Wextra -Wno-sign-compare}.
 
+@item -Waddress
+@opindex Waddress
+@opindex Wno-address
+Warn about suspicious uses of memory addresses. These include using
+the address of a function in a conditional expression, such as
+@code{void func(void); if (func)}, and comparisons against the memory
+address of a string literal, such as @code{if (x == "abc")}.  Such
+uses typically indicate a programmer error: the address of a function
+always evaluates to true, so their use in a conditional usually
+indicate that the programmer forgot the parentheses in a function
+call; and comparisons against string literals result in unspecified
+behavior and are not portable in C, so they usually indicate that the
+programmer intended to use @code{strcmp}.  This warning is enabled by
+@option{-Wall}.
+
 @item -Waggregate-return
 @opindex Waggregate-return
 Warn if any functions that return structures or unions are defined or
 called.  (In languages where you can return an array, this also elicits
 a warning.)
-
-@item -Walways-true
-@opindex Walways-true
-Warn about comparisons which are always true such as testing if
-unsigned values are greater than or equal to zero.  This warning is
-enabled by @option{-Wall}.
 
 @item -Wno-attributes
 @opindex Wno-attributes
@@ -3741,15 +3749,6 @@ imply anything.
 @opindex Wstack-protector
 This option is only active when @option{-fstack-protector} is active.  It
 warns about functions that will not be protected against stack smashing.
-
-@item -Wstring-literal-comparison
-@opindex Wstring-literal-comparison
-Warn about suspicious comparisons to string literal constants.  In C,
-direct comparisons against the memory address of a string literal, such
-as @code{if (x == "abc")}, typically indicate a programmer error, and
-even when intentional, result in unspecified behavior and are not portable.
-Usually these warnings alert that the programmer intended to use
-@code{strcmp}.  This warning is enabled by @option{-Wall}.
 
 @item -Woverlength-strings
 @opindex Woverlength-strings

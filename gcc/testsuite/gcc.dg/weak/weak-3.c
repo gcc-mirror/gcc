@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-alias "" } */
 /* { dg-require-weak "" } */
-/* { dg-options "-fno-common -Walways-true" } */
+/* { dg-options "-fno-common -Waddress" } */
 
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?ffoo1a" } } */
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?ffoo1b" } } */

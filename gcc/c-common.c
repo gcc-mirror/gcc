@@ -2716,7 +2716,7 @@ c_common_truthvalue_conversion (tree expr)
 	if (decl_with_nonnull_addr_p (inner))
 	  {
 	    /* Common Ada/Pascal programmer's mistake.  */
-	    warning (OPT_Walways_true,
+	    warning (OPT_Waddress,
 		     "the address of %qD will always evaluate as %<true%>",
 		     inner);
 	    return truthvalue_true_node;

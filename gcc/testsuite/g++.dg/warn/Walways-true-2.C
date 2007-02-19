@@ -4,7 +4,7 @@
 // Origin: Ian Lance Taylor <iant@google.com>
 
 // { dg-do compile}
-// { dg-options "-Walways-true" }
+// { dg-options "-Waddress" }
 // { dg-require-weak "" }
 
 extern int foo (int) __attribute__ ((weak));

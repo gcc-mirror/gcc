@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wattributes -Werror=always-true" } */
+/* { dg-options "-Wattributes -Werror=address" } */
 
 /* Make sure -Werror-foo emits an error and not a warning */
 

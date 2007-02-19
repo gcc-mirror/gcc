@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-// { dg-options "-Walways-true" }
+// { dg-options "-Waddress" }
 
 struct foo {
   bool test();
