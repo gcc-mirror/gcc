@@ -89,7 +89,8 @@ if test -n "$PWD" ; then PWD=`${PWDCMD-pwd}`; fi
 # Quote arguments with shell meta charatcers.
 TOPLEVEL_CONFIGURE_ARGUMENTS=
 set -- "$progname" "$@"
-for ac_arg; do
+for ac_arg
+do
   case "$ac_arg" in
   *" "*|*"	"*|*[\[\]\~\#\$\^\&\*\(\)\{\}\\\|\;\<\>\?]*)
     ac_arg=`echo "$ac_arg" | sed "s/'/'\\\\\\\\''/g"`

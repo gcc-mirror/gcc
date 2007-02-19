@@ -1,3 +1,8 @@
+2007-02-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac: Adjust for loop syntax.
+	* configure: Regenerate.
+
 2007-02-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure: Rebuilt.
