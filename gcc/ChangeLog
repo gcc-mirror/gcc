@@ -1,3 +1,8 @@
+2007-02-19  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-pre.c (create_value_expr_from): Initialize POOL to
+	NULL.
+
 2007-02-19  Lee Millward  <lee.millward@codesourcery.com>
 
 	* config/ia64/ia64.c (ia64_expand_builtin): Use the
