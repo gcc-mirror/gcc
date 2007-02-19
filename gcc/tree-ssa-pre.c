@@ -3201,7 +3201,7 @@ create_value_expr_from (tree expr, basic_block block, tree stmt)
   int i;
   enum tree_code code = TREE_CODE (expr);
   tree vexpr;
-  alloc_pool pool;
+  alloc_pool pool = NULL;
   tree efi;
 
   gcc_assert (TREE_CODE_CLASS (code) == tcc_unary
