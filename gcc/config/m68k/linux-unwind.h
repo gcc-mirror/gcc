@@ -34,7 +34,7 @@ Boston, MA 02110-1301, USA.  */
 
 #include <signal.h>
 
-/* <sys/ucontext.h> is unfortunaly broken right now */
+/* <sys/ucontext.h> is unfortunately broken right now.  */
 struct uw_ucontext {
 	unsigned long	  uc_flags;
 	struct ucontext  *uc_link;
