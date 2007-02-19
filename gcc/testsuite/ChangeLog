@@ -1,3 +1,10 @@
+2007-02-18  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/30975
+	* gcc.dg/vect/vect-iv-8.c: Fix to include an induction. Xfail.
+	* gcc.dg/vect/vect-iv-8a.c: New (same as above, but signed).
+	* gcc.dg/vect/pr30795.c: New.
+
 2007-02-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/30681

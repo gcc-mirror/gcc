@@ -10,6 +10,7 @@ int main1 (short X)
   unsigned char a[N];
   unsigned short b[N];
   unsigned int c[N];
+  short myX = X;
   int i;
 
   /* vectorization of induction with type conversions.  */
@@ -18,12 +19,13 @@ int main1 (short X)
     a[i] = (unsigned char)X;
     b[i] = X;
     c[i] = (unsigned int)X;
+    X++;
   }
 
   /* check results:  */
   for (i = 0; i < N; i++)
     {
-      if (a[i] != (char)X || b[i] != X || c[i] != (int)X)
+      if (a[i] != (unsigned char)myX || b[i] != myX || c[i] != (unsigned int)myX++)
 	abort ();
     }
 
@@ -37,5 +39,9 @@ int main (void)
   return main1 (3);
 } 
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_pack_mod && vect_unpack } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail *-*-* } } } */
+/* Fails to get vectorized due to a redundant cast. Once this is fixed, 
+   should be vectorized as follows:
+   dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_pack_mod && vect_unpack } } } 
+*/
 /* { dg-final { cleanup-tree-dump "vect" } } */
