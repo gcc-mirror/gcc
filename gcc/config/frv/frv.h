@@ -1272,21 +1272,21 @@ extern enum reg_class reg_class_from_letter[];
 
 #define ZERO_P(x) (x == CONST0_RTX (GET_MODE (x)))
 
-/* 6 bit signed immediate.  */
+/* 6-bit signed immediate.  */
 #define CONST_OK_FOR_I(VALUE) IN_RANGE_P(VALUE, -32, 31)
-/* 10 bit signed immediate.  */
+/* 10-bit signed immediate.  */
 #define CONST_OK_FOR_J(VALUE) IN_RANGE_P(VALUE, -512, 511)
 /* Unused */
 #define CONST_OK_FOR_K(VALUE)  0
-/* 16 bit signed immediate.  */
+/* 16-bit signed immediate.  */
 #define CONST_OK_FOR_L(VALUE) IN_RANGE_P(VALUE, -32768, 32767)
-/* 16 bit unsigned immediate.  */
+/* 16-bit unsigned immediate.  */
 #define CONST_OK_FOR_M(VALUE)  IN_RANGE_P (VALUE, 0, 65535)
-/* 12 bit signed immediate that is negative.  */
+/* 12-bit signed immediate that is negative.  */
 #define CONST_OK_FOR_N(VALUE) IN_RANGE_P(VALUE, -2048, -1)
 /* Zero */
 #define CONST_OK_FOR_O(VALUE) ((VALUE) == 0)
-/* 12 bit signed immediate that is negative.  */
+/* 12-bit signed immediate that is negative.  */
 #define CONST_OK_FOR_P(VALUE) IN_RANGE_P(VALUE, 1, 2047)
 
 /* A C expression that defines the machine-dependent operand constraint letters

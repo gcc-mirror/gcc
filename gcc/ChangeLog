@@ -3,6 +3,9 @@
 	* config/sh/divtab.c, config/sh/sh.c, config/sh/sh.h,
 	config/sh/sh.md: Follow spelling conventions.
 
+	* config/frv/frv.c, config/frv/frv.h, config/frv/frv.md,
+	config/frv/predicates.md: Follow spelling conventions.
+
 2007-02-18  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/28173
