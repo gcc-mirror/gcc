@@ -1550,8 +1550,8 @@ extern enum reg_class reg_class_from_letter[];
     Bsc: SCRATCH - for the scratch register in movsi_ie in the
 	 fldi0 / fldi0 cases
    C: Constants other than only CONST_INT (constraint len == 3)
-    Css: signed 16 bit constant, literal or symbolic
-    Csu: unsigned 16 bit constant, literal or symbolic
+    Css: signed 16-bit constant, literal or symbolic
+    Csu: unsigned 16-bit constant, literal or symbolic
     Csy: label or symbol
     Cpg: non-explicit constants that can be directly loaded into a general
 	 purpose register in PIC code.  like 's' except we don't allow

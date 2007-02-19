@@ -206,7 +206,7 @@
 ;; store	to memory
 ;; fstore	floating point register to memory
 ;; move		general purpose register to register
-;; movi8	8 bit immediate to general purpose register
+;; movi8	8-bit immediate to general purpose register
 ;; mt_group	other sh4 mt instructions
 ;; fmove	register to register, floating point
 ;; smpy		word precision integer multiply
@@ -263,7 +263,7 @@
 ;; store_media	SHmedia general register store instructions
 ;; mcmp_media	SHmedia multimedia compare, absolute, saturating ops
 ;; mac_media	SHmedia mac-style fixed point operations
-;; d2mpy_media	SHmedia: two 32 bit integer multiplies
+;; d2mpy_media	SHmedia: two 32-bit integer multiplies
 ;; atrans_media	SHmedia approximate transcendental functions
 ;; ustore_media	SHmedia unaligned stores
 ;; nil		no-op move, will be deleted.

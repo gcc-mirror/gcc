@@ -3702,7 +3702,7 @@ broken_move (rtx insn)
       if (GET_CODE (pat) == PARALLEL)
 	pat = XVECEXP (pat, 0, 0);
       if (GET_CODE (pat) == SET
-	  /* We can load any 8 bit value if we don't care what the high
+	  /* We can load any 8-bit value if we don't care what the high
 	     order bits end up as.  */
 	  && GET_MODE (SET_DEST (pat)) != QImode
 	  && (CONSTANT_P (SET_SRC (pat))
@@ -9651,7 +9651,7 @@ struct builtin_description
 
 /* describe number and signedness of arguments; arg[0] == result
    (1: unsigned, 2: signed, 4: don't care, 8: pointer 0: no argument */
-/* 9: 64 bit pointer, 10: 32 bit pointer */
+/* 9: 64-bit pointer, 10: 32-bit pointer */
 static const char signature_args[][4] =
 {
 #define SH_BLTIN_V2SI2 0
