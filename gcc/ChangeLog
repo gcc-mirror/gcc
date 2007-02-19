@@ -1,3 +1,10 @@
+2007-02-18  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/30833
+	* tree-dump.c (dequeue_and_dump): Add tcc_vl_exp case missed
+	during CALL_EXPR representation conversion.
+	* tree-ssa-propagate.c (set_rhs): Likewise.
+
 2007-02-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	* tree-sra.c (sra_build_assignment): Disable assertion checking
