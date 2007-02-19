@@ -1,3 +1,15 @@
+2007-02-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (import_export_decl): Reverse sense of 
+	DECL_VISIBILITY_SPECIFIED test for target-specific visibility
+	rules.
+
+	Backport of:
+	2006-07-20  Jason Merrill  <jason@redhat.com>
+	* decl2.c (determine_visibility_from_class): Reverse sense of 
+	DECL_VISIBILITY_SPECIFIED test for target-specific visibility
+	rules.
+
 2007-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/30536

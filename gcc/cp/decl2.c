@@ -1905,8 +1905,8 @@ import_export_decl (tree decl)
       comdat_linkage (decl);
     }
 
-  /* Give the target a chance to override the visibility associated
-     with DECL.  */
+  /* Give the target a chance to override the visibility of class
+     data, like virtual tables.  */
   if (TREE_CODE (decl) == VAR_DECL
       && (DECL_TINFO_P (decl)
 	  || (DECL_VTABLE_OR_VTT_P (decl)
@@ -1914,9 +1914,16 @@ import_export_decl (tree decl)
 		 they cannot be referred to from other object files;
 		 their name is not standardized by the ABI.  */
 	      && !DECL_CONSTRUCTION_VTABLE_P (decl)))
-      && TREE_PUBLIC (decl)
+      /* Visibility only applies to objects with external linkage.  */
+      && TREE_PUBLIC (decl) 
+      /* Visibility is specified by the definition of the object, not
+	 its declaration.  */
       && !DECL_REALLY_EXTERN (decl)
-      && DECL_VISIBILITY_SPECIFIED (decl)
+      /* Respect any explicit specification of visibility for the
+	 class data itself.  */
+      && !DECL_VISIBILITY_SPECIFIED (decl)
+      /* If the visibility of the class has been explicitly specified,
+	 that visibility applies to class data as well.  */
       && (!class_type || !CLASSTYPE_VISIBILITY_SPECIFIED (class_type)))
     targetm.cxx.determine_class_data_visibility (decl);
 
