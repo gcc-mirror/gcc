@@ -1,3 +1,9 @@
+2007-02-19  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/30975
+	* tree-vect-trasnform.c (vect_get_vec_def_for_stmt_copy): Remove
+	wrong assert.
+
 2007-02-18  Eric Christopher  <echristo@gmail.com>
 
 	* mips.c (mips_prepare_builtin_arg): Add argnum parameter.

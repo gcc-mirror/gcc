@@ -897,8 +897,6 @@ vect_get_vec_def_for_stmt_copy (enum vect_def_type dt, tree vec_oprnd)
 
   vec_stmt_for_operand = SSA_NAME_DEF_STMT (vec_oprnd);
   def_stmt_info = vinfo_for_stmt (vec_stmt_for_operand);
-  if (dt == vect_induction_def)
-    gcc_assert (TREE_CODE (vec_stmt_for_operand) == PHI_NODE);  
   gcc_assert (def_stmt_info);
   vec_stmt_for_operand = STMT_VINFO_RELATED_STMT (def_stmt_info);
   gcc_assert (vec_stmt_for_operand);
