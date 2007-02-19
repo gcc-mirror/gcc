@@ -319,6 +319,7 @@ dequeue_and_dump (dump_info_p di)
 	case tcc_expression:
 	case tcc_reference:
 	case tcc_statement:
+	case tcc_vl_exp:
 	  /* These nodes are handled explicitly below.  */
 	  break;
 
