@@ -1,4 +1,6 @@
 // PR c++/26696, 28996
+// { dg-do compile }
+// { dg-options "-Waddress" }
 
 struct A
 {

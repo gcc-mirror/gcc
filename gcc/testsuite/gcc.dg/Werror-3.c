@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Walways-true -Wattributes" } */
+/* { dg-options "-Waddress -Wattributes" } */
 
 /* Make sure the command line option enables the warning.  */
 

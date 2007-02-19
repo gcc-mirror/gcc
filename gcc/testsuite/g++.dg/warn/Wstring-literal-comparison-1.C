@@ -1,6 +1,6 @@
 /* PR c/7776 */
 /* { dg-do compile } */
-/* { dg-options "-Wstring-literal-comparison" } */
+/* { dg-options "-Waddress" } */
 
 int test1(char *ptr)
 {

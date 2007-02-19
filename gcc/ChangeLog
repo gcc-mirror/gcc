@@ -1,3 +1,21 @@
+2007-02-19  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* c.opt (Waddress): New.
+	* common.opt (Walways-true): Delete.
+	(Wstring-literal-comparison): Delete.
+	* doc/invoke.texi (Warning Options): Delete -Walways-true and
+	-Wstring-literal-comparison. Add -Waddress.
+	(Waddress): New.
+	(Walways-true): Delete.
+	(Wstring-literal-comparison): Delete.
+	* doc/extend.texi (#pragma GCC diagnostic): Use -Wformat
+	consistently instead of -Walways-true in example.
+	* c-opts.c (c_common_handle_option): -Waddress is enabled by -Wall.
+	* c-typeck.c (parser_build_binary_op): Replace
+	-Wstring-literal-comparison and -Walways-true with -Waddress.
+	* c-common.c (c_common_truthvalue_conversion): Replace -Walways-true
+	with -Waddress.
+	
 2007-02-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-cfg.c (dump_function_to_file): Be prepared for functions

@@ -1,8 +1,8 @@
-// Test -Walways-true for testing an address against NULL.
+// Test -Waddress for testing an address against NULL.
 // Origin: Ian Lance Taylor <iant@google.com>
 
 // { dg-do compile}
-// { dg-options "-Walways-true" }
+// { dg-options "-Waddress" }
 
 extern int foo (int);
 

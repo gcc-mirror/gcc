@@ -1,3 +1,10 @@
+2007-02-19  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* typeck.c (build_binary_op): Replace -Wstring-literal-comparison
+	and -Walways-true with -Waddress.
+	* cvt.c (convert_to_void): Replace unconditional warning with
+	-Waddress.
+
 2007-02-18  Kazu Hirata  <kazu@codesourcery.com>
 
 	* decl.c, tree.c: Fix comment typos.
