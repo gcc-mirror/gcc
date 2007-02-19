@@ -83,7 +83,7 @@ static double note_defect3 (int val, double d2, double y2d, double x)
     }
 }
 
-/* This function assumes 32 bit integers.  */
+/* This function assumes 32-bit integers.  */
 static double
 calc_defect (double x, int constant, int factor)
 {
