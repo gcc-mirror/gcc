@@ -1,3 +1,9 @@
+2007-02-19  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (s390_call_saved_register_used,
+	s390_function_ok_for_sibcall): Adjust the way CALL_EXPR arguments are
+	accessed to the new scheme.
+
 2007-02-19  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/cris/cris.c (cris_movem_load_rest_p, cris_store_multiple_op_p)

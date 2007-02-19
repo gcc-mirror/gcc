@@ -8703,28 +8703,26 @@ s390_valid_pointer_mode (enum machine_mode mode)
   return (mode == SImode || (TARGET_64BIT && mode == DImode));
 }
 
-/* Checks whether the given ARGUMENT_LIST would use a caller
+/* Checks whether the given CALL_EXPR would use a caller
    saved register.  This is used to decide whether sibling call
    optimization could be performed on the respective function
    call.  */
 
 static bool
-s390_call_saved_register_used (tree argument_list)
+s390_call_saved_register_used (tree call_expr)
 {
   CUMULATIVE_ARGS cum;
   tree parameter;
   enum machine_mode mode;
   tree type;
   rtx parm_rtx;
-  int reg;
+  int reg, i;
 
   INIT_CUMULATIVE_ARGS (cum, NULL, NULL, 0, 0);
 
-  while (argument_list)
+  for (i = 0; i < call_expr_nargs (call_expr); i++)
     {
-      parameter = TREE_VALUE (argument_list);
-      argument_list = TREE_CHAIN (argument_list);
-
+      parameter = CALL_EXPR_ARG (call_expr, i);
       gcc_assert (parameter);
 
       /* For an undeclared variable passed as parameter we will get
@@ -8780,11 +8778,7 @@ s390_function_ok_for_sibcall (tree decl, tree exp)
   /* Register 6 on s390 is available as an argument register but unfortunately
      "caller saved". This makes functions needing this register for arguments
      not suitable for sibcalls.  */
-  if (TREE_OPERAND (exp, 1)
-      && s390_call_saved_register_used (TREE_OPERAND (exp, 1)))
-      return false;
-
-  return true;
+  return !s390_call_saved_register_used (exp);
 }
 
 /* Return the fixed registers used for condition codes.  */
