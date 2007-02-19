@@ -205,8 +205,8 @@ cris_movem_load_rest_p (rtx op, int offs)
      other than (MEM reg).  */
   if (reg_count <= 1
       || GET_CODE (XVECEXP (op, 0, offs)) != SET
-      || GET_CODE (SET_DEST (XVECEXP (op, 0, offs))) != REG
-      || GET_CODE (SET_SRC (XVECEXP (op, 0, offs))) != MEM)
+      || !REG_P (SET_DEST (XVECEXP (op, 0, offs)))
+      || !MEM_P (SET_SRC (XVECEXP (op, 0, offs))))
     return false;
 
   /* Check a possible post-inc indicator.  */
@@ -221,7 +221,7 @@ cris_movem_load_rest_p (rtx op, int offs)
 	  || !REG_P (reg)
 	  || !REG_P (SET_DEST (XVECEXP (op, 0, offs + 1)))
 	  || REGNO (reg) != REGNO (SET_DEST (XVECEXP (op, 0, offs + 1)))
-	  || GET_CODE (inc) != CONST_INT
+	  || !CONST_INT_P (inc)
 	  || INTVAL (inc) != (HOST_WIDE_INT) reg_count * 4)
 	return false;
       i = offs + 2;
@@ -237,10 +237,10 @@ cris_movem_load_rest_p (rtx op, int offs)
   src_addr = XEXP (SET_SRC (elt), 0);
 
   if (GET_CODE (elt) != SET
-      || GET_CODE (SET_DEST (elt)) != REG
+      || !REG_P (SET_DEST (elt))
       || GET_MODE (SET_DEST (elt)) != SImode
       || REGNO (SET_DEST (elt)) != regno
-      || GET_CODE (SET_SRC (elt)) != MEM
+      || !MEM_P (SET_SRC (elt))
       || GET_MODE (SET_SRC (elt)) != SImode
       || !memory_address_p (SImode, src_addr))
     return false;
@@ -251,14 +251,14 @@ cris_movem_load_rest_p (rtx op, int offs)
       regno += regno_dir;
 
       if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_DEST (elt)) != REG
+	  || !REG_P (SET_DEST (elt))
 	  || GET_MODE (SET_DEST (elt)) != SImode
 	  || REGNO (SET_DEST (elt)) != regno
-	  || GET_CODE (SET_SRC (elt)) != MEM
+	  || !MEM_P (SET_SRC (elt))
 	  || GET_MODE (SET_SRC (elt)) != SImode
 	  || GET_CODE (XEXP (SET_SRC (elt), 0)) != PLUS
 	  || ! rtx_equal_p (XEXP (XEXP (SET_SRC (elt), 0), 0), src_addr)
-	  || GET_CODE (XEXP (XEXP (SET_SRC (elt), 0), 1)) != CONST_INT
+	  || !CONST_INT_P (XEXP (XEXP (SET_SRC (elt), 0), 1))
 	  || INTVAL (XEXP (XEXP (SET_SRC (elt), 0), 1)) != setno * 4)
 	return false;
     }
@@ -295,8 +295,7 @@ cris_store_multiple_op_p (rtx op)
 
   dest = SET_DEST (elt);
 
-  if (GET_CODE (SET_SRC (elt)) != REG
-      || GET_CODE (dest) != MEM)
+  if (!REG_P (SET_SRC (elt)) || !MEM_P (dest))
     return false;
 
   dest_addr = XEXP (dest, 0);
@@ -313,7 +312,7 @@ cris_store_multiple_op_p (rtx op)
 	  || !REG_P (reg)
 	  || !REG_P (SET_DEST (XVECEXP (op, 0, 1)))
 	  || REGNO (reg) != REGNO (SET_DEST (XVECEXP (op, 0, 1)))
-	  || GET_CODE (inc) != CONST_INT
+	  || !CONST_INT_P (inc)
 	  /* Support increment by number of registers, and by the offset
 	     of the destination, if it has the form (MEM (PLUS reg
 	     offset)).  */
@@ -323,7 +322,7 @@ cris_store_multiple_op_p (rtx op)
 	       || (GET_CODE (dest_addr) == PLUS
 		   && REG_P (XEXP (dest_addr, 0))
 		   && REGNO (XEXP (dest_addr, 0)) == REGNO (reg)
-		   && GET_CODE (XEXP (dest_addr, 1)) == CONST_INT
+		   && CONST_INT_P (XEXP (dest_addr, 1))
 		   && INTVAL (XEXP (dest_addr, 1)) == INTVAL (inc))))
 	return false;
 
@@ -337,10 +336,10 @@ cris_store_multiple_op_p (rtx op)
   regno = reg_count - 1;
 
   if (GET_CODE (elt) != SET
-      || GET_CODE (SET_SRC (elt)) != REG
+      || !REG_P (SET_SRC (elt))
       || GET_MODE (SET_SRC (elt)) != SImode
       || REGNO (SET_SRC (elt)) != (unsigned int) regno
-      || GET_CODE (SET_DEST (elt)) != MEM
+      || !MEM_P (SET_DEST (elt))
       || GET_MODE (SET_DEST (elt)) != SImode)
     return false;
 
@@ -351,7 +350,7 @@ cris_store_multiple_op_p (rtx op)
     }
   else if (GET_CODE (dest_addr) == PLUS
 	   && REG_P (XEXP (dest_addr, 0))
-	   && GET_CODE (XEXP (dest_addr, 1)) == CONST_INT)
+	   && CONST_INT_P (XEXP (dest_addr, 1)))
     {
       dest_base = XEXP (dest_addr, 0);
       offset = INTVAL (XEXP (dest_addr, 1));
@@ -365,14 +364,14 @@ cris_store_multiple_op_p (rtx op)
       regno += regno_dir;
 
       if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_SRC (elt)) != REG
+	  || !REG_P (SET_SRC (elt))
 	  || GET_MODE (SET_SRC (elt)) != SImode
 	  || REGNO (SET_SRC (elt)) != (unsigned int) regno
-	  || GET_CODE (SET_DEST (elt)) != MEM
+	  || !MEM_P (SET_DEST (elt))
 	  || GET_MODE (SET_DEST (elt)) != SImode
 	  || GET_CODE (XEXP (SET_DEST (elt), 0)) != PLUS
 	  || ! rtx_equal_p (XEXP (XEXP (SET_DEST (elt), 0), 0), dest_base)
-	  || GET_CODE (XEXP (XEXP (SET_DEST (elt), 0), 1)) != CONST_INT
+	  || !CONST_INT_P (XEXP (XEXP (SET_DEST (elt), 0), 1))
 	  || INTVAL (XEXP (XEXP (SET_DEST (elt), 0), 1)) != setno * 4 + offset)
 	return false;
     }
@@ -501,7 +500,7 @@ cris_print_index (rtx index, FILE *file)
 
   /* Make the index "additive" unless we'll output a negative number, in
      which case the sign character is free (as in free beer).  */
-  if (GET_CODE (index) != CONST_INT || INTVAL (index) >= 0)
+  if (!CONST_INT_P (index) || INTVAL (index) >= 0)
     putc ('+', file);
 
   if (REG_P (index))
@@ -515,8 +514,7 @@ cris_print_index (rtx index, FILE *file)
 
       putc (INTVAL (XEXP (index, 1)) == 2 ? 'w' : 'd', file);
     }
-  else if (GET_CODE (index) == SIGN_EXTEND &&
-	   GET_CODE (inner) == MEM)
+  else if (GET_CODE (index) == SIGN_EXTEND && MEM_P (inner))
     {
       rtx inner_inner = XEXP (inner, 0);
 
@@ -533,7 +531,7 @@ cris_print_index (rtx index, FILE *file)
 	  putc (GET_MODE (inner) == HImode ? 'w' : 'b', file);
 	}
     }
-  else if (GET_CODE (index) == MEM)
+  else if (MEM_P (index))
     {
       if (GET_CODE (inner) == POST_INC)
 	fprintf (file, "[$%s+].d", reg_names[REGNO (XEXP (inner, 0))]);
@@ -669,7 +667,7 @@ cris_print_operand (FILE *file, rtx x, int code)
     case 'b':
       /* Print the unsigned supplied integer as if it were signed
 	 and < 0, i.e print 255 or 65535 as -1, 254, 65534 as -2, etc.  */
-      if (GET_CODE (x) != CONST_INT
+      if (!CONST_INT_P (x)
 	  || ! CONST_OK_FOR_LETTER_P (INTVAL (x), 'O'))
 	LOSE_AND_RETURN ("invalid operand for 'b' modifier", x);
       fprintf (file, HOST_WIDE_INT_PRINT_DEC,
@@ -711,7 +709,7 @@ cris_print_operand (FILE *file, rtx x, int code)
 
 	/* The lowest mem operand is in the first item, but perhaps it
 	   needs to be output as postincremented.  */
-	addr = GET_CODE (SET_SRC (XVECEXP (x, 0, 0))) == MEM
+	addr = MEM_P (SET_SRC (XVECEXP (x, 0, 0)))
 	  ? XEXP (SET_SRC (XVECEXP (x, 0, 0)), 0)
 	  : XEXP (SET_DEST (XVECEXP (x, 0, 0)), 0);
 
@@ -739,7 +737,7 @@ cris_print_operand (FILE *file, rtx x, int code)
 
     case 'p':
       /* Adjust a power of two to its log2.  */
-      if (GET_CODE (x) != CONST_INT || exact_log2 (INTVAL (x)) < 0 )
+      if (!CONST_INT_P (x) || exact_log2 (INTVAL (x)) < 0 )
 	LOSE_AND_RETURN ("invalid operand for 'p' modifier", x);
       fprintf (file, "%d", exact_log2 (INTVAL (x)));
       return;
@@ -749,7 +747,7 @@ cris_print_operand (FILE *file, rtx x, int code)
 	 respectively.  This modifier also terminates the inhibiting
          effects of the 'x' modifier.  */
       cris_output_insn_is_bound = 0;
-      if (GET_MODE (x) == VOIDmode && GET_CODE (x) == CONST_INT)
+      if (GET_MODE (x) == VOIDmode && CONST_INT_P (x))
 	{
 	  if (INTVAL (x) >= 0)
 	    {
@@ -777,7 +775,7 @@ cris_print_operand (FILE *file, rtx x, int code)
     case 'z':
       /* Const_int: print b for -127 <= x <= 255,
 	 w for -32768 <= x <= 65535, else die.  */
-      if (GET_CODE (x) != CONST_INT
+      if (!CONST_INT_P (x)
 	  || INTVAL (x) < -32768 || INTVAL (x) > 65535)
 	LOSE_AND_RETURN ("invalid operand for 'z' modifier", x);
       putc (INTVAL (x) >= -128 && INTVAL (x) <= 255 ? 'b' : 'w', file);
@@ -883,7 +881,7 @@ cris_print_operand (FILE *file, rtx x, int code)
 	 cris_output_insn_is_bound is nonzero.  */
       if (GET_CODE (operand) != SIGN_EXTEND
 	  && GET_CODE (operand) != ZERO_EXTEND
-	  && GET_CODE (operand) != CONST_INT)
+	  && !CONST_INT_P (operand))
 	LOSE_AND_RETURN ("invalid operand for 'e' modifier", x);
 
       if (cris_output_insn_is_bound)
@@ -893,7 +891,7 @@ cris_print_operand (FILE *file, rtx x, int code)
 	}
 
       putc (GET_CODE (operand) == SIGN_EXTEND
-	    || (GET_CODE (operand) == CONST_INT && INTVAL (operand) < 0)
+	    || (CONST_INT_P (operand) && INTVAL (operand) < 0)
 	    ? 's' : 'u', file);
       return;
 
@@ -912,7 +910,7 @@ cris_print_operand (FILE *file, rtx x, int code)
 	  fprintf (file, HOST_WIDE_INT_PRINT_HEX, CONST_DOUBLE_LOW (x));
 	  return;
 	}
-      else if (HOST_BITS_PER_WIDE_INT > 32 && GET_CODE (operand) == CONST_INT)
+      else if (HOST_BITS_PER_WIDE_INT > 32 && CONST_INT_P (operand))
 	{
 	  fprintf (file, HOST_WIDE_INT_PRINT_HEX,
 		   INTVAL (x) & ((unsigned int) 0x7fffffff * 2 + 1));
@@ -925,7 +923,7 @@ cris_print_operand (FILE *file, rtx x, int code)
     case 'A':
       /* When emitting an add for the high part of a DImode constant, we
 	 want to use addq for 0 and adds.w for -1.  */
-      if (GET_CODE (operand) != CONST_INT)
+      if (!CONST_INT_P (operand))
 	LOSE_AND_RETURN ("invalid operand for 'A' modifier", x);
       fprintf (file, INTVAL (operand) < 0 ? "adds.w" : "addq");
       return;
@@ -948,7 +946,7 @@ cris_print_operand (FILE *file, rtx x, int code)
     case 'D':
       /* When emitting an sub for the high part of a DImode constant, we
 	 want to use subq for 0 and subs.w for -1.  */
-      if (GET_CODE (operand) != CONST_INT)
+      if (!CONST_INT_P (operand))
 	LOSE_AND_RETURN ("invalid operand for 'D' modifier", x);
       fprintf (file, INTVAL (operand) < 0 ? "subs.w" : "subq");
       return;
@@ -962,7 +960,7 @@ cris_print_operand (FILE *file, rtx x, int code)
     case 'T':
       /* Print the size letter for an operand to a MULT, which must be a
 	 const_int with a suitable value.  */
-      if (GET_CODE (operand) != CONST_INT || INTVAL (operand) > 4)
+      if (!CONST_INT_P (operand) || INTVAL (operand) > 4)
 	LOSE_AND_RETURN ("invalid operand for 'T' modifier", x);
       fprintf (file, "%s", mults[INTVAL (operand)]);
       return;
@@ -1021,14 +1019,14 @@ cris_print_operand (FILE *file, rtx x, int code)
     case ASHIFT:
       {
 	/* For a (MULT (reg X) const_int) we output "rX.S".  */
-	int i = GET_CODE (XEXP (operand, 1)) == CONST_INT
+	int i = CONST_INT_P (XEXP (operand, 1))
 	  ? INTVAL (XEXP (operand, 1)) : INTVAL (XEXP (operand, 0));
-	rtx reg = GET_CODE (XEXP (operand, 1)) == CONST_INT
+	rtx reg = CONST_INT_P (XEXP (operand, 1))
 	  ? XEXP (operand, 0) : XEXP (operand, 1);
 
-	if (GET_CODE (reg) != REG
-	    || (GET_CODE (XEXP (operand, 0)) != CONST_INT
-		&& GET_CODE (XEXP (operand, 1)) != CONST_INT))
+	if (!REG_P (reg)
+	    || (!CONST_INT_P (XEXP (operand, 0))
+		&& !CONST_INT_P (XEXP (operand, 1))))
 	  LOSE_AND_RETURN ("unexpected multiplicative operand", x);
 
 	cris_print_base (reg, file);
@@ -1084,7 +1082,7 @@ cris_print_operand_address (FILE *file, rtx x)
       else
 	LOSE_AND_RETURN ("unrecognized address", x);
     }
-  else if (GET_CODE (x) == MEM)
+  else if (MEM_P (x))
     {
       /* A DIP.  Output more indirection characters.  */
       putc ('[', file);
@@ -1238,8 +1236,7 @@ cris_reload_address_legitimized (rtx x,
   if (!REG_P (op1))
     return false;
 
-  if (GET_CODE (op0) == SIGN_EXTEND
-      && GET_CODE (XEXP (op0, 0)) == MEM)
+  if (GET_CODE (op0) == SIGN_EXTEND && MEM_P (XEXP (op0, 0)))
     {
       rtx op00 = XEXP (op0, 0);
       rtx op000 = XEXP (op00, 0);
@@ -1390,7 +1387,7 @@ cris_notice_update_cc (rtx exp, rtx insn)
 	      if (GET_CODE (SET_SRC (exp)) == ZERO_EXTRACT
 		  && XEXP (SET_SRC (exp), 1) == const1_rtx)
 		{
-		  if (GET_CODE (XEXP (SET_SRC (exp), 0)) == CONST_INT)
+		  if (CONST_INT_P (XEXP (SET_SRC (exp), 0)))
 		    /* Using cmpq.  */
 		    cc_status.flags = CC_INVERTED;
 		  else
@@ -1487,9 +1484,9 @@ cris_notice_update_cc (rtx exp, rtx insn)
 		  return;
 		}
 	    }
-	  else if (GET_CODE (SET_DEST (exp)) == MEM
+	  else if (MEM_P (SET_DEST (exp))
 		   || (GET_CODE (SET_DEST (exp)) == STRICT_LOW_PART
-		       && GET_CODE (XEXP (SET_DEST (exp), 0)) == MEM))
+		       && MEM_P (XEXP (SET_DEST (exp), 0))))
 	    {
 	      /* When SET to MEM, then CC is not changed (except for
 		 overlap).  */
@@ -1511,7 +1508,7 @@ cris_notice_update_cc (rtx exp, rtx insn)
 	      && REG_P (XEXP (XVECEXP (exp, 0, 1), 0)))
 	    {
 	      if (REG_P (XEXP (XVECEXP (exp, 0, 0), 0))
-		  && GET_CODE (XEXP (XVECEXP (exp, 0, 0), 1)) == MEM)
+		  && MEM_P (XEXP (XVECEXP (exp, 0, 0), 1)))
 		{
 		  /* For "move.S [rx=ry+o],rz", say CC reflects
 		     value1=rz and value2=[rx] */
@@ -1530,7 +1527,7 @@ cris_notice_update_cc (rtx exp, rtx insn)
 		}
 	      else if ((REG_P (XEXP (XVECEXP (exp, 0, 0), 1))
 			|| XEXP (XVECEXP (exp, 0, 0), 1) == const0_rtx)
-		       && GET_CODE (XEXP (XVECEXP (exp, 0, 0), 0)) == MEM)
+		       && MEM_P (XEXP (XVECEXP (exp, 0, 0), 0)))
 		{
 		  /* For "move.S rz,[rx=ry+o]" and "clear.S [rx=ry+o]",
 		     say flags are not changed, except for overlap.  */
@@ -1662,7 +1659,7 @@ cris_rtx_costs (rtx x, int code, int outer_code, int *total)
     case MULT:
       /* Identify values that are no powers of two.  Powers of 2 are
          taken care of already and those values should not be changed.  */
-      if (GET_CODE (XEXP (x, 1)) != CONST_INT
+      if (!CONST_INT_P (XEXP (x, 1))
           || exact_log2 (INTVAL (XEXP (x, 1)) < 0))
 	{
 	  /* If we have a multiply insn, then the cost is between
@@ -1683,7 +1680,7 @@ cris_rtx_costs (rtx x, int code, int outer_code, int *total)
     case MOD:
     case UMOD:
     case DIV:
-      if (GET_CODE (XEXP (x, 1)) != CONST_INT
+      if (!CONST_INT_P (XEXP (x, 1))
           || exact_log2 (INTVAL (XEXP (x, 1)) < 0))
 	{
 	  /* Estimate this as 4 + 8 * #of bits.  */
@@ -1693,9 +1690,9 @@ cris_rtx_costs (rtx x, int code, int outer_code, int *total)
       return false;
 
     case AND:
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+      if (CONST_INT_P (XEXP (x, 1))
           /* Two constants may actually happen before optimization.  */
-          && GET_CODE (XEXP (x, 0)) != CONST_INT
+          && !CONST_INT_P (XEXP (x, 0))
           && !CONST_OK_FOR_LETTER_P (INTVAL (XEXP (x, 1)), 'I'))
 	{
 	  *total = (rtx_cost (XEXP (x, 0), outer_code) + 2
@@ -1729,7 +1726,7 @@ cris_address_cost (rtx x)
 
   /* An indirect mem must be a DIP.  This means two bytes extra for code,
      and 4 bytes extra for memory read, i.e.  (2 + 4) / 2.  */
-  if (GET_CODE (x) == MEM)
+  if (MEM_P (x))
     return (2 + 4) / 2;
 
   /* Assume (2 + 4) / 2 for a single constant; a dword, since it needs
@@ -1752,14 +1749,12 @@ cris_address_cost (rtx x)
 
     /* A BDAP (quick) is 2 extra bytes.  Any constant operand to the
        PLUS is always found in tem2.  */
-    if (GET_CODE (tem2) == CONST_INT
-	&& INTVAL (tem2) < 128 && INTVAL (tem2) >= -128)
+    if (CONST_INT_P (tem2) && INTVAL (tem2) < 128 && INTVAL (tem2) >= -128)
       return 2 / 2;
 
     /* A BDAP -32768 .. 32767 is like BDAP quick, but with 2 extra
        bytes.  */
-    if (GET_CODE (tem2) == CONST_INT
-	&& CONST_OK_FOR_LETTER_P (INTVAL (tem2), 'L'))
+    if (CONST_INT_P (tem2) && CONST_OK_FOR_LETTER_P (INTVAL (tem2), 'L'))
       return (2 + 2) / 2;
 
     /* A BDAP with some other constant is 2 bytes extra.  */
@@ -1858,7 +1853,7 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
       /* Do not allow rx = rx + n if a normal add or sub with same size
 	 would do.  */
       if (rtx_equal_p (ops[lreg], reg_rtx)
-	  && GET_CODE (val_rtx) == CONST_INT
+	  && CONST_INT_P (val_rtx)
 	  && (INTVAL (val_rtx) <= 63 && INTVAL (val_rtx) >= -63))
 	return 0;
 
@@ -1866,12 +1861,11 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
       if (CONSTANT_P (val_rtx))
 	return 1;
 
-      if (GET_CODE (val_rtx) == MEM
-	  && BASE_OR_AUTOINCR_P (XEXP (val_rtx, 0)))
+      if (MEM_P (val_rtx) && BASE_OR_AUTOINCR_P (XEXP (val_rtx, 0)))
 	return 1;
 
       if (GET_CODE (val_rtx) == SIGN_EXTEND
-	  && GET_CODE (XEXP (val_rtx, 0)) == MEM
+	  && MEM_P (XEXP (val_rtx, 0))
 	  && BASE_OR_AUTOINCR_P (XEXP (XEXP (val_rtx, 0), 0)))
 	return 1;
 
@@ -1958,7 +1952,7 @@ cris_valid_pic_const (rtx x)
   if (GET_CODE (x) == PLUS
       && GET_CODE (XEXP (x, 0)) == UNSPEC
       && XINT (XEXP (x, 0), 1) == CRIS_UNSPEC_GOTREL
-      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+      && CONST_INT_P (XEXP (x, 1)))
     x = XEXP (x, 0);
 
   if (GET_CODE (x) == UNSPEC)
@@ -2306,12 +2300,12 @@ cris_split_movdx (rtx *operands)
   CRIS_ASSERT (GET_CODE (dest) != SUBREG && GET_CODE (src) != SUBREG);
 
   start_sequence ();
-  if (GET_CODE (dest) == REG)
+  if (REG_P (dest))
     {
       int dregno = REGNO (dest);
 
       /* Reg-to-reg copy.  */
-      if (GET_CODE (src) == REG)
+      if (REG_P (src))
 	{
 	  int sregno = REGNO (src);
 
@@ -2329,7 +2323,7 @@ cris_split_movdx (rtx *operands)
 				  operand_subword (src, !reverse, TRUE, mode)));
 	}
       /* Constant-to-reg copy.  */
-      else if (GET_CODE (src) == CONST_INT || GET_CODE (src) == CONST_DOUBLE)
+      else if (CONST_INT_P (src) || GET_CODE (src) == CONST_DOUBLE)
 	{
 	  rtx words[2];
 	  split_double (src, &words[0], &words[1]);
@@ -2342,7 +2336,7 @@ cris_split_movdx (rtx *operands)
 				  words[1]));
 	}
       /* Mem-to-reg copy.  */
-      else if (GET_CODE (src) == MEM)
+      else if (MEM_P (src))
 	{
 	  /* If the high-address word is used in the address, we must load it
 	     last.  Otherwise, load it first.  */
@@ -2416,8 +2410,8 @@ cris_split_movdx (rtx *operands)
 	internal_error ("Unknown src");
     }
   /* Reg-to-mem copy or clear mem.  */
-  else if (GET_CODE (dest) == MEM
-	   && (GET_CODE (src) == REG
+  else if (MEM_P (dest)
+	   && (REG_P (src)
 	       || src == const0_rtx
 	       || src == CONST0_RTX (DFmode)))
     {
@@ -2427,7 +2421,7 @@ cris_split_movdx (rtx *operands)
 	{
 	  rtx mem;
 	  rtx insn;
-	  
+
 	  /* Whenever we emit insns with post-incremented addresses
 	     ourselves, we must add a post-inc note manually.  */
 	  mem = change_address (dest, SImode, addr);
@@ -3183,7 +3177,7 @@ cris_expand_pic_call_address (rtx *opp)
   /* It might be that code can be generated that jumps to 0 (or to a
      specific address).  Don't die on that.  (There is a
      testcase.)  */
-  if (CONSTANT_ADDRESS_P (op) && GET_CODE (op) != CONST_INT)
+  if (CONSTANT_ADDRESS_P (op) && CONST_INT_P (op))
     {
       enum cris_pic_symbol_type t = cris_pic_symbol_type_of (op);
 
