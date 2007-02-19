@@ -1,3 +1,23 @@
+2007-02-19  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/cris/cris.c (cris_movem_load_rest_p, cris_store_multiple_op_p)
+	(cris_print_index, cris_print_operand, cris_print_operand_address)
+	(cris_reload_address_legitimized, cris_rtx_costs, cris_address_cost)
+	(cris_side_effect_mode_ok, cris_valid_pic_const, cris_split_movdx)
+	(cris_expand_pic_call_address): Use xxx_P predicate macros instead of
+	GET_CODE () == xxx.
+	* config/cris/cris.h (SECONDARY_RELOAD_CLASS, EXTRA_CONSTRAINT_Q,
+	EXTRA_CONSTRAINT_T, BDAP_INDEX_P, BIAP_INDEX_P, SIMPLE_ADDRESS_P,
+	GO_IF_LEGITIMATE_ADDRESS): Ditto.
+	* config/cris/cris.md (define_insns: *btst, movdi, *mov_side<mode>)
+	(*mov_sidesisf, *mov_side<mode>_mem, *mov_sidesisf_mem)
+	(*clear_side<mode>, movsi, *movsi_internal, *ext_sideqihi)
+	(*ext_side<mode>si, *op_side<mode>, *op_swap_side<mode>, addsi3)
+	(*extopqihi_side, *extop<mode>si_side, *extopqihi_swap_side)
+	(*extop<mode>si_swap_side, addi_mul, *addi,andsi3, andhi3, ashl<mode>3)
+	(uminsi3, call, call_value): Ditto.
+	(define_split: indir_to_reg_split, unnamed): Ditto.
+
 2007-02-19  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/30975
