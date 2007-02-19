@@ -349,7 +349,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-pre  -ftree-ccp  -ftree-dce -ftree-loop-optimize @gol
 -ftree-loop-linear -ftree-loop-im -ftree-loop-ivcanon -fivopts @gol
 -ftree-dominator-opts -ftree-dse -ftree-copyrename -ftree-sink @gol
--ftree-ch -ftree-sra -ftree-ter -ftree-lrs -ftree-fre -ftree-vectorize @gol
+-ftree-ch -ftree-sra -ftree-ter -ftree-fre -ftree-vectorize @gol
 -ftree-vect-loop-version -ftree-salias -fipa-pta -fweb @gol
 -ftree-copy-prop -ftree-store-ccp -ftree-store-copy-prop -fwhole-program @gol
 --param @var{name}=@var{value}
@@ -4758,7 +4758,6 @@ compilation time.
 -ftree-dominator-opts @gol
 -ftree-dse @gol
 -ftree-ter @gol
--ftree-lrs @gol
 -ftree-sra @gol
 -ftree-copyrename @gol
 -ftree-fre @gol
@@ -5453,11 +5452,6 @@ use/single def temporaries are replaced at their use location with their
 defining expression.  This results in non-GIMPLE code, but gives the expanders
 much more complex trees to work on resulting in better RTL generation.  This is
 enabled by default at @option{-O} and higher.
-
-@item -ftree-lrs
-Perform live range splitting during the SSA->normal phase.  Distinct live
-ranges of a variable are split into unique variables, allowing for better
-optimization later.  This is enabled by default at @option{-O} and higher.
 
 @item -ftree-vectorize
 Perform loop vectorization on trees.
