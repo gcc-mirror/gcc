@@ -1,3 +1,65 @@
+2007-02-19  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/30533
+	PR libfortran/30765
+	* Makefile.am: Add $(srcdir) too all files in generated/.
+	(i_maxloc0_c): Add maxloc0_4_i1.c, maxloc0_8_i1.c,
+	maxloc0_16_i1.c, maxloc0_4_i2.c, maxloc0_8_i2.c and
+	maxloc0_16_i2.c.
+	(i_maxloc1_c): Add maxloc1_4_i1.c, maxloc1_8_i1.c,
+	maxloc1_16_i1.c, maxloc1_4_i2.c, maxloc1_8_i2.c and
+	maxloc1_16_i2.c.
+	(i_maxval_c): Add maxval_i1.c and maxval_i2.c.
+	(i_minloc0_c):  Add minloc0_4_i1.c, minloc0_8_i1.c,
+	minloc0_16_i1.c, minloc0_4_i2.c, minloc0_8_i2.c and
+	minloc0_16_i2.c.
+	(i_minloc_1.c): Add minloc1_4_i1.c, minloc1_8_i1.c,
+	minloc1_16_i1.c, minloc1_4_i2.c, minloc1_8_i2.c and
+	minloc1_16_i2.c.
+	(i_minval_c):  Add minval_i1.c and minval_i2.c.
+	(i_sum_c):  Add sum_i1.c and sum_i2.c.
+	(i_product_c):  Add product_i1.c and product_i2.c.
+	(i_matmul_c):  Add matmul_i1.c and matmul_i2.c.
+	(gfor_built_specific_src):  Remove $(srcdir) from target.
+	(gfor_bulit_specific2_src):  Likewise.
+	Makefile.in:  Regenerated.
+	libgfortran.h:  Add GFC_INTEGER_1_HUGE and GFC_INTEGER_2_HUGE.
+	Add gfc_array_i1 and gfc_array_i2.
+	* generated/matmul_i1.c: New file.
+	* generated/matmul_i2.c: New file.
+	* generated/maxloc0_16_i1.c: New file.
+	* generated/maxloc0_16_i2.c: New file.
+	* generated/maxloc0_4_i1.c: New file.
+	* generated/maxloc0_4_i2.c: New file.
+	* generated/maxloc0_8_i1.c: New file.
+	* generated/maxloc0_8_i2.c: New file.
+	* generated/maxloc1_16_i1.c: New file.
+	* generated/maxloc1_16_i2.c: New file.
+	* generated/maxloc1_4_i1.c: New file.
+	* generated/maxloc1_4_i2.c: New file.
+	* generated/maxloc1_8_i1.c: New file.
+	* generated/maxloc1_8_i2.c: New file.
+	* generated/maxval_i1.c: New file.
+	* generated/maxval_i2.c: New file.
+	* generated/minloc0_16_i1.c: New file.
+	* generated/minloc0_16_i2.c: New file.
+	* generated/minloc0_4_i1.c: New file.
+	* generated/minloc0_4_i2.c: New file.
+	* generated/minloc0_8_i1.c: New file.
+	* generated/minloc0_8_i2.c: New file.
+	* generated/minloc1_16_i1.c: New file.
+	* generated/minloc1_16_i2.c: New file.
+	* generated/minloc1_4_i1.c: New file.
+	* generated/minloc1_4_i2.c: New file.
+	* generated/minloc1_8_i1.c: New file.
+	* generated/minloc1_8_i2.c: New file.
+	* generated/minval_i1.c: New file.
+	* generated/minval_i2.c: New file.
+	* generated/product_i1.c: New file.
+	* generated/product_i2.c: New file.
+	* generated/sum_i1.c: New file.
+	* generated/sum_i2.c: New file.
+
 2007-02-16  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* runtime/memory.c (deallocate): Correct comment.
