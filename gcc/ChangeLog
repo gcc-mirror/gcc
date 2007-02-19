@@ -1,3 +1,31 @@
+2007-02-18  Roger Sayle  <roger@eyesopen.com>
+
+	* function.c (gimplify_parameters): Call build_gimple_modify_stmt
+	instead of calling build2 with a GIMPLE_MODIFY_STMT.
+	* gimple-low.c (lower_function_body, lower_builtin_setjmp):
+	Likewise.
+	* gimplify.c (build_stack_save_restore, gimplify_return_expr,
+	gimplify_decl_expr,  gimplify_self_mod_expr, gimplify_cond_expr,
+	gimplify_init_ctor_eval_range, gimple_push_cleanup,
+	gimplify_omp_for, gimplify_omp_atomic_pipeline, 
+	gimplify_omp_atomic_mutex, gimplify_expr, gimplify_one_sizepos,
+	force_gimple_operand): Likewise.
+	* ipa-cp.c (constant_val_insert): Likewise.
+	* lambda-code.c (lbv_to_gcc_expression, lle_to_gcc_expression,
+	lambda_loopnest_to_gcc_loopnest, replace_uses_equiv_to_x_with_y,
+	perfect_nestify): Likewise.
+	* langhooks.c (lhd_omp_assignment): Likewise.
+	* omp-low.c (lower_rec_input_clauses, lower_reduction_clauses,
+	lower_copyprivate_clauses, lower_send_clauses,
+	lower_send_shared_vars, expand_parallel_call,
+	expand_omp_for_generic, expand_omp_for_static_nochunk,
+	expand_omp_for_static_chunk, expand_omp_sections,
+	lower_omp_single_copy, lower_omp_for_lastprivate,
+	lower_omp_parallel, init_tmp_var, save_tmp_var): Likewise.
+	* value-prof.c (tree_divmod_fixed_value, tree_mod_pow2,
+	tree_mod_subtract, tree_ic, tree_stringop_fixed_value):
+	Likewise.
+
 2007-02-19  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/sh/divtab.c, config/sh/sh.c, config/sh/sh.h,

@@ -1,6 +1,6 @@
 /* Tree lowering pass.  Lowers GIMPLE into unstructured form.
 
-   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -137,7 +137,7 @@ lower_function_body (void)
       arg = build_addr (disp_label, current_function_decl);
       t = implicit_built_in_decls[BUILT_IN_SETJMP_DISPATCHER];
       t = build_call_expr (t, 1, arg);
-      x = build2 (GIMPLE_MODIFY_STMT, void_type_node, disp_var, t);
+      x = build_gimple_modify_stmt (disp_var, t);
 
       /* Build 'goto DISP_VAR;' and insert.  */
       tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
@@ -671,7 +671,8 @@ lower_builtin_setjmp (tree_stmt_iterator *tsi)
   /* Build 'DEST = 0' and insert.  */
   if (dest)
     {
-      t = build2 (GIMPLE_MODIFY_STMT, void_type_node, dest, integer_zero_node);
+      t = build_gimple_modify_stmt (dest, fold_convert (TREE_TYPE (dest),
+							integer_zero_node));
       SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
       tsi_link_before (tsi, t, TSI_SAME_STMT);
     }
@@ -694,7 +695,8 @@ lower_builtin_setjmp (tree_stmt_iterator *tsi)
   /* Build 'DEST = 1' and insert.  */
   if (dest)
     {
-      t = build2 (GIMPLE_MODIFY_STMT, void_type_node, dest, integer_one_node);
+      t = build_gimple_modify_stmt (dest, fold_convert (TREE_TYPE (dest),
+							integer_one_node));
       SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
       tsi_link_before (tsi, t, TSI_SAME_STMT);
     }

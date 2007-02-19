@@ -1,5 +1,5 @@
 /* Transformations based on profile information for values.
-   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -523,9 +523,8 @@ tree_divmod_fixed_value (tree stmt, tree operation,
 
   tmpv = create_tmp_var (optype, "PROF");
   tmp1 = create_tmp_var (optype, "PROF");
-  stmt1 = build2 (GIMPLE_MODIFY_STMT, optype, tmpv,
-		  fold_convert (optype, value));
-  stmt2 = build2 (GIMPLE_MODIFY_STMT, optype, tmp1, op2);
+  stmt1 = build_gimple_modify_stmt (tmpv, fold_convert (optype, value));
+  stmt2 = build_gimple_modify_stmt (tmp1, op2);
   stmt3 = build3 (COND_EXPR, void_type_node,
 	    build2 (NE_EXPR, boolean_type_node, tmp1, tmpv),
 	    build1 (GOTO_EXPR, void_type_node, label_decl2),
@@ -537,15 +536,17 @@ tree_divmod_fixed_value (tree stmt, tree operation,
 
   tmp2 = create_tmp_var (optype, "PROF");
   label1 = build1 (LABEL_EXPR, void_type_node, label_decl1);
-  stmt1 = build2 (GIMPLE_MODIFY_STMT, optype, tmp2,
-		  build2 (TREE_CODE (operation), optype, op1, tmpv));
+  stmt1 = build_gimple_modify_stmt (tmp2,
+				    build2 (TREE_CODE (operation), optype,
+					    op1, tmpv));
   bsi_insert_before (&bsi, label1, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   bb2end = stmt1;
 
   label2 = build1 (LABEL_EXPR, void_type_node, label_decl2);
-  stmt1 = build2 (GIMPLE_MODIFY_STMT, optype, tmp2,
-		  build2 (TREE_CODE (operation), optype, op1, op2));
+  stmt1 = build_gimple_modify_stmt (tmp2,
+				    build2 (TREE_CODE (operation), optype,
+					    op1, op2));
   bsi_insert_before (&bsi, label2, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   bb3end = stmt1;
@@ -680,10 +681,11 @@ tree_mod_pow2 (tree stmt, tree operation, tree op1, tree op2, int prob,
 
   tmp2 = create_tmp_var (optype, "PROF");
   tmp3 = create_tmp_var (optype, "PROF");
-  stmt2 = build2 (GIMPLE_MODIFY_STMT, optype, tmp2, 
-		  build2 (PLUS_EXPR, optype, op2, build_int_cst (optype, -1)));
-  stmt3 = build2 (GIMPLE_MODIFY_STMT, optype, tmp3,
-		  build2 (BIT_AND_EXPR, optype, tmp2, op2));
+  stmt2 = build_gimple_modify_stmt (tmp2, 
+				    build2 (PLUS_EXPR, optype, op2,
+					    build_int_cst (optype, -1)));
+  stmt3 = build_gimple_modify_stmt (tmp3,
+				    build2 (BIT_AND_EXPR, optype, tmp2, op2));
   stmt4 = build3 (COND_EXPR, void_type_node,
 		  build2 (NE_EXPR, boolean_type_node,
 			  tmp3, build_int_cst (optype, 0)),
@@ -696,15 +698,16 @@ tree_mod_pow2 (tree stmt, tree operation, tree op1, tree op2, int prob,
 
   /* tmp2 == op2-1 inherited from previous block */
   label1 = build1 (LABEL_EXPR, void_type_node, label_decl1);
-  stmt1 = build2 (GIMPLE_MODIFY_STMT, optype, result,
-		  build2 (BIT_AND_EXPR, optype, op1, tmp2));
+  stmt1 = build_gimple_modify_stmt (result,
+				    build2 (BIT_AND_EXPR, optype, op1, tmp2));
   bsi_insert_before (&bsi, label1, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   bb2end = stmt1;
 
   label2 = build1 (LABEL_EXPR, void_type_node, label_decl2);
-  stmt1 = build2 (GIMPLE_MODIFY_STMT, optype, result,
-		  build2 (TREE_CODE (operation), optype, op1, op2));
+  stmt1 = build_gimple_modify_stmt (result,
+				    build2 (TREE_CODE (operation), optype,
+					    op1, op2));
   bsi_insert_before (&bsi, label2, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   bb3end = stmt1;
@@ -838,8 +841,8 @@ tree_mod_subtract (tree stmt, tree operation, tree op1, tree op2,
   bsi = bsi_for_stmt (stmt);
 
   tmp1 = create_tmp_var (optype, "PROF");
-  stmt1 = build2 (GIMPLE_MODIFY_STMT, optype, result, op1);
-  stmt2 = build2 (GIMPLE_MODIFY_STMT, optype, tmp1, op2);
+  stmt1 = build_gimple_modify_stmt (result, op1);
+  stmt2 = build_gimple_modify_stmt (tmp1, op2);
   stmt3 = build3 (COND_EXPR, void_type_node,
 	    build2 (LT_EXPR, boolean_type_node, result, tmp1),
 	    build1 (GOTO_EXPR, void_type_node, label_decl3),
@@ -853,8 +856,9 @@ tree_mod_subtract (tree stmt, tree operation, tree op1, tree op2,
   if (ncounts)	/* Assumed to be 0 or 1 */
     {
       label1 = build1 (LABEL_EXPR, void_type_node, label_decl1);
-      stmt1 = build2 (GIMPLE_MODIFY_STMT, optype, result,
-		      build2 (MINUS_EXPR, optype, result, tmp1));
+      stmt1 = build_gimple_modify_stmt (result,
+					build2 (MINUS_EXPR, optype,
+						result, tmp1));
       stmt2 = build3 (COND_EXPR, void_type_node,
 		build2 (LT_EXPR, boolean_type_node, result, tmp1),
 		build1 (GOTO_EXPR, void_type_node, label_decl3),
@@ -867,8 +871,9 @@ tree_mod_subtract (tree stmt, tree operation, tree op1, tree op2,
 
   /* Fallback case. */
   label2 = build1 (LABEL_EXPR, void_type_node, label_decl2);
-  stmt1 = build2 (GIMPLE_MODIFY_STMT, optype, result,
-		    build2 (TREE_CODE (operation), optype, result, tmp1));
+  stmt1 = build_gimple_modify_stmt (result,
+				    build2 (TREE_CODE (operation), optype,
+					    result, tmp1));
   bsi_insert_before (&bsi, label2, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   bb3end = stmt1;
@@ -1055,7 +1060,7 @@ tree_ic (tree stmt, tree call, struct cgraph_node* direct_call,
 	 int prob, gcov_type count, gcov_type all)
 {
   tree stmt1, stmt2, stmt3;
-  tree tmp1, tmpv;
+  tree tmp1, tmpv, tmp;
   tree label_decl1 = create_artificial_label ();
   tree label_decl2 = create_artificial_label ();
   tree label1, label2;
@@ -1072,11 +1077,11 @@ tree_ic (tree stmt, tree call, struct cgraph_node* direct_call,
 
   tmpv = create_tmp_var (optype, "PROF");
   tmp1 = create_tmp_var (optype, "PROF");
-  stmt1 = build2 (GIMPLE_MODIFY_STMT, optype, tmpv, 
-		  unshare_expr (CALL_EXPR_FN (call)));
-  stmt2 = build2 (GIMPLE_MODIFY_STMT, optype, tmp1, 
-		  fold_convert (optype, build_addr (direct_call->decl, 
-						    current_function_decl)));
+  stmt1 = build_gimple_modify_stmt (tmpv, 
+				    unshare_expr (CALL_EXPR_FN (call)));
+  tmp = fold_convert (optype, build_addr (direct_call->decl, 
+					  current_function_decl));
+  stmt2 = build_gimple_modify_stmt (tmp1, tmp);
   stmt3 = build3 (COND_EXPR, void_type_node,
 		  build2 (NE_EXPR, boolean_type_node, tmp1, tmpv),
 		  build1 (GOTO_EXPR, void_type_node, label_decl2),
@@ -1279,9 +1284,8 @@ tree_stringop_fixed_value (tree stmt, tree value, int prob, gcov_type count,
 
   tmpv = create_tmp_var (optype, "PROF");
   tmp1 = create_tmp_var (optype, "PROF");
-  stmt1 = build2 (GIMPLE_MODIFY_STMT, optype, tmpv,
-		  fold_convert (optype, value));
-  stmt2 = build2 (GIMPLE_MODIFY_STMT, optype, tmp1, blck_size);
+  stmt1 = build_gimple_modify_stmt (tmpv, fold_convert (optype, value));
+  stmt2 = build_gimple_modify_stmt (tmp1, blck_size);
   stmt3 = build3 (COND_EXPR, void_type_node,
 	    build2 (NE_EXPR, boolean_type_node, tmp1, tmpv),
 	    build1 (GOTO_EXPR, void_type_node, label_decl2),
