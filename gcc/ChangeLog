@@ -1,3 +1,8 @@
+2007-02-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (expm1xf2): Reorder insn sequence for
+	better code generation.
+
 2007-02-20  Ben Elliston  <bje@au.ibm.com>
 
 	* config/m68hc11/m68hc11.h (OVERRIDE_OPTIONS): Remove extra ;.
@@ -74,9 +79,9 @@
 
 2007-02-19  Richard Henderson  <rth@redhat.com>
 
-        PR debug/29558
-        * var-tracking.c (track_expr_p): Disallow AGGREGATE_TYPE_P
-        in memory.
+	PR debug/29558
+	* var-tracking.c (track_expr_p): Disallow AGGREGATE_TYPE_P
+	in memory.
 
 2007-02-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
@@ -826,7 +831,7 @@
 
 	* except.c (expand_builtin_eh_return_data_regno): Pass entire
 	CALL_EXPR as parameter instead of arglist.  Use new CALL_EXPR
-        accessors.
+	accessors.
 
 	* coverage.c (create_coverage): Use build_call_expr.
 
@@ -2333,8 +2338,8 @@
 
 2007-02-03  Douglas Gregor  <doug.gregor@gmail.com>
 
-       * c-opts.c (c_common_post_options): If C++0x mode is enabled, don't
-       warn about C++0x compatibility.
+	* c-opts.c (c_common_post_options): If C++0x mode is enabled, don't
+	warn about C++0x compatibility.
 
 2007-02-04  Kazu Hirata  <kazu@codesourcery.com>
 
