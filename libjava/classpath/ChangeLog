@@ -1,3 +1,14 @@
+2007-02-20  Matthias Klose  <doko@ubuntu.com>
+
+	* doc/Makefile.am: Add rules to build and install man pages
+	from texinfo docs.
+	* doc/hacking.texinfo doc/tools.texinfo, doc/vmintegration.texinfo:
+	Rename, prefix files with "cp-".
+	* doc/cp-tools.texinfo: Add markup for man page generation,
+	add documentation for command line options for gjar, gjavah,
+	gnative2ascii, gorbd, grmid, grmiregistry, gserialver, gtnameserv.
+	doc/texi2pod.pl: New, taken from the GCC sources.
+
 2006-10-14  Edwin Steiner  <edwin.steiner@gmx.net>
 
 	PR classpath/28652:

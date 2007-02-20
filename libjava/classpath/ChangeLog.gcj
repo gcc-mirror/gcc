@@ -1,3 +1,10 @@
+2007-02-20  Matthias Klose  <doko@ubuntu.com>
+
+	* Merge doc update from classpath HEAD.
+	* doc/texi2pod.pl: Not imported.
+	* doc/Makefile.am: Use GCC's texi2pod.pl
+	* doc/Makefile.in: Regenerate.
+
 2007-02-20  Gary Benson  <gbenson@redhat.com>
 
 	* javax/management/MBeanServer.java: Updated.
