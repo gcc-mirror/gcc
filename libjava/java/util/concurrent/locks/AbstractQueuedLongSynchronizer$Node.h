@@ -22,10 +22,10 @@ public: // actually package-private
   static const jint CONDITION = -2;
   static ::java::util::concurrent::locks::AbstractQueuedLongSynchronizer$Node * SHARED;
   static ::java::util::concurrent::locks::AbstractQueuedLongSynchronizer$Node * EXCLUSIVE;
-  jint volatile __attribute__((aligned(__alignof__( ::java::lang::Object)))) waitStatus;
-  ::java::util::concurrent::locks::AbstractQueuedLongSynchronizer$Node * volatile prev;
-  ::java::util::concurrent::locks::AbstractQueuedLongSynchronizer$Node * volatile next;
-  ::java::lang::Thread * volatile thread;
+  volatile jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) waitStatus;
+  volatile ::java::util::concurrent::locks::AbstractQueuedLongSynchronizer$Node * prev;
+  volatile ::java::util::concurrent::locks::AbstractQueuedLongSynchronizer$Node * next;
+  volatile ::java::lang::Thread * thread;
   ::java::util::concurrent::locks::AbstractQueuedLongSynchronizer$Node * nextWaiter;
 public:
   static ::java::lang::Class class$;

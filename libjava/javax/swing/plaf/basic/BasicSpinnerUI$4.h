@@ -46,7 +46,7 @@ public:
   void mouseReleased(::java::awt::event::MouseEvent *);
 public: // actually package-private
   void decrement();
-  jboolean volatile __attribute__((aligned(__alignof__( ::java::awt::event::MouseAdapter)))) mouseDown;
+  volatile jboolean __attribute__((aligned(__alignof__( ::java::awt::event::MouseAdapter)))) mouseDown;
   ::javax::swing::Timer * timer;
   ::javax::swing::plaf::basic::BasicSpinnerUI * this$0;
 public:

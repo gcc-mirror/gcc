@@ -31,10 +31,10 @@ public: // actually package-private
 private:
   static const jlong serialVersionUID = 2249069246763182397LL;
 public: // actually package-private
-  jint volatile __attribute__((aligned(__alignof__( ::java::util::concurrent::locks::ReentrantLock)))) count;
+  volatile jint __attribute__((aligned(__alignof__( ::java::util::concurrent::locks::ReentrantLock)))) count;
   jint modCount;
   jint threshold;
-  JArray< ::java::util::concurrent::ConcurrentHashMap$HashEntry * > * volatile table;
+  volatile JArray< ::java::util::concurrent::ConcurrentHashMap$HashEntry * > * table;
   jfloat loadFactor;
 public:
   static ::java::lang::Class class$;

@@ -19,9 +19,9 @@ public: // actually package-private
   ::java::lang::Object * transfer(::java::lang::Object *, jboolean, jlong);
   ::java::lang::Object * awaitFulfill(::java::util::concurrent::SynchronousQueue$TransferQueue$QNode *, ::java::lang::Object *, jboolean, jlong);
   void clean(::java::util::concurrent::SynchronousQueue$TransferQueue$QNode *, ::java::util::concurrent::SynchronousQueue$TransferQueue$QNode *);
-  ::java::util::concurrent::SynchronousQueue$TransferQueue$QNode * volatile __attribute__((aligned(__alignof__( ::java::util::concurrent::SynchronousQueue$Transferer)))) head;
-  ::java::util::concurrent::SynchronousQueue$TransferQueue$QNode * volatile tail;
-  ::java::util::concurrent::SynchronousQueue$TransferQueue$QNode * volatile cleanMe;
+  volatile ::java::util::concurrent::SynchronousQueue$TransferQueue$QNode * __attribute__((aligned(__alignof__( ::java::util::concurrent::SynchronousQueue$Transferer)))) head;
+  volatile ::java::util::concurrent::SynchronousQueue$TransferQueue$QNode * tail;
+  volatile ::java::util::concurrent::SynchronousQueue$TransferQueue$QNode * cleanMe;
   static ::java::util::concurrent::atomic::AtomicReferenceFieldUpdater * headUpdater;
   static ::java::util::concurrent::atomic::AtomicReferenceFieldUpdater * tailUpdater;
   static ::java::util::concurrent::atomic::AtomicReferenceFieldUpdater * cleanMeUpdater;

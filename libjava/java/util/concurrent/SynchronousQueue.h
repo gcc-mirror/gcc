@@ -47,7 +47,7 @@ public: // actually package-private
   static jint maxUntimedSpins;
   static const jlong spinForTimeoutThreshold = 1000LL;
 private:
-  ::java::util::concurrent::SynchronousQueue$Transferer * volatile __attribute__((aligned(__alignof__( ::java::util::AbstractQueue)))) transferer;
+  volatile ::java::util::concurrent::SynchronousQueue$Transferer * __attribute__((aligned(__alignof__( ::java::util::AbstractQueue)))) transferer;
   ::java::util::concurrent::locks::ReentrantLock * qlock;
   ::java::util::concurrent::SynchronousQueue$WaitQueue * waitingProducers;
   ::java::util::concurrent::SynchronousQueue$WaitQueue * waitingConsumers;
