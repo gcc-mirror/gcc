@@ -664,7 +664,7 @@ See RS/6000 and PowerPC Options.
 -mpowerpc-gpopt  -mno-powerpc-gpopt @gol
 -mpowerpc-gfxopt  -mno-powerpc-gfxopt @gol
 -mmfcrf  -mno-mfcrf  -mpopcntb  -mno-popcntb  -mfprnd  -mno-fprnd @gol
--mmfpgpr -mno-mfpgpr @gol
+-mcmpb -mno-cmpb -mmfpgpr -mno-mfpgpr -mdfp -mno-dfp @gol
 -mnew-mnemonics  -mold-mnemonics @gol
 -mfull-toc   -mminimal-toc  -mno-fp-in-toc  -mno-sum-in-toc @gol
 -m64  -m32  -mxl-compat  -mno-xl-compat  -mpe @gol
@@ -11799,8 +11799,12 @@ These @samp{-m} options are defined for the IBM RS/6000 and PowerPC:
 @itemx -mno-popcntb
 @itemx -mfprnd
 @itemx -mno-fprnd
+@itemx -mcmpb
+@itemx -mno-cmpb
 @itemx -mmfpgpr
 @itemx -mno-mfpgpr
+@itemx -mdfp
+@itemx -mno-dfp
 @opindex mpower
 @opindex mno-power
 @opindex mpower2
@@ -11819,8 +11823,12 @@ These @samp{-m} options are defined for the IBM RS/6000 and PowerPC:
 @opindex mno-popcntb
 @opindex mfprnd
 @opindex mno-fprnd
+@opindex mcmpb
+@opindex mno-cmpb
 @opindex mmfpgpr
 @opindex mno-mfpgpr
+@opindex mdfp
+@opindex mno-dfp
 GCC supports two related instruction set architectures for the
 RS/6000 and PowerPC@.  The @dfn{POWER} instruction set are those
 instructions supported by the @samp{rios} chip set used in the original
@@ -11865,10 +11873,15 @@ architecture.
 The @option{-mfprnd} option allows GCC to generate the FP round to
 integer instructions implemented on the POWER5+ processor and other
 processors that support the PowerPC V2.03 architecture.
+The @option{-mcmpb} option allows GCC to generate the compare bytes
+instruction implemented on the POWER6 processor and other processors
+that support the PowerPC V2.05 architecture.
 The @option{-mmfpgpr} option allows GCC to generate the FP move to/from
 general purpose register instructions implemented on the POWER6X
 processor and other processors that support the extended PowerPC V2.05
 architecture.
+The @option{-mdfp} option allows GCC to generate the decimal floating
+point instructions implemented on some POWER processors.
 
 The @option{-mpowerpc64} option allows GCC to generate the additional
 64-bit instructions that are found in the full PowerPC64 architecture

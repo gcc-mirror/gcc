@@ -1,3 +1,22 @@
+2007-02-20  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Add -mcmpb and -mdfp.
+	* configure.ac (HAVE_GAS_CMPB): Check for assembler support of the
+	cmpb instruction.
+	(HAVE_GAS_DFP): Check for assembler support of decimal floating
+	point instructions.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/rs6000/rs6000.opt (mcmpb, mdfp): New.
+	* config/rs6000/rs6000.c (rs6000_override_options): Add CMPB and DFP
+	masks to power6 and power6x and to POWERPC_MASKS.
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Define
+	_ARCH_PWR6.
+	* config/rs6000/rs6000.h: Check assembler support for CMPB and DFP.
+	* config/rs6000/sysv4.opt (mprototype): Use variable, not mask.
+	* config/rs6000/linux64.h (SUBSUBTARGET_OVERRIDE_OPTIONS):
+	Access PROTOTYPE as variable, not mask.
+
 2007-02-20  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* rtl.h (remove_reg_equal_equiv_notes): New prototype.
