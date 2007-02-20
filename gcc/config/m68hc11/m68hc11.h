@@ -152,7 +152,7 @@ extern short *reg_renumber;	/* def in local_alloc.c */
    Don't use this macro to turn on various extra optimizations for
    `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
 
-#define OVERRIDE_OPTIONS	m68hc11_override_options ();
+#define OVERRIDE_OPTIONS	m68hc11_override_options ()
 
 
 /* Define cost parameters for a given processor variant.  */

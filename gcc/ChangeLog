@@ -1,3 +1,7 @@
+2007-02-20  Ben Elliston  <bje@au.ibm.com>
+
+	* config/m68hc11/m68hc11.h (OVERRIDE_OPTIONS): Remove extra ;.
+
 2007-02-20  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/alpha/alpha.c, config/alpha/alpha.md,
