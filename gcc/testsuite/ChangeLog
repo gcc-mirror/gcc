@@ -1,3 +1,15 @@
+2007-02-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+            DJ Delorie <dj@redhat.com>
+
+	PR other/30824
+	* gcc.dg/Wfatal.c: New.
+	* gcc.dg/Wfatal-2.c: New.
+	* gcc.dg/Werror-1.c: Adjust expectations.
+	* gcc.dg/Werror-5.c: Likewise.
+	* gcc.dg/Werror-7.c: Likewise.
+	* gcc.dg/Werror-10.c: Likewise.
+	* gcc.dg/Werror-11.c: Likewise.
+
 2007-02-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/30522

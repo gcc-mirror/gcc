@@ -1,3 +1,11 @@
+2007-02-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+            DJ Delorie <dj@redhat.com>
+
+	PR other/30824
+	* diagnostic.c (diagnostic_count_diagnostic): Move -Werror logic to...
+	(diagnostic_report_diagnostic): ... here, and turn them into real
+	errors. If warnings are inhibited, no need to do anything.
+
 2007-02-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (expm1xf2): Reorder insn sequence for
