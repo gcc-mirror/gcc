@@ -1,3 +1,9 @@
+2007-02-20  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/30869
+	* match.c(gfc_match_iterator):  Remove conflict between
+	loop variable and pointer.
+
 2007-02-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/30522

@@ -1,3 +1,8 @@
+2007-02-20  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/30869
+	* gfortran.dg/do_pointer_1.f90:  New test.
+
 2007-02-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-nonneg-1.c: Add checks for scalb, scalbn
