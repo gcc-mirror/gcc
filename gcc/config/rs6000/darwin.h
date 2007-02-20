@@ -93,7 +93,7 @@
 #define CC1_SPEC "\
   %{g: %{!fno-eliminate-unused-debug-symbols: -feliminate-unused-debug-symbols }} \
   %{static: %{Zdynamic: %e conflicting code gen style switches are used}}\
-  -mmacosx-version-min=%(darwin_minversion) \
+  %{!mmacosx-version-min=*:-mmacosx-version-min=%(darwin_minversion)} \
   %{!mkernel:%{!static:%{!mdynamic-no-pic:-fPIC}}}"
 
 #define DARWIN_ARCH_SPEC "%{m64:ppc64;:ppc}"
@@ -123,8 +123,7 @@
 
 /* Determine a minimum version based on compiler options.  */
 #define DARWIN_MINVERSION_SPEC	\
-  "%{mmacosx-version-min=*:%*;	\
-     m64:10.4;			\
+  "%{m64:10.4;			\
      shared-libgcc:10.3;	\
      :10.1}"
 

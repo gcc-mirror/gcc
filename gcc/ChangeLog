@@ -1,3 +1,12 @@
+2007-02-20  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin.h (LINK_SPEC): Default -mmacosx-version-min only
+	if user didn't pass it.
+	* config/i386/darwin.h (CC1_SPEC): Likewise.
+	* config/rs6000/darwin.h (CC1_SPEC): Likewise.
+	(DARWIN_MINVERSION_SPEC): Don't depend on user's setting of
+	-mmacosx-version-min.
+
 2007-02-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
