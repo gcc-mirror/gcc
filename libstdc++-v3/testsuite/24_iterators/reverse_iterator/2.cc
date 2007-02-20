@@ -39,14 +39,6 @@ void test02()
   5 + it02;
 }
 
-// Check data member 'current' accessible.
-class test_dm : public std::reverse_iterator<int*>
-{
-  int* p;
-public:
-  test_dm(): p(current) { }
-};
-
 int main() 
 { 
   test02();
