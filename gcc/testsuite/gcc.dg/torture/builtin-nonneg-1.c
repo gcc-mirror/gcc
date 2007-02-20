@@ -120,9 +120,9 @@ void test(double d1, double d2, float f1, float f2,
      || signbitl(FN##l(fabsl(ld1),fabsl(ld2)))) \
    link_failure_##FN()
 
-  /* These are nonnegative if the first argument is, 2nd arg is int.  */
-#define ARG2TEST1_A2INT(FN) \
- extern void link_failure_##FN (void); PROTOTYPE2TYPE2(FN, int) \
+  /* These are nonnegative if the first argument is, 2nd arg is an int.  */
+#define ARG1TEST2_A2INT(FN, INTTYPE) \
+ extern void link_failure_##FN (void); PROTOTYPE2TYPE2(FN, INTTYPE) \
  if (signbit(FN(fabs(d1),d2)) || signbitf(FN##f(fabsf(f1),f2)) \
      || signbitl(FN##l(fabsl(ld1),ld2))) \
    link_failure_##FN()
@@ -143,7 +143,7 @@ void test(double d1, double d2, float f1, float f2,
   ARG1TEST1 (expm1);
   ARG1TEST1 (floor);
   ARG1TEST2 (fmod);
-  ARG2TEST1_A2INT (ldexp);
+  ARG1TEST2_A2INT (ldexp, int);
   ARG1TEST1_RTYPE (llrint, long long);
   ARG1TEST1_RTYPE (llround, long long);
   ARG1TEST1_RTYPE (lrint, long);
@@ -155,6 +155,9 @@ void test(double d1, double d2, float f1, float f2,
   ARG1TEST2 (pow);
   ARG1TEST1 (rint);
   ARG1TEST1 (round);
+  ARG1TEST2 (scalb);
+  ARG1TEST2_A2INT (scalbln, long);
+  ARG1TEST2_A2INT (scalbn, int);
   ARG1TEST1_RTYPE (signbit, int);
   ARG1TEST1 (sinh);
   ARG1TEST1 (tanh);

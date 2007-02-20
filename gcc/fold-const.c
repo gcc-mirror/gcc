@@ -13352,6 +13352,9 @@ tree_expr_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
 	    CASE_FLT_FN (BUILT_IN_NEARBYINT):
 	    CASE_FLT_FN (BUILT_IN_RINT):
 	    CASE_FLT_FN (BUILT_IN_ROUND):
+	    CASE_FLT_FN (BUILT_IN_SCALB):
+	    CASE_FLT_FN (BUILT_IN_SCALBLN):
+	    CASE_FLT_FN (BUILT_IN_SCALBN):
 	    CASE_FLT_FN (BUILT_IN_SIGNBIT):
 	    CASE_FLT_FN (BUILT_IN_SINH):
 	    CASE_FLT_FN (BUILT_IN_TANH):
