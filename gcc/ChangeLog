@@ -1,3 +1,9 @@
+2007-02-20  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* rtlanal.c (find_reg_equal_equiv_note): Do not find REG_EQ*
+	notes on an insn with multiple sets, even if single_set returns
+	non-NULL for that insn.
+
 2007-02-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fold-const.c (tree_expr_nonnegative_warnv_p): Handle scalb,

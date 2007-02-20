@@ -1676,11 +1676,18 @@ find_reg_equal_equiv_note (rtx insn)
 
   if (!INSN_P (insn))
     return 0;
+
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
     if (REG_NOTE_KIND (link) == REG_EQUAL
 	|| REG_NOTE_KIND (link) == REG_EQUIV)
       {
-	if (single_set (insn) == 0)
+	/* FIXME: We should never have REG_EQUAL/REG_EQUIV notes on
+	   insns that have multiple sets.  Checking single_set to
+	   make sure of this is not the proper check, as explained
+	   in the comment in set_unique_reg_note.
+
+	   This should be changed into an assert.  */
+	if (GET_CODE (PATTERN (insn)) == PARALLEL && multiple_sets (insn))
 	  return 0;
 	return link;
       }
