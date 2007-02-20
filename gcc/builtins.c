@@ -1973,10 +1973,15 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
   bool errno_set = true;
   bool stable = true;
 
-  if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_LDEXP
-      || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_LDEXPF
-      || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_LDEXPL)
-    op1_type = INTEGER_TYPE;
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    CASE_FLT_FN (BUILT_IN_SCALBN):
+    CASE_FLT_FN (BUILT_IN_SCALBLN):
+    CASE_FLT_FN (BUILT_IN_LDEXP):
+      op1_type = INTEGER_TYPE;
+    default:
+      break;
+    }
 
   if (!validate_arglist (exp, REAL_TYPE, op1_type, VOID_TYPE))
     return NULL_RTX;
@@ -1990,6 +1995,15 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
       builtin_optab = pow_optab; break;
     CASE_FLT_FN (BUILT_IN_ATAN2):
       builtin_optab = atan2_optab; break;
+    CASE_FLT_FN (BUILT_IN_SCALB):
+      if (REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (exp)))->b != 2)
+	return 0;
+      builtin_optab = scalb_optab; break;
+    CASE_FLT_FN (BUILT_IN_SCALBN):
+    CASE_FLT_FN (BUILT_IN_SCALBLN):
+      if (REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (exp)))->b != 2)
+	return 0;
+    /* Fall through... */
     CASE_FLT_FN (BUILT_IN_LDEXP):
       builtin_optab = ldexp_optab; break;
     CASE_FLT_FN (BUILT_IN_FMOD):
@@ -5963,6 +5977,9 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 
     CASE_FLT_FN (BUILT_IN_ATAN2):
     CASE_FLT_FN (BUILT_IN_LDEXP):
+    CASE_FLT_FN (BUILT_IN_SCALB):
+    CASE_FLT_FN (BUILT_IN_SCALBN):
+    CASE_FLT_FN (BUILT_IN_SCALBLN):
       if (! flag_unsafe_math_optimizations)
 	break;
 
