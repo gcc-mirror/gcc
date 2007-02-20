@@ -45,8 +45,8 @@ public: // actually package-private
   static ::java::util::concurrent::atomic::AtomicLong * access$0();
   static ::java::util::concurrent::BlockingQueue * access$1(::java::util::concurrent::ScheduledThreadPoolExecutor *);
 private:
-  jboolean volatile __attribute__((aligned(__alignof__( ::java::util::concurrent::ThreadPoolExecutor)))) continueExistingPeriodicTasksAfterShutdown;
-  jboolean volatile executeExistingDelayedTasksAfterShutdown;
+  volatile jboolean __attribute__((aligned(__alignof__( ::java::util::concurrent::ThreadPoolExecutor)))) continueExistingPeriodicTasksAfterShutdown;
+  volatile jboolean executeExistingDelayedTasksAfterShutdown;
   static ::java::util::concurrent::atomic::AtomicLong * sequencer;
   static jlong NANO_ORIGIN;
 public:

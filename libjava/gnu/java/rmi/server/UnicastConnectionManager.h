@@ -70,7 +70,7 @@ public: // actually package-private
   static ::java::util::Hashtable * clients;
   ::java::util::ArrayList * __attribute__((aligned(__alignof__( ::java::lang::Object)))) connections;
 private:
-  ::java::lang::Thread * volatile serverThread;
+  volatile ::java::lang::Thread * serverThread;
   ::java::net::ServerSocket * ssock;
 public: // actually package-private
   ::java::lang::String * serverName;

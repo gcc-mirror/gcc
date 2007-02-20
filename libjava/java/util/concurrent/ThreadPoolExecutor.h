@@ -71,20 +71,20 @@ private:
   ::java::util::concurrent::locks::ReentrantLock * mainLock;
   ::java::util::concurrent::locks::Condition * termination;
   ::java::util::HashSet * workers;
-  jlong volatile keepAliveTime;
-  jboolean volatile allowCoreThreadTimeOut__;
-  jint volatile corePoolSize;
-  jint volatile maximumPoolSize;
-  jint volatile poolSize;
+  volatile jlong keepAliveTime;
+  volatile jboolean allowCoreThreadTimeOut__;
+  volatile jint corePoolSize;
+  volatile jint maximumPoolSize;
+  volatile jint poolSize;
 public: // actually package-private
-  jint volatile runState;
+  volatile jint runState;
   static const jint RUNNING = 0;
   static const jint SHUTDOWN = 1;
   static const jint STOP = 2;
   static const jint TERMINATED = 3;
 private:
-  ::java::util::concurrent::RejectedExecutionHandler * volatile handler;
-  ::java::util::concurrent::ThreadFactory * volatile threadFactory;
+  volatile ::java::util::concurrent::RejectedExecutionHandler * handler;
+  volatile ::java::util::concurrent::ThreadFactory * threadFactory;
   jint largestPoolSize;
   jlong completedTaskCount;
   static ::java::util::concurrent::RejectedExecutionHandler * defaultHandler;

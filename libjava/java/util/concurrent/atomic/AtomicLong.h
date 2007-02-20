@@ -49,7 +49,7 @@ private:
 public: // actually package-private
   static jboolean VM_SUPPORTS_LONG_CAS;
 private:
-  jlong volatile __attribute__((aligned(__alignof__( ::java::lang::Number)))) value;
+  volatile jlong __attribute__((aligned(__alignof__( ::java::lang::Number)))) value;
 public:
   static ::java::lang::Class class$;
 };

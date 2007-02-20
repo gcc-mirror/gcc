@@ -13,7 +13,7 @@ class java::util::concurrent::LinkedBlockingQueue$Node : public ::java::lang::Ob
 
 public: // actually package-private
   LinkedBlockingQueue$Node(::java::lang::Object *);
-  ::java::lang::Object * volatile __attribute__((aligned(__alignof__( ::java::lang::Object)))) item;
+  volatile ::java::lang::Object * __attribute__((aligned(__alignof__( ::java::lang::Object)))) item;
   ::java::util::concurrent::LinkedBlockingQueue$Node * next;
 public:
   static ::java::lang::Class class$;

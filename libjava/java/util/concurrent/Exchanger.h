@@ -33,7 +33,7 @@ private:
   static jint TIMED_SPINS;
   static ::java::lang::Object * CANCEL;
   static ::java::lang::Object * NULL_ITEM;
-  JArray< ::java::util::concurrent::Exchanger$Slot * > * volatile __attribute__((aligned(__alignof__( ::java::lang::Object)))) arena;
+  volatile JArray< ::java::util::concurrent::Exchanger$Slot * > * __attribute__((aligned(__alignof__( ::java::lang::Object)))) arena;
   ::java::util::concurrent::atomic::AtomicInteger * max;
 public:
   static ::java::lang::Class class$;

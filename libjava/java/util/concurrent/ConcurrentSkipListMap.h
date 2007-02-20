@@ -118,7 +118,7 @@ private:
   static const jlong serialVersionUID = -8627078645895051609LL;
   static ::java::util::Random * seedGenerator;
   static ::java::lang::Object * BASE_HEADER;
-  ::java::util::concurrent::ConcurrentSkipListMap$HeadIndex * volatile __attribute__((aligned(__alignof__( ::java::util::AbstractMap)))) head;
+  volatile ::java::util::concurrent::ConcurrentSkipListMap$HeadIndex * __attribute__((aligned(__alignof__( ::java::util::AbstractMap)))) head;
   ::java::util::Comparator * comparator__;
   jint randomSeed;
   ::java::util::concurrent::ConcurrentSkipListMap$KeySet * keySet__;

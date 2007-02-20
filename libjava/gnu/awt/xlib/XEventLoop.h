@@ -67,7 +67,7 @@ private:
   ::java::lang::Thread * eventLoopThread;
 public: // actually package-private
   ::gnu::awt::LightweightRedirector * lightweightRedirector;
-  jboolean volatile idle;
+  volatile jboolean idle;
 public:
   static ::java::lang::Class class$;
 };

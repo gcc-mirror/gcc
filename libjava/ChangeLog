@@ -1,3 +1,49 @@
+2007-02-20  Gary Benson  <gbenson@redhat.com>
+
+	* gnu/awt/xlib/XEventLoop.h: Regenerated.
+	* gnu/java/awt/peer/gtk/GThreadMutex.h: Likewise.
+	* gnu/java/rmi/server/ConnectionRunnerPool$ConnectionRunner.h:
+	Likewise.
+	* gnu/java/rmi/server/UnicastConnectionManager.h: Likewise.
+	* java/lang/SecurityManager.h: Likewise.
+	* java/lang/Thread.h: Likewise.
+	* java/security/VMSecureRandom$Spinner.h: Likewise.
+	* java/util/concurrent/atomic/AtomicBoolean.h: Likewise.
+	* java/util/concurrent/atomic/AtomicInteger.h: Likewise.
+	* java/util/concurrent/atomic/AtomicLong.h: Likewise.
+	* java/util/concurrent/atomic/AtomicReference.h: Likewise.
+	* java/util/concurrent/ConcurrentHashMap$HashEntry.h: Likewise.
+	* java/util/concurrent/ConcurrentHashMap$Segment.h: Likewise.
+	* java/util/concurrent/ConcurrentLinkedQueue.h: Likewise.
+	* java/util/concurrent/ConcurrentLinkedQueue$Node.h: Likewise.
+	* java/util/concurrent/ConcurrentSkipListMap.h: Likewise.
+	* java/util/concurrent/ConcurrentSkipListMap$Index.h: Likewise.
+	* java/util/concurrent/ConcurrentSkipListMap$Node.h: Likewise.
+	* java/util/concurrent/Exchanger.h: Likewise.
+	* java/util/concurrent/Exchanger$Node.h: Likewise.
+	* java/util/concurrent/FutureTask$Sync.h: Likewise.
+	* java/util/concurrent/LinkedBlockingQueue$Node.h: Likewise.
+	* java/util/concurrent/locks/AbstractQueuedLongSynchronizer.h:
+	Likewise.
+	* java/util/concurrent/locks/AbstractQueuedLongSynchronizer$Node.h: 
+	Likewise.
+	* java/util/concurrent/locks/AbstractQueuedSynchronizer.h: Likewise.
+	* java/util/concurrent/locks/AbstractQueuedSynchronizer$Node.h:
+	Likewise.
+	* java/util/concurrent/ScheduledThreadPoolExecutor.h: Likewise.
+	* java/util/concurrent/SynchronousQueue.h: Likewise.
+	* java/util/concurrent/SynchronousQueue$TransferQueue.h: Likewise.
+	* java/util/concurrent/SynchronousQueue$TransferQueue$QNode.h:
+	Likewise.
+	* java/util/concurrent/SynchronousQueue$TransferStack.h: Likewise.
+	* java/util/concurrent/SynchronousQueue$TransferStack$SNode.h:
+	Likewise.
+	* java/util/concurrent/ThreadPoolExecutor.h: Likewise.
+	* java/util/concurrent/ThreadPoolExecutor$Worker.h: Likewise.
+	* java/util/logging/ErrorManager.h: Likewise.
+	* javax/swing/plaf/basic/BasicSpinnerUI$2.h: Likewise.
+	* javax/swing/plaf/basic/BasicSpinnerUI$4.h: Likewise.
+
 2007-02-16  Keith Seitz  <keiths@redhat.com>
 
 	* gnu/classpath/jdwp/natVMVirtualMachine.cc

@@ -19,7 +19,7 @@ public: // actually package-private
   virtual jboolean unlink(::java::util::concurrent::ConcurrentSkipListMap$Index *);
   ::java::util::concurrent::ConcurrentSkipListMap$Node * __attribute__((aligned(__alignof__( ::java::lang::Object)))) node;
   ::java::util::concurrent::ConcurrentSkipListMap$Index * down;
-  ::java::util::concurrent::ConcurrentSkipListMap$Index * volatile right;
+  volatile ::java::util::concurrent::ConcurrentSkipListMap$Index * right;
   static ::java::util::concurrent::atomic::AtomicReferenceFieldUpdater * rightUpdater;
 public:
   static ::java::lang::Class class$;

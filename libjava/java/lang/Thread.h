@@ -147,7 +147,7 @@ public: // actually package-private
   ::java::lang::Object * accessControlState;
   ::gnu::gcj::RawData * interp_frame;
   ::gnu::gcj::RawData * frame;
-  jint volatile state;
+  volatile jint state;
   ::gnu::gcj::RawDataManaged * data;
 public:
   static ::java::lang::Class class$;

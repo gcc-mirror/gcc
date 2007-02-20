@@ -18,7 +18,7 @@ public: // actually package-private
   static JArray< ::java::util::concurrent::ConcurrentHashMap$HashEntry * > * newArray(jint);
   ::java::lang::Object * __attribute__((aligned(__alignof__( ::java::lang::Object)))) key;
   jint hash;
-  ::java::lang::Object * volatile value;
+  volatile ::java::lang::Object * value;
   ::java::util::concurrent::ConcurrentHashMap$HashEntry * next;
 public:
   static ::java::lang::Class class$;
