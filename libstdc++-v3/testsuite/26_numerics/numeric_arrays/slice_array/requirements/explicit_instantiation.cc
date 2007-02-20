@@ -1,6 +1,6 @@
-// 19990404 gdr
+// { dg-do compile }
 
-// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -13,10 +13,10 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-// You should have received a copy of the GNU General Public License along
-// with this library; see the file COPYING.  If not, write to the Free
-// Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
-// USA.
+// You should have received a copy of the GNU General Public License
+// along with this library; see the file COPYING.  If not, write to
+// the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+// Boston, MA 02110-1301, USA.
 
 // As a special exception, you may use this file as part of a free software
 // library without restriction.  Specifically, if other files instantiate
@@ -27,17 +27,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+// This file tests explicit instantiation of library containers.
+
 #include <valarray>
 
-int main()
-{
-  // 01: instantiation
-  std::valarray<double> a(20);
-
-  // 02: algo
-  using std::valarray;
-  valarray<double> b, c;
-  double m __attribute__((unused)) = std::abs(b - c).max();
-
-  return 0;
-}
+template class std::slice_array<short>;
