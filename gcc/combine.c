@@ -1726,18 +1726,8 @@ likely_spilled_retval_p (rtx insn)
 static void
 adjust_for_new_dest (rtx insn)
 {
-  rtx *loc;
-
   /* For notes, be conservative and simply remove them.  */
-  loc = &REG_NOTES (insn);
-  while (*loc)
-    {
-      enum reg_note kind = REG_NOTE_KIND (*loc);
-      if (kind == REG_EQUAL || kind == REG_EQUIV)
-	*loc = XEXP (*loc, 1);
-      else
-	loc = &XEXP (*loc, 1);
-    }
+  remove_reg_equal_equiv_notes (insn);
 
   /* The new insn will have a destination that was previously the destination
      of an insn just above it.  Call distribute_links to make a LOG_LINK from
