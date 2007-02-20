@@ -1,7 +1,182 @@
 2007-02-20  Benjamin Kosnik  <bkoz@redhat.com>
 
+	Directory layout flattening.
+
+	Added in testsuite:
+	* 20_util/allocator
+	* 20_util/auto_ptr
+	* 20_util/function_objects
+	* 20_util/function_objects/binders
+	* 20_util/function_objects/binders/1.cc
+	* 20_util/function_objects/binders/3113.cc
+	* 20_util/function_objects/comparisons.cc
+	* 20_util/pair
+	* 20_util/raw_storage_iterator
+	* 20_util/rel_ops.cc
+	* 20_util/specialized_algorithms
+	* 20_util/specialized_algorithms/16505.cc
+	* 20_util/temporary_buffer.cc
+	* 26_numerics/numeric_arrays/slice_array
+	* 26_numerics/numeric_arrays/slice_array/array_assignment.cc
+	* 26_numerics/numeric_arrays/slice_array/requirements
+	* 26_numerics/numeric_arrays/slice_array/requirements/
+	explicit_instantiation.cc
+	* 26_numerics/numeric_arrays/slice_array/requirements/typedefs.cc
+	* 26_numerics/numeric_arrays/valarray
+	* 26_numerics/numeric_arrays/valarray/27867.cc
+	* 26_numerics/numeric_arrays/valarray/28277.cc
+	* 26_numerics/numeric_arrays/valarray/30416.cc
+	* 26_numerics/numeric_arrays/valarray/algo.cc
+	* 26_numerics/numeric_arrays/valarray/binary_closure.cc
+	* 26_numerics/numeric_arrays/valarray/const_bracket.cc
+	* 26_numerics/numeric_arrays/valarray/dr543.cc
+	* 26_numerics/numeric_arrays/valarray/name_lookup.cc
+	* 26_numerics/numeric_arrays/valarray/operators.cc
+	* 26_numerics/numeric_arrays/valarray/requirements
+	* 26_numerics/numeric_arrays/valarray/requirements/
+	explicit_instantiation.cc
+	* 26_numerics/numeric_arrays/valarray/requirements/typedefs.cc
+	* 26_numerics/numeric_arrays/valarray/subset_assignment.cc
+	* tr1/2_general_utilities/enable_shared_from_this
+	* tr1/2_general_utilities/shared_ptr
+	* tr1/2_general_utilities/weak_ptr
+	
+	Deleted in testsuite:
+	* 20_util/functional
+	* 20_util/functional/binders
+	* 20_util/functional/binders/1.cc
+	* 20_util/functional/binders/3113.cc
+	* 20_util/functional/comparisons.cc
+	* 20_util/memory
+	* 20_util/memory/16505.cc
+	* 20_util/memory/allocator
+	* 20_util/memory/allocator/10378.cc
+	* 20_util/memory/allocator/14176.cc
+	* 20_util/memory/allocator/1.cc
+	* 20_util/memory/allocator/8230.cc
+	* 20_util/memory/allocator/requirements
+	* 20_util/memory/allocator/requirements/explicit_instantiation
+	* 20_util/memory/allocator/requirements/explicit_instantiation/1.cc
+	* 20_util/memory/auto_ptr
+	* 20_util/memory/auto_ptr/1.cc
+	* 20_util/memory/auto_ptr/2.cc
+	* 20_util/memory/auto_ptr/3946.cc
+	* 20_util/memory/auto_ptr/3.cc
+	* 20_util/memory/auto_ptr/4.cc
+	* 20_util/memory/auto_ptr/5.cc
+	* 20_util/memory/auto_ptr/6.cc
+	* 20_util/memory/auto_ptr/7.cc
+	* 20_util/memory/auto_ptr/assign_neg.cc
+	* 20_util/memory/auto_ptr/requirements
+	* 20_util/memory/auto_ptr/requirements/explicit_instantiation
+	* 20_util/memory/auto_ptr/requirements/explicit_instantiation/1.cc
+	* 20_util/memory/raw_storage_iterator
+	* 20_util/memory/raw_storage_iterator/requirements
+	* 20_util/memory/raw_storage_iterator/requirements/base_classes.cc
+	* 20_util/memory/raw_storage_iterator/requirements/
+	explicit_instantiation
+	* 20_util/memory/raw_storage_iterator/requirements/
+	explicit_instantiation/1.cc
+	* 20_util/memory/raw_storage_iterator/requirements/typedefs.cc
+	* 20_util/memory/temporary_buffer.cc
+	* 20_util/utility
+	* 20_util/utility/pair
+	* 20_util/utility/pair/1.cc
+	* 20_util/utility/pair/2.cc
+	* 20_util/utility/pair/3.cc
+	* 20_util/utility/pair/4.cc
+	* 20_util/utility/pair/requirements
+	* 20_util/utility/pair/requirements/explicit_instantiation
+	* 20_util/utility/pair/requirements/explicit_instantiation/1.cc
+	* 20_util/utility/rel_ops.cc
+	* 26_numerics/numeric_arrays/27867.cc
+	* 26_numerics/numeric_arrays/28277.cc
+	* 26_numerics/numeric_arrays/30416.cc
+	* 26_numerics/numeric_arrays/binary_closure.cc
+	* 26_numerics/numeric_arrays/dr543.cc
+	* 26_numerics/numeric_arrays/slice_array_assignment.cc
+	* 26_numerics/numeric_arrays/valarray.cc
+	* 26_numerics/numeric_arrays/valarray_const_bracket.cc
+	* 26_numerics/numeric_arrays/valarray_name_lookup.cc
+	* 26_numerics/numeric_arrays/valarray_operators.cc
+	* 26_numerics/numeric_arrays/valarray_subset_assignment.cc
+	* tr1/2_general_utilities/memory
+	* tr1/2_general_utilities/memory/enable_shared_from_this
+	* tr1/2_general_utilities/memory/enable_shared_from_this/1.cc
+	* tr1/2_general_utilities/memory/enable_shared_from_this/not_shared2.cc
+	* tr1/2_general_utilities/memory/enable_shared_from_this/not_shared3.cc
+	* tr1/2_general_utilities/memory/enable_shared_from_this/not_shared.cc
+	* tr1/2_general_utilities/memory/enable_shared_from_this/requirements
+	* tr1/2_general_utilities/memory/enable_shared_from_this/
+	requirements/explicit_instantiation
+	* tr1/2_general_utilities/memory/enable_shared_from_this/
+	requirements/explicit_instantiation/1.cc
+	* tr1/2_general_utilities/memory/enable_shared_from_this/shared.cc
+	* tr1/2_general_utilities/memory/enable_shared_from_this/
+	still_shared.cc
+	* tr1/2_general_utilities/memory/shared_ptr
+	* tr1/2_general_utilities/memory/shared_ptr/assign
+	* tr1/2_general_utilities/memory/shared_ptr/assign/assign.cc
+	* tr1/2_general_utilities/memory/shared_ptr/assign/auto_ptr.cc
+	* tr1/2_general_utilities/memory/shared_ptr/assign/auto_ptr_neg.cc
+	* tr1/2_general_utilities/memory/shared_ptr/assign/
+	auto_ptr_rvalue_neg.cc
+	* tr1/2_general_utilities/memory/shared_ptr/assign/dr541.cc
+	* tr1/2_general_utilities/memory/shared_ptr/assign/shared_ptr.cc
+	* tr1/2_general_utilities/memory/shared_ptr/assign/shared_ptr_neg.cc
+	* tr1/2_general_utilities/memory/shared_ptr/casts
+	* tr1/2_general_utilities/memory/shared_ptr/casts/1.cc
+	* tr1/2_general_utilities/memory/shared_ptr/comparison
+	* tr1/2_general_utilities/memory/shared_ptr/comparison/cmp.cc
+	* tr1/2_general_utilities/memory/shared_ptr/cons
+	* tr1/2_general_utilities/memory/shared_ptr/cons/auto_ptr.cc
+	* tr1/2_general_utilities/memory/shared_ptr/cons/auto_ptr_neg.cc
+	* tr1/2_general_utilities/memory/shared_ptr/cons/copy.cc
+	* tr1/2_general_utilities/memory/shared_ptr/cons/default.cc
+	* tr1/2_general_utilities/memory/shared_ptr/cons/pointer.cc
+	* tr1/2_general_utilities/memory/shared_ptr/cons/weak_ptr.cc
+	* tr1/2_general_utilities/memory/shared_ptr/cons/weak_ptr_expired.cc
+	* tr1/2_general_utilities/memory/shared_ptr/dest
+	* tr1/2_general_utilities/memory/shared_ptr/dest/dest.cc
+	* tr1/2_general_utilities/memory/shared_ptr/misc
+	* tr1/2_general_utilities/memory/shared_ptr/misc/24595.cc
+	* tr1/2_general_utilities/memory/shared_ptr/misc/io.cc
+	* tr1/2_general_utilities/memory/shared_ptr/misc/swap.cc
+	* tr1/2_general_utilities/memory/shared_ptr/modifiers
+	* tr1/2_general_utilities/memory/shared_ptr/modifiers/24805.cc
+	* tr1/2_general_utilities/memory/shared_ptr/modifiers/reset.cc
+	* tr1/2_general_utilities/memory/shared_ptr/modifiers/reset_neg.cc
+	* tr1/2_general_utilities/memory/shared_ptr/modifiers/swap.cc
+	* tr1/2_general_utilities/memory/shared_ptr/modifiers/swap_neg.cc
+	* tr1/2_general_utilities/memory/shared_ptr/observers
+	* tr1/2_general_utilities/memory/shared_ptr/observers/bool_conv.cc
+	* tr1/2_general_utilities/memory/shared_ptr/observers/get.cc
+	* tr1/2_general_utilities/memory/shared_ptr/observers/unique.cc
+	* tr1/2_general_utilities/memory/shared_ptr/observers/use_count.cc
+	* tr1/2_general_utilities/memory/shared_ptr/requirements
+	* tr1/2_general_utilities/memory/shared_ptr/requirements/
+	explicit_instantiation
+	* tr1/2_general_utilities/memory/shared_ptr/requirements/
+	explicit_instantiation/1.cc
+	* tr1/2_general_utilities/memory/shared_ptr/thread
+	* tr1/2_general_utilities/memory/shared_ptr/thread/
+	default_weaktoshared.cc
+	* tr1/2_general_utilities/memory/shared_ptr/thread/
+	mutex_weaktoshared.cc
+	* tr1/2_general_utilities/memory/weak_ptr
+	* tr1/2_general_utilities/memory/weak_ptr/lock
+	* tr1/2_general_utilities/memory/weak_ptr/lock/1.cc
+	* tr1/2_general_utilities/memory/weak_ptr/requirements
+	* tr1/2_general_utilities/memory/weak_ptr/requirements/
+	explicit_instantiation
+	* tr1/2_general_utilities/memory/weak_ptr/requirements/
+	explicit_instantiation/1.cc
+
+2007-02-20  Benjamin Kosnik  <bkoz@redhat.com>
+
 	Revamp library API testing.
-	Added:
+	
+	Added in testsuite:
 	* 17_intro/headers
 	* 17_intro/headers/all_assert_neg.cc
 	* 17_intro/headers/all_c++200x_compatibility.cc
@@ -610,7 +785,7 @@
 	* tr1/6_containers/unordered_set/swap/2.cc
 	* tr1/using_namespace_std_tr1.cc
 
-	Deleted:
+	Deleted in testsuite:
 	* 17_intro/header_cassert.cc
 	* 17_intro/header_cerrno.cc
 	* 17_intro/header_csetjmp.cc
@@ -891,9 +1066,9 @@
 	* tr1/6_containers/unordered/types/multiset_iterator.cc
 	* tr1/6_containers/unordered/types/set_iterator.cc
 
-	* 24_iterators/reverse_iterator/2.cc: To just one
+	* testsuite/24_iterators/reverse_iterator/2.cc: To just one
 	non-requirements test.
-	* ext/headers.cc: Add new includes.
+	* testsuite/ext/headers.cc: Add new includes.
 	
 2007-02-18  Paolo Carlini  <pcarlini@suse.de>
 
