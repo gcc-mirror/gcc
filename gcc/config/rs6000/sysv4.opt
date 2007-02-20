@@ -75,7 +75,7 @@ Target RejectNegative
 no description yet
 
 mprototype
-Target Mask(PROTOTYPE)
+Target Var(TARGET_PROTOTYPE)
 Assume all variable arg functions are prototyped
 
 ;; FIXME: Does nothing.

@@ -106,6 +106,8 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
     builtin_define ("_ARCH_PWR5");
   if (TARGET_FPRND)
     builtin_define ("_ARCH_PWR5X");
+  if (TARGET_CMPB)
+    builtin_define ("_ARCH_PWR6");
   if (TARGET_MFPGPR)
     builtin_define ("_ARCH_PWR6X");
   if (! TARGET_POWER && ! TARGET_POWER2 && ! TARGET_POWERPC)

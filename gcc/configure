@@ -10559,9 +10559,19 @@ fi;
 
 
 
-    lib_includedir=UNSET
-  lib_libdir=UNSET
 
+    use_additional=yes
+
+  acl_save_prefix="$prefix"
+  prefix="$acl_final_prefix"
+  acl_save_exec_prefix="$exec_prefix"
+  exec_prefix="$acl_final_exec_prefix"
+
+    eval additional_includedir=\"$includedir\"
+    eval additional_libdir=\"$libdir\"
+
+  exec_prefix="$acl_save_exec_prefix"
+  prefix="$acl_save_prefix"
 
 
 # Check whether --with-libiconv-prefix or --without-libiconv-prefix was given.
@@ -10569,8 +10579,7 @@ if test "${with_libiconv_prefix+set}" = set; then
   withval="$with_libiconv_prefix"
 
     if test "X$withval" = "Xno"; then
-      lib_includedir="NONE"
-      lib_libdir="NONE"
+      use_additional=no
     else
       if test "X$withval" = "X"; then
 
@@ -10579,36 +10588,19 @@ if test "${with_libiconv_prefix+set}" = set; then
   acl_save_exec_prefix="$exec_prefix"
   exec_prefix="$acl_final_exec_prefix"
 
-          eval lib_includedir=\"$includedir\"
-          eval lib_libdir=\"$libdir\"
+          eval additional_includedir=\"$includedir\"
+          eval additional_libdir=\"$libdir\"
 
   exec_prefix="$acl_save_exec_prefix"
   prefix="$acl_save_prefix"
 
       else
-        lib_includedir="$withval/include"
-        lib_libdir="$withval/lib"
+        additional_includedir="$withval/include"
+        additional_libdir="$withval/lib"
       fi
     fi
 
 fi;
-
-
-  acl_save_prefix="$prefix"
-  prefix="$acl_final_prefix"
-  acl_save_exec_prefix="$exec_prefix"
-  exec_prefix="$acl_final_exec_prefix"
-
-    test $lib_includedir = UNSET && eval lib_includedir=\"$includedir\"
-    test $lib_libdir = UNSET && eval lib_libdir=\"$libdir\"
-
-  exec_prefix="$acl_save_exec_prefix"
-  prefix="$acl_save_prefix"
-
-
-
-
-
       LIBICONV=
   LTLIBICONV=
   INCICONV=
@@ -10645,19 +10637,19 @@ fi;
           found_la=
           found_so=
           found_a=
-          if test "$lib_libdir" != NONE; then
-            if test -n "$shlibext" && test -f "$lib_libdir/lib$name.$shlibext"; then
-              found_dir="$lib_libdir"
-              found_so="$lib_libdir/lib$name.$shlibext"
-              if test -f "$lib_libdir/lib$name.la"; then
-                found_la="$lib_libdir/lib$name.la"
+          if test $use_additional = yes; then
+            if test -n "$shlibext" && test -f "$additional_libdir/lib$name.$shlibext"; then
+              found_dir="$additional_libdir"
+              found_so="$additional_libdir/lib$name.$shlibext"
+              if test -f "$additional_libdir/lib$name.la"; then
+                found_la="$additional_libdir/lib$name.la"
               fi
             else
-              if test -f "$lib_libdir/lib$name.$libext"; then
-                found_dir="$lib_libdir"
-                found_a="$lib_libdir/lib$name.$libext"
-                if test -f "$lib_libdir/lib$name.la"; then
-                  found_la="$lib_libdir/lib$name.la"
+              if test -f "$additional_libdir/lib$name.$libext"; then
+                found_dir="$additional_libdir"
+                found_a="$additional_libdir/lib$name.$libext"
+                if test -f "$additional_libdir/lib$name.la"; then
+                  found_la="$additional_libdir/lib$name.la"
                 fi
               fi
             fi
@@ -10766,11 +10758,6 @@ fi;
             fi
                         additional_includedir=
             case "$found_dir" in
-              "$lib_libdir")
-                if test "$lib_includedir" != NONE; then
-                  additional_includedir="$lib_includedir"
-                fi
-                ;;
               */lib | */lib/)
                 basedir=`echo "X$found_dir" | sed -e 's,^X,,' -e 's,/lib/*$,,'`
                 additional_includedir="$basedir/include"
@@ -10948,7 +10935,6 @@ fi;
       LTLIBICONV="${LTLIBICONV}${LTLIBICONV:+ }-R$found_dir"
     done
   fi
-
 
 
 
@@ -15602,6 +15588,98 @@ LCF0:
 	addis 11,30,_GLOBAL_OFFSET_TABLE_-.LCF0@ha';;
     esac
 
+    case $target in
+      *-*-aix*) conftest_s='	.machine "pwr6"
+	.csect .text[PR]
+	cmpb 3,4,5';;
+      *) conftest_s='	.machine power6
+	.text
+	cmpb 3,4,5';;
+    esac
+
+    echo "$as_me:$LINENO: checking assembler for compare bytes support" >&5
+echo $ECHO_N "checking assembler for compare bytes support... $ECHO_C" >&6
+if test "${gcc_cv_as_powerpc_cmpb+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_as_powerpc_cmpb=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 9 \* 1000 \) + 99 \) \* 1000 + 0`
+  then gcc_cv_as_powerpc_cmpb=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as -a32 -o conftest.o conftest.s >&5'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }
+    then
+	gcc_cv_as_powerpc_cmpb=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_as_powerpc_cmpb" >&5
+echo "${ECHO_T}$gcc_cv_as_powerpc_cmpb" >&6
+if test $gcc_cv_as_powerpc_cmpb = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_AS_CMPB 1
+_ACEOF
+
+fi
+
+    case $target in
+      *-*-aix*) conftest_s='	.machine "pwr6"
+	.csect .text[PR]
+	dadd 1,3';;
+      *) conftest_s='	.machine power6
+	.text
+	dadd 1,3';;
+    esac
+
+    echo "$as_me:$LINENO: checking assembler for decimal float support" >&5
+echo $ECHO_N "checking assembler for decimal float support... $ECHO_C" >&6
+if test "${gcc_cv_as_powerpc_dfp+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_as_powerpc_dfp=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 9 \* 1000 \) + 99 \) \* 1000 + 0`
+  then gcc_cv_as_powerpc_dfp=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as -a32 -o conftest.o conftest.s >&5'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }
+    then
+	gcc_cv_as_powerpc_dfp=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_as_powerpc_dfp" >&5
+echo "${ECHO_T}$gcc_cv_as_powerpc_dfp" >&6
+if test $gcc_cv_as_powerpc_dfp = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_AS_DFP 1
+_ACEOF
+
+fi
+
     echo "$as_me:$LINENO: checking assembler for rel16 relocs" >&5
 echo $ECHO_N "checking assembler for rel16 relocs... $ECHO_C" >&6
 if test "${gcc_cv_as_powerpc_rel16+set}" = set; then
@@ -16014,70 +16092,70 @@ echo "${ECHO_T}$gcc_cv_ld_pie" >&6
 echo "$as_me:$LINENO: checking linker EH-compatible garbage collection of sections" >&5
 echo $ECHO_N "checking linker EH-compatible garbage collection of sections... $ECHO_C" >&6
 gcc_cv_ld_eh_gc_sections=no
-#if test $in_tree_ld = yes ; then
-#  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 17 -o "$gcc_cv_gld_major_version" -gt 2 \
-#     && test $in_tree_ld_is_elf = yes; then
-#    gcc_cv_ld_eh_gc_sections=yes
-#  fi
-#elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x ; then
-#  cat > conftest.s <<EOF
-#	.section	.text
-#.globl _start
-#        .type _start, @function
-#_start:
-#	.long foo
-#	.size _start, .-_start
-#	.section	.text.foo,"ax",@progbits
-#	.type foo, @function
-#foo:
-#	.long 0
-#	.size foo, .-foo
-#	.section	.gcc_except_table.foo,"a",@progbits
-#.L0:
-#	.long 0
-#	.section	.eh_frame,"a",@progbits
-#	.long .L0
-#EOF
-#  if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-#    if $gcc_cv_ld -o conftest conftest.o --entry=_start --gc-sections 2>&1 \
-#	 | grep "gc-sections option ignored" > /dev/null; then
-#      gcc_cv_ld_eh_gc_sections=no
-#    elif $gcc_cv_objdump -h conftest | grep gcc_except_table > /dev/null; then
-#      gcc_cv_ld_eh_gc_sections=yes
-#      # If no COMDAT groups, the compiler will emit .gnu.linkonce.t. sections.
-#      if test x$gcc_cv_as_comdat_group != xyes; then
-#	gcc_cv_ld_eh_gc_sections=no
-#	cat > conftest.s <<EOF
-#	.section	.text
-#.globl _start
-#        .type _start, @function
-#_start:
-#	.long foo
-#	.size _start, .-_start
-#	.section	.gnu.linkonce.t.foo,"ax",@progbits
-#	.type foo, @function
-#foo:
-#	.long 0
-#	.size foo, .-foo
-#	.section	.gcc_except_table.foo,"a",@progbits
-#.L0:
-#	.long 0
-#	.section	.eh_frame,"a",@progbits
-#	.long .L0
-#EOF
-#	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-#	  if $gcc_cv_ld -o conftest conftest.o --entry=_start --gc-sections 2>&1 \
-#	       | grep "gc-sections option ignored" > /dev/null; then
-#	    gcc_cv_ld_eh_gc_sections=no
-#	  elif $gcc_cv_objdump -h conftest | grep gcc_except_table > /dev/null; then
-#	    gcc_cv_ld_eh_gc_sections=yes
-#	  fi
-#	fi
-#      fi
-#    fi
-#  fi
-#  rm -f conftest.s conftest.o conftest
-#fi
+if test $in_tree_ld = yes ; then
+  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 17 -o "$gcc_cv_gld_major_version" -gt 2 \
+     && test $in_tree_ld_is_elf = yes; then
+    gcc_cv_ld_eh_gc_sections=yes
+  fi
+elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x ; then
+  cat > conftest.s <<EOF
+	.section	.text
+.globl _start
+        .type _start, @function
+_start:
+	.long foo
+	.size _start, .-_start
+	.section	.text.foo,"ax",@progbits
+	.type foo, @function
+foo:
+	.long 0
+	.size foo, .-foo
+	.section	.gcc_except_table.foo,"a",@progbits
+.L0:
+	.long 0
+	.section	.eh_frame,"a",@progbits
+	.long .L0
+EOF
+  if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+    if $gcc_cv_ld -o conftest conftest.o --entry=_start --gc-sections 2>&1 \
+	 | grep "gc-sections option ignored" > /dev/null; then
+      gcc_cv_ld_eh_gc_sections=no
+    elif $gcc_cv_objdump -h conftest | grep gcc_except_table > /dev/null; then
+      gcc_cv_ld_eh_gc_sections=yes
+      # If no COMDAT groups, the compiler will emit .gnu.linkonce.t. sections.
+      if test x$gcc_cv_as_comdat_group != xyes; then
+	gcc_cv_ld_eh_gc_sections=no
+	cat > conftest.s <<EOF
+	.section	.text
+.globl _start
+        .type _start, @function
+_start:
+	.long foo
+	.size _start, .-_start
+	.section	.gnu.linkonce.t.foo,"ax",@progbits
+	.type foo, @function
+foo:
+	.long 0
+	.size foo, .-foo
+	.section	.gcc_except_table.foo,"a",@progbits
+.L0:
+	.long 0
+	.section	.eh_frame,"a",@progbits
+	.long .L0
+EOF
+	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+	  if $gcc_cv_ld -o conftest conftest.o --entry=_start --gc-sections 2>&1 \
+	       | grep "gc-sections option ignored" > /dev/null; then
+	    gcc_cv_ld_eh_gc_sections=no
+	  elif $gcc_cv_objdump -h conftest | grep gcc_except_table > /dev/null; then
+	    gcc_cv_ld_eh_gc_sections=yes
+	  fi
+	fi
+      fi
+    fi
+  fi
+  rm -f conftest.s conftest.o conftest
+fi
 case "$target" in
   hppa*-*-linux*)
     # ??? This apparently exposes a binutils bug with PC-relative relocations.

@@ -164,12 +164,27 @@
 #define TARGET_FPRND 0
 #endif
 
+/* Define TARGET_CMPB if the target assembler does not support the
+   cmpb instruction.  */
+
+#ifndef HAVE_AS_CMPB
+#undef  TARGET_CMPB
+#define TARGET_CMPB 0
+#endif
+
 /* Define TARGET_MFPGPR if the target assembler does not support the
    mffpr and mftgpr instructions. */
 
 #ifndef HAVE_AS_MFPGPR
 #undef  TARGET_MFPGPR
 #define TARGET_MFPGPR 0
+#endif
+
+/* Define TARGET_DFP if the target assembler does not support decimal
+   floating point instructions.  */
+#ifndef HAVE_AS_DFP
+#undef  TARGET_DFP
+#define TARGET_DFP 0
 #endif
 
 #ifndef TARGET_SECURE_PLT

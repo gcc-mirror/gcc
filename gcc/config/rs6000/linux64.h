@@ -98,9 +98,9 @@ extern int dot_symbols;
 	      target_flags &= ~MASK_EABI;			\
 	      error (INVALID_64BIT, "eabi");			\
 	    }							\
-	  if (target_flags & MASK_PROTOTYPE)			\
+	  if (TARGET_PROTOTYPE)					\
 	    {							\
-	      target_flags &= ~MASK_PROTOTYPE;			\
+	      TARGET_PROTOTYPE = 0;				\
 	      error (INVALID_64BIT, "prototype");		\
 	    }							\
 	  if ((target_flags & MASK_POWERPC64) == 0)		\
