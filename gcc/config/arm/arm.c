@@ -3190,7 +3190,7 @@ current_file_function_operand (rtx sym_ref)
   return 0;
 }
 
-/* Return nonzero if a 32 bit "long_call" should be generated for
+/* Return nonzero if a 32-bit "long_call" should be generated for
    this call.  We generate a long_call if the function:
 
         a.  has an __attribute__((long call))
@@ -4076,7 +4076,7 @@ thumb1_legitimate_address_p (enum machine_mode mode, rtx x, int strict_p)
 	       && thumb_legitimate_offset_p (mode, INTVAL (XEXP (x, 1))))
 	return 1;
 
-      /* REG+const has 10 bit offset for SP, but only SImode and
+      /* REG+const has 10-bit offset for SP, but only SImode and
 	 larger is supported.  */
       /* ??? Should probably check for DI/DFmode overflow here
 	 just like GO_IF_LEGITIMATE_OFFSET does.  */
@@ -4385,8 +4385,8 @@ arm_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
       HOST_WIDE_INT mask, base, index;
       rtx base_reg;
 
-      /* ldr and ldrb can use a 12 bit index, ldrsb and the rest can only
-         use a 8 bit index. So let's use a 12 bit index for SImode only and
+      /* ldr and ldrb can use a 12-bit index, ldrsb and the rest can only
+         use a 8-bit index. So let's use a 12-bit index for SImode only and
          hope that arm_gen_constant will enable ldrb to use more bits. */
       bits = (mode == SImode) ? 12 : 8;
       mask = (1 << bits) - 1;

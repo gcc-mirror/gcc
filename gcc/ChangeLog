@@ -1,3 +1,11 @@
+2007-02-20  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/alpha/alpha.c, config/alpha/alpha.md,
+	config/alpha/lib1funcs.asm, config/alpha/vms-crt0-64.c,
+	config/alpha/vms-psxcrt0-64.c, config/arc/arc.c,
+	config/arc/arc.h, config/arm/arm.c, config/arm/arm.md,
+	config/arm/lib1funcs.asm: Follow spelling conventions.
+
 2007-02-20  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/29943

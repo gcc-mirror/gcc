@@ -200,7 +200,7 @@ FUNCTION_NAME:
 #define N RETREG
 #endif
 
-/* Perform conversion from 32 bit types to 64 bit types.  */
+/* Perform conversion from 32-bit types to 64-bit types.  */
 #if SIZE == 32
 #if TYPE == SIGNED
 	/* If there are problems with the signed case, add these instructions.
@@ -303,7 +303,7 @@ $46:
 #endif
 
 
-/* Sign extend an *unsigned* 32 bit result, as required by the Alpha
+/* Sign extend an *unsigned* 32-bit result, as required by the Alpha
    conventions.  */
 #if TYPE == UNSIGNED && SIZE == 32
 	/* This could be avoided by adding some CPP hair to the divide loop.

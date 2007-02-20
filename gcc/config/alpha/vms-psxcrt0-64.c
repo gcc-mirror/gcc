@@ -79,7 +79,7 @@ __main (arg1, arg2, arg3, image_file_desc, arg5, arg6)
 
 #pragma __pointer_size long
 
-  /* Reallocate argv with 64 bit pointers.  */
+  /* Reallocate argv with 64-bit pointers.  */
   long_argv = (char **) malloc (sizeof (char *) * (argc + 1));
 
   for (i = 0; i < argc; i++)
