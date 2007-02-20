@@ -1,6 +1,6 @@
 // random number generation -*- C++ -*-
 
-// Copyright (C) 2006 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +35,7 @@
 #ifndef _TR1_RANDOM
 #define _TR1_RANDOM 1
 
-#include <algorithm>
+#include <bits/stl_algobase.h>
 #include <bits/concept_check.h>
 #include <cmath>
 #include <debug/debug.h>

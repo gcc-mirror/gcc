@@ -1,3 +1,19 @@
+2007-02-20  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28080 (partial)
+	* include/tr1/functional: Split out hash bits to...
+	* include/tr1/functional_hash.h: ...here.
+	* include/Makefile.am: Add.
+	* include/tr1/unordered_set: Include the latter instead.
+	* include/tr1/unordered_map: Likewise.
+	* include/tr1/random: Do not include the whole <algorithm>,
+	stl_algobase.h is enough.
+	* include/tr1/memory: Likewise.
+	* include/Makefile.in: Regenerate.
+
+	* include/tr1/utility (get(std::pair<>&), get(const std::pair<>&)):
+	Mark inline.
+
 2007-02-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Directory layout flattening.
