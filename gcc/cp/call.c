@@ -5481,6 +5481,20 @@ build_new_method_call (tree instance, tree fns, tree args,
 		  && TREE_SIDE_EFFECTS (instance_ptr))
 		call = build2 (COMPOUND_EXPR, TREE_TYPE (call),
 			       instance_ptr, call);
+	      else if (call != error_mark_node
+		       && DECL_DESTRUCTOR_P (cand->fn)
+		       && !VOID_TYPE_P (TREE_TYPE (call)))
+		/* An explicit call of the form "x->~X()" has type
+		   "void".  However, on platforms where destructors
+		   return "this" (i.e., those where
+		   targetm.cxx.cdtor_returns_this is true), such calls
+		   will appear to have a return value of pointer type
+		   to the low-level call machinery.  We do not want to
+		   change the low-level machinery, since we want to be
+		   able to optimize "delete f()" on such platforms as
+		   "operator delete(~X(f()))" (rather than generating
+		   "t = f(), ~X(t), operator delete (t)").  */
+		call = build_nop (void_type_node, call);
 	    }
 	}
     }
