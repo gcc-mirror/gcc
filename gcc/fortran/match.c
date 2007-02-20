@@ -534,12 +534,6 @@ gfc_match_iterator (gfc_iterator *iter, int init_flag)
       goto cleanup;
     }
 
-  if (var->symtree->n.sym->attr.pointer)
-    {
-      gfc_error ("Loop variable at %C cannot have the POINTER attribute");
-      goto cleanup;
-    }
-
   m = init_flag ? gfc_match_init_expr (&e1) : gfc_match_expr (&e1);
   if (m == MATCH_NO)
     goto syntax;
