@@ -1218,6 +1218,10 @@ use_blocks_for_decl_p (tree decl)
   if (DECL_INITIAL (decl) == decl)
     return false;
 
+  /* If this decl is an alias, then we don't want to emit a definition.  */
+  if (lookup_attribute ("alias", DECL_ATTRIBUTES (decl)))
+    return false;
+
   return true;
 }
 
