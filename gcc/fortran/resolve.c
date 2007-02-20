@@ -6153,8 +6153,20 @@ resolve_symbol (gfc_symbol *sym)
   if (sym->attr.value && !sym->attr.dummy)
     {
       gfc_error ("'%s' at %L cannot have the VALUE attribute because "
-		 "it is not a dummy", sym->name, &sym->declared_at);
+		 "it is not a dummy argument", sym->name, &sym->declared_at);
       return;
+    }
+
+  if (sym->attr.value && sym->ts.type == BT_CHARACTER)
+    {
+      gfc_charlen *cl = sym->ts.cl;
+      if (!cl || !cl->length || cl->length->expr_type != EXPR_CONSTANT)
+	{
+	  gfc_error ("Character dummy variable '%s' at %L with VALUE "
+		     "attribute must have constant length",
+		     sym->name, &sym->declared_at);
+	  return;
+	}
     }
 
   /* If a derived type symbol has reached this point, without its
