@@ -1,3 +1,9 @@
+2007-02-20  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/natVMVirtualMachine.cc
+	(jdwpClassPrepareCB): Move class status stuff to ...
+	(getClassStatus): ... here.
+
 2007-02-20  Gary Benson  <gbenson@redhat.com>
 
 	* gnu/awt/xlib/XEventLoop.h: Regenerated.

@@ -453,9 +453,25 @@ gnu::classpath::jdwp::VMVirtualMachine::getAllLoadedClasses (void)
 
 jint
 gnu::classpath::jdwp::VMVirtualMachine::
-getClassStatus (MAYBE_UNUSED jclass klass)
+getClassStatus (jclass klass)
 {
-  return 0;
+  jint flags = 0;
+  jvmtiError err = _jdwp_jvmtiEnv->GetClassStatus (klass, &flags);
+  if (err != JVMTI_ERROR_NONE)
+    throw_jvmti_error (err);
+
+  using namespace gnu::classpath::jdwp::event;
+  jint status = 0;
+  if (flags & JVMTI_CLASS_STATUS_VERIFIED)
+    status |= ClassPrepareEvent::STATUS_VERIFIED;
+  if (flags & JVMTI_CLASS_STATUS_PREPARED)
+    status |= ClassPrepareEvent::STATUS_PREPARED;
+  if (flags & JVMTI_CLASS_STATUS_ERROR)
+    status |= ClassPrepareEvent::STATUS_ERROR;
+  if (flags & JVMTI_CLASS_STATUS_INITIALIZED)
+    status |= ClassPrepareEvent::STATUS_INITIALIZED;
+
+  return status;
 }
 
 JArray<gnu::classpath::jdwp::VMMethod *> *
@@ -812,27 +828,12 @@ jdwpBreakpointCB (jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
 }
 
 static void JNICALL
-jdwpClassPrepareCB (jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
+jdwpClassPrepareCB (MAYBE_UNUSED jvmtiEnv *env, MAYBE_UNUSED JNIEnv *jni_env,
 		    jthread thread, jclass klass)
 {
   using namespace gnu::classpath::jdwp;
 
-  jint flags = 0;
-  jvmtiError err = env->GetClassStatus (klass, &flags);
-  if (err != JVMTI_ERROR_NONE)
-    throw_jvmti_error (err);
-
-  using namespace gnu::classpath::jdwp::event;
-  jint status = 0;
-  if (flags & JVMTI_CLASS_STATUS_VERIFIED)
-    status |= ClassPrepareEvent::STATUS_VERIFIED;
-  if (flags & JVMTI_CLASS_STATUS_PREPARED)
-    status |= ClassPrepareEvent::STATUS_PREPARED;
-  if (flags & JVMTI_CLASS_STATUS_ERROR)
-    status |= ClassPrepareEvent::STATUS_ERROR;
-  if (flags & JVMTI_CLASS_STATUS_INITIALIZED)
-    status |= ClassPrepareEvent::STATUS_INITIALIZED;
-
+  jint status = VMVirtualMachine::getClassStatus (klass);
   event::ClassPrepareEvent *event
     = new event::ClassPrepareEvent (thread, klass, status);
   Jdwp::notify (event);
