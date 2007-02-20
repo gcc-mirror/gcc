@@ -542,6 +542,9 @@ typedef struct
   /* The symbol is a derived type with allocatable components, possibly nested.
    */
   unsigned alloc_comp:1;
+
+  /* The namespace where the VOLATILE attribute has been set.  */
+  struct gfc_namespace *volatile_ns;
 }
 symbol_attribute;
 

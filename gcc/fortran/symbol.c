@@ -876,24 +876,18 @@ gfc_add_value (symbol_attribute * attr, const char *name, locus * where)
 try
 gfc_add_volatile (symbol_attribute * attr, const char *name, locus * where)
 {
-
   /* No check_used needed as 11.2.1 of the F2003 standard allows
      that the local identifier made accessible by a use statement can be
      given a VOLATILE attribute.  */
 
-  /* TODO: The following allows multiple VOLATILE statements for
-     use-associated variables and it prevents setting VOLATILE for a host-
-     associated variable which is already marked as VOLATILE in the host.  */
-  if (attr->volatile_ && !attr->use_assoc)
-    {
-	if (gfc_notify_std (GFC_STD_LEGACY, 
-			    "Duplicate VOLATILE attribute specified at %L",
-			    where) 
-	    == FAILURE)
-	  return FAILURE;
-    }
+  if (attr->volatile_ && attr->volatile_ns == gfc_current_ns)
+    if (gfc_notify_std (GFC_STD_LEGACY, 
+        		"Duplicate VOLATILE attribute specified at %L", where)
+        == FAILURE)
+      return FAILURE;
 
   attr->volatile_ = 1;
+  attr->volatile_ns = gfc_current_ns;
   return check_conflict (attr, name, where);
 }
 
