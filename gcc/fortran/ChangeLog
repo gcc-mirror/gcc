@@ -1,5 +1,15 @@
 2007-02-20  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/30522
+	* symbol.c (gfc_add_volatile): Allow to set VOLATILE
+	  attribute for host-associated variables.
+	* gfortran.h (symbol_attribute): Save namespace
+	  where VOLATILE has been set.
+	* trans-decl.c (gfc_finish_var_decl): Move variable
+	  declaration to the top.
+
+2007-02-20  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/30783
 	* resolve.c (resolve_symbol): Add character dummy VALUE check.
 
