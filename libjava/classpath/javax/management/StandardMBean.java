@@ -69,7 +69,7 @@ public class StandardMBean
   /**
    * The interface for this bean.
    */
-  private Class iface;
+  private Class<?> iface;
 
   /**
    * The implementation of the interface.
@@ -94,7 +94,7 @@ public class StandardMBean
    *                                    in the interface that doesn't comply
    *                                    with the naming conventions.
    */
-  protected StandardMBean(Class iface)
+  protected StandardMBean(Class<?> iface)
     throws NotCompliantMBeanException
   {
     if (iface == null)
@@ -133,7 +133,7 @@ public class StandardMBean
    *                                    in the interface that doesn't comply
    *                                    with the naming conventions.
    */
-  public StandardMBean(Object impl, Class iface)
+  public <T> StandardMBean(T impl, Class<T> iface)
     throws NotCompliantMBeanException
   {
     if (impl == null)
@@ -143,8 +143,8 @@ public class StandardMBean
 	String className = impl.getClass().getName();
 	try
 	  {
-	    iface = Class.forName(className + "MBean", true,
-				  impl.getClass().getClassLoader());
+	    this.iface = Class.forName(className + "MBean", true,
+				       impl.getClass().getClassLoader());
 	  }
 	catch (ClassNotFoundException e)
 	  {
@@ -154,11 +154,12 @@ public class StandardMBean
 					      " was not found.").initCause(e));
 	  }
       }
-    if (!(iface.isInstance(impl)))
+    else
+      this.iface = iface;
+    if (!(this.iface.isInstance(impl)))
       throw new NotCompliantMBeanException("The instance, " + impl + 
 					   ", is not an instance of " + iface);
     this.impl = impl;
-    this.iface = iface;
   }
 
   /**
@@ -493,7 +494,7 @@ public class StandardMBean
    *
    * @return the implementation class.
    */
-  public Class getImplementationClass()
+  public Class<?> getImplementationClass()
   {
     return impl.getClass();
   }
@@ -681,7 +682,7 @@ public class StandardMBean
    *
    * @return the management interface.
    */
-  public final Class getMBeanInterface()
+  public final Class<?> getMBeanInterface()
   {
     return iface;
   }

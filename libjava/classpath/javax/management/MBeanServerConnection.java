@@ -533,7 +533,7 @@ public interface MBeanServerConnection
    * @throws IOException if an I/O error occurred in communicating with
    *                     the bean server.
    */
-  Set queryMBeans(ObjectName name, QueryExp query)
+  Set<ObjectInstance> queryMBeans(ObjectName name, QueryExp query)
     throws IOException;
   
   /**
@@ -560,7 +560,7 @@ public interface MBeanServerConnection
    * @throws IOException if an I/O error occurred in communicating with
    *                     the bean server.
    */
-  Set queryNames(ObjectName name, QueryExp query)
+  Set<ObjectName> queryNames(ObjectName name, QueryExp query)
     throws IOException;
 
   /**

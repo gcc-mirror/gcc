@@ -30,6 +30,9 @@ private:
   void checkComponents();
 public:
   virtual jboolean apply(::javax::management::ObjectName *);
+private:
+  static jboolean domainMatches(::java::lang::String *, jint, ::java::lang::String *, jint);
+public:
   virtual jboolean equals(::java::lang::Object *);
   virtual ::java::lang::String * getCanonicalKeyPropertyListString();
   virtual ::java::lang::String * getCanonicalName();
