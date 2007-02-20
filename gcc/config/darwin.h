@@ -297,7 +297,8 @@ extern GTY(()) int darwin_ms_struct;
    %{headerpad_max_install_names*} \
    %{Zimage_base*:-image_base %*} \
    %{Zinit*:-init %*} \
-   -macosx_version_min %(darwin_minversion) \
+   %{!mmacosx-version-min=*:-macosx_version_min %(darwin_minversion)} \
+   %{mmacosx-version-min=*:-macosx_version_min %*} \
    %{nomultidefs} \
    %{Zmulti_module:-multi_module} %{Zsingle_module:-single_module} \
    %{Zmultiply_defined*:-multiply_defined %*} \
