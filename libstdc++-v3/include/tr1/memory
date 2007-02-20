@@ -1,6 +1,6 @@
 // <tr1/memory> -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,14 +36,14 @@
 #define _TR1_MEMORY 1
 
 #include "../memory"
-#include <functional>       // std::less
-#include <exception>        // std::exception
-#include <new>              // std::bad_alloc
-#include <typeinfo>         // std::type_info in get_deleter
-#include <cstddef>          // std::size_t
-#include <algorithm>        // std::swap
-#include <iosfwd>           // std::basic_ostream
-#include <cstdlib>          // std::abort
+#include <functional>           // std::less
+#include <exception>            // std::exception
+#include <new>                  // std::bad_alloc
+#include <typeinfo>             // std::type_info in get_deleter
+#include <cstddef>              // std::size_t
+#include <bits/stl_algobase.h>  // std::swap
+#include <iosfwd>               // std::basic_ostream
+#include <cstdlib>              // std::abort
 
 #include <ext/atomicity.h>
 #include <ext/concurrence.h>

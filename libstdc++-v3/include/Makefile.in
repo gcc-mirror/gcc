@@ -774,6 +774,7 @@ tr1_headers = \
 	${tr1_srcdir}/fenv.h \
 	${tr1_srcdir}/float.h \
 	${tr1_srcdir}/functional \
+	${tr1_srcdir}/functional_hash.h \
 	${tr1_srcdir}/functional_iterate.h \
 	${tr1_srcdir}/hashtable \
 	${tr1_srcdir}/hashtable_policy.h \
