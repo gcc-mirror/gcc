@@ -4,13 +4,13 @@
 
 /* Make sure -Werror turns warnings in to errors.  */
 
-void __attribute__((dj)) bar() { }	/* { dg-warning "warning: .* attribute directive ignored" } */
+void __attribute__((dj)) bar() { }	/* { dg-error "error: .* attribute directive ignored" } */
 
 int i;
 
 void
 foo ()
 {
-  if (&i)	/* { dg-warning "warning: .* will always evaluate as 'true'" } */
+  if (&i)	/* { dg-error "error: .* will always evaluate as 'true'" } */
     grill ();
 }
