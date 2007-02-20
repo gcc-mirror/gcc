@@ -140,6 +140,7 @@ static const char * const optabs[] =
   "exp2_optab->handlers[$A].insn_code = CODE_FOR_$(exp2$a2$)",
   "expm1_optab->handlers[$A].insn_code = CODE_FOR_$(expm1$a2$)",
   "ldexp_optab->handlers[$A].insn_code = CODE_FOR_$(ldexp$a3$)",
+  "scalb_optab->handlers[$A].insn_code = CODE_FOR_$(scalb$a3$)",
   "logb_optab->handlers[$A].insn_code = CODE_FOR_$(logb$a2$)",
   "ilogb_optab->handlers[$A].insn_code = CODE_FOR_$(ilogb$a2$)",
   "log_optab->handlers[$A].insn_code = CODE_FOR_$(log$a2$)",

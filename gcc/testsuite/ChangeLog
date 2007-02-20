@@ -1,3 +1,7 @@
+2007-02-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/builtins-34.c: Add scalb/scalbn/scalbln cases.
+
 2007-02-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
             DJ Delorie <dj@redhat.com>
 
@@ -76,7 +80,7 @@
 
 2007-02-18  Roger Sayle  <roger@eyesopen.com>
 
-        * gfortran.dg/forall_10.f90: New test case.
+	* gfortran.dg/forall_10.f90: New test case.
 
 2007-02-18  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -1199,9 +1203,9 @@
 
 2007-01-06  Lee Millward  <lee.millward@codesourcery.com>
 
-       PR c++/19439
-       * g++.dg/template/duplicate1.C: New test
-       * g++.dg/template/memfriend6.C: Adjust error markers.
+	PR c++/19439
+	* g++.dg/template/duplicate1.C: New test
+	* g++.dg/template/memfriend6.C: Adjust error markers.
 	
 2007-01-05  Andrew Pinski  <Andrew_Pinski@playstation.sony.com>
 

@@ -179,6 +179,8 @@ enum optab_index
   OTI_expm1,
   /* Load exponent of a floating point number */
   OTI_ldexp,
+  /* Multiply floating-point number by integral power of radix */
+  OTI_scalb,
   /* Radix-independent exponent */
   OTI_logb,
   OTI_ilogb,
@@ -357,6 +359,7 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define exp2_optab (optab_table[OTI_exp2])
 #define expm1_optab (optab_table[OTI_expm1])
 #define ldexp_optab (optab_table[OTI_ldexp])
+#define scalb_optab (optab_table[OTI_scalb])
 #define logb_optab (optab_table[OTI_logb])
 #define ilogb_optab (optab_table[OTI_ilogb])
 #define log_optab (optab_table[OTI_log])

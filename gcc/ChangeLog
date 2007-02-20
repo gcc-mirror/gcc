@@ -1,3 +1,21 @@
+2007-02-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* optabs.h (enum optab_index): Add new OTI_scalb.
+	(scalb_optab): Define corresponding macro.
+	* optabs.c (init_optabs): Initialize scalb_optab.
+	* genopinit.c (optabs): Implement scalb_optab using scalb?f3
+	patterns.
+	* builtins.c (expand_builtin_mathfn_2, expand_builtin): Handle
+	BUILT_IN_SCALB{,F,L}, BUILT_IN_SCALBN{,F,L} and BUILT_IN_SCALBLN{,F,L}.
+	(expand_builtin): Expand BUILT_IN_SCALB{,F,L}, BUILT_IN_SCALBN{,F,L}
+	and BUILT_IN_SCALBLN{,F,L} using expand_builtin_mathfn_2 if
+	flag_unsafe_math_optimizations is set.
+
+	* config/i386/i386.md (scalbxf3, scalb<mode>3): New expanders
+	to implement scalbf, scalb and scalbl built-ins as inline x87
+	intrinsics.
+
 2007-02-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
             DJ Delorie <dj@redhat.com>
 
