@@ -31,7 +31,7 @@ Boston, MA 02110-1301, USA.  */
    HP-PA 2.0w has 32 fullword registers and 32 floating point
    registers. However, the floating point registers behave
    differently: the left and right halves of registers are addressable
-   as 32 bit registers.
+   as 32-bit registers.
 
    Due to limitations within GCC itself, we do not expose the left/right
    half addressability when in wide mode.  This is not a major performance

@@ -29,7 +29,7 @@
 ;        for QImode and Pmode, whether Pmode was QImode or PQImode.
 ;        For addresses we wouldn't have to have a clobber of the CC
 ;        associated with each insn and we could use MPYI in address
-;        calculations without having to synthesize a proper 32 bit multiply.
+;        calculations without having to synthesize a proper 32-bit multiply.
 
 ; Additional C30/C40 instructions not coded:
 ; CALLcond, IACK, IDLE, LDE, LDFI, LDII, LDM, NORM, RETIcond
@@ -123,7 +123,7 @@
 ; L   unsigned 16-bit
 ; M   unsigned 8-bit  (C4x only)
 ; N   ones complement of unsigned 16-bit
-; O   16 bit high constant
+; O   16-bit high constant
 ; Q   ARx + 9-bit signed disp
 ; R   ARx + 5-bit unsigned disp  (C4x only)
 ; S   ARx + 0, 1, IRx disp

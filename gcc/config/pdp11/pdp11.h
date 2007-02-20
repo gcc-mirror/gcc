@@ -97,7 +97,7 @@ Boston, MA 02110-1301, USA.  */
 #define UNITS_PER_WORD 2
 
 /* This machine doesn't use IEEE floats.  */
-/* Because the pdp11 (at least Unix) convention for 32 bit ints is
+/* Because the pdp11 (at least Unix) convention for 32-bit ints is
    big endian, opposite for what you need for float, the vax float
    conversion routines aren't actually used directly.  But the underlying
    format is indeed the vax/pdp11 float format.  */
@@ -286,10 +286,10 @@ extern const struct real_format pdp11_d_format;
    
 /* The pdp has a couple of classes:
 
-MUL_REGS are used for odd numbered regs, to use in 16 bit multiplication
-         (even numbered do 32 bit multiply)
+MUL_REGS are used for odd numbered regs, to use in 16-bit multiplication
+         (even numbered do 32-bit multiply)
 LMUL_REGS long multiply registers (even numbered regs )
-	  (don't need them, all 32 bit regs are even numbered!)
+	  (don't need them, all 32-bit regs are even numbered!)
 GENERAL_REGS is all cpu
 LOAD_FPU_REGS is the first four cpu regs, they are easier to load
 NO_LOAD_FPU_REGS is ac4 and ac5, currently - difficult to load them

@@ -1632,7 +1632,7 @@ cris_rtx_costs (rtx x, int code, int outer_code, int *total)
 	/* Eight or 16 bits are a word and cycle more expensive.  */
 	else if (val <= 32767 && val >= -32768)
 	  *total = 2;
-	/* A 32 bit constant (or very seldom, unsigned 16 bits) costs
+	/* A 32-bit constant (or very seldom, unsigned 16 bits) costs
 	   another word.  FIXME: This isn't linear to 16 bits.  */
 	else
 	  *total = 4;

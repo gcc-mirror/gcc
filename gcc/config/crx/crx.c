@@ -546,12 +546,12 @@ crx_function_arg_regno_p (int n)
  * The following addressing modes are supported on CRX:
  *
  * Relocations		--> const | symbol_ref | label_ref
- * Absolute address	--> 32 bit absolute
- * Post increment	--> reg + 12 bit disp.
- * Post modify		--> reg + 12 bit disp.
- * Register relative	--> reg | 32 bit disp. + reg | 4 bit + reg
- * Scaled index		--> reg + reg | 22 bit disp. + reg + reg |
- *			    22 disp. + reg + reg + (2 | 4 | 8) */
+ * Absolute address	--> 32-bit absolute
+ * Post increment	--> reg + 12-bit disp.
+ * Post modify		--> reg + 12-bit disp.
+ * Register relative	--> reg | 32-bit disp. + reg | 4 bit + reg
+ * Scaled index		--> reg + reg | 22-bit disp. + reg + reg |
+ *			    22-disp. + reg + reg + (2 | 4 | 8) */
 
 static int crx_addr_reg_p (rtx addr_reg)
 {

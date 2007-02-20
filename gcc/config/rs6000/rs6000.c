@@ -3530,7 +3530,7 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	}
       else
 	{
-	  /* IE, or 64 bit offset LE.  */
+	  /* IE, or 64-bit offset LE.  */
 	  tmp2 = gen_reg_rtx (Pmode);
 	  if (TARGET_64BIT)
 	    insn = gen_tls_got_tprel_64 (tmp2, got, addr);
@@ -9271,22 +9271,22 @@ rs6000_common_init_builtins (void)
 	       && mode3 == V4SImode)
 	type = v4sf_ftype_v4sf_v4sf_v4si;
 
-      /* vchar, vchar, vchar, 4 bit literal.  */
+      /* vchar, vchar, vchar, 4-bit literal.  */
       else if (mode0 == V16QImode && mode1 == mode0 && mode2 == mode0
 	       && mode3 == QImode)
 	type = v16qi_ftype_v16qi_v16qi_int;
 
-      /* vshort, vshort, vshort, 4 bit literal.  */
+      /* vshort, vshort, vshort, 4-bit literal.  */
       else if (mode0 == V8HImode && mode1 == mode0 && mode2 == mode0
 	       && mode3 == QImode)
 	type = v8hi_ftype_v8hi_v8hi_int;
 
-      /* vint, vint, vint, 4 bit literal.  */
+      /* vint, vint, vint, 4-bit literal.  */
       else if (mode0 == V4SImode && mode1 == mode0 && mode2 == mode0
 	       && mode3 == QImode)
 	type = v4si_ftype_v4si_v4si_int;
 
-      /* vfloat, vfloat, vfloat, 4 bit literal.  */
+      /* vfloat, vfloat, vfloat, 4-bit literal.  */
       else if (mode0 == V4SFmode && mode1 == mode0 && mode2 == mode0
 	       && mode3 == QImode)
 	type = v4sf_ftype_v4sf_v4sf_int;
@@ -9390,23 +9390,23 @@ rs6000_common_init_builtins (void)
       else if (mode0 == V4SImode && mode1 == V8HImode && mode2 == V4SImode)
 	type = v4si_ftype_v8hi_v4si;
 
-      /* vint, vint, 5 bit literal.  */
+      /* vint, vint, 5-bit literal.  */
       else if (mode0 == V4SImode && mode1 == V4SImode && mode2 == QImode)
 	type = v4si_ftype_v4si_int;
 
-      /* vshort, vshort, 5 bit literal.  */
+      /* vshort, vshort, 5-bit literal.  */
       else if (mode0 == V8HImode && mode1 == V8HImode && mode2 == QImode)
 	type = v8hi_ftype_v8hi_int;
 
-      /* vchar, vchar, 5 bit literal.  */
+      /* vchar, vchar, 5-bit literal.  */
       else if (mode0 == V16QImode && mode1 == V16QImode && mode2 == QImode)
 	type = v16qi_ftype_v16qi_int;
 
-      /* vfloat, vint, 5 bit literal.  */
+      /* vfloat, vint, 5-bit literal.  */
       else if (mode0 == V4SFmode && mode1 == V4SImode && mode2 == QImode)
 	type = v4sf_ftype_v4si_int;
 
-      /* vint, vfloat, 5 bit literal.  */
+      /* vint, vfloat, 5-bit literal.  */
       else if (mode0 == V4SImode && mode1 == V4SFmode && mode2 == QImode)
 	type = v4si_ftype_v4sf_int;
 

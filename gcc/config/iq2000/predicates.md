@@ -18,7 +18,7 @@
 ;; the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 ;; Boston, MA 02110-1301, USA.
 
-;; Return 1 if OP can be used as an operand where a register or 16 bit
+;; Return 1 if OP can be used as an operand where a register or 16-bit
 ;; unsigned integer is needed.
 
 (define_predicate "uns_arith_operand"
@@ -30,7 +30,7 @@
   return register_operand (op, mode);
 })
 
-;; Return 1 if OP can be used as an operand where a 16 bit integer is
+;; Return 1 if OP can be used as an operand where a 16-bit integer is
 ;; needed.
 
 (define_predicate "arith_operand"
@@ -50,7 +50,7 @@
   return (GET_CODE (op) == CONST_INT && SMALL_INT (op));
 })
 
-;; Return 1 if OP is a 32 bit integer which is too big to be loaded
+;; Return 1 if OP is a 32-bit integer which is too big to be loaded
 ;; with one instruction.
 
 (define_predicate "large_int"

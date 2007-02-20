@@ -1969,7 +1969,7 @@ insert_branch_hints (void)
        because they are only at the end of a block and are
        considered when we are deciding whether to propagate
        - we're getting too far away from the branch.  The hbr insns
-       only have a signed 10 bit offset
+       only have a signed 10-bit offset
        We go back as far as possible so the branch will be considered
        for propagation when we get to the beginning of the block.  */
     next = 0;
@@ -2280,7 +2280,7 @@ legitimate_const (rtx x, int aligned)
 {
   /* We can never know if the resulting address fits in 18 bits and can be
      loaded with ila.  Instead we should use the HI and LO relocations to
-     load a 32 bit address. */
+     load a 32-bit address.  */
   rtx sym, cst;
 
   gcc_assert (GET_CODE (x) == CONST);
@@ -2588,11 +2588,11 @@ arith_immediate_p (rtx op, enum machine_mode mode,
 }
 
 /* We accept:
-   - any 32 bit constant (SImode, SFmode)
+   - any 32-bit constant (SImode, SFmode)
    - any constant that can be generated with fsmbi (any mode)
-   - a 64 bit constant where the high and low bits are identical
+   - a 64-bit constant where the high and low bits are identical
      (DImode, DFmode)
-   - a 128 bit constant where the four 32 bit words match. */
+   - a 128-bit constant where the four 32-bit words match.  */
 int
 spu_legitimate_constant_p (rtx x)
 {

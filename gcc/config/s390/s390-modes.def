@@ -119,7 +119,7 @@ information necessary for CCT1 and CCT2 modes.):
 
 CCSR, CCUR
 
-There are several instructions comparing 32 bit with 64 bit unsigned/signed
+There are several instructions comparing 32 bit with 64-bit unsigned/signed
 values. Such instructions can be considered to have a builtin zero/sign_extend.
 The problem is that in the RTL (to be canonical) the zero/sign extended operand 
 has to be the first one but the machine instructions like it the other way 

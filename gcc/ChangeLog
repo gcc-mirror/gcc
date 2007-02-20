@@ -6,6 +6,19 @@
 	config/arc/arc.h, config/arm/arm.c, config/arm/arm.md,
 	config/arm/lib1funcs.asm: Follow spelling conventions.
 
+	* config/c4x/c4x.md, config/cris/cris.c, config/crx/crx.c,
+	config/fr30/fr30.md, config/i386/i386.h,
+	config/iq2000/iq2000.h, config/iq2000/predicates.md,
+	config/pa/milli64.S, config/pa/pa.c, config/pa/pa.h,
+	config/pa/pa.md, config/pa/pa32-regs.h, config/pa/pa64-regs.h,
+	config/pdp11/pdp11.c, config/pdp11/pdp11.h,
+	config/rs6000/altivec.md, config/rs6000/rs6000.c,
+	config/s390/s390-modes.def, config/sparc/netbsd-elf.h,
+	config/sparc/sparc.c, config/sparc/sparc.h,
+	config/sparc/sparc.md, config/spu/constraints.md,
+	config/spu/spu.c, config/stormy16/stormy16.md: Follow spelling
+	conventions.
+
 2007-02-20  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/29943

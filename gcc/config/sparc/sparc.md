@@ -1237,7 +1237,7 @@
   "TARGET_V9
    && REGNO (operands[1]) == SPARC_ICC_REG
    && (GET_MODE (operands[1]) == CCXmode
-       /* 32 bit LTU/GEU are better implemented using addx/subx.  */
+       /* 32-bit LTU/GEU are better implemented using addx/subx.  */
        || (GET_CODE (operands[2]) != LTU && GET_CODE (operands[2]) != GEU))"
   [(set (match_dup 0) (const_int 0))
    (set (match_dup 0)
@@ -4592,7 +4592,7 @@
 
 ;; Integer multiply/divide instructions.
 
-;; The 32 bit multiply/divide instructions are deprecated on v9, but at
+;; The 32-bit multiply/divide instructions are deprecated on v9, but at
 ;; least in UltraSPARC I, II and IIi it is a win tick-wise.
 
 (define_insn "mulsi3"
@@ -4699,8 +4699,8 @@
     }
 })
 
-;; V9 puts the 64 bit product in a 64 bit register.  Only out or global
-;; registers can hold 64 bit values in the V8plus environment.
+;; V9 puts the 64-bit product in a 64-bit register.  Only out or global
+;; registers can hold 64-bit values in the V8plus environment.
 ;; XXX
 (define_insn "mulsidi3_v8plus"
   [(set (match_operand:DI 0 "register_operand" "=h,r")

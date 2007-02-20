@@ -85,7 +85,7 @@ Boston, MA 02110-1301, USA.  */
 #define TARGET_VERSION fprintf (stderr, " (%s)", TARGET_NAME);
 
 /* Below here exists the merged NetBSD/sparc & NetBSD/sparc64 compiler
-   description, allowing one to build 32 bit or 64 bit applications
+   description, allowing one to build 32-bit or 64-bit applications
    on either.  We define the sparc & sparc64 versions of things,
    occasionally a neutral version (should be the same as "netbsd-elf.h")
    and then based on SPARC_BI_ARCH, DEFAULT_ARCH32_P, and TARGET_CPU_DEFAULT,

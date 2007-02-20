@@ -252,12 +252,12 @@ enum reg_class
 /* For IQ2000:
 
    `I'	is used for the range of constants an arithmetic insn can
-	actually contain (16 bits signed integers).
+	actually contain (16-bits signed integers).
 
    `J'	is used for the range which is just zero (i.e., $r0).
 
    `K'	is used for the range of constants a logical insn can actually
-	contain (16 bit zero-extended integers).
+	contain (16-bit zero-extended integers).
 
    `L'	is used for the range of constants that be loaded with lui
 	(i.e., the bottom 16 bits are zero).
@@ -267,7 +267,7 @@ enum reg_class
 
    `N'	is used for constants 0xffffnnnn or 0xnnnnffff
 
-   `O'	is a 5 bit zero-extended integer.  */
+   `O'	is a 5-bit zero-extended integer.  */
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)					\
   ((C) == 'I' ? ((unsigned HOST_WIDE_INT) ((VALUE) + 0x8000) < 0x10000)	\
