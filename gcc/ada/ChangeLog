@@ -1,3 +1,18 @@
+2007-02-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/30684
+	Backport from 4.2 branch:
+	2006-11-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ada-tree.h (DECL_READONLY_ONCE_ELAB): New macro.
+	* decl.c (elaborate_expression_1): Test the DECL_READONLY_ONCE_ELAB
+	flag in addition to TREE_READONLY to assert the constantness of
+	variables for elaboration purposes.
+	* trans.c (add_decl_expr): Do not dynamically elaborate padded objects
+	if the initializer takes into account the padding.
+	Set DECL_READONLY_ONCE_ELAB flag on variables originally TREE_READONLY
+	but whose elaboration cannot be performed statically.
+
 2007-02-13  Release Manager
 
 	* GCC 4.1.2 released.

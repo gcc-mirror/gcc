@@ -4732,7 +4732,8 @@ elaborate_expression_1 (Node_Id gnat_expr, Entity_Id gnat_entity,
 
   expr_variable = (!CONSTANT_CLASS_P (gnu_expr)
 		   && !(TREE_CODE (gnu_inner_expr) == VAR_DECL
-			&& TREE_READONLY (gnu_inner_expr))
+			&& (TREE_READONLY (gnu_inner_expr)
+			    || DECL_READONLY_ONCE_ELAB (gnu_inner_expr)))
 		   && !CONTAINS_PLACEHOLDER_P (gnu_expr));
 
   /* If this is a static expression or contains a discriminant, we don't

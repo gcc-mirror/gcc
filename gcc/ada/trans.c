@@ -4315,7 +4315,8 @@ add_stmt_with_node (tree gnu_stmt, Node_Id gnat_node)
 void
 add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 {
-  tree gnu_stmt;
+  tree type = TREE_TYPE (gnu_decl);
+  tree gnu_stmt, gnu_init, gnu_lhs;
 
   /* If this is a variable that Gigi is to ignore, we may have been given
      an ERROR_MARK.  So test for it.  We also might have been given a
@@ -4323,7 +4324,7 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
      ignore a TYPE_DECL for an UNCONSTRAINED_ARRAY_TYPE.  */
   if (!DECL_P (gnu_decl)
       || (TREE_CODE (gnu_decl) == TYPE_DECL
-	  && TREE_CODE (TREE_TYPE (gnu_decl)) == UNCONSTRAINED_ARRAY_TYPE))
+	  && TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE))
     return;
 
   /* If we are global, we don't want to actually output the DECL_EXPR for
@@ -4345,41 +4346,32 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 	}
     }
 
-  /* If this is a DECL_EXPR for a variable with DECL_INITIAL set,
-     there are two cases we need to handle here.  */
-  if (TREE_CODE (gnu_decl) == VAR_DECL && DECL_INITIAL (gnu_decl))
+  /* If this is a variable and an initializer is attached to it, it must be
+     valid for the context.  Similar to init_const in create_var_decl_1.  */ 
+  if (TREE_CODE (gnu_decl) == VAR_DECL
+      && (gnu_init = DECL_INITIAL (gnu_decl)) != NULL_TREE
+      && (TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (TREE_TYPE (gnu_init))
+	  || (TREE_STATIC (gnu_decl)
+	      && !initializer_constant_valid_p (gnu_init,
+						TREE_TYPE (gnu_init)))))
     {
-      tree gnu_init = DECL_INITIAL (gnu_decl);
-      tree gnu_lhs = NULL_TREE;
-
-      /* If this is a DECL_EXPR for a variable with DECL_INITIAL set
-	 and decl has a padded type, convert it to the unpadded type so the
-	 assignment is done properly.  */
-      if (TREE_CODE (TREE_TYPE (gnu_decl)) == RECORD_TYPE
-	  && TYPE_IS_PADDING_P (TREE_TYPE (gnu_decl)))
-	gnu_lhs
-	  = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_decl))), gnu_decl);
-
-      /* Otherwise, if this is going into memory and the initializer isn't
-	 valid for the assembler and loader.  Gimplification could do this,
-	 but would be run too late if -fno-unit-at-a-time.  */
-      else if (TREE_STATIC (gnu_decl)
-	       && !initializer_constant_valid_p (gnu_init,
-						 TREE_TYPE (gnu_decl)))
+      /* If GNU_DECL has a padded type, convert it to the unpadded
+	 type so the assignment is done properly.  */
+      if (TREE_CODE (type) == RECORD_TYPE && TYPE_IS_PADDING_P (type))
+	gnu_lhs = convert (TREE_TYPE (TYPE_FIELDS (type)), gnu_decl);
+      else
 	gnu_lhs = gnu_decl;
 
-      if (gnu_lhs)
-	{
-	  tree gnu_assign_stmt
-	    = build_binary_op (MODIFY_EXPR, NULL_TREE,
-			       gnu_lhs, DECL_INITIAL (gnu_decl));
+      gnu_stmt = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_lhs, gnu_init);
 
-	  DECL_INITIAL (gnu_decl) = 0;
+      DECL_INITIAL (gnu_decl) = NULL_TREE;
+      if (TREE_READONLY (gnu_decl))
+	{
 	  TREE_READONLY (gnu_decl) = 0;
-	  annotate_with_locus (gnu_assign_stmt,
-			       DECL_SOURCE_LOCATION (gnu_decl));
-	  add_stmt (gnu_assign_stmt);
+	  DECL_READONLY_ONCE_ELAB (gnu_decl) = 1;
 	}
+
+      add_stmt_with_node (gnu_stmt, gnat_entity);
     }
 }
 

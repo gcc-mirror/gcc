@@ -235,6 +235,10 @@ struct lang_type GTY(()) {tree t; };
    discriminant.  */
 #define DECL_STUBBED_P(NODE) DECL_LANG_FLAG_0 (FUNCTION_DECL_CHECK (NODE))
 
+/* Nonzero in a VAR_DECL if it is guaranteed to be constant after having
+   been elaborated and TREE_READONLY is not set on it.  */
+#define DECL_READONLY_ONCE_ELAB(NODE) DECL_LANG_FLAG_0 (VAR_DECL_CHECK (NODE))
+
 /* Nonzero if this decl is always used by reference; i.e., an INDIRECT_REF
    is needed to access the object.  */
 #define DECL_BY_REF_P(NODE) DECL_LANG_FLAG_1 (NODE)
