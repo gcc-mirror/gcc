@@ -1,3 +1,8 @@
+2007-02-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (build_new_method_call): Ensure that explicit calls of
+	destructors have type "void".
+
 2007-02-19  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* typeck.c (build_binary_op): Replace -Wstring-literal-comparison
