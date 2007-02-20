@@ -1820,6 +1820,24 @@ remove_note (rtx insn, rtx note)
   gcc_unreachable ();
 }
 
+/* Remove REG_EQUAL and/or REG_EQUIV notes if INSN has such notes.  */
+
+void
+remove_reg_equal_equiv_notes (rtx insn)
+{
+  rtx *loc;
+
+  loc = &REG_NOTES (insn);
+  while (*loc)
+    {
+      enum reg_note kind = REG_NOTE_KIND (*loc);
+      if (kind == REG_EQUAL || kind == REG_EQUIV)
+	*loc = XEXP (*loc, 1);
+      else
+	loc = &XEXP (*loc, 1);
+    }
+}
+
 /* Search LISTP (an EXPR_LIST) for an entry whose first operand is NODE and
    return 1 if it is found.  A simple equality test is used to determine if
    NODE matches.  */

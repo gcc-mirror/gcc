@@ -887,22 +887,13 @@ reload_combine (void)
 
 	      if (apply_change_group ())
 		{
-		  rtx *np;
-
 		  /* Delete the reg-reg addition.  */
 		  delete_insn (insn);
 
 		  if (reg_state[regno].offset != const0_rtx)
 		    /* Previous REG_EQUIV / REG_EQUAL notes for PREV
 		       are now invalid.  */
-		    for (np = &REG_NOTES (prev); *np;)
-		      {
-			if (REG_NOTE_KIND (*np) == REG_EQUAL
-			    || REG_NOTE_KIND (*np) == REG_EQUIV)
-			  *np = XEXP (*np, 1);
-			else
-			  np = &XEXP (*np, 1);
-		      }
+		    remove_reg_equal_equiv_notes (prev);
 
 		  reg_state[regno].use_index = RELOAD_COMBINE_MAX_USES;
 		  reg_state[REGNO (const_reg)].store_ruid

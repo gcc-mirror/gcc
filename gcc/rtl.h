@@ -1702,6 +1702,7 @@ extern int find_reg_fusage (rtx, enum rtx_code, rtx);
 extern int find_regno_fusage (rtx, enum rtx_code, unsigned int);
 extern int pure_call_p (rtx);
 extern void remove_note (rtx, rtx);
+extern void remove_reg_equal_equiv_notes (rtx);
 extern int side_effects_p (rtx);
 extern int volatile_refs_p (rtx);
 extern int volatile_insn_p (rtx);
