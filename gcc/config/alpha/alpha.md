@@ -6568,7 +6568,7 @@
     {
       int ofs;
 
-      /* Fail 8 bit fields, falling back on a simple byte load.  */
+      /* Fail 8-bit fields, falling back on a simple byte load.  */
       if (INTVAL (operands[2]) == 8)
 	FAIL;
 

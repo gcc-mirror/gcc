@@ -444,7 +444,7 @@ pc		.req	r15
 
 	@ Initially shift the divisor left 3 bits if possible,
 	@ set curbit accordingly.  This allows for curbit to be located
-	@ at the left end of each 4 bit nibbles in the division loop
+	@ at the left end of each 4-bit nibbles in the division loop
 	@ to save one loop in most cases.
 	tst	\divisor, #0xe0000000
 	moveq	\divisor, \divisor, lsl #3

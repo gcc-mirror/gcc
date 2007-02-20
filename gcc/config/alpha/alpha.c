@@ -3343,7 +3343,7 @@ alpha_expand_unaligned_load (rtx tgt, rtx mem, HOST_WIDE_INT size,
 
       /* We must use tgt here for the target.  Alpha-vms port fails if we use
 	 addr for the target, because addr is marked as a pointer and combine
-	 knows that pointers are always sign-extended 32 bit values.  */
+	 knows that pointers are always sign-extended 32-bit values.  */
       addr = expand_binop (DImode, ior_optab, extl, exth, tgt, 1, OPTAB_WIDEN);
       addr = expand_binop (DImode, ashr_optab, addr, GEN_INT (48),
 			   addr, 1, OPTAB_WIDEN);
@@ -6580,7 +6580,7 @@ alpha_expand_builtin (tree exp, rtx target,
 #endif
 
 /* Fold the builtin for the CMPBGE instruction.  This is a vector comparison
-   with an 8 bit output vector.  OPINT contains the integer operands; bit N
+   with an 8-bit output vector.  OPINT contains the integer operands; bit N
    of OP_CONST is set if OPINT[N] is valid.  */
 
 static tree

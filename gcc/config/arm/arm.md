@@ -8152,7 +8152,7 @@
       operands[2] = const0_rtx;
       
     /* This is to decide if we should generate indirect calls by loading the
-       32 bit address of the callee into a register before performing the
+       32-bit address of the callee into a register before performing the
        branch and link.  operand[2] encodes the long_call/short_call
        attribute of the function being called.  This attribute is set whenever
        __attribute__((long_call/short_call)) or #pragma long_call/no_long_call
