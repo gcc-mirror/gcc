@@ -25,23 +25,23 @@
 ;; another treats it as 64 bit, and the third sign extends it to 128 bit.
 
 (define_constraint "A"
-  "An immediate which can be loaded with the il/ila/ilh/ilhu instructions.  const_int is treated as a 32 bit value."
+  "An immediate which can be loaded with the il/ila/ilh/ilhu instructions.  const_int is treated as a 32-bit value."
   (ior (and (match_code "const_int,const_double,const_vector")
 	    (match_test "immediate_load_p (op, SImode)"))
        (match_code "symbol_ref,label_ref,high,const")))
 
 (define_constraint "B"
-  "An immediate for arithmetic instructions (e.g., ai, ceqi).  const_int is treated as a 32 bit value."
+  "An immediate for arithmetic instructions (e.g., ai, ceqi).  const_int is treated as a 32-bit value."
   (and (match_code "const_int,const_double,const_vector")
        (match_test "arith_immediate_p (op, SImode, -0x200, 0x1ff)")))
 
 (define_constraint "C"
-  "An immediate for and/xor/or instructions.  const_int is treated as a 32 bit value."
+  "An immediate for and/xor/or instructions.  const_int is treated as a 32-bit value."
   (and (match_code "const_int,const_double,const_vector")
        (match_test "logical_immediate_p (op, SImode)")))
 
 (define_constraint "D"
-  "An immediate for iohl instruction.  const_int is treated as a 32 bit value."
+  "An immediate for iohl instruction.  const_int is treated as a 32-bit value."
   (and (match_code "const_int,const_double,const_vector")
        (match_test "iohl_immediate_p (op, SImode)")))
 
@@ -51,7 +51,7 @@
        (match_test "immediate_load_p (op, TImode)")))
 
 (define_constraint "W"
-  "An immediate for shift and rotate instructions.  const_int is treated as a 32 bit value."
+  "An immediate for shift and rotate instructions.  const_int is treated as a 32-bit value."
   (and (match_code "const_int,const_double,const_vector")
        (match_test "arith_immediate_p (op, SImode, -0x40, 0x3f)")))
 
@@ -66,17 +66,17 @@
        (match_test "iohl_immediate_p (op, TImode)")))
 
 (define_constraint "a"
-  "An immediate which can be loaded with the il/ila/ilh/ilhu instructions.  const_int is treated as a 64 bit value."
+  "An immediate which can be loaded with the il/ila/ilh/ilhu instructions.  const_int is treated as a 64-bit value."
   (and (match_code "const_int")
        (match_test "immediate_load_p (op, DImode)")))
 
 (define_constraint "c"
-  "An immediate for and/xor/or instructions.  const_int is treated as a 64 bit value."
+  "An immediate for and/xor/or instructions.  const_int is treated as a 64-bit value."
   (and (match_code "const_int")
        (match_test "logical_immediate_p (op, DImode)")))
 
 (define_constraint "d"
-  "An immediate for iohl instruction.  const_int is treated as a 64 bit value."
+  "An immediate for iohl instruction.  const_int is treated as a 64-bit value."
   (and (match_code "const_int")
        (match_test "iohl_immediate_p (op, DImode)")))
 
@@ -86,12 +86,12 @@
        (match_test "fsmbi_const_p (op)")))
 
 (define_constraint "j"
-  "An immediate which can be loaded with one of the cbd/chd/cwd/cdd instructions.  const_int is treated as a 32 bit value."
+  "An immediate which can be loaded with one of the cbd/chd/cwd/cdd instructions.  const_int is treated as a 32-bit value."
   (and (match_code "const_int,const_double,const_vector")
        (match_test "cpat_const_p (op, SImode)")))
 
 (define_constraint "k"
-  "An immediate which can be loaded with one of the cbd/chd/cwd/cdd instructions.  const_int is treated as a 64 bit value."
+  "An immediate which can be loaded with one of the cbd/chd/cwd/cdd instructions.  const_int is treated as a 64-bit value."
   (and (match_code "const_int,const_double,const_vector")
        (match_test "cpat_const_p (op, DImode)")))
 
@@ -119,7 +119,7 @@
        (match_test "ival >= -0x200 && ival <= 0x1ff")))
  
 (define_constraint "M"
-  "A signed 16 bit immediate for @code{stop}."
+  "A signed 16-bit immediate for @code{stop}."
   (and (match_code "const_int")
        (match_test "ival >= -0x8000ll && ival <= 0x7fffll")))
 

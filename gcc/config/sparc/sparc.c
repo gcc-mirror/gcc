@@ -3493,7 +3493,7 @@ mem_min_alignment (rtx mem, int desired)
    hard register number, and one indexed by mode.  */
 
 /* The purpose of sparc_mode_class is to shrink the range of modes so that
-   they all fit (as bit numbers) in a 32 bit word (again).  Each real mode is
+   they all fit (as bit numbers) in a 32-bit word (again).  Each real mode is
    mapped into one sparc_mode_class mode.  */
 
 enum sparc_mode_class {

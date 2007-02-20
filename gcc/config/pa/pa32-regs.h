@@ -15,7 +15,7 @@
    HP-PA 1.1 has 32 fullword registers and 32 floating point
    registers. However, the floating point registers behave
    differently: the left and right halves of registers are addressable
-   as 32 bit registers. So, we will set things up like the 68k which
+   as 32-bit registers. So, we will set things up like the 68k which
    has different fp units: define separate register sets for the 1.0
    and 1.1 fp units.  */
 

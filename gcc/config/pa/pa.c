@@ -576,7 +576,7 @@ adddi3_operand (rtx op, enum machine_mode mode)
 }
 
 /* True iff zdepi can be used to generate this CONST_INT.
-   zdepi first sign extends a 5 bit signed number to a given field
+   zdepi first sign extends a 5-bit signed number to a given field
    length, then places this field anywhere in a zero.  */
 int
 zdepi_cint_p (unsigned HOST_WIDE_INT x)

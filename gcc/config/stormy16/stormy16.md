@@ -300,7 +300,7 @@
 
 ;; ::::::::::::::::::::
 ;; ::
-;; :: 16 bit Integer arithmetic
+;; :: 16-bit Integer arithmetic
 ;; ::
 ;; ::::::::::::::::::::
 
@@ -449,7 +449,7 @@
   "mul"
   [(set_attr "psw_operand" "nop")])
 
-;; Unsigned multiplication producing 64 bit results from 32 bit inputs
+;; Unsigned multiplication producing 64-bit results from 32-bit inputs
 ; The constraint on operand 0 is 't' because it is actually two regs
 ; long, and both regs must match the constraint.
 (define_insn "umulhisi3"
@@ -522,7 +522,7 @@
 
 ;; ::::::::::::::::::::
 ;; ::
-;; :: 16 bit Integer Shifts and Rotates
+;; :: 16-bit Integer Shifts and Rotates
 ;; ::
 ;; ::::::::::::::::::::
 
@@ -556,11 +556,11 @@
 
 ;; ::::::::::::::::::::
 ;; ::
-;; :: 16 Bit Integer Logical operations
+;; :: 16-Bit Integer Logical operations
 ;; ::
 ;; ::::::::::::::::::::
 
-;; Logical AND, 16 bit integers
+;; Logical AND, 16-bit integers
 (define_insn "andhi3"
   [(set (match_operand:HI 0 "xstormy16_splittable_below100_or_register" "=T,r,r,r,W")
 	(and:HI (match_operand:HI 1 "xstormy16_below100_or_register" "%0,0,0,0,0")
@@ -590,7 +590,7 @@
    }
 ")
 
-;; Inclusive OR, 16 bit integers
+;; Inclusive OR, 16-bit integers
 (define_insn "iorhi3"
   [(set (match_operand:HI 0 "xstormy16_splittable_below100_or_register" "=T,r,r,r,W")
 	(ior:HI (match_operand:HI 1 "xstormy16_below100_or_register" "%0,0,0,0,0")
@@ -620,7 +620,7 @@
    }
 ")
 
-;; Exclusive OR, 16 bit integers
+;; Exclusive OR, 16-bit integers
 (define_insn "xorhi3"
   [(set (match_operand:HI 0 "register_operand" "=T,r,r")
 	(xor:HI (match_operand:HI 1 "register_operand" "%0,0,0")
@@ -632,7 +632,7 @@
    xor %0,%2"
   [(set_attr "length" "2,2,4")])
 
-;; One's complement, 16 bit integers
+;; One's complement, 16-bit integers
 (define_insn "one_cmplhi2"
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(not:HI (match_operand:HI 1 "register_operand" "0")))]
@@ -642,7 +642,7 @@
 
 ;; ::::::::::::::::::::
 ;; ::
-;; :: 32 bit Integer arithmetic
+;; :: 32-bit Integer arithmetic
 ;; ::
 ;; ::::::::::::::::::::
 
@@ -695,7 +695,7 @@
 
 ;; ::::::::::::::::::::
 ;; ::
-;; :: 32 bit Integer Shifts and Rotates
+;; :: 32-bit Integer Shifts and Rotates
 ;; ::
 ;; ::::::::::::::::::::
 

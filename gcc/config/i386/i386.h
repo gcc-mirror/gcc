@@ -1955,7 +1955,7 @@ do {							\
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
-/* In order to refer to the first 8 regs as 32 bit regs, prefix an "e".
+/* In order to refer to the first 8 regs as 32-bit regs, prefix an "e".
    For non floating point regs, the following are the HImode names.
 
    For float regs, the stack top is sometimes referred to as "%st(0)"

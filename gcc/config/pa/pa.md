@@ -4638,7 +4638,7 @@
   "!TARGET_64BIT"
   "*
 {
-  /* Don't output a 64 bit constant, since we can't trust the assembler to
+  /* Don't output a 64-bit constant, since we can't trust the assembler to
      handle it correctly.  */
   if (GET_CODE (operands[2]) == CONST_DOUBLE)
     operands[2] = GEN_INT (CONST_DOUBLE_LOW (operands[2]));

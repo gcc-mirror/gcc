@@ -584,7 +584,7 @@ output_move_double (rtx *operands)
 	    operands[1] = GEN_INT (INTVAL(operands[1]) & 0xff);
 	}
 	else
-	  /* immediate 32 bit values not allowed */
+	  /* immediate 32-bit values not allowed */
 	  gcc_assert (GET_CODE (operands[1]) != CONST_DOUBLE);
     }
   else

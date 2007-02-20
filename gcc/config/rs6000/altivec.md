@@ -587,7 +587,7 @@
   DONE;
 }")
 
-;; 32 bit integer multiplication
+;; 32-bit integer multiplication
 ;; A_high = Operand_0 & 0xFFFF0000 >> 16
 ;; A_low = Operand_0 & 0xFFFF
 ;; B_high = Operand_1 & 0xFFFF0000 >> 16
