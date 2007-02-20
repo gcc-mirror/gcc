@@ -890,7 +890,7 @@ public interface MBeanServer
    *                           arise from the execution of the query, in which
    *                           case that particular bean will again be excluded.
    */
-  Set queryMBeans(ObjectName name, QueryExp query);
+  Set<ObjectInstance> queryMBeans(ObjectName name, QueryExp query);
   
   /**
    * <p>
@@ -929,7 +929,7 @@ public interface MBeanServer
    *                           Note that these permissions are implied if the
    *                           <code>queryMBeans</code> permissions are available.
    */
-  Set queryNames(ObjectName name, QueryExp query);
+  Set<ObjectName> queryNames(ObjectName name, QueryExp query);
 
   /**
    * Registers the supplied instance with the server, using the specified
