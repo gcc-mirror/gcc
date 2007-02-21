@@ -1334,6 +1334,7 @@ case ${host} in
     AC_CACHE_CHECK([whether mcontext_t fields have underscores],
       gcc_cv_mcontext_underscores,
       AC_COMPILE_IFELSE([
+#include <sys/cdefs.h>
 #include <sys/signal.h>
 #include <ucontext.h>
 int main() { mcontext_t m; if (m->ss.srr0) return 0; return 0; }
