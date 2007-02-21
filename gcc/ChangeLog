@@ -1,3 +1,28 @@
+2007-02-20  Eric Christopher  <echristo@gmail.com>
+
+	* config/frv/frv.c (frv_read_argument): Take a tree and int argument.
+	Rewrite accordingly.
+	(frv_read_iacc_argument): Ditto.
+	(frv_expand_set_builtin): Take a call instead of arglist, update for
+	above changes.
+	(frv_expand_unop_builtin): Ditto.
+	(frv_expand_binop_builtin): Ditto.
+	(frv_expand_cut_builtin): Ditto.
+	(frv_expand_binopimm_builtin): Ditto.
+	(frv_expand_voidbinop_builtin): Ditto.
+	(frv_expand_int_void2arg): Ditto.
+	(frv_expand_prefetches): Ditto.
+	(frv_expand_voidtriop_builtin): Ditto.
+	(frv_expand_voidaccop_builtin): Ditto.
+	(frv_expand_load_builtin): Ditto.
+	(frv_expand_store_builtin): Ditto.
+	(frv_expand_mdpackh_builtin): Ditto.
+	(frv_expand_mclracc_builtin): Ditto.
+	(frv_expand_mrdacc_builtin): Ditto.
+	(frv_expand_mwtacc_builtin): Ditto.
+	(frv_expand_builtin): Remove usage of CALL_EXPR_ARGS, update
+	calls for above.
+
 2007-02-20  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/invoke.texi (RS/6000 and PowerPC Options): Add -mcmpb and -mdfp.
@@ -118,9 +143,9 @@
 2007-02-19  Lee Millward  <lee.millward@codesourcery.com>
 
 	* config/ia64/ia64.c (ia64_expand_builtin): Use the
-	new CALL_EXPR_FN macro for retrieving the function 
+	new CALL_EXPR_FN macro for retrieving the function
 	declaration of the input expression.
-	
+
 2007-02-19  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* c.opt (Waddress): New.
@@ -138,7 +163,7 @@
 	-Wstring-literal-comparison and -Walways-true with -Waddress.
 	* c-common.c (c_common_truthvalue_conversion): Replace -Walways-true
 	with -Waddress.
-	
+
 2007-02-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-cfg.c (dump_function_to_file): Be prepared for functions
