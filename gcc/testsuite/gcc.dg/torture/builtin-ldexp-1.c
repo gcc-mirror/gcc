@@ -6,6 +6,7 @@
    Origin: Kaveh R. Ghazi,  February 17, 2007.  */
 
 /* { dg-do link } */
+/* { dg-options "-fno-finite-math-only" { target sh*-*-* } } */
 
 extern void link_error(int);
 
@@ -21,13 +22,13 @@ extern void link_error(int);
 /* Test that FUNC(ARG1,ARG2) == RES.  Check the sign for -0.0.  */
 #define TESTIT(FUNC,ARG1,ARG2,RES) do { \
   if (__builtin_##FUNC##f(ARG1##f,ARG2) != RES##f \
-      || CKSGN(__builtin_##FUNC##f(ARG1##f,ARG2),RES##f)) \
+      || CKSGN_F(__builtin_##FUNC##f(ARG1##f,ARG2),RES##f)) \
     link_error(__LINE__); \
   if (__builtin_##FUNC(ARG1,ARG2) != RES \
       || CKSGN(__builtin_##FUNC(ARG1,ARG2),RES)) \
     link_error(__LINE__); \
   if (__builtin_##FUNC##l(ARG1##l,ARG2) != RES##l \
-      || CKSGN(__builtin_##FUNC##l(ARG1##l,ARG2),RES##l)) \
+      || CKSGN_L(__builtin_##FUNC##l(ARG1##l,ARG2),RES##l)) \
     link_error(__LINE__); \
   } while (0)
 
@@ -46,13 +47,13 @@ extern void link_error(int);
    the sign as well.  */
 #define TESTIT3(FUNC,NEG,FUNCARG,ARGARG,ARG2,FUNCRES) do { \
   if (!__builtin_##FUNCRES##f(__builtin_##FUNC##f(NEG __builtin_##FUNCARG##f(ARGARG),ARG2)) \
-      || CKSGN(__builtin_##FUNC##f(NEG __builtin_##FUNCARG##f(ARGARG),ARG2), NEG __builtin_##FUNCARG##f(ARGARG))) \
+      || CKSGN_F(__builtin_##FUNC##f(NEG __builtin_##FUNCARG##f(ARGARG),ARG2), NEG __builtin_##FUNCARG##f(ARGARG))) \
     link_error(__LINE__); \
   if (!__builtin_##FUNCRES(__builtin_##FUNC(NEG __builtin_##FUNCARG(ARGARG),ARG2)) \
       || CKSGN(__builtin_##FUNC(NEG __builtin_##FUNCARG(ARGARG),ARG2), NEG __builtin_##FUNCARG(ARGARG))) \
     link_error(__LINE__); \
   if (!__builtin_##FUNCRES##l(__builtin_##FUNC##l(NEG __builtin_##FUNCARG##l(ARGARG),ARG2)) \
-      || CKSGN(__builtin_##FUNC##l(NEG __builtin_##FUNCARG##l(ARGARG),ARG2), NEG __builtin_##FUNCARG##l(ARGARG))) \
+      || CKSGN_L(__builtin_##FUNC##l(NEG __builtin_##FUNCARG##l(ARGARG),ARG2), NEG __builtin_##FUNCARG##l(ARGARG))) \
     link_error(__LINE__); \
   } while (0)
 
