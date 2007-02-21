@@ -47,6 +47,7 @@ Boston, MA 02110-1301, USA.  */
 #include "vec.h"
 #include "bitmap.h"
 #include "vecprim.h"
+#include "pointer-set.h"
 
 /* Obstack used to hold grouping bitmaps and other temporary bitmaps used by
    aliasing  */

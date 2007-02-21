@@ -1,3 +1,8 @@
+2007-02-21 Ira Rosen  <irar@il.ibm.com>
+
+	* tree-ssa-alias.c: Include pointer-set.h
+	* Makefile.in (tree-ssa-alias.o): Depend on pointer-set.h.
+
 2007-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
