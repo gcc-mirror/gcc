@@ -213,7 +213,7 @@
   ""
   "@
    mpy\t%0,%1,%2
-   mpyi\t%0,%1,%H2"
+   mpyi\t%0,%1,%2"
   [(set_attr "type" "fp7")])
 
 (define_insn "spu_mpyu"
@@ -230,7 +230,7 @@
   ""
   "@
    mpyu\t%0,%1,%2
-   mpyui\t%0,%1,%H2"
+   mpyui\t%0,%1,%2"
   [(set_attr "type" "fp7")])
 
 (define_insn "spu_mpya"
@@ -607,12 +607,9 @@
   [(set_attr "type" "br")])
 
 ;; interrupt disable/enable
-;; Register 131 is used exclusively for enabling/disabling interrupts.
-;; It is marked as a global reg and the instructions clobber mem, so it will
-;; not be incorrectly optimized.
 (define_expand "spu_idisable"
   [(parallel
-    [(set (reg:INTR 131) (const_int 0))
+    [(unspec_volatile [(const_int 0)] UNSPEC_SET_INTR)
      (clobber (match_dup:SI 0))
      (clobber (mem:BLK (scratch)))])]
   ""
@@ -620,14 +617,14 @@
 
 (define_expand "spu_ienable"
   [(parallel
-    [(set (reg:INTR 131) (const_int 1))
+    [(unspec_volatile [(const_int 1)] UNSPEC_SET_INTR)
      (clobber (match_dup:SI 0))
      (clobber (mem:BLK (scratch)))])]
   ""
   "operands[0] = gen_reg_rtx (SImode);")
 
 (define_insn "set_intr"
-  [(set (reg:INTR 131) (match_operand 1 "const_int_operand" "i"))
+  [(unspec_volatile [(match_operand 1 "const_int_operand" "i")] UNSPEC_SET_INTR)
    (clobber (match_operand:SI 0 "spu_reg_operand" "=&r"))
    (clobber (mem:BLK (scratch)))]
   "! flag_pic"
@@ -636,7 +633,7 @@
    (set_attr "type" "multi0")])
 
 (define_insn "set_intr_pic"
-  [(set (reg:INTR 131) (match_operand 1 "const_int_operand" "i"))
+  [(unspec_volatile [(match_operand 1 "const_int_operand" "i")] UNSPEC_SET_INTR)
    (clobber (match_operand:SI 0 "spu_reg_operand" "=&r"))
    (clobber (mem:BLK (scratch)))]
   "flag_pic"
@@ -644,53 +641,32 @@
   [(set_attr "length" "12")
    (set_attr "type" "multi1")])
 
-(define_expand "movintrcc"
-  [(parallel
-    [(set (match_operand:INTR 0 "spu_reg_operand" "")
-	  (if_then_else:INTR (match_operand 1 "branch_comparison_operator" "")
-			(match_operand 3 "const_int_operand" "")
-			(match_operand:INTR 2 "spu_reg_operand" "")))
-     (clobber (match_dup:SI 4))
-     (clobber (mem:BLK (scratch)))])]
-  ""
-  { /* We've swapped operands 2 and 3 in the pattern, reverse the
-       condition code too. */
-    PUT_CODE (operands[1], reverse_condition (GET_CODE (operands[1])));
-    operands[4] = gen_reg_rtx (SImode);
-  })
-
 (define_insn "set_intr_cc"
-  [(set (reg:INTR 131)
-	(if_then_else:INTR
-	  (match_operator 1 "branch_comparison_operator"
-	    [(match_operand 2 "spu_reg_operand" "r")
-	     (const_int 0)])
-	  (match_operand:SI 3 "const_int_operand" "i")
-	  (reg:INTR 131)))
-   (clobber (match_operand:SI 0 "spu_reg_operand" "=&r"))
-   (clobber (mem:BLK (scratch)))]
+  [(cond_exec (match_operator 1 "branch_comparison_operator"
+		[(match_operand 2 "spu_reg_operand" "r")
+		 (const_int 0)])
+              (parallel [(unspec_volatile [(match_operand:SI 3 "const_int_operand" "i")] UNSPEC_SET_INTR)
+                         (clobber (match_operand:SI 0 "spu_reg_operand" "=&r"))
+			 (clobber (mem:BLK (scratch)))]))]
   "! flag_pic"
   "ila\t%0,.+8\;bi%b2%b1z%I3\t%2,%0"
   [(set_attr "length" "8")
    (set_attr "type" "multi0")])
 
 (define_insn "set_intr_cc_pic"
-  [(set (reg:INTR 131)
-	(if_then_else:INTR
-	  (match_operator 1 "branch_comparison_operator"
-	    [(match_operand 2 "spu_reg_operand" "r")
-	     (const_int 0)])
-	  (match_operand:SI 3 "const_int_operand" "i")
-	  (reg:INTR 131)))
-   (clobber (match_operand:SI 0 "spu_reg_operand" "=&r"))
-   (clobber (mem:BLK (scratch)))]
+  [(cond_exec (match_operator 1 "branch_comparison_operator"
+		[(match_operand 2 "spu_reg_operand" "r")
+		 (const_int 0)])
+              (parallel [(unspec_volatile [(match_operand:SI 3 "const_int_operand" "i")] UNSPEC_SET_INTR)
+                         (clobber (match_operand:SI 0 "spu_reg_operand" "=&r"))
+			 (clobber (mem:BLK (scratch)))]))]
   "flag_pic"
-  "brsl\t%0,.+4\;ai\t%0,%0,8\;%b2%b1z%I3\t%2,%0"
+  "brsl\t%0,.+4\;ai\t%0,%0,8\;bi%b2%b1z%I3\t%2,%0"
   [(set_attr "length" "12")
    (set_attr "type" "multi1")])
 
 (define_insn "set_intr_return"
-  [(set (reg:INTR 131) (match_operand 0 "const_int_operand" "i"))
+  [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "i")] UNSPEC_SET_INTR)
    (return)]
   ""
   "bi%I0\t$lr"
@@ -698,7 +674,7 @@
 
 (define_peephole2
   [(parallel
-    [(set (reg:INTR 131) (match_operand 0 "const_int_operand"))
+    [(unspec_volatile [(match_operand:SI 0 "const_int_operand")] UNSPEC_SET_INTR)
      (clobber (match_operand:SI 1 "spu_reg_operand"))
      (clobber (mem:BLK (scratch)))])
    (use (reg:SI 0))
@@ -706,7 +682,7 @@
   ""
   [(use (reg:SI 0))
    (parallel
-    [(set (reg:INTR 131) (match_dup 0))
+    [(unspec_volatile [(match_dup:SI 0)] UNSPEC_SET_INTR)
      (return)])]
   "")
 

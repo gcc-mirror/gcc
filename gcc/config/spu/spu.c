@@ -157,6 +157,7 @@ enum immediate_class
   IC_IL2s,			/* both ilhu and iohl instructions */
   IC_FSMBI,			/* the fsmbi instruction */
   IC_CPAT,			/* one of the c*d instructions */
+  IC_FSMBI2			/* fsmbi plus 1 other instruction */
 };
 
 static enum spu_immediate which_immediate_load (HOST_WIDE_INT val);
@@ -262,6 +263,22 @@ const struct attribute_spec spu_attribute_table[];
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+void
+spu_optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
+{
+  /* Small loops will be unpeeled at -O3.  For SPU it is more important
+     to keep code small by default. */
+  if (!flag_unroll_loops && !flag_peel_loops)
+    PARAM_VALUE (PARAM_MAX_COMPLETELY_PEEL_TIMES) = 1;
+
+  /* Override some of the default param values.  With so many registers
+     larger values are better for these params.  */
+  MAX_PENDING_LIST_LENGTH = 128;
+
+  /* With so many registers this is better on by default. */
+  flag_rename_registers = 1;
+}
+
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro
    OVERRIDE_OPTIONS to take account of this. This macro, if defined, is
@@ -269,13 +286,6 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 void
 spu_override_options (void)
 {
-  /* Override some of the default param values.  With so many registers
-     larger values are better for these params.  */
-  if (MAX_UNROLLED_INSNS == 100)
-    MAX_UNROLLED_INSNS = 250;
-  if (MAX_PENDING_LIST_LENGTH == 32)
-    MAX_PENDING_LIST_LENGTH = 128;
-
   flag_omit_frame_pointer = 1;
 
   if (align_functions < 8)
@@ -1142,6 +1152,7 @@ print_operand (FILE * file, rtx x, int code)
 		fprintf (file, "hu");
 	      break;
 	    case IC_FSMBI:
+	    case IC_FSMBI2:
 	    case IC_IL2:
 	    case IC_IL2s:
 	    case IC_POOL:
@@ -1194,21 +1205,17 @@ print_operand (FILE * file, rtx x, int code)
 	      fprintf (file, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT)info);
 	      break;
 	    case IC_IL1s:
-	      if (xcode == CONST_VECTOR)
-		{
-		  x = CONST_VECTOR_ELT (x, 0);
-		  xcode = GET_CODE (x);
-		}
 	      if (xcode == HIGH)
-		{
-		  output_addr_const (file, XEXP (x, 0));
-		  fprintf (file, "@h");
-		}
-	      else
-		output_addr_const (file, x);
+		x = XEXP (x, 0);
+	      if (GET_CODE (x) == CONST_VECTOR)
+		x = CONST_VECTOR_ELT (x, 0);
+	      output_addr_const (file, x);
+	      if (xcode == HIGH)
+		fprintf (file, "@h");
 	      break;
 	    case IC_IL2:
 	    case IC_IL2s:
+	    case IC_FSMBI2:
 	    case IC_POOL:
 	      abort ();
 	    }
@@ -1307,6 +1314,58 @@ print_operand (FILE * file, rtx x, int code)
 	}
       return;
 
+    case 'e':
+      val = xcode == CONST_INT ? INTVAL (x) : INTVAL (CONST_VECTOR_ELT (x, 0));
+      val &= 0x7;
+      output_addr_const (file, GEN_INT (val));
+      return;
+
+    case 'f':
+      val = xcode == CONST_INT ? INTVAL (x) : INTVAL (CONST_VECTOR_ELT (x, 0));
+      val &= 0x1f;
+      output_addr_const (file, GEN_INT (val));
+      return;
+
+    case 'g':
+      val = xcode == CONST_INT ? INTVAL (x) : INTVAL (CONST_VECTOR_ELT (x, 0));
+      val &= 0x3f;
+      output_addr_const (file, GEN_INT (val));
+      return;
+
+    case 'h':
+      val = xcode == CONST_INT ? INTVAL (x) : INTVAL (CONST_VECTOR_ELT (x, 0));
+      val = (val >> 3) & 0x1f;
+      output_addr_const (file, GEN_INT (val));
+      return;
+
+    case 'E':
+      val = xcode == CONST_INT ? INTVAL (x) : INTVAL (CONST_VECTOR_ELT (x, 0));
+      val = -val;
+      val &= 0x7;
+      output_addr_const (file, GEN_INT (val));
+      return;
+
+    case 'F':
+      val = xcode == CONST_INT ? INTVAL (x) : INTVAL (CONST_VECTOR_ELT (x, 0));
+      val = -val;
+      val &= 0x1f;
+      output_addr_const (file, GEN_INT (val));
+      return;
+
+    case 'G':
+      val = xcode == CONST_INT ? INTVAL (x) : INTVAL (CONST_VECTOR_ELT (x, 0));
+      val = -val;
+      val &= 0x3f;
+      output_addr_const (file, GEN_INT (val));
+      return;
+
+    case 'H':
+      val = xcode == CONST_INT ? INTVAL (x) : INTVAL (CONST_VECTOR_ELT (x, 0));
+      val = -(val & -8ll);
+      val = (val >> 3) & 0x1f;
+      output_addr_const (file, GEN_INT (val));
+      return;
+
     case 0:
       if (xcode == REG)
 	fprintf (file, "%s", reg_names[REGNO (x)]);
@@ -1318,6 +1377,9 @@ print_operand (FILE * file, rtx x, int code)
 	output_addr_const (file, x);
       return;
 
+      /* unsed letters
+	              o qr  uvw yz
+	AB            OPQR  UVWXYZ */
     default:
       output_operand_lossage ("invalid %%xn code");
     }
@@ -1341,8 +1403,9 @@ get_pic_reg (void)
   return pic_reg;
 }
 
-/* Split constant addresses to handle cases that are too large.  Also, add in
-   the pic register when in PIC mode. */
+/* Split constant addresses to handle cases that are too large. 
+   Add in the pic register when in PIC mode.
+   Split immediates that require more than 1 instruction. */
 int
 spu_split_immediate (rtx * ops)
 {
@@ -1373,6 +1436,36 @@ spu_split_immediate (rtx * ops)
 		   (VOIDmode, ops[0], gen_rtx_IOR (mode, to, lo)));
 	return 1;
       }
+    case IC_FSMBI2:
+      {
+	unsigned char arr_fsmbi[16];
+	unsigned char arr_andbi[16];
+	rtx to, reg_fsmbi, reg_and;
+	int i;
+	enum machine_mode imode = mode;
+	/* We need to do reals as ints because the constant used in the
+	 * AND might not be a legitimate real constant. */
+	imode = int_mode_for_mode (mode);
+	constant_to_array (mode, ops[1], arr_fsmbi);
+	if (imode != mode)
+	  to = simplify_gen_subreg(imode, ops[0], GET_MODE (ops[0]), 0);
+	else
+	  to = ops[0];
+	for (i = 0; i < 16; i++)
+	  if (arr_fsmbi[i] != 0)
+	    {
+	      arr_andbi[0] = arr_fsmbi[i];
+	      arr_fsmbi[i] = 0xff;
+	    }
+	for (i = 1; i < 16; i++)
+	  arr_andbi[i] = arr_andbi[0];
+	reg_fsmbi = array_to_constant (imode, arr_fsmbi);
+	reg_and = array_to_constant (imode, arr_andbi);
+	emit_move_insn (to, reg_fsmbi);
+	emit_insn (gen_rtx_SET
+		   (VOIDmode, to, gen_rtx_AND (imode, to, reg_and)));
+	return 1;
+      }
     case IC_POOL:
       if (reload_in_progress || reload_completed)
 	{
@@ -1393,8 +1486,8 @@ spu_split_immediate (rtx * ops)
 	{
 	  if (c == IC_IL2s)
 	    {
-	      emit_insn (gen_high (ops[0], ops[1]));
-	      emit_insn (gen_low (ops[0], ops[0], ops[1]));
+	      emit_move_insn (ops[0], gen_rtx_HIGH (mode, ops[1]));
+	      emit_move_insn (ops[0], gen_rtx_LO_SUM (mode, ops[0], ops[1]));
 	    }
 	  else if (flag_pic)
 	    emit_insn (gen_pic (ops[0], ops[1]));
@@ -1667,6 +1760,7 @@ spu_expand_prologue (void)
 	  REG_NOTES (insn) = 
 	    gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
 			       real, REG_NOTES (insn));
+          REGNO_POINTER_ALIGN (HARD_FRAME_POINTER_REGNUM) = STACK_BOUNDARY;
 	}
     }
 
@@ -2329,7 +2423,8 @@ immediate_load_p (rtx op, enum machine_mode mode)
   if (CONSTANT_P (op))
     {
       enum immediate_class c = classify_immediate (op, mode);
-      return c == IC_IL1 || (!flow2_completed && c == IC_IL2);
+      return c == IC_IL1 || c == IC_IL1s
+	     || (!flow2_completed && (c == IC_IL2 || c == IC_IL2s));
     }
   return 0;
 }
@@ -2390,7 +2485,7 @@ classify_immediate (rtx op, enum machine_mode mode)
 {
   HOST_WIDE_INT val;
   unsigned char arr[16];
-  int i, j, repeated, fsmbi;
+  int i, j, repeated, fsmbi, repeat;
 
   gcc_assert (CONSTANT_P (op));
 
@@ -2398,7 +2493,8 @@ classify_immediate (rtx op, enum machine_mode mode)
     mode = GET_MODE (op);
 
   /* A V4SI const_vector with all identical symbols is ok. */
-  if (mode == V4SImode
+  if (!flag_pic
+      && mode == V4SImode
       && GET_CODE (op) == CONST_VECTOR
       && GET_CODE (CONST_VECTOR_ELT (op, 0)) != CONST_INT
       && GET_CODE (CONST_VECTOR_ELT (op, 0)) != CONST_DOUBLE
@@ -2452,11 +2548,14 @@ classify_immediate (rtx op, enum machine_mode mode)
       gcc_assert (GET_MODE_SIZE (mode) > 2);
 
       fsmbi = 1;
+      repeat = 0;
       for (i = 0; i < 16 && fsmbi; i++)
-	if (arr[i] != 0 && arr[i] != 0xff)
+	if (arr[i] != 0 && repeat == 0)
+	  repeat = arr[i];
+	else if (arr[i] != 0 && arr[i] != repeat)
 	  fsmbi = 0;
       if (fsmbi)
-	return IC_FSMBI;
+	return repeat == 0xff ? IC_FSMBI : IC_FSMBI2;
 
       if (cpat_info (arr, GET_MODE_SIZE (mode), 0, 0))
 	return IC_CPAT;
@@ -2495,6 +2594,20 @@ which_logical_immediate (HOST_WIDE_INT val)
   return SPU_NONE;
 }
 
+/* Return TRUE when X, a CONST_VECTOR, only contains CONST_INTs or
+   CONST_DOUBLEs. */
+static int
+const_vector_immediate_p (rtx x)
+{
+  int i;
+  gcc_assert (GET_CODE (x) == CONST_VECTOR);
+  for (i = 0; i < GET_MODE_NUNITS (GET_MODE (x)); i++)
+    if (GET_CODE (CONST_VECTOR_ELT (x, i)) != CONST_INT
+	&& GET_CODE (CONST_VECTOR_ELT (x, i)) != CONST_DOUBLE)
+      return 0;
+  return 1;
+}
+
 int
 logical_immediate_p (rtx op, enum machine_mode mode)
 {
@@ -2504,6 +2617,10 @@ logical_immediate_p (rtx op, enum machine_mode mode)
 
   gcc_assert (GET_CODE (op) == CONST_INT || GET_CODE (op) == CONST_DOUBLE
 	      || GET_CODE (op) == CONST_VECTOR);
+
+  if (GET_CODE (op) == CONST_VECTOR
+      && !const_vector_immediate_p (op))
+    return 0;
 
   if (GET_MODE (op) != VOIDmode)
     mode = GET_MODE (op);
@@ -2533,6 +2650,10 @@ iohl_immediate_p (rtx op, enum machine_mode mode)
   gcc_assert (GET_CODE (op) == CONST_INT || GET_CODE (op) == CONST_DOUBLE
 	      || GET_CODE (op) == CONST_VECTOR);
 
+  if (GET_CODE (op) == CONST_VECTOR
+      && !const_vector_immediate_p (op))
+    return 0;
+
   if (GET_MODE (op) != VOIDmode)
     mode = GET_MODE (op);
 
@@ -2560,6 +2681,10 @@ arith_immediate_p (rtx op, enum machine_mode mode,
 
   gcc_assert (GET_CODE (op) == CONST_INT || GET_CODE (op) == CONST_DOUBLE
 	      || GET_CODE (op) == CONST_VECTOR);
+
+  if (GET_CODE (op) == CONST_VECTOR
+      && !const_vector_immediate_p (op))
+    return 0;
 
   if (GET_MODE (op) != VOIDmode)
     mode = GET_MODE (op);
@@ -2596,22 +2721,21 @@ arith_immediate_p (rtx op, enum machine_mode mode,
 int
 spu_legitimate_constant_p (rtx x)
 {
-  int i;
+  if (GET_CODE (x) == HIGH)
+    x = XEXP (x, 0);
   /* V4SI with all identical symbols is valid. */
-  if (GET_MODE (x) == V4SImode
+  if (!flag_pic
+      && GET_MODE (x) == V4SImode
       && (GET_CODE (CONST_VECTOR_ELT (x, 0)) == SYMBOL_REF
 	  || GET_CODE (CONST_VECTOR_ELT (x, 0)) == LABEL_REF
-	  || GET_CODE (CONST_VECTOR_ELT (x, 0)) == CONST
-	  || GET_CODE (CONST_VECTOR_ELT (x, 0)) == HIGH))
+	  || GET_CODE (CONST_VECTOR_ELT (x, 0)) == CONST))
     return CONST_VECTOR_ELT (x, 0) == CONST_VECTOR_ELT (x, 1)
 	   && CONST_VECTOR_ELT (x, 1) == CONST_VECTOR_ELT (x, 2)
 	   && CONST_VECTOR_ELT (x, 2) == CONST_VECTOR_ELT (x, 3);
 
-  if (VECTOR_MODE_P (GET_MODE (x)))
-    for (i = 0; i < GET_MODE_NUNITS (GET_MODE (x)); i++)
-      if (GET_CODE (CONST_VECTOR_ELT (x, i)) != CONST_INT
-	  && GET_CODE (CONST_VECTOR_ELT (x, i)) != CONST_DOUBLE)
-	return 0;
+  if (GET_CODE (x) == CONST_VECTOR
+      && !const_vector_immediate_p (x))
+    return 0;
   return 1;
 }
 
@@ -2668,7 +2792,7 @@ spu_legitimate_address (enum machine_mode mode ATTRIBUTE_UNUSED,
 	    && GET_CODE (op1) == CONST_INT
 	    && INTVAL (op1) >= -0x2000
 	    && INTVAL (op1) <= 0x1fff
-	    && (REGNO_PTR_FRAME_P (REGNO (op0)) || (INTVAL (op1) & 15) == 0))
+	    && (regno_aligned_for_load (REGNO (op0)) || (INTVAL (op1) & 15) == 0))
 	  return 1;
 	if (GET_CODE (op0) == REG
 	    && INT_REG_OK_FOR_BASE_P (op0, reg_ok_strict)
@@ -3135,7 +3259,6 @@ spu_conditional_register_usage (void)
       fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
       call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
     }
-  global_regs[INTR_REGNUM] = 1;
 }
 
 /* This is called to decide when we can simplify a load instruction.  We
@@ -3149,9 +3272,10 @@ static int
 regno_aligned_for_load (int regno)
 {
   return regno == FRAME_POINTER_REGNUM
-    || regno == HARD_FRAME_POINTER_REGNUM
+    || (frame_pointer_needed && regno == HARD_FRAME_POINTER_REGNUM)
     || regno == STACK_POINTER_REGNUM
-    || (regno >= FIRST_VIRTUAL_REGISTER && regno <= LAST_VIRTUAL_REGISTER);
+    || (regno >= FIRST_VIRTUAL_REGISTER 
+	&& regno <= LAST_VIRTUAL_REGISTER);
 }
 
 /* Return TRUE when mem is known to be 16-byte aligned. */
@@ -3706,10 +3830,10 @@ fsmbi_const_p (rtx x)
 {
   if (CONSTANT_P (x))
     {
-      /* We can always choose DImode for CONST_INT because the high bits
+      /* We can always choose TImode for CONST_INT because the high bits
          of an SImode will always be all 1s, i.e., valid for fsmbi. */
-      enum immediate_class c = classify_immediate (x, DImode);
-      return c == IC_FSMBI;
+      enum immediate_class c = classify_immediate (x, TImode);
+      return c == IC_FSMBI || (!flow2_completed && c == IC_FSMBI2);
     }
   return 0;
 }
@@ -3929,7 +4053,7 @@ reloc_diagnostic (rtx x)
   /* We use last_assemble_variable_decl to get line information.  It's
      not always going to be right and might not even be close, but will
      be right for the more common cases. */
-  if (!last_assemble_variable_decl)
+  if (!last_assemble_variable_decl || in_section == ctors_section)
     loc_decl = decl;
   else
     loc_decl = last_assemble_variable_decl;
@@ -4346,7 +4470,7 @@ spu_builtin_splats (rtx ops[])
       constant_to_array (GET_MODE_INNER (mode), ops[1], arr);
       emit_move_insn (ops[0], array_to_constant (mode, arr));
     }
-  else if (GET_MODE (ops[0]) == V4SImode && CONSTANT_P (ops[1]))
+  else if (!flag_pic && GET_MODE (ops[0]) == V4SImode && CONSTANT_P (ops[1]))
     {
       rtvec v = rtvec_alloc (4);
       RTVEC_ELT (v, 0) = ops[1];
@@ -4773,10 +4897,8 @@ spu_check_builtin_parm (struct spu_builtin_description *d, rtx op, int p)
   if (p >= SPU_BTI_7 && p <= SPU_BTI_U18)
     {
       int range = p - SPU_BTI_7;
-      if (!CONSTANT_P (op)
-	  || (GET_CODE (op) == CONST_INT
-	      && (INTVAL (op) < spu_builtin_range[range].low
-		  || INTVAL (op) > spu_builtin_range[range].high)))
+
+      if (!CONSTANT_P (op))
 	error ("%s expects an integer literal in the range [%d, %d].",
 	       d->name,
 	       spu_builtin_range[range].low, spu_builtin_range[range].high);
@@ -4790,6 +4912,18 @@ spu_check_builtin_parm (struct spu_builtin_description *d, rtx op, int p)
 	}
       else if (GET_CODE (op) == CONST_INT)
 	v = INTVAL (op);
+      else if (GET_CODE (op) == CONST_VECTOR
+	       && GET_CODE (CONST_VECTOR_ELT (op, 0)) == CONST_INT)
+	v = INTVAL (CONST_VECTOR_ELT (op, 0));
+
+      /* The default for v is 0 which is valid in every range. */
+      if (v < spu_builtin_range[range].low
+	  || v > spu_builtin_range[range].high)
+	error ("%s expects an integer literal in the range [%d, %d]. ("
+	       HOST_WIDE_INT_PRINT_DEC ")",
+	       d->name,
+	       spu_builtin_range[range].low, spu_builtin_range[range].high,
+	       v);
 
       switch (p)
 	{
@@ -4814,7 +4948,7 @@ spu_check_builtin_parm (struct spu_builtin_description *d, rtx op, int p)
       if (GET_CODE (op) == LABEL_REF
 	  || (GET_CODE (op) == SYMBOL_REF
 	      && SYMBOL_REF_FUNCTION_P (op))
-	  || (INTVAL (op) & ((1 << lsbits) - 1)) != 0)
+	  || (v & ((1 << lsbits) - 1)) != 0)
 	warning (0, "%d least significant bits of %s are ignored.", lsbits,
 		 d->name);
     }
@@ -4822,30 +4956,29 @@ spu_check_builtin_parm (struct spu_builtin_description *d, rtx op, int p)
 
 
 static void
-expand_builtin_args (struct spu_builtin_description *d, tree arglist,
+expand_builtin_args (struct spu_builtin_description *d, tree exp,
 		     rtx target, rtx ops[])
 {
   enum insn_code icode = d->icode;
-  int i = 0;
+  int i = 0, a;
 
   /* Expand the arguments into rtl. */
 
   if (d->parm[0] != SPU_BTI_VOID)
     ops[i++] = target;
 
-  for (; i < insn_data[icode].n_operands; i++)
+  for (a = 0; i < insn_data[icode].n_operands; i++, a++)
     {
-      tree arg = TREE_VALUE (arglist);
+      tree arg = CALL_EXPR_ARG (exp, a);
       if (arg == 0)
 	abort ();
       ops[i] = expand_expr (arg, NULL_RTX, VOIDmode, 0);
-      arglist = TREE_CHAIN (arglist);
     }
 }
 
 static rtx
 spu_expand_builtin_1 (struct spu_builtin_description *d,
-		      tree arglist, rtx target)
+		      tree exp, rtx target)
 {
   rtx pat;
   rtx ops[8];
@@ -4855,7 +4988,7 @@ spu_expand_builtin_1 (struct spu_builtin_description *d,
   tree return_type;
 
   /* Set up ops[] with values from arglist. */
-  expand_builtin_args (d, arglist, target, ops);
+  expand_builtin_args (d, exp, target, ops);
 
   /* Handle the target operand which must be operand 0. */
   i = 0;
@@ -4889,7 +5022,7 @@ spu_expand_builtin_1 (struct spu_builtin_description *d,
       rtx addr, op, pat;
 
       /* get addr */
-      arg = TREE_VALUE (arglist);
+      arg = CALL_EXPR_ARG (exp, 0);
       gcc_assert (TREE_CODE (TREE_TYPE (arg)) == POINTER_TYPE);
       op = expand_expr (arg, NULL_RTX, Pmode, EXPAND_NORMAL);
       addr = memory_address (mode, op);
@@ -4947,10 +5080,10 @@ spu_expand_builtin_1 (struct spu_builtin_description *d,
 	    }
 	}
 
+      spu_check_builtin_parm (d, ops[i], d->parm[p]);
+
       if (!(*insn_data[icode].operand[i].predicate) (ops[i], mode))
 	ops[i] = spu_force_reg (mode, ops[i]);
-
-      spu_check_builtin_parm (d, ops[i], d->parm[p]);
     }
 
   switch (insn_data[icode].n_operands)
@@ -5012,16 +5145,15 @@ spu_expand_builtin (tree exp,
 		    enum machine_mode mode ATTRIBUTE_UNUSED,
 		    int ignore ATTRIBUTE_UNUSED)
 {
-  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl) - END_BUILTINS;
-  tree arglist = TREE_OPERAND (exp, 1);
   struct spu_builtin_description *d;
 
   if (fcode < NUM_SPU_BUILTINS)
     {
       d = &spu_builtins[fcode];
 
-      return spu_expand_builtin_1 (d, arglist, target);
+      return spu_expand_builtin_1 (d, exp, target);
     }
   abort ();
 }
@@ -5068,3 +5200,13 @@ spu_builtin_mask_for_load (void)
   gcc_assert (d);
   return d->fndecl;
 }
+
+void
+spu_init_expanders (void)
+{   
+  /* HARD_FRAME_REGISTER is only 128 bit aligned when
+   * frame_pointer_needed is true.  We don't know that until we're
+   * expanding the prologue. */
+  if (cfun)
+    REGNO_POINTER_ALIGN (HARD_FRAME_POINTER_REGNUM) = 8;
+}       

@@ -53,7 +53,7 @@
 (define_constraint "W"
   "An immediate for shift and rotate instructions.  const_int is treated as a 32-bit value."
   (and (match_code "const_int,const_double,const_vector")
-       (match_test "arith_immediate_p (op, SImode, -0x40, 0x3f)")))
+       (match_test "arith_immediate_p (op, SImode, -0x80000000ll, 0x7fffffffll)")))
 
 (define_constraint "Y"
   "An immediate for and/xor/or instructions.  const_int is sign extended as a 128 bit."
@@ -131,7 +131,7 @@
 (define_constraint "O"
   "An unsigned 7-bit constant whose 3 least significant bits are 0."
   (and (match_code "const_int")
-       (match_test "ival >= 0 && ival <= 0x7f && (ival & 7) == 0")))
+       (match_test "(ival & 7) == 0")))
 
 (define_constraint "P"
   "An unsigned 3-bit constant for 16-byte rotates and shifts"
