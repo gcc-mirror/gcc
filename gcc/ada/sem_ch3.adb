@@ -9900,6 +9900,18 @@ package body Sem_Ch3 is
          New_Compon : constant Entity_Id := New_Copy (Old_Compon);
 
       begin
+         if Ekind (Old_Compon) = E_Discriminant
+           and then Is_Completely_Hidden (Old_Compon)
+         then
+
+            --  This is a shadow discriminant created for a discriminant of
+            --  the parent type that is one of several renamed by the same
+            --  new discriminant. Give the shadow discriminant an internal
+            --  name that cannot conflict with that of visible components.
+
+            Set_Chars (New_Compon, New_Internal_Name ('C'));
+         end if;
+
          --  Set the parent so we have a proper link for freezing etc. This is
          --  not a real parent pointer, since of course our parent does not own
          --  up to us and reference us, we are an illegitimate child of the
@@ -9978,12 +9990,85 @@ package body Sem_Ch3 is
 
       --  Inherit the discriminants of the parent type
 
-      Old_C := First_Discriminant (Typ);
-      while Present (Old_C) loop
-         New_C := Create_Component (Old_C);
-         Set_Is_Public (New_C, Is_Public (Subt));
-         Next_Discriminant (Old_C);
-      end loop;
+      Add_Discriminants : declare
+         Num_Disc : Int;
+         Num_Gird : Int;
+
+      begin
+         Num_Disc := 0;
+         Old_C := First_Discriminant (Typ);
+
+         while Present (Old_C) loop
+            Num_Disc := Num_Disc + 1;
+            New_C := Create_Component (Old_C);
+            Set_Is_Public (New_C, Is_Public (Subt));
+            Next_Discriminant (Old_C);
+         end loop;
+
+         --  For an untagged derived subtype, the number of discriminants may
+         --  be smaller than the number of inherited discriminants, because
+         --  several of them may be renamed by a single new discriminant.
+         --  In this case, add the hidden discriminants back into the subtype,
+         --  because otherwise the size of the subtype is computed incorrectly
+         --  in GCC 4.1.
+
+         Num_Gird := 0;
+
+         if Is_Derived_Type (Typ)
+           and then not Is_Tagged_Type (Typ)
+         then
+            Old_C := First_Stored_Discriminant (Typ);
+
+            while Present (Old_C) loop
+               Num_Gird := Num_Gird + 1;
+               Next_Stored_Discriminant (Old_C);
+            end loop;
+         end if;
+
+         if Num_Gird > Num_Disc then
+
+            --  Find out multiple uses of new discriminants, and add hidden
+            --  components for the extra renamed discriminants. We recognize
+            --  multiple uses through the Corresponding_Discriminant of a
+            --  new discriminant: if it constrains several old discriminants,
+            --  this field points to the last one in the parent type. The
+            --  stored discriminants of the derived type have the same name
+            --  as those of the parent.
+
+            declare
+               Constr    : Elmt_Id;
+               New_Discr : Entity_Id;
+               Old_Discr : Entity_Id;
+
+            begin
+               Constr    := First_Elmt (Stored_Constraint (Typ));
+               Old_Discr := First_Stored_Discriminant (Typ);
+
+               while Present (Constr) loop
+                  if Is_Entity_Name (Node (Constr))
+                    and then Ekind (Entity (Node (Constr))) = E_Discriminant
+                  then
+                     New_Discr := Entity (Node (Constr));
+
+                     if Chars (Corresponding_Discriminant (New_Discr))
+                         /= Chars (Old_Discr)
+                     then
+
+                        --  The new discriminant has been used to rename
+                        --  a subsequent old discriminant. Introduce a shadow
+                        --  component for the current old discriminant.
+
+                        New_C := Create_Component (Old_Discr);
+                        Set_Original_Record_Component  (New_C, Old_Discr);
+                     end if;
+                  end if;
+
+                  Next_Elmt (Constr);
+                  Next_Stored_Discriminant (Old_Discr);
+               end loop;
+            end;
+         end if;
+      end Add_Discriminants;
 
       if Is_Static
         and then Is_Variant_Record (Typ)
