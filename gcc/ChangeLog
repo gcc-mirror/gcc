@@ -1,3 +1,8 @@
+2007-02-21  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (thumb2_final_prescan_insn): Don't incrememnt
+	condexec_count when skipping USE and CLOBBER.
+
 2007-02-21  Nick Clifton  <nickc@redhat.com>
 
 	* common.opt (Warray-bounds): Add Warning attribute.

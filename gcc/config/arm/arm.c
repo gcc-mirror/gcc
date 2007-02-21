@@ -12243,10 +12243,7 @@ thumb2_final_prescan_insn (rtx insn)
       /* USE and CLOBBER aren't really insns, so just skip them.  */
       if (GET_CODE (body) == USE
 	  || GET_CODE (body) == CLOBBER)
-	{
-	  arm_condexec_count++;
-	  continue;
-	}
+	continue;
 
       /* ??? Recognize conditional jumps, and combine them with IT blocks.  */
       if (GET_CODE (body) != COND_EXEC)
