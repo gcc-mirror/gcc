@@ -935,10 +935,11 @@ public class GregorianCalendar extends Calendar
 	    fields[MONTH] += 12;
 	    fields[YEAR]--;
 	  }
-	isTimeSet = false;
 	int maxDay = getActualMaximum(DAY_OF_MONTH);
 	if (fields[DAY_OF_MONTH] > maxDay)
 	  fields[DAY_OF_MONTH] = maxDay;
+	set(YEAR, fields[YEAR]);
+	set(MONTH, fields[MONTH]);
 	break;
       case DAY_OF_MONTH:
       case DAY_OF_YEAR:
