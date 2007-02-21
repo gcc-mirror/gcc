@@ -1,3 +1,8 @@
+2007-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/gomp/omp_parse1.f90: New test.
+	* gfortran.dg/gomp/omp_parse2.f: New test.
+
 2007-02-20  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/30869
