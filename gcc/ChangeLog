@@ -1,3 +1,10 @@
+2007-02-21  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR middle-end/30761
+	* reload1.c (eliminate_regs_in_insn): In the single_set special
+	case, attempt to re-recognize the insn before falling back to
+	having reload fix it up.
+
 2007-02-20  Eric Christopher  <echristo@gmail.com>
 
 	* config/frv/frv.c (frv_read_argument): Take a tree and int argument.
