@@ -1,3 +1,12 @@
+2007-02-21  Kyle Galloway  <kgallowa@redhat.com>
+
+	* jvmti.cc (_Jv_JVMTI_GetArgumentsSize): New function.
+	* testsuite/libjava.jvmti/interp/getargssize.java: New test.
+	* testsuite/libjava.jvmti/interp/getargssize.h: Ditto.
+	* testsuite/libjava.jvmti/interp/getargssize.jar: Ditto.
+	* testsuite/libjava.jvmti/interp/getargssize.out: Ditto.
+	* testsuite/libjava.jvmti/interp/natgetargssize.cc: Ditto.
+
 2007-02-21  Gary Benson  <gbenson@redhat.com>
 
 	* java/util/GregorianCalendar.java: Removed.
