@@ -1,3 +1,11 @@
+2007-02-21  Ed Schonberg  <schonberg@adacore.com>
+
+	PR ada/18819
+	* sem_ch3.adb (Create_Constrained_Components): for a subtype of an
+	untagged derived type, add hidden components to keep discriminant
+	layout consistent, when a given discriminant of the derived type
+	constraints several discriminants of the parent type.
+
 2007-02-16  Eric Botcazou  <ebotcazou@adacore.com>
             Sandra Loosemore  <sandra@codesourcery.com>
 
