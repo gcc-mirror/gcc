@@ -297,8 +297,8 @@ static void frv_frame_access_standard_regs	(enum frv_stack_op,
 static struct machine_function *frv_init_machine_status		(void);
 static rtx frv_int_to_acc			(enum insn_code, int, rtx);
 static enum machine_mode frv_matching_accg_mode	(enum machine_mode);
-static rtx frv_read_argument			(tree *);
-static rtx frv_read_iacc_argument		(enum machine_mode, tree *);
+static rtx frv_read_argument			(tree, unsigned int);
+static rtx frv_read_iacc_argument		(enum machine_mode, tree, unsigned int);
 static int frv_check_constant_argument		(enum insn_code, int, rtx);
 static rtx frv_legitimize_target		(enum insn_code, rtx);
 static rtx frv_legitimize_argument		(enum insn_code, int, rtx);
@@ -3796,7 +3796,7 @@ frv_expand_fdpic_call (rtx *operands, bool ret_value, bool sibcall)
       emit_insn (x);
       cfun->uses_pic_offset_table = TRUE;
       addr = dest;
-    }    
+    }
   else if (GET_CODE (addr) == SYMBOL_REF)
     {
       /* These are always either local, or handled through a local
@@ -4017,7 +4017,7 @@ frv_emit_movsi (rtx dest, rtx src)
 	     (read-write) for code size (read-only, shareable), as
 	     long as the symbol is not used in more than two different
 	     locations.
-	     
+
 	     With -fpie/-fpic, we'd be trading a single load for a
 	     sequence of 4 instructions, because the offset of the
 	     label can't be assumed to be addressable with 12 bits, so
@@ -4116,11 +4116,11 @@ frv_emit_movsi (rtx dest, rtx src)
 
 		  if (init && init != error_mark_node)
 		    reloc = compute_reloc_for_constant (init);
-		  
+
 		  named_section = TREE_CODE (decl) == VAR_DECL
 		    && lookup_attribute ("section", DECL_ATTRIBUTES (decl));
 		  readonly = decl_readonly_section (decl, reloc);
-		  
+
 		  if (named_section)
 		    unspec = R_FRV_GOT12;
 		  else if (!readonly)
@@ -8687,28 +8687,27 @@ frv_matching_accg_for_acc (rtx acc)
 		      REGNO (acc) - ACC_FIRST + ACCG_FIRST);
 }
 
-/* Read a value from the head of the tree list pointed to by ARGLISTPTR.
-   Return the value as an rtx and replace *ARGLISTPTR with the tail of the
-   list.  */
+/* Read the requested argument from the call EXP given by INDEX.
+   Return the value as an rtx.  */
 
 static rtx
-frv_read_argument (tree *arglistptr)
+frv_read_argument (tree exp, unsigned int index)
 {
-  tree next = TREE_VALUE (*arglistptr);
-  *arglistptr = TREE_CHAIN (*arglistptr);
-  return expand_expr (next, NULL_RTX, VOIDmode, 0);
+  return expand_expr (CALL_EXPR_ARG (exp, index),
+		      NULL_RTX, VOIDmode, 0);
 }
 
 /* Like frv_read_argument, but interpret the argument as the number
    of an IACC register and return a (reg:MODE ...) rtx for it.  */
 
 static rtx
-frv_read_iacc_argument (enum machine_mode mode, tree *arglistptr)
+frv_read_iacc_argument (enum machine_mode mode, tree call,
+			unsigned int index)
 {
   int i, regno;
   rtx op;
 
-  op = frv_read_argument (arglistptr);
+  op = frv_read_argument (call, index);
   if (GET_CODE (op) != CONST_INT
       || INTVAL (op) < 0
       || INTVAL (op) > IACC_LAST - IACC_FIRST
@@ -8797,10 +8796,10 @@ frv_volatile_memref (enum machine_mode mode, rtx arg)
    only MHDSETS falls into this category.  */
 
 static rtx
-frv_expand_set_builtin (enum insn_code icode, tree arglist, rtx target)
+frv_expand_set_builtin (enum insn_code icode, tree call, rtx target)
 {
   rtx pat;
-  rtx op0 = frv_read_argument (&arglist);
+  rtx op0 = frv_read_argument (call, 0);
 
   if (! frv_check_constant_argument (icode, 1, op0))
     return NULL_RTX;
@@ -8817,10 +8816,10 @@ frv_expand_set_builtin (enum insn_code icode, tree arglist, rtx target)
 /* Expand builtins that take one operand.  */
 
 static rtx
-frv_expand_unop_builtin (enum insn_code icode, tree arglist, rtx target)
+frv_expand_unop_builtin (enum insn_code icode, tree call, rtx target)
 {
   rtx pat;
-  rtx op0 = frv_read_argument (&arglist);
+  rtx op0 = frv_read_argument (call, 0);
 
   target = frv_legitimize_target (icode, target);
   op0 = frv_legitimize_argument (icode, 1, op0);
@@ -8835,11 +8834,11 @@ frv_expand_unop_builtin (enum insn_code icode, tree arglist, rtx target)
 /* Expand builtins that take two operands.  */
 
 static rtx
-frv_expand_binop_builtin (enum insn_code icode, tree arglist, rtx target)
+frv_expand_binop_builtin (enum insn_code icode, tree call, rtx target)
 {
   rtx pat;
-  rtx op0 = frv_read_argument (&arglist);
-  rtx op1 = frv_read_argument (&arglist);
+  rtx op0 = frv_read_argument (call, 0);
+  rtx op1 = frv_read_argument (call, 1);
 
   target = frv_legitimize_target (icode, target);
   op0 = frv_legitimize_argument (icode, 1, op0);
@@ -8856,11 +8855,11 @@ frv_expand_binop_builtin (enum insn_code icode, tree arglist, rtx target)
    one.  */
 
 static rtx
-frv_expand_cut_builtin (enum insn_code icode, tree arglist, rtx target)
+frv_expand_cut_builtin (enum insn_code icode, tree call, rtx target)
 {
   rtx pat;
-  rtx op0 = frv_read_argument (&arglist);
-  rtx op1 = frv_read_argument (&arglist);
+  rtx op0 = frv_read_argument (call, 0);
+  rtx op1 = frv_read_argument (call, 1);
   rtx op2;
 
   target = frv_legitimize_target (icode, target);
@@ -8888,11 +8887,11 @@ frv_expand_cut_builtin (enum insn_code icode, tree arglist, rtx target)
 /* Expand builtins that take two operands and the second is immediate.  */
 
 static rtx
-frv_expand_binopimm_builtin (enum insn_code icode, tree arglist, rtx target)
+frv_expand_binopimm_builtin (enum insn_code icode, tree call, rtx target)
 {
   rtx pat;
-  rtx op0 = frv_read_argument (&arglist);
-  rtx op1 = frv_read_argument (&arglist);
+  rtx op0 = frv_read_argument (call, 0);
+  rtx op1 = frv_read_argument (call, 1);
 
   if (! frv_check_constant_argument (icode, 2, op1))
     return NULL_RTX;
@@ -8911,11 +8910,11 @@ frv_expand_binopimm_builtin (enum insn_code icode, tree arglist, rtx target)
    ints and return void.  */
 
 static rtx
-frv_expand_voidbinop_builtin (enum insn_code icode, tree arglist)
+frv_expand_voidbinop_builtin (enum insn_code icode, tree call)
 {
   rtx pat;
-  rtx op0 = frv_read_argument (&arglist);
-  rtx op1 = frv_read_argument (&arglist);
+  rtx op0 = frv_read_argument (call, 0);
+  rtx op1 = frv_read_argument (call, 1);
   enum machine_mode mode0 = insn_data[icode].operand[0].mode;
   rtx addr;
 
@@ -8949,11 +8948,11 @@ frv_expand_voidbinop_builtin (enum insn_code icode, tree arglist)
 /* Expand builtins that take two long operands and return void.  */
 
 static rtx
-frv_expand_int_void2arg (enum insn_code icode, tree arglist)
+frv_expand_int_void2arg (enum insn_code icode, tree call)
 {
   rtx pat;
-  rtx op0 = frv_read_argument (&arglist);
-  rtx op1 = frv_read_argument (&arglist);
+  rtx op0 = frv_read_argument (call, 0);
+  rtx op1 = frv_read_argument (call, 1);
 
   op0 = frv_legitimize_argument (icode, 1, op0);
   op1 = frv_legitimize_argument (icode, 1, op1);
@@ -8968,10 +8967,10 @@ frv_expand_int_void2arg (enum insn_code icode, tree arglist)
 /* Expand prefetch builtins.  These take a single address as argument.  */
 
 static rtx
-frv_expand_prefetches (enum insn_code icode, tree arglist)
+frv_expand_prefetches (enum insn_code icode, tree call)
 {
   rtx pat;
-  rtx op0 = frv_read_argument (&arglist);
+  rtx op0 = frv_read_argument (call, 0);
 
   pat = GEN_FCN (icode) (force_reg (Pmode, op0));
   if (! pat)
@@ -8987,12 +8986,12 @@ frv_expand_prefetches (enum insn_code icode, tree arglist)
    corresponds to the accumulator.  */
 
 static rtx
-frv_expand_voidtriop_builtin (enum insn_code icode, tree arglist)
+frv_expand_voidtriop_builtin (enum insn_code icode, tree call)
 {
   rtx pat;
-  rtx op0 = frv_read_argument (&arglist);
-  rtx op1 = frv_read_argument (&arglist);
-  rtx op2 = frv_read_argument (&arglist);
+  rtx op0 = frv_read_argument (call, 0);
+  rtx op1 = frv_read_argument (call, 1);
+  rtx op2 = frv_read_argument (call, 2);
   rtx op3;
 
   op0 = frv_int_to_acc (icode, 0, op0);
@@ -9015,11 +9014,11 @@ frv_expand_voidtriop_builtin (enum insn_code icode, tree arglist)
    void.  */
 
 static rtx
-frv_expand_voidaccop_builtin (enum insn_code icode, tree arglist)
+frv_expand_voidaccop_builtin (enum insn_code icode, tree call)
 {
   rtx pat;
-  rtx op0 = frv_read_argument (&arglist);
-  rtx op1 = frv_read_argument (&arglist);
+  rtx op0 = frv_read_argument (call, 0);
+  rtx op1 = frv_read_argument (call, 1);
   rtx op2;
   rtx op3;
 
@@ -9046,9 +9045,9 @@ frv_expand_voidaccop_builtin (enum insn_code icode, tree arglist)
 
 static rtx
 frv_expand_load_builtin (enum insn_code icode, enum machine_mode target_mode,
-                         tree arglist, rtx target)
+                         tree call, rtx target)
 {
-  rtx op0 = frv_read_argument (&arglist);
+  rtx op0 = frv_read_argument (call, 0);
   rtx cookie = frv_io_address_cookie (op0);
 
   if (target == 0 || !REG_P (target))
@@ -9063,10 +9062,10 @@ frv_expand_load_builtin (enum insn_code icode, enum machine_mode target_mode,
 /* Likewise __builtin_write* functions.  */
 
 static rtx
-frv_expand_store_builtin (enum insn_code icode, tree arglist)
+frv_expand_store_builtin (enum insn_code icode, tree call)
 {
-  rtx op0 = frv_read_argument (&arglist);
-  rtx op1 = frv_read_argument (&arglist);
+  rtx op0 = frv_read_argument (call, 0);
+  rtx op1 = frv_read_argument (call, 1);
   rtx cookie = frv_io_address_cookie (op0);
 
   op0 = frv_volatile_memref (insn_data[icode].operand[0].mode, op0);
@@ -9078,18 +9077,18 @@ frv_expand_store_builtin (enum insn_code icode, tree arglist)
 
 /* Expand the MDPACKH builtin.  It takes four unsigned short arguments and
    each argument forms one word of the two double-word input registers.
-   ARGLIST is a TREE_LIST of the arguments and TARGET, if nonnull,
-   suggests a good place to put the return value.  */
+   CALL is the tree for the call and TARGET, if nonnull, suggests a good place
+   to put the return value.  */
 
 static rtx
-frv_expand_mdpackh_builtin (tree arglist, rtx target)
+frv_expand_mdpackh_builtin (tree call, rtx target)
 {
   enum insn_code icode = CODE_FOR_mdpackh;
   rtx pat, op0, op1;
-  rtx arg1 = frv_read_argument (&arglist);
-  rtx arg2 = frv_read_argument (&arglist);
-  rtx arg3 = frv_read_argument (&arglist);
-  rtx arg4 = frv_read_argument (&arglist);
+  rtx arg1 = frv_read_argument (call, 0);
+  rtx arg2 = frv_read_argument (call, 1);
+  rtx arg3 = frv_read_argument (call, 2);
+  rtx arg4 = frv_read_argument (call, 3);
 
   target = frv_legitimize_target (icode, target);
   op0 = gen_reg_rtx (DImode);
@@ -9118,11 +9117,11 @@ frv_expand_mdpackh_builtin (tree arglist, rtx target)
    number as argument.  */
 
 static rtx
-frv_expand_mclracc_builtin (tree arglist)
+frv_expand_mclracc_builtin (tree call)
 {
   enum insn_code icode = CODE_FOR_mclracc;
   rtx pat;
-  rtx op0 = frv_read_argument (&arglist);
+  rtx op0 = frv_read_argument (call, 0);
 
   op0 = frv_int_to_acc (icode, 0, op0);
   if (! op0)
@@ -9151,11 +9150,11 @@ frv_expand_noargs_builtin (enum insn_code icode)
    number or accumulator guard number as argument and return an SI integer.  */
 
 static rtx
-frv_expand_mrdacc_builtin (enum insn_code icode, tree arglist)
+frv_expand_mrdacc_builtin (enum insn_code icode, tree call)
 {
   rtx pat;
   rtx target = gen_reg_rtx (SImode);
-  rtx op0 = frv_read_argument (&arglist);
+  rtx op0 = frv_read_argument (call, 0);
 
   op0 = frv_int_to_acc (icode, 1, op0);
   if (! op0)
@@ -9174,11 +9173,11 @@ frv_expand_mrdacc_builtin (enum insn_code icode, tree arglist)
    second.  */
 
 static rtx
-frv_expand_mwtacc_builtin (enum insn_code icode, tree arglist)
+frv_expand_mwtacc_builtin (enum insn_code icode, tree call)
 {
   rtx pat;
-  rtx op0 = frv_read_argument (&arglist);
-  rtx op1 = frv_read_argument (&arglist);
+  rtx op0 = frv_read_argument (call, 0);
+  rtx op1 = frv_read_argument (call, 1);
 
   op0 = frv_int_to_acc (icode, 0, op0);
   if (! op0)
@@ -9216,8 +9215,6 @@ frv_expand_builtin (tree exp,
                     enum machine_mode mode ATTRIBUTE_UNUSED,
                     int ignore ATTRIBUTE_UNUSED)
 {
-  /* FIXME:  Pass the CALL_EXPR directly instead of consing up an arglist.  */
-  tree arglist = CALL_EXPR_ARGS (exp);
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   unsigned fcode = (unsigned)DECL_FUNCTION_CODE (fndecl);
   unsigned i;
@@ -9322,7 +9319,7 @@ frv_expand_builtin (tree exp,
       return frv_expand_noargs_builtin (CODE_FOR_mtrap);
 
     case FRV_BUILTIN_MCLRACC:
-      return frv_expand_mclracc_builtin (arglist);
+      return frv_expand_mclracc_builtin (exp);
 
     case FRV_BUILTIN_MCLRACCA:
       if (TARGET_ACC_8)
@@ -9331,23 +9328,23 @@ frv_expand_builtin (tree exp,
 	return frv_expand_noargs_builtin (CODE_FOR_mclracca4);
 
     case FRV_BUILTIN_MRDACC:
-      return frv_expand_mrdacc_builtin (CODE_FOR_mrdacc, arglist);
+      return frv_expand_mrdacc_builtin (CODE_FOR_mrdacc, exp);
 
     case FRV_BUILTIN_MRDACCG:
-      return frv_expand_mrdacc_builtin (CODE_FOR_mrdaccg, arglist);
+      return frv_expand_mrdacc_builtin (CODE_FOR_mrdaccg, exp);
 
     case FRV_BUILTIN_MWTACC:
-      return frv_expand_mwtacc_builtin (CODE_FOR_mwtacc, arglist);
+      return frv_expand_mwtacc_builtin (CODE_FOR_mwtacc, exp);
 
     case FRV_BUILTIN_MWTACCG:
-      return frv_expand_mwtacc_builtin (CODE_FOR_mwtaccg, arglist);
+      return frv_expand_mwtacc_builtin (CODE_FOR_mwtaccg, exp);
 
     case FRV_BUILTIN_MDPACKH:
-      return frv_expand_mdpackh_builtin (arglist, target);
+      return frv_expand_mdpackh_builtin (exp, target);
 
     case FRV_BUILTIN_IACCreadll:
       {
-	rtx src = frv_read_iacc_argument (DImode, &arglist);
+	rtx src = frv_read_iacc_argument (DImode, exp, 0);
 	if (target == 0 || !REG_P (target))
 	  target = gen_reg_rtx (DImode);
 	frv_split_iacc_move (target, src);
@@ -9355,20 +9352,20 @@ frv_expand_builtin (tree exp,
       }
 
     case FRV_BUILTIN_IACCreadl:
-      return frv_read_iacc_argument (SImode, &arglist);
+      return frv_read_iacc_argument (SImode, exp, 0);
 
     case FRV_BUILTIN_IACCsetll:
       {
-	rtx dest = frv_read_iacc_argument (DImode, &arglist);
-	rtx src = frv_read_argument (&arglist);
+	rtx dest = frv_read_iacc_argument (DImode, exp, 0);
+	rtx src = frv_read_argument (exp, 1);
 	frv_split_iacc_move (dest, force_reg (DImode, src));
 	return 0;
       }
 
     case FRV_BUILTIN_IACCsetl:
       {
-	rtx dest = frv_read_iacc_argument (SImode, &arglist);
-	rtx src = frv_read_argument (&arglist);
+	rtx dest = frv_read_iacc_argument (SImode, exp, 0);
+	rtx src = frv_read_argument (exp, 1);
 	emit_move_insn (dest, force_reg (SImode, src));
 	return 0;
       }
@@ -9381,54 +9378,54 @@ frv_expand_builtin (tree exp,
 
   for (i = 0, d = bdesc_set; i < ARRAY_SIZE (bdesc_set); i++, d++)
     if (d->code == fcode)
-      return frv_expand_set_builtin (d->icode, arglist, target);
+      return frv_expand_set_builtin (d->icode, exp, target);
 
   for (i = 0, d = bdesc_1arg; i < ARRAY_SIZE (bdesc_1arg); i++, d++)
     if (d->code == fcode)
-      return frv_expand_unop_builtin (d->icode, arglist, target);
+      return frv_expand_unop_builtin (d->icode, exp, target);
 
   for (i = 0, d = bdesc_2arg; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
     if (d->code == fcode)
-      return frv_expand_binop_builtin (d->icode, arglist, target);
+      return frv_expand_binop_builtin (d->icode, exp, target);
 
   for (i = 0, d = bdesc_cut; i < ARRAY_SIZE (bdesc_cut); i++, d++)
     if (d->code == fcode)
-      return frv_expand_cut_builtin (d->icode, arglist, target);
+      return frv_expand_cut_builtin (d->icode, exp, target);
 
   for (i = 0, d = bdesc_2argimm; i < ARRAY_SIZE (bdesc_2argimm); i++, d++)
     if (d->code == fcode)
-      return frv_expand_binopimm_builtin (d->icode, arglist, target);
+      return frv_expand_binopimm_builtin (d->icode, exp, target);
 
   for (i = 0, d = bdesc_void2arg; i < ARRAY_SIZE (bdesc_void2arg); i++, d++)
     if (d->code == fcode)
-      return frv_expand_voidbinop_builtin (d->icode, arglist);
+      return frv_expand_voidbinop_builtin (d->icode, exp);
 
   for (i = 0, d = bdesc_void3arg; i < ARRAY_SIZE (bdesc_void3arg); i++, d++)
     if (d->code == fcode)
-      return frv_expand_voidtriop_builtin (d->icode, arglist);
+      return frv_expand_voidtriop_builtin (d->icode, exp);
 
   for (i = 0, d = bdesc_voidacc; i < ARRAY_SIZE (bdesc_voidacc); i++, d++)
     if (d->code == fcode)
-      return frv_expand_voidaccop_builtin (d->icode, arglist);
+      return frv_expand_voidaccop_builtin (d->icode, exp);
 
   for (i = 0, d = bdesc_int_void2arg;
        i < ARRAY_SIZE (bdesc_int_void2arg); i++, d++)
     if (d->code == fcode)
-      return frv_expand_int_void2arg (d->icode, arglist);
+      return frv_expand_int_void2arg (d->icode, exp);
 
   for (i = 0, d = bdesc_prefetches;
        i < ARRAY_SIZE (bdesc_prefetches); i++, d++)
     if (d->code == fcode)
-      return frv_expand_prefetches (d->icode, arglist);
+      return frv_expand_prefetches (d->icode, exp);
 
   for (i = 0, d = bdesc_loads; i < ARRAY_SIZE (bdesc_loads); i++, d++)
     if (d->code == fcode)
       return frv_expand_load_builtin (d->icode, TYPE_MODE (TREE_TYPE (exp)),
-				      arglist, target);
+				      exp, target);
 
   for (i = 0, d = bdesc_stores; i < ARRAY_SIZE (bdesc_stores); i++, d++)
     if (d->code == fcode)
-      return frv_expand_store_builtin (d->icode, arglist);
+      return frv_expand_store_builtin (d->icode, exp);
 
   return 0;
 }
@@ -9563,7 +9560,7 @@ frv_asm_out_destructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
   if (TARGET_FDPIC)
     {
       int ok = frv_assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
-      
+
       gcc_assert (ok);
       return;
     }
