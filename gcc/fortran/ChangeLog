@@ -1,7 +1,11 @@
+2007-02-21  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	* parse.c (next_free): Gooble spaces after OpenMP sentinel.
+
 2007-02-20  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/30869
-	* match.c(gfc_match_iterator):  Remove conflict between
+	* match.c (gfc_match_iterator): Remove conflict between
 	loop variable and pointer.
 
 2007-02-20  Tobias Burnus  <burnus@net-b.de>
@@ -22,9 +26,9 @@
 2007-02-19  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/30533
-	* fortran/iresolve.c(gfc_resolve_maxloc):  Remove coercion of
+	* fortran/iresolve.c (gfc_resolve_maxloc): Remove coercion of
 	argument to default integer.
-	(gfc_resolve_minloc):  Likewise.
+	(gfc_resolve_minloc): Likewise.
 
 2007-02-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
@@ -151,7 +155,7 @@
 
 2007-02-12  Nick Clifton  <nickc@redhat.com>
 
-	* lang.opt:  Add Warning attribute to warning options.
+	* lang.opt: Add Warning attribute to warning options.
 
 2007-02-11  Daniel Franke  <franke.daniel@gmail.com>
 
@@ -312,7 +316,7 @@
 2007-01-30  Steve Ellcey  <sje@cup.hp.com>
 
 	PR fortran/30432
-	* trans-types.c (gfc_get_function_type):  Do not add void_type_node
+	* trans-types.c (gfc_get_function_type): Do not add void_type_node
 	to empty arg list.
 	* trans-decl.c (create_function_arglist): Change assert.
 
@@ -326,27 +330,27 @@
 2007-01-28  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/30389
-	* gfortran.h:  Remove gfc_simplify_init_1.
-	* arith.h:  Remove third argument from gfc_compare_string.
-	* arith.c(gfc_compare_expression):  Remove third argument
+	* gfortran.h: Remove gfc_simplify_init_1.
+	* arith.h: Remove third argument from gfc_compare_string.
+	* arith.c (gfc_compare_expression): Remove third argument
 	from call to gfc_compare_string.
-	(gfc_compare_string):  Remove third argument xcoll_table.
+	(gfc_compare_string): Remove third argument xcoll_table.
 	Remove use of xcoll_table.
-	* misc.c(gfc_init_1):  Remove call to gfc_simplify_init_1.
-	* simplify.c(ascii_table):  Remove.
+	* misc.c (gfc_init_1): Remove call to gfc_simplify_init_1.
+	* simplify.c (ascii_table): Remove.
 	(xascii_table): Likewise.
-	(gfc_simplify_achar):  ICE if extract_int fails.  Remove use of
+	(gfc_simplify_achar): ICE if extract_int fails.  Remove use of
 	ascii_table.  Warn if -Wsurprising and value < 0 or > 127.
-	(gfc_simplify_char):  ICE if extract_int fails. Error if
+	(gfc_simplify_char): ICE if extract_int fails. Error if
 	value < 0 or value > 255.
-	(gfc_simplify_iachar):  Remove use of xascii_table.
+	(gfc_simplify_iachar): Remove use of xascii_table.
 	Char values outside of 0..255 are an ICE.
-	(gfc_simplify_lge):  Remove use of xascii_table.
-	(gfc_simplify_lgt):  Likewise.
-	(gfc_simplify_lle):  Likewise.
-	(gfc_simplify_llt):  Likewise.
-	(invert_table):  Remove.
-	(gfc_simplify_init_1):  Remove.
+	(gfc_simplify_lge): Remove use of xascii_table.
+	(gfc_simplify_lgt): Likewise.
+	(gfc_simplify_lle): Likewise.
+	(gfc_simplify_llt): Likewise.
+	(invert_table): Remove.
+	(gfc_simplify_init_1): Remove.
 
 2007-01-27  Roger Sayle  <roger@eyesopen.com>
 
@@ -423,7 +427,7 @@
 2007-01-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* openmp.c, matchexp.c, module.c, scanner.c, resolve.c, st.c,
-	parse.c, primary.c, options.c, misc.c, simplify.c:  Next installment
+	parse.c, primary.c, options.c, misc.c, simplify.c: Next installment
 	in the massive whitespace patch.
 
 2007-01-20  Roger Sayle  <roger@eyesopen.com>
@@ -632,11 +636,11 @@
 2007-01-11  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/30415
-	* iresolve.c (gfc_resolve_maxloc):  If the rank
+	* iresolve.c (gfc_resolve_maxloc): If the rank
 	of the return array is nonzero and we process an
 	integer array smaller than default kind, coerce
 	the array to default integer.
-	* iresolve.c (gfc_resolve_minloc):  Likewise.
+	* iresolve.c (gfc_resolve_minloc): Likewise.
 
 2007-01-11  Brooks Moses  <brooks.moses@codesourcery.com>
 
@@ -689,7 +693,7 @@
 2007-01-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* interface.c, intrinsic.c, gfortranspec.c, io.c, f95-lang.c,
-	iresolve.c, match.c:  Update Copyright years.  Whitespace.
+	iresolve.c, match.c: Update Copyright years.  Whitespace.
 
 2007-01-08  Richard Guenther  <rguenther@suse.de>
 
@@ -705,7 +709,7 @@
 	initialized gfortran array for a given EXPR_ARRAY.
 	(gfc_trans_constant_array_constructor): Efficiently scalarize
 	a constant array constructor.
-	(gfc_trans_array_constructor):  Tidy up use of CONST_STRING.
+	(gfc_trans_array_constructor): Tidy up use of CONST_STRING.
 	Special case scalarization of constant array constructors, all of
 	whose elements are specified, using constant_array_constructor_p 
 	and gfc_trans_constant_array_constructor.
@@ -719,7 +723,7 @@
 2007-01-07  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* decl.c, dump-parse-tree.c, error.c, data.c, expr.c, dependency.c,
-	convert.c:  Update Copyright dates.  Fix whitespace.
+	convert.c: Update Copyright dates.  Fix whitespace.
 
 2007-01-07  Bernhard Fischer  <aldot@gcc.gnu.org>
 
@@ -742,7 +746,7 @@
 
 2007-01-06  Steven G. Kargl  <kargl@gcc.gnu.org>
 
-	* array.c, bbt.c, check.c:  Update copyright years.  Whitespace.
+	* array.c, bbt.c, check.c: Update copyright years.  Whitespace.
 
 2007-01-06  Steven G. Kargl  <kargl@gcc.gnu.org>
 
@@ -768,7 +772,7 @@
 
 2007-01-05  Roger Sayle  <roger@eyesopen.com>
 
-	* trans-array.c (gfc_conv_loop_setup):  Test whether the loop
+	* trans-array.c (gfc_conv_loop_setup): Test whether the loop
 	stride is one, to avoid fold_build2 introducing a useless
 	NON_LVALUE_EXPR node.
 
