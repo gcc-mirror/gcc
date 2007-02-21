@@ -1,3 +1,8 @@
+2007-02-20  Mike Stump  <mrs@apple.com>
+
+	* configure.ac (powerpc*-*-darwin*): #include <sys/cdefs.h>.
+	* configure: Regenerate.
+
 2007-02-21  Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
 
 	Change the defaults of some parameters and options.
@@ -20,7 +25,7 @@
 	Make sure shift and rotate instructions have valid immediate operands.
 	* config/spu/predicates.md (spu_shift_operand): Remove.
 	* config/spu/spu.c (print_operand): Add [efghEFGH] modifiers.
-	* config/spu/constraints.md (W, O): Extend range. 
+	* config/spu/constraints.md (W, O): Extend range.
 	* config/spu/spu.md (umask, nmask): Define.
 	(ashl<mode>3, ashldi3, ashlti3_imm, shlqbybi_ti, shlqbi_ti, shlqby_ti,
 	lshr<mode>3, rotm_<mode>, lshr<mode>3_imm, rotqmbybi_<mode>,
@@ -205,7 +210,7 @@
 	intrinsics.
 
 2007-02-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
-            DJ Delorie <dj@redhat.com>
+	    DJ Delorie <dj@redhat.com>
 
 	PR other/30824
 	* diagnostic.c (diagnostic_count_diagnostic): Move -Werror logic to...
