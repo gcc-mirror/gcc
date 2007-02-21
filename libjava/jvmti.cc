@@ -1086,6 +1086,45 @@ _Jv_JVMTI_GetMaxLocals (jvmtiEnv *env, jmethodID method, jint *max_locals)
 }
 
 static jvmtiError JNICALL
+_Jv_JVMTI_GetArgumentsSize (jvmtiEnv *env, jmethodID method, jint *size)
+{
+  REQUIRE_PHASE (env, JVMTI_PHASE_START | JVMTI_PHASE_LIVE);
+  NULL_CHECK (size);
+  
+  CHECK_FOR_NATIVE_METHOD (method);
+  
+  jvmtiError jerr;
+  char *sig;
+  jint num_slots = 0;
+  
+  jerr = env->GetMethodName (method, NULL, &sig, NULL);
+  if (jerr != JVMTI_ERROR_NONE)
+    return jerr;
+  
+  // If the method is non-static add a slot for the "this" pointer.
+  if ((method->accflags & java::lang::reflect::Modifier::STATIC) == 0)
+    num_slots++;
+  
+  for (int i = 0; sig[i] != ')'; i++)
+    {
+      if (sig[i] == 'Z' || sig[i] == 'B' || sig[i] == 'C' || sig[i] == 'S'
+          || sig[i] == 'I' || sig[i] == 'F')
+        num_slots++;
+      else if (sig[i] == 'J' || sig[i] == 'D')
+        num_slots+=2;
+      else if (sig[i] == 'L')
+        {
+          num_slots++;
+          while (sig[i] != ';')
+            i++;
+        }
+    }
+  
+  *size = num_slots;
+  return JVMTI_ERROR_NONE;
+}
+
+static jvmtiError JNICALL
 _Jv_JVMTI_GetMethodDeclaringClass (MAYBE_UNUSED jvmtiEnv *env,
 				   jmethodID method,
 				   jclass *declaring_class_ptr)
@@ -2011,7 +2050,7 @@ struct _Jv_jvmtiEnv _Jv_JVMTI_Interface =
   _Jv_JVMTI_GetMethodModifiers,	// GetMethodModifers
   RESERVED,			// reserved67
   _Jv_JVMTI_GetMaxLocals,		// GetMaxLocals
-  UNIMPLEMENTED,		// GetArgumentsSize
+  _Jv_JVMTI_GetArgumentsSize,		// GetArgumentsSize
   _Jv_JVMTI_GetLineNumberTable,	// GetLineNumberTable
   UNIMPLEMENTED,		// GetMethodLocation
   _Jv_JVMTI_GetLocalVariableTable,		// GetLocalVariableTable
