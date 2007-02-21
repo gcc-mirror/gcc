@@ -4880,7 +4880,7 @@ classpath/java/util/Formattable.java \
 classpath/java/util/FormattableFlags.java \
 classpath/java/util/Formatter.java \
 classpath/java/util/FormatterClosedException.java \
-java/util/GregorianCalendar.java \
+classpath/java/util/GregorianCalendar.java \
 classpath/java/util/HashMap.java \
 classpath/java/util/HashSet.java \
 classpath/java/util/Hashtable.java \

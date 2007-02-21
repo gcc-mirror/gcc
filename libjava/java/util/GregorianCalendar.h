@@ -61,7 +61,6 @@ private:
 public: // actually package-private
   static const jlong serialVersionUID = -8125100834729963327LL;
 private:
-  static ::java::lang::String * bundleName;
   static const jint EPOCH_DAYS = 719162;
   static JArray< jint > * minimums;
   static JArray< jint > * maximums;
