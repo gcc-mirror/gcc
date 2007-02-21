@@ -25,10 +25,6 @@ VECTOR_MODES (INT, 16);       /* V16QI V8HI V4SI V2DI */
 VECTOR_MODES (FLOAT, 8);      /*            V4HF V2SF */ 
 VECTOR_MODES (FLOAT, 16);     /*       V8HF V4SF V2DF */ 
         
-/* A special mode for the intr register so we can treat it differently
-   for conditional moves.  */
-RANDOM_MODE (INTR);
-
 /* cse_insn needs an INT_MODE larger than WORD_MODE, otherwise some
    parts of it will go into an infinite loop. */
 INT_MODE (OI, 32);

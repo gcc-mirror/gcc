@@ -1,3 +1,99 @@
+2007-02-21  Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
+
+	Change the defaults of some parameters and options.
+	* config/spu/spu-protos.h (spu_optimization_options): Declare.
+	* config/spu/spu.c (spu_optimization_options): Add.
+	(spu_override_options): Change params in spu_optimization_options.
+	* config/spu/spu.h (OPTIMIZATION_OPTIONS): Define.
+
+	Register 127 is only 16 byte aligned when used as a frame pointer.
+	* config/spu/spu-protos.h (spu_init_expanders): Declare.
+	* config/spu/spu.c (spu_expand_prologue): Set REGNO_POINTER_ALIGN for
+	HARD_FRAME_POINTER_REGNUM.
+	(spu_legitimate_address):  Use regno_aligned_for_reload.
+	(regno_aligned_for_load):  HARD_FRAME_POINTER_REGNUM is only 16 byte
+	aligned when frame_pointer_needed is true.
+	(spu_init_expanders): New.  Set alignment of HARD_FRAME_POINTER_REGNUM
+	to 8 bits.
+	* config/spu/spu.h (INIT_EXPANDERS): Define.
+
+	Make sure shift and rotate instructions have valid immediate operands.
+	* config/spu/predicates.md (spu_shift_operand): Remove.
+	* config/spu/spu.c (print_operand): Add [efghEFGH] modifiers.
+	* config/spu/constraints.md (W, O): Extend range. 
+	* config/spu/spu.md (umask, nmask): Define.
+	(ashl<mode>3, ashldi3, ashlti3_imm, shlqbybi_ti, shlqbi_ti, shlqby_ti,
+	lshr<mode>3, rotm_<mode>, lshr<mode>3_imm, rotqmbybi_<mode>,
+	rotqmbi_<mode>, rotqmby_<mode>, ashr<mode>3, rotma_<mode>,
+	rotl<mode>3, rotlti3, rotqbybi_ti, rotqby_ti, rotqbi_ti): Use
+	spu_nonmem_operand instead of spu_shift_operands.  Use new modifiers.
+	(lshr<mode>3_reg):  Fix rtl description.
+
+	Make sure mulhisi immediate operands are valid.
+	* config/spu/predicates.md (imm_K_operand): Add.
+	* config/spu/spu.md (mulhisi3_imm, umulhisi3_imm): Use imm_K_operand.
+
+	Generate constants using fsmbi and andi.
+	* config/spu/spu.c (enum immediate_class): Add IC_FSMBI2.
+	(print_operand, spu_split_immediate, classify_immediate,
+	fsmbi_const_p): Handle IC_FSMBI2.
+
+	Correctly handle a CONST_VECTOR containing symbols.
+	* config/spu/spu.c (print_operand): Handle HIGH correctly.
+	(spu_split_immediate): Split CONST_VECTORs with -mlarge-mem.
+	(immediate_load_p): Allow symbols that use 2 instructions to create.
+	(classify_immediate, spu_builtin_splats):  Don't accept a CONST_VECTOR
+	with symbols when flag_pic is set.
+	(const_vector_immediate_p): New.
+	(logical_immediate_p, iohl_immediate_p, arith_immediate_p): Don't
+	accept a CONST_VECTOR with symbols.
+	(spu_legitimate_constant_p): Use const_vector_immediate_p.  Don't
+	accept a CONST_VECTOR with symbols when flag_pic is set.  Handle HIGH
+	correctly.
+	* config/spu/spu.md (high, low): Delete.
+	(low_<mode>): Define.
+
+	Remove INTRmode and INTR_REGNUM, which didn't work.
+	* config/spu/spu.c (spu_conditional_register_usage): Remove reference
+	of INTR_REGNUM.
+	* config/spu/spu-builtins.md (spu_idisable, spu_ienable, set_intr,
+	set_intr_pic, set_intr_cc, set_intr_cc_pic, set_intr_return, unnamed
+	peephole2 pattern): Don't use INTR or 131.
+	(movintrcc): Delete.
+	* config/spu/spu.h (FIRST_PSEUDO_REGISTER, FIXED_REGISTERS,
+	CALL_USED_REGISTERS, REGISTER_NAMES, INTR_REGNUM): Remove INTR_REGNUM.
+	* config/spu/spu.md (UNSPEC_IDISABLE, UNSPEC_IENABLE): Remove.
+	(UNSPEC_SET_INTR): Add.
+	* config/spu/spu-modes.def (INTR): Remove.
+
+	More accurate warnings about run-time relocations.
+	* config/spu/spu.c (reloc_diagnostic): Test in_section.
+
+	Correctly warn about immediate arguments to specific intrinsics.
+	* config/spu/spu.c (spu_check_builtin_parm): Handle CONST_VECTORs.
+	(spu_expand_builtin_1): Call spu_check_builtin_parm before checking
+	the instruction predicate.
+
+	Fix tree check errors with latest update.
+	* config/spu/spu.c (expand_builtin_args, spu_expand_builtin_1): Use
+	CALL_EXPR_ARG.
+	(spu_expand_builtin): Use CALL_EXPR_FN.
+
+	Add missing specific intrinsics.
+	* config/spu/spu-builtins.def: Add si_bisled, si_bisledd and
+	si_bislede.
+	* config/spu/spu_internals.h: Ditto.
+
+	Fix incorrect operand modifiers.
+	* config/spu/spu-builtins.md (spu_mpy, spu_mpyu):  Remove use of %H.
+	* config/spu/spu.md (xor<mode>3):  Change %S to %J.
+
+	Optimize one case of zero_extend of a vec_select.
+	* config/spu/spu.md (_vec_extractv8hi_ze):  Add.
+
+	Accept any immediate for hbr.
+	* config/spu/spu.md (hbr):  Change s constraints to i.
+
 2007-02-21  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (thumb2_final_prescan_insn): Don't incrememnt

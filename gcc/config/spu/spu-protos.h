@@ -23,6 +23,7 @@
 extern enum machine_mode spu_eh_return_filter_mode (void);
 extern void spu_cpu_cpp_builtins (struct cpp_reader * pfile);
 extern void builtin_define_std (const char *);
+extern void spu_optimization_options (int level, int size);
 extern void spu_override_options (void);
 extern void spu_c_common_override_options (void);
 extern int valid_subreg (rtx op);
@@ -88,6 +89,7 @@ extern void spu_builtin_promote (rtx ops[]);
 extern void spu_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt);
 extern void spu_expand_sign_extend (rtx ops[]);
 extern void spu_expand_vector_init (rtx target, rtx vals);
+extern void spu_init_expanders (void);
 
 /* spu-c.c */
 extern tree spu_resolve_overloaded_builtin (tree fndecl, tree fnargs);
