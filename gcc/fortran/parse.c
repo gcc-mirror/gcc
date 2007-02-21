@@ -479,6 +479,7 @@ next_free (void)
 	    gcc_assert (c == "!$omp"[i]);
 
 	  gcc_assert (c == ' ');
+	  gfc_gobble_whitespace ();
 	  return decode_omp_directive ();
 	}
     }
