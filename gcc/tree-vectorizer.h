@@ -175,7 +175,15 @@ enum stmt_vec_info_type {
 /* Indicates whether/how a variable is used in the loop.  */
 enum vect_relevant {
   vect_unused_in_loop = 0,
+
+  /* defs that feed computations that end up (only) in a reduction. These
+     defs may be used by non-reduction stmts, but eventually, any 
+     computations/values that are affected by these defs are used to compute 
+     a reduction (i.e. don't get stored to memory, for example). We use this 
+     to identify computations that we can change the order in which they are 
+     computed.  */
   vect_used_by_reduction,
+
   vect_used_in_loop  
 };
 
