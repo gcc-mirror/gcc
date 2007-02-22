@@ -1,3 +1,92 @@
+2007-02-22  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/29475
+	* cp-tree.h (struct deferred_access_check): New structure to represent a
+	deferred access check. It replaces the previous representation as a tree.
+	(get_deferred_access_checks): Return a vector of struct
+	deferred_access_check instead of a tree list.
+	(perform_access_checks): Take a vector of struct deferred_access_check
+	instead of a tree list.
+	(enforce_access, perform_or_defer_access_check): Added an
+	extra argument that represents the declaration to use to print
+	potential error messages.
+	* semantics.c (struct deferred_access): Store the deferred access checks
+	as a vector of struct deferred_access_check instead of a tree list.
+	(push_deferring_access_checks): Handle the change in struct
+	deferred_access.
+	(get_deferred_access_checks): Likewise.
+	(pop_to_parent_deferring_access_checks): Likewise.
+	(perform_or_defer_access_check): Likewise.
+	(perform_access_checks): Take a vector of struct deferred_access_check
+	instead of a tree list.
+	(finish_non_static_data_member, check_accessibility_of_qualified_id,
+	finish_id_expression): Adjusted the call to perform_or_defer_access_check.
+	(pop_to_parent_deferring_access_checks, perform_access_checks,
+	perform_or_defer_access_check): Adjusted the call to enforce_access.
+	* parser.c (struct tree_check): New structure to store various data
+	associated with a CPP_NESTED_NAME_SPECIFIER or CPP_TEMPLATE_ID token.
+	(struct cp_token): Changed the value field to be a union with a pointer to
+	a struct tree_check for CPP_NESTED_NAME_SPECIFIER or CPP_TEMPLATE_ID
+	tokens and a tree field for all other tokens.
+	(eof_token): Adjusted due to the change in struct cp_token.
+	(cp_lexer_get_preprocessor_token): Likewise.
+	(cp_lexer_purge_token): Likewise.
+	(cp_lexer_purge_tokens_after): Likewise.
+	(cp_lexer_print_token): Likewise.
+	(cp_parser_error): Likewise.
+	(cp_parser_identifier): Likewise.
+	(cp_parser_string_literal): Likewise.
+	(cp_parser_primary_expression): Likewise.
+	(cp_parser_unqualified_id): Likewise.
+	(cp_parser_parenthesized_expression_list): Likewise.
+	(cp_parser_storage_class_specifier_opt): Likewise.
+	(cp_parser_function_specifier_opt): Likewise.
+	(cp_parser_type_specifier): Likewise.
+	(cp_parser_simple_type_specifier): Likewise.
+	(cp_parser_initializer_list): Likewise.
+	(cp_parser_member_specification_opt): Likewise.
+	(cp_parser_attribute_list): Likewise.
+	(cp_parser_objc_expression): Likewise.
+	(cp_parser_objc_protocol_qualifiers): Likewise.
+	(cp_parser_objc_selector): Likewise.
+	(cp_parser_objc_declaration): Likewise.
+	(cp_parser_objc_statement): Likewise.
+	(cp_parser_omp_clause_name): Likewise.
+	(cp_parser_omp_clause_default): Likewise.
+	(cp_parser_omp_clause_schedule): Likewise.
+	(cp_parser_omp_parallel): Likewise.
+	(cp_parser_initial_pragma): Likewise.
+	(pragma_lex): Likewise.
+	(cp_parser_pre_parsed_nested_name_specifier): Likewise.
+	(cp_parser_nested_name_specifier_opt): Likewise.
+	Use cp_token::u::tree_check_value to save the token's value, the
+	associated deferred checks and its qualifying scope.
+	(cp_parser_template_id): Likewise.
+	(cp_parser_template_declaration_after_export): Adjusted the call to
+	get_deferred_access_checks.
+	(cp_parser_init_declarator): Take the access checks as a vector of struct
+	deferred_access_check instead of a tree list.
+	(cp_parser_single_declaration): Likewise.
+	(cp_parser_perform_template_parameter_access_checks): Likewise.
+	(cp_parser_simple_declaration): Adjusted the call to
+	cp_parser_init_declarator.
+	(cp_parser_explicit_specialization): Adjusted the call to
+	cp_parser_single_declaration.
+	(cp_parser_template_id, cp_parser_pre_parsed_nested_name_specifier):
+	Adjusted the call to perform_or_defer_access_check.
+	* init.c (build_offset_ref): Adjusted the call to
+	perform_or_defer_access_check.
+	* class.c (alter_access, resolve_address_of_overloaded_function):
+	Likewise.
+	* decl.c (make_typename_type, make_unbound_class_template): Likewise.
+	* search.c (lookup_member): Likewise.
+	* friend.c (add_friend): Likewise.
+	* call.c (enforce_access): Use the new extra argument to build the
+	error message.
+	(build_op_delete_call): Adjusted the call to
+	perform_or_defer_access_check.
+	(build_over_call): Likewise.
+
 2007-02-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_new_method_call): Ensure that explicit calls of

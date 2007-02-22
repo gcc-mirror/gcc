@@ -5,12 +5,12 @@
 class A
 {
 private:
-  template <class T> void g(T t)  {} // { dg-error "" } private
+  template <class T> void g(T t)  {}
   int i;
 };
 
 template <>
-void A::g<int>(int t) { i = 1; }
+void A::g<int>(int t) { i = 1; } // { dg-error "" } private
 
 int main()
 {
