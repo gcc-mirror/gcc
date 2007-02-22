@@ -1,3 +1,7 @@
+2007-02-22  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* include/win32-threads.h: Added #undef OUT.
+
 2007-02-21  Kyle Galloway  <kgallowa@redhat.com>
 
 	* jvmti.cc (_Jv_JVMTI_GetArgumentsSize): New function.
