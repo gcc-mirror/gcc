@@ -227,5 +227,6 @@ private:
 #undef STRICT
 #undef VOID
 #undef TEXT
+#undef OUT
 
 #endif /* __JV_WIN32_THREADS__ */
