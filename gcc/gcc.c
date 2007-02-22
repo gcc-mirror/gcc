@@ -350,6 +350,7 @@ static void init_gcc_specs (struct obstack *, const char *, const char *,
 static const char *convert_filename (const char *, int, int);
 #endif
 
+static const char *getenv_spec_function (int, const char **);
 static const char *if_exists_spec_function (int, const char **);
 static const char *if_exists_else_spec_function (int, const char **);
 static const char *replace_outfile_spec_function (int, const char **);
@@ -1601,6 +1602,7 @@ static struct spec_list *specs = (struct spec_list *) 0;
 
 static const struct spec_function static_spec_functions[] =
 {
+  { "getenv",                   getenv_spec_function },
   { "if-exists",		if_exists_spec_function },
   { "if-exists-else",		if_exists_else_spec_function },
   { "replace-outfile",		replace_outfile_spec_function },
@@ -7645,6 +7647,27 @@ print_multilib_info (void)
     }
 }
 
+/* getenv built-in spec function.
+
+   Returns the value of the environment variable given by its first
+   argument, concatenated with the second argument.  If the
+   environment variable is not defined, a fatal error is issued.  */
+
+static const char *
+getenv_spec_function (int argc, const char **argv)
+{
+  char *value;
+
+  if (argc != 2)
+    return NULL;
+
+  value = getenv (argv[0]);
+  if (!value)
+    fatal ("environment variable \"%s\" not defined", argv[0]);
+
+  return concat (value, argv[1], NULL);
+}
+
 /* if-exists built-in spec function.
 
    Checks to see if the file specified by the absolute pathname in

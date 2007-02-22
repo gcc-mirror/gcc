@@ -26,8 +26,11 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    like a traditional Unix, with more external files.  Most of our specs
    must be aware of the difference.  */
 
-/* The directory containing the VxWorks target headers.  */
-#define VXWORKS_TARGET_DIR  "/home/tornado/base6/target"
+/* We look for the VxWorks header files using the environment
+   variables that are set in VxWorks to indicate the location of the
+   system header files.  We use -idirafter so that the GCC's own
+   header-file directories (containing <stddef.h>, etc.) come before
+   the VxWorks system header directories.  */
 
 /* Since we provide a default -isystem, expand -isystem on the command
    line early.  */
@@ -35,9 +38,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define VXWORKS_ADDITIONAL_CPP_SPEC " 					\
  %{!nostdinc:%{isystem*}}						\
  %{mrtp: -D__RTP__=1							\
-	 %{!nostdinc:-isystem " VXWORKS_TARGET_DIR "/usr/h}}		\
+	 %{!nostdinc:-idirafter %:getenv(WIND_USR /h)}}			\
  %{!mrtp:-D_WRS_KERNEL=1						\
-	 %{!nostdinc:-isystem " VXWORKS_TARGET_DIR "/h}}"
+ 	 %{!nostdinc:-idirafter %:getenv(WIND_BASE /target/h)}}"
 
 /* The references to __init and __fini will be satisfied by
    libc_internal.a.  */
