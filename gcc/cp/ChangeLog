@@ -1,3 +1,16 @@
+2007-02-22  Michael Matz  <matz@suse.de>
+
+	PR c++/29433
+	* cp-tree.h (TFF_UNQUALIFIED_NAME): New formatting flag.
+	* error.c (dump_aggr_type, dump_simple_decl, dump_decl,
+	dump_function_decl): Guard emitting outer scopes by new flag.
+	* cp-lang.c (cxx_dwarf_name): New function.
+	(LANG_HOOKS_DWARF_NAME): Define to cxx_dwarf_name.
+	* pt.c (classtype_mangled_name, mangle_class_name_for_template):
+	Remove functions.
+	(push_template_decl_real, lookup_template_class): Remove calls
+	to above functions.
+
 2007-02-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_new_method_call): Ensure that explicit calls of

@@ -3647,7 +3647,9 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
        template-declaration.
    TFF_TEMPLATE_NAME: show only template-name.
    TFF_EXPR_IN_PARENS: parenthesize expressions.
-   TFF_NO_FUNCTION_ARGUMENTS: don't show function arguments.  */
+   TFF_NO_FUNCTION_ARGUMENTS: don't show function arguments.
+   TFF_UNQUALIFIED_NAME: do not print the qualifying scope of the
+       top-level entity.  */
 
 #define TFF_PLAIN_IDENTIFIER			(0)
 #define TFF_SCOPE				(1)
@@ -3661,6 +3663,7 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 #define TFF_TEMPLATE_NAME			(1 << 8)
 #define TFF_EXPR_IN_PARENS			(1 << 9)
 #define TFF_NO_FUNCTION_ARGUMENTS		(1 << 10)
+#define TFF_UNQUALIFIED_NAME			(1 << 11)
 
 /* Returns the TEMPLATE_DECL associated to a TEMPLATE_TEMPLATE_PARM
    node.  */

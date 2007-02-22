@@ -447,7 +447,10 @@ dump_aggr_type (tree t, int flags)
 		&& TYPE_LANG_SPECIFIC (t) && CLASSTYPE_TEMPLATE_INFO (t)
 		&& (TREE_CODE (CLASSTYPE_TI_TEMPLATE (t)) != TEMPLATE_DECL
 		    || PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)));
-      dump_scope (CP_DECL_CONTEXT (name), flags | TFF_SCOPE);
+      
+      if (! (flags & TFF_UNQUALIFIED_NAME))
+	dump_scope (CP_DECL_CONTEXT (name), flags | TFF_SCOPE);
+      flags &= ~TFF_UNQUALIFIED_NAME;
       if (tmplate)
 	{
 	  /* Because the template names are mangled, we have to locate
@@ -697,11 +700,14 @@ dump_simple_decl (tree t, tree type, int flags)
 {
   if (flags & TFF_DECL_SPECIFIERS)
     {
-      dump_type_prefix (type, flags);
+      dump_type_prefix (type, flags & ~TFF_UNQUALIFIED_NAME);
       pp_maybe_space (cxx_pp);
     }
-  if (!DECL_INITIAL (t) || TREE_CODE (DECL_INITIAL (t)) != TEMPLATE_PARM_INDEX)
+  if (! (flags & TFF_UNQUALIFIED_NAME)
+      && (!DECL_INITIAL (t)
+	  || TREE_CODE (DECL_INITIAL (t)) != TEMPLATE_PARM_INDEX))
     dump_scope (CP_DECL_CONTEXT (t), flags);
+  flags &= ~TFF_UNQUALIFIED_NAME;
   if (DECL_NAME (t))
     dump_decl (DECL_NAME (t), flags);
   else
@@ -763,7 +769,9 @@ dump_decl (tree t, int flags)
 	pp_cxx_declaration (cxx_pp, t);
       else
 	{
-	  dump_scope (CP_DECL_CONTEXT (t), flags);
+	  if (! (flags & TFF_UNQUALIFIED_NAME))
+	    dump_scope (CP_DECL_CONTEXT (t), flags);
+	  flags &= ~TFF_UNQUALIFIED_NAME;
 	  if (DECL_NAME (t) == NULL_TREE)
 	    pp_identifier (cxx_pp, "<unnamed>");
 	  else
@@ -998,7 +1006,9 @@ dump_function_decl (tree t, int flags)
   tree template_args = NULL_TREE;
   tree template_parms = NULL_TREE;
   int show_return = flags & TFF_RETURN_TYPE || flags & TFF_DECL_SPECIFIERS;
+  int do_outer_scope = ! (flags & TFF_UNQUALIFIED_NAME);
 
+  flags &= ~TFF_UNQUALIFIED_NAME;
   if (TREE_CODE (t) == TEMPLATE_DECL)
     t = DECL_TEMPLATE_RESULT (t);
 
@@ -1040,7 +1050,9 @@ dump_function_decl (tree t, int flags)
     dump_type_prefix (TREE_TYPE (fntype), flags);
 
   /* Print the function name.  */
-  if (cname)
+  if (!do_outer_scope)
+    /* Nothing.  */;
+  else if (cname)
     {
       dump_type (cname, flags);
       pp_cxx_colon_colon (cxx_pp);
