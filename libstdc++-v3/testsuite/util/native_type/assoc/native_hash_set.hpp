@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -68,12 +68,12 @@ namespace pb_ds
   {
 #ifdef PB_DS_USE_TR1
 #define PB_DS_BASE_C_DEC \
-    std::tr1::unordered_set<Key, Hash_Fn, Eq_Fn, \
-			    typename Allocator::template rebind<Key>::other>
+    std::tr1::__unordered_set<Key, Hash_Fn, Eq_Fn, \
+    typename Allocator::template rebind<Key>::other, Cache_Hash>
 #else
 #define PB_DS_BASE_C_DEC \
     __gnu_cxx::hash_set<Key, Hash_Fn, Eq_Fn, \
-			typename Allocator::template rebind<Key>::other>
+    typename Allocator::template rebind<Key>::other>
 #endif
 
     template<typename Key,

@@ -1,5 +1,4 @@
-// { dg-do compile { xfail *-*-* } }
-// { dg-excess-errors "" }
+// { dg-do compile }
 
 // 2007-02-04  Benjamin Kosnik  <bkoz@redhat.com>
 //

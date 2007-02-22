@@ -48,7 +48,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	   class _Pred = std::equal_to<_Value>,
 	   class _Alloc = std::allocator<_Value>,
 	   bool __cache_hash_code = false>
-    class unordered_set
+    class __unordered_set
     : public _Hashtable<_Value, _Value, _Alloc,
 			std::_Identity<_Value>, _Pred,
 			_Hash, __detail::_Mod_range_hashing,
@@ -71,21 +71,21 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       typedef typename _Base::allocator_type  allocator_type;
       
       explicit
-      unordered_set(size_type __n = 10,
-		    const hasher& __hf = hasher(),
-		    const key_equal& __eql = key_equal(),
-		    const allocator_type& __a = allocator_type())
+      __unordered_set(size_type __n = 10,
+		      const hasher& __hf = hasher(),
+		      const key_equal& __eql = key_equal(),
+		      const allocator_type& __a = allocator_type())
       : _Base(__n, __hf, __detail::_Mod_range_hashing(),
 	      __detail::_Default_ranged_hash(), __eql,
 	      std::_Identity<_Value>(), __a)
       { }
 
       template<typename _InputIterator>
-        unordered_set(_InputIterator __f, _InputIterator __l, 
-		      size_type __n = 10,
-		      const hasher& __hf = hasher(), 
-		      const key_equal& __eql = key_equal(), 
-		      const allocator_type& __a = allocator_type())
+        __unordered_set(_InputIterator __f, _InputIterator __l, 
+			size_type __n = 10,
+			const hasher& __hf = hasher(), 
+			const key_equal& __eql = key_equal(), 
+			const allocator_type& __a = allocator_type())
 	: _Base(__f, __l, __n, __hf, __detail::_Mod_range_hashing(),
 		__detail::_Default_ranged_hash(), __eql,
 		std::_Identity<_Value>(), __a)
@@ -97,7 +97,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	   class _Pred = std::equal_to<_Value>,
 	   class _Alloc = std::allocator<_Value>,
 	   bool __cache_hash_code = false>
-    class unordered_multiset
+    class __unordered_multiset
     : public _Hashtable<_Value, _Value, _Alloc,
 			std::_Identity<_Value>, _Pred,
 			_Hash, __detail::_Mod_range_hashing,
@@ -120,10 +120,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       typedef typename _Base::allocator_type  allocator_type;
       
       explicit
-      unordered_multiset(size_type __n = 10,
-			 const hasher& __hf = hasher(),
-			 const key_equal& __eql = key_equal(),
-			 const allocator_type& __a = allocator_type())
+      __unordered_multiset(size_type __n = 10,
+			   const hasher& __hf = hasher(),
+			   const key_equal& __eql = key_equal(),
+			   const allocator_type& __a = allocator_type())
       : _Base(__n, __hf, __detail::_Mod_range_hashing(),
 	      __detail::_Default_ranged_hash(), __eql,
 	      std::_Identity<_Value>(), __a)
@@ -131,11 +131,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
 
       template<typename _InputIterator>
-        unordered_multiset(_InputIterator __f, _InputIterator __l, 
-			   typename _Base::size_type __n = 0,
-			   const hasher& __hf = hasher(), 
-			   const key_equal& __eql = key_equal(), 
-			   const allocator_type& __a = allocator_type())
+        __unordered_multiset(_InputIterator __f, _InputIterator __l, 
+			     typename _Base::size_type __n = 0,
+			     const hasher& __hf = hasher(), 
+			     const key_equal& __eql = key_equal(), 
+			     const allocator_type& __a = allocator_type())
 	: _Base(__f, __l, __n, __hf, __detail::_Mod_range_hashing(),
 		__detail::_Default_ranged_hash(), __eql,
 		std::_Identity<_Value>(), __a)
@@ -145,20 +145,88 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   template<class _Value, class _Hash, class _Pred, class _Alloc,
 	   bool __cache_hash_code>
     inline void
-    swap (unordered_set<_Value, _Hash, _Pred,
+    swap (__unordered_set<_Value, _Hash, _Pred,
 	  _Alloc, __cache_hash_code>& __x,
-	  unordered_set<_Value, _Hash, _Pred,
+	  __unordered_set<_Value, _Hash, _Pred,
 	  _Alloc, __cache_hash_code>& __y)
     { __x.swap(__y); }
 
   template<class _Value, class _Hash, class _Pred, class _Alloc,
 	   bool __cache_hash_code>
     inline void
-    swap(unordered_multiset<_Value, _Hash, _Pred,
+    swap(__unordered_multiset<_Value, _Hash, _Pred,
 	 _Alloc, __cache_hash_code>& __x,
-	 unordered_multiset<_Value, _Hash, _Pred,
+	 __unordered_multiset<_Value, _Hash, _Pred,
 	 _Alloc, __cache_hash_code>& __y)
     { __x.swap(__y); }
+
+
+  template<class _Value,
+	   class _Hash = hash<_Value>,
+	   class _Pred = std::equal_to<_Value>,
+	   class _Alloc = std::allocator<_Value> >
+    class unordered_set
+    : public __unordered_set<_Value, _Hash, _Pred, _Alloc>
+    {
+      typedef __unordered_set<_Value, _Hash, _Pred, _Alloc>  _Base;
+
+    public:
+      typedef typename _Base::size_type       size_type;
+      typedef typename _Base::hasher          hasher;
+      typedef typename _Base::key_equal       key_equal;
+      typedef typename _Base::allocator_type  allocator_type;
+      
+      explicit
+      unordered_set(size_type __n = 10,
+		    const hasher& __hf = hasher(),
+		    const key_equal& __eql = key_equal(),
+		    const allocator_type& __a = allocator_type())
+      : _Base(__n, __hf, __eql, __a)
+      { }
+
+      template<typename _InputIterator>
+        unordered_set(_InputIterator __f, _InputIterator __l, 
+		      size_type __n = 10,
+		      const hasher& __hf = hasher(), 
+		      const key_equal& __eql = key_equal(), 
+		      const allocator_type& __a = allocator_type())
+	: _Base(__f, __l, __n, __hf, __eql, __a)
+        { }
+    };
+
+  template<class _Value,
+	   class _Hash = hash<_Value>,
+	   class _Pred = std::equal_to<_Value>,
+	   class _Alloc = std::allocator<_Value> >
+    class unordered_multiset
+    : public __unordered_multiset<_Value, _Hash, _Pred, _Alloc>
+    {
+      typedef __unordered_multiset<_Value, _Hash, _Pred, _Alloc>  _Base;
+
+    public:
+      typedef typename _Base::size_type       size_type;
+      typedef typename _Base::hasher          hasher;
+      typedef typename _Base::key_equal       key_equal;
+      typedef typename _Base::allocator_type  allocator_type;
+      
+      explicit
+      unordered_multiset(size_type __n = 10,
+			 const hasher& __hf = hasher(),
+			 const key_equal& __eql = key_equal(),
+			 const allocator_type& __a = allocator_type())
+      : _Base(__n, __hf, __eql, __a)
+      { }
+
+
+      template<typename _InputIterator>
+        unordered_multiset(_InputIterator __f, _InputIterator __l, 
+			   typename _Base::size_type __n = 0,
+			   const hasher& __hf = hasher(), 
+			   const key_equal& __eql = key_equal(), 
+			   const allocator_type& __a = allocator_type())
+	: _Base(__f, __l, __n, __hf, __eql, __a)
+        { }
+    };
 
 _GLIBCXX_END_NAMESPACE
 }

@@ -48,7 +48,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	   class _Pred = std::equal_to<_Key>,
 	   class _Alloc = std::allocator<std::pair<const _Key, _Tp> >,
 	   bool __cache_hash_code = false>
-    class unordered_map
+    class __unordered_map
     : public _Hashtable<_Key, std::pair<const _Key, _Tp>, _Alloc,
 			std::_Select1st<std::pair<const _Key, _Tp> >, _Pred, 
 			_Hash, __detail::_Mod_range_hashing,
@@ -71,21 +71,21 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       typedef typename _Base::allocator_type  allocator_type;
 
       explicit
-      unordered_map(size_type __n = 10,
-		    const hasher& __hf = hasher(),
-		    const key_equal& __eql = key_equal(),
-		    const allocator_type& __a = allocator_type())
+      __unordered_map(size_type __n = 10,
+		      const hasher& __hf = hasher(),
+		      const key_equal& __eql = key_equal(),
+		      const allocator_type& __a = allocator_type())
       : _Base(__n, __hf, __detail::_Mod_range_hashing(),
 	      __detail::_Default_ranged_hash(),
 	      __eql, std::_Select1st<std::pair<const _Key, _Tp> >(), __a)
       { }
 
       template<typename _InputIterator>
-        unordered_map(_InputIterator __f, _InputIterator __l, 
-		      size_type __n = 10,
-		      const hasher& __hf = hasher(), 
-		      const key_equal& __eql = key_equal(), 
-		      const allocator_type& __a = allocator_type())
+        __unordered_map(_InputIterator __f, _InputIterator __l, 
+			size_type __n = 10,
+			const hasher& __hf = hasher(), 
+			const key_equal& __eql = key_equal(), 
+			const allocator_type& __a = allocator_type())
 	: _Base(__f, __l, __n, __hf, __detail::_Mod_range_hashing(),
 		__detail::_Default_ranged_hash(),
 		__eql, std::_Select1st<std::pair<const _Key, _Tp> >(), __a)
@@ -97,7 +97,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	   class _Pred = std::equal_to<_Key>,
 	   class _Alloc = std::allocator<std::pair<const _Key, _Tp> >,
 	   bool __cache_hash_code = false>
-    class unordered_multimap
+    class __unordered_multimap
     : public _Hashtable<_Key, std::pair<const _Key, _Tp>,
 			_Alloc,
 			std::_Select1st<std::pair<const _Key, _Tp> >, _Pred,
@@ -122,10 +122,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       typedef typename _Base::allocator_type  allocator_type;
       
       explicit
-      unordered_multimap(size_type __n = 10,
-			 const hasher& __hf = hasher(),
-			 const key_equal& __eql = key_equal(),
-			 const allocator_type& __a = allocator_type())
+      __unordered_multimap(size_type __n = 10,
+			   const hasher& __hf = hasher(),
+			   const key_equal& __eql = key_equal(),
+			   const allocator_type& __a = allocator_type())
       : _Base(__n, __hf, __detail::_Mod_range_hashing(),
 	      __detail::_Default_ranged_hash(),
 	      __eql, std::_Select1st<std::pair<const _Key, _Tp> >(), __a)
@@ -133,11 +133,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
 
       template<typename _InputIterator>
-        unordered_multimap(_InputIterator __f, _InputIterator __l, 
-			   typename _Base::size_type __n = 0,
-			   const hasher& __hf = hasher(), 
-			   const key_equal& __eql = key_equal(), 
-			   const allocator_type& __a = allocator_type())
+        __unordered_multimap(_InputIterator __f, _InputIterator __l, 
+			     typename _Base::size_type __n = 0,
+			     const hasher& __hf = hasher(), 
+			     const key_equal& __eql = key_equal(), 
+			     const allocator_type& __a = allocator_type())
 	: _Base(__f, __l, __n, __hf, __detail::_Mod_range_hashing(),
 		__detail::_Default_ranged_hash(),
 		__eql, std::_Select1st<std::pair<const _Key, _Tp> >(), __a)
@@ -147,20 +147,88 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   template<class _Key, class _Tp, class _Hash, class _Pred, class _Alloc,
 	   bool __cache_hash_code>
     inline void
-    swap(unordered_map<_Key, _Tp, _Hash, _Pred,
+    swap(__unordered_map<_Key, _Tp, _Hash, _Pred,
 	 _Alloc, __cache_hash_code>& __x,
-	 unordered_map<_Key, _Tp, _Hash, _Pred,
+	 __unordered_map<_Key, _Tp, _Hash, _Pred,
 	 _Alloc, __cache_hash_code>& __y)
     { __x.swap(__y); }
 
   template<class _Key, class _Tp, class _Hash, class _Pred, class _Alloc,
 	   bool __cache_hash_code>
     inline void
-    swap(unordered_multimap<_Key, _Tp, _Hash, _Pred,
+    swap(__unordered_multimap<_Key, _Tp, _Hash, _Pred,
 	 _Alloc, __cache_hash_code>& __x,
-	 unordered_multimap<_Key, _Tp, _Hash, _Pred,
+	 __unordered_multimap<_Key, _Tp, _Hash, _Pred,
 	 _Alloc, __cache_hash_code>& __y)
     { __x.swap(__y); }
+
+
+  template<class _Key, class _Tp,
+	   class _Hash = hash<_Key>,
+	   class _Pred = std::equal_to<_Key>,
+	   class _Alloc = std::allocator<std::pair<const _Key, _Tp> > >
+    class unordered_map
+    : public __unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>
+    {
+      typedef __unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>  _Base;
+
+    public:
+      typedef typename _Base::size_type       size_type;
+      typedef typename _Base::hasher          hasher;
+      typedef typename _Base::key_equal       key_equal;
+      typedef typename _Base::allocator_type  allocator_type;
+
+      explicit
+      unordered_map(size_type __n = 10,
+		    const hasher& __hf = hasher(),
+		    const key_equal& __eql = key_equal(),
+		    const allocator_type& __a = allocator_type())
+      : _Base(__n, __hf, __eql, __a)
+      { }
+
+      template<typename _InputIterator>
+        unordered_map(_InputIterator __f, _InputIterator __l, 
+		      size_type __n = 10,
+		      const hasher& __hf = hasher(), 
+		      const key_equal& __eql = key_equal(), 
+		      const allocator_type& __a = allocator_type())
+	: _Base(__f, __l, __n, __hf, __eql, __a)
+        { }
+    };
+  
+  template<class _Key, class _Tp,
+	   class _Hash = hash<_Key>,
+	   class _Pred = std::equal_to<_Key>,
+	   class _Alloc = std::allocator<std::pair<const _Key, _Tp> > >
+    class unordered_multimap
+    : public __unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>
+    {
+      typedef __unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>  _Base;
+
+    public:
+      typedef typename _Base::size_type       size_type;
+      typedef typename _Base::hasher          hasher;
+      typedef typename _Base::key_equal       key_equal;
+      typedef typename _Base::allocator_type  allocator_type;
+      
+      explicit
+      unordered_multimap(size_type __n = 10,
+			 const hasher& __hf = hasher(),
+			 const key_equal& __eql = key_equal(),
+			 const allocator_type& __a = allocator_type())
+      : _Base(__n, __hf, __eql, __a)
+      { }
+
+
+      template<typename _InputIterator>
+        unordered_multimap(_InputIterator __f, _InputIterator __l, 
+			   typename _Base::size_type __n = 0,
+			   const hasher& __hf = hasher(), 
+			   const key_equal& __eql = key_equal(), 
+			   const allocator_type& __a = allocator_type())
+	: _Base(__f, __l, __n, __hf, __eql, __a)
+        { }
+    };
 
 _GLIBCXX_END_NAMESPACE
 }

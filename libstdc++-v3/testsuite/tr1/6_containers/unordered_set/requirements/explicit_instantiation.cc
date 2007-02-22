@@ -2,7 +2,7 @@
 
 // 2005-02-17  Matt Austern  <austern@apple.com>
 //
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,7 +28,9 @@ using namespace std;
 using namespace std::tr1;
 
 template class unordered_set<int>;
+template class unordered_set<float, hash<float>, equal_to<float>,
+			     allocator<float> >;
 template class unordered_set<int, hash<int>, equal_to<int>,
-			     allocator<int>, true>;
-template class unordered_set<int, hash<int>, equal_to<int>,
-			     allocator<char>, false>;
+			     allocator<char> >;
+template class __unordered_set<float, hash<float>, equal_to<float>,
+			       allocator<float>, true>;
