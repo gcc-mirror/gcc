@@ -184,11 +184,11 @@ void test01()
 #if !__GXX_WEAK__
 // Explicitly instantiate for systems with no COMDAT or weak support.
 template 
-  std::basic_string< A<B> >::size_type 
+  const std::basic_string< A<B> >::size_type 
   std::basic_string< A<B> >::_Rep::_S_max_size;
 
 template 
-  A<B>
+  const A<B>
   std::basic_string< A<B> >::_Rep::_S_terminal;
 #endif
 

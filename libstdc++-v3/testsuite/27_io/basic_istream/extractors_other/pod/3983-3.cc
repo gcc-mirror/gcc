@@ -61,11 +61,11 @@ void test03()
 #if !__GXX_WEAK__
 // Explicitly instantiate for systems with no COMDAT or weak support.
 template 
-  std::basic_string<__gnu_test::pod_ushort>::size_type 
+  const std::basic_string<__gnu_test::pod_ushort>::size_type 
   std::basic_string<__gnu_test::pod_ushort>::_Rep::_S_max_size;
 
 template 
-  __gnu_test::pod_ushort
+  const __gnu_test::pod_ushort
   std::basic_string<__gnu_test::pod_ushort>::_Rep::_S_terminal;
 #endif
 
