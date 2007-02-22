@@ -1,3 +1,34 @@
+2007-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* java/util/Date.java (parse): Properly parse 09:01:02 as
+	hours/minutes/seconds, not as hours/minutes/year.
+	* java/util/SimpleTimeZone.java (SimpleTimeZone): Simplify
+	{start,end}TimeMode constructor by calling shorter constructor,
+	set {start,end}TimeMode fields after it returns.
+	(setStartRule): Don't adjust startTime into WALL_TIME.  Set
+	startTimeMode to WALL_TIME.
+	(endStartRule): Similarly.
+	(getOffset): Handle properly millis + dstOffset overflowing into the
+	next day.  Adjust startTime resp. endTime based on startTimeMode
+	resp. endTimeMode.
+	* java/util/TimeZone.java (zoneinfo_dir, availableIDs, aliases0): New
+	static fields.
+	(timezones): Remove synchronized keyword.  Set zoneinfo_dir.
+	If non-null, set up aliases0 and don't put anything into
+	timezones0.
+	(defaultZone): Call getTimeZone instead of timezones().get.
+	(getDefaultTimeZone): Fix parsing of EST5 or EST5EDT6.  Use
+	getTimeZoneInternal instead of timezones().get.
+	(parseTime): Parse correctly hour:minute.
+	(getTimeZoneInternal): New private method.
+	(getTimeZone): Do the custom ID checking first, canonicalize
+	ID for custom IDs as required by documentation.  Call
+	getTimeZoneInternal to handle the rest.
+	(getAvailableIDs(int)): Add locking.  Handle zoneinfo_dir != null.
+	(getAvailableIDs(File,String,ArrayList)): New private method.
+	(getAvailableIDs()): Add locking.  Handle zoneinfo_dir != null.
+	* gnu/java/util/ZoneInfo.java: New file.
+
 2007-02-20  Matthias Klose  <doko@ubuntu.com>
 
 	* doc/Makefile.am: Add rules to build and install man pages

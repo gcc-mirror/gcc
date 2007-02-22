@@ -139,6 +139,10 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
   if (! tmpdir)
     tmpdir = "/tmp";
   SET ("java.io.tmpdir", tmpdir);
+  const char *zoneinfodir = ::getenv("TZDATA");
+  if (! zoneinfodir)
+    zoneinfodir = "/usr/share/zoneinfo";
+  SET ("gnu.java.util.zoneinfo.dir", zoneinfodir);
 }
 
 static inline void

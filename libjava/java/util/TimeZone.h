@@ -40,8 +40,14 @@ public:
   virtual jboolean useDaylightTime() = 0;
   virtual jboolean inDaylightTime(::java::util::Date *) = 0;
   virtual jint getDSTSavings();
+private:
+  static ::java::util::TimeZone * getTimeZoneInternal(::java::lang::String *);
+public:
   static ::java::util::TimeZone * getTimeZone(::java::lang::String *);
   static JArray< ::java::lang::String * > * getAvailableIDs(jint);
+private:
+  static jint getAvailableIDs(::java::io::File *, ::java::lang::String *, ::java::util::ArrayList *);
+public:
   static JArray< ::java::lang::String * > * getAvailableIDs();
   static ::java::util::TimeZone * getDefault();
   static void setDefault(::java::util::TimeZone *);
@@ -53,6 +59,9 @@ private:
   ::java::lang::String * __attribute__((aligned(__alignof__( ::java::lang::Object)))) ID;
   static ::java::util::TimeZone * defaultZone0;
   static const jlong serialVersionUID = 3581463369166924961LL;
+  static ::java::lang::String * zoneinfo_dir;
+  static JArray< ::java::lang::String * > * availableIDs;
+  static ::java::util::HashMap * aliases0;
   static ::java::util::HashMap * timezones0;
 public:
   static ::java::lang::Class class$;

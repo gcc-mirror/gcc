@@ -754,6 +754,7 @@ public class Date
 	  }
 	else if (firstch >= '0' && firstch <= '9')
 	  {
+	    int lastPunct = -1;
 	    while (tok != null && tok.length() > 0)
 	      {
 		int punctOffset = tok.length();
@@ -790,6 +791,13 @@ public class Date
 		      hour = num;
 		    else
 		      minute = num;
+		  }
+		else if (lastPunct == ':' && hour >= 0 && (minute < 0 || second < 0))
+		  {
+		    if (minute < 0)
+		      minute = num;
+		    else
+		      second = num;
 		  }
 	        else if ((num >= 70
 			  && (punct == ' ' || punct == ','
@@ -828,6 +836,7 @@ public class Date
 		  tok = null;
 		else
 		  tok = tok.substring(punctOffset + 1);
+		lastPunct = punct;
 	      }
 	  }
 	else if (firstch >= 'A' && firstch <= 'Z')

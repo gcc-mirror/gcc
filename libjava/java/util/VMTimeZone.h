@@ -16,8 +16,7 @@ public: // actually package-private
   static ::java::util::TimeZone * getDefaultTimeZoneId();
 private:
   static ::java::lang::String * readTimeZoneFile(::java::lang::String *);
-  static ::java::lang::String * readtzFile(::java::lang::String *);
-  static void skipFully(::java::io::InputStream *, jlong);
+  static ::java::lang::String * readSysconfigClockFile(::java::lang::String *);
   static ::java::lang::String * getSystemTimeZoneId();
 public:
   static ::java::lang::Class class$;
