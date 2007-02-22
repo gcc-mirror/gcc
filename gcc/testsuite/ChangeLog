@@ -1,3 +1,8 @@
+2007-02-22  Ian Lance Taylor  <iant@google.com>
+
+	PR debug/30898
+	* g++.dg/debug/pr30898.C: New test.
+
 2007-02-22  Ira Rosen  <irar@il.ibm.com>
 
 	* gcc.dg/vect/vect-106.c: New test.
