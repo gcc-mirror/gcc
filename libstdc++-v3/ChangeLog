@@ -1,3 +1,20 @@
+2007-02-22  Simon Martin  <simartin@users.sourceforge.net>
+
+	* testsuite/27_io/basic_ios/cons/char/3.cc: Fixed type mismatches in
+	explicit instantiations.
+	* testsuite/27_io/basic_istream/extractors_other/pod/3983-3.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/pod/3983-1.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/pod/3983-2.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/sentry/pod/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/sentry/pod/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/inserters_extractors/pod/10081-in.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/inserters_extractors/pod/10081-out.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/capacity/1.cc: Likewise.
+
 2007-02-22  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/unordered_map (class __unordered_map,
