@@ -812,19 +812,21 @@ of extensions, and @option{-std=legacy} allows both without warning.
 @section Old-style kind specifications
 @cindex Kind specifications
 
-GNU Fortran allows old-style kind specifications in
-declarations. These look like:
+GNU Fortran allows old-style kind specifications in declarations. These
+look like:
 @smallexample
-      TYPESPEC*k x,y,z
+      TYPESPEC*size x,y,z
 @end smallexample
 where @code{TYPESPEC} is a basic type (@code{INTEGER}, @code{REAL},
-etc.), and where @code{k} is a valid kind number for that type. The
-statement then declares @code{x}, @code{y} and @code{z} to be of
-type @code{TYPESPEC} with kind @code{k}. This is equivalent to the
-standard conforming declaration
+etc.), and where @code{size} is a byte count corresponding to a valid
+kind for that type. The statement then declares @code{x}, @code{y} and
+@code{z} to be of type @code{TYPESPEC} with the appropriate kind. This
+is equivalent to the standard conforming declaration
 @smallexample
       TYPESPEC(k) x,y,z
 @end smallexample
+where @code{k} is equal to @code{size} for most types, but is equal to
+@code{size/2} for the @code{COMPLEX} type.
 
 @node Old-style variable initialization
 @section Old-style variable initialization

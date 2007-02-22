@@ -1364,7 +1364,9 @@ cleanup:
 }
 
 
-/* Match an extended-f77 kind specification.  */
+/* Match an extended-f77 kind specification.  This assumes that the kind
+   number is equal to the byte size for non-COMPLEX types, and equal to
+   half of the byte size for COMPLEX.  */
 
 match
 gfc_match_old_kind_spec (gfc_typespec * ts)
