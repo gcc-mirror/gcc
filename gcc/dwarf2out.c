@@ -8811,6 +8811,32 @@ is_based_loc (rtx rtl)
 	       && GET_CODE (XEXP (rtl, 1)) == CONST_INT)));
 }
 
+/* Return a descriptor that describes the concatenation of N locations
+   used to form the address of a memory location.  */
+
+static dw_loc_descr_ref
+concatn_mem_loc_descriptor (rtx concatn, enum machine_mode mode)
+{
+  unsigned int i;
+  dw_loc_descr_ref cc_loc_result = NULL;
+  unsigned int n = XVECLEN (concatn, 0);
+
+  for (i = 0; i < n; ++i)
+    {
+      dw_loc_descr_ref ref;
+      rtx x = XVECEXP (concatn, 0, i);
+
+      ref = mem_loc_descriptor (x, mode);
+      if (ref == NULL)
+	return NULL;
+
+      add_loc_descr (&cc_loc_result, ref);
+      add_loc_descr_op_piece (&cc_loc_result, GET_MODE_SIZE (GET_MODE (x)));
+    }
+
+  return cc_loc_result;
+}
+
 /* The following routine converts the RTL for a variable or parameter
    (resident in memory) into an equivalent Dwarf representation of a
    mechanism for getting the address of that same variable onto the top of a
@@ -9004,6 +9030,10 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode)
 
     case CONST_INT:
       mem_loc_result = int_loc_descriptor (INTVAL (rtl));
+      break;
+
+    case CONCATN:
+      mem_loc_result = concatn_mem_loc_descriptor (rtl, mode);
       break;
 
     default:
