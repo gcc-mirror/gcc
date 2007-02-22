@@ -1,3 +1,11 @@
+2007-02-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.c (getenv_spec_function): New function.
+	(static_spec_functions): Add it.
+	* config/vxworks.h (VXWORKS_TARGET_DIR): Remove.
+	(VXWORKS_ADDITIONAL_CPP_SPEC): Use getenv to find the VxWorks
+	header files.
+
 2007-02-22  Michael Matz  <matz@suse.de
 
 	PR c++/29433
