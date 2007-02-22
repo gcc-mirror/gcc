@@ -5039,9 +5039,15 @@ add_AT_string (dw_die_ref die, enum dwarf_attribute attr_kind, const char *str)
   slot = htab_find_slot_with_hash (debug_str_hash, str,
 				   htab_hash_string (str), INSERT);
   if (*slot == NULL)
-    *slot = ggc_alloc_cleared (sizeof (struct indirect_string_node));
-  node = (struct indirect_string_node *) *slot;
-  node->str = ggc_strdup (str);
+    {
+      node = (struct indirect_string_node *)
+	       ggc_alloc_cleared (sizeof (struct indirect_string_node));
+      node->str = ggc_strdup (str);
+      *slot = node;
+    }
+  else
+    node = (struct indirect_string_node *) *slot;
+
   node->refcount++;
 
   attr.dw_attr = attr_kind;
@@ -11251,10 +11257,17 @@ type_tag (tree type)
 	 involved.  */
       else if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 	       && ! DECL_IGNORED_P (TYPE_NAME (type)))
-	t = DECL_NAME (TYPE_NAME (type));
+	{
+	  /* We want to be extra verbose.  Don't call dwarf_name if
+	     DECL_NAME isn't set.  The default hook for decl_printable_name
+	     doesn't like that, and in this context it's correct to return
+	     0, instead of "<anonymous>" or the like.  */
+	  if (DECL_NAME (TYPE_NAME (type)))
+	    name = lang_hooks.dwarf_name (TYPE_NAME (type), 2);
+	}
 
       /* Now get the name as a string, or invent one.  */
-      if (t != 0)
+      if (!name && t != 0)
 	name = IDENTIFIER_POINTER (t);
     }
 

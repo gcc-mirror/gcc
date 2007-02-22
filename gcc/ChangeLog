@@ -1,3 +1,9 @@
+2007-02-22  Michael Matz  <matz@suse.de
+
+	PR c++/29433
+	* dwarf2out.c (add_AT_string): Call ggc_strdup once per string.
+	(type_tag): Use lang_hooks.dwarf_name instead of DECL_NAME.
+
 2007-02-22  Ian Lance Taylor  <iant@google.com>
 
 	PR debug/30898
@@ -5,7 +11,7 @@
 	(mem_loc_descriptor): Call it.
 
 2007-02-22  Zdenek Dvorak  <dvorakz@suse.cz>
-            Ira Rosen  <irar@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
 
 	* tree-data-ref.c (ptr_ptr_may_alias_p): Take alias sets into account.
 
