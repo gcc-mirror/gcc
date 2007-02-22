@@ -5059,7 +5059,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
   int nbbs = loop->num_nodes;
-  block_stmt_iterator si;
+  block_stmt_iterator si, next_si;
   int i;
   tree ratio = NULL;
   int vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
@@ -5212,12 +5212,14 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 
 		  while (next)
 		    {
+		      next_si = bsi_for_stmt (next);
 		      next_stmt_info = vinfo_for_stmt (next);
 		      /* Free the attached stmt_vec_info and remove the stmt.  */
 		      ann = stmt_ann (next);
 		      tmp = DR_GROUP_NEXT_DR (next_stmt_info);
 		      free (next_stmt_info);
 		      set_stmt_info (ann, NULL);
+		      bsi_remove (&next_si, true);
 		      next = tmp;
 		    }
 		  bsi_remove (&si, true);
@@ -5233,16 +5235,6 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 		  continue;
 		}
 	    }
-	  else
-	    {
-	      if (strided_store)
-		{
-		  /* This is case of skipped interleaved store. We don't free
-		     its stmt_vec_info.  */
-		  bsi_remove (&si, true);
-		  continue;
-		}
-            }
 	  bsi_next (&si);
 	}		        /* stmts in BB */
     }				/* BBs in loop */

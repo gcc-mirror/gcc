@@ -1,4 +1,10 @@
 2007-02-22  Dorit Nuzman  <dorit@il.ibm.com>
+            Ira Rosen  <irar@il.ibm.com> 
+
+	PR tree-optimization/30843
+	* gcc.dg/vect/pr30843.c: New test.
+
+2007-02-22  Dorit Nuzman  <dorit@il.ibm.com>
 
         PR tree-optimization/30858
 	* gcc.dg/vect/pr30858.c: New test.
