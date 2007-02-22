@@ -172,6 +172,7 @@ ptr_ptr_may_alias_p (tree ptr_a, tree ptr_b,
   tree tag_a = NULL_TREE, tag_b = NULL_TREE;
   struct ptr_info_def *pi_a = DR_PTR_INFO (dra);  
   struct ptr_info_def *pi_b = DR_PTR_INFO (drb);  
+  bitmap bal1, bal2;
 
   if (pi_a && pi_a->name_mem_tag && pi_b && pi_b->name_mem_tag)
     {
@@ -192,7 +193,19 @@ ptr_ptr_may_alias_p (tree ptr_a, tree ptr_b,
       if (!tag_b)
 	return false;
     }
-  *aliased = (tag_a == tag_b);
+  bal1 = BITMAP_ALLOC (NULL);
+  bitmap_set_bit (bal1, DECL_UID (tag_a));
+  if (MTAG_P (tag_a) && MTAG_ALIASES (tag_a))
+    bitmap_ior_into (bal1, MTAG_ALIASES (tag_a));
+
+  bal2 = BITMAP_ALLOC (NULL);
+  bitmap_set_bit (bal2, DECL_UID (tag_b));
+  if (MTAG_P (tag_b) && MTAG_ALIASES (tag_b))
+    bitmap_ior_into (bal2, MTAG_ALIASES (tag_b));
+  *aliased = bitmap_intersect_p (bal1, bal2);
+
+  BITMAP_FREE (bal1);
+  BITMAP_FREE (bal2);
   return true;
 }
 
