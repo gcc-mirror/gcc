@@ -1,5 +1,6 @@
 /* java.util.SimpleTimeZone
-   Copyright (C) 1998, 1999, 2000, 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2003, 2004, 2005, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -141,8 +142,8 @@ public class SimpleTimeZone extends TimeZone
 
   /**
    * This variable specifies the time of change to daylight savings.
-   * This time is given in milliseconds after midnight local
-   * standard time.
+   * This time is given in milliseconds after midnight in startTimeMode
+   * chosen time mode.
    * @serial
    */
   private int startTime;
@@ -187,8 +188,8 @@ public class SimpleTimeZone extends TimeZone
 
   /**
    * This variable specifies the time of change back to standard time.
-   * This time is given in milliseconds after midnight local
-   * standard time.
+   * This time is given in milliseconds after midnight in endTimeMode
+   * chosen time mode.
    * @serial
    */
   private int endTime;
@@ -380,24 +381,17 @@ public class SimpleTimeZone extends TimeZone
                         int endDayOfWeekInMonth, int endDayOfWeek,
                         int endTime, int endTimeMode, int dstSavings)
   {
-    this.rawOffset = rawOffset;
-    setID(id);
-    useDaylight = true;
+    this(rawOffset, id, startMonth, startDayOfWeekInMonth, startDayOfWeek,
+	 startTime, endMonth, endDayOfWeekInMonth, endDayOfWeek, endTime);
 
     if (startTimeMode < WALL_TIME || startTimeMode > UTC_TIME)
       throw new IllegalArgumentException("startTimeMode must be one of WALL_TIME, STANDARD_TIME, or UTC_TIME");
     if (endTimeMode < WALL_TIME || endTimeMode > UTC_TIME)
       throw new IllegalArgumentException("endTimeMode must be one of WALL_TIME, STANDARD_TIME, or UTC_TIME");
-    this.startTimeMode = startTimeMode;
-    this.endTimeMode = endTimeMode;
-
-    setStartRule(startMonth, startDayOfWeekInMonth, startDayOfWeek, startTime);
-    setEndRule(endMonth, endDayOfWeekInMonth, endDayOfWeek, endTime);
-    if (startMonth == endMonth)
-      throw new IllegalArgumentException("startMonth and endMonth must be different");
-    this.startYear = 0;
 
     this.dstSavings = dstSavings;
+    this.startTimeMode = startTimeMode;
+    this.endTimeMode = endTimeMode;
   }
 
   /**
@@ -477,12 +471,8 @@ public class SimpleTimeZone extends TimeZone
     this.startMonth = month;
     this.startDay = day;
     this.startDayOfWeek = Math.abs(dayOfWeek);
-    if (this.startTimeMode == WALL_TIME || this.startTimeMode == STANDARD_TIME)
-      this.startTime = time;
-    else
-      // Convert from UTC to STANDARD
-      this.startTime = time + this.rawOffset;
-    useDaylight = true;
+    this.startTime = time;
+    this.startTimeMode = WALL_TIME;
   }
 
   /**
@@ -513,24 +503,10 @@ public class SimpleTimeZone extends TimeZone
   public void setStartRule(int month, int day, int dayOfWeek, int time,
                            boolean after)
   {
-    // FIXME: XXX: Validate that checkRule and offset processing work with on
-    // or before mode.
-    this.startDay = after ? Math.abs(day) : -Math.abs(day);
-    this.startDayOfWeek = after ? Math.abs(dayOfWeek) : -Math.abs(dayOfWeek);
-    this.startMode = (dayOfWeek != 0)
-                     ? (after ? DOW_GE_DOM_MODE : DOW_LE_DOM_MODE)
-                     : checkRule(month, day, dayOfWeek);
-    this.startDay = Math.abs(this.startDay);
-    this.startDayOfWeek = Math.abs(this.startDayOfWeek);
-
-    this.startMonth = month;
-
-    if (this.startTimeMode == WALL_TIME || this.startTimeMode == STANDARD_TIME)
-      this.startTime = time;
+    if (after)
+      setStartRule(month, day, -dayOfWeek, time);
     else
-      // Convert from UTC to STANDARD
-      this.startTime = time + this.rawOffset;
-    useDaylight = true;
+      setStartRule(month, -day, -dayOfWeek, time);
   }
 
   /**
@@ -570,14 +546,8 @@ public class SimpleTimeZone extends TimeZone
     this.endMonth = month;
     this.endDay = day;
     this.endDayOfWeek = Math.abs(dayOfWeek);
-    if (this.endTimeMode == WALL_TIME)
-      this.endTime = time;
-    else if (this.endTimeMode == STANDARD_TIME)
-      // Convert from STANDARD to DST
-      this.endTime = time + this.dstSavings;
-    else
-      // Convert from UTC to DST
-      this.endTime = time + this.rawOffset + this.dstSavings;
+    this.endTime = time;
+    this.endTimeMode = WALL_TIME;
     useDaylight = true;
   }
 
@@ -607,27 +577,10 @@ public class SimpleTimeZone extends TimeZone
   public void setEndRule(int month, int day, int dayOfWeek, int time,
                          boolean after)
   {
-    // FIXME: XXX: Validate that checkRule and offset processing work with on
-    // or before mode.
-    this.endDay = after ? Math.abs(day) : -Math.abs(day);
-    this.endDayOfWeek = after ? Math.abs(dayOfWeek) : -Math.abs(dayOfWeek);
-    this.endMode = (dayOfWeek != 0)
-                   ? (after ? DOW_GE_DOM_MODE : DOW_LE_DOM_MODE)
-                   : checkRule(month, day, dayOfWeek);
-    this.endDay = Math.abs(this.endDay);
-    this.endDayOfWeek = Math.abs(endDayOfWeek);
-
-    this.endMonth = month;
-
-    if (this.endTimeMode == WALL_TIME)
-      this.endTime = time;
-    else if (this.endTimeMode == STANDARD_TIME)
-      // Convert from STANDARD to DST
-      this.endTime = time + this.dstSavings;
+    if (after)
+      setEndRule(month, day, -dayOfWeek, time);
     else
-      // Convert from UTC to DST
-      this.endTime = time + this.rawOffset + this.dstSavings;
-    useDaylight = true;
+      setEndRule(month, -day, -dayOfWeek, time);
   }
 
   /**
@@ -688,16 +641,37 @@ public class SimpleTimeZone extends TimeZone
     int daylightSavings = 0;
     if (useDaylight && era == GregorianCalendar.AD && year >= startYear)
       {
+	int orig_year = year;
+	int time = startTime + (startTimeMode == UTC_TIME ? rawOffset : 0);
 	// This does only work for Gregorian calendars :-(
 	// This is mainly because setStartYear doesn't take an era.
 	boolean afterStart = ! isBefore(year, month, day, dayOfWeek, millis,
 	                                startMode, startMonth, startDay,
-	                                startDayOfWeek, startTime);
-	boolean beforeEnd = isBefore(year, month, day, dayOfWeek,
-				     millis + dstSavings,
-	                             endMode, endMonth, endDay, endDayOfWeek,
-	                             endTime);
+					startDayOfWeek, time);
+	millis += dstSavings;
+	if (millis >= 24 * 60 * 60 * 1000)
+	  {
+	    millis -= 24 * 60 * 60 * 1000;
+	    dayOfWeek = (dayOfWeek % 7) + 1;
+	    if (++day > daysInMonth)
+	      {
+		day = 1;
+		if (month++ == Calendar.DECEMBER)
+		  {
+		    month = Calendar.JANUARY;
+		    year++;
+		  }
+	      }
+	  }
+	time = endTime + (endTimeMode == UTC_TIME ? rawOffset : 0);
+	if (endTimeMode != WALL_TIME)
+	  time += dstSavings;
+	boolean beforeEnd = isBefore(year, month, day, dayOfWeek, millis,
+				     endMode, endMonth, endDay, endDayOfWeek,
+				     time);
 
+	if (year != orig_year)
+	  afterStart = false;
 	if (startMonth < endMonth)
 	  // use daylight savings, if the date is after the start of
 	  // savings, and before the end of savings.

@@ -2402,7 +2402,8 @@ gnu_java_text_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gn
 gnu_java_util_source_files = \
 classpath/gnu/java/util/DoubleEnumeration.java \
 classpath/gnu/java/util/EmptyEnumeration.java \
-classpath/gnu/java/util/WeakIdentityHashMap.java
+classpath/gnu/java/util/WeakIdentityHashMap.java \
+classpath/gnu/java/util/ZoneInfo.java
 
 gnu_java_util_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_util_source_files)))
 gnu_java_util_jar_source_files = \
