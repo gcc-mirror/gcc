@@ -92,7 +92,7 @@ BEGIN
           END;
 
           BEGIN
-               YR := IDENT_INT(2100);
+               YR := IDENT_INT(YEAR_NUMBER'LAST + 1);
                FAILED ("EXCEPTION NOT RAISED - (A)3");
                IF NOT EQUAL (YR, YR) THEN
                     COMMENT ("NO EXCEPTION RAISED");

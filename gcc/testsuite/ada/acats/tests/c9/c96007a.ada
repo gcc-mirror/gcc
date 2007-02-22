@@ -136,7 +136,7 @@ BEGIN
           END;
 
           BEGIN
-               BAD_TIME := TIME_OF (2100, 8, 13);
+               BAD_TIME := TIME_OF (YEAR_NUMBER'LAST + 1, 8, 13);
                FAILED ("EXCEPTION NOT RAISED - 2100 (B)");
           EXCEPTION
                WHEN CONSTRAINT_ERROR =>
