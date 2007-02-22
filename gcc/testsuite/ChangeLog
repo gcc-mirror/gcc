@@ -1,3 +1,10 @@
+2007-02-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/wrapper.exp (${tool}_maybe_build_wrapper): Allow the caller
+	to set options for compiling testglue.
+	* lib/g++.exp (g++_init): Compile testglue with -fexceptions.
+	* lib/obj-c++.exp (obj-c++_init): Likewise.
+
 2007-02-20 Ira Rosen  <irar@il.ibm.com>
 
 	* gfortran.dg/vect/vect-2.f90: Xfail to vectorize one of the loops

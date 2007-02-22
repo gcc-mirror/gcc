@@ -221,7 +221,7 @@ proc g++_init { args } {
 	unset gluefile
     }
 
-    g++_maybe_build_wrapper "${tmpdir}/g++-testglue.o"
+    g++_maybe_build_wrapper "${tmpdir}/g++-testglue.o" "-fexceptions"
 
     if {![info exists CXXFLAGS]} {
 	set CXXFLAGS ""

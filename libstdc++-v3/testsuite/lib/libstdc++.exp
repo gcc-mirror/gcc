@@ -223,7 +223,7 @@ proc libstdc++_init { testfile } {
 	v3track PCH_CXXFLAGS 2
     }
 
-    libstdc++_maybe_build_wrapper "${objdir}/testglue.o"
+    libstdc++_maybe_build_wrapper "${objdir}/testglue.o" "-fexceptions"
 }
 
 # Callback for cleanup routines.

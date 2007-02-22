@@ -239,7 +239,7 @@ proc obj-c++_init { args } {
 	unset gluefile
     }
 
-    obj-c++_maybe_build_wrapper "${tmpdir}/obj-c++-testglue.o"
+    obj-c++_maybe_build_wrapper "${tmpdir}/obj-c++-testglue.o" "-fexceptions"
 
     set ALWAYS_OBJCXXFLAGS ""
 

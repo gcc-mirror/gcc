@@ -18,18 +18,20 @@
 
 # ${tool}_maybe_build_wrapper -- Build wrapper object if the target needs it.
 
-proc ${tool}_maybe_build_wrapper { filename } {
+proc ${tool}_maybe_build_wrapper { filename args } {
     global gluefile wrap_flags
 
     if { [target_info needs_status_wrapper] != "" \
  	 && [target_info needs_status_wrapper] != "0" \
 	 && ![info exists gluefile] } {
 	set saved_wrap_compile_flags [target_info wrap_compile_flags]
+	set flags [join $args " "]
 	# The wrapper code may contain code that gcc objects on.  This
 	# became true for dejagnu-1.4.4.  The set of warnings and code
 	# that gcc objects on may change, so just make sure -w is always
 	# passed to turn off all warnings.
-	set_currtarget_info wrap_compile_flags "$saved_wrap_compile_flags -w"
+	set_currtarget_info wrap_compile_flags \
+	    "$saved_wrap_compile_flags -w $flags"
 	set result [build_wrapper $filename]
 	set_currtarget_info wrap_compile_flags "$saved_wrap_compile_flags"
 	if { $result != "" } {

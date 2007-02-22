@@ -1,3 +1,8 @@
+2007-02-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Compile testglue
+	with -fexceptions.
+
 2007-02-13  Release Manager
 
 	* GCC 4.1.2 released.
