@@ -1,3 +1,27 @@
+2007-02-22  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/unordered_map (class __unordered_map,
+	class __unordered_multimap): New.
+	(class unordered_map, class unordered_multimap): Forward to
+	the latter.
+	* include/tr1/unordered_set: Likewise for unordered_set and
+	unordered_multiset.
+	* testsuite/tr1/6_containers/headers/unordered_set/synopsis.cc:
+	Remove xfail.
+	* testsuite/tr1/6_containers/headers/unordered_map/synopsis.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/unordered_multimap/requirements/
+	explicit_instantiation.cc: Adjust.
+	* testsuite/tr1/6_containers/unordered_set/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_map/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multiset/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_map/24064.cc: Likewise.
+	* testsuite/util/native_type/assoc/native_hash_set.hpp: Likewise.
+	* testsuite/util/native_type/assoc/native_hash_map.hpp: Likewise.
+
 2007-02-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/lib/libstdc++.exp (libstdc++_init): Compile testglue
