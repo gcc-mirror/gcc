@@ -1,4 +1,4 @@
-// Copyright (C) 2005 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,7 @@ void test01()
   using namespace std;
   using namespace tr1;
 
-  unordered_map<int, char, hash<int>, equal_to<int>,
+  __unordered_map<int, char, hash<int>, equal_to<int>,
     allocator<pair<const int, char> >, true> m;
  
   for (int i = 0; i < 1000; ++i)
