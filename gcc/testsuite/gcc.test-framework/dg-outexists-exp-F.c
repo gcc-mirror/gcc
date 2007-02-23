@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-W -Werror" } */
+/* { dg-options "-Wunused-value -Werror" } */
 
 int main (void) { 0; }   /* { dg-warning "no effect" } */
 
