@@ -1,3 +1,8 @@
+2007-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/30910	
+	* gfortran.dg/fmt_zero_precision.f90: New test.
+
 2007-02-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* lib/wrapper.exp (${tool}_maybe_build_wrapper): Allow the caller
