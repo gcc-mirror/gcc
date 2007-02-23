@@ -324,7 +324,8 @@ propagate_rtx_1 (rtx *px, rtx old, rtx new, bool can_appear)
 	  /* Dismiss transformation that we do not want to carry on.  */
 	  if (!valid_ops
 	      || new_op0 == op0
-	      || GET_MODE (new_op0) != GET_MODE (op0))
+	      || !(GET_MODE (new_op0) == GET_MODE (op0)
+		   || GET_MODE (new_op0) == VOIDmode))
 	    return true;
 
 	  canonicalize_address (new_op0);
