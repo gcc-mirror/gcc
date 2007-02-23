@@ -1,5 +1,5 @@
 /* VMClassLoader.java -- Reference implementation of compiler interface
-   Copyright (C) 2004, 2005, 2006 Free Software Foundation
+   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -248,7 +248,12 @@ final class VMCompiler
 	hexBytes.append(File.separatorChar);
 	int digestLength = digest.length;
 	for (int i = 0; i < digestLength; ++i)
-	  hexBytes.append(Integer.toHexString(digest[i] & 0xff));
+	  {
+	    int v = digest[i] & 0xff;
+	    if (v < 16)
+	      hexBytes.append('0');	    
+	    hexBytes.append(Integer.toHexString(v));
+	  }
 
 	// FIXME: use System.mapLibraryName?
 	// I'm thinking we should use that, plus a class specified
