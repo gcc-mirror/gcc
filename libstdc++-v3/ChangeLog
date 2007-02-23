@@ -1,3 +1,14 @@
+2007-02-23  Paolo Carlini  <pcarlini@suse.de>
+	
+	PR libstdc++/25896
+	* include/tr1/hashtable (_Hashtable<>::erase(const key_type&)):
+	Take care of &_M_extract((*__slot)->_M_v) == &__k.
+
+	* testsuite/tr1/6_containers/unordered_map/erase/1.cc: New.
+	* testsuite/tr1/6_containers/unordered_multimap/erase/1.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multiset/erase/1.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_set/erase/1.cc: Likewise.
+
 2007-02-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/27_io/ios_base/sync_with_stdio/1.cc: XFAIL for wrapped

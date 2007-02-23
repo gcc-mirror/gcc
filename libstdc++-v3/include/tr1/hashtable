@@ -1063,10 +1063,31 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       while (*__slot && !this->_M_compare(__k, __code, *__slot))
 	__slot = &((*__slot)->_M_next);
 
+      _Node** __saved_slot = 0;
       while (*__slot && this->_M_compare(__k, __code, *__slot))
 	{
-	  _Node* __p = *__slot;
-	  *__slot = __p->_M_next;
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 526. Is it undefined if a function in the standard changes
+	  // in parameters?
+	  if (&this->_M_extract((*__slot)->_M_v) != &__k)
+	    {
+              _Node* __p = *__slot;
+              *__slot = __p->_M_next;
+	      _M_deallocate_node(__p);
+	      --_M_element_count;
+	      ++__result;
+	    }
+	  else
+	    {
+	      __saved_slot = __slot;
+	      __slot = &((*__slot)->_M_next);
+	    }
+	}
+
+      if (__saved_slot)
+	{
+	  _Node* __p = *__saved_slot;
+	  *__saved_slot = __p->_M_next;
 	  _M_deallocate_node(__p);
 	  --_M_element_count;
 	  ++__result;
