@@ -1,3 +1,10 @@
+2007-02-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/30825
+	* config/i386/i386.md (*movdi_1_rex64, zero_extendsidi2_32,
+	zero_extendsidi2_rex64): Penalize MMX register<->memory moves.
+	(*movsf_1): Penalize MMX moves.
+
 2007-02-23  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.md (doloop_end): Fail for loops that can iterate
