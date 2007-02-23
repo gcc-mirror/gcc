@@ -1,3 +1,8 @@
+2007-02-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (fold_builtin_frexp): New.
+	(fold_builtin_2): Use it.
+
 2007-02-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/invoke.texi (Spec Files): Document getenv spec function.

@@ -9017,6 +9017,62 @@ fold_builtin_carg (tree arg, tree type)
   return NULL_TREE;
 }
 
+/* Fold a call to builtin frexp, we can assume the base is 2.  */
+
+static tree
+fold_builtin_frexp (tree arg0, tree arg1, tree rettype)
+{
+  if (! validate_arg (arg0, REAL_TYPE) || ! validate_arg (arg1, POINTER_TYPE))
+    return NULL_TREE;
+  
+  STRIP_NOPS (arg0);
+      
+  if (!(TREE_CODE (arg0) == REAL_CST && ! TREE_OVERFLOW (arg0)))
+    return NULL_TREE;
+  
+  arg1 = build_fold_indirect_ref (arg1);
+
+  /* Proceed if a valid pointer type was passed in.  */
+  if (TYPE_MAIN_VARIANT (TREE_TYPE (arg1)) == integer_type_node)
+    {
+      const REAL_VALUE_TYPE *const value = TREE_REAL_CST_PTR (arg0);
+      tree frac, exp;
+	  
+      switch (value->cl)
+      {
+      case rvc_zero:
+	/* For +-0, return (*exp = 0, +-0).  */
+	exp = integer_zero_node;
+	frac = arg0;
+	break;
+      case rvc_nan:
+      case rvc_inf:
+	/* For +-NaN or +-Inf, *exp is unspecified, return arg0.  */
+	return omit_one_operand (rettype, arg0, arg1);
+      case rvc_normal:
+	{
+	  /* Since the frexp function always expects base 2, and in
+	     GCC normalized significands are already in the range
+	     [0.5, 1.0), we have exactly what frexp wants.  */
+	  REAL_VALUE_TYPE frac_rvt = *value;
+	  SET_REAL_EXP (&frac_rvt, 0);
+	  frac = build_real (rettype, frac_rvt);
+	  exp = build_int_cst (NULL_TREE, REAL_EXP (value));
+	}
+	break;
+      default:
+	gcc_unreachable ();
+      }
+		
+      /* Create the COMPOUND_EXPR (*arg1 = trunc, frac). */
+      arg1 = fold_build2 (MODIFY_EXPR, rettype, arg1, exp);
+      TREE_SIDE_EFFECTS (arg1) = 1;
+      return fold_build2 (COMPOUND_EXPR, rettype, arg1, frac);
+    }
+
+  return NULL_TREE;
+}
+
 /* Fold a call to builtin ldexp or scalbn/scalbln.  If LDEXP is true
    then we can assume the base is two.  If it's false, then we have to
    check the mode of the TYPE parameter in certain cases.  */
@@ -9543,6 +9599,9 @@ fold_builtin_2 (tree fndecl, tree arg0, tree arg1, bool ignore)
     CASE_FLT_FN (BUILT_IN_SCALBN):
     CASE_FLT_FN (BUILT_IN_SCALBLN):
       return fold_builtin_load_exponent (arg0, arg1, type, /*ldexp=*/false);
+
+    CASE_FLT_FN (BUILT_IN_FREXP):
+      return fold_builtin_frexp (arg0, arg1, type);
 
     case BUILT_IN_BZERO:
       return fold_builtin_bzero (arg0, arg1, ignore);
