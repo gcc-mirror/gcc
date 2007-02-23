@@ -1,3 +1,8 @@
+2007-02-23  Gary Benson  <gbenson@redhat.com>
+
+	* java/lang/VMCompiler.java
+	(compileClass): Don't lose zeros from within the digest.
+
 2007-02-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgcj/17002
