@@ -1,3 +1,9 @@
+2007-02-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/30793
+	* trans-decl.c (gfc_generate_function_code): Do not initialize
+	  pointers to derived components.
+
 2007-02-22  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* gfortran.texi (Old-style kind specifications): Document

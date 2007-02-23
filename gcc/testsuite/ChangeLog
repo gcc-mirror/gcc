@@ -1,3 +1,8 @@
+2007-02-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/30793
+	* gfortran.dg/func_derived_4.f90: New test.
+
 2007-02-22  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/29475
