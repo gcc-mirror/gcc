@@ -1,3 +1,8 @@
+2007-02-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc:
+	XFAIL for Newlib targets.
+
 2007-02-22  Simon Martin  <simartin@users.sourceforge.net>
 
 	* testsuite/27_io/basic_ios/cons/char/3.cc: Fixed type mismatches in

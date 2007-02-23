@@ -2053,6 +2053,14 @@ proc check_effective_target_uclibc {} {
     }]
 }
 
+# Return true if this is a Newlib target.
+
+proc check_effective_target_newlib {} {
+    return [check_no_compiler_messages newlib object {
+	#include <newlib.h>
+    }]
+}
+
 # Return 1 if
 #   (a) an error of a few ULP is expected in string to floating-point
 #       conversion functions; and
