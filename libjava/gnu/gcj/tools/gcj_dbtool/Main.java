@@ -1,4 +1,4 @@
-/* Copyright (C) 2004, 2005, 2006  Free Software Foundation
+/* Copyright (C) 2004, 2005, 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
