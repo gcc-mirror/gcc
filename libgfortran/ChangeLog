@@ -1,4 +1,10 @@
-2007-02-03  Thomas Koenig  <Thomas.Koenig@online.de>
+2007-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/30910
+	* io/write.c (output_float): Add condition of format F only for
+	special case rounding with zero precision.
+
+2007-02-16  Thomas Koenig  <Thomas.Koenig@online.de>
 	    Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/30512
