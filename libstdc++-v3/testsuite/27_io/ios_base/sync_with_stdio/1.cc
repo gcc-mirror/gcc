@@ -25,6 +25,12 @@
 // @require@ %-*.tst
 // @diff@ %-*.tst %-*.txt
 
+// This test fails on platforms using a wrapper, because this test
+// redirects stdout to a file and so the exit status printed by the
+// wrapper is not visibile to DejaGNU.  DejaGNU then assumes that the
+// test exited with a non-zero exit status.
+// { dg-do run { xfail { ! unwrapped } } }
+
 #include <cstdio>
 #include <sstream>
 #include <iostream>

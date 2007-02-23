@@ -1,4 +1,9 @@
-2007-02-22  Mark Mitchell  <mark@codesourcery.com>
+2007-02-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/27_io/ios_base/sync_with_stdio/1.cc: XFAIL for wrapped
+	targets.
+
+2007-02-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc:
 	XFAIL for Newlib targets.
