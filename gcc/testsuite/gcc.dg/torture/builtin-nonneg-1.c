@@ -159,6 +159,7 @@ void test(double d1, double d2, float f1, float f2,
   ARG1TEST2_A2INT (scalbln, long);
   ARG1TEST2_A2INT (scalbn, int);
   ARG1TEST1_RTYPE (signbit, int);
+  ARG1TEST1 (significand);
   ARG1TEST1 (sinh);
   ARG1TEST1 (tanh);
   ARG1TEST1 (trunc);

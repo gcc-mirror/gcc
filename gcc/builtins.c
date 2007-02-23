@@ -9017,6 +9017,86 @@ fold_builtin_carg (tree arg, tree type)
   return NULL_TREE;
 }
 
+/* Fold a call to builtin logb/ilogb.  */
+
+static tree
+fold_builtin_logb (tree arg, tree rettype)
+{
+  if (! validate_arg (arg, REAL_TYPE))
+    return NULL_TREE;
+  
+  STRIP_NOPS (arg);
+      
+  if (TREE_CODE (arg) == REAL_CST && ! TREE_OVERFLOW (arg))
+    {
+      const REAL_VALUE_TYPE *const value = TREE_REAL_CST_PTR (arg);
+	  
+      switch (value->cl)
+      {
+      case rvc_nan:
+      case rvc_inf:
+	/* If arg is Inf or NaN and we're logb, return it.  */
+	if (TREE_CODE (rettype) == REAL_TYPE)
+	  return fold_convert (rettype, arg);
+	/* Fall through... */
+      case rvc_zero:
+	/* Zero may set errno and/or raise an exception for logb, also
+	   for ilogb we don't know FP_ILOGB0.  */
+	return NULL_TREE;
+      case rvc_normal:
+	/* For normal numbers, proceed iff radix == 2.  In GCC,
+	   normalized significands are in the range [0.5, 1.0).  We
+	   want the exponent as if they were [1.0, 2.0) so get the
+	   exponent and subtract 1.  */
+	if (REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (arg)))->b == 2)
+	  return fold_convert (rettype, build_int_cst (NULL_TREE,
+						       REAL_EXP (value)-1));
+	break;
+      }
+    }
+  
+  return NULL_TREE;
+}
+
+/* Fold a call to builtin significand, if radix == 2.  */
+
+static tree
+fold_builtin_significand (tree arg, tree rettype)
+{
+  if (! validate_arg (arg, REAL_TYPE))
+    return NULL_TREE;
+  
+  STRIP_NOPS (arg);
+      
+  if (TREE_CODE (arg) == REAL_CST && ! TREE_OVERFLOW (arg))
+    {
+      const REAL_VALUE_TYPE *const value = TREE_REAL_CST_PTR (arg);
+	  
+      switch (value->cl)
+      {
+      case rvc_zero:
+      case rvc_nan:
+      case rvc_inf:
+	/* If arg is +-0, +-Inf or +-NaN, then return it.  */
+	return fold_convert (rettype, arg);
+      case rvc_normal:
+	/* For normal numbers, proceed iff radix == 2.  */
+	if (REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (arg)))->b == 2)
+	  {
+	    REAL_VALUE_TYPE result = *value;
+	    /* In GCC, normalized significands are in the range [0.5,
+	       1.0).  We want them to be [1.0, 2.0) so set the
+	       exponent to 1.  */
+	    SET_REAL_EXP (&result, 1);
+	    return build_real (rettype, result);
+	  }
+	break;
+      }
+    }
+  
+  return NULL_TREE;
+}
+
 /* Fold a call to builtin frexp, we can assume the base is 2.  */
 
 static tree
@@ -9525,6 +9605,13 @@ fold_builtin_1 (tree fndecl, tree arg0, bool ignore)
 
     CASE_FLT_FN (BUILT_IN_SIGNBIT):
       return fold_builtin_signbit (arg0, type);
+
+    CASE_FLT_FN (BUILT_IN_SIGNIFICAND):
+      return fold_builtin_significand (arg0, type);
+
+    CASE_FLT_FN (BUILT_IN_ILOGB):
+    CASE_FLT_FN (BUILT_IN_LOGB):
+      return fold_builtin_logb (arg0, type);
 
     case BUILT_IN_ISASCII:
       return fold_builtin_isascii (arg0);

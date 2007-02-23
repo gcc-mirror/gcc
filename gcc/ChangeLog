@@ -1,3 +1,10 @@
+2007-02-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (fold_builtin_logb, fold_builtin_significand): New.
+	(fold_builtin_1): Use them.
+	* fold-const.c (tree_expr_nonnegative_warnv_p): Handle
+	BUILT_IN_SIGNIFICAND.
+
 2007-02-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (bdesc_1arg): Initialize

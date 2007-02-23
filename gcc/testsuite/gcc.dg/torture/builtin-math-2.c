@@ -208,6 +208,26 @@ void bar()
 		 __DBL_MIN_EXP__, __LDBL_MIN__, __LDBL_MIN_EXP__);
   TESTIT2_I2ALL (scalbln, __FLT_MAX__, __FLT_MAX_EXP__, __DBL_MAX__,
 		 __DBL_MAX_EXP__, __LDBL_MAX__, __LDBL_MAX_EXP__);
+
+  TESTIT (logb, 0.0);
+  TESTIT (logb, -0.0);
+
+  TESTIT (ilogb, 0.0);
+  TESTIT (ilogb, -0.0);
+
+  foof (__builtin_ilogbf (__builtin_inff()));
+  foo (__builtin_ilogb (__builtin_inf()));
+  fool (__builtin_ilogbl (__builtin_infl()));
+  foof (__builtin_ilogbf (-__builtin_inff()));
+  foo (__builtin_ilogb (-__builtin_inf()));
+  fool (__builtin_ilogbl (-__builtin_infl()));
+
+  foof (__builtin_ilogbf (__builtin_nanf("")));
+  foo (__builtin_ilogb (__builtin_nan("")));
+  fool (__builtin_ilogbl (__builtin_nanl("")));
+  foof (__builtin_ilogbf (-__builtin_nanf("")));
+  foo (__builtin_ilogb (-__builtin_nan("")));
+  fool (__builtin_ilogbl (-__builtin_nanl("")));
 }
 
 /* { dg-final { scan-tree-dump-times "exp2 " 9 "original" } } */
@@ -258,4 +278,10 @@ void bar()
 /* { dg-final { scan-tree-dump-times "scalbln " 8 "original" } } */
 /* { dg-final { scan-tree-dump-times "scalblnf" 8 "original" } } */
 /* { dg-final { scan-tree-dump-times "scalblnl" 8 "original" } } */
+/* { dg-final { scan-tree-dump-times "_logb " 2 "original" } } */
+/* { dg-final { scan-tree-dump-times "_logbf" 2 "original" } } */
+/* { dg-final { scan-tree-dump-times "_logbl" 2 "original" } } */
+/* { dg-final { scan-tree-dump-times "ilogb " 6 "original" } } */
+/* { dg-final { scan-tree-dump-times "ilogbf" 6 "original" } } */
+/* { dg-final { scan-tree-dump-times "ilogbl" 6 "original" } } */
 /* { dg-final { cleanup-tree-dump "original" } } */
