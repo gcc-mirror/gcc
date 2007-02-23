@@ -517,6 +517,16 @@ proc check_effective_target_mpaired_single { } {
     } "-mpaired-single"]
 }
 
+# Return 1 if the target does not use a status wrapper.
+
+proc check_effective_target_unwrapped { } {
+    if { [target_info needs_status_wrapper] != "" \
+	     && [target_info needs_status_wrapper] != "0" } {
+	return 0
+    }
+    return 1
+}
+
 # Return true if iconv is supported on the target. In particular IBM1047.
 
 proc check_iconv_available { test_what } {
