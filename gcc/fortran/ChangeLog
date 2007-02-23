@@ -1,3 +1,10 @@
+2007-02-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* options.c (set_default_std_flags): New function to consolidate
+	setting the flags.
+	(gfc_init_options): Use new function.
+	(gfc_handle_option): Use new function.
+
 2007-02-22  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* gfortran.texi (Old-style kind specifications): Document
