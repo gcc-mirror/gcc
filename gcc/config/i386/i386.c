@@ -15417,7 +15417,7 @@ ix86_constant_alignment (tree exp, int align)
 int
 ix86_data_alignment (tree type, int align)
 {
-  int max_align = optimize_size ? BITS_PER_WORD : 256;
+  int max_align = optimize_size ? BITS_PER_WORD : MIN (256, MAX_OFILE_ALIGNMENT);
 
   if (AGGREGATE_TYPE_P (type)
       && TYPE_SIZE (type)
