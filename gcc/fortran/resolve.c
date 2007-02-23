@@ -5529,6 +5529,21 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 }
 
 
+static gfc_component *
+has_default_initializer (gfc_symbol *der)
+{
+  gfc_component *c;
+  for (c = der->components; c; c = c->next)
+    if ((c->ts.type != BT_DERIVED && c->initializer)
+        || (c->ts.type == BT_DERIVED
+              && !c->pointer
+              && has_default_initializer (c->ts.derived)))
+      break;
+
+  return c;
+}
+
+
 /* Resolve symbols with flavor variable.  */
 
 static try
@@ -5676,9 +5691,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
      components.  */
   c = NULL;
   if (sym->ts.type == BT_DERIVED && !(sym->value || flag))
-    for (c = sym->ts.derived->components; c; c = c->next)
-      if (c->initializer)
-      break;
+    c = has_default_initializer (sym->ts.derived);
 
   /* 4th constraint in section 11.3:  "If an object of a type for which
      component-initialization is specified (R429) appears in the

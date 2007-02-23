@@ -1,3 +1,10 @@
+2007-02-23  Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/30660
+	* gfortran.dg/alloc_comp_basics_4.f90: Add component with an
+	allocatable component.
+
+
 2007-02-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-logb-1.c: New test.

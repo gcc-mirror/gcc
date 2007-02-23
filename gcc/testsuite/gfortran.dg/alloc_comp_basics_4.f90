@@ -6,8 +6,14 @@
 ! Contributed by Toon Moene <toon@moene.indiv.nluug.nl>
 !
 MODULE types_m
+  TYPE coord_t
+    INTEGER ncord
+    REAL,ALLOCATABLE,DIMENSION(:) :: x, y
+  END TYPE
+
   TYPE grib_t
     REAL,DIMENSION(:),ALLOCATABLE :: vdata
+   TYPE(coord_t) coords
   END TYPE
 END MODULE
 
