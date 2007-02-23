@@ -7415,6 +7415,19 @@ of the current spec.
 The following built-in spec functions are provided:
 
 @table @code
+@item @code{getenv}
+The @code{getenv} spec function takes two arguments: an environment
+variable name and a string.  If the environment variable is not
+defined, a fatal error is issued.  Otherwise, the return value is the
+value of the environment variable concatenated with the string.  For
+example, if @env{TOPDIR} is defined as @file{/path/to/top}, then:
+
+@smallexample
+%:getenv(TOPDIR /include)
+@end smallexample
+
+expands to @file{/path/to/top/include}.
+
 @item @code{if-exists}
 The @code{if-exists} spec function takes one argument, an absolute
 pathname to a file.  If the file exists, @code{if-exists} returns the

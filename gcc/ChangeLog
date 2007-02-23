@@ -1,5 +1,7 @@
 2007-02-22  Mark Mitchell  <mark@codesourcery.com>
 
+	* doc/invoke.texi (Spec Files): Document getenv spec function.
+
 	* gcc.c (getenv_spec_function): New function.
 	(static_spec_functions): Add it.
 	* config/vxworks.h (VXWORKS_TARGET_DIR): Remove.
