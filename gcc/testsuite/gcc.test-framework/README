@@ -19,7 +19,7 @@ To run these tests:
 To check the results:
                                                                                 
     TF=${SRC}/gcc/testsuite/gcc.test-framework
-    awk -f ${TF}/test-framework.awk gcc/testsuite/gcc.sum
+    awk -f ${TF}/test-framework.awk gcc/testsuite/gcc/gcc.sum
                                                                                 
 The awk script prints unexpected results followed by the number of tests
 that passed and failed.

@@ -1,3 +1,10 @@
+2007-02-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* gcc.test-framework/README: Correct command.
+	* gcc.test-framework/dg-outexistsnot-exp-P.c: Replace -W with
+	-Wunused-value.
+	* gcc.test-framework/dg-outexists-exp-F.c: Likewise.
+	
 2007-02-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* lib/target-supports.exp (check_effective_target_unwrapped): New.
