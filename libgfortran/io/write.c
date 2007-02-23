@@ -426,6 +426,15 @@ output_float (st_parameter_dt *dtp, const fnode *f, GFC_REAL_LARGEST value)
   if (value < 0)
     value = -value;
 
+  /* Special case when format specifies no digits after the decimal point.  */
+  if (d == 0 && ft == FMT_F)
+    {
+      if (value < 0.5)
+	value = 0.0;
+      else if (value < 1.0)
+	value = value + 0.5;
+    }
+
   /* Printf always prints at least two exponent digits.  */
   if (value == 0)
     edigits = 2;
