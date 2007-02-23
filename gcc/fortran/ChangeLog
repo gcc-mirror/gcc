@@ -1,3 +1,13 @@
+2007-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/30681
+	* options.c (set_default_std_flags): New function to consolidate
+	setting the flags. Relax warning level for obsolescent.
+	(gfc_init_options): Use new function.
+	(gfc_handle_option): Use new function.
+	* match.c (match_arithmetic_if): Change to obsolescent from deleted.
+	(gfc_match_if): Same.
+
 2007-02-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/30793
