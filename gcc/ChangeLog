@@ -1,7 +1,15 @@
+2007-02-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (bdesc_1arg): Initialize
+	IX86_BUILTIN_MOVSHDUP and IX86_BUILTIN_MOVSLDUP with
+	"__builtin_ia32_movshdup" and "__builtin_ia32_movsldup".
+	(ix86_init_mmx_sse_builtins): Remove IX86_BUILTIN_MOVSHDUP
+	and IX86_BUILTIN_MOVSLDUP.
+
 2007-02-22  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/30841
-        * fwprop.c (propagate_rtx_1): Accept a VOIDmode replacement address.
+	* fwprop.c (propagate_rtx_1): Accept a VOIDmode replacement address.
 
 2007-02-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
