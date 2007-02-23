@@ -1,3 +1,8 @@
+2007-02-23  Richard Guenther  <rguenther@suse.de>
+
+	* class.c (note_name_declared_in_class): Make declaration
+	changes meaning a pedwarn.
+
 2007-02-22  Michael Matz  <matz@suse.de>
 
 	PR c++/29433

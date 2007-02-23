@@ -6299,9 +6299,9 @@ note_name_declared_in_class (tree name, tree decl)
 	 A name N used in a class S shall refer to the same declaration
 	 in its context and when re-evaluated in the completed scope of
 	 S.  */
-      error ("declaration of %q#D", decl);
-      error ("changes meaning of %qD from %q+#D",
-	     DECL_NAME (OVL_CURRENT (decl)), (tree) n->value);
+      pedwarn ("declaration of %q#D", decl);
+      pedwarn ("changes meaning of %qD from %q+#D",
+	       DECL_NAME (OVL_CURRENT (decl)), (tree) n->value);
     }
 }
 
