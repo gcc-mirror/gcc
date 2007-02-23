@@ -1261,71 +1261,6 @@ inverse (unsigned HOST_WIDEST_INT x, int mod)
   return rslt;
 }
 
-/* Tries to estimate the maximum number of iterations.  */
-
-static unsigned HOST_WIDEST_INT
-determine_max_iter (struct niter_desc *desc)
-{
-  rtx niter = desc->niter_expr;
-  rtx mmin, mmax, left, right;
-  unsigned HOST_WIDEST_INT nmax, inc;
-
-  if (GET_CODE (niter) == AND
-      && GET_CODE (XEXP (niter, 0)) == CONST_INT)
-    {
-      nmax = INTVAL (XEXP (niter, 0));
-      if (!(nmax & (nmax + 1)))
-	{
-	  desc->niter_max = nmax;
-	  return nmax;
-	}
-    }
-
-  get_mode_bounds (desc->mode, desc->signed_p, desc->mode, &mmin, &mmax);
-  nmax = INTVAL (mmax) - INTVAL (mmin);
-
-  if (GET_CODE (niter) == UDIV)
-    {
-      if (GET_CODE (XEXP (niter, 1)) != CONST_INT)
-	{
-	  desc->niter_max = nmax;
-	  return nmax;
-	}
-      inc = INTVAL (XEXP (niter, 1));
-      niter = XEXP (niter, 0);
-    }
-  else
-    inc = 1;
-
-  if (GET_CODE (niter) == PLUS)
-    {
-      left = XEXP (niter, 0);
-      right = XEXP (niter, 0);
-
-      if (GET_CODE (right) == CONST_INT)
-	right = GEN_INT (-INTVAL (right));
-    }
-  else if (GET_CODE (niter) == MINUS)
-    {
-      left = XEXP (niter, 0);
-      right = XEXP (niter, 0);
-    }
-  else
-    {
-      left = niter;
-      right = mmin;
-    }
-
-  if (GET_CODE (left) == CONST_INT)
-    mmax = left;
-  if (GET_CODE (right) == CONST_INT)
-    mmin = right;
-  nmax = INTVAL (mmax) - INTVAL (mmin);
-
-  desc->niter_max = nmax / inc;
-  return nmax / inc;
-}
-
 /* Checks whether register *REG is in set ALT.  Callback for for_each_rtx.  */
 
 static int
@@ -1979,6 +1914,71 @@ canonicalize_iv_subregs (struct rtx_iv *iv0, struct rtx_iv *iv1,
   desc->signed_p = signed_p;
 
   return true;
+}
+
+/* Tries to estimate the maximum number of iterations.  */
+
+static unsigned HOST_WIDEST_INT
+determine_max_iter (struct niter_desc *desc)
+{
+  rtx niter = desc->niter_expr;
+  rtx mmin, mmax, left, right;
+  unsigned HOST_WIDEST_INT nmax, inc;
+
+  if (GET_CODE (niter) == AND
+      && GET_CODE (XEXP (niter, 0)) == CONST_INT)
+    {
+      nmax = INTVAL (XEXP (niter, 0));
+      if (!(nmax & (nmax + 1)))
+	{
+	  desc->niter_max = nmax;
+	  return nmax;
+	}
+    }
+
+  get_mode_bounds (desc->mode, desc->signed_p, desc->mode, &mmin, &mmax);
+  nmax = INTVAL (mmax) - INTVAL (mmin);
+
+  if (GET_CODE (niter) == UDIV)
+    {
+      if (GET_CODE (XEXP (niter, 1)) != CONST_INT)
+	{
+	  desc->niter_max = nmax;
+	  return nmax;
+	}
+      inc = INTVAL (XEXP (niter, 1));
+      niter = XEXP (niter, 0);
+    }
+  else
+    inc = 1;
+
+  if (GET_CODE (niter) == PLUS)
+    {
+      left = XEXP (niter, 0);
+      right = XEXP (niter, 0);
+
+      if (GET_CODE (right) == CONST_INT)
+	right = GEN_INT (-INTVAL (right));
+    }
+  else if (GET_CODE (niter) == MINUS)
+    {
+      left = XEXP (niter, 0);
+      right = XEXP (niter, 0);
+    }
+  else
+    {
+      left = niter;
+      right = mmin;
+    }
+
+  if (GET_CODE (left) == CONST_INT)
+    mmax = left;
+  if (GET_CODE (right) == CONST_INT)
+    mmin = right;
+  nmax = INTVAL (mmax) - INTVAL (mmin);
+
+  desc->niter_max = nmax / inc;
+  return nmax / inc;
 }
 
 /* Computes number of iterations of the CONDITION in INSN in LOOP and stores
