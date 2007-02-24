@@ -1,3 +1,8 @@
+2007-02-23  Mike Stump  <mrs@apple.com>
+
+	* tlink.c (scan_linker_output): Parse linker messages from
+	darwin9's linker better.
+
 2007-02-21 Ira Rosen  <irar@il.ibm.com>
 
 	* tree-ssa-alias.c: Include pointer-set.h
