@@ -7176,12 +7176,11 @@ output_pic_addr_const (FILE *file, rtx x, int code)
 	  if (SYMBOL_REF_DECL (x))
 	    mark_decl_referenced (SYMBOL_REF_DECL (x));
 
-	  if (MACHOPIC_INDIRECT
 #if TARGET_MACHO
-	      && machopic_classify_symbol (x) == MACHOPIC_UNDEFINED_FUNCTION
-#endif
-	      )
+	  if (MACHOPIC_INDIRECT
+	      && machopic_classify_symbol (x) == MACHOPIC_UNDEFINED_FUNCTION)
 	    name = machopic_indirection_name (x, /*stub_p=*/true);
+#endif
 	  assemble_name (file, name);
 	}
       if (!TARGET_MACHO && code == 'P' && ! SYMBOL_REF_LOCAL_P (x))
