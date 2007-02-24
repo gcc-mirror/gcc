@@ -1,3 +1,9 @@
+2007-02-23  Steve Ellcey  <sje@cup.hp.com>
+
+	PR debug/29614
+	* varpool.c (varpool_assemble_pending_decls):  Set
+	varpool_last_needed_node to null.
+
 2007-02-23  DJ Delorie  <dj@redhat.com>
 
 	* config/i386/i386.c (ix86_data_alignment): Don't specify an
