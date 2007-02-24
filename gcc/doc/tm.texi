@@ -1068,7 +1068,9 @@ Alignment required for a function entry point, in bits.
 @end defmac
 
 @defmac BIGGEST_ALIGNMENT
-Biggest alignment that any data type can require on this machine, in bits.
+Biggest alignment that any data type can require on this machine, in
+bits.  Note that this is not the biggest alignment that is supported,
+just the biggest alignment that, when violated, may cause a fault.
 @end defmac
 
 @defmac MINIMUM_ATOMIC_ALIGNMENT
