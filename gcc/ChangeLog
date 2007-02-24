@@ -4,6 +4,8 @@
 	(determine_max_iter): Take additional LOOP arg; all callers changed.
 	Lose broken logic dealing with PLUS.  Try to limit the upper bound by
 	one using simplifications.
+	(simplify_using_initial_values): Return if the expression becomes
+	invalid due to altered regs.
 
 2007-02-23  DJ Delorie  <dj@redhat.com>
 
