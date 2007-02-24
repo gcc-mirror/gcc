@@ -1,3 +1,8 @@
+2007-02-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/30951
+	* gcc.dg/pr30951.c: New testcase.
+
 2007-02-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-modf-1.c: New test.
