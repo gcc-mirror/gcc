@@ -11203,6 +11203,24 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 					 fold_convert (TREE_TYPE (arg0), arg1),
 					 TREE_OPERAND (arg0, 1)));
 
+      /* Transform comparisons of the form X +- C CMP X.  */
+      if ((TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
+	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0)
+	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
+	  && (INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+	      || POINTER_TYPE_P (TREE_TYPE (arg0))))
+	{
+	  tree cst = TREE_OPERAND (arg0, 1);
+
+	  if (code == EQ_EXPR
+	      && !integer_zerop (cst))
+	    return omit_two_operands (type, boolean_false_node,
+				      TREE_OPERAND (arg0, 0), arg1);
+	  else
+	    return omit_two_operands (type, boolean_true_node,
+				      TREE_OPERAND (arg0, 0), arg1);
+	}
+
       /* If we have X - Y == 0, we can convert that to X == Y and similarly
 	 for !=.  Don't do this for ordered comparisons due to overflow.  */
       if (TREE_CODE (arg0) == MINUS_EXPR
