@@ -9214,6 +9214,62 @@ fold_builtin_load_exponent (tree arg0, tree arg1, tree type, bool ldexp)
   return NULL_TREE;
 }
 
+/* Fold a call to builtin modf.  */
+
+static tree
+fold_builtin_modf (tree arg0, tree arg1, tree rettype)
+{
+  if (! validate_arg (arg0, REAL_TYPE) || ! validate_arg (arg1, POINTER_TYPE))
+    return NULL_TREE;
+  
+  STRIP_NOPS (arg0);
+      
+  if (!(TREE_CODE (arg0) == REAL_CST && ! TREE_OVERFLOW (arg0)))
+    return NULL_TREE;
+  
+  arg1 = build_fold_indirect_ref (arg1);
+
+  /* Proceed if a valid pointer type was passed in.  */
+  if (TYPE_MAIN_VARIANT (TREE_TYPE (arg1)) == TYPE_MAIN_VARIANT (rettype))
+    {
+      const REAL_VALUE_TYPE *const value = TREE_REAL_CST_PTR (arg0);
+      REAL_VALUE_TYPE trunc, frac;
+
+      switch (value->cl)
+      {
+      case rvc_nan:
+      case rvc_zero:
+	/* For +-NaN or +-0, return (*arg1 = arg0, arg0).  */
+	trunc = frac = *value;
+	break;
+      case rvc_inf:
+	/* For +-Inf, return (*arg1 = arg0, +-0).  */
+	frac = dconst0;
+	frac.sign = value->sign;
+	trunc = *value;
+	break;
+      case rvc_normal:
+	/* Return (*arg1 = trunc(arg0), arg0-trunc(arg0)).  */
+	real_trunc (&trunc, VOIDmode, value);
+	real_arithmetic (&frac, MINUS_EXPR, value, &trunc);
+	/* If the original number was negative and already
+	   integral, then the fractional part is -0.0.  */
+	if (value->sign && frac.cl == rvc_zero)
+	  frac.sign = value->sign;
+	break;
+      }
+	      
+      /* Create the COMPOUND_EXPR (*arg1 = trunc, frac). */
+      arg1 = fold_build2 (MODIFY_EXPR, rettype, arg1,
+			  build_real (rettype, trunc));
+      TREE_SIDE_EFFECTS (arg1) = 1;
+      return fold_build2 (COMPOUND_EXPR, rettype, arg1,
+			  build_real (rettype, frac));
+    }
+  
+  return NULL_TREE;
+}
+
 /* Fold a call to __builtin_isnan(), __builtin_isinf, __builtin_finite.
    ARG is the argument for the call.  */
 
@@ -9689,6 +9745,9 @@ fold_builtin_2 (tree fndecl, tree arg0, tree arg1, bool ignore)
 
     CASE_FLT_FN (BUILT_IN_FREXP):
       return fold_builtin_frexp (arg0, arg1, type);
+
+    CASE_FLT_FN (BUILT_IN_MODF):
+      return fold_builtin_modf (arg0, arg1, type);
 
     case BUILT_IN_BZERO:
       return fold_builtin_bzero (arg0, arg1, ignore);
