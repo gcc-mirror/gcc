@@ -430,6 +430,9 @@ varpool_assemble_pending_decls (void)
       else
         node->next_needed = NULL;
     }
+  /* varpool_nodes_queue is now empty, clear the pointer to the last element
+     in the queue.  */
+  varpool_last_needed_node = NULL;
   return changed;
 }
 
