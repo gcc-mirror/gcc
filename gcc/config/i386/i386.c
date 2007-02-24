@@ -13538,7 +13538,7 @@ expand_movmem_epilogue (rtx destmem, rtx srcmem,
       HOST_WIDE_INT countval = INTVAL (count);
       int offset = 0;
 
-      if ((countval & 0x16) && max_size > 16)
+      if ((countval & 0x10) && max_size > 16)
 	{
 	  if (TARGET_64BIT)
 	    {
@@ -13691,7 +13691,7 @@ expand_setmem_epilogue (rtx destmem, rtx destptr, rtx value, rtx count, int max_
       HOST_WIDE_INT countval = INTVAL (count);
       int offset = 0;
 
-      if ((countval & 0x16) && max_size > 16)
+      if ((countval & 0x10) && max_size > 16)
 	{
 	  if (TARGET_64BIT)
 	    {
