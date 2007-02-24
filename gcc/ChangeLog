@@ -1,3 +1,10 @@
+2007-02-24  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* loop-iv.c (implies_p): Detect additional cases where A implies B.
+	(determine_max_iter): Take additional LOOP arg; all callers changed.
+	Lose broken logic dealing with PLUS.  Try to limit the upper bound by
+	one using simplifications.
+
 2007-02-23  DJ Delorie  <dj@redhat.com>
 
 	* doc/tm.h (BIGGEST_ALIGNMENT): Clarify the purpose of this macro.
