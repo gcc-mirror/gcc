@@ -607,7 +607,7 @@ scan_linker_output (const char *fname)
 {
   FILE *stream = fopen (fname, "r");
   char *line;
-  int skip_next_line = 0;
+  int skip_next_in_line = 0;
 
   while ((line = tfgets (stream)) != NULL)
     {
@@ -616,11 +616,11 @@ scan_linker_output (const char *fname)
       int end;
       int ok = 0;
 
-      if (skip_next_line)
-	{
-	  skip_next_line = 0;
+      /* On darwin9, we might have to skip " in " lines as well.  */
+      if (skip_next_in_line
+	  && strstr (p, " in "))
 	  continue;
-	}
+      skip_next_in_line = 0;
 
       while (*p && ISSPACE ((unsigned char) *p))
 	++p;
@@ -662,17 +662,19 @@ scan_linker_output (const char *fname)
 	  demangled *dem = 0;
 	  q = 0;
 
-	  /* On darwin9, we look for "foo" referenced from:\n.*\n  */
+	  /* On darwin9, we look for "foo" referenced from:\n\(.* in .*\n\)*  */
 	  if (strcmp (oldq, "referenced from:") == 0)
 	    {
 	      /* We have to remember that we found a symbol to tweak.  */
 	      ok = 1;
 
-	      /* We actually want to start from the first word on the line.  */
+	      /* We actually want to start from the first word on the
+		 line.  */
 	      oldq = p;
 
-	      /* Since the format is multiline, we have to skip the next line.  */
-	      skip_next_line = 1;
+	      /* Since the format is multiline, we have to skip
+		 following lines with " in ".  */
+	      skip_next_in_line = 1;
 	    }
 
 	  /* First try `GNU style'.  */
