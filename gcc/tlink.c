@@ -617,7 +617,10 @@ scan_linker_output (const char *fname)
       int ok = 0;
 
       if (skip_next_line)
-	continue;
+	{
+	  skip_next_line = 0;
+	  continue;
+	}
 
       while (*p && ISSPACE ((unsigned char) *p))
 	++p;
