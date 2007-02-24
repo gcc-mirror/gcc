@@ -1,3 +1,10 @@
+2007-02-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/30770
+	* config/i386/i386.md (expand_movmem_epilogue): Fix typo, mask
+	count argument with 0x10, not with 0x16.
+	(expand_setmem_epilogue): Ditto.
+
 2007-02-24  Mike Stump  <mrs@apple.com>
 
 	* config/i386/i386.c (output_pic_addr_const): Stubify optimized
