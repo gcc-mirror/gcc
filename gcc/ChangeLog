@@ -1,3 +1,8 @@
+2007-02-24  Mike Stump  <mrs@apple.com>
+
+	* config/i386/i386.c (output_pic_addr_const): Stubify optimized
+	symbols.
+
 2007-02-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/30951

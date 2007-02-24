@@ -7582,7 +7582,24 @@ output_pic_addr_const (FILE *file, rtx x, int code)
       break;
 
     case SYMBOL_REF:
-      output_addr_const (file, x);
+      if (! TARGET_MACHO || TARGET_64BIT)
+	output_addr_const (file, x);
+      else
+	{
+	  const char *name = XSTR (x, 0);
+
+	  /* Mark the decl as referenced so that cgraph will output the function.  */
+	  if (SYMBOL_REF_DECL (x))
+	    mark_decl_referenced (SYMBOL_REF_DECL (x));
+
+	  if (MACHOPIC_INDIRECT
+#if TARGET_MACHO
+	      && machopic_classify_symbol (x) == MACHOPIC_UNDEFINED_FUNCTION
+#endif
+	      )
+	    name = machopic_indirection_name (x, /*stub_p=*/true);
+	  assemble_name (file, name);
+	}
       if (!TARGET_MACHO && code == 'P' && ! SYMBOL_REF_LOCAL_P (x))
 	fputs ("@PLT", file);
       break;
