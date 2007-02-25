@@ -1,3 +1,8 @@
+2007-02-25  Nick Clifton  <nickc@redhat.com>
+
+	* config/frv/frv.h (ASM_OUTPUT_CASE_LABEL): Delete.
+	(JUMP_TABLES_IN_TEXT_SECTION): Define.
+
 2007-02-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/30770
