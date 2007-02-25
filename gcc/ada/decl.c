@@ -6016,7 +6016,7 @@ annotate_value (tree gnu_size)
   if (h)
     {
       *h = ggc_alloc (sizeof (struct tree_int_map));
-      (*h)->from = gnu_size;
+      (*h)->base.from = gnu_size;
       (*h)->to = ret;
     }
 

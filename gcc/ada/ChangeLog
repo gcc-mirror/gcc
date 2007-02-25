@@ -1,3 +1,8 @@
+2007-02-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (annotate_value): Adjust for refactoring of tree_map
+	hierarchy.
+
 2007-02-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (annotate_value): Adjust for refactoring of tree_map
