@@ -13314,6 +13314,21 @@ scale_counter (rtx countreg, int scale)
   return sc;
 }
 
+/* Return mode for the memcpy/memset loop counter.  Preffer SImode over DImode
+   for constant loop counts.  */
+
+static enum machine_mode
+counter_mode (rtx count_exp)
+{
+  if (GET_MODE (count_exp) != VOIDmode)
+    return GET_MODE (count_exp);
+  if (GET_CODE (count_exp) != CONST_INT)
+    return Pmode;
+  if (TARGET_64BIT && (INTVAL (count_exp) & ~0xffffffff))
+    return DImode;
+  return SImode;
+}
+
 /* When SRCPTR is non-NULL, output simple loop to move memory
    pointer to SRCPTR to DESTPTR via chunks of MODE unrolled UNROLL times,
    overall size is COUNT specified in bytes.  When SRCPTR is NULL, output the
@@ -13330,17 +13345,13 @@ expand_set_or_movmem_via_loop (rtx destmem, rtx srcmem,
 			       int expected_size)
 {
   rtx out_label, top_label, iter, tmp;
-  enum machine_mode iter_mode;
+  enum machine_mode iter_mode = counter_mode (count);
   rtx piece_size = GEN_INT (GET_MODE_SIZE (mode) * unroll);
   rtx piece_size_mask = GEN_INT (~((GET_MODE_SIZE (mode) * unroll) - 1));
   rtx size;
   rtx x_addr;
   rtx y_addr;
   int i;
-
-  iter_mode = GET_MODE (count);
-  if (iter_mode == VOIDmode)
-    iter_mode = word_mode;
 
   top_label = gen_label_rtx ();
   out_label = gen_label_rtx ();
@@ -13555,8 +13566,8 @@ expand_movmem_epilogue (rtx destmem, rtx srcmem,
 	    emit_strmov (destmem, srcmem, destptr, srcptr, DImode, offset);
 	  else
 	    {
-	      emit_strmov (destmem, srcmem, destptr, srcptr, DImode, offset);
-	      emit_strmov (destmem, srcmem, destptr, srcptr, DImode, offset + 4);
+	      emit_strmov (destmem, srcmem, destptr, srcptr, SImode, offset);
+	      emit_strmov (destmem, srcmem, destptr, srcptr, SImode, offset + 4);
 	    }
 	  offset += 8;
 	}
@@ -13673,8 +13684,8 @@ expand_setmem_epilogue_via_loop (rtx destmem, rtx destptr, rtx value,
 				 rtx count, int max_size)
 {
   count =
-    expand_simple_binop (GET_MODE (count), AND, count, GEN_INT (max_size - 1),
-			 count, 1, OPTAB_DIRECT);
+    expand_simple_binop (counter_mode (count), AND, count,
+			 GEN_INT (max_size - 1), count, 1, OPTAB_DIRECT);
   expand_set_or_movmem_via_loop (destmem, NULL, destptr, NULL,
 				 gen_lowpart (QImode, value), count, QImode,
 				 1, max_size / 2);
@@ -14134,11 +14145,9 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
   gcc_assert (desired_align >= 1 && align >= 1);
 
   /* Ensure that alignment prologue won't copy past end of block.  */
-  if ((size_needed > 1 || (desired_align > 1 && desired_align > align))
-      && !count)
+  if (size_needed > 1 || (desired_align > 1 && desired_align > align))
     {
       epilogue_size_needed = MAX (size_needed - 1, desired_align - align);
-
       /* Epilogue always copies COUNT_EXP & EPILOGUE_SIZE_NEEDED bytes.
 	 Make sure it is power of 2.  */
       epilogue_size_needed = smallest_pow2_greater_than (epilogue_size_needed);
@@ -14146,8 +14155,10 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
       label = gen_label_rtx ();
       emit_cmp_and_jump_insns (count_exp,
 			       GEN_INT (epilogue_size_needed),
-			       LTU, 0, GET_MODE (count_exp), 1, label);
-      if (expected_size == -1 || expected_size < epilogue_size_needed)
+			       LTU, 0, counter_mode (count_exp), 1, label);
+      if (GET_CODE (count_exp) == CONST_INT)
+	;
+      else if (expected_size == -1 || expected_size < epilogue_size_needed)
 	predict_jump (REG_BR_PROB_BASE * 60 / 100);
       else
 	predict_jump (REG_BR_PROB_BASE * 20 / 100);
@@ -14247,7 +14258,7 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
       if (size_needed < epilogue_size_needed)
 	{
 	  tmp =
-	    expand_simple_binop (GET_MODE (count_exp), AND, count_exp,
+	    expand_simple_binop (counter_mode (count_exp), AND, count_exp,
 				 GEN_INT (size_needed - 1), count_exp, 1,
 				 OPTAB_DIRECT);
 	  if (tmp != count_exp)
@@ -14403,7 +14414,7 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
     return 0;
   gcc_assert (alg != no_stringop);
   if (!count)
-    count_exp = copy_to_mode_reg (GET_MODE (count_exp), count_exp);
+    count_exp = copy_to_mode_reg (counter_mode (count_exp), count_exp);
   destreg = copy_to_mode_reg (Pmode, XEXP (dst, 0));
   switch (alg)
     {
@@ -14446,11 +14457,9 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
     promoted_val = promote_duplicated_reg_to_size (val_exp, size_needed,
 						   desired_align, align);
   /* Ensure that alignment prologue won't copy past end of block.  */
-  if ((size_needed > 1 || (desired_align > 1 && desired_align > align))
-      && !count)
+  if (size_needed > 1 || (desired_align > 1 && desired_align > align))
     {
       epilogue_size_needed = MAX (size_needed - 1, desired_align - align);
-
       /* Epilogue always copies COUNT_EXP & EPILOGUE_SIZE_NEEDED bytes.
 	 Make sure it is power of 2.  */
       epilogue_size_needed = smallest_pow2_greater_than (epilogue_size_needed);
@@ -14464,8 +14473,10 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
       label = gen_label_rtx ();
       emit_cmp_and_jump_insns (count_exp,
 			       GEN_INT (epilogue_size_needed),
-			       LTU, 0, GET_MODE (count_exp), 1, label);
-      if (expected_size == -1 || expected_size <= epilogue_size_needed)
+			       LTU, 0, counter_mode (count_exp), 1, label);
+      if (GET_CODE (count_exp) == CONST_INT)
+	;
+      else if (expected_size == -1 || expected_size <= epilogue_size_needed)
 	predict_jump (REG_BR_PROB_BASE * 60 / 100);
       else
 	predict_jump (REG_BR_PROB_BASE * 20 / 100);
@@ -14475,7 +14486,7 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
       rtx hot_label = gen_label_rtx ();
       jump_around_label = gen_label_rtx ();
       emit_cmp_and_jump_insns (count_exp, GEN_INT (dynamic_check - 1),
-			       LEU, 0, GET_MODE (count_exp), 1, hot_label);
+			       LEU, 0, counter_mode (count_exp), 1, hot_label);
       predict_jump (REG_BR_PROB_BASE * 90 / 100);
       set_storage_via_libcall (dst, count_exp, val_exp, false);
       emit_jump (jump_around_label);
@@ -14558,7 +14569,7 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
       if (size_needed < desired_align - align)
 	{
 	  tmp =
-	    expand_simple_binop (GET_MODE (count_exp), AND, count_exp,
+	    expand_simple_binop (counter_mode (count_exp), AND, count_exp,
 				 GEN_INT (size_needed - 1), count_exp, 1,
 				 OPTAB_DIRECT);
 	  size_needed = desired_align - align + 1;

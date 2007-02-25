@@ -1,3 +1,13 @@
+2007-02-24  Uros Bizjak  <ubizjak@gmail.com>
+	    Jan Hubicka  <jh@suse.cz>
+
+	PR target/30778
+	* i386.c (counter_mode): New function.
+	(expand_set_or_movmem_via_loop): Use it.
+	(expand_movmem_epilogue): Likewise; fix pasto.
+	(ix86_expand_movmem): Do emit guard even for constant counts.
+	(ix86_expand_setmem): Likewise.
+
 2007-02-25  Nick Clifton  <nickc@redhat.com>
 
 	* config/frv/frv.h (ASM_OUTPUT_CASE_LABEL): Delete.
