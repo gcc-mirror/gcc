@@ -1,3 +1,8 @@
+2007-02-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/30918
+	* io/listread.c (namelist_read): Eat comment line.
+
 2007-02-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/30910
