@@ -1,3 +1,10 @@
+2007-02-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/30938
+	* tree-vect-transform.c (vectorizable_call): Fix off-by-one error:
+	use &dt[nargs-1] instead of &dt[nargs] in the call to
+	vect_is_simple_use().
+
 2007-02-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* reload.c (find_reloads_address_1): Handle PLUS expressions resulting
