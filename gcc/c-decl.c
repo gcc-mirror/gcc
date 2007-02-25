@@ -6828,28 +6828,6 @@ finish_function (void)
   cfun = NULL;
   current_function_decl = NULL;
 }
-
-/* Generate the RTL for the body of FNDECL.  */
-
-void
-c_expand_body (tree fndecl)
-{
-
-  if (!DECL_INITIAL (fndecl)
-      || DECL_INITIAL (fndecl) == error_mark_node)
-    return;
-
-  tree_rest_of_compilation (fndecl);
-
-  if (DECL_STATIC_CONSTRUCTOR (fndecl)
-      && targetm.have_ctors_dtors)
-    targetm.asm_out.constructor (XEXP (DECL_RTL (fndecl), 0),
-				 DEFAULT_INIT_PRIORITY);
-  if (DECL_STATIC_DESTRUCTOR (fndecl)
-      && targetm.have_ctors_dtors)
-    targetm.asm_out.destructor (XEXP (DECL_RTL (fndecl), 0),
-				DEFAULT_INIT_PRIORITY);
-}
 
 /* Check the declarations given in a for-loop for satisfying the C99
    constraints.  If exactly one such decl is found, return it.  */

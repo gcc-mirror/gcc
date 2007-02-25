@@ -1,3 +1,72 @@
+2007-02-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/extend.texi: Document optional priority argument to
+	constructors and destructors.
+	* tree.c (init_priority_for_decl): Adjust GTY markers.
+	(init_ttree): Use priority-info hash functions for
+	init_priority_for_decl.
+	(tree_map_eq): Rename to ...
+	(tree_map_base_eq): ... this.
+	(tree_map_marked_p): Rename to ...
+	(tree_map_base_marked_p): ... this.
+	(tree_map_base_hash): New function.
+	(decl_init_priority_lookup): Rework.
+	(decl_fini_priority_lookup): New function.
+	(decl_priority_info): New function.
+	(decl_init_priority_insert): Use it.
+	(decl_fini_priority_insert): Likewise.
+	(decl_restrict_base_lookup): Adjust for refactoring of tree_map
+	hierarchy.
+	(decl_restrict_base_insert): Likewise.
+	(decl_debug_expr_insert): Likewise.
+	(decl_value_expr_lookup): Likewise.
+	(decl_value_expr_insert): Likewise.
+	* tree.h (priority_type): New type.
+	(decl_init_priority_lookup): Use priority_type.
+	(decl_fini_priority_lookup): New function.
+	(decl_init_priority_insert): Use priority_type.
+	(decl_fini_priority_insert): New function.
+	(DECL_HAS_INIT_PRIORITY): Tweak comments.
+	(DECL_INIT_PRIORITY): Likewise.
+	(SET_DECL_INIT_PRIORITY): Add comment.
+	(DECL_FINI_PRIORITY): New macro.
+	(SET_DECL_FINI_PRIORITY): Likewise.
+	(DEFAULT_INIT_PRIORITY): Document.
+	(MAX_INIT_PRIORITY): Likewise.
+	(MAX_RESERVED_INIT_PRIORITY): Likewise.
+	(tree_map_base): New type.
+	(tree_map_base_eq): New function.
+	(tree_map_base_hash): Likewise.
+	(tree_map_base_marked_p): Likewise.
+	(tree_map): Inherit from tree_map_base.
+	(tree_map_eq): Make it a macro.
+	(tree_map_marked_p): Likewise.
+	(tree_int_map): Inherit from tree_map_base.
+	(tree_int_map_eq): Make it a macro.
+	(tree_int_map_hash): Likewise.
+	(tree_int_map_marked_p): Likewise.
+	(tree_priority_map): New type.
+	(tree_priority_map_eq): New macro.
+	(tree_priority_map_hash): Likewise.
+	(tree_priority_map_marked_p): Likewise.
+	* varasm.c (emults_decl): Adjust for refactoring of tree_map
+	hierarchy.
+	(emutls_common_1): Likewise.
+	* lambda-code.c (replace_uses_equiv_to_x_with_y): Likewise.
+	* tree-ssa-structalias.c (heapvar_lookup): Adjust for refactoring
+	of tree_map hierarchy.
+	* tree-cfg.c (move_stmt_r): Likewise.
+	(new_label_mapper): Likewise.
+	* c-tree.h (c_expand_body): Move to ...
+	* c-common.h (c_expand_body): ... here.
+	* c-decl.c (c_expand_body): Move to ...
+	* c-common.c (c_expand_body): ... here.
+	(c_common_attribute_table): Allow 1 argument for the constructor
+	and destructor attributes.
+	(get_priority): New function.
+	(handle_constructor_attribute): Set DECL_INIT_PRIORITY.
+	(handle_destructor_attribute): Set DECL_FINI_PRIORITY.
+
 2007-02-24  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/30509

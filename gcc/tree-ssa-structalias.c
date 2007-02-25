@@ -330,7 +330,7 @@ static tree
 heapvar_lookup (tree from)
 {
   struct tree_map *h, in;
-  in.from = from;
+  in.base.from = from;
 
   h = htab_find_with_hash (heapvar_for_stmt, &in, htab_hash_pointer (from));
   if (h)
@@ -349,7 +349,7 @@ heapvar_insert (tree from, tree to)
 
   h = ggc_alloc (sizeof (struct tree_map));
   h->hash = htab_hash_pointer (from);
-  h->from = from;
+  h->base.from = from;
   h->to = to;
   loc = htab_find_slot_with_hash (heapvar_for_stmt, h, h->hash, INSERT);
   *(struct tree_map **) loc = h;

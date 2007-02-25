@@ -97,11 +97,6 @@ static GTY(()) VEC(tree,gc) *deferred_fns;
 
 int at_eof;
 
-/* Functions called along with real static constructors and destructors.  */
-
-tree static_ctors;
-tree static_dtors;
-
 
 
 /* Return a member function type (a METHOD_TYPE), given FNTYPE (a
@@ -2847,7 +2842,7 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
       && constructor_p && objc_static_init_needed_p ())
     {
       body = start_objects (function_key, priority);
-      static_ctors = objc_generate_static_init_call (static_ctors);
+      objc_generate_static_init_call (NULL_TREE);
     }
 
   /* Call the static storage duration function with appropriate
@@ -2870,29 +2865,6 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
 	}
     }
 
-  /* If we're generating code for the DEFAULT_INIT_PRIORITY, throw in
-     calls to any functions marked with attributes indicating that
-     they should be called at initialization- or destruction-time.  */
-  if (priority == DEFAULT_INIT_PRIORITY)
-    {
-      tree fns;
-
-      for (fns = constructor_p ? static_ctors : static_dtors;
-	   fns;
-	   fns = TREE_CHAIN (fns))
-	{
-	  fndecl = TREE_VALUE (fns);
-
-	  /* Calls to pure/const functions will expand to nothing.  */
-	  if (! (flags_from_decl_or_type (fndecl) & (ECF_CONST | ECF_PURE)))
-	    {
-	      if (! body)
-		body = start_objects (function_key, priority);
-	      finish_expr_stmt (build_function_call (fndecl, NULL_TREE));
-	    }
-	}
-    }
-
   /* Close out the function.  */
   if (body)
     finish_objects (function_key, priority, body);
@@ -2910,11 +2882,9 @@ generate_ctor_and_dtor_functions_for_priority (splay_tree_node n, void * data)
 
   /* Generate the functions themselves, but only if they are really
      needed.  */
-  if (pi->initializations_p
-      || (priority == DEFAULT_INIT_PRIORITY && static_ctors))
+  if (pi->initializations_p)
     generate_ctor_or_dtor_function (/*constructor_p=*/true, priority, locus);
-  if (pi->destructions_p
-      || (priority == DEFAULT_INIT_PRIORITY && static_dtors))
+  if (pi->destructions_p)
     generate_ctor_or_dtor_function (/*constructor_p=*/false, priority, locus);
 
   /* Keep iterating.  */
@@ -3309,17 +3279,11 @@ cp_write_global_declarations (void)
     splay_tree_foreach (priority_info_map,
 			generate_ctor_and_dtor_functions_for_priority,
 			/*data=*/&locus);
-  else
-    {
-      /* If we have a ctor or this is obj-c++ and we need a static init,
-	 call generate_ctor_or_dtor_function.  */
-      if (static_ctors || (c_dialect_objc () && objc_static_init_needed_p ()))
-	generate_ctor_or_dtor_function (/*constructor_p=*/true,
-					DEFAULT_INIT_PRIORITY, &locus);
-      if (static_dtors)
-	generate_ctor_or_dtor_function (/*constructor_p=*/false,
-					DEFAULT_INIT_PRIORITY, &locus);
-    }
+  else if (c_dialect_objc () && objc_static_init_needed_p ())
+    /* If this is obj-c++ and we need a static init, call
+       generate_ctor_or_dtor_function.  */
+    generate_ctor_or_dtor_function (/*constructor_p=*/true,
+				    DEFAULT_INIT_PRIORITY, &locus);
 
   /* We're done with the splay-tree now.  */
   if (priority_info_map)

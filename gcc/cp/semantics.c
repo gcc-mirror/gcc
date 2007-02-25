@@ -3099,7 +3099,7 @@ expand_body (tree fn)
      generating trees for a function.  */
   gcc_assert (function_depth == 0);
 
-  tree_rest_of_compilation (fn);
+  c_expand_body (fn);
 
   current_function_decl = saved_function;
 
@@ -3158,18 +3158,6 @@ expand_or_defer_fn (tree fn)
       TREE_ASM_WRITTEN (fn) = 1;
       return;
     }
-
-  /* If this function is marked with the constructor attribute, add it
-     to the list of functions to be called along with constructors
-     from static duration objects.  */
-  if (DECL_STATIC_CONSTRUCTOR (fn))
-    static_ctors = tree_cons (NULL_TREE, fn, static_ctors);
-
-  /* If this function is marked with the destructor attribute, add it
-     to the list of functions to be called along with destructors from
-     static duration objects.  */
-  if (DECL_STATIC_DESTRUCTOR (fn))
-    static_dtors = tree_cons (NULL_TREE, fn, static_dtors);
 
   /* We make a decision about linkage for these functions at the end
      of the compilation.  Until that point, we do not want the back

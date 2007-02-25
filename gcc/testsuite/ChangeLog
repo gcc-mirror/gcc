@@ -1,3 +1,18 @@
+2007-02-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.dg/initpri1.c: New test.
+	* gcc.dg/initpri2.c: Likewise.
+	* g++.dg/special/initpri1.C: New test.
+	* g++.dg/special/initpri2.C: Likewise.
+	* g++.dg/special/conpr-1.C: Use init_priority effective target.
+	* g++.dg/special/conpr-2.C: Likewise.
+	* g++.dg/special/conpr-3.C: Likewise.
+	* g++.dg/special/conpr-4.C: Likewise.
+	* g++.dg/special/initp1.C: Likewise.
+	* g++.dg/special/ecos.exp: Remove code to detect availability of
+	constructor priorities.
+	* lib/target-support.exp (target_init_priority): New function.
+
 2007-02-24  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/execute/pr30778.c: New testcase.

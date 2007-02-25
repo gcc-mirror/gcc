@@ -1,5 +1,4 @@
-/* This doesn't work on solaris2 for reasons described in PR 6482.  */
-/* { dg-do run { xfail *-*-solaris2* } } */
+/* { dg-do run { target init_priority } } */
 #include <stdlib.h>
 
 class Two {

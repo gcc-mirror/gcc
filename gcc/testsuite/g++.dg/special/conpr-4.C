@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target init_priority } } */
 /* { dg-additional-sources "conpr-3b.cc conpr-3a.cc" } */
 
 #include <stdlib.h>
