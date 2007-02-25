@@ -2089,6 +2089,23 @@ proc check_effective_target_dummy_wcsftime {} {
     return [check_effective_target_uclibc]
 }
 
+# Return 1 if constructors with initialization priority arguments are
+# supposed on this target.
+
+proc check_effective_target_init_priority {} {
+    # On Solaris2, initialization priorities are only supported with
+    # GNU ld, but the compiler accepts them even when using Sun ld.
+    # For more information, see PR 6482.
+    if { [istarget *-solaris2*] } {
+	return 1
+    }
+
+    return [check_no_compiler_messages init_priority assembly "
+	void f() __attribute__((constructor (1000)));
+	void f() \{\}
+    "]
+}
+
 # Return 1 if the target matches the effective target 'arg', 0 otherwise.
 # This can be used with any check_* proc that takes no argument and
 # returns only 1 or 0.  It could be used with check_* procs that take

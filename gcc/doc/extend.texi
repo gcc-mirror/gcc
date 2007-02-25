@@ -1667,6 +1667,8 @@ specifies that the @samp{const} must be attached to the return value.
 
 @item constructor
 @itemx destructor
+@itemx constructor (@var{priority})
+@itemx destructor (@var{priority})
 @cindex @code{constructor} function attribute
 @cindex @code{destructor} function attribute
 The @code{constructor} attribute causes the function to be called
@@ -1676,6 +1678,16 @@ automatically after @code{main ()} has completed or @code{exit ()} has
 been called.  Functions with these attributes are useful for
 initializing data that will be used implicitly during the execution of
 the program.
+
+You may provide an optional integer priority to control the order in
+which constructor and destructor functions are run.  A constructor
+with a smaller priority number runs before a constructor with a larger
+priority number; the opposite relationship holds for destructors.  So,
+if you have a constructor that allocates a resource and a destructor
+that deallocates the same resource, both functions typically have the
+same priority.  The priorities for constructor and destructor
+functions are the same as those specified for namespace-scope C++
+objects (@pxref{C++ Attributes}).
 
 These attributes are not currently implemented for Objective-C@.
 

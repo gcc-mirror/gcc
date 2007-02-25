@@ -1,3 +1,20 @@
+2007-02-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (static_ctors): Remove.
+	* cp-tree.h (static_dtors): Likewise.
+	* cp-objcp-common.c (decl_shadowed_for_var_lookup): Adjust for
+	refactoring of tree_map hierarchy.
+	(decl_shadowed_for_var_insert): Likewise.
+	* semantics.c (expand_body): Use c_expand_body.
+	(expand_or_defer_fn): Don't update static_ctors or static_dtors.
+	* decl2.c (static_ctors): Remove.
+	(static_dtors): Likewise.
+	(generate_ctor_or_dtor_function): Pass NULL_TREE to
+	objc_generate_static_init_call.  Do not call static_[cd]tors.
+	(generate_ctor_and_dtor_functions_for_priority): Do not check for
+	static_[cd]tors.
+	(cp_write_global_declarations): Likewise.
+
 2007-02-23  Richard Guenther  <rguenther@suse.de>
 
 	* class.c (note_name_declared_in_class): Make declaration

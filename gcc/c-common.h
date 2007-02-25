@@ -810,6 +810,7 @@ extern tree lookup_name (tree);
 extern bool vector_types_convertible_p (tree t1, tree t2, bool emit_lax_note);
 
 extern rtx c_expand_expr (tree, rtx, enum machine_mode, int, rtx *);
+extern void c_expand_body (tree);
 
 extern tree c_staticp (tree);
 

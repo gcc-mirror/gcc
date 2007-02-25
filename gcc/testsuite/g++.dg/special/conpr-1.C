@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target init_priority } } */
 
 #include <stdlib.h>
 

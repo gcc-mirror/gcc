@@ -3479,11 +3479,6 @@ extern int at_eof;
    TREE_PURPOSE slot.  */
 extern GTY(()) tree static_aggregates;
 
-/* Functions called along with real static constructors and destructors.  */
-
-extern GTY(()) tree static_ctors;
-extern GTY(()) tree static_dtors;
-
 enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 
 /* These are uses as bits in flags passed to various functions to

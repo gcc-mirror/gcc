@@ -343,7 +343,7 @@ emutls_decl (tree decl)
      of the decl's pointer.  In emutls_finish we iterate through the
      hash table, and we want this traversal to be predictable.  */
   in.hash = htab_hash_string (IDENTIFIER_POINTER (name));
-  in.from = decl;
+  in.base.from = decl;
   loc = htab_find_slot_with_hash (emutls_htab, &in, in.hash, INSERT);
   h = *loc;
   if (h != NULL)
@@ -355,7 +355,7 @@ emutls_decl (tree decl)
 
       h = ggc_alloc (sizeof (struct tree_map));
       h->hash = in.hash;
-      h->from = decl;
+      h->base.from = decl;
       h->to = to;
       *(struct tree_map **) loc = h;
 
@@ -394,9 +394,9 @@ emutls_common_1 (void **loc, void *xstmts)
   tree args, x, *pstmts = (tree *) xstmts;
   tree word_type_node;
 
-  if (! DECL_COMMON (h->from)
-      || (DECL_INITIAL (h->from)
-	  && DECL_INITIAL (h->from) != error_mark_node))
+  if (! DECL_COMMON (h->base.from)
+      || (DECL_INITIAL (h->base.from)
+	  && DECL_INITIAL (h->base.from) != error_mark_node))
     return 1;
 
   word_type_node = lang_hooks.types.type_for_mode (word_mode, 1);
@@ -407,9 +407,9 @@ emutls_common_1 (void **loc, void *xstmts)
      output.  */
   x = null_pointer_node;
   args = tree_cons (NULL, x, NULL);
-  x = build_int_cst (word_type_node, DECL_ALIGN_UNIT (h->from));
+  x = build_int_cst (word_type_node, DECL_ALIGN_UNIT (h->base.from));
   args = tree_cons (NULL, x, args);
-  x = fold_convert (word_type_node, DECL_SIZE_UNIT (h->from));
+  x = fold_convert (word_type_node, DECL_SIZE_UNIT (h->base.from));
   args = tree_cons (NULL, x, args);
   x = build_fold_addr_expr (h->to);
   args = tree_cons (NULL, x, args);

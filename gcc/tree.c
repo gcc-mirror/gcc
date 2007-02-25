@@ -146,7 +146,8 @@ static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map)))
 static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map))) 
      htab_t value_expr_for_decl;
 
-static GTY ((if_marked ("tree_int_map_marked_p"), param_is (struct tree_int_map)))
+static GTY ((if_marked ("tree_priority_map_marked_p"), 
+	     param_is (struct tree_priority_map)))
   htab_t init_priority_for_decl;
 
 static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map)))
@@ -220,8 +221,8 @@ init_ttree (void)
 
   value_expr_for_decl = htab_create_ggc (512, tree_map_hash,
 					 tree_map_eq, 0);
-  init_priority_for_decl = htab_create_ggc (512, tree_int_map_hash,
-					    tree_int_map_eq, 0);
+  init_priority_for_decl = htab_create_ggc (512, tree_priority_map_hash,
+					    tree_priority_map_eq, 0);
   restrict_base_for_decl = htab_create_ggc (256, tree_map_hash,
 					    tree_map_eq, 0);
 
@@ -4195,18 +4196,18 @@ build_variant_type_copy (tree type)
 /* Return true if the from tree in both tree maps are equal.  */
 
 int
-tree_map_eq (const void *va, const void *vb)
+tree_map_base_eq (const void *va, const void *vb)
 {
-  const struct tree_map  *a = va, *b = vb;
+  const struct tree_map_base  *a = va, *b = vb;
   return (a->from == b->from);
 }
 
 /* Hash a from tree in a tree_map.  */
 
 unsigned int
-tree_map_hash (const void *item)
+tree_map_base_hash (const void *item)
 {
-  return (((const struct tree_map *) item)->hash);
+  return htab_hash_pointer (((const struct tree_map_base *)item)->from);
 }
 
 /* Return true if this tree map structure is marked for garbage collection
@@ -4214,70 +4215,97 @@ tree_map_hash (const void *item)
    structure goes away when the from tree goes away.  */
 
 int
-tree_map_marked_p (const void *p)
+tree_map_base_marked_p (const void *p)
 {
-  tree from = ((struct tree_map *) p)->from;
-
-  return ggc_marked_p (from);
+  return ggc_marked_p (((struct tree_map_base *) p)->from);
 }
-
-/* Return true if the trees in the tree_int_map *'s VA and VB are equal.  */
-
-int
-tree_int_map_eq (const void *va, const void *vb)
-{
-  const struct tree_int_map  *a = va, *b = vb;
-  return (a->from == b->from);
-}
-
-/* Hash a from tree in the tree_int_map * ITEM.  */
 
 unsigned int
-tree_int_map_hash (const void *item)
+tree_map_hash (const void *item)
 {
-  return htab_hash_pointer (((const struct tree_int_map *)item)->from);
+  return (((const struct tree_map *) item)->hash);
 }
 
-/* Return true if this tree int map structure is marked for garbage collection
-   purposes.  We simply return true if the from tree_int_map *P's from tree is marked, so that this
-   structure goes away when the from tree goes away.  */
+/* Return the initialization priority for DECL.  */
 
-int
-tree_int_map_marked_p (const void *p)
+priority_type
+decl_init_priority_lookup (tree decl)
 {
-  tree from = ((struct tree_int_map *) p)->from;
+  struct tree_priority_map *h;
+  struct tree_map_base in;
 
-  return ggc_marked_p (from);
-}
-/* Lookup an init priority for FROM, and return it if we find one.  */
-
-unsigned short
-decl_init_priority_lookup (tree from)
-{
-  struct tree_int_map *h, in;
-  in.from = from;
-
-  h = htab_find_with_hash (init_priority_for_decl, 
-			   &in, htab_hash_pointer (from));
-  if (h)
-    return h->to;
-  return 0;
+  gcc_assert (VAR_OR_FUNCTION_DECL_P (decl));
+  gcc_assert (TREE_CODE (decl) == VAR_DECL
+	      ? DECL_HAS_INIT_PRIORITY_P (decl)
+	      : DECL_STATIC_CONSTRUCTOR (decl));
+  in.from = decl;
+  h = htab_find (init_priority_for_decl, &in);
+  return h ? h->init : DEFAULT_INIT_PRIORITY;
 }
 
-/* Insert a mapping FROM->TO in the init priority hashtable.  */
+/* Return the finalization priority for DECL.  */
 
-void
-decl_init_priority_insert (tree from, unsigned short to)
+priority_type
+decl_fini_priority_lookup (tree decl)
 {
-  struct tree_int_map *h;
+  struct tree_priority_map *h;
+  struct tree_map_base in;
+
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
+  gcc_assert (DECL_STATIC_DESTRUCTOR (decl));
+  in.from = decl;
+  h = htab_find (init_priority_for_decl, &in);
+  return h ? h->fini : DEFAULT_INIT_PRIORITY;
+}
+
+/* Return the initialization and finalization priority information for
+   DECL.  If there is no previous priority information, a freshly
+   allocated structure is returned.  */
+
+static struct tree_priority_map *
+decl_priority_info (tree decl)
+{
+  struct tree_priority_map in;
+  struct tree_priority_map *h;
   void **loc;
 
-  h = ggc_alloc (sizeof (struct tree_int_map));
-  h->from = from;
-  h->to = to;
-  loc = htab_find_slot_with_hash (init_priority_for_decl, h, 
-				  htab_hash_pointer (from), INSERT);
-  *(struct tree_int_map **) loc = h;
+  in.base.from = decl;
+  loc = htab_find_slot (init_priority_for_decl, &in, INSERT);
+  h = *loc;
+  if (!h)
+    {
+      h = GGC_CNEW (struct tree_priority_map);
+      *loc = h;
+      h->base.from = decl;
+      h->init = DEFAULT_INIT_PRIORITY;
+      h->fini = DEFAULT_INIT_PRIORITY;
+    }
+
+  return h;
+}
+
+/* Set the initialization priority for DECL to PRIORITY.  */
+
+void
+decl_init_priority_insert (tree decl, priority_type priority)
+{
+  struct tree_priority_map *h;
+
+  gcc_assert (VAR_OR_FUNCTION_DECL_P (decl));
+  h = decl_priority_info (decl);
+  h->init = priority;
+}  
+
+/* Set the finalization priority for DECL to PRIORITY.  */
+
+void
+decl_fini_priority_insert (tree decl, priority_type priority)
+{
+  struct tree_priority_map *h;
+
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
+  h = decl_priority_info (decl);
+  h->fini = priority;
 }  
 
 /* Look up a restrict qualified base decl for FROM.  */
@@ -4288,7 +4316,7 @@ decl_restrict_base_lookup (tree from)
   struct tree_map *h;
   struct tree_map in;
 
-  in.from = from;
+  in.base.from = from;
   h = htab_find_with_hash (restrict_base_for_decl, &in,
 			   htab_hash_pointer (from));
   return h ? h->to : NULL_TREE;
@@ -4304,7 +4332,7 @@ decl_restrict_base_insert (tree from, tree to)
 
   h = ggc_alloc (sizeof (struct tree_map));
   h->hash = htab_hash_pointer (from);
-  h->from = from;
+  h->base.from = from;
   h->to = to;
   loc = htab_find_slot_with_hash (restrict_base_for_decl, h, h->hash, INSERT);
   *(struct tree_map **) loc = h;
@@ -4352,7 +4380,7 @@ tree
 decl_debug_expr_lookup (tree from)
 {
   struct tree_map *h, in;
-  in.from = from;
+  in.base.from = from;
 
   h = htab_find_with_hash (debug_expr_for_decl, &in, htab_hash_pointer (from));
   if (h)
@@ -4370,7 +4398,7 @@ decl_debug_expr_insert (tree from, tree to)
 
   h = ggc_alloc (sizeof (struct tree_map));
   h->hash = htab_hash_pointer (from);
-  h->from = from;
+  h->base.from = from;
   h->to = to;
   loc = htab_find_slot_with_hash (debug_expr_for_decl, h, h->hash, INSERT);
   *(struct tree_map **) loc = h;
@@ -4382,7 +4410,7 @@ tree
 decl_value_expr_lookup (tree from)
 {
   struct tree_map *h, in;
-  in.from = from;
+  in.base.from = from;
 
   h = htab_find_with_hash (value_expr_for_decl, &in, htab_hash_pointer (from));
   if (h)
@@ -4400,7 +4428,7 @@ decl_value_expr_insert (tree from, tree to)
 
   h = ggc_alloc (sizeof (struct tree_map));
   h->hash = htab_hash_pointer (from);
-  h->from = from;
+  h->base.from = from;
   h->to = to;
   loc = htab_find_slot_with_hash (value_expr_for_decl, h, h->hash, INSERT);
   *(struct tree_map **) loc = h;

@@ -228,7 +228,7 @@ tree
 decl_shadowed_for_var_lookup (tree from)
 {
   struct tree_map *h, in;
-  in.from = from;
+  in.base.from = from;
 
   h = (struct tree_map *) htab_find_with_hash (shadowed_var_for_decl, &in,
 					       htab_hash_pointer (from));
@@ -247,7 +247,7 @@ decl_shadowed_for_var_insert (tree from, tree to)
 
   h = GGC_NEW (struct tree_map);
   h->hash = htab_hash_pointer (from);
-  h->from = from;
+  h->base.from = from;
   h->to = to;
   loc = htab_find_slot_with_hash (shadowed_var_for_decl, h, h->hash, INSERT);
   *(struct tree_map **) loc = h;

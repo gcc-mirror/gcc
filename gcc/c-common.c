@@ -598,9 +598,9 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_const_attribute },
   { "transparent_union",      0, 0, false, false, false,
 			      handle_transparent_union_attribute },
-  { "constructor",            0, 0, true,  false, false,
+  { "constructor",            0, 1, true,  false, false,
 			      handle_constructor_attribute },
-  { "destructor",             0, 0, true,  false, false,
+  { "destructor",             0, 1, true,  false, false,
 			      handle_destructor_attribute },
   { "mode",                   1, 1, false,  true, false,
 			      handle_mode_attribute },
@@ -4220,6 +4220,29 @@ c_expand_expr (tree exp, rtx target, enum machine_mode tmode,
     }
 }
 
+
+/* Generate the RTL for the body of FNDECL.  */
+
+void
+c_expand_body (tree fndecl)
+{
+
+  if (!DECL_INITIAL (fndecl)
+      || DECL_INITIAL (fndecl) == error_mark_node)
+    return;
+
+  tree_rest_of_compilation (fndecl);
+
+  if (DECL_STATIC_CONSTRUCTOR (fndecl)
+      && targetm.have_ctors_dtors)
+    targetm.asm_out.constructor (XEXP (DECL_RTL (fndecl), 0),
+				 decl_init_priority_lookup (fndecl));
+  if (DECL_STATIC_DESTRUCTOR (fndecl)
+      && targetm.have_ctors_dtors)
+    targetm.asm_out.destructor (XEXP (DECL_RTL (fndecl), 0),
+				decl_fini_priority_lookup (fndecl));
+}
+
 /* Hook used by staticp to handle language-specific tree codes.  */
 
 tree
@@ -4655,12 +4678,56 @@ handle_transparent_union_attribute (tree *node, tree name,
   return NULL_TREE;
 }
 
+/* Subroutine of handle_{con,de}structor_attribute.  Evaluate ARGS to
+   get the requested priority for a constructor or destructor,
+   possibly issuing diagnostics for invalid or reserved
+   priorities.  */
+
+static priority_type
+get_priority (tree args, bool is_destructor)
+{
+  HOST_WIDE_INT pri;
+
+  if (!args)
+    return DEFAULT_INIT_PRIORITY;
+
+  if (!host_integerp (TREE_VALUE (args), /*pos=*/0))
+    goto invalid;
+
+  pri = tree_low_cst (TREE_VALUE (args), /*pos=*/0);
+  if (pri < 0 || pri > MAX_INIT_PRIORITY)
+    goto invalid;
+
+  if (pri <= MAX_RESERVED_INIT_PRIORITY)
+    {
+      if (is_destructor)
+	warning (0,
+		 "destructor priorities from 0 to %d are reserved "
+		 "for the implementation", 
+		 MAX_RESERVED_INIT_PRIORITY);
+      else
+	warning (0,
+		 "constructor priorities from 0 to %d are reserved "
+		 "for the implementation", 
+		 MAX_RESERVED_INIT_PRIORITY);
+    }
+  return pri;
+
+ invalid:
+  if (is_destructor)
+    error ("destructor priorities must be integers from 0 to %d inclusive",
+	   MAX_INIT_PRIORITY);
+  else
+    error ("constructor priorities must be integers from 0 to %d inclusive",
+	   MAX_INIT_PRIORITY);
+  return DEFAULT_INIT_PRIORITY;
+}
+
 /* Handle a "constructor" attribute; arguments as in
    struct attribute_spec.handler.  */
 
 static tree
-handle_constructor_attribute (tree *node, tree name,
-			      tree ARG_UNUSED (args),
+handle_constructor_attribute (tree *node, tree name, tree args,
 			      int ARG_UNUSED (flags),
 			      bool *no_add_attrs)
 {
@@ -4671,7 +4738,10 @@ handle_constructor_attribute (tree *node, tree name,
       && TREE_CODE (type) == FUNCTION_TYPE
       && decl_function_context (decl) == 0)
     {
+      priority_type priority;
       DECL_STATIC_CONSTRUCTOR (decl) = 1;
+      priority = get_priority (args, /*is_destructor=*/false);
+      SET_DECL_INIT_PRIORITY (decl, priority);
       TREE_USED (decl) = 1;
     }
   else
@@ -4687,8 +4757,7 @@ handle_constructor_attribute (tree *node, tree name,
    struct attribute_spec.handler.  */
 
 static tree
-handle_destructor_attribute (tree *node, tree name,
-			     tree ARG_UNUSED (args),
+handle_destructor_attribute (tree *node, tree name, tree args,
 			     int ARG_UNUSED (flags),
 			     bool *no_add_attrs)
 {
@@ -4699,7 +4768,10 @@ handle_destructor_attribute (tree *node, tree name,
       && TREE_CODE (type) == FUNCTION_TYPE
       && decl_function_context (decl) == 0)
     {
+      priority_type priority;
       DECL_STATIC_DESTRUCTOR (decl) = 1;
+      priority = get_priority (args, /*is_destructor=*/true);
+      SET_DECL_FINI_PRIORITY (decl, priority);
       TREE_USED (decl) = 1;
     }
   else

@@ -24,16 +24,6 @@
 # Load support procs.
 load_lib g++-dg.exp
 
-# Test for whether or not __attribute__((init_priority)) is supported
-# by the platform.
-
-set comp_output [g++_target_compile \
-		"$srcdir/$subdir/initp1.C" "initp1.S" assembly ""]
-remove-build-file "initp1.S"
-if { [string match "*init_priority*" $comp_output] } {
-  return 0
-}
-
 # Initialize 'dg'.
 dg-init
 

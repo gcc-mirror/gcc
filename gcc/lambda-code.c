@@ -2153,7 +2153,7 @@ replace_uses_equiv_to_x_with_y (struct loop *loop, tree stmt, tree x,
       /* Use REPLACEMENTS hash table to cache already created
 	 temporaries.  */
       in.hash = htab_hash_pointer (use);
-      in.from = use;
+      in.base.from = use;
       h = htab_find_with_hash (replacements, &in, in.hash);
       if (h != NULL)
 	{
@@ -2198,7 +2198,7 @@ replace_uses_equiv_to_x_with_y (struct loop *loop, tree stmt, tree x,
       SET_USE (use_p, var);
       h = ggc_alloc (sizeof (struct tree_map));
       h->hash = in.hash;
-      h->from = use;
+      h->base.from = use;
       h->to = var;
       loc = htab_find_slot_with_hash (replacements, h, in.hash, INSERT);
       gcc_assert ((*(struct tree_map **)loc) == NULL);

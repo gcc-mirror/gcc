@@ -4606,7 +4606,7 @@ move_stmt_r (tree *tp, int *walk_subtrees, void *data)
 	  if (p->new_label_map)
 	    {
 	      struct tree_map in, *out;
-	      in.from = t;
+	      in.base.from = t;
 	      out = htab_find_with_hash (p->new_label_map, &in, DECL_UID (t));
 	      if (out)
 		*tp = t = out->to;
@@ -4795,7 +4795,7 @@ new_label_mapper (tree decl, void *data)
 
   m = xmalloc (sizeof (struct tree_map));
   m->hash = DECL_UID (decl);
-  m->from = decl;
+  m->base.from = decl;
   m->to = create_artificial_label ();
   LABEL_DECL_UID (m->to) = LABEL_DECL_UID (decl);
 
