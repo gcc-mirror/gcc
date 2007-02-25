@@ -1,3 +1,16 @@
+2007-02-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* reload.c (find_reloads_address_1): Handle PLUS expressions resulting
+	from register elimination as PRE_MODIFY / POST_MODIFY increments.
+	Do not attempt to handle MEM inside auto-inc expressions.
+	* reload1.c (eliminate_regs_1): Do not attempt to handle elimination
+	of a register modified by an auto-inc expression.  However, do handle
+	elimination of a register used as PRE_MODIFY / POST_MODIFY increment.
+	(elimination_effects): Prohibit elimination of a register modified
+	by an auto-inc expression.  Disable register elimination rules whose
+	target register is modified by an auto-inc expression with variable
+	increment.
+
 2007-02-25  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-ssa-loop-niter.c (compute_estimated_nb_iterations): Fix

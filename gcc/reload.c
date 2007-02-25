@@ -5543,16 +5543,20 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 	   auto-modify by a constant then we could try replacing a pseudo
 	   register with its equivalent constant where applicable.
 
+	   We also handle the case where the register was eliminated
+	   resulting in a PLUS subexpression.
+
 	   If we later decide to reload the whole PRE_MODIFY or
 	   POST_MODIFY, inc_for_reload might clobber the reload register
 	   before reading the index.  The index register might therefore
 	   need to live longer than a TYPE reload normally would, so be
 	   conservative and class it as RELOAD_OTHER.  */
-	if (REG_P (XEXP (op1, 1)))
-	  if (!REGNO_OK_FOR_INDEX_P (REGNO (XEXP (op1, 1))))
-	    find_reloads_address_1 (mode, XEXP (op1, 1), 1, code, SCRATCH,
-				    &XEXP (op1, 1), opnum, RELOAD_OTHER,
-				    ind_levels, insn);
+	if ((REG_P (XEXP (op1, 1))
+	     && !REGNO_OK_FOR_INDEX_P (REGNO (XEXP (op1, 1))))
+	    || GET_CODE (XEXP (op1, 1)) == PLUS)
+	  find_reloads_address_1 (mode, XEXP (op1, 1), 1, code, SCRATCH,
+				  &XEXP (op1, 1), opnum, RELOAD_OTHER,
+				  ind_levels, insn);
 
 	gcc_assert (REG_P (XEXP (op1, 0)));
 
@@ -5732,43 +5736,6 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 				     reloadnum);
 	    }
 	  return value;
-	}
-
-      else if (MEM_P (XEXP (x, 0)))
-	{
-	  /* This is probably the result of a substitution, by eliminate_regs,
-	     of an equivalent address for a pseudo that was not allocated to a
-	     hard register.  Verify that the specified address is valid and
-	     reload it into a register.  */
-	  /* Variable `tem' might or might not be used in FIND_REG_INC_NOTE.  */
-	  rtx tem ATTRIBUTE_UNUSED = XEXP (x, 0);
-	  rtx link;
-	  int reloadnum;
-
-	  /* Since we know we are going to reload this item, don't decrement
-	     for the indirection level.
-
-	     Note that this is actually conservative:  it would be slightly
-	     more efficient to use the value of SPILL_INDIRECT_LEVELS from
-	     reload1.c here.  */
-	  /* We can't use ADDR_TYPE (type) here, because we need to
-	     write back the value after reading it, hence we actually
-	     need two registers.  */
-	  find_reloads_address (GET_MODE (x), &XEXP (x, 0),
-				XEXP (XEXP (x, 0), 0), &XEXP (XEXP (x, 0), 0),
-				opnum, type, ind_levels, insn);
-
-	  reloadnum = push_reload (x, NULL_RTX, loc, (rtx*) 0,
-				   context_reg_class,
-				   GET_MODE (x), VOIDmode, 0, 0, opnum, type);
-	  rld[reloadnum].inc
-	    = find_inc_amount (PATTERN (this_insn), XEXP (x, 0));
-
-	  link = FIND_REG_INC_NOTE (this_insn, tem);
-	  if (link != 0)
-	    push_replacement (&XEXP (link, 0), reloadnum, VOIDmode);
-
-	  return 1;
 	}
       return 0;
 

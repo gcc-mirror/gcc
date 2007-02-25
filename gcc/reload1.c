@@ -2548,6 +2548,30 @@ eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
     case POST_INC:
     case PRE_DEC:
     case POST_DEC:
+      /* We do not support elimination of a register that is modified.
+	 elimination_effects has already make sure that this does not
+	 happen.  */
+      return x;
+
+    case PRE_MODIFY:
+    case POST_MODIFY:
+      /* We do not support elimination of a register that is modified.
+	 elimination_effects has already make sure that this does not
+	 happen.  The only remaining case we need to consider here is
+	 that the increment value may be an eliminable register.  */
+      if (GET_CODE (XEXP (x, 1)) == PLUS
+	  && XEXP (XEXP (x, 1), 0) == XEXP (x, 0))
+	{
+	  rtx new = eliminate_regs_1 (XEXP (XEXP (x, 1), 1), mem_mode,
+				      insn, true);
+
+	  if (new != XEXP (XEXP (x, 1), 1))
+	    return gen_rtx_fmt_ee (code, GET_MODE (x), XEXP (x, 0),
+				   gen_rtx_PLUS (GET_MODE (x),
+						 XEXP (x, 0), new));
+	}
+      return x;
+
     case STRICT_LOW_PART:
     case NEG:          case NOT:
     case SIGN_EXTEND:  case ZERO_EXTEND:
@@ -2743,6 +2767,14 @@ elimination_effects (rtx x, enum machine_mode mem_mode)
     case POST_DEC:
     case POST_MODIFY:
     case PRE_MODIFY:
+      /* If we modify the source of an elimination rule, disable it.  */
+      for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
+	if (ep->from_rtx == XEXP (x, 0))
+	  ep->can_eliminate = 0;
+
+      /* If we modify the target of an elimination rule by adding a constant,
+	 update its offset.  If we modify the target in any other way, we'll
+	 have to disable the rule as well.  */
       for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
 	if (ep->to_rtx == XEXP (x, 0))
 	  {
@@ -2757,11 +2789,15 @@ elimination_effects (rtx x, enum machine_mode mem_mode)
 	      ep->offset += size;
 	    else if (code == PRE_INC || code == POST_INC)
 	      ep->offset -= size;
-	    else if ((code == PRE_MODIFY || code == POST_MODIFY)
-		     && GET_CODE (XEXP (x, 1)) == PLUS
-		     && XEXP (x, 0) == XEXP (XEXP (x, 1), 0)
-		     && CONSTANT_P (XEXP (XEXP (x, 1), 1)))
-	      ep->offset -= INTVAL (XEXP (XEXP (x, 1), 1));
+	    else if (code == PRE_MODIFY || code == POST_MODIFY)
+	      {
+		if (GET_CODE (XEXP (x, 1)) == PLUS
+		    && XEXP (x, 0) == XEXP (XEXP (x, 1), 0)
+		    && CONST_INT_P (XEXP (XEXP (x, 1), 1)))
+		  ep->offset -= INTVAL (XEXP (XEXP (x, 1), 1));
+		else
+		  ep->can_eliminate = 0;
+	      }
 	  }
 
       /* These two aren't unary operators.  */
