@@ -1,3 +1,8 @@
+2007-02-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/30918
+	* gfortran.dg/namelist_26.f90: New test.
+
 2007-02-24  Roger Sayle  <roger@eyesopen.com>
 
         PR fortran/30400

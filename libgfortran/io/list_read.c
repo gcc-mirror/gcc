@@ -2567,6 +2567,10 @@ find_nml_name:
     case '&':
           break;
 
+    case '!':
+      eat_line (dtp);
+      goto find_nml_name;
+
     case '=':
       c = next_char (dtp);
       if (c == '?')
