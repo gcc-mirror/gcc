@@ -265,6 +265,9 @@ extern bool just_once_each_iteration_p (const struct loop *, basic_block);
 extern unsigned expected_loop_iterations (const struct loop *);
 extern rtx doloop_condition_get (rtx);
 
+void estimate_numbers_of_iterations_loop (struct loop *);
+HOST_WIDE_INT estimated_loop_iterations_int (struct loop *, bool);
+
 /* Loop manipulation.  */
 extern bool can_duplicate_loop_p (struct loop *loop);
 
