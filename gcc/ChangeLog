@@ -1,3 +1,8 @@
+2007-02-24  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/30509
+	* tree-inline.c (copy_bb): Produce exact copy of EH info when copying for inlining.
+
 2007-02-24  Uros Bizjak  <ubizjak@gmail.com>
 	    Jan Hubicka  <jh@suse.cz>
 
