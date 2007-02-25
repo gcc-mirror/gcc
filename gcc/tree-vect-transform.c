@@ -1844,7 +1844,7 @@ vectorizable_call (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 	}
       rhs_type = TREE_TYPE (op);
 
-      if (!vect_is_simple_use (op, loop_vinfo, &def_stmt, &def, &dt[nargs]))
+      if (!vect_is_simple_use (op, loop_vinfo, &def_stmt, &def, &dt[nargs-1]))
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "use not simple.");
