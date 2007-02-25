@@ -2543,29 +2543,85 @@ analyze_ziv_subscript (tree chrec_a,
     fprintf (dump_file, ")\n");
 }
 
-/* Get the real or estimated number of iterations for LOOPNUM, whichever is
-   available. Return the number of iterations as a tree, or NULL_TREE if
-   we don't know.  */
+/* Sets NIT to the estimated number of executions of the statements in
+   LOOP.  If CONSERVATIVE is true, we must be sure that NIT is at least as
+   large as the number of iterations.  If we have no reliable estimate,
+   the function returns false, otherwise returns true.  */
 
-static tree
-get_number_of_iters_for_loop (int loopnum)
+static bool
+estimated_loop_iterations (struct loop *loop, bool conservative,
+			   double_int *nit)
 {
-  struct loop *loop = get_loop (loopnum);
   tree numiter = number_of_exit_cond_executions (loop);
 
+  /* If we have an exact value, use it.  */
   if (TREE_CODE (numiter) == INTEGER_CST)
-    return numiter;
-
-  if (loop->estimate_state == EST_AVAILABLE)
     {
-      tree type = lang_hooks.types.type_for_size (INT_TYPE_SIZE, true);
-      if (double_int_fits_to_tree_p (type, loop->estimated_nb_iterations))
-	return double_int_to_tree (type, loop->estimated_nb_iterations);
+      *nit = tree_to_double_int (numiter);
+      return true;
     }
 
-  return NULL_TREE;
+  /* If we have a measured profile and we do not ask for a conservative bound,
+     use it.  */
+  if (!conservative && loop->header->count != 0)
+    {
+      *nit = uhwi_to_double_int (expected_loop_iterations (loop) + 1);
+      return true;
+    }
+
+  /* Finally, try using a reliable estimate on number of iterations according
+     to the size of the accessed data, if available.  */
+  estimate_numbers_of_iterations_loop (loop);
+  if (loop->estimate_state == EST_AVAILABLE)
+    {
+      *nit = loop->estimated_nb_iterations;
+      return true;
+    }
+
+  return false;
+}
+
+/* Similar to estimated_loop_iterations, but returns the estimate only
+   if it fits to HOST_WIDE_INT.  If this is not the case, or the estimate
+   on the number of iterations of LOOP could not be derived, returns -1.  */
+
+HOST_WIDE_INT
+estimated_loop_iterations_int (struct loop *loop, bool conservative)
+{
+  double_int nit;
+  HOST_WIDE_INT hwi_nit;
+
+  if (!estimated_loop_iterations (loop, conservative, &nit))
+    return -1;
+
+  if (!double_int_fits_in_shwi_p (nit))
+    return -1;
+  hwi_nit = double_int_to_shwi (nit);
+
+  return hwi_nit < 0 ? -1 : hwi_nit;
 }
     
+/* Similar to estimated_loop_iterations, but returns the estimate as a tree,
+   and only if it fits to the int type.  If this is not the case, or the
+   estimate on the number of iterations of LOOP could not be derived, returns
+   chrec_dont_know.  */
+
+static tree
+estimated_loop_iterations_tree (struct loop *loop, bool conservative)
+{
+  double_int nit;
+  tree type;
+
+  if (!estimated_loop_iterations (loop, conservative, &nit))
+    return chrec_dont_know;
+
+  type = lang_hooks.types.type_for_size (INT_TYPE_SIZE, true);
+  if (!double_int_fits_to_tree_p (type, nit))
+    return chrec_dont_know;
+
+  return double_int_to_tree (type, nit);
+}
+
 /* Analyze a SIV (Single Index Variable) subscript where CHREC_A is a
    constant, and CHREC_B is an affine function.  *OVERLAPS_A and
    *OVERLAPS_B are initialized to the functions that describe the
@@ -2626,8 +2682,8 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 		  
 		  if (tree_fold_divides_p (CHREC_RIGHT (chrec_b), difference))
 		    {
-		      tree numiter;
-		      int loopnum = CHREC_VARIABLE (chrec_b);
+		      HOST_WIDE_INT numiter;
+		      struct loop *loop = get_chrec_loop (chrec_b);
 
 		      *overlaps_a = conflict_fn (1, affine_fn_cst (integer_zero_node));
 		      tmp = fold_build2 (EXACT_DIV_EXPR, integer_type_node,
@@ -2641,11 +2697,10 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 
 		      /* Perform weak-zero siv test to see if overlap is
 			 outside the loop bounds.  */
-		      numiter = get_number_of_iters_for_loop (loopnum);
+		      numiter = estimated_loop_iterations_int (loop, true);
 
-		      if (numiter != NULL_TREE
-			  && TREE_CODE (tmp) == INTEGER_CST
-			  && tree_int_cst_lt (numiter, tmp))
+		      if (numiter >= 0
+			  && compare_tree_int (tmp, numiter) > 0)
 			{
 			  free_conflict_function (*overlaps_a);
 			  free_conflict_function (*overlaps_b);
@@ -2709,8 +2764,8 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 		  */
 		  if (tree_fold_divides_p (CHREC_RIGHT (chrec_b), difference))
 		    {
-		      tree numiter;
-		      int loopnum = CHREC_VARIABLE (chrec_b);
+		      HOST_WIDE_INT numiter;
+		      struct loop *loop = get_chrec_loop (chrec_b);
 
 		      *overlaps_a = conflict_fn (1, affine_fn_cst (integer_zero_node));
 		      tmp = fold_build2 (EXACT_DIV_EXPR,
@@ -2721,11 +2776,10 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 
 		      /* Perform weak-zero siv test to see if overlap is
 			 outside the loop bounds.  */
-		      numiter = get_number_of_iters_for_loop (loopnum);
+		      numiter = estimated_loop_iterations_int (loop, true);
 
-		      if (numiter != NULL_TREE
-			  && TREE_CODE (tmp) == INTEGER_CST
-			  && tree_int_cst_lt (numiter, tmp))
+		      if (numiter >= 0
+			  && compare_tree_int (tmp, numiter) > 0)
 			{
 			  free_conflict_function (*overlaps_a);
 			  free_conflict_function (*overlaps_b);
@@ -2852,8 +2906,7 @@ compute_overlap_steps_for_affine_1_2 (tree chrec_a, tree chrec_b,
 {
   bool xz_p, yz_p, xyz_p;
   int step_x, step_y, step_z;
-  int niter_x, niter_y, niter_z, niter;
-  tree numiter_x, numiter_y, numiter_z;
+  HOST_WIDE_INT niter_x, niter_y, niter_z, niter;
   affine_fn overlaps_a_xz, overlaps_b_xz;
   affine_fn overlaps_a_yz, overlaps_b_yz;
   affine_fn overlaps_a_xyz, overlaps_b_xyz;
@@ -2864,12 +2917,12 @@ compute_overlap_steps_for_affine_1_2 (tree chrec_a, tree chrec_b,
   step_y = int_cst_value (CHREC_RIGHT (chrec_a));
   step_z = int_cst_value (CHREC_RIGHT (chrec_b));
 
-  numiter_x = get_number_of_iters_for_loop (CHREC_VARIABLE (CHREC_LEFT (chrec_a)));
-  numiter_y = get_number_of_iters_for_loop (CHREC_VARIABLE (chrec_a));
-  numiter_z = get_number_of_iters_for_loop (CHREC_VARIABLE (chrec_b));
+  niter_x = estimated_loop_iterations_int
+	  	(get_chrec_loop (CHREC_LEFT (chrec_a)), true);
+  niter_y = estimated_loop_iterations_int (get_chrec_loop (chrec_a), true);
+  niter_z = estimated_loop_iterations_int (get_chrec_loop (chrec_b), true);
   
-  if (numiter_x == NULL_TREE || numiter_y == NULL_TREE 
-      || numiter_z == NULL_TREE)
+  if (niter_x < 0 || niter_y < 0 || niter_z < 0)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "overlap steps test failed: no iteration counts.\n");
@@ -2879,10 +2932,6 @@ compute_overlap_steps_for_affine_1_2 (tree chrec_a, tree chrec_b,
       *last_conflicts = chrec_dont_know;
       return;
     }
-
-  niter_x = int_cst_value (numiter_x);
-  niter_y = int_cst_value (numiter_y);
-  niter_z = int_cst_value (numiter_z);
 
   niter = MIN (niter_x, niter_z);
   compute_overlap_steps_for_affine_univar (niter, step_x, step_z,
@@ -3029,13 +3078,14 @@ analyze_subscript_affine_affine (tree chrec_a,
       if (nb_vars_a == 1 && nb_vars_b == 1)
 	{
 	  int step_a, step_b;
-	  int niter, niter_a, niter_b;
-	  tree numiter_a, numiter_b;
+	  HOST_WIDE_INT niter, niter_a, niter_b;
 	  affine_fn ova, ovb;
 
-	  numiter_a = get_number_of_iters_for_loop (CHREC_VARIABLE (chrec_a));
-	  numiter_b = get_number_of_iters_for_loop (CHREC_VARIABLE (chrec_b));
-	  if (numiter_a == NULL_TREE || numiter_b == NULL_TREE)
+	  niter_a = estimated_loop_iterations_int
+			(get_chrec_loop (chrec_a), true);
+	  niter_b = estimated_loop_iterations_int
+			(get_chrec_loop (chrec_b), true);
+	  if (niter_a < 0 || niter_b < 0)
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "affine-affine test failed: missing iteration counts.\n");
@@ -3045,8 +3095,6 @@ analyze_subscript_affine_affine (tree chrec_a,
 	      goto end_analyze_subs_aa;
 	    }
 
-	  niter_a = int_cst_value (numiter_a);
-	  niter_b = int_cst_value (numiter_b);
 	  niter = MIN (niter_a, niter_b);
 
 	  step_a = int_cst_value (CHREC_RIGHT (chrec_a));
@@ -3140,12 +3188,13 @@ analyze_subscript_affine_affine (tree chrec_a,
 	     equation: chrec_a (X0) = chrec_b (Y0).  */
 	  int x0, y0;
 	  int niter, niter_a, niter_b;
-	  tree numiter_a, numiter_b;
 
-	  numiter_a = get_number_of_iters_for_loop (CHREC_VARIABLE (chrec_a));
-	  numiter_b = get_number_of_iters_for_loop (CHREC_VARIABLE (chrec_b));
+	  niter_a = estimated_loop_iterations_int
+			(get_chrec_loop (chrec_a), true);
+	  niter_b = estimated_loop_iterations_int
+			(get_chrec_loop (chrec_b), true);
 
-	  if (numiter_a == NULL_TREE || numiter_b == NULL_TREE)
+	  if (niter_a < 0 || niter_b < 0)
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "affine-affine test failed: missing iteration counts.\n");
@@ -3155,8 +3204,6 @@ analyze_subscript_affine_affine (tree chrec_a,
 	      goto end_analyze_subs_aa;
 	    }
 
-	  niter_a = int_cst_value (numiter_a);
-	  niter_b = int_cst_value (numiter_b);
 	  niter = MIN (niter_a, niter_b);
 
 	  i0 = U[0][0] * gamma / gcd_alpha_beta;
@@ -3481,7 +3528,8 @@ analyze_miv_subscript (tree chrec_a,
 	 in the same order.  */
       *overlaps_a = conflict_fn (1, affine_fn_cst (integer_zero_node));
       *overlaps_b = conflict_fn (1, affine_fn_cst (integer_zero_node));
-      *last_conflicts = get_number_of_iters_for_loop (CHREC_VARIABLE (chrec_a));
+      *last_conflicts = estimated_loop_iterations_tree
+				(get_chrec_loop (chrec_a), true);
       dependence_stats.num_miv_dependent++;
     }
   
