@@ -1,3 +1,12 @@
+2007-02-25  Roger Sayle  <roger@eyesopen.com>
+	    Paul Thomas <pault@gcc.gnu.org>
+
+        PR fortran/30400
+        * match.c (match_forall_iterator): Use gfc_match_expr instead
+	of gfc_match_variable to match the iterator variable.  Return
+	MATCH_NO if not a variable.  Remove the reset of the symbol's
+	flavor in cleanup.
+
 2007-02-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/30799
