@@ -6,7 +6,7 @@
 # in $ADD_BRANCHES.
 
 SVNROOT=${SVNROOT:-"file:///svn/gcc"}
-IGNORE_BRANCHES='gcc-(2_95|3_0|3_1|3_2|3_3|3_4)-branch'
+IGNORE_BRANCHES='gcc-(2_95|3_0|3_1|3_2|3_3|3_4|4_0)-branch'
 ADD_BRANCHES='HEAD autovect-branch'
 
 # Run this from /tmp.
