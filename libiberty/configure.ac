@@ -545,6 +545,23 @@ if test -z "${setobjs}"; then
     setobjs=yes
     ;;
 
+  *-*-msdosdjgpp)
+    for f in atexit basename bcmp bcopy bsearch bzero calloc clock ffs \
+             getcwd getpagesize getrusage gettimeofday gettimeofday \
+             index insque memchr memcmp memcpy memmove memset psignal \
+             putenv random rename rindex sbrk setenv stpcpy strcasecmp \
+             strchr strdup strerror strncasecmp strrchr strstr strtod \
+             strtol strtoul sysconf times tmpnam vfprintf vprintf \
+             vsprintf waitpid
+    do
+      n=HAVE_`echo $f | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+      AC_DEFINE_UNQUOTED($n)
+    done
+
+
+    setobjs=yes
+    ;;
+
   esac
 fi
 
