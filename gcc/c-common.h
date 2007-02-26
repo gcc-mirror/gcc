@@ -988,4 +988,11 @@ extern tree c_omp_remap_decl (tree, bool);
 #define GCC_DIAG_STYLE __gcc_cdiag__
 #endif
 
+/* Functions called automatically at the beginning and end of execution.  */
+extern GTY (()) tree static_ctors;
+extern GTY (()) tree static_dtors;
+
+extern void c_record_cdtor_fn (tree);
+extern void c_build_cdtor_fns (void);
+
 #endif /* ! GCC_C_COMMON_H */

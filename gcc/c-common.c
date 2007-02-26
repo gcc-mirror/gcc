@@ -663,6 +663,11 @@ const struct attribute_spec c_common_format_attribute_table[] =
   { NULL,                     0, 0, false, false, false, NULL }
 };
 
+/* Functions called automatically at the beginning and end of execution.  */
+
+tree static_ctors;
+tree static_dtors;
+
 /* Push current bindings for the function name VAR_DECLS.  */
 
 void
@@ -6872,6 +6877,61 @@ warn_for_unused_label (tree label)
 	warning (OPT_Wunused_label, "label %q+D defined but not used", label);
       else
         warning (OPT_Wunused_label, "label %q+D declared but not defined", label);
+    }
+}
+
+/* If FNDECL is a static constructor or destructor, add it to the list
+   of functions to be called by the file scope initialization
+   function.  */
+
+void
+c_record_cdtor_fn (tree fndecl)
+{
+  if (targetm.have_ctors_dtors)
+    return;
+
+  if (DECL_STATIC_CONSTRUCTOR (fndecl))
+    static_ctors = tree_cons (NULL_TREE, fndecl, static_ctors);
+  if (DECL_STATIC_DESTRUCTOR (fndecl))
+    static_dtors = tree_cons (NULL_TREE, fndecl, static_dtors);
+}
+
+/* Synthesize a function which calls all the global ctors or global
+   dtors in this file.  This is only used for targets which do not
+   support .ctors/.dtors sections.  FIXME: Migrate into cgraph.  */
+static void
+build_cdtor (int method_type, tree cdtors)
+{
+  tree body = 0;
+
+  if (!cdtors)
+    return;
+
+  for (; cdtors; cdtors = TREE_CHAIN (cdtors))
+    append_to_statement_list (build_function_call (TREE_VALUE (cdtors), 0),
+			      &body);
+
+  cgraph_build_static_cdtor (method_type, body, DEFAULT_INIT_PRIORITY);
+}
+
+/* Generate functions to call static constructors and destructors
+   for targets that do not support .ctors/.dtors sections.  These
+   functions have magic names which are detected by collect2.  */
+
+void
+c_build_cdtor_fns (void)
+{
+  if (!targetm.have_ctors_dtors)
+    {
+      build_cdtor ('I', static_ctors); 
+      static_ctors = NULL_TREE;
+      build_cdtor ('D', static_dtors); 
+      static_dtors = NULL_TREE;
+    }
+  else
+    {
+      gcc_assert (!static_ctors);
+      gcc_assert (!static_dtors);
     }
 }
 
