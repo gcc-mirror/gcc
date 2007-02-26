@@ -16,3 +16,24 @@ void c3()
 void d3() 
      __attribute__((constructor (50))); /* { dg-warning "reserved" } */
 
+/* Priorities must be integral constants.  */
+
+/* Pointers, even with constant values, are not allowed.  */
+void c4() 
+     __attribute__((constructor ((void*) 500))); /* { dg-error "priorities" } */
+void d4()    
+     __attribute__((destructor ((void*) 500))); /* { dg-error "priorities" } */
+
+/* Integer variables are not allowed.  */
+int i;
+void c5() 
+     __attribute__((constructor ((i)))); /* { dg-error "priorities" } */
+void d5()    
+     __attribute__((destructor ((i)))); /* { dg-error "priorities" } */
+
+/* Enumeration constants are allowed.  */
+enum E { e = 500 };
+void c6() 
+     __attribute__((constructor ((e))));
+void d6()    
+     __attribute__((destructor ((e))));

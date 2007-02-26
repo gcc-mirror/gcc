@@ -4687,11 +4687,14 @@ static priority_type
 get_priority (tree args, bool is_destructor)
 {
   HOST_WIDE_INT pri;
+  tree arg;
 
   if (!args)
     return DEFAULT_INIT_PRIORITY;
-
-  if (!host_integerp (TREE_VALUE (args), /*pos=*/0))
+  
+  arg = TREE_VALUE (args);
+  if (!host_integerp (arg, /*pos=*/0)
+      || !INTEGRAL_TYPE_P (TREE_TYPE (arg)))
     goto invalid;
 
   pri = tree_low_cst (TREE_VALUE (args), /*pos=*/0);
