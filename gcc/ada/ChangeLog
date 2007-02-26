@@ -39,8 +39,8 @@
 
 2006-06-06  Laurent GUERBY  <laurent@guerby.net>
 
-        PR ada/27769
-        mlib-utl.adb: Use Program_Name.
+	PR ada/27769
+	* mlib-utl.adb: Use Program_Name.
 
 2006-05-24  Release Manager
 
@@ -63,20 +63,19 @@
 
 	Backport:
 	2005-12-05  Paolo Bonzini  <bonzini@gnu.org>
-        * Makefile.in (gnatlib): Fix regex, using \. instead of . when a
+	* Makefile.in (gnatlib): Fix regex, using \. instead of . when a
 	period is meant.
-	
+
 2006-02-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Backport from mainline:
 	2006-02-13  Geert Bosch  <bosch@adacore.com>
-	            Gary Dismukes  <dismukes@adacore.com>
+		    Gary Dismukes  <dismukes@adacore.com>
 
 	* a-tifiio.adb (Put_Digits): Test Last against To'First - 1 instead of
 	0, since the lower bound of the actual string may be greater than one.
 
 	PR ada/20753
-
 	(Put): Fix condition to raise Layout_Error when invalid
 	layout is requested.
 
@@ -138,8 +137,8 @@
 
 2005-11-18  Laurent GUERBY  <laurent@guerby.net>
 
-        PR ada/24857
-        * Makefile.in: Use s-auxdec-empty for RTEMS.
+	PR ada/24857
+	* Makefile.in: Use s-auxdec-empty for RTEMS.
 
 2005-11-17  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
@@ -153,15 +152,15 @@
 
 	PR ada/24857
 	* s-auxdec-empty.ads, s-auxdec-empty.adb: New files.
-	
+
 2005-11-16  Richard Guenther  <rguenther@suse.de>
 
 	* Makefile.in: Add EH_MECHANISM=-gcc to s390(x) linux.
 
 2005-11-16  Joel Sherrill <joel.sherrill@oarcorp.com>
 
-        PR ada/24855
-        * raise-gcc.c: Add missing stdarg.h include.
+	PR ada/24855
+	* raise-gcc.c: Add missing stdarg.h include.
  
 2005-11-16  Richard Guenther  <rguenther@suse.de>
 
@@ -229,7 +228,6 @@
 	    Ed Schonberg  <schonberg@adacore.com>
 
 	PR ada/18434
-
 	* types.ads: Include All_Checks in Suppress_Array
 
 	* checks.adb (Check_Needed): Remove kludge for a/=b rewritten as
@@ -352,7 +350,7 @@
 	(Save_Occurrence_And_Private): Move GCC EH related code to
 	a-exexpr-gcc.adb
 	(Raise_Current_Excep): Add new variable Id with pragma
-        volatile, to ensure that the variable lives on stack.
+	volatile, to ensure that the variable lives on stack.
 
 	* a-exexpr-gcc.adb, raise-gcc.c: New file.
 
@@ -1157,7 +1155,6 @@
 	    Javier Miranda  <miranda@adacore.com>
 
 	PR ada/15604
-
 	* sem_type.adb (Covers): In an inlined body, a composite type matches
 	a private type whose full view is a composite type.
 	(Interface_Present_In_Ancestor): Protect the frontend against
@@ -2464,9 +2461,9 @@
 	subprogram Complete_Subprograms_Derivation already does the
 	job associated with the second call.
 
-        * exp_strm.adb (Build_Elementary_Input_Call): Add an explicit
-        conversion to the full view when generating an operation for a
-        discriminant whose type may currently be private.
+	* exp_strm.adb (Build_Elementary_Input_Call): Add an explicit
+	conversion to the full view when generating an operation for a
+	discriminant whose type may currently be private.
 
 2005-09-01  Ed Schonberg  <schonberg@adacore.com>
 	    Javier Miranda  <miranda@adacore.com>
@@ -2851,7 +2848,6 @@
 2005-07-07  Olivier Hainque  <hainque@adacore.com>
 
 	PR ada/22301
-
 	* raise.c: Only include unwind.h if IN_RTS, and provide dummy type
 	definitions for the Unwind wrappers in the compiler case.
 
@@ -2963,10 +2959,10 @@
 	N_Object_Declaration, only perform the checks if the Object_Definition
 	is not an Access_Definition.
 
-        * sem_ch3.adb (Access_Subprogram_Declaration): Add test for the case
-        where the parent of an the access definition is an N_Object_Declaration
-        when determining the Associated_Node_For_Itype and scope of an
-        anonymous access-to-subprogram type.
+	* sem_ch3.adb (Access_Subprogram_Declaration): Add test for the case
+	where the parent of an the access definition is an N_Object_Declaration
+	when determining the Associated_Node_For_Itype and scope of an
+	anonymous access-to-subprogram type.
 
 	* exp_ch6.adb (Expand_N_Subprogram_Declaration): Set the
 	Corresponding_Spec on the body created for a null procedure. Add ???
@@ -3149,7 +3145,6 @@
 2005-07-04  Robert Dewar  <dewar@adacore.com>
 
 	PR ada/22039
-
 	* s-sopco3.ads, s-sopco4.ads, s-sopco5.ads: Minor documentation fix
 
 2005-07-04  Matthew Gingell  <gingell@adacore.com>
@@ -3201,19 +3196,19 @@
 
 2005-07-04  Sergey Rybin  <rybin@adacore.com>
 
-        * gnat_ugn.texi: Add description of --eol gnatpp option
+	* gnat_ugn.texi: Add description of --eol gnatpp option
 
 2005-07-04  Eric Botcazou  <ebotcazou@adacore.com>
 	    Thomas Quinot  <quinot@adacore.com>
 
-        * gnat_rm.texi: Add a note that pragma Unreferenced is not appropriate
+	* gnat_rm.texi: Add a note that pragma Unreferenced is not appropriate
 	if the user wants all calls of a subprogram to be flagged,
 	independently of whether they are made from within the same unit or
 	another unit.
-        Mention restriction for pragma Linker_Alias on some platforms.
-        Document pragma Linker_Constructor and Linker_Destructor.
-        Rewrite documentation of Weak_External, Linker_Section and
-        Linker_Alias pragmas.
+	Mention restriction for pragma Linker_Alias on some platforms.
+	Document pragma Linker_Constructor and Linker_Destructor.
+	Rewrite documentation of Weak_External, Linker_Section and
+	Linker_Alias pragmas.
 
 2005-07-04  Arnaud Charlet  <charlet@adacore.com>
 
@@ -4180,8 +4175,8 @@
 	s-valwch.ads, s-widwch.adb, s-widwch.ads, s-wwdcha.adb, s-wwdwch.adb:
 	Rewrite to correspond to new wide character names in AI-395
 
-        * par-ch12.adb (P_Formal_Subprogram_Declaration): Recognize null
-        default procedures.
+	* par-ch12.adb (P_Formal_Subprogram_Declaration): Recognize null
+	default procedures.
 
 2005-06-14  Ed Schonberg  <schonberg@adacore.com>
 	    Robert Dewar  <dewar@adacore.com>
@@ -4270,7 +4265,6 @@
 2005-06-14  Thomas Quinot  <quinot@adacore.com>
 
 	PR ada/6717
-
 	* g-socket.ads, g-socket.adb (Inet_Addr): Special case the all-ones
 	broadcast address.
 	(Create_Selector): Bind listening socket used to create the signalling
@@ -4342,15 +4336,15 @@
 	For objects and parameters of a generic private type, retain the '*'
 	indicator to distinguish such an entity from its type.
 
-        * ali.ads (Xref_Entity_Record): New fields Iref_File_Num and Iref_Line,
-        to store information about instantiated entities.
+	* ali.ads (Xref_Entity_Record): New fields Iref_File_Num and Iref_Line,
+	to store information about instantiated entities.
 
-        * ali.adb (Scan_ALI): Add support for parsing the reference to the
-        generic parent
+	* ali.adb (Scan_ALI): Add support for parsing the reference to the
+	generic parent
 
-        * xref_lib.adb (Skip_To_Matching_Closing_Bracket): New subprogram
-        (Parse_Identifier_Info, Parse_Token): Add support for the generic parent
-        information.
+	* xref_lib.adb (Skip_To_Matching_Closing_Bracket): New subprogram
+	(Parse_Identifier_Info, Parse_Token): Add support for the generic parent
+	information.
 
 2005-06-10  Doug Rupp  <rupp@adacore.com>
 	    Arnaud Charlet  <charlet@adacore.com>
@@ -4413,7 +4407,6 @@
 2005-06-14  Robert Dewar  <dewar@adacore.com>
 
 	PR ada/15613
-
 	* par-ch2.adb (Scan_Pragma_Argument): New procedure
 	(P_Pragma): Implement RM 2.8(4) check for no pos args after named args
 
@@ -4459,11 +4452,11 @@
 	characters are now considered graphic characters and hence yield false
 	in this call.
 
-        * nmake.adt: Modify header so that xnmake does not generate output
-        files with multiple blank lines.
+	* nmake.adt: Modify header so that xnmake does not generate output
+	files with multiple blank lines.
 
-        * treeprs.adt: Remove a blank line so that output from xtreeprs does
-        not have an extra blank line
+	* treeprs.adt: Remove a blank line so that output from xtreeprs does
+	not have an extra blank line
 
 2005-06-14  Gary Dismukes  <dismukes@adacore.com>
 
@@ -4495,7 +4488,6 @@
 	    Ed Schonberg  <schonberg@adacore.com>
 
 	PR ada/10671
-
 	* sem_prag.adb: Implement pragma Persistent_BSS
 	Remove obsolete pragma Persistent_Data, Persistent_Object
 	Set Ada_Version_Explicit, for implementation of AI-362
@@ -4560,8 +4552,8 @@
 	* nmake.adt: Modify header so that xnmake does not generate output
 	files with multiple blank lines.
 
-        * treeprs.adt: Remove a blank line so that output from xtreeprs does
-        not have an extra blank line
+	* treeprs.adt: Remove a blank line so that output from xtreeprs does
+	not have an extra blank line
 
 2005-06-14  Sergey Rybin  <rybin@adacore.com>
 
@@ -4585,7 +4577,7 @@
 	Add UNNECESSARY_BLANK_LINES for -gnatyu
 	Add qualifiers /ALL_PROJECTS (-U) for GNAT PRETTY and GNAT METRIC
 
-        * ug_words: Add entry for -gnaty/Y [NO]ADA_2005_COMPATIBILITY
+	* ug_words: Add entry for -gnaty/Y [NO]ADA_2005_COMPATIBILITY
 
 2005-06-14  Vincent Celier  <celier@adacore.com>
 
@@ -4686,7 +4678,7 @@
 	object directories of project files before directories in ADA_*_PATH
 	environment variables.
 
-        * g-trasym.ads: Document that IRIX is supported
+	* g-trasym.ads: Document that IRIX is supported
 
 2005-06-10  Arnaud Charlet  <charlet@adacore.com>
 
@@ -4781,9 +4773,9 @@
 
 2005-04-16  Laurent GUERBY  <laurent@guerby.net>
 
-        PR ada/18847
-        * a-nudira.adb (Value): Check for valid string.
-        * a-nuflra.adb (Value): Likewise.
+	PR ada/18847
+	* a-nudira.adb (Value): Check for valid string.
+	* a-nuflra.adb (Value): Likewise.
 
 2005-04-11  Richard Sandiford  <rsandifo@redhat.com>
 
@@ -4956,7 +4948,6 @@
 	Generic_Dispatching_Constructor.
 
 	PR ada/20300
-
 	* sem_ch8.adb (Find_Direct_Name): Go to root type for check of
 	character type cases.
 	(Analyze_Subprogram_Renaming): Add special handling for
@@ -5256,13 +5247,12 @@
 
 	* Makefile.in: (ia64-hp-*vms*): Use s-crtl-vms64.ads.
 
-        * 5xcrtl.ads: Renamed to...
-        * s-crtl-vms64.ads: ...this new file
+	* 5xcrtl.ads: Renamed to...
+	* s-crtl-vms64.ads: ...this new file
 
 2005-03-17  Robert Dewar  <dewar@adacore.com>
 
 	PR ada/19519
-
 	* namet.adb (Copy_One_Character): Set proper wide character encoding
 	for upper half character if we have upper half encoding.
 
@@ -5638,7 +5628,6 @@
 2005-03-15  Robert Dewar  <dewar@adacore.com>
 
 	PR ada/13470
-
 	* a-stunau.ads, a-stunau.adb:
 	Change interface to allow efficient (and correct) implementation
 	The previous changes to allow extra space in unbounded strings had
@@ -5801,7 +5790,6 @@
 	PR ada/19408
 	PR ada/19140
 	PR ada/20255
-
 	* decl.c (gnat_to_gnu_field): Reject aliased components with a
 	representation clause that prescribes a size not equal to the rounded
 	size of their types.
@@ -5960,7 +5948,6 @@
 
 	PR ada/20226
 	PR ada/20344
-
 	* init.c (__gnat_initialize): Do not call __gnat_install_SEH_handler()
 	when IN_RTS. This is to work around a bootstrap path problem.
 
@@ -6671,8 +6658,7 @@
 2005-02-09  Eric Botcazou  <ebotcazou@adacore.com>
 	    Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
-	Fix for c330001 - PR ada/19386
-
+	PR ada/19386
 	* decl.c:
 	(gnat_to_gnu_field): Do not necessarily invoke make_packable_type
 	on the field if Pragma Component_Alignment (Storage_Unit).
@@ -6772,7 +6758,6 @@
 2005-02-09  Arnaud Charlet  <charlet@adacore.com>
 
 	PR ada/16592
-
 	* Makefile.in: Link all gnat tools with -static-libgcc, since
 	-shared-libgcc is now used by default on some systems (e.g. linux with
 	recent binutils).
@@ -8562,7 +8547,6 @@
 2004-10-04  Bernard Banner  <banner@gnat.com>
 
 	PR ada/13897
-
 	* Makefile.in: Add section for powerpc linux
 	Add variant i-vxwork-x86.ads
 
@@ -8838,7 +8822,6 @@
 2004-09-23  Robert Dewar  <dewar@gnat.com>
 
 	PR ada/17540
-
 	* sem_prag.adb (Process_Import_Or_Interface): Don't set Is_Public here,
 	instead do this at freeze time (we won't do it if there is an address
 	clause).
@@ -8883,7 +8866,6 @@
 2004-09-20  Robert Dewar  <dewar@gnat.com>
 
 	PR ada/17540
-
 	* freeze.adb (Check_Address_Clause): Reset Is_Imported and Is_Public
 	if an address clause is present, since that means that the Import
 	should be ignored.
@@ -9562,7 +9544,6 @@
 2004-08-09  Ed Schonberg  <schonberg@gnat.com>
 
 	PR ada/15408
-
 	* sem_ch7.adb (Install_Private_Declarations): In the body of the
 	package or of a child, private entities are both immediately_visible
 	and not hidden.
@@ -11100,7 +11081,6 @@
 2004-06-11  Hristian Kirtchev  <kirtchev@gnat.com>
 
 	PR ada/15587
-
 	* einfo.ads: Minor comment updates for Has_Completion and
 	E_Constant list of flags.
 
@@ -11183,7 +11163,6 @@
 2004-06-11  Ed Schonberg  <schonberg@gnat.com>
 
 	PR ada/15403
-
 	* sem_ch12.adb (Save_References): If operator node has been folded to
 	enumeration literal, associated_node must be discarded.
 
@@ -11195,7 +11174,6 @@
 2004-06-08  Arnaud Charlet  <charlet@act-europe.fr>
 
 	PR ada/15568
-
 	* Makefile.in: Remove target specific SO_OPT on IRIX
 
 2004-06-07  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
@@ -12410,7 +12388,6 @@
 2004-05-03  Olivier Hainque  <hainque@act-europe.fr>
 
 	PR ada/15152
-
 	* exp_ch2.adb (Expand_Current_Value): Leave Machine_Code Asm arguments
 	alone. Replacing object references by literals is inappropriate in a
 	so low level context.
@@ -14741,7 +14718,8 @@
 2004-02-10  Arnaud Charlet  <charlet@act-europe.fr>,
 	    Nathanael Nerode  <neroden@gcc.gnu.org>
 
-	PR ada/6637, PR ada/5911
+	PR ada/6637
+	PR ada/5911
 	Merge with libada-branch:
 	* config-lang.in: Build libada only when ada is built.
 
@@ -15873,7 +15851,6 @@
 	 Fixes ACATS regressions.
 
 	PR ada/13353
-
 	* sem_prag.adb (Back_End_Cannot_Inline): A renaming_as_body can always
 	be inlined.
 
@@ -16110,7 +16087,6 @@
 2003-12-03  Thomas Quinot  <quinot@act-europe.fr>
 
 	PR ada/11724
-
 	* adaint.h, adaint.c, g-os_lib.ads:
 	Do not assume that the offset argument to lseek(2) is a 32 bit integer,
 	on some platforms (including FreeBSD), it is a 64 bit value.
@@ -17134,7 +17110,6 @@
 2003-11-04  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	Part of PR ada/12806
-
 	* ada-tree.h (TYPE_DIGITS_VALUE, SET_TYPE_DIGITS_VALUE): Save count as
 	tree, not integer.
 
@@ -17448,7 +17423,7 @@
 
 	* Makefile.generic: Add missing substitution on object_deps handling.
 
-	PR ada/5909:
+	PR ada/5909
 	* Make-lang.in (check-ada): Enable ACATS test suite.
 
 2003-10-27  Robert Dewar  <dewar@gnat.com>
@@ -17517,13 +17492,13 @@
 
 2003-10-24  Pascal Obry  <obry@gnat.com>
 
+	PR ada/12014
 	* adadecode.c (ostrcpy): New function.
 	(__gnat_decode): Use ostrcpy of strcpy.
 	(has_prefix): Set first parameter a const.
 	(has_suffix): Set first parameter a const.
 	Update copyright notice. Fix source name in header.
 	Removes a trailing space.
-	PR ada/12014.
 
 2003-10-24  Jose Ruiz  <ruiz@act-europe.fr>
 
@@ -17598,13 +17573,13 @@
 
 2003-10-23  Thomas Quinot  <quinot@act-europe.fr>
 
-	PR ada/11978:
+	PR ada/11978
 	* exp_ch13.adb (Expand_N_Freeze_Entity): Do not consider inherited
 	External_Tag attribute definition clauses.
 
 2003-10-23  Ed Schonberg  <schonberg@gnat.com>
 
-	PR ada/7613:
+	PR ada/7613
 	* exp_dbug.adb (Debug_Renaming_Declaration): For the renaming of a
 	child unit, generate a fully qualified name to avoid spurious errors
 	when the context contains renamings of different child units with
@@ -17667,7 +17642,8 @@
 
 2003-10-22  Arnaud Charlet  <charlet@act-europe.fr>
 
-	* Makefile.in: Disable build of gnatpsta. PR ada/10110.
+	PR ada/10110
+	* Makefile.in: Disable build of gnatpsta.
 	* cstreams.c (__gnat_full_name): Minor improvements and clean up
 	of previous change.
 
@@ -18202,7 +18178,7 @@
 
 2003-06-04  Olivier Hainque  <hainque@act-europe.fr>
 
-	PR ada/9953:
+	PR ada/9953
 	* 5hsystem.ads: Remove pragma Linker_Option for pthreads library,
 	and turn ZCX_By_Default back to False since the underlying support
 	is not quite there yet.
@@ -18655,7 +18631,7 @@
 
 2003-02-18  Ben Elliston  <bje@redhat.com>
 
-	Part of fix for PR ada/9406
+	Part of PR ada/9406
 	* gnat_ug.texi (Binder output file): Grammar fix.
 
 2003-02-18  Ben Elliston  <bje@redhat.com>
@@ -18764,9 +18740,10 @@
 
 2002-12-14   Geert Bosch <bosch@gnat.com>
 
+	PR ada/5690
 	* sem_ch6.adb (Analyze_Subprogram_Body): Recognize additional
 	case of a body created for a Renaming_As_Body, on which
-	conformance checks are not performed. Fixes PR ada/5690.
+	conformance checks are not performed.
 
 2002-11-30  Zack Weinberg  <zack@codesourcery.com>
 
@@ -18780,7 +18757,9 @@
 	solution to buffer overflow bug on GNU/Linux.
 
 2002-11-14  Nathanael Nerode  <neroden@gcc.gnu.org>
-	Closes PR ada/5856 and PR ada/6919 !
+
+	PR ada/5856
+	PR ada/6919
 	* bindgen.adb: Remove all references to Public_Version.
 	* comperr.adb: Remove all references to Public_Version and
 	GNATPRO_Version; correct bug reporting instructions.
@@ -18789,6 +18768,7 @@
 	GNATPRO version.
 
 2002-11-13  Nathanael Nerode  <neroden@gcc.gnu.org>
+
 	PR ada/6919
 	* adaint.c (__gnat_tmp_name): Remove buffer overflow bug on
 	GNU/Linux.
@@ -18797,21 +18777,25 @@
 	* config-lang.in: Remove diff_excludes.
 
 2002-11-05  Graham Stott  <graham.stott@btinternet.com>
+
 	PR ada/8358
 	* trans.c (gnu_pending_elaboration_lists): New GC root.
 	(build_unit_elab): Use..
 
 2002-10-30   Geert Bosch <bosch@gnat.com>
+
 	PR ada/6558
 	* misc.c : Include optabs.h
 
 	* Make-lang.in (misc.o): Add dependency on optabs.h
 
 2002-10-29   Geert Bosch <bosch@gnat.com>
+
 	PR ada/6558
 	* Make-lang.in (gnatbind): Depend on CONFIG_H
 
 2002-10-29  Geert bosch  <bosch@gnat.com>
+
 	PR ada/6558
 	* misc.c: Unrevert misc.c (1.13)
 
@@ -18821,6 +18805,7 @@
 	maintainership comments.
 
 2002-09-25  Nathanael Nerode  <neroden@gcc.gnu.org>
+
 	PR ada/5904
 	* 5ataprop.adb 5atpopsp.adb 5bosinte.adb 5ftaprop.adb
 	5gtaprop.adb 5htaprop.adb 5rosinte.ads 5staprop.adb
