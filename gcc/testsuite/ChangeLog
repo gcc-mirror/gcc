@@ -1,5 +1,11 @@
 2007-02-25  Mark Mitchell  <mark@codesourcery.com>
 
+	* gcc.dg/vxworks/vxworks.exp: New file.
+	* gcc.dg/vxworks/initpri1.c: Likewise.
+	* gcc.dg/vxworks/initpri2.c: Likewise.
+	* gcc.dg/initpri2.c: Add more tests.
+	* g++.dg/special/initpri2.C: Likewise.
+
 	* gcc.dg/initpri1.c: New test.
 	* gcc.dg/initpri2.c: Likewise.
 	* g++.dg/special/initpri1.C: New test.

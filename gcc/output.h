@@ -272,6 +272,9 @@ extern bool assemble_integer (rtx, unsigned, unsigned, int);
 extern void assemble_real (REAL_VALUE_TYPE, enum machine_mode, unsigned);
 #endif
 
+/* Write the address of the entity given by SYMBOL to SEC.  */
+extern void assemble_addr_to_section (rtx, section *);
+
 /* Return the size of the constant pool.  */
 extern int get_pool_size (void);
 
@@ -571,6 +574,10 @@ extern section *mergeable_constant_section (enum machine_mode,
 extern section *function_section (tree);
 extern section *unlikely_text_section (void);
 extern section *current_function_section (void);
+
+/* Return the numbered .ctors.N (if CONSTRUCTOR_P) or .dtors.N (if
+   not) section for PRIORITY.  */
+extern section *get_cdtor_priority_section (int, bool);
 
 extern bool unlikely_text_section_p (section *);
 extern void switch_to_section (section *);

@@ -1,3 +1,24 @@
+2007-02-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* output.h (assemble_addr_to_section): Declare.
+	(get_cdtor_priority_section): Likewise.
+	* varasm.c (assemble_addr_to_section): New function.
+	(get_cdtor_priority_section): Likewise.
+	(default_named_section_asm_out_destructor): Use them.
+	(destor_dtor_section_asm_out_destructor): Likewise.
+	(default_named_section_asm_out_constructor): Likewise.
+	(default_ctor_section_asm_out_constructor): Likewise.
+	* config.gcc (*-*-vxworks*): Include vxworks.o.
+	* config/t-vxworks (vxworks.o): New target.
+	* config/vxworks.h (ALWAYS_NUMBER_CTORS_SECTIONS): Remove.
+	(TARGET_ASM_CONSTRUCTOR): Define.
+	(TARGET_ASM_DESTRUCTOR): Likewise.
+	(vxworks_asm_out_constructor): Declare.
+	(vxworks_asm_out_destructor): Likewise.
+
+	* c-common.c (get_priority): Check that we have not just an
+	INTEGER_CST, but an integer constant with integeral type.
+
 2007-02-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/30938

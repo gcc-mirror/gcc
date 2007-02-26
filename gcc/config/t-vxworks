@@ -25,3 +25,7 @@ EXTRA_HEADERS += $(srcdir)/gthr-vxworks.h gthr-default.h
 LIBGCC2_INCLUDES="-I$(SYSTEM_HEADER_DIR)"
 
 EXTRA_MULTILIB_PARTS = 
+
+vxworks.o: $(srcdir)/config/vxworks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+	output.h $(TM_H)
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

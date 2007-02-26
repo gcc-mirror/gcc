@@ -90,11 +90,12 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
   targetm.have_ctors_dtors = TARGET_VXWORKS_RTP; \
 } while (0)
 
-/* The VxWorks runtime uses a clever trick to get the sentinel entry
-   (-1) inserted at the beginning of the .ctors segment.  This trick
-   will not work if we ever generate any entries in plain .ctors
-   sections; we must always use .ctors.PRIORITY.  */
-#define ALWAYS_NUMBER_CTORS_SECTIONS 1
+/* VxWorks requires special handling of constructors and destructors.
+   All VxWorks configurations must use these functions.  */
+#define TARGET_ASM_CONSTRUCTOR vxworks_asm_out_constructor
+#define TARGET_ASM_DESTRUCTOR vxworks_asm_out_destructor
+extern void vxworks_asm_out_constructor (rtx symbol, int priority);
+extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 
 /* The name of the symbol for the table of GOTs in a particular
    RTP.  */
