@@ -1,6 +1,6 @@
 // <bitset> -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -52,14 +52,12 @@
 
 #include <cstddef>     // For size_t
 #include <cstring>     // For memset
-#include <limits>      // For numeric_limits
 #include <string>
 #include <bits/functexcept.h>   // For invalid_argument, out_of_range,
                                 // overflow_error
-#include <ostream>     // For ostream (operator<<)
-#include <istream>     // For istream (operator>>)
+#include <ios>
 
-#define _GLIBCXX_BITSET_BITS_PER_WORD  numeric_limits<unsigned long>::digits
+#define _GLIBCXX_BITSET_BITS_PER_WORD  (__CHAR_BIT__ * sizeof(unsigned long))
 #define _GLIBCXX_BITSET_WORDS(__n) \
  ((__n) < 1 ? 0 : ((__n) + _GLIBCXX_BITSET_BITS_PER_WORD - 1) \
                   / _GLIBCXX_BITSET_BITS_PER_WORD)

@@ -1,3 +1,39 @@
+2007-02-26  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28080 (partial)
+	* include/std/bitset: Do not include <istream> and <ostream>,
+	<ios> is enough.
+	* include/std/iomanip: Do not include the whole <istream>,
+	<ios> is enough; do not include <functional>; reformat.
+	* include/std/functional: Do not include <cstddef>.
+	* include/std/list: Do not include <bits/stl_uninitialized.h>.
+	* include/std/numeric: Do not include the whole <iterator> and
+	<bits/stl_function.h>.
+	* include/std/valarray: Do not include <numeric>.
+	* include/bits/stl_numeric.h: Include <bits/concept_check.h>.
+	* src/iostream-inst.cc: Include <istream>.
+	* include/ext/functional: Include <cstddef>.
+	* testsuite/util/testsuite_hooks.h: Do not include <locale>,
+	<ctime> is enough; qualify tm.
+	* testsuite/util/testsuite_hooks.cc: Qualify tm.
+
+2007-02-26  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.h (class ctype_byname<char>,
+	class ctype_byname<wchar_t>): Declare.
+	* src/ctype.cc (ctype_byname<wchar_t>::ctype_byname(const char*,
+	size_t), ctype_byname<wchar_t>::~ctype_byname): Define.
+	* config/locale/generic/ctype_members.cc (ctype_byname<char>::
+	ctype_byname(const char*, size_t), ctype_byname<char>::~ctype_byname):
+	Likewise.
+	* config/locale/gnu/ctype_members.cc (ctype_byname<char>::
+	ctype_byname(const char*, size_t), ctype_byname<char>::~ctype_byname):
+	Likewise.
+	* config/locale/darwin/ctype_members.cc (ctype_byname<char>::
+	ctype_byname(const char*, size_t), ctype_byname<char>::~ctype_byname):
+	Likewise.
+	* testsuite/22_locale/headers/locale/synopsis.cc: Remove xfail.
+
 2007-02-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/19_diagnostics/headers/cerrno/macros.cc: Include
