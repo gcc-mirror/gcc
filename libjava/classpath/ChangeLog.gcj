@@ -1,3 +1,8 @@
+2007-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* java/util/TimeZone.java (getDefaultDisplayName): Don't
+	check if TimeZone is instanceof SimpleTimeZone.
+
 2007-02-21  Gary Benson  <gbenson@redhat.com>
 
 	* java/util/GregorianCalendar.java,
