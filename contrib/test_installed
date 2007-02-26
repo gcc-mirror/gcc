@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# (C) 1998, 2000, 2002, 2003 Free Software Foundation
+# (C) 1998, 2000, 2002, 2003, 2007 Free Software Foundation
 # Originally by Alexandre Oliva <oliva@dcc.unicamp.br>
 
 # This script is Free Software, and it can be copied, distributed and
@@ -16,12 +16,12 @@
 # will be appended to the srcdir.
 
 # You may specify where the binaries to be tested should be picked up
-# from.  If you specify --prefix=/some/dir, gcc, g++ and g77 will be
+# from.  If you specify --prefix=/some/dir, gcc, g++ and gfortran will be
 # looked for at /some/dir/bin.  Each one may be overridden by
 # specifying --with-gcc=/pathname/to/gcc, --with-g++=/pathname/to/g++
-# and --with-g77=/pathname/to/g77.  If you specify --without-gcc,
-# --without-g++ or --without-g77, the test for the specified program
-# will be skipped.  By default, gcc, g++ and g77 will be searched in
+# and --with-gfortran=/pathname/to/gfortran.  If you specify --without-gcc,
+# --without-g++ or --without-gfortran, the test for the specified program
+# will be skipped.  By default, gcc, g++ and gfortran will be searched in
 # the PATH.
 
 # An additional argument may specify --tmpdir=/some/dir; by default,
@@ -50,16 +50,16 @@ while true; do
   --prefix=*) prefix=`echo "$1" | sed 's/[^=]*=//'`; shift;;
   --with-gcc=*) GCC_UNDER_TEST=`echo "$1" | sed 's/[^=]*=//'`; shift;;
   --with-g++=*) GXX_UNDER_TEST=`echo "$1" | sed 's/[^=]*=//'`; shift;;
-  --with-g77=*) G77_UNDER_TEST=`echo "$1" | sed 's/[^=]*=//'`; shift;;
+  --with-gfortran=*) GFORTRAN_UNDER_TEST=`echo "$1" | sed 's/[^=]*=//'`; shift;;
   --without-gcc) GCC_UNDER_TEST=no; shift;;
   --without-g++) GXX_UNDER_TEST=no; shift;;
-  --without-g77) G77_UNDER_TEST=no; shift;;
+  --without-gfortran) GFORTRAN_UNDER_TEST=no; shift;;
   --without-objc) OBJC_UNDER_TEST=no; shift;;
 
   --tmpdir=*) tmpdir=`echo "$1" | sed 's/[^=]*=//'`; shift;;
 
   --help) cat <<\EOF
-Runs the testsuite for an installed version of gcc/g++/g77/objc
+Runs the testsuite for an installed version of gcc/g++/gfortran/objc
 Copyright (C) 1998  Free Software Foundation
 by Alexandre Oliva <oliva@dcc.unicamp.br>
 
@@ -71,13 +71,13 @@ Supported arguments:
 --srcdir=/some/dir            same as --with-testsuite=/some/dir/gcc/testsuite
                               [deduced from shell-script pathname]
 
---prefix=/some/dir            use gcc, g++ and g77 from /some/dir/bin [PATH]
+--prefix=/some/dir            use gcc, g++ and gfortran from /some/dir/bin [PATH]
 --with-gcc=/some/dir/bin/gcc  use specified gcc program [gcc]
 --with-g++=/some/dir/bin/g++  use specified g++ program [g++]
---with-g77=/some/dir/bin/g77  use specified g77 program [g77]
+--with-gfortran=/some/dir/bin/gfortran  use specified gfortran program [gfortran]
 --without-gcc                 do not run gcc testsuite
 --without-g++                 do not run g++ testsuite
---without-g77                 do not run g77 testsuite
+--without-gfortran            do not run gfortran testsuite
 --without-objc                do not run objc testsuite
 
 --tmpdir=/some/dir            create temporaries and leave failed programs
@@ -109,13 +109,13 @@ set CFLAGS ""
 set CXXFLAGS ""
 set GCC_UNDER_TEST "${GCC_UNDER_TEST-${prefix}${prefix+/bin/}gcc}"
 set GXX_UNDER_TEST "${GXX_UNDER_TEST-${prefix}${prefix+/bin/}g++}"
-set G77_UNDER_TEST "${G77_UNDER_TEST-${prefix}${prefix+/bin/}g77}"
+set GFORTRAN_UNDER_TEST "${GFORTRAN_UNDER_TEST-${prefix}${prefix+/bin/}gfortran}"
 set OBJC_UNDER_TEST "${OBJC_UNDER_TEST-${prefix}${prefix+/bin/}gcc}"
 EOF
 
 test x"${GCC_UNDER_TEST}" = x"no" || runtest --tool gcc ${1+"$@"}
 test x"${GXX_UNDER_TEST}" = x"no" || runtest --tool g++ ${1+"$@"}
-test x"${G77_UNDER_TEST}" = x"no" || runtest --tool g77 ${1+"$@"}
+test x"${GFORTRAN_UNDER_TEST}" = x"no" || runtest --tool gfortran ${1+"$@"}
 test x"${OBJC_UNDER_TEST}" = x"no" || runtest --tool objc ${1+"$@"}
 
 exit 0
