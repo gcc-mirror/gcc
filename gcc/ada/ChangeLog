@@ -17,7 +17,7 @@
 	constraints several discriminants of the parent type.
 
 2007-02-16  Eric Botcazou  <ebotcazou@adacore.com>
-            Sandra Loosemore  <sandra@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
 
 	* trans.c (call_to_gnu):  Use build_call_list instead of build3 to
 	build the call expression.
@@ -78,9 +78,9 @@
 
 2006-12-05  Aldy Hernandez  <aldyh@redhat.com>
 
-	Merge from gimple-tuples-branch.
-
+	Merge from gimple-tuples-branch:
 	2006-11-02  Aldy Hernandez  <aldyh@redhat.com>
+
 	* ada-tree.h (lang_tree_node): Handle gimple tuples.
 	* trans.c (gnat_gimplify_expr): Replace MODIFY_EXPR with
 	GIMPLE_MODIFY_STMT.
@@ -130,7 +130,7 @@
 	    Bob Duff  <duff@adacore.com>
 	    Ed Schonberg  <schonberg@adacore.com>
 
-        * sem_res.adb (Resolve_Unary_Op): Add warning for use of unary minus
+	* sem_res.adb (Resolve_Unary_Op): Add warning for use of unary minus
 	with multiplying operator.
 	(Expected_Type_Is_Any_Real): New function to determine from the Parent
 	pointer whether the context expects "any real type".
@@ -211,7 +211,7 @@
 	* a-calari.ads, a-calari.adb, a-calfor.ads, a-calfor.adb,
 	a-catizo.ads, a-catizo.adb: New files.
 
-        * impunit.adb: Add new Ada 2005 entries
+	* impunit.adb: Add new Ada 2005 entries
 
 	* sysdep.c: Add external variable __gnat_invalid_tz_offset.
 	Rename all occurences of "__gnat_localtime_r" to
@@ -667,10 +667,10 @@
 	determining progenitor interfaces in Tags.
 	(Inherit_CPP_DT): New subprogram.
 
-        * exp_disp.adb (Expand_Interface_Thunk): Suppress checks during the
+	* exp_disp.adb (Expand_Interface_Thunk): Suppress checks during the
 	analysis of the thunk code.
-        (Expand_Interface_Conversion): Handle run-time conversion of
-        access to class wide types.
+	(Expand_Interface_Conversion): Handle run-time conversion of
+	access to class wide types.
 	(Expand_Dispatching_Call): When generating the profile for the
 	subprogram itype for a dispatching operation, properly terminate the
 	formal parameters chaind list (set the Next_Entity of the last formal
@@ -723,11 +723,11 @@
 
 	* treepr.adb: Use new subtype N_Membership_Test
 
-        * checks.ads, checks.adb: Add definition for Validity_Check
-        (Range_Or_Validity_Checks_Suppressed): New function
-        (Ensure_Valid): Test Validity_Check suppressed
-        (Insert_Valid_Check): Test Validity_Check suppressed
-        (Insert_Valid_Check): Preserve Do_Range_Check flag
+	* checks.ads, checks.adb: Add definition for Validity_Check
+	(Range_Or_Validity_Checks_Suppressed): New function
+	(Ensure_Valid): Test Validity_Check suppressed
+	(Insert_Valid_Check): Test Validity_Check suppressed
+	(Insert_Valid_Check): Preserve Do_Range_Check flag
 	(Validity_Check_Range): New procedure
 	(Expr_Known_Valid): Result of membership test is always valid
 	(Selected_Range_Checks): Range checks cannot be applied to discriminants
@@ -820,7 +820,7 @@
 	* gnat1drv.adb: 
 	Implement new -gnatl=xxx switch to output listing to file
 
-        * opt.ads: (Warn_On_Questionable_Missing_Paren): New switch
+	* opt.ads: (Warn_On_Questionable_Missing_Paren): New switch
 	(Commands_To_Stdout): New flag
 	Implement new -gnatl=xxx switch to output listing to file
 	New switch Dump_Source_Text
@@ -893,11 +893,11 @@
 	    Thomas Quinot  <quinot@adacore.com>
 	    Javier Miranda  <miranda@adacore.com>
 	    Robert Dewar  <dewar@adacore.com>
-        
-        * exp_attr.adb: 
-        (Expand_Access_To_Protected_Op): If the context indicates that an access
-        to a local operation may be transfered outside of the object, create an
-        access to the wrapper operation that must be used in an external call.
+
+	* exp_attr.adb: 
+	(Expand_Access_To_Protected_Op): If the context indicates that an access
+	to a local operation may be transfered outside of the object, create an
+	access to the wrapper operation that must be used in an external call.
 	(Expand_N_Attribute_Reference, case Attribute_Valid): For the AAMP
 	target, pass the Valid attribute applied to a floating-point prefix on
 	to the back end without expansion.
@@ -933,14 +933,14 @@
 	    Ed Schonberg  <schonberg@adacore.com>
 	    Gary Dismukes  <dismukes@adacore.com>
 
-        * exp_ch3.ads, exp_ch3.adb (Expand_N_Object_Declaration): Do not
+	* exp_ch3.ads, exp_ch3.adb (Expand_N_Object_Declaration): Do not
 	register in the final list objects containing class-wide interfaces;
 	otherwise we incorrectly register the tag of the interface in the final
 	list.
-        (Make_Controlling_Function_Wrappers): Add missing barrier to do not
-        generate the wrapper if the parent primitive is abstract. This is
-        required to report the correct error message.
-        (Expand_N_Subtype_Indication): Do validity checks on range
+	(Make_Controlling_Function_Wrappers): Add missing barrier to do not
+	generate the wrapper if the parent primitive is abstract. This is
+	required to report the correct error message.
+	(Expand_N_Subtype_Indication): Do validity checks on range
 	(Clean_Task_Names): If an initialization procedure includes a call to
 	initialize a task (sub)component, indicate that the procedure will use
 	the secondary stack.
@@ -995,10 +995,10 @@
 	    Bob Duff  <duff@adacore.com>
 	    Gary Dismukes  <dismukes@adacore.com>
 	    Robert Dewar  <dewar@adacore.com>
-        
-        * exp_ch4.adb (Expand_N_Type_Conversion): Handle missing interface type
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): Handle missing interface type
 	conversion.
-        (Expand_N_In): Do validity checks on range
+	(Expand_N_In): Do validity checks on range
 	(Expand_Selected_Component): Use updated for of Denotes_Discriminant.
 	(Expand_N_Allocator): For "new T", if the object is constrained by
 	discriminant defaults, allocate the right amount of memory, rather than
@@ -1026,7 +1026,7 @@
 
 	* exp_ch5.ads (Expand_N_Extended_Return_Statement): New procedure.
 
-        * exp_ch5.adb (Expand_N_Loop_Statement): Do validity checks on range
+	* exp_ch5.adb (Expand_N_Loop_Statement): Do validity checks on range
 	(Expand_N_Assignment_Statement): Call
 	Make_Build_In_Place_Call_In_Assignment if the right-hand side is a
 	build-in-place function call. Currently, this can happen only for
@@ -1140,9 +1140,9 @@
 	controlled status since with HIE runtimes class wide types are not
 	potentially controlled anymore.
 
-2006-10-31  Ed Schonberg  <schonberg@adacore.com>             
+2006-10-31  Ed Schonberg  <schonberg@adacore.com>
 
-        * exp_ch9.adb (Update_Prival_Types): Simplify code for entity
+	* exp_ch9.adb (Update_Prival_Types): Simplify code for entity
 	references that are private components of the protected object.
 	(Build_Barrier_Function): Set flag Is_Entry_Barrier_Function
 	(Update_Prival_Subtypes): Add explicit Process argument to Traverse_Proc
@@ -1161,8 +1161,8 @@
 
 2006-10-31  Thomas Quinot  <quinot@adacore.com>
 	    Pablo Oliveira  <oliveira@adacore.com>
-        
-        * exp_dist.adb (Get_Subprogram_Ids): This function will no more assign
+
+	* exp_dist.adb (Get_Subprogram_Ids): This function will no more assign
 	subprogram Ids, even if they are not yet assigned.
 	(Build_Subprogram_Id): It is now this function that will take care of
 	calling Assign_Subprogram_Ids if necessary.
@@ -1202,7 +1202,7 @@
 	* s-wchcnv.adb: Minor reformatting
 
 2006-10-31  Javier Miranda  <miranda@adacore.com>
-        
+
 	* exp_intr.adb (Expand_Dispatching_Constructor_Call): Add missing
 	run-time membership test to ensure that the constructed object
 	implements the target abstract interface.
@@ -1252,7 +1252,7 @@
 	type of the function containing a return statement, because the
 	Return_Type field was removed. We now use the Return_Applies_To field.
 
-        * exp_util.ads, exp_util.adb: Use new subtype N_Membership_Test
+	* exp_util.ads, exp_util.adb: Use new subtype N_Membership_Test
 	(Build_Task_Image_Decl): If procedure is not called from an
 	initialization procedure, indicate that function that builds task name
 	uses the sec. stack. Otherwise the enclosing initialization procedure
@@ -1313,7 +1313,7 @@
 
 	* xref_lib.adb: Add pragma Warnings (Off) to avoid new warnings
 
-        * sem_warn.ads, sem_warn.adb (Set_Warning_Switch): Add processing for
+	* sem_warn.ads, sem_warn.adb (Set_Warning_Switch): Add processing for
 	-gnatwq/Q.
 	(Warn_On_Useless_Assignment): Suppress warning if enclosing inner
 	exception handler.
@@ -1326,7 +1326,7 @@
 	(Output_Obsolescent_Entity_Warnings): New procedure
 	(Check_Code_Statement): New procedure
 
-        * einfo.ads, einfo.adb (Has_Static_Discriminants): New flag
+	* einfo.ads, einfo.adb (Has_Static_Discriminants): New flag
 	Change name Is_Ada_2005 to Is_Ada_2005_Only
 	(Last_Assignment): New field for useless assignment warning
 
@@ -1357,8 +1357,8 @@
 	* par.adb (P_Interface_Type_Definition): Addition of one formal to
 	report an error if the reserved word abstract has been previously found.
 	(SS_End_Type): Add E_Return for new extended_return_statement syntax.
-        
-        * par-ch4.adb (P_Aggregate_Or_Paren_Expr): Improve message for
+
+	* par-ch4.adb (P_Aggregate_Or_Paren_Expr): Improve message for
 	parenthesized range attribute usage
 	(P_Expression_No_Right_Paren): Add missing comment about error recovery.
 
@@ -1402,11 +1402,11 @@
 	(Resolve_Extension_Aggregate): Minor fix to bad error message (started
 	with space can upper case letter).
 
-        * sem_ch3.ads, sem_ch3.adb (Create_Constrained_Components): Set
+	* sem_ch3.ads, sem_ch3.adb (Create_Constrained_Components): Set
 	Has_Static_Discriminants flag
-        (Record_Type_Declaration): Diagnose an attempt to declare an interface
-        type with discriminants.
-        (Process_Range_Expr_In_Decl): Do validity checks on range
+	(Record_Type_Declaration): Diagnose an attempt to declare an interface
+	type with discriminants.
+	(Process_Range_Expr_In_Decl): Do validity checks on range
 	(Build_Discriminant_Constraints): Use updated form of
 	Denotes_Discriminant.
 	(Process_Subtype): If the subtype is a private subtype whose full view
@@ -1513,7 +1513,7 @@
 	Darwin, where one of these two switches is compulsory to link.
 
 2006-10-31  Vincent Celier  <celier@adacore.com>
-        
+
 	* gnatls.adb: Take into account GPR_PROJECT_PATH, when it is defined,
 	instead of ADA_PROJECT_PATH, for the project path.
 	(Gnatls): When displaying the project path directories, use host dir
@@ -1554,15 +1554,15 @@
 
 2006-10-31  Robert Dewar  <dewar@adacore.com>
 
-        * layout.adb (Layout_Record_Type): Deal with non-static subtypes of
-        variant records
-        (Layout_Variant_Record): Retrieve the discriminants from the entity
+	* layout.adb (Layout_Record_Type): Deal with non-static subtypes of
+	variant records
+	(Layout_Variant_Record): Retrieve the discriminants from the entity
 	rather than from the type definition, because in the case of a full
 	type for a private type we need to take the discriminants from the
 	partial view.
-        (Layout_Component_List): When applying the Max operator to variants with
-        a nonstatic size, check whether either operand is static and scale that
-        operand from bits to storage units before applying Max.
+	(Layout_Component_List): When applying the Max operator to variants with
+	a nonstatic size, check whether either operand is static and scale that
+	operand from bits to storage units before applying Max.
 	(Layout_Type): In VMS, if a C-convention access type has no explicit
 	size clause (and does not inherit one in the case of a derived type),
 	then the size is reset to 32 from 64.
@@ -1585,7 +1585,7 @@
 	(LIBGNAT_TARGET_PAIRS for Windows): Avoid the use of the specific
 	a-calend-mingw.adb version.
 
-        * Makefile.rtl: Added s-dsaser.
+	* Makefile.rtl: Added s-dsaser.
 	Add object entries for Ada.Calendar.[Arithmetic/Formatting/Time_Zones]
 	(GNATRTL_TASKING_OBJS): Add Ada.Dispatching and
 	Ada.Dispatching.Round_Robin.
@@ -1668,7 +1668,7 @@
 
 2006-10-31  Robert Dewar  <dewar@adacore.com>
 	    Javier Miranda  <miranda@adacore.com>
-        
+
 	* par-ch3.adb (P_Range_Or_Subtype_Mark): Check for bad parentheses
 	(P_Type_Declaration): Remove barrier against the reserved word "limited"
 	after "abstract" to give support to the new syntax of AARM 3.4 (2/2).
@@ -1737,13 +1737,13 @@
 	* raise.h: (__gnat_set_globals): Change profile.
 
 2006-10-31  Arnaud Charlet  <charlet@adacore.com>
-        
-        * rtsfind.adb: Remove s-polint from comment as it exists no more.
 
-        * rtsfind.ads: 
-        Move entity RE_Get_Active_Partition_Id to package System.DSA_Services.
-        Move all the entities in obsolete package System.PolyORB_Interface to
-        System.Partition_Interface.
+	* rtsfind.adb: Remove s-polint from comment as it exists no more.
+
+	* rtsfind.ads: 
+	Move entity RE_Get_Active_Partition_Id to package System.DSA_Services.
+	Move all the entities in obsolete package System.PolyORB_Interface to
+	System.Partition_Interface.
 	(RE_Storage_Size): New function in System.Tasking.
 	(RE_Get_Ceiling): New entity.
 	(RE_Set_Ceiling): New entity.
@@ -1816,8 +1816,8 @@
 
 2006-10-31  Ed Schonberg  <schonberg@adacore.com>
 	    Hristian Kirtchev  <kirtchev@adacore.com>
-        
-        * sem_ch12.ads, sem_ch12.adb (Save_References): If node is an operator
+
+	* sem_ch12.ads, sem_ch12.adb (Save_References): If node is an operator
 	that has been constant-folded, preserve information of original tree,
 	for ASIS uses.
 	(Analyze_Formal_Derived_Type): Set the limited present flag of the newly
@@ -1952,7 +1952,7 @@
 2006-10-31  Ed Schonberg  <schonberg@adacore.com>
 	    Hristian Kirtchev  <kirtchev@adacore.com>
 	    Bob Duff  <duff@adacore.com>
-        
+
 	* sem_ch6.ads, sem_ch6.adb (Analyze_Subprogram_Declaration): A null
 	procedure cannot be a protected operation (it is a basic_declaration,
 	not a subprogram_declaration).
@@ -2030,7 +2030,7 @@
 	    Hristian Kirtchev  <kirtchev@adacore.com>
 	    Javier Miranda  <miranda@adacore.com>
 	    Ed Schonberg  <schonberg@adacore.com>
-        
+
 	* sem_ch8.adb: Minor error msg rewording
 	(Undefined): When checking for misspellings, invert arguments (to get
 	expected and found set right)
@@ -2140,8 +2140,8 @@
 2006-10-31  Robert Dewar  <dewar@adacore.com>
 	    Hristian Kirtchev  <kirtchev@adacore.com>
 	    Ed Schonberg  <schonberg@adacore.com>
-        
-        * sem_util.ads, sem_util.adb (Enter_Name): Exclude -gnatwh warning
+
+	* sem_util.ads, sem_util.adb (Enter_Name): Exclude -gnatwh warning
 	messages for entities in packages which are not used.
 	(Collect_Synchronized_Interfaces): New procedure.
 	(Overrides_Synchronized_Primitive): New function.
@@ -2243,7 +2243,7 @@
 	Generic_associations now carry the Box_Present flag, to indicate a
 	default for an actual in a partially parametrized formal package.
 
-        * snames.h, snames.ads, snames.adb: Add definition for Validity_Check
+	* snames.h, snames.ads, snames.adb: Add definition for Validity_Check
 	(Preset_Names): Add entries for Priority_Specific_Dispatching pragma
 	and for the new predefined dispatching policies: EDF_Across_Priorities,
 	Non_Preemptive_Within_Priorities, and Round_Robin_Within_Priorities.
@@ -2356,7 +2356,7 @@
 	* a-crbtgo.adb: Added reference to book from which algorithms were
 	adapted.
 
-        * a-crbtgk.ads, a-crbtgk.adb (Generic_Insert_Post): pass flag to
+	* a-crbtgk.ads, a-crbtgk.adb (Generic_Insert_Post): pass flag to
 	indicate which child.
 	(Generic_Conditional_Insert): changed parameter name from "Success" to
 	"Inserted".
@@ -2424,11 +2424,11 @@
 
 	* debug.adb:  Update flags documentation
 
-        * gnat_ugn.texi: Add documentation for new -gnatwq switch
-        Clean up documentation for several other warning switches
-        Clarify how task stack size can be specified with various
-        versions of Windows.
-        Add note that -gnatVo includes ranges including loops
+	* gnat_ugn.texi: Add documentation for new -gnatwq switch
+	Clean up documentation for several other warning switches
+	Clarify how task stack size can be specified with various
+	versions of Windows.
+	Add note that -gnatVo includes ranges including loops
 	Add documentation for -gnatL switch
 	Add note on elaboration warning for initializing variables
 	Add documentation for new -gnatwt warning switch
@@ -2462,7 +2462,7 @@
 	Add comments on layout of subprogram local variables in the
 	presence of nested subprograms.
 
-        * ug_words: Resync.
+	* ug_words: Resync.
 
 	* elists.ads: Minor reformatting
 	Node returns Node_Or_Entity_Id (doc change only)
@@ -2473,12 +2473,12 @@
 
 	* sem.ads: Add details on the handling of the scope stack.
 
-        * usage.adb: Update documentation.
+	* usage.adb: Update documentation.
 
 	* validsw.ads, validsw.adb: 
 	Add definition of Validity_Check_Components and implement -gnatVe/E
 
-        * vms_data.ads: Add missing VMS qualifiers.
+	* vms_data.ads: Add missing VMS qualifiers.
 
 	* s-addope.ads: Add documentation on overflow and divide by zero
 
@@ -2738,7 +2738,7 @@
 	not been able to get a constant upper bound from TYPE_SIZE_UNIT.
 
 2006-06-20  James A. Morrison  <phython@gcc.gnu.org>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/18692
 	* Make-lang.in: Add check-gnat to lang_checks.  Rename existing
@@ -2746,7 +2746,7 @@
 
 2006-06-17  Karl Berry  <karl@gnu.org>
 
-        * gnat-style.texi (@dircategory): Use "Software development"
+	* gnat-style.texi (@dircategory): Use "Software development"
 	instead of "Programming", following the Free Software Directory.
 
 2006-06-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
@@ -2756,9 +2756,9 @@
 
 2006-06-06  Laurent GUERBY  <laurent@guerby.net>
 
-        PR ada/27769
-        mlib-utl.adb: Use Program_Name.
-	
+	PR ada/27769
+	mlib-utl.adb: Use Program_Name.
+
 2006-05-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	* decl.c, env.c, gigi.h, init.c, initialize.c, raise-gcc.c,
@@ -2803,7 +2803,7 @@
 	* utils.c (create_var_decl): Use have_global_bss_p when deciding
 	whether to make the decl common.
 
-2006-02-20 Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
+2006-02-20  Rafael Ávila de Espíndola <rafael.espindola@gmail.com>
 
 	* Make-lang.in (Ada): Remove.
 	(.PHONY): Remove Ada
@@ -3303,9 +3303,9 @@
 	Add exception reason code PE_Implicit_Return
 	Add new exception reason code (Null Exception_Id)
 
-        * clean.adb (Initialize): Get the target parameters before checking
-        if target is OpenVMS. Move the OpenVMS specific code here from package
-        body elaboration code.
+	* clean.adb (Initialize): Get the target parameters before checking
+	if target is OpenVMS. Move the OpenVMS specific code here from package
+	body elaboration code.
 
 2006-02-13  Thomas Quinot  <quinot@adacore.com>
 	    Vincent Celier  <celier@adacore.com>
@@ -4074,7 +4074,6 @@
 2006-02-13  Javier Miranda  <miranda@adacore.com>
 
 	PR ada/23973
-
 	* par-ch3.adb (P_Derived_Type_Def_Or_Private_Ext_Decl): Reorganize the
 	code to improve the error message reported when the program has
 	declarations of abstract interface types and it is not compiled with
@@ -4201,17 +4200,17 @@
 	the rules of 3.10.2(32/2).
 	Diagnose use of current instance with an illegal attribute.
 
-        * sem_util.ads, sem_util.adb (Enclosing_Generic_Body): Change formal
-        to a Node_Id.
-        (Enclosing_Generic_Unit): New function to return a node's innermost
-        enclosing generic declaration node.
-        (Compile_Time_Constraint_Error): Remove '!' in warning messages.
-        (Type_Access_Level): The accessibility level of anonymous acccess types
-        associated with discriminants is that of the current instance of the
-        type, and that's deeper than the type itself (AARM 3.10.2 (12.3.21)).
-        (Compile_Time_Constraint_Error): Handle case of conditional expression.
-        (Kill_Current_Values_For_Entity): New function
-        (Enter_Name): Change formal type to Entity_Id
+	* sem_util.ads, sem_util.adb (Enclosing_Generic_Body): Change formal
+	to a Node_Id.
+	(Enclosing_Generic_Unit): New function to return a node's innermost
+	enclosing generic declaration node.
+	(Compile_Time_Constraint_Error): Remove '!' in warning messages.
+	(Type_Access_Level): The accessibility level of anonymous acccess types
+	associated with discriminants is that of the current instance of the
+	type, and that's deeper than the type itself (AARM 3.10.2 (12.3.21)).
+	(Compile_Time_Constraint_Error): Handle case of conditional expression.
+	(Kill_Current_Values_For_Entity): New function
+	(Enter_Name): Change formal type to Entity_Id
 
 2006-02-13  Hristian Kirtchev  <kirtchev@adacore.com>
 	    Ed Schonberg  <schonberg@adacore.com>
@@ -4641,7 +4640,7 @@
 	    Quentin Ochem  <ochem@adacore.com>
 	    Florian Villoing  <villoing@adacore.com>
 
-        * a-taster.ads, a-taster.adb: New files.
+	* a-taster.ads, a-taster.adb: New files.
 
 	* a-elchha.adb (Last_Chance_Handler): Change the task termination soft
 	link to the version that does nothing. This way the task termination
@@ -4849,7 +4848,7 @@
 	dealing with dispatching selects and abort, 'Callable, 'Terminated only
 	for concurrent types.
 
-        * exp_sel.ads, exp_sel.adb: New files.
+	* exp_sel.ads, exp_sel.adb: New files.
 
 	* exp_ch9.adb (Build_Protected_Entry, Expand_N_Protected_Body,
 	Expand_N_Protected_Type_Declaration, Make_Initialize_Protection): Handle
@@ -5216,7 +5215,7 @@
 2005-12-09  Robert Dewar  <dewar@adacore.com>
 
 	* i-c.adb, i-cexten.ads, i-cobol.adb, i-cobol.ads, i-cpoint.ads,
-        i-cpp.adb, i-cpp.ads, i-cstrea.ads, i-cstrin.adb, i-cstrin.ads,
+	i-cpp.adb, i-cpp.ads, i-cstrea.ads, i-cstrin.adb, i-cstrin.ads,
 	inline.adb, interfac.ads, i-os2err.ads, i-os2lib.ads, i-os2syn.ads,
 	i-os2thr.ads, itypes.adb, itypes.adb, itypes.ads, krunch.ads,
 	krunch.adb, lib.adb, lib.ads, lib-list.adb, lib-load.adb,
@@ -5276,7 +5275,7 @@
 
 2005-12-05  Paolo Bonzini  <bonzini@gnu.org>
 
-        * Makefile.in (gnatlib): Fix regex, using \. instead of . when
+	* Makefile.in (gnatlib): Fix regex, using \. instead of . when
 	a period is meant.
 
 2005-12-02  Richard Guenther  <rguenther@suse.de>
@@ -5290,7 +5289,7 @@
 
 2005-11-23  Laurent GUERBY  <laurent@guerby.net>
 
-        * mlib-prj.adb (Build_Library): Initialize Delete.
+	* mlib-prj.adb (Build_Library): Initialize Delete.
 
 2005-11-21  Joel Sherrill <joel.sherrill@oarcorp.com>
 
@@ -5308,8 +5307,8 @@
 
 2005-11-18  Laurent GUERBY  <laurent@guerby.net>
 
-        PR ada/24857
-        * Makefile.in: Use s-auxdec-empty for RTEMS.
+	PR ada/24857
+	* Makefile.in: Use s-auxdec-empty for RTEMS.
 
 2005-11-17  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
@@ -5323,15 +5322,15 @@
 
 	PR ada/24857
 	* s-auxdec-empty.ads, s-auxdec-empty.adb: New files.
-	
+
 2005-11-16  Richard Guenther  <rguenther@suse.de>
 
 	* Makefile.in: Add EH_MECHANISM=-gcc to s390(x) linux.
 
 2005-11-16  Joel Sherrill <joel.sherrill@oarcorp.com>
 
-        PR ada/24855
-        * raise-gcc.c: Add missing stdarg.h include.
+	PR ada/24855
+	* raise-gcc.c: Add missing stdarg.h include.
  
 2005-11-16  Richard Guenther  <rguenther@suse.de>
 
@@ -5399,7 +5398,6 @@
 	    Ed Schonberg  <schonberg@adacore.com>
 
 	PR ada/18434
-
 	* types.ads: Include All_Checks in Suppress_Array
 
 	* checks.adb (Check_Needed): Remove kludge for a/=b rewritten as
@@ -5522,7 +5520,7 @@
 	(Save_Occurrence_And_Private): Move GCC EH related code to
 	a-exexpr-gcc.adb
 	(Raise_Current_Excep): Add new variable Id with pragma
-        volatile, to ensure that the variable lives on stack.
+	volatile, to ensure that the variable lives on stack.
 
 	* a-exexpr-gcc.adb, raise-gcc.c: New file.
 
@@ -6327,7 +6325,6 @@
 	    Javier Miranda  <miranda@adacore.com>
 
 	PR ada/15604
-
 	* sem_type.adb (Covers): In an inlined body, a composite type matches
 	a private type whose full view is a composite type.
 	(Interface_Present_In_Ancestor): Protect the frontend against
@@ -7634,9 +7631,9 @@
 	subprogram Complete_Subprograms_Derivation already does the
 	job associated with the second call.
 
-        * exp_strm.adb (Build_Elementary_Input_Call): Add an explicit
-        conversion to the full view when generating an operation for a
-        discriminant whose type may currently be private.
+	* exp_strm.adb (Build_Elementary_Input_Call): Add an explicit
+	conversion to the full view when generating an operation for a
+	discriminant whose type may currently be private.
 
 2005-09-01  Ed Schonberg  <schonberg@adacore.com>
 	    Javier Miranda  <miranda@adacore.com>
@@ -8021,7 +8018,6 @@
 2005-07-07  Olivier Hainque  <hainque@adacore.com>
 
 	PR ada/22301
-
 	* raise.c: Only include unwind.h if IN_RTS, and provide dummy type
 	definitions for the Unwind wrappers in the compiler case.
 
@@ -8133,10 +8129,10 @@
 	N_Object_Declaration, only perform the checks if the Object_Definition
 	is not an Access_Definition.
 
-        * sem_ch3.adb (Access_Subprogram_Declaration): Add test for the case
-        where the parent of an the access definition is an N_Object_Declaration
-        when determining the Associated_Node_For_Itype and scope of an
-        anonymous access-to-subprogram type.
+	* sem_ch3.adb (Access_Subprogram_Declaration): Add test for the case
+	where the parent of an the access definition is an N_Object_Declaration
+	when determining the Associated_Node_For_Itype and scope of an
+	anonymous access-to-subprogram type.
 
 	* exp_ch6.adb (Expand_N_Subprogram_Declaration): Set the
 	Corresponding_Spec on the body created for a null procedure. Add ???
@@ -8319,7 +8315,6 @@
 2005-07-04  Robert Dewar  <dewar@adacore.com>
 
 	PR ada/22039
-
 	* s-sopco3.ads, s-sopco4.ads, s-sopco5.ads: Minor documentation fix
 
 2005-07-04  Matthew Gingell  <gingell@adacore.com>
@@ -8371,19 +8366,19 @@
 
 2005-07-04  Sergey Rybin  <rybin@adacore.com>
 
-        * gnat_ugn.texi: Add description of --eol gnatpp option
+	* gnat_ugn.texi: Add description of --eol gnatpp option
 
 2005-07-04  Eric Botcazou  <ebotcazou@adacore.com>
 	    Thomas Quinot  <quinot@adacore.com>
 
-        * gnat_rm.texi: Add a note that pragma Unreferenced is not appropriate
+	* gnat_rm.texi: Add a note that pragma Unreferenced is not appropriate
 	if the user wants all calls of a subprogram to be flagged,
 	independently of whether they are made from within the same unit or
 	another unit.
-        Mention restriction for pragma Linker_Alias on some platforms.
-        Document pragma Linker_Constructor and Linker_Destructor.
-        Rewrite documentation of Weak_External, Linker_Section and
-        Linker_Alias pragmas.
+	Mention restriction for pragma Linker_Alias on some platforms.
+	Document pragma Linker_Constructor and Linker_Destructor.
+	Rewrite documentation of Weak_External, Linker_Section and
+	Linker_Alias pragmas.
 
 2005-07-04  Arnaud Charlet  <charlet@adacore.com>
 
@@ -9350,8 +9345,8 @@
 	s-valwch.ads, s-widwch.adb, s-widwch.ads, s-wwdcha.adb, s-wwdwch.adb:
 	Rewrite to correspond to new wide character names in AI-395
 
-        * par-ch12.adb (P_Formal_Subprogram_Declaration): Recognize null
-        default procedures.
+	* par-ch12.adb (P_Formal_Subprogram_Declaration): Recognize null
+	default procedures.
 
 2005-06-14  Ed Schonberg  <schonberg@adacore.com>
 	    Robert Dewar  <dewar@adacore.com>
@@ -9440,7 +9435,6 @@
 2005-06-14  Thomas Quinot  <quinot@adacore.com>
 
 	PR ada/6717
-
 	* g-socket.ads, g-socket.adb (Inet_Addr): Special case the all-ones
 	broadcast address.
 	(Create_Selector): Bind listening socket used to create the signalling
@@ -9512,15 +9506,15 @@
 	For objects and parameters of a generic private type, retain the '*'
 	indicator to distinguish such an entity from its type.
 
-        * ali.ads (Xref_Entity_Record): New fields Iref_File_Num and Iref_Line,
-        to store information about instantiated entities.
+	* ali.ads (Xref_Entity_Record): New fields Iref_File_Num and Iref_Line,
+	to store information about instantiated entities.
 
-        * ali.adb (Scan_ALI): Add support for parsing the reference to the
-        generic parent
+	* ali.adb (Scan_ALI): Add support for parsing the reference to the
+	generic parent
 
-        * xref_lib.adb (Skip_To_Matching_Closing_Bracket): New subprogram
-        (Parse_Identifier_Info, Parse_Token): Add support for the generic parent
-        information.
+	* xref_lib.adb (Skip_To_Matching_Closing_Bracket): New subprogram
+	(Parse_Identifier_Info, Parse_Token): Add support for the generic parent
+	information.
 
 2005-06-10  Doug Rupp  <rupp@adacore.com>
 	    Arnaud Charlet  <charlet@adacore.com>
@@ -9583,7 +9577,6 @@
 2005-06-14  Robert Dewar  <dewar@adacore.com>
 
 	PR ada/15613
-
 	* par-ch2.adb (Scan_Pragma_Argument): New procedure
 	(P_Pragma): Implement RM 2.8(4) check for no pos args after named args
 
@@ -9629,11 +9622,11 @@
 	characters are now considered graphic characters and hence yield false
 	in this call.
 
-        * nmake.adt: Modify header so that xnmake does not generate output
-        files with multiple blank lines.
+	* nmake.adt: Modify header so that xnmake does not generate output
+	files with multiple blank lines.
 
-        * treeprs.adt: Remove a blank line so that output from xtreeprs does
-        not have an extra blank line
+	* treeprs.adt: Remove a blank line so that output from xtreeprs does
+	not have an extra blank line
 
 2005-06-14  Gary Dismukes  <dismukes@adacore.com>
 
@@ -9665,7 +9658,6 @@
 	    Ed Schonberg  <schonberg@adacore.com>
 
 	PR ada/10671
-
 	* sem_prag.adb: Implement pragma Persistent_BSS
 	Remove obsolete pragma Persistent_Data, Persistent_Object
 	Set Ada_Version_Explicit, for implementation of AI-362
@@ -9730,8 +9722,8 @@
 	* nmake.adt: Modify header so that xnmake does not generate output
 	files with multiple blank lines.
 
-        * treeprs.adt: Remove a blank line so that output from xtreeprs does
-        not have an extra blank line
+	* treeprs.adt: Remove a blank line so that output from xtreeprs does
+	not have an extra blank line
 
 2005-06-14  Sergey Rybin  <rybin@adacore.com>
 
@@ -9755,7 +9747,7 @@
 	Add UNNECESSARY_BLANK_LINES for -gnatyu
 	Add qualifiers /ALL_PROJECTS (-U) for GNAT PRETTY and GNAT METRIC
 
-        * ug_words: Add entry for -gnaty/Y [NO]ADA_2005_COMPATIBILITY
+	* ug_words: Add entry for -gnaty/Y [NO]ADA_2005_COMPATIBILITY
 
 2005-06-14  Vincent Celier  <celier@adacore.com>
 
@@ -9856,7 +9848,7 @@
 	object directories of project files before directories in ADA_*_PATH
 	environment variables.
 
-        * g-trasym.ads: Document that IRIX is supported
+	* g-trasym.ads: Document that IRIX is supported
 
 2005-06-10  Arnaud Charlet  <charlet@adacore.com>
 
@@ -9951,9 +9943,9 @@
 
 2005-04-16  Laurent GUERBY  <laurent@guerby.net>
 
-        PR ada/18847
-        * a-nudira.adb (Value): Check for valid string.
-        * a-nuflra.adb (Value): Likewise.
+	PR ada/18847
+	* a-nudira.adb (Value): Check for valid string.
+	* a-nuflra.adb (Value): Likewise.
 
 2005-04-11  Richard Sandiford  <rsandifo@redhat.com>
 
@@ -10126,7 +10118,6 @@
 	Generic_Dispatching_Constructor.
 
 	PR ada/20300
-
 	* sem_ch8.adb (Find_Direct_Name): Go to root type for check of
 	character type cases.
 	(Analyze_Subprogram_Renaming): Add special handling for
@@ -10426,13 +10417,12 @@
 
 	* Makefile.in: (ia64-hp-*vms*): Use s-crtl-vms64.ads.
 
-        * 5xcrtl.ads: Renamed to...
-        * s-crtl-vms64.ads: ...this new file
+	* 5xcrtl.ads: Renamed to...
+	* s-crtl-vms64.ads: ...this new file
 
 2005-03-17  Robert Dewar  <dewar@adacore.com>
 
 	PR ada/19519
-
 	* namet.adb (Copy_One_Character): Set proper wide character encoding
 	for upper half character if we have upper half encoding.
 
@@ -10808,7 +10798,6 @@
 2005-03-15  Robert Dewar  <dewar@adacore.com>
 
 	PR ada/13470
-
 	* a-stunau.ads, a-stunau.adb:
 	Change interface to allow efficient (and correct) implementation
 	The previous changes to allow extra space in unbounded strings had
@@ -10971,7 +10960,6 @@
 	PR ada/19408
 	PR ada/19140
 	PR ada/20255
-
 	* decl.c (gnat_to_gnu_field): Reject aliased components with a
 	representation clause that prescribes a size not equal to the rounded
 	size of their types.
@@ -11130,7 +11118,6 @@
 
 	PR ada/20226
 	PR ada/20344
-
 	* init.c (__gnat_initialize): Do not call __gnat_install_SEH_handler()
 	when IN_RTS. This is to work around a bootstrap path problem.
 
@@ -11841,8 +11828,7 @@
 2005-02-09  Eric Botcazou  <ebotcazou@adacore.com>
 	    Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
-	Fix for c330001 - PR ada/19386
-
+	PR ada/19386
 	* decl.c:
 	(gnat_to_gnu_field): Do not necessarily invoke make_packable_type
 	on the field if Pragma Component_Alignment (Storage_Unit).
@@ -11942,7 +11928,6 @@
 2005-02-09  Arnaud Charlet  <charlet@adacore.com>
 
 	PR ada/16592
-
 	* Makefile.in: Link all gnat tools with -static-libgcc, since
 	-shared-libgcc is now used by default on some systems (e.g. linux with
 	recent binutils).
@@ -13732,7 +13717,6 @@
 2004-10-04  Bernard Banner  <banner@gnat.com>
 
 	PR ada/13897
-
 	* Makefile.in: Add section for powerpc linux
 	Add variant i-vxwork-x86.ads
 
@@ -14008,7 +13992,6 @@
 2004-09-23  Robert Dewar  <dewar@gnat.com>
 
 	PR ada/17540
-
 	* sem_prag.adb (Process_Import_Or_Interface): Don't set Is_Public here,
 	instead do this at freeze time (we won't do it if there is an address
 	clause).
@@ -14053,7 +14036,6 @@
 2004-09-20  Robert Dewar  <dewar@gnat.com>
 
 	PR ada/17540
-
 	* freeze.adb (Check_Address_Clause): Reset Is_Imported and Is_Public
 	if an address clause is present, since that means that the Import
 	should be ignored.
@@ -14732,7 +14714,6 @@
 2004-08-09  Ed Schonberg  <schonberg@gnat.com>
 
 	PR ada/15408
-
 	* sem_ch7.adb (Install_Private_Declarations): In the body of the
 	package or of a child, private entities are both immediately_visible
 	and not hidden.
@@ -16270,7 +16251,6 @@
 2004-06-11  Hristian Kirtchev  <kirtchev@gnat.com>
 
 	PR ada/15587
-
 	* einfo.ads: Minor comment updates for Has_Completion and
 	E_Constant list of flags.
 
@@ -16353,7 +16333,6 @@
 2004-06-11  Ed Schonberg  <schonberg@gnat.com>
 
 	PR ada/15403
-
 	* sem_ch12.adb (Save_References): If operator node has been folded to
 	enumeration literal, associated_node must be discarded.
 
@@ -16365,7 +16344,6 @@
 2004-06-08  Arnaud Charlet  <charlet@act-europe.fr>
 
 	PR ada/15568
-
 	* Makefile.in: Remove target specific SO_OPT on IRIX
 
 2004-06-07  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
@@ -17580,7 +17558,6 @@
 2004-05-03  Olivier Hainque  <hainque@act-europe.fr>
 
 	PR ada/15152
-
 	* exp_ch2.adb (Expand_Current_Value): Leave Machine_Code Asm arguments
 	alone. Replacing object references by literals is inappropriate in a
 	so low level context.
@@ -19911,7 +19888,8 @@
 2004-02-10  Arnaud Charlet  <charlet@act-europe.fr>,
 	    Nathanael Nerode  <neroden@gcc.gnu.org>
 
-	PR ada/6637, PR ada/5911
+	PR ada/6637
+	PR ada/5911
 	Merge with libada-branch:
 	* config-lang.in: Build libada only when ada is built.
 
@@ -21043,7 +21021,6 @@
 	 Fixes ACATS regressions.
 
 	PR ada/13353
-
 	* sem_prag.adb (Back_End_Cannot_Inline): A renaming_as_body can always
 	be inlined.
 
@@ -21280,7 +21257,6 @@
 2003-12-03  Thomas Quinot  <quinot@act-europe.fr>
 
 	PR ada/11724
-
 	* adaint.h, adaint.c, g-os_lib.ads:
 	Do not assume that the offset argument to lseek(2) is a 32 bit integer,
 	on some platforms (including FreeBSD), it is a 64 bit value.
@@ -22304,7 +22280,6 @@
 2003-11-04  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	Part of PR ada/12806
-
 	* ada-tree.h (TYPE_DIGITS_VALUE, SET_TYPE_DIGITS_VALUE): Save count as
 	tree, not integer.
 
@@ -22618,7 +22593,7 @@
 
 	* Makefile.generic: Add missing substitution on object_deps handling.
 
-	PR ada/5909:
+	PR ada/5909
 	* Make-lang.in (check-ada): Enable ACATS test suite.
 
 2003-10-27  Robert Dewar  <dewar@gnat.com>
@@ -22687,13 +22662,13 @@
 
 2003-10-24  Pascal Obry  <obry@gnat.com>
 
+	PR ada/12014
 	* adadecode.c (ostrcpy): New function.
 	(__gnat_decode): Use ostrcpy of strcpy.
 	(has_prefix): Set first parameter a const.
 	(has_suffix): Set first parameter a const.
 	Update copyright notice. Fix source name in header.
 	Removes a trailing space.
-	PR ada/12014.
 
 2003-10-24  Jose Ruiz  <ruiz@act-europe.fr>
 
@@ -22768,13 +22743,13 @@
 
 2003-10-23  Thomas Quinot  <quinot@act-europe.fr>
 
-	PR ada/11978:
+	PR ada/11978
 	* exp_ch13.adb (Expand_N_Freeze_Entity): Do not consider inherited
 	External_Tag attribute definition clauses.
 
 2003-10-23  Ed Schonberg  <schonberg@gnat.com>
 
-	PR ada/7613:
+	PR ada/7613
 	* exp_dbug.adb (Debug_Renaming_Declaration): For the renaming of a
 	child unit, generate a fully qualified name to avoid spurious errors
 	when the context contains renamings of different child units with
@@ -22837,7 +22812,8 @@
 
 2003-10-22  Arnaud Charlet  <charlet@act-europe.fr>
 
-	* Makefile.in: Disable build of gnatpsta. PR ada/10110.
+	PR ada/10110
+	* Makefile.in: Disable build of gnatpsta.
 	* cstreams.c (__gnat_full_name): Minor improvements and clean up
 	of previous change.
 
@@ -23372,7 +23348,7 @@
 
 2003-06-04  Olivier Hainque  <hainque@act-europe.fr>
 
-	PR ada/9953:
+	PR ada/9953
 	* 5hsystem.ads: Remove pragma Linker_Option for pthreads library,
 	and turn ZCX_By_Default back to False since the underlying support
 	is not quite there yet.
@@ -23825,7 +23801,7 @@
 
 2003-02-18  Ben Elliston  <bje@redhat.com>
 
-	Part of fix for PR ada/9406
+	Part of PR ada/9406
 	* gnat_ug.texi (Binder output file): Grammar fix.
 
 2003-02-18  Ben Elliston  <bje@redhat.com>
@@ -23934,9 +23910,10 @@
 
 2002-12-14   Geert Bosch <bosch@gnat.com>
 
+	PR ada/5690
 	* sem_ch6.adb (Analyze_Subprogram_Body): Recognize additional
 	case of a body created for a Renaming_As_Body, on which
-	conformance checks are not performed. Fixes PR ada/5690.
+	conformance checks are not performed.
 
 2002-11-30  Zack Weinberg  <zack@codesourcery.com>
 
@@ -23950,7 +23927,9 @@
 	solution to buffer overflow bug on GNU/Linux.
 
 2002-11-14  Nathanael Nerode  <neroden@gcc.gnu.org>
-	Closes PR ada/5856 and PR ada/6919 !
+
+	PR ada/5856
+	PR ada/6919
 	* bindgen.adb: Remove all references to Public_Version.
 	* comperr.adb: Remove all references to Public_Version and
 	GNATPRO_Version; correct bug reporting instructions.
@@ -23959,6 +23938,7 @@
 	GNATPRO version.
 
 2002-11-13  Nathanael Nerode  <neroden@gcc.gnu.org>
+
 	PR ada/6919
 	* adaint.c (__gnat_tmp_name): Remove buffer overflow bug on
 	GNU/Linux.
@@ -23967,21 +23947,25 @@
 	* config-lang.in: Remove diff_excludes.
 
 2002-11-05  Graham Stott  <graham.stott@btinternet.com>
+
 	PR ada/8358
 	* trans.c (gnu_pending_elaboration_lists): New GC root.
 	(build_unit_elab): Use..
 
 2002-10-30   Geert Bosch <bosch@gnat.com>
+
 	PR ada/6558
 	* misc.c : Include optabs.h
 
 	* Make-lang.in (misc.o): Add dependency on optabs.h
 
 2002-10-29   Geert Bosch <bosch@gnat.com>
+
 	PR ada/6558
 	* Make-lang.in (gnatbind): Depend on CONFIG_H
 
 2002-10-29  Geert bosch  <bosch@gnat.com>
+
 	PR ada/6558
 	* misc.c: Unrevert misc.c (1.13)
 
@@ -23991,6 +23975,7 @@
 	maintainership comments.
 
 2002-09-25  Nathanael Nerode  <neroden@gcc.gnu.org>
+
 	PR ada/5904
 	* 5ataprop.adb 5atpopsp.adb 5bosinte.adb 5ftaprop.adb
 	5gtaprop.adb 5htaprop.adb 5rosinte.ads 5staprop.adb
