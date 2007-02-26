@@ -64,8 +64,7 @@
 
 #include <bits/c++config.h>
 #include <cstddef>
-#include <iterator>
-#include <bits/stl_function.h>
+#include <bits/stl_iterator_base_types.h>
 #include <bits/stl_numeric.h>
 
 #endif /* _GLIBCXX_NUMERIC */

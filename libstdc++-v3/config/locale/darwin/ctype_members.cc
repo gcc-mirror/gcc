@@ -1,6 +1,7 @@
 // std::ctype implementation details, GNU version -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,16 +41,19 @@ namespace std
 {
   // NB: The other ctype<char> specializations are in src/locale.cc and
   // various /config/os/* files.
-  template<>
-    ctype_byname<char>::ctype_byname(const char* __s, size_t __refs)
-    : ctype<char>(0, false, __refs) 
-    { 		
-      if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
-	{
-	  this->_S_destroy_c_locale(this->_M_c_locale_ctype);
-	  this->_S_create_c_locale(this->_M_c_locale_ctype, __s); 
-	}
-    }
+
+  ctype_byname<char>::ctype_byname(const char* __s, size_t __refs)
+  : ctype<char>(0, false, __refs) 
+  { 		
+    if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
+      {
+	this->_S_destroy_c_locale(this->_M_c_locale_ctype);
+	this->_S_create_c_locale(this->_M_c_locale_ctype, __s); 
+      }
+  }
+
+  ctype_byname<char>::~ctype_byname()
+  { }
 
 #ifdef _GLIBCXX_USE_WCHAR_T  
   ctype<wchar_t>::__wmask_type
