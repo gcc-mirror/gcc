@@ -1,3 +1,11 @@
+2007-02-26  Thomas Koenig  <Thomas.Koenig@online.de>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30865
+	* trans-intrinsic.c (gfc_conv_intrinsic_size):
+	If dim is an optional argument, check for its
+	presence and call size0 or size1, respectively.
+
 2007-02-23  Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/30660
