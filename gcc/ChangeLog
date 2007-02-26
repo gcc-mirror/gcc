@@ -1,5 +1,20 @@
 2007-02-26  Mark Mitchell  <mark@codesourcery.com>
 
+	* c-decl.c (static_ctors): Move to c-common.c.
+	(static_dtors): Likewise.
+	(finish_function): Use c_record_cdtor_fn.
+	(build_cdtor): Move to c-common.c.
+	(c_write_global_declarations): Use c_build_cdtor_fns.
+	* c-common.h (static_ctors): Declare.
+	(static_dtors): Likewise.
+	(c_record_cdtor_fn): Likewise.
+	(c_build_cdtor_fns): Likewise.
+	* c-common.c (static_ctors): New variable.
+	(static_dtors): Likewise.
+	(c_record_cdtor_fn): New function.
+	(build_cdtor): Move from c-decl.c
+	(c_build_cdtor_fns): New function.
+
 	* output.h (assemble_addr_to_section): Declare.
 	(get_cdtor_priority_section): Likewise.
 	* varasm.c (assemble_addr_to_section): New function.

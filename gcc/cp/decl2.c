@@ -3289,6 +3289,8 @@ cp_write_global_declarations (void)
   if (priority_info_map)
     splay_tree_delete (priority_info_map);
 
+  c_build_cdtor_fns ();
+
   /* Generate any missing aliases.  */
   maybe_apply_pending_pragma_weaks ();
 

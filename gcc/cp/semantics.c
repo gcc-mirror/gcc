@@ -3159,6 +3159,10 @@ expand_or_defer_fn (tree fn)
       return;
     }
 
+  /* Keep track of functions declared with the "constructor" and
+     "destructor" attribute.  */
+  c_record_cdtor_fn (fn);
+
   /* We make a decision about linkage for these functions at the end
      of the compilation.  Until that point, we do not want the back
      end to output them -- but we do want it to see the bodies of
