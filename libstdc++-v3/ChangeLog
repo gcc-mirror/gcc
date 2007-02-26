@@ -1,3 +1,9 @@
+2007-02-26  DJ Delorie  <dj@redhat.com>
+
+	* crossconfig.m4 (djgpp): Pre-detect djgpp-specific results, to
+	avoid needing to link during cross compiling.
+	* configure: Regenerated.
+
 2007-02-26  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/28080 (partial)
