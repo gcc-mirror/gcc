@@ -1812,7 +1812,10 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 	      return;
 	    }
 	  if (for_each_rtx (expr, altered_reg_used, altered))
-	    return;
+	    {
+	      FREE_REG_SET (altered);
+	      return;
+	    }
 	}
 
       if (!single_pred_p (e->src)
