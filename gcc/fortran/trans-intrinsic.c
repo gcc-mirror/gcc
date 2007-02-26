@@ -2681,9 +2681,10 @@ static void
 gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
 {
   gfc_actual_arglist *actual;
-  tree args;
+  tree arg1;
   tree type;
-  tree fndecl;
+  tree fncall0;
+  tree fncall1;
   gfc_se argse;
   gfc_ss *ss;
 
@@ -2697,21 +2698,45 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
   gfc_conv_expr_descriptor (&argse, actual->expr, ss);
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);
-  args = gfc_chainon_list (NULL_TREE, argse.expr);
+  arg1 = gfc_evaluate_now (argse.expr, &se->pre);
+
+  /* Build the call to size0.  */
+  fncall0 = build_call_expr (gfor_fndecl_size0, 1, arg1);
 
   actual = actual->next;
+
   if (actual->expr)
     {
       gfc_init_se (&argse, NULL);
-      gfc_conv_expr_type (&argse, actual->expr, gfc_array_index_type);
+      gfc_conv_expr_type (&argse, actual->expr,
+			  gfc_array_index_type);
       gfc_add_block_to_block (&se->pre, &argse.pre);
-      args = gfc_chainon_list (args, argse.expr);
-      fndecl = gfor_fndecl_size1;
+
+      /* Build the call to size1.  */
+      fncall1 = build_call_expr (gfor_fndecl_size1, 2,
+				 arg1, argse.expr);
+
+      /* Unusually, for an intrinsic, size does not exclude
+	 an optional arg2, so we must test for it.  */  
+      if (actual->expr->expr_type == EXPR_VARIABLE
+	    && actual->expr->symtree->n.sym->attr.dummy
+	    && actual->expr->symtree->n.sym->attr.optional)
+	{
+	  tree tmp;
+	  tmp = gfc_build_addr_expr (pvoid_type_node,
+				     argse.expr);
+	  tmp = build2 (NE_EXPR, boolean_type_node, tmp, 
+			build_int_cst (pvoid_type_node, 0));
+	  tmp = gfc_evaluate_now (tmp, &se->pre);
+	  se->expr = build3 (COND_EXPR, pvoid_type_node,
+			     tmp, fncall1, fncall0);
+	}
+      else
+	se->expr = fncall1;
     }
   else
-    fndecl = gfor_fndecl_size0;
+    se->expr = fncall0;
 
-  se->expr = build_function_call_expr (fndecl, args);
   type = gfc_typenode_for_spec (&expr->ts);
   se->expr = convert (type, se->expr);
 }
