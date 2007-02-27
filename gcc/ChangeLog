@@ -1,3 +1,7 @@
+2007-02-27  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.in (TEXI_GCCINSTALL_FILES): Add gcc-common.texi.
+
 2007-02-27  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (last_basic_block_p): Remove.
