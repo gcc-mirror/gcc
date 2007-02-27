@@ -27,6 +27,9 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.  */
 
+/* Don't do anything if we are compiling for a kext multilib. */
+#ifdef __PIC__
+
 /* It is incorrect to include config.h here, because this file is being
    compiled for the target, and hence definitions concerning only the host
    do not apply.  */
@@ -530,3 +533,5 @@ atexit (atexit_callback func)
   r.has_arg = 0;
   return atexit_common (&r, &__dso_handle);
 }
+
+#endif /* __PIC__ */

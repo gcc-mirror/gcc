@@ -1,3 +1,8 @@
+2007-02-27  Mike Stump  <mrs@apple.com>
+
+	* config/darwin-crt3.c: Avoid compilation when compiling for a
+	kext multilib.
+
 2007-02-27  Joseph Myers  <joseph@codesourcery.com>
 
 	* Makefile.in (PREPROCESSOR_DEFINES, test-protoize-simple): Define
