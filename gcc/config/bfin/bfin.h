@@ -411,6 +411,14 @@ enum reg_class
   CCREGS,
   EVEN_DREGS,
   ODD_DREGS,
+  D0REGS,
+  D1REGS,
+  D2REGS,
+  D3REGS,
+  D4REGS,
+  D5REGS,
+  D6REGS,
+  D7REGS,
   DREGS,
   FDPIC_REGS,
   FDPIC_FPTR_REGS,
@@ -447,6 +455,14 @@ enum reg_class
    "CCREGS",		\
    "EVEN_DREGS",	\
    "ODD_DREGS",		\
+   "D0REGS",		\
+   "D1REGS",		\
+   "D2REGS",		\
+   "D3REGS",		\
+   "D4REGS",		\
+   "D5REGS",		\
+   "D6REGS",		\
+   "D7REGS",		\
    "DREGS",		\
    "FDPIC_REGS",	\
    "FDPIC_FPTR_REGS",	\
@@ -491,6 +507,14 @@ enum reg_class
     { 0x00000000,    0x4 },		/* CCREGS */  \
     { 0x00000055,    0 },		/* EVEN_DREGS */   \
     { 0x000000aa,    0 },		/* ODD_DREGS */   \
+    { 0x00000001,    0 },		/* D0REGS */   \
+    { 0x00000002,    0 },		/* D1REGS */   \
+    { 0x00000004,    0 },		/* D2REGS */   \
+    { 0x00000008,    0 },		/* D3REGS */   \
+    { 0x00000010,    0 },		/* D4REGS */   \
+    { 0x00000020,    0 },		/* D5REGS */   \
+    { 0x00000040,    0 },		/* D6REGS */   \
+    { 0x00000080,    0 },		/* D7REGS */   \
     { 0x000000ff,    0 },		/* DREGS */   \
     { 0x00000800,    0x000 },		/* FDPIC_REGS */   \
     { 0x00000200,    0x000 },		/* FDPIC_FPTR_REGS */   \
@@ -537,7 +561,7 @@ enum reg_class
 
 /* Get reg_class from a letter such as appears in the machine description.  */
 
-#define REG_CLASS_FROM_LETTER(LETTER)	\
+#define REG_CLASS_FROM_CONSTRAINT(LETTER, STR)	\
   ((LETTER) == 'a' ? PREGS :            \
    (LETTER) == 'Z' ? FDPIC_REGS :	\
    (LETTER) == 'Y' ? FDPIC_FPTR_REGS :	\
@@ -559,6 +583,16 @@ enum reg_class
    (LETTER) == 'x' ? MOST_REGS :	\
    (LETTER) == 'y' ? PROLOGUE_REGS :	\
    (LETTER) == 'w' ? NON_A_CC_REGS :	\
+   (LETTER) == 'q' \
+    ? ((STR)[1] == '0' ? D0REGS \
+       : (STR)[1] == '1' ? D1REGS \
+       : (STR)[1] == '2' ? D2REGS \
+       : (STR)[1] == '3' ? D3REGS \
+       : (STR)[1] == '4' ? D4REGS \
+       : (STR)[1] == '5' ? D5REGS \
+       : (STR)[1] == '6' ? D6REGS \
+       : (STR)[1] == '7' ? D7REGS \
+       : NO_REGS) : \
    NO_REGS)
 
 /* The same information, inverted:
@@ -567,7 +601,14 @@ enum reg_class
    or could index an array.  */
 
 #define REGNO_REG_CLASS(REGNO) \
- ((REGNO) < REG_P0 ? DREGS				\
+((REGNO) == REG_R0 ? D0REGS				\
+ : (REGNO) == REG_R1 ? D1REGS				\
+ : (REGNO) == REG_R2 ? D2REGS				\
+ : (REGNO) == REG_R3 ? D3REGS				\
+ : (REGNO) == REG_R4 ? D4REGS				\
+ : (REGNO) == REG_R5 ? D5REGS				\
+ : (REGNO) == REG_R6 ? D6REGS				\
+ : (REGNO) == REG_R7 ? D7REGS				\
  : (REGNO) < REG_I0 ? PREGS				\
  : (REGNO) == REG_ARGP ? PREGS				\
  : (REGNO) >= REG_I0 && (REGNO) <= REG_I3 ? IREGS	\
@@ -590,6 +631,9 @@ enum reg_class
 #define CLASS_LIKELY_SPILLED_P(CLASS) \
     ((CLASS) == PREGS_CLOBBERED \
      || (CLASS) == PROLOGUE_REGS \
+     || (CLASS) == D0REGS \
+     || (CLASS) == D1REGS \
+     || (CLASS) == D2REGS \
      || (CLASS) == CCREGS)
 
 /* Do not allow to store a value in REG_CC for any mode */
@@ -1030,7 +1074,7 @@ do {					       \
 #define CONST_3UBIT_IMM_P(VALUE) ((VALUE) >= 0 && (VALUE) <= 7)
 
 #define CONSTRAINT_LEN(C, STR)			\
-    ((C) == 'P' || (C) == 'M' || (C) == 'N' ? 2	\
+    ((C) == 'P' || (C) == 'M' || (C) == 'N' || (C) == 'q' ? 2	\
      : (C) == 'K' ? 3				\
      : DEFAULT_CONSTRAINT_LEN ((C), (STR)))
 

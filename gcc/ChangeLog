@@ -15,6 +15,31 @@
 	(bfin_reorder_loops): New function.
 	(bfin_reorg_loops): Use these three new functions.
 
+	* config/bfin/bfin.h (enum reg_class, REG_CLASS_NAMES,
+	REG_CLASS_CONTENTS): Add D0REGS through D7REGS.
+	(CONSTRAINT_LEN): Add entry for 'q'.
+	(REG_CLASS_FROM_CONSTRAINT): Renamed from REG_CLASS_FROM_LETTER.
+	Add 'q' constraints.
+	(REGNO_REG_CLASS): For R0 through R7, return corresponding regclass.
+	(CLASS_LIKELY_SPILLED_P): True for R0, R1 and R2.
+
+	* config/bfin/bfin.md (add_with_carry): New pattern.
+	(s_or_u, su_optab, su_modifier): New code macros/attrs.
+	(<su_optab>hisi_ll, <su_optab>hisi_lh, <su_optab>hisi_hl,
+	<su_optab>hisi_hh): Renamed from mulhisi_xx patterns; macroized to
+	support unsigned multiplies too.  Removed incorrect commutativity from
+	operand 1 constraint where appropriate.
+	(usmulhisi_ull, usmulhisi_ulh, usmulhisi_uhl, usmulhisi_uhh): New
+	patterns.
+	(<su_optab>hisi_ll_lh, <su_optab>hisi_ll_hl, <su_optab>hisi_ll_hh,
+	<su_optab>hisi_lh_hl, <su_optab>hisi_lh_hh, <su_optab>hisi_hl_hh):
+	New patterns.
+	(usmulhisi_ll_lul, usmulhisi_ll_luh, usmulhisi_ll_hul,
+	usmulhisi_ll_huh, usmulhisi_lh_lul, usmulhisi_lh_luh, usmulhisi_lh_hul,
+	usmulhisi_lh_huh, usmulhisi_hl_lul, usmulhisi_hl_luh, usmulhisi_hl_hul,
+	usmulhisi_hl_huh, usmulhisi_hh_lul, usmulhisi_hh_luh, usmulhisi_hh_hul,
+	usmulhisi_hh_huh): New patterns.
+
 2007-02-27  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.in (TEXI_GCCINSTALL_FILES): Add gcc-common.texi.
