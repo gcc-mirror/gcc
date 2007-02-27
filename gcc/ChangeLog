@@ -1,3 +1,12 @@
+2007-02-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/30970
+	* config/i386/sse.md (*mov<mode>_internal, *movv4sf_internal,
+	*movv2df_internal): Enable pattern only for valid operand
+	combinations.
+	* config/i386/i386.c (ix86_modes_tieable_p): For SSE registers,
+	tie only 128bit modes. For MMX registers, tie only 64bit modes.
+
 2007-02-27  Mike Stump  <mrs@apple.com>
 
 	* config/darwin-crt3.c: Avoid compilation when compiling for a
