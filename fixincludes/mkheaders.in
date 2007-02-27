@@ -77,7 +77,7 @@ libexecsubdir=${libexecdir}/gcc/${target_noncanonical}/${version}
 
 itoolsdir=${libexecsubdir}/install-tools
 itoolsdatadir=${libsubdir}/install-tools
-incdir=${libsubdir}/include
+incdir=${libsubdir}/include-fixed
 
 . ${itoolsdatadir}/mkheaders.conf
 
