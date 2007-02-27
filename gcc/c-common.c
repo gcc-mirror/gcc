@@ -4697,6 +4697,15 @@ get_priority (tree args, bool is_destructor)
   if (!args)
     return DEFAULT_INIT_PRIORITY;
   
+  if (!SUPPORTS_INIT_PRIORITY)
+    {
+      if (is_destructor)
+	error ("destructor priorities are not supported");
+      else
+	error ("constructor priorities are not supported");
+      return DEFAULT_INIT_PRIORITY;
+    }
+
   arg = TREE_VALUE (args);
   if (!host_integerp (arg, /*pos=*/0)
       || !INTEGRAL_TYPE_P (TREE_TYPE (arg)))

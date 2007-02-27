@@ -1,3 +1,8 @@
+2007-02-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.c (get_priority): Add check for
+	SUPPORTS_INIT_PRIORITY.
+
 2007-02-27  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.md (doloop_end): FAIL if counter reg isn't SImode.

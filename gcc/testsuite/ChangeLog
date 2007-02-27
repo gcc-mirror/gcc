@@ -1,3 +1,8 @@
+2007-02-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_init_priority):
+	Remove Solaris special case.
+
 2007-02-26  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.target/powerpc/stabs-attrib-vect-darwin.c: Allow
@@ -35,7 +40,8 @@
 	* g++.dg/special/initp1.C: Likewise.
 	* g++.dg/special/ecos.exp: Remove code to detect availability of
 	constructor priorities.
-	* lib/target-support.exp (target_init_priority): New function.
+	* lib/target-supports.exp (check_effective_target_init_priority):
+	New function.
 
 2007-02-24  Jan Hubicka  <jh@suse.cz>
 
