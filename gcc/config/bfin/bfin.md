@@ -1640,10 +1640,12 @@
 	      (clobber (match_scratch:SI 5 ""))])]
   ""
 {
+  /* The loop optimizer doesn't check the predicates... */
+  if (GET_MODE (operands[0]) != SImode)
+    FAIL;
   /* Due to limitations in the hardware (an initial loop count of 0
      does not loop 2^32 times) we must avoid to generate a hardware
      loops when we cannot rule out this case.  */
-
   if (!flag_unsafe_loop_optimizations
       && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) >= 0xFFFFFFFF)
     FAIL;
