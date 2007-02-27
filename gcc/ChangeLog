@@ -1,5 +1,9 @@
 2007-02-26  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* Makefile.in (TEXI_GCCINSTALL_FILES): Add gcc-vers.texi dependency.
+
+2007-02-26  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* doc/include/gcc-common.texi (versionsubtitle): New macro.
 	* doc/cpp.texi: Standardize title page.
 	* doc/cppinternals.texi: Likewise.
