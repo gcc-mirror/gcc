@@ -89,12 +89,11 @@ man page gfdl(7).
 
 @titlepage
 @title GNU gcj
+@versionsubtitle
 @author Tom Tromey
 
 @page
 @vskip 0pt plus 1filll
-For the @value{which-gcj} Version*
-@sp 1
 Published by the Free Software Foundation @*
 51 Franklin Street, Fifth Floor@*
 Boston, MA 02110-1301, USA@*
