@@ -1477,6 +1477,37 @@
    %0 = %1 >>> %2%!"
   [(set_attr "type" "shft,dsp32")])
 
+(define_insn "rotl16"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(rotate:SI (match_operand:SI 1 "register_operand" "d")
+		   (const_int 16)))]
+  ""
+  "%0 = PACK (%h1, %d1)%!"
+  [(set_attr "type" "dsp32")])
+
+(define_expand "rotlsi3"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(rotate:SI (match_operand:SI 1 "register_operand" "")
+		   (match_operand:SI 2 "immediate_operand" "")))]
+  ""
+{
+  if (INTVAL (operands[2]) != 16)
+    FAIL;
+})
+
+(define_expand "rotrsi3"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(rotatert:SI (match_operand:SI 1 "register_operand" "")
+		     (match_operand:SI 2 "immediate_operand" "")))]
+  ""
+{
+  if (INTVAL (operands[2]) != 16)
+    FAIL;
+  emit_insn (gen_rotl16 (operands[0], operands[1]));
+  DONE;
+})
+
+
 (define_insn "ror_one"
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(ior:SI (lshiftrt:SI (match_operand:SI 1 "register_operand" "d") (const_int 1))
