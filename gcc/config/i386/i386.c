@@ -18783,15 +18783,17 @@ ix86_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
 
   /* If MODE2 is only appropriate for an SSE register, then tie with
      any other mode acceptable to SSE registers.  */
-  if (GET_MODE_SIZE (mode2) >= 8
+  if (GET_MODE_SIZE (mode2) == 16
       && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode2))
-    return ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode1);
+    return (GET_MODE_SIZE (mode1) == 16
+	    && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode1));
 
-  /* If MODE2 is appropriate for an MMX (or SSE) register, then tie
+  /* If MODE2 is appropriate for an MMX register, then tie
      with any other mode acceptable to MMX registers.  */
   if (GET_MODE_SIZE (mode2) == 8
       && ix86_hard_regno_mode_ok (FIRST_MMX_REG, mode2))
-    return ix86_hard_regno_mode_ok (FIRST_MMX_REG, mode1);
+    return (GET_MODE_SIZE (mode2) == 8
+	    && ix86_hard_regno_mode_ok (FIRST_MMX_REG, mode1));
 
   return false;
 }
