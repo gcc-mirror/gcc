@@ -8700,6 +8700,10 @@ combine_givs_p (struct induction *g1, struct induction *g2)
 {
   rtx comb, ret;
 
+  /* We cannot combine givs that are not always in sync.  */
+  if (!g1->always_executed || !g2->always_executed)
+    return NULL_RTX;
+
   /* With the introduction of ext dependent givs, we must care for modes.
      G2 must not use a wider mode than G1.  */
   if (GET_MODE_SIZE (g1->mode) < GET_MODE_SIZE (g2->mode))
@@ -8708,6 +8712,7 @@ combine_givs_p (struct induction *g1, struct induction *g2)
   ret = comb = express_from (g1, g2);
   if (comb == NULL_RTX)
     return NULL_RTX;
+
   if (g1->mode != g2->mode)
     ret = gen_lowpart (g2->mode, comb);
 
@@ -8718,9 +8723,7 @@ combine_givs_p (struct induction *g1, struct induction *g2)
      combination to be the other way round.  */
   if (comb == g1->dest_reg
       && (g1->giv_type == DEST_REG || g2->giv_type == DEST_ADDR))
-    {
-      return ret;
-    }
+    return ret;
 
   /* If G2 can be expressed as a function of G1 and that function is valid
      as an address and no more expensive than using a register for G2,

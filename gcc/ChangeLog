@@ -1,3 +1,9 @@
+2007-02-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/30931
+	* loop.c (combine_givs_p): Return false if either GIV is not
+	always executed.
+
 2007-02-21 Ira Rosen  <irar@il.ibm.com>
 
 	* Makefile.in (tree-ssa-alias.o): Depend on pointer-set.h.
