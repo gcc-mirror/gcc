@@ -4990,7 +4990,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
 	  null_cond = gfc_conv_descriptor_data_get (decl);
 	  null_cond = build2 (NE_EXPR, boolean_type_node, null_cond,
-			      build_int_cst (TREE_TYPE (tmp), 0));
+			      build_int_cst (TREE_TYPE (null_cond), 0));
 	}
       else
 	{
