@@ -1,3 +1,19 @@
+2007-02-27  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28080 (partial)
+	* include/std/bitset: Do not include <ios>, <iosfwd> is enough.
+	(operator>>(std::basic_istream<>&, bitset<>&)): Tweak, refer to
+	ios_base as a base of basic_istream.
+	* include/std/iomanip: Do not include <ios>, <iosfwd> + 
+	<bits/ios_base.h> is enough.
+	* include/std/iosfwd: Do not include <cctype> here...
+	* include/bits/locale_facets.h: ... do it here, when needed.
+	* include/bits/ostream.tcc: Clean up, do not include <locale> here...
+	* include/std/ostream: ... here instead.
+	* include/bits/istream.tcc: Likewise for <locale> and <ostream>...
+	* include/std/istream: ... here.
+	* include/bits/sstream.tcc: Do not include <sstream>.
+
 2007-02-27  Richard Guenther  <rguenther@suse.de>
 
 	* acinclude.m4: Adjust regular expression for ld version extraction.

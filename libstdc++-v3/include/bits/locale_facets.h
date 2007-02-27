@@ -45,6 +45,7 @@
 
 #include <ctime>	// For struct tm
 #include <cwctype>	// For wctype_t
+#include <cctype>
 #include <bits/ctype_base.h>	
 #include <iosfwd>
 #include <bits/ios_base.h>  // For ios_base, ios_base::iostate

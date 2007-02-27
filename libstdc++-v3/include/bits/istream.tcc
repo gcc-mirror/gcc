@@ -43,9 +43,6 @@
 
 #pragma GCC system_header
 
-#include <locale>
-#include <ostream> // For flush()
-
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _CharT, typename _Traits>
