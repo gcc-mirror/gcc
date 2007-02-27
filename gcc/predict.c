@@ -75,7 +75,6 @@ static sreal real_zero, real_one, real_almost_one, real_br_prob_base,
 static void combine_predictions_for_insn (rtx, basic_block);
 static void dump_prediction (FILE *, enum br_predictor, int, basic_block, int);
 static void predict_paths_leading_to (basic_block, int *, enum br_predictor, enum prediction);
-static bool last_basic_block_p (basic_block);
 static void compute_function_frequency (void);
 static void choose_function_section (void);
 static bool can_predict_insn_p (rtx);
@@ -1290,20 +1289,41 @@ tree_estimate_probability (void)
 	{
 	  /* Predict early returns to be probable, as we've already taken
 	     care for error returns and other cases are often used for
-	     fast paths through function.  */
-	  if (e->dest == EXIT_BLOCK_PTR
-	      && TREE_CODE (last_stmt (bb)) == RETURN_EXPR
-	      && !single_pred_p (bb))
+	     fast paths through function. 
+
+	     Since we've already removed the return statments, we are
+	     looking for CFG like:
+
+	       if (conditoinal)
+	         {
+		   ..
+		   goto return_block
+	         }
+	       some other blocks
+	     return_block:
+	       return_stmt.  */
+	  if (e->dest != bb->next_bb
+	      && e->dest != EXIT_BLOCK_PTR
+	      && single_succ_p (e->dest)
+	      && single_succ_edge (e->dest)->dest == EXIT_BLOCK_PTR
+	      && TREE_CODE (last_stmt (e->dest)) == RETURN_EXPR)
 	    {
 	      edge e1;
 	      edge_iterator ei1;
 
-	      FOR_EACH_EDGE (e1, ei1, bb->preds)
-	      	if (!predicted_by_p (e1->src, PRED_NULL_RETURN)
-		    && !predicted_by_p (e1->src, PRED_CONST_RETURN)
-		    && !predicted_by_p (e1->src, PRED_NEGATIVE_RETURN)
-		    && !last_basic_block_p (e1->src))
-		  predict_edge_def (e1, PRED_TREE_EARLY_RETURN, NOT_TAKEN);
+	      if (single_succ_p (bb))
+		{
+		  FOR_EACH_EDGE (e1, ei1, bb->preds)
+		    if (!predicted_by_p (e1->src, PRED_NULL_RETURN)
+			&& !predicted_by_p (e1->src, PRED_CONST_RETURN)
+			&& !predicted_by_p (e1->src, PRED_NEGATIVE_RETURN))
+		      predict_edge_def (e1, PRED_TREE_EARLY_RETURN, NOT_TAKEN);
+		}
+	       else
+		if (!predicted_by_p (e->src, PRED_NULL_RETURN)
+		    && !predicted_by_p (e->src, PRED_CONST_RETURN)
+		    && !predicted_by_p (e->src, PRED_NEGATIVE_RETURN))
+		  predict_edge_def (e, PRED_TREE_EARLY_RETURN, NOT_TAKEN);
 	    }
 
 	  /* Look for block we are guarding (ie we dominate it,
@@ -1353,20 +1373,6 @@ tree_estimate_probability (void)
   return 0;
 }
 
-/* Check whether this is the last basic block of function.  Commonly
-   there is one extra common cleanup block.  */
-static bool
-last_basic_block_p (basic_block bb)
-{
-  if (bb == EXIT_BLOCK_PTR)
-    return false;
-
-  return (bb->next_bb == EXIT_BLOCK_PTR
-	  || (bb->next_bb->next_bb == EXIT_BLOCK_PTR
-	      && single_succ_p (bb)
-	      && single_succ (bb)->next_bb == EXIT_BLOCK_PTR));
-}
-
 /* Sets branch probabilities according to PREDiction and
    FLAGS. HEADS[bb->index] should be index of basic block in that we
    need to alter branch predictions (i.e. the first of our dominators

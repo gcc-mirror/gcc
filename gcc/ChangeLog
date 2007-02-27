@@ -1,3 +1,9 @@
+2007-02-27  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (last_basic_block_p): Remove.
+	(tree_estimate_probability): Update return heuristic for commonized
+	return blocks.
+
 2007-02-26  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Makefile.in (TEXI_GCCINSTALL_FILES): Add gcc-vers.texi dependency.
