@@ -1,3 +1,8 @@
+2006-02-27  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/25392
+	* gfortran.dg/f2c_8.f90: New test.
+
 2007-02-25  Roger Sayle  <roger@eyesopen.com>
 
         PR fortran/30400
