@@ -259,7 +259,6 @@
 2006-12-11  Alan Modra  <amodra@bigpond.net.au>
 
 	* configure.in:  Handle spu makefile frag.
-	* config/mt-spu: New file.
 	* Makefile.tpl (MAINT): Define
 	(MAINTAINER_MODE_FALSE, MAINTAINER_MODE_TRUE): Define.
 	* configure: Regenerate.
