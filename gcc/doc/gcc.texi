@@ -73,15 +73,12 @@ This file documents the use of the GNU compilers.
 @end ifnottex
 
 @setchapternewpage odd
-@shorttitlepage Using the GNU Compiler Collection (GCC)
 @titlepage
-@center @titlefont{Using the GNU Compiler Collection}
-@sp 2
-@center by Richard M. Stallman and the GCC Developer Community
+@title Using the GNU Compiler Collection
+@versionsubtitle
+@author Richard M. Stallman and the @sc{GCC} Developer Community
 @page
 @vskip 0pt plus 1filll
-For GCC Version @value{version-GCC}@*
-@sp 1
 Published by:
 @multitable @columnfractions 0.5 0.5
 @item GNU Press

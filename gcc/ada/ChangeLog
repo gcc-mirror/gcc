@@ -1,3 +1,9 @@
+2007-02-26  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* gnat-style.texi: Standardize title page.
+	* gnat_rm.texi: Likewise.
+	* gnat_ugn.texi: Likewise.
+
 2007-02-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (annotate_value): Adjust for refactoring of tree_map

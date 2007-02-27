@@ -125,23 +125,16 @@ A copy of the license is included in the section entitled
 @end copying
 
 @titlepage
-
 @title @value{EDITION} User's Guide
-
 @ifset vms
 @sp 1
 @flushright
 @titlefont{@i{@value{PLATFORM}}}
 @end flushright
 @end ifset
-
-@sp 2
-
 @subtitle GNAT, The GNU Ada 95 Compiler
-@subtitle GCC version @value{version-GCC}
-
-@author AdaCore
-
+@versionsubtitle
+@author Ada Core Technologies, Inc.
 @page
 @vskip 0pt plus 1filll
 

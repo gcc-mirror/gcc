@@ -59,15 +59,12 @@ This file documents the internals of the GNU compilers.
 @end ifnottex
 
 @setchapternewpage odd
-@shorttitlepage GNU Compiler Collection Internals (GCC)
 @titlepage
-@center @titlefont{GNU Compiler Collection Internals}
-@sp 2
-@center by Richard M. Stallman and the GCC Developer Community
+@title GNU Compiler Collection Internals
+@versionsubtitle
+@author Richard M. Stallman and the @sc{GCC} Developer Community
 @page
 @vskip 0pt plus 1filll
-For GCC Version @value{version-GCC}@*
-@sp 1
 @insertcopying
 @end titlepage
 @summarycontents
