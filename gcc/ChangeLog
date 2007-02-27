@@ -2,6 +2,19 @@
 
 	* config/bfin/bfin.md (doloop_end): FAIL if counter reg isn't SImode.
 
+	* config/bfin/bfin.c: Include "cfglayout.h".
+	(MAX_LSETUP_DISTANCE): New macro.
+	(struct loop_info): New members incoming, incoming_src and
+	incoming_dest.  Delete member predecessor.
+	(length_for_loop): New function.
+	(bfin_optimize_loop): Handle more different loop structures.
+	(bfin_discover_loop): Rework detection of predecessor blocks by
+	examining incoming edges.
+	(bfin_discover_loops, bfin_free_loops): New functions, broken out of
+	bfin_reorg_loops.
+	(bfin_reorder_loops): New function.
+	(bfin_reorg_loops): Use these three new functions.
+
 2007-02-27  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.in (TEXI_GCCINSTALL_FILES): Add gcc-common.texi.
