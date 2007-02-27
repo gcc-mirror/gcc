@@ -3207,6 +3207,7 @@ intl.o: intl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h Makefile
 
 PREPROCESSOR_DEFINES = \
   -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
+  -DFIXED_INCLUDE_DIR=\"$(libsubdir)/include-fixed\" \
   -DGPLUSPLUS_INCLUDE_DIR=\"$(gcc_gxx_include_dir)\" \
   -DGPLUSPLUS_TOOL_INCLUDE_DIR=\"$(gcc_gxx_include_dir)/$(target_noncanonical)\" \
   -DGPLUSPLUS_BACKWARD_INCLUDE_DIR=\"$(gcc_gxx_include_dir)/backward\" \
@@ -3269,6 +3270,7 @@ test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 	./protoize -N -B ./ -x getopt.h -c "-B./ -Wall -Wwrite-strings \
 	  $(GCC_CFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=0 \
+	  -DFIXED_INCLUDE_DIR=0 \
 	  -DGPLUSPLUS_INCLUDE_DIR=0 \
 	  -DCROSS_INCLUDE_DIR=0 \
 	  -DTOOL_INCLUDE_DIR=0 \
@@ -3281,6 +3283,7 @@ test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 	./unprotoize -N -x getopt.h -c "-B./ -Wall -Wwrite-strings \
 	  $(GCC_CFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=0 \
+	  -DFIXED_INCLUDE_DIR=0 \
 	  -DGPLUSPLUS_INCLUDE_DIR=0 \
 	  -DCROSS_INCLUDE_DIR=0 \
 	  -DTOOL_INCLUDE_DIR=0 \
@@ -3317,11 +3320,11 @@ GCOV_DUMP_OBJS = gcov-dump.o version.o errors.o
 gcov-dump$(exeext): $(GCOV_DUMP_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(GCOV_DUMP_OBJS) $(LIBS) -o $@
 #
-# Build the include directory.  The stamp files are stmp-* rather than
+# Build the include directories.  The stamp files are stmp-* rather than
 # s-* so that mostlyclean does not force the include directory to
 # be rebuilt.
 
-# Build the include directory
+# Build the include directories.
 stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) xlimits.h $(UNWIND_H)
 # Copy in the headers provided with gcc.
 # The sed command gets just the last file name component;
@@ -3329,6 +3332,7 @@ stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) xlimits.h $(UNWIND_H)
 # Using basename would be simpler, but some systems don't have it.
 # The touch command is here to workaround an AIX/Linux NFS bug.
 	-if [ -d include ] ; then true; else mkdir include; chmod a+rx include; fi
+	-if [ -d include-fixed ] ; then true; else mkdir include-fixed; chmod a+rx include-fixed; fi
 	for file in .. $(USER_H); do \
 	  if [ X$$file != X.. ]; then \
 	    realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
@@ -3338,15 +3342,15 @@ stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) xlimits.h $(UNWIND_H)
 	    chmod a+r include/$$realfile; \
 	  fi; \
 	done
-	rm -f include/limits.h
-	cp xlimits.h include/limits.h
+	rm -f include-fixed/limits.h
+	cp xlimits.h include-fixed/limits.h
+	chmod a+r include-fixed/limits.h
 	rm -f include/unwind.h
 	cp $(UNWIND_H) include/unwind.h
-	chmod a+r include/limits.h
 # Install the README
-	rm -f include/README
-	cp $(srcdir)/../fixincludes/README-fixinc include/README
-	chmod a+r include/README
+	rm -f include-fixed/README
+	cp $(srcdir)/../fixincludes/README-fixinc include-fixed/README
+	chmod a+r include-fixed/README
 	$(STAMP) $@
 
 .PHONY: install-gcc-tooldir
@@ -3389,8 +3393,8 @@ stmp-fixinc: gsyslimits.h macro_list \
 	  if test "x${SYSTEM_HEADER_DIR}" = "x$${tooldir_sysinc}"; \
 	  then sleep 1; else exit 1; fi; \
 	fi
-	rm -rf include; mkdir include
-	-chmod a+rx include
+	rm -rf include-fixed; mkdir include-fixed
+	-chmod a+rx include-fixed
 	if [ -d ../prev-gcc ]; then \
 	  cd ../prev-gcc && \
 	  $(MAKE) real-$(INSTALL_HEADERS_DIR) DESTDIR=`pwd`/../gcc/ \
@@ -3400,16 +3404,16 @@ stmp-fixinc: gsyslimits.h macro_list \
 	    SHELL='$(SHELL)'; MACRO_LIST=`${PWD_COMMAND}`/macro_list ; \
 	    export TARGET_MACHINE srcdir SHELL MACRO_LIST && \
 	    cd $(build_objdir)/fixincludes && \
-	    $(SHELL) ./fixinc.sh ../../gcc/include \
+	    $(SHELL) ./fixinc.sh ../../gcc/include-fixed \
 	      $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS) ); \
-	  rm -f include/syslimits.h; \
-	  if [ -f include/limits.h ]; then \
-	    mv include/limits.h include/syslimits.h; \
+	  rm -f include-fixed/syslimits.h; \
+	  if [ -f include-fixed/limits.h ]; then \
+	    mv include-fixed/limits.h include-fixed/syslimits.h; \
 	  else \
-	    cp $(srcdir)/gsyslimits.h include/syslimits.h; \
+	    cp $(srcdir)/gsyslimits.h include-fixed/syslimits.h; \
 	  fi; \
 	fi
-	chmod a+r include/syslimits.h
+	chmod a+r include-fixed/syslimits.h
 	$(STAMP) stmp-fixinc
 
 # Files related to the fixproto script.
@@ -3944,14 +3948,14 @@ install-headers: $(INSTALL_HEADERS_DIR)
 # Fix symlinks to absolute paths in the installed include directory to
 # point to the installed directory, not the build directory.
 # Don't need to use LN_S here since we really do need ln -s and no substitutes.
-	-files=`cd $(DESTDIR)$(libsubdir)/include; find . -type l -print 2>/dev/null`; \
+	-files=`cd $(DESTDIR)$(libsubdir)/include-fixed; find . -type l -print 2>/dev/null`; \
 	if [ $$? -eq 0 ]; then \
-	  dir=`cd include; ${PWD_COMMAND}`; \
+	  dir=`cd include-fixed; ${PWD_COMMAND}`; \
 	  for i in $$files; do \
-	    dest=`ls -ld $(DESTDIR)$(libsubdir)/include/$$i | sed -n 's/.*-> //p'`; \
+	    dest=`ls -ld $(DESTDIR)$(libsubdir)/include-fixed/$$i | sed -n 's/.*-> //p'`; \
 	    if expr "$$dest" : "$$dir.*" > /dev/null; then \
-	      rm -f $(DESTDIR)$(libsubdir)/include/$$i; \
-	      ln -s `echo $$i | sed "s|/[^/]*|/..|g" | sed 's|/..$$||'``echo "$$dest" | sed "s|$$dir||"` $(DESTDIR)$(libsubdir)/include/$$i; \
+	      rm -f $(DESTDIR)$(libsubdir)/include-fixed/$$i; \
+	      ln -s `echo $$i | sed "s|/[^/]*|/..|g" | sed 's|/..$$||'``echo "$$dest" | sed "s|$$dir||"` $(DESTDIR)$(libsubdir)/include-fixed/$$i; \
 	    fi; \
 	  done; \
 	fi
@@ -3959,8 +3963,11 @@ install-headers: $(INSTALL_HEADERS_DIR)
 # Create or recreate the gcc private include file directory.
 install-include-dir: installdirs
 	-rm -rf $(DESTDIR)$(libsubdir)/include
+	-rm -rf $(DESTDIR)$(libsubdir)/include-fixed
 	mkdir $(DESTDIR)$(libsubdir)/include
+	mkdir $(DESTDIR)$(libsubdir)/include-fixed
 	-chmod a+rx $(DESTDIR)$(libsubdir)/include
+	-chmod a+rx $(DESTDIR)$(libsubdir)/include-fixed
 
 # Create or recreate the install-tools include file directory.
 itoolsdir = $(libexecsubdir)/install-tools
@@ -3977,6 +3984,8 @@ install-headers-tar: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 # output of `cd', but some shells lose on redirection within `()'s
 	(cd `${PWD_COMMAND}`/include ; \
 	 tar -cf - .; exit 0) | (cd $(DESTDIR)$(libsubdir)/include; tar xpf - )
+	(cd `${PWD_COMMAND}`/include-fixed ; \
+	 tar -cf - .; exit 0) | (cd $(DESTDIR)$(libsubdir)/include-fixed; tar xpf - )
 # /bin/sh on some systems returns the status of the first tar,
 # and that can lose with GNU tar which always writes a full block.
 # So use `exit 0' to ignore its exit status.
@@ -3986,33 +3995,35 @@ install-headers-cpio: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 # See discussion about the use of `pwd` above
 	cd `${PWD_COMMAND}`/include ; \
 	find . -print | cpio -pdum $(DESTDIR)$(libsubdir)/include
+	cd `${PWD_COMMAND}`/include-fixed ; \
+	find . -print | cpio -pdum $(DESTDIR)$(libsubdir)/include-fixed
 
 # Install the include directory using cp.
 install-headers-cp: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 	cp -p -r include $(DESTDIR)$(libsubdir)
+	cp -p -r include-fixed $(DESTDIR)$(libsubdir)
 
 # Targets without dependencies, for use in prev-gcc during bootstrap.
 real-install-headers-tar:
 	(cd `${PWD_COMMAND}`/include ; \
 	 tar -cf - .; exit 0) | (cd $(DESTDIR)$(libsubdir)/include; tar xpf - )
+	(cd `${PWD_COMMAND}`/include-fixed ; \
+	 tar -cf - .; exit 0) | (cd $(DESTDIR)$(libsubdir)/include-fixed; tar xpf - )
 
 real-install-headers-cpio:
 	cd `${PWD_COMMAND}`/include ; \
 	find . -print | cpio -pdum $(DESTDIR)$(libsubdir)/include
+	cd `${PWD_COMMAND}`/include-fixed ; \
+	find . -print | cpio -pdum $(DESTDIR)$(libsubdir)/include-fixed
 
 real-install-headers-cp:
 	cp -p -r include $(DESTDIR)$(libsubdir)
+	cp -p -r include-fixed $(DESTDIR)$(libsubdir)
 
 # Install supporting files for fixincludes to be run later.
 install-mkheaders: stmp-int-hdrs $(STMP_FIXPROTO) install-itoolsdirs \
   macro_list xlimits.h
-	for file in $(USER_H); do \
-	  realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
-	  $(INSTALL_DATA) $$file \
-	    $(DESTDIR)$(itoolsdatadir)/include/$$realfile ; \
-	done
 	$(INSTALL_DATA) xlimits.h $(DESTDIR)$(itoolsdatadir)/include/limits.h
-	$(INSTALL_DATA) $(UNWIND_H) $(DESTDIR)$(itoolsdatadir)/include/unwind.h
 	$(INSTALL_DATA) $(srcdir)/gsyslimits.h \
 	  $(DESTDIR)$(itoolsdatadir)/gsyslimits.h
 	$(INSTALL_DATA) macro_list $(DESTDIR)$(itoolsdatadir)/macro_list

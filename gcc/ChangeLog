@@ -1,3 +1,20 @@
+2007-02-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.in (PREPROCESSOR_DEFINES, test-protoize-simple): Define
+	FIXED_INCLUDE_DIR.
+	(stmp-int-hdrs, stmp-fixinc, install-headers): Use include-fixed
+	for fixed headers and limits.h.
+	(install-include-dir, install-headers-tar, install-headers-cpio,
+	install-headers-cp, real-install-headers-tar,
+	real-install-headers-cpio, real-install-headers-cp): Handle
+	include-fixed as well as include.
+	(install-mkheaders): Don't install files that go only in include
+	not include-fixed.
+	* cppdefault.c (cpp_include_defaults): Separate FIXED_INCLUDE_DIR
+	from GCC_INCLUDE_DIR.
+	* gcc.c (process_command): Remove special -BstageN/ handling.
+	(do_spec_1): Add include-fixed directories.
+
 2007-02-27  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/t-bfin-elf (LIB1ASMFUNCS): Add _umulsi3_highpart and

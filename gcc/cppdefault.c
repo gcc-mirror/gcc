@@ -66,8 +66,12 @@ const struct default_include cpp_include_defaults[]
     { PREFIX_INCLUDE_DIR, 0, 0, 1, 0, 0 },
 #endif
 #ifdef GCC_INCLUDE_DIR
-    /* This is the dir for fixincludes and for gcc's private headers.  */
+    /* This is the dir for gcc's private headers.  */
     { GCC_INCLUDE_DIR, "GCC", 0, 0, 0, 0 },
+#endif
+#ifdef FIXED_INCLUDE_DIR
+    /* This is the dir for fixincludes.  */
+    { FIXED_INCLUDE_DIR, "GCC", 0, 0, 0, 0 },
 #endif
 #ifdef CROSS_INCLUDE_DIR
     /* One place the target system's headers might be.  */

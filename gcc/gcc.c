@@ -3816,28 +3816,6 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 		    value = tmp;
 		  }
 
-		/* As a kludge, if the arg is "[foo/]stageN/", just
-		   add "[foo/]include" to the include prefix.  */
-		if ((len == 7
-		     || (len > 7
-			 && (IS_DIR_SEPARATOR (value[len - 8]))))
-		    && strncmp (value + len - 7, "stage", 5) == 0
-		    && ISDIGIT (value[len - 2])
-		    && (IS_DIR_SEPARATOR (value[len - 1])))
-		  {
-		    if (len == 7)
-		      add_prefix (&include_prefixes, "./", NULL,
-				  PREFIX_PRIORITY_B_OPT, 0, 0);
-		    else
-		      {
-		        char *string = xmalloc (len - 6);
-			memcpy (string, value, len - 7);
-			string[len - 7] = 0;
-		        add_prefix (&include_prefixes, string, NULL,
-				    PREFIX_PRIORITY_B_OPT, 0, 0);
-		      }
-		  }
-
 		add_prefix (&exec_prefixes, value, NULL,
 			    PREFIX_PRIORITY_B_OPT, 0, 0);
 		add_prefix (&startfile_prefixes, value, NULL,
@@ -4996,6 +4974,11 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      info.omit_relative = false;
 	      info.separate_options = true;
 
+	      for_each_path (&include_prefixes, false, info.append_len,
+			     spec_path, &info);
+
+	      info.append = "include-fixed";
+	      info.append_len = strlen (info.append);
 	      for_each_path (&include_prefixes, false, info.append_len,
 			     spec_path, &info);
 	    }
