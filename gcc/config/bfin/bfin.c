@@ -4556,7 +4556,7 @@ bfin_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
   if (vcall_offset)
     {
       rtx p2tmp = gen_rtx_REG (Pmode, REG_P2);
-      rtx tmp = gen_rtx_REG (Pmode, REG_R2);
+      rtx tmp = gen_rtx_REG (Pmode, REG_R3);
 
       xops[1] = tmp;
       xops[2] = p2tmp;
