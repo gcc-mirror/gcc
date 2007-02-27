@@ -2,7 +2,7 @@
 /* { dg-do compile { target fpic } } */
 /* { dg-require-visibility "" } */
 /* { dg-options "-fPIC -fvisibility=hidden" } */
-/* { dg-final { scan-assembler-not "methodEv@PLT" } } */
+/* { dg-final { scan-assembler-not "methodEv@PLT|indirect_symbol.*methodEv" } } */
 
 class Foo
 {

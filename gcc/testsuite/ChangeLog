@@ -1,3 +1,8 @@
+2007-02-26  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++.dg/ext/visibility/class1.C: Port to Darwin.
+	* g++.dg/ext/visibility/noPLT.C: Likewise.
+
 2007-02-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/30918
