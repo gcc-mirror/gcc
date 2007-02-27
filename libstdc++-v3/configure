@@ -8381,7 +8381,7 @@ done
 echo $ECHO_N "checking for ld version... $ECHO_C" >&6
 
     ldver=`$LD --version 2>/dev/null | head -1 | \
-           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+           sed -e 's/GNU ld \(version \)\{0,1\}\(([^)]*) \)\{0,1\}\([0-9.][0-9.]*\).*/\3/'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
            $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
@@ -54494,7 +54494,7 @@ done
 echo $ECHO_N "checking for ld version... $ECHO_C" >&6
 
     ldver=`$LD --version 2>/dev/null | head -1 | \
-           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+           sed -e 's/GNU ld \(version \)\{0,1\}\(([^)]*) \)\{0,1\}\([0-9.][0-9.]*\).*/\3/'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
            $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
@@ -55512,7 +55512,7 @@ done
 echo $ECHO_N "checking for ld version... $ECHO_C" >&6
 
     ldver=`$LD --version 2>/dev/null | head -1 | \
-           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+           sed -e 's/GNU ld \(version \)\{0,1\}\(([^)]*) \)\{0,1\}\([0-9.][0-9.]*\).*/\3/'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
            $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
@@ -56498,7 +56498,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 echo $ECHO_N "checking for ld version... $ECHO_C" >&6
 
     ldver=`$LD --version 2>/dev/null | head -1 | \
-           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+           sed -e 's/GNU ld \(version \)\{0,1\}\(([^)]*) \)\{0,1\}\([0-9.][0-9.]*\).*/\3/'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
            $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
@@ -77883,7 +77883,7 @@ done
 echo $ECHO_N "checking for ld version... $ECHO_C" >&6
 
     ldver=`$LD --version 2>/dev/null | head -1 | \
-           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+           sed -e 's/GNU ld \(version \)\{0,1\}\(([^)]*) \)\{0,1\}\([0-9.][0-9.]*\).*/\3/'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
            $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
@@ -78730,7 +78730,7 @@ done
 echo $ECHO_N "checking for ld version... $ECHO_C" >&6
 
     ldver=`$LD --version 2>/dev/null | head -1 | \
-           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+           sed -e 's/GNU ld \(version \)\{0,1\}\(([^)]*) \)\{0,1\}\([0-9.][0-9.]*\).*/\3/'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
            $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
@@ -79626,7 +79626,7 @@ done
 echo $ECHO_N "checking for ld version... $ECHO_C" >&6
 
     ldver=`$LD --version 2>/dev/null | head -1 | \
-           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+           sed -e 's/GNU ld \(version \)\{0,1\}\(([^)]*) \)\{0,1\}\([0-9.][0-9.]*\).*/\3/'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
            $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
@@ -80914,7 +80914,7 @@ echo "${ECHO_T}$glibcxx_cv_WRITEV" >&6
 echo $ECHO_N "checking for ld version... $ECHO_C" >&6
 
     ldver=`$LD --version 2>/dev/null | head -1 | \
-           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+           sed -e 's/GNU ld \(version \)\{0,1\}\(([^)]*) \)\{0,1\}\([0-9.][0-9.]*\).*/\3/'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
            $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
@@ -81652,7 +81652,7 @@ _ACEOF
 echo $ECHO_N "checking for ld version... $ECHO_C" >&6
 
     ldver=`$LD --version 2>/dev/null | head -1 | \
-           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+           sed -e 's/GNU ld \(version \)\{0,1\}\(([^)]*) \)\{0,1\}\([0-9.][0-9.]*\).*/\3/'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
            $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
@@ -82155,7 +82155,7 @@ done
 echo $ECHO_N "checking for ld version... $ECHO_C" >&6
 
     ldver=`$LD --version 2>/dev/null | head -1 | \
-           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+           sed -e 's/GNU ld \(version \)\{0,1\}\(([^)]*) \)\{0,1\}\([0-9.][0-9.]*\).*/\3/'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
            $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
