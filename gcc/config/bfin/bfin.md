@@ -1436,6 +1436,46 @@
   "%0 *= %2;"
   [(set_attr "type" "mult")])
 
+(define_expand "umulsi3_highpart"
+  [(set (match_operand:SI 0 "register_operand" "")
+       (truncate:SI
+        (lshiftrt:DI
+         (mult:DI (zero_extend:DI
+                   (match_operand:SI 1 "nonimmediate_operand" ""))
+                  (zero_extend:DI
+                   (match_operand:SI 2 "register_operand" "")))
+         (const_int 32))))]
+  ""
+{
+  rtx umulsi3_highpart_libfunc
+    = init_one_libfunc ("__umulsi3_highpart");
+
+  emit_library_call_value (umulsi3_highpart_libfunc,
+			   operands[0], LCT_NORMAL, SImode,
+			   2, operands[1], SImode, operands[2], SImode);
+  DONE;
+})
+
+(define_expand "smulsi3_highpart"
+  [(set (match_operand:SI 0 "register_operand" "")
+       (truncate:SI
+        (lshiftrt:DI
+         (mult:DI (sign_extend:DI
+                   (match_operand:SI 1 "nonimmediate_operand" ""))
+                  (sign_extend:DI
+                   (match_operand:SI 2 "register_operand" "")))
+         (const_int 32))))]
+  ""
+{
+  rtx smulsi3_highpart_libfunc
+    = init_one_libfunc ("__smulsi3_highpart");
+
+  emit_library_call_value (smulsi3_highpart_libfunc,
+			   operands[0], LCT_NORMAL, SImode,
+			   2, operands[1], SImode, operands[2], SImode);
+  DONE;
+})
+
 (define_expand "ashlsi3"
   [(set (match_operand:SI 0 "register_operand" "")
         (ashift:SI (match_operand:SI 1 "register_operand" "")
