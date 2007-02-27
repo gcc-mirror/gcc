@@ -1,3 +1,12 @@
+2007-02-27  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/t-bfin-elf (LIB1ASMFUNCS): Add _umulsi3_highpart and
+	_smulsi3_highpart.
+	* config/bfin/lib1funcs.asm (___umulsi3_highpart, ___smulsi3_highpart):
+	New functions.
+	* config/bfin/bfin.md (smulsi3_highpart, umulsi3_highpart): New
+	patterns.
+
 2007-02-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-common.c (get_priority): Add check for

@@ -117,3 +117,50 @@ ___umodsi3:
 	RTS;
 #endif
 
+#ifdef L_umulsi3_highpart
+.align 2
+.global ___umulsi3_highpart;
+.type ___umulsi3_highpart, STT_FUNC;
+
+___umulsi3_highpart:
+	R2 = R1.H * R0.H, R3 = R1.L * R0.H (FU);
+	R0 = R1.L * R0.L, R1 = R1.H * R0.L (FU);
+	R0 >>= 16;
+	/* Unsigned multiplication has the nice property that we can
+	   ignore carry on this first addition.  */
+	R0 = R0 + R3;
+	R0 = R0 + R1;
+	cc = ac0;
+	R1 = cc;
+	R1 = PACK(R1.l,R0.h);
+	R0 = R1 + R2;
+	RTS;
+#endif
+
+#ifdef L_smulsi3_highpart
+.align 2
+.global ___smulsi3_highpart;
+.type ___smulsi3_highpart, STT_FUNC;
+
+___smulsi3_highpart:
+	R2 = R1.L * R0.L (FU);
+	R3 = R1.H * R0.L (IS,M);
+	R0 = R0.H * R1.H, R1 = R0.H * R1.L (IS,M);
+
+	R1.L = R2.H + R1.L;
+	cc = ac0;
+	R2 = cc;
+
+	R1.L = R1.L + R3.L;
+	cc = ac0;
+	R1 >>>= 16;
+	R3 >>>= 16;
+	R1 = R1 + R3;
+	R1 = R1 + R2;
+	R2 = cc;
+	R1 = R1 + R2;
+
+	R0 = R0 + R1;
+	RTS;
+#endif
+
