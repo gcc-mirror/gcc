@@ -1,3 +1,10 @@
+2007-02-26  Jan Hubicka  <jh@suse.cz>
+
+	* predict.def: Set outcomes according to more recent results.
+	(PRED_LOOP_CONDITION, PRED_LOOP_PRECONDITIONING, PRED_LOOP_HEADER):
+	Remove dead predictors.
+	* predict.c (return_prediction): Fix pasto.
+
 2007-02-27  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* loop-iv.c (simplify_using_initial_values): Fix oversight in previous

@@ -1152,7 +1152,7 @@ return_prediction (tree val, enum prediction *prediction)
 	  && (!integer_zerop (val) && !integer_onep (val)))
 	{
 	  *prediction = TAKEN;
-	  return PRED_NEGATIVE_RETURN;
+	  return PRED_CONST_RETURN;
 	}
     }
   return PRED_NO_PREDICTION;
