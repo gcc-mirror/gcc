@@ -235,7 +235,7 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
     AC_MSG_CHECKING([for ld version])
     changequote(,)
     ldver=`$LD --version 2>/dev/null | head -1 | \
-           sed -e 's/GNU ld version \([0-9.][0-9.]*\).*/\1/'`
+           sed -e 's/GNU ld \(version \)\{0,1\}\(([^)]*) \)\{0,1\}\([0-9.][0-9.]*\).*/\3/'`
     changequote([,])
     glibcxx_gnu_ld_version=`echo $ldver | \
            $AWK -F. '{ if (NF<3) [$]3=0; print ([$]1*100+[$]2)*100+[$]3 }'`

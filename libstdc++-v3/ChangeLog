@@ -1,3 +1,8 @@
+2007-02-27  Richard Guenther  <rguenther@suse.de>
+
+	* acinclude.m4: Adjust regular expression for ld version extraction.
+	* configure: Regenerate.
+
 2007-02-26  DJ Delorie  <dj@redhat.com>
 
 	* crossconfig.m4 (djgpp): Pre-detect djgpp-specific results, to
