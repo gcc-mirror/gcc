@@ -41,9 +41,8 @@ into another language, under the above conditions for modified versions.
 @end ifinfo
 
 @titlepage
-@c @finalout
 @title Cpplib Internals
-@subtitle for GCC version @value{version-GCC}
+@versionsubtitle
 @author Neil Booth
 @page
 @vskip 0pt plus 1filll

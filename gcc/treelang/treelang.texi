@@ -133,8 +133,7 @@ Boston, MA 02110-1301 USA
 @titlepage
 @ifset INTERNALS
 @ifset USING
-@center @titlefont{Using and Maintaining GNU Treelang}
-
+@title Using and Maintaining GNU Treelang
 @end ifset
 @end ifset
 @ifclear INTERNALS
@@ -143,12 +142,10 @@ Boston, MA 02110-1301 USA
 @ifclear USING
 @title Maintaining GNU Treelang
 @end ifclear
-@sp 2
-@center Tim Josling
+@versionsubtitle
+@author Tim Josling
 @page
 @vskip 0pt plus 1filll
-For the @value{which-treelang} Version*
-@sp 1
 Published by the Free Software Foundation @*
 51 Franklin Street, Fifth Floor@*
 Boston, MA 02110-1301, USA@*

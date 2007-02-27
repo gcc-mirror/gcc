@@ -27,6 +27,7 @@
 @settitle GNAT Coding Style
 @setchapternewpage odd
 
+@include gcc-common.texi
 
 @dircategory Software development
 @direntry
@@ -39,16 +40,12 @@
 @c %**end of header
 
 @titlepage
-@sp 10
-@title GNAT Coding Style
-@flushright
-@titlefont{A Guide for GNAT Developers}
-@end flushright
-@sp 2
+@titlefont{GNAT Coding Style:}
+@sp 1
+@title @hfill A Guide for GNAT Developers
 @subtitle GNAT, The GNU Ada 95 Compiler
-
+@versionsubtitle
 @author Ada Core Technologies, Inc.
-
 @page
 @vskip 0pt plus 1filll
 

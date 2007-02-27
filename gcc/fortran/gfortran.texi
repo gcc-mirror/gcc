@@ -118,12 +118,10 @@ Boston, MA 02110-1301 USA
 @setchapternewpage odd
 @titlepage
 @title Using GNU Fortran
-@sp 2
-@center The gfortran team
+@versionsubtitle
+@author The @t{gfortran} team
 @page
 @vskip 0pt plus 1filll
-For the @value{version-GCC} Version
-@sp 1
 Published by the Free Software Foundation@*
 51 Franklin Street, Fifth Floor@*
 Boston, MA 02110-1301, USA@*
