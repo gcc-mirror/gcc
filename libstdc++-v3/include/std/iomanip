@@ -43,7 +43,8 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-#include <ios>
+#include <iosfwd>
+#include <bits/ios_base.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -111,7 +112,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _CharT, typename _Traits>
     inline basic_ostream<_CharT, _Traits>& 
-    operator<<(basic_ostream<_CharT,_Traits>& __os, _Setiosflags __f)
+    operator<<(basic_ostream<_CharT, _Traits>& __os, _Setiosflags __f)
     { 
       __os.setf(__f._M_mask); 
       return __os; 
