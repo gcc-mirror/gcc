@@ -8,4 +8,4 @@ int main ()
   return 0;
 }
 
-/* { dg-final { scan-assembler ".stabs.*vi\:\\(0,16\\)=\@V" } } */
+/* { dg-final { scan-assembler ".stabs.*vi\:\\(0,\[0-9\]+\\)=\@V" } } */
