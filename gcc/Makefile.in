@@ -3386,7 +3386,7 @@ TEXI_GCCINT_FILES = gccint.texi gcc-common.texi gcc-vers.texi		\
 	 loop.texi
 
 TEXI_GCCINSTALL_FILES = install.texi install-old.texi fdl.texi		\
-	 gcc-vers.texi
+	 gcc-common.texi gcc-vers.texi
 
 TEXI_CPPINT_FILES = cppinternals.texi gcc-common.texi gcc-vers.texi
 
