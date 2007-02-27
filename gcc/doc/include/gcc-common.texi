@@ -51,3 +51,19 @@
 \global\normaloffset =0.75in
 @end tex
 @end ifset
+
+@c Macro to generate a "For the N.N.N version" subtitle on the title
+@c page of TeX documentation.  This macro should be used in the
+@c titlepage environment after the title and any other subtitles have
+@c been placed, and before any authors are placed.
+@macro versionsubtitle
+@ifclear DEVELOPMENT
+@subtitle For @sc{gcc} version @value{version-GCC}
+@end ifclear
+@ifset DEVELOPMENT
+@subtitle For @sc{gcc} version @value{version-GCC} (pre-release)
+@end ifset
+@c Even if there are no authors, the second titlepage line should be
+@c forced to the bottom of the page.
+@vskip 0pt plus 1filll
+@end macro

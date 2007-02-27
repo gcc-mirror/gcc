@@ -7,6 +7,8 @@
 @c %**end of header
 @c @end ifnothtml
 
+@include gcc-common.texi
+
 @c Specify title for specific html page
 @ifset indexhtml
 @settitle Installing GCC
@@ -99,9 +101,8 @@ Free Documentation License}''.
 
 @c Part 3 Titlepage and Copyright
 @titlepage
-@sp 10
-@comment The title is printed in a large font.
-@center @titlefont{Installing GCC}
+@title Installing GCC
+@versionsubtitle
 
 @c The following two commands start the copyright page.
 @page
@@ -109,7 +110,7 @@ Free Documentation License}''.
 @insertcopying
 @end titlepage
 
-@c Part 4 Top node and Master Menu
+@c Part 4 Top node, Master Menu, and/or Table of Contents
 @ifinfo
 @node    Top, , , (dir)
 @comment node-name, next,          Previous, up
@@ -128,6 +129,10 @@ Free Documentation License}''.
 * Concept Index::   This index has two entries.
 @end menu
 @end ifinfo
+
+@iftex
+@contents
+@end iftex
 
 @c Part 5 The Body of the Document
 @c ***Installing GCC**********************************************************

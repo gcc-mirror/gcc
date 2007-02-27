@@ -58,9 +58,8 @@ This manual contains no Invariant Sections.  The Front-Cover Texts are
 
 @titlepage
 @title The C Preprocessor
-@subtitle for GCC version @value{version-GCC}
-@author Richard M. Stallman
-@author Zachary Weinberg
+@versionsubtitle
+@author Richard M. Stallman, Zachary Weinberg
 @page
 @c There is a fill at the bottom of the page, so we need a filll to
 @c override it.

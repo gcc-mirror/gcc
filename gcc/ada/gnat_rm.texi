@@ -43,12 +43,10 @@ entitled ``GNU Free Documentation License''.
 @end copying
 
 @titlepage
-
 @title GNAT Reference Manual
 @subtitle GNAT, The GNU Ada 95 Compiler
-@subtitle GCC version @value{version-GCC}
-@author AdaCore
-
+@versionsubtitle
+@author Ada Core Technologies, Inc.
 @page
 @vskip 0pt plus 1filll
 
