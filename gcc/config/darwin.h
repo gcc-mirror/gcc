@@ -377,7 +377,8 @@ extern GTY(()) int darwin_ms_struct;
                 %{!pg:%{static:-lcrt0.o}				    \
                       %{!static:%{object:-lcrt0.o}			    \
                                 %{!object:%{preload:-lcrt0.o}		    \
-                                  %{!preload: %(darwin_crt1)  %(darwin_crt2)}}}}}}  \
+                                  %{!preload: %(darwin_crt1)		    \
+					      %(darwin_crt2)}}}}}}	    \
   %{shared-libgcc:%:version-compare(< 10.5 mmacosx-version-min= crt3.o%s)}"
 
 /* The native Darwin linker doesn't necessarily place files in the order
@@ -385,17 +386,17 @@ extern GTY(()) int darwin_ms_struct;
    to put anything in ENDFILE_SPEC.  */
 /* #define ENDFILE_SPEC "" */
 
-#define DARWIN_EXTRA_SPECS     \
-  { "darwin_crt1", DARWIN_CRT1_SPEC },                                 \
-  { "darwin_dylib1", DARWIN_DYLIB1_SPEC },			       \
+#define DARWIN_EXTRA_SPECS						\
+  { "darwin_crt1", DARWIN_CRT1_SPEC },					\
+  { "darwin_dylib1", DARWIN_DYLIB1_SPEC },				\
   { "darwin_minversion", DARWIN_MINVERSION_SPEC },
 
-#define DARWIN_DYLIB1_SPEC                                             \
-  "%:version-compare(!> 10.5 mmacosx-version-min= -ldylib1.o)          \
+#define DARWIN_DYLIB1_SPEC						\
+  "%:version-compare(!> 10.5 mmacosx-version-min= -ldylib1.o)		\
    %:version-compare(>= 10.5 mmacosx-version-min= -ldylib1.10.5.o)"
 
-#define DARWIN_CRT1_SPEC                                               \
-  "%:version-compare(!> 10.5 mmacosx-version-min= -lcrt1.o)            \
+#define DARWIN_CRT1_SPEC						\
+  "%:version-compare(!> 10.5 mmacosx-version-min= -lcrt1.o)		\
    %:version-compare(>= 10.5 mmacosx-version-min= -lcrt1.10.5.o)"
 
 /* Default Darwin ASM_SPEC, very simple.  */
