@@ -146,9 +146,7 @@ genericize_eh_spec_block (tree *stmt_p)
 {
   tree body = EH_SPEC_STMTS (*stmt_p);
   tree allowed = EH_SPEC_RAISES (*stmt_p);
-  tree failure = build_call (call_unexpected_node,
-			     tree_cons (NULL_TREE, build_exc_ptr (),
-					NULL_TREE));
+  tree failure = build_call_n (call_unexpected_node, 1, build_exc_ptr ());
   gimplify_stmt (&body);
 
   *stmt_p = gimple_build_eh_filter (body, allowed, failure);
@@ -432,7 +430,7 @@ gimplify_must_not_throw_expr (tree *expr_p, tree *pre_p)
   gimplify_stmt (&body);
 
   stmt = gimple_build_eh_filter (body, NULL_TREE,
-				 build_call (terminate_node, NULL_TREE));
+				 build_call_n (terminate_node, 0));
 
   if (temp)
     {
@@ -766,10 +764,15 @@ static tree
 cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
 {
   tree defparm, parm;
-  int i;
+  int i = 0;
+  int nargs;
+  tree *argarray;
 
   if (fn == NULL)
     return NULL;
+
+  nargs = list_length (DECL_ARGUMENTS (fn));
+  argarray = (tree *) alloca (nargs * sizeof (tree));
 
   defparm = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fn)));
   if (arg2)
@@ -817,16 +820,14 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
       t = build1 (LABEL_EXPR, void_type_node, lab);
       append_to_statement_list (t, &ret);
 
-      t = tree_cons (NULL, p1, NULL);
+      argarray[i++] = p1;
       if (arg2)
-	t = tree_cons (NULL, p2, t);
+	argarray[i++] = p2;
       /* Handle default arguments.  */
-      i = 1 + (arg2 != NULL);
-      for (parm = defparm; parm != void_list_node; parm = TREE_CHAIN (parm))
-	t = tree_cons (NULL, convert_default_arg (TREE_VALUE (parm),
-						  TREE_PURPOSE (parm),
-						  fn, i++), t);
-      t = build_call (fn, nreverse (t));
+      for (parm = defparm; parm != void_list_node; parm = TREE_CHAIN (parm), i++)
+	argarray[i] = convert_default_arg (TREE_VALUE (parm),
+					   TREE_PURPOSE (parm), fn, i);
+      t = build_call_a (fn, i, argarray);
       append_to_statement_list (t, &ret);
 
       t = fold_convert (TREE_TYPE (p1), TYPE_SIZE_UNIT (inner_type));
@@ -850,16 +851,16 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
     }
   else
     {
-      tree t = tree_cons (NULL, build_fold_addr_expr (arg1), NULL);
+      argarray[i++] = build_fold_addr_expr (arg1);
       if (arg2)
-	t = tree_cons (NULL, build_fold_addr_expr (arg2), t);
+	argarray[i++] = build_fold_addr_expr (arg2);
       /* Handle default arguments.  */
-      i = 1 + (arg2 != NULL);
-      for (parm = defparm; parm != void_list_node; parm = TREE_CHAIN (parm))
-	t = tree_cons (NULL, convert_default_arg (TREE_VALUE (parm),
-						  TREE_PURPOSE (parm),
-						  fn, i++), t);
-      return build_call (fn, nreverse (t));
+      for (parm = defparm; parm != void_list_node;
+	   parm = TREE_CHAIN (parm), i++)
+	argarray[i] = convert_default_arg (TREE_VALUE (parm),
+					   TREE_PURPOSE (parm),
+					   fn, i);
+      return build_call_a (fn, i, argarray);
     }
 }
 

@@ -851,13 +851,14 @@ decode_format_type (const char *s)
 
 
 /* Check the argument list of a call to printf, scanf, etc.
-   ATTRS are the attributes on the function type.
-   PARAMS is the list of argument values.  Also, if -Wmissing-format-attribute,
+   ATTRS are the attributes on the function type.  There are NARGS argument
+   values in the array ARGARRAY.
+   Also, if -Wmissing-format-attribute,
    warn for calls to vprintf or vscanf in functions with no such format
    attribute themselves.  */
 
 void
-check_function_format (tree attrs, tree params)
+check_function_format (tree attrs, int nargs, tree *argarray)
 {
   tree a;
 
@@ -870,7 +871,16 @@ check_function_format (tree attrs, tree params)
 	  function_format_info info;
 	  decode_format_attr (TREE_VALUE (a), &info, 1);
 	  if (warn_format)
-	    check_format_info (&info, params);
+	    {
+	      /* FIXME: Rewrite all the internal functions in this file
+		 to use the ARGARRAY directly instead of constructing this
+		 temporary list.  */
+	      tree params = NULL_TREE;
+	      int i;
+	      for (i = nargs - 1; i >= 0; i--)
+		params = tree_cons (NULL_TREE, argarray[i], params);
+	      check_format_info (&info, params);
+	    }
 	  if (warn_missing_format_attribute && info.first_arg_num == 0
 	      && (format_types[info.format_type].flags
 		  & (int) FMT_FLAG_ARG_CONVERT))

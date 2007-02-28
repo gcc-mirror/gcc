@@ -1540,7 +1540,7 @@ static tree
 build_builtin_delete_call (tree addr)
 {
   mark_used (global_delete_fndecl);
-  return build_call (global_delete_fndecl, build_tree_list (NULL_TREE, addr));
+  return build_call_n (global_delete_fndecl, 1, addr);
 }
 
 /* Build and return a NEW_EXPR.  If NELTS is non-NULL, TYPE[NELTS] is

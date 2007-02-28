@@ -5641,7 +5641,7 @@ expand_static_init (tree decl, tree init)
       /* Emit code to perform this initialization but once.  */
       tree if_stmt = NULL_TREE, inner_if_stmt = NULL_TREE;
       tree then_clause = NULL_TREE, inner_then_clause = NULL_TREE;
-      tree guard, guard_addr, guard_addr_list;
+      tree guard, guard_addr;
       tree acquire_fn, release_fn, abort_fn;
       tree flag, begin;
 
@@ -5693,7 +5693,6 @@ expand_static_init (tree decl, tree init)
       if (flag_threadsafe_statics)
 	{
 	  guard_addr = build_address (guard);
-	  guard_addr_list = build_tree_list (NULL_TREE, guard_addr);
 
 	  acquire_fn = get_identifier ("__cxa_guard_acquire");
 	  release_fn = get_identifier ("__cxa_guard_release");
@@ -5715,7 +5714,7 @@ expand_static_init (tree decl, tree init)
 	    }
 
 	  inner_if_stmt = begin_if_stmt ();
-	  finish_if_stmt_cond (build_call (acquire_fn, guard_addr_list),
+	  finish_if_stmt_cond (build_call_n (acquire_fn, 1, guard_addr),
 			       inner_if_stmt);
 
 	  inner_then_clause = begin_compound_stmt (BCS_NO_SCOPE);
@@ -5725,7 +5724,7 @@ expand_static_init (tree decl, tree init)
 	  TARGET_EXPR_CLEANUP (begin)
 	    = build3 (COND_EXPR, void_type_node, flag,
 		      void_zero_node,
-		      build_call (abort_fn, guard_addr_list));
+		      build_call_n (abort_fn, 1, guard_addr));
 	  CLEANUP_EH_ONLY (begin) = 1;
 
 	  /* Do the initialization itself.  */
@@ -5733,7 +5732,7 @@ expand_static_init (tree decl, tree init)
 	  init = add_stmt_to_compound
 	    (init, build2 (MODIFY_EXPR, void_type_node, flag, boolean_true_node));
 	  init = add_stmt_to_compound
-	    (init, build_call (release_fn, guard_addr_list));
+	    (init, build_call_n (release_fn, 1, guard_addr));
 	}
       else
 	init = add_stmt_to_compound (init, set_guard (guard));

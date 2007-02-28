@@ -12875,13 +12875,13 @@ fold_build3_stat (enum tree_code code, tree type, tree op0, tree op1, tree op2
   return tem;
 }
 
-/* Fold a CALL_EXPR expression of type TYPE with operands FN and ARGLIST
-   and a null static chain.
+/* Fold a CALL_EXPR expression of type TYPE with operands FN and NARGS
+   arguments in ARGARRAY, and a null static chain.
    Return a folded expression if successful.  Otherwise, return a CALL_EXPR
-   of type TYPE from the given operands as constructed by build_call_list.  */
+   of type TYPE from the given operands as constructed by build_call_array.  */
 
 tree
-fold_build_call_list (tree type, tree fn, tree arglist)
+fold_build_call_array (tree type, tree fn, int nargs, tree *argarray)
 {
   tree tem;
 #ifdef ENABLE_FOLD_CHECKING
@@ -12891,6 +12891,7 @@ fold_build_call_list (tree type, tree fn, tree arglist)
 		checksum_after_arglist[16];
   struct md5_ctx ctx;
   htab_t ht;
+  int i;
 
   ht = htab_create (32, htab_hash_pointer, htab_eq_pointer, NULL);
   md5_init_ctx (&ctx);
@@ -12899,12 +12900,13 @@ fold_build_call_list (tree type, tree fn, tree arglist)
   htab_empty (ht);
 
   md5_init_ctx (&ctx);
-  fold_checksum_tree (arglist, &ctx, ht);
+  for (i = 0; i < nargs; i++)
+    fold_checksum_tree (argarray[i], &ctx, ht);
   md5_finish_ctx (&ctx, checksum_before_arglist);
   htab_empty (ht);
 #endif
 
-  tem = fold_builtin_call_list (type, fn, arglist);
+  tem = fold_builtin_call_array (type, fn, nargs, argarray);
       
 #ifdef ENABLE_FOLD_CHECKING
   md5_init_ctx (&ctx);
@@ -12916,12 +12918,13 @@ fold_build_call_list (tree type, tree fn, tree arglist)
     fold_check_failed (fn, tem);
   
   md5_init_ctx (&ctx);
-  fold_checksum_tree (arglist, &ctx, ht);
+  for (i = 0; i < nargs; i++)
+    fold_checksum_tree (argarray[i], &ctx, ht);
   md5_finish_ctx (&ctx, checksum_after_arglist);
   htab_delete (ht);
 
   if (memcmp (checksum_before_arglist, checksum_after_arglist, 16))
-    fold_check_failed (arglist, tem);
+    fold_check_failed (NULL_TREE, tem);
 #endif
   return tem;
 }
@@ -12987,12 +12990,13 @@ fold_build3_initializer (enum tree_code code, tree type, tree op0, tree op1,
 }
 
 tree
-fold_build_call_list_initializer (tree type, tree fn, tree arglist)
+fold_build_call_array_initializer (tree type, tree fn,
+				   int nargs, tree *argarray)
 {
   tree result;
   START_FOLD_INIT;
 
-  result = fold_build_call_list (type, fn, arglist);
+  result = fold_build_call_array (type, fn, nargs, argarray);
 
   END_FOLD_INIT;
   return result;

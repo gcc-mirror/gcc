@@ -452,6 +452,8 @@ use_thunk (tree thunk_fndecl, bool emit_p)
     }
   else
     {
+      int i;
+      tree *argarray = (tree *) alloca (list_length (a) * sizeof (tree));
       /* If this is a covariant thunk, or we don't have the necessary
 	 code for efficient thunks, generate a thunk function that
 	 just makes a call to the real function.  Unfortunately, this
@@ -475,11 +477,10 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 			  fixed_offset, virtual_offset);
 
       /* Build up the call to the real function.  */
-      t = tree_cons (NULL_TREE, t, NULL_TREE);
-      for (a = TREE_CHAIN (a); a; a = TREE_CHAIN (a))
-	t = tree_cons (NULL_TREE, a, t);
-      t = nreverse (t);
-      t = build_call (alias, t);
+      argarray[0] = t;
+      for (i = 1, a = TREE_CHAIN (a); a; a = TREE_CHAIN (a), i++)
+	argarray[i] = a;
+      t = build_call_a (alias, i, argarray);
       CALL_FROM_THUNK_P (t) = 1;
 
       if (VOID_TYPE_P (TREE_TYPE (t)))
@@ -1190,5 +1191,26 @@ skip_artificial_parms_for (tree fn, tree list)
     list = TREE_CHAIN (list);
   return list;
 }
+
+/* Given a FUNCTION_DECL FN and a chain LIST, return the number of
+   artificial parms in FN.  */
+
+int
+num_artificial_parms_for (tree fn)
+{
+  int count = 0;
+
+  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+    count++;
+  else
+    return 0;
+
+  if (DECL_HAS_IN_CHARGE_PARM_P (fn))
+    count++;
+  if (DECL_HAS_VTT_PARM_P (fn))
+    count++;
+  return count;
+}
+
 
 #include "gt-cp-method.h"

@@ -1,3 +1,30 @@
+2007-02-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* typeck.c (build_function_call): Store converted arguments
+	in a stack-allocated array instead of building a list.
+	(convert_arguments): Store arguments in the array passed in as an
+	argument, and return the actual number of arguments.
+	* call.c (build_call): Delete, and replace with...
+	(build_call_n, build_call_a): New.
+	(build_op_delete_call): Rewrite to avoid constructing argument lists.
+	(build_over_call): Store converted arguments in a stack-allocated
+	array instead of building a list.
+	(build_cxx_call): Pass arguments in an array instead of as a list.
+	(build_java_interface_fn_ref): Rewrite to avoid constructing
+	argument lists.
+	* tree.h: Update declarations to reflect above changes.
+	* method.c (use_thunk): Use a stack-allocated array to hold
+	the arguments instead of a list.
+	* rtti.c (throw_bad_cast): Update call to cxx_call.
+	(throw_bad_typeid): Likewise.
+	(build_dynamic_cast_1): Likewise.
+	* init.c (build_builtin_delete_call): Use build_call_n.
+	* decl.c (expand_static_init): Likewise.
+	* except.c (cp_protect_cleanup_actions): Likewise.
+	* cp-gimplify.c (genericize_eh_spec_block): Likewise.
+	(gimplify_must_not_throw_expr): Likewise.
+	(cxx_omp_apply_fn): Use build_call_a.
+
 2007-02-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* semantics.c (expand_or_defer_fn): Call c_record_cdtor_fn.

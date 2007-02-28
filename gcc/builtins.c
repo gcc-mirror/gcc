@@ -10124,56 +10124,13 @@ build_function_call_expr (tree fndecl, tree arglist)
 {
   tree fntype = TREE_TYPE (fndecl);
   tree fn = build1 (ADDR_EXPR, build_pointer_type (fntype), fndecl);
-  return fold_builtin_call_list (TREE_TYPE (fntype), fn, arglist);
-}
-
-/* Construct a CALL_EXPR with type TYPE with FN as the function expression.
-   ARGLIST is a TREE_LIST of arguments.  */
-
-tree
-fold_builtin_call_list (tree type, tree fn, tree arglist)
-{
-  tree ret = NULL_TREE;
-  if (TREE_CODE (fn) == ADDR_EXPR)
-    {
-      tree fndecl = TREE_OPERAND (fn, 0);
-      if (TREE_CODE (fndecl) == FUNCTION_DECL
-	  && DECL_BUILT_IN (fndecl))
-	{
-	  /* FIXME: Don't use a list in this interface.  */
-	  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
-	    {
-	      ret = targetm.fold_builtin (fndecl, arglist, false);
-	      if (ret)
-		return ret;
-	    }
-	  else
-	    {
-	      tree tail = arglist;
-	      tree args[MAX_ARGS_TO_FOLD_BUILTIN];
-	      int nargs;
-	      tree exp;
-
-	      for (nargs = 0; nargs < MAX_ARGS_TO_FOLD_BUILTIN; nargs++)
-		{
-		  if (!tail)
-		    break;
-		  args[nargs] = TREE_VALUE (tail);
-		  tail = TREE_CHAIN (tail);
-		}
-	      if (nargs <= MAX_ARGS_TO_FOLD_BUILTIN)
-		{
-		  ret = fold_builtin_n (fndecl, args, nargs, false);
-		  if (ret)
-		    return ret;
-		}
-	      exp = build_call_list (type, fn, arglist);
-	      ret = fold_builtin_varargs (fndecl, exp, false);
-	      return ret ? ret : exp;
-	    }
-	}
-    }
-  return build_call_list (type, fn, arglist);
+  int n = list_length (arglist);
+  tree *argarray = (tree *) alloca (n * sizeof (tree));
+  int i;
+  
+  for (i = 0; i < n; i++, arglist = TREE_CHAIN (arglist))
+    argarray[i] = TREE_VALUE (arglist);
+  return fold_builtin_call_array (TREE_TYPE (fntype), fn, n, argarray);
 }
 
 /* Conveniently construct a function call expression.  FNDECL names the
@@ -10184,24 +10141,26 @@ tree
 build_call_expr (tree fndecl, int n, ...)
 {
   va_list ap;
-  tree ret;
   tree fntype = TREE_TYPE (fndecl);
   tree fn = build1 (ADDR_EXPR, build_pointer_type (fntype), fndecl);
+  tree *argarray = (tree *) alloca (n * sizeof (tree));
+  int i;
 
   va_start (ap, n);
-  ret = fold_builtin_call_valist (TREE_TYPE (fntype), fn, n, ap);
+  for (i = 0; i < n; i++)
+    argarray[i] = va_arg (ap, tree);
   va_end (ap);
-  return ret;
+  return fold_builtin_call_array (TREE_TYPE (fntype), fn, n, argarray);
 }
 
 /* Construct a CALL_EXPR with type TYPE with FN as the function expression.
-   N arguments are passed in the va_list AP.  */
+   N arguments are passed in the array ARGARRAY.  */
 
 tree
-fold_builtin_call_valist (tree type,
-			  tree fn,
-			  int n,
-			  va_list ap)
+fold_builtin_call_array (tree type,
+			 tree fn,
+			 int n,
+			 tree *argarray)
 {
   tree ret = NULL_TREE;
   int i;
@@ -10216,15 +10175,8 @@ fold_builtin_call_valist (tree type,
         if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
           {
             tree arglist = NULL_TREE;
-            va_list ap0;
-            va_copy (ap0, ap);
-            for (i = 0; i < n; i++)
-              {
-                tree arg = va_arg (ap0, tree);
-                arglist = tree_cons (NULL_TREE, arg, arglist);
-	       }
-            va_end (ap0);
-            arglist = nreverse (arglist);
+	    for (i = n - 1; i >= 0; i--)
+	      arglist = tree_cons (NULL_TREE, argarray[i], arglist);
             ret = targetm.fold_builtin (fndecl, arglist, false);
             if (ret)
               return ret;
@@ -10233,25 +10185,19 @@ fold_builtin_call_valist (tree type,
           {
             /* First try the transformations that don't require consing up
                an exp.  */
-            tree args[MAX_ARGS_TO_FOLD_BUILTIN];
-            va_list ap0;
-            va_copy (ap0, ap);
-            for (i = 0; i < n; i++)
-              args[i] = va_arg (ap0, tree);
-            va_end (ap0);
-            ret = fold_builtin_n (fndecl, args, n, false);
+            ret = fold_builtin_n (fndecl, argarray, n, false);
             if (ret)
               return ret;
           }
 
         /* If we got this far, we need to build an exp.  */
-        exp = build_call_valist (type, fn, n, ap);
+        exp = build_call_array (type, fn, n, argarray);
         ret = fold_builtin_varargs (fndecl, exp, false);
         return ret ? ret : exp;
       }
   }
 
-  return build_call_valist (type, fn, n, ap);
+  return build_call_array (type, fn, n, argarray);
 }
 
 /* Construct a new CALL_EXPR using the tail of the argument list of EXP
