@@ -1,6 +1,6 @@
 # Top level -*- makefile -*- fragment for GNU Ada (GNAT).
 #   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-#   2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+#   2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -386,7 +386,8 @@ ada/doctools/xgnatugn$(build_exeext): ada/xgnatugn.adb
 # Note that gnat_ugn_unw.texi does not depend on xgnatugn 
 # being built so we can distribute a pregenerated gnat_ugn_unw.info
 
-doc/gnat_ugn_unw.texi: $(srcdir)/ada/gnat_ugn.texi $(srcdir)/ada/ug_words
+doc/gnat_ugn_unw.texi: $(srcdir)/ada/gnat_ugn.texi $(srcdir)/ada/ug_words \
+   $(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
 	$(MAKE) ada/doctools/xgnatugn$(build_exeext)
 	ada/doctools/xgnatugn unw $(srcdir)/ada/gnat_ugn.texi \
 	   $(srcdir)/ada/ug_words doc/gnat_ugn_unw.texi
@@ -394,7 +395,6 @@ doc/gnat_ugn_unw.texi: $(srcdir)/ada/gnat_ugn.texi $(srcdir)/ada/ug_words
 doc/gnat_ugn_unw.info: doc/gnat_ugn_unw.texi			\
    $(gcc_docdir)/include/fdl.texi $(gcc_docdir)/include/gcc-common.texi	\
    gcc-vers.texi
-
 	if [ x$(BUILD_INFO) = xinfo ]; then \
 	  rm -f $(@)*; \
 	  $(MAKEINFO) $(MAKEINFOFLAGS) -I$(gcc_docdir)/include \
@@ -409,7 +409,8 @@ doc/gnat_rm.info: ada/gnat_rm.texi $(gcc_docdir)/include/fdl.texi	\
             -I$(srcdir)/ada -o $@ $<; \
 	else true; fi
 
-doc/gnat-style.info: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
+doc/gnat-style.info: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi	\
+   $(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
 	if [ x$(BUILD_INFO) = xinfo ]; then \
 	  rm -f $(@)*; \
 	  $(MAKEINFO) $(MAKEINFOFLAGS) -I$(gcc_docdir)/include \
