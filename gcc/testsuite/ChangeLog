@@ -1,3 +1,10 @@
+2007-02-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/torture/builtin-frexp-1.c: On mips*-*-irix6* and
+	powerpc*, use -funsafe-math-optimizations.
+	* gcc.dg/torture/builtin-logb-1.c: Likewise.
+	* gcc.dg/torture/builtin-modf-1.c: Likewise.
+
 2007-02-28  Tobias Burnus  <burnus@net-b.de>
 	    Paul Thomas  <pault@gcc.gnu.org>
 
