@@ -1,3 +1,7 @@
+2007-02-28  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* g++.dg/inherit/thunk7.C: New test.
+
 2007-02-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/30970
