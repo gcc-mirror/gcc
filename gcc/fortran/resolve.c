@@ -1016,22 +1016,14 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype)
 		 since same file external procedures are not resolvable
 		 in gfortran, it is a good deal easier to leave them to
 		 intrinsic.c.  */
-	      if (ptype != PROC_UNKNOWN && ptype != PROC_EXTERNAL)
+	      if (ptype != PROC_UNKNOWN
+		  && ptype != PROC_DUMMY
+		  && ptype != PROC_EXTERNAL)
 		{
 		  gfc_error ("By-value argument at %L is not allowed "
 			     "in this context", &e->where);
 		  return FAILURE;
 		}
-
-	      if (((e->ts.type == BT_REAL || e->ts.type == BT_COMPLEX)
-		   && e->ts.kind > gfc_default_real_kind)
-		  || (e->ts.kind > gfc_default_integer_kind))
-		{
-		  gfc_error ("Kind of by-value argument at %L is larger "
-			     "than default kind", &e->where);
-		  return FAILURE;
-		}
-
 	    }
 
 	  /* Statement functions have already been excluded above.  */
