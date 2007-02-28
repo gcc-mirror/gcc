@@ -1,4 +1,14 @@
 2007-02-28  Tobias Burnus  <burnus@net-b.de>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30888
+	PR fortran/30887
+	* resolve.c (resolve_actual_arglist): Allow by-value
+	arguments and non-default-kind for %VAL().
+	* trans-expr.c (conv_arglist_function): Allow
+	non-default-kind for %VAL().
+
+2007-02-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/30968
 	* primary.c (next_string_char): Correct reading a character

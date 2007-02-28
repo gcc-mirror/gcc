@@ -1934,40 +1934,12 @@ is_aliased_array (gfc_expr * e)
 static void
 conv_arglist_function (gfc_se *se, gfc_expr *expr, const char *name)
 {
-  tree type = NULL_TREE;
   /* Pass by value for g77 %VAL(arg), pass the address
      indirectly for %LOC, else by reference.  Thus %REF
      is a "do-nothing" and %LOC is the same as an F95
      pointer.  */
   if (strncmp (name, "%VAL", 4) == 0)
-    {
-      gfc_conv_expr (se, expr);
-      /* %VAL converts argument to default kind.  */
-      switch (expr->ts.type)
-	{
-	  case BT_REAL:
-	    type = gfc_get_real_type (gfc_default_real_kind);
-	    se->expr = fold_convert (type, se->expr);
-	    break;
-	  case BT_COMPLEX:
-	    type = gfc_get_complex_type (gfc_default_complex_kind);
-	    se->expr = fold_convert (type, se->expr);
-	    break;
-	  case BT_INTEGER:
-	    type = gfc_get_int_type (gfc_default_integer_kind);
-	    se->expr = fold_convert (type, se->expr);
-	    break;
-	  case BT_LOGICAL:
-	    type = gfc_get_logical_type (gfc_default_logical_kind);
-	    se->expr = fold_convert (type, se->expr);
-	    break;
-	  /* This should have been resolved away.  */
-	  case BT_UNKNOWN: case BT_CHARACTER: case BT_DERIVED:
-	  case BT_PROCEDURE: case BT_HOLLERITH:
-	    gfc_internal_error ("Bad type in conv_arglist_function");
-	}
-	  
-    }
+    gfc_conv_expr (se, expr);
   else if (strncmp (name, "%LOC", 4) == 0)
     {
       gfc_conv_expr_reference (se, expr);
