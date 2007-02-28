@@ -1,3 +1,7 @@
+2007-02-28  Eric Christopher  <echristo@apple.com>
+
+	* Makefile.in (install-include-dir): Don't rm -rf include.
+
 2007-02-28  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/30364
@@ -35,7 +39,7 @@
 
 	* calls.c (emit_library_call_value_1): Handle partial registers
 	correctly when building up CALL_INSN_FUNCTION_USAGE.
-	
+
 2007-02-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa/predicates.md (move_src_operand): Allow zero for mode.
@@ -173,7 +177,7 @@
 
 	* loop-iv.c (simplify_using_initial_values): Fix oversight in previous
 	change; avoid a memory leak when returning early.
-	
+
 2007-02-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-decl.c (static_ctors): Move to c-common.c.
@@ -472,7 +476,7 @@
 2007-02-22  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/30843
-	* tree-vect-transform.c (vect_transform_loop): Remove strided scalar 
+	* tree-vect-transform.c (vect_transform_loop): Remove strided scalar
 	stores only after all the group is vectorized.
 
 2007-02-22  Dorit Nuzman  <dorit@il.ibm.com>

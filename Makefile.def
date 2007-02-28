@@ -484,10 +484,6 @@ dependencies = { module=all-target-libobjc; on=all-target-libiberty; };
 dependencies = { module=all-target-libobjc; on=all-target-boehm-gc; };
 dependencies = { module=all-target-libstdc++-v3; on=all-target-libiberty; };
 
-// Target libraries installed under gcc need to be installed before gcc
-dependencies = { module=install-target-libssp; on=install-gcc; };
-dependencies = { module=install-target-libgomp; on=install-gcc; };
-
 // Target modules in the 'src' repository.
 lang_env_dependencies = { module=examples; };
 lang_env_dependencies = { module=libtermcap; };
