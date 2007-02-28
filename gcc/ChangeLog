@@ -1,3 +1,8 @@
+2007-02-28  Jan Hubicka  <jh@suse.cz>
+
+	* predict.def (PRED_TREE_EARLY_RETURN, PRED_CONST_RETURN,
+	PRED_NEGATIVE_RETURN): Update outcomes.
+
 2007-02-28  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* calls.c (emit_library_call_value_1): Handle partial registers

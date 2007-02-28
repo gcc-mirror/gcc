@@ -97,16 +97,16 @@ DEF_PREDICTOR (PRED_TREE_FPOPCODE, "fp_opcode (on trees)", HITRATE (90), 0)
 DEF_PREDICTOR (PRED_CALL, "call", HITRATE (69), 0)
 
 /* Branch causing function to terminate is probably not taken.  */
-DEF_PREDICTOR (PRED_TREE_EARLY_RETURN, "early return (on trees)", HITRATE (45), 0)
+DEF_PREDICTOR (PRED_TREE_EARLY_RETURN, "early return (on trees)", HITRATE (54), 0)
 
 /* Branch containing goto is probably not taken.  */
 DEF_PREDICTOR (PRED_GOTO, "goto", HITRATE (70), 0)
 
 /* Branch ending with return constant is probably not taken.  */
-DEF_PREDICTOR (PRED_CONST_RETURN, "const return", HITRATE (95), 0)
+DEF_PREDICTOR (PRED_CONST_RETURN, "const return", HITRATE (67), 0)
 
 /* Branch ending with return negative constant is probably not taken.  */
-DEF_PREDICTOR (PRED_NEGATIVE_RETURN, "negative return", HITRATE (77), 0)
+DEF_PREDICTOR (PRED_NEGATIVE_RETURN, "negative return", HITRATE (96), 0)
 
 /* Branch ending with return; is probably not taken */
 DEF_PREDICTOR (PRED_NULL_RETURN, "null return", HITRATE (96), 0)
