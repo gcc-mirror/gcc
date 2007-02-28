@@ -3859,7 +3859,8 @@ extern bool check_dtor_name			(tree, tree);
 extern tree build_vfield_ref			(tree, tree);
 extern tree build_conditional_expr		(tree, tree, tree);
 extern tree build_addr_func			(tree);
-extern tree build_call				(tree, tree);
+extern tree build_call_a			(tree, int, tree*);
+extern tree build_call_n			(tree, int, ...);
 extern bool null_ptr_cst_p			(tree);
 extern bool sufficient_parms_p			(tree);
 extern tree type_decays_to			(tree);
@@ -3889,7 +3890,7 @@ extern tree strip_top_quals			(tree);
 extern tree perform_implicit_conversion		(tree, tree);
 extern tree perform_direct_initialization_if_possible (tree, tree, bool);
 extern tree in_charge_arg_for_name		(tree);
-extern tree build_cxx_call			(tree, tree);
+extern tree build_cxx_call			(tree, int, tree *);
 #ifdef ENABLE_CHECKING
 extern void validate_conversion_obstack		(void);
 #endif /* ENABLE_CHECKING */
@@ -4174,6 +4175,7 @@ extern void synthesize_method			(tree);
 extern tree lazily_declare_fn			(special_function_kind,
 						 tree);
 extern tree skip_artificial_parms_for		(tree, tree);
+extern int num_artificial_parms_for		(tree);
 extern tree make_alias_for			(tree, tree);
 
 /* In optimize.c */

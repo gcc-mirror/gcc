@@ -83,7 +83,7 @@ static int function_types_compatible_p (tree, tree);
 static int type_lists_compatible_p (tree, tree);
 static tree decl_constant_value_for_broken_optimization (tree);
 static tree lookup_field (tree, tree);
-static tree convert_arguments (tree, tree, tree, tree);
+static int convert_arguments (int, tree *, tree, tree, tree, tree);
 static tree pointer_diff (tree, tree);
 static tree convert_for_assignment (tree, tree, enum impl_conv, tree, tree,
 				    int);
@@ -2228,9 +2228,11 @@ tree
 build_function_call (tree function, tree params)
 {
   tree fntype, fundecl = 0;
-  tree coerced_params;
   tree name = NULL_TREE, result;
   tree tem;
+  int nargs;
+  tree *argarray;
+  
 
   /* Strip NON_LVALUE_EXPRs, etc., since we aren't using as an lvalue.  */
   STRIP_TYPE_NOPS (function);
@@ -2317,30 +2319,30 @@ build_function_call (tree function, tree params)
   /* Convert the parameters to the types declared in the
      function prototype, or apply default promotions.  */
 
-  coerced_params
-    = convert_arguments (TYPE_ARG_TYPES (fntype), params, function, fundecl);
-
-  if (coerced_params == error_mark_node)
+  nargs = list_length (params);
+  argarray = (tree *) alloca (nargs * sizeof (tree));
+  nargs = convert_arguments (nargs, argarray, TYPE_ARG_TYPES (fntype), 
+			     params, function, fundecl);
+  if (nargs < 0)
     return error_mark_node;
 
   /* Check that the arguments to the function are valid.  */
 
-  check_function_arguments (TYPE_ATTRIBUTES (fntype), coerced_params,
+  check_function_arguments (TYPE_ATTRIBUTES (fntype), nargs, argarray,
 			    TYPE_ARG_TYPES (fntype));
 
   if (require_constant_value)
     {
-      result = fold_build_call_list_initializer (TREE_TYPE (fntype),
-						 function,
-						 coerced_params);
+      result = fold_build_call_array_initializer (TREE_TYPE (fntype),
+						  function, nargs, argarray);
       if (TREE_CONSTANT (result)
 	  && (name == NULL_TREE
 	      || strncmp (IDENTIFIER_POINTER (name), "__builtin_", 10) != 0))
 	pedwarn_init ("initializer element is not constant");
     }
   else
-    result = fold_build_call_list (TREE_TYPE (fntype),
-				   function, coerced_params);
+    result = fold_build_call_array (TREE_TYPE (fntype),
+				    function, nargs, argarray);
 
   if (VOID_TYPE_P (TREE_TYPE (result)))
     return result;
@@ -2348,9 +2350,8 @@ build_function_call (tree function, tree params)
 }
 
 /* Convert the argument expressions in the list VALUES
-   to the types in the list TYPELIST.  The result is a list of converted
-   argument expressions, unless there are too few arguments in which
-   case it is error_mark_node.
+   to the types in the list TYPELIST.  The resulting arguments are
+   stored in the array ARGARRAY which has size NARGS.
 
    If TYPELIST is exhausted, or when an element has NULL as its type,
    perform the default conversions.
@@ -2364,14 +2365,17 @@ build_function_call (tree function, tree params)
 
    This is also where warnings about wrong number of args are generated.
 
-   Both VALUES and the returned value are chains of TREE_LIST nodes
-   with the elements of the list in the TREE_VALUE slots of those nodes.  */
+   VALUES is a chain of TREE_LIST nodes with the elements of the list
+   in the TREE_VALUE slots of those nodes.
 
-static tree
-convert_arguments (tree typelist, tree values, tree function, tree fundecl)
+   Returns the actual number of arguments processed (which may be less
+   than NARGS in some error situations), or -1 on failure.  */
+
+static int
+convert_arguments (int nargs, tree *argarray,
+		   tree typelist, tree values, tree function, tree fundecl)
 {
   tree typetail, valtail;
-  tree result = NULL;
   int parmnum;
   tree selector;
 
@@ -2385,7 +2389,7 @@ convert_arguments (tree typelist, tree values, tree function, tree fundecl)
   selector = objc_message_selector ();
 
   /* Scan the given expressions and types, producing individual
-     converted arguments and pushing them on RESULT in reverse order.  */
+     converted arguments and storing them in ARGARRAY.  */
 
   for (valtail = values, typetail = typelist, parmnum = 0;
        valtail;
@@ -2400,7 +2404,7 @@ convert_arguments (tree typelist, tree values, tree function, tree fundecl)
       if (type == void_type_node)
 	{
 	  error ("too many arguments to function %qE", function);
-	  break;
+	  return parmnum;
 	}
 
       if (selector && argnum > 2)
@@ -2558,35 +2562,37 @@ convert_arguments (tree typelist, tree values, tree function, tree fundecl)
 		  && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
 		parmval = default_conversion (parmval);
 	    }
-	  result = tree_cons (NULL_TREE, parmval, result);
+	  argarray[parmnum] = parmval;
 	}
       else if (TREE_CODE (TREE_TYPE (val)) == REAL_TYPE
 	       && (TYPE_PRECISION (TREE_TYPE (val))
 		   < TYPE_PRECISION (double_type_node))
 	       && !DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (val))))
 	/* Convert `float' to `double'.  */
-	result = tree_cons (NULL_TREE, convert (double_type_node, val), result);
+	argarray[parmnum] = convert (double_type_node, val);
       else if ((invalid_func_diag =
 		targetm.calls.invalid_arg_for_unprototyped_fn (typelist, fundecl, val)))
 	{
 	  error (invalid_func_diag);
-	  return error_mark_node;
+	  return -1;
 	}
       else
 	/* Convert `short' and `char' to full-size `int'.  */
-	result = tree_cons (NULL_TREE, default_conversion (val), result);
+	argarray[parmnum] = default_conversion (val);
 
       if (typetail)
 	typetail = TREE_CHAIN (typetail);
     }
 
+  gcc_assert (parmnum == nargs);
+
   if (typetail != 0 && TREE_VALUE (typetail) != void_type_node)
     {
       error ("too few arguments to function %qE", function);
-      return error_mark_node;
+      return -1;
     }
 
-  return nreverse (result);
+  return parmnum;
 }
 
 /* This is the entry point used by the parser to build unary operators

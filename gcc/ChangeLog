@@ -1,3 +1,25 @@
+2007-02-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* builtins.c (fold_builtin_call_list, fold_builtin_call_valist):
+	Delete, and replace with...
+	(fold_builtin_call_array): This.  Update callers to use it.
+	* fold-const.c (fold_build_call_list): Delete, and replace with...
+	(fold_build_call_array): This.
+	(fold_build_call_list_initializer): Delete, and replace with...
+	(fold_build_call_array_initializer): This.
+	* tree.h: Update declarations to reflect above changes.
+
+	* c-typeck.c (build_function_call): Store converted arguments
+	in a stack-allocated array instead of building a list.
+	(convert_arguments): Store arguments in the array passed in as an
+	argument, and return the actual number of arguments.
+	* c-format.c: (check_function_format): Pass arguments in an
+	array instead of a list.
+	* c-common.c (check_function_nonnull): Likewise.
+	(check_function_sentinel): Likewise.
+	(check_function_arguments): Likewise.
+	* c-common.h: Update declarations to reflect above changes.
+
 2007-02-28  Jan Hubicka  <jh@suse.cz>
 
 	* predict.def (PRED_TREE_EARLY_RETURN, PRED_CONST_RETURN,

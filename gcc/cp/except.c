@@ -99,7 +99,7 @@ cp_protect_cleanup_actions (void)
 
      When the destruction of an object during stack unwinding exits
      using an exception ... void terminate(); is called.  */
-  return build_call (terminate_node, NULL_TREE);
+  return build_call_n (terminate_node, 0);
 }
 
 static tree
