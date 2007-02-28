@@ -1163,9 +1163,11 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
     #if MPFR_VERSION < MPFR_VERSION_NUM(2,2,0)
     choke me
     #endif
-    mpfr_t n; mpfr_init(n);
-    mpfr_t x; mpfr_init(x);
+    mpfr_t n;
+    mpfr_t x;
     int t;
+    mpfr_init (n);
+    mpfr_init (x);
     mpfr_atan2 (n, n, x, GMP_RNDN);
     mpfr_erfc (n, x, GMP_RNDN);
     mpfr_subnormalize (x, t, GMP_RNDN);
