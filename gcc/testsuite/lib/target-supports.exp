@@ -340,6 +340,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget arm*-*-eabi*]
 	     || [istarget arm*-*-elf]
 	     || [istarget arm*-*-symbianelf*]
+	     || [istarget bfin-*-*]
 	     || [istarget powerpc-*-eabi*]
 	     || [istarget strongarm*-*-elf]
 	     || [istarget xscale*-*-elf]
