@@ -1,3 +1,9 @@
+2007-02-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa/predicates.md (move_src_operand): Allow zero for mode.
+	* pa/pa.md: Fix constraints for zero CONST_DOUBLE in 64-bit DFmode
+	move pattern.
+
 2007-02-27  Mike Stump  <mrs@apple.com>
 
 	* config/darwin-crt3.c: Avoid compilation when compiling for a
