@@ -46464,8 +46464,6 @@ configure-target-libobjc: maybe-configure-target-boehm-gc
 all-target-libobjc: maybe-all-target-libiberty
 all-target-libobjc: maybe-all-target-boehm-gc
 all-target-libstdc++-v3: maybe-all-target-libiberty
-install-target-libssp: maybe-install-gcc
-install-target-libgomp: maybe-install-gcc
 all-target-libgloss: maybe-configure-target-newlib
 all-target-winsup: maybe-all-target-libiberty
 all-target-winsup: maybe-all-target-libtermcap
