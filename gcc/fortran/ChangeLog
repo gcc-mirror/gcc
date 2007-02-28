@@ -1,3 +1,15 @@
+2007-02-28  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	Backport from trunk
+	PR fortran/30869
+	PR libfortran/30533
+        PR libfortran/30765
+	* match.c(gfc_match_iterator):  Remove conflict between
+	loop variable and pointer.
+	* fortran/iresolve.c(gfc_resolve_maxloc):  Remove coercion of
+	argument to default integer.
+        (gfc_resolve_minloc):  Likewise.
+
 2007-02-26  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* gfortran.texi: Standardize title page, remove version number

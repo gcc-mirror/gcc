@@ -1,3 +1,12 @@
+2007-02-28  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	Backport from trunk
+	PR fortran/30869
+	PR libfortran/30533
+        PR libfortran/30765
+	* gfortran.dg/intrinsic_intkinds_1.f90:  New test.
+	* gfortran.dg/do_pointer_1.f90:  New test.
+
 2007-02-26  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.target/powerpc/stabs-attrib-vect-darwin.c: Allow
