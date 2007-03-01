@@ -1,3 +1,12 @@
+2007-03-01  Simon Baldwin <simonb@google.com>
+
+	PR c++/23689
+	* warn/ignored_typedef.C: New.
+	* init/ctor8.C: Added dg-warning to consume ignored typedef
+	warning. 
+	* template/typedef2.C: Ditto.  Moved dg-error onto its own line
+	and added an explicit line number.
+
 2007-02-28  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/30364
