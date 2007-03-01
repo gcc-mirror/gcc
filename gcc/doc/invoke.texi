@@ -2903,10 +2903,6 @@ A pointer is compared against integer zero with @samp{<}, @samp{<=},
 @item
 A variable might be changed by @samp{longjmp} or @samp{vfork}.
 
-@item
-Any of several floating-point events that often indicate errors, such as
-overflow, underflow, loss of precision, etc.
-
 @item @r{(C++ only)}
 An enumerator and a non-enumerator both appear in a conditional expression.
 
