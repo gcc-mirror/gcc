@@ -1,3 +1,8 @@
+2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* Makefile.am: Add dummy install-pdf target.
+	* Makefile.in: Regenerate
+
 2007-03-01  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/31005

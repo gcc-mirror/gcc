@@ -113,6 +113,8 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 
 # Installation of distribution html documentation not yet supported
 # TODO: Write custom install-html rule.
-.PHONY: install-html
+.PHONY: install-html install-pdf
 install-html:
 
+# No install-pdf support in automake yet
+install-pdf:
