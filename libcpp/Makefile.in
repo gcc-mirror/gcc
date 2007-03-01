@@ -184,6 +184,7 @@ pdf:
 html:
 info:
 install-info:
+install-pdf:
 install-man:
 install-html:
 
