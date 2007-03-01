@@ -1,3 +1,9 @@
+2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* Makefile.in: Add install-pdf target as copied from
+	automake v1.10 rules.
+	* testsuite/Makefile.in: Add dummy install-pdf target.
+
 2007-03-01  Peter Breitenlohner  <peb@mppmu.mpg.de>
             Eric Botcazou  <ebotcazou@libertysurf.fr>
 

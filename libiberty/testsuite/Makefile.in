@@ -73,7 +73,8 @@ test-expandargv: $(srcdir)/test-expandargv.c ../libiberty.a
 		$(srcdir)/test-expandargv.c ../libiberty.a
 
 # Standard (either GNU or Cygnus) rules we don't use.
-html install-html info install-info clean-info dvi pdf install etags tags installcheck:
+html install-html info install-info clean-info dvi pdf install-pdf \
+install etags tags installcheck:
 
 # The standard clean rules.
 mostlyclean:
