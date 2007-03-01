@@ -1121,10 +1121,12 @@ enum reg_class
    or out of a register in CLASS in MODE.  If it can be done directly,
    NO_REGS is returned.  */
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X)		\
-  /* Restrict which direct reloads are allowed for VFP regs.  */ \
+  /* Restrict which direct reloads are allowed for VFP/iWMMXt regs.  */ \
   ((TARGET_VFP && TARGET_HARD_FLOAT				\
     && (CLASS) == VFP_REGS)					\
-   ? vfp_secondary_reload_class (MODE, X)			\
+   ? coproc_secondary_reload_class (MODE, X, FALSE)		\
+   : (TARGET_IWMMXT && (CLASS) == IWMMXT_REGS)			\
+   ? coproc_secondary_reload_class (MODE, X, TRUE)		\
    : TARGET_32BIT						\
    ? (((MODE) == HImode && ! arm_arch4 && true_regnum (X) == -1) \
     ? GENERAL_REGS : NO_REGS)					\
@@ -1132,10 +1134,12 @@ enum reg_class
 
 /* If we need to load shorts byte-at-a-time, then we need a scratch.  */
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X)		\
-  /* Restrict which direct reloads are allowed for VFP regs.  */ \
+  /* Restrict which direct reloads are allowed for VFP/iWMMXt regs.  */ \
   ((TARGET_VFP && TARGET_HARD_FLOAT				\
     && (CLASS) == VFP_REGS)					\
-    ? vfp_secondary_reload_class (MODE, X) :			\
+    ? coproc_secondary_reload_class (MODE, X, FALSE) :		\
+    (TARGET_IWMMXT && (CLASS) == IWMMXT_REGS) ?			\
+    coproc_secondary_reload_class (MODE, X, TRUE) :		\
   /* Cannot load constants into Cirrus registers.  */		\
    (TARGET_MAVERICK && TARGET_HARD_FLOAT			\
      && (CLASS) == CIRRUS_REGS					\
