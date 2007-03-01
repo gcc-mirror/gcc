@@ -269,9 +269,10 @@ exception_gc.lo: exception.c
 
 doc: info dvi pdf html
 
-# No install-html support
-.PHONY: install-html
+# No install-html or install-pdf support
+.PHONY: install-html install-pdf
 install-html:
+install-pdf:
 
 libobjc$(libext).la: $(OBJS)
 	$(LIBTOOL_LINK) $(CC) -o $@ $(OBJS) \
