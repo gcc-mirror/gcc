@@ -18792,7 +18792,7 @@ ix86_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
      with any other mode acceptable to MMX registers.  */
   if (GET_MODE_SIZE (mode2) == 8
       && ix86_hard_regno_mode_ok (FIRST_MMX_REG, mode2))
-    return (GET_MODE_SIZE (mode2) == 8
+    return (GET_MODE_SIZE (mode1) == 8
 	    && ix86_hard_regno_mode_ok (FIRST_MMX_REG, mode1));
 
   return false;
