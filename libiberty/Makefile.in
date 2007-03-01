@@ -245,7 +245,24 @@ info: libiberty.info info-subdir
 install-info: install-info-subdir
 clean-info: clean-info-subdir
 dvi: libiberty.dvi dvi-subdir
-pdf: libiberty.pdf pdf-subdir
+
+LIBIBERTY_PDFFILES = libiberty.pdf
+
+pdf: $(LIBIBERTY_PDFFILES) pdf-subdir
+
+.PHONY: install-pdf
+
+pdf__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
+
+install-pdf: $(LIBIBERTY_PDFFILES)
+	@$(NORMAL_INSTALL)
+	test -z "$(pdfdir)" || $(mkinstalldirs) "$(DESTDIR)$(pdfdir)"
+	@list='$(LIBIBERTY_PDFFILES)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(pdf__strip_dir) \
+	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(pdfdir)/$$f'"; \
+	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/$$f"; \
+	done
 
 # html, install-html targets
 HTMLS = libiberty.html
