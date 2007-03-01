@@ -363,6 +363,9 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   if (flag_inline_functions)
     flag_inline_trees = 2;
 
+  /* The structural alias analysis machinery essentially assumes that
+     everything is addressable (modulo bit-fields) by disregarding
+     the TYPE_NONALIASED_COMPONENT and DECL_NONADDRESSABLE_P macros.  */
   flag_tree_salias = 0;
 
   return false;
