@@ -3269,8 +3269,7 @@ got_specific:
   /* TODO: We should probably only allow elemental functions here.  */
   flag |= (expr->ts.type != BT_INTEGER && expr->ts.type != BT_CHARACTER);
 
-  if (pedantic && gfc_init_expr
-      && flag && gfc_init_expr_extensions (specific))
+  if (gfc_init_expr && flag && gfc_init_expr_extensions (specific))
     {
       if (gfc_notify_std (GFC_STD_GNU, "Extension: Evaluation of "
 	    "nonstandard initialization expression at %L", &expr->where)

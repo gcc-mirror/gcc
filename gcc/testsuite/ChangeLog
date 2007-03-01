@@ -1,3 +1,9 @@
+2007-03-01  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	Backport from trunk
+	PR fortran/29441
+	* gfortran.dg/initialization_4.f90: New test.
+
 2007-02-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/execute/20070227-1.c: New test.
