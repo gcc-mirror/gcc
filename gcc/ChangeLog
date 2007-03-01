@@ -1,3 +1,10 @@
+2007-03-01  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-ssa-loop-prefetch.c (determine_unroll_factor):  Bound the unroll
+	factor by the estimated number of iterations.
+	(loop_prefetch_arrays): Do not prefetch in loops that iterate less than
+	prefetch latency.
+
 2007-03-01  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (emit_move_complex_push): Export.
