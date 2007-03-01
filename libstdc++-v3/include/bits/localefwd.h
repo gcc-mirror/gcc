@@ -45,6 +45,7 @@
 #include <bits/c++config.h>
 #include <bits/c++locale.h>     // Defines __c_locale, config-specific includes
 #include <iosfwd>		// For ostreambuf_iterator, istreambuf_iterator
+#include <cctype>
 #include <bits/functexcept.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
