@@ -1,14 +1,25 @@
+2007-03-01  Paul Thomas <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/30660
+	* resolve.c (pure_function, resolve_function): Initialize name to
+	null to clear up build warnings.
+	(has_default_initializer): New function.
+	(resolve_fl_variable): Call has_default_initializer to determine if
+	the derived type has a default initializer to its ultimate
+	components.
+
 2007-02-28  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	Backport from trunk
 	PR fortran/30869
 	PR libfortran/30533
-        PR libfortran/30765
+	PR libfortran/30765
 	* match.c(gfc_match_iterator):  Remove conflict between
 	loop variable and pointer.
 	* fortran/iresolve.c(gfc_resolve_maxloc):  Remove coercion of
 	argument to default integer.
-        (gfc_resolve_minloc):  Likewise.
+	(gfc_resolve_minloc):  Likewise.
 
 2007-02-26  Brooks Moses  <brooks.moses@codesourcery.com>
 
@@ -18,8 +29,8 @@
 2007-02-24  Roger Sayle  <roger@eyesopen.com>
 	    Paul Thomas <pault@gcc.gnu.org>
 
-        PR fortran/30400
-        * match.c (match_forall_iterator): Use gfc_match_expr instead
+	PR fortran/30400
+	* match.c (match_forall_iterator): Use gfc_match_expr instead
 	of gfc_match_variable to match the iterator variable.  Return
 	MATCH_NO if not a variable.  Remove the reset of the symbol's
 	flavor in cleanup.

@@ -1501,6 +1501,8 @@ pure_function (gfc_expr * e, const char **name)
 {
   int pure;
 
+  *name = NULL;
+
   if (e->symtree != NULL
         && e->symtree->n.sym != NULL
         && e->symtree->n.sym->attr.proc == PROC_ST_FUNCTION)
@@ -1681,6 +1683,7 @@ resolve_function (gfc_expr * expr)
 #undef GENERIC_ID
 
   need_full_assumed_size = temp;
+  name = NULL;
 
   if (!pure_function (expr, &name) && name)
     {
@@ -5530,6 +5533,22 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
   return SUCCESS;
 }
 
+
+static gfc_component *
+has_default_initializer (gfc_symbol *der)
+{
+  gfc_component *c;
+  for (c = der->components; c; c = c->next)
+    if ((c->ts.type != BT_DERIVED && c->initializer)
+	|| (c->ts.type == BT_DERIVED
+	    && !c->pointer
+	    && has_default_initializer (c->ts.derived)))
+      break;
+
+  return c;
+}
+
+
 /* Resolve symbols with flavor variable.  */
 
 static try
@@ -5538,7 +5557,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
   int flag;
   int i;
   gfc_expr *e;
-  gfc_expr *constructor_expr;
+  gfc_component *c;
   const char * auto_save_msg;
 
   auto_save_msg = "automatic object '%s' at %L cannot have the "
@@ -5671,18 +5690,19 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 	}
     }
 
+   /* Do not use gfc_default_initializer to test for a default initializer
+      in the fortran because it generates a hidden default for allocatable
+      components.  */
+   c = NULL;
+   if (sym->ts.type == BT_DERIVED && !(sym->value || flag))
+     c = has_default_initializer (sym->ts.derived);
+ 
   /* 4th constraint in section 11.3:  "If an object of a type for which
      component-initialization is specified (R429) appears in the
      specification-part of a module and does not have the ALLOCATABLE
      or POINTER attribute, the object shall have the SAVE attribute."  */
-
-  constructor_expr = NULL;
-  if (sym->ts.type == BT_DERIVED && !(sym->value || flag))
-	constructor_expr = gfc_default_initializer (&sym->ts);
-
-  if (sym->ns->proc_name
+  if (c && sym->ns->proc_name
 	&& sym->ns->proc_name->attr.flavor == FL_MODULE
-	&& constructor_expr
 	&& !sym->ns->save_all && !sym->attr.save
 	&& !sym->attr.pointer && !sym->attr.allocatable)
     {
