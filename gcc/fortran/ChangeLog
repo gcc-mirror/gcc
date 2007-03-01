@@ -1,4 +1,11 @@
-2007-03-01  Paul Thomas <pault@gcc.gnu.org>
+2007-03-01  Tobias Schlueter  <tobi@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/29441
+	* intrinsic.c (gfc_intrinsic_func_interface): Always check if
+	intrinsic is allowed in initialization expression.
+
+2007-03-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
 	PR fortran/30660
