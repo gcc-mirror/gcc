@@ -90,9 +90,10 @@ AM_MAKEFLAGS = \
 
 MAKEOVERRIDES=
 
-.PHONY: install-html
-
+# No install-html or install-pdf support in automake yet
+.PHONY: install-html install-pdf
 install-html:
+install-pdf:
 
 ## ################################################################
 
