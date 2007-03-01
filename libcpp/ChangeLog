@@ -1,3 +1,7 @@
+2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* Makefile.in: Add dummy install-pdf target.
+
 2007-01-30  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/30468:
