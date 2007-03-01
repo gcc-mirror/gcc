@@ -191,6 +191,9 @@ int m68k_last_compare_had_fp_operands;
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX m68k_struct_value_rtx
 
+#undef TARGET_CANNOT_FORCE_CONST_MEM
+#define TARGET_CANNOT_FORCE_CONST_MEM m68k_illegitimate_symbolic_constant_p
+
 static const struct attribute_spec m68k_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
@@ -1663,6 +1666,23 @@ output_btst (rtx *operands, rtx countop, rtx dataop, rtx insn, int signpos)
   return "btst %0,%1";
 }
 
+/* Return true if X is an illegitimate symbolic constant.  */
+
+bool
+m68k_illegitimate_symbolic_constant_p (rtx x)
+{
+  rtx base, offset;
+
+  if (M68K_OFFSETS_MUST_BE_WITHIN_SECTIONS_P)
+    {
+      split_const (x, &base, &offset);
+      if (GET_CODE (base) == SYMBOL_REF
+	  && !offset_within_block_p (base, INTVAL (offset)))
+	return true;
+    }
+  return false;
+}
+
 /* Legitimize PIC addresses.  If the address is already
    position-independent, we return ORIG.  Newly generated
    position-independent addresses go to REG.  If we need more

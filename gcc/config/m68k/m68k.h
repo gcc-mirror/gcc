@@ -786,17 +786,25 @@ __transfer_from_trampoline ()					\
 /* 1 if X is an address register  */
 #define ADDRESS_REG_P(X) (REG_P (X) && REGNO_OK_FOR_BASE_P (REGNO (X)))
 
+/* True if SYMBOL + OFFSET constants must refer to something within
+   SYMBOL's section.  */
+#ifndef M68K_OFFSETS_MUST_BE_WITHIN_SECTIONS_P
+#define M68K_OFFSETS_MUST_BE_WITHIN_SECTIONS_P 0
+#endif
 
 #define MAX_REGS_PER_ADDRESS 2
 
-#define CONSTANT_ADDRESS_P(X)   \
-  (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
-   || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
-   || GET_CODE (X) == HIGH)
+#define CONSTANT_ADDRESS_P(X)						\
+  ((GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
+    || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
+    || GET_CODE (X) == HIGH)						\
+   && LEGITIMATE_CONSTANT_P (X))
 
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
-#define LEGITIMATE_CONSTANT_P(X) (GET_MODE (X) != XFmode)
+#define LEGITIMATE_CONSTANT_P(X)				\
+  (GET_MODE (X) != XFmode					\
+   && !m68k_illegitimate_symbolic_constant_p (X))
 
 #ifndef REG_OK_STRICT
 #define PCREL_GENERAL_OPERAND_OK 0

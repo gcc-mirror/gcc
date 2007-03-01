@@ -65,3 +65,9 @@ Boston, MA 02110-1301, USA.  */
 /* -msep-data is the default PIC mode on this target.  */
 #define DRIVER_SELF_SPECS \
   "%{fpie|fPIE|fpic|fPIC:%{!msep-data:%{!mid-shared-library: -msep-data}}}"
+
+/* The uclinux binary format relies on relocations against a segment being
+   within that segment.  Conservatively apply this rule to individual
+   sections.  */
+#undef M68K_OFFSETS_MUST_BE_WITHIN_SECTIONS_P
+#define M68K_OFFSETS_MUST_BE_WITHIN_SECTIONS_P 1

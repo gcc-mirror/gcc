@@ -1,3 +1,34 @@
+2007-03-01  Richard Sandiford  <richard@codesourcery.com>
+
+	* Makefile.in (rtlanal.o): Depend on tree.h.
+	* rtl.h (offset_within_section_p, split_const): Declare.
+	* rtlanal.c: Include tree.h.
+	(offset_within_block_p): New function, taken from
+	mips_offset_within_object_p.
+	(split_const): New function, taken from mips_split_const.
+	* config/m68k/m68k-protos.h (m68k_illegitimate_symbolic_constant_p):
+	Declare.
+	* config/m68k/m68k.h (M68K_OFFSETS_MUST_BE_WITHIN_SECTIONS_P): Define.
+	(CONSTANT_ADDRESS_P): Only accept legitimate constants.
+	(LEGITIMATE_CONSTANT_P): Check m68k_illegitimate_symbolic_constant_p.
+	* config/m68k/m68k.c (TARGET_CANNOT_FORCE_CONST_MEM): Define.
+	(m68k_illegitimate_symbolic_constant_p): New function.
+	* config/m68k/m68k.md (movsi): Remove misleading predicates.
+	If M68K_OFFSETS_MUST_BE_WITHIN_SECTIONS_P and the source is a
+	symbolic constant that might be outside the symbol's section,
+	move the symbol first and then add the offset.
+	* config/m68k/uclinux.h (M68K_OFFSETS_MUST_BE_WITHIN_SECTIONS_P):
+	Override.
+	* config/mips/mips.c (mips_split_const): Delete.
+	(mips_offset_within_object_p): Delete.
+	(mips_symbolic_constant_p): Use offset_within_section_p and
+	split_const instead of mips_offset_within_object_p and
+	mips_split_const.
+	(mips_cannot_force_const_mem, mips_const_insns, mips_unspec_address)
+	(mips_legitimize_const_move, print_operand_reloc)
+	(mips_dangerous_for_la25_p): Use split_const instead of
+	mips_split_const.
+
 2007-02-28  Eric Christopher  <echristo@apple.com>
 
 	* Makefile.in (install-include-dir): Don't rm -rf include.
