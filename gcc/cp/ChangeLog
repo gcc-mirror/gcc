@@ -1,3 +1,9 @@
+2007-03-01  Simon Baldwin <simonb@google.com>
+
+	PR c++/23689
+	* decl.c (check_tag_decl): Added new warning for typedef ignored
+	when it precedes an otherwise valid non-typedef declaration.
+
 2007-02-28  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* typeck.c (build_function_call): Store converted arguments

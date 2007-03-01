@@ -3694,6 +3694,8 @@ check_tag_decl (cp_decl_specifier_seq *declspecs)
 	       || declspecs->specs[(int)ds_thread])
 	error ("qualifiers can only be specified for objects "
 	       "and functions");
+      else if (saw_typedef)
+	warning (0, "%<typedef%> was ignored in this declaration");
     }
 
   return declared_type;
