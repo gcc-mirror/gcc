@@ -267,8 +267,6 @@ struct mips_integer_op;
 struct mips_sim;
 
 static enum mips_symbol_type mips_classify_symbol (rtx);
-static void mips_split_const (rtx, rtx *, HOST_WIDE_INT *);
-static bool mips_offset_within_object_p (rtx, HOST_WIDE_INT);
 static bool mips_valid_base_register_p (rtx, enum machine_mode, int);
 static bool mips_symbolic_address_p (enum mips_symbol_type, enum machine_mode);
 static bool mips_classify_address (struct mips_address_info *, rtx,
@@ -1292,58 +1290,6 @@ mips_classify_symbol (rtx x)
   return SYMBOL_GENERAL;
 }
 
-
-/* Split X into a base and a constant offset, storing them in *BASE
-   and *OFFSET respectively.  */
-
-static void
-mips_split_const (rtx x, rtx *base, HOST_WIDE_INT *offset)
-{
-  *offset = 0;
-
-  if (GET_CODE (x) == CONST)
-    {
-      x = XEXP (x, 0);
-      if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == CONST_INT)
-	{
-	  *offset += INTVAL (XEXP (x, 1));
-	  x = XEXP (x, 0);
-	}
-    }
-  *base = x;
-}
-
-
-/* Return true if SYMBOL is a SYMBOL_REF and OFFSET + SYMBOL points
-   to the same object as SYMBOL, or to the same object_block.  */
-
-static bool
-mips_offset_within_object_p (rtx symbol, HOST_WIDE_INT offset)
-{
-  if (GET_CODE (symbol) != SYMBOL_REF)
-    return false;
-
-  if (CONSTANT_POOL_ADDRESS_P (symbol)
-      && offset >= 0
-      && offset < (int) GET_MODE_SIZE (get_pool_mode (symbol)))
-    return true;
-
-  if (SYMBOL_REF_DECL (symbol) != 0
-      && offset >= 0
-      && offset < int_size_in_bytes (TREE_TYPE (SYMBOL_REF_DECL (symbol))))
-    return true;
-
-  if (SYMBOL_REF_HAS_BLOCK_INFO_P (symbol)
-      && SYMBOL_REF_BLOCK (symbol)
-      && SYMBOL_REF_BLOCK_OFFSET (symbol) >= 0
-      && ((unsigned HOST_WIDE_INT) offset + SYMBOL_REF_BLOCK_OFFSET (symbol)
-	  < (unsigned HOST_WIDE_INT) SYMBOL_REF_BLOCK (symbol)->size))
-    return true;
-
-  return false;
-}
-
-
 /* Return true if X is a symbolic constant that can be calculated in
    the same way as a bare symbol.  If it is, store the type of the
    symbol in *SYMBOL_TYPE.  */
@@ -1351,9 +1297,9 @@ mips_offset_within_object_p (rtx symbol, HOST_WIDE_INT offset)
 bool
 mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
 {
-  HOST_WIDE_INT offset;
+  rtx offset;
 
-  mips_split_const (x, &x, &offset);
+  split_const (x, &x, &offset);
   if (UNSPEC_ADDRESS_P (x))
     *symbol_type = UNSPEC_ADDRESS_TYPE (x);
   else if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF)
@@ -1365,7 +1311,7 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
   else
     return false;
 
-  if (offset == 0)
+  if (offset == const0_rtx)
     return true;
 
   /* Check whether a nonzero offset is valid for the underlying
@@ -1381,7 +1327,7 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
 	 sign-extended.  In this case we can't allow an arbitrary offset
 	 in case the 32-bit value X + OFFSET has a different sign from X.  */
       if (Pmode == DImode && !ABI_HAS_64BIT_SYMBOLS)
-	return mips_offset_within_object_p (x, offset);
+	return offset_within_block_p (x, INTVAL (offset));
 
       /* In other cases the relocations can handle any offset.  */
       return true;
@@ -1397,15 +1343,15 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
 
     case SYMBOL_SMALL_DATA:
       /* Make sure that the offset refers to something within the
-	 underlying object.  This should guarantee that the final
+	 same object block.  This should guarantee that the final
 	 PC- or GP-relative offset is within the 16-bit limit.  */
-      return mips_offset_within_object_p (x, offset);
+      return offset_within_block_p (x, INTVAL (offset));
 
     case SYMBOL_GOT_LOCAL:
     case SYMBOL_GOTOFF_PAGE:
       /* The linker should provide enough local GOT entries for a
 	 16-bit offset.  Larger offsets may lead to GOT overflow.  */
-      return SMALL_OPERAND (offset);
+      return SMALL_INT (offset);
 
     case SYMBOL_GOT_GLOBAL:
     case SYMBOL_GOTOFF_GLOBAL:
@@ -1595,8 +1541,7 @@ mips_tls_symbol_ref_1 (rtx *x, void *data ATTRIBUTE_UNUSED)
 static bool
 mips_cannot_force_const_mem (rtx x)
 {
-  rtx base;
-  HOST_WIDE_INT offset;
+  rtx base, offset;
 
   if (!TARGET_MIPS16)
     {
@@ -1612,8 +1557,8 @@ mips_cannot_force_const_mem (rtx x)
       if (GET_CODE (x) == CONST_INT)
 	return true;
 
-      mips_split_const (x, &base, &offset);
-      if (symbolic_operand (base, VOIDmode) && SMALL_OPERAND (offset))
+      split_const (x, &base, &offset);
+      if (symbolic_operand (base, VOIDmode) && SMALL_INT (offset))
 	return true;
     }
 
@@ -1800,7 +1745,7 @@ mips_const_insns (rtx x)
 {
   struct mips_integer_op codes[MIPS_MAX_INTEGER_OPS];
   enum mips_symbol_type symbol_type;
-  HOST_WIDE_INT offset;
+  rtx offset;
 
   switch (GET_CODE (x))
     {
@@ -1841,16 +1786,16 @@ mips_const_insns (rtx x)
       /* Otherwise try splitting the constant into a base and offset.
 	 16-bit offsets can be added using an extra addiu.  Larger offsets
 	 must be calculated separately and then added to the base.  */
-      mips_split_const (x, &x, &offset);
+      split_const (x, &x, &offset);
       if (offset != 0)
 	{
 	  int n = mips_const_insns (x);
 	  if (n != 0)
 	    {
-	      if (SMALL_OPERAND (offset))
+	      if (SMALL_INT (offset))
 		return n + 1;
 	      else
-		return n + 1 + mips_build_integer (codes, offset);
+		return n + 1 + mips_build_integer (codes, INTVAL (offset));
 	    }
 	}
       return 0;
@@ -1949,13 +1894,14 @@ mips_split_symbol (rtx temp, rtx addr)
 rtx
 mips_unspec_address (rtx address, enum mips_symbol_type symbol_type)
 {
-  rtx base;
-  HOST_WIDE_INT offset;
+  rtx base, offset;
 
-  mips_split_const (address, &base, &offset);
+  split_const (address, &base, &offset);
   base = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, base),
 			 UNSPEC_ADDRESS_FIRST + symbol_type);
-  return plus_constant (gen_rtx_CONST (Pmode, base), offset);
+  if (offset != const0_rtx)
+    base = gen_rtx_PLUS (Pmode, base, offset);
+  return gen_rtx_CONST (Pmode, base);
 }
 
 
@@ -2303,8 +2249,7 @@ mips_move_integer (rtx dest, rtx temp, unsigned HOST_WIDE_INT value)
 static void
 mips_legitimize_const_move (enum machine_mode mode, rtx dest, rtx src)
 {
-  rtx base;
-  HOST_WIDE_INT offset;
+  rtx base, offset;
 
   /* Split moves of big integers into smaller pieces.  */
   if (splittable_const_int_operand (src, mode))
@@ -2329,13 +2274,13 @@ mips_legitimize_const_move (enum machine_mode mode, rtx dest, rtx src)
   /* If we have (const (plus symbol offset)), load the symbol first
      and then add in the offset.  This is usually better than forcing
      the constant into memory, at least in non-mips16 code.  */
-  mips_split_const (src, &base, &offset);
+  split_const (src, &base, &offset);
   if (!TARGET_MIPS16
-      && offset != 0
-      && (!no_new_pseudos || SMALL_OPERAND (offset)))
+      && offset != const0_rtx
+      && (!no_new_pseudos || SMALL_INT (offset)))
     {
       base = mips_force_temporary (dest, base);
-      emit_move_insn (dest, mips_add_offset (0, base, offset));
+      emit_move_insn (dest, mips_add_offset (0, base, INTVAL (offset)));
       return;
     }
 
@@ -5709,16 +5654,15 @@ print_operand_reloc (FILE *file, rtx op, const char **relocs)
 {
   enum mips_symbol_type symbol_type;
   const char *p;
-  rtx base;
-  HOST_WIDE_INT offset;
+  rtx base, offset;
 
   if (!mips_symbolic_constant_p (op, &symbol_type) || relocs[symbol_type] == 0)
     fatal_insn ("PRINT_OPERAND, invalid operand for relocation", op);
 
   /* If OP uses an UNSPEC address, we want to print the inner symbol.  */
-  mips_split_const (op, &base, &offset);
+  split_const (op, &base, &offset);
   if (UNSPEC_ADDRESS_P (base))
-    op = plus_constant (UNSPEC_ADDRESS (base), offset);
+    op = plus_constant (UNSPEC_ADDRESS (base), INTVAL (offset));
 
   fputs (relocs[symbol_type], file);
   output_addr_const (file, op);
@@ -7640,12 +7584,12 @@ mips_cannot_change_mode_class (enum machine_mode from,
 bool
 mips_dangerous_for_la25_p (rtx x)
 {
-  HOST_WIDE_INT offset;
+  rtx offset;
 
   if (TARGET_EXPLICIT_RELOCS)
     return false;
 
-  mips_split_const (x, &x, &offset);
+  split_const (x, &x, &offset);
   return global_got_operand (x, VOIDmode);
 }
 
