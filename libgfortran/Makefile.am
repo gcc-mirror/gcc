@@ -622,9 +622,10 @@ $(gfor_misc_specifics) \
 intrinsics/dprod_r8.f90 \
 intrinsics/f2c_specifics.F90
 
-# No install-html support yet.
-.PHONY: install-html
+# No install-html or install-pdf support in automake yet
+.PHONY: install-html install-pdf
 install-html:
+install-pdf:
 
 # Turn on vectorization and loop unrolling for matmul.
 $(patsubst %.c,%.lo,$(notdir $(i_matmul_c))): AM_CFLAGS += -ftree-vectorize -funroll-loops
