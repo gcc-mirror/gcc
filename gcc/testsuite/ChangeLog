@@ -1,3 +1,7 @@
+2007-03-01  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/prefetch-4.c: New test.
+
 2007-03-01  Simon Baldwin <simonb@google.com>
 
 	PR c++/23689

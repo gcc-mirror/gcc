@@ -885,13 +885,14 @@ should_unroll_loop_p (struct loop *loop, struct tree_niter_desc *desc,
 
 /* Determine the coefficient by that unroll LOOP, from the information
    contained in the list of memory references REFS.  Description of
-   umber of iterations of LOOP is stored to DESC.  AHEAD is the number
-   of iterations ahead that we need to prefetch.  NINSNS is number of
-   insns of the LOOP.  */
+   umber of iterations of LOOP is stored to DESC.  NINSNS is the number of
+   insns of the LOOP.  EST_NITER is the estimated number of iterations of
+   the loop, or -1 if no estimate is available.  */
 
 static unsigned
 determine_unroll_factor (struct loop *loop, struct mem_ref_group *refs,
-			 unsigned ninsns, struct tree_niter_desc *desc)
+			 unsigned ninsns, struct tree_niter_desc *desc,
+			 HOST_WIDE_INT est_niter)
 {
   unsigned upper_bound;
   unsigned nfactor, factor, mod_constraint;
@@ -906,6 +907,12 @@ determine_unroll_factor (struct loop *loop, struct mem_ref_group *refs,
      gains from better scheduling and decreasing loop overhead, which is not
      the case here.  */
   upper_bound = PARAM_VALUE (PARAM_MAX_UNROLLED_INSNS) / ninsns;
+
+  /* If we unrolled the loop more times than it iterates, the unrolled version
+     of the loop would be never entered.  */
+  if (est_niter >= 0 && est_niter < (HOST_WIDE_INT) upper_bound)
+    upper_bound = est_niter;
+
   if (upper_bound <= 1)
     return 1;
 
@@ -935,7 +942,8 @@ static bool
 loop_prefetch_arrays (struct loop *loop)
 {
   struct mem_ref_group *refs;
-  unsigned ahead, ninsns, unroll_factor;
+  unsigned ahead, ninsns, time, unroll_factor;
+  HOST_WIDE_INT est_niter;
   struct tree_niter_desc desc;
   bool unrolled = false;
 
@@ -950,20 +958,23 @@ loop_prefetch_arrays (struct loop *loop)
 
   /* Step 3: determine the ahead and unroll factor.  */
 
-  /* FIXME: We should use not size of the loop, but the average number of
-     instructions executed per iteration of the loop.  */
-  ninsns = tree_num_loop_insns (loop, &eni_time_weights);
-  ahead = (PREFETCH_LATENCY + ninsns - 1) / ninsns;
-  unroll_factor = determine_unroll_factor (loop, refs, ninsns, &desc);
+  /* FIXME: the time should be weighted by the probabilities of the blocks in
+     the loop body.  */
+  time = tree_num_loop_insns (loop, &eni_time_weights);
+  ahead = (PREFETCH_LATENCY + time - 1) / time;
+  est_niter = estimated_loop_iterations_int (loop, false);
+
+  /* The prefetches will run for AHEAD iterations of the original loop.  Unless
+     the loop rolls at least AHEAD times, prefetching the references does not
+     make sense.  */
+  if (est_niter >= 0 && est_niter <= (HOST_WIDE_INT) ahead)
+    goto fail;
+
+  ninsns = tree_num_loop_insns (loop, &eni_size_weights);
+  unroll_factor = determine_unroll_factor (loop, refs, ninsns, &desc,
+					   est_niter);
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Ahead %d, unroll factor %d\n", ahead, unroll_factor);
-
-  /* If the loop rolls less than the required unroll factor, prefetching
-     is useless.  */
-  if (unroll_factor > 1
-      && cst_and_fits_in_hwi (desc.niter)
-      && (unsigned HOST_WIDE_INT) int_cst_value (desc.niter) < unroll_factor)
-    goto fail;
 
   /* Step 4: what to prefetch?  */
   if (!schedule_prefetches (refs, unroll_factor, ahead))
