@@ -315,6 +315,8 @@ install:
 
 install-info:
 
+install-pdf:
+
 install-html:
 
 # Cleaning rules.
