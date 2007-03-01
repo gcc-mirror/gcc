@@ -1,3 +1,8 @@
+2007-03-01  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/31005
+	* include/bits/localefwd.h: Include <cctype>.
+
 2007-02-27  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/28080 (partial)
