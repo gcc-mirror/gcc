@@ -862,9 +862,10 @@ pth/mf-hooks2.lo: mf-hooks2.c mf-runtime.h mf-impl.h
 pth/mf-hooks3.lo: mf-hooks3.c mf-runtime.h mf-impl.h
 	$(LTCOMPILE) -DLIBMUDFLAPTH -c $(srcdir)/mf-hooks3.c -o $@
 
-.PHONY: install-html
-
+# No install-html or install-pdf support in automake yet
+.PHONY: install-html install-pdf
 install-html:
+install-pdf:
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
