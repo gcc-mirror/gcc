@@ -2723,10 +2723,13 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
 	    && actual->expr->symtree->n.sym->attr.optional)
 	{
 	  tree tmp;
-	  tmp = gfc_build_addr_expr (pvoid_type_node,
-				     argse.expr);
-	  tmp = build2 (NE_EXPR, boolean_type_node, tmp, 
-			build_int_cst (pvoid_type_node, 0));
+	  gfc_init_se (&argse, NULL);
+	  argse.want_pointer = 1;
+	  argse.data_not_needed = 1;
+	  gfc_conv_expr (&argse, actual->expr);
+	  gfc_add_block_to_block (&se->pre, &argse.pre);
+	  tmp = build2 (NE_EXPR, boolean_type_node, argse.expr,
+			null_pointer_node);
 	  tmp = gfc_evaluate_now (tmp, &se->pre);
 	  se->expr = build3 (COND_EXPR, pvoid_type_node,
 			     tmp, fncall1, fncall0);
