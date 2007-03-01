@@ -1,3 +1,10 @@
+2007-03-01  Peter Breitenlohner  <peb@mppmu.mpg.de>
+            Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR other/16513
+	* Makefile.in: Install library under $(MULTIOSDIR), not $(MULTISUBDIR).
+	Install headers in multilib independent location.
+
 2007-02-26  DJ Delorie  <dj@redhat.com>
 
 	* configure.ac: add djgpp-specific results, so we don't have to

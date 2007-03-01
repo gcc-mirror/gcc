@@ -336,15 +336,20 @@ libiberty.html : $(srcdir)/libiberty.texi $(TEXISRC)
 INSTALL_DEST = @INSTALL_DEST@
 install: install_to_$(INSTALL_DEST) install-subdir
 
+# This is tricky.  Even though CC in the Makefile contains
+# multilib-specific flags, it's overridden by FLAGS_TO_PASS from the
+# default multilib, so we have to take LIBCFLAGS into account as well,
+# since it will be passed the multilib flags.
+MULTIOSDIR = `$(CC) $(LIBCFLAGS) -print-multi-os-directory`
 install_to_libdir: all
-	${mkinstalldirs} $(DESTDIR)$(libdir)$(MULTISUBDIR)
-	$(INSTALL_DATA) $(TARGETLIB) $(DESTDIR)$(libdir)$(MULTISUBDIR)/$(TARGETLIB)n
-	( cd $(DESTDIR)$(libdir)$(MULTISUBDIR) ; chmod 644 $(TARGETLIB)n ;$(RANLIB) $(TARGETLIB)n )
-	mv -f $(DESTDIR)$(libdir)$(MULTISUBDIR)/$(TARGETLIB)n $(DESTDIR)$(libdir)$(MULTISUBDIR)/$(TARGETLIB)
+	${mkinstalldirs} $(DESTDIR)$(libdir)/$(MULTIOSDIR)
+	$(INSTALL_DATA) $(TARGETLIB) $(DESTDIR)$(libdir)/$(MULTIOSDIR)/$(TARGETLIB)n
+	( cd $(DESTDIR)$(libdir)/$(MULTIOSDIR) ; chmod 644 $(TARGETLIB)n ;$(RANLIB) $(TARGETLIB)n )
+	mv -f $(DESTDIR)$(libdir)/$(MULTIOSDIR)/$(TARGETLIB)n $(DESTDIR)$(libdir)/$(MULTIOSDIR)/$(TARGETLIB)
 	if test -n "${target_header_dir}"; then \
 	  case "${target_header_dir}" in \
 	    /*)    thd=${target_header_dir};; \
-	    *)     thd=${includedir}${MULTISUBDIR}/${target_header_dir};; \
+	    *)     thd=${includedir}/${target_header_dir};; \
 	  esac; \
 	  ${mkinstalldirs} $(DESTDIR)$${thd}; \
 	  for h in ${INSTALLED_HEADERS}; do \
@@ -353,11 +358,6 @@ install_to_libdir: all
 	fi
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
-# This is tricky.  Even though CC in the Makefile contains
-# multilib-specific flags, it's overridden by FLAGS_TO_PASS from the
-# default multilib, so we have to take LIBCFLAGS into account as well,
-# since it will be passed the multilib flags.
-MULTIOSDIR = `$(CC) $(LIBCFLAGS) -print-multi-os-directory`
 install_to_tooldir: all
 	${mkinstalldirs} $(DESTDIR)$(tooldir)/lib/$(MULTIOSDIR)
 	$(INSTALL_DATA) $(TARGETLIB) $(DESTDIR)$(tooldir)/lib/$(MULTIOSDIR)/$(TARGETLIB)n
