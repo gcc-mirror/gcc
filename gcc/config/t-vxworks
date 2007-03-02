@@ -21,8 +21,11 @@ EXTRA_HEADERS += $(srcdir)/gthr-vxworks.h gthr-default.h
 # This ensures that the correct target headers are used; some
 # VxWorks system headers have names that collide with GCC's
 # internal (host) headers, e.g. regs.h.
-# FIXME: May not be necessary anymore.
-LIBGCC2_INCLUDES="-I$(SYSTEM_HEADER_DIR)"
+LIBGCC2_INCLUDES = -nostdinc -I \
+  `case "/$$(MULTIDIR)" in \
+     */mrtp*) echo $(WIND_USR)/h ;; \
+     *) echo $(WIND_BASE)/target/h ;; \
+   esac`
 
 EXTRA_MULTILIB_PARTS = 
 
