@@ -1,3 +1,9 @@
+2007-03-02  Paul Thomas  <pault@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/30873
+	* decl.c (gfc_match_entry): Remove erroneous entry result check.
+
 2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Make-lang.in: Add install-pdf target as copied from
