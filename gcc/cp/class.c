@@ -2097,7 +2097,8 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
 				   fixed_offset, virtual_offset);
     }
   else
-    gcc_assert (!DECL_THUNK_P (fn));
+    gcc_assert (DECL_INVALID_OVERRIDER_P (overrider_target) ||
+		!DECL_THUNK_P (fn));
 
   /* Assume that we will produce a thunk that convert all the way to
      the final overrider, and not to an intermediate virtual base.  */
