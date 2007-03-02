@@ -1,3 +1,12 @@
+2007-03-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (TUNEMASK): Remove define.
+	(ARCHMASK): Remove define.
+	(TARGET_*): Use ix86_tune_mask variable instead of TUNEMASK.
+	 Use ix86_arch_mask variable instead of ARCHMASK.
+	* config/i386/i386.c (override_options): Ditto.
+	(standard_80387_constant_p): Ditto.
+
 2007-03-03  Ian Lance Taylor  <iant@google.com>
 
 	Used signed infinities in VRP.
