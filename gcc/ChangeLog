@@ -1,3 +1,8 @@
+2007-03-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/alpha/alpha.c (alpha_gp_save_rtx): Insert the insns at the
+	entry by means of emit_insn_at_entry.
+
 2007-03-01  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* doc/invoke.texi (Wextra): Delete outdated paragraph.
