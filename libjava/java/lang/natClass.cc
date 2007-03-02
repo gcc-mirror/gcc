@@ -1331,9 +1331,8 @@ java::lang::Class::getDeclaredAnnotations(jint /* jv_attr_type */ member_type,
   if (bytes == NULL)
     return 0;
 
-  ClassLoader *trueLoader = loader;
-  if (trueLoader == NULL)
-    trueLoader = (ClassLoader *)VMClassLoader::bootLoader;
+  if (loader == NULL)
+    loader = (ClassLoader *)VMClassLoader::bootLoader;
 
   result = (loader->getDeclaredAnnotations
 	    (this, member_type, member_index, kind_req));
