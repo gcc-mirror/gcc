@@ -159,9 +159,17 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 		arg = "";
 	      if (library == 0
 		  && (strcmp (arg, "c++") == 0
-		      || strcmp (arg, "c++-cpp-output") == 0))
+		      || strcmp (arg, "c++-cpp-output") == 0
+		      || strcmp (arg, "objective-c++") == 0
+		      || strcmp (arg, "objective-c++-cpp-output") == 0))
 		library = 1;
 		
+	      saw_speclang = 1;
+	    }
+	  else if (strcmp (argv[i], "-ObjC++") == 0)
+	    {
+	      if (library == 0)
+		library = 1;
 	      saw_speclang = 1;
 	    }
 	  /* Arguments that go directly to the linker might be .o files,
@@ -236,13 +244,6 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 
   if (quote)
     fatal ("argument to '%s' missing\n", quote);
-
-  /* If we know we don't have to do anything, bail now.  */
-  if (! added && library <= 0)
-    {
-      free (args);
-      return;
-    }
 
   /* There's no point adding -shared-libgcc if we don't have a shared
      libgcc.  */

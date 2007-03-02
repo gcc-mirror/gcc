@@ -1,3 +1,7 @@
+2007-03-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++.dg/other/darwin-minversion-1.C: New.
+
 2007-03-02  Diego Novillo  <dnovillo@redhat.com>
 
 	* gcc.dg/tree-ssa/20070302-1.c: New test.

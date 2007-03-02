@@ -1,3 +1,9 @@
+2007-03-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++spec.c (lang_specific_driver): Add -lstdc++ when compiling
+	Objective-C++.  Don't exit early if -shared-libgcc needs to be
+	added.
+
 2007-03-02  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* typeck.c (common_base_type): Delete unused function.
