@@ -1,6 +1,6 @@
 // random number generation (out of line) -*- C++ -*-
 
-// Copyright (C) 2006 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -143,10 +143,12 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 	       const linear_congruential<_UIntType, __a, __c, __m>& __lcr)
     {
-      const std::ios_base::fmtflags __flags = __os.flags();
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
-      __os.flags(std::ios_base::dec | std::ios_base::fixed
-		 | std::ios_base::left);
+      __os.flags(__ios_base::dec | __ios_base::fixed | __ios_base::left);
       __os.fill(__os.widen(' '));
 
       __os << __lcr._M_x;
@@ -162,8 +164,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator>>(std::basic_istream<_CharT, _Traits>& __is,
 	       linear_congruential<_UIntType, __a, __c, __m>& __lcr)
     {
-      const std::ios_base::fmtflags __flags = __is.flags();
-      __is.flags(std::ios_base::dec);
+      typedef std::basic_istream<_CharT, _Traits>  __istream_type;
+      typedef typename __istream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __is.flags();
+      __is.flags(__ios_base::dec);
 
       __is >> __lcr._M_x;
 
@@ -268,11 +273,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	       const mersenne_twister<_UIntType, __w, __n, __m,
 	       __r, __a, __u, __s, __b, __t, __c, __l>& __x)
     {
-      const std::ios_base::fmtflags __flags = __os.flags();
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
       const _CharT __space = __os.widen(' ');
-      __os.flags(std::ios_base::dec | std::ios_base::fixed
-		 | std::ios_base::left);
+      __os.flags(__ios_base::dec | __ios_base::fixed | __ios_base::left);
       __os.fill(__space);
 
       for (int __i = 0; __i < __n - 1; ++__i)
@@ -293,8 +300,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	       mersenne_twister<_UIntType, __w, __n, __m,
 	       __r, __a, __u, __s, __b, __t, __c, __l>& __x)
     {
-      const std::ios_base::fmtflags __flags = __is.flags();
-      __is.flags(std::ios_base::dec | std::ios_base::skipws);
+      typedef std::basic_istream<_CharT, _Traits>  __istream_type;
+      typedef typename __istream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __is.flags();
+      __is.flags(__ios_base::dec | __ios_base::skipws);
 
       for (int __i = 0; __i < __n; ++__i)
 	__is >> __x._M_x[__i];
@@ -385,11 +395,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 	       const subtract_with_carry<_IntType, __m, __s, __r>& __x)
     {
-      const std::ios_base::fmtflags __flags = __os.flags();
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
       const _CharT __space = __os.widen(' ');
-      __os.flags(std::ios_base::dec | std::ios_base::fixed
-		 | std::ios_base::left);
+      __os.flags(__ios_base::dec | __ios_base::fixed | __ios_base::left);
       __os.fill(__space);
 
       for (int __i = 0; __i < __r; ++__i)
@@ -407,8 +419,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator>>(std::basic_istream<_CharT, _Traits>& __is,
 	       subtract_with_carry<_IntType, __m, __s, __r>& __x)
     {
-      const std::ios_base::fmtflags __flags = __is.flags();
-      __is.flags(std::ios_base::dec | std::ios_base::skipws);
+      typedef std::basic_ostream<_CharT, _Traits>  __istream_type;
+      typedef typename __istream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __is.flags();
+      __is.flags(__ios_base::dec | __ios_base::skipws);
 
       for (int __i = 0; __i < __r; ++__i)
 	__is >> __x._M_x[__i];
@@ -524,11 +539,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 	       const subtract_with_carry_01<_RealType, __w, __s, __r>& __x)
     {
-      const std::ios_base::fmtflags __flags = __os.flags();
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
       const _CharT __space = __os.widen(' ');
-      __os.flags(std::ios_base::dec | std::ios_base::fixed
-		 | std::ios_base::left);
+      __os.flags(__ios_base::dec | __ios_base::fixed | __ios_base::left);
       __os.fill(__space);
 
       for (int __i = 0; __i < __r; ++__i)
@@ -547,8 +564,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator>>(std::basic_istream<_CharT, _Traits>& __is,
 	       subtract_with_carry_01<_RealType, __w, __s, __r>& __x)
     {
-      const std::ios_base::fmtflags __flags = __is.flags();
-      __is.flags(std::ios_base::dec | std::ios_base::skipws);
+      typedef std::basic_istream<_CharT, _Traits>  __istream_type;
+      typedef typename __istream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __is.flags();
+      __is.flags(__ios_base::dec | __ios_base::skipws);
 
       for (int __i = 0; __i < __r; ++__i)
 	for (int __j = 0; __j < __x.__n; ++__j)
@@ -586,11 +606,14 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	       const discard_block<_UniformRandomNumberGenerator,
 	       __p, __r>& __x)
     {
-      const std::ios_base::fmtflags __flags = __os.flags();
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
       const _CharT __space = __os.widen(' ');
-      __os.flags(std::ios_base::dec | std::ios_base::fixed
-		 | std::ios_base::left);
+      __os.flags(__ios_base::dec | __ios_base::fixed
+		 | __ios_base::left);
       __os.fill(__space);
 
       __os << __x._M_b << __space << __x._M_n;
@@ -606,8 +629,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator>>(std::basic_istream<_CharT, _Traits>& __is,
 	       discard_block<_UniformRandomNumberGenerator, __p, __r>& __x)
     {
-      const std::ios_base::fmtflags __flags = __is.flags();
-      __is.flags(std::ios_base::dec | std::ios_base::skipws);
+      typedef std::basic_istream<_CharT, _Traits>  __istream_type;
+      typedef typename __istream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __is.flags();
+      __is.flags(__ios_base::dec | __ios_base::skipws);
 
       __is >> __x._M_b >> __x._M_n;
 
@@ -686,11 +712,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	       const xor_combine<_UniformRandomNumberGenerator1, __s1,
 	       _UniformRandomNumberGenerator2, __s2>& __x)
     {
-      const std::ios_base::fmtflags __flags = __os.flags();
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
       const _CharT __space = __os.widen(' ');
-      __os.flags(std::ios_base::dec | std::ios_base::fixed 
-		 | std::ios_base::left);
+      __os.flags(__ios_base::dec | __ios_base::fixed | __ios_base::left);
       __os.fill(__space);
 
       __os << __x.base1() << __space << __x.base2();
@@ -708,8 +736,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	       xor_combine<_UniformRandomNumberGenerator1, __s1,
 	       _UniformRandomNumberGenerator2, __s2>& __x)
     {
-      const std::ios_base::fmtflags __flags = __is.flags();
-      __is.flags(std::ios_base::skipws);
+      typedef std::basic_istream<_CharT, _Traits>  __istream_type;
+      typedef typename __istream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __is.flags();
+      __is.flags(__ios_base::skipws);
 
       __is >> __x._M_b1 >> __x._M_b2;
 
@@ -723,10 +754,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 	       const uniform_int<_IntType>& __x)
     {
-      const std::ios_base::fmtflags __flags = __os.flags();
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
       const _CharT __space = __os.widen(' ');
-      __os.flags(std::ios_base::scientific | std::ios_base::left);
+      __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__space);
 
       __os << __x.min() << __space << __x.max();
@@ -741,8 +775,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator>>(std::basic_istream<_CharT, _Traits>& __is,
 	       uniform_int<_IntType>& __x)
     {
-      const std::ios_base::fmtflags __flags = __is.flags();
-      __is.flags(std::ios_base::dec | std::ios_base::skipws);
+      typedef std::basic_istream<_CharT, _Traits>  __istream_type;
+      typedef typename __istream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __is.flags();
+      __is.flags(__ios_base::dec | __ios_base::skipws);
 
       __is >> __x._M_min >> __x._M_max;
 
@@ -756,10 +793,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 	       const bernoulli_distribution& __x)
     {
-      const std::ios_base::fmtflags __flags = __os.flags();
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
       const std::streamsize __precision = __os.precision();
-      __os.flags(std::ios_base::scientific | std::ios_base::left);
+      __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__os.widen(' '));
       __os.precision(__gnu_cxx::__numeric_traits<double>::__max_digits10);
 
@@ -800,10 +840,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 	       const geometric_distribution<_IntType, _RealType>& __x)
     {
-      const std::ios_base::fmtflags __flags = __os.flags();
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
       const std::streamsize __precision = __os.precision();
-      __os.flags(std::ios_base::scientific | std::ios_base::left);
+      __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__os.widen(' '));
       __os.precision(__gnu_cxx::__numeric_traits<_RealType>::__max_digits10);
 
@@ -960,11 +1003,14 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 	       const poisson_distribution<_IntType, _RealType>& __x)
     {
-      const std::ios_base::fmtflags __flags = __os.flags();
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
       const std::streamsize __precision = __os.precision();
       const _CharT __space = __os.widen(' ');
-      __os.flags(std::ios_base::scientific | std::ios_base::left);
+      __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__space);
       __os.precision(__gnu_cxx::__numeric_traits<_RealType>::__max_digits10);
 
@@ -982,8 +1028,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator>>(std::basic_istream<_CharT, _Traits>& __is,
 	       poisson_distribution<_IntType, _RealType>& __x)
     {
-      const std::ios_base::fmtflags __flags = __is.flags();
-      __is.flags(std::ios_base::skipws);
+      typedef std::basic_istream<_CharT, _Traits>  __istream_type;
+      typedef typename __istream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __is.flags();
+      __is.flags(__ios_base::skipws);
 
       __is >> __x._M_mean >> __x._M_nd;
       __x._M_initialize();
@@ -1192,11 +1241,14 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 	       const binomial_distribution<_IntType, _RealType>& __x)
     {
-      const std::ios_base::fmtflags __flags = __os.flags();
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
       const std::streamsize __precision = __os.precision();
       const _CharT __space = __os.widen(' ');
-      __os.flags(std::ios_base::scientific | std::ios_base::left);
+      __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__space);
       __os.precision(__gnu_cxx::__numeric_traits<_RealType>::__max_digits10);
 
@@ -1215,8 +1267,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator>>(std::basic_istream<_CharT, _Traits>& __is,
 	       binomial_distribution<_IntType, _RealType>& __x)
     {
-      const std::ios_base::fmtflags __flags = __is.flags();
-      __is.flags(std::ios_base::dec | std::ios_base::skipws);
+      typedef std::basic_istream<_CharT, _Traits>  __istream_type;
+      typedef typename __istream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __is.flags();
+      __is.flags(__ios_base::dec | __ios_base::skipws);
 
       __is >> __x._M_t >> __x._M_p >> __x._M_nd;
       __x._M_initialize();
@@ -1231,11 +1286,14 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 	       const uniform_real<_RealType>& __x)
     {
-      const std::ios_base::fmtflags __flags = __os.flags();
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
       const std::streamsize __precision = __os.precision();
       const _CharT __space = __os.widen(' ');
-      __os.flags(std::ios_base::scientific | std::ios_base::left);
+      __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__space);
       __os.precision(__gnu_cxx::__numeric_traits<_RealType>::__max_digits10);
 
@@ -1252,8 +1310,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator>>(std::basic_istream<_CharT, _Traits>& __is,
 	       uniform_real<_RealType>& __x)
     {
-      const std::ios_base::fmtflags __flags = __is.flags();
-      __is.flags(std::ios_base::skipws);
+      typedef std::basic_istream<_CharT, _Traits>  __istream_type;
+      typedef typename __istream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __is.flags();
+      __is.flags(__ios_base::skipws);
 
       __is >> __x._M_min >> __x._M_max;
 
@@ -1267,10 +1328,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 	       const exponential_distribution<_RealType>& __x)
     {
-      const std::ios_base::fmtflags __flags = __os.flags();
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
       const std::streamsize __precision = __os.precision();
-      __os.flags(std::ios_base::scientific | std::ios_base::left);
+      __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__os.widen(' '));
       __os.precision(__gnu_cxx::__numeric_traits<_RealType>::__max_digits10);
 
@@ -1328,11 +1392,14 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 	       const normal_distribution<_RealType>& __x)
     {
-      const std::ios_base::fmtflags __flags = __os.flags();
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
       const std::streamsize __precision = __os.precision();
       const _CharT __space = __os.widen(' ');
-      __os.flags(std::ios_base::scientific | std::ios_base::left);
+      __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__space);
       __os.precision(__gnu_cxx::__numeric_traits<_RealType>::__max_digits10);
 
@@ -1353,8 +1420,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator>>(std::basic_istream<_CharT, _Traits>& __is,
 	       normal_distribution<_RealType>& __x)
     {
-      const std::ios_base::fmtflags __flags = __is.flags();
-      __is.flags(std::ios_base::dec | std::ios_base::skipws);
+      typedef std::basic_istream<_CharT, _Traits>  __istream_type;
+      typedef typename __istream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __is.flags();
+      __is.flags(__ios_base::dec | __ios_base::skipws);
 
       __is >> __x._M_saved_available >> __x._M_mean
 	   >> __x._M_sigma;
@@ -1455,10 +1525,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 	       const gamma_distribution<_RealType>& __x)
     {
-      const std::ios_base::fmtflags __flags = __os.flags();
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
       const std::streamsize __precision = __os.precision();
-      __os.flags(std::ios_base::scientific | std::ios_base::left);
+      __os.flags(__ios_base::scientific | __ios_base::left);
       __os.fill(__os.widen(' '));
       __os.precision(__gnu_cxx::__numeric_traits<_RealType>::__max_digits10);
 

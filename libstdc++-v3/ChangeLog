@@ -1,3 +1,21 @@
+2007-03-02  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/thread/pthread1.cc: Include <pthread.h>.
+	* testsuite/thread/pthread2.cc: Likewise.
+	* testsuite/thread/pthread3.cc: Likewise.
+	* testsuite/thread/pthread4.cc: Likewise.
+	* testsuite/thread/pthread5.cc: Likewise.
+	* testsuite/thread/pthread6.cc: Likewise.
+	* testsuite/thread/pthread7-rope.cc: Likewise.
+
+2007-03-02  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28080 (partial)
+	* include/tr1/random (class random_device): Rework to use simple
+	<cstdio> input, do not include <fstream>.
+	* include/tr1/random.tcc (all inserters and extractors): Refer
+	to ios_base as base class of basic_istream or basic_ostream.
+
 2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Makefile.am: Add dummy install-pdf target.

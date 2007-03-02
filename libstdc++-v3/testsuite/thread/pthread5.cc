@@ -2,7 +2,8 @@
 // Adpated from libstdc++/5464 submitted by jjessel@amadeus.net
 // Jean-Francois JESSEL (Amadeus SAS Development) 
 //
-// Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,9 +28,7 @@
 #include <vector>
 #include <list>
 #include <string>
-
-// Do not include <pthread.h> explicitly; if threads are properly
-// configured for the port, then it is picked up free from STL headers.
+#include <pthread.h>
 
 #ifdef _GLIBCXX_HAVE_UNISTD_H
 #include <unistd.h>	// To test for _POSIX_THREAD_PRIORITY_SCHEDULING
