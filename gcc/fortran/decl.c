@@ -3030,12 +3030,6 @@ gfc_match_entry (void)
 
 	  entry->result = result;
 	}
-
-      if (proc->attr.recursive && result == NULL)
-	{
-	  gfc_error ("RESULT attribute required in ENTRY statement at %C");
-	  return MATCH_ERROR;
-	}
     }
 
   if (gfc_match_eos () != MATCH_YES)
