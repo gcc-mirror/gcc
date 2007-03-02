@@ -35,17 +35,16 @@
 #ifndef _TR1_RANDOM
 #define _TR1_RANDOM 1
 
-#include <bits/stl_algobase.h>
-#include <bits/concept_check.h>
 #include <cmath>
-#include <debug/debug.h>
-#include <iterator>
+#include <cstdio>
+#include <string>
 #include <iosfwd>
 #include <limits>
 #include <tr1/type_traits>
 #include <tr1/cmath>
-#include <fstream>
 #include <ext/type_traits.h>
+#include <bits/concept_check.h>
+#include <debug/debug.h>
 
 namespace std
 {
@@ -1421,14 +1420,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     random_device(const std::string& __token = "/dev/urandom")
     {
       if ((__token != "/dev/urandom" && __token != "/dev/random")
-	  || !_M_filebuf.open(__token.c_str(),
-			      std::ios_base::in | std::ios_base::binary))
+	  || !(_M_file = std::fopen(__token.c_str(), "rb")))
 	std::__throw_runtime_error(__N("random_device::"
 				       "random_device(const std::string&)"));
     }
 
     ~random_device()
-    { _M_filebuf.close(); }
+    { std::fclose(_M_file); }
 
 #else
 
@@ -1474,7 +1472,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     {
 #ifdef _GLIBCXX_USE_RANDOM_TR1
       result_type __ret;
-      _M_filebuf.sgetn(reinterpret_cast<char*>(&__ret), sizeof(result_type));
+      std::fread(reinterpret_cast<void*>(&__ret), sizeof(result_type),
+		 1, _M_file);
       return __ret;
 #else
       return _M_mt();
@@ -1486,7 +1485,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     void operator=(const random_device&);
 
 #ifdef _GLIBCXX_USE_RANDOM_TR1
-    std::filebuf _M_filebuf;
+    FILE*        _M_file;
 #else
     mt19937      _M_mt;
 #endif

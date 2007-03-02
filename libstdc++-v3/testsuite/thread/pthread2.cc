@@ -1,7 +1,8 @@
 // 2002-01-23  Loren J. Rittle <rittle@labs.mot.com> <ljrittle@acm.org>
 // Adpated from libstdc++/5347 submitted by markus.breuer@materna.de
 //
-// Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,9 +25,7 @@
 // { dg-options "-pthreads" { target *-*-solaris* } }
 
 #include <fstream>
-
-// Do not include <pthread.h> explicitly; if threads are properly
-// configured for the port, then it is picked up free from STL headers.
+#include <pthread.h>
 
 const int max_thread_count = 2;
 const int max_loop_count = 1000000;
