@@ -1,3 +1,40 @@
+2007-03-03  Ian Lance Taylor  <iant@google.com>
+
+	Used signed infinities in VRP.
+	* tree-vrp.c (uses_overflow_infinity): New static function.
+	(supports_overflow_infinity): New static function.
+	(make_overflow_infinity): New static function.
+	(negative_overflow_infinity): New static function.
+	(positive_overflow_infinity): New static function.
+	(is_negative_overflow_infinity): New static function.
+	(is_positive_overflow_infinity): New static function.
+	(is_overflow_infinity): New static function.
+	(overflow_infinity_range_p): New static function.
+	(compare_values_warnv): New function split out of compare_values.
+	(compare_value): Call it.
+	(set_value_range_to_nonnegative): Add overflow_infinity
+	parameter.  Change caller.
+	(vrp_expr_computes_nonnegative): Add strict_overflow_p parameter.
+	Change callers.
+	(vrp_expr_computes_nonzero): Likewise.
+	(compare_ranges, compare_range_with_value): Likewise.
+	(compare_name_with_value, compare_names): Likewise.
+	(vrp_evaluate_conditional): Likewise.
+	(set_value_range): Handle infinity
+	(vrp_operand_equal_p, operand_less_p): Likewise.
+	(extract_range_from_assert): Likewise.
+	(vrp_int_const_binop): Likewise.
+	(extract_range_from_binary_expr): Likewise.
+	(extract_range_from_unary_expr): Likewise.
+	(extract_range_from_comparison): Likewise.
+	(extract_range_from_expr): Likewise.
+	(dump_value_range): Likewise.
+	(vrp_visit_cond_stmt, vrp_visit_phi_node): Likewise.
+	(test_for_singularity): Likewise.
+	(vrp_int_const_binop): Remove inline qualifier.
+	(adjust_range_with_scev): Add comment.
+	* tree-flow.h (vrp_evaluate_conditional): Update declaration.
+
 2007-03-02  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-structalias.c (could_have_pointers): Tidy.

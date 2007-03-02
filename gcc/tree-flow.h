@@ -776,7 +776,7 @@ bool fold_stmt_inplace (tree);
 tree widen_bitfield (tree, tree, tree);
 
 /* In tree-vrp.c  */
-tree vrp_evaluate_conditional (tree, bool);
+tree vrp_evaluate_conditional (tree, bool, bool *);
 void simplify_stmt_using_ranges (tree);
 
 /* In tree-ssa-dom.c  */
