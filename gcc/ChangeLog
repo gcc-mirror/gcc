@@ -1,3 +1,8 @@
+2007-03-02  Ben Elliston  <bje@au.ibm.com>
+
+	PR 30992
+	* config/dfp-bit.c (DFP_TO_INT): Initialise qval with "1.".
+
 2007-03-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* target.h (init_dwarf_reg_sizes_extra): New target hook.
