@@ -1,3 +1,20 @@
+2007-03-02  Uros Bizjak  <ubizjak@gmail.com>
+	    Michael Meissner  <michael.meissner@amd.com>
+
+	PR target/31019
+	* config/i386/i386.h (TUNEMASK): Redefine to use ix86_tune_mask.
+	(ARCHMASK): Define.
+	(TARGET_CMOVE): Use ARCHMASK.
+	(TARGET_CMPXCHG): Ditto.
+	(TARGET_CMPXCHG8B): Ditto.
+	(TARGET_XADD): Ditto.
+	(TARGET_BSWAP): Ditto.
+	* config/i386/i386.c (ix86_tune_mask): New global variable.
+	(ix86_arch_mask): Ditto.
+	(override_options): Initialize ix86_tune_mask and
+	ix86_arch_mask. Use ARCHMASK to clear MASK_NO_FANCY_MATH_387 in
+	target_flags.
+
 2007-03-02  Ben Elliston  <bje@au.ibm.com>
 
 	PR 30992

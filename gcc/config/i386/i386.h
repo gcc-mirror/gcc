@@ -179,7 +179,6 @@ extern const struct processor_costs *ix86_cost;
 #define TARGET_GENERIC (TARGET_GENERIC32 || TARGET_GENERIC64)
 #define TARGET_AMDFAM10 (ix86_tune == PROCESSOR_AMDFAM10)
 
-#define TUNEMASK (1 << ix86_tune)
 extern const int x86_use_leave, x86_push_memory, x86_zero_extend_with_and;
 extern const int x86_use_bit_test, x86_cmove, x86_deep_branch;
 extern const int x86_branch_hints, x86_unroll_strlen;
@@ -208,6 +207,9 @@ extern const int x86_bswap;
 extern const int x86_partial_flag_reg_stall;
 extern int x86_prefetch_sse, x86_cmpxchg16b;
 
+#define TUNEMASK ix86_tune_mask
+#define ARCHMASK ix86_arch_mask
+
 #define TARGET_USE_LEAVE (x86_use_leave & TUNEMASK)
 #define TARGET_PUSH_MEMORY (x86_push_memory & TUNEMASK)
 #define TARGET_ZERO_EXTEND_WITH_AND (x86_zero_extend_with_and & TUNEMASK)
@@ -215,7 +217,7 @@ extern int x86_prefetch_sse, x86_cmpxchg16b;
 #define TARGET_UNROLL_STRLEN (x86_unroll_strlen & TUNEMASK)
 /* For sane SSE instruction set generation we need fcomi instruction.  It is
    safe to enable all CMOVE instructions.  */
-#define TARGET_CMOVE ((x86_cmove & (1 << ix86_arch)) || TARGET_SSE)
+#define TARGET_CMOVE ((x86_cmove & ARCHMASK) || TARGET_SSE)
 #define TARGET_FISTTP (TARGET_SSE3 && TARGET_80387)
 #define TARGET_DEEP_BRANCH_PREDICTION (x86_deep_branch & TUNEMASK)
 #define TARGET_BRANCH_PREDICTION_HINTS (x86_branch_hints & TUNEMASK)
@@ -276,11 +278,11 @@ extern int x86_prefetch_sse, x86_cmpxchg16b;
 #define TARGET_ANY_GNU_TLS (TARGET_GNU_TLS || TARGET_GNU2_TLS)
 #define TARGET_SUN_TLS (ix86_tls_dialect == TLS_DIALECT_SUN)
 
-#define TARGET_CMPXCHG (x86_cmpxchg & (1 << ix86_arch))
-#define TARGET_CMPXCHG8B (x86_cmpxchg8b & (1 << ix86_arch))
+#define TARGET_CMPXCHG (x86_cmpxchg & ARCHMASK)
+#define TARGET_CMPXCHG8B (x86_cmpxchg8b & ARCHMASK)
 #define TARGET_CMPXCHG16B (x86_cmpxchg16b)
-#define TARGET_XADD (x86_xadd & (1 << ix86_arch))
-#define TARGET_BSWAP (x86_bswap & (1 << ix86_arch))
+#define TARGET_XADD (x86_xadd & ARCHMASK)
+#define TARGET_BSWAP (x86_bswap & ARCHMASK)
 
 #ifndef TARGET_64BIT_DEFAULT
 #define TARGET_64BIT_DEFAULT 0
@@ -2130,7 +2132,10 @@ enum processor_type
 };
 
 extern enum processor_type ix86_tune;
+extern int ix86_tune_mask;
+
 extern enum processor_type ix86_arch;
+extern int ix86_arch_mask;
 
 enum fpmath_unit
 {
