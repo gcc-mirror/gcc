@@ -4781,7 +4781,7 @@ alpha_gp_save_rtx (void)
 
       seq = get_insns ();
       end_sequence ();
-      emit_insn_after (seq, entry_of_function ());
+      emit_insn_at_entry (seq);
 
       cfun->machine->gp_save_rtx = m;
     }
