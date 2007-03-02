@@ -1,3 +1,8 @@
+2007-03-02  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/28253
+	* g++.dg/inherit/covariant16.C: New test.
+
 2007-03-02  Geoffrey Keating  <geoffk@apple.com>
 
 	* g++.dg/other/darwin-minversion-1.C: New.

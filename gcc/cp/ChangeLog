@@ -1,3 +1,9 @@
+2007-03-02  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/28253
+	* class.c (update_vtable_entry_for_fn): Properly handle invalid overriders
+	for thunks.
+
 2007-03-02  Geoffrey Keating  <geoffk@apple.com>
 
 	* g++spec.c (lang_specific_driver): Add -lstdc++ when compiling
