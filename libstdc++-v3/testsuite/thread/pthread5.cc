@@ -28,6 +28,7 @@
 #include <vector>
 #include <list>
 #include <string>
+#include <cstdlib>
 #include <pthread.h>
 
 #ifdef _GLIBCXX_HAVE_UNISTD_H

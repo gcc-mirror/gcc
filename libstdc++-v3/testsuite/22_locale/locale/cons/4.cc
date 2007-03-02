@@ -23,6 +23,7 @@
 // 22.1.1.2 locale constructors and destructors [lib.locale.cons]
 
 #include <cwchar> // for mbstate_t
+#include <cstdlib>
 #include <locale>
 #include <stdexcept>
 #include <testsuite_hooks.h>

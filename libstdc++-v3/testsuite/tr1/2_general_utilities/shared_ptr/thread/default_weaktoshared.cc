@@ -1,4 +1,4 @@
-// Copyright (C) 2006 Free Software Foundation
+// Copyright (C) 2006, 2007 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,6 +27,7 @@
 #include <vector>
 #include <testsuite_hooks.h>
 #include <iostream>
+#include <cstdlib>
 
 #include <pthread.h>
 
@@ -169,14 +170,14 @@ test01()
     {
       if (pthread_create(&threads[worker], &tattr,
 			 thread_hammer, reinterpret_cast<void*>(&weak_pool[worker])))
-	abort();
+	std::abort();
     }
   // Wait for threads to complete, then check integrity of reference.
   void* status;
   for (unsigned int worker = 0; worker < HAMMER_MAX_THREADS; worker++)
     {
       if (pthread_join(threads[worker], &status))
-	abort();
+	std::abort();
     }
   obj_pool.clear();
   

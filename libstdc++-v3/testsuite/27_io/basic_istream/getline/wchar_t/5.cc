@@ -1,4 +1,4 @@
-// Copyright (C) 2004 Free Software Foundation
+// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,6 +21,7 @@
 #include <istream>
 #include <string>
 #include <fstream>
+#include <cstdlib>
 #include <testsuite_hooks.h>
 
 using namespace std;
