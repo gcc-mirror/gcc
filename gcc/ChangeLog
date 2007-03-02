@@ -1,3 +1,30 @@
+2007-03-02  Ben Elliston  <bje@au.ibm.com>
+	    Peter Bergner  <bergner@vnet.ibm.com>
+	    Janis Johnson  <janis187@us.ibm.com>
+
+	* config/rs6000/dfp.md: New file.
+	* config/rs6000/rs6000.md: Include dfp.md.
+	(add<mode>3_internal1): Disable for DECIMAL_FLOAT_MODE_P operands.
+	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): Handle DDmode
+	and TDmode decimal float modes in FP registers.
+	(num_insns_constant): Likewise.
+	(rs6000_legitimate_offset_address_p): Likewise.
+	(rs6000_legitimize_address): Likewise.
+	(rs6000_legitimize_reload_address): Likewise.
+	(rs6000_legitimate_address): Likewise.
+	(rs6000_emit_move): Likewise.
+	(function_arg_boundary): Likewise.
+	(function_arg_advance): Likewise.
+	(rs6000_darwin64_record_arg_recurse): Likewise.
+	(function_arg): Likewise.
+	(rs6000_gimplify_va_arg): Likewise.
+	(rs6000_split_multireg_move): Likewise.
+	(rs6000_output_function_epilogue): Likewise.
+	(rs6000_output_function_epilogue): Likewise.
+	(rs6000_register_move_cost): Likewise.
+	(rs6000_function_value): Likewise.
+	(rs6000_libcall_value): Likewise.
+
 2007-03-02  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/t-vxworks (LIMITS_H_TEST): Define to true for VxWorks.
