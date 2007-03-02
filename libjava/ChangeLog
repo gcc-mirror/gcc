@@ -1,3 +1,13 @@
+2007-03-02  Andrew Haley  <aph@redhat.com>
+
+	* sun/reflect/annotation/AnnotationInvocationHandler.java:
+	Whitespace only changes.
+
+2007-03-02  Andrew Haley  <aph@redhat.com>
+
+	* sun/reflect/annotation/AnnotationInvocationHandler.java: Moved
+	from Classpath to libgcj local.
+
 2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Makefile.am: Add dummy install-pdf target.
