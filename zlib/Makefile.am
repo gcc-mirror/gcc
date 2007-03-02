@@ -59,9 +59,11 @@ AM_MAKEFLAGS = \
 	"RANLIB=$(RANLIB)" \
 	"DESTDIR=$(DESTDIR)"
 
-# No html, or install-html support.
-.PHONY: html install-html
+# No html support.
+# No install-html or install-pdf support in automake yet
+.PHONY: html install-html install-pdf
 
 html:
 install-html:
+install-pdf:
 
