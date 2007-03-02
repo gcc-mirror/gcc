@@ -1100,6 +1100,7 @@ fold_predicate_in (tree stmt)
   tree *pred_p = NULL;
   bool modify_stmt_p = false;
   tree val;
+  bool sop;
 
   if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
       && COMPARISON_CLASS_P (GIMPLE_STMT_OPERAND (stmt, 1)))
@@ -1112,7 +1113,8 @@ fold_predicate_in (tree stmt)
   else
     return false;
 
-  val = vrp_evaluate_conditional (*pred_p, true);
+  sop = false;
+  val = vrp_evaluate_conditional (*pred_p, true, &sop);
   if (val)
     {
       if (modify_stmt_p)
