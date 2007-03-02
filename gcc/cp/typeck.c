@@ -53,7 +53,6 @@ static tree rationalize_conditional_expr (enum tree_code, tree);
 static int comp_ptr_ttypes_real (tree, tree, int);
 static bool comp_except_types (tree, tree, bool);
 static bool comp_array_types (tree, tree, bool);
-static tree common_base_type (tree, tree);
 static tree pointer_diff (tree, tree, tree);
 static tree get_delta_difference (tree, tree, bool, bool);
 static void casts_away_constness_r (tree *, tree *);
@@ -1195,59 +1194,6 @@ comp_cv_qual_signature (tree type1, tree type2)
     return -1;
   else
     return 0;
-}
-
-/* If two types share a common base type, return that basetype.
-   If there is not a unique most-derived base type, this function
-   returns ERROR_MARK_NODE.  */
-
-static tree
-common_base_type (tree tt1, tree tt2)
-{
-  tree best = NULL_TREE;
-  int i;
-
-  /* If one is a baseclass of another, that's good enough.  */
-  if (UNIQUELY_DERIVED_FROM_P (tt1, tt2))
-    return tt1;
-  if (UNIQUELY_DERIVED_FROM_P (tt2, tt1))
-    return tt2;
-
-  /* Otherwise, try to find a unique baseclass of TT1
-     that is shared by TT2, and follow that down.  */
-  for (i = BINFO_N_BASE_BINFOS (TYPE_BINFO (tt1))-1; i >= 0; i--)
-    {
-      tree basetype = BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (tt1), i));
-      tree trial = common_base_type (basetype, tt2);
-
-      if (trial)
-	{
-	  if (trial == error_mark_node)
-	    return trial;
-	  if (best == NULL_TREE)
-	    best = trial;
-	  else if (best != trial)
-	    return error_mark_node;
-	}
-    }
-
-  /* Same for TT2.  */
-  for (i = BINFO_N_BASE_BINFOS (TYPE_BINFO (tt2))-1; i >= 0; i--)
-    {
-      tree basetype = BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (tt2), i));
-      tree trial = common_base_type (tt1, basetype);
-
-      if (trial)
-	{
-	  if (trial == error_mark_node)
-	    return trial;
-	  if (best == NULL_TREE)
-	    best = trial;
-	  else if (best != trial)
-	    return error_mark_node;
-	}
-    }
-  return best;
 }
 
 /* Subroutines of `comptypes'.  */

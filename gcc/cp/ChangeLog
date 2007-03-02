@@ -1,3 +1,7 @@
+2007-03-02  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* typeck.c (common_base_type): Delete unused function.
+	
 2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Make-lang.in: Add dummy lang.install-pdf target.
