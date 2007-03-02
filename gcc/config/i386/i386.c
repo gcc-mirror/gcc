@@ -2284,7 +2284,7 @@ override_options (void)
 
   /* If the architecture always has an FPU, turn off NO_FANCY_MATH_387,
      since the insns won't need emulation.  */
-  if (x86_arch_always_fancy_math_387 & ARCHMASK)
+  if (x86_arch_always_fancy_math_387 & ix86_arch_mask)
     target_flags &= ~MASK_NO_FANCY_MATH_387;
 
   /* Likewise, if the target doesn't have a 387, or we've specified
@@ -2405,7 +2405,7 @@ override_options (void)
   if (!TARGET_80387)
     target_flags &= ~MASK_FLOAT_RETURNS;
 
-  if ((x86_accumulate_outgoing_args & TUNEMASK)
+  if ((x86_accumulate_outgoing_args & ix86_tune_mask)
       && !(target_flags_explicit & MASK_ACCUMULATE_OUTGOING_ARGS)
       && !optimize_size)
     target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
@@ -4999,7 +4999,7 @@ standard_80387_constant_p (rtx x)
   /* For XFmode constants, try to find a special 80387 instruction when
      optimizing for size or on those CPUs that benefit from them.  */
   if (GET_MODE (x) == XFmode
-      && (optimize_size || x86_ext_80387_constants & TUNEMASK))
+      && (optimize_size || x86_ext_80387_constants & ix86_tune_mask))
     {
       int i;
 
