@@ -9,6 +9,11 @@
 	and use $WIND_BASE and $WIND_USR to locate them.
 
 2007-03-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (override_options): Put initialization of
+	ix86_tune_mask and ix86_arch_mask to the correct place.
+
+2007-03-02  Uros Bizjak  <ubizjak@gmail.com>
 	    Michael Meissner  <michael.meissner@amd.com>
 
 	PR target/31019
