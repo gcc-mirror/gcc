@@ -3597,8 +3597,10 @@ doc/%.dvi: %.texi
 doc/gccinstall.dvi: $(TEXI_GCCINSTALL_FILES)
 	$(TEXI2DVI) -I . -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
 
-pdf:: doc/gcc.pdf doc/gccint.pdf doc/gccinstall.pdf doc/cpp.pdf \
-      doc/cppinternals.pdf lang.pdf
+PDFFILES = doc/gcc.pdf doc/gccint.pdf doc/gccinstall.pdf doc/cpp.pdf \
+           doc/cppinternals.pdf
+
+pdf:: $(PDFFILES) lang.pdf
 
 doc/%.pdf: %.texi
 	$(TEXI2PDF) -I . -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
@@ -3894,6 +3896,18 @@ $(DESTDIR)$(infodir)/%.info: doc/%.info installdirs
 	    install-info --dir-file=$(DESTDIR)$(infodir)/dir $@; \
 	  else true; fi; \
 	else true; fi;
+
+pdf__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
+
+install-pdf: $(PDFFILES) lang.install-pdf
+	@$(NORMAL_INSTALL)
+	test -z "$(pdfdir)/gcc" || $(mkinstalldirs) "$(DESTDIR)$(pdfdir)/gcc"
+	@list='$(PDFFILES)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(pdf__strip_dir) \
+	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(pdfdir)/gcc/$$f'"; \
+	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/gcc/$$f"; \
+	done
 
 html__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 

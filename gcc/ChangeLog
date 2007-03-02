@@ -1,3 +1,10 @@
+2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* Makefile.in: Add install-pdf target as
+	copied from automake v1.10 rules.
+	* configure.ac: Add install-pdf to target list.
+	* configure: Regenerate.
+
 2007-03-01  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_legitimate_index_p): Limit iWMMXt addressing
