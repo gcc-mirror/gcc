@@ -1,3 +1,9 @@
+2007-03-02  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/t-vxworks (LIBGCC2_INCLUDES): Pass -nostdinc.
+	Use $MULTIDIR to choose between the kernel and RTP headers,
+	and use $WIND_BASE and $WIND_USR to locate them.
+
 2007-03-02  Uros Bizjak  <ubizjak@gmail.com>
 	    Michael Meissner  <michael.meissner@amd.com>
 
