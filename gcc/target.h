@@ -601,6 +601,12 @@ struct gcc_target
      hook should return NULL_RTX.  */
   rtx (* dwarf_register_span) (rtx);
 
+  /* If expand_builtin_init_dwarf_reg_sizes needs to fill in table
+     entries not corresponding directly to registers below
+     FIRST_PSEUDO_REGISTER, this hook should generate the necessary
+     code, given the address of the table.  */
+  void (* init_dwarf_reg_sizes_extra) (tree);
+
   /* Fetch the fixed register(s) which hold condition codes, for
      targets where it makes sense to look for duplicate assignments to
      the condition codes.  This should return true if there is such a

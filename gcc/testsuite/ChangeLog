@@ -1,3 +1,8 @@
+2007-03-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.target/powerpc/spe-unwind-1.c, g++.dg/eh/simd-5.C: New
+	tests.
+
 2007-03-01  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* gcc.dg/tree-ssa/prefetch-4.c: New test.

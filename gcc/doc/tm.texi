@@ -8168,6 +8168,15 @@ register in Dwarf.  Otherwise, this hook should return @code{NULL_RTX}.
 If not defined, the default is to return @code{NULL_RTX}.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_INIT_DWARF_REG_SIZES_EXTRA (tree @var{address})
+If some registers are represented in Dwarf-2 unwind information in
+multiple pieces, define this hook to fill in information about the
+sizes of those pieces in the table used by the unwinder at runtime.
+It will be called by @code{expand_builtin_init_dwarf_reg_sizes} after
+filling in a single size corresponding to each hard register;
+@var{address} is the address of the table.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_ASM_TTYPE (rtx @var{sym})
 This hook is used to output a reference from a frame unwinding table to
 the type_info object identified by @var{sym}.  It should return @code{true}

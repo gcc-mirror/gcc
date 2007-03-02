@@ -1,3 +1,15 @@
+2007-03-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* target.h (init_dwarf_reg_sizes_extra): New target hook.
+	* target-def.h (TARGET_INIT_DWARF_REG_SIZES_EXTRA): New default.
+	* doc/tm.texi (TARGET_INIT_DWARF_REG_SIZES_EXTRA): Document.
+	* dwarf2out.c (expand_builtin_init_dwarf_reg_sizes): Call this
+	hook.
+	* config/rs6000/rs6000.c (TARGET_INIT_DWARF_REG_SIZES_EXTRA,
+	rs6000_init_dwarf_reg_sizes_extra): New.
+	* config/rs6000/linux-unwind.h (ppc_fallback_frame_state): Support
+	SPE register high parts.
+
 2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Makefile.in: Add install-pdf target as

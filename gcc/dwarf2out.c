@@ -498,6 +498,8 @@ expand_builtin_init_dwarf_reg_sizes (tree address)
 #ifdef DWARF_ALT_FRAME_RETURN_COLUMN
   init_return_column_size (mode, mem, DWARF_ALT_FRAME_RETURN_COLUMN);
 #endif
+
+  targetm.init_dwarf_reg_sizes_extra (address);
 }
 
 /* Convert a DWARF call frame info. operation to its string name */

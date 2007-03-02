@@ -301,6 +301,17 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
       fs->regs.reg[VRSAVE_REGNO].loc.offset = (long) &vregs->vsave - new_cfa;
     }
 
+  /* If we have SPE register high-parts... we check at compile-time to
+     avoid expanding the code for all other PowerPC.  */
+#ifdef __SPE__
+  for (i = 0; i < 32; i++)
+    {
+      fs->regs.reg[i + FIRST_PSEUDO_REGISTER - 1].how = REG_SAVED_OFFSET;
+      fs->regs.reg[i + FIRST_PSEUDO_REGISTER - 1].loc.offset
+	= (long) &regs->vregs - new_cfa + 4 * i;
+    }
+#endif
+
   return _URC_NO_REASON;
 }
 
