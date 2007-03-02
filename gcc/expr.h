@@ -597,9 +597,6 @@ extern rtx label_rtx (tree);
    if how is not obvious).  */
 extern rtx force_label_rtx (tree);
 
-/* Indicate how an input argument register was promoted.  */
-extern rtx promoted_input_arg (unsigned int, enum machine_mode *, int *);
-
 /* Return an rtx like arg but sans any constant terms.
    Returns the original rtx if it has no constant terms.
    The constant terms are added and stored via a second arg.  */
