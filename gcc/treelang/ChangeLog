@@ -1,3 +1,8 @@
+2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* Make-lang.in: Add install-pdf target as copied from
+	automake v1.10 rules.
+
 2007-02-26  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* treelang.texi: Standardize title page, remove version number

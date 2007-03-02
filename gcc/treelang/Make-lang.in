@@ -24,8 +24,8 @@
 # Each language makefile fragment must provide the following targets:
 #
 # foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.install-common, foo.install-man, foo.install-info, foo.dvi, foo.pdf
-# foo.html, foo.uninstall,
+# foo.install-common, foo.install-man, foo.install-info, foo.install-pdf,
+# foo.info, foo.dvi, foo.pdf, foo.html, foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
@@ -160,7 +160,9 @@ treelang.srcinfo: doc/treelang.info
 
 treelang.dvi: doc/treelang.dvi
 
-treelang.pdf: doc/treelang.pdf
+TREELANG_PDFFILES = doc/treelang.pdf
+
+treelang.pdf: $(TREELANG_PDFFILES)
 
 TEXI_TREELANG_FILES = treelang/treelang.texi \
 	 $(gcc_docdir)/include/gcc-common.texi \
@@ -209,6 +211,16 @@ treelang.install.common.done:  installdirs treelang.done
 
 # We might not be able to build the info files
 treelang.install-info: $(DESTDIR)$(infodir)/treelang.info
+
+treelang.install-pdf: $(TREELANG_PDFFILES)
+	@$(NORMAL_INSTALL)
+	test -z "$(pdfdir)/gcc" || $(mkinstalldirs) "$(DESTDIR)$(pdfdir)/gcc"
+	@list='$(TREELANG_PDFFILES)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(pdf__strip_dir) \
+	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(pdfdir)/gcc/$$f'"; \
+	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/gcc/$$f"; \
+	done
 
 treelang.install-man:
 
