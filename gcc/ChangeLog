@@ -1,4 +1,11 @@
-2007-03-01  Paul Brook  <paul@codesourcery.com>
+2007-03-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-sra.c (sra_walk_fns) <ldst>: Document new restriction.
+	(sra_walk_modify_expr) <rhs_elt>: Treat the reference as a use
+	if the lhs has side-effects.
+	<lhs_elt>: Treat the reference as a use if the rhs has side-effects.
+
+2007-03-02  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_legitimate_index_p): Limit iWMMXt addressing
 	modes to LDRD for DImode.

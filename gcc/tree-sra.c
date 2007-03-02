@@ -668,8 +668,8 @@ struct sra_walk_fns
   void (*init) (struct sra_elt *elt, tree value, block_stmt_iterator *bsi);
 
   /* Invoked when we have a copy between one scalarizable reference ELT
-     and one non-scalarizable reference OTHER.  IS_OUTPUT is true if ELT
-     is on the left-hand side.  */
+     and one non-scalarizable reference OTHER without side-effects. 
+     IS_OUTPUT is true if ELT is on the left-hand side.  */
   void (*ldst) (struct sra_elt *elt, tree other,
 		block_stmt_iterator *bsi, bool is_output);
 
@@ -876,7 +876,7 @@ sra_walk_modify_expr (tree expr, block_stmt_iterator *bsi,
   /* If the RHS is scalarizable, handle it.  There are only two cases.  */
   if (rhs_elt)
     {
-      if (!rhs_elt->is_scalar)
+      if (!rhs_elt->is_scalar && !TREE_SIDE_EFFECTS (lhs))
 	fns->ldst (rhs_elt, lhs, bsi, false);
       else
 	fns->use (rhs_elt, &TREE_OPERAND (expr, 1), bsi, false, false);
@@ -919,7 +919,8 @@ sra_walk_modify_expr (tree expr, block_stmt_iterator *bsi,
 	 The lvalue requirement prevents us from trying to directly scalarize
 	 the result of a function call.  Which would result in trying to call
 	 the function multiple times, and other evil things.  */
-      else if (!lhs_elt->is_scalar && is_gimple_addressable (rhs))
+      else if (!lhs_elt->is_scalar
+	       && !TREE_SIDE_EFFECTS (rhs) && is_gimple_addressable (rhs))
 	fns->ldst (lhs_elt, rhs, bsi, true);
 
       /* Otherwise we're being used in some context that requires the
