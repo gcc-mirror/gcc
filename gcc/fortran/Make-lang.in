@@ -25,10 +25,9 @@
 # Each language makefile fragment must provide the following targets:
 #
 # foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.info
-# foo.install-common, foo.install-info, foo.install-man,
-# foo.uninstall, foo.install-info, foo.dvi, foo.pdf, foo.html,
-# foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
+# foo.install-common, foo.install-man, foo.install-info, foo.install-pdf,
+# foo.info, foo.dvi, foo.pdf, foo.html, foo.uninstall,
+# foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
 # where `foo' is the name of the language.
@@ -124,8 +123,21 @@ fortran.tags: force
 
 fortran.info: doc/gfortran.info
 fortran.dvi: doc/gfortran.dvi
-fortran.pdf: doc/gfortran.pdf
 fortran.html: $(build_htmldir)/gfortran/index.html
+
+F95_PDFFILES = doc/gfortran.pdf
+
+fortran.pdf: $(F95_PDFFILES)
+
+fortran.install-pdf: $(F95_PDFFILES)
+	@$(NORMAL_INSTALL)
+	test -z "$(pdfdir)/gcc" || $(mkinstalldirs) "$(DESTDIR)$(pdfdir)/gcc"
+	@list='$(F95_PDFFILES)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(pdf__strip_dir) \
+	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(pdfdir)/gcc/$$f'"; \
+	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/gcc/$$f"; \
+	done
 
 F95_MANFILES = doc/gfortran.1
 
