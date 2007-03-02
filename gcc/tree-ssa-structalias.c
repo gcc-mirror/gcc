@@ -2312,9 +2312,11 @@ could_have_pointers (tree t)
 {
   tree type = TREE_TYPE (t);
 
-  if (POINTER_TYPE_P (type) || AGGREGATE_TYPE_P (type)
+  if (POINTER_TYPE_P (type)
+      || AGGREGATE_TYPE_P (type)
       || TREE_CODE (type) == COMPLEX_TYPE)
     return true;
+
   return false;
 }
 
@@ -2524,6 +2526,7 @@ get_constraint_for (tree t, VEC (ce_s, heap) **results)
 	      tree pttype = TREE_TYPE (TREE_TYPE (t));
 
 	      get_constraint_for (exp, results);
+
 	      /* Make sure we capture constraints to all elements
 		 of an array.  */
 	      if ((handled_component_p (exp)
@@ -3001,6 +3004,7 @@ do_structure_copy (tree lhsop, tree rhsop)
     }
 }
 
+
 /* Update related alias information kept in AI.  This is used when
    building name tags, alias sets and deciding grouping heuristics.
    STMT is the statement to process.  This function also updates
@@ -3326,9 +3330,9 @@ find_func_aliases (tree origt)
 	}
     }
   /* In IPA mode, we need to generate constraints to pass call
-     arguments through their calls.   There are two case, either a
-     modify_expr when we are returning a value, or just a plain
-     call_expr when we are not.   */
+     arguments through their calls.   There are two cases, either a
+     GIMPLE_MODIFY_STMT when we are returning a value, or just a plain
+     CALL_EXPR when we are not.   */
   else if (in_ipa_mode
 	   && ((TREE_CODE (t) == GIMPLE_MODIFY_STMT
 		&& TREE_CODE (GIMPLE_STMT_OPERAND (t, 1)) == CALL_EXPR
@@ -3399,6 +3403,7 @@ find_func_aliases (tree origt)
 	    }
 	  i++;
 	}
+
       /* If we are returning a value, assign it to the result.  */
       if (lhsop)
 	{
@@ -4099,8 +4104,8 @@ intra_create_variable_infos (void)
   tree t;
   struct constraint_expr lhs, rhs;
 
-  /* For each incoming pointer argument arg, ARG = ANYTHING or a
-     dummy variable if flag_argument_noalias > 2. */
+  /* For each incoming pointer argument arg, create the constraint ARG
+     = ANYTHING or a dummy variable if flag_argument_noalias is set.  */
   for (t = DECL_ARGUMENTS (current_function_decl); t; t = TREE_CHAIN (t))
     {
       varinfo_t p;
