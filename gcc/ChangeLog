@@ -1,3 +1,15 @@
+2007-03-01  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (arm_legitimate_index_p): Limit iWMMXt addressing
+	modes to LDRD for DImode.
+	(output_move_double): Fixup out of range ldrd/strd.
+	(vfp_secondary_reload_class): Rename...
+	(coproc_secondary_reload_class): ... to this.  Add wb argument.
+	* config/arm/arm.h (SECONDARY_OUTPUT_RELOAD_CLASS): Use
+	coproc_secondary_reload_class for CLASS_IWMMXT.
+	(SECONDARY_INPUT_RELOAD_CLASS): Ditto.
+	* arm-protos.h (coproc_secondary_reload_class): Update prototype.
+
 2007-03-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/alpha/alpha.c (alpha_gp_save_rtx): Insert the insns at the

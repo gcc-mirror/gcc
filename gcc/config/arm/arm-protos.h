@@ -66,7 +66,8 @@ extern rtx thumb_legitimize_reload_address (rtx *, enum machine_mode, int, int,
 					    int);
 extern int arm_const_double_rtx (rtx);
 extern int neg_const_double_rtx_ok_for_fpa (rtx);
-extern enum reg_class vfp_secondary_reload_class (enum machine_mode, rtx);
+extern enum reg_class coproc_secondary_reload_class (enum machine_mode, rtx,
+						     bool);
 extern bool arm_tls_referenced_p (rtx);
 
 extern int cirrus_memory_offset (rtx);
