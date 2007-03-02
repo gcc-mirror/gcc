@@ -1,3 +1,16 @@
+2007-03-02  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-structalias.c (could_have_pointers): Tidy.
+	(get_constraint_for): Likewise.
+	(do_structure_copy): Likewise.
+	(find_func_aliases): Fix references to MODIFY_EXPR.
+	(intra_create_variable_infos): Tidy.
+	* tree-ssa-operands.c (add_virtual_operand): Add argument
+	IS_CALL_SITE.
+	When adding members of alias sets, if IS_CALL_SITE is true and
+	the symbol is not call-clobbered, skip it.
+	Adjust all callers.
+
 2007-03-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/alpha/alpha.c (alpha_gp_save_rtx): Insert the insns at the

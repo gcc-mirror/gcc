@@ -142,6 +142,7 @@ static VEC(tree,heap) *build_vuses;
 /* Bitmap obstack for our datastructures that needs to survive across	
    compilations of multiple functions.  */
 static bitmap_obstack operands_bitmap_obstack;
+
 /* Set for building all the loaded symbols.  */
 static bitmap build_loads;
 
@@ -1433,12 +1434,13 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
    get_expr_operands.  FULL_REF is a tree that contains the entire
    pointer dereference expression, if available, or NULL otherwise.
    OFFSET and SIZE come from the memory access expression that
-   generated this virtual operand.  */
+   generated this virtual operand.  IS_CALL_SITE is true if the
+   affected statement is a call site.  */
 
 static void 
 add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 		     tree full_ref, HOST_WIDE_INT offset,
-		     HOST_WIDE_INT size)
+		     HOST_WIDE_INT size, bool is_call_site)
 {
   bitmap aliases = NULL;
   tree sym;
@@ -1480,10 +1482,12 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
   
   if (MTAG_P (var))
     aliases = MTAG_ALIASES (var);
+
   if (aliases == NULL)
     {
       if (s_ann && !gimple_aliases_computed_p (cfun))
         s_ann->has_volatile_ops = true;
+
       /* The variable is not aliased or it is an alias tag.  */
       if (flags & opf_def)
 	append_vdef (var);
@@ -1508,7 +1512,13 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 	      al = referenced_var (i);
 	      if (!access_can_touch_variable (full_ref, al, offset, size))
 		continue;
-	      
+
+	      /* Call-clobbered tags may have non-call-clobbered
+		 symbols in their alias sets.  Ignore them if we are
+		 adding VOPs for a call site.  */
+	      if (is_call_site && !is_call_clobbered (al))
+		continue;
+
 	      none_added = false;
 	      append_vdef (al);
 	    }
@@ -1529,6 +1539,13 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 	      al = referenced_var (i);
 	      if (!access_can_touch_variable (full_ref, al, offset, size))
 		continue;
+
+	      /* Call-clobbered tags may have non-call-clobbered
+		 symbols in their alias sets.  Ignore them if we are
+		 adding VOPs for a call site.  */
+	      if (is_call_site && !is_call_clobbered (al))
+		continue;
+
 	      none_added = false;
 	      append_vuse (al);
 	    }
@@ -1575,7 +1592,7 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
 	append_use (var_p);
     }
   else
-    add_virtual_operand (var, s_ann, flags, NULL_TREE, 0, -1);
+    add_virtual_operand (var, s_ann, flags, NULL_TREE, 0, -1, false);
 }
 
 
@@ -1622,7 +1639,7 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags,
 	{
 	  /* PTR has its own memory tag.  Use it.  */
 	  add_virtual_operand (pi->name_mem_tag, s_ann, flags,
-			       full_ref, offset, size);
+			       full_ref, offset, size, false);
 	}
       else
 	{
@@ -1651,10 +1668,12 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags,
 
 	  if (v_ann->symbol_mem_tag)
 	    add_virtual_operand (v_ann->symbol_mem_tag, s_ann, flags,
-				 full_ref, offset, size);
-          /* Aliasing information is missing; mark statement as volatile so we
-             won't optimize it out too actively.  */
-          else if (s_ann && !gimple_aliases_computed_p (cfun)
+				 full_ref, offset, size, false);
+
+	  /* Aliasing information is missing; mark statement as
+	     volatile so we won't optimize it out too actively.  */
+          else if (s_ann
+	           && !gimple_aliases_computed_p (cfun)
                    && (flags & opf_def))
             s_ann->has_volatile_ops = true;
 	}
@@ -1743,12 +1762,11 @@ add_call_clobber_ops (tree stmt, tree callee)
   if (s_ann)
     s_ann->makes_clobbering_call = true;
 
-  /* If we created .GLOBAL_VAR earlier, just use it.  See compute_may_aliases 
-     for the heuristic used to decide whether to create .GLOBAL_VAR or not.  */
+  /* If we created .GLOBAL_VAR earlier, just use it.  */
   if (gimple_global_var (cfun))
     {
       tree var = gimple_global_var (cfun);
-      add_stmt_operand (&var, s_ann, opf_def);
+      add_virtual_operand (var, s_ann, opf_def, NULL, 0, -1, true);
       return;
     }
 
@@ -1772,10 +1790,13 @@ add_call_clobber_ops (tree stmt, tree callee)
       if (TREE_CODE (var) == STRUCT_FIELD_TAG)
 	real_var = SFT_PARENT_VAR (var);
 
-      not_read = not_read_b ? bitmap_bit_p (not_read_b, 
-					    DECL_UID (real_var)) : false;
-      not_written = not_written_b ? bitmap_bit_p (not_written_b, 
-						  DECL_UID (real_var)) : false;
+      not_read = not_read_b
+	         ? bitmap_bit_p (not_read_b, DECL_UID (real_var))
+	         : false;
+
+      not_written = not_written_b
+	            ? bitmap_bit_p (not_written_b, DECL_UID (real_var))
+		    : false;
       gcc_assert (!unmodifiable_var_p (var));
       
       clobber_stats.clobbered_vars++;
@@ -1789,7 +1810,7 @@ add_call_clobber_ops (tree stmt, tree callee)
 	  tree call = get_call_expr_in (stmt);
 	  if (call_expr_flags (call) & (ECF_CONST | ECF_PURE))
 	    {
-	      add_stmt_operand (&var, s_ann, opf_use);
+	      add_virtual_operand (var, s_ann, opf_use, NULL, 0, -1, true);
 	      clobber_stats.unescapable_clobbers_avoided++;
 	      continue;
 	    }
@@ -1804,12 +1825,12 @@ add_call_clobber_ops (tree stmt, tree callee)
 	{
 	  clobber_stats.static_write_clobbers_avoided++;
 	  if (!not_read)
-	    add_stmt_operand (&var, s_ann, opf_use);
+	    add_virtual_operand (var, s_ann, opf_use, NULL, 0, -1, true);
 	  else
 	    clobber_stats.static_read_clobbers_avoided++;
 	}
       else
-	add_virtual_operand (var, s_ann, opf_def, NULL, 0, -1);
+	add_virtual_operand (var, s_ann, opf_def, NULL, 0, -1, true);
     }
 }
 
@@ -1831,7 +1852,7 @@ add_call_read_ops (tree stmt, tree callee)
   if (gimple_global_var (cfun))
     {
       tree var = gimple_global_var (cfun);
-      add_stmt_operand (&var, s_ann, opf_use);
+      add_virtual_operand (var, s_ann, opf_use, NULL, 0, -1, true);
       return;
     }
   
@@ -1861,7 +1882,7 @@ add_call_read_ops (tree stmt, tree callee)
 	  continue;
 	}
             
-      add_stmt_operand (&var, s_ann, opf_use | opf_implicit);
+      add_virtual_operand (var, s_ann, opf_use, NULL, 0, -1, true);
     }
 }
 

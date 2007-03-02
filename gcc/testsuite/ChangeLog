@@ -1,3 +1,7 @@
+2007-03-02  Diego Novillo  <dnovillo@redhat.com>
+
+	* gcc.dg/tree-ssa/20070302-1.c: New test.
+
 2007-03-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.target/powerpc/spe-unwind-1.c, g++.dg/eh/simd-5.C: New
