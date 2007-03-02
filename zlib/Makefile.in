@@ -601,11 +601,13 @@ uninstall-am: uninstall-toolexeclibLIBRARIES
 	uninstall-toolexeclibLIBRARIES
 
 
-# No html, or install-html support.
-.PHONY: html install-html
+# No html support.
+# No install-html or install-pdf support in automake yet
+.PHONY: html install-html install-pdf
 
 html:
 install-html:
+install-pdf:
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
