@@ -1014,27 +1014,36 @@ init_reg_last (void)
 static void
 setup_incoming_promotions (void)
 {
-  unsigned int regno;
-  rtx reg;
-  enum machine_mode mode;
-  int unsignedp;
-  rtx first = get_insns ();
+  rtx first;
+  tree arg;
 
-  if (targetm.calls.promote_function_args (TREE_TYPE (cfun->decl)))
+  if (!targetm.calls.promote_function_args (TREE_TYPE (cfun->decl)))
+    return;
+
+  first = get_insns ();
+
+  for (arg = DECL_ARGUMENTS (current_function_decl); arg;
+       arg = TREE_CHAIN (arg))
     {
-      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	/* Check whether this register can hold an incoming pointer
-	   argument.  FUNCTION_ARG_REGNO_P tests outgoing register
-	   numbers, so translate if necessary due to register windows.  */
-	if (FUNCTION_ARG_REGNO_P (OUTGOING_REGNO (regno))
-	    && (reg = promoted_input_arg (regno, &mode, &unsignedp)) != 0)
-	  {
-	    record_value_for_reg
-	      (reg, first, gen_rtx_fmt_e ((unsignedp ? ZERO_EXTEND
-					   : SIGN_EXTEND),
-					  GET_MODE (reg),
-					  gen_rtx_CLOBBER (mode, const0_rtx)));
-	  }
+      rtx reg = DECL_INCOMING_RTL (arg);
+
+      if (!REG_P (reg))
+	continue;
+
+      if (TYPE_MODE (DECL_ARG_TYPE (arg)) == TYPE_MODE (TREE_TYPE (arg)))
+	{
+	  enum machine_mode mode = TYPE_MODE (TREE_TYPE (arg));
+	  int uns = TYPE_UNSIGNED (TREE_TYPE (arg));
+
+	  mode = promote_mode (TREE_TYPE (arg), mode, &uns, 1);
+	  if (mode == GET_MODE (reg) && mode != DECL_MODE (arg))
+	    {
+	      rtx x;
+	      x = gen_rtx_CLOBBER (DECL_MODE (arg), const0_rtx);
+	      x = gen_rtx_fmt_e ((uns ? ZERO_EXTEND : SIGN_EXTEND), mode, x);
+	      record_value_for_reg (reg, first, x);
+	    }
+	}
     }
 }
 

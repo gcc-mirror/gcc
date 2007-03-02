@@ -1,3 +1,10 @@
+2007-03-02  Richard Henderson  <rth@redhat.com>
+
+	* expr.h (promoted_input_arg): Remove decl.
+	* function.c (promoted_input_arg): Merge into ...
+	* combine.c (setup_incoming_promotions): ... only caller.
+	Rearrange to avoid double loop.
+
 2007-03-02  Ben Elliston  <bje@au.ibm.com>
 	    Peter Bergner  <bergner@vnet.ibm.com>
 	    Janis Johnson  <janis187@us.ibm.com>
