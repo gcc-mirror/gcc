@@ -61,6 +61,7 @@ oldincludedir = @oldincludedir@
 infodir = @infodir@
 datarootdir = @datarootdir@
 docdir = @docdir@
+pdfdir = @pdfdir@
 htmldir = @htmldir@
 mandir = @mandir@
 man1dir = $(mandir)/man1
@@ -570,7 +571,8 @@ do-[+make_target+]:
 
 # Here are the targets which correspond to the do-X targets.
 
-.PHONY: info installcheck dvi pdf html install-info install-html
+.PHONY: info installcheck dvi pdf html
+.PHONY: install-info install-pdf install-html
 .PHONY: clean distclean mostlyclean maintainer-clean realclean
 .PHONY: local-clean local-distclean local-maintainer-clean
 info: do-info
@@ -588,6 +590,8 @@ install-info: do-install-info dir.info
 	if [ -f dir.info ] ; then \
 	  $(INSTALL_DATA) dir.info $(DESTDIR)$(infodir)/dir.info ; \
 	else true ; fi
+
+install-pdf: do-install-pdf
 
 install-html: do-install-html
 
