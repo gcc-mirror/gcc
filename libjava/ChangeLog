@@ -1,3 +1,11 @@
+2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* Makefile.am: Add dummy install-pdf target.
+	* Makefile.in: Regenerate
+	* include/Makefile.in: Regenerate
+	* testsuite/Makefile.in: Regenerate
+	* gcj/Makefile.in: Regenerate
+
 2007-02-23  Gary Benson  <gbenson@redhat.com>
 
 	* gnu/gcj/tools/gcj_dbtool/Main.java: Updated copyright year.
