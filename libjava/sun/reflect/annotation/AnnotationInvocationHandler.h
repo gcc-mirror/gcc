@@ -29,19 +29,19 @@ class sun::reflect::annotation::AnnotationInvocationHandler : public ::java::lan
 public:
   AnnotationInvocationHandler(::java::lang::Class *, ::java::util::Map *);
   static ::java::lang::annotation::Annotation * create(::java::lang::Class *, ::java::util::Map *);
-  static jboolean equals(::java::lang::Class *, ::java::util::Map *, ::java::lang::Object *);
+  jboolean equals(::java::lang::Object *, ::java::lang::Object *);
 private:
   static jboolean deepEquals(::java::lang::Object *, ::java::lang::Object *);
   static jint deepHashCode(::java::lang::Object *);
 public:
-  static jint hashCode(::java::lang::Class *, ::java::util::Map *);
+  jint hashCode();
 private:
   static ::java::lang::String * deepToString(::java::lang::Object *);
 public:
-  static ::java::lang::String * toString(::java::lang::Class *, ::java::util::Map *);
+  ::java::lang::String * toString();
 private:
   static ::java::lang::Class * getBoxedReturnType(::java::lang::reflect::Method *);
-  ::java::lang::Object * arrayClone(::java::lang::Object *);
+  ::java::lang::Object * coerce(::java::lang::Object *, ::java::lang::Class *);
 public:
   ::java::lang::Object * invoke(::java::lang::Object *, ::java::lang::reflect::Method *, JArray< ::java::lang::Object * > *);
 private:

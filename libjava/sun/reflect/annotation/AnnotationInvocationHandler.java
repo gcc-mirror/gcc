@@ -1,5 +1,5 @@
 /* sun.reflect.annotation.AnnotationInvocationHandler
-   Copyright (C) 2006
+   Copyright (C) 2006, 2007
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -43,9 +43,9 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.AnnotationTypeMismatchException;
 import java.lang.annotation.IncompleteAnnotationException;
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
@@ -62,21 +62,21 @@ public final class AnnotationInvocationHandler
   implements InvocationHandler, Serializable
 {
   private static final long serialVersionUID = 6182022883658399397L;
-  private final Class type;
-  private final Map memberValues;
+  private final Class<? extends Annotation> type;
+  private final Map<String, ?> memberValues;
 
   /**
    * Construct a new invocation handler for an annotation proxy.
    * Note that the VM is responsible for filling the memberValues map
    * with the default values of all the annotation members.
    */
-  public AnnotationInvocationHandler(Class type, Map memberValues)
+  public AnnotationInvocationHandler(Class<? extends Annotation> type, Map memberValues)
   {
     this.type = type;
-    this.memberValues = memberValues;
+    this.memberValues = (Map<String, ?>)memberValues;
   }
 
-  public static Annotation create(Class type, Map memberValues)
+  public static Annotation create(Class<? extends Annotation> type, Map memberValues)
   {
     for (Method m : type.getDeclaredMethods())
       {
@@ -106,7 +106,7 @@ public final class AnnotationInvocationHandler
    * (can) use different representations of annotations that reuse this
    * method.
    */
-  public static boolean equals(Class type, Map memberValues, Object other)
+  public boolean equals(Object proxy, Object other)
   {
     if (type.isInstance(other))
       {
@@ -118,8 +118,12 @@ public final class AnnotationInvocationHandler
 		for (int i = 0; i < methods.length; i++)
 		  {
 		    String key = methods[i].getName();
-		    Object val = methods[i].invoke(other, new Object[0]);
-		    if (! deepEquals(memberValues.get(key), val))
+		    Object val = methods[i].invoke(other, (Object[])null);
+		    Object thisVal
+		      = invoke(proxy,
+			       methods[i],
+			       (Object[])null);
+		    if (! deepEquals(thisVal, val))
 		      {
 			return false;
 		      }
@@ -127,11 +131,7 @@ public final class AnnotationInvocationHandler
 		return true;
 	      }
 	  }
-	catch (IllegalAccessException _)
-	  {
-	    // Ignore exception, like the JDK
-	  }
-	catch (InvocationTargetException _)
+	catch (Throwable _)
 	  {
 	    // Ignore exception, like the JDK
 	  }
@@ -217,45 +217,30 @@ public final class AnnotationInvocationHandler
    * (can) use different representations of annotations that reuse this
    * method.
    */
-  public static int hashCode(Class type, Map memberValues)
+  public int hashCode()
   {
     int h = 0;
     Iterator iter = memberValues.keySet().iterator();
     while (iter.hasNext())
       {
 	Object key = iter.next();
-	Object val = memberValues.get(key);
-	h += deepHashCode(val) ^ 127 * key.hashCode();
+	try
+	  {
+	    Object val
+	      = invoke(null,
+		       type.getDeclaredMethod((String)key, (Class[])null),
+		       (Object[])null);
+	    h += deepHashCode(val) ^ 127 * key.hashCode();
+	  }
+	catch (Throwable _)
+	  {
+	  }
       }
     return h;
   }
 
   private static String deepToString(Object obj)
   {
-    if (obj instanceof boolean[])
-      return Arrays.toString((boolean[]) obj);
-
-    if (obj instanceof byte[])
-      return Arrays.toString((byte[]) obj);
-
-    if (obj instanceof char[])
-      return Arrays.toString((char[]) obj);
-
-    if (obj instanceof short[])
-      return Arrays.toString((short[]) obj);
-
-    if (obj instanceof int[])
-      return Arrays.toString((int[]) obj);
-
-    if (obj instanceof float[])
-      return Arrays.toString((float[]) obj);
-
-    if (obj instanceof long[])
-      return Arrays.toString((long[]) obj);
-
-    if (obj instanceof double[])
-      return Arrays.toString((double[]) obj);
-
     if (obj instanceof Object[])
       return Arrays.toString((Object[]) obj);
 
@@ -267,7 +252,7 @@ public final class AnnotationInvocationHandler
    * (can) use different representations of annotations that reuse this
    * method.
    */
-  public static String toString(Class type, Map memberValues)
+  public String toString()
   {
     StringBuffer sb = new StringBuffer();
     sb.append('@').append(type.getName()).append('(');
@@ -283,6 +268,7 @@ public final class AnnotationInvocationHandler
     sb.append(')');
     return sb.toString();
   }
+
 
   private static Class getBoxedReturnType(Method method)
   {
@@ -315,51 +301,106 @@ public final class AnnotationInvocationHandler
     return returnType;
   }
 
-  private Object arrayClone(Object obj)
+  // This is slightly awkward.  When the value of an annotation is an
+  // array, libgcj constructs an Object[], but the value() method
+  // returns an arrays of the appropriate primitive type.  We should
+  // perhaps save the resulting array rather than the Object[].
+
+  private Object coerce(Object val, Class dstType)
+    throws ArrayStoreException
   {
-    if (obj instanceof boolean[])
-      return ((boolean[]) obj).clone();
+    if (! val.getClass().isArray())
+      return val;
 
-    if (obj instanceof byte[])
-      return ((byte[]) obj).clone();
+    Object[] srcArray = (Object[])val;
+    final int len = srcArray.length;
 
-    if (obj instanceof char[])
-      return ((char[]) obj).clone();
+    if (dstType.getComponentType().isPrimitive())
+      {
+	if (dstType == boolean[].class)
+	  {
+	    boolean[] dst = new boolean[len];
+	    for (int i = 0; i < len; i++)
+	      dst[i] = (Boolean)srcArray[i];
+	    return dst;
+	  }
 
-    if (obj instanceof short[])
-      return ((short[]) obj).clone();
+	if (dstType == byte[].class)
+	  {
+	    byte[] dst = new byte[len];
+	    for (int i = 0; i < len; i++)
+	      dst[i] = (Byte)srcArray[i];
+	    return dst;
+	  }
 
-    if (obj instanceof int[])
-      return ((int[]) obj).clone();
+	if (dstType == char[].class)
+	  {
+	    char[] dst = new char[len];
+	    for (int i = 0; i < len; i++)
+	      dst[i] = (Character)srcArray[i];
+	    return dst;
+	  }
 
-    if (obj instanceof float[])
-      return ((float[]) obj).clone();
+	if (dstType == short[].class)
+	  {
+	    short[] dst = new short[len];
+	    for (int i = 0; i < len; i++)
+	      dst[i] = (Short)srcArray[i];
+	    return dst;
+	  }
 
-    if (obj instanceof long[])
-      return ((long[]) obj).clone();
+	if (dstType == int[].class)
+	  {
+	    int[] dst = new int[len];
+	    for (int i = 0; i < len; i++)
+	      dst[i] = (Integer)srcArray[i];
+	    return dst;
+	  }
 
-    if (obj instanceof double[])
-      return ((double[]) obj).clone();
+	if (dstType == long[].class)
+	  {
+	    long[] dst = new long[len];
+	    for (int i = 0; i < len; i++)
+	      dst[i] = (Long)srcArray[i];
+	    return dst;
+	  }
 
-    if (obj instanceof Object[])
-      return ((Object[]) obj).clone();
+	if (dstType == float[].class)
+	  {
+	    float[] dst = new float[len];
+	    for (int i = 0; i < len; i++)
+	      dst[i] = (Float)srcArray[i];
+	    return dst;
+	  }
 
-    return obj;
+	if (dstType == double[].class)
+	  {
+	    double[] dst = new double[len];
+	    for (int i = 0; i < len; i++)
+	      dst[i] = (Double)srcArray[i];
+	    return dst;
+	  }
+      }
+
+    Object dst = Array.newInstance(dstType.getComponentType(), len);
+    System.arraycopy((Object)srcArray, 0, dst, 0, len);
+    return dst;
   }
 
   public Object invoke(Object proxy, Method method, Object[] args)
     throws Throwable
   {
     String methodName = method.getName().intern();
+
     if (args == null || args.length == 0)
       {
 	if (methodName == "toString")
 	  {
-	    return toString(type, memberValues);
+	    return toString();
 	  }
 	else if (methodName == "hashCode")
 	  {
-	    return Integer.valueOf(hashCode(type, memberValues));
+	    return Integer.valueOf(hashCode());
 	  }
 	else if (methodName == "annotationType")
 	  {
@@ -372,15 +413,19 @@ public final class AnnotationInvocationHandler
 	      {
 		throw new IncompleteAnnotationException(type, methodName);
 	      }
+	    try
+	      {
+		if (val.getClass().isArray())
+		  val = coerce((Object[])val, method.getReturnType());
+	      }
+	    catch (ArrayStoreException _)
+	      {
+		throw new AnnotationTypeMismatchException
+		  (method, val.getClass().getName());
+	      }
 	    if (! getBoxedReturnType(method).isInstance(val))
-	      {
-		throw new AnnotationTypeMismatchException(method,
-							  val.getClass().getName());
-	      }
-	    if (val.getClass().isArray())
-	      {
-		val = arrayClone(val);
-	      }
+	      throw (new AnnotationTypeMismatchException
+		     (method, val.getClass().getName()));
 	    return val;
 	  }
       }
@@ -388,7 +433,7 @@ public final class AnnotationInvocationHandler
       {
 	if (methodName == "equals")
 	  {
-	    return Boolean.valueOf(equals(type, memberValues, args[0]));
+	    return Boolean.valueOf(equals(proxy, args[0]));
 	  }
       }
     throw new InternalError("Invalid annotation proxy");

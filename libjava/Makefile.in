@@ -7194,7 +7194,7 @@ sun/reflect/Reflection.java
 
 sun_reflect_header_files = $(patsubst %.java,%.h,$(sun_reflect_source_files))
 sun_reflect_annotation_source_files = \
-classpath/sun/reflect/annotation/AnnotationInvocationHandler.java \
+sun/reflect/annotation/AnnotationInvocationHandler.java \
 classpath/sun/reflect/annotation/AnnotationParser.java \
 classpath/sun/reflect/annotation/AnnotationType.java \
 classpath/sun/reflect/annotation/EnumConstantNotPresentExceptionProxy.java \
