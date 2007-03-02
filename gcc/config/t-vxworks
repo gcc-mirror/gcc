@@ -27,6 +27,9 @@ LIBGCC2_INCLUDES = -nostdinc -I \
      *) echo $(WIND_BASE)/target/h ;; \
    esac`
 
+# Both the kernel and RTP headers provide limits.h.
+LIMITS_H_TEST = true
+
 EXTRA_MULTILIB_PARTS = 
 
 vxworks.o: $(srcdir)/config/vxworks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
