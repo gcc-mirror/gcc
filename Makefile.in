@@ -58,6 +58,7 @@ oldincludedir = @oldincludedir@
 infodir = @infodir@
 datarootdir = @datarootdir@
 docdir = @docdir@
+pdfdir = @pdfdir@
 htmldir = @htmldir@
 mandir = @mandir@
 man1dir = $(mandir)/man1
@@ -441,6 +442,7 @@ BASE_FLAGS_TO_PASS = \
 	"datarootdir=$(datarootdir)" \
 	"docdir=$(docdir)" \
 	"infodir=$(infodir)" \
+	"pdfdir=$(pdfdir)" \
 	"htmldir=$(htmldir)" \
 	"libdir=$(libdir)" \
 	"libexecdir=$(libexecdir)" \
@@ -1484,6 +1486,112 @@ install-info-target: maybe-install-info-target-rda
 install-info-target: maybe-install-info-target-libada
 install-info-target: maybe-install-info-target-libgomp
 
+.PHONY: do-install-pdf
+do-install-pdf:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) install-pdf-host \
+	  install-pdf-target
+
+
+.PHONY: install-pdf-host
+
+install-pdf-host: maybe-install-pdf-ash
+install-pdf-host: maybe-install-pdf-autoconf
+install-pdf-host: maybe-install-pdf-automake
+install-pdf-host: maybe-install-pdf-bash
+install-pdf-host: maybe-install-pdf-bfd
+install-pdf-host: maybe-install-pdf-opcodes
+install-pdf-host: maybe-install-pdf-binutils
+install-pdf-host: maybe-install-pdf-bison
+install-pdf-host: maybe-install-pdf-byacc
+install-pdf-host: maybe-install-pdf-bzip2
+install-pdf-host: maybe-install-pdf-dejagnu
+install-pdf-host: maybe-install-pdf-diff
+install-pdf-host: maybe-install-pdf-dosutils
+install-pdf-host: maybe-install-pdf-etc
+install-pdf-host: maybe-install-pdf-fastjar
+install-pdf-host: maybe-install-pdf-fileutils
+install-pdf-host: maybe-install-pdf-findutils
+install-pdf-host: maybe-install-pdf-find
+install-pdf-host: maybe-install-pdf-fixincludes
+install-pdf-host: maybe-install-pdf-flex
+install-pdf-host: maybe-install-pdf-gas
+install-pdf-host: maybe-install-pdf-gcc
+install-pdf-host: maybe-install-pdf-gawk
+install-pdf-host: maybe-install-pdf-gettext
+install-pdf-host: maybe-install-pdf-gmp
+install-pdf-host: maybe-install-pdf-mpfr
+install-pdf-host: maybe-install-pdf-gnuserv
+install-pdf-host: maybe-install-pdf-gprof
+install-pdf-host: maybe-install-pdf-gzip
+install-pdf-host: maybe-install-pdf-hello
+install-pdf-host: maybe-install-pdf-indent
+install-pdf-host: maybe-install-pdf-intl
+install-pdf-host: maybe-install-pdf-tcl
+install-pdf-host: maybe-install-pdf-itcl
+install-pdf-host: maybe-install-pdf-ld
+install-pdf-host: maybe-install-pdf-libcpp
+install-pdf-host: maybe-install-pdf-libdecnumber
+install-pdf-host: maybe-install-pdf-libgui
+install-pdf-host: maybe-install-pdf-libiberty
+install-pdf-host: maybe-install-pdf-libtool
+install-pdf-host: maybe-install-pdf-m4
+install-pdf-host: maybe-install-pdf-make
+install-pdf-host: maybe-install-pdf-mmalloc
+install-pdf-host: maybe-install-pdf-patch
+install-pdf-host: maybe-install-pdf-perl
+install-pdf-host: maybe-install-pdf-prms
+install-pdf-host: maybe-install-pdf-rcs
+install-pdf-host: maybe-install-pdf-readline
+install-pdf-host: maybe-install-pdf-release
+install-pdf-host: maybe-install-pdf-recode
+install-pdf-host: maybe-install-pdf-sed
+install-pdf-host: maybe-install-pdf-send-pr
+install-pdf-host: maybe-install-pdf-shellutils
+install-pdf-host: maybe-install-pdf-sid
+install-pdf-host: maybe-install-pdf-sim
+install-pdf-host: maybe-install-pdf-tar
+install-pdf-host: maybe-install-pdf-texinfo
+install-pdf-host: maybe-install-pdf-textutils
+install-pdf-host: maybe-install-pdf-time
+install-pdf-host: maybe-install-pdf-uudecode
+install-pdf-host: maybe-install-pdf-wdiff
+install-pdf-host: maybe-install-pdf-zip
+install-pdf-host: maybe-install-pdf-zlib
+install-pdf-host: maybe-install-pdf-gdb
+install-pdf-host: maybe-install-pdf-expect
+install-pdf-host: maybe-install-pdf-guile
+install-pdf-host: maybe-install-pdf-tk
+install-pdf-host: maybe-install-pdf-libtermcap
+install-pdf-host: maybe-install-pdf-utils
+install-pdf-host: maybe-install-pdf-gnattools
+
+.PHONY: install-pdf-target
+
+install-pdf-target: maybe-install-pdf-target-libstdc++-v3
+install-pdf-target: maybe-install-pdf-target-libmudflap
+install-pdf-target: maybe-install-pdf-target-libssp
+install-pdf-target: maybe-install-pdf-target-newlib
+install-pdf-target: maybe-install-pdf-target-libgcc
+install-pdf-target: maybe-install-pdf-target-libgfortran
+install-pdf-target: maybe-install-pdf-target-libobjc
+install-pdf-target: maybe-install-pdf-target-libtermcap
+install-pdf-target: maybe-install-pdf-target-winsup
+install-pdf-target: maybe-install-pdf-target-libgloss
+install-pdf-target: maybe-install-pdf-target-libiberty
+install-pdf-target: maybe-install-pdf-target-gperf
+install-pdf-target: maybe-install-pdf-target-examples
+install-pdf-target: maybe-install-pdf-target-libffi
+install-pdf-target: maybe-install-pdf-target-libjava
+install-pdf-target: maybe-install-pdf-target-zlib
+install-pdf-target: maybe-install-pdf-target-boehm-gc
+install-pdf-target: maybe-install-pdf-target-qthreads
+install-pdf-target: maybe-install-pdf-target-rda
+install-pdf-target: maybe-install-pdf-target-libada
+install-pdf-target: maybe-install-pdf-target-libgomp
+
 .PHONY: do-install-html
 do-install-html:
 	@: $(MAKE); $(unstage)
@@ -2123,7 +2231,8 @@ maintainer-clean-target: maybe-maintainer-clean-target-libgomp
 
 # Here are the targets which correspond to the do-X targets.
 
-.PHONY: info installcheck dvi pdf html install-info install-html
+.PHONY: info installcheck dvi pdf html
+.PHONY: install-info install-pdf install-html
 .PHONY: clean distclean mostlyclean maintainer-clean realclean
 .PHONY: local-clean local-distclean local-maintainer-clean
 info: do-info
@@ -2141,6 +2250,8 @@ install-info: do-install-info dir.info
 	if [ -f dir.info ] ; then \
 	  $(INSTALL_DATA) dir.info $(DESTDIR)$(infodir)/dir.info ; \
 	else true ; fi
+
+install-pdf: do-install-pdf
 
 install-html: do-install-html
 
@@ -3178,6 +3289,33 @@ install-info-ash: \
 
 @endif ash
 
+.PHONY: maybe-install-pdf-ash install-pdf-ash
+maybe-install-pdf-ash:
+@if ash
+maybe-install-pdf-ash: install-pdf-ash
+
+install-pdf-ash: \
+    configure-ash \
+    pdf-ash 
+	@: $(MAKE); $(unstage)
+	@[ -f ./ash/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in ash" ; \
+	(cd $(HOST_SUBDIR)/ash && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif ash
+
 .PHONY: maybe-install-html-ash install-html-ash
 maybe-install-html-ash:
 @if ash
@@ -3571,6 +3709,33 @@ install-info-autoconf: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif autoconf
+
+.PHONY: maybe-install-pdf-autoconf install-pdf-autoconf
+maybe-install-pdf-autoconf:
+@if autoconf
+maybe-install-pdf-autoconf: install-pdf-autoconf
+
+install-pdf-autoconf: \
+    configure-autoconf \
+    pdf-autoconf 
+	@: $(MAKE); $(unstage)
+	@[ -f ./autoconf/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in autoconf" ; \
+	(cd $(HOST_SUBDIR)/autoconf && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif autoconf
@@ -3972,6 +4137,33 @@ install-info-automake: \
 
 @endif automake
 
+.PHONY: maybe-install-pdf-automake install-pdf-automake
+maybe-install-pdf-automake:
+@if automake
+maybe-install-pdf-automake: install-pdf-automake
+
+install-pdf-automake: \
+    configure-automake \
+    pdf-automake 
+	@: $(MAKE); $(unstage)
+	@[ -f ./automake/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in automake" ; \
+	(cd $(HOST_SUBDIR)/automake && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif automake
+
 .PHONY: maybe-install-html-automake install-html-automake
 maybe-install-html-automake:
 @if automake
@@ -4365,6 +4557,33 @@ install-info-bash: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif bash
+
+.PHONY: maybe-install-pdf-bash install-pdf-bash
+maybe-install-pdf-bash:
+@if bash
+maybe-install-pdf-bash: install-pdf-bash
+
+install-pdf-bash: \
+    configure-bash \
+    pdf-bash 
+	@: $(MAKE); $(unstage)
+	@[ -f ./bash/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in bash" ; \
+	(cd $(HOST_SUBDIR)/bash && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif bash
@@ -5137,6 +5356,32 @@ install-info-bfd: \
 
 @endif bfd
 
+.PHONY: maybe-install-pdf-bfd install-pdf-bfd
+maybe-install-pdf-bfd:
+@if bfd
+maybe-install-pdf-bfd: install-pdf-bfd
+
+install-pdf-bfd: \
+    configure-bfd \
+    pdf-bfd 
+	@[ -f ./bfd/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in bfd" ; \
+	(cd $(HOST_SUBDIR)/bfd && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif bfd
+
 .PHONY: maybe-install-html-bfd install-html-bfd
 maybe-install-html-bfd:
 @if bfd
@@ -5895,6 +6140,32 @@ install-info-opcodes: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif opcodes
+
+.PHONY: maybe-install-pdf-opcodes install-pdf-opcodes
+maybe-install-pdf-opcodes:
+@if opcodes
+maybe-install-pdf-opcodes: install-pdf-opcodes
+
+install-pdf-opcodes: \
+    configure-opcodes \
+    pdf-opcodes 
+	@[ -f ./opcodes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in opcodes" ; \
+	(cd $(HOST_SUBDIR)/opcodes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif opcodes
@@ -6661,6 +6932,32 @@ install-info-binutils: \
 
 @endif binutils
 
+.PHONY: maybe-install-pdf-binutils install-pdf-binutils
+maybe-install-pdf-binutils:
+@if binutils
+maybe-install-pdf-binutils: install-pdf-binutils
+
+install-pdf-binutils: \
+    configure-binutils \
+    pdf-binutils 
+	@[ -f ./binutils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in binutils" ; \
+	(cd $(HOST_SUBDIR)/binutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif binutils
+
 .PHONY: maybe-install-html-binutils install-html-binutils
 maybe-install-html-binutils:
 @if binutils
@@ -7051,6 +7348,33 @@ install-info-bison: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif bison
+
+.PHONY: maybe-install-pdf-bison install-pdf-bison
+maybe-install-pdf-bison:
+@if bison
+maybe-install-pdf-bison: install-pdf-bison
+
+install-pdf-bison: \
+    configure-bison \
+    pdf-bison 
+	@: $(MAKE); $(unstage)
+	@[ -f ./bison/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in bison" ; \
+	(cd $(HOST_SUBDIR)/bison && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif bison
@@ -7455,6 +7779,33 @@ install-info-byacc: \
 
 @endif byacc
 
+.PHONY: maybe-install-pdf-byacc install-pdf-byacc
+maybe-install-pdf-byacc:
+@if byacc
+maybe-install-pdf-byacc: install-pdf-byacc
+
+install-pdf-byacc: \
+    configure-byacc \
+    pdf-byacc 
+	@: $(MAKE); $(unstage)
+	@[ -f ./byacc/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in byacc" ; \
+	(cd $(HOST_SUBDIR)/byacc && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif byacc
+
 .PHONY: maybe-install-html-byacc install-html-byacc
 maybe-install-html-byacc:
 @if byacc
@@ -7848,6 +8199,33 @@ install-info-bzip2: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif bzip2
+
+.PHONY: maybe-install-pdf-bzip2 install-pdf-bzip2
+maybe-install-pdf-bzip2:
+@if bzip2
+maybe-install-pdf-bzip2: install-pdf-bzip2
+
+install-pdf-bzip2: \
+    configure-bzip2 \
+    pdf-bzip2 
+	@: $(MAKE); $(unstage)
+	@[ -f ./bzip2/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in bzip2" ; \
+	(cd $(HOST_SUBDIR)/bzip2 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif bzip2
@@ -8249,6 +8627,33 @@ install-info-dejagnu: \
 
 @endif dejagnu
 
+.PHONY: maybe-install-pdf-dejagnu install-pdf-dejagnu
+maybe-install-pdf-dejagnu:
+@if dejagnu
+maybe-install-pdf-dejagnu: install-pdf-dejagnu
+
+install-pdf-dejagnu: \
+    configure-dejagnu \
+    pdf-dejagnu 
+	@: $(MAKE); $(unstage)
+	@[ -f ./dejagnu/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in dejagnu" ; \
+	(cd $(HOST_SUBDIR)/dejagnu && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif dejagnu
+
 .PHONY: maybe-install-html-dejagnu install-html-dejagnu
 maybe-install-html-dejagnu:
 @if dejagnu
@@ -8646,6 +9051,33 @@ install-info-diff: \
 
 @endif diff
 
+.PHONY: maybe-install-pdf-diff install-pdf-diff
+maybe-install-pdf-diff:
+@if diff
+maybe-install-pdf-diff: install-pdf-diff
+
+install-pdf-diff: \
+    configure-diff \
+    pdf-diff 
+	@: $(MAKE); $(unstage)
+	@[ -f ./diff/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in diff" ; \
+	(cd $(HOST_SUBDIR)/diff && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif diff
+
 .PHONY: maybe-install-html-diff install-html-diff
 maybe-install-html-diff:
 @if diff
@@ -9033,6 +9465,33 @@ install-info-dosutils: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif dosutils
+
+.PHONY: maybe-install-pdf-dosutils install-pdf-dosutils
+maybe-install-pdf-dosutils:
+@if dosutils
+maybe-install-pdf-dosutils: install-pdf-dosutils
+
+install-pdf-dosutils: \
+    configure-dosutils \
+    pdf-dosutils 
+	@: $(MAKE); $(unstage)
+	@[ -f ./dosutils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in dosutils" ; \
+	(cd $(HOST_SUBDIR)/dosutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif dosutils
@@ -9430,6 +9889,33 @@ install-info-etc: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif etc
+
+.PHONY: maybe-install-pdf-etc install-pdf-etc
+maybe-install-pdf-etc:
+@if etc
+maybe-install-pdf-etc: install-pdf-etc
+
+install-pdf-etc: \
+    configure-etc \
+    pdf-etc 
+	@: $(MAKE); $(unstage)
+	@[ -f ./etc/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in etc" ; \
+	(cd $(HOST_SUBDIR)/etc && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif etc
@@ -9834,6 +10320,33 @@ install-info-fastjar: \
 
 @endif fastjar
 
+.PHONY: maybe-install-pdf-fastjar install-pdf-fastjar
+maybe-install-pdf-fastjar:
+@if fastjar
+maybe-install-pdf-fastjar: install-pdf-fastjar
+
+install-pdf-fastjar: \
+    configure-fastjar \
+    pdf-fastjar 
+	@: $(MAKE); $(unstage)
+	@[ -f ./fastjar/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in fastjar" ; \
+	(cd $(HOST_SUBDIR)/fastjar && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif fastjar
+
 .PHONY: maybe-install-html-fastjar install-html-fastjar
 maybe-install-html-fastjar:
 @if fastjar
@@ -10227,6 +10740,33 @@ install-info-fileutils: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif fileutils
+
+.PHONY: maybe-install-pdf-fileutils install-pdf-fileutils
+maybe-install-pdf-fileutils:
+@if fileutils
+maybe-install-pdf-fileutils: install-pdf-fileutils
+
+install-pdf-fileutils: \
+    configure-fileutils \
+    pdf-fileutils 
+	@: $(MAKE); $(unstage)
+	@[ -f ./fileutils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in fileutils" ; \
+	(cd $(HOST_SUBDIR)/fileutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif fileutils
@@ -10628,6 +11168,33 @@ install-info-findutils: \
 
 @endif findutils
 
+.PHONY: maybe-install-pdf-findutils install-pdf-findutils
+maybe-install-pdf-findutils:
+@if findutils
+maybe-install-pdf-findutils: install-pdf-findutils
+
+install-pdf-findutils: \
+    configure-findutils \
+    pdf-findutils 
+	@: $(MAKE); $(unstage)
+	@[ -f ./findutils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in findutils" ; \
+	(cd $(HOST_SUBDIR)/findutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif findutils
+
 .PHONY: maybe-install-html-findutils install-html-findutils
 maybe-install-html-findutils:
 @if findutils
@@ -11025,6 +11592,33 @@ install-info-find: \
 
 @endif find
 
+.PHONY: maybe-install-pdf-find install-pdf-find
+maybe-install-pdf-find:
+@if find
+maybe-install-pdf-find: install-pdf-find
+
+install-pdf-find: \
+    configure-find \
+    pdf-find 
+	@: $(MAKE); $(unstage)
+	@[ -f ./find/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in find" ; \
+	(cd $(HOST_SUBDIR)/find && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif find
+
 .PHONY: maybe-install-html-find install-html-find
 maybe-install-html-find:
 @if find
@@ -11338,6 +11932,16 @@ maybe-install-info-fixincludes: install-info-fixincludes
 
 # fixincludes doesn't support install-info.
 install-info-fixincludes:
+
+@endif fixincludes
+
+.PHONY: maybe-install-pdf-fixincludes install-pdf-fixincludes
+maybe-install-pdf-fixincludes:
+@if fixincludes
+maybe-install-pdf-fixincludes: install-pdf-fixincludes
+
+# fixincludes doesn't support install-pdf.
+install-pdf-fixincludes:
 
 @endif fixincludes
 
@@ -11721,6 +12325,33 @@ install-info-flex: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif flex
+
+.PHONY: maybe-install-pdf-flex install-pdf-flex
+maybe-install-pdf-flex:
+@if flex
+maybe-install-pdf-flex: install-pdf-flex
+
+install-pdf-flex: \
+    configure-flex \
+    pdf-flex 
+	@: $(MAKE); $(unstage)
+	@[ -f ./flex/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in flex" ; \
+	(cd $(HOST_SUBDIR)/flex && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif flex
@@ -12493,6 +13124,32 @@ install-info-gas: \
 
 @endif gas
 
+.PHONY: maybe-install-pdf-gas install-pdf-gas
+maybe-install-pdf-gas:
+@if gas
+maybe-install-pdf-gas: install-pdf-gas
+
+install-pdf-gas: \
+    configure-gas \
+    pdf-gas 
+	@[ -f ./gas/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in gas" ; \
+	(cd $(HOST_SUBDIR)/gas && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif gas
+
 .PHONY: maybe-install-html-gas install-html-gas
 maybe-install-html-gas:
 @if gas
@@ -13255,6 +13912,32 @@ install-info-gcc: \
 
 @endif gcc
 
+.PHONY: maybe-install-pdf-gcc install-pdf-gcc
+maybe-install-pdf-gcc:
+@if gcc
+maybe-install-pdf-gcc: install-pdf-gcc
+
+install-pdf-gcc: \
+    configure-gcc \
+    pdf-gcc 
+	@[ -f ./gcc/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) $(EXTRA_GCC_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in gcc" ; \
+	(cd $(HOST_SUBDIR)/gcc && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif gcc
+
 .PHONY: maybe-install-html-gcc install-html-gcc
 maybe-install-html-gcc:
 @if gcc
@@ -13642,6 +14325,33 @@ install-info-gawk: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif gawk
+
+.PHONY: maybe-install-pdf-gawk install-pdf-gawk
+maybe-install-pdf-gawk:
+@if gawk
+maybe-install-pdf-gawk: install-pdf-gawk
+
+install-pdf-gawk: \
+    configure-gawk \
+    pdf-gawk 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gawk/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in gawk" ; \
+	(cd $(HOST_SUBDIR)/gawk && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif gawk
@@ -14039,6 +14749,33 @@ install-info-gettext: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif gettext
+
+.PHONY: maybe-install-pdf-gettext install-pdf-gettext
+maybe-install-pdf-gettext:
+@if gettext
+maybe-install-pdf-gettext: install-pdf-gettext
+
+install-pdf-gettext: \
+    configure-gettext \
+    pdf-gettext 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gettext/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in gettext" ; \
+	(cd $(HOST_SUBDIR)/gettext && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif gettext
@@ -14805,6 +15542,32 @@ install-info-gmp: \
 
 @endif gmp
 
+.PHONY: maybe-install-pdf-gmp install-pdf-gmp
+maybe-install-pdf-gmp:
+@if gmp
+maybe-install-pdf-gmp: install-pdf-gmp
+
+install-pdf-gmp: \
+    configure-gmp \
+    pdf-gmp 
+	@[ -f ./gmp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in gmp" ; \
+	(cd $(HOST_SUBDIR)/gmp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif gmp
+
 .PHONY: maybe-install-html-gmp install-html-gmp
 maybe-install-html-gmp:
 @if gmp
@@ -15561,6 +16324,32 @@ install-info-mpfr: \
 
 @endif mpfr
 
+.PHONY: maybe-install-pdf-mpfr install-pdf-mpfr
+maybe-install-pdf-mpfr:
+@if mpfr
+maybe-install-pdf-mpfr: install-pdf-mpfr
+
+install-pdf-mpfr: \
+    configure-mpfr \
+    pdf-mpfr 
+	@[ -f ./mpfr/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in mpfr" ; \
+	(cd $(HOST_SUBDIR)/mpfr && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif mpfr
+
 .PHONY: maybe-install-html-mpfr install-html-mpfr
 maybe-install-html-mpfr:
 @if mpfr
@@ -15948,6 +16737,33 @@ install-info-gnuserv: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif gnuserv
+
+.PHONY: maybe-install-pdf-gnuserv install-pdf-gnuserv
+maybe-install-pdf-gnuserv:
+@if gnuserv
+maybe-install-pdf-gnuserv: install-pdf-gnuserv
+
+install-pdf-gnuserv: \
+    configure-gnuserv \
+    pdf-gnuserv 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gnuserv/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in gnuserv" ; \
+	(cd $(HOST_SUBDIR)/gnuserv && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif gnuserv
@@ -16349,6 +17165,33 @@ install-info-gprof: \
 
 @endif gprof
 
+.PHONY: maybe-install-pdf-gprof install-pdf-gprof
+maybe-install-pdf-gprof:
+@if gprof
+maybe-install-pdf-gprof: install-pdf-gprof
+
+install-pdf-gprof: \
+    configure-gprof \
+    pdf-gprof 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprof/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in gprof" ; \
+	(cd $(HOST_SUBDIR)/gprof && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif gprof
+
 .PHONY: maybe-install-html-gprof install-html-gprof
 maybe-install-html-gprof:
 @if gprof
@@ -16742,6 +17585,33 @@ install-info-gzip: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif gzip
+
+.PHONY: maybe-install-pdf-gzip install-pdf-gzip
+maybe-install-pdf-gzip:
+@if gzip
+maybe-install-pdf-gzip: install-pdf-gzip
+
+install-pdf-gzip: \
+    configure-gzip \
+    pdf-gzip 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gzip/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in gzip" ; \
+	(cd $(HOST_SUBDIR)/gzip && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif gzip
@@ -17143,6 +18013,33 @@ install-info-hello: \
 
 @endif hello
 
+.PHONY: maybe-install-pdf-hello install-pdf-hello
+maybe-install-pdf-hello:
+@if hello
+maybe-install-pdf-hello: install-pdf-hello
+
+install-pdf-hello: \
+    configure-hello \
+    pdf-hello 
+	@: $(MAKE); $(unstage)
+	@[ -f ./hello/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in hello" ; \
+	(cd $(HOST_SUBDIR)/hello && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif hello
+
 .PHONY: maybe-install-html-hello install-html-hello
 maybe-install-html-hello:
 @if hello
@@ -17536,6 +18433,33 @@ install-info-indent: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif indent
+
+.PHONY: maybe-install-pdf-indent install-pdf-indent
+maybe-install-pdf-indent:
+@if indent
+maybe-install-pdf-indent: install-pdf-indent
+
+install-pdf-indent: \
+    configure-indent \
+    pdf-indent 
+	@: $(MAKE); $(unstage)
+	@[ -f ./indent/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in indent" ; \
+	(cd $(HOST_SUBDIR)/indent && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif indent
@@ -18308,6 +19232,32 @@ install-info-intl: \
 
 @endif intl
 
+.PHONY: maybe-install-pdf-intl install-pdf-intl
+maybe-install-pdf-intl:
+@if intl
+maybe-install-pdf-intl: install-pdf-intl
+
+install-pdf-intl: \
+    configure-intl \
+    pdf-intl 
+	@[ -f ./intl/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in intl" ; \
+	(cd $(HOST_SUBDIR)/intl && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif intl
+
 .PHONY: maybe-install-html-intl install-html-intl
 maybe-install-html-intl:
 @if intl
@@ -18699,6 +19649,33 @@ install-info-tcl: \
 
 @endif tcl
 
+.PHONY: maybe-install-pdf-tcl install-pdf-tcl
+maybe-install-pdf-tcl:
+@if tcl
+maybe-install-pdf-tcl: install-pdf-tcl
+
+install-pdf-tcl: \
+    configure-tcl \
+    pdf-tcl 
+	@: $(MAKE); $(unstage)
+	@[ -f ./tcl/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in tcl" ; \
+	(cd $(HOST_SUBDIR)/tcl && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif tcl
+
 .PHONY: maybe-install-html-tcl install-html-tcl
 maybe-install-html-tcl:
 @if tcl
@@ -19077,6 +20054,33 @@ install-info-itcl: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif itcl
+
+.PHONY: maybe-install-pdf-itcl install-pdf-itcl
+maybe-install-pdf-itcl:
+@if itcl
+maybe-install-pdf-itcl: install-pdf-itcl
+
+install-pdf-itcl: \
+    configure-itcl \
+    pdf-itcl 
+	@: $(MAKE); $(unstage)
+	@[ -f ./itcl/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in itcl" ; \
+	(cd $(HOST_SUBDIR)/itcl && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif itcl
@@ -19849,6 +20853,32 @@ install-info-ld: \
 
 @endif ld
 
+.PHONY: maybe-install-pdf-ld install-pdf-ld
+maybe-install-pdf-ld:
+@if ld
+maybe-install-pdf-ld: install-pdf-ld
+
+install-pdf-ld: \
+    configure-ld \
+    pdf-ld 
+	@[ -f ./ld/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in ld" ; \
+	(cd $(HOST_SUBDIR)/ld && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif ld
+
 .PHONY: maybe-install-html-ld install-html-ld
 maybe-install-html-ld:
 @if ld
@@ -20607,6 +21637,32 @@ install-info-libcpp: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif libcpp
+
+.PHONY: maybe-install-pdf-libcpp install-pdf-libcpp
+maybe-install-pdf-libcpp:
+@if libcpp
+maybe-install-pdf-libcpp: install-pdf-libcpp
+
+install-pdf-libcpp: \
+    configure-libcpp \
+    pdf-libcpp 
+	@[ -f ./libcpp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in libcpp" ; \
+	(cd $(HOST_SUBDIR)/libcpp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif libcpp
@@ -21373,6 +22429,32 @@ install-info-libdecnumber: \
 
 @endif libdecnumber
 
+.PHONY: maybe-install-pdf-libdecnumber install-pdf-libdecnumber
+maybe-install-pdf-libdecnumber:
+@if libdecnumber
+maybe-install-pdf-libdecnumber: install-pdf-libdecnumber
+
+install-pdf-libdecnumber: \
+    configure-libdecnumber \
+    pdf-libdecnumber 
+	@[ -f ./libdecnumber/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in libdecnumber" ; \
+	(cd $(HOST_SUBDIR)/libdecnumber && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif libdecnumber
+
 .PHONY: maybe-install-html-libdecnumber install-html-libdecnumber
 maybe-install-html-libdecnumber:
 @if libdecnumber
@@ -21760,6 +22842,33 @@ install-info-libgui: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif libgui
+
+.PHONY: maybe-install-pdf-libgui install-pdf-libgui
+maybe-install-pdf-libgui:
+@if libgui
+maybe-install-pdf-libgui: install-pdf-libgui
+
+install-pdf-libgui: \
+    configure-libgui \
+    pdf-libgui 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libgui/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in libgui" ; \
+	(cd $(HOST_SUBDIR)/libgui && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif libgui
@@ -22532,6 +23641,32 @@ install-info-libiberty: \
 
 @endif libiberty
 
+.PHONY: maybe-install-pdf-libiberty install-pdf-libiberty
+maybe-install-pdf-libiberty:
+@if libiberty
+maybe-install-pdf-libiberty: install-pdf-libiberty
+
+install-pdf-libiberty: \
+    configure-libiberty \
+    pdf-libiberty 
+	@[ -f ./libiberty/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in libiberty" ; \
+	(cd $(HOST_SUBDIR)/libiberty && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif libiberty
+
 .PHONY: maybe-install-html-libiberty install-html-libiberty
 maybe-install-html-libiberty:
 @if libiberty
@@ -22919,6 +24054,33 @@ install-info-libtool: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif libtool
+
+.PHONY: maybe-install-pdf-libtool install-pdf-libtool
+maybe-install-pdf-libtool:
+@if libtool
+maybe-install-pdf-libtool: install-pdf-libtool
+
+install-pdf-libtool: \
+    configure-libtool \
+    pdf-libtool 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libtool/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in libtool" ; \
+	(cd $(HOST_SUBDIR)/libtool && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif libtool
@@ -23320,6 +24482,33 @@ install-info-m4: \
 
 @endif m4
 
+.PHONY: maybe-install-pdf-m4 install-pdf-m4
+maybe-install-pdf-m4:
+@if m4
+maybe-install-pdf-m4: install-pdf-m4
+
+install-pdf-m4: \
+    configure-m4 \
+    pdf-m4 
+	@: $(MAKE); $(unstage)
+	@[ -f ./m4/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in m4" ; \
+	(cd $(HOST_SUBDIR)/m4 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif m4
+
 .PHONY: maybe-install-html-m4 install-html-m4
 maybe-install-html-m4:
 @if m4
@@ -23717,6 +24906,33 @@ install-info-make: \
 
 @endif make
 
+.PHONY: maybe-install-pdf-make install-pdf-make
+maybe-install-pdf-make:
+@if make
+maybe-install-pdf-make: install-pdf-make
+
+install-pdf-make: \
+    configure-make \
+    pdf-make 
+	@: $(MAKE); $(unstage)
+	@[ -f ./make/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in make" ; \
+	(cd $(HOST_SUBDIR)/make && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif make
+
 .PHONY: maybe-install-html-make install-html-make
 maybe-install-html-make:
 @if make
@@ -24104,6 +25320,33 @@ install-info-mmalloc: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif mmalloc
+
+.PHONY: maybe-install-pdf-mmalloc install-pdf-mmalloc
+maybe-install-pdf-mmalloc:
+@if mmalloc
+maybe-install-pdf-mmalloc: install-pdf-mmalloc
+
+install-pdf-mmalloc: \
+    configure-mmalloc \
+    pdf-mmalloc 
+	@: $(MAKE); $(unstage)
+	@[ -f ./mmalloc/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in mmalloc" ; \
+	(cd $(HOST_SUBDIR)/mmalloc && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif mmalloc
@@ -24505,6 +25748,33 @@ install-info-patch: \
 
 @endif patch
 
+.PHONY: maybe-install-pdf-patch install-pdf-patch
+maybe-install-pdf-patch:
+@if patch
+maybe-install-pdf-patch: install-pdf-patch
+
+install-pdf-patch: \
+    configure-patch \
+    pdf-patch 
+	@: $(MAKE); $(unstage)
+	@[ -f ./patch/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in patch" ; \
+	(cd $(HOST_SUBDIR)/patch && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif patch
+
 .PHONY: maybe-install-html-patch install-html-patch
 maybe-install-html-patch:
 @if patch
@@ -24898,6 +26168,33 @@ install-info-perl: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif perl
+
+.PHONY: maybe-install-pdf-perl install-pdf-perl
+maybe-install-pdf-perl:
+@if perl
+maybe-install-pdf-perl: install-pdf-perl
+
+install-pdf-perl: \
+    configure-perl \
+    pdf-perl 
+	@: $(MAKE); $(unstage)
+	@[ -f ./perl/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in perl" ; \
+	(cd $(HOST_SUBDIR)/perl && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif perl
@@ -25299,6 +26596,33 @@ install-info-prms: \
 
 @endif prms
 
+.PHONY: maybe-install-pdf-prms install-pdf-prms
+maybe-install-pdf-prms:
+@if prms
+maybe-install-pdf-prms: install-pdf-prms
+
+install-pdf-prms: \
+    configure-prms \
+    pdf-prms 
+	@: $(MAKE); $(unstage)
+	@[ -f ./prms/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in prms" ; \
+	(cd $(HOST_SUBDIR)/prms && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif prms
+
 .PHONY: maybe-install-html-prms install-html-prms
 maybe-install-html-prms:
 @if prms
@@ -25692,6 +27016,33 @@ install-info-rcs: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif rcs
+
+.PHONY: maybe-install-pdf-rcs install-pdf-rcs
+maybe-install-pdf-rcs:
+@if rcs
+maybe-install-pdf-rcs: install-pdf-rcs
+
+install-pdf-rcs: \
+    configure-rcs \
+    pdf-rcs 
+	@: $(MAKE); $(unstage)
+	@[ -f ./rcs/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in rcs" ; \
+	(cd $(HOST_SUBDIR)/rcs && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif rcs
@@ -26093,6 +27444,33 @@ install-info-readline: \
 
 @endif readline
 
+.PHONY: maybe-install-pdf-readline install-pdf-readline
+maybe-install-pdf-readline:
+@if readline
+maybe-install-pdf-readline: install-pdf-readline
+
+install-pdf-readline: \
+    configure-readline \
+    pdf-readline 
+	@: $(MAKE); $(unstage)
+	@[ -f ./readline/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in readline" ; \
+	(cd $(HOST_SUBDIR)/readline && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif readline
+
 .PHONY: maybe-install-html-readline install-html-readline
 maybe-install-html-readline:
 @if readline
@@ -26474,6 +27852,33 @@ install-info-release: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif release
+
+.PHONY: maybe-install-pdf-release install-pdf-release
+maybe-install-pdf-release:
+@if release
+maybe-install-pdf-release: install-pdf-release
+
+install-pdf-release: \
+    configure-release \
+    pdf-release 
+	@: $(MAKE); $(unstage)
+	@[ -f ./release/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in release" ; \
+	(cd $(HOST_SUBDIR)/release && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif release
@@ -26875,6 +28280,33 @@ install-info-recode: \
 
 @endif recode
 
+.PHONY: maybe-install-pdf-recode install-pdf-recode
+maybe-install-pdf-recode:
+@if recode
+maybe-install-pdf-recode: install-pdf-recode
+
+install-pdf-recode: \
+    configure-recode \
+    pdf-recode 
+	@: $(MAKE); $(unstage)
+	@[ -f ./recode/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in recode" ; \
+	(cd $(HOST_SUBDIR)/recode && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif recode
+
 .PHONY: maybe-install-html-recode install-html-recode
 maybe-install-html-recode:
 @if recode
@@ -27268,6 +28700,33 @@ install-info-sed: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif sed
+
+.PHONY: maybe-install-pdf-sed install-pdf-sed
+maybe-install-pdf-sed:
+@if sed
+maybe-install-pdf-sed: install-pdf-sed
+
+install-pdf-sed: \
+    configure-sed \
+    pdf-sed 
+	@: $(MAKE); $(unstage)
+	@[ -f ./sed/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in sed" ; \
+	(cd $(HOST_SUBDIR)/sed && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif sed
@@ -27669,6 +29128,33 @@ install-info-send-pr: \
 
 @endif send-pr
 
+.PHONY: maybe-install-pdf-send-pr install-pdf-send-pr
+maybe-install-pdf-send-pr:
+@if send-pr
+maybe-install-pdf-send-pr: install-pdf-send-pr
+
+install-pdf-send-pr: \
+    configure-send-pr \
+    pdf-send-pr 
+	@: $(MAKE); $(unstage)
+	@[ -f ./send-pr/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in send-pr" ; \
+	(cd $(HOST_SUBDIR)/send-pr && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif send-pr
+
 .PHONY: maybe-install-html-send-pr install-html-send-pr
 maybe-install-html-send-pr:
 @if send-pr
@@ -28062,6 +29548,33 @@ install-info-shellutils: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif shellutils
+
+.PHONY: maybe-install-pdf-shellutils install-pdf-shellutils
+maybe-install-pdf-shellutils:
+@if shellutils
+maybe-install-pdf-shellutils: install-pdf-shellutils
+
+install-pdf-shellutils: \
+    configure-shellutils \
+    pdf-shellutils 
+	@: $(MAKE); $(unstage)
+	@[ -f ./shellutils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in shellutils" ; \
+	(cd $(HOST_SUBDIR)/shellutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif shellutils
@@ -28463,6 +29976,33 @@ install-info-sid: \
 
 @endif sid
 
+.PHONY: maybe-install-pdf-sid install-pdf-sid
+maybe-install-pdf-sid:
+@if sid
+maybe-install-pdf-sid: install-pdf-sid
+
+install-pdf-sid: \
+    configure-sid \
+    pdf-sid 
+	@: $(MAKE); $(unstage)
+	@[ -f ./sid/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in sid" ; \
+	(cd $(HOST_SUBDIR)/sid && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif sid
+
 .PHONY: maybe-install-html-sid install-html-sid
 maybe-install-html-sid:
 @if sid
@@ -28856,6 +30396,33 @@ install-info-sim: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif sim
+
+.PHONY: maybe-install-pdf-sim install-pdf-sim
+maybe-install-pdf-sim:
+@if sim
+maybe-install-pdf-sim: install-pdf-sim
+
+install-pdf-sim: \
+    configure-sim \
+    pdf-sim 
+	@: $(MAKE); $(unstage)
+	@[ -f ./sim/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in sim" ; \
+	(cd $(HOST_SUBDIR)/sim && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif sim
@@ -29257,6 +30824,33 @@ install-info-tar: \
 
 @endif tar
 
+.PHONY: maybe-install-pdf-tar install-pdf-tar
+maybe-install-pdf-tar:
+@if tar
+maybe-install-pdf-tar: install-pdf-tar
+
+install-pdf-tar: \
+    configure-tar \
+    pdf-tar 
+	@: $(MAKE); $(unstage)
+	@[ -f ./tar/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in tar" ; \
+	(cd $(HOST_SUBDIR)/tar && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif tar
+
 .PHONY: maybe-install-html-tar install-html-tar
 maybe-install-html-tar:
 @if tar
@@ -29644,6 +31238,33 @@ install-info-texinfo: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif texinfo
+
+.PHONY: maybe-install-pdf-texinfo install-pdf-texinfo
+maybe-install-pdf-texinfo:
+@if texinfo
+maybe-install-pdf-texinfo: install-pdf-texinfo
+
+install-pdf-texinfo: \
+    configure-texinfo \
+    pdf-texinfo 
+	@: $(MAKE); $(unstage)
+	@[ -f ./texinfo/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in texinfo" ; \
+	(cd $(HOST_SUBDIR)/texinfo && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif texinfo
@@ -30045,6 +31666,33 @@ install-info-textutils: \
 
 @endif textutils
 
+.PHONY: maybe-install-pdf-textutils install-pdf-textutils
+maybe-install-pdf-textutils:
+@if textutils
+maybe-install-pdf-textutils: install-pdf-textutils
+
+install-pdf-textutils: \
+    configure-textutils \
+    pdf-textutils 
+	@: $(MAKE); $(unstage)
+	@[ -f ./textutils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in textutils" ; \
+	(cd $(HOST_SUBDIR)/textutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif textutils
+
 .PHONY: maybe-install-html-textutils install-html-textutils
 maybe-install-html-textutils:
 @if textutils
@@ -30438,6 +32086,33 @@ install-info-time: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif time
+
+.PHONY: maybe-install-pdf-time install-pdf-time
+maybe-install-pdf-time:
+@if time
+maybe-install-pdf-time: install-pdf-time
+
+install-pdf-time: \
+    configure-time \
+    pdf-time 
+	@: $(MAKE); $(unstage)
+	@[ -f ./time/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in time" ; \
+	(cd $(HOST_SUBDIR)/time && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif time
@@ -30839,6 +32514,33 @@ install-info-uudecode: \
 
 @endif uudecode
 
+.PHONY: maybe-install-pdf-uudecode install-pdf-uudecode
+maybe-install-pdf-uudecode:
+@if uudecode
+maybe-install-pdf-uudecode: install-pdf-uudecode
+
+install-pdf-uudecode: \
+    configure-uudecode \
+    pdf-uudecode 
+	@: $(MAKE); $(unstage)
+	@[ -f ./uudecode/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in uudecode" ; \
+	(cd $(HOST_SUBDIR)/uudecode && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif uudecode
+
 .PHONY: maybe-install-html-uudecode install-html-uudecode
 maybe-install-html-uudecode:
 @if uudecode
@@ -31232,6 +32934,33 @@ install-info-wdiff: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif wdiff
+
+.PHONY: maybe-install-pdf-wdiff install-pdf-wdiff
+maybe-install-pdf-wdiff:
+@if wdiff
+maybe-install-pdf-wdiff: install-pdf-wdiff
+
+install-pdf-wdiff: \
+    configure-wdiff \
+    pdf-wdiff 
+	@: $(MAKE); $(unstage)
+	@[ -f ./wdiff/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in wdiff" ; \
+	(cd $(HOST_SUBDIR)/wdiff && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif wdiff
@@ -31632,6 +33361,33 @@ install-info-zip: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif zip
+
+.PHONY: maybe-install-pdf-zip install-pdf-zip
+maybe-install-pdf-zip:
+@if zip
+maybe-install-pdf-zip: install-pdf-zip
+
+install-pdf-zip: \
+    configure-zip \
+    pdf-zip 
+	@: $(MAKE); $(unstage)
+	@[ -f ./zip/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in zip" ; \
+	(cd $(HOST_SUBDIR)/zip && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif zip
@@ -32392,6 +34148,32 @@ install-info-zlib: \
 
 @endif zlib
 
+.PHONY: maybe-install-pdf-zlib install-pdf-zlib
+maybe-install-pdf-zlib:
+@if zlib
+maybe-install-pdf-zlib: install-pdf-zlib
+
+install-pdf-zlib: \
+    configure-zlib \
+    pdf-zlib 
+	@[ -f ./zlib/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in zlib" ; \
+	(cd $(HOST_SUBDIR)/zlib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif zlib
+
 .PHONY: maybe-install-html-zlib install-html-zlib
 maybe-install-html-zlib:
 @if zlib
@@ -32779,6 +34561,33 @@ install-info-gdb: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif gdb
+
+.PHONY: maybe-install-pdf-gdb install-pdf-gdb
+maybe-install-pdf-gdb:
+@if gdb
+maybe-install-pdf-gdb: install-pdf-gdb
+
+install-pdf-gdb: \
+    configure-gdb \
+    pdf-gdb 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdb/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) $(X11_FLAGS_TO_PASS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in gdb" ; \
+	(cd $(HOST_SUBDIR)/gdb && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif gdb
@@ -33180,6 +34989,33 @@ install-info-expect: \
 
 @endif expect
 
+.PHONY: maybe-install-pdf-expect install-pdf-expect
+maybe-install-pdf-expect:
+@if expect
+maybe-install-pdf-expect: install-pdf-expect
+
+install-pdf-expect: \
+    configure-expect \
+    pdf-expect 
+	@: $(MAKE); $(unstage)
+	@[ -f ./expect/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) $(X11_FLAGS_TO_PASS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in expect" ; \
+	(cd $(HOST_SUBDIR)/expect && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif expect
+
 .PHONY: maybe-install-html-expect install-html-expect
 maybe-install-html-expect:
 @if expect
@@ -33573,6 +35409,33 @@ install-info-guile: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif guile
+
+.PHONY: maybe-install-pdf-guile install-pdf-guile
+maybe-install-pdf-guile:
+@if guile
+maybe-install-pdf-guile: install-pdf-guile
+
+install-pdf-guile: \
+    configure-guile \
+    pdf-guile 
+	@: $(MAKE); $(unstage)
+	@[ -f ./guile/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) $(X11_FLAGS_TO_PASS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in guile" ; \
+	(cd $(HOST_SUBDIR)/guile && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif guile
@@ -33974,6 +35837,33 @@ install-info-tk: \
 
 @endif tk
 
+.PHONY: maybe-install-pdf-tk install-pdf-tk
+maybe-install-pdf-tk:
+@if tk
+maybe-install-pdf-tk: install-pdf-tk
+
+install-pdf-tk: \
+    configure-tk \
+    pdf-tk 
+	@: $(MAKE); $(unstage)
+	@[ -f ./tk/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) $(X11_FLAGS_TO_PASS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in tk" ; \
+	(cd $(HOST_SUBDIR)/tk && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif tk
+
 .PHONY: maybe-install-html-tk install-html-tk
 maybe-install-html-tk:
 @if tk
@@ -34365,6 +36255,33 @@ install-info-libtermcap: \
 
 @endif libtermcap
 
+.PHONY: maybe-install-pdf-libtermcap install-pdf-libtermcap
+maybe-install-pdf-libtermcap:
+@if libtermcap
+maybe-install-pdf-libtermcap: install-pdf-libtermcap
+
+install-pdf-libtermcap: \
+    configure-libtermcap \
+    pdf-libtermcap 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libtermcap/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in libtermcap" ; \
+	(cd $(HOST_SUBDIR)/libtermcap && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif libtermcap
+
 .PHONY: maybe-install-html-libtermcap install-html-libtermcap
 maybe-install-html-libtermcap:
 @if libtermcap
@@ -34692,6 +36609,33 @@ install-info-utils: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif utils
+
+.PHONY: maybe-install-pdf-utils install-pdf-utils
+maybe-install-pdf-utils:
+@if utils
+maybe-install-pdf-utils: install-pdf-utils
+
+install-pdf-utils: \
+    configure-utils \
+    pdf-utils 
+	@: $(MAKE); $(unstage)
+	@[ -f ./utils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in utils" ; \
+	(cd $(HOST_SUBDIR)/utils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif utils
@@ -35089,6 +37033,33 @@ install-info-gnattools: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          install-info) \
+	  || exit 1
+
+@endif gnattools
+
+.PHONY: maybe-install-pdf-gnattools install-pdf-gnattools
+maybe-install-pdf-gnattools:
+@if gnattools
+maybe-install-pdf-gnattools: install-pdf-gnattools
+
+install-pdf-gnattools: \
+    configure-gnattools \
+    pdf-gnattools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gnattools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in gnattools" ; \
+	(cd $(HOST_SUBDIR)/gnattools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          install-pdf) \
 	  || exit 1
 
 @endif gnattools
@@ -35512,6 +37483,33 @@ install-info-target-libstdc++-v3: \
 
 @endif target-libstdc++-v3
 
+.PHONY: maybe-install-pdf-target-libstdc++-v3 install-pdf-target-libstdc++-v3
+maybe-install-pdf-target-libstdc++-v3:
+@if target-libstdc++-v3
+maybe-install-pdf-target-libstdc++-v3: install-pdf-target-libstdc++-v3
+
+install-pdf-target-libstdc++-v3: \
+    configure-target-libstdc++-v3 \
+    pdf-target-libstdc++-v3 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libstdc++-v3/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(RAW_CXX_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libstdc++-v3" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libstdc++-v3 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-libstdc++-v3
+
 .PHONY: maybe-install-html-target-libstdc++-v3 install-html-target-libstdc++-v3
 maybe-install-html-target-libstdc++-v3:
 @if target-libstdc++-v3
@@ -35922,6 +37920,33 @@ install-info-target-libmudflap: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	           install-info) \
+	  || exit 1
+
+@endif target-libmudflap
+
+.PHONY: maybe-install-pdf-target-libmudflap install-pdf-target-libmudflap
+maybe-install-pdf-target-libmudflap:
+@if target-libmudflap
+maybe-install-pdf-target-libmudflap: install-pdf-target-libmudflap
+
+install-pdf-target-libmudflap: \
+    configure-target-libmudflap \
+    pdf-target-libmudflap 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libmudflap/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libmudflap" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libmudflap && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
 	  || exit 1
 
 @endif target-libmudflap
@@ -36340,6 +38365,33 @@ install-info-target-libssp: \
 
 @endif target-libssp
 
+.PHONY: maybe-install-pdf-target-libssp install-pdf-target-libssp
+maybe-install-pdf-target-libssp:
+@if target-libssp
+maybe-install-pdf-target-libssp: install-pdf-target-libssp
+
+install-pdf-target-libssp: \
+    configure-target-libssp \
+    pdf-target-libssp 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libssp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libssp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libssp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-libssp
+
 .PHONY: maybe-install-html-target-libssp install-html-target-libssp
 maybe-install-html-target-libssp:
 @if target-libssp
@@ -36750,6 +38802,33 @@ install-info-target-newlib: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	           install-info) \
+	  || exit 1
+
+@endif target-newlib
+
+.PHONY: maybe-install-pdf-target-newlib install-pdf-target-newlib
+maybe-install-pdf-target-newlib:
+@if target-newlib
+maybe-install-pdf-target-newlib: install-pdf-target-newlib
+
+install-pdf-target-newlib: \
+    configure-target-newlib \
+    pdf-target-newlib 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/newlib/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/newlib" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/newlib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
 	  || exit 1
 
 @endif target-newlib
@@ -37612,6 +39691,33 @@ install-info-target-libgcc: \
 
 @endif target-libgcc
 
+.PHONY: maybe-install-pdf-target-libgcc install-pdf-target-libgcc
+maybe-install-pdf-target-libgcc:
+@if target-libgcc
+maybe-install-pdf-target-libgcc: install-pdf-target-libgcc
+
+install-pdf-target-libgcc: \
+    configure-target-libgcc \
+    pdf-target-libgcc 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgcc/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libgcc" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgcc && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-libgcc
+
 .PHONY: maybe-install-html-target-libgcc install-html-target-libgcc
 maybe-install-html-target-libgcc:
 @if target-libgcc
@@ -38022,6 +40128,33 @@ install-info-target-libgfortran: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	           install-info) \
+	  || exit 1
+
+@endif target-libgfortran
+
+.PHONY: maybe-install-pdf-target-libgfortran install-pdf-target-libgfortran
+maybe-install-pdf-target-libgfortran:
+@if target-libgfortran
+maybe-install-pdf-target-libgfortran: install-pdf-target-libgfortran
+
+install-pdf-target-libgfortran: \
+    configure-target-libgfortran \
+    pdf-target-libgfortran 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgfortran/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libgfortran" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgfortran && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
 	  || exit 1
 
 @endif target-libgfortran
@@ -38440,6 +40573,33 @@ install-info-target-libobjc: \
 
 @endif target-libobjc
 
+.PHONY: maybe-install-pdf-target-libobjc install-pdf-target-libobjc
+maybe-install-pdf-target-libobjc:
+@if target-libobjc
+maybe-install-pdf-target-libobjc: install-pdf-target-libobjc
+
+install-pdf-target-libobjc: \
+    configure-target-libobjc \
+    pdf-target-libobjc 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libobjc/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libobjc" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libobjc && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-libobjc
+
 .PHONY: maybe-install-html-target-libobjc install-html-target-libobjc
 maybe-install-html-target-libobjc:
 @if target-libobjc
@@ -38849,6 +41009,33 @@ install-info-target-libtermcap: \
 
 @endif target-libtermcap
 
+.PHONY: maybe-install-pdf-target-libtermcap install-pdf-target-libtermcap
+maybe-install-pdf-target-libtermcap:
+@if target-libtermcap
+maybe-install-pdf-target-libtermcap: install-pdf-target-libtermcap
+
+install-pdf-target-libtermcap: \
+    configure-target-libtermcap \
+    pdf-target-libtermcap 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libtermcap/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libtermcap" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libtermcap && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-libtermcap
+
 .PHONY: maybe-install-html-target-libtermcap install-html-target-libtermcap
 maybe-install-html-target-libtermcap:
 @if target-libtermcap
@@ -39199,6 +41386,33 @@ install-info-target-winsup: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	           install-info) \
+	  || exit 1
+
+@endif target-winsup
+
+.PHONY: maybe-install-pdf-target-winsup install-pdf-target-winsup
+maybe-install-pdf-target-winsup:
+@if target-winsup
+maybe-install-pdf-target-winsup: install-pdf-target-winsup
+
+install-pdf-target-winsup: \
+    configure-target-winsup \
+    pdf-target-winsup 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/winsup/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/winsup" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/winsup && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
 	  || exit 1
 
 @endif target-winsup
@@ -39608,6 +41822,33 @@ install-info-target-libgloss: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	           install-info) \
+	  || exit 1
+
+@endif target-libgloss
+
+.PHONY: maybe-install-pdf-target-libgloss install-pdf-target-libgloss
+maybe-install-pdf-target-libgloss:
+@if target-libgloss
+maybe-install-pdf-target-libgloss: install-pdf-target-libgloss
+
+install-pdf-target-libgloss: \
+    configure-target-libgloss \
+    pdf-target-libgloss 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgloss/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libgloss" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgloss && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
 	  || exit 1
 
 @endif target-libgloss
@@ -40026,6 +42267,33 @@ install-info-target-libiberty: \
 
 @endif target-libiberty
 
+.PHONY: maybe-install-pdf-target-libiberty install-pdf-target-libiberty
+maybe-install-pdf-target-libiberty:
+@if target-libiberty
+maybe-install-pdf-target-libiberty: install-pdf-target-libiberty
+
+install-pdf-target-libiberty: \
+    configure-target-libiberty \
+    pdf-target-libiberty 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libiberty/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libiberty" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libiberty && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-libiberty
+
 .PHONY: maybe-install-html-target-libiberty install-html-target-libiberty
 maybe-install-html-target-libiberty:
 @if target-libiberty
@@ -40440,6 +42708,33 @@ install-info-target-gperf: \
 
 @endif target-gperf
 
+.PHONY: maybe-install-pdf-target-gperf install-pdf-target-gperf
+maybe-install-pdf-target-gperf:
+@if target-gperf
+maybe-install-pdf-target-gperf: install-pdf-target-gperf
+
+install-pdf-target-gperf: \
+    configure-target-gperf \
+    pdf-target-gperf 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/gperf/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/gperf" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/gperf && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-gperf
+
 .PHONY: maybe-install-html-target-gperf install-html-target-gperf
 maybe-install-html-target-gperf:
 @if target-gperf
@@ -40840,6 +43135,33 @@ install-info-target-examples: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	           install-info) \
+	  || exit 1
+
+@endif target-examples
+
+.PHONY: maybe-install-pdf-target-examples install-pdf-target-examples
+maybe-install-pdf-target-examples:
+@if target-examples
+maybe-install-pdf-target-examples: install-pdf-target-examples
+
+install-pdf-target-examples: \
+    configure-target-examples \
+    pdf-target-examples 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/examples/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/examples" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/examples && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
 	  || exit 1
 
 @endif target-examples
@@ -41258,6 +43580,33 @@ install-info-target-libffi: \
 
 @endif target-libffi
 
+.PHONY: maybe-install-pdf-target-libffi install-pdf-target-libffi
+maybe-install-pdf-target-libffi:
+@if target-libffi
+maybe-install-pdf-target-libffi: install-pdf-target-libffi
+
+install-pdf-target-libffi: \
+    configure-target-libffi \
+    pdf-target-libffi 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libffi/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libffi" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libffi && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-libffi
+
 .PHONY: maybe-install-html-target-libffi install-html-target-libffi
 maybe-install-html-target-libffi:
 @if target-libffi
@@ -41668,6 +44017,33 @@ install-info-target-libjava: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	           install-info) \
+	  || exit 1
+
+@endif target-libjava
+
+.PHONY: maybe-install-pdf-target-libjava install-pdf-target-libjava
+maybe-install-pdf-target-libjava:
+@if target-libjava
+maybe-install-pdf-target-libjava: install-pdf-target-libjava
+
+install-pdf-target-libjava: \
+    configure-target-libjava \
+    pdf-target-libjava 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libjava/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(RAW_CXX_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libjava" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libjava && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
 	  || exit 1
 
 @endif target-libjava
@@ -42086,6 +44462,33 @@ install-info-target-zlib: \
 
 @endif target-zlib
 
+.PHONY: maybe-install-pdf-target-zlib install-pdf-target-zlib
+maybe-install-pdf-target-zlib:
+@if target-zlib
+maybe-install-pdf-target-zlib: install-pdf-target-zlib
+
+install-pdf-target-zlib: \
+    configure-target-zlib \
+    pdf-target-zlib 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/zlib/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/zlib" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/zlib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-zlib
+
 .PHONY: maybe-install-html-target-zlib install-html-target-zlib
 maybe-install-html-target-zlib:
 @if target-zlib
@@ -42496,6 +44899,33 @@ install-info-target-boehm-gc: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	           install-info) \
+	  || exit 1
+
+@endif target-boehm-gc
+
+.PHONY: maybe-install-pdf-target-boehm-gc install-pdf-target-boehm-gc
+maybe-install-pdf-target-boehm-gc:
+@if target-boehm-gc
+maybe-install-pdf-target-boehm-gc: install-pdf-target-boehm-gc
+
+install-pdf-target-boehm-gc: \
+    configure-target-boehm-gc \
+    pdf-target-boehm-gc 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/boehm-gc/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/boehm-gc" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/boehm-gc && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
 	  || exit 1
 
 @endif target-boehm-gc
@@ -42914,6 +45344,33 @@ install-info-target-qthreads: \
 
 @endif target-qthreads
 
+.PHONY: maybe-install-pdf-target-qthreads install-pdf-target-qthreads
+maybe-install-pdf-target-qthreads:
+@if target-qthreads
+maybe-install-pdf-target-qthreads: install-pdf-target-qthreads
+
+install-pdf-target-qthreads: \
+    configure-target-qthreads \
+    pdf-target-qthreads 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/qthreads/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/qthreads" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/qthreads && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-qthreads
+
 .PHONY: maybe-install-html-target-qthreads install-html-target-qthreads
 maybe-install-html-target-qthreads:
 @if target-qthreads
@@ -43324,6 +45781,33 @@ install-info-target-rda: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	           install-info) \
+	  || exit 1
+
+@endif target-rda
+
+.PHONY: maybe-install-pdf-target-rda install-pdf-target-rda
+maybe-install-pdf-target-rda:
+@if target-rda
+maybe-install-pdf-target-rda: install-pdf-target-rda
+
+install-pdf-target-rda: \
+    configure-target-rda \
+    pdf-target-rda 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/rda/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/rda" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/rda && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
 	  || exit 1
 
 @endif target-rda
@@ -43742,6 +46226,33 @@ install-info-target-libada: \
 
 @endif target-libada
 
+.PHONY: maybe-install-pdf-target-libada install-pdf-target-libada
+maybe-install-pdf-target-libada:
+@if target-libada
+maybe-install-pdf-target-libada: install-pdf-target-libada
+
+install-pdf-target-libada: \
+    configure-target-libada \
+    pdf-target-libada 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libada/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libada" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libada && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-libada
+
 .PHONY: maybe-install-html-target-libada install-html-target-libada
 maybe-install-html-target-libada:
 @if target-libada
@@ -44152,6 +46663,33 @@ install-info-target-libgomp: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	           install-info) \
+	  || exit 1
+
+@endif target-libgomp
+
+.PHONY: maybe-install-pdf-target-libgomp install-pdf-target-libgomp
+maybe-install-pdf-target-libgomp:
+@if target-libgomp
+maybe-install-pdf-target-libgomp: install-pdf-target-libgomp
+
+install-pdf-target-libgomp: \
+    configure-target-libgomp \
+    pdf-target-libgomp 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgomp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libgomp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgomp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-pdf) \
 	  || exit 1
 
 @endif target-libgomp

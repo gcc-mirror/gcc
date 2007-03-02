@@ -1,3 +1,16 @@
+2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* configure.ac: Add "--with-pdfdir" configure option,
+	which defines pdfdir variable.
+	* Makefile.def (target=fixincludes): Add install-pdf to
+	missing targets.
+	(recursive_targets): Add install-pdf target.
+	(flags_to_pass): Add pdfdir.
+	* Makefile.tpl: Add pdfdir handling, add do-install-pdf
+	target.
+	* configure: Regenerate
+	* Makefile.in: Regenerate
+
 2007-02-28  Eric Christopher  <echristo@apple.com>
 
 	Revert:

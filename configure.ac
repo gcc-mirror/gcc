@@ -2612,6 +2612,11 @@ AC_ARG_WITH(docdir,
 [docdir="\${prefix}/${withval}"],
 [docdir="\${datarootdir}/doc"])
 
+AC_ARG_WITH(pdfdir,
+[  --with-pdfdir	Install pdf in this directory.],
+[pdfdir="\${prefix}/${withval}"],
+[pdfdir="\${docdir}"])
+
 AC_ARG_WITH(htmldir,
 [  --with-htmldir	Install html in this directory.],
 [htmldir="\${prefix}/${withval}"],
@@ -2619,6 +2624,7 @@ AC_ARG_WITH(htmldir,
 
 AC_SUBST(datarootdir)
 AC_SUBST(docdir)
+AC_SUBST(pdfdir)
 AC_SUBST(htmldir)
 
 AC_OUTPUT(Makefile)
