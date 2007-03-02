@@ -2079,10 +2079,8 @@ override_options (void)
     if (! strcmp (ix86_arch_string, processor_alias_table[i].name))
       {
 	ix86_arch = processor_alias_table[i].processor;
-	ix86_arch_mask = 1 << ix86_arch;
 	/* Default cpu tuning to the architecture.  */
 	ix86_tune = ix86_arch;
-	ix86_tune_mask = 1 << ix86_tune;
 	if (processor_alias_table[i].flags & PTA_MMX
 	    && !(target_flags_explicit & MASK_MMX))
 	  target_flags |= MASK_MMX;
@@ -2156,6 +2154,9 @@ override_options (void)
       }
   if (i == pta_size)
     error ("bad value (%s) for -mtune= switch", ix86_tune_string);
+
+  ix86_arch_mask = 1 << ix86_arch;
+  ix86_tune_mask = 1 << ix86_tune;
 
   if (optimize_size)
     ix86_cost = &size_cost;
