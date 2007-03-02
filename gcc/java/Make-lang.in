@@ -28,8 +28,8 @@
 # Each language makefile fragment must provide the following targets:
 #
 # foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.install-common, foo.install-man, foo.install-info, foo.dvi, foo.pdf,
-# foo.html, foo.uninstall,
+# foo.install-common, foo.install-man, foo.install-info, foo.install-pdf,
+# foo.info, foo.dvi, foo.pdf, foo.html, foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
@@ -135,8 +135,13 @@ java.srcinfo: doc/gcj.info
 	-cp -p $^ $(srcdir)/doc
 
 java.dvi: doc/gcj.dvi
-java.pdf: doc/gcj.pdf
+
+JAVA_PDFFILES = doc/gcj.pdf
+
+java.pdf: $(JAVA_PDFFILES)
+
 java.html: $(build_htmldir)/java/index.html
+
 JAVA_MANFILES = doc/gcj.1 doc/jcf-dump.1 doc/gij.1 \
                 doc/jv-convert.1 doc/grmic.1 doc/grmiregistry.1 \
 		doc/gcj-dbtool.1 doc/gc-analyze.1
@@ -186,6 +191,16 @@ java.uninstall:
 	-rm -rf $(DESTDIR)$(man1dir)/gcj-dbtool$(man1ext)
 
 java.install-info: $(DESTDIR)$(infodir)/gcj.info
+
+java.install-pdf: $(JAVA_PDFFILES)
+	@$(NORMAL_INSTALL)
+	test -z "$(pdfdir)" || $(mkinstalldirs) "$(DESTDIR)$(pdfdir)"
+	@list='$(JAVA_PDFFILES)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(pdf__strip_dir) \
+	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(pdfdir)/$$f'"; \
+	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/$$f"; \
+	done
 
 #
 # Clean hooks:
