@@ -23,8 +23,9 @@
 # Each language makefile fragment must provide the following targets:
 #
 # foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.install-common, foo.install-man, foo.install-info, foo.dvi, foo.pdf
-# foo.uninstall, foo.mostlyclean, foo.clean, foo.distclean,
+# foo.install-common, foo.install-man, foo.install-info, foo.install-pdf,
+# foo.info, foo.dvi, foo.pdf, foo.html, foo.uninstall,
+# foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
 # where `foo' is the name of the language.
@@ -434,8 +435,20 @@ ada.install-info: $(DESTDIR)$(infodir)/gnat_ugn_unw.info \
 ada.dvi: doc/gnat_ugn_unw.dvi \
       doc/gnat_rm.dvi doc/gnat-style.dvi
 
-ada.pdf: doc/gnat_ugn_unw.pdf \
-      doc/gnat_rm.pdf doc/gnat-style.pdf
+ADA_PDFFILES = doc/gnat_ugn_unw.pdf \
+               doc/gnat_rm.pdf doc/gnat-style.pdf
+
+ada.pdf: $(ADA_PDFFILES)
+
+ada.install-pdf: $(ADA_PDFFILES)
+	@$(NORMAL_INSTALL)
+	test -z "$(pdfdir)/gcc" || $(mkinstalldirs) "$(DESTDIR)$(pdfdir)/gcc"
+	@list='$(ADA_PDFFILES)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(pdf__strip_dir) \
+	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(pdfdir)/gcc/$$f'"; \
+	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/gcc/$$f"; \
+	done
 
 ada.html:
 
