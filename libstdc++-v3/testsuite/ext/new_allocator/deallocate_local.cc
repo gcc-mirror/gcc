@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,6 +21,7 @@
 
 #include <string>
 #include <stdexcept>
+#include <cstdlib>
 #include <ext/new_allocator.h>
 
 static size_t count;
@@ -39,8 +40,8 @@ static count_check check;
 
 void* operator new(size_t size) throw(std::bad_alloc)
 {
-  printf("operator new is called \n");
-  void* p = malloc(size);
+  std::printf("operator new is called \n");
+  void* p = std::malloc(size);
   if (p == NULL)
     throw std::bad_alloc();
   count++;
@@ -49,7 +50,7 @@ void* operator new(size_t size) throw(std::bad_alloc)
  
 void operator delete(void* p) throw()
 {
-  printf("operator delete is called \n");
+  std::printf("operator delete is called \n");
   if (p == NULL)
     return;
   count--;

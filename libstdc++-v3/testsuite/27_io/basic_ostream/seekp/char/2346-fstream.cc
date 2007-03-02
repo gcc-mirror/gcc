@@ -1,6 +1,7 @@
 // 2000-06-29 bkoz
 
-// Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+// Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,6 +26,7 @@
 #include <ostream>
 #include <istream>
 #include <fstream>
+#include <cstdlib>
 #include <testsuite_hooks.h>
 
 const char* s = " lootpack, peanut butter wolf, rob swift, madlib, quasimoto";

@@ -1,4 +1,4 @@
-// Copyright (C) 2005 Free Software Foundation
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,6 +23,7 @@
 #include <ostream>
 #include <istream>
 #include <fstream>
+#include <cstdlib>
 #include <testsuite_hooks.h>
 
 const wchar_t* s = L" lootpack, peanut butter wolf, rob swift, madlib, quasimoto";

@@ -1,5 +1,57 @@
 2007-03-02  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/27_io/objects/wchar_t/9661-1.cc: Include <cstdlib>.
+	* testsuite/27_io/objects/wchar_t/7.cc: Likewise.
+	* testsuite/27_io/objects/char/9661-1.cc: Likewise.
+	* testsuite/27_io/objects/char/7.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/char/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/wchar_t/5.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/char/5.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/
+	11.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/
+	4.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/char/
+	4.cc: Likewise.
+	* testsuite/27_io/basic_ostream/seekp/wchar_t/
+	2346-fstream.cc: Likewise.
+	* testsuite/27_io/basic_ostream/seekp/char/
+	2346-fstream.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/26777.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13582-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/14975-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/13171-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/13582-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/4879.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/9964.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/char/10097.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/showmanyc/char/9533-1.cc: Likewise.
+	* testsuite/21_strings/basic_string/inserters_extractors/
+	wchar_t/10.cc: Likewise.
+	* testsuite/21_strings/basic_string/inserters_extractors/
+	wchar_t/11.cc: Likewise.
+	* testsuite/21_strings/basic_string/inserters_extractors/
+	char/10.cc: Likewise.
+	* testsuite/21_strings/basic_string/inserters_extractors/
+	char/11.cc: Likewise.
+	* testsuite/ext/pb_ds/example/trie_dna.cc: Likewise.
+	* testsuite/ext/new_allocator/deallocate_global.cc: Likewise.
+	* testsuite/ext/new_allocator/deallocate_local.cc: Likewise.
+	* testsuite/performance/27_io/filebuf_sgetn_unbuf.cc: Likewise.
+	* testsuite/performance/27_io/ifstream_getline.cc: Likewise.
+	* testsuite/22_locale/locale/cons/4.cc: Likewise.
+	* testsuite/22_locale/locale/cons/5.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/
+	mutex_weaktoshared.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/
+	default_weaktoshared.cc: Likewise.
+	* testsuite/thread/pthread5.cc: Likewise.
+	* testsuite/thread/pthread1.cc: Likewise.
+	* testsuite/23_containers/deque/cons/assign/1.cc: Likewise.
+
+2007-03-02  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/thread/pthread1.cc: Include <pthread.h>.
 	* testsuite/thread/pthread2.cc: Likewise.
 	* testsuite/thread/pthread3.cc: Likewise.

@@ -1,7 +1,7 @@
 // { dg-require-fork "" }
 // { dg-require-mkfifo "" }
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -28,6 +28,7 @@
 // the non-portable functionality in the libstdc++-v3 IO library
 
 #include <fstream>
+#include <cstdlib>
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>

@@ -3,7 +3,7 @@
 
 // 2001-05-21 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -25,6 +25,7 @@
 // 27.8.1.4 Overridden virtual functions
 
 #include <fstream>
+#include <cstdlib>
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>

@@ -31,6 +31,7 @@
 // if the STL threading support is fubar'd).
 
 #include <list>
+#include <cstdlib>
 #include <pthread.h>
 
 using namespace std;
