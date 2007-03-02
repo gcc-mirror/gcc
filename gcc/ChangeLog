@@ -1,3 +1,8 @@
+2007-03-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/alpha/alpha.c (alpha_gp_save_rtx): Insert the insns at the
+	entry by means of emit_insn_at_entry.
+
 2007-03-02  Richard Henderson  <rth@redhat.com>
 
 	* expr.h (promoted_input_arg): Remove decl.
