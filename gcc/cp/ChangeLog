@@ -1,3 +1,7 @@
+2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* Make-lang.in: Add dummy lang.install-pdf target.
+
 2007-03-01  Simon Baldwin <simonb@google.com>
 
 	PR c++/23689
