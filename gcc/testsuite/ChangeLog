@@ -1,3 +1,9 @@
+2007-03-03  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/15787
+	* g++.dg/parse/else.C: New.
+	* g++.dg/parse/else-2.C: New.
+	
 2007-03-03  Paul Thomas  <pault@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 

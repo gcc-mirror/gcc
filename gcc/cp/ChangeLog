@@ -1,3 +1,14 @@
+2007-03-03  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/15787
+	* parser.c (struct cp_parser): New IN_IF_STMT.
+	(cp_parser_statement_seq_opt): Handle an unexpected 'else',
+	returning if parsing the body of an 'if' statement or issuing an
+	error and continuing.
+	(cp_parser_selection_statement): Set IN_IF_STMT bit when parsing
+	body of 'if'.
+	(cp_parser_jump_statement): Mask new IN_IF_STMT bit.
+	
 2007-03-02  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/28253
