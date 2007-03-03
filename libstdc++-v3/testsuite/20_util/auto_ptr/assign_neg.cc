@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation
+// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,5 +46,5 @@ main()
   test01();
   return 0;
 }
-// { dg-error "candidates" "" { target *-*-* } 224 } 
-// { dg-error "::auto_ptr" "" { target *-*-* } 354 } 
+// { dg-error "candidates" "" { target *-*-* } 223 } 
+// { dg-error "::auto_ptr" "" { target *-*-* } 353 } 

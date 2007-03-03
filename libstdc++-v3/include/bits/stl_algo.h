@@ -63,7 +63,7 @@
 #define _ALGO_H 1
 
 #include <bits/stl_heap.h>
-#include <bits/stl_tempbuf.h>     // for _Temporary_buffer
+#include <bits/stl_tempbuf.h>  // for _Temporary_buffer
 #include <debug/debug.h>
 
 // See concept_check.h for the __glibcxx_*_requires macros.
@@ -293,17 +293,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  return __last;
 	}
     }
-
-  /**
-   *  @if maint
-   *  This is an overload of find() for streambuf iterators.
-   *  @endif
-  */
-  template<typename _CharT>
-    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value,
-				    istreambuf_iterator<_CharT> >::__type
-    find(istreambuf_iterator<_CharT>, istreambuf_iterator<_CharT>,
-	 const _CharT&);
 
   /**
    *  @brief Find the first occurrence of a value in a sequence.

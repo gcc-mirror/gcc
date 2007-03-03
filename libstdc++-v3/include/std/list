@@ -63,10 +63,8 @@
 
 #pragma GCC system_header
 
-#include <bits/functexcept.h>
 #include <bits/stl_algobase.h>
 #include <bits/allocator.h>
-#include <bits/stl_construct.h>
 #include <bits/stl_list.h>
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE

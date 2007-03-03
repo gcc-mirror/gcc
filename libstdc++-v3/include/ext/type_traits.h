@@ -37,10 +37,7 @@
 
 #pragma GCC system_header
 
-#include <cstddef>
-#include <utility>
 #include <limits>
-#include <iosfwd> // std::streamsize
 #include <bits/cpp_type_traits.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
@@ -182,12 +179,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     struct __numeric_traits_floating
     {
       // Only floating point types. See N1822. 
-      static const std::streamsize __max_digits10 =
+      static const int __max_digits10 =
 	2 + std::numeric_limits<_Value>::digits * 3010/10000;
     };
 
   template<typename _Value>
-    const std::streamsize __numeric_traits_floating<_Value>::__max_digits10;
+    const int __numeric_traits_floating<_Value>::__max_digits10;
 
   template<typename _Value>
     struct __numeric_traits 

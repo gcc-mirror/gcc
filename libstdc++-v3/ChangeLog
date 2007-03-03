@@ -1,3 +1,38 @@
+2007-03-03  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28080 (partial)
+	* include/bits/stl_algobase.h: Do not include <iosfwd>,
+	<bits/functexcept.h> is enough; adjust __copy_aux declarations;
+	remove declaration of copy overload for istreambuf_iterator /
+	ostreambuf_iterator.
+	* src/debug.cc: Include <cstdio>.
+	* include/ext/rope: Include <iosfwd>.
+	* include/bits/char_traits.h: Include <cstdio> and <cwchar>.
+	* include/bits/stl_algo.h: Remove declaration of find overload
+	for istreambuf_iterator.
+	* include/std/queue: Clean up includes.
+	* include/std/stack: Likewise.
+	* include/std/memory: Likewise.
+	* include/std/algorithm: Likewise.
+	* include/std/vector: Likewise.
+	* include/std/deque: Likewise.
+	* include/std/list: Likewise.
+	* include/bits/stl_tree.h: Likewise.
+	* testsuite/ext/type_traits/remove_unsigned_integer_neg.cc: Adjust
+	dg-error markers.
+	* testsuite/ext/type_traits/add_unsigned_floating_neg.cc: Likewise.
+	* testsuite/ext/type_traits/remove_unsigned_floating_neg.cc: Likewise.
+	* testsuite/ext/type_traits/add_unsigned_integer_neg.cc: Likewise.
+	* testsuite/23_containers/set/operators/1_neg.cc: Likewise.
+	* testsuite/23_containers/map/operators/1_neg.cc: Likewise.
+	* testsuite/20_util/auto_ptr/assign_neg.cc: Likewise.
+
+	* include/ext/type_traits.h: Fix type of __max_digits10; clean up
+	includes.
+
+	* testsuite/util/testsuite_hooks.h: Do not include <cstddef>.
+	* testsuite/util/testsuite_hooks.cc: Do it here.
+
 2007-03-02  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/objects/wchar_t/9661-1.cc: Include <cstdlib>.

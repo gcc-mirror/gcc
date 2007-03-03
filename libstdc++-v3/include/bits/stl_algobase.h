@@ -67,7 +67,7 @@
 #include <cwchar>
 #include <cstdlib>
 #include <cstddef>
-#include <iosfwd>
+#include <bits/functexcept.h>
 #include <bits/stl_pair.h>
 #include <bits/cpp_type_traits.h>
 #include <ext/type_traits.h>
@@ -317,21 +317,33 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   // Helpers for streambuf iterators (either istream or ostream).
+  // NB: avoid including <iosfwd>, relatively large.
   template<typename _CharT>
-    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, 
-				    ostreambuf_iterator<_CharT> >::__type
-    __copy_aux(_CharT*, _CharT*, ostreambuf_iterator<_CharT>);
+    struct char_traits;
+
+  template<typename _CharT, typename _Traits>
+    class istreambuf_iterator;
+
+  template<typename _CharT, typename _Traits>
+    class ostreambuf_iterator;
 
   template<typename _CharT>
     typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, 
-				    ostreambuf_iterator<_CharT> >::__type
-    __copy_aux(const _CharT*, const _CharT*, ostreambuf_iterator<_CharT>);
+	     ostreambuf_iterator<_CharT, char_traits<_CharT> > >::__type
+    __copy_aux(_CharT*, _CharT*,
+	       ostreambuf_iterator<_CharT, char_traits<_CharT> >);
+
+  template<typename _CharT>
+    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, 
+	     ostreambuf_iterator<_CharT, char_traits<_CharT> > >::__type
+    __copy_aux(const _CharT*, const _CharT*,
+	       ostreambuf_iterator<_CharT, char_traits<_CharT> >);
 
   template<typename _CharT>
     typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value,
 				    _CharT*>::__type
-    __copy_aux(istreambuf_iterator<_CharT>, istreambuf_iterator<_CharT>,
-	       _CharT*);
+    __copy_aux(istreambuf_iterator<_CharT, char_traits<_CharT> >,
+	       istreambuf_iterator<_CharT, char_traits<_CharT> >, _CharT*);
 
   template<bool, bool>
     struct __copy_normal
@@ -402,13 +414,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        return std::__copy_normal<__in, __out>::__copy_n(__first, __last,
 							__result);
     }
-
-  // Overload for streambuf iterators.
-  template<typename _CharT>
-    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, 
-  	       			    ostreambuf_iterator<_CharT> >::__type
-    copy(istreambuf_iterator<_CharT>, istreambuf_iterator<_CharT>,
-	 ostreambuf_iterator<_CharT>);
 
   template<bool, typename>
     struct __copy_backward

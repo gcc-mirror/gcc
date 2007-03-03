@@ -58,7 +58,6 @@
 
 #include <bits/c++config.h>
 #include <bits/functexcept.h>
-#include <cstddef>
 #include <ctime>
 
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H

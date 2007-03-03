@@ -1,6 +1,6 @@
 // RB tree implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -66,7 +66,6 @@
 
 #include <bits/stl_algobase.h>
 #include <bits/allocator.h>
-#include <bits/stl_construct.h>
 #include <bits/stl_function.h>
 #include <bits/cpp_type_traits.h>
 
