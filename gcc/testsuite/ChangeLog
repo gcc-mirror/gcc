@@ -1,3 +1,9 @@
+2007-03-03  Paul Thomas  <pault@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/30882
+	* gfortran.dg/size_dim.f90: New test.
+
 2007-03-02  Paul Thomas  <pault@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 
