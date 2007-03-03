@@ -1,7 +1,7 @@
 # configure.ac for GCC
 # Process this file with autoconf to generate a configuration script.
 
-# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
 # Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -2926,6 +2926,12 @@ LCF0:
 	addis 11,30,_GLOBAL_OFFSET_TABLE_-.LCF0@ha';;
     esac
 
+    gcc_GAS_CHECK_FEATURE([rel16 relocs],
+      gcc_cv_as_powerpc_rel16, [2,17,0], -a32,
+      [$conftest_s],,
+      [AC_DEFINE(HAVE_AS_REL16, 1,
+	  [Define if your assembler supports R_PPC_REL16 relocs.])])
+
     case $target in
       *-*-aix*) conftest_s='	.machine "pwr6"
 	.csect .text[[PR]]
@@ -2955,12 +2961,6 @@ LCF0:
       [$conftest_s],,
       [AC_DEFINE(HAVE_AS_DFP, 1,
 	  [Define if your assembler supports DFP instructions.])])
-
-    gcc_GAS_CHECK_FEATURE([rel16 relocs],
-      gcc_cv_as_powerpc_rel16, [2,17,0], -a32,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_REL16, 1,
-	  [Define if your assembler supports R_PPC_REL16 relocs.])])
     ;;
 
   mips*-*-*)

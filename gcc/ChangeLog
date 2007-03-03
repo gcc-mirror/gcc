@@ -1,3 +1,8 @@
+2007-03-03  Andreas Schwab  <schwab@suse.de>
+
+	* configure.ac (HAVE_AS_REL16): Move test back to correct place.
+	* configure: Regenerate.
+
 2007-03-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.def (ATTR_MATHFN_FPROUNDING): Rely on
