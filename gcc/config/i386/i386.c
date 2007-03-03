@@ -4859,13 +4859,13 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 		  src_offset = REGNO (reg) * 8;
 		}
 	      src_addr = fold_convert (addr_type, src_addr);
-	      src_addr = fold (build2 (PLUS_EXPR, addr_type, src_addr,
-				       size_int (src_offset)));
+	      src_addr = fold_build2 (PLUS_EXPR, addr_type, src_addr,
+				      size_int (src_offset));
 	      src = build_va_arg_indirect_ref (src_addr);
 
 	      dest_addr = fold_convert (addr_type, addr);
-	      dest_addr = fold (build2 (PLUS_EXPR, addr_type, dest_addr,
-					size_int (INTVAL (XEXP (slot, 1)))));
+	      dest_addr = fold_build2 (PLUS_EXPR, addr_type, dest_addr,
+				       size_int (INTVAL (XEXP (slot, 1))));
 	      dest = build_va_arg_indirect_ref (dest_addr);
 
 	      t = build2 (GIMPLE_MODIFY_STMT, void_type_node, dest, src);
