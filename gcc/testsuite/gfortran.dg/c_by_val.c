@@ -1,11 +1,13 @@
 /*  Passing from fortran to C by value, using %VAL.  */
 
+#include <inttypes.h>
+
 typedef struct { float r, i; } complex;
 typedef struct { double r, i; } complex8;
 extern void f_to_f__ (float*, float, float*, float**);
 extern void f_to_f8__ (double*, double, double*, double**);
 extern void i_to_i__ (int*, int, int*, int**);
-extern void i_to_i8__ (long*, long, long*, long**);
+extern void i_to_i8__ (int64_t*, int64_t, int64_t*, int64_t**);
 extern void c_to_c__ (complex*, complex, complex*, complex**);
 extern void c_to_c8__ (complex8*, complex8, complex8*, complex8**);
 extern void abort (void);
@@ -41,7 +43,7 @@ i_to_i__(int *retval, int i1, int *i2, int **i3)
 }
 
 void
-i_to_i8__(long *retval, long i1, long *i2, long **i3)
+i_to_i8__(int64_t *retval, int64_t i1, int64_t *i2, int64_t **i3)
 {
   if ( i1 != *i2 ) abort();
   if ( i1 != **i3 ) abort();
