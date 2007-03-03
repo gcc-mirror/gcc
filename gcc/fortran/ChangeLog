@@ -1,3 +1,9 @@
+2007-03-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30882
+	* check.c (dim_rank_check): The shape of subsections of
+	assumed-size arrays is known.
+
 2007-03-02  Paul Thomas  <pault@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 

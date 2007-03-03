@@ -337,7 +337,10 @@ dim_rank_check (gfc_expr *dim, gfc_expr *array, int allow_assumed)
 
   ar = gfc_find_array_ref (array);
   rank = array->rank;
-  if (ar->as->type == AS_ASSUMED_SIZE && !allow_assumed)
+  if (ar->as->type == AS_ASSUMED_SIZE
+      && !allow_assumed
+      && ar->type != AR_ELEMENT
+      && ar->type != AR_SECTION)
     rank--;
 
   if (mpz_cmp_ui (dim->value.integer, 1) < 0
