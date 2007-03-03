@@ -1,3 +1,12 @@
+2007-03-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	Backport from mainline:
+	2007-03-01  Peter Breitenlohner  <peb@mppmu.mpg.de>
+
+	PR other/16513
+	* Makefile.in: Install library under $(MULTIOSDIR), not $(MULTISUBDIR).
+	Install headers in multilib independent location.
+
 2006-10-10  Brooks Moses  <bmoses@stanford.edu>
 
 	* Makefile.in: Added "pdf", "libiberty.pdf" target support.
