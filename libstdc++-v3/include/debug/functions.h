@@ -36,7 +36,7 @@
 #define _GLIBCXX_DEBUG_FUNCTIONS_H 1
 
 #include <bits/c++config.h>
-#include <stddef.h>                       // for ptrdiff_t
+#include <cstddef>                       // for ptrdiff_t
 #include <bits/stl_iterator_base_types.h> // for iterator_traits, categories
 #include <bits/cpp_type_traits.h>         // for __is_integer
 

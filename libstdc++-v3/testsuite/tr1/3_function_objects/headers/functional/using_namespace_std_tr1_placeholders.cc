@@ -18,7 +18,7 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-#include <tr1/tuple>
+#include <tr1/functional>
 
 namespace gnu
 {
