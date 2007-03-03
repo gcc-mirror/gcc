@@ -6629,8 +6629,8 @@ alpha_fold_builtin_zapnot (tree *op, unsigned HOST_WIDE_INT opint[],
 	return build_int_cst (long_integer_type_node, opint[0] & mask);
 
       if (op)
-	return fold (build2 (BIT_AND_EXPR, long_integer_type_node, op[0],
-			     build_int_cst (long_integer_type_node, mask)));
+	return fold_build2 (BIT_AND_EXPR, long_integer_type_node, op[0],
+			    build_int_cst (long_integer_type_node, mask));
     }
   else if ((op_const & 1) && opint[0] == 0)
     return build_int_cst (long_integer_type_node, 0);
@@ -6783,7 +6783,7 @@ alpha_fold_vector_minmax (enum tree_code code, tree op[], tree vtype)
 {
   tree op0 = fold_convert (vtype, op[0]);
   tree op1 = fold_convert (vtype, op[1]);
-  tree val = fold (build2 (code, vtype, op0, op1));
+  tree val = fold_build2 (code, vtype, op0, op1);
   return fold_convert (long_integer_type_node, val);
 }
 

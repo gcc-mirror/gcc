@@ -1,3 +1,12 @@
+2007-03-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-pretty-print.c (pp_c_direct_abstract_declarator): Use
+	fold_build2.
+	* config/alpha/alpha.c (alpha_fold_builtin_zapnot,
+	alpha_fold_vector_minmax): Likewise.
+	* config/i386/i386.c (ix86_gimplify_va_arg): Likewise.
+	* config/sparc/sparc.c (sparc_gimplify_va_arg): Likewise.
+
 2007-03-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-sra.c (sra_walk_fns) <ldst>: Document new restriction.
