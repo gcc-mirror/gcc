@@ -1,3 +1,14 @@
+2007-03-03  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/31031
+	* include/bits/istream.tcc: Inhibit implicit instantiation of
+	the _M_insert helpers.
+	* include/bits/ostream.tcc: Likewise for _M_extract.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/
+	31031.cc: New.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/
+	31031.cc: Likewise.
+
 2007-03-03  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/debug/functions.h: Use cstddef.
