@@ -54185,7 +54185,7 @@ fi
 
 done
 
-    # math
+    # GLIBCXX_CHECK_MATH_SUPPORT
     cat >>confdefs.h <<\_ACEOF
 #define HAVE_LIBM 1
 _ACEOF
@@ -54214,62 +54214,65 @@ _ACEOF
 #define HAVE_HYPOT 1
 _ACEOF
 
+    # GLIBCXX_CHECK_BUILTIN_MATH_SUPPORT
     cat >>confdefs.h <<\_ACEOF
-#define HAVE____BUILTIN_ABS 1
+#define HAVE___BUILTIN_ABS 1
 _ACEOF
 
     cat >>confdefs.h <<\_ACEOF
-#define HAVE____BUILTIN_FABSF 1
+#define HAVE___BUILTIN_FABSF 1
 _ACEOF
 
     cat >>confdefs.h <<\_ACEOF
-#define HAVE____BUILTIN_FABS 1
+#define HAVE___BUILTIN_FABS 1
 _ACEOF
 
     cat >>confdefs.h <<\_ACEOF
-#define HAVE____BUILTIN_FABSL 1
+#define HAVE___BUILTIN_FABSL 1
 _ACEOF
 
     cat >>confdefs.h <<\_ACEOF
-#define HAVE____BUILTIN_LABS 1
+#define HAVE___BUILTIN_LABS 1
 _ACEOF
 
     cat >>confdefs.h <<\_ACEOF
-#define HAVE____BUILTIN_SQRTF 1
+#define HAVE___BUILTIN_SQRTF 1
 _ACEOF
 
     cat >>confdefs.h <<\_ACEOF
-#define HAVE____BUILTIN_SQRT 1
+#define HAVE___BUILTIN_SQRT 1
 _ACEOF
 
     cat >>confdefs.h <<\_ACEOF
-#define HAVE____BUILTIN_SQRTL 1
+#define HAVE___BUILTIN_SQRTL 1
 _ACEOF
 
     cat >>confdefs.h <<\_ACEOF
-#define HAVE____BUILTIN_SINF 1
+#define HAVE___BUILTIN_SINF 1
 _ACEOF
 
     cat >>confdefs.h <<\_ACEOF
-#define HAVE____BUILTIN_SIN 1
+#define HAVE___BUILTIN_SIN 1
 _ACEOF
 
     cat >>confdefs.h <<\_ACEOF
-#define HAVE____BUILTIN_SINL 1
+#define HAVE___BUILTIN_SINL 1
 _ACEOF
 
     cat >>confdefs.h <<\_ACEOF
-#define HAVE____BUILTIN_COSF 1
+#define HAVE___BUILTIN_COSF 1
 _ACEOF
 
     cat >>confdefs.h <<\_ACEOF
-#define HAVE____BUILTIN_COS 1
+#define HAVE___BUILTIN_COS 1
 _ACEOF
 
     cat >>confdefs.h <<\_ACEOF
-#define HAVE____BUILTIN_COSL 1
+#define HAVE___BUILTIN_COSL 1
 _ACEOF
 
+    # GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
+    # GLIBCXX_CHECK_STDLIB_SUPPORT
     cat >>confdefs.h <<\_ACEOF
 #define HAVE_COPYSIGN 1
 _ACEOF
@@ -54278,6 +54281,7 @@ _ACEOF
 #define HAVE_COPYSIGNF 1
 _ACEOF
 
+    # GLIBCXX_CHECK_S_ISREG_OR_S_IFREG
     cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_ISREG 1
 _ACEOF
