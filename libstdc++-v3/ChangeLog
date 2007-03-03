@@ -1,5 +1,12 @@
 2007-03-03  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/debug/functions.h: Use cstddef.
+	
+	* testsuite/tr1/3_function_objects/headers/functional/
+	using_namespace_std_tr1_placeholders.cc: Fix include.
+	
+2007-03-03  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* crossconfig.m4 (djgpp): Correct builtin defines to HAVE___,
 	instead of HAVE____.
 	* configure: Regenerate.
