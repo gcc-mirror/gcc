@@ -1410,6 +1410,7 @@ typedef struct cp_parser GTY(())
 #define IN_ITERATION_STMT	2
 #define IN_OMP_BLOCK		4
 #define IN_OMP_FOR		8
+#define IN_IF_STMT             16
   unsigned char in_statement;
 
   /* TRUE if we are presently parsing the body of a switch statement.
@@ -6538,6 +6539,19 @@ cp_parser_statement_seq_opt (cp_parser* parser, tree in_statement_expr)
 	  || token->type == CPP_EOF
 	  || token->type == CPP_PRAGMA_EOL)
 	break;
+      
+      /* If we are in a compound statement and find 'else' then
+	 something went wrong.  */
+      else if (token->type == CPP_KEYWORD && token->keyword == RID_ELSE)
+	{
+	  if (parser->in_statement & IN_IF_STMT) 
+	    break;
+	  else
+	    {
+	      token = cp_lexer_consume_token (parser->lexer);
+	      error ("%<else%> without a previous %<if%>");
+	    }
+	}
 
       /* Parse the statement.  */
       cp_parser_statement (parser, in_statement_expr, true, NULL);
@@ -6603,12 +6617,17 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p)
 	if (keyword == RID_IF)
 	  {
 	    bool nested_if;
+	    unsigned char in_statement;
 
 	    /* Add the condition.  */
 	    finish_if_stmt_cond (condition, statement);
 
 	    /* Parse the then-clause.  */
+	    in_statement = parser->in_statement;
+	    parser->in_statement |= IN_IF_STMT;
 	    cp_parser_implicitly_scoped_statement (parser, &nested_if);
+	    parser->in_statement = in_statement;
+
 	    finish_then_clause (statement);
 
 	    /* If the next token is `else', parse the else-clause.  */
@@ -6954,6 +6973,7 @@ cp_parser_jump_statement (cp_parser* parser)
   tree statement = error_mark_node;
   cp_token *token;
   enum rid keyword;
+  unsigned char in_statement;
 
   /* Peek at the next token.  */
   token = cp_parser_require (parser, CPP_KEYWORD, "jump-statement");
@@ -6965,14 +6985,15 @@ cp_parser_jump_statement (cp_parser* parser)
   switch (keyword)
     {
     case RID_BREAK:
-      switch (parser->in_statement)
+      in_statement = parser->in_statement & ~IN_IF_STMT;      
+      switch (in_statement)
 	{
 	case 0:
 	  error ("break statement not within loop or switch");
 	  break;
 	default:
-	  gcc_assert ((parser->in_statement & IN_SWITCH_STMT)
-		      || parser->in_statement == IN_ITERATION_STMT);
+	  gcc_assert ((in_statement & IN_SWITCH_STMT)
+		      || in_statement == IN_ITERATION_STMT);
 	  statement = finish_break_stmt ();
 	  break;
 	case IN_OMP_BLOCK:
@@ -6986,7 +7007,7 @@ cp_parser_jump_statement (cp_parser* parser)
       break;
 
     case RID_CONTINUE:
-      switch (parser->in_statement & ~IN_SWITCH_STMT)
+      switch (parser->in_statement & ~(IN_SWITCH_STMT | IN_IF_STMT))
 	{
 	case 0:
 	  error ("continue statement not within a loop");
