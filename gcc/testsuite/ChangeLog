@@ -1,3 +1,8 @@
+2007-03-02  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/29902
+	* g++.dg/tree-ssa/pr29902.C: New test.
+
 2007-03-01  Tobias Schlueter  <tobi@gcc.gnu.org>
 
 	Backport from trunk

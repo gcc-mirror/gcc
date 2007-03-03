@@ -1,3 +1,9 @@
+2007-03-02  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/29902
+	* tree-ssa-loop-manip.c (can_unroll_loop_p): Return false if
+	any involved ssa name appears in abnormal phi node.
+
 2007-03-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-sra.c (sra_walk_fns) <ldst>: Document new restriction.
