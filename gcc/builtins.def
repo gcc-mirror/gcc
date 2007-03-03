@@ -150,13 +150,13 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 	ATTR_NOTHROW_LIST : ATTR_CONST_NOTHROW_LIST)
 
 /* Define an attribute list for math functions that are normally
-   "pure" but if flag_unsafe_math_optimizations is set they are
-   instead "const".  This distinction accounts for the fact that some
-   math functions check the rounding mode which is akin to examining
-   global memory.  In "unsafe" mode we can be less careful.  */
+   "const" but if flag_rounding_math is set they are instead "pure".
+   This distinction accounts for the fact that some math functions
+   check the rounding mode which is akin to examining global
+   memory.  */
 #undef ATTR_MATHFN_FPROUNDING
-#define ATTR_MATHFN_FPROUNDING (flag_unsafe_math_optimizations ? \
-	ATTR_CONST_NOTHROW_LIST : ATTR_PURE_NOTHROW_NOVOPS_LIST)
+#define ATTR_MATHFN_FPROUNDING (flag_rounding_math ? \
+	ATTR_PURE_NOTHROW_NOVOPS_LIST : ATTR_CONST_NOTHROW_LIST)
 
 /* Define an attribute list for math functions that are normally
    "impure" because some of them may write into global memory for

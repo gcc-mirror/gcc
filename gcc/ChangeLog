@@ -1,5 +1,8 @@
 2007-03-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* builtins.def (ATTR_MATHFN_FPROUNDING): Rely on
+	flag_rounding_math, not flag_unsafe_math_optimizations.
+
 	* c-pretty-print.c (pp_c_direct_abstract_declarator): Use
 	fold_build2.
 	* config/alpha/alpha.c (alpha_fold_builtin_zapnot,
