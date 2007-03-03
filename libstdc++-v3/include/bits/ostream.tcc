@@ -365,6 +365,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   extern template ostream& operator<<(ostream&, const unsigned char*);
   extern template ostream& operator<<(ostream&, const signed char*);
 
+  extern template ostream& ostream::_M_insert(long);
+  extern template ostream& ostream::_M_insert(unsigned long);
+  extern template ostream& ostream::_M_insert(bool);
+#ifdef _GLIBCXX_USE_LONG_LONG
+  extern template ostream& ostream::_M_insert(long long);
+  extern template ostream& ostream::_M_insert(unsigned long long);
+#endif
+  extern template ostream& ostream::_M_insert(double);
+  extern template ostream& ostream::_M_insert(long double);
+  extern template ostream& ostream::_M_insert(const void*);
+
 #ifdef _GLIBCXX_USE_WCHAR_T
   extern template class basic_ostream<wchar_t>;
   extern template wostream& endl(wostream&);
@@ -374,6 +385,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   extern template wostream& operator<<(wostream&, char);
   extern template wostream& operator<<(wostream&, const wchar_t*);
   extern template wostream& operator<<(wostream&, const char*);
+
+  extern template wostream& wostream::_M_insert(long);
+  extern template wostream& wostream::_M_insert(unsigned long);
+  extern template wostream& wostream::_M_insert(bool);
+#ifdef _GLIBCXX_USE_LONG_LONG
+  extern template wostream& wostream::_M_insert(long long);
+  extern template wostream& wostream::_M_insert(unsigned long long);
+#endif
+  extern template wostream& wostream::_M_insert(double);
+  extern template wostream& wostream::_M_insert(long double);
+  extern template wostream& wostream::_M_insert(const void*);
 #endif
 #endif
 
