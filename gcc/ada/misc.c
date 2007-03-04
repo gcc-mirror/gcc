@@ -303,6 +303,12 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
       gnat_argc++;
       break;
 
+    case OPT_ftree_vrp:
+      /* We arrange for post_option to be able to set the corresponding
+	 flag to 1 only when explicitly requested by the user.  */
+      flag_tree_vrp = -value;
+      break;
+
     case OPT_fRTS_:
       gnat_argv[gnat_argc] = xstrdup ("-fRTS");
       gnat_argc++;
@@ -367,6 +373,13 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
      everything is addressable (modulo bit-fields) by disregarding
      the TYPE_NONALIASED_COMPONENT and DECL_NONADDRESSABLE_P macros.  */
   flag_tree_salias = 0;
+
+  /* Disable Tree-VRP unless an explicit positive -f has been passed.
+     This forces the default to 0 for Ada.  */
+  if (flag_tree_vrp < 0)
+    flag_tree_vrp = 1;
+  else
+    flag_tree_vrp = 0; 
 
   return false;
 }

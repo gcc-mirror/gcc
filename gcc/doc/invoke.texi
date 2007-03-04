@@ -4535,6 +4535,10 @@ also turns on the following optimization flags:
 Please note the warning under @option{-fgcse} about
 invoking @option{-O2} on programs that use computed gotos.
 
+@option{-O2} doesn't turn on @option{-ftree-vrp} for the Ada compiler.
+This option must be explicitly specified on the command line to be
+enabled for the Ada compiler.
+
 @item -O3
 @opindex O3
 Optimize yet more.  @option{-O3} turns on all optimizations specified by

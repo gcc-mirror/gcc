@@ -69,6 +69,11 @@ nostdlib
 Ada
 ; Don't look for object files
 
+ftree-vrp
+Ada
+; Effect documented in common.opt - intercepted for Ada
+; to force the associated flag not to be set by default.
+
 fRTS=
 Ada Joined RejectNegative
 ; Selects the runtime

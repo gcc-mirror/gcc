@@ -1,3 +1,9 @@
+2007-03-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/26797
+	* doc/invoke.texi (-O2): Document that Tree-VRP is not turned on
+	for the Ada compiler.
+
 2007-03-02  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/29902
