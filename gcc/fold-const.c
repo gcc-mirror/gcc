@@ -8921,16 +8921,23 @@ fold_comparison (enum tree_code code, tree type, tree op0, tree op1)
   /* Fold ~X op ~Y as Y op X.  */
   if (TREE_CODE (arg0) == BIT_NOT_EXPR
       && TREE_CODE (arg1) == BIT_NOT_EXPR)
-    return fold_build2 (code, type,
-			TREE_OPERAND (arg1, 0),
-			TREE_OPERAND (arg0, 0));
+    {
+      tree cmp_type = TREE_TYPE (TREE_OPERAND (arg0, 0));
+      return fold_build2 (code, type,
+			  fold_convert (cmp_type, TREE_OPERAND (arg1, 0)),
+			  TREE_OPERAND (arg0, 0));
+    }
 
   /* Fold ~X op C as X op' ~C, where op' is the swapped comparison.  */
   if (TREE_CODE (arg0) == BIT_NOT_EXPR
       && TREE_CODE (arg1) == INTEGER_CST)
-    return fold_build2 (swap_tree_comparison (code), type,
-			TREE_OPERAND (arg0, 0),
-			fold_build1 (BIT_NOT_EXPR, TREE_TYPE (arg1), arg1));
+    {
+      tree cmp_type = TREE_TYPE (TREE_OPERAND (arg0, 0));
+      return fold_build2 (swap_tree_comparison (code), type,
+			  TREE_OPERAND (arg0, 0),
+			  fold_build1 (BIT_NOT_EXPR, cmp_type,
+				       fold_convert (cmp_type, arg1)));
+    }
 
   return NULL_TREE;
 }
