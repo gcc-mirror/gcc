@@ -33,7 +33,7 @@
 
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(tr1)
+_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
   /*
    * (Further) implementation-space details.
@@ -322,7 +322,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       if (__value == 0)
 	__value = 19780503;
 
-      std::tr1::linear_congruential<unsigned long, 40014, 0, 2147483563>
+      std::_GLIBCXX_TR1::linear_congruential<unsigned long, 40014, 0, 2147483563>
 	__lcg(__value);
 
       for (int __i = 0; __i < long_lag; ++__i)
@@ -441,7 +441,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     {
       for (int __j = 0; __j < __n; ++__j)
 #if _GLIBCXX_USE_C99_MATH_TR1
-	_M_npows[__j] = std::tr1::ldexp(_RealType(1), -__w + __j * 32);
+	_M_npows[__j] = std::_GLIBCXX_TR1::ldexp(_RealType(1), -__w + __j * 32);
 #else
         _M_npows[__j] = std::pow(_RealType(2), -__w + __j * 32);
 #endif
@@ -457,7 +457,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 512. Seeding subtract_with_carry_01 from a single unsigned long.
-      std::tr1::linear_congruential<unsigned long, 40014, 0, 2147483563>
+      std::_GLIBCXX_TR1::linear_congruential<unsigned long, 40014, 0, 2147483563>
 	__lcg(__value);
 
       this->seed(__lcg);
@@ -869,13 +869,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	{
 	  const _RealType __m = std::floor(_M_mean);
 	  _M_lm_thr = std::log(_M_mean);
-	  _M_lfm = std::tr1::lgamma(__m + 1);
+	  _M_lfm = std::_GLIBCXX_TR1::lgamma(__m + 1);
 	  _M_sm = std::sqrt(__m);
 
 	  const _RealType __pi_4 = 0.7853981633974483096156608458198757L;
 	  const _RealType __dx = std::sqrt(2 * __m * std::log(32 * __m
 							      / __pi_4));
-	  _M_d = std::tr1::round(std::max(_RealType(6),
+	  _M_d = std::_GLIBCXX_TR1::round(std::max(_RealType(6),
 					  std::min(__m, __dx)));
 	  const _RealType __cx = 2 * __m + _M_d;
 	  _M_scx = std::sqrt(__cx / 2);
@@ -972,7 +972,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		  }
 
 		__reject = (__w - __e - __x * _M_lm_thr
-			    > _M_lfm - std::tr1::lgamma(__x + __m + 1));
+			    > _M_lfm - std::_GLIBCXX_TR1::lgamma(__x + __m + 1));
 
 		__reject |= __x + __m >= __thr;
 
@@ -1063,11 +1063,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	  const _RealType __d1x =
 	    std::sqrt(__np * __1p * std::log(32 * __np
 					     / (81 * __pi_4 * __1p)));
-	  _M_d1 = std::tr1::round(std::max(_RealType(1), __d1x));
+	  _M_d1 = std::_GLIBCXX_TR1::round(std::max(_RealType(1), __d1x));
 	  const _RealType __d2x =
 	    std::sqrt(__np * __1p * std::log(32 * _M_t * __1p
 					     / (__pi_4 * __pa)));
-	  _M_d2 = std::tr1::round(std::max(_RealType(1), __d2x));
+	  _M_d2 = std::_GLIBCXX_TR1::round(std::max(_RealType(1), __d2x));
 	  
 	  // sqrt(pi / 2)
 	  const _RealType __spi_2 = 1.2533141373155002512078826424055226L;
@@ -1083,8 +1083,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	  const _RealType __s2s = _M_s2 * _M_s2;
 	  _M_s = (_M_a123 + 2 * __s2s / _M_d2
 		  * std::exp(-_M_d2 * _M_d2 / (2 * __s2s)));
-	  _M_lf = (std::tr1::lgamma(__np + 1)
-		   + std::tr1::lgamma(_M_t - __np + 1));
+	  _M_lf = (std::_GLIBCXX_TR1::lgamma(__np + 1)
+		   + std::_GLIBCXX_TR1::lgamma(_M_t - __np + 1));
 	  _M_lp1p = std::log(__pa / __1p);
 
 	  _M_q = -std::log(1 - (__p12 - __pa) / __1p);
@@ -1212,8 +1212,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		if (!__reject)
 		  {
 		    const _RealType __lfx =
-		      std::tr1::lgamma(__np + __x + 1)
-		      + std::tr1::lgamma(_M_t - (__np + __x) + 1);
+		      std::_GLIBCXX_TR1::lgamma(__np + __x + 1)
+		      + std::_GLIBCXX_TR1::lgamma(_M_t - (__np + __x) + 1);
 		    __reject = __v > _M_lf - __lfx + __x * _M_lp1p;
 		  }
 

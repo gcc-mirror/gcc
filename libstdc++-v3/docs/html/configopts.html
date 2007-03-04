@@ -143,9 +143,11 @@ options</a></h1>
  </dd>
 
  <dt><code>--enable-cheaders=OPTION  </code></dt>
- <dd><p>This allows the user to define what kind of C headers are
-        used.  Options are c and c_std.  These correspond to the source
-	directory's include/c and include/c_std.  The default is c_std.
+ <dd><p>This allows the user to define the approach taken for C header
+        compatibility with C++. Options are c, c_std, and c_global.
+        These correspond to the source directory's include/c,
+        include/c_std, and include/c_global, and may also include
+        include/c_compatibility.  The default is c_global.
      </p>
  </dd>
 

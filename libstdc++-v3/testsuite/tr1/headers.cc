@@ -2,7 +2,7 @@
 
 // 2006-02-02  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2006 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,6 +21,7 @@
 // USA.
 
 #include <tr1/array>
+#include <tr1/ccomplex>
 #include <tr1/cctype>
 #include <tr1/cfenv>
 #include <tr1/cfloat>
@@ -28,6 +29,7 @@
 #include <tr1/climits>
 #include <tr1/cmath>
 #include <tr1/complex>
+#include <tr1/complex.h>
 #include <tr1/cstdarg>
 #include <tr1/cstdbool>
 #include <tr1/cstdint>
@@ -46,6 +48,7 @@
 #include <tr1/math.h>
 #include <tr1/memory>
 #include <tr1/random>
+#include <tr1/regex>
 #include <tr1/stdarg.h>
 #include <tr1/stdbool.h>
 #include <tr1/stdint.h>

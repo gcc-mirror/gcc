@@ -34,11 +34,11 @@
 #ifndef _TR1_UTILITY
 #define _TR1_UTILITY 1
 
-#include "../utility"
+#include <utility>
 
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(tr1)
+_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
   template<class _Tp> class tuple_size;
   template<int _Int, class _Tp> class tuple_element;

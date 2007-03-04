@@ -1,6 +1,6 @@
 // TR1 stdlib.h -*- C++ -*-
 
-// Copyright (C) 2006 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,13 +40,13 @@
 
 #if _GLIBCXX_USE_C99
 
-using std::tr1::atoll;
-using std::tr1::strtoll;
-using std::tr1::strtoull;
+using std::_GLIBCXX_TR1::atoll;
+using std::_GLIBCXX_TR1::strtoll;
+using std::_GLIBCXX_TR1::strtoull;
 
-using std::tr1::abs;
+using std::_GLIBCXX_TR1::abs;
 #if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
-using std::tr1::div;
+using std::_GLIBCXX_TR1::div;
 #endif
 
 #endif

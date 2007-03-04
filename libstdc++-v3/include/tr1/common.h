@@ -39,7 +39,7 @@
 // namespace std::tr1
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(tr1)
+_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
   template<typename _Tp, bool = is_integral<_Tp>::value>
     struct __promote

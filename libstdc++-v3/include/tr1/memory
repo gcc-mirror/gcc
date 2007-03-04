@@ -35,22 +35,22 @@
 #ifndef _TR1_MEMORY
 #define _TR1_MEMORY 1
 
-#include "../memory"
-#include <functional>           // std::less
-#include <exception>            // std::exception
-#include <new>                  // std::bad_alloc
-#include <typeinfo>             // std::type_info in get_deleter
-#include <cstddef>              // std::size_t
+#include <cstddef>          	// std::size_t
+#include <cstdlib>          	// std::abort
+#include <exception>        	// std::exception
+#include <new>              	// std::bad_alloc
+#include <typeinfo>         	// std::type_info in get_deleter
 #include <bits/stl_algobase.h>  // std::swap
-#include <iosfwd>               // std::basic_ostream
-#include <cstdlib>              // std::abort
+#include <iosfwd>           	// std::basic_ostream
+#include <memory>
 
 #include <ext/atomicity.h>
 #include <ext/concurrence.h>
 #include <bits/functexcept.h>
+#include <bits/stl_function.h> 	// std::less
 #include <debug/debug.h>
-#include <tr1/type_traits>  // tr1::add_reference
 
+#include <tr1/type_traits>  	// tr1::add_reference
 #include <tr1/boost_shared_ptr.h>
 
 #endif

@@ -40,7 +40,7 @@
 
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(tr1)
+_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
   // Definition of default hash function std::tr1::hash<>.  The types for
   // which std::tr1::hash<T> is defined is in clause 6.3.3. of the PDTR.

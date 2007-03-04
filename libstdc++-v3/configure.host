@@ -64,7 +64,7 @@
 # Try to guess a default cpu_include_dir based on the name of the CPU.  We
 # cannot do this for os_include_dir; there are too many portable operating
 # systems out there.  :-)
-c_model=c_std
+c_model=c_global
 c_compatibility=no
 atomic_word_dir=cpu/generic
 atomicity_dir="cpu/generic"

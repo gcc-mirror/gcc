@@ -151,7 +151,7 @@
 // namespace std::tr1
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(tr1)
+_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
 #if _GLIBCXX_USE_C99_MATH_TR1
 
@@ -375,10 +375,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       __gnu_cxx::__enable_if<std::__is_floating<_Tp>::__value
                              || std::__is_floating<_Up>::__value,
 			     typename
-			     std::tr1::__promote_2<_Tp, _Up>::__type>::__type
+			     std::_GLIBCXX_TR1::__promote_2<_Tp, _Up>::__type>::__type
       atan2(_Tp __y, _Up __x)
       {
-	typedef typename std::tr1::__promote_2<_Tp, _Up>::__type __type;
+	typedef typename std::_GLIBCXX_TR1::__promote_2<_Tp, _Up>::__type __type;
 	return std::atan2(__type(__y), __type(__x));
       }
   } // namespace __detail

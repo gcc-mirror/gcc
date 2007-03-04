@@ -41,7 +41,7 @@
 
 namespace std
 { 
-_GLIBCXX_BEGIN_NAMESPACE(tr1)
+_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 namespace __detail
 {
   // Helper function: return distance(first, last) for forward
