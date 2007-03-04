@@ -218,6 +218,11 @@
 	(loop_prefetch_arrays): Do not prefetch in loops that iterate less than
 	prefetch latency.
 
+	* config/i386/driver-i386.c (describe_cache, detect_caches_amd,
+	decode_caches_intel, detect_caches_intel): New functions.
+	(host_detect_local_cpu): Use detect_caches_amd and
+	detect_caches_intel.
+
 2007-03-01  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (emit_move_complex_push): Export.
