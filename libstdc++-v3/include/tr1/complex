@@ -1,6 +1,6 @@
 // TR1 complex -*- C++ -*-
 
-// Copyright (C) 2006 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,13 +34,13 @@
 #ifndef _TR1_COMPLEX
 #define _TR1_COMPLEX 1
 
-#include "../complex"
+#include <complex>
 #include <tr1/common.h>
 
 // namespace std::tr1
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(tr1)
+_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
   // Forward declarations.
   template<typename _Tp> std::complex<_Tp> acos(const std::complex<_Tp>&);
@@ -59,7 +59,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     inline std::complex<_Tp>
     __complex_acos(const std::complex<_Tp>& __z)
     {
-      const std::complex<_Tp> __t = std::tr1::asin(__z);
+      const std::complex<_Tp> __t = std::_GLIBCXX_TR1::asin(__z);
       const _Tp __pi_2 = 1.5707963267948966192313216916397514L;
       return std::complex<_Tp>(__pi_2 - __t.real(), -__t.imag());
     }
@@ -96,7 +96,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     __complex_asin(const std::complex<_Tp>& __z)
     {
       std::complex<_Tp> __t(-__z.imag(), __z.real());
-      __t = std::tr1::asinh(__t);
+      __t = std::_GLIBCXX_TR1::asinh(__t);
       return std::complex<_Tp>(__t.imag(), -__t.real());
     }
 

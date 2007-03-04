@@ -40,7 +40,7 @@
 // namespace std::tr1
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(tr1)
+_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
   /// @brief  helper classes [4.3].
   template<typename _Tp, _Tp __v>

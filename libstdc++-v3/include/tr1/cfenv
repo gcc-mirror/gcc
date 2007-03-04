@@ -55,7 +55,7 @@
 // namespace std::tr1
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(tr1)
+_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
   // types
   using ::fenv_t;

@@ -1,6 +1,6 @@
 // TR1 functional -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 // Written by Douglas Gregor <doug.gregor -at- gmail.com>
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -35,7 +35,7 @@
 
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(tr1)
+_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
 template<typename _Res _GLIBCXX_COMMA _GLIBCXX_TEMPLATE_PARAMS>
   struct _Weak_result_type_impl<_Res(_GLIBCXX_TEMPLATE_ARGS)>
@@ -547,7 +547,7 @@ class _Function_handler<_Res(_GLIBCXX_TEMPLATE_ARGS), _Member _Class::*>
   static _Res
   _M_invoke(const _Any_data& __functor _GLIBCXX_COMMA _GLIBCXX_PARAMS)
   {
-    return std::tr1::mem_fn(_Base::_M_get_pointer(__functor)->__value)
+    return std::_GLIBCXX_TR1::mem_fn(_Base::_M_get_pointer(__functor)->__value)
              (_GLIBCXX_ARGS);
   }
 };
@@ -586,7 +586,7 @@ class _Function_handler<void(_GLIBCXX_TEMPLATE_ARGS), _Member _Class::*>
   static void
   _M_invoke(const _Any_data& __functor _GLIBCXX_COMMA _GLIBCXX_PARAMS)
   {
-    std::tr1::mem_fn(_Base::_M_get_pointer(__functor)->__value)
+    std::_GLIBCXX_TR1::mem_fn(_Base::_M_get_pointer(__functor)->__value)
       (_GLIBCXX_ARGS);
   }
 };

@@ -39,7 +39,7 @@
 
 namespace std
 { 
-_GLIBCXX_BEGIN_NAMESPACE(tr1)
+_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
   // XXX When we get typedef templates these class definitions
   // will be unnecessary.

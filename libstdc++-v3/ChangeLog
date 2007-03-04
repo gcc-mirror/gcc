@@ -1,3 +1,224 @@
+2007-03-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_CHEADERS): Add c_global.
+	* configure.host (c_model): Set default to c_global.
+	* configure: Regenerate.
+	* include/Makefile.am (c_compatibility_headers_extra): Make
+	conditional on GLIBCXX_C_HEADERS_COMPATIBILITY.
+	(c_base_headers_extra): Make conditional on GLIBCXX_C_HEADERS_EXTRA.
+	(c_compatibility_headers): Make conditional on c/c_std/c_global.
+	* include/Makefile.in: Regenerate.
+	* docs/html/configopts.html: Add c_global information to
+	--enable-cheaders. Eventually, "c_std" should mean "C" includes
+	that are in namespace std, with optional C++ "C" compatibility
+	includes to inject into global scope. And "c_global" should mean
+	"C" includes that are in the global namespace, with C++ includes
+	injecting into namespace std and no C++ "C" compatibility
+	includes.
+ 
+2007-03-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/c++config: Add _GLIBCXX_NAMEPACE_C.
+	Add _GLIBCXX_NAMESPACE_ASSOCIATION_CXX200x.
+	Add _GLIBCXX_TR1 as namespace macro.
+	Add namespace associations for std::__cxx200x conditionally.
+
+	* include/c_compatibility/assert.h: Correct doxygen markup,
+	conditionalize the global injections on _GLIBCXX_NAMESPACE_C.
+	* include/c_compatibility/ctype.h: Same.
+	* include/c_compatibility/errno.h: Same.
+	* include/c_compatibility/float.h: Same.
+	* include/c_compatibility/iso646.h: Same.
+	* include/c_compatibility/limits.h: Same.
+	* include/c_compatibility/locale.h: Same.
+	* include/c_compatibility/math.h: Same.
+	* include/c_compatibility/setjmp.h: Same.
+	* include/c_compatibility/signal.h: Same.
+	* include/c_compatibility/stdarg.h: Same.
+	* include/c_compatibility/stddef.h: Same.
+	* include/c_compatibility/stdio.h: Same.
+	* include/c_compatibility/stdlib.h: Same.
+	* include/c_compatibility/string.h: Same.
+	* include/c_compatibility/time.h: Same.
+	* include/c_compatibility/wchar.h: Same.
+	* include/c_compatibility/wctype.h: Same.
+
+	* include/c_compatibility/complex.h: Add.
+	* include/c_compatibility/fenv.h: Same.
+	* include/c_compatibility/inttypes.h: Same.
+	* include/c_compatibility/stdbool.h: Same.
+	* include/c_compatibility/stdint.h: Same.
+	* include/c_compatibility/tgmath.h: Same.
+
+	* include/c_global/cassert: Add, use include_next, use C++0x features
+	if -std=c++0x.
+	* include/c_global/cctype: Same.
+	* include/c_global/cerrno: Same.
+	* include/c_global/cfloat: Same.
+	* include/c_global/ciso646: Same.
+	* include/c_global/climits: Same.
+	* include/c_global/clocale: Same.
+	* include/c_global/cmath: Same.
+	* include/c_global/cmath.tcc: Same.
+	* include/c_global/csetjmp: Same.
+	* include/c_global/csignal: Same.
+	* include/c_global/cstdarg: Same.
+	* include/c_global/cstddef: Same.
+	* include/c_global/cstdio: Same.
+	* include/c_global/cstdlib: Same.
+	* include/c_global/cstring: Same.
+	* include/c_global/ctime: Same.
+	* include/c_global/cwchar: Same.
+	* include/c_global/cwctype: Same.
+
+	* include/c_global/ccomplex: Add.
+	* include/c_global/cfenv: Add.
+	* include/c_global/cinttypes: Add. 
+	* include/c_global/cstdbool: Add.
+	* include/c_global/cstdint: Add.
+	* include/c_global/ctgmath: Add.
+
+	* include/std/algorithm: Use C++0x features if -std=c++0x.	
+	* include/std/bitset: Same.
+	* include/std/complex: Same.
+	* include/std/deque: Same.
+	* include/std/fstream: Same.
+	* include/std/functional: Same.
+	* include/std/iomanip: Same.
+	* include/std/ios: Same.
+	* include/std/iosfwd: Same.
+	* include/std/iostream: Same.
+	* include/std/istream: Same.
+	* include/std/iterator: Same.
+	* include/std/limits: Same.
+	* include/std/list: Same.
+	* include/std/locale: Same.
+	* include/std/map: Same.
+	* include/std/memory: Same.
+	* include/std/numeric: Same.
+	* include/std/ostream: Same.
+	* include/std/queue: Same.
+	* include/std/set: Same.
+	* include/std/sstream: Same.
+	* include/std/stack: Same.
+	* include/std/stdexcept: Same.
+	* include/std/streambuf: Same.
+	* include/std/string: Same.
+	* include/std/utility: Same.
+	* include/std/valarray: Same.
+	* include/std/vector: Same.
+
+	* include/std/array: Add.
+	* include/std/random: Add.
+	* include/std/regex: Add.
+	* include/std/tuple: Add.
+	* include/std/type_traits: Add.
+	* include/std/unordered_map: Add.
+	* include/std/unordered_set: Add.
+	* include/std/c++0x_warning.h: Add.
+	
+	* include/tr1/array: Switch namespaces based on _GLIBCXX_TR1.
+	* include/tr1/boost_shared_ptr.h: Same.
+	* include/tr1/cctype: Same.
+	* include/tr1/cfenv: Same.
+	* include/tr1/cinttypes: Same.
+	* include/tr1/cmath: Same.
+	* include/tr1/common.h: Same.
+	* include/tr1/complex: Same.
+	* include/tr1/cstdint: Same.
+	* include/tr1/cstdio: Same.
+	* include/tr1/cstdlib: Same.
+	* include/tr1/cwchar: Same.
+	* include/tr1/cwctype: Same.
+	* include/tr1/functional: Same.
+	* include/tr1/functional_hash.h: Same.
+	* include/tr1/functional_iterate.h: Same.
+	* include/tr1/hashtable: Same.
+	* include/tr1/hashtable_policy.h: Same.
+	* include/tr1/math.h: Same.
+	* include/tr1/memory: Same.
+	* include/tr1/random: Same.
+	* include/tr1/random.tcc: Same.
+	* include/tr1/ref_fwd.h: Same.
+	* include/tr1/repeat.h: Same.
+	* include/tr1/stdlib.h: Same.
+	* include/tr1/tuple: Same.
+	* include/tr1/tuple_iterate.h: Same.
+	* include/tr1/type_traits: Same.
+	* include/tr1/type_traits_fwd.h: Same.
+	* include/tr1/unordered_map: Same.
+	* include/tr1/unordered_set: Same.
+	* include/tr1/utility: Same.
+
+	* include/tr1/ccomplex: Add.
+	* include/tr1/complex.h: Add.
+	* include/tr1/regex: Add.
+
+	* include/Makefile.am: Add C++0x headers, "C" compatibility headers.
+	* include/Makefile.in: Regenerate.
+
+	* testsuite/tr1/headers.cc: Add in regex/complex.
+
+	* testsuite/17_intro/headers/c++200x/all.cc: New.
+	* testsuite/17_intro/headers/c++200x/all_multiple_inclusion.cc: Same.
+	* testsuite/17_intro/using_namespace_std_tr1_neg.cc: Same.
+	* testsuite/18_support/headers/cstdbool/std_c++0x_neg.cc: Same.
+	* testsuite/18_support/headers/cstdint/std_c++0x_neg.cc: Same.
+	* testsuite/18_support/headers/cstdint/types_std_c++0x.cc: Same.
+	* testsuite/20_util/enable_shared_from_this/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/20_util/headers/functional/types_std_c++0x.cc: Same.
+	* testsuite/20_util/headers/functional/
+	using_namespace_std_placeholders.cc: Same.
+	* testsuite/20_util/headers/memory/types_std_c++0x.cc: Same.
+	* testsuite/20_util/headers/type_traits/std_c++0x_neg.cc: Same.
+	* testsuite/20_util/headers/type_traits/types_std_c++0x.cc: Same.
+	* testsuite/20_util/shared_ptr/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/20_util/weak_ptr/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/23_containers/array/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/23_containers/hash/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/23_containers/headers/array/std_c++0x_neg.cc: Same.
+	* testsuite/23_containers/headers/tuple/std_c++0x_neg.cc: Same.
+	* testsuite/23_containers/headers/tuple/types_std_c++0x.cc: Same.
+	* testsuite/23_containers/headers/unordered_map/std_c++0x_neg.cc: Same.
+	* testsuite/23_containers/headers/unordered_set/std_c++0x_neg.cc: Same.
+	* testsuite/23_containers/tuple/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/23_containers/unordered_set/requirements/
+	explicit_instantiation.cc: Same.
+	* testsuite/26_numerics/headers/ccomplex/std_c++0x_neg.cc: Same.
+	* testsuite/26_numerics/headers/cfenv/std_c++0x_neg.cc: Same.
+	* testsuite/26_numerics/headers/cfenv/types_std_c++0x.cc: Same.
+	* testsuite/26_numerics/headers/cmath/types_std_c++0x.cc: Same.
+	* testsuite/26_numerics/headers/cstdlib/types_std_c++0x.cc: Same.
+	* testsuite/26_numerics/headers/ctgmath/std_c++0x_neg.cc: Same.
+	* testsuite/26_numerics/headers/random/std_c++0x_neg.cc: Same.
+	* testsuite/26_numerics/headers/random/types_std_c++0x.cc: Same.
+	* testsuite/27_io/headers/cinttypes/std_c++0x_neg.cc: Same.
+	* testsuite/27_io/headers/cinttypes/types_std_c++0x.cc: Same.
+	* testsuite/28_regex/headers/regex/std_c++0x_neg.cc: Same.
+
+	* testsuite/tr1/8_c_compatibility/cfenv/types.cc: Rename ...
+	* testsuite/tr1/8_c_compatibility/cinttypes/types.cc: Same.
+	* testsuite/tr1/8_c_compatibility/cmath/types.cc: Same.
+	* testsuite/tr1/8_c_compatibility/cstdint/types.cc: Same.
+	* testsuite/tr1/8_c_compatibility/cstdlib/types.cc: Same.
+	* testsuite/tr1/8_c_compatibility/cfenv/types_std_tr1.cc: ...to this.
+	* testsuite/tr1/8_c_compatibility/cinttypes/types_std_tr1.cc: Same.
+	* testsuite/tr1/8_c_compatibility/cmath/types_std_tr1.cc: Same.
+	* testsuite/tr1/8_c_compatibility/cstdint/types_std_tr1.cc: Same.
+	* testsuite/tr1/8_c_compatibility/cstdlib/types_std_tr1.cc: Same.
+
 2007-03-03  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/31031

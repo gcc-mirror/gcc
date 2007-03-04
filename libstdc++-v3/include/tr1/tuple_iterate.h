@@ -36,7 +36,7 @@
 
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(tr1)
+_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
 /// @brief class tuple_size
 template<_GLIBCXX_TEMPLATE_PARAMS>

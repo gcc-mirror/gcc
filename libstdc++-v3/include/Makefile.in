@@ -124,9 +124,13 @@ GLIBCXX_BUILD_PCH_TRUE = @GLIBCXX_BUILD_PCH_TRUE@
 GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE = @GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE@
 GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE = @GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE@
 GLIBCXX_C_HEADERS_C_FALSE = @GLIBCXX_C_HEADERS_C_FALSE@
+GLIBCXX_C_HEADERS_C_GLOBAL_FALSE = @GLIBCXX_C_HEADERS_C_GLOBAL_FALSE@
+GLIBCXX_C_HEADERS_C_GLOBAL_TRUE = @GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@
 GLIBCXX_C_HEADERS_C_STD_FALSE = @GLIBCXX_C_HEADERS_C_STD_FALSE@
 GLIBCXX_C_HEADERS_C_STD_TRUE = @GLIBCXX_C_HEADERS_C_STD_TRUE@
 GLIBCXX_C_HEADERS_C_TRUE = @GLIBCXX_C_HEADERS_C_TRUE@
+GLIBCXX_C_HEADERS_EXTRA_FALSE = @GLIBCXX_C_HEADERS_EXTRA_FALSE@
+GLIBCXX_C_HEADERS_EXTRA_TRUE = @GLIBCXX_C_HEADERS_EXTRA_TRUE@
 GLIBCXX_HOSTED_FALSE = @GLIBCXX_HOSTED_FALSE@
 GLIBCXX_HOSTED_TRUE = @GLIBCXX_HOSTED_TRUE@
 GLIBCXX_INCLUDES = @GLIBCXX_INCLUDES@
@@ -259,7 +263,9 @@ std_srcdir = ${glibcxx_srcdir}/include/std
 std_builddir = .
 std_headers = \
 	${std_srcdir}/algorithm \
+	${std_srcdir}/array \
 	${std_srcdir}/bitset \
+	${std_srcdir}/c++0x_warning.h \
 	${std_srcdir}/complex \
 	${std_srcdir}/deque \
 	${std_srcdir}/fstream \
@@ -278,12 +284,18 @@ std_headers = \
 	${std_srcdir}/numeric \
 	${std_srcdir}/ostream \
 	${std_srcdir}/queue \
+	${std_srcdir}/random \
+	${std_srcdir}/regex \
 	${std_srcdir}/set \
 	${std_srcdir}/sstream \
 	${std_srcdir}/stack \
 	${std_srcdir}/stdexcept \
 	${std_srcdir}/streambuf \
 	${std_srcdir}/string \
+	${std_srcdir}/tuple \
+	${std_srcdir}/type_traits \
+	${std_srcdir}/unordered_map \
+	${std_srcdir}/unordered_set \
 	${std_srcdir}/utility \
 	${std_srcdir}/valarray \
 	${std_srcdir}/vector
@@ -753,6 +765,7 @@ tr1_headers = \
 	${tr1_srcdir}/bind_repeat.h \
 	${tr1_srcdir}/bind_iterate.h \
 	${tr1_srcdir}/boost_shared_ptr.h \
+	${tr1_srcdir}/ccomplex \
 	${tr1_srcdir}/cctype \
 	${tr1_srcdir}/cfenv \
 	${tr1_srcdir}/cfloat \
@@ -761,6 +774,7 @@ tr1_headers = \
 	${tr1_srcdir}/cmath \
 	${tr1_srcdir}/common.h \
 	${tr1_srcdir}/complex \
+	${tr1_srcdir}/complex.h \
 	${tr1_srcdir}/cstdarg \
 	${tr1_srcdir}/cstdbool \
 	${tr1_srcdir}/cstdint \
@@ -787,6 +801,7 @@ tr1_headers = \
 	${tr1_srcdir}/random.tcc \
 	${tr1_srcdir}/ref_fwd.h \
 	${tr1_srcdir}/ref_wrap_iterate.h \
+	${tr1_srcdir}/regex \
 	${tr1_srcdir}/repeat.h \
 	${tr1_srcdir}/stdarg.h \
 	${tr1_srcdir}/stdbool.h \
@@ -806,14 +821,17 @@ tr1_headers = \
 	${tr1_srcdir}/wctype.h
 
 
-# This is the common subset of files that all three "C" header models use.
+# This is the common subset of C++ files that all three "C" header models use.
 c_base_srcdir = $(C_INCLUDE_DIR)
 c_base_builddir = .
 c_base_headers = \
 	${c_base_srcdir}/cassert \
+	${c_base_srcdir}/ccomplex \
 	${c_base_srcdir}/cctype \
 	${c_base_srcdir}/cerrno \
+	${c_base_srcdir}/cfenv \
 	${c_base_srcdir}/cfloat \
+	${c_base_srcdir}/cinttypes \
 	${c_base_srcdir}/ciso646 \
 	${c_base_srcdir}/climits \
 	${c_base_srcdir}/clocale \
@@ -821,10 +839,13 @@ c_base_headers = \
 	${c_base_srcdir}/csetjmp \
 	${c_base_srcdir}/csignal \
 	${c_base_srcdir}/cstdarg \
+	${c_base_srcdir}/cstdbool \
 	${c_base_srcdir}/cstddef \
+	${c_base_srcdir}/cstdint \
 	${c_base_srcdir}/cstdio \
 	${c_base_srcdir}/cstdlib \
 	${c_base_srcdir}/cstring \
+	${c_base_srcdir}/ctgmath \
 	${c_base_srcdir}/ctime \
 	${c_base_srcdir}/cwchar \
 	${c_base_srcdir}/cwctype
@@ -833,25 +854,36 @@ c_base_headers = \
 # "C" compatibility headers.
 c_compatibility_srcdir = ${glibcxx_srcdir}/include/c_compatibility
 c_compatibility_builddir = .
-c_compatibility_headers = \
-	${c_compatibility_srcdir}/assert.h \
-	${c_compatibility_srcdir}/ctype.h \
-	${c_compatibility_srcdir}/errno.h \
-	${c_compatibility_srcdir}/float.h \
-	${c_compatibility_srcdir}/iso646.h \
-	${c_compatibility_srcdir}/limits.h \
-	${c_compatibility_srcdir}/locale.h \
-	${c_compatibility_srcdir}/math.h \
-	${c_compatibility_srcdir}/setjmp.h \
-	${c_compatibility_srcdir}/signal.h \
-	${c_compatibility_srcdir}/stdarg.h \
-	${c_compatibility_srcdir}/stddef.h \
-	${c_compatibility_srcdir}/stdio.h \
-	${c_compatibility_srcdir}/stdlib.h \
-	${c_compatibility_srcdir}/string.h \
-	${c_compatibility_srcdir}/time.h \
-	${c_compatibility_srcdir}/wchar.h \
-	${c_compatibility_srcdir}/wctype.h
+@GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@c_compatibility_headers = \
+@GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/complex.h \
+@GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/tgmath.h 
+
+@GLIBCXX_C_HEADERS_C_STD_TRUE@c_compatibility_headers = 
+@GLIBCXX_C_HEADERS_C_TRUE@c_compatibility_headers = \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/assert.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/complex.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/ctype.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/errno.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/fenv.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/float.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/inttypes.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/iso646.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/limits.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/locale.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/math.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/setjmp.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/signal.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/stdarg.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/stdbool.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/stddef.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/stdint.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/stdio.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/stdlib.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/string.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/tgmath.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/time.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/wchar.h \
+@GLIBCXX_C_HEADERS_C_TRUE@	${c_compatibility_srcdir}/wctype.h
 
 
 # Debug mode headers
@@ -884,12 +916,12 @@ debug_headers = \
 	${debug_srcdir}/string \
 	${debug_srcdir}/vector
 
-@GLIBCXX_C_HEADERS_C_STD_FALSE@c_base_headers_extra = 
+@GLIBCXX_C_HEADERS_EXTRA_FALSE@c_base_headers_extra = 
 
 # Some of the different "C" header models need extra files.
 # Some "C" header schemes require the "C" compatibility headers.
 # For --enable-cheaders=c_std
-@GLIBCXX_C_HEADERS_C_STD_TRUE@c_base_headers_extra = ${c_base_srcdir}/cmath.tcc
+@GLIBCXX_C_HEADERS_EXTRA_TRUE@c_base_headers_extra = ${c_base_srcdir}/cmath.tcc
 @GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE@c_compatibility_headers_extra = 
 @GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE@c_compatibility_headers_extra = ${c_compatibility_headers}
 host_srcdir = ${glibcxx_srcdir}/$(OS_INC_SRCDIR)
@@ -1342,7 +1374,7 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	    -e '/[ 	]_GLIBCXX_LONG_DOUBLE_COMPAT[ 	]/d' \
 	    < ${CONFIG_HEADER} >> $@ ;\
 	echo "" >> $@ ;\
-	echo "#endif // _CXXCONFIG_" >> $@
+	echo "#endif // _GLIBCXX_CXX_CONFIG_H" >> $@
 
 ${host_builddir}/gthr.h: ${toplevel_srcdir}/gcc/gthr.h stamp-${host_alias}
 	sed -e '/^#pragma/b' \

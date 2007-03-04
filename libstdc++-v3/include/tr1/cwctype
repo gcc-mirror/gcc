@@ -43,7 +43,7 @@
 // namespace std::tr1
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(tr1)
+_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
 #if _GLIBCXX_HAVE_ISWBLANK
   using std::iswblank;

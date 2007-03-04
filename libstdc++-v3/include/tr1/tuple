@@ -41,7 +41,7 @@
 
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(tr1)
+_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
  // An implementation specific class which is used in the tuple class
  // when the tuple is not maximum possible size.

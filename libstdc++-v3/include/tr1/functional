@@ -36,16 +36,18 @@
 
 #pragma GCC system_header
 
-#include "../functional"
+#include <cstdlib>              // for std::abort
+#include <cmath>                // for std::frexp
+#include <string>               // for std::tr1::hash
+#include <functional>
 #include <typeinfo>
+#include <tr1/tuple>
 #include <tr1/type_traits>
 #include <ext/type_traits.h>
-#include <cstdlib>  // for std::abort
-#include <tr1/tuple>
 
 namespace std
 {
-_GLIBCXX_BEGIN_NAMESPACE(tr1)
+_GLIBCXX_BEGIN_NAMESPACE(_GLIBCXX_TR1)
 
   template<typename _MemberPointer>
     class _Mem_fn;
@@ -636,7 +638,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       typename result<_Mu(_Arg, _Tuple)>::type
       operator()(const volatile _Arg&, const _Tuple& __tuple) const volatile
       {
-        return ::std::tr1::get<(is_placeholder<_Arg>::value - 1)>(__tuple);
+        return ::std::_GLIBCXX_TR1::get<(is_placeholder<_Arg>::value - 1)>(__tuple);
       }
     };
 

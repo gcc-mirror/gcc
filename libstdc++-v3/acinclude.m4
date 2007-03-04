@@ -1264,19 +1264,30 @@ dnl
 dnl --enable-cheaders= [does stuff].
 dnl --disable-cheaders [does not do anything, really].
 dnl  +  Usage:  GLIBCXX_ENABLE_CHEADERS[(DEFAULT)]
-dnl       Where DEFAULT is either `c' or `c_std'.
+dnl       Where DEFAULT is either 'c' or 'c_std' or 'c_global'.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_CHEADERS], [
   GLIBCXX_ENABLE(cheaders,$1,[=KIND],
-    [construct "C" headers for g++], [permit c|c_std])
+    [construct "C" headers for g++], [permit c|c_std|c_global])
   AC_MSG_NOTICE("C" header strategy set to $enable_cheaders)
 
   C_INCLUDE_DIR='${glibcxx_srcdir}/include/'$enable_cheaders
 
+  # Allow overrides to configure.host here.
+  if test $enable_cheaders = c_global; then
+     c_compatibility=yes
+  fi
+
+  if test $enable_cheaders = c_global || test $enable_cheaders = c_std; then
+     c_extra=yes
+  fi
+
   AC_SUBST(C_INCLUDE_DIR)
   GLIBCXX_CONDITIONAL(GLIBCXX_C_HEADERS_C, test $enable_cheaders = c)
   GLIBCXX_CONDITIONAL(GLIBCXX_C_HEADERS_C_STD, test $enable_cheaders = c_std)
+  GLIBCXX_CONDITIONAL(GLIBCXX_C_HEADERS_C_GLOBAL, test $enable_cheaders = c_global)
   GLIBCXX_CONDITIONAL(GLIBCXX_C_HEADERS_COMPATIBILITY, test $c_compatibility = yes)
+  GLIBCXX_CONDITIONAL(GLIBCXX_C_HEADERS_EXTRA, test $c_extra = yes)
 ])
 
 
