@@ -45,7 +45,8 @@ GFC_COMPLEX_10
 pow_c10_i8 (GFC_COMPLEX_10 a, GFC_INTEGER_8 b)
 {
   GFC_COMPLEX_10 pow, x;
-  GFC_INTEGER_8 n, u;
+  GFC_INTEGER_8 n;
+  GFC_UINTEGER_8 u;
   
   n = b;
   x = a;
@@ -55,10 +56,13 @@ pow_c10_i8 (GFC_COMPLEX_10 a, GFC_INTEGER_8 b)
       if (n < 0)
 	{
 
-	  n = -n;
+	  u = -n;
 	  x = pow / x;
 	}
-      u = n;
+      else
+	{
+	   u = n;
+	}
       for (;;)
 	{
 	  if (u & 1)

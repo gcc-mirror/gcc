@@ -45,7 +45,8 @@ GFC_REAL_4
 pow_r4_i16 (GFC_REAL_4 a, GFC_INTEGER_16 b)
 {
   GFC_REAL_4 pow, x;
-  GFC_INTEGER_16 n, u;
+  GFC_INTEGER_16 n;
+  GFC_UINTEGER_16 u;
   
   n = b;
   x = a;
@@ -55,10 +56,13 @@ pow_r4_i16 (GFC_REAL_4 a, GFC_INTEGER_16 b)
       if (n < 0)
 	{
 
-	  n = -n;
+	  u = -n;
 	  x = pow / x;
 	}
-      u = n;
+      else
+	{
+	   u = n;
+	}
       for (;;)
 	{
 	  if (u & 1)
