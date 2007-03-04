@@ -6725,7 +6725,7 @@ tree_contains_struct_check_failed (const tree node,
 				   const char *function)
 {
   internal_error
-    ("tree check: expected tree that contains %qs structure, have %qs  in %s, at %s:%d",
+    ("tree check: expected tree that contains %qs structure, have %qs in %s, at %s:%d",
      TS_ENUM_NAME(en),
      tree_code_name[TREE_CODE (node)], function, trim_filename (file), line);
 }
