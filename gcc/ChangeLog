@@ -1,3 +1,10 @@
+2007-03-04  Roman Zippel <zippel@linux-m68k.org>
+            Nathan Sidwell  <nathan@codesourcery.com>
+
+	* emit-rtl.c (find_auto_inc): New.
+	(try_split): recreate REG_INC notes,
+	Use regular for loops rather than whiles.
+
 2007-03-03  Andreas Schwab  <schwab@suse.de>
 
 	* configure.ac (HAVE_AS_REL16): Move test back to correct place.

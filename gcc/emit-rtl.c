@@ -3077,6 +3077,37 @@ prev_cc0_setter (rtx insn)
 }
 #endif
 
+#ifdef AUTO_INC_DEC
+/* Find a RTX_AUTOINC class rtx which matches DATA.  */
+
+static int
+find_auto_inc (rtx *xp, void *data)
+{
+  rtx x = *xp;
+  rtx reg = data;
+
+  if (GET_RTX_CLASS (GET_CODE (x)) != RTX_AUTOINC)
+    return 0;
+
+  switch (GET_CODE (x))
+    {
+      case PRE_DEC:
+      case PRE_INC:
+      case POST_DEC:
+      case POST_INC:
+      case PRE_MODIFY:
+      case POST_MODIFY:
+	if (rtx_equal_p (reg, XEXP (x, 0)))
+	  return 1;
+	break;
+
+      default:
+	gcc_unreachable ();
+    }
+  return -1;
+}
+#endif
+
 /* Increment the label uses for all labels present in rtx.  */
 
 static void
@@ -3201,8 +3232,7 @@ try_split (rtx pat, rtx trial, int last)
       switch (REG_NOTE_KIND (note))
 	{
 	case REG_EH_REGION:
-	  insn = insn_last;
-	  while (insn != NULL_RTX)
+	  for (insn = insn_last; insn != NULL_RTX; insn = PREV_INSN (insn))
 	    {
 	      if (CALL_P (insn)
 		  || (flag_non_call_exceptions && INSN_P (insn)
@@ -3211,36 +3241,44 @@ try_split (rtx pat, rtx trial, int last)
 		  = gen_rtx_EXPR_LIST (REG_EH_REGION,
 				       XEXP (note, 0),
 				       REG_NOTES (insn));
-	      insn = PREV_INSN (insn);
 	    }
 	  break;
 
 	case REG_NORETURN:
 	case REG_SETJMP:
-	  insn = insn_last;
-	  while (insn != NULL_RTX)
+	  for (insn = insn_last; insn != NULL_RTX; insn = PREV_INSN (insn))
 	    {
 	      if (CALL_P (insn))
 		REG_NOTES (insn)
 		  = gen_rtx_EXPR_LIST (REG_NOTE_KIND (note),
 				       XEXP (note, 0),
 				       REG_NOTES (insn));
-	      insn = PREV_INSN (insn);
 	    }
 	  break;
 
 	case REG_NON_LOCAL_GOTO:
-	  insn = insn_last;
-	  while (insn != NULL_RTX)
+	  for (insn = insn_last; insn != NULL_RTX; insn = PREV_INSN (insn))
 	    {
 	      if (JUMP_P (insn))
 		REG_NOTES (insn)
 		  = gen_rtx_EXPR_LIST (REG_NOTE_KIND (note),
 				       XEXP (note, 0),
 				       REG_NOTES (insn));
-	      insn = PREV_INSN (insn);
 	    }
 	  break;
+
+#ifdef AUTO_INC_DEC
+	case REG_INC:
+	  for (insn = insn_last; insn != NULL_RTX; insn = PREV_INSN (insn))
+	    {
+	      rtx reg = XEXP (note, 0);
+	      if (!FIND_REG_INC_NOTE (insn, reg)
+		  && for_each_rtx (&PATTERN (insn), find_auto_inc, reg) > 0)
+		REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, reg,
+						      REG_NOTES (insn));
+	    }
+	  break;
+#endif
 
 	default:
 	  break;

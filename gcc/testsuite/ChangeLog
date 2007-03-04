@@ -1,3 +1,8 @@
+2007-03-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc.target/m68k/m68k.exp: New.
+	* gcc.target/m68k/crash1.c: New.
+
 2007-03-03  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/c_by_val.c: Use int64_t instead of long
