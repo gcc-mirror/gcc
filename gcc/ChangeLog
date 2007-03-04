@@ -1,3 +1,9 @@
+2007-03-04  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/30744
+	* fold-const.c (fold_comparison): Enforce type consistency when
+	transforming ~X op ~Y to Y op X, and ~X op C to X op' ~C.
+
 2007-03-04  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-ssa-address.c (create_mem_ref): Do not put an expression

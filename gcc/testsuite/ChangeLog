@@ -1,3 +1,8 @@
+2007-03-04  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/30744
+	* gcc.dg/pr30744-1.c: New test case.
+
 2007-03-04  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/c_by_val.c: Use _Complex instead of a struct.
