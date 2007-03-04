@@ -1,6 +1,6 @@
 // TR1 utility -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -87,13 +87,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     };
 
    template<int _Int, class _Tp1, class _Tp2>
-     typename tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&
-     get(pair<_Tp1, _Tp2>& __in)
+     inline typename tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&
+     get(std::pair<_Tp1, _Tp2>& __in)
      { return __pair_get<_Int>::__get(__in); }
  
    template<int _Int, class _Tp1, class _Tp2>
-     const typename tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&
-     get(const pair<_Tp1, _Tp2>& __in)
+     inline const typename tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&
+     get(const std::pair<_Tp1, _Tp2>& __in)
      { return __pair_get<_Int>::__const_get(__in); }
 
 _GLIBCXX_END_NAMESPACE

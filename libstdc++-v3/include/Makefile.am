@@ -1,6 +1,6 @@
 ## Makefile for the include subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+## Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
 ## Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
@@ -579,6 +579,7 @@ tr1_headers = \
 	${tr1_srcdir}/fenv.h \
 	${tr1_srcdir}/float.h \
 	${tr1_srcdir}/functional \
+	${tr1_srcdir}/functional_hash.h \
 	${tr1_srcdir}/functional_iterate.h \
 	${tr1_srcdir}/hashtable \
 	${tr1_srcdir}/hashtable_policy.h \
