@@ -1,3 +1,8 @@
+2007-03-04  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/30895
+	* tree.c (cp_tree_equal): Properly handle COMPLEX_CST trees.
+
 2007-03-03  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/15787
