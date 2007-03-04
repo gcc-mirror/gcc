@@ -1,3 +1,7 @@
+2007-03-04  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/c_by_val.c: Use _Complex instead of a struct.
+
 2007-03-04 Francois-Xavier Coudert <coudert@clipper.ens.fr>
 
 	PR target/30406
