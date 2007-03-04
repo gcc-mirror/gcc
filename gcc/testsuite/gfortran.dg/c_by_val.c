@@ -1,15 +1,14 @@
 /*  Passing from fortran to C by value, using %VAL.  */
 
 #include <inttypes.h>
+#include <complex.h>
 
-typedef struct { float r, i; } complex;
-typedef struct { double r, i; } complex8;
 extern void f_to_f__ (float*, float, float*, float**);
 extern void f_to_f8__ (double*, double, double*, double**);
 extern void i_to_i__ (int*, int, int*, int**);
 extern void i_to_i8__ (int64_t*, int64_t, int64_t*, int64_t**);
-extern void c_to_c__ (complex*, complex, complex*, complex**);
-extern void c_to_c8__ (complex8*, complex8, complex8*, complex8**);
+extern void c_to_c__ (float _Complex*, float _Complex, float _Complex*, float _Complex**);
+extern void c_to_c8__ (double _Complex*, double _Complex, double _Complex*, double _Complex**);
 extern void abort (void);
 
 void
@@ -53,29 +52,21 @@ i_to_i8__(int64_t *retval, int64_t i1, int64_t *i2, int64_t **i3)
 }
 
 void
-c_to_c__(complex *retval, complex c1, complex *c2, complex **c3)
+c_to_c__(float _Complex *retval, float _Complex c1, float _Complex *c2, float _Complex **c3)
 {
-  if ( c1.r != c2->r ) abort();
-  if ( c1.i != c2->i ) abort();
-  if ( c1.r != (*c3)->r ) abort();
-  if ( c1.i != (*c3)->i ) abort();
-  c1.r = 0.0;
-  c1.i = 0.0;
-  retval->r = c2->r * 4.0;
-  retval->i = c2->i * 4.0;
+  if ( c1 != *c2    ) abort();
+  if ( c1 != *(*c3) ) abort();
+  c1 = 0.0 + 0.0 * _Complex_I;
+  *retval = (*c2) * 4.0;
   return;
 }
 
 void
-c_to_c8__(complex8 *retval, complex8 c1, complex8 *c2, complex8 **c3)
+c_to_c8__(double _Complex *retval, double _Complex c1, double _Complex *c2, double _Complex **c3)
 {
-  if ( c1.r != c2->r ) abort();
-  if ( c1.i != c2->i ) abort();
-  if ( c1.r != (*c3)->r ) abort();
-  if ( c1.i != (*c3)->i ) abort();
-  c1.r = 0.0;
-  c1.i = 0.0;
-  retval->r = c2->r * 4.0;
-  retval->i = c2->i * 4.0;
+  if ( c1 != *c2    ) abort();
+  if ( c1 != *(*c3) ) abort();
+  c1 = 0.0 +  0.0 * _Complex_I;;
+  *retval = (*c2) * 4.0;
   return;
 }
