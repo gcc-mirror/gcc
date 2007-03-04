@@ -569,7 +569,7 @@ tree
 create_mem_ref (block_stmt_iterator *bsi, tree type, aff_tree *addr)
 {
   tree mem_ref, tmp;
-  tree addr_type = build_pointer_type (type), atype;
+  tree atype;
   struct mem_address parts;
 
   addr_to_parts (addr, &parts);
@@ -597,18 +597,23 @@ create_mem_ref (block_stmt_iterator *bsi, tree type, aff_tree *addr)
 
   if (parts.symbol)
     {
-      tmp = fold_convert (addr_type,
-			  build_addr (parts.symbol, current_function_decl));
+      tmp = build_addr (parts.symbol, current_function_decl);
+      gcc_assert (is_gimple_val (tmp));
     
       /* Add the symbol to base, eventually forcing it to register.  */
       if (parts.base)
 	{
+	  gcc_assert (TREE_TYPE (parts.base) == sizetype);
+
 	  if (parts.index)
-	    parts.base = force_gimple_operand_bsi (bsi,
-			fold_build2 (PLUS_EXPR, addr_type,
-				     fold_convert (addr_type, parts.base),
+	    {
+	      atype = TREE_TYPE (tmp);
+	      parts.base = force_gimple_operand_bsi (bsi,
+			fold_build2 (PLUS_EXPR, atype,
+				     fold_convert (atype, parts.base),
 				     tmp),
 			true, NULL_TREE);
+	    }
 	  else
 	    {
 	      parts.index = parts.base;

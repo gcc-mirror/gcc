@@ -1,3 +1,8 @@
+2007-03-04  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-ssa-address.c (create_mem_ref): Do not put an expression
+	containing a cast to the base of TARGET_MEM_REF.
+
 2007-03-04  Martin Michlmayr  <tbm@cyrius.com>
 
 	* tree.c (tree_contains_struct_check_failed): Remove spurious
@@ -10,7 +15,7 @@
 	instead of precision.
 
 2007-03-04  Roman Zippel <zippel@linux-m68k.org>
-            Nathan Sidwell  <nathan@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
 
 	* emit-rtl.c (find_auto_inc): New.
 	(try_split): recreate REG_INC notes,
