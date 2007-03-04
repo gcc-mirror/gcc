@@ -46,7 +46,8 @@ rtype_name
 `pow_'rtype_code`_'atype_code (rtype_name a, atype_name b)
 {
   rtype_name pow, x;
-  atype_name n, u;
+  atype_name n;
+  `GFC_UINTEGER_'atype_kind` u;'
   
   n = b;
   x = a;
@@ -62,11 +63,14 @@ ifelse(rtype_letter,i,`dnl
 	    return (n & 1) ? -1 : 1;
 	  return (x == 0) ? 1 / x : 0;
 ',`
-	  n = -n;
+	  u = -n;
 	  x = pow / x;
 ')dnl
 	}
-      u = n;
+      else
+	{
+	   u = n;
+	}
       for (;;)
 	{
 	  if (u & 1)

@@ -1,3 +1,8 @@
+2007-03-04  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/30981
+	* gfortran.dg/integer_exponentiation_1.f90:  New test.
+
 2007-03-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.target/m68k/m68k.exp: New.
