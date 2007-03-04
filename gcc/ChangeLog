@@ -1,3 +1,8 @@
+2007-03-04  Martin Michlmayr  <tbm@cyrius.com>
+
+	* tree.c (tree_contains_struct_check_failed): Remove spurious
+	whitespace from error message.
+
 2007-03-04 Andrew Pinski <andrew_pinski@playstation.sony.com>
 
 	PR target/30406
