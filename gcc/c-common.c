@@ -1250,9 +1250,8 @@ convert_and_check (tree type, tree expr)
   
   result = convert (type, expr);
 
-  if (skip_evaluation)
+  if (skip_evaluation || TREE_OVERFLOW_P (expr))
     return result;
-
 
   if (TREE_CODE (expr) == INTEGER_CST
       && (TREE_CODE (type) == INTEGER_TYPE
@@ -1274,21 +1273,19 @@ convert_and_check (tree type, tree expr)
           else if (warn_conversion)
             conversion_warning (type, expr);
         }
-      else
-        {
-          if (!int_fits_type_p (expr, c_common_unsigned_type (type)))
-            warning (OPT_Woverflow,
-                     "overflow in implicit constant conversion");
-          /* No warning for converting 0x80000000 to int.  */
-          else if (pedantic
-                   && (TREE_CODE (TREE_TYPE (expr)) != INTEGER_TYPE
-                       || TYPE_PRECISION (TREE_TYPE (expr))
-                       != TYPE_PRECISION (type)))
-            warning (OPT_Woverflow,
-                     "overflow in implicit constant conversion");
-          else if (warn_conversion)
-            conversion_warning (type, expr);
-        }
+      else if (!int_fits_type_p (expr, c_common_unsigned_type (type))) 
+	warning (OPT_Woverflow,
+		 "overflow in implicit constant conversion");
+      /* No warning for converting 0x80000000 to int.  */
+      else if (pedantic
+	       && (TREE_CODE (TREE_TYPE (expr)) != INTEGER_TYPE
+		   || TYPE_PRECISION (TREE_TYPE (expr))
+		   != TYPE_PRECISION (type)))
+	warning (OPT_Woverflow,
+		 "overflow in implicit constant conversion");
+
+      else if (warn_conversion)
+	conversion_warning (type, expr);
     }
   else if (TREE_CODE (result) == INTEGER_CST && TREE_OVERFLOW (result)) 
     warning (OPT_Woverflow,

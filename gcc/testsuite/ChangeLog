@@ -1,3 +1,9 @@
+2007-03-04  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR other/30465
+	* gcc.dg/multiple-overflow-warn-3.c: New.
+	* g++.dg/warn/multiple-overflow-warn-3.C: New.
+	
 2007-03-04  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/30895

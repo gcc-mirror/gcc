@@ -1,3 +1,9 @@
+2007-03-04  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR other/30465
+	* c-common.c (convert_and_check): Don't give warnings for
+	conversion if 'expr' already overflowed.
+	
 2007-03-04  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/30744
