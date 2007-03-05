@@ -1,5 +1,5 @@
 /* String.java -- immutable character sequences; the object of string literals
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -41,9 +41,11 @@ package java.lang;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.lang.Comparable;
 import java.util.Comparator;
+import java.text.Collator;
+import java.util.Formatter;
 import java.util.Locale;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -70,10 +72,13 @@ import java.util.regex.PatternSyntaxException;
  * @author Paul N. Fisher
  * @author Eric Blake (ebb9@email.byu.edu)
  * @author Per Bothner (bothner@cygnus.com)
+ * @author Tom Tromey (tromey@redhat.com)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.0
  * @status updated to 1.4
  */
-public final class String implements Serializable, Comparable, CharSequence
+public final class String
+  implements Serializable, Comparable<String>, CharSequence
 {
   // WARNING: String is a CORE class in the bootstrap cycle. See the comments
   // in vm/reference/java/lang/Runtime for implications of this fact.
@@ -113,12 +118,12 @@ public final class String implements Serializable, Comparable, CharSequence
   private int cachedHashCode;
 
   /**
-   * An implementation for {@link CASE_INSENSITIVE_ORDER}.
+   * An implementation for {@link #CASE_INSENSITIVE_ORDER}.
    * This must be {@link Serializable}. The class name is dictated by
    * compatibility with Sun's JDK.
    */
   private static final class CaseInsensitiveComparator
-    implements Comparator, Serializable
+    implements Comparator<String>, Serializable
   {
     /**
      * Compatible with JDK 1.2.
@@ -142,9 +147,9 @@ public final class String implements Serializable, Comparable, CharSequence
      * @throws ClassCastException if either argument is not a String
      * @see #compareToIgnoreCase(String)
      */
-    public int compare(Object o1, Object o2)
+    public int compare(String o1, String o2)
     {
-      return ((String) o1).compareToIgnoreCase((String) o2);
+      return o1.compareToIgnoreCase(o2);
     }
   } // class CaseInsensitiveComparator
 
@@ -156,7 +161,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @see Collator#compare(String, String)
    * @since 1.2
    */
-  public static final Comparator CASE_INSENSITIVE_ORDER
+  public static final Comparator<String> CASE_INSENSITIVE_ORDER
     = new CaseInsensitiveComparator();
 
   /**
@@ -207,6 +212,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @param count the number of characters from data to copy
    * @throws NullPointerException if data is null
    * @throws IndexOutOfBoundsException if (offset &lt; 0 || count &lt; 0
+   *         || offset + count &lt; 0 (overflow)
    *         || offset + count &gt; data.length)
    *         (while unspecified, this is a StringIndexOutOfBoundsException)
    */
@@ -230,6 +236,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @param count the number of characters from ascii to copy
    * @throws NullPointerException if ascii is null
    * @throws IndexOutOfBoundsException if (offset &lt; 0 || count &lt; 0
+   *         || offset + count &lt; 0 (overflow)
    *         || offset + count &gt; ascii.length)
    *         (while unspecified, this is a StringIndexOutOfBoundsException)
    * @see #String(byte[])
@@ -281,7 +288,7 @@ public final class String implements Serializable, Comparable, CharSequence
    *
    * @param data byte array to copy
    * @param offset the offset to start at
-   * @param count the number of characters in the array to use
+   * @param count the number of bytes in the array to use
    * @param encoding the name of the encoding to use
    * @throws NullPointerException if data or encoding is null
    * @throws IndexOutOfBoundsException if offset or count is incorrect
@@ -330,7 +337,7 @@ public final class String implements Serializable, Comparable, CharSequence
    *
    * @param data byte array to copy
    * @param offset the offset to start at
-   * @param count the number of characters in the array to use
+   * @param count the number of bytes in the array to use
    * @throws NullPointerException if data is null
    * @throws IndexOutOfBoundsException if offset or count is incorrect
    * @throws Error if the decoding fails
@@ -644,23 +651,17 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return the comparison
    * @throws NullPointerException if anotherString is null
    */
-  public native int compareTo(String anotherString);
+  public int compareTo(String anotherString)
+  {
+    return nativeCompareTo(anotherString);
+  }
 
   /**
-   * Behaves like <code>compareTo(java.lang.String)</code> unless the Object
-   * is not a <code>String</code>.  Then it throws a
-   * <code>ClassCastException</code>.
-   *
-   * @param o the object to compare against
-   * @return the comparison
-   * @throws NullPointerException if o is null
-   * @throws ClassCastException if o is not a <code>String</code>
-   * @since 1.2
+   * The native implementation of compareTo(). Must be named different
+   * since cni doesn't understand the bridge method generated from
+   * the compareTo() method because of the Comparable<String> interface.
    */
-  public int compareTo(Object o)
-  {
-    return compareTo((String) o);
-  }
+  private native int nativeCompareTo(String anotherString);
 
   /**
    * Compares this String and another String (case insensitive). This
@@ -710,7 +711,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @param ignoreCase true if case should be ignored in comparision
    * @param toffset index to start comparison at for this String
    * @param other String to compare region to this String
-   * @param oofset index to start comparison at for other
+   * @param ooffset index to start comparison at for other
    * @param len number of characters to compare
    * @return true if regions match, false otherwise
    * @throws NullPointerException if other is null
@@ -1124,7 +1125,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * Trims all characters less than or equal to <code>'\u0020'</code>
    * (<code>' '</code>) from the beginning and end of this String. This
    * includes many, but not all, ASCII control characters, and all
-   * {@link Character#whitespace(char)}.
+   * {@link Character#isWhitespace(char)}.
    *
    * @return new trimmed String, or this if nothing trimmed
    */
@@ -1204,6 +1205,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return String containing the chars from data[offset..offset+count]
    * @throws NullPointerException if data is null
    * @throws IndexOutOfBoundsException if (offset &lt; 0 || count &lt; 0
+   *         || offset + count &lt; 0 (overflow)
    *         || offset + count &gt; data.length)
    *         (while unspecified, this is a StringIndexOutOfBoundsException)
    * @see #String(char[], int, int)
@@ -1294,12 +1296,27 @@ public final class String implements Serializable, Comparable, CharSequence
     return Double.toString(d);
   }
 
+
+  /** @since 1.5 */
+  public static String format(Locale locale, String format, Object... args)
+  {
+    Formatter f = new Formatter(locale);
+    return f.format(format, args).toString();
+  }
+
+  /** @since 1.5 */
+  public static String format(String format, Object... args)
+  {
+    return format(Locale.getDefault(), format, args);
+  }
+
   /**
-   * Fetches this String from the intern hashtable. If two Strings are
-   * considered equal, by the equals() method, then intern() will return the
-   * same String instance. ie. if (s1.equals(s2)) then
-   * (s1.intern() == s2.intern()). All string literals and string-valued
-   * constant expressions are already interned.
+   * Fetches this String from the intern hashtable.
+   * If two Strings are considered equal, by the equals() method, 
+   * then intern() will return the same String instance. ie. 
+   * if (s1.equals(s2)) then (s1.intern() == s2.intern()). 
+   * All string literals and string-valued constant expressions 
+   * are already interned.
    *
    * @return the interned String
    */
@@ -1345,20 +1362,20 @@ public final class String implements Serializable, Comparable, CharSequence
       }
     return count;
   }
-
+  
   /**
    * Returns true iff this String contains the sequence of Characters
    * described in s.
    * @param s the CharSequence
    * @return true iff this String contains s
-   *
+   * 
    * @since 1.5
    */
   public boolean contains (CharSequence s)
   {
     return this.indexOf(s.toString()) != -1;
   }
-
+  
   /**
    * Returns a string that is this string with all instances of the sequence
    * represented by <code>target</code> replaced by the sequence in 
@@ -1386,7 +1403,42 @@ public final class String implements Serializable, Comparable, CharSequence
       }
     return result.toString();
   }
+  
+  /**
+   * Return the index into this String that is offset from the given index by 
+   * <code>codePointOffset</code> code points.
+   * @param index the index at which to start
+   * @param codePointOffset the number of code points to offset
+   * @return the index into this String that is <code>codePointOffset</code>
+   * code points offset from <code>index</code>.
+   * 
+   * @throws IndexOutOfBoundsException if index is negative or larger than the
+   * length of this string.
+   * @throws IndexOutOfBoundsException if codePointOffset is positive and the
+   * substring starting with index has fewer than codePointOffset code points.
+   * @throws IndexOutOfBoundsException if codePointOffset is negative and the
+   * substring ending with index has fewer than (-codePointOffset) code points.
+   * @since 1.5
+   */
+  public int offsetByCodePoints(int index, int codePointOffset)
+  {
+    if (index < 0 || index > count)
+      throw new IndexOutOfBoundsException();
+    
+    return Character.offsetByCodePoints(this, index, codePointOffset);
+  }
 
+  /**
+   * Returns true if, and only if, {@link #length()}
+   * is <code>0</code>.
+   *
+   * @return true if the length of the string is zero.
+   * @since 1.6
+   */
+  public boolean isEmpty()
+  {
+    return count == 0;
+  }
 
   private native void init(char[] chars, int offset, int count,
 			   boolean dont_copy);

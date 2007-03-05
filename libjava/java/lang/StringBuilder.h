@@ -66,6 +66,10 @@ public:
 private:
   jboolean regionMatches(jint, ::java::lang::String *);
 public:
+  jint codePointAt(jint);
+  jint codePointBefore(jint);
+  jint codePointCount(jint, jint);
+  void trimToSize();
   ::java::lang::Appendable * append(::java::lang::CharSequence *, jint, jint);
   ::java::lang::Appendable * append(::java::lang::CharSequence *);
   ::java::lang::Appendable * append(jchar);

@@ -18,13 +18,12 @@ public:
   static ::java::lang::Character$UnicodeBlock * of(jchar);
   static ::java::lang::Character$UnicodeBlock * of(jint);
   static ::java::lang::Character$UnicodeBlock * forName(::java::lang::String *);
+public: // actually package-private
+  static JArray< jint > * $SWITCH_TABLE$java$lang$Character$UnicodeBlock$NameType();
 private:
   jint __attribute__((aligned(__alignof__( ::java::lang::Character$Subset)))) start;
   jint end;
   ::java::lang::String * canonicalName;
-  static const jint CANONICAL_NAME = 0;
-  static const jint NO_SPACES_NAME = 1;
-  static const jint CONSTANT_NAME = 2;
 public:
   static ::java::lang::Character$UnicodeBlock * BASIC_LATIN;
   static ::java::lang::Character$UnicodeBlock * LATIN_1_SUPPLEMENT;
@@ -154,6 +153,7 @@ public:
   static ::java::lang::Character$UnicodeBlock * SURROGATES_AREA;
 private:
   static JArray< ::java::lang::Character$UnicodeBlock * > * sets;
+  static JArray< jint > * $SWITCH_TABLE$java$lang$Character$UnicodeBlock$NameType__;
 public:
   static ::java::lang::Class class$;
 };

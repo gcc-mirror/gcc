@@ -14,6 +14,7 @@ class java::lang::String$CaseInsensitiveComparator : public ::java::lang::Object
 public: // actually package-private
   String$CaseInsensitiveComparator();
 public:
+  jint target$compare(::java::lang::String *, ::java::lang::String *);
   jint compare(::java::lang::Object *, ::java::lang::Object *);
 private:
   static const jlong serialVersionUID = 8575799808933029326LL;

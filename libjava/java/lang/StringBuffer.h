@@ -30,13 +30,13 @@ public:
   ::java::lang::StringBuffer * append(::java::lang::Object *);
   ::java::lang::StringBuffer * append(::java::lang::String *);
   ::java::lang::StringBuffer * append(::java::lang::StringBuffer *);
-  ::java::lang::StringBuffer * append(::java::lang::CharSequence *);
-  ::java::lang::StringBuffer * append(::java::lang::CharSequence *, jint, jint);
   ::java::lang::StringBuffer * append(JArray< jchar > *);
   ::java::lang::StringBuffer * append(JArray< jchar > *, jint, jint);
-  ::java::lang::StringBuffer * append(jboolean);
-  ::java::lang::StringBuffer * append(jchar);
   ::java::lang::StringBuffer * appendCodePoint(jint);
+  ::java::lang::StringBuffer * append(jboolean);
+  ::java::lang::StringBuffer * target$append(jchar);
+  ::java::lang::StringBuffer * target$append(::java::lang::CharSequence *);
+  ::java::lang::StringBuffer * target$append(::java::lang::CharSequence *, jint, jint);
   ::java::lang::StringBuffer * append(jint);
   ::java::lang::StringBuffer * append(jlong);
   ::java::lang::StringBuffer * append(jfloat);
@@ -71,6 +71,11 @@ public:
 private:
   void ensureCapacity_unsynchronized(jint);
   jboolean regionMatches(jint, ::java::lang::String *);
+public:
+  ::java::lang::Appendable * append(::java::lang::CharSequence *, jint, jint);
+  ::java::lang::Appendable * append(::java::lang::CharSequence *);
+  ::java::lang::Appendable * append(jchar);
+private:
   static const jlong serialVersionUID = 3388685877147921107LL;
 public: // actually package-private
   jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) count;
