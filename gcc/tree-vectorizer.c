@@ -2196,6 +2196,12 @@ vectorize_loops (void)
   loop_iterator li;
   struct loop *loop;
 
+  vect_loops_num = number_of_loops ();
+
+  /* Bail out if there are no loops.  */
+  if (vect_loops_num <= 1)
+    return 0;
+
   /* Fix the verbosity level if not defined explicitly by the user.  */
   vect_set_dump_settings ();
 
@@ -2208,7 +2214,6 @@ vectorize_loops (void)
   /* If some loop was duplicated, it gets bigger number 
      than all previously defined loops. This fact allows us to run 
      only over initial loops skipping newly generated ones.  */
-  vect_loops_num = number_of_loops ();
   FOR_EACH_LOOP (li, loop, 0)
     {
       loop_vec_info loop_vinfo;
@@ -2225,7 +2230,9 @@ vectorize_loops (void)
     }
   vect_loop_location = UNKNOWN_LOC;
 
-  if (vect_print_dump_info (REPORT_VECTORIZED_LOOPS))
+  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS)
+      || (vect_print_dump_info (REPORT_VECTORIZED_LOOPS)
+	  && num_vectorized_loops > 0))
     fprintf (vect_dump, "vectorized %u loops in function.\n",
 	     num_vectorized_loops);
 

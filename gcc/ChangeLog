@@ -1,3 +1,12 @@
+2007-03-05  Richard Guenther  <rguenther@suse.de>
+	Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/26420
+	* tree-vectorizer.c (vectorize_loops): Bail out early if there
+	are no loops in the function.  Only print the number of
+	vectorized loops if it is greater than zero or we are supposed
+	to print information about unvectorized loops.
+
 2007-03-05  Revital Eres  <eres@il.ibm.com>
 
       * gcc.dg/var-expand1.c: New test.
