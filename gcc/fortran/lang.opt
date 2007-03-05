@@ -165,6 +165,10 @@ ffree-line-length-
 Fortran RejectNegative Joined UInteger
 -ffree-line-length-<n>		Use n as character line width in free mode
 
+fmax-errors=
+Fortran RejectNegative Joined UInteger
+-fmax-errors=<n>	Maximum number of errors to report
+
 fmax-identifier-length=
 Fortran RejectNegative Joined UInteger
 -fmax-identifier-length=<n>	Maximum identifier length

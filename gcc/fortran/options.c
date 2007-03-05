@@ -77,6 +77,7 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.warn_surprising = 0;
   gfc_option.warn_tabs = 1;
   gfc_option.warn_underflow = 1;
+  gfc_option.max_errors = 25;
 
   gfc_option.flag_all_intrinsics = 0;
   gfc_option.flag_default_double = 0;
@@ -524,6 +525,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_fimplicit_none:
       gfc_option.flag_implicit_none = value;
+      break;
+
+    case OPT_fmax_errors_:
+      gfc_option.max_errors = value;
       break;
 
     case OPT_fmax_stack_var_size_:

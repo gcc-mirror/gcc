@@ -2,7 +2,7 @@
 ! Contributed by Francois-Xavier Coudert (coudert@clipper.ens.fr)
 !
 ! { dg-do compile }
-! { dg-options "-ffree-line-length-none -pedantic" }
+! { dg-options "-ffree-line-length-none -pedantic -fmax-errors=50" }
   integer,parameter :: mone = -1, zero = 0
   character(len=*),parameter :: foo = "foo"
   character(len=20) :: str

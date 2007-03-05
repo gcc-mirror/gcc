@@ -126,7 +126,7 @@ by type.  Explanations are in the following sections.
 @item Error and Warning Options
 @xref{Error and Warning Options,,Options to Request or Suppress Errors
 and Warnings}.
-@gccoptlist{
+@gccoptlist{-fmax-errors=@var{n} @gol
 -fsyntax-only  -pedantic  -pedantic-errors @gol
 -w  -Wall  -Waliasing  -Wampersand  -Wconversion  -Wimplicit-interface @gol
 -Wtabs -Wnonstd-intrinsics -Wsurprising -Wunderflow @gol
@@ -364,6 +364,15 @@ These options control the amount and kinds of errors and warnings produced
 by GNU Fortran:
 
 @table @gcctabopt
+@item -fmax-errors-@var{n}
+@cindex @code{-fmax-errors-}@var{n} option
+@cindex option, @code{-fmax-errors-}@var{n}
+@cindex errors, limiting
+Limits the maximum number of error messages to @var{n}, at which point
+GNU Fortran bails out rather than attempting to continue processing the
+source code.  If @var{n} is 0, there is no limit on the number of error
+messages produced.
+
 @item -fsyntax-only
 @cindex @code{-fsyntax-only} option
 @cindex option, @code{-fsyntax-only}

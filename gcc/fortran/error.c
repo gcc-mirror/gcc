@@ -595,6 +595,18 @@ error_printf (const char *nocmsgid, ...)
 }
 
 
+/* Increment the number of errors, and check whether too many have 
+   been printed.  */
+
+static void
+gfc_increment_error_count (void)
+{
+  errors++;
+  if ((gfc_option.max_errors != 0) && (errors >= gfc_option.max_errors))
+    gfc_fatal_error ("Error count reached limit of %d.", gfc_option.max_errors);
+}
+
+
 /* Issue a warning.  */
 
 void
@@ -610,12 +622,13 @@ gfc_warning (const char *nocmsgid, ...)
   cur_error_buffer = &warning_buffer;
 
   va_start (argp, nocmsgid);
-  if (buffer_flag == 0)
-    warnings++;
   error_print (_("Warning:"), _(nocmsgid), argp);
   va_end (argp);
 
   error_char ('\0');
+
+  if (buffer_flag == 0)
+    warnings++;
 }
 
 
@@ -659,13 +672,6 @@ gfc_notify_std (int std, const char *nocmsgid, ...)
   cur_error_buffer->flag = 1;
   cur_error_buffer->index = 0;
 
-  if (buffer_flag == 0)
-    {
-      if (warning)
-	warnings++;
-      else
-	errors++;
-    }
   va_start (argp, nocmsgid);
   if (warning)
     error_print (_("Warning:"), _(nocmsgid), argp);
@@ -674,6 +680,15 @@ gfc_notify_std (int std, const char *nocmsgid, ...)
   va_end (argp);
 
   error_char ('\0');
+
+  if (buffer_flag == 0)
+    {
+      if (warning)
+	warnings++;
+      else
+	gfc_increment_error_count();
+    }
+
   return warning ? SUCCESS : FAILURE;
 }
 
@@ -742,12 +757,13 @@ gfc_error (const char *nocmsgid, ...)
   cur_error_buffer = &error_buffer;
 
   va_start (argp, nocmsgid);
-  if (buffer_flag == 0)
-    errors++;
   error_print (_("Error:"), _(nocmsgid), argp);
   va_end (argp);
 
   error_char ('\0');
+
+  if (buffer_flag == 0)
+    gfc_increment_error_count();
 }
 
 
@@ -765,13 +781,15 @@ gfc_error_now (const char *nocmsgid, ...)
 
   i = buffer_flag;
   buffer_flag = 0;
-  errors++;
 
   va_start (argp, nocmsgid);
   error_print (_("Error:"), _(nocmsgid), argp);
   va_end (argp);
 
   error_char ('\0');
+
+  gfc_increment_error_count();
+
   buffer_flag = i;
 
   if (flag_fatal_errors)
@@ -847,10 +865,11 @@ gfc_error_check (void)
 
   if (error_buffer.flag)
     {
-      errors++;
       if (error_buffer.message != NULL)
 	fputs (error_buffer.message, stderr);
       error_buffer.flag = 0;
+
+      gfc_increment_error_count();
 
       if (flag_fatal_errors)
 	exit (1);

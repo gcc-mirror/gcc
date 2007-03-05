@@ -1,5 +1,22 @@
 2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* lang.opt: Add -fmax-errors= option.
+	* gfortran.h (gfc_option_t): Add max_errors element.
+	* options.c (gfc_init_options): Set max_errors default value
+	to 25.
+	(gfc_handle_options): Check -fmax_errors value, assign to
+	gfc_option.max_errors.
+	* error.c (gfc_increment_error_count): New function, which
+	also checks whether the error count exceeds max_errors.
+	(gfc_notify_std): Use it.
+	(gfc_error): Use it.
+	(gfc_error_now): Use it.
+	(gfc_error_check): Use it.
+	(gfc_warning): Reorder to match trunk.
+	* invoke.texi: Added documentation for -fmax-errors option.
+
+2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* check.c (gfc_check_kill_sub): Add checks for non-scalar
 	arguments.
 
