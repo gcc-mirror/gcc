@@ -248,6 +248,11 @@ bfin*-elf*)
         ;;
 bfin*-uclinux*)
         ;;
+bfin*-linux-uclibc*)
+	# No need to build crtbeginT.o on uClibc systems.  Should probably
+	# be moved to the OS specific section above.
+	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	;;
 bfin*-*)
         ;;
 c4x-*-rtems* | tic4x-*-rtems*)

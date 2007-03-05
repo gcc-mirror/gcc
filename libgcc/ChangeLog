@@ -1,3 +1,7 @@
+2007-03-05  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config.host (bfin*-linux-uclibc*): Set extra_parts.
+
 2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Makefile.in: Add install-html and install-pdf dummy

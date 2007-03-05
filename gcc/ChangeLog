@@ -1,3 +1,16 @@
+2007-03-05  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config.gcc (bfin*-uclinux*): Use t-bfin-uclinux.
+	(bfin*-linux-uclibc*): New configuration.
+	* config/linux.h (LINK_GCC_C_SEQUENCE_SPEC): Undefined before
+	defining.
+	* config/bfin/linux.h: New file.
+	* config/bfin/libgcc-bfin.ver: New file.
+	* config/bfin/t-bfin-uclinux: New file.
+	* config/bfin/t-bfin-linux: New file.
+	* config/bfin/uclinux.h (LINUX_TARGET_OS_CPP_BUILTINS): New macro.
+	(TARGET_OS_CPP_BUILTINS): New macro.
+
 2007-03-05  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (fold_binary): Remove duplicate folding

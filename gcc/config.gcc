@@ -811,7 +811,12 @@ bfin*-elf*)
         ;;
 bfin*-uclinux*)
 	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h bfin/uclinux.h"
-        tmake_file=bfin/t-bfin-elf
+        tmake_file=bfin/t-bfin-uclinux
+        use_collect2=no
+        ;;
+bfin*-linux-uclibc*)
+	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h linux.h bfin/linux.h"
+        tmake_file="t-slibgcc-elf-ver bfin/t-bfin-linux"
         use_collect2=no
         ;;
 bfin*-rtems*)
