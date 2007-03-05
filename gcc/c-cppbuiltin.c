@@ -1,5 +1,6 @@
 /* Define builtin-in macros for the C family front ends.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -494,6 +495,11 @@ c_cpp_builtins (cpp_reader *pfile)
 
   /* Misc.  */
   builtin_define_with_value ("__VERSION__", version_string, 1);
+
+  if (flag_gnu89_inline)
+    cpp_define (pfile, "__GNUC_GNU_INLINE__");
+  else
+    cpp_define (pfile, "__GNUC_STDC_INLINE__");
 
   /* Definitions for LP64 model.  */
   if (TYPE_PRECISION (long_integer_type_node) == 64

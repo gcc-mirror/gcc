@@ -1,5 +1,24 @@
 2007-03-05  Ian Lance Taylor  <iant@google.com>
 
+	* c.opt (fgnu89-inline): New option.
+	* c-opts.c (c_common_post_options): Set default value for
+	flag_gnu89_inline.
+	* c-decl.c (WANT_C99_INLINE_SEMANTICS): Remove.
+	(pop_scope): Check flag_gnu89_inline rather than flag_isoc99 for
+	inline functions.
+	(diagnose_mismatched_decls, merge_decls, start_decl): Likewise.
+	(grokdeclarator, start_function): Likewise.
+	* c-cppbuiltin.c (c_cpp_builtins): Define either
+	__GNUC_GNU_INLINE__ or __GNUC_STDC_INLINE__.
+	* doc/invoke.texi (Option Summary): Mention -fgnu89-inline.
+	(C Dialect Options): Document -fgnu89-inline.
+	* doc/extend.texi (Function Attributes): Explain what the
+	gnu_inline attribute does.
+	* doc/cpp.texi (Common Predefined Macros): Document
+	__GNUC_GNU_INLINE__ and __GNUC_STDC_INLINE__.
+
+2007-03-05  Ian Lance Taylor  <iant@google.com>
+
 	PR tree-optimization/31034
 	* tree-vrp.c (extract_range_from_assert): Don't try to handle a
 	half-range if the other side is an overflow infinity.

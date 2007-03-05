@@ -1,5 +1,5 @@
 ; Options for the C, ObjC, C++ and ObjC++ front ends.
-; Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+; Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -553,6 +553,10 @@ Recognize GNU-defined keywords
 fgnu-runtime
 ObjC ObjC++
 Generate code for GNU runtime environment
+
+fgnu89-inline
+C Var(flag_gnu89_inline) Init(-1)
+Use traditional GNU semantics for inline functions
 
 fguiding-decls
 C++ ObjC++

@@ -1,6 +1,6 @@
 /* Process declarations and variables for C compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -61,12 +61,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "except.h"
 #include "langhooks-def.h"
 #include "pointer-set.h"
-
-/* Set this to 1 if you want the standard ISO C99 semantics of 'inline'
-   when you specify -std=c99 or -std=gnu99, and to 0 if you want
-   behavior compatible with the nonstandard semantics implemented by
-   GCC 2.95 through 4.2.  */
-#define WANT_C99_INLINE_SEMANTICS 1
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context
@@ -803,7 +797,7 @@ pop_scope (void)
 	  else if (DECL_DECLARED_INLINE_P (p)
 		   && TREE_PUBLIC (p)
 		   && !DECL_INITIAL (p)
-		   && flag_isoc99)
+		   && !flag_gnu89_inline)
 	    pedwarn ("inline function %q+D declared but never defined", p);
 
 	  goto common_symbol;
@@ -1330,15 +1324,13 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 		 unit.  */
 	      if ((!DECL_EXTERN_INLINE (olddecl)
 		   || DECL_EXTERN_INLINE (newdecl)
-#if WANT_C99_INLINE_SEMANTICS
-		   || (flag_isoc99
+		   || (!flag_gnu89_inline
 		       && (!DECL_DECLARED_INLINE_P (olddecl)
 			   || !lookup_attribute ("gnu_inline",
 						 DECL_ATTRIBUTES (olddecl)))
 		       && (!DECL_DECLARED_INLINE_P (newdecl)
 			   || !lookup_attribute ("gnu_inline",
 						 DECL_ATTRIBUTES (newdecl))))
-#endif /* WANT_C99_INLINE_SEMANTICS */
 		  )
 		  && same_translation_unit_p (newdecl, olddecl))
 		{
@@ -1553,7 +1545,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	 we still shouldn't warn.)  */
       if (DECL_DECLARED_INLINE_P (newdecl) && !DECL_DECLARED_INLINE_P (olddecl)
 	  && same_translation_unit_p (olddecl, newdecl)
-	  && ! flag_isoc99)
+	  && flag_gnu89_inline)
 	{
 	  if (TREE_USED (olddecl))
 	    {
@@ -1783,12 +1775,11 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	}
     }
 
-#if WANT_C99_INLINE_SEMANTICS
   /* In c99, 'extern' declaration before (or after) 'inline' means this
      function is not DECL_EXTERNAL, unless 'gnu_inline' attribute
      is present.  */
   if (TREE_CODE (newdecl) == FUNCTION_DECL
-      && flag_isoc99
+      && !flag_gnu89_inline
       && (DECL_DECLARED_INLINE_P (newdecl)
 	  || DECL_DECLARED_INLINE_P (olddecl))
       && (!DECL_DECLARED_INLINE_P (newdecl)
@@ -1797,7 +1788,6 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
       && DECL_EXTERNAL (newdecl)
       && !lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (newdecl)))
     DECL_EXTERNAL (newdecl) = 0;
-#endif /* WANT_C99_INLINE_SEMANTICS */
 
   if (DECL_EXTERNAL (newdecl))
     {
@@ -3309,10 +3299,9 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
   decl_attributes (&decl, attributes, 0);
 
-#if WANT_C99_INLINE_SEMANTICS
   /* Handle gnu_inline attribute.  */
   if (declspecs->inline_p
-      && flag_isoc99
+      && !flag_gnu89_inline
       && TREE_CODE (decl) == FUNCTION_DECL
       && lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (decl)))
     {
@@ -3321,7 +3310,6 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
       else if (declspecs->storage_class != csc_static)
 	DECL_EXTERNAL (decl) = !DECL_EXTERNAL (decl);
     }
-#endif /* WANT_C99_INLINE_SEMANTICS */
 
   if (TREE_CODE (decl) == FUNCTION_DECL
       && targetm.calls.promote_prototypes (TREE_TYPE (decl)))
@@ -4819,11 +4807,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	   in this file, C99 6.7.4p6.  In GNU C89, a function declared
 	   'extern inline' is an external reference.  */
 	else if (declspecs->inline_p && storage_class != csc_static)
-#if WANT_C99_INLINE_SEMANTICS
-	  DECL_EXTERNAL (decl) = (storage_class == csc_extern) == !flag_isoc99;
-#else
-	  DECL_EXTERNAL (decl) = (storage_class == csc_extern);
-#endif
+	  DECL_EXTERNAL (decl) = ((storage_class == csc_extern)
+				  == flag_gnu89_inline);
 	else
 	  DECL_EXTERNAL (decl) = !initialized;
 
@@ -6085,17 +6070,15 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
     warning (OPT_Wattributes, "inline function %q+D given attribute noinline",
 	     decl1);
 
-#if WANT_C99_INLINE_SEMANTICS
   /* Handle gnu_inline attribute.  */
   if (declspecs->inline_p
-      && flag_isoc99
+      && !flag_gnu89_inline
       && TREE_CODE (decl1) == FUNCTION_DECL
       && lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (decl1)))
     {
       if (declspecs->storage_class != csc_static)
 	DECL_EXTERNAL (decl1) = !DECL_EXTERNAL (decl1);
     }
-#endif /* WANT_C99_INLINE_SEMANTICS */
 
   announce_function (decl1);
 

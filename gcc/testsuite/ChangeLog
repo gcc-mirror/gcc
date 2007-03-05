@@ -1,3 +1,10 @@
+2007-03-05  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/inline-18.c: New test.
+	* gcc.dg/inline-19.c: New test.
+	* gcc.dg/inline-20.c: New test.
+	* gcc.dg/inline-21.c: New test.
+
 2007-03-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/14052
