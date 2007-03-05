@@ -775,7 +775,7 @@ next_string_char (char delimiter)
     return c;
 
   old_locus = gfc_current_locus;
-  c = gfc_next_char_literal (1);
+  c = gfc_next_char_literal (0);
 
   if (c == delimiter)
     return c;
@@ -854,7 +854,7 @@ static match
 match_string_constant (gfc_expr ** result)
 {
   char *p, name[GFC_MAX_SYMBOL_LEN + 1];
-  int i, c, kind, length, delimiter;
+  int i, c, kind, length, delimiter, warn_ampersand;
   locus old_locus, start_locus;
   gfc_symbol *sym;
   gfc_expr *e;
@@ -981,10 +981,16 @@ got_delim:
   gfc_current_locus = start_locus;
   gfc_next_char ();		/* Skip delimiter */
 
+  /* We disable the warning for the following loop as the warning has already
+     been printed in the loop above.  */
+  warn_ampersand = gfc_option.warn_ampersand;
+  gfc_option.warn_ampersand = 0;
+
   for (i = 0; i < length; i++)
     *p++ = next_string_char (delimiter);
 
   *p = '\0';	/* TODO: C-style string is for development/debug purposes.  */
+  gfc_option.warn_ampersand = warn_ampersand;
 
   if (next_string_char (delimiter) != -1)
     gfc_internal_error ("match_string_constant(): Delimiter not found");
