@@ -1,3 +1,7 @@
+2007-03-04  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* check.c (same_type_check): Typo fix in comment.
+
 2007-03-01  Tobias Schlueter  <tobi@gcc.gnu.org>
 
 	Backport from trunk
