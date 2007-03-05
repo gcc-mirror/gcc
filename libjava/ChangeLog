@@ -1,3 +1,16 @@
+2007-03-05  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/reflect/natVMProxy.cc (ncode_closure.meth): Delete.
+	(generateProxyClass): Don't pass method to ncode.
+	(run_proxy): Call _Jv_GetReflectedMethod to find the proxy method.
+	* java/lang/reflect/Method.h: Rebuild.
+	* java/lang/reflect/Method.java (internalGetParameterTypes,
+	internalGetExceptionTypes): New methods.
+	* headers.txt (class java/lang/reflect/Method): Declare
+	_Jv_GetReflectedMethod.  Be its friend.
+	* java/lang/natClass.cc (_Jv_GetReflectedMethod): New method.
+	* java/lang/Class.h: Declare it.  Be its friend.
+
 2007-03-05  Tom Tromey  <tromey@redhat.com>
 
 	* sources.am, Makefile.in: Rebuilt.

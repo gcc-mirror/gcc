@@ -225,6 +225,9 @@ jboolean _Jv_InterfaceAssignableFrom (jclass, jclass);
 
 _Jv_Method* _Jv_LookupDeclaredMethod (jclass, _Jv_Utf8Const *, 
 				      _Jv_Utf8Const*, jclass * = NULL);
+java::lang::reflect::Method *_Jv_GetReflectedMethod (jclass klass, 
+						    _Jv_Utf8Const *name,
+						    _Jv_Utf8Const *signature);
 jfieldID JvGetFirstInstanceField (jclass);
 jint JvNumInstanceFields (jclass);
 jfieldID JvGetFirstStaticField (jclass);
@@ -529,6 +532,9 @@ private:
 
   friend _Jv_Method* ::_Jv_LookupDeclaredMethod (jclass, _Jv_Utf8Const *, 
 						 _Jv_Utf8Const*, jclass *);
+  friend java::lang::reflect::Method* ::_Jv_GetReflectedMethod (jclass klass, 
+						    _Jv_Utf8Const *name,
+						    _Jv_Utf8Const *signature);
   friend jfieldID (::JvGetFirstInstanceField) (jclass);
   friend jint (::JvNumInstanceFields) (jclass);
   friend jfieldID (::JvGetFirstStaticField) (jclass);

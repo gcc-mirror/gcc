@@ -12,6 +12,7 @@
 
 jmethodID _Jv_FromReflectedMethod (java::lang::reflect::Method *);
 jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);
+::java::lang::reflect::Method *_Jv_GetReflectedMethod (jclass, _Jv_Utf8Const*, _Jv_Utf8Const*);
 
 class java::lang::reflect::Method : public ::java::lang::reflect::AccessibleObject
 {
@@ -29,7 +30,13 @@ public:
   jboolean isVarArgs();
   ::java::lang::Class * getReturnType();
   JArray< ::java::lang::Class * > * getParameterTypes();
+public: // actually package-private
+  JArray< ::java::lang::Class * > * internalGetParameterTypes();
+public:
   JArray< ::java::lang::Class * > * getExceptionTypes();
+public: // actually package-private
+  JArray< ::java::lang::Class * > * internalGetExceptionTypes();
+public:
   jboolean equals(::java::lang::Object *);
   jint hashCode();
   ::java::lang::String * toString();
@@ -71,6 +78,7 @@ public:
   friend jobject (::_Jv_JNI_ToReflectedMethod) (_Jv_JNIEnv *, jclass, jmethodID, jboolean);
   friend class java::lang::Class;
   friend class java::io::ObjectInputStream;
+  friend java::lang::reflect::Method* ::_Jv_GetReflectedMethod (jclass, _Jv_Utf8Const*, _Jv_Utf8Const*);
 };
 
 #endif // __java_lang_reflect_Method__

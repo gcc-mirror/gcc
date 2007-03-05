@@ -153,6 +153,15 @@ public final class Method
     return (Class<?>[]) parameter_types.clone();
   }
 
+  // Just like getParameterTypes, but don't clone the array.
+  // Package private for use by VMProxy.
+  final Class<?>[] internalGetParameterTypes ()
+  {
+    if (parameter_types == null)
+      getType();
+    return (Class<?>[]) parameter_types;
+  }
+
   /**
    * Get the exception types this method says it throws, in no particular
    * order. If the method has no throws clause, returns a 0-length array
@@ -165,6 +174,15 @@ public final class Method
     if (exception_types == null)
       getType();
     return (Class<?>[]) exception_types.clone();
+  }
+
+  // Just like getExceptionTypes, but don't clone the array.
+  // Package private for use by VMProxy.
+  final Class<?>[] internalGetExceptionTypes ()
+  {
+    if (exception_types == null)
+      getType();
+    return (Class<?>[]) exception_types;
   }
 
   /**

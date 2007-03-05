@@ -1630,6 +1630,26 @@ _Jv_LookupDeclaredMethod (jclass klass, _Jv_Utf8Const *name,
   return NULL;
 }
 
+java::lang::reflect::Method *
+_Jv_GetReflectedMethod (jclass klass, _Jv_Utf8Const *name,
+		       _Jv_Utf8Const *signature)
+{
+  for (; klass; klass = klass->getSuperclass())
+    {
+      _Jv_Method *meth = _Jv_GetMethodLocal (klass, name, signature);
+      if (meth)
+	{
+	  using namespace java::lang::reflect;
+	  Method *rmethod = new Method ();
+	  rmethod->offset = (char*) meth - (char*) klass->methods;
+	  rmethod->declaringClass = klass;
+	  return rmethod;
+	}
+    }
+  
+  return NULL;
+}
+
 #ifdef HAVE_TLS
 
 // NOTE: MCACHE_SIZE should be a power of 2 minus one.
