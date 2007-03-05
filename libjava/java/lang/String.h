@@ -62,8 +62,10 @@ public:
   jboolean contentEquals(::java::lang::StringBuffer *);
   jboolean contentEquals(::java::lang::CharSequence *);
   jboolean equalsIgnoreCase(::java::lang::String *);
-  jint compareTo(::java::lang::String *);
-  jint compareTo(::java::lang::Object *);
+  jint target$compareTo(::java::lang::String *);
+private:
+  jint nativeCompareTo(::java::lang::String *);
+public:
   jint compareToIgnoreCase(::java::lang::String *);
   jboolean regionMatches(jint, ::java::lang::String *, jint, jint);
   jboolean regionMatches(jboolean, jint, ::java::lang::String *, jint, jint);
@@ -107,15 +109,22 @@ public:
   static ::java::lang::String * valueOf(jlong);
   static ::java::lang::String * valueOf(jfloat);
   static ::java::lang::String * valueOf(jdouble);
+  static ::java::lang::String * format(::java::util::Locale *, ::java::lang::String *, JArray< ::java::lang::Object * > *);
+  static ::java::lang::String * format(::java::lang::String *, JArray< ::java::lang::Object * > *);
   ::java::lang::String * intern();
   jint codePointCount(jint, jint);
   jboolean contains(::java::lang::CharSequence *);
   ::java::lang::String * replace(::java::lang::CharSequence *, ::java::lang::CharSequence *);
+  jint offsetByCodePoints(jint, jint);
+  jboolean isEmpty();
 private:
   void init(JArray< jchar > *, jint, jint, jboolean);
   void init(JArray< jbyte > *, jint, jint, jint);
   void init(JArray< jbyte > *, jint, jint, ::java::lang::String *);
   void init(::gnu::gcj::runtime::StringBuffer *);
+public:
+  jint compareTo(::java::lang::Object *);
+private:
   static const jlong serialVersionUID = -6849794470754667710LL;
   ::java::lang::Object * __attribute__((aligned(__alignof__( ::java::lang::Object)))) data;
   jint boffset;

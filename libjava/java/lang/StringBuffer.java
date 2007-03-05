@@ -1,5 +1,5 @@
 /* StringBuffer.java -- Growable strings
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -72,8 +72,12 @@ import java.io.Serializable;
  * @since 1.0
  * @status updated to 1.4
  */
-public final class StringBuffer implements Serializable, CharSequence
+public final class StringBuffer
+  implements Serializable, CharSequence, Appendable
 {
+  // Implementation note: if you change this class, you usually will
+  // want to change StringBuilder as well.
+
   /**
    * Compatible with JDK 1.0+.
    */
@@ -152,17 +156,16 @@ public final class StringBuffer implements Serializable, CharSequence
    * specified <code>CharSequence</code>. Initial capacity will be the
    * size of the CharSequence plus 16.
    *
-   * @param sequence the <code>String</code> to convert
+   * @param seq the <code>String</code> to convert
    * @throws NullPointerException if str is null
-   *
    * @since 1.5
    */
-  public StringBuffer(CharSequence sequence)
+  public StringBuffer(CharSequence seq)
   {
-    count = Math.max(0, sequence.length());
+    count = Math.max(0, seq.length());
     value = new char[count + DEFAULT_CAPACITY];
     for (int i = 0; i < count; ++i)
-      value[i] = sequence.charAt(i);
+      value[i] = seq.charAt(i);
   }
 
   /**
@@ -391,46 +394,6 @@ public final class StringBuffer implements Serializable, CharSequence
   }
 
   /**
-   * Append the <code>CharSequence</code> value of the argument to this
-   * <code>StringBuffer</code>.
-   *
-   * @param sequence the <code>CharSequence</code> to append
-   * @return this <code>StringBuffer</code>
-   * @see #append(Object)
-   * @since 1.5
-   */
-  public synchronized StringBuffer append(CharSequence sequence)
-  {
-    if (sequence == null)
-      sequence = "null";
-    return append(sequence, 0, sequence.length());
-  }
-
-  /**
-   * Append the specified subsequence of the <code>CharSequence</code>
-   * argument to this <code>StringBuffer</code>.
-   *
-   * @param sequence the <code>CharSequence</code> to append
-   * @param start the starting index
-   * @param end one past the ending index
-   * @return this <code>StringBuffer</code>
-   * @see #append(Object)
-   * @since 1.5
-   */
-  public synchronized StringBuffer append(CharSequence sequence,
-					  int start, int end)
-  {
-    if (sequence == null)
-      sequence = "null";
-    if (start < 0 || end < 0 || start > end || end > sequence.length())
-      throw new IndexOutOfBoundsException();
-    ensureCapacity_unsynchronized(this.count + end - start);
-    for (int i = start; i < end; ++i)
-      value[count++] = sequence.charAt(i);
-    return this;
-  }
-
-  /**
    * Append the <code>char</code> array to this <code>StringBuffer</code>.
    * This is similar (but more efficient) than
    * <code>append(new String(data))</code>, except in the case of null.
@@ -470,6 +433,25 @@ public final class StringBuffer implements Serializable, CharSequence
   }
 
   /**
+   * Append the code point to this <code>StringBuffer</code>.
+   * This is like #append(char), but will append two characters
+   * if a supplementary code point is given.
+   *
+   * @param code the code point to append
+   * @return this <code>StringBuffer</code>
+   * @see Character#toChars(int, char[], int)
+   * @since 1.5
+   */
+  public synchronized StringBuffer appendCodePoint(int code)
+  {
+    int len = Character.charCount(code);
+    ensureCapacity_unsynchronized(count + len);
+    Character.toChars(code, value, count);
+    count += len;
+    return this;
+  }
+
+  /**
    * Append the <code>String</code> value of the argument to this
    * <code>StringBuffer</code>. Uses <code>String.valueOf()</code> to convert
    * to <code>String</code>.
@@ -497,21 +479,41 @@ public final class StringBuffer implements Serializable, CharSequence
   }
 
   /**
-   * Append the code point to this <code>StringBuffer</code>.
-   * This is like #append(char), but will append two characters
-   * if a supplementary code point is given.
+   * Append the <code>CharSequence</code> value of the argument to this
+   * <code>StringBuffer</code>.
    *
-   * @param code the code point to append
+   * @param seq the <code>CharSequence</code> to append
    * @return this <code>StringBuffer</code>
-   * @see Character#toChars(int, char[], int)
+   * @see #append(Object)
    * @since 1.5
    */
-  public synchronized StringBuffer appendCodePoint(int code)
+  public synchronized StringBuffer append(CharSequence seq)
   {
-    int len = Character.charCount(code);
-    ensureCapacity_unsynchronized(count + len);
-    Character.toChars(code, value, count);
-    count += len;
+    if (seq == null)
+      seq = "null";
+    return append(seq, 0, seq.length());
+  }
+
+  /**
+   * Append the specified subsequence of the <code>CharSequence</code>
+   * argument to this <code>StringBuffer</code>.
+   *
+   * @param seq the <code>CharSequence</code> to append
+   * @param start the starting index
+   * @param end one past the ending index
+   * @return this <code>StringBuffer</code>
+   * @see #append(Object)
+   * @since 1.5
+   */
+  public synchronized StringBuffer append(CharSequence seq, int start, int end)
+  {
+    if (seq == null)
+      seq = "null";
+    if (start < 0 || end < 0 || start > end || end > seq.length())
+      throw new IndexOutOfBoundsException();
+    ensureCapacity_unsynchronized(this.count + end - start);
+    for (int i = start; i < end; ++i)
+      value[count++] = seq.charAt(i);
     return this;
   }
 

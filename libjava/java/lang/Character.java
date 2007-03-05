@@ -1,5 +1,6 @@
 /* java.lang.Character -- Wrapper class for char, and Unicode subsets
-   Copyright (C) 1998, 1999, 2001, 2002, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005, 2006, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -54,7 +55,7 @@ import java.util.Locale;
 /**
  * Wrapper class for the primitive char data type.  In addition, this class
  * allows one to retrieve property information and perform transformations
- * on the 57,707 defined characters in the Unicode Standard, Version 3.0.0.
+ * on the defined characters in the Unicode Standard, Version 4.0.0.
  * java.lang.Character is designed to be very dynamic, and as such, it
  * retrieves information on the Unicode character set from a separate
  * database, gnu.java.lang.CharData, which can be easily upgraded.
@@ -62,7 +63,7 @@ import java.util.Locale;
  * <p>For predicates, boundaries are used to describe
  * the set of characters for which the method will return true.
  * This syntax uses fairly normal regular expression notation.
- * See 5.13 of the Unicode Standard, Version 3.0, for the
+ * See 5.13 of the Unicode Standard, Version 4.0, for the
  * boundary specification.
  *
  * <p>See <a href="http://www.unicode.org">http://www.unicode.org</a>
@@ -72,10 +73,11 @@ import java.util.Locale;
  * @author Paul N. Fisher
  * @author Jochen Hoenicke
  * @author Eric Blake (ebb9@email.byu.edu)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.0
- * @status updated to 1.4
+ * @status partly updated to 1.5; some things still missing
  */
-public final class Character implements Serializable, Comparable
+public final class Character implements Serializable, Comparable<Character>
 {
   /**
    * A subset of Unicode blocks.
@@ -160,10 +162,8 @@ public final class Character implements Serializable, Comparable
     /** The canonical name of the block according to the Unicode standard. */
     private final String canonicalName;
 
-    /** Constants for the <code>forName()</code> method */
-    private static final int CANONICAL_NAME = 0;
-    private static final int NO_SPACES_NAME = 1;
-    private static final int CONSTANT_NAME = 2;
+    /** Enumeration for the <code>forName()</code> method */
+    private enum NameType { CANONICAL, NO_SPACES, CONSTANT; };
 
     /**
      * Constructor for strictly defined blocks.
@@ -173,7 +173,7 @@ public final class Character implements Serializable, Comparable
      * @param name the block name
      */
     private UnicodeBlock(int start, int end, String name,
-             String canonicalName)
+			 String canonicalName)
     {
       super(name);
       this.start = start;
@@ -207,8 +207,8 @@ public final class Character implements Serializable, Comparable
     public static UnicodeBlock of(int codePoint)
     {
       if (codePoint > MAX_CODE_POINT)
-    throw new IllegalArgumentException("The supplied integer value is " +
-                       "too large to be a codepoint.");
+	throw new IllegalArgumentException("The supplied integer value is " +
+					   "too large to be a codepoint.");
       // Simple binary search for the correct block.
       int low = 0;
       int hi = sets.length - 1;
@@ -262,59 +262,51 @@ public final class Character implements Serializable, Comparable
      */
     public static final UnicodeBlock forName(String blockName)
     {
-      int type;
+      NameType type;
       if (blockName.indexOf(' ') != -1)
-        type = CANONICAL_NAME;
+        type = NameType.CANONICAL;
       else if (blockName.indexOf('_') != -1)
-        type = CONSTANT_NAME;
+        type = NameType.CONSTANT;
       else
-        type = NO_SPACES_NAME;
+        type = NameType.NO_SPACES;
       Collator usCollator = Collator.getInstance(Locale.US);
       usCollator.setStrength(Collator.PRIMARY);
       /* Special case for deprecated blocks not in sets */
       switch (type)
       {
-        case CANONICAL_NAME:
+        case CANONICAL:
           if (usCollator.compare(blockName, "Surrogates Area") == 0)
             return SURROGATES_AREA;
           break;
-        case NO_SPACES_NAME:
+        case NO_SPACES:
           if (usCollator.compare(blockName, "SurrogatesArea") == 0)
             return SURROGATES_AREA;
           break;
-        case CONSTANT_NAME:
+        case CONSTANT:
           if (usCollator.compare(blockName, "SURROGATES_AREA") == 0) 
             return SURROGATES_AREA;
           break;
       }
       /* Other cases */
-      int setLength = sets.length;
       switch (type)
       {
-        case CANONICAL_NAME:
-          for (int i = 0; i < setLength; i++)
-            {
-              UnicodeBlock block = sets[i];
-              if (usCollator.compare(blockName, block.canonicalName) == 0)
-                return block;
-            }
+        case CANONICAL:
+          for (UnicodeBlock block : sets)
+            if (usCollator.compare(blockName, block.canonicalName) == 0)
+              return block;
           break;
-        case NO_SPACES_NAME:
-          for (int i = 0; i < setLength; i++)
-            {
-              UnicodeBlock block = sets[i];
-              String nsName = block.canonicalName.replaceAll(" ","");
-              if (usCollator.compare(blockName, nsName) == 0)
-                return block;
-            }        
-          break;
-        case CONSTANT_NAME:
-          for (int i = 0; i < setLength; i++)
-            {
-              UnicodeBlock block = sets[i];
-              if (usCollator.compare(blockName, block.toString()) == 0)
-                return block;
-            }
+        case NO_SPACES:
+          for (UnicodeBlock block : sets)
+	    {
+	      String nsName = block.canonicalName.replaceAll(" ","");
+	      if (usCollator.compare(blockName, nsName) == 0)
+		return block;
+	    }
+	  break;
+        case CONSTANT:
+          for (UnicodeBlock block : sets)
+            if (usCollator.compare(blockName, block.toString()) == 0)
+              return block;
           break;
       }
       throw new IllegalArgumentException("No Unicode block found for " +
@@ -1517,10 +1509,11 @@ public final class Character implements Serializable, Comparable
      * this.  These are also returned from calls to <code>of(int)</code>
      * and <code>of(char)</code>.
      */
+    @Deprecated
     public static final UnicodeBlock SURROGATES_AREA
       = new UnicodeBlock(0xD800, 0xDFFF,
                          "SURROGATES_AREA",
-             "Surrogates Area");
+			 "Surrogates Area");
 
     /**
      * The defined subsets.
@@ -1699,11 +1692,78 @@ public final class Character implements Serializable, Comparable
   public static final char MAX_VALUE = '\uFFFF';
 
   /**
+   * The minimum Unicode 4.0 code point.  This value is <code>0</code>.
+   * @since 1.5
+   */
+  public static final int MIN_CODE_POINT = 0;
+
+  /**
+   * The maximum Unicode 4.0 code point, which is greater than the range
+   * of the char data type.
+   * This value is <code>0x10FFFF</code>.
+   * @since 1.5
+   */
+  public static final int MAX_CODE_POINT = 0x10FFFF;
+
+  /**
+   * The minimum Unicode high surrogate code unit, or
+   * <emph>leading-surrogate</emph>, in the UTF-16 character encoding.
+   * This value is <code>'\uD800'</code>.
+   * @since 1.5
+   */
+  public static final char MIN_HIGH_SURROGATE = '\uD800';
+
+  /**
+   * The maximum Unicode high surrogate code unit, or
+   * <emph>leading-surrogate</emph>, in the UTF-16 character encoding.
+   * This value is <code>'\uDBFF'</code>.
+   * @since 1.5
+   */
+  public static final char MAX_HIGH_SURROGATE = '\uDBFF';
+
+  /**
+   * The minimum Unicode low surrogate code unit, or
+   * <emph>trailing-surrogate</emph>, in the UTF-16 character encoding.
+   * This value is <code>'\uDC00'</code>.
+   * @since 1.5
+   */
+  public static final char MIN_LOW_SURROGATE = '\uDC00';
+
+  /**
+   * The maximum Unicode low surrogate code unit, or
+   * <emph>trailing-surrogate</emph>, in the UTF-16 character encoding.
+   * This value is <code>'\uDFFF'</code>.
+   * @since 1.5
+   */
+  public static final char MAX_LOW_SURROGATE = '\uDFFF';  
+
+  /**
+   * The minimum Unicode surrogate code unit in the UTF-16 character encoding.
+   * This value is <code>'\uD800'</code>.
+   * @since 1.5
+   */
+  public static final char MIN_SURROGATE = MIN_HIGH_SURROGATE;
+
+  /**
+   * The maximum Unicode surrogate code unit in the UTF-16 character encoding.
+   * This value is <code>'\uDFFF'</code>.
+   * @since 1.5
+   */
+  public static final char MAX_SURROGATE = MAX_LOW_SURROGATE;
+
+  /**
+   * The lowest possible supplementary Unicode code point (the first code
+   * point outside the basic multilingual plane (BMP)).
+   * This value is <code>0x10000</code>.
+   */ 
+  public static final int MIN_SUPPLEMENTARY_CODE_POINT = 0x10000;
+
+  /**
    * Class object representing the primitive char data type.
    *
    * @since 1.1
    */
-  public static final Class TYPE = VMClassLoader.getPrimitiveClass('C');
+  public static final Class<Character> TYPE = (Class<Character>) VMClassLoader.getPrimitiveClass('C');
 
   /**
    * The number of bits needed to represent a <code>char</code>.
@@ -2089,71 +2149,6 @@ public final class Character implements Serializable, Comparable
   private static final int MIRROR_MASK = 0x40;
 
   /**
-   * Min value for supplementary code point.
-   *
-   * @since 1.5
-   */
-  public static final int MIN_SUPPLEMENTARY_CODE_POINT = 0x10000;
-
-  /**
-   * Min value for code point.
-   *
-   * @since 1.5
-   */
-  public static final int MIN_CODE_POINT = 0; 
- 
- 
-  /**
-   * Max value for code point.
-   *
-   * @since 1.5
-   */
-  public static final int MAX_CODE_POINT = 0x010ffff;
-
-
-  /**
-   * Minimum high surrogate code in UTF-16 encoding.
-   *
-   * @since 1.5
-   */
-  public static final char MIN_HIGH_SURROGATE = '\ud800';
-
-  /**
-   * Maximum high surrogate code in UTF-16 encoding.
-   *
-   * @since 1.5
-   */
-  public static final char MAX_HIGH_SURROGATE = '\udbff';
- 
-  /**
-   * Minimum low surrogate code in UTF-16 encoding.
-   *
-   * @since 1.5
-   */
-  public static final char MIN_LOW_SURROGATE = '\udc00';
-
-  /**
-   * Maximum low surrogate code in UTF-16 encoding.
-   *
-   * @since 1.5
-   */
-  public static final char MAX_LOW_SURROGATE = '\udfff';
-
-  /**
-   * Minimum surrogate code in UTF-16 encoding.
-   *
-   * @since 1.5
-   */
-  public static final char MIN_SURROGATE = MIN_HIGH_SURROGATE;
-
-  /**
-   * Maximum low surrogate code in UTF-16 encoding.
-   *
-   * @since 1.5
-   */
-  public static final char MAX_SURROGATE = MAX_LOW_SURROGATE;
-
-  /**
    * Grabs an attribute offset from the Unicode attribute database. The lower
    * 5 bits are the character type, the next 2 bits are flags, and the top
    * 9 bits are the offset into the attribute tables. Note that the top 9
@@ -2503,6 +2498,209 @@ public final class Character implements Serializable, Comparable
                | (1 << TITLECASE_LETTER)
                | (1 << MODIFIER_LETTER)
                | (1 << OTHER_LETTER))) != 0;
+  }
+  
+  /**
+   * Returns the index into the given CharSequence that is offset
+   * <code>codePointOffset</code> code points from <code>index</code>.
+   * @param seq the CharSequence
+   * @param index the start position in the CharSequence
+   * @param codePointOffset the number of code points offset from the start
+   * position
+   * @return the index into the CharSequence that is codePointOffset code 
+   * points offset from index
+   * 
+   * @throws NullPointerException if seq is null
+   * @throws IndexOutOfBoundsException if index is negative or greater than the
+   * length of the sequence.
+   * @throws IndexOutOfBoundsException if codePointOffset is positive and the 
+   * subsequence from index to the end of seq has fewer than codePointOffset
+   * code points
+   * @throws IndexOutOfBoundsException if codePointOffset is negative and the
+   * subsequence from the start of seq to index has fewer than 
+   * (-codePointOffset) code points
+   * @since 1.5
+   */
+  public static int offsetByCodePoints(CharSequence seq,
+                                       int index,
+                                       int codePointOffset)
+  {
+    int len = seq.length();
+    if (index < 0 || index > len)
+      throw new IndexOutOfBoundsException();
+    
+    int numToGo = codePointOffset;
+    int offset = index;
+    int adjust = 1;
+    if (numToGo >= 0)
+      {
+        for (; numToGo > 0; offset++)
+          {
+            numToGo--;
+            if (Character.isHighSurrogate(seq.charAt(offset))
+                && (offset + 1) < len
+                && Character.isLowSurrogate(seq.charAt(offset + 1)))
+              offset++;
+          }
+        return offset;
+      }
+    else
+      {
+        numToGo *= -1;
+        for (; numToGo > 0;)
+          {
+            numToGo--;
+            offset--;
+            if (Character.isLowSurrogate(seq.charAt(offset))
+                && (offset - 1) >= 0
+                && Character.isHighSurrogate(seq.charAt(offset - 1)))
+              offset--;
+          }
+        return offset;
+      }
+  }
+  
+  /**
+   * Returns the index into the given char subarray that is offset
+   * <code>codePointOffset</code> code points from <code>index</code>.
+   * @param a the char array
+   * @param start the start index of the subarray
+   * @param count the length of the subarray
+   * @param index the index to be offset
+   * @param codePointOffset the number of code points offset from <code>index
+   * </code>
+   * @return the index into the char array
+   * 
+   * @throws NullPointerException if a is null
+   * @throws IndexOutOfBoundsException if start or count is negative or if
+   * start + count is greater than the length of the array
+   * @throws IndexOutOfBoundsException if index is less than start or larger 
+   * than start + count
+   * @throws IndexOutOfBoundsException if codePointOffset is positive and the
+   * subarray from index to start + count - 1 has fewer than codePointOffset
+   * code points.
+   * @throws IndexOutOfBoundsException if codePointOffset is negative and the
+   * subarray from start to index - 1 has fewer than (-codePointOffset) code
+   * points
+   * @since 1.5
+
+   */
+  public static int offsetByCodePoints(char[] a,
+                                       int start,
+                                       int count,
+                                       int index,
+                                       int codePointOffset)
+  {
+    int len = a.length;
+    int end = start + count;
+    if (start < 0 || count < 0 || end > len || index < start || index > end)
+      throw new IndexOutOfBoundsException();
+    
+    int numToGo = codePointOffset;
+    int offset = index;
+    int adjust = 1;
+    if (numToGo >= 0)
+      {
+        for (; numToGo > 0; offset++)
+          {
+            numToGo--;
+            if (Character.isHighSurrogate(a[offset])
+                && (offset + 1) < len
+                && Character.isLowSurrogate(a[offset + 1]))
+              offset++;
+          }
+        return offset;
+      }
+    else
+      {
+        numToGo *= -1;
+        for (; numToGo > 0;)
+          {
+            numToGo--;
+            offset--;
+            if (Character.isLowSurrogate(a[offset])
+                && (offset - 1) >= 0
+                && Character.isHighSurrogate(a[offset - 1]))
+              offset--;
+            if (offset < start)
+              throw new IndexOutOfBoundsException();
+          }
+        return offset;
+      }
+
+  }
+
+  /**
+   * Returns the number of Unicode code points in the specified range of the
+   * given CharSequence.  The first char in the range is at position
+   * beginIndex and the last one is at position endIndex - 1.  Paired 
+   * surrogates (supplementary characters are represented by a pair of chars - 
+   * one from the high surrogates and one from the low surrogates) 
+   * count as just one code point.
+   * @param seq the CharSequence to inspect
+   * @param beginIndex the beginning of the range
+   * @param endIndex the end of the range
+   * @return the number of Unicode code points in the given range of the 
+   * sequence
+   * @throws NullPointerException if seq is null
+   * @throws IndexOutOfBoundsException if beginIndex is negative, endIndex is
+   * larger than the length of seq, or if beginIndex is greater than endIndex.
+   * @since 1.5
+   */
+  public static int codePointCount(CharSequence seq, int beginIndex,
+                                   int endIndex)
+  {
+    int len = seq.length();
+    if (beginIndex < 0 || endIndex > len || beginIndex > endIndex)
+      throw new IndexOutOfBoundsException();
+        
+    int count = 0;
+    for (int i = beginIndex; i < endIndex; i++)
+      {
+        count++;
+        // If there is a pairing, count it only once.
+        if (isHighSurrogate(seq.charAt(i)) && (i + 1) < endIndex
+            && isLowSurrogate(seq.charAt(i + 1)))
+          i ++;
+      }    
+    return count;
+  }
+
+  /**
+   * Returns the number of Unicode code points in the specified range of the
+   * given char array.  The first char in the range is at position
+   * offset and the length of the range is count.  Paired surrogates
+   * (supplementary characters are represented by a pair of chars - 
+   * one from the high surrogates and one from the low surrogates) 
+   * count as just one code point.
+   * @param a the char array to inspect
+   * @param offset the beginning of the range
+   * @param count the length of the range
+   * @return the number of Unicode code points in the given range of the 
+   * array
+   * @throws NullPointerException if a is null
+   * @throws IndexOutOfBoundsException if offset or count is negative or if 
+   * offset + countendIndex is larger than the length of a.
+   * @since 1.5
+   */
+  public static int codePointCount(char[] a, int offset,
+                                   int count)
+  {
+    int len = a.length;
+    int end = offset + count;
+    if (offset < 0 || count < 0 || end > len)
+      throw new IndexOutOfBoundsException();
+        
+    int counter = 0;
+    for (int i = offset; i < end; i++)
+      {
+        counter++;
+        // If there is a pairing, count it only once.
+        if (isHighSurrogate(a[i]) && (i + 1) < end
+            && isLowSurrogate(a[i + 1]))
+          i ++;
+      }    
+    return counter;
   }
 
   /**
@@ -3497,30 +3695,13 @@ public final class Character implements Serializable, Comparable
   }
 
   /**
-   * Compares an object to this Character.  Assuming the object is a
-   * Character object, this method performs the same comparison as
-   * compareTo(Character).
-   *
-   * @param o object to compare
-   * @return the comparison value
-   * @throws ClassCastException if o is not a Character object
-   * @throws NullPointerException if o is null
-   * @see #compareTo(Character)
-   * @since 1.2
-   */
-  public int compareTo(Object o)
-  {
-    return compareTo((Character) o);
-  }
-
-  /**
    * Returns an <code>Character</code> object wrapping the value.
    * In contrast to the <code>Character</code> constructor, this method
    * will cache some values.  It is used by boxing conversion.
    *
    * @param val the value to wrap
    * @return the <code>Character</code>
-   * 
+   *
    * @since 1.5
    */
   public static Character valueOf(char val)
@@ -3529,9 +3710,9 @@ public final class Character implements Serializable, Comparable
       return new Character(val);
     synchronized (charCache)
       {
-    if (charCache[val - MIN_VALUE] == null)
-      charCache[val - MIN_VALUE] = new Character(val);
-    return charCache[val - MIN_VALUE];
+	if (charCache[val - MIN_VALUE] == null)
+	  charCache[val - MIN_VALUE] = new Character(val);
+	return charCache[val - MIN_VALUE];
       }
   }
 
@@ -3559,6 +3740,9 @@ public final class Character implements Serializable, Comparable
    */
   public static char[] toChars(int codePoint)
   {
+    if (!isValidCodePoint(codePoint))
+      throw new IllegalArgumentException("Illegal Unicode code point : "
+                                         + codePoint);
     char[] result = new char[charCount(codePoint)];
     int ignore = toChars(codePoint, result, 0);
     return result;
@@ -3776,7 +3960,7 @@ public final class Character implements Serializable, Comparable
    */
   public static int codePointAt(char[] chars, int index, int limit)
   {
-    if (index < 0 || index >= limit || limit < 0 || limit >= chars.length)
+    if (index < 0 || index >= limit || limit < 0 || limit > chars.length)
       throw new IndexOutOfBoundsException();
     char high = chars[index];
     if (! isHighSurrogate(high) || ++index >= limit)

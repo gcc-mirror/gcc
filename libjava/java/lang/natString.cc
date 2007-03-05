@@ -707,7 +707,7 @@ java::lang::String::regionMatches (jint toffset,
 }
 
 jint
-java::lang::String::compareTo (jstring anotherString)
+java::lang::String::nativeCompareTo (jstring anotherString)
 {
   jchar *tptr = JvGetStringChars (this);
   jchar *optr = JvGetStringChars (anotherString);

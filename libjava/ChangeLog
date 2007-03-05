@@ -1,3 +1,14 @@
+2007-03-05  Mark Wielaard  <mark@klomp.org>
+
+	* java/lang/Character.java: Re-merged with Classpath.
+	* java/lang/natString.cc (nativeCompareTo): Renamed from
+	compareTo.
+	* java/lang/StringBuilder.java: Re-merged with Classpath.
+	* java/lang/String.java: Re-merged with Classpath.
+	(nativeCompareTo): Renamed from compareTo.
+	* java/lang/StringBuffer.java: Re-merged with Classpath.
+	* jni.cc (_Jv_JNI_GetAnyMethodID): Split calls to append.
+
 2007-03-05  Andrew Haley  <aph@redhat.com>
 
 	* java/lang/reflect/natVMProxy.cc (ncode_closure.meth): Delete.

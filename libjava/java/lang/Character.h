@@ -34,6 +34,10 @@ public:
   static jboolean isDefined(jint);
   static jboolean isLetter(jchar);
   static jboolean isLetter(jint);
+  static jint offsetByCodePoints(::java::lang::CharSequence *, jint, jint);
+  static jint offsetByCodePoints(JArray< jchar > *, jint, jint, jint, jint);
+  static jint codePointCount(::java::lang::CharSequence *, jint, jint);
+  static jint codePointCount(JArray< jchar > *, jint, jint);
   static jboolean isLetterOrDigit(jchar);
   static jboolean isLetterOrDigit(jint);
   static jboolean isJavaLetter(jchar);
@@ -72,8 +76,7 @@ public:
   static jbyte getDirectionality(jint);
   static jboolean isMirrored(jchar);
   static jboolean isMirrored(jint);
-  jint compareTo(::java::lang::Character *);
-  jint compareTo(::java::lang::Object *);
+  jint target$compareTo(::java::lang::Character *);
   static ::java::lang::Character * valueOf(jchar);
   static jchar reverseBytes(jchar);
   static JArray< jchar > * toChars(jint);
@@ -91,6 +94,7 @@ public:
   static jint codePointBefore(JArray< jchar > *, jint);
   static jint codePointBefore(JArray< jchar > *, jint, jint);
   static jint codePointBefore(::java::lang::CharSequence *, jint);
+  jint compareTo(::java::lang::Object *);
 private:
   jchar __attribute__((aligned(__alignof__( ::java::lang::Object)))) value;
   static const jlong serialVersionUID = 3786198910865385080LL;
@@ -99,6 +103,15 @@ public:
   static const jint MAX_RADIX = 36;
   static const jchar MIN_VALUE = 0;
   static const jchar MAX_VALUE = 65535;
+  static const jint MIN_CODE_POINT = 0;
+  static const jint MAX_CODE_POINT = 1114111;
+  static const jchar MIN_HIGH_SURROGATE = 55296;
+  static const jchar MAX_HIGH_SURROGATE = 56319;
+  static const jchar MIN_LOW_SURROGATE = 56320;
+  static const jchar MAX_LOW_SURROGATE = 57343;
+  static const jchar MIN_SURROGATE = 55296;
+  static const jchar MAX_SURROGATE = 57343;
+  static const jint MIN_SUPPLEMENTARY_CODE_POINT = 65536;
   static ::java::lang::Class * TYPE;
   static const jint SIZE = 16;
 private:
@@ -160,15 +173,6 @@ private:
   static const jint NO_BREAK_MASK = 32;
   static const jint MIRROR_MASK = 64;
 public:
-  static const jint MIN_SUPPLEMENTARY_CODE_POINT = 65536;
-  static const jint MIN_CODE_POINT = 0;
-  static const jint MAX_CODE_POINT = 1114111;
-  static const jchar MIN_HIGH_SURROGATE = 55296;
-  static const jchar MAX_HIGH_SURROGATE = 56319;
-  static const jchar MIN_LOW_SURROGATE = 56320;
-  static const jchar MAX_LOW_SURROGATE = 57343;
-  static const jchar MIN_SURROGATE = 55296;
-  static const jchar MAX_SURROGATE = 57343;
   static ::java::lang::Class class$;
 };
 
