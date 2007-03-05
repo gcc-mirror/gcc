@@ -1023,6 +1023,13 @@ c_common_post_options (const char **pfilename)
   if (flag_inline_functions)
     flag_inline_trees = 2;
 
+  /* By default we use C99 inline semantics in GNU99 or C99 mode.  C99
+     inline semantics are not supported in GNU89 or C89 mode.  */
+  if (flag_gnu89_inline == -1)
+    flag_gnu89_inline = !flag_isoc99;
+  else if (!flag_gnu89_inline && !flag_isoc99)
+    error ("-fno-gnu89-inline is only supported in GNU99 or C99 mode");
+
   /* If we are given more than one input file, we must use
      unit-at-a-time mode.  */
   if (num_in_fnames > 1)
