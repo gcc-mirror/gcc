@@ -1,3 +1,8 @@
+2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* c.opt: Remove -ffixed-form, -ffixed-line-length-none, and
+	-ffixed-line-length-* options.
+
 2007-03-05  David Edelsohn  <edelsohn@gnu.ogr>
 
 	* config/rs6000/t-ppccomm: Always build libgcc2 for GNU/Linux

@@ -511,15 +511,6 @@ C ObjC C++ ObjC++ Joined RejectNegative
 fexternal-templates
 C++ ObjC++
 
-ffixed-form
-C ObjC
-
-ffixed-line-length-none
-C ObjC
-
-ffixed-line-length-
-C ObjC Joined
-
 ffor-scope
 C++ ObjC++
 Scope of for-init-statement variables is local to the loop
