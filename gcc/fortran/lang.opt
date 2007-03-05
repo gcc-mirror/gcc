@@ -34,7 +34,7 @@ Fortran Joined
 -J<directory>	Put MODULE files in 'directory'
 
 Wall
-Fortran RejectNegative
+Fortran
 ; Documented in C
 
 Waliasing

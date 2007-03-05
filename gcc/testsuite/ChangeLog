@@ -1,5 +1,15 @@
 2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	PR fortran/30437
+	Backport from trunk:
+	2007-01-25  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	* gcc.dg/Wall.c: New.
+	* gcc.dg/Wno-all.c: New.
+	* gfortran.dg/Wall.f90: New.
+	* gfortran.dg/Wno-all.f90: New.
+
+2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* gfortran.dg/io_constraints_3.f90: Add -fmax-errors=50 option.
 
 2007-03-05  Richard Guenther  <rguenther@suse.de>

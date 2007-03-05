@@ -1,5 +1,14 @@
 2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	PR fortran/30437
+	Backport from trunk:
+	2007-01-25  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	* lang.opt (Wall): Remove RejectNegative.
+	* options.c (gfc_handle_option): Wall can be disabled.
+	(set_Wall): Add a parameter for disabling Wall.
+
+2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* lang.opt: Add -fmax-errors= option.
 	* gfortran.h (gfc_option_t): Add max_errors element.
 	* options.c (gfc_init_options): Set max_errors default value
