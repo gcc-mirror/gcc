@@ -304,7 +304,7 @@ proc emit_package_rule {package} {
     # Object and Class are special cases due to an apparent compiler
     # bug.  Process is a special case because we don't build all
     # concrete implementations of Process on all platforms.
-    set omit "| tr ' ' '\\n' | fgrep -v Object.class | fgrep -v Class.class | grep -v '\[^/\]Process' "
+    set omit "| tr ' ' '\\n' | fgrep -v Object.class | fgrep -v Class.class | egrep -v '\(Ecos\|Posix\|Win32\)Process' "
   } else {
     set omit ""
   }

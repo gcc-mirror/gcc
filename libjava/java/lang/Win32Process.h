@@ -20,10 +20,10 @@ public:
   ::java::io::InputStream * getInputStream();
   ::java::io::OutputStream * getOutputStream();
   jint waitFor();
-  Win32Process(JArray< ::java::lang::String * > *, JArray< ::java::lang::String * > *, ::java::io::File *);
+  Win32Process(JArray< ::java::lang::String * > *, JArray< ::java::lang::String * > *, ::java::io::File *, jboolean);
 private:
   jboolean hasExited();
-  void startProcess(JArray< ::java::lang::String * > *, JArray< ::java::lang::String * > *, ::java::io::File *);
+  void startProcess(JArray< ::java::lang::String * > *, JArray< ::java::lang::String * > *, ::java::io::File *, jboolean);
   void cleanup();
   ::java::io::OutputStream * __attribute__((aligned(__alignof__( ::java::lang::Process)))) outputStream;
   ::java::io::InputStream * inputStream;

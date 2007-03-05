@@ -1,5 +1,5 @@
-/* ProcessBuilder.java - Represent spawned system process
-   Copyright (C) 2005, 2006  Free Software Foundation, Inc.
+/* java.lang.VMProcess -- VM implementation of java.lang.ProcessBuilder
+   Copyright (C) 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,84 +35,34 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.lang;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public final class ProcessBuilder
+final class VMProcess
 {
-  private File directory = new File(System.getProperty("user.dir"));
-  private List<String> command;
-  // FIXME: make a copy.
-  private Map<String, String> environment = System.getenv();
-  private boolean redirect = false;
+  static native Process nativeExec(String[] cmd, String[] env,
+				   File dir, boolean redirect)
+    throws IOException;
 
-  public ProcessBuilder(List<String> command)
+  static Process exec(List<String> cmd, Map<String, String> env,
+		      File dir, boolean redirect) throws IOException
   {
-    this.command = command;
-  }
+    String[] acmd = (String[]) cmd.toArray(new String[cmd.size()]);
+    String[] aenv = new String[env.size()];
 
-  public ProcessBuilder(String... command)
-  {
-    this.command = Arrays.asList(command);
-  }
+    int i = 0;
+    Iterator iter = env.entrySet().iterator();
+    while (iter.hasNext())
+      {
+	Map.Entry entry = (Map.Entry) iter.next();
+	aenv[i++] = entry.getKey() + "=" + entry.getValue();
+      }
 
-  public List<String> command()
-  {
-    return command;
-  }
-
-  public ProcessBuilder command(List<String> command)
-  {
-    this.command = command;
-    return this;
-  }
-
-  public ProcessBuilder command(String... command)
-  {
-    this.command = Arrays.asList(command);
-    return this;
-  }
-
-  public File directory()
-  {
-    return directory;
-  }
-
-  public ProcessBuilder directory(File directory)
-  {
-    this.directory = directory;
-    return this;
-  }
-
-  public Map<String, String> environment()
-  {
-    return environment;
-  }
-
-  public boolean redirectErrorStream()
-  {
-    return redirect;
-  }
-
-  public ProcessBuilder redirectErrorStream(boolean redirect)
-  {
-    this.redirect = redirect;
-    return this;
-  }
-
-  public Process start() throws IOException
-  {
-    SecurityManager sm = SecurityManager.current; // Be thread-safe!
-    if (sm != null)
-      sm.checkExec(command.get(0));
-    //    return VMProcess.exec(command, environment, directory, redirect);
-    // FIXME
-    return null;
+    return nativeExec(acmd, aenv, dir, redirect);
   }
 }

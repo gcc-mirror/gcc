@@ -1,3 +1,29 @@
+2007-03-05  Tom Tromey  <tromey@redhat.com>
+
+	* sources.am, Makefile.in: Rebuilt.
+	* scripts/makemake.tcl (emit_package_rule): Don't omit
+	VMProcess.java.
+	* Makefile.am (nat_source_files): Added natVMProcess.cc.
+	(inner_nat_headers): Added ImmediateEOFInputStream.h.
+	* gcj/javaprims.h: Regenerated.
+	* java/lang/System.java (EnvironmentMap): Now package-private.
+	(EnvironmentMap(Map)): New constructor.
+	(EnvironmentMap.put): New method.
+	* java/lang/natWin32Process.cc (startProcess): Update.
+	* java/lang/Win32Process.java (Win32Process): Added 'redirect'
+	argument.
+	(startProcess): Likewise.
+	* java/lang/EcosProcess.java (EcosProcess): Added 'redirect'
+	argument.
+	* java/lang/natPosixProcess.cc (nativeSpawn): Handle redirection.
+	* java/lang/PosixProcess.java (redirect): New field.
+	(PosixProcess): Added 'redirect' argument.
+	* java/lang/natRuntime.cc (execInternal): Added 'redirect'
+	argument to Process creation.
+	* java/lang/natVMProcess.cc: New file.
+	* java/lang/ProcessBuilder.java: Removed.
+	* java/lang/VMProcess.java: New file.
+
 2007-03-03  Andrew Haley  <aph@redhat.com>
 
 	* java/lang/natClass.cc (parseAnnotationElement): Correct long

@@ -20,7 +20,7 @@ public:
   ::java::io::InputStream * getInputStream();
   ::java::io::OutputStream * getOutputStream();
   jint waitFor();
-  EcosProcess(JArray< ::java::lang::String * > *, JArray< ::java::lang::String * > *, ::java::io::File *);
+  EcosProcess(JArray< ::java::lang::String * > *, JArray< ::java::lang::String * > *, ::java::io::File *, jboolean);
   static ::java::lang::Class class$;
 };
 

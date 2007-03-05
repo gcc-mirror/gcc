@@ -1,6 +1,6 @@
 // natRuntime.cc - Implementation of native side of Runtime class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -297,7 +297,7 @@ java::lang::Runtime::execInternal (jstringArray cmd,
 				   jstringArray env,
 				   java::io::File *dir)
 {
-  return new _Jv_platform_process (cmd, env, dir);
+  return new _Jv_platform_process (cmd, env, dir, false);
 }
 
 jint

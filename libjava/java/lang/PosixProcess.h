@@ -31,7 +31,7 @@ public: // actually package-private
 private:
   void nativeSpawn();
 public: // actually package-private
-  PosixProcess(JArray< ::java::lang::String * > *, JArray< ::java::lang::String * > *, ::java::io::File *);
+  PosixProcess(JArray< ::java::lang::String * > *, JArray< ::java::lang::String * > *, ::java::io::File *, jboolean);
   static jlong access$0(::java::lang::PosixProcess *);
   static ::java::lang::Object * access$1();
   static void access$2(::java::lang::PosixProcess$ProcessManager *);
@@ -39,6 +39,7 @@ private:
   JArray< ::java::lang::String * > * __attribute__((aligned(__alignof__( ::java::lang::Process)))) progarray;
   JArray< ::java::lang::String * > * envp;
   ::java::io::File * dir;
+  jboolean redirect;
   ::java::lang::Throwable * exception;
   jlong pid;
 public: // actually package-private

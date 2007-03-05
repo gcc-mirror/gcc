@@ -1,6 +1,6 @@
 // natWin32Process.cc - Native side of Win32 process code.
 
-/* Copyright (C) 2003, 2006  Free Software Foundation
+/* Copyright (C) 2003, 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -210,8 +210,9 @@ HANDLE ChildProcessPipe::getChildHandle()
 
 void
 java::lang::Win32Process::startProcess (jstringArray progarray,
-                                           jstringArray envp,
-                                           java::io::File *dir)
+					jstringArray envp,
+					java::io::File *dir,
+					jboolean redirect)
 {
   using namespace java::io;
 
