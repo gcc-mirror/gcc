@@ -13,7 +13,7 @@ EXTRA_DIST = README.jaxp $(man_MANS)
 
 docs: cp-hacking.ps cp-vmintegration.ps cp-tools.ps
 
-#man_MANS = $(TOOLS_MANFILES)
+man_MANS = $(TOOLS_MANFILES)
 TOOLS_MANFILES = \
 	gappletviewer.1 \
 	gjar.1 \
