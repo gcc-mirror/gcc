@@ -139,8 +139,8 @@ struct cgraph_varpool_node *cgraph_varpool_nodes_queue, *cgraph_varpool_first_un
 /* The linked list of cgraph varpool nodes.  */
 struct cgraph_varpool_node *cgraph_varpool_nodes;
 
-/* End of the varpool queue.  Needs to be QTYed to work with PCH.  */
-static GTY(()) struct cgraph_varpool_node *cgraph_varpool_last_needed_node;
+/* End of the varpool queue.  */
+struct cgraph_varpool_node *cgraph_varpool_last_needed_node;
 
 /* Linked list of cgraph asm nodes.  */
 struct cgraph_asm_node *cgraph_asm_nodes;

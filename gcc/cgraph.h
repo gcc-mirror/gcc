@@ -249,6 +249,7 @@ extern GTY(()) struct cgraph_node *cgraph_nodes_queue;
 extern GTY(()) struct cgraph_node *cgraph_expand_queue;
 
 extern GTY(()) struct cgraph_varpool_node *cgraph_varpool_first_unanalyzed_node;
+extern GTY(()) struct cgraph_varpool_node *cgraph_varpool_last_needed_node;
 extern GTY(()) struct cgraph_varpool_node *cgraph_varpool_nodes_queue;
 extern GTY(()) struct cgraph_varpool_node *cgraph_varpool_nodes;
 extern GTY(()) struct cgraph_asm_node *cgraph_asm_nodes;

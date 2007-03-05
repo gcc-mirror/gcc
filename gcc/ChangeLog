@@ -1,3 +1,12 @@
+2007-03-05  Steve Ellcey  <sje@cup.hp.com>
+
+	Backported from mainline
+	PR debug/29614
+	* cgraph.h (cgraph_varpool_last_needed_node): Make global.
+	* cgraph.c (cgraph_varpool_last_needed_node): Ditto.
+	* cgraphunit.c (cgraph_varpool_assemble_pending_decls):
+	Set cgraph_varpool_last_needed_node to NULL.
+
 2007/03/05  David Taylor  <dtaylor@emc.com>
 
 	PR 31050

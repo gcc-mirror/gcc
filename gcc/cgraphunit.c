@@ -897,6 +897,9 @@ cgraph_varpool_assemble_pending_decls (void)
       else
         node->next_needed = NULL;
     }
+  /* cgraph_varpool_nodes_queue is now empty, clear the pointer to the last
+     element in the queue.  */
+  cgraph_varpool_last_needed_node = NULL;
   return changed;
 }
 /* Output all variables enqueued to be assembled.  */
