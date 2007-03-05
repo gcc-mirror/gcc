@@ -68,20 +68,12 @@ binfo_or_else (tree base, tree type)
 }
 
 /* According to ARM $7.1.6, "A `const' object may be initialized, but its
-   value may not be changed thereafter.  Thus, we emit hard errors for these,
-   rather than just pedwarns.  If `SOFT' is 1, then we just pedwarn.  (For
-   example, conversions to references.)  */
+   value may not be changed thereafter.  */
 
 void
-readonly_error (tree arg, const char* string, int soft)
+readonly_error (tree arg, const char* string)
 {
   const char *fmt;
-  void (*fn) (const char *, ...) ATTRIBUTE_GCC_CXXDIAG(1,2);
-
-  if (soft)
-    fn = pedwarn;
-  else
-    fn = error;
 
   if (TREE_CODE (arg) == COMPONENT_REF)
     {
@@ -89,7 +81,7 @@ readonly_error (tree arg, const char* string, int soft)
 	fmt = "%s of data-member %qD in read-only structure";
       else
 	fmt = "%s of read-only data-member %qD";
-      (*fn) (fmt, string, TREE_OPERAND (arg, 1));
+      error (fmt, string, TREE_OPERAND (arg, 1));
     }
   else if (TREE_CODE (arg) == VAR_DECL)
     {
@@ -99,21 +91,21 @@ readonly_error (tree arg, const char* string, int soft)
 	fmt = "%s of constant field %qD";
       else
 	fmt = "%s of read-only variable %qD";
-      (*fn) (fmt, string, arg);
+      error (fmt, string, arg);
     }
   else if (TREE_CODE (arg) == PARM_DECL)
-    (*fn) ("%s of read-only parameter %qD", string, arg);
+    error ("%s of read-only parameter %qD", string, arg);
   else if (TREE_CODE (arg) == INDIRECT_REF
 	   && TREE_CODE (TREE_TYPE (TREE_OPERAND (arg, 0))) == REFERENCE_TYPE
 	   && (TREE_CODE (TREE_OPERAND (arg, 0)) == VAR_DECL
 	       || TREE_CODE (TREE_OPERAND (arg, 0)) == PARM_DECL))
-    (*fn) ("%s of read-only reference %qD", string, TREE_OPERAND (arg, 0));
+    error ("%s of read-only reference %qD", string, TREE_OPERAND (arg, 0));
   else if (TREE_CODE (arg) == RESULT_DECL)
-    (*fn) ("%s of read-only named return value %qD", string, arg);
+    error ("%s of read-only named return value %qD", string, arg);
   else if (TREE_CODE (arg) == FUNCTION_DECL)
-    (*fn) ("%s of function %qD", string, arg);
+    error ("%s of function %qD", string, arg);
   else
-    (*fn) ("%s of read-only location", string);
+    error ("%s of read-only location", string);
 }
 
 
