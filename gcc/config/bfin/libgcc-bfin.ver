@@ -1,0 +1,285 @@
+GCC_3.0 {
+  # libgcc1 integer symbols
+  ___absvsi2
+  ___addvsi3
+  ___ashlsi3
+  ___ashrsi3
+  ___divsi3
+  ___lshrsi3
+  ___modsi3
+  ___mulsi3
+  ___mulvsi3
+  ___negvsi2
+  ___subvsi3
+  ___udivsi3
+  ___umodsi3
+
+  # libgcc1 floating point symbols
+  ___addsf3
+  ___adddf3
+  ___addxf3
+  ___addtf3
+  ___divsf3
+  ___divdf3
+  ___divxf3
+  ___divtf3
+  ___eqsf2
+  ___eqdf2
+  ___eqxf2
+  ___eqtf2
+  ___extenddfxf2
+  ___extenddftf2
+  ___extendsfdf2
+  ___extendsfxf2
+  ___extendsftf2
+  ___fixsfsi
+  ___fixdfsi
+  ___fixxfsi
+  ___fixtfsi
+  ___floatsisf
+  ___floatsidf
+  ___floatsixf
+  ___floatsitf
+  ___gesf2
+  ___gedf2
+  ___gexf2
+  ___getf2
+  ___gtsf2
+  ___gtdf2
+  ___gtxf2
+  ___gttf2
+  ___lesf2
+  ___ledf2
+  ___lexf2
+  ___letf2
+  ___ltsf2
+  ___ltdf2
+  ___ltxf2
+  ___lttf2
+  ___mulsf3
+  ___muldf3
+  ___mulxf3
+  ___multf3
+  ___negsf2
+  ___negdf2
+  ___negxf2
+  ___negtf2
+  ___nesf2
+  ___nedf2
+  ___nexf2
+  ___netf2
+  ___subsf3
+  ___subdf3
+  ___subxf3
+  ___subtf3
+  ___truncdfsf2
+  ___truncxfsf2
+  ___trunctfsf2
+  ___truncxfdf2
+  ___trunctfdf2
+
+  # libgcc2 DImode arithmetic (for 32-bit targets).
+  ___absvdi2
+  ___addvdi3
+  ___ashldi3
+  ___ashrdi3
+  ___cmpdi2
+  ___divdi3
+  ___ffsdi2
+  ___fixdfdi
+  ___fixsfdi
+  ___fixtfdi
+  ___fixxfdi
+  ___fixunsdfdi
+  ___fixunsdfsi
+  ___fixunssfsi
+  ___fixunssfdi
+  ___fixunstfdi
+  ___fixunstfsi
+  ___fixunsxfdi
+  ___fixunsxfsi
+  ___floatdidf
+  ___floatdisf
+  ___floatdixf
+  ___floatditf
+  ___lshrdi3
+  ___moddi3
+  ___muldi3
+  ___mulvdi3
+  ___negdi2
+  ___negvdi2
+  ___subvdi3
+  ___ucmpdi2
+  ___udivdi3
+  ___udivmoddi4
+  ___umoddi3
+
+  # libgcc2 TImode arithmetic (for 64-bit targets).
+  ___ashlti3
+  ___ashrti3
+  ___cmpti2
+  ___divti3
+  ___ffsti2
+  ___fixdfti
+  ___fixsfti
+  ___fixtfti
+  ___fixxfti
+  ___lshrti3
+  ___modti3
+  ___multi3
+  ___negti2
+  ___ucmpti2
+  ___udivmodti4
+  ___udivti3
+  ___umodti3
+  ___fixunsdfti
+  ___fixunssfti
+  ___fixunstfti
+  ___fixunsxfti
+  ___floattidf
+  ___floattisf
+  ___floattixf
+  ___floattitf
+
+  # Used to deal with trampoline initialization on some platforms
+  ___clear_cache
+
+  # EH symbols
+  __Unwind_DeleteException
+  __Unwind_Find_FDE
+  __Unwind_ForcedUnwind
+  __Unwind_GetGR
+  __Unwind_GetIP
+  __Unwind_GetLanguageSpecificData
+  __Unwind_GetRegionStart
+  __Unwind_GetTextRelBase
+  __Unwind_GetDataRelBase
+  __Unwind_RaiseException
+  __Unwind_Resume
+  __Unwind_SetGR
+  __Unwind_SetIP
+  ___deregister_frame
+  ___deregister_frame_info
+  ___deregister_frame_info_bases
+  ___register_frame
+  ___register_frame_info
+  ___register_frame_info_bases
+  ___register_frame_info_table
+  ___register_frame_info_table_bases
+  ___register_frame_table
+
+  # SjLj EH symbols
+  __Unwind_SjLj_Register
+  __Unwind_SjLj_Unregister
+  __Unwind_SjLj_RaiseException
+  __Unwind_SjLj_ForcedUnwind
+  __Unwind_SjLj_Resume
+}
+
+%inherit GCC_3.3 GCC_3.0
+GCC_3.3 {
+  __Unwind_FindEnclosingFunction
+  __Unwind_GetCFA
+  __Unwind_Backtrace
+  __Unwind_Resume_or_Rethrow
+  __Unwind_SjLj_Resume_or_Rethrow
+}
+
+%inherit GCC_3.3.1 GCC_3.3
+GCC_3.3.1 {
+  ___gcc_personality_sj0
+  ___gcc_personality_v0
+}
+
+%inherit GCC_3.3.2 GCC_3.3.1
+GCC_3.3.2 {
+}
+%inherit GCC_3.3.4 GCC_3.3.2
+GCC_3.3.4 {
+  ___unorddf2
+  ___unordsf2
+}
+
+%inherit GCC_3.4 GCC_3.3.4
+GCC_3.4 {
+  # bit scanning and counting built-ins
+  ___clzsi2
+  ___clzdi2
+  ___clzti2
+  ___ctzsi2
+  ___ctzdi2
+  ___ctzti2
+  ___popcountsi2
+  ___popcountdi2
+  ___popcountti2
+  ___paritysi2
+  ___paritydi2
+  ___parityti2
+}
+
+%inherit GCC_3.4.2 GCC_3.4
+GCC_3.4.2 {
+  # Used to deal with trampoline initialization on some platforms
+  ___enable_execute_stack
+  ___trampoline_setup
+}
+
+%inherit GCC_3.4.4 GCC_3.4.2
+GCC_3.4.4 {
+  # libgcc2 TImode arithmetic (for 64-bit targets).
+  ___absvti2
+  ___addvti3
+  ___mulvti3
+  ___negvti2
+  ___subvti3
+}
+
+%inherit GCC_4.0.0 GCC_3.4.4
+GCC_4.0.0 {
+  # libgcc2 ___builtin_powi helpers.
+  ___powisf2
+  ___powidf2
+  ___powixf2
+  ___powitf2
+
+  # c99 compliant complex arithmetic
+  ___divsc3
+  ___divdc3
+  ___divxc3
+  ___divtc3
+  ___mulsc3
+  ___muldc3
+  ___mulxc3
+  ___multc3
+}
+
+%inherit GCC_4.1.0 GCC_4.0.0
+GCC_4.1.0 {
+}
+
+%inherit GCC_4.2.0 GCC_4.1.0
+GCC_4.2.0 {
+  # unsigned-to-floating conversions
+  ___floatunsisf
+  ___floatunsidf
+  ___floatunsixf
+  ___floatunsitf
+  ___floatundidf
+  ___floatundisf
+  ___floatundixf
+  ___floatunditf
+  ___floatuntidf
+  ___floatuntisf
+  ___floatuntixf
+  ___floatuntitf
+  __Unwind_GetIPInfo
+}
+
+%inherit GCC_4.3.0 GCC_4.2.0
+GCC_4.3.0 {
+  # byte swapping routines
+  ___bswapsi2
+  ___bswapdi2
+  ___emutls_get_address
+  ___emutls_register_common
+}
