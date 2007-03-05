@@ -666,7 +666,7 @@ gij_SOURCES =
 ## We need -nodefaultlibs because we want to avoid gcj's `-lgcj'.  We
 ## need this because we are explicitly using libtool to link using the
 ## `.la' file.
-gij_LDFLAGS = -rpath $(libdir)/gcj-$(gcc_version) -rpath $(toolexeclibdir) \
+gij_LDFLAGS = -rpath $(dbexecdir) -rpath $(toolexeclibdir) \
 	-shared-libgcc $(THREADLDFLAGS)
 gij_LINK = $(GCJLINK)
 ## See jv_convert_LDADD.
