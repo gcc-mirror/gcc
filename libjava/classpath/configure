@@ -13521,23 +13521,23 @@ fi
   else
      PKG_CONFIG_MIN_VERSION=0.9.0
      if $PKG_CONFIG --atleast-pkgconfig-version $PKG_CONFIG_MIN_VERSION; then
-        echo "$as_me:$LINENO: checking for firefox-plugin" >&5
-echo $ECHO_N "checking for firefox-plugin... $ECHO_C" >&6
+        echo "$as_me:$LINENO: checking for firefox-plugin firefox-xpcom" >&5
+echo $ECHO_N "checking for firefox-plugin firefox-xpcom... $ECHO_C" >&6
 
-        if $PKG_CONFIG --exists "firefox-plugin" ; then
+        if $PKG_CONFIG --exists "firefox-plugin firefox-xpcom" ; then
             echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
             succeeded=yes
 
             echo "$as_me:$LINENO: checking MOZILLA_CFLAGS" >&5
 echo $ECHO_N "checking MOZILLA_CFLAGS... $ECHO_C" >&6
-            MOZILLA_CFLAGS=`$PKG_CONFIG --cflags "firefox-plugin"`
+            MOZILLA_CFLAGS=`$PKG_CONFIG --cflags "firefox-plugin firefox-xpcom"`
             echo "$as_me:$LINENO: result: $MOZILLA_CFLAGS" >&5
 echo "${ECHO_T}$MOZILLA_CFLAGS" >&6
 
             echo "$as_me:$LINENO: checking MOZILLA_LIBS" >&5
 echo $ECHO_N "checking MOZILLA_LIBS... $ECHO_C" >&6
-            MOZILLA_LIBS=`$PKG_CONFIG --libs "firefox-plugin"`
+            MOZILLA_LIBS=`$PKG_CONFIG --libs "firefox-plugin firefox-xpcom"`
             echo "$as_me:$LINENO: result: $MOZILLA_LIBS" >&5
 echo "${ECHO_T}$MOZILLA_LIBS" >&6
         else
@@ -13545,7 +13545,7 @@ echo "${ECHO_T}$MOZILLA_LIBS" >&6
             MOZILLA_LIBS=""
             ## If we have a custom action on failure, don't print errors, but
             ## do set a variable so people can do so.
-            MOZILLA_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "firefox-plugin"`
+            MOZILLA_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "firefox-plugin firefox-xpcom"`
 
         fi
 
@@ -13619,23 +13619,23 @@ fi
   else
      PKG_CONFIG_MIN_VERSION=0.9.0
      if $PKG_CONFIG --atleast-pkgconfig-version $PKG_CONFIG_MIN_VERSION; then
-        echo "$as_me:$LINENO: checking for xulrunner-plugin" >&5
-echo $ECHO_N "checking for xulrunner-plugin... $ECHO_C" >&6
+        echo "$as_me:$LINENO: checking for xulrunner-plugin xulrunner-xpcom" >&5
+echo $ECHO_N "checking for xulrunner-plugin xulrunner-xpcom... $ECHO_C" >&6
 
-        if $PKG_CONFIG --exists "xulrunner-plugin" ; then
+        if $PKG_CONFIG --exists "xulrunner-plugin xulrunner-xpcom" ; then
             echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
             succeeded=yes
 
             echo "$as_me:$LINENO: checking MOZILLA_CFLAGS" >&5
 echo $ECHO_N "checking MOZILLA_CFLAGS... $ECHO_C" >&6
-            MOZILLA_CFLAGS=`$PKG_CONFIG --cflags "xulrunner-plugin"`
+            MOZILLA_CFLAGS=`$PKG_CONFIG --cflags "xulrunner-plugin xulrunner-xpcom"`
             echo "$as_me:$LINENO: result: $MOZILLA_CFLAGS" >&5
 echo "${ECHO_T}$MOZILLA_CFLAGS" >&6
 
             echo "$as_me:$LINENO: checking MOZILLA_LIBS" >&5
 echo $ECHO_N "checking MOZILLA_LIBS... $ECHO_C" >&6
-            MOZILLA_LIBS=`$PKG_CONFIG --libs "xulrunner-plugin"`
+            MOZILLA_LIBS=`$PKG_CONFIG --libs "xulrunner-plugin xulrunner-xpcom"`
             echo "$as_me:$LINENO: result: $MOZILLA_LIBS" >&5
 echo "${ECHO_T}$MOZILLA_LIBS" >&6
         else
@@ -13643,7 +13643,7 @@ echo "${ECHO_T}$MOZILLA_LIBS" >&6
             MOZILLA_LIBS=""
             ## If we have a custom action on failure, don't print errors, but
             ## do set a variable so people can do so.
-            MOZILLA_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "xulrunner-plugin"`
+            MOZILLA_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "xulrunner-plugin xulrunner-xpcom"`
 
         fi
 
@@ -13717,23 +13717,23 @@ fi
   else
      PKG_CONFIG_MIN_VERSION=0.9.0
      if $PKG_CONFIG --atleast-pkgconfig-version $PKG_CONFIG_MIN_VERSION; then
-        echo "$as_me:$LINENO: checking for mozilla-firefox-plugin" >&5
-echo $ECHO_N "checking for mozilla-firefox-plugin... $ECHO_C" >&6
+        echo "$as_me:$LINENO: checking for mozilla-firefox-plugin mozilla-firefox-xpcom" >&5
+echo $ECHO_N "checking for mozilla-firefox-plugin mozilla-firefox-xpcom... $ECHO_C" >&6
 
-        if $PKG_CONFIG --exists "mozilla-firefox-plugin" ; then
+        if $PKG_CONFIG --exists "mozilla-firefox-plugin mozilla-firefox-xpcom" ; then
             echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
             succeeded=yes
 
             echo "$as_me:$LINENO: checking MOZILLA_CFLAGS" >&5
 echo $ECHO_N "checking MOZILLA_CFLAGS... $ECHO_C" >&6
-            MOZILLA_CFLAGS=`$PKG_CONFIG --cflags "mozilla-firefox-plugin"`
+            MOZILLA_CFLAGS=`$PKG_CONFIG --cflags "mozilla-firefox-plugin mozilla-firefox-xpcom"`
             echo "$as_me:$LINENO: result: $MOZILLA_CFLAGS" >&5
 echo "${ECHO_T}$MOZILLA_CFLAGS" >&6
 
             echo "$as_me:$LINENO: checking MOZILLA_LIBS" >&5
 echo $ECHO_N "checking MOZILLA_LIBS... $ECHO_C" >&6
-            MOZILLA_LIBS=`$PKG_CONFIG --libs "mozilla-firefox-plugin"`
+            MOZILLA_LIBS=`$PKG_CONFIG --libs "mozilla-firefox-plugin mozilla-firefox-xpcom"`
             echo "$as_me:$LINENO: result: $MOZILLA_LIBS" >&5
 echo "${ECHO_T}$MOZILLA_LIBS" >&6
         else
@@ -13741,7 +13741,7 @@ echo "${ECHO_T}$MOZILLA_LIBS" >&6
             MOZILLA_LIBS=""
             ## If we have a custom action on failure, don't print errors, but
             ## do set a variable so people can do so.
-            MOZILLA_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "mozilla-firefox-plugin"`
+            MOZILLA_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "mozilla-firefox-plugin mozilla-firefox-xpcom"`
 
         fi
 
@@ -13815,23 +13815,23 @@ fi
   else
      PKG_CONFIG_MIN_VERSION=0.9.0
      if $PKG_CONFIG --atleast-pkgconfig-version $PKG_CONFIG_MIN_VERSION; then
-        echo "$as_me:$LINENO: checking for seamonkey-plugin" >&5
-echo $ECHO_N "checking for seamonkey-plugin... $ECHO_C" >&6
+        echo "$as_me:$LINENO: checking for seamonkey-plugin seamonkey-xpcom" >&5
+echo $ECHO_N "checking for seamonkey-plugin seamonkey-xpcom... $ECHO_C" >&6
 
-        if $PKG_CONFIG --exists "seamonkey-plugin" ; then
+        if $PKG_CONFIG --exists "seamonkey-plugin seamonkey-xpcom" ; then
             echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
             succeeded=yes
 
             echo "$as_me:$LINENO: checking MOZILLA_CFLAGS" >&5
 echo $ECHO_N "checking MOZILLA_CFLAGS... $ECHO_C" >&6
-            MOZILLA_CFLAGS=`$PKG_CONFIG --cflags "seamonkey-plugin"`
+            MOZILLA_CFLAGS=`$PKG_CONFIG --cflags "seamonkey-plugin seamonkey-xpcom"`
             echo "$as_me:$LINENO: result: $MOZILLA_CFLAGS" >&5
 echo "${ECHO_T}$MOZILLA_CFLAGS" >&6
 
             echo "$as_me:$LINENO: checking MOZILLA_LIBS" >&5
 echo $ECHO_N "checking MOZILLA_LIBS... $ECHO_C" >&6
-            MOZILLA_LIBS=`$PKG_CONFIG --libs "seamonkey-plugin"`
+            MOZILLA_LIBS=`$PKG_CONFIG --libs "seamonkey-plugin seamonkey-xpcom"`
             echo "$as_me:$LINENO: result: $MOZILLA_LIBS" >&5
 echo "${ECHO_T}$MOZILLA_LIBS" >&6
         else
@@ -13839,7 +13839,7 @@ echo "${ECHO_T}$MOZILLA_LIBS" >&6
             MOZILLA_LIBS=""
             ## If we have a custom action on failure, don't print errors, but
             ## do set a variable so people can do so.
-            MOZILLA_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "seamonkey-plugin"`
+            MOZILLA_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "seamonkey-plugin seamonkey-xpcom"`
 
         fi
 
