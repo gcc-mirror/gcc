@@ -613,16 +613,16 @@ if test "x${COMPILE_JNI}" = xyes; then
   if test "x${COMPILE_PLUGIN}" = xyes; then
     PKG_CHECK_MODULES(MOZILLA, mozilla-plugin, [MOZILLA_FOUND=yes], [MOZILLA_FOUND=no])
     if test "x${MOZILLA_FOUND}" = xno; then
-      PKG_CHECK_MODULES(MOZILLA, firefox-plugin, [MOZILLA_FOUND=yes], [MOZILLA_FOUND=no])
+      PKG_CHECK_MODULES(MOZILLA, firefox-plugin firefox-xpcom, [MOZILLA_FOUND=yes], [MOZILLA_FOUND=no])
     fi
     if test "x${MOZILLA_FOUND}" = xno; then
-      PKG_CHECK_MODULES(MOZILLA, xulrunner-plugin, [MOZILLA_FOUND=yes], [MOZILLA_FOUND=no])
+      PKG_CHECK_MODULES(MOZILLA, xulrunner-plugin xulrunner-xpcom, [MOZILLA_FOUND=yes], [MOZILLA_FOUND=no])
     fi
     if test "x${MOZILLA_FOUND}" = xno; then
-      PKG_CHECK_MODULES(MOZILLA, mozilla-firefox-plugin, [MOZILLA_FOUND=yes], [MOZILLA_FOUND=no])
+      PKG_CHECK_MODULES(MOZILLA, mozilla-firefox-plugin mozilla-firefox-xpcom, [MOZILLA_FOUND=yes], [MOZILLA_FOUND=no])
     fi
     if test "x${MOZILLA_FOUND}" = xno; then
-      PKG_CHECK_MODULES(MOZILLA, seamonkey-plugin, [MOZILLA_FOUND=yes], [MOZILLA_FOUND=no])
+      PKG_CHECK_MODULES(MOZILLA, seamonkey-plugin seamonkey-xpcom, [MOZILLA_FOUND=yes], [MOZILLA_FOUND=no])
     fi
     PKG_CHECK_MODULES(GLIB, glib-2.0)
 

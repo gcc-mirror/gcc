@@ -1,3 +1,9 @@
+2007-03-02  Mario Torre  <neugens@limasoftware.net>
+
+	PR classpath/31017:
+	committed for Petteri RÃ¤ty <betelgeuse@gentoo.org>
+	* configure.ac: fix broken build for gcj browser plugin
+
 2007-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* java/util/Date.java (parse): Properly parse 09:01:02 as
