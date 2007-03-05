@@ -13,15 +13,9 @@ tramp.S: $(srcdir)/config/rs6000/tramp.asm
 
 ifneq (,$(findstring gnu,$(target)))
 ifeq (,$(findstring spe,$(target)))
-TARGET_LIBGCC2_CFLAGS += -specs=ldblspecs
+TARGET_LIBGCC2_CFLAGS += -mlong-double-128
 
 SHLIB_MAPFILES += $(srcdir)/config/rs6000/libgcc-ppc-glibc.ver
-
-# Hack to use -mlong-double-128 only when not compiling nof libgcc
-mklibgcc: ldblspecs
-
-ldblspecs: specs
-	sed -e '/cc1_options/{ n; s/$$/ %{!msoft-float:-mlong-double-128}/; }' < specs > $@
 endif
 endif
 
