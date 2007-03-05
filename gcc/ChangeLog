@@ -1,4 +1,9 @@
 2007-03-05  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (fold_binary): Remove duplicate folding
+	of comparison of non-null ADDR_EXPR against null.
+
+2007-03-05  Richard Guenther  <rguenther@suse.de>
 	Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/26420
