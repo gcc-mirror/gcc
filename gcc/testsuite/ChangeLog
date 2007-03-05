@@ -1,5 +1,9 @@
 2007-03-05  Ian Lance Taylor  <iant@google.com>
 
+	* gcc.c-torture/compile/pr31034.c: New test.
+
+2007-03-05  Ian Lance Taylor  <iant@google.com>
+
 	* gcc.dg/inline-18.c: New test.
 	* gcc.dg/inline-19.c: New test.
 	* gcc.dg/inline-20.c: New test.
