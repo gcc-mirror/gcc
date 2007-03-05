@@ -1,3 +1,8 @@
+2007-03-05  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/30895
+	* tree.c (cp_tree_equal): Properly handle COMPLEX_CST trees.
+
 2007-02-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_new_method_call): Ensure that explicit calls of
