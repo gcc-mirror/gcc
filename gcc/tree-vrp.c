@@ -1137,13 +1137,14 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
       /* If the maximum value forces us to be out of bounds, simply punt.
 	 It would be pointless to try and do anything more since this
 	 all should be optimized away above us.  */
-      if (cond_code == LT_EXPR && compare_values (max, min) == 0)
+      if ((cond_code == LT_EXPR
+	   && compare_values (max, min) == 0)
+	  || is_overflow_infinity (max))
 	set_value_range_to_varying (vr_p);
       else
 	{
 	  /* For LT_EXPR, we create the range [MIN, MAX - 1].  */
-	  if (cond_code == LT_EXPR
-	      && !is_positive_overflow_infinity (max))
+	  if (cond_code == LT_EXPR)
 	    {
 	      tree one = build_int_cst (type, 1);
 	      max = fold_build2 (MINUS_EXPR, type, max, one);
@@ -1169,13 +1170,14 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
       /* If the minimum value forces us to be out of bounds, simply punt.
 	 It would be pointless to try and do anything more since this
 	 all should be optimized away above us.  */
-      if (cond_code == GT_EXPR && compare_values (min, max) == 0)
+      if ((cond_code == GT_EXPR
+	   && compare_values (min, max) == 0)
+	  || is_overflow_infinity (min))
 	set_value_range_to_varying (vr_p);
       else
 	{
 	  /* For GT_EXPR, we create the range [MIN + 1, MAX].  */
-	  if (cond_code == GT_EXPR
-	      && !is_negative_overflow_infinity (min))
+	  if (cond_code == GT_EXPR)
 	    {
 	      tree one = build_int_cst (type, 1);
 	      min = fold_build2 (PLUS_EXPR, type, min, one);
