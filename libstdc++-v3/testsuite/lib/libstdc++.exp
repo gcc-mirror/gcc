@@ -466,11 +466,13 @@ proc v3-build_support { } {
     }
 
     # Collect into libtestc++.a
-    set arcommand "ar -rc ./libtestc++.a ${libtest_objs}"
+    set ar [transform "ar"]
+    set arcommand "$ar -rc ./libtestc++.a ${libtest_objs}"
     set result [lindex [local_exec "$arcommand" "" "" 300] 0]
     verbose "link result is $result"
     if { $result == 0 } {
-	set ranlibcommand "ranlib ./libtestc++.a"
+	set ranlib [transform "ranlib"]
+	set ranlibcommand "$ranlib ./libtestc++.a"
 	set result [lindex [local_exec "$ranlibcommand" "" "" 300] 0]
 	if { $result != 0 } {
 	    error "could not link libtestc++.a"
