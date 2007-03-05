@@ -1588,7 +1588,15 @@ analyze_insn_to_expand_var (struct loop *loop, rtx insn)
        || FLOAT_MODE_P (mode2)) 
       && !flag_unsafe_math_optimizations) 
     return NULL;
-  
+
+  if (dump_file)
+  {
+    fprintf (dump_file,
+    "\n;; Expanding Accumulator ");
+    print_rtl (dump_file, dest);
+    fprintf (dump_file, "\n");
+  }
+
   /* Record the accumulator to expand.  */
   ves = XNEW (struct var_to_expand);
   ves->insn = insn;
