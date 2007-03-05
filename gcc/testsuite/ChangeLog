@@ -1,3 +1,8 @@
+2007-03-05  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/30895
+	* g++.dg/parse/template23.C: New test.
+
 2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	PR fortran/30437
