@@ -1,3 +1,8 @@
+2007-03-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/
+	char/31031.cc: Include the right header.
+
 2007-03-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_CHEADERS): Add c_global.
