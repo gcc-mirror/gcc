@@ -1,5 +1,10 @@
 2007-03-05  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/14052
+	* gcc.dg/tree-ssa/vrp33.c: New testcase.
+
+2007-03-05  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/23777
 	* gcc.dg/tree-ssa/pr23777.c: New testcase.
 
