@@ -1,3 +1,9 @@
+2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	PR 31050
+	* gfortranspec.c (lang_specific_driver): Update program
+	name and copyright date.
+
 2007-03-01  Tobias Schlueter  <tobi@gcc.gnu.org>
 
 	Backport from trunk
