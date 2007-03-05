@@ -1,3 +1,8 @@
+2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* simplify.c (gfc_simplify_ibclr): Fix POS comparison.
+	(gfc_simplify_ibset): Same.
+
 2007-03-04  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* check.c (same_type_check): Typo fix in comment.
