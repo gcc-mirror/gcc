@@ -1,5 +1,10 @@
 2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* check.c (gfc_check_kill_sub): Add checks for non-scalar
+	arguments.
+
+2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* lang.opt (-fmodule-private): Remove option.
 	* gfortran.h (gfc_option_t): Remove module_access_private flag.
 	* options.c (gfc_init_options): Remove initialization for it.
