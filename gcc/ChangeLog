@@ -1,3 +1,9 @@
+2007-03-05  Ian Lance Taylor  <iant@google.com>
+
+	PR tree-optimization/31034
+	* tree-vrp.c (extract_range_from_assert): Don't try to handle a
+	half-range if the other side is an overflow infinity.
+
 2007-03-05  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config.gcc (bfin*-uclinux*): Use t-bfin-uclinux.
