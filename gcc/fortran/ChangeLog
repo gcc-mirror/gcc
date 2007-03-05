@@ -1,5 +1,11 @@
 2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	PR 31050
+	* gfortranspec.c (lang_specific_driver): Update program
+	name and copyright date.
+
+2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	PR fortran/30437
 	Backport from trunk:
 	2007-01-25  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
