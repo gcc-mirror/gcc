@@ -1,3 +1,12 @@
+2007-03-05  Volker Reichelt  <reichelt@netcologne.de>
+
+	* typeck2.c (readonly_error): Always emit a hard error.
+	Remove last argument.
+	* cp-tree.h (readonly_error): Adjust prototype.
+	* semantics.c (finish_asm_stmt): Adjust call to readonly_error.
+	* typeck.c (build_unary_op): Likewise.
+	(build_modify_expr): Likewise.
+
 2007-03-04  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/30895
