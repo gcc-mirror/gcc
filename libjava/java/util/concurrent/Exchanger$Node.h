@@ -14,7 +14,7 @@ class java::util::concurrent::Exchanger$Node : public ::java::util::concurrent::
 public:
   Exchanger$Node(::java::lang::Object *);
   ::java::lang::Object * __attribute__((aligned(__alignof__( ::java::util::concurrent::atomic::AtomicReference)))) item;
-  volatile ::java::lang::Thread * waiter;
+  ::java::lang::Thread * volatile waiter;
   static ::java::lang::Class class$;
 };
 

@@ -36,7 +36,7 @@ private:
   ::java::util::concurrent::Callable * __attribute__((aligned(__alignof__( ::java::util::concurrent::locks::AbstractQueuedSynchronizer)))) callable;
   ::java::lang::Object * result;
   ::java::lang::Throwable * exception;
-  volatile ::java::lang::Thread * runner;
+  ::java::lang::Thread * volatile runner;
 public: // actually package-private
   ::java::util::concurrent::FutureTask * this$0;
 public:

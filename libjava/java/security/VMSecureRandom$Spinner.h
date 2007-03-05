@@ -29,8 +29,8 @@ private:
   void stop();
 public: // actually package-private
   static void access$0(::java::security::VMSecureRandom$Spinner *);
-  volatile jbyte __attribute__((aligned(__alignof__( ::java::lang::Object)))) value;
-  volatile jboolean running;
+  jbyte volatile __attribute__((aligned(__alignof__( ::java::lang::Object)))) value;
+  jboolean volatile running;
 public:
   static ::java::lang::Class class$;
 };

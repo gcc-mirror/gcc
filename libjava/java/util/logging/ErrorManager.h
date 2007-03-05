@@ -21,7 +21,7 @@ public:
   static const jint OPEN_FAILURE = 4;
   static const jint FORMAT_FAILURE = 5;
 private:
-  volatile jboolean __attribute__((aligned(__alignof__( ::java::lang::Object)))) everUsed;
+  jboolean volatile __attribute__((aligned(__alignof__( ::java::lang::Object)))) everUsed;
 public:
   static ::java::lang::Class class$;
 };

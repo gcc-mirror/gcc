@@ -34,8 +34,8 @@ private:
   static const jlong serialVersionUID = 196745693267521676LL;
   static ::java::util::concurrent::atomic::AtomicReferenceFieldUpdater * tailUpdater;
   static ::java::util::concurrent::atomic::AtomicReferenceFieldUpdater * headUpdater;
-  volatile ::java::util::concurrent::ConcurrentLinkedQueue$Node * __attribute__((aligned(__alignof__( ::java::util::AbstractQueue)))) head;
-  volatile ::java::util::concurrent::ConcurrentLinkedQueue$Node * tail;
+  ::java::util::concurrent::ConcurrentLinkedQueue$Node * volatile __attribute__((aligned(__alignof__( ::java::util::AbstractQueue)))) head;
+  ::java::util::concurrent::ConcurrentLinkedQueue$Node * volatile tail;
 public:
   static ::java::lang::Class class$;
 };
