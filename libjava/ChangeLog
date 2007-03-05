@@ -1,3 +1,8 @@
+2007-03-05  Matthias Klose  <doko@debian.org>
+
+	* Makefile.am (gij_LDFLAGS): Use dbexecdir.
+	* Makefile.in: Regnerate.
+
 2007-03-05  Mark Wielaard  <mark@klomp.org>
 
 	* java/lang/Character.java: Re-merged with Classpath.
