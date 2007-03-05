@@ -1,3 +1,8 @@
+2007-03-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* convert.c (convert_to_integer): Fix nearbyint/rint -> *lrint
+	conversion.
+
 2007-03-05  Ian Lance Taylor  <iant@google.com>
 
 	* c.opt (fgnu89-inline): New option.
