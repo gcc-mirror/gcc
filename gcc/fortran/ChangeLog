@@ -1,3 +1,12 @@
+2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* lang.opt (-fmodule-private): Remove option.
+	* gfortran.h (gfc_option_t): Remove module_access_private flag.
+	* options.c (gfc_init_options): Remove initialization for it.
+	(gfc_process_option): Remove handling for -fmodule-private.
+	* module.c (gfc_check_access): Add comments, remove check for
+	gfc_option.flag_module_access_private.
+
 2007-03-05  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/30968

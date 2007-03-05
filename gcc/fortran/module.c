@@ -3514,7 +3514,10 @@ read_module (void)
 
 
 /* Given an access type that is specific to an entity and the default
-   access, return nonzero if the entity is publicly accessible.  */
+   access, return nonzero if the entity is publicly accessible.  If the
+   element is declared as PUBLIC, then it is public; if declared 
+   PRIVATE, then private, and otherwise it is public unless the default
+   access in this context has been declared PRIVATE.  */
 
 bool
 gfc_check_access (gfc_access specific_access, gfc_access default_access)
@@ -3525,12 +3528,7 @@ gfc_check_access (gfc_access specific_access, gfc_access default_access)
   if (specific_access == ACCESS_PRIVATE)
     return FALSE;
 
-  if (gfc_option.flag_module_access_private)
-    return default_access == ACCESS_PUBLIC;
-  else
-    return default_access != ACCESS_PRIVATE;
-
-  return FALSE;
+  return default_access != ACCESS_PRIVATE;
 }
 
 

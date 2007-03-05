@@ -88,7 +88,6 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.flag_second_underscore = -1;
   gfc_option.flag_implicit_none = 0;
   gfc_option.flag_max_stack_var_size = 32768;
-  gfc_option.flag_module_access_private = 0;
   gfc_option.flag_no_backend = 0;
   gfc_option.flag_range_check = 1;
   gfc_option.flag_pack_derived = 0;
@@ -529,10 +528,6 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_fmax_stack_var_size_:
       gfc_option.flag_max_stack_var_size = value;
-      break;
-
-    case OPT_fmodule_private:
-      gfc_option.flag_module_access_private = value;
       break;
 
     case OPT_fno_backend:
