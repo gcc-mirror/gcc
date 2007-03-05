@@ -1,3 +1,8 @@
+2007-03-03  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natClass.cc (parseAnnotationElement): Correct long
+	annotations to read JV_CONSTANT_Long, not JV_CONSTANT_Double.
+
 2007-03-02  Andrew Haley  <aph@redhat.com>
 
 	* sun/reflect/annotation/AnnotationInvocationHandler.java:
