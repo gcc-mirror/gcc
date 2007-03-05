@@ -1,6 +1,6 @@
 // EcosProcess.java - Subclass of Process for eCos systems.
 
-/* Copyright (C) 1998, 1999, 2006  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -51,9 +51,8 @@ final class EcosProcess extends Process
     return 0;
   }
 
-  public EcosProcess (String[] progarray,
-                          String[] envp,
-                          File dir)
+  public EcosProcess (String[] progarray, String[] envp, File dir,
+		      boolean redirect)
     throws IOException
   {
     throw new IOException ("eCos processes unimplemented");

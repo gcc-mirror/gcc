@@ -406,6 +406,7 @@ inner_nat_headers = java/io/ObjectOutputStream$$PutField.h \
 	java/nio/DirectByteBufferImpl$$ReadWrite.h \
 	java/nio/channels/Pipe$$SinkChannel.h \
 	java/nio/channels/Pipe$$SourceChannel.h \
+	java/lang/VMProcess$ImmediateEOFInputStream.h \
 	java/lang/reflect/Proxy$$ProxyData.h \
 	java/lang/reflect/Proxy$$ProxyType.h \
 	gnu/java/net/PlainSocketImpl$$SocketInputStream.h \
@@ -883,6 +884,7 @@ java/lang/natSystem.cc \
 java/lang/natThread.cc \
 java/lang/natThreadLocal.cc \
 java/lang/natVMClassLoader.cc \
+java/lang/natVMProcess.cc \
 java/lang/natVMThrowable.cc \
 java/lang/ref/natReference.cc \
 java/lang/reflect/natArray.cc \

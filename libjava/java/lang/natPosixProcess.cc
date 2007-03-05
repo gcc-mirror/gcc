@@ -1,6 +1,6 @@
 // natPosixProcess.cc - Native side of POSIX process code.
 
-/* Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004, 2005, 2006  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004, 2005, 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -41,6 +41,7 @@ details.  */
 #include <java/io/FileOutputStream.h>
 #include <java/io/IOException.h>
 #include <java/lang/OutOfMemoryError.h>
+#include <java/lang/PosixProcess$EOFInputStream.h>
 
 using gnu::java::nio::channels::FileChannelImpl;
 
@@ -231,7 +232,7 @@ java::lang::PosixProcess::nativeSpawn ()
   try
     {
       // Transform arrays to native form.
-    args = (char **) _Jv_Malloc ((progarray->length + 1) * sizeof (char *));
+      args = (char **) _Jv_Malloc ((progarray->length + 1) * sizeof (char *));
 
       // Initialize so we can gracefully recover.
       jstring *elts = elements (progarray);
@@ -262,23 +263,30 @@ java::lang::PosixProcess::nativeSpawn ()
 	path = new_string (dir->getPath ());
 
       // Create pipes for I/O.  MSGP is for communicating exec()
-      // status.
-      if (pipe (inp) || pipe (outp) || pipe (errp) || pipe (msgp)
+      // status.  If redirecting stderr to stdout, we don't need to
+      // create the ERRP pipe.
+      if (pipe (inp) || pipe (outp) || pipe (msgp)
 	  || fcntl (msgp[1], F_SETFD, FD_CLOEXEC))
-      throw new IOException (JvNewStringUTF (strerror (errno)));
+	throw new IOException (JvNewStringUTF (strerror (errno)));
+      if (! redirect && pipe (errp))
+	throw new IOException (JvNewStringUTF (strerror (errno)));
 
       // We create the streams before forking.  Otherwise if we had an
       // error while creating the streams we would have run the child
       // with no way to communicate with it.
-    errorStream =
-      new FileInputStream (new
-                           FileChannelImpl (errp[0], FileChannelImpl::READ));
-    inputStream =
-      new FileInputStream (new
-                           FileChannelImpl (inp[0], FileChannelImpl::READ));
-    outputStream =
-      new FileOutputStream (new FileChannelImpl (outp[1],
-                                             FileChannelImpl::WRITE));
+      if (redirect)
+	errorStream = PosixProcess$EOFInputStream::instance;
+      else
+	errorStream =
+	  new FileInputStream (new
+			       FileChannelImpl (errp[0],
+						FileChannelImpl::READ));
+      inputStream =
+	new FileInputStream (new
+			     FileChannelImpl (inp[0], FileChannelImpl::READ));
+      outputStream =
+	new FileOutputStream (new FileChannelImpl (outp[1],
+						   FileChannelImpl::WRITE));
 
       // We don't use vfork() because that would cause the local
       // environment to be set by the child.
@@ -319,14 +327,17 @@ java::lang::PosixProcess::nativeSpawn ()
 	  // We ignore errors from dup2 because they should never occur.
 	  dup2 (outp[0], 0);
 	  dup2 (inp[1], 1);
-	  dup2 (errp[1], 2);
+	  dup2 (redirect ? inp[1] : errp[1], 2);
 
 	  // Use close and not myclose -- we're in the child, and we
 	  // aren't worried about the possible race condition.
 	  close (inp[0]);
 	  close (inp[1]);
-	  close (errp[0]);
-	  close (errp[1]);
+	  if (! redirect)
+	    {
+	      close (errp[0]);
+	      close (errp[1]);
+	    }
 	  close (outp[0]);
 	  close (outp[1]);
 	  close (msgp[0]);
@@ -362,7 +373,8 @@ java::lang::PosixProcess::nativeSpawn ()
 
       myclose (outp[0]);
       myclose (inp[1]);
-      myclose (errp[1]);
+      if (! redirect)
+	myclose (errp[1]);
       myclose (msgp[1]);
 
       char c;
@@ -406,7 +418,7 @@ java::lang::PosixProcess::nativeSpawn ()
 	{
 	  if (errorStream != NULL)
 	    errorStream->close ();
-	  else
+	  else if (! redirect)
 	    myclose (errp[0]);
 	}
       catch (java::lang::Throwable *ignore)
@@ -417,10 +429,11 @@ java::lang::PosixProcess::nativeSpawn ()
       // the use of myclose.
       myclose (outp[0]);
       myclose (inp[1]);
-      myclose (errp[1]);
+      if (! redirect)
+	myclose (errp[1]);
       myclose (msgp[1]);
 
-    exception = thrown;
+      exception = thrown;
     }
 
   myclose (msgp[0]);
@@ -430,6 +443,7 @@ java::lang::PosixProcess::nativeSpawn ()
     {
       fcntl (outp[1], F_SETFD, FD_CLOEXEC);
       fcntl (inp[0], F_SETFD, FD_CLOEXEC);
-      fcntl (errp[0], F_SETFD, FD_CLOEXEC);
+      if (! redirect)
+	fcntl (errp[0], F_SETFD, FD_CLOEXEC);
     }
 }

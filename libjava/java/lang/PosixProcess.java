@@ -1,5 +1,5 @@
 // PosixProcess.java - Subclass of Process for POSIX systems.
-/* Copyright (C) 1998, 1999, 2004, 2006  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2004, 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -354,8 +354,8 @@ final class PosixProcess extends Process
    */
   private native void nativeSpawn();
 
-  PosixProcess(String[] progarray, String[] envp, File dir)
-           throws IOException
+  PosixProcess(String[] progarray, String[] envp, File dir, boolean redirect)
+    throws IOException
   {
     // Check to ensure there is something to run, and avoid
     // dereferencing null pointers in native code.
@@ -365,6 +365,7 @@ final class PosixProcess extends Process
     this.progarray = progarray;
     this.envp = envp;
     this.dir = dir;
+    this.redirect = redirect;
 
     // Start a ProcessManager if there is not one already running.
     synchronized (queueLock)
@@ -419,6 +420,7 @@ final class PosixProcess extends Process
   private String[] progarray;
   private String[] envp;
   private File dir;
+  private boolean redirect;
 
   /** Set by the ProcessManager on problems starting. */
   private Throwable exception;
