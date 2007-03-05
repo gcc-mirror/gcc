@@ -17,9 +17,9 @@ public: // actually package-private
   jboolean tryMatch(::java::util::concurrent::SynchronousQueue$TransferStack$SNode *);
   void tryCancel();
   jboolean isCancelled();
-  volatile ::java::util::concurrent::SynchronousQueue$TransferStack$SNode * __attribute__((aligned(__alignof__( ::java::lang::Object)))) next;
-  volatile ::java::util::concurrent::SynchronousQueue$TransferStack$SNode * match;
-  volatile ::java::lang::Thread * waiter;
+  ::java::util::concurrent::SynchronousQueue$TransferStack$SNode * volatile __attribute__((aligned(__alignof__( ::java::lang::Object)))) next;
+  ::java::util::concurrent::SynchronousQueue$TransferStack$SNode * volatile match;
+  ::java::lang::Thread * volatile waiter;
   ::java::lang::Object * item;
   jint mode;
   static ::java::util::concurrent::atomic::AtomicReferenceFieldUpdater * nextUpdater;

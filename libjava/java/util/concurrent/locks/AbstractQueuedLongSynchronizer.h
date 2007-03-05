@@ -97,9 +97,9 @@ public: // actually package-private
   static void access$0();
 private:
   static const jlong serialVersionUID = 7373984972572414692LL;
-  volatile ::java::util::concurrent::locks::AbstractQueuedLongSynchronizer$Node * __attribute__((aligned(__alignof__( ::java::util::concurrent::locks::AbstractOwnableSynchronizer)))) head;
-  volatile ::java::util::concurrent::locks::AbstractQueuedLongSynchronizer$Node * tail;
-  volatile jlong state;
+  ::java::util::concurrent::locks::AbstractQueuedLongSynchronizer$Node * volatile __attribute__((aligned(__alignof__( ::java::util::concurrent::locks::AbstractOwnableSynchronizer)))) head;
+  ::java::util::concurrent::locks::AbstractQueuedLongSynchronizer$Node * volatile tail;
+  jlong volatile state;
 public: // actually package-private
   static const jlong spinForTimeoutThreshold = 1000LL;
 private:

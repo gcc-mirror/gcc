@@ -23,7 +23,7 @@ public: // actually package-private
   static const jint REQUEST = 0;
   static const jint DATA = 1;
   static const jint FULFILLING = 2;
-  volatile ::java::util::concurrent::SynchronousQueue$TransferStack$SNode * __attribute__((aligned(__alignof__( ::java::util::concurrent::SynchronousQueue$Transferer)))) head;
+  ::java::util::concurrent::SynchronousQueue$TransferStack$SNode * volatile __attribute__((aligned(__alignof__( ::java::util::concurrent::SynchronousQueue$Transferer)))) head;
   static ::java::util::concurrent::atomic::AtomicReferenceFieldUpdater * headUpdater;
 public:
   static ::java::lang::Class class$;

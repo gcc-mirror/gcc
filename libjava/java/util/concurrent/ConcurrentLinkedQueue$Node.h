@@ -21,8 +21,8 @@ public: // actually package-private
   virtual jboolean casNext(::java::util::concurrent::ConcurrentLinkedQueue$Node *, ::java::util::concurrent::ConcurrentLinkedQueue$Node *);
   virtual void setNext(::java::util::concurrent::ConcurrentLinkedQueue$Node *);
 private:
-  volatile ::java::lang::Object * __attribute__((aligned(__alignof__( ::java::lang::Object)))) item;
-  volatile ::java::util::concurrent::ConcurrentLinkedQueue$Node * next;
+  ::java::lang::Object * volatile __attribute__((aligned(__alignof__( ::java::lang::Object)))) item;
+  ::java::util::concurrent::ConcurrentLinkedQueue$Node * volatile next;
   static ::java::util::concurrent::atomic::AtomicReferenceFieldUpdater * nextUpdater;
   static ::java::util::concurrent::atomic::AtomicReferenceFieldUpdater * itemUpdater;
 public:
