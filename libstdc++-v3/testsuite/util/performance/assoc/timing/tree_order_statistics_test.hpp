@@ -52,6 +52,7 @@
 #include <common_type/assoc/string_form.hpp>
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <iterator>
+#include <cstdlib>
 
 namespace pb_ds
 {
@@ -84,7 +85,7 @@ namespace pb_ds
 	      const size_t max_size = m_r_container.size();
 	      while (it != e)
 		if (m_r_container.order_of_key(*(it++)) > max_size)
-		  abort();
+		  std::abort();
 	    }
 	}
 
@@ -113,7 +114,7 @@ namespace pb_ds
 		{
 		  const_iterator f_it = m_r_container.find(*(it++));
 		  if (static_cast<size_t>(std::distance(b, f_it)) > max_size)
-		    abort();
+		    std::abort();
 		}
 	    }
 	}

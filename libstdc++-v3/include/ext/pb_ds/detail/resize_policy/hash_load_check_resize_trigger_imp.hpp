@@ -280,7 +280,7 @@ PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
 do_resize(size_type)
-{ abort(); }
+{ std::abort(); }
 
 #ifdef _GLIBCXX_DEBUG
 PB_DS_CLASS_T_DEC

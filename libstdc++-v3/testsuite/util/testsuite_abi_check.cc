@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -33,6 +33,7 @@
  
 #include "testsuite_abi.h"
 #include <iostream>
+#include <cstdlib>
 #include <unistd.h>    // for access(2)
 
 int

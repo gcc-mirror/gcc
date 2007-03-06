@@ -43,6 +43,7 @@
 #include <stdexcept>
 #include <cstddef>
 #include <clocale>
+#include <cstdlib>
 #include <locale>
 #include <cxxabi.h>
 

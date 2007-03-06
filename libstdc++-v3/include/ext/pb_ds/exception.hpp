@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -48,6 +48,7 @@
 #define PB_DS_EXCEPTION_HPP
 
 #include <stdexcept>
+#include <cstdlib>
 
 namespace pb_ds
 {

@@ -28,6 +28,7 @@
 // the GNU General Public License.
 
 #include <locale>
+#include <cstdlib>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -74,7 +75,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // XXX At some point, just rename this file to ctype_configure_char.cc
   // and compile it as a separate file instead of including it here.
   // Platform-specific initialization code for ctype tables.
-  #include <bits/ctype_noninline.h>
+#include <bits/ctype_noninline.h>
 
   const size_t ctype<char>::table_size;
 

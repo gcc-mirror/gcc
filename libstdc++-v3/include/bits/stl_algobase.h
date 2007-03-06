@@ -65,7 +65,6 @@
 #include <bits/c++config.h>
 #include <cstring>
 #include <cwchar>
-#include <cstdlib>
 #include <cstddef>
 #include <bits/functexcept.h>
 #include <bits/stl_pair.h>
