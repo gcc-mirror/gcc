@@ -354,7 +354,7 @@ Elemental function
 @code{RESULT = ABS(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type of the argument shall be an @code{INTEGER(*)},
 @code{REAL(*)}, or @code{COMPLEX(*)}.
 @end multitable
@@ -377,7 +377,7 @@ end program test_abs
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument            @tab Return type       @tab Standard
 @item @code{CABS(Z)}  @tab @code{COMPLEX(4) Z} @tab @code{REAL(4)}    @tab F77 and later
 @item @code{DABS(X)}  @tab @code{REAL(8)    X} @tab @code{REAL(8)}    @tab F77 and later
@@ -410,7 +410,7 @@ Inquiry function
 @code{RESULT = ACCESS(NAME, MODE)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{NAME} @tab Scalar @code{CHARACTER} with the file name.
 Tailing blank are ignored unless the character @code{achar(0)} is
 present, then all characters up to and excluding @code{achar(0)} are
@@ -465,7 +465,7 @@ Elemental function
 @code{RESULT = ACHAR(I)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be @code{INTEGER(*)}.
 @end multitable
 
@@ -508,7 +508,7 @@ Elemental function
 @code{RESULT = ACOS(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)} with a magnitude that is
 less than one.
 @end multitable
@@ -527,7 +527,7 @@ end program test_acos
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DACOS(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F77 and later
 @end multitable
@@ -558,7 +558,7 @@ Elemental function
 @code{RESULT = ACOSH(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)} with a magnitude that is
 greater or equal to one.
 @end multitable
@@ -601,7 +601,7 @@ Elemental function
 @code{RESULT = ADJUSTL(STR)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{STR} @tab The type shall be @code{CHARACTER}.
 @end multitable
 
@@ -642,7 +642,7 @@ Elemental function
 @code{RESULT = ADJUSTR(STR)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{STR} @tab The type shall be @code{CHARACTER}.
 @end multitable
 
@@ -688,7 +688,7 @@ Elemental function
 @code{RESULT = AIMAG(Z)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{Z} @tab The type of the argument shall be @code{COMPLEX(*)}.
 @end multitable
 
@@ -708,7 +708,7 @@ end program test_aimag
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument            @tab Return type       @tab Standard
 @item @code{DIMAG(Z)} @tab @code{COMPLEX(8) Z} @tab @code{REAL(8)}    @tab GNU extension
 @item @code{IMAG(Z)}  @tab @code{COMPLEX(*) Z} @tab @code{REAL(*)}    @tab GNU extension
@@ -738,7 +738,7 @@ Elemental function
 @code{RESULT = AINT(X [, KIND])} 
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X}    @tab The type of the argument shall be @code{REAL(*)}.
 @item @var{KIND} @tab (Optional) An @code{INTEGER(*)} initialization
                       expression indicating the kind parameter of
@@ -767,7 +767,7 @@ end program test_aint
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name           @tab Argument         @tab Return type      @tab Standard
 @item @code{DINT(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}   @tab F77 and later
 @end multitable
@@ -798,7 +798,7 @@ Subroutine
 @code{CALL ALARM(SECONDS, HANDLER [, STATUS])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{SECONDS} @tab The type of the argument shall be a scalar
 @code{INTEGER}. It is @code{INTENT(IN)}.
 @item @var{HANDLER} @tab Signal handler (@code{INTEGER FUNCTION} or
@@ -844,7 +844,7 @@ transformational function
 @code{RESULT = ALL(MASK [, DIM])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{MASK} @tab The type of the argument shall be @code{LOGICAL(*)} and
 it shall not be scalar.
 @item @var{DIM}  @tab (Optional) @var{DIM} shall be a scalar integer
@@ -909,7 +909,7 @@ Inquiry function
 @code{RESULT = ALLOCATED(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X}    @tab The argument shall be an @code{ALLOCATABLE} array.
 @end multitable
 
@@ -952,7 +952,7 @@ Non-elemental function
 @code{RESULT = AND(X, Y)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
 @item @var{Y} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
 @end multitable
@@ -999,7 +999,7 @@ Elemental function
 @code{RESULT = ANINT(X [, KIND])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X}    @tab The type of the argument shall be @code{REAL(*)}.
 @item @var{KIND} @tab (Optional) An @code{INTEGER(*)} initialization
                       expression indicating the kind parameter of
@@ -1026,7 +1026,7 @@ end program test_anint
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument         @tab Return type      @tab Standard
 @item @code{DNINT(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}   @tab F77 and later
 @end multitable
@@ -1054,7 +1054,7 @@ transformational function
 @code{RESULT = ANY(MASK [, DIM])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{MASK} @tab The type of the argument shall be @code{LOGICAL(*)} and
 it shall not be scalar.
 @item @var{DIM}  @tab (Optional) @var{DIM} shall be a scalar integer
@@ -1120,7 +1120,7 @@ Elemental function
 @code{RESULT = ASIN(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)}, and a magnitude that is
 less than one.
 @end multitable
@@ -1139,7 +1139,7 @@ end program test_asin
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DASIN(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F77 and later
 @end multitable
@@ -1170,7 +1170,7 @@ Elemental function
 @code{RESULT = ASINH(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)}, with @var{X} a real number.
 @end multitable
 
@@ -1212,7 +1212,7 @@ Inquiry function
 @code{RESULT = ASSOCIATED(PTR [, TGT])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{PTR} @tab @var{PTR} shall have the @code{POINTER} attribute and
 it can be of any type.
 @item @var{TGT} @tab (Optional) @var{TGT} shall be a @code{POINTER} or
@@ -1287,7 +1287,7 @@ Elemental function
 @code{RESULT = ATAN(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)}.
 @end multitable
 
@@ -1304,7 +1304,7 @@ end program test_atan
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DATAN(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F77 and later
 @end multitable
@@ -1336,7 +1336,7 @@ Elemental function
 @code{RESULT = ATAN2(Y,X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{Y} @tab The type shall be @code{REAL(*)}.
 @item @var{X} @tab The type and kind type parameter shall be the same as @var{Y}.
 If @var{Y} is zero, then @var{X} must be nonzero.
@@ -1360,7 +1360,7 @@ end program test_atan2
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type    @tab Standard
 @item @code{DATAN2(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)} @tab F77 and later
 @end multitable
@@ -1388,7 +1388,7 @@ Elemental function
 @code{RESULT = ATANH(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)} with a magnitude
 that is less than or equal to one.
 @end multitable
@@ -1433,7 +1433,7 @@ Elemental function
 @code{RESULT = BESJ0(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
@@ -1450,7 +1450,7 @@ end program test_besj0
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DBESJ0(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}   @tab GNU extension
 @end multitable
@@ -1479,7 +1479,7 @@ Elemental function
 @code{RESULT = BESJ1(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
@@ -1496,7 +1496,7 @@ end program test_besj1
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DBESJ1(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
@@ -1525,7 +1525,7 @@ Elemental function
 @code{RESULT = BESJN(N, X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{N} @tab The type shall be @code{INTEGER(*)}, and it shall be scalar.
 @item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
 @end multitable
@@ -1542,7 +1542,7 @@ end program test_besjn
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name             @tab Argument            @tab Return type       @tab Standard
 @item @code{DBESJN(X)} @tab @code{INTEGER(*) N} @tab @code{REAL(8)}    @tab GNU extension
 @item                  @tab @code{REAL(8) X}    @tab                   @tab
@@ -1572,7 +1572,7 @@ Elemental function
 @code{RESULT = BESY0(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
@@ -1588,7 +1588,7 @@ end program test_besy0
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DBESY0(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
@@ -1617,7 +1617,7 @@ Elemental function
 @code{RESULT = BESY1(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
@@ -1633,7 +1633,7 @@ end program test_besy1
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DBESY1(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
@@ -1662,7 +1662,7 @@ Elemental function
 @code{RESULT = BESYN(N, X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{N} @tab The type shall be @code{INTEGER(*)}, and it shall be scalar.
 @item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
 @end multitable
@@ -1679,7 +1679,7 @@ end program test_besyn
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name               @tab Argument            @tab Return type     @tab Standard
 @item @code{DBESYN(N,X)} @tab @code{INTEGER(*) N} @tab @code{REAL(8)}  @tab GNU extension
 @item                    @tab @code{REAL(8)    X} @tab                 @tab 
@@ -1709,7 +1709,7 @@ Inquiry function
 @code{RESULT = BIT_SIZE(I)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be @code{INTEGER(*)}.
 @end multitable
 
@@ -1749,7 +1749,7 @@ Elemental function
 @code{RESULT = BTEST(I, POS)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be @code{INTEGER(*)}.
 @item @var{POS} @tab The type shall be @code{INTEGER(*)}.
 @end multitable
@@ -1792,7 +1792,7 @@ Elemental function
 @code{RESULT = CEILING(X [, KIND])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)}.
 @item @var{KIND} @tab (Optional) An @code{INTEGER(*)} initialization
                       expression indicating the kind parameter of
@@ -1838,7 +1838,7 @@ Elemental function
 @code{RESULT = CHAR(I [, KIND])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be @code{INTEGER(*)}.
 @item @var{KIND} @tab (Optional) An @code{INTEGER(*)} initialization
                       expression indicating the kind parameter of
@@ -1883,7 +1883,7 @@ Non-elemental subroutine
 @code{CALL CHDIR(PATH [, STATUS])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{PATH}   @tab The type shall be @code{CHARACTER(*)} and shall
                         specify a valid path within the file system.
 @item @var{STATUS} @tab (Optional) status flag. Returns 0 on success, 
@@ -1934,7 +1934,7 @@ Subroutine, non-elemental function
 @end multitable
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{NAME} @tab Scalar @code{CHARACTER} with the file name.
 Trailing blanks are ignored unless the character @code{achar(0)} is
 present, then all characters up to and excluding @code{achar(0)} are
@@ -1999,7 +1999,7 @@ Elemental function
 @code{RESULT = CMPLX(X [, Y [, KIND]])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type may be @code{INTEGER(*)}, @code{REAL(*)},
                    or @code{COMPLEX(*)}.
 @item @var{Y} @tab (Optional; only allowed if @var{X} is not
@@ -2047,7 +2047,7 @@ Inquiry function
 @code{RESULT = COMMAND_ARGUMENT_COUNT()}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item None
 @end multitable
 
@@ -2087,7 +2087,7 @@ Elemental function
 @code{Z = CONJG(Z)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{Z} @tab The type shall be @code{COMPLEX(*)}.
 @end multitable
 
@@ -2107,7 +2107,7 @@ end program test_conjg
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name             @tab Argument             @tab Return type          @tab Standard
 @item @code{DCONJG(Z)} @tab @code{COMPLEX(8) Z}  @tab @code{COMPLEX(8)}    @tab GNU extension
 @end multitable
@@ -2137,7 +2137,7 @@ Elemental function
 @code{RESULT = COS(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)} or
 @code{COMPLEX(*)}.
 @end multitable
@@ -2156,7 +2156,7 @@ end program test_cos
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument            @tab Return type       @tab Standard
 @item @code{DCOS(X)}  @tab @code{REAL(8) X}    @tab @code{REAL(8)}    @tab F77 and later
 @item @code{CCOS(X)}  @tab @code{COMPLEX(4) X} @tab @code{COMPLEX(4)} @tab F77 and later
@@ -2191,7 +2191,7 @@ Elemental function
 @code{X = COSH(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)}.
 @end multitable
 
@@ -2208,7 +2208,7 @@ end program test_cosh
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DCOSH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F77 and later
 @end multitable
@@ -2242,7 +2242,7 @@ transformational function
 @code{RESULT = COUNT(MASK [, DIM])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{MASK} @tab The type shall be @code{LOGICAL}.
 @item @var{DIM}  @tab The type shall be @code{INTEGER}.
 @end multitable
@@ -2300,7 +2300,7 @@ Subroutine
 @code{CALL CPU_TIME(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL} with @code{INTENT(OUT)}.
 @end multitable
 
@@ -2347,7 +2347,7 @@ transformational function
 @code{RESULT = CSHIFT(A, SHIFT [, DIM])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{ARRAY}  @tab May be any type, not scaler.
 @item @var{SHIFT}  @tab The type shall be @code{INTEGER}.
 @item @var{DIM}    @tab The type shall be @code{INTEGER}.
@@ -2404,7 +2404,7 @@ Subroutine
 @end multitable
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{S}@tab The type shall be of type @code{CHARACTER}.
 @item @var{T}@tab The type shall be of type @code{INTEGER(KIND=8)}.
 @end multitable
@@ -2452,7 +2452,7 @@ Unavailable time and date parameters return blanks.
 
 @var{VALUES} is @code{INTENT(OUT)} and provides the following:
 
-@multitable @columnfractions .15 .30 .60
+@multitable @columnfractions .15 .30 .40
 @item @tab @code{VALUE(1)}: @tab The year
 @item @tab @code{VALUE(2)}: @tab The month
 @item @tab @code{VALUE(3)}: @tab The day of the month
@@ -2473,7 +2473,7 @@ Subroutine
 @code{CALL DATE_AND_TIME([DATE, TIME, ZONE, VALUES])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{DATE}  @tab (Optional) The type shall be @code{CHARACTER(8)} or larger.
 @item @var{TIME}  @tab (Optional) The type shall be @code{CHARACTER(10)} or larger.
 @item @var{ZONE}  @tab (Optional) The type shall be @code{CHARACTER(5)} or larger.
@@ -2522,7 +2522,7 @@ Elemental function
 @code{RESULT = DBLE(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{INTEGER(*)}, @code{REAL(*)},
                    or @code{COMPLEX(*)}.
 @end multitable
@@ -2568,7 +2568,7 @@ Elemental function
 @code{RESULT = DCMPLX(X [, Y])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type may be @code{INTEGER(*)}, @code{REAL(*)},
                    or @code{COMPLEX(*)}.
 @item @var{Y} @tab (Optional if @var{X} is not @code{COMPLEX(*)}.) May be
@@ -2614,7 +2614,7 @@ Elemental function
 @code{RESULT = DFLOAT(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{INTEGER(*)}.
 @end multitable
 
@@ -2656,7 +2656,7 @@ Inquiry function
 @code{RESULT = DIGITS(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type may be @code{INTEGER(*)} or @code{REAL(*)}.
 @end multitable
 
@@ -2700,7 +2700,7 @@ Elemental function
 @code{RESULT = DIM(X, Y)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{INTEGER(*)} or @code{REAL(*)}
 @item @var{Y} @tab The type shall be the same type and kind as @var{X}.
 @end multitable
@@ -2721,7 +2721,7 @@ end program test_dim
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name             @tab Argument              @tab Return type       @tab Standard
 @item @code{IDIM(X,Y)} @tab @code{INTEGER(4) X,Y} @tab @code{INTEGER(4)} @tab F77 and later
 @item @code{DDIM(X,Y)} @tab @code{REAL(8) X,Y}    @tab @code{REAL(8)}    @tab F77 and later
@@ -2754,7 +2754,7 @@ transformational function
 @code{RESULT = DOT_PRODUCT(X, Y)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be numeric or @code{LOGICAL}, rank 1.
 @item @var{Y} @tab The type shall be numeric or @code{LOGICAL}, rank 1.
 @end multitable
@@ -2800,7 +2800,7 @@ Elemental function
 @code{RESULT = DPROD(X, Y)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL}.
 @item @var{Y} @tab The type shall be @code{REAL}.
 @end multitable
@@ -2842,7 +2842,7 @@ Elemental function
 @code{RESULT = DREAL(Z)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{Z} @tab The type shall be @code{COMPLEX(8)}.
 @end multitable
 
@@ -2892,7 +2892,7 @@ subroutine, and vice versa.
 
 @var{TARRAY} and @var{RESULT} are @code{INTENT(OUT)} and provide the following:
 
-@multitable @columnfractions .15 .30 .60
+@multitable @columnfractions .15 .30 .40
 @item @tab @code{TARRAY(1)}: @tab User time in seconds.
 @item @tab @code{TARRAY(2)}: @tab System time in seconds.
 @item @tab @code{RESULT}: @tab Run time since start in seconds.
@@ -2911,7 +2911,7 @@ Subroutine
 @end multitable
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{TARRAY}@tab The type shall be @code{REAL, DIMENSION(2)}.
 @item @var{RESULT}@tab The type shall be @code{REAL}.
 @end multitable
@@ -2978,7 +2978,7 @@ transformational function
 @code{RESULT = EOSHIFT(A, SHIFT [, BOUNDARY, DIM])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{ARRAY}  @tab May be any type, not scaler.
 @item @var{SHIFT}  @tab The type shall be @code{INTEGER}.
 @item @var{BOUNDARY} @tab Same type as @var{ARRAY}. 
@@ -3026,7 +3026,7 @@ Inquiry function
 @code{RESULT = EPSILON(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)}.
 @end multitable
 
@@ -3065,7 +3065,7 @@ Elemental function
 @code{RESULT = ERF(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
@@ -3082,7 +3082,7 @@ end program test_erf
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DERF(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
@@ -3109,7 +3109,7 @@ Elemental function
 @code{RESULT = ERFC(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)}, and it shall be scalar.
 @end multitable
 
@@ -3126,7 +3126,7 @@ end program test_erfc
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DERFC(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
@@ -3170,13 +3170,13 @@ GNU extension
 Subroutine
 
 @item @emph{Syntax}:
-@multitable @columnfractions .8
+@multitable @columnfractions .80
 @item @code{CALL ETIME(TARRAY, RESULT)}.
 @item @code{RESULT = ETIME(TARRAY)}, (not recommended).
 @end multitable
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{TARRAY}@tab The type shall be @code{REAL, DIMENSION(2)}.
 @item @var{RESULT}@tab The type shall be @code{REAL}.
 @end multitable
@@ -3232,7 +3232,7 @@ Subroutine
 @code{CALL EXIT([STATUS])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{STATUS} @tab The type of the argument shall be @code{INTEGER(*)}.
 @end multitable
 
@@ -3276,7 +3276,7 @@ Elemental function
 @code{RESULT = EXP(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)} or
 @code{COMPLEX(*)}.
 @end multitable
@@ -3293,7 +3293,7 @@ end program test_exp
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument             @tab Return type         @tab Standard
 @item @code{DEXP(X)}  @tab @code{REAL(8) X}     @tab @code{REAL(8)}      @tab F77 and later
 @item @code{CEXP(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}   @tab F77 and later
@@ -3324,7 +3324,7 @@ Elemental function
 @code{RESULT = EXPONENT(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)}.
 @end multitable
 
@@ -3376,7 +3376,7 @@ Subroutine
 @end multitable
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{DATE}@tab The type shall be of type @code{CHARACTER}.
 @end multitable
 
@@ -3419,7 +3419,7 @@ Elemental function
 @code{RESULT = FLOAT(I)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be @code{INTEGER(*)}.
 @end multitable
 
@@ -3467,7 +3467,7 @@ Non-elemental subroutine
 @code{CALL FGET(C [, STATUS])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{C}      @tab The type shall be @code{CHARACTER}.
 @item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}.
                         Returns 0 on success, -1 on end-of-file, and a
@@ -3523,7 +3523,7 @@ Non-elemental subroutine
 @code{CALL FGETC(UNIT, C [, STATUS])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{UNIT}   @tab The type shall be @code{INTEGER}.
 @item @var{C}      @tab The type shall be @code{CHARACTER}.
 @item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}. Returns 0 on success,
@@ -3571,7 +3571,7 @@ Elemental function
 @code{RESULT = FLOOR(X [, KIND])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)}.
 @item @var{KIND} @tab (Optional) An @code{INTEGER(*)} initialization
                       expression indicating the kind parameter of
@@ -3618,7 +3618,7 @@ non-elemental subroutine
 @code{CALL FLUSH(UNIT)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{UNIT} @tab (Optional) The type shall be @code{INTEGER}.
 @end multitable
 
@@ -3650,7 +3650,7 @@ non-elemental function
 @code{RESULT = FNUM(UNIT)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{UNIT} @tab The type shall be @code{INTEGER}.
 @end multitable
 
@@ -3698,7 +3698,7 @@ Non-elemental subroutine
 @code{CALL FPUT(C [, STATUS])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{C}      @tab The type shall be @code{CHARACTER}.
 @item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}. Returns 0 on success,
                         -1 on end-of-file and a system specific positive error code otherwise.
@@ -3748,7 +3748,7 @@ Non-elemental subroutine
 @code{CALL FPUTC(UNIT, C [, STATUS])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{UNIT}   @tab The type shall be @code{INTEGER}.
 @item @var{C}      @tab The type shall be @code{CHARACTER}.
 @item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}. Returns 0 on success,
@@ -3795,7 +3795,7 @@ Elemental function
 @code{Y = FRACTION(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type of the argument shall be a @code{REAL}.
 @end multitable
 
@@ -3840,7 +3840,7 @@ Subroutine
 @code{FREE(PTR)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{PTR} @tab The type shall be @code{INTEGER}. It represents the
 location of the memory that should be de-allocated.
 @end multitable
@@ -3880,7 +3880,7 @@ Non-elemental subroutine
 @code{CALL FSTAT(UNIT, BUFF [, STATUS])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{UNIT}   @tab An open I/O unit number of type @code{INTEGER}.
 @item @var{BUFF}   @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
 @item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)}. Returns 0 
@@ -3948,7 +3948,7 @@ Subroutine, function
 @end multitable
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{OFFSET}  @tab Shall of type @code{INTEGER}.
 @item @var{UNIT}    @tab Shall of type @code{INTEGER}.
 @end multitable
@@ -3998,7 +3998,7 @@ Subroutine
 @code{CALL GETARG(N, ARG)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{N}   @tab Shall of type @code{INTEGER(4)}, @math{@var{N} \geq 0}
 @item @var{ARG} @tab Shall be of type @code{CHARACTER(*)}. 
 @end multitable
@@ -4052,7 +4052,7 @@ Subroutine
 @code{CALL GET_COMMAND(CMD)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{CMD} @tab Shall be of type @code{CHARACTER(*)}. 
 @end multitable
 
@@ -4095,7 +4095,7 @@ Subroutine
 @code{CALL GET_COMMAND_ARGUMENT(N, ARG)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{N}   @tab Shall of type @code{INTEGER(4)}, @math{@var{N} \geq 0}
 @item @var{ARG} @tab Shall be of type @code{CHARACTER(*)}. 
 @end multitable
@@ -4150,7 +4150,7 @@ Non-elemental subroutine.
 @code{CALL GETCWD(CWD [, STATUS])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{CWD}    @tab The type shall be @code{CHARACTER(*)}.
 @item @var{STATUS} @tab (Optional) status flag. Returns 0 on success, 
                         a system specific and non-zero error code otherwise.
@@ -4195,7 +4195,7 @@ Subroutine
 @code{CALL GETENV(ENVVAR, VALUE)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{ENVVAR} @tab Shall be of type @code{CHARACTER(*)}. 
 @item @var{VALUE}  @tab Shall be of type @code{CHARACTER(*)}. 
 @end multitable
@@ -4239,7 +4239,7 @@ Subroutine
 @code{CALL GET_ENVIRONMENT_VARIABLE(ENVVAR, VALUE)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{ENVVAR} @tab Shall be of type @code{CHARACTER(*)}. 
 @item @var{VALUE}  @tab Shall be of type @code{CHARACTER(*)}. 
 @end multitable
@@ -4311,7 +4311,7 @@ Subroutine
 @code{CALL GETLOG(LOGIN)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{LOGIN} @tab Shall be of type @code{CHARACTER(*)}.
 @end multitable
 
@@ -4427,7 +4427,7 @@ Subroutine
 @code{CALL GMTIME(STIME, TARRAY)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{STIME}  @tab An @code{INTEGER(*)} scalar expression
                         corresponding to a system time, with 
 			@code{INTENT(IN)}.
@@ -4483,7 +4483,7 @@ Subroutine, function
 @end multitable
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{NAME}    @tab Shall of type @code{CHARACTER(*)}.
 @item @var{STATUS}  @tab (Optional) status flag of type @code{INTEGER}.
                          Returns 0 on success, or a system specific error
@@ -4518,7 +4518,7 @@ Elemental function
 @code{RESULT = HUGE(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab shall be of type @code{REAL} or @code{INTEGER}.
 @end multitable
 
@@ -4557,7 +4557,7 @@ Elemental function
 @code{RESULT = IACHAR(C)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{C} @tab Shall be a scalar @code{CHARACTER}, with @code{INTENT(IN)}
 @end multitable
 
@@ -4598,7 +4598,7 @@ Elemental function
 @code{RESULT = IAND(I, J)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be @code{INTEGER(*)}.
 @item @var{J} @tab The type shall be @code{INTEGER(*)}, of the same
 kind as @var{I}.  (As a GNU extension, different kinds are also 
@@ -4688,7 +4688,7 @@ Elemental function
 @code{RESULT = IBCLR(I, POS)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be @code{INTEGER(*)}.
 @item @var{POS} @tab The type shall be @code{INTEGER(*)}.
 @end multitable
@@ -4727,7 +4727,7 @@ Elemental function
 @code{RESULT = IBITS(I, POS, LEN)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be @code{INTEGER(*)}.
 @item @var{POS} @tab The type shall be @code{INTEGER(*)}.
 @item @var{LEN} @tab The type shall be @code{INTEGER(*)}.
@@ -4763,7 +4763,7 @@ Elemental function
 @code{RESULT = IBSET(I, POS)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be @code{INTEGER(*)}.
 @item @var{POS} @tab The type shall be @code{INTEGER(*)}.
 @end multitable
@@ -4801,7 +4801,7 @@ Elemental function
 @code{RESULT = ICHAR(C)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{C} @tab Shall be a scalar @code{CHARACTER}, with @code{INTENT(IN)}
 @end multitable
 
@@ -4864,7 +4864,7 @@ Subroutine
 @code{CALL IDATE(TARRAY)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{TARRAY} @tab The type shall be @code{INTEGER, DIMENSION(3)} and
 the kind shall be the default integer kind.
 @end multitable
@@ -4906,7 +4906,7 @@ Elemental function
 @code{RESULT = IEOR(I, J)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be @code{INTEGER(*)}.
 @item @var{J} @tab The type shall be @code{INTEGER(*)}, of the same
 kind as @var{I}.  (As a GNU extension, different kinds are also 
@@ -4977,7 +4977,7 @@ Elemental function
 @code{RESULT = INDEX(STRING, SUBSTRING [, BACK])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{STRING} @tab Shall be a scalar @code{CHARACTER(*)}, with
 @code{INTENT(IN)}
 @item @var{SUBSTRING} @tab Shall be a scalar @code{CHARACTER(*)}, with
@@ -5016,7 +5016,7 @@ Elemental function
 @item @code{RESULT = INT(X [, KIND))}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X}    @tab shall be of type @code{INTEGER(*)},
                       @code{REAL(*)}, or @code{COMPLEX(*)}.
 @item @var{KIND} @tab (Optional) An @code{INTEGER(*)} initialization
@@ -5050,7 +5050,7 @@ end program
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name             @tab Argument            @tab Return type       @tab Standard
 @item @code{IFIX(X)}   @tab @code{REAL(4) X}    @tab @code{INTEGER}    @tab F77 and later
 @item @code{IDINT(X)}  @tab @code{REAL(8) X}    @tab @code{INTEGER}    @tab F77 and later
@@ -5081,7 +5081,7 @@ Elemental function
 @code{RESULT = IEOR(I, J)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be @code{INTEGER(*)}.
 @item @var{J} @tab The type shall be @code{INTEGER(*)}, of the same
 kind as @var{I}.  (As a GNU extension, different kinds are also 
@@ -5124,7 +5124,7 @@ non-elemental function
 @code{RESULT = IRAND(FLAG)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{FLAG} @tab shall be a scalar @code{INTEGER} of kind 4.
 @end multitable
 
@@ -5171,7 +5171,7 @@ Elemental function
 @code{RESULT = ISHFT(I, SHIFT)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be @code{INTEGER(*)}.
 @item @var{SHIFT} @tab The type shall be @code{INTEGER(*)}.
 @end multitable
@@ -5213,7 +5213,7 @@ Elemental function
 @code{RESULT = ISHFTC(I, SHIFT [, SIZE])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be @code{INTEGER(*)}.
 @item @var{SHIFT} @tab The type shall be @code{INTEGER(*)}.
 @item @var{SIZE} @tab (Optional) The type shall be @code{INTEGER(*)};
@@ -5252,7 +5252,7 @@ Subroutine
 @code{CALL ITIME(TARRAY)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{TARRAY} @tab The type shall be @code{INTEGER, DIMENSION(3)}
 and the kind shall be the default integer kind.
 @end multitable
@@ -5292,7 +5292,7 @@ Subroutine
 @code{CALL KILL(PID, SIGNAL [, STATUS])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{PID} @tab Shall be a scalar @code{INTEGER}, with
 @code{INTENT(IN)}
 @item @var{SIGNAL} @tab Shall be a scalar @code{INTEGER}, with
@@ -5326,7 +5326,7 @@ Inquiry function
 @code{K = KIND(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab Shall be of type @code{LOGICAL}, @code{INTEGER},
 @code{REAL}, @code{COMPLEX} or @code{CHARACTER}.
 @end multitable
@@ -5368,7 +5368,7 @@ Inquiry function
 @code{RESULT = LBOUND(ARRAY [, DIM])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{ARRAY} @tab Shall be an array, of any type.
 @item @var{DIM} @tab (Optional) Shall be a scalar @code{INTEGER(*)}.
 @end multitable
@@ -5408,7 +5408,7 @@ Inquiry function
 @code{L = LEN(STRING)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{STRING} @tab Shall be a scalar or array of type
 @code{CHARACTER(*)}, with @code{INTENT(IN)}
 @end multitable
@@ -5440,7 +5440,7 @@ Elemental function
 @code{RESULT = LEN_TRIM(STRING)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{STRING} @tab Shall be a scalar of type @code{CHARACTER(*)},
 with @code{INTENT(IN)}
 @end multitable
@@ -5485,7 +5485,7 @@ Elemental function
 @code{RESULT = LGE(STRING_A, STRING_B)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{STRING_A} @tab Shall be of default @code{CHARACTER} type.
 @item @var{STRING_B} @tab Shall be of default @code{CHARACTER} type.
 @end multitable
@@ -5531,7 +5531,7 @@ Elemental function
 @code{RESULT = LGT(STRING_A, STRING_B)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{STRING_A} @tab Shall be of default @code{CHARACTER} type.
 @item @var{STRING_B} @tab Shall be of default @code{CHARACTER} type.
 @end multitable
@@ -5570,7 +5570,7 @@ Subroutine
 @code{CALL LINK(PATH1, PATH2 [, STATUS])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{PATH1} @tab Shall be of default @code{CHARACTER} type.
 @item @var{PATH2} @tab Shall be of default @code{CHARACTER} type.
 @item @var{STATUS} @tab (Optional) Shall be of default @code{INTEGER} type.
@@ -5613,7 +5613,7 @@ Elemental function
 @code{RESULT = LLE(STRING_A, STRING_B)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{STRING_A} @tab Shall be of default @code{CHARACTER} type.
 @item @var{STRING_B} @tab Shall be of default @code{CHARACTER} type.
 @end multitable
@@ -5659,7 +5659,7 @@ Elemental function
 @code{RESULT = LLT(STRING_A, STRING_B)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{STRING_A} @tab Shall be of default @code{CHARACTER} type.
 @item @var{STRING_B} @tab Shall be of default @code{CHARACTER} type.
 @end multitable
@@ -5694,7 +5694,7 @@ Elemental function
 @code{RESULT = LNBLNK(STRING)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{STRING} @tab Shall be a scalar of type @code{CHARACTER(*)},
 with @code{INTENT(IN)}
 @end multitable
@@ -5727,7 +5727,7 @@ Inquiry function
 @code{RESULT = LOC(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab Variable of any type.
 @end multitable
 
@@ -5773,7 +5773,7 @@ Elemental function
 @code{RESULT = LOG(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)} or
 @code{COMPLEX(*)}.
 @end multitable
@@ -5793,7 +5793,7 @@ end program test_log
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{ALOG(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab f95, gnu
 @item @code{DLOG(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
@@ -5826,7 +5826,7 @@ Elemental function
 @code{RESULT = LOG10(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)} or
 @code{COMPLEX(*)}.
 @end multitable
@@ -5844,7 +5844,7 @@ end program test_log10
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{ALOG10(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab F95 and later
 @item @code{DLOG10(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F95 and later
@@ -5872,7 +5872,7 @@ Elemental function
 @code{RESULT = LOGICAL(L [, KIND])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{L}    @tab The type shall be @code{LOGICAL(*)}.
 @item @var{KIND} @tab (Optional) An @code{INTEGER(*)} initialization
                       expression indicating the kind parameter of
@@ -5917,7 +5917,7 @@ Elemental function
 @code{RESULT = LSHIFT(I, SHIFT)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be @code{INTEGER(*)}.
 @item @var{SHIFT} @tab The type shall be @code{INTEGER(*)}.
 @end multitable
@@ -5954,7 +5954,7 @@ Non-elemental subroutine
 @code{CALL LSTAT(FILE, BUFF [, STATUS])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{FILE}   @tab The type shall be @code{CHARACTER(*)}, a valid path within the file system.
 @item @var{BUFF}   @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
 @item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)}. Returns 0 
@@ -5991,7 +5991,7 @@ Subroutine
 @code{CALL LTIME(STIME, TARRAY)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{STIME}  @tab An @code{INTEGER(*)} scalar expression
                         corresponding to a system time, with 
 			@code{INTENT(IN)}.
@@ -6047,7 +6047,7 @@ non-elemental function
 @code{PTR = MALLOC(SIZE)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{SIZE} @tab The type shall be @code{INTEGER(*)}.
 @end multitable
 
@@ -6108,7 +6108,7 @@ Transformational function
 @code{RESULT = MATMUL(MATRIX_A, MATRIX_B)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{MATRIX_A} @tab An array of @code{INTEGER(*)},
                           @code{REAL(*)}, @code{COMPLEX(*)}, or
 			  @code{LOGICAL(*)} type, with a rank of
@@ -6151,7 +6151,7 @@ Elemental function
 @code{RESULT = MAX(A1, A2 [, A3 [, ...]])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{A1}          @tab The type shall be @code{INTEGER(*)} or
                              @code{REAL(*)}.
 @item @var{A2}, @var{A3}, ... @tab An expression of the same type and kind
@@ -6165,7 +6165,7 @@ The return value corresponds to the maximum value among the arguments,
 and has the same type and kind as the first argument.
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name             @tab Argument            @tab Return type         @tab Standard
 @item @code{MAX0(I)}   @tab @code{INTEGER(4) I} @tab @code{INTEGER(4)}   @tab F77 and later
 @item @code{AMAX0(I)}  @tab @code{INTEGER(4) I} @tab @code{REAL(MAX(X))} @tab F77 and later
@@ -6202,7 +6202,7 @@ Inquiry function
 @code{RESULT = MAXEXPONENT(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab shall be of type @code{REAL}.
 @end multitable
 
@@ -6255,7 +6255,7 @@ Transformational function
 @end multitable
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{ARRAY} @tab Shall be an array of type @code{INTEGER(*)},
                        @code{REAL(*)}, or @code{CHARACTER(*)}.
 @item @var{DIM}   @tab (Optional) Shall be a scalar of type
@@ -6310,7 +6310,7 @@ Transformational function
 @end multitable
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{ARRAY} @tab Shall be an array of type @code{INTEGER(*)},
                        @code{REAL(*)}, or @code{CHARACTER(*)}.
 @item @var{DIM}   @tab (Optional) Shall be a scalar of type
@@ -6354,7 +6354,7 @@ Elemental function
 @code{RESULT = MERGE(TSOURCE, FSOURCE, MASK)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{TSOURCE} @tab May be of any type.
 @item @var{FSOURCE} @tab Shall be of the same type and type parameters
                          as @var{TSOURCE}.
@@ -6386,7 +6386,7 @@ Elemental function
 @code{RESULT = MIN(A1, A2 [, A3, ...])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{A1}          @tab The type shall be @code{INTEGER(*)} or
                              @code{REAL(*)}.
 @item @var{A2}, @var{A3}, ... @tab An expression of the same type and kind
@@ -6400,7 +6400,7 @@ The return value corresponds to the maximum value among the arguments,
 and has the same type and kind as the first argument.
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name             @tab Argument            @tab Return type         @tab Standard
 @item @code{MIN0(I)}   @tab @code{INTEGER(4) I} @tab @code{INTEGER(4)}   @tab F77 and later
 @item @code{AMIN0(I)}  @tab @code{INTEGER(4) I} @tab @code{REAL(MIN(X))} @tab F77 and later
@@ -6434,7 +6434,7 @@ Inquiry function
 @code{RESULT = MINEXPONENT(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab shall be of type @code{REAL}.
 @end multitable
 
@@ -6479,7 +6479,7 @@ Transformational function
 @end multitable
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{ARRAY} @tab Shall be an array of type @code{INTEGER(*)},
                        @code{REAL(*)}, or @code{CHARACTER(*)}.
 @item @var{DIM}   @tab (Optional) Shall be a scalar of type
@@ -6534,7 +6534,7 @@ Transformational function
 @end multitable
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{ARRAY} @tab Shall be an array of type @code{INTEGER(*)},
                        @code{REAL(*)}, or @code{CHARACTER(*)}.
 @item @var{DIM}   @tab (Optional) Shall be a scalar of type
@@ -6581,7 +6581,7 @@ Elemental function
 @code{RESULT = MOD(A, P)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{A} @tab shall be a scalar of type @code{INTEGER} or @code{REAL}
 @item @var{P} @tab shall be a scalar of the same type as @var{A} and not
 equal to zero
@@ -6612,7 +6612,7 @@ end program test_mod
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name             @tab Arguments      @tab Return type    @tab Standard
 @item @code{AMOD(A,P)} @tab @code{REAL(4)} @tab @code{REAL(4)} @tab F95 and later
 @item @code{DMOD(A,P)} @tab @code{REAL(8)} @tab @code{REAL(8)} @tab F95 and later
@@ -6640,7 +6640,7 @@ Elemental function
 @code{RESULT = MODULO(A, P)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{A} @tab shall be a scalar of type @code{INTEGER} or @code{REAL}
 @item @var{P} @tab shall be a scalar of the same type and kind as @var{A}
 @end multitable
@@ -6696,7 +6696,7 @@ Subroutine
 @code{CALL MOVE_ALLOC(SRC, DEST)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{SRC}  @tab @code{ALLOCATABLE}, @code{INTENT(INOUT)}, may be
                       of any type and kind.
 @item @var{DEST} @tab @code{ALLOCATABLE}, @code{INTENT(OUT)}, shall be
@@ -6746,7 +6746,7 @@ Elemental function
 @code{RESULT = MVBITS(FROM, FROMPOS, LEN, TO, TOPOS)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{FROM}    @tab The type shall be @code{INTEGER(*)}.
 @item @var{FROMPOS} @tab The type shall be @code{INTEGER(*)}.
 @item @var{LEN}     @tab The type shall be @code{INTEGER(*)}.
@@ -6786,7 +6786,7 @@ Elemental function
 @code{RESULT = NEAREST(X, S)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab shall be of type @code{REAL}.
 @item @var{S} @tab (Optional) shall be of type @code{REAL} and
 not equal to zero.
@@ -6831,7 +6831,7 @@ Elemental function
 @code{RESULT = NEW_LINE(C)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{C}    @tab The argument shall be a scalar or array of the
                       type @code{CHARACTER}.
 @end multitable
@@ -6871,7 +6871,7 @@ Elemental function
 @code{RESULT = NINT(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X}    @tab The type of the argument shall be @code{REAL}.
 @end multitable
 
@@ -6892,7 +6892,7 @@ end program test_nint
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .33 .33 .33
+@multitable @columnfractions .25 .25 .25
 @item Name             @tab Argument         @tab Standard
 @item @code{IDNINT(X)} @tab @code{REAL(8)}   @tab F95 and later
 @end multitable
@@ -6922,7 +6922,7 @@ Elemental function
 @code{RESULT = NOT(I)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be @code{INTEGER(*)}.
 @end multitable
 
@@ -6987,7 +6987,7 @@ Non-elemental function
 @code{RESULT = OR(X, Y)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
 @item @var{Y} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
 @end multitable
@@ -7061,7 +7061,7 @@ Subroutine
 @code{CALL PERROR(STRING)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{STRING} @tab A scalar of default @code{CHARACTER} type.
 @end multitable
 
@@ -7091,7 +7091,7 @@ Inquiry function
 @code{RESULT = PRECISION(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab shall be of type @code{REAL} or @code{COMPLEX}.
 @end multitable
 
@@ -7182,7 +7182,7 @@ Inquiry function
 @code{RESULT = RADIX(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab Shall be of type @code{INTEGER} or @code{REAL}
 @end multitable
 
@@ -7248,7 +7248,7 @@ Non-elemental function
 @code{RESULT = RAND(FLAG)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{FLAG} @tab shall be a scalar @code{INTEGER} of kind 4.
 @end multitable
 
@@ -7343,7 +7343,7 @@ Inquiry function
 @code{RESULT = RANGE(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab shall be of type @code{REAL} or @code{COMPLEX}.
 @end multitable
 
@@ -7376,13 +7376,13 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@multitable @columnfractions .30 .80
+@multitable @columnfractions .80
 @item @code{RESULT = REAL(X [, KIND])}
 @item @code{RESULT = REALPART(Z)}
 @end multitable
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X}    @tab shall be @code{INTEGER(*)}, @code{REAL(*)}, or
                       @code{COMPLEX(*)}.
 @item @var{KIND} @tab (Optional) An @code{INTEGER(*)} initialization
@@ -7446,7 +7446,7 @@ Subroutine
 @code{CALL RENAME(PATH1, PATH2 [, STATUS])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{PATH1} @tab Shall be of default @code{CHARACTER} type.
 @item @var{PATH2} @tab Shall be of default @code{CHARACTER} type.
 @item @var{STATUS} @tab (Optional) Shall be of default @code{INTEGER} type.
@@ -7528,7 +7528,7 @@ Elemental function
 @code{RESULT = RRSPACING(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab shall be of type @code{REAL}.
 @end multitable
 
@@ -7567,7 +7567,7 @@ Elemental function
 @code{RESULT = RSHIFT(I, SHIFT)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{I} @tab The type shall be @code{INTEGER(*)}.
 @item @var{SHIFT} @tab The type shall be @code{INTEGER(*)}.
 @end multitable
@@ -7601,7 +7601,7 @@ Elemental function
 @code{RESULT = SCALE(X, I)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type of the argument shall be a @code{REAL}.
 @item @var{I} @tab The type of the argument shall be a @code{INTEGER}.
 @end multitable
@@ -7670,7 +7670,7 @@ function
 @code{RESULT = SECNDS (X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item Name        @tab Type
 @item @var{T}     @tab REAL(4)
 @item @var{X}     @tab REAL(4)
@@ -7717,7 +7717,7 @@ Transformational function
 @code{RESULT = SELECTED_INT_KIND(I)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{I} @tab shall be a scalar and of type @code{INTEGER}.
 @end multitable
 
@@ -7761,7 +7761,7 @@ Transformational function
 @code{RESULT = SELECTED_REAL_KIND(P, R)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{P} @tab (Optional) shall be a scalar and of type @code{INTEGER}.
 @item @var{R} @tab (Optional) shall be a scalar and of type @code{INTEGER}.
 @end multitable
@@ -7822,7 +7822,7 @@ Elemental function
 @code{RESULT = SET_EXPONENT(X, I)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab shall be of type @code{REAL}.
 @item @var{I} @tab shall be of type @code{INTEGER}.
 @end multitable
@@ -7892,7 +7892,7 @@ Elemental function
 @code{RESULT = SIGN(A, B)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{A} @tab shall be a scalar of type @code{INTEGER} or @code{REAL}
 @item @var{B} @tab shall be a scalar of the same type and kind as @var{A}
 @end multitable
@@ -7916,7 +7916,7 @@ end program test_sign
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name              @tab Arguments      @tab Return type    @tab Standard
 @item @code{ISIGN(A,P)} @tab @code{INTEGER(4)} @tab @code{INTEGER(4)} @tab f95, gnu
 @item @code{DSIGN(A,P)} @tab @code{REAL(8)} @tab @code{REAL(8)} @tab f95, gnu
@@ -7954,7 +7954,7 @@ subroutine, non-elemental function
 @end multitable
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{NUMBER} @tab shall be a scalar integer, with @code{INTENT(IN)}
 @item @var{HANDLER}@tab Signal handler (@code{INTEGER FUNCTION} or
 @code{SUBROUTINE}) or dummy/global @code{INTEGER} scalar.
@@ -8004,7 +8004,7 @@ Elemental function
 @code{RESULT = SIN(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)} or
 @code{COMPLEX(*)}.
 @end multitable
@@ -8021,7 +8021,7 @@ end program test_sin
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DSIN(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
 @item @code{CSIN(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}    @tab f95, gnu
@@ -8055,7 +8055,7 @@ Elemental function
 @code{RESULT = SINH(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)}.
 @end multitable
 
@@ -8071,7 +8071,7 @@ end program test_sinh
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DSINH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F95 and later
 @end multitable
@@ -8124,7 +8124,7 @@ Subroutine
 @code{CALL SLEEP(SECONDS)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{SECONDS} @tab The type shall be of default @code{INTEGER}.
 @end multitable
 
@@ -8159,7 +8159,7 @@ function
 @code{RESULT = SNGL(A)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{A} @tab The type shall be a double precision @code{REAL}.
 @end multitable
 
@@ -8245,7 +8245,7 @@ Elemental function
 @code{RESULT = SQRT(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)} or
 @code{COMPLEX(*)}.
 @end multitable
@@ -8265,7 +8265,7 @@ end program test_sqrt
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name             @tab Argument             @tab Return type          @tab Standard
 @item @code{DSQRT(X)}  @tab @code{REAL(8) X}     @tab @code{REAL(8)}       @tab F95 and later
 @item @code{CSQRT(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}    @tab F95 and later
@@ -8297,7 +8297,7 @@ non-elemental subroutine
 @code{CALL SRAND(SEED)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{SEED} @tab shall be a scalar @code{INTEGER(kind=4)}.
 @end multitable
 
@@ -8335,7 +8335,7 @@ the file itself, but execute (search) permission is required on all of the
 directories in path that lead to the file.
 
 The elements that are obtained and stored in the array @code{BUFF}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @code{buff(1)}   @tab  Device ID 
 @item @code{buff(2)}   @tab  Inode number 
 @item @code{buff(3)}   @tab  File mode 
@@ -8365,7 +8365,7 @@ Non-elemental subroutine
 @code{CALL STAT(FILE,BUFF[,STATUS])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{FILE}   @tab The type shall be @code{CHARACTER(*)}, a valid path within the file system.
 @item @var{BUFF}   @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
 @item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)}. Returns 0 
@@ -8454,7 +8454,7 @@ Subroutine
 @code{CALL SYMLNK(PATH1, PATH2 [, STATUS])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{PATH1} @tab Shall be of default @code{CHARACTER} type.
 @item @var{PATH2} @tab Shall be of default @code{CHARACTER} type.
 @item @var{STATUS} @tab (Optional) Shall be of default @code{INTEGER} type.
@@ -8489,7 +8489,7 @@ Subroutine
 @code{CALL SYSTEM(COMMAND [, STATUS])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{COMMAND} @tab Shall be of default @code{CHARACTER} type.
 @item @var{STATUS}  @tab (Optional) Shall be of default @code{INTEGER} type.
 @end multitable
@@ -8544,7 +8544,7 @@ Elemental function
 @code{RESULT = TAN(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)}.
 @end multitable
 
@@ -8561,7 +8561,7 @@ end program test_tan
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DTAN(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F95 and later
 @end multitable
@@ -8592,7 +8592,7 @@ Elemental function
 @code{X = TANH(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be @code{REAL(*)}.
 @end multitable
 
@@ -8609,7 +8609,7 @@ end program test_tanh
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .20 .20 .20 .40
+@multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DTANH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F95 and later
 @end multitable
@@ -8720,7 +8720,7 @@ Elemental function
 @code{RESULT = TINY(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab shall be of type @code{REAL}.
 @end multitable
 
@@ -8823,7 +8823,7 @@ Inquiry function
 @code{RESULT = UBOUND(ARRAY [, DIM])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{ARRAY} @tab Shall be an array, of any type.
 @item @var{DIM} @tab (Optional) Shall be a scalar @code{INTEGER(*)}.
 @end multitable
@@ -8863,7 +8863,7 @@ Subroutine
 @code{CALL UMASK(MASK [, OLD])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{MASK} @tab Shall be a scalar of type @code{INTEGER(*)}.
 @item @var{MASK} @tab (Optional) Shall be a scalar of type
                       @code{INTEGER(*)}.
@@ -8896,7 +8896,7 @@ Subroutine
 @code{CALL UNLINK(PATH [, STATUS])}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{PATH} @tab Shall be of default @code{CHARACTER} type.
 @item @var{STATUS} @tab (Optional) Shall be of default @code{INTEGER} type.
 @end multitable
@@ -8981,7 +8981,7 @@ Non-elemental function
 @code{RESULT = XOR(X, Y)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .80
+@multitable @columnfractions .15 .70
 @item @var{X} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
 @item @var{Y} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
 @end multitable
