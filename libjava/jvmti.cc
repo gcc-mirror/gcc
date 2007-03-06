@@ -997,23 +997,23 @@ _Jv_JVMTI_GetLocalVariableTable (MAYBE_UNUSED jvmtiEnv *env, jmethodID method,
                                  table_slot) 
             >= 0)
     {
+      char **str_ptr = &(*locals)[table_slot].name;
       jerr = env->Allocate (static_cast<jlong> (strlen (name) + 1),
-                             reinterpret_cast<unsigned char **>
-                               (&(*locals)[table_slot].name));
+                             reinterpret_cast<unsigned char **> (str_ptr));
       if (jerr != JVMTI_ERROR_NONE)
         return jerr;
       strcpy ((*locals)[table_slot].name, name);
-
-      jerr = env->Allocate (static_cast<jlong> (strlen (name) + 1),
-                               reinterpret_cast<unsigned char **>
-                                 (&(*locals)[table_slot].signature));
+      
+      str_ptr = &(*locals)[table_slot].signature;
+      jerr = env->Allocate (static_cast<jlong> (strlen (sig) + 1),
+                               reinterpret_cast<unsigned char **> (str_ptr));
       if (jerr != JVMTI_ERROR_NONE)
         return jerr;
       strcpy ((*locals)[table_slot].signature, sig);
-  
-      jerr = env->Allocate (static_cast<jlong> (strlen (name) + 1),
-                               reinterpret_cast<unsigned char **>
-                               (&(*locals)[table_slot].generic_signature));
+      
+      str_ptr = &(*locals)[table_slot].generic_signature;
+      jerr = env->Allocate (static_cast<jlong> (strlen (generic_sig) + 1),
+                               reinterpret_cast<unsigned char **> (str_ptr));
       if (jerr != JVMTI_ERROR_NONE)
         return jerr;
       strcpy ((*locals)[table_slot].generic_signature, generic_sig);
