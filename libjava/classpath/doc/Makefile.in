@@ -721,10 +721,10 @@ gjavah.pod: $(srcdir)/cp-tools.texinfo
 
 # hack around the cross references and the enumeration
 gkeytool.pod: $(srcdir)/cp-tools.texinfo
-	-$(TEXI2POD) -D gkeytool < $< > $@
-	sed -i -e 's/^For more details.*/See I<Common Options> for more details./' \
+	-$(TEXI2POD) -D gkeytool < $< \
+	  | sed -e 's/^For more details.*/See I<Common Options> for more details./' \
 	    -e 's/1\.<\([^>]*\)>/- \1/' \
-		$@
+		> $@
 
 gnative2ascii.pod: $(srcdir)/cp-tools.texinfo
 	-$(TEXI2POD) -D gnative2ascii < $< > $@
