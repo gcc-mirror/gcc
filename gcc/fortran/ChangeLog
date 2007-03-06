@@ -1,5 +1,9 @@
 2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* gfortran.texi (GFortran and G77): Rewrite completely.
+
+2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* match.c (gfc_match_name): Expanded comment.
 
 2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
