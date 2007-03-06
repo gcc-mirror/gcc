@@ -1,6 +1,11 @@
 2007-03-06  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/m68k/m68k.c (m68k_save_reg): Save the PIC register in
+	functions that call eh_return.
+
+2007-03-06  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/m68k/m68k.c (m68k_save_reg): Save the PIC register in
 	functions that need a constant pool.
 
 2007-03-06  Richard Sandiford  <richard@codesourcery.com>
