@@ -840,14 +840,18 @@ look like:
 @smallexample
       TYPESPEC*size x,y,z
 @end smallexample
+@noindent
 where @code{TYPESPEC} is a basic type (@code{INTEGER}, @code{REAL},
-etc.), and where @code{size} is a byte count corresponding to a valid
-kind for that type. The statement then declares @code{x}, @code{y} and
-@code{z} to be of type @code{TYPESPEC} with the appropriate kind. This
-is equivalent to the standard conforming declaration
+etc.), and where @code{size} is a byte count corresponding to the
+storage size of a valid kind for that type.  (For @code{COMPLEX}
+variables, @code{size} is the total size of the real and imaginary
+parts.)  The statement then declares @code{x}, @code{y} and @code{z} to
+be of type @code{TYPESPEC} with the appropriate kind.  This is
+equivalent to the standard-conforming declaration
 @smallexample
       TYPESPEC(k) x,y,z
 @end smallexample
+@noindent
 where @code{k} is equal to @code{size} for most types, but is equal to
 @code{size/2} for the @code{COMPLEX} type.
 
