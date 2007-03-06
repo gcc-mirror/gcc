@@ -1,3 +1,15 @@
+2007-03-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.md: In unamed move patterns, disparge copies between general
+	and floating point registers using '?' modifier.  Don't include 'f'
+	constraint for register preferences in DImode, SImode, HImode and
+	QImode patterns.  Likewise for 'r' in DFmode and SFmode patterns.
+	Remove constraints for copies between general and floating registers
+	in soft-float DFmode pattern.
+	(movdf): Fail if operand1 is a CONST_DOUBLE and operand0 is a hard
+	floating register.
+	(movsf): Likewise. 
+
 2007-03-05  Mike Stump  <mrs@apple.com>
 
 	* c-common.c (targetcm): Add.   
