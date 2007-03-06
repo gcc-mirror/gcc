@@ -1,3 +1,11 @@
+2006-03-06  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr.c (avr_mcu_types): Add support for ATmega325P,
+	ATmega3250P, ATmega329P, ATmega3290P, AT90USB82 and AT90USB162 
+	devices.
+	* config/avr/avr.h (LINK_SPEC, CRT_BINUTILS_SPECS): (Ditto.).
+	* config/avr/t-avr (MULTILIB_MATCHES): (Ditto.).
+
 2007-03-06  Jan Hubicka  <jh@suse.cz>
 
 	* errors.h (warning, error, fatal, internal_error): Mark as cold.
