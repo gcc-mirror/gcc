@@ -1208,6 +1208,7 @@ classpath/gnu/classpath/jdwp/event/filters/ThreadOnlyFilter.java
 
 gnu_classpath_jdwp_event_filters_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_classpath_jdwp_event_filters_source_files)))
 gnu_classpath_jdwp_exception_source_files = \
+classpath/gnu/classpath/jdwp/exception/AbsentInformationException.java \
 classpath/gnu/classpath/jdwp/exception/InvalidClassException.java \
 classpath/gnu/classpath/jdwp/exception/InvalidClassLoaderException.java \
 classpath/gnu/classpath/jdwp/exception/InvalidCountException.java \

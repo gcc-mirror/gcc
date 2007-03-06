@@ -326,6 +326,7 @@ gnu/classpath/jdwp/event/filters.list: $(gnu_classpath_jdwp_event_filters_source
 
 
 gnu_classpath_jdwp_exception_source_files = \
+classpath/gnu/classpath/jdwp/exception/AbsentInformationException.java \
 classpath/gnu/classpath/jdwp/exception/InvalidClassException.java \
 classpath/gnu/classpath/jdwp/exception/InvalidClassLoaderException.java \
 classpath/gnu/classpath/jdwp/exception/InvalidCountException.java \
