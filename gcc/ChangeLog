@@ -1,5 +1,19 @@
 2007-03-06  Richard Sandiford  <richard@codesourcery.com>
 
+	PR target/28181
+	* config/m68k/m68k-protos.h (m68k_secondary_reload_class): Declare.
+	(m68k_preferred_reload_class): Likewise.
+	* config/m68k/m68k.h (HARD_REGNO_MODE_OK): Remove duplicated comment.
+	(SECONDARY_RELOAD_CLASS): Define.
+	(PREFERRED_RELOAD_CLASS): Use m68k_preferred_reload_class.
+	(LIMIT_RELOAD_CLASS): Delete.
+	* config/m68k/m68k.c (m68k_regno_mode_ok): Don't prevent address
+	registers from storing bytes.
+	(m68k_secondary_reload_class): New function.
+	(m68k_preferred_reload_class): Likewise.
+
+2007-03-06  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/m68k/m68k.c (m68k_save_reg): Remove special case for
 	leaf functions.
 	(m68k_expand_prologue): Likewise.

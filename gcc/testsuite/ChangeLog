@@ -1,3 +1,7 @@
+2007-03-06  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.c-torture/compile/m68k-byte-addr.c: New test.
+
 2007-03-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-convert-4.c: New test.

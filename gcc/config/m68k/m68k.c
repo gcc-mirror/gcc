@@ -4153,9 +4153,10 @@ m68k_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
   return 1;
 }
 
-/* Value is true if hard register REGNO can hold a value of machine-mode MODE.
-   On the 68000, the cpu registers can hold any mode except bytes in address
-   registers, but the 68881 registers can hold only SFmode or DFmode.  */
+/* Value is true if hard register REGNO can hold a value of machine-mode
+   MODE.  On the 68000, we let the cpu registers can hold any mode, but
+   restrict the 68881 registers to floating-point modes.  */
+
 bool
 m68k_regno_mode_ok (int regno, enum machine_mode mode)
 {
@@ -4167,10 +4168,6 @@ m68k_regno_mode_ok (int regno, enum machine_mode mode)
     }
   else if (ADDRESS_REGNO_P (regno))
     {
-      /* Address Registers, can't hold bytes, can hold aggregate if
-	 fits in.  */
-      if (GET_MODE_SIZE (mode) == 1)
-	return false;
       if (regno + GET_MODE_SIZE (mode) / 4 <= 16)
 	return true;
     }
@@ -4184,6 +4181,66 @@ m68k_regno_mode_ok (int regno, enum machine_mode mode)
 	return true;
     }
   return false;
+}
+
+/* Implement SECONDARY_RELOAD_CLASS.  */
+
+enum reg_class
+m68k_secondary_reload_class (enum reg_class rclass,
+			     enum machine_mode mode, rtx x)
+{
+  int regno;
+
+  regno = true_regnum (x);
+
+  /* If one operand of a movqi is an address register, the other
+     operand must be a general register or constant.  Other types
+     of operand must be reloaded through a data register.  */
+  if (GET_MODE_SIZE (mode) == 1
+      && reg_classes_intersect_p (rclass, ADDR_REGS)
+      && !(INT_REGNO_P (regno) || CONSTANT_P (x)))
+    return DATA_REGS;
+
+  /* PC-relative addresses must be loaded into an address register first.  */
+  if (TARGET_PCREL
+      && !reg_class_subset_p (rclass, ADDR_REGS)
+      && symbolic_operand (x, VOIDmode))
+    return ADDR_REGS;
+
+  return NO_REGS;
+}
+
+/* Implement PREFERRED_RELOAD_CLASS.  */
+
+enum reg_class
+m68k_preferred_reload_class (rtx x, enum reg_class rclass)
+{
+  enum reg_class secondary_class;
+
+  /* If RCLASS might need a secondary reload, try restricting it to
+     a class that doesn't.  */
+  secondary_class = m68k_secondary_reload_class (rclass, GET_MODE (x), x);
+  if (secondary_class != NO_REGS
+      && reg_class_subset_p (secondary_class, rclass))
+    return secondary_class;
+
+  /* Prefer to use moveq for in-range constants.  */
+  if (GET_CODE (x) == CONST_INT
+      && reg_class_subset_p (DATA_REGS, rclass)
+      && IN_RANGE (INTVAL (x), -0x80, 0x7f))
+    return DATA_REGS;
+
+  /* ??? Do we really need this now?  */
+  if (GET_CODE (x) == CONST_DOUBLE
+      && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+    {
+      if (TARGET_HARD_FLOAT && reg_class_subset_p (FP_REGS, rclass))
+	return FP_REGS;
+
+      return NO_REGS;
+    }
+
+  return rclass;
 }
 
 /* Return floating point values in a 68881 register.  This makes 68881 code

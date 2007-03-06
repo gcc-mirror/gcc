@@ -69,6 +69,9 @@ extern const char *m68k_output_movem (rtx *, rtx, HOST_WIDE_INT, bool);
 #endif /* RTX_CODE */
 
 extern bool m68k_regno_mode_ok (int, enum machine_mode);
+extern enum reg_class m68k_secondary_reload_class (enum reg_class,
+						   enum machine_mode, rtx);
+extern enum reg_class m68k_preferred_reload_class (rtx, enum reg_class);
 extern int flags_in_68881 (void);
 extern void m68k_expand_prologue (void);
 extern bool m68k_use_return_insn (void);
