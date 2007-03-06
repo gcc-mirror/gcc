@@ -827,7 +827,7 @@ and against the declared minimum and maximum values.  It also
 checks array indices for assumed and deferred
 shape arrays against the actual allocated bounds.
 
-In the future this may also include other forms of checking, eg. checking
+In the future this may also include other forms of checking, e.g., checking
 substring references.
 
 @item -fmax-stack-var-size=@var{n}
