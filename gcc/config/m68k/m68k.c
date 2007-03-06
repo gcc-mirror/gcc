@@ -749,6 +749,13 @@ m68k_save_reg (unsigned int regno, bool interrupt_handler)
     {
       if (current_function_uses_pic_offset_table)
 	return true;
+      /* Reload may introduce constant pool references into a function
+	 that thitherto didn't need a PIC register.  Note that the test
+	 above will not catch that case because we will only set
+	 current_function_uses_pic_offset_table when emitting
+	 the address reloads.  */
+      if (current_function_uses_const_pool)
+	return true;
     }
 
   if (current_function_calls_eh_return)
