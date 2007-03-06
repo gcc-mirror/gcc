@@ -191,7 +191,7 @@ int m68k_last_compare_had_fp_operands;
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK m68k_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
-#define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
 
 #undef TARGET_ASM_FILE_START_APP_OFF
 #define TARGET_ASM_FILE_START_APP_OFF true
@@ -745,7 +745,7 @@ m68k_initial_elimination_offset (int from, int to)
 static bool
 m68k_save_reg (unsigned int regno, bool interrupt_handler)
 {
-  if (flag_pic && regno == PIC_OFFSET_TABLE_REGNUM)
+  if (flag_pic && regno == PIC_REG)
     {
       /* A function that receives a nonlocal goto must save all call-saved
 	 registers.  */
@@ -4083,59 +4083,93 @@ m68k_coff_asm_named_section (const char *name, unsigned int flags,
 
 static void
 m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
-		      HOST_WIDE_INT delta,
-		      HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
+		      HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		      tree function)
 {
-  rtx xops[1];
-  const char *fmt;
+  rtx this_slot, offset, addr, mem, insn;
 
-  if (delta > 0 && delta <= 8)
-    asm_fprintf (file, (MOTOROLA
-			? "\taddq.l %I%d,4(%Rsp)\n"
-			: "\taddql %I%d,%Rsp@(4)\n"),
-		 (int) delta);
-  else if (delta < 0 && delta >= -8)
-    asm_fprintf (file, (MOTOROLA
-			? "\tsubq.l %I%d,4(%Rsp)\n"
-			: "\tsubql %I%d,%Rsp@(4)\n"),
-		 (int) -delta);
-  else if (TARGET_COLDFIRE)
+  /* Pretend to be a post-reload pass while generating rtl.  */
+  no_new_pseudos = 1;
+  reload_completed = 1;
+  reset_block_changes ();
+  allocate_reg_info (FIRST_PSEUDO_REGISTER, true, true);
+
+  /* The "this" pointer is stored at 4(%sp).  */
+  this_slot = gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx, 4));
+
+  /* Add DELTA to THIS.  */
+  if (delta != 0)
     {
-      /* ColdFire can't add/sub a constant to memory unless it is in
-	 the range of addq/subq.  So load the value into %d0 and
-	 then add it to 4(%sp). */
-      if (delta >= -128 && delta <= 127)
-	asm_fprintf (file, (MOTOROLA
-			    ? "\tmoveq.l %I%wd,%Rd0\n"
-			    : "\tmoveql %I%wd,%Rd0\n"),
-		     delta);
-      else
-	asm_fprintf (file, (MOTOROLA
-			    ? "\tmove.l %I%wd,%Rd0\n"
-			    : "\tmovel %I%wd,%Rd0\n"),
-		     delta);
-      asm_fprintf (file, (MOTOROLA
-			  ? "\tadd.l %Rd0,4(%Rsp)\n"
-			  : "\taddl %Rd0,%Rsp@(4)\n"));
+      /* Make the offset a legitimate operand for memory addition.  */
+      offset = GEN_INT (delta);
+      if ((delta < -8 || delta > 8)
+	  && (TARGET_COLDFIRE || USE_MOVQ (delta)))
+	{
+	  emit_move_insn (gen_rtx_REG (Pmode, D0_REG), offset);
+	  offset = gen_rtx_REG (Pmode, D0_REG);
+	}
+      emit_insn (gen_add3_insn (copy_rtx (this_slot),
+				copy_rtx (this_slot), offset));
     }
-  else
-    asm_fprintf (file, (MOTOROLA
-			? "\tadd.l %I%wd,4(%Rsp)\n"
-			: "\taddl %I%wd,%Rsp@(4)\n"),
-		 delta);
 
-  xops[0] = DECL_RTL (function);
+  /* If needed, add *(*THIS + VCALL_OFFSET) to THIS.  */
+  if (vcall_offset != 0)
+    {
+      /* Set the static chain register to *THIS.  */
+      emit_move_insn (static_chain_rtx, this_slot);
+      emit_move_insn (static_chain_rtx, gen_rtx_MEM (Pmode, static_chain_rtx));
 
-  gcc_assert (MEM_P (xops[0])
-	      && symbolic_operand (XEXP (xops[0], 0), VOIDmode));
-  xops[0] = XEXP (xops[0], 0);
+      /* Set ADDR to a legitimate address for *THIS + VCALL_OFFSET.  */
+      addr = plus_constant (static_chain_rtx, vcall_offset);
+      if (!m68k_legitimate_address_p (Pmode, addr, true))
+	{
+	  emit_insn (gen_rtx_SET (VOIDmode, static_chain_rtx, addr));
+	  addr = static_chain_rtx;
+	}
 
-  fmt = m68k_symbolic_jump;
-  if (m68k_symbolic_jump == NULL)
-    fmt = "move.l %%a1@GOT(%%a5), %%a1\n\tjmp (%%a1)";
+      /* Load the offset into %d0 and add it to THIS.  */
+      emit_move_insn (gen_rtx_REG (Pmode, D0_REG),
+		      gen_rtx_MEM (Pmode, addr));
+      emit_insn (gen_add3_insn (copy_rtx (this_slot),
+				copy_rtx (this_slot),
+				gen_rtx_REG (Pmode, D0_REG)));
+    }
 
-  output_asm_insn (fmt, xops);
+  /* Jump to the target function.  Use a sibcall if direct jumps are
+     allowed, otherwise load the address into a register first.  */
+  mem = DECL_RTL (function);
+  if (!sibcall_operand (XEXP (mem, 0), VOIDmode))
+    {
+      gcc_assert (flag_pic);
+
+      if (!TARGET_SEP_DATA)
+	{
+	  /* Use the static chain register as a temporary (call-clobbered)
+	     GOT pointer for this function.  We can use the static chain
+	     register because it isn't live on entry to the thunk.  */
+	  REGNO (pic_offset_table_rtx) = STATIC_CHAIN_REGNUM;
+	  emit_insn (gen_load_got (pic_offset_table_rtx));
+	}
+      legitimize_pic_address (XEXP (mem, 0), Pmode, static_chain_rtx);
+      mem = replace_equiv_address (mem, static_chain_rtx);
+    }
+  insn = emit_call_insn (gen_sibcall (mem, const0_rtx));
+  SIBLING_CALL_P (insn) = 1;
+
+  /* Run just enough of rest_of_compilation.  */
+  insn = get_insns ();
+  split_all_insns_noflow ();
+  final_start_function (insn, file, 1);
+  final (insn, file, 1);
+  final_end_function ();
+
+  /* Clean up the vars set above.  */
+  reload_completed = 0;
+  no_new_pseudos = 0;
+
+  /* Restore the original PIC register.  */
+  if (flag_pic)
+    REGNO (pic_offset_table_rtx) = PIC_REG;
 }
 
 /* Worker function for TARGET_STRUCT_VALUE_RTX.  */
