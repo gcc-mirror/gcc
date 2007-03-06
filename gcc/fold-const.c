@@ -1,6 +1,7 @@
 /* Fold a constant sub-tree into a single node for C-compiler
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -10274,9 +10275,12 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       /*  ~a != C becomes a != ~C where C is a constant.  Likewise for ==.  */
       if (TREE_CODE (arg0) == BIT_NOT_EXPR
 	  && TREE_CODE (arg1) == INTEGER_CST)
-	return fold_build2 (code, type, TREE_OPERAND (arg0, 0),
-			    fold_build1 (BIT_NOT_EXPR, TREE_TYPE (arg1), 
-					 arg1));
+	{
+	  tree cmp_type = TREE_TYPE (TREE_OPERAND (arg0, 0));
+	  return fold_build2 (code, type, TREE_OPERAND (arg0, 0),
+			      fold_build1 (BIT_NOT_EXPR, cmp_type, 
+					   fold_convert (cmp_type, arg1)));
+	}
 
       /* If this is an equality comparison of the address of a non-weak
 	 object against zero, then we know the result.  */

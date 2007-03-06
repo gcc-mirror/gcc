@@ -1,3 +1,9 @@
+2007-03-06  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/30744
+	* fold-const.c (fold_binary) <EQ_EXPR>: Enforce type consistency
+	when transforming ~X op C to X op' ~C.
+
 2007-03-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.md: In unamed move patterns, disparge copies between general
