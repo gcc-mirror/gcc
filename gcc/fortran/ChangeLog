@@ -1,3 +1,9 @@
+2007-03-06  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR documentation/30950
+	* intrinsic.texi (AND, CPU_TIME): Fix dummy argument names.
+	(FREE): Fix call syntax.
+
 2007-03-06  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* intrinsic.texi: Limit column widths to a total of .85.
