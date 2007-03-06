@@ -1,3 +1,9 @@
+2007-03-06  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/m68k/m68k.md (movsf_cf_soft): Provide the same non-mov3q
+	alternatives as movsi_cf.
+	(movsf_cf_hard): Add commentary.
+
 2007-03-06  Kazu Hirata  <kazu@codesourcery.com>
 	    Richard Sandiford  <richard@codesourcery.com>
 
