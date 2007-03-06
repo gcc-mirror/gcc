@@ -1,3 +1,7 @@
+2007/03/05  David Taylor  <dtaylor@emc.com>
+
+	* gcc.c: Correct copyright date in --version output.
+
 2007-03-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.md: In unamed move patterns, disparge copies between general
