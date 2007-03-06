@@ -1,5 +1,16 @@
 2007-03-06  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/m68k/m68k.h (PIC_OFFSET_TABLE_REGNUM): Use the REGNO
+	of pic_offset_table_rtx if reload_completed.
+	(CONDITIONAL_REGISTER_USAGE): Use PIC_REG instead of
+	PIC_OFFSET_TABLE_REGNUM.
+	* config/m68k/m68k.c (TARGET_ASM_CAN_OUTPUT_MI_THUNK): Always
+	return true.
+	(m68k_save_reg): Use PIC_REG instead of PIC_OFFSET_TABLE_REGNO.
+	(m68k_output_mi_thunk): Rewrite to use RTL.  Honor vcall_offset.
+
+2007-03-06  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/m68k/m68k.c (m68k_save_reg): Save the PIC register in
 	functions that call eh_return.
 
