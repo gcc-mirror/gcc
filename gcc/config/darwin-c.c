@@ -34,6 +34,8 @@ Boston, MA 02110-1301, USA.  */
 #include "tm_p.h"
 #include "cppdefault.h"
 #include "prefix.h"
+#include "target.h"
+#include "target-def.h"
 
 /* Pragmas.  */
 
@@ -42,13 +44,6 @@ Boston, MA 02110-1301, USA.  */
 
 static bool using_frameworks = false;
 
-/* Maintain a small stack of alignments.  This is similar to pragma
-   pack's stack, but simpler.  */
-
-static void push_field_alignment (int);
-static void pop_field_alignment (void);
-static const char *find_subframework_file (const char *, const char *);
-static void add_system_framework_path (char *);
 static const char *find_subframework_header (cpp_reader *pfile, const char *header,
 					     cpp_dir **dirp);
 
@@ -59,6 +54,9 @@ typedef struct align_stack
 } align_stack;
 
 static struct align_stack * field_align_stack = NULL;
+
+/* Maintain a small stack of alignments.  This is similar to pragma
+   pack's stack, but simpler.  */
 
 static void
 push_field_alignment (int bit_alignment)
@@ -619,3 +617,31 @@ darwin_cpp_builtins (cpp_reader *pfile)
   builtin_define_with_value ("__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__",
 			     version_as_macro(), false);
 }
+
+/* Handle C family front-end options.  */
+
+static bool
+handle_c_option (size_t code,
+		 const char *arg,
+		 int value ATTRIBUTE_UNUSED)
+{
+  switch (code)
+    {
+    default:
+      /* Unrecognized options that we said we'd handle turn into
+	 errors if not listed here.  */
+      return false;
+
+    case OPT_iframework:
+      add_system_framework_path (xstrdup (arg));
+      break;
+    }
+
+  /* We recognized the option.  */
+  return true;
+}
+
+#undef TARGET_HANDLE_C_OPTION
+#define TARGET_HANDLE_C_OPTION handle_c_option
+
+struct gcc_targetcm targetcm = TARGETCM_INITIALIZER;

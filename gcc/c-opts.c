@@ -39,6 +39,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "opts.h"
 #include "options.h"
 #include "mkdeps.h"
+#include "target.h"
 
 #ifndef DOLLARS_IN_IDENTIFIERS
 # define DOLLARS_IN_IDENTIFIERS true
@@ -278,7 +279,12 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     {
     default:
       if (cl_options[code].flags & (CL_C | CL_CXX | CL_ObjC | CL_ObjCXX))
-	break;
+	{
+	  if ((option->flags & CL_TARGET)
+	      && ! targetcm.handle_c_option (scode, arg, value))
+	    result = 0;
+	  break;
+	}
 #ifdef CL_Fortran
       if (lang_fortran && (cl_options[code].flags & (CL_Fortran)))
 	break;

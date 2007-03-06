@@ -773,6 +773,19 @@ argument.  Otherwise @var{value} is 1 if the positive form of the
 option was used and 0 if the ``no-'' form was.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_HANDLE_C_OPTION (size_t @var{code}, const char *@var{arg}, int @var{value})
+This target hook is called whenever the user specifies one of the
+target-specific C language family options described by the @file{.opt}
+definition files(@pxref{Options}).  It has the opportunity to do some
+option-specific processing and should return true if the option is
+valid.  The default definition does nothing but return false.
+
+In general, you should use @code{TARGET_HANDLE_OPTION} to handle
+options.  However, if processing an option requires routines that are
+only available in the C (and related language) front ends, then you
+should use @code{TARGET_HANDLE_C_OPTION} instead.
+@end deftypefn
+
 @defmac TARGET_VERSION
 This macro is a C statement to print on @code{stderr} a string
 describing the particular machine description choice.  Every machine

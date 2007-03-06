@@ -48,6 +48,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "opts.h"
 #include "real.h"
 #include "cgraph.h"
+#include "target-def.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -6925,5 +6926,9 @@ c_build_cdtor_fns (void)
       gcc_assert (!static_dtors);
     }
 }
+
+#ifndef TARGET_HAS_TARGETCM
+struct gcc_targetcm targetcm = TARGETCM_INITIALIZER;
+#endif
 
 #include "gt-c-common.h"

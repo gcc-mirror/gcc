@@ -42,3 +42,7 @@ Generate code for darwin loadable kernel extensions
 mkernel
 Target Report Var(flag_mkernel)
 Generate code for the kernel or loadable kernel extensions
+
+iframework
+Target RejectNegative C ObjC C++ ObjC++ Joined Separate 
+-iframework <dir>	Add <dir> to the end of the system framework include path

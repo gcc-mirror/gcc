@@ -1,3 +1,26 @@
+2007-03-05  Mike Stump  <mrs@apple.com>
+
+	* c-common.c (targetcm): Add.   
+	* c-opts.c (c_common_handle_option): Handle language specific
+	target options.
+	* opts.c (handle_option): Verify language for target options, if
+	any are given.
+	* opth-gen.awk: Add CL_LANG_ALL.
+	* target-def.h (TARGET_HANDLE_C_OPTION): Add.
+	(TARGETCM_INITIALIZER): Add.
+	* target.h (struct gcc_targetcm): Add.
+	(targetcm): Add.
+	* targhooks.c (default_handle_c_option): Add.
+	* targhooks.h (default_handle_c_option): Add.
+	* doc/tm.texi (TARGET_HANDLE_C_OPTION): Add.
+
+	* config/darwin.opt (iframework): Add.
+	* config/darwin.h (TARGET_HAS_TARGETCM): Add.
+	* config/darwin-c.c (handle_c_option): Add.
+	(TARGET_HANDLE_C_OPTION): Add.
+	(targetcm): Add.
+	* doc/invoke.texi (Darwin Options): Add -iframework.
+
 2007-03-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* convert.c (convert_to_integer): Fix nearbyint/rint -> *lrint
