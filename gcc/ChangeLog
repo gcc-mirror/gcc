@@ -1,3 +1,33 @@
+2007-03-06  Richard Sandiford  <richard@codesourcery.com>
+
+	PR target/23482
+	PR target/17114
+	* config/m68k/m68k-protos.h (m68k_legitimate_base_reg_p): Declare.
+	(m68k_legitimate_index_reg_p, m68k_legitimate_address_p): Likewise.
+	(m68k_matches_q_p, m68k_matches_u_p): Likewise.
+	* config/m68k/m68k.h (EXTRA_CONSTRAINT): Use m68k_matches_q_p
+	and m68k_matches_u_p.
+	(PCREL_GENERAL_OPERAND_OK, LEGITIMATE_BASE_REG_P): Delete.
+	(INDIRECTABLE_1_ADDRESS_P, GO_IF_NONINDEXED_ADDRESS): Delete.
+	(GO_IF_INDEXABLE_BASE, GO_IF_INDEXING, GO_IF_INDEXED_ADDRESS): Delete.
+	(LEGITIMATE_INDEX_REG_P, LEGITIMATE_INDEX_P): Delete.
+	(GO_IF_COLDFIRE_FPU_LEGITIMATE_ADDRESS): Delete.
+	(REG_STRICT_P): New macro.
+	(LEGITIMATE_PIC_OPERAND_P): Use REG_STRICT_P rather than
+	PCREL_GENERAL_OPERAND_OK.
+	(REG_OK_FOR_BASE_P): Merge definitions.  Use REG_STRICT_P and
+	m68k_legitimate_base_reg_p.
+	(REG_MODE_OK_FOR_INDEX_P): Likewise m68k_legitimate_index_reg_p.
+	(GO_IF_LEGITIMATE_ADDRESS): Likewise m68k_legitimate_address_p.
+	(PIC_CASE_VECTOR_ADDRESS): Update comment.
+	* config/m68k/m68k.c (m68k_address): New structure.
+	(m68k_legitimate_base_reg_p, m68k_legitimate_index_reg_p)
+	(m68k_decompose_index, m68k_legitimate_constant_address_p)
+	(m68k_jump_table_ref_p, m68k_decompose_address)
+	(m68k_legitimate_address_p, m68k_legitimate_mem_p, m68k_matches_q_p)
+	(m68k_matches_u_p): New functions.
+	(print_operand_address): Rewrite to use m68k_decompose_index.
+
 2007/03/05  David Taylor  <dtaylor@emc.com>
 
 	* gcc.c: Correct copyright date in --version output.
