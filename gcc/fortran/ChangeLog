@@ -1,3 +1,10 @@
+2007-03-06  Daniel Franke  <franke.daniel@gmail.com>
+
+	Backport from trunk:
+	PR documentation/30950
+	* intrinsic.texi (AND, CPU_TIME): Fix dummy argument names.
+	(FREE): Fix call syntax.
+
 2007-03-06  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* invoke.texi: Corrected -Wtabs documentation.
