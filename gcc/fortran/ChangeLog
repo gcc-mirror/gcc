@@ -1,5 +1,9 @@
 2007-03-06  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* invoke.texi: Corrected -Wtabs documentation.
+
+2007-03-06  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* intrinsic.texi: Backported typo fixes from trunk.
 	* invoke.texi: Likewise.
 

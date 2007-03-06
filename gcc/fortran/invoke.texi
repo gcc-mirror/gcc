@@ -499,7 +499,9 @@ A LOGICAL SELECT construct has three CASE statements.
 By default, tabs are accepted as whitespace, but tabs are not members
 of the Fortran Character Set.  @option{-Wno-tabs} will cause a warning
 to be issued if a tab is encountered. Note, @option{-Wno-tabs} is active
-for @option{-pedantic}, @option{-std=f95}, and @option{-Wall}.
+for @option{-pedantic}, @option{-std=f95}, @option{-std=f2003}, and
+@option{-Wall}.
+
 
 @item -Wunderflow
 @cindex @code{-Wunderflow} option
