@@ -72,7 +72,7 @@ db_pathtail = gcj-$(gcc_version)/$(db_name)
 ## For now, only on native systems.  FIXME.
 if NATIVE
 bin_PROGRAMS = jv-convert gij grmic grmiregistry gcj-dbtool \
-	gappletviewer gjarsigner gkeytool gjar gjavah gnative2ascii \
+	gappletviewer gjarsigner gkeytool gjar gcjh gjavah gnative2ascii \
 	gorbd grmid gserialver gtnameserv gc-analyze
 
 ## It is convenient to actually build and install the default database
@@ -755,6 +755,15 @@ gjavah_LINK = $(GCJLINK)
 ## See jv_convert_LDADD.
 gjavah_LDADD = -L$(here)/.libs libgcj-tools.la
 gjavah_DEPENDENCIES = libgcj-tools.la
+
+## This is a dummy definition.
+gcjh_SOURCES =
+gcjh_LDFLAGS = --main=gnu.classpath.tools.javah.GcjhMain \
+	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
+gcjh_LINK = $(GCJLINK)
+## See jv_convert_LDADD.
+gcjh_LDADD = -L$(here)/.libs libgcj-tools.la
+gcjh_DEPENDENCIES = libgcj-tools.la
 
 ## This is a dummy definition.
 gnative2ascii_SOURCES =

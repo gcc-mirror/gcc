@@ -1,4 +1,12 @@
+2007-03-06  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (bin_PROGRAMS): Added gcjh.
+	(gcjh_SOURCES, gcjh_LDFLAGS, gcjh_LINK, gcjh_LDADD,
+	gcjh_DEPENDENCIES): New variables.
+
 2007-03-06  Kyle Galloway  <kgallowa@redhat.com>
+
 	* jvmti.cc(_Jv_JVMTI_GetLocalVariableTable): Fix _Jv_Malloc parameters.
 	* testsuite/libjava.jvmti/interp/natgetlocalvartable.cc
 	(do_getlocalvartable_tests): Add Deallocate calls to free strings.

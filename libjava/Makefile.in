@@ -48,7 +48,7 @@ target_triplet = @target@
 @NATIVE_TRUE@	grmic$(EXEEXT) grmiregistry$(EXEEXT) \
 @NATIVE_TRUE@	gcj-dbtool$(EXEEXT) gappletviewer$(EXEEXT) \
 @NATIVE_TRUE@	gjarsigner$(EXEEXT) gkeytool$(EXEEXT) \
-@NATIVE_TRUE@	gjar$(EXEEXT) gjavah$(EXEEXT) \
+@NATIVE_TRUE@	gjar$(EXEEXT) gcjh$(EXEEXT) gjavah$(EXEEXT) \
 @NATIVE_TRUE@	gnative2ascii$(EXEEXT) gorbd$(EXEEXT) \
 @NATIVE_TRUE@	grmid$(EXEEXT) gserialver$(EXEEXT) \
 @NATIVE_TRUE@	gtnameserv$(EXEEXT) gc-analyze$(EXEEXT)
@@ -442,6 +442,8 @@ am_gc_analyze_OBJECTS =
 gc_analyze_OBJECTS = $(am_gc_analyze_OBJECTS)
 am_gcj_dbtool_OBJECTS = gnu/gcj/tools/gcj_dbtool/natMain.$(OBJEXT)
 gcj_dbtool_OBJECTS = $(am_gcj_dbtool_OBJECTS)
+am_gcjh_OBJECTS =
+gcjh_OBJECTS = $(am_gcjh_OBJECTS)
 am__gen_from_JIS_SOURCES_DIST = gnu/gcj/convert/gen-from-JIS.c \
 	gnu/gcj/convert/make-trie.c
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@am_gen_from_JIS_OBJECTS = gnu/gcj/convert/gen-from-JIS.$(OBJEXT) \
@@ -503,7 +505,7 @@ SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) $(libgcj_tools_la_SOURCES) \
 	$(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) \
 	$(libgcj_bc_la_SOURCES) $(libgij_la_SOURCES) \
 	$(libjvm_la_SOURCES) $(ecjx_SOURCES) $(gappletviewer_SOURCES) \
-	$(gc_analyze_SOURCES) $(gcj_dbtool_SOURCES) \
+	$(gc_analyze_SOURCES) $(gcj_dbtool_SOURCES) $(gcjh_SOURCES) \
 	$(gen_from_JIS_SOURCES) $(gij_SOURCES) $(gjar_SOURCES) \
 	$(gjarsigner_SOURCES) $(gjavah_SOURCES) $(gkeytool_SOURCES) \
 	$(gnative2ascii_SOURCES) $(gorbd_SOURCES) $(grmic_SOURCES) \
@@ -514,12 +516,13 @@ DIST_SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) \
 	$(EXTRA_libgcj_la_SOURCES) $(libgcj_bc_la_SOURCES) \
 	$(libgij_la_SOURCES) $(libjvm_la_SOURCES) $(ecjx_SOURCES) \
 	$(gappletviewer_SOURCES) $(gc_analyze_SOURCES) \
-	$(gcj_dbtool_SOURCES) $(am__gen_from_JIS_SOURCES_DIST) \
-	$(gij_SOURCES) $(gjar_SOURCES) $(gjarsigner_SOURCES) \
-	$(gjavah_SOURCES) $(gkeytool_SOURCES) $(gnative2ascii_SOURCES) \
-	$(gorbd_SOURCES) $(grmic_SOURCES) $(grmid_SOURCES) \
-	$(grmiregistry_SOURCES) $(gserialver_SOURCES) \
-	$(gtnameserv_SOURCES) $(jv_convert_SOURCES)
+	$(gcj_dbtool_SOURCES) $(gcjh_SOURCES) \
+	$(am__gen_from_JIS_SOURCES_DIST) $(gij_SOURCES) \
+	$(gjar_SOURCES) $(gjarsigner_SOURCES) $(gjavah_SOURCES) \
+	$(gkeytool_SOURCES) $(gnative2ascii_SOURCES) $(gorbd_SOURCES) \
+	$(grmic_SOURCES) $(grmid_SOURCES) $(grmiregistry_SOURCES) \
+	$(gserialver_SOURCES) $(gtnameserv_SOURCES) \
+	$(jv_convert_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-exec-recursive install-info-recursive \
@@ -7885,6 +7888,13 @@ gjavah_LDFLAGS = --main=gnu.classpath.tools.javah.Main \
 gjavah_LINK = $(GCJLINK)
 gjavah_LDADD = -L$(here)/.libs libgcj-tools.la
 gjavah_DEPENDENCIES = libgcj-tools.la
+gcjh_SOURCES = 
+gcjh_LDFLAGS = --main=gnu.classpath.tools.javah.GcjhMain \
+	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
+
+gcjh_LINK = $(GCJLINK)
+gcjh_LDADD = -L$(here)/.libs libgcj-tools.la
+gcjh_DEPENDENCIES = libgcj-tools.la
 gnative2ascii_SOURCES = 
 gnative2ascii_LDFLAGS = --main=gnu.classpath.tools.native2ascii.Native2ASCII \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
@@ -8719,6 +8729,9 @@ gnu/gcj/tools/gcj_dbtool/natMain.$(OBJEXT):  \
 gcj-dbtool$(EXEEXT): $(gcj_dbtool_OBJECTS) $(gcj_dbtool_DEPENDENCIES) 
 	@rm -f gcj-dbtool$(EXEEXT)
 	$(gcj_dbtool_LINK) $(gcj_dbtool_LDFLAGS) $(gcj_dbtool_OBJECTS) $(gcj_dbtool_LDADD) $(LIBS)
+gcjh$(EXEEXT): $(gcjh_OBJECTS) $(gcjh_DEPENDENCIES) 
+	@rm -f gcjh$(EXEEXT)
+	$(gcjh_LINK) $(gcjh_LDFLAGS) $(gcjh_OBJECTS) $(gcjh_LDADD) $(LIBS)
 gnu/gcj/convert/gen-from-JIS.$(OBJEXT):  \
 	gnu/gcj/convert/$(am__dirstamp) \
 	gnu/gcj/convert/$(DEPDIR)/$(am__dirstamp)
