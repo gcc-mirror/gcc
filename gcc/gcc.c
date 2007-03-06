@@ -168,6 +168,11 @@ static int print_multi_lib;
 
 static int print_help_list;
 
+/* Flag saying to print the sysroot suffix used for searching for
+   headers.  */
+
+static int print_sysroot_headers_suffix;
+
 /* Flag indicating whether we should print the command and arguments */
 
 static int verbose_flag;
@@ -1125,6 +1130,7 @@ static const struct option_map option_map[] =
    {"--print-multi-directory", "-print-multi-directory", 0},
    {"--print-multi-os-directory", "-print-multi-os-directory", 0},
    {"--print-prog-name", "-print-prog-name=", "aj"},
+   {"--print-sysroot-headers-suffix", "-print-sysroot-headers-suffix", 0},
    {"--profile", "-p", 0},
    {"--profile-blocks", "-a", 0},
    {"--quiet", "-q", 0},
@@ -3193,6 +3199,7 @@ display_help (void)
   -print-multi-lib         Display the mapping between command line options and\n\
                            multiple library search directories\n"), stdout);
   fputs (_("  -print-multi-os-directory Display the relative path to OS libraries\n"), stdout);
+  fputs (_("  -print-sysroot-headers-suffix Display the sysroot suffix used to find headers\n"), stdout);
   fputs (_("  -Wa,<options>            Pass comma-separated <options> on to the assembler\n"), stdout);
   fputs (_("  -Wp,<options>            Pass comma-separated <options> on to the preprocessor\n"), stdout);
   fputs (_("  -Wl,<options>            Pass comma-separated <options> on to the linker\n"), stdout);
@@ -3637,6 +3644,8 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	print_multi_directory = 1;
       else if (! strcmp (argv[i], "-print-multi-os-directory"))
 	print_multi_os_directory = 1;
+      else if (! strcmp (argv[i], "-print-sysroot-headers-suffix"))
+	print_sysroot_headers_suffix = 1;
       else if (! strncmp (argv[i], "-Wa,", 4))
 	{
 	  int prev, j;
@@ -4065,6 +4074,8 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
       else if (! strcmp (argv[i], "-print-multi-directory"))
 	;
       else if (! strcmp (argv[i], "-print-multi-os-directory"))
+	;
+      else if (! strcmp (argv[i], "-print-sysroot-headers-suffix"))
 	;
       else if (! strncmp (argv[i], "--sysroot=", strlen ("--sysroot=")))
 	{
@@ -4978,6 +4989,9 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 			     spec_path, &info);
 
 	      info.append = "include-fixed";
+	      if (*sysroot_hdrs_suffix_spec)
+		info.append = concat (info.append, dir_separator_str,
+				      multilib_dir, NULL);
 	      info.append_len = strlen (info.append);
 	      for_each_path (&include_prefixes, false, info.append_len,
 			     spec_path, &info);
@@ -6392,6 +6406,19 @@ main (int argc, char **argv)
       else
 	printf ("%s\n", multilib_os_dir);
       return (0);
+    }
+
+  if (print_sysroot_headers_suffix)
+    {
+      if (*sysroot_hdrs_suffix_spec)
+	{
+	  printf("%s\n", target_sysroot_hdrs_suffix);
+	  return (0);
+	}
+      else
+	/* The error status indicates that only one set of fixed
+	   headers should be built.  */
+	fatal ("not configured with sysroot headers suffix");
     }
 
   if (print_help_list)

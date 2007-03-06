@@ -302,6 +302,7 @@ Objective-C and Objective-C++ Dialects}.
 -p  -pg  -print-file-name=@var{library}  -print-libgcc-file-name @gol
 -print-multi-directory  -print-multi-lib @gol
 -print-prog-name=@var{program}  -print-search-dirs  -Q @gol
+-print-sysroot-headers-suffix @gol
 -save-temps  -time}
 
 @item Optimization Options
@@ -4696,6 +4697,12 @@ components where @command{gcc} expects to find them, or you can set the environm
 variable @env{GCC_EXEC_PREFIX} to the directory where you installed them.
 Don't forget the trailing @samp{/}.
 @xref{Environment Variables}.
+
+@item -print-sysroot-headers-suffix
+@opindex print-sysroot-headers-suffix
+Print the suffix added to the target sysroot when searching for
+headers, or give an error if the compiler is not configured with such
+a suffix---and don't do anything else.
 
 @item -dumpmachine
 @opindex dumpmachine
