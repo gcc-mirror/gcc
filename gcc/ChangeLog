@@ -1,3 +1,8 @@
+2007-03-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* convert.c (convert_to_integer): Fix nearbyint/rint -> *lrint
+	conversion.
+
 2007-03-05  Steve Ellcey  <sje@cup.hp.com>
 
 	Backported from mainline

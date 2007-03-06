@@ -1,3 +1,7 @@
+2007-03-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/torture/builtin-convert-4.c: New test.
+
 2007-03-05  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/30895

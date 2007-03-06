@@ -422,12 +422,12 @@ convert_to_integer (tree type, tree expr)
 	    fn = mathfn_built_in (s_intype, BUILT_IN_LLROUND);
 	  break;
 
-	CASE_FLT_FN (BUILT_IN_RINT):
-	  /* Only convert rint* if we can ignore math exceptions.  */
+	CASE_FLT_FN (BUILT_IN_NEARBYINT):
+	  /* Only convert nearbyint* if we can ignore math exceptions.  */
 	  if (flag_trapping_math)
 	    break;
 	  /* ... Fall through ...  */
-	CASE_FLT_FN (BUILT_IN_NEARBYINT):
+	CASE_FLT_FN (BUILT_IN_RINT):
 	  if (outprec < TYPE_PRECISION (long_integer_type_node)
 	      || (outprec == TYPE_PRECISION (long_integer_type_node)
 		  && !TYPE_UNSIGNED (type)))
