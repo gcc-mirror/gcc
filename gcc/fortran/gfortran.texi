@@ -389,36 +389,12 @@ Fortran compiler.
 @cindex Fortran 77
 @cindex G77
 
-Why do we write a compiler front end from scratch? 
-There's a fine Fortran 77 compiler in the
-GNU Compiler Collection that accepts some features
-of the Fortran 90 standard as extensions.
-Why not start from there and revamp it?
-
-One of the reasons is that Craig Burley, the author of G77,
-has decided to stop working on the G77 front end.
-On @uref{http://world.std.com/~burley/g77-why.html,
-Craig explains the reasons for his decision to stop working on G77}
-in one of the pages in his homepage.
-Among the reasons is a lack of interest in improvements to
-@command{g77}.
-Users appear to be quite satisfied with @command{g77} as it is.
-While @command{g77} is still being maintained (by Toon Moene),
-it is unlikely that sufficient people will be willing
-to completely rewrite the existing code. 
-
-But there are other reasons to start from scratch.
-Many people, including Craig Burley,
-no longer agreed with certain design decisions in the G77 front end.
-Also, the interface of @command{g77} to the back end is written in
-a style which is confusing and not up to date on recommended practice.
-In fact, a full rewrite had already been planned for GCC 3.0.
-
-When Craig decided to stop,
-it just seemed to be a better idea to start a new project from scratch,
-because it was expected to be easier to maintain code we
-develop ourselves than to do a major overhaul of @command{g77} first,
-and then build a Fortran 95 compiler out of it.
+The GNU Fortran compiler is the successor to G77, the Fortran 77 front
+end included in GCC prior to version 4.  It is an entirely new program
+that has been designed to provide Fortran 95 support and extensibility
+for future Fortran language standards, as well as providing backwards
+compatibility for Fortran 77 and nearly all of the GNU language 
+extensions supported by G77.
 
 
 @c ---------------------------------------------------------------------
