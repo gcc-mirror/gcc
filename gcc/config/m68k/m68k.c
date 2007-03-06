@@ -103,6 +103,27 @@ struct m68k_frame
 /* Current frame information calculated by m68k_compute_frame_layout().  */
 static struct m68k_frame current_frame;
 
+/* Structure describing an m68k address.
+
+   If CODE is UNKNOWN, the address is BASE + INDEX * SCALE + OFFSET,
+   with null fields evaluating to 0.  Here:
+
+   - BASE satisfies m68k_legitimate_base_reg_p
+   - INDEX satisfies m68k_legitimate_index_reg_p
+   - OFFSET satisfies m68k_legitimate_constant_address_p
+
+   INDEX is either HImode or SImode.  The other fields are SImode.
+
+   If CODE is PRE_DEC, the address is -(BASE).  If CODE is POST_INC,
+   the address is (BASE)+.  */
+struct m68k_address {
+  enum rtx_code code;
+  rtx base;
+  rtx index;
+  rtx offset;
+  int scale;
+};
+
 static bool m68k_handle_option (size_t, const char *, int);
 static rtx find_addr_reg (rtx);
 static const char *singlemove_string (rtx *);
@@ -1666,6 +1687,76 @@ output_btst (rtx *operands, rtx countop, rtx dataop, rtx insn, int signpos)
   return "btst %0,%1";
 }
 
+/* Return true if X is a legitimate base register.  STRICT_P says
+   whether we need strict checking.  */
+
+bool
+m68k_legitimate_base_reg_p (rtx x, bool strict_p)
+{
+  /* Allow SUBREG everywhere we allow REG.  This results in better code.  */
+  if (!strict_p && GET_CODE (x) == SUBREG)
+    x = SUBREG_REG (x);
+
+  return (REG_P (x)
+	  && (strict_p
+	      ? REGNO_OK_FOR_BASE_P (REGNO (x))
+	      : !DATA_REGNO_P (REGNO (x)) && !FP_REGNO_P (REGNO (x))));
+}
+
+/* Return true if X is a legitimate index register.  STRICT_P says
+   whether we need strict checking.  */
+
+bool
+m68k_legitimate_index_reg_p (rtx x, bool strict_p)
+{
+  if (!strict_p && GET_CODE (x) == SUBREG)
+    x = SUBREG_REG (x);
+
+  return (REG_P (x)
+	  && (strict_p
+	      ? REGNO_OK_FOR_INDEX_P (REGNO (x))
+	      : !FP_REGNO_P (REGNO (x))));
+}
+
+/* Return true if X is a legitimate index expression for a (d8,An,Xn) or
+   (bd,An,Xn) addressing mode.  Fill in the INDEX and SCALE fields of
+   ADDRESS if so.  STRICT_P says whether we need strict checking.  */
+
+static bool
+m68k_decompose_index (rtx x, bool strict_p, struct m68k_address *address)
+{
+  int scale;
+
+  /* Check for a scale factor.  */
+  scale = 1;
+  if ((TARGET_68020 || TARGET_COLDFIRE)
+      && GET_CODE (x) == MULT
+      && GET_CODE (XEXP (x, 1)) == CONST_INT
+      && (INTVAL (XEXP (x, 1)) == 2
+	  || INTVAL (XEXP (x, 1)) == 4
+	  || (INTVAL (XEXP (x, 1)) == 8
+	      && (TARGET_COLDFIRE_FPU || !TARGET_COLDFIRE))))
+    {
+      scale = INTVAL (XEXP (x, 1));
+      x = XEXP (x, 0);
+    }
+
+  /* Check for a word extension.  */
+  if (!TARGET_COLDFIRE
+      && GET_CODE (x) == SIGN_EXTEND
+      && GET_MODE (XEXP (x, 0)) == HImode)
+    x = XEXP (x, 0);
+
+  if (m68k_legitimate_index_reg_p (x, strict_p))
+    {
+      address->scale = scale;
+      address->index = x;
+      return true;
+    }
+
+  return false;
+}
+
 /* Return true if X is an illegitimate symbolic constant.  */
 
 bool
@@ -1681,6 +1772,251 @@ m68k_illegitimate_symbolic_constant_p (rtx x)
 	return true;
     }
   return false;
+}
+
+/* Return true if X is a legitimate constant address that can reach
+   bytes in the range [X, X + REACH).  STRICT_P says whether we need
+   strict checking.  */
+
+static bool
+m68k_legitimate_constant_address_p (rtx x, unsigned int reach, bool strict_p)
+{
+  rtx base, offset;
+
+  if (!CONSTANT_ADDRESS_P (x))
+    return false;
+
+  if (flag_pic
+      && !(strict_p && TARGET_PCREL)
+      && symbolic_operand (x, VOIDmode))
+    return false;
+
+  if (M68K_OFFSETS_MUST_BE_WITHIN_SECTIONS_P && reach > 1)
+    {
+      split_const (x, &base, &offset);
+      if (GET_CODE (base) == SYMBOL_REF
+	  && !offset_within_block_p (base, INTVAL (offset) + reach - 1))
+	return false;
+    }
+
+  return true;
+}
+
+/* Return true if X is a LABEL_REF for a jump table.  Assume that unplaced
+   labels will become jump tables.  */
+
+static bool
+m68k_jump_table_ref_p (rtx x)
+{
+  if (GET_CODE (x) != LABEL_REF)
+    return false;
+
+  x = XEXP (x, 0);
+  if (!NEXT_INSN (x) && !PREV_INSN (x))
+    return true;
+
+  x = next_nonnote_insn (x);
+  return x && JUMP_TABLE_DATA_P (x);
+}
+
+/* Return true if X is a legitimate address for values of mode MODE.
+   STRICT_P says whether strict checking is needed.  If the address
+   is valid, describe its components in *ADDRESS.  */
+
+static bool
+m68k_decompose_address (enum machine_mode mode, rtx x,
+			bool strict_p, struct m68k_address *address)
+{
+  unsigned int reach;
+
+  memset (address, 0, sizeof (*address));
+
+  if (mode == BLKmode)
+    reach = 1;
+  else
+    reach = GET_MODE_SIZE (mode);
+
+  /* Check for (An) (mode 2).  */
+  if (m68k_legitimate_base_reg_p (x, strict_p))
+    {
+      address->base = x;
+      return true;
+    }
+
+  /* Check for -(An) and (An)+ (modes 3 and 4).  */
+  if ((GET_CODE (x) == PRE_DEC || GET_CODE (x) == POST_INC)
+      && m68k_legitimate_base_reg_p (XEXP (x, 0), strict_p))
+    {
+      address->code = GET_CODE (x);
+      address->base = XEXP (x, 0);
+      return true;
+    }
+
+  /* Check for (d16,An) (mode 5).  */
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 1)) == CONST_INT
+      && IN_RANGE (INTVAL (XEXP (x, 1)), -0x8000, 0x8000 - reach)
+      && m68k_legitimate_base_reg_p (XEXP (x, 0), strict_p))
+    {
+      address->base = XEXP (x, 0);
+      address->offset = XEXP (x, 1);
+      return true;
+    }
+
+  /* Check for GOT loads.  These are (bd,An,Xn) addresses if
+     TARGET_68020 && flag_pic == 2, otherwise they are (d16,An)
+     addresses.  */
+  if (flag_pic
+      && GET_CODE (x) == PLUS
+      && XEXP (x, 0) == pic_offset_table_rtx
+      && (GET_CODE (XEXP (x, 1)) == SYMBOL_REF
+	  || GET_CODE (XEXP (x, 1)) == LABEL_REF))
+    {
+      address->base = XEXP (x, 0);
+      address->offset = XEXP (x, 1);
+      return true;
+    }
+
+  /* The ColdFire FPU only accepts addressing modes 2-5.  */
+  if (TARGET_COLDFIRE_FPU && GET_MODE_CLASS (mode) == MODE_FLOAT)
+    return false;
+
+  /* Check for (xxx).w and (xxx).l.  Also, in the TARGET_PCREL case,
+     check for (d16,PC) or (bd,PC,Xn) with a suppressed index register.
+     All these modes are variations of mode 7.  */
+  if (m68k_legitimate_constant_address_p (x, reach, strict_p))
+    {
+      address->offset = x;
+      return true;
+    }
+
+  /* Check for (d8,PC,Xn), a mode 7 form.  This case is needed for
+     tablejumps.
+
+     ??? do_tablejump creates these addresses before placing the target
+     label, so we have to assume that unplaced labels are jump table
+     references.  It seems unlikely that we would ever generate indexed
+     accesses to unplaced labels in other cases.  */
+  if (GET_CODE (x) == PLUS
+      && m68k_jump_table_ref_p (XEXP (x, 1))
+      && m68k_decompose_index (XEXP (x, 0), strict_p, address))
+    {
+      address->offset = XEXP (x, 1);
+      return true;
+    }
+
+  /* Everything hereafter deals with (d8,An,Xn.SIZE*SCALE) or
+     (bd,An,Xn.SIZE*SCALE) addresses.  */
+
+  if (TARGET_68020)
+    {
+      /* Check for a nonzero base displacement.  */
+      if (GET_CODE (x) == PLUS
+	  && m68k_legitimate_constant_address_p (XEXP (x, 1), reach, strict_p))
+	{
+	  address->offset = XEXP (x, 1);
+	  x = XEXP (x, 0);
+	}
+
+      /* Check for a suppressed index register.  */
+      if (m68k_legitimate_base_reg_p (x, strict_p))
+	{
+	  address->base = x;
+	  return true;
+	}
+
+      /* Check for a suppressed base register.  Do not allow this case
+	 for non-symbolic offsets as it effectively gives gcc freedom
+	 to treat data registers as base registers, which can generate
+	 worse code.  */
+      if (address->offset
+	  && symbolic_operand (address->offset, VOIDmode)
+	  && m68k_decompose_index (x, strict_p, address))
+	return true;
+    }
+  else
+    {
+      /* Check for a nonzero base displacement.  */
+      if (GET_CODE (x) == PLUS
+	  && GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && IN_RANGE (INTVAL (XEXP (x, 1)), -0x80, 0x80 - reach))
+	{
+	  address->offset = XEXP (x, 1);
+	  x = XEXP (x, 0);
+	}
+    }
+
+  /* We now expect the sum of a base and an index.  */
+  if (GET_CODE (x) == PLUS)
+    {
+      if (m68k_legitimate_base_reg_p (XEXP (x, 0), strict_p)
+	  && m68k_decompose_index (XEXP (x, 1), strict_p, address))
+	{
+	  address->base = XEXP (x, 0);
+	  return true;
+	}
+
+      if (m68k_legitimate_base_reg_p (XEXP (x, 1), strict_p)
+	  && m68k_decompose_index (XEXP (x, 0), strict_p, address))
+	{
+	  address->base = XEXP (x, 1);
+	  return true;
+	}
+    }
+  return false;
+}
+
+/* Return true if X is a legitimate address for values of mode MODE.
+   STRICT_P says whether strict checking is needed.  */
+
+bool
+m68k_legitimate_address_p (enum machine_mode mode, rtx x, bool strict_p)
+{
+  struct m68k_address address;
+
+  return m68k_decompose_address (mode, x, strict_p, &address);
+}
+
+/* Return true if X is a memory, describing its address in ADDRESS if so.
+   Apply strict checking if called during or after reload.  */
+
+static bool
+m68k_legitimate_mem_p (rtx x, struct m68k_address *address)
+{
+  return (MEM_P (x)
+	  && m68k_decompose_address (GET_MODE (x), XEXP (x, 0),
+				     reload_in_progress || reload_completed,
+				     address));
+}
+
+/* Return true if X matches the 'Q' constraint.  It must be a memory
+   with a base address and no constant offset or index.  */
+
+bool
+m68k_matches_q_p (rtx x)
+{
+  struct m68k_address address;
+
+  return (m68k_legitimate_mem_p (x, &address)
+	  && address.code == UNKNOWN
+	  && address.base
+	  && !address.offset
+	  && !address.index);
+}
+
+/* Return true if X matches the 'U' constraint.  It must be a base address
+   with a constant offset and no index.  */
+
+bool
+m68k_matches_u_p (rtx x)
+{
+  struct m68k_address address;
+
+  return (m68k_legitimate_mem_p (x, &address)
+	  && address.code == UNKNOWN
+	  && address.base
+	  && address.offset
+	  && !address.index);
 }
 
 /* Legitimize PIC addresses.  If the address is already
@@ -3271,253 +3607,44 @@ print_operand (FILE *file, rtx op, int letter)
    offset is output in word mode (e.g. movel a5@(_foo:w), a0).  When generating
    -fPIC code the offset is output in long mode (e.g. movel a5@(_foo:l), a0) */
 
-#if MOTOROLA
-#  define ASM_OUTPUT_CASE_FETCH(file, labelno, regname) \
-  asm_fprintf (file, "%LL%d-%LLI%d.b(%Rpc,%s.", labelno, labelno, regname)
-#else /* !MOTOROLA */
-# define ASM_OUTPUT_CASE_FETCH(file, labelno, regname) \
-  asm_fprintf (file, "%Rpc@(%LL%d-%LLI%d-2:b,%s:", labelno, labelno, regname)
-#endif /* !MOTOROLA */
-
 void
 print_operand_address (FILE *file, rtx addr)
 {
-  register rtx reg1, reg2, breg, ireg;
-  rtx offset;
+  struct m68k_address address;
 
-  switch (GET_CODE (addr))
+  if (!m68k_decompose_address (QImode, addr, true, &address))
+    gcc_unreachable ();
+
+  if (address.code == PRE_DEC)
+    fprintf (file, MOTOROLA ? "-(%s)" : "%s@-",
+	     M68K_REGNAME (REGNO (address.base)));
+  else if (address.code == POST_INC)
+    fprintf (file, MOTOROLA ? "(%s)+" : "%s@+",
+	     M68K_REGNAME (REGNO (address.base)));
+  else if (!address.base && !address.index)
     {
-    case REG:
-      fprintf (file, MOTOROLA ? "(%s)" : "%s@", M68K_REGNAME (REGNO (addr)));
-      break;
-    case PRE_DEC:
-      fprintf (file, MOTOROLA ? "-(%s)" : "%s@-",
-	       M68K_REGNAME (REGNO (XEXP (addr, 0))));
-      break;
-    case POST_INC:
-      fprintf (file, MOTOROLA ? "(%s)+" : "%s@+",
-	       M68K_REGNAME (REGNO (XEXP (addr, 0))));
-      break;
-    case PLUS:
-      reg1 = reg2 = ireg = breg = offset = 0;
-      if (CONSTANT_ADDRESS_P (XEXP (addr, 0)))
+      /* A constant address.  */
+      gcc_assert (address.offset == addr);
+      if (GET_CODE (addr) == CONST_INT)
 	{
-	  offset = XEXP (addr, 0);
-	  addr = XEXP (addr, 1);
-	}
-      else if (CONSTANT_ADDRESS_P (XEXP (addr, 1)))
-	{
-	  offset = XEXP (addr, 1);
-	  addr = XEXP (addr, 0);
-	}
-      if (GET_CODE (addr) != PLUS)
-	{
-	  ;
-	}
-      else if (GET_CODE (XEXP (addr, 0)) == SIGN_EXTEND)
-	{
-	  reg1 = XEXP (addr, 0);
-	  addr = XEXP (addr, 1);
-	}
-      else if (GET_CODE (XEXP (addr, 1)) == SIGN_EXTEND)
-	{
-	  reg1 = XEXP (addr, 1);
-	  addr = XEXP (addr, 0);
-	}
-      else if (GET_CODE (XEXP (addr, 0)) == MULT)
-	{
-	  reg1 = XEXP (addr, 0);
-	  addr = XEXP (addr, 1);
-	}
-      else if (GET_CODE (XEXP (addr, 1)) == MULT)
-	{
-	  reg1 = XEXP (addr, 1);
-	  addr = XEXP (addr, 0);
-	}
-      else if (GET_CODE (XEXP (addr, 0)) == REG)
-	{
-	  reg1 = XEXP (addr, 0);
-	  addr = XEXP (addr, 1);
-	}
-      else if (GET_CODE (XEXP (addr, 1)) == REG)
-	{
-	  reg1 = XEXP (addr, 1);
-	  addr = XEXP (addr, 0);
-	}
-      if (GET_CODE (addr) == REG || GET_CODE (addr) == MULT
-	  || GET_CODE (addr) == SIGN_EXTEND)
-	{
-	  if (reg1 == 0)
-	    reg1 = addr;
+	  /* (xxx).w or (xxx).l.  */
+	  if (IN_RANGE (INTVAL (addr), -0x8000, 0x7fff))
+	    fprintf (file, MOTOROLA ? "%d.w" : "%d:w", (int) INTVAL (addr));
 	  else
-	    reg2 = addr;
-	  addr = 0;
-	}
-#if 0	/* for OLD_INDEXING */
-      else if (GET_CODE (addr) == PLUS)
-	{
-	  if (GET_CODE (XEXP (addr, 0)) == REG)
-	    {
-	      reg2 = XEXP (addr, 0);
-	      addr = XEXP (addr, 1);
-	    }
-	  else if (GET_CODE (XEXP (addr, 1)) == REG)
-	    {
-	      reg2 = XEXP (addr, 1);
-	      addr = XEXP (addr, 0);
-	    }
-	}
-#endif
-      if (offset != 0)
-	{
-	  gcc_assert (!addr);
-	  addr = offset;
-	}
-      if ((reg1 && (GET_CODE (reg1) == SIGN_EXTEND
-		    || GET_CODE (reg1) == MULT))
-	  || (reg2 != 0 && REGNO_OK_FOR_BASE_P (REGNO (reg2))))
-	{
-	  breg = reg2;
-	  ireg = reg1;
-	}
-      else if (reg1 != 0 && REGNO_OK_FOR_BASE_P (REGNO (reg1)))
-	{
-	  breg = reg1;
-	  ireg = reg2;
-	}
-      if (ireg != 0 && breg == 0 && GET_CODE (addr) == LABEL_REF
-	  && ! (flag_pic && ireg == pic_offset_table_rtx))
-	{
-	  int scale = 1;
-	  if (GET_CODE (ireg) == MULT)
-	    {
-	      scale = INTVAL (XEXP (ireg, 1));
-	      ireg = XEXP (ireg, 0);
-	    }
-	  if (GET_CODE (ireg) == SIGN_EXTEND)
-	    {
-	      ASM_OUTPUT_CASE_FETCH (file,
-				     CODE_LABEL_NUMBER (XEXP (addr, 0)),
-				     M68K_REGNAME (REGNO (XEXP (ireg, 0))));
-	      fprintf (file, "w");
-	    }
-	  else
-	    {
-	      ASM_OUTPUT_CASE_FETCH (file,
-				     CODE_LABEL_NUMBER (XEXP (addr, 0)),
-				     M68K_REGNAME (REGNO (ireg)));
-	      fprintf (file, "l");
-	    }
-	  if (scale != 1)
-	    fprintf (file, MOTOROLA ? "*%d" : ":%d", scale);
-	  putc (')', file);
-	  break;
-	}
-      if (breg != 0 && ireg == 0 && GET_CODE (addr) == LABEL_REF
-	  && ! (flag_pic && breg == pic_offset_table_rtx))
-	{
-	  ASM_OUTPUT_CASE_FETCH (file,
-				 CODE_LABEL_NUMBER (XEXP (addr, 0)),
-				 M68K_REGNAME (REGNO (breg)));
-	  fprintf (file, "l)");
-	  break;
-	}
-      if (ireg != 0 || breg != 0)
-	{
-	  int scale = 1;
-	    
-	  gcc_assert (breg);
-	  gcc_assert (flag_pic || !addr || GET_CODE (addr) != LABEL_REF);
-	    
-	  if (MOTOROLA)
-	    {
-	      if (addr != 0)
-		{
-		  output_addr_const (file, addr);
-		  if (flag_pic && (breg == pic_offset_table_rtx))
-		    {
-		      fprintf (file, "@GOT");
-		      if (flag_pic == 1)
-			fprintf (file, ".w");
-		    }
-		}
-	      fprintf (file, "(%s", M68K_REGNAME (REGNO (breg)));
-	      if (ireg != 0)
-		putc (',', file);
-	    }
-	  else /* !MOTOROLA */
-	    {
-	      fprintf (file, "%s@(", M68K_REGNAME (REGNO (breg)));
-	      if (addr != 0)
-		{
-		  output_addr_const (file, addr);
-		  if (breg == pic_offset_table_rtx)
-		    switch (flag_pic)
-		      {
-		      case 1:
-			fprintf (file, ":w");
-			break;
-		      case 2:
-			fprintf (file, ":l");
-			break;
-		      default:
-			break;
-		      }
-		  if (ireg != 0)
-		    putc (',', file);
-		}
-	    } /* !MOTOROLA */
-	  if (ireg != 0 && GET_CODE (ireg) == MULT)
-	    {
-	      scale = INTVAL (XEXP (ireg, 1));
-	      ireg = XEXP (ireg, 0);
-	    }
-	  if (ireg != 0 && GET_CODE (ireg) == SIGN_EXTEND)
-	    fprintf (file, MOTOROLA ? "%s.w" : "%s:w",
-		     M68K_REGNAME (REGNO (XEXP (ireg, 0))));
-	  else if (ireg != 0)
-	    fprintf (file, MOTOROLA ? "%s.l" : "%s:l",
-		     M68K_REGNAME (REGNO (ireg)));
-	  if (scale != 1)
-	    fprintf (file, MOTOROLA ? "*%d" : ":%d", scale);
-	  putc (')', file);
-	  break;
-	}
-      else if (reg1 != 0 && GET_CODE (addr) == LABEL_REF
-	       && ! (flag_pic && reg1 == pic_offset_table_rtx))
-	{
-	  ASM_OUTPUT_CASE_FETCH (file,
-				 CODE_LABEL_NUMBER (XEXP (addr, 0)),
-				 M68K_REGNAME (REGNO (reg1)));
-	  fprintf (file, "l)");
-	  break;
-	}
-      /* FALL-THROUGH (is this really what we want?)  */
-    default:
-      if (GET_CODE (addr) == CONST_INT
-	  && INTVAL (addr) < 0x8000
-	  && INTVAL (addr) >= -0x8000)
-	{
-	  fprintf (file, MOTOROLA ? "%d.w" : "%d:w", (int) INTVAL (addr));
-	}
-      else if (GET_CODE (addr) == CONST_INT)
-	{
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (addr));
+	    fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (addr));
 	}
       else if (TARGET_PCREL)
 	{
+	  /* (d16,PC) or (bd,PC,Xn) (with suppressed index register).  */
 	  fputc ('(', file);
 	  output_addr_const (file, addr);
-	  if (flag_pic == 1)
-	    asm_fprintf (file, ":w,%Rpc)");
-	  else
-	    asm_fprintf (file, ":l,%Rpc)");
+	  asm_fprintf (file, flag_pic == 1 ? ":w,%Rpc)" : ":l,%Rpc)");
 	}
       else
 	{
-	  /* Special case for SYMBOL_REF if the symbol name ends in
-	     `.<letter>', this can be mistaken as a size suffix.  Put
-	     the name in parentheses.  */
+	  /* (xxx).l.  We need a special case for SYMBOL_REF if the symbol
+	     name ends in `.<letter>', as the last 2 characters can be
+	     mistaken as a size suffix.  Put the name in parentheses.  */
 	  if (GET_CODE (addr) == SYMBOL_REF
 	      && strlen (XSTR (addr, 0)) > 2
 	      && XSTR (addr, 0)[strlen (XSTR (addr, 0)) - 2] == '.')
@@ -3529,7 +3656,93 @@ print_operand_address (FILE *file, rtx addr)
 	  else
 	    output_addr_const (file, addr);
 	}
-      break;
+    }
+  else
+    {
+      int labelno;
+
+      /* If ADDR is a (d8,pc,Xn) address, this is the number of the
+	 label being acceesed, otherwise it is -1.  */
+      labelno = (address.offset
+		 && !address.base
+		 && GET_CODE (address.offset) == LABEL_REF
+		 ? CODE_LABEL_NUMBER (XEXP (address.offset, 0))
+		 : -1);
+      if (MOTOROLA)
+	{
+	  /* Print the "offset(base" component.  */
+	  if (labelno >= 0)
+	    asm_fprintf (file, "%LL%d-%LLI%d.b(%Rpc,", labelno, labelno);
+	  else
+	    {
+	      if (address.offset)
+		{
+		  output_addr_const (file, address.offset);
+		  if (flag_pic && address.base == pic_offset_table_rtx)
+		    {
+		      fprintf (file, "@GOT");
+		      if (flag_pic == 1 && TARGET_68020)
+			fprintf (file, ".w");
+		    }
+		}
+	      putc ('(', file);
+	      if (address.base)
+		fputs (M68K_REGNAME (REGNO (address.base)), file);
+	    }
+	  /* Print the ",index" component, if any.  */
+	  if (address.index)
+	    {
+	      if (address.base)
+		putc (',', file);
+	      fprintf (file, "%s.%c",
+		       M68K_REGNAME (REGNO (address.index)),
+		       GET_MODE (address.index) == HImode ? 'w' : 'l');
+	      if (address.scale != 1)
+		fprintf (file, "*%d", address.scale);
+	    }
+	  putc (')', file);
+	}
+      else /* !MOTOROLA */
+	{
+	  if (!address.offset && !address.index)
+	    fprintf (file, "%s@", M68K_REGNAME (REGNO (address.base)));
+	  else
+	    {
+	      /* Print the "base@(offset" component.  */
+	      if (labelno >= 0)
+		asm_fprintf (file, "%Rpc@(%LL%d-%LLI%d-2:b", labelno, labelno);
+	      else
+		{
+		  if (address.base)
+		    fputs (M68K_REGNAME (REGNO (address.base)), file);
+		  fprintf (file, "@(");
+		  if (address.offset)
+		    {
+		      output_addr_const (file, address.offset);
+		      if (address.base == pic_offset_table_rtx && TARGET_68020)
+			switch (flag_pic)
+			  {
+			  case 1:
+			    fprintf (file, ":w"); break;
+			  case 2:
+			    fprintf (file, ":l"); break;
+			  default:
+			    break;
+			  }
+		    }
+		}
+	      /* Print the ",index" component, if any.  */
+	      if (address.index)
+		{
+		  fprintf (file, ",%s:%c",
+			   M68K_REGNAME (REGNO (address.index)),
+			   GET_MODE (address.index) == HImode ? 'w' : 'l');
+		  if (address.scale != 1)
+		    fprintf (file, ":%d", address.scale);
+		}
+	      putc (')', file);
+	    }
+	}
     }
 }
 
