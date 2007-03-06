@@ -1,5 +1,11 @@
 2007-03-06  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/m68k/m68k.c (m68k_save_reg): Remove special case for
+	leaf functions.
+	(m68k_expand_prologue): Likewise.
+
+2007-03-06  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/m68k/m68k-protos.h (output_sibcall): Declare.
 	(mips_expand_epilogue): Add a bool parameter.
 	(m68k_legitimize_sibcall_address): Declare.
