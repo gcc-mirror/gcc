@@ -21,6 +21,7 @@ Boston, MA 02110-1301, USA.  */
 /* Define functions defined in aux-output.c and used in templates.  */
 
 #ifdef RTX_CODE
+extern bool m68k_interrupt_function_p (tree);
 extern HOST_WIDE_INT m68k_initial_elimination_offset (int from, int to);
 
 extern void split_di (rtx[], int, rtx[], rtx[]);
@@ -61,12 +62,16 @@ extern int valid_dbcc_comparison_p_2 (rtx, enum machine_mode);
 extern rtx m68k_libcall_value (enum machine_mode);
 extern rtx m68k_function_value (tree, tree);
 extern int emit_move_sequence (rtx *, enum machine_mode, rtx);
+extern bool m68k_movem_pattern_p (rtx, rtx, HOST_WIDE_INT, bool);
+extern const char *m68k_output_movem (rtx *, rtx, HOST_WIDE_INT, bool);
 
 #endif /* RTX_CODE */
 
 extern bool m68k_regno_mode_ok (int, enum machine_mode);
 extern int flags_in_68881 (void);
+extern void m68k_expand_prologue (void);
 extern bool m68k_use_return_insn (void);
+extern void m68k_expand_epilogue (void);
 extern void override_options (void);
 extern const char *m68k_cpp_cpu_ident (const char *);
 extern const char *m68k_cpp_cpu_family (const char *);

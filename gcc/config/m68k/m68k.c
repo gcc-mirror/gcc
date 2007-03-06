@@ -70,6 +70,16 @@ enum reg_class regno_reg_class[] =
 #endif
 
 
+/* The minimum number of integer registers that we want to save with the
+   movem instruction.  Using two movel instructions instead of a single
+   moveml is about 15% faster for the 68020 and 68030 at no expense in
+   code size.  */
+#define MIN_MOVEM_REGS 3
+
+/* The minimum number of floating point registers that we want to save
+   with the fmovem instruction.  */
+#define MIN_FMOVEM_REGS 1
+
 /* Structure describing stack frame layout.  */
 struct m68k_frame
 {
@@ -85,12 +95,10 @@ struct m68k_frame
   /* Data and address register.  */
   int reg_no;
   unsigned int reg_mask;
-  unsigned int reg_rev_mask;
 
   /* FPU registers.  */
   int fpu_no;
   unsigned int fpu_mask;
-  unsigned int fpu_rev_mask;
 
   /* Offsets relative to ARG_POINTER.  */
   HOST_WIDE_INT frame_pointer_offset;
@@ -127,15 +135,12 @@ struct m68k_address {
 static bool m68k_handle_option (size_t, const char *, int);
 static rtx find_addr_reg (rtx);
 static const char *singlemove_string (rtx *);
-static void m68k_output_function_prologue (FILE *, HOST_WIDE_INT);
-static void m68k_output_function_epilogue (FILE *, HOST_WIDE_INT);
 #ifdef M68K_TARGET_COFF
 static void m68k_coff_asm_named_section (const char *, unsigned int, tree);
 #endif /* M68K_TARGET_COFF */
 static void m68k_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 					  HOST_WIDE_INT, tree);
 static rtx m68k_struct_value_rtx (tree, int);
-static bool m68k_interrupt_function_p (tree func);
 static tree m68k_handle_fndecl_attribute (tree *node, tree name,
 					  tree args, int flags,
 					  bool *no_add_attrs);
@@ -181,11 +186,6 @@ int m68k_last_compare_had_fp_operands;
 #define TARGET_ASM_UNALIGNED_HI_OP TARGET_ASM_ALIGNED_HI_OP
 #undef TARGET_ASM_UNALIGNED_SI_OP
 #define TARGET_ASM_UNALIGNED_SI_OP TARGET_ASM_ALIGNED_SI_OP
-
-#undef TARGET_ASM_FUNCTION_PROLOGUE
-#define TARGET_ASM_FUNCTION_PROLOGUE m68k_output_function_prologue
-#undef TARGET_ASM_FUNCTION_EPILOGUE
-#define TARGET_ASM_FUNCTION_EPILOGUE m68k_output_function_epilogue
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK m68k_output_mi_thunk
@@ -631,8 +631,8 @@ m68k_cpp_cpu_family (const char *prefix)
 
 /* Return nonzero if FUNC is an interrupt function as specified by the
    "interrupt_handler" attribute.  */
-static bool
-m68k_interrupt_function_p(tree func)
+bool
+m68k_interrupt_function_p (tree func)
 {
   tree a;
 
@@ -665,7 +665,7 @@ static void
 m68k_compute_frame_layout (void)
 {
   int regno, saved;
-  unsigned int mask, rmask;
+  unsigned int mask;
   bool interrupt_handler = m68k_interrupt_function_p (current_function_decl);
 
   /* Only compute the frame once per function.
@@ -676,28 +676,25 @@ m68k_compute_frame_layout (void)
 
   current_frame.size = (get_frame_size () + 3) & -4;
 
-  mask = rmask = saved = 0;
+  mask = saved = 0;
   for (regno = 0; regno < 16; regno++)
     if (m68k_save_reg (regno, interrupt_handler))
       {
-	mask |= 1 << regno;
-	rmask |= 1 << (15 - regno);
+	mask |= 1 << (regno - D0_REG);
 	saved++;
       }
   current_frame.offset = saved * 4;
   current_frame.reg_no = saved;
   current_frame.reg_mask = mask;
-  current_frame.reg_rev_mask = rmask;
 
   current_frame.foffset = 0;
-  mask = rmask = saved = 0;
+  mask = saved = 0;
   if (TARGET_HARD_FLOAT)
     {
       for (regno = 16; regno < 24; regno++)
 	if (m68k_save_reg (regno, interrupt_handler))
 	  {
-	    mask |= 1 << (regno - 16);
-	    rmask |= 1 << (23 - regno);
+	    mask |= 1 << (regno - FP0_REG);
 	    saved++;
 	  }
       current_frame.foffset = saved * TARGET_FP_REG_SIZE;
@@ -705,7 +702,6 @@ m68k_compute_frame_layout (void)
     }
   current_frame.fpu_no = saved;
   current_frame.fpu_mask = mask;
-  current_frame.fpu_rev_mask = rmask;
 
   /* Remember what function this frame refers to.  */
   current_frame.funcdef_no = current_function_funcdef_no;
@@ -793,154 +789,158 @@ m68k_save_reg (unsigned int regno, bool interrupt_handler)
   return !call_used_regs[regno];
 }
 
-/* This function generates the assembly code for function entry.
-   STREAM is a stdio stream to output the code to.
-   SIZE is an int: how many units of temporary storage to allocate.  */
+/* Emit RTL for a MOVEM or FMOVEM instruction.  BASE + OFFSET represents
+   the lowest memory address.  COUNT is the number of registers to be
+   moved, with register REGNO + I being moved if bit I of MASK is set.
+   STORE_P specifies the direction of the move and ADJUST_STACK_P says
+   whether or not this is pre-decrement (if STORE_P) or post-increment
+   (if !STORE_P) operation.  */
+
+static rtx
+m68k_emit_movem (rtx base, HOST_WIDE_INT offset,
+		 unsigned int count, unsigned int regno,
+		 unsigned int mask, bool store_p, bool adjust_stack_p)
+{
+  int i;
+  rtx body, addr, src, operands[2];
+  enum machine_mode mode;
+
+  body = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (adjust_stack_p + count));
+  mode = reg_raw_mode[regno];
+  i = 0;
+
+  if (adjust_stack_p)
+    {
+      src = plus_constant (base, (count
+				  * GET_MODE_SIZE (mode)
+				  * (HOST_WIDE_INT) (store_p ? -1 : 1)));
+      XVECEXP (body, 0, i++) = gen_rtx_SET (VOIDmode, base, src);
+    }
+
+  for (; mask != 0; mask >>= 1, regno++)
+    if (mask & 1)
+      {
+	addr = plus_constant (base, offset);
+	operands[!store_p] = gen_frame_mem (mode, addr);
+	operands[store_p] = gen_rtx_REG (mode, regno);
+	XVECEXP (body, 0, i++)
+	  = gen_rtx_SET (VOIDmode, operands[0], operands[1]);
+	offset += GET_MODE_SIZE (mode);
+      }
+  gcc_assert (i == XVECLEN (body, 0));
+
+  return emit_insn (body);
+}
+
+/* Make INSN a frame-related instruction.  */
 
 static void
-m68k_output_function_prologue (FILE *stream,
-			       HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+m68k_set_frame_related (rtx insn)
+{
+  rtx body;
+  int i;
+
+  RTX_FRAME_RELATED_P (insn) = 1;
+  body = PATTERN (insn);
+  if (GET_CODE (body) == PARALLEL)
+    for (i = 0; i < XVECLEN (body, 0); i++)
+      RTX_FRAME_RELATED_P (XVECEXP (body, 0, i)) = 1;
+}
+
+/* Emit RTL for the "prologue" define_expand.  */
+
+void
+m68k_expand_prologue (void)
 {
   HOST_WIDE_INT fsize_with_regs;
-  HOST_WIDE_INT cfa_offset = INCOMING_FRAME_SP_OFFSET;
+  rtx limit, src, dest, insn;
 
-  m68k_compute_frame_layout();
+  m68k_compute_frame_layout ();
 
   /* If the stack limit is a symbol, we can check it here,
      before actually allocating the space.  */
   if (current_function_limit_stack
       && GET_CODE (stack_limit_rtx) == SYMBOL_REF)
-    asm_fprintf (stream, "\tcmp" ASM_DOT "l %I%s+%wd,%Rsp\n\ttrapcs\n",
-		 XSTR (stack_limit_rtx, 0), current_frame.size + 4);
+    {
+      limit = plus_constant (stack_limit_rtx, current_frame.size + 4);
+      if (!LEGITIMATE_CONSTANT_P (limit))
+	{
+	  emit_move_insn (gen_rtx_REG (Pmode, D0_REG), limit);
+	  limit = gen_rtx_REG (Pmode, D0_REG);
+	}
+      emit_insn (gen_cmpsi (stack_pointer_rtx, limit));
+      emit_insn (gen_conditional_trap (gen_rtx_LTU (VOIDmode,
+						    cc0_rtx, const0_rtx),
+				       const1_rtx));
+    }
 
-  /* On ColdFire add register save into initial stack frame setup, if possible.  */
   fsize_with_regs = current_frame.size;
   if (TARGET_COLDFIRE)
     {
-      if (current_frame.reg_no > 2)
-	fsize_with_regs += current_frame.reg_no * 4;
-      if (current_frame.fpu_no)
-	fsize_with_regs += current_frame.fpu_no * 8;
+      /* ColdFire's move multiple instructions do not allow pre-decrement
+	 addressing.  Add the size of movem saves to the initial stack
+	 allocation instead.  */
+      if (current_frame.reg_no >= MIN_MOVEM_REGS)
+	fsize_with_regs += current_frame.reg_no * GET_MODE_SIZE (SImode);
+      if (current_frame.fpu_no >= MIN_FMOVEM_REGS)
+	fsize_with_regs += current_frame.fpu_no * GET_MODE_SIZE (DFmode);
     }
 
   if (frame_pointer_needed)
     {
-      if (current_frame.size == 0 && TUNE_68040)
-	/* on the 68040, pea + move is faster than link.w 0 */
-	fprintf (stream, (MOTOROLA
-			  ? "\tpea (%s)\n\tmove.l %s,%s\n"
-			  : "\tpea %s@\n\tmovel %s,%s\n"),
-		 M68K_REGNAME (FRAME_POINTER_REGNUM),
-		 M68K_REGNAME (STACK_POINTER_REGNUM),
-		 M68K_REGNAME (FRAME_POINTER_REGNUM));
-      else if (fsize_with_regs < 0x8000)
-	asm_fprintf (stream, "\tlink" ASM_DOTW " %s,%I%wd\n",
-		     M68K_REGNAME (FRAME_POINTER_REGNUM), -fsize_with_regs);
-      else if (TARGET_68020)
-	asm_fprintf (stream, "\tlink" ASM_DOTL " %s,%I%wd\n",
-		     M68K_REGNAME (FRAME_POINTER_REGNUM), -fsize_with_regs);
-      else
-	/* Adding negative number is faster on the 68040.  */
-	asm_fprintf (stream,
-		     "\tlink" ASM_DOTW " %s,%I0\n"
-		     "\tadd" ASM_DOT "l %I%wd,%Rsp\n",
-		     M68K_REGNAME (FRAME_POINTER_REGNUM), -fsize_with_regs);
-    }
-  else if (fsize_with_regs) /* !frame_pointer_needed */
-    {
-      if (fsize_with_regs < 0x8000)
+      if (fsize_with_regs == 0 && TUNE_68040)
 	{
-	  if (fsize_with_regs <= 8)
-	    {
-	      if (!TARGET_COLDFIRE)
-		asm_fprintf (stream, "\tsubq" ASM_DOT "w %I%wd,%Rsp\n",
-		             fsize_with_regs);
-	      else
-		asm_fprintf (stream, "\tsubq" ASM_DOT "l %I%wd,%Rsp\n",
-		             fsize_with_regs);
-	    }
-	  else if (fsize_with_regs <= 16 && TUNE_CPU32)
-	    /* On the CPU32 it is faster to use two subqw instructions to
-	       subtract a small integer (8 < N <= 16) to a register.  */
-	    asm_fprintf (stream,
-			 "\tsubq" ASM_DOT "w %I8,%Rsp\n"
-			 "\tsubq" ASM_DOT "w %I%wd,%Rsp\n",
-			 fsize_with_regs - 8);
-	  else if (TUNE_68040)
-	    /* Adding negative number is faster on the 68040.  */
-	    asm_fprintf (stream, "\tadd" ASM_DOT "w %I%wd,%Rsp\n",
-			 -fsize_with_regs);
-	  else
-	    asm_fprintf (stream, (MOTOROLA
-				  ? "\tlea (%wd,%Rsp),%Rsp\n"
-				  : "\tlea %Rsp@(%wd),%Rsp\n"),
-			 -fsize_with_regs);
+	  /* On the 68040, two separate moves are faster than link.w 0.  */
+	  dest = gen_frame_mem (Pmode,
+				gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx));
+	  m68k_set_frame_related (emit_move_insn (dest, frame_pointer_rtx));
+	  m68k_set_frame_related (emit_move_insn (frame_pointer_rtx,
+						  stack_pointer_rtx));
 	}
-      else /* fsize_with_regs >= 0x8000 */
-	asm_fprintf (stream, "\tadd" ASM_DOT "l %I%wd,%Rsp\n",
-		     -fsize_with_regs);
-    } /* !frame_pointer_needed */
-
-  if (dwarf2out_do_frame ())
-    {
-      if (frame_pointer_needed)
-	{
-	  char *l;
-	  l = (char *) dwarf2out_cfi_label ();
-	  cfa_offset += 4;
-	  dwarf2out_reg_save (l, FRAME_POINTER_REGNUM, -cfa_offset);
-	  dwarf2out_def_cfa (l, FRAME_POINTER_REGNUM, cfa_offset);
-	  cfa_offset += current_frame.size;
-        }
+      else if (fsize_with_regs < 0x8000 || TARGET_68020)
+	m68k_set_frame_related
+	  (emit_insn (gen_link (frame_pointer_rtx,
+				GEN_INT (-4 - fsize_with_regs))));
       else
-        {
-	  cfa_offset += current_frame.size;
-	  dwarf2out_def_cfa ("", STACK_POINTER_REGNUM, cfa_offset);
-        }
+ 	{
+	  m68k_set_frame_related
+	    (emit_insn (gen_link (frame_pointer_rtx, GEN_INT (-4))));
+	  m68k_set_frame_related
+	    (emit_insn (gen_addsi3 (stack_pointer_rtx,
+				    stack_pointer_rtx,
+				    GEN_INT (-fsize_with_regs))));
+	}
     }
+  else if (fsize_with_regs != 0)
+    m68k_set_frame_related
+      (emit_insn (gen_addsi3 (stack_pointer_rtx,
+			      stack_pointer_rtx,
+			      GEN_INT (-fsize_with_regs))));
 
   if (current_frame.fpu_mask)
     {
+      gcc_assert (current_frame.fpu_no >= MIN_FMOVEM_REGS);
       if (TARGET_68881)
-	{
-	  asm_fprintf (stream, (MOTOROLA
-				? "\tfmovm %I0x%x,-(%Rsp)\n"
-				: "\tfmovem %I0x%x,%Rsp@-\n"),
-		       current_frame.fpu_mask);
-	}
+	m68k_set_frame_related
+	  (m68k_emit_movem (stack_pointer_rtx,
+			    current_frame.fpu_no * -GET_MODE_SIZE (XFmode),
+			    current_frame.fpu_no, FP0_REG,
+			    current_frame.fpu_mask, true, true));
       else
 	{
 	  int offset;
 
-	  /* stack already has registers in it.  Find the offset from
-	     the bottom of stack to where the FP registers go */
-	  if (current_frame.reg_no <= 2)
+	  /* If we're using moveml to save the integer registers,
+	     the stack pointer will point to the bottom of the moveml
+	     save area.  Find the stack offset of the first FP register.  */
+	  if (current_frame.reg_no < MIN_MOVEM_REGS)
 	    offset = 0;
 	  else
-	    offset = current_frame.reg_no * 4;
-	  if (offset)
-	    asm_fprintf (stream,
-			 "\tfmovem %I0x%x,%d(%Rsp)\n",
-			 current_frame.fpu_rev_mask,
-			 offset);
-	  else
-	    asm_fprintf (stream,
-			 "\tfmovem %I0x%x,(%Rsp)\n",
-			 current_frame.fpu_rev_mask);
-	}
-
-      if (dwarf2out_do_frame ())
-	{
-	  char *l = (char *) dwarf2out_cfi_label ();
-	  int n_regs, regno;
-
-	  cfa_offset += current_frame.fpu_no * TARGET_FP_REG_SIZE;
-	  if (! frame_pointer_needed)
-	    dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
-	  for (regno = 16, n_regs = 0; regno < 24; regno++)
-	    if (current_frame.fpu_mask & (1 << (regno - 16)))
-	      dwarf2out_reg_save (l, regno, -cfa_offset
-				  + n_regs++ * TARGET_FP_REG_SIZE);
+	    offset = current_frame.reg_no * GET_MODE_SIZE (SImode);
+	  m68k_set_frame_related
+	    (m68k_emit_movem (stack_pointer_rtx, offset,
+			      current_frame.fpu_no, FP0_REG,
+			      current_frame.fpu_mask, true, false));
 	}
     }
 
@@ -949,96 +949,56 @@ m68k_output_function_prologue (FILE *stream,
   if (current_function_limit_stack)
     {
       if (REG_P (stack_limit_rtx))
-	asm_fprintf (stream, "\tcmp" ASM_DOT "l %s,%Rsp\n\ttrapcs\n",
-		     M68K_REGNAME (REGNO (stack_limit_rtx)));
+	{
+	  emit_insn (gen_cmpsi (stack_pointer_rtx, stack_limit_rtx));
+	  emit_insn (gen_conditional_trap (gen_rtx_LTU (VOIDmode,
+							cc0_rtx, const0_rtx),
+					   const1_rtx));
+	}
       else if (GET_CODE (stack_limit_rtx) != SYMBOL_REF)
 	warning (0, "stack limit expression is not supported");
     }
 
-  if (current_frame.reg_no <= 2)
+  if (current_frame.reg_no < MIN_MOVEM_REGS)
     {
-      /* Store each separately in the same order moveml uses.
-         Using two movel instructions instead of a single moveml
-         is about 15% faster for the 68020 and 68030 at no expense
-         in code size.  */
-
+      /* Store each register separately in the same order moveml does.  */
       int i;
 
-      for (i = 0; i < 16; i++)
-        if (current_frame.reg_rev_mask & (1 << i))
+      for (i = 16; i-- > 0; )
+	if (current_frame.reg_mask & (1 << i))
 	  {
-	    asm_fprintf (stream, (MOTOROLA
-				  ? "\t%Omove.l %s,-(%Rsp)\n"
-				  : "\tmovel %s,%Rsp@-\n"),
-			 M68K_REGNAME (15 - i));
-	    if (dwarf2out_do_frame ())
-	      {
-		char *l = (char *) dwarf2out_cfi_label ();
-
-		cfa_offset += 4;
-		if (! frame_pointer_needed)
-		  dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
-		dwarf2out_reg_save (l, 15 - i, -cfa_offset);
-	      }
+	    src = gen_rtx_REG (SImode, D0_REG + i);
+	    dest = gen_frame_mem (SImode,
+				  gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx));
+	    m68k_set_frame_related (emit_insn (gen_movsi (dest, src)));
 	  }
     }
-  else if (current_frame.reg_rev_mask)
+  else
     {
       if (TARGET_COLDFIRE)
-	/* The ColdFire does not support the predecrement form of the
-	   MOVEM instruction, so we must adjust the stack pointer and
-	   then use the plain address register indirect mode.
-	   The required register save space was combined earlier with
-	   the fsize_with_regs amount.  */
-
-	asm_fprintf (stream, (MOTOROLA
-			      ? "\tmovm.l %I0x%x,(%Rsp)\n"
-			      : "\tmoveml %I0x%x,%Rsp@\n"),
-		     current_frame.reg_mask);
+	/* The required register save space has already been allocated.
+	   The first register should be stored at (%sp).  */
+	m68k_set_frame_related
+	  (m68k_emit_movem (stack_pointer_rtx, 0,
+			    current_frame.reg_no, D0_REG,
+			    current_frame.reg_mask, true, false));
       else
-	asm_fprintf (stream, (MOTOROLA
-			      ? "\tmovm.l %I0x%x,-(%Rsp)\n"
-			      : "\tmoveml %I0x%x,%Rsp@-\n"),
-		     current_frame.reg_rev_mask);
-      if (dwarf2out_do_frame ())
-	{
-	  char *l = (char *) dwarf2out_cfi_label ();
-	  int n_regs, regno;
-
-	  cfa_offset += current_frame.reg_no * 4;
-	  if (! frame_pointer_needed)
-	    dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
-	  for (regno = 0, n_regs = 0; regno < 16; regno++)
-	    if (current_frame.reg_mask & (1 << regno))
-	      dwarf2out_reg_save (l, regno, -cfa_offset + n_regs++ * 4);
-	}
+	m68k_set_frame_related
+	  (m68k_emit_movem (stack_pointer_rtx,
+			    current_frame.reg_no * -GET_MODE_SIZE (SImode),
+			    current_frame.reg_no, D0_REG,
+			    current_frame.reg_mask, true, true));
     }
-  if (!TARGET_SEP_DATA && flag_pic
+
+  if (flag_pic
+      && !TARGET_SEP_DATA
       && (current_function_uses_pic_offset_table
 	  || (!current_function_is_leaf && TARGET_ID_SHARED_LIBRARY)))
     {
-      if (TARGET_ID_SHARED_LIBRARY)
-	{
-	  asm_fprintf (stream, "\tmovel %s@(%s), %s\n",
-		       M68K_REGNAME (PIC_OFFSET_TABLE_REGNUM),
-		       m68k_library_id_string,
-		       M68K_REGNAME (PIC_OFFSET_TABLE_REGNUM));
-	}
-      else
-	{
-	  if (MOTOROLA)
-	    asm_fprintf (stream,
-			 "\t%Olea (%Rpc, %U_GLOBAL_OFFSET_TABLE_@GOTPC), %s\n",
-			 M68K_REGNAME (PIC_OFFSET_TABLE_REGNUM));
-	  else
-	    {
-	      asm_fprintf (stream, "\tmovel %I%U_GLOBAL_OFFSET_TABLE_, %s\n",
-			   M68K_REGNAME (PIC_OFFSET_TABLE_REGNUM));
-	      asm_fprintf (stream, "\tlea %Rpc@(0,%s:l),%s\n",
-			   M68K_REGNAME (PIC_OFFSET_TABLE_REGNUM),
-			   M68K_REGNAME (PIC_OFFSET_TABLE_REGNUM));
-	    }
-	}
+      insn = emit_insn (gen_load_got (pic_offset_table_rtx));
+      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD,
+					    const0_rtx,
+					    REG_NOTES (insn));
     }
 }
 
@@ -1055,301 +1015,173 @@ m68k_use_return_insn (void)
   return current_frame.offset == 0;
 }
 
-/* This function generates the assembly code for function exit,
-   on machines that need it.
+/* Emit RTL for the "epilogue" define_expand.
 
    The function epilogue should not depend on the current stack pointer!
    It should use the frame pointer only, if there is a frame pointer.
    This is mandatory because of alloca; we also take advantage of it to
    omit stack adjustments before returning.  */
 
-static void
-m68k_output_function_epilogue (FILE *stream,
-			       HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+void
+m68k_expand_epilogue (void)
 {
   HOST_WIDE_INT fsize, fsize_with_regs;
-  bool big = false;
-  bool restore_from_sp = false;
-  rtx insn = get_last_insn ();
+  bool big, restore_from_sp;
 
   m68k_compute_frame_layout ();
 
-  /* If the last insn was a BARRIER, we don't have to write any code.  */
-  if (GET_CODE (insn) == NOTE)
-    insn = prev_nonnote_insn (insn);
-  if (insn && GET_CODE (insn) == BARRIER)
-    return;
-
   fsize = current_frame.size;
+  big = false;
+  restore_from_sp = false;
 
-  /* FIXME: leaf_function_p below is too strong.
+  /* FIXME : current_function_is_leaf below is too strong.
      What we really need to know there is if there could be pending
      stack adjustment needed at that point.  */
-  restore_from_sp
-    = (! frame_pointer_needed
-       || (! current_function_calls_alloca && leaf_function_p ()));
+  restore_from_sp = (!frame_pointer_needed
+		     || (!current_function_calls_alloca
+			 && current_function_is_leaf));
 
   /* fsize_with_regs is the size we need to adjust the sp when
      popping the frame.  */
   fsize_with_regs = fsize;
-
-  /* Because the ColdFire doesn't support moveml with
-     complex address modes, we must adjust the stack manually
-     after restoring registers. When the frame pointer isn't used,
-     we can merge movem adjustment into frame unlinking
-     made immediately after it.  */
   if (TARGET_COLDFIRE && restore_from_sp)
     {
-      if (current_frame.reg_no > 2)
-	fsize_with_regs += current_frame.reg_no * 4;
-      if (current_frame.fpu_no)
-	fsize_with_regs += current_frame.fpu_no * 8;
+      /* ColdFire's move multiple instructions do not allow post-increment
+	 addressing.  Add the size of movem loads to the final deallocation
+	 instead.  */
+      if (current_frame.reg_no >= MIN_MOVEM_REGS)
+	fsize_with_regs += current_frame.reg_no * GET_MODE_SIZE (SImode);
+      if (current_frame.fpu_no >= MIN_FMOVEM_REGS)
+	fsize_with_regs += current_frame.fpu_no * GET_MODE_SIZE (DFmode);
     }
 
   if (current_frame.offset + fsize >= 0x8000
-      && ! restore_from_sp
+      && !restore_from_sp
       && (current_frame.reg_mask || current_frame.fpu_mask))
     {
-      /* Because the ColdFire doesn't support moveml with
-         complex address modes we make an extra correction here.  */
-      if (TARGET_COLDFIRE)
-        fsize += current_frame.offset;
-
-      asm_fprintf (stream, "\t%Omove" ASM_DOT "l %I%wd,%Ra1\n", -fsize);
-      fsize = 0, big = true;
+      if (TARGET_COLDFIRE
+	  && (current_frame.reg_no >= MIN_MOVEM_REGS
+	      || current_frame.fpu_no >= MIN_FMOVEM_REGS))
+	{
+	  /* ColdFire's move multiple instructions do not support the
+	     (d8,Ax,Xi) addressing mode, so we're as well using a normal
+	     stack-based restore.  */
+	  emit_move_insn (gen_rtx_REG (Pmode, A1_REG),
+			  GEN_INT (-(current_frame.offset + fsize)));
+	  emit_insn (gen_addsi3 (stack_pointer_rtx,
+				 gen_rtx_REG (Pmode, A1_REG),
+				 frame_pointer_rtx));
+	  restore_from_sp = true;
+	}
+      else
+	{
+	  emit_move_insn (gen_rtx_REG (Pmode, A1_REG), GEN_INT (-fsize));
+	  fsize = 0;
+	  big = true;
+	}
     }
-  if (current_frame.reg_no <= 2)
+
+  if (current_frame.reg_no < MIN_MOVEM_REGS)
     {
-      /* Restore each separately in the same order moveml does.
-         Using two movel instructions instead of a single moveml
-         is about 15% faster for the 68020 and 68030 at no expense
-         in code size.  */
-
+      /* Restore each register separately in the same order moveml does.  */
       int i;
-      HOST_WIDE_INT offset = current_frame.offset + fsize;
+      HOST_WIDE_INT offset;
 
+      offset = current_frame.offset + fsize;
       for (i = 0; i < 16; i++)
         if (current_frame.reg_mask & (1 << i))
           {
-            if (big)
+	    rtx addr;
+
+	    if (big)
 	      {
-		if (MOTOROLA)
-		  asm_fprintf (stream, "\t%Omove.l -%wd(%s,%Ra1.l),%s\n",
-			       offset,
-			       M68K_REGNAME (FRAME_POINTER_REGNUM),
-			       M68K_REGNAME (i));
-		else
-		  asm_fprintf (stream, "\tmovel %s@(-%wd,%Ra1:l),%s\n",
-			       M68K_REGNAME (FRAME_POINTER_REGNUM),
-			       offset,
-			       M68K_REGNAME (i));
+		/* Generate the address -OFFSET(%fp,%a1.l).  */
+		addr = gen_rtx_REG (Pmode, A1_REG);
+		addr = gen_rtx_PLUS (Pmode, addr, frame_pointer_rtx);
+		addr = plus_constant (addr, -offset);
 	      }
-            else if (restore_from_sp)
-	      asm_fprintf (stream, (MOTOROLA
-				    ? "\t%Omove.l (%Rsp)+,%s\n"
-				    : "\tmovel %Rsp@+,%s\n"),
-			   M68K_REGNAME (i));
-            else
-	      {
-	        if (MOTOROLA)
-		  asm_fprintf (stream, "\t%Omove.l -%wd(%s),%s\n",
-			       offset,
-			       M68K_REGNAME (FRAME_POINTER_REGNUM),
-			       M68K_REGNAME (i));
-		else
-		  asm_fprintf (stream, "\tmovel %s@(-%wd),%s\n",
-			       M68K_REGNAME (FRAME_POINTER_REGNUM),
-			       offset,
-			       M68K_REGNAME (i));
-	      }
-            offset -= 4;
-          }
+	    else if (restore_from_sp)
+	      addr = gen_rtx_POST_INC (Pmode, stack_pointer_rtx);
+	    else
+	      addr = plus_constant (frame_pointer_rtx, -offset);
+	    emit_move_insn (gen_rtx_REG (SImode, D0_REG + i),
+			    gen_frame_mem (SImode, addr));
+	    offset -= GET_MODE_SIZE (SImode);
+	  }
     }
   else if (current_frame.reg_mask)
     {
-      /* The ColdFire requires special handling due to its limited moveml
-	 insn.  */
-      if (TARGET_COLDFIRE)
-        {
-          if (big)
-            {
-              asm_fprintf (stream, "\tadd" ASM_DOT "l %s,%Ra1\n",
-			   M68K_REGNAME (FRAME_POINTER_REGNUM));
-              asm_fprintf (stream, (MOTOROLA
-				    ? "\tmovm.l (%Ra1),%I0x%x\n"
-				    : "\tmoveml %Ra1@,%I0x%x\n"),
-			   current_frame.reg_mask);
-	     }
-	   else if (restore_from_sp)
-	     asm_fprintf (stream, (MOTOROLA
-				   ? "\tmovm.l (%Rsp),%I0x%x\n"
-				   : "\tmoveml %Rsp@,%I0x%x\n"),
-			  current_frame.reg_mask);
-          else
-            {
-	      if (MOTOROLA)
-		asm_fprintf (stream, "\tmovm.l -%wd(%s),%I0x%x\n",
-			     current_frame.offset + fsize,
-			     M68K_REGNAME (FRAME_POINTER_REGNUM),
-			     current_frame.reg_mask);
-	      else
-		asm_fprintf (stream, "\tmoveml %s@(-%wd),%I0x%x\n",
-			     M68K_REGNAME (FRAME_POINTER_REGNUM),
-			     current_frame.offset + fsize,
-			     current_frame.reg_mask);
-	    }
-        }
-      else /* !TARGET_COLDFIRE */
-	{
-	  if (big)
-	    {
-	      if (MOTOROLA)
-		asm_fprintf (stream, "\tmovm.l -%wd(%s,%Ra1.l),%I0x%x\n",
-			     current_frame.offset + fsize,
-			     M68K_REGNAME (FRAME_POINTER_REGNUM),
-			     current_frame.reg_mask);
-	      else
-		asm_fprintf (stream, "\tmoveml %s@(-%wd,%Ra1:l),%I0x%x\n",
-			     M68K_REGNAME (FRAME_POINTER_REGNUM),
-			     current_frame.offset + fsize,
-			     current_frame.reg_mask);
-	    }
-	  else if (restore_from_sp)
-	    {
-	      asm_fprintf (stream, (MOTOROLA
-				    ? "\tmovm.l (%Rsp)+,%I0x%x\n"
-				    : "\tmoveml %Rsp@+,%I0x%x\n"),
-			   current_frame.reg_mask);
-	    }
-	  else
-	    {
-	      if (MOTOROLA)
-		asm_fprintf (stream, "\tmovm.l -%wd(%s),%I0x%x\n",
-			     current_frame.offset + fsize,
-			     M68K_REGNAME (FRAME_POINTER_REGNUM),
-			     current_frame.reg_mask);
-	      else
-		asm_fprintf (stream, "\tmoveml %s@(-%wd),%I0x%x\n",
-			     M68K_REGNAME (FRAME_POINTER_REGNUM),
-			     current_frame.offset + fsize,
-			     current_frame.reg_mask);
-	    }
-	}
+      if (big)
+	m68k_emit_movem (gen_rtx_PLUS (Pmode,
+				       gen_rtx_REG (Pmode, A1_REG),
+				       frame_pointer_rtx),
+			 -(current_frame.offset + fsize),
+			 current_frame.reg_no, D0_REG,
+			 current_frame.reg_mask, false, false);
+      else if (restore_from_sp)
+	m68k_emit_movem (stack_pointer_rtx, 0,
+			 current_frame.reg_no, D0_REG,
+			 current_frame.reg_mask, false,
+			 !TARGET_COLDFIRE);
+      else
+	m68k_emit_movem (frame_pointer_rtx,
+			 -(current_frame.offset + fsize),
+			 current_frame.reg_no, D0_REG,
+			 current_frame.reg_mask, false, false);
     }
-  if (current_frame.fpu_rev_mask)
+
+  if (current_frame.fpu_no > 0)
     {
       if (big)
-	{
-	  if (TARGET_COLDFIRE)
-	    {
-	      if (current_frame.reg_no)
-		asm_fprintf (stream, MOTOROLA ?
-			     "\tfmovem.d %d(%Ra1),%I0x%x\n" :
-			     "\tfmovmd (%d,%Ra1),%I0x%x\n",
-			     current_frame.reg_no * 4,
-			     current_frame.fpu_rev_mask);
-	      else
-		asm_fprintf (stream, MOTOROLA ?
-			     "\tfmovem.d (%Ra1),%I0x%x\n" :
-			     "\tfmovmd (%Ra1),%I0x%x\n",
-			     current_frame.fpu_rev_mask);
-	    }
-	  else if (MOTOROLA)
-	    asm_fprintf (stream, "\tfmovm -%wd(%s,%Ra1.l),%I0x%x\n",
-		         current_frame.foffset + fsize,
-		         M68K_REGNAME (FRAME_POINTER_REGNUM),
-		         current_frame.fpu_rev_mask);
-	  else
-	    asm_fprintf (stream, "\tfmovem %s@(-%wd,%Ra1:l),%I0x%x\n",
-			 M68K_REGNAME (FRAME_POINTER_REGNUM),
-			 current_frame.foffset + fsize,
-			 current_frame.fpu_rev_mask);
-	}
+	m68k_emit_movem (gen_rtx_PLUS (Pmode,
+				       gen_rtx_REG (Pmode, A1_REG),
+				       frame_pointer_rtx),
+			 -(current_frame.foffset + fsize),
+			 current_frame.fpu_no, FP0_REG,
+			 current_frame.fpu_mask, false, false);
       else if (restore_from_sp)
 	{
 	  if (TARGET_COLDFIRE)
 	    {
 	      int offset;
 
-	      /* Stack already has registers in it.  Find the offset from
-		 the bottom of stack to where the FP registers go.  */
-	      if (current_frame.reg_no <= 2)
+	      /* If we used moveml to restore the integer registers, the
+		 stack pointer will still point to the bottom of the moveml
+		 save area.  Find the stack offset of the first FP
+		 register.  */
+	      if (current_frame.reg_no < MIN_MOVEM_REGS)
 		offset = 0;
 	      else
-		offset = current_frame.reg_no * 4;
-	      if (offset)
-		asm_fprintf (stream,
-			     "\tfmovem %Rsp@(%d), %I0x%x\n",
-			     offset, current_frame.fpu_rev_mask);
-	      else
-		asm_fprintf (stream,
-			     "\tfmovem %Rsp@, %I0x%x\n",
-			     current_frame.fpu_rev_mask);
+		offset = current_frame.reg_no * GET_MODE_SIZE (SImode);
+	      m68k_emit_movem (stack_pointer_rtx, offset,
+			       current_frame.fpu_no, FP0_REG,
+			       current_frame.fpu_mask, false, false);
 	    }
 	  else
-	    asm_fprintf (stream, MOTOROLA ?
-			 "\tfmovm (%Rsp)+,%I0x%x\n" :
-			 "\tfmovem %Rsp@+,%I0x%x\n",
-			 current_frame.fpu_rev_mask);
+	    m68k_emit_movem (stack_pointer_rtx, 0,
+			     current_frame.fpu_no, FP0_REG,
+			     current_frame.fpu_mask, false, true);
 	}
       else
-	{
-	  if (MOTOROLA && !TARGET_COLDFIRE)
-	    asm_fprintf (stream, "\tfmovm -%wd(%s),%I0x%x\n",
-			 current_frame.foffset + fsize,
-			 M68K_REGNAME (FRAME_POINTER_REGNUM),
-			 current_frame.fpu_rev_mask);
-	  else
-	    asm_fprintf (stream, "\tfmovem %s@(-%wd),%I0x%x\n",
-			 M68K_REGNAME (FRAME_POINTER_REGNUM),
-			 current_frame.foffset + fsize,
-			 current_frame.fpu_rev_mask);
-	}
+	m68k_emit_movem (frame_pointer_rtx,
+			 -(current_frame.foffset + fsize),
+			 current_frame.fpu_no, FP0_REG,
+			 current_frame.fpu_mask, false, false);
     }
+
   if (frame_pointer_needed)
-    fprintf (stream, "\tunlk %s\n", M68K_REGNAME (FRAME_POINTER_REGNUM));
+    emit_insn (gen_unlink (frame_pointer_rtx));
   else if (fsize_with_regs)
-    {
-      if (fsize_with_regs <= 8)
-	{
-	  if (!TARGET_COLDFIRE)
-	    asm_fprintf (stream, "\taddq" ASM_DOT "w %I%wd,%Rsp\n",
-			 fsize_with_regs);
-	  else
-	    asm_fprintf (stream, "\taddq" ASM_DOT "l %I%wd,%Rsp\n",
-			 fsize_with_regs);
-	}
-      else if (fsize_with_regs <= 16 && TUNE_CPU32)
-	{
-	  /* On the CPU32 it is faster to use two addqw instructions to
-	     add a small integer (8 < N <= 16) to a register.  */
-	  asm_fprintf (stream,
-		       "\taddq" ASM_DOT "w %I8,%Rsp\n"
-		       "\taddq" ASM_DOT "w %I%wd,%Rsp\n",
-		       fsize_with_regs - 8);
-	}
-      else if (fsize_with_regs < 0x8000)
-	{
-	  if (TUNE_68040)
-	    asm_fprintf (stream, "\tadd" ASM_DOT "w %I%wd,%Rsp\n",
-			 fsize_with_regs);
-	  else
-	    asm_fprintf (stream, (MOTOROLA
-				  ? "\tlea (%wd,%Rsp),%Rsp\n"
-				  : "\tlea %Rsp@(%wd),%Rsp\n"),
-			 fsize_with_regs);
-	}
-      else
-	asm_fprintf (stream, "\tadd" ASM_DOT "l %I%wd,%Rsp\n", fsize_with_regs);
-    }
+    emit_insn (gen_addsi3 (stack_pointer_rtx,
+			   stack_pointer_rtx,
+			   GEN_INT (fsize_with_regs)));
+
   if (current_function_calls_eh_return)
-    asm_fprintf (stream, "\tadd" ASM_DOT "l %Ra0,%Rsp\n");
-  if (m68k_interrupt_function_p (current_function_decl))
-    fprintf (stream, "\trte\n");
-  else if (current_function_pops_args)
-    asm_fprintf (stream, "\trtd %I%d\n", current_function_pops_args);
-  else
-    fprintf (stream, "\trts\n");
+    emit_insn (gen_addsi3 (stack_pointer_rtx,
+			   stack_pointer_rtx,
+			   EH_RETURN_STACKADJ_RTX));
+
+  emit_insn (gen_rtx_RETURN (VOIDmode));
 }
 
 /* Return true if X is a valid comparison operator for the dbcc 
@@ -3110,6 +2942,204 @@ split_di (rtx operands[], int num, rtx lo_half[], rtx hi_half[])
     }
 }
 
+/* Split X into a base and a constant offset, storing them in *BASE
+   and *OFFSET respectively.  */
+
+static void
+m68k_split_offset (rtx x, rtx *base, HOST_WIDE_INT *offset)
+{
+  *offset = 0;
+  if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == CONST_INT)
+    {
+      *offset += INTVAL (XEXP (x, 1));
+      x = XEXP (x, 0);
+    }
+  *base = x;
+}
+
+/* Return true if PATTERN is a PARALLEL suitable for a movem or fmovem
+   instruction.  STORE_P says whether the move is a load or store.
+
+   If the instruction uses post-increment or pre-decrement addressing,
+   AUTOMOD_BASE is the base register and AUTOMOD_OFFSET is the total
+   adjustment.  This adjustment will be made by the first element of
+   PARALLEL, with the loads or stores starting at element 1.  If the
+   instruction does not use post-increment or pre-decrement addressing,
+   AUTOMOD_BASE is null, AUTOMOD_OFFSET is 0, and the loads or stores
+   start at element 0.  */
+
+bool
+m68k_movem_pattern_p (rtx pattern, rtx automod_base,
+		      HOST_WIDE_INT automod_offset, bool store_p)
+{
+  rtx base, mem_base, set, mem, reg, last_reg;
+  HOST_WIDE_INT offset, mem_offset;
+  int i, first, len;
+  enum reg_class rclass;
+
+  len = XVECLEN (pattern, 0);
+  first = (automod_base != NULL);
+
+  if (automod_base)
+    {
+      /* Stores must be pre-decrement and loads must be post-increment.  */
+      if (store_p != (automod_offset < 0))
+	return false;
+
+      /* Work out the base and offset for lowest memory location.  */
+      base = automod_base;
+      offset = (automod_offset < 0 ? automod_offset : 0);
+    }
+  else
+    {
+      /* Allow any valid base and offset in the first access.  */
+      base = NULL;
+      offset = 0;
+    }
+
+  last_reg = NULL;
+  rclass = NO_REGS;
+  for (i = first; i < len; i++)
+    {
+      /* We need a plain SET.  */
+      set = XVECEXP (pattern, 0, i);
+      if (GET_CODE (set) != SET)
+	return false;
+
+      /* Check that we have a memory location...  */
+      mem = XEXP (set, !store_p);
+      if (!MEM_P (mem) || !memory_operand (mem, VOIDmode))
+	return false;
+
+      /* ...with the right address.  */
+      if (base == NULL)
+	{
+	  m68k_split_offset (XEXP (mem, 0), &base, &offset);
+	  /* The ColdFire instruction only allows (An) and (d16,An) modes.
+	     There are no mode restrictions for 680x0 besides the
+	     automodification rules enforced above.  */
+	  if (TARGET_COLDFIRE
+	      && !m68k_legitimate_base_reg_p (base, reload_completed))
+	    return false;
+	}
+      else
+	{
+	  m68k_split_offset (XEXP (mem, 0), &mem_base, &mem_offset);
+	  if (!rtx_equal_p (base, mem_base) || offset != mem_offset)
+	    return false;
+	}
+
+      /* Check that we have a register of the required mode and class.  */
+      reg = XEXP (set, store_p);
+      if (!REG_P (reg)
+	  || !HARD_REGISTER_P (reg)
+	  || GET_MODE (reg) != reg_raw_mode[REGNO (reg)])
+	return false;
+
+      if (last_reg)
+	{
+	  /* The register must belong to RCLASS and have a higher number
+	     than the register in the previous SET.  */
+	  if (!TEST_HARD_REG_BIT (reg_class_contents[rclass], REGNO (reg))
+	      || REGNO (last_reg) >= REGNO (reg))
+	    return false;
+	}
+      else
+	{
+	  /* Work out which register class we need.  */
+	  if (INT_REGNO_P (REGNO (reg)))
+	    rclass = GENERAL_REGS;
+	  else if (FP_REGNO_P (REGNO (reg)))
+	    rclass = FP_REGS;
+	  else
+	    return false;
+	}
+
+      last_reg = reg;
+      offset += GET_MODE_SIZE (GET_MODE (reg));
+    }
+
+  /* If we have an automodification, check whether the final offset is OK.  */
+  if (automod_base && offset != (automod_offset < 0 ? 0 : automod_offset))
+    return false;
+
+  /* Reject unprofitable cases.  */
+  if (len < first + (rclass == FP_REGS ? MIN_FMOVEM_REGS : MIN_MOVEM_REGS))
+    return false;
+
+  return true;
+}
+
+/* Return the assembly code template for a movem or fmovem instruction
+   whose pattern is given by PATTERN.  Store the template's operands
+   in OPERANDS.
+
+   If the instruction uses post-increment or pre-decrement addressing,
+   AUTOMOD_OFFSET is the total adjustment, otherwise it is 0.  STORE_P
+   is true if this is a store instruction.  */
+
+const char *
+m68k_output_movem (rtx *operands, rtx pattern,
+		   HOST_WIDE_INT automod_offset, bool store_p)
+{
+  unsigned int mask;
+  int i, first;
+
+  gcc_assert (GET_CODE (pattern) == PARALLEL);
+  mask = 0;
+  first = (automod_offset != 0);
+  for (i = first; i < XVECLEN (pattern, 0); i++)
+    {
+      /* When using movem with pre-decrement addressing, register X + D0_REG
+	 is controlled by bit 15 - X.  For all other addressing modes,
+	 register X + D0_REG is controlled by bit X.  Confusingly, the
+	 register mask for fmovem is in the opposite order to that for
+	 movem.  */
+      unsigned int regno;
+
+      gcc_assert (MEM_P (XEXP (XVECEXP (pattern, 0, i), !store_p)));
+      gcc_assert (REG_P (XEXP (XVECEXP (pattern, 0, i), store_p)));
+      regno = REGNO (XEXP (XVECEXP (pattern, 0, i), store_p));
+      if (automod_offset < 0)
+	{
+	  if (FP_REGNO_P (regno))
+	    mask |= 1 << (regno - FP0_REG);
+	  else
+	    mask |= 1 << (15 - (regno - D0_REG));
+	}
+      else
+	{
+	  if (FP_REGNO_P (regno))
+	    mask |= 1 << (7 - (regno - FP0_REG));
+	  else
+	    mask |= 1 << (regno - D0_REG);
+	}
+    }
+  CC_STATUS_INIT;
+
+  if (automod_offset == 0)
+    operands[0] = XEXP (XEXP (XVECEXP (pattern, 0, first), !store_p), 0);
+  else if (automod_offset < 0)
+    operands[0] = gen_rtx_PRE_DEC (Pmode, SET_DEST (XVECEXP (pattern, 0, 0)));
+  else
+    operands[0] = gen_rtx_POST_INC (Pmode, SET_DEST (XVECEXP (pattern, 0, 0)));
+  operands[1] = GEN_INT (mask);
+  if (FP_REGNO_P (REGNO (XEXP (XVECEXP (pattern, 0, first), store_p))))
+    {
+      if (store_p)
+	return MOTOROLA ? "fmovm %1,%a0" : "fmovem %1,%a0";
+      else
+	return MOTOROLA ? "fmovm %a0,%1" : "fmovem %a0,%1";
+    }
+  else
+    {
+      if (store_p)
+	return MOTOROLA ? "movm.l %1,%a0" : "moveml %1,%a0";
+      else
+	return MOTOROLA ? "movm.l %a0,%1" : "moveml %a0,%1";
+    }
+}
+
 /* Return a REG that occurs in ADDR with coefficient 1.
    ADDR can be effectively incremented by incrementing REG.  */
 
@@ -3481,6 +3511,7 @@ floating_exact_log2 (rtx x)
    '$' for the letter `s' in an op code, but only on the 68040.
    '&' for the letter `d' in an op code, but only on the 68040.
    '/' for register prefix needed by longlong.h.
+   '?' for m68k_library_id_string
 
    'b' for byte insn (no effect, on the Sun; this is for the ISI).
    'd' to force memory addressing to be absolute, not relative.
@@ -3520,6 +3551,8 @@ print_operand (FILE *file, rtx op, int letter)
     }
   else if (letter == '/')
     asm_fprintf (file, "%R");
+  else if (letter == '?')
+    asm_fprintf (file, m68k_library_id_string);
   else if (letter == 'p')
     {
       output_addr_const (file, op);
