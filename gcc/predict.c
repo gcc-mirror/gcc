@@ -117,6 +117,13 @@ maybe_hot_bb_p (basic_block bb)
       && (bb->count
 	  < profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION)))
     return false;
+  if (!profile_info || !flag_branch_probabilities)
+    {
+      if (cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED)
+        return false;
+      if (cfun->function_frequency == FUNCTION_FREQUENCY_HOT)
+        return true;
+    }
   if (bb->frequency < BB_FREQ_MAX / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION))
     return false;
   return true;
@@ -131,6 +138,9 @@ probably_cold_bb_p (basic_block bb)
       && (bb->count
 	  < profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION)))
     return true;
+  if ((!profile_info || !flag_branch_probabilities)
+      && cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED)
+    return true;
   if (bb->frequency < BB_FREQ_MAX / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION))
     return true;
   return false;
@@ -142,6 +152,9 @@ probably_never_executed_bb_p (basic_block bb)
 {
   if (profile_info && flag_branch_probabilities)
     return ((bb->count + profile_info->runs / 2) / profile_info->runs) == 0;
+  if ((!profile_info || !flag_branch_probabilities)
+      && cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED)
+    return true;
   return false;
 }
 
@@ -1234,6 +1247,7 @@ tree_bb_level_predictions (void)
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	{
 	  tree stmt = bsi_stmt (bsi);
+	  tree decl;
 	  switch (TREE_CODE (stmt))
 	    {
 	      case GIMPLE_MODIFY_STMT:
@@ -1247,6 +1261,12 @@ tree_bb_level_predictions (void)
 call_expr:;
 		if (call_expr_flags (stmt) & ECF_NORETURN)
 		  predict_paths_leading_to (bb, heads, PRED_NORETURN,
+		      			    NOT_TAKEN);
+		decl = get_callee_fndecl (stmt);
+		if (decl
+		    && lookup_attribute ("cold",
+					 DECL_ATTRIBUTES (decl)))
+		  predict_paths_leading_to (bb, heads, PRED_COLD_FUNCTION,
 		      			    NOT_TAKEN);
 		break;
 	      default:
@@ -1785,7 +1805,15 @@ compute_function_frequency (void)
   basic_block bb;
 
   if (!profile_info || !flag_branch_probabilities)
-    return;
+    {
+      if (lookup_attribute ("cold", DECL_ATTRIBUTES (current_function_decl))
+	  != NULL)
+        cfun->function_frequency = FUNCTION_FREQUENCY_UNLIKELY_EXECUTED;
+      else if (lookup_attribute ("hot", DECL_ATTRIBUTES (current_function_decl))
+	       != NULL)
+        cfun->function_frequency = FUNCTION_FREQUENCY_HOT;
+      return;
+    }
   cfun->function_frequency = FUNCTION_FREQUENCY_UNLIKELY_EXECUTED;
   FOR_EACH_BB (bb)
     {

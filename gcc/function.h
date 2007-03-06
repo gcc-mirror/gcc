@@ -168,12 +168,12 @@ DEF_VEC_ALLOC_P(temp_slot_p,gc);
 
 enum function_frequency {
   /* This function most likely won't be executed at all.
-     (set only when profile feedback is available).  */
+     (set only when profile feedback is available or via function attribute). */
   FUNCTION_FREQUENCY_UNLIKELY_EXECUTED,
   /* The default value.  */
   FUNCTION_FREQUENCY_NORMAL,
   /* Optimize this function hard
-     (set only when profile feedback is available).  */
+     (set only when profile feedback is available or via function attribute). */
   FUNCTION_FREQUENCY_HOT
 };
 

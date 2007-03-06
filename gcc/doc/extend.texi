@@ -1578,10 +1578,11 @@ attributes are currently defined for functions on all targets:
 @code{section}, @code{constructor}, @code{destructor}, @code{used},
 @code{unused}, @code{deprecated}, @code{weak}, @code{malloc},
 @code{alias}, @code{warn_unused_result}, @code{nonnull},
-@code{gnu_inline} and @code{externally_visible}.  Several other
-attributes are defined for functions on particular target systems.  Other
-attributes, including @code{section} are supported for variables declarations
-(@pxref{Variable Attributes}) and for types (@pxref{Type Attributes}).
+@code{gnu_inline} and @code{externally_visible}, @code{hot}, @code{cold}.
+Several other attributes are defined for functions on particular target
+systems.  Other attributes, including @code{section} are supported for
+variables declarations (@pxref{Variable Attributes}) and for types (@pxref{Type
+Attributes}).
 
 You may also specify attributes with @samp{__} preceding and following
 each keyword.  This allows you to use them in header files without
@@ -2241,6 +2242,35 @@ two consecutive calls (such as @code{feof} in a multithreading environment).
 
 The attribute @code{pure} is not implemented in GCC versions earlier
 than 2.96.
+
+@item hot
+@cindex @code{hot} function attribute
+The @code{hot} attribute is used to inform the compiler that a function is a
+hot spot of the compiled program.  The function is optimized more aggressively
+and on many target it is placed into special subsection of the text section so
+all hot functions appears close together improving locality.
+
+When profile feedback is available, via @option{-fprofile-use}, hot functions
+are automatically detected and this attribute is ignored.
+
+The @code{hot} attribute is not implemented in GCC versions earlier than 4.3.
+
+@item cold
+@cindex @code{cold} function attribute
+The @code{cold} attribute is used to inform the compiler that a function is
+unlikely executed.  The function is optimized for size rather than speed and on
+many targets it is placed into special subsection of the text section so all
+cold functions appears close together improving code locality of non-cold parts
+of program.  The paths leading to call of cold functions within code are marked
+as unlikely by the branch prediction mechanizm. It is thus useful to mark
+functions used to handle unlikely conditions, such as @code{perror}, as cold to
+improve optimization of hot functions that do call marked functions in rare
+occasions.
+
+When profile feedback is available, via @option{-fprofile-use}, hot functions
+are automatically detected and this attribute is ignored.
+
+The @code{hot} attribute is not implemented in GCC versions earlier than 4.3.
 
 @item regparm (@var{number})
 @cindex @code{regparm} attribute

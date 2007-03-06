@@ -367,6 +367,22 @@ So instead we use the macro below and test it against specific values.  */
 # define ATTRIBUTE_PACKED __attribute__ ((packed))
 #endif
 
+/* Attribute `hot' and `cold' was valid as of gcc 4.3.  */
+#ifndef ATTRIBUTE_COLD
+# if (GCC_VERSION >= 4003)
+#  define ATTRIBUTE_COLD __attribute__ ((__cold__))
+# else
+#  define ATTRIBUTE_COLD
+# endif /* GNUC >= 4.3 */
+#endif /* ATTRIBUTE_COLD */
+#ifndef ATTRIBUTE_HOT
+# if (GCC_VERSION >= 4003)
+#  define ATTRIBUTE_HOT __attribute__ ((__hot__))
+# else
+#  define ATTRIBUTE_HOT
+# endif /* GNUC >= 4.3 */
+#endif /* ATTRIBUTE_HOT */
+
 /* We use __extension__ in some places to suppress -pedantic warnings
    about GCC extensions.  This feature didn't work properly before
    gcc 2.8.  */
