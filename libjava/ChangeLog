@@ -1,3 +1,14 @@
+2007-03-06  Kyle Galloway  <kgallowa@redhat.com>
+
+	* classpath/gnu/classpath/jdwp/exception/AbsentInformationException.java: New file.
+	* classpath/lib/gnu/classpath/jdwp/exception/AbsentInformationException.class: Ditto.
+	* gnu/classpath/jdwp/exception/AbsentInformationException.h: Ditto.
+	* gnu/classpath/jdwp/natVMMethod.cc: Add CHECK_INTERP_CLASS macro.
+	(VMMethod::getLineTable): Use new macro.
+	(VMMethod::getVariableTable): Implement.
+	* sources.am: Regenerated.
+	* Makefile.in: Ditto.
+
 2007-03-06  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
