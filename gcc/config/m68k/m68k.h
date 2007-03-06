@@ -401,12 +401,11 @@ Boston, MA 02110-1301, USA.  */
 #define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG) \
   m68k_hard_regno_rename_ok (OLD_REG, NEW_REG)
 
-/* Value is true if hard register REGNO can hold a value of machine-mode MODE.
-   On the 68000, the cpu registers can hold any mode except bytes in
-   address registers, the 68881 registers can hold only SFmode or DFmode.  */
-
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   m68k_regno_mode_ok ((REGNO), (MODE))
+
+#define SECONDARY_RELOAD_CLASS(CLASS, MODE, X) \
+  m68k_secondary_reload_class (CLASS, MODE, X)
 
 #define MODES_TIEABLE_P(MODE1, MODE2)			\
   (! TARGET_HARD_FLOAT					\
@@ -544,34 +543,8 @@ extern enum reg_class regno_reg_class[];
    ? const_call_operand (OP, VOIDmode)			\
    : 0)
 
-/* On the m68k, use a data reg if possible when the
-   value is a constant in the range where moveq could be used
-   and we ensure that QImodes are reloaded into data regs.  */
-#define PREFERRED_RELOAD_CLASS(X,CLASS)  \
-  ((GET_CODE (X) == CONST_INT			\
-    && (unsigned) (INTVAL (X) + 0x80) < 0x100	\
-    && (CLASS) != ADDR_REGS)			\
-   ? DATA_REGS					\
-   : (GET_MODE (X) == QImode && (CLASS) != ADDR_REGS) \
-   ? DATA_REGS					\
-   : (GET_CODE (X) == CONST_DOUBLE					\
-      && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)			\
-   ? (TARGET_HARD_FLOAT && (CLASS == FP_REGS || CLASS == DATA_OR_FP_REGS) \
-      ? FP_REGS : NO_REGS)						\
-   : (TARGET_PCREL				\
-      && (GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == CONST \
-	  || GET_CODE (X) == LABEL_REF))	\
-   ? ADDR_REGS					\
-   : (CLASS))
-
-/* Force QImode output reloads from subregs to be allocated to data regs,
-   since QImode stores from address regs are not supported.  We make the
-   assumption that if the class is not ADDR_REGS, then it must be a superset
-   of DATA_REGS.  */
-#define LIMIT_RELOAD_CLASS(MODE, CLASS) \
-  (((MODE) == QImode && (CLASS) != ADDR_REGS)	\
-   ? DATA_REGS					\
-   : (CLASS))
+#define PREFERRED_RELOAD_CLASS(X,CLASS) \
+  m68k_preferred_reload_class (X, CLASS)
 
 /* On the m68k, this is the size of MODE in words,
    except in the FP regs, where a single reg is always enough.  */
