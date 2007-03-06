@@ -949,12 +949,12 @@ GNU extension
 Non-elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = AND(X, Y)}
+@code{RESULT = AND(I, J)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
-@item @var{Y} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
+@item @var{I} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
+@item @var{J} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
 @end multitable
 
 @item @emph{Return value}:
@@ -2297,11 +2297,11 @@ F95 and later
 Subroutine
 
 @item @emph{Syntax}:
-@code{CALL CPU_TIME(X)}
+@code{CALL CPU_TIME(TIME)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be @code{REAL} with @code{INTENT(OUT)}.
+@item @var{TIME} @tab The type shall be @code{REAL} with @code{INTENT(OUT)}.
 @end multitable
 
 @item @emph{Return value}:
@@ -3837,7 +3837,7 @@ GNU extension
 Subroutine
 
 @item @emph{Syntax}:
-@code{FREE(PTR)}
+@code{CALL FREE(PTR)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
