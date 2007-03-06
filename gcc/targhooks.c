@@ -614,4 +614,12 @@ default_narrow_bitfield (void)
   return !STRICT_ALIGNMENT;
 }
 
+bool
+default_handle_c_option (size_t code ATTRIBUTE_UNUSED,
+			 const char *arg ATTRIBUTE_UNUSED,
+			 int value ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
 #include "gt-targhooks.h"

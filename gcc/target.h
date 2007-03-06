@@ -892,4 +892,16 @@ struct gcc_target
 
 extern struct gcc_target targetm;
 
+struct gcc_targetcm {
+  /* Handle target switch CODE (an OPT_* value).  ARG is the argument
+     passed to the switch; it is NULL if no argument was.  VALUE is the
+     value of ARG if CODE specifies a UInteger option, otherwise it is
+     1 if the positive form of the switch was used and 0 if the negative
+     form was.  Return true if the switch was valid.  */
+  bool (*handle_c_option) (size_t code, const char *arg, int value);
+};
+
+/* Each target can provide their own.  */
+extern struct gcc_targetcm targetcm;
+
 #endif /* GCC_TARGET_H */

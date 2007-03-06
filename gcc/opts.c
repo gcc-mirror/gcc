@@ -268,6 +268,15 @@ handle_option (const char **argv, unsigned int lang_mask)
       complain_wrong_lang (argv[0], option, lang_mask);
       goto done;
     }
+  else if ((option->flags & CL_TARGET)
+	   && (option->flags & CL_LANG_ALL)
+	   && !(option->flags & lang_mask))
+    {
+      /* Complain for target flag language mismatches if any languages
+	 are specified.  */
+      complain_wrong_lang (argv[0], option, lang_mask);
+      goto done;
+    }
 
   if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
     {

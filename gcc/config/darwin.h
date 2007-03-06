@@ -980,4 +980,6 @@ extern int flag_mkernel;
 extern int flag_apple_kext;
 #define TARGET_KEXTABI flag_apple_kext
 
+#define TARGET_HAS_TARGETCM 1
+
 #endif /* CONFIG_DARWIN_H */

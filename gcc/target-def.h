@@ -730,5 +730,8 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   TARGET_ARM_EABI_UNWINDER			\
 }
 
+#define TARGET_HANDLE_C_OPTION default_handle_c_option
+#define TARGETCM_INITIALIZER { TARGET_HANDLE_C_OPTION }
+
 #include "hooks.h"
 #include "targhooks.h"

@@ -462,6 +462,7 @@ Objective-C and Objective-C++ Dialects}.
 -dynamic  -dynamiclib  -exported_symbols_list @gol
 -filelist  -flat_namespace  -force_cpusubtype_ALL @gol
 -force_flat_namespace  -headerpad_max_install_names @gol
+-iframework @gol
 -image_base  -init  -install_name  -keep_private_externs @gol
 -multi_module  -multiply_defined  -multiply_defined_unused @gol
 -noall_load   -no_dead_strip_inits_and_terms @gol
@@ -8462,6 +8463,14 @@ in @samp{"/System/Library/Frameworks"} and
 @code{#include <Framework/header.h>}, where @samp{Framework} denotes
 the name of the framework and header.h is found in the
 @samp{"PrivateHeaders"} or @samp{"Headers"} directory.
+
+@item -iframework@var{dir}
+@opindex iframework
+Like @option{-F} except the directory is a treated as a system
+directory.  The main difference between this @option{-iframework} and
+@option{-F} is that with @option{-iframework} the compiler does not
+warn about constructs contained within header files found via
+@var{dir}.  This option is valid only for the C family of languages.
 
 @item -gused
 @opindex -gused
