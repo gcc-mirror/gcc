@@ -1,3 +1,8 @@
+2007-03-06  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/i386/att.h (ASM_OUTPUT_ASCII, ASM_OUTPUT_SKIP): Undefine
+	before redefining.
+
 2007-03-06  Jan Hubicka  <jh@suse.cz>
 
 	* reg-stack.c (reg_to_stack): Large models don't allow NAN to be
