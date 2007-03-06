@@ -1,3 +1,83 @@
+2007-03-06  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (x86_use_leave, x86_push_memory,
+	x86_zero_extend_with_and, x86_movx, x86_double_with_add,
+	x86_use_bit_test, x86_unroll_strlen, x86_deep_branch,
+	x86_branch_hints, x86_use_sahf, x86_partial_reg_stall,
+	x86_partial_flag_reg_stall, x86_use_himode_fiop, x86_use_simode_fiop,
+	x86_use_mov0, x86_use_cltd, x86_read_modify_write, x86_read_modify,
+	x86_split_long_moves, x86_promote_QImode, x86_fast_prefix, 
+	x86_single_stringop, x86_qimode_math, x86_promote_qi_regs,
+	x86_himode_math, x86_promote_hi_regs, x86_sub_esp_4, x86_sub_esp_8,
+	x86_add_esp_4, x86_add_esp_8, x86_integer_DFmode_moves, 
+	x86_partial_reg_dependency, x86_memory_mismatch_stall, 
+	x86_prologue_using_move, x86_epilogue_using_move, x86_shift1,
+	x86_sse_partial_reg_dependency, x86_sse_split_regs, 
+	x86_sse_unaligned_move_optimal, x86_sse_typeless_stores,
+	x86_sse_load0_by_pxor, x86_use_ffreep, x86_use_incdec,
+	x86_inter_unit_moves, x86_ext_80387_constants, x86_four_jump_limit,
+	x86_schedule, x86_use_bt, x86_pad_returns): Merge into ...
+	(ix86_tune_features): ... here.  New array.
+	(x86_cmove, x86_use_xchgb, x86_cmpxchg, x86_cmpxchg8b,	
+	x86_xadd, x86_bswap): Merge into ...
+	(ix86_arch_features): ... here.  New array.
+	(x86_3dnow_a): Remove.
+	(x86_accumulate_outgoing_args): Make static.
+	(x86_arch_always_fancy_math_387): Make static.
+	(ix86_tune_mask, ix86_arch_mask): Move ...
+	(override_options): ... to local variables here.  Apply the
+	appropriate mask to each element of ix86_arch_features and
+	ix86_tune_features.  Adjust TARGET_CMOVE and TARGET_USE_SAHF
+	as were done in the old macros.
+	(standard_80387_constant_p): Use TARGET_EXT_80387_CONSTANTS.
+	* config/i386/i386.h (x86_use_leave, x86_push_memory,
+	x86_zero_extend_with_and, x86_use_bit_test, x86_cmove, x86_deep_branch,
+	x86_branch_hints, x86_unroll_strlen, x86_double_with_add,
+	x86_partial_reg_stall, x86_movx, x86_use_himode_fiop,
+	x86_use_simode_fiop, x86_use_mov0, x86_use_cltd, x86_use_xchgb,
+	x86_read_modify_write, x86_read_modify, x86_split_long_moves,
+	x86_promote_QImode, x86_single_stringop, x86_fast_prefix,
+	x86_himode_math, x86_qimode_math, x86_promote_qi_regs,
+	x86_promote_hi_regs, x86_integer_DFmode_moves, x86_add_esp_4,
+	x86_add_esp_8, x86_sub_esp_4, x86_sub_esp_8,
+	x86_partial_reg_dependency, x86_memory_mismatch_stall,
+	x86_accumulate_outgoing_args, x86_prologue_using_move,
+	x86_epilogue_using_move, x86_decompose_lea,
+	x86_arch_always_fancy_math_387, x86_shift1,
+	x86_sse_partial_reg_dependency, x86_sse_split_regs,
+	x86_sse_unaligned_move_optimal, x86_sse_typeless_stores,	
+	x86_sse_load0_by_pxor, x86_use_ffreep, x86_inter_unit_moves,
+	x86_schedule, x86_use_bt, x86_cmpxchg, x86_cmpxchg8b, x86_xadd,
+	x86_use_incdec, x86_pad_returns, x86_bswap,
+	x86_partial_flag_reg_stall): Remove.
+	(enum ix86_tune_indices): New.
+	(ix86_tune_features): New.
+	(TARGET_USE_LEAVE, TARGET_PUSH_MEMORY, TARGET_ZERO_EXTEND_WITH_AND,
+	TARGET_USE_BIT_TEST, TARGET_UNROLL_STRLEN,
+	TARGET_DEEP_BRANCH_PREDICTION, TARGET_BRANCH_PREDICTION_HINTS,
+	TARGET_DOUBLE_WITH_ADD, TARGET_USE_SAHF, TARGET_MOVX,
+	TARGET_PARTIAL_REG_STALL, TARGET_PARTIAL_FLAG_REG_STALL,
+	TARGET_USE_HIMODE_FIOP, TARGET_USE_SIMODE_FIOP, TARGET_USE_MOV0,
+	TARGET_USE_CLTD, TARGET_USE_XCHGB, TARGET_SPLIT_LONG_MOVES,
+	TARGET_READ_MODIFY_WRITE, TARGET_READ_MODIFY, TARGET_PROMOTE_QImode,
+	TARGET_FAST_PREFIX, TARGET_SINGLE_STRINGOP, TARGET_QIMODE_MATH,
+	TARGET_HIMODE_MATH, TARGET_PROMOTE_QI_REGS, TARGET_PROMOTE_HI_REGS,
+	TARGET_ADD_ESP_4, TARGET_ADD_ESP_8, TARGET_SUB_ESP_4,
+	TARGET_SUB_ESP_8, TARGET_INTEGER_DFMODE_MOVES,
+	TARGET_PARTIAL_REG_DEPENDENCY, TARGET_SSE_PARTIAL_REG_DEPENDENCY,
+	TARGET_SSE_UNALIGNED_MOVE_OPTIMAL, TARGET_SSE_SPLIT_REGS,
+	TARGET_SSE_TYPELESS_STORES, TARGET_SSE_LOAD0_BY_PXOR,
+	TARGET_MEMORY_MISMATCH_STALL, TARGET_PROLOGUE_USING_MOVE,
+	TARGET_EPILOGUE_USING_MOVE, TARGET_SHIFT1, TARGET_USE_FFREEP,
+	TARGET_INTER_UNIT_MOVES, TARGET_FOUR_JUMP_LIMIT, TARGET_SCHEDULE,
+	TARGET_USE_BT, TARGET_USE_INCDEC, TARGET_PAD_RETURNS,
+	TARGET_EXT_80387_CONSTANTS): Use it.
+	(enum ix86_arch_indices): New.
+	(ix86_arch_features): New.
+	(TARGET_CMOVE, TARGET_CMPXCHG, TARGET_CMPXCHG8B, TARGET_XADD,
+	TARGET_BSWAP): Use it.
+	(ix86_tune_mask, ix86_arch_mask): Remove.
+
 2007-03-06  Joseph Myers  <joseph@codesourcery.com>
 
 	PR bootstrap/31020
