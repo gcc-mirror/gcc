@@ -1,3 +1,8 @@
+2007-03-06  Jan Hubicka  <jh@suse.cz>
+
+	* regstack.c (reg_to_stack): When in 64bit PIC mode, we still can load
+	NANs easilly.
+
 2007-03-06  Richard Sandiford  <richard@codesourcery.com>
 
 	* configure.ac: Allow tm_file to contain build-directory files.
