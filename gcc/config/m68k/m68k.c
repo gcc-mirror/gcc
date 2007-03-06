@@ -146,6 +146,7 @@ static tree m68k_handle_fndecl_attribute (tree *node, tree name,
 					  bool *no_add_attrs);
 static void m68k_compute_frame_layout (void);
 static bool m68k_save_reg (unsigned int regno, bool interrupt_handler);
+static bool m68k_ok_for_sibcall_p (tree, tree);
 static bool m68k_rtx_costs (rtx, int, int, int *);
 
 
@@ -214,6 +215,9 @@ int m68k_last_compare_had_fp_operands;
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM m68k_illegitimate_symbolic_constant_p
+
+#undef TARGET_FUNCTION_OK_FOR_SIBCALL
+#define TARGET_FUNCTION_OK_FOR_SIBCALL m68k_ok_for_sibcall_p
 
 static const struct attribute_spec m68k_attribute_table[] =
 {
@@ -1015,7 +1019,8 @@ m68k_use_return_insn (void)
   return current_frame.offset == 0;
 }
 
-/* Emit RTL for the "epilogue" define_expand.
+/* Emit RTL for the "epilogue" or "sibcall_epilogue" define_expand;
+   SIBCALL_P says which.
 
    The function epilogue should not depend on the current stack pointer!
    It should use the frame pointer only, if there is a frame pointer.
@@ -1023,7 +1028,7 @@ m68k_use_return_insn (void)
    omit stack adjustments before returning.  */
 
 void
-m68k_expand_epilogue (void)
+m68k_expand_epilogue (bool sibcall_p)
 {
   HOST_WIDE_INT fsize, fsize_with_regs;
   bool big, restore_from_sp;
@@ -1181,7 +1186,8 @@ m68k_expand_epilogue (void)
 			   stack_pointer_rtx,
 			   EH_RETURN_STACKADJ_RTX));
 
-  emit_insn (gen_rtx_RETURN (VOIDmode));
+  if (!sibcall_p)
+    emit_insn (gen_rtx_RETURN (VOIDmode));
 }
 
 /* Return true if X is a valid comparison operator for the dbcc 
@@ -1218,6 +1224,16 @@ flags_in_68881 (void)
   return cc_status.flags & CC_IN_68881;
 }
 
+/* Implement TARGET_FUNCTION_OK_FOR_SIBCALL_P.  We cannot use sibcalls
+   for nested functions because we use the static chain register for
+   indirect calls.  */
+
+static bool
+m68k_ok_for_sibcall_p (tree decl ATTRIBUTE_UNUSED, tree exp)
+{
+  return TREE_OPERAND (exp, 2) == NULL;
+}
+
 /* Convert X to a legitimate function call memory reference and return the
    result.  */
 
@@ -1228,6 +1244,19 @@ m68k_legitimize_call_address (rtx x)
   if (call_operand (XEXP (x, 0), VOIDmode))
     return x;
   return replace_equiv_address (x, force_reg (Pmode, XEXP (x, 0)));
+}
+
+/* Likewise for sibling calls.  */
+
+rtx
+m68k_legitimize_sibcall_address (rtx x)
+{
+  gcc_assert (MEM_P (x));
+  if (sibcall_operand (XEXP (x, 0), VOIDmode))
+    return x;
+
+  emit_move_insn (gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM), XEXP (x, 0));
+  return replace_equiv_address (x, gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM));
 }
 
 /* Output a dbCC; jCC sequence.  Note we do not handle the 
@@ -4011,6 +4040,17 @@ output_call (rtx x)
     return m68k_symbolic_call;
   else
     return "jsr %a0";
+}
+
+/* Likewise sibling calls.  */
+
+const char *
+output_sibcall (rtx x)
+{
+  if (symbolic_operand (x, VOIDmode))
+    return m68k_symbolic_jump;
+  else
+    return "jmp %a0";
 }
 
 #ifdef M68K_TARGET_COFF

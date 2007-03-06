@@ -159,7 +159,7 @@
     }
 })
 
-;; A constant that can be used the address in a call insn.
+;; A constant that can be used the address in a call or sibcall insn.
 (define_predicate "const_call_operand"
   (ior (match_operand 0 "const_int_operand")
        (and (match_test "m68k_symbolic_call != NULL")
@@ -169,6 +169,12 @@
 (define_predicate "call_operand"
   (ior (match_operand 0 "const_call_operand")
        (match_operand 0 "register_operand")))
+
+;; An operand that can be used as the address in a sibcall insn.
+(define_predicate "sibcall_operand"
+  (ior (match_operand 0 "const_call_operand")
+       (and (match_code "reg")
+	    (match_test "REGNO (op) == STATIC_CHAIN_REGNUM"))))
 
 ;; TODO: Add a comment here.
 
