@@ -1548,7 +1548,7 @@ m68k-*-uclinux*)		# Motorola m68k/ColdFire running uClinux
 				# ABI.
 	default_m68k_cpu=68020
 	default_cf_cpu=5206
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h flat.h m68k/linux.h m68k/uclinux.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h flat.h m68k/linux.h m68k/uclinux.h ./sysroot-suffix.h"
  	tm_defines="${tm_defines} MOTOROLA=1 USE_GAS UCLIBC_DEFAULT=1"
 	extra_options="${extra_options} linux.opt"
 	tmake_file="m68k/t-floatlib m68k/t-uclinux m68k/t-mlibs"

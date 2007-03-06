@@ -1,5 +1,13 @@
 2007-03-06  Richard Sandiford  <richard@codesourcery.com>
 
+	* configure.ac: Allow tm_file to contain build-directory files.
+	* configure: Regenerate.
+	* config.gcc (m68k-*-uclinux*): Add ./sysroot-suffix.h to tm_file.
+	* config/m68k/t-uclinux (sysroot-suffix.h): New target.
+	* config/m68k/print-sysroot-suffix.sh: New file.
+
+2007-03-06  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/m68k/m68k.h (PIC_OFFSET_TABLE_REGNUM): Use the REGNO
 	of pic_offset_table_rtx if reload_completed.
 	(CONDITIONAL_REGISTER_USAGE): Use PIC_REG instead of
