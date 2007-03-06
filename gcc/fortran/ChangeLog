@@ -1,5 +1,9 @@
 2007-03-06  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* intrinsic.texi: Backported typo fixes from trunk.
+
+2007-03-06  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* intrinsic.texi: Limit column widths to a total of .85.
 
 2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
