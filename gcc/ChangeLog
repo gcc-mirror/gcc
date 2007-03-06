@@ -1,3 +1,20 @@
+2007-03-06  Jan Hubicka  <jh@suse.cz>
+
+	* errors.h (warning, error, fatal, internal_error): Mark as cold.
+	* predict.c (maybe_hot_bb): Cold functions are never hot; hot functions
+	are hot.
+	(probably_cold_bb_p): Cold functions are cold.
+	(probably_never_executed_bb_p): Cold functions are cold.
+	(tree_bb_level_predictions): Predict calls to cold functions as not
+	taken.
+	(compute_function_frequency): Check hot/cold attributes.
+	* function.h (function_frequency): Update comments.
+	* predict.def (PRED_COLD_FUNCTION): Predict cold function.
+	* c-common.c (handle_hot_attribute, handle_cold_attribute): New.
+	(c_common_att): Add cold and hot.
+
+	* doc/extend.texi (hot,cold attributes): Document.
+
 2007-03-06  Andrew Haley  <aph@redhat.com>
 
 	* function.c (expand_function_end): Move blockage to just after we

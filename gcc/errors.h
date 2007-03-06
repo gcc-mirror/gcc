@@ -34,10 +34,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    version of warning().  For those, you'd pass an OPT_W* value from
    options.h, but in generator programs it has no effect, so it's OK
    to just pass zero for calls from generator-only files.  */
-extern void warning (int, const char *, ...) ATTRIBUTE_PRINTF_2;
-extern void error (const char *, ...) ATTRIBUTE_PRINTF_1;
-extern void fatal (const char *, ...) ATTRIBUTE_NORETURN ATTRIBUTE_PRINTF_1;
-extern void internal_error (const char *, ...) ATTRIBUTE_NORETURN ATTRIBUTE_PRINTF_1;
+extern void warning (int, const char *, ...) ATTRIBUTE_PRINTF_2 ATTRIBUTE_COLD;
+extern void error (const char *, ...) ATTRIBUTE_PRINTF_1 ATTRIBUTE_COLD;
+extern void fatal (const char *, ...) ATTRIBUTE_NORETURN ATTRIBUTE_PRINTF_1 ATTRIBUTE_COLD;
+extern void internal_error (const char *, ...) ATTRIBUTE_NORETURN ATTRIBUTE_PRINTF_1 ATTRIBUTE_COLD;
 extern const char *trim_filename (const char *);
 
 extern int have_error;
