@@ -71,7 +71,15 @@ const struct default_include cpp_include_defaults[]
 #endif
 #ifdef FIXED_INCLUDE_DIR
     /* This is the dir for fixincludes.  */
-    { FIXED_INCLUDE_DIR, "GCC", 0, 0, 0, 0 },
+    { FIXED_INCLUDE_DIR, "GCC", 0, 0, 0,
+      /* A multilib suffix needs adding if different multilibs use
+	 different headers.  */
+#ifdef SYSROOT_HEADERS_SUFFIX_SPEC
+      1
+#else
+      0
+#endif
+    },
 #endif
 #ifdef CROSS_INCLUDE_DIR
     /* One place the target system's headers might be.  */

@@ -1,3 +1,38 @@
+2007-03-06  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/31020
+	* configure.ac (CROSS_SYSTEM_HEADER_DIR, build_system_header_dir):
+	Define using $${sysroot_headers_suffix}.
+	* configure: Regenerate.
+	* cppdefault.c (cpp_include_defaults): Make FIXED_INCLUDE_DIR a
+	multilib-suffixed directory if SYSROOT_HEADERS_SUFFIX_SPEC
+	defined.
+	* doc/invoke.texi (-print-sysroot-headers-suffix): Document.
+	* gcc.c (print_sysroot_headers_suffix): New.
+	(option_map): Include --print-sysroot-headers-suffix.
+	(display_help): Mention -print-sysroot-headers-suffix.
+	(process_command): Handle -print-sysroot-headers-suffix.
+	(do_spec_1): Append multilib directory to include-fixed path if
+	sysroot suffixes in use.
+	(main): Handle -print-sysroot-headers-suffix.
+	* Makefile.in (start.encap): Don't depend on xlimits.h
+	(xlimits.h): Remove.
+	(stmp-int-hdrs): Don't depend on xlimits.h.  Inline generation of
+	limits.h for each multilib in fixinc_list.
+	(fixinc_list, s-fixinc_list): New.
+	(stmp-fixinc): Depend on fixinc_list.  If not copying headers,
+	generate them for each multilib in fixinc_list.
+	(stmp-fixproto): Use include-fixed.  Run fixproto for each
+	multilib in fixinc_list.
+	(mostlyclean): Don't remove xlimits.h.
+	(clean): Remove include-fixed.
+	(real-install-headers-tar, real-install-headers-cpio,
+	real-install-headers-cp): Don't copy include, only include-fixed.
+	(install-mkheaders): Depend on fixinc_list.  Don't depend on
+	xlimits.h.  Save limits.h files for each multilib in fixinc_list.
+	Always save mkinstalldirs.  Preserve ${sysroot_headers_suffix} in
+	SYSTEM_HEADER_DIR setting in mkheaders.conf.
+
 2007-03-06  Jan Hubicka  <jh@suse.cz>
 
 	* regstack.c (reg_to_stack): When in 64bit PIC mode, we still can load

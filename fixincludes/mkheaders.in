@@ -78,29 +78,33 @@ libexecsubdir=${libexecdir}/gcc/${target_noncanonical}/${version}
 itoolsdir=${libexecsubdir}/install-tools
 itoolsdatadir=${libsubdir}/install-tools
 incdir=${libsubdir}/include-fixed
-
-. ${itoolsdatadir}/mkheaders.conf
+mkinstalldirs="@SHELL@ ${itoolsdir}/mkinstalldirs"
 
 cd ${itoolsdir}
 rm -rf ${incdir}/*
 
-if [ x${STMP_FIXINC} != x ] ; then
+for ml in `cat ${itoolsdatadir}/fixinc_list`; do
+  sysroot_headers_suffix=`echo ${ml} | sed -e 's/;.*$//'`
+  multi_dir=`echo ${ml} | sed -e 's/^[^;]*;//'`
+  subincdir=${incdir}${multi_dir}
+  . ${itoolsdatadir}/mkheaders.conf
+  if [ x${STMP_FIXINC} != x ] ; then
 	TARGET_MACHINE="${target}" target_canonical="${target}" \
 	    MACRO_LIST="${itoolsdatadir}/macro_list" \
-	    @SHELL@ ./fixinc.sh ${incdir} \
+	    @SHELL@ ./fixinc.sh ${subincdir} \
 	    ${isysroot}${SYSTEM_HEADER_DIR} ${OTHER_FIXINCLUDES_DIRS}
-	rm -f ${incdir}/syslimits.h
-	if [ -f ${incdir}/limits.h ]; then
-	  mv ${incdir}/limits.h ${incdir}/syslimits.h
+	rm -f ${subincdir}/syslimits.h
+	if [ -f ${subincdir}/limits.h ]; then
+	  mv ${subincdir}/limits.h ${subincdir}/syslimits.h
 	else
-	  cp ${itoolsdatadir}/gsyslimits.h ${incdir}/syslimits.h
+	  cp ${itoolsdatadir}/gsyslimits.h ${subincdir}/syslimits.h
 	fi
-fi
+  fi
 
-cp ${itoolsdatadir}/include/* ${incdir}
+  cp ${itoolsdatadir}/include${multi_dir}/limits.h ${subincdir}
 
-if [ x${STMP_FIXPROTO} != x ] ; then
-  mkinstalldirs="@SHELL@ ${itoolsdir}/mkinstalldirs"
-  export FIXPROTO_DEFINES mkinstalldirs
-  @SHELL@ fixproto ${incdir} ${incdir} ${isysroot}${SYSTEM_HEADER_DIR} || exit 1
-fi
+  if [ x${STMP_FIXPROTO} != x ] ; then
+    export FIXPROTO_DEFINES mkinstalldirs
+    @SHELL@ fixproto ${subincdir} ${subincdir} ${isysroot}${SYSTEM_HEADER_DIR} || exit 1
+  fi
+done
