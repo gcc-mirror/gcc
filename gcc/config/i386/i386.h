@@ -1851,7 +1851,8 @@ do {									\
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
-#define CASE_VECTOR_MODE (!TARGET_64BIT || flag_pic ? SImode : DImode)
+#define CASE_VECTOR_MODE \
+ (!TARGET_64BIT || (flag_pic && ix86_cmodel != CM_LARGE_PIC) ? SImode : DImode)
 
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 1
@@ -2213,7 +2214,8 @@ enum cmodel {
   CM_MEDIUM,	/* Assumes code fits in the low 31 bits; data unlimited.  */
   CM_LARGE,	/* No assumptions.  */
   CM_SMALL_PIC,	/* Assumes code+data+got/plt fits in a 31 bit region.  */
-  CM_MEDIUM_PIC	/* Assumes code+got/plt fits in a 31 bit region.  */
+  CM_MEDIUM_PIC,/* Assumes code+got/plt fits in a 31 bit region.  */
+  CM_LARGE_PIC	/* No assumptions.  */
 };
 
 extern enum cmodel ix86_cmodel;

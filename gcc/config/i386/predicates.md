@@ -472,8 +472,9 @@
 
 ;; Test for a pc-relative call operand
 (define_predicate "constant_call_address_operand"
-  (ior (match_code "symbol_ref")
-       (match_operand 0 "local_symbolic_operand")))
+  (and (ior (match_code "symbol_ref")
+            (match_operand 0 "local_symbolic_operand"))
+       (match_test "ix86_cmodel != CM_LARGE && ix86_cmodel != CM_LARGE_PIC")))
 
 ;; True for any non-virtual or eliminable register.  Used in places where
 ;; instantiation of such a register may cause the pattern to not be recognized.
