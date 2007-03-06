@@ -1004,187 +1004,221 @@ const struct processor_costs *ix86_cost = &pentium_cost;
    (PPro/PENT4/NOCONA/CORE2/Athlon/K8).  */
 #define m_GENERIC (m_GENERIC32 | m_GENERIC64)
 
-/* Leave is not affecting Nocona SPEC2000 results negatively, so enabling for
-   Generic64 seems like good code size tradeoff.  We can't enable it for 32bit
-   generic because it is not working well with PPro base chips.  */
-const int x86_use_leave = m_386 | m_K6_GEODE | m_ATHLON_K8_AMDFAM10 | m_CORE2
-                          | m_GENERIC64;
-const int x86_push_memory = m_386 | m_K6_GEODE | m_ATHLON_K8_AMDFAM10 | m_PENT4
-                            | m_NOCONA | m_CORE2 | m_GENERIC;
-const int x86_zero_extend_with_and = m_486 | m_PENT;
-/* Enable to zero extend integer registers to avoid partial dependencies */
-const int x86_movx = m_ATHLON_K8_AMDFAM10 | m_PPRO | m_PENT4 | m_NOCONA
-                     | m_CORE2 | m_GENERIC | m_GEODE /* m_386 | m_K6 */;
-const int x86_double_with_add = ~m_386;
-const int x86_use_bit_test = m_386;
-const int x86_unroll_strlen = m_486 | m_PENT | m_PPRO | m_ATHLON_K8_AMDFAM10
-                              | m_K6 | m_CORE2 | m_GENERIC;
-const int x86_cmove = m_PPRO | m_GEODE | m_ATHLON_K8_AMDFAM10 | m_PENT4
-                      | m_NOCONA;
-const int x86_3dnow_a = m_ATHLON_K8_AMDFAM10;
-const int x86_deep_branch = m_PPRO | m_K6_GEODE | m_ATHLON_K8_AMDFAM10
-                            | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC;
-/* Branch hints were put in P4 based on simulation result. But
-   after P4 was made, no performance benefit was observed with
-   branch hints. It also increases the code size. As the result,
-   icc never generates branch hints.  */
-const int x86_branch_hints = 0;
-const int x86_use_sahf = m_PPRO | m_K6_GEODE | m_PENT4 | m_NOCONA | m_GENERIC32;
-                         /*m_GENERIC | m_ATHLON_K8 ? */
-/* We probably ought to watch for partial register stalls on Generic32
-   compilation setting as well.  However in current implementation the
-   partial register stalls are not eliminated very well - they can
-   be introduced via subregs synthesized by combine and can happen
-   in caller/callee saving sequences.
-   Because this option pays back little on PPro based chips and is in conflict
-   with partial reg. dependencies used by Athlon/P4 based chips, it is better
-   to leave it off for generic32 for now.  */
-const int x86_partial_reg_stall = m_PPRO;
-const int x86_partial_flag_reg_stall =  m_CORE2 | m_GENERIC;
-const int x86_use_himode_fiop = m_386 | m_486 | m_K6_GEODE;
-const int x86_use_simode_fiop = ~(m_PPRO | m_ATHLON_K8_AMDFAM10 | m_PENT
-                                  | m_CORE2 | m_GENERIC);
-const int x86_use_mov0 = m_K6;
-const int x86_use_cltd = ~(m_PENT | m_K6 | m_CORE2 | m_GENERIC);
-/* Use xchgb %rh,%rl instead of rolw/rorw $8,rx.  */
-const int x86_use_xchgb = m_PENT4;
-const int x86_read_modify_write = ~m_PENT;
-const int x86_read_modify = ~(m_PENT | m_PPRO);
-const int x86_split_long_moves = m_PPRO;
-const int x86_promote_QImode = m_K6_GEODE | m_PENT | m_386 | m_486
-                               | m_ATHLON_K8_AMDFAM10 | m_CORE2 | m_GENERIC;
-                               /* m_PENT4 ? */
-const int x86_fast_prefix = ~(m_PENT | m_486 | m_386);
-const int x86_single_stringop = m_386 | m_PENT4 | m_NOCONA;
-const int x86_qimode_math = ~(0);
-const int x86_promote_qi_regs = 0;
-/* On PPro this flag is meant to avoid partial register stalls.  Just like
-   the x86_partial_reg_stall this option might be considered for Generic32
-   if our scheme for avoiding partial stalls was more effective.  */
-const int x86_himode_math = ~(m_PPRO);
-const int x86_promote_hi_regs = m_PPRO;
-/* Enable if add/sub rsp is preferred over 1 or 2 push/pop */
-const int x86_sub_esp_4 = m_ATHLON_K8_AMDFAM10 | m_PPRO | m_PENT4 | m_NOCONA
-                          | m_CORE2 | m_GENERIC;
-const int x86_sub_esp_8 = m_ATHLON_K8_AMDFAM10 | m_PPRO | m_386 | m_486
-                          | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC;
-const int x86_add_esp_4 = m_ATHLON_K8_AMDFAM10 | m_K6_GEODE | m_PENT4 | m_NOCONA
-                          | m_CORE2 | m_GENERIC;
-const int x86_add_esp_8 = m_ATHLON_K8_AMDFAM10 | m_PPRO | m_K6_GEODE | m_386
-                          | m_486 | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC;
-/* Enable if integer moves are preferred for DFmode copies */
-const int x86_integer_DFmode_moves = ~(m_ATHLON_K8_AMDFAM10 | m_PENT4 | m_NOCONA
-                                       | m_PPRO | m_CORE2 | m_GENERIC | m_GEODE);
-const int x86_partial_reg_dependency = m_ATHLON_K8_AMDFAM10 | m_PENT4 | m_NOCONA
-                                       | m_CORE2 | m_GENERIC;
-const int x86_memory_mismatch_stall = m_ATHLON_K8_AMDFAM10 | m_PENT4 | m_NOCONA 
-                                      | m_CORE2 | m_GENERIC;
-/* If ACCUMULATE_OUTGOING_ARGS is enabled, the maximum amount of space required
-   for outgoing arguments will be computed and placed into the variable
-   `current_function_outgoing_args_size'. No space will be pushed onto the stack
-   for each call; instead, the function prologue should increase the stack frame
-   size by this amount. Setting both PUSH_ARGS and ACCUMULATE_OUTGOING_ARGS is
-   not proper. */
-const int x86_accumulate_outgoing_args = m_ATHLON_K8_AMDFAM10 | m_PENT4
-                                         | m_NOCONA | m_PPRO | m_CORE2
-                                         | m_GENERIC;
-const int x86_prologue_using_move = m_ATHLON_K8 | m_PPRO | m_CORE2 | m_GENERIC;
-const int x86_epilogue_using_move = m_ATHLON_K8 | m_PPRO | m_CORE2 | m_GENERIC;
-const int x86_shift1 = ~m_486;
-const int x86_arch_always_fancy_math_387 = m_PENT | m_PPRO
-                                           | m_ATHLON_K8_AMDFAM10 | m_PENT4 
-                                           | m_NOCONA | m_CORE2 | m_GENERIC;
-/* In Generic model we have an conflict here in between PPro/Pentium4 based chips
-   that thread 128bit SSE registers as single units versus K8 based chips that
-   divide SSE registers to two 64bit halves.
-   x86_sse_partial_reg_dependency promote all store destinations to be 128bit
-   to allow register renaming on 128bit SSE units, but usually results in one
-   extra microop on 64bit SSE units.  Experimental results shows that disabling
-   this option on P4 brings over 20% SPECfp regression, while enabling it on
-   K8 brings roughly 2.4% regression that can be partly masked by careful scheduling
-   of moves.  */
-const int x86_sse_partial_reg_dependency = m_PENT4 | m_NOCONA | m_PPRO | m_CORE2
-                                           | m_GENERIC | m_AMDFAM10;
-/* Set for machines where the type and dependencies are resolved on SSE
-   register parts instead of whole registers, so we may maintain just
-   lower part of scalar values in proper format leaving the upper part
-   undefined.  */
-const int x86_sse_split_regs = m_ATHLON_K8;
-/* Code generation for scalar reg-reg moves of single and double precision data:
-     if (x86_sse_partial_reg_dependency == true | x86_sse_split_regs == true)
-       movaps reg, reg
-     else
-       movss reg, reg
-     if (x86_sse_partial_reg_dependency == true)
-       movapd reg, reg
-     else
-       movsd reg, reg
+/* Feature tests against the various tunings.  */
+unsigned int ix86_tune_features[X86_TUNE_LAST] = {
+  /* X86_TUNE_USE_LEAVE: Leave does not affect Nocona SPEC2000 results
+     negatively, so enabling for Generic64 seems like good code size
+     tradeoff.  We can't enable it for 32bit generic because it does not
+     work well with PPro base chips.  */
+  m_386 | m_K6_GEODE | m_ATHLON_K8_AMDFAM10 | m_CORE2 | m_GENERIC64,
 
-   Code generation for scalar loads of double precision data:
-     if (x86_sse_split_regs == true)
-       movlpd mem, reg      (gas syntax)
-     else
-       movsd mem, reg
- 
-   Code generation for unaligned packed loads of single precision data
-   (x86_sse_unaligned_move_optimal overrides x86_sse_partial_reg_dependency):
-     if (x86_sse_unaligned_move_optimal)
-       movups mem, reg
+  /* X86_TUNE_PUSH_MEMORY */
+  m_386 | m_K6_GEODE | m_ATHLON_K8_AMDFAM10 | m_PENT4
+  | m_NOCONA | m_CORE2 | m_GENERIC,
 
-     if (x86_sse_partial_reg_dependency == true)
-       {
-         xorps  reg, reg
-         movlps mem, reg
-         movhps mem+8, reg
-       }
-     else
-       {
-         movlps mem, reg
-         movhps mem+8, reg
-       }
+  /* X86_TUNE_ZERO_EXTEND_WITH_AND */
+  m_486 | m_PENT,
 
-   Code generation for unaligned packed loads of double precision data
-   (x86_sse_unaligned_move_optimal overrides x86_sse_split_regs):
-     if (x86_sse_unaligned_move_optimal)
-       movupd mem, reg
+  /* X86_TUNE_USE_BIT_TEST */
+  m_386,
 
-     if (x86_sse_split_regs == true)
-       {
-         movlpd mem, reg
-         movhpd mem+8, reg
-       }
-     else
-       {
-         movsd  mem, reg
-         movhpd mem+8, reg
-       }
- */
-const int x86_sse_unaligned_move_optimal = m_AMDFAM10;
-const int x86_sse_typeless_stores = m_ATHLON_K8_AMDFAM10;
-const int x86_sse_load0_by_pxor = m_PPRO | m_PENT4 | m_NOCONA;
-const int x86_use_ffreep = m_ATHLON_K8_AMDFAM10;
-const int x86_use_incdec = ~(m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC);
+  /* X86_TUNE_UNROLL_STRLEN */
+  m_486 | m_PENT | m_PPRO | m_ATHLON_K8_AMDFAM10 | m_K6 | m_CORE2 | m_GENERIC,
 
-const int x86_inter_unit_moves = ~(m_ATHLON_K8_AMDFAM10 | m_GENERIC);
+  /* X86_TUNE_DEEP_BRANCH_PREDICTION */
+  m_PPRO | m_K6_GEODE | m_ATHLON_K8_AMDFAM10 | m_PENT4
+  | m_NOCONA | m_CORE2 | m_GENERIC,
 
-const int x86_ext_80387_constants = m_K6_GEODE | m_ATHLON_K8 | m_PENT4
-                                    | m_NOCONA | m_PPRO | m_CORE2 | m_GENERIC;
-/* Some CPU cores are not able to predict more than 4 branch instructions in
-   the 16 byte window.  */
-const int x86_four_jump_limit = m_PPRO | m_ATHLON_K8_AMDFAM10 | m_PENT4
-                                | m_NOCONA | m_CORE2 | m_GENERIC;
-const int x86_schedule = m_PPRO | m_ATHLON_K8_AMDFAM10 | m_K6_GEODE | m_PENT
-                         | m_CORE2 | m_GENERIC;
-const int x86_use_bt = m_ATHLON_K8_AMDFAM10;
-/* Compare and exchange was added for 80486.  */
-const int x86_cmpxchg = ~m_386;
-/* Compare and exchange 8 bytes was added for pentium.  */
-const int x86_cmpxchg8b = ~(m_386 | m_486);
-/* Exchange and add was added for 80486.  */
-const int x86_xadd = ~m_386;
-/* Byteswap was added for 80486.  */
-const int x86_bswap = ~m_386;
-const int x86_pad_returns = m_ATHLON_K8_AMDFAM10 | m_CORE2 | m_GENERIC;
+  /* X86_TUNE_BRANCH_PREDICTION_HINTS: Branch hints were put in P4 based
+     on simulation result. But after P4 was made, no performance benefit
+     was observed with branch hints.  It also increases the code size.
+     As a result, icc never generates branch hints.  */
+  0,
+
+  /* X86_TUNE_DOUBLE_WITH_ADD */
+  ~m_386,
+  
+  /* X86_TUNE_USE_SAHF */
+  m_PPRO | m_K6_GEODE | m_PENT4 | m_NOCONA | m_GENERIC32,
+  /* | m_GENERIC | m_ATHLON_K8 ? */
+
+  /* X86_TUNE_MOVX: Enable to zero extend integer registers to avoid
+     partial dependencies */
+  m_ATHLON_K8_AMDFAM10 | m_PPRO | m_PENT4 | m_NOCONA
+  | m_CORE2 | m_GENERIC | m_GEODE /* m_386 | m_K6 */,
+
+  /* X86_TUNE_PARTIAL_REG_STALL: We probably ought to watch for partial
+     register stalls on Generic32 compilation setting as well.  However
+     in current implementation the partial register stalls are not eliminated
+     very well - they can be introduced via subregs synthesized by combine
+     and can happen in caller/callee saving sequences.  Because this option
+     pays back little on PPro based chips and is in conflict with partial reg
+     dependencies used by Athlon/P4 based chips, it is better to leave it off
+     for generic32 for now.  */
+  m_PPRO,
+
+  /* X86_TUNE_PARTIAL_FLAG_REG_STALL */
+  m_CORE2 | m_GENERIC,
+  
+  /* X86_TUNE_USE_HIMODE_FIOP */
+  m_386 | m_486 | m_K6_GEODE,
+
+  /* X86_TUNE_USE_SIMODE_FIOP */
+  ~(m_PPRO | m_ATHLON_K8_AMDFAM10 | m_PENT | m_CORE2 | m_GENERIC),
+
+  /* X86_TUNE_USE_MOV0 */
+  m_K6,
+  
+  /* X86_TUNE_USE_CLTD */
+  ~(m_PENT | m_K6 | m_CORE2 | m_GENERIC),
+
+  /* X86_TUNE_USE_XCHGB: Use xchgb %rh,%rl instead of rolw/rorw $8,rx.  */
+  m_PENT4,
+
+  /* X86_TUNE_SPLIT_LONG_MOVES */
+  m_PPRO,
+
+  /* X86_TUNE_READ_MODIFY_WRITE */
+  ~m_PENT,
+
+  /* X86_TUNE_READ_MODIFY */
+  ~(m_PENT | m_PPRO),
+
+  /* X86_TUNE_PROMOTE_QIMODE */
+  m_K6_GEODE | m_PENT | m_386 | m_486 | m_ATHLON_K8_AMDFAM10 | m_CORE2
+  | m_GENERIC /* | m_PENT4 ? */,
+
+  /* X86_TUNE_FAST_PREFIX */
+  ~(m_PENT | m_486 | m_386),
+
+  /* X86_TUNE_SINGLE_STRINGOP */
+  m_386 | m_PENT4 | m_NOCONA,
+  
+  /* X86_TUNE_QIMODE_MATH */
+  ~0,
+  
+  /* X86_TUNE_HIMODE_MATH: On PPro this flag is meant to avoid partial
+     register stalls.  Just like X86_TUNE_PARTIAL_REG_STALL this option
+     might be considered for Generic32 if our scheme for avoiding partial
+     stalls was more effective.  */
+  ~m_PPRO,
+
+  /* X86_TUNE_PROMOTE_QI_REGS */
+  0,
+
+  /* X86_TUNE_PROMOTE_HI_REGS */
+  m_PPRO,
+
+  /* X86_TUNE_ADD_ESP_4: Enable if add/sub is preferred over 1/2 push/pop.  */
+  m_ATHLON_K8_AMDFAM10 | m_K6_GEODE | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC,
+
+  /* X86_TUNE_ADD_ESP_8 */
+  m_ATHLON_K8_AMDFAM10 | m_PPRO | m_K6_GEODE | m_386
+  | m_486 | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC,
+
+  /* X86_TUNE_SUB_ESP_4 */
+  m_ATHLON_K8_AMDFAM10 | m_PPRO | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC,
+
+  /* X86_TUNE_SUB_ESP_8 */
+  m_ATHLON_K8_AMDFAM10 | m_PPRO | m_386 | m_486
+  | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC,
+
+  /* X86_TUNE_INTEGER_DFMODE_MOVES: Enable if integer moves are preferred
+     for DFmode copies */
+  ~(m_ATHLON_K8_AMDFAM10 | m_PENT4 | m_NOCONA | m_PPRO | m_CORE2
+    | m_GENERIC | m_GEODE),
+
+  /* X86_TUNE_PARTIAL_REG_DEPENDENCY */
+  m_ATHLON_K8_AMDFAM10 | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC,
+
+  /* X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY: In the Generic model we have a
+     conflict here in between PPro/Pentium4 based chips that thread 128bit
+     SSE registers as single units versus K8 based chips that divide SSE
+     registers to two 64bit halves.  This knob promotes all store destinations
+     to be 128bit to allow register renaming on 128bit SSE units, but usually
+     results in one extra microop on 64bit SSE units.  Experimental results
+     shows that disabling this option on P4 brings over 20% SPECfp regression,
+     while enabling it on K8 brings roughly 2.4% regression that can be partly
+     masked by careful scheduling of moves.  */
+  m_PENT4 | m_NOCONA | m_PPRO | m_CORE2 | m_GENERIC | m_AMDFAM10,
+
+  /* X86_TUNE_SSE_UNALIGNED_MOVE_OPTIMAL */
+  m_AMDFAM10,
+
+  /* X86_TUNE_SSE_SPLIT_REGS: Set for machines where the type and dependencies
+     are resolved on SSE register parts instead of whole registers, so we may
+     maintain just lower part of scalar values in proper format leaving the
+     upper part undefined.  */
+  m_ATHLON_K8,
+
+  /* X86_TUNE_SSE_TYPELESS_STORES */
+  m_ATHLON_K8_AMDFAM10,
+
+  /* X86_TUNE_SSE_LOAD0_BY_PXOR */
+  m_PPRO | m_PENT4 | m_NOCONA,
+
+  /* X86_TUNE_MEMORY_MISMATCH_STALL */
+  m_ATHLON_K8_AMDFAM10 | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC,
+
+  /* X86_TUNE_PROLOGUE_USING_MOVE */
+  m_ATHLON_K8 | m_PPRO | m_CORE2 | m_GENERIC,
+
+  /* X86_TUNE_EPILOGUE_USING_MOVE */
+  m_ATHLON_K8 | m_PPRO | m_CORE2 | m_GENERIC,
+
+  /* X86_TUNE_SHIFT1 */
+  ~m_486,
+
+  /* X86_TUNE_USE_FFREEP */
+  m_ATHLON_K8_AMDFAM10,
+
+  /* X86_TUNE_INTER_UNIT_MOVES */
+  ~(m_ATHLON_K8_AMDFAM10 | m_GENERIC),
+
+  /* X86_TUNE_FOUR_JUMP_LIMIT: Some CPU cores are not able to predict more
+     than 4 branch instructions in the 16 byte window.  */
+  m_PPRO | m_ATHLON_K8_AMDFAM10 | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC,
+
+  /* X86_TUNE_SCHEDULE */
+  m_PPRO | m_ATHLON_K8_AMDFAM10 | m_K6_GEODE | m_PENT | m_CORE2 | m_GENERIC,
+
+  /* X86_TUNE_USE_BT */
+  m_ATHLON_K8_AMDFAM10,
+
+  /* X86_TUNE_USE_INCDEC */
+  ~(m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC),
+
+  /* X86_TUNE_PAD_RETURNS */
+  m_ATHLON_K8_AMDFAM10 | m_CORE2 | m_GENERIC,
+
+  /* X86_TUNE_EXT_80387_CONSTANTS */
+  m_K6_GEODE | m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_PPRO | m_CORE2 | m_GENERIC
+};
+
+/* Feature tests against the various architecture variations.  */
+unsigned int ix86_arch_features[X86_ARCH_LAST] = {
+  /* X86_ARCH_CMOVE */
+  m_PPRO | m_GEODE | m_ATHLON_K8_AMDFAM10 | m_PENT4 | m_NOCONA,
+
+  /* X86_ARCH_CMPXCHG: Compare and exchange was added for 80486.  */
+  ~m_386,
+
+  /* X86_ARCH_CMPXCHG8B: Compare and exchange 8 bytes was added for pentium. */
+  ~(m_386 | m_486),
+
+  /* X86_ARCH_XADD: Exchange and add was added for 80486.  */
+  ~m_386,
+
+  /* X86_ARCH_BSWAP: Byteswap was added for 80486.  */
+  ~m_386,
+};
+
+static const unsigned int x86_accumulate_outgoing_args
+  = m_ATHLON_K8_AMDFAM10 | m_PENT4 | m_NOCONA | m_PPRO | m_CORE2 | m_GENERIC;
+
+static const unsigned int x86_arch_always_fancy_math_387
+  = m_PENT | m_PPRO | m_ATHLON_K8_AMDFAM10 | m_PENT4
+    | m_NOCONA | m_CORE2 | m_GENERIC;
 
 static enum stringop_alg stringop_alg = no_stringop;
 
@@ -1397,11 +1431,9 @@ enum fpmath_unit ix86_fpmath;
 
 /* Which cpu are we scheduling for.  */
 enum processor_type ix86_tune;
-int ix86_tune_mask;
 
 /* Which instruction set architecture to use.  */
 enum processor_type ix86_arch;
-int ix86_arch_mask;
 
 /* true if sse prefetch instruction is not NOOP.  */
 int x86_prefetch_sse;
@@ -1811,6 +1843,7 @@ override_options (void)
 {
   int i;
   int ix86_tune_defaulted = 0;
+  unsigned int ix86_arch_mask, ix86_tune_mask;
 
   /* Comes from final.c -- no real reason to change it.  */
 #define MAX_CODE_ALIGN 16
@@ -2124,6 +2157,10 @@ override_options (void)
   if (i == pta_size)
     error ("bad value (%s) for -march= switch", ix86_arch_string);
 
+  ix86_arch_mask = 1u << ix86_arch;
+  for (i = 0; i < X86_ARCH_LAST; ++i)
+    ix86_arch_features[i] &= ix86_arch_mask;
+
   for (i = 0; i < pta_size; i++)
     if (! strcmp (ix86_tune_string, processor_alias_table[i].name))
       {
@@ -2155,8 +2192,9 @@ override_options (void)
   if (i == pta_size)
     error ("bad value (%s) for -mtune= switch", ix86_tune_string);
 
-  ix86_arch_mask = 1 << ix86_arch;
-  ix86_tune_mask = 1 << ix86_tune;
+  ix86_tune_mask = 1u << ix86_tune;
+  for (i = 0; i < X86_TUNE_LAST; ++i)
+    ix86_tune_features[i] &= ix86_tune_mask;
 
   if (optimize_size)
     ix86_cost = &size_cost;
@@ -2366,7 +2404,6 @@ override_options (void)
     error ("-msseregparm used without SSE enabled");
 
   ix86_fpmath = TARGET_FPMATH_DEFAULT;
-
   if (ix86_fpmath_string != 0)
     {
       if (! strcmp (ix86_fpmath_string, "387"))
@@ -2425,6 +2462,15 @@ override_options (void)
       target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
     }
 
+  /* For sane SSE instruction set generation we need fcomi instruction.
+     It is safe to enable all CMOVE instructions.  */
+  if (TARGET_SSE)
+    TARGET_CMOVE = 1;
+
+  /* ??? Any idea why this is unconditionally disabled for 64-bit?  */
+  if (TARGET_64BIT)
+    TARGET_USE_SAHF = 0;
+  
   /* Figure out what ASM_GENERATE_INTERNAL_LABEL builds as a prefix.  */
   {
     char *p;
@@ -4999,7 +5045,7 @@ standard_80387_constant_p (rtx x)
   /* For XFmode constants, try to find a special 80387 instruction when
      optimizing for size or on those CPUs that benefit from them.  */
   if (GET_MODE (x) == XFmode
-      && (optimize_size || x86_ext_80387_constants & ix86_tune_mask))
+      && (optimize_size || TARGET_EXT_80387_CONSTANTS))
     {
       int i;
 
@@ -9499,6 +9545,55 @@ ix86_expand_vector_move (enum machine_mode mode, rtx operands[])
 
 /* Implement the movmisalign patterns for SSE.  Non-SSE modes go
    straight to ix86_expand_vector_move.  */
+/* Code generation for scalar reg-reg moves of single and double precision data:
+     if (x86_sse_partial_reg_dependency == true | x86_sse_split_regs == true)
+       movaps reg, reg
+     else
+       movss reg, reg
+     if (x86_sse_partial_reg_dependency == true)
+       movapd reg, reg
+     else
+       movsd reg, reg
+
+   Code generation for scalar loads of double precision data:
+     if (x86_sse_split_regs == true)
+       movlpd mem, reg      (gas syntax)
+     else
+       movsd mem, reg
+ 
+   Code generation for unaligned packed loads of single precision data
+   (x86_sse_unaligned_move_optimal overrides x86_sse_partial_reg_dependency):
+     if (x86_sse_unaligned_move_optimal)
+       movups mem, reg
+
+     if (x86_sse_partial_reg_dependency == true)
+       {
+         xorps  reg, reg
+         movlps mem, reg
+         movhps mem+8, reg
+       }
+     else
+       {
+         movlps mem, reg
+         movhps mem+8, reg
+       }
+
+   Code generation for unaligned packed loads of double precision data
+   (x86_sse_unaligned_move_optimal overrides x86_sse_split_regs):
+     if (x86_sse_unaligned_move_optimal)
+       movupd mem, reg
+
+     if (x86_sse_split_regs == true)
+       {
+         movlpd mem, reg
+         movhpd mem+8, reg
+       }
+     else
+       {
+         movsd  mem, reg
+         movhpd mem+8, reg
+       }
+ */
 
 void
 ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])

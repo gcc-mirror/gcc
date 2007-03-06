@@ -179,110 +179,165 @@ extern const struct processor_costs *ix86_cost;
 #define TARGET_GENERIC (TARGET_GENERIC32 || TARGET_GENERIC64)
 #define TARGET_AMDFAM10 (ix86_tune == PROCESSOR_AMDFAM10)
 
-extern const int x86_use_leave, x86_push_memory, x86_zero_extend_with_and;
-extern const int x86_use_bit_test, x86_cmove, x86_deep_branch;
-extern const int x86_branch_hints, x86_unroll_strlen;
-extern const int x86_double_with_add, x86_partial_reg_stall, x86_movx;
-extern const int x86_use_himode_fiop, x86_use_simode_fiop;
-extern const int x86_use_mov0, x86_use_cltd, x86_use_xchgb;
-extern const int x86_read_modify_write, x86_read_modify, x86_split_long_moves;
-extern const int x86_promote_QImode, x86_single_stringop, x86_fast_prefix;
-extern const int x86_himode_math, x86_qimode_math, x86_promote_qi_regs;
-extern const int x86_promote_hi_regs, x86_integer_DFmode_moves;
-extern const int x86_add_esp_4, x86_add_esp_8, x86_sub_esp_4, x86_sub_esp_8;
-extern const int x86_partial_reg_dependency, x86_memory_mismatch_stall;
-extern const int x86_accumulate_outgoing_args, x86_prologue_using_move;
-extern const int x86_epilogue_using_move, x86_decompose_lea;
-extern const int x86_arch_always_fancy_math_387, x86_shift1;
-extern const int x86_sse_partial_reg_dependency, x86_sse_split_regs;
-extern const int x86_sse_unaligned_move_optimal;
-extern const int x86_sse_typeless_stores, x86_sse_load0_by_pxor;
-extern const int x86_use_ffreep;
-extern const int x86_inter_unit_moves, x86_schedule;
-extern const int x86_use_bt;
-extern const int x86_cmpxchg, x86_cmpxchg8b, x86_xadd;
-extern const int x86_use_incdec;
-extern const int x86_pad_returns;
-extern const int x86_bswap;
-extern const int x86_partial_flag_reg_stall;
-extern int x86_prefetch_sse, x86_cmpxchg16b;
+/* Feature tests against the various tunings.  */
+enum ix86_tune_indices {
+  X86_TUNE_USE_LEAVE,
+  X86_TUNE_PUSH_MEMORY,
+  X86_TUNE_ZERO_EXTEND_WITH_AND,
+  X86_TUNE_USE_BIT_TEST,
+  X86_TUNE_UNROLL_STRLEN,
+  X86_TUNE_DEEP_BRANCH_PREDICTION,
+  X86_TUNE_BRANCH_PREDICTION_HINTS,
+  X86_TUNE_DOUBLE_WITH_ADD,
+  X86_TUNE_USE_SAHF,			/* && !TARGET_64BIT */
+  X86_TUNE_MOVX,
+  X86_TUNE_PARTIAL_REG_STALL,
+  X86_TUNE_PARTIAL_FLAG_REG_STALL,
+  X86_TUNE_USE_HIMODE_FIOP,
+  X86_TUNE_USE_SIMODE_FIOP,
+  X86_TUNE_USE_MOV0,
+  X86_TUNE_USE_CLTD,
+  X86_TUNE_USE_XCHGB,
+  X86_TUNE_SPLIT_LONG_MOVES,
+  X86_TUNE_READ_MODIFY_WRITE,
+  X86_TUNE_READ_MODIFY,
+  X86_TUNE_PROMOTE_QIMODE,
+  X86_TUNE_FAST_PREFIX,
+  X86_TUNE_SINGLE_STRINGOP,
+  X86_TUNE_QIMODE_MATH,
+  X86_TUNE_HIMODE_MATH,
+  X86_TUNE_PROMOTE_QI_REGS,
+  X86_TUNE_PROMOTE_HI_REGS,
+  X86_TUNE_ADD_ESP_4,
+  X86_TUNE_ADD_ESP_8,
+  X86_TUNE_SUB_ESP_4,
+  X86_TUNE_SUB_ESP_8,
+  X86_TUNE_INTEGER_DFMODE_MOVES,
+  X86_TUNE_PARTIAL_REG_DEPENDENCY,
+  X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY,
+  X86_TUNE_SSE_UNALIGNED_MOVE_OPTIMAL,
+  X86_TUNE_SSE_SPLIT_REGS,
+  X86_TUNE_SSE_TYPELESS_STORES,
+  X86_TUNE_SSE_LOAD0_BY_PXOR,
+  X86_TUNE_MEMORY_MISMATCH_STALL,
+  X86_TUNE_PROLOGUE_USING_MOVE,
+  X86_TUNE_EPILOGUE_USING_MOVE,
+  X86_TUNE_SHIFT1,
+  X86_TUNE_USE_FFREEP,
+  X86_TUNE_INTER_UNIT_MOVES,
+  X86_TUNE_FOUR_JUMP_LIMIT,
+  X86_TUNE_SCHEDULE,
+  X86_TUNE_USE_BT,
+  X86_TUNE_USE_INCDEC,
+  X86_TUNE_PAD_RETURNS,
+  X86_TUNE_EXT_80387_CONSTANTS,
 
-#define TARGET_USE_LEAVE (x86_use_leave & ix86_tune_mask)
-#define TARGET_PUSH_MEMORY (x86_push_memory & ix86_tune_mask)
-#define TARGET_ZERO_EXTEND_WITH_AND (x86_zero_extend_with_and & ix86_tune_mask)
-#define TARGET_USE_BIT_TEST (x86_use_bit_test & ix86_tune_mask)
-#define TARGET_UNROLL_STRLEN (x86_unroll_strlen & ix86_tune_mask)
-/* For sane SSE instruction set generation we need fcomi instruction.  It is
-   safe to enable all CMOVE instructions.  */
-#define TARGET_CMOVE ((x86_cmove & ix86_arch_mask) || TARGET_SSE)
-#define TARGET_FISTTP (TARGET_SSE3 && TARGET_80387)
-#define TARGET_DEEP_BRANCH_PREDICTION (x86_deep_branch & ix86_tune_mask)
-#define TARGET_BRANCH_PREDICTION_HINTS (x86_branch_hints & ix86_tune_mask)
-#define TARGET_DOUBLE_WITH_ADD (x86_double_with_add & ix86_tune_mask)
-#define TARGET_USE_SAHF ((x86_use_sahf & ix86_tune_mask) && !TARGET_64BIT)
-#define TARGET_MOVX (x86_movx & ix86_tune_mask)
-#define TARGET_PARTIAL_REG_STALL (x86_partial_reg_stall & ix86_tune_mask)
-#define TARGET_PARTIAL_FLAG_REG_STALL		\
-  (x86_partial_flag_reg_stall & ix86_tune_mask)
-#define TARGET_USE_HIMODE_FIOP (x86_use_himode_fiop & ix86_tune_mask)
-#define TARGET_USE_SIMODE_FIOP (x86_use_simode_fiop & ix86_tune_mask)
-#define TARGET_USE_MOV0 (x86_use_mov0 & ix86_tune_mask)
-#define TARGET_USE_CLTD (x86_use_cltd & ix86_tune_mask)
-#define TARGET_USE_XCHGB (x86_use_xchgb & ix86_tune_mask)
-#define TARGET_SPLIT_LONG_MOVES (x86_split_long_moves & ix86_tune_mask)
-#define TARGET_READ_MODIFY_WRITE (x86_read_modify_write & ix86_tune_mask)
-#define TARGET_READ_MODIFY (x86_read_modify & ix86_tune_mask)
-#define TARGET_PROMOTE_QImode (x86_promote_QImode & ix86_tune_mask)
-#define TARGET_FAST_PREFIX (x86_fast_prefix & ix86_tune_mask)
-#define TARGET_SINGLE_STRINGOP (x86_single_stringop & ix86_tune_mask)
-#define TARGET_QIMODE_MATH (x86_qimode_math & ix86_tune_mask)
-#define TARGET_HIMODE_MATH (x86_himode_math & ix86_tune_mask)
-#define TARGET_PROMOTE_QI_REGS (x86_promote_qi_regs & ix86_tune_mask)
-#define TARGET_PROMOTE_HI_REGS (x86_promote_hi_regs & ix86_tune_mask)
-#define TARGET_ADD_ESP_4 (x86_add_esp_4 & ix86_tune_mask)
-#define TARGET_ADD_ESP_8 (x86_add_esp_8 & ix86_tune_mask)
-#define TARGET_SUB_ESP_4 (x86_sub_esp_4 & ix86_tune_mask)
-#define TARGET_SUB_ESP_8 (x86_sub_esp_8 & ix86_tune_mask)
-#define TARGET_INTEGER_DFMODE_MOVES (x86_integer_DFmode_moves & ix86_tune_mask)
-#define TARGET_PARTIAL_REG_DEPENDENCY		\
-  (x86_partial_reg_dependency & ix86_tune_mask)
-#define TARGET_SSE_PARTIAL_REG_DEPENDENCY		\
-  (x86_sse_partial_reg_dependency & ix86_tune_mask)
-#define TARGET_SSE_UNALIGNED_MOVE_OPTIMAL		\
-  (x86_sse_unaligned_move_optimal & ix86_tune_mask)
-#define TARGET_SSE_SPLIT_REGS (x86_sse_split_regs & ix86_tune_mask)
-#define TARGET_SSE_TYPELESS_STORES (x86_sse_typeless_stores & ix86_tune_mask)
-#define TARGET_SSE_LOAD0_BY_PXOR (x86_sse_load0_by_pxor & ix86_tune_mask)
-#define TARGET_MEMORY_MISMATCH_STALL		\
-  (x86_memory_mismatch_stall & ix86_tune_mask)
-#define TARGET_PROLOGUE_USING_MOVE (x86_prologue_using_move & ix86_tune_mask)
-#define TARGET_EPILOGUE_USING_MOVE (x86_epilogue_using_move & ix86_tune_mask)
-#define TARGET_PREFETCH_SSE (x86_prefetch_sse)
-#define TARGET_SHIFT1 (x86_shift1 & ix86_tune_mask)
-#define TARGET_USE_FFREEP (x86_use_ffreep & ix86_tune_mask)
-#define TARGET_INTER_UNIT_MOVES (x86_inter_unit_moves & ix86_tune_mask)
-#define TARGET_FOUR_JUMP_LIMIT (x86_four_jump_limit & ix86_tune_mask)
-#define TARGET_SCHEDULE (x86_schedule & ix86_tune_mask)
-#define TARGET_USE_BT (x86_use_bt & ix86_tune_mask)
-#define TARGET_USE_INCDEC (x86_use_incdec & ix86_tune_mask)
-#define TARGET_PAD_RETURNS (x86_pad_returns & ix86_tune_mask)
+  X86_TUNE_LAST
+};
 
-#define ASSEMBLER_DIALECT (ix86_asm_dialect)
+extern unsigned int ix86_tune_features[X86_TUNE_LAST];
 
-#define TARGET_SSE_MATH ((ix86_fpmath & FPMATH_SSE) != 0)
-#define TARGET_MIX_SSE_I387 ((ix86_fpmath & FPMATH_SSE) \
-			     && (ix86_fpmath & FPMATH_387))
+#define TARGET_USE_LEAVE	ix86_tune_features[X86_TUNE_USE_LEAVE]
+#define TARGET_PUSH_MEMORY	ix86_tune_features[X86_TUNE_PUSH_MEMORY]
+#define TARGET_ZERO_EXTEND_WITH_AND \
+	ix86_tune_features[X86_TUNE_ZERO_EXTEND_WITH_AND]
+#define TARGET_USE_BIT_TEST	ix86_tune_features[X86_TUNE_USE_BIT_TEST]
+#define TARGET_UNROLL_STRLEN	ix86_tune_features[X86_TUNE_UNROLL_STRLEN]
+#define TARGET_DEEP_BRANCH_PREDICTION \
+	ix86_tune_features[X86_TUNE_DEEP_BRANCH_PREDICTION]
+#define TARGET_BRANCH_PREDICTION_HINTS \
+	ix86_tune_features[X86_TUNE_BRANCH_PREDICTION_HINTS]
+#define TARGET_DOUBLE_WITH_ADD	ix86_tune_features[X86_TUNE_DOUBLE_WITH_ADD]
+#define TARGET_USE_SAHF		ix86_tune_features[X86_TUNE_USE_SAHF]
+#define TARGET_MOVX		ix86_tune_features[X86_TUNE_MOVX]
+#define TARGET_PARTIAL_REG_STALL ix86_tune_features[X86_TUNE_PARTIAL_REG_STALL]
+#define TARGET_PARTIAL_FLAG_REG_STALL \
+	ix86_tune_features[X86_TUNE_PARTIAL_FLAG_REG_STALL]
+#define TARGET_USE_HIMODE_FIOP	ix86_tune_features[X86_TUNE_USE_HIMODE_FIOP]
+#define TARGET_USE_SIMODE_FIOP	ix86_tune_features[X86_TUNE_USE_SIMODE_FIOP]
+#define TARGET_USE_MOV0		ix86_tune_features[X86_TUNE_USE_MOV0]
+#define TARGET_USE_CLTD		ix86_tune_features[X86_TUNE_USE_CLTD]
+#define TARGET_USE_XCHGB	ix86_tune_features[X86_TUNE_USE_XCHGB]
+#define TARGET_SPLIT_LONG_MOVES	ix86_tune_features[X86_TUNE_SPLIT_LONG_MOVES]
+#define TARGET_READ_MODIFY_WRITE ix86_tune_features[X86_TUNE_READ_MODIFY_WRITE]
+#define TARGET_READ_MODIFY	ix86_tune_features[X86_TUNE_READ_MODIFY]
+#define TARGET_PROMOTE_QImode	ix86_tune_features[X86_TUNE_PROMOTE_QIMODE]
+#define TARGET_FAST_PREFIX	ix86_tune_features[X86_TUNE_FAST_PREFIX]
+#define TARGET_SINGLE_STRINGOP	ix86_tune_features[X86_TUNE_SINGLE_STRINGOP]
+#define TARGET_QIMODE_MATH	ix86_tune_features[X86_TUNE_QIMODE_MATH]
+#define TARGET_HIMODE_MATH	ix86_tune_features[X86_TUNE_HIMODE_MATH]
+#define TARGET_PROMOTE_QI_REGS	ix86_tune_features[X86_TUNE_PROMOTE_QI_REGS]
+#define TARGET_PROMOTE_HI_REGS	ix86_tune_features[X86_TUNE_PROMOTE_HI_REGS]
+#define TARGET_ADD_ESP_4	ix86_tune_features[X86_TUNE_ADD_ESP_4]
+#define TARGET_ADD_ESP_8	ix86_tune_features[X86_TUNE_ADD_ESP_8]
+#define TARGET_SUB_ESP_4	ix86_tune_features[X86_TUNE_SUB_ESP_4]
+#define TARGET_SUB_ESP_8	ix86_tune_features[X86_TUNE_SUB_ESP_8]
+#define TARGET_INTEGER_DFMODE_MOVES \
+	ix86_tune_features[X86_TUNE_INTEGER_DFMODE_MOVES]
+#define TARGET_PARTIAL_REG_DEPENDENCY \
+	ix86_tune_features[X86_TUNE_PARTIAL_REG_DEPENDENCY]
+#define TARGET_SSE_PARTIAL_REG_DEPENDENCY \
+	ix86_tune_features[X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY]
+#define TARGET_SSE_UNALIGNED_MOVE_OPTIMAL \
+	ix86_tune_features[X86_TUNE_SSE_UNALIGNED_MOVE_OPTIMAL]
+#define TARGET_SSE_SPLIT_REGS	ix86_tune_features[X86_TUNE_SSE_SPLIT_REGS]
+#define TARGET_SSE_TYPELESS_STORES \
+	ix86_tune_features[X86_TUNE_SSE_TYPELESS_STORES]
+#define TARGET_SSE_LOAD0_BY_PXOR ix86_tune_features[X86_TUNE_SSE_LOAD0_BY_PXOR]
+#define TARGET_MEMORY_MISMATCH_STALL \
+	ix86_tune_features[X86_TUNE_MEMORY_MISMATCH_STALL]
+#define TARGET_PROLOGUE_USING_MOVE \
+	ix86_tune_features[X86_TUNE_PROLOGUE_USING_MOVE]
+#define TARGET_EPILOGUE_USING_MOVE \
+	ix86_tune_features[X86_TUNE_EPILOGUE_USING_MOVE]
+#define TARGET_SHIFT1		ix86_tune_features[X86_TUNE_SHIFT1]
+#define TARGET_USE_FFREEP	ix86_tune_features[X86_TUNE_USE_FFREEP]
+#define TARGET_INTER_UNIT_MOVES	ix86_tune_features[X86_TUNE_INTER_UNIT_MOVES]
+#define TARGET_FOUR_JUMP_LIMIT	ix86_tune_features[X86_TUNE_FOUR_JUMP_LIMIT]
+#define TARGET_SCHEDULE		ix86_tune_features[X86_TUNE_SCHEDULE]
+#define TARGET_USE_BT		ix86_tune_features[X86_TUNE_USE_BT]
+#define TARGET_USE_INCDEC	ix86_tune_features[X86_TUNE_USE_INCDEC]
+#define TARGET_PAD_RETURNS	ix86_tune_features[X86_TUNE_PAD_RETURNS]
+#define TARGET_EXT_80387_CONSTANTS \
+	ix86_tune_features[X86_TUNE_EXT_80387_CONSTANTS]
 
-#define TARGET_GNU_TLS (ix86_tls_dialect == TLS_DIALECT_GNU)
-#define TARGET_GNU2_TLS (ix86_tls_dialect == TLS_DIALECT_GNU2)
-#define TARGET_ANY_GNU_TLS (TARGET_GNU_TLS || TARGET_GNU2_TLS)
-#define TARGET_SUN_TLS (ix86_tls_dialect == TLS_DIALECT_SUN)
+/* Feature tests against the various architecture variations.  */
+enum ix86_arch_indices {
+  X86_ARCH_CMOVE,		/* || TARGET_SSE */
+  X86_ARCH_CMPXCHG,
+  X86_ARCH_CMPXCHG8B,
+  X86_ARCH_XADD,
+  X86_ARCH_BSWAP,
 
-#define TARGET_CMPXCHG (x86_cmpxchg & ix86_arch_mask)
-#define TARGET_CMPXCHG8B (x86_cmpxchg8b & ix86_arch_mask)
-#define TARGET_CMPXCHG16B (x86_cmpxchg16b)
-#define TARGET_XADD (x86_xadd & ix86_arch_mask)
-#define TARGET_BSWAP (x86_bswap & ix86_arch_mask)
+  X86_ARCH_LAST
+};
+  
+extern unsigned int ix86_arch_features[X86_ARCH_LAST];
+
+#define TARGET_CMOVE		ix86_arch_features[X86_ARCH_CMOVE]
+#define TARGET_CMPXCHG		ix86_arch_features[X86_ARCH_CMPXCHG]
+#define TARGET_CMPXCHG8B	ix86_arch_features[X86_ARCH_CMPXCHG8B]
+#define TARGET_XADD		ix86_arch_features[X86_ARCH_XADD]
+#define TARGET_BSWAP		ix86_arch_features[X86_ARCH_BSWAP]
+
+#define TARGET_FISTTP		(TARGET_SSE3 && TARGET_80387)
+
+extern int x86_prefetch_sse;
+#define TARGET_PREFETCH_SSE	x86_prefetch_sse
+
+extern int x86_cmpxchg16b;
+#define TARGET_CMPXCHG16B	x86_cmpxchg16b
+
+#define ASSEMBLER_DIALECT	(ix86_asm_dialect)
+
+#define TARGET_SSE_MATH		((ix86_fpmath & FPMATH_SSE) != 0)
+#define TARGET_MIX_SSE_I387 \
+ ((ix86_fpmath & (FPMATH_SSE | FPMATH_387)) == (FPMATH_SSE | FPMATH_387))
+
+#define TARGET_GNU_TLS		(ix86_tls_dialect == TLS_DIALECT_GNU)
+#define TARGET_GNU2_TLS		(ix86_tls_dialect == TLS_DIALECT_GNU2)
+#define TARGET_ANY_GNU_TLS	(TARGET_GNU_TLS || TARGET_GNU2_TLS)
+#define TARGET_SUN_TLS		(ix86_tls_dialect == TLS_DIALECT_SUN)
 
 #ifndef TARGET_64BIT_DEFAULT
 #define TARGET_64BIT_DEFAULT 0
@@ -2132,10 +2187,7 @@ enum processor_type
 };
 
 extern enum processor_type ix86_tune;
-extern int ix86_tune_mask;
-
 extern enum processor_type ix86_arch;
-extern int ix86_arch_mask;
 
 enum fpmath_unit
 {
