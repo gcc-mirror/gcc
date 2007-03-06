@@ -2290,9 +2290,9 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "move_dest_operand"
-			  "=r,r,r,r,r,r,Q,!*q,!r,!*f,*f,T,!r,!f")
+			  "=r,r,r,r,r,r,Q,!*q,!r,!*f,*f,T,?r,?*f")
 	(match_operand:SI 1 "move_src_operand"
-			  "A,r,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f,!f,!r"))]
+			  "A,r,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f,*f,r"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))
    && !TARGET_SOFT_FLOAT
@@ -2932,9 +2932,9 @@
 
 (define_insn ""
   [(set (match_operand:HI 0 "move_dest_operand"
-	 		  "=r,r,r,r,r,Q,!*q,!r,!*f,!r,!f")
+	 		  "=r,r,r,r,r,Q,!*q,!r,!*f,?r,?*f")
 	(match_operand:HI 1 "move_src_operand"
-			  "r,J,N,K,RQ,rM,!rM,!*q,!*fM,!f,!r"))]
+			  "r,J,N,K,RQ,rM,!rM,!*q,!*fM,*f,r"))]
   "(register_operand (operands[0], HImode)
     || reg_or_0_operand (operands[1], HImode))
    && !TARGET_SOFT_FLOAT
@@ -3105,9 +3105,9 @@
 
 (define_insn ""
   [(set (match_operand:QI 0 "move_dest_operand"
-			  "=r,r,r,r,r,Q,!*q,!r,!*f,!r,!f")
+			  "=r,r,r,r,r,Q,!*q,!r,!*f,?r,?*f")
 	(match_operand:QI 1 "move_src_operand"
-			  "r,J,N,K,RQ,rM,!rM,!*q,!*fM,!f,!r"))]
+			  "r,J,N,K,RQ,rM,!rM,!*q,!*fM,*f,r"))]
   "(register_operand (operands[0], QImode)
     || reg_or_0_operand (operands[1], QImode))
    && !TARGET_SOFT_FLOAT
@@ -3907,8 +3907,20 @@
   ""
   "
 {
-  if (GET_CODE (operands[1]) == CONST_DOUBLE && TARGET_64BIT)
-    operands[1] = force_const_mem (DFmode, operands[1]);
+  if (GET_CODE (operands[1]) == CONST_DOUBLE
+      && operands[1] != CONST0_RTX (DFmode))
+    {
+      /* Reject CONST_DOUBLE loads to all hard registers when
+	 generating 64-bit code and to floating point registers
+	 when generating 32-bit code.  */
+      if (REG_P (operands[0])
+	  && HARD_REGISTER_P (operands[0])
+	  && (TARGET_64BIT || REGNO (operands[0]) >= 32))
+	FAIL;
+
+      if (TARGET_64BIT)
+	operands[1] = force_const_mem (DFmode, operands[1]);
+    }
 
   if (emit_move_sequence (operands, DFmode, 0))
     DONE;
@@ -3949,9 +3961,9 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "move_dest_operand"
-			  "=f,*r,Q,?o,?Q,f,*r,*r,!r,!f")
+			  "=f,*r,Q,?o,?Q,f,*r,*r,?*r,?f")
 	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
-			  "fG,*rG,f,*r,*r,RQ,o,RQ,!f,!r"))]
+			  "fG,*rG,f,*r,*r,RQ,o,RQ,f,*r"))]
   "(register_operand (operands[0], DFmode)
     || reg_or_0_operand (operands[1], DFmode))
    && !(GET_CODE (operands[1]) == CONST_DOUBLE
@@ -4123,9 +4135,9 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "move_dest_operand"
-			  "=r,?o,?Q,r,r,!r,!f")
+			  "=r,?o,?Q,r,r")
 	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
-			  "rG,r,r,o,RQ,!f,!r"))]
+			  "rG,r,r,o,RQ"))]
   "(register_operand (operands[0], DFmode)
     || reg_or_0_operand (operands[1], DFmode))
    && !TARGET_64BIT
@@ -4134,8 +4146,8 @@
 {
   return output_move_double (operands);
 }"
-  [(set_attr "type" "move,store,store,load,load,move,move")
-   (set_attr "length" "8,8,16,8,16,12,12")])
+  [(set_attr "type" "move,store,store,load,load")
+   (set_attr "length" "8,8,16,8,16")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "move_dest_operand"
@@ -4255,9 +4267,9 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "move_dest_operand"
-			  "=r,o,Q,r,r,r,*f,*f,T,!r,!f")
+			  "=r,o,Q,r,r,r,*f,*f,T,?r,?*f")
 	(match_operand:DI 1 "general_operand"
-			  "rM,r,r,o*R,Q,i,*fM,RT,*f,!f,!r"))]
+			  "rM,r,r,o*R,Q,i,*fM,RT,*f,*f,r"))]
   "(register_operand (operands[0], DImode)
     || reg_or_0_operand (operands[1], DImode))
    && !TARGET_64BIT
@@ -4447,6 +4459,14 @@
   ""
   "
 {
+  /* Reject CONST_DOUBLE loads to floating point registers.  */
+  if (GET_CODE (operands[1]) == CONST_DOUBLE
+      && operands[1] != CONST0_RTX (SFmode)
+      && REG_P (operands[0])
+      && HARD_REGISTER_P (operands[0])
+      && REGNO (operands[0]) >= 32)
+    FAIL;
+
   if (emit_move_sequence (operands, SFmode, 0))
     DONE;
 }")
@@ -4486,9 +4506,9 @@
 
 (define_insn ""
   [(set (match_operand:SF 0 "move_dest_operand"
-			  "=f,!*r,f,*r,Q,Q,!r,!f")
+			  "=f,!*r,f,*r,Q,Q,?*r,?f")
 	(match_operand:SF 1 "reg_or_0_or_nonsymb_mem_operand"
-			  "fG,!*rG,RQ,RQ,f,*rG,!f,!r"))]
+			  "fG,!*rG,RQ,RQ,f,*rG,f,*r"))]
   "(register_operand (operands[0], SFmode)
     || reg_or_0_operand (operands[1], SFmode))
    && !TARGET_SOFT_FLOAT
