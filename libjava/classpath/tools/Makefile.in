@@ -1080,6 +1080,7 @@ $(TOOLS_ZIP): $(TOOLS_JAVA_FILES)
 	find $(srcdir)/external/asm -name '*.java' -print > asm.lst
 	find $(srcdir)/gnu/classpath/tools -name '*.java' -print > classes.lst
 	if [ -f $(top_builddir)/../vm-tools-packages ]; then \
+	    : > vm-tools.lst; \
 	    for pkg in `cat $(top_builddir)/../vm-tools-packages`; do \
 	      $(FIND) $(top_srcdir)/../$$pkg -follow -name '*.java' -print >> vm-tools.lst; \
 	    done \

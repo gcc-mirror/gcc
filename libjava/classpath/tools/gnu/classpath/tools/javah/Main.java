@@ -1,5 +1,5 @@
 /* Main.java - javah main program
- Copyright (C) 2006 Free Software Foundation, Inc.
+ Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
 
@@ -179,9 +179,14 @@ public class Main
       results.addAll(Arrays.asList(files));
   }
 
-  private Parser getParser()
+  protected String getName()
   {
-    ClasspathToolParser result = new ClasspathToolParser("javah", true);
+    return "javah";
+  }
+
+  protected Parser getParser()
+  {
+    ClasspathToolParser result = new ClasspathToolParser(getName(), true);
     result.setHeader("usage: javah [OPTIONS] CLASS...");
     result.add(classpath);
     result.add(new Option('d', "Set output directory", "DIR")
@@ -249,7 +254,7 @@ public class Main
         cni = true;
       }
     });
-    result.add(new Option("verbose", "Set verbose mode")
+    result.add(new Option('v', "verbose", "Set verbose mode")
     {
       public void parsed(String arg0) throws OptionException
       {
@@ -317,10 +322,16 @@ public class Main
       }
   }
 
-  private void run(String[] args) throws IOException
+  protected void postParse(String[] names)
+  {
+    // Nothing here.
+  }
+
+  protected void run(String[] args) throws IOException
   {
     Parser p = getParser();
     String[] classNames = p.parse(args);
+    postParse(classNames);
     loader = classpath.getLoader();
 
     boolean isDirectory = outFileName == null;
