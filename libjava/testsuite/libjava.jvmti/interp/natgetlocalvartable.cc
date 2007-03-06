@@ -53,8 +53,11 @@ JNIEXPORT jint JNICALL Java_getlocalvartable_do_1getlocalvartable_1tests
             {
               printf ("Slot: %d\n", static_cast<int> (var_table[j].slot));
               printf ("  Name: %s\n", var_table[j].name);
+              jvmti->Deallocate (reinterpret_cast<unsigned char *> (var_table[j].name));
               printf ("  Sig: %s\n", var_table[j].signature);
+              jvmti->Deallocate (reinterpret_cast<unsigned char *> (var_table[j].signature));
               printf ("  Gen Sig: %s\n", var_table[j].generic_signature);
+              jvmti->Deallocate (reinterpret_cast<unsigned char *> (var_table[j].generic_signature));
               printf ("  Start Loc: %ld\n", static_cast<long> (var_table[j].start_location));
               printf ("  Length: %d\n", static_cast<int> (var_table[j].length));
             }
