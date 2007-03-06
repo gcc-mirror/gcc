@@ -10142,8 +10142,7 @@ building of shared libraries are not supported with the medium model.
 @item -mcmodel=large
 @opindex mcmodel=large
 Generate code for the large model: This model makes no assumptions
-about addresses and sizes of sections.  Currently GCC does not implement
-this model.
+about addresses and sizes of sections.  
 @end table
 
 @node IA-64 Options

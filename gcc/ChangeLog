@@ -1,3 +1,36 @@
+2007-03-06  Jan Hubicka  <jh@suse.cz>
+
+	* reg-stack.c (reg_to_stack): Large models don't allow NAN to be
+	loaded for constant large models.  Non-large 64bit PIC can do.
+	* i386.h (CASE_VECTOR_MODE): Large PIC cases are 64bit.
+	* cmodel.h: Add LARGE PIC.
+	* i386.md (UNSPEC_PLTOFF): New.
+	(UNSPEC_SET_RIP, UNSPEC_SET_GOT_OFFSET): New; renumber other unspecs as
+	needed.
+	(*call_1_rex64): Disable for large models.
+	(*call_1_rex64_large): New.
+	(*call_value_1_rex64): Disable for large models.
+	(*call_value_1_rex64_large): New.
+	(set_rip_rex4): New.
+	(set_got_offset_rex64): New.
+	* predicates.md (constant_call_address_operand): For large model
+	constant calls are not possible.
+	* i386-protos.h (construct_plt_address): Declare.
+	* i386.c (override_options): Accept large models.
+	(ix86_expand_prologue): Expand large PIC GOT pointer load.
+	(legitimate_constant_p): Add new UNSPECs.
+	(legitimate_pic_operand_p): Likewise.
+	(legitimate_pic_address_disp_p): Disallow local symbols for large PICs.
+	(legitimize_pic_address): Do easy RIP relative way for TLS only for
+	non-large model.
+	(output_pic_addr_const): Add PLTOFF.
+	(ix86_output_addr_diff_elt): Output 64bit tables when needed.
+	(ix86_expand_move): Legitimize pic address when in PIC mode.
+	(construct_plt_address): New function.
+	(ix86_expand_call): Offload the address to register and use GOT pointer
+	for large model.
+	* invoke.texi (mcmodel=large): Update documentation.
+
 2007-03-06  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (x86_use_leave, x86_push_memory,

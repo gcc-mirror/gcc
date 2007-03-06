@@ -3141,7 +3141,8 @@ reg_to_stack (void)
      the PIC register hasn't been set up.  In that case, fall back
      on zero, which we can get from `ldz'.  */
 
-  if (flag_pic && !TARGET_64BIT)
+  if ((flag_pic && !TARGET_64BIT)
+      || ix86_cmodel == CM_LARGE || ix86_cmodel == CM_LARGE_PIC)
     not_a_num = CONST0_RTX (SFmode);
   else
     {

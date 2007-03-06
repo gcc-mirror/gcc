@@ -2072,14 +2072,14 @@ override_options (void)
 	ix86_cmodel = flag_pic ? CM_SMALL_PIC : CM_SMALL;
       else if (!strcmp (ix86_cmodel_string, "medium"))
 	ix86_cmodel = flag_pic ? CM_MEDIUM_PIC : CM_MEDIUM;
+      else if (!strcmp (ix86_cmodel_string, "large"))
+	ix86_cmodel = flag_pic ? CM_LARGE_PIC : CM_LARGE;
       else if (flag_pic)
-	sorry ("code model %s not supported in PIC mode", ix86_cmodel_string);
+	error ("code model %s does not support PIC mode", ix86_cmodel_string);
       else if (!strcmp (ix86_cmodel_string, "32"))
 	ix86_cmodel = CM_32;
       else if (!strcmp (ix86_cmodel_string, "kernel") && !flag_pic)
 	ix86_cmodel = CM_KERNEL;
-      else if (!strcmp (ix86_cmodel_string, "large") && !flag_pic)
-	ix86_cmodel = CM_LARGE;
       else
 	error ("bad value (%s) for -mcmodel= switch", ix86_cmodel_string);
     }
@@ -2102,8 +2102,6 @@ override_options (void)
   if ((TARGET_64BIT == 0) != (ix86_cmodel == CM_32))
     error ("code model %qs not supported in the %s bit mode",
 	   ix86_cmodel_string, TARGET_64BIT ? "64" : "32");
-  if (ix86_cmodel == CM_LARGE)
-    sorry ("code model %<large%> not supported yet");
   if ((TARGET_64BIT != 0) != ((target_flags & MASK_64BIT) != 0))
     sorry ("%i-bit mode not compiled in",
 	   (target_flags & MASK_64BIT) ? 64 : 32);
@@ -5982,7 +5980,25 @@ ix86_expand_prologue (void)
   if (pic_reg_used)
     {
       if (TARGET_64BIT)
-        insn = emit_insn (gen_set_got_rex64 (pic_offset_table_rtx));
+	{
+	  if (ix86_cmodel == CM_LARGE_PIC)
+	    {
+              rtx tmp_reg = gen_rtx_REG (DImode,
+					 FIRST_REX_INT_REG + 3 /* R11 */);
+	      rtx label = gen_label_rtx ();
+	      emit_label (label);
+	      LABEL_PRESERVE_P (label) = 1;
+	      gcc_assert (REGNO (pic_offset_table_rtx) != REGNO (tmp_reg));
+	      insn = emit_insn (gen_set_rip_rex64 (pic_offset_table_rtx, label));
+              REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, const0_rtx, NULL);
+	      insn = emit_insn (gen_set_got_offset_rex64 (tmp_reg, label));
+              REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, const0_rtx, NULL);
+	      insn = emit_insn (gen_adddi3 (pic_offset_table_rtx,
+					    pic_offset_table_rtx, tmp_reg));
+	    }
+	  else
+            insn = emit_insn (gen_set_got_rex64 (pic_offset_table_rtx));
+	}
       else
         insn = emit_insn (gen_set_got (pic_offset_table_rtx));
 
@@ -6537,7 +6553,9 @@ legitimate_constant_p (rtx x)
       if (GET_CODE (x) == UNSPEC)
 	switch (XINT (x, 1))
 	  {
+	  case UNSPEC_GOT:
 	  case UNSPEC_GOTOFF:
+	  case UNSPEC_PLTOFF:
 	    return TARGET_64BIT;
 	  case UNSPEC_TPOFF:
 	  case UNSPEC_NTPOFF:
@@ -6635,7 +6653,9 @@ legitimate_pic_operand_p (rtx x)
       if (GET_CODE (inner) == UNSPEC)
 	switch (XINT (inner, 1))
 	  {
+	  case UNSPEC_GOT:
 	  case UNSPEC_GOTOFF:
+	  case UNSPEC_PLTOFF:
 	    return TARGET_64BIT;
 	  case UNSPEC_TPOFF:
 	    x = XVECEXP (inner, 0, 0);
@@ -6693,7 +6713,8 @@ legitimate_pic_address_disp_p (rtx disp)
 	  /* TLS references should always be enclosed in UNSPEC.  */
 	  if (SYMBOL_REF_TLS_MODEL (op0))
 	    return false;
-	  if (!SYMBOL_REF_FAR_ADDR_P (op0) && SYMBOL_REF_LOCAL_P (op0))
+	  if (!SYMBOL_REF_FAR_ADDR_P (op0) && SYMBOL_REF_LOCAL_P (op0)
+	      && ix86_cmodel != CM_LARGE_PIC)
 	    return true;
 	  break;
 
@@ -6711,7 +6732,8 @@ legitimate_pic_address_disp_p (rtx disp)
          of GOT tables.  We should not need these anyway.  */
       if (GET_CODE (disp) != UNSPEC
 	  || (XINT (disp, 1) != UNSPEC_GOTPCREL
-	      && XINT (disp, 1) != UNSPEC_GOTOFF))
+	      && XINT (disp, 1) != UNSPEC_GOTOFF
+	      && XINT (disp, 1) != UNSPEC_PLTOFF))
 	return 0;
 
       if (GET_CODE (XVECEXP (disp, 0, 0)) != SYMBOL_REF
@@ -7128,7 +7150,7 @@ legitimize_pic_address (rtx orig, rtx reg)
     }
   else if (GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (addr) == 0)
     {
-      if (TARGET_64BIT)
+      if (TARGET_64BIT && ix86_cmodel != CM_LARGE_PIC)
 	{
 	  new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTPCREL);
 	  new = gen_rtx_CONST (Pmode, new);
@@ -7152,6 +7174,8 @@ legitimize_pic_address (rtx orig, rtx reg)
 	    regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
 	  new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOT);
 	  new = gen_rtx_CONST (Pmode, new);
+	  if (TARGET_64BIT)
+	    new = force_reg (Pmode, new);
 	  new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
 	  new = gen_const_mem (Pmode, new);
 	  set_mem_alias_set (new, ix86_GOT_alias_set ());
@@ -7729,6 +7753,9 @@ output_pic_addr_const (FILE *file, rtx x, int code)
 	  break;
 	case UNSPEC_GOTOFF:
 	  fputs ("@GOTOFF", file);
+	  break;
+	case UNSPEC_PLTOFF:
+	  fputs ("@PLTOFF", file);
 	  break;
 	case UNSPEC_GOTPCREL:
 	  fputs ("@GOTPCREL(%rip)", file);
@@ -9344,9 +9371,17 @@ ix86_output_addr_vec_elt (FILE *file, int value)
 void
 ix86_output_addr_diff_elt (FILE *file, int value, int rel)
 {
+  const char *directive = ASM_LONG;
+
+#ifdef ASM_QUAD
+  if (TARGET_64BIT && CASE_VECTOR_MODE == DImode)
+    directive = ASM_QUAD;
+#else
+  gcc_assert (!TARGET_64BIT);
+#endif
   if (TARGET_64BIT)
     fprintf (file, "%s%s%d-%s%d\n",
-	     ASM_LONG, LPREFIX, value, LPREFIX, rel);
+	     directive, LPREFIX, value, LPREFIX, rel);
   else if (HAVE_AS_GOTOFF_IN_DATA)
     fprintf (file, "%s%s%d@GOTOFF\n", ASM_LONG, LPREFIX, value);
 #if TARGET_MACHO
@@ -9466,8 +9501,8 @@ ix86_expand_move (enum machine_mode mode, rtx operands[])
 	{
 	  if (MEM_P (op0))
 	    op1 = force_reg (Pmode, op1);
-	  else
-	    op1 = legitimize_address (op1, op1, Pmode);
+	  else if (!TARGET_64BIT || !x86_64_movabs_operand (op1, Pmode))
+	    op1 = legitimize_pic_address (op1, op0);
 	}
     }
   else
@@ -14958,6 +14993,22 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
   emit_label (end_0_label);
 }
 
+/* For given symbol (function) construct code to compute address of it's PLT
+   entry in large x86-64 PIC model.  */
+rtx
+construct_plt_address (rtx symbol)
+{
+  rtx tmp = gen_reg_rtx (Pmode);
+  rtx unspec = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, symbol), UNSPEC_PLTOFF);
+
+  gcc_assert (GET_CODE (symbol) == SYMBOL_REF);
+  gcc_assert (ix86_cmodel == CM_LARGE_PIC);
+
+  emit_move_insn (tmp, gen_rtx_CONST (Pmode, unspec));
+  emit_insn (gen_adddi3 (tmp, tmp, pic_offset_table_rtx));
+  return tmp;
+}
+
 void
 ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 		  rtx callarg2 ATTRIBUTE_UNUSED,
@@ -14979,7 +15030,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
   else
     {
       /* Static functions and indirect calls don't need the pic register.  */
-      if (! TARGET_64BIT && flag_pic
+      if (flag_pic && (!TARGET_64BIT || ix86_cmodel == CM_LARGE_PIC)
 	  && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF
 	  && ! SYMBOL_REF_LOCAL_P (XEXP (fnaddr, 0)))
 	use_reg (&use, pic_offset_table_rtx);
@@ -14992,7 +15043,12 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       use_reg (&use, al);
     }
 
-  if (! call_insn_operand (XEXP (fnaddr, 0), Pmode))
+  if (ix86_cmodel == CM_LARGE_PIC
+      && GET_CODE (fnaddr) == MEM
+      && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF
+      && !local_symbolic_operand (XEXP (fnaddr, 0), VOIDmode))
+    fnaddr = gen_rtx_MEM (QImode, construct_plt_address (XEXP (fnaddr, 0)));
+  else if (! call_insn_operand (XEXP (fnaddr, 0), Pmode))
     {
       fnaddr = copy_to_mode_reg (Pmode, XEXP (fnaddr, 0));
       fnaddr = gen_rtx_MEM (QImode, fnaddr);

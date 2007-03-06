@@ -249,5 +249,6 @@ extern void x86_elf_aligned_common (FILE *, const char *,
 extern void ix86_fp_comparison_codes (enum rtx_code code, enum rtx_code *,
 				      enum rtx_code *, enum rtx_code *);
 extern enum rtx_code ix86_fp_compare_code_to_integer (enum rtx_code);
+extern rtx construct_plt_address (rtx);
 #endif
 extern int asm_preferred_eh_data_format (int, int);
