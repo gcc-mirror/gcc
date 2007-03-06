@@ -1,5 +1,24 @@
 2007-03-06  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/m68k/m68k-protos.h (output_sibcall): Declare.
+	(mips_expand_epilogue): Add a bool parameter.
+	(m68k_legitimize_sibcall_address): Declare.
+	* config/m68k/m68k.c (TARGET_FUNCTION_OK_FOR_SIBCALL): Define.
+	(m68k_expand_epilogue): Add a parameter to select between sibling
+	and normal epilogues.  Only generate a return for the latter.
+	(m68k_ok_for_sibcall_p): New function.
+	(m68k_legitimize_sibcall_address, output_sibcall): New functions.
+	* config/m68k/m68k.md (sibcall, *sibcall): New patterns.
+	(sibcall_value, *sibcall_value): Likewise.
+	(*call, *call_value): Require !SIBLING_CALL_P.
+	(epilogue): Update call to m68k_expand_epilogue.
+	(sibcall_epilogue): New pattern.
+	* config/m68k/predicates.md (const_call_operand): Say that this
+	predicate applies to sibling calls too.
+	(sibcall_operand): New predicate.
+
+2007-03-06  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/m68k/m68k.md (movsf_cf_soft): Provide the same non-mov3q
 	alternatives as movsi_cf.
 	(movsf_cf_hard): Add commentary.
