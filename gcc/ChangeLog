@@ -1,3 +1,36 @@
+2007-03-06  Kazu Hirata  <kazu@codesourcery.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+
+	* config/m68k/m68k-protos.h (m68k_interrupt_function_p): Declare.
+	(m68k_movem_pattern_p, m68k_output_movem): Likewise.
+	(m68k_expand_prologue, m68k_expand_epilogue): Likewise.
+	* config/m68k/m68k.h (EPILOGUE_USES): Define.  Treat all registers
+	as being live on exit from an interrupt function.
+	(PRINT_OPERAND_PUNCT_VALID_P): Return true for '?'.
+	* config/m68k/m68k.c (MIN_MOVEM_REGS, MIN_FMOVEM_REGS): New macros.
+	(m68k_frame): Remove reg_rev_mask and fpu_rev_mask.
+	(TARGET_ASM_FUNCTION_PROLOGUE, TARGET_ASM_FUNCTION_EPILOGUE): Delete.
+	(m68k_interrupt_function_p): Globalize.
+	(m68k_compute_frame_layout): Remove reverse mask code.
+	(m68k_emit_movem, m68k_set_frame_related): New functions.
+	(m68k_output_function_prologue): Delete in favor of...
+	(m68k_expand_prologue): ...this new function.
+	(m68k_output_function_epilogue): Delete in favor of...
+	(m68k_expand_epilogue): ...this new function.
+	(m68k_split_offset, m68k_movem_pattern_p, m68k_output_movem): New
+	functions.
+	(print_operand): Handle %?.
+	* config/m68k/m68k.md (UNSPEC_SIN, UNSPEC_COS): Remove excess space.
+	(UNSPEC_GOT, A1_REG, PIC_REG, FP0_REG): New constants.
+	(prologue, epilogue): New patterns.
+	(return): Turn into a define_expand.
+	(*return): New pattern, derived from old "return" pattern.  Use rte
+	rather than rts for interrupt functions.  Only use rtd if the pop
+	count is nonzero.
+	(*m68k_store_multiple, *m68k_store_multiple_automod): New patterns.
+	(*m68k_load_multiple, *m68k_load_multiple_automod): Likewise.
+	(link, *link, unlink, *unlink, load_got): Likewise.
+
 2007-03-06  Richard Sandiford  <richard@codesourcery.com>
 
 	PR target/23482

@@ -987,6 +987,10 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
 /* Before the prologue, the top of the frame is at 4(%sp).  */
 #define INCOMING_FRAME_SP_OFFSET 4
 
+/* All registers are live on exit from an interrupt routine.  */
+#define EPILOGUE_USES(REGNO) \
+  (reload_completed && m68k_interrupt_function_p (current_function_decl))
+
 /* Describe how we implement __builtin_eh_return.  */
 #define EH_RETURN_DATA_REGNO(N) \
   ((N) < 2 ? (N) : INVALID_REGNUM)
@@ -1123,6 +1127,7 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
    '$' for the letter `s' in an op code, but only on the 68040.
    '&' for the letter `d' in an op code, but only on the 68040.
    '/' for register prefix needed by longlong.h.
+   '?' for m68k_library_id_string
 
    'b' for byte insn (no effect, on the Sun; this is for the ISI).
    'd' to force memory addressing to be absolute, not relative.
@@ -1133,7 +1138,7 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
   ((CODE) == '.' || (CODE) == '#' || (CODE) == '-'			\
    || (CODE) == '+' || (CODE) == '@' || (CODE) == '!'			\
-   || (CODE) == '$' || (CODE) == '&' || (CODE) == '/')
+   || (CODE) == '$' || (CODE) == '&' || (CODE) == '/' || (CODE) == '?')
 
 
 /* See m68k.c for the m68k specific codes.  */
