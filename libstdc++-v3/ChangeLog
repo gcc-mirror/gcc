@@ -1,3 +1,31 @@
+2007-03-06  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28080 (partial)
+	* include/bits/stl_algobase.h: Do not include <cstdlib>.
+	* src/localename.cc: Do it here.
+	* src/ctype.cc: Likewise.
+	* include/ext/pb_ds/detail/map_debug_base.hpp: Likewise.
+	* include/ext/pb_ds/exception.hpp: Likewise.
+	* include/ext/pb_ds/list_update_policy.hpp: Likewise.
+	* include/bits/stl_algo.h: Likewise.
+	* include/tr1/random: Likewise.
+	* testsuite/util/testsuite_hooks.cc: Likewise.
+	* testsuite/util/testsuite_abi_check.cc: Likewise.
+	* testsuite/util/testsuite_abi.cc: Likewise.
+	* testsuite/util/performance/assoc/timing/
+	tree_order_statistics_test.hpp: Likewise.
+	* config/locale/darwin/ctype_members.cc: Likewise.
+	* config/locale/gnu/c++locale_internal.h: Likewise.
+	* config/locale/generic/ctype_members.cc: Likewise.
+	* config/locale/generic/time_members.cc: Likewise.
+
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_load_check_resize_trigger_imp.hpp: Qualify abort.
+	* testsuite/util/performance/assoc/timing/
+	multimap_find_test.hpp: Likewise.
+	* include/std/valarray: Do include <cstdlib>.
+	* include/tr1/hashtable: Likewise.
+
 2007-03-05  Joseph Myers  <joseph@codesourcery.com>
 
 	PR libstdc++/30675

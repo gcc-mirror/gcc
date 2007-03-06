@@ -56,7 +56,6 @@
 #include <memory>
 #include <iterator>
 #include <cstddef>
-#include <cstdlib>
 #include <cmath>
 #include <bits/functexcept.h>
 #include <tr1/type_traits>	// For true_type and false_type

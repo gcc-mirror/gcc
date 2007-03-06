@@ -35,6 +35,7 @@
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
 #include <locale>
+#include <cstdlib>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 

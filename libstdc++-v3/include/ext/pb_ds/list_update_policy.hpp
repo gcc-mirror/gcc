@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -47,6 +47,7 @@
 #ifndef PB_DS_LU_POLICY_HPP
 #define PB_DS_LU_POLICY_HPP
 
+#include <cstdlib>
 #include <ext/pb_ds/detail/list_update_policy/counter_lu_metadata.hpp>
 
 namespace pb_ds

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -51,6 +51,7 @@
 
 #include <list>
 #include <utility>
+#include <cstdlib>
 #include <ext/throw_allocator.h>
 #include <debug/debug.h>
 
@@ -157,7 +158,7 @@ namespace pb_ds
       if (find(r_key) != m_key_set.end())
 	{
 	  std::cerr << "insert_new " << r_key << std::endl;
-	  abort();
+	  std::abort();
 	}
 
       try
@@ -167,7 +168,7 @@ namespace pb_ds
       catch(...)
 	{
 	  std::cerr << "insert_new 1" << r_key << std::endl;
-	  abort();
+	  std::abort();
 	}
       alloc.set_throw_prob(orig_throw_prob);
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
@@ -183,7 +184,7 @@ namespace pb_ds
       if (it == m_key_set.end())
 	{
 	  std::cerr << "erase_existing " << r_key << std::endl;
-	  abort();
+	  std::abort();
 	}
       m_key_set.erase(it);
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
@@ -208,7 +209,7 @@ namespace pb_ds
       if (find(r_key) == m_key_set.end())
         {
           std::cerr << "check_key_exists " << r_key << std::endl;
-          abort();
+          std::abort();
         }
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
@@ -222,7 +223,7 @@ namespace pb_ds
       if (find(r_key) != m_key_set.end())
         {
 	  std::cerr << "check_key_does_not_exist " << r_key << std::endl;
-          abort();
+          std::abort();
         }
     }
 
@@ -237,7 +238,7 @@ namespace pb_ds
 	{
 	  std::cerr << "check_size " << size 
 		    << " " << key_set_size << std::endl;
-	  abort();
+	  std::abort();
 	}
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
      }
