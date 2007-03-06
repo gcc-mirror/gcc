@@ -1,5 +1,12 @@
 2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* gfortran.texi (Old-style kind specifications): Document
+	special handling of old-style kind specifiers for COMPLEX.
+	* decl.c (gfc_match_old_kind_spec): Document kind/bytesize
+	assumptions for COMPLEX in comment.
+
+2007-03-05  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	PR 31050
 	* gfortranspec.c (lang_specific_driver): Update program
 	name and copyright date.
