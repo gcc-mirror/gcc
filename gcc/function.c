@@ -4327,16 +4327,6 @@ expand_function_end (void)
       if (flag_exceptions)
 	sjlj_emit_function_exit_after (get_last_insn ());
     }
-  else
-    {
-      /* @@@ This is a kludge.  We want to ensure that instructions that
-	 may trap are not moved into the epilogue by scheduling, because
-	 we don't always emit unwind information for the epilogue.
-	 However, not all machine descriptions define a blockage insn, so
-	 emit an ASM_INPUT to act as one.  */
-      if (flag_non_call_exceptions)
-	emit_insn (gen_rtx_ASM_INPUT (VOIDmode, ""));
-    }
 
   /* If this is an implementation of throw, do what's necessary to
      communicate between __builtin_eh_return and the epilogue.  */
@@ -4477,6 +4467,14 @@ expand_function_end (void)
 
   /* Output the label for the naked return from the function.  */
   emit_label (naked_return_label);
+
+  /* @@@ This is a kludge.  We want to ensure that instructions that
+     may trap are not moved into the epilogue by scheduling, because
+     we don't always emit unwind information for the epilogue.
+     However, not all machine descriptions define a blockage insn, so
+     emit an ASM_INPUT to act as one.  */
+  if (! USING_SJLJ_EXCEPTIONS && flag_non_call_exceptions)
+    emit_insn (gen_rtx_ASM_INPUT (VOIDmode, ""));
 
   /* If stack protection is enabled for this function, check the guard.  */
   if (cfun->stack_protect_guard)
