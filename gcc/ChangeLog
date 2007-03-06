@@ -1,5 +1,10 @@
 2007-03-06  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/m68k/m68k.c (m68k_save_reg): Save the PIC register in
+	functions that need a constant pool.
+
+2007-03-06  Richard Sandiford  <richard@codesourcery.com>
+
 	PR target/28181
 	* config/m68k/m68k-protos.h (m68k_secondary_reload_class): Declare.
 	(m68k_preferred_reload_class): Likewise.
