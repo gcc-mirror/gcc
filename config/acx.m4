@@ -485,7 +485,8 @@ AC_DEFUN([GCC_TARGET_TOOL],
 if test "x${build}" != "x${host}" ; then
   if expr "x[$]$2" : "x/" > /dev/null; then
     # We already found the complete path
-    AC_MSG_RESULT(pre-installed in `dirname [$]$2`)
+    ac_dir=`dirname [$]$2`
+    AC_MSG_RESULT(pre-installed in $ac_dir)
   else
     # Canadian cross, just use what we found
     AC_MSG_RESULT(pre-installed)
@@ -508,7 +509,8 @@ else
     AC_MSG_RESULT(just compiled)
   el])if expr "x[$]$2" : "x/" > /dev/null; then
     # We already found the complete path
-    AC_MSG_RESULT(pre-installed in `dirname [$]$2`)
+    ac_dir=`dirname [$]$2`
+    AC_MSG_RESULT(pre-installed in $ac_dir)
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     $2='$($3)'
