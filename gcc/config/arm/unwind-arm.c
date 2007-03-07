@@ -91,6 +91,16 @@ struct fpa_regs
   struct fpa_reg f[8];
 };
 
+struct wmmxd_regs
+{
+  _uw64 wd[16];
+};
+
+struct wmmxc_regs
+{
+  _uw wc[4];
+};
+
 /* Unwind descriptors.  */
 
 typedef struct
@@ -123,12 +133,18 @@ typedef struct
   struct vfp_regs vfp;
   struct vfpv3_regs vfp_regs_16_to_31;
   struct fpa_regs fpa;
+  struct wmmxd_regs wmmxd;
+  struct wmmxc_regs wmmxc;
 } phase1_vrs;
 
 #define DEMAND_SAVE_VFP 1	/* VFP state has been saved if not set */
 #define DEMAND_SAVE_VFP_D 2	/* VFP state is for FLDMD/FSTMD if set */
 #define DEMAND_SAVE_VFP_V3 4    /* VFPv3 state for regs 16 .. 31 has
                                    been saved if not set */
+#define DEMAND_SAVE_WMMXD 8	/* iWMMXt data registers have been
+				   saved if not set.  */
+#define DEMAND_SAVE_WMMXC 16	/* iWMMXt control registers have been
+				   saved if not set.  */
 
 /* This must match the structure created by the assembly wrappers.  */
 typedef struct
@@ -157,6 +173,10 @@ void __attribute__((noreturn)) restore_core_regs (struct core_regs *);
 /* Routines for FLDMX/FSTMX format...  */
 void __gnu_Unwind_Save_VFP (struct vfp_regs * p);
 void __gnu_Unwind_Restore_VFP (struct vfp_regs * p);
+void __gnu_Unwind_Save_WMMXD (struct wmmxd_regs * p);
+void __gnu_Unwind_Restore_WMMXD (struct wmmxd_regs * p);
+void __gnu_Unwind_Save_WMMXC (struct wmmxc_regs * p);
+void __gnu_Unwind_Restore_WMMXC (struct wmmxc_regs * p);
 
 /* ...and those for FLDMD/FSTMD format...  */
 void __gnu_Unwind_Save_VFP_D (struct vfp_regs * p);
@@ -181,6 +201,11 @@ restore_non_core_regs (phase1_vrs * vrs)
 
   if ((vrs->demand_save_flags & DEMAND_SAVE_VFP_V3) == 0)
     __gnu_Unwind_Restore_VFP_D_16_to_31 (&vrs->vfp_regs_16_to_31);
+
+  if ((vrs->demand_save_flags & DEMAND_SAVE_WMMXD) == 0)
+    __gnu_Unwind_Restore_WMMXD (&vrs->wmmxd);
+  if ((vrs->demand_save_flags & DEMAND_SAVE_WMMXC) == 0)
+    __gnu_Unwind_Restore_WMMXC (&vrs->wmmxc);
 }
 
 /* A better way to do this would probably be to compare the absolute address
@@ -421,9 +446,80 @@ _Unwind_VRS_Result _Unwind_VRS_Pop (_Unwind_Context *context,
       return _UVRSR_OK;
 
     case _UVRSC_FPA:
-    case _UVRSC_WMMXD:
-    case _UVRSC_WMMXC:
       return _UVRSR_NOT_IMPLEMENTED;
+
+    case _UVRSC_WMMXD:
+      {
+	_uw start = discriminator >> 16;
+	_uw count = discriminator & 0xffff;
+	struct wmmxd_regs tmp;
+	_uw *sp;
+	_uw *dest;
+
+	if ((representation != _UVRSD_UINT64) || start + count > 16)
+	  return _UVRSR_FAILED;
+
+	if (vrs->demand_save_flags & DEMAND_SAVE_WMMXD)
+	  {
+	    /* Demand-save resisters for stage1.  */
+	    vrs->demand_save_flags &= ~DEMAND_SAVE_WMMXD;
+	    __gnu_Unwind_Save_WMMXD (&vrs->wmmxd);
+	  }
+
+	/* Restore the registers from the stack.  Do this by saving the
+	   current WMMXD registers to a memory area, moving the in-memory
+	   values into that area, and restoring from the whole area.  */
+	__gnu_Unwind_Save_WMMXD (&tmp);
+
+	/* The stack address is only guaranteed to be word aligned, so
+	   we can't use doubleword copies.  */
+	sp = (_uw *) vrs->core.r[R_SP];
+	dest = (_uw *) &tmp.wd[start];
+	count *= 2;
+	while (count--)
+	  *(dest++) = *(sp++);
+
+	/* Set the new stack pointer.  */
+	vrs->core.r[R_SP] = (_uw) sp;
+
+	/* Reload the registers.  */
+	__gnu_Unwind_Restore_WMMXD (&tmp);
+      }
+      return _UVRSR_OK;
+
+    case _UVRSC_WMMXC:
+      {
+	int i;
+	struct wmmxc_regs tmp;
+	_uw *sp;
+
+	if ((representation != _UVRSD_UINT32) || discriminator > 16)
+	  return _UVRSR_FAILED;
+
+	if (vrs->demand_save_flags & DEMAND_SAVE_WMMXC)
+	  {
+	    /* Demand-save resisters for stage1.  */
+	    vrs->demand_save_flags &= ~DEMAND_SAVE_WMMXC;
+	    __gnu_Unwind_Save_WMMXC (&vrs->wmmxc);
+	  }
+
+	/* Restore the registers from the stack.  Do this by saving the
+	   current WMMXC registers to a memory area, moving the in-memory
+	   values into that area, and restoring from the whole area.  */
+	__gnu_Unwind_Save_WMMXC (&tmp);
+
+	sp = (_uw *) vrs->core.r[R_SP];
+	for (i = 0; i < 4; i++)
+	  if (discriminator & (1 << i))
+	    tmp.wc[i] = *(sp++);
+
+	/* Set the new stack pointer.  */
+	vrs->core.r[R_SP] = (_uw) sp;
+
+	/* Reload the registers.  */
+	__gnu_Unwind_Restore_WMMXC (&tmp);
+      }
+      return _UVRSR_OK;
 
     default:
       return _UVRSR_FAILED;

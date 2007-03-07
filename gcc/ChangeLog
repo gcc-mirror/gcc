@@ -1,3 +1,22 @@
+2007-03-07  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/libunwind.S: Add .arch/.object_arch for armv4 builds.
+
+2007-03-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/unwind-arm.c (struct wmmxd_regs, struct wmmxc_regs):
+	New.
+	(phase1_vrs): Use them.
+	(DEMAND_SAVE_WMMXD, DEMAND_SAVE_WMMXC): New.
+	(__gnu_Unwind_Save_WMMXD, __gnu_Unwind_Restore_WMMXD,
+	__gnu_Unwind_Save_WMMXC, __gnu_Unwind_Restore_WMMXC): Declare.
+	(restore_non_core_regs): Call __gnu_Unwind_Restore_WMMXD and
+	__gnu_Unwind_Restore_WMMXC if required.
+	(_Unwind_VRS_Pop): Implement iWMMXt support.
+	* config/arm/libunwind.S (gnu_Unwind_Restore_WMMXD,
+	gnu_Unwind_Save_WMMXD, gnu_Unwind_Restore_WMMXC,
+	gnu_Unwind_Save_WMMXC): Define.
+
 2007-03-07  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/vxworks.h (vxworks_override_options): Declare.
