@@ -58,6 +58,7 @@ void _Jv_RegisterNewClasses ()
 /* Symbols used by jvgenmain (-fmain).  */
 
 void JvRunMain () {}
+void JvRunMainName () {}
 const char **_Jv_Compiler_Properties;
 
 /* Functions used by -fjni.  */
