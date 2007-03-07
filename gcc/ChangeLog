@@ -1,4 +1,9 @@
-2006-03-06  Anatoly Sokolov <aesok@post.ru>
+2007-03-06  David Daney  <ddaney@avtrex.com>
+
+	* doc/install.texi (mips-*-*): Change recommended binutils
+	version.
+
+2007-03-06  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.c (avr_mcu_types): Add support for ATmega325P,
 	ATmega3250P, ATmega329P, ATmega3290P, AT90USB82 and AT90USB162 

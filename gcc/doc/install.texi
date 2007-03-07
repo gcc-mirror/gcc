@@ -3551,10 +3551,13 @@ currently do not work, because the auxiliary programs
 anything but a MIPS.  It does work to cross compile for a MIPS
 if you use the GNU assembler and linker.
 
-The linker from GNU binutils versions prior to 2.17 has a bug which
-causes the runtime linker stubs in @file{libgcj.so} to be incorrectly
-generated.  If you want to use libgcj, either use binutils 2.17 or
-later to build it or export @samp{LD_BIND_NOW=1} in your runtime environment.
+The assembler from GNU binutils 2.17 and earlier has a bug in the way
+it sorts relocations for REL targets (o32, o64, EABI).  This can cause
+bad code to be generated for simple C++ programs.  Also the linker
+from GNU binutils versions prior to 2.17 has a bug which causes the
+runtime linker stubs in very large programs, like @file{libgcj.so}, to
+be incorrectly generated.  Binutils CVS snapshots and releases made
+after Nov. 9, 2006 are thought to be free from both of these problems.
 
 @html
 <hr />
