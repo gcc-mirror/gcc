@@ -400,7 +400,7 @@
 	(m68k_matches_u_p): New functions.
 	(print_operand_address): Rewrite to use m68k_decompose_index.
 
-2007/03/05  David Taylor  <dtaylor@emc.com>
+2007-03-05  David Taylor  <dtaylor@emc.com>
 
 	* gcc.c: Correct copyright date in --version output.
 
