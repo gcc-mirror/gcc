@@ -807,9 +807,19 @@ emit_swap_insn (rtx insn, stack regstack, rtx reg)
 
   hard_regno = get_hard_regnum (regstack, reg);
 
-  gcc_assert (hard_regno >= FIRST_STACK_REG);
   if (hard_regno == FIRST_STACK_REG)
     return;
+  if (hard_regno == -1)
+    {
+      /* Something failed if the register wasn't on the stack.  If we had
+	 malformed asms, we zapped the instruction itself, but that didn't
+	 produce the same pattern of register sets as before.  To prevent
+	 further failure, adjust REGSTACK to include REG at TOP.  */
+      gcc_assert (any_malformed_asm);
+      regstack->reg[++regstack->top] = REGNO (reg);
+      return;
+    }
+  gcc_assert (hard_regno >= FIRST_STACK_REG);
 
   other_reg = regstack->top - (hard_regno - FIRST_STACK_REG);
 

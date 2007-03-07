@@ -1,3 +1,9 @@
+2007-03-07  Richard Henderson  <rth@redhat.com>
+
+	PR target/30848
+	* reg-stack.c (emit_swap_insn): If a malformed asm was seen,
+	silently fix up the stack in the case of a missing register.
+
 2007-03-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* convert.c (convert_to_integer): Fix nearbyint/rint -> *lrint
@@ -107,7 +113,7 @@
 	even if cv-qualification is the same.
 
 2007-02-14  Eric Botcazou  <ebotcazou@adacore.com>
-            Maxim Kuvyrkov <mkuvyrkov@ispras.ru>
+	    Maxim Kuvyrkov <mkuvyrkov@ispras.ru>
 
 	PR rtl-optimization/28772
 	* Makefile.in (haifa-sched.o): Add dependency on $(PARAMS_H).
@@ -161,11 +167,11 @@
 
 2007-01-29  Josh Conner  <jconner@apple.com>
 
-        PR middle-end/29683
-        * calls.c (compute_argument_addresses): Set stack and stack_slot
-        for partial args, too.
-        (store_one_arg): Use locate.size.constant for the size when
-        generating a save_area.
+	PR middle-end/29683
+	* calls.c (compute_argument_addresses): Set stack and stack_slot
+	for partial args, too.
+	(store_one_arg): Use locate.size.constant for the size when
+	generating a save_area.
 
 2007-01-28  Ralf Wildenhalf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
@@ -246,7 +252,7 @@
 
 2007-01-05  Richard Guenther  <rguenther@suse.de>
 
-        PR tree-optimization/30212
+	PR tree-optimization/30212
 	* tree-vrp.c (adjust_range_with_scev): Do not adjust invalid
 	ranges by using TYPE_MIN_VALUE or TYPE_MAX_VALUE.
 
@@ -344,7 +350,7 @@
 	* gcc/config/mips/linux.h (SUBTARGET_CPP_SPEC): Extend.
 
 2006-12-16  Joseph Myers  <joseph@codesourcery.com>
-            David Edelsohn  <edelsohn@gnu.org>
+	    David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/24036
 	* doc/tm.texi (HARD_REGNO_NREGS_HAS_PADDING,
@@ -422,7 +428,7 @@
 	inside start_sequence / end_sequence pair.
 
 2006-11-27  Michael Matz  <matz@suse.de>
-            Andreas Krebbel  <krebbel1@de.ibm.com>
+	    Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR target/29319
 	* config/s390/predicates.md (larl_operand): Check addend of larl
@@ -2237,16 +2243,16 @@
 
 2006-04-19  Jeff Law  <law@redhat.com>
 
-        PR tree-optimization/26854
+	PR tree-optimization/26854
 	* tree-ssa-dse.c (dse_optimize_stmt): Use has_single_use rather
 	than num_imm_uses.
 	* tree-ssa-dom.c (simplify_rhs_and_lookup_avail_expr): Similarly.
 
 2006-04-18  Jeff Law  <law@redhat.com>
 
-        PR tree-optimization/27087
-        * tree-ssa-copy.c (may_propagate_copy): Test flow sensitive
-        alias information too.
+	PR tree-optimization/27087
+	* tree-ssa-copy.c (may_propagate_copy): Test flow sensitive
+	alias information too.
 
 2006-04-18  Andreas Krebbel  <krebbel1@de.ibm.com>
 
@@ -2255,14 +2261,14 @@
 
 2006-04-18  Paolo Bonzini  <bonzini@gnu.org>
 
-        PR tree-optimization/26643
+	PR tree-optimization/26643
 
 	Backport from mainline:
 	2006-03-29  Zdenek Dvorak <dvorakz@suse.cz>
 
-        PR tree-optimization/26643
-        * tree-ssa-loop-ivopts.c (find_interesting_uses_address): Do not handle
-        bit_field_refs.
+	PR tree-optimization/26643
+	* tree-ssa-loop-ivopts.c (find_interesting_uses_address): Do not handle
+	bit_field_refs.
 
 2006-04-18  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -2277,7 +2283,7 @@
 	(insert_reciprocals): Use it.
 
 	2006-02-02  Paolo Bonzini  <bonzini@gnu.org>
-            
+	    
 	* tree-flow-inline.h (bsi_after_labels): Rewrite, return
 	what its name says.
 	* lambda-code.c (perfect_nestify): Use bsi_insert_before on
@@ -2301,7 +2307,7 @@
 	to expand fallback builtin function call.
 
 2006-04-14  Alexey Starovoytov  <alexey.starovoytov@sun.com>
-            Eric Botcazou  <ebotcazou@libertysurf.fr>
+	    Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (emit_and_preserve): Allocate space for the
 	register save area.
@@ -2375,7 +2381,7 @@
 
 2006-04-08  Matthias Klose  <doko@debian.org>
 
-        * Makefile.in (unprotoize.o): Same dependencies as for protoize.o.
+	* Makefile.in (unprotoize.o): Same dependencies as for protoize.o.
 
 2006-04-07  Richard Guenther  <rguenther@suse.de>
 
@@ -2433,7 +2439,7 @@
 	* tree-cfg.c (tree_duplicate_sese_region): Do not update SSA.
 	* tree-ssa-loop-ch.c (copy_loop_headers): Count successfully duplicated
 	headers and, if there was any, update SSA at the end.
-        
+	
 	Backport from mainline:
 	2006-03-30  Paolo Bonzini  <bonzini@gnu.org>
 
