@@ -1,3 +1,7 @@
+2007-03-07  Hans-Peter Nilsson  <hp@axis.com>
+
+	* g++.old-deja/g++.jason/template31.C: Include cstdlib.
+
 2007-03-06  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.c-torture/compile/m68k-byte-addr.c: New test.
