@@ -1,3 +1,8 @@
+2007-03-07  Tom Tromey  <tromey@redhat.com>
+
+	* configure: Rebuilt.
+	* configure.ac: Clear vm-tools-packages.
+
 2007-03-07  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* java/lang/Win32Process.java: Added nested class EOFInputStream.
