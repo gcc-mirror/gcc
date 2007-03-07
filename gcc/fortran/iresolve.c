@@ -988,7 +988,7 @@ gfc_resolve_ishftc (gfc_expr *f, gfc_expr *i, gfc_expr *shift, gfc_expr *size)
 {
   int s_kind;
 
-  s_kind = (size == NULL) ? gfc_default_integer_kind : shift->ts.kind;
+  s_kind = (size == NULL) ? gfc_default_integer_kind : size->ts.kind;
 
   f->ts = i->ts;
   f->value.function.name
