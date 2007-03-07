@@ -1437,9 +1437,7 @@ override_options (void)
 
   if (s390_stack_size)
     {
-      if (!s390_stack_guard)
-	error ("-mstack-size implies use of -mstack-guard");
-      else if (s390_stack_guard >= s390_stack_size)
+      if (s390_stack_guard >= s390_stack_size)
 	error ("stack size must be greater than the stack guard value");
       else if (s390_stack_size > 1 << 16)
 	error ("stack size must not be greater than 64k");
@@ -7245,21 +7243,47 @@ s390_emit_prologue (void)
 
       if (s390_stack_size)
   	{
-	  HOST_WIDE_INT stack_check_mask = ((s390_stack_size - 1)
-					    & ~(s390_stack_guard - 1));
-	  rtx t = gen_rtx_AND (Pmode, stack_pointer_rtx,
-			       GEN_INT (stack_check_mask));
+	  HOST_WIDE_INT stack_guard;
 
-	  if (TARGET_64BIT)
-	    gen_cmpdi (t, const0_rtx);
+	  if (s390_stack_guard)
+	    stack_guard = s390_stack_guard;
 	  else
-	    gen_cmpsi (t, const0_rtx);
+	    {
+	      /* If no value for stack guard is provided the smallest power of 2
+		 larger than the current frame size is chosen.  */
+	      stack_guard = 1;
+	      while (stack_guard < cfun_frame_layout.frame_size)
+		stack_guard <<= 1;
+	    }
 
-	  emit_insn (gen_conditional_trap (gen_rtx_EQ (CCmode, 
-						       gen_rtx_REG (CCmode, 
-								    CC_REGNUM),
-						       const0_rtx),
-					   const0_rtx));
+	  if (cfun_frame_layout.frame_size >= s390_stack_size)
+	    {
+	      warning (0, "frame size of function %qs is "
+		       HOST_WIDE_INT_PRINT_DEC
+		       " bytes exceeding user provided stack limit of "
+		       HOST_WIDE_INT_PRINT_DEC " bytes.  "
+		       "An unconditional trap is added.",
+		       current_function_name(), cfun_frame_layout.frame_size,
+		       s390_stack_size);
+	      emit_insn (gen_trap ());
+	    }
+	  else
+	    {
+	      HOST_WIDE_INT stack_check_mask = ((s390_stack_size - 1)
+						& ~(stack_guard - 1));
+	      rtx t = gen_rtx_AND (Pmode, stack_pointer_rtx,
+				   GEN_INT (stack_check_mask));
+	      if (TARGET_64BIT)
+		gen_cmpdi (t, const0_rtx);
+	      else
+		gen_cmpsi (t, const0_rtx);
+
+	      emit_insn (gen_conditional_trap (gen_rtx_EQ (CCmode,
+							   gen_rtx_REG (CCmode,
+								     CC_REGNUM),
+							   const0_rtx),
+					       const0_rtx));
+	    }
   	}
 
       if (s390_warn_framesize > 0 

@@ -12789,17 +12789,19 @@ sized arrays.  This is generally a bad idea with a limited stack size.
 @item -mstack-size=@var{stack-size}
 @opindex mstack-guard
 @opindex mstack-size
-These arguments always have to be used in conjunction.  If they are present the s390
-back end emits additional instructions in the function prologue which trigger a trap
-if the stack size is @var{stack-guard} bytes above the @var{stack-size}
-(remember that the stack on s390 grows downward).  These options are intended to
-be used to help debugging stack overflow problems.  The additionally emitted code
-causes only little overhead and hence can also be used in production like systems
-without greater performance degradation.  The given values have to be exact
-powers of 2 and @var{stack-size} has to be greater than @var{stack-guard} without
-exceeding 64k.
+If these options are provided the s390 back end emits additional instructions in
+the function prologue which trigger a trap if the stack size is @var{stack-guard}
+bytes above the @var{stack-size} (remember that the stack on s390 grows downward).
+If the @var{stack-guard} option is omitted the smallest power of 2 larger than
+the frame size of the compiled function is chosen.
+These options are intended to be used to help debugging stack overflow problems.
+The additionally emitted code causes only little overhead and hence can also be
+used in production like systems without greater performance degradation.  The given
+values have to be exact powers of 2 and @var{stack-size} has to be greater than
+@var{stack-guard} without exceeding 64k.
 In order to be efficient the extra code makes the assumption that the stack starts
 at an address aligned to the value given by @var{stack-size}.
+The @var{stack-guard} option can only be used in conjunction with @var{stack-size}.
 @end table
 
 @node Score Options
