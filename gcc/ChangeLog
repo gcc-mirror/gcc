@@ -1,3 +1,11 @@
+2007-03-07  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (override_options): Don't emit an error when
+	-mstack-size is used without providing -mstack-guard.
+	(s390_emit_prologue): Choose stack_guard value automatically if not
+	provided via command line.
+	* doc/invoke.texi: Adjust description of -mstack-guard and -mstack-size.
+
 2007-03-07  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/i386/i386.c (output_set_got): Add a GOT initialization
