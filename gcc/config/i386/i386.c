@@ -5371,6 +5371,23 @@ output_set_got (rtx dest, rtx label ATTRIBUTE_UNUSED)
   rtx xops[3];
 
   xops[0] = dest;
+
+  if (TARGET_VXWORKS_RTP && flag_pic)
+    {
+      /* Load (*VXWORKS_GOTT_BASE) into the PIC register.  */
+      xops[2] = gen_rtx_MEM (Pmode,
+			     gen_rtx_SYMBOL_REF (Pmode, VXWORKS_GOTT_BASE));
+      output_asm_insn ("mov{l}\t{%2, %0|%0, %2}", xops);
+
+      /* Load (*VXWORKS_GOTT_BASE)[VXWORKS_GOTT_INDEX] into the PIC register.
+	 Use %P and a local symbol in order to print VXWORKS_GOTT_INDEX as
+	 an unadorned address.  */
+      xops[2] = gen_rtx_SYMBOL_REF (Pmode, VXWORKS_GOTT_INDEX);
+      SYMBOL_REF_FLAGS (xops[2]) |= SYMBOL_FLAG_LOCAL;
+      output_asm_insn ("mov{l}\t{%P2(%0), %0|%0, DWORD PTR %P2[%0]}", xops);
+      return "";
+    }
+
   xops[1] = gen_rtx_SYMBOL_REF (Pmode, GOT_SYMBOL_NAME);
 
   if (! TARGET_DEEP_BRANCH_PREDICTION || !flag_pic)
@@ -6762,7 +6779,11 @@ legitimate_pic_address_disp_p (rtx disp)
     case UNSPEC_GOT:
       if (saw_plus)
 	return false;
-      return GET_CODE (XVECEXP (disp, 0, 0)) == SYMBOL_REF;
+      /* We need to check for both symbols and labels because VxWorks loads
+	 text labels with @GOT rather than @GOTOFF.  See gotoff_operand for
+	 details.  */
+      return (GET_CODE (XVECEXP (disp, 0, 0)) == SYMBOL_REF
+	      || GET_CODE (XVECEXP (disp, 0, 0)) == LABEL_REF);
     case UNSPEC_GOTOFF:
       /* Refuse GOTOFF in 64bit mode since it is always 64bit when used.
 	 While ABI specify also 32bit relocation but we don't produce it in
@@ -6770,7 +6791,7 @@ legitimate_pic_address_disp_p (rtx disp)
       if ((GET_CODE (XVECEXP (disp, 0, 0)) == SYMBOL_REF
 	   || GET_CODE (XVECEXP (disp, 0, 0)) == LABEL_REF)
 	  && !TARGET_64BIT)
-        return local_symbolic_operand (XVECEXP (disp, 0, 0), Pmode);
+        return gotoff_operand (XVECEXP (disp, 0, 0), Pmode);
       return false;
     case UNSPEC_GOTTPOFF:
     case UNSPEC_GOTNTPOFF:
@@ -7091,7 +7112,7 @@ legitimize_pic_address (rtx orig, rtx reg)
     new = addr;
   else if (TARGET_64BIT
 	   && ix86_cmodel != CM_SMALL_PIC
-	   && local_symbolic_operand (addr, Pmode))
+	   && gotoff_operand (addr, Pmode))
     {
       rtx tmpreg;
       /* This symbol may be referenced via a displacement from the PIC
@@ -7123,7 +7144,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 	}
       else new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, tmpreg);
     }
-  else if (!TARGET_64BIT && local_symbolic_operand (addr, Pmode))
+  else if (!TARGET_64BIT && gotoff_operand (addr, Pmode))
     {
       /* This symbol may be referenced via a displacement from the PIC
 	 base address (@GOTOFF).  */
@@ -7148,7 +7169,10 @@ legitimize_pic_address (rtx orig, rtx reg)
 	  new = reg;
 	}
     }
-  else if (GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (addr) == 0)
+  else if ((GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (addr) == 0)
+	   /* We can't use @GOTOFF for text labels on VxWorks;
+	      see gotoff_operand.  */
+	   || (TARGET_VXWORKS_RTP && GET_CODE (addr) == LABEL_REF))
     {
       if (TARGET_64BIT && ix86_cmodel != CM_LARGE_PIC)
 	{
@@ -7218,7 +7242,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 
 	  /* Check first to see if this is a constant offset from a @GOTOFF
 	     symbol reference.  */
-	  if (local_symbolic_operand (op0, Pmode)
+	  if (gotoff_operand (op0, Pmode)
 	      && CONST_INT_P (op1))
 	    {
 	      if (!TARGET_64BIT)
@@ -9379,7 +9403,8 @@ ix86_output_addr_diff_elt (FILE *file, int value, int rel)
 #else
   gcc_assert (!TARGET_64BIT);
 #endif
-  if (TARGET_64BIT)
+  /* We can't use @GOTOFF for text labels on VxWorks; see gotoff_operand.  */
+  if (TARGET_64BIT || TARGET_VXWORKS_RTP)
     fprintf (file, "%s%s%d-%s%d\n",
 	     directive, LPREFIX, value, LPREFIX, rel);
   else if (HAVE_AS_GOTOFF_IN_DATA)
@@ -9502,7 +9527,12 @@ ix86_expand_move (enum machine_mode mode, rtx operands[])
 	  if (MEM_P (op0))
 	    op1 = force_reg (Pmode, op1);
 	  else if (!TARGET_64BIT || !x86_64_movabs_operand (op1, Pmode))
-	    op1 = legitimize_pic_address (op1, op0);
+	    {
+	      rtx reg = no_new_pseudos ? op0 : NULL_RTX;
+	      op1 = legitimize_pic_address (op1, reg);
+	      if (op0 == op1)
+		return;
+	    }
 	}
     }
   else

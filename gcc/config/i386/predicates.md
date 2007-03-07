@@ -456,6 +456,18 @@
   return 0;
 })
 
+;; Test for a legitimate @GOTOFF operand.
+;;
+;; VxWorks does not impose a fixed gap between segments; the run-time
+;; gap can be different from the object-file gap.  We therefore can't
+;; use @GOTOFF unless we are absolutely sure that the symbol is in the
+;; same segment as the GOT.  Unfortunately, the flexibility of linker
+;; scripts means that we can't be sure of that in general, so assume
+;; that @GOTOFF is never valid on VxWorks.
+(define_predicate "gotoff_operand"
+  (and (match_test "!TARGET_VXWORKS_RTP")
+       (match_operand 0 "local_symbolic_operand")))
+
 ;; Test for various thread-local symbols.
 (define_predicate "tls_symbolic_operand"
   (and (match_code "symbol_ref")
