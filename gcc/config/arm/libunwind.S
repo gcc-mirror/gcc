@@ -41,6 +41,18 @@
 	EQUIV SYM (\name), SYM (__\name)
 .endm
 
+#if (__ARM_ARCH__ == 4)
+/* Some coprocessors require armv5.  We know this code will never be run on
+   other cpus.  Tell gas to allow armv5, but only mark the objects as armv4.
+ */
+.arch armv5t
+#ifdef __ARM_ARCH_4T__
+.object_arch armv4t
+#else
+.object_arch armv4
+#endif
+#endif
+
 /* r0 points to a 16-word block.  Upload these values to the actual core
    state.  */
 ARM_FUNC_START restore_core_regs
@@ -117,6 +129,66 @@ ARM_FUNC_START gnu_Unwind_Restore_VFP_D_16_to_31
    Use this to store in FLDMD (=VLDM) format.  Needs VFPv3.  */
 ARM_FUNC_START gnu_Unwind_Save_VFP_D_16_to_31
 	stcl  p11,cr0,[r0],{0x20} /* vstm r0, {d16-d31} */
+	RET
+
+ARM_FUNC_START gnu_Unwind_Restore_WMMXD
+	/* Use the generic coprocessor form so that gas doesn't complain
+	   on non-iWMMXt targets.  */
+	ldcl  p1, cr0, [r0], #8 /* wldrd wr0, [r0], #8 */
+	ldcl  p1, cr1, [r0], #8 /* wldrd wr1, [r0], #8 */
+	ldcl  p1, cr2, [r0], #8 /* wldrd wr2, [r0], #8 */
+	ldcl  p1, cr3, [r0], #8 /* wldrd wr3, [r0], #8 */
+	ldcl  p1, cr4, [r0], #8 /* wldrd wr4, [r0], #8 */
+	ldcl  p1, cr5, [r0], #8 /* wldrd wr5, [r0], #8 */
+	ldcl  p1, cr6, [r0], #8 /* wldrd wr6, [r0], #8 */
+	ldcl  p1, cr7, [r0], #8 /* wldrd wr7, [r0], #8 */
+	ldcl  p1, cr8, [r0], #8 /* wldrd wr8, [r0], #8 */
+	ldcl  p1, cr9, [r0], #8 /* wldrd wr9, [r0], #8 */
+	ldcl  p1, cr10, [r0], #8 /* wldrd wr10, [r0], #8 */
+	ldcl  p1, cr11, [r0], #8 /* wldrd wr11, [r0], #8 */
+	ldcl  p1, cr12, [r0], #8 /* wldrd wr12, [r0], #8 */
+	ldcl  p1, cr13, [r0], #8 /* wldrd wr13, [r0], #8 */
+	ldcl  p1, cr14, [r0], #8 /* wldrd wr14, [r0], #8 */
+	ldcl  p1, cr15, [r0], #8 /* wldrd wr15, [r0], #8 */
+	RET
+
+ARM_FUNC_START gnu_Unwind_Save_WMMXD
+	/* Use the generic coprocessor form so that gas doesn't complain
+	   on non-iWMMXt targets.  */
+	stcl  p1, cr0, [r0], #8 /* wstrd wr0, [r0], #8 */
+	stcl  p1, cr1, [r0], #8 /* wstrd wr1, [r0], #8 */
+	stcl  p1, cr2, [r0], #8 /* wstrd wr2, [r0], #8 */
+	stcl  p1, cr3, [r0], #8 /* wstrd wr3, [r0], #8 */
+	stcl  p1, cr4, [r0], #8 /* wstrd wr4, [r0], #8 */
+	stcl  p1, cr5, [r0], #8 /* wstrd wr5, [r0], #8 */
+	stcl  p1, cr6, [r0], #8 /* wstrd wr6, [r0], #8 */
+	stcl  p1, cr7, [r0], #8 /* wstrd wr7, [r0], #8 */
+	stcl  p1, cr8, [r0], #8 /* wstrd wr8, [r0], #8 */
+	stcl  p1, cr9, [r0], #8 /* wstrd wr9, [r0], #8 */
+	stcl  p1, cr10, [r0], #8 /* wstrd wr10, [r0], #8 */
+	stcl  p1, cr11, [r0], #8 /* wstrd wr11, [r0], #8 */
+	stcl  p1, cr12, [r0], #8 /* wstrd wr12, [r0], #8 */
+	stcl  p1, cr13, [r0], #8 /* wstrd wr13, [r0], #8 */
+	stcl  p1, cr14, [r0], #8 /* wstrd wr14, [r0], #8 */
+	stcl  p1, cr15, [r0], #8 /* wstrd wr15, [r0], #8 */
+	RET
+
+ARM_FUNC_START gnu_Unwind_Restore_WMMXC
+	/* Use the generic coprocessor form so that gas doesn't complain
+	   on non-iWMMXt targets.  */
+	ldc2  p1, cr8, [r0], #4 /* wldrw wcgr0, [r0], #4 */
+	ldc2  p1, cr9, [r0], #4 /* wldrw wcgr1, [r0], #4 */
+	ldc2  p1, cr10, [r0], #4 /* wldrw wcgr2, [r0], #4 */
+	ldc2  p1, cr11, [r0], #4 /* wldrw wcgr3, [r0], #4 */
+	RET
+
+ARM_FUNC_START gnu_Unwind_Save_WMMXC
+	/* Use the generic coprocessor form so that gas doesn't complain
+	   on non-iWMMXt targets.  */
+	stc2  p1, cr8, [r0], #4 /* wstrw wcgr0, [r0], #4 */
+	stc2  p1, cr9, [r0], #4 /* wstrw wcgr1, [r0], #4 */
+	stc2  p1, cr10, [r0], #4 /* wstrw wcgr2, [r0], #4 */
+	stc2  p1, cr11, [r0], #4 /* wstrw wcgr3, [r0], #4 */
 	RET
 
 /* Wrappers to save core registers, then call the real routine.   */
