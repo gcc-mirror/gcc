@@ -10717,8 +10717,9 @@ echo $ECHO_N "checking where to find the target ar... $ECHO_C" >&6
 if test "x${build}" != "x${host}" ; then
   if expr "x$AR_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $AR_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $AR_FOR_TARGET\`" >&6
+    ac_dir=`dirname $AR_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   else
     # Canadian cross, just use what we found
     echo "$as_me:$LINENO: result: pre-installed" >&5
@@ -10738,8 +10739,9 @@ else
 echo "${ECHO_T}just compiled" >&6
   elif expr "x$AR_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $AR_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $AR_FOR_TARGET\`" >&6
+    ac_dir=`dirname $AR_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     AR_FOR_TARGET='$(AR)'
@@ -10757,8 +10759,9 @@ echo $ECHO_N "checking where to find the target as... $ECHO_C" >&6
 if test "x${build}" != "x${host}" ; then
   if expr "x$AS_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $AS_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $AS_FOR_TARGET\`" >&6
+    ac_dir=`dirname $AS_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   else
     # Canadian cross, just use what we found
     echo "$as_me:$LINENO: result: pre-installed" >&5
@@ -10778,8 +10781,9 @@ else
 echo "${ECHO_T}just compiled" >&6
   elif expr "x$AS_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $AS_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $AS_FOR_TARGET\`" >&6
+    ac_dir=`dirname $AS_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     AS_FOR_TARGET='$(AS)'
@@ -10797,8 +10801,9 @@ echo $ECHO_N "checking where to find the target cc... $ECHO_C" >&6
 if test "x${build}" != "x${host}" ; then
   if expr "x$CC_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $CC_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $CC_FOR_TARGET\`" >&6
+    ac_dir=`dirname $CC_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   else
     # Canadian cross, just use what we found
     echo "$as_me:$LINENO: result: pre-installed" >&5
@@ -10818,8 +10823,9 @@ else
 echo "${ECHO_T}just compiled" >&6
   elif expr "x$CC_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $CC_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $CC_FOR_TARGET\`" >&6
+    ac_dir=`dirname $CC_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     CC_FOR_TARGET='$(CC)'
@@ -10837,8 +10843,9 @@ echo $ECHO_N "checking where to find the target c++... $ECHO_C" >&6
 if test "x${build}" != "x${host}" ; then
   if expr "x$CXX_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $CXX_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $CXX_FOR_TARGET\`" >&6
+    ac_dir=`dirname $CXX_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   else
     # Canadian cross, just use what we found
     echo "$as_me:$LINENO: result: pre-installed" >&5
@@ -10861,8 +10868,9 @@ else
 echo "${ECHO_T}just compiled" >&6
   elif expr "x$CXX_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $CXX_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $CXX_FOR_TARGET\`" >&6
+    ac_dir=`dirname $CXX_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     CXX_FOR_TARGET='$(CXX)'
@@ -10880,8 +10888,9 @@ echo $ECHO_N "checking where to find the target c++ for libstdc++... $ECHO_C" >&
 if test "x${build}" != "x${host}" ; then
   if expr "x$RAW_CXX_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $RAW_CXX_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $RAW_CXX_FOR_TARGET\`" >&6
+    ac_dir=`dirname $RAW_CXX_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   else
     # Canadian cross, just use what we found
     echo "$as_me:$LINENO: result: pre-installed" >&5
@@ -10904,8 +10913,9 @@ else
 echo "${ECHO_T}just compiled" >&6
   elif expr "x$RAW_CXX_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $RAW_CXX_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $RAW_CXX_FOR_TARGET\`" >&6
+    ac_dir=`dirname $RAW_CXX_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     RAW_CXX_FOR_TARGET='$(CXX)'
@@ -10923,8 +10933,9 @@ echo $ECHO_N "checking where to find the target dlltool... $ECHO_C" >&6
 if test "x${build}" != "x${host}" ; then
   if expr "x$DLLTOOL_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $DLLTOOL_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $DLLTOOL_FOR_TARGET\`" >&6
+    ac_dir=`dirname $DLLTOOL_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   else
     # Canadian cross, just use what we found
     echo "$as_me:$LINENO: result: pre-installed" >&5
@@ -10944,8 +10955,9 @@ else
 echo "${ECHO_T}just compiled" >&6
   elif expr "x$DLLTOOL_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $DLLTOOL_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $DLLTOOL_FOR_TARGET\`" >&6
+    ac_dir=`dirname $DLLTOOL_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     DLLTOOL_FOR_TARGET='$(DLLTOOL)'
@@ -10963,8 +10975,9 @@ echo $ECHO_N "checking where to find the target gcc... $ECHO_C" >&6
 if test "x${build}" != "x${host}" ; then
   if expr "x$GCC_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $GCC_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $GCC_FOR_TARGET\`" >&6
+    ac_dir=`dirname $GCC_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   else
     # Canadian cross, just use what we found
     echo "$as_me:$LINENO: result: pre-installed" >&5
@@ -10984,8 +10997,9 @@ else
 echo "${ECHO_T}just compiled" >&6
   elif expr "x$GCC_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $GCC_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $GCC_FOR_TARGET\`" >&6
+    ac_dir=`dirname $GCC_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     GCC_FOR_TARGET='$()'
@@ -11003,8 +11017,9 @@ echo $ECHO_N "checking where to find the target gcj... $ECHO_C" >&6
 if test "x${build}" != "x${host}" ; then
   if expr "x$GCJ_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $GCJ_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $GCJ_FOR_TARGET\`" >&6
+    ac_dir=`dirname $GCJ_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   else
     # Canadian cross, just use what we found
     echo "$as_me:$LINENO: result: pre-installed" >&5
@@ -11027,8 +11042,9 @@ else
 echo "${ECHO_T}just compiled" >&6
   elif expr "x$GCJ_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $GCJ_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $GCJ_FOR_TARGET\`" >&6
+    ac_dir=`dirname $GCJ_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     GCJ_FOR_TARGET='$(GCJ)'
@@ -11046,8 +11062,9 @@ echo $ECHO_N "checking where to find the target gfortran... $ECHO_C" >&6
 if test "x${build}" != "x${host}" ; then
   if expr "x$GFORTRAN_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $GFORTRAN_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $GFORTRAN_FOR_TARGET\`" >&6
+    ac_dir=`dirname $GFORTRAN_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   else
     # Canadian cross, just use what we found
     echo "$as_me:$LINENO: result: pre-installed" >&5
@@ -11070,8 +11087,9 @@ else
 echo "${ECHO_T}just compiled" >&6
   elif expr "x$GFORTRAN_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $GFORTRAN_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $GFORTRAN_FOR_TARGET\`" >&6
+    ac_dir=`dirname $GFORTRAN_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     GFORTRAN_FOR_TARGET='$(GFORTRAN)'
@@ -11089,8 +11107,9 @@ echo $ECHO_N "checking where to find the target ld... $ECHO_C" >&6
 if test "x${build}" != "x${host}" ; then
   if expr "x$LD_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $LD_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $LD_FOR_TARGET\`" >&6
+    ac_dir=`dirname $LD_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   else
     # Canadian cross, just use what we found
     echo "$as_me:$LINENO: result: pre-installed" >&5
@@ -11110,8 +11129,9 @@ else
 echo "${ECHO_T}just compiled" >&6
   elif expr "x$LD_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $LD_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $LD_FOR_TARGET\`" >&6
+    ac_dir=`dirname $LD_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     LD_FOR_TARGET='$(LD)'
@@ -11129,8 +11149,9 @@ echo $ECHO_N "checking where to find the target lipo... $ECHO_C" >&6
 if test "x${build}" != "x${host}" ; then
   if expr "x$LIPO_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $LIPO_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $LIPO_FOR_TARGET\`" >&6
+    ac_dir=`dirname $LIPO_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   else
     # Canadian cross, just use what we found
     echo "$as_me:$LINENO: result: pre-installed" >&5
@@ -11139,8 +11160,9 @@ echo "${ECHO_T}pre-installed" >&6
 else
   if expr "x$LIPO_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $LIPO_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $LIPO_FOR_TARGET\`" >&6
+    ac_dir=`dirname $LIPO_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     LIPO_FOR_TARGET='$(LIPO)'
@@ -11158,8 +11180,9 @@ echo $ECHO_N "checking where to find the target nm... $ECHO_C" >&6
 if test "x${build}" != "x${host}" ; then
   if expr "x$NM_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $NM_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $NM_FOR_TARGET\`" >&6
+    ac_dir=`dirname $NM_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   else
     # Canadian cross, just use what we found
     echo "$as_me:$LINENO: result: pre-installed" >&5
@@ -11179,8 +11202,9 @@ else
 echo "${ECHO_T}just compiled" >&6
   elif expr "x$NM_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $NM_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $NM_FOR_TARGET\`" >&6
+    ac_dir=`dirname $NM_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     NM_FOR_TARGET='$(NM)'
@@ -11198,8 +11222,9 @@ echo $ECHO_N "checking where to find the target objdump... $ECHO_C" >&6
 if test "x${build}" != "x${host}" ; then
   if expr "x$OBJDUMP_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $OBJDUMP_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $OBJDUMP_FOR_TARGET\`" >&6
+    ac_dir=`dirname $OBJDUMP_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   else
     # Canadian cross, just use what we found
     echo "$as_me:$LINENO: result: pre-installed" >&5
@@ -11219,8 +11244,9 @@ else
 echo "${ECHO_T}just compiled" >&6
   elif expr "x$OBJDUMP_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $OBJDUMP_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $OBJDUMP_FOR_TARGET\`" >&6
+    ac_dir=`dirname $OBJDUMP_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     OBJDUMP_FOR_TARGET='$(OBJDUMP)'
@@ -11238,8 +11264,9 @@ echo $ECHO_N "checking where to find the target ranlib... $ECHO_C" >&6
 if test "x${build}" != "x${host}" ; then
   if expr "x$RANLIB_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $RANLIB_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $RANLIB_FOR_TARGET\`" >&6
+    ac_dir=`dirname $RANLIB_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   else
     # Canadian cross, just use what we found
     echo "$as_me:$LINENO: result: pre-installed" >&5
@@ -11259,8 +11286,9 @@ else
 echo "${ECHO_T}just compiled" >&6
   elif expr "x$RANLIB_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $RANLIB_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $RANLIB_FOR_TARGET\`" >&6
+    ac_dir=`dirname $RANLIB_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     RANLIB_FOR_TARGET='$(RANLIB)'
@@ -11278,8 +11306,9 @@ echo $ECHO_N "checking where to find the target strip... $ECHO_C" >&6
 if test "x${build}" != "x${host}" ; then
   if expr "x$STRIP_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $STRIP_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $STRIP_FOR_TARGET\`" >&6
+    ac_dir=`dirname $STRIP_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   else
     # Canadian cross, just use what we found
     echo "$as_me:$LINENO: result: pre-installed" >&5
@@ -11299,8 +11328,9 @@ else
 echo "${ECHO_T}just compiled" >&6
   elif expr "x$STRIP_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $STRIP_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $STRIP_FOR_TARGET\`" >&6
+    ac_dir=`dirname $STRIP_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     STRIP_FOR_TARGET='$(STRIP)'
@@ -11318,8 +11348,9 @@ echo $ECHO_N "checking where to find the target windres... $ECHO_C" >&6
 if test "x${build}" != "x${host}" ; then
   if expr "x$WINDRES_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $WINDRES_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $WINDRES_FOR_TARGET\`" >&6
+    ac_dir=`dirname $WINDRES_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   else
     # Canadian cross, just use what we found
     echo "$as_me:$LINENO: result: pre-installed" >&5
@@ -11339,8 +11370,9 @@ else
 echo "${ECHO_T}just compiled" >&6
   elif expr "x$WINDRES_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    echo "$as_me:$LINENO: result: pre-installed in \`dirname $WINDRES_FOR_TARGET\`" >&5
-echo "${ECHO_T}pre-installed in \`dirname $WINDRES_FOR_TARGET\`" >&6
+    ac_dir=`dirname $WINDRES_FOR_TARGET`
+    echo "$as_me:$LINENO: result: pre-installed in $ac_dir" >&5
+echo "${ECHO_T}pre-installed in $ac_dir" >&6
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     WINDRES_FOR_TARGET='$(WINDRES)'
@@ -11546,6 +11578,7 @@ if test "${with_htmldir+set}" = set; then
 else
   htmldir="\${docdir}"
 fi;
+
 
 
 
