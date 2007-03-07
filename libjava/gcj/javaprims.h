@@ -153,6 +153,7 @@ extern "Java"
       class Character;
       class Character$Subset;
       class Character$UnicodeBlock;
+      class Character$UnicodeBlock$NameType;
       class Class;
       class ClassCastException;
       class ClassCircularityError;
