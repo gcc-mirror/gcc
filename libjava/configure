@@ -5088,6 +5088,7 @@ if test "$use_x_awt" != yes; then
 fi
 
 # Tools that need to be compiled against classpath's tools classes
+: > vm-tools-packages
 for package in gnu/gcj/tools/gc_analyze ; do
     echo $package >> standard.omit
     echo $package >> vm-tools-packages
@@ -6030,7 +6031,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 6033 "configure"' > conftest.$ac_ext
+  echo '#line 6034 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -7072,7 +7073,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   :
 else
   cat > conftest.$ac_ext << EOF
-#line 7075 "configure"
+#line 7076 "configure"
 struct S { ~S(); };
 void bar();
 void foo()

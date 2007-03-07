@@ -296,6 +296,7 @@ if test "$use_x_awt" != yes; then
 fi
 
 # Tools that need to be compiled against classpath's tools classes
+: > vm-tools-packages
 for package in gnu/gcj/tools/gc_analyze ; do
     echo $package >> standard.omit
     echo $package >> vm-tools-packages
