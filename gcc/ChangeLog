@@ -1,3 +1,9 @@
+2007-03-07  Richard Henderson  <rth@redhat.com>
+
+	PR target/30848
+	* reg-stack.c (emit_swap_insn): If a malformed asm was seen,
+	silently fix up the stack in the case of a missing register.
+
 2007-03-07  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/libunwind.S: Add .arch/.object_arch for armv4 builds.
