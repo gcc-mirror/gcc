@@ -1,6 +1,6 @@
 // boehm.cc - interface between libjava and Boehm GC.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation
 
    This file is part of libgcj.
@@ -378,6 +378,29 @@ void *
 _Jv_AllocRawObj (jsize size)
 {
   return (void *) GC_MALLOC (size ? size : 1);
+}
+
+typedef _Jv_ClosureList *closure_list_pointer;
+
+/* Release closures in a _Jv_ClosureList.  */
+static void
+finalize_closure_list (GC_PTR obj, GC_PTR)
+{
+  _Jv_ClosureList **clpp = (_Jv_ClosureList **)obj;
+  _Jv_ClosureList::releaseClosures (clpp);
+}
+
+/* Allocate a double-indirect pointer to a _Jv_ClosureList that will
+   get garbage-collected after this double-indirect pointer becomes
+   unreachable by any other objects, including finalizable ones.  */
+_Jv_ClosureList **
+_Jv_ClosureListFinalizer ()
+{
+  _Jv_ClosureList **clpp;
+  clpp = (_Jv_ClosureList **)_Jv_AllocBytes (sizeof (*clpp));
+  GC_REGISTER_FINALIZER_UNREACHABLE (clpp, finalize_closure_list,
+				     NULL, NULL, NULL);
+  return clpp;
 }
 
 static void

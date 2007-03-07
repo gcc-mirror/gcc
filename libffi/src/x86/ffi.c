@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 1996, 1998, 1999, 2001  Red Hat, Inc.
+   ffi.c - Copyright (c) 1996, 1998, 1999, 2001, 2007  Red Hat, Inc.
            Copyright (c) 2002  Ranjit Mathew
            Copyright (c) 2002  Bo Thorsen
            Copyright (c) 2002  Roger Sayle
@@ -302,7 +302,7 @@ ffi_prep_incoming_args_SYSV(char *stack, void **rvalue, void **avalue,
 ({ unsigned char *__tramp = (unsigned char*)(TRAMP); \
    unsigned int  __fun = (unsigned int)(FUN); \
    unsigned int  __ctx = (unsigned int)(CTX); \
-   unsigned int  __dis = __fun - ((unsigned int) __tramp + FFI_TRAMPOLINE_SIZE); \
+   unsigned int  __dis = __fun - (__ctx + FFI_TRAMPOLINE_SIZE); \
    *(unsigned char*) &__tramp[0] = 0xb8; \
    *(unsigned int*)  &__tramp[1] = __ctx; /* movl __ctx, %eax */ \
    *(unsigned char *)  &__tramp[5] = 0xe9; \
@@ -313,16 +313,17 @@ ffi_prep_incoming_args_SYSV(char *stack, void **rvalue, void **avalue,
 /* the cif must already be prep'ed */
 
 ffi_status
-ffi_prep_closure (ffi_closure* closure,
-		  ffi_cif* cif,
-		  void (*fun)(ffi_cif*,void*,void**,void*),
-		  void *user_data)
+ffi_prep_closure_loc (ffi_closure* closure,
+		      ffi_cif* cif,
+		      void (*fun)(ffi_cif*,void*,void**,void*),
+		      void *user_data,
+		      void *codeloc)
 {
   FFI_ASSERT (cif->abi == FFI_SYSV);
 
   FFI_INIT_TRAMPOLINE (&closure->tramp[0], \
 		       &ffi_closure_SYSV,  \
-		       (void*)closure);
+		       codeloc);
     
   closure->cif  = cif;
   closure->user_data = user_data;
@@ -336,10 +337,11 @@ ffi_prep_closure (ffi_closure* closure,
 #if !FFI_NO_RAW_API
 
 ffi_status
-ffi_prep_raw_closure (ffi_raw_closure* closure,
-		      ffi_cif* cif,
-		      void (*fun)(ffi_cif*,void*,ffi_raw*,void*),
-		      void *user_data)
+ffi_prep_raw_closure_loc (ffi_raw_closure* closure,
+			  ffi_cif* cif,
+			  void (*fun)(ffi_cif*,void*,ffi_raw*,void*),
+			  void *user_data,
+			  void *codeloc)
 {
   int i;
 
@@ -358,7 +360,7 @@ ffi_prep_raw_closure (ffi_raw_closure* closure,
   
 
   FFI_INIT_TRAMPOLINE (&closure->tramp[0], &ffi_closure_raw_SYSV,
-		       (void*)closure);
+		       codeloc);
     
   closure->cif  = cif;
   closure->user_data = user_data;

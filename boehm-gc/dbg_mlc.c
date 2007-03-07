@@ -3,6 +3,7 @@
  * Copyright (c) 1991-1995 by Xerox Corporation.  All rights reserved.
  * Copyright (c) 1997 by Silicon Graphics.  All rights reserved.
  * Copyright (c) 1999-2004 Hewlett-Packard Development Company, L.P.
+ * Copyright (C) 2007 Free Software Foundation, Inc
  *
  * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
  * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
@@ -1118,8 +1119,8 @@ GC_PTR *ocd;
     if (0 == base) return;
     if ((ptr_t)obj - base != sizeof(oh)) {
         GC_err_printf1(
-	  "GC_debug_register_finalizer_no_order called with non-base-pointer 0x%lx\n",
-	  obj);
+	    "GC_debug_register_finalizer_no_order called with non-base-pointer 0x%lx\n",
+	    obj);
     }
     if (0 == fn) {
       GC_register_finalizer_no_order(base, 0, 0, &my_old_fn, &my_old_cd);
@@ -1129,7 +1130,41 @@ GC_PTR *ocd;
 				     &my_old_cd);
     }
     store_old(obj, my_old_fn, (struct closure *)my_old_cd, ofn, ocd);
- }
+}
+
+# ifdef __STDC__
+    void GC_debug_register_finalizer_unreachable
+    				    (GC_PTR obj, GC_finalization_proc fn,
+    				     GC_PTR cd, GC_finalization_proc *ofn,
+				     GC_PTR *ocd)
+# else
+    void GC_debug_register_finalizer_unreachable
+    				    (obj, fn, cd, ofn, ocd)
+    GC_PTR obj;
+    GC_finalization_proc fn;
+    GC_PTR cd;
+    GC_finalization_proc *ofn;
+    GC_PTR *ocd;
+# endif
+{
+    GC_finalization_proc my_old_fn;
+    GC_PTR my_old_cd;
+    ptr_t base = GC_base(obj);
+    if (0 == base) return;
+    if ((ptr_t)obj - base != sizeof(oh)) {
+        GC_err_printf1(
+	    "GC_debug_register_finalizer_unreachable called with non-base-pointer 0x%lx\n",
+	    obj);
+    }
+    if (0 == fn) {
+      GC_register_finalizer_unreachable(base, 0, 0, &my_old_fn, &my_old_cd);
+    } else {
+      GC_register_finalizer_unreachable(base, GC_debug_invoke_finalizer,
+    			    	     GC_make_closure(fn,cd), &my_old_fn,
+				     &my_old_cd);
+    }
+    store_old(obj, my_old_fn, (struct closure *)my_old_cd, ofn, ocd);
+}
 
 # ifdef __STDC__
     void GC_debug_register_finalizer_ignore_self

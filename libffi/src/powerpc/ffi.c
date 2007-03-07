@@ -1,5 +1,6 @@
 /* -----------------------------------------------------------------------
    ffi.c - Copyright (c) 1998 Geoffrey Keating
+   Copyright (C) 2007 Free Software Foundation, Inc
 
    PowerPC Foreign Function Interface
 
@@ -834,27 +835,27 @@ ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
 #define MIN_CACHE_LINE_SIZE 8
 
 static void
-flush_icache (char *addr1, int size)
+flush_icache (char *wraddr, char *xaddr, int size)
 {
   int i;
-  char * addr;
   for (i = 0; i < size; i += MIN_CACHE_LINE_SIZE)
     {
       addr = addr1 + i;
-      __asm__ volatile ("icbi 0,%0;" "dcbf 0,%0;"
-			: : "r" (addr) : "memory");
+      __asm__ volatile ("icbi 0,%0;" "dcbf 0,%1;"
+			: : "r" (xaddr + i), "r" (wraddr + i) : "memory");
     }
-  addr = addr1 + size - 1;
-  __asm__ volatile ("icbi 0,%0;" "dcbf 0,%0;" "sync;" "isync;"
-		    : : "r"(addr) : "memory");
+  __asm__ volatile ("icbi 0,%0;" "dcbf 0,%1;" "sync;" "isync;"
+		    : : "r"(xaddr + size - 1), "r"(wraddr + size - 1)
+		    : "memory");
 }
 #endif
 
 ffi_status
-ffi_prep_closure (ffi_closure *closure,
-		  ffi_cif *cif,
-		  void (*fun) (ffi_cif *, void *, void **, void *),
-		  void *user_data)
+ffi_prep_closure_loc (ffi_closure *closure,
+		      ffi_cif *cif,
+		      void (*fun) (ffi_cif *, void *, void **, void *),
+		      void *user_data,
+		      void *codeloc)
 {
 #ifdef POWERPC64
   void **tramp = (void **) &closure->tramp[0];
@@ -862,7 +863,7 @@ ffi_prep_closure (ffi_closure *closure,
   FFI_ASSERT (cif->abi == FFI_LINUX64);
   /* Copy function address and TOC from ffi_closure_LINUX64.  */
   memcpy (tramp, (char *) ffi_closure_LINUX64, 16);
-  tramp[2] = (void *) closure;
+  tramp[2] = (void *) codeloc;
 #else
   unsigned int *tramp;
 
@@ -878,10 +879,10 @@ ffi_prep_closure (ffi_closure *closure,
   tramp[8] = 0x7c0903a6;  /*   mtctr   r0 */
   tramp[9] = 0x4e800420;  /*   bctr */
   *(void **) &tramp[2] = (void *) ffi_closure_SYSV; /* function */
-  *(void **) &tramp[3] = (void *) closure;          /* context */
+  *(void **) &tramp[3] = (void *) codeloc;          /* context */
 
   /* Flush the icache.  */
-  flush_icache (&closure->tramp[0],FFI_TRAMPOLINE_SIZE);
+  flush_icache (tramp, codeloc, FFI_TRAMPOLINE_SIZE);
 #endif
 
   closure->cif = cif;

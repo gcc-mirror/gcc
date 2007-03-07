@@ -92,7 +92,7 @@ LTLIBRARIES = $(noinst_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 libffi_la_LIBADD =
 am__dirstamp = $(am__leading_dot)dirstamp
 am_libffi_la_OBJECTS = src/debug.lo src/prep_cif.lo src/types.lo \
-	src/raw_api.lo src/java_raw_api.lo
+	src/raw_api.lo src/java_raw_api.lo src/closures.lo
 @MIPS_IRIX_TRUE@am__objects_1 = src/mips/ffi.lo src/mips/o32.lo \
 @MIPS_IRIX_TRUE@	src/mips/n32.lo
 @MIPS_LINUX_TRUE@am__objects_2 = src/mips/ffi.lo src/mips/o32.lo
@@ -141,7 +141,7 @@ libffi_la_OBJECTS = $(am_libffi_la_OBJECTS) \
 	$(nodist_libffi_la_OBJECTS)
 libffi_convenience_la_LIBADD =
 am__objects_24 = src/debug.lo src/prep_cif.lo src/types.lo \
-	src/raw_api.lo src/java_raw_api.lo
+	src/raw_api.lo src/java_raw_api.lo src/closures.lo
 am_libffi_convenience_la_OBJECTS = $(am__objects_24)
 am__objects_25 = $(am__objects_1) $(am__objects_2) $(am__objects_3) \
 	$(am__objects_4) $(am__objects_5) $(am__objects_6) \
@@ -416,7 +416,7 @@ MAKEOVERRIDES =
 toolexeclib_LTLIBRARIES = libffi.la
 noinst_LTLIBRARIES = libffi_convenience.la
 libffi_la_SOURCES = src/debug.c src/prep_cif.c src/types.c \
-		src/raw_api.c src/java_raw_api.c
+		src/raw_api.c src/java_raw_api.c src/closures.c
 
 nodist_libffi_la_SOURCES = $(am__append_1) $(am__append_2) \
 	$(am__append_3) $(am__append_4) $(am__append_5) \
@@ -534,6 +534,7 @@ src/prep_cif.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/types.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/raw_api.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/java_raw_api.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
+src/closures.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/mips/$(am__dirstamp):
 	@$(mkdir_p) src/mips
 	@: > src/mips/$(am__dirstamp)
@@ -729,6 +730,8 @@ mostlyclean-compile:
 	-rm -f src/arm/ffi.lo
 	-rm -f src/arm/sysv.$(OBJEXT)
 	-rm -f src/arm/sysv.lo
+	-rm -f src/closures.$(OBJEXT)
+	-rm -f src/closures.lo
 	-rm -f src/cris/ffi.$(OBJEXT)
 	-rm -f src/cris/ffi.lo
 	-rm -f src/cris/sysv.$(OBJEXT)
@@ -827,6 +830,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/closures.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/debug.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/java_raw_api.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/prep_cif.Plo@am__quote@

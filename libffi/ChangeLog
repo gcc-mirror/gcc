@@ -1,5 +1,55 @@
 2007-03-07  Alexandre Oliva  <aoliva@redhat.com>
 
+	* include/ffi.h.in (ffi_closure_alloc, ffi_closure_free): New.
+	(ffi_prep_closure_loc): New.
+	(ffi_prep_raw_closure_loc): New.
+	(ffi_prep_java_raw_closure_loc): New.
+	* src/closures.c: New file.
+	* src/dlmalloc.c [FFI_MMAP_EXEC_WRIT] (struct malloc_segment):
+	Replace sflags with exec_offset.
+	[FFI_MMAP_EXEC_WRIT] (mmap_exec_offset, add_segment_exec_offset,
+	sub_segment_exec_offset): New macros.
+	(get_segment_flags, set_segment_flags, check_segment_merge): New
+	macros.
+	(is_mmapped_segment, is_extern_segment): Use get_segment_flags.
+	(add_segment, sys_alloc, create_mspace, create_mspace_with_base,
+	destroy_mspace): Use new macros.
+	(sys_alloc): Silence warning.
+	* Makefile.am (libffi_la_SOURCES): Add src/closures.c.
+	* Makefile.in: Rebuilt.
+	* src/prep_cif [FFI_CLOSURES] (ffi_prep_closure): Implement in
+	terms of ffi_prep_closure_loc.
+	* src/raw_api.c (ffi_prep_raw_closure_loc): Renamed and adjusted
+	from...
+	(ffi_prep_raw_closure): ... this.  Re-implement in terms of the
+	renamed version.
+	* src/java_raw_api (ffi_prep_java_raw_closure_loc): Renamed and
+	adjusted from...
+	(ffi_prep_java_raw_closure): ... this.  Re-implement in terms of
+	the renamed version.
+	* src/alpha/ffi.c (ffi_prep_closure_loc): Renamed from
+	(ffi_prep_closure): ... this.
+	* src/pa/ffi.c: Likewise.
+	* src/cris/ffi.c: Likewise.  Adjust.
+	* src/frv/ffi.c: Likewise.
+	* src/ia64/ffi.c: Likewise.
+	* src/mips/ffi.c: Likewise.
+	* src/powerpc/ffi_darwin.c: Likewise.
+	* src/s390/ffi.c: Likewise.
+	* src/sh/ffi.c: Likewise.
+	* src/sh64/ffi.c: Likewise.
+	* src/sparc/ffi.c: Likewise.
+	* src/x86/ffi64.c: Likewise.
+	* src/x86/ffi.c: Likewise.
+	(FFI_INIT_TRAMPOLINE): Adjust.
+	(ffi_prep_raw_closure_loc): Renamed and adjusted from...
+	(ffi_prep_raw_closure): ... this.
+	* src/powerpc/ffi.c (ffi_prep_closure_loc): Renamed from
+	(ffi_prep_closure): ... this.
+	(flush_icache): Adjust.
+
+2007-03-07  Alexandre Oliva  <aoliva@redhat.com>
+
 	* src/dlmalloc.c: New file, imported version 2.8.3 of Doug
 	Lea's malloc.
 

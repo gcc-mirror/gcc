@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 1996, 2003, 2004 Red Hat, Inc.
+   ffi.c - Copyright (c) 1996, 2003, 2004, 2007 Red Hat, Inc.
    
    SPARC Foreign Function Interface 
 
@@ -425,10 +425,11 @@ extern void ffi_closure_v8(void);
 #endif
 
 ffi_status
-ffi_prep_closure (ffi_closure* closure,
-		  ffi_cif* cif,
-		  void (*fun)(ffi_cif*, void*, void**, void*),
-		  void *user_data)
+ffi_prep_closure_loc (ffi_closure* closure,
+		      ffi_cif* cif,
+		      void (*fun)(ffi_cif*, void*, void**, void*),
+		      void *user_data,
+		      void *codeloc)
 {
   unsigned int *tramp = (unsigned int *) &closure->tramp[0];
   unsigned long fn;
@@ -443,7 +444,7 @@ ffi_prep_closure (ffi_closure* closure,
   tramp[3] = 0x01000000;	/* nop			*/
   *((unsigned long *) &tramp[4]) = fn;
 #else
-  unsigned long ctx = (unsigned long) closure;
+  unsigned long ctx = (unsigned long) codeloc;
   FFI_ASSERT (cif->abi == FFI_V8);
   fn = (unsigned long) ffi_closure_v8;
   tramp[0] = 0x03000000 | fn >> 10;	/* sethi %hi(fn), %g1	*/

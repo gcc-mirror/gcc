@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 2002  Bo Thorsen <bo@suse.de>
+   ffi.c - Copyright (c) 2002, 2007  Bo Thorsen <bo@suse.de>
    
    x86-64 Foreign Function Interface 
 
@@ -433,10 +433,11 @@ ffi_call (ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
 extern void ffi_closure_unix64(void);
 
 ffi_status
-ffi_prep_closure (ffi_closure* closure,
-		  ffi_cif* cif,
-		  void (*fun)(ffi_cif*, void*, void**, void*),
-		  void *user_data)
+ffi_prep_closure_loc (ffi_closure* closure,
+		      ffi_cif* cif,
+		      void (*fun)(ffi_cif*, void*, void**, void*),
+		      void *user_data,
+		      void *codeloc)
 {
   volatile unsigned short *tramp;
 
@@ -445,7 +446,7 @@ ffi_prep_closure (ffi_closure* closure,
   tramp[0] = 0xbb49;		/* mov <code>, %r11	*/
   *(void * volatile *) &tramp[1] = ffi_closure_unix64;
   tramp[5] = 0xba49;		/* mov <data>, %r10	*/
-  *(void * volatile *) &tramp[6] = closure;
+  *(void * volatile *) &tramp[6] = codeloc;
 
   /* Set the carry bit iff the function uses any sse registers.
      This is clc or stc, together with the first byte of the jmp.  */

@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 1998, 2001 Red Hat, Inc.
+   ffi.c - Copyright (c) 1998, 2001, 2007 Red Hat, Inc.
    
    Alpha Foreign Function Interface 
 
@@ -146,10 +146,11 @@ ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
 
 
 ffi_status
-ffi_prep_closure (ffi_closure* closure,
-		  ffi_cif* cif,
-		  void (*fun)(ffi_cif*, void*, void**, void*),
-		  void *user_data)
+ffi_prep_closure_loc (ffi_closure* closure,
+		      ffi_cif* cif,
+		      void (*fun)(ffi_cif*, void*, void**, void*),
+		      void *user_data,
+		      void *codeloc)
 {
   unsigned int *tramp;
 

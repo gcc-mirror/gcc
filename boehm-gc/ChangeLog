@@ -1,3 +1,14 @@
+2007-03-07  Alexandre Oliva  <aoliva@redhat.com>
+
+	* include/gc.h (GC_REGISTER_FINALIZER_UNREACHABLE): New.
+	(GC_register_finalizer_unreachable): Declare.
+	(GC_debug_register_finalizer_unreachable): Declare.
+	* finalize.c (GC_unreachable_finalize_mark_proc): New.
+	(GC_register_finalizer_unreachable): New.
+	(GC_finalize): Handle it.
+	* dbg_mlc.c (GC_debug_register_finalizer_unreachable): New.
+	(GC_debug_register_finalizer_no_order): Fix whitespace.
+
 2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Makefile.am: Add dummy install-pdf target.

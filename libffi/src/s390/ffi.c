@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 2000 Software AG
+   ffi.c - Copyright (c) 2000, 2007 Software AG
  
    S390 Foreign Function Interface
  
@@ -736,17 +736,18 @@ ffi_closure_helper_SYSV (ffi_closure *closure,
 
 /*====================================================================*/
 /*                                                                    */
-/* Name     - ffi_prep_closure.                                       */
+/* Name     - ffi_prep_closure_loc.                                   */
 /*                                                                    */
 /* Function - Prepare a FFI closure.                                  */
 /*                                                                    */
 /*====================================================================*/
  
 ffi_status
-ffi_prep_closure (ffi_closure *closure,
-                  ffi_cif *cif,
-                  void (*fun) (ffi_cif *, void *, void **, void *),
-                  void *user_data)
+ffi_prep_closure_loc (ffi_closure *closure,
+		      ffi_cif *cif,
+		      void (*fun) (ffi_cif *, void *, void **, void *),
+		      void *user_data,
+		      void *codeloc)
 {
   FFI_ASSERT (cif->abi == FFI_SYSV);
 
@@ -755,7 +756,7 @@ ffi_prep_closure (ffi_closure *closure,
   *(short *)&closure->tramp [2] = 0x9801;   /* lm %r0,%r1,6(%r1) */
   *(short *)&closure->tramp [4] = 0x1006;
   *(short *)&closure->tramp [6] = 0x07f1;   /* br %r1 */
-  *(long  *)&closure->tramp [8] = (long)closure;
+  *(long  *)&closure->tramp [8] = (long)codeloc;
   *(long  *)&closure->tramp[12] = (long)&ffi_closure_SYSV;
 #else
   *(short *)&closure->tramp [0] = 0x0d10;   /* basr %r1,0 */
@@ -763,7 +764,7 @@ ffi_prep_closure (ffi_closure *closure,
   *(short *)&closure->tramp [4] = 0x100e;
   *(short *)&closure->tramp [6] = 0x0004;
   *(short *)&closure->tramp [8] = 0x07f1;   /* br %r1 */
-  *(long  *)&closure->tramp[16] = (long)closure;
+  *(long  *)&closure->tramp[16] = (long)codeloc;
   *(long  *)&closure->tramp[24] = (long)&ffi_closure_SYSV;
 #endif 
  

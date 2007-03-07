@@ -1,6 +1,6 @@
 // execution.h - Execution engines. -*- c++ -*-
 
-/* Copyright (C) 2004, 2006  Free Software Foundation
+/* Copyright (C) 2004, 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -29,6 +29,7 @@ struct _Jv_ExecutionEngine
   _Jv_ResolvedMethod *(*resolve_method) (_Jv_Method *, jclass,
 					 jboolean);
   void (*post_miranda_hook) (jclass);
+  _Jv_ClosureList **(*get_closure_list) (jclass);
 };
 
 // This handles gcj-compiled code except that compiled with
@@ -77,6 +78,11 @@ struct _Jv_CompiledEngine : public _Jv_ExecutionEngine
     // Not needed.
   }
 
+  static _Jv_ClosureList **do_get_closure_list (jclass)
+  {
+    return NULL;
+  }
+
   _Jv_CompiledEngine ()
   {
     unregister = do_unregister;
@@ -87,6 +93,7 @@ struct _Jv_CompiledEngine : public _Jv_ExecutionEngine
     create_ncode = do_create_ncode;
     resolve_method = do_resolve_method;
     post_miranda_hook = do_post_miranda_hook;
+    get_closure_list = do_get_closure_list;
   }
 
   // These operators make it so we don't have to link in libstdc++.
@@ -105,6 +112,7 @@ class _Jv_IndirectCompiledClass
 {
 public:
   void **field_initializers;
+  _Jv_ClosureList **closures;
 };
 
 // This handles gcj-compiled code compiled with -findirect-classes.
@@ -114,14 +122,32 @@ struct _Jv_IndirectCompiledEngine : public _Jv_CompiledEngine
   {
     allocate_static_fields = do_allocate_static_fields;
     allocate_field_initializers = do_allocate_field_initializers;
+    get_closure_list = do_get_closure_list;
   }
   
+  static _Jv_IndirectCompiledClass *get_aux_info (jclass klass)
+  {
+    _Jv_IndirectCompiledClass *aux =
+      (_Jv_IndirectCompiledClass*)klass->aux_info;
+    if (!aux)
+      {
+	aux = (_Jv_IndirectCompiledClass*)
+	  _Jv_AllocRawObj (sizeof (_Jv_IndirectCompiledClass));
+	klass->aux_info = aux;
+      }
+
+    return aux;
+  }
+
   static void do_allocate_field_initializers (jclass klass)
   {
-    _Jv_IndirectCompiledClass *aux 
-      =  (_Jv_IndirectCompiledClass*)
-        _Jv_AllocRawObj (sizeof (_Jv_IndirectCompiledClass));
-    klass->aux_info = aux;
+    _Jv_IndirectCompiledClass *aux = get_aux_info (klass);
+    if (!aux)
+      {
+	aux = (_Jv_IndirectCompiledClass*)
+	  _Jv_AllocRawObj (sizeof (_Jv_IndirectCompiledClass));
+	klass->aux_info = aux;
+      }
 
     aux->field_initializers = (void **)_Jv_Malloc (klass->field_count 
 						   * sizeof (void*));    
@@ -172,6 +198,16 @@ struct _Jv_IndirectCompiledEngine : public _Jv_CompiledEngine
       } 
     _Jv_Free (aux->field_initializers);
   }
+
+  static _Jv_ClosureList **do_get_closure_list (jclass klass)
+  {
+    _Jv_IndirectCompiledClass *aux = get_aux_info (klass);
+
+    if (!aux->closures)
+      aux->closures = _Jv_ClosureListFinalizer ();
+
+    return aux->closures;
+  }
 };
 
 
@@ -203,6 +239,8 @@ class _Jv_InterpreterEngine : public _Jv_ExecutionEngine
 
   static void do_post_miranda_hook (jclass);
 
+  static _Jv_ClosureList **do_get_closure_list (jclass klass);
+
   _Jv_InterpreterEngine ()
   {
     unregister = do_unregister;
@@ -213,6 +251,7 @@ class _Jv_InterpreterEngine : public _Jv_ExecutionEngine
     create_ncode = do_create_ncode;
     resolve_method = do_resolve_method;
     post_miranda_hook = do_post_miranda_hook;
+    get_closure_list = do_get_closure_list;
   }
 
   // These operators make it so we don't have to link in libstdc++.

@@ -1879,11 +1879,47 @@ struct malloc_segment {
   char*        base;             /* base address */
   size_t       size;             /* allocated size */
   struct malloc_segment* next;   /* ptr to next segment */
+#if FFI_MMAP_EXEC_WRIT
+  /* The mmap magic is supposed to store the address of the executable
+     segment at the very end of the requested block.  */
+
+# define mmap_exec_offset(b,s) (*(ptrdiff_t*)((b)+(s)-sizeof(ptrdiff_t)))
+
+  /* We can only merge segments if their corresponding executable
+     segments are at identical offsets.  */
+# define check_segment_merge(S,b,s) \
+  (mmap_exec_offset((b),(s)) == (S)->exec_offset)
+
+# define add_segment_exec_offset(p,S) ((char*)(p) + (S)->exec_offset)
+# define sub_segment_exec_offset(p,S) ((char*)(p) - (S)->exec_offset)
+
+  /* The removal of sflags only works with HAVE_MORECORE == 0.  */
+
+# define get_segment_flags(S)   (IS_MMAPPED_BIT)
+# define set_segment_flags(S,v) \
+  (((v) != IS_MMAPPED_BIT) ? (ABORT, (v)) :				\
+   (((S)->exec_offset =							\
+     mmap_exec_offset((S)->base, (S)->size)),				\
+    (mmap_exec_offset((S)->base + (S)->exec_offset, (S)->size) !=	\
+     (S)->exec_offset) ? (ABORT, (v)) :					\
+   (mmap_exec_offset((S)->base, (S)->size) = 0), (v)))
+
+  /* We use an offset here, instead of a pointer, because then, when
+     base changes, we don't have to modify this.  On architectures
+     with segmented addresses, this might not work.  */
+  ptrdiff_t    exec_offset;
+#else
+
+# define get_segment_flags(S)   ((S)->sflags)
+# define set_segment_flags(S,v) ((S)->sflags = (v))
+# define check_segment_merge(S,b,s) (1)
+
   flag_t       sflags;           /* mmap and extern flag */
+#endif
 };
 
-#define is_mmapped_segment(S)  ((S)->sflags & IS_MMAPPED_BIT)
-#define is_extern_segment(S)   ((S)->sflags & EXTERN_BIT)
+#define is_mmapped_segment(S)  (get_segment_flags(S) & IS_MMAPPED_BIT)
+#define is_extern_segment(S)   (get_segment_flags(S) & EXTERN_BIT)
 
 typedef struct malloc_segment  msegment;
 typedef struct malloc_segment* msegmentptr;
@@ -3290,7 +3326,7 @@ static void add_segment(mstate m, char* tbase, size_t tsize, flag_t mmapped) {
   *ss = m->seg; /* Push current record */
   m->seg.base = tbase;
   m->seg.size = tsize;
-  m->seg.sflags = mmapped;
+  set_segment_flags(&m->seg, mmapped);
   m->seg.next = ss;
 
   /* Insert trailing fenceposts */
@@ -3393,7 +3429,7 @@ static void* sys_alloc(mstate m, size_t nb) {
             if (end != CMFAIL)
               asize += esize;
             else {            /* Can't use; try to release */
-              CALL_MORECORE(-asize);
+              (void)CALL_MORECORE(-asize);
               br = CMFAIL;
             }
           }
@@ -3450,7 +3486,7 @@ static void* sys_alloc(mstate m, size_t nb) {
     if (!is_initialized(m)) { /* first-time initialization */
       m->seg.base = m->least_addr = tbase;
       m->seg.size = tsize;
-      m->seg.sflags = mmap_flag;
+      set_segment_flags(&m->seg, mmap_flag);
       m->magic = mparams.magic;
       init_bins(m);
       if (is_global(m)) 
@@ -3469,7 +3505,8 @@ static void* sys_alloc(mstate m, size_t nb) {
         sp = sp->next;
       if (sp != 0 &&
           !is_extern_segment(sp) &&
-          (sp->sflags & IS_MMAPPED_BIT) == mmap_flag &&
+	  check_segment_merge(sp, tbase, tsize) &&
+          (get_segment_flags(sp) & IS_MMAPPED_BIT) == mmap_flag &&
           segment_holds(sp, m->top)) { /* append */
         sp->size += tsize;
         init_top(m, m->top, m->topsize + tsize);
@@ -3482,7 +3519,8 @@ static void* sys_alloc(mstate m, size_t nb) {
           sp = sp->next;
         if (sp != 0 &&
             !is_extern_segment(sp) &&
-            (sp->sflags & IS_MMAPPED_BIT) == mmap_flag) {
+	    check_segment_merge(sp, tbase, tsize) &&
+            (get_segment_flags(sp) & IS_MMAPPED_BIT) == mmap_flag) {
           char* oldbase = sp->base;
           sp->base = tbase;
           sp->size += tsize;
@@ -4397,7 +4435,7 @@ mspace create_mspace(size_t capacity, int locked) {
     char* tbase = (char*)(CALL_MMAP(tsize));
     if (tbase != CMFAIL) {
       m = init_user_mstate(tbase, tsize);
-      m->seg.sflags = IS_MMAPPED_BIT;
+      set_segment_flags(&m->seg, IS_MMAPPED_BIT);
       set_lock(m, locked);
     }
   }
@@ -4412,7 +4450,7 @@ mspace create_mspace_with_base(void* base, size_t capacity, int locked) {
   if (capacity > msize + TOP_FOOT_SIZE &&
       capacity < (size_t) -(msize + TOP_FOOT_SIZE + mparams.page_size)) {
     m = init_user_mstate((char*)base, capacity);
-    m->seg.sflags = EXTERN_BIT;
+    set_segment_flags(&m->seg, EXTERN_BIT);
     set_lock(m, locked);
   }
   return (mspace)m;
@@ -4426,7 +4464,7 @@ size_t destroy_mspace(mspace msp) {
     while (sp != 0) {
       char* base = sp->base;
       size_t size = sp->size;
-      flag_t flag = sp->sflags;
+      flag_t flag = get_segment_flags(sp);
       sp = sp->next;
       if ((flag & IS_MMAPPED_BIT) && !(flag & EXTERN_BIT) &&
           CALL_MUNMAP(base, size) == 0)

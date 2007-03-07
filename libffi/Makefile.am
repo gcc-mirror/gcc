@@ -78,7 +78,7 @@ toolexeclib_LTLIBRARIES = libffi.la
 noinst_LTLIBRARIES = libffi_convenience.la
 
 libffi_la_SOURCES = src/debug.c src/prep_cif.c src/types.c \
-		src/raw_api.c src/java_raw_api.c
+		src/raw_api.c src/java_raw_api.c src/closures.c
 
 nodist_libffi_la_SOURCES =
 

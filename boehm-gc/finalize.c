@@ -2,6 +2,7 @@
  * Copyright 1988, 1989 Hans-J. Boehm, Alan J. Demers
  * Copyright (c) 1991-1996 by Xerox Corporation.  All rights reserved.
  * Copyright (c) 1996-1999 by Silicon Graphics.  All rights reserved.
+ * Copyright (C) 2007 Free Software Foundation, Inc
 
  * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
  * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
@@ -315,6 +316,14 @@ ptr_t p;
 {
 }
 
+/* Possible finalization_marker procedures.  Note that mark stack	*/
+/* overflow is handled by the caller, and is not a disaster.		*/
+GC_API void GC_unreachable_finalize_mark_proc(p)
+ptr_t p;
+{
+    return GC_normal_finalize_mark_proc(p);
+}
+
 
 
 /* Register a finalization function.  See gc.h for details.	*/
@@ -511,6 +520,23 @@ finalization_mark_proc * mp;
     				ocd, GC_null_finalize_mark_proc);
 }
 
+# if defined(__STDC__)
+    void GC_register_finalizer_unreachable(void * obj,
+			       GC_finalization_proc fn, void * cd,
+			       GC_finalization_proc *ofn, void ** ocd)
+# else
+    void GC_register_finalizer_unreachable(obj, fn, cd, ofn, ocd)
+    GC_PTR obj;
+    GC_finalization_proc fn;
+    GC_PTR cd;
+    GC_finalization_proc * ofn;
+    GC_PTR * ocd;
+# endif
+{
+    GC_register_finalizer_inner(obj, fn, cd, ofn,
+    				ocd, GC_unreachable_finalize_mark_proc);
+}
+
 #ifndef NO_DEBUGGING
 void GC_dump_finalization()
 {
@@ -638,8 +664,43 @@ void GC_finalize()
   	    if (curr_fo -> fo_mark_proc == GC_null_finalize_mark_proc) {
   	        GC_MARK_FO(real_ptr, GC_normal_finalize_mark_proc);
   	    }
-  	    GC_set_mark_bit(real_ptr);
+	    if (curr_fo -> fo_mark_proc != GC_unreachable_finalize_mark_proc) {
+		GC_set_mark_bit(real_ptr);
+	    }
   	}
+      }
+
+      /* now revive finalize-when-unreachable objects reachable from
+	 other finalizable objects */
+      curr_fo = GC_finalize_now;
+      prev_fo = 0;
+      while (curr_fo != 0) {
+	next_fo = fo_next(curr_fo);
+	if (curr_fo -> fo_mark_proc == GC_unreachable_finalize_mark_proc) {
+	  real_ptr = (ptr_t)curr_fo -> fo_hidden_base;
+	  if (!GC_is_marked(real_ptr)) {
+	      GC_set_mark_bit(real_ptr);
+	  } else {
+	      if (prev_fo == 0)
+		GC_finalize_now = next_fo;
+	      else
+		fo_set_next(prev_fo, next_fo);
+
+              curr_fo -> fo_hidden_base =
+              		(word) HIDE_POINTER(curr_fo -> fo_hidden_base);
+              GC_words_finalized -=
+                 	ALIGNED_WORDS(curr_fo -> fo_object_size)
+              		+ ALIGNED_WORDS(sizeof(struct finalizable_object));
+
+	      i = HASH2(real_ptr, log_fo_table_size);
+	      fo_set_next (curr_fo, fo_head[i]);
+	      GC_fo_entries++;
+	      fo_head[i] = curr_fo;
+	      curr_fo = prev_fo;
+	  }
+	}
+	prev_fo = curr_fo;
+	curr_fo = next_fo;
       }
   }
 

@@ -202,7 +202,7 @@ class _Jv_InterpMethod : public _Jv_MethodBase
   }
 
   // return the method's invocation pointer (a stub).
-  void *ncode ();
+  void *ncode (jclass);
   void compile (const void * const *);
 
   static void run_normal (ffi_cif*, void*, ffi_raw*, void*);
@@ -293,6 +293,7 @@ class _Jv_InterpClass
   _Jv_MethodBase **interpreted_methods;
   _Jv_ushort     *field_initializers;
   jstring source_file_name;
+  _Jv_ClosureList **closures;
 
   friend class _Jv_ClassReader;
   friend class _Jv_InterpMethod;
@@ -341,7 +342,7 @@ class _Jv_JNIMethod : public _Jv_MethodBase
   // This function is used when making a JNI call from the interpreter.
   static void call (ffi_cif *, void *, ffi_raw *, void *);
 
-  void *ncode ();
+  void *ncode (jclass);
 
   friend class _Jv_ClassReader;
   friend class _Jv_InterpreterEngine;

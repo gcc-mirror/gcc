@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   java_raw_api.c - Copyright (c) 1999  Red Hat, Inc.
+   java_raw_api.c - Copyright (c) 1999, 2007  Red Hat, Inc.
 
    Cloned from raw_api.c
 
@@ -307,22 +307,20 @@ ffi_java_translate_args (ffi_cif *cif, void *rvalue,
   ffi_java_raw_to_rvalue (cif, rvalue);
 }
 
-/* Again, here is the generic version of ffi_prep_raw_closure, which
- * will install an intermediate "hub" for translation of arguments from
- * the pointer-array format, to the raw format */
-
 ffi_status
-ffi_prep_java_raw_closure (ffi_raw_closure* cl,
-		      ffi_cif *cif,
-		      void (*fun)(ffi_cif*,void*,ffi_raw*,void*),
-		      void *user_data)
+ffi_prep_java_raw_closure_loc (ffi_raw_closure* cl,
+			       ffi_cif *cif,
+			       void (*fun)(ffi_cif*,void*,ffi_raw*,void*),
+			       void *user_data,
+			       void *codeloc)
 {
   ffi_status status;
 
-  status = ffi_prep_closure ((ffi_closure*) cl,
-			     cif,
-			     &ffi_java_translate_args,
-			     (void*)cl);
+  status = ffi_prep_closure_loc ((ffi_closure*) cl,
+				 cif,
+				 &ffi_java_translate_args,
+				 codeloc,
+				 codeloc);
   if (status == FFI_OK)
     {
       cl->fun       = fun;
@@ -330,6 +328,19 @@ ffi_prep_java_raw_closure (ffi_raw_closure* cl,
     }
 
   return status;
+}
+
+/* Again, here is the generic version of ffi_prep_raw_closure, which
+ * will install an intermediate "hub" for translation of arguments from
+ * the pointer-array format, to the raw format */
+
+ffi_status
+ffi_prep_java_raw_closure (ffi_raw_closure* cl,
+			   ffi_cif *cif,
+			   void (*fun)(ffi_cif*,void*,ffi_raw*,void*),
+			   void *user_data)
+{
+  return ffi_prep_java_raw_closure_loc (cl, cif, fun, user_data, cl);
 }
 
 #endif /* FFI_CLOSURES */

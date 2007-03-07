@@ -288,7 +288,7 @@ private:
  						    _Jv_Utf8Const *method_signature,
 						    jclass *found_class,
 						    bool check_perms = true);
-  static void *create_error_method(_Jv_Utf8Const *);
+  static void *create_error_method(_Jv_Utf8Const *, jclass);
 
   /* The least significant bit of the signature pointer in a symbol
      table is set to 1 by the compiler if the reference is "special",
@@ -341,6 +341,10 @@ void *_Jv_AllocBytes (jsize size) __attribute__((__malloc__));
 /* Allocate space for a new non-Java object, which does not have the usual 
    Java object header but may contain pointers to other GC'ed objects.  */
 void *_Jv_AllocRawObj (jsize size) __attribute__((__malloc__));
+/* Allocate a double-indirect pointer to a _Jv_ClosureList such that
+   the _Jv_ClosureList gets automatically finalized when it is no
+   longer reachable, not even by other finalizable objects.  */
+_Jv_ClosureList **_Jv_ClosureListFinalizer (void) __attribute__((__malloc__));
 /* Explicitly throw an out-of-memory exception.	*/
 void _Jv_ThrowNoMemory() __attribute__((__noreturn__));
 /* Allocate an object with a single pointer.  The first word is reserved

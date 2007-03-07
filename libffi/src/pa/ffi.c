@@ -613,10 +613,11 @@ ffi_status ffi_closure_inner_pa32(ffi_closure *closure, UINT32 *stack)
 extern void ffi_closure_pa32(void);
 
 ffi_status
-ffi_prep_closure (ffi_closure* closure,
-		  ffi_cif* cif,
-		  void (*fun)(ffi_cif*,void*,void**,void*),
-		  void *user_data)
+ffi_prep_closure_loc (ffi_closure* closure,
+		      ffi_cif* cif,
+		      void (*fun)(ffi_cif*,void*,void**,void*),
+		      void *user_data,
+		      void *codeloc)
 {
   UINT32 *tramp = (UINT32 *)(closure->tramp);
 #ifdef PA_HPUX
