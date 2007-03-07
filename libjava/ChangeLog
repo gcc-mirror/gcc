@@ -1,3 +1,7 @@
+2007-03-07  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* gcj/javaprims.h: Regenerated.
+
 2007-03-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	* include/jvm.h (_Jv_ClosureListFinalizer): New.
