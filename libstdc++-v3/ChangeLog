@@ -1,3 +1,11 @@
+2007-03-06  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28080 (partial)
+	* include/tr1/random (class random_device): Rework to use simple
+	<cstdio> input, do not include <fstream>.
+	* include/tr1/random.tcc (all inserters and extractors): Refer
+	to ios_base as base class of basic_istream or basic_ostream.
+
 2007-03-05  Joseph Myers  <joseph@codesourcery.com>
 
 	PR libstdc++/30675
