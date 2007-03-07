@@ -1,3 +1,27 @@
+2007-03-07  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* gcc.dg/20031012-1.c: Replace -Walways-true with -Waddress.
+	* gcc.dg/warn-addr-cmp.c: Likewise.
+	* gcc.dg/weak/weak-3.c: Likewise.
+	* gcc.dg/Werror-1.c: Likewise.
+	* gcc.dg/Werror-3.c: Likewise.
+	* gcc.dg/Werror-4.c: Likewise.
+	* gcc.dg/Werror-5.c: Likewise.
+	* gcc.dg/Werror-6.c: Likewise.
+	* gcc.dg/Werror-7.c: Likewise.
+	* gcc.dg/Werror-8.c: Likewise.
+	* gcc.dg/Werror-9.c: Likewise.
+	* gcc.dg/Werror-10.c: Likewise.
+	* gcc.dg/Werror-11.c: Likewise.
+	* gcc.dg/Werror-12.c: Likewise.
+	* g++.old-deja/g++.mike/warn8.C: Likewise.
+	* g++.dg/warn/noeffect8.C: Warn only with -Waddress.
+	* gcc.dg/Wstring-literal-comparison-1.C: Replace
+	-Wstring-literal-comparison with -Waddress.
+	* gcc.dg/Wstring-literal-comparison-4.c: Likewise.
+	* g++.dg/warn/Wstring-literal-comparison-1.C: Likewise.
+	* g++.dg/warn/Wstring-literal-comparison-4.c: Likewise.
+	
 2007-03-06  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/30744

@@ -2692,13 +2692,13 @@ parser_build_binary_op (enum tree_code code, struct c_expr arg1,
     {
       if ((code1 == STRING_CST && !integer_zerop (arg2.value))
 	  || (code2 == STRING_CST && !integer_zerop (arg1.value)))
-	warning (OPT_Wstring_literal_comparison,
-		 "comparison with string literal");
+	warning (OPT_Waddress, 
+                 "comparison with string literal results in unspecified behaviour");
     }
   else if (TREE_CODE_CLASS (code) == tcc_comparison
 	   && (code1 == STRING_CST || code2 == STRING_CST))
-    warning (OPT_Wstring_literal_comparison,
-	     "comparison with string literal");
+    warning (OPT_Waddress, 
+             "comparison with string literal results in unspecified behaviour");
 
   overflow_warning (result.value);
 
@@ -8072,7 +8072,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	      && (TREE_CODE (TREE_OPERAND (op0, 0)) == PARM_DECL
 		  || TREE_CODE (TREE_OPERAND (op0, 0)) == LABEL_DECL
 		  || !DECL_WEAK (TREE_OPERAND (op0, 0))))
-	    warning (OPT_Walways_true, "the address of %qD will never be NULL",
+	    warning (OPT_Waddress, "the address of %qD will never be NULL",
 		     TREE_OPERAND (op0, 0));
 	  result_type = type0;
 	}
@@ -8083,7 +8083,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	      && (TREE_CODE (TREE_OPERAND (op1, 0)) == PARM_DECL
 		  || TREE_CODE (TREE_OPERAND (op1, 0)) == LABEL_DECL
 		  || !DECL_WEAK (TREE_OPERAND (op1, 0))))
-	    warning (OPT_Walways_true, "the address of %qD will never be NULL",
+	    warning (OPT_Waddress, "the address of %qD will never be NULL",
 		     TREE_OPERAND (op1, 0));
 	  result_type = type1;
 	}

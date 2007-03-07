@@ -2505,9 +2505,10 @@ c_common_truthvalue_conversion (tree expr)
 		|| TREE_CODE (inner) == LABEL_DECL
 		|| !DECL_WEAK (inner)))
 	  {
-	    /* Common Ada/Pascal programmer's mistake.  We always warn
+            /* Common Ada/Pascal programmer's mistake.  We always warn
 	       about this since it is so bad.  */
-	    warning (OPT_Walways_true, "the address of %qD will always evaluate as %<true%>",
+	    warning (OPT_Waddress,
+		     "the address of %qD will always evaluate as %<true%>",
 		     inner);
 	    return truthvalue_true_node;
 	  }

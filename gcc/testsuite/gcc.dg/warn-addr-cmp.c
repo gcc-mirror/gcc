@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-weak "" } */
-/* { dg-options "-Walways-true" } */
+/* { dg-options "-Waddress" } */
 /* Warning when addr convert to bool always gives known result.
    Ada/Pascal programmers sometimes write 0-param functions without
    (), and might as well warn on variables, too.  */

@@ -116,6 +116,10 @@ Wabi
 C++ ObjC++ Var(warn_abi)
 Warn about things that will change when compiling with an ABI-compliant compiler
 
+Waddress
+C ObjC C++ ObjC++ Var(warn_address)
+Warn about suspicious uses of memory addresses
+
 Wall
 C ObjC C++ ObjC++
 Enable most warning messages

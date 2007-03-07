@@ -9976,8 +9976,8 @@ option.
 
 @example
 #pragma GCC diagnostic warning "-Wformat"
-#pragma GCC diagnostic error "-Walways-true"
-#pragma GCC diagnostic ignored "-Walways-true"
+#pragma GCC diagnostic error "-Wformat"
+#pragma GCC diagnostic ignored "-Wformat"
 @end example
 
 Note that these pragmas override any command line options.  Also,

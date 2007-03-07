@@ -1,9 +1,9 @@
 /* { dg-do compile } */
-/* { dg-options "-Wattributes -Walways-true" } */
+/* { dg-options "-Wattributes -Waddress" } */
 
 /* Make sure #pragma can override -Wfoo.  */
 
-#pragma GCC diagnostic ignored "-Walways-true"
+#pragma GCC diagnostic ignored "-Waddress"
 
 void __attribute__((dj)) bar() { }	/* { dg-warning "attribute directive ignored" } */
 

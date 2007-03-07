@@ -3248,8 +3248,8 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 		 "comparing floating point with == or != is unsafe");
       if ((TREE_CODE (orig_op0) == STRING_CST && !integer_zerop (op1))
 	  || (TREE_CODE (orig_op1) == STRING_CST && !integer_zerop (op0)))
-	warning (OPT_Wstring_literal_comparison,
-		 "comparison with string literal");
+	warning (OPT_Waddress, 
+                 "comparison with string literal results in unspecified behaviour");
 
       build_type = boolean_type_node;
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
@@ -3357,8 +3357,8 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
     case GT_EXPR:
       if (TREE_CODE (orig_op0) == STRING_CST
 	  || TREE_CODE (orig_op1) == STRING_CST)
-	warning (OPT_Wstring_literal_comparison,
-		 "comparison with string literal");
+	warning (OPT_Waddress, 
+                 "comparison with string literal results in unspecified behaviour");
 
       build_type = boolean_type_node;
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE)

@@ -1,6 +1,6 @@
 /* PR c/7776 */
 /* { dg-do compile } */
-/* { dg-options "-Wall -Wno-string-literal-comparison" } */
+/* { dg-options "-Wall -Wno-address" } */
 
 int test1(char *ptr)
 {

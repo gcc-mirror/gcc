@@ -57,10 +57,6 @@ Waggregate-return
 Common Var(warn_aggregate_return)
 Warn about returning structures, unions or arrays
 
-Walways-true
-Common Var(warn_always_true)
-Warn about comparisons that always evaluate to true
-
 Wattributes
 Common Var(warn_attributes) Init(1)
 Warn about inappropriate attribute usage
@@ -136,10 +132,6 @@ Warn about code which might break strict aliasing rules
 Wstrict-aliasing=
 Common Joined UInteger
 Warn about code which might break strict aliasing rules
-
-Wstring-literal-comparison
-Common Var(warn_string_literal_comparison)
-Warn about comparisons to constant string literals
 
 Wswitch
 Common Var(warn_switch)
