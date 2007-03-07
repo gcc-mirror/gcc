@@ -1,3 +1,14 @@
+2007-03-07  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* java/lang/Win32Process.java: Added nested class EOFInputStream.
+	* java/lang/natWin32Process.cc (ChildProcessPipe): Added DUMMY
+	enum and implementation.
+	(startProcess): Use redirect flag.
+	* classpath/lib/java/lang/Win32Process.class: Regenerated.
+	* classpath/lib/java/lang/Win32Process$EOFInputStream.class: New.
+	* gcj/javaprims.h: Regenerated.
+	* java/lang/Win32Process$EOFInputStream.h: New.
+
 2007-03-07  Andrew Haley  <aph@redhat.com>
 
 	* libgcj_bc.c (JvRunMainName): Declare.

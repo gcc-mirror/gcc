@@ -85,4 +85,13 @@ final class Win32Process extends Process
 				    boolean redirect)
     throws IOException;
   private native void cleanup ();
+
+  private static class EOFInputStream extends InputStream
+  {
+    static EOFInputStream instance = new EOFInputStream();
+    public int read()
+    {
+      return -1;
+    }
+  }
 }
