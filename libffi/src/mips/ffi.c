@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 1996 Red Hat, Inc.
+   ffi.c - Copyright (c) 1996, 2007 Red Hat, Inc.
    
    MIPS Foreign Function Interface 
 
@@ -497,14 +497,15 @@ extern void ffi_closure_O32(void);
 #endif /* FFI_MIPS_O32 */
 
 ffi_status
-ffi_prep_closure (ffi_closure *closure,
-		  ffi_cif *cif,
-		  void (*fun)(ffi_cif*,void*,void**,void*),
-		  void *user_data)
+ffi_prep_closure_loc (ffi_closure *closure,
+		      ffi_cif *cif,
+		      void (*fun)(ffi_cif*,void*,void**,void*),
+		      void *user_data,
+		      void *codeloc)
 {
   unsigned int *tramp = (unsigned int *) &closure->tramp[0];
   unsigned int fn;
-  unsigned int ctx = (unsigned int) closure;
+  unsigned int ctx = (unsigned int) codeloc;
 
 #if defined(FFI_MIPS_O32)
   FFI_ASSERT(cif->abi == FFI_O32 || cif->abi == FFI_O32_SOFT_FLOAT);
@@ -525,7 +526,7 @@ ffi_prep_closure (ffi_closure *closure,
   closure->user_data = user_data;
 
   /* XXX this is available on Linux, but anything else? */
-  cacheflush (tramp, FFI_TRAMPOLINE_SIZE, ICACHE);
+  cacheflush (codeloc, FFI_TRAMPOLINE_SIZE, ICACHE);
 
   return FFI_OK;
 }

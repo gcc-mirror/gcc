@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 2003, 2004, 2006 Kaz Kojima
+   ffi.c - Copyright (c) 2003, 2004, 2006, 2007 Kaz Kojima
    
    SuperH SHmedia Foreign Function Interface 
 
@@ -283,10 +283,11 @@ extern void ffi_closure_SYSV (void);
 extern void __ic_invalidate (void *line);
 
 ffi_status
-ffi_prep_closure (ffi_closure *closure,
-		  ffi_cif *cif,
-		  void (*fun)(ffi_cif*, void*, void**, void*),
-		  void *user_data)
+ffi_prep_closure_loc (ffi_closure *closure,
+		      ffi_cif *cif,
+		      void (*fun)(ffi_cif*, void*, void**, void*),
+		      void *user_data,
+		      void *codeloc)
 {
   unsigned int *tramp;
 
@@ -310,8 +311,8 @@ ffi_prep_closure (ffi_closure *closure,
   tramp[2] = 0xcc000010 | (((UINT32) ffi_closure_SYSV) >> 16) << 10;
   tramp[3] = 0xc8000010 | (((UINT32) ffi_closure_SYSV) & 0xffff) << 10;
   tramp[4] = 0x6bf10600;
-  tramp[5] = 0xcc000010 | (((UINT32) closure) >> 16) << 10;
-  tramp[6] = 0xc8000010 | (((UINT32) closure) & 0xffff) << 10;
+  tramp[5] = 0xcc000010 | (((UINT32) codeloc) >> 16) << 10;
+  tramp[6] = 0xc8000010 | (((UINT32) codeloc) & 0xffff) << 10;
   tramp[7] = 0x4401fff0;
 
   closure->cif = cif;
@@ -319,7 +320,8 @@ ffi_prep_closure (ffi_closure *closure,
   closure->user_data = user_data;
 
   /* Flush the icache.  */
-  asm volatile ("ocbwb %0,0; synco; icbi %0,0; synci" : : "r" (tramp));
+  asm volatile ("ocbwb %0,0; synco; icbi %1,0; synci" : : "r" (tramp),
+		"r"(codeloc));
 
   return FFI_OK;
 }

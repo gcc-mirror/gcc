@@ -105,6 +105,15 @@ class _Jv_InterpClass;
 class _Jv_InterpMethod;
 #endif
 
+class _Jv_ClosureList
+{
+  _Jv_ClosureList *next;
+  void *ptr;
+public:
+  void registerClosure (jclass klass, void *ptr);
+  static void releaseClosures (_Jv_ClosureList **closures);
+};
+
 struct _Jv_Constants
 {
   jint size;
@@ -632,6 +641,7 @@ private:
   friend class ::_Jv_CompiledEngine;
   friend class ::_Jv_IndirectCompiledEngine;
   friend class ::_Jv_InterpreterEngine;
+  friend class ::_Jv_ClosureList;
 
   friend void ::_Jv_sharedlib_register_hook (jclass klass);
 

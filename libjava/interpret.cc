@@ -1255,10 +1255,10 @@ _Jv_init_cif (_Jv_Utf8Const* signature,
 }
 
 #if FFI_NATIVE_RAW_API
-#   define FFI_PREP_RAW_CLOSURE ffi_prep_raw_closure
+#   define FFI_PREP_RAW_CLOSURE ffi_prep_raw_closure_loc
 #   define FFI_RAW_SIZE ffi_raw_size
 #else
-#   define FFI_PREP_RAW_CLOSURE ffi_prep_java_raw_closure
+#   define FFI_PREP_RAW_CLOSURE ffi_prep_java_raw_closure_loc
 #   define FFI_RAW_SIZE ffi_java_raw_size
 #endif
 
@@ -1269,6 +1269,7 @@ _Jv_init_cif (_Jv_Utf8Const* signature,
 
 typedef struct {
   ffi_raw_closure  closure;
+  _Jv_ClosureList list;
   ffi_cif   cif;
   ffi_type *arg_types[0];
 } ncode_closure;
@@ -1276,7 +1277,7 @@ typedef struct {
 typedef void (*ffi_closure_fun) (ffi_cif*,void*,ffi_raw*,void*);
 
 void *
-_Jv_InterpMethod::ncode ()
+_Jv_InterpMethod::ncode (jclass klass)
 {
   using namespace java::lang::reflect;
 
@@ -1286,9 +1287,12 @@ _Jv_InterpMethod::ncode ()
   jboolean staticp = (self->accflags & Modifier::STATIC) != 0;
   int arg_count = _Jv_count_arguments (self->signature, staticp);
 
+  void *code;
   ncode_closure *closure =
-    (ncode_closure*)_Jv_AllocBytes (sizeof (ncode_closure)
-					+ arg_count * sizeof (ffi_type*));
+    (ncode_closure*)ffi_closure_alloc (sizeof (ncode_closure)
+				       + arg_count * sizeof (ffi_type*),
+				       &code);
+  closure->list.registerClosure (klass, closure);
 
   _Jv_init_cif (self->signature,
 		arg_count,
@@ -1341,9 +1345,11 @@ _Jv_InterpMethod::ncode ()
   FFI_PREP_RAW_CLOSURE (&closure->closure,
 		        &closure->cif, 
 		        fun,
-		        (void*)this);
+		        (void*)this,
+			code);
 
-  self->ncode = (void*)closure;
+  self->ncode = code;
+
   return self->ncode;
 }
 
@@ -1540,7 +1546,7 @@ _Jv_InterpMethod::set_insn (jlong index, pc_t insn)
 }
 
 void *
-_Jv_JNIMethod::ncode ()
+_Jv_JNIMethod::ncode (jclass klass)
 {
   using namespace java::lang::reflect;
 
@@ -1550,9 +1556,12 @@ _Jv_JNIMethod::ncode ()
   jboolean staticp = (self->accflags & Modifier::STATIC) != 0;
   int arg_count = _Jv_count_arguments (self->signature, staticp);
 
+  void *code;
   ncode_closure *closure =
-    (ncode_closure*)_Jv_AllocBytes (sizeof (ncode_closure)
-				    + arg_count * sizeof (ffi_type*));
+    (ncode_closure*)ffi_closure_alloc (sizeof (ncode_closure)
+				       + arg_count * sizeof (ffi_type*),
+				       &code);
+  closure->list.registerClosure (klass, closure);
 
   ffi_type *rtype;
   _Jv_init_cif (self->signature,
@@ -1594,9 +1603,10 @@ _Jv_JNIMethod::ncode ()
   FFI_PREP_RAW_CLOSURE (&closure->closure,
 			&closure->cif, 
 			fun,
-			(void*) this);
+			(void*) this,
+			code);
 
-  self->ncode = (void *) closure;
+  self->ncode = code;
   return self->ncode;
 }
 
@@ -1657,14 +1667,25 @@ _Jv_InterpreterEngine::do_create_ncode (jclass klass)
 	  // cases.  Well, we can't, because we don't allocate these
 	  // objects using `new', and thus they don't get a vtable.
 	  _Jv_JNIMethod *jnim = reinterpret_cast<_Jv_JNIMethod *> (imeth);
-	  klass->methods[i].ncode = jnim->ncode ();
+	  klass->methods[i].ncode = jnim->ncode (klass);
 	}
       else if (imeth != 0)		// it could be abstract
 	{
 	  _Jv_InterpMethod *im = reinterpret_cast<_Jv_InterpMethod *> (imeth);
-	  klass->methods[i].ncode = im->ncode ();
+	  klass->methods[i].ncode = im->ncode (klass);
 	}
     }
+}
+
+_Jv_ClosureList **
+_Jv_InterpreterEngine::do_get_closure_list (jclass klass)
+{
+  _Jv_InterpClass *iclass = (_Jv_InterpClass *) klass->aux_info;
+
+  if (!iclass->closures)
+    iclass->closures = _Jv_ClosureListFinalizer ();
+
+  return iclass->closures;
 }
 
 void

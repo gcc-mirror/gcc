@@ -3,6 +3,7 @@
  * Copyright (c) 1991-1995 by Xerox Corporation.  All rights reserved.
  * Copyright 1996-1999 by Silicon Graphics.  All rights reserved.
  * Copyright 1999 by Hewlett-Packard Company.  All rights reserved.
+ * Copyright (C) 2007 Free Software Foundation, Inc
  *
  * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
  * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
@@ -602,6 +603,8 @@ GC_API GC_PTR GC_debug_realloc_replacement
 	GC_debug_register_finalizer_ignore_self(p, f, d, of, od)
 #   define GC_REGISTER_FINALIZER_NO_ORDER(p, f, d, of, od) \
 	GC_debug_register_finalizer_no_order(p, f, d, of, od)
+#   define GC_REGISTER_FINALIZER_UNREACHABLE(p, f, d, of, od) \
+	GC_debug_register_finalizer_unreachable(p, f, d, of, od)
 #   define GC_MALLOC_STUBBORN(sz) GC_debug_malloc_stubborn(sz, GC_EXTRAS);
 #   define GC_CHANGE_STUBBORN(p) GC_debug_change_stubborn(p)
 #   define GC_END_STUBBORN_CHANGE(p) GC_debug_end_stubborn_change(p)
@@ -624,6 +627,8 @@ GC_API GC_PTR GC_debug_realloc_replacement
 	GC_register_finalizer_ignore_self(p, f, d, of, od)
 #   define GC_REGISTER_FINALIZER_NO_ORDER(p, f, d, of, od) \
 	GC_register_finalizer_no_order(p, f, d, of, od)
+#   define GC_REGISTER_FINALIZER_UNREACHABLE(p, f, d, of, od) \
+	GC_register_finalizer_unreachable(p, f, d, of, od)
 #   define GC_MALLOC_STUBBORN(sz) GC_malloc_stubborn(sz)
 #   define GC_CHANGE_STUBBORN(p) GC_change_stubborn(p)
 #   define GC_END_STUBBORN_CHANGE(p) GC_end_stubborn_change(p)
@@ -716,6 +721,19 @@ GC_API void GC_debug_register_finalizer_no_order
 	GC_PROTO((GC_PTR obj, GC_finalization_proc fn, GC_PTR cd,
 		  GC_finalization_proc *ofn, GC_PTR *ocd));
 
+/* This is a special finalizer that is useful when an object's  */
+/* finalizer must be run when the object is known to be no      */
+/* longer reachable, not even from other finalizable objects.   */
+/* This can be used in combination with finalizer_no_order so   */
+/* as to release resources that must not be released while an   */
+/* object can still be brought back to life by other            */
+/* finalizers.                                                  */
+GC_API void GC_register_finalizer_unreachable
+	GC_PROTO((GC_PTR obj, GC_finalization_proc fn, GC_PTR cd,
+		  GC_finalization_proc *ofn, GC_PTR *ocd));
+GC_API void GC_debug_register_finalizer_unreachable
+	GC_PROTO((GC_PTR obj, GC_finalization_proc fn, GC_PTR cd,
+		  GC_finalization_proc *ofn, GC_PTR *ocd));
 
 /* The following routine may be used to break cycles between	*/
 /* finalizable objects, thus causing cyclic finalizable		*/

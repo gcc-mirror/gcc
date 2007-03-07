@@ -670,6 +670,28 @@ java::lang::Class::finalize (void)
   engine->unregister(this);
 }
 
+void
+_Jv_ClosureList::releaseClosures (_Jv_ClosureList **closures)
+{
+  if (!closures)
+    return;
+
+  while (_Jv_ClosureList *current = *closures)
+    {
+      *closures = current->next;
+      ffi_closure_free (current->ptr);
+    }
+}
+
+void
+_Jv_ClosureList::registerClosure (jclass klass, void *ptr)
+{
+  _Jv_ClosureList **closures = klass->engine->get_closure_list (klass);
+  this->ptr = ptr;
+  this->next = *closures;
+  *closures = this;
+}
+
 // This implements the initialization process for a class.  From Spec
 // section 12.4.2.
 void

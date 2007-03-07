@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 1998 Red Hat, Inc.
+   ffi.c - Copyright (c) 1998, 2007 Red Hat, Inc.
 	   Copyright (c) 2000 Hewlett Packard Company
    
    IA64 Foreign Function Interface 
@@ -400,10 +400,11 @@ ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
 extern void ffi_closure_unix ();
 
 ffi_status
-ffi_prep_closure (ffi_closure* closure,
-		  ffi_cif* cif,
-		  void (*fun)(ffi_cif*,void*,void**,void*),
-		  void *user_data)
+ffi_prep_closure_loc (ffi_closure* closure,
+		      ffi_cif* cif,
+		      void (*fun)(ffi_cif*,void*,void**,void*),
+		      void *user_data,
+		      void *codeloc)
 {
   /* The layout of a function descriptor.  A C function pointer really 
      points to one of these.  */
@@ -430,7 +431,7 @@ ffi_prep_closure (ffi_closure* closure,
 
   tramp->code_pointer = fd->code_pointer;
   tramp->real_gp = fd->gp;
-  tramp->fake_gp = (UINT64)(PTR64)closure;
+  tramp->fake_gp = (UINT64)(PTR64)codeloc;
   closure->cif = cif;
   closure->user_data = user_data;
   closure->fun = fun;

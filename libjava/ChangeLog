@@ -1,3 +1,53 @@
+2007-03-07  Alexandre Oliva  <aoliva@redhat.com>
+
+	* include/jvm.h (_Jv_ClosureListFinalizer): New.
+	(_Jv_Linker::create_error_method): Adjust.
+	* boehm.cc (_Jv_ClosureListFinalizer): New.
+	* nogc.cc (_Jv_ClosureListFinalizer): New.
+	* java/lang/Class.h (class _Jv_ClosureList): New.
+	(class java::lang::Class): Declare it as friend.
+	* java/lang/natClass.cc (_Jv_ClosureList::releaseClosures): New.
+	(_Jv_ClosureList::registerClousure): New.
+	* include/execution.h (_Jv_ExecutionEngine): Add get_closure_list.
+	(_Jv_CompiledEngine::do_get_closure_list): New.
+	(_Jv_CompiledEngine::_Jv_CompiledEngine): Use it.
+	(_Jv_IndirectCompiledClass): Add closures.
+	(_Jv_IndirectCompiledEngine::get_aux_info): New.
+	(_Jv_IndirectCompiledEngine::do_allocate_field_initializers): Use
+	it.
+	(_Jv_IndirectCompiledEngine::do_get_closure_list): New.
+	(_Jv_IndirectCompiledEngine::_Jv_IndirectCompiledEngine): Use it.
+	(_Jv_InterpreterEngine::do_get_closure_list): Declare.
+	(_Jv_InterpreterEngine::_Jv_InterpreterEngine): Use it.
+	* interpret.cc (FFI_PREP_RAW_CLOSURE): Use _loc variants.
+	(node_closure): Add closure list.
+	(_Jv_InterpMethod::ncode): Add jclass argument.  Use
+	ffi_closure_alloc and the separate code pointer.  Register the
+	closure for finalization.
+	(_Jv_JNIMethod::ncode): Likewise.
+	(_Jv_InterpreterEngine::do_create_ncode): Pass klass to ncode.
+	(_Jv_InterpreterEngine::do_get_closure_list): New.
+	* include/java-interp.h (_Jv_InterpMethod::ncode): Adjust.
+	(_Jv_InterpClass): Add closures field.
+	(_Jv_JNIMethod::ncode): Adjust.
+	* defineclass.cc (_Jv_ClassReader::handleCodeAttribute): Adjust.
+	(_Jv_ClassReader::handleMethodsEnd): Likewise.
+	* link.cc (struct method_closure): Add closure list.
+	(_Jv_Linker::create_error_method): Add jclass argument.  Use
+	ffi_closure_alloc and the separate code pointer.  Register the
+	closure for finalization.
+	(_Jv_Linker::link_symbol_table): Remove outdated comment about
+	sharing of otable and atable.  Adjust.
+	* java/lang/reflect/natVMProxy.cc (ncode_closure): Add closure
+	list.
+	(ncode): Add jclass argument.  Use ffi_closure_alloc and the
+	separate code pointer.  Register the closure for finalization.
+	(java::lang::reflect::VMProxy::generateProxyClass): Adjust.
+	* testsuite/libjava.jar/TestClosureGC.java: New.
+	* testsuite/libjava.jar/TestClosureGC.out: New.
+	* testsuite/libjava.jar/TestClosureGC.xfail: New.
+	* testsuite/libjava.jar/TestClosureGC.jar: New.
+
 2007-03-06  Kyle Galloway  <kgallowa@redhat.com>
 
 	* classpath/gnu/classpath/jdwp/exception/AbsentInformationException.java: New file.

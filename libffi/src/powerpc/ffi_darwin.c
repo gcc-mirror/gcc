@@ -3,7 +3,7 @@
 
    Copyright (C) 1998 Geoffrey Keating
    Copyright (C) 2001 John Hornkvist
-   Copyright (C) 2002, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006, 2007 Free Software Foundation, Inc.
 
    FFI support for Darwin and AIX.
    
@@ -528,10 +528,11 @@ SP current -->    +---------------------------------------+ 176 <- parent frame
 
 */
 ffi_status
-ffi_prep_closure (ffi_closure* closure,
-		  ffi_cif* cif,
-		  void (*fun)(ffi_cif*, void*, void**, void*),
-		  void *user_data)
+ffi_prep_closure_loc (ffi_closure* closure,
+		      ffi_cif* cif,
+		      void (*fun)(ffi_cif*, void*, void**, void*),
+		      void *user_data,
+		      void *codeloc)
 {
   unsigned int *tramp;
   struct ffi_aix_trampoline_struct *tramp_aix;
@@ -553,14 +554,14 @@ ffi_prep_closure (ffi_closure* closure,
       tramp[8] = 0x816b0004;  /*   lwz     r11,4(r11) static chain  */
       tramp[9] = 0x4e800420;  /*   bctr  */
       tramp[2] = (unsigned long) ffi_closure_ASM; /* function  */
-      tramp[3] = (unsigned long) closure; /* context  */
+      tramp[3] = (unsigned long) codeloc; /* context  */
 
       closure->cif = cif;
       closure->fun = fun;
       closure->user_data = user_data;
 
       /* Flush the icache. Only necessary on Darwin.  */
-      flush_range(&closure->tramp[0],FFI_TRAMPOLINE_SIZE);
+      flush_range(codeloc, FFI_TRAMPOLINE_SIZE);
 
       break;
 
@@ -573,7 +574,7 @@ ffi_prep_closure (ffi_closure* closure,
 
       tramp_aix->code_pointer = fd->code_pointer;
       tramp_aix->toc = fd->toc;
-      tramp_aix->static_chain = closure;
+      tramp_aix->static_chain = codeloc;
       closure->cif = cif;
       closure->fun = fun;
       closure->user_data = user_data;

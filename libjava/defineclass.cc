@@ -1,6 +1,7 @@
 // defineclass.cc - defining a class from .class format.
 
-/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation
 
    This file is part of libgcj.
 
@@ -1695,7 +1696,7 @@ void _Jv_ClassReader::handleCodeAttribute
       // call a static method of an interpreted class from precompiled
       // code without first resolving the class (that will happen
       // during class initialization instead).
-      method->self->ncode = method->ncode ();
+      method->self->ncode = method->ncode (def);
     }
 }
 
@@ -1740,7 +1741,7 @@ void _Jv_ClassReader::handleMethodsEnd ()
 		  // interpreted class from precompiled code without
 		  // first resolving the class (that will happen
 		  // during class initialization instead).
-		  method->ncode = m->ncode ();
+		  method->ncode = m->ncode (def);
 		}
 	    }
 	}

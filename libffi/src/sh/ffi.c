@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 2002, 2003, 2004, 2005, 2006 Kaz Kojima
+   ffi.c - Copyright (c) 2002, 2003, 2004, 2005, 2006, 2007 Kaz Kojima
    
    SuperH Foreign Function Interface 
 
@@ -452,10 +452,11 @@ extern void __ic_invalidate (void *line);
 #endif
 
 ffi_status
-ffi_prep_closure (ffi_closure* closure,
-		  ffi_cif* cif,
-		  void (*fun)(ffi_cif*, void*, void**, void*),
-		  void *user_data)
+ffi_prep_closure_loc (ffi_closure* closure,
+		      ffi_cif* cif,
+		      void (*fun)(ffi_cif*, void*, void**, void*),
+		      void *user_data,
+		      void *codeloc)
 {
   unsigned int *tramp;
   unsigned short insn;
@@ -475,7 +476,7 @@ ffi_prep_closure (ffi_closure* closure,
   tramp[0] = 0xd102d301;
   tramp[1] = 0x412b0000 | insn;
 #endif
-  *(void **) &tramp[2] = (void *)closure;          /* ctx */
+  *(void **) &tramp[2] = (void *)codeloc;          /* ctx */
   *(void **) &tramp[3] = (void *)ffi_closure_SYSV; /* funaddr */
 
   closure->cif = cif;
@@ -484,7 +485,7 @@ ffi_prep_closure (ffi_closure* closure,
 
 #if defined(__SH4__)
   /* Flush the icache.  */
-  __ic_invalidate(&closure->tramp[0]);
+  __ic_invalidate(codeloc);
 #endif
 
   return FFI_OK;

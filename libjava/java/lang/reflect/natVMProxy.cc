@@ -1,6 +1,6 @@
 // natVMProxy.cc -- Implementation of VMProxy methods.
 
-/* Copyright (C) 2006
+/* Copyright (C) 2006, 2007
    Free Software Foundation
 
    This file is part of libgcj.
@@ -66,7 +66,7 @@ using namespace java::lang::reflect;
 using namespace java::lang;
 
 typedef void (*closure_fun) (ffi_cif*, void*, void**, void*);
-static void *ncode (_Jv_Method *self, closure_fun fun);
+static void *ncode (jclass klass, _Jv_Method *self, closure_fun fun);
 static void run_proxy (ffi_cif*, void*, void**, void*);
 
 typedef jobject invoke_t (jobject, Proxy *, Method *, JArray< jobject > *);
@@ -165,7 +165,7 @@ java::lang::reflect::VMProxy::generateProxyClass
       // the interfaces of which it is a proxy will also be reachable,
       // so this is safe.
       method = imethod;
-      method.ncode = ncode (&method, run_proxy);
+      method.ncode = ncode (klass, &method, run_proxy);
       method.accflags &= ~Modifier::ABSTRACT;
     }
 
@@ -289,6 +289,7 @@ unbox (jobject o, jclass klass, void *rvalue, FFI_TYPE type)
 
 typedef struct {
   ffi_closure  closure;
+  _Jv_ClosureList list;
   ffi_cif   cif;
   _Jv_Method *self;
   ffi_type *arg_types[0];
@@ -366,16 +367,19 @@ run_proxy (ffi_cif *cif,
 // the address of its closure.
 
 static void *
-ncode (_Jv_Method *self, closure_fun fun)
+ncode (jclass klass, _Jv_Method *self, closure_fun fun)
 {
   using namespace java::lang::reflect;
 
   jboolean staticp = (self->accflags & Modifier::STATIC) != 0;
   int arg_count = _Jv_count_arguments (self->signature, staticp);
 
+  void *code;
   ncode_closure *closure =
-    (ncode_closure*)_Jv_AllocBytes (sizeof (ncode_closure)
-				    + arg_count * sizeof (ffi_type*));
+    (ncode_closure*)ffi_closure_alloc (sizeof (ncode_closure)
+				       + arg_count * sizeof (ffi_type*),
+				       &code);
+  closure->list.registerClosure (klass, closure);
 
   _Jv_init_cif (self->signature,
 		arg_count,
@@ -387,11 +391,12 @@ ncode (_Jv_Method *self, closure_fun fun)
 
   JvAssert ((self->accflags & Modifier::NATIVE) == 0);
 
-  ffi_prep_closure (&closure->closure,
-		    &closure->cif, 
-		    fun,
-		    (void*)closure);
+  ffi_prep_closure_loc (&closure->closure,
+			&closure->cif,
+			fun,
+			code,
+			code);
 
-  self->ncode = (void*)closure;
+  self->ncode = code;
   return self->ncode;
 }
