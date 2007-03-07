@@ -20,6 +20,8 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
+#include "config/vxworks-dummy.h"
+
 /* Algorithm to expand string function with.  */
 enum stringop_alg
 {

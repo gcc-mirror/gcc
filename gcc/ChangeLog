@@ -1,3 +1,10 @@
+2007-03-06  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/vxworks.h (VXWORKS_GOTT_BASE, VXWORKS_GOTT_INDEX): Undefine
+	before defining.
+	* config/vxworks-dummy.h: New file.
+	* config/i386/i386.h: Include it.
+
 2007-03-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	* dwarf2out.c (is_inlined_entry_point): New
