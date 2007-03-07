@@ -25,6 +25,7 @@ details.  */
 #include <java/io/FileOutputStream.h>
 #include <java/io/IOException.h>
 #include <java/lang/OutOfMemoryError.h>
+#include <java/lang/Win32Process$EOFInputStream.h>
 #include <gnu/java/nio/channels/FileChannelImpl.h>
 
 using gnu::java::nio::channels::FileChannelImpl;
@@ -146,7 +147,7 @@ class ChildProcessPipe
 public:
   // Indicates from the child process' point of view
   // whether the pipe is for reading or writing.
-  enum EType {INPUT, OUTPUT};
+  enum EType {INPUT, OUTPUT, DUMMY};
 
   ChildProcessPipe(EType eType);
   ~ChildProcessPipe();
@@ -163,8 +164,11 @@ private:
 };
 
 ChildProcessPipe::ChildProcessPipe(EType eType):
-  m_eType(eType)
+  m_eType(eType), m_hRead(0), m_hWrite(0)
 {
+  if (eType == DUMMY)
+    return;
+  
   SECURITY_ATTRIBUTES sAttrs;
 
   // Explicitly allow the handles to the pipes to be inherited.
@@ -195,7 +199,8 @@ ChildProcessPipe::~ChildProcessPipe()
   // Close the parent end of the pipe. This
   // destructor is called after the child process
   // has been spawned.
-  CloseHandle(getChildHandle());
+  if (m_eType != DUMMY)
+    CloseHandle(getChildHandle());
 }
 
 HANDLE ChildProcessPipe::getParentHandle()
@@ -284,7 +289,8 @@ java::lang::Win32Process::startProcess (jstringArray progarray,
       // on each of standard streams.
       ChildProcessPipe aChildStdIn(ChildProcessPipe::INPUT);
       ChildProcessPipe aChildStdOut(ChildProcessPipe::OUTPUT);
-      ChildProcessPipe aChildStdErr(ChildProcessPipe::OUTPUT);
+      ChildProcessPipe aChildStdErr(redirect ? ChildProcessPipe::DUMMY
+				    : ChildProcessPipe::OUTPUT);
 
       outputStream = new FileOutputStream (new FileChannelImpl (
                            (jint) aChildStdIn.getParentHandle (),
@@ -292,7 +298,10 @@ java::lang::Win32Process::startProcess (jstringArray progarray,
       inputStream = new FileInputStream (new FileChannelImpl (
                            (jint) aChildStdOut.getParentHandle (),
 			   FileChannelImpl::READ));
-      errorStream = new FileInputStream (new FileChannelImpl (
+      if (redirect)
+        errorStream = Win32Process$EOFInputStream::instance;
+      else
+        errorStream = new FileInputStream (new FileChannelImpl (
                            (jint) aChildStdErr.getParentHandle (),
 			   FileChannelImpl::READ));
 
@@ -310,7 +319,8 @@ java::lang::Win32Process::startProcess (jstringArray progarray,
 
       si.hStdInput = aChildStdIn.getChildHandle();
       si.hStdOutput = aChildStdOut.getChildHandle();
-      si.hStdError = aChildStdErr.getChildHandle();
+      si.hStdError = redirect ? aChildStdOut.getChildHandle()
+                              : aChildStdErr.getChildHandle();
 
       // Spawn the process. CREATE_NO_WINDOW only applies when
       // starting a console application; it suppresses the

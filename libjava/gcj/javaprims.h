@@ -255,6 +255,7 @@ extern "Java"
       class VirtualMachineError;
       class Void;
       class Win32Process;
+      class Win32Process$EOFInputStream;
       namespace annotation
       {
         class Annotation;
