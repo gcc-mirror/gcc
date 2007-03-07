@@ -1,3 +1,11 @@
+2007-03-07  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/vxworks.h (vxworks_override_options): Declare.
+	(VXWORKS_OVERRIDE_OPTIONS): Use it.
+	* config/vxworks.c: Include target.h and toplev.h.
+	(vxworks_override_options): New function.
+	* config/t-vxworks (vxworks.o): Depend on $(TARGET_H) and toplev.h.
+
 2007-03-07  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (override_options): Don't emit an error when

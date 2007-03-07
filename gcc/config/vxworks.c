@@ -23,6 +23,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "target.h"
+#include "toplev.h"
 #include "output.h"
 #include "tm.h"
 
@@ -53,4 +55,17 @@ vxworks_asm_out_destructor (rtx symbol, int priority)
   sec = get_cdtor_priority_section (priority,
 				    /*constructor_p=*/false);
   assemble_addr_to_section (symbol, sec);
+}
+
+/* Do VxWorks-specific parts of OVERRIDE_OPTIONS.  */
+
+void
+vxworks_override_options (void)
+{
+  /* We can use .ctors/.dtors sections only in RTP mode.  */
+  targetm.have_ctors_dtors = TARGET_VXWORKS_RTP;
+
+  /* PIC is only supported for RTPs.  */
+  if (flag_pic && !TARGET_VXWORKS_RTP)
+    error ("PIC is only supported for RTPs");
 }

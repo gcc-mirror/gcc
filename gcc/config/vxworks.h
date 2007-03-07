@@ -82,13 +82,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define	VXWORKS_STARTFILE_SPEC "%{mrtp:%{!shared:crt0.o%s}}"
 #define VXWORKS_ENDFILE_SPEC ""
 
-/* We can use .ctors/.dtors sections only in RTP mode.
-   Unfortunately this must be an integer constant expression;
-   fix up in override_options.  */
+/* Do VxWorks-specific parts of OVERRIDE_OPTIONS.  */
 #undef VXWORKS_OVERRIDE_OPTIONS
-#define VXWORKS_OVERRIDE_OPTIONS do { \
-  targetm.have_ctors_dtors = TARGET_VXWORKS_RTP; \
-} while (0)
+#define VXWORKS_OVERRIDE_OPTIONS vxworks_override_options ()
+extern void vxworks_override_options (void);
 
 /* VxWorks requires special handling of constructors and destructors.
    All VxWorks configurations must use these functions.  */
