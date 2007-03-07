@@ -1,3 +1,9 @@
+2007-03-07  Alexandre Oliva  <aoliva@redhat.com>
+
+	* dwarf2out.c (is_inlined_entry_point): New
+	(add_high_low_attributes): Emit DW_AT_entry_pc along with
+	DW_AT_ranges if the first subblock is the entry point.
+
 2007-03-06  David Daney  <ddaney@avtrex.com>
 
 	* doc/install.texi (mips-*-*): Change recommended binutils
