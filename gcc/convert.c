@@ -389,14 +389,14 @@ convert_to_integer (tree type, tree expr)
 	    fn = mathfn_built_in (s_intype, BUILT_IN_LLROUND);
 	  break;
 
-	case BUILT_IN_RINT: case BUILT_IN_RINTF: case BUILT_IN_RINTL:
-	  /* Only convert rint* if we can ignore math exceptions.  */
-	  if (flag_trapping_math)
-	    break;
-	  /* ... Fall through ...  */
 	case BUILT_IN_NEARBYINT:
 	case BUILT_IN_NEARBYINTF:
 	case BUILT_IN_NEARBYINTL:
+	  /* Only convert nearbyint* if we can ignore math exceptions.  */
+	  if (flag_trapping_math)
+	    break;
+	  /* ... Fall through ...  */
+	case BUILT_IN_RINT: case BUILT_IN_RINTF: case BUILT_IN_RINTL:
 	  if (outprec < TYPE_PRECISION (long_integer_type_node)
 	      || (outprec == TYPE_PRECISION (long_integer_type_node)
 		  && !TYPE_UNSIGNED (type)))
