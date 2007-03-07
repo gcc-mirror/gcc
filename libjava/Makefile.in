@@ -7772,6 +7772,7 @@ property_files = \
   classpath/resource/META-INF/services/javax.xml.parsers.SAXParserFactory \
   classpath/resource/META-INF/services/javax.xml.parsers.TransformerFactory \
   classpath/resource/META-INF/services/org.relaxng.datatype.DatatypeLibraryFactory \
+  classpath/resource/META-INF/services/org.w3c.dom.DOMImplementationSourceList \
   classpath/resource/META-INF/services/org.xml.sax.driver
 
 omitted_headers = java/lang/ClassLoader.h java/lang/Thread.h \

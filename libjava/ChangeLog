@@ -1,3 +1,7 @@
+2007-03-07  Gary Benson  <gbenson@redhat.com>
+
+	* sources.am, Makefile.in: Rebuilt.
+
 2007-03-07  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* gcj/javaprims.h: Regenerated.

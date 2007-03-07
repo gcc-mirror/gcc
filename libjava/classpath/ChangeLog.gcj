@@ -1,3 +1,8 @@
+2007-03-07  Gary Benson  <gbenson@redhat.com>
+
+	* resource/META-INF/services/org.w3c.dom.DOMImplementationSourceList:
+	New file.
+
 2007-03-06  Matthias Klose  <doko@ubuntu.com>
 
 	* doc/Makefile.am(gkeytool.pod): Don't use sed -i.
