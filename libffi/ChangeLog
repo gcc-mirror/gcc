@@ -1,3 +1,8 @@
+2007-03-07  Alexandre Oliva  <aoliva@redhat.com>
+
+	* src/dlmalloc.c: New file, imported version 2.8.3 of Doug
+	Lea's malloc.
+
 2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Makefile.am: Add dummy install-pdf target.
