@@ -1,3 +1,7 @@
+2007-03-07  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* iresolve.c (gfc_resolve_ishftc): Correct s_kind value.
+
 2007-03-06  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR documentation/30950
