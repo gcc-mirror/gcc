@@ -1,3 +1,21 @@
+2007-03-07  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/i386/i386.c (output_set_got): Add a GOT initialization
+	sequence for VxWorks PIC.
+	(legitimate_pic_address_disp_p): Allow UNSPEC_GOT wrappers
+	around labels as well as symbols.  Use gotoff_operand instead
+	of local_symbolic_operand.
+	(legitimize_pic_address): Use gotoff_operand instead of
+	local_symbolic_operand.  Use @GOT accesses for labels as
+	well as symbols.
+	(ix86_output_addr_diff_elt): Use PC-relative rather than
+	GP-relative offsets for VxWorks PIC.
+	(ix86_expand_move): Pass NULL_RTX to legitimize_pic_address unless
+	no_new_pseudos.  Check whether the returned register is op0.
+	* config/i386/i386.md (tablejump): Use PC-relative rather than
+	GP-relative offsets for VxWorks PIC.
+	* config/i386/predicates.md (gotoff_operand): New predicate.
+
 2007-03-06  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/vxworks.h (VXWORKS_GOTT_BASE, VXWORKS_GOTT_INDEX): Undefine
