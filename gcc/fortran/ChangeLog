@@ -1,3 +1,9 @@
+2007-03-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31011
+	* expr.c (find_array_section): Correct arithmetic for section
+	size.
+
 2007-03-07  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* iresolve.c (gfc_resolve_ishftc): Correct s_kind value.
