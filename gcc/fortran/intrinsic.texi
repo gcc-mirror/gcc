@@ -478,6 +478,10 @@ program test_achar
 end program test_achar
 @end smallexample
 
+@item @emph{Note}:
+See @ref{ICHAR} for a discussion of converting between numerical values
+and formatted string representations.
+
 @item @emph{See also}:
 @ref{CHAR}, @ref{IACHAR}, @ref{ICHAR}
 
@@ -1855,6 +1859,10 @@ program test_char
     print *, i, c ! returns 'J'
 end program test_char
 @end smallexample
+
+@item @emph{Note}:
+See @ref{ICHAR} for a discussion of converting between numerical values
+and formatted string representations.
 
 @item @emph{See also}:
 @ref{ACHAR}, @ref{IACHAR}, @ref{ICHAR}
@@ -4606,6 +4614,10 @@ program test_iachar
 end program test_iachar
 @end smallexample
 
+@item @emph{Note}:
+See @ref{ICHAR} for a discussion of converting between numerical values
+and formatted string representations.
+
 @item @emph{See also}:
 @ref{ACHAR}, @ref{CHAR}, @ref{ICHAR}
 
@@ -4851,21 +4863,25 @@ end program test_ichar
 @end smallexample
 
 @item @emph{Note}:
-No intrinsic exists to convert a printable character string to a
-numerical value. For example, there is no intrinsic that, given the
-@code{CHARACTER} value @code{'154'}, returns an @code{INTEGER} or
-@code{REAL} value with the value 154.
-
-Instead, you can use internal-file I/O to do this kind of conversion. For
+No intrinsic exists to convert between a numeric value and a formatted
+character string representation -- for instance, given the
+@code{CHARACTER} value @code{'154'}, obtaining an @code{INTEGER} or
+@code{REAL} value with the value 154, or vice versa. Instead, this
+functionality is provided by internal-file I/O, as in the following
 example:
 @smallexample
 program read_val
   integer value
-  character(len=10) string
-
+  character(len=10) string, string2
   string = '154'
+  
+  ! Convert a string to a numeric value
   read (string,'(I10)') value
   print *, value
+  
+  ! Convert a value to a formatted string
+  write (string2,'(I10)') value
+  print *, string2
 end program read_val
 @end smallexample
 
