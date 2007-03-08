@@ -5635,14 +5635,20 @@ names are ignored.  If the @var{STATUS} argument is supplied, it
 contains 0 on success or a nonzero error code upon return; see
 @code{link(2)}.
 
+This intrinsic is provided in both subroutine and function forms;
+however, only one form can be used in any given program unit.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
-Subroutine
+Subroutine, non-elemental function
 
 @item @emph{Syntax}:
-@code{CALL LINK(PATH1, PATH2 [, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL LINK(PATH1, PATH2 [, STATUS])}
+@item @code{STATUS = LINK(PATH1, PATH2)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7511,14 +7517,20 @@ names are ignored.  If the @var{STATUS} argument is supplied, it
 contains 0 on success or a nonzero error code upon return; see
 @code{rename(2)}.
 
+This intrinsic is provided in both subroutine and function forms;
+however, only one form can be used in any given program unit.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
-Subroutine
+Subroutine, non-elemental function
 
 @item @emph{Syntax}:
-@code{CALL RENAME(PATH1, PATH2 [, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL RENAME(PATH1, PATH2 [, STATUS])}
+@item @code{STATUS = RENAME(PATH1, PATH2)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8519,14 +8531,20 @@ contains 0 on success or a nonzero error code upon return; see
 @code{symlink(2)}.  If the system does not supply @code{symlink(2)}, 
 @code{ENOSYS} is returned.
 
+This intrinsic is provided in both subroutine and function forms;
+however, only one form can be used in any given program unit.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
-Subroutine
+Subroutine, non-elemental function
 
 @item @emph{Syntax}:
-@code{CALL SYMLNK(PATH1, PATH2 [, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL SYMLNK(PATH1, PATH2 [, STATUS])}
+@item @code{STATUS = SYMLNK(PATH1, PATH2)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8554,14 +8572,20 @@ argument @var{STATUS} is present, it contains the value returned by
 Note that which shell is used to invoke the command is system-dependent
 and environment-dependent.
 
+This intrinsic is provided in both subroutine and function forms;
+however, only one form can be used in any given program unit.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
-Subroutine
+Subroutine, non-elemental function
 
 @item @emph{Syntax}:
-@code{CALL SYSTEM(COMMAND [, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL SYSTEM(COMMAND [, STATUS])}
+@item @code{STATUS = SYSTEM(COMMAND)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9007,14 +9031,20 @@ blanks in the file name are ignored.  If the @var{STATUS} argument is
 supplied, it contains 0 on success or a nonzero error code upon return;
 see @code{unlink(2)}.
 
+This intrinsic is provided in both subroutine and function forms;
+however, only one form can be used in any given program unit.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
-Subroutine
+Subroutine, non-elemental function
 
 @item @emph{Syntax}:
-@code{CALL UNLINK(PATH [, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL UNLINK(PATH [, STATUS])}
+@item @code{STATUS = UNLINK(PATH)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
