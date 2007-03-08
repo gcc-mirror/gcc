@@ -1,5 +1,12 @@
+2007-03-08  Gary Benson  <gbenson@redhat.com>
+
+	PR classpath/30983:
+	* gnu/xml/dom/ls/DomLSParser.java (getInputSource):
+	Do not use the entity resolver to resolve the top-level document.
+
 2007-03-07  Gary Benson  <gbenson@redhat.com>
 
+	PR classpath/30906:
 	* resource/META-INF/services/org.w3c.dom.DOMImplementationSourceList:
 	New file.
 
