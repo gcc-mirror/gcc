@@ -1,3 +1,7 @@
+2007-03-08  Diego Novillo  <dnovillo@redhat.com>
+
+	* doc/tree-ssa.texi: Remove documentation for V_MUST_DEF.
+
 2007-03-08  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 31013
