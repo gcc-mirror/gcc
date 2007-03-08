@@ -909,7 +909,7 @@ abnormal_corrupt (tree phi, int i)
 static inline void
 fail_abnormal_edge_coalesce (int x, int y)
 {
-  fprintf (stderr, "\nUnable to coalesce ssa_names %d  and %d ",x, y);
+  fprintf (stderr, "\nUnable to coalesce ssa_names %d and %d",x, y);
   fprintf (stderr, " which are marked as MUST COALESCE.\n");
   print_generic_expr (stderr, ssa_name (x), TDF_SLIM);
   fprintf (stderr, " and  ");
