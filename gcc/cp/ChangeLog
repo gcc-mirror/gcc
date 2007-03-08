@@ -1,3 +1,8 @@
+2007-03-08  Volker Reichelt  <reichelt@netcologne.de>
+
+	PR c++/30852
+	* semantics.c (finish_offsetof): Handle COMPOUND_EXPR.
+
 2007-03-05  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/30895
