@@ -6054,6 +6054,12 @@ fold_offsetof_1 (tree expr, tree stop_ref)
       off = size_binop (MULT_EXPR, TYPE_SIZE_UNIT (TREE_TYPE (expr)), t);
       break;
 
+    case COMPOUND_EXPR:
+      /* Handle static members of volatile structs.  */
+      t = TREE_OPERAND (expr, 1);
+      gcc_assert (TREE_CODE (t) == VAR_DECL);
+      return fold_offsetof_1 (t, stop_ref);
+
     default:
       gcc_unreachable ();
     }
