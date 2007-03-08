@@ -38,12 +38,6 @@ Some basic guidelines for editing this document:
 @chapter Intrinsic Procedures
 @cindex intrinsic procedures
 
-This portion of the document is incomplete and undergoing massive expansion 
-and editing.  All contributions and corrections are strongly encouraged. 
-
-Implemented intrinsics are fully functional and available to the user to apply. 
-Some intrinsics have documentation yet to be completed as indicated by 'documentation pending'.
-
 @comment Missing intrinsics (double check with #19292)
 @comment  - MClock
 @comment  - Short
@@ -483,6 +477,10 @@ program test_achar
   c = achar(32)
 end program test_achar
 @end smallexample
+
+@item @emph{Note}:
+See @ref{ICHAR} for a discussion of converting between numerical values
+and formatted string representations.
 
 @item @emph{See also}:
 @ref{CHAR}, @ref{IACHAR}, @ref{ICHAR}
@@ -1862,6 +1860,10 @@ program test_char
 end program test_char
 @end smallexample
 
+@item @emph{Note}:
+See @ref{ICHAR} for a discussion of converting between numerical values
+and formatted string representations.
+
 @item @emph{See also}:
 @ref{ACHAR}, @ref{IACHAR}, @ref{ICHAR}
 
@@ -1975,8 +1977,6 @@ program chmod_test
   print *, 'Status: ', status
 end program chmod_test
 @end smallexample
-@item @emph{Specific names}:
-@item @emph{See also}:
 
 @end table
 
@@ -3861,6 +3861,33 @@ See @code{MALLOC} for an example.
 
 
 
+@node FSEEK
+@section @code{FSEEK} --- Low level file positioning subroutine
+@cindex @code{FSEEK} intrinsic
+@cindex file system operations
+
+Not yet implemented in GNU Fortran.
+
+@table @asis
+@item @emph{Description}:
+
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@uref{http://gcc.gnu.org/bugzilla/show_bug.cgi?id=19292, g77 features lacking in gfortran}
+
+@end table
+
+
 
 @node FSTAT
 @section @code{FSTAT} --- Get file status
@@ -3896,34 +3923,6 @@ See @ref{STAT} for an example.
 
 @item @emph{See also}:
 To stat a link: @ref{LSTAT}, to stat a file: @ref{STAT}
-@end table
-
-
-
-@node FSEEK
-@section @code{FSEEK} --- Low level file positioning subroutine
-@cindex @code{FSEEK} intrinsic
-@cindex file system operations
-
-Not yet implemented in GNU Fortran.
-
-@table @asis
-@item @emph{Description}:
-
-@item @emph{Standard}:
-GNU extension
-
-@item @emph{Class}:
-Subroutine
-
-@item @emph{Syntax}:
-@item @emph{Arguments}:
-@item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
-@item @emph{See also}:
-@uref{http://gcc.gnu.org/bugzilla/show_bug.cgi?id=19292, g77 features lacking in gfortran}
-
 @end table
 
 
@@ -4041,7 +4040,7 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{N}   @tab Shall of type @code{INTEGER(4)}, @math{@var{N} \geq 0}
+@item @var{N}   @tab Shall be of type @code{INTEGER(4)}, @math{@var{N} \geq 0}
 @item @var{ARG} @tab Shall be of type @code{CHARACTER(*)}. 
 @end multitable
 
@@ -4138,7 +4137,7 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{N}   @tab Shall of type @code{INTEGER(4)}, @math{@var{N} \geq 0}
+@item @var{N}   @tab Shall be of type @code{INTEGER(4)}, @math{@var{N} \geq 0}
 @item @var{ARG} @tab Shall be of type @code{CHARACTER(*)}. 
 @end multitable
 
@@ -4561,7 +4560,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab shall be of type @code{REAL} or @code{INTEGER}.
+@item @var{X} @tab Shall be of type @code{REAL} or @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
@@ -4614,6 +4613,10 @@ program test_iachar
   i = iachar(' ')
 end program test_iachar
 @end smallexample
+
+@item @emph{Note}:
+See @ref{ICHAR} for a discussion of converting between numerical values
+and formatted string representations.
 
 @item @emph{See also}:
 @ref{ACHAR}, @ref{CHAR}, @ref{ICHAR}
@@ -4860,21 +4863,25 @@ end program test_ichar
 @end smallexample
 
 @item @emph{Note}:
-No intrinsic exists to convert a printable character string to a numerical
-value. For example, there is no intrinsic that, given the @code{CHARACTER}
-value 154, returns an @code{INTEGER} or @code{REAL} value with the
-value 154.
-
-Instead, you can use internal-file I/O to do this kind of conversion. For
+No intrinsic exists to convert between a numeric value and a formatted
+character string representation -- for instance, given the
+@code{CHARACTER} value @code{'154'}, obtaining an @code{INTEGER} or
+@code{REAL} value with the value 154, or vice versa. Instead, this
+functionality is provided by internal-file I/O, as in the following
 example:
 @smallexample
 program read_val
   integer value
-  character(len=10) string
-
+  character(len=10) string, string2
   string = '154'
+  
+  ! Convert a string to a numeric value
   read (string,'(I10)') value
   print *, value
+  
+  ! Convert a value to a formatted string
+  write (string2,'(I10)') value
+  print *, string2
 end program read_val
 @end smallexample
 
@@ -5059,7 +5066,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X}    @tab shall be of type @code{INTEGER(*)},
+@item @var{X}    @tab Shall be of type @code{INTEGER(*)},
                       @code{REAL(*)}, or @code{COMPLEX(*)}.
 @item @var{KIND} @tab (Optional) An @code{INTEGER(*)} initialization
                       expression indicating the kind parameter of
@@ -5167,7 +5174,7 @@ Non-elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{FLAG} @tab shall be a scalar @code{INTEGER} of kind 4.
+@item @var{FLAG} @tab Shall be a scalar @code{INTEGER} of kind 4.
 @end multitable
 
 @item @emph{Return value}:
@@ -5644,14 +5651,20 @@ names are ignored.  If the @var{STATUS} argument is supplied, it
 contains 0 on success or a nonzero error code upon return; see
 @code{link(2)}.
 
+This intrinsic is provided in both subroutine and function forms;
+however, only one form can be used in any given program unit.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
-Subroutine
+Subroutine, non-elemental function
 
 @item @emph{Syntax}:
-@code{CALL LINK(PATH1, PATH2 [, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL LINK(PATH1, PATH2 [, STATUS])}
+@item @code{STATUS = LINK(PATH1, PATH2)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -6287,7 +6300,7 @@ Inquiry function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab shall be of type @code{REAL}.
+@item @var{X} @tab Shall be of type @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
@@ -6519,7 +6532,7 @@ Inquiry function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab shall be of type @code{REAL}.
+@item @var{X} @tab Shall be of type @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
@@ -6666,8 +6679,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{A} @tab shall be a scalar of type @code{INTEGER} or @code{REAL}
-@item @var{P} @tab shall be a scalar of the same type as @var{A} and not
+@item @var{A} @tab Shall be a scalar of type @code{INTEGER} or @code{REAL}
+@item @var{P} @tab Shall be a scalar of the same type as @var{A} and not
 equal to zero
 @end multitable
 
@@ -6725,8 +6738,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{A} @tab shall be a scalar of type @code{INTEGER} or @code{REAL}
-@item @var{P} @tab shall be a scalar of the same type and kind as @var{A}
+@item @var{A} @tab Shall be a scalar of type @code{INTEGER} or @code{REAL}
+@item @var{P} @tab Shall be a scalar of the same type and kind as @var{A}
 @end multitable
 
 @item @emph{Return value}:
@@ -6871,7 +6884,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab shall be of type @code{REAL}.
+@item @var{X} @tab Shall be of type @code{REAL}.
 @item @var{S} @tab (Optional) shall be of type @code{REAL} and
 not equal to zero.
 @end multitable
@@ -7176,7 +7189,7 @@ Inquiry function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab shall be of type @code{REAL} or @code{COMPLEX}.
+@item @var{X} @tab Shall be of type @code{REAL} or @code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
@@ -7333,7 +7346,7 @@ Non-elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{FLAG} @tab shall be a scalar @code{INTEGER} of kind 4.
+@item @var{FLAG} @tab Shall be a scalar @code{INTEGER} of kind 4.
 @end multitable
 
 @item @emph{Return value}:
@@ -7428,7 +7441,7 @@ Inquiry function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab shall be of type @code{REAL} or @code{COMPLEX}.
+@item @var{X} @tab Shall be of type @code{REAL} or @code{COMPLEX}.
 @end multitable
 
 @item @emph{Return value}:
@@ -7467,7 +7480,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X}    @tab shall be @code{INTEGER(*)}, @code{REAL(*)}, or
+@item @var{X}    @tab Shall be @code{INTEGER(*)}, @code{REAL(*)}, or
                       @code{COMPLEX(*)}.
 @item @var{KIND} @tab (Optional) An @code{INTEGER(*)} initialization
                       expression indicating the kind parameter of
@@ -7520,14 +7533,20 @@ names are ignored.  If the @var{STATUS} argument is supplied, it
 contains 0 on success or a nonzero error code upon return; see
 @code{rename(2)}.
 
+This intrinsic is provided in both subroutine and function forms;
+however, only one form can be used in any given program unit.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
-Subroutine
+Subroutine, non-elemental function
 
 @item @emph{Syntax}:
-@code{CALL RENAME(PATH1, PATH2 [, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL RENAME(PATH1, PATH2 [, STATUS])}
+@item @code{STATUS = RENAME(PATH1, PATH2)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7613,7 +7632,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab shall be of type @code{REAL}.
+@item @var{X} @tab Shall be of type @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
@@ -7802,7 +7821,7 @@ Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab shall be a scalar and of type @code{INTEGER}.
+@item @var{I} @tab Shall be a scalar and of type @code{INTEGER}.
 @end multitable
 
 @item @emph{Example}:
@@ -7907,8 +7926,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab shall be of type @code{REAL}.
-@item @var{I} @tab shall be of type @code{INTEGER}.
+@item @var{X} @tab Shall be of type @code{REAL}.
+@item @var{I} @tab Shall be of type @code{INTEGER}.
 @end multitable
 
 @item @emph{Return value}:
@@ -7977,8 +7996,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{A} @tab shall be a scalar of type @code{INTEGER} or @code{REAL}
-@item @var{B} @tab shall be a scalar of the same type and kind as @var{A}
+@item @var{A} @tab Shall be a scalar of type @code{INTEGER} or @code{REAL}
+@item @var{B} @tab Shall be a scalar of the same type and kind as @var{A}
 @end multitable
 
 @item @emph{Return value}:
@@ -8039,7 +8058,7 @@ Subroutine, non-elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{NUMBER} @tab shall be a scalar integer, with @code{INTENT(IN)}
+@item @var{NUMBER} @tab Shall be a scalar integer, with @code{INTENT(IN)}
 @item @var{HANDLER}@tab Signal handler (@code{INTEGER FUNCTION} or
 @code{SUBROUTINE}) or dummy/global @code{INTEGER} scalar.
 @code{INTEGER}. It is @code{INTENT(IN)}.
@@ -8382,7 +8401,7 @@ Non-elemental subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{SEED} @tab shall be a scalar @code{INTEGER(kind=4)}.
+@item @var{SEED} @tab Shall be a scalar @code{INTEGER(kind=4)}.
 @end multitable
 
 @item @emph{Return value}:
@@ -8528,14 +8547,20 @@ contains 0 on success or a nonzero error code upon return; see
 @code{symlink(2)}.  If the system does not supply @code{symlink(2)}, 
 @code{ENOSYS} is returned.
 
+This intrinsic is provided in both subroutine and function forms;
+however, only one form can be used in any given program unit.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
-Subroutine
+Subroutine, non-elemental function
 
 @item @emph{Syntax}:
-@code{CALL SYMLNK(PATH1, PATH2 [, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL SYMLNK(PATH1, PATH2 [, STATUS])}
+@item @code{STATUS = SYMLNK(PATH1, PATH2)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8563,14 +8588,20 @@ argument @var{STATUS} is present, it contains the value returned by
 Note that which shell is used to invoke the command is system-dependent
 and environment-dependent.
 
+This intrinsic is provided in both subroutine and function forms;
+however, only one form can be used in any given program unit.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
-Subroutine
+Subroutine, non-elemental function
 
 @item @emph{Syntax}:
-@code{CALL SYSTEM(COMMAND [, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL SYSTEM(COMMAND [, STATUS])}
+@item @code{STATUS = SYSTEM(COMMAND)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8805,7 +8836,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab shall be of type @code{REAL}.
+@item @var{X} @tab Shall be of type @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
@@ -9016,14 +9047,20 @@ blanks in the file name are ignored.  If the @var{STATUS} argument is
 supplied, it contains 0 on success or a nonzero error code upon return;
 see @code{unlink(2)}.
 
+This intrinsic is provided in both subroutine and function forms;
+however, only one form can be used in any given program unit.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
-Subroutine
+Subroutine, non-elemental function
 
 @item @emph{Syntax}:
-@code{CALL UNLINK(PATH [, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL UNLINK(PATH [, STATUS])}
+@item @code{STATUS = UNLINK(PATH)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70

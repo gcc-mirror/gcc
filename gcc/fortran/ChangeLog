@@ -1,3 +1,18 @@
+2007-03-08  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	Backport from trunk:
+	* intrinsic.texi: minor typo fixes, removed prologue.
+	(FSEEK): moved to correct place in alphabetical order.
+	(LINK) Document function form.
+	(RENAME): Likewise.
+	(SYMLNK): Likewise.
+	(SYSTEM): Likewise.
+	(UNLINK): Likewise.
+	(ICHAR) Improve internal I/O note.
+	(ACHAR): Reference it.
+	(CHAR): Reference it.
+	(IACHAR): Reference it.
+
 2007-03-08  Daniel Franke  <franke.daniel@gmail.com>
 
 	Backport from trunk:
