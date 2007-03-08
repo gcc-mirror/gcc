@@ -1,3 +1,14 @@
+2007-03-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/builtins-55.c: Test *lceil* and *lfloor*.
+	* gcc.dg/torture/builtin-attr-1.c: Likewise.
+	* gcc.dg/torture/builtin-convert-1.c: Likewise.  Also test *lrint* and *lround*.
+	* gcc.dg/torture/builtin-convert-2.c: Test ceil->lceil and floor->lfloor.
+	* gcc.dg/torture/builtin-convert-3.c: Test *lceil* and *lfloor*.
+	* gcc.dg/torture/builtin-integral-1.c: Likewise.
+	* gcc.dg/torture/builtin-nonneg-1.c: Likewise.
+	* gcc.dg/torture/builtin-rounding-1.c: Likewise.
+
 2007-03-08  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	Backport from trunk.

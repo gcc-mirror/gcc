@@ -12106,6 +12106,7 @@ tree_expr_nonnegative_p (tree t)
     case SAVE_EXPR:
     case NON_LVALUE_EXPR:
     case FLOAT_EXPR:
+    case FIX_TRUNC_EXPR:
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
 
     case COMPOUND_EXPR:

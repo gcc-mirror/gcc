@@ -1,3 +1,11 @@
+2007-03-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.def (lceil, lceilf, lceill, lfloor, lfloorf, lfloorl,
+	llceil, llceilf, llceill, llfloor, llfloorf, llfloorl): Mark with
+	ATTR_CONST_NOTHROW_LIST.
+	
+	* fold-const.c (tree_expr_nonnegative_p): Handle FIX_TRUNC_EXPR.
+
 2007-03-08 Andrew Pinski <andrew_pinski@playstation.sony.com>
 
 	PR target/30406

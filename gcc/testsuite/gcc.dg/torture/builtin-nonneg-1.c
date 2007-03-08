@@ -144,8 +144,12 @@ void test(double d1, double d2, float f1, float f2,
   ARG1TEST1 (floor);
   ARG1TEST2 (fmod);
   ARG2TEST1_A2INT (ldexp);
+  ARG1TEST1_RTYPE (__builtin_llceil, long long);
+  ARG1TEST1_RTYPE (__builtin_llfloor, long long);
   ARG1TEST1_RTYPE (llrint, long long);
   ARG1TEST1_RTYPE (llround, long long);
+  ARG1TEST1_RTYPE (__builtin_lceil, long);
+  ARG1TEST1_RTYPE (__builtin_lfloor, long);
   ARG1TEST1_RTYPE (lrint, long);
   ARG1TEST1_RTYPE (lround, long);
   /* The modf* functions aren't ever "const" or "pure" even with

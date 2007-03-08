@@ -21,9 +21,6 @@
 #define MAYBEC99(CODE, C99) (!(C99) && (CODE))
 #endif
 
-#define PROTOTYPE1(FN) extern double FN(double); extern float FN##f(float); \
-  extern long double FN##l(long double);
-
 void test(double d1, float f1, long double ld1)
 {
   /* Test converting math builtins to narrower FP types based on a
@@ -33,7 +30,6 @@ void test(double d1, float f1, long double ld1)
      is only performed if the replacement function is actually
      narrower in width, so check that first.  */
 #define OUTER_CAST1(MATHFN, C99) \
- PROTOTYPE1 (MATHFN) \
  extern void link_failure_outer_##MATHFN##l_##MATHFN##_1(void); \
  extern void link_failure_outer_##MATHFN##l_##MATHFN##_2(void); \
  extern void link_failure_outer_##MATHFN##l_##MATHFN##f_1(void); \
@@ -41,52 +37,51 @@ void test(double d1, float f1, long double ld1)
  extern void link_failure_outer_##MATHFN##_##MATHFN##f_1(void); \
  extern void link_failure_outer_##MATHFN##_##MATHFN##f_2(void); \
  if (sizeof (long double) > sizeof (double) \
-     && MAYBEC99 ((double) MATHFN##l((double)ld1) != MATHFN(ld1), C99)) \
+     && MAYBEC99 ((double) __builtin_##MATHFN##l((double)ld1) != __builtin_##MATHFN(ld1), C99)) \
     link_failure_outer_##MATHFN##l_##MATHFN##_1(); \
  if (sizeof (long double) > sizeof (double) \
-     && MAYBEC99 ((double) MATHFN##l(d1) != MATHFN(d1), C99)) \
+     && MAYBEC99 ((double) __builtin_##MATHFN##l(d1) != __builtin_##MATHFN(d1), C99)) \
     link_failure_outer_##MATHFN##l_##MATHFN##_1(); \
  if (sizeof (long double) > sizeof (double) \
-     && MAYBEC99 ((double) MATHFN##l(f1) != MATHFN(f1), C99)) \
+     && MAYBEC99 ((double) __builtin_##MATHFN##l(f1) != __builtin_##MATHFN(f1), C99)) \
     link_failure_outer_##MATHFN##l_##MATHFN##_2(); \
  if (sizeof (long double) > sizeof (float) \
-     && C99CODE ((float) MATHFN##l((float) ld1) != MATHFN##f(ld1))) \
+     && C99CODE ((float) __builtin_##MATHFN##l((float) ld1) != __builtin_##MATHFN##f(ld1))) \
     link_failure_outer_##MATHFN##l_##MATHFN##f_1(); \
  if (sizeof (long double) > sizeof (float) \
-     && C99CODE ((float) MATHFN##l((float) d1) != MATHFN##f(d1))) \
+     && C99CODE ((float) __builtin_##MATHFN##l((float) d1) != __builtin_##MATHFN##f(d1))) \
     link_failure_outer_##MATHFN##l_##MATHFN##f_1(); \
  if (sizeof (long double) > sizeof (float) \
-     && C99CODE ((float) MATHFN##l(f1) != MATHFN##f(f1))) \
+     && C99CODE ((float) __builtin_##MATHFN##l(f1) != __builtin_##MATHFN##f(f1))) \
     link_failure_outer_##MATHFN##l_##MATHFN##f_2(); \
  if (sizeof (double) > sizeof (float) \
-     && C99CODE ((float) MATHFN((float) ld1) != MATHFN##f(ld1))) \
+     && C99CODE ((float) __builtin_##MATHFN((float) ld1) != __builtin_##MATHFN##f(ld1))) \
     link_failure_outer_##MATHFN##_##MATHFN##f_1(); \
  if (sizeof (double) > sizeof (float) \
-     && C99CODE ((float) MATHFN((float) d1) != MATHFN##f(d1))) \
+     && C99CODE ((float) __builtin_##MATHFN((float) d1) != __builtin_##MATHFN##f(d1))) \
     link_failure_outer_##MATHFN##_##MATHFN##f_1(); \
  if (sizeof (double) > sizeof (float) \
-     && C99CODE ((float) MATHFN(f1) != MATHFN##f(f1))) \
+     && C99CODE ((float) __builtin_##MATHFN(f1) != __builtin_##MATHFN##f(f1))) \
     link_failure_outer_##MATHFN##_##MATHFN##f_2()
 
   /* Test converting math builtins to narrower FP types based on if
      the argument is a narrower type (perhaps implicitly) cast to a
      wider one.  */
 #define INNER_CAST1(MATHFN, C99) \
- PROTOTYPE1 (MATHFN) \
  extern void link_failure_inner_##MATHFN##l_##MATHFN(void); \
  extern void link_failure_inner_##MATHFN##l_##MATHFN##f(void); \
  extern void link_failure_inner_##MATHFN##_##MATHFN##f(void); \
  if (sizeof (long double) > sizeof (double) \
-     && MAYBEC99 (MATHFN##l(d1) != (long double) MATHFN(d1), C99)) \
+     && MAYBEC99 (__builtin_##MATHFN##l(d1) != (long double) __builtin_##MATHFN(d1), C99)) \
     link_failure_inner_##MATHFN##l_##MATHFN(); \
  if (sizeof (long double) > sizeof (float) \
-     && C99CODE (MATHFN##l(f1) != (long double) MATHFN##f(f1))) \
+     && C99CODE (__builtin_##MATHFN##l(f1) != (long double) __builtin_##MATHFN##f(f1))) \
     link_failure_inner_##MATHFN##l_##MATHFN##f(); \
  if (sizeof (long double) > sizeof (float) \
-     && C99CODE (MATHFN##l((double)f1) != (long double) MATHFN##f(f1))) \
+     && C99CODE (__builtin_##MATHFN##l((double)f1) != (long double) __builtin_##MATHFN##f(f1))) \
     link_failure_inner_##MATHFN##l_##MATHFN##f(); \
  if (sizeof (double) > sizeof (float) \
-     && C99CODE (MATHFN(f1) != (double) MATHFN##f(f1))) \
+     && C99CODE (__builtin_##MATHFN(f1) != (double) __builtin_##MATHFN##f(f1))) \
     link_failure_inner_##MATHFN##_##MATHFN##f()
 
 
@@ -122,6 +117,22 @@ void test(double d1, float f1, long double ld1)
   OUTER_CAST1 (ceil, /*C99=*/ 0);
   INNER_CAST1 (floor, /*C99=*/ 0);
   OUTER_CAST1 (floor, /*C99=*/ 0);
+  INNER_CAST1 (lceil, /*C99=*/ 1);
+  OUTER_CAST1 (lceil, /*C99=*/ 1);
+  INNER_CAST1 (lfloor, /*C99=*/ 1);
+  OUTER_CAST1 (lfloor, /*C99=*/ 1);
+  INNER_CAST1 (lrint, /*C99=*/ 1);
+  OUTER_CAST1 (lrint, /*C99=*/ 1);
+  INNER_CAST1 (lround, /*C99=*/ 1);
+  OUTER_CAST1 (lround, /*C99=*/ 1);
+  INNER_CAST1 (llceil, /*C99=*/ 1);
+  OUTER_CAST1 (llceil, /*C99=*/ 1);
+  INNER_CAST1 (llfloor, /*C99=*/ 1);
+  OUTER_CAST1 (llfloor, /*C99=*/ 1);
+  INNER_CAST1 (llrint, /*C99=*/ 1);
+  OUTER_CAST1 (llrint, /*C99=*/ 1);
+  INNER_CAST1 (llround, /*C99=*/ 1);
+  OUTER_CAST1 (llround, /*C99=*/ 1);
   INNER_CAST1 (nearbyint, /*C99=*/ 1);
   OUTER_CAST1 (nearbyint, /*C99=*/ 1);
   INNER_CAST1 (rint, /*C99=*/ 1);
