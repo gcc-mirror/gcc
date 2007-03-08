@@ -363,22 +363,6 @@ public class DomLSParser
         source = new InputSource(in);
         source.setSystemId(systemId);
       }
-    if (source == null && entityResolver != null)
-      {
-        String publicId = input.getPublicId();
-        try
-          {
-            source = entityResolver.resolveEntity(publicId, systemId);
-          }
-        catch (SAXException e)
-          {
-            throw new DomLSException(LSException.PARSE_ERR, e);
-          } 
-        catch (IOException e)
-          {
-            throw new DomLSException(LSException.PARSE_ERR, e);
-          } 
-      }
     if (source == null)
       {
         URL url = null;
