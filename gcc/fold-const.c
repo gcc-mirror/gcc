@@ -13256,6 +13256,7 @@ tree_expr_nonnegative_warnv_p (tree t, bool *strict_overflow_p)
     case SAVE_EXPR:
     case NON_LVALUE_EXPR:
     case FLOAT_EXPR:
+    case FIX_TRUNC_EXPR:
       return tree_expr_nonnegative_warnv_p (TREE_OPERAND (t, 0),
 					    strict_overflow_p);
 

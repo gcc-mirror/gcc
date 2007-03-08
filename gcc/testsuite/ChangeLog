@@ -1,3 +1,16 @@
+2007-03-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/builtins-55.c: Test *lceil* and *lfloor*.
+	* gcc.dg/torture/builtin-attr-1.c: Likewise.
+	* gcc.dg/torture/builtin-convert-1.c: Likewise.  Also test *lrint* and *lround*.
+	* gcc.dg/torture/builtin-convert-2.c: Test ceil->lceil and floor->lfloor.
+	* gcc.dg/torture/builtin-convert-3.c: Test *lceil* and *lfloor*.
+	* gcc.dg/torture/builtin-integral-1.c: Likewise.
+	* gcc.dg/torture/builtin-minmax-1.c: Likewise.  Also test *lrint*
+	and *lround*.  Correct macro names.
+	* gcc.dg/torture/builtin-nonneg-1.c: Test *lceil* and *lfloor*.
+	* gcc.dg/torture/builtin-rounding-1.c: Likewise.
+
 2007-03-08  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/no-strict-overflow-5.c: New test.

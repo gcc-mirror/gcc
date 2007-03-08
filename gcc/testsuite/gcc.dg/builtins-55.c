@@ -32,6 +32,10 @@ void test(double x)
   if (sizeof(long) != sizeof(long long))
     return;
 
+  if (__builtin_lceil(x) != __builtin_llceil(x))
+    link_error();
+  if (__builtin_lfloor(x) != __builtin_llfloor(x))
+    link_error();
   if (lround(x) != llround(x))
     link_error();
   if (lrint(x) != llrint(x))
@@ -45,6 +49,10 @@ void testf(float x)
   if (sizeof(long) != sizeof(long long))
     return;
 
+  if (__builtin_lceilf(x) != __builtin_llceilf(x))
+    link_error();
+  if (__builtin_lfloorf(x) != __builtin_llfloorf(x))
+    link_error();
   if (lroundf(x) != llroundf(x))
     link_error();
   if (lrintf(x) != llrintf(x))
@@ -58,6 +66,10 @@ void testl(long double x)
   if (sizeof(long) != sizeof(long long))
     return;
 
+  if (__builtin_lceill(x) != __builtin_llceill(x))
+    link_error();
+  if (__builtin_lfloorl(x) != __builtin_llfloorl(x))
+    link_error();
   if (lroundl(x) != llroundl(x))
     link_error();
   if (lrintl(x) != llrintl(x))
