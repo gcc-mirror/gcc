@@ -1039,11 +1039,11 @@ unsigned int ix86_tune_features[X86_TUNE_LAST] = {
   ~m_386,
   
   /* X86_TUNE_USE_SAHF */
-  m_PPRO | m_K6_GEODE | m_PENT4 | m_NOCONA | m_GENERIC32,
-  /* | m_GENERIC | m_ATHLON_K8 ? */
+  m_PPRO | m_K6_GEODE | m_K8 | m_AMDFAM10 | m_PENT4
+  | m_NOCONA | m_CORE2 | m_GENERIC32,
 
   /* X86_TUNE_MOVX: Enable to zero extend integer registers to avoid
-     partial dependencies */
+     partial dependencies.  */
   m_ATHLON_K8_AMDFAM10 | m_PPRO | m_PENT4 | m_NOCONA
   | m_CORE2 | m_GENERIC | m_GEODE /* m_386 | m_K6 */,
 
@@ -1440,6 +1440,11 @@ int x86_prefetch_sse;
 
 /* true if cmpxchg16b is supported.  */
 int x86_cmpxchg16b;
+
+/* true if sahf is supported. Early Intel CPUs with Intel 64
+   lacked LAHF and SAHF instructions supported by AMD64 until
+   introduction of Pentium 4 G1 step in December 2005.  */
+int x86_sahf;
 
 /* ix86_regparm_string as a number */
 static int ix86_regparm;
@@ -1884,19 +1889,20 @@ override_options (void)
       const enum processor_type processor;
       const enum pta_flags
 	{
-	  PTA_SSE = 1,
-	  PTA_SSE2 = 2,
-	  PTA_SSE3 = 4,
-	  PTA_MMX = 8,
-	  PTA_PREFETCH_SSE = 16,
-	  PTA_3DNOW = 32,
-	  PTA_3DNOW_A = 64,
-	  PTA_64BIT = 128,
-	  PTA_SSSE3 = 256,
-	  PTA_CX16 = 512,
-	  PTA_POPCNT = 1024,
-	  PTA_ABM = 2048,
- 	  PTA_SSE4A = 4096
+	  PTA_SSE = 1 << 0,
+	  PTA_SSE2 = 1 << 1,
+	  PTA_SSE3 = 1 << 2,
+	  PTA_MMX = 1 << 3,
+	  PTA_PREFETCH_SSE = 1 << 4,
+	  PTA_3DNOW = 1 << 5,
+	  PTA_3DNOW_A = 1 << 6,
+	  PTA_64BIT = 1 << 7,
+	  PTA_SSSE3 = 1 << 8,
+	  PTA_CX16 = 1 << 9,
+	  PTA_POPCNT = 1 << 10,
+	  PTA_ABM = 1 << 11,
+ 	  PTA_SSE4A = 1 << 12,
+	  PTA_NO_SAHF = 1 << 13
 	} flags;
     }
   const processor_alias_table[] =
@@ -1923,7 +1929,8 @@ override_options (void)
       {"prescott", PROCESSOR_NOCONA, PTA_SSE | PTA_SSE2 | PTA_SSE3
 				        | PTA_MMX | PTA_PREFETCH_SSE},
       {"nocona", PROCESSOR_NOCONA, PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_64BIT
-					| PTA_MMX | PTA_PREFETCH_SSE | PTA_CX16},
+					| PTA_MMX | PTA_PREFETCH_SSE
+					| PTA_CX16 | PTA_NO_SAHF},
       {"core2", PROCESSOR_CORE2, PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_SSSE3
                                         | PTA_64BIT | PTA_MMX
 					| PTA_PREFETCH_SSE | PTA_CX16},
@@ -1943,7 +1950,7 @@ override_options (void)
       {"athlon-mp", PROCESSOR_ATHLON, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
 				      | PTA_3DNOW_A | PTA_SSE},
       {"x86-64", PROCESSOR_K8, PTA_MMX | PTA_PREFETCH_SSE | PTA_64BIT
-			       | PTA_SSE | PTA_SSE2 },
+			       | PTA_SSE | PTA_SSE2 | PTA_NO_SAHF},
       {"k8", PROCESSOR_K8, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW | PTA_64BIT
 				      | PTA_3DNOW_A | PTA_SSE | PTA_SSE2},
       {"opteron", PROCESSOR_K8, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW | PTA_64BIT
@@ -2146,6 +2153,8 @@ override_options (void)
 	if (processor_alias_table[i].flags & PTA_SSE4A
 	    && !(target_flags_explicit & MASK_SSE4A))
 	  target_flags |= MASK_SSE4A;
+	if (!(processor_alias_table[i].flags & PTA_NO_SAHF))
+	  x86_sahf = true;
 	if (TARGET_64BIT && !(processor_alias_table[i].flags & PTA_64BIT))
 	  error ("CPU you selected does not support x86-64 "
 		 "instruction set");
@@ -2465,10 +2474,6 @@ override_options (void)
   if (TARGET_SSE)
     TARGET_CMOVE = 1;
 
-  /* ??? Any idea why this is unconditionally disabled for 64-bit?  */
-  if (TARGET_64BIT)
-    TARGET_USE_SAHF = 0;
-  
   /* Figure out what ASM_GENERATE_INTERNAL_LABEL builds as a prefix.  */
   {
     char *p;
@@ -10976,7 +10981,7 @@ ix86_fp_comparison_sahf_cost (enum rtx_code code)
   enum rtx_code bypass_code, first_code, second_code;
   /* Return arbitrarily high cost when instruction is not preferred - this
      avoids gcc from using it.  */
-  if (!TARGET_USE_SAHF && !optimize_size)
+  if (!(TARGET_SAHF && (TARGET_USE_SAHF || optimize_size)))
     return 1024;
   ix86_fp_comparison_codes (code, &bypass_code, &first_code, &second_code);
   return (bypass_code != UNKNOWN || second_code != UNKNOWN) + 3;
@@ -11023,7 +11028,8 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1, rtx scratch,
   ix86_fp_comparison_codes (code, &bypass_code, &first_code, &second_code);
 
   /* Do fcomi/sahf based test when profitable.  */
-  if ((bypass_code == UNKNOWN || bypass_test)
+  if ((TARGET_CMOVE || TARGET_SAHF)
+      && (bypass_code == UNKNOWN || bypass_test)
       && (second_code == UNKNOWN || second_test)
       && ix86_fp_comparison_arithmetics_cost (code) > cost)
     {
@@ -21007,7 +21013,7 @@ ix86_emit_fp_unordered_jump (rtx label)
 
   emit_insn (gen_x86_fnstsw_1 (reg));
 
-  if (TARGET_USE_SAHF)
+  if (TARGET_SAHF && (TARGET_USE_SAHF || optimize_size))
     {
       emit_insn (gen_x86_sahf_1 (reg));
 
