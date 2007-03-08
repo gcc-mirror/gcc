@@ -634,13 +634,13 @@ do_return_redirection (struct goto_queue_node *q, tree finlab, tree mod,
 	    else
 	      new = *return_value_p;
 
-	    x = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (new), new, old);
+	    x = build_gimple_modify_stmt (new, old);
 	    append_to_statement_list (x, &q->repl_stmt);
 
 	    if (new == result)
 	      x = result;
 	    else
-	      x = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (result), result, new);
+	      x = build_gimple_modify_stmt (result, new);
 	    q->cont_stmt = build1 (RETURN_EXPR, void_type_node, x);
 	  }
 
@@ -830,20 +830,20 @@ honor_protect_cleanup_actions (struct leh_state *outer_state,
 
       i = tsi_start (finally);
       x = build0 (EXC_PTR_EXPR, ptr_type_node);
-      x = build2 (GIMPLE_MODIFY_STMT, void_type_node, save_eptr, x);
+      x = build_gimple_modify_stmt (save_eptr, x);
       tsi_link_before (&i, x, TSI_CONTINUE_LINKING);
 
       x = build0 (FILTER_EXPR, integer_type_node);
-      x = build2 (GIMPLE_MODIFY_STMT, void_type_node, save_filt, x);
+      x = build_gimple_modify_stmt (save_filt, x);
       tsi_link_before (&i, x, TSI_CONTINUE_LINKING);
 
       i = tsi_last (finally);
       x = build0 (EXC_PTR_EXPR, ptr_type_node);
-      x = build2 (GIMPLE_MODIFY_STMT, void_type_node, x, save_eptr);
+      x = build_gimple_modify_stmt (x, save_eptr);
       tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
 
       x = build0 (FILTER_EXPR, integer_type_node);
-      x = build2 (GIMPLE_MODIFY_STMT, void_type_node, x, save_filt);
+      x = build_gimple_modify_stmt (x, save_filt);
       tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
 
       x = build_resx (get_eh_region_number (tf->region));
@@ -1165,8 +1165,9 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
 
   if (tf->may_fallthru)
     {
-      x = build2 (GIMPLE_MODIFY_STMT, void_type_node, finally_tmp,
-		  build_int_cst (NULL_TREE, fallthru_index));
+      x = build_gimple_modify_stmt (finally_tmp,
+				    build_int_cst (integer_type_node,
+						   fallthru_index));
       append_to_statement_list (x, tf->top_p);
 
       if (tf->may_throw)
@@ -1195,8 +1196,9 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
       x = build1 (LABEL_EXPR, void_type_node, tf->eh_label);
       append_to_statement_list (x, tf->top_p);
 
-      x = build2 (GIMPLE_MODIFY_STMT, void_type_node, finally_tmp,
-		  build_int_cst (NULL_TREE, eh_index));
+      x = build_gimple_modify_stmt (finally_tmp,
+				    build_int_cst (integer_type_node,
+						   eh_index));
       append_to_statement_list (x, tf->top_p);
 
       last_case = build3 (CASE_LABEL_EXPR, void_type_node,
@@ -1227,15 +1229,17 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
 
       if (q->index < 0)
 	{
-	  mod = build2 (GIMPLE_MODIFY_STMT, void_type_node, finally_tmp,
-		        build_int_cst (NULL_TREE, return_index));
+	  mod = build_gimple_modify_stmt (finally_tmp,
+					  build_int_cst (integer_type_node,
+							 return_index));
 	  do_return_redirection (q, finally_label, mod, &return_val);
 	  switch_id = return_index;
 	}
       else
 	{
-	  mod = build2 (GIMPLE_MODIFY_STMT, void_type_node, finally_tmp,
-		        build_int_cst (NULL_TREE, q->index));
+	  mod = build_gimple_modify_stmt (finally_tmp,
+					  build_int_cst (integer_type_node,
+							 q->index));
 	  do_goto_redirection (q, finally_label, mod);
 	  switch_id = q->index;
 	}

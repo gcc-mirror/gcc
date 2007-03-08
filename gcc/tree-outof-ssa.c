@@ -1,5 +1,5 @@
 /* Convert a program in SSA form into Normal form.
-   Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Andrew Macleod <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -141,7 +141,7 @@ insert_copy_on_edge (edge e, tree dest, tree src)
 {
   tree copy;
 
-  copy = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (dest), dest, src);
+  copy = build_gimple_modify_stmt (dest, src);
   set_is_used (dest);
 
   if (TREE_CODE (src) == ADDR_EXPR)
@@ -1254,8 +1254,8 @@ insert_backedge_copies (void)
 
 		  /* Create a new instance of the underlying variable of the 
 		     PHI result.  */
-		  stmt = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (result_var),
-				 NULL_TREE, PHI_ARG_DEF (phi, i));
+		  stmt = build_gimple_modify_stmt (NULL_TREE,
+						   PHI_ARG_DEF (phi, i));
 		  name = make_ssa_name (result_var, stmt);
 		  GIMPLE_STMT_OPERAND (stmt, 0) = name;
 

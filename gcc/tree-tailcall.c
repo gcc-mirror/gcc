@@ -1,5 +1,5 @@
 /* Tail call optimization on trees.
-   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -560,8 +560,9 @@ adjust_accumulator_values (block_stmt_iterator bsi, tree m, tree a, edge back)
 	    var = m_acc;
 	  else
 	    {
-	      stmt = build2 (GIMPLE_MODIFY_STMT, ret_type, NULL_TREE,
-			     build2 (MULT_EXPR, ret_type, m_acc, a));
+	      stmt = build_gimple_modify_stmt (NULL_TREE,
+					       build2 (MULT_EXPR, ret_type,
+						       m_acc, a));
 
 	      tmp = create_tmp_var (ret_type, "acc_tmp");
 	      add_referenced_var (tmp);
@@ -574,8 +575,8 @@ adjust_accumulator_values (block_stmt_iterator bsi, tree m, tree a, edge back)
       else
 	var = a;
 
-      stmt = build2 (GIMPLE_MODIFY_STMT, ret_type, NULL_TREE,
-		     build2 (PLUS_EXPR, ret_type, a_acc, var));
+      stmt = build_gimple_modify_stmt (NULL_TREE, build2 (PLUS_EXPR, ret_type,
+							  a_acc, var));
       var = make_ssa_name (SSA_NAME_VAR (a_acc), stmt);
       GIMPLE_STMT_OPERAND (stmt, 0) = var;
       bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
@@ -584,8 +585,9 @@ adjust_accumulator_values (block_stmt_iterator bsi, tree m, tree a, edge back)
 
   if (m)
     {
-      stmt = build2 (GIMPLE_MODIFY_STMT, ret_type, NULL_TREE,
-		     build2 (MULT_EXPR, ret_type, m_acc, m));
+      stmt = build_gimple_modify_stmt (NULL_TREE,
+				       build2 (MULT_EXPR, ret_type,
+					       m_acc, m));
       var = make_ssa_name (SSA_NAME_VAR (m_acc), stmt);
       GIMPLE_STMT_OPERAND (stmt, 0) = var;
       bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
@@ -638,8 +640,9 @@ adjust_return_value (basic_block bb, tree m, tree a)
 
   if (m)
     {
-      stmt = build2 (GIMPLE_MODIFY_STMT, ret_type, NULL_TREE,
-		     build2 (MULT_EXPR, ret_type, m_acc, ret_var));
+      stmt = build_gimple_modify_stmt (NULL_TREE,
+				       build2 (MULT_EXPR, ret_type,
+					       m_acc, ret_var));
 
       tmp = create_tmp_var (ret_type, "acc_tmp");
       add_referenced_var (tmp);
@@ -653,8 +656,9 @@ adjust_return_value (basic_block bb, tree m, tree a)
 
   if (a)
     {
-      stmt = build2 (GIMPLE_MODIFY_STMT, ret_type, NULL_TREE,
-		     build2 (PLUS_EXPR, ret_type, a_acc, var));
+      stmt = build_gimple_modify_stmt (NULL_TREE,
+				       build2 (PLUS_EXPR, ret_type,
+					       a_acc, var));
 
       tmp = create_tmp_var (ret_type, "acc_tmp");
       add_referenced_var (tmp);

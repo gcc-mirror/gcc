@@ -1,3 +1,40 @@
+2007-03-08  Roger Sayle  <roger@eyesopen.com>
+
+	* tree-eh.c (do_return_redirection): Call build_gimple_modify_stmt
+	instead of calling build2 with a GIMPLE_MODIFY_STMT.
+	(honor_protect_cleanup_actions, lower_try_finally_switch):
+	Likewise.
+	* tree-if-conv.c (replace_phi_with_cond_gimple_modify_stmt,
+	ifc_temp_var): Likewise.
+	* tree-inline.c (setup_one_parameter): Likewise.
+	* tree-mudflap.c (mf_decl_cache_locals,
+	mf_build_check_statement_for): Likewise.
+	* tree-nested.c (init_tmp_var, save_tmp_var,
+	finalize_nesting_tree_1): Likewise.
+	* tree-outof-ssa.c (insert_copy_on_edge,
+	insert_backedge_copies): Likewise.
+	* tree-profile.c (tree_gen_edge_profiler,
+	tree_gen_ic_profiler): Likewise.
+	* tree-scalar-evolution.c (scev_const_prop): Likewise.
+	* tree-sra.c (sra_build_assignment): Likewise.
+	* tree-ssa-loop-im.c (determine_invariantness_stmt): Likewise.
+	* tree-ssa-math-opts.c (insert_reciprocals,
+	execute_cse_sincos_1): Likewise.
+	* tree-tailcall.c (adjust_accumulator_values,
+	adjust_return_value): Likewise.
+	* tree-vect-patterns.c (vect_pattern_recog_1): Likewise.
+	* tree-vect-transform.c (vect_create_data_ref_ptr,
+	bump_vector_ptr, vect_init_vector, get_initial_def_for_induction,
+	vect_create_epilog_for_reduction, vectorizable_reduction,
+	vectorizable_call, vectorizable_conversion,
+	vectorizable_assignment, vectorizable_operation,
+	vectorizable_type_demotion, vect_gen_widened_results_half,
+	vect_permute_store_chain, vectorizable_store,
+	vect_setup_realignment, vect_permute_load_chain,
+	vectorizable_load, vectorizable_condition,
+	vect_create_cond_for_align_checks): Likewise.
+	* tree-vrp.c (build_assert_expr_for): Likewise.
+
 2007-03-08  Ian Lance Taylor  <iant@google.com>
 
 	* tree-vrp.c: Include "intl.h".

@@ -1,5 +1,5 @@
 /* Nested function decomposition for trees.
-   Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -361,7 +361,7 @@ init_tmp_var (struct nesting_info *info, tree exp, tree_stmt_iterator *tsi)
   tree t, stmt;
 
   t = create_tmp_var_for (info, TREE_TYPE (exp), NULL);
-  stmt = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (t), t, exp);
+  stmt = build_gimple_modify_stmt (t, exp);
   SET_EXPR_LOCUS (stmt, EXPR_LOCUS (tsi_stmt (*tsi)));
   tsi_link_before (tsi, stmt, TSI_SAME_STMT);
 
@@ -389,7 +389,7 @@ save_tmp_var (struct nesting_info *info, tree exp,
   tree t, stmt;
 
   t = create_tmp_var_for (info, TREE_TYPE (exp), NULL);
-  stmt = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (t), exp, t);
+  stmt = build_gimple_modify_stmt (exp, t);
   SET_EXPR_LOCUS (stmt, EXPR_LOCUS (tsi_stmt (*tsi)));
   tsi_link_after (tsi, stmt, TSI_SAME_STMT);
 
@@ -1757,7 +1757,7 @@ finalize_nesting_tree_1 (struct nesting_info *root)
 
 	  y = build3 (COMPONENT_REF, TREE_TYPE (field),
 		      root->frame_decl, field, NULL_TREE);
-	  x = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (field), y, x);
+	  x = build_gimple_modify_stmt (y, x);
 	  append_to_statement_list (x, &stmt_list);
 	}
     }
@@ -1768,7 +1768,7 @@ finalize_nesting_tree_1 (struct nesting_info *root)
     {
       tree x = build3 (COMPONENT_REF, TREE_TYPE (root->chain_field),
 		       root->frame_decl, root->chain_field, NULL_TREE);
-      x = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (x), x, get_chain_decl (root));
+      x = build_gimple_modify_stmt (x, get_chain_decl (root));
       append_to_statement_list (x, &stmt_list);
     }
 

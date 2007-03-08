@@ -1,5 +1,5 @@
 /* If-conversion for vectorizer.
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Devang Patel <dpatel@apple.com>
 
 This file is part of GCC.
@@ -802,8 +802,7 @@ replace_phi_with_cond_gimple_modify_stmt (tree phi, tree cond,
 	        unshare_expr (arg_1));
 
   /* Create new MODIFY expression using RHS.  */
-  new_stmt = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (PHI_RESULT (phi)),
-		     unshare_expr (PHI_RESULT (phi)), rhs);
+  new_stmt = build_gimple_modify_stmt (unshare_expr (PHI_RESULT (phi)), rhs);
 
   /* Make new statement definition of the original phi result.  */
   SSA_NAME_DEF_STMT (PHI_RESULT (phi)) = new_stmt;
@@ -983,7 +982,7 @@ ifc_temp_var (tree type, tree exp)
   add_referenced_var (var);
 
   /* Build new statement to assign EXP to new variable.  */
-  stmt = build2 (GIMPLE_MODIFY_STMT, type, var, exp);
+  stmt = build_gimple_modify_stmt (var, exp);
 
   /* Get SSA name for the new variable and set make new statement
      its definition statement.  */
