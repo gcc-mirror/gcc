@@ -1,3 +1,10 @@
+2007-03-08  Daniel Franke  <franke.daniel@gmail.com>
+
+	* intrinsic.texi (GERROR, ISATTY, TTYNAM): New.
+	(ABORT, FLUSH, FNUM, IRAND, MALLOC, SIGNAL, SRAND): Fixed typo.
+	* intrinsic.c (add_subroutines): Adjusted dummy argument names 
+	of GERROR and TTYNAM.
+
 2007-07-08  Tobias Burnus  <burnus@net-b.de>
 
 	* module.c (gfc_match_use): Support renaming of operators
