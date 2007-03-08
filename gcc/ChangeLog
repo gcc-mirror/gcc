@@ -1,3 +1,9 @@
+2007-03-08 Andrew Pinski <andrew_pinski@playstation.sony.com>
+
+	PR target/30406
+	* config/rs6000/rs6000.c (rs6000_function_value): Look at bit size
+	instead of precision.
+
 2007-03-08  Volker Reichelt  <reichelt@netcologne.de>
 
 	PR c++/30852

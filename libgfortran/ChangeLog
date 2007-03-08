@@ -1,3 +1,9 @@
+2007-03-08  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/31001
+	* intrinsics/pack_generic.c (pack_internal): Add special checks
+	for zero-sized arrays.
+
 2007-02-28  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	Backport from trunk
