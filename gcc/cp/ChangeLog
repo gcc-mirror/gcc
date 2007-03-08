@@ -1,5 +1,8 @@
 2007-03-08  Volker Reichelt  <reichelt@netcologne.de>
 
+	PR c++/30852
+	* semantics.c (finish_offsetof): Handle COMPOUND_EXPR.
+
 	PR c++/30534
 	* pt.c (any_template_arguments_need_structural_equality_p):
 	Robustify.
