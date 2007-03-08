@@ -1,3 +1,8 @@
+2007-03-08  Volker Reichelt  <reichelt@netcologne.de>
+
+	PR c++/30534
+	* g++.dg/template/arg5.C: New test.
+
 2007-03-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* g++.dg/eh/arm-iwmmxt-unwind.C: New test.

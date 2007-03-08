@@ -1,3 +1,9 @@
+2007-03-08  Volker Reichelt  <reichelt@netcologne.de>
+
+	PR c++/30534
+	* pt.c (any_template_arguments_need_structural_equality_p):
+	Robustify.
+
 2007-03-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* decl.c (grokdeclarator): Disable warnings for anonymous
