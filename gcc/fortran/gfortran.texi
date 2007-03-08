@@ -764,6 +764,9 @@ host-associated derived types.
 attribute; supported intrinsic modules: @code{ISO_FORTRAN_ENV},
 @code{OMP_LIB} and @code{OMP_LIB_KINDS}.
 
+@item
+Renaming of operators in the @code{USE} statement.
+
 @end itemize
 
 

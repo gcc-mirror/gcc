@@ -488,7 +488,7 @@ gfc_match_use (void)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1], module_nature[GFC_MAX_SYMBOL_LEN + 1];
   gfc_use_rename *tail = NULL, *new;
-  interface_type type;
+  interface_type type, type2;
   gfc_intrinsic_op operator;
   match m;
 
@@ -588,8 +588,15 @@ gfc_match_use (void)
 	  gfc_error ("Missing generic specification in USE statement at %C");
 	  goto cleanup;
 
+	case INTERFACE_USER_OP:
 	case INTERFACE_GENERIC:
 	  m = gfc_match (" =>");
+
+	  if (type == INTERFACE_USER_OP && m == MATCH_YES
+	      && (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Renaming "
+				  "operators in USE statements at %C")
+	         == FAILURE))
+	    goto cleanup;
 
 	  if (only_flag)
 	    {
@@ -598,8 +605,9 @@ gfc_match_use (void)
 	      else
 		{
 		  strcpy (new->local_name, name);
-
-		  m = gfc_match_name (new->use_name);
+		  m = gfc_match_generic_spec (&type2, new->use_name, &operator);
+		  if (type != type2)
+		    goto syntax;
 		  if (m == MATCH_NO)
 		    goto syntax;
 		  if (m == MATCH_ERROR)
@@ -612,7 +620,9 @@ gfc_match_use (void)
 		goto syntax;
 	      strcpy (new->local_name, name);
 
-	      m = gfc_match_name (new->use_name);
+	      m = gfc_match_generic_spec (&type2, new->use_name, &operator);
+	      if (type != type2)
+		goto syntax;
 	      if (m == MATCH_NO)
 		goto syntax;
 	      if (m == MATCH_ERROR)
@@ -627,11 +637,10 @@ gfc_match_use (void)
 	      goto cleanup;
 	    }
 
-	  break;
+	  if (type == INTERFACE_USER_OP)
+	    new->operator = operator;
 
-	case INTERFACE_USER_OP:
-	  strcpy (new->use_name, name);
-	  /* Fall through */
+	  break;
 
 	case INTERFACE_INTRINSIC_OP:
 	  new->operator = operator;
