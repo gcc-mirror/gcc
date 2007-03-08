@@ -1,5 +1,14 @@
 2007-03-08  Daniel Franke  <franke.daniel@gmail.com>
 
+	PR fortran/30947
+	* check.c (gfc_check_alarm_sub): Added check for default integer 
+	kind of status argument.
+	* iresolve.c (gfc_resolve_alarm_sub): Removed conversion of 
+	status argument.
+	* intrinsic.texi (ALARM): Extended documentation.
+
+2007-03-08  Daniel Franke  <franke.daniel@gmail.com>
+
 	* intrinsic.texi (GERROR, ISATTY, TTYNAM): New.
 	(ABORT, FLUSH, FNUM, IRAND, MALLOC, SIGNAL, SRAND): Fixed typo.
 	* intrinsic.c (add_subroutines): Adjusted dummy argument names 

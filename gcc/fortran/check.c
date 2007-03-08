@@ -2999,6 +2999,9 @@ gfc_check_alarm_sub (gfc_expr *seconds, gfc_expr *handler, gfc_expr *status)
   if (type_check (status, 2, BT_INTEGER) == FAILURE)
     return FAILURE;
 
+  if (kind_value_check (status, 2, gfc_default_integer_kind) == FAILURE)
+    return FAILURE;
+
   return SUCCESS;
 }
 

@@ -785,7 +785,7 @@ end program test_aint
 @table @asis
 @item @emph{Description}:
 @code{ALARM(SECONDS, HANDLER [, STATUS])} causes external subroutine @var{HANDLER}
-to be executed after a delay of @var{SECONDS} by using @code{alarm(1)} to
+to be executed after a delay of @var{SECONDS} by using @code{alarm(2)} to
 set up a signal and @code{signal(2)} to catch it. If @var{STATUS} is
 supplied, it will be returned with the number of seconds remaining until
 any previously scheduled alarm was due to be delivered, or zero if there
@@ -805,10 +805,11 @@ Subroutine
 @item @var{SECONDS} @tab The type of the argument shall be a scalar
 @code{INTEGER}. It is @code{INTENT(IN)}.
 @item @var{HANDLER} @tab Signal handler (@code{INTEGER FUNCTION} or
-@code{SUBROUTINE}) or dummy/global @code{INTEGER} scalar.
-@code{INTEGER}. It is @code{INTENT(IN)}.
+@code{SUBROUTINE}) or dummy/global @code{INTEGER} scalar. The scalar 
+values may be either @code{SIG_IGN=1} to ignore the alarm generated 
+or @code{SIG_DFL=0} to set the default action. It is @code{INTENT(IN)}.
 @item @var{STATUS}  @tab (Optional) @var{STATUS} shall be a scalar
-@code{INTEGER} variable. It is @code{INTENT(OUT)}.
+variable of the default @code{INTEGER} kind. It is @code{INTENT(OUT)}.
 @end multitable
 
 @item @emph{Example}:
