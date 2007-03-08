@@ -45,7 +45,8 @@ GFC_REAL_8
 pow_r8_i4 (GFC_REAL_8 a, GFC_INTEGER_4 b)
 {
   GFC_REAL_8 pow, x;
-  GFC_INTEGER_4 n, u;
+  GFC_INTEGER_4 n;
+  GFC_UINTEGER_4 u;
   
   n = b;
   x = a;
@@ -55,10 +56,13 @@ pow_r8_i4 (GFC_REAL_8 a, GFC_INTEGER_4 b)
       if (n < 0)
 	{
 
-	  n = -n;
+	  u = -n;
 	  x = pow / x;
 	}
-      u = n;
+      else
+	{
+	   u = n;
+	}
       for (;;)
 	{
 	  if (u & 1)

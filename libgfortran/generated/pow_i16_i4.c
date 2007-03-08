@@ -45,7 +45,8 @@ GFC_INTEGER_16
 pow_i16_i4 (GFC_INTEGER_16 a, GFC_INTEGER_4 b)
 {
   GFC_INTEGER_16 pow, x;
-  GFC_INTEGER_4 n, u;
+  GFC_INTEGER_4 n;
+  GFC_UINTEGER_4 u;
   
   n = b;
   x = a;
@@ -60,7 +61,10 @@ pow_i16_i4 (GFC_INTEGER_16 a, GFC_INTEGER_4 b)
 	    return (n & 1) ? -1 : 1;
 	  return (x == 0) ? 1 / x : 0;
 	}
-      u = n;
+      else
+	{
+	   u = n;
+	}
       for (;;)
 	{
 	  if (u & 1)

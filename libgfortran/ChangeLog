@@ -1,3 +1,42 @@
+2007-03-08  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/30981
+	Backport from trunk.
+	* m4/pow_m4: Use appropriate unsigned int type for u.
+	* generated/pow_c10_i16.c: Regenerated.
+	* generated/pow_c10_i4.c: Regenerated.
+	* generated/pow_c10_i8.c: Regenerated.
+	* generated/pow_c16_i16.c: Regenerated.
+	* generated/pow_c16_i4.c: Regenerated.
+	* generated/pow_c16_i8.c: Regenerated.
+	* generated/pow_c4_i16.c: Regenerated.
+	* generated/pow_c4_i4.c: Regenerated.
+	* generated/pow_c4_i8.c: Regenerated.
+	* generated/pow_c8_i16.c: Regenerated.
+	* generated/pow_c8_i4.c: Regenerated.
+	* generated/pow_c8_i8.c: Regenerated.
+	* generated/pow_i16_i16.c: Regenerated.
+	* generated/pow_i16_i4.c: Regenerated.
+	* generated/pow_i16_i8.c: Regenerated.
+	* generated/pow_i4_i16.c: Regenerated.
+	* generated/pow_i4_i4.c: Regenerated.
+	* generated/pow_i4_i8.c: Regenerated.
+	* generated/pow_i8_i16.c: Regenerated.
+	* generated/pow_i8_i4.c: Regenerated.
+	* generated/pow_i8_i8.c: Regenerated.
+	* generated/pow_r10_i16.c: Regenerated.
+	* generated/pow_r10_i4.c: Regenerated.
+	* generated/pow_r10_i8.c: Regenerated.
+	* generated/pow_r16_i16.c: Regenerated.
+	* generated/pow_r16_i4.c: Regenerated.
+	* generated/pow_r16_i8.c: Regenerated.
+	* generated/pow_r4_i16.c: Regenerated.
+	* generated/pow_r4_i4.c: Regenerated.
+	* generated/pow_r4_i8.c: Regenerated.
+	* generated/pow_r8_i16.c: Regenerated.
+	* generated/pow_r8_i4.c: Regenerated.
+	* generated/pow_r8_i8.c: Regenerated.
+	
 2007-03-08  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/31001
