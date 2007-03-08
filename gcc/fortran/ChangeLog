@@ -1,5 +1,12 @@
 2007-07-08  Tobias Burnus  <burnus@net-b.de>
 
+	* module.c (gfc_match_use): Support renaming of operators
+	in USE statements.
+	* gfortran.texi (Fortran 2003 Status): Document support of
+	renaming of operators.
+
+2007-07-08  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/30973
 	* module.c (read_module): Always import module name as symbol.
 	(gfc_match_use): Disallow module name in the only clause of
