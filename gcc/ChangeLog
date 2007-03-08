@@ -1,3 +1,8 @@
+2007-03-08  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/31085
+	* tree-ssa-address.c (create_mem_ref): Fix test of type of base.
+
 2007-03-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.def (lceil, lceilf, lceill, lfloor, lfloorf, lfloorl,
