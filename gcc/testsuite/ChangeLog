@@ -1,3 +1,16 @@
+2007-03-08  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.c-torture/execute/builtins/memmove-lib.c: Include lib/bzero.c
+	and lib/bfill.c on VxWorks targets.
+	* gcc.c-torture/execute/builtins/memmove-2-lib.c: Likewise.
+	* gcc.c-torture/execute/builtins/strchr-lib.c: Include lib/bzero.c,
+	lib/bfill.c and lib/memmove.c on VxWorks targets.
+	* gcc.c-torture/execute/builtins/strrchr-lib.c: Likewise.
+	* gcc.c-torture/execute/builtins/memops-asm-lib.c: Include lib/bfill.c
+	on VxWorks targets.
+	* gcc.c-torture/execute/builtins/lib/bzero.c: New file.
+	* gcc.c-torture/execute/builtins/lib/bfill.c: Likewise.
+
 2007-03-08  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/use_5.f90: New test.

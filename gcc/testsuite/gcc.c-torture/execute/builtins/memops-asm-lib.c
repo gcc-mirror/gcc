@@ -77,3 +77,9 @@ bzero (void *d, size_t n)
   my_bzero (d, n);
   TEST_ABORT;
 }
+
+#ifdef __vxworks
+/* The RTP C library uses bfill, which is defined in the same file as
+   bzero and bcopy.  */
+#include "lib/bfill.c"
+#endif
