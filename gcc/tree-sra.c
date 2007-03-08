@@ -1241,6 +1241,8 @@ instantiate_element (struct sra_elt *elt)
       
       DECL_IGNORED_P (var) = 0;
       TREE_NO_WARNING (var) = TREE_NO_WARNING (base);
+      if (elt->element && TREE_NO_WARNING (elt->element))
+	TREE_NO_WARNING (var) = 1;
     }
   else
     {

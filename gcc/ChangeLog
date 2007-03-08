@@ -1,3 +1,10 @@
+2007-03-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* c-decl.c (grokdeclarator): Disable warnings for anonymous
+	bitfields.
+	* tree-sra.c (instantiate_element): Propagate disabled warnings
+	from the element itself to the created variable.
+
 2007-03-07  Richard Henderson  <rth@redhat.com>
 
 	PR target/30848

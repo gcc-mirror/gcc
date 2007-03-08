@@ -1,6 +1,6 @@
 /* Process declarations and variables for C++ compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2005, 2006, 2007  Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -8539,6 +8539,9 @@ grokdeclarator (const cp_declarator *declarator,
 	      {
 		decl = build_decl (FIELD_DECL, unqualified_id, type);
 		DECL_NONADDRESSABLE_P (decl) = bitfield;
+		if (bitfield && !unqualified_id)
+		  TREE_NO_WARNING (decl) = 1;
+
 		if (storage_class == sc_mutable)
 		  {
 		    DECL_MUTABLE_P (decl) = 1;
