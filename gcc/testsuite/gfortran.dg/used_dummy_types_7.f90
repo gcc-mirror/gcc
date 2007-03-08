@@ -33,12 +33,12 @@ END MODULE
 
 MODULE list
 INTERFACE
-  SUBROUTINE dummy_atom_list_insert(this, atom)
+  SUBROUTINE dummy_atom_list_insert(this, atom2)
     USE types, ONLY: dummy_atom_list
     USE atom, ONLY: dummy_atom
 
     TYPE(dummy_atom_list), INTENT(inout) :: this
-    TYPE(dummy_atom), INTENT(in)         :: atom
+    TYPE(dummy_atom), INTENT(in)         :: atom2
   END SUBROUTINE
 END INTERFACE
 END MODULE
