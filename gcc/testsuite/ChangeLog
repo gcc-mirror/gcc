@@ -1,5 +1,10 @@
 2007-03-08  Richard Sandiford  <richard@codesourcery.com>
 
+	* gcc.c-torture/execute/ieee/hugeval.x: XFAIL for VxWorks kernel
+	mode.
+
+2007-03-08  Richard Sandiford  <richard@codesourcery.com>
+
 	* gcc.c-torture/execute/builtins/memmove-lib.c: Include lib/bzero.c
 	and lib/bfill.c on VxWorks targets.
 	* gcc.c-torture/execute/builtins/memmove-2-lib.c: Likewise.
