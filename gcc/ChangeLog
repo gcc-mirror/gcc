@@ -1,3 +1,33 @@
+2007-03-08  Ian Lance Taylor  <iant@google.com>
+
+	* tree-vrp.c: Include "intl.h".
+	(usable_range_p): New static function.
+	(compare_values_warnv): Don't test TYPE_OVERFLOW_UNDEFINED for
+	overflowed values, juts set *strict_overflow_p.
+	(compare_values): Only return -2 if one of the operands is not a
+	constant.
+	(compare_ranges): Call usable_range_p.
+	(compare_range_with_value): Likewise.
+	(vrp_evaluate_conditional_warnv): Rename from
+	vrp_evaluate_conditional.  Make static.  Change all callers.
+	(vrp_evaluate_conditional): New function.
+	(simplify_div_or_mod_using_ranges): Issue warning about reliance
+	on signed overflow.
+	(simplify_abs_using_ranges): Likewise.
+	(simplify_stmt_for_jump_threading): Add within_stmt parameter.
+	* tree-ssa-dom.c (simplify_stmt_for_jump_threading): Add
+	within_stmt parameter.
+	* tree-ssa-propagate.c (fold_predicate_in): Update call to
+	vrp_evaluate_conditional.
+	* tree-ssa-threadedge.c
+	(record_temporary_equivalences_from_stmts_at_dest): Change
+	simplify parameter to take a second tree parameter.
+	(simplify_control_stmt_condition): Likewise.
+	(thread_across_edge): Likewise.
+	* tree-flow.h (vrp_evaluate_conditional): Update declaration.
+	(thread_across_edge): Likewise.
+	* gcc/Makefile.in (tree-vrp.o): Depend upon intl.h.
+
 2007-03-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (TARGET_SAHF): New define.
