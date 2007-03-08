@@ -125,6 +125,7 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 * @code{FSEEK}:         FSEEK,     Low level file positioning subroutine
 * @code{FSTAT}:         FSTAT,     Get file status
 * @code{FTELL}:         FTELL,     Current stream position
+* @code{GERROR}:        GERROR,    Get last system error message
 * @code{GETARG}:        GETARG,    Get command line arguments
 * @code{GET_COMMAND}:   GET_COMMAND, Get the entire command line
 * @code{GET_COMMAND_ARGUMENT}: GET_COMMAND_ARGUMENT, Get command line arguments
@@ -152,6 +153,7 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 * @code{INT}:           INT,       Convert to integer type
 * @code{IOR}:           IOR,       Bitwise logical or
 * @code{IRAND}:         IRAND,     Integer pseudo-random number
+* @code{ISATTY}:        ISATTY,    Whether a unit is a terminal device
 * @code{ISHFT}:         ISHFT,     Shift bits
 * @code{ISHFTC}:        ISHFTC,    Shift bits circularly
 * @code{ITIME}:         ITIME,     Current local time (hour/minutes/seconds)
@@ -244,6 +246,7 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 * @code{TRANSFER}:      TRANSFER,  Transfer bit patterns
 * @code{TRANSPOSE}:     TRANSPOSE, Transpose an array of rank two
 * @code{TRIM}:          TRIM,      Function to remove trailing blank characters of a string
+* @code{TTYNAM}:        TTYNAM,    Get the name of a terminal device.
 * @code{UBOUND}:        UBOUND,    Upper dimension bounds of an array
 * @code{UMASK}:         UMASK,     Set the file creation mask
 * @code{UNLINK}:        UNLINK,    Remove a file from the file system
@@ -308,7 +311,7 @@ which is suitable for debugging purposes.
 GNU extension
 
 @item @emph{Class}:
-non-elemental subroutine
+Non-elemental subroutine
 
 @item @emph{Syntax}:
 @code{CALL ABORT}
@@ -3612,7 +3615,7 @@ argument, all units are flushed, otherwise just the unit specified.
 GNU extension
 
 @item @emph{Class}:
-non-elemental subroutine
+Non-elemental subroutine
 
 @item @emph{Syntax}:
 @code{CALL FLUSH(UNIT)}
@@ -3644,7 +3647,7 @@ open Fortran I/O unit @code{UNIT}.
 GNU extension
 
 @item @emph{Class}:
-non-elemental function
+Non-elemental function
 
 @item @emph{Syntax}:
 @code{RESULT = FNUM(UNIT)}
@@ -3969,6 +3972,44 @@ END PROGRAM
 
 @item @emph{See also}:
 @ref{FSEEK}
+@end table
+
+
+
+@node GERROR
+@section @code{GERROR} --- Get last system error message
+@cindex @code{GERROR} intrinsic
+
+@table @asis
+@item @emph{Description}:
+Returns the system error message corresponding to the last system error.
+This resembles the functionality of @code{strerror(3)} in C.
+
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@code{CALL GERROR(RESULT)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{RESULT}  @tab Shall of type @code{CHARACTER(*)}.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+PROGRAM test_gerror
+  CHARACTER(len=100) :: msg
+  CALL gerror(msg)
+  WRITE(*,*) msg
+END PROGRAM
+@end smallexample
+
+@item @emph{See also}:
+@ref{IERRNO}, @ref{PERROR}
 @end table
 
 
@@ -5118,7 +5159,7 @@ it is used as a new seed with @code{SRAND}.
 GNU extension
 
 @item @emph{Class}:
-non-elemental function
+Non-elemental function
 
 @item @emph{Syntax}:
 @code{RESULT = IRAND(FLAG)}
@@ -5143,6 +5184,48 @@ end program test_irand
 @end smallexample
 
 @end table
+
+
+
+@node ISATTY
+@section @code{ISATTY} --- Whether a unit is a terminal device.
+@cindex @code{ISATTY} intrinsic
+
+@table @asis
+@item @emph{Description}:
+Determine whether a unit is connected to a terminal device.
+
+@item @emph{Standard}:
+GNU extension.
+
+@item @emph{Class}:
+Non-elemental function.
+
+@item @emph{Syntax}:
+@code{RESULT = ISATTY(UNIT)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{UNIT} @tab Shall be a scalar @code{INTEGER(*)}.
+@end multitable
+
+@item @emph{Return value}:
+Returns @code{.TRUE.} if the @var{UNIT} is connected to a terminal 
+device, @code{.FALSE.} otherwise.
+
+@item @emph{Example}:
+@smallexample
+PROGRAM test_isatty
+  INTEGER(kind=1) :: unit
+  DO unit = 1, 10
+    write(*,*) isatty(unit=unit)
+  END DO
+END PROGRAM
+@end smallexample
+@item @emph{See also}:
+@ref{TTYNAM}
+@end table
+
 
 
 
@@ -6041,7 +6124,7 @@ using Fortran 95 pointers, the memory allocation intrinsic is
 GNU extension
 
 @item @emph{Class}:
-non-elemental function
+Non-elemental function
 
 @item @emph{Syntax}:
 @code{PTR = MALLOC(SIZE)}
@@ -7945,7 +8028,7 @@ is supplied, it is set to the value returned by @code{signal(2)}.
 GNU extension
 
 @item @emph{Class}:
-subroutine, non-elemental function
+Subroutine, non-elemental function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
@@ -8291,7 +8374,7 @@ generator is specified by the required argument @var{SEED}.
 GNU extension
 
 @item @emph{Class}:
-non-elemental subroutine
+Non-elemental subroutine
 
 @item @emph{Syntax}:
 @code{CALL SRAND(SEED)}
@@ -8801,6 +8884,52 @@ Transformational function
 @item @emph{Return value}:
 @item @emph{Example}:
 @item @emph{See also}:
+@end table
+
+
+
+@node TTYNAM
+@section @code{TTYNAM} --- Get the name of a terminal device.
+@cindex @code{TTYNAM} intrinsic
+
+@table @asis
+@item @emph{Description}:
+Get the name of a terminal device. For more information, 
+see @code{ttyname(3)}.
+
+This intrinsic is provided in both subroutine and function forms; 
+however, only one form can be used in any given program unit. 
+
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Subroutine, non-elemental function
+
+@item @emph{Syntax}:
+@multitable @columnfractions .80
+@item @code{CALL TTYNAM(UNIT, NAME)}
+@item @code{NAME = TTYNAM(UNIT)}
+@end multitable
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{UNIT} @tab Shall be a scalar @code{INTEGER(*)}.
+@item @var{NAME} @tab Shall be of type @code{CHARACTER(*)}.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+PROGRAM test_ttynam
+  INTEGER :: unit
+  DO unit = 1, 10
+    IF (isatty(unit=unit)) write(*,*) ttynam(unit)
+  END DO
+END PROGRAM
+@end smallexample
+
+@item @emph{See also}:
+@ref{ISATTY}
 @end table
 
 

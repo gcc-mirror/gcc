@@ -1,3 +1,11 @@
+2007-03-08  Daniel Franke  <franke.daniel@gmail.com>
+
+	Backport from trunk:
+	* intrinsic.texi (GERROR, ISATTY, TTYNAM): New.
+	(ABORT, FLUSH, FNUM, IRAND, MALLOC, SIGNAL, SRAND): Fixed typo.
+	* intrinsic.c (add_subroutines): Adjusted dummy argument names
+	of GERROR and TTYNAM.
+
 2007-03-08  Paul Thomas  <pault@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 
