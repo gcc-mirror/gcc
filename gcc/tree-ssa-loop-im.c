@@ -619,7 +619,7 @@ determine_invariantness_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
 	  && outermost_invariant_loop_expr (rhs,
 					    loop_containing_stmt (stmt)) == NULL)
 	{
-	  tree lhs, stmt1, stmt2, var, name;
+	  tree lhs, stmt1, stmt2, var, name, tmp;
 
 	  lhs = GENERIC_TREE_OPERAND (stmt, 0);
 
@@ -627,15 +627,15 @@ determine_invariantness_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
 	  var = create_tmp_var (TREE_TYPE (rhs), "reciptmp");
 	  add_referenced_var (var);
 
-	  stmt1 = build2 (GIMPLE_MODIFY_STMT, void_type_node, var,
-			  build2 (RDIV_EXPR, TREE_TYPE (rhs),
-				  build_real (TREE_TYPE (rhs), dconst1),
-				  TREE_OPERAND (rhs, 1)));
+	  tmp = build2 (RDIV_EXPR, TREE_TYPE (rhs),
+			build_real (TREE_TYPE (rhs), dconst1),
+			TREE_OPERAND (rhs, 1));
+	  stmt1 = build_gimple_modify_stmt (var, tmp);
 	  name = make_ssa_name (var, stmt1);
 	  GIMPLE_STMT_OPERAND (stmt1, 0) = name;
-	  stmt2 = build2 (GIMPLE_MODIFY_STMT, void_type_node, lhs,
-			  build2 (MULT_EXPR, TREE_TYPE (rhs),
-				  name, TREE_OPERAND (rhs, 0)));
+	  tmp = build2 (MULT_EXPR, TREE_TYPE (rhs),
+			name, TREE_OPERAND (rhs, 0));
+	  stmt2 = build_gimple_modify_stmt (lhs, tmp);
 
 	  /* Replace division stmt with reciprocal and multiply stmts.
 	     The multiply stmt is not invariant, so update iterator

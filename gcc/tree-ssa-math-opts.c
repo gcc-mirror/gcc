@@ -1,5 +1,5 @@
 /* Global, SSA-based optimizations using mathematical identities.
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
    
 This file is part of GCC.
    
@@ -303,9 +303,10 @@ insert_reciprocals (block_stmt_iterator *def_bsi, struct occurrence *occ,
       /* Make a variable with the replacement and substitute it.  */
       type = TREE_TYPE (def);
       recip_def = make_rename_temp (type, "reciptmp");
-      new_stmt = build2 (GIMPLE_MODIFY_STMT, void_type_node, recip_def,
-		         fold_build2 (RDIV_EXPR, type, build_one_cst (type),
-				      def));
+      new_stmt = build_gimple_modify_stmt (recip_def,
+					   fold_build2 (RDIV_EXPR, type,
+							build_one_cst (type),
+							def));
   
   
       if (occ->bb_has_division)
@@ -607,7 +608,7 @@ execute_cse_sincos_1 (tree name)
     return;
   res = make_rename_temp (TREE_TYPE (TREE_TYPE (fndecl)), "sincostmp");
   call = build_call_expr (fndecl, 1, name);
-  stmt = build2 (GIMPLE_MODIFY_STMT, NULL_TREE, res, call);
+  stmt = build_gimple_modify_stmt (res, call);
   def_stmt = SSA_NAME_DEF_STMT (name);
   if (bb_for_stmt (def_stmt) == top_bb
       && TREE_CODE (def_stmt) == GIMPLE_MODIFY_STMT)

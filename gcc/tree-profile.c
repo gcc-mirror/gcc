@@ -1,6 +1,7 @@
 /* Calculate branch probabilities, and basic block execution counts.
    Copyright (C) 1990, 1991, 1992, 1993, 1994, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -171,11 +172,12 @@ tree_gen_edge_profiler (int edgeno, edge e)
   tree tmp1 = create_tmp_var (gcov_type_node, "PROF");
   tree tmp2 = create_tmp_var (gcov_type_node, "PROF");
   tree ref = tree_coverage_counter_ref (GCOV_COUNTER_ARCS, edgeno);
-  tree stmt1 = build2 (GIMPLE_MODIFY_STMT, gcov_type_node, tmp1, ref);
-  tree stmt2 = build2 (GIMPLE_MODIFY_STMT, gcov_type_node, tmp2,
-		       build2 (PLUS_EXPR, gcov_type_node, 
-			      tmp1, integer_one_node));
-  tree stmt3 = build2 (GIMPLE_MODIFY_STMT, gcov_type_node, ref, tmp2);
+  tree one = build_int_cst (gcov_type_node, 1);
+  tree stmt1 = build_gimple_modify_stmt (tmp1, ref);
+  tree stmt2 = build_gimple_modify_stmt (tmp2,
+					 build2 (PLUS_EXPR, gcov_type_node,
+						 tmp1, one));
+  tree stmt3 = build_gimple_modify_stmt (ref, tmp2);
   bsi_insert_on_edge (e, stmt1);
   bsi_insert_on_edge (e, stmt2);
   bsi_insert_on_edge (e, stmt3);
@@ -282,13 +284,9 @@ tree_gen_ic_profiler (histogram_value value, unsigned tag, unsigned base)
    */
 
   tmp1 = create_tmp_var (ptr_void, "PROF");
-  stmt1 = build2 (GIMPLE_MODIFY_STMT, 
-		  build_pointer_type (get_gcov_type ()), 
-		  ic_gcov_type_ptr_var, ref_ptr);
-  stmt2 = build2 (GIMPLE_MODIFY_STMT, ptr_void, tmp1, 
-		  unshare_expr (value->hvalue.value));
-  stmt3 = build2 (GIMPLE_MODIFY_STMT, ptr_void, 
-		  ic_void_ptr_var, tmp1);
+  stmt1 = build_gimple_modify_stmt (ic_gcov_type_ptr_var, ref_ptr);
+  stmt2 = build_gimple_modify_stmt (tmp1, unshare_expr (value->hvalue.value));
+  stmt3 = build_gimple_modify_stmt (ic_void_ptr_var, tmp1);
 
   bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
   bsi_insert_before (&bsi, stmt2, BSI_SAME_STMT);

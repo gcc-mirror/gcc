@@ -1,5 +1,6 @@
 /* Mudflap: narrow-pointer bounds-checking by tree rewriting.
-   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
    Contributed by Frank Ch. Eigler <fche@redhat.com>
    and Graydon Hoare <graydon@redhat.com>
 
@@ -458,14 +459,12 @@ mf_decl_cache_locals (void)
 
   /* Build initialization nodes for the cache vars.  We just load the
      globals into the cache variables.  */
-  t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (mf_cache_shift_decl_l),
-              mf_cache_shift_decl_l, mf_cache_shift_decl);
+  t = build_gimple_modify_stmt (mf_cache_shift_decl_l, mf_cache_shift_decl);
   SET_EXPR_LOCATION (t, DECL_SOURCE_LOCATION (current_function_decl));
   gimplify_to_stmt_list (&t);
   shift_init_stmts = t;
 
-  t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (mf_cache_mask_decl_l),
-              mf_cache_mask_decl_l, mf_cache_mask_decl);
+  t = build_gimple_modify_stmt (mf_cache_mask_decl_l, mf_cache_mask_decl);
   SET_EXPR_LOCATION (t, DECL_SOURCE_LOCATION (current_function_decl));
   gimplify_to_stmt_list (&t);
   mask_init_stmts = t;
@@ -553,16 +552,18 @@ mf_build_check_statement_for (tree base, tree limit,
   mf_limit = create_tmp_var (mf_uintptr_type, "__mf_limit");
 
   /* Build: __mf_base = (uintptr_t) <base address expression>.  */
-  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, mf_base,
-              convert (mf_uintptr_type, unshare_expr (base)));
+  t = build_gimple_modify_stmt (mf_base,
+				fold_convert (mf_uintptr_type,
+					      unshare_expr (base)));
   SET_EXPR_LOCUS (t, locus);
   gimplify_to_stmt_list (&t);
   head = tsi_start (t);
   tsi = tsi_last (t);
 
   /* Build: __mf_limit = (uintptr_t) <limit address expression>.  */
-  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, mf_limit,
-              convert (mf_uintptr_type, unshare_expr (limit)));
+  t = build_gimple_modify_stmt (mf_limit,
+				fold_convert (mf_uintptr_type,
+					      unshare_expr (limit)));
   SET_EXPR_LOCUS (t, locus);
   gimplify_to_stmt_list (&t);
   tsi_link_after (&tsi, t, TSI_CONTINUE_LINKING);
@@ -577,7 +578,7 @@ mf_build_check_statement_for (tree base, tree limit,
               TREE_TYPE (TREE_TYPE (mf_cache_array_decl)),
               mf_cache_array_decl, t, NULL_TREE, NULL_TREE);
   t = build1 (ADDR_EXPR, mf_cache_structptr_type, t);
-  t = build2 (GIMPLE_MODIFY_STMT, void_type_node, mf_elem, t);
+  t = build_gimple_modify_stmt (mf_elem, t);
   SET_EXPR_LOCUS (t, locus);
   gimplify_to_stmt_list (&t);
   tsi_link_after (&tsi, t, TSI_CONTINUE_LINKING);
@@ -623,7 +624,7 @@ mf_build_check_statement_for (tree base, tree limit,
      can use as the condition for the conditional jump.  */
   t = build2 (TRUTH_OR_EXPR, boolean_type_node, t, u);
   cond = create_tmp_var (boolean_type_node, "__mf_unlikely_cond");
-  t = build2 (GIMPLE_MODIFY_STMT, boolean_type_node, cond, t);
+  t = build_gimple_modify_stmt (cond, t);
   gimplify_to_stmt_list (&t);
   tsi_link_after (&tsi, t, TSI_CONTINUE_LINKING);
 
@@ -669,12 +670,12 @@ mf_build_check_statement_for (tree base, tree limit,
 
   if (! flag_mudflap_threads)
     {
-      t = build2 (GIMPLE_MODIFY_STMT, void_type_node,
-                  mf_cache_shift_decl_l, mf_cache_shift_decl);
+      t = build_gimple_modify_stmt (mf_cache_shift_decl_l,
+				    mf_cache_shift_decl);
       tsi_link_after (&tsi, t, TSI_CONTINUE_LINKING);
 
-      t = build2 (GIMPLE_MODIFY_STMT, void_type_node,
-                  mf_cache_mask_decl_l, mf_cache_mask_decl);
+      t = build_gimple_modify_stmt (mf_cache_mask_decl_l,
+				    mf_cache_mask_decl);
       tsi_link_after (&tsi, t, TSI_CONTINUE_LINKING);
     }
 

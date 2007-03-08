@@ -2993,22 +2993,20 @@ build_assert_expr_for (tree cond, tree v)
   if (COMPARISON_CLASS_P (cond))
     {
       tree a = build2 (ASSERT_EXPR, TREE_TYPE (v), v, cond); 
-      assertion = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (v), n, a);
+      assertion = build_gimple_modify_stmt (n, a);
     }
   else if (TREE_CODE (cond) == TRUTH_NOT_EXPR)
     {
       /* Given !V, build the assignment N = false.  */
       tree op0 = TREE_OPERAND (cond, 0);
       gcc_assert (op0 == v);
-      assertion = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (v), n,
-			  boolean_false_node);
+      assertion = build_gimple_modify_stmt (n, boolean_false_node);
     }
   else if (TREE_CODE (cond) == SSA_NAME)
     {
       /* Given V, build the assignment N = true.  */
       gcc_assert (v == cond);
-      assertion = build2 (GIMPLE_MODIFY_STMT,
-	  		  TREE_TYPE (v), n, boolean_true_node);
+      assertion = build_gimple_modify_stmt (n, boolean_true_node);
     }
   else
     gcc_unreachable ();

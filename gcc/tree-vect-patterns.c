@@ -1,5 +1,5 @@
 /* Analysis Utilities for Loop Vectorization.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
    Contributed by Dorit Nuzman <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -674,8 +674,7 @@ vect_pattern_recog_1 (
   var = create_tmp_var (pattern_type, "patt");
   add_referenced_var (var);
   var_name = make_ssa_name (var, NULL_TREE);
-  pattern_expr = build2 (GIMPLE_MODIFY_STMT, void_type_node, var_name,
-      			 pattern_expr);
+  pattern_expr = build_gimple_modify_stmt (var_name, pattern_expr);
   SSA_NAME_DEF_STMT (var_name) = pattern_expr;
   bsi_insert_before (&si, pattern_expr, BSI_SAME_STMT);
   ann = stmt_ann (pattern_expr);

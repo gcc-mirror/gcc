@@ -2999,7 +2999,7 @@ scev_const_prop (void)
 	  def = unshare_expr (def);
 	  remove_phi_node (phi, NULL_TREE, false);
 
-	  ass = build2 (GIMPLE_MODIFY_STMT, void_type_node, rslt, NULL_TREE);
+	  ass = build_gimple_modify_stmt (rslt, NULL_TREE);
 	  SSA_NAME_DEF_STMT (rslt) = ass;
 	  {
 	    block_stmt_iterator dest = bsi;
