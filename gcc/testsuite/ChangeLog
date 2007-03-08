@@ -1,3 +1,13 @@
+2007-03-08  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/no-strict-overflow-5.c: New test.
+	* gcc.dg/no-strict-overflow-6.c: New test.
+	* gcc.dg/Wstrict-overflow-11.c: New test.
+	* gcc.dg/Wstrict-overflow-12.c: New test.
+	* gcc.dg/Wstrict-overflow-13.c: New test.
+	* gcc.dg/Wstrict-overflow-14.c: New test.
+	* gcc.dg/Wstrict-overflow-15.c: New test.
+
 2007-03-08  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.c-torture/execute/strcmp-1.x: New file.  XFAIL execution

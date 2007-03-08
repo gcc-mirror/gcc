@@ -211,7 +211,8 @@ record_temporary_equivalences_from_phis (edge e, VEC(tree, heap) **stack)
 static tree
 record_temporary_equivalences_from_stmts_at_dest (edge e,
 						  VEC(tree, heap) **stack,
-						  tree (*simplify) (tree))
+						  tree (*simplify) (tree,
+								    tree))
 {
   block_stmt_iterator bsi;
   tree stmt = NULL;
@@ -315,7 +316,7 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 	      cached_lhs = fold (pre_fold_expr);
 	      if (TREE_CODE (cached_lhs) != SSA_NAME
 		  && !is_gimple_min_invariant (cached_lhs))
-	        cached_lhs = (*simplify) (stmt);
+	        cached_lhs = (*simplify) (stmt, stmt);
 	    }
 
 	  /* Restore the statement's original uses/defs.  */
@@ -353,7 +354,7 @@ static tree
 simplify_control_stmt_condition (edge e,
 				 tree stmt,
 				 tree dummy_cond,
-				 tree (*simplify) (tree),
+				 tree (*simplify) (tree, tree),
 				 bool handle_dominating_asserts)
 {
   tree cond, cached_lhs;
@@ -439,7 +440,7 @@ simplify_control_stmt_condition (edge e,
       /* If we have not simplified the condition down to an invariant,
 	 then use the pass specific callback to simplify the condition.  */
       if (! is_gimple_min_invariant (cached_lhs))
-	cached_lhs = (*simplify) (dummy_cond);
+	cached_lhs = (*simplify) (dummy_cond, stmt);
     }
 
   /* We can have conditionals which just test the state of a variable
@@ -466,7 +467,7 @@ simplify_control_stmt_condition (edge e,
       /* If we haven't simplified to an invariant yet, then use the
 	 pass specific callback to try and simplify it further.  */
       if (cached_lhs && ! is_gimple_min_invariant (cached_lhs))
-        cached_lhs = (*simplify) (stmt);
+        cached_lhs = (*simplify) (stmt, stmt);
     }
   else
     cached_lhs = NULL;
@@ -494,7 +495,7 @@ thread_across_edge (tree dummy_cond,
 		    edge e,
 		    bool handle_dominating_asserts,
 		    VEC(tree, heap) **stack,
-		    tree (*simplify) (tree))
+		    tree (*simplify) (tree, tree))
 {
   tree stmt;
 
