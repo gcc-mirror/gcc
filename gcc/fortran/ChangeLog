@@ -1,3 +1,8 @@
+2007-03-08  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* intrinsic.texi: minor typo fixes, removed prologue.
+	(FSEEK): moved to correct place in alphabetical order.
+
 2007-03-08  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/30947
