@@ -12,36 +12,26 @@
 
 #include "../builtins-config.h"
 
-#define PROTOTYPE(FN) extern double FN(double); \
-  extern float FN##f(float); \
-  extern long double FN##l(long double);
-#define PROTOTYPE_RET(FN, RET) extern RET FN(double); \
-  extern RET FN##f(float); \
-  extern RET FN##l(long double);
-
 /* Macro to do all FP type combinations.  The second half tests
    narrowing the FP type.  */
 #define TEST_FP2FIXED(FN1, FN2) \
-  PROTOTYPE(FN1) \
-  PROTOTYPE_RET(FN2, long) \
-  PROTOTYPE_RET(l##FN2, long long) \
   extern void link_error_##FN1##_##FN2(void); \
   extern void link_error_##FN1##f_##FN2##f(void); \
   extern void link_error_##FN1##l_##FN2##l(void); \
   extern void link_error_##FN1##_l##FN2(void); \
   extern void link_error_##FN1##f_l##FN2##f(void); \
   extern void link_error_##FN1##l_l##FN2##l(void); \
-  if ((long)FN1(d) != FN2(d)) \
+  if ((long)__builtin_##FN1(d) != __builtin_##FN2(d)) \
     link_error_##FN1##_##FN2(); \
-  if ((long)FN1##f(f) != FN2##f(f)) \
+  if ((long)__builtin_##FN1##f(f) != __builtin_##FN2##f(f)) \
     link_error_##FN1##f_##FN2##f(); \
-  if ((long)FN1##l(ld) != FN2##l(ld)) \
+  if ((long)__builtin_##FN1##l(ld) != __builtin_##FN2##l(ld)) \
     link_error_##FN1##l_##FN2##l(); \
-  if ((long long)FN1(d) != l##FN2(d)) \
+  if ((long long)__builtin_##FN1(d) != __builtin_l##FN2(d)) \
     link_error_##FN1##_l##FN2(); \
-  if ((long long)FN1##f(f) != l##FN2##f(f)) \
+  if ((long long)__builtin_##FN1##f(f) != __builtin_l##FN2##f(f)) \
     link_error_##FN1##f_l##FN2##f(); \
-  if ((long long)FN1##l(ld) != l##FN2##l(ld)) \
+  if ((long long)__builtin_##FN1##l(ld) != __builtin_l##FN2##l(ld)) \
     link_error_##FN1##l_l##FN2##l(); \
   extern void link_error_##FN1##_##FN2##f(void); \
   extern void link_error_##FN1##l_##FN2(void); \
@@ -49,17 +39,23 @@
   extern void link_error_##FN1##_l##FN2##f(void); \
   extern void link_error_##FN1##l_l##FN2(void); \
   extern void link_error_##FN1##l_l##FN2##f(void); \
-  if (sizeof(double) > sizeof(float) && (long)FN1(f) != FN2##f(f)) \
+  if (sizeof(double) > sizeof(float) \
+      && (long)__builtin_##FN1(f) != __builtin_##FN2##f(f)) \
     link_error_##FN1##_##FN2##f(); \
-  if (sizeof(long double) > sizeof(double) && (long)FN1##l(d) != FN2(d)) \
+  if (sizeof(long double) > sizeof(double) \
+      && (long)__builtin_##FN1##l(d) != __builtin_##FN2(d)) \
     link_error_##FN1##l_##FN2(); \
-  if (sizeof(long double) > sizeof(float) && (long)FN1##l(f) != FN2##f(f)) \
+  if (sizeof(long double) > sizeof(float) \
+      && (long)__builtin_##FN1##l(f) != __builtin_##FN2##f(f)) \
     link_error_##FN1##l_##FN2##f(); \
-  if (sizeof(double) > sizeof(float) && (long long)FN1(f) != l##FN2##f(f)) \
+  if (sizeof(double) > sizeof(float) \
+      && (long long)__builtin_##FN1(f) != __builtin_l##FN2##f(f)) \
     link_error_##FN1##_l##FN2##f(); \
-  if (sizeof(long double) > sizeof(double) && (long long)FN1##l(d) != l##FN2(d)) \
+  if (sizeof(long double) > sizeof(double) \
+      && (long long)__builtin_##FN1##l(d) != __builtin_l##FN2(d)) \
     link_error_##FN1##l_l##FN2(); \
-  if (sizeof(long double) > sizeof(float) && (long long)FN1##l(f) != l##FN2##f(f)) \
+  if (sizeof(long double) > sizeof(float) \
+      && (long long)__builtin_##FN1##l(f) != __builtin_l##FN2##f(f)) \
     link_error_##FN1##l_l##FN2##f()
 
 void __attribute__ ((__noinline__)) foo (double d, float f, long double ld)
@@ -67,6 +63,8 @@ void __attribute__ ((__noinline__)) foo (double d, float f, long double ld)
 #ifdef __OPTIMIZE__
 # ifdef HAVE_C99_RUNTIME
   /* The resulting transformation functions are all C99.  */
+  TEST_FP2FIXED (ceil, lceil);
+  TEST_FP2FIXED (floor, lfloor);
   TEST_FP2FIXED (round, lround);
   TEST_FP2FIXED (nearbyint, lrint);
   TEST_FP2FIXED (rint, lrint);

@@ -7,34 +7,12 @@
 
 /* { dg-do link } */
 
-#define PROTOTYPE(FN) \
-  PROTOTYPE_LINK_ERROR(FN) \
-  extern double FN (double); \
-  extern float FN##f (float); \
-  extern long double FN##l (long double);
-
-#define PROTOTYPE_RET(FN, RET) \
-  PROTOTYPE_LINK_ERROR(FN) \
-  extern RET FN (double); \
-  extern RET FN##f (float); \
-  extern RET FN##l (long double);
-
-#define PROTOTYPE_LINK_ERROR(FN) \
-  extern void link_error_##FN(void); \
-  extern void link_error_##FN##f(void); \
-  extern void link_error_##FN##l(void);
+extern int link_error (int);
 
 #define TEST(FN, VALUE, RESULT) \
-  if (FN (VALUE) != RESULT) link_error_##FN(); \
-  if (FN##f (VALUE) != RESULT) link_error_##FN##f(); \
-  if (FN##l (VALUE) != RESULT) link_error_##FN##l(); \
-
-PROTOTYPE (trunc);
-PROTOTYPE (floor);
-PROTOTYPE (ceil);
-PROTOTYPE (round);
-PROTOTYPE_RET (lround, long);
-PROTOTYPE_RET (llround, long long);
+  if (__builtin_##FN (VALUE) != RESULT) link_error (__LINE__); \
+  if (__builtin_##FN##f (VALUE) != RESULT) link_error (__LINE__); \
+  if (__builtin_##FN##l (VALUE) != RESULT) link_error (__LINE__); \
 
 int
 main (void)
@@ -45,6 +23,10 @@ main (void)
   TEST(round,   0, 0);
   TEST(lround,  0, 0);
   TEST(llround, 0, 0);
+  TEST(lfloor,  0, 0);
+  TEST(llfloor, 0, 0);
+  TEST(lceil,  0, 0);
+  TEST(llceil, 0, 0);
   
   TEST(trunc,   6, 6);
   TEST(floor,   6, 6);
@@ -52,6 +34,10 @@ main (void)
   TEST(round,   6, 6);
   TEST(lround,  6, 6);
   TEST(llround, 6, 6);
+  TEST(lfloor,  6, 6);
+  TEST(llfloor, 6, 6);
+  TEST(lceil,  6, 6);
+  TEST(llceil, 6, 6);
   
   TEST(trunc,   -8, -8);
   TEST(floor,   -8, -8);
@@ -59,6 +45,10 @@ main (void)
   TEST(round,   -8, -8);
   TEST(lround,  -8, -8);
   TEST(llround, -8, -8);
+  TEST(lfloor,  -8, -8);
+  TEST(llfloor, -8, -8);
+  TEST(lceil,  -8, -8);
+  TEST(llceil, -8, -8);
   
   TEST(trunc,   3.2, 3);
   TEST(floor,   3.2, 3);
@@ -66,6 +56,10 @@ main (void)
   TEST(round,   3.2, 3);
   TEST(lround,  3.2, 3);
   TEST(llround, 3.2, 3);
+  TEST(lfloor,  3.2, 3);
+  TEST(llfloor, 3.2, 3);
+  TEST(lceil,  3.2, 4);
+  TEST(llceil, 3.2, 4);
 
   TEST(trunc,   -2.8, -2);
   TEST(floor,   -2.8, -3);
@@ -73,6 +67,10 @@ main (void)
   TEST(round,   -2.8, -3);
   TEST(lround,  -2.8, -3);
   TEST(llround, -2.8, -3);
+  TEST(lfloor,  -2.8, -3);
+  TEST(llfloor, -2.8, -3);
+  TEST(lceil,  -2.8, -2);
+  TEST(llceil, -2.8, -2);
 
   TEST(trunc,   0.01, 0);
   TEST(floor,   0.01, 0);
@@ -80,6 +78,10 @@ main (void)
   TEST(round,   0.01, 0);
   TEST(lround,  0.01, 0);
   TEST(llround, 0.01, 0);
+  TEST(lfloor,  0.01, 0);
+  TEST(llfloor, 0.01, 0);
+  TEST(lceil,  0.01, 1);
+  TEST(llceil, 0.01, 1);
 
   TEST(trunc,   -0.7, 0);
   TEST(floor,   -0.7, -1);
@@ -87,6 +89,10 @@ main (void)
   TEST(round,   -0.7, -1);
   TEST(lround,  -0.7, -1);
   TEST(llround, -0.7, -1);
+  TEST(lfloor,  -0.7, -1);
+  TEST(llfloor, -0.7, -1);
+  TEST(lceil,  -0.7, 0);
+  TEST(llceil, -0.7, 0);
 
   TEST(trunc,   2.5, 2);
   TEST(floor,   2.5, 2);
@@ -94,6 +100,10 @@ main (void)
   TEST(round,   2.5, 3);
   TEST(lround,  2.5, 3);
   TEST(llround, 2.5, 3);
+  TEST(lfloor,  2.5, 2);
+  TEST(llfloor, 2.5, 2);
+  TEST(lceil,  2.5, 3);
+  TEST(llceil, 2.5, 3);
 
   TEST(trunc,   -1.5, -1);
   TEST(floor,   -1.5, -2);
@@ -101,6 +111,10 @@ main (void)
   TEST(round,   -1.5, -2);
   TEST(lround,  -1.5, -2);
   TEST(llround, -1.5, -2);
+  TEST(lfloor,  -1.5, -2);
+  TEST(llfloor, -1.5, -2);
+  TEST(lceil,  -1.5, -1);
+  TEST(llceil, -1.5, -1);
 
   return 0;
 }

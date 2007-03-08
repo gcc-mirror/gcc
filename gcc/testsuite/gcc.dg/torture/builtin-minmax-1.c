@@ -15,10 +15,6 @@ extern void link_error(int);
   extern float FUNC##f (float); \
   extern double FUNC (double); \
   extern long double FUNC##l (long double)
-#define DECLARE_L(FUNC) \
-  extern long FUNC##f (float); \
-  extern long FUNC (double); \
-  extern long FUNC##l (long double)
 #define DECLARE2(FUNC) \
   extern float FUNC##f (float, float); \
   extern double FUNC (double, double); \
@@ -26,9 +22,6 @@ extern void link_error(int);
 
 DECLARE2(fmin);
 DECLARE2(fmax);
-DECLARE_L(lround);
-DECLARE_L(lrint);
-DECLARE(sqrt);
 DECLARE(fabs);
 extern int pure(int) __attribute__ ((__pure__));
 
@@ -52,20 +45,32 @@ extern int pure(int) __attribute__ ((__pure__));
     link_error(__LINE__); \
   } while (0)
 
-/* Test that lround(FUNC(int,int)) == lrint(FUNC(int,int)), i.e. both
-   lround() and lrint() should be folded away.  */
-#define TEST_NONNEG(FUNC) do { \
-  if (lroundf(FUNC##f(i,j)) != lrintf(FUNC##f(i,j))) \
+/* Test that FIXFUNC(FUNC(int1,int2)) == (TYPE)FUNC(int1,int2),
+   i.e. FIXFUNC should be folded away and replaced with a cast.  */
+#define TEST_FIXFUNC(FUNC,FIXFUNC,TYPE) do { \
+  if (FIXFUNC##f(FUNC##f(i,j)) != (TYPE)FUNC##f(i,j)) \
     link_error(__LINE__); \
-  if (lround(FUNC(i,j)) != lrint(FUNC(i,j))) \
+  if (FIXFUNC(FUNC(i,j)) != (TYPE)FUNC(i,j)) \
     link_error(__LINE__); \
-  if (lroundl(FUNC##l(i,j)) != lrintl(FUNC##l(i,j))) \
+  if (FIXFUNC##l(FUNC##l(i,j)) != (TYPE)FUNC##l(i,j)) \
     link_error(__LINE__); \
+  } while (0)
+
+/* Test that FUNC(int1,int2) has an integer return type.  */
+#define TEST_INT(FUNC) do { \
+  TEST_FIXFUNC(FUNC,__builtin_lround,long); \
+  TEST_FIXFUNC(FUNC,__builtin_llround,long long); \
+  TEST_FIXFUNC(FUNC,__builtin_lrint,long); \
+  TEST_FIXFUNC(FUNC,__builtin_llrint,long long); \
+  TEST_FIXFUNC(FUNC,__builtin_lceil,long); \
+  TEST_FIXFUNC(FUNC,__builtin_llceil,long long); \
+  TEST_FIXFUNC(FUNC,__builtin_lfloor,long); \
+  TEST_FIXFUNC(FUNC,__builtin_llfloor,long long); \
   } while (0)
 
 /* Test that (long)fabs(FUNC(fabs(x),fabs(y))) ==
    (long)FUNC(fabs(x),fabs(y)).  We cast to (long) so "!=" folds.  */
-#define TEST_INT(FUNC) do { \
+#define TEST_NONNEG(FUNC) do { \
   if ((long)fabsf(FUNC##f(fabsf(xf),fabsf(yf))) != (long)FUNC##f(fabsf(xf),fabsf(yf))) \
     link_error(__LINE__); \
   if ((long)fabs(FUNC(fabs(x),fabs(y))) != (long)FUNC(fabs(x),fabs(y))) \
