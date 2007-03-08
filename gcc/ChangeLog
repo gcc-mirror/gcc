@@ -1,3 +1,8 @@
+2007-03-08  Andreas Schwab  <schwab@suse.de>
+
+	* c-common.c (fold_offsetof_1): Remove extra argument in recursive
+	call.
+
 2007-03-08  Volker Reichelt  <reichelt@netcologne.de>
 
 	PR c++/30852
