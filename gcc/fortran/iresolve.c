@@ -2386,8 +2386,6 @@ gfc_resolve_alarm_sub (gfc_code *c)
 
   if (seconds->ts.kind != gfc_c_int_kind)
     gfc_convert_type (seconds, &ts, 2);
-  if (status != NULL && status->ts.kind != gfc_c_int_kind)
-    gfc_convert_type (status, &ts, 2);
 
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
