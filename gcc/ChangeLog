@@ -1,3 +1,23 @@
+2007-03-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (TARGET_SAHF): New define.
+	* config/i386/i386.c (ix86_tune_features) [X86_TUNE_USE_SAHF]:
+	Also enable for m_K8, m_AMDFAM10 and m_CORE2.
+	(x86_sahf): New global variable.
+	(override_options): Add PTA_NO_SAHF to pta_flags enum.  Recode
+	pta_flags masks using shifts.  Add PTA_NO_SAHF to x86_64 and
+	nocona processor flags.  Set x86_sahf when PTA_NO_SAHF is not set
+	in processor flags.  Do not unconditionally disable TARGET_USE_SAHF
+	for 64-bit.
+	(ix86_fp_comparison_sahf_cost): Return high value for !TARGET_SAHF.
+	(ix86_expand_fp_compare): Check for TARGET_CMOVE or TARGET_SAHF
+	when expanding fcomi/sahf based tests.
+	(ix86_emit_fp_unordered_jump): Check for TARGET_SAHF when
+	expanding sahf based alternative. Emit sahf based sequence when
+	optimizing for code size.
+	* config/i386/i386.md (x86_sahf_1): Do not disable for
+	TARGET_64BIT, enable for TARGET_SAHF. 
+
 2007-03-08  Martin Michlmayr  <tbm@cyrius.com>
 
 	* tree-ssa-coalesce.c (fail_abnormal_edge_coalesce): Remove
@@ -505,7 +525,7 @@
 	of comparison of non-null ADDR_EXPR against null.
 
 2007-03-05  Richard Guenther  <rguenther@suse.de>
-	Dorit Nuzman  <dorit@il.ibm.com>
+	    Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/26420
 	* tree-vectorizer.c (vectorize_loops): Bail out early if there
@@ -515,9 +535,9 @@
 
 2007-03-05  Revital Eres  <eres@il.ibm.com>
 
-      * gcc.dg/var-expand1.c: New test.
-      * loop-unroll.c (analyze_insn_to_expand_var): Add dump info
-      when an accumulator is expanded.
+	* gcc.dg/var-expand1.c: New test.
+	* loop-unroll.c (analyze_insn_to_expand_var): Add dump info
+	when an accumulator is expanded.
 
 2007-03-04  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 

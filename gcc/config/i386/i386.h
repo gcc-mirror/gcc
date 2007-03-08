@@ -191,7 +191,7 @@ enum ix86_tune_indices {
   X86_TUNE_DEEP_BRANCH_PREDICTION,
   X86_TUNE_BRANCH_PREDICTION_HINTS,
   X86_TUNE_DOUBLE_WITH_ADD,
-  X86_TUNE_USE_SAHF,			/* && !TARGET_64BIT */
+  X86_TUNE_USE_SAHF,
   X86_TUNE_MOVX,
   X86_TUNE_PARTIAL_REG_STALL,
   X86_TUNE_PARTIAL_FLAG_REG_STALL,
@@ -329,6 +329,9 @@ extern int x86_prefetch_sse;
 
 extern int x86_cmpxchg16b;
 #define TARGET_CMPXCHG16B	x86_cmpxchg16b
+
+extern int x86_sahf;
+#define TARGET_SAHF		x86_sahf
 
 #define ASSEMBLER_DIALECT	(ix86_asm_dialect)
 
