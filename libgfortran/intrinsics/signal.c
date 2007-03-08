@@ -170,14 +170,14 @@ alarm_sub_int (int *seconds, int *handler, int *status)
 #if defined (SIGALRM) && defined (HAVE_ALARM) && defined (HAVE_SIGNAL)
   if (status != NULL)
     {
-      if (signal (SIGALRM, (void (*)(int)) handler) == SIG_ERR)
+      if (signal (SIGALRM, (void (*)(int)) *handler) == SIG_ERR)
 	*status = -1;
       else
 	*status = alarm (*seconds);
     }
   else
     {
-      signal (SIGALRM, (void (*)(int)) handler);
+      signal (SIGALRM, (void (*)(int)) *handler);
       alarm (*seconds);
     }
 #else
