@@ -30,7 +30,10 @@ lang_specific_driver (int *in_argc ATTRIBUTE_UNUSED,
 		      const char *const **in_argv ATTRIBUTE_UNUSED,
 		      int *in_added_libraries ATTRIBUTE_UNUSED)
 {
-#ifdef ENABLE_SHARED_LIBGCC
+  /* Systems which use the NeXT runtime by default should arrange
+     for the shared libgcc to be used when -fgnu-runtime is passed
+     through specs.  */
+#if defined(ENABLE_SHARED_LIBGCC) && ! defined(NEXT_OBJC_RUNTIME)
   int i;
 
   /* The new argument list will be contained in this.  */
