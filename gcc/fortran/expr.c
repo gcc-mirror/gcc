@@ -1137,8 +1137,7 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
 	    }
 
 	  /* Calculate the number of elements and the shape.  */
-	  mpz_abs (tmp_mpz, stride[d]);
-	  mpz_div (tmp_mpz, stride[d], tmp_mpz);
+	  mpz_set (tmp_mpz, stride[d]);
 	  mpz_add (tmp_mpz, end[d], tmp_mpz);
 	  mpz_sub (tmp_mpz, tmp_mpz, ctr[d]);
 	  mpz_div (tmp_mpz, tmp_mpz, stride[d]);
