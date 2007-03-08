@@ -619,6 +619,14 @@ gfc_match_use (void)
 		goto cleanup;
 	    }
 
+	  if (strcmp (new->use_name, module_name) == 0
+	      || strcmp (new->local_name, module_name) == 0)
+	    {
+	      gfc_error ("The name '%s' at %C has already been used as "
+			 "an external module name.", module_name);
+	      goto cleanup;
+	    }
+
 	  break;
 
 	case INTERFACE_USER_OP:
@@ -3437,6 +3445,9 @@ read_module (void)
 	{
 	  /* Get the jth local name for this symbol.  */
 	  p = find_use_name_n (name, &j);
+
+	  if (p == NULL && strcmp (name, module_name) == 0)
+	    p = name;
 
 	  /* Skip symtree nodes not in an ONLY clause, unless there
 	     is an existing symtree loaded from another USE

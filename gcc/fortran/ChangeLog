@@ -1,3 +1,10 @@
+2007-07-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/30973
+	* module.c (read_module): Always import module name as symbol.
+	(gfc_match_use): Disallow module name in the only clause of
+	a use statement.
+
 2007-03-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31011
