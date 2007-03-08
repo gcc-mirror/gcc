@@ -1,5 +1,12 @@
 2007-03-08  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* intrinsic.texi: (ICHAR) Improve internal I/O note.
+	(ACHAR): Reference it.
+	(CHAR): Reference it.
+	(IACHAR): Reference it.
+
+2007-03-08  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* intrinsic.texi: (LINK) Document function form.
 	(RENAME): Likewise.
 	(SYMLNK): Likewise.
