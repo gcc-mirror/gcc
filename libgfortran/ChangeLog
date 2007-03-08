@@ -1,3 +1,10 @@
+2007-03-08  Daniel Franke  <franke.daniel@gmail.com>
+
+	Backport from trunk:
+	PR fortran/30947
+	* intrinsics/signal.c (alarm_sub_int): Avoid SEGFAULT with
+	integer arguments.
+
 2007-03-08  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/30981
