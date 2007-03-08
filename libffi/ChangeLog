@@ -1,3 +1,9 @@
+2007-03-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* src/powerpc/ffi.c (flush_icache): Fix left-over from previous
+	patch.
+	(ffi_prep_closure_loc): Remove unneeded casts.  Add needed ones.
+
 2007-03-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	* include/ffi.h.in (ffi_closure_alloc, ffi_closure_free): New.
