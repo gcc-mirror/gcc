@@ -13131,7 +13131,9 @@ any_template_arguments_need_structural_equality_p (tree args)
       for (j = 0; j < TREE_VEC_LENGTH (level); ++j)
 	{
 	  tree arg = TREE_VEC_ELT (level, j);
-	  if (TREE_CODE (arg) == TEMPLATE_DECL
+	  if (error_operand_p (arg))
+	    return true;
+	  else if (TREE_CODE (arg) == TEMPLATE_DECL
 	      || TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
 	    continue;
 	  else if (TYPE_P (arg) && TYPE_STRUCTURAL_EQUALITY_P (arg))
