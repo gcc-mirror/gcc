@@ -839,11 +839,8 @@ flush_icache (char *wraddr, char *xaddr, int size)
 {
   int i;
   for (i = 0; i < size; i += MIN_CACHE_LINE_SIZE)
-    {
-      addr = addr1 + i;
-      __asm__ volatile ("icbi 0,%0;" "dcbf 0,%1;"
-			: : "r" (xaddr + i), "r" (wraddr + i) : "memory");
-    }
+    __asm__ volatile ("icbi 0,%0;" "dcbf 0,%1;"
+		      : : "r" (xaddr + i), "r" (wraddr + i) : "memory");
   __asm__ volatile ("icbi 0,%0;" "dcbf 0,%1;" "sync;" "isync;"
 		    : : "r"(xaddr + size - 1), "r"(wraddr + size - 1)
 		    : "memory");
@@ -863,7 +860,7 @@ ffi_prep_closure_loc (ffi_closure *closure,
   FFI_ASSERT (cif->abi == FFI_LINUX64);
   /* Copy function address and TOC from ffi_closure_LINUX64.  */
   memcpy (tramp, (char *) ffi_closure_LINUX64, 16);
-  tramp[2] = (void *) codeloc;
+  tramp[2] = codeloc;
 #else
   unsigned int *tramp;
 
@@ -879,10 +876,10 @@ ffi_prep_closure_loc (ffi_closure *closure,
   tramp[8] = 0x7c0903a6;  /*   mtctr   r0 */
   tramp[9] = 0x4e800420;  /*   bctr */
   *(void **) &tramp[2] = (void *) ffi_closure_SYSV; /* function */
-  *(void **) &tramp[3] = (void *) codeloc;          /* context */
+  *(void **) &tramp[3] = codeloc;                   /* context */
 
   /* Flush the icache.  */
-  flush_icache (tramp, codeloc, FFI_TRAMPOLINE_SIZE);
+  flush_icache ((char *)tramp, (char *)codeloc, FFI_TRAMPOLINE_SIZE);
 #endif
 
   closure->cif = cif;
