@@ -1,5 +1,11 @@
 2007-03-08  Richard Sandiford  <richard@codesourcery.com>
 
+	* gcc.c-torture/execute/strcmp-1.x: New file.  XFAIL execution
+	for VxWorks kernel mode.
+	* gcc.c-torture/execute/strncmp-1.x: Likewise.
+
+2007-03-08  Richard Sandiford  <richard@codesourcery.com>
+
 	* gcc.c-torture/execute/ieee/hugeval.x: XFAIL for VxWorks kernel
 	mode.
 
