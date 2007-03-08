@@ -964,12 +964,11 @@ tree            FOR_EACH_SSA_TREE_OPERAND
 #define SSA_OP_DEF              0x02    /* @r{Real DEF operands.}  */
 #define SSA_OP_VUSE             0x04    /* @r{VUSE operands.}  */
 #define SSA_OP_VMAYUSE          0x08    /* @r{USE portion of VDEFS.}  */
-#define SSA_OP_VMAYDEF          0x10    /* @r{DEF portion of VDEFS.}  */
-#define SSA_OP_VMUSTDEF         0x20    /* @r{V_MUST_DEF definitions.}  */
+#define SSA_OP_VDEF             0x10    /* @r{DEF portion of VDEFS.}  */
 
 /* @r{These are commonly grouped operand flags.}  */
 #define SSA_OP_VIRTUAL_USES     (SSA_OP_VUSE | SSA_OP_VMAYUSE)
-#define SSA_OP_VIRTUAL_DEFS     (SSA_OP_VMAYDEF | SSA_OP_VMUSTDEF)
+#define SSA_OP_VIRTUAL_DEFS     (SSA_OP_VDEF)
 #define SSA_OP_ALL_USES         (SSA_OP_VIRTUAL_USES | SSA_OP_USE)
 #define SSA_OP_ALL_DEFS         (SSA_OP_VIRTUAL_DEFS | SSA_OP_DEF)
 #define SSA_OP_ALL_OPERANDS     (SSA_OP_ALL_USES | SSA_OP_ALL_DEFS)
@@ -998,14 +997,14 @@ aren't using operand pointers, use and defs flags can be mixed.
   tree var;
   ssa_op_iter iter;
 
-  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_VUSE | SSA_OP_VMUSTDEF)
+  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_VUSE)
     @{
        print_generic_expr (stderr, var, TDF_SLIM);
     @}
 @end smallexample
 
 @code{VDEF}s are broken into two flags, one for the
-@code{DEF} portion (@code{SSA_OP_VMAYDEF}) and one for the USE portion
+@code{DEF} portion (@code{SSA_OP_VDEF}) and one for the USE portion
 (@code{SSA_OP_VMAYUSE}).  If all you want to look at are the
 @code{VDEF}s together, there is a fourth iterator macro for this,
 which returns both a def_operand_p and a use_operand_p for each
@@ -1022,26 +1021,6 @@ this one.
       my_code;
     @}
 @end smallexample
-
-@code{V_MUST_DEF}s are broken into two flags, one for the
-@code{DEF} portion (@code{SSA_OP_VMUSTDEF}) and one for the kill portion
-(@code{SSA_OP_VMUSTKILL}).  If all you want to look at are the
-@code{V_MUST_DEF}s together, there is a fourth iterator macro for this,
-which returns both a def_operand_p and a use_operand_p for each
-@code{V_MUST_DEF} in the statement.  Note that you don't need any flags for
-this one.
-
-@smallexample
-  use_operand_p kill_p;
-  def_operand_p def_p;
-  ssa_op_iter iter;
-
-  FOR_EACH_SSA_MUSTDEF_OPERAND (def_p, kill_p, stmt, iter)
-    @{
-      my_code;
-    @}
-@end smallexample
-
 
 There are many examples in the code as well, as well as the
 documentation in @file{tree-ssa-operands.h}.
@@ -1535,9 +1514,9 @@ struct foo temp;
 int bar (void)
 @{
   int tmp1, tmp2, tmp3;
-  SFT.0_2 = V_MUST_DEF <SFT.0_1>
+  SFT.0_2 = VDEF <SFT.0_1>
   temp.a = 5;
-  SFT.1_4 = V_MUST_DEF <SFT.1_3>
+  SFT.1_4 = VDEF <SFT.1_3>
   temp.b = 6;
   
   VUSE <SFT.1_4>
