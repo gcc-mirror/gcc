@@ -2153,7 +2153,7 @@ override_options (void)
 	if (processor_alias_table[i].flags & PTA_SSE4A
 	    && !(target_flags_explicit & MASK_SSE4A))
 	  target_flags |= MASK_SSE4A;
-	if (!(processor_alias_table[i].flags & PTA_NO_SAHF))
+	if (!(TARGET_64BIT && (processor_alias_table[i].flags & PTA_NO_SAHF)))
 	  x86_sahf = true;
 	if (TARGET_64BIT && !(processor_alias_table[i].flags & PTA_64BIT))
 	  error ("CPU you selected does not support x86-64 "
