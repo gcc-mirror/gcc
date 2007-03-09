@@ -1577,6 +1577,12 @@ check_replaceable (temp_expr_table_p tab, tree stmt)
   if (flag_float_store && FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (stmt, 1))))
     return false;
 
+  /* An assignment with a register variable on the RHS is not
+     replaceable.  */
+  if (TREE_CODE (TREE_OPERAND (stmt, 1)) == VAR_DECL
+     && DECL_HARD_REGISTER (TREE_OPERAND (stmt, 1)))
+   return false;
+
   /* Calls to functions with side-effects cannot be replaced.  */
   if ((call_expr = get_call_expr_in (stmt)) != NULL_TREE)
     {
