@@ -1523,13 +1523,23 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 	      append_vdef (al);
 	    }
 
-	  /* Even if no aliases have been added, we still need to
-	     establish def-use and use-def chains, lest
-	     transformations think that this is not a memory
-	     reference.  For an example of this scenario, see
-	     testsuite/g++.dg/opt/cleanup1.C.  */
-	  if (none_added)
-	    append_vdef (var);
+	  /* If the variable is also an alias tag, add a virtual
+	     operand for it, otherwise we will miss representing
+	     references to the members of the variable's alias set.	     
+	     This fixes the bug in gcc.c-torture/execute/20020503-1.c.
+	     
+	     It is also necessary to add bare defs on clobbers for
+	     SMT's, so that bare SMT uses caused by pruning all the
+	     aliases will link up properly with calls.   In order to
+	     keep the number of these bare defs we add down to the
+	     minimum necessary, we keep track of which SMT's were used
+	     alone in statement vdefs or VUSEs.  */
+	  if (none_added
+	      || (TREE_CODE (var) == SYMBOL_MEMORY_TAG
+		  && is_call_site))
+	    {
+	      append_vdef (var);
+	    }
 	}
       else
 	{
