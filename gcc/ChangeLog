@@ -1,3 +1,7 @@
+2007-03-09  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/t-m32c (m32c-pragma.o): Add TM_H dependency to m32c-pragma.o
+
 2007-03-09  Aldy Hernandez  <aldyh@redhat.com>
 
         PR tree-optimization/30375

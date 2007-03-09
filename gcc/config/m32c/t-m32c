@@ -57,7 +57,7 @@ md : $(MD_FILES:%=$(srcdir)/config/m32c/%.md) $(srcdir)/config/m32c/t-m32c
 	  echo "(include \"$(srcdir)/config/m32c/$$md.md\")"; \
 	done > md
 
-m32c-pragma.o: $(srcdir)/config/m32c/m32c-pragma.c $(RTL_H) $(TREE_H) $(CONFIG_H)
+m32c-pragma.o: $(srcdir)/config/m32c/m32c-pragma.c $(RTL_H) $(TREE_H) $(CONFIG_H) $(TM_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
 # We support four CPU series, but R8C and M16C share one multilib, and
