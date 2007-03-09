@@ -1,3 +1,9 @@
+2007-03-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR rtl-optimization/30643
+	* cse.c (cse_insn): Recompute dest_hash after insert_regs for
+	dest_addr_elt.
+
 2007-03-09  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/30045
