@@ -1,3 +1,9 @@
+2007-03-09  Ian Lance Taylor  <iant@google.com>
+
+	* opts.c (common_handle_option): Treat -Wstrict-overflow (with no
+	argument) like -Wstrict-overflow=2.
+	* doc/invoke.texi (Warning Options): Update documentation.
+
 2007-03-09  Dirk Mueller  <dmueller@suse.de>
 
 	PR c++/17946
