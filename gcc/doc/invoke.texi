@@ -3018,17 +3018,17 @@ warning levels are defined.
 @item -Wstrict-overflow=1
 Warn about cases which are both questionable and easy to avoid.  For
 example: @code{x + 1 > x}; with @option{-fstrict-overflow}, the
-compiler will simplify this to @code{1}.  @option{-Wstrict-overflow}
-(with no level) is the same as @option{-Wstrict-overflow=1}.  This
-level of @option{-Wstrict-overflow} is enabled by @option{-Wall};
-higher levels are not, and must be explicitly requested.
+compiler will simplify this to @code{1}.  This level of
+@option{-Wstrict-overflow} is enabled by @option{-Wall}; higher levels
+are not, and must be explicitly requested.
 
 @item -Wstrict-overflow=2
 Also warn about other cases where a comparison is simplified to a
 constant.  For example: @code{abs (x) >= 0}.  This can only be
 simplified when @option{-fstrict-overflow} is in effect, because
 @code{abs (INT_MIN)} overflows to @code{INT_MIN}, which is less than
-zero.
+zero.  @option{-Wstrict-overflow} (with no level) is the same as
+@option{-Wstrict-overflow=2}.
 
 @item -Wstrict-overflow=3
 Also warn about other cases where a comparison is simplified.  For

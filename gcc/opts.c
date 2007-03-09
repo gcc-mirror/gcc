@@ -1094,6 +1094,11 @@ common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_Wstrict_overflow:
+      warn_strict_overflow = (value
+			      ? (int) WARN_STRICT_OVERFLOW_CONDITIONAL
+			      : 0);
+      break;
+
     case OPT_Wstrict_overflow_:
       warn_strict_overflow = value;
       break;
