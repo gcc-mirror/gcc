@@ -1,5 +1,11 @@
 2007-03-09  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
+	PR tree-opt/30045
+	* tree-vrp.c (nonnull_arg_p): Treat the static decl as always
+	non null.
+
+2007-03-09  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
 	PR middle-end/30729
 	* stmt.c (warn_if_unused_value): VA_ARG_EXPR has side
 	effects unknown to this function, return early.

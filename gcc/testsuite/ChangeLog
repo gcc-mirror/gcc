@@ -1,5 +1,10 @@
 2007-03-09  Andrew Pinski  <andrew_pinski@playstation.sony.com> 
 
+	PR tree-opt/30045
+	* gcc.dg/pr30045.c: New test.
+
+2007-03-09  Andrew Pinski  <andrew_pinski@playstation.sony.com> 
+
 	PR middle-end/30729
 	* gcc.dg/Wunused-value-2.c: New testcase.
 
