@@ -123,6 +123,14 @@ set properties_map(java/util/logging) _
 # We haven't merged locale resources yet.
 set properties_map(gnu/java/locale) _
 
+# We want to be able to load xerces if it is on the class path.  So,
+# we have to avoid compiling in the XML-related service files.
+set properties_map(META-INF/services/javax.xml.parsers.DocumentBuilderFactory) _
+set properties_map(META-INF/services/javax.xml.parsers.SAXParserFactory) _
+set properties_map(META-INF/services/javax.xml.parsers.TransformerFactory) _
+set properties_map(META-INF/services/org.relaxng.datatype.DatatypeLibraryFactory) _
+set properties_map(META-INF/services/org.w3c.dom.DOMImplementationSourceList) _
+set properties_map(META-INF/services/org.xml.sax.driver) _
 
 # List of all properties files.
 set properties_files {}
@@ -223,8 +231,10 @@ proc scan_directory {basedir subdir} {
     } elseif {[file isdirectory $file]} {
       lappend subdirs $subdir/$file
     } elseif {$subdir == "META-INF/services"} {
-      # All service files are included as properties.
-      lappend properties_files $basedir/$subdir/$file
+      # Service files are generally included as properties.
+      if {! [info exists properties_map($subdir/$file)]} {
+	lappend properties_files $basedir/$subdir/$file
+      }
     }
   }
   cd $here
