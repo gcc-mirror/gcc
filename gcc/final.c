@@ -2081,7 +2081,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 		loc.file = ASM_INPUT_SOURCE_FILE (body);
 		loc.line = ASM_INPUT_SOURCE_LINE (body);
 #endif
-		if (loc.file && loc.line)
+		if (*loc.file && loc.line)
 		  fprintf (asm_out_file, "%s %i \"%s\" 1\n",
 			   ASM_COMMENT_START, loc.line, loc.file);
 		fprintf (asm_out_file, "\t%s\n", string);
