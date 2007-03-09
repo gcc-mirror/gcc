@@ -168,15 +168,15 @@ DEF_RTL_EXPR(COND_EXEC, "cond_exec", "ee", RTX_EXTRA)
 /* Several operations to be done in parallel (perhaps under COND_EXEC).  */
 DEF_RTL_EXPR(PARALLEL, "parallel", "E", RTX_EXTRA)
 
+#ifdef USE_MAPPED_LOCATION
 /* A string that is passed through to the assembler as input.
      One can obviously pass comments through by using the
      assembler comment syntax.
      These occur in an insn all by themselves as the PATTERN.
      They also appear inside an ASM_OPERANDS
      as a convenient way to hold a string.  */
-DEF_RTL_EXPR(ASM_INPUT, "asm_input", "s", RTX_EXTRA)
+DEF_RTL_EXPR(ASM_INPUT, "asm_input", "si", RTX_EXTRA)
 
-#ifdef USE_MAPPED_LOCATION
 /* An assembler instruction with operands.
    1st operand is the instruction template.
    2nd operand is the constraint for the output.
@@ -190,6 +190,14 @@ DEF_RTL_EXPR(ASM_INPUT, "asm_input", "s", RTX_EXTRA)
    6th is the source line number.  */
 DEF_RTL_EXPR(ASM_OPERANDS, "asm_operands", "ssiEEi", RTX_EXTRA)
 #else
+/* A string that is passed through to the assembler as input.
+     One can obviously pass comments through by using the
+     assembler comment syntax.
+     These occur in an insn all by themselves as the PATTERN.
+     They also appear inside an ASM_OPERANDS
+     as a convenient way to hold a string.  */
+DEF_RTL_EXPR(ASM_INPUT, "asm_input", "ssi", RTX_EXTRA)
+
 /* An assembler instruction with operands.
    1st operand is the instruction template.
    2nd operand is the constraint for the output.
