@@ -1,3 +1,12 @@
+2007-03-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/31099
+	* io/open.c (new_unit): Initialize bytes_left and recl_subrecord.
+	* io/transfer.c (next_record_w): Set bytes left to record length for
+	sequential unformatted I/O.
+	(next_record_r): Ditto.
+	(read_block_direct): Fix test for exceeding bytes_left.
+
 2007-03-08  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/30947
