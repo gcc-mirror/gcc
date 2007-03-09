@@ -283,6 +283,32 @@ dse_possible_dead_store_p (tree stmt,
       gcc_assert (*use_p != NULL_USE_OPERAND_P);
       *first_use_p = *use_p;
 
+      /* In the case of memory partitions, we may get:
+
+	   # MPT.764_162 = VDEF <MPT.764_161(D)>
+	   x = {};
+	   # MPT.764_167 = VDEF <MPT.764_162>
+	   y = {};
+
+	   So we must make sure we're talking about the same LHS.
+      */
+      if (TREE_CODE (temp) == GIMPLE_MODIFY_STMT)
+	{
+	  tree base1 = get_base_address (GIMPLE_STMT_OPERAND (stmt, 0));
+	  tree base2 =  get_base_address (GIMPLE_STMT_OPERAND (temp, 0));
+
+	  while (base1 && INDIRECT_REF_P (base1))
+	    base1 = TREE_OPERAND (base1, 0);
+	  while (base2 && INDIRECT_REF_P (base2))
+	    base2 = TREE_OPERAND (base2, 0);
+
+	  if (base1 != base2)
+	    {
+	      fail = true;
+	      break;
+	    }
+	}
+
       /* If the immediate use of DEF_VAR is not the same as the
 	 previously find immediate uses, then we will not be able
 	 to eliminate STMT.  */
