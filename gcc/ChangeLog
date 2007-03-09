@@ -1,3 +1,10 @@
+2007-03-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/30904
+	PR middle-end/31058
+	* tree-vrp.c (extract_range_from_binary_expr): Handle RSHIFT_EXPR
+	the same way as *_DIV_EXPR.
+
 2007-03-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* recog.c (decode_asm_operands): No mixed declarations and code.
