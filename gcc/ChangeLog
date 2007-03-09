@@ -1,3 +1,12 @@
+2007-03-09  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_comparison): Remove compile-time evaluation of
+	complex constant equality/inequality comparisons for here.
+	(fold_binary) <EQ_EXPR>: Simplify complex comparisons that are
+	known at compile-time or can be simplified to a scalar comparison.
+	(fold_relational_const): Move compile-time evaluation of complex
+	constant equality/inequality comparisons to here.
+
 2007-03-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/30643
@@ -7,7 +16,8 @@
 
 2007-03-09  DJ Delorie  <dj@redhat.com>
 
-	* config/m32c/t-m32c (m32c-pragma.o): Add TM_H dependency to m32c-pragma.o
+	* config/m32c/t-m32c (m32c-pragma.o): Add TM_H dependency to
+	m32c-pragma.o.
 
 2007-03-09  Aldy Hernandez  <aldyh@redhat.com>
 
