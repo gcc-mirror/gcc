@@ -1403,17 +1403,6 @@ make_decl_rtl (tree decl)
   if (flag_mudflap && TREE_CODE (decl) == VAR_DECL)
     mudflap_enqueue_decl (decl);
 }
-
-/* Make the rtl for variable VAR be volatile.
-   Use this only for static variables.  */
-
-void
-make_var_volatile (tree var)
-{
-  gcc_assert (MEM_P (DECL_RTL (var)));
-
-  MEM_VOLATILE_P (DECL_RTL (var)) = 1;
-}
 
 /* Output a string of literal assembler code
    for an `asm' keyword used between functions.  */
