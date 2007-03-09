@@ -1,3 +1,10 @@
+2007-03-09  Aldy Hernandez  <aldyh@redhat.com>
+
+        PR tree-optimization/30375
+        * tree-ssa-dse.c (dse_possible_dead_store_p): Do not eliminate if
+        LHS of statements is not the same.
+        * testsuite/gcc.dg/tree-ssa/ssa-dse-10.c: New.
+
 2007-03-09  Chao-ying Fu  <fu@mips.com>
 
 	* doc/extend.texi (MIPS DSP Built-in Functions): Document the DSP
