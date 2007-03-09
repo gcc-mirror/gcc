@@ -1,3 +1,8 @@
+2007-03-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	* rtl.h (gen_rtx_ASM_INPUT): Use "" instead of NULL file name.
+	* final.c (final_scan_insn): Test for non-"" file name.
+
 2007-03-09  Sebastian Pop  <sebastian.pop@inria.fr>
 
 	* doc/loop.texi: Document the Omega linear constraints solver.

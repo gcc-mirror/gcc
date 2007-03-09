@@ -1875,7 +1875,7 @@ extern GTY(()) rtx return_address_pointer_rtx;
   gen_rtx_fmt_si (ASM_INPUT, (MODE), (ARG0), (LOC))
 #else
 #define gen_rtx_ASM_INPUT(MODE, ARG0)				\
-  gen_rtx_fmt_ssi (ASM_INPUT, (MODE), (ARG0), NULL, 0)
+  gen_rtx_fmt_ssi (ASM_INPUT, (MODE), (ARG0), "", 0)
 #define gen_rtx_ASM_INPUT_loc(MODE, ARG0, LOC)			\
   gen_rtx_fmt_ssi (ASM_INPUT, (MODE), (ARG0), (LOC).file, (LOC).line)
 #undef gen_rtx_ASM_OPERANDS
