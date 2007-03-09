@@ -350,6 +350,7 @@ Objective-C and Objective-C++ Dialects}.
 -fvariable-expansion-in-unroller @gol
 -ftree-pre  -ftree-ccp  -ftree-dce -ftree-loop-optimize @gol
 -ftree-loop-linear -ftree-loop-im -ftree-loop-ivcanon -fivopts @gol
+-fcheck-data-deps @gol
 -ftree-dominator-opts -ftree-dse -ftree-copyrename -ftree-sink @gol
 -ftree-ch -ftree-sra -ftree-ter -ftree-fre -ftree-vectorize @gol
 -ftree-vect-loop-version -ftree-salias -fipa-pta -fweb @gol
@@ -5447,6 +5448,10 @@ at @option{-O} and higher.
 Perform linear loop transformations on tree.  This flag can improve cache
 performance and allow further loop optimizations to take place.
 
+@item -fcheck-data-deps
+Compare the results of several data dependence analyzers.  This option
+is used for debugging the data dependence analyzers.
+
 @item -ftree-loop-im
 Perform loop invariant motion on trees.  This pass moves only invariants that
 would be hard to handle at RTL level (function calls, operations that expand to
@@ -6449,6 +6454,34 @@ optimization when a new iv is added to the set.
 @item scev-max-expr-size
 Bound on size of expressions used in the scalar evolutions analyzer.
 Large expressions slow the analyzer.
+
+@item omega-max-vars
+The maximum number of variables in an Omega constraint system.
+The default value is 128.
+
+@item omega-max-geqs
+The maximum number of inequalities in an Omega constraint system.
+The default value is 256.
+
+@item omega-max-eqs
+The maximum number of equalities in an Omega constraint system.
+The default value is 128.
+
+@item omega-max-wild-cards
+The maximum number of wildcard variables that the Omega solver will
+be able to insert.  The default value is 18.
+
+@item omega-hash-table-size
+The size of the hash table in the Omega solver.  The default value is
+550.
+
+@item omega-max-keys
+The maximal number of keys used by the Omega solver.  The default
+value is 500.
+
+@item omega-eliminate-redundant-constraints
+When set to 1, use expensive methods to eliminate all redundant
+constraints.  The default value is 0.
 
 @item vect-max-version-checks
 The maximum number of runtime checks that can be performed when doing
