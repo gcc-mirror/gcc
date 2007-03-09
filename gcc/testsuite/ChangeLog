@@ -1,4 +1,9 @@
-2006-03-09  Mark Shinwell  <shinwell@codesourcery.com>
+2007-03-09  Andrew Pinski  <pinskia@gmail.com>
+
+	PR C++/30168
+	* g++.dg/opt/complex6.C: New test.
+
+2007-03-09  Mark Shinwell  <shinwell@codesourcery.com>
 	    Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc.dg/pr16194.c: Skip test entirely if we don't know the name of
