@@ -131,13 +131,6 @@
    (UNSPEC_INTERLO_V8HI 233)
    (UNSPEC_INTERLO_V16QI 234)
    (UNSPEC_INTERLO_V4SF 235)
-   (UNSPEC_VCOND_V4SI   301)
-   (UNSPEC_VCOND_V4SF   302)
-   (UNSPEC_VCOND_V8HI   303)
-   (UNSPEC_VCOND_V16QI  304)
-   (UNSPEC_VCONDU_V4SI  305)
-   (UNSPEC_VCONDU_V8HI  306)
-   (UNSPEC_VCONDU_V16QI 307)
    (UNSPEC_VMULWHUB     308)
    (UNSPEC_VMULWLUB     309)
    (UNSPEC_VMULWHSB     310)
@@ -1485,13 +1478,13 @@
   [(set_attr "type" "vecfloat")])
 
 (define_expand "vcondv4si"
-	[(set (match_operand:V4SI 0 "register_operand" "=v")
-	      (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v")
-	       (match_operand:V4SI 2 "register_operand" "v")
-	       (match_operand:V4SI 3 "comparison_operator" "")
-	       (match_operand:V4SI 4 "register_operand" "v")
-	       (match_operand:V4SI 5 "register_operand" "v")
-	       ] UNSPEC_VCOND_V4SI))]
+        [(set (match_operand:V4SI 0 "register_operand" "=v")
+              (if_then_else:V4SI
+                (match_operator 3 "comparison_operator"
+                  [(match_operand:V4SI 4 "register_operand" "v")
+                   (match_operand:V4SI 5 "register_operand" "v")])
+               (match_operand:V4SI 1 "register_operand" "v")
+               (match_operand:V4SI 2 "register_operand" "v")))]
 	"TARGET_ALTIVEC"
 	"
 {
@@ -1504,13 +1497,13 @@
 	")
 
 (define_expand "vconduv4si"
-	[(set (match_operand:V4SI 0 "register_operand" "=v")
-	      (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v")
-	       (match_operand:V4SI 2 "register_operand" "v")
-	       (match_operand:V4SI 3 "comparison_operator" "")
-	       (match_operand:V4SI 4 "register_operand" "v")
-	       (match_operand:V4SI 5 "register_operand" "v")
-	       ] UNSPEC_VCONDU_V4SI))]
+        [(set (match_operand:V4SI 0 "register_operand" "=v")
+              (if_then_else:V4SI
+                (match_operator 3 "comparison_operator"
+                  [(match_operand:V4SI 4 "register_operand" "v")
+                   (match_operand:V4SI 5 "register_operand" "v")])
+               (match_operand:V4SI 1 "register_operand" "v")
+               (match_operand:V4SI 2 "register_operand" "v")))]
 	"TARGET_ALTIVEC"
 	"
 {
@@ -1523,13 +1516,13 @@
 	")
 
 (define_expand "vcondv4sf"
-	[(set (match_operand:V4SF 0 "register_operand" "=v")
-	      (unspec:V4SF [(match_operand:V4SI 1 "register_operand" "v")
-	       (match_operand:V4SF 2 "register_operand" "v")
-	       (match_operand:V4SF 3 "comparison_operator" "")
-	       (match_operand:V4SF 4 "register_operand" "v")
-	       (match_operand:V4SF 5 "register_operand" "v")
-	       ] UNSPEC_VCOND_V4SF))]
+        [(set (match_operand:V4SF 0 "register_operand" "=v")
+              (if_then_else:V4SF
+                (match_operator 3 "comparison_operator"
+                  [(match_operand:V4SF 4 "register_operand" "v")
+                   (match_operand:V4SF 5 "register_operand" "v")])
+               (match_operand:V4SF 1 "register_operand" "v")
+               (match_operand:V4SF 2 "register_operand" "v")))]
 	"TARGET_ALTIVEC"
 	"
 {
@@ -1542,13 +1535,13 @@
 	")
 
 (define_expand "vcondv8hi"
-	[(set (match_operand:V4SF 0 "register_operand" "=v")
-	      (unspec:V8HI [(match_operand:V4SI 1 "register_operand" "v")
-	       (match_operand:V8HI 2 "register_operand" "v")
-	       (match_operand:V8HI 3 "comparison_operator" "")
-	       (match_operand:V8HI 4 "register_operand" "v")
-	       (match_operand:V8HI 5 "register_operand" "v")
-	       ] UNSPEC_VCOND_V8HI))]
+        [(set (match_operand:V8HI 0 "register_operand" "=v")
+              (if_then_else:V8HI
+                (match_operator 3 "comparison_operator"
+                  [(match_operand:V8HI 4 "register_operand" "v")
+                   (match_operand:V8HI 5 "register_operand" "v")])
+               (match_operand:V8HI 1 "register_operand" "v")
+               (match_operand:V8HI 2 "register_operand" "v")))]
 	"TARGET_ALTIVEC"
 	"
 {
@@ -1561,13 +1554,13 @@
 	")
 
 (define_expand "vconduv8hi"
-	[(set (match_operand:V4SF 0 "register_operand" "=v")
-	      (unspec:V8HI [(match_operand:V4SI 1 "register_operand" "v")
-	       (match_operand:V8HI 2 "register_operand" "v")
-	       (match_operand:V8HI 3 "comparison_operator" "")
-	       (match_operand:V8HI 4 "register_operand" "v")
-	       (match_operand:V8HI 5 "register_operand" "v")
-	       ] UNSPEC_VCONDU_V8HI))]
+        [(set (match_operand:V8HI 0 "register_operand" "=v")
+              (if_then_else:V8HI
+                (match_operator 3 "comparison_operator"
+                  [(match_operand:V8HI 4 "register_operand" "v")
+                   (match_operand:V8HI 5 "register_operand" "v")])
+               (match_operand:V8HI 1 "register_operand" "v")
+               (match_operand:V8HI 2 "register_operand" "v")))]
 	"TARGET_ALTIVEC"
 	"
 {
@@ -1580,13 +1573,13 @@
 	")
 
 (define_expand "vcondv16qi"
-	[(set (match_operand:V4SF 0 "register_operand" "=v")
-	      (unspec:V16QI [(match_operand:V4SI 1 "register_operand" "v")
-	       (match_operand:V16QI 2 "register_operand" "v")
-	       (match_operand:V16QI 3 "comparison_operator" "")
-	       (match_operand:V16QI 4 "register_operand" "v")
-	       (match_operand:V16QI 5 "register_operand" "v")
-	       ] UNSPEC_VCOND_V16QI))]
+        [(set (match_operand:V16QI 0 "register_operand" "=v")
+              (if_then_else:V16QI
+                (match_operator 3 "comparison_operator"
+                  [(match_operand:V16QI 4 "register_operand" "v")
+                   (match_operand:V16QI 5 "register_operand" "v")])
+               (match_operand:V16QI 1 "register_operand" "v")
+               (match_operand:V16QI 2 "register_operand" "v")))]
 	"TARGET_ALTIVEC"
 	"
 {
@@ -1599,13 +1592,13 @@
 	")
 
 (define_expand "vconduv16qi"
-	[(set (match_operand:V4SF 0 "register_operand" "=v")
-	      (unspec:V16QI [(match_operand:V4SI 1 "register_operand" "v")
-	       (match_operand:V16QI 2 "register_operand" "v")
-	       (match_operand:V16QI 3 "comparison_operator" "")
-	       (match_operand:V16QI 4 "register_operand" "v")
-	       (match_operand:V16QI 5 "register_operand" "v")
-	       ] UNSPEC_VCONDU_V16QI))]
+        [(set (match_operand:V16QI 0 "register_operand" "=v")
+              (if_then_else:V16QI
+                (match_operator 3 "comparison_operator"
+                  [(match_operand:V16QI 4 "register_operand" "v")
+                   (match_operand:V16QI 5 "register_operand" "v")])
+               (match_operand:V16QI 1 "register_operand" "v")
+               (match_operand:V16QI 2 "register_operand" "v")))]
 	"TARGET_ALTIVEC"
 	"
 {
