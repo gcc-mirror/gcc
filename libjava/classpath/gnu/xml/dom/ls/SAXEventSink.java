@@ -144,36 +144,39 @@ public class SAXEventSink
     final String PROPERTIES = "http://xml.org/sax/properties/";
     final String GNU_PROPERTIES = "http://gnu.org/sax/properties/";
 
-    boolean standalone = reader.getFeature(FEATURES + "is-standalone");
-    doc.setXmlStandalone(standalone);
-    try
+    if (reader != null)
       {
-        String version = (String) reader.getProperty(PROPERTIES +
-                                                     "document-xml-version");
-        doc.setXmlVersion(version);
-      }
-    catch (SAXNotRecognizedException e)
-      {
-      }
-    catch (SAXNotSupportedException e)
-      {
+        boolean standalone = reader.getFeature(FEATURES + "is-standalone");
+        doc.setXmlStandalone(standalone);
+        try
+          {
+            String version = (String) reader.getProperty(PROPERTIES +
+                    "document-xml-version");
+            doc.setXmlVersion(version);
+          }
+        catch (SAXNotRecognizedException e)
+          {
+          }
+        catch (SAXNotSupportedException e)
+          {
+          }
+        try
+          {
+              String encoding = (String) reader.getProperty(GNU_PROPERTIES +
+                      "document-xml-encoding");
+              doc.setXmlEncoding(encoding);
+          }
+        catch (SAXNotRecognizedException e)
+          {
+          }
+        catch (SAXNotSupportedException e)
+          {
+          }
       }
     if (locator != null && locator instanceof Locator2)
       {
         String encoding = ((Locator2) locator).getEncoding();
         doc.setInputEncoding(encoding);
-      }
-    try
-      {
-        String encoding = (String) reader.getProperty(GNU_PROPERTIES +
-                                                      "document-xml-encoding");
-        doc.setXmlEncoding(encoding);
-      }
-    catch (SAXNotRecognizedException e)
-      {
-      }
-    catch (SAXNotSupportedException e)
-      {
       }
   }
 
