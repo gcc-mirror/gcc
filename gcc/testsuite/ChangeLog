@@ -1,3 +1,9 @@
+2007-03-09  Dirk Mueller  <dmueller@suse.de>
+
+	PR c++/17946
+	* gcc.dg/Wlogical-op-1.c: New.
+	* g++.dg/warn/Wlogical-op-1.C: New.
+
 2007-03-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/30904

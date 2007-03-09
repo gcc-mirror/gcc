@@ -3694,6 +3694,7 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
   void *p;
   bool strict_p;
   bool any_viable_p;
+  bool expl_eq_arg1 = false;
 
   if (error_operand_p (arg1)
       || error_operand_p (arg2)
@@ -3723,6 +3724,12 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
     case CALL_EXPR:
       return build_object_call (arg1, arg2);
 
+    case TRUTH_ORIF_EXPR:
+    case TRUTH_ANDIF_EXPR:
+    case TRUTH_AND_EXPR:
+    case TRUTH_OR_EXPR:
+      if (COMPARISON_CLASS_P (arg1))
+	expl_eq_arg1 = true;
     default:
       break;
     }
@@ -3930,6 +3937,12 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 		conv = conv->u.next;
 	      arg3 = convert_like (conv, arg3);
 	    }
+
+	  if (!expl_eq_arg1) 
+	    {
+	      warn_logical_operator (code, arg1, arg2);
+	      expl_eq_arg1 = true;
+	    }
 	}
     }
 
@@ -3950,6 +3963,12 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
     case INDIRECT_REF:
       return build_indirect_ref (arg1, "unary *");
 
+    case TRUTH_ANDIF_EXPR:
+    case TRUTH_ORIF_EXPR:
+    case TRUTH_AND_EXPR:
+    case TRUTH_OR_EXPR:
+      if (!expl_eq_arg1)
+	warn_logical_operator (code, arg1, arg2);
     case PLUS_EXPR:
     case MINUS_EXPR:
     case MULT_EXPR:
@@ -3968,8 +3987,6 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
     case BIT_AND_EXPR:
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
-    case TRUTH_ANDIF_EXPR:
-    case TRUTH_ORIF_EXPR:
       return cp_build_binary_op (code, arg1, arg2);
 
     case UNARY_PLUS_EXPR:

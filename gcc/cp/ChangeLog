@@ -1,3 +1,7 @@
+2007-03-09  Dirk Mueller  <dmueller@suse.de>
+
+	* cp/call.c (build_new_op): Call warn_logical_operator.
+
 2007-03-08  Volker Reichelt  <reichelt@netcologne.de>
 
 	PR c++/30852

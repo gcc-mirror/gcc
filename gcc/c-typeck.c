@@ -2640,6 +2640,9 @@ parser_build_binary_op (enum tree_code code, struct c_expr arg1,
   if (warn_parentheses)
     warn_about_parentheses (code, code1, code2);
 
+  if (code1 != tcc_comparison)
+    warn_logical_operator (code, arg1.value, arg2.value);
+
   /* Warn about comparisons against string literals, with the exception
      of testing for equality or inequality of a string literal with NULL.  */
   if (code == EQ_EXPR || code == NE_EXPR)
