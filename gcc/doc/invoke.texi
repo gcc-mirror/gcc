@@ -613,7 +613,7 @@ Objective-C and Objective-C++ Dialects}.
 -mips16  -mno-mips16  -mabi=@var{abi}  -mabicalls  -mno-abicalls @gol
 -mshared  -mno-shared  -mxgot  -mno-xgot  -mgp32  -mgp64  @gol
 -mfp32  -mfp64  -mhard-float  -msoft-float  @gol
--msingle-float  -mdouble-float  -mdsp  -mpaired-single  -mips3d @gol
+-msingle-float  -mdouble-float  -mdsp  -mdspr2  -mpaired-single  -mips3d @gol
 -mlong64  -mlong32  -msym32  -mno-sym32 @gol
 -G@var{num}  -membedded-data  -mno-embedded-data @gol
 -muninit-const-in-rodata  -mno-uninit-const-in-rodata @gol
@@ -11317,6 +11317,13 @@ operations.  This is the default.
 @opindex mdsp
 @opindex mno-dsp
 Use (do not use) the MIPS DSP ASE.  @xref{MIPS DSP Built-in Functions}.
+
+@itemx -mdspr2
+@itemx -mno-dspr2
+@opindex mdspr2
+@opindex mno-dspr2
+Use (do not use) the MIPS DSP ASE REV 2.  @xref{MIPS DSP Built-in Functions}.
+The option @option{-mdspr2} implies @option{-mdsp}.
 
 @itemx -mpaired-single
 @itemx -mno-paired-single
