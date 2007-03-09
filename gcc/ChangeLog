@@ -2,6 +2,7 @@
 
 	PR rtl-optimization/30643
 	* cse.c (cse_insn): Recompute dest_hash after insert_regs for
+	dest_addr_elt.
 	(fold_rtx): Recurse, like before 2006-11-03.
 
 2007-03-09  DJ Delorie  <dj@redhat.com>
