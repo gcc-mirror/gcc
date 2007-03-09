@@ -1,3 +1,20 @@
+2007-03-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	* rtl.def (ASM_INPUT): Add location.
+	* rtl.h (ASM_INPUT_SOURCE_LOCATION): New.
+	(ASM_INPUT_SOURCE_FILE, ASM_INPUT_SOURCE_LINE): New.
+	(decode_asm_operands): Add loc operand.
+	(gen_rtx_ASM_INPUT, gen_rtx_ASM_INPUT_loc): Define.
+	* stmt.c (expand_asm): Rename to...
+	(expand_asm_loc): ... this.  Add locus argument.  Pass it on to
+	gen_rtx_ASM_INPUT_loc.
+	(expand_asm_expr): Adjust.
+	* recog.c (decode_asm_operands): Add loc operand.
+	(check_asm_operands, extract_insn): Adjust.
+	* reload1.c (maybe_fix_stack_asms): Likewise.
+	* final.c (asm_insn_count): Likewise.
+	(final_scan_insn): Output # line before and after asm.
+
 2007-03-09  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-structalias.c (variable_info): Remove

@@ -1,6 +1,6 @@
 /* Expands front end tree to back end RTL for GCC
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -260,15 +260,16 @@ n_occurrences (int c, const char *s)
    insn is volatile; don't optimize it.  */
 
 static void
-expand_asm (tree string, int vol)
+expand_asm_loc (tree string, int vol, location_t locus)
 {
   rtx body;
 
   if (TREE_CODE (string) == ADDR_EXPR)
     string = TREE_OPERAND (string, 0);
 
-  body = gen_rtx_ASM_INPUT (VOIDmode,
-			    ggc_strdup (TREE_STRING_POINTER (string)));
+  body = gen_rtx_ASM_INPUT_loc (VOIDmode,
+				ggc_strdup (TREE_STRING_POINTER (string)),
+				locus);
 
   MEM_VOLATILE_P (body) = vol;
 
@@ -1094,7 +1095,7 @@ expand_asm_expr (tree exp)
 
   if (ASM_INPUT_P (exp))
     {
-      expand_asm (ASM_STRING (exp), ASM_VOLATILE_P (exp));
+      expand_asm_loc (ASM_STRING (exp), ASM_VOLATILE_P (exp), input_location);
       return;
     }
 

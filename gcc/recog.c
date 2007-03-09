@@ -1,6 +1,6 @@
 /* Subroutines used by or related to instruction recognition.
    Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -140,7 +140,7 @@ check_asm_operands (rtx x)
   operands = alloca (noperands * sizeof (rtx));
   constraints = alloca (noperands * sizeof (char *));
 
-  decode_asm_operands (x, operands, NULL, constraints, NULL);
+  decode_asm_operands (x, operands, NULL, constraints, NULL, NULL);
 
   for (i = 0; i < noperands; i++)
     {
@@ -1492,15 +1492,16 @@ asm_noperands (rtx body)
 
 const char *
 decode_asm_operands (rtx body, rtx *operands, rtx **operand_locs,
-		     const char **constraints, enum machine_mode *modes)
+		     const char **constraints, enum machine_mode *modes,
+		     location_t *loc)
 {
   int i;
   int noperands;
-  const char *template = 0;
+  rtx asmop = 0;
 
   if (GET_CODE (body) == SET && GET_CODE (SET_SRC (body)) == ASM_OPERANDS)
     {
-      rtx asmop = SET_SRC (body);
+      asmop = SET_SRC (body);
       /* Single output operand: BODY is (set OUTPUT (asm_operands ....)).  */
 
       noperands = ASM_OPERANDS_INPUT_LENGTH (asmop) + 1;
@@ -1527,11 +1528,10 @@ decode_asm_operands (rtx body, rtx *operands, rtx **operand_locs,
 	constraints[0] = ASM_OPERANDS_OUTPUT_CONSTRAINT (asmop);
       if (modes)
 	modes[0] = GET_MODE (SET_DEST (body));
-      template = ASM_OPERANDS_TEMPLATE (asmop);
     }
   else if (GET_CODE (body) == ASM_OPERANDS)
     {
-      rtx asmop = body;
+      asmop = body;
       /* No output operands: BODY is (asm_operands ....).  */
 
       noperands = ASM_OPERANDS_INPUT_LENGTH (asmop);
@@ -1549,13 +1549,12 @@ decode_asm_operands (rtx body, rtx *operands, rtx **operand_locs,
 	  if (modes)
 	    modes[i] = ASM_OPERANDS_INPUT_MODE (asmop, i);
 	}
-      template = ASM_OPERANDS_TEMPLATE (asmop);
     }
   else if (GET_CODE (body) == PARALLEL
 	   && GET_CODE (XVECEXP (body, 0, 0)) == SET
 	   && GET_CODE (SET_SRC (XVECEXP (body, 0, 0))) == ASM_OPERANDS)
     {
-      rtx asmop = SET_SRC (XVECEXP (body, 0, 0));
+      asmop = SET_SRC (XVECEXP (body, 0, 0));
       int nparallel = XVECLEN (body, 0); /* Includes CLOBBERs.  */
       int nin = ASM_OPERANDS_INPUT_LENGTH (asmop);
       int nout = 0;		/* Does not include CLOBBERs.  */
@@ -1591,15 +1590,13 @@ decode_asm_operands (rtx body, rtx *operands, rtx **operand_locs,
 	  if (modes)
 	    modes[i + nout] = ASM_OPERANDS_INPUT_MODE (asmop, i);
 	}
-
-      template = ASM_OPERANDS_TEMPLATE (asmop);
     }
   else if (GET_CODE (body) == PARALLEL
 	   && GET_CODE (XVECEXP (body, 0, 0)) == ASM_OPERANDS)
     {
       /* No outputs, but some CLOBBERs.  */
 
-      rtx asmop = XVECEXP (body, 0, 0);
+      asmop = XVECEXP (body, 0, 0);
       int nin = ASM_OPERANDS_INPUT_LENGTH (asmop);
 
       for (i = 0; i < nin; i++)
@@ -1614,10 +1611,19 @@ decode_asm_operands (rtx body, rtx *operands, rtx **operand_locs,
 	    modes[i] = ASM_OPERANDS_INPUT_MODE (asmop, i);
 	}
 
-      template = ASM_OPERANDS_TEMPLATE (asmop);
     }
 
-  return template;
+  if (loc)
+    {
+#ifdef USE_MAPPED_LOCATION
+      *loc = ASM_OPERANDS_SOURCE_LOCATION (asmop);
+#else
+      loc->file = ASM_OPERANDS_SOURCE_FILE (asmop);
+      loc->line = ASM_OPERANDS_SOURCE_LINE (asmop);
+#endif
+    }
+
+  return ASM_OPERANDS_TEMPLATE (asmop);
 }
 
 /* Check if an asm_operand matches its constraints.
@@ -2086,7 +2092,7 @@ extract_insn (rtx insn)
 	  decode_asm_operands (body, recog_data.operand,
 			       recog_data.operand_loc,
 			       recog_data.constraints,
-			       recog_data.operand_mode);
+			       recog_data.operand_mode, NULL);
 	  if (noperands > 0)
 	    {
 	      const char *p =  recog_data.constraints[0];
