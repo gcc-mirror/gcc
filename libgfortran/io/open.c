@@ -437,6 +437,8 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
     {
       u->flags.has_recl = 1;
       u->recl = opp->recl_in;
+      u->recl_subrecord = u->recl;
+      u->bytes_left = u->recl;
     }
   else
     {
