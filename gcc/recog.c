@@ -1,6 +1,7 @@
 /* Subroutines used by or related to instruction recognition.
    Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1554,10 +1555,12 @@ decode_asm_operands (rtx body, rtx *operands, rtx **operand_locs,
 	   && GET_CODE (XVECEXP (body, 0, 0)) == SET
 	   && GET_CODE (SET_SRC (XVECEXP (body, 0, 0))) == ASM_OPERANDS)
     {
-      asmop = SET_SRC (XVECEXP (body, 0, 0));
       int nparallel = XVECLEN (body, 0); /* Includes CLOBBERs.  */
-      int nin = ASM_OPERANDS_INPUT_LENGTH (asmop);
+      int nin;
       int nout = 0;		/* Does not include CLOBBERs.  */
+
+      asmop = SET_SRC (XVECEXP (body, 0, 0));
+      nin = ASM_OPERANDS_INPUT_LENGTH (asmop);
 
       /* At least one output, plus some CLOBBERs.  */
 
@@ -1596,8 +1599,10 @@ decode_asm_operands (rtx body, rtx *operands, rtx **operand_locs,
     {
       /* No outputs, but some CLOBBERs.  */
 
+      int nin;
+
       asmop = XVECEXP (body, 0, 0);
-      int nin = ASM_OPERANDS_INPUT_LENGTH (asmop);
+      nin = ASM_OPERANDS_INPUT_LENGTH (asmop);
 
       for (i = 0; i < nin; i++)
 	{
