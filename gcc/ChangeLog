@@ -1,5 +1,11 @@
 2007-03-09  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
+	PR middle-end/30729
+	* stmt.c (warn_if_unused_value): VA_ARG_EXPR has side
+	effects unknown to this function, return early.
+
+2007-03-09  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
 	PR tree-opt/28624
 	* tree-ssa-dom.c (eliminate_degenerate_phis): Use a temporary 
 	bitmap for EXECUTE_IF_SET_IN_BITMAP.
