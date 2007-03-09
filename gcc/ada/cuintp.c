@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2005 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2007 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -113,18 +113,18 @@ UI_To_gnu (Uint Input, tree type)
       gnu_ret = build_cst_from_int (comp_type, First);
       if (First < 0)
 	for (Idx++, Length--; Length; Idx++, Length--)
-	  gnu_ret = fold (build2 (MINUS_EXPR, comp_type,
-				  fold (build2 (MULT_EXPR, comp_type,
-						gnu_ret, gnu_base)),
-				  build_cst_from_int (comp_type,
-						      Udigits_Ptr[Idx])));
+	  gnu_ret = fold_build2 (MINUS_EXPR, comp_type,
+				 fold_build2 (MULT_EXPR, comp_type,
+					      gnu_ret, gnu_base),
+				 build_cst_from_int (comp_type,
+						     Udigits_Ptr[Idx]));
       else
 	for (Idx++, Length--; Length; Idx++, Length--)
-	  gnu_ret = fold (build2 (PLUS_EXPR, comp_type,
-				  fold (build2 (MULT_EXPR, comp_type,
-						gnu_ret, gnu_base)),
-				  build_cst_from_int (comp_type,
-						      Udigits_Ptr[Idx])));
+	  gnu_ret = fold_build2 (PLUS_EXPR, comp_type,
+				 fold_build2 (MULT_EXPR, comp_type,
+					      gnu_ret, gnu_base),
+				 build_cst_from_int (comp_type,
+						     Udigits_Ptr[Idx]));
     }
 
   gnu_ret = convert (type, gnu_ret);
