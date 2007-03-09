@@ -1,5 +1,9 @@
 2007-03-09  Alexandre Oliva  <aoliva@redhat.com>
 
+	* recog.c (decode_asm_operands): No mixed declarations and code.
+
+2007-03-09  Alexandre Oliva  <aoliva@redhat.com>
+
 	* rtl.def (ASM_INPUT): Add location.
 	* rtl.h (ASM_INPUT_SOURCE_LOCATION): New.
 	(ASM_INPUT_SOURCE_FILE, ASM_INPUT_SOURCE_LINE): New.
