@@ -1,6 +1,11 @@
+2007-03-09  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/28624
+	* tree-ssa-dom.c (eliminate_degenerate_phis): Use a temporary 
+	bitmap for EXECUTE_IF_SET_IN_BITMAP.
+
 2006-03-09  Mark Shinwell  <shinwell@codesourcery.com>
 	    Andrew MacLeod  <amacleod@redhat.com>
-
 	PR tree-optimization/29877
 	* tree-outof-ssa.c (check_replaceable): Don't allow TER to replace
 	an expression if the RHS is a register variable.
