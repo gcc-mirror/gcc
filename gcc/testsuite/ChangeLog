@@ -1,3 +1,7 @@
+2007-03-09  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/fold-eqcmplx-1.c: New test case.
+
 2007-03-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/30643

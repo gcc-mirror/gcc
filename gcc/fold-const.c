@@ -8859,29 +8859,6 @@ fold_comparison (enum tree_code code, tree type, tree op0, tree op1)
 	}
     }
 
-  /* If this is a comparison of complex values and both sides
-     are COMPLEX_CST, do the comparison by parts to fold the
-     comparison.  */
-  if ((code == EQ_EXPR || code == NE_EXPR)
-      && TREE_CODE (TREE_TYPE (arg0)) == COMPLEX_TYPE
-      && TREE_CODE (arg0) == COMPLEX_CST
-      && TREE_CODE (arg1) == COMPLEX_CST)
-    {
-      tree real0, imag0, real1, imag1;
-      enum tree_code outercode;
-
-      real0 = TREE_REALPART (arg0);
-      imag0 = TREE_IMAGPART (arg0);
-      real1 = TREE_REALPART (arg1);
-      imag1 = TREE_IMAGPART (arg1);
-      outercode = code == EQ_EXPR ? TRUTH_ANDIF_EXPR : TRUTH_ORIF_EXPR;
-
-      return fold_build2 (outercode, type,
-			  fold_build2 (code, type, real0, real1),
-			  fold_build2 (code, type, imag0, imag1));
-    }
-
-
   /* Fold a comparison of the address of COMPONENT_REFs with the same
      type and component to a comparison of the address of the base
      object.  In short, &x->a OP &y->a to x OP y and
@@ -11621,6 +11598,79 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 							  arg01, arg11)),
 				arg10);
 	}
+
+      /* Attempt to simplify equality/inequality comparisons of complex
+	 values.  Only lower the comparison if the result is known or
+	 can be simplified to a single scalar comparison.  */
+      if ((TREE_CODE (arg0) == COMPLEX_EXPR
+	   || TREE_CODE (arg0) == COMPLEX_CST)
+	  && (TREE_CODE (arg1) == COMPLEX_EXPR
+	      || TREE_CODE (arg1) == COMPLEX_CST))
+	{
+	  tree real0, imag0, real1, imag1;
+	  tree rcond, icond;
+
+	  if (TREE_CODE (arg0) == COMPLEX_EXPR)
+	    {
+	      real0 = TREE_OPERAND (arg0, 0);
+	      imag0 = TREE_OPERAND (arg0, 1);
+	    }
+	  else
+	    {
+	      real0 = TREE_REALPART (arg0);
+	      imag0 = TREE_IMAGPART (arg0);
+	    }
+
+	  if (TREE_CODE (arg1) == COMPLEX_EXPR)
+	    {
+	      real1 = TREE_OPERAND (arg1, 0);
+	      imag1 = TREE_OPERAND (arg1, 1);
+	    }
+	  else
+	    {
+	      real1 = TREE_REALPART (arg1);
+	      imag1 = TREE_IMAGPART (arg1);
+	    }
+
+	  rcond = fold_binary (code, type, real0, real1);
+	  if (rcond && TREE_CODE (rcond) == INTEGER_CST)
+	    {
+	      if (integer_zerop (rcond))
+		{
+		  if (code == EQ_EXPR)
+		    return omit_two_operands (type, boolean_false_node,
+					      imag0, imag1);
+		  return fold_build2 (NE_EXPR, type, imag0, imag1);
+		}
+	      else
+		{
+		  if (code == NE_EXPR)
+		    return omit_two_operands (type, boolean_true_node,
+					      imag0, imag1);
+		  return fold_build2 (EQ_EXPR, type, imag0, imag1);
+		}
+	    }
+
+	  icond = fold_binary (code, type, imag0, imag1);
+	  if (icond && TREE_CODE (icond) == INTEGER_CST)
+	    {
+	      if (integer_zerop (icond))
+		{
+		  if (code == EQ_EXPR)
+		    return omit_two_operands (type, boolean_false_node,
+					      real0, real1);
+		  return fold_build2 (NE_EXPR, type, real0, real1);
+		}
+	      else
+		{
+		  if (code == NE_EXPR)
+		    return omit_two_operands (type, boolean_true_node,
+					      real0, real1);
+		  return fold_build2 (EQ_EXPR, type, real0, real1);
+		}
+	    }
+	}
+
       return NULL_TREE;
 
     case LT_EXPR:
@@ -13929,6 +13979,23 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
 	}
 
       return constant_boolean_node (real_compare (code, c0, c1), type);
+    }
+
+  /* Handle equality/inequality of complex constants.  */
+  if (TREE_CODE (op0) == COMPLEX_CST && TREE_CODE (op1) == COMPLEX_CST)
+    {
+      tree rcond = fold_relational_const (code, type,
+					  TREE_REALPART (op0),
+					  TREE_REALPART (op1));
+      tree icond = fold_relational_const (code, type,
+					  TREE_IMAGPART (op0),
+					  TREE_IMAGPART (op1));
+      if (code == EQ_EXPR)
+	return fold_build2 (TRUTH_ANDIF_EXPR, type, rcond, icond);
+      else if (code == NE_EXPR)
+	return fold_build2 (TRUTH_ORIF_EXPR, type, rcond, icond);
+      else
+	return NULL_TREE;
     }
 
   /* From here on we only handle LT, LE, GT, GE, EQ and NE.
