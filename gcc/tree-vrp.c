@@ -1596,6 +1596,7 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
       && code != CEIL_DIV_EXPR
       && code != EXACT_DIV_EXPR
       && code != ROUND_DIV_EXPR
+      && code != RSHIFT_EXPR
       && code != MIN_EXPR
       && code != MAX_EXPR
       && code != BIT_AND_EXPR
@@ -1763,7 +1764,8 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
 	   || code == FLOOR_DIV_EXPR
 	   || code == CEIL_DIV_EXPR
 	   || code == EXACT_DIV_EXPR
-	   || code == ROUND_DIV_EXPR)
+	   || code == ROUND_DIV_EXPR
+	   || code == RSHIFT_EXPR)
     {
       tree val[4];
       size_t i;

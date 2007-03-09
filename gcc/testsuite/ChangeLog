@@ -1,3 +1,9 @@
+2007-03-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/30904
+	PR middle-end/31058
+	* gcc.dg/pr30904.c: Remove xfail.
+
 2007-03-08  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C/31072

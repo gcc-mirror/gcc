@@ -14,5 +14,5 @@ int main (void)
 }
 
 
-/* { dg-final { scan-tree-dump-times "link_error" 0 "optimized" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "link_error" 0 "optimized"  } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
