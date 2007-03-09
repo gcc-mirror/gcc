@@ -1,3 +1,10 @@
+2007-03-09  Gary Benson  <gbenson@redhat.com>
+	    Chris Burdess  <dog@gnu.org>
+
+	PR classpath/30831
+	* gnu/xml/dom/ls/SAXEventSink.java: Only set extended document
+	properties when reader is available.
+
 2007-03-08  Gary Benson  <gbenson@redhat.com>
 
 	PR classpath/30983:
