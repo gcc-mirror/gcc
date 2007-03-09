@@ -434,11 +434,10 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
 
   /* Check whether we exceed the total record length.  */
 
-  if (dtp->u.p.current_unit->flags.has_recl)
+  if (dtp->u.p.current_unit->flags.has_recl
+      && (*nbytes > (size_t) dtp->u.p.current_unit->bytes_left))
     {
-      to_read_record =
-	*nbytes > (size_t) dtp->u.p.current_unit->bytes_left ?
-	*nbytes : (size_t) dtp->u.p.current_unit->bytes_left;
+      to_read_record = (size_t) dtp->u.p.current_unit->bytes_left;
       short_record = 1;
     }
   else
@@ -2142,6 +2141,7 @@ next_record_r (st_parameter_dt *dtp)
     
     case UNFORMATTED_SEQUENTIAL:
       next_record_r_unf (dtp, 1);
+      dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
       break;
 
     case FORMATTED_DIRECT:
@@ -2367,6 +2367,7 @@ next_record_w (st_parameter_dt *dtp, int done)
 
     case UNFORMATTED_SEQUENTIAL:
       next_record_w_unf (dtp, 0);
+      dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
       break;
 
     case FORMATTED_STREAM:
