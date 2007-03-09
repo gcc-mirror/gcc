@@ -256,10 +256,6 @@ struct variable_info
   /* Old points-to set for this variable.  */
   bitmap oldsolution;
 
-  /* Finished points-to set for this variable (IE what is returned
-     from find_what_p_points_to.  */
-  bitmap finished_solution;
-
   /* Variable ids represented by this node.  */
   bitmap variables;
 
@@ -374,7 +370,6 @@ new_var_info (tree t, unsigned int id, const char *name)
   ret->has_union = false;
   ret->solution = BITMAP_ALLOC (&pta_obstack);
   ret->oldsolution = BITMAP_ALLOC (&oldpta_obstack);
-  ret->finished_solution = NULL;
   ret->next = NULL;
   ret->collapsed_to = NULL;
   return ret;
@@ -4159,6 +4154,75 @@ intra_create_variable_infos (void)
     }
 }
 
+/* Structure used to put solution bitmaps in a hashtable so they can
+   be shared among variables with the same points-to set.  */
+
+typedef struct shared_bitmap_info
+{
+  bitmap pt_vars;
+  hashval_t hashcode;
+} *shared_bitmap_info_t;
+
+static htab_t shared_bitmap_table;
+
+/* Hash function for a shared_bitmap_info_t */
+
+static hashval_t
+shared_bitmap_hash (const void *p)
+{
+  const shared_bitmap_info_t bi = (shared_bitmap_info_t) p;
+  return bi->hashcode;
+}
+
+/* Equality function for two shared_bitmap_info_t's. */
+
+static int
+shared_bitmap_eq (const void *p1, const void *p2)
+{
+  const shared_bitmap_info_t sbi1 = (shared_bitmap_info_t) p1;
+  const shared_bitmap_info_t sbi2 = (shared_bitmap_info_t) p2;
+  return bitmap_equal_p (sbi1->pt_vars, sbi2->pt_vars);
+}
+
+/* Lookup a bitmap in the shared bitmap hashtable, and return an already
+   existing instance if there is one, NULL otherwise.  */
+
+static bitmap
+shared_bitmap_lookup (bitmap pt_vars)
+{
+  void **slot;
+  struct shared_bitmap_info sbi;
+
+  sbi.pt_vars = pt_vars;
+  sbi.hashcode = bitmap_hash (pt_vars);
+  
+  slot = htab_find_slot_with_hash (shared_bitmap_table, &sbi,
+				   sbi.hashcode, NO_INSERT);
+  if (!slot)
+    return NULL;
+  else
+    return ((shared_bitmap_info_t) *slot)->pt_vars;
+}
+
+
+/* Add a bitmap to the shared bitmap hashtable.  */
+
+static void
+shared_bitmap_add (bitmap pt_vars)
+{
+  void **slot;
+  shared_bitmap_info_t sbi = XNEW (struct shared_bitmap_info);
+  
+  sbi->pt_vars = pt_vars;
+  sbi->hashcode = bitmap_hash (pt_vars);
+  
+  slot = htab_find_slot_with_hash (shared_bitmap_table, sbi,
+				   sbi->hashcode, INSERT);
+  gcc_assert (!*slot);
+  *slot = (void *) sbi;
+}
+
+
 /* Set bits in INTO corresponding to the variable uids in solution set
    FROM, which came from variable PTR.
    For variables that are actually dereferenced, we also use type
@@ -4282,12 +4346,12 @@ set_used_smts (void)
     }
 }
 
-/* Merge the necessary SMT's into the solution set for VI, which is
+/* Merge the necessary SMT's into the bitmap INTO, which is
    P's varinfo.  This involves merging all SMT's that are a subset of
    the SMT necessary for P. */
 
 static void
-merge_smts_into (tree p, varinfo_t vi)
+merge_smts_into (tree p, bitmap solution)
 {
   unsigned int i;
   bitmap_iterator bi;
@@ -4305,7 +4369,7 @@ merge_smts_into (tree p, varinfo_t vi)
 
       /* Need to set the SMT subsets first before this
 	 will work properly.  */
-      bitmap_set_bit (vi->finished_solution, DECL_UID (smt));
+      bitmap_set_bit (solution, DECL_UID (smt));
       EXECUTE_IF_SET_IN_BITMAP (used_smts, 0, i, bi)
 	{
 	  tree newsmt = referenced_var (i);
@@ -4313,12 +4377,12 @@ merge_smts_into (tree p, varinfo_t vi)
 
 	  if (alias_set_subset_of (get_alias_set (newsmttype),
 				   smtset))
-	    bitmap_set_bit (vi->finished_solution, i);
+	    bitmap_set_bit (solution, i);
 	}
 
       aliases = MTAG_ALIASES (smt);
       if (aliases)
-        bitmap_ior_into (vi->finished_solution, aliases);
+        bitmap_ior_into (solution, aliases);
     }
 }
 
@@ -4371,7 +4435,9 @@ find_what_p_points_to (tree p)
 	  unsigned int i;
 	  bitmap_iterator bi;
 	  bool was_pt_anything = false;
-
+	  bitmap finished_solution;
+	  bitmap result;
+	  
 	  if (!pi->is_dereferenced)
 	    return false;
 
@@ -4403,32 +4469,31 @@ find_what_p_points_to (tree p)
 		}
 	    }
 
-	  /* Share the final set of variables between the SSA_NAME
-	     pointer infos for collapsed nodes that are collapsed to
-	     non-special variables.  This is because special vars have
-	     no real types associated with them, so while we know the
-	     pointers are equivalent to them, we need to generate the
-	     solution separately since it will include SMT's from the
-	     original non-collapsed variable.  */
-	  if (!vi->is_special_var && vi->finished_solution)
+	  /* Share the final set of variables when possible.  */
+	  
+	  finished_solution = BITMAP_GGC_ALLOC ();
+	  stats.points_to_sets_created++;
+	  
+	  /* Instead of using pt_anything, we instead merge in the SMT
+	     aliases for the underlying SMT.  */
+	  if (was_pt_anything)
 	    {
-	      pi->pt_vars = vi->finished_solution;
+	      merge_smts_into (p, finished_solution);
+	      pi->pt_global_mem = 1;
+	    }
+	  
+	  set_uids_in_ptset (vi->decl, finished_solution, vi->solution);
+	  result = shared_bitmap_lookup (finished_solution);
+
+	  if (!result)
+	    {
+	      shared_bitmap_add (finished_solution);
+	      pi->pt_vars = finished_solution;
 	    }
 	  else
 	    {
-	      vi->finished_solution = BITMAP_GGC_ALLOC ();
-	      stats.points_to_sets_created++;
-
-	      /* Instead of using pt_anything, we instead merge in the SMT
-		 aliases for the underlying SMT.  */
-	      if (was_pt_anything)
-		{
-		  merge_smts_into (p, vi);
-		  pi->pt_global_mem = 1;
-		}
-
-	      set_uids_in_ptset (vi->decl, vi->finished_solution, vi->solution);
-	      pi->pt_vars = vi->finished_solution;
+	      pi->pt_vars = result;
+	      bitmap_clear (finished_solution);
 	    }
 
 	  if (bitmap_empty_p (pi->pt_vars))
@@ -4602,7 +4667,8 @@ init_alias_vars (void)
   vi_for_tree = pointer_map_create ();
 
   memset (&stats, 0, sizeof (stats));
-
+  shared_bitmap_table = htab_create (511, shared_bitmap_hash,
+				     shared_bitmap_eq, free);
   init_base_vars ();
 }
 
@@ -4737,6 +4803,7 @@ delete_points_to_sets (void)
   varinfo_t v;
   int i;
 
+  htab_delete (shared_bitmap_table);
   if (dump_file && (dump_flags & TDF_STATS))
     fprintf (dump_file, "Points to sets created:%d\n",
 	     stats.points_to_sets_created);

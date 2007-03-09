@@ -1,3 +1,22 @@
+2007-03-09  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-structalias.c (variable_info): Remove
+	finished_solution.
+	(new_var_info): Ditto.
+	(shared_bitmap_info_t): New structure.
+	(shared_bitmap_table): New variable.
+	(shared_bitmap_hash): New function.
+	(shared_bitmap_eq): Ditto
+	(shared_bitmap_lookup): Ditto.
+	(shared_bitmap_add): Ditto.
+	(merge_smts_into): Change to take bitmap directly.
+	(find_what_p_points_to): Rewrite to use shared bitmap hashtable.
+	(init_alias_vars): Init shared bitmap hashtable.
+	(delete_points_to_sets): Delete shared bitmap hashtable.
+	* tree-ssa-operands.c (add_virtual_operand): Partially revert the
+	is_aliased removal as a change that was still necessary was
+	deleted.
+
 2007-03-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (override_options): Conditionally disable
