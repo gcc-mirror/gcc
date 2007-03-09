@@ -1690,11 +1690,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
     TREE_READONLY (olddecl) = 1;
 
   if (TREE_THIS_VOLATILE (newdecl))
-    {
-      TREE_THIS_VOLATILE (olddecl) = 1;
-      if (TREE_CODE (newdecl) == VAR_DECL)
-	make_var_volatile (newdecl);
-    }
+    TREE_THIS_VOLATILE (olddecl) = 1;
 
   /* Merge deprecatedness.  */
   if (TREE_DEPRECATED (newdecl))
