@@ -1,3 +1,9 @@
+2007-03-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR rtl-optimization/30643
+	* cse.c (cse_insn): Recompute dest_hash after insert_regs for
+	(fold_rtx): Recurse, like before 2006-11-03.
+
 2007-03-09  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/t-m32c (m32c-pragma.o): Add TM_H dependency to m32c-pragma.o

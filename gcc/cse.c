@@ -1,6 +1,7 @@
 /* Common subexpression elimination for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3045,11 +3046,37 @@ fold_rtx (rtx x, rtx insn)
       {
 	rtx folded_arg = XEXP (x, i), const_arg;
 	enum machine_mode mode_arg = GET_MODE (folded_arg);
+
+	switch (GET_CODE (folded_arg))
+	  {
+	  case MEM:
+	  case REG:
+	  case SUBREG:
+	    const_arg = equiv_constant (folded_arg);
+	    break;
+
+	  case CONST:
+	  case CONST_INT:
+	  case SYMBOL_REF:
+	  case LABEL_REF:
+	  case CONST_DOUBLE:
+	  case CONST_VECTOR:
+	    const_arg = folded_arg;
+	    break;
+
 #ifdef HAVE_cc0
-	if (CC0_P (folded_arg))
-	  folded_arg = prev_insn_cc0, mode_arg = prev_insn_cc0_mode;
+	  case CC0:
+	    folded_arg = prev_insn_cc0;
+	    mode_arg = prev_insn_cc0_mode;
+	    const_arg = equiv_constant (folded_arg);
+	    break;
 #endif
-	const_arg = equiv_constant (folded_arg);
+
+	  default:
+	    folded_arg = fold_rtx (folded_arg, insn);
+	    const_arg = equiv_constant (folded_arg);
+	    break;
+	  }
 
 	/* For the first three operands, see if the operand
 	   is constant or equivalent to a constant.  */
@@ -5254,8 +5281,11 @@ cse_insn (rtx insn, rtx libcall_insn)
 		{
 		  if (insert_regs (x, NULL, 0))
 		    {
+		      rtx dest = SET_DEST (sets[i].rtl);
+
 		      rehash_using_reg (x);
 		      hash = HASH (x, mode);
+		      sets[i].dest_hash = HASH (dest, GET_MODE (dest));
 		    }
 		  elt = insert (x, NULL, hash, mode);
 		}
