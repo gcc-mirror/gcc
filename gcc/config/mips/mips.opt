@@ -59,6 +59,10 @@ mdsp
 Target Report Mask(DSP)
 Use MIPS-DSP instructions
 
+mdspr2
+Target Report Mask(DSPR2)
+Use MIPS-DSP REV 2 instructions
+
 mdebug
 Target Var(TARGET_DEBUG_MODE) Undocumented
 

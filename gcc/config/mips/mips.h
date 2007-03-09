@@ -340,6 +340,9 @@ extern const struct mips_rtx_cost_data *mips_cost;
       if (TARGET_DSP)						\
 	builtin_define ("__mips_dsp");				\
 								\
+      if (TARGET_DSPR2)						\
+	builtin_define ("__mips_dspr2");			\
+								\
       MIPS_CPP_SET_PROCESSOR ("_MIPS_ARCH", mips_arch_info);	\
       MIPS_CPP_SET_PROCESSOR ("_MIPS_TUNE", mips_tune_info);	\
 								\
@@ -820,6 +823,7 @@ extern const struct mips_rtx_cost_data *mips_cost;
 %{mips16:%{!mno-mips16:-mips16}} %{mno-mips16:-no-mips16} \
 %{mips3d:-mips3d} \
 %{mdsp} \
+%{mdspr2} \
 %{mfix-vr4120} %{mfix-vr4130} \
 %(subtarget_asm_optimizing_spec) \
 %(subtarget_asm_debugging_spec) \

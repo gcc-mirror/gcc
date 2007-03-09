@@ -147,6 +147,57 @@
    (UNSPEC_MTHLIP		365)
    (UNSPEC_WRDSP		366)
    (UNSPEC_RDDSP		367)
+
+   ;; MIPS DSP ASE REV 2 Revision 0.02 11/24/2006
+   (UNSPEC_ABSQ_S_QB		400)
+   (UNSPEC_ADDU_PH		401)
+   (UNSPEC_ADDU_S_PH		402)
+   (UNSPEC_ADDUH_QB		403)
+   (UNSPEC_ADDUH_R_QB		404)
+   (UNSPEC_APPEND		405)
+   (UNSPEC_BALIGN		406)
+   (UNSPEC_CMPGDU_EQ_QB		407)
+   (UNSPEC_CMPGDU_LT_QB		408)
+   (UNSPEC_CMPGDU_LE_QB		409)
+   (UNSPEC_DPA_W_PH		410)
+   (UNSPEC_DPS_W_PH		411)
+   (UNSPEC_MADD			412)
+   (UNSPEC_MADDU		413)
+   (UNSPEC_MSUB			414)
+   (UNSPEC_MSUBU		415)
+   (UNSPEC_MUL_PH		416)
+   (UNSPEC_MUL_S_PH		417)
+   (UNSPEC_MULQ_RS_W		418)
+   (UNSPEC_MULQ_S_PH		419)
+   (UNSPEC_MULQ_S_W		420)
+   (UNSPEC_MULSA_W_PH		421)
+   (UNSPEC_MULT			422)
+   (UNSPEC_MULTU		423)
+   (UNSPEC_PRECR_QB_PH		424)
+   (UNSPEC_PRECR_SRA_PH_W	425)
+   (UNSPEC_PRECR_SRA_R_PH_W	426)
+   (UNSPEC_PREPEND		427)
+   (UNSPEC_SHRA_QB		428)
+   (UNSPEC_SHRA_R_QB		429)
+   (UNSPEC_SHRL_PH		430)
+   (UNSPEC_SUBU_PH		431)
+   (UNSPEC_SUBU_S_PH		432)
+   (UNSPEC_SUBUH_QB		433)
+   (UNSPEC_SUBUH_R_QB		434)
+   (UNSPEC_ADDQH_PH		435)
+   (UNSPEC_ADDQH_R_PH		436)
+   (UNSPEC_ADDQH_W		437)
+   (UNSPEC_ADDQH_R_W		438)
+   (UNSPEC_SUBQH_PH		439)
+   (UNSPEC_SUBQH_R_PH		440)
+   (UNSPEC_SUBQH_W		441)
+   (UNSPEC_SUBQH_R_W		442)
+   (UNSPEC_DPAX_W_PH		443)
+   (UNSPEC_DPSX_W_PH		444)
+   (UNSPEC_DPAQX_S_W_PH		445)
+   (UNSPEC_DPAQX_SA_W_PH	446)
+   (UNSPEC_DPSQX_S_W_PH		447)
+   (UNSPEC_DPSQX_SA_W_PH	448)
   ]
 )
 
@@ -1505,7 +1556,7 @@
   [(set (match_operand:DI 0 "register_operand" "=x")
 	(mult:DI (any_extend:DI (match_operand:SI 1 "register_operand" "d"))
 		 (any_extend:DI (match_operand:SI 2 "register_operand" "d"))))]
-  "!TARGET_64BIT && !TARGET_FIX_R4000"
+  "!TARGET_64BIT && !TARGET_FIX_R4000 && !TARGET_DSPR2"
   "mult<u>\t%1,%2"
   [(set_attr "type" "imul")
    (set_attr "mode" "SI")])
@@ -5514,3 +5565,7 @@
 ; The MIPS DSP Instructions.
 
 (include "mips-dsp.md")
+
+; The MIPS DSP REV 2 Instructions.
+
+(include "mips-dspr2.md")

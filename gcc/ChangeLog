@@ -1,3 +1,32 @@
+2007-03-09  Chao-ying Fu  <fu@mips.com>
+
+	* doc/extend.texi (MIPS DSP Built-in Functions): Document the DSP
+	REV 2.
+	* doc/invoke.texi (-mdspr2): Document new option.
+	* config/mips/mips.md (UNSPEC_ABSQ_S_QB .. UNSPEC_DPSQX_SA_W_PH):
+	New unspec for DSP REV 2.
+	(<u>mulsidi3_32bit_internal): Check if !TARGET_DSPR2, because
+	these instructions are extended in DSP REV 2.
+	(mips-dspr2.md): Include.
+	* config/mips/mips.opt (mdspr2): New option.
+	* config/mips/mips.c (mips_function_type): Add MIPS_V4QI_FTYPE_V4QI,
+	MIPS_SI_FTYPE_SI_SI_SI, MIPS_DI_FTYPE_DI_USI_USI, MIPS_DI_FTYPE_SI_SI,
+	MIPS_DI_FTYPE_USI_USI, MIPS_V2HI_FTYPE_SI_SI_SI.
+	(override_options): Check TARGET_DSPR2 to enable MASK_DSP.
+	(CODE_FOR_mips_mul_ph): Define it to CODE_FOR_mulv2hi3.
+	(dsp_bdesc): Add DSP REV 2 builtins.  Remove 32-bit only DSP builtins.
+	(dsp_32only_bdesc): New description table for 32-bit only DSP REV 1
+	and 2 builtins.
+	(bdesc_map): Add one field of unsupported_target_flags.
+	(bdesc_arrays):  Update entries to have extra fields.  Add
+	dsp_32only_bdesc.
+	(mips_init_builtins): Initialize new function types.
+	Check unsupported_target_fileds to filter out builtins.
+	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Define __mips_dspr2 if
+	TARGET_DSPR2.
+	(ASM_SPEC): Pass mdspr2 to the assembler.
+	* config/mips/mips-dspr2.md: New file.
+
 2007-03-09  Sa Liu  <saliu@de.ibm.com>
 
 	* config/rs6000/altivec.md: Fix vcond patterns using if_then_else.
