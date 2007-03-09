@@ -978,6 +978,44 @@ overflow_warning (tree value)
     }
 }
 
+
+/* Warn about use of a logical || / && operator being used in a
+   context where it is likely that the bitwise equivalent was intended
+   by the programmer. CODE is the TREE_CODE of the operator, ARG1
+   and ARG2 the arguments.  */
+
+void
+warn_logical_operator (enum tree_code code, tree arg1, tree
+    arg2)
+{
+  switch (code)
+    {
+      case TRUTH_ANDIF_EXPR:
+      case TRUTH_ORIF_EXPR:
+      case TRUTH_OR_EXPR:
+      case TRUTH_AND_EXPR:
+       if (!TREE_NO_WARNING (arg1)
+            && INTEGRAL_TYPE_P (TREE_TYPE (arg1))
+           && !CONSTANT_CLASS_P (arg1)
+           && TREE_CODE (arg2) == INTEGER_CST
+           && !integer_zerop (arg2)
+           && !integer_onep (arg2))
+         {
+           warning (OPT_Wlogical_op,
+                    "logical %<%s%> with non-zero constant "
+                    "will always evaluate as true",
+                    ((code == TRUTH_ANDIF_EXPR)
+                     || (code == TRUTH_AND_EXPR)) ? "&&" : "||");
+            TREE_NO_WARNING (arg1) = true;
+         }
+
+        break;
+      default:
+        break;
+    }
+}
+
+
 /* Print a warning about casts that might indicate violation
    of strict aliasing rules if -Wstrict-aliasing is used and
    strict aliasing mode is in effect. OTYPE is the original

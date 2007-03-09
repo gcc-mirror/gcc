@@ -118,6 +118,10 @@ Wlarger-than-
 Common RejectNegative Joined UInteger Warning
 -Wlarger-than-<number>	Warn if an object is larger than <number> bytes
 
+Wlogical-op
+Common Warning Var(warn_logical_op)
+Warn when a logical operator is suspicously always evaluating to true or false
+
 Wunsafe-loop-optimizations
 Common Var(warn_unsafe_loop_optimizations) Warning
 Warn if the loop cannot be optimized due to nontrivial assumptions.

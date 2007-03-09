@@ -236,9 +236,9 @@ Objective-C and Objective-C++ Dialects}.
 -Wformat-security  -Wformat-y2k @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
 -Wimport  -Wno-import  -Winit-self  -Winline @gol
--Wno-int-to-pointer-cast @gol
--Wno-invalid-offsetof  -Winvalid-pch @gol
--Wlarger-than-@var{len}  -Wunsafe-loop-optimizations  -Wlong-long @gol
+-Wno-int-to-pointer-cast -Wno-invalid-offsetof @gol
+-Winvalid-pch -Wlarger-than-@var{len}  -Wunsafe-loop-optimizations @gol
+-Wlogical-op -Wlong-long @gol
 -Wmain  -Wmissing-braces  -Wmissing-field-initializers @gol
 -Wmissing-format-attribute  -Wmissing-include-dirs @gol
 -Wmissing-noreturn @gol
@@ -3419,6 +3419,13 @@ call; and comparisons against string literals result in unspecified
 behavior and are not portable in C, so they usually indicate that the
 programmer intended to use @code{strcmp}.  This warning is enabled by
 @option{-Wall}.
+
+@item -Wlogical-op
+@opindex Wlogical-op
+@opindex Wno-logical-op
+Warn about suspicious uses of logical operators in expressions.
+This includes using logical operators in contexts where a
+bit-wise operator is likely to be expected.
 
 @item -Waggregate-return
 @opindex Waggregate-return
