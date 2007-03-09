@@ -1,3 +1,8 @@
+2007-03-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (override_options): Conditionally disable
+	x86_sahf for 64bit targets only.
+
 2007-03-08  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C/31072
