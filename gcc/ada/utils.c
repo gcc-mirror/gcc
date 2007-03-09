@@ -868,10 +868,10 @@ finish_record_type (tree record_type, tree fieldlist, bool has_rep,
 
 	case QUAL_UNION_TYPE:
 	  ada_size
-	    = fold (build3 (COND_EXPR, bitsizetype, DECL_QUALIFIER (field),
-			    this_ada_size, ada_size));
-	  size = fold (build3 (COND_EXPR, bitsizetype, DECL_QUALIFIER (field),
-			       this_size, size));
+	    = fold_build3 (COND_EXPR, bitsizetype, DECL_QUALIFIER (field),
+			   this_ada_size, ada_size);
+	  size = fold_build3 (COND_EXPR, bitsizetype, DECL_QUALIFIER (field),
+			      this_size, size);
 	  break;
 
 	case RECORD_TYPE:
@@ -1133,15 +1133,15 @@ merge_sizes (tree last_size, tree first_bit, tree size, bool special,
     }
 
   else
-    new = fold (build3 (COND_EXPR, type, TREE_OPERAND (size, 0),
-			integer_zerop (TREE_OPERAND (size, 1))
-			? last_size : merge_sizes (last_size, first_bit,
-						   TREE_OPERAND (size, 1),
-						   1, has_rep),
-			integer_zerop (TREE_OPERAND (size, 2))
-			? last_size : merge_sizes (last_size, first_bit,
-						   TREE_OPERAND (size, 2),
-						   1, has_rep)));
+    new = fold_build3 (COND_EXPR, type, TREE_OPERAND (size, 0),
+		       integer_zerop (TREE_OPERAND (size, 1))
+		       ? last_size : merge_sizes (last_size, first_bit,
+						  TREE_OPERAND (size, 1),
+						  1, has_rep),
+		       integer_zerop (TREE_OPERAND (size, 2))
+		       ? last_size : merge_sizes (last_size, first_bit,
+						  TREE_OPERAND (size, 2),
+						  1, has_rep));
 
   /* We don't need any NON_VALUE_EXPRs and they can confuse us (especially
      when fed through substitute_in_expr) into thinking that a constant
@@ -2372,9 +2372,9 @@ max_size (tree exp, bool max_p)
 	    return max_size (TREE_OPERAND (exp, 0), max_p);
 	  else
 	    return
-	      fold (build1 (code, type,
-			    max_size (TREE_OPERAND (exp, 0),
-				      code == NEGATE_EXPR ? !max_p : max_p)));
+	      fold_build1 (code, type,
+			   max_size (TREE_OPERAND (exp, 0),
+				     code == NEGATE_EXPR ? !max_p : max_p));
 
 	case 2:
 	  if (code == COMPOUND_EXPR)
@@ -2424,16 +2424,16 @@ max_size (tree exp, bool max_p)
 		     && !TREE_CONSTANT (rhs))
 	      return lhs;
 	    else
-	      return fold (build2 (code, type, lhs, rhs));
+	      return fold_build2 (code, type, lhs, rhs);
 	  }
 
 	case 3:
 	  if (code == SAVE_EXPR)
 	    return exp;
 	  else if (code == COND_EXPR)
-	    return fold (build2 (max_p ? MAX_EXPR : MIN_EXPR, type,
-				 max_size (TREE_OPERAND (exp, 1), max_p),
-				 max_size (TREE_OPERAND (exp, 2), max_p)));
+	    return fold_build2 (max_p ? MAX_EXPR : MIN_EXPR, type,
+				max_size (TREE_OPERAND (exp, 1), max_p),
+				max_size (TREE_OPERAND (exp, 2), max_p));
 	}
 
       /* Other tree classes cannot happen.  */
@@ -3167,10 +3167,10 @@ convert (tree type, tree expr)
 
   /* If the input is a biased type, adjust first.  */
   if (ecode == INTEGER_TYPE && TYPE_BIASED_REPRESENTATION_P (etype))
-    return convert (type, fold (build2 (PLUS_EXPR, TREE_TYPE (etype),
-					fold_convert (TREE_TYPE (etype),
-						      expr),
-					TYPE_MIN_VALUE (etype))));
+    return convert (type, fold_build2 (PLUS_EXPR, TREE_TYPE (etype),
+				       fold_convert (TREE_TYPE (etype),
+						     expr),
+				       TYPE_MIN_VALUE (etype)));
 
   /* If the input is a justified modular type, we need to extract the actual
      object before converting it to any other type with the exceptions of an
@@ -3321,7 +3321,7 @@ convert (tree type, tree expr)
   switch (code)
     {
     case VOID_TYPE:
-      return build1 (CONVERT_EXPR, type, expr);
+      return fold_build1 (CONVERT_EXPR, type, expr);
 
     case BOOLEAN_TYPE:
       return fold_convert (type, gnat_truthvalue_conversion (expr));

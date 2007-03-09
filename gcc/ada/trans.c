@@ -782,8 +782,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 
       if (attribute == Attr_Max_Size_In_Storage_Elements)
 	gnu_result = convert (sizetype,
-			      fold (build2 (CEIL_DIV_EXPR, bitsizetype,
-					    gnu_result, bitsize_unit_node)));
+			      fold_build2 (CEIL_DIV_EXPR, bitsizetype,
+					   gnu_result, bitsize_unit_node));
       break;
 
     case Attr_Alignment:
@@ -1100,8 +1100,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
      example in AARM 11.6(5.e). */
   if (prefix_unused && TREE_SIDE_EFFECTS (gnu_prefix)
       && !Is_Entity_Name (Prefix (gnat_node)))
-    gnu_result = fold (build2 (COMPOUND_EXPR, TREE_TYPE (gnu_result),
-			       gnu_prefix, gnu_result));
+    gnu_result = fold_build2 (COMPOUND_EXPR, TREE_TYPE (gnu_result),
+			      gnu_prefix, gnu_result);
 
   *gnu_result_type_p = gnu_result_type;
   return gnu_result;
@@ -3079,13 +3079,13 @@ gnat_to_gnu (Node_Id gnat_node)
                expression if the slice range is not null (max >= min) or
                returns the min if the slice range is null */
             gnu_expr
-              = fold (build3 (COND_EXPR, gnu_expr_type,
-			      build_binary_op (GE_EXPR, gnu_expr_type,
-					       convert (gnu_expr_type,
-							gnu_max_expr),
-					       convert (gnu_expr_type,
-							gnu_min_expr)),
-			      gnu_expr, gnu_min_expr));
+              = fold_build3 (COND_EXPR, gnu_expr_type,
+			     build_binary_op (GE_EXPR, gnu_expr_type,
+					      convert (gnu_expr_type,
+						       gnu_max_expr),
+					      convert (gnu_expr_type,
+						       gnu_min_expr)),
+			     gnu_expr, gnu_min_expr);
           }
         else
           gnu_expr = TYPE_MIN_VALUE (TYPE_DOMAIN (gnu_result_type));
@@ -5403,10 +5403,10 @@ emit_check (tree gnu_cond, tree gnu_expr, int reason)
      in front of the comparison in case it ends up being a SAVE_EXPR.  Put the
      whole thing inside its own SAVE_EXPR so the inner SAVE_EXPR doesn't leak
      out.  */
-  gnu_result = fold (build3 (COND_EXPR, TREE_TYPE (gnu_expr), gnu_cond,
-			     build2 (COMPOUND_EXPR, TREE_TYPE (gnu_expr),
-				     gnu_call, gnu_expr),
-			     gnu_expr));
+  gnu_result = fold_build3 (COND_EXPR, TREE_TYPE (gnu_expr), gnu_cond,
+			    build2 (COMPOUND_EXPR, TREE_TYPE (gnu_expr),
+				    gnu_call, gnu_expr),
+			    gnu_expr);
 
   /* If GNU_EXPR has side effects, make the outer COMPOUND_EXPR and
      protect it.  Otherwise, show GNU_RESULT has no side effects: we

@@ -87,23 +87,27 @@ gnat_truthvalue_conversion (tree expr)
       return expr;
 
     case INTEGER_CST:
-      return (integer_zerop (expr) ? convert (type, integer_zero_node)
-	      : convert (type, integer_one_node));
+      return (integer_zerop (expr)
+	      ? build_int_cst (type, 0)
+	      : build_int_cst (type, 1));
 
     case REAL_CST:
-      return (real_zerop (expr) ? convert (type, integer_zero_node)
-	      : convert (type, integer_one_node));
+      return (real_zerop (expr)
+	      ? fold_convert (type, integer_zero_node)
+	      : fold_convert (type, integer_one_node));
 
     case COND_EXPR:
       /* Distribute the conversion into the arms of a COND_EXPR.  */
-      return fold
-	(build3 (COND_EXPR, type, TREE_OPERAND (expr, 0),
-		 gnat_truthvalue_conversion (TREE_OPERAND (expr, 1)),
-		 gnat_truthvalue_conversion (TREE_OPERAND (expr, 2))));
+      {
+	tree arg1 = gnat_truthvalue_conversion (TREE_OPERAND (expr, 1));
+	tree arg2 = gnat_truthvalue_conversion (TREE_OPERAND (expr, 2));
+	return fold_build3 (COND_EXPR, type, TREE_OPERAND (expr, 0),
+			    arg1, arg2);
+      }
 
     default:
       return build_binary_op (NE_EXPR, type, expr,
-			      convert (type, integer_zero_node));
+			      fold_convert (type, integer_zero_node));
     }
 }
 
@@ -351,8 +355,8 @@ compare_arrays (tree result_type, tree a1, tree a2)
       tree lb2 = TYPE_MIN_VALUE (TYPE_DOMAIN (t2));
       tree ub2 = TYPE_MAX_VALUE (TYPE_DOMAIN (t2));
       tree bt = get_base_type (TREE_TYPE (lb1));
-      tree length1 = fold (build2 (MINUS_EXPR, bt, ub1, lb1));
-      tree length2 = fold (build2 (MINUS_EXPR, bt, ub2, lb2));
+      tree length1 = fold_build2 (MINUS_EXPR, bt, ub1, lb1);
+      tree length2 = fold_build2 (MINUS_EXPR, bt, ub2, lb2);
       tree nbt;
       tree tem;
       tree comparison, this_a1_is_null, this_a2_is_null;
@@ -361,8 +365,8 @@ compare_arrays (tree result_type, tree a1, tree a2)
 	 unless the length of the second array is the constant zero.
 	 Note that we have set the `length' values to the length - 1.  */
       if (TREE_CODE (length1) == INTEGER_CST
-	  && !integer_zerop (fold (build2 (PLUS_EXPR, bt, length2,
-					   convert (bt, integer_one_node)))))
+	  && !integer_zerop (fold_build2 (PLUS_EXPR, bt, length2,
+					  convert (bt, integer_one_node))))
 	{
 	  tem = a1, a1 = a2, a2 = tem;
 	  tem = t1, t1 = t2, t2 = tem;
@@ -375,8 +379,8 @@ compare_arrays (tree result_type, tree a1, tree a2)
       /* If the length of this dimension in the second array is the constant
 	 zero, we can just go inside the original bounds for the first
 	 array and see if last < first.  */
-      if (integer_zerop (fold (build2 (PLUS_EXPR, bt, length2,
-				       convert (bt, integer_one_node)))))
+      if (integer_zerop (fold_build2 (PLUS_EXPR, bt, length2,
+				      convert (bt, integer_one_node))))
 	{
 	  tree ub = TYPE_MAX_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1)));
 	  tree lb = TYPE_MIN_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (t1)));
@@ -455,7 +459,7 @@ compare_arrays (tree result_type, tree a1, tree a2)
 	a1 = convert (type, a1), a2 = convert (type, a2);
 
       result = build_binary_op (TRUTH_ANDIF_EXPR, result_type, result,
-				fold (build2 (EQ_EXPR, result_type, a1, a2)));
+				fold_build2 (EQ_EXPR, result_type, a1, a2));
 
     }
 
@@ -496,7 +500,10 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
   /* If this is an addition of a constant, convert it to a subtraction
      of a constant since we can do that faster.  */
   if (op_code == PLUS_EXPR && TREE_CODE (rhs) == INTEGER_CST)
-    rhs = fold (build2 (MINUS_EXPR, type, modulus, rhs)), op_code = MINUS_EXPR;
+    {
+      rhs = fold_build2 (MINUS_EXPR, type, modulus, rhs);
+      op_code = MINUS_EXPR;
+    }
 
   /* For the logical operations, we only need PRECISION bits.  For
      addition and subtraction, we need one more and for multiplication we
@@ -528,7 +535,7 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
     }
 
   /* Do the operation, then we'll fix it up.  */
-  result = fold (build2 (op_code, op_type, lhs, rhs));
+  result = fold_build2 (op_code, op_type, lhs, rhs);
 
   /* For multiplication, we have no choice but to do a full modulus
      operation.  However, we want to do this in the narrowest
@@ -540,32 +547,31 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
       SET_TYPE_MODULUS (div_type, modulus);
       TYPE_MODULAR_P (div_type) = 1;
       result = convert (op_type,
-			fold (build2 (TRUNC_MOD_EXPR, div_type,
-				      convert (div_type, result), modulus)));
+			fold_build2 (TRUNC_MOD_EXPR, div_type,
+				     convert (div_type, result), modulus));
     }
 
   /* For subtraction, add the modulus back if we are negative.  */
   else if (op_code == MINUS_EXPR)
     {
       result = save_expr (result);
-      result = fold (build3 (COND_EXPR, op_type,
-			     build2 (LT_EXPR, integer_type_node, result,
-				     convert (op_type, integer_zero_node)),
-			     fold (build2 (PLUS_EXPR, op_type,
-					   result, modulus)),
-			     result));
+      result = fold_build3 (COND_EXPR, op_type,
+			    fold_build2 (LT_EXPR, integer_type_node, result,
+					 convert (op_type, integer_zero_node)),
+			    fold_build2 (PLUS_EXPR, op_type, result, modulus),
+			    result);
     }
 
   /* For the other operations, subtract the modulus if we are >= it.  */
   else
     {
       result = save_expr (result);
-      result = fold (build3 (COND_EXPR, op_type,
-			     build2 (GE_EXPR, integer_type_node,
-				     result, modulus),
-			     fold (build2 (MINUS_EXPR, op_type,
-					   result, modulus)),
-			     result));
+      result = fold_build3 (COND_EXPR, op_type,
+			    fold_build2 (GE_EXPR, integer_type_node,
+					 result, modulus),
+			    fold_build2 (MINUS_EXPR, op_type,
+					 result, modulus),
+			    result);
     }
 
   return convert (type, result);
@@ -955,11 +961,11 @@ build_binary_op (enum tree_code op_code, tree result_type,
   else if (TREE_CODE (right_operand) == NULL_EXPR)
     return build1 (NULL_EXPR, operation_type, TREE_OPERAND (right_operand, 0));
   else if (op_code == ARRAY_REF || op_code == ARRAY_RANGE_REF)
-    result = fold (build4 (op_code, operation_type, left_operand,
-			   right_operand, NULL_TREE, NULL_TREE));
+    result = build4 (op_code, operation_type, left_operand,
+		     right_operand, NULL_TREE, NULL_TREE);
   else
     result
-      = fold (build2 (op_code, operation_type, left_operand, right_operand));
+      = fold_build2 (op_code, operation_type, left_operand, right_operand);
 
   TREE_SIDE_EFFECTS (result) |= has_side_effects;
   TREE_CONSTANT (result)
@@ -973,8 +979,8 @@ build_binary_op (enum tree_code op_code, tree result_type,
   /* If we are working with modular types, perform the MOD operation
      if something above hasn't eliminated the need for it.  */
   if (modulus)
-    result = fold (build2 (FLOOR_MOD_EXPR, operation_type, result,
-			   convert (operation_type, modulus)));
+    result = fold_build2 (FLOOR_MOD_EXPR, operation_type, result,
+			  convert (operation_type, modulus));
 
   if (result_type && result_type != operation_type)
     result = convert (result_type, result);
@@ -1012,7 +1018,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
       else
 	gcc_assert (result_type == TREE_TYPE (type));
 
-      result = fold (build1 (op_code, operation_type, operand));
+      result = fold_build1 (op_code, operation_type, operand);
       break;
 
     case TRUTH_NOT_EXPR:
@@ -1160,7 +1166,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	    operation_type = build_pointer_type (type);
 
 	  gnat_mark_addressable (operand);
-	  result = fold (build1 (ADDR_EXPR, operation_type, operand));
+	  result = fold_build1 (ADDR_EXPR, operation_type, operand);
 	}
 
       TREE_CONSTANT (result) = staticp (operand) || TREE_CONSTANT (operand);
@@ -1192,7 +1198,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 
       else
 	{
-	  result = fold (build1 (op_code, TREE_TYPE (type), operand));
+	  result = fold_build1 (op_code, TREE_TYPE (type), operand);
 	  TREE_READONLY (result) = TYPE_READONLY (TREE_TYPE (type));
 	}
 
@@ -1222,10 +1228,10 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	       the straightforward code; the TRUNC_MOD_EXPR below
 	       is an AND operation.  */
 	    if (op_code == NEGATE_EXPR && mod_pow2)
-	      result = fold (build2 (TRUNC_MOD_EXPR, operation_type,
-				     fold (build1 (NEGATE_EXPR, operation_type,
-						   operand)),
-				     modulus));
+	      result = fold_build2 (TRUNC_MOD_EXPR, operation_type,
+				    fold_build1 (NEGATE_EXPR, operation_type,
+						 operand),
+				    modulus);
 
 	    /* For nonbinary negate case, return zero for zero operand,
 	       else return the modulus minus the operand.  If the modulus
@@ -1233,24 +1239,24 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	       as an XOR since it is equivalent and faster on most machines. */
 	    else if (op_code == NEGATE_EXPR && !mod_pow2)
 	      {
-		if (integer_pow2p (fold (build2 (PLUS_EXPR, operation_type,
-						 modulus,
-						 convert (operation_type,
-							  integer_one_node)))))
-		  result = fold (build2 (BIT_XOR_EXPR, operation_type,
-					 operand, modulus));
+		if (integer_pow2p (fold_build2 (PLUS_EXPR, operation_type,
+						modulus,
+						convert (operation_type,
+							 integer_one_node))))
+		  result = fold_build2 (BIT_XOR_EXPR, operation_type,
+					operand, modulus);
 		else
-		  result = fold (build2 (MINUS_EXPR, operation_type,
-					modulus, operand));
+		  result = fold_build2 (MINUS_EXPR, operation_type,
+					modulus, operand);
 
-		result = fold (build3 (COND_EXPR, operation_type,
-				       fold (build2 (NE_EXPR,
-						     integer_type_node,
-						     operand,
-						     convert
+		result = fold_build3 (COND_EXPR, operation_type,
+				      fold_build2 (NE_EXPR,
+						   integer_type_node,
+						   operand,
+						   convert
 						     (operation_type,
-						      integer_zero_node))),
-				       result, operand));
+						      integer_zero_node)),
+				      result, operand);
 	      }
 	    else
 	      {
@@ -1259,16 +1265,16 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 		   XOR against the constant and subtract the operand from
 		   that constant for nonbinary modulus.  */
 
-		tree cnst = fold (build2 (MINUS_EXPR, operation_type, modulus,
-					  convert (operation_type,
-						   integer_one_node)));
+		tree cnst = fold_build2 (MINUS_EXPR, operation_type, modulus,
+					 convert (operation_type,
+						  integer_one_node));
 
 		if (mod_pow2)
-		  result = fold (build2 (BIT_XOR_EXPR, operation_type,
-					 operand, cnst));
+		  result = fold_build2 (BIT_XOR_EXPR, operation_type,
+					operand, cnst);
 		else
-		  result = fold (build2 (MINUS_EXPR, operation_type,
-					 cnst, operand));
+		  result = fold_build2 (MINUS_EXPR, operation_type,
+					cnst, operand);
 	      }
 
 	    break;
@@ -1279,8 +1285,8 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 
     default:
       gcc_assert (operation_type == base_type);
-      result = fold (build1 (op_code, operation_type, convert (operation_type,
-							       operand)));
+      result = fold_build1 (op_code, operation_type,
+			    convert (operation_type, operand));
     }
 
   if (side_effects)
@@ -1322,8 +1328,8 @@ build_cond_expr (tree result_type, tree condition_operand,
       false_operand = build_unary_op (ADDR_EXPR, result_type, false_operand);
     }
 
-  result = fold (build3 (COND_EXPR, result_type, condition_operand,
-			 true_operand, false_operand));
+  result = fold_build3 (COND_EXPR, result_type, condition_operand,
+			true_operand, false_operand);
 
   /* If either operand is a SAVE_EXPR (possibly surrounded by
      arithmetic, make sure it gets done.  */

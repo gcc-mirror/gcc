@@ -1,3 +1,19 @@
+2007-03-09  Roger Sayle  <roger@eyesopen.com>
+
+	* cuintp.c (UI_To_gnu): Use fold_buildN calls instead of calling
+	fold with the result of buildN.
+	* decl.c (gnat_to_gnu_entity): Likewise.
+	* trans.c (Attribute_to_gnu, gnat_to_gnu, emit_check): Likewise.
+	* utils.c (finish_record_type, merge_sizes, max_size, convert):
+	Likewise.
+	* utils2.c (gnat_truthvalue_conversion, compare_arrays,
+	nonbinary_modular_operation, build_binary_op, build_unary_op,
+	build_cond_expr): Likewise.
+
+	* utils.c (convert): Use fold_build1 when casting values to void.
+	* utils2.c (gnat_truthvalue_conversion): Use build_int_cst and
+	fold_convert instead of convert when appropriate.
+
 2007-03-01  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* Make-lang.in: Add install-pdf target as copied from
