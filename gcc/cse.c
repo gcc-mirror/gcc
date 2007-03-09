@@ -6016,8 +6016,11 @@ cse_insn (rtx insn, rtx libcall_insn)
 		{
 		  if (insert_regs (x, NULL, 0))
 		    {
+		      rtx dest = SET_DEST (sets[i].rtl);
+
 		      rehash_using_reg (x);
 		      hash = HASH (x, mode);
+		      sets[i].dest_hash = HASH (dest, GET_MODE (dest));
 		    }
 		  elt = insert (x, NULL, hash, mode);
 		}
