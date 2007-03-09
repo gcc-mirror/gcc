@@ -1,3 +1,13 @@
+2007-03-09  Chao-ying Fu  <fu@mips.com>
+
+	* gcc.target/mips/mips32-dspr2-type.c: New test.
+	* gcc.target/mips/mips32-dspr2.c: New test.
+	* gcc.target/mips/dspr2-MULT.c: New test.
+	* gcc.target/mips/dspr2-MULTU.c: New test.
+	* gcc.target/mips/mips32-dsp-run.c: New test to check execution.
+	* gcc.target/mips/mips32-dsp.c: Change v4i8 typedef to use signed char.
+	Adjust some formats.
+
 2007-03-09  Dirk Mueller  <dmueller@suse.de>
 
 	PR c++/17946
