@@ -1,3 +1,8 @@
+2007-03-08  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR C/31072
+	* gcc.c-torture/execute/pr31072.c: New test.
+
 2007-03-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/builtins-55.c: Test *lceil* and *lfloor*.

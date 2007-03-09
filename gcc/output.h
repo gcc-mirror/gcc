@@ -167,10 +167,6 @@ extern void weak_finish (void);
    Prefixes such as % are optional.  */
 extern int decode_reg_name (const char *);
 
-/* Make the rtl for variable VAR be volatile.
-   Use this only for static variables.  */
-extern void make_var_volatile (tree);
-
 extern void assemble_alias (tree, tree);
 
 extern void default_assemble_visibility (tree, int);

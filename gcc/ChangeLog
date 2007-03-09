@@ -1,3 +1,10 @@
+2007-03-08  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR C/31072
+	* c-decl.c (merge_decls): Don't call make_var_volatile.
+	* varasm.c (make_var_volatile): Remove.
+	* output.h (make_var_volatile): Remove.
+
 2007-03-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.def (lceil, lceilf, lceill, lfloor, lfloorf, lfloorl,
