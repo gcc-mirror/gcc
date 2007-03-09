@@ -1,5 +1,5 @@
 /* Data references and dependences detectors.
-   Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -125,10 +125,6 @@ static struct datadep_stats
 static tree object_analysis (tree, tree, bool, struct data_reference **, 
 			     tree *, tree *, tree *, tree *, tree *,
 			     struct ptr_info_def **, subvar_t *);
-static struct data_reference * init_data_ref (tree, tree, tree, tree, bool, 
-					      tree, tree, tree, tree, tree, 
-					      struct ptr_info_def *,
-					      enum  data_ref_type);
 static bool subscript_dependence_tester_1 (struct data_dependence_relation *,
 					   struct data_reference *,
 					   struct data_reference *);
@@ -832,6 +828,7 @@ dump_data_dependence_relation (FILE *outf,
 	  dump_subscript (outf, DDR_SUBSCRIPT (ddr, i));
 	}
 
+      fprintf (outf, "  inner loop index: %d\n", DDR_INNER_LOOP (ddr));
       fprintf (outf, "  loop nest: (");
       for (i = 0; VEC_iterate (loop_p, DDR_LOOP_NEST (ddr), i, loopi); i++)
 	fprintf (outf, "%d ", loopi->num);
@@ -985,27 +982,24 @@ analyze_array_indexes (struct loop *loop,
    set to true when REF is in the right hand side of an
    assignment.  */
 
-struct data_reference *
-analyze_array (tree stmt, tree ref, bool is_read)
+static struct data_reference *
+init_array_ref (tree stmt, tree ref, bool is_read)
 {
-  struct data_reference *res;
-  VEC(tree,heap) *acc_fns;
+  struct loop *loop = loop_containing_stmt (stmt);
+  VEC(tree,heap) *acc_fns = VEC_alloc (tree, heap, 3);
+  struct data_reference *res = XNEW (struct data_reference);;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "(analyze_array \n");
+      fprintf (dump_file, "(init_array_ref \n");
       fprintf (dump_file, "  (ref = ");
       print_generic_stmt (dump_file, ref, 0);
       fprintf (dump_file, ")\n");
     }
 
-  res = XNEW (struct data_reference);
-
   DR_STMT (res) = stmt;
   DR_REF (res) = ref;
-  acc_fns = VEC_alloc (tree, heap, 3);
-  DR_BASE_OBJECT (res) = analyze_array_indexes
-    (loop_containing_stmt (stmt), &acc_fns, ref, stmt);
+  DR_BASE_OBJECT (res) = analyze_array_indexes (loop, &acc_fns, ref, stmt);
   DR_TYPE (res) = ARRAY_REF_TYPE;
   DR_SET_ACCESS_FNS (res, acc_fns);
   DR_IS_READ (res) = is_read;
@@ -1016,6 +1010,45 @@ analyze_array (tree stmt, tree ref, bool is_read)
   DR_OFFSET_MISALIGNMENT (res) = NULL_TREE;
   DR_MEMTAG (res) = NULL_TREE;
   DR_PTR_INFO (res) = NULL;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, ")\n");
+
+  return res;
+}
+
+/* For a data reference REF contained in the statement STMT, initialize
+   a DATA_REFERENCE structure, and return it.  */
+
+static struct data_reference *
+init_pointer_ref (tree stmt, tree ref, tree access_fn, bool is_read,
+		  tree base_address, tree step, struct ptr_info_def *ptr_info)
+{
+  struct data_reference *res = XNEW (struct data_reference);
+  VEC(tree,heap) *acc_fns = VEC_alloc (tree, heap, 3);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "(init_pointer_ref \n");
+      fprintf (dump_file, "  (ref = ");
+      print_generic_stmt (dump_file, ref, 0);
+      fprintf (dump_file, ")\n");
+    }
+
+  DR_STMT (res) = stmt;
+  DR_REF (res) = ref;
+  DR_BASE_OBJECT (res) = NULL_TREE;
+  DR_TYPE (res) = POINTER_REF_TYPE;
+  DR_SET_ACCESS_FNS (res, acc_fns);
+  VEC_quick_push (tree, DR_ACCESS_FNS (res), access_fn);
+  DR_IS_READ (res) = is_read;
+  DR_BASE_ADDRESS (res) = base_address;
+  DR_OFFSET (res) = NULL_TREE;
+  DR_INIT (res) = NULL_TREE;
+  DR_STEP (res) = step;
+  DR_OFFSET_MISALIGNMENT (res) = NULL_TREE;
+  DR_MEMTAG (res) = NULL_TREE;
+  DR_PTR_INFO (res) = ptr_info;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, ")\n");
@@ -1063,7 +1096,7 @@ analyze_indirect_ref (tree stmt, tree ref, bool is_read)
 
   if (!expr_invariant_in_loop_p (loop, init))
     {
-    if (dump_file && (dump_flags & TDF_DETAILS))
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "\ninitial condition is not loop invariant.\n");	
     }
   else
@@ -1087,61 +1120,8 @@ analyze_indirect_ref (tree stmt, tree ref, bool is_read)
 	if (dump_file && (dump_flags & TDF_DETAILS))
 	  fprintf (dump_file, "\nunknown evolution of ptr.\n");	
     }
-  return init_data_ref (stmt, ref, NULL_TREE, access_fn, is_read, base_address, 
-			NULL_TREE, step, NULL_TREE, NULL_TREE, 
-			ptr_info, POINTER_REF_TYPE);
-}
-
-/* For a data reference REF contained in the statement STMT, initialize
-   a DATA_REFERENCE structure, and return it.  */
-
-struct data_reference *
-init_data_ref (tree stmt, 
-	       tree ref,
-	       tree base,
-	       tree access_fn,
-	       bool is_read,
-	       tree base_address,
-	       tree init_offset,
-	       tree step,
-	       tree misalign,
-	       tree memtag,
-               struct ptr_info_def *ptr_info,
-	       enum data_ref_type type)
-{
-  struct data_reference *res;
-  VEC(tree,heap) *acc_fns;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "(init_data_ref \n");
-      fprintf (dump_file, "  (ref = ");
-      print_generic_stmt (dump_file, ref, 0);
-      fprintf (dump_file, ")\n");
-    }
-
-  res = XNEW (struct data_reference);
-
-  DR_STMT (res) = stmt;
-  DR_REF (res) = ref;
-  DR_BASE_OBJECT (res) = base;
-  DR_TYPE (res) = type;
-  acc_fns = VEC_alloc (tree, heap, 3);
-  DR_SET_ACCESS_FNS (res, acc_fns);
-  VEC_quick_push (tree, DR_ACCESS_FNS (res), access_fn);
-  DR_IS_READ (res) = is_read;
-  DR_BASE_ADDRESS (res) = base_address;
-  DR_OFFSET (res) = init_offset;
-  DR_INIT (res) = NULL_TREE;
-  DR_STEP (res) = step;
-  DR_OFFSET_MISALIGNMENT (res) = misalign;
-  DR_MEMTAG (res) = memtag;
-  DR_PTR_INFO (res) = ptr_info;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, ")\n");
-
-  return res;
+  return init_pointer_ref (stmt, ref, access_fn, is_read, base_address, 
+			   step, ptr_info);
 }
 
 /* Function strip_conversions
@@ -1598,7 +1578,7 @@ object_analysis (tree memref, tree stmt, bool is_read,
       if (!(*dr))
 	{ 
 	  if (TREE_CODE (memref) == ARRAY_REF)
-	    *dr = analyze_array (stmt, memref, is_read);	  
+	    *dr = init_array_ref (stmt, memref, is_read);	  
 	  else if (TREE_CODE (memref) == COMPONENT_REF)
 	    comp_ref = memref;
 	  else  
@@ -1671,7 +1651,7 @@ object_analysis (tree memref, tree stmt, bool is_read,
 	{
 	  if (comp_ref && TREE_CODE (TREE_OPERAND (comp_ref, 0)) == ARRAY_REF)
 	    {
-	      *dr = analyze_array (stmt, TREE_OPERAND (comp_ref, 0), is_read);	      	      
+	      *dr = init_array_ref (stmt, TREE_OPERAND (comp_ref, 0), is_read);	      	      
 	      if (DR_NUM_DIMENSIONS (*dr) != 1)
 		{
 		  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2302,6 +2282,7 @@ initialize_data_dependence_relation (struct data_reference *a,
   DDR_ARE_DEPENDENT (res) = NULL_TREE;
   DDR_SUBSCRIPTS (res) = VEC_alloc (subscript_p, heap, DR_NUM_DIMENSIONS (a));
   DDR_LOOP_NEST (res) = loop_nest;
+  DDR_INNER_LOOP (res) = 0;
   DDR_DIR_VECTS (res) = NULL;
   DDR_DIST_VECTS (res) = NULL;
 
@@ -4176,15 +4157,539 @@ static bool
 access_functions_are_affine_or_constant_p (struct data_reference *a)
 {
   unsigned int i;
-  VEC(tree,heap) **fns = DR_ACCESS_FNS_ADDR (a);
+  VEC(tree,heap) *fns = DR_ACCESS_FNS (a);
   tree t;
-  
-  for (i = 0; VEC_iterate (tree, *fns, i, t); i++)
+
+  for (i = 0; VEC_iterate (tree, fns, i, t); i++)
     if (!evolution_function_is_constant_p (t)
 	&& !evolution_function_is_affine_multivariate_p (t))
       return false;
   
   return true;
+}
+
+/* Initializes an equation for an OMEGA problem using the information
+   contained in the ACCESS_FUN.  Returns true when the operation
+   succeeded.
+
+   PB is the omega constraint system.
+   EQ is the number of the equation to be initialized.
+   OFFSET is used for shifting the variables names in the constraints:
+   a constrain is composed of 2 * the number of variables surrounding
+   dependence accesses.  OFFSET is set either to 0 for the first n variables,
+   then it is set to n.
+   ACCESS_FUN is expected to be an affine chrec.  */
+
+static bool
+init_omega_eq_with_af (omega_pb pb, unsigned eq, 
+		       unsigned int offset, tree access_fun, 
+		       struct data_dependence_relation *ddr)
+{
+  switch (TREE_CODE (access_fun))
+    {
+    case POLYNOMIAL_CHREC:
+      {
+	tree left = CHREC_LEFT (access_fun);
+	tree right = CHREC_RIGHT (access_fun);
+	int var = CHREC_VARIABLE (access_fun);
+	unsigned var_idx;
+
+	if (TREE_CODE (right) != INTEGER_CST)
+	  return false;
+
+	var_idx = index_in_loop_nest (var, DDR_LOOP_NEST (ddr));
+	pb->eqs[eq].coef[offset + var_idx + 1] = int_cst_value (right);
+
+	/* Compute the innermost loop index.  */
+	DDR_INNER_LOOP (ddr) = MAX (DDR_INNER_LOOP (ddr), var_idx);
+
+	if (offset == 0)
+	  pb->eqs[eq].coef[var_idx + DDR_NB_LOOPS (ddr) + 1] 
+	    += int_cst_value (right);
+
+	switch (TREE_CODE (left))
+	  {
+	  case POLYNOMIAL_CHREC:
+	    return init_omega_eq_with_af (pb, eq, offset, left, ddr);
+
+	  case INTEGER_CST:
+	    pb->eqs[eq].coef[0] += int_cst_value (left);
+	    return true;
+
+	  default:
+	    return false;
+	  }
+      }
+
+    case INTEGER_CST:
+      pb->eqs[eq].coef[0] += int_cst_value (access_fun);
+      return true;
+
+    default:
+      return false;
+    }
+}
+
+/* As explained in the comments preceding init_omega_for_ddr, we have
+   to set up a system for each loop level, setting outer loops
+   variation to zero, and current loop variation to positive or zero.
+   Save each lexico positive distance vector.  */
+
+static void
+omega_extract_distance_vectors (omega_pb pb,
+				struct data_dependence_relation *ddr)
+{
+  int eq, geq;
+  unsigned i, j;
+  struct loop *loopi, *loopj;
+  enum omega_result res;
+
+  /* Set a new problem for each loop in the nest.  The basis is the
+     problem that we have initialized until now.  On top of this we
+     add new constraints.  */
+  for (i = 0; i <= DDR_INNER_LOOP (ddr) 
+	 && VEC_iterate (loop_p, DDR_LOOP_NEST (ddr), i, loopi); i++)
+    {
+      int dist = 0;
+      omega_pb copy = omega_alloc_problem (2 * DDR_NB_LOOPS (ddr),
+					   DDR_NB_LOOPS (ddr));
+
+      omega_copy_problem (copy, pb);
+
+      /* For all the outer loops "loop_j", add "dj = 0".  */
+      for (j = 0;
+	   j < i && VEC_iterate (loop_p, DDR_LOOP_NEST (ddr), j, loopj); j++)
+	{
+	  eq = omega_add_zero_eq (copy, omega_black);
+	  copy->eqs[eq].coef[j + 1] = 1;
+	}
+
+      /* For "loop_i", add "0 <= di".  */
+      geq = omega_add_zero_geq (copy, omega_black);
+      copy->geqs[geq].coef[i + 1] = 1;
+
+      /* Reduce the constraint system, and test that the current
+	 problem is feasible.  */
+      res = omega_simplify_problem (copy);
+      if (res == omega_false 
+	  || res == omega_unknown
+	  || copy->num_geqs > (int) DDR_NB_LOOPS (ddr))
+	goto next_problem;
+
+      for (eq = 0; eq < copy->num_subs; eq++)
+	if (copy->subs[eq].key == (int) i + 1)
+	  {
+	    dist = copy->subs[eq].coef[0];
+	    goto found_dist;
+	  }
+
+      if (dist == 0)
+	{
+	  /* Reinitialize problem...  */
+	  omega_copy_problem (copy, pb);
+	  for (j = 0;
+	       j < i && VEC_iterate (loop_p, DDR_LOOP_NEST (ddr), j, loopj); j++)
+	    {
+	      eq = omega_add_zero_eq (copy, omega_black);
+	      copy->eqs[eq].coef[j + 1] = 1;
+	    }
+
+	  /* ..., but this time "di = 1".  */
+	  eq = omega_add_zero_eq (copy, omega_black);
+	  copy->eqs[eq].coef[i + 1] = 1;
+	  copy->eqs[eq].coef[0] = -1;
+
+	  res = omega_simplify_problem (copy);
+	  if (res == omega_false 
+	      || res == omega_unknown
+	      || copy->num_geqs > (int) DDR_NB_LOOPS (ddr))
+	    goto next_problem;
+
+	  for (eq = 0; eq < copy->num_subs; eq++)
+	    if (copy->subs[eq].key == (int) i + 1)
+	      {
+		dist = copy->subs[eq].coef[0];
+		goto found_dist;
+	      }
+	}
+
+    found_dist:;
+      /* Save the lexicographically positive distance vector.  */
+      if (dist >= 0)
+	{
+	  lambda_vector dist_v = lambda_vector_new (DDR_NB_LOOPS (ddr));
+	  lambda_vector dir_v = lambda_vector_new (DDR_NB_LOOPS (ddr));
+
+	  dist_v[i] = dist;
+
+	  for (eq = 0; eq < copy->num_subs; eq++)
+	    if (copy->subs[eq].key > 0)
+	      {
+		dist = copy->subs[eq].coef[0];
+		dist_v[copy->subs[eq].key - 1] = dist;
+	      }
+
+	  for (j = 0; j < DDR_NB_LOOPS (ddr); j++)
+	    dir_v[j] = dir_from_dist (dist_v[j]);
+
+	  save_dist_v (ddr, dist_v);
+	  save_dir_v (ddr, dir_v);
+	}
+
+    next_problem:;
+      omega_free_problem (copy);
+    }
+}
+
+/* This is called for each subscript of a tuple of data references:
+   insert an equality for representing the conflicts.  */
+
+static bool
+omega_setup_subscript (tree access_fun_a, tree access_fun_b,
+		       struct data_dependence_relation *ddr,
+		       omega_pb pb, bool *maybe_dependent)
+{
+  int eq;
+  tree fun_a = chrec_convert (integer_type_node, access_fun_a, NULL_TREE);
+  tree fun_b = chrec_convert (integer_type_node, access_fun_b, NULL_TREE);
+  tree difference = chrec_fold_minus (integer_type_node, fun_a, fun_b);
+
+  /* When the fun_a - fun_b is not constant, the dependence is not
+     captured by the classic distance vector representation.  */
+  if (TREE_CODE (difference) != INTEGER_CST)
+    return false;
+
+  /* ZIV test.  */
+  if (ziv_subscript_p (fun_a, fun_b) && !integer_zerop (difference))
+    {
+      /* There is no dependence.  */
+      *maybe_dependent = false;
+      return true;
+    }
+
+  fun_b = chrec_fold_multiply (integer_type_node, fun_b, 
+			       integer_minus_one_node);
+
+  eq = omega_add_zero_eq (pb, omega_black);
+  if (!init_omega_eq_with_af (pb, eq, DDR_NB_LOOPS (ddr), fun_a, ddr)
+      || !init_omega_eq_with_af (pb, eq, 0, fun_b, ddr))
+    /* There is probably a dependence, but the system of
+       constraints cannot be built: answer "don't know".  */
+    return false;
+
+  /* GCD test.  */
+  if (DDR_NB_LOOPS (ddr) != 0 && pb->eqs[eq].coef[0]
+      && !int_divides_p (lambda_vector_gcd 
+			 ((lambda_vector) &(pb->eqs[eq].coef[1]),
+			  2 * DDR_NB_LOOPS (ddr)),
+			 pb->eqs[eq].coef[0]))
+    {
+      /* There is no dependence.  */
+      *maybe_dependent = false;
+      return true;
+    }
+
+  return true;
+}
+
+/* Helper function, same as init_omega_for_ddr but specialized for
+   data references A and B.  */
+
+static bool
+init_omega_for_ddr_1 (struct data_reference *dra, struct data_reference *drb,
+		      struct data_dependence_relation *ddr,
+		      omega_pb pb, bool *maybe_dependent)
+{
+  unsigned i;
+  int ineq;
+  struct loop *loopi;
+  unsigned nb_loops = DDR_NB_LOOPS (ddr);
+
+  /* Insert an equality per subscript.  */
+  for (i = 0; i < DDR_NUM_SUBSCRIPTS (ddr); i++)
+    {
+      if (!omega_setup_subscript (DR_ACCESS_FN (dra, i), DR_ACCESS_FN (drb, i),
+				  ddr, pb, maybe_dependent))
+	return false;
+      else if (*maybe_dependent == false)
+	{
+	  /* There is no dependence.  */
+	  DDR_ARE_DEPENDENT (ddr) = chrec_known;
+	  return true;
+	}
+    }
+
+  /* Insert inequalities: constraints corresponding to the iteration
+     domain, i.e. the loops surrounding the references "loop_x" and
+     the distance variables "dx".  The layout of the OMEGA
+     representation is as follows:
+     - coef[0] is the constant
+     - coef[1..nb_loops] are the protected variables that will not be
+     removed by the solver: the "dx"
+     - coef[nb_loops + 1, 2*nb_loops] are the loop variables: "loop_x".
+  */
+  for (i = 0; i <= DDR_INNER_LOOP (ddr) 
+	 && VEC_iterate (loop_p, DDR_LOOP_NEST (ddr), i, loopi); i++)
+    {
+      HOST_WIDE_INT nbi = estimated_loop_iterations_int (loopi, true);
+
+      /* 0 <= loop_x */
+      ineq = omega_add_zero_geq (pb, omega_black);
+      pb->geqs[ineq].coef[i + nb_loops + 1] = 1;
+
+      /* 0 <= loop_x + dx */
+      ineq = omega_add_zero_geq (pb, omega_black);
+      pb->geqs[ineq].coef[i + nb_loops + 1] = 1;
+      pb->geqs[ineq].coef[i + 1] = 1;
+
+      if (nbi != -1)
+	{
+	  /* loop_x <= nb_iters */
+	  ineq = omega_add_zero_geq (pb, omega_black);
+	  pb->geqs[ineq].coef[i + nb_loops + 1] = -1;
+	  pb->geqs[ineq].coef[0] = nbi;
+
+	  /* loop_x + dx <= nb_iters */
+	  ineq = omega_add_zero_geq (pb, omega_black);
+	  pb->geqs[ineq].coef[i + nb_loops + 1] = -1;
+	  pb->geqs[ineq].coef[i + 1] = -1;
+	  pb->geqs[ineq].coef[0] = nbi;
+
+	  /* A step "dx" bigger than nb_iters is not feasible, so
+	     add "0 <= nb_iters + dx",  */
+	  ineq = omega_add_zero_geq (pb, omega_black);
+	  pb->geqs[ineq].coef[i + 1] = 1;
+	  pb->geqs[ineq].coef[0] = nbi;
+	  /* and "dx <= nb_iters".  */
+	  ineq = omega_add_zero_geq (pb, omega_black);
+	  pb->geqs[ineq].coef[i + 1] = -1;
+	  pb->geqs[ineq].coef[0] = nbi;
+	}
+    }
+
+  omega_extract_distance_vectors (pb, ddr);
+
+  return true;
+}
+
+/* Sets up the Omega dependence problem for the data dependence
+   relation DDR.  Returns false when the constraint system cannot be
+   built, ie. when the test answers "don't know".  Returns true
+   otherwise, and when independence has been proved (using one of the
+   trivial dependence test), set MAYBE_DEPENDENT to false, otherwise
+   set MAYBE_DEPENDENT to true.
+
+   Example: for setting up the dependence system corresponding to the
+   conflicting accesses 
+
+   | loop_i
+   |   loop_j
+   |     A[i, i+1] = ...
+   |     ... A[2*j, 2*(i + j)]
+   |   endloop_j
+   | endloop_i
+   
+   the following constraints come from the iteration domain:
+
+   0 <= i <= Ni
+   0 <= i + di <= Ni
+   0 <= j <= Nj
+   0 <= j + dj <= Nj
+
+   where di, dj are the distance variables.  The constraints
+   representing the conflicting elements are:
+
+   i = 2 * (j + dj)
+   i + 1 = 2 * (i + di + j + dj)
+
+   For asking that the resulting distance vector (di, dj) be
+   lexicographically positive, we insert the constraint "di >= 0".  If
+   "di = 0" in the solution, we fix that component to zero, and we
+   look at the inner loops: we set a new problem where all the outer
+   loop distances are zero, and fix this inner component to be
+   positive.  When one of the components is positive, we save that
+   distance, and set a new problem where the distance on this loop is
+   zero, searching for other distances in the inner loops.  Here is
+   the classic example that illustrates that we have to set for each
+   inner loop a new problem:
+
+   | loop_1
+   |   loop_2
+   |     A[10]
+   |   endloop_2
+   | endloop_1
+
+   we have to save two distances (1, 0) and (0, 1).
+
+   Given two array references, refA and refB, we have to set the
+   dependence problem twice, refA vs. refB and refB vs. refA, and we
+   cannot do a single test, as refB might occur before refA in the
+   inner loops, and the contrary when considering outer loops: ex.
+
+   | loop_0
+   |   loop_1
+   |     loop_2
+   |       T[{1,+,1}_2][{1,+,1}_1]  // refA
+   |       T[{2,+,1}_2][{0,+,1}_1]  // refB
+   |     endloop_2
+   |   endloop_1
+   | endloop_0
+
+   refB touches the elements in T before refA, and thus for the same
+   loop_0 refB precedes refA: ie. the distance vector (0, 1, -1)
+   but for successive loop_0 iterations, we have (1, -1, 1)
+
+   The Omega solver expects the distance variables ("di" in the
+   previous example) to come first in the constraint system (as
+   variables to be protected, or "safe" variables), the constraint
+   system is built using the following layout:
+
+   "cst | distance vars | index vars".
+*/
+
+static bool
+init_omega_for_ddr (struct data_dependence_relation *ddr,
+		    bool *maybe_dependent)
+{
+  omega_pb pb;
+  bool res = false;
+
+  *maybe_dependent = true;
+
+  if (same_access_functions (ddr))
+    {
+      unsigned j;
+      lambda_vector dir_v;
+
+      /* Save the 0 vector.  */
+      save_dist_v (ddr, lambda_vector_new (DDR_NB_LOOPS (ddr)));
+      dir_v = lambda_vector_new (DDR_NB_LOOPS (ddr));
+      for (j = 0; j < DDR_NB_LOOPS (ddr); j++)
+	dir_v[j] = dir_equal;
+      save_dir_v (ddr, dir_v);
+
+      /* Save the dependences carried by outer loops.  */
+      pb = omega_alloc_problem (2 * DDR_NB_LOOPS (ddr), DDR_NB_LOOPS (ddr));
+      res = init_omega_for_ddr_1 (DDR_A (ddr), DDR_B (ddr), ddr, pb,
+				  maybe_dependent);
+      omega_free_problem (pb);
+      return res;
+    }
+
+  /* Omega expects the protected variables (those that have to be kept
+     after elimination) to appear first in the constraint system.
+     These variables are the distance variables.  In the following
+     initialization we declare NB_LOOPS safe variables, and the total
+     number of variables for the constraint system is 2*NB_LOOPS.  */
+  pb = omega_alloc_problem (2 * DDR_NB_LOOPS (ddr), DDR_NB_LOOPS (ddr));
+  res = init_omega_for_ddr_1 (DDR_A (ddr), DDR_B (ddr), ddr, pb,
+			      maybe_dependent);
+  omega_free_problem (pb);
+
+  /* Stop computation if not decidable, or no dependence.  */
+  if (res == false || *maybe_dependent == false)
+    return res;
+
+  pb = omega_alloc_problem (2 * DDR_NB_LOOPS (ddr), DDR_NB_LOOPS (ddr));
+  res = init_omega_for_ddr_1 (DDR_B (ddr), DDR_A (ddr), ddr, pb,
+			      maybe_dependent);
+  omega_free_problem (pb);
+
+  return res;
+}
+
+/* Return true when DDR contains the same information as that stored
+   in DIR_VECTS and in DIST_VECTS, return false otherwise.   */
+
+static bool
+ddr_consistent_p (FILE *file,
+		  struct data_dependence_relation *ddr,
+		  VEC (lambda_vector, heap) *dist_vects,
+		  VEC (lambda_vector, heap) *dir_vects)
+{
+  unsigned int i, j;
+
+  /* If dump_file is set, output there.  */
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    file = dump_file;
+
+  if (VEC_length (lambda_vector, dist_vects) != DDR_NUM_DIST_VECTS (ddr))
+    {
+      lambda_vector b_dist_v;
+      fprintf (file, "\n(Number of distance vectors differ: Banerjee has %d, Omega has %d.\n",
+	       VEC_length (lambda_vector, dist_vects),
+	       DDR_NUM_DIST_VECTS (ddr));
+
+      fprintf (file, "Banerjee dist vectors:\n");
+      for (i = 0; VEC_iterate (lambda_vector, dist_vects, i, b_dist_v); i++)
+	print_lambda_vector (file, b_dist_v, DDR_NB_LOOPS (ddr));
+
+      fprintf (file, "Omega dist vectors:\n");
+      for (i = 0; i < DDR_NUM_DIST_VECTS (ddr); i++)
+	print_lambda_vector (file, DDR_DIST_VECT (ddr, i), DDR_NB_LOOPS (ddr));
+
+      fprintf (file, "data dependence relation:\n");
+      dump_data_dependence_relation (file, ddr);
+
+      fprintf (file, ")\n");
+      return false;
+    }
+
+  if (VEC_length (lambda_vector, dir_vects) != DDR_NUM_DIR_VECTS (ddr))
+    {
+      fprintf (file, "\n(Number of direction vectors differ: Banerjee has %d, Omega has %d.)\n",
+	       VEC_length (lambda_vector, dir_vects),
+	       DDR_NUM_DIR_VECTS (ddr));
+      return false;
+    }
+
+  for (i = 0; i < DDR_NUM_DIST_VECTS (ddr); i++)
+    {
+      lambda_vector a_dist_v;
+      lambda_vector b_dist_v = DDR_DIST_VECT (ddr, i);
+
+      /* Distance vectors are not ordered in the same way in the DDR
+	 and in the DIST_VECTS: search for a matching vector.  */
+      for (j = 0; VEC_iterate (lambda_vector, dist_vects, j, a_dist_v); j++)
+	if (lambda_vector_equal (a_dist_v, b_dist_v, DDR_NB_LOOPS (ddr)))
+	  break;
+
+      if (j == VEC_length (lambda_vector, dist_vects))
+	{
+	  fprintf (file, "\n(Dist vectors from the first dependence analyzer:\n");
+	  print_dist_vectors (file, dist_vects, DDR_NB_LOOPS (ddr));
+	  fprintf (file, "not found in Omega dist vectors:\n");
+	  print_dist_vectors (file, DDR_DIST_VECTS (ddr), DDR_NB_LOOPS (ddr));
+	  fprintf (file, "data dependence relation:\n");
+	  dump_data_dependence_relation (file, ddr);
+	  fprintf (file, ")\n");
+	}
+    }
+
+  for (i = 0; i < DDR_NUM_DIR_VECTS (ddr); i++)
+    {
+      lambda_vector a_dir_v;
+      lambda_vector b_dir_v = DDR_DIR_VECT (ddr, i);
+
+      /* Direction vectors are not ordered in the same way in the DDR
+	 and in the DIR_VECTS: search for a matching vector.  */
+      for (j = 0; VEC_iterate (lambda_vector, dir_vects, j, a_dir_v); j++)
+	if (lambda_vector_equal (a_dir_v, b_dir_v, DDR_NB_LOOPS (ddr)))
+	  break;
+
+      if (j == VEC_length (lambda_vector, dist_vects))
+	{
+	  fprintf (file, "\n(Dir vectors from the first dependence analyzer:\n");
+	  print_dir_vectors (file, dir_vects, DDR_NB_LOOPS (ddr));
+	  fprintf (file, "not found in Omega dir vectors:\n");
+	  print_dir_vectors (file, DDR_DIR_VECTS (ddr), DDR_NB_LOOPS (ddr));
+	  fprintf (file, "data dependence relation:\n");
+	  dump_data_dependence_relation (file, ddr);
+	  fprintf (file, ")\n");
+	}
+    }
+
+  return true;  
 }
 
 /* This computes the affine dependence relation between A and B.
@@ -4219,13 +4724,57 @@ compute_affine_dependence (struct data_dependence_relation *ddr)
 
       if (access_functions_are_affine_or_constant_p (dra)
 	  && access_functions_are_affine_or_constant_p (drb))
-	subscript_dependence_tester (ddr);
-      
+	{
+	  if (flag_check_data_deps)
+	    {
+	      /* Compute the dependences using the first algorithm.  */
+	      subscript_dependence_tester (ddr);
+
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "\n\nBanerjee Analyzer\n");
+		  dump_data_dependence_relation (dump_file, ddr);
+		}
+
+	      if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE)
+		{
+		  bool maybe_dependent;
+		  VEC (lambda_vector, heap) *dir_vects, *dist_vects;
+
+		  /* Save the result of the first DD analyzer.  */
+		  dist_vects = DDR_DIST_VECTS (ddr);
+		  dir_vects = DDR_DIR_VECTS (ddr);
+
+		  /* Reset the information.  */
+		  DDR_DIST_VECTS (ddr) = NULL;
+		  DDR_DIR_VECTS (ddr) = NULL;
+
+		  /* Compute the same information using Omega.  */
+		  if (!init_omega_for_ddr (ddr, &maybe_dependent))
+		    goto csys_dont_know;
+
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "Omega Analyzer\n");
+		      dump_data_dependence_relation (dump_file, ddr);
+		    }
+
+		  /* Check that we get the same information.  */
+		  if (maybe_dependent)
+		    gcc_assert (ddr_consistent_p (stderr, ddr, dist_vects,
+						  dir_vects));
+		}
+	    }
+	  else
+	    subscript_dependence_tester (ddr);
+	}
+     
       /* As a last case, if the dependence cannot be determined, or if
 	 the dependence is considered too difficult to determine, answer
 	 "don't know".  */
       else
 	{
+	csys_dont_know:;
 	  dependence_stats.num_dependence_undetermined++;
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -4584,7 +5133,7 @@ compute_data_dependences_for_loop (struct loop *loop,
 }
 
 /* Entry point (for testing only).  Analyze all the data references
-   and the dependence relations.
+   and the dependence relations in LOOP.
 
    The data references are computed first.  
    
@@ -4604,9 +5153,8 @@ compute_data_dependences_for_loop (struct loop *loop,
    recompute the same information.  The implementation of this KB is
    transparent to the optimizer, and thus the KB can be changed with a
    more efficient implementation, or the KB could be disabled.  */
-#if 0
 static void 
-analyze_all_data_dependences (struct loops *loops)
+analyze_all_data_dependences (struct loop *loop)
 {
   unsigned int i;
   int nb_data_refs = 10;
@@ -4616,8 +5164,8 @@ analyze_all_data_dependences (struct loops *loops)
     VEC_alloc (ddr_p, heap, nb_data_refs * nb_data_refs);
 
   /* Compute DDs on the whole function.  */
-  compute_data_dependences_for_loop (loops->parray[0], false,
-				     &datarefs, &dependence_relations);
+  compute_data_dependences_for_loop (loop, false, &datarefs,
+				     &dependence_relations);
 
   if (dump_file)
     {
@@ -4666,7 +5214,19 @@ analyze_all_data_dependences (struct loops *loops)
   free_dependence_relations (dependence_relations);
   free_data_refs (datarefs);
 }
-#endif
+
+/* Computes all the data dependences and check that the results of
+   several analyzers are the same.  */
+
+void
+tree_check_data_deps (void)
+{
+  loop_iterator li;
+  struct loop *loop_nest;
+
+  FOR_EACH_LOOP (li, loop_nest, 0)
+    analyze_all_data_dependences (loop_nest);
+}
 
 /* Free the memory used by a data dependence relation DDR.  */
 

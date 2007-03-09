@@ -26,6 +26,7 @@ variable analysis and number of iterations analysis).
 * Number of iterations::	Number of iterations analysis.
 * Dependency analysis::		Data dependency analysis.
 * Lambda::			Linear loop transformations framework.
+* Omega::			A solver for linear programming problems.
 @end menu
 
 @node Loop representation
@@ -623,3 +624,32 @@ Given a transformed loopnest, conversion back into gcc IR is done by
 @code{lambda_loopnest_to_gcc_loopnest}.  This function will modify the
 loops so that they match the transformed loopnest.
 
+
+@node Omega
+@section Omega a solver for linear programming problems
+@cindex Omega a solver for linear programming problems
+
+The data dependence analysis contains several solvers triggered
+sequentially from the less complex ones to the more sophisticated.
+For ensuring the consistency of the results of these solvers, a data
+dependence check pass has been implemented based on two different
+solvers.  The second method that has been integrated to GCC is based
+on the Omega dependence solver, written in the 1990's by William Pugh
+and David Wonnacott.  Data dependence tests can be formulated using a
+subset of the Presburger arithmetics that can be translated to linear
+constraint systems.  These linear constraint systems can then be
+solved using the Omega solver.
+
+The Omega solver is using Fourier-Motzkin's algorithm for variable
+elimination: a linear constraint system containing @code{n} variables
+is reduced to a linear constraint system with @code{n-1} variables.
+The Omega solver can also be used for solving other problems that can
+be expressed under the form of a system of linear equalities and
+inequalities.  The Omega solver is known to have an exponential worst
+case, also known under the name of ``omega nightmare'' in the
+literature, but in practice, the omega test is known to be efficient
+for the common data dependence tests.
+
+The interface used by the Omega solver for describing the linear
+programming problems is described in @file{omega.h}, and the solver is
+@code{omega_solve_problem}.  

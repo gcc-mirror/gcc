@@ -352,6 +352,10 @@ fcaller-saves
 Common Report Var(flag_caller_saves) Optimization
 Save registers around function calls
 
+fcheck-data-deps
+Common Report Var(flag_check_data_deps)
+Compare the results of several data dependence analyzers.
+
 fcommon
 Common Report Var(flag_no_common,0) Optimization
 Do not put uninitialized globals in the common section

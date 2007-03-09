@@ -1,5 +1,5 @@
 /* Loop optimizations over tree-ssa.
-   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005, 2006, 2007 Free Software Foundation, Inc.
    
 This file is part of GCC.
    
@@ -238,6 +238,41 @@ struct tree_opt_pass pass_linear_transform =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_verify_loops,	/* todo_flags_finish */
+  0				        /* letter */	
+};
+
+/* Check the correctness of the data dependence analyzers.  */
+
+static unsigned int
+check_data_deps (void)
+{
+  if (!current_loops)
+    return 0;
+
+  tree_check_data_deps ();
+  return 0;
+}
+
+static bool
+gate_check_data_deps (void)
+{
+  return flag_check_data_deps != 0;
+}
+
+struct tree_opt_pass pass_check_data_deps =
+{
+  "ckdd",				/* name */
+  gate_check_data_deps,	        	/* gate */
+  check_data_deps,       		/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_CHECK_DATA_DEPS,  	        	/* tv_id */
+  PROP_cfg | PROP_ssa,			/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func,                	/* todo_flags_finish */
   0				        /* letter */	
 };
 

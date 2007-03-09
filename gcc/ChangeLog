@@ -1,3 +1,50 @@
+2007-03-09  Sebastian Pop  <sebastian.pop@inria.fr>
+
+	* doc/loop.texi: Document the Omega linear constraints solver.
+	* doc/invoke.texi: Document -fcheck-data-deps, omega-max-vars,
+	omega-max-geqs, omega-max-eqs, omega-max-wild-cards, 
+	omega-hash-table-size, omega-max-keys, and 
+	omega-eliminate-redundant-constraints.
+	* tree-pass.h (pass_check_data_deps): Declared.
+	* omega.c: New.
+	* omega.h: New.
+	* timevar.def (TV_CHECK_DATA_DEPS): Declared.
+	* tree-ssa-loop.c (check_data_deps, gate_check_data_deps, 
+	pass_check_data_deps): New.
+	* tree-data-ref.c (init_data_ref): Remove declaration.
+	(dump_data_dependence_relation): Dump DDR_INNER_LOOP.
+	(analyze_array): Renamed init_array_ref, move up initializations.
+	(init_data_ref): Renamed init_pointer_ref.  Moved before its call.
+	Removed arguments that are set to NULL.
+	(analyze_indirect_ref): Correct indentation, correct call to 
+	init_pointer_ref.
+	(object_analysis): Call init_array_ref instead of analyze_array.
+	(initialize_data_dependence_relation): Initialize DDR_INNER_LOOP.
+	(access_functions_are_affine_or_constant_p): Use DR_ACCESS_FNS instead
+	of DR_ACCESS_FNS_ADDR.
+	(init_omega_eq_with_af, omega_extract_distance_vectors, 
+	omega_setup_subscript, init_omega_for_ddr_1, init_omega_for_ddr,
+	ddr_consistent_p): New.
+	(compute_affine_dependence): Check consistency of ddrs when 
+	flag_check_data_deps is passed.
+	(analyze_all_data_dependences): Uncomment.
+	(tree_check_data_deps): New.
+	* tree-data-ref.h: Include omega.h.
+	(DR_ACCESS_FNS_ADDR): Removed.
+	(data_dependence_relation): Add inner_loop.
+	(DDR_INNER_LOOP): New.
+	* common.opt (fcheck-data-deps): New.
+	* tree-flow.h (tree_check_data_deps): Declare.
+	* Makefile.in (TREE_DATA_REF_H): Depend on omega.h.
+	(OBJS-common): Depend on omega.o.
+	(omega.o): Define.
+	* passes.c (pass_check_data_deps): Scheduled.
+	* params.def (PARAM_OMEGA_MAX_VARS, PARAM_OMEGA_MAX_GEQS, 
+	PARAM_OMEGA_MAX_EQS, PARAM_OMEGA_MAX_WILD_CARDS,
+	PARAM_OMEGA_HASH_TABLE_SIZE, PARAM_OMEGA_MAX_KEYS,
+	PARAM_VECT_MAX_VERSION_CHECKS,
+	PARAM_OMEGA_ELIMINATE_REDUNDANT_CONSTRAINTS): New.
+
 2007-03-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/30904
