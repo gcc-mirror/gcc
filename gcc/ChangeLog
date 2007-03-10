@@ -1,3 +1,11 @@
+2007-03-09  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-pass.h (TODO_update_smt_usage): Remove.
+	Update all users.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Remove
+	argument SOME.
+	Update all users.
+
 2007-03-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (attr_length_call): Revise condition for long pc-relative branch.

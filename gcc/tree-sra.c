@@ -1612,9 +1612,6 @@ decide_instantiations (void)
     }
   bitmap_clear (&done_head);
   
-  if (!bitmap_empty_p (sra_candidates))
-    todoflags |= TODO_update_smt_usage;
-
   mark_set_for_renaming (sra_candidates);
 
   if (dump_file)
@@ -1700,7 +1697,6 @@ generate_one_element_ref (struct sra_elt *elt, tree base)
       }
 
     case ARRAY_TYPE:
-      todoflags |= TODO_update_smt_usage;
       if (TREE_CODE (elt->element) == RANGE_EXPR)
 	return build4 (ARRAY_RANGE_REF, elt->type, base,
 		       TREE_OPERAND (elt->element, 0), NULL, NULL);

@@ -1411,8 +1411,7 @@ execute_ssa_ccp (bool store_ccp)
   ccp_initialize ();
   ssa_propagate (ccp_visit_stmt, ccp_visit_phi_node);
   if (ccp_finalize ())
-    return (TODO_cleanup_cfg | TODO_update_ssa | TODO_update_smt_usage
-	    | TODO_remove_unused_locals);
+    return (TODO_cleanup_cfg | TODO_update_ssa | TODO_remove_unused_locals);
   else
     return 0;
 }

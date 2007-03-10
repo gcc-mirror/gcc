@@ -215,10 +215,6 @@ struct dump_file_info
    for the passes that are handed to register_dump_files.  */
 #define TODO_set_props			(1 << 15)
 
-/* Set by passes that may make SMT's that were previously never used
-   in statements, used.  */
-#define TODO_update_smt_usage           (1 << 16)
-
 #define TODO_update_ssa_any		\
     (TODO_update_ssa			\
      | TODO_update_ssa_no_phi		\

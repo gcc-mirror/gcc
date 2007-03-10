@@ -668,14 +668,11 @@ forward_propagate_addr_into_variable_array_index (tree offset, tree lhs,
    Often this will allow for removal of an ADDR_EXPR and INDIRECT_REF
    node or for recovery of array indexing from pointer arithmetic.
    
-   CHANGED is an optional pointer to a boolean variable set to true if
-   either the LHS or RHS was changed in the USE_STMT.  
-
    Return true if the propagation was successful (the propagation can
    be not totally successful, yet things may have been changed).  */
 
 static bool
-forward_propagate_addr_expr_1 (tree stmt, tree use_stmt, bool *changed)
+forward_propagate_addr_expr_1 (tree stmt, tree use_stmt)
 {
   tree name = GIMPLE_STMT_OPERAND (stmt, 0);
   tree lhs, rhs, array_ref;
@@ -695,8 +692,6 @@ forward_propagate_addr_expr_1 (tree stmt, tree use_stmt, bool *changed)
       TREE_OPERAND (lhs, 0) = unshare_expr (GIMPLE_STMT_OPERAND (stmt, 1));
       fold_stmt_inplace (use_stmt);
       tidy_after_forward_propagate_addr (use_stmt);
-      if (changed)
-	*changed = true;
     }
 
   /* Trivial case.  The use statement could be a trivial copy.  We
@@ -712,8 +707,6 @@ forward_propagate_addr_expr_1 (tree stmt, tree use_stmt, bool *changed)
       GIMPLE_STMT_OPERAND (use_stmt, 1)
 	= unshare_expr (GIMPLE_STMT_OPERAND (stmt, 1));
       tidy_after_forward_propagate_addr (use_stmt);
-      if (changed)
-	*changed = true;
       return true;
     }
 
@@ -734,8 +727,6 @@ forward_propagate_addr_expr_1 (tree stmt, tree use_stmt, bool *changed)
       TREE_OPERAND (rhs, 0) = unshare_expr (GIMPLE_STMT_OPERAND (stmt, 1));
       fold_stmt_inplace (use_stmt);
       tidy_after_forward_propagate_addr (use_stmt);
-      if (changed)
-	*changed = true;
       return true;
     }
 
@@ -768,8 +759,6 @@ forward_propagate_addr_expr_1 (tree stmt, tree use_stmt, bool *changed)
       if (fold_stmt_inplace (use_stmt))
 	{
 	  tidy_after_forward_propagate_addr (use_stmt);
-	  if (changed)
-	    *changed = true;
 	  return true;
 	}
       else
@@ -795,8 +784,6 @@ forward_propagate_addr_expr_1 (tree stmt, tree use_stmt, bool *changed)
       
       res = forward_propagate_addr_into_variable_array_index (offset_stmt, lhs,
 							      stmt, use_stmt);
-      if (res && changed)
-	*changed = true;
       return res;
     }
 	      
@@ -812,16 +799,12 @@ forward_propagate_addr_expr_1 (tree stmt, tree use_stmt, bool *changed)
       tree offset_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (rhs, 0));
       res = forward_propagate_addr_into_variable_array_index (offset_stmt, lhs,
 							      stmt, use_stmt);
-      if (res && changed)
-	*changed = true;
       return res;
     }
   return false;
 }
 
 /* STMT is a statement of the form SSA_NAME = ADDR_EXPR <whatever>.
-   SOME is a pointer to a boolean value indicating whether we
-   propagated the address expression anywhere.
 
    Try to forward propagate the ADDR_EXPR into all uses of the SSA_NAME.
    Often this will allow for removal of an ADDR_EXPR and INDIRECT_REF
@@ -829,7 +812,7 @@ forward_propagate_addr_expr_1 (tree stmt, tree use_stmt, bool *changed)
    Returns true, if all uses have been propagated into.  */
 
 static bool
-forward_propagate_addr_expr (tree stmt, bool *some)
+forward_propagate_addr_expr (tree stmt)
 {
   int stmt_loop_depth = bb_for_stmt (stmt)->loop_depth;
   tree name = GIMPLE_STMT_OPERAND (stmt, 0);
@@ -860,8 +843,7 @@ forward_propagate_addr_expr (tree stmt, bool *some)
       
       push_stmt_changes (&use_stmt);
 
-      result = forward_propagate_addr_expr_1 (stmt, use_stmt, some);
-      *some |= result;
+      result = forward_propagate_addr_expr_1 (stmt, use_stmt);
       all &= result;
 
       pop_stmt_changes (&use_stmt);
@@ -999,8 +981,7 @@ tree_ssa_forward_propagate_single_use_vars (void)
 
 	      if (TREE_CODE (rhs) == ADDR_EXPR)
 		{
-		  bool some = false;
-		  if (forward_propagate_addr_expr (stmt, &some))
+		  if (forward_propagate_addr_expr (stmt))
 		    {
 		      release_defs (stmt);
 		      todoflags |= TODO_remove_unused_locals;
@@ -1008,8 +989,6 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		    }
 		  else
 		    bsi_next (&bsi);
-		  if (some)
-		    todoflags |= TODO_update_smt_usage;
 		}
 	      else if ((TREE_CODE (rhs) == BIT_NOT_EXPR
 		        || TREE_CODE (rhs) == NEGATE_EXPR)
