@@ -1,3 +1,9 @@
+2007-03-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac (glibc_header_dir): Set using with_build_sysroot if
+	defined.
+	* configure: Regenerate.
+
 2007-03-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/31101
