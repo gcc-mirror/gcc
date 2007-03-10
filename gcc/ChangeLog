@@ -1,5 +1,10 @@
 2007-03-10  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	* config/sh/sh.c (sh_insn_length_adjustment): Adjust for
+	the change of decode_asm_operands.
+
+2007-03-10  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	* mode-switching.c (create_pre_exit): Skip blockage insn.
 
 2007-03-09  Diego Novillo  <dnovillo@redhat.com>

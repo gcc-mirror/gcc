@@ -8594,7 +8594,7 @@ sh_insn_length_adjustment (rtx insn)
 	template = XSTR (body, 0);
       else if (asm_noperands (body) >= 0)
 	template
-	  = decode_asm_operands (body, NULL, NULL, NULL, NULL);
+	  = decode_asm_operands (body, NULL, NULL, NULL, NULL, NULL);
       else
 	return 0;
       do
