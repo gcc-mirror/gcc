@@ -103,6 +103,7 @@ struct diagnostic_context;
    1: C_TYPEDEF_EXPLICITLY_SIGNED (in TYPE_DECL).
       DECL_TEMPLATE_INSTANTIATED (in a VAR_DECL or a FUNCTION_DECL)
       DECL_MEMBER_TEMPLATE_P (in TEMPLATE_DECL)
+      FUNCTION_PARAMETER_PACK_P (in PARM_DECL)
    2: DECL_THIS_EXTERN (in VAR_DECL or FUNCTION_DECL).
       DECL_IMPLICIT_TYPEDEF_P (in a TYPE_DECL)
    3: DECL_IN_AGGR_P.
@@ -222,6 +223,10 @@ struct template_parm_index_s GTY(())
   HOST_WIDE_INT level;
   HOST_WIDE_INT orig_level;
   tree decl;
+
+  /* When true, indicates that this parameter is actually a parameter
+     pack, for variadic templates.  */
+  BOOL_BITFIELD parameter_pack;
 };
 typedef struct template_parm_index_s template_parm_index;
 
@@ -469,6 +474,13 @@ struct tree_static_assert GTY (())
   location_t location;
 };
 
+struct tree_argument_pack_select GTY (())
+{
+  struct tree_common common;
+  tree argument_pack;
+  int index;
+};
+
 enum cp_tree_node_structure_enum {
   TS_CP_GENERIC,
   TS_CP_IDENTIFIER,
@@ -481,6 +493,7 @@ enum cp_tree_node_structure_enum {
   TS_CP_WRAPPER,
   TS_CP_DEFAULT_ARG,
   TS_CP_STATIC_ASSERT,
+  TS_CP_ARGUMENT_PACK_SELECT,
   LAST_TS_CP_ENUM
 };
 
@@ -499,6 +512,8 @@ union lang_tree_node GTY((desc ("cp_tree_node_structure (&%h)"),
   struct lang_identifier GTY ((tag ("TS_CP_IDENTIFIER"))) identifier;
   struct tree_static_assert GTY ((tag ("TS_CP_STATIC_ASSERT"))) 
     static_assertion;
+  struct tree_argument_pack_select GTY ((tag ("TS_CP_ARGUMENT_PACK_SELECT")))
+    argument_pack_select;
 };
 
 
@@ -2188,7 +2203,7 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 /* Nonzero if the template arguments is actually a vector of vectors,
    rather than just a vector.  */
 #define TMPL_ARGS_HAVE_MULTIPLE_LEVELS(NODE)		\
-  (NODE && TREE_VEC_ELT (NODE, 0)			\
+  (NODE && TREE_VEC_ELT (NODE, 0)                       \
    && TREE_CODE (TREE_VEC_ELT (NODE, 0)) == TREE_VEC)
 
 /* The depth of a template argument vector.  When called directly by
@@ -2294,6 +2309,84 @@ extern void decl_shadowed_for_var_insert (tree, tree);
    member template, whose inline definition is being processed after
    the class definition is complete.  */
 #define TEMPLATE_PARMS_FOR_INLINE(NODE) TREE_LANG_FLAG_1 (NODE)
+
+/* Determine if a parameter (i.e., a PARM_DECL) is a function
+   parameter pack.  */
+#define FUNCTION_PARAMETER_PACK_P(NODE) \
+  (DECL_LANG_FLAG_1 (PARM_DECL_CHECK (NODE)))
+
+/* Determines if NODE is an expansion of one or more parameter packs,
+   e.g., a TYPE_PACK_EXPANSION or EXPR_PACK_EXPANSION.  */
+#define PACK_EXPANSION_P(NODE)                 \
+  (TREE_CODE (NODE) == TYPE_PACK_EXPANSION     \
+   || TREE_CODE (NODE) == EXPR_PACK_EXPANSION)
+
+/* Extracts the type or expression pattern from a TYPE_PACK_EXPANSION or
+   EXPR_PACK_EXPANSION.  */
+#define PACK_EXPANSION_PATTERN(NODE)                            \
+  (TREE_CODE (NODE) == TYPE_PACK_EXPANSION? TREE_TYPE (NODE)    \
+   : TREE_OPERAND (NODE, 0))
+
+/* Sets the type or expression pattern for a TYPE_PACK_EXPANSION or
+   EXPR_PACK_EXPANSION.  */
+#define SET_PACK_EXPANSION_PATTERN(NODE,VALUE)  \
+  if (TREE_CODE (NODE) == TYPE_PACK_EXPANSION)  \
+    TREE_TYPE (NODE) = VALUE;                   \
+  else                                          \
+    TREE_OPERAND (NODE, 0) = VALUE
+
+/* The list of parameter packs used in the PACK_EXPANSION_* node. The
+   TREE_VALUE of each TREE_LIST contains the parameter packs.  */
+#define PACK_EXPANSION_PARAMETER_PACKS(NODE) TREE_CHAIN (NODE)
+
+/* Determine if this is an argument pack.  */
+#define ARGUMENT_PACK_P(NODE)                          \
+  (TREE_CODE (NODE) == TYPE_ARGUMENT_PACK              \
+   || TREE_CODE (NODE) == NONTYPE_ARGUMENT_PACK)
+
+/* The arguments stored in an argument pack. Arguments are stored in a
+   TREE_VEC, which may have length zero.  */
+#define ARGUMENT_PACK_ARGS(NODE)                               \
+  (TREE_CODE (NODE) == TYPE_ARGUMENT_PACK? TREE_TYPE (NODE)    \
+   : TREE_OPERAND (NODE, 0))
+
+/* Set the arguments stored in an argument pack. VALUE must be a
+   TREE_VEC.  */
+#define SET_ARGUMENT_PACK_ARGS(NODE,VALUE)     \
+  if (TREE_CODE (NODE) == TYPE_ARGUMENT_PACK)  \
+    TREE_TYPE (NODE) = VALUE;                           \
+  else                                                  \
+    TREE_OPERAND (NODE, 0) = VALUE
+
+/* Whether the argument pack is "incomplete", meaning that more
+   arguments can still be deduced. Incomplete argument packs are only
+   used when the user has provided an explicit template argument list
+   for a variadic function template. Some of the explicit template
+   arguments will be placed into the beginning of the argument pack,
+   but additional arguments might still be deduced.  */
+#define ARGUMENT_PACK_INCOMPLETE_P(NODE)        \
+  TREE_LANG_FLAG_0 (ARGUMENT_PACK_ARGS (NODE))
+
+/* When ARGUMENT_PACK_INCOMPLETE_P, stores the explicit template
+   arguments used to fill this pack.  */
+#define ARGUMENT_PACK_EXPLICIT_ARGS(NODE)       \
+  TREE_TYPE (ARGUMENT_PACK_ARGS (NODE))
+
+/* In an ARGUMENT_PACK_SELECT, the argument pack from which an
+   argument will be selected.  */
+#define ARGUMENT_PACK_SELECT_FROM_PACK(NODE)				\
+  (((struct tree_argument_pack_select *)ARGUMENT_PACK_SELECT_CHECK (NODE))->argument_pack)
+
+/* In an ARGUMENT_PACK_SELECT, the index of the argument we want to
+   select.  */
+#define ARGUMENT_PACK_SELECT_INDEX(NODE)				\
+  (((struct tree_argument_pack_select *)ARGUMENT_PACK_SELECT_CHECK (NODE))->index)
+  
+/* In an ARGUMENT_PACK_SELECT, the actual underlying argument that the
+   ARGUMENT_PACK_SELECT represents. */
+#define ARGUMENT_PACK_SELECT_ARG(NODE)					\
+  TREE_VEC_ELT (ARGUMENT_PACK_ARGS (ARGUMENT_PACK_SELECT_FROM_PACK (NODE)), \
+	        ARGUMENT_PACK_SELECT_INDEX (NODE));
 
 /* In a FUNCTION_DECL, the saved language-specific per-function data.  */
 #define DECL_SAVED_FUNCTION_DATA(NODE)			\
@@ -3612,6 +3705,7 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 #define TEMPLATE_PARM_DESCENDANTS(NODE) (TREE_CHAIN (NODE))
 #define TEMPLATE_PARM_ORIG_LEVEL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->orig_level)
 #define TEMPLATE_PARM_DECL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->decl)
+#define TEMPLATE_PARM_PARAMETER_PACK(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->parameter_pack)
 
 /* These macros are for accessing the fields of TEMPLATE_TYPE_PARM,
    TEMPLATE_TEMPLATE_PARM and BOUND_TEMPLATE_TEMPLATE_PARM nodes.  */
@@ -3626,6 +3720,8 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
   (TEMPLATE_PARM_ORIG_LEVEL (TEMPLATE_TYPE_PARM_INDEX (NODE)))
 #define TEMPLATE_TYPE_DECL(NODE) \
   (TEMPLATE_PARM_DECL (TEMPLATE_TYPE_PARM_INDEX (NODE)))
+#define TEMPLATE_TYPE_PARAMETER_PACK(NODE) \
+  (TEMPLATE_PARM_PARAMETER_PACK (TEMPLATE_TYPE_PARM_INDEX (NODE)))
 
 /* These constants can used as bit flags in the process of tree formatting.
 
@@ -3812,6 +3908,9 @@ struct cp_declarator {
      cdk_id and cdk_error, guaranteed to be NULL.  */
   cp_declarator *declarator;
   location_t id_loc; /* Currently only set for cdk_id. */
+  /* Whether we parsed an ellipsis (`...') just before the declarator,
+     to indicate this is a parameter pack.  */
+  bool parameter_pack_p;
   union {
     /* For identifiers.  */
     struct {
@@ -4104,6 +4203,7 @@ extern const char *lang_decl_name		(tree, int);
 extern const char *language_to_string		(enum languages);
 extern const char *class_key_or_enum_as_string	(tree);
 extern void print_instantiation_context		(void);
+extern void maybe_warn_variadic_templates       (void);
 
 /* in except.c */
 extern void init_exception_processing		(void);
@@ -4194,7 +4294,7 @@ extern void end_specialization			(void);
 extern void begin_explicit_instantiation	(void);
 extern void end_explicit_instantiation		(void);
 extern tree check_explicit_specialization	(tree, tree, int, int);
-extern tree process_template_parm		(tree, tree, bool);
+extern tree process_template_parm		(tree, tree, bool, bool);
 extern tree end_template_parm_list		(tree);
 extern void end_template_decl			(void);
 extern tree push_template_decl			(tree);
@@ -4215,6 +4315,11 @@ extern void do_decl_instantiation		(tree, tree);
 extern void do_type_instantiation		(tree, tree, tsubst_flags_t);
 extern tree instantiate_decl			(tree, int, bool);
 extern int comp_template_parms			(tree, tree);
+extern bool uses_parameter_packs                (tree);
+extern bool template_parameter_pack_p           (tree);
+extern bool template_parms_variadic_p           (tree);
+extern tree make_pack_expansion                 (tree);
+extern void check_for_bare_parameter_packs      (tree);
 extern int template_class_depth			(tree);
 extern int is_specialization_of			(tree, tree);
 extern bool is_specialization_of_friend		(tree, tree);

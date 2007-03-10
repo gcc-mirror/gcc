@@ -138,7 +138,9 @@ dump_scope (tree scope, int flags)
 static void
 dump_template_argument (tree arg, int flags)
 {
-  if (TYPE_P (arg) || TREE_CODE (arg) == TEMPLATE_DECL)
+  if (ARGUMENT_PACK_P (arg))
+    dump_template_argument_list (ARGUMENT_PACK_ARGS (arg), flags);
+  else if (TYPE_P (arg) || TREE_CODE (arg) == TEMPLATE_DECL)
     dump_type (arg, flags & ~TFF_CLASS_KEY_OR_ENUM);
   else
     dump_expr (arg, (flags | TFF_EXPR_IN_PARENS) & ~TFF_CLASS_KEY_OR_ENUM);
@@ -156,9 +158,17 @@ dump_template_argument_list (tree args, int flags)
 
   for (i = 0; i< n; ++i)
     {
-      if (need_comma)
+      tree arg = TREE_VEC_ELT (args, i);
+
+      /* Only print a comma if we know there is an argument coming. In
+         the case of an empty template argument pack, no actual
+         argument will be printed.  */
+      if (need_comma
+          && (!ARGUMENT_PACK_P (arg)
+              || TREE_VEC_LENGTH (ARGUMENT_PACK_ARGS (arg)) > 0))
 	pp_separate_with_comma (cxx_pp);
-      dump_template_argument (TREE_VEC_ELT (args, i), flags);
+
+      dump_template_argument (arg, flags);
       need_comma = 1;
     }
 }
@@ -182,6 +192,8 @@ dump_template_parameter (tree parm, int flags)
       if (flags & TFF_DECL_SPECIFIERS)
 	{
 	  pp_cxx_identifier (cxx_pp, "class");
+          if (TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (p)))
+            pp_cxx_identifier (cxx_pp, "...");
 	  if (DECL_NAME (p))
 	    pp_cxx_tree_identifier (cxx_pp, DECL_NAME (p));
 	}
@@ -376,6 +388,11 @@ dump_type (tree t, int flags)
       pp_cxx_left_paren (cxx_pp);
       dump_expr (TYPEOF_TYPE_EXPR (t), flags & ~TFF_EXPR_IN_PARENS);
       pp_cxx_right_paren (cxx_pp);
+      break;
+
+    case TYPE_PACK_EXPANSION:
+      dump_type (PACK_EXPANSION_PATTERN (t), flags);
+      pp_cxx_identifier (cxx_pp, "...");
       break;
 
     default:
@@ -1102,8 +1119,7 @@ dump_function_decl (tree t, int flags)
 static void
 dump_parameters (tree parmtypes, int flags)
 {
-  int first;
-
+  int first = 1;
   pp_cxx_left_paren (cxx_pp);
 
   for (first = 1; parmtypes != void_list_node;
@@ -1117,7 +1133,22 @@ dump_parameters (tree parmtypes, int flags)
 	  pp_cxx_identifier (cxx_pp, "...");
 	  break;
 	}
-      dump_type (TREE_VALUE (parmtypes), flags);
+      if (ARGUMENT_PACK_P (TREE_VALUE (parmtypes)))
+        {
+          tree types = ARGUMENT_PACK_ARGS (TREE_VALUE (parmtypes));
+          int i, len = TREE_VEC_LENGTH (types);
+	  first = 1;
+          for (i = 0; i < len; ++i)
+            {
+              if (!first)
+                pp_separate_with_comma (cxx_pp);
+              first = 0;
+              
+              dump_type (TREE_VEC_ELT (types, i), flags);
+            }
+        }
+      else
+        dump_type (TREE_VALUE (parmtypes), flags);
 
       if ((flags & TFF_FUNCTION_DEFAULT_ARGUMENTS) && TREE_PURPOSE (parmtypes))
 	{
@@ -1240,14 +1271,19 @@ dump_template_parms (tree info, int primary, int flags)
 	{
 	  tree arg = TREE_VEC_ELT (args, ix);
 
-	  if (ix)
-	    pp_separate_with_comma (cxx_pp);
-
-	  if (!arg)
-	    pp_identifier (cxx_pp, "<template parameter error>");
-	  else
-	    dump_template_argument (arg, flags);
-	}
+          /* Only print a comma if we know there is an argument coming. In
+             the case of an empty template argument pack, no actual
+             argument will be printed.  */
+          if (ix
+              && (!ARGUMENT_PACK_P (arg)
+                  || TREE_VEC_LENGTH (ARGUMENT_PACK_ARGS (arg)) > 0))
+            pp_separate_with_comma (cxx_pp);
+          
+          if (!arg)
+            pp_identifier (cxx_pp, "<template parameter error>");
+          else
+            dump_template_argument (arg, flags);
+        }
     }
   else if (primary)
     {
@@ -1946,6 +1982,11 @@ dump_expr (tree t, int flags)
       dump_expr (TREE_OPERAND (t, 0), flags);
       break;
 
+    case EXPR_PACK_EXPANSION:
+      dump_expr (PACK_EXPANSION_PATTERN (t), flags);
+      pp_cxx_identifier (cxx_pp, "...");
+      break;
+
       /*  This list is incomplete, but should suffice for now.
 	  It is very important that `sorry' does not call
 	  `report_error_function'.  That could cause an infinite loop.  */
@@ -2463,4 +2504,15 @@ cp_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level,
   diagnostic_set_info_translated (&diagnostic, msg, ap,
 				  input_location, dlevel);
   report_diagnostic (&diagnostic);
+}
+
+/* Warn about the use of variadic templates when appropriate.  */
+void
+maybe_warn_variadic_templates (void)
+{
+  if ((!flag_cpp0x || flag_iso) && !in_system_header)
+    /* We really want to surpress this warning in system headers,
+       because libstdc++ uses variadic templates even when we aren't
+       in C++0x mode. */
+    pedwarn ("ISO C++ does not include variadic templates");
 }

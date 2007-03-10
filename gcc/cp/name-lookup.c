@@ -4563,6 +4563,18 @@ arg_assoc_type (struct arg_lookup *k, tree type)
     case LANG_TYPE:
       gcc_assert (type == unknown_type_node);
       return false;
+    case TYPE_PACK_EXPANSION:
+      return arg_assoc_type (k, PACK_EXPANSION_PATTERN (type));
+    case TYPE_ARGUMENT_PACK:
+      {
+        tree args = ARGUMENT_PACK_ARGS (type);
+        int i, len = TREE_VEC_LENGTH (args);
+        for (i = 0; i < len; i++)
+          if (arg_assoc_type (k, TREE_VEC_ELT (args, i)))
+            return true;
+      }
+      break;
+
     default:
       gcc_unreachable ();
     }

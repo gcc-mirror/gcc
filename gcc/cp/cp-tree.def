@@ -352,6 +352,76 @@ DEFTREECODE (UNARY_PLUS_EXPR, "unary_plus_expr", tcc_unary, 1)
    literal) to be displayed if the condition fails to hold.  */
 DEFTREECODE (STATIC_ASSERT, "static_assert", tcc_exceptional, 0)
 
+/* Represents an argument pack of types (or templates). An argument
+   pack stores zero or more arguments that will be used to instantiate
+   a parameter pack. 
+
+   ARGUMENT_PACK_ARGS retrieves the arguments stored in the argument
+   pack.
+
+   Example:
+     template<typename... Values>
+     class tuple { ... };
+
+     tuple<int, float, double> t;
+
+   Values is a (template) parameter pack. When tuple<int, float,
+   double> is instantiated, the Values parameter pack is instantiated
+   with the argment pack <int, float, double>. ARGUMENT_PACK_ARGS will
+   be a TREE_VEC containing int, float, and double.  */
+DEFTREECODE (TYPE_ARGUMENT_PACK, "type_argument_pack", tcc_type, 0)
+
+/* Represents an argument pack of values, which can be used either for
+   non-type template arguments or function call arguments. 
+
+   NONTYPE_ARGUMENT_PACK plays precisely the same role as
+   TYPE_ARGUMENT_PACK, but will be used for packing non-type template
+   arguments (e.g., "int... Dimensions") or function arguments ("const
+   Args&... args"). */
+DEFTREECODE (NONTYPE_ARGUMENT_PACK, "nontype_argument_pack", tcc_expression, 1)
+
+/* Represents a type expression that will be expanded into a list of
+   types when instantiated with one or more argument packs.
+
+   PACK_EXPANSION_PATTERN retrieves the expansion pattern. This is
+   the type or expression that we will substitute into with each
+   argument in an argument pack.
+
+   SET_PACK_EXPANSION_PATTERN sets the expansion pattern.
+
+   PACK_EXPANSION_PARAMETER_PACKS contains a TREE_LIST of the parameter
+   packs that are used in this pack expansion.
+
+   Example:
+     template<typename... Values>
+     struct tied : tuple<Values&...> { 
+       // ...
+     };
+
+   The derivation from tuple contains a TYPE_PACK_EXPANSION for the
+   template arguments. Its EXPR_PACK_EXPANSION is "Values&" and its
+   PACK_EXPANSION_PARAMETER_PACKS will contain "Values".  */
+DEFTREECODE (TYPE_PACK_EXPANSION, "type_pack_expansion", tcc_type, 0)
+
+/* Represents an expression that will be expanded into a list of
+   expressions when instantiated with one or more argument packs.
+
+   EXPR_PACK_EXPANSION plays precisely the same role as TYPE_PACK_EXPANSION,
+   but will be used for expressions.  */
+DEFTREECODE (EXPR_PACK_EXPANSION, "expr_pack_expansion", tcc_expression, 1)
+
+/* Selects the Ith parameter out of an argument pack. This node will
+   be used when instantiating pack expansions; see
+   tsubst_pack_expansion. 
+
+   ARGUMENT_PACK_SELECT_FROM_PACK contains the *_ARGUMENT_PACK node
+   from which the argument will be selected.
+
+   ARGUMENT_PACK_SELECT_INDEX contains the index into the argument
+   pack that will be returned by this ARGUMENT_PACK_SELECT node. The
+   index is a machine integer.  */
+DEFTREECODE (ARGUMENT_PACK_SELECT, "argument_pack_select", tcc_exceptional, 0)
+
 /*
 Local variables:
 mode:c

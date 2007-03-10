@@ -1645,6 +1645,11 @@ write_type (tree type)
 	  write_type (TREE_TYPE (type));
 	  break;
 
+        case TYPE_PACK_EXPANSION:
+          write_string ("U10__variadic");
+          write_type (PACK_EXPANSION_PATTERN (type));
+          break;
+
 	default:
 	  gcc_unreachable ();
 	}
@@ -2302,7 +2307,15 @@ write_template_arg (tree node)
 	G.need_abi_warning = 1;
     }
 
-  if (TYPE_P (node))
+  if (ARGUMENT_PACK_P (node))
+    {
+      /* Expand the template argument pack. */
+      tree args = ARGUMENT_PACK_ARGS (node);
+      int i, length = TREE_VEC_LENGTH (args);
+      for (i = 0; i < length; ++i)
+        write_template_arg (TREE_VEC_ELT (args, i));
+    }
+  else if (TYPE_P (node))
     write_type (node);
   else if (code == TEMPLATE_DECL)
     /* A template appearing as a template arg is a template template arg.  */
