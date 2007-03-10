@@ -1,6 +1,6 @@
 /* Output variables, constants and external declarations, for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -5224,18 +5224,11 @@ decl_default_tls_model (tree decl)
 unsigned int
 default_section_type_flags (tree decl, const char *name, int reloc)
 {
-  return default_section_type_flags_1 (decl, name, reloc, flag_pic);
-}
-
-unsigned int
-default_section_type_flags_1 (tree decl, const char *name, int reloc,
-			      int shlib)
-{
   unsigned int flags;
 
   if (decl && TREE_CODE (decl) == FUNCTION_DECL)
     flags = SECTION_CODE;
-  else if (decl && decl_readonly_section_1 (decl, reloc, shlib))
+  else if (decl && decl_readonly_section (decl, reloc))
     flags = 0;
   else if (current_function_decl
 	   && cfun
@@ -5435,7 +5428,7 @@ default_select_section (tree decl, int reloc,
 }
 
 enum section_category
-categorize_decl_for_section (tree decl, int reloc, int shlib)
+categorize_decl_for_section (tree decl, int reloc)
 {
   enum section_category ret;
 
@@ -5456,17 +5449,17 @@ categorize_decl_for_section (tree decl, int reloc, int shlib)
 	       || TREE_SIDE_EFFECTS (decl)
 	       || ! TREE_CONSTANT (DECL_INITIAL (decl)))
 	{
-	  if (shlib && (reloc & 2))
-	    ret = SECCAT_DATA_REL;
-	  else if (shlib && reloc)
-	    ret = SECCAT_DATA_REL_LOCAL;
+	  /* Here the reloc_rw_mask is not testing whether the section should
+	     be read-only or not, but whether the dynamic link will have to
+	     do something.  If so, we wish to segregate the data in order to
+	     minimize cache misses inside the dynamic linker.  */
+	  if (reloc & targetm.asm_out.reloc_rw_mask ())
+	    ret = reloc == 1 ? SECCAT_DATA_REL_LOCAL : SECCAT_DATA_REL;
 	  else
 	    ret = SECCAT_DATA;
 	}
-      else if (shlib && (reloc & 2))
-	ret = SECCAT_DATA_REL_RO;
-      else if (shlib && reloc)
-	ret = SECCAT_DATA_REL_RO_LOCAL;
+      else if (reloc & targetm.asm_out.reloc_rw_mask ())
+	ret = reloc == 1 ? SECCAT_DATA_REL_RO_LOCAL : SECCAT_DATA_REL_RO;
       else if (reloc || flag_merge_constants < 2)
 	/* C and C++ don't allow different variables to share the same
 	   location.  -fmerge-all-constants allows even that (at the
@@ -5479,7 +5472,7 @@ categorize_decl_for_section (tree decl, int reloc, int shlib)
     }
   else if (TREE_CODE (decl) == CONSTRUCTOR)
     {
-      if ((shlib && reloc)
+      if ((reloc & targetm.asm_out.reloc_rw_mask ())
 	  || TREE_SIDE_EFFECTS (decl)
 	  || ! TREE_CONSTANT (decl))
 	ret = SECCAT_DATA;
@@ -5519,13 +5512,7 @@ categorize_decl_for_section (tree decl, int reloc, int shlib)
 bool
 decl_readonly_section (tree decl, int reloc)
 {
-  return decl_readonly_section_1 (decl, reloc, flag_pic);
-}
-
-bool
-decl_readonly_section_1 (tree decl, int reloc, int shlib)
-{
-  switch (categorize_decl_for_section (decl, reloc, shlib))
+  switch (categorize_decl_for_section (decl, reloc))
     {
     case SECCAT_RODATA:
     case SECCAT_RODATA_MERGE_STR:
@@ -5546,15 +5533,8 @@ section *
 default_elf_select_section (tree decl, int reloc,
 			    unsigned HOST_WIDE_INT align)
 {
-  return default_elf_select_section_1 (decl, reloc, align, flag_pic);
-}
-
-section *
-default_elf_select_section_1 (tree decl, int reloc,
-			      unsigned HOST_WIDE_INT align, int shlib)
-{
   const char *sname;
-  switch (categorize_decl_for_section (decl, reloc, shlib))
+  switch (categorize_decl_for_section (decl, reloc))
     {
     case SECCAT_TEXT:
       /* We're not supposed to be called on FUNCTION_DECLs.  */
@@ -5616,19 +5596,13 @@ default_elf_select_section_1 (tree decl, int reloc,
 void
 default_unique_section (tree decl, int reloc)
 {
-  default_unique_section_1 (decl, reloc, flag_pic);
-}
-
-void
-default_unique_section_1 (tree decl, int reloc, int shlib)
-{
   /* We only need to use .gnu.linkonce if we don't have COMDAT groups.  */
   bool one_only = DECL_ONE_ONLY (decl) && !HAVE_COMDAT_GROUP;
   const char *prefix, *name;
   size_t nlen, plen;
   char *string;
 
-  switch (categorize_decl_for_section (decl, reloc, shlib))
+  switch (categorize_decl_for_section (decl, reloc))
     {
     case SECCAT_TEXT:
       prefix = one_only ? ".gnu.linkonce.t." : ".text.";
@@ -5689,45 +5663,76 @@ default_unique_section_1 (tree decl, int reloc, int shlib)
   DECL_SECTION_NAME (decl) = build_string (nlen + plen, string);
 }
 
+/* Like compute_reloc_for_constant, except for an RTX.  The return value
+   is a mask for which bit 1 indicates a global relocation, and bit 0
+   indicates a local relocation.  */
+
+static int
+compute_reloc_for_rtx_1 (rtx *xp, void *data)
+{
+  int *preloc = data;
+  rtx x = *xp;
+
+  switch (GET_CODE (x))
+    {
+    case SYMBOL_REF:
+      *preloc |= SYMBOL_REF_LOCAL_P (x) ? 1 : 2;
+      break;
+    case LABEL_REF:
+      *preloc |= 1;
+      break;
+    default:
+      break;
+    }
+
+  return 0;
+}
+
+static int
+compute_reloc_for_rtx (rtx x)
+{
+  int reloc;
+
+  switch (GET_CODE (x))
+    {
+    case CONST:
+    case SYMBOL_REF:
+    case LABEL_REF:
+      reloc = 0;
+      for_each_rtx (&x, compute_reloc_for_rtx_1, &reloc);
+      return reloc;
+
+    default:
+      return 0;
+    }
+}
+
 section *
 default_select_rtx_section (enum machine_mode mode ATTRIBUTE_UNUSED,
 			    rtx x,
 			    unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
-  if (flag_pic)
-    switch (GET_CODE (x))
-      {
-      case CONST:
-      case SYMBOL_REF:
-      case LABEL_REF:
-	return data_section;
-
-      default:
-	break;
-      }
-
-  return readonly_data_section;
+  if (compute_reloc_for_rtx (x) & targetm.asm_out.reloc_rw_mask ())
+    return data_section;
+  else
+    return readonly_data_section;
 }
 
 section *
 default_elf_select_rtx_section (enum machine_mode mode, rtx x,
 				unsigned HOST_WIDE_INT align)
 {
+  int reloc = compute_reloc_for_rtx (x);
+
   /* ??? Handle small data here somehow.  */
 
-  if (flag_pic)
-    switch (GET_CODE (x))
-      {
-      case CONST:
-      case SYMBOL_REF:
-	return get_named_section (NULL, ".data.rel.ro", 3);
-
-      case LABEL_REF:
+  if (reloc & targetm.asm_out.reloc_rw_mask ())
+    {
+      if (reloc == 1)
 	return get_named_section (NULL, ".data.rel.ro.local", 1);
-
-      default:
-	break;
-      }
+      else
+	return get_named_section (NULL, ".data.rel.ro", 3);
+    }
 
   return mergeable_constant_section (mode, align, 0);
 }

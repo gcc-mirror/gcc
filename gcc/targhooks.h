@@ -78,3 +78,5 @@ extern enum reg_class default_secondary_reload (bool, rtx, enum reg_class,
 						enum machine_mode,
 						secondary_reload_info *);
 extern void hook_void_bitmap (bitmap);
+
+extern int default_reloc_rw_mask (void);

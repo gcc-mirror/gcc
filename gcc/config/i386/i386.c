@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on IA-32.
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2010,7 +2010,7 @@ x86_64_elf_select_section (tree decl, int reloc,
     {
       const char *sname = NULL;
       unsigned int flags = SECTION_WRITE;
-      switch (categorize_decl_for_section (decl, reloc, flag_pic))
+      switch (categorize_decl_for_section (decl, reloc))
 	{
 	case SECCAT_DATA:
 	  sname = ".ldata";
@@ -2077,7 +2077,7 @@ x86_64_elf_unique_section (tree decl, int reloc)
       /* We only need to use .gnu.linkonce if we don't have COMDAT groups.  */
       bool one_only = DECL_ONE_ONLY (decl) && !HAVE_COMDAT_GROUP;
 
-      switch (categorize_decl_for_section (decl, reloc, flag_pic))
+      switch (categorize_decl_for_section (decl, reloc))
 	{
 	case SECCAT_DATA:
 	case SECCAT_DATA_REL:

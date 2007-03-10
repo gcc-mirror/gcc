@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
 		  David Mosberger <davidm@hpl.hp.com>.
@@ -243,16 +243,11 @@ static void ia64_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				  HOST_WIDE_INT, tree);
 static void ia64_file_start (void);
 
+static int ia64_hpux_reloc_rw_mask (void) ATTRIBUTE_UNUSED;
+static int ia64_reloc_rw_mask (void) ATTRIBUTE_UNUSED;
 static section *ia64_select_rtx_section (enum machine_mode, rtx,
 					 unsigned HOST_WIDE_INT);
 static void ia64_output_dwarf_dtprel (FILE *, int, rtx)
-     ATTRIBUTE_UNUSED;
-static section *ia64_rwreloc_select_section (tree, int, unsigned HOST_WIDE_INT)
-     ATTRIBUTE_UNUSED;
-static void ia64_rwreloc_unique_section (tree, int)
-     ATTRIBUTE_UNUSED;
-static section *ia64_rwreloc_select_rtx_section (enum machine_mode, rtx,
-						 unsigned HOST_WIDE_INT)
      ATTRIBUTE_UNUSED;
 static unsigned int ia64_section_type_flags (tree, const char *, int);
 static void ia64_hpux_add_extern_decl (tree decl)
@@ -9395,6 +9390,24 @@ ia64_sysv4_init_libfuncs (void)
      glibc doesn't have them.  */
 }
 
+/* For HPUX, it is illegal to have relocations in shared segments.  */
+
+static int
+ia64_hpux_reloc_rw_mask (void)
+{
+  return 3;
+}
+
+/* For others, relax this so that relocations to local data goes in
+   read-only segments, but we still cannot allow global relocations
+   in read-only segments.  */
+
+static int
+ia64_reloc_rw_mask (void)
+{
+  return flag_pic ? 3 : 2;
+}
+
 /* Return the section to use for X.  The only special thing we do here
    is to honor small data.  */
 
@@ -9409,37 +9422,6 @@ ia64_select_rtx_section (enum machine_mode mode, rtx x,
   else
     return default_elf_select_rtx_section (mode, x, align);
 }
-
-/* It is illegal to have relocations in shared segments on AIX and HPUX.
-   Pretend flag_pic is always set.  */
-
-static section *
-ia64_rwreloc_select_section (tree exp, int reloc, unsigned HOST_WIDE_INT align)
-{
-  return default_elf_select_section_1 (exp, reloc, align, true);
-}
-
-static void
-ia64_rwreloc_unique_section (tree decl, int reloc)
-{
-  default_unique_section_1 (decl, reloc, true);
-}
-
-static section *
-ia64_rwreloc_select_rtx_section (enum machine_mode mode, rtx x,
-				 unsigned HOST_WIDE_INT align)
-{
-  section *sect;
-  int save_pic = flag_pic;
-  flag_pic = 1;
-  sect = ia64_select_rtx_section (mode, x, align);
-  flag_pic = save_pic;
-  return sect;
-}
-
-#ifndef TARGET_RWRELOC
-#define TARGET_RWRELOC flag_pic
-#endif
 
 static unsigned int
 ia64_section_type_flags (tree decl, const char *name, int reloc)
@@ -9456,7 +9438,7 @@ ia64_section_type_flags (tree decl, const char *name, int reloc)
       || strncmp (name, ".gnu.linkonce.sb.", 17) == 0)
     flags = SECTION_SMALL;
 
-  flags |= default_section_type_flags_1 (decl, name, reloc, TARGET_RWRELOC);
+  flags |= default_section_type_flags (decl, name, reloc);
   return flags;
 }
 

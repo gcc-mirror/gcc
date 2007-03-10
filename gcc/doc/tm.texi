@@ -6296,6 +6296,18 @@ any assembly code, and before calling any of the section-returning hooks
 described below.
 @end deftypefn
 
+@deftypefn {Target Hook} TARGET_ASM_RELOC_RW_MASK (void)
+Return a mask describing how relocations should be treated when
+selecting sections.  Bit 1 should be set if global relocations
+should be placed in a read-write section; bit 0 should be set if
+local relocations should be placed in a read-write section.
+
+The default version of this function returns 3 when @option{-fpic}
+is in effect, and 0 otherwise.  The hook is typically redefined
+when the target cannot support (some kinds of) dynamic relocations
+in read-only sections even in executables.
+@end deftypefn
+
 @deftypefn {Target Hook} {section *} TARGET_ASM_SELECT_SECTION (tree @var{exp}, int @var{reloc}, unsigned HOST_WIDE_INT @var{align})
 Return the section into which @var{exp} should be placed.  You can
 assume that @var{exp} is either a @code{VAR_DECL} node or a constant of

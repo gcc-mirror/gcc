@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on the DEC Alpha.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -9395,6 +9395,14 @@ alpha_file_start (void)
 #endif
 
 #ifdef OBJECT_FORMAT_ELF
+/* Since we don't have a .dynbss section, we should not allow global
+   relocations in the .rodata section.  */
+
+static int
+alpha_elf_reloc_rw_mask (void)
+{
+  return flag_pic ? 3 : 2;
+}
 
 /* Return a section for X.  The only special thing we do here is to
    honor small data.  */
@@ -10643,6 +10651,8 @@ alpha_init_libfuncs (void)
 #endif
 
 #ifdef OBJECT_FORMAT_ELF
+#undef  TARGET_ASM_RELOC_RW_MASK
+#define TARGET_ASM_RELOC_RW_MASK  alpha_elf_reloc_rw_mask
 #undef	TARGET_ASM_SELECT_RTX_SECTION
 #define	TARGET_ASM_SELECT_RTX_SECTION  alpha_elf_select_rtx_section
 #endif

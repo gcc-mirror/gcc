@@ -1,3 +1,49 @@
+2007-03-09  Richard Henderson  <rth@redhat.com>
+
+        PR target/26090
+	* target.h (targetm.asm.out.reloc_rw_mask): New.
+	* target-def.h (TARGET_ASM_RELOC_RW_MASK): New.
+	(TARGET_ASM_OUT): Use it.
+	* targhooks.c, targhooks.h (default_reloc_rw_mask): New.
+	* varasm.c (categorize_decl_for_section): Remove shlib argument;
+	use the new reloc_rw_mask target hook instead.
+	(default_section_type_flags_1): Merge into...
+	(default_section_type_flags): ... here.
+	(decl_readonly_section_1): Merge into...
+	(decl_readonly_section): ... here.
+	(default_elf_select_section_1): Merge into...
+	(default_elf_select_section): ... here.
+	(default_unique_section_1): Merge into...
+	(default_unique_section): ... here.
+	(compute_reloc_for_rtx_1, compute_reloc_for_rtx): New.
+	(default_select_rtx_section): Use it.
+	(default_elf_select_rtx_section): Likewise.
+	* output.h: Update to match.
+	* doc/tm.texi (TARGET_ASM_RELOC_RW_MASK): New.
+	* config/alpha/alpha.c (alpha_elf_reloc_rw_mask): New.
+	(TARGET_ASM_RELOC_RW_MASK): New.
+	* config/i386/i386.c (x86_64_elf_select_section): Adjust call
+	to categorize_decl_for_section.
+	(x86_64_elf_unique_section): Likewise.
+	* config/ia64/hpux.h (TARGET_ASM_SELECT_SECTION,
+	TARGET_ASM_UNIQUE_SECTION, TARGET_ASM_SELECT_RTX_SECTION): Remove.
+	(TARGET_ASM_RELOC_RW_MASK): New.
+	* config/ia64/ia64.c (ia64_rwreloc_select_section,
+	ia64_rwreloc_unique_section, ia64_rwreloc_select_rtx_section): Remove.
+	(ia64_hpux_reloc_rw_mask, ia64_reloc_rw_mask): New.
+	(TARGET_RWRELOC): Remove.
+	(ia64_section_type_flags): Adjust call to default_section_type_flags.
+	* config/ia64/sysv4.h (TARGET_ASM_RELOC_RW_MASK): New.
+	* config/rs6000/rs6000.c (rs6000_elf_section_type_flags): Remove.
+	(rs6000_elf_select_section, rs6000_elf_unique_section): Remove.
+	(rs6000_elf_reloc_rw_mask, rs6000_xcoff_reloc_rw_mask): New.
+	(rs6000_xcoff_select_section): Use decl_readonly_section.
+	(rs6000_xcoff_section_type_flags): Use default_section_type_flags.
+	* config/rs6000/sysv4.h (TARGET_ASM_RELOC_RW_MASK): New.
+	(TARGET_ASM_SELECT_SECTION, TARGET_ASM_UNIQUE_SECTION): Remove.
+	(TARGET_SECTION_TYPE_FLAGS): Remove.
+	* config/rs6000/xcoff.h (TARGET_ASM_RELOC_RW_MASK): New.
+
 2007-03-08  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 31013

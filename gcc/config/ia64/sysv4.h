@@ -121,6 +121,8 @@ do {									\
 } while (0)
 
 /* Override default elf definition.  */
+#undef  TARGET_ASM_RELOC_RW_MASK
+#define TARGET_ASM_RELOC_RW_MASK  ia64_reloc_rw_mask
 #undef	TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION  ia64_select_rtx_section
 

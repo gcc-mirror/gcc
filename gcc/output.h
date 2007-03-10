@@ -377,7 +377,6 @@ extern bool first_function_block_is_cold;
 /* Decide whether DECL needs to be in a writable section.
    RELOC is the same as for SELECT_SECTION.  */
 extern bool decl_readonly_section (tree, int);
-extern bool decl_readonly_section_1 (tree, int, int);
 
 /* This can be used to compute RELOC for the function above, when
    given a constant expression.  */
@@ -570,12 +569,11 @@ extern void switch_to_section (section *);
 extern void output_section_asm_op (const void *);
 
 extern unsigned int default_section_type_flags (tree, const char *, int);
-extern unsigned int default_section_type_flags_1 (tree, const char *, int, int);
 
 extern bool have_global_bss_p (void);
 extern void default_no_named_section (const char *, unsigned int, tree);
 extern void default_elf_asm_named_section (const char *, unsigned int, tree);
-extern enum section_category categorize_decl_for_section (tree, int, int);
+extern enum section_category categorize_decl_for_section (tree, int);
 extern void default_coff_asm_named_section (const char *, unsigned int, tree);
 extern void default_pe_asm_named_section (const char *, unsigned int, tree);
 
@@ -586,15 +584,9 @@ extern void default_stabs_asm_out_constructor (rtx, int);
 extern void default_named_section_asm_out_constructor (rtx, int);
 extern void default_ctor_section_asm_out_constructor (rtx, int);
 
-extern section *default_select_section (tree, int,
-					       unsigned HOST_WIDE_INT);
-extern section *default_elf_select_section (tree, int,
-						   unsigned HOST_WIDE_INT);
-extern section *default_elf_select_section_1 (tree, int,
-						     unsigned HOST_WIDE_INT,
-						     int);
+extern section *default_select_section (tree, int, unsigned HOST_WIDE_INT);
+extern section *default_elf_select_section (tree, int, unsigned HOST_WIDE_INT);
 extern void default_unique_section (tree, int);
-extern void default_unique_section_1 (tree, int, int);
 extern section *default_function_rodata_section (tree);
 extern section *default_no_function_rodata_section (tree);
 extern section *default_select_rtx_section (enum machine_mode, rtx,

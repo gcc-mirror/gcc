@@ -1,5 +1,5 @@
 /* Definitions of target machine GNU compiler.  IA-64 version.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
    Free Software Foundation, Inc.
    Contributed by Steve Ellcey <sje@cup.hp.com> and
                   Reva Cuthbertson <reva@cup.hp.com>
@@ -178,13 +178,8 @@ do {								\
 
 /* It is illegal to have relocations in shared segments on HPUX.
    Pretend flag_pic is always set.  */
-#undef  TARGET_ASM_SELECT_SECTION
-#define TARGET_ASM_SELECT_SECTION  ia64_rwreloc_select_section
-#undef  TARGET_ASM_UNIQUE_SECTION
-#define TARGET_ASM_UNIQUE_SECTION  ia64_rwreloc_unique_section
-#undef  TARGET_ASM_SELECT_RTX_SECTION
-#define TARGET_ASM_SELECT_RTX_SECTION  ia64_rwreloc_select_rtx_section
-#define TARGET_RWRELOC  true
+#undef  TARGET_ASM_RELOC_RW_MASK
+#define TARGET_ASM_RELOC_RW_MASK  ia64_hpux_reloc_rw_mask
 
 /* ia64 HPUX has the float and long double forms of math functions.  */
 #undef TARGET_C99_FUNCTIONS

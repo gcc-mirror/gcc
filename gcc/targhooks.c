@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -593,6 +593,15 @@ bool
 default_narrow_bitfield (void)
 {
   return !STRICT_ALIGNMENT;
+}
+
+/* By default, if flag_pic is true, then neither local nor global relocs
+   should be placed in readonly memory.  */
+
+int
+default_reloc_rw_mask (void)
+{
+  return flag_pic ? 3 : 0;
 }
 
 #include "gt-targhooks.h"

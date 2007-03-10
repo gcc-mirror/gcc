@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on IBM RS/6000.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
@@ -616,13 +616,11 @@ static rtx rs6000_emit_set_long_const (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 static bool rs6000_return_in_memory (tree, tree);
 static void rs6000_file_start (void);
 #if TARGET_ELF
-static unsigned int rs6000_elf_section_type_flags (tree, const char *, int);
+static int rs6000_elf_reloc_rw_mask (void);
 static void rs6000_elf_asm_out_constructor (rtx, int);
 static void rs6000_elf_asm_out_destructor (rtx, int);
 static void rs6000_elf_end_indicate_exec_stack (void) ATTRIBUTE_UNUSED;
 static void rs6000_elf_asm_init_sections (void);
-static section *rs6000_elf_select_section (tree, int, unsigned HOST_WIDE_INT);
-static void rs6000_elf_unique_section (tree, int);
 static section *rs6000_elf_select_rtx_section (enum machine_mode, rtx,
 					       unsigned HOST_WIDE_INT);
 static void rs6000_elf_encode_section_info (tree, rtx, int)
@@ -633,6 +631,7 @@ static bool rs6000_use_blocks_for_constant_p (enum machine_mode, rtx);
 static void rs6000_xcoff_asm_output_anchor (rtx);
 static void rs6000_xcoff_asm_globalize_label (FILE *, const char *);
 static void rs6000_xcoff_asm_init_sections (void);
+static int rs6000_xcoff_reloc_rw_mask (void);
 static void rs6000_xcoff_asm_named_section (const char *, unsigned int, tree);
 static section *rs6000_xcoff_select_section (tree, int,
 					     unsigned HOST_WIDE_INT);
@@ -17793,37 +17792,6 @@ rs6000_elf_select_rtx_section (enum machine_mode mode, rtx x,
   else
     return default_elf_select_rtx_section (mode, x, align);
 }
-
-/* Implement TARGET_ASM_SELECT_SECTION for ELF targets.  */
-
-static section *
-rs6000_elf_select_section (tree decl, int reloc,
-			   unsigned HOST_WIDE_INT align)
-{
-  /* Pretend that we're always building for a shared library when
-     ABI_AIX, because otherwise we end up with dynamic relocations
-     in read-only sections.  This happens for function pointers,
-     references to vtables in typeinfo, and probably other cases.  */
-  return default_elf_select_section_1 (decl, reloc, align,
-				       flag_pic || DEFAULT_ABI == ABI_AIX);
-}
-
-/* A C statement to build up a unique section name, expressed as a
-   STRING_CST node, and assign it to DECL_SECTION_NAME (decl).
-   RELOC indicates whether the initial value of EXP requires
-   link-time relocations.  If you do not define this macro, GCC will use
-   the symbol name prefixed by `.' as the section name.  Note - this
-   macro can now be called for uninitialized data items as well as
-   initialized data and functions.  */
-
-static void
-rs6000_elf_unique_section (tree decl, int reloc)
-{
-  /* As above, pretend that we're always building for a shared library
-     when ABI_AIX, to avoid dynamic relocations in read-only sections.  */
-  default_unique_section_1 (decl, reloc,
-			    flag_pic || DEFAULT_ABI == ABI_AIX);
-}
 
 /* For a SYMBOL_REF, set generic flags and then perform some
    target-specific processing.
@@ -18302,11 +18270,15 @@ rs6000_darwin_file_start (void)
 #endif /* TARGET_MACHO */
 
 #if TARGET_ELF
-static unsigned int
-rs6000_elf_section_type_flags (tree decl, const char *name, int reloc)
+static int
+rs6000_elf_reloc_rw_mask (void)
 {
-  return default_section_type_flags_1 (decl, name, reloc,
-				       flag_pic || DEFAULT_ABI == ABI_AIX);
+  if (flag_pic)
+    return 3;
+  else if (DEFAULT_ABI == ABI_AIX)
+    return 2;
+  else
+    return 0;
 }
 
 /* Record an element in the table of global constructors.  SYMBOL is
@@ -18544,6 +18516,12 @@ rs6000_xcoff_asm_init_sections (void)
   exception_section = data_section;
 }
 
+static int
+rs6000_xcoff_reloc_rw_mask (void)
+{
+  return 3;
+}
+
 static void
 rs6000_xcoff_asm_named_section (const char *name, unsigned int flags,
 				tree decl ATTRIBUTE_UNUSED)
@@ -18567,7 +18545,7 @@ static section *
 rs6000_xcoff_select_section (tree decl, int reloc,
 			     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
-  if (decl_readonly_section_1 (decl, reloc, 1))
+  if (decl_readonly_section (decl, reloc))
     {
       if (TREE_PUBLIC (decl))
 	return read_only_data_section;
@@ -18639,7 +18617,7 @@ static unsigned int
 rs6000_xcoff_section_type_flags (tree decl, const char *name, int reloc)
 {
   unsigned int align;
-  unsigned int flags = default_section_type_flags_1 (decl, name, reloc, 1);
+  unsigned int flags = default_section_type_flags (decl, name, reloc);
 
   /* Align to at least UNIT size.  */
   if (flags & SECTION_CODE)
