@@ -1,3 +1,16 @@
+2007-03-11  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* lower-subreg.c: Include except.h.
+	(decompose_multiword_subregs): Verify that the only control flow
+	insns we can split are loads to multi-words pseudos.
+	Handle breaking such blocks after splitting, instead of calling
+	find_many_sub_basic_blocks.
+
+	* loop-unroll.c (split_edge_and_insert): Don't set BB_SUPERBLOCK
+	on the new basic block.  Add a lengthy comment explaining why we
+	thought this was necessary.
+	* cfglayout.c (cfg_layout_finalize): Don't break superblocks.
+
 2007-03-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/30924

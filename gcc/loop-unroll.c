@@ -879,7 +879,37 @@ split_edge_and_insert (edge e, rtx insns)
     return NULL;
   bb = split_edge (e); 
   emit_insn_after (insns, BB_END (bb));
-  bb->flags |= BB_SUPERBLOCK;
+
+  /* ??? We used to assume that INSNS can contain control flow insns, and
+     that we had to try to find sub basic blocks in BB to maintain a valid
+     CFG.  For this purpose we used to set the BB_SUPERBLOCK flag on BB
+     and call break_superblocks when going out of cfglayout mode.  But it
+     turns out that this never happens; and that if it does ever happen,
+     the verify_flow_info call in loop_optimizer_finalize would fail.
+
+     There are two reasons why we expected we could have control flow insns
+     in INSNS.  The first is when a comparison has to be done in parts, and
+     the second is when the number of iterations is computed for loops with
+     the number of iterations known at runtime.  In both cases, test cases
+     to get control flow in INSNS appear to be impossible to construct:
+
+      * If do_compare_rtx_and_jump needs several branches to do comparison
+	in a mode that needs comparison by parts, we cannot analyze the
+	number of iterations of the loop, and we never get to unrolling it.
+
+      * The code in expand_divmod that was suspected to cause creation of
+	branching code seems to be only accessed for signed division.  The
+	divisions used by # of iterations analysis are always unsigned.
+	Problems might arise on architectures that emits branching code
+	for some operations that may appear in the unroller (especially
+	for division), but we have no such architectures.
+
+     Considering all this, it was decided that we should for now assume
+     that INSNS can in theory contain control flow insns, but in practice
+     it never does.  So we don't handle the theoretical case, and should
+     a real failure ever show up, we have a pretty good clue for how to
+     fix it.  */
+
   return bb;
 }
 

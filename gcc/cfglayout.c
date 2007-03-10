@@ -1149,8 +1149,6 @@ cfg_layout_finalize (void)
     bb->il.rtl->visited = 0;
   }
 
-  break_superblocks ();
-
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
 #endif
