@@ -1,3 +1,18 @@
+2007-03-10  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28080 (partial)
+	* include/std/memory: Move C++03 implementation...
+	* include/bits/stl_memory.h: ... here, new.
+	* include/Makefile.am: Add.
+	* include/bits/stl_tempbuf.h: Include the latter instead.
+	* include/tr1/hashtable: Include allocator.h instead of
+	the whole <memory>.
+	* include/tr1/hashtable_policy.h: Include stl_function.h
+	instead of <functional>.
+	* include/Makefile.in: Regenerate.
+	* testsuite/20_util/auto_ptr/assign_neg.cc: Adjust dg-error
+	line numbers.
+
 2007-03-09  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* include/Makefile.in: Regenerate.
