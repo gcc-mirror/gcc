@@ -994,24 +994,22 @@ warn_logical_operator (enum tree_code code, tree arg1, tree
       case TRUTH_ORIF_EXPR:
       case TRUTH_OR_EXPR:
       case TRUTH_AND_EXPR:
-       if (!TREE_NO_WARNING (arg1)
-            && INTEGRAL_TYPE_P (TREE_TYPE (arg1))
-           && !CONSTANT_CLASS_P (arg1)
-           && TREE_CODE (arg2) == INTEGER_CST
-           && !integer_zerop (arg2)
-           && !integer_onep (arg2))
-         {
-           warning (OPT_Wlogical_op,
-                    "logical %<%s%> with non-zero constant "
-                    "will always evaluate as true",
-                    ((code == TRUTH_ANDIF_EXPR)
-                     || (code == TRUTH_AND_EXPR)) ? "&&" : "||");
-            TREE_NO_WARNING (arg1) = true;
-         }
-
-        break;
+	if (!TREE_NO_WARNING (arg1)
+	    && INTEGRAL_TYPE_P (TREE_TYPE (arg1))
+	    && !CONSTANT_CLASS_P (arg1)
+	    && TREE_CODE (arg2) == INTEGER_CST
+	    && !integer_zerop (arg2))
+	  {
+	    warning (OPT_Wlogical_op,
+		     "logical %<%s%> with non-zero constant "
+		     "will always evaluate as true",
+		     ((code == TRUTH_ANDIF_EXPR)
+		      || (code == TRUTH_AND_EXPR)) ? "&&" : "||");
+	    TREE_NO_WARNING (arg1) = true;
+	  }
+	break;
       default:
-        break;
+	break;
     }
 }
 
