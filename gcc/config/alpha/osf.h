@@ -121,7 +121,7 @@ Boston, MA 02110-1301, USA.  */
 		%{K: -I %b.o~} \
 		%{!K: %{save-temps: -I %b.o~}} \
 		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
-		%{.s:%i} %{!.s:%g.s}}}"
+		%{,assembler:%i;:%g.s}}}"
 
 #else
 #define ASM_FINAL_SPEC "\
@@ -130,7 +130,7 @@ Boston, MA 02110-1301, USA.  */
 		%{K: -I %b.o~} \
 		%{!K: %{save-temps: -I %b.o~}} \
 		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
-		%{.s:%i} %{!.s:%g.s}}}"
+		%{,assembler:%i;:%g.s}}}"
 
 #endif
 
