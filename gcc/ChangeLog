@@ -1,3 +1,7 @@
+2007-03-10  Dirk Mueller  <dmueller@suse.de>
+
+	* c-common.c (warn_logical_operator): Fix condition.
+
 2007-03-10  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	* config/i386/darwin.h (DARWIN_MINVERSION_SPEC): Add missing
