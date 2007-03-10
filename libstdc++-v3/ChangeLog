@@ -1,3 +1,54 @@
+2007-03-09  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* include/Makefile.in: Regenerate.
+	* include/tr1/mu_iterate.h: Remove.
+	* include/tr1/tuple (_Tuple_impl): New.
+	(tuple): Make variadic, re-implement as shell over _Tuple_impl.
+	(0-element tuple): Basis case.
+	(2-element tuple): Handle pair methods.
+	(__get_helper): Remove.
+	(tuple_element): Reimplement with variadic templates.
+	(tuple_size): Ditto.
+	(get): Ditto.
+	(operator==): Use variadic templates in the signature.
+	(operator<): Ditto.
+	(operator!=): Ditto.
+	(operator>): Ditto.
+	(operator<=): Ditto.
+	(operator>=): Ditto.
+	(__stripped_tuple_type): Remove; we've inlined its behavior.
+	(make_tuple): Reimplement with variadic templates.
+	(tie): Ditto.
+	* include/tr1/tuple_iterate.h: Remove.
+	* include/tr1/bind_repeat.h: Remove.
+	* include/tr1/ref_wrap_iterate.h: Remove.
+	* include/tr1/bind_iterate.h: Remove.
+	* include/tr1/functional (_Weak_result_type): Add variadic
+	partial specializations.
+	(result_of): Ditto.
+	(__invoke): Reimplement using variadic templates.
+	(reference_wrapper): Reimplement operator() with variadic
+	templates.
+	(_Maybe_unary_or_binary_function): New.
+	(_Mem_fn): Implement for member function pointers using variadic
+	templates.
+	(placeholders): Define 30 placeholders.
+	(_Index_tuple): New.
+	(_Build_index_tuple): New.
+	(_No_tuple_element): New.
+	(_Safe_tuple_element_impl): New.
+	(_Safe_tuple_element): New.
+	(_Mu): Reimplement with variadic templates, use
+	_Safe_tuple_element instead of tuple_element.
+	(_Bind): Reimplement with variadic templates and tuples.
+	(_Bind_result): Ditto.
+	(bind): Reimplement with variadic templates.
+	(_Function_handler): Ditto.
+	(function): Ditto.
+	* include/tr1/functional_iterate.h: Remove.
+	* include/tr1/repeat.h: Remove.
+	* include/Makefile.am: Don't install removed headers.
+	
 2007-03-06  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/28080 (partial)
