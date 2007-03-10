@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for some generic XCOFF file format
-   Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2007 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -88,6 +88,7 @@
 #define TARGET_ASM_OUTPUT_ANCHOR  rs6000_xcoff_asm_output_anchor
 #define TARGET_ASM_GLOBALIZE_LABEL  rs6000_xcoff_asm_globalize_label
 #define TARGET_ASM_INIT_SECTIONS  rs6000_xcoff_asm_init_sections
+#define TARGET_ASM_RELOC_RW_MASK  rs6000_xcoff_reloc_rw_mask
 #define TARGET_ASM_NAMED_SECTION  rs6000_xcoff_asm_named_section
 #define TARGET_ASM_SELECT_SECTION  rs6000_xcoff_select_section
 #define TARGET_ASM_SELECT_RTX_SECTION  rs6000_xcoff_select_rtx_section

@@ -1,5 +1,5 @@
 /* Data structure definitions for a generic GCC target.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
@@ -161,6 +161,12 @@ struct gcc_target
        If DECL is non-NULL, it is the VAR_DECL or FUNCTION_DECL with
        which this section is associated.  */
     void (* named_section) (const char *name, unsigned int flags, tree decl);
+
+    /* Return a mask describing how relocations should be treated when
+       selecting sections.  Bit 1 should be set if global relocations
+       should be placed in a read-write section; bit 0 should be set if
+       local relocations should be placed in a read-write section.  */
+    int (*reloc_rw_mask) (void);
 
     /* Return a section for EXP.  It may be a DECL or a constant.  RELOC
        is nonzero if runtime relocations must be applied; bit 1 will be
