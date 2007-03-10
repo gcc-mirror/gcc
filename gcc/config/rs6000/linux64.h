@@ -165,7 +165,7 @@ extern int dot_symbols;
 #define ASM_SPEC64 "-a64"
 
 #define ASM_SPEC_COMMON "%(asm_cpu) \
-%{.s: %{mregnames} %{mno-regnames}} %{.S: %{mregnames} %{mno-regnames}} \
+%{,assembler|,assembler-with-cpp: %{mregnames} %{mno-regnames}} \
 %{v:-V} %{Qy:} %{!Qn:-Qy} %{Wa,*:%*} \
 %{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian}"
 

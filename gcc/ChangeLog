@@ -1,3 +1,22 @@
+2007-03-09  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.c: Document %{, in big comment at top.
+	(input_suffix_matches): Remove special handling for .s and
+	.S.
+	(input_spec_matches): New.
+	(handle_braces): Handle %{,.
+	(validate_switches): ',' indicates a value which is not a switch.
+	* config/alpha/osf.h (ASM_FINAL_SPEC): Use %{, rather than %{.
+	to detect assembler input.
+	* config/i386/sol2.h (CPP_SPEC): Likewise.
+	* config/rs6000/sysv4.h (ASM_SPEC): Likewise.
+	* config/rs6000/vxworks.h (ASM_SPEC): Likewise.
+	* config/rs6000/lynx.h (ASM_SPEC): Likewise.
+	* config/rs6000/linux64.h (ASM_SPEC_COMMON): Likewise.
+	* config/i386/darwin.h (DARWIN_MINVERSION_SPEC): Objective-C plus
+	-m64 causes deployment target to default to 10.5.
+	* config/rs6000/darwin.h (DARWIN_MINVERSION_SPEC): Likewise.
+
 2007-03-09  Richard Henderson  <rth@redhat.com>
 
 	PR target/26090

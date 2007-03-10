@@ -54,8 +54,7 @@
 #undef ASM_SPEC
 #define ASM_SPEC \
 "%(asm_cpu) \
- %{.s: %{mregnames} %{mno-regnames}} \
- %{.S: %{mregnames} %{mno-regnames}}"
+ %{,assembler|,assembler-with-cpp: %{mregnames} %{mno-regnames}}"
 
 #undef STARTFILE_SPEC
 #undef ENDFILE_SPEC
