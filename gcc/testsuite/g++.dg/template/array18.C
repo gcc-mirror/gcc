@@ -1,4 +1,4 @@
-// PR c++/20924
+// PR c++/30924
 
 template<typename T>
 struct x {};
