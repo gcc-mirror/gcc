@@ -1,6 +1,6 @@
 2007-03-10  Mark Mitchell  <mark@codesourcery.com>
 
-	PR c++/20924
+	PR c++/30924
 	* tree.c (walk_type_fields): Recurse into the element type of
 	ARRAY_TYPEs if there is a pointer set.
 
