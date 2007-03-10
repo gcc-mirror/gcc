@@ -1,3 +1,100 @@
+2007-03-09  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/20599
+	* g++.dg/cpp0x/variadic-bind.C: New.
+	* g++.dg/cpp0x/variadic-function.C: New.
+	* g++.dg/cpp0x/variadic-mem_fn.C: New.
+	* g++.dg/cpp0x/variadic-tuple.C: New.
+	* g++.dg/cpp0x/variadic1.C: New.
+	* g++.dg/cpp0x/variadic2.C: New.
+	* g++.dg/cpp0x/variadic3.C: New.
+	* g++.dg/cpp0x/variadic4.C: New.
+	* g++.dg/cpp0x/variadic5.C: New.
+	* g++.dg/cpp0x/variadic6.C: New.
+	* g++.dg/cpp0x/variadic7.C: New.
+	* g++.dg/cpp0x/variadic8.C: New.
+	* g++.dg/cpp0x/variadic9.C: New.
+	* g++.dg/cpp0x/variadic10.C: New.
+	* g++.dg/cpp0x/variadic11.C: New.
+	* g++.dg/cpp0x/variadic12.C: New.
+	* g++.dg/cpp0x/variadic13.C: New.
+	* g++.dg/cpp0x/variadic14.C: New.
+	* g++.dg/cpp0x/variadic15.C: New.
+	* g++.dg/cpp0x/variadic16.C: New.
+	* g++.dg/cpp0x/variadic17.C: New.
+	* g++.dg/cpp0x/variadic18.C: New.
+	* g++.dg/cpp0x/variadic19.C: New.
+	* g++.dg/cpp0x/variadic20.C: New.
+	* g++.dg/cpp0x/variadic21.C: New.
+	* g++.dg/cpp0x/variadic22.C: New.
+	* g++.dg/cpp0x/variadic23.C: New.
+	* g++.dg/cpp0x/variadic24.C: New.
+	* g++.dg/cpp0x/variadic25.C: New.
+	* g++.dg/cpp0x/variadic26.C: New.
+	* g++.dg/cpp0x/variadic27.C: New.
+	* g++.dg/cpp0x/variadic28.C: New.
+	* g++.dg/cpp0x/variadic29.C: New.
+	* g++.dg/cpp0x/variadic30.C: New.
+	* g++.dg/cpp0x/variadic31.C: New.
+	* g++.dg/cpp0x/variadic32.C: New.
+	* g++.dg/cpp0x/variadic33.C: New.
+	* g++.dg/cpp0x/variadic34.C: New.
+	* g++.dg/cpp0x/variadic35.C: New.
+	* g++.dg/cpp0x/variadic36.C: New.
+	* g++.dg/cpp0x/variadic37.C: New.
+	* g++.dg/cpp0x/variadic38.C: New.
+	* g++.dg/cpp0x/variadic39.C: New.
+	* g++.dg/cpp0x/variadic40.C: New.
+	* g++.dg/cpp0x/variadic41.C: New.
+	* g++.dg/cpp0x/variadic42.C: New.
+	* g++.dg/cpp0x/variadic43.C: New.
+	* g++.dg/cpp0x/variadic44.C: New.
+	* g++.dg/cpp0x/variadic45.C: New.
+	* g++.dg/cpp0x/variadic46.C: New.
+	* g++.dg/cpp0x/variadic47.C: New.
+	* g++.dg/cpp0x/variadic48.C: New.
+	* g++.dg/cpp0x/variadic49.C: New.
+	* g++.dg/cpp0x/variadic50.C: New.
+	* g++.dg/cpp0x/variadic51.C: New.
+	* g++.dg/cpp0x/variadic52.C: New.
+	* g++.dg/cpp0x/variadic53.C: New.
+	* g++.dg/cpp0x/variadic54.C: New.
+	* g++.dg/cpp0x/variadic55.C: New.
+	* g++.dg/cpp0x/variadic56.C: New.
+	* g++.dg/cpp0x/variadic57.C: New.
+	* g++.dg/cpp0x/variadic58.C: New.
+	* g++.dg/cpp0x/variadic59.C: New.
+        * g++.dg/cpp0x/variadic60.C : New.
+        * g++.dg/cpp0x/variadic61.C : New.
+        * g++.dg/cpp0x/variadic62.C : New.
+        * g++.dg/cpp0x/variadic63.C : New.
+        * g++.dg/cpp0x/variadic64.C : New.
+        * g++.dg/cpp0x/variadic65.C : New.
+        * g++.dg/cpp0x/variadic66.C : New.
+        * g++.dg/cpp0x/variadic67.C : New.
+        * g++.dg/cpp0x/variadic68.C : New.	
+        * g++.dg/cpp0x/variadic69.C : New.
+	* g++.dg/cpp0x/variadic70.C : New.
+	* g++.dg/cpp0x/variadic71.C : New.
+	* g++.dg/cpp0x/variadic72.C : New.
+	* g++.dg/cpp0x/variadic73.C : New.
+	* g++.dg/cpp0x/variadic74.C : New.
+	* g++.dg/cpp0x/variadic75.C : New.
+	* g++.dg/cpp0x/variadic-ex1.C : New.
+	* g++.dg/cpp0x/variadic-ex2.C : New.
+	* g++.dg/cpp0x/variadic-ex3.C : New.
+	* g++.dg/cpp0x/variadic-ex4.C : New.
+	* g++.dg/cpp0x/variadic-ex5.C : New.
+	* g++.dg/cpp0x/variadic-ex6.C : New.
+	* g++.dg/cpp0x/variadic-ex7.C : New.
+	* g++.dg/cpp0x/variadic-ex8.C : New.
+	* g++.dg/cpp0x/variadic-ex9.C : New.
+	* g++.dg/cpp0x/variadic-ex10.C : New.
+	* g++.dg/cpp0x/variadic-ex11.C : New.
+	* g++.dg/cpp0x/variadic-ex12.C : New.
+	* g++.dg/cpp0x/variadic-ex13.C : New.
+	* g++.dg/cpp0x/variadic-ex14.C : New.
+
 2007-03-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/31099
