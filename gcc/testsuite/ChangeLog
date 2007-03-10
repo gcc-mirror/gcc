@@ -1,3 +1,9 @@
+2007-03-10  Dirk Mueller  <dmueller@suse.de>
+
+	PR c++/17946
+	* gcc.dg/Wlogical-op-1.c: Remove duplicated part.
+	* g++.dg/warn/Wlogical-op-1.C: Remove duplicated part.
+
 2007-03-09  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/20599
