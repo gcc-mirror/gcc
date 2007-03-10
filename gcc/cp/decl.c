@@ -6967,6 +6967,7 @@ grokdeclarator (const cp_declarator *declarator,
   cp_storage_class storage_class;
   bool unsigned_p, signed_p, short_p, long_p, thread_p;
   bool type_was_error_mark_node = false;
+  bool parameter_pack_p = declarator? declarator->parameter_pack_p : false;
   bool set_no_warning = false;
 
   signed_p = declspecs->specs[(int)ds_signed];
@@ -7936,6 +7937,16 @@ grokdeclarator (const cp_declarator *declarator,
 	*attrlist = chainon (returned_attrs, *attrlist);
       else
 	attrlist = &returned_attrs;
+    }
+
+  /* Handle parameter packs. */
+  if (parameter_pack_p)
+    {
+      if (decl_context == PARM)
+        /* Turn the type into a pack expansion.*/
+        type = make_pack_expansion (type);
+      else
+        error ("non-parameter %qs cannot be a parameter pack", name);
     }
 
   /* Did array size calculations overflow?  */
@@ -8940,6 +8951,11 @@ grokparms (cp_parameter_declarator *first_parm, tree *parms)
 	    init = check_default_argument (decl, init);
 	}
 
+      if (TREE_CODE (decl) == PARM_DECL
+          && FUNCTION_PARAMETER_PACK_P (decl)
+          && parm->next)
+        error ("parameter packs must be at the end of the parameter list");
+
       TREE_CHAIN (decl) = decls;
       decls = decl;
       result = tree_cons (init, type, result);
@@ -9941,6 +9957,8 @@ xref_basetypes (tree ref, tree base_list)
       if (access == access_default_node)
 	access = default_access;
 
+      if (PACK_EXPANSION_P (basetype))
+        basetype = PACK_EXPANSION_PATTERN (basetype);
       if (TREE_CODE (basetype) == TYPE_DECL)
 	basetype = TREE_TYPE (basetype);
       if (TREE_CODE (basetype) != RECORD_TYPE
@@ -9986,6 +10004,11 @@ xref_basetypes (tree ref, tree base_list)
 	    error ("duplicate base type %qT invalid", basetype);
 	  return false;
 	}
+
+      if (PACK_EXPANSION_P (TREE_VALUE (base_list)))
+        /* Regenerate the pack expansion for the bases. */
+        basetype = make_pack_expansion (basetype);
+
       TYPE_MARKED_P (basetype) = 1;
 
       base_binfo = copy_binfo (base_binfo, basetype, ref,
@@ -11695,6 +11718,7 @@ cp_tree_node_structure (union lang_tree_node * t)
     case PTRMEM_CST:		return TS_CP_PTRMEM;
     case BASELINK:		return TS_CP_BASELINK;
     case STATIC_ASSERT:		return TS_CP_STATIC_ASSERT;
+    case ARGUMENT_PACK_SELECT:  return TS_CP_ARGUMENT_PACK_SELECT;
     default:			return TS_CP_GENERIC;
     }
 }

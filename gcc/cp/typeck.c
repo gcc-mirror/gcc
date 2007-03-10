@@ -991,7 +991,9 @@ structural_comptypes (tree t1, tree t2, int strict)
     case TEMPLATE_TEMPLATE_PARM:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
       if (TEMPLATE_TYPE_IDX (t1) != TEMPLATE_TYPE_IDX (t2)
-	  || TEMPLATE_TYPE_LEVEL (t1) != TEMPLATE_TYPE_LEVEL (t2))
+	  || TEMPLATE_TYPE_LEVEL (t1) != TEMPLATE_TYPE_LEVEL (t2)
+          || (TEMPLATE_TYPE_PARAMETER_PACK (t1) 
+              != TEMPLATE_TYPE_PARAMETER_PACK (t2)))
 	return false;
       if (!comp_template_parms
 	  (DECL_TEMPLATE_PARMS (TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL (t1)),
@@ -1050,7 +1052,9 @@ structural_comptypes (tree t1, tree t2, int strict)
 
     case TEMPLATE_TYPE_PARM:
       if (TEMPLATE_TYPE_IDX (t1) != TEMPLATE_TYPE_IDX (t2)
-	  || TEMPLATE_TYPE_LEVEL (t1) != TEMPLATE_TYPE_LEVEL (t2))
+	  || TEMPLATE_TYPE_LEVEL (t1) != TEMPLATE_TYPE_LEVEL (t2)
+          || (TEMPLATE_TYPE_PARAMETER_PACK (t1) 
+              != TEMPLATE_TYPE_PARAMETER_PACK (t2)))
 	return false;
       break;
 
@@ -1079,6 +1083,10 @@ structural_comptypes (tree t1, tree t2, int strict)
 	  || !same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
 	return false;
       break;
+
+    case TYPE_PACK_EXPANSION:
+      return same_type_p (PACK_EXPANSION_PATTERN (t1), 
+                          PACK_EXPANSION_PATTERN (t2));
 
     default:
       return false;
@@ -6543,6 +6551,7 @@ check_return_expr (tree retval, bool *no_warning)
   if (processing_template_decl)
     {
       current_function_returns_value = 1;
+      check_for_bare_parameter_packs (retval);
       return retval;
     }
 

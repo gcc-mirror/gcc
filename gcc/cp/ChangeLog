@@ -1,3 +1,217 @@
+2007-03-09  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/20599
+	* typeck.c (check_return_expr): Check for bare parameter packs.
+	(comptypes): Compare template parameter packs and
+	type pack expansions.
+	* decl.c (grokdeclarator): Deal with the declaration of function
+	parameter packs.
+	(grokparms): Verify that the (optional) function parameter pack is
+	at the end of the parameter list.
+	(xref_basetypes): Handle pack expansions in the base class.
+	(cp_tree_node_structure): Handle ARGUMENT_PACK_SELECT.
+	* cp-tree.def (TYPE_ARGUMENT_PACK): New.
+	(NONTYPE_ARGUMENT_PACK): New.
+	(TYPE_PACK_EXPANSION): New.
+	(EXPR_PACK_EXPANSION): New.
+	(ARGUMENT_PACK_SELECT): New.
+	* cp-objcp-common.c (cp_tree_size): Compute size of
+	(NON)TYPE_ARGUMENT_PACK, (TYPE|EXPR)_PACK_EXPANSION, and
+	ARGUMENT_PACK_SELECT.
+	* error.c (dump_template_argument): Print template argument packs.
+	(dump_template_argument_list): Ditto.
+	(dump_template_parameter): Dump `...' for template type parameter
+	packs.
+	(dump_type): Dump TYPE_PACK_EXPANSION nodes.
+	(dump_parameters): Print function parameter packs.
+	(dump_template_parms): Print template argument packs.
+	(dump_expr): Dump EXPR_PACK_EXPANSION nodes.
+	(maybe_warn_variadic_templates): New.
+	* operators.def: Add ellipsis operator for EXPR_PACK_EXPANSION.
+	* tree.c (cp_walk_subtrees): Walk BASELINK, TYPE_ARGUMENT_PACK,
+	NONTYPE_ARGUMENT_PACK, TYPE_PACK_EXPANSION, EXPR_PACK_EXPANSION,
+	CAST_EXPR. 
+	* mangle.c (write_type): Mangle TYPE_PACK_EXPANSION.
+	(write_template_arg): Write argument packs as separate arguments.
+	* cp-tree.h (struct template_parm_index_s): Add flag that
+	indicates that the template parameter is actually a parameter
+	pack.
+	(struct tree_argument_pack_select): New.
+	(enum cp_tree_node_structure_enum): Add TS_CP_ARGUMENT_PACK_SELECT.
+	(union lang_tree_node): Add argument_pack_select.
+	(FUNCTION_PARAMETER_PACK_P): New.
+	(PACK_EXPANSION_P): New.
+	(PACK_EXPANSION_PATTERN): New.
+	(SET_PACK_EXPANSION_PATTERN): New.
+	(PACK_EXPANSION_PARAMETER_PACKS): New.
+	(ARGUMENT_PACK_P): New.
+	(ARGUMENT_PACK_ARGS): New.
+	(SET_ARGUMENT_PACK_ARGS): New.
+	(ARGUMENT_PACK_INCOMPLETE_P): New.
+	(ARGUMENT_PACK_EXPLICIT_ARGS): New.
+	(TEMPLATE_PARM_PARAMETER_PACK): New.
+	(TEMPLATE_TYPE_PARAMETER_PACK): New.
+	(ARGUMENT_PACK_SELECT_FROM_PACK): New.
+	(ARGUMENT_PACK_SELECT_INDEX): New.
+	(ARGUMENT_PACK_SELECT_ARG): New.
+	(struct cp_declarator): Add parameter_pack_p flag.
+	(maybe_warn_variadic_templates): Declare.
+	(process_template_parm): Add bool parameter IS_PARAMETER_PACK, to
+	indicate a template parameter pack. 
+	(uses_parameter_packs): Declare.
+	(template_parameter_pack_p): Declare.
+	(template_parms_variadic_p): Declare.
+	(make_pack_expansion): Declare.
+	(check_for_bare_parameter_packs): Declare.
+	* cxx-pretty-print.c (pp_cxx_unary_expression): Print
+	sizeof... expressions. 
+	(pp_cxx_expression): Print pack expansions and non-type argument
+	packs.
+	(pp_cxx_exception_specification): Print pack expansions. 
+	(pp_cxx_direct_declarator): Print ellipsis for parameter packs.
+	(pp_cxx_ctor_initializer): Print pack expansions.
+	(pp_cxx_type_id): Print pack expansions.
+	(pp_cxx_template_argument_list): Print argument packs.
+	(pp_cxx_template_parameter): Print ellipsis for template parameter
+	packs.
+	* pt.c (comp_template_parms): Compare template parameter packs.
+	(template_parameter_pack_p): New.
+	(template_parms_variadic_p): New.
+	(template_args_variadic_p): New.
+	(make_ith_pack_parameter_name): New.
+	(struct find_parameter_pack_data): New.
+	(find_parameter_packs_r): New.
+	(uses_parameter_packs): New.
+	(make_pack_expansion): New.
+	(check_for_bare_parameter_packs): New.
+	(expand_template_argument_pack): New.
+	(reduce_template_parm_level): Propagate parameter pack flag.
+	(process_template_parm): Add is_parameter_pack parameter to state
+	when the parameter is actually a parameter pack. Create template
+	parameter packs when is_parameter_pack is true.
+	(current_template_args): The argument for a template parameter
+	pack is an argument pack containing a single pack expansion.
+	(process_partial_specialization): When checking that non-type
+	argument expressions do not involve template parameters, loop over
+	the arguments in argument packs separately.
+	(push_template_decl_real): Check that the type of the declaration
+	does not have any bare parameter packs. Check that primary
+	templates have no more than one parameter pack, and that it comes
+	at the end of the template parameter list.
+	(convert_template_argument): Handle coercions for pack expansion
+	expressions by coercing the pattern then rebuilding the expansion.
+	(coerce_template_parms): When coercing the arguments for a
+	variadic template, pack "extra" arguments into an argument pack.
+	(coerce_template_template_parms): Cannot coerce between parameter
+	packs and non-pack parameters.
+	(template_args_equal): Compare PACK_EXPANSION_P expressions.
+	(comp_template_args): Expand all template arguments packs before
+	comparing template argument lists.
+	(mangle_class_name_for_template): Make argument packs as separate
+	template arguments.
+	(for_each_template_parm_r): No need to handle BASELINK. 
+	(instantiate_class_template): Handle pack expansions in the base
+	class list.
+	(tsubst_pack_expansion): New.
+	(tsubst_template_args): Handle substitutions of argument packs and
+	pack expansion into template argument lists.
+	(tsubst_decl): Expand function parameter packs into separate
+	function parameters.
+	(tsubst_arg_types): Expand a type pack expansion into separate
+	argument types.
+	(tsubst_exception_specification): Handle pack expansions in
+	exception specifiers.
+	(tsubst): See through ARGUMENT_PACK_SELECT arguments when 
+	replacing a template parameter with its argument. If we encounter
+	a substitution for an argument pack, just return the parameter
+	itself. 
+	(tsubst_copy): sizeof(X...) returns the number of elements in
+	parameter pack X.  See through ARGUMENT_PACK_SELECT when the
+	PARM_DECL is a parameter pack.
+	(tsubst_expr): Expression pack expansions and argument packs
+	cannot show up here; they will all be handled through function
+	calls, sizeof, and template argument lists.
+	(tsubst_copy_and_build): sizeof(X...) returns the number of
+	elements in parameter pack X.  Handle pack expansions in TREE_LIST
+	and CONSTRUCTOR nodes.
+	(fn_type_unification): Handle "incomplete" explicit template
+	argument lists that specify some of the arguments for a template
+	parameter pack.
+	(type_unification_real): Unify arguments against pack expansions.
+	(template_parm_level_and_index): New, helper function.
+	(unify_pack_expansion): New.
+	(unify): Unify argument packs on an argument-by-argument basis,
+	handling variadic argument packs as well.
+	(more_specialized_fn): Handle unification of function parameter
+	packs. All things being equal, prefer non-variadic function
+	templates to variadic function templates.
+	(more_specialized_class): Prefer the variadic class template
+	partial specialization that binds fewer arguments to a parameter
+	pack.
+	(regenerate_decl_from_template): Expand function parameter packs
+	into separate parameters.
+	(instantiate_decl): Ditto.
+	(tsubst_initializer_list): Handle pack expansions for base-class
+	initializers.
+	(dependent_type_p_r): Determine dependent types in argument packs
+	and pack expansions.
+	(value_dependent_expression_p): Determine value-dependence of
+	non-type argument packs.
+	(dependent_template_arg_p): Handle argument packs.
+	* semantics.c (finish_cond): Check for bare parameter packs.
+	(finish_expr_stmt): Ditto.
+	(finish_for_expr): Ditto.
+	(finish_switch_cond): Ditto.
+	(finish_mem_initializers): Ditto.
+	* name-lookup.c (arg_assoc_type): Handle pack expansions and
+	argument packs.
+	* decl2.c (cp_build_parm_decl): Mark function parameter packs.
+	* parser.c (make_declarator): Declarator is not an expansion.
+	(make_pointer_declarator): Transfer parameter pack flag to outer
+	declarator.
+	(make_reference_declarator): Ditto.
+	(make_ptrmem_declarator): Ditto.
+	(make_call_declarator): Ditto.
+	(make_array_declarator): Ditto.
+	(cp_parser_postfix_expression): Allow pack expansion expressions
+	in the argument list for a call expression.
+	(cp_parser_parenthesized_expression_list): Add new parameter
+	ALLOW_EXPANSION_P. When true, parse the ellipsis to mean "expand
+	into separate arguments."
+	(cp_parser_new_placement): Allow pack expansion expressions.
+	(cp_parser_new_initializer): Ditto.
+	(cp_parser_mem_initializer_list): Allow ellipsis to create a
+	base-class initializer expansion.
+	(cp_parser_mem_initializer): Ditto.
+	(cp_parser_template_parameter_list): Keep track of whether the
+	template parameter is a template parameter pack.
+	(cp_parser_template_parameter): Parse the ellipsis to indicate a
+	template parameter pack.
+	(cp_parser_type_parameter): Ditto.
+	(cp_parser_template_argument_list): Parse the ellipsis to indicate
+	a pack expansion.
+	(cp_parser_direct_declarator): Parse the ellipsis to indicate that
+	this declarator is a parameter pack.
+	(cp_parser_parameter_declaration): The ellipsis does not end the
+	parameter declaration, because it might be a parameter pack. Parse
+	the ellipsis to indicate a parameter pack.
+	(cp_parser_initializer): Allow pack expansions.
+	(cp_parser_initializer_list): Allow ellipsis to create an
+	initializer expansion.
+	(cp_parser_base_clause): Allow ellipsis to create a base specifier
+	expansion.
+	(cp_parser_type_id_list): Allow ellipsis to create an exception
+	specifier expansion.
+	(cp_parser_attribute_list): Don't allow pack expansions.
+	(cp_parser_functional_cast): Allow pack expansions.
+	(cp_parser_sizeof_operand): Allow ellipsis following "sizeof" to
+	compute the length of a parameter pack.
+	(cp_parser_next_token_ends_template_argument_p): An ellipsis can
+	end a template argument.
+	* tree.c (cp_walk_subtrees): Walk BASELINK, TYPE_ARGUMENT_PACK,
+	NONTYPE_ARGUMENT_PACK, TYPE_PACK_EXPANSION, EXPR_PACK_EXPANSION,
+	CAST_EXPR. 
+
 2007-03-09  Dirk Mueller  <dmueller@suse.de>
 
 	* cp/call.c (build_new_op): Call warn_logical_operator.

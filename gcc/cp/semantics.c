@@ -509,6 +509,8 @@ finish_cond (tree *cond_p, tree expr)
       tree cond = pop_stmt_list (*cond_p);
       if (TREE_CODE (cond) == DECL_EXPR)
 	expr = cond;
+
+      check_for_bare_parameter_packs (expr);
     }
   *cond_p = expr;
 }
@@ -617,6 +619,8 @@ finish_expr_stmt (tree expr)
 	}
       else if (!type_dependent_expression_p (expr))
 	convert_to_void (build_non_dependent_expr (expr), "statement");
+
+      check_for_bare_parameter_packs (expr);
 
       /* Simplification of inner statement expressions, compound exprs,
 	 etc can result in us already having an EXPR_STMT.  */
@@ -866,6 +870,7 @@ finish_for_expr (tree expr, tree for_stmt)
   else if (!type_dependent_expression_p (expr))
     convert_to_void (build_non_dependent_expr (expr), "3rd expression in for");
   expr = maybe_cleanup_point_expr_void (expr);
+  check_for_bare_parameter_packs (expr);
   FOR_EXPR (for_stmt) = expr;
 }
 
@@ -966,6 +971,7 @@ finish_switch_cond (tree cond, tree switch_stmt)
   add_stmt (switch_stmt);
   push_switch (switch_stmt);
   SWITCH_STMT_BODY (switch_stmt) = push_stmt_list ();
+  check_for_bare_parameter_packs (cond);
 }
 
 /* Finish the body of a switch-statement, which may be given by
@@ -1362,7 +1368,22 @@ finish_mem_initializers (tree mem_inits)
   mem_inits = nreverse (mem_inits);
 
   if (processing_template_decl)
-    add_stmt (build_min_nt (CTOR_INITIALIZER, mem_inits));
+    {
+      tree mem;
+
+      for (mem = mem_inits; mem; mem = TREE_CHAIN (mem))
+        {
+          /* If the TREE_PURPOSE is a TYPE_PACK_EXPANSION, skip the
+             check for bare parameter packs in the TREE_VALUE, because
+             any parameter packs in the TREE_VALUE have already been
+             bound as part of the TREE_PURPOSE.  See
+             make_pack_expansion for more information.  */
+          if (TREE_CODE (TREE_PURPOSE (mem)) != TYPE_PACK_EXPANSION)
+            check_for_bare_parameter_packs (TREE_VALUE (mem));
+        }
+
+      add_stmt (build_min_nt (CTOR_INITIALIZER, mem_inits));
+    }
   else
     emit_mem_initializers (mem_inits);
 }
