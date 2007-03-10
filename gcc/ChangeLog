@@ -1,3 +1,16 @@
+2007-03-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/31101
+	* config/i386/i386.md (UNSPEC_C2_FLAG): New constant.
+	(fpremxf4_i387, fprem1xf4_i387): Use UNSPEC_C2_FLAG.
+	(fmodxf3, fmod<mode>3, remainderxf3, remainder<mode>3):
+	Add LABEL_NUSES to emmitted label.
+	* config/i386/i386.c (ix86_emit_fp_unordered_jump): Add
+	branch probability value to emmitted jump insn.
+	* reg-stack.c (subst_stack_regs_pat)[UNSPEC]: Handle UNSPEC_C2_FLAG.
+	Do not check life information and do not re-arrange input operands
+	for UNSPEC_FSCALE_EXP, UNSPEC_FPREM_U and UNSPEC_FPREM1_U.
+
 2007-03-10  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_insn_length_adjustment): Adjust for
