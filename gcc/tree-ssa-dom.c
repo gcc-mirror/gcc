@@ -389,8 +389,7 @@ struct tree_opt_pass pass_dominator =
   TODO_dump_func
     | TODO_update_ssa
     | TODO_cleanup_cfg
-    | TODO_verify_ssa	
-    | TODO_update_smt_usage,		/* todo_flags_finish */
+    | TODO_verify_ssa,			/* todo_flags_finish */
   0					/* letter */
 };
 
@@ -2551,9 +2550,11 @@ struct tree_opt_pass pass_phi_only_cprop =
   0,                                    /* properties_provided */
   0,		                        /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_cleanup_cfg | TODO_dump_func 
-    | TODO_ggc_collect | TODO_verify_ssa
-    | TODO_verify_stmts | TODO_update_smt_usage
-    | TODO_update_ssa, /* todo_flags_finish */
+  TODO_cleanup_cfg
+    | TODO_dump_func 
+    | TODO_ggc_collect
+    | TODO_verify_ssa
+    | TODO_verify_stmts
+    | TODO_update_ssa,			/* todo_flags_finish */
   0                                     /* letter */
 };
