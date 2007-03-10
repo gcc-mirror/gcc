@@ -21032,7 +21032,9 @@ ix86_emit_fp_unordered_jump (rtx label)
 			      gen_rtx_LABEL_REF (VOIDmode, label),
 			      pc_rtx);
   temp = gen_rtx_SET (VOIDmode, pc_rtx, temp);
+
   emit_jump_insn (temp);
+  predict_jump (REG_BR_PROB_BASE * 10 / 100);
 }
 
 /* Output code to perform a log1p XFmode calculation.  */

@@ -1759,7 +1759,7 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 	      case UNSPEC_FSCALE_FRACT:
 	      case UNSPEC_FPREM_F:
 	      case UNSPEC_FPREM1_F:
-		/* These insns operate on the top two stack slots.
+		/* These insns operate on the top two stack slots,
 		   first part of double input, double output insn.  */
 
 		src1 = get_true_reg (&XVECEXP (pat_src, 0, 0));
@@ -1791,21 +1791,11 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 	      case UNSPEC_FSCALE_EXP:
 	      case UNSPEC_FPREM_U:
 	      case UNSPEC_FPREM1_U:
-		/* These insns operate on the top two stack slots./
+		/* These insns operate on the top two stack slots,
 		   second part of double input, double output insn.  */
 
 		src1 = get_true_reg (&XVECEXP (pat_src, 0, 0));
 		src2 = get_true_reg (&XVECEXP (pat_src, 0, 1));
-
-		src1_note = find_regno_note (insn, REG_DEAD, REGNO (*src1));
-		src2_note = find_regno_note (insn, REG_DEAD, REGNO (*src2));
-
-		/* Inputs should never die, they are
-		   replaced with outputs.  */
-		gcc_assert (!src1_note);
-		gcc_assert (!src2_note);
-
-		swap_to_top (insn, regstack, *src1, *src2);
 
 		/* Push the result back onto stack. Fill empty slot from
 		   first part of insn and fix top of stack pointer.  */
@@ -1815,6 +1805,17 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 		    SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
 		    replace_reg (dest, FIRST_STACK_REG + 1);
 		  }
+
+		replace_reg (src1, FIRST_STACK_REG);
+		replace_reg (src2, FIRST_STACK_REG + 1);
+		break;
+
+	      case UNSPEC_C2_FLAG:
+		/* This insn operates on the top two stack slots,
+		   third part of C2 setting double input insn.  */
+
+		src1 = get_true_reg (&XVECEXP (pat_src, 0, 0));
+		src2 = get_true_reg (&XVECEXP (pat_src, 0, 1));
 
 		replace_reg (src1, FIRST_STACK_REG);
 		replace_reg (src2, FIRST_STACK_REG + 1);
