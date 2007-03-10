@@ -53,10 +53,10 @@
 #define _TR1_HASHTABLE 1
 
 #include <utility>		// For std::pair
-#include <memory>
 #include <iterator>
 #include <cstddef>
 #include <cmath>
+#include <bits/allocator.h>
 #include <bits/functexcept.h>
 #include <tr1/type_traits>	// For true_type and false_type
 #include <tr1/hashtable_policy.h>

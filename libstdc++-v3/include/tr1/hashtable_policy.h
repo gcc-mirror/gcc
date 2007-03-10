@@ -34,8 +34,8 @@
 #ifndef _TR1_HASHTABLE_POLICY_H
 #define _TR1_HASHTABLE_POLICY_H 1
 
-#include <functional> // _Identity, _Select1st
 #include <algorithm> // lower_bound
+#include <bits/stl_function.h> // equal_to, _Identity, _Select1st
 #include <tr1/utility>
 #include <ext/type_traits.h>
 
