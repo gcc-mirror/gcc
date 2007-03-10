@@ -259,6 +259,12 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 			last_insn = return_copy;
 			continue;
 		      }
+		    if (GET_CODE (PATTERN (return_copy)) == ASM_INPUT
+			&& strcmp (XSTR (PATTERN (return_copy), 0), "") == 0)
+		      {
+			last_insn = return_copy;
+			continue;
+		      }
 		    /* If the return register is not (in its entirety)
 		       likely spilled, the return copy might be
 		       partially or completely optimized away.  */
