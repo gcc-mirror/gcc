@@ -1,3 +1,10 @@
+2007-03-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (attr_length_call): Revise condition for long pc-relative branch.
+	(output_call): Use "LONG_PIC_SDIFF" instruction sequence for long local
+	calls on the SOM target.  Don't use "LONG_PIC_PCREL" call sequence on
+	SOM target.
+
 2007-03-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/30643
