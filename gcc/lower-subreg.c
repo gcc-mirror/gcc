@@ -35,6 +35,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "recog.h"
 #include "bitmap.h"
 #include "expr.h"
+#include "except.h"
 #include "regs.h"
 #include "tree-pass.h"
 
@@ -1051,6 +1052,8 @@ decompose_multiword_subregs (bool update_life)
       int max_regno = max_reg_num ();
       sbitmap life_blocks;
       sbitmap sub_blocks;
+      unsigned int i;
+      sbitmap_iterator sbi;
       bitmap_iterator iter;
       unsigned int regno;
 
@@ -1105,6 +1108,21 @@ decompose_multiword_subregs (bool update_life)
 		      rtx orig_insn = insn;
 		      bool cfi = control_flow_insn_p (insn);
 
+		      /* We can end up splitting loads to multi-word pseudos
+			 into separate loads to machine word size pseudos.
+			 When this happens, we first had one load that can
+			 throw, and after resolve_simple_move we'll have a
+			 bunch of loads (at least two).  All those loads may
+			 trap if we can have non-call exceptions, so they
+			 all will end the current basic block.  We split the
+			 block after the outer loop over all insns, but we
+			 make sure here that we will be able to split the
+			 basic block and still produce the correct control
+			 flow graph for it.  */
+		      gcc_assert (!cfi
+				  || (flag_non_call_exceptions
+				      && can_throw_internal (insn)));
+
 		      insn = resolve_simple_move (set, insn);
 		      if (insn != orig_insn)
 			{
@@ -1157,8 +1175,35 @@ decompose_multiword_subregs (bool update_life)
 	update_life_info (life_blocks, UPDATE_LIFE_GLOBAL_RM_NOTES,
 			  PROP_DEATH_NOTES);
 
-      if (sbitmap_first_set_bit (sub_blocks) >= 0)
-	find_many_sub_basic_blocks (sub_blocks);
+      /* If we had insns to split that caused control flow insns in the middle
+	 of a basic block, split those blocks now.  Note that we only handle
+	 the case where splitting a load has caused multiple possibly trapping
+	 loads to appear.  */
+      EXECUTE_IF_SET_IN_SBITMAP (sub_blocks, 0, i, sbi)
+	{
+	  rtx insn, end;
+	  edge fallthru;
+
+	  bb = BASIC_BLOCK (i);
+	  insn = BB_HEAD (bb);
+	  end = BB_END (bb);
+
+	  while (insn != end)
+	    {
+	      if (control_flow_insn_p (insn))
+		{
+		  /* Split the block after insn.  There will be a fallthru
+		     edge, which is OK so we keep it.  We have to create the
+		     exception edges ourselves.  */
+		  fallthru = split_block (bb, insn);
+		  rtl_make_eh_edge (NULL, bb, BB_END (bb));
+		  bb = fallthru->dest;
+		  insn = BB_HEAD (bb);
+		}
+	      else
+	        insn = NEXT_INSN (insn);
+	    }
+	}
 
       sbitmap_free (life_blocks);
       sbitmap_free (sub_blocks);
