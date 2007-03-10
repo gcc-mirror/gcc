@@ -532,8 +532,6 @@ tr1_srcdir = ${glibcxx_srcdir}/include/tr1
 tr1_builddir = ./tr1
 tr1_headers = \
 	${tr1_srcdir}/array \
-	${tr1_srcdir}/bind_repeat.h \
-	${tr1_srcdir}/bind_iterate.h \
 	${tr1_srcdir}/boost_shared_ptr.h \
 	${tr1_srcdir}/ccomplex \
 	${tr1_srcdir}/cctype \
@@ -559,20 +557,16 @@ tr1_headers = \
 	${tr1_srcdir}/float.h \
 	${tr1_srcdir}/functional \
 	${tr1_srcdir}/functional_hash.h \
-	${tr1_srcdir}/functional_iterate.h \
 	${tr1_srcdir}/hashtable \
 	${tr1_srcdir}/hashtable_policy.h \
 	${tr1_srcdir}/inttypes.h \
 	${tr1_srcdir}/limits.h \
 	${tr1_srcdir}/math.h \
 	${tr1_srcdir}/memory \
-	${tr1_srcdir}/mu_iterate.h \
 	${tr1_srcdir}/random \
 	${tr1_srcdir}/random.tcc \
 	${tr1_srcdir}/ref_fwd.h \
-	${tr1_srcdir}/ref_wrap_iterate.h \
 	${tr1_srcdir}/regex \
-	${tr1_srcdir}/repeat.h \
 	${tr1_srcdir}/stdarg.h \
 	${tr1_srcdir}/stdbool.h \
 	${tr1_srcdir}/stdint.h \
@@ -580,8 +574,6 @@ tr1_headers = \
 	${tr1_srcdir}/stdlib.h \
 	${tr1_srcdir}/tgmath.h \
 	${tr1_srcdir}/tuple \
-	${tr1_srcdir}/tuple_defs.h \
-	${tr1_srcdir}/tuple_iterate.h \
 	${tr1_srcdir}/type_traits \
 	${tr1_srcdir}/type_traits_fwd.h \
 	${tr1_srcdir}/unordered_set \
