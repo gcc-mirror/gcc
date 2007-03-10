@@ -88,7 +88,7 @@ Boston, MA 02110-1301, USA.  */
  "%{!m64|fgnu-runtime:10.4;				\
     ,objective-c|,objc-cpp-output:10.5;			\
     ,objective-c++|,objective-c++-cpp-output:10.5;	\
-    :10.4}
+    :10.4}"
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS                                   \

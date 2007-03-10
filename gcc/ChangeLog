@@ -1,3 +1,11 @@
+2007-03-10  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	* config/i386/darwin.h (DARWIN_MINVERSION_SPEC): Add missing
+	quotation mark.
+	* config/i386/darwin.c (machopic_select_section): Remove
+	superfluous argument in call to categorize_decl_for_section.
+	Remove unused variable shlib.
+
 2007-03-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac (glibc_header_dir): Set using with_build_sysroot if
