@@ -1,3 +1,9 @@
+2007-03-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/20924
+	* tree.c (walk_type_fields): Recurse into the element type of
+	ARRAY_TYPEs if there is a pointer set.
+
 2007-03-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (attr_length_call): Revise condition for long pc-relative branch.

@@ -1,3 +1,8 @@
+2007-03-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/20924
+	* g++.dg/template/array18.C: New test.
+
 2007-03-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/31099

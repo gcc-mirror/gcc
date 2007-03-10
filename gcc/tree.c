@@ -7429,10 +7429,12 @@ walk_type_fields (tree type, walk_tree_fn func, void *data,
       break;
 
     case ARRAY_TYPE:
-      /* Don't follow this nodes's type if a pointer for fear that we'll
-	 have infinite recursion.  Those types are uninteresting anyway.  */
-      if (!POINTER_TYPE_P (TREE_TYPE (type))
-	  && TREE_CODE (TREE_TYPE (type)) != OFFSET_TYPE)
+      /* Don't follow this nodes's type if a pointer for fear that
+	 we'll have infinite recursion.  If we have a PSET, then we
+	 need not fear.  */
+      if (pset
+	  || (!POINTER_TYPE_P (TREE_TYPE (type))
+	      && TREE_CODE (TREE_TYPE (type)) != OFFSET_TYPE))
 	WALK_SUBTREE (TREE_TYPE (type));
       WALK_SUBTREE (TYPE_DOMAIN (type));
       break;
