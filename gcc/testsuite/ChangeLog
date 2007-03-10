@@ -1,3 +1,8 @@
+2007-03-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/31099
+	* gfortran.dg/unformatted_recl.f90: New test.
+
 2007-03-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/30643
@@ -19,6 +24,7 @@
 	* g++.dg/opt/complex6.C: New test.
 
 2007-03-09  Mark Shinwell  <shinwell@codesourcery.com>
+
 	    Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc.dg/pr16194.c: Skip test entirely if we don't know the name of
