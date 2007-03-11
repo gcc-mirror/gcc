@@ -1,3 +1,12 @@
+2007-03-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/31115
+	* tree-vrp.c (extract_range_from_binary_expr): Make sure
+	the shift count is positive and non-anti-range for RSHIFT_EXPR.
+	A shift count of zero is not special as with *_DIV_EXPR.
+	(vrp_int_const_binop): Handle RSHIFT_EXPR for determining overflow
+	direction.
+
 2007-03-11  Ian Lance Taylor  <iant@google.com>
 
 	* tree-vrp.c (vrp_int_const_binop): Handle PLUS_EXPR and
