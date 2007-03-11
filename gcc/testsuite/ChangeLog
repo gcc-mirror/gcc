@@ -1,3 +1,8 @@
+2007-03-11  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/29925
+	* gcc.dg/vect/fast-math-vect-pr29925.c: New test.
+
 2007-03-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/30274
