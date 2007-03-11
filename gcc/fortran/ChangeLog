@@ -1,3 +1,10 @@
+2007-03-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30883
+	* parse.c (parse_interface): Use the default types from the
+	formal namespace if a function or its result do not have a type
+	after parsing the specification statements.
+
 2007-03-08  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* intrinsic.texi: (ICHAR) Improve internal I/O note.
