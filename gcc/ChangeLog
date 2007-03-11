@@ -1,3 +1,8 @@
+2007-03-11  Ian Lance Taylor  <iant@google.com>
+
+	* tree-vrp.c (vrp_int_const_binop): Handle PLUS_EXPR and
+	the *_DIV_EXPR codes correctly with overflow infinities.
+
 2007-03-11  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-data-ref.c (analyze_offset): Add a return value (bool) to 
