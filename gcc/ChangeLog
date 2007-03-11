@@ -1,3 +1,12 @@
+2007-03-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (frndintxf2): Rename to ...
+	(rintxf2): ... this. Remove expander having same name.
+	(rintsf2, rintdf2): Implement using SSEMODEF macro.
+	(roundsf2, rounddf2): Ditto.
+	(lrint<mode>di2, lrint<mode>si2): Implement using SSEMODEI24 macro.
+	(lround<mode>di2, lround<mode>si2): Ditto.
+
 2007-03-11  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* lower-subreg.c: Include except.h.
@@ -41,9 +50,9 @@
 	* config/i386/i386.md (UNSPEC_C2_FLAG): New constant.
 	(fpremxf4_i387, fprem1xf4_i387): Use UNSPEC_C2_FLAG.
 	(fmodxf3, fmod<mode>3, remainderxf3, remainder<mode>3):
-	Add LABEL_NUSES to emmitted label.
+	Add LABEL_NUSES to emitted label.
 	* config/i386/i386.c (ix86_emit_fp_unordered_jump): Add
-	branch probability value to emmitted jump insn.
+	branch probability value to emitted jump insn.
 	* reg-stack.c (subst_stack_regs_pat)[UNSPEC]: Handle UNSPEC_C2_FLAG.
 	Do not check life information and do not re-arrange input operands
 	for UNSPEC_FSCALE_EXP, UNSPEC_FPREM_U and UNSPEC_FPREM1_U.
@@ -160,10 +169,10 @@
 
 2007-03-09  Aldy Hernandez  <aldyh@redhat.com>
 
-        PR tree-optimization/30375
-        * tree-ssa-dse.c (dse_possible_dead_store_p): Do not eliminate if
-        LHS of statements is not the same.
-        * testsuite/gcc.dg/tree-ssa/ssa-dse-10.c: New.
+	PR tree-optimization/30375
+	* tree-ssa-dse.c (dse_possible_dead_store_p): Do not eliminate if
+	LHS of statements is not the same.
+	* testsuite/gcc.dg/tree-ssa/ssa-dse-10.c: New.
 
 2007-03-09  Chao-ying Fu  <fu@mips.com>
 
@@ -618,10 +627,11 @@
 	x86_sse_unaligned_move_optimal, x86_sse_typeless_stores,
 	x86_sse_load0_by_pxor, x86_use_ffreep, x86_use_incdec,
 	x86_inter_unit_moves, x86_ext_80387_constants, x86_four_jump_limit,
-	x86_schedule, x86_use_bt, x86_pad_returns): Merge into ...
+	x86_schedule, x86_use_bt, x86_pad_returns,
+	x86_use_xchgb): Merge into ...
 	(ix86_tune_features): ... here.  New array.
-	(x86_cmove, x86_use_xchgb, x86_cmpxchg, x86_cmpxchg8b,	
-	x86_xadd, x86_bswap): Merge into ...
+	(x86_cmove, x86_cmpxchg, x86_cmpxchg8b,	x86_xadd,
+	x86_bswap): Merge into ...
 	(ix86_arch_features): ... here.  New array.
 	(x86_3dnow_a): Remove.
 	(x86_accumulate_outgoing_args): Make static.
@@ -875,7 +885,7 @@
 
 2007-03-05  Mike Stump  <mrs@apple.com>
 
-	* c-common.c (targetcm): Add.   
+	* c-common.c (targetcm): Add.
 	* c-opts.c (c_common_handle_option): Handle language specific
 	target options.
 	* opts.c (handle_option): Verify language for target options, if
