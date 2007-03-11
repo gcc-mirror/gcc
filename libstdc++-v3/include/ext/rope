@@ -58,11 +58,11 @@
 #include <bits/allocator.h>
 #include <ext/hash_fun.h>
 #include <iosfwd>
+#include <bits/gthr.h>
 
 # ifdef __GC
 #   define __GC_CONST const
 # else
-#   include <bits/gthr.h>
 #   define __GC_CONST   // constant except for deallocation
 # endif
 

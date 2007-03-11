@@ -1,6 +1,6 @@
 // Wrapper of C-language FILE struct -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -43,6 +43,7 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
+#include <bits/c++io.h>  // for __c_lock and __c_file
 #include <ios>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)

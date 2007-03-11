@@ -1,6 +1,7 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+// 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,7 +44,6 @@
 #include <iosfwd>
 #include <exception> 		// For ios_base::failure
 #include <bits/char_traits.h> 	// For char_traits, streamoff, streamsize, fpos
-#include <cstdio> 	// For SEEK_SET, SEEK_CUR, SEEK_END
 #include <bits/localefwd.h>	// For class locale
 #include <bits/ios_base.h>	// For ios_base declarations.
 #include <streambuf> 

@@ -1,3 +1,18 @@
+2007-03-11  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28080 (final)
+	* include/std/iosfwd: Do not include <bits/c++io.h>.
+	* config/io/basic_file_stdio.h: Do it here.
+	* include/ext/stdio_sync_filebuf.h: Likewise.
+	* include/ext/rope: Include <bits/gthr.h> unconditionally.
+	* include/std/fstream: Do not include <bits/gthr.h>.
+	
+	* include/std/ios: Do not include <cstdio>.
+	* include/bits/ios_base.h: Do it here.
+	* testsuite/27_io/ios_base/cons/assign_neg.cc: Adjust dg-error
+	line numbers.
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: Likewise.
+
 2007-03-10  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/28080 (partial)
