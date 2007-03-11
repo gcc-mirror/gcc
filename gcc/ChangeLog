@@ -1,3 +1,10 @@
+2007-03-11  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-data-ref.c (analyze_offset): Add a return value (bool) to 
+	indicate success/failure of the analysis. Add negation to subtrahend
+	in case of subtraction. Fail if both operands contain constants.
+	(create_data_ref): Fail if analyze_offset fails.
+
 2007-03-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (frndintxf2): Rename to ...
