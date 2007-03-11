@@ -1569,6 +1569,12 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2)
 	      && (sgn1 >= 0
 		  ? !is_positive_overflow_infinity (val2)
 		  : is_negative_overflow_infinity (val2)))
+	  /* We only get in here with positive shift count, so the
+	     overflow direction is the same as the sign of val1.
+	     Actually rshift does not overflow at all, but we only
+	     handle the case of shifting overflowed -INF and +INF.  */
+	  || (code == RSHIFT_EXPR
+	      && sgn1 >= 0)
 	  /* For division, the only case is -INF / -1 = +INF.  */
 	  || code == TRUNC_DIV_EXPR
 	  || code == FLOOR_DIV_EXPR
@@ -1802,6 +1808,17 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
 	  return;
 	}
 
+      /* If we have a RSHIFT_EXPR with a possibly negative shift
+	 count or an anti-range shift count drop to VR_VARYING.
+	 We currently cannot handle the overflow cases correctly.  */
+      if (code == RSHIFT_EXPR
+	  && (vr1.type == VR_ANTI_RANGE
+	      || !vrp_expr_computes_nonnegative (op1, &sop)))
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
+
       /* Multiplications and divisions are a bit tricky to handle,
 	 depending on the mix of signs we have in the two ranges, we
 	 need to operate on different values to get the minimum and
@@ -1816,7 +1833,8 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
 	 the new range.  */
 
       /* Divisions by zero result in a VARYING value.  */
-      if (code != MULT_EXPR
+      if ((code != MULT_EXPR
+	   && code != RSHIFT_EXPR)
 	  && (vr0.type == VR_ANTI_RANGE || range_includes_zero_p (&vr1)))
 	{
 	  set_value_range_to_varying (vr);
