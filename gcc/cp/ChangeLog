@@ -1,3 +1,14 @@
+2007-03-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/30274
+	* cp-tree.h (unlowered_expr_type): New function.
+	* typeck.c (is_bitfield_expr_with_lowered_type): Handle
+	COMPOUND_EXPR, MODIFY_EXPR, and SAVE_EXPR.
+	(unlowered_expr_type): New function.
+	(build_unary_op): Disallow predecrements of bool bitfields.
+	* call.c (build_conditional_expr): Use unlowered_expr_type.
+	* pt.c (type_unification_real): Likewise.
+
 2007-03-08  Andrew Pinski  <pinskia@gmail.com> 
 
 	PR C++/30168

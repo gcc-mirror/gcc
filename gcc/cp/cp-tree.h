@@ -4442,6 +4442,7 @@ extern tree cxx_sizeof_or_alignof_type		(tree, enum tree_code, bool);
 #define cxx_sizeof_nowarn(T) cxx_sizeof_or_alignof_type (T, SIZEOF_EXPR, false)
 extern tree inline_conversion			(tree);
 extern tree is_bitfield_expr_with_lowered_type  (tree);
+extern tree unlowered_expr_type                 (tree);
 extern tree decay_conversion			(tree);
 extern tree build_class_member_access_expr      (tree, tree, tree, bool);
 extern tree finish_class_member_access_expr     (tree, tree, bool);

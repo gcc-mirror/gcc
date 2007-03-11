@@ -1,5 +1,13 @@
 2007-03-10  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/30274
+	* g++.dg/expr/bitfield3.C: New test.
+	* g++.dg/expr/bitfield4.C: Likewise.
+	* g++.dg/expr/bitfield5.C: Likewise.
+	* g++.dg/expr/bitfield6.C: Likewise.
+
+2007-03-10  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/30924
 	* g++.dg/template/array18.C: New test.
 
