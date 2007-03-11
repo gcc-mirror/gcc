@@ -11260,7 +11260,7 @@ type_unification_real (tree tparms,
 		return 1;
 	      continue;
 	    }
-	  arg = TREE_TYPE (arg);
+	  arg = unlowered_expr_type (arg);
 	  if (arg == error_mark_node)
 	    return 1;
 	}

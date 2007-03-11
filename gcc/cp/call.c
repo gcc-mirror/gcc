@@ -3250,12 +3250,8 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
      array-to-pointer (_conv.array_), and function-to-pointer
      (_conv.func_) standard conversions are performed on the second
      and third operands.  */
-  arg2_type = is_bitfield_expr_with_lowered_type (arg2);
-  if (!arg2_type)
-    arg2_type = TREE_TYPE (arg2);
-  arg3_type = is_bitfield_expr_with_lowered_type (arg3);
-  if (!arg3_type)
-    arg3_type = TREE_TYPE (arg3);
+  arg2_type = unlowered_expr_type (arg2);
+  arg3_type = unlowered_expr_type (arg3);
   if (VOID_TYPE_P (arg2_type) || VOID_TYPE_P (arg3_type))
     {
       /* Do the conversions.  We don't these for `void' type arguments
