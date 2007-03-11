@@ -1519,13 +1519,24 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2)
 	  && !supports_overflow_infinity (TREE_TYPE (res)))
 	return NULL_TREE;
 
-      /* We have to punt on subtracting infinities of the same sign,
-	 since we can't tell what the sign of the result should
-	 be.  */
-      if (code == MINUS_EXPR
-	  && sgn1 == sgn2
+      /* We have to punt on adding infinities of different signs,
+	 since we can't tell what the sign of the result should be.
+	 Likewise for subtracting infinities of the same sign.  */
+      if (((code == PLUS_EXPR && sgn1 != sgn2)
+	   || (code == MINUS_EXPR && sgn1 == sgn2))
 	  && is_overflow_infinity (val1)
 	  && is_overflow_infinity (val2))
+	return NULL_TREE;
+
+      /* Don't try to handle division or shifting of infinities.  */
+      if ((code == TRUNC_DIV_EXPR
+	   || code == FLOOR_DIV_EXPR
+	   || code == CEIL_DIV_EXPR
+	   || code == EXACT_DIV_EXPR
+	   || code == ROUND_DIV_EXPR
+	   || code == RSHIFT_EXPR)
+	  && (is_overflow_infinity (val1)
+	      || is_overflow_infinity (val2)))
 	return NULL_TREE;
 
       /* Notice that we only need to handle the restricted set of
@@ -1541,8 +1552,12 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2)
       if ((code == MULT_EXPR && sgn1 == sgn2)
           /* For addition, the operands must be of the same sign
 	     to yield an overflow.  Its sign is therefore that
-	     of one of the operands, for example the first.  */
-	  || (code == PLUS_EXPR && sgn1 > 0)
+	     of one of the operands, for example the first.  For
+	     infinite operands X + -INF is negative, not positive.  */
+	  || (code == PLUS_EXPR
+	      && (sgn1 >= 0
+		  ? !is_negative_overflow_infinity (val2)
+		  : is_positive_overflow_infinity (val2)))
 	  /* For subtraction, non-infinite operands must be of
 	     different signs to yield an overflow.  Its sign is
 	     therefore that of the first operand or the opposite of
