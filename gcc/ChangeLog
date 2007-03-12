@@ -5,6 +5,7 @@
 	and handle unnamed array case.
 	(grokdeclarator): Refactored VLA warning case.
 	* c.opt (Wvla): New flag.
+	* doc/invoke.texi (Wvla): New warning.
 
 2007-03-12  Richard Henderson  <rth@redhat.com>
 

@@ -3,10 +3,6 @@
 	* Makefile.def (fixincludes): Remove unneeded "missing" lines.
 	* Makefile.in: Regenerate
 
-2007-03-12  Seongbae Park <seongbae.park@gmail.com>
-
-	* gcc/doc/invoke.texi (Wvla): New warning.
-
 2007-03-07  Andreas Schwab  <schwab@suse.de>
 
 	* configure: Regenerate.
