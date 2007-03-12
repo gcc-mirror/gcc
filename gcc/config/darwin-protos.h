@@ -52,6 +52,7 @@ extern void darwin_set_default_type_attributes (tree);
 
 extern void machopic_finish (FILE *);
 
+extern int machopic_reloc_rw_mask (void);
 extern section *machopic_select_section (tree, int, unsigned HOST_WIDE_INT);
 extern section *machopic_select_rtx_section (enum machine_mode, rtx,
 					     unsigned HOST_WIDE_INT);
