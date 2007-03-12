@@ -1,3 +1,75 @@
+2007-03-12  Stephen M. Webb  <stephen.webb@bregmasoft.com>
+
+	* include/tr1/regex: Add "boilerplate" implementations.
+	* testsuite/tr1/7_regular_expressions/regex_traits/wchar_t/
+	translate_nocase.cc: New.
+	* testsuite/tr1/7_regular_expressions/regex_traits/wchar_t/
+	ctor.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/regex_traits/char/
+	translate_nocase.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/regex_traits/char/
+	ctor.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/regex/cons/char/
+	c_string_ecma.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/regex/cons/char/
+	default.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/regex/cons/char/
+	c_string_grep.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/regex/cons/char/
+	c_string_extended.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/regex/cons/char/
+	c_string_basic.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/regex/cons/char/
+	c_string_awk.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/regex/cons/char/
+	c_string_egrep.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/assign/wchar_t/
+	range.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/assign/wchar_t/
+	string_op.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/assign/wchar_t/
+	string.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/assign/wchar_t/
+	pstring.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/assign/wchar_t/
+	cstring_op.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/assign/wchar_t/
+	cstring.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/assign/char/
+	range.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/assign/char/
+	string_op.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/assign/char/
+	string.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/assign/char/
+	pstring.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/assign/char/
+	cstring_op.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/assign/char/
+	cstring.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/ctors/wchar_t/
+	range.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/ctors/wchar_t/
+	default.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/ctors/wchar_t/
+	string.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/ctors/wchar_t/
+	pstring.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/ctors/wchar_t/
+	cstring.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/ctors/char/
+	range.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/ctors/char/
+	default.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/ctors/char/
+	string.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/ctors/char/
+	pstring.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/basic_regex/ctors/char/
+	cstring.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/match_results/ctors/char/
+	default.cc: Likewise.
+
 2007-03-12  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_algo.h (swap_ranges): Move...
