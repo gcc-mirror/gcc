@@ -131,7 +131,6 @@ static tree fold_truthop (enum tree_code, tree, tree, tree);
 static tree optimize_minmax_comparison (enum tree_code, tree, tree, tree);
 static tree extract_muldiv (tree, tree, enum tree_code, tree, bool *);
 static tree extract_muldiv_1 (tree, tree, enum tree_code, tree, bool *);
-static int multiple_of_p (tree, tree, tree);
 static tree fold_binary_op_with_conditional_arg (enum tree_code, tree,
 						 tree, tree,
 						 tree, tree, int);
@@ -13115,7 +13114,7 @@ fold_build_call_array_initializer (tree type, tree fn,
    (where the same SAVE_EXPR (J) is used in the original and the
    transformed version).  */
 
-static int
+int
 multiple_of_p (tree type, tree top, tree bottom)
 {
   if (operand_equal_p (top, bottom, 0))
