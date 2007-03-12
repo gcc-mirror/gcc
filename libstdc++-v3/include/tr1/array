@@ -1,6 +1,6 @@
 // class template array -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,12 +34,7 @@
 #ifndef _TR1_ARRAY
 #define _TR1_ARRAY 1
 
-#include <new>
-#include <iterator>
-#include <algorithm>
-#include <cstddef>
-#include <bits/functexcept.h>
-#include <ext/type_traits.h>
+#include <bits/stl_algobase.h>
 
 //namespace std::tr1
 namespace std

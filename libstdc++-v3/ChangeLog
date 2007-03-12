@@ -1,3 +1,9 @@
+2007-03-12  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algo.h (swap_ranges): Move...
+	* include/bits/stl_algobase.h: ... here.
+	* include/tr1/array: Trim includes, stl_algobase.h is enough.
+
 2007-03-11  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/28080 (final)
