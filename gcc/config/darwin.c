@@ -1093,6 +1093,12 @@ darwin_mark_decl_preserved (const char *name)
   fputc ('\n', asm_out_file);
 }
 
+int
+machopic_reloc_rw_mask (void)
+{
+  return MACHOPIC_INDIRECT ? 3 : 0;
+}
+
 section *
 machopic_select_section (tree exp, int reloc,
 			 unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
@@ -1112,7 +1118,7 @@ machopic_select_section (tree exp, int reloc,
       else
 	base_section = weak_p ? darwin_sections[text_coal_section] : text_section;
     }
-  else if (decl_readonly_section_1 (exp, reloc, MACHOPIC_INDIRECT))
+  else if (decl_readonly_section (exp, reloc))
     base_section = weak_p ? darwin_sections[const_coal_section] : darwin_sections[const_section];
   else if (TREE_READONLY (exp) || TREE_CONSTANT (exp))
     base_section = weak_p ? darwin_sections[const_data_coal_section] : darwin_sections[const_data_section];
