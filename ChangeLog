@@ -1,3 +1,8 @@
+2007-03-12  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* Makefile.def (fixincludes): Remove unneeded "missing" lines.
+	* Makefile.in: Regenerate
+
 2007-03-12  Seongbae Park <seongbae.park@gmail.com>
 
 	* gcc/doc/invoke.texi (Wvla): New warning.
