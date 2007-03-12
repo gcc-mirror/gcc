@@ -1,3 +1,8 @@
+2007-03-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c (main): Handle target_sysroot_hdrs_suffix being NULL for
+	some multilibs.
+
 2007-03-12  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	PR 30635

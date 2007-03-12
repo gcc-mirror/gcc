@@ -6422,7 +6422,9 @@ main (int argc, char **argv)
     {
       if (*sysroot_hdrs_suffix_spec)
 	{
-	  printf("%s\n", target_sysroot_hdrs_suffix);
+	  printf("%s\n", (target_sysroot_hdrs_suffix
+			  ? target_sysroot_hdrs_suffix
+			  : ""));
 	  return (0);
 	}
       else
