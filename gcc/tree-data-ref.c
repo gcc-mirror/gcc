@@ -1725,7 +1725,7 @@ object_analysis (tree memref, tree stmt, bool is_read,
    Extract INVARIANT and CONSTANT parts from OFFSET. 
 
 */
-static void 
+static bool 
 analyze_offset (tree offset, tree *invariant, tree *constant)
 {
   tree op0, op1, constant_0, constant_1, invariant_0, invariant_1;
@@ -1741,23 +1741,36 @@ analyze_offset (tree offset, tree *invariant, tree *constant)
 	*constant = offset;
       else
 	*invariant = offset;
-      return;
+      return true;
     }
 
   op0 = TREE_OPERAND (offset, 0);
   op1 = TREE_OPERAND (offset, 1);
 
   /* Recursive call with the operands.  */
-  analyze_offset (op0, &invariant_0, &constant_0);
-  analyze_offset (op1, &invariant_1, &constant_1);
+  if (!analyze_offset (op0, &invariant_0, &constant_0)
+      || !analyze_offset (op1, &invariant_1, &constant_1))
+    return false;
 
-  /* Combine the results.  */
+  /* Combine the results.  Add negation to the subtrahend in case of 
+     subtraction.  */
+  if (constant_0 && constant_1)
+    return false;
   *constant = constant_0 ? constant_0 : constant_1;
+  if (code == MINUS_EXPR && constant_1)
+    *constant = fold_build1 (NEGATE_EXPR, TREE_TYPE (*constant), *constant);
+
   if (invariant_0 && invariant_1)
     *invariant = 
       fold_build2 (code, TREE_TYPE (invariant_0), invariant_0, invariant_1);
   else
-    *invariant = invariant_0 ? invariant_0 : invariant_1;
+    {
+      *invariant = invariant_0 ? invariant_0 : invariant_1;
+      if (code == MINUS_EXPR && invariant_1)
+        *invariant = 
+           fold_build1 (NEGATE_EXPR, TREE_TYPE (*invariant), *invariant);
+    }
+  return true;
 }
 
 
@@ -1833,7 +1846,17 @@ create_data_ref (tree memref, tree stmt, bool is_read)
 
       /* Extract CONSTANT and INVARIANT from OFFSET, and put them in DR_INIT and
 	 DR_OFFSET fields of DR.  */
-      analyze_offset (offset, &invariant, &constant); 
+      if (!analyze_offset (offset, &invariant, &constant))
+        {
+          if (dump_file && (dump_flags & TDF_DETAILS))
+            {
+              fprintf (dump_file, "\ncreate_data_ref: failed to analyze dr's");
+              fprintf (dump_file, " offset for ");
+              print_generic_expr (dump_file, memref, TDF_SLIM);
+              fprintf (dump_file, "\n");
+            }
+          return NULL;
+        }
       if (constant)
 	{
 	  DR_INIT (dr) = fold_convert (ssizetype, constant);
