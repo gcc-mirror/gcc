@@ -1581,8 +1581,8 @@ attributes are currently defined for functions on all targets:
 @code{format}, @code{format_arg}, @code{no_instrument_function},
 @code{section}, @code{constructor}, @code{destructor}, @code{used},
 @code{unused}, @code{deprecated}, @code{weak}, @code{malloc},
-@code{alias}, @code{warn_unused_result}, @code{nonnull}
-and @code{externally_visible}.  Several other
+@code{alias}, @code{warn_unused_result}, @code{nonnull},
+@code{gnu_inline} and @code{externally_visible}.  Several other
 attributes are defined for functions on particular target systems.  Other
 attributes, including @code{section} are supported for variables declarations
 (@pxref{Variable Attributes}) and for types (@pxref{Type Attributes}).
@@ -1619,6 +1619,45 @@ Not all target machines support this attribute.
 Generally, functions are not inlined unless optimization is specified.
 For functions declared inline, this attribute inlines the function even
 if no optimization level was specified.
+
+@item gnu_inline
+@cindex @code{gnu_inline} function attribute
+This attribute should be used with a function which is also declared
+with the @code{inline} keyword.  It directs GCC to treat the function
+as if it were defined in gnu89 mode even when compiling in C99 or
+gnu99 mode.
+
+If the function is declared @code{extern}, then this definition of the
+function is used only for inlining.  In no case is the function
+compiled as a standalone function, not even if you take its address
+explicitly.  Such an address becomes an external reference, as if you
+had only declared the function, and had not defined it.  This has
+almost the effect of a macro.  The way to use this is to put a
+function definition in a header file with this attribute, and put
+another copy of the function, without @code{extern}, in a library
+file.  The definition in the header file will cause most calls to the
+function to be inlined.  If any uses of the function remain, they will
+refer to the single copy in the library.  Note that the two
+definitions of the functions need not be precisely the same, although
+if they do not have the same effect your program may behave oddly.
+
+If the function is neither @code{extern} nor @code{static}, then the
+function is compiled as a standalone function, as well as being
+inlined where possible.
+
+This is how GCC traditionally handled functions declared
+@code{inline}.  Since ISO C99 specifies a different semantics for
+@code{inline}, this function attribute is provided as a transition
+measure and as a useful feature in its own right.  This attribute is
+available in GCC 4.1.3 and later.  It is available if either of the
+preprocessor macros @code{__GNUC_GNU_INLINE__} or
+@code{__GNUC_STDC_INLINE__} are defined.  @xref{Inline,,An Inline
+Function is As Fast As a Macro}.
+
+Note that since the first version of GCC to support C99 inline
+semantics is 4.3, earlier versions of GCC which accept this attribute
+effectively ignore it.  Its only effect is to disable warnings about
+using inline functions in C99 mode.
 
 @cindex @code{flatten} function attribute
 @item flatten
@@ -3802,7 +3841,15 @@ you don't use @option{-O}, no function is really inline.
 
 Inline functions are included in the ISO C99 standard, but there are
 currently substantial differences between what GCC implements and what
-the ISO C99 standard requires.
+the ISO C99 standard requires.  GCC will fully support C99 inline
+functions in version 4.3.  The traditional GCC handling of inline
+functions will still be available with @option{-std=gnu89},
+@option{-fgnu89-inline} or when @code{gnu_inline} attribute is present
+on all inline declarations.  The preprocessor macros
+@code{__GNUC_GNU_INLINE__} and @code{__GNUC_STDC_INLINE__} may be used
+to determine the handling of @code{inline} during a particular
+compilation (@pxref{Common Predefined Macros,,,cpp.info,The C
+Preprocessor}).
 
 To declare a function inline, use the @code{inline} keyword in its
 declaration, like this:
@@ -3878,12 +3925,15 @@ The definition in the header file will cause most calls to the function
 to be inlined.  If any uses of the function remain, they will refer to
 the single copy in the library.
 
-Since GCC eventually will implement ISO C99 semantics for
-inline functions, it is best to use @code{static inline} only
+Since GCC 4.3 will implement ISO C99 semantics for
+inline functions, it is simplest to use @code{static inline} only
 to guarantee compatibility.  (The
 existing semantics will remain available when @option{-std=gnu89} is
-specified, but eventually the default will be @option{-std=gnu99} and
-that will implement the C99 semantics, though it does not do so yet.)
+specified, but eventually the default will be @option{-std=gnu99};
+that will implement the C99 semantics, though it does not do so in
+versions of GCC before 4.3.  After the default changes, the existing
+semantics will still be available via the @option{-fgnu89-inline}
+option or the @code{gnu_inline} function attribute.)
 
 GCC does not inline any functions when not optimizing unless you specify
 the @samp{always_inline} attribute for the function, like this:

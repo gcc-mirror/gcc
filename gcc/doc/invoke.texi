@@ -164,7 +164,8 @@ in the following sections.
 
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
-@gccoptlist{-ansi  -std=@var{standard}  -aux-info @var{filename} @gol
+@gccoptlist{-ansi  -std=@var{standard}  -fgnu89-inline @gol
+-aux-info @var{filename} @gol
 -fno-asm  -fno-builtin  -fno-builtin-@var{function} @gol
 -fhosted  -ffreestanding -fopenmp -fms-extensions @gol
 -trigraphs  -no-integrated-cpp  -traditional  -traditional-cpp @gol
@@ -1212,6 +1213,26 @@ the @code{inline} keyword in ISO C99) are not disabled.
 
 @xref{Standards,,Language Standards Supported by GCC}, for details of
 these standard versions.
+
+@item -fgnu89-inline
+@opindex fgnu89-inline
+The option @option{-fgnu89-inline} tells GCC to use the traditional
+GNU semantics for @code{inline} functions when in C99 mode.
+@xref{Inline,,An Inline Function is As Fast As a Macro}.  This option
+is accepted and ignored by GCC versions 4.1.3 up to but not including
+4.3.  In GCC versions 4.3 and later it changes the behavior of GCC in
+C99 mode.  Using this option is roughly equivalent to adding the
+@code{gnu_inline} function attribute to all inline functions
+(@pxref{Function Attributes}).
+
+The option @option{-fno-gnu89-inline} is not supported in versions of
+GCC before 4.3.  It will be supported only in C99 or gnu99 mode, not
+in C89 or gnu89 mode.
+
+The preprocesor macros @code{__GNUC_GNU_INLINE__} and
+@code{__GNUC_STDC_INLINE__} may be used to check which semantics are
+in effect for @code{inline} functions.  @xref{Common Predefined
+Macros,,,cpp.info,The C Preprocessor}.
 
 @item -aux-info @var{filename}
 @opindex aux-info

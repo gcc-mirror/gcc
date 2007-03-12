@@ -6139,6 +6139,30 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
      except for defining how to inline.  So set DECL_EXTERNAL in that case.  */
   DECL_EXTERNAL (decl1) = current_extern_inline;
 
+  /* C99 specified different behaviour for non-static inline
+     functions, compared with the traditional GNU behaviour.  We don't
+     support the C99 behaviour, but we do warn about non-static inline
+     functions here.  The warning can be disabled via an explicit use
+     of -fgnu89-inline, or by using the gnu_inline attribute.  */
+  if (DECL_DECLARED_INLINE_P (decl1)
+      && TREE_PUBLIC (decl1)
+      && flag_isoc99
+      && flag_gnu89_inline != 1
+      && !lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (decl1))
+      && diagnostic_report_warnings_p ())
+    {
+      static bool info = false;
+
+      warning (0, "C99 inline functions are not supported; using GNU89");
+      if (!info)
+	{
+	  warning (0,
+		   "to disable this warning use -fgnu89-inline or "
+		   "the gnu_inline function attribute");
+	  info = true;
+	}
+    }
+
   /* This function exists in static storage.
      (This does not mean `static' in the C sense!)  */
   TREE_STATIC (decl1) = 1;
