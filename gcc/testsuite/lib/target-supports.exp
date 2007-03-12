@@ -350,6 +350,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget m68k-*-elf]
 	     || [istarget mips*-*-elf]
 	     || [istarget xtensa-*-elf]
+	     || [istarget *-*-vxworks*]
 	     || [istarget *-*-windiss] } {
 	    set profiling_available_saved 0
 	} else {
@@ -2185,4 +2186,14 @@ proc check_effective_target_simulator { } {
     }
 
     return 0
+}
+
+# Return 1 if the target is a VxWorks RTP.
+
+proc check_effective_target_vxworks_kernel { } {
+    return [check_no_compiler_messages vxworks_kernel assembly {
+	#if !defined __vxworks || defined __RTP__
+	#error NO
+	#endif
+    }]
 }

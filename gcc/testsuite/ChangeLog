@@ -1,5 +1,17 @@
 2007-03-12  Richard Sandiford  <richard@codesourcery.com>
 
+	* lib/target-supports.exp (check_profiling_available): Return false
+	for VxWorks.
+	(check_effective_target_vxworks_kernel): New procedure.
+	* gcc.dg/20040813-1.c: Extend list of stabless targets to include
+	VxWorks.
+	* gcc.dg/builtins-config.h: Do not define HAVE_C99_RUNTIME on VxWorks.
+	* gcc.dg/intmax_t-1.c: Extend the list of targets without inttypes.h
+	to include VxWorks.
+	* gcc.dg/vxworks/initpri2.c: Require vxworks_kernel.
+
+2007-03-12  Richard Sandiford  <richard@codesourcery.com>
+
 	* gcc.c-torture/compile/981006-1.c: Use the non-PIC options if
 	PIC is not supported.
 	* gcc.dg/20020103-1.c: Add dg-require-effective-target fpic.

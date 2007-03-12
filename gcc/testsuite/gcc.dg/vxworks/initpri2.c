@@ -1,7 +1,7 @@
 /* On VxWorks, in kernel mode, there is no support for .ctors/.dtors.
    Instead, initialization is handled by munch.  */
 
-/* { dg-do compile { target *-*-vxworks* } } */
+/* { dg-do compile { target vxworks_kernel } } */
 /* { dg-final { scan-assembler-not "\.ctors" } } */
 /* { dg-final { scan-assembler-not "\.dtors" } } */
 
