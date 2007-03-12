@@ -4272,6 +4272,21 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p)
 		   allowed in standard C++.  */
 		if (pedantic)
 		  pedwarn ("ISO C++ forbids compound-literals");
+		/* For simplicitly, we disallow compound literals in
+		   constant-expressions for simpliicitly.  We could
+		   allow compound literals of integer type, whose
+		   initializer was a constant, in constant
+		   expressions.  Permitting that usage, as a further
+		   extension, would not change the meaning of any
+		   currently accepted programs.  (Of course, as
+		   compound literals are not part of ISO C++, the
+		   standard has nothing to say.)  */
+		if (cp_parser_non_integral_constant_expression 
+		    (parser, "non-constant compound literals"))
+		  {
+		    postfix_expression = error_mark_node;
+		    break;
+		  }
 		/* Form the representation of the compound-literal.  */
 		postfix_expression
 		  = finish_compound_literal (type, initializer_list);

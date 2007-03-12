@@ -1,3 +1,12 @@
+2007-03-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/31038
+	* parser.c (cp_parser_postfix_expression): Disallow compound
+	literals in constant expressions.
+
+	PR c++/30328
+	* semantics.c (finish_typeof): Use unlowered_expr_type.
+	
 2007-03-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/30274

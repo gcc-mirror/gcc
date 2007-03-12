@@ -2890,7 +2890,7 @@ finish_typeof (tree expr)
       return type;
     }
 
-  type = TREE_TYPE (expr);
+  type = unlowered_expr_type (expr);
 
   if (!type || type == unknown_type_node)
     {
