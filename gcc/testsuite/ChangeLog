@@ -1,3 +1,16 @@
+2007-03-12  Seongbae Park <seongbae.park@gmail.com>
+
+ 	* gcc.dg/wvla-1.c: New test
+ 	* gcc.dg/wvla-2.c: New test
+ 	* gcc.dg/wvla-3.c: New test
+ 	* gcc.dg/wvla-4.c: New test
+ 	* gcc.dg/wvla-5.c: New test
+ 	* gcc.dg/wvla-6.c: New test
+ 	* gcc.dg/wvla-7.c: New test
+	* g++.dg/warn/Wvla-1.C: New test
+	* g++.dg/warn/Wvla-2.C: New test
+	* g++.dg/warn/Wvla-3.C: New test
+
 2007-03-12  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/30108

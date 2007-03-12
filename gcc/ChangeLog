@@ -1,3 +1,11 @@
+2007-03-12  Seongbae Park <seongbae.park@gmail.com>
+
+	* c-decl.c (warn_variable_length_array): New function.
+	Refactored from grokdeclarator to handle warn_vla
+	and handle unnamed array case.
+	(grokdeclarator): Refactored VLA warning case.
+	* c.opt (Wvla): New flag.
+
 2007-03-12  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_elf_section_type_flags): New.
