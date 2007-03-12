@@ -1,3 +1,7 @@
+2007-03-12  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* Makefile.in (install-info): New dummy target.
+
 2007-03-05  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config.host (bfin*-linux-uclibc*): Set extra_parts.
