@@ -1,3 +1,8 @@
+2007-03-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/30108
+	* call.c (convert_default_arg): Copy non-constant arguments.
+
 2007-03-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/31038

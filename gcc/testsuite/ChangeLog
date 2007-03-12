@@ -1,3 +1,8 @@
+2007-03-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/30108
+	* g++.dg/other/default6.C: New test.
+
 2007-03-12  Richard Sandiford  <richard@codesourcery.com>
 
 	* lib/target-supports.exp (check_profiling_available): Return false
