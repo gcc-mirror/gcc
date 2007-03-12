@@ -11549,6 +11549,23 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
       return constant_boolean_node (real_compare (code, c0, c1), type);
     }
 
+  /* Handle equality/inequality of complex constants.  */
+  if (TREE_CODE (op0) == COMPLEX_CST && TREE_CODE (op1) == COMPLEX_CST)
+    {
+      tree rcond = fold_relational_const (code, type,
+					  TREE_REALPART (op0),
+					  TREE_REALPART (op1));
+      tree icond = fold_relational_const (code, type,
+					  TREE_IMAGPART (op0),
+					  TREE_IMAGPART (op1));
+      if (code == EQ_EXPR)
+	return fold_build2 (TRUTH_ANDIF_EXPR, type, rcond, icond);
+      else if (code == NE_EXPR)
+	return fold_build2 (TRUTH_ORIF_EXPR, type, rcond, icond);
+      else
+	return NULL_TREE;
+    }
+
   /* From here on we only handle LT, LE, GT, GE, EQ and NE.
 
      To compute GT, swap the arguments and do LT.

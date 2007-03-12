@@ -1,3 +1,9 @@
+2007-03-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/30433
+	* gcc.c-torture/compile/pr30433.c: New testcase to check
+	that complex constant comparisions are folded.
+
 2007-03-12  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/29925

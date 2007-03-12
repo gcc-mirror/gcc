@@ -1,3 +1,10 @@
+2007-03-12  Roger Sayle  <roger@eyesopen.com>
+	    Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/30433
+	* fold-const.c (fold_relational_const): Add back compile-time
+	evaluation of complex constant equality/inequality comparisons.
+
 2007-03-12  Richard Henderson  <rth@redhat.com>
 
         PR target/26090
