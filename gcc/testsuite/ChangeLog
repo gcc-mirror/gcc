@@ -1,5 +1,11 @@
 2007-03-12  Seongbae Park <seongbae.park@gmail.com>
 
+	* gcc.dg/c90-vla-1.c: Reflect the change of the error message.
+	* gcc.dg/c99-vla-1.c: Likewise.
+	* g++.dg/ext/vla1.C: Likewise
+
+2007-03-12  Seongbae Park <seongbae.park@gmail.com>
+
  	* gcc.dg/wvla-1.c: New test
  	* gcc.dg/wvla-2.c: New test
  	* gcc.dg/wvla-3.c: New test
