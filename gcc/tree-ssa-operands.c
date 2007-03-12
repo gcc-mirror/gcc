@@ -1310,12 +1310,19 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 	    {
 	      /* Every bare SMT def we add should have SMT_USED_ALONE
 		 set on it, or else we will get the wrong answer on
-		 clobbers.  */
+		 clobbers.  Sadly, this assertion trips on code that
+		 violates strict aliasing rules, because they *do* get
+		 the clobbers wrong, since it is illegal code.  As a
+		 result, we currently only enable it for aliasing
+		 debugging.  Someone might wish to turn this code into
+		 a nice strict-aliasing warning, since we *know* it
+		 will get the wrong answer...  */
+#ifdef ACCESS_DEBUGGING
 	      if (none_added
 		  && !updating_used_alone && aliases_computed_p
 		  && TREE_CODE (var) == SYMBOL_MEMORY_TAG)
 		gcc_assert (SMT_USED_ALONE (var));
-
+#endif
 	      append_v_may_def (var);
 	    }
 	}
