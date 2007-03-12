@@ -861,40 +861,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   /**
-   *  @brief Swap the elements of two sequences.
-   *  @param  first1  A forward iterator.
-   *  @param  last1   A forward iterator.
-   *  @param  first2  A forward iterator.
-   *  @return   An iterator equal to @p first2+(last1-first1).
-   *
-   *  Swaps each element in the range @p [first1,last1) with the
-   *  corresponding element in the range @p [first2,(last1-first1)).
-   *  The ranges must not overlap.
-  */
-  template<typename _ForwardIterator1, typename _ForwardIterator2>
-    _ForwardIterator2
-    swap_ranges(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
-		_ForwardIterator2 __first2)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
-				  _ForwardIterator1>)
-      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
-				  _ForwardIterator2>)
-      __glibcxx_function_requires(_ConvertibleConcept<
-	    typename iterator_traits<_ForwardIterator1>::value_type,
-	    typename iterator_traits<_ForwardIterator2>::value_type>)
-      __glibcxx_function_requires(_ConvertibleConcept<
-	    typename iterator_traits<_ForwardIterator2>::value_type,
-	    typename iterator_traits<_ForwardIterator1>::value_type>)
-      __glibcxx_requires_valid_range(__first1, __last1);
-
-      for ( ; __first1 != __last1; ++__first1, ++__first2)
-	std::iter_swap(__first1, __first2);
-      return __first2;
-    }
-
-  /**
    *  @brief Perform an operation on a sequence.
    *  @param  first     An input iterator.
    *  @param  last      An input iterator.
