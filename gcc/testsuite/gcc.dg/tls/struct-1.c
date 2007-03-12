@@ -1,6 +1,7 @@
 /* This testcase ICEd on IA-32 because the backend was inconsistent whether
    to allow addends for @dtpoff relocs or not.  */
 /* { dg-do compile } */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -fpic" } */
 
 struct S {

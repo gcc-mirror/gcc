@@ -1,5 +1,6 @@
 /* PR 21412 */
 /* { dg-do compile */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -fPIC" } */
 
 struct S { int x[10]; };
