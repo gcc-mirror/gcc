@@ -191,7 +191,7 @@ rid of it.  This pass is located in @file{tree-cfg.c} and described by
 @item Mudflap declaration registration
 
 If mudflap (@pxref{Optimize Options,,-fmudflap -fmudflapth
--fmudflapir,gcc.info,Using the GNU Compiler Collection (GCC)}) is
+-fmudflapir,gcc,Using the GNU Compiler Collection (GCC)}) is
 enabled, we generate code to register some variable declarations with
 the mudflap runtime.  Specifically, the runtime tracks the lifetimes of
 those variable declarations that have their addresses taken, or whose

@@ -1232,7 +1232,7 @@ in C89 or gnu89 mode.
 The preprocesor macros @code{__GNUC_GNU_INLINE__} and
 @code{__GNUC_STDC_INLINE__} may be used to check which semantics are
 in effect for @code{inline} functions.  @xref{Common Predefined
-Macros,,,cpp.info,The C Preprocessor}.
+Macros,,,cpp,The C Preprocessor}.
 
 @item -aux-info @var{filename}
 @opindex aux-info

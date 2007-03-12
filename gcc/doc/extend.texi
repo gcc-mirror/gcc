@@ -3848,7 +3848,7 @@ functions will still be available with @option{-std=gnu89},
 on all inline declarations.  The preprocessor macros
 @code{__GNUC_GNU_INLINE__} and @code{__GNUC_STDC_INLINE__} may be used
 to determine the handling of @code{inline} during a particular
-compilation (@pxref{Common Predefined Macros,,,cpp.info,The C
+compilation (@pxref{Common Predefined Macros,,,cpp,The C
 Preprocessor}).
 
 To declare a function inline, use the @code{inline} keyword in its
