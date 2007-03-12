@@ -1,5 +1,10 @@
 2007-03-12  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.c (alpha_elf_section_type_flags): New.
+	(TARGET_SECTION_TYPE_FLAGS): New.
+
+2007-03-12  Richard Henderson  <rth@redhat.com>
+
 	* config/darwin.c (machopic_reloc_rw_mask): New.
 	(machopic_select_section): Use decl_readonly_section.
 	* config/darwin-protos.h (machopic_reloc_rw_mask): Declare.
