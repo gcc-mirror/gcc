@@ -1,3 +1,8 @@
+2007-03-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/31038
+	* g++.dg/template/complit2.C: New test.
+
 2007-03-11  Ian Lance Taylor  <iant@google.com>
 
 	Backported -fstrict-overflow/-Wstrict-overflow from mainline:

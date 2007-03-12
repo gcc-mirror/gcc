@@ -1,3 +1,9 @@
+2007-03-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/31038
+	* parser.c (cp_parser_postfix_expression): Disallow compound
+	literals in constant expressions.
+
 2007-03-11  Ian Lance Taylor  <iant@google.com>
 
 	Backported -fstrict-overflow/-Wstrict-overflow from mainline:
