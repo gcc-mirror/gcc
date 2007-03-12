@@ -4454,7 +4454,7 @@ enum operand_equal_flag
 };
 
 extern int operand_equal_p (tree, tree, unsigned int);
-
+extern int multiple_of_p (tree, tree, tree);
 extern tree omit_one_operand (tree, tree, tree);
 extern tree omit_two_operands (tree, tree, tree, tree);
 extern tree invert_truthvalue (tree);

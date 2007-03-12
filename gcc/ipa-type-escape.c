@@ -60,13 +60,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    this phase has been run.  */
 static bool initialized = false;
 
-/* This bitmap contains the set of local vars that are the lhs of
-   calls to mallocs.  These variables, when seen on the rhs as part of
-   a cast, the cast are not marked as doing bad things to the type
-   even though they are generally of the form 
-   "foo = (type_of_foo)void_temp". */
-static bitmap results_of_malloc;
-
 /* Scratch bitmap for avoiding work. */
 static bitmap been_there_done_that;
 static bitmap bitmap_tmp;
@@ -135,7 +128,16 @@ static splay_tree uid_to_subtype_map;
    scan_for_refs.  */
 static struct pointer_set_t *visited_nodes;
 
+/* Visited stmts by walk_use_def_chains function because it's called
+   recursively.  */
+static struct pointer_set_t *visited_stmts;
+
 static bitmap_obstack ipa_obstack;
+
+/* Static functions from this file that are used 
+   before being defined.  */
+static unsigned int look_for_casts (tree lhs ATTRIBUTE_UNUSED, tree);
+static bool is_cast_from_non_pointer (tree, tree, void *);
 
 /* Get the name of TYPE or return the string "<UNNAMED>".  */
 static char*
@@ -622,10 +624,15 @@ count_stars (tree* type_ptr)
 }
 
 enum cast_type {
-  CT_UP,
-  CT_DOWN,
-  CT_SIDEWAYS,
-  CT_USELESS
+  CT_UP = 0x1,
+  CT_DOWN = 0x2,
+  CT_SIDEWAYS = 0x4,
+  CT_USELESS = 0x8,
+  CT_FROM_P_BAD = 0x10,
+  CT_FROM_NON_P = 0x20,
+  CT_TO_NON_INTER = 0x40,
+  CT_FROM_MALLOC = 0x80,
+  CT_NO_CAST = 0x100
 };
 
 /* Check the cast FROM_TYPE to TO_TYPE.  This function requires that
@@ -648,17 +655,54 @@ check_cast_type (tree to_type, tree from_type)
   return CT_SIDEWAYS;
 }     
 
+/* This function returns non-zero if VAR is result of call 
+   to malloc function.  */
+
+static bool
+is_malloc_result (tree var)
+{
+  tree def_stmt;
+  tree rhs;
+  int flags;
+
+  if (!var)
+    return false;
+  
+  if (SSA_NAME_IS_DEFAULT_DEF (var))
+    return false;
+
+  def_stmt = SSA_NAME_DEF_STMT (var);
+  
+  if (TREE_CODE (def_stmt) != GIMPLE_MODIFY_STMT)
+    return false;
+
+  if (var != GIMPLE_STMT_OPERAND (def_stmt, 0))
+    return false;
+
+  rhs = get_call_expr_in (def_stmt);
+
+  if (!rhs)
+    return false;
+
+  flags = call_expr_flags (rhs);
+    
+  return ((flags & ECF_MALLOC) != 0);
+
+}
+
 /* Check a cast FROM this variable, TO_TYPE.  Mark the escaping types
-   if appropriate.  */ 
-static void
+   if appropriate. Returns cast_type as detected.  */
+ 
+static enum cast_type
 check_cast (tree to_type, tree from) 
 {
   tree from_type = get_canon_type (TREE_TYPE (from), false, false);
   bool to_interesting_type, from_interesting_type;
+  enum cast_type cast = CT_NO_CAST;
 
   to_type = get_canon_type (to_type, false, false);
   if (!from_type || !to_type || from_type == to_type)
-    return;
+    return cast;
 
   to_interesting_type = 
     ipa_type_escape_star_count_of_interesting_type (to_type) >= 0;
@@ -674,7 +718,8 @@ check_cast (tree to_type, tree from)
 	   both sides get marked as escaping.  Downcasts are not
 	   interesting here because if type is marked as escaping, all
 	   of its subtypes escape.  */
-	switch (check_cast_type (to_type, from_type)) 
+	cast = check_cast_type (to_type, from_type);
+	switch (cast) 
 	  {
 	  case CT_UP:
 	  case CT_USELESS:
@@ -685,17 +730,288 @@ check_cast (tree to_type, tree from)
 	    mark_type (to_type, FULL_ESCAPE);
 	    mark_type (from_type, FULL_ESCAPE);
 	    break;
+
+	  default:
+	    break;
 	  }
       }
     else
       {
-	/* If this is a cast from the local that is a result from a
-	   call to malloc, do not mark the cast as bad.  */
-	if (DECL_P (from) && !bitmap_bit_p (results_of_malloc, DECL_UID (from)))
-	  mark_type (to_type, FULL_ESCAPE);
+	/* This code excludes two cases from marking as escaped:
+	   
+	1. if this is a cast of index of array of structures/unions
+	that happens before accessing array element, we should not 
+	mark it as escaped.
+	2. if this is a cast from the local that is a result from a
+	call to malloc, do not mark the cast as bad.  
+
+	*/
+	
+	if (POINTER_TYPE_P (to_type) && !POINTER_TYPE_P (from_type))
+	  cast = CT_FROM_NON_P;
+	else if (TREE_CODE (from) == SSA_NAME 
+		 && is_malloc_result (from))
+	  cast = CT_FROM_MALLOC;
+	else
+	  {
+	    cast = CT_FROM_P_BAD;
+	    mark_type (to_type, FULL_ESCAPE);
+	  }
       }
   else if (from_interesting_type)
-    mark_type (from_type, FULL_ESCAPE);
+    {
+      mark_type (from_type, FULL_ESCAPE);
+      cast = CT_TO_NON_INTER;
+    }
+
+  return cast;
+}
+
+typedef struct cast 
+{
+  int type;
+  tree stmt;
+}cast_t;
+
+/* This function is a callback for walk_tree called from 
+   is_cast_from_non_pointer. The data->type is set to be:
+
+   0      - if there is no cast
+   number - the number of casts from non-pointer type
+   -1     - if there is a cast that makes the type to escape
+
+   If data->type = number, then data->stmt will contain the 
+   last casting stmt met in traversing.  */
+
+static tree
+is_cast_from_non_pointer_1 (tree *tp, int *walk_subtrees, void *data)
+{
+  tree def_stmt = *tp;
+
+
+  if (pointer_set_insert (visited_stmts, def_stmt))
+    {
+      *walk_subtrees = 0;
+      return NULL;
+    }
+  
+  switch (TREE_CODE (def_stmt))
+    {
+    case GIMPLE_MODIFY_STMT:
+      {
+	use_operand_p use_p; 
+	ssa_op_iter iter;
+	tree lhs = GIMPLE_STMT_OPERAND (def_stmt, 0);
+	tree rhs = GIMPLE_STMT_OPERAND (def_stmt, 1);
+
+        unsigned int cast = look_for_casts (lhs, rhs);
+	/* Check that only one cast happened, and it's of 
+	   non-pointer type.  */
+	if ((cast & CT_FROM_NON_P) == (CT_FROM_NON_P) 
+	    && (cast & ~(CT_FROM_NON_P)) == 0)
+	  {
+	    ((cast_t *)data)->stmt = def_stmt;
+	    ((cast_t *)data)->type++;
+
+	    FOR_EACH_SSA_USE_OPERAND (use_p, def_stmt, iter, SSA_OP_ALL_USES)
+	      {
+		walk_use_def_chains (USE_FROM_PTR (use_p), is_cast_from_non_pointer, 
+				     data, false);
+		if (((cast_t*)data)->type == -1)
+		  return def_stmt;
+	      }
+	  }
+
+	/* Check that there is no cast, or cast is not harmful. */
+	else if ((cast & CT_NO_CAST) == (CT_NO_CAST)
+		 || (cast & CT_DOWN) == (CT_DOWN)
+		 || (cast & CT_UP) == (CT_UP)
+		 || (cast & CT_USELESS) == (CT_USELESS)
+		 || (cast & CT_FROM_MALLOC) == (CT_FROM_MALLOC))
+	  {
+	    FOR_EACH_SSA_USE_OPERAND (use_p, def_stmt, iter, SSA_OP_ALL_USES)
+	      {
+		walk_use_def_chains (USE_FROM_PTR (use_p), is_cast_from_non_pointer, 
+				     data, false);
+		if (((cast_t*)data)->type == -1)
+		  return def_stmt;
+	      }	    
+	  }
+
+	/* The cast is harmful.  */
+	else
+	  {
+	    ((cast_t *)data)->type = -1;
+	    return def_stmt;
+	  }
+
+	*walk_subtrees = 0;
+      }     
+      break;
+
+    default:
+      {
+	*walk_subtrees = 0;
+	break;
+      }
+    }
+
+  return NULL;
+}
+
+/* This function is a callback for walk_use_def_chains function called 
+   from is_array_access_through_pointer_and_index.  */
+
+static bool
+is_cast_from_non_pointer (tree var, tree def_stmt, void *data)
+{
+
+  if (!def_stmt || !var)
+    return false;
+  
+  if (TREE_CODE (def_stmt) == PHI_NODE)
+    return false;
+
+  if (SSA_NAME_IS_DEFAULT_DEF (var))
+      return false;
+
+  walk_tree (&def_stmt, is_cast_from_non_pointer_1, data, NULL);
+  if (((cast_t*)data)->type == -1)
+    return true;
+  
+  return false;
+}
+
+/* When array element a_p[i] is accessed through the pointer a_p 
+   and index i, it's translated into the following sequence
+   in gimple:
+
+  i.1_5 = (unsigned int) i_1;
+  D.1605_6 = i.1_5 * 16;
+  D.1606_7 = (struct str_t *) D.1605_6;
+  a_p.2_8 = a_p;
+  D.1608_9 = D.1606_7 + a_p.2_8;
+
+  OP0 and OP1 are of the same pointer types and stand for 
+  D.1606_7 and a_p.2_8 or vise versa.
+
+  This function checks that:
+
+  1. one of OP0 and OP1 (D.1606_7) has passed only one cast from 
+  non-pointer type (D.1606_7 = (struct str_t *) D.1605_6;).
+
+  2. one of OP0 and OP1 which has passed the cast from 
+  non-pointer type (D.1606_7), is actually generated by multiplication of 
+  index by size of type to which both OP0 and OP1 point to
+  (in this case D.1605_6 = i.1_5 * 16; ).
+
+  3. an address of def of the var to which was made cast (D.1605_6) 
+  was not taken.(How can it happen?)
+
+  The following items are checked implicitly by the end of algorithm:
+
+  4. one of OP0 and OP1 (a_p.2_8) have never been cast 
+  (because if it was cast to pointer type, its type, that is also 
+  the type of OP0 and OP1, will be marked as escaped during 
+  analysis of casting stmt (when check_cast() is called 
+  from scan_for_refs for this stmt)).   
+
+  5. defs of OP0 and OP1 are not passed into externally visible function
+  (because if they are passed then their type, that is also the type of OP0
+  and OP1, will be marked and escaped during check_call function called from 
+  scan_for_refs with call stmt).
+
+  In total, 1-5 guaranty that it's an access to array by pointer and index. 
+
+*/
+
+static bool
+is_array_access_through_pointer_and_index (tree op0, tree op1)
+{
+  tree base, offset, offset_cast_stmt;
+  tree before_cast, before_cast_def_stmt;
+  cast_t op0_cast, op1_cast;
+
+  /* Check 1.  */
+
+  /* Init data for walk_use_def_chains function.  */
+  op0_cast.type = op1_cast.type = 0;
+  op0_cast.stmt = op1_cast.stmt = NULL;
+
+  visited_stmts = pointer_set_create ();
+  walk_use_def_chains (op0, is_cast_from_non_pointer,(void *)(&op0_cast), false);
+  pointer_set_destroy (visited_stmts);
+
+  visited_stmts = pointer_set_create ();  
+  walk_use_def_chains (op1, is_cast_from_non_pointer,(void *)(&op1_cast), false);
+  pointer_set_destroy (visited_stmts);
+
+  if (op0_cast.type == 1 && op1_cast.type == 0)
+    {
+      base = op1;
+      offset = op0;
+      offset_cast_stmt = op0_cast.stmt;
+    }
+  else if (op0_cast.type == 0 && op1_cast.type == 1)
+    {
+      base = op0;
+      offset = op1;      
+      offset_cast_stmt = op1_cast.stmt;
+    }
+  else
+    return false;
+
+  /* Check 2.  
+     offset_cast_stmt is of the form: 
+     D.1606_7 = (struct str_t *) D.1605_6;  */
+
+  before_cast = SINGLE_SSA_TREE_OPERAND (offset_cast_stmt, SSA_OP_USE);
+  if (!before_cast)
+    return false;
+  
+  if (SSA_NAME_IS_DEFAULT_DEF(before_cast))
+    return false;
+  
+  before_cast_def_stmt = SSA_NAME_DEF_STMT (before_cast);
+  if (!before_cast_def_stmt)
+    return false;
+
+  /* before_cast_def_stmt should be of the form:
+     D.1605_6 = i.1_5 * 16; */
+  
+  if (TREE_CODE (before_cast_def_stmt) == GIMPLE_MODIFY_STMT)
+    {
+      tree lhs = GIMPLE_STMT_OPERAND (before_cast_def_stmt,0);
+      tree rhs = GIMPLE_STMT_OPERAND (before_cast_def_stmt,1);
+
+      /* We expect temporary here.  */
+      if (!is_gimple_reg (lhs))	
+	return false;
+
+      if (TREE_CODE (rhs) == MULT_EXPR)
+	{
+	  tree arg0 = TREE_OPERAND (rhs, 0);
+	  tree arg1 = TREE_OPERAND (rhs, 1);
+	  tree unit_size = 
+	    TYPE_SIZE_UNIT (TREE_TYPE (TYPE_MAIN_VARIANT (TREE_TYPE (op0))));
+
+	  if (!(CONSTANT_CLASS_P (arg0) 
+	      && simple_cst_equal (arg0,unit_size))
+	      && !(CONSTANT_CLASS_P (arg1) 
+	      && simple_cst_equal (arg1,unit_size)))
+	    return false;	      		   
+	}
+      else
+	return false;
+    }
+  else
+    return false;
+
+  /* Check 3.
+     check that address of D.1605_6 was not taken.
+     FIXME: if D.1605_6 is gimple reg than it cannot be addressable.  */
+
+  return true;
 }
 
 /* Register the parameter and return types of function FN.  The type
@@ -808,9 +1124,9 @@ check_tree (tree t)
   if ((TREE_CODE (t) == EXC_PTR_EXPR) || (TREE_CODE (t) == FILTER_EXPR))
     return;
 
-  while (TREE_CODE (t) == REALPART_EXPR 
-	 || TREE_CODE (t) == IMAGPART_EXPR
-	 || handled_component_p (t))
+  /* We want to catch here also REALPART_EXPR and IMAGEPART_EXPR,
+     but they already included in handled_component_p.  */
+  while (handled_component_p (t))
     {
       if (TREE_CODE (t) == ARRAY_REF)
 	check_operand (TREE_OPERAND (t, 1));
@@ -873,7 +1189,7 @@ mark_interesting_addressof (tree to_type, tree from_type)
 			 to_uid, 
 			 (splay_tree_value)type_map);
     }
-  bitmap_set_bit (type_map, TYPE_UID (to_type));
+  bitmap_set_bit (type_map, TYPE_UID (from_type)); 
 }
 
 /* Scan tree T to see if there are any addresses taken in within T.  */
@@ -912,29 +1228,41 @@ look_for_address_of (tree t)
 /* Scan tree T to see if there are any casts within it.
    LHS Is the LHS of the expression involving the cast.  */
 
-static void 
-look_for_casts (tree lhs __attribute__((unused)), tree t)
+static unsigned int 
+look_for_casts (tree lhs ATTRIBUTE_UNUSED, tree t)
 {
+  unsigned int cast = 0;
+
+
   if (is_gimple_cast (t) || TREE_CODE (t) == VIEW_CONVERT_EXPR)
     {
       tree castfromvar = TREE_OPERAND (t, 0);
-      check_cast (TREE_TYPE (t), castfromvar);
+      cast = cast | check_cast (TREE_TYPE (t), castfromvar);
     }
-  else
-    while (handled_component_p (t))
-      {
-	t = TREE_OPERAND (t, 0);
-	if (TREE_CODE (t) == VIEW_CONVERT_EXPR)
-	  {
-	    /* This may be some part of a component ref.
-	       IE it may be a.b.VIEW_CONVERT_EXPR<weird_type>(c).d, AFAIK.
-	       castfromref will give you a.b.c, not a. */
-	    tree castfromref = TREE_OPERAND (t, 0);
-	    check_cast (TREE_TYPE (t), castfromref);
-	  }
-	else if (TREE_CODE (t) == COMPONENT_REF)
-	  get_canon_type (TREE_TYPE (TREE_OPERAND (t, 1)), false, false);
-      }
+  else if (TREE_CODE (t) == COMPONENT_REF
+	   || TREE_CODE (t) == INDIRECT_REF
+	   || TREE_CODE (t) == BIT_FIELD_REF)
+    {
+      tree base = get_base_address (t);
+      while (t != base)
+	{
+	  t = TREE_OPERAND (t, 0);
+	  if (TREE_CODE (t) == VIEW_CONVERT_EXPR)
+	    {
+	      /* This may be some part of a component ref.
+		 IE it may be a.b.VIEW_CONVERT_EXPR<weird_type>(c).d, AFAIK.
+		 castfromref will give you a.b.c, not a. */
+	      tree castfromref = TREE_OPERAND (t, 0);
+	      cast = cast | check_cast (TREE_TYPE (t), castfromref);
+	    }
+	  else if (TREE_CODE (t) == COMPONENT_REF)
+	    get_canon_type (TREE_TYPE (TREE_OPERAND (t, 1)), false, false);
+	}
+    } 
+
+  if (!cast)
+    cast = CT_NO_CAST;
+  return cast;
 } 
 
 /* Check to see if T is a read or address of operation on a static var
@@ -1007,10 +1335,9 @@ get_asm_expr_operands (tree stmt)
    this is either an indirect call, a call outside the compilation
    unit.  */
 
-static bool
+static void
 check_call (tree call_expr) 
 {
-  int flags = call_expr_flags(call_expr);
   tree operand;
   tree callee_t = get_callee_fndecl (call_expr);
   struct cgraph_node* callee;
@@ -1118,7 +1445,6 @@ check_call (tree call_expr)
 	  mark_interesting_type (type, EXPOSED_PARAMETER);
 	}
     }
-  return (flags & ECF_MALLOC);
 }
 
 /* CODE is the operation on OP0 and OP1.  OP0 is the operand that we
@@ -1128,18 +1454,39 @@ okay_pointer_operation (enum tree_code code, tree op0, tree op1)
 {
   tree op0type = TYPE_MAIN_VARIANT (TREE_TYPE (op0));
   tree op1type = TYPE_MAIN_VARIANT (TREE_TYPE (op1));
-  if (POINTER_TYPE_P (op1type))
-    return false;
+
   switch (code)
     {
     case MULT_EXPR:
-    case PLUS_EXPR:
+      /* Multiplication does not change alignment.  */
+      return true;
+      break;
     case MINUS_EXPR:
-      /* TODO: Handle multiples of op0 size as well */
-      if (operand_equal_p (size_in_bytes (op0type), op1, 0))
-	return true;
-      /* fallthrough */
+    case PLUS_EXPR:
+      {
+	if (POINTER_TYPE_P (op1type)
+	    && TREE_CODE (op0) == SSA_NAME 
+	    && TREE_CODE (op1) == SSA_NAME 
+	    && is_array_access_through_pointer_and_index (op0, op1))
+	  return true;
+	else
+	  {
+	    tree size_of_op0_points_to = TYPE_SIZE_UNIT (TREE_TYPE (op0type));
+	    
+	    if (CONSTANT_CLASS_P (op1)
+		&& size_of_op0_points_to
+		&& multiple_of_p (TREE_TYPE (size_of_op0_points_to), 
+				  op1, size_of_op0_points_to))
+	      return true;
 
+	    if (CONSTANT_CLASS_P (op0) 
+		&& size_of_op0_points_to
+		&& multiple_of_p (TREE_TYPE (size_of_op0_points_to), 
+				  op0, size_of_op0_points_to))
+	      return true;	    
+	  }
+      }
+      break;
     default:
       return false;
     }
@@ -1256,12 +1603,7 @@ scan_for_refs (tree *tp, int *walk_subtrees, void *data)
 		/* If this is a call to malloc, squirrel away the
 		   result so we do mark the resulting cast as being
 		   bad.  */
-		if (check_call (rhs))
-		  {
-		    if (TREE_CODE (lhs) == SSA_NAME)
-		      lhs = SSA_NAME_VAR (lhs);
-		    bitmap_set_bit (results_of_malloc, DECL_UID (lhs));
-		  }
+		check_call (rhs);
 		break;
 	      default:
 		break;
@@ -1307,7 +1649,6 @@ ipa_init (void)
   global_types_exposed_parameter = BITMAP_ALLOC (&ipa_obstack);
   global_types_full_escape = BITMAP_ALLOC (&ipa_obstack);
   global_types_seen = BITMAP_ALLOC (&ipa_obstack);
-  results_of_malloc = BITMAP_ALLOC (&ipa_obstack);
 
   uid_to_canon_type = splay_tree_new (splay_tree_compare_ints, 0, 0);
   all_canon_types = splay_tree_new (compare_type_brand, 0, 0);
@@ -1810,7 +2151,6 @@ type_escape_execute (void)
   BITMAP_FREE (global_types_exposed_parameter);
   BITMAP_FREE (been_there_done_that);
   BITMAP_FREE (bitmap_tmp);
-  BITMAP_FREE (results_of_malloc);
   return 0;
 }
 

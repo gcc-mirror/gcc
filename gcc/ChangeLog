@@ -1,3 +1,20 @@
+2007-03-12  Olga Golovanevsky  <olga@il.ibm.com>
+  
+  	* tree.h : Add multiple_of_p declaration.
+  	* fold-const.c (multiple_of_p): Make multiple_of_p public. 
+  	* ipa-type-escape.c (results_of_malloc): Redundant.
+  	(visited_stmts): New. Visited stmt for walk_use_def_chains.
+  	(cast_type): Extended with new members.
+  	(check_cast): Returns cast_type.
+  	(cast): New structure for data of walk_use_def_chains.
+  	(is_malloc_result, is_cast_from_non_pointer_1,
+  	is_cast_from_non_pointer, 
+  	is_array_access_through_pointer_and_index): New functions.
+  	(look_for_casts): Returns cast types.
+ 	(check_call): Returns void.
+  	(okay_pointer_operation): Use support of pointer plus index,
+  	pointer plus constant and allow all multiplications.
+	
 2007-03-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/31115
