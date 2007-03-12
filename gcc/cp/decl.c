@@ -6632,12 +6632,21 @@ compute_array_index_type (tree name, tree size)
 	error ("size of array is not an integral constant-expression");
       size = integer_one_node;
     }
-  else if (pedantic)
+  else if (pedantic && warn_vla != 0)
     {
       if (name)
-	pedwarn ("ISO C++ forbids variable-size array %qD", name);
+	pedwarn ("ISO C++ forbids variable length array %qD", name);
       else
-	pedwarn ("ISO C++ forbids variable-size array");
+	pedwarn ("ISO C++ forbids variable length array");
+    }
+  else if (warn_vla > 0)
+    {
+      if (name)
+	warning (OPT_Wvla, 
+                 "variable length array %qD is used", name);
+      else
+	warning (OPT_Wvla, 
+                 "variable length array is used");
     }
 
   if (processing_template_decl && !TREE_CONSTANT (size))

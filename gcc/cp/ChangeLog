@@ -1,3 +1,7 @@
+2007-03-12  Seongbae Park <seongbae.park@gmail.com>
+
+	* decl.c (compute_array_index_type): New warning flag warn_vla.
+
 2007-03-12  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/30108

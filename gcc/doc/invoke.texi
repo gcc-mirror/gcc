@@ -254,7 +254,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wsystem-headers  -Wtrigraphs  -Wundef  -Wuninitialized @gol
 -Wunknown-pragmas  -Wno-pragmas -Wunreachable-code @gol
 -Wunused  -Wunused-function  -Wunused-label  -Wunused-parameter @gol
--Wunused-value  -Wunused-variable  -Wvariadic-macros @gol
+-Wunused-value  -Wunused-variable @gol
+-Wvariadic-macros -Wvla @gol
 -Wvolatile-register-var  -Wwrite-strings}
 
 @item C-only Warning Options
@@ -3732,6 +3733,13 @@ only when @option{-pedantic} flag is used.
 Warn if variadic macros are used in pedantic ISO C90 mode, or the GNU
 alternate syntax when in pedantic ISO C99 mode.  This is default.
 To inhibit the warning messages, use @option{-Wno-variadic-macros}.
+
+@item -Wvla
+@opindex Wvla
+@opindex Wno-vla
+Warn if variable length array is used in the code.
+@option{-Wno-vla} will prevent the @option{-pedantic} warning of
+the variable length array.
 
 @item -Wvolatile-register-var
 @opindex Wvolatile-register-var

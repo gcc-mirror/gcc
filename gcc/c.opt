@@ -450,6 +450,10 @@ Wvariadic-macros
 C ObjC C++ ObjC++ Warning
 Do not warn about using variadic macros when -pedantic
 
+Wvla
+C ObjC C++ ObjC++ Var(warn_vla) Init(-1) Warning
+Warn if a variable length array is used
+
 Wwrite-strings
 C ObjC C++ ObjC++ Var(warn_write_strings) Warning
 In C++, nonzero means warn about deprecated conversion from string literals to `char *'.  In C, similar warning, except that the conversion is of course not deprecated by the ISO C standard.
