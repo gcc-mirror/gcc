@@ -1,3 +1,12 @@
+2007-03-12  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tree-pass.h (pass_into_cfg_layout_mode,
+	pass_outof_cfg_layout_mode): Declare.
+	* cfglayout.c (into_cfg_layout_mode, outof_cfg_layout_mode,
+	pass_into_cfg_layout_mode, pass_outof_cfg_layout_mode): New.
+	* passes.c (pass_into_cfg_layout_mode): Schedule before jump2.
+	(pass_outof_cfg_layout_mode): Schedule after pass_rtl_ifcvt.
+
 2007-03-12  Seongbae Park <seongbae.park@gmail.com>
 
 	* c-decl.c (warn_variable_length_array): New function.
