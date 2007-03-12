@@ -1,3 +1,8 @@
+2007-03-12  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	PR 30635
+	* doc/install.texi: Document --enable-stage1-languages
+
 2007-03-12  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* tree-pass.h (pass_into_cfg_layout_mode,

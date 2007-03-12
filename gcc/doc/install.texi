@@ -1136,6 +1136,21 @@ Re-defining @code{LANGUAGES} when calling @samp{make} @strong{does not}
 work anymore, as those language sub-directories might not have been
 configured!
 
+@item --enable-stage1-languages=@var{lang1},@var{lang2},@dots{}
+Specify that a particular subset of compilers and their runtime
+libraries should be built with the system C compiler during stage 1 of
+the bootstrap process, rather than only in later stages with the
+bootstrapped C compiler.  The list of valid values is the same as for
+@option{--enable-languages}, and the option @code{all} will select all
+of the languages enabled by @option{--enable-languages}.  This option is
+primarily useful for GCC development; for instance, when a development
+version of the compiler cannot bootstrap due to compiler bugs, or when
+one is debugging front ends other than the C front end.  When this
+option is used, one can then build the target libraries for the
+specified languages with the stage-1 compiler by using @command{make
+stage1-bubble all-target}, or run the testsuite on the stage-1 compiler
+for the specified languages using @command{make stage1-start check-gcc}.
+
 @item --disable-libada
 Specify that the run-time libraries and tools used by GNAT should not
 be built.  This can be useful for debugging, or for compatibility with
