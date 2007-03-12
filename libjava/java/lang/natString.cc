@@ -1,6 +1,6 @@
 // natString.cc - Implementation of java.lang.String native methods.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -615,11 +615,9 @@ java::lang::String::getBytes (jstring enc)
   while (todo > 0 || converter->havePendingBytes())
     {
       converter->setOutput(buffer, bufpos);
-      // We only really need to do a single write.
-      converter->setFinished();
       int converted = converter->write(this, offset, todo, NULL);
       bufpos = converter->count;
-      if (converted == 0 && bufpos == converter->count)
+      if (converted == 0)
 	{
 	  buflen *= 2;
 	  jbyteArray newbuffer = JvNewByteArray(buflen);
@@ -627,10 +625,15 @@ java::lang::String::getBytes (jstring enc)
 	  buffer = newbuffer;
 	}
       else
-	bufpos = converter->count;
-
-      offset += converted;
-      todo -= converted;
+	{
+	  offset += converted;
+	  todo -= converted;
+	}
+    }
+  if (length() > 0)
+    {
+      converter->setFinished();
+      converter->write(this, 0, 0, NULL);
     }
   converter->done ();
   if (bufpos == buflen)
