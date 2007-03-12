@@ -1113,7 +1113,7 @@ _Jv_JVMTI_GetArgumentsSize (jvmtiEnv *env, jmethodID method, jint *size)
       else if (sig[i] == 'J' || sig[i] == 'D')
         {
           // If this is an array of wide types it uses a single slot
-          if (i > 0 && sig[i-1] == '[')
+          if (i > 0 && sig[i - 1] == '[')
             num_slots++;
           else
             num_slots += 2;
